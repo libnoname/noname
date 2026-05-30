@@ -1,4 +1,22 @@
 const characters = {
+	ol_duanwei: {
+		sex: "male",
+		hp: 4,
+		group: "qun",
+		skills: ["taohuai"],
+	},
+	tangtang: {
+		sex: "female",
+		hp: 3,
+		group: "qun",
+		skills: ["zexing", "zhiyi"],
+	},
+	ol_zhengxuan: {
+		sex: "male",
+		hp: 3,
+		group: "qun",
+		skills: ["shixing", "dejiao"],
+	},
 	ol_huangfusong: {
 		sex: "male",
 		group: "qun",

@@ -1,6 +1,11 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	niutoumamian: "牛头马面",
+	dianbu: "点簿",
+	dianbu_info: "锁定技，你的首个回合开始时，你获得13张牌。当你每个回合内首次打出一种“拘魂”组合后，你视为使用一张【无中生有】，且因此获得的牌不计入手牌上限。若为炸弹，刷新此技能。",
+	juhun: "拘魂",
+	juhun_info: "出牌阶段开始时，将你的手牌变为扑克牌（仅点数、花色可见），直到此回合结束。然后你可根据以下组合打出手牌并执行效果\n对子：视为使用一张基本牌（不计入次数）\n三条：获得相邻各一张牌\n炸弹：造成两点伤害。\n顺子：你将一名角色随机两张牌变为扑克牌。",
 	bachiqionggouyu: "八尺琼勾玉",
 	bachiqionggouyu_info: "锁定技，出牌阶段结束时回复1点体力;摸牌阶段开始时，若你的体力为满，则摸牌数+2。",
 	bachiqionggouyu_skill: "八尺琼勾玉",

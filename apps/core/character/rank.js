@@ -103,6 +103,7 @@ window.noname_character_rank = {
 		"eu_yuejin",
 	],
 	a: [
+		"nitoumamian",
 		"lizhaoyi",
 		"luwenyi",
 		"mb_shen_machao",
@@ -1127,6 +1128,9 @@ window.noname_character_rank = {
 		"pot_zanghong",
 	],
 	b: [
+		"ol_duanwei",
+		"tangtang",
+		"ol_zhengxuan",
 		"clan_luyusheng",
 		"mb_caochun",
 		"mb_xiahoumao",

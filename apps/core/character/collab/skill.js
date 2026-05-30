@@ -2,13 +2,250 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//牛头马面
+	dianbu: {
+		trigger: {
+			player: ["phaseBefore", "enterGame"],
+		},
+		filter(event, player) {
+			return game.phaseNumber == 0 || event.name != "phase";
+		},
+		forced: true,
+		async content(event, trigger, player) {
+			const cards = [];
+			while (cards.length < 13) {
+				const card = get.cardPile2(c => !cards.includes(c));
+				if (card) {
+					cards.push(card);
+				} else {
+					break;
+				}
+			}
+			if (cards.length) {
+				await player.gain({ cards: cards, animate: "draw" });
+			}
+		},
+		group: ["dianbu_effect"],
+		subSkill: {
+			used: {},
+			effect: {
+				trigger: {
+					player: ["useCard"],
+				},
+				forced: true,
+				filter(event, player) {
+					const name = event.card.name;
+					const used = player.getStorage("dianbu_used") || [];
+					return name.startsWith("juhun_") && !used.includes(name);
+				},
+				mod: {
+					ignoredHandcard(card, player) {
+						return card.hasGaintag("dianbu_noMax");
+					},
+					cardDiscardable(card, player, name) {
+						if (name == "phaseDiscard" && card.hasGaintag("dianbu_noMax")) {
+							return false;
+						}
+					},
+				},
+				async content(event, trigger, player) {
+					const name = trigger.card.name;
+					const used = player.getStorage("dianbu_used") || [];
+					used.push(name);
+					player.setStorage("dianbu_used", used);
+					const card = get.autoViewAs({ name: "wuzhong" });
+					const next = player.useCard({
+						card: card,
+						targets: [player],
+					});
+					player
+						.when({
+							player: ["gainAfter"],
+						})
+						.filter((event, player) => {
+							return event.getParent("useCard") == next;
+						})
+						.step(async (event, trigger, player) => {
+							const cards = trigger.cards.filter(card => get.owner(card) == player);
+							player.addGaintag(cards, "dianbu_noMax");
+						});
+					await next;
+					if (name == "juhun_zhadan") {
+						player.setStorage("dianbu_used", []);
+					}
+				},
+			},
+		},
+	},
+	juhun: {
+		enable: ["chooseToUse"],
+		init(player) {
+			game.players.forEach(curr => curr.addSkill("juhun_effect"));
+		},
+		selectCard: [1, Infinity],
+		filterCard(card, player) {
+			return lib.filter.cardEnabled(card, player);
+		},
+		check(card) {
+			const num = ui.selected.cards.length;
+			if (num > 3) {
+				return -1;
+			}
+			if (!num) {
+				return 1;
+			}
+			const cards = ui.selected.cards.slice();
+			const type = get.info("juhun").getType(cards.add(card));
+			if (type) {
+				return 1;
+			}
+			return -1;
+		},
+		lose: false,
+		delay: false,
+		discard: false,
+		filterOk() {
+			const cards = ui.selected.cards;
+			return get.info("juhun").getType(cards);
+		},
+		getType(cards) {
+			const numbers = cards.map(card => get.number(card));
+			if (numbers.some(number => typeof number != "number")) {
+				return false;
+			}
+			const len = numbers.toUniqued().length;
+			if (cards.length == 2 && numbers.toUniqued().length == 1) {
+				return "duizi";
+			} else if (cards.length == 3 && numbers.toUniqued().length == 1) {
+				return "santiao";
+			} else if (cards.length == 4 && numbers.toUniqued().length == 1) {
+				return "zhadan";
+			} else if (
+				cards.length == 5 &&
+				numbers.every((number, i, list) => {
+					return number - list[i - 1] == 1;
+				})
+			) {
+				return "shunzi";
+			}
+			return false;
+		},
+		filter(event, player) {
+			if (_status.currentPhase != player || event.type != "phase") {
+				return false;
+			}
+			const cards = player.getCards("h");
+			const numbers = cards.map(card => get.number(card));
+			const dsz = numbers.some(number => get.numOf(numbers, number) > 1);
+			const list = numbers.filter(i => typeof i == "number").sort();
+			let sz;
+			if (list.length < 5) {
+				sz = false;
+			} else {
+				sz = list.every((i, j) => i - list[j - 1] == 1);
+			}
+			return dsz || sz;
+		},
+		async content(event, trigger, player) {
+			const { cards } = event;
+			await player.discard({ cards: cards });
+			const type = get.info("juhun").getType(cards);
+			if (type == "duizi") {
+				const cards = get.inpileVCardList(info => {
+					if (info[0] != "basic") {
+						return false;
+					}
+					const card = get.autoViewAs({ name: info[2] });
+					return player.hasUseTarget(card, null, false);
+				});
+				const {
+					links: [link],
+				} = await player
+					.chooseButton({
+						forced: true,
+						createDialog: ["视为使用一张基本牌", [cards, "vcard"]],
+					})
+					.forResult();
+				const card = get.autoViewAs({ name: link[2], isCard: false });
+				await player.chooseUseTarget({
+					card: card,
+					nodistance: true,
+					addCount: false,
+				});
+			} else if (type == "santiao") {
+				const targets = [player.getPrevious(), player.getNext()];
+				await game.doAsyncInOrder(targets, async target => {
+					await player.gainPlayerCard({
+						target: target,
+						position: "he",
+					});
+				});
+			} else if (type == "zhadan") {
+				const {
+					targets: [target],
+				} = await player
+					.chooseTarget({
+						prompt: "选择一名角色对其造成2点伤害",
+					})
+					.forResult();
+				await target.damage({
+					source: player,
+					num: 2,
+				});
+			} else if (type == "shunzi") {
+				const {
+					targets: [target],
+				} = await player
+					.chooseTarget({
+						prompt: "将一名角色随机两张牌变为扑克牌。",
+					})
+					.forResult();
+				const cards = target.getCards("h").randomGets(2);
+				target.addGaintag(cards, "juhun");
+			}
+		},
+		subSkill: {
+			effect: {
+				trigger: {
+					player: ["phaseBegin", "phaseEnd"],
+				},
+				popup: false,
+				forced: true,
+				charlotte: true,
+				mod: {
+					cardname(card, player, currentname) {
+						if (card.hasGaintag("juhun")) {
+							return "hschenzhi_poker";
+						}
+					},
+				},
+				filter(event, player, name) {
+					return player.hasSkill("juhun", null, false, false);
+				},
+				async content(event, trigger, player) {
+					const cards = player.getCards("h");
+					if (event.triggername == "phaseBegin") {
+						player.addGaintag(cards, "juhun");
+					} else if (event.triggername == "phaseEnd") {
+						player.removeGaintag("juhun", cards);
+					}
+				},
+			},
+		},
+		ai: {
+			order: 13,
+			result: {
+				player: 5,
+			},
+		},
+	},
 	// 魔周瑜
 	yiran: {
 		audio: 2,
 		trigger: { player: "damageBegin3" },
 		forced: true,
 		filter(event, player) {
-			return  event.hasNature("fire");
+			return event.hasNature("fire");
 		},
 		async content(event, trigger, player) {
 			trigger.num++;

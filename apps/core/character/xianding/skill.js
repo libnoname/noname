@@ -816,6 +816,179 @@ const skills = {
 			},
 		},
 	},
+	//李昭仪
+	dcmingjie: {
+		trigger: {
+			global: "phaseBefore",
+			player: "enterGame",
+		},
+		init(player) {
+			player.addSkill("dcmingjie_dis");
+		},
+		filter(event, player) {
+			return event.name != "phase" || game.phaseNumber == 0;
+		},
+		mark: true,
+		marktext: "节",
+		intro: {
+			content: "players",
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: "选择一名其他角色，你与其获得对方因为弃牌阶段弃置的牌，你与其的阶段被跳过时各摸2张牌并可令对方防止下次受到的伤害。所选角色阵亡时，你立即阵亡。",
+					filterTarget: lib.filter.notMe,
+					ai(target) {
+						const player = get.player();
+						return get.attitude(player, target);
+					},
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+			} = event;
+			player.setStorage("dcmingjie", target);
+		},
+		group: ["dcmingjie_eff", "dcmingjie_die"],
+		subSkill: {
+			eff: {
+				trigger: {
+					global: ["phaseAnySkipped", "phaseAnyCancelled"],
+				},
+				filter(event, player) {
+					return event.player == player || event.player == player.storage.dc_mingjie;
+				},
+				forced: true,
+				async content(event, trigger, player) {
+					const targets = [player, player.storage.dc_mingjie];
+					await game.doAsyncInOrder(targets, async target => {
+						await target.draw(2);
+						const mate = targets.find(t => t != target);
+						const { bool } = await target
+							.chooseBool({
+								prompt: `是否防止${get.translation(mate)}受到下次伤害`,
+								ai(event, player) {
+									const mate = get.event().dc_mingjie_target;
+									const att = get.attitude(player, mate);
+									if (att > 0) {
+										return true;
+									} else {
+										return false;
+									}
+								},
+							})
+							.set("dcmingjie_target", mate)
+							.forResult();
+						if (bool) {
+							mate.addSkill("dcmingjie_mate");
+						}
+					});
+				},
+			},
+			dis: {
+				trigger: {
+					global: ["phaseDiscardEnd"],
+				},
+				forced: true,
+				charlotte: true,
+				filter(event, player) {
+					if (!event.cards?.length) {
+						return false;
+					}
+					return event.player == player || event.player == player.storage.dc_mingjie;
+				},
+				async content(event, trigger, player) {
+					const source = trigger.player;
+					const gainer = source == player ? player.storage.dc_mingjie : player;
+					const cards = trigger.cards.filterInD("d");
+					await gainer.gain({
+						cards: cards,
+						animate: "gain2",
+					});
+				},
+			},
+			mate: {
+				trigger: {
+					player: ["damageBegin4"],
+				},
+				mark: true,
+				marktext: "明",
+				intro: {
+					content: "防止下次受到的伤害",
+				},
+				forced: true,
+				charlotte: true,
+				async content(event, trigger, player) {
+					trigger.cancel();
+					player.removeSkill("dcmingjie_mate");
+				},
+			},
+			die: {
+				trigger: {
+					global: ["dieAfter"],
+				},
+				filter(event, player) {
+					return player.storage.dc_mingjie == event.player;
+				},
+				direct: true,
+				async content(event, trigger, player) {
+					await player.die();
+				},
+			},
+		},
+	},
+	dcxianfu: {
+		trigger: {
+			target: ["useCardToTargeted"],
+		},
+		usable: 1,
+		async cost(event, trigger, player) {
+			const list = lib.phaseName.filter(i => !player.skipList.concat(["phaseZhunbei", "phaseJieshu"]).includes(i));
+			const { links, bool } = await player
+				.chooseButton({
+					createDialog: ["跳过你下个除准备阶段和结束阶段外的一个阶段并与“明节”角色交换手牌，若如此做，此牌对你无效。", [list.map(i => [i, get.translation(i)]), "tdnodes"]],
+					ai(button) {
+						const link = button.link;
+						const player = get.player();
+						const evt = get.event().dc_xianfu_use;
+						const card = evt.card;
+						const user = evt.player;
+						const num = get.effect(player, card, user, player);
+						if (num > 0) {
+							return -1;
+						} else {
+							if (link == "phaseDiscard") {
+								return 4;
+							} else if (link == "phaseUse") {
+								return Math.random() - 0.3;
+							} else if (link == "phaseDraw") {
+								return Math.random() - 0.5;
+							}
+							return 3;
+						}
+					},
+				})
+				.set("dc_xianfu_use", list)
+				.forResult();
+			event.result = {
+				bool: bool,
+				cost_data: {
+					skip: links,
+				},
+			};
+		},
+		async content(event, trigger, player) {
+			const evt = trigger.getParent();
+			evt.targets.remove(player);
+			evt.excluded.add(player);
+			const { skip } = event.cost_data;
+			player.skipList.add(skip[0]);
+			const target = player.storage.dc_mingjie;
+			await player.swapHandcards(target);
+		},
+	},
 	//威马腾
 	dcheji: {
 		trigger: {

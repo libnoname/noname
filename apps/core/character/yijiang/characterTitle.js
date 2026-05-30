@@ -1,4 +1,6 @@
 export default {
+	tangtang: "伊侍佐佑",
+	ol_zhengxuan: "弘道传德",
 	old_huaxiong: "魔将",
 	yufan: "狂直之士",
 	xushu: "忠义的侠士",

@@ -1,4 +1,10 @@
 const characters = {
+	niutoumamian: {
+		sex: "male",
+		hp: 4,
+		group: "shen",
+		skills: ["dianbu", "juhun"],
+	},
 	tw_dm_zhouyu: {
 		sex: "male",
 		group: "qun",
