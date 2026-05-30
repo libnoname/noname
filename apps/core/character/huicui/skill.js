@@ -1350,7 +1350,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			const num = player.getDamagedHp();
+			const num = player.maxHp - player.hp;
 			await player.recover(num);
 			//await player.draw(num);
 			await player.removeSkills("dcyizheng");
