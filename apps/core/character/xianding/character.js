@@ -1,4 +1,40 @@
 const characters = {
+	v_mateng: {
+		sex: "male",
+		hp: 5,
+		group: "qun",
+		skills: ["dcheji", "dchuirui", "dcxiaohui"],
+	},
+	lizhaoyi: {
+		sex: "female",
+		hp: 3,
+		group: "shu",
+		skills: ["dcmingjie", "dcxianfu"],
+	},
+	luwenyi: {
+		sex: "female",
+		hp: 3,
+		group: "wu",
+		skills: ["caiyun", "qieyan"],
+	},
+	dengwantang: {
+		sex: "female",
+		hp: 3,
+		group: "wei",
+		skills: ["daijia", "chengchong"],
+	},
+	wu_zhangfei: {
+		sex: "male",
+		hp: 4,
+		group: "shu",
+		skills: ["zisheng", "xianlue", "haoxian"],
+	},
+	dc_sb_guanyu: {
+		sex: "male",
+		hp: 4,
+		group: "shu",
+		skills: ["guanwu", "weishi", "jvao"],
+	},
 	dc_shen_caopi: {
 		sex: "male",
 		group: "shen",
