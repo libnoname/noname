@@ -401,7 +401,7 @@ const skills = {
 			},
 		},
 	},
-	zhiyi: {
+	ol_zhiyi: {
 		trigger: {
 			global: ["loseAsyncAfter", "gainAfter"],
 		},

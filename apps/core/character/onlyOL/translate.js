@@ -21,7 +21,6 @@ const translates = {
 	oljihui_info: "锁定技，当有角色回复体力后，你摸一张牌，你本轮首次失去牌数大于体力值后，你获得一张【桃】。",
 	olxiaju: "霞举",
 	olxiaju_info: "锁定技，你每回合首次失去牌后，你获得一张未拥有花色的牌。若因此凑齐四种花色，下次此技能获得牌数+1。",
-
 	dm_zhangfei: "魔张飞",
 	dm_zhangfei_prefix: "魔",
 	olzhuohun: "灼魂",
