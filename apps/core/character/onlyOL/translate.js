@@ -1,6 +1,27 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	ol_sb_zhurong: "OL谋祝融",
+	ol_sb_xizhicai_prefix: "OL谋",
+	olsbrenche: "刃掣",
+	olsbrenche_info: "出牌阶段限X次，你可弃置X张牌并令至多X名其他角色各弃置一张牌(X为本回合弃牌堆中【杀】的数量且至少为1)。每有一名角色因此弃置一张不为【杀】的牌时，你便摸一张牌。",
+	olsbyalian: "牙镰",
+	olsbyalian_info: "每阶段结束时，若你此阶段不因使用而失去过【杀】，你可以视为对任意名手牌数小于等于X的角色使用一张火【杀】(X为本回合弃牌堆中【杀】的数量且至少为1)。",
+	ol_sb_tianfeng: "OL谋田丰",
+	ol_sb_tianfeng_prefix: "OL谋",
+	olsbzhijian: "执谏",
+	olsbzhijian_info: "出牌阶段限一次，你可令一名其他角色声明一个的牌类别然后你摸一张牌并交给其一张牌(若上一次发动此技能也指定该角色，则多摸一张牌)。若此牌与声明的类别不同，其可对你使用一张【杀】。",
+	olsbxiaojie: "效竭",
+	olsbxiaojie_info: "当你成为【杀】的目标后，你可令你不可响应之。若如此做，你于此 【杀】结算完毕后:视为使用你使用的上一张普通锦囊牌或摸一张牌。",
+	ol_sunhanhua: "OL孙寒华",
+	ol_sunhanhua_prefix: "OL",
+	oldangmo: "荡魔",
+	oldangmo_info: "锁定技，当你使用仅指定单一目标的伤害牌时选择一项：1.令此牌额外结算一次；2.令此牌目标数+1。",
+	oljihui: "济惠",
+	oljihui_info: "锁定技，当有角色回复体力后，你摸一张牌，你本轮首次失去牌数大于体力值后，你获得一张【桃】。",
+	olxiaju: "霞举",
+	olxiaju_info: "锁定技，你每回合首次失去牌后，你获得一张未拥有花色的牌。若因此凑齐四种花色，下次此技能获得牌数+1。",
+
 	dm_zhangfei: "魔张飞",
 	dm_zhangfei_prefix: "魔",
 	olzhuohun: "灼魂",
@@ -10,7 +31,7 @@ const translates = {
 		id: "olzhuohun_rewrite",
 		name: "修改〖灼魂〗",
 		type: "character",
-		info: "你的回合内：你的【闪】均视为【杀】；一名角色的勾玉首次变为一个颜色后，你将手牌摸至体力上限，并执行对应效果：绿色，其本回合摸牌改为从牌堆获得等量【杀】；黄色，其本回合非锁定技失效；红色，若无角色处于濒死状态，其失去所有体力。"
+		info: "你的回合内：你的【闪】均视为【杀】；一名角色的勾玉首次变为一个颜色后，你将手牌摸至体力上限，并执行对应效果：绿色，其本回合摸牌改为从牌堆获得等量【杀】；黄色，其本回合非锁定技失效；红色，若无角色处于濒死状态，其失去所有体力。",
 	})}并${get.poptip("olrumo")}。`,
 	ol_xiahoushi: "OL界夏侯氏",
 	ol_xiahoushi_prefix: "OL界",

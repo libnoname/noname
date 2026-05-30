@@ -2,6 +2,174 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//新杀木鹿大王
+	dczhoufa: {
+		enable: ["chooseToUse"],
+		init(player) {
+			player.addSkill("dczhoufa_damage");
+		},
+		filter(event, player) {
+			if (event.type != "phase") {
+				return false;
+			}
+			return player.countCards("hes", c => get.type2(c, false) != "basic") > 0;
+		},
+		mod: {
+			cardUsable(card, player) {
+				if (card.storage.dczhoufa) {
+					return Infinity;
+				}
+			},
+		},
+		chooseButton: {
+			dialog(event, player) {
+				const list = get.inpileVCardList(info => {
+					const card = get.autoViewAs({ name: info[2] });
+					return get.tag(card, "damage") > 0;
+				});
+				return ui.create.dialog("将一张非基本牌当作伤害牌使用", [list, "vcard"]);
+			},
+			check(button) {
+				const link = button.link;
+				return get.useful({ name: link.name });
+			},
+			backup(links, player) {
+				return {
+					selectCard: 1,
+					filterCard(card) {
+						return get.type2(card, false) != "basic";
+					},
+					check(card) {
+						return 6 - get.value(card);
+					},
+					viewAs: {
+						name: links[0][2],
+						nature: links[0][3],
+						storage: {
+							dczhoufa: true,
+						},
+					},
+					async precontent(event, trigger, player) {
+						trigger.addCount = false;
+					},
+				};
+			},
+		},
+		subSkill: {
+			damage: {
+				trigger: {
+					global: ["damageBegin2"],
+				},
+				forced: true,
+				charlotte: true,
+				filter(event, player) {
+					return event.card?.storage.dczhoufa;
+				},
+				async content(event, trigger, player) {
+					game.setNature(trigger, "thunder");
+				},
+			},
+		},
+		ai: {
+			order: 10,
+			result: {
+				player: 2,
+			},
+		},
+	},
+	dcshouqun: {
+		trigger: {
+			player: ["phaseDrawBegin"],
+		},
+		filter(event, player) {
+			return !event.numFixed;
+		},
+		check(event, player) {
+			return player.maxHp > 2;
+		},
+		prompt2(event, player) {
+			return `摸牌阶段，你可以改为展示牌堆顶${player.maxHp}张牌，并选择一项：1、获得其中的坐骑牌、锦囊牌、【杀】和【酒】，然后若你因此获得的牌数不超过2，你体力上限+1（不能超过初始上限）；2、获得所有展示牌，然后直到你的下回合开始，你获得“驭象”且每次受到火焰伤害后，体力上限-1`;
+		},
+		async content(event, trigger, player) {
+			trigger.changeToZero();
+			const cards = get.cards(5, true);
+			await player.showCards(cards, `${get.translation(player)}发动了【${get.translation(event.name)}】`, true).set("clearArena", false);
+			const {
+				links: [link],
+			} = await player
+				.chooseButton({
+					forced: true,
+					createDialog: [[["add", "获得其中的坐骑牌、锦囊牌、【杀】和【酒】，然后若你因此获得的牌数不超过2，你体力上限+1（不能超过初始上限）"], ["lose", "获得所有展示牌，然后直到你的下回合开始，你获得“驭象”且每次受到火焰伤害后，体力上限-1"], "textbutton"]],
+					ai(button) {
+						const link = button.link;
+						if (player.maxHp < 4 && link == "add") {
+							return 2;
+						} else if (player.maxHp > 3 && link == "lose") {
+							return 2;
+						}
+						return 1;
+					},
+				})
+				.forResult();
+			if (link == "add") {
+				const list = cards.filter(c => ["equip3", "equip4"].includes(get.subtype(c)) || get.type2(c, false) == "trick" || ["sha", "jiu"].includes(get.name(c, false)));
+				if (list.length) {
+					await player.gain({
+						cards: list,
+						animate: "gain2",
+					});
+				}
+				if (list.filter(c => get.owner(c) == player).length < 3 && player.maxHp < 6) {
+					await player.gainMaxHp({ num: 1 });
+				}
+			} else {
+				await player.gain({
+					cards: cards,
+					animate: "gain2",
+				});
+				player.addSkill("dcshouqun_fire");
+				await player.addSkills("dcyuxiang");
+			}
+		},
+		derivation: ["dcyuxiang"],
+		subSkill: {
+			fire: {
+				trigger: {
+					player: ["damamgeAfter"],
+				},
+				forced: true,
+				charlotte: true,
+				filter(event, player) {
+					const list = get.natureList(event.nature);
+					return list.includes("fire");
+				},
+				async content(event, trigger, player) {
+					await player.loseMaxHp({ num: 1 });
+				},
+			},
+		},
+	},
+	dcyuxiang: {
+		trigger: {
+			player: ["useCard"],
+		},
+		filter(event, player) {
+			return game.hasPlayer(curr => get.distance(player, curr) < 3);
+		},
+		forced: true,
+		mod: {
+			globalFrom(from, to, num) {
+				return num - 2;
+			},
+		},
+		async content(event, trigger, player) {
+			const targets = game.players.filter(curr => get.distance(player, curr) < 3);
+			if (!trigger.directHit?.length) {
+				trigger.directHit = [];
+			}
+			trigger.directHit.addArray(targets);
+		},
+	},
 	//魏讽
 	dchuozhong: {
 		audio: 2,
@@ -98,7 +266,7 @@ const skills = {
 			let maxHandCount = -1;
 			const playersToDiscard = [];
 			for (const p of otherPlayers) {
-				let handNum = p.countCards("h");  // 只计算手牌数量（决定谁弃牌）
+				let handNum = p.countCards("h"); // 只计算手牌数量（决定谁弃牌）
 				if (handNum > maxHandCount) {
 					maxHandCount = handNum;
 					playersToDiscard.length = 1;
@@ -117,8 +285,8 @@ const skills = {
 					target.$throw(hs.length, 1e3);
 					game.log(target, "将", `#y${get.cnNumber(hs.length)}张牌`, "置于牌堆顶");
 					await target.lose({
-						cards: hs, 
-						position: ui.cardPile, 
+						cards: hs,
+						position: ui.cardPile,
 						insert_card: true,
 					});
 				}
@@ -129,7 +297,7 @@ const skills = {
 		audio: 2,
 		forced: true,
 		trigger: {
-			global: ["loseAfter", "loseAsyncAfter", "cardsGotoPileAfter"]
+			global: ["loseAfter", "loseAsyncAfter", "cardsGotoPileAfter"],
 		},
 		usable: 3,
 		filter(event, player, name, target) {
@@ -3996,7 +4164,7 @@ const skills = {
 						.setContent("gaincardMultiple");
 					const names = givenCards.map(card => card.name).toUniqued();
 					await game.delayx();
-						const newNames = names.filter(name => !player.getStorage(event.name).includes(name));
+					const newNames = names.filter(name => !player.getStorage(event.name).includes(name));
 					if (newNames.length) {
 						player.markAuto(event.name, newNames);
 						await player.draw(newNames.length);
@@ -4011,7 +4179,7 @@ const skills = {
 			}
 		},
 		onremove: true,
-		intro: {  content: "已交出牌名：$"},
+		intro: { content: "已交出牌名：$" },
 	},
 	dcmouli: {
 		audio: 2,
@@ -14120,7 +14288,7 @@ const skills = {
 			if (event.type != "discard" || event.getlx === false || player.getExpansions("xunli").length >= 9) {
 				return false;
 			}
-			return event.cards.some(card => get.position(card, true) == "d" && get.color(card, event.cards2?.includes(card) ? event.player : false) == "black")
+			return event.cards.some(card => get.position(card, true) == "d" && get.color(card, event.cards2?.includes(card) ? event.player : false) == "black");
 		},
 		async content(event, trigger, player) {
 			const num = 9 - player.getExpansions("xunli").length;
