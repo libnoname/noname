@@ -1150,7 +1150,7 @@ const skills = {
 			player: "useCard",
 		},
 		filter(event, player) {
-			if (get.color(event.card, player) != "balck") {
+			if (get.color(event.card, player) != "black") {
 				return false;
 			}
 			const evt = lib.skill.dcjianying.getLastUsed(player, event);
@@ -1195,7 +1195,7 @@ const skills = {
 			const { bool } = await player.chooseBool({
 				prompt: "移除所有其他角色的“骑”，其他角色每失去一个“骑” 便受到一点伤害",
 				ai: () => true,
-			});
+			}).forResult();
 			if (bool) {
 				const losers = game.filterPlayer(p => p.hasMark("dcheji"));
 				await game.doAsyncInOrder(losers, async p => {
