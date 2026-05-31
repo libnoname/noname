@@ -1,6 +1,48 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 export default {
+	//马云騄
+	gzfengpo: {
+		audio: "fengpo",
+		trigger: { player: "useCardToPlayered" },
+		filter(event, player) {
+			if (event.targets.length != 1 || !["sha", "juedou"].includes(event.card.name)) {
+				return false;
+			}
+			var evtx = event.getParent();
+			return !player.hasHistory(
+				"useCard",
+				evt => {
+					return evt != evtx && evt.card.name == event.card.name;
+				},
+				evtx
+			);
+		},
+		async cost(event, trigger, player) {
+			const result = await player.chooseControl("摸牌", "加伤", "cancel2").set("prompt", get.prompt2(event.skill, trigger.target)).forResult();
+			if (result.control !== "cancel2") {
+				event.result = {
+					bool: true,
+					cost_data: result.index,
+				};
+			}
+		},
+		logTarget: "target",
+		async content(event, trigger, player) {
+			const {
+				cost_data: index,
+				targets: [target],
+			} = event;
+			const nd = target.countCards("h", { suit: "diamond" });
+			if (event.cost_data === "摸牌") {
+				await player.draw(nd);
+			} else {
+				const evt = trigger.getParent();
+				evt.baseDamage ??= 1;
+				evt.baseDamage += nd;
+			}
+		},
+	},
 	//OL许攸
 	gz_ol_chenglve: {
 		audio: "gzchenglve",
@@ -479,7 +521,7 @@ export default {
 		audio: 2,
 		enable: "phaseUse",
 		filter(event, player) {
-			if (player.countMark("gz_ol_zhuanzheng_used") > 1) {
+			if (player.countMark("gz_ol_zhuanzheng_used") >= 1 + player.countMark("gz_ol_zhuanzheng_more")) {
 				return false;
 			}
 			return game.hasPlayer(current => player.isFriendOf(current));
@@ -504,22 +546,25 @@ export default {
 				num++;
 			}
 			await player.draw(Math.max(1, num));
-			const result =
-				target == player
-					? {
-							bool: false,
-						}
-					: await target
-							.chooseBool(`是否与${get.translation(player)}交换副将？`)
-							.set("choice", Math.random() > 0.5)
-							.forResult();
-			if (result.bool) {
-				// @ts-expect-error 祖宗之法就是这么做的
-				await player.transCharacter(target);
+			if (target !== player) {
+				const result = await target
+					.chooseBool(`是否与${get.translation(player)}交换副将？`)
+					.set("choice", Math.random() > 0.5)
+					.forResult();
+				if (result.bool) {
+					player.addTempSkill(`${event.name}_more`, { global: "roundStart" });
+					player.addMark(`${event.name}_more`, 1, false);
+					// @ts-expect-error 祖宗之法就是这么做的
+					await player.transCharacter(target);
+				}
 			}
 		},
 		subSkill: {
 			used: {
+				charlotte: true,
+				onremove: true,
+			},
+			more: {
 				charlotte: true,
 				onremove: true,
 			},
@@ -798,12 +843,13 @@ export default {
 			player: "phaseDiscardEnd",
 		},
 		filter(event, player) {
-			if (!player.countExpansions("gz_ol_quanji")) {
-				return false;
-			}
-			return !player.hasHistory("lose", evt => {
-				return evt.type == "discard" && evt.getParent(event.name) == event;
+			let cards = [];
+			player.getHistory("lose", evt => {
+				if (evt.type == "discard" && evt.getParent(event.name) == event) {
+					cards.addArray(evt.cards2);
+				}
 			});
+			return cards.length < player.countExpansions("gz_ol_quanji");
 		},
 		async cost(event, trigger, player) {
 			const result = await player
@@ -859,7 +905,15 @@ export default {
 			global: "phaseEnd",
 		},
 		filter(event, player) {
-			return player.getStat("kill") > 0;
+			let targets = game
+				.getGlobalHistory("everything", evt => {
+					if (evt.name !== "dying" || evt.player === player) {
+						return false;
+					}
+					return (evt.reason ?? {}).source === player;
+				})
+				.map(evt => evt.player);
+			return targets.some(target => !player.getStorage("gz_yaopan_used").includes(target));
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
@@ -872,6 +926,18 @@ export default {
 				.forResult();
 		},
 		async content(event, trigger, player) {
+			player.addSkill("gz_yaopan_used");
+			player.markAuto(
+				"gz_yaopan_used",
+				game
+					.getGlobalHistory("everything", evt => {
+						if (evt.name !== "dying" || evt.player === player) {
+							return false;
+						}
+						return (evt.reason ?? {}).source === player;
+					})
+					.map(evt => evt.player)
+			);
 			const target = event.targets[0];
 			const result =
 				target == player
@@ -900,6 +966,12 @@ export default {
 				// @ts-expect-error 祖宗之法就是这么做的
 				next.phaseList = ["phaseUse"];
 			}
+		},
+		subSkill: {
+			used: {
+				charlotte: true,
+				onremove: true,
+			},
 		},
 	},
 	//国战典藏2024-2025，启动！
@@ -2097,12 +2169,15 @@ export default {
 				.sortBySeat(player);
 			for (const i of targets) {
 				const aim = list[1 - list.indexOf(i)];
-				const { bool } = await i.chooseBool(get.prompt("fakehanzhan"), "获得" + get.translation(aim) + "装备区的一张牌").set(
-					"choice",
-					aim.hasCard(card => {
-						return get.value(card, aim) * get.attitude(i, aim) < 0;
-					}, "e")
-				).forResult();
+				const { bool } = await i
+					.chooseBool(get.prompt("fakehanzhan"), "获得" + get.translation(aim) + "装备区的一张牌")
+					.set(
+						"choice",
+						aim.hasCard(card => {
+							return get.value(card, aim) * get.attitude(i, aim) < 0;
+						}, "e")
+					)
+					.forResult();
 				if (bool) {
 					users.push(i);
 				}
@@ -2645,23 +2720,26 @@ export default {
 					return player.getStorage("fakeyigui").length;
 				},
 				async cost(event, trigger, player) {
-					const { bool, links } = await player.chooseButton([get.prompt("fakejihun"), '<div class="text center">弃置至多两张“魂”，然后获得等量的“魂”</div>', [player.getStorage("fakeyigui"), "character"]], [1, 2]).set("ai", button => {
-						const getNum = character => {
-							return (
-								game.countPlayer(target => {
-									const group = get.character(character, 1);
-									if (group == "ye" || target.identity == group) {
-										return true;
-									}
-									const double = get.is.double(character, true);
-									if (double && double.includes(target.identity)) {
-										return true;
-									}
-								}) + 1
-							);
-						};
-						return game.countPlayer() - getNum(button.link);
-					}).forResult();
+					const { bool, links } = await player
+						.chooseButton([get.prompt("fakejihun"), '<div class="text center">弃置至多两张“魂”，然后获得等量的“魂”</div>', [player.getStorage("fakeyigui"), "character"]], [1, 2])
+						.set("ai", button => {
+							const getNum = character => {
+								return (
+									game.countPlayer(target => {
+										const group = get.character(character, 1);
+										if (group == "ye" || target.identity == group) {
+											return true;
+										}
+										const double = get.is.double(character, true);
+										if (double && double.includes(target.identity)) {
+											return true;
+										}
+									}) + 1
+								);
+							};
+							return game.countPlayer() - getNum(button.link);
+						})
+						.forResult();
 					event.result = { bool: bool, cost_data: links };
 				},
 				async content(event, trigger, player) {
@@ -2723,13 +2801,11 @@ export default {
 					player.addTempSkill("drlt_jueyan1");
 					break;
 			}
-			player
-				.when("phaseJieshuBegin")
-				.step(async () => {
-					if (player.countCards(position)) {
-						await player.discard(player.getCards(position));
-					}
-				})
+			player.when("phaseJieshuBegin").step(async () => {
+				if (player.countCards(position)) {
+					await player.discard(player.getCards(position));
+				}
+			});
 		},
 	},
 	fakejizhi: {
@@ -3049,9 +3125,9 @@ export default {
 		},
 		async content(event, trigger, player) {
 			if (parseInt(event.triggername.slice("damageBegin".length)) == 4) {
-				trigger.num --;
+				trigger.num--;
 			} else {
-				trigger.num ++;
+				trigger.num++;
 			}
 		},
 		ai: {
@@ -3703,11 +3779,9 @@ export default {
 		content() {
 			const goon = Boolean(player.getHistory("useCard").length);
 			get.info("rekuangcai").change(player, goon ? -1 : 1);
-			player
-				.when({ global: "phaseAfter" })
-				.step(async () => {
-					get.info("rekuangcai").change(player, goon ? 1 : -1);
-				});
+			player.when({ global: "phaseAfter" }).step(async () => {
+				get.info("rekuangcai").change(player, goon ? 1 : -1);
+			});
 		},
 	},
 	faketunchu: {
@@ -3729,9 +3803,12 @@ export default {
 				.step(async (event, trigger, player) => {
 					var nh = player.countCards("h");
 					if (nh) {
-						const result = await player.chooseCard("h", [1, Math.min(nh, 2)], "将至多两张手牌置于你的武将牌上", true).set("ai", card => {
-							return 7.5 - get.value(card);
-						}).forResult();
+						const result = await player
+							.chooseCard("h", [1, Math.min(nh, 2)], "将至多两张手牌置于你的武将牌上", true)
+							.set("ai", card => {
+								return 7.5 - get.value(card);
+							})
+							.forResult();
 						if (result.bool) {
 							player.addToExpansion(result.cards, player, "giveAuto").gaintag.add("faketunchu");
 						}
@@ -4214,14 +4291,17 @@ export default {
 						const num = Math.min(5, trigger.source.countCards("h") - player.countCards("h"));
 						await player.draw(num);
 					} else {
-						const { bool, cards } = await player.chooseCard("秘备：展示一至三张手牌，本回合你可以将其中一张牌当作另一张基本牌或普通锦囊牌使用一次", [1, 3], true).set("ai", card => {
-							const player = get.event().player,
-								goon = _status.currentPhase == player;
-							if (goon) {
-								return player.getUseValue(card) / get.value(card);
-							}
-							return get.value(card);
-						}).forResult();
+						const { bool, cards } = await player
+							.chooseCard("秘备：展示一至三张手牌，本回合你可以将其中一张牌当作另一张基本牌或普通锦囊牌使用一次", [1, 3], true)
+							.set("ai", card => {
+								const player = get.event().player,
+									goon = _status.currentPhase == player;
+								if (goon) {
+									return player.getUseValue(card) / get.value(card);
+								}
+								return get.value(card);
+							})
+							.forResult();
 						if (bool) {
 							await player.showCards(cards, get.translation(player) + "发动了【秘备】");
 							player.addGaintag(cards, "fakemibei_effect");
@@ -4440,7 +4520,10 @@ export default {
 				await player.draw(num, "nodelay");
 				await target.draw(num);
 				if (!target.isUnseen(2)) {
-					const { bool, links } = await player.chooseButton(["拒战：是否暗置" + get.translation(target) + "的一张武将牌？", '<div class="text center">' + get.translation(target) + "的武将牌</div>", [[target.name1, target.name2], "character"]]).set("filterButton", button => !get.is.jun(button.link)).forResult();
+					const { bool, links } = await player
+						.chooseButton(["拒战：是否暗置" + get.translation(target) + "的一张武将牌？", '<div class="text center">' + get.translation(target) + "的武将牌</div>", [[target.name1, target.name2], "character"]])
+						.set("filterButton", button => !get.is.jun(button.link))
+						.forResult();
 					if (bool) {
 						await target.hideCharacter(target.name1 == links[0] ? 0 : 1);
 						target.addTempSkill("donggui2");
@@ -4579,7 +4662,10 @@ export default {
 						const num = player.countMark("fakedanshou_effect");
 						await player.draw(num);
 						if (num >= 4) {
-							const { bool } = await player.chooseBool("胆守：是否对" + get.translation(trigger.player) + "造成1点伤害？").set("choice", get.damageEffect(trigger.player, player, player) > 0).forResult();
+							const { bool } = await player
+								.chooseBool("胆守：是否对" + get.translation(trigger.player) + "造成1点伤害？")
+								.set("choice", get.damageEffect(trigger.player, player, player) > 0)
+								.forResult();
 							if (bool) {
 								player.line(trigger.player);
 								await trigger.player.damage();
@@ -5048,7 +5134,10 @@ export default {
 				return;
 			}
 
-			const result2 = await player.chooseTarget("将" + get.translation(card, void 0) + "交给另一名角色", (_card, player, current) => current != player && current != _status.event.target, true).set("target", target).forResult();
+			const result2 = await player
+				.chooseTarget("将" + get.translation(card, void 0) + "交给另一名角色", (_card, player, current) => current != player && current != _status.event.target, true)
+				.set("target", target)
+				.forResult();
 
 			if (result2.bool) {
 				const target2 = result2.targets[0];
@@ -19527,7 +19616,10 @@ export default {
 					}
 				} else {
 					event.name1 = bool1 ? player.name1 : player.name2;
-					const result = await player.chooseBool(`是否明置${get.translation(event.name1)}以发动【${get.translation(skill)}】？`).set("choice", choice).forResult();
+					const result = await player
+						.chooseBool(`是否明置${get.translation(event.name1)}以发动【${get.translation(skill)}】？`)
+						.set("choice", choice)
+						.forResult();
 					if (result?.bool) {
 						const index = bool1 ? 0 : 1;
 						await player.showCharacter(index);
