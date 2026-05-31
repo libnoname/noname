@@ -290,7 +290,7 @@ const characters = {
 	ol_jsrg_lvbu: {
 		sex: "male",
 		group: "qun",
-		hp: 4,
+		hp: 5,
 		skills: ["olfengzhu", "olyuyu", "ollbzhiji", "oljiejiu"],
 		img: "image/character/jsrg_lvbu.jpg",
 		names: "吕|布",
