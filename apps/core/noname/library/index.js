@@ -17,6 +17,7 @@ import { updateURLs } from "./update-urls.js";
 import { defaultHooks } from "./hooks/index.js";
 import { security, ErrorManager } from "@/util/sandbox.js";
 import { assetURL, userAgentLowerCase, GeneratorFunction, AsyncFunction, characterDefaultPicturePath } from "@/util/index.js";
+import { decideReconnect } from "@/util/reconnect.js";
 
 import { defaultSplashs } from "@/init/onload/index.js";
 import dedent from "dedent";
@@ -10622,6 +10623,7 @@ export class Library {
 		Character: Element.Character,
 		ws: {
 			onopen: function () {
+				clearTimeout(this._connectTimeout);
 				if (_status.connectCallback) {
 					_status.connectCallback(true);
 					delete _status.connectCallback;
@@ -10658,6 +10660,7 @@ export class Library {
 				lib.message.client[message.shift()].apply(null, message);
 			},
 			onerror: function (e) {
+				clearTimeout(this._connectTimeout);
 				if (this._nocallback) {
 					return;
 				}
@@ -10669,6 +10672,7 @@ export class Library {
 				}
 			},
 			onclose: function () {
+				clearTimeout(this._connectTimeout);
 				if (this._nocallback) {
 					return;
 				}
@@ -10676,19 +10680,63 @@ export class Library {
 					_status.connectCallback(false);
 					delete _status.connectCallback;
 				}
-				if (game.online || game.onlineroom) {
-					if ((game.servermode || game.onlinehall) && _status.over) {
-						void 0;
-					} else {
-						localStorage.setItem(lib.configprefix + "directstart", true);
-						game.reload();
-					}
-				} else {
-					// game.saveConfig('reconnect_info');
-				}
-				game.online = false;
+				// 清理 WebSocket 引用
 				game.ws = null;
 				game.sandbox = null;
+
+				var wasOnline = game.online || game.onlineroom;
+				var wasGameOver = (game.servermode || game.onlinehall) && _status.over;
+
+				// 【关键】必须先置 game.online = false，否则 game.connect() 会因
+				// 其开头的 `if (game.online) return;` 守卫而跳过重连
+				game.online = false;
+
+				// 决策逻辑抽离为纯函数 decideReconnect（见 @/util/reconnect.js），
+				// 此处只负责按返回的 action 执行副作用
+				var decision = decideReconnect({
+					wasOnline: wasOnline,
+					wasGameOver: wasGameOver,
+					noReconnect: !!_status.noReconnect,
+					reconnecting: !!_status.reconnecting,
+					hasIp: !!_status.ip,
+					attempts: _status.reconnectAttempts || 0,
+					maxAttempts: 5,
+				});
+
+				if (decision.action === "none") {
+					// 未联机或游戏正常结束，无需重连
+					return;
+				}
+				if (decision.action === "reload") {
+					// 主动退出 / 无地址 / 重试耗尽 —— 回退到原有刷新行为
+					delete _status.noReconnect;
+					_status.reconnecting = false;
+					_status.reconnectAttempts = 0;
+					localStorage.setItem(lib.configprefix + "directstart", true);
+					game.reload();
+					return;
+				}
+				// decision.action === "retry"：指数退避调度下一次重连
+				_status.reconnectAttempts = decision.nextAttempts;
+				_status.reconnecting = true;
+				// 显示重连遮罩层（connecting(true) 用于移除）
+				if (typeof ui.create.connecting === "function") {
+					ui.create.connecting();
+				}
+				_status.reconnectTimer = setTimeout(function () {
+					game.connect(_status.ip, function (success) {
+						if (success) {
+							_status.reconnectAttempts = 0;
+							_status.reconnecting = false;
+							if (typeof ui.create.connecting === "function") {
+								ui.create.connecting(true);
+							}
+							// 服务端通过 roomlist 触发，客户端携带 reconnect_info 自动重新加入房间
+						}
+						// 失败时不在此处理：新建连接的 onclose 因 _status.reconnecting
+						// 仍为 true 而继续进入重试链，依据 reconnectAttempts 退避或回退刷新
+					});
+				}, decision.delay);
 			},
 		},
 		/**
@@ -12527,11 +12575,18 @@ export class Library {
 				}
 			},
 			selfclose: function () {
+				// 用户被踢出 / 房主断开：取消自动重连，并标记走 reload 路径
+				clearTimeout(_status.reconnectTimer);
+				_status.reconnectAttempts = 0;
+				_status.reconnecting = false;
+				_status.noReconnect = true;
 				if (game.online || game.onlineroom) {
 					if ((game.servermode || game.onlinehall) && _status.over) {
 						// later
 					} else {
 						game.saveConfig("tmp_user_roomId");
+						// 清除重连信息，防止重连后尝试加入已不存在的房间
+						game.saveConfig("reconnect_info");
 					}
 				}
 				game.ws.close();
