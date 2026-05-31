@@ -84,7 +84,7 @@ const translates = {
 	lucia_duqu_append: `<span style="font-family:yuanli">异能技：带有Charlotte标签，带有该标签的技能不受【技能失效】效果以及【技能失去】效果的影响</span>`,
 	lucia_zhenren: "振刃",
 	lucia_zhenren_info: "异能技，每个结束阶段，若你的装备区内有牌，则你弃置之。然后，你依次弃置场上的X张牌。（X为你以此法弃置的牌数）",
-	lucia_zhenren_append:  `<span style="font-family:yuanli">异能技：带有Charlotte标签，带有该标签的技能不受【技能失效】效果以及【技能失去】效果的影响</span>`,
+	lucia_zhenren_append: `<span style="font-family:yuanli">异能技：带有Charlotte标签，带有该标签的技能不受【技能失效】效果以及【技能失去】效果的影响</span>`,
 	nk_shekong: "设控",
 	nk_shekong_info: "出牌阶段限一次，你可以弃置任意张手牌并选择一名其他角色（不能超过该角色的牌数），然后令其选择一项：弃置一张牌并令你摸X张牌，或弃置X张牌并令你摸一张牌。然后，你将你与其弃置的且位于弃牌堆中的牌以任意顺序置于牌堆顶。",
 	key_huanjie: "幻界",
@@ -584,7 +584,6 @@ const translates = {
 	michiru_sheyuan: "舍愿",
 	michiru_sheyuan_info: "异能技，每轮限一次。若你没有“米券”，则你可以将所有手牌当做任意基本牌或普通锦囊牌使用，然后摸等量的牌。",
 	michiru_sheyuan_append: `<span style="font-family:yuanli">异能技：带有Charlotte标签，带有该标签的技能不受【技能失效】效果以及【技能失去】效果的影响</span>`,
-	
 	minagi_tag: "米券",
 };
 

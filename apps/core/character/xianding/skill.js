@@ -14983,19 +14983,7 @@ const skills = {
 					derivation: "cuilingyi",
 					fullskin: true,
 					image: "image/card/cuilingyi_huashang.png",
-					type: "equip",
-					enable: true,
-					selectTarget: -1,
-					filterTarget(card, player, target) {
-						if (player != target) {
-							return false;
-						}
-						return target.canEquip(card, true);
-					},
-					modTarget: true,
-					allowMultiple: false,
-					content: lib.element.content.equipCard,
-					toself: true,
+					type,
 					ai: { basic: { equipValue: 2 } },
 					originalType: type,
 					cardPrompt(card) {
@@ -15034,7 +15022,7 @@ const skills = {
 		trigger: { player: "useCardAfter" },
 		filter(event, player) {
 			const suit = get.suit(event.card);
-			return player.countCards("h", card => get.suit(card, player) == suit && get.type(card, player) != "equip");
+			return player.hasCards("h", card => get.suit(card, player) == suit && get.type(card, player) != "equip");
 		},
 		async cost(event, trigger, player) {
 			const equips = [],
@@ -15133,7 +15121,7 @@ const skills = {
 					player
 						.getCards("e")
 						.map(i => get.color(i))
-						.unique().length >= 2
+						.unique().length == 2
 				) {
 					return true;
 				}
@@ -15144,6 +15132,7 @@ const skills = {
 			init: {
 				audio: "dchuashang",
 				forced: true,
+				locked: false,
 				trigger: {
 					global: "phaseBefore",
 					player: "enterGame",
@@ -15165,54 +15154,22 @@ const skills = {
 							if (!choices.length) {
 								break;
 							}
-							const result = await player
-								.chooseControl(choices)
-								.set("prompt", `将${get.translation(card)}置入你的一个装备栏`)
-								.set("slots", choices)
-								.set("ai", () => {
-									const player = get.player();
-									const func = slot => {
-										const num = parseInt(slot.slice(5));
-										const card = player.getEquips(num)[0];
-										if (card) {
-											return 0;
-										}
-										switch (num) {
-											case 3:
-												return 4.5;
-											case 4:
-												return 4.4;
-											case 5:
-												return 4.3;
-											case 2:
-												return 3.1;
-											case 1: {
-												return 3.2;
-											}
-										}
-									};
-									const slots = get.event().slots.sort((a, b) => func(b) - func(a));
-									return slots[0];
-								})
-								.forResult();
-							if (result?.control) {
-								const slot = result.control;
-								const type = get.type2(card);
-								const list = [type];
-								game.addVideo("skill", player, ["dchuashang", [list]]);
-								game.broadcastAll(
-									(player, list) => {
-										for (const type of list) {
-											lib.skill.dchuashang.createCard(type);
-										}
-									},
-									player,
-									list
-								);
-								const cardx = get.autoViewAs({ name: `dchuashang_${type}` }, [card]);
-								cardx.subtypes = [slot];
-								await player.equip(cardx);
-							}
+							const slot = choices.randomGet();
+							const type = get.type2(card);
+							const list = [type];
+							game.addVideo("skill", player, ["dchuashang", [list]]);
+							game.broadcastAll(
+								(player, list) => {
+									for (const type of list) {
+										lib.skill.dchuashang.createCard(type);
+									}
+								},
+								player,
+								list
+							);
+							const cardx = get.autoViewAs({ name: `dchuashang_${type}` }, [card]);
+							cardx.subtypes = [slot];
+							await player.equip(cardx);
 						}
 					}
 				},

@@ -3583,19 +3583,7 @@ const skills = {
 					derivation: "yj_majun",
 					fullskin: true,
 					image: "image/card/majun_gongqiao.png",
-					type: "equip",
-					enable: true,
-					selectTarget: -1,
-					filterTarget(card, player, target) {
-						if (player != target) {
-							return false;
-						}
-						return target.canEquip(card, true);
-					},
-					modTarget: true,
-					allowMultiple: false,
-					content: lib.element.content.equipCard,
-					toself: true,
+					type,
 					ai: { basic: { equipValue: 2 } },
 					originalType: type,
 					cardPrompt(card) {

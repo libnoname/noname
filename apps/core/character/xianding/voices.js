@@ -1,4 +1,8 @@
 export default {
+	"#manyi_menghuo1": "巨象阵，迎敌！",
+	"#manyi_menghuo2": "子弟兵们，跟我上！",
+	"#manyi_zhurong1": "去区区无名之辈，不劳大王出马。",
+	"#manyi_zhurong2": "尔等鼠辈怎见得如此阵势？",
 	"#dcsbjutu1": "蜀川岁岁熟，何必起刀兵？",
 	"#dcsbjutu2": "益州天府之国，不知何为饥馑。",
 	"#dcsbrenshan1": "既有宗族之情，何虑天下之争？",

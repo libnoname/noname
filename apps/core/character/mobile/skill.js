@@ -9728,7 +9728,7 @@ const skills = {
 					forced: true,
 				})
 				.forResult();
-			if (result?.bool && result.autochoose && result.cards?.length === result.rawcards?.length) {
+			if (result?.cards?.length > 0 && result.autochoose && result.cards?.length === result.rawcards?.length) {
 				game.log(player, "修改了", "#g【复难】");
 				player.addSkill("mbfunan_rewrite");
 			}

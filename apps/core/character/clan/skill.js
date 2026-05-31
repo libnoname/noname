@@ -248,10 +248,7 @@ const skills = {
 			if (player.getHistory("useCard", evt => get.type2(evt.card) == type).indexOf(event) != 0) {
 				return false;
 			}
-			return player
-				.getCards("he")
-				.map(card => get.suit(card))
-				.toUniqued(type);
+			return player.hasCards("he");
 		},
 		async content(event, trigger, player) {
 			player.addTempSkill("clanjianbai_effect");
