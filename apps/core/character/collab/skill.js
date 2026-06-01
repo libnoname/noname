@@ -25,18 +25,15 @@ const skills = {
 				await player.gain({ cards: cards, animate: "draw" });
 			}
 		},
-		group: ["dianbu_effect"],
 		subSkill: {
 			used: {},
 			effect: {
 				trigger: {
-					player: ["useCard"],
+					player: ["juhunZ"],
 				},
 				forced: true,
 				filter(event, player) {
-					const name = event.card.name;
-					const used = player.getStorage("dianbu_used") || [];
-					return name.startsWith("juhun_") && !used.includes(name);
+					return event.juhunType && !player.getStorage("dianbu_used").includes(name);
 				},
 				mod: {
 					ignoredHandcard(card, player) {
@@ -49,7 +46,7 @@ const skills = {
 					},
 				},
 				async content(event, trigger, player) {
-					const name = trigger.card.name;
+					const name = trigger.juhunType;
 					const used = player.getStorage("dianbu_used") || [];
 					used.push(name);
 					player.setStorage("dianbu_used", used);
@@ -70,7 +67,7 @@ const skills = {
 							player.addGaintag(cards, "dianbu_noMax");
 						});
 					await next;
-					if (name == "juhun_zhadan") {
+					if (name == "zhadan") {
 						player.setStorage("dianbu_used", []);
 					}
 				},
@@ -79,13 +76,8 @@ const skills = {
 	},
 	juhun: {
 		enable: ["chooseToUse"],
-		init(player) {
-			game.players.forEach(curr => curr.addSkill("juhun_effect"));
-		},
 		selectCard: [1, Infinity],
-		filterCard(card, player) {
-			return lib.filter.cardEnabled(card, player);
-		},
+		filterCard: true,
 		check(card) {
 			const num = ui.selected.cards.length;
 			if (num > 3) {
@@ -122,9 +114,14 @@ const skills = {
 				return "zhadan";
 			} else if (
 				cards.length == 5 &&
-				numbers.every((number, i, list) => {
-					return number - list[i - 1] == 1;
-				})
+				numbers
+					.sort((a, b) => a - b)
+					.every((number, i, list) => {
+						if (i == 0) {
+							return true;
+						}
+						return number - list[i - 1] == 1;
+					})
 			) {
 				return "shunzi";
 			}
@@ -137,12 +134,12 @@ const skills = {
 			const cards = player.getCards("h");
 			const numbers = cards.map(card => get.number(card));
 			const dsz = numbers.some(number => get.numOf(numbers, number) > 1);
-			const list = numbers.filter(i => typeof i == "number").sort();
+			const list = numbers.filter(i => typeof i == "number").sort((a, b) => a - b);
 			let sz;
 			if (list.length < 5) {
 				sz = false;
 			} else {
-				sz = list.every((i, j) => i - list[j - 1] == 1);
+				sz = list.every((i, j) => i == 0 || i - list[j - 1] == 1);
 			}
 			return dsz || sz;
 		},
@@ -202,7 +199,12 @@ const skills = {
 					.forResult();
 				const cards = target.getCards("h").randomGets(2);
 				target.addGaintag(cards, "juhun");
+				if (!target.hasSkill("juhun_effect", null, false, false)) {
+					target.addSkill("junhun_effect");
+				}
 			}
+			event.juhunType = type;
+			await event.trigger("juhunZ");
 		},
 		subSkill: {
 			effect: {
@@ -223,6 +225,7 @@ const skills = {
 					return player.hasSkill("juhun", null, false, false);
 				},
 				async content(event, trigger, player) {
+					player.setStorage("dianbu_used", []);
 					const cards = player.getCards("h");
 					if (event.triggername == "phaseBegin") {
 						player.addGaintag(cards, "juhun");
