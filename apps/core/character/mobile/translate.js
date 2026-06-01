@@ -1097,6 +1097,7 @@ const translates = {
 	mbxishang: "袭裳",
 	mbxishang_info: `锁定技，①游戏开始时，你选择本局形象并获得${get.poptip("mbweizhuang")}。②你不因摸牌而获得牌时，明置之。`,
 	faceup_tag: "明置牌",
+	faceup_tag_append: `<span style="font-family:yuanli">明置牌：一名角色装备区和判定区的牌都是明置牌，但是一名角色的明置牌不包括其判定区的牌`,
 	mbweizhuang: "褽装",
 	mbweizhuang_info: `此技能效果根据你的形象发生变化：${get.poptip("mbweizhuang_guidianx")}${get.poptip("mbweizhuang_dongjiaox")}${get.poptip("mbweizhuang_xiugex")}。`,
 	mbweizhuang_guidianx: "桂殿",
