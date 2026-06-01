@@ -14198,7 +14198,7 @@ const skills = {
 				.chooseTarget(get.prompt2(event.skill))
 				.set("ai", target => {
 					const player = get.player();
-					let att = get.attitude(aiPlayer, target);
+					let att = get.attitude(player, target);
 					if (att <= 4) {
 						return 0;
 					}
