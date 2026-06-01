@@ -217,7 +217,7 @@ export default {
 	"#drlt_jueyan2": "堰坝毁之，可令敌军自退。",
 	"#drlt_poshi1": "破晋军分进合击之势，牵晋军主力之实！",
 	"#drlt_poshi2": "破羊祜之策，势在必行！",
-	"#lukang:die": "哎，陛下不听，社稷恐有危难……",
+	"#lukang:die": "吾即亡矣，吴又能存几时……",
 	"#drlt_yongsi1": "传国玉玺在手，朕语便是天言。",
 	"#drlt_yongsi2": "朕今日雄踞淮南，明日便可一匡天下。",
 	"#drlt_weidi1": "天下，即将尽归吾袁公路！",

@@ -21,6 +21,12 @@ const translates = {
 	clan_wuqiao_prefix: "族",
 	clan_wangshen_prefix: "族",
 
+	clan_luyusheng: "族陆郁生",
+	clan_luyusheng_prefix: "族",
+	clanshixi: "拾昔",
+	clanshixi_info: "你可以将一种花色的所有牌置入弃牌堆，视为使用你本局游戏首次使用的此花色单目标普通锦囊牌。",
+	clanjianbai: "坚白",
+	clanjianbai_info: "锁定技，当你每回合首次使用一种类别的牌后，你选择一种花色的所有牌，然后重铸所有其余花色的牌；当前回合结束时，你交给一名其他角色一张牌，然后摸X张牌（X为此牌本回合被选择的次数）。",
 	clan_wangshen: "族王沈",
 	clananran: "岸然",
 	clananran_info: "出牌阶段开始时或当你受到伤害后，你可以选择一项：①摸X张牌；②令至多X名角色各摸一张牌。以此法获得牌的角色本回合使用的下一张牌不能为这些牌。（X为此技能发动次数且至多为4）",

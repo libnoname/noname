@@ -605,7 +605,7 @@ const translates = {
 	dcyizheng: "议政",
 	dcyizheng_info: "你的回合开始时，你可与至多体力上限名其他角色各展示一张手牌，若展示的牌类型均相同，你可将这些牌交给一名角色，否则，你弃置这些牌。",
 	dcguilin: "归林",
-	dcguilin_info: "限定技，出牌阶段或你进入濒死状态时，你可以回复所有体力，然后失去〖议政〗并修改〖博玄〗。",
+	dcguilin_info: `限定技，出牌阶段或你进入濒死状态时，你可以将体力回复至体力上限，然后失去${get.poptip("dcyizheng")}并修改${get.poptip("dcboxuan")}。`,
 	dc_xiangchong: "新杀向宠",
 	dc_xiangchong_prefix: "新杀",
 	dcguying: "固营",

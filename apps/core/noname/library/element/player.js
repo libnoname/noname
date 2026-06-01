@@ -2487,7 +2487,7 @@ export class Player extends HTMLDivElement {
 	 *
 	 * @param { Card[] } cards
 	 * @param { string } tag
-	 * @param { Player } target
+	 * @param { Player } [target]
 	 * @returns { GameEvent }
 	 */
 	loseToSpecial(cards, tag, target) {

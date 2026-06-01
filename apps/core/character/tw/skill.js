@@ -90,7 +90,7 @@ const skills = {
 		subSkill: { phase: { charlotte: true } },
 	},
 	twwuhun: {
-		audio: 2,
+		audio: "wuhun",
 		trigger: { player: "die" },
 		forceDie: true,
 		skillAnimation: true,
@@ -110,7 +110,7 @@ const skills = {
 			judge.set("judge2", result => result.bool);
 
 			const judgeResult = await judge.forResult();
-			if (!judgeResult.bool) {
+			if (!judgeResult?.bool) {
 				return;
 			}
 
@@ -150,7 +150,7 @@ const skills = {
 		group: "twwuhun_gain",
 		subSkill: {
 			gain: {
-				audio: "twwuhun",
+				audio: "wuhun",
 				trigger: {
 					player: "damageEnd",
 					source: "damageSource",
@@ -15195,7 +15195,7 @@ const skills = {
 				event.finish();
 			}
 			"step 4";
-			if (result.bool && result.autochoose && result.cards.length == result.rawcards.length && !player.hasSkill("funan_jiexun")) {
+			if (result?.cards?.length > 0 && result.autochoose && result.cards?.length === result.rawcards?.length && !player.hasSkill("funan_jiexun")) {
 				player
 					.chooseControl()
 					.set("choiceList", ["摸" + get.cnNumber(event.num2) + "张牌，将【诫训】的发动次数归零", "修改【复难】和【诫训】"])

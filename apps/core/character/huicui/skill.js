@@ -1350,14 +1350,12 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			const num = player.getDamagedHp();
-			await player.recover(num);
-			//await player.draw(num);
+			await player.recoverTo(player.maxHp);
 			await player.removeSkills("dcyizheng");
 			if (player.hasSkill("dcboxuan", null, null, false)) {
 				player.storage.dcboxuan = true;
 			}
-			game.log(player, `修改了〖博玄〗`);
+			game.log(player, "修改了", "#g【博玄】");
 		},
 		ai: {
 			order: 10,

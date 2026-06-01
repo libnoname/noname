@@ -393,7 +393,7 @@ export default () => {
 					sex: "female",
 					group: "wu",
 					hp: 3,
-					skills: ["xiaoji", "yinli"],
+					skills: ["sgxiaoji", "yinli"],
 				},
 				huatuo: {
 					sex: "male",
@@ -2096,6 +2096,7 @@ export default () => {
 				inherit: "xingshang",
 			},
 			cangji: {
+				audio: 2,
 				trigger: { player: "die" },
 				filter: function (event, player) {
 					return player.countCards("e") > 0;
@@ -2230,6 +2231,35 @@ export default () => {
 						_status.event.finish();
 						_status.event.untrigger(true);
 					}
+				},
+			},
+			sgxiaoji: {
+				audio: 2,
+				trigger: {
+					player: "loseAfter",
+					global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
+				},
+				frequent: true,
+				getIndex(event, player) {
+					const evt = event.getl(player);
+					if (evt && evt.player === player && evt.es) {
+						return evt.es.length;
+					}
+					return false;
+				},
+				async content(event, trigger, player) {
+					await player.chooseDrawRecover(2, true);
+				},
+				ai: {
+					noe: true,
+					reverseEquip: true,
+					effect: {
+						target(card, player, target, current) {
+							if (get.type(card) == "equip" && !get.cardtag(card, "gifts")) {
+								return [1, 3];
+							}
+						},
+					},
 				},
 			},
 			yinli: {
@@ -2778,6 +2808,8 @@ export default () => {
 			suzi: "肃资",
 			cangji: "藏机",
 			cangji_info: "当你死亡时，你可以将装备区内的所有牌移动到游戏外。若如此做，你的下一名角色登场时，你将这些牌置入你的装备区。",
+			"#cangji1": "乾坤之道，我也略知一二。",
+			"#cangji2": "聪慧之人，自有藏巧之计。",
 			sgrenwang: "仁望",
 			sgrenwang_info: "当你于一名其他角色的出牌阶段内成为该角色使用的【杀】或普通锦囊牌的目标后，若此牌不是其本阶段内对你使用的第一张【杀】或普通锦囊牌，则你可以弃置该角色的一张牌。",
 			sgduanliang: "断粮",
@@ -2786,6 +2818,10 @@ export default () => {
 			sgqingguo_info: "你可以将一张装备区内的牌当做【闪】使用或打出。",
 			pianyi: "翩仪",
 			pianyi_info: "锁定技，当你于对手的回合内登场时，你结束此回合。",
+			sgxiaoji: "枭姬",
+			sgxiaoji_info: "当你失去一张装备区内的牌后，你可以摸两张牌或回复1点体力。",
+			"#sgxiaoji1": "你可要看好了！",
+			"#sgxiaoji2": "谁说女子不如男！",
 			yinli: "姻礼",
 			yinli_info: "其他角色的装备牌于其回合内进入弃牌堆后，你可以获得之。",
 			shenju: "慎拒",
