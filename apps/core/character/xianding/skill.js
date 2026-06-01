@@ -25161,7 +25161,7 @@ const skills = {
 					}
 					const result = await player
 						.chooseCardTarget({
-							prompt: "明势：请展示三张牌并令一名其他角色选择获得其中的一张牌",
+							prompt: "明势：请展示三张手牌并令一名其他角色选择获得其中的一张牌",
 							filterTarget: lib.filter.notMe,
 							filterCard: true,
 							selectCard: 3,

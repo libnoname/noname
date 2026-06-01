@@ -14198,7 +14198,7 @@ const skills = {
 				.chooseTarget(get.prompt2(event.skill))
 				.set("ai", target => {
 					const player = get.player();
-					let att = get.attitude(aiPlayer, target);
+					let att = get.attitude(player, target);
 					if (att <= 4) {
 						return 0;
 					}
@@ -16127,9 +16127,9 @@ const skills = {
 				if (result?.bool) {
 					const number2 = result.cards.reduce((num, card) => (num += get.number(card, player)), 0);
 					event.number2 = number2;
-					if (number1 > number2) {
+					if (number1 < number2) {
 						await player.draw();
-					} else if (number1 < number2) {
+					} else if (number1 > number2) {
 						await player.discardPlayerCard(target, true, "hej");
 					}
 				}
