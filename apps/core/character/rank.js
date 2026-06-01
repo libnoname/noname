@@ -1126,6 +1126,8 @@ window.noname_character_rank = {
 		"clan_luyusheng",
 		"mb_caochun",
 		"mb_xiahoumao",
+		"ylyg_xuhuang",
+		"ylyg_zhurong",
 		"tw_dm_zhouyu",
 		"zhuji",
 		"ylyg_dianwei",
@@ -3188,6 +3190,8 @@ window.noname_character_rank = {
 		],
 		rare: [
 			"mb_xiahoumao",
+			"ylyg_xuhuang",
+			"ylyg_zhurong",
 			"o_chenlan",
 			"o_meicheng",
 			"zhuji",

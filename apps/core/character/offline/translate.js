@@ -1,6 +1,18 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	ylyg_zhurong: "雁翎祝融",
+	ylyg_zhurong_prefix: "雁翎",
+	ylyg_lieren: "烈刃",
+	ylyg_lieren_info: "当你每回合首次使用【杀】指定唯一目标后，你可以与其拼点，赢的角色于此【杀】结算后将所有手牌当【南蛮入侵】使用。",
+	ylyg_juxiang: "巨象",
+	ylyg_juxiang_info: "当一名角色使用【南蛮入侵]时，若使用者不为你，此牌对你无效且你于结算后获得之；否则你可令此牌对体力值大于你的角色造成的伤害+1。",
+	ylyg_xuhuang: "雁翎徐晃",
+	ylyg_xuhuang_prefix: "雁翎",
+	ylyg_duanliang: "断粮",
+	ylyg_duanliang_info: "你可以将一张黑色非锦囊牌当无距离限制的【兵粮寸断】使用；若目标数手牌大于你，你摸一张牌。",
+	ylyg_zier: "辎饵",
+	ylyg_zier_info: "当一名角色跳过一个阶段后，你可以记录此阶段。每轮限一次，一名角色回合开始时，你可以将其本回合的一个阶段改为你本轮记录的阶段。",
 	wxdl_caozhi: "文心雕龙曹植",
 	wxdl_caozhi_prefix: "文心雕龙",
 	wxdl_huamao: "华茂",
