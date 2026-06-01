@@ -6292,9 +6292,6 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		requestAnimationFrame(adjust);
 		return uiintro;
 	}
-	groups() {
-		return ["wei", "shu", "wu", "qun", "jin", "western", "key"];
-	}
 	selectGroup(name, type) {
 		if (get.itemtype(name) == "player") {
 			name = name.name || name.name1;
@@ -6325,7 +6322,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			if (type === true) {
 				return "kami";
 			}
-			return this.groups().filter(group => lib.group.includes(group));
+			return lib.group.filter(group => !lib.selectGroup.includes(group));
 		}
 		if (type === true) {
 			return "default";
