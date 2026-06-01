@@ -1093,7 +1093,7 @@ const translates = {
 	mb_cuilingyi_ab: "手杀崔芙",
 	mb_cuilingyi_prefix: "手杀",
 	mbcaiqiu: "裁裘",
-	mbcaiqiu_info: "①每轮开始时，你观看牌堆顶X张牌（X为游戏人数），然后可以获得其中任意张牌。②其他角色使用牌结算结束后，若你本轮因〖裁裘〗获得过同名牌，你失去1点体力。",
+	mbcaiqiu_info: "①每轮开始时，你观看牌堆顶X张牌（X为游戏人数），然后可以获得其中任意张牌。②每轮限一次，其他角色使用牌结算结束后，若你本轮因〖裁裘〗获得过同名牌，你失去1点体力。",
 	mbxishang: "袭裳",
 	mbxishang_info: `锁定技，①游戏开始时，你选择本局形象并获得${get.poptip("mbweizhuang")}。②你不因摸牌而获得牌时，明置之。`,
 	faceup_tag: "明置牌",

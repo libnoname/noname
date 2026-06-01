@@ -1710,15 +1710,15 @@ const skills = {
 				.set("list", list)
 				.set("filterButton", button => !_status.event.list.includes(button.link))
 				.set("ai", button => {
-					const aiPlayer = _status.event.player;
-					const aiTarget = _status.event.getParent().target;
+					const player = _status.event.player;
+					const target = _status.event.getParent().target;
 					switch (button.link) {
 						case "damage":
-							return get.damageEffect(aiTarget, aiPlayer, aiPlayer);
+							return get.damageEffect(target, player, player);
 						case "draw":
-							return 2 * get.effect(aiPlayer, { name: "draw" }, aiPlayer, aiPlayer);
+							return 2 * get.effect(player, { name: "draw" }, player, player);
 						case "discard":
-							return get.effect(aiTarget, { name: "guohe_copy2" }, aiPlayer, aiPlayer) * Math.min(1.6, aiTarget.countCards("he"));
+							return get.effect(target, { name: "guohe_copy2" }, player, player) * Math.min(1.6, target.countCards("he"));
 						case "use":
 							return _status.event.getRand("minagi_peiquan") * 4;
 					}

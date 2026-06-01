@@ -4506,36 +4506,14 @@ const skills = {
 	//手杀崔令仪
 	mbcaiqiu: {
 		audio: 4,
-		logAudio(event, player) {
-			if (event.name == "useCard") {
-				return ["mbcaiqiu3.mp3", "mbcaiqiu4.mp3"];
-			}
-			return 2;
-		},
-		trigger: {
-			global: ["roundStart", "useCardAfter"],
-		},
+		logAudio: () => 2,
+		trigger: { global: "roundStart" },
 		filter(event, player) {
-			if (event.name == "useCard") {
-				return (
-					event.player != player &&
-					player.getRoundHistory("gain", evt => {
-						if (evt.getParent().name != "mbcaiqiu") {
-							return false;
-						}
-						return evt.cards?.length && evt.cards.some(card => card.name == event.card.name);
-					}).length > 0
-				);
-			}
 			return game.countPlayer2(() => true, true) > 0;
 		},
 		forced: true,
 		locked: false,
 		async content(event, trigger, player) {
-			if (trigger?.name == "useCard") {
-				await player.loseHp();
-				return;
-			}
 			const cards = get.cards(
 				game.countPlayer2(() => true, true),
 				true
@@ -4545,7 +4523,7 @@ const skills = {
 				.set("ai", button => {
 					const player = get.player();
 					//只要贪不死就往死里贪
-					if (game.countPlayer(() => true) > player.hp && ["sha", "shan"].includes(button.link.name)) {
+					if (player.hp <= 1 && ["sha", "shan"].includes(button.link.name)) {
 						return 0;
 					}
 					return 1;
@@ -4554,6 +4532,31 @@ const skills = {
 			if (result?.bool && result.links?.length) {
 				await player.gain(result.links, "draw");
 			}
+		},
+		group: "mbcaiqiu_effect",
+		subSkill: {
+			effect: {
+				audio: "mbcaiqiu",
+				logAudio: () => ["mbcaiqiu3.mp3", "mbcaiqiu4.mp3"],
+				trigger: { global: "useCardAfter" },
+				filter(event, player) {
+					return (
+						event.player != player &&
+						player.hasRoundHistory("gain", evt => {
+							if (evt.getParent().name != "mbcaiqiu") {
+								return false;
+							}
+							return evt.cards?.length && evt.cards.some(card => card.name == event.card.name);
+						})
+					);
+				},
+				round: 1,
+				forced: true,
+				locked: false,
+				async content(event, trigger, player) {
+					await player.loseHp();
+				},
+			},
 		},
 	},
 	mbxishang: {

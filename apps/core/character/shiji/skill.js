@@ -1365,11 +1365,7 @@ const skills = {
 	tamo: {
 		available(mode) {
 			// 走另外的phaseLoop的模式/子模式/设置
-			if (
-				["boss", "stone", "tafang"].includes(mode) ||
-				["jiange", "standard", "three", "leader"].includes(_status.mode) ||
-				get.config("seat_order") === "指定"
-			) {
+			if (["boss", "stone", "tafang"].includes(mode) || ["jiange", "standard", "three", "leader"].includes(_status.mode) || get.config("seat_order") === "指定") {
 				return false;
 			}
 		},
@@ -1392,15 +1388,8 @@ const skills = {
 		async content(event, trigger, player) {
 			const toSortPlayers = get.info(event.name).getTargets();
 			toSortPlayers.sortBySeat(game.findPlayer2(current => current.getSeatNum() == 1, true));
-			const next = player.chooseToMove(
-				"榻谟：是否分配" + (get.mode() != "doudizhu" ? (game.hasPlayer(cur => cur.isZhu2()) ? "除主公外" : "") : "") + "所有角色的座次？"
-			);
-			next.set("list", [
-				[
-					"（以下排列的顺序即为发动技能后角色的座次顺序）",
-					[toSortPlayers.map(i => `${i.getSeatNum()}|${i.name}`), lib.skill.tamo.$createButton],
-				],
-			]);
+			const next = player.chooseToMove("榻谟：是否分配" + (get.mode() != "doudizhu" ? (game.hasPlayer(cur => cur.isZhu2()) ? "除主公外" : "") : "") + "所有角色的座次？");
+			next.set("list", [["（以下排列的顺序即为发动技能后角色的座次顺序）", [toSortPlayers.map(i => `${i.getSeatNum()}|${i.name}`), lib.skill.tamo.$createButton]]]);
 			next.set("toSortPlayers", toSortPlayers.slice(0));
 			next.set("processAI", () => {
 				const players = get.event().toSortPlayers,
