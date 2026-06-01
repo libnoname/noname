@@ -1384,33 +1384,110 @@ const skills = {
 			player: "enterGame",
 		},
 		filter(event, player) {
-			return (event.name != "phase" || game.phaseNumber == 0) && get.info("tamo").getTargets().length > 1;
-		},
-		seatRelated: "changeSeat",
-		derivation: "tamo_faq",
-		frequent: true,
-		async content(event, trigger, player) {
-			const toSortPlayers = get.info(event.name).getTargets();
-			toSortPlayers.sortBySeat(game.findPlayer2(current => current.getSeatNum() == 1, true));
-			const next = player.chooseToMove(
-				"榻谟：是否分配" + (get.mode() != "doudizhu" ? (game.hasPlayer(cur => cur.isZhu2()) ? "除主公外" : "") : "") + "所有角色的座次？"
+			return (
+				(event.name != "phase" || game.phaseNumber == 0) &&
+				game.countPlayer(current => {
+					if (get.mode() === "doudizhu") return current.getSeatNum() !== 3;
+					return !current.isZhu2();
+				}) > 1
 			);
+		},
+		direct: true,
+		changeSeat: true,
+		seatRelated: true,
+		derivation: "tamo_faq",
+		async content(event, trigger, player) {
+			const toSortPlayers = game.filterPlayer(current => {
+				if (get.mode() === "doudizhu") return current.getSeatNum() !== 3;
+				return !current.isZhu2();
+			});
+			toSortPlayers.sortBySeat(game.findPlayer2(current => current.getSeatNum() == 1, true));
+			const next = player.chooseToMove("榻谟：是否分配" + (get.mode() != "doudizhu" ? (game.hasPlayer(cur => cur.isZhu2()) ? "除主公外" : "") : "除三号位外") + "所有角色的座次？");
 			next.set("list", [
 				[
 					"（以下排列的顺序即为发动技能后角色的座次顺序）",
-					[toSortPlayers.map(i => `${i.getSeatNum()}|${i.name}`), lib.skill.tamo.$createButton],
+					[
+						toSortPlayers.map(i => `${i.getSeatNum()}|${i.name}`),
+						(item, type, position, noclick, node) => {
+							const info = item.split("|"),
+								_item = item;
+							const seat = parseInt(info[0]);
+							item = info[1];
+							if (node) {
+								node.classList.add("button");
+								node.classList.add("character");
+								node.style.display = "";
+							} else {
+								node = ui.create.div(".button.character", position);
+							}
+							node._link = item;
+							node.link = item;
+
+							const func = function (node, item) {
+								const currentPlayer = game.findPlayer(current => current.getSeatNum() == seat);
+								if (currentPlayer.classList.contains("unseen_show")) node.setBackground("hidden_image", "character");
+								else if (item != "unknown") node.setBackground(item, "character");
+								if (node.node) {
+									node.node.name.remove();
+									node.node.hp.remove();
+									node.node.group.remove();
+									node.node.intro.remove();
+									if (node.node.replaceButton) node.node.replaceButton.remove();
+								}
+								node.node = {
+									name: ui.create.div(".name", node),
+									group: ui.create.div(".identity", node),
+									intro: ui.create.div(".intro", node),
+								};
+								const infoitem = [currentPlayer.sex, currentPlayer.group, `${currentPlayer.hp}/${currentPlayer.maxHp}/${currentPlayer.hujia}`];
+								node.node.name.innerHTML = get.slimName(item);
+								if (lib.config.buttoncharacter_style == "default" || lib.config.buttoncharacter_style == "simple") {
+									if (lib.config.buttoncharacter_style == "simple") {
+										node.node.group.style.display = "none";
+									}
+									node.classList.add("newstyle");
+									node.node.name.dataset.nature = get.groupnature(get.bordergroup(infoitem));
+									node.node.group.dataset.nature = get.groupnature(get.bordergroup(infoitem), "raw");
+								}
+								node.node.name.style.top = "8px";
+								if (node.node.name.querySelectorAll("br").length >= 4) {
+									node.node.name.classList.add("long");
+									if (lib.config.buttoncharacter_style == "old") {
+										node.addEventListener("mouseenter", ui.click.buttonnameenter);
+										node.addEventListener("mouseleave", ui.click.buttonnameleave);
+									}
+								}
+								node.node.intro.innerHTML = lib.config.intro;
+								if (!noclick) {
+									lib.setIntro(node);
+								}
+								node.node.group.innerHTML = `<div>${get.cnNumber(seat, true)}号</div>`;
+								node.node.group.style.backgroundColor = get.translation(`${get.bordergroup(infoitem)}Color`);
+							};
+							node.refresh = func;
+							node.refresh(node, item);
+
+							node.link = _item;
+							node.seatNumber = seat;
+							node._customintro = uiintro => {
+								uiintro.add(`${get.translation(node._link)}(原${get.cnNumber(node.seatNumber, true)}号位)`);
+							};
+							return node;
+						},
+					],
 				],
 			]);
 			next.set("toSortPlayers", toSortPlayers.slice(0));
 			next.set("processAI", () => {
-				const players = get.event().toSortPlayers,
+				const players = get.event("toSortPlayers"),
 					player = get.player();
 				players.randomSort().sort((a, b) => get.attitude(player, b) - get.attitude(player, a));
 				return [players.map(i => `${i.getSeatNum()}|${i.name}`)];
 			});
-			const result = await next.forResult();
-			const moved = result?.moved;
-			const resultList = moved[0].map(info => {
+			const { result } = await next;
+			if (!result.bool) return;
+			await player.logSkill("tamo");
+			const resultList = result.moved[0].map(info => {
 				return parseInt(info.split("|")[0]);
 			});
 			const toSwapList = [];
@@ -1447,77 +1524,6 @@ const skills = {
 				});
 			}
 			await game.delay();
-		},
-		$createButton(item, type, position, noclick, node) {
-			const info = item.split("|"),
-				_item = item;
-			const seat = parseInt(info[0]);
-			item = info[1];
-			if (node) {
-				node.classList.add("button");
-				node.classList.add("character");
-				node.style.display = "";
-			} else {
-				node = ui.create.div(".button.character", position);
-			}
-			node._link = item;
-			node.link = item;
-
-			const func = function (node, item) {
-				const currentPlayer = game.findPlayer(current => current.getSeatNum() == seat);
-				if (currentPlayer.classList.contains("unseen_show")) {
-					node.setBackground("hidden_image", "character");
-				} else if (item != "unknown") {
-					node.setBackground(item, "character");
-				}
-				if (node.node) {
-					node.node.name.remove();
-					node.node.hp.remove();
-					node.node.group.remove();
-					node.node.intro.remove();
-					if (node.node.replaceButton) {
-						node.node.replaceButton.remove();
-					}
-				}
-				node.node = {
-					name: ui.create.div(".name", node),
-					group: ui.create.div(".identity", node),
-					intro: ui.create.div(".intro", node),
-				};
-				const infoitem = [currentPlayer.sex, currentPlayer.group, `${currentPlayer.hp}/${currentPlayer.maxHp}/${currentPlayer.hujia}`];
-				node.node.name.innerHTML = get.slimName(item);
-				if (lib.config.buttoncharacter_style == "default" || lib.config.buttoncharacter_style == "simple") {
-					if (lib.config.buttoncharacter_style == "simple") {
-						node.node.group.style.display = "none";
-					}
-					node.classList.add("newstyle");
-					node.node.name.dataset.nature = get.groupnature(get.bordergroup(infoitem));
-					node.node.group.dataset.nature = get.groupnature(get.bordergroup(infoitem), "raw");
-				}
-				node.node.name.style.top = "8px";
-				if (node.node.name.querySelectorAll("br").length >= 4) {
-					node.node.name.classList.add("long");
-					if (lib.config.buttoncharacter_style == "old") {
-						node.addEventListener("mouseenter", ui.click.buttonnameenter);
-						node.addEventListener("mouseleave", ui.click.buttonnameleave);
-					}
-				}
-				node.node.intro.innerHTML = lib.config.intro;
-				if (!noclick) {
-					lib.setIntro(node);
-				}
-				node.node.group.innerHTML = `<div>${get.cnNumber(seat, true)}号</div>`;
-				node.node.group.style.backgroundColor = get.translation(`${get.bordergroup(infoitem)}Color`);
-			};
-			node.refresh = func;
-			node.refresh(node, item);
-
-			node.link = _item;
-			node.seatNumber = seat;
-			node._customintro = uiintro => {
-				uiintro.add(`${get.translation(node._link)}(原${get.cnNumber(node.seatNumber, true)}号位)`);
-			};
-			return node;
 		},
 	},
 	//什么均贫卡
