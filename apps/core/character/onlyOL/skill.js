@@ -3399,7 +3399,7 @@ const skills = {
 							if (!player.canUse(card, target) || get.effect(target, card, player, player) < 0) {
 								return false;
 							}
-							const targetChoices = (player.getStorage("olquanyu", new Map([])).get(event.target) ?? [[], undefined])[0];
+							const targetChoices = (player.getStorage("olquanyu", new Map([])).get(target) ?? [[], undefined])[0];
 							return [playerChoice, ...targetChoices].unique().length > 3;
 						});
 					});
