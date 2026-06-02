@@ -9,8 +9,27 @@ permissions:
   contents: write
 
 jobs:
+  create-release:
+    name: Draft Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Create draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+
+          gh release create "$TAG" \
+          --title "$TAG" \
+          --notes-file apps/core/game/updateLog.md \
+          --draft
+
   build-packages:
     name: Build Packages
+    needs: create-release
     runs-on: ubuntu-latest
 
     steps:
@@ -27,7 +46,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 24
-          cache: 'pnpm'
+          cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -44,17 +63,20 @@ jobs:
           cd ../../../dist
           7z a ../release/noname.full.zip *
 
-      - name: Upload Temporary Packages
-        uses: actions/upload-artifact@v7
-        with:
-          name: release-packages
-          path: |
-            release/noname.core.zip
-            release/noname.full.zip
-          retention-days: 1
+      - name: Upload packages to release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+
+          gh release upload "$TAG" \
+          release/noname.core.zip \
+          release/noname.full.zip \
+          --clobber
 
   build-installer:
     name: Build Installer
+    needs: create-release
     runs-on: windows-latest
 
     steps:
@@ -71,7 +93,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 24
-          cache: 'pnpm'
+          cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -92,12 +114,16 @@ jobs:
           EXE="$(find output -maxdepth 1 -name '*.exe' | head -n 1)"
           cp "$EXE" "release/noname.Setup.${VER}.exe"
 
-      - name: Upload Temporary Installer
-        uses: actions/upload-artifact@v7
-        with:
-          name: release-installer
-          path: release/*.exe
-          retention-days: 1
+      - name: Upload installer to release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+
+          gh release upload "$TAG" \
+          "release/noname.Setup.${VER}.exe" \
+          --clobber
 
   release:
     name: Release Version
@@ -110,22 +136,27 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
-      - name: Download Temporary Files
-        uses: actions/download-artifact@v7
-        with:
-          path: release
-          merge-multiple: true
-
-      - name: Create GitHub Release
+      - name: Publish GitHub Release
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           TAG="${GITHUB_REF_NAME}"
 
-          gh release create "$TAG" \
-            "release/noname.core.zip" \
-            "release/noname.full.zip" \
-            "release/noname.Setup.*.exe" \
-            --title "$TAG" \
-            --notes-file apps/core/game/updateLog.md
+          gh release edit "$TAG" --draft=false
+
+  cleanup-release:
+    name: Clean Draft When Failure
+    if: ${{ failure() }}
+    needs:
+      - create-release
+      - build-packages
+      - build-installer
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Delete draft release on failure
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete "$GITHUB_REF_NAME" --yes --cleanup-tag=false
