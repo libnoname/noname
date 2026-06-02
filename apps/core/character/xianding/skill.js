@@ -1598,28 +1598,31 @@ const skills = {
 			const groupx = target.group;
 			const hps = [get.character(target.name).hp, get.character(target.name2).hp];
 			const skillsx = player.getSkills(null, false, false).filter(skill => !get.info(skill).charlotte);
-			const skills = _status.characterlist.reduce((list, name) => {
-				const { group, hp, skills } = get.character(name);
+			/** @type { [skill: string, owner: string][] } */
+			const skills = [];
+			for (const name of _status.characterlist) {
+				const { group, hp, skills: curSkills } = get.character(name);
 				if (groupx != group || !hps.includes(hp)) {
-					return list;
+					continue;
 				}
-				return [
-					...skills.filter(skill => {
-						const info = get.info(skill);
-						if (!info || info.charlotte || info.juexingji || info.hiddenSkill || info.zhuSkill || info.limited) {
-							return false;
-						}
-						if (typeof info.groupSkill == "string" && info.groupSkill != player.group) {
-							return false;
-						}
-						if (info.ai && (info.ai.combo || info.ai.notemp || info.ai.neg)) {
-							return false;
-						}
-						return !skillsx.includes(skill);
-					}),
-					...list,
-				];
-			}, []);
+				skills.unshift(
+					...curSkills
+						.filter(skill => {
+							const info = get.info(skill);
+							if (!info || info.charlotte || info.juexingji || info.hiddenSkill || info.zhuSkill || info.limited) {
+								return false;
+							}
+							if (typeof info.groupSkill === "string" && info.groupSkill !== player.group) {
+								return false;
+							}
+							if (info.ai && (info.ai.combo || info.ai.notemp || info.ai.neg)) {
+								return false;
+							}
+							return !skillsx.includes(skill);
+						})
+						.map(/** @returns { [skill: string, owner: string] } */ skill => [skill, name])
+				);
+			}
 			if (skills.length) {
 				const result = await player
 					.chooseButton({
