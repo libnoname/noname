@@ -5065,9 +5065,9 @@ export default () => {
 			},
 			tongshuai1: {
 				trigger: { global: "gameStart" },
-				forced: true,
-				popup: false,
-				priority: 10,
+				charlotte: true,
+				silent: true,
+				firstDo: true,
 				async content(event, trigger, player) {
 					const storage = player.storage.tongshuai;
 					for (const name of game.data.character) {
@@ -5103,7 +5103,10 @@ export default () => {
 			},
 			tongshuai2: {
 				audio: 2,
-				trigger: { player: ["phaseBegin", "phaseEnd"], global: "gameStart" },
+				trigger: {
+					player: ["phaseZhunbeiBegin", "phaseJieshuBegin"],
+					global: "gameStart",
+				},
 				filter(event, player, name) {
 					if (!player.hasSkill("tongshuai")) {
 						return false;
@@ -5111,108 +5114,58 @@ export default () => {
 					if (name === "phaseBegin" && game.phaseNumber === 1) {
 						return false;
 					}
-					return true;
-				},
-				priority: -9,
-				forced: true,
-				popup: false,
-				async content(event, trigger, player) {
 					const slist = player.storage.tongshuai.owned;
-					const list = Object.keys(slist);
+					for (const _ in slist) {
+						return true;
+					}
+					return false;
+				},
+				charlotte: true,
+				async cost(event, trigger, player) {
 					if (!event.isMine()) {
 						return;
 					}
-					event.dialog = ui.create.dialog("选择获得一项技能", [list, "character"]);
-					if (trigger.name === "game") {
-						event.control = ui.create.control();
-					} else {
-						event.control = ui.create.control(["cancel"]);
-					}
-					event.clickControl = link => {
-						if (link !== "cancel") {
-							const currentname = event.dialog.querySelector(".selected.button").link;
-							let mark = player.marks.tongshuai;
-							if (!mark) {
-								player.markSkill("tongshuai");
-								mark = player.marks.tongshuai;
-								if (mark.firstChild) {
-									mark.firstChild.remove();
-								}
-							}
-							mark.setBackground(currentname, "character");
 
-							player.addAdditionalSkill("tongshuai", link);
-							game.addVideo("chess_tongshuai_skill", player, [currentname, link]);
-							player.logSkill("tongshuai2");
-							game.log(player, "获得技能", `【${get.translation(link)}】`);
-							player.popup(link);
+					const slist = player.storage.tongshuai.owned;
+					const list = Object.entries(slist).flatMap(([id, skills]) => skills.map(skill => [skill, id]));
+					const from = new Map(list);
+					const result = await player
+						.chooseButton({
+							createDialog: [get.prompt2("tongshuai"), [list, "skill"]],
+							ai(button) {
+								return get.skillRank(button.link, "inout");
+							},
+						})
+						.forResult();
 
-							for (const button of event.dialog.buttons) {
-								if (!button.classList.contains("selected")) {
-									continue;
-								}
-								const name = button.link;
-								player.sex = lib.character[name][0];
-								player.group = lib.character[name][1];
-								// player.node.identity.style.backgroundColor=get.translation(player.group+'Color');
-								break;
-							}
+					event.result = {
+						bool: result.bool,
+						cost_data: {
+							skills: result.links,
+							owner: from.get(result.links[0]),
 						}
-						ui.auto.show();
-						event.dialog.close();
-						event.control.close();
-						_status.imchoosing = false;
-						game.resume();
-					};
-					event.control.custom = event.clickControl;
-					ui.auto.hide();
-					_status.imchoosing = true;
-					game.pause();
-					for (const button of event.dialog.buttons) {
-						button.classList.add("selectable");
 					}
-					event.custom.replace.button = button => {
-						if (button.classList.contains("selected")) {
-							button.classList.remove("selected");
-							if (trigger.name === "game") {
-								event.control.style.opacity = 0;
-							} else {
-								event.control.replace(["cancel"]);
-							}
-							event.control.custom = event.clickControl;
-							return;
+				},
+				async content(event, trigger, player) {
+					const { skills, owner } = event.cost_data;
+					const [skill] = skills;
+
+					let mark = player.marks.tongshuai;
+					if (mark == null) {
+						player.markSkill("tongshuai");
+						mark = player.marks.tongshuai;
+						if (mark.firstChild) {
+							mark.firstChild.remove();
 						}
-						for (const buttonx of event.dialog.buttons) {
-							buttonx.classList.remove("selected");
-						}
-						button.classList.add("selected");
-						event.control.replace(slist[button.link]);
-						if (trigger.name !== "game" || getComputedStyle(event.control).opacity !== "0") {
-							event.control.style.opacity = 1;
-						} else {
-							event.control.style.transition = "opacity 0.5s";
-							ui.refresh(event.control);
-							event.control.style.opacity = 1;
-							event.control.style.transition = "";
-							ui.refresh(event.control);
-						}
-						event.control.custom = event.clickControl;
-					};
-					event.custom.replace.window = () => {
-						for (const button of event.dialog.buttons) {
-							if (!button.classList.contains("selected")) {
-								continue;
-							}
-							button.classList.remove("selected");
-							if (trigger.name === "game") {
-								event.control.style.opacity = 0;
-							} else {
-								event.control.replace(["cancel"]);
-							}
-							event.control.custom = event.clickControl;
-							return;
-						}
-					};
+					}
+					mark.setBackground(owner, "character");
+
+					await player.addAdditionalSkills("tongshuai", skills);
+					game.addVideo("chess_tongshuai_skill", player, [owner, skill]);
+
+					const character = get.character(owner);
+					player.sex = character.sex;
+					player.group = character.group;
 				},
 			},
 			tongshuai3: {
