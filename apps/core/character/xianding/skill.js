@@ -998,6 +998,9 @@ const skills = {
 		filter(event, player) {
 			return game.phaseNumber == 0 || event.name != "phase";
 		},
+		init(player) {
+			player.addSkill("dcheji_source");
+		},
 		marktext: "骑",
 		intro: {
 			name: "骑",
@@ -1043,6 +1046,19 @@ const skills = {
 						const card = get.autoViewAs({ name: "sha", storage: { dcheji: true } });
 						await player.useCard({ card: card, targets: useTargets });
 					}
+				},
+			},
+			source: {
+				trigger: {
+					source: ["damageBefore"],
+				},
+				forced: true,
+				charlotte: true,
+				filter(event, player) {
+					return event.card?.storage.dcheji;
+				},
+				async content(event, trigger, player) {
+					trigger.set("nosource", true);
 				},
 			},
 		},
@@ -1192,10 +1208,12 @@ const skills = {
 			const gainer = targets[1];
 			loser.removeMark("dcheji");
 			gainer.addMark("dcheji", 1);
-			const { bool } = await player.chooseBool({
-				prompt: "移除所有其他角色的“骑”，其他角色每失去一个“骑” 便受到一点伤害",
-				ai: () => true,
-			}).forResult();
+			const { bool } = await player
+				.chooseBool({
+					prompt: "移除所有其他角色的“骑”，其他角色每失去一个“骑” 便受到一点伤害",
+					ai: () => true,
+				})
+				.forResult();
 			if (bool) {
 				const losers = game.filterPlayer(p => p.hasMark("dcheji"));
 				await game.doAsyncInOrder(losers, async p => {
