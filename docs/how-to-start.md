@@ -13,6 +13,7 @@
 
    ```bash
    node -v
+   npm -v
    ```
 
 ### pnpm (>=9)
