@@ -5114,7 +5114,6 @@ export default () => {
 					}
 					return false;
 				},
-				charlotte: true,
 				async cost(event, trigger, player) {
 					if (!event.isMine()) {
 						return;
@@ -5166,6 +5165,7 @@ export default () => {
 				unique: true,
 				trigger: { player: "phaseBegin" },
 				forced: true,
+				locked: true,
 				filter(event, player) {
 					return player.storage.tongshuai && player.storage.tongshuai.unowned?.length > 0;
 				},
