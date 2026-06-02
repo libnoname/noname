@@ -5012,25 +5012,23 @@ export default () => {
 				init(player) {
 					player.storage.tongshuai = {
 						list: [],
+						unowned: [],
 						owned: {},
-						player: player,
+						player,
 						get(num) {
-							if (typeof num != "number") {
+							if (typeof num !== "number") {
 								num = 1;
 							}
-							var player = this.player;
+							const player = this.player;
 							while (num--) {
-								var name = player.storage.tongshuai.unowned.shift();
-								if (!name) {
+								const name = player.storage.tongshuai.unowned.shift();
+								if (name == null) {
 									return;
 								}
-								var skills = lib.character[name][3].slice(0);
-								for (var i = 0; i < skills.length; i++) {
-									var info = lib.skill[skills[i]];
-									if (info.unique && !info.gainable) {
-										skills.splice(i--, 1);
-									}
-								}
+								const skills = get.character(name).skills.filter(skill => {
+									const info = get.info(skill);
+									return !info.unique || info.gainable;
+								});
 								player.storage.tongshuai.owned[name] = skills;
 								game.addVideo("chess_tongshuai", player, player.storage.tongshuai.owned);
 							}
@@ -5040,36 +5038,26 @@ export default () => {
 				group: ["tongshuai1", "tongshuai2", "tongshuai3"],
 				intro: {
 					content(storage, player) {
-						var str = "";
-						var slist = storage.owned;
-						var list = [];
-						for (var i in slist) {
-							list.push(i);
-						}
+						let str = "";
+						const list = Object.keys(storage.owned);
 						if (list.length) {
-							str += get.translation(list[0]);
-							for (var i = 1; i < list.length; i++) {
-								str += "、" + get.translation(list[i]);
-							}
+							str = list.map(name => get.translation(name)).join("、");
 						}
-						var skill = player.additionalSkills.tongshuai[0];
+						const skill = player.additionalSkills.tongshuai[0];
 						if (skill) {
-							str += "<p>当前技能：" + get.translation(skill);
+							str += `<p>当前技能：${get.translation(skill)}`;
 						}
 						return str;
 					},
 					mark(dialog, content, player) {
-						var slist = content.owned;
-						var list = [];
-						for (var i in slist) {
-							list.push(i);
-						}
+						const list = Object.keys(content.owned);
 						if (list.length) {
 							dialog.addSmall([list, "character"]);
 						}
-						var skill = player.additionalSkills.tongshuai[0];
+						const skill = player.additionalSkills.tongshuai[0];
 						if (skill) {
-							dialog.add('<div><div class="skill">【' + get.translation(skill) + "】</div><div>" + lib.translate[skill + "_info"] + "</div></div>");
+							const skillInfo = lib.translate[`${skill}_info`];
+							dialog.add(`<div><div class="skill">【${get.translation(skill)}】</div><div>${skillInfo}</div></div>`);
 						}
 					},
 				},
