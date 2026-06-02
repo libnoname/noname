@@ -24182,7 +24182,7 @@ const skills = {
 				await target.draw("nodelay");
 			}
 			await game.delayx();
-			const luckyOne = targets.filter(current => current.isMinHp(false, false, targets.includes(current))).randomGet();
+			const luckyOne = targets.filter(current => current.isMinHp()).randomGet();
 			await luckyOne.recover();
 		},
 	},

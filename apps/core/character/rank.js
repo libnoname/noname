@@ -547,6 +547,8 @@ window.noname_character_rank = {
 		"yj_zhenji",
 	],
 	bp: [
+		"pot_zhangren",
+		"pot_sunchen",
 		"wxdl_caozhi",
 		"shie",
 		"dc_xia_wangyue",
@@ -3189,6 +3191,8 @@ window.noname_character_rank = {
 			"dc_sb_chunyuqiong",
 		],
 		rare: [
+			"pot_zhangren",
+			"pot_sunchen",
 			"mb_xiahoumao",
 			"ylyg_xuhuang",
 			"ylyg_zhurong",
