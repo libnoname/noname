@@ -1096,6 +1096,7 @@ const translates = {
 	mbcaiqiu_info: "①每轮开始时，你观看牌堆顶X张牌（X为游戏人数），然后可以获得其中任意张牌。②每轮限一次，其他角色使用牌结算结束后，若你本轮因〖裁裘〗获得过同名牌，你失去1点体力。",
 	mbxishang: "袭裳",
 	mbxishang_info: `锁定技，①游戏开始时，你选择本局形象并获得${get.poptip("mbweizhuang")}。②你不因摸牌而获得牌时，明置之。`,
+	mbxishang_append: `<span style="font-family:yuanli">明置牌（移动服定义）：对所有玩家可见的牌。一名角色装备区和判定区的牌都是明置牌，但是一名角色的明置牌不包括其判定区的牌。</span>`,
 	faceup_tag: "明置牌",
 	mbweizhuang: "褽装",
 	mbweizhuang_info: `此技能效果根据你的形象发生变化：${get.poptip("mbweizhuang_guidianx")}${get.poptip("mbweizhuang_dongjiaox")}${get.poptip("mbweizhuang_xiugex")}。`,
