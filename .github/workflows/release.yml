@@ -36,12 +36,12 @@ jobs:
         shell: bash
         run: |
           mkdir -p release
-          pnpm generateTestPack
+          pnpm build
 
-          cd output/testpack
-          7z a ../../release/noname.core.zip *
+          cd apps/core/dist
+          7z a ../../../release/noname.core.zip *
 
-          cd ../../dist
+          cd ../../../dist
           7z a ../release/noname.full.zip *
 
       - name: Upload Temporary Packages
