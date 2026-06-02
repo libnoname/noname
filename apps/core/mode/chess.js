@@ -4856,26 +4856,19 @@ export default () => {
 				enable: "phaseUse",
 				usable: 1,
 				promptfunc(event, player) {
-					var targets = [];
-					var skill = lib.skill.leader_zhaoxiang;
-					for (var i = 0; i < game.players.length; i++) {
-						if (!game.data.character.includes(game.players[i].name) && game.players[i].side != player.side) {
-							targets.push(game.players[i]);
-						}
+					const targets = game.players.filter(current => !game.data.character.includes(current.name) && current.side !== player.side);
+					if (!targets.length) {
+						return lib.translate.leader_zhaoxiang_info;
 					}
-					var str = lib.translate.leader_zhaoxiang_info;
-					if (targets.length) {
-						str = '<p style="text-align:center;line-height:20px;margin-top:0">⚑ ' + game.data.dust + '</p><p style="text-align:center;line-height:20px;margin-top:8px">';
-						for (var i = 0; i < targets.length; i++) {
-							str += '<span style="width:120px;display:inline-block;text-align:right">' + get.translation(targets[i]) + '：</span><span style="width:120px;display:inline-block;text-align:left">' + (skill.chance(targets[i], player) * 100).toFixed(2) + "%</span><br>";
-						}
-						str += "</p>";
-					}
-					return str;
+					const skill = lib.skill.leader_zhaoxiang;
+					const chances = targets
+						.map(target => `<span style="width:120px;display:inline-block;text-align:right">${get.translation(target)}：</span><span style="width:120px;display:inline-block;text-align:left">${(skill.chance(target, player) * 100).toFixed(2)}%</span><br>`)
+						.join("");
+					return `<p style="text-align:center;line-height:20px;margin-top:0">⚑ ${game.data.dust}</p><p style="text-align:center;line-height:20px;margin-top:8px">${chances}</p>`;
 				},
 				chance(target, player) {
-					var chance;
-					var renyi = player.hasSkill("leader_renyi");
+					let chance;
+					const renyi = player.hasSkill("leader_renyi");
 					switch (target.hp) {
 						case 1:
 							chance = 0.7;
@@ -4940,19 +4933,20 @@ export default () => {
 				filterTarget(card, player, target) {
 					return game.isChessNeighbour(player, target) && !game.data.character.includes(target.name);
 				},
-				content() {
-					var chance = lib.skill.leader_zhaoxiang.chance(target, player);
+				async content(event, trigger, player) {
+					const target = event.target;
+					const chance = lib.skill.leader_zhaoxiang.chance(target, player);
 					game.changeDust(-10);
 					if (Math.random() < chance) {
 						_status.zhaoxiang = target.name;
 						game.data.character.add(target.name);
 						game.saveData();
 						game.over();
-					} else {
-						game.log("招降", target, "失败");
-						player.popup("招降失败");
-						player.damage(target);
+						return;
 					}
+					game.log("招降", target, "失败");
+					player.popup("招降失败");
+					await player.damage(target);
 				},
 			},
 			leader_xiaoxiong: {
