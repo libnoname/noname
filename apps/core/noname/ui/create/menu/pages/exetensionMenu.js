@@ -826,10 +826,10 @@ export const extensionMenu = function (connectMenu) {
 							translate: {},
 						};
 						page.content.image = {};
-						for (var i in page.content.pack.character) {
-							var file = i + ".jpg";
-							var url = lib.assetURL + "extension/" + name + "/" + file;
-							createButton(i, url);
+						for (const id in page.content.pack.character) {
+							const file = id + ".jpg";
+							const url = lib.assetURL + "extension/" + name + "/" + file;
+							createButton(id, url);
 							game.promises.readFile(url).then(result => {
 								page.content.image[file] = result;
 							}).catch(e => console.error(e));
@@ -1405,16 +1405,11 @@ export const extensionMenu = function (connectMenu) {
 								};
 							}
 						}
-						for (var i in page.content.pack.card) {
-							var file;
-							var fullskin = page.content.pack.card[i].fullskin ? true : false;
-							if (fullskin) {
-								file = i + ".png";
-							} else {
-								file = i + ".jpg";
-							}
-							var url = lib.assetURL + "extension/" + name + "/" + file;
-							createButton(i, url, fullskin);
+						for (const id in page.content.pack.card) {
+							const fullskin = page.content.pack.card[id].fullskin ? true : false;
+							const file = id + (fullskin ? ".png" : ".jpg");
+							const url = lib.assetURL + "extension/" + name + "/" + file;
+							createButton(id, url, fullskin);
 							game.promises.readFile(url).then(result => {
 								page.content.image[file] = result;
 							}).catch(e => console.error(e));
