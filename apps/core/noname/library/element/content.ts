@@ -4494,10 +4494,9 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 	},
 	async replaceHandcardsOL(event, trigger, player) {
 		const send = () => {
-			game.me.chooseBool("是否置换手牌？");
+			game.me.chooseBool({ prompt: "是否置换手牌？" });
 			game.resume();
 		};
-
 		const sendback = (result, player) => {
 			if (!result || !result.bool) {
 				return;
@@ -4553,24 +4552,29 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			}
 			player._start_cards = cards;
 		};
+		const waitCallback = resolve => (result, player) => {
+			sendback(result, player);
+			resolve(result?.bool);
+		}
 
-		let withol = false;
-		for (const current of event.players) {
+		const events = Array(event.players.length);
+		for (const [i, current] of event.players.entries()) {
+			const { promise, resolve } = Promise.withResolvers<boolean>();
+
 			if (current.isOnline()) {
-				withol = true;
 				current.send(send);
-				current.wait(sendback);
+				current.wait(waitCallback(resolve));
 			} else if (current == game.me) {
-				const next = game.me.chooseBool("是否置换手牌？");
-				game.me.wait(sendback);
+				const next = game.me.chooseBool({ prompt: "是否置换手牌？" });
+				game.me.wait(waitCallback(resolve));
 				const result = await next.forResult();
 				game.me.unwait(result);
 			}
+
+			events[i] = promise;
 		}
 
-		if (withol && !event.resultOL) {
-			await game.pause();
-		}
+		await Promise.allSettled(events);
 	},
 	phase: [
 		async (event, trigger, player) => {
