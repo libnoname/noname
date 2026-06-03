@@ -125,8 +125,9 @@ const skills = {
 					}
 				}
 			}
+			player.storage.mbshanjia = num;
 			if (num > 0) {
-				player.addMark("mbshanjia", num, false);
+				player.markSkill("mbshanjia");
 			}
 		},
 		async content(event, trigger, player) {
