@@ -1200,10 +1200,15 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 
 			if (targets.length) {
 				const next = player
-					.chooseCardOL(targets, `${get.translation(player)}发起了议事，请选择展示的手牌`, true)
+					.chooseCardOL({
+						list: targets,
+						prompt: `${get.translation(player)}发起了议事，请选择展示的手牌`,
+						forced: true,
+						glow_result: false,
+						ai: event.ai ?? (() => Math.random()),
+					})
 					.set("type", "debate")
 					.set("source", player)
-					.set("ai", event.ai ?? (() => Math.random()))
 					.set(
 						"aiCard",
 						event.aiCard ??
@@ -1214,7 +1219,6 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 							})
 					);
 
-				next._args.remove("glow_result");
 				result = await next.forResult();
 			} else {
 				event.noselected = true;
@@ -1234,8 +1238,8 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 		event.videoId = lib.status.videoId++;
 
 		if (!event.noselected) {
-			for (const [i, target] of targets.entries()) {
-				const card = result[i].cards[0];
+			for (const [target, r] of Iterator.zip([targets, result as Partial<Result>[]])) {
+				const card = r.cards[0];
 
 				if (card == "red" || get.color(card, target) == "red") {
 					red.push([target, card]);
@@ -7544,88 +7548,59 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			event.resume();
 		},
 	],
-	chooseCardOL: [
-		async (event, trigger, player) => {
-			event.targets = event.list.slice(0);
-			if (!_status.connectMode) {
-				event.result = [];
-				event.goto(7);
-			} else {
-				for (let i = 0; i < event.list.length; i++) {
-					const target = event.list[i];
-					target.wait();
-					if (target.isOnline()) {
-						target.send(
-							(args, set) => {
-								game.me.chooseCard.apply(game.me, args).set(set);
-								game.resume();
-							},
-							event._args,
-							event._set
-						);
-						event.list.splice(i--, 1);
-					} else if (target == game.me) {
-						event.withme = true;
-						event.list.splice(i--, 1);
-					}
+	async chooseCardOL(event, trigger, player) {
+		const targets: Player[] = event.list;
+
+		if (!_status.connectMode) {
+			const results: Partial<Result>[] = Array(targets.length);
+			for (const [i, target] of targets.entries()) {
+				results[i] = {};
+
+				const result = await target
+					.chooseCard(...event._args)
+					.set(event._set)
+					.forResult();
+
+				results[i] = result;
+			}
+			Reflect.set(event, "result", results);
+			return;
+		}
+		const events: Promise<Partial<Result>>[] = Array(targets.length);
+		for (const [i, target] of targets.entries()) {
+			const { promise, resolve } = Promise.withResolvers<Partial<Result>>();
+
+			target.wait(result => void resolve(result));
+			if (target.isOnline()) {
+				target.send(
+					(args, set) => {
+						game.me.chooseCard(...args).set(set);
+						game.resume();
+					},
+					event._args,
+					event._set
+				);
+			} else if (target === game.me) {
+				const next = game.me.chooseCard(...event._args).set(event._set);
+				next.forResult().then(result => game.me.unwait(result));
+			}
+
+			events[i] = promise;
+		}
+
+		const results: Partial<Result>[] = Array(targets.length);
+		for (const [i, result] of (await Promise.allSettled(events)).entries()) {
+			if (result.status === "fulfilled") {
+				results[i] = result.value;
+				if (results[i] === "ai" && event.aiCard) {
+					results[i] = event.aiCard(targets[i]);
 				}
-			}
-		},
-		async (event, trigger, player) => {
-			if (event.list.length) {
-				event.target = event.list.shift();
-				event.target.chooseCard.apply(event.target, event._args).set(event._set);
 			} else {
-				event.goto(3);
+				results[i] = {};
 			}
-		},
-		async (event, trigger, player, result) => {
-			event.target.unwait(result);
-			event.goto(1);
-		},
-		async (event, trigger, player) => {
-			if (event.withme) {
-				game.me.chooseCard.apply(game.me, event._args).set(event._set);
-			} else {
-				event.goto(5);
-			}
-		},
-		async (event, trigger, player, result) => {
-			game.me.unwait(result);
-		},
-		async (event, trigger, player) => {
-			if (!event.resultOL) {
-				game.pause();
-			}
-		},
-		async (event, trigger, player) => {
-			event.result = [];
-			for (const [i, target] of event.targets.entries()) {
-				event.result.push(event.resultOL[target.playerid] || {});
-				if (event.result[i] == "ai" && event.aiCard) {
-					event.result[i] = event.aiCard(target);
-				}
-			}
-			event.finish();
-		},
-		async (event, trigger, player) => {
-			if (event.list.length) {
-				event.target = event.list.shift();
-				event.target.chooseCard.apply(event.target, event._args).set(event._set);
-			} else {
-				for (const [i] of event.targets.entries()) {
-					if (!event.result[i]) {
-						event.result[i] = {};
-					}
-				}
-				event.finish();
-			}
-		},
-		async (event, trigger, player, result) => {
-			event.result[event.targets.indexOf(event.target)] = result;
-			event.goto(7);
-		},
-	],
+		}
+		Reflect.set(event, "result", results);
+	},
 	chooseButtonOL: [
 		async (event, trigger, player) => {
 			event.targets = event.list.slice();
