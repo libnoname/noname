@@ -4567,8 +4567,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			} else if (current == game.me) {
 				const next = game.me.chooseBool({ prompt: "是否置换手牌？" });
 				game.me.wait(waitCallback(resolve));
-				const result = await next.forResult();
-				game.me.unwait(result);
+				next.forResult().then(result => game.me.unwait(result));
 			}
 
 			events[i] = promise;
