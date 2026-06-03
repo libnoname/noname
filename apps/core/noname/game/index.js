@@ -1904,7 +1904,9 @@ export class Game {
 			return;
 		}
 		for (const client of lib.node.clients) {
-			client.send(func, ...args);
+			if (client.inited) {
+				client.send(func, ...args);
+			}
 		}
 	}
 	/**
