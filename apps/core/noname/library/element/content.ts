@@ -7554,51 +7554,58 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 		if (!_status.connectMode) {
 			const results: Partial<Result>[] = Array(targets.length);
 			for (const [i, target] of targets.entries()) {
-				results[i] = {};
+				try {
+					const result = await target
+						.chooseCard(...event._args)
+						.set(event._set)
+						.forResult();
 
-				const result = await target
-					.chooseCard(...event._args)
-					.set(event._set)
-					.forResult();
-
-				results[i] = result;
+					results[i] = result;
+				} catch {
+					results[i] = {};
+				}
 			}
 			Reflect.set(event, "result", results);
 			return;
 		}
-		const events: Promise<Partial<Result>>[] = Array(targets.length);
-		for (const [i, target] of targets.entries()) {
-			const { promise, resolve } = Promise.withResolvers<Partial<Result>>();
 
-			target.wait(result => void resolve(result));
-			if (target.isOnline()) {
-				target.send(
-					(args, set) => {
-						game.me.chooseCard(...args).set(set);
-						game.resume();
-					},
-					event._args,
-					event._set
-				);
-			} else if (target === game.me) {
-				const next = game.me.chooseCard(...event._args).set(event._set);
-				next.forResult().then(result => game.me.unwait(result));
-			}
-
-			events[i] = promise;
-		}
-
-		const results: Partial<Result>[] = Array(targets.length);
-		for (const [i, result] of (await Promise.allSettled(events)).entries()) {
-			if (result.status === "fulfilled") {
-				results[i] = result.value;
-				if (results[i] === "ai" && event.aiCard) {
-					results[i] = event.aiCard(targets[i]);
+		type ChooseCardOLResult = Partial<Result> | "ai";
+		const chooseRemote = (args, set) => {
+			game.me.chooseCard(...args).set(set);
+			game.resume();
+		};
+		const chooseLocal = (current: Player) => {
+			return current.chooseCard(...event._args).set(event._set);
+		};
+		const choose = (current: Player) => {
+			return new Promise<ChooseCardOLResult>(resolve => {
+				if (current.isOnline()) {
+					current.wait(result => resolve(result ?? {}));
+					current.send(chooseRemote, event._args, event._set);
+					return;
+				} else if (current === game.me) {
+					const next = chooseLocal(game.me);
+					game.me.wait(result => resolve(result ?? {}));
+					next.forResult()
+						.then(result => game.me.unwait(result))
+						.catch(() => resolve({}));
+				} else {
+					const next = chooseLocal(current);
+					next.forResult().then(resolve).catch(() => resolve({}));
 				}
-			} else {
-				results[i] = {};
+			});
+		};
+
+		const events: Promise<Partial<Result>>[] = targets.map(async target => {
+			const result = await choose(target);
+
+			if (result === "ai") {
+				return event.aiCard ? event.aiCard(target) : { bool: false, cards: [] };
 			}
-		}
+			return result;
+		});
+		const settled = await Promise.allSettled(events);
+		const results = settled.map(evt => (evt.status === "fulfilled" ? evt.value : {}));
 		Reflect.set(event, "result", results);
 	},
 	chooseButtonOL: [
