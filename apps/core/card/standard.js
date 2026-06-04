@@ -109,18 +109,19 @@ export default {
 			},
 			selectTarget: 1,
 			cardPrompt(card) {
-				var natures = get.natureList(Array.isArray(card) ? card[3] : card);
-				if (lib.translate["sha_nature_" + natures[0] + "_info"]) {
-					return lib.translate["sha_nature_" + natures[0] + "_info"];
+				const natures = get.natureList(Array.isArray(card) ? card[3] : card);
+				const natureInfo = lib.translate[`sha_nature_${natures[0]}_info`];
+				if (natureInfo) {
+					return natureInfo;
 				}
-				var str = "出牌阶段，对你攻击范围内的一名角色使用。其须使用一张【闪】，";
+				let str = "出牌阶段，对你攻击范围内的一名角色使用。其须使用一张【闪】，";
 				if (natures.includes("stab")) {
 					str += "且在此之后需弃置一张手牌（没有则不弃），";
 				}
 				str += "否则你对其造成1点";
-				var linked = lib.linked.filter(n => natures.includes(n));
+				const linked = lib.linked.filter(n => natures.includes(n));
 				if (linked.length) {
-					str += get.translation(get.nature(linked)) + "属性";
+					str += `${get.translation(get.nature(linked))}属性`;
 				}
 				str += "伤害。";
 				return str;
@@ -129,43 +130,56 @@ export default {
 			filterTarget(card, player, target) {
 				return player !== target;
 			},
-			content() {
-				"step 0";
-				if (typeof event.shanRequired !== "number" || !event.shanRequired || event.shanRequired < 0) {
-					event.shanRequired = 1;
-				}
-				if (typeof event.baseDamage !== "number") {
-					event.baseDamage = 1;
-				}
-				if (typeof event.extraDamage !== "number") {
-					event.extraDamage = 0;
-				}
-				("step 1");
-				if (event.directHit || event.directHit2 || (!_status.connectMode && lib.config.skip_shan && !target.hasShan())) {
-					event._result = { bool: false };
-				} else if (event.skipShan) {
-					event._result = { bool: true, result: "shaned" };
-				} else {
-					var next = target.chooseToUse("请使用一张闪响应杀");
+			async content(event, trigger, player) {
+				const { target } = event;
+				const triggerWithFallback = async (name, fallback) => {
+					const next = event.trigger(name);
+					if (!next) {
+						return fallback;
+					}
+					const result = await next.forResult();
+					return result ?? fallback;
+				};
+				const damageTarget = async () => {
+					if (!event.directHit && !event.directHit2 && lib.filter.cardEnabled(new lib.element.VCard({ name: "shan" }), target, "forceEnable") && target.countCards("hs") > 0 && get.damageEffect(target, player, target) < 0) {
+						target.addGaintag(target.getCards("hs"), "sha_notshan");
+					}
+					await target.damage(get.nature(event.card));
+					event.result = { bool: true };
+					await event.trigger("shaDamage");
+				};
+				const setUnhurtResult = async () => {
+					event.result = { bool: false };
+					await event.trigger("shaUnhirt");
+				};
+				const isShaned = result => result?.bool && result.result === "shaned";
+				const chooseShan = async () => {
+					if (event.directHit || event.directHit2 || (!_status.connectMode && lib.config.skip_shan && !target.hasShan())) {
+						return { bool: false };
+					}
+					if (event.skipShan) {
+						return { bool: true, result: "shaned" };
+					}
+					const next = target.chooseToUse("请使用一张闪响应杀");
 					next.set("type", "respondShan");
-					next.set("filterCard", function (card, player) {
+					next.set("filterCard", (card, player) => {
 						if (get.name(card) !== "shan") {
 							return false;
 						}
 						return lib.filter.cardEnabled(card, player, "forceEnable");
 					});
 					if (event.shanRequired > 1) {
-						next.set("prompt2", "（共需使用" + event.shanRequired + "张闪）");
+						next.set("prompt2", `（共需使用${event.shanRequired}张闪）`);
 					} else if (game.hasNature(event.card, "stab")) {
 						next.set("prompt2", "（在此之后仍需弃置一张手牌）");
 					}
-					next.set("ai1", function (card) {
+					next.set("ai1", card => {
 						if (get.event().toUse) {
 							return get.order(card);
 						}
 						return 0;
 					}).set("shanRequired", event.shanRequired);
-					next.set("respondTo", [player, card]);
+					next.set("respondTo", [player, event.card]);
 					next.set(
 						"toUse",
 						(() => {
@@ -212,76 +226,70 @@ export default {
 							return true;
 						})()
 					);
-					//next.autochoose=lib.filter.autoRespondShan;
+					return next.forResult();
+				};
+				if (typeof event.shanRequired !== "number" || !event.shanRequired || event.shanRequired < 0) {
+					event.shanRequired = 1;
 				}
-				("step 2");
-				if (!result || !result.bool || !result.result || result.result !== "shaned") {
-					event.trigger("shaHit");
-				} else {
+				if (typeof event.baseDamage !== "number") {
+					event.baseDamage = 1;
+				}
+				if (typeof event.extraDamage !== "number") {
+					event.extraDamage = 0;
+				}
+				let result;
+				while (true) {
+					result = await chooseShan();
+					if (!isShaned(result)) {
+						result = await triggerWithFallback("shaHit", result);
+						break;
+					}
 					event.shanRequired--;
+					event.responded = result;
 					if (event.shanRequired > 0) {
-						event.goto(1);
-					} else if (game.hasNature(event.card, "stab") && target.countCards("h") > 0) {
-						event.responded = result;
-						event.goto(4);
+						continue;
+					}
+					if (game.hasNature(event.card, "stab") && target.countCards("h") > 0) {
+						const discardResult = await target
+							.chooseToDiscard("刺杀：请弃置一张牌，否则此【杀】依然造成伤害")
+							.set("ai", card => {
+								const target = _status.event.player;
+								const evt = _status.event.getParent();
+								if (get.damageEffect(target, evt.player, target, evt.card.nature) >= 0) {
+									return 0;
+								}
+								return 8 - get.useful(card);
+							})
+							.forResult();
+						if ((!discardResult || !discardResult.bool) && !event.unhurt) {
+							await damageTarget();
+							return;
+						}
+						result = await triggerWithFallback("shaMiss", discardResult);
+						if ((!result || !result.bool) && !event.unhurt) {
+							await damageTarget();
+						} else {
+							await setUnhurtResult();
+						}
+						return;
 					} else {
-						event.trigger("shaMiss");
-						event.responded = result;
+						result = await triggerWithFallback("shaMiss", result);
 					}
+					break;
 				}
-				("step 3");
-				if ((!result || !result.bool || !result.result || result.result !== "shaned") && !event.unhurt) {
-					if (!event.directHit && !event.directHit2 && lib.filter.cardEnabled(new lib.element.VCard({ name: "shan" }), target, "forceEnable") && target.countCards("hs") > 0 && get.damageEffect(target, player, target) < 0) {
-						target.addGaintag(target.getCards("hs"), "sha_notshan");
-					}
-					target.damage(get.nature(event.card));
-					event.result = { bool: true };
-					event.trigger("shaDamage");
-				} else {
-					event.result = { bool: false };
-					event.trigger("shaUnhirt");
+				if (!isShaned(result) && !event.unhurt) {
+					await damageTarget();
+					return;
 				}
-				event.finish();
-				("step 4");
-				target.chooseToDiscard("刺杀：请弃置一张牌，否则此【杀】依然造成伤害").set("ai", function (card) {
-					var target = _status.event.player;
-					var evt = _status.event.getParent();
-					var bool = true;
-					if (get.damageEffect(target, evt.player, target, evt.card.nature) >= 0) {
-						bool = false;
-					}
-					if (bool) {
-						return 8 - get.useful(card);
-					}
-					return 0;
-				});
-				("step 5");
-				if ((!result || !result.bool) && !event.unhurt) {
-					target.damage(get.nature(event.card));
-					event.result = { bool: true };
-					event.trigger("shaDamage");
-					event.finish();
-				} else {
-					event.trigger("shaMiss");
-				}
-				("step 6");
-				if ((!result || !result.bool) && !event.unhurt) {
-					target.damage(get.nature(event.card));
-					event.result = { bool: true };
-					event.trigger("shaDamage");
-					event.finish();
-				} else {
-					event.result = { bool: false };
-					event.trigger("shaUnhirt");
-				}
+				await setUnhurtResult();
 			},
 			ai: {
 				yingbian(card, player, targets, viewer) {
 					if (get.attitude(viewer, player) <= 0) {
 						return 0;
 					}
-					var base = 0,
-						hit = false;
+					let base = 0;
+					let hit = false;
 					if (get.cardtag(card, "yingbian_hit")) {
 						hit = true;
 						if (
@@ -294,9 +302,7 @@ export default {
 					}
 					if (get.cardtag(card, "yingbian_add")) {
 						if (
-							game.hasPlayer(function (current) {
-								return !targets.includes(current) && lib.filter.targetEnabled2(card, player, current) && get.effect(current, card, player, player) > 0;
-							})
+							game.hasPlayer(current => !targets.includes(current) && lib.filter.targetEnabled2(card, player, current) && get.effect(current, card, player, player) > 0)
 						) {
 							base += 5;
 						}
@@ -390,9 +396,9 @@ export default {
 				},
 				result: {
 					target(player, target, card, isLink) {
-						let eff = -1.5,
-							odds = 1.35,
-							num = 1;
+						let eff = -1.5;
+						let odds = 1.35;
+						let num = 1;
 						if (isLink) {
 							eff = isLink.eff || -2;
 							odds = isLink.odds || 0.65;
