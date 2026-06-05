@@ -2534,204 +2534,204 @@ const skills = {
 			},
 		},
 	},
-		hefeidangshi: {
-			audio: 4,
-			trigger: { player: "useCardAfter" },
-			filter(event, player) {
-				if (!event.targets?.length) {
-					return false;
-				}
-				return get.is.damageCard(event.card);
-			},
-			async cost(event, trigger, player) {
-				event.result = await player
-					.chooseTarget({
-						prompt: get.prompt2(event.skill),
-						filterTarget(card, player, target) {
-							const trigger = get.event().getTrigger();
-							return trigger.targets?.includes(target) && target !== player;
-						},
-						ai(target) {
-							const player = get.player();
-							if (get.attitude(player, target) > 0) {
-								return 0;
-							}
-							if (!target.countCards("he")) {
-								return get.damageEffect(target, player, player);
-							}
-							return 10 / target.countCards("he");
-						},
-					})
-					.forResult();
-			},
-			async content(event, trigger, player) {
-				const {
-					targets: [target],
-					name,
-				} = event;
-				const getNum = (player, target) => {
-					let num = Math.max(
-						1,
-						game.players.reduce((sum, target) => sum + target.countMark(`hefeidangshi_count`), 0)
-					);
-					if (player.hasSkill("hefeiheyuzhangliao") && get.info("friendgongli").isFriendOf(player, "hefei_lidian")) {
-						num = 3;
-					}
-					return num;
-				};
-				const list = [
-					["useCard", `对${get.translation(player)}使用一张${get.translation(trigger.card.name)}`],
-					["discard", `弃置${get.cnNumber(getNum(player, target))}张牌`],
-					["damage", `${get.translation(player)}对你造成1点伤害`],
-				];
-				const canChoose = list
-					.map(info => info[0])
-					.filter(info => {
-						switch (info) {
-							case "useCard": {
-								return (
-									target.countCards("hs", card => {
-										if (get.name(card) != trigger.card.name) {
-											return false;
-										}
-										if (card.transform || card.virtual) return false;
-										return target.canUse(card, player);
-									}) > 0
-								);
-							}
-							case "discard": {
-								const num = getNum(player, target);
-								return target.countDiscardableCards(target, "he") >= num;
-							}
-							default: {
-								return true;
-							}
+	hefeidangshi: {
+		audio: 4,
+		trigger: { player: "useCardAfter" },
+		filter(event, player) {
+			if (!event.targets?.length) {
+				return false;
+			}
+			return get.is.damageCard(event.card);
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2(event.skill),
+					filterTarget(card, player, target) {
+						const trigger = get.event().getTrigger();
+						return trigger.targets?.includes(target) && target !== player;
+					},
+					ai(target) {
+						const player = get.player();
+						if (get.attitude(player, target) > 0) {
+							return 0;
 						}
-					});
-				const result =
-					canChoose.length > 1
-						? await target
-							.chooseButton({
-								createDialog: ["荡势：请选择一项", [list, "textbutton"]],
-								forced: true,
-								filterButton(button) {
-									return get.event().canChoose?.includes(button.link);
-								},
-								ai(button) {
-									const { player, getNum } = get.event(),
-										trigger = get.event().getTrigger();
-									if (button.link == "useCard") {
-										const cards = player.getCards("hs", card => {
-											if (get.name(card) != trigger.card.name) return false;
-											if (card.transform || card.virtual) return false;
-											return player.canUse(card, trigger.player);
-										});
-										const check = card => get.effect(trigger.player, card, player, player);
-										return cards.length ? check(cards.maxBy(check)) : 0;
-									}
-									if (button.link == "discard") {
-										return get.effect(player, { name: "guohe_copy2" }, player, player) / getNum;
-									}
-									return get.damageEffect(player, player, player);
-								},
-							})
-							.set("getNum", getNum(player, target))
-							.set("canChoose", canChoose)
-							.forResult()
-						: {
-							bool: true,
-							links: canChoose,
-						};
-				if (!result?.bool || !result.links?.length) {
-					return;
-				}
-				const type = result.links[0];
-				let next = { skill: name, type: type, event: event };
-				game.log(target, "选择了", `#y${list.find(info => info[0] == type)?.[1]}`);
-				player.getHistory("custom").push(next);
-				if (
-					!player.hasHistory("custom", evt => {
-						if (evt.skill != name || evt.type != type) {
-							return false;
+						if (!target.countCards("he")) {
+							return get.damageEffect(target, player, player);
 						}
-						return evt.event != event;
-					})
-				) {
-					await player.draw();
-					// 增加本阶段出杀次数+1
-					player.addMark("hefeidangshi_effect", 1, false);
-					if (!player.hasSkill("hefeidangshi_effect")) {
-						player.addTempSkill("hefeidangshi_effect", { player: "phaseAfter" });
-					}
+						return 10 / target.countCards("he");
+					},
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const {
+			targets: [target],
+				name,
+			} = event;
+			const getNum = (player, target) => {
+				let num = Math.max(
+					1,
+					game.players.reduce((sum, target) => sum + target.countMark(`hefeidangshi_count`), 0)
+				);
+				if (player.hasSkill("hefeiheyuzhangliao") && get.info("friendgongli").isFriendOf(player, "hefei_lidian")) {
+					num = 3;
 				}
-				switch (type) {
-					case "useCard": {
-						await target
-							.chooseToUse({
-								filterCard(card, player, event) {
-									if (get.itemtype(card) != "card" || get.name(card) != get.event().cardx) {
+				return num;
+			};
+			const list = [
+				["useCard", `对${get.translation(player)}使用一张${get.translation(trigger.card.name)}`],
+				["discard", `弃置${get.cnNumber(getNum(player, target))}张牌`],
+				["damage", `${get.translation(player)}对你造成1点伤害`],
+			];
+			const canChoose = list
+				.map(info => info[0])
+				.filter(info => {
+					switch (info) {
+						case "useCard": {
+							return (
+								target.countCards("hs", card => {
+									if (get.name(card) != trigger.card.name) {
 										return false;
 									}
 									if (card.transform || card.virtual) return false;
-									return lib.filter.filterCard.apply(this, arguments);
-								},
-								prompt: `荡势：对${get.translation(player)}使用一张${get.translation(trigger.card.name)}`,
-								addCount: false,
-								forced: true,
-								filterTarget(card, player, target) {
-									if (target != get.event().sourcex) {
-										return false;
-									}
-									return lib.filter.filterTarget.apply(this, arguments);
-								},
-							})
-							.set("targetRequired", true)
-							.set("complexTarget", true)
-							.set("cardx", trigger.card.name)
-							.set("sourcex", player);
-						return;
-					}
-					case "discard": {
-						const num = Math.min(target.countDiscardableCards(target, "he"), getNum(player, target));
-						target.addMark(`${name}_count`, 1, false);
-						target.addTempSkill(`${name}_count`, "roundStart");
-						if (num > 0) {
-							await target.chooseToDiscard({ position: "he", forced: true, selectCard: num });
+									return target.canUse(card, player);
+								}) > 0
+							);
 						}
-						return;
+						case "discard": {
+							const num = getNum(player, target);
+							return target.countDiscardableCards(target, "he") >= num;
+						}
+						default: {
+							return true;
+						}
 					}
-					default: {
-						await target.damage();
-						return;
+				});
+			const result =
+				canChoose.length > 1
+					? await target
+						.chooseButton({
+							createDialog: ["荡势：请选择一项", [list, "textbutton"]],
+							forced: true,
+							filterButton(button) {
+								return get.event().canChoose?.includes(button.link);
+							},
+							ai(button) {
+								const { player, getNum } = get.event(),
+									trigger = get.event().getTrigger();
+								if (button.link == "useCard") {
+									const cards = player.getCards("hs", card => {
+										if (get.name(card) != trigger.card.name) return false;
+										if (card.transform || card.virtual) return false;
+										return player.canUse(card, trigger.player);
+									});
+									const check = card => get.effect(trigger.player, card, player, player);
+									return cards.length ? check(cards.maxBy(check)) : 0;
+								}
+								if (button.link == "discard") {
+									return get.effect(player, { name: "guohe_copy2" }, player, player) / getNum;
+								}
+								return get.damageEffect(player, player, player);
+							},
+						})
+						.set("getNum", getNum(player, target))
+						.set("canChoose", canChoose)
+						.forResult()
+					: {
+						bool: true,
+						links: canChoose,
+					};
+			if (!result?.bool || !result.links?.length) {
+				return;
+			}
+			const type = result.links[0];
+			let next = { skill: name, type: type, event: event };
+			game.log(target, "选择了", `#y${list.find(info => info[0] == type)?.[1]}`);
+			player.getHistory("custom").push(next);
+			if (
+				!player.hasHistory("custom", evt => {
+					if (evt.skill != name || evt.type != type) {
+						return false;
 					}
+					return evt.event != event;
+				})
+			) {
+				await player.draw();
+				// 增加本阶段出杀次数+1
+				player.addMark("hefeidangshi_effect", 1, false);
+				if (!player.hasSkill("hefeidangshi_effect")) {
+					player.addTempSkill("hefeidangshi_effect", { player: "phaseAfter" });
 				}
+			}
+			switch (type) {
+				case "useCard": {
+					await target
+						.chooseToUse({
+							filterCard(card, player, event) {
+								if (get.itemtype(card) != "card" || get.name(card) != get.event().cardx) {
+									return false;
+								}
+								if (card.transform || card.virtual) return false;
+								return lib.filter.filterCard.apply(this, arguments);
+							},
+							prompt: `荡势：对${get.translation(player)}使用一张${get.translation(trigger.card.name)}`,
+							addCount: false,
+							forced: true,
+							filterTarget(card, player, target) {
+								if (target != get.event().sourcex) {
+									return false;
+								}
+								return lib.filter.filterTarget.apply(this, arguments);
+							},
+						})
+						.set("targetRequired", true)
+						.set("complexTarget", true)
+						.set("cardx", trigger.card.name)
+						.set("sourcex", player);
+					return;
+				}
+				case "discard": {
+					const num = Math.min(target.countDiscardableCards(target, "he"), getNum(player, target));
+					target.addMark(`${name}_count`, 1, false);
+					target.addTempSkill(`${name}_count`, "roundStart");
+					if (num > 0) {
+						await target.chooseToDiscard({ position: "he", forced: true, selectCard: num });
+					}
+					return;
+				}
+				default: {
+					await target.damage();
+					return;
+				}
+			}
+		},
+		subSkill: {
+			count: {
+				charlotte: true,
+				onremove: true,
 			},
-			subSkill: {
-				count: {
-					charlotte: true,
-					onremove: true,
+			effect: {
+				charlotte: true,
+				onremove: function (player) {
+					if (player && typeof player.getMark === 'function') {
+						var mark = player.getMark("hefeidangshi_effect");
+						if (mark) player.removeMark("hefeidangshi_effect", mark);
+					}
 				},
-				effect: {
-					charlotte: true,
-					onremove: function (player) {
-						if (player && typeof player.getMark === 'function') {
-							var mark = player.getMark("hefeidangshi_effect");
-							if (mark) player.removeMark("hefeidangshi_effect", mark);
+				intro: {
+					content: "出杀次数+#",
+				},
+				mod: {
+					cardUsable(card, player, num) {
+						if (card.name == "sha") {
+							return num + player.countMark("hefeidangshi_effect");
 						}
-					},
-					intro: {
-						content: "出杀次数+#",
-					},
-					mod: {
-						cardUsable(card, player, num) {
-							if (card.name == "sha") {
-								return num + player.countMark("hefeidangshi_effect");
-							}
-						},
 					},
 				},
 			},
 		},
+	},
 	hefeiheyuzhangliao: {
 		audio: 2,
 		locked: true,
