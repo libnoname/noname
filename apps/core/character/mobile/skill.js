@@ -2538,7 +2538,9 @@ const skills = {
 		audio: 4,
 		trigger: { player: "useCardAfter" },
 		filter(event, player) {
-			if (!event.targets?.length) return false;
+			if (!event.targets?.length) {
+				return false;
+			}
 			return get.is.damageCard(event.card);
 		},
 		async cost(event, trigger, player) {
@@ -2551,8 +2553,12 @@ const skills = {
 					},
 					ai(target) {
 						const player = get.player();
-						if (get.attitude(player, target) > 0) return 0;
-						if (!target.countCards("he")) return get.damageEffect(target, player, player);
+						if (get.attitude(player, target) > 0) {
+							return 0;
+						}
+						if (!target.countCards("he")) {
+							return get.damageEffect(target, player, player);
+						}
 						return 10 / target.countCards("he");
 					},
 				})
@@ -2585,7 +2591,9 @@ const skills = {
 						case "useCard": {
 							return (
 								target.countCards("hs", card => {
-									if (get.name(card) != trigger.card.name) return false;
+									if (get.name(card) != trigger.card.name) {
+										return false;
+									}
 									return target.canUse(card, player);
 								}) > 0
 							);
@@ -2614,8 +2622,12 @@ const skills = {
 								const trigger = get.event().getTrigger();
 								if (button.link == "useCard") {
 									const cards = player.getCards("hs", card => {
-										if (get.name(card) != trigger.card.name) return false;
-										if (card.transform || card.virtual) return false;
+										if (get.name(card) != trigger.card.name) {
+											return false;
+										}
+										if (card.transform || card.virtual) {
+											return false;
+										}
 										return player.canUse(card, trigger.player);
 									});
 									const check = card => get.effect(trigger.player, card, player, player);
@@ -2631,14 +2643,18 @@ const skills = {
 						.set("canChoose", canChoose)
 						.forResult()
 					: { bool: true, links: canChoose };
-			if (!result?.bool || !result.links?.length) return;
+			if (!result?.bool || !result.links?.length) {
+				return;
+			}
 			const type = result.links[0];
 			let next = { skill: name, type: type, event: event };
 			game.log(target, "选择了", `#y${list.find(info => info[0] == type)?.[1]}`);
 			player.getHistory("custom").push(next);
 			if (
 				!player.hasHistory("custom", evt => {
-					if (evt.skill != name || evt.type != type) return false;
+					if (evt.skill != name || evt.type != type) {
+						return false;
+					}
 					return evt.event != event;
 				})
 			) {
@@ -2655,15 +2671,21 @@ const skills = {
 					await target
 						.chooseToUse({
 							filterCard(card, player, event) {
-								if (get.itemtype(card) != "card" || get.name(card) != get.event().cardx) return false;
-								if (card.transform || card.virtual) return false;
+								if (get.itemtype(card) != "card" || get.name(card) != get.event().cardx) {
+									return false;
+								}
+								if (card.transform || card.virtual) {
+									return false;
+								}
 								return lib.filter.filterCard.apply(this, arguments);
 							},
 							prompt: `荡势：对${get.translation(player)}使用一张${get.translation(trigger.card.name)}`,
 							addCount: false,
 							forced: true,
 							filterTarget(card, player, target) {
-								if (target != get.event().sourcex) return false;
+								if (target != get.event().sourcex) {
+									return false;
+								}
 								return lib.filter.filterTarget.apply(this, arguments);
 							},
 						})
