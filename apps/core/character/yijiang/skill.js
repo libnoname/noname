@@ -12100,7 +12100,7 @@ const skills = {
 			const result = await gainner
 				.gainPlayerCard({
 					target: giver,
-					positon: "h",
+					position: "h",
 					forced: true,
 					visibleMove: true,
 				})

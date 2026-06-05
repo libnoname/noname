@@ -5593,21 +5593,6 @@ const skills = {
 		trigger: { global: "roundStart" },
 		forced: true,
 		locked: false,
-		//牢萌的方案
-		init(player) {
-			if (!_status.olhuanhuo) {
-				game.broadcastAll(() => {
-					_status.olhuanhuo = lib.filter.filterEnable;
-					lib.filter.filterEnable = function (event, player, skill) {
-						const cards = player.getCards("h", card => player.hasUseTarget(card, null, event));
-						if (event.name === "chooseToUse" && event.type === "phase" && player.hasMark("olhuanhuo_debuff") && cards.length) {
-							return false;
-						}
-						return _status.olhuanhuo(event, player, skill);
-					};
-				});
-			}
-		},
 		async content(event, trigger, player) {
 			await player.draw(2);
 			const num = Math.min(

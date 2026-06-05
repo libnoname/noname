@@ -186,7 +186,7 @@ declare interface Mod {
 	 */
 	targetInRange?(card: Card, player: Player, target: Player, result: boolean | number): boolean | number | void;
 	/**
-	 * 弃牌阶段时，忽略弃置的的手牌
+	 * 弃牌阶段时，忽略弃置的手牌
 	 * @param card 
 	 * @param player 
 	 */
@@ -1283,13 +1283,15 @@ declare interface Skill {
 	vanish?: boolean;
 
 	/** 
-	 * 武将特有固有技能
+	 * 异能技标签，同时也作为状态技的标签。
 	 * 
-	 * 从逻辑上来看，比固定技优先级还高，不会受“fengyin”，“baiban”等技能移除；
+	 * 异能技是 \@Spmario233 Key包角色被赋予特权的能力技能，比固定技优先级还高，
+	 * 不会受“fengyin”，“baiban”等技能移除，不会被【化身】之类的技能获得、删除，
+	 * 在clearSkills时，如果不是“删除所有的all为true”的情况下，不会被移除。
 	 * 
-	 * 在clearSkills时，如果不是“删除所有的all为true”的情况下，不会被移除；
-	 * 
-	 * 不会被，“化身”之类的技能获得，删除；
+	 * 同时，该标签也用于当作全局状态的技能，使这类效果不会因为【断肠】等技能而失去，
+	 * 如【天义】可额外使用一张【杀】和使用【杀】时可额外指定一个目标的效果，
+	 * 【双雄】可以于此回合内将任意一张与此判定牌不同颜色的手牌当做【决斗】使用的效果。
 	 */
 	charlotte?: boolean;
 	/** 在clearSkills中使用,标记此标记，永远不会被该方法删除，该标记独立使用，一般其他方法没有对其进行处理 */
@@ -1388,7 +1390,7 @@ declare interface Skill {
 	 * 
 	 * 在ai.basic.chooseTarget中使用；
 	 * 
-	 * 注：其实这些应该都有两个参数的，既第二个参数其实当前所有选中的的数据；
+	 * 注：其实这些应该都有两个参数的，既第二个参数其实当前所有选中的数据；
 	 * 
 	 * 有时甚至不传参，所以遇到保存，做好健壮性屏蔽；
 	 * 
