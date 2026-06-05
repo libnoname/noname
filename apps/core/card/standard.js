@@ -1028,54 +1028,52 @@ export default {
 			cardcolor: "red",
 			selectTarget: -1,
 			filterTarget: true,
-			contentBefore() {
-				"step 0";
+			async contentBefore(event, trigger, player) {
+				const card = event.card;
+				const targets = event.targets;
 				if (!targets.length) {
-					event.finish();
 					return;
 				}
 				if (card.storage?.chooseDirection || get.is.versus()) {
-					player
-						.chooseControl("顺时针", "逆时针", function (event, player) {
+					const result = await player
+						.chooseControl("顺时针", "逆时针", (event, player) => {
 							if ((get.event().isVersus && player.next.side === player.side) || get.attitude(player, player.next) > get.attitude(player, player.previous)) {
 								return "逆时针";
 							}
 							return "顺时针";
 						})
-						.set("prompt", "选择" + get.translation(card) + "的结算方向")
-						.set("isVersus", get.is.versus());
-				} else {
-					event.goto(2);
-				}
-				("step 1");
-				if (result && result.control === "顺时针") {
-					var evt = event.getParent(),
-						sorter = _status.currentPhase || player;
-					evt.fixedSeat = true;
-					evt.targets.sortBySeat(sorter);
-					evt.targets.reverse();
-					if (evt.targets[evt.targets.length - 1] === sorter) {
-						evt.targets.unshift(evt.targets.pop());
+						.set("prompt", `选择${get.translation(card)}的结算方向`)
+						.set("isVersus", get.is.versus())
+						.forResult();
+					if (result && result.control === "顺时针") {
+						const evt = event.getParent();
+						const sorter = _status.currentPhase || player;
+						evt.fixedSeat = true;
+						evt.targets.sortBySeat(sorter);
+						evt.targets.reverse();
+						if (evt.targets[evt.targets.length - 1] === sorter) {
+							evt.targets.unshift(evt.targets.pop());
+						}
 					}
 				}
-				("step 2");
 				ui.clear();
-				var cards;
+				let cards;
+				const nextEvents = [];
 				if (get.itemtype(card.storage?.fixedShownCards) === "cards") {
 					cards = card.storage.fixedShownCards.slice();
-					var lose_list = [],
-						cards2 = [];
-					cards.forEach(card => {
-						var owner = get.owner(card);
+					const lose_list = [];
+					const cards2 = [];
+					cards.forEach(cardx => {
+						const owner = get.owner(cardx);
 						if (owner) {
-							var arr = lose_list.find(i => i[0] === owner);
+							const arr = lose_list.find(i => i[0] === owner);
 							if (arr) {
-								arr[1].push(card);
+								arr[1].push(cardx);
 							} else {
-								lose_list.push([owner, [card]]);
+								lose_list.push([owner, [cardx]]);
 							}
 						} else {
-							cards2.add(card);
+							cards2.add(cardx);
 						}
 					});
 					if (lose_list.length) {
@@ -1083,32 +1081,37 @@ export default {
 							list[0].$throw(list[1]);
 							game.log(list[0], "将", list[1], "置于了处理区");
 						});
-						game.loseAsync({
+						const loseEvent = game.loseAsync({
 							lose_list: lose_list,
 							visible: true,
 							relatedEvent: event.getParent(),
 						}).setContent("chooseToCompareLose");
+						nextEvents.push(loseEvent);
 					}
 					if (cards2.length) {
-						game.cardsGotoOrdering(cards2).relatedEvent = event.getParent();
+						const orderingEvent = game.cardsGotoOrdering(cards2);
+						orderingEvent.relatedEvent = event.getParent();
+						nextEvents.push(orderingEvent);
 					}
-					game.delayex();
+					nextEvents.push(game.delayex());
 				} else {
 					let num = event.targets?.length ?? game.countPlayer();
 					if (typeof card.storage?.extraCardsNum === "number") {
 						num += card.storage.extraCardsNum;
 					}
 					cards = get.cards(num);
-					game.cardsGotoOrdering(cards).relatedEvent = event.getParent();
+					const orderingEvent = game.cardsGotoOrdering(cards);
+					orderingEvent.relatedEvent = event.getParent();
+					nextEvents.push(orderingEvent);
 				}
-				var dialog = ui.create.dialog("五谷丰登", cards, true);
+				const dialog = ui.create.dialog("五谷丰登", cards, true);
 				_status.dieClose.push(dialog);
 				dialog.videoId = lib.status.videoId++;
 				game.addVideo("cardDialog", null, ["五谷丰登", get.cardsInfo(cards), dialog.videoId]);
 				event.getParent().preResult = dialog.videoId;
 				game.broadcast(
-					function (cards, id) {
-						var dialog = ui.create.dialog("五谷丰登", cards, true);
+					(cards, id) => {
+						const dialog = ui.create.dialog("五谷丰登", cards, true);
 						_status.dieClose.push(dialog);
 						dialog.videoId = id;
 					},
@@ -1116,29 +1119,26 @@ export default {
 					dialog.videoId
 				);
 				game.log(event.card, "亮出了", cards);
-			},
-			content() {
-				"step 0";
-				for (var i = 0; i < ui.dialogs.length; i++) {
-					if (ui.dialogs[i].videoId === event.preResult) {
-						event.dialog = ui.dialogs[i];
-						break;
-					}
+				for (const nextEvent of nextEvents) {
+					await nextEvent;
 				}
-				if (!event.dialog || event.dialog.buttons.length === 0) {
-					event.finish();
+			},
+			async content(event, trigger, player) {
+				const { target } = event;
+				const dialog = ui.dialogs.find(dialog => dialog.videoId === event.preResult);
+				if (!dialog || dialog.buttons.length === 0) {
 					return;
 				}
-				if (event.dialog.buttons.length > 1) {
-					var next = target.chooseButton(true);
+				let result;
+				let directButton;
+				if (dialog.buttons.length > 1) {
+					const next = target.chooseButton(true);
 					next.set("ai", button => {
-						let player = _status.event.player,
-							card = button.link,
-							val = get.value(card, player);
+						const player = _status.event.player;
+						const card = button.link;
+						let val = get.value(card, player);
 						if (get.tag(card, "recover")) {
-							val += game.countPlayer(target => {
-								return target.hp < 2 && get.attitude(player, target) > 0 && lib.filter.cardSavable(card, player, target);
-							});
+							val += game.countPlayer(target => target.hp < 2 && get.attitude(player, target) > 0 && lib.filter.cardSavable(card, player, target));
 							if (player.hp <= 2 && game.checkMod(card, player, "unchanged", "cardEnabled2", player)) {
 								val *= 2;
 							}
@@ -1148,50 +1148,44 @@ export default {
 					next.set("dialog", event.preResult);
 					next.set("closeDialog", false);
 					next.set("dialogdisplay", true);
+					result = await next.forResult();
 				} else {
-					event.directButton = event.dialog.buttons[0];
+					directButton = dialog.buttons[0];
 				}
-				("step 1");
-				var dialog = event.dialog;
-				var card;
-				if (event.directButton) {
-					card = event.directButton.link;
+				let card;
+				if (directButton) {
+					card = directButton.link;
 				} else {
-					for (var i of dialog.buttons) {
-						if (i.link === result.links[0]) {
-							card = i.link;
+					for (const button of dialog.buttons) {
+						if (button.link === result.links[0]) {
+							card = button.link;
 							break;
 						}
 					}
 					if (!card) {
-						card = event.dialog.buttons[0].link;
+						card = dialog.buttons[0].link;
 					}
 				}
-				var button;
-				for (var i = 0; i < dialog.buttons.length; i++) {
-					if (dialog.buttons[i].link === card) {
-						button = dialog.buttons[i];
-						const innerHTML = target.getName(true);
-						game.createButtonCardsetion(innerHTML, button);
-						dialog.buttons.remove(button);
-						break;
-					}
+				const button = dialog.buttons.find(button => button.link === card);
+				if (button) {
+					const innerHTML = target.getName(true);
+					game.createButtonCardsetion(innerHTML, button);
+					dialog.buttons.remove(button);
 				}
-				var capt = get.translation(target) + "选择了" + get.translation(button.link);
+				const capt = `${get.translation(target)}选择了${get.translation(button.link)}`;
+				let gainEvent;
 				if (card) {
-					target.gain(card, "visible");
+					gainEvent = target.gain(card, "visible");
 					target.$gain2(card);
 					game.broadcast(
-						function (card, id, name, capt) {
-							var dialog = get.idDialog(id);
+						(card, id, name, capt) => {
+							const dialog = get.idDialog(id);
 							if (dialog) {
 								dialog.content.firstChild.innerHTML = capt;
-								for (var i = 0; i < dialog.buttons.length; i++) {
-									if (dialog.buttons[i].link === card) {
-										game.createButtonCardsetion(name, dialog.buttons[i]);
-										dialog.buttons.splice(i--, 1);
-										break;
-									}
+								const button = dialog.buttons.find(button => button.link === card);
+								if (button) {
+									game.createButtonCardsetion(name, button);
+									dialog.buttons.remove(button);
 								}
 							}
 						},
@@ -1204,32 +1198,34 @@ export default {
 				dialog.content.firstChild.innerHTML = capt;
 				game.addVideo("dialogCapt", null, [dialog.videoId, dialog.content.firstChild.innerHTML]);
 				game.log(target, "选择了", button.link);
-				game.delay();
+				const delayEvent = game.delay();
+				if (gainEvent) {
+					await gainEvent;
+				}
+				await delayEvent;
 			},
-			contentAfter() {
-				for (var i = 0; i < ui.dialogs.length; i++) {
-					if (ui.dialogs[i].videoId === event.preResult) {
-						var dialog = ui.dialogs[i];
-						dialog.close();
-						_status.dieClose.remove(dialog);
-						if (dialog.buttons.length) {
-							event.remained = [];
-							for (var i = 0; i < dialog.buttons.length; i++) {
-								event.remained.push(dialog.buttons[i].link);
-							}
-							event.trigger("wuguRemained");
-						}
-						break;
+			async contentAfter(event) {
+				const dialog = ui.dialogs.find(dialog => dialog.videoId === event.preResult);
+				let remainedEvent;
+				if (dialog) {
+					dialog.close();
+					_status.dieClose.remove(dialog);
+					if (dialog.buttons.length) {
+						event.remained = dialog.buttons.map(button => button.link);
+						remainedEvent = event.trigger("wuguRemained");
 					}
 				}
-				game.broadcast(function (id) {
-					var dialog = get.idDialog(id);
+				game.broadcast(id => {
+					const dialog = get.idDialog(id);
 					if (dialog) {
 						dialog.close();
 						_status.dieClose.remove(dialog);
 					}
 				}, event.preResult);
 				game.addVideo("cardDialog", null, event.preResult);
+				if (remainedEvent) {
+					await remainedEvent;
+				}
 			},
 			ai: {
 				wuxie() {
@@ -1243,7 +1239,7 @@ export default {
 				},
 				result: {
 					target(player, target) {
-						var sorter = _status.currentPhase || player;
+						const sorter = _status.currentPhase || player;
 						let opt = 6 + 0.75 * (game.countPlayer() - 2 * get.distance(sorter, target, "absolute"));
 						if (get.is.versus()) {
 							if (target !== sorter && get.attitude(player, player.next) < get.attitude(player, player.previous)) {
