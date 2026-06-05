@@ -2538,9 +2538,7 @@ const skills = {
 		audio: 4,
 		trigger: { player: "useCardAfter" },
 		filter(event, player) {
-			if (!event.targets?.length) {
-				return false;
-			}
+			if (!event.targets?.length) return false;
 			return get.is.damageCard(event.card);
 		},
 		async cost(event, trigger, player) {
@@ -2553,12 +2551,8 @@ const skills = {
 					},
 					ai(target) {
 						const player = get.player();
-						if (get.attitude(player, target) > 0) {
-							return 0;
-						}
-						if (!target.countCards("he")) {
-							return get.damageEffect(target, player, player);
-						}
+						if (get.attitude(player, target) > 0) return 0;
+						if (!target.countCards("he")) return get.damageEffect(target, player, player);
 						return 10 / target.countCards("he");
 					},
 				})
@@ -2566,7 +2560,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const {
-			targets: [target],
+				targets: [target],
 				name,
 			} = event;
 			const getNum = (player, target) => {
@@ -2591,10 +2585,7 @@ const skills = {
 						case "useCard": {
 							return (
 								target.countCards("hs", card => {
-									if (get.name(card) != trigger.card.name) {
-										return false;
-									}
-									if (card.transform || card.virtual) return false;
+									if (get.name(card) != trigger.card.name) return false;
 									return target.canUse(card, player);
 								}) > 0
 							);
@@ -2618,8 +2609,9 @@ const skills = {
 								return get.event().canChoose?.includes(button.link);
 							},
 							ai(button) {
-								const { player, getNum } = get.event(),
-									trigger = get.event().getTrigger();
+								const { player } = get.event();
+								const getNum = get.event().getNum;
+								const trigger = get.event().getTrigger();
 								if (button.link == "useCard") {
 									const cards = player.getCards("hs", card => {
 										if (get.name(card) != trigger.card.name) return false;
@@ -2638,30 +2630,24 @@ const skills = {
 						.set("getNum", getNum(player, target))
 						.set("canChoose", canChoose)
 						.forResult()
-					: {
-						bool: true,
-						links: canChoose,
-					};
-			if (!result?.bool || !result.links?.length) {
-				return;
-			}
+					: { bool: true, links: canChoose };
+			if (!result?.bool || !result.links?.length) return;
 			const type = result.links[0];
 			let next = { skill: name, type: type, event: event };
 			game.log(target, "选择了", `#y${list.find(info => info[0] == type)?.[1]}`);
 			player.getHistory("custom").push(next);
 			if (
 				!player.hasHistory("custom", evt => {
-					if (evt.skill != name || evt.type != type) {
-						return false;
-					}
+					if (evt.skill != name || evt.type != type) return false;
 					return evt.event != event;
 				})
 			) {
 				await player.draw();
-				// 增加本阶段出杀次数+1
 				player.addMark("hefeidangshi_effect", 1, false);
 				if (!player.hasSkill("hefeidangshi_effect")) {
-					player.addTempSkill("hefeidangshi_effect", { player: "phaseAfter" });
+					// ========== 这里修改 ==========
+					player.addTempSkill("hefeidangshi_effect", ["phaseChange", "phaseAfter"]);
+					// =============================
 				}
 			}
 			switch (type) {
@@ -2669,9 +2655,7 @@ const skills = {
 					await target
 						.chooseToUse({
 							filterCard(card, player, event) {
-								if (get.itemtype(card) != "card" || get.name(card) != get.event().cardx) {
-									return false;
-								}
+								if (get.itemtype(card) != "card" || get.name(card) != get.event().cardx) return false;
 								if (card.transform || card.virtual) return false;
 								return lib.filter.filterCard.apply(this, arguments);
 							},
@@ -2679,9 +2663,7 @@ const skills = {
 							addCount: false,
 							forced: true,
 							filterTarget(card, player, target) {
-								if (target != get.event().sourcex) {
-									return false;
-								}
+								if (target != get.event().sourcex) return false;
 								return lib.filter.filterTarget.apply(this, arguments);
 							},
 						})
@@ -2713,12 +2695,7 @@ const skills = {
 			},
 			effect: {
 				charlotte: true,
-				onremove: function (player) {
-					if (player && typeof player.getMark === 'function') {
-						var mark = player.getMark("hefeidangshi_effect");
-						if (mark) player.removeMark("hefeidangshi_effect", mark);
-					}
-				},
+				onremove: true,
 				intro: {
 					content: "出杀次数+#",
 				},
