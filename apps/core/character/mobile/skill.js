@@ -125,9 +125,11 @@ const skills = {
 					}
 				}
 			}
-			player.storage.mbshanjia = num;
-			if (num > 0) {
-				player.markSkill("mbshanjia");
+			const lastNum = player.getStorage("mbshanjia_sync") || 0;
+			player.setStorage("mbshanjia_sync", num);
+			const num1 = num - lastNum;
+			if (num1 > 0) {
+				player.addMark("mbshanjia", num1, false);
 			}
 		},
 		async content(event, trigger, player) {
