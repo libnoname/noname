@@ -1,6 +1,12 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const dynamicTranslates = {
+	sxrmdancui(player, skill) {
+		const bool = player.getStorage(skill, false);
+		let type = !bool ? get.poptip("sxrm_qidingSkill") : "锁定技";
+		let forced = !bool ? "可以" : "须";
+		return `${type}。当你造成伤害时，你${forced}弃置两张牌（无牌则不弃，不足则全弃），令此伤害+1。`;
+	},
 	sxrmqishi(player, skill) {
 		const bool = player.getStorage(skill, false);
 		let type = !bool ? get.poptip("sxrm_qidingSkill") : "锁定技";
