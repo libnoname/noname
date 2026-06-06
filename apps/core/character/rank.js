@@ -311,6 +311,7 @@ window.noname_character_rank = {
 		"bigsb_dengai",
 	],
 	am: [
+		"dc_shen_zhangliao",
 		"dc_shen_caopi",
 		"o_tadun",
 		"o_chenlan",
@@ -2643,6 +2644,7 @@ window.noname_character_rank = {
 			"v_sunce",
 		],
 		epic: [
+			"dc_shen_zhangliao",
 			"dc_muludawang",
 			"mb_shen_machao",
 			"clan_luyusheng",
