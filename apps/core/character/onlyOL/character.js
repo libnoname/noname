@@ -1,4 +1,12 @@
 const characters = {
+	ol_re_peixiu: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["olremaozhu", "olrejinlan", "olrecaifeng"],
+		forbidai: true,
+		groupBorder: "jin",
+	},
 	ol_sb_zhurong: {
 		sex: "female",
 		hp: 4,

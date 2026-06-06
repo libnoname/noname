@@ -1,6 +1,9 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const dynamicTranslates = {
+	oltaohuai(player, skill) {
+		return `你使用牌后，若此牌点数为你手牌中: ${player.storage[skill] ? "最小" : "最大"},你摸一张牌。否则你可弃置一张牌`;
+	},
 	olfenyue(player, skill) {
 		const bool = player.storage[skill];
 		let yang = "摸两张牌",
@@ -16,15 +19,15 @@ const dynamicTranslates = {
 	},
 	olchunhui(player, skill) {
 		const bool = player.storage[`${skill}_rewrite`];
-		return `锁定技，每轮首张牌被使用后，若此牌为: ${bool? "黑色" : "红色"}，你回复1点体力；黑色，你摸一张牌。`;
+		return `锁定技，每轮首张牌被使用后，若此牌为: ${bool ? "黑色" : "红色"}，你回复1点体力；黑色，你摸一张牌。`;
 	},
 	olxiasheng(player, skill) {
 		const bool = player.storage[`${skill}_rewrite`];
-		return `准备阶段或当你受到伤害后，令一名其他角色交给你一张牌。若此牌为黑色，本轮你与其下一次使用${bool? "黑色" : "红色"}牌时，可为此牌增加或减少一个目标（至多减至1）。`;
+		return `准备阶段或当你受到伤害后，令一名其他角色交给你一张牌。若此牌为黑色，本轮你与其下一次使用${bool ? "黑色" : "红色"}牌时，可为此牌增加或减少一个目标（至多减至1）。`;
 	},
 	olqiumu(player, skill) {
 		const bool = player.storage[`${skill}_rewrite`];
-		return `锁定技，你脱离濒死状态后，你重铸所有${bool? "黑色" : "红色"}牌，并将${get.poptip("olchunhui")}${get.poptip("olxiasheng")}〖秋暮〗描述中的“红色”均改为“黑色”。`;
+		return `锁定技，你脱离濒死状态后，你重铸所有${bool ? "黑色" : "红色"}牌，并将${get.poptip("olchunhui")}${get.poptip("olxiasheng")}〖秋暮〗描述中的“红色”均改为“黑色”。`;
 	},
 	olwenyi(player) {
 		let info = lib.translate["olwenyi_info"],
