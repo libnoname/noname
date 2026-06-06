@@ -7,7 +7,7 @@ const translates = {
 	olrejinlan: "尽览",
 	olrejinlan_info: "当你于回合内使用♠/♥/♣/♦牌时，你可以绘制东/西/南/北方位的所有“地图”。你绘制一处城市后，执行对应城市的效果。",
 	olrecaifeng: "采风",
-	olrecaifeng_info: "出牌阶段，你可以弃置两张牌，然后从牌堆或弃牌堆中随机获得一张其余花色的牌。",
+	olrecaifeng_info: "出牌阶段每张地图限一次，你可以弃置任意张牌，然后从牌堆或弃牌堆中随机获得等量张其余花色的牌。",
 	pxwenxian: "温县",
 	pxwenxian_info: "你加1点体力上限并回复1点体力，然后获得一张【虚妄之冤】。",
 	pxwenxi: "闻喜",
