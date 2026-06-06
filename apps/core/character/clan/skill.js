@@ -6028,9 +6028,9 @@ const skills = {
 			content(storage) {
 				let str = "转换技。每名角色Ａ的出牌阶段限一次。";
 				if (!storage) {
-					str += "Ａ可以重铸一张牌，然后你可以重铸一张牌。若这两张牌颜色不同，则你的手牌上限-1。";
+					str += "Ａ可以重铸一张牌，然后你可以重铸一张牌。若这两张牌颜色相同，则你的手牌上限+1。";
 				} else {
-					str += "Ａ可以令你选择一名在你或Ａ攻击范围内的另一名其他角色Ｂ，然后Ａ和你可依次选择是否对Ｂ使用一张【杀】。若这两张【杀】颜色相同，则你的手牌上限+1";
+					str += "Ａ可以令你选择一名在你或Ａ攻击范围内的另一名其他角色Ｂ，然后Ａ和你可依次选择是否对Ｂ使用一张【杀】。若这两张【杀】颜色不同，则你的手牌上限-1";
 				}
 				return str;
 			},
@@ -6224,12 +6224,10 @@ const skills = {
 								usedCards.push(result.card);
 							}
 						}
-
-						if (usedCards.length > 1) {
-							const colors = usedCards.map(card => get.color(card, false)).toUniqued();
-							if (colors.length > 1 && !colors.includes("none")) {
-								lib.skill.chenliuwushi.change(target, -1);
-							}
+						const bool1 = usedCards.length == 0;
+						const bool2 = usedCards.length == 2 && get.color(usedCards[0], false) === get.color(usedCards[1], false);
+						if (!bool1 && !bool2) {
+							lib.skill.chenliuwushi.change(target, -1);
 						}
 					}
 				},
@@ -6551,8 +6549,17 @@ const skills = {
 		async content(event, trigger, player) {
 			const targets = event.targets;
 			await game.doAsyncInOrder(targets, target => target.link(true));
-			player.addSkill(event.name + "_effect");
-			player.markAuto(event.name + "_effect", targets);
+			targets.forEach(target => {
+				target
+					.when({ player: "phaseUseEnd" })
+					.filter(evt => evt != trigger)
+					.step(async (event, trigger, player) => {
+						trigger.clanlianhe_check = true;
+					});
+			});
+			const effect = event.name + "_effect";
+			player.addSkill(effect);
+			player.setStorage(effect, player.getStorage(effect).concat(targets), true);
 		},
 		subSkill: {
 			effect: {
@@ -6564,12 +6571,15 @@ const skills = {
 				popup: false,
 				onremove: true,
 				filter(event, player) {
-					return player.getStorage("clanlianhe_effect").includes(event.player);
+					return player.getStorage("clanlianhe_effect").includes(event.player) && event.clanlianhe_check;
 				},
 				marktext: "连",
-				intro: { content: "已选择目标：$" },
+				intro: { content: (storage = [], player) => `已选择目标：${get.translation(storage.toUniqued())}` },
 				async content(event, trigger, player) {
 					player.unmarkAuto(event.name, [trigger.player]);
+					if (!player.getStorage(event.name).length) {
+						player.removeSkill(event.name);
+					}
 					if (trigger.name == "die") {
 						return;
 					}
@@ -6884,7 +6894,7 @@ const skills = {
 		},
 		derivation: "clansankuang",
 		ai: { combo: "clansankuang" },
-		intro: { content: "三框目标：$" },
+		intro: { content: ["每当$失去最后的手牌，你回复1点体力", '<span style="font-family:yuanli">“唉，我本袁氏故吏，又能做些什么呢……”</span>'].join("<br><br>") },
 		subSkill: {
 			mark: {
 				trigger: { player: "logSkillBegin" },
