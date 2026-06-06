@@ -102,7 +102,7 @@ const skills = {
 			if (!target.hasHistory("damage") && !target.hasHistory("lose")) {
 				return false;
 			}
-			return target != player && !player.getStorage("xianlue_used").includes(target);
+			return !player.getStorage("xianlue_used").includes(target);
 		},
 		init(player) {
 			player.addSkill("xianlue_used");
@@ -217,7 +217,7 @@ const skills = {
 				await next;
 			}
 			const targets = game.filterPlayer(target => target != player && target.countCards("h", card => get.number(card) == 3) > 0);
-			await game.doAsyncInOrder(event.targets, async target => {
+			await game.doAsyncInOrder(targets, async target => {
 				const cards = target.getCards("h").filter(card => get.number(card) == 3);
 				if (cards.length) {
 					await player.gain({ cards: cards, animate: "gain2" });
