@@ -2610,15 +2610,16 @@ const skills = {
 			const result =
 				canChoose.length > 1
 					? await target
-							.chooseButton({
-								createDialog: ["荡势：请选择一项", [list, "textbutton"]],
-								forced: true,
-								filterButton(button) {
-									return get.event().canChoose?.includes(button.link);
-								},
-								ai(button) {
-									const { player, getNum } = get.event(),
-									trigger = get.event().getTrigger();
+						.chooseButton({
+							createDialog: ["荡势：请选择一项", [list, "textbutton"]],
+							forced: true,
+							filterButton(button) {
+								return get.event().canChoose?.includes(button.link);
+							},
+							ai(button) {
+								const { player } = get.event();
+								const getNum = get.event().getNum;
+								const trigger = get.event().getTrigger();
 								if (button.link == "useCard") {
 									const cards = player.getCards("hs", card => {
 										if (get.name(card) != trigger.card.name) {
@@ -2643,17 +2644,13 @@ const skills = {
 				return;
 			}
 			const type = result.links[0];
-			let next = { skill: name, type: type, event: event };
 			game.log(target, "选择了", `#y${list.find(info => info[0] == type)?.[1]}`);
-			player.getHistory("custom").push(next);
-			if (
-				!player.hasHistory("custom", evt => {
-					if (evt.skill != name || evt.type != type) {
-						return false;
-					}
-					return evt.event != event;
-				})
-			) {
+			if (!player.storage.hefeidangshi_phaseChoices) {
+				player.storage.hefeidangshi_phaseChoices = [];
+			}
+			const isNewThisPhase = !player.storage.hefeidangshi_phaseChoices.includes(type);
+			if (isNewThisPhase) {
+				player.storage.hefeidangshi_phaseChoices.push(type);
 				await player.draw();
 				player.addMark("hefeidangshi_effect", 1, false);
 				if (!player.hasSkill("hefeidangshi_effect")) {
@@ -2666,6 +2663,9 @@ const skills = {
 						.chooseToUse({
 							filterCard(card, player, event) {
 								if (get.itemtype(card) != "card" || get.name(card) != get.event().cardx) {
+									return false;
+								}
+								if (card.transform || card.virtual) {
 									return false;
 								}
 								return lib.filter.filterCard.apply(this, arguments);
@@ -2701,6 +2701,7 @@ const skills = {
 				}
 			}
 		},
+		group: ["hefeidangshi_clear"],
 		subSkill: {
 			count: {
 				charlotte: true,
@@ -2718,6 +2719,14 @@ const skills = {
 							return num + player.countMark("hefeidangshi_effect");
 						}
 					},
+				},
+			},
+			clear: {
+				charlotte: true,
+				direct: true,
+				trigger: { player: ["phaseChange", "phaseAfter"] },
+				content() {
+					player.storage.hefeidangshi_phaseChoices = [];
 				},
 			},
 		},
