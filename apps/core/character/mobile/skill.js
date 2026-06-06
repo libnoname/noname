@@ -2617,9 +2617,8 @@ const skills = {
 									return get.event().canChoose?.includes(button.link);
 								},
 								ai(button) {
-									const { player } = get.event();
-									const getNum = get.event().getNum;
-									const trigger = get.event().getTrigger();
+									const { player, getNum } = get.event(),
+										trigger = get.event().getTrigger();
 									if (button.link == "useCard") {
 									const cards = player.getCards("hs", card => {
 											if (get.name(card) != trigger.card.name) {
@@ -2639,10 +2638,10 @@ const skills = {
 							.set("getNum", getNum(player, target))
 							.set("canChoose", canChoose)
 							.forResult()
-					: { 
-						bool: true, 
-						links: canChoose 
-					};
+					: {
+							bool: true, 
+							links: canChoose 
+						};
 			if (!result?.bool || !result.links?.length) {
 				return;
 			}
