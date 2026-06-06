@@ -185,7 +185,7 @@ const skills = {
 					} else {
 						if (trigger.addCount !== false) {
 							trigger.addCount = false;
-							const stat = player.getStat().card,
+							const stat = trigger.player.getStat().card,
 								name = card.name;
 							if (typeof stat[name] == "number") {
 								stat[name]--;
