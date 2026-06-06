@@ -551,7 +551,7 @@ const skills = {
 							selectCard: [1, Infinity],
 							ai(card) {
 								return 2 - get.player().getUseValue(card);
-							}
+							},
 						})
 						.forResult();
 					const { cards } = result;
@@ -566,7 +566,7 @@ const skills = {
 							}
 						}
 						if (gain.length) {
-							await player.gain({ cards: gain, animate: "gain2"});
+							await player.gain({ cards: gain, animate: "gain2" });
 						}
 					}
 				}
@@ -872,10 +872,7 @@ const skills = {
 			const cards = get.info(event.skill).getCards(trigger, player);
 			const red = cards.filter(card => get.color(card) == "red");
 			const sha = cards.filter(card => get.name(card) == "sha");
-			const choiceList = [
-				`获得${get.translation(red)}中的任意张并弃置一张黑牌`,
-				`获得${get.translation(sha)}并永久视为雷杀`
-			];
+			const choiceList = [`获得${get.translation(red)}中的任意张并弃置一张黑牌`, `获得${get.translation(sha)}并永久视为雷杀`];
 			const controls = ["选项一", "选项二", "cancel2"];
 			if (!red.length) {
 				choiceList[0] = `<span style="text-decoration: line-through;">没有红色牌可以获得</span>`;
@@ -907,17 +904,14 @@ const skills = {
 		async content(event, trigger, player) {
 			const { cards, cost_data: index } = event;
 			if (index == 0) {
-				const result = await player.
-					chooseButton({
-						createDialog: [
-							`慑道：请选择要获得的牌`,
-							cards
-						],
+				const result = await player
+					.chooseButton({
+						createDialog: [`慑道：请选择要获得的牌`, cards],
 						selectButton: [1, cards.length],
 						forced: true,
 						ai(button) {
 							return get.value(button.link);
-						}
+						},
 					})
 					.forResult();
 				if (!result?.links?.length) {
@@ -951,8 +945,8 @@ const skills = {
 						if (card.hasGaintag("eternal_dcsbshedao_global")) {
 							return "thunder";
 						}
-					}
-				}
+					},
+				},
 			},
 			effect: {
 				charlotte: true,
@@ -1188,7 +1182,7 @@ const skills = {
 				const dialog = ui.create.dialog(`###煌怒###请选择一项`, [
 					[
 						["discard", `选择一名角色令其随机弃置一张你指定类型的牌`],
-						["sha", "视为使用一张【杀】"],//无距离限制的
+						["sha", "视为使用一张【杀】"], //无距离限制的
 						["exclude", "令一名角色本回合下次使用牌无效"],
 					],
 					"textbutton",
@@ -1259,7 +1253,7 @@ const skills = {
 								[
 									[
 										["discard", `选择一名角色令其随机弃置一张你指定类型的牌`],
-										["sha", "视为使用一张【杀】"],//无距离限制的
+										["sha", "视为使用一张【杀】"], //无距离限制的
 										["exclude", "令一名角色本回合下次使用牌无效"],
 									],
 									"textbutton",
@@ -1364,10 +1358,7 @@ const skills = {
 			const num = player.countDisabledSlot();
 			const result = await player
 				.chooseControl({
-					choiceList: [
-						`获得${get.translation(cards)}`,
-						`令${get.translation(target)}摸${num}张牌`
-					],
+					choiceList: [`获得${get.translation(cards)}`, `令${get.translation(target)}摸${num}张牌`],
 					choice: (() => {
 						const att = get.attitude(player, target);
 						if (att <= 0) {
@@ -1383,12 +1374,16 @@ const skills = {
 			} else {
 				await target.draw({ num });
 			}
-			if (game.getGlobalHistory("everything", evt => {
-				if (evt.name != "gain") {
-					return false;
-				}
-				return evt.getParent().name == event.name || (evt.getParent().name == "draw" && evt.getParent(2).name == event.name);
-			}).reduce((list, evt) => [...list, ...evt.cards], []).length > 1) {
+			if (
+				game
+					.getGlobalHistory("everything", evt => {
+						if (evt.name != "gain") {
+							return false;
+						}
+						return evt.getParent().name == event.name || (evt.getParent().name == "draw" && evt.getParent(2).name == event.name);
+					})
+					.reduce((list, evt) => [...list, ...evt.cards], []).length > 1
+			) {
 				player.tempBanSkill(event.name);
 			}
 		},
@@ -9091,14 +9086,14 @@ const skills = {
 					}
 					if (
 						game.hasGlobalHistory("everything", evt => {
-							if (evt.name != "die" || evt.player != target || !evt.reason) {
+							if (evt.name != "dying" || evt.player != target || !evt.reason) {
 								return false;
 							}
 							return evt.reason.getParent(evtx => evtx == trigger, true);
-						}) &&
-						player.countCards("h") < player.maxHp
+						})
 					) {
-						await player.drawTo(player.maxHp);
+						player.addSkill("dcshouhu_nocount");
+						await player.draw({ num: player.maxHp, gaintag: ["dcshouhu_nocount"] });
 					}
 				});
 		},
@@ -9112,6 +9107,24 @@ const skills = {
 		},
 		group: "dcshouhu_reset",
 		subSkill: {
+			nocount: {
+				inherit: "nocount",
+				filter(event, player) {
+					return (
+						event.addCount !== false &&
+						player.hasHistory("lose", evt => {
+							return (evt.relatedEvent || evt.getParent()) == event && evt.hs.length && Object.values(evt.gaintag_map).flat().includes("dcshouhu_nocount");
+						})
+					);
+				},
+				mod: {
+					cardUsable(card) {
+						if (get.number(card) === "unsure" || card.cards?.some(card => card.hasGaintag("dcshouhu_nocount"))) {
+							return Infinity;
+						}
+					},
+				},
+			},
 			reset: {
 				updateDistanceMap() {
 					const map = {};
@@ -9272,7 +9285,7 @@ const skills = {
 					break;
 				}
 			}
-			if (player.getStorage(name).length > 2) {
+			if (player.getStorage(name).length > 1) {
 				player.removeSkill(name);
 				game.log(player, "重置了", "#g【凝准】");
 			}

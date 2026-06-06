@@ -1503,6 +1503,7 @@ const skills = {
 	olcaishi: {
 		audio: 2,
 		forced: true,
+		locked: false,
 		trigger: {
 			player: "useCardAfter",
 		},
@@ -1511,12 +1512,26 @@ const skills = {
 			return player.getRoundHistory("useCard", evt => get.type2(evt.card) == type).indexOf(event) == 0;
 		},
 		async content(event, trigger, player) {
-			if (!get.info("clanmuyin").isMax(player)) {
-				player.addSkill(`${event.name}_effect`);
-				player.addMark(`${event.name}_effect`, 1, false);
-			} else {
-				await player.recover();
-				player.tempBanSkill(event.name, "roundStart");
+			player.addTempSkill(`${event.name}_effect`, "roundStart");
+			player.addMark(`${event.name}_effect`, 1, false);
+			if (!get.info("clanmuyin").isMax(player) && game.hasPlayer(target => target.isDamaged())) {
+				const result = await player
+					.chooseTarget({
+						prompt: "才识：你可以令一名角色回复一点体力，然后此技能本回合失效",
+						filterTarget(card, player, target) {
+							return target.isDamaged();
+						},
+						ai(target) {
+							return get.recoverEffect(target, get.player(), get.player());
+						}
+					})
+					.forResult();
+				if (result?.bool && result.targets?.length) {
+					const { targets: [target] } = result;
+					player.line(target, "green");
+					await target.recover();
+					player.tempBanSkill(event.name);
+				}
 			}
 		},
 		subSkill: {
@@ -1572,7 +1587,16 @@ const skills = {
 			} = result2;
 			await player.showCards(card);
 			if (shown.some(i => get.suit(i) == get.suit(card))) {
-				await player.draw();
+				const result = await player
+					.discardPlayerCard({
+						prompt: `忠鉴：弃置${get.translation(target)}一张牌或取消你摸一张牌`,
+						target,
+						position: "he",
+					})
+					.forResult();
+				if (!result?.bool) {
+					await player.draw();
+				}
 			}
 			if (shown.some(i => get.name(i) == get.name(card)) && !player.hasMark(name)) {
 				player.addMark(name, 1, false);
