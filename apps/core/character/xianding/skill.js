@@ -8055,14 +8055,19 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseToDiscard(get.prompt2(event.skill, trigger.player), [1, 5], "h", "chooseonly")
-				.set("allowChooseAll", true)
-				.set("ai", card => {
-					const target = get.event().getTrigger().player;
-					if (get.attitude(get.player(), target) > 0) {
-						return 7.5 - get.value(card);
-					}
-					return 0;
+				.chooseToDiscard({
+					prompt: get.prompt2(event.skill, trigger.player),
+					selectCard: [1, 5],
+					position: "he",
+					chooseonly: true,
+					allowChooseAll: true,
+					ai(card) {
+						const target = get.event().getTrigger().player;
+						if (get.attitude(get.player(), target) > 0) {
+							return 7.5 - get.value(card);
+						}
+						return 0;
+					},
 				})
 				.forResult();
 		},

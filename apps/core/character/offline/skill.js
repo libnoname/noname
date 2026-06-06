@@ -28918,17 +28918,14 @@ const skills = {
 		async content(event, trigger, player) {
 			let cards = get.cards(event.cards.length, true);
 			await player.showCards(cards, get.translation(player) + "发动了【爵制】");
-			const {
-				result: {
-					links: [card],
-				},
-			} = await player.chooseCardButton("爵制：选择要获得的牌", true, cards).set("ai", button => {
+			const result = await player.chooseCardButton("爵制：选择要获得的牌", true, cards).set("ai", button => {
 				let player = get.event().player,
 					number = get.number(button.link);
 				return player.getUseValue(button.link, null, number % (player.storage.xingtu_mark || 13) !== 0);
-			});
-			if (card) {
-				player.gain(card, "gain2");
+			}).forResult();
+			const { links } = result;
+			if (links?.length) {
+				player.gain({ cards: links, animate: "gain" });
 			}
 		},
 		ai: {
