@@ -2610,36 +2610,39 @@ const skills = {
 			const result =
 				canChoose.length > 1
 					? await target
-						.chooseButton({
-							createDialog: ["荡势：请选择一项", [list, "textbutton"]],
-							forced: true,
-							filterButton(button) {
-								return get.event().canChoose?.includes(button.link);
-							},
-							ai(button) {
-								const { player } = get.event();
-								const getNum = get.event().getNum;
-								const trigger = get.event().getTrigger();
-								if (button.link == "useCard") {
+							.chooseButton({
+								createDialog: ["荡势：请选择一项", [list, "textbutton"]],
+								forced: true,
+								filterButton(button) {
+									return get.event().canChoose?.includes(button.link);
+								},
+								ai(button) {
+									const { player } = get.event();
+									const getNum = get.event().getNum;
+									const trigger = get.event().getTrigger();
+									if (button.link == "useCard") {
 									const cards = player.getCards("hs", card => {
-										if (get.name(card) != trigger.card.name) {
-											return false;
-										}
-										return player.canUse(card, trigger.player);
-									});
-									const check = card => get.effect(trigger.player, card, player, player);
-									return cards.length ? check(cards.maxBy(check)) : 0;
-								}
-								if (button.link == "discard") {
-									return get.effect(player, { name: "guohe_copy2" }, player, player) / getNum;
-								}
-								return get.damageEffect(player, player, player);
-							},
-						})
-						.set("getNum", getNum(player, target))
-						.set("canChoose", canChoose)
-						.forResult()
-					: { bool: true, links: canChoose };
+											if (get.name(card) != trigger.card.name) {
+												return false;
+											}
+											return player.canUse(card, trigger.player);
+										});
+										const check = card => get.effect(trigger.player, card, player, player);
+										return cards.length ? check(cards.maxBy(check)) : 0;
+									}
+									if (button.link == "discard") {
+										return get.effect(player, { name: "guohe_copy2" }, player, player) / getNum;
+									}
+									return get.damageEffect(player, player, player);
+								},
+							})
+							.set("getNum", getNum(player, target))
+							.set("canChoose", canChoose)
+							.forResult()
+					: { 
+						bool: true, 
+						links: canChoose 
+					};
 			if (!result?.bool || !result.links?.length) {
 				return;
 			}
