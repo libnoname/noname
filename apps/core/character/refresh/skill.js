@@ -9784,7 +9784,7 @@ const skills = {
 		filterCard: () => false,
 		selectCard: -1,
 		log: false,
-		async content(event, trigger, player) {
+		async precontent(event, trigger, player) {
 			player.logSkill("decadechunlao");
 			await player.link();
 		},
