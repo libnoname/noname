@@ -28623,7 +28623,7 @@ const skills = {
 		filter(event, player) {
 			return player.countCards("he") > 1;
 		},
-		filterCard: true,
+		filterCard: lib.filter.cardDiscardable,
 		position: "he",
 		selectCard: [2, Infinity],
 		check(card) {
@@ -28650,12 +28650,12 @@ const skills = {
 						const player = get.player();
 						const number = get.number(button.link);
 						return player.getUseValue(button.link, null, number % (player.storage.xingtu_mark || 13) !== 0);
-					}
+					},
 				})
 				.forResult();
-			if (card) {
-				player.gain({
-					cards: [card],
+			if (result?.links?.length) {
+				await player.gain({
+					cards: result.links,
 					animate: "gain2",
 				});
 			}
