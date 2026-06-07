@@ -15,7 +15,7 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			if (!player.countCards("hes", card => get.type(card) != "basic")) {
+			if (!player.hasCards("hes", card => get.type(card) != "basic")) {
 				return false;
 			}
 			const list = get.inpileVCardList(([type, _, name, nature]) => get.is.damageCard(get.autoViewAs({ name, nature }, "unsure")));
@@ -130,7 +130,6 @@ const skills = {
 					if (result?.control && result.control != "cancel2") {
 						if (result.index == 0) {
 							const { cards } = await player.gain(list, "gain2");
-
 							if (cards.length <= 2 && player.maxHp < player.getStorage("dcshouqun", 6)) {
 								await player.gainMaxHp();
 							}

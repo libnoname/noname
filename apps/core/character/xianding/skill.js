@@ -22,10 +22,12 @@ const skills = {
 					ai(card) {
 						return 6 - get.value(card);
 					},
+					logSkill: [event.skill, trigger.player],
 					chooseonly: true,
 				})
 				.forResult();
 		},
+		popup: false,
 		async content(event, trigger, player) {
 			await player.discard({ cards: event.cards, discarder: player });
 			const result = await trigger.player
@@ -62,7 +64,7 @@ const skills = {
 				silent: true,
 				async content(event, trigger, player) {
 					const source = player.getStorage("dccuxi_draw");
-					await source.logSkill(event.name, [player]);
+					source.logSkill(event.name, player);
 					trigger.player = source;
 				},
 			},
@@ -88,7 +90,7 @@ const skills = {
 							return "cancel2";
 						} else if (target.hasSkillTag("maixie")) {
 							return 1;
-						} else if (target.getEquips()) {
+						} else if (target.hasCards("e")) {
 							return 0;
 						}
 						return 1;
@@ -110,12 +112,12 @@ const skills = {
 			let phseUse = trigger.getParent(evt => evt.name == "phaseUse" && evt.player == player, true),
 				info = storage.find(info => info.player == target && info.phaseUse == phseUse),
 				infoIndex = storage.findIndex(info => info.player == target && info.phaseUse == phseUse);
+			if (phseUse == undefined) {
+				phseUse = "next";
+			}
 			if (!info) {
 				infoIndex = "add";
 				info = { player: target, phaseUse: phseUse };
-			}
-			if (phseUse == undefined) {
-				phseUse = "next";
 			}
 			if (index == 0) {
 				const result = await target.chooseToDisable({ source: player }).forResult();
@@ -132,7 +134,7 @@ const skills = {
 					})
 					.forResult();
 				if (result?.bool) {
-					target.tempBanSkill(result.skill, "forever");
+					target.disableSkill(`${event.name}_${player.playerid}`, result.skill);
 					info.skill ??= [];
 					info.skill.push(result.skill);
 				}
@@ -179,7 +181,7 @@ const skills = {
 							await info.player.enableEquip(info.equip);
 						}
 						if (info.skill?.length) {
-							info.skill.forEach(skill => delete info.player.storage[`temp_ban_${skill}`]);
+							info.player.enableSkill(`dcduorui_${player.playerid}`);
 						}
 					}
 					player.setStorage("dcduorui", newStorage, true);
@@ -219,12 +221,11 @@ const skills = {
 							position: "hej",
 							selectButton: trigger.player.countDisabledSlot(),
 							allowChooseAll: true,
-							logSkill: [event.skill, [trigger.player]],
+							logSkill: [event.skill, trigger.player],
 							chooseonly: true,
 						})
 						.forResult();
 				},
-				forced: true,
 				popup: false,
 				async content(event, trigger, player) {
 					await trigger.player.discard({ cards: event.cards, discarder: player });
