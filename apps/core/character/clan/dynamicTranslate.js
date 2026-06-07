@@ -3,15 +3,15 @@ import { lib, game, ui, get, ai, _status } from "noname";
 const dynamicTranslates = {
 	clandongxu(player, skill) {
 		const bool = player.storage[skill];
-		let yang = "你可以将你装备区里的一张牌置于其他角色装备区（替换原装备），视为对其使用一张【杀】",
-			yin = "你可以将手牌摸至X（X为你的攻击范围且至多为5），视为使用一张【闪】";
+		let yang = "你可以将一张装备牌置于其他角色装备区（替换原装备）",
+			yin = "你可以将手牌摸至X（X为你的攻击范围且至多为5）";
 		if (bool) {
 			yin = `<span class='bluetext'>${yin}</span>`;
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
 		let start = "转换技,",
-			end = "。";
+			end = "。然后视为使用一张【闪】或令你被抵消的【杀】依然造成伤害。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
 	clanlianzhu(player) {

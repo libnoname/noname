@@ -2,6 +2,93 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//界曹休
+	olqianju: {
+		audio: 2,
+		mod: {
+			globalFrom(from, to, distance) {
+				return distance - from.getDamagedHp();
+			},
+			cardUsable(card, player, num) {
+				if (card.name == "sha" && !game.hasPlayer(target => target != player && !player.inRange(target))) {
+					return num + 1;
+				}
+			},
+		},
+	},
+	olqingxi: {
+		audio: 2,
+		trigger: {
+			source: "damageBegin1",
+		},
+		filter(event, player) {
+			return event.card?.name == "sha" && event.getParent(evt => evt.name == "useCard" && evt.card == event.card, true)?.targets?.includes(event.player);
+		},
+		logTarget: "player",
+		check(event, player) {
+			return get.damageEffect(event.player, player, player) > 0;
+		},
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+			} = event;
+			let result;
+			if (player.getEquips(1).length > 0) {
+				result = { index: 2 };
+			} else if (!target.hasDiscardableCards(target, "he") || !player.getAttackRange()) {
+				result = { index: 1 };
+			} else {
+				result = await target
+					.chooseControl({
+						choiceList: [`弃置${get.cnNumber(player.getAttackRange())}张牌`, `此次伤害+1`],
+						choice: (() => {
+							if (target.hp == 1) {
+								return 0;
+							}
+							if (player.getAttackRange() > 2) {
+								return 1;
+							}
+							return 0;
+						})(),
+						prompt: `${get.translation(player)}对你发动了【倾袭】，请选择一项`,
+					})
+					.forResult();
+			}
+			if (typeof result.index !== "number") {
+				return;
+			}
+			if (result.index % 2 == 0) {
+				await target
+					.chooseToDiscard({
+						forced: true,
+						position: "he",
+						selectCard: player.getAttackRange(),
+					})
+					.forResult();
+			}
+			if (result.index > 0) {
+				trigger.num++;
+			}
+			if (result.index == 2) {
+				await player.modedDiscard({ cards: player.getEquips(1) });
+			}
+		},
+	},
+	//界关平
+	oljieyong: {
+		audio: 2,
+		enable: ["chooseToUse", "chooseToRespond"],
+		viewAsFilter(player) {
+			return player.countCards("h", { color: "red" }) == 1;
+		},
+		viewAs: {
+			name: "sha",
+		},
+		filterCard(card, player) {
+			return get.color(card) == "red";
+		},
+		selectCard: -1,
+	},
 	//魔张飞
 	olzhuohun: {
 		audio: 6,
@@ -165,13 +252,13 @@ const skills = {
 						const result = await player
 							.chooseTarget({
 								prompt: `瞋视：为${get.translation(card)}增加任意个目标`,
-								selectTarget: [1, Infinity], 
+								selectTarget: [1, Infinity],
 								filterTarget(card, player, target) {
 									return !get.event().targets.includes(target) && get.hpColor(target) != get.hpColor(player) && lib.filter.targetEnabled2(get.event().card, player, target);
 								},
 								ai(target) {
 									return get.effect(target, get.event().card, get.player(), get.player());
-								}
+								},
 							})
 							.set("targets", targets)
 							.set("card", card)
@@ -1523,11 +1610,13 @@ const skills = {
 						},
 						ai(target) {
 							return get.recoverEffect(target, get.player(), get.player());
-						}
+						},
 					})
 					.forResult();
 				if (result?.bool && result.targets?.length) {
-					const { targets: [target] } = result;
+					const {
+						targets: [target],
+					} = result;
 					player.line(target, "green");
 					await target.recover();
 					player.tempBanSkill(event.name);

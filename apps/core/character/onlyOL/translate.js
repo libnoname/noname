@@ -1,6 +1,16 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	ol_caoxiu: "OL界曹休",
+	ol_caoxiu_prefix: "OL界",
+	olqianju: "千驹",
+	olqianju_info: "锁定技，你每损失1点体力，你计算与其他角色的距离便-1。若全场角色均在你的攻击范围内，你出牌阶段使用【杀】的次数+1。",
+	olqingxi: "倾袭",
+	olqingxi_info: "当你使用杀对目标角色造成伤害时，你可令其选择一项：1.弃置你攻击范围张牌；2.此【杀】对其伤害+1。若你的装备区有武器牌，则改为其依次执行这两项，然后弃置此牌。",
+	ol_guanping: "OL界关平",
+	ol_guanping_prefix: "OL界",
+	oljieyong: "竭勇",
+	oljieyong_info: "你可将手牌中最后一张红色牌当【杀】使用或打出",
 	dm_zhangfei: "魔张飞",
 	dm_zhangfei_prefix: "魔",
 	olzhuohun: "灼魂",
