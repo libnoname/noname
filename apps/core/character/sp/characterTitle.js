@@ -230,6 +230,7 @@ export default {
 	ol_fanyufeng: "红鸾寡宿",
 	wangyan: "玄虚陆沉",
 	huanshujun: "环佩解君",
+	dc_huanhuaijin: "慧心育麟",
 	ol_hanfu: "挈瓶之知",
 	wangkuang: "任侠纵横",
 	caoyu: "燕王",

@@ -49,6 +49,12 @@ const characters = {
 		hp: 3,
 		skills: ["olhuanpei", "olwenyi", "olmiaoxin"],
 	},
+	dc_huanhuaijin: {
+		sex: "female",
+		group: "wei",
+		hp: 3,
+		skills: ["dc_lianyou", "dc_cili"],
+	},
 	sunyuan: {
 		sex: "female",
 		group: "wu",
