@@ -6137,6 +6137,7 @@ const skills = {
 				async content(event, trigger, player) {
 					const target = trigger.player;
 					const cards = player.getCards("h", card => card.hasGaintag("kousheng"));
+					event.cards = cards;
 					const str = get.translation(player);
 					await player.showCards(cards, `${str}的【寇旌】牌`);
 					if (!target.hasCards("h")) {
@@ -6153,7 +6154,7 @@ const skills = {
 									return false;
 								}
 								const hs1 = player.getCards("h");
-								const hs2 = _status.event.getParent()?.cards;
+								const hs2 = _status.event.getParent()?.cards || [];
 								if (hs2?.length >= player.hp) {
 									return true;
 								}
