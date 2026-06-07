@@ -541,10 +541,10 @@ export default {
 			notarget: true,
 			nodelay: true,
 			defaultYingbianEffect: "draw",
-			content() {
+			async content(event, trigger, player) {
 				event.result = "shaned";
 				event.getParent().delayx = false;
-				game.delay(0.5);
+				await game.delay(0.5);
 			},
 			ai: {
 				order: 3,
@@ -583,8 +583,8 @@ export default {
 			modTarget(card, player, target) {
 				return target.isDamaged();
 			},
-			content() {
-				target.recover();
+			async content(event, trigger, player) {
+				await event.target.recover();
 			},
 			ai: {
 				basic: {
@@ -1274,8 +1274,8 @@ export default {
 			ignoreTarget(card, player, target) {
 				return target.isHealthy();
 			},
-			content() {
-				target.recover();
+			async content(event, trigger, player) {
+				event.target.recover();
 			},
 			ai: {
 				basic: {
@@ -2087,21 +2087,22 @@ export default {
 				return target === player;
 			},
 			modTarget: true,
-			content() {
+			async content(event, trigger, player) {
+				const { target } = event;
 				if (get.is.versus()) {
 					if (game.friend.includes(target)) {
 						if (game.friend.length < game.enemy.length) {
-							target.draw(3);
+							await target.draw(3);
 							return;
 						}
 					} else {
 						if (game.friend.length > game.enemy.length) {
-							target.draw(3);
+							await target.draw(3);
 							return;
 						}
 					}
 				}
-				target.draw(2);
+				await target.draw(2);
 			},
 			ai: {
 				wuxie(target, card, player, viewer) {
