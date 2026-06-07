@@ -24192,7 +24192,7 @@ const skills = {
 		async content(event, trigger, player) {
 			player
 				.judge(card => {
-					const evt = get.event().evtTrigger;
+					const evt = (get.event().name == "judge" ? get.event() : get.event().getParent("judge")).evtTrigger;
 					if (!evt.source?.isIn() || !evt.card || typeof get.info("dczhantao").getNumber(evt.card) !== "number") {
 						return 0;
 					}

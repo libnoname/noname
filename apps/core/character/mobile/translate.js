@@ -1,6 +1,12 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	mb_dongbai: "手杀董白",
+	mb_dongbai_prefix: "手杀",
+	mblianzhu: "连诛",
+	mblianzhu_info: "①出牌阶段限一次，你可以展示一张牌并将此牌交给一名其他角色。若如此做，你对持有此牌的角色获得以下效果直至出牌阶段结束：1.你对其使用牌无距离次数限制；2.当你对其造成伤害后，你可以获得此牌。②一名其他角色于此阶段内因此技能获得此牌后，其须选择一项：1.交给你一张除此牌以外的其他牌，然后将此牌交给其上家角色；2.令你摸两张牌。",
+	mbxiahui: "黠慧",
+	mbxiahui_info: "锁定技，①黑色牌不计入你的手牌上限；②当其他角色获得“连诛”牌或者你的黑色牌时，其不能使用、打出或弃置这些牌直到其体力值减少为止。",
 	mb_zhugeguo: "手杀诸葛果",
 	mb_zhugeguo_prefix: "手杀",
 	mbqirang: "祈禳",

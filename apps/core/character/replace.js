@@ -72,7 +72,7 @@ window.noname_character_replace = {
 	dingfeng: ["dingfeng", "star_dingfeng", "tw_dingfeng", "std_dingfeng", "old_dingfeng", "zj_dingfeng"],
 	dingshangwan: ["dingshangwan", "ol_dingshangwan", "huan_dingshangwan"],
 	dingyuan: ["ol_dingyuan", "dingyuan"],
-	dongbai: ["dongbai", "re_dongbai", "jsrg_dongbai"],
+	dongbai: ["dongbai", "re_dongbai", "mb_dongbai", "jsrg_dongbai"],
 	dongcheng: ["re_dongcheng", "dc_sb_dongcheng", "dongcheng"],
 	dongwan: ["dongwan", "shinin_dongwan"],
 	dongxie: ["ol_dongxie", "dongxie"],

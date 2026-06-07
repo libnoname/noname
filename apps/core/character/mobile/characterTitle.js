@@ -1,4 +1,5 @@
 export default {
+	mb_dongbai: "魔姬",
 	//mb_shen_machao: "",
 	//mb_caochun: "",
 	//mb_zhugeguo: "",

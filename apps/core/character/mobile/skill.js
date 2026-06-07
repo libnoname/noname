@@ -2,6 +2,234 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//董白
+	mblianzhu: {
+		audio: "lianzhu",
+		enable: "phaseUse",
+		usable: 1,
+		filterCard: true,
+		filterTarget: lib.filter.notMe,
+		lose: false,
+		discard: false,
+		delay: false,
+		async content(event, trigger, player) {
+			const { cards: [card], target } = event;
+			await player.showCards(card);
+			player.addTempSkill(event.name + "_effect", "phaseChange");
+			target.addTempSkill(event.name + "_mark", "phaseChange");
+			const next = player.give(card, target);
+			next.gaintag.add(event.name);
+			await next;
+			/**@type { Player | null } */
+			let targetx = target;
+			while(targetx && targetx != player) {
+				const prevPlayer = targetx.getPrevious();
+				/** @type { Partial<Result> } */
+				let result;
+				if (!targetx.hasCards("he", cardx => cardx != card)) {
+					result = { bool: false };
+				} else {
+					result = await targetx
+						.chooseToGive({
+							prompt: `连诛：交给${get.translation(player)}一张不为${get.translation(card)}的牌${prevPlayer ? `然后将连诛牌交给${get.translation(prevPlayer)}` : "" }，否则其摸两张牌`,
+							target: player,
+							filterCard(card, player) {
+								// @ts-ignore
+								return card !== get.event().card;
+							},
+							position: "he",
+							ai(card) {
+								return 5.5 - get.value(card);
+							}
+						})
+						.set("card", card)
+						.forResult();
+				}
+				if (result?.bool) {
+					if (prevPlayer) {
+						prevPlayer.addTempSkill(event.name + "_mark", "phaseChange");
+						const next = targetx.give(card, prevPlayer);
+						next.gaintag.add(event.name);
+						await next;
+					}
+					targetx = prevPlayer;
+				} else {
+					await player.draw(2);
+					break;
+				}
+			}
+		},
+		ai: {
+			order: 8,
+			result: {
+				target(player, target) {
+					if (target == player.getPrevious()) {
+						return 1;
+					}
+				}
+			}
+		},
+		subSkill: {
+			mark: {
+				init(player, skill) {
+					player.addTip(skill, "连诛");
+				},
+				onremove(player, skill) {
+					player.removeGaintag("mblianzhu");
+					player.removeTip(skill);
+				},
+				charlotte: true,
+				firstDo: true,
+				silent: true,
+				trigger: {
+					player: "loseEnd",
+					global: ["loseAsycnEnd", "equipEnd", "gainEnd", "addToExpansionEnd", "addJudgeEnd"],
+				},
+				filter(event, player) {
+					const cards = event.getl?.(player)?.hs;
+					const map = event.getl?.(player)?.gaintag_map;
+					return cards.some(i => map[i.cardid]?.includes("mblianzhu")) && !player.hasCards("h", card => card.hasGaintag("mblianzhu"));
+				},
+				async content(event, trigger, player) {
+					player.removeSkill(event.name);
+				}
+			},
+			effect: {
+				charlotte: true,
+				audio: "mblianzhu",
+				mod: {
+					cardUsableTarget(card, player, target) {
+						if (target.hasCards("h", card => card.hasGaintag("mblianzhu"))) {
+							return true;
+						}
+					},
+					targetInRange(card, player, target) {
+						if (target.hasCards("h", card => card.hasGaintag("mblianzhu"))) {
+							return true;
+						}
+					}
+				},
+				trigger: {
+					source: "damageSource",
+				},
+				filter(event, player) {
+					return event.player.isIn() && event.player.hasCards("h", card => card.hasGaintag("mblianzhu"));
+				},
+				prompt2: "获得其连诛牌",
+				check: () => true,
+				logTarget: "player",
+				async content(event, trigger, player) {
+					const cards = event.targets[0].getCards("h", card => card.hasGaintag("mblianzhu"));
+					player.addTempSkill("mblianzhu_mark", "phaseChange");
+					await player.gain({ cards, animate: "giveAuto", source: event.targets[0], gaintag: ["mblianzhu"] });
+				},
+			}
+		},
+	},
+	mbxiahui: {
+		audio: "xiahui",
+		mod: {
+			ignoredHandcard(card, player) {
+				if (get.color(card) == "black") {
+					return true;
+				}
+			},
+			cardDiscardable(card, player, name) {
+				if (name == "phaseDiscard" && get.color(card) == "black") {
+					return false;
+				}
+			},
+		},
+		trigger: {
+			global: "gainAfter",
+			player: "loseAsyncAfter",
+		},
+		forced: true,
+		popup: false,
+		filter(event, player) {
+			if (event.name == "loseAsync") {
+				if (event.type != "gain") {
+					return false;
+				}
+				return game.hasPlayer(function (current) {
+					if (current == player) {
+						return false;
+					}
+					const hs = current.getCards("h"),
+						cards = event.getl(player).cards2;
+					const cardsx = event.getg(current);
+					for (const i of cardsx) {
+						if (i.hasGaintag("mblianzhu")) {
+							return true;
+						}
+						if (hs.includes(i) && cards.includes(i) && get.color(i, player) == "black") {
+							return true;
+						}
+					}
+					return false;
+				});
+			}
+			if (event.player != player) {
+				const hs = event.player.getCards("h");
+				const evt = event.getl(player);
+				return evt?.cards2?.filter(function (card) {
+					return card.hasGaintag("mblianzhu") || (hs.includes(card) && get.color(card, player) == "black");
+				}).length > 0;
+			}
+			return false;
+		},
+		async content(event, trigger, player) {
+			const cards = trigger.getl(player).cards2;
+			game.filterPlayer().forEach(function (current) {
+				if (current == player) {
+					return;
+				}
+				const hs = current.getCards("h"),
+					cardsx = trigger.getg(current).filter(function (card) {
+						return hs.includes(card) && (card.hasGaintag("mblianzhu") || (cards.includes(card) && get.color(card, player) == "black"));
+					});
+				if (cardsx.length > 0) {
+					current.addSkill("mbxiahui_effect");
+					current.addGaintag(cardsx, "mbxiahui_effect");
+				}
+			});
+		},
+		subSkill: {
+			effect: {
+				mark: true,
+				intro: {
+					content: "不能使用、打出或弃置标记牌",
+				},
+				mod: {
+					cardDiscardable(card, player) {
+						if (card.hasGaintag("mbxiahui_effect")) {
+							return false;
+						}
+					},
+					cardEnabled2(card, player) {
+						if (get.itemtype(card) == "card" && card.hasGaintag("mbxiahui_effect")) {
+							return false;
+						}
+					},
+				},
+				trigger: {
+					player: "changeHp",
+				},
+				forced: true,
+				popup: false,
+				charlotte: true,
+				filter(event) {
+					return event.changedHp < 0;
+				},
+				async content(event, trigger, player) {
+					player.removeSkill(event.name);
+				},
+				onremove(player, skill) {
+					player.removeGaintag(skill);
+				},
+			}
+		},
+	},
 	// 诸葛果
 	mbqirang: {
 		audio: 2,
