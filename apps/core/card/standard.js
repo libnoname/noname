@@ -2692,7 +2692,7 @@ export default {
 			enable: true,
 			selectTarget: 1,
 			postAi(targets) {
-				return targets.length === 1 && targets[0].countCards("j");
+				return targets.length === 1 && targets[0].hasCards("j");
 			},
 			filterTarget(card, player, target) {
 				if (player === target) {
@@ -2701,48 +2701,63 @@ export default {
 				return target.hasCard(card => lib.filter.canBeDiscarded(card, player, target), get.is.single() ? "he" : "hej");
 			},
 			defaultYingbianEffect: "add",
-			content() {
-				"step 0";
+			/**
+			 * @type {ContentFuncByAll}
+			 */
+			async content(event, trigger, player) {
+				const target = event.target;
+				let result;
 				if (get.is.single()) {
-					let bool1 = target.countDiscardableCards(player, "h"),
-						bool2 = target.countDiscardableCards(player, "e");
+					const bool1 = target.hasDiscardableCards(player, "h");
+					const bool2 = target.hasDiscardableCards(player, "e");
 					if (bool1 && bool2) {
-						player
-							.chooseControl("手牌区", "装备区")
-							.set("ai", function () {
-								return Math.random() < 0.5 ? 1 : 0;
+						result = await player
+							.chooseControl({
+								prompt: `弃置${get.translation(target)}装备区的一张牌，或观看其手牌并弃置其中的一张牌。`,
+								controls: ["手牌区", "装备区"],
+								ai() {
+									return Math.random() < 0.5 ? 1 : 0;
+								}
 							})
-							.set("prompt", "弃置" + get.translation(target) + "装备区的一张牌，或观看其手牌并弃置其中的一张牌。");
+							.forResult();
 					} else {
-						event._result = { control: bool1 ? "手牌区" : "装备区" };
+						result = { control: bool1 ? "手牌区" : "装备区" };
 					}
 				} else {
-					event._result = { control: "所有区域" };
+					result = { control: "所有区域" };
 				}
-				("step 1");
-				let pos,
-					vis = "visible";
+				let pos;
+				let vis = true;
 				if (result.control === "手牌区") {
 					pos = "h";
 				} else if (result.control === "装备区") {
 					pos = "e";
 				} else {
 					pos = "hej";
-					vis = undefined;
+					vis = false;
 				}
-				if (target.countDiscardableCards(player, pos)) {
-					player.discardPlayerCard(pos, target, true, vis).set("target", target).set("complexSelect", false).set("ai", lib.card.guohe.ai.button);
+				if (target.hasDiscardableCards(player, pos)) {
+					await player
+						.discardPlayerCard({
+							target,
+							position: pos,
+							forced: true,
+							visible: vis,
+						})
+						.set("target", target)
+						.set("complexSelect", false)
+						.set("ai", lib.card.guohe.ai.button);
 				}
 			},
 			ai: {
 				wuxie: (target, card, player, viewer, status) => {
 					if (
-						!target.countCards("hej") ||
+						!target.hasCards("hej") ||
 						status * get.attitude(viewer, player._trueMe || player) > 0 ||
 						(target.hp > 2 &&
 							!target.hasCard(i => {
-								let val = get.value(i, target),
-									subtypes = get.subtypes(i);
+								const val = get.value(i, target);
+								const subtypes = get.subtypes(i);
 								if (val < 8 && target.hp < 2 && !subtypes.includes("equip2") && !subtypes.includes("equip5")) {
 									return false;
 								}
@@ -2758,9 +2773,9 @@ export default {
 					useful: (card, i) => 10 / (3 + i),
 					value: (card, player) => {
 						let max = 0;
-						game.countPlayer(cur => {
-							max = Math.max(max, lib.card.guohe.ai.result.target(player, cur) * get.attitude(player, cur));
-						});
+						for (const current of game.filterPlayer()) {
+							max = Math.max(max, lib.card.guohe.ai.result.target(player, current) * get.attitude(player, current));
+						}
 						if (max <= 0) {
 							return 5;
 						}
@@ -2772,28 +2787,26 @@ export default {
 						return 0;
 					}
 					if (
-						game.hasPlayer(function (current) {
-							return !targets.includes(current) && lib.filter.targetEnabled2(card, player, current) && get.effect(current, card, player, player) > 0;
-						})
+						game.hasPlayer(current => !targets.includes(current) && lib.filter.targetEnabled2(card, player, current) && get.effect(current, card, player, player) > 0)
 					) {
 						return 6;
 					}
 					return 0;
 				},
 				button: button => {
-					let player = _status.event.player,
-						target = _status.event.target;
+					const player = _status.event.player;
+					const target = _status.event.target;
 					if (!lib.filter.canBeDiscarded(button.link, player, target)) {
 						return 0;
 					}
-					let att = get.attitude(player, target),
-						val = get.buttonValue(button),
-						pos = get.position(button.link),
-						name = get.name(button.link);
+					const att = get.attitude(player, target);
+					let val = get.buttonValue(button);
+					const pos = get.position(button.link);
+					const name = get.name(button.link);
 					if (pos === "j") {
-						let viewAs = button.link.viewAs;
+						const viewAs = button.link.viewAs;
 						if (viewAs === "lebu") {
-							let needs = target.needsToDiscard(2);
+							const needs = target.needsToDiscard(2);
 							val *= 1.08 + 0.2 * needs;
 						} else if (viewAs === "shandian" || viewAs === "fulei") {
 							val /= 2;
@@ -2805,13 +2818,13 @@ export default {
 					if (pos !== "e") {
 						return val;
 					}
-					let sub = get.subtypes(button.link);
+					const sub = get.subtypes(button.link);
 					if (sub.includes("equip1")) {
 						return (val * Math.min(3.6, target.hp)) / 3;
 					}
 					if (sub.includes("equip2")) {
 						if (name === "baiyin" && pos === "e" && target.isDamaged()) {
-							let by = 3 - 0.6 * Math.min(5, target.hp);
+							const by = 3 - 0.6 * Math.min(5, target.hp);
 							return get.sgn(get.recoverEffect(target, player, player)) * by;
 						}
 						return 1.57 * val;
@@ -2825,14 +2838,12 @@ export default {
 					if (sub.includes("equip4")) {
 						return val / 2;
 					}
-					if (
-						sub.includes("equip3") &&
-						!game.hasPlayer(cur => {
-							return !cur.inRange(target) && get.attitude(cur, target) < 0;
-						})
-					) {
-						return 0.4 * val;
-					}
+						if (
+							sub.includes("equip3") &&
+							!game.hasPlayer(cur => !cur.inRange(target) && get.attitude(cur, target) < 0)
+						) {
+							return 0.4 * val;
+						}
 					return val;
 				},
 				result: {
@@ -2860,23 +2871,19 @@ export default {
 								if (target.hp === 1 && !target.hujia) {
 									return 1.6;
 								}
-							}
-							if (
-								es.some(card => {
-									return get.value(card, target) < 0;
-								})
-							) {
-								return 1;
-							}
+								}
+								if (
+									es.some(card => get.value(card, target) < 0)
+								) {
+									return 1;
+								}
 							return -1.5;
 						} else {
 							const noh = hs.length === 0 || target.hasSkillTag("noh");
 							const noe = es.length === 0 || target.hasSkillTag("noe");
-							const noe2 =
-								noe ||
-								!es.some(card => {
-									return get.value(card, target) > 0;
-								});
+								const noe2 =
+									noe ||
+									!es.some(card => get.value(card, target) > 0);
 							const noj =
 								js.length === 0 ||
 								!js.some(card => {
