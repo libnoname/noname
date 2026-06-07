@@ -3017,59 +3017,55 @@ export default {
 			complexSelect: true,
 			complexTarget: true,
 			multicheck() {
-				var card = { name: "sha", isCard: true };
-				return game.hasPlayer(function (current) {
-					if (current.getEquips(1).length > 0) {
-						return game.hasPlayer(function (current2) {
-							return current.inRange(current2) && lib.filter.targetEnabled(card, current, current2);
-						});
+				const card = { name: "sha", isCard: true };
+				return game.hasPlayer(current => {
+					if (!current.getEquips(1).length) {
+						return false;
 					}
+					return game.hasPlayer(current2 => current.inRange(current2) && !!lib.filter.targetEnabled(card, current, current2));
 				});
 			},
 			filterTarget(card, player, target) {
-				var card = { name: "sha", isCard: true };
+				const sha = { name: "sha", isCard: true };
 				return (
 					player !== target &&
 					target.getEquips(1).length > 0 &&
-					game.hasPlayer(function (current) {
-						return target !== current && target.inRange(current) && lib.filter.targetEnabled(card, target, current);
-					})
+					game.hasPlayer(current => target !== current && target.inRange(current) && lib.filter.targetEnabled(sha, target, current))
 				);
 			},
 			filterAddedTarget(card, player, target, preTarget) {
-				var card = { name: "sha", isCard: true };
-				return target !== preTarget && preTarget.inRange(target) && lib.filter.targetEnabled(card, preTarget, target);
+				const sha = { name: "sha", isCard: true };
+				return target !== preTarget && preTarget.inRange(target) && lib.filter.targetEnabled(sha, preTarget, target);
 			},
-			content() {
-				"step 0";
-				if (event.directHit || !event.addedTarget || (!_status.connectMode && lib.config.skip_shan && !target.hasSha())) {
-					event.directfalse = true;
-				} else {
-					target
-						.chooseToUse("对" + get.translation(event.addedTarget) + "使用一张杀，或令" + get.translation(player) + "获得你的武器牌", function (card, player) {
+			async content(event, trigger, player) {
+				const target = event.target;
+				let result = { bool: false };
+				if (!event.directHit && event.addedTarget && (_status.connectMode || !lib.config.skip_shan || target.hasSha())) {
+					result = await target
+						.chooseToUse(`对${get.translation(event.addedTarget)}使用一张杀，或令${get.translation(player)}获得你的武器牌`, (card, player, event) => {
 							if (get.name(card) !== "sha") {
 								return false;
 							}
-							return lib.filter.filterCard.apply(this, arguments);
+							return lib.filter.filterCard(card, player, event);
 						})
 						.set("targetRequired", true)
 						.set("complexSelect", true)
 						.set("complexTarget", true)
-						.set("filterTarget", function (card, player, target) {
+						.set("filterTarget", (card, player, target) => {
 							if (target !== _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
 								return false;
 							}
-							return lib.filter.filterTarget.apply(this, arguments);
+							return lib.filter.filterTarget(card, player, target);
 						})
 						.set("sourcex", event.addedTarget)
 						.set("addCount", false)
-						.set("respondTo", [player, card]);
+						.set("respondTo", [player, event.card])
+						.forResult();
 				}
-				("step 1");
-				if (event.directfalse || result.bool === false) {
+				if (!result.bool) {
 					const cards = target.getGainableCards(player, "e", card => get.subtypes(card)?.includes("equip1"));
 					if (cards.length) {
-						player.gain(cards, target, "give", "bySelf");
+						await player.gain(cards, target, "give", "bySelf");
 					}
 				}
 			},
@@ -3091,45 +3087,39 @@ export default {
 						}
 						return (
 							(player.hasSkillTag("noe") ? 0.32 : 0.15) *
-							target.getEquips(1).reduce((num, i) => {
-								return num + get.value(i, player);
-							}, 0)
+							target.getEquips(1).reduce((num, i) => num + get.value(i, player), 0)
 						);
 					},
 					target: (player, target, card) => {
-						let targets = ui.selected.targets.slice();
+						const targets = ui.selected.targets.slice();
 						if (_status.event.preTarget) {
 							targets.add(_status.event.preTarget);
 						}
 						if (targets.length) {
-							let preTarget = targets.at(-1),
-								pre = _status.event.getTempCache("jiedao_result", preTarget.playerid);
+							const preTarget = targets.at(-1);
+							const pre = _status.event.getTempCache("jiedao_result", preTarget.playerid);
 							if (pre && pre.target && pre.target.isIn() && pre.card === ai.getCacheKey(card, true)) {
 								return target === pre.target ? pre.res : 0;
 							}
 							return (get.effect(target, { name: "sha" }, preTarget, target) / get.attitude(target, target)) * preTarget.mayHaveSha(player, "use", null, "odds");
 						}
-						let odds = target.mayHaveSha(player, "use", null, "odds"),
-							addTar = null,
-							sha = game
-								.filterPlayer(cur => {
-									return get.info({ name: "jiedao" }).filterAddedTarget(null, player, cur, target);
-								})
-								.reduce((num, current) => {
-									let eff = get.effect(current, { name: "sha" }, target, player);
-									if (eff < num) {
-										return num;
-									}
-									addTar = current;
-									return eff;
-								}, -Infinity);
+						const odds = target.mayHaveSha(player, "use", null, "odds");
+						let addTar = null;
+						let sha = game
+							.filterPlayer(cur => get.info({ name: "jiedao" }).filterAddedTarget(null, player, cur, target))
+							.reduce((num, current) => {
+								const eff = get.effect(current, { name: "sha" }, target, player);
+								if (eff < num) {
+									return num;
+								}
+								addTar = current;
+								return eff;
+							}, -Infinity);
 						if (addTar) {
 							sha = get.effect(addTar, { name: "sha" }, target, target) / 10;
 						}
 						let res =
-							target.getEquips(1).reduce((num, i) => {
-								return num + get.value(i, target);
-							}, 0) / (target.hasSkillTag("noe") ? -2 : -4);
+							target.getEquips(1).reduce((num, i) => num + get.value(i, target), 0) / (target.hasSkillTag("noe") ? -2 : -4);
 						if (odds > 0.06 && sha > res) {
 							res += (sha - res) * odds;
 						}
