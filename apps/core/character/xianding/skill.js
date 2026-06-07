@@ -24083,7 +24083,8 @@ const skills = {
 		async content(event, trigger, player) {
 			player
 				.judge(card => {
-					const evt = get.event().evtTrigger;
+					const eventName = get.event().eventName;
+					const evt = get.event().getParent(eventName).getTrigger();
 					if (!evt.source?.isIn() || !evt.card || typeof get.info("dczhantao").getNumber(evt.card) !== "number") {
 						return 0;
 					}
@@ -24094,7 +24095,8 @@ const skills = {
 				})
 				.set("judge2", result => result.bool)
 				.set("callback", event => {
-					const evt = event.getParent().evtTrigger;
+					const evtx = event.getParent();
+					const evt = event.getParent(evtx.eventName).getTrigger();
 					if (!evt.source?.isIn() || !evt.card || typeof get.info("dczhantao").getNumber(evt.card) !== "number") {
 						return;
 					}
@@ -24106,7 +24108,7 @@ const skills = {
 						}
 					}
 				})
-				.set("evtTrigger", trigger);
+				.set("eventName", event.name);
 		},
 	},
 	dcanjing: {
