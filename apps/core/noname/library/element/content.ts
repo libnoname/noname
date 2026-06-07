@@ -1586,7 +1586,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 						ui.roundmenu.style.display = "";
 					}
 					if (ui.backgroundMusic && !isNaN(ui.backgroundMusic.duration)) {
-						ui.backgroundMusic.play();
+						Promise.resolve(ui.backgroundMusic.play()).catch(() => void 0);
 					}
 					hitsound_audio.remove();
 					resolve({
@@ -1821,7 +1821,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 					dialog.close();
 				}
 				if (ui.backgroundMusic && !isNaN(ui.backgroundMusic.duration)) {
-					ui.backgroundMusic.play();
+					Promise.resolve(ui.backgroundMusic.play()).catch(() => void 0);
 				}
 			},
 			event.videoId,
