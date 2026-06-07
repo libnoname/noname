@@ -5911,31 +5911,30 @@ const skills = {
 	},
 	nsbaiyi: {
 		trigger: { player: "phaseDiscardBefore" },
-		forced: true,
 		filter(event, player) {
-			return player.storage.nsqinxue && player.storage.nsqinxue.length;
+			return player.getStorage("nsqinxue_mark").length > 0;
 		},
+		forced: true,
 		async content(event, trigger, player) {
 			let result;
-
 			trigger.cancel();
-
-			const num = player.storage.nsqinxue.length;
-			result = await player.chooseToDiscard("白衣：请弃置" + get.cnNumber(num) + "张牌", "he", true, num).forResult();
-
-			if (!result.bool || !result.cards?.length) {
+			const num = player.getStorage("nsqinxue_mark").length;
+			if (!num) {
 				return;
 			}
-
+			result = await player.chooseToDiscard("白衣：请弃置" + get.cnNumber(num) + "张牌", "he", true, num).forResult();
+			if (!result?.bool || !result.cards?.length) {
+				return;
+			}
 			let goon = true;
-			if (result.cards.length === 3) {
+			if (result.cards?.length === 3) {
 				const types = new Set();
 				for (const card of result.cards) {
-					types.add(get.type(card, "trick"));
+					types.add(get.type2(card));
 				}
-				if (types.size === 3 && trigger.getParent().skill != "nsbaiyi") {
+				if (types.size === 3 && trigger.getParent("phase")?.skill != "nsbaiyi") {
 					goon = false;
-					await player.insertPhase();
+					player.insertPhase();
 				}
 			}
 
@@ -5943,18 +5942,20 @@ const skills = {
 				return;
 			}
 
-			const cards = get.cards(result.cards.length);
-			result = await player.chooseCardButton(cards, "获得一张牌", true).forResult();
+			const cards = get.cards(result.cards.length, true);
+			result = await player.chooseCardButton(cards, "白衣：获得其中一张牌", true).forResult();
 
-			if (result.bool && result.links?.length) {
+			if (result?.bool && result.links?.length) {
 				await player.gain(result.links, "draw");
-				for (const card of cards) {
-					if (!result.links.includes(card)) {
-						card.discard();
-					}
+				const discard = cards.filter(card => !result.links.includes(card));
+				if (discard.length) {
+					player.$throw(discard, 1000);
+					await game.cardsDiscard(discard);
+					game.log(discard, "进入了弃牌堆");
 				}
 			}
 		},
+		derivation: "nsqinxue",
 		ai: {
 			threaten: 1.5,
 			combo: "nsqinxue",
@@ -5962,20 +5963,17 @@ const skills = {
 	},
 	nsqinxue: {
 		trigger: { player: "useCard" },
-		init(player) {
-			player.storage.nsqinxue = [];
-		},
 		forced: true,
 		filter(event, player) {
-			var type = get.type(event.card, "trick");
-			if (player.storage.nsqinxue.includes(type)) {
+			const type = get.type2(event.card);
+			if (player.getStorage("nsqinxue_mark").includes(type)) {
 				return false;
 			}
 			return ["basic", "trick", "equip"].includes(type);
 		},
 		async content(event, trigger, player) {
 			let card;
-			const type0 = get.type(trigger.card, "trick");
+			const type0 = get.type2(trigger.card);
 			let type = null;
 
 			switch (type0) {
@@ -5994,25 +5992,23 @@ const skills = {
 			}
 
 			card = get.cardPile(cardx => {
-				return get.type(cardx, "trick") == type;
+				return get.type2(cardx) == type;
 			});
 
 			if (card) {
+				player.addTempSkill("nsqinxue_mark");
+				player.markAuto("nsqinxue_mark", [type0]);
 				await player.gain({
 					cards: [card],
 					animate: "gain2",
 				});
-				player.storage.nsqinxue.push(type0);
 			}
 		},
-		group: "nsqinxue_clear",
 		subSkill: {
-			clear: {
-				trigger: { global: "phaseAfter" },
-				silent: true,
-				async content(event, trigger, player) {
-					player.storage.nsqinxue = [];
-				},
+			mark: {
+				charlotte: true,
+				onremove: true,
+				intro: { content: "【勤学】已触发类别：$" },
 			},
 		},
 	},

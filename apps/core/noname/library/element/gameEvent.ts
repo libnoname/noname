@@ -9,7 +9,7 @@ type triggerSkillTodo = {
 	skill: string;
 	player: Player;
 	priority: number;
-	indexedData?: Player | true;
+	indexedData?: any;
 };
 type triggerPlayerTodo = {
 	player: Player | "firstDo" | "lastDo";
@@ -360,61 +360,62 @@ export class GameEvent implements PromiseLike<void> {
 			const firstDo = evt.doingList.find(i => i.player === "firstDo");
 			const lastDo = evt.doingList.find(i => i.player === "lastDo");
 
-			skills.forEach(skill => {
+			for (const skill of skills) {
 				const info = lib.skill[skill];
 				if (!info.trigger) {
-					return;
+					continue;
 				}
 				if (
 					!Object.keys(info.trigger).some(i => {
-						if (Array.isArray(info.trigger[i])) {
+						if (Array.isArray(info.trigger?.[i])) {
 							return info.trigger[i].includes(evt.triggername);
 						}
-						return info.trigger[i] === evt.triggername;
+						return info.trigger?.[i] === evt.triggername;
 					})
 				) {
-					return;
+					continue;
 				}
 				let toadds: triggerSkillTodo[] = [];
+				const priority = get.priority(skill)
 				if (typeof info.getIndex === "function") {
-					const indexedResult = info.getIndex(evt.getTrigger(), player, evt.triggername);
-					if (Array.isArray(indexedResult)) {
-						indexedResult.forEach(indexedData => {
-							toadds.push({
-								skill: skill,
-								player: player,
-								priority: get.priority(skill),
-								indexedData,
-							});
-						});
-					} else if (typeof indexedResult === "number" && indexedResult > 0) {
+					const indexedResult = info.getIndex<any>(evt.getTrigger(), player, evt.triggername);
+					if (typeof indexedResult === "number") {
 						for (let i = 0; i < indexedResult; i++) {
 							toadds.push({
-								skill: skill,
-								player: player,
-								priority: get.priority(skill),
+								skill,
+								player,
+								priority,
 								indexedData: true,
+							});
+						}
+					} else if (indexedResult != null && typeof indexedResult !== "string" && typeof indexedResult[Symbol.iterator] === "function") {
+						for (const indexedData of indexedResult) {
+							toadds.push({
+								skill,
+								player,
+								priority,
+								indexedData,
 							});
 						}
 					}
 				} else {
 					toadds.push({
-						skill: skill,
-						player: player,
-						priority: get.priority(skill),
+						skill,
+						player,
+						priority,
 					});
 				}
 				const map = info.firstDo ? firstDo : info.lastDo ? lastDo : doing;
 				if (!map) {
-					return;
+					continue;
 				}
 				for (const toadd of toadds) {
 					if (!toadd.indexedData) {
 						if (map.doneList.some(i => i.skill === toadd.skill && i.player === toadd.player)) {
-							return;
+							continue;
 						}
 						if (map.todoList.some(i => i.skill === toadd.skill && i.player === toadd.player)) {
-							return;
+							continue;
 						}
 					}
 					map.todoList.add(toadd);
@@ -424,7 +425,7 @@ export class GameEvent implements PromiseLike<void> {
 				} else {
 					map.todoList.sort((a, b) => b.priority - a.priority);
 				}
-			});
+			};
 		}
 	}
 	removeTrigger(skills, player) {
@@ -537,26 +538,27 @@ export class GameEvent implements PromiseLike<void> {
 
 					const info = lib.skill[skill];
 					const list = info.firstDo ? firstDo.todoList : info.lastDo ? lastDo.todoList : this.todoList;
+					const priority = get.priority(skill);
 					if (typeof info.getIndex === "function") {
-						const indexedResult = info.getIndex(event, player, name);
-						if (Array.isArray(indexedResult)) {
-							indexedResult.forEach(indexedData => {
-								list.push({
-									skill: skill,
-									player: this.player,
-									priority: get.priority(skill),
-									indexedData,
-								});
-							});
-						} else if (typeof indexedResult === "number" && indexedResult > 0) {
+						const indexedResult = info.getIndex<any>(event, player, name);
+						if (typeof indexedResult === "number") {
 							for (let i = 0; i < indexedResult; i++) {
 								list.push({
-									skill: skill,
+									skill,
 									player: this.player,
-									priority: get.priority(skill),
+									priority,
 									indexedData: true,
 								});
 							}
+						} else if (indexedResult != null && typeof indexedResult !== "string" && typeof indexedResult[Symbol.iterator] === "function") {
+							for (const indexedData of indexedResult) {
+								list.push({
+									skill,
+									player: this.player,
+									priority,
+									indexedData,
+								});
+							};
 						}
 					} else {
 						list.push({

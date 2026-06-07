@@ -28,7 +28,7 @@ const cards = {
 		},
 	},
 	dchuashang_trick: {
-		type: "equip",
+		type: "trick",
 		derivation: "cuilingyi",
 		fullskin: true,
 		image: "image/card/cuilingyi_huashang.png",
@@ -54,7 +54,7 @@ const cards = {
 		},
 	},
 	dchuashang_basic: {
-		type: "equip",
+		type: "basic",
 		derivation: "cuilingyi",
 		fullskin: true,
 		image: "image/card/cuilingyi_huashang.png",

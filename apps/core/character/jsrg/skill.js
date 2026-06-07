@@ -7595,6 +7595,7 @@ const skills = {
 		},
 		subSkill: {
 			after: {
+				audio: "jsrgxianzhu",
 				trigger: {
 					global: "damageSource",
 				},

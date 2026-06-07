@@ -1350,7 +1350,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const skill = event.name;
 			player.addMark(skill, 1, false);
-			player.when({ global: ["roundStart"] }).then(() => player.clearMark("mbzhengpeng", false));
+			player.when({ global: ["roundStart"] }).step(async () => player.clearMark("mbzhengpeng", false));
 			await player.loseHp(player.countMark(skill) - 1);
 			const num = get.info(skill).judge(event.targets[0]);
 			if (num > 0) {
@@ -2186,6 +2186,7 @@ const skills = {
 		group: ["olmojin_equip", "olmojin_effect"],
 		subSkill: {
 			equip: {
+				audio: "olmojin",
 				trigger: {
 					player: ["phaseBegin"],
 				},
@@ -2199,6 +2200,7 @@ const skills = {
 				},
 			},
 			effect: {
+				audio: "olmojin",
 				trigger: {
 					player: "useCard",
 					global: "recoverBegin",

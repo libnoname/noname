@@ -6325,7 +6325,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			if (type === true) {
 				return "kami";
 			}
-			return this.groups().filter(group => lib.group.includes(group));
+			return lib.group.filter(group => !lib.selectGroup.includes(group));
 		}
 		if (type === true) {
 			return "default";

@@ -4493,13 +4493,35 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 		}
 	},
 	async replaceHandcardsOL(event, trigger, player) {
-		const send = () => {
-			game.me.chooseBool("是否置换手牌？");
+		const chooseRemote = () => {
+			game.me.chooseBool({ prompt: "是否置换手牌？" });
 			game.resume();
 		};
+		const chooseMe = () => {
+			return game.me.chooseBool({ prompt: "是否置换手牌？" });
+		};
+		const choose = (current: Player) => {
+			return new Promise<boolean>(resolve => {
+				if (current.isOnline()) {
+					current.wait(result => resolve(!!result?.bool));
+					current.send(chooseRemote);
+					return;
+				} else if (current === game.me) {
+					const next = chooseMe();
+					game.me.wait(result => resolve(!!result?.bool));
+					next.forResult()
+						.then(result => game.me.unwait(result))
+						.catch(() => resolve(false));
+				} else {
+					resolve(false);
+				}
+			});
+		};
 
-		const sendback = (result, player) => {
-			if (!result || !result.bool) {
+		const events = event.players.map(async current => {
+			const result = await choose(current);
+
+			if (!result) {
 				return;
 			}
 
@@ -4507,26 +4529,26 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			 *getCards函数与获得牌相关，只传入要获得的牌数num作为参数
 			 *discard与手气卡换牌后弃置牌相关，只传入要弃置的牌card作为参数
 			 */
-			const hs = player.getCards("h");
-			const cards = [];
-			const otherGetCards = event.otherPile?.[player.playerid]?.getCards;
-			const otherDiscacrd = event.otherPile?.[player.playerid]?.discard;
+			const hs = current.getCards("h");
+			const cards: Card[] = [];
+			const otherGetCards = event.otherPile?.[current.playerid]?.getCards;
+			const otherDiscard = event.otherPile?.[current.playerid]?.discard;
 			//先弃牌
 			game.broadcastAll(
-				(player, hs, otherDiscacrd) => {
+				(player, hs, otherDiscard) => {
 					game.addVideo("lose", player, [get.cardsInfo(hs), [], [], []]);
 					for (const card of hs) {
 						card.removeGaintag(true);
-						if (otherDiscacrd) {
-							otherDiscacrd(card);
+						if (otherDiscard) {
+							otherDiscard(card);
 						} else {
 							card.discard(false);
 						}
 					}
 				},
-				player,
+				current,
 				hs,
-				otherDiscacrd
+				otherDiscard
 			);
 			//再摸牌，先看有没有专属牌堆
 			if (otherGetCards) {
@@ -4536,8 +4558,8 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			}
 			//添加标记相关
 			//event.gaintag支持函数、字符串、数组。数组就是添加一连串的标记；函数的返回格式为[[cards1,gaintag1],[cards2,gaintag2]...]
-			if (event.gaintag?.[player.playerid]) {
-				const gaintag = event.gaintag[player.playerid];
+			if (event.gaintag?.[current.playerid]) {
+				const gaintag = event.gaintag[current.playerid];
 				const list = typeof gaintag == "function" ? gaintag(hs.length, cards) : [[cards, gaintag]];
 				game.broadcastAll(
 					(player, list) => {
@@ -4545,32 +4567,15 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 							player.directgain(list[i][0], null, list[i][1]);
 						}
 					},
-					player,
+					current,
 					list
 				);
 			} else {
-				player.directgain(cards);
+				current.directgain(cards);
 			}
-			player._start_cards = cards;
-		};
-
-		let withol = false;
-		for (const current of event.players) {
-			if (current.isOnline()) {
-				withol = true;
-				current.send(send);
-				current.wait(sendback);
-			} else if (current == game.me) {
-				const next = game.me.chooseBool("是否置换手牌？");
-				game.me.wait(sendback);
-				const result = await next.forResult();
-				game.me.unwait(result);
-			}
-		}
-
-		if (withol && !event.resultOL) {
-			await game.pause();
-		}
+			current._start_cards = cards;
+		});
+		await Promise.allSettled(events);
 	},
 	phase: [
 		async (event, trigger, player) => {
@@ -6524,7 +6529,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			event.cards = cards;
 			for (const [target, targetCards] of event.lose_list) {
 				const next = target.lose(targetCards, event.position);
-				game.log(target, "将", targetCards, "置入了弃牌堆");
+				game.log(target, "将", targetCards, `置入了${lib.areaList.get(event.position.id)}`);
 				next.animate = false;
 				next.delay = false;
 				cards.addArray(targetCards);

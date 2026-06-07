@@ -10156,6 +10156,7 @@ const skills = {
 		async content(event, trigger, player) {
 			await game.doAsyncInOrder(event.targets, async target => await target.damage());
 		},
+		locked: false,
 		mod: {
 			aiOrder(player, card, num) {
 				const num1 = get.info(card).selectTarget ?? 0,
@@ -15817,16 +15818,16 @@ const skills = {
 		frequent: true,
 		async content(event, trigger, player) {
 			const list = [];
-			for (let positon of ["c", "d", "ej"]) {
+			for (let position of ["c", "d", "ej"]) {
 				const card = get.cardPile(
 					card => {
-						return get.is.damageCard(card) && positon.includes(get.position(card, true));
+						return get.is.damageCard(card) && position.includes(get.position(card, true));
 					},
 					"field",
 					"random"
 				);
 				if (card) {
-					if (positon == "ej") {
+					if (position == "ej") {
 						const owner = get.owner(card);
 						if (owner) {
 							player.line(owner, "green");

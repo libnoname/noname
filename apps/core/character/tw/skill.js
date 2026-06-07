@@ -90,7 +90,7 @@ const skills = {
 		subSkill: { phase: { charlotte: true } },
 	},
 	twwuhun: {
-		audio: 2,
+		audio: "wuhun",
 		trigger: { player: "die" },
 		forceDie: true,
 		skillAnimation: true,
@@ -110,7 +110,7 @@ const skills = {
 			judge.set("judge2", result => result.bool);
 
 			const judgeResult = await judge.forResult();
-			if (!judgeResult.bool) {
+			if (!judgeResult?.bool) {
 				return;
 			}
 
@@ -150,7 +150,7 @@ const skills = {
 		group: "twwuhun_gain",
 		subSkill: {
 			gain: {
-				audio: "twwuhun",
+				audio: "wuhun",
 				trigger: {
 					player: "damageEnd",
 					source: "damageSource",
@@ -13535,99 +13535,105 @@ const skills = {
 				},
 				async cost(event, trigger, player) {
 					const target = player.storage.twxiongzheng_target;
+					if (!target) {
+						return;
+					}
 					const sha = new lib.element.VCard({ name: "sha", isCard: true });
 					const list = game.filterPlayer(target => player.getStorage("twxiongzheng_mark").includes(target));
-					const list2 = game.filterPlayer(target => player.canUse(sha, target, false));
+					const list2 = game.filterPlayer(target => !list.includes(target) && player.canUse(sha, target, false));
 					let choiceList = [
-						"视为对任意名本轮未对" + get.translation(target) + "造成过伤害的角色使用一张【杀】",
-						"令任意名本轮对" + get.translation(target) + "造成过伤害的角色摸两张牌",
+						["sha", `视为对任意名本轮未对${get.translation(target)}造成过伤害的角色依次使用一张【杀】`],
+						["draw", `令任意名本轮对${get.translation(target)}造成过伤害的角色摸两张牌`],
 					];
-					let choices = [];
 					if (list2.length) {
-						choices.push("选项一");
-						choiceList[0] += "（" + get.translation(list2) + "）";
-					} else {
-						choiceList[0] = '<span style="opacity:0.5">' + choiceList[0] + "</span>";
+						choiceList[0][1] += `（${get.translation(list2)}）`;
 					}
 					if (list.length) {
-						choices.push("选项二");
-						choiceList[1] += "（" + get.translation(list) + "）";
-					} else {
-						choiceList[1] = '<span style="opacity:0.5">' + choiceList[1] + "</span>";
+						choiceList[1][1] += `（${get.translation(list)}）`;
 					}
-					choices.push("cancel2");
-					const { control } = await player
-						.chooseControl(choices)
-						.set("prompt", "雄争：是否选择一项？")
-						.set("choiceList", choiceList)
-						.set("list", list)
-						.set("list2", list2)
-						.set("ai", function () {
-							const { player, list, list2 } = get.event();
-							const eff1 = list.reduce((acc, target) => {
-									if (target === player) {
+					const result = await player
+						.chooseButtonTarget({
+							createDialog: ["雄争：你可以选择一项", [choiceList, "textbutton"]],
+							list2,
+							list,
+							filterButton(button) {
+								const link = button.link;
+								const { list, list2 } = get.event();
+								if (link == "sha") {
+									return list2.length > 0;
+								}
+								return list.length > 0;
+							},
+							filterTarget(card, player, target) {
+								if (!ui.selected.buttons.length) {
+									return false;
+								}
+								const link = ui.selected.buttons[0].link;
+								const { list, list2 } = get.event();
+								if (link == "sha") {
+									return list2.includes(target);
+								}
+								return list.includes(target);
+							},
+							selectTarget: [1, Infinity],
+							complexSelect: true,
+							ai1(button) {
+								const { player, list, list2 } = get.event();
+								const link = button.link;
+								const eff1 = list2.reduce((acc, target) => {
+										const eff = get.effect(target, { name: "sha" }, player, player);
+										if (eff > 0) {
+											return acc + eff;
+										}
 										return acc;
-									}
-									const eff = get.effect(target, { name: "sha" }, player, player);
-									if (eff > 0) {
-										return acc + eff;
-									}
-									return acc;
-								}, 0),
-								eff2 = list2.reduce((acc, target) => {
-									const eff = get.effect(target, { name: "draw" }, player, player);
-									if (eff > 0) {
-										return acc + eff;
-									}
-									return acc;
-								}, 0);
-							if (eff2 > eff1 && _status.event.controls.includes("选项二")) {
-								return "选项二";
-							}
-							if (eff1 > 0) {
+									}, 0),
+									eff2 = list.reduce((acc, target) => {
+										const eff = get.effect(target, { name: "draw" }, player, player);
+										if (eff > 0) {
+											return acc + eff;
+										}
+										return acc;
+									}, 0);
+								if (eff2 > eff1 && link == "draw") {
+									return 2;
+								}
+								if (eff1 > 0 && link == "sha") {
+									return 1;
+								}
 								return 0;
-							}
-							return "cancel2";
+							},
+							ai2(target) {
+								const link = ui.selected.buttons[0]?.link,
+									player = get.player(),
+									att = get.attitude(player, target);
+								if (!link) {
+									return 0;
+								}
+								return get.effect(target, { name: link }, player, player);
+							},
 						})
 						.forResult();
 					event.result = {
-						bool: control && control !== "cancel2",
-						cost_data: [control, [list2, list]],
+						bool: result.bool,
+						targets: result.targets,
+						cost_data: result.links,
 					};
 				},
 				async content(event, trigger, player) {
-					const goon = event.cost_data[0] === "选项一";
-					const list = event.cost_data[1][goon ? 0 : 1];
-					const prompt = "雄争：请选择任意名满足条件的角色，" + (goon ? "视为依次对这些角色使用一张【杀】" : "令这些角色摸两张牌");
-					const result = await player
-						.chooseTarget(
-							prompt,
-							(card, player, target) => {
-								const { goon, list } = get.event();
-								if (!list.includes(target)) {
-									return false;
-								}
-								return !goon || player.canUse(new lib.element.VCard({ name: "sha", isCard: true }), target, false);
-							},
-							[1, list.length]
-						)
-						.set("goon", goon)
-						.set("list", list)
-						.set("ai", target => {
-							const { goon, player } = get.event();
-							return get.effect(target, { name: goon ? "sha" : "draw" }, player, player);
-						})
-						.forResult();
-					if (result?.bool && result.targets?.length) {
-						const targets = result.targets.sortBySeat();
-						player.line(targets);
-						if (goon) {
-							const sha = new lib.element.VCard({ name: "sha", isCard: true });
-							await player.useCard(sha, targets, false);
-						} else {
-							await game.asyncDraw(targets, 2);
-							await game.delayx();
+					const goon = event.cost_data[0] === "sha";
+					const targets = event.targets.sortBySeat();
+					player.line(targets);
+					if (goon) {
+						const sha = new lib.element.VCard({ name: "sha", isCard: true });
+						for (const target of targets) {
+							if (!target.isIn() || !player.canUse(sha, target, false)) {
+								continue;
+							}
+							await player.useCard(sha, target, false);
 						}
+					} else {
+						await game.asyncDraw(targets, 2);
+						await game.delayx();
 					}
 				},
 			},
@@ -15195,7 +15201,7 @@ const skills = {
 				event.finish();
 			}
 			"step 4";
-			if (result.bool && result.autochoose && result.cards.length == result.rawcards.length && !player.hasSkill("funan_jiexun")) {
+			if (result?.cards?.length > 0 && result.autochoose && result.cards?.length === result.rawcards?.length && !player.hasSkill("funan_jiexun")) {
 				player
 					.chooseControl()
 					.set("choiceList", ["摸" + get.cnNumber(event.num2) + "张牌，将【诫训】的发动次数归零", "修改【复难】和【诫训】"])
@@ -25013,7 +25019,11 @@ const skills = {
 		audio: 3,
 		trigger: { global: "useCardAfter" },
 		filter(event, player) {
-			var type = get.type(event.card);
+			const target = event.player;
+			if (player == target || !target.isIn()) {
+				return false;
+			}
+			const type = get.type(event.card);
 			if (type != "delay" && type != "equip") {
 				return false;
 			}
@@ -25027,7 +25037,7 @@ const skills = {
 					}
 				}
 			}
-			return event.player.isIn();
+			return true;
 		},
 		async cost(event, trigger, player) {
 			let [choiceList, choices] = [[], []];
@@ -25043,10 +25053,7 @@ const skills = {
 				}
 				choiceList.push(choice1);
 				let choice2 = `弃置一张手牌，获得${str}`;
-				if (
-					player.hasCard(card => lib.filter.cardDiscardable(card, player, event.skill), "h") &&
-					lib.filter.canBeGained(card, player, owner)
-				) {
+				if (player.hasCard(card => lib.filter.cardDiscardable(card, player, event.skill), "h") && lib.filter.canBeGained(card, player, owner)) {
 					choices.push("获得卡牌");
 				} else {
 					choice2 = `<span style="opacity:0.5">${choice2}</span>`;
@@ -25095,12 +25102,7 @@ const skills = {
 						if (choice == "弃置卡牌") {
 							return result;
 						}
-						if (
-							player.hasCard(
-								cardx => lib.filter.cardDiscardable(cardx, player, "twzhian") && get.value(cardx, player) < get.value(card, player),
-								"h"
-							)
-						) {
+						if (player.hasCard(cardx => lib.filter.cardDiscardable(cardx, player, "twzhian") && get.value(cardx, player) < get.value(card, player), "h")) {
 							return result * 1.2;
 						}
 						return 0;
@@ -25152,9 +25154,7 @@ const skills = {
 							if (get.type(card) !== "delay" && get.type(card) !== "equip") {
 								return 1;
 							}
-							let za = game.findPlayer(
-								cur => cur.hasSkill("twzhian") && !cur.storage.counttrigger?.twzhian && get.attitude(player, cur) <= 0
-							);
+							let za = game.findPlayer(cur => cur.hasSkill("twzhian") && !cur.storage.counttrigger?.twzhian && get.attitude(player, cur) <= 0);
 							if (za) {
 								return [0.5, -0.8];
 							}

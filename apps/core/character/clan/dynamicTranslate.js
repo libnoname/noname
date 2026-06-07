@@ -16,8 +16,8 @@ const dynamicTranslates = {
 	},
 	clanlianzhu(player) {
 		const bool = player.storage.clanlianzhu;
-		let yang = "Ａ可以重铸一张牌，然后你可以重铸一张牌。若这两张牌颜色相同，则你的手牌上限-1",
-			yin = "Ａ可以令你选择另一名其他角色Ｂ，然后Ａ和你可依次选择是否对Ｂ使用一张无距离限制的【杀】。若这两张【杀】颜色不同，则你的手牌上限+1";
+		let yang = "Ａ可以重铸一张牌，然后你可以重铸一张牌。若这两张牌颜色相同，则你的手牌上限+1",
+			yin = "Ａ可以令你选择另一名其他角色Ｂ，然后Ａ和你可依次选择是否对Ｂ使用一张无距离限制的【杀】。若这两张【杀】颜色不同，则你的手牌上限-1";
 		if (bool) {
 			yin = `<span class='bluetext'>${yin}</span>`;
 		} else {

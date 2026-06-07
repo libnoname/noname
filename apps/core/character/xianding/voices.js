@@ -1,4 +1,8 @@
 export default {
+	"#manyi_menghuo1": "巨象阵，迎敌！",
+	"#manyi_menghuo2": "子弟兵们，跟我上！",
+	"#manyi_zhurong1": "区区无名之辈，不劳大王出马。",
+	"#manyi_zhurong2": "尔等鼠辈怎见得如此阵势？",
 	"#dcsbjutu1": "蜀川岁岁熟，何必起刀兵？",
 	"#dcsbjutu2": "益州天府之国，不知何为饥馑。",
 	"#dcsbrenshan1": "既有宗族之情，何虑天下之争？",
@@ -281,6 +285,8 @@ export default {
 	"#dcjiwei2": "朕承天命，御极四方，当系天下之颈。",
 	"#dcsugang1": "秦汉败絮在前，朕岂假寐之主！",
 	"#dcsugang2": "众卿非犬，何故狺狺于朝堂！",
+	"#rexingshang_v_caopi1": "秋夜漫长，起坐彷徨，帝王一诺，践于秋月春风。",
+	"#rexingshang_v_caopi2": "西风萧瑟，草木摇落，余屈子行吟，宋玉悲秋。",
 	"#v_caopi:die": "建平所言八十，谓昼夜也，吾其绝矣。",
 	"#dcjuanji1": "野雀飞上枝头，真当自己是凤凰了。",
 	"#dcjuanji2": "鹦哥学舌，本是禽兽，装个甚的人模样。",

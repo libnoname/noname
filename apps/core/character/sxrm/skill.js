@@ -2015,18 +2015,31 @@ const skills = {
 	sxrmsigu: {
 		audio: 2,
 		enable: "phaseUse",
+		filter(event, player) {
+			return game.hasPlayer(current => player !== current);
+		},
 		usable: 1,
 		filterTarget: lib.filter.notMe,
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			const result = await target.judge().forResult();
-			if (!result.number) {
+			const result = await target
+				.judge(card => {
+					if ([4, 5, 6, 8].includes(get.number(card))) {
+						return 2;
+					}
+					if ([9, 12].includes(get.number(card))) {
+						return 1;
+					}
+					return -1;
+				})
+				.forResult();
+			if (!result?.number) {
 				return;
 			}
 			const name = get.info(event.name).pasts[result.number - 1],
 				skill = get.info(event.name).derivation[result.number - 1];
 			const mark = `desigu_${player.playerid}`;
-			if (name) {
+			if (name && skill) {
 				await target.addAdditionalSkills(mark, [skill], true);
 				//写个标记吧
 				target.addTip(mark, `似故 ${get.translation(skill)}`);
@@ -2037,33 +2050,31 @@ const skills = {
 			}
 			await target.damage();
 			await target.damage();
-			if (name) {
+			if (name && skill) {
 				target.removeAdditionalSkills(mark);
 				target.removeTip(mark);
 				target.setAvatar(target.name, target.name);
 			}
 		},
-		//不太会写ai，随便写了点简单的情况
 		ai: {
-			order: 1,
+			order(item, player) {
+				return get.order({ name: "sha" }) - 0.1;
+			},
 			result: {
 				target(player, target) {
-					if ((target.hasSkillTag("maixie") || target.hasSkillTag("maixie_hp")) && get.attitude(player, target) < 0) {
+					let eff = get.damageEffect(target, player, player);
+					const att = get.attitude(player, target);
+					if (eff <= 0) {
+						const numbers = [4, 5, 6, 8, 9, 12];
+						if (att > 0 && player.hasSkillTag("rejudge") && target.hp + target.hujia >= 5 && eff >= -2 && player.hasCards("he", card => numbers.includes(get.number(card)))) {
+							return 0.1;
+						}
+						if (eff == 0 && att < 0) {
+							return -0.1;
+						}
 						return 0;
 					}
-					if (get.attitude(player, target) < 0 && target.getHp() + target.hujia <= 1) {
-						return -1;
-					}
-					if ((target.hasSkillTag("maixie") || target.hasSkillTag("maixie_hp")) && get.attitude(player, target) > 0 && target.getHp() + target.hujia >= 3) {
-						return 2;
-					}
-					if (get.attitude(player, target) > 0 && target.getHp() + target.hujia >= 4) {
-						return 1;
-					}
-					if (get.attitude(player, target) == 0 && target.getHp() + target.hujia >= 2) {
-						return 1;
-					}
-					return 0;
+					return (-eff * get.threaten(target)) / Math.sqrt(target.hp + target.hujia + 1) / Math.sqrt(target.countCards("h") + 1);
 				},
 			},
 			tag: {
