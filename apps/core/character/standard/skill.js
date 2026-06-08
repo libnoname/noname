@@ -859,7 +859,7 @@ const skills = {
 					judgeEvent.set("callback", async event => {
 						if (event.judgeResult.color === "black" && get.position(event.card, true) === "o") {
 							await player.gain({
-								cards: event.card,
+								cards: [event.card],
 								animate: "gain2",
 							});
 						}
