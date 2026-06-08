@@ -20,6 +20,7 @@ export default {
 	wuban: "碧血的英豪",
 	yuejiu: "仲家军督",
 	tw_zhaoxiang: "策马奔腾",
+	yj_fazheng: "弹铗待试",
 	tw_fuwan: "身陷囹圄",
 	tw_yujin: "逐皋定乱",
 	tw_hucheer: "扬尘卷沙",

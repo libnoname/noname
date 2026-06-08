@@ -7,6 +7,12 @@ const characters = {
 		groupInGuozhan: "shu",
 		dieAudios: ["shen_guanyu"],
 	},
+	yj_fazheng: {
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		skills: ["youtan", "ciren", "zhancai"]
+	},
 	tw_shen_lvmeng: {
 		sex: "male",
 		group: "shen",
