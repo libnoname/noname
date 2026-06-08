@@ -1050,9 +1050,9 @@ declare interface Skill {
 	 * @param event 事件，即event._trigger,相当于trigger时机（此时的event为触发该技能时机时的事件）
 	 * @param player 
 	 * @param name 触发名，为event.triggername，目前只有在lib.filter.filterTrigger中才传该值，即被动触发，主动触发不检测该值，目前暂未完善
-	 * @param target v1.10.11 触发的目标
+	 * @param indexedData 由`getIndex`返回的对象
 	 */
-	filter?(event: GameEvent, player: Player, name?: string, target?: Player): boolean | void | null;
+	filter?(event: GameEvent, player: Player, name?: string, indexedData?: any): boolean | void | null;
 	/**
 	 * 选择的目标武将牌上出现什么字。
 	 * 
@@ -1331,9 +1331,9 @@ declare interface Skill {
 	 * 
 	 * 若没有配置prompt，显示该配置的提示
 	 * 
-	 * @param target v1.10.11 触发的目标
+	 * @param indexedData 由`getIndex`返回的对象
 	 */
-	logTarget?: string | ((event?: GameEvent, player?: Player, triggername?: string, target?: Player) => string | Player | Player[] | null | undefined);
+	logTarget?: string | ((event?: GameEvent, player?: Player, triggername?: string, indexedData?: any) => string | Player | Player[] | null | undefined);
 	/**
 	 * 是否通过logTarget显示触发者的目标日志；
 	 * 
@@ -1417,7 +1417,7 @@ declare interface Skill {
 	 * 无参，简洁写法；
 	 */
 	check?: ((card: Card) => number | boolean | void) |
-	((event: GameEvent, player: Player, triggername?: string, target?: Player) => number | boolean | void) |
+	((event: GameEvent, player: Player, triggername?: string, indexedData?: any) => number | boolean | void) |
 	(() => number | boolean | void);
 	// check?(...any:any):number|boolean;
 	// /** ai用于检测的方法：用于主动使用触发技能 */
@@ -1482,7 +1482,7 @@ declare interface Skill {
 	 * 
 	 * 如果返回值为数组或任意可遍历对象，则会分别结算每个目标；目标将存放在`event.indexedData`中，供cost和content使用。
 	 */
-	getIndex?<T>(event: GameEvent, player: Player, triggername: string): number | Iterable<T>;
+	getIndex?(event: GameEvent, player: Player, triggername: string): number | Iterable<any>;
 
 	/**
 	 * 持恒技
