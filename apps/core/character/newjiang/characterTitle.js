@@ -1,7 +1,6 @@
 export default {
 	//yj_puyuan: "",
 	//yao_yuanshu: "",
-	yj_fazheng: "弹铗待试",
 	//yj_hanbing: "",
 	//yj_tengjia: "",
 	yj_zhanghe: "宁国中郎将",

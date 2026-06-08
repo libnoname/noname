@@ -13,12 +13,6 @@ const characters = {
 		img: "image/character/yj_x_xunxu.jpg",
 		dieAudios: ["yj_x_xunxu"],
 	},
-	yj_fazheng: {
-		sex: "male",
-		group: "qun",
-		hp: 3,
-		skills: ["youtan", "ciren", "zhancai"]
-	},
 	yj_hanbing: {
 		sex: "female",
 		group: "qun",
