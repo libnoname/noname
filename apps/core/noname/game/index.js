@@ -10711,6 +10711,12 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		if (_status.connectMode) {
 			delete lib.playerOL[player.playerid];
 		}
+		//如果被移除角色为当前角色，需要特殊处理
+		const evt = get.event();
+		const loop = evt.getParent("phaseLoop", true);
+		if (loop?.player == player) {
+			loop.player = player.previousSeat;
+		}
 		//移除角色的具体步骤
 		const removePlayer = async (player, config, configOL) => {
 			let { animate } = config;
