@@ -7965,8 +7965,8 @@ const skills = {
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseToDiscard({
-					prompt: get.prompt2(event.skill, trigger.player), 
-					selectCard: [1, 5], 
+					prompt: get.prompt2(event.skill, trigger.player),
+					selectCard: [1, 5],
 					position: "he",
 					chooseonly: true,
 					allowChooseAll: true,
