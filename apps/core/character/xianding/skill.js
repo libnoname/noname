@@ -766,9 +766,18 @@ const skills = {
 		init(player) {
 			player.addSkill("qieyan_del");
 		},
+		mark: true,
+		marktext: "言",
+		intro: {
+			content(storage, player) {
+				let add = player.storage.qieyan_count || 0;
+				return `本回合与其他角色距离 + ${add}`;
+			},
+		},
 		mod: {
 			globalTo(from, to, num) {
 				const add = to.storage.qieyan_count || 0;
+				return num + add;
 			},
 		},
 		async content(event, trigger, player) {

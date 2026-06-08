@@ -204,7 +204,6 @@ window.noname_character_replace = {
 	menghuo: ["menghuo", "re_menghuo", "sb_menghuo", "sp_menghuo", "dc_sp_menghuo", "jd_sb_menghuo"],
 	mengyou: ["mengyou", "ns_mengyou"],
 	miheng: ["ol_miheng", "yue_miheng", "re_miheng", "miheng", "scl_miheng", "std_miheng"],
-	muludawang: ["muludawang", "dc_muludawang"],
 	mushun: ["mushun", "sp_mushun"],
 	nanhualaoxian: ["ol_nanhualaoxian", "re_nanhualaoxian", "nanhualaoxian", "jsrg_nanhualaoxian", "hm_nanhualaoxian", "std_nanhualaoxian", "ns_nanhua", "ns_xinnanhua"],
 	niufu: ["ol_niufu", "niufu"],
