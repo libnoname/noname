@@ -1200,10 +1200,15 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 
 			if (targets.length) {
 				const next = player
-					.chooseCardOL(targets, `${get.translation(player)}发起了议事，请选择展示的手牌`, true)
+					.chooseCardOL({
+						list: targets,
+						prompt: `${get.translation(player)}发起了议事，请选择展示的手牌`,
+						forced: true,
+						glow_result: false,
+						ai: event.ai ?? (() => Math.random()),
+					})
 					.set("type", "debate")
 					.set("source", player)
-					.set("ai", event.ai ?? (() => Math.random()))
 					.set(
 						"aiCard",
 						event.aiCard ??
@@ -1214,7 +1219,6 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 							})
 					);
 
-				next._args.remove("glow_result");
 				result = await next.forResult();
 			} else {
 				event.noselected = true;
@@ -1234,8 +1238,8 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 		event.videoId = lib.status.videoId++;
 
 		if (!event.noselected) {
-			for (const [i, target] of targets.entries()) {
-				const card = result[i].cards[0];
+			for (const [target, r] of Iterator.zip([targets, result as Partial<Result>[]])) {
+				const card = r.cards[0];
 
 				if (card == "red" || get.color(card, target) == "red") {
 					red.push([target, card]);
@@ -4493,13 +4497,35 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 		}
 	},
 	async replaceHandcardsOL(event, trigger, player) {
-		const send = () => {
-			game.me.chooseBool("是否置换手牌？");
+		const chooseRemote = () => {
+			game.me.chooseBool({ prompt: "是否置换手牌？" });
 			game.resume();
 		};
+		const chooseMe = () => {
+			return game.me.chooseBool({ prompt: "是否置换手牌？" });
+		};
+		const choose = (current: Player) => {
+			return new Promise<boolean>(resolve => {
+				if (current.isOnline()) {
+					current.wait(result => resolve(!!result?.bool));
+					current.send(chooseRemote);
+					return;
+				} else if (current === game.me) {
+					const next = chooseMe();
+					game.me.wait(result => resolve(!!result?.bool));
+					next.forResult()
+						.then(result => game.me.unwait(result))
+						.catch(() => resolve(false));
+				} else {
+					resolve(false);
+				}
+			});
+		};
 
-		const sendback = (result, player) => {
-			if (!result || !result.bool) {
+		const events = event.players.map(async current => {
+			const result = await choose(current);
+
+			if (!result) {
 				return;
 			}
 
@@ -4507,26 +4533,26 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			 *getCards函数与获得牌相关，只传入要获得的牌数num作为参数
 			 *discard与手气卡换牌后弃置牌相关，只传入要弃置的牌card作为参数
 			 */
-			const hs = player.getCards("h");
-			const cards = [];
-			const otherGetCards = event.otherPile?.[player.playerid]?.getCards;
-			const otherDiscacrd = event.otherPile?.[player.playerid]?.discard;
+			const hs = current.getCards("h");
+			const cards: Card[] = [];
+			const otherGetCards = event.otherPile?.[current.playerid]?.getCards;
+			const otherDiscard = event.otherPile?.[current.playerid]?.discard;
 			//先弃牌
 			game.broadcastAll(
-				(player, hs, otherDiscacrd) => {
+				(player, hs, otherDiscard) => {
 					game.addVideo("lose", player, [get.cardsInfo(hs), [], [], []]);
 					for (const card of hs) {
 						card.removeGaintag(true);
-						if (otherDiscacrd) {
-							otherDiscacrd(card);
+						if (otherDiscard) {
+							otherDiscard(card);
 						} else {
 							card.discard(false);
 						}
 					}
 				},
-				player,
+				current,
 				hs,
-				otherDiscacrd
+				otherDiscard
 			);
 			//再摸牌，先看有没有专属牌堆
 			if (otherGetCards) {
@@ -4536,8 +4562,8 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			}
 			//添加标记相关
 			//event.gaintag支持函数、字符串、数组。数组就是添加一连串的标记；函数的返回格式为[[cards1,gaintag1],[cards2,gaintag2]...]
-			if (event.gaintag?.[player.playerid]) {
-				const gaintag = event.gaintag[player.playerid];
+			if (event.gaintag?.[current.playerid]) {
+				const gaintag = event.gaintag[current.playerid];
 				const list = typeof gaintag == "function" ? gaintag(hs.length, cards) : [[cards, gaintag]];
 				game.broadcastAll(
 					(player, list) => {
@@ -4545,32 +4571,15 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 							player.directgain(list[i][0], null, list[i][1]);
 						}
 					},
-					player,
+					current,
 					list
 				);
 			} else {
-				player.directgain(cards);
+				current.directgain(cards);
 			}
-			player._start_cards = cards;
-		};
-
-		let withol = false;
-		for (const current of event.players) {
-			if (current.isOnline()) {
-				withol = true;
-				current.send(send);
-				current.wait(sendback);
-			} else if (current == game.me) {
-				const next = game.me.chooseBool("是否置换手牌？");
-				game.me.wait(sendback);
-				const result = await next.forResult();
-				game.me.unwait(result);
-			}
-		}
-
-		if (withol && !event.resultOL) {
-			await game.pause();
-		}
+			current._start_cards = cards;
+		});
+		await Promise.allSettled(events);
 	},
 	phase: [
 		async (event, trigger, player) => {
@@ -6524,7 +6533,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			event.cards = cards;
 			for (const [target, targetCards] of event.lose_list) {
 				const next = target.lose(targetCards, event.position);
-				game.log(target, "将", targetCards, "置入了弃牌堆");
+				game.log(target, "将", targetCards, `置入了${lib.areaList.get(event.position.id)}`);
 				next.animate = false;
 				next.delay = false;
 				cards.addArray(targetCards);
@@ -7544,185 +7553,125 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			event.resume();
 		},
 	],
-	chooseCardOL: [
-		async (event, trigger, player) => {
-			event.targets = event.list.slice(0);
-			if (!_status.connectMode) {
-				event.result = [];
-				event.goto(7);
-			} else {
-				for (let i = 0; i < event.list.length; i++) {
-					const target = event.list[i];
-					target.wait();
-					if (target.isOnline()) {
-						target.send(
-							(args, set) => {
-								game.me.chooseCard.apply(game.me, args).set(set);
-								game.resume();
-							},
-							event._args,
-							event._set
-						);
-						event.list.splice(i--, 1);
-					} else if (target == game.me) {
-						event.withme = true;
-						event.list.splice(i--, 1);
+	async chooseCardOL(event, trigger, player) {
+		const targets: Player[] = event.list;
+
+		type ChooseCardOLResult = Partial<Result> | "ai";
+		const chooseRemote = (args, set) => {
+			game.me.chooseCard(...args).set(set);
+			game.resume();
+		};
+		const chooseLocal = (current: Player) => {
+			return current.chooseCard(...event._args).set(event._set);
+		};
+		const choose = (current: Player) => {
+			return new Promise<ChooseCardOLResult>(resolve => {
+				if (current.isOnline()) {
+					current.wait(result => resolve(result ?? {}));
+					current.send(chooseRemote, event._args, event._set);
+					return;
+				} else if (current === game.me) {
+					const next = chooseLocal(game.me);
+					game.me.wait(result => resolve(result ?? {}));
+					next.forResult()
+						.then(result => game.me.unwait(result))
+						.catch(() => resolve({}));
+				} else {
+					const next = chooseLocal(current);
+					next.forResult().then(resolve).catch(() => resolve({}));
+				}
+			});
+		};
+
+		let results: Partial<Result>[];
+		if (_status.connectMode) {
+			const events: Promise<Partial<Result>>[] = targets.map(async target => {
+				try {
+					const result = await choose(target);
+
+					if (result === "ai") {
+						return event.aiCard ? event.aiCard(target) : { bool: false, cards: [] };
 					}
+					return result;
+				} catch {
+					return {};
 				}
+			});
+			results = await Promise.all(events);
+		} else {
+			results = [];
+			for (const target of targets) {
+				results.push(
+					await chooseLocal(target)
+						.forResult()
+						.catch(() => ({}))
+				);
 			}
-		},
-		async (event, trigger, player) => {
-			if (event.list.length) {
-				event.target = event.list.shift();
-				event.target.chooseCard.apply(event.target, event._args).set(event._set);
-			} else {
-				event.goto(3);
-			}
-		},
-		async (event, trigger, player, result) => {
-			event.target.unwait(result);
-			event.goto(1);
-		},
-		async (event, trigger, player) => {
-			if (event.withme) {
-				game.me.chooseCard.apply(game.me, event._args).set(event._set);
-			} else {
-				event.goto(5);
-			}
-		},
-		async (event, trigger, player, result) => {
-			game.me.unwait(result);
-		},
-		async (event, trigger, player) => {
-			if (!event.resultOL) {
-				game.pause();
-			}
-		},
-		async (event, trigger, player) => {
-			event.result = [];
-			for (const [i, target] of event.targets.entries()) {
-				event.result.push(event.resultOL[target.playerid] || {});
-				if (event.result[i] == "ai" && event.aiCard) {
-					event.result[i] = event.aiCard(target);
+		}
+		
+		Reflect.set(event, "result", results);
+	},
+	async chooseButtonOL(event, trigger, player) {
+		const list: [Player, ...any[]][] = event.list;
+
+		const chooseRemote = (args, callback, switchToAuto, processAI) => {
+			const next = game.me.chooseButton(...args);
+			next.callback = callback;
+			next.switchToAuto = switchToAuto;
+			next.processAI = processAI;
+			next.complexSelect = true;
+			game.resume();
+		};
+		const chooseLocal = (current: Player, args: any[]) => {
+			const next = current.chooseButton(...args);
+			next.callback = event.callback;
+			next.switchToAuto = event.switchToAuto;
+			next.processAI = event.processAI;
+			return next;
+		};
+		const choose = (current: Player, args: any[]) => {
+			return new Promise<Partial<Result>>(resolve => {
+				if (current.isOnline()) {
+					current.wait(result => resolve(result ?? {}));
+					current.send(chooseRemote, args, event.callback, event.switchToAuto, event.processAI);
+					return;
+				} else if (current === game.me) {
+					const next = chooseLocal(game.me, args);
+					game.me.wait(result => resolve(result ?? {}));
+					next.forResult()
+						.then(result => game.me.unwait(result))
+						.catch(() => resolve({}));
+				} else {
+					const next = chooseLocal(current, args);
+					next.forResult()
+						.then(resolve)
+						.catch(() => resolve({}));
 				}
-			}
-			event.finish();
-		},
-		async (event, trigger, player) => {
-			if (event.list.length) {
-				event.target = event.list.shift();
-				event.target.chooseCard.apply(event.target, event._args).set(event._set);
-			} else {
-				for (const [i] of event.targets.entries()) {
-					if (!event.result[i]) {
-						event.result[i] = {};
-					}
+			});
+		};
+
+		let results: Record<string, Partial<Result>>;
+		if (_status.connectMode) {
+			const events: Promise<[number, Partial<Result>]>[] = list.map(async ([target, ...args]) => {
+				try {
+					const result = await choose(target, args);
+					return [target.playerid, result];
+				} catch {
+					return [target.playerid, {}];
 				}
-				event.finish();
+			});
+			results = Object.fromEntries(await Promise.all(events));
+		} else {
+			results = {};
+			for (const [target, ...args] of list) {
+				results[target.playerid] = await chooseLocal(target, args)
+					.forResult()
+					.catch(() => ({}));
 			}
-		},
-		async (event, trigger, player, result) => {
-			event.result[event.targets.indexOf(event.target)] = result;
-			event.goto(7);
-		},
-	],
-	chooseButtonOL: [
-		async (event, trigger, player) => {
-			event.targets = event.list.slice();
-			if (!_status.connectMode) {
-				event.result = {};
-				event.goto(7);
-				return;
-			}
-			//ui.arena.classList.add('markhidden');
-			for (let i = 0; i < event.list.length; i++) {
-				const current = event.list[i];
-				current[0].wait();
-				if (current[0].isOnline()) {
-					const target = current.shift();
-					target.send(
-						(args, callback, switchToAuto, processAI) => {
-							//ui.arena.classList.add('markhidden');
-							const next = game.me.chooseButton.apply(game.me, args);
-							next.callback = callback;
-							next.switchToAuto = switchToAuto;
-							next.processAI = processAI;
-							next.complexSelect = true;
-							game.resume();
-						},
-						current,
-						event.callback,
-						event.switchToAuto,
-						event.processAI
-					);
-					target._choose_button_ol = current;
-					event.list.splice(i--, 1);
-				} else if (current[0] == game.me) {
-					event.last = current;
-					event.last.shift();
-					event.list.splice(i--, 1);
-				}
-			}
-		},
-		async (event, trigger, player) => {
-			if (event.list.length) {
-				const current = event.list.shift();
-				event.target = current.shift();
-				const next = event.target.chooseButton.apply(event.target, current);
-				next.callback = event.callback;
-				next.switchToAuto = event.switchToAuto;
-				next.processAI = event.processAI;
-				return next.forResult();
-			} else {
-				event.goto(3);
-			}
-		},
-		async (event, trigger, player, result) => {
-			event.target.unwait(result);
-			event.goto(1);
-		},
-		async (event, trigger, player) => {
-			if (event.last) {
-				const next = game.me.chooseButton.apply(game.me, event.last);
-				next.callback = event.callback;
-				next.switchToAuto = event.switchToAuto;
-				next.processAI = event.processAI;
-				return next.forResult();
-			} else {
-				event.goto(5);
-			}
-		},
-		async (event, trigger, player, result) => {
-			game.me.unwait(result);
-		},
-		async (event, trigger, player) => {
-			if (!event.resultOL) {
-				game.pause();
-			}
-		},
-		async (event, trigger, player) => {
-			event.result = event.resultOL;
-			event.finish();
-		},
-		async (event, trigger, player) => {
-			if (event.list.length) {
-				const current = event.list.shift();
-				event.target = current.shift();
-				const next = event.target.chooseButton.apply(event.target, current);
-				next.callback = event.callback;
-				next.switchToAuto = event.switchToAuto;
-				next.processAI = event.processAI;
-				return next.forResult();
-			}
-		},
-		async (event, trigger, player, result) => {
-			const { target } = event;
-			event.result[target.playerid] = result;
-			if (event.list.length) {
-				event.goto(7);
-			}
-		},
-	],
+		}
+
+		Reflect.set(event, "result", results);
+	},
 	async chooseAnyOL(event, trigger, player) {
 		const { targets, func, args } = event;
 		const map = new Map();

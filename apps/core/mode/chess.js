@@ -4856,26 +4856,19 @@ export default () => {
 				enable: "phaseUse",
 				usable: 1,
 				promptfunc(event, player) {
-					var targets = [];
-					var skill = lib.skill.leader_zhaoxiang;
-					for (var i = 0; i < game.players.length; i++) {
-						if (!game.data.character.includes(game.players[i].name) && game.players[i].side != player.side) {
-							targets.push(game.players[i]);
-						}
+					const targets = game.players.filter(current => !game.data.character.includes(current.name) && current.side !== player.side);
+					if (!targets.length) {
+						return lib.translate.leader_zhaoxiang_info;
 					}
-					var str = lib.translate.leader_zhaoxiang_info;
-					if (targets.length) {
-						str = '<p style="text-align:center;line-height:20px;margin-top:0">⚑ ' + game.data.dust + '</p><p style="text-align:center;line-height:20px;margin-top:8px">';
-						for (var i = 0; i < targets.length; i++) {
-							str += '<span style="width:120px;display:inline-block;text-align:right">' + get.translation(targets[i]) + '：</span><span style="width:120px;display:inline-block;text-align:left">' + (skill.chance(targets[i], player) * 100).toFixed(2) + "%</span><br>";
-						}
-						str += "</p>";
-					}
-					return str;
+					const skill = lib.skill.leader_zhaoxiang;
+					const chances = targets
+						.map(target => `<span style="width:120px;display:inline-block;text-align:right">${get.translation(target)}：</span><span style="width:120px;display:inline-block;text-align:left">${(skill.chance(target, player) * 100).toFixed(2)}%</span><br>`)
+						.join("");
+					return `<p style="text-align:center;line-height:20px;margin-top:0">⚑ ${game.data.dust}</p><p style="text-align:center;line-height:20px;margin-top:8px">${chances}</p>`;
 				},
 				chance(target, player) {
-					var chance;
-					var renyi = player.hasSkill("leader_renyi");
+					let chance;
+					const renyi = player.hasSkill("leader_renyi");
 					switch (target.hp) {
 						case 1:
 							chance = 0.7;
@@ -4940,19 +4933,20 @@ export default () => {
 				filterTarget(card, player, target) {
 					return game.isChessNeighbour(player, target) && !game.data.character.includes(target.name);
 				},
-				content() {
-					var chance = lib.skill.leader_zhaoxiang.chance(target, player);
+				async content(event, trigger, player) {
+					const target = event.target;
+					const chance = lib.skill.leader_zhaoxiang.chance(target, player);
 					game.changeDust(-10);
 					if (Math.random() < chance) {
 						_status.zhaoxiang = target.name;
 						game.data.character.add(target.name);
 						game.saveData();
 						game.over();
-					} else {
-						game.log("招降", target, "失败");
-						player.popup("招降失败");
-						player.damage(target);
+						return;
 					}
+					game.log("招降", target, "失败");
+					player.popup("招降失败");
+					await player.damage(target);
 				},
 			},
 			leader_xiaoxiong: {
@@ -5012,25 +5006,23 @@ export default () => {
 				init(player) {
 					player.storage.tongshuai = {
 						list: [],
+						unowned: [],
 						owned: {},
-						player: player,
+						player,
 						get(num) {
-							if (typeof num != "number") {
+							if (typeof num !== "number") {
 								num = 1;
 							}
-							var player = this.player;
+							const player = this.player;
 							while (num--) {
-								var name = player.storage.tongshuai.unowned.shift();
-								if (!name) {
+								const name = player.storage.tongshuai.unowned.shift();
+								if (name == null) {
 									return;
 								}
-								var skills = lib.character[name][3].slice(0);
-								for (var i = 0; i < skills.length; i++) {
-									var info = lib.skill[skills[i]];
-									if (info.unique && !info.gainable) {
-										skills.splice(i--, 1);
-									}
-								}
+								const skills = get.character(name).skills.filter(skill => {
+									const info = get.info(skill);
+									return !info.unique || info.gainable;
+								});
 								player.storage.tongshuai.owned[name] = skills;
 								game.addVideo("chess_tongshuai", player, player.storage.tongshuai.owned);
 							}
@@ -5040,36 +5032,26 @@ export default () => {
 				group: ["tongshuai1", "tongshuai2", "tongshuai3"],
 				intro: {
 					content(storage, player) {
-						var str = "";
-						var slist = storage.owned;
-						var list = [];
-						for (var i in slist) {
-							list.push(i);
-						}
+						let str = "";
+						const list = Object.keys(storage.owned);
 						if (list.length) {
-							str += get.translation(list[0]);
-							for (var i = 1; i < list.length; i++) {
-								str += "、" + get.translation(list[i]);
-							}
+							str = list.map(name => get.translation(name)).join("、");
 						}
-						var skill = player.additionalSkills.tongshuai[0];
+						const skill = player.additionalSkills.tongshuai[0];
 						if (skill) {
-							str += "<p>当前技能：" + get.translation(skill);
+							str += `<p>当前技能：${get.translation(skill)}`;
 						}
 						return str;
 					},
 					mark(dialog, content, player) {
-						var slist = content.owned;
-						var list = [];
-						for (var i in slist) {
-							list.push(i);
-						}
+						const list = Object.keys(content.owned);
 						if (list.length) {
 							dialog.addSmall([list, "character"]);
 						}
-						var skill = player.additionalSkills.tongshuai[0];
+						const skill = player.additionalSkills.tongshuai[0];
 						if (skill) {
-							dialog.add('<div><div class="skill">【' + get.translation(skill) + "】</div><div>" + lib.translate[skill + "_info"] + "</div></div>");
+							const skillInfo = lib.translate[`${skill}_info`];
+							dialog.add(`<div><div class="skill">【${get.translation(skill)}】</div><div>${skillInfo}</div></div>`);
 						}
 					},
 				},
@@ -5077,163 +5059,117 @@ export default () => {
 			},
 			tongshuai1: {
 				trigger: { global: "gameStart" },
-				forced: true,
-				popup: false,
-				priority: 10,
-				content() {
-					for (var i = 0; i < game.data.character.length; i++) {
-						var skills = lib.character[game.data.character[i]][3];
-						var add = false;
-						for (var j = 0; j < skills.length; j++) {
-							var info = lib.skill[skills[j]];
-							if (info.gainable || !info.unique) {
-								add = true;
-								break;
+				charlotte: true,
+				silent: true,
+				firstDo: true,
+				async content(event, trigger, player) {
+					const storage = player.storage.tongshuai;
+					for (const name of game.data.character) {
+						const skills = lib.character[name][3];
+						let add = false;
+						for (const skill of skills) {
+							const info = lib.skill[skill];
+							if (!info.gainable && info.unique) {
+								continue;
 							}
+							add = true;
+							break;
 						}
 						if (add) {
-							player.storage.tongshuai.list.push(game.data.character[i]);
+							storage.list.push(name);
 						}
 					}
-					for (var i = 0; i < game.players.length; i++) {
-						player.storage.tongshuai.list.remove([game.players[i].name]);
-						player.storage.tongshuai.list.remove([game.players[i].name1]);
-						player.storage.tongshuai.list.remove([game.players[i].name2]);
+					for (const current of game.players) {
+						storage.list.remove([current.name]);
+						storage.list.remove([current.name1]);
+						storage.list.remove([current.name2]);
 					}
-					player.storage.tongshuai.unowned = player.storage.tongshuai.list.slice(0);
-					player.storage.tongshuai.unowned.sort(lib.sort.random);
-					if (player.storage.tongshuai.unowned.length > 1) {
-						player.storage.tongshuai.get(2);
-					} else if (player.storage.tongshuai.unowned.length == 1) {
-						player.storage.tongshuai.get();
-					} else {
+					storage.unowned = storage.list.slice(0);
+					storage.unowned.sort(lib.sort.random);
+					if (!storage.unowned.length) {
 						player.removeSkill("tongshuai");
+					} else if (storage.unowned.length === 1) {
+						storage.get();
+					} else {
+						storage.get(2);
 					}
 				},
 			},
 			tongshuai2: {
 				audio: 2,
-				trigger: { player: ["phaseBegin", "phaseEnd"], global: "gameStart" },
+				trigger: {
+					player: ["phaseZhunbeiBegin", "phaseJieshuBegin"],
+					global: "gameStart",
+				},
 				filter(event, player, name) {
 					if (!player.hasSkill("tongshuai")) {
 						return false;
 					}
-					if (name == "phaseBegin" && game.phaseNumber == 1) {
+					if (name === "phaseBegin" && game.phaseNumber === 1) {
 						return false;
 					}
-					return true;
+					const slist = player.storage.tongshuai.owned;
+					for (const _ in slist) {
+						return true;
+					}
+					return false;
 				},
-				priority: -9,
-				forced: true,
-				popup: false,
-				content() {
-					var slist = player.storage.tongshuai.owned;
-					var list = [];
-					for (var i in slist) {
-						list.push(i);
+				async cost(event, trigger, player) {
+					if (!event.isMine()) {
+						return;
 					}
-					if (event.isMine()) {
-						event.dialog = ui.create.dialog("选择获得一项技能", [list, "character"]);
-						if (trigger.name == "game") {
-							event.control = ui.create.control();
-						} else {
-							event.control = ui.create.control(["cancel"]);
-						}
-						event.clickControl = function (link) {
-							if (link != "cancel") {
-								var currentname = event.dialog.querySelector(".selected.button").link;
-								var mark = player.marks.tongshuai;
-								if (!mark) {
-									player.markSkill("tongshuai");
-									mark = player.marks.tongshuai;
-									if (mark.firstChild) {
-										mark.firstChild.remove();
-									}
-								}
-								mark.setBackground(currentname, "character");
 
-								player.addAdditionalSkill("tongshuai", link);
-								game.addVideo("chess_tongshuai_skill", player, [currentname, link]);
-								player.logSkill("tongshuai2");
-								game.log(player, "获得技能", "【" + get.translation(link) + "】");
-								player.popup(link);
+					const slist = player.storage.tongshuai.owned;
+					const list = Object.entries(slist).flatMap(([id, skills]) => skills.map(skill => [skill, id]));
+					const from = new Map(list);
+					const result = await player
+						.chooseButton({
+							createDialog: [get.prompt2("tongshuai"), [list, "skill"]],
+							ai(button) {
+								return get.skillRank(button.link, "inout");
+							},
+						})
+						.forResult();
 
-								for (var i = 0; i < event.dialog.buttons.length; i++) {
-									if (event.dialog.buttons[i].classList.contains("selected")) {
-										var name = event.dialog.buttons[i].link;
-										player.sex = lib.character[name][0];
-										player.group = lib.character[name][1];
-										// player.node.identity.style.backgroundColor=get.translation(player.group+'Color');
-										break;
-									}
-								}
-							}
-							ui.auto.show();
-							event.dialog.close();
-							event.control.close();
-							_status.imchoosing = false;
-							game.resume();
-						};
-						event.control.custom = event.clickControl;
-						ui.auto.hide();
-						_status.imchoosing = true;
-						game.pause();
-						for (var i = 0; i < event.dialog.buttons.length; i++) {
-							event.dialog.buttons[i].classList.add("selectable");
+					event.result = {
+						bool: result.bool,
+						cost_data: {
+							skills: result.links,
+							owner: from.get(result.links[0]),
 						}
-						event.custom.replace.button = function (button) {
-							if (button.classList.contains("selected")) {
-								button.classList.remove("selected");
-								if (trigger.name == "game") {
-									event.control.style.opacity = 0;
-								} else {
-									event.control.replace(["cancel"]);
-								}
-							} else {
-								for (var i = 0; i < event.dialog.buttons.length; i++) {
-									event.dialog.buttons[i].classList.remove("selected");
-								}
-								button.classList.add("selected");
-								event.control.replace(slist[button.link]);
-								if (trigger.name == "game" && getComputedStyle(event.control).opacity == 0) {
-									event.control.style.transition = "opacity 0.5s";
-									ui.refresh(event.control);
-									event.control.style.opacity = 1;
-									event.control.style.transition = "";
-									ui.refresh(event.control);
-								} else {
-									event.control.style.opacity = 1;
-								}
-							}
-							event.control.custom = event.clickControl;
-						};
-						event.custom.replace.window = function () {
-							for (var i = 0; i < event.dialog.buttons.length; i++) {
-								if (event.dialog.buttons[i].classList.contains("selected")) {
-									event.dialog.buttons[i].classList.remove("selected");
-									if (trigger.name == "game") {
-										event.control.style.opacity = 0;
-									} else {
-										event.control.replace(["cancel"]);
-									}
-									event.control.custom = event.clickControl;
-									return;
-								}
-							}
-						};
-					} else {
-						event.finish();
 					}
+				},
+				async content(event, trigger, player) {
+					const { skills, owner } = event.cost_data;
+					const [skill] = skills;
+
+					let mark = player.marks.tongshuai;
+					if (mark == null) {
+						player.markSkill("tongshuai");
+						mark = player.marks.tongshuai;
+						if (mark.firstChild) {
+							mark.firstChild.remove();
+						}
+					}
+					mark.setBackground(owner, "character");
+
+					await player.addAdditionalSkills("tongshuai", skills);
+					game.addVideo("chess_tongshuai_skill", player, [owner, skill]);
+
+					const character = get.character(owner);
+					player.sex = character.sex;
+					player.group = character.group;
 				},
 			},
 			tongshuai3: {
 				unique: true,
 				trigger: { player: "phaseBegin" },
 				forced: true,
+				locked: true,
 				filter(event, player) {
-					return player.storage.tongshuai && player.storage.tongshuai.unowned && player.storage.tongshuai.unowned.length > 0;
+					return player.storage.tongshuai && player.storage.tongshuai.unowned?.length > 0;
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.storage.tongshuai.get();
 				},
 			},

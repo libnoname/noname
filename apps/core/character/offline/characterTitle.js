@@ -1,4 +1,6 @@
 export default {
+	ylyg_xuhuang: "公明大义",
+	ylyg_zhurong: "刺美人",
 	wxdl_caozhi: "白马饰金羁",
 	hl_shen_guanyu: "刀炽炼狱",
 	hl_shen_zhugeliang: "赤壁唤风",

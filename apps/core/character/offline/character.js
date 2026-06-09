@@ -1,4 +1,17 @@
 const characters = {
+	ylyg_xuhuang: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["ylyg_duanliang", "ylyg_zier"],
+	},
+	ylyg_zhurong: {
+		sex: "female",
+		group: "shu",
+		hp: 4,
+		skills: ["ylyg_lieren", "ylyg_juxiang"],
+		names: "null|null",
+	},
 	wxdl_caozhi: {
 		sex: "male",
 		group: "wei",

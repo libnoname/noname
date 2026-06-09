@@ -1904,7 +1904,9 @@ export class Game {
 			return;
 		}
 		for (const client of lib.node.clients) {
-			client.send(func, ...args);
+			if (client.inited) {
+				client.send(func, ...args);
+			}
 		}
 	}
 	/**
@@ -10722,6 +10724,12 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		//联机需要删除掉，不然重进会多一个dead（）
 		if (_status.connectMode) {
 			delete lib.playerOL[player.playerid];
+		}
+		//如果被移除角色为当前角色，需要特殊处理
+		const evt = get.event();
+		const loop = evt.getParent("phaseLoop", true);
+		if (loop?.player == player) {
+			loop.player = player.previousSeat;
 		}
 		//移除角色的具体步骤
 		const removePlayer = async (player, config, configOL) => {

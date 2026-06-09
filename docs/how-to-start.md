@@ -16,7 +16,7 @@
    npm -v
    ```
 
-### pnpm (>=8)
+### pnpm (>=9)
 
 在命令行输入：
 
@@ -61,42 +61,14 @@ pnpm install
   - 打包离线包（包含完整源代码以及这个版本更新的素材）：
   
     ```bash
-    pnpm build:diff
+    pnpm generateTestPack
     ```
   
   - 打包完整包（包含完整源代码、所有素材和所有内置扩展）：
   
     ```bash
-    pnpm build:full
+    pnpm build
     ```
-
-  打包结果会输出到`dist/`文件夹，可以复制到启动器（如electron）中打开。
-
-  > **提示:**
-  >
-  > 如果需要自动打包成zip，请在命令之后增加`--zip`，如：
-  >
-  > ```bash
-  > pnpm build:diff --zip
-  > ```
-  >
-  > 这会在打包完成后额外在项目根目录输出结果的压缩包。
-
-- ### 生产环境
-
-  执行：
-  
-  ```bash
-  pnpm start
-  ```
-
-  或在构建完项目后执行：
-
-  ```bash
-  pnpm serve
-  ```
-  
-  浏览器会自动打开，占用本地的8080端口。
 
 - ### 语法检查
 

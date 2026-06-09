@@ -67,6 +67,10 @@ export class Client {
 		}
 		return this;
 	}
+	/**
+	 * @type {boolean | undefined}
+	 */
+	inited;
 	close() {
 		lib.node.clients.remove(this);
 		lib.node.observing.remove(this);
