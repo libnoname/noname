@@ -1627,14 +1627,14 @@ const skills = {
 					position: "hes",
 					viewAs: { name: links[0][2], nature: links[0][3] },
 					onuse(result, player) {
-						var evt = _status.event.getParent("phase");
-						if (evt && evt.name == "phase" && !evt.xintaoluan) {
+						const evt = _status.event.getParent("phase");
+						if (evt?.name === "phase" && !evt.xintaoluan) {
 							evt.xintaoluan = true;
-							var next = game.createEvent("xintaoluan_clear");
+							const next = game.createEvent("xintaoluan_clear");
 							_status.event.next.remove(next);
 							evt.after.push(next);
 							next.player = player;
-							next.setContent(function () {
+							next.setContent(async (event, trigger, player) => {
 								delete player.storage.xintaoluan;
 								delete player.storage.xintaoluan2;
 							});

@@ -19,7 +19,7 @@ const skills = {
 						return false;
 					}
 					const card = get.autoViewAs({ name, isCard: true }, "unsure");
-					if (!lib.skill.clanshixi.filterx(card, player) || !event.filterCard(card, player, event)) {
+					if (!lib.skill.clanshixi.filterx(card) || !event.filterCard(card, player, event)) {
 						return false;
 					}
 					return true;
@@ -41,18 +41,15 @@ const skills = {
 		filter(event, player) {
 			return event.clanshixi?.length > 0;
 		},
-		filterx(card, player) {
+		filterx(card) {
 			if (get.type(card, null, false) !== "trick") {
 				return false;
 			}
-			const info = get.info(card, player);
+			const info = get.info(card, false);
 			if (!info || info.notarget) {
 				return false;
 			}
-			if (info.selectTarget && info.selectTarget !== 1) {
-				return false;
-			}
-			return info.type === "trick";
+			return info.toself || info.singleCard || !info.selectTarget || info.selectTarget == 1;
 		},
 		chooseButton: {
 			dialog(event, player) {
@@ -180,7 +177,7 @@ const skills = {
 		subSkill: {
 			mark: {
 				init(player, skill) {
-					const history = player.getAllHistory("useCard", evt => get.suit(evt.card) !== "none" && lib.skill.clanshixi.filterx(evt.card, player));
+					const history = player.getAllHistory("useCard", evt => get.suit(evt.card) !== "none" && lib.skill.clanshixi.filterx(evt.card));
 					if (history.length) {
 						player.storage.clanshixi ??= {};
 						const storage = player.storage.clanshixi;
@@ -205,7 +202,7 @@ const skills = {
 				trigger: { player: "useCard1" },
 				filter(event, player) {
 					const card = event.card;
-					if (!lib.skill.clanshixi.filterx(card, player)) {
+					if (!lib.skill.clanshixi.filterx(card)) {
 						return false;
 					}
 					const suit = get.suit(card);

@@ -1,0 +1,15 @@
+[commit]
+# https://www.conventionalcommits.org
+conventional_commits = true
+allow_commit_types = ["build", "feat", "fix", "docs", "style", "refactor", "perf", "test", "chore", "ci", "revert", "style", "test"]
+subject_imperative = true
+allow_wip_commits = true
+require_signed_off_by = false
+# Bypass checks for bot/automation authors and co-authors:
+ignore_authors = ["dependabot[bot]", "renovate[bot]", "copilot[bot]", "github-actions[bot]"]
+
+[branch]
+# https://conventional-branch.github.io/
+conventional_branch = true
+allow_branch_types = ["feature", "bugfix", "hotfix", "release", "chore", "feat", "fix", "stage"]
+allow_branch_names = ["main", "build-output"]
