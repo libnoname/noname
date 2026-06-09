@@ -8168,7 +8168,9 @@ const skills = {
 			player: "useCardAfter",
 		},
 		filter(event, player) {
-			return player.countMark("dcsbmoyou_count") >= 2;
+			const used = player.getHistory("useCard", evt => !evt.skill || !evt.skill.startsWith("dcsbmoyou")).length;
+			const fired = player.getHistory("useSkill", evt => evt.skill == "dcsbmoyou").length;
+			return used - 2 * fired >= 2;
 		},
 		check: () => true,
 		async content(event, trigger, player) {
