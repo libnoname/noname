@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  discussions: write
 
 jobs:
   create-release:
@@ -143,7 +144,9 @@ jobs:
         run: |
           TAG="${GITHUB_REF_NAME}"
 
-          gh release edit "$TAG" --draft=false
+          gh release edit "$TAG" \
+          --draft=false \
+          --discussion-category "Announcements"
 
   cleanup-release:
     name: Clean Draft When Failure
@@ -155,6 +158,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
       - name: Delete draft release on failure
         env:
           GH_TOKEN: ${{ github.token }}
