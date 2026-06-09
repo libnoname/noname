@@ -27,13 +27,6 @@ const dynamicTranslates = {
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
-	dcliexiang(player, skill) {
-		let info = lib.translate[`${skill}_info`];
-		if (player.hasSkill("dcliexiang_extra")) {
-			return info.replace("一名", `至多${get.cnNumber(player.countMark("dcliexiang_extra") + 1)}名`);
-		}
-		return info;
-	},
 	dcsbyinmou(player) {
 		const bool = player.storage.dcsbyinmou;
 		let yang = "摸体力值张牌（至多摸五）",
@@ -313,6 +306,13 @@ const dynamicTranslates = {
 			return match;
 		});
 		return result;
+	},
+	rencheng(player, skill) {
+		const storage = player.storage[skill];
+		if (!storage) {
+			return lib.translate["rencheng_info"];
+		}
+		return lib.translate["rencheng_rewrite_info"];
 	},
 };
 export default dynamicTranslates;

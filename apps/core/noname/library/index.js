@@ -7569,7 +7569,7 @@ export class Library {
 				check_extension: {
 					name: "禁止扩展玩家进房",
 					init: false,
-					intro: "禁止开启了扩展的的玩家进入房间",
+					intro: "禁止开启了扩展的玩家进入房间",
 				},
 				reset_banBlacklist: {
 					name: "重置黑名单",
@@ -13533,6 +13533,13 @@ export class Library {
 		[11, "J"],
 		[12, "Q"],
 		[13, "K"],
+	]);
+	// special翻译被占了，单独给几个区域加个翻译列表
+	areaList = new Map([
+		["cardPile", "牌堆"],
+		["discardPile", "弃牌堆"],
+		["special", "s区"],
+		["ordering", "处理区"],
 	]);
 	suit = ["club", "spade", "diamond", "heart"];
 	suits = ["club", "spade", "diamond", "heart", "none"];

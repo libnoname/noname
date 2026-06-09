@@ -1627,14 +1627,14 @@ const skills = {
 					position: "hes",
 					viewAs: { name: links[0][2], nature: links[0][3] },
 					onuse(result, player) {
-						var evt = _status.event.getParent("phase");
-						if (evt && evt.name == "phase" && !evt.xintaoluan) {
+						const evt = _status.event.getParent("phase");
+						if (evt?.name === "phase" && !evt.xintaoluan) {
 							evt.xintaoluan = true;
-							var next = game.createEvent("xintaoluan_clear");
+							const next = game.createEvent("xintaoluan_clear");
 							_status.event.next.remove(next);
 							evt.after.push(next);
 							next.player = player;
-							next.setContent(function () {
+							next.setContent(async (event, trigger, player) => {
 								delete player.storage.xintaoluan;
 								delete player.storage.xintaoluan2;
 							});
@@ -2693,8 +2693,8 @@ const skills = {
 					forced: true,
 				})
 				.forResult();
-			if (result.bool && result.autochoose && result.cards?.length === result.rawcards.length) {
-				player.removeSkills("jiexun");
+			if (result?.cards?.length > 0 && result.autochoose && result.cards?.length === result.rawcards?.length) {
+				await player.removeSkills("jiexun");
 				player.addSkill("funan_jiexun");
 			}
 		},
@@ -2752,8 +2752,8 @@ const skills = {
 					})
 					.forResult();
 
-				if (result.bool && result.autochoose && result.cards?.length === result.rawcards.length) {
-					player.removeMark("xinjiexun", player.countMark("xinjiexun"), false);
+				if (result?.cards?.length > 0 && result.autochoose && result.cards?.length === result.rawcards?.length) {
+					player.clearMarkMark("xinjiexun", false);
 					player.addSkill("funan_jiexun");
 				}
 			}
@@ -12100,7 +12100,7 @@ const skills = {
 			const result = await gainner
 				.gainPlayerCard({
 					target: giver,
-					positon: "h",
+					position: "h",
 					forced: true,
 					visibleMove: true,
 				})

@@ -5,6 +5,7 @@ const characters = {
 		hp: 4,
 		skills: ["twwushen", "twwuhun"],
 		groupInGuozhan: "shu",
+		dieAudios: ["shen_guanyu"],
 	},
 	tw_shen_lvmeng: {
 		sex: "male",

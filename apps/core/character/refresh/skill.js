@@ -9784,7 +9784,7 @@ const skills = {
 		filterCard: () => false,
 		selectCard: -1,
 		log: false,
-		async content(event, trigger, player) {
+		async precontent(event, trigger, player) {
 			player.logSkill("decadechunlao");
 			await player.link();
 		},
@@ -13851,14 +13851,13 @@ const skills = {
 		locked: false,
 		trigger: { global: "judge" },
 		filter(event, player) {
-			return player.countCards("hes", { color: "black" }) > 0;
+			return player.hasCards("hes", { color: "black" });
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseCard(
-					`${get.translation(trigger.player)}的${trigger.judgestr || ""}判定为${get.translation(trigger.player.judging[0])}，${get.prompt(event.skill)}`,
-					"hes",
-					card => {
+				.chooseCard({
+					prompt: `${get.translation(trigger.player)}的${trigger.judgestr || ""}判定为${get.translation(trigger.player.judging[0])}，${get.prompt(event.skill)}`,
+					filterCard(card) {
 						const player = get.player();
 						if (get.color(card) !== "black") {
 							return false;
@@ -13872,49 +13871,51 @@ const skills = {
 							return mod;
 						}
 						return true;
-					}
-				)
-				.set("ai", card => {
-					const trigger = get.event().getTrigger();
-					const { player, judging } = get.event();
-					const result = trigger.judge(card) - trigger.judge(judging);
-					const attitude = get.attitude(player, trigger.player);
-					if (attitude == 0 || result == 0) {
-						if (trigger.player != player) {
+					},
+					position: "hes",
+					ai(card) {
+						const trigger = get.event().getTrigger();
+						const { player, judging } = get.event();
+						const result = trigger.judge(card) - trigger.judge(judging);
+						const attitude = get.attitude(player, trigger.player);
+						if (attitude == 0 || result == 0) {
+							if (trigger.player != player) {
+								return 0;
+							}
+							if (game.hasPlayer(current => get.attitude(player, current) < 0)) {
+								const checkx = lib.skill.xinleiji.judgeCheck(card, true) - lib.skill.xinleiji.judgeCheck(judging);
+								if (checkx > 0) {
+									return checkx;
+								}
+							}
 							return 0;
 						}
-						if (
-							game.hasPlayer(function (current) {
-								return get.attitude(player, current) < 0;
-							})
-						) {
-							var checkx = lib.skill.xinleiji.judgeCheck(card, true) - lib.skill.xinleiji.judgeCheck(judging);
-							if (checkx > 0) {
-								return checkx;
-							}
+						let val = get.value(card);
+						if (get.subtype(card) == "equip2") {
+							val /= 2;
+						} else {
+							val /= 7;
 						}
-						return 0;
+						if (attitude == 0 || result == 0) {
+							return 0;
+						}
+						if (attitude > 0) {
+							return result - val;
+						}
+						return -result - val;
 					}
-					let val = get.value(card);
-					if (get.subtype(card) == "equip2") {
-						val /= 2;
-					} else {
-						val /= 7;
-					}
-					if (attitude == 0 || result == 0) {
-						return 0;
-					}
-					if (attitude > 0) {
-						return result - val;
-					}
-					return -result - val;
 				})
 				.set("judging", trigger.player.judging[0])
 				.forResult();
 		},
 		popup: false,
 		async content(event, trigger, player) {
-			const next = player.respond(event.cards, event.name, "highlight", "noOrdering");
+			const next = player.respond({
+				cards: event.cards,
+				skill: event.name,
+				highlight: true,
+				noOrdering: true,
+			});
 			await next;
 			const { cards } = next;
 			if (cards?.length) {

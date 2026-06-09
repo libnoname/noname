@@ -1,123 +1,101 @@
-# v1.11.3更新内容
+# v1.11.4更新内容
 
-※ 我们继续和一些优秀且具有开源精神的代码编写者保持着积极合作。在这一版本中，我们通过接收GitHub的Pull Request，整合了 @1937475624 @1TheLeaderOne @diandian157 @gitxin09 @mengxinzxz @rintim @willinie @Xiazhiliao @xjm0708 @xiyang141 @xizifu @yx-lingmeng @YYUZDS @Zander-Sun 共14位贡献者编写的代码（排名不分先后）。
+※ 我们继续和一些优秀且具有开源精神的代码编写者保持着积极合作。在这一版本中，我们通过接收GitHub的Pull Request，整合了 @bacz00 @ChiryuhLii @DennyCats @Foxissimo-8 @gitxin09 @karimvern @morego123 @PositionZer0 @qihang518887 @rintim @Spmario233 @xizifu @xjm0708 @yx-lingmeng @YYUZDS @Zander-Sun @zhpy2004 @zziyoo 共18位贡献者编写的代码（排名不分先后）。
 
 # 新武将
 
 - **十周年:**
-  - 星河璀璨: 星张松
-  - 限定专属: 张裕、刘璿、威张星彩、新杀谋张任、史阿、王越
-  - 一将成名2026: 笛音荀勖、勘律荀勖
-  - 武将列传: 曹豹
+  - 神武: 神曹丕
 
 - **OL:**
-  - OL专属: 闪张郃、OL界张松、OL界夏侯氏
-  - 限时地主: 乐诸葛亮
-  - 璀璨星河: OL刘晔、OL皇甫嵩、董予安、逄纪
+  - 魔武将: 魔张飞
+  - 门阀士族: 族陆郁生
 
 - **手杀/海外:**
-  - 限时地主: 赤兔、绝影、的卢
-  - 喵喵杀: 体重之神、可爱之神、委屈之神、抉择之神、变幻之神、睡眠之神、逆转之神、美腿之神、宫百万
-  - 移动版·缘: 缘孙权、缘关羽、缘梅成、缘陈兰、缘蹋顿
-  - 兵势篇: 手杀朱绩
-  - 未分组: 手杀张既
+  - SP: 手杀诸葛果
+  - 测试服: 手杀夏侯楙
+  - 限时地主: 魔周瑜
+  - 袖里乾坤: 手杀曹纯
+  - 神将异构: 手杀神马超
 
 - **线下:**
-  - 四象封印: 标轲比能、标牛金、标甘夫人、标王沈、标曹金玉、标吕伯奢、吴珂
-  - 雁翎耀光: 雁翎庞统、雁翎典韦
-  - 神霸虎牢: 虎牢神关羽、虎牢神诸葛亮、虎牢神吕蒙、虎牢神周瑜、虎牢神吕布
-  - 文心雕龙: 文曹植
+  - 蚀心入魔: 魔周瑜
 
 # 底层改动
 
-## 为所有不定参数的Player方式添加可提供类型的obj参数 (#3428)
+## 使自由选将搜索栏能以技能搜索武将 (#3592)
 
-无名杀不少创建事件的函数都是不定参数顺序的，以`chooseCard`举例，`player.chooseCard(2, true)`和`player.chooseCard(true, 2)`都发挥一个功能，即强制选择两张牌；这些不定顺序的函数有一个问题，就是不好写函数的注释
+由于群友觉得搜索栏应该能以技能搜索武将，故添加该功能
 
-目前为所有参数为不定参数的`Player#xxx`增加了一个新的形参，即提供一个和`Player#chooseCardTarget`参数形式一样的object类型参数，而该object类型的参数拥有完整的类型，方便函数使用
+## 修改仅点将可用机制，分离单独禁将和整体禁将 (#3622)
 
-**注:** 该改动理应不影响以前的扩展，但由于固有代码与现形式的部分冲突，发生以下情况请及时适配:
+无名杀在几个月前增加了武将包的“仅点将可用”选项，使得能使一整个武将包在开启的状态下使人机无法选择其中的武将
 
-- 在使用`Player#chooseCard`等选择牌函数的时候，如果只给了一个参数且该参数是限定可选择什么牌的object（如`player.chooseCard({ type: "trick" })`），如果限定object没有name属性，则会被当成obj参数从而导致函数异常
+但当时的逻辑是在加载武将包时修改`lib.config.forbidai_user`，武将包仅点将则把该武将包的所有武将均放进去，反之就把该武将包的所有武将移除
 
-## 重写Step Content任务 (#3323) (W.I.P)
+这使得“随机选将可用”完全没了作用，因为在加载武将包时会立即根据“仅点将可用”的状态更新数组，使得单独禁将失去了作用
 
-Step Content过于依赖Javascript的动态，导致现在环境下，Step Content拥有下面的问题:
-- IDE/LSP无法正常理解Step Content中的状态问题
-- AI也无法理解Step Content的逻辑
-基于此，将本体的Step Content都重写成Async Content和Array Content需提上日程，其中无需跨步的重写成Async Content，而需要跨步的重写成Array Content
+现在分离了相关逻辑，“随机选将可用”仍然走`lib.config.forbidai_user`，而仅点将可用则在加载游戏时单独根据配置判断
 
-目前已完成下面的任务:
+## 修复电脑端不支持window.prompt导致无法正常运行 (#3638)
 
-- 重写`lib.element.content`中的所有`Step Content`函数 (#3324)
-- 重写神话再临和神将的`Step Content` (#3336)
-- 重写界限突破包的所有step content (#3407)
-- 重写旧武将包和四象封印包的所有step content (#3450)
+由于Electron不支持`window.prompt`，导致一些使用`window.prompt`读取用户输入的地方均无法在Electron正常运行
 
-等所有Step Content均重写完后，将会把武将包和模式打包成单文件，从而加快游戏加载流程
+现将这些地方改成无名杀自带的`game.prompt`和`game.promises.prompt`，以使得Electron正常运行
 
-**注:** 重写Step Content不代表要舍弃Step Content，请无需担心
+> 目前唯一留下的`window.prompt`会检测移动端和诗笺版接口，Electron端不会访问，故无修改
+
+## 支持viewAs函数返回卡牌名称 (#3658)
+
+原先函数式viewAs返回string类型，仅做了类型声明，未进行实现
+
+现在实现了对string返回值的处理，可以正常使用了
+
+目前，函数式viewAs的返回值类型，是原本静态viewAs类型的超集
+
+也就是说，如果需要动态计算某些参数，现在所有静态viewAs都可以改为函数式viewAs
+
+## 国战暗将时，长按暗将点击查看资料时，可以直接看到隐藏的主将 (#3747)
+
+上个版本中，对于拥有隐匿技的武将和国战暗将，在武将牌未知时，可通过“查看资料”来获取武将信息
+
+现版本中，如果一个武将是“未知”的，则不会显示“查看资料”按钮
+
+## 将【Charlotte技】正式更名为【异能技】 (#3877)
+
+给Charlotte技确认了正式的名称，至于延迟效果等charlotte标签是否需要改名则另当别论
 
 ## API更改
 
 ### 新增
 
-**Player#sortHandcard**和**Player#sortHandcardOL**
+**Player#iterableGetConnectedCards**、**Player#iterableGetShownCards**和**Player#iterableGetKnownCards**
 
-- 用于整理手牌，其中`Player#sortHandcard`用于单机，而`Player#sortHandcardOL`同时作用于单机和联机，建议一般情况下均使用`Player#sortHandcardOL`
+- 用于以迭代器的形式遍历连接牌/明置牌/已知牌，对于不需要完整数组的情况下能优化相关性能
 
-**game.syncHandcard**
+**Player#hasCards**、**Player#hasDiscardableCards**和**Player#hasGainableCards**
 
-- 供联机中主机同步手牌状态，应用可参考OL的蒋琬
+- 用于判断是否有牌/可弃置的牌/可获取的牌，参数位置同`Player#getCards`/`Player#getDiscardableCards`/`Player#getGainableCards`
+- `Player#hasCards`拥有短路机制，在获取到存在牌时即会返回结果，无需完整遍历牌区，能优化相关性能
+
+**Player#countHistory**、**Player#countAllHistory**和**Player#countRoundHistory**
+
+- 为“获取某轮次XX事件数量”“获取当前回合XX事件数量”“获得整局XX事件数量”增加了统一的数量函数
+
+**get.hpColor**
+
+- 获取一名角色的勾玉颜色。用法参考【瞋视】
 
 ### 变动
 
-**game.addPlayerOL**和**game.removePlayerOL**
+**Player#getShownCards**、**Player#countShownCards**和**Player#hasShownCards**
 
-- 改为异步函数（返回值不变），同时增加新函数，可允许自定义动画；`game.addPlayerOL`可增加添加角色的来源
-- 现函数签名如下:
-```typescript
-type Game = {
-    ...
-    /**
-     * 添加一个新玩家到target的上家或下家（默认为上家）
-     * @param { Player } target 新玩家的下家
-     * @param { string|undefined|null } [character] 新玩家主将
-     * @param { string|undefined|null } [character2] 新玩家副将
-     * @param { boolean } [isNext] 是否添加到下家
-     * @param { object } [config] 一些别的参数塞这来！
-     * @param { Player } [config.source] addPlayer的来源，不填就是没有
-     * @param { ((player: Player) => Promise) | false } [config.animate] 添加player的动画，有默认动画，自定义动画须返回一个promise；false则不生成动画
-     * @returns { Player }
-     */
-    async addPlayerOL(target, character, character2, isNext, config = {})
+- 现版本已知牌相关的函数在判断`filter`时，会先走一遍是否符合`filter`，再判断是否已知；上个版本前是先判断是否已知，再判断`filter`；这会导致现在提供给`filter`的函数会出现未知牌。如果原先代码中存在直接从`filter`中编写逻辑的情况，则会导致相关函数退化会`get/count/hasCards`，需要适配
 
-    /**
-     * 移除一名玩家，单机联机都可用
-     * @param { Player } player 要移除的玩家
-     * @param { object } [config] 一些别的参数塞这来！
-     * @param { ((player: Player) => Promise) | false } [config.animate] 移除player的动画，有默认动画，自定义动画须返回一个promise；false则不生成动画
-     * @returns { Player }
-     */
-    async removePlayerOL(player, config = {})
-    ...
-}
-```
+**Player#changeHp**、**Player#gainMaxHp**和**Player#loseMaxHp**
 
-**Player#showCards**
+- 返回的事件增加属性`changedHp`和`changedMaxHp`，用于获取准确的体力值变化值和体力上限变化值
 
-- 新增 `multipleShow` 属性，有该属性时，showCards 的 log 改为每个在此次事件中有牌被展示的角色依次展示
+**Player#gainMultiple**
 
-**Player#clearSkills**
-
-- 如果第一个参数不为真则直接返回`this.removeSkills(this.getSkills(null, false, false).removeArray(skills))`，否则走老逻辑
-
-**game.gameDraw**
-
-- 新增可传入`targets`数组（不传默认为`game.players`），让部分人定向执行分发起始手牌
-
-### 废弃
-
-**game.addPlayer**和**game.removePlayer**
-
-- 请使用`game.addPlayerOL`和`game.removePlayerOL`替代
+- 返回的事件增加属性`gaintag`，支持使用`gaintag`给获得的牌添加标记

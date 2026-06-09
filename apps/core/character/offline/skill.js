@@ -10156,6 +10156,7 @@ const skills = {
 		async content(event, trigger, player) {
 			await game.doAsyncInOrder(event.targets, async target => await target.damage());
 		},
+		locked: false,
 		mod: {
 			aiOrder(player, card, num) {
 				const num1 = get.info(card).selectTarget ?? 0,
@@ -15817,16 +15818,16 @@ const skills = {
 		frequent: true,
 		async content(event, trigger, player) {
 			const list = [];
-			for (let positon of ["c", "d", "ej"]) {
+			for (let position of ["c", "d", "ej"]) {
 				const card = get.cardPile(
 					card => {
-						return get.is.damageCard(card) && positon.includes(get.position(card, true));
+						return get.is.damageCard(card) && position.includes(get.position(card, true));
 					},
 					"field",
 					"random"
 				);
 				if (card) {
-					if (positon == "ej") {
+					if (position == "ej") {
 						const owner = get.owner(card);
 						if (owner) {
 							player.line(owner, "green");
@@ -28622,7 +28623,7 @@ const skills = {
 		filter(event, player) {
 			return player.countCards("he") > 1;
 		},
-		filterCard: true,
+		filterCard: lib.filter.cardDiscardable,
 		position: "he",
 		selectCard: [2, Infinity],
 		check(card) {
@@ -28640,17 +28641,23 @@ const skills = {
 		async content(event, trigger, player) {
 			let cards = get.cards(event.cards.length, true);
 			await player.showCards(cards, get.translation(player) + "发动了【爵制】");
-			const {
-				result: {
-					links: [card],
-				},
-			} = await player.chooseCardButton("爵制：选择要获得的牌", true, cards).set("ai", button => {
-				let player = get.event().player,
-					number = get.number(button.link);
-				return player.getUseValue(button.link, null, number % (player.storage.xingtu_mark || 13) !== 0);
-			});
-			if (card) {
-				player.gain(card, "gain2");
+			const result = await player
+				.chooseCardButton({
+					prompt: "爵制：选择要获得的牌",
+					cards,
+					forced: true,
+					ai(button) {
+						const player = get.player();
+						const number = get.number(button.link);
+						return player.getUseValue(button.link, null, number % (player.storage.xingtu_mark || 13) !== 0);
+					},
+				})
+				.forResult();
+			if (result?.links?.length) {
+				await player.gain({
+					cards: result.links,
+					animate: "gain2",
+				});
 			}
 		},
 		ai: {

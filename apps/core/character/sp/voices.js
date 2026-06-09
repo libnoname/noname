@@ -1,4 +1,10 @@
 export default {
+	"#xiaoxi_hansui1": "两军交战，勇者为胜！",
+	"#xiaoxi_hansui2": "打你个措手不及！",
+	"#xiaoxi_machao1": "快马突袭！",
+	"#xiaoxi_machao2": "突入敌阵！",
+	"#xiaoxi_pangde1": "先吃我一刀！",
+	"#xiaoxi_pangde2": "先下手为强！",
 	"#olshutong1": "宜循春秋之义，秉承正统。",
 	"#olshutong2": "整束古仁人之礼，统饬今世。",
 	"#olzhijie1": "今邦国殄瘁，唯世子慎以行正。",

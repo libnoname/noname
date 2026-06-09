@@ -121,7 +121,7 @@ const dynamicTranslates = {
 		if (count < 3) {
 			return lib.translate.olbixin_info.slice(count * 5);
 		}
-		return "你可以声明一种牌的类型（每种类型限[3]次），并选择一种你本轮未使用过且有合法目标的的基本牌。你摸[1]张牌，然后若你有此类型的手牌，你将所有此类型的手牌当此基本牌使用。";
+		return "你可以声明一种牌的类型（每种类型限[3]次），并选择一种你本轮未使用过且有合法目标的基本牌。你摸[1]张牌，然后若你有此类型的手牌，你将所有此类型的手牌当此基本牌使用。";
 	},
 	olfeibai(player) {
 		const bool = player.storage.olfeibai;

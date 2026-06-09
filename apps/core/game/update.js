@@ -1,10 +1,9 @@
 window.noname_update = {
-	version: "1.11.3",
+	version: "1.11.4",
 	update: "NULL",
 	changeLog: [
-		"新增52个武将",
-		"对Step Content武将进行重构",
-		"调整部分api",
+		"儿童节快乐",
+		"新增9个武将",
 		"详细信息请参考game/updateLog.md"
 	],
 	files: [],

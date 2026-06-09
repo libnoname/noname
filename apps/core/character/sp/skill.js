@@ -19252,7 +19252,7 @@ const skills = {
 					}
 					return event.olbixin_list?.length > 0;
 				},
-				prompt: "你可以声明一种牌的类型（每种类型限三次），并选择一种你本轮未使用过且有合法目标的的基本牌。你摸一张牌，然后若你有此类型的手牌，你将所有此类型的手牌当此基本牌使用。",
+				prompt: "你可以声明一种牌的类型（每种类型限三次），并选择一种你本轮未使用过且有合法目标的基本牌。你摸一张牌，然后若你有此类型的手牌，你将所有此类型的手牌当此基本牌使用。",
 				chooseButton: {
 					dialog(event, player) {
 						const list = event.olbixin_list;

@@ -28,7 +28,7 @@ const cards = {
 		},
 	},
 	gongqiao_trick: {
-		type: "equip",
+		type: "trick",
 		derivation: "yj_majun",
 		fullskin: true,
 		image: "image/card/majun_gongqiao.png",
@@ -54,7 +54,7 @@ const cards = {
 		},
 	},
 	gongqiao_basic: {
-		type: "equip",
+		type: "basic",
 		derivation: "yj_majun",
 		fullskin: true,
 		image: "image/card/majun_gongqiao.png",

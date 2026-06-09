@@ -936,15 +936,14 @@ const skills = {
 	drlt_zhengu: {
 		audio: 2,
 		trigger: { player: "phaseJieshuBegin" },
+		filter(event, player) {
+			return game.hasPlayer(current => current != player);
+		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt2(event.skill), function (card, player, target) {
-					//if(target.storage.drlt_zhengu_mark&&target.storage.drlt_zhengu_mark.includes(player)) return false;
-					return target != player;
-				})
-				.set("ai", function (target) {
-					const player = _status.event.player;
-					//if(target.storage.drlt_zhengu_mark&&target.storage.drlt_zhengu_mark.includes(player)) return 0;
+				.chooseTarget(get.prompt2(event.skill), lib.filter.notMe)
+				.set("ai", target => {
+					const player = get.player();
 					const num = Math.min(5, player.countCards("h")) - target.countCards("h");
 					const att = get.attitude(player, target);
 					return num * att;
@@ -953,55 +952,58 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			player.addSkill("drlt_zhengu2");
-			target.addSkill("drlt_zhengu_mark");
-			target.storage.drlt_zhengu_mark.push(player);
-			target.markSkill("drlt_zhengu_mark");
-			lib.skill.drlt_zhengu.sync(player, target);
+			player.addSkill("drlt_zhengu_mark");
+			player.markAuto("drlt_zhengu_mark", [target]);
 		},
-		sync(player, target) {
+		async sync(player, target) {
 			const num = player.countCards("h");
 			const num2 = target.countCards("h");
 			if (num < num2) {
-				target.chooseToDiscard(num2 - num, true, "h", "allowChooseAll");
+				await target.chooseToDiscard(num2 - num, true, "h", "allowChooseAll");
 			} else {
-				target.drawTo(Math.min(5, num));
+				await target.drawTo(Math.min(5, num));
 			}
 		},
-	},
-	drlt_zhengu2: {
-		audio: "drlt_zhengu",
-		trigger: {
-			global: "phaseEnd",
-		},
-		forced: true,
-		charlotte: true,
-		logTarget: "player",
-		sourceSkill: "drlt_zhengu",
-		filter(event, player) {
-			return event.player.storage.drlt_zhengu_mark && event.player.storage.drlt_zhengu_mark.includes(player);
-		},
-		async content(event, trigger, player) {
-			while (trigger.player.storage.drlt_zhengu_mark.includes(player)) {
-				trigger.player.storage.drlt_zhengu_mark.remove(player);
-			}
-			if (trigger.player.storage.drlt_zhengu_mark.length == 0) {
-				trigger.player.unmarkSkill("drlt_zhengu_mark");
-			}
-			lib.skill.drlt_zhengu.sync(player, trigger.player);
-		},
-	},
-	drlt_zhengu_mark: {
-		charlotte: true,
-		init(player, skill) {
-			if (!player.storage[skill]) {
-				player.storage[skill] = [];
-			}
-		},
-		marktext: "镇",
-		intro: {
-			name: "镇骨",
-			content: "已成为$〖镇骨〗的目标",
+		subSkill: {
+			mark: {
+				charlotte: true,
+				onremove: true,
+				intro: { content: "你的回合结束时和$的下个回合结束时，其将手牌摸至或弃置至与你手牌数相同（至多摸至五张）" },
+				audio: "drlt_zhengu",
+				trigger: { global: "phaseEnd" },
+				filter(event, player) {
+					if (player == event.player) {
+						return player.getStorage("drlt_zhengu_mark").some(current => current.isIn());
+					}
+					return player.getStorage("drlt_zhengu_mark").includes(event.player);
+				},
+				forced: true,
+				logTarget(event, player) {
+					return player == event.player
+						? player
+								.getStorage("drlt_zhengu_mark")
+								.filter(current => current.isIn())
+								.sortBySeat()
+						: event.player;
+				},
+				async content(event, trigger, player) {
+					if (player == trigger.player) {
+						for (const target of event.targets.sortBySeat()) {
+							if (!target.isIn()) {
+								continue;
+							}
+							await lib.skill.drlt_zhengu.sync(player, target);
+						}
+					} else {
+						const target = event.targets[0];
+						player.unmarkAuto(event.name, [target]);
+						if (!player.getStorage(event.name).length) {
+							player.removeSkill(event.name);
+						}
+						await lib.skill.drlt_zhengu.sync(player, target);
+					}
+				},
+			},
 		},
 	},
 	xinfu_zuilun: {
