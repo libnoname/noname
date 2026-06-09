@@ -2538,18 +2538,14 @@ const skills = {
 		audio: 4,
 		trigger: { player: "useCardAfter" },
 		filter(event, player) {
-			if (!event.targets?.length) {
-				return false;
-			}
-			return get.is.damageCard(event.card);
+			return get.is.damageCard(event.card) && event.targets?.some(target => target !== player);
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget({
 					prompt: get.prompt2(event.skill),
 					filterTarget(card, player, target) {
-						const trigger = get.event().getTrigger();
-						return trigger.targets?.includes(target);
+						return get.event().targets.includes(target);
 					},
 					ai(target) {
 						const player = get.player();
@@ -2562,6 +2558,10 @@ const skills = {
 						return 10 / target.countCards("he");
 					},
 				})
+				.set(
+					"targets",
+					trigger.targets.filter(target => target !== player)
+				)
 				.forResult();
 		},
 		async content(event, trigger, player) {
@@ -2580,7 +2580,7 @@ const skills = {
 				return num;
 			};
 			const list = [
-				//["useCard", `对${get.translation(player)}使用一张${get.translation(trigger.card.name)}`],
+				["useCard", `对${get.translation(player)}使用一张非转化且非虚拟的【${get.translation(trigger.card.name)}】`],
 				["discard", `弃置${get.cnNumber(getNum(player, target))}张牌`],
 				["damage", `${get.translation(player)}对你造成1点伤害`],
 			];
@@ -2588,7 +2588,7 @@ const skills = {
 				.map(info => info[0])
 				.filter(info => {
 					switch (info) {
-						/*case "useCard": {
+						case "useCard": {
 							return (
 								target.countCards("hs", card => {
 									if (get.name(card) != trigger.card.name) {
@@ -2597,7 +2597,7 @@ const skills = {
 									return target.canUse(card, player);
 								}) > 0
 							);
-						}*/
+						}
 						case "discard": {
 							const num = getNum(player, target);
 							return target.countDiscardableCards(target, "he") >= num;
@@ -2619,20 +2619,20 @@ const skills = {
 								ai(button) {
 									const { player, getNum } = get.event(),
 										trigger = get.event().getTrigger();
-									/*if (button.link == "useCard") {
-									const cards = player.getCards("hs", card => {
+									if (button.link == "useCard") {
+										const cards = player.getCards("hs", card => {
 											if (get.name(card) != trigger.card.name) {
 												return false;
 											}
 											return player.canUse(card, trigger.player);
-										}),
-										check = card => get.effect(trigger.player, card, player, player);
-									return check(cards.maxBy(check));
-								}*/
+										});
+										const check = card => get.effect(trigger.player, card, player, player);
+										return cards.length ? check(cards.maxBy(check)) : 0;
+									}
 									if (button.link == "discard") {
 										return get.effect(player, { name: "guohe_copy2" }, player, player) / getNum;
 									}
-									return get.damageEffect(player, player, player);
+									return get.damageEffect(player, trigger.player, player);
 								},
 							})
 							.set("getNum", getNum(player, target))
@@ -2646,21 +2646,10 @@ const skills = {
 				return;
 			}
 			const type = result.links[0];
-			//next = { skill: name, type: type, event: event };
-			game.log(target, "选择了", `#y${list.find(info => info[0] == type)?.[1]}`);
-			/*player.getHistory("custom").push(next);
-			if (
-				!player.hasHistory("custom", evt => {
-					if (evt.skill != name || evt.type != type) {
-						return false;
-					}
-					return evt.event != event;
-				})
-			) {
-				await player.draw();
-			}*/
+			const index = ["useCard", "discard", "damage"].indexOf(type);
+			game.log(player, "选择了", "#g【荡势】", "的", "#y选项" + get.cnNumber(index + 1, true));
 			switch (type) {
-				/*case "useCard": {
+				case "useCard": {
 					await target
 						.chooseToUse({
 							filterCard(card, player, event) {
@@ -2669,7 +2658,7 @@ const skills = {
 								}
 								return lib.filter.filterCard.apply(this, arguments);
 							},
-							prompt: `荡势：对${get.translation(player)}使用一张${get.translation(trigger.card.name)}`,
+							prompt: `荡势：对${get.translation(player)}使用一张非转化且非虚拟的【${get.translation(trigger.card.name)}】`,
 							addCount: false,
 							forced: true,
 							filterTarget(card, player, target) {
@@ -2683,20 +2672,34 @@ const skills = {
 						.set("complexTarget", true)
 						.set("cardx", trigger.card.name)
 						.set("sourcex", player);
-					return;
-				}*/
+					break;
+				}
 				case "discard": {
 					const num = Math.min(target.countDiscardableCards(target, "he"), getNum(player, target));
 					target.addMark(`${name}_count`, 1, false);
 					target.addTempSkill(`${name}_count`, "roundStart");
 					if (num > 0) {
-						await target.chooseToDiscard({ position: "he", forced: true, selectCard: num });
+						await target.chooseToDiscard({ position: "he", forced: true, selectCard: num, allowChooseAll: true });
 					}
-					return;
+					break;
 				}
 				default: {
 					await target.damage();
-					return;
+				}
+			}
+			const bool = !player.getStorage("hefeidangshi_choices").includes(type);
+			if (bool) {
+				for (const name of lib.phaseName) {
+					const evt = event.getParent(name);
+					if (!evt || evt.name != name) {
+						continue;
+					}
+					player.addTempSkill("hefeidangshi_choices", name + "After");
+					player.markAuto("hefeidangshi_choices", [type]);
+					await player.draw();
+					player.addTempSkill("hefeidangshi_effect", name + "After");
+					player.addMark("hefeidangshi_effect", 1, false);
+					break;
 				}
 			}
 		},
@@ -2708,15 +2711,27 @@ const skills = {
 			effect: {
 				charlotte: true,
 				onremove: true,
-				intro: {
-					content: "出杀次数+#",
-				},
+				intro: { content: "本阶段出杀次数+#" },
 				mod: {
 					cardUsable(card, player, num) {
 						if (card.name == "sha") {
 							return num + player.countMark("hefeidangshi_effect");
 						}
 					},
+				},
+			},
+			choices: {
+				charlotte: true,
+				onremove: true,
+				marktext: "势",
+				intro: {
+					content: (storage, player) =>
+						`本阶段【荡势】已执行选项：${storage
+							.map(item => {
+								const index = ["useCard", "discard", "damage"].indexOf(item);
+								return `选项${get.cnNumber(index + 1, true)}`;
+							})
+							.join("、")}`,
 				},
 			},
 		},

@@ -1147,7 +1147,8 @@ const translates = {
 	hefeichonglei: "冲垒",
 	hefeichonglei_info: "锁定技。①你的出牌阶段内，所有其他角色的非基本手牌均只能作为【闪】使用或打出。②出牌阶段限X次（X为其他角色数），当你使用的牌被其他角色响应后，或当你响应其他角色使用的牌后，你获得该角色一张手牌。",
 	hefeidangshi: "荡势",
-	hefeidangshi_info: "当你使用伤害牌结算完毕后，你可以令其中一名目标其他角色选择一项：1.弃置X张牌（X为所有角色本轮选择此选项的次数，且至少为1）；2.你对其造成1点伤害。",//且本阶段出杀次数+1
+	hefeidangshi_info: "当你使用伤害牌结算结束后，你可令一名其他目标角色选择一项：1.对你使用一张非转化、非虚拟且与此牌牌名相同的伤害牌；2.弃置X张牌（X为所有角色本轮选择此项的次数且至少为1）；3.受到你造成的1点伤害。若其选择了本阶段未被执行过的选项，你摸一张牌且本阶段出【杀】次数+1。",
+	hefeidangshi_append: `<span style="font-family:yuanli">该技能为海外版本</span>`,
 	hefeiheyuzhangliao: "合御",
 	hefeiheyuzhangliao_info: `锁定技，①若${get.poptip({
 		id: "characterx_hefei_yuejin",

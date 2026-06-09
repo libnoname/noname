@@ -1,4 +1,6 @@
 export default {
+	//pot_zhangren: "",
+	//pot_sunchen: "",
 	//zhuji: "",
 	pot_dengai: "勇气陵云",
 	//pot_chenjiao: "",

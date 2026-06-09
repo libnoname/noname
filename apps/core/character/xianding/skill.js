@@ -8190,18 +8190,23 @@ const skills = {
 		trigger: { global: "phaseUseBegin" },
 		round: 1,
 		filter(event, player) {
-			return player.countDiscardableCards(player, "h") > 0 && event.player != player;
+			return event.player !== player && player.hasDiscardableCards(player, "he");
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseToDiscard(get.prompt2(event.skill, trigger.player), [1, 5], "h", "chooseonly")
-				.set("allowChooseAll", true)
-				.set("ai", card => {
-					const target = get.event().getTrigger().player;
-					if (get.attitude(get.player(), target) > 0) {
-						return 7.5 - get.value(card);
+				.chooseToDiscard({
+					prompt: get.prompt2(event.skill, trigger.player),
+					selectCard: [1, 5],
+					position: "he",
+					chooseonly: true,
+					allowChooseAll: true,
+					ai(card) {
+						const target = get.event().getTrigger().player;
+						if (get.attitude(get.player(), target) > 0) {
+							return 7.5 - get.value(card);
+						}
+						return 0;
 					}
-					return 0;
 				})
 				.forResult();
 		},
@@ -24308,7 +24313,8 @@ const skills = {
 		async content(event, trigger, player) {
 			player
 				.judge(card => {
-					const evt = get.event().evtTrigger;
+					const eventName = get.event().eventName;
+					const evt = get.event().getParent(eventName).getTrigger();
 					if (!evt.source?.isIn() || !evt.card || typeof get.info("dczhantao").getNumber(evt.card) !== "number") {
 						return 0;
 					}
@@ -24319,7 +24325,8 @@ const skills = {
 				})
 				.set("judge2", result => result.bool)
 				.set("callback", event => {
-					const evt = event.getParent().evtTrigger;
+					const evtx = event.getParent();
+					const evt = event.getParent(evtx.eventName).getTrigger();
 					if (!evt.source?.isIn() || !evt.card || typeof get.info("dczhantao").getNumber(evt.card) !== "number") {
 						return;
 					}
@@ -24331,7 +24338,7 @@ const skills = {
 						}
 					}
 				})
-				.set("evtTrigger", trigger);
+				.set("eventName", event.name);
 		},
 	},
 	dcanjing: {
