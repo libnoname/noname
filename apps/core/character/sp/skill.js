@@ -6694,7 +6694,34 @@ const skills = {
 				const result =
 					num < skills.length
 						? await player
-								.chooseButton(["青书：选择失去" + get.cnNumber(num) + "册多余的“天书”", [skills.map(item => [item, "（剩余" + player.storage[item][0] + "次）" + lib.translate[item + "_info"]]), "textbutton"]], true, num)
+								.chooseButton(
+									[
+										"青书：选择失去" + get.cnNumber(num) + "册多余的“天书”",
+										[
+											dialog => {
+												dialog.css({ top: get.is.phoneLayout() ? "20%" : "25%" });
+												dialog.addNewRow(
+													...skills.map(item => {
+														return {
+															item: [`${lib.translate[`${item}_info`]}<br>（剩余${player.storage[item][0]}次）`],
+															custom(itemContainer) {
+																itemContainer.link = item;
+																itemContainer.classList.add("button");
+																dialog.buttons.add(itemContainer);
+															},
+															clickItemContainer(itemContainer, 棍, 母, e) {
+																ui.click.button.call(itemContainer, e);
+															},
+														};
+													})
+												);
+											},
+											"handle",
+										],
+									],
+									true,
+									num
+								)
 								.set("ai", () => 1 + Math.random())
 								.forResult()
 						: { bool: true, links: skills };
@@ -6728,7 +6755,33 @@ const skills = {
 			const result =
 				skills.length > 1
 					? await player
-							.chooseButton(["授术：请选择你要授予" + get.translation(target) + "的天书", [skills.map(item => [item, get.translation(item + "_info")]), "textbutton"]], true)
+							.chooseButton(
+								[
+									"授术：请选择你要授予" + get.translation(target) + "的天书",
+									[
+										dialog => {
+											dialog.css({ top: get.is.phoneLayout() ? "20%" : "25%" });
+											dialog.addNewRow(
+												...skills.map(item => {
+													return {
+														item: [lib.translate[`${item}_info`]],
+														custom(itemContainer) {
+															itemContainer.link = item;
+															itemContainer.classList.add("button");
+															dialog.buttons.add(itemContainer);
+														},
+														clickItemContainer(itemContainer, 棍, 母, e) {
+															ui.click.button.call(itemContainer, e);
+														},
+													};
+												})
+											);
+										},
+										"handle",
+									],
+								],
+								true
+							)
 							.set("ai", () => 1 + Math.random())
 							.forResult()
 					: { bool: true, links: skills };
