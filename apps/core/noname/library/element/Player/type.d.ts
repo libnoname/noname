@@ -344,9 +344,9 @@ export interface EventChooseButtonParams extends ChooseBase, CheckButtonParams {
 	processAI?(): Partial<Result>;
 }
 
-export interface EventChooseCardOLParams {
-	list?: Player[];
-	args: any[];
+export interface EventChooseCardOLParams extends EventChooseCardParams {
+	list: Player[];
+	args?: any[];
 }
 
 export interface EventChooseCardParams extends ChooseBase, CheckCardParams {

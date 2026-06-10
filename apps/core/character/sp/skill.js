@@ -6557,7 +6557,33 @@ const skills = {
 			let { tianshuTrigger: fromItems, tianshuContent: toItems } = get.info("olhedao");
 			fromItems = fromItems.randomGets(3);
 			const froms = await player
-				.chooseButton(['###青书：请选择“天书”时机###<div class="text center">时机触发等级将决定后续效果词条的等级</div>', [fromItems.map((item, index) => [index, "（触发等级：" + item.fromIndex + "）" + item.name]), "textbutton"]], true)
+				.chooseButton(
+					[
+						'###青书：请选择“天书”时机###<div class="text center">时机触发等级将决定后续效果词条的等级</div>',
+						[
+							dialog => {
+								dialog.css({ top: get.is.phoneLayout() ? "20%" : "25%" });
+								dialog.addNewRow(
+									...fromItems.map((item, index) => {
+										return {
+											item: [`${item.name}<br>（触发等级：${item.fromIndex}）`],
+											custom(itemContainer) {
+												itemContainer.link = index;
+												itemContainer.classList.add("button");
+												dialog.buttons.add(itemContainer);
+											},
+											clickItemContainer(itemContainer, 棍, 母, e) {
+												ui.click.button.call(itemContainer, e);
+											},
+										};
+									})
+								);
+							},
+							"handle",
+						],
+					],
+					true
+				)
 				.set("ai", () => 1 + Math.random())
 				.forResult();
 			if (!froms?.links?.length) {
@@ -6573,7 +6599,33 @@ const skills = {
 				}
 			}
 			const tos = await player
-				.chooseButton(['###青书：请选择“天书”效果###<div class="text center">' + from.name + "</div>", [toItems.map((item, index) => [index, `${["", '<span style="color: #EEC900; text-shadow: 0.5px 0.5px 0.5px white, 0.5px 0.5px 0.5px white, 0.5px 0.5px 0.5px white, 0.5px 0.5px 0.5px white;">'][item.toIndex - from.fromIndex]}${item.name}${["", "</span>"][item.toIndex - from.fromIndex]}`]), "textbutton"]], true)
+				.chooseButton(
+					[
+						'###青书：请选择“天书”效果###<div class="text center">' + from.name + "</div>",
+						[
+							dialog => {
+								dialog.css({ top: get.is.phoneLayout() ? "20%" : "25%" });
+								dialog.addNewRow(
+									...toItems.map((item, index) => {
+										return {
+											item: [`${["", '<span style="color: #EEC900; text-shadow: 0.5px 0.5px 0.5px white, 0.5px 0.5px 0.5px white, 0.5px 0.5px 0.5px white, 0.5px 0.5px 0.5px white;">'][item.toIndex - from.fromIndex]}${item.name}${["", "</span>"][item.toIndex - from.fromIndex]}`],
+											custom(itemContainer) {
+												itemContainer.link = index;
+												itemContainer.classList.add("button");
+												dialog.buttons.add(itemContainer);
+											},
+											clickItemContainer(itemContainer, 棍, 母, e) {
+												ui.click.button.call(itemContainer, e);
+											},
+										};
+									})
+								);
+							},
+							"handle",
+						],
+					],
+					true
+				)
 				.set("ai", () => 1 + Math.random())
 				.forResult();
 			if (!tos?.links?.length) {
@@ -6642,7 +6694,34 @@ const skills = {
 				const result =
 					num < skills.length
 						? await player
-								.chooseButton(["青书：选择失去" + get.cnNumber(num) + "册多余的“天书”", [skills.map(item => [item, "（剩余" + player.storage[item][0] + "次）" + lib.translate[item + "_info"]]), "textbutton"]], true, num)
+								.chooseButton(
+									[
+										"青书：选择失去" + get.cnNumber(num) + "册多余的“天书”",
+										[
+											dialog => {
+												dialog.css({ top: get.is.phoneLayout() ? "20%" : "25%" });
+												dialog.addNewRow(
+													...skills.map(item => {
+														return {
+															item: [`${lib.translate[`${item}_info`]}<br>（剩余${player.storage[item][0]}次）`],
+															custom(itemContainer) {
+																itemContainer.link = item;
+																itemContainer.classList.add("button");
+																dialog.buttons.add(itemContainer);
+															},
+															clickItemContainer(itemContainer, 棍, 母, e) {
+																ui.click.button.call(itemContainer, e);
+															},
+														};
+													})
+												);
+											},
+											"handle",
+										],
+									],
+									true,
+									num
+								)
 								.set("ai", () => 1 + Math.random())
 								.forResult()
 						: { bool: true, links: skills };
@@ -6676,7 +6755,33 @@ const skills = {
 			const result =
 				skills.length > 1
 					? await player
-							.chooseButton(["授术：请选择你要授予" + get.translation(target) + "的天书", [skills.map(item => [item, get.translation(item + "_info")]), "textbutton"]], true)
+							.chooseButton(
+								[
+									"授术：请选择你要授予" + get.translation(target) + "的天书",
+									[
+										dialog => {
+											dialog.css({ top: get.is.phoneLayout() ? "20%" : "25%" });
+											dialog.addNewRow(
+												...skills.map(item => {
+													return {
+														item: [lib.translate[`${item}_info`]],
+														custom(itemContainer) {
+															itemContainer.link = item;
+															itemContainer.classList.add("button");
+															dialog.buttons.add(itemContainer);
+														},
+														clickItemContainer(itemContainer, 棍, 母, e) {
+															ui.click.button.call(itemContainer, e);
+														},
+													};
+												})
+											);
+										},
+										"handle",
+									],
+								],
+								true
+							)
 							.set("ai", () => 1 + Math.random())
 							.forResult()
 					: { bool: true, links: skills };
@@ -32789,7 +32894,7 @@ const skills = {
 			let str = "摸两张牌";
 			const mode = get.mode();
 			let choice = "选项一";
-				const list = [];
+			const list = [];
 			if (mode == "identity" || (mode == "versus" && _status.mode == "four")) {
 				const zhu = get.zhu(player);
 				if (zhu && zhu != player && zhu.skills) {
@@ -32808,7 +32913,7 @@ const skills = {
 				.set("ai", () => _status.event.choice)
 				.forResult();
 			if (result?.control == "选项一") {
-					player.addSkills("rewangzun");
+				player.addSkills("rewangzun");
 			} else if (result?.control == "选项二") {
 				await player.draw(2);
 				if (list.length) {
@@ -41565,7 +41670,7 @@ const skills = {
 					return event.type == "phase" || event.filterCard({ name: "tiesuo" }, player, event);
 				},
 				hiddenCard(player, name) {
-					return name == "tiesuo" && player.hasCard((card) => get.suit(card) == "club", "she");
+					return name == "tiesuo" && player.hasCard(card => get.suit(card) == "club", "she");
 				},
 				position: "hes",
 				inherit: "lianhuan",

@@ -7,7 +7,6 @@ on:
 
 permissions:
   contents: write
-  discussions: write
 
 jobs:
   create-release:
@@ -132,6 +131,9 @@ jobs:
     needs:
       - build-packages
       - build-installer
+    permissions:
+      contents: write
+      discussions: write
 
     steps:
       - name: Checkout repository
@@ -155,6 +157,7 @@ jobs:
       - create-release
       - build-packages
       - build-installer
+      - release
     runs-on: ubuntu-latest
 
     steps:

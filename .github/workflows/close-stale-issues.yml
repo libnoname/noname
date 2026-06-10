@@ -16,7 +16,7 @@ jobs:
         uses: actions/stale@v10
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          only-labels: needs more info
+          only-labels: needs-info
 
           days-before-issue-stale: 60
           days-before-issue-close: 7

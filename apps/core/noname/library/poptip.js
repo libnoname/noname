@@ -28,7 +28,7 @@ const _poptipMap = new Map([
 	["rule_jiang", { name: "激昂", info: "一名角色发动“昂扬技”标签技能后，此技能失效，直至从此刻至满足此技能“激昂”条件后。" }],
 	["rule_lizhan", { name: "历战", info: "一名角色的回合结束时，若本回合发动过拥有历战效果的技能，则对此技能效果的进行等同于发动次数的永久可叠加式升级或修改。" }],
 	["rule_tongxin", { name: "同心", info: "若技能拥有同心效果，则拥有该技能的角色可在回合开始时与其他角色同心直到自己下回合开始（默认为选择一名角色同心），选择的角色称为“同心角色”。拥有同心效果的技能发动后，技能发动者先执行同心效果。然后若有与其同心的角色，这些角色也依次执行同心效果。" }],
-	["sxrm_connect", {name: "连接", info: `一种对手牌的动作：<br><li>被连接的手牌对所有角色可见<br><li>一名角色因为使用、打出、弃置而失去连接牌时，所有角色依次弃置被连接的手牌（不可嵌套）<br><li>一张连接牌再次被连接或离开手牌区时，重置为正常状态`}],
+	["sxrm_connect", { name: "连接", info: `一种对手牌的动作：<br><li>被连接的手牌对所有角色可见<br><li>一名角色因为使用、打出、弃置而失去连接牌时，所有角色依次弃置被连接的手牌（不可嵌套）<br><li>一张连接牌再次被连接或离开手牌区时，重置为正常状态` }],
 	["sxrm_compare", { name: "延时拼点", info: "拼点的子类，拼点结束后不会立刻公布结果，改为将两张拼点牌扣置并移出游戏；满足一定条件时公开结果，此回合结束后，若仍未满足公开条件，将游戏外的拼点牌移回弃牌堆，并且不再执行拼点的后续效果。" }],
 	["rule_mamba", { name: "牢大", info: "Man! What can I say? Mamba out!" }],
 ]);
@@ -81,23 +81,29 @@ export class PoptipManager {
 	 * @type {Map<string, string | ((dialog: Dialog, poptip: string) => Dialog)>}
 	 */
 	createDialog = new Map([
-		["cardDialog", (dialog, poptip) => {
-			dialog.addSmall([[poptip], "vcard"]);
-			const node = dialog.buttons[0];
-			get.nodeintro(node, null, null, dialog);
-			return dialog;
-		}],
-		["characterDialog", (dialog, poptip) => {
-			const name = poptip.startsWith("character_") ? poptip.slice(10) : poptip;
-			if (name.startsWith("characterx_")) {
-				dialog.addSmall([[name.slice(11)], "character"]);
-			} else {
-				dialog.addSmall([[name], "character"]);
+		[
+			"cardDialog",
+			(dialog, poptip) => {
+				dialog.addSmall([[poptip], "vcard"]);
 				const node = dialog.buttons[0];
 				get.nodeintro(node, null, null, dialog);
-			}
-			return dialog;
-		}],
+				return dialog;
+			},
+		],
+		[
+			"characterDialog",
+			(dialog, poptip) => {
+				const name = poptip.startsWith("character_") ? poptip.slice(10) : poptip;
+				if (name.startsWith("characterx_")) {
+					dialog.addSmall([[name.slice(11)], "character"]);
+				} else {
+					dialog.addSmall([[name], "character"]);
+					const node = dialog.buttons[0];
+					get.nodeintro(node, null, null, dialog);
+				}
+				return dialog;
+			},
+		],
 	]);
 
 	init() {
@@ -271,7 +277,7 @@ export class HTMLPoptipElement extends HTMLElement {
 	}
 
 	createdCallback() {
-		this.textContent = this.name;
+		this.innerHTML = this.name;
 	}
 
 	/**
@@ -302,7 +308,7 @@ export class HTMLPoptipElement extends HTMLElement {
 		if (poptip && lib.poptip.createDialog.has(poptip)) {
 			dialog = lib.poptip.createDialog.get(poptip);
 			if (typeof dialog == "string" && lib.poptip.createDialog.has(dialog)) {
-				dialog = lib.poptip.createDialog.get(dialog)
+				dialog = lib.poptip.createDialog.get(dialog);
 			}
 		}
 		return dialog || this.info;
