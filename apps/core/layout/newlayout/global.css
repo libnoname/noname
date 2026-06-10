@@ -251,18 +251,28 @@
 	top: 96px;
 	left: 120px;
 }
+.player.minskin .count,
 .player .count {
 	top: auto;
-	bottom: 30px;
-	left: -3px;
+	/*bottom: 30px;
+	left: -3px;*/
+	bottom: -14px;
+	right: -14px;
 	padding: 2px;
-	line-height: 20px;
-	width: 8px;
+	/*line-height: 20px;*/
+	/*width: 8px;*/
+	line-height: 28px;
+	height: 28px;
+	width: 28px;
 	text-align: left;
 	border-radius: 2px;
 	z-index: 1;
-	border-radius: 3px 0 0 3px;
-	box-shadow: rgba(0, 0, 0, 0.2) 1px -1px 2px inset, rgba(255, 255, 255, 0.15) -1px 1px 5px inset;
+	background-image: url("../../image/card/handcard.png");
+	background-repeat: no-repeat;
+	background-size: cover;
+	font-weight: bolder;
+	/*border-radius: 3px 0 0 3px;
+	box-shadow: rgba(0, 0, 0, 0.2) 1px -1px 2px inset, rgba(255, 255, 255, 0.15) -1px 1px 5px inset;*/
 }
 .player.topcount .count {
 	border-radius: 2px;
@@ -287,16 +297,26 @@
 	border-radius: 3px;
 	text-align: center;
 }
-#arena.slim_player .player .count {
+/*#arena.slim_player .player .count {
 	left: -6px;
-}
+}*/
 #arena.mslim_player .player .count {
 	left: -5px;
 }
 .player .count.action {
 	bottom: 60px;
 }
-.player .count[data-condition="none"] {
+.player .count[data-condition="mid"] {
+	font-size: 14px;
+}
+
+.player .count[data-condition="low"] {
+	font-size: 16px;
+}
+.player .count[data-condition="high"] {
+	font-size: 12px;
+}
+/*.player .count[data-condition="none"] {
 	background: rgba(57, 123, 4, 1);
 	border: 1px solid rgba(39, 79, 7, 1);
 	filter: grayscale(1);
@@ -317,7 +337,7 @@
 .player .count[data-condition="low"] {
 	background: rgba(148, 27, 27, 1);
 	border: 1px solid rgba(86, 9, 9, 1);
-}
+}*/
 
 .player .identity {
 	right: -6px;

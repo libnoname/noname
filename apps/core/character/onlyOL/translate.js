@@ -1,6 +1,16 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	ol_caoxiu: "OL界曹休",
+	ol_caoxiu_prefix: "OL界",
+	olqianju: "千驹",
+	olqianju_info: "锁定技，你每损失1点体力，你计算与其他角色的距离便-1。若全场角色均在你的攻击范围内，你出牌阶段使用【杀】的次数+1。",
+	olqingxi: "倾袭",
+	olqingxi_info: "当你使用杀对目标角色造成伤害时，你可令其选择一项：1.弃置你攻击范围张牌；2.此【杀】对其伤害+1。若你的装备区有武器牌，则改为其依次执行这两项，然后弃置此牌。",
+	ol_guanping: "OL界关平",
+	ol_guanping_prefix: "OL界",
+	oljieyong: "竭勇",
+	oljieyong_info: "你可将手牌中最后一张红色牌当【杀】使用或打出",
 	dm_zhangfei: "魔张飞",
 	dm_zhangfei_prefix: "魔",
 	olzhuohun: "灼魂",
@@ -78,9 +88,9 @@ const translates = {
 	ol_re_xinxianying: "OL界辛宪英",
 	ol_re_xinxianying_prefix: "OL界",
 	olcaishi: "才识",
-	olcaishi_info: "锁定技，当你每轮首次使用一种类型的牌后，若你的手牌上限不为全场最大，你增加一点手牌上限，否则你回复1点体力并令此技能本轮失效。",
+	olcaishi_info: "当你每轮首次使用一种类型的牌后，本轮你的手牌上限+1，若你的手牌上限不为全场最大，你可以令一名角色回复一点体力，然后本回合此技能失效。",
 	olzhongjian: "忠鉴",
-	olzhongjian_info: "出牌阶段限一次，你可展示一名其他角色X张手牌（X为其体力值），然后你展示一张手牌。若展示其的牌包含与你展示牌：颜色相同的牌，你摸一张牌；牌名相同的牌，本阶段此技能改为限两次。",
+	olzhongjian_info: "出牌阶段限一次，你可展示一名其他角色X张手牌（X为其体力值），然后你展示一张手牌。若展示其的牌包含与你展示牌：颜色相同的牌，你摸一张牌或弃置其一张牌；牌名相同的牌，本阶段此技能改为限两次。",
 	ol_sb_chengyu: "OL谋程昱",
 	ol_sb_chengyu_prefix: "OL谋",
 	olsbliduan: "戾断",

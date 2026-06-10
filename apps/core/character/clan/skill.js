@@ -655,41 +655,67 @@ const skills = {
 		enable: "phaseUse",
 		filter(event, player) {
 			const name = "clanfenjian_used";
+			const card = get.autoViewAs({ name: "sha", isCard: true });
 			return game.hasPlayer(target => {
-				return !player.getStorage(name).includes(Math.sign(target.getAttackRange() - player.getAttackRange())) && target.countDiscardableCards(target, "he") > 0;
+				return !player.getStorage(name).includes(Math.sign(target.getAttackRange() - player.getAttackRange())) && player.canUse(card, target, void 0, false);
 			});
 		},
 		filterTarget(card, player, target) {
-			return !player.getStorage("clanfenjian_used").includes(Math.sign(target.getAttackRange() - player.getAttackRange())) && target.countDiscardableCards(target, "he") > 0;
+			return !player.getStorage("clanfenjian_used").includes(Math.sign(target.getAttackRange() - player.getAttackRange())) && lib.filter.filterTarget(get.autoViewAs(get.info("clanfenjian").viewAs), player, target);
 		},
-		async content(event, trigger, player) {
-			const { target } = event;
-			const num = Math.sign(target.getAttackRange() - player.getAttackRange());
-			player.addTempSkill(`${event.name}_used`, "phaseChange");
-			player.markAuto(`${event.name}_used`, num);
-			const result = await target.chooseToDiscard(`奋剑：你须弃置一张牌，若为【闪】，${get.translation(player)}摸一张牌，否则其本回合攻击范围-1`, "he", true).forResult();
+		viewAs: {
+			name: "sha",
+			isCard: true,
+			number: void 0,
+			suit: "none",
+			color: "none",
+			storage: {
+				clanfenjian: true,
+			},
+		},
+		ignoreMod: true,
+		filterCard(card, player, event) {
+			return lib.filter.cardDiscardable.call(this, card, player, event);
+		},
+		log: false,
+		async precontent(event, trigger, player) {
+			const name = event.name.slice(4);
+			player.logSkill(name);
 			const {
-				cards: [card],
-			} = result;
-			if (get.name(card) == "shan") {
-				await player.draw();
-			} else {
-				player.addTempSkill(`${event.name}_debuff`);
-				player.addMark(`${event.name}_debuff`, 1, false);
-			}
+				targets: [target],
+				cards,
+			} = event.result;
+			const num = Math.sign(target.getAttackRange() - player.getAttackRange());
+			player.addTempSkill(`${name}_used`, "phaseChange");
+			player.markAuto(`${name}_used`, num);
+			await player.discard({ cards });
+			event.result.card.cards = [];
+			event.result.cards = [];
+			event.getParent().addCount = false;
 		},
 		ai: {
 			order: 3,
-			result: {
-				target(player, target) {
-					return -get.effect(target, { name: "guohe_copy2" }, target, player);
+		},
+		group: ["clanfenjian_effect"],
+		subSkill: {
+			effect: {
+				forced: true,
+				locked: false,
+				trigger: {
+					source: "damageSource",
+				},
+				filter(event, player) {
+					return event.card?.storage?.clanfenjian && player.getAttackRange() > 0;
+				},
+				async content(event, trigger, player) {
+					player.addTempSkill("clanfenjian_debuff");
+					player.addMark("clanfenjian_debuff", 1, false);
 				},
 			},
-		},
-		subSkill: {
 			debuff: {
 				charlotte: true,
 				onremove: true,
+				markimage: "image/card/attackRange.png",
 				intro: {
 					markcount: storage => -storage,
 					content: "攻击范围-#",
@@ -713,91 +739,162 @@ const skills = {
 		marktext: "☯",
 		intro: {
 			content(storage) {
-				return !storage ? "你可以将你装备区里的一张牌置于其他角色装备区（替换原装备），视为对其使用一张【杀】" : "你可以将手牌摸至X（X为你的攻击范围且至多为5），视为使用一张【闪】";
+				return (!storage ? "你可以将一张装备牌置于其他角色装备区（替换原装备）" : "你可以将手牌摸至X（X为你的攻击范围且至多为5）") + "，然后视为使用一张【闪】或令你被抵消的【杀】依然造成伤害。";
 			},
 		},
-		group: ["clandongxu_yang", "clandongxu_yin"],
-		subSkill: {
-			yang: {
-				log: false,
-				enable: "chooseToUse",
-				hiddenCard(player, name) {
-					return name == "sha" && !player.storage.clandongxu && player.hasCards("e");
-				},
-				filter(event, player) {
-					return event.filterCard(get.autoViewAs({ name: "sha", isCard: true }), player, event) && !player.storage.clandongxu && player.hasCards("e");
-				},
-				prompt: "将装备区里的一张牌置于其他角色装备区（替换原装备），视为对其使用一张【杀】",
-				ignoreMod: true,
-				viewAs: {
-					name: "sha",
-					cards: [],
-					isCard: true,
-				},
-				filterCard: true,
-				position: "e",
-				filterTarget(card, player, target) {
-					const {
-						cards: [cardx],
-					} = ui.selected;
-					if (!cardx) {
-						return;
-					}
-					return target.canEquip(cardx, true) && lib.filter.filterTarget(get.autoViewAs(get.info("clandongxu_yang").viewAs), player, target);
-				},
-				async precontent(event, trigger, player) {
-					player.logSkill("clandongxu");
-					player.changeZhuanhuanji("clandongxu");
-					const [card] = event.result.cards;
-					const [target] = event.result.targets;
-					event.result.cards = [];
-					event.result.card = { name: "sha", isCard: true };
-					player.$give(card, target, false);
-					await target.equip(card);
-					await game.delayx(2);
-				},
-				ai: {
-					respondSha: true,
-					skillTagFilter(player, tag, arg) {
-						if (tag == "respond") {
-							return false;
-						}
-						if (tag == "respondSha" && (player.storage.clandongxu || !player.hasCards("e"))) {
-							return false;
-						}
-					},
-				},
+		enable: "chooseToUse",
+		viewAs: {
+			name: "shan",
+			isCard: true,
+			number: void 0,
+			suit: "none",
+			color: "none",
+		},
+		ignoreMod: true,
+		viewAsFilter(player) {
+			return !player.storage.clandongxu ? player.hasCards("he", { type: "equip" }) : player.countCards("h") < Math.min(player.getAttackRange(), 5);
+		},
+		log: false,
+		filterCard(card, player) {
+			if (!player.storage.clandongxu) {
+				return get.type(card) == "equip";
+			}
+			return false;
+		},
+		selectCard() {
+			if (!get.player().storage.clandongxu) {
+				return 1;
+			}
+			return -1;
+		},
+		position: "he",
+		selectTarget() {
+			if (!get.player().storage.clandongxu) {
+				return 1;
+			}
+			return -1;
+		},
+		filterTarget(card, player, target) {
+			const vcard = get.autoViewAs(get.info("clandongxu").viewAs);
+			if (player.storage.clandongxu) {
+				return true;
+			}
+			const {
+				cards: [cardx],
+			} = ui.selected;
+			if (!cardx) {
+				return;
+			}
+			return target != player && target.canEquip(cardx, true);
+		},
+		async precontent(event, trigger, player) {
+			const name = event.name.slice(4);
+			const bool = player.storage[name];
+			player.logSkill(name);
+			player.changeZhuanhuanji(name);
+			if (!bool) {
+				const [card] = event.result.cards;
+				const [target] = event.result.targets;
+				event.result.cards = [];
+				event.result.card = { name: "shan", isCard: true };
+				event.result.targets = [];
+				player.$give(card, target, false);
+				await target.equip(card);
+				await game.delayx(2);
+			} else {
+				await player.drawTo(Math.min(player.getAttackRange(), 5));
+			}
+		},
+		ai: {
+			respondShan: true,
+			skillTagFilter(player, tag, arg) {
+				if (tag == "respond") {
+					return false;
+				}
+				const bool = player.storage.clandongxu;
+				if (tag == "respondShan" && ((!bool && !player.hasCards("he", card => get.type(card) == "equip")) || (bool && player.countCards("h") >= Math.min(player.getAttackRange(), 5)))) {
+					return false;
+				}
 			},
-			yin: {
-				log: false,
-				enable: "chooseToUse",
-				hiddenCard(player, name) {
-					return name == "shan" && !player.storage.clandongxu && player.countCards("h") < Math.min(player.getAttackRange(), 5);
+		},
+		group: ["clandongxu_guanshi"],
+		subSkill: {
+			guanshi: {
+				audio: "clandongxu",
+				trigger: {
+					player: ["shaMiss", "eventNeutralized"],
 				},
 				filter(event, player) {
-					return event.filterCard(get.autoViewAs({ name: "shan", isCard: true }), player, event) && player.storage.clandongxu && player.countCards("h") < Math.min(player.getAttackRange(), 5);
+					if (event.type !== "card" || event.card.name !== "sha" || !event.target.isIn()) {
+						return false;
+					}
+					const bool = player.storage.clandongxu;
+					if (!bool) {
+						return player.hasCards("he", { type: "equip" });
+					} else {
+						return player.countCards("h") < Math.min(player.getAttackRange(), 5);
+					}
 				},
-				viewAs: {
-					name: "shan",
-					isCard: true,
+				async cost(event, trigger, player) {
+					const bool = player.storage.clandongxu;
+					const { target, card } = trigger;
+					if (!bool) {
+						event.result = await player
+							.chooseCardTarget({
+								prompt: get.prompt(event.skill, target),
+								prompt2: `将一张装备牌置于其他角色装备区（替换原装备），然后此杀依然造成伤害`,
+								filterCard(card, player) {
+									return get.type(card) == "equip";
+								},
+								filterTarget(card, player, target) {
+									return target != player && target.canEquip(ui.selected.cards[0], true);
+								},
+								position: "he",
+								ai1(card) {
+									if (!get.event().goon) {
+										return 0;
+									}
+									return 7 - get.value(card);
+								},
+								ai2(target) {
+									return get.equipValue(ui.selected.cards[0], target);
+								},
+							})
+							.set("goon", get.effect(target, card, player, player) > 0)
+							.forResult();
+					} else {
+						const num = Math.min(player.getAttackRange(), 5);
+						event.result = await player
+							.chooseBool({
+								prompt: get.prompt(event.skill, target),
+								prompt2: `将手牌摸至${num}，然后此杀依然造成伤害`,
+								choice: get.effect(target, card, player, player) > 0,
+							})
+							.forResult();
+					}
 				},
-				filterCard: () => false,
-				selectCard: 0,
-				async precontent(event, trigger, player) {
-					player.logSkill("clandongxu");
+				async content(event, trigger, player) {
+					const bool = player.storage.clandongxu;
 					player.changeZhuanhuanji("clandongxu");
-					await player.drawTo(Math.min(player.getAttackRange(), 5));
-				},
-				ai: {
-					respondShan: true,
-					skillTagFilter(player, tag, arg) {
-						if (tag == "respond") {
-							return false;
-						}
-						if (tag == "respondShan" && (!player.storage.clandongxu || player.countCards("h") >= Math.min(player.getAttackRange(), 5))) {
-							return false;
-						}
-					},
+					if (!bool) {
+						const {
+							cards: [card],
+							targets: [target],
+						} = event;
+						player.$give(card, target, false);
+						await target.equip(card);
+						await game.delayx(2);
+					} else {
+						await player.drawTo(Math.min(player.getAttackRange(), 5));
+					}
+					if (event.triggername === "shaMiss") {
+						trigger.untrigger();
+						trigger.trigger("shaHit");
+						trigger._result.bool = false;
+						trigger._result.result = null;
+					} else {
+						trigger.unneutralize();
+					}
 				},
 			},
 		},

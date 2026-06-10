@@ -9696,14 +9696,14 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			let waiting;
 			if (targets[0].getCards("e").includes(link)) {
 				position = "e";
-				if (!link.cards?.length) {
+				/*if (!link.cards?.length) {
 					targets[0].removeVirtualEquip(link);
-				}
+				}*/
 				waiting = targets[1].equip(link);
 			} else {
-				if (!link.cards?.length) {
+				/*if (!link.cards?.length) {
 					targets[0].removeVirtualJudge(link);
-				}
+				}*/
 				waiting = targets[1].addJudge(link, link?.cards);
 			}
 			if (link.cards?.length) {
@@ -12976,7 +12976,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			}
 			let stop = false;
 			const list = [];
-			for (const cardx of loseCards) {
+			for (const cardx of event.cards) {
 				if (cardx.willBeDestroyed("judge", player, event)) {
 					cardx.selfDestroy(event);
 					stop = true;

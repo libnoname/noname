@@ -725,7 +725,7 @@ declare interface Skill {
 	/** 标记显示内容 */
 	intro?: {
 		/** 自定义mark弹窗的显示内容 */
-		mark?: (dialog: Dialog, storage: any, player: Player) => string | void;
+		mark?: (dialog: Dialog, storage: any, player: Player, event: MouseEvent | TouchEvent | PointerEvent, skill: string) => string | void;
 		/** 用于info.mark为“character”，添加，移除标记时，log显示的标记名（好像意义不大） */
 		name?: string | ((arg: any, player: Player) => string);
 		name2?: string | ((arg: any, player: Player) => string);

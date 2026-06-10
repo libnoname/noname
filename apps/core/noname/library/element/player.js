@@ -191,6 +191,8 @@ export class Player extends HTMLDivElement {
 		} else {
 			player.addEventListener(lib.config.touchscreen ? "touchend" : "click", ui.click.target);
 			node.identity.addEventListener(lib.config.touchscreen ? "touchend" : "click", ui.click.identity);
+			//node.count.addEventListener("pointerdown", ui.click.countOpen);
+			
 			if (lib.config.touchscreen) {
 				player.addEventListener("touchstart", ui.click.playertouchstart);
 				player.addEventListener("touchmove", ui.click.playertouchmove);
@@ -4687,11 +4689,11 @@ export class Player extends HTMLDivElement {
 				hp.style.transition = "";
 			});
 		}
-		var numh = this.countCards("h");
+		let numh = this.countCards("h");
 		if (_status.video) {
 			numh = arguments[0];
 		}
-		if (numh >= 10) {
+		/*if (numh >= 10) {
 			this.node.count.dataset.condition = "low";
 			this.node.count.innerHTML = Array.from(numh.toString()).join("<br>");
 		} else {
@@ -4705,6 +4707,14 @@ export class Player extends HTMLDivElement {
 				this.node.count.dataset.condition = "none";
 			}
 			this.node.count.innerHTML = numh;
+		}*/
+		this.node.count.innerHTML = numh.toString();
+		if (numh <10) {
+			this.node.count.dataset.condition = "low";
+		} else if (numh < 100) {
+			this.node.count.dataset.condition = "mid";
+		} else {
+			this.node.count.dataset.condition = "high";
 		}
 		if (this.updates) {
 			for (var i = 0; i < this.updates.length; i++) {
@@ -7335,7 +7345,7 @@ export class Player extends HTMLDivElement {
 			next.resolve();
 		}
 		next.flashAnimation = flashAnimation;
-		if (flashAnimation && !isFlash) {
+		if (flashAnimation && isFlash == undefined) {
 			next.isFlash = true;
 		} else {
 			next.isFlash = false;

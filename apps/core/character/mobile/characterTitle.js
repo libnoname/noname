@@ -1,4 +1,8 @@
 export default {
+	mb_zhongyao: "正楷萧曹",
+	mb_wutugu: "霸体金刚",
+	mb_chengyu: "泰山捧日",
+	mb_dongbai: "魔姬",
 	//mb_shen_machao: "",
 	//mb_caochun: "",
 	//mb_zhugeguo: "",

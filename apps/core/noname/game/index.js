@@ -10824,7 +10824,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 					}
 				).finished;
 				list.push(animation);
-				return Promise.all(list);
+				return Promise.allSettled(list);
 			};
 			await animate(player).then(() => {
 				//移除角色的dom，隐藏dom是为了避免动画结束后的拖影（）
