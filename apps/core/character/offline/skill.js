@@ -5288,14 +5288,14 @@ const skills = {
 								};
 								if (source.getCards("e").includes(event.card)) {
 									position = "e";
-									if (!event.card.cards?.length) {
+									/*if (!event.card.cards?.length) {
 										source.removeVirtualEquip(event.card);
-									}
+									}*/
 									await aim.equip(event.card);
 								} else {
-									if (!event.card.cards?.length) {
+									/*if (!event.card.cards?.length) {
 										source.removeVirtualJudge(event.card);
-									}
+									}*/
 									await aim.addJudge(event.card, event.card?.cards);
 								}
 								if (event.card.cards?.length) {

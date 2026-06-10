@@ -8067,7 +8067,7 @@ const skills = {
 							return 7.5 - get.value(card);
 						}
 						return 0;
-					}
+					},
 				})
 				.forResult();
 		},
@@ -19852,9 +19852,146 @@ const skills = {
 			await player.removeSkills("dckuichi");
 		},
 	},
-	//这是俺拾嘞
+	//这是俺拾嘞（谋胡车儿）
 	dcsbkongwu: {
 		audio: 2,
+		enable: "phaseUse",
+		usable: 1,
+		filterTarget(card, player, target) {
+			return player != target && target.hasCards("h");
+		},
+		check(card) {
+			return 6 - get.value(card);
+		},
+		async content(event, trigger, player) {
+			const { target } = event;
+			const result = await player
+				.choosePlayerCard({
+					prompt: "孔武：请选择要展示的牌",
+					target,
+					position: "h",
+					forced: true,
+				})
+				.forResult();
+			const { cards } = result;
+			if (cards?.length) {
+				await player.showCards(cards, `${get.translation(player)}对${get.translation(target)}发动了〖孔武〗`);
+				const [card] = cards;
+				await target.modedDiscard({ cards: target.getCards("h", { suit: get.suit(card) }) });
+				let num = target.countCards("he", cardx => get.type2(card) == get.type2(cardx));
+				let isDamaged = false;
+				if (num) {
+					const vcard = get.autoViewAs({ name: "sha", isCard: true });
+					while (num > 0) {
+						num--;
+						if (player.canUse(vcard, target, false, false)) {
+							const next = player.useCard({ card: vcard, targets: [target], addCount: false });
+							await next;
+							if (target.hasHistory("damage", evt => evt.card == next.card)) {
+								isDamaged = true;
+							}
+						} else {
+							break;
+						}
+					}
+				}
+				if (!isDamaged) {
+					await player.drawTo(player.maxHp);
+				}
+				player.when({ global: "phaseAnyEnd" }).then(async (event, trigger, player) => {
+					if (target.isIn() && target.hp <= player.hp && target.countCards("h") <= player.countCards("h")) {
+						player.line(target, "green");
+						target.addTempSkill("dcsbkongwu_effect", { player: "phaseAfter" });
+					}
+				});
+			}
+		},
+		subSkill: {
+			effect: {
+				trigger: {
+					player: ["phaseDrawBegin", "phaseBegin", "equipAfter"],
+				},
+				direct: true,
+				forced: true,
+				charlotte: true,
+				filter(event, player) {
+					if (event.name == "phaseDraw") {
+						return !event.numFixed;
+					}
+					return true;
+				},
+				async content(event, trigger, player) {
+					if (trigger.name == "phaseDraw") {
+						trigger.num--;
+						player.logSkill(event.name);
+					} else {
+						player.disableSkill(event.name, get.skillsFromEquips(player.getCards("e")));
+					}
+				},
+				onremove(player, skill) {
+					player.enableSkill(skill);
+				},
+				mark: true,
+				marktext: "※",
+				intro: {
+					content: "摸牌阶段少摸一张牌，装备牌失效",
+				},
+				mod: {
+					attackRangeBase(player, num) {
+						if (player != _status.currentPhase) {
+							return;
+						}
+						return 1;
+					},
+					globalFrom(from, to, distance) {
+						if (from != _status.currentPhase) {
+							return;
+						}
+						let num = 0;
+						for (let i of from.getVCards("e")) {
+							const info = get.info(i).distance;
+							if (!info) {
+								continue;
+							}
+							if (info.globalFrom) {
+								num += info.globalFrom;
+							}
+						}
+						return distance - num;
+					},
+					globalTo(from, to, distance) {
+						if (to != _status.currentPhase) {
+							return;
+						}
+						let num = 0;
+						for (let i of to.getVCards("e")) {
+							const info = get.info(i).distance;
+							if (!info) {
+								continue;
+							}
+							if (info.globalTo) {
+								num += info.globalTo;
+							}
+							if (info.attackTo) {
+								num += info.attackTo;
+							}
+						}
+						return distance - num;
+					},
+				},
+			},
+		},
+		ai: {
+			order: 5,
+			result: {
+				target(player, target) {
+					return -target.countCards("h");
+				},
+			},
+		},
+	},
+	old_dcsbkongwu: {
+		audio: "dcsbkongwu",
 		enable: "phaseUse",
 		usable: 1,
 		filterCard: true,
@@ -19876,7 +20013,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const target = event.target;
 			player.changeZhuanhuanji(event.name);
-			if (player.storage.dcsbkongwu) {
+			if (player.storage.old_dcsbkongwu) {
 				const num = Math.min(event.cards.length, target.countCards("he"));
 				if (num > 0) {
 					await player.discardPlayerCard("he", target, true, num, "allowChooseAll");
@@ -19892,7 +20029,7 @@ const skills = {
 			player.when("phaseUseEnd").step(async (event, trigger, player) => {
 				if (target.isIn() && target.hp <= player.hp && target.countCards("h") <= player.countCards("h")) {
 					player.line(target, "green");
-					target.addTempSkill("dcsbkongwu_effect", { player: "phaseEnd" });
+					target.addTempSkill("old_dcsbkongwu_effect", { player: "phaseEnd" });
 				}
 			});
 		},
@@ -19934,7 +20071,7 @@ const skills = {
 						trigger.num--;
 						player.logSkill(event.name);
 					} else {
-						player.disableSkill(event.name, lib.skill.dcsbkongwu.getSkills(player));
+						player.disableSkill(event.name, lib.skill.old_dcsbkongwu.getSkills(player));
 					}
 				},
 				onremove(player, skill) {
