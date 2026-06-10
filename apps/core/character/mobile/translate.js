@@ -1,6 +1,22 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	mb_zhongyao: "手杀钟繇",
+	mb_zhongyao_prefix: "手杀",
+	mbzuoding: "佐定",
+	mbzuoding_info: "当其他角色于其出牌阶段内使用♠️牌指定目标后，若你或者目标角色于此阶段内没有受到过伤害，你可以令其中一名目标角色摸一张牌。",
+	mb_wutugu: "手杀兀突骨",
+	mb_wutugu_prefix: "手杀",
+	mbranshang: "燃殇",
+	mbranshang_info: "锁定技，①当你受到1点火焰伤害后，你获得1枚“燃”标记。②结束阶段，你失去X点体力（X为你的“燃”标记数）；然后若你的“燃”数量不小于你的已损失体力值，你减少2点体力上限并摸两张牌。",
+	mbhanyong: "悍勇",
+	mbhanyong_info: "当你使用牌指定的目标数大于1时，若你已受伤，你可以选择一项：1.摸一张牌；2.令此牌造成的伤害+1。背水：获得一个“燃”。",
+	mb_chengyu: "手杀程昱",
+	mb_chengyu_prefix: "手杀",
+	mbshefu: "设伏",
+	mbshefu_info: "①结束阶段，你可以记录一个未被记录的基本牌或普通锦囊牌的牌名并扣置一张牌，称为“伏兵”；②你的回合外，当其他角色使用牌时，你可以移去一张记录名称相同的“伏兵”，令此牌无效（若此牌有目标角色则改为取消所有目标），然后你可以记录一个除此牌名以外且未被记录的基本牌或普通锦囊牌的牌名并扣置一张牌，称为“伏兵”。",
+	mbbenyu: "贲育",
+	mbbenyu_info: "当你受伤害后，若你的手牌数：小于X，你可将手牌摸至X张（至多摸至五）；大于X，你可弃至少X+1张手牌，对伤害来源造成1点伤害；等于X，其技能失效直至你下回合开始（x为伤害来源的手牌数）。",
 	mb_dongbai: "手杀董白",
 	mb_dongbai_prefix: "手杀",
 	mblianzhu: "连诛",

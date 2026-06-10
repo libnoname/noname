@@ -55,7 +55,7 @@ window.noname_character_replace = {
 	chengong: ["chengong", "re_chengong", "sb_chengong", "xy_chengong"],
 	chengpu: ["chengpu", "ol_chengpu", "xin_chengpu", "re_chengpu", "tw_chengpu", "std_chengpu", "ns_chengpu"],
 	chengui: ["chengui", "mb_chengui"],
-	chengyu: ["chengyu", "ol_sb_chengyu", "dc_sb_chengyu", "std_chengyu", "xy_chengyu"],
+	chengyu: ["chengyu", "ol_sb_chengyu", "dc_sb_chengyu", "mb_chengyu", "std_chengyu", "xy_chengyu"],
 	chenjiao: ["chenjiao", "pot_chenjiao"],
 	chenlin: ["chenlin", "dc_sb_chenlin"],
 	chenqun: ["chenqun", "clan_chenqun", "dc_chenqun", "re_chenqun", "old_chenqun"],
@@ -352,7 +352,7 @@ window.noname_character_replace = {
 	zhenji: ["zhenji", "re_zhenji", "sp_zhenji", "sb_zhenji", "mb_sp_zhenji", "tw_zhenji", "jsrg_zhenji", "yj_zhenji", "shinin_zhenji"],
 	zhonghui: ["zhonghui", "clan_zhonghui", "xin_zhonghui", "re_zhonghui", "std_zhonghui", "yj_zhonghui", "pe_zhonghui", "old_zhonghui", "zj_zhonghui", "sp_zhonghui"],
 	zhongyan: ["zhongyan", "clan_zhongyan"],
-	zhongyao: ["zhongyao", "clan_zhongyao", "re_zhongyao"],
+	zhongyao: ["zhongyao", "clan_zhongyao", "re_zhongyao", "mb_zhongyao"],
 	zhoubuyi: ["zhoubuyi", "yj_zhoubuyi"],
 	zhoucang: ["zhoucang", "re_zhoucang", "xin_zhoucang", "drag_zhoucang"],
 	zhouchu: ["jin_zhouchu", "zhouchu", "tw_zhouchu", "std_zhouchu"],
@@ -461,4 +461,5 @@ window.noname_character_replace = {
 	shen_caopi: ["shen_caopi", "dc_shen_caopi"],
 	xiahoumao: ["xiahoumao", "mb_xiahoumao"],
 	sunchen: ["sunchen", "pot_sunchen"],
+	wutugu: ["wutugu", "mb_wutugu"],
 };

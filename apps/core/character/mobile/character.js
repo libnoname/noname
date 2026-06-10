@@ -1,4 +1,24 @@
 const characters = {
+	mb_zhongyao: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["rehuomo", "mbzuoding"],
+		clans: ["颍川钟氏"],
+	},
+	mb_wutugu: {
+		sex: "male",
+		group: "qun",
+		hp: 15,
+		skills: ["mbranshang", "mbhanyong"],
+		names: "null|null",
+	},
+	mb_chengyu: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["mbshefu", "mbbenyu"],
+	},
 	mb_dongbai: {
 		sex: "female",
 		group: "qun",
