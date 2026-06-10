@@ -885,12 +885,8 @@ export default {
 						return 1;
 					}
 					player._zhuge_temp = true;
-					var result = (function () {
-						if (
-							!game.hasPlayer(function (current) {
-								return get.distance(player, current) <= 1 && player.canUse("sha", current) && get.effect(current, { name: "sha" }, player, player) > 0;
-							})
-						) {
+					const result = (() => {
+						if (!game.hasPlayer(current => get.distance(player, current) <= 1 && player.canUse("sha", current) && get.effect(current, { name: "sha" }, player, player) > 0)) {
 							return 1;
 						}
 						if (player.hasSha() && _status.currentPhase === player) {
@@ -898,7 +894,7 @@ export default {
 								return 10;
 							}
 						}
-						var num = player.countCards("h", "sha");
+						const num = player.countCards("h", "sha");
 						if (num > 1) {
 							return 6 + num;
 						}
@@ -966,7 +962,7 @@ export default {
 			distance: { attackFrom: -2 },
 			ai: {
 				equipValue(card, player) {
-					var num = 2.5 + player.countCards("h") / 3;
+					const num = 2.5 + player.countCards("h") / 3;
 					return Math.min(num, 4);
 				},
 				basic: {
@@ -983,7 +979,7 @@ export default {
 			distance: { attackFrom: -2 },
 			ai: {
 				equipValue(card, player) {
-					var num = 2.5 + (player.countCards("h") + player.countCards("e")) / 2.5;
+					const num = 2.5 + player.countCards("he") / 2.5;
 					return Math.min(num, 5);
 				},
 				basic: {
@@ -1322,21 +1318,11 @@ export default {
 					let result = { bool: false };
 					if (!event.directHit) {
 						const next = target.chooseToRespond();
-						next.set("filterCard", function (card, player) {
-							if (get.name(card) !== "sha") {
-								return false;
-							}
-							return lib.filter.cardRespondable(card, player);
-						});
+						next.set("filterCard", (card, player) => get.name(card) === "sha" && lib.filter.cardRespondable(card, player));
 						if (event.shaRequired > 1) {
-							next.set("prompt2", "共需打出" + event.shaRequired + "张【杀】");
+							next.set("prompt2", `共需打出${event.shaRequired}张【杀】`);
 						}
-						next.set("ai", function (card) {
-							if (get.event().toRespond) {
-								return get.order(card);
-							}
-							return -1;
-						});
+						next.set("ai", card => (get.event().toRespond ? get.order(card) : -1));
 						next.set(
 							"toRespond",
 							(() => {
@@ -1399,10 +1385,8 @@ export default {
 							card: card,
 						}),
 						damage = 1,
-						isZhu = function (tar) {
-							return tar.isZhu || tar === game.boss || tar === game.trueZhu || tar === game.falseZhu;
-						},
-						canSha = function (tar, blur) {
+						isZhu = tar => tar.isZhu || tar === game.boss || tar === game.trueZhu || tar === game.falseZhu,
+						canSha = (tar, blur) => {
 							let known = tar.getKnownCards(viewer);
 							if (!blur) {
 								return known.some(card => {
@@ -1713,21 +1697,11 @@ export default {
 					let result = { bool: false };
 					if (!event.directHit) {
 						const next = target.chooseToRespond();
-						next.set("filterCard", function (card, player) {
-							if (get.name(card) !== "shan") {
-								return false;
-							}
-							return lib.filter.cardRespondable(card, player);
-						});
+						next.set("filterCard", (card, player) => get.name(card) === "shan" && lib.filter.cardRespondable(card, player));
 						if (event.shanRequired > 1) {
-							next.set("prompt2", "共需打出" + event.shanRequired + "张闪");
+							next.set("prompt2", `共需打出${event.shanRequired}张闪`);
 						}
-						next.set("ai", function (card) {
-							if (get.event().toRespond) {
-								return get.order(card);
-							}
-							return -1;
-						});
+						next.set("ai", card => (get.event().toRespond ? get.order(card) : -1));
 						next.set(
 							"toRespond",
 							(() => {
@@ -1787,10 +1761,8 @@ export default {
 							card: card,
 						}),
 						damage = 1,
-						isZhu = function (tar) {
-							return tar.isZhu || tar === game.boss || tar === game.trueZhu || tar === game.falseZhu;
-						},
-						canShan = function (tar, blur) {
+						isZhu = tar => tar.isZhu || tar === game.boss || tar === game.trueZhu || tar === game.falseZhu,
+						canShan = (tar, blur) => {
 							let known = tar.getKnownCards(viewer);
 							if (!blur) {
 								return known.some(card => {
@@ -2177,21 +2149,11 @@ export default {
 						let result = { bool: false };
 						if (!event.directHit) {
 							const next = event.turn.chooseToRespond();
-							next.set("filterCard", function (card, player) {
-								if (get.name(card) !== "sha") {
-									return false;
-								}
-								return lib.filter.cardRespondable(card, player);
-							});
+							next.set("filterCard", (card, player) => get.name(card) === "sha" && lib.filter.cardRespondable(card, player));
 							if (event.shaRequired > 1) {
-								next.set("prompt2", "共需打出" + event.shaRequired + "张杀");
+								next.set("prompt2", `共需打出${event.shaRequired}张杀`);
 							}
-							next.set("ai", function (card) {
-								if (get.event().toRespond) {
-									return get.order(card);
-								}
-								return -1;
-							});
+							next.set("ai", card => (get.event().toRespond ? get.order(card) : -1));
 							next.set("shaRequired", event.shaRequired);
 							next.set(
 								"toRespond",
@@ -2488,7 +2450,7 @@ export default {
 									return get.value(card, target) > 0 && card !== target.getEquip("jinhe");
 								}) &&
 								!js.some(card => {
-									var cardj = card.viewAs ? { name: card.viewAs } : card;
+									const cardj = card.viewAs ? { name: card.viewAs } : card;
 									if (cardj.name === "xumou_jsrg") {
 										return true;
 									}
@@ -2502,7 +2464,7 @@ export default {
 								return get.value(card, target) <= 0;
 							}) ||
 								js.some(card => {
-									var cardj = card.viewAs ? { name: card.viewAs } : card;
+									const cardj = card.viewAs ? { name: card.viewAs } : card;
 									if (cardj.name === "xumou_jsrg") {
 										return false;
 									}
@@ -2526,7 +2488,7 @@ export default {
 								return get.value(card, target) > 0 && card !== target.getEquip("jinhe");
 							}) ||
 								js.some(card => {
-									var cardj = card.viewAs ? { name: card.viewAs } : card;
+									const cardj = card.viewAs ? { name: card.viewAs } : card;
 									if (cardj.name === "xumou_jsrg") {
 										return true;
 									}
@@ -2539,7 +2501,7 @@ export default {
 							return get.value(card, target) <= 0;
 						}) ||
 							js.some(card => {
-								var cardj = card.viewAs ? { name: card.viewAs } : card;
+								const cardj = card.viewAs ? { name: card.viewAs } : card;
 								if (cardj.name === "xumou_jsrg") {
 									return false;
 								}
@@ -2579,7 +2541,7 @@ export default {
 								return get.value(card, target) > 0 && card !== target.getEquip("jinhe");
 							}) ||
 								js.some(card => {
-									var cardj = card.viewAs ? { name: card.viewAs } : card;
+									const cardj = card.viewAs ? { name: card.viewAs } : card;
 									if (cardj.name === "xumou_jsrg") {
 										return true;
 									}
@@ -2592,7 +2554,7 @@ export default {
 							return get.value(card, target) <= 0;
 						}) ||
 							js.some(card => {
-								var cardj = card.viewAs ? { name: card.viewAs } : card;
+								const cardj = card.viewAs ? { name: card.viewAs } : card;
 								if (cardj.name === "xumou_jsrg") {
 									return false;
 								}
@@ -2617,7 +2579,7 @@ export default {
 									return get.value(card, target) > 0 && card !== target.getEquip("jinhe");
 								}) &&
 								!js.some(card => {
-									var cardj = card.viewAs ? { name: card.viewAs } : card;
+									const cardj = card.viewAs ? { name: card.viewAs } : card;
 									if (cardj.name === "xumou_jsrg") {
 										return true;
 									}
@@ -2631,7 +2593,7 @@ export default {
 								return get.value(card, target) <= 0;
 							}) ||
 								js.some(card => {
-									var cardj = card.viewAs ? { name: card.viewAs } : card;
+									const cardj = card.viewAs ? { name: card.viewAs } : card;
 									if (cardj.name === "xumou_jsrg") {
 										return false;
 									}
@@ -3307,59 +3269,51 @@ export default {
 				},
 				result: {
 					target(player, target) {
-						var num = game.countPlayer(function (current) {
+						const num = game.countPlayer(current => {
 							//var skills=current.getSkills();
-							for (var j = 0; j < current.skills.length; j++) {
-								var rejudge = get.tag(current.skills[j], "rejudge", current);
-								if (rejudge !== undefined) {
-									if (get.attitude(target, current) > 0 && get.attitude(current, target) > 0) {
-										return rejudge;
-									} else {
-										return -rejudge;
-									}
+							for (const skill of current.skills) {
+								const rejudge = get.tag(skill, "rejudge", current);
+								if (rejudge === undefined) {
+									continue;
 								}
+								if (get.attitude(target, current) > 0 && get.attitude(current, target) > 0) {
+									return rejudge;
+								}
+								return -rejudge;
 							}
 						});
 						if (num > 0) {
 							return num;
 						}
-						if (num === 0) {
-							var mode = get.mode();
-							if (mode === "identity") {
-								if (target.identity === "nei") {
+						const mode = get.mode();
+						if (mode === "identity") {
+							if (target.identity === "nei") {
+								return 1;
+							}
+							const situ = get.situation();
+							if (target.identity === "fan") {
+								if (situ > 1) {
 									return 1;
 								}
-								var situ = get.situation();
-								if (target.identity === "fan") {
-									if (situ > 1) {
-										return 1;
-									}
-								} else {
-									if (situ < -1) {
-										return 1;
-									}
-								}
-							} else if (mode === "guozhan") {
-								if (target.identity === "ye") {
+							} else if (situ < -1) {
+								return 1;
+							}
+						} else if (mode === "guozhan") {
+							if (target.identity === "ye") {
+								return 1;
+							}
+							if (game.hasPlayer(current => current.identity === "unknown")) {
+								return -1;
+							}
+							if (get.population(target.identity) === 1) {
+								if (target.maxHp > 2 && target.hp < 2) {
 									return 1;
 								}
-								if (
-									game.hasPlayer(function (current) {
-										return current.identity === "unknown";
-									})
-								) {
+								if (game.countPlayer() < 3) {
 									return -1;
 								}
-								if (get.population(target.identity) === 1) {
-									if (target.maxHp > 2 && target.hp < 2) {
-										return 1;
-									}
-									if (game.countPlayer() < 3) {
-										return -1;
-									}
-									if (target.hp <= 2 && target.countCards("he") <= 3) {
-										return 1;
-									}
+								if (target.hp <= 2 && target.countCards("he") <= 3) {
+									return 1;
 								}
 							}
 						}
@@ -3440,8 +3394,8 @@ export default {
 				nomingzhi: true,
 				skillTagFilter(player) {
 					if (_status.qinglong_guozhan) {
-						for (var i = 0; i < _status.qinglong_guozhan.length; i++) {
-							if (_status.qinglong_guozhan[i].targets.includes(player)) {
+						for (const info of _status.qinglong_guozhan) {
+							if (info.targets.includes(player)) {
 								return true;
 							}
 						}
@@ -3790,11 +3744,12 @@ export default {
 							if (get.name(card) !== "sha") {
 								return false;
 							}
-							if (!player.hasSkill("qinglong_skill", null, false)) {
-								var cards = player.getCards("e", card => get.name(card) === "qinglong");
-								if (!cards.some(card2 => card2 !== card && !ui.selected.cards.includes(card2))) {
-									return false;
-								}
+							if (player.hasSkill("qinglong_skill", null, false)) {
+								return lib.filter.filterCard.apply(this, arguments);
+							}
+							const cards = player.getCards("e", card => get.name(card) === "qinglong");
+							if (!cards.some(card2 => card2 !== card && !ui.selected.cards.includes(card2))) {
+								return false;
 							}
 							return lib.filter.filterCard.apply(this, arguments);
 						},
@@ -3848,7 +3803,7 @@ export default {
 				}
 				let min = 2;
 				if (!player.hasSkill("guanshi_skill", null, false)) {
-					min += player.hasCards("e", card => get.name(card) == "guanshi") ? 1 : 0;
+					min += player.hasCards("e", card => get.name(card) === "guanshi") ? 1 : 0;
 				}
 				return player.countCards("he") >= min;
 			},
@@ -3940,7 +3895,7 @@ export default {
 					range = select;
 				} else if (typeof select === "function") {
 					range = select(card, player);
-					if (typeof range == "number") {
+					if (typeof range === "number") {
 						range = [range, range];
 					}
 				}
@@ -3959,7 +3914,7 @@ export default {
 					if (range[1] === -1) {
 						return;
 					}
-					var cards = player.getCards("h");
+					const cards = player.getCards("h");
 					if (!cards.length) {
 						return;
 					}
@@ -4049,8 +4004,8 @@ export default {
 				player.logSkill("fangtian_skill", event.targets);
 
 				trigger.targets.addArray(event.targets);
-				player.addTempSkill(event.name + "_trigger");
-				player.markAuto(event.name + "_trigger", [trigger.card]);
+				player.addTempSkill(`${event.name}_trigger`);
+				player.markAuto(`${event.name}_trigger`, [trigger.card]);
 			},
 			subSkill: {
 				trigger: {
@@ -4244,7 +4199,7 @@ export default {
 			},
 			prompt: "是否发动〖绝影〗，将装备区内的【绝影】置入弃牌堆并防止此伤害？",
 			async content(event, trigger, player) {
-				var e3 = player.getCards("e", card => {
+				const e3 = player.getCards("e", card => {
 					return get.name(card, player) === "jueying";
 				});
 				if (e3.length) {
@@ -5132,7 +5087,7 @@ export default {
 		bagua_skill_info: "当你需要使用或打出一张【闪】时，你可以进行判定。若结果为红色，则你视为使用或打出一张【闪】。",
 		jueying_info: "锁定技，其他角色计算与你的距离+1。",
 		get jueying_append() {
-			if (get.mode() == "doudizhu") {
+			if (get.mode() === "doudizhu") {
 				return '<span class="text" style="font-family: yuanli">【绝影】于7月5日8时-7月21日24时位于装备区时，可以将【绝影】置入弃牌堆防止一次伤害。</span>';
 			}
 			return "";
