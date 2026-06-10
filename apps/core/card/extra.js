@@ -410,8 +410,8 @@ game.import("card", function () {
 				filterTarget: true,
 				selectTarget: [1, 2],
 				complexTarget: true,
-				content() {
-					target.link();
+				async content(event, trigger, player) {
+					await event.target.link();
 				},
 				recastable: true,
 				ai: {
@@ -752,7 +752,7 @@ game.import("card", function () {
 				unique: true,
 				trigger: { player: "phaseDrawBegin" },
 				silent: true,
-				content() {
+				async content(event, trigger, player) {
 					trigger.num--;
 				},
 				group: "bingliang_changban2",
@@ -761,9 +761,9 @@ game.import("card", function () {
 				cardSkill: true,
 				trigger: { player: "phaseDrawAfter" },
 				silent: true,
-				content() {
+				async content(event, trigger, player) {
 					if (player.enemy) {
-						player.enemy.draw();
+						await player.enemy.draw();
 					}
 				},
 			},
@@ -1034,8 +1034,8 @@ game.import("card", function () {
 						}).length > 0
 					);
 				},
-				content() {
-					const munius = player.getVCards("e").filter(i => i.name == "muniu");
+				async content(event, trigger, player) {
+					const munius = player.getVCards("e", card => card.name == "muniu");
 					let cards = [];
 					for (let muniu of munius) {
 						if (muniu?.storages?.length) {
@@ -1064,12 +1064,12 @@ game.import("card", function () {
 			jiu: {
 				trigger: { player: "useCard1" },
 				filter(event) {
-					return event.card && event.card.name == "sha";
+					return event.card && event.card.name === "sha";
 				},
 				forced: true,
 				charlotte: true,
 				firstDo: true,
-				content() {
+				async content(event, trigger, player) {
 					if (!trigger.baseDamage) {
 						trigger.baseDamage = 1;
 					}
@@ -1124,7 +1124,7 @@ game.import("card", function () {
 				forced: true,
 				popup: false,
 				audio: false,
-				content() {
+				async content(event, trigger, player) {
 					game.broadcastAll(function (player) {
 						player.removeSkill("jiu");
 					}, player);
@@ -1147,7 +1147,7 @@ game.import("card", function () {
 					return false;
 				},
 				forced: true,
-				content() {
+				async content(event, trigger, player) {
 					trigger.num++;
 				},
 				ai: {
@@ -1196,7 +1196,7 @@ game.import("card", function () {
 					//if(event.card.name=='chuqibuyi') return true;
 					return false;
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.cancel();
 				},
 				ai: {
@@ -1259,7 +1259,7 @@ game.import("card", function () {
 				},
 				audio: true,
 				forced: true,
-				content() {
+				async content(event, trigger, player) {
 					trigger.num++;
 				},
 				ai: {
@@ -1303,7 +1303,7 @@ game.import("card", function () {
 					}
 					return false;
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.cancel();
 				},
 			},
@@ -1332,7 +1332,7 @@ game.import("card", function () {
 					return true;
 				},
 				//priority:-10,
-				content() {
+				async content(event, trigger, player) {
 					trigger.num = 1;
 				},
 				subSkill: {
@@ -1423,14 +1423,14 @@ game.import("card", function () {
 				prompt2(event, player) {
 					return "将" + get.translation(event.card) + "改为火属性";
 				},
-				content() {
+				async content(event, trigger, player) {
 					game.setNature(trigger.card, "fire");
-					if (get.itemtype(trigger.card) == "card") {
-						var next = game.createEvent("zhuque_clear");
+					if (get.itemtype(trigger.card) === "card") {
+						const next = game.createEvent("zhuque_clear");
 						next.card = trigger.card;
 						event.next.remove(next);
 						trigger.after.push(next);
-						next.setContent(function () {
+						next.setContent(async (event, trigger) => {
 							game.setNature(trigger.card, []);
 						});
 					}
@@ -1440,7 +1440,7 @@ game.import("card", function () {
 				trigger: { player: "useCardAfter" },
 				forced: true,
 				popup: false,
-				content() {
+				async content(event, trigger, player) {
 					delete player.storage.zhuque_skill.nature;
 				},
 			},
