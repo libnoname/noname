@@ -420,11 +420,7 @@ const skills = {
 			if (!event.card.isCard || !event.cards || event.cards.length !== 1) {
 				return false;
 			}
-			return (
-				event.card.name == "qizhengxiangsheng" ||
-				get.zhinangs().includes(event.card.name) ||
-				player.getStorage("dinghan").includes(event.card.name)
-			);
+			return event.card.name == "qizhengxiangsheng" || get.zhinangs().includes(event.card.name) || player.getStorage("dinghan").includes(event.card.name);
 		},
 		async content(event, trigger, player) {
 			await player.draw();
@@ -627,11 +623,7 @@ const skills = {
 				trigger: { global: "phaseBegin" },
 				direct: true,
 				filter(event, player) {
-					return (
-						event.player != player &&
-						event.player.hasMark("dulie") &&
-						(player.countCards("h") > 0 || (player.hp >= event.player.hp && event.player.countCards("h") > 0))
-					);
+					return event.player != player && event.player.hasMark("dulie") && (player.countCards("h") > 0 || (player.hp >= event.player.hp && event.player.countCards("h") > 0));
 				},
 				async content(event, trigger, player) {
 					let list = [],
@@ -666,12 +658,7 @@ const skills = {
 							) {
 								return "选项一";
 							}
-							if (
-								evt.player.hp >= evt.target.hp &&
-								evt.target.countCards("h") > 0 &&
-								get.attitude(evt.player, evt.target) <= 0 &&
-								!evt.target.hasSkillTag("noh")
-							) {
+							if (evt.player.hp >= evt.target.hp && evt.target.countCards("h") > 0 && get.attitude(evt.player, evt.target) <= 0 && !evt.target.hasSkillTag("noh")) {
 								return "选项二";
 							}
 							return "cancel2";
@@ -858,15 +845,10 @@ const skills = {
 				})
 			);
 			let result = await player
-				.chooseTarget(
-					get.prompt("dangmo"),
-					"为" + get.translation(trigger.card) + "增加至多" + get.translation(num) + "个目标",
-					[1, num],
-					function (card, player, target) {
-						var evt = _status.event.getTrigger();
-						return !evt.targets.includes(target) && lib.filter.filterTarget(evt.card, player, target);
-					}
-				)
+				.chooseTarget(get.prompt("dangmo"), "为" + get.translation(trigger.card) + "增加至多" + get.translation(num) + "个目标", [1, num], function (card, player, target) {
+					var evt = _status.event.getTrigger();
+					return !evt.targets.includes(target) && lib.filter.filterTarget(evt.card, player, target);
+				})
 				.set("ai", function (target) {
 					var evt = _status.event.getTrigger(),
 						eff = get.effect(target, evt.card, evt.player, evt.player);
@@ -1159,9 +1141,9 @@ const skills = {
 					list.length == 1
 						? { bool: true, links: list }
 						: await player
-							.chooseButton([`辉逝：选择一个觉醒技，令${get.translation(target)}可无视条件发动该技能`, [list, "skill"]], true)
-							.set("displayIndex", false)
-							.forResult();
+								.chooseButton([`辉逝：选择一个觉醒技，令${get.translation(target)}可无视条件发动该技能`, [list, "skill"]], true)
+								.set("displayIndex", false)
+								.forResult();
 				if (result?.bool && result.links?.length) {
 					const [skill] = result.links;
 					target.storage.resghuishi_mark = skill;
@@ -1335,10 +1317,7 @@ const skills = {
 					if (ui.selected.cards.length) {
 						eff = ui.selected.cards.map(card => get.value(card)).reduce((p, c) => p + c, 0);
 					}
-					if (
-						player.hasSkill("zhimeng") &&
-						(get.mode() == "identity" || player.countCards("h") - target.countCards("h") > 2 * ui.selected.cards.length)
-					) {
+					if (player.hasSkill("zhimeng") && (get.mode() == "identity" || player.countCards("h") - target.countCards("h") > 2 * ui.selected.cards.length)) {
 						eff *= 1 + get.sgnAttitude(player, target) * 0.15;
 					}
 					const es = target.getCards("e"),
@@ -1371,7 +1350,7 @@ const skills = {
 		},
 		getTargets() {
 			return game.filterPlayer(current => {
-				return !current.isZhu2();
+				return !current.isZhu2() && (get.mode() !== "doudizhu" || current.getSeatNum() !== 3);
 			});
 		},
 		audio: 2,
@@ -1388,7 +1367,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const toSortPlayers = get.info(event.name).getTargets();
 			toSortPlayers.sortBySeat(game.findPlayer2(current => current.getSeatNum() == 1, true));
-			const next = player.chooseToMove("榻谟：是否分配" + (get.mode() != "doudizhu" ? (game.hasPlayer(cur => cur.isZhu2()) ? "除主公外" : "") : "") + "所有角色的座次？");
+			const next = player.chooseToMove(lib.translate[`${event.name}_info`]);
 			next.set("list", [["（以下排列的顺序即为发动技能后角色的座次顺序）", [toSortPlayers.map(i => `${i.getSeatNum()}|${i.name}`), lib.skill.tamo.$createButton]]]);
 			next.set("toSortPlayers", toSortPlayers.slice(0));
 			next.set("processAI", () => {
@@ -1628,10 +1607,7 @@ const skills = {
 				node.node.range.style.right = "0%";
 				node.node.range.style.textAlign = "center";
 				node._link = node.link = [null, null, item];
-				node._customintro = [
-					node => `五禽戏：${node.link[2]}`,
-					node => lib.skill.wuling.wuqinxiMap[lib.skill.wuling.wuqinxi.indexOf(node.link[2])].slice(2),
-				];
+				node._customintro = [node => `五禽戏：${node.link[2]}`, node => lib.skill.wuling.wuqinxiMap[lib.skill.wuling.wuqinxi.indexOf(node.link[2])].slice(2)];
 				return node;
 			}
 
@@ -1674,13 +1650,7 @@ const skills = {
 			}
 		},
 		wuqinxi: ["虎", "鹿", "熊", "猿", "鹤"],
-		wuqinxiMap: [
-			"虎：当你使用指定唯一目标的牌对目标角色造成伤害时，此伤害+1。",
-			"鹿：①当你获得此效果时，你回复1点体力并弃置判定区的所有牌。②你不能成为延时锦囊牌的目标。",
-			"熊：每回合限一次，当你受到伤害时，此伤害-1。",
-			"猿：当你获得此效果时，你选择一名其他角色，获得其装备区里的一张牌。",
-			"鹤：当你获得此效果时，你摸三张牌。",
-		],
+		wuqinxiMap: ["虎：当你使用指定唯一目标的牌对目标角色造成伤害时，此伤害+1。", "鹿：①当你获得此效果时，你回复1点体力并弃置判定区的所有牌。②你不能成为延时锦囊牌的目标。", "熊：每回合限一次，当你受到伤害时，此伤害-1。", "猿：当你获得此效果时，你选择一名其他角色，获得其装备区里的一张牌。", "鹤：当你获得此效果时，你摸三张牌。"],
 		wuqinxiMap2: {
 			虎: ["wuqinxi_hu", "用牌加伤"],
 			鹿: ["wuqinxi_lu", "弃判定回血"],
@@ -2013,9 +1983,7 @@ const skills = {
 				}
 			}
 			if ([...doneList.keys()].length) {
-				const targets = [...doneList.entries()]
-					.filter(([_, cards]) => !cards.some(card => get.name(card) == "sha"))
-					.map(([target]) => target);
+				const targets = [...doneList.entries()].filter(([_, cards]) => !cards.some(card => get.name(card) == "sha")).map(([target]) => target);
 				await game.doAsyncInOrder(targets, async target => {
 					return target.loseHp();
 				});

@@ -6483,13 +6483,24 @@ export class Player extends HTMLDivElement {
 	 * @returns {GameEvent}
 	 */
 	chooseCardOL(params) {
-		var next = game.createEvent("chooseCardOL");
+		const next = game.createEvent("chooseCardOL");
 		next._args = [];
 
 		const args = [...arguments];
-		if (args.length == 1 && get.is.object(params) && get.itemtype(params) == null) {
+		if (args.length == 1 && params != null && get.is.object(params) && get.itemtype(params) == null) {
 			next.list = params.list;
-			next._args = params.args;
+			if (params.args) {
+				next._args = params.args;
+				next._args.add("glow_result");
+			} else {
+				/** @type {import("./Player/type.d").EventChooseCardParams} */
+				const newArgs = { ...params };
+				Reflect.deleteProperty(newArgs, "list");
+				if (newArgs.glow_result == null) {
+					newArgs.glow_result = true;
+				}
+				next._args = [newArgs];
+			}
 		} else {
 			for (const arg of args) {
 				if (get.itemtype(arg) == "players") {
@@ -6498,9 +6509,9 @@ export class Player extends HTMLDivElement {
 					next._args.push(arg);
 				}
 			}
+			next._args.add("glow_result");
 		}
 		next.setContent("chooseCardOL");
-		next._args.add("glow_result");
 		return next;
 	}
 	/**
