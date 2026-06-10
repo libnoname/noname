@@ -1,4 +1,13 @@
 export default {
+	"#potnigu1": "我令既不得行，我刑当得行也！",
+	"#potnigu2": "天子若有他意，我亦当复改图！",
+	"#potnigu3": "正值尽忠死战之时，何故生此迟疑！",
+	"#potnigu4": "诸卿若不奉我，便是已有反心！",
+	"#potlulian1": "我心性善，不忍见离，自许汝举族团圆！",
+	"#potlulian2": "莫言泉下孤苦，自有汝族相陪！",
+	"#potlulian3": "朝事在君，生杀在我！",
+	"#potlulian4": "本朝可无天子，可无我孙綝否？",
+	"#pot_sunchen:die": "臣无功劳亦有苦劳，望陛下饶命，饶命啊！",
 	"#potjiezhu1": "趁魏军退走，我等可急令进军。",
 	"#potjiezhu2": "虽攻敌不足，然退守有余矣。",
 	"#potjiezhu_zhuji_shadow1": "城头旌旗不倒，吴土寸步不让！",

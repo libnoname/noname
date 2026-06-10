@@ -188,7 +188,7 @@ const skills = {
 	},
 	//势孙綝
 	potnigu: {
-		audio: 2,
+		audio: 4,
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
@@ -278,7 +278,7 @@ const skills = {
 		},
 	},
 	potlulian: {
-		audio: 2,
+		audio: 4,
 		trigger: {
 			player: "useCardAfter",
 		},

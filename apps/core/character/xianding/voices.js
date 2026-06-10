@@ -1,4 +1,11 @@
 export default {
+	"#mogui1": "君子言行由心，不拘繁文缛节。",
+	"#mogui2": "心猿在役，何以俗规锁意马？",
+	"#zunjian1": "孤非桀纣，不敢讳诸师之言。",
+	"#zunjian2": "开张纳言之听，不宜引喻失义。",
+	"#rencheng1": "父祖珠玉在前，孤岂为桓灵。",
+	"#rencheng2": "在庭之木不翦，无以成栋梁。",
+	"#liuxuan:die": "千古衣冠，做了降幡。",
 	"#manyi_menghuo1": "巨象阵，迎敌！",
 	"#manyi_menghuo2": "子弟兵们，跟我上！",
 	"#manyi_zhurong1": "区区无名之辈，不劳大王出马。",
