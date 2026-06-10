@@ -3208,7 +3208,7 @@ export default {
 				}
 				return false;
 			},
-			effect() {
+			async effect(event, trigger, player, result) {
 				if (result.bool === false) {
 					player.skip("phaseUse");
 				}
@@ -3289,15 +3289,15 @@ export default {
 				}
 				return false;
 			},
-			effect() {
+			async effect(event, trigger, player, result) {
 				if (result.bool === false) {
 					player.damage(3, "thunder", "nosource");
 				} else {
-					player.addJudgeNext(card);
+					player.addJudgeNext(event.card);
 				}
 			},
-			cancel() {
-				player.addJudgeNext(card);
+			async cancel(event, trigger, player) {
+				player.addJudgeNext(event.card);
 			},
 			ai: {
 				basic: {
@@ -4080,17 +4080,20 @@ export default {
 			direct: true,
 			audio: true,
 			async content(event, trigger, player) {
-				var att = get.attitude(player, trigger.player) <= 0;
-				var next = player.chooseButton();
-				next.set("att", att);
-				next.set("createDialog", ["是否发动【麒麟弓】，弃置" + get.translation(trigger.player) + "的一张坐骑牌？", trigger.player.getCards("e", { subtype: ["equip3", "equip4", "equip6"] })]);
-				next.set("ai", function (button) {
-					if (_status.event.att) {
-						return get.buttonValue(button);
-					}
-					return 0;
-				});
-				if (result.bool) {
+				const att = get.attitude(player, trigger.player) <= 0;
+				const result = await player
+					.chooseButton({
+						createDialog: [`是否发动【麒麟弓】，弃置${get.translation(trigger.player)}的一张坐骑牌？`, trigger.player.getCards("e", { subtype: ["equip3", "equip4", "equip6"] })],
+						ai(button) {
+							if (get.event().att) {
+								return get.buttonValue(button);
+							}
+							return 0;
+						},
+					})
+					.set("att", att)
+					.forResult();
+				if (result.bool && result.links?.length) {
 					player.logSkill("qilin_skill", trigger.player);
 					trigger.player.discard(result.links[0]);
 				}
