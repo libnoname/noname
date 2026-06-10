@@ -1,6 +1,16 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	pot_caoshuang: "势曹爽",
+	pot_caoshuang_prefix: "势",
+	potdianyi: "典易",
+	potdianyi_info: "锁定技，触发对应时机后，你随机获得X张“奢权”牌（X为此技能本轮的发动次数）。若你本轮以此法获得牌数大于你的体力上限，你失去1点体力。",
+	potshequan: "奢权",
+	potshequan_info: "锁定技，触发对应时机后，你令所有其他角色同时选择一张手牌，并标记为“奢权”。",
+	potjianzhuan: "渐专",
+	potjianzhuan_info: "锁定技，你的“奢权”手牌点数为K，其他角色的“奢权”手牌点数为A。当你本局游戏首次造成伤害后、受到伤害后或一名角色进入濒死状态时，你为“奢权”或“典易”增加一个每轮限一次的对应触发时机。当增加过所有时机后，你失去“奢权”或“典易”，获得【溺尊】并增加X点体力上限回复X点体力（X为你失去对应技能的时机数）。",
+	potnizun: "溺尊",
+	potnizun_info: "锁定技，你使用过牌的回合结束时，你将本回合弃牌堆中的“奢权”牌置于你的武将牌上。每回合限一次，你可如手牌般使用这些牌，然后当你受到伤害时，此伤害值+X（X为你本轮以此法使用牌的数量）。",
 	pot_zhangren: "势张任",
 	pot_zhangren_prefix: "势",
 	potfuan: "伏暗",
@@ -170,7 +180,7 @@ const translates = {
 	potgongmou: "共谋",
 	potgongmou_info: `准备阶段，你可以与一名其他角色交换手牌，若如此做，你获得技能${get.poptip("qice")}且其获得技能${get.poptip("kanpo")}至本回合结束。`,
 	potzhengshuo: "正朔",
-	potzhengshuo_info: "限定技，出牌阶段，你可以令所有角色弃置所有手牌，然后洗牌。若如此做，所有角色各摸四张牌。",//若没有角色的手牌数为4，
+	potzhengshuo_info: "限定技，出牌阶段，你可以令所有角色弃置所有手牌，然后洗牌。若如此做，所有角色各摸四张牌。", //若没有角色的手牌数为4，
 	pot_dengai: "势邓艾",
 	pot_dengai_prefix: "势",
 	pottuntian: "屯田",
