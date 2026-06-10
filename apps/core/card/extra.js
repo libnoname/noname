@@ -12,14 +12,16 @@ export default {
 			type: "equip",
 			subtype: "equip5",
 			nomod: true,
-			onEquip() {
+			async onEquip(event, trigger, player) {
+				const { card } = event;
 				if (card && card.storages?.length) {
 					player.directgains(card.storages, null, "muniu");
 				}
 				player.markSkill("muniu_skill");
 			},
 			forceDie: true,
-			onLose() {
+			async onLose(event, trigger, player) {
+				const { card } = event;
 				if (card?.storage?.used) {
 					card.storage.used = 0;
 				}
@@ -515,7 +517,7 @@ export default {
 				}
 				return false;
 			},
-			effect() {
+			async effect(event, trigger, player, result) {
 				if (result.bool == false) {
 					if (get.is.changban()) {
 						player.addTempSkill("bingliang_changban");
@@ -686,7 +688,7 @@ export default {
 			subtype: "equip2",
 			bingzhu: ["马超"],
 			loseDelay: false,
-			onLose() {
+			async onLose(event, trigger, player) {
 				player.addTempSkill("baiyin_skill_lose");
 			},
 			skills: ["baiyin_skill"],
