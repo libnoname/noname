@@ -4553,6 +4553,7 @@ export default {
 					let withme = false;
 					let withol = false;
 					const list = event.list;
+					let dx = 0;
 					for (const [i, current] of [...list].entries()) {
 						if (current.isOnline()) {
 							withol = true;
@@ -4570,11 +4571,13 @@ export default {
 							onchooseToUse_data.cancel(null, null, true);
 							current.wait(sendback);
 							current.send(event.send, current, event._info_map, get.skillState(current), onchooseToUse_data);
-							list.splice(i, 1);
+							list.splice(i - dx, 1);
+							++dx;
 						} else if (current === game.me) {
 							withme = true;
 							event.send(current, event._info_map);
-							list.splice(i, 1);
+							list.splice(i - dx, 1);
+							++dx;
 						}
 					}
 					if (!withme) {
