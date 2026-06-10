@@ -4291,10 +4291,10 @@ export default {
 					delete event.resultOL;
 					delete event._info_map;
 					//创建map存储各种信息，用于hasHiddenWuxie判断
-					var map = {};
+					const map = {};
 					event._info_map = map;
-					var card = trigger.card;
-					var state = true;
+					let card = trigger.card;
+					let state = true;
 					if (trigger.name === "phaseJudge") {
 						if (get.itemtype(card) === "card" && card.viewAs) {
 							card = get.autoViewAs({ name: card.viewAs }, [card]);
@@ -4312,17 +4312,16 @@ export default {
 						map.noai = Boolean(trigger.getParent().noai);
 						//如果对拼无懈，获取历史数据
 						if (card.name === "wuxie") {
-							var evt = event;
+							let evt = event;
 							while (true) {
 								evt = evt.getParent(5);
-								if (evt && evt.name === "_wuxie") {
-									state = !state;
-									var evtmap = evt._info_map;
-									if (evtmap.card.name !== "wuxie") {
-										map._source = evtmap;
-									}
-								} else {
+								if (!evt || evt.name !== "_wuxie") {
 									break;
+								}
+								state = !state;
+								const evtmap = evt._info_map;
+								if (evtmap.card.name !== "wuxie") {
+									map._source = evtmap;
 								}
 							}
 						}
@@ -4332,20 +4331,20 @@ export default {
 					map.id2 = trigger.getParent().id;
 					event._global_waiting = true;
 					//发送函数
-					event.send = function (player, map, skillState, eventData) {
+					event.send = (player, map, skillState, eventData) => {
 						//获取技能数据
 						if (skillState) {
 							player.applySkills(skillState);
 						}
 						//生成描述提示
-						var prompt = "",
-							evtmap = map,
-							state = map.state;
+						let prompt = "";
+						let evtmap = map;
+						const state = map.state;
 						if (map._source) {
 							evtmap = map._source;
 						}
 						if (evtmap.isJudge) {
-							prompt += get.translation(evtmap.target) + "的" + get.translation(evtmap.card) + "即将" + (state > 0 ? "生" : "失") + "效。";
+							prompt += `${get.translation(evtmap.target)}的${get.translation(evtmap.card)}即将${state > 0 ? "生" : "失"}效。`;
 						} else {
 							prompt += get.translation(evtmap.player);
 							if (evtmap.multitarget) {
@@ -4357,19 +4356,19 @@ export default {
 								prompt += "对";
 								prompt += evtmap.target === evtmap.player ? "自己" : get.translation(evtmap.target);
 							}
-							prompt += "使用的" + get.translation(evtmap.card);
-							prompt += "即将" + (state > 0 ? "生" : "失") + "效。";
+							prompt += `使用的${get.translation(evtmap.card)}`;
+							prompt += `即将${state > 0 ? "生" : "失"}效。`;
 						}
 						prompt += "是否使用【无懈可击】？";
 						if (player.isUnderControl(true) && !_status.auto && !ui.tempnowuxie && map.tempnowuxie) {
-							var translation = get.translation(map.card.name);
+							let translation = get.translation(map.card.name);
 							if (translation.length >= 4) {
-								translation = lib.translate[map.card.name + "_ab"] || translation.slice(0, 2);
+								translation = lib.translate[`${map.card.name}_ab`] || translation.slice(0, 2);
 							}
-							ui.tempnowuxie = ui.create.control("不无懈" + translation, ui.click.tempnowuxie, "stayleft");
+							ui.tempnowuxie = ui.create.control(`不无懈${translation}`, ui.click.tempnowuxie, "stayleft");
 							ui.tempnowuxie._origin = map.id2;
 						}
-						var next = player.chooseToUse({
+						const next = player.chooseToUse({
 							filterCard(card, player) {
 								if (get.name(card) !== "wuxie") {
 									return false;
@@ -4381,12 +4380,12 @@ export default {
 							_global_waiting: true,
 							ai1() {
 								if (map.isJudge) {
-									var card = evtmap.card,
-										source = evtmap.target;
-									var name = card.viewAs || card.name;
-									var info = lib.card[name];
+									const card = evtmap.card;
+									const source = evtmap.target;
+									const name = card.viewAs || card.name;
+									const info = lib.card[name];
 									if (info && info.ai && info.ai.wuxie) {
-										var aiii = info.ai.wuxie(source, card, source, _status.event.player, state);
+										const aiii = info.ai.wuxie(source, card, source, _status.event.player, state);
 										if (typeof aiii === "number") {
 											return aiii;
 										}
@@ -4397,44 +4396,43 @@ export default {
 									if (source.hasSkillTag("nowuxie_judge") || (source.hasSkillTag("guanxing") && (source !== player || !source.hasSkill("guanxing_fail")))) {
 										return 0;
 									}
-									if (name !== "lebu" && name !== "bingliang") {
-										if (source !== _status.event.player) {
-											return 0;
-										}
+									if (name !== "lebu" && name !== "bingliang" && source !== _status.event.player) {
+										return 0;
 									}
 									if (name === "bingliang" && source.countCards("j") > 0 && source.countCards("h") >= source.hp - 1) {
 										return 0;
 									}
-									var card2;
+									let card2;
 									if (name !== card.name) {
-										card2 = { name: name };
+										card2 = { name };
 									} else {
 										card2 = card;
 									}
-									var eff = get.effect(source, card2, source, source);
+									const eff = get.effect(source, card2, source, source);
 									if (eff >= 0) {
 										return 0;
 									}
 									return state * get.attitude(_status.event.player, source);
-								} else if (evtmap.target) {
-									var triggerevent = _status.event.getTrigger();
+								}
+								if (evtmap.target) {
+									const triggerevent = _status.event.getTrigger();
 									if (triggerevent && triggerevent.parent && triggerevent.parent.postAi && triggerevent.player.isUnknown(_status.event.player)) {
 										return 0;
 									}
-									var card = evtmap.card,
-										target = evtmap.target,
-										source = evtmap.player;
-									var info = get.info(card);
+									const card = evtmap.card;
+									const target = evtmap.target;
+									const source = evtmap.player;
+									const info = get.info(card);
 									if (info.ai && info.ai.wuxie) {
-										var aiii = info.ai.wuxie(target, card, source, _status.event.player, state);
+										const aiii = info.ai.wuxie(target, card, source, _status.event.player, state);
 										if (typeof aiii === "number") {
 											return aiii;
 										}
 									}
-									if (info.multitarget && targets) {
-										var eff = 0;
-										for (var i = 0; i < targets.length; i++) {
-											eff += get.effect(targets[i], card, source, _status.event.player);
+									if (info.multitarget && evtmap.targets) {
+										let eff = 0;
+										for (const target of evtmap.targets) {
+											eff += get.effect(target, card, source, _status.event.player);
 										}
 										return -eff * state;
 									}
@@ -4442,25 +4440,24 @@ export default {
 										return 0;
 									}
 									return -get.effect(target, card, source, _status.event.player) * state;
-								} else {
-									var triggerevent = _status.event.getTrigger();
-									if (triggerevent && triggerevent.parent && triggerevent.parent.postAi && triggerevent.player.isUnknown(_status.event.player)) {
-										return 0;
-									}
-									var card = evtmap.card,
-										source = evtmap.player;
-									var info = get.info(card);
-									if (info.ai && info.ai.wuxie) {
-										var aiii = info.ai.wuxie(target, card, source, _status.event.player, state);
-										if (typeof aiii === "number") {
-											return aiii;
-										}
-									}
-									if (Math.abs(get.attitude(_status.event.player, source)) < 3) {
-										return 0;
-									}
-									return -get.attitude(_status.event.player, source) * state;
 								}
+								const triggerevent = _status.event.getTrigger();
+								if (triggerevent && triggerevent.parent && triggerevent.parent.postAi && triggerevent.player.isUnknown(_status.event.player)) {
+									return 0;
+								}
+								const card = evtmap.card;
+								const source = evtmap.player;
+								const info = get.info(card);
+								if (info.ai && info.ai.wuxie) {
+									const aiii = info.ai.wuxie(undefined, card, source, _status.event.player, state);
+									if (typeof aiii === "number") {
+										return aiii;
+									}
+								}
+								if (Math.abs(get.attitude(_status.event.player, source)) < 3) {
+									return 0;
+								}
+								return -get.attitude(_status.event.player, source) * state;
 							},
 							source: evtmap.target,
 							source2: evtmap.targets,
@@ -4479,7 +4476,7 @@ export default {
 							next.nouse = true;
 						}
 						if (eventData) {
-							for (let key in eventData) {
+							for (const key in eventData) {
 								if (next[key] === undefined) {
 									next[key] = eventData[key];
 								}
@@ -4489,8 +4486,8 @@ export default {
 				},
 				async (event, trigger, player, result) => {
 					//判断谁有无懈
-					var map = event._info_map;
-					var list = game.filterPlayer(function (current) {
+					const map = event._info_map;
+					const list = game.filterPlayer(current => {
 						if (event.triggername === "phaseJudge") {
 							if (game.checkMod(map.card, map.target, current, "unchanged", "wuxieJudgeEnabled", current) === false) {
 								return false;
@@ -4538,14 +4535,14 @@ export default {
 					}
 				},
 				async (event, trigger, player, result) => {
-					var id = event.id;
-					var sendback = function (result, player) {
+					const id = event.id;
+					const sendback = (result, player) => {
 						if (result && result.id === id && !event.wuxieresult && result.bool) {
 							event.wuxieresult = player;
 							event.wuxieresult2 = result;
 							game.broadcast("cancel", id);
-							return function () {
-								var evt = get.event();
+							return () => {
+								let evt = get.event();
 								if (evt.getParent().name === "chooseToUse") {
 									evt = evt.getParent();
 								}
@@ -4574,64 +4571,60 @@ export default {
 									}
 								}
 							};
-						} else {
-							var evt = get.event();
-							//判断主机是否还在特殊框架内转化卡牌
-							if (evt.getParent().name === "chooseToUse") {
-								evt = evt.getParent();
-							}
-							if (evt.id === id && evt.name === "chooseToUse" && _status.paused) {
-								return function () {
-									//如果主机还在想要不要打无懈(包括chooseButton+backup框架)的情况下所有客机均完成响应执行的代码
-									event.resultOL = _status.event.resultOL;
-								};
-							} else {
-								//主机完成响应后所有客机完成响应后执行的代码
-								return () => {
-									//判断本次_wuxie事件是否在“暂停”状态
-									if (get.event().name === "_wuxie" && _status.paused && get.event().withol && get.event().step === 6) {
-										game.resume();
-									}
-								};
-							}
 						}
+						let evt = get.event();
+						//判断主机是否还在特殊框架内转化卡牌
+						if (evt.getParent()?.name === "chooseToUse") {
+							evt = evt.getParent();
+						}
+						if (evt.id === id && evt.name === "chooseToUse" && _status.paused) {
+							return () => {
+								//如果主机还在想要不要打无懈(包括chooseButton+backup框架)的情况下所有客机均完成响应执行的代码
+								event.resultOL = _status.event.resultOL;
+							};
+						}
+						//主机完成响应后所有客机完成响应后执行的代码
+						return () => {
+							//判断本次_wuxie事件是否在“暂停”状态
+							if (get.event().name === "_wuxie" && _status.paused && get.event().withol && get.event().step === 6) {
+								game.resume();
+							}
+						};
 					};
 
-					var withme = false;
-					var withol = false;
-					var list = event.list;
-					for (var i = 0; i < list.length; i++) {
-						if (list[i].isOnline()) {
+					let withme = false;
+					let withol = false;
+					const list = event.list;
+					for (const [i, current] of [...list].entries()) {
+						if (current.isOnline()) {
 							withol = true;
-							const onchooseToUse_data = list[i].chooseToUse();
-							onchooseToUse_data.setContent(async function () {});
+							const onchooseToUse_data = current.chooseToUse();
+							onchooseToUse_data.setContent(async () => {});
 							event.next.remove(onchooseToUse_data);
-							var skills = list[i].getSkills("invisible").concat(lib.skill.global);
+							const skills = current.getSkills("invisible").concat(lib.skill.global);
 							game.expandSkills(skills);
-							for (let skill of skills) {
-								var info = lib.skill[skill];
+							for (const skill of skills) {
+								const info = lib.skill[skill];
 								if (info?.onChooseToUse) {
 									info.onChooseToUse(onchooseToUse_data);
 								}
 							}
 							onchooseToUse_data.cancel(null, null, true);
-							list[i].wait(sendback);
-							list[i].send(event.send, list[i], event._info_map, get.skillState(list[i]), onchooseToUse_data);
-							list.splice(i--, 1);
-						} else if (list[i] === game.me) {
+							current.wait(sendback);
+							current.send(event.send, current, event._info_map, get.skillState(current), onchooseToUse_data);
+							list.splice(i, 1);
+						} else if (current === game.me) {
 							withme = true;
-							event.send(list[i], event._info_map);
-							list.splice(i--, 1);
+							event.send(current, event._info_map);
+							list.splice(i, 1);
 						}
 					}
 					if (!withme) {
 						event.goto(6);
 					}
-					if (_status.connectMode) {
-						if (withme || withol) {
-							for (var i = 0; i < game.players.length; i++) {
-								game.players[i].showTimer();
-							}
+					if (_status.connectMode && (withme || withol)) {
+						for (const player of game.players) {
+							player.showTimer();
 						}
 					}
 					event.withol = withol;
@@ -4649,8 +4642,8 @@ export default {
 					}
 				},
 				async (event, trigger, player, result) => {
-					for (var i = 0; i < game.players.length; i++) {
-						game.players[i].hideTimer();
+					for (const player of game.players) {
+						player.hideTimer();
 					}
 				},
 				async (event, trigger, player, result) => {
@@ -4658,9 +4651,9 @@ export default {
 						lib.skill[event.wuxieresult2._sendskill[0]] = event.wuxieresult2._sendskill[1];
 					}
 					if (event.wuxieresult && event.wuxieresult2 && event.wuxieresult2.skill) {
-						var info = get.info(event.wuxieresult2.skill);
+						const info = get.info(event.wuxieresult2.skill);
 						if (info && info.precontent && !game.online) {
-							var next = game.createEvent("pre_" + event.wuxieresult2.skill);
+							const next = game.createEvent(`pre_${event.wuxieresult2.skill}`);
 							next.setContent(info.precontent);
 							next.set("result", event.wuxieresult2);
 							next.set("player", event.wuxieresult);
@@ -4671,7 +4664,7 @@ export default {
 					if (event?.wuxieresult2?.cancel) {
 						event.goto(0);
 					} else if (event.wuxieresult) {
-						var next = event.wuxieresult.useResult(event.wuxieresult2);
+						const next = event.wuxieresult.useResult(event.wuxieresult2);
 						if (event.triggername !== "phaseJudge") {
 							next.respondTo = [trigger.player, trigger.card];
 						}
