@@ -47,7 +47,7 @@ window.noname_character_replace = {
 	caoying: ["caoying", "scl_caoying"],
 	caozhang: ["caozhang", "ol_caozhang", "re_caozhang", "xin_caozhang"],
 	caozhen: ["caozhen", "re_caozhen", "xin_caozhen", "old_caozhen", "std_caozhen"],
-	caozhi: ["caozhi", "ol_caozhi", "dc_caozhi", "re_caozhi", "mb_caozhi", "huan_caozhi", "ps_caozhi", "wxdl_caozhi"],
+	caozhi: ["caozhi", "ol_caozhi", "dc_caozhi", "re_caozhi", "mb_caozhi", "huan_caozhi", "ps_caozhi", "wxdl_caozhi", "yue_caozhi"],
 	cenhun: ["cenhun", "shi_cenhun", "std_cenhun"],
 	chendao: ["chendao", "pot_chendao", "ns_chendao", "old_chendao"],
 	chendeng: ["chendeng", "ol_chendeng", "re_chendeng", "jsrg_chendeng"],
