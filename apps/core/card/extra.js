@@ -66,21 +66,25 @@ game.import("card", function () {
 				lianheng: true,
 				logv: false,
 				savable(card, player, dying) {
-					return dying == player || player.hasSkillTag("jiuOther", null, dying, true);
+					return dying === player || player.hasSkillTag("jiuOther", null, dying, true);
 				},
 				usable: 1,
 				selectTarget: -1,
 				modTarget: true,
 				filterTarget(card, player, target) {
-					return target == player;
+					return target === player;
 				},
-				content() {
-					if (typeof event.baseDamage != "number") {
+				async content(event, trigger, player) {
+					const target = event.target;
+					const targets = event.targets;
+					const cards = event.cards;
+					let card = event.card;
+					if (typeof event.baseDamage !== "number") {
 						event.baseDamage = 1;
 					}
-					if (target.isDying() || event.getParent(2).type == "dying") {
+					if (target.isDying() || event.getParent(2).type === "dying") {
 						target.recover();
-						if (_status.currentPhase == target && typeof target.getStat().card.jiu == "number") {
+						if (_status.currentPhase === target && typeof target.getStat().card.jiu === "number") {
 							target.getStat().card.jiu--;
 						}
 					} else {
@@ -93,22 +97,22 @@ game.import("card", function () {
 						}
 						target.storage.jiu += event.baseDamage;
 						game.broadcastAll(
-							function (target, card, gain2) {
+							(target, card, gain2) => {
 								target.addSkill("jiu");
 								if (!target.node.jiu && lib.config.jiu_effect) {
 									target.node.jiu = ui.create.div(".playerjiu", target.node.avatar);
 									target.node.jiu2 = ui.create.div(".playerjiu", target.node.avatar2);
 								}
-								if (gain2 && card.clone && (card.clone.parentNode == target.parentNode || card.clone.parentNode == ui.arena)) {
+								if (gain2 && card.clone && (card.clone.parentNode === target.parentNode || card.clone.parentNode === ui.arena)) {
 									card.clone.moveDelete(target);
 								}
 							},
 							target,
 							card,
-							target == targets[0] && cards.length == 1
+							target === targets[0] && cards.length === 1
 						);
-						if (target == targets[0] && cards.length == 1) {
-							if (card.clone && (card.clone.parentNode == target.parentNode || card.clone.parentNode == ui.arena)) {
+						if (target === targets[0] && cards.length === 1) {
+							if (card.clone && (card.clone.parentNode === target.parentNode || card.clone.parentNode === ui.arena)) {
 								game.addVideo("gain2", target, get.cardsInfo([card]));
 							}
 						}
@@ -145,21 +149,19 @@ game.import("card", function () {
 						if (_status.event.dying) {
 							return 9;
 						}
-						let sha = get.order({ name: "sha" });
+						const sha = get.order({ name: "sha" });
 						if (sha <= 0) {
 							return 0;
 						}
 						let usable = player.getCardUsable("sha");
 						if (
 							usable < 2 &&
-							player.hasCard(i => {
-								return get.name(i, player) == "zhuge";
-							}, "hs")
+							player.hasCard(i => get.name(i, player) === "zhuge", "hs")
 						) {
 							usable = Infinity;
 						}
-						let shas = Math.min(usable, player.mayHaveSha(player, "use", item, "count"));
-						if (shas != 1 || (lib.config.mode === "stone" && !player.isMin() && player.getActCount() + 1 >= player.actcount)) {
+						const shas = Math.min(usable, player.mayHaveSha(player, "use", item, "count"));
+						if (shas !== 1 || (lib.config.mode === "stone" && !player.isMin() && player.getActCount() + 1 >= player.actcount)) {
 							return 0;
 						}
 						return sha + 0.2;
@@ -172,8 +174,8 @@ game.import("card", function () {
 							if (!target || target._jiu_temp || !target.isPhaseUsing()) {
 								return 0;
 							}
-							let effs = { order: 0 },
-								temp;
+							let effs = { order: 0 };
+							let temp;
 							target.getCards("hs", i => {
 								if (get.name(i) !== "sha" || ui.selected.cards.includes(i)) {
 									return false;
@@ -192,7 +194,7 @@ game.import("card", function () {
 								};
 							});
 							delete effs.order;
-							for (let i in effs) {
+							for (const i in effs) {
 								if (!lib.filter.filterCard(effs[i].card, target)) {
 									continue;
 								}
@@ -318,52 +320,6 @@ game.import("card", function () {
 					game.addVideo("cardDialog", null, videoId);
 					game.broadcastAll("closeDialog", videoId);
 				},
-				/*content() {
-					"step 0";
-					if (target.countCards("h") == 0) {
-						event.finish();
-						return;
-					} else if (target.countCards("h") == 1) {
-						event._result = { cards: target.getCards("h") };
-					} else {
-						target.chooseCard(true).ai = function (card) {
-							if (_status.event.getRand() < 0.5) {
-								return Math.random();
-							}
-							return get.value(card);
-						};
-					}
-					"step 1";
-					target.showCards(result.cards).setContent(function () {});
-					event.dialog = ui.create.dialog(get.translation(target) + "展示的手牌", result.cards);
-					event.videoId = lib.status.videoId++;
-
-					game.broadcast("createDialog", event.videoId, get.translation(target) + "展示的手牌", result.cards);
-					game.addVideo("cardDialog", null, [get.translation(target) + "展示的手牌", get.cardsInfo(result.cards), event.videoId]);
-					event.card2 = result.cards[0];
-					game.log(target, "展示了", event.card2);
-					game.addCardKnower(result.cards, "everyone");
-					event._result = {};
-					player
-						.chooseToDiscard({ suit: get.suit(event.card2) }, function (card) {
-							var evt = _status.event.getParent();
-							if (get.damageEffect(evt.target, evt.player, evt.player, "fire") > 0) {
-								return 6.2 + Math.min(4, evt.player.hp) - get.value(card, evt.player);
-							}
-							return -1;
-						})
-						.set("prompt", false);
-					game.delay(2);
-					"step 2";
-					if (result.bool) {
-						target.damage("fire");
-					} else {
-						target.addTempSkill("huogong2");
-					}
-					event.dialog.close();
-					game.addVideo("cardDialog", null, event.videoId);
-					game.broadcast("closeDialog", event.videoId);
-				},*/
 				ai: {
 					basic: {
 						order: 9.2,
