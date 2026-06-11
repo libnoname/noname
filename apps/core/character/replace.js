@@ -93,7 +93,7 @@ window.noname_character_replace = {
 	ganning: ["ganning", "re_ganning", "sb_ganning", "yj_ganning", "yongjian_ganning", "jd_sb_ganning", "sp_ganning", "ty_ganning"],
 	gaolan: ["gaolan", "dc_gaolan", "sp_gaolan"],
 	gaoshun: ["gaoshun", "ol_gaoshun", "xin_gaoshun", "re_gaoshun", "sb_gaoshun", "o_gaoshun", "old_gaoshun"],
-	gaoxiang: ["gaoxiang", "jsrg_gaoxiang"],
+	gaoxiang: ["gaoxiang", "mb_gaoxiang", "jsrg_gaoxiang"],
 	gexuan: ["gexuan", "tw_gexuan"],
 	goblin: ["goblin", "lord_goblin"],
 	gongsunyuan: ["gongsunyuan", "re_gongsunyuan", "std_gongsunyuan", "yy_gongsunyuan"],
@@ -257,7 +257,7 @@ window.noname_character_replace = {
 	tongyuan: ["tongyuan", "xia_tongyuan"],
 	wangcan: ["wangcan", "sp_wangcan", "tw_wangcan"],
 	wangjun: ["dc_wangjun", "wangjun", "jsrg_wangjun"],
-	wanglang: ["ol_wanglang", "wanglang", "std_wanglang", "old_wanglang"],
+	wanglang: ["ol_wanglang", "wanglang", "yj_wanglang", "std_wanglang", "old_wanglang"],
 	wangling: ["clan_wangling", "dc_wangling", "wangling", "tw_wangling"],
 	wangrong: ["ol_wangrong", "wangrong"],
 	wangshuang: ["wangshuang", "sp_wangshuang"],
@@ -463,4 +463,5 @@ window.noname_character_replace = {
 	xiahoumao: ["xiahoumao", "mb_xiahoumao"],
 	sunchen: ["sunchen", "pot_sunchen"],
 	wutugu: ["wutugu", "mb_wutugu"],
+	cuimao: ["cuimao", "mb_cuimao"],
 };

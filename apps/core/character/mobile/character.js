@@ -1,4 +1,17 @@
 const characters = {
+	mb_gaoxiang: {
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		skills: ["mbgxchiyuan", "mberdi"],
+	},
+	mb_cuimao: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["mbzhengbi", "mbfengying"],
+		names: "崔|琰-毛|玠",
+	},
 	mb_zhongyao: {
 		sex: "male",
 		group: "wei",
