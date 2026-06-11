@@ -14961,6 +14961,7 @@ const skills = {
 		},
 		subSkill: {
 			target: {
+				audio: "twruilian",
 				onremove: true,
 				intro: { content: "已选择$" },
 				trigger: { global: "phaseEnd" },

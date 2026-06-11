@@ -1,4 +1,11 @@
 export default {
+	"#clanshixi1": "满枝橘子香，小女窗前贴花黄。",
+	"#clanshixi2": "提裙扑流萤，囊灯一盏照夜读。",
+	"#clanjianbai1": "阿耶答应我的事，一定能做到。",
+	"#clanjianbai2": "花开有期，世间流水终会相逢。",
+	"#clanzelie_clan_luyusheng1": "不许哭，要做个大人。",
+	"#clanzelie_clan_luyusheng2": "转瞬之景，何故常忧我心。",
+	"#clan_luyusheng:die": "船儿总有码头，鸟儿总有窠，我又往何处去呢？",
 	"#clandingan1": "今人心思动，非天子无以讨不臣。",
 	"#clandingan2": "现大乱将起，非英杰无以定海内。",
 	"#clanfuning1": "内外协一，方定天下社稷。",

@@ -1,6 +1,14 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	dc_shen_zhangliao: "新杀神张辽",
+	dc_shen_zhangliao_prefix: "新杀|神",
+	dccuxi: "猝袭",
+	dccuxi_info: "其他角色回合开始时，你可以弃置两张牌，然后令其选择一项：1.由你代替其执行摸牌阶段；2.受到你造成的1点伤害。",
+	dcduorui: "夺锐",
+	dcduorui_info: "锁定技，你对其他角色造成伤害时，你可以选择一项：1.废除其一个装备栏直到你的下个出牌阶段开始；2.令其武将牌上的一个技能失效直到你的下个出牌阶段开始。",
+	dczhiti: "止啼",
+	dczhiti_info: "锁定技，摸牌阶段你多摸×张牌（×为场上所有被废除的装备栏数）；其他角色弃牌阶段结束时，若其有被废除的装备栏,你可弃置其区域内等量张牌。",
 	dc_shen_caopi: "新杀神曹丕",
 	dc_shen_caopi_prefix: "新杀|神",
 	dcyinzhi: "阴鸷",

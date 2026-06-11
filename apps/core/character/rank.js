@@ -1,5 +1,5 @@
 window.noname_character_rank = {
-	s: ["v_sunshangxiang", "two_yj_puyuan", "x_yao_yuanshu", "lord_goblin", "pe_guozhao", "xia_caopi", "pe_jun_caopi", "wn_shen_machao", "pe_que", "hm_shen_huangfusong", "tw_jsrg_huangfusong", "key_shiki", "sp_xiahoushi", "ns_zhangwei", "key_mio", "key_midori", "key_yuri", "key_yui", "key_lucia", "db_key_hina", "sp_key_kanade", "key_shizuru", "key_sakuya", "boss_zhaoyun", "noname", "ns_shijian", "key_iriya", "ol_nanhualaoxian", "huzun", "dc_xujing", "ty_shen_zhangfei", "vtb_xiaole", "yj_zhonghui", "duosidawang", "re_sp_zhugeliang", "re_pangtong", "tw_wujing", "dengzhi", "xin_chengpu", "tw_dongzhao", "sunwukong", "ps_shen_machao", "pk_sp_duyu", "std_pengyang", "diy_liaohua", "drag_xusheng"],
+	s: ["yue_caozhi", "v_sunshangxiang", "two_yj_puyuan", "x_yao_yuanshu", "lord_goblin", "pe_guozhao", "xia_caopi", "pe_jun_caopi", "wn_shen_machao", "pe_que", "hm_shen_huangfusong", "tw_jsrg_huangfusong", "key_shiki", "sp_xiahoushi", "ns_zhangwei", "key_mio", "key_midori", "key_yuri", "key_yui", "key_lucia", "db_key_hina", "sp_key_kanade", "key_shizuru", "key_sakuya", "boss_zhaoyun", "noname", "ns_shijian", "key_iriya", "ol_nanhualaoxian", "huzun", "dc_xujing", "ty_shen_zhangfei", "vtb_xiaole", "yj_zhonghui", "duosidawang", "re_sp_zhugeliang", "re_pangtong", "tw_wujing", "dengzhi", "xin_chengpu", "tw_dongzhao", "sunwukong", "ps_shen_machao", "pk_sp_duyu", "std_pengyang", "diy_liaohua", "drag_xusheng"],
 	ap: [
 		"dc_sb_zhuran",
 		"mb_cuilingyi",
@@ -101,6 +101,7 @@ window.noname_character_rank = {
 		"eu_yuejin",
 	],
 	a: [
+		"dc_muludawang",
 		"mb_shen_machao",
 		"dm_zhangfei",
 		"mb_shen_jiangwei",
@@ -310,6 +311,7 @@ window.noname_character_rank = {
 		"bigsb_dengai",
 	],
 	am: [
+		"dc_shen_zhangliao",
 		"dc_shen_caopi",
 		"o_tadun",
 		"o_chenlan",
@@ -1125,6 +1127,7 @@ window.noname_character_rank = {
 		"pot_zanghong",
 	],
 	b: [
+		"pot_caoshuang",
 		"clan_luyusheng",
 		"mb_caochun",
 		"mb_xiahoumao",
@@ -2337,6 +2340,7 @@ window.noname_character_rank = {
 	],
 	rarity: {
 		legend: [
+			"yue_caozhi",
 			"v_sunshangxiang",
 			"zc26_shen_huangyueying",
 			"dc_shen_sunquan",
@@ -2652,6 +2656,8 @@ window.noname_character_rank = {
 			"v_sunce",
 		],
 		epic: [
+			"dc_shen_zhangliao",
+			"dc_muludawang",
 			"mb_shen_machao",
 			"clan_luyusheng",
 			"mb_zhugeguo",
@@ -3197,6 +3203,7 @@ window.noname_character_rank = {
 			"dc_sb_chunyuqiong",
 		],
 		rare: [
+			"pot_caoshuang",
 			"mb_zhongyao",
 			"mb_wutugu",
 			"mb_chengyu",

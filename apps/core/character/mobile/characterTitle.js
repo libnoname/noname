@@ -3,7 +3,7 @@ export default {
 	mb_wutugu: "霸体金刚",
 	mb_chengyu: "泰山捧日",
 	mb_dongbai: "魔姬",
-	//mb_shen_machao: "",
+	mb_shen_machao: "势震九天",
 	//mb_caochun: "",
 	//mb_zhugeguo: "",
 	//mb_xiahoumao: "",

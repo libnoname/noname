@@ -1894,7 +1894,7 @@ const skills = {
 	},
 	clanzelie: {
 		audio: 2,
-		audioname: ["clan_lujing"],
+		audioname: ["clan_lujing", "clan_luyusheng"],
 		trigger: { global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"] },
 		getIndex(event, player) {
 			return game
