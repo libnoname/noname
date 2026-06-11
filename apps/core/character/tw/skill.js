@@ -2475,7 +2475,7 @@ const skills = {
 		group: ["twmiewei_damage"],
 		subSkill: {
 			damage: {
-				audio: 2,
+				audio: "twmiewei",
 				forced: true,
 				locked: false,
 				trigger: { source: "damageBegin1" },
@@ -2543,7 +2543,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
-				audio: 2,
+				audio: "twmiyong",
 				mod: {
 					aiOrder(card, player, num) {},
 				},
