@@ -28,28 +28,22 @@ const skills = {
 			const {
 				targets: [target],
 			} = event;
-			// 拼点
 			const result = await player.chooseToCompare(target).forResult();
-			// 牌的使用者始终是 trigger.player
 			const cardUserWon = !result.tie && result.winner === trigger.player;
 			if (cardUserWon) {
-				// 使用者赢 → 额外结算
 				game.log(trigger.card, "额外结算一次");
 				trigger.getParent().effectCount++;
 			} else {
-				// 使用者没赢（含平局）→ 无效
 				game.log(trigger.card, "被无效了");
 				trigger.getParent().all_excluded = true;
 				trigger.getParent().targets.length = 0;
 			}
-			// 追踪拼点结果
 			const playerResult = result.bool;
 			const lastResult = player.getStorage(event.name + "_last", void 0);
 			if (playerResult === lastResult) {
 				await player.draw(2);
 			}
 			player.setStorage(event.name + "_last", playerResult);
-			// 标记方向已用
 			const storage = player.getStorage(event.name + "_used", {});
 			storage[event.triggername] = true;
 			player.setStorage(event.name + "_used", storage);
