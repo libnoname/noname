@@ -764,7 +764,7 @@ const skills = {
 				silent: true,
 				trigger: {
 					player: "loseEnd",
-					global: ["loseAsycnEnd", "equipEnd", "gainEnd", "addToExpansionEnd", "addJudgeEnd"],
+					global: ["loseAsyncEnd", "equipEnd", "gainEnd", "addToExpansionEnd", "addJudgeEnd"],
 				},
 				filter(event, player) {
 					const cards = event.getl?.(player)?.hs;
