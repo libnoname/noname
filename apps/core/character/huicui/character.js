@@ -8,7 +8,7 @@ const characters = {
 	dc_muludawang: {
 		sex: "male",
 		group: "qun",
-		hp: 6,
+		hp: 5,
 		skills: ["dczhoufa", "dcshouqun"],
 		names: "null|null",
 	},
