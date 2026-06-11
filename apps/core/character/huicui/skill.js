@@ -207,7 +207,7 @@ const skills = {
 					}
 					if (obtained.length > 0) {
 						await player.gain({
-							cards: obtained, 
+							cards: obtained,
 							animate: "gain2",
 						});
 						obtainedFromPile = true;
@@ -477,6 +477,7 @@ const skills = {
 		discard: false,
 		delay: false,
 		async content(event, trigger, player) {
+			const sourcePlayer = player;
 			const {
 				cards: [card],
 				targets,
@@ -487,73 +488,110 @@ const skills = {
 				if (!game.hasPlayer(target2 => target2.hasCards("he"))) {
 					return;
 				}
-				const result = await target
-					.chooseCardTarget({
-						prompt: `惑众：选择一项：1.获得另一名其他角色的一张牌；2.交给${get.translation(player)}一张牌（不选择卡牌即视为进行获得牌操作）`,
-						filterCard: true,
-						position: "he",
-						selectCard: [0, 1],
-						complexSelect: true,
-						filterTarget(card2, player2, target2) {
-							if (target2 === player2) return false;
-							if (!ui.selected.cards?.length) {
-								if (target2 === get.event().sourcex) {
+
+				const { bool, links } = await target
+					.chooseButton([
+						get.prompt(event.name),
+						[
+							[
+								["gain", `获得一名其他角色的一张牌（不能是${get.translation(sourcePlayer)}和你自己）`],
+								["give", `交给${get.translation(sourcePlayer)}一张牌`],
+							],
+							"textbutton",
+						],
+					])
+					.set("filterButton", button => {
+						const { link } = button,
+							player = get.player();
+						if (link == "gain" && !game.hasPlayer(p => p !== target && p !== sourcePlayer && p.hasCards("he"))) {
+							return false;
+						}
+						if (link == "give" && !target.hasCards("he")) {
+							return false;
+						}
+						return true;
+					})
+					.set("ai", button => {
+						// 灰风：我不会写AI，所以就写个简单的
+						const { link } = button;
+						if (link == "gain") return 5;
+						if (link == "give") return 3;
+						return 1;
+					})
+					.set("selectButton", 1)
+					.set("forced", true)
+					.forResult();
+
+				if (!bool || !links.length) return;
+				if (links.includes("gain")) {
+					const result = await target
+						.chooseTarget({
+							prompt: `选择一名其他角色（不能是${get.translation(sourcePlayer)}和你自己），获得其一张牌`,
+							filterTarget(card2, player2, target2) {
+								if (target2 === player2 || target2 === get.event().sourcex) {
 									return false;
 								}
 								return target2.hasCards("he");
-							}
-							return target2 === get.event().sourcex;
-						},
-						forced: true,
-						type,
-						sourcex: player,
-						ai1(card2) {
-							const player2 = get.player();
-							if (player2.countCards("he") < 3) {
-								return 0;
-							}
-							if (get.type2(card2) === get.event().type) {
-								return 6.5 - get.value(card2);
-							}
-							return 5 - get.value(card2);
-						},
-						ai2(target2) {
-							const player2 = get.player();
-							let att = get.attitude(player2, target2);
-							if (ui.selected.cards?.length) {
-								if (att < 0 && target2 === get.event().sourcex) {
+							},
+							forced: true,
+							type,
+							sourcex: player,
+							ai1(card2) {
+								const player2 = get.player();
+								if (player2.countCards("he") < 3) {
 									return 0;
 								}
-								if (target2.hasSkillTag("nogain")) {
-									att /= 9;
+								if (get.type2(card2) === get.event().type) {
+									return 6.5 - get.value(card2);
 								}
-								return 4 - att;
-							}
-							return -att;
-						},
-					})
-					.forResult();
-				if (result?.targets?.length) {
-					const { cards: cards2, targets: targets2 } = result;
-					target.line(targets2);
-					if (!cards2?.length) {
+								return 5 - get.value(card2);
+							},
+							ai2(target2) {
+								const player2 = get.player();
+								let att = get.attitude(player2, target2);
+								if (ui.selected.cards?.length) {
+									if (att < 0 && target2 === get.event().sourcex) {
+										return 0;
+									}
+									if (target2.hasSkillTag("nogain")) {
+										att /= 9;
+									}
+									return 4 - att;
+								}
+								return -att;
+							},
+						})
+						.forResult();
+					if (result?.targets?.length) {
+						const { targets: targets2 } = result;
+						target.line(targets2);
 						await target.gainPlayerCard({
 							target: targets2[0],
 							position: "he",
 							forced: true,
 						});
-					} else {
-						await target.give(cards2, targets2[0]);
+					}
+				}
+				if (links.includes("give")) {
+					const cardChoice = await target
+						.chooseCard({
+							prompt: `选择一张牌交给${get.translation(sourcePlayer)}`,
+							filterCard: card => true,
+							position: "he",
+							forced: true,
+						})
+						.forResult();
+					if (cardChoice && cardChoice.cards.length) {
+						await target.give(cardChoice.cards, sourcePlayer);
 					}
 				}
 			});
-			const otherPlayers = game.filterPlayer(p => p !== player);
 
-			// 计算这些角色的最大手牌数（只计算手牌数，用于判断哪些角色需要弃牌）
+			const otherPlayers = game.filterPlayer(p => p !== player);
 			let maxHandCount = -1;
 			const playersToDiscard = [];
 			for (const p of otherPlayers) {
-				let handNum = p.countCards("h"); // 只计算手牌数量（决定谁弃牌）
+				let handNum = p.countCards("h");
 				if (handNum > maxHandCount) {
 					maxHandCount = handNum;
 					playersToDiscard.length = 1;
@@ -562,12 +600,9 @@ const skills = {
 					playersToDiscard.push(p);
 				}
 			}
-
-			// 让这些角色依次弃置与展示牌类型相同的所有牌（包括手牌和装备区）
 			await game.doAsyncInOrder(playersToDiscard, async target => {
 				await target.showHandcards();
 				const hs = target.getCards("he", card2 => get.type2(card2) === type);
-
 				if (hs.length) {
 					target.$throw(hs.length, 1e3);
 					game.log(target, "将", `#y${get.cnNumber(hs.length)}张牌`, "置于牌堆顶");
@@ -4449,7 +4484,7 @@ const skills = {
 						.setContent("gaincardMultiple");
 					const names = givenCards.map(card => card.name).toUniqued();
 					await game.delayx();
-						const newNames = names.filter(name => !player.getStorage(event.name).includes(name));
+					const newNames = names.filter(name => !player.getStorage(event.name).includes(name));
 					if (newNames.length) {
 						player.markAuto(event.name, newNames);
 						await player.draw(newNames.length);
