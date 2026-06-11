@@ -3,7 +3,7 @@ export default {
 	ol_caojinyu: "春秋盈昃",
 	//pangji: "",
 	ol_dongguiren: "衣雪宫柳",
-	ol_liuye: "佐世之才",
+	ol_liuye: "算谋励樑",
 	ol_cuiyan: "时乎时乎",
 	//ol_yangfeng: "忠勇半途", //暂无称号
 	//ol_caizhenji: "舍心顾复", //暂无称号
