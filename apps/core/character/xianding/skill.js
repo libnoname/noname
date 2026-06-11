@@ -7710,7 +7710,7 @@ const skills = {
 			}
 			switch (link) {
 				case "sha": {
-					const num = Math.ceil(player.countCards("h") / 2);
+					const num = Math.ceil(target.countCards("h") / 2);
 					if (num > 0) {
 						const result = await target
 							.chooseToDiscard("宏策：弃置半数手牌（向上取整）并获得等量张伤害牌", num, true, "allowChooseAll")
@@ -9513,7 +9513,7 @@ const skills = {
 				}
 				default: {
 					if (player.canMoveCard()) {
-						await player.moveCard(true);
+						await player.moveCard();
 					}
 					break;
 				}
@@ -14240,7 +14240,7 @@ const skills = {
 						if (card) {
 							const choices = [];
 							for (let i = 0; i <= 5; i++) {
-								if (player.hasEquipableSlot(i)) {
+								if (player.hasEmptySlot(i)) {
 									choices.push(`equip${i}`);
 								}
 							}
