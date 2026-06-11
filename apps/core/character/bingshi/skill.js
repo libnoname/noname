@@ -23,20 +23,12 @@ const skills = {
 		},
 		forced: true,
 		async content(event, trigger, player) {
-			const name = event.triggername,
-				storage = player.getStorage(event.name, { triggers: [], triggered: [] });
+			const name = event.triggername;
+			const storage = player.getStorage(event.name, { triggers: [], triggered: [] });
 			storage.triggered.push(name);
 			player.setStorage(event.name, storage);
 			const num = player.getRoundHistory("useSkill", evt => evt.skill == event.name).length;
-			const shequanCards = game
-				.filterPlayer(cur => cur != player)
-				.reduce((arr, cur) => {
-					const cards = cur.getCards("hej", card => card.hasGaintag("eternal_potshequan"));
-					if (cards.length) {
-						arr.addArray(cards);
-					}
-					return arr;
-				}, []);
+			const shequanCards = game.filterPlayer(current => current != player).flatMap(cur => cur.getCards("hej", card => card.hasGaintag("eternal_potshequan")));
 			Array.from(ui.cardPile.childNodes).forEach(c => {
 				if (c.hasGaintag("eternal_potshequan")) {
 					shequanCards.push(c);
@@ -57,35 +49,31 @@ const skills = {
 						cards: gain,
 						gain_list: [[player, gain]],
 					})
-					.setContent(async function (event) {
+					.setContent(async event => {
 						event.type = "gain";
 						const { cards, gain_list } = event;
-						const position = [],
-							[[player]] = gain_list;
-						for (let card of cards) {
+						const position = [];
+						/** @type { [[Player]] } */
+						const [[player]] = gain_list;
+						for (const card of cards) {
 							position.push(get.position(card, "judge"));
 						}
-						for (let index in position) {
-							const card = cards[index],
-								pos = position[index];
-							if ("hesx".indexOf(pos) > -1) {
+						for (const index in position) {
+							const card = cards[index];
+							const pos = position[index];
+							if ("hesx".includes(pos)) {
 								const owner = get.owner(card);
-								owner.$giveAuto([card], player);
+								owner?.$giveAuto([card], player);
 							} else {
 								player.$gain2([card], true);
 							}
 						}
 						await game.delay(0, get.delayx(500, 500));
-						await player.gain(cards).set("getlx", false);
+						await player.gain({ cards }).set("getlx", false);
 						await game.delayx();
 					});
 			}
-			let gained = player
-				.getRoundHistory("gain", evt => evt.getParent(2).name == event.name)
-				.reduce((cards, evt) => {
-					cards.addArray(evt.cards);
-					return cards;
-				}, []).length;
+			const gained = player.getRoundHistory("gain", evt => evt.getParent(2)?.name === event.name).flatMap(evt => evt.cards).length;
 			if (gained > player.maxHp) {
 				await player.loseHp(1);
 			}
@@ -132,11 +120,11 @@ const skills = {
 			return game.filterPlayer(cur => cur != player && cur.isIn()).sortBySeat(player);
 		},
 		async content(event, trigger, player) {
-			const name = event.triggername,
-				storage = player.getStorage(event.name, { triggers: [], triggered: [] });
+			const name = event.triggername;
+			const storage = player.getStorage(event.name, { triggers: [], triggered: [] });
 			storage.triggered.push(name);
 			player.setStorage(event.name, storage);
-			const targets = game.filterPlayer(cur => cur != player && cur.isIn() && cur.hasCards("h", c => !c.hasGaintag("eternal_potshequan")));
+			const targets = game.filterPlayer(current => current != player && current.isIn() && current.hasCards("h", c => !c.hasGaintag("eternal_potshequan")));
 			if (!targets.length) {
 				return;
 			}
@@ -191,13 +179,13 @@ const skills = {
 		intro: {
 			name: "渐专",
 			mark(dialog, storage, player) {
-				const { triggers: potdianyi } = player.getStorage("potdianyi", { triggers: [] }),
-					{ triggers: potshequan } = player.getStorage("potshequan", { triggers: [] }),
-					map = {
-						damageSource: "造成伤害后",
-						damageEnd: "受到伤害后",
-						dying: "一名角色进入濒死状态时",
-					};
+				const { triggers: potdianyi } = player.getStorage("potdianyi", { triggers: [] });
+				const { triggers: potshequan } = player.getStorage("potshequan", { triggers: [] });
+				const map = {
+					damageSource: "造成伤害后",
+					damageEnd: "受到伤害后",
+					dying: "一名角色进入濒死状态时",
+				};
 				if (!potdianyi.length && !potshequan.length) {
 					dialog.addText("尚未触发任何时机");
 				}
@@ -220,13 +208,13 @@ const skills = {
 			if (!player.hasSkill("potdianyi", null, false, false) && !player.hasSkill("potshequan", null, false, false)) {
 				return false;
 			}
-			if (event.name == "damage" && event.num < 1) {
+			if (event.name === "damage" && event.num < 1) {
 				return false;
 			}
-			const { triggers: potdianyi } = player.getStorage("potdianyi", { triggers: [] }),
-				{ triggers: potshequan } = player.getStorage("potshequan", { triggers: [] });
+			const { triggers: potdianyi } = player.getStorage("potdianyi", { triggers: [] });
+			const { triggers: potshequan } = player.getStorage("potshequan", { triggers: [] });
 			const alltriggers = potdianyi.concat(potshequan);
-			if (alltriggers.length == 3) {
+			if (alltriggers.length === 3) {
 				return true;
 			}
 			return !alltriggers.includes(name);
@@ -234,15 +222,15 @@ const skills = {
 		forced: true,
 		popup: false,
 		async content(event, trigger, player) {
-			const name = event.triggername,
-				map = {
-					damageSource: "造成伤害后",
-					damageEnd: "受到伤害后",
-					dying: "一名角色进入濒死状态时",
-				},
-				choices = ["potdianyi", "potshequan"].filter(skill => player.hasSkill(skill, null, false, false)).map(skill => get.translation(skill));
-			let { triggers: potdianyi } = player.getStorage("potdianyi", { triggers: [] }),
-				{ triggers: potshequan } = player.getStorage("potshequan", { triggers: [] });
+			const name = event.triggername;
+			const map = {
+				damageSource: "造成伤害后",
+				damageEnd: "受到伤害后",
+				dying: "一名角色进入濒死状态时",
+			};
+			const choices = ["potdianyi", "potshequan"].filter(skill => player.hasSkill(skill, null, false, false)).map(skill => get.translation(skill));
+			const { triggers: potdianyi } = player.getStorage("potdianyi", { triggers: [] });
+			const { triggers: potshequan } = player.getStorage("potshequan", { triggers: [] });
 			if (potdianyi.concat(potshequan).length == 3) {
 				player.logSkill(`${event.name}_animate`);
 				player.awakenSkill(event.name);
@@ -258,8 +246,8 @@ const skills = {
 				const skillToRemove = result?.index == 0 ? "potdianyi" : "potshequan";
 				const x = player.getStorage(skillToRemove, { triggers: [] }).triggers.length - 1;
 				await player.changeSkills(["potnizun"], [skillToRemove]);
-				await player.gainMaxHp(x);
-				await player.recover(x);
+				await player.gainMaxHp({ num: x });
+				await player.recover({ num: x });
 			} else {
 				player.logSkill(event.name);
 				const result = await player
@@ -316,7 +304,7 @@ const skills = {
 		onremove(player, skill) {
 			const cards2 = player.getExpansions(skill);
 			if (cards2.length) {
-				player.loseToDiscardpile(cards2);
+				player.loseToDiscardpile({ cards: cards2 });
 			}
 		},
 		mark: true,
@@ -324,7 +312,7 @@ const skills = {
 		intro: {
 			markcount: "expansion",
 			mark(dialog, storage, player) {
-				const usedCount = player.getRoundHistory("useCard", evt => evt.skill == "potnizun_backup").length;
+				const usedCount = player.countRoundHistory("useCard", evt => evt.skill == "potnizun_backup");
 				if (usedCount > 0) {
 					dialog.addText(`本轮受到的伤害+${usedCount}`);
 				}
@@ -359,7 +347,7 @@ const skills = {
 			filter(button, player) {
 				const card = button.link;
 				const evt = get.event().getParent();
-				return evt.filterCard?.(card, player, evt) ?? false;
+				return evt?.filterCard?.(card, player, evt) ?? false;
 			},
 			check(button) {
 				const player = get.player();
@@ -397,11 +385,11 @@ const skills = {
 					player: "damageBegin3",
 				},
 				filter(event, player) {
-					return player.getRoundHistory("useCard", evt => evt.skill == "potnizun_backup").length;
+					return player.hasRoundHistory("useCard", evt => evt.skill == "potnizun_backup");
 				},
 				forced: true,
 				async content(event, trigger, player) {
-					const usedCount = player.getRoundHistory("useCard", evt => evt.skill == "potnizun_backup").length;
+					const usedCount = player.countRoundHistory("useCard", evt => evt.skill == "potnizun_backup");
 					trigger.num += usedCount;
 				},
 			},
@@ -421,9 +409,11 @@ const skills = {
 					const discarded = get.discarded().filter(card => card.hasGaintag("eternal_potshequan"));
 					const shequanCards = discarded.filterInD("d");
 					if (shequanCards.length > 0) {
-						const next = player.addToExpansion(shequanCards, "gain2");
-						next.gaintag.add("potnizun");
-						await next;
+						await player.addToExpansion({
+							cards: shequanCards,
+							animate: "gain2",
+							gaintag: ["potnizun"],
+						});
 					}
 				},
 			},

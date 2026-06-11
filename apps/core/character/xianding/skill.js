@@ -10,7 +10,7 @@ const skills = {
 			global: "phaseBegin",
 		},
 		filter(event, player) {
-			return event.player != player && event.player.isIn() && player.countDiscardableCards(player, "he") >= 2;
+			return event.player !== player && event.player.isIn() && player.countDiscardableCards(player, "he") >= 2;
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
@@ -22,12 +22,11 @@ const skills = {
 					ai(card) {
 						return 6 - get.value(card);
 					},
-					logSkill: [event.skill, trigger.player],
 					chooseonly: true,
 				})
 				.forResult();
 		},
-		popup: false,
+		logTarget: "player",
 		async content(event, trigger, player) {
 			await player.discard({ cards: event.cards, discarder: player });
 			const result = await trigger.player
@@ -42,7 +41,7 @@ const skills = {
 				})
 				.forResult();
 			if (result?.control && result.control != "cancel2") {
-				if (result.index == 0) {
+				if (result.index === 0) {
 					trigger.player.addTempSkill(`${event.name}_draw`);
 					trigger.player.setStorage(`${event.name}_draw`, player, true);
 					trigger.player.markSkillCharacter(`${event.name}_draw`, player, "猝袭", `本回合的摸牌阶段被${get.translation(player)}夺取`);
@@ -76,7 +75,7 @@ const skills = {
 			source: "damageBegin1",
 		},
 		filter(event, player) {
-			return event.player.hasEnabledSlot() || event.player.getSkill(null, false).length;
+			return event.player.hasEnabledSlot() || event.player.getSkills(null, false).length;
 		},
 		async cost(event, trigger, player) {
 			const result = await player
@@ -98,20 +97,20 @@ const skills = {
 				})
 				.forResult();
 			event.result = {
-				bool: result?.control && result.control != "cancel2",
+				bool: result?.control !== "cancel2",
 				targets: [trigger.player],
 				cost_data: { index: result?.index ?? null },
 			};
 		},
 		async content(event, trigger, player) {
 			const {
-					targets: [target],
-					cost_data: { index },
-				} = event,
-				storage = player.getStorage(event.name, []);
-			let phseUse = trigger.getParent(evt => evt.name == "phaseUse" && evt.player == player, true),
-				info = storage.find(info => info.player == target && info.phaseUse == phseUse),
-				infoIndex = storage.findIndex(info => info.player == target && info.phaseUse == phseUse);
+				targets: [target],
+				cost_data: { index },
+			} = event;
+			const storage = player.getStorage(event.name, []);
+			let phseUse = trigger.getParent(evt => evt.name === "phaseUse" && evt.player === player, true);
+			let info = storage.find(info => info.player === target && info.phaseUse === phseUse);
+			let infoIndex = storage.findIndex(info => info.player === target && info.phaseUse === phseUse);
 			if (phseUse == undefined) {
 				phseUse = "next";
 			}
@@ -119,9 +118,9 @@ const skills = {
 				infoIndex = "add";
 				info = { player: target, phaseUse: phseUse };
 			}
-			if (index == 0) {
+			if (index === 0) {
 				const result = await target.chooseToDisable({ source: player }).forResult();
-				if (result?.control && result.control != "cancel2") {
+				if (result?.control && result.control !== "cancel2") {
 					info.equip ??= [];
 					info.equip.push(result.control);
 				}
@@ -140,7 +139,7 @@ const skills = {
 				}
 			}
 			if (info.equip?.length || info.skill?.length) {
-				if (infoIndex == "add") {
+				if (infoIndex === "add") {
 					storage.add(info);
 				} else {
 					storage[infoIndex] = info;
@@ -158,7 +157,7 @@ const skills = {
 				filter(event, player) {
 					const storage = player.getStorage("dcduorui", []);
 					return storage.some(info => {
-						if (!info.player?.isIn() || info.phaseUse == event) {
+						if (!info.player?.isIn() || info.phaseUse === event) {
 							return false;
 						}
 						return info.equip?.length || info.skill?.length;
@@ -212,7 +211,7 @@ const skills = {
 					global: "phaseDiscardEnd",
 				},
 				filter(event, player) {
-					return event.player != player && event.player.hasDisabledSlot() && event.player.hasDiscardableCards(player, "hej");
+					return event.player !== player && event.player.hasDisabledSlot() && event.player.hasDiscardableCards(player, "hej");
 				},
 				async cost(event, trigger, player) {
 					event.result = await player
@@ -221,12 +220,11 @@ const skills = {
 							position: "hej",
 							selectButton: trigger.player.countDisabledSlot(),
 							allowChooseAll: true,
-							logSkill: [event.skill, trigger.player],
 							chooseonly: true,
 						})
 						.forResult();
 				},
-				popup: false,
+				logTarget: "player",
 				async content(event, trigger, player) {
 					await trigger.player.discard({ cards: event.cards, discarder: player });
 				},

@@ -167,9 +167,9 @@ const skills = {
 			player: ["useCardAfter", "respondAfter"],
 		},
 		getIndex(event, player) {
-			const storage = player.getStorage("dcwenlan").slice().reverse(),
-				result = [],
-				currCard = event.cards?.[0] || event.card;
+			const storage = player.getStorage("dcwenlan").toReversed();
+			const result = [];
+			const currCard = event.cards?.[0] || event.card;
 			storage.unshift(currCard);
 			storage.unique();
 			while (storage.length) {
@@ -185,13 +185,12 @@ const skills = {
 		forced: true,
 		async content(event, trigger, player) {
 			trigger.dcwenlan = true;
-			const { fuCardPool, markAsFu } = get.info("dcfuyue"),
-				storage = player.getStorage("dcwenlan");
+			const { fuCardPool, markAsFu } = get.info("dcfuyue");
+			const storage = player.getStorage("dcwenlan");
 			storage.removeArray(event.indexedData);
-			const prevCard = event.indexedData[1],
-				currCard = event.indexedData[0];
-			const prevIsFu = prevCard?.storage?.dcfuyue_name,
-				currIsFu = currCard?.storage?.dcfuyue_name;
+			const [currCard, prevCard] = event.indexedData;
+			const prevIsFu = prevCard?.storage?.dcfuyue_name;
+			const currIsFu = currCard?.storage?.dcfuyue_name;
 			player.setStorage("dcwenlan", storage, true);
 			let obtainedFromPile = false;
 			if (prevIsFu && currIsFu) {
@@ -207,7 +206,10 @@ const skills = {
 						}
 					}
 					if (obtained.length > 0) {
-						await player.gain(obtained, "gain2");
+						await player.gain({
+							cards: obtained, 
+							animate: "gain2",
+						});
 						obtainedFromPile = true;
 					}
 				}
@@ -302,8 +304,12 @@ const skills = {
 					},
 					viewAs: { name: links[0][2], nature: links[0][3], storage: { dczhoufa: true } },
 					async precontent(event, _, player) {
-						if (event.getParent().addCount !== false) {
-							event.getParent().addCount = false;
+						const evt = event.getParent();
+						if (evt == null) {
+							return;
+						}
+						if (evt.addCount !== false) {
+							evt.addCount = false;
 						}
 					},
 					popname: true,
@@ -14570,7 +14576,7 @@ const skills = {
 			if (event.type != "discard" || event.getlx === false || player.getExpansions("xunli").length >= 9) {
 				return false;
 			}
-			return event.cards.some(card => get.position(card, true) == "d" && get.color(card, event.cards2?.includes(card) ? event.player : false) == "black");
+			return event.cards.some(card => get.position(card, true) === "d" && get.color(card, event.cards2?.includes(card) ? event.player : false) === "black");
 		},
 		async content(event, trigger, player) {
 			const num = 9 - player.getExpansions("xunli").length;
