@@ -35,13 +35,13 @@ jobs:
           else
             IS_LATEST_RELEASE=false
           fi
-          echo "is-latest-release=$IS_LATEST_RELEASE" >> "$GITHUB_OUTPUT"
+          echo "is_latest_release=$IS_LATEST_RELEASE" >> "$GITHUB_OUTPUT"
 
       - name: Create draft release
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-          IS_LATEST_RELEASE: ${{ steps.release-metadata.outputs.is-latest-release }}
+          IS_LATEST_RELEASE: ${{ steps["release-metadata"].outputs.is_latest_release }}
         run: |
           TAG="${GITHUB_REF_NAME}"
           RELEASE_ARGS=(
