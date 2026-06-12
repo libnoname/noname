@@ -22500,7 +22500,7 @@ const skills = {
 						num = get.event().getParent().num;
 					let att = get.attitude(player, target);
 					if (num <= 1) {
-						return -att * target.countCards("h");
+						return -att * (target.countCards("h") + 0.1);
 					}
 					if (num == 2) {
 						if (target.hasJudge("lebu")) {
