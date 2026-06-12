@@ -36816,20 +36816,38 @@ const skills = {
 					return changed.includes(to.link);
 				});
 				next.set("max", Math.min(hs.length, ts.length, player.getDamagedHp()));
+				next.set("target", target);
 				next.set("processAI", function (list) {
-					if (_status.event.max) {
-						let gain = list[0][1]
+					const { max, target } = get.event();
+					const player = get.player();
+					const att = get.attitude(player, target);
+					if (max > 0) {
+						let gain, give;
+						if (att <= 1) {
+							gain = list[0][1]
 								.sort((a, b) => {
 									return player.getUseValue(b, null, true) - player.getUseValue(a, null, true);
 								})
-								.slice(0, _status.event.max),
+								.slice(0, _status.event.max);
 							give = list[1][1]
 								.sort((a, b) => {
 									return get.value(a, player) - get.value(b, player);
 								})
 								.slice(0, _status.event.max);
+						} else {
+							give = list[1][1]
+								.sort((a, b) => {
+									return target.getUseValue(b, null, true) - target.getUseValue(a, null, true);
+								})
+								.slice(0, _status.event.max);
+							gain = list[0][1]
+								.sort((a, b) => {
+									return get.value(a, target) - get.value(b, target);
+								})
+								.slice(0, _status.event.max);
+						}
 						for (let i of gain) {
-							if (get.value(i, player) < get.value(give[0], player)) {
+							if (att <= 1 && get.value(i, player) < get.value(give[0], player)) {
 								continue;
 							}
 							let j = give.shift();
