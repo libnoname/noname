@@ -4343,9 +4343,6 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		}
 		return selectable;
 	}
-	/**
-	 * 
-	 */
 	filter(filter, index) {
 		if (typeof filter === "function") {
 			return filter;
@@ -4353,6 +4350,20 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		if (index == null) {
 			index = 0;
 		}
+		const cardFilterGetters = {
+			name: "name",
+			type: "type",
+			subtype: "subtype",
+			color: "color",
+			suit: "suit",
+			number: "number",
+		};
+		const matches = (value, target) => {
+			if (Array.isArray(value)) {
+				return value.includes(target);
+			}
+			return target == value;
+		};
 		const result = (...args) => {
 			const item = args[index];
 			if (filter == null) {
@@ -4361,83 +4372,20 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			if (filter == item) {
 				return true;
 			}
+			const isCard = get.itemtype(item) === "card";
 			for (const key in filter) {
-				if (Object.prototype.hasOwnProperty.call(filter, key)) {
-					if (get.itemtype(item) == "card") {
-						if (key == "name") {
-							if (Array.isArray(filter[key])) {
-								if (filter[key].includes(get.name(item)) == false) {
-									return false;
-								}
-							} else if (typeof filter[key] == "string") {
-								if (get.name(item) != filter[key]) {
-									return false;
-								}
-							}
-						} else if (key == "type") {
-							if (Array.isArray(filter[key])) {
-								if (filter[key].includes(get.type(item)) == false) {
-									return false;
-								}
-							} else if (typeof filter[key] == "string") {
-								if (get.type(item) != filter[key]) {
-									return false;
-								}
-							}
-						} else if (key == "subtype") {
-							if (Array.isArray(filter[key])) {
-								if (filter[key].includes(get.subtype(item)) == false) {
-									return false;
-								}
-							} else if (typeof filter[key] == "string") {
-								if (get.subtype(item) != filter[key]) {
-									return false;
-								}
-							}
-						} else if (key == "color") {
-							if (Array.isArray(filter[key])) {
-								if (filter[key].includes(get.color(item)) == false) {
-									return false;
-								}
-							} else if (typeof filter[key] == "string") {
-								if (get.color(item) != filter[key]) {
-									return false;
-								}
-							}
-						} else if (key == "suit") {
-							if (Array.isArray(filter[key])) {
-								if (filter[key].includes(get.suit(item)) == false) {
-									return false;
-								}
-							} else if (typeof filter[key] == "string") {
-								if (get.suit(item) != filter[key]) {
-									return false;
-								}
-							}
-						} else if (key == "number") {
-							if (Array.isArray(filter[key])) {
-								if (filter[key].includes(get.number(item)) == false) {
-									return false;
-								}
-							} else if (typeof filter[key] == "string") {
-								if (get.number(item) != filter[key]) {
-									return false;
-								}
-							}
-						} else if (Array.isArray(filter[key])) {
-							if (filter[key].includes(item[key]) == false) {
-								return false;
-							}
-						} else if (typeof filter[key] == "string") {
-							if (item[key] != filter[key]) {
-								return false;
-							}
-						}
-					} else {
-						if (item[key] != filter[key]) {
-							return false;
-						}
+				if (!Object.prototype.hasOwnProperty.call(filter, key)) {
+					continue;
+				}
+				const value = filter[key];
+				if (isCard) {
+					const getter = cardFilterGetters[key];
+					const target = getter ? get[getter](item) : item[key];
+					if (!matches(value, target)) {
+						return false;
 					}
+				} else if (item[key] != value) {
+					return false;
 				}
 			}
 			return true;
