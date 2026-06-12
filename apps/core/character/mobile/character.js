@@ -1,4 +1,17 @@
 const characters = {
+	re_zhoufei: {
+		sex: "female",
+		group: "wu",
+		hp: 3,
+		skills: ["reliangyin", "rekongsheng"],
+		names: "周|null",
+	},
+	re_yanyan: {
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		skills: ["rejuzhan"],
+	},
 	mb_gaoxiang: {
 		sex: "male",
 		group: "shu",
