@@ -38290,7 +38290,7 @@ const skills = {
 			target.addSkill("xinzhoufu_judge");
 		},
 		ai: {
-			order: 9,
+			order: 12,
 			result: {
 				target(player, target) {
 					if (player.inRange(target)) {
