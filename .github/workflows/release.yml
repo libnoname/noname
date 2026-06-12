@@ -15,15 +15,12 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
 
       - name: Resolve release metadata
         id: release-metadata
         shell: bash
         run: |
           TAG="${GITHUB_REF_NAME}"
-          TAG_COMMIT="$(git rev-list -n 1 "$TAG")"
 
           if [[ ! "$TAG" =~ ^v[0-9]+([.][0-9]+)*$ ]]; then
             echo "Tag $TAG is not a numeric release tag." >&2
@@ -31,25 +28,13 @@ jobs:
           fi
 
           git fetch --force --tags origin
-          git fetch --no-tags origin \
-          "+refs/heads/main:refs/remotes/origin/main" \
-          "+refs/heads/maint/v*:refs/remotes/origin/maint/v*"
-
-          BRANCHES="$(git branch -r --contains "$TAG_COMMIT" --format="%(refname:short)")"
-
-          if ! grep -qxE "origin/maint/v[^[:space:]]+" <<< "$BRANCHES" && ! grep -qx "origin/main" <<< "$BRANCHES"; then
-            echo "Tag $TAG does not belong to main or maint/v* branches." >&2
-            exit 1
-          fi
 
           LATEST_TAG="$(git tag -l 'v*' | grep -E '^v[0-9]+([.][0-9]+)*$' | sort -V | tail -n 1)"
-
           if [[ "$TAG" == "$LATEST_TAG" ]]; then
             IS_LATEST_RELEASE=true
           else
             IS_LATEST_RELEASE=false
           fi
-
           echo "is-latest-release=$IS_LATEST_RELEASE" >> "$GITHUB_OUTPUT"
 
       - name: Create draft release
