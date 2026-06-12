@@ -1093,6 +1093,14 @@ export class Get {
 			}
 		}
 	}
+	/**
+	 * 将一张牌或虚拟牌数据转为对应的虚拟牌。
+	 *
+	 * @param { Card | VCard | CardBaseUIData } card - 要转换的牌或虚拟牌数据
+	 * @param { Card[] } [cards] - 组成虚拟牌的实体牌
+	 * @param { Player | false } [owner] - 获取牌面信息时参考的玩家
+	 * @returns { VCard } 转换后的虚拟牌；单参数传入VCard时直接返回原对象
+	 */
 	autoViewAs(card, cards, owner) {
 		if (arguments.length === 1 && card instanceof lib.element.VCard) {
 			return card;
@@ -1186,22 +1194,22 @@ export class Get {
 	 *
 	 * @template T
 	 * @overload
-	 * @param { T[] } list 待比较的列表
-	 * @param { string | ((item: T) => number) } func 用于取数值的属性名或函数
+	 * @param { T[] } list - 待比较的列表
+	 * @param { string | ((item: T) => number) } func - 用于取数值的属性名或函数
 	 * @returns { number | undefined }
 	 *
 	 * @template T
 	 * @overload
-	 * @param { T[] } list 待比较的列表
-	 * @param { string | ((item: T) => number) } func 用于取数值的属性名或函数
-	 * @param { "item" } type 返回最大项
+	 * @param { T[] } list - 待比较的列表
+	 * @param { string | ((item: T) => number) } func - 用于取数值的属性名或函数
+	 * @param { "item" } type - 返回最大项
 	 * @returns { T | undefined }
 	 *
 	 * @template T
 	 * @overload
-	 * @param { T[] } list 待比较的列表
-	 * @param { string | ((item: T) => number) } func 用于取数值的属性名或函数
-	 * @param { "list" } type 返回所有并列最大项
+	 * @param { T[] } list - 待比较的列表
+	 * @param { string | ((item: T) => number) } func - 用于取数值的属性名或函数
+	 * @param { "list" } type - 返回所有并列最大项
 	 * @returns { T[] }
 	 */
 	max(list, func, type) {
@@ -1212,22 +1220,22 @@ export class Get {
 	 *
 	 * @template T
 	 * @overload
-	 * @param { T[] } list 待比较的列表
-	 * @param { string | ((item: T) => number) } func 用于取数值的属性名或函数
+	 * @param { T[] } list - 待比较的列表
+	 * @param { string | ((item: T) => number) } func - 用于取数值的属性名或函数
 	 * @returns { number | undefined }
 	 *
 	 * @template T
 	 * @overload
-	 * @param { T[] } list 待比较的列表
-	 * @param { string | ((item: T) => number) } func 用于取数值的属性名或函数
-	 * @param { "item" } type 返回最小项
+	 * @param { T[] } list - 待比较的列表
+	 * @param { string | ((item: T) => number) } func - 用于取数值的属性名或函数
+	 * @param { "item" } type - 返回最小项
 	 * @returns { T | undefined }
 	 *
 	 * @template T
 	 * @overload
-	 * @param { T[] } list 待比较的列表
-	 * @param { string | ((item: T) => number) } func 用于取数值的属性名或函数
-	 * @param { "list" } type 返回所有并列最小项
+	 * @param { T[] } list - 待比较的列表
+	 * @param { string | ((item: T) => number) } func - 用于取数值的属性名或函数
+	 * @param { "list" } type - 返回所有并列最小项
 	 * @returns { T[] }
 	 */
 	min(list, func, type) {
