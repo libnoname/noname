@@ -41,7 +41,7 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-          IS_LATEST_RELEASE: ${{ steps["release-metadata"].outputs.is_latest_release }}
+          IS_LATEST_RELEASE: ${{ steps['release-metadata'].outputs.is_latest_release }}
         run: |
           TAG="${GITHUB_REF_NAME}"
           RELEASE_ARGS=(
