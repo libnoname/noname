@@ -4343,91 +4343,98 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		}
 		return selectable;
 	}
-	filter(filter, i) {
-		if (typeof filter == "function") {
+	/**
+	 * 
+	 */
+	filter(filter, index) {
+		if (typeof filter === "function") {
 			return filter;
 		}
-		if (i == undefined) {
-			i = 0;
+		if (index == null) {
+			index = 0;
 		}
-		var result = function () {
-			if (filter == arguments[i]) {
+		const result = (...args) => {
+			const item = args[index];
+			if (filter == null) {
+				return item == null;
+			}
+			if (filter == item) {
 				return true;
 			}
-			for (var j in filter) {
-				if (Object.prototype.hasOwnProperty.call(filter, j)) {
-					if (get.itemtype(arguments[i]) == "card") {
-						if (j == "name") {
-							if (Array.isArray(filter[j])) {
-								if (filter[j].includes(get.name(arguments[i])) == false) {
+			for (const key in filter) {
+				if (Object.prototype.hasOwnProperty.call(filter, key)) {
+					if (get.itemtype(item) == "card") {
+						if (key == "name") {
+							if (Array.isArray(filter[key])) {
+								if (filter[key].includes(get.name(item)) == false) {
 									return false;
 								}
-							} else if (typeof filter[j] == "string") {
-								if (get.name(arguments[i]) != filter[j]) {
-									return false;
-								}
-							}
-						} else if (j == "type") {
-							if (Array.isArray(filter[j])) {
-								if (filter[j].includes(get.type(arguments[i])) == false) {
-									return false;
-								}
-							} else if (typeof filter[j] == "string") {
-								if (get.type(arguments[i]) != filter[j]) {
+							} else if (typeof filter[key] == "string") {
+								if (get.name(item) != filter[key]) {
 									return false;
 								}
 							}
-						} else if (j == "subtype") {
-							if (Array.isArray(filter[j])) {
-								if (filter[j].includes(get.subtype(arguments[i])) == false) {
+						} else if (key == "type") {
+							if (Array.isArray(filter[key])) {
+								if (filter[key].includes(get.type(item)) == false) {
 									return false;
 								}
-							} else if (typeof filter[j] == "string") {
-								if (get.subtype(arguments[i]) != filter[j]) {
-									return false;
-								}
-							}
-						} else if (j == "color") {
-							if (Array.isArray(filter[j])) {
-								if (filter[j].includes(get.color(arguments[i])) == false) {
-									return false;
-								}
-							} else if (typeof filter[j] == "string") {
-								if (get.color(arguments[i]) != filter[j]) {
+							} else if (typeof filter[key] == "string") {
+								if (get.type(item) != filter[key]) {
 									return false;
 								}
 							}
-						} else if (j == "suit") {
-							if (Array.isArray(filter[j])) {
-								if (filter[j].includes(get.suit(arguments[i])) == false) {
+						} else if (key == "subtype") {
+							if (Array.isArray(filter[key])) {
+								if (filter[key].includes(get.subtype(item)) == false) {
 									return false;
 								}
-							} else if (typeof filter[j] == "string") {
-								if (get.suit(arguments[i]) != filter[j]) {
-									return false;
-								}
-							}
-						} else if (j == "number") {
-							if (Array.isArray(filter[j])) {
-								if (filter[j].includes(get.number(arguments[i])) == false) {
-									return false;
-								}
-							} else if (typeof filter[j] == "string") {
-								if (get.number(arguments[i]) != filter[j]) {
+							} else if (typeof filter[key] == "string") {
+								if (get.subtype(item) != filter[key]) {
 									return false;
 								}
 							}
-						} else if (Array.isArray(filter[j])) {
-							if (filter[j].includes(arguments[i][j]) == false) {
+						} else if (key == "color") {
+							if (Array.isArray(filter[key])) {
+								if (filter[key].includes(get.color(item)) == false) {
+									return false;
+								}
+							} else if (typeof filter[key] == "string") {
+								if (get.color(item) != filter[key]) {
+									return false;
+								}
+							}
+						} else if (key == "suit") {
+							if (Array.isArray(filter[key])) {
+								if (filter[key].includes(get.suit(item)) == false) {
+									return false;
+								}
+							} else if (typeof filter[key] == "string") {
+								if (get.suit(item) != filter[key]) {
+									return false;
+								}
+							}
+						} else if (key == "number") {
+							if (Array.isArray(filter[key])) {
+								if (filter[key].includes(get.number(item)) == false) {
+									return false;
+								}
+							} else if (typeof filter[key] == "string") {
+								if (get.number(item) != filter[key]) {
+									return false;
+								}
+							}
+						} else if (Array.isArray(filter[key])) {
+							if (filter[key].includes(item[key]) == false) {
 								return false;
 							}
-						} else if (typeof filter[j] == "string") {
-							if (arguments[i][j] != filter[j]) {
+						} else if (typeof filter[key] == "string") {
+							if (item[key] != filter[key]) {
 								return false;
 							}
 						}
 					} else {
-						if (arguments[i][j] != filter[j]) {
+						if (item[key] != filter[key]) {
 							return false;
 						}
 					}
@@ -4435,7 +4442,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			}
 			return true;
 		};
-		result._filter_args = [filter, i];
+		result._filter_args = [filter, index];
 		return result;
 	}
 	/**
