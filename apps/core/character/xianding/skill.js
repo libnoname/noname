@@ -30759,9 +30759,7 @@ const skills = {
 			player.chooseTarget(get.prompt2("dcfumou"), [1, player.getDamagedHp()]).set("ai", target => {
 				var att = get.attitude(_status.event.player, target);
 				if (target.countCards("h") >= 3 && (!target.isDamaged() || !target.countCards("e"))) {
-					if (!target.canMoveCard()) {
-						return -att;
-					} else if (!target.canMoveCard(true)) {
+					if (!target.canMoveCard(true)) {
 						return -att / 5;
 					}
 				}
