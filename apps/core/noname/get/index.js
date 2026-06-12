@@ -1076,12 +1076,19 @@ export class Get {
 		}
 		return str;
 	}
+	/**
+	 * 设置事件的提示文本；已有主提示时写入副提示。
+	 *
+	 * @param { GameEvent } next - 需要设置提示文本的事件
+	 * @param { string } str - 提示文本；以"###"开头时可拆分为prompt和prompt2
+	 * @returns { void }
+	 */
 	evtprompt(next, str) {
 		if (next.prompt) {
 			next.set("prompt2", str);
 		} else {
 			if (str.startsWith("###")) {
-				var prompts = str.slice(3).split("###");
+				const prompts = str.slice(3).split("###");
 				if (prompts[0]) {
 					next.set("prompt", prompts[0]);
 				}
