@@ -4343,8 +4343,19 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		}
 		return selectable;
 	}
+	/**
+	 * 将过滤函数或对象条件标准化为过滤函数。
+	 *
+	 * 传入对象条件时，会检查返回函数调用参数中第 `index` 个对象是否匹配该条件。
+	 * 若被检查对象是牌，`name`、`type`、`subtype`、`color`、`suit`、`number` 会通过对应的 get 方法取值。
+	 *
+	 * @param { ((...args: any[]) => boolean) | Record<string, any> } [filter] 过滤函数或对象条件
+	 * @param { number } [index=0] 要检查的参数下标
+	 * @returns { (...args: any[]) => boolean } 标准化后的过滤函数
+	 */
 	filter(filter, index) {
 		if (typeof filter === "function") {
+			// @ts-expect-error
 			return filter;
 		}
 		if (index == null) {
