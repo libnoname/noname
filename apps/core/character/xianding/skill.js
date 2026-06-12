@@ -586,6 +586,8 @@ const skills = {
 						return info.equip?.length || info.skill?.length;
 					});
 				},
+				forced: true,
+				silent: true,
 				async content(event, trigger, player) {
 					lib.tempSortSeat = player;
 					const storage = player.getStorage("dcduorui", []).sort(({ player: a }, { player: b }) => lib.sort.seat(a, b));
@@ -594,7 +596,7 @@ const skills = {
 					while (storage.length) {
 						const info = storage.shift();
 						if (!info.player?.isIn() || info.phaseUse == trigger) {
-							newStorage.add(info);
+							newStorage.push(info);
 						}
 						if (!info.equip?.length && info.skill?.length) {
 							continue;
