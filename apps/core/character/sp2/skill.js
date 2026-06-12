@@ -1787,6 +1787,29 @@ const skills = {
 				const next = player.chooseToDiscard("he", num);
 				next.set("prompt", "荡尘：是否弃置" + get.cnNumber(num) + "张牌并获得后续效果？");
 				next.set("prompt2", "当你于本回合使用基本牌或普通锦囊牌时，可以进行一次判定，若判定的点数为" + num + "的倍数，则此牌额外结算一次");
+				next.set("ai", card => {
+					const { isDiscard } = get.event();
+					if (isDiscard) {
+						if (get.tag("draw", card)) {
+							return -5;
+						} else if (player.getUseValue(card, true, true) > 0) {
+							return get.type(card) == "basic" ? 1 : 0.5;
+						}
+						return 8 - get.value(card);
+					}
+					return 0;
+				});
+				next.set(
+					"isDiscard",
+					(function () {
+						const hs = player.getDiscardableCards(player, "h");
+						const basic = hs.filter(card => get.type(card) == "basic" && player.getUseValue(card, true, true) > 0);
+						if (!basic.length) {
+							return false;
+						}
+						return hs.length - basic.length >= num - 1;
+					})()
+				);
 				result = await next.forResult();
 				if (!result?.bool) {
 					return;

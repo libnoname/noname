@@ -14677,9 +14677,13 @@ const skills = {
 		},
 		position: "he",
 		check(card) {
-			var player = _status.event.player;
+			const player = get.player(),
+				event = get.event();
 			if (card.name == "sha") {
-				return player.hasValueTarget(card) ? 10 : 0.001;
+				if (event.getStepCache("useShaValue") === undefined) {
+					event.putStepCache("useShaValue", player.getUseValue("sha", true, false));
+				}
+				return  event.getStepCache("useShaValue") > 0 ? 10 : -1;
 			}
 			return 6 - get.value(card);
 		},

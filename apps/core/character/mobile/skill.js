@@ -8102,10 +8102,11 @@ const skills = {
 		},
 		ai: {
 			order(item, player) {
-				let num = player.countCards("h"),
-					sha = player.countCards("h", "sha");
-				if (player.countCards("hs", card => get.tag(card, "draw"))) {
-					return 1;
+				let sha = player.countCards("hs", card => card.name == "sha" && player.hasUseTarget("sha", true, true));
+				if (!sha.length) {
+					return 0.5;
+				} else if (player.countCards("hs", card => get.tag(card, "draw"))) {
+					return 0;
 				} else if (!game.hasPlayer(target => target != player && get.attitude(player, target) < 0 && lib.skill.mbjinzu.ai.result.target(player, target) < 0)) {
 					return 0;
 				}
@@ -8113,18 +8114,23 @@ const skills = {
 			},
 			result: {
 				target(player, target) {
-					if (!target.countCards("h")) {
-						if (target.hasSkillTag("filterDamage", null, { player })) {
+					if (!target.hasCards("h")) {
+						let sha = player.countCards("hs", card => card.name == "sha" && player.hasUseTarget("sha", true, true));
+						if (!sha.length) {
 							return 0;
-						} else if (!player.countCards("h", "sha")) {
+						} else if (target.hasSkillTag("filterDamage", null, { player })) {
+							return 0;
+						} else if (!player.hasCards("h", "sha")) {
 							return 0;
 						} else if (!player.canUse("sha", target, undefined, true)) {
 							return 0;
 						} else if (get.effect(target, { name: "sha" }, player, player) < 0) {
 							return 0;
+						} else if (player.hasHistory("useSkill", evt => evt.skill == "mbanxian") && !player.canUse("sha", target, true, true)) {
+							return 0;
 						}
 					}
-					return target.countCards("h") ? -1 : -0.5;
+					return -1;
 				},
 			},
 		},
@@ -22494,7 +22500,7 @@ const skills = {
 						num = get.event().getParent().num;
 					let att = get.attitude(player, target);
 					if (num <= 1) {
-						return -att * target.countCards("h");
+						return -att * (target.countCards("h") + 0.1);
 					}
 					if (num == 2) {
 						if (target.hasJudge("lebu")) {

@@ -311,6 +311,7 @@ window.noname_character_rank = {
 		"bigsb_dengai",
 	],
 	am: [
+		"dc_shen_guanyu",
 		"dc_shen_zhangliao",
 		"dc_shen_caopi",
 		"o_tadun",
@@ -549,6 +550,7 @@ window.noname_character_rank = {
 		"yj_zhenji",
 	],
 	bp: [
+		"dc_shen_liubei",
 		"pot_zhangren",
 		"pot_sunchen",
 		"wxdl_caozhi",
@@ -2343,6 +2345,7 @@ window.noname_character_rank = {
 	],
 	rarity: {
 		legend: [
+			"dc_shen_guanyu",
 			"yue_caozhi",
 			"v_sunshangxiang",
 			"zc26_shen_huangyueying",
@@ -2659,6 +2662,7 @@ window.noname_character_rank = {
 			"v_sunce",
 		],
 		epic: [
+			"dc_shen_liubei",
 			"dc_shen_zhangliao",
 			"dc_muludawang",
 			"mb_shen_machao",
