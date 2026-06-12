@@ -1508,18 +1508,24 @@ const skills = {
 		},
 		usable: 1,
 		filter(event, player) {
-			return event.card.name == "sha" && player.countDiscardableCards(player, "he", card => get.name(card) == "sha") > 0;
+			return get.is.damageCard(event.card) && player.countDiscardableCards(player, "he", card => get.is.damageCard(card)) > 0;
 		},
 		async cost(event, trigger, player) {
 			const { player: source, card } = trigger;
 			event.result = await player
-				.chooseToDiscard(get.prompt2(event.skill, source), [1, Infinity], "he", "chooseonly", card => get.name(card) == "sha")
-				.set("ai", card => {
-					const { sourcex, cardx, player } = get.event();
-					if (get.effect(player, cardx, sourcex, player) >= 0 || get.damageEffect(sourcex, player, player) <= 0) {
-						return 0;
+				.chooseToDiscard({
+					prompt: get.prompt2(event.skill, source),
+					selectCard: [1, Infinity],
+					position: "he",
+					chooseonly: true, 
+					filterCard: card => get.is.damageCard(card),
+					ai(card) {
+						const { sourcex, cardx, player } = get.event();
+						if (get.effect(player, cardx, sourcex, player) >= 0 || get.damageEffect(sourcex, player, player) <= 0) {
+							return 0;
+						}
+						return 7 - get.value(card);
 					}
-					return 7 - get.value(card);
 				})
 				.set("sourcex", source)
 				.set("cardx", card)
@@ -1538,7 +1544,7 @@ const skills = {
 				.filter(evt => evt.card == trigger.card)
 				.step(async (event, trigger, player) => {
 					if (!player.hasHistory("damage", evt => evt.card == trigger.card)) {
-						await player.drawTo(Math.min(5, player.getHandcardLimit()));
+						await player.drawTo(player.getHandcardLimit());
 					}
 				});
 		},
