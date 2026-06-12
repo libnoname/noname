@@ -4696,7 +4696,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				}
 			}
 			if (position === "field") {
-				for (const current of reversedPlayers()) {
+				for (const current of game.filterPlayer().reverse()) {
 					for (const card of reversedFieldCards(current)) {
 						if (matches(card)) {
 							return card;
@@ -4736,15 +4736,6 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		}
 		return null;
 
-		function* reversedPlayers() {
-			let i = game.players.length;
-			while (i--) {
-				const player = game.players[i];
-				if (!player.isOut()) {
-					yield player;
-				}
-			}
-		}
 		function* reversedFieldCards(player) {
 			const judges = player.node.judges.childNodes;
 			let index = judges.length;
