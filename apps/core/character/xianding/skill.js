@@ -10310,7 +10310,16 @@ const skills = {
 				player.changeSkin(event.name, "v_sunshangxiang_shadow");
 				player.setStorage("v_sunshangxiang_changeSkin", !storage);
 			}
-			const { control } = await player.chooseToDisable().forResult();
+			const { control } = await player
+				.chooseToDisable({
+					ai(event, player, list) {
+						if (list.every(i => player.hasEmptySlot(i))) {
+							return 0;
+						}
+						return list.filter(i => player.getCards("e", card => get.subtype(card) == i))[0];
+					},
+				})
+				.forResult();
 			if (!control) {
 				return;
 			}
@@ -10424,7 +10433,16 @@ const skills = {
 					.set("ai", () => true)
 					.forResult();
 				if (bool) {
-					await player.chooseToEnable();
+					await player.chooseToEnable({
+						ai(event, player, list) {
+							if (list.includes("equip1")) {
+								return "equip1";
+							} else if (list.includes("equip4")) {
+								return "equip4";
+							}
+							return list[0];
+						},
+					});
 				}
 			}
 			const findEquipCard = slot => {
