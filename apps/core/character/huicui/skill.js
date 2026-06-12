@@ -367,7 +367,7 @@ const skills = {
 				.set("clearArena", false)
 				.set("callback", async function (event, trigger, player) {
 					const list = event.cards.filter(card => {
-						if (["equip3", "equip4", "equip3_4"].includes(get.subtype("card"))) {
+						if (["equip3", "equip4", "equip3_4"].includes(get.subtype(card))) {
 							return true;
 						} else if (get.type2(card) == "basic") {
 							return true;
@@ -384,12 +384,14 @@ const skills = {
 								}
 								return 1;
 							},
+							list,
 						})
-						.set("list", list)
 						.forResult();
 					if (result?.control && result.control != "cancel2") {
 						if (result.index == 0) {
-							const { cards } = await player.gain(list, "gain2");
+							const next = player.gain(list, "gain2");
+							await next;
+							const { cards } = next;
 							if (cards.length <= 2 && player.maxHp < player.getStorage("dcshouqun", 6)) {
 								await player.gainMaxHp();
 							}
@@ -18488,7 +18490,7 @@ const skills = {
 							return target != player && target.countGainableCards(player, "he");
 						})
 						.set("ai", target => {
-							return get.effect(target, { name: "shunshou" }, _status.event.player, _status.event.player);
+							return get.effect(target, { name: "shunshou_copy2" }, _status.event.player, _status.event.player);
 						})
 						.forResult();
 					if (result?.bool && result.targets?.length) {

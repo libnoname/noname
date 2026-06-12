@@ -11,5 +11,5 @@ ignore_authors = ["dependabot[bot]", "renovate[bot]", "copilot[bot]", "github-ac
 [branch]
 # https://conventional-branch.github.io/
 conventional_branch = true
-allow_branch_types = ["feature", "bugfix", "hotfix", "release", "chore", "feat", "fix", "stage"]
+allow_branch_types = ["feature", "bugfix", "hotfix", "release", "chore", "feat", "fix", "maint"]
 allow_branch_names = ["main", "build-output"]

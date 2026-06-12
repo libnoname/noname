@@ -1,6 +1,18 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	dc_shen_guanyu: "新杀神关羽",
+	dc_shen_guanyu_prefix: "新杀|神",
+	dcwushen: "武神",
+	dcwushen_info: "锁定技，你的红桃手牌视为【杀】；你使用红桃【杀】无距离和次数限制且不计入次数，且此红桃【杀】造成伤害后，你摸一张牌",
+	dcwuhun: "武魂",
+	dcwuhun_info: "锁定技，当你造成/受到1点伤害后，你令受伤角色/来源获得1枚【梦魇】标记；当你死亡时，你令拥有最多该标记的一名其他角色进行判定，若结果不为【桃】或【桃园结义】，则该角色死亡",
+	dc_shen_liubei: "新杀神刘备",
+	dc_shen_liubei_prefix: "新杀|神",
+	dclongnu: "龙怒",
+	dclongnu_info: "转换技，锁定技，出牌阶段开始时，阳：你失去1点体力并摸等同于你损失体力值张牌，然后本回合你的红色手牌均视为【火杀】（无距离限制）；阴：你减1点体力上限并摸等同于你体力值张牌，然后本回合你的锦囊牌均视为【雷杀】（无次数限制且不计入次数限制）。",
+	dcjieying: "结营",
+	dcjieying_info: "锁定技，你始终处于横置状态；已横置的角色手牌上限+2；结束阶段，你横置一名其他角色，然后令任意已横置的角色各摸一张牌。",
 	dc_shen_zhangliao: "新杀神张辽",
 	dc_shen_zhangliao_prefix: "新杀|神",
 	dccuxi: "猝袭",
