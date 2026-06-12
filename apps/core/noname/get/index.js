@@ -1153,55 +1153,57 @@ export class Get {
 			return card;
 		}
 	}
-	max(list, func, type) {
-		list = list.slice(0);
-		if (typeof func == "string") {
-			var key = func;
-			func = function (item) {
-				return item[key];
-			};
+	/**
+	 * 用于`get.max`和`get.min`的内部函数，感谢Javascript已经有了真正的私有化。
+	 *
+	 * 考虑到该函数不会暴露出去，干脆不考虑命名规范了，怎么申必怎么来。
+	 *
+	 * @param { any[] } list 
+	 * @param { string | ((item: any) => number)} func 
+	 * @param { string | undefined } type 
+	 * @param { number } sign - 正为max，负为min
+	 */
+	static #_extreme(list, func, type, sign) {
+		if (typeof func === "string") {
+			const key = func;
+			func = item => item[key];
 		}
-		list.sort(function (a, b) {
-			return func(b) - func(a);
-		});
-		if (type == "list") {
-			var list2 = [];
-			for (var i = 0; i < list.length; i++) {
-				if (func(list[i]) == func(list[0])) {
-					list2.push(list[i]);
-				}
-			}
-			return list2;
-		} else if (type == "item") {
-			return list[0];
-		} else {
-			return func(list[0]);
+
+		const values = list.map(item => [item, func(item)]);
+		const sorted = values.toSorted((a, b) => sign * (b[1] - a[1]));
+
+		switch (type) {
+			case "list":
+				return sorted.length ? sorted.filter(item => item[1] == sorted[0][1]).map(item => item[0]) : [];
+			case "item":
+				return sorted.length ? sorted[0][0] : undefined;
+			default:
+				return sorted.length ? sorted[0][1] : undefined;
 		}
 	}
+	/**
+	 * 获取列表中指定数值最大的结果。
+	 *
+	 * @template T
+	 * @param { T[] } list 待比较的列表
+	 * @param { string | ((item: T) => number) } func 用于取数值的属性名或函数
+	 * @param { "list" | "item" } [type] 返回类型；"list"返回所有并列最大项，"item"返回最大项，不传则返回最大数值
+	 * @returns { T[] | T | number | undefined }
+	 */
+	max(list, func, type) {
+		return Get.#_extreme(list, func, type, 1);
+	}
+	/**
+	 * 获取列表中指定数值最小的结果。
+	 *
+	 * @template T
+	 * @param { T[] } list 待比较的列表
+	 * @param { string | ((item: T) => number) } func 用于取数值的属性名或函数
+	 * @param { "list" | "item" } [type] 返回类型；"list"返回所有并列最小项，"item"返回最小项，不传则返回最小数值
+	 * @returns { T[] | T | number | undefined }
+	 */
 	min(list, func, type) {
-		list = list.slice(0);
-		if (typeof func == "string") {
-			var key = func;
-			func = function (item) {
-				return item[key];
-			};
-		}
-		list.sort(function (a, b) {
-			return func(a) - func(b);
-		});
-		if (type == "list") {
-			var list2 = [];
-			for (var i = 0; i < list.length; i++) {
-				if (func(list[i]) == func(list[0])) {
-					list2.push(list[i]);
-				}
-			}
-			return list2;
-		} else if (type == "item") {
-			return list[0];
-		} else {
-			return func(list[0]);
-		}
+		return Get.#_extreme(list, func, type, -1);
 	}
 	/**
 	 * 获取一张装备牌的兵主
