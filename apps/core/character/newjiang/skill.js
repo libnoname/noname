@@ -895,7 +895,7 @@ const skills = {
 			},
 		},
 	},
-	//☆法正
+	//TW☆法正
 	youtan: {
 		audio: 4,
 		trigger: {
@@ -933,24 +933,30 @@ const skills = {
 				);
 			}
 		},
-		mod: {
-			cardEnabled(card, player) {
-				if (!player.isPhaseUsing() || get.suit(card) == "unsure") {
-					return;
+		group:"youtan_defend",
+		subSkill: {
+			defend:{
+				forced:true,
+				trigger:{
+					target:"useCardToTargeted",
+				},
+				filter(event, player){
+					return !player.getStorage("youtan").includes(get.suit(event.card))
+				},
+				async content(event, trigger, player) {
+					const source = trigger.card.player;
+					if(!source.countCards("he",card=>lib.filter.cardDiscardable(card,source,event.skill))){
+						trigger.getParent().excluded.add(player);
+					} else{
+						const result = await source
+							.chooseToDiscard("弃置一张牌，否则"+get.translation(trigger.card)+"对"+get.translation(player)+"无效")
+							.set("ai",card=>20-get.value(card))
+							.forResult();
+						if(!result.bool)trigger.getParent().excluded.add(player);
+					}
 				}
-				if (!player.getStorage("youtan").includes(get.suit(card))) {
-					return false;
-				}
-			},
-			cardSavable(card, player) {
-				if (!player.isPhaseUsing() || get.suit(card) == "unsure") {
-					return;
-				}
-				if (!player.getStorage("youtan").includes(get.suit(card))) {
-					return false;
-				}
-			},
-		},
+			}
+		}
 	},
 	ciren: {
 		audio: 2,
@@ -1030,7 +1036,7 @@ const skills = {
 	zhancai: {
 		audio: 2,
 		enable: "phaseUse",
-		usable: 1,
+		usable: 4,
 		filter(event, player) {
 			return player.getStorage("youtan").length;
 		},
