@@ -2,6 +2,117 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//☆王朗
+	fuyu: {
+		audio: 2,
+		trigger: {
+			player: "useCardToPlayered",
+			target: "useCardToTargeted",
+		},
+		usable: 2,
+		filter(event, player, name) {
+			if (event.targets?.length !== 1 || !event.isFirstTarget) {
+				return false;
+			}
+			const target = name === "useCardToTargeted" ? event.player : event.targets[0];
+			if (!player.canCompare(target) || target == player) {
+				return false;
+			}
+			const storage = player.getStorage("fuyu_used", {});
+			return !storage[name];
+		},
+		logTarget(event, player, name) {
+			return name === "useCardToTargeted" ? event?.player : event?.targets[0];
+		},
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+			} = event;
+			const result = await player.chooseToCompare(target).forResult();
+			const cardUserWon = !result.tie && result.winner === trigger.player;
+			if (cardUserWon) {
+				game.log(trigger.card, "额外结算一次");
+				trigger.getParent().effectCount++;
+			} else {
+				game.log(trigger.card, "被无效了");
+				trigger.getParent().all_excluded = true;
+				trigger.getParent().targets.length = 0;
+			}
+			const playerResult = result.bool;
+			const lastResult = player.getStorage(event.name + "_last", void 0);
+			if (playerResult === lastResult) {
+				await player.draw(2);
+			}
+			player.setStorage(event.name + "_last", playerResult);
+			const storage = player.getStorage(event.name + "_used", {});
+			storage[event.triggername] = true;
+			player.setStorage(event.name + "_used", storage);
+			player.addTempSkill(event.name + "_used");
+		},
+		subSkill: {
+			used: {
+				charlotte: true,
+				onremove: true,
+			},
+		},
+	},
+	zhanshi: {
+		audio: 2,
+		trigger: { global: "chooseToCompareBegin" },
+		filter(event, player) {
+			return player.hasDiscardableCards(player, "he");
+		},
+		async cost(event, trigger, player) {
+			const participants = [trigger.player, ...(trigger.targets?.length ? trigger.targets : [trigger.target])];
+			event.result = await player
+				.chooseCardTarget({
+					prompt: get.prompt2(event.skill),
+					filterTarget(card, player, target) {
+						return get.event().targets.includes(target);
+					},
+					selectTarget() {
+						return ui.selected.cards.length;
+					},
+					filterCard: lib.filter.cardDiscardable,
+					position: "he",
+					selectCard: [1, participants.length],
+				})
+				.set("targets", participants)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const { cards, targets } = event;
+			await player.discard({ cards });
+			player.addTempSkill(event.name + "_draw");
+			player.markAuto(event.name + "_draw", [[trigger, targets]]);
+		},
+		subSkill: {
+			draw: {
+				charlotte: true,
+				forced: true,
+				popup: false,
+				onremove: true,
+				trigger: { global: ["chooseToCompareAfter", "compareMultipleAfter"] },
+				filter(event, player) {
+					if (event.preserve || event.compareMultiple) {
+						return false;
+					}
+					const bool = event.name == "compareMultiple";
+					return player.getStorage("zhanshi_draw").find(arr => (!bool ? event == arr[0] : event.getParent() == arr[0]));
+				},
+				async content(event, trigger, player) {
+					const bool = trigger.name == "compareMultiple";
+					const list = player.getStorage("zhanshi_draw").find(arr => (!bool ? trigger == arr[0] : trigger.getParent() == arr[0]));
+					const targets = list[1];
+					const winner = trigger.winner || trigger.result?.winner;
+					const winCount = targets.filter(t => t === winner).length;
+					if (winCount > 0) {
+						await player.draw(winCount * 2);
+					}
+				},
+			},
+		},
+	},
 	//威孙策
 	dczhifeng: {
 		audio: 2,

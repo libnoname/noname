@@ -1129,6 +1129,9 @@ window.noname_character_rank = {
 		"pot_zanghong",
 	],
 	b: [
+		"mb_gaoxiang",
+		"mb_cuimao",
+		"yj_wanglang",
 		"pot_caoshuang",
 		"clan_luyusheng",
 		"mb_caochun",
@@ -3207,6 +3210,9 @@ window.noname_character_rank = {
 			"dc_sb_chunyuqiong",
 		],
 		rare: [
+			"mb_gaoxiang",
+			"mb_cuimao",
+			"yj_wanglang",
 			"pot_caoshuang",
 			"mb_zhongyao",
 			"mb_wutugu",

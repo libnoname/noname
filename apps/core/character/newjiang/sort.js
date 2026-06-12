@@ -4,7 +4,7 @@ const characterSort = {
 	yijiang_2023: ["yj_majun", "mp_liuling", "yj_weiyan", "xiahoumao", "chenshi", "sunli", "feiyao"],
 	yijiang_2024: ["fj_peixiu", "new_yj_dongzhuo", "mp_wangrong", "yj_zhoubuyi", "linghuyu", "yj_simafu", "yj_xuangongzhu", "xukun", "xunyuxunyou", "yj_sb_guojia", "mp_xiangxiu"],
 	yijiang_2025: ["wufu", "yao_yuanshu", "yj_zhanghuan", "yj_zhangyan", "yj_puyuan", "v_sunce", "yj_hanbing", "yj_tengjia", "yj_fazheng"],
-	yijiang_2026: ["yj_x_xunxu", "yj_y_xunxu"],
+	yijiang_2026: ["yj_x_xunxu", "yj_y_xunxu", "yj_wanglang"],
 };
 
 const characterSortTranslate = {

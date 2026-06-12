@@ -16,16 +16,47 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
-      - name: Create draft release
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Resolve release metadata
+        id: release-metadata
+        shell: bash
         run: |
           TAG="${GITHUB_REF_NAME}"
 
-          gh release create "$TAG" \
-          --title "$TAG" \
-          --notes-file apps/core/game/updateLog.md \
-          --draft
+          if [[ ! "$TAG" =~ ^v[0-9]+([.][0-9]+)*$ ]]; then
+            echo "Tag $TAG is not a numeric release tag." >&2
+            exit 1
+          fi
+
+          git fetch --force --tags origin
+
+          LATEST_TAG="$(git tag -l 'v*' | grep -E '^v[0-9]+([.][0-9]+)*$' | sort -V | tail -n 1)"
+          if [[ "$TAG" == "$LATEST_TAG" ]]; then
+            IS_LATEST_RELEASE=true
+          else
+            IS_LATEST_RELEASE=false
+          fi
+          echo "is_latest_release=$IS_LATEST_RELEASE" >> "$GITHUB_OUTPUT"
+
+      - name: Create draft release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          IS_LATEST_RELEASE: ${{ steps['release-metadata'].outputs.is_latest_release }}
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          RELEASE_ARGS=(
+            --title "$TAG"
+            --notes-file apps/core/game/updateLog.md
+            --draft
+          )
+
+          if [[ "$IS_LATEST_RELEASE" == "true" ]]; then
+            RELEASE_ARGS+=(--latest)
+          else
+            RELEASE_ARGS+=(--latest=false)
+          fi
+
+          gh release create "$TAG" "${RELEASE_ARGS[@]}"
 
   build-packages:
     name: Build Packages

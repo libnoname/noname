@@ -2686,7 +2686,9 @@ const skills = {
 		audio: 4,
 		logAudio: index => (typeof index === "number" ? `mbxiongtu${index}.mp3` : 2),
 		enable: "phaseUse",
-		usable: 1,
+		usable(skill, player) {
+			return player.hasSkill(skill + "_double") ? 2 : 1;
+		},
 		filter(event, player) {
 			return game.hasPlayer(target => target.countCards("h") && target != player);
 		},
@@ -2727,6 +2729,7 @@ const skills = {
 				} else {
 					await target.modedDiscard(card, player);
 				}
+				player.addTempSkill(event.name + "_effect");
 			}
 		},
 		ai: {
@@ -2734,6 +2737,30 @@ const skills = {
 			result: {
 				target: -1,
 			},
+		},
+		subSkill: {
+			effect: {
+				audio: "mbxiongtu",
+				charlotte: true,
+				forced: true,
+				trigger: {
+					source: "damageSource",
+				},
+				filter(event, player) {
+					return event.getParent().name != "mbxiongtu";
+				},
+				async content(event, trigger, player) {
+					player.removeSkill(event.name);
+					player.addTempSkill("mbxiongtu_double", "phaseChange")
+				},
+				mark: true,
+				intro: {
+					content: "下次不因此技能造成伤害后，改为限两次",
+				}
+			},
+			double: {
+				charlotte: true,	
+			}
 		},
 	},
 	mbxianshuai: {

@@ -1,6 +1,18 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	mb_gaoxiang: "手杀高翔",
+	mb_gaoxiang_prefix: "手杀",
+	mbgxchiyuan: "驰援",
+	mbgxchiyuan_info: "出牌阶段限一次，你可以交给一名体力值小于你的角色一张牌，然后视为对攻击范围内包含其的一名角色使用一张【杀】。此【杀】结算后，若造成过伤害，其回复1点体力值；若未造成过伤害，目标角色依次视为对你使用一张【杀】。",
+	mberdi: "饵敌",
+	mberdi_info: "结束阶段，你可以指定一名手牌数大于你的角色，你失去1点体力值并摸一张牌，然后你与其同时弃置任意张手牌。此法弃置牌后，若你弃置的牌数：大于其，你回复1点体力值并对其造成1点伤害；小于其，你摸等同于其弃置的牌数。",
+	mb_cuimao: "手杀崔琰毛玠",
+	mb_cuimao_prefix: "手杀",
+	mbzhengbi: "征辟",
+	mbzhengbi_info: "准备阶段，你可选择至多一名其他角色，其选择令你获得其区域内的一至三张牌，然后你交给其等量张牌。每名角色限一次，若其选择三，你因〖征辟〗选择的角色数+1。",
+	mbfengying: "奉迎",
+	mbfengying_info: "限定技，出牌阶段，你可以选择一名角色并令其攻击范围内的所有其他角色须将一张手牌当【无中生有】对其使用。若该角色体力上限为全场最大，此回合结束时你获得一个额外的回合。",
 	mb_zhongyao: "手杀钟繇",
 	mb_zhongyao_prefix: "手杀",
 	mbzuoding: "佐定",

@@ -10515,7 +10515,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			ui.arena.setNumber(parseInt(ui.arena.dataset.number) + 1);
 			let position = !isNext ? parseInt(target.dataset.position) : parseInt(target.dataset.position) + 1;
 			if (position == 0) {
-				position = players.length;
+				position = parseInt(ui.arena.dataset.number) - 1;
 			}
 			players.forEach(value => {
 				if (parseInt(value.dataset.position) >= position) {
@@ -10627,7 +10627,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 						)
 						.finished.then(() => wave.remove());
 					list.push(shockWave);
-					return Promise.all(list);
+					return Promise.allSettled(list);
 				});
 			};
 			await animate(player);
@@ -10661,11 +10661,25 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			custom: [],
 			useSkill: [],
 		});
+		for (let i = 0; i < players[0].actionHistory.length; i++) {
+			["isRound", "isSkipped"].forEach(key => {
+				if (players[0].actionHistory[i][key]) {
+					player.actionHistory[i][key] = true;
+				}
+			});
+		}
 		player.stat = new Array(players[0].stat.length).fill({
 			card: {},
 			skill: {},
 			triggerSkill: {},
 		});
+		for (let i = 0; i < players[0].stat.length; i++) {
+			["isRound", "isSkipped"].forEach(key => {
+				if (players[0].stat[i][key]) {
+					player.stat[i][key] = true;
+				}
+			});
+		}
 		return player;
 	}
 	/**
@@ -10725,7 +10739,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		if (_status.connectMode) {
 			delete lib.playerOL[player.playerid];
 		}
-		//如果被移除角色为当前角色，需要特殊处理
+		//如果被移除角色为当前回合角色，需要特殊处理
 		const evt = get.event();
 		const loop = evt.getParent("phaseLoop", true);
 		if (loop?.player == player) {
@@ -10811,7 +10825,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 					);
 				}
 
-				//玩家dom自身的溃散动画（缩小并变灰），建议removePlayer的不要加onfinish后续移除角色的dom需要用到onfinish
+				//玩家dom自身的溃散动画（缩小并变灰）
 				const animation = player.animate(
 					[
 						{ transform: "scale(1)", filter: "brightness(1) grayscale(0)", opacity: 1 },
@@ -10826,51 +10840,51 @@ ${e instanceof Error ? e.stack : String(e)}`);
 				list.push(animation);
 				return Promise.allSettled(list);
 			};
-			await animate(player).then(() => {
-				//移除角色的dom，隐藏dom是为了避免动画结束后的拖影（）
-				player.classList.add("dead");
-				player.classList.add("out");
-				player.style.display = "none";
-				player.delete();
-				//调整布局
-				const players = game.players.concat(game.dead);
-				const position = parseInt(player.dataset.position);
-				players.forEach(value => {
-					if (parseInt(value.dataset.position) > position) {
-						value.dataset.position = parseInt(value.dataset.position) - 1;
-					}
-				});
-				ui.arena.setNumber(parseInt(ui.arena.dataset.number) - 1);
-				player.removed = true;
-				if (player == game.me) {
-					//把角色移入旁观，主机不可能真的进旁观的，所以不必在意
-					const func = (player, config) => {
-						game.swapPlayer(game.players.find(i => i != player));
-						const replacePlayer = function (e) {
-							if (!_status.auto || !game.notMe) {
-								return;
-							}
-							game.swapPlayer(this || e.target.parentElement);
-						};
-						game.players.forEach(p => p.addEventListener(lib.config.touchscreen ? "touchend" : "click", replacePlayer));
-						game.notMe = true;
-						_status.auto = true;
-						if (game.online) {
-							if (!config.observe_handcard) {
-								ui.arena.classList.add("observe");
-							}
-							game.observe = true;
-						}
-					};
-					func(player, configOL);
-					//ui.me.hide();
-					ui.auto.hide();
-					ui.wuxie.hide();
+			await animate(player);
+			//移除角色的dom，隐藏dom是为了避免动画结束后的拖影（）
+			player.classList.add("dead");
+			player.classList.add("out");
+			player.style.display = "none";
+			player.delete();
+			await game.delay(1);
+			//调整布局
+			const players = game.players.concat(game.dead);
+			const position = parseInt(player.dataset.position);
+			players.forEach(value => {
+				if (parseInt(value.dataset.position) > position) {
+					value.dataset.position = parseInt(value.dataset.position) - 1;
 				}
-				setTimeout(() => {
-					player.removeAttribute("style");
-				}, 500);
 			});
+			ui.arena.setNumber(parseInt(ui.arena.dataset.number) - 1);
+			player.removed = true;
+			if (player == game.me) {
+				//把角色移入旁观，主机不可能真的进旁观的，所以不必在意
+				const func = (player, config) => {
+					game.swapPlayer(game.players.find(i => i != player));
+					const replacePlayer = function (e) {
+						if (!_status.auto || !game.notMe) {
+							return;
+						}
+						game.swapPlayer(this || e.target.parentElement);
+					};
+					game.players.forEach(p => p.addEventListener(lib.config.touchscreen ? "touchend" : "click", replacePlayer));
+					game.notMe = true;
+					_status.auto = true;
+					if (game.online) {
+						if (!config.observe_handcard) {
+							ui.arena.classList.add("observe");
+						}
+						game.observe = true;
+					}
+				};
+				func(player, configOL);
+				//ui.me.hide();
+				ui.auto.hide();
+				ui.wuxie.hide();
+			}
+			setTimeout(() => {
+				player.removeAttribute("style");
+			}, 500);
 		};
 		game.broadcast(removePlayer, player, config, get.copy(lib.configOL));
 		await removePlayer(player, config, get.copy(lib.configOL));
