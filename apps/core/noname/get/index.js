@@ -1,5 +1,5 @@
 import { Is } from "./is.js";
-import { Promises } from "./promises.js";
+import { Promises } from "./promises";
 import { rootURL, game, lib, _status, ui } from "noname";
 import * as pinyinPro from "pinyin-pro";
 import NonameDictionary from "./pinyins/noname-dict.js";
