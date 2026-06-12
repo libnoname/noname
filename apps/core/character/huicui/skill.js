@@ -18490,7 +18490,7 @@ const skills = {
 							return target != player && target.countGainableCards(player, "he");
 						})
 						.set("ai", target => {
-							return get.effect(target, { name: "shunshou" }, _status.event.player, _status.event.player);
+							return get.effect(target, { name: "shunshou_copy2" }, _status.event.player, _status.event.player);
 						})
 						.forResult();
 					if (result?.bool && result.targets?.length) {
