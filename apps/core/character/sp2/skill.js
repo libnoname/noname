@@ -3173,6 +3173,183 @@ const skills = {
 			},
 		},
 	},
+	// 星夏侯霸
+	star_weigu: {
+		trigger: {
+			player: "useCardToPlayer",
+			target: "useCardToTarget",
+		},
+		filter(event, player) {
+			if (!get.is.damageCard(event.card)) return;
+			if (event.targets.length != 1) return;
+			if (!player.countCards("he", card => lib.skill.star_weigu.isSelf(card, player) && lib.filter.cardDiscardable(card, player, "star_weigu"))) return;
+			return true;
+		},
+		async cost(event, trigger, player) {
+			let prompt = "弃置一张可指定自己为目标的牌，然后选择一项:";
+			if (player.storage?.star_weigu) {
+				prompt += "<span class=text center>1、对一名角色造成2点伤害；</span>";
+			} else {
+				prompt += "<span class=text center>1、移动场上一张牌；</span>";
+			}
+			prompt += "2、令你攻击范围内的所有角色也成为此牌目标（不包括此牌使用者）。此牌结算后若牌未造成伤害，你失去1点体力并摸两张牌。";
+			const result = await player
+				.chooseCard("he", card => lib.skill.star_weigu.isSelf(card, player) && lib.filter.cardDiscardable(card, player, "star_weigu"))
+				.set("ai", card => get.value(card))
+				.set("prompt", get.prompt("star_weigu"))
+				.set("prompt2", prompt)
+				.forResult();
+			if (result.bool) event.result = { bool: true, cost_data: result.cards };
+		},
+		getTargets(card, player) {
+			return game.filterPlayer(current => {
+				if (player == current) return false;
+				if (!player.inRange(current)) return false;
+				if (card.source == current) return false;
+				return lib.filter.targetEnabled2(card, player, current);
+			});
+		},
+		isSelf(card, player, evt = get.event()) {
+			const info = get.info(card);
+			if (info.toself) return true;
+			return lib.filter.targetEnabled3(card, player, evt);
+		},
+		async content(event, trigger, player) {
+			const card = event.cost_data[0];
+			await player.discard(card);
+			const choiceList = [];
+			if (!player.storage || !player.storage.star_weigu) {
+				if (player.canMoveCard()) choiceList.push(["move", "移动场上的一张牌"]);
+			} else {
+				choiceList.push(["damage", "对一名角色造成2点伤害"]);
+			}
+			const targets = lib.skill.star_weigu.getTargets(trigger.card, player);
+			if (targets.length) choiceList.push(["addtarget", "令" + get.translation(targets) + "成为" + get.translation(trigger.card) + "的额外目标"]);
+			if (choiceList.length) {
+				let choice;
+				if (choiceList.length == 2) {
+					const result = await player
+						.chooseButton(["选择一项：", [choiceList, "textbutton"]])
+						.set("choiceList", choiceList)
+						.set("ai", button => {
+							const player2 = get.player();
+							if (button.link === "move") return 1;
+							if (button.link === "damage") {
+								for (let i of game.filterPlayer(current => current != player2)) {
+									if (get.damageEffect(current, player2, player2) > 0) return 666;
+								}
+							}
+							if (button.link === "addtarget") {
+								let num = 0;
+								targets.forEach(target => (num += get.effect(target, { name: get.event().card }, player2, player2)));
+								return num;
+							}
+						})
+						.set("targets", targets)
+						.set("card", trigger.card)
+						.set("forced", true)
+						.set("selectButton", [1, 1])
+						.forResult();
+					choice = result.links[0];
+				} else {
+					choice = choiceList[0][0];
+				}
+				if (choice === "move") {
+					await player.moveCard(true, "移动场上的一张牌");
+				}
+				if (choice === "damage") {
+					const result = await player
+						.chooseTarget("对一名角色造成2点伤害")
+						.set("ai", target => -get.attitude(get.player(), target))
+						.forResult();
+					if (result.bool) {
+						await result.targets[0].damage(2, player);
+					}
+				}
+				if (choice === "addtarget") {
+					trigger.targets.addArray(targets.filter(target => target.isIn()));
+				}
+			}
+			player
+				.when({ global: "useCardAfter" })
+				.filter(evt => evt.card == trigger.card)
+				.then(async (event, trigger, player) => {
+					if (
+						!game.hasGlobalHistory("everything", evt => {
+							return evt.name == "damage" && evt.card == trigger.card;
+						})
+					) {
+						await player.loseHp();
+						await player.draw(2);
+					}
+				});
+		},
+	},
+	star_juefa: {
+		//批量改名前记得这里有star_weigu
+		enable: "phaseUse",
+		skillAnimation: true,
+		limited: true,
+		animationColor: "red",
+		manualConfirm: true,
+		filter(event, player) {
+			return !player.storage || !player.storage.star_weigu;
+		},
+		async content(event, trigger, player) {
+			player.awakenSkill(event.name);
+			player.storage.star_juefa = true;
+			player.addSkill("star_juefa_effect");
+		},
+		subSkill: {
+			effect: {
+				charlotte: true,
+				forced: true,
+				init(player, skill) {
+					player.storage.star_weigu = true;
+					player.addSkill("star_juefa_remove");
+					if (!player.storage.star_juefa_remove) player.storage.star_juefa_remove = {};
+					player.storage.star_juefa_remove.die = true;
+				},
+				trigger: {
+					source: "dieAfter",
+				},
+				async content(event, trigger, player) {
+					delete player.storage.star_juefa_remove.die;
+					if (trigger.reason?.getParent("star_weigu")) {
+						const num1 = player.countCards("h"),
+							num2 = player.maxHp,
+							num3 = player.hp;
+						if (num1 > num2) {
+							await player.chooseToDiscard(num1 - num2);
+						} else if (num1 < num2) {
+							await player.drawTo(num2);
+						}
+						if (num3 != num2) {
+							await player.recover(num2 - num3);
+						}
+					}
+				},
+			},
+			remove: {
+				charlotte: true,
+				forced: true,
+				trigger: {
+					player: "phaseEnd",
+				},
+				async content(event, trigger, player) {
+					if (!player.storage.star_juefa_remove.remove) player.storage.star_juefa_remove.remove = true;
+					else {
+						delete player.storage.star_weigu;
+						player.removeSkill("jufa_effect");
+						player.removeSkill("jufa_remove");
+						if (player.storage.star_juefa_remove.die) {
+							if (player.hp > 0) await player.loseHp(player.hp);
+						}
+					}
+				},
+			},
+		},
+	},
 	//张春华
 	starliangyan: {
 		audio: 2,
