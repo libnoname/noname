@@ -1185,10 +1185,24 @@ export class Get {
 	 * 获取列表中指定数值最大的结果。
 	 *
 	 * @template T
+	 * @overload
 	 * @param { T[] } list 待比较的列表
 	 * @param { string | ((item: T) => number) } func 用于取数值的属性名或函数
-	 * @param { "list" | "item" } [type] 返回类型；"list"返回所有并列最大项，"item"返回最大项，不传则返回最大数值
-	 * @returns { T[] | T | number | undefined }
+	 * @returns { number | undefined }
+	 *
+	 * @template T
+	 * @overload
+	 * @param { T[] } list 待比较的列表
+	 * @param { string | ((item: T) => number) } func 用于取数值的属性名或函数
+	 * @param { "item" } type 返回最大项
+	 * @returns { T | undefined }
+	 *
+	 * @template T
+	 * @overload
+	 * @param { T[] } list 待比较的列表
+	 * @param { string | ((item: T) => number) } func 用于取数值的属性名或函数
+	 * @param { "list" } type 返回所有并列最大项
+	 * @returns { T[] }
 	 */
 	max(list, func, type) {
 		return Get.#_extreme(list, func, type, 1);
@@ -1197,10 +1211,24 @@ export class Get {
 	 * 获取列表中指定数值最小的结果。
 	 *
 	 * @template T
+	 * @overload
 	 * @param { T[] } list 待比较的列表
 	 * @param { string | ((item: T) => number) } func 用于取数值的属性名或函数
-	 * @param { "list" | "item" } [type] 返回类型；"list"返回所有并列最小项，"item"返回最小项，不传则返回最小数值
-	 * @returns { T[] | T | number | undefined }
+	 * @returns { number | undefined }
+	 *
+	 * @template T
+	 * @overload
+	 * @param { T[] } list 待比较的列表
+	 * @param { string | ((item: T) => number) } func 用于取数值的属性名或函数
+	 * @param { "item" } type 返回最小项
+	 * @returns { T | undefined }
+	 *
+	 * @template T
+	 * @overload
+	 * @param { T[] } list 待比较的列表
+	 * @param { string | ((item: T) => number) } func 用于取数值的属性名或函数
+	 * @param { "list" } type 返回所有并列最小项
+	 * @returns { T[] }
 	 */
 	min(list, func, type) {
 		return Get.#_extreme(list, func, type, -1);
