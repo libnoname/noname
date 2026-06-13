@@ -37501,10 +37501,12 @@ const skills = {
 					name: "慈厉",
 					markcount: () => 0,
 					content(storage, player) {
-						if (!storage) return;
-						const name = storage[0],
-							num = storage[1];
-						return get.translation(name) + "啊，你当时是" + num + "点体力值</br>下回合用不到" + num + "张牌可是要打皮鼓的哟";
+						if (!storage) {
+							return;
+						}
+						const name = storage[0];
+						const num = storage[1];
+						return `${get.translation(name)}啊，你当时是${num}点体力值<br />下回合用不到${num}张牌可是要打皮鼓的哟`;
 					},
 				},
 			},
