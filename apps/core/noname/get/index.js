@@ -7243,13 +7243,23 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		return eff;
 	}
 	/**
+	 * 获取动态变量的实际值。
 	 *
-	 * @param {any} source 如果参数是function，执行此函数并返回结果，传参为此方法剩余的参数。如果参数不是function，直接返回结果。
-	 * @returns 返回的结果
+	 * 当source为函数时，使用剩余参数执行该函数并返回结果；否则直接返回source。
+	 * 
+	 * > 在我看到本体的用法时，我似乎理解了为什么有这种API
+	 * > 但还是很神金，而且命名也有问题
+	 *
+	 * @template T
+	 * @template { any[] } U
+	 * @param { T | ((...args: U) => T) } source 动态变量或用于计算动态变量的函数
+	 * @param { U } args 传给source函数的参数
+	 * @returns { T } source为函数时返回函数执行结果，否则返回source本身
 	 */
-	dynamicVariable(source) {
-		if (typeof source == "function") {
-			return source.call(null, ...Array.from(arguments).slice(1));
+	dynamicVariable(source, ...args) {
+		if (typeof source === "function") {
+			// @ts-ignore
+			return source(...args);
 		}
 		return source;
 	}
