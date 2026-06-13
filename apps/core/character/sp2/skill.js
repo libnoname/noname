@@ -3203,9 +3203,15 @@ const skills = {
 			target: "useCardToTarget",
 		},
 		filter(event, player) {
-			if (!get.is.damageCard(event.card)) return;
-			if (event.targets.length != 1) return;
-			if (!player.countCards("he", card => lib.skill.starweigu.isSelf(card, player) && lib.filter.cardDiscardable(card, player, "starweigu"))) return;
+			if (!get.is.damageCard(event.card)) {
+				return false;
+			}
+			if (event.targets.length !== 1) {
+				return false;
+			}
+			if (!player.hasCards("he", card => lib.skill.starweigu.isSelf(card, player) && lib.filter.cardDiscardable(card, player, "starweigu"))) {
+				return false;
+			}
 			return true;
 		},
 		async cost(event, trigger, player) {
@@ -3217,91 +3223,128 @@ const skills = {
 			}
 			prompt += "2、令你攻击范围内的所有角色也成为此牌目标（不包括此牌使用者）。此牌结算后若牌未造成伤害，你失去1点体力并摸两张牌。";
 			const result = await player
-				.chooseCard("he", card => lib.skill.starweigu.isSelf(card, player) && lib.filter.cardDiscardable(card, player, "starweigu"))
-				.set("ai", card => get.value(card))
-				.set("prompt", get.prompt("starweigu"))
-				.set("prompt2", prompt)
+				.chooseCard({
+					prompt: get.prompt("starweigu"),
+					prompt2: prompt,
+					filterCard(card) {
+						const player = get.player();
+						return lib.skill.starweigu.isSelf(card, player) && lib.filter.cardDiscardable(card, player, "starweigu");
+					},
+					position: "he",
+					ai(card) {
+						return get.value(card);
+					},
+				})
 				.forResult();
-			if (result.bool) event.result = { bool: true, cost_data: result.cards };
+			if (result.bool) {
+				event.result = {
+					bool: true,
+					cost_data: {
+						cards: result.cards,
+					},
+				};
+			}
 		},
 		getTargets(card, player) {
 			return game.filterPlayer(current => {
-				if (player == current) return false;
-				if (!player.inRange(current)) return false;
-				if (card.source == current) return false;
+				if (player === current) {
+					return false;
+				}
+				if (!player.inRange(current)) {
+					return false;
+				}
+				if (card.source === current) {
+					return false;
+				}
 				return lib.filter.targetEnabled2(card, player, current);
 			});
 		},
 		isSelf(card, player, evt = get.event()) {
 			const info = get.info(card);
-			if (info.toself) return true;
+			if (info.toself) {
+				return true;
+			}
 			return lib.filter.targetEnabled3(card, player, evt);
 		},
 		async content(event, trigger, player) {
-			const card = event.cost_data[0];
-			await player.discard(card);
+			const cards = event.cost_data.cards;
+			await player.discard({ cards });
 			const choiceList = [];
 			if (!player.storage || !player.storage.starweigu) {
-				if (player.canMoveCard()) choiceList.push(["move", "移动场上的一张牌"]);
+				if (player.canMoveCard()) {
+					choiceList.push(["move", "移动场上的一张牌"]);
+				}
 			} else {
 				choiceList.push(["damage", "对一名角色造成2点伤害"]);
 			}
 			const targets = lib.skill.starweigu.getTargets(trigger.card, player);
-			if (targets.length) choiceList.push(["addtarget", "令" + get.translation(targets) + "成为" + get.translation(trigger.card) + "的额外目标"]);
+			if (targets.length) {
+				choiceList.push(["addtarget", `令${get.translation(targets)}成为${get.translation(trigger.card)}的额外目标`]);
+			}
 			if (choiceList.length) {
 				let choice;
 				if (choiceList.length == 2) {
 					const result = await player
-						.chooseButton(["选择一项：", [choiceList, "textbutton"]])
-						.set("choiceList", choiceList)
-						.set("ai", button => {
-							const player2 = get.player();
-							if (button.link === "move") return 1;
-							if (button.link === "damage") {
-								for (let i of game.filterPlayer(current => current != player2)) {
-									if (get.damageEffect(current, player2, player2) > 0) return 666;
+						.chooseButton({
+							createDialog: ["选择一项：", [choiceList, "textbutton"]],
+							selectButton: 1,
+							forced: true,
+							ai(button) {
+								const player2 = get.player();
+								const { card, targets } = get.event();
+								if (button.link === "move") {
+									return 1;
+								} else if (button.link === "damage") {
+									for (const current of game.filterPlayer(current => current !== player2)) {
+										if (get.damageEffect(current, player2, player2) > 0) {
+											return 666;
+										}
+									}
+								} else if (button.link === "addtarget") {
+									let num = 0;
+									targets.forEach(target => (num += get.effect(target, { name: card }, player2, player2)));
+									return num;
 								}
-							}
-							if (button.link === "addtarget") {
-								let num = 0;
-								targets.forEach(target => (num += get.effect(target, { name: get.event().card }, player2, player2)));
-								return num;
-							}
+								return 0;
+							},
 						})
+						.set("choiceList", choiceList)
 						.set("targets", targets)
 						.set("card", trigger.card)
-						.set("forced", true)
-						.set("selectButton", [1, 1])
 						.forResult();
-					choice = result.links[0];
+					choice = result.links?.[0];
 				} else {
 					choice = choiceList[0][0];
 				}
 				if (choice === "move") {
-					await player.moveCard(true, "移动场上的一张牌");
-				}
-				if (choice === "damage") {
+					await player.moveCard({
+						prompt: "移动场上的一张牌",
+						forced: true,
+					});
+				} else if (choice === "damage") {
 					const result = await player
-						.chooseTarget("对一名角色造成2点伤害")
-						.set("ai", target => -get.attitude(get.player(), target))
+						.chooseTarget({
+							prompt: "对一名角色造成2点伤害",
+							ai(target) {
+								return -get.attitude(get.player(), target);
+							},
+						})
 						.forResult();
-					if (result.bool) {
-						await result.targets[0].damage(2, player);
+					if (result.bool && result.targets?.length) {
+						await result.targets[0].damage({
+							num: 2,
+							source: player,
+						});
 					}
-				}
-				if (choice === "addtarget") {
+				} else if (choice === "addtarget") {
 					trigger.targets.addArray(targets.filter(target => target.isIn()));
 				}
 			}
 			player
 				.when({ global: "useCardAfter" })
-				.filter(evt => evt.card == trigger.card)
+				.filter(evt => evt.card === trigger.card)
 				.then(async (event, trigger, player) => {
-					if (
-						!game.hasGlobalHistory("everything", evt => {
-							return evt.name == "damage" && evt.card == trigger.card;
-						})
-					) {
+					if (!game.hasGlobalHistory("everything", evt => evt.name === "damage" && evt.card === trigger.card)) {
 						await player.loseHp();
 						await player.draw(2);
 					}
@@ -3330,7 +3373,9 @@ const skills = {
 				init(player, skill) {
 					player.storage.starweigu = true;
 					player.addSkill("starjuefa_remove");
-					if (!player.storage.starjuefa_remove) player.storage.starjuefa_remove = {};
+					if (!player.storage.starjuefa_remove) {
+						player.storage.starjuefa_remove = {};
+					}
 					player.storage.starjuefa_remove.die = true;
 				},
 				trigger: {
@@ -3339,16 +3384,18 @@ const skills = {
 				async content(event, trigger, player) {
 					delete player.storage.starjuefa_remove.die;
 					if (trigger.reason?.getParent("starweigu")) {
-						const num1 = player.countCards("h"),
-							num2 = player.maxHp,
-							num3 = player.hp;
+						const num1 = player.countCards("h");
+						const num2 = player.maxHp;
+						const num3 = player.hp;
 						if (num1 > num2) {
-							await player.chooseToDiscard(num1 - num2);
+							await player.chooseToDiscard({
+								selectCard: num1 - num2,
+							});
 						} else if (num1 < num2) {
 							await player.drawTo(num2);
 						}
 						if (num3 != num2) {
-							await player.recover(num2 - num3);
+							await player.recover({ num: num2 - num3 });
 						}
 					}
 				},
@@ -3360,13 +3407,16 @@ const skills = {
 					player: "phaseEnd",
 				},
 				async content(event, trigger, player) {
-					if (!player.storage.starjuefa_remove.remove) player.storage.starjuefa_remove.remove = true;
-					else {
+					if (!player.storage.starjuefa_remove.remove) {
+						player.storage.starjuefa_remove.remove = true;
+					} else {
 						delete player.storage.starweigu;
 						player.removeSkill("jufa_effect");
 						player.removeSkill("jufa_remove");
 						if (player.storage.starjuefa_remove.die) {
-							if (player.hp > 0) await player.loseHp(player.hp);
+							if (player.hp > 0) {
+								await player.loseHp(player.hp);
+							}
 						}
 					}
 				},

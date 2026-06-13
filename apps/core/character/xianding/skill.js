@@ -37267,7 +37267,9 @@ const skills = {
 	// 环怀瑾
 	dclianyou: {
 		init(player, skill) {
-			if (!player.storage[skill]) player.storage[skill] = {};
+			if (!player.storage[skill]) {
+				player.storage[skill] = {};
+			}
 		},
 		trigger: {
 			player: "damageEnd",
@@ -37290,83 +37292,100 @@ const skills = {
 			}
 			if (choiceList.length) {
 				const result = await player
-					.chooseButton([get.prompt("dclianyou") + "选择一项", [choiceList, "textbutton"]])
-					.set("choiceList", choiceList)
-					.set("ai", button => {
-						if (button.link === "recover") {
-							let max = 0;
-							game.filterPlayer(current => {
-								if (!current.isMinHp()) return;
-								const num = Math.min(current.getDamagedHp(), 2) * get.recoverEffect(current, player, player);
-								if (num > max) max = num;
-								return;
-							});
-							return max;
-						}
-						if (button.link === "draw") {
-							return 3.95 + 0.1 * Math.random();
-						}
-						let min = Infinity;
-						let target;
-						game.filterPlayer(current => {
-							if (target === true) return;
-							const num = current.countCards("e");
-							if (num <= min) {
-								min = num;
-								if (get.attitude(player, current) > 0) target = true;
-								else target = false;
+					.chooseButton({
+						createDialog: [get.prompt("dclianyou") + "选择一项", [choiceList, "textbutton"]],
+						selectButton: 1,
+						ai(button) {
+							if (button.link === "recover") {
+								let max = 0;
+								for (const current of game.filterPlayer()) {
+									if (!current.isMinHp()) {
+										continue;
+									}
+									const num = Math.min(current.getDamagedHp(), 2) * get.recoverEffect(current, player, player);
+									if (num > max) {
+										max = num;
+									}
+								}
+								return max;
 							}
-						});
-						if (target === true) return 4;
+							if (button.link === "draw") {
+								return 3.95 + 0.1 * Math.random();
+							}
+							let min = Infinity;
+							let target;
+							for (const current of game.filterPlayer()) {
+								if (target === true) {
+									continue;
+								}
+								const num = current.countCards("e");
+								if (num <= min) {
+									min = num;
+									if (get.attitude(player, current) > 0) {
+										target = true;
+									} else {
+										target = false;
+									}
+								}
+							}
+							if (target === true) {
+								return 4;
+							}
+						}
 					})
-					.set("selectButton", [1, 1])
+					.set("choiceList", choiceList)
 					.forResult();
 				if (result.bool) {
 					player.storage.dclianyou[result.links[0]] = true;
-					event.result = { bool: true, cost_data: result.links[0] };
+					event.result = { bool: true, cost_data: { choice: result.links[0] } };
 				}
 			}
 		},
 		async content(event, trigger, player) {
-			const choice = event.cost_data;
+			const { choice } = event.cost_data;
 			if (choice === "recover") {
 				const result = await player
-					.chooseTarget("令一名体力值最小的角色回复2点体力", (card, player, target) => {
-						return target.isMinHp() && target.isDamaged();
+					.chooseTarget({
+						prompt: "令一名体力值最小的角色回复2点体力",
+						filterTarget(card, player, target) {
+							return target.isMinHp() && target.isDamaged();
+						},
+						forced: true,
+						ai(target) {
+							return Math.min(target.getDamagedHp(), 2) * get.recoverEffect(target, player, player);
+						},
 					})
-					.set("ai", target => {
-						return Math.min(target.getDamagedHp(), 2) * get.recoverEffect(target, player, player);
-					})
-					.set("forced", true)
 					.forResult();
-				if (result.bool) await result.targets[0].recover(2);
-				return;
-			}
-			if (choice === "equip") {
+				if (result.bool) {
+					await result.targets[0].recover({ num: 2 });
+				}
+			} else if (choice === "equip") {
 				const result = await player
-					.chooseTarget("选择一名角色，随机使用两张装备牌", (card, player, target) => {
-						const num = Math.min(...game.filterPlayer().map(current => current.countCards("e")));
-						if (target.countCards("e") === num) return true;
-						return false;
+					.chooseTarget({
+						prompt: "选择一名角色，随机使用两张装备牌",
+						filterTarget(card, player, target) {
+							const num = get.event().min;
+							return target.countCards("e") === num;
+						},
+						forced: true,
+						ai(target) {
+							return get.attitude(get.player(), target);
+						}
 					})
-					.set("ai", target => get.attitude(player, target))
-					.set("forced", true)
+					.set("min", Math.min(...game.filterPlayer().map(current => current.countCards("e"))))
 					.forResult();
 				if (result?.targets?.length) {
 					const target = result.targets[0];
 					for (let i = 1; i <= 2; i++) {
-						const card = get.cardPile(
-							card => {
-								return get.type(card) === "equip" && target.canUse(card, target);
-							},
-							undefined,
-							"bottom"
-						);
-						await target.chooseUseTarget(card, true, "nopopup");
+						const card = get.cardPile(card => get.type(card) === "equip" && target.canUse(card, target), undefined, "bottom");
+						await target.chooseUseTarget({
+							card,
+							forced: true,
+							nopopup: true,
+						});
 					}
 				}
-			}
-			if (choice === "draw") {
+			} else if (choice === "draw") {
 				await player.draw(3);
 				const result = await player
 					.chooseCardTarget({
@@ -37405,7 +37424,7 @@ const skills = {
 				trigger: {
 					global: "roundStart",
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.storage.dclianyou = {};
 				},
 			},
@@ -37416,14 +37435,18 @@ const skills = {
 			global: "roundStart",
 		},
 		async cost(event, trigger, player) {
-			const result = await player
-				.chooseTarget(get.prompt("dccili") + "<br>记录一名角色的体力值，根据其用牌数你获得收益")
-				.set("ai", target => Math.random())
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt("dccili"),
+					prompt2: "记录一名角色的体力值，根据其用牌数你获得收益",
+					ai() {
+						return Math.random();
+					},
+				})
 				.forResult();
-			if (result?.bool) event.result = { bool: true, cost_data: result.targets[0] };
 		},
 		async content(event, trigger, player) {
-			const target = event.cost_data;
+			const target = event.targets[0];
 			player.addSkill("dccili_mark");
 			player.storage.dccili_mark = [target, target.getHp()];
 			target
@@ -37432,27 +37455,38 @@ const skills = {
 				.then(async (event, trigger, player2) => {
 					const record = player.storage.dccili_mark;
 					player.removeSkill("dccili_mark");
-					if (!record || record[0] != target) return;
-					const num = player2.getHistory("useCard").length;
+					if (!record || record[0] != target) {
+						return;
+					}
+					const num = player2.countHistory("useCard");
 					if (record[1] > 0) {
 						if (num < record[1]) {
 							const result = await player
-								.chooseTarget("令一名角色随机弃置" + record[1] + "张牌", (card, player, target) => {
-									return target.countCards("he");
-								})
-								.set("ai", target => {
-									return -get.attitude(player, target) * (0.7 + (target.countCards("he") >= 5));
+								.chooseTarget({
+									prompt: `令一名角色随机弃置${record[1]}张牌`,
+									filterTarget(card, player, target) {
+										return target.hasCards("he");
+									},
+									ai(target) {
+										return -get.attitude(player, target) * (0.7 + (target.countCards("he") >= 5));
+									}
 								})
 								.forResult();
-							if (result.bool) await result.targets[0].randomDiscard(record[1]);
+							if (result.bool){ 
+								await result.targets[0].randomDiscard(record[1]);
+							}
 						} else {
 							const result = await player
-								.chooseTarget("令一名角色摸" + record[1] + "张牌")
-								.set("ai", target => {
-									return get.attitude(player, target);
+								.chooseTarget({
+									prompt: `令一名角色摸${record[1]}张牌`,
+									ai(target) {
+										return get.attitude(player, target);
+									},
 								})
 								.forResult();
-							if (result.bool) await result.targets[0].draw(record[1]);
+							if (result.bool) {
+								await result.targets[0].draw(record[1]);
+							}
 						}
 					}
 					delete player.storage.dccili_mark;

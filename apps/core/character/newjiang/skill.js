@@ -933,26 +933,32 @@ const skills = {
 				);
 			}
 		},
-		group:"youtan_defend",
+		group: "youtan_defend",
 		subSkill: {
-			defend:{
-				forced:true,
-				trigger:{
-					target:"useCardToTargeted",
+			defend: {
+				forced: true,
+				trigger: {
+					target: "useCardToTargeted",
 				},
-				filter(event, player){
-					return !player.getStorage("youtan").includes(get.suit(event.card))
+				filter(event, player) {
+					return !player.getStorage("youtan").includes(get.suit(event.card));
 				},
 				async content(event, trigger, player) {
 					const source = trigger.card.player;
-					if(!source.countCards("he",card=>lib.filter.cardDiscardable(card,source,event.skill))){
-						trigger.getParent().excluded.add(player);
-					} else{
+					if (!source.hasCards("he", card => lib.filter.cardDiscardable(card, source, event.skill))) {
+						trigger.getParent()?.excluded.add(player);
+					} else {
 						const result = await source
-							.chooseToDiscard("弃置一张牌，否则"+get.translation(trigger.card)+"对"+get.translation(player)+"无效")
-							.set("ai",card=>20-get.value(card))
+							.chooseToDiscard({
+								prompt: `弃置一张牌，否则${get.translation(trigger.card)}对${get.translation(player)}无效`,
+								ai(card) {
+									return 20 - get.value(card);
+								},
+							})
 							.forResult();
-						if(!result.bool)trigger.getParent().excluded.add(player);
+						if (!result.bool) {
+							trigger.getParent()?.excluded.add(player)
+						}
 					}
 				}
 			}

@@ -9,13 +9,13 @@ const dynamicTranslates = {
 	},
     starweigu(player) {
         let str = "你使用伤害牌指定唯一目标或成为伤害牌唯一目标时，你可以弃置一张可指定自己为目标（toself为true或目标合法）的牌，然后选择一项:";
-        if(player.storage?.star_weigu) {
-            str += "<span class=bluetext>1、对一名角色造成2点伤害；</span>";
-        }else {
-            str += "<span class=bluetext>1、移动场上一张牌；</span>";
-        }
-        str += "2、令你攻击范围内的所有角色也成为此牌目标（不包括此牌使用者）。此牌结算后若牌未造成伤害，你失去1点体力并摸两张牌。";
-        return str;
+		if (player.storage?.star_weigu) {
+			str += "<span class=bluetext>1、对一名角色造成2点伤害；</span>";
+		} else {
+			str += "<span class=bluetext>1、移动场上一张牌；</span>";
+		}
+		str += "2、令你攻击范围内的所有角色也成为此牌目标（不包括此牌使用者）。此牌结算后若牌未造成伤害，你失去1点体力并摸两张牌。";
+		return str;
     },
 	mubing(player) {
 		if (player.storage.mubing2) {
