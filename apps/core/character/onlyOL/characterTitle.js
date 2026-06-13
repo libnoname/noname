@@ -1,4 +1,5 @@
 export default {
+	//ol_quancong: "",
 	//ol_caoxiu: "",
 	ol_guanping: "威灵显化",
 	dm_zhangfei: "祭命的战神",

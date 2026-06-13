@@ -23014,7 +23014,7 @@ const skills = {
 			if (event.type == "wuxie" || player.hasSkill("zhenshan_used")) {
 				return false;
 			}
-			var nh = player.countCards("h");
+			const nh = player.countCards("h");
 			if (
 				!game.hasPlayer(function (current) {
 					return current != player && current.countCards("h") < nh;
@@ -23022,16 +23022,16 @@ const skills = {
 			) {
 				return false;
 			}
-			for (var i of lib.inpile) {
+			for (const i of lib.inpile) {
 				if (get.type(i) != "basic") {
 					continue;
 				}
-				var card = { name: i, isCard: true };
+				const card = { name: i, isCard: true };
 				if (event.filterCard(card, player, event)) {
 					return true;
 				}
 				if (i == "sha") {
-					for (var j of lib.inpile_nature) {
+					for (const j of lib.inpile_nature) {
 						card.nature = j;
 						if (event.filterCard(card, player, event)) {
 							return true;
@@ -23043,17 +23043,17 @@ const skills = {
 		},
 		chooseButton: {
 			dialog(event, player) {
-				var list = [];
-				for (var i of lib.inpile) {
+				const list = [];
+				for (const i of lib.inpile) {
 					if (get.type(i) != "basic") {
 						continue;
 					}
-					var card = { name: i, isCard: true };
+					const card = { name: i, isCard: true };
 					if (event.filterCard(card, player, event)) {
 						list.push(["基本", "", i]);
 					}
 					if (i == "sha") {
-						for (var j of lib.inpile_nature) {
+						for (const j of lib.inpile_nature) {
 							card.nature = j;
 							if (event.filterCard(card, player, event)) {
 								list.push(["基本", "", i, j]);
@@ -23064,8 +23064,8 @@ const skills = {
 				return ui.create.dialog("振赡", [list, "vcard"], "hidden");
 			},
 			check(button) {
-				var player = _status.event.player;
-				var card = { name: button.link[2], nature: button.link[3] };
+				const player = _status.event.player;
+				const card = { name: button.link[2], nature: button.link[3] };
 				if (card.name == "jiu") {
 					return 0;
 				}
@@ -23075,7 +23075,7 @@ const skills = {
 					})
 				) {
 					if (card.name == "sha") {
-						var eff = player.getUseValue(card);
+						const eff = player.getUseValue(card);
 						if (eff > 0) {
 							return 2.9 + eff / 10;
 						}
@@ -23096,29 +23096,27 @@ const skills = {
 					},
 					selectCard: -1,
 					log: false,
-					precontent() {
-						"step 0";
-						player
-							.chooseTarget(
-								"选择一名手牌数小于你的角色交换手牌",
-								function (card, player, target) {
+					async precontent(event, trigger, player) {
+						const result = await player
+							.chooseTarget({
+								prompt: "赈赡：选择一名手牌数小于你的角色交换手牌",
+								filterTarget(card, player, target) {
 									return target != player && target.countCards("h") < player.countCards("h");
 								},
-								true
-							)
-							.set("ai", function (target) {
-								return get.attitude(player, target) * Math.sqrt(target.countCards("h") + 1);
-							});
-						"step 1";
-						if (result.bool) {
+								forced: true,
+								ai(target) {
+									return get.attitude(get.player(), target) * Math.sqrt(target.countCards("h") + 1);
+								}
+							})
+							.forResult();
+						if (result?.bool) {
 							player.logSkill("zhenshan", result.targets);
 							player.addTempSkill("zhenshan_used");
-							player.swapHandcards(result.targets[0]);
+							await player.swapHandcards(result.targets[0]);
 						} else {
-							event.finish();
+							event.result.cancel = true;
 						}
-						"step 2";
-						game.delayx();
+						await game.delayx();
 					},
 				};
 			},
@@ -23126,12 +23124,11 @@ const skills = {
 				return "选择" + get.translation(links[0][3] || "") + "【" + get.translation(links[0][2]) + "】的目标";
 			},
 		},
-		subSkill: { used: { charlotte: true } },
 		ai: {
 			order() {
-				var player = _status.event.player;
-				var event = _status.event;
-				var nh = player.countCards("h");
+				const player = _status.event.player;
+				const event = _status.event;
+				const nh = player.countCards("h");
 				if (
 					game.hasPlayer(function (current) {
 						return get.attitude(player, current) > 0 && current.countCards("h") < nh;
@@ -23156,10 +23153,10 @@ const skills = {
 			respondSha: true,
 			respondShan: true,
 			skillTagFilter(player, tag, arg) {
-				if (player.hasSkill("zhenshan_used")) {
+				if (player.getStat().skill.olzhenshan > 0) {
 					return false;
 				}
-				var nh = player.countCards("h");
+				const nh = player.countCards("h");
 				return game.hasPlayer(function (current) {
 					return current != player && current.countCards("h") < nh;
 				});

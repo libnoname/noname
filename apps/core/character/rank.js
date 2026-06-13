@@ -1129,6 +1129,8 @@ window.noname_character_rank = {
 		"pot_zanghong",
 	],
 	b: [
+		"re_zhoufei",
+		"re_yanyan",
 		"mb_gaoxiang",
 		"mb_cuimao",
 		"yj_wanglang",
@@ -2035,6 +2037,7 @@ window.noname_character_rank = {
 		"tw_jsrg_hejin",
 	],
 	c: [
+		"ol_quancong",
 		"star_zhangsong",
 		"xy_caocao",
 		"xy_chengyu",
@@ -3210,6 +3213,9 @@ window.noname_character_rank = {
 			"dc_sb_chunyuqiong",
 		],
 		rare: [
+			"ol_quancong",
+			"re_zhoufei",
+			"re_yanyan",
 			"mb_gaoxiang",
 			"mb_cuimao",
 			"yj_wanglang",
