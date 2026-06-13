@@ -688,7 +688,6 @@ const skills = {
 			storage[target.playerid] ??= 0;
 			storage[target.playerid] = Math.min(3, ++storage[target.playerid]);
 			player.setStorage(name, storage, true);
-			await player.draw(storage[target.playerid]);
 			target.markAuto(`${name}_debuff`, player);
 			target.addAdditionalSkill(`${name}_debuff_${player.playerid}`, `${name}_debuff`);
 			target.addTempSkill(`${name}_reset`, { player: "dieAfter" });
@@ -37265,7 +37264,7 @@ const skills = {
 		derivation: "dczimu",
 	},
 	// 环怀瑾
-	dc_lianyou: {
+	dclianyou: {
 		init(player, skill) {
 			if (!player.storage[skill]) player.storage[skill] = {};
 		},
@@ -37273,24 +37272,24 @@ const skills = {
 			player: "damageEnd",
 		},
 		filter(event, player) {
-			return !(player.storage.dc_lianyou["recover"] && player.storage.dc_lianyou["equip"] && player.storage.dc_lianyou["draw"]);
+			return !(player.storage.dclianyou["recover"] && player.storage.dclianyou["equip"] && player.storage.dclianyou["draw"]);
 		},
 		async cost(event, trigger, player) {
 			const choiceList = [];
-			if (!player.storage.dc_lianyou["recover"]) {
+			if (!player.storage.dclianyou["recover"]) {
 				if (game.hasPlayer(current => current.isMinHp() && current.isDamaged())) {
 					choiceList.push(["recover", "令一名体力值最小的角色回复2点体力"]);
 				}
 			}
-			if (!player.storage.dc_lianyou["equip"]) {
+			if (!player.storage.dclianyou["equip"]) {
 				choiceList.push(["equip", "令一名装备区牌最少的角色随机使用两张装备牌"]);
 			}
-			if (!player.storage.dc_lianyou["draw"]) {
+			if (!player.storage.dclianyou["draw"]) {
 				choiceList.push(["draw", "摸三张牌并可以交给一名手牌最少的其他角色三张牌"]);
 			}
 			if (choiceList.length) {
 				const result = await player
-					.chooseButton([get.prompt("dc_lianyou") + "选择一项", [choiceList, "textbutton"]])
+					.chooseButton([get.prompt("dclianyou") + "选择一项", [choiceList, "textbutton"]])
 					.set("choiceList", choiceList)
 					.set("ai", button => {
 						if (button.link === "recover") {
@@ -37322,7 +37321,7 @@ const skills = {
 					.set("selectButton", [1, 1])
 					.forResult();
 				if (result.bool) {
-					player.storage.dc_lianyou[result.links[0]] = true;
+					player.storage.dclianyou[result.links[0]] = true;
 					event.result = { bool: true, cost_data: result.links[0] };
 				}
 			}
@@ -37395,7 +37394,7 @@ const skills = {
 				}
 			}
 		},
-		group: ["dc_lianyou_restore"],
+		group: ["dclianyou_restore"],
 		subSkill: {
 			restore: {
 				charlotte: true,
@@ -37406,32 +37405,32 @@ const skills = {
 					global: "roundStart",
 				},
 				content() {
-					player.storage.dc_lianyou = {};
+					player.storage.dclianyou = {};
 				},
 			},
 		},
 	},
-	dc_cili: {
+	dccili: {
 		trigger: {
 			global: "roundStart",
 		},
 		async cost(event, trigger, player) {
 			const result = await player
-				.chooseTarget(get.prompt("dc_cili") + "<br>记录一名角色的体力值，根据其用牌数你获得收益")
+				.chooseTarget(get.prompt("dccili") + "<br>记录一名角色的体力值，根据其用牌数你获得收益")
 				.set("ai", target => Math.random())
 				.forResult();
 			if (result?.bool) event.result = { bool: true, cost_data: result.targets[0] };
 		},
 		async content(event, trigger, player) {
 			const target = event.cost_data;
-			player.addSkill("dc_cili_mark");
-			player.storage.dc_cili_mark = [target, target.getHp()];
+			player.addSkill("dccili_mark");
+			player.storage.dccili_mark = [target, target.getHp()];
 			target
 				.when("phaseEnd")
 				.vars({ player: player })
 				.then(async (event, trigger, player2) => {
-					const record = player.storage.dc_cili_mark;
-					player.removeSkill("dc_cili_mark");
+					const record = player.storage.dccili_mark;
+					player.removeSkill("dccili_mark");
 					if (!record || record[0] != target) return;
 					const num = player2.getHistory("useCard").length;
 					if (record[1] > 0) {
@@ -37455,7 +37454,7 @@ const skills = {
 							if (result.bool) await result.targets[0].draw(record[1]);
 						}
 					}
-					delete player.storage.dc_cili_mark;
+					delete player.storage.dccili_mark;
 				});
 		},
 		subSkill: {
