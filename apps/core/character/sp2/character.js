@@ -114,7 +114,7 @@ const characters = {
 		sex: "male",
 		group: "shu",
 		hp: 4,
-		skills: ["star_weigu","star_juefa"],
+		skills: ["starweigu","starjuefa"],
 		names: "夏侯|霸",
 	},
 	liqueguosi: {
