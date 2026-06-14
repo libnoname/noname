@@ -3257,8 +3257,7 @@ const skills = {
 			return lib.filter.targetEnabled3(card, player, evt);
 		},
 		async content(event, trigger, player) {
-			const cards = event.cost_data.cards;
-			await player.discard({ cards });
+			await player.discard({ cards:event.cards });
 			const choiceList = [];
 			if (!player.storage || !player.storage.starweigu) {
 				if (player.canMoveCard()) {
