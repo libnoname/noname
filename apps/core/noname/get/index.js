@@ -1184,20 +1184,45 @@ export class Get {
 			func = item => item[key];
 		}
 
-		const values = list.map(item => [item, func(item)]);
-		const sorted = values.toSorted((a, b) => sign * (b[1] - a[1]));
-
-		switch (type) {
-			case "list":
-				return sorted.filter(item => item[1] == sorted[0][1]).map(item => item[0]);
-			case "item":
-				return sorted.length ? sorted[0][0] : undefined;
-			default:
-				if (sorted.length) {
-					return sorted[0][1];
-				}
-				return func(undefined);
+		if (!list.length) {
+			if (type === "list") {
+				return [];
+			}
+			if (type === "item") {
+				return undefined;
+			}
+			return func(undefined);
 		}
+
+		let result = list[0];
+		let extreme = func(result);
+
+		if (type === "list") {
+			const resultList = [result];
+			for (let i = 1; i < list.length; i++) {
+				const item = list[i];
+				const value = func(item);
+				const compared = sign * (value - extreme);
+				if (compared > 0) {
+					extreme = value;
+					resultList.length = 0;
+					resultList.push(item);
+				} else if (value == extreme) {
+					resultList.push(item);
+				}
+			}
+			return resultList;
+		}
+
+		for (let i = 1; i < list.length; i++) {
+			const item = list[i];
+			const value = func(item);
+			if (sign * (value - extreme) > 0) {
+				result = item;
+				extreme = value;
+			}
+		}
+		return type === "item" ? result : extreme;
 	}
 	/**
 	 * 获取列表中指定数值最大的结果。
