@@ -4438,7 +4438,10 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		const result = (...args) => {
 			const item = args[index];
 			if (filter == null) {
-				return item == null;
+				// 旧代码中，判断完是否相等后，便开始执行遍历，而for in null不会进入循环
+				// 因此如果传入null，则必然返回true
+				// 考虑到传入null的合理情况基本没有，还是兼容为好
+				return true;
 			}
 			if (filter == item) {
 				return true;
