@@ -981,6 +981,14 @@ const characters = {
 		skills: ["chijie", "waishi", "renshe"],
 		names: "null|null",
 	},
+	tw_yj_fazheng: {
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		skills: ["cangjia", "duohui", "yueyuan"],
+		img: "image/character/yj_fazheng.jpg",
+		dieAudios: ["yj_fazheng"],
+	},
 	tw_xiahouba: {
 		sex: "male",
 		group: "shu",
