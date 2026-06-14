@@ -6729,19 +6729,33 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		let cache = CacheContext.requireCacheContext();
 		return cache.get.effect_use(target, card, player, player2, isLink);
 	}
-	effect_use(target, card, player, player2, isLink) {
-		let cache = CacheContext.requireCacheContext();
-		var event = _status.event;
-		var eventskill = null;
-		if (player == undefined) {
+	/**
+	 * 计算使用牌或技能时的AI效果分值。
+	 *
+	 * 与`effect`类似，但会优先读取`player_use`和`target_use`作为使用阶段的基础收益；
+	 * 随后叠加发动者和目标的技能修正、目标威胁度、血量、手牌数，以及自然伤害的连环传导收益。
+	 * 数值越高，表示该使用行为对评估立场越有利；数值越低，表示越不利。
+	 *
+	 * @param { Player } [target] - 被作用的目标；无目标牌可省略
+	 * @param { string | Card | VCard | CardBaseUIData } [card] - 要评估的牌、虚拟牌、技能名或可被当前事件推断的对象
+	 * @param { Player } [player] - 牌或技能的发动者；省略时取当前事件的玩家
+	 * @param { Player } [player2] - 评估立场；省略时以`player`立场评估
+	 * @param { boolean | Record<string, any> } [linking] - 是否正在计算连环传导，或传导计算时携带的上下文
+	 * @returns { number } 综合态度、技能和状态修正后的AI效果分值
+	 */
+	effect_use(target, card, player, player2, linking) {
+		const cache = CacheContext.requireCacheContext();
+		const event = _status.event;
+		let eventskill = null;
+		if (player === undefined) {
 			player = _status.event.player;
 		}
-		if (card && typeof card == "object" && "name" in card) {
+		if (card && typeof card === "object" && "name" in card) {
 			card = get.autoViewAs(card);
 		}
-		if (typeof card != "string" && (typeof card != "object" || !card.name)) {
-			var skillinfo = get.info(event.skill);
-			if (event.skill && skillinfo.viewAs == undefined) {
+		if (typeof card !== "string" && (typeof card !== "object" || !card.name)) {
+			const skillinfo = get.info(event.skill);
+			if (event.skill && skillinfo.viewAs === undefined) {
 				card = _status.event.skill;
 			} else {
 				card = get.card();
@@ -6750,82 +6764,82 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				}
 			}
 		}
-		var info = get.info(card);
-		if (typeof card == "object" && info && info.changeTarget) {
-			var targets = [target];
-			info.changeTarget(player, targets);
-			var eff = 0;
-			for (var i of targets) {
-				eff += cache.get.effect(i, card, player, player2, isLink);
+		const cardInfo = get.info(card);
+		if (typeof card === "object" && cardInfo && cardInfo.changeTarget) {
+			const targets = [target];
+			cardInfo.changeTarget(player, targets);
+			let eff = 0;
+			for (const currentTarget of targets) {
+				eff += cache.get.effect(currentTarget, card, player, player2, linking);
 			}
 			return eff;
 		}
-		var result = get.result(card, eventskill);
-		var result1 = result.player_use || result.player,
-			result2 = result.target_use || result.target;
-		if (typeof result1 == "function") {
-			result1 = result1(player, target, card, isLink);
+		const result = get.result(card, eventskill);
+		let result1 = result.player_use || result.player;
+		let result2 = result.target_use || result.target;
+		if (typeof result1 === "function") {
+			result1 = result1(player, target, card, linking);
 		}
-		if (typeof result2 == "function") {
-			result2 = result2(player, target, card, isLink);
+		if (typeof result2 === "function") {
+			result2 = result2(player, target, card, linking);
 		}
 
-		if (typeof result1 != "number") {
+		if (typeof result1 !== "number") {
 			result1 = 0;
 		}
-		if (typeof result2 != "number") {
+		if (typeof result2 !== "number") {
 			result2 = 0;
 		}
-		var temp1,
-			temp2,
-			temp3,
-			temp01 = 0,
-			temp02 = 0,
-			threaten = 1;
-		var skills1 = player.getSkills().concat(lib.skill.global);
+		let temp1;
+		let temp2;
+		let temp3;
+		let temp01 = 0;
+		let temp02 = 0;
+		let threaten = 1;
+		const skills1 = player.getSkills().concat(lib.skill.global);
 		game.expandSkills(skills1);
-		var zerotarget = false,
-			zeroplayer = false;
-		for (let i = 0; i < skills1.length; i++) {
-			const info = get.info(skills1[i]);
+		let zerotarget = false;
+		let zeroplayer = false;
+		for (const skill of skills1) {
+			const info = get.info(skill);
 			if (!info) {
-				throw new Error(`${skills1[i]}不存在的技能`);
+				throw new Error(`${skill}不存在的技能`);
 			}
 			temp1 = info.ai;
-			if (temp1 && typeof temp1.effect == "object" && typeof temp1.effect.player_use == "function") {
-				temp1 = cache.delegate(temp1.effect).player_use(card, player, target, result1, isLink);
-			} else if (temp1 && typeof temp1.effect == "object" && typeof temp1.effect.player == "function") {
-				temp1 = cache.delegate(temp1.effect).player(card, player, target, result1, isLink);
+			if (temp1 && typeof temp1.effect === "object" && typeof temp1.effect.player_use === "function") {
+				temp1 = cache.delegate(temp1.effect).player_use(card, player, target, result1, linking);
+			} else if (temp1 && typeof temp1.effect === "object" && typeof temp1.effect.player === "function") {
+				temp1 = cache.delegate(temp1.effect).player(card, player, target, result1, linking);
 			} else {
 				temp1 = undefined;
 			}
-			if (typeof temp1 == "object") {
-				if (temp1.length == 2 || temp1.length == 4) {
+			if (typeof temp1 === "object") {
+				if (temp1.length === 2 || temp1.length === 4) {
 					result1 *= temp1[0];
 					temp01 += temp1[1];
 				}
-				if (temp1.length == 4) {
+				if (temp1.length === 4) {
 					result2 *= temp1[2];
 					temp02 += temp1[3];
 				}
-			} else if (typeof temp1 == "number") {
+			} else if (typeof temp1 === "number") {
 				result1 *= temp1;
-			} else if (temp1 == "zeroplayer") {
+			} else if (temp1 === "zeroplayer") {
 				zeroplayer = true;
-			} else if (temp1 == "zerotarget") {
+			} else if (temp1 === "zerotarget") {
 				zerotarget = true;
-			} else if (temp1 == "zeroplayertarget") {
+			} else if (temp1 === "zeroplayertarget") {
 				zeroplayer = true;
 				zerotarget = true;
 			}
 		}
 		if (target) {
-			var skills2 = target.getSkills().concat(lib.skill.global);
+			const skills2 = target.getSkills().concat(lib.skill.global);
 			game.expandSkills(skills2);
-			for (let i = 0; i < skills2.length; i++) {
-				const info = get.info(skills2[i]);
+			for (const skill of skills2) {
+				const info = get.info(skill);
 				if (!info) {
-					throw new Error(`${skills2[i]}不存在的技能`);
+					throw new Error(`${skill}不存在的技能`);
 				}
 				temp2 = info.ai;
 				if (temp2 && temp2.threaten) {
@@ -6833,109 +6847,109 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				} else {
 					temp3 = undefined;
 				}
-				if (temp2 && typeof temp2.effect == "function") {
+				if (temp2 && typeof temp2.effect === "function") {
 					if (
 						!player.hasSkillTag("ignoreSkill", true, {
 							card: card,
 							target: target,
-							skill: skills2[i],
-							isLink: isLink,
+							skill: skill,
+							isLink: linking,
 						})
 					) {
-						temp2 = cache.delegate(temp2).effect(card, player, target, result2, isLink);
+						temp2 = cache.delegate(temp2).effect(card, player, target, result2, linking);
 					} else {
 						temp2 = undefined;
 					}
-				} else if (temp2 && typeof temp2.effect == "object" && typeof temp2.effect.target_use == "function") {
+				} else if (temp2 && typeof temp2.effect === "object" && typeof temp2.effect.target_use === "function") {
 					if (
 						!player.hasSkillTag("ignoreSkill", true, {
 							card: card,
 							target: target,
-							skill: skills2[i],
-							isLink: isLink,
+							skill: skill,
+							isLink: linking,
 						})
 					) {
-						temp2 = cache.delegate(temp2.effect).target_use(card, player, target, result2, isLink);
+						temp2 = cache.delegate(temp2.effect).target_use(card, player, target, result2, linking);
 					} else {
 						temp2 = undefined;
 					}
-				} else if (temp2 && typeof temp2.effect == "object" && typeof temp2.effect.target == "function") {
+				} else if (temp2 && typeof temp2.effect === "object" && typeof temp2.effect.target === "function") {
 					if (
 						!player.hasSkillTag("ignoreSkill", true, {
 							card: card,
 							target: target,
-							skill: skills2[i],
-							isLink: isLink,
+							skill: skill,
+							isLink: linking,
 						})
 					) {
-						temp2 = cache.delegate(temp2.effect).target(card, player, target, result2, isLink);
+						temp2 = cache.delegate(temp2.effect).target(card, player, target, result2, linking);
 					} else {
 						temp2 = undefined;
 					}
 				} else {
 					temp2 = undefined;
 				}
-				if (typeof temp2 == "object") {
-					if (temp2.length == 2 || temp2.length == 4) {
+				if (typeof temp2 === "object") {
+					if (temp2.length === 2 || temp2.length === 4) {
 						result2 *= temp2[0];
 						temp02 += temp2[1];
 					}
-					if (temp2.length == 4) {
+					if (temp2.length === 4) {
 						result1 *= temp2[2];
 						temp01 += temp2[3];
 					}
-				} else if (typeof temp2 == "number") {
+				} else if (typeof temp2 === "number") {
 					result2 *= temp2;
-				} else if (temp2 == "zeroplayer") {
+				} else if (temp2 === "zeroplayer") {
 					zeroplayer = true;
-				} else if (temp2 == "zerotarget") {
+				} else if (temp2 === "zerotarget") {
 					zerotarget = true;
-				} else if (temp2 == "zeroplayertarget") {
+				} else if (temp2 === "zeroplayertarget") {
 					zeroplayer = true;
 					zerotarget = true;
 				}
-				if (typeof temp3 == "object") {
+				if (typeof temp3 === "object") {
 					temp3 = temp3.target;
 				}
-				if (typeof temp3 == "function") {
+				if (typeof temp3 === "function") {
 					temp3 = temp3(player, target);
 				}
-				if (typeof temp3 == "number") {
+				if (typeof temp3 === "number") {
 					threaten *= temp3;
 				}
 			}
 			result2 += temp02;
 			result1 += temp01;
-			if (typeof card == "object" && !result.ignoreStatus) {
+			if (typeof card === "object" && !result.ignoreStatus) {
 				if (cache.get.attitude(player, target) < 0) {
 					result2 *= Math.sqrt(threaten);
 				} else {
 					result2 *= Math.sqrt(Math.sqrt(threaten));
 				}
-				if (target.hp == 1) {
+				if (target.hp === 1) {
 					result2 *= 2.5;
 				}
-				if (target.hp == 2) {
+				if (target.hp === 2) {
 					result2 *= 1.8;
 				}
-				let countTargetCards = target.countCards("h");
-				if (countTargetCards == 0) {
+				const countTargetCards = target.countCards("h");
+				if (countTargetCards === 0) {
 					if (get.tag(card, "respondSha") || get.tag(card, "respondShan")) {
 						result2 *= 1.7;
 					} else {
 						result2 *= 1.5;
 					}
-				} else if (countTargetCards == 1) {
+				} else if (countTargetCards === 1) {
 					result2 *= 1.3;
-				} else if (countTargetCards == 2) {
+				} else if (countTargetCards === 2) {
 					result2 *= 1.1;
 				} else if (countTargetCards >= 3) {
 					result2 *= 0.5;
 				}
 
-				if (target.hp == 4) {
+				if (target.hp === 4) {
 					result2 *= 0.9;
-				} else if (target.hp == 5) {
+				} else if (target.hp === 5) {
 					result2 *= 0.8;
 				} else if (target.hp > 5) {
 					result2 *= 0.6;
@@ -6945,7 +6959,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			result2 += temp02;
 			result1 += temp01;
 			if (typeof card === "object" && !get.info(card)?.notarget) {
-				console.warn("计算get.effect_use(", target, card, player, player2, isLink, ")时缺少target参数");
+				console.warn("计算get.effect_use(", target, card, player, player2, linking, ")时缺少target参数");
 			}
 		}
 		if (zeroplayer) {
@@ -6954,18 +6968,18 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		if (zerotarget) {
 			result2 = 0;
 		}
-		var final = 0;
+		let final = 0;
 		if (player2) {
 			final = result1 * cache.get.attitude(player2, player) + (target ? result2 * cache.get.attitude(player2, target) : 0);
 		} else {
 			final = result1 * cache.get.attitude(player, player) + (target ? result2 * cache.get.attitude(player, target) : 0);
 		}
-		if (!isLink && target && !zerotarget && get.tag(card, "natureDamage")) {
-			var info = get.info(card);
+		if (!linking && target && !zerotarget && get.tag(card, "natureDamage")) {
+			const info = get.info(card);
 			if (!info || !info.ai || !info.ai.canLink) {
 				if (target.isLinked()) {
-					game.players.forEach(function (current) {
-						if (current != target && current.isLinked()) {
+					game.players.forEach(current => {
+						if (current !== target && current.isLinked()) {
 							final += cache.get.effect(current, card, player, player2, { source: target });
 						}
 					});
@@ -6977,8 +6991,8 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 						canLink = {};
 					}
 					canLink.source = target;
-					game.players.forEach(function (current) {
-						if (current != target && current.isLinked()) {
+					game.players.forEach(current => {
+						if (current !== target && current.isLinked()) {
 							final += cache.get.effect(current, card, player, player2, canLink);
 						}
 					});
