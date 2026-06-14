@@ -1173,9 +1173,9 @@ export class Get {
 	 *
 	 * 考虑到该函数不会暴露出去，干脆不考虑命名规范了，怎么申必怎么来。
 	 *
-	 * @param { any[] } list 
-	 * @param { string | ((item: any) => number)} func 
-	 * @param { string | undefined } type 
+	 * @param { any[] } list
+	 * @param { string | ((item: any) => number)} func
+	 * @param { string | undefined } type
 	 * @param { number } sign - 正为max，负为min
 	 */
 	static #_extreme(list, func, type, sign) {
@@ -4403,6 +4403,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		}
 		return selectable;
 	}
+	static #cardProperFunctions = new Set(["name", "type", "subtype", "color", "suit", "number"]);
 	/**
 	 * 将过滤函数或对象条件标准化为过滤函数。
 	 *
@@ -4421,14 +4422,6 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		if (index == null) {
 			index = 0;
 		}
-		const cardFilterGetters = {
-			name: "name",
-			type: "type",
-			subtype: "subtype",
-			color: "color",
-			suit: "suit",
-			number: "number",
-		};
 		const matches = (value, target) => {
 			if (Array.isArray(value)) {
 				return value.includes(target);
@@ -4453,8 +4446,8 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				}
 				const value = filter[key];
 				if (isCard) {
-					const getter = cardFilterGetters[key];
-					const target = getter ? get[getter](item) : item[key];
+					const proper = Get.#cardProperFunctions.has(key);
+					const target = proper ? get[key](item) : item[key];
 					if (!matches(value, target)) {
 						return false;
 					}
@@ -7291,7 +7284,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 * 获取动态变量的实际值。
 	 *
 	 * 当source为函数时，使用剩余参数执行该函数并返回结果；否则直接返回source。
-	 * 
+	 *
 	 * > 在我看到本体的用法时，我似乎理解了为什么有这种API
 	 * > 但还是很神金，而且命名也有问题
 	 *
