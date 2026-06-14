@@ -4649,20 +4649,24 @@ const skills = {
 				forced: true,
 				popup: false,
 				content() {
-					player.removeExtraEquip(event.name);
+					const skill = event.name;
 					player.unmarkAuto(
-						event.name,
-						player.getStorage(event.name).filter(name => trigger.slots.some(t => get.subtypes(name[2]).includes(t)))
+						skill,
+						player.getStorage(skill).filter(name => trigger.slots.some(t => get.subtypes(name[2]).includes(t)))
 					);
-					if (!player.getStorage(event.name).length) {
-						player.removeSkill(event.name);
+					const storage = player.getStorage(skill);
+					if (!storage.length) {
+						player.removeExtraEquip(skill);
+						player.removeSkill(skill);
 					} else {
+						player.addExtraEquip(
+							skill,
+							storage.map(name => name[2]),
+							true
+						);
 						player.addAdditionalSkill(
-							event.name,
-							player
-								.getStorage(equip)
-								.map(name => lib.card[name[2]]?.skills || [])
-								.flat()
+							skill,
+							storage.map(name => lib.card[name[2]]?.skills || []).flat()
 						);
 					}
 				},
