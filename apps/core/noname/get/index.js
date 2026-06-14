@@ -4415,7 +4415,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 */
 	filter(filter, index) {
 		if (typeof filter === "function") {
-			// @ts-expect-error
+			// @ts-expect-error 神奇类型返回值
 			return filter;
 		}
 		if (index == null) {
