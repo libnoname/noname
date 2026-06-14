@@ -1448,24 +1448,39 @@ export class Get {
 				return Math.min(max, num);
 		}
 	}
+	/**
+	 * 返回发动技能时的询问提示文本。
+	 *
+	 * @param { string } skill - 技能名
+	 * @param { Player } [target] - 技能目标
+	 * @param { Player } [player] - 发动技能的玩家，默认取当前事件玩家
+	 * @returns { string }
+	 */
 	prompt(skill, target, player) {
-		player = player || _status.event.player;
+		player ??= get.player();
 		if (target) {
-			var str = get.translation(target);
-			if (target == player) {
+			let str = get.translation(target);
+			if (target === player) {
 				str += "（你）";
 			}
-			return "是否对" + str + "发动【" + get.skillTranslation(skill, player) + "】？";
-		} else {
-			return "是否发动【" + get.skillTranslation(skill, player) + "】？";
+			return `是否对${str}发动【${get.skillTranslation(skill, player)}】？`;
 		}
+		return `是否发动【${get.skillTranslation(skill, player)}】？`;
 	}
+	/**
+	 * 返回发动技能时的询问提示文本，并在存在技能描述时附加描述。
+	 *
+	 * @param { string } skill - 技能名
+	 * @param { Player } [target] - 技能目标
+	 * @param { Player } [player] - 发动技能的玩家，默认取当前事件玩家
+	 * @returns { string }
+	 */
 	prompt2(skill, target, player) {
-		var str = get.prompt.apply(this, arguments);
-		if (!lib.translate[skill + "_info"]) {
+		const str = get.prompt(skill, target, player);
+		if (!lib.translate[`${skill}_info`]) {
 			return str;
 		}
-		return "###" + str + "###" + lib.translate[skill + "_info"];
+		return `###${str}###${lib.translate[`${skill}_info`]}`;
 	}
 	url(master) {
 		var url = lib.config.updateURL || lib.updateURL;
