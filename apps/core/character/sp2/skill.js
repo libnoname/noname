@@ -3222,28 +3222,18 @@ const skills = {
 				prompt += "<span class=text center>1、移动场上一张牌；</span>";
 			}
 			prompt += "2、令你攻击范围内的所有角色也成为此牌目标（不包括此牌使用者）。此牌结算后若牌未造成伤害，你失去1点体力并摸两张牌。";
-			const result = await player
-				.chooseCard({
+			event.result = await player
+				.chooseToDiscard({
 					prompt: get.prompt("starweigu"),
 					prompt2: prompt,
-					filterCard(card) {
-						const player = get.player();
-						return lib.skill.starweigu.isSelf(card, player) && lib.filter.cardDiscardable(card, player, "starweigu");
-					},
+					filterCard: lib.skill.starweigu.isSelf,
 					position: "he",
 					ai(card) {
 						return get.value(card);
 					},
+					chooseonly: true,
 				})
 				.forResult();
-			if (result.bool) {
-				event.result = {
-					bool: true,
-					cost_data: {
-						cards: result.cards,
-					},
-				};
-			}
 		},
 		getTargets(card, player) {
 			return game.filterPlayer(current => {
