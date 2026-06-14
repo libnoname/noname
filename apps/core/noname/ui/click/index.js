@@ -3429,12 +3429,12 @@ export class Click {
 										});
 										createButtons(list);
 									},
-									() => {}
+									() => { }
 								);
 							};
 						}
 					},
-					() => {}
+					() => { }
 				);
 			}
 		}
@@ -4822,6 +4822,25 @@ export class Click {
 			game.closeCountDialog(target);
 		};
 
+		const intervalId = setInterval(() => {
+			let cards = [];
+			const allShown = target.isUnderControl(true, game.me) || (!game.observe && game.me && game.me.hasSkillTag("viewHandcard", null, target, true));
+			if (allShown) {
+				cards = target.getCards("h");
+			} else {
+				//后续有别的判断是否可见的方法丢这来
+				const checkCard = card => {
+					return get.is.shownCard(card);
+				};
+				cards = target.getCards("h", card => checkCard(card));
+			}
+			if (!cards.length && !allShown) {
+				game.closeCountDialog(target);
+				return;
+			}
+			game.addCardsToCountDialog(container, cards);
+		}, 500);
+		dialog._intervalId = intervalId;
 		//打开对话框(模仿dialog.open的动画)
 		dialog.style.transform = "scale(0.8)";
 		dialog.style.transitionProperty = "opacity,transform";
@@ -4874,18 +4893,18 @@ export class Click {
 			};
 			container.addEventListener("touchstart", activateCards);
 
-			const closeAllCards = e => {
+			/*const closeAllCards = e => {
 				if (!container.contains(e.target)) {
 					Array.from(container.children).forEach(child => {
 						child.classList.remove("count-card-active");
 					});
 				}
 			};
-			ui.window.addEventListener("touchstart", closeAllCards);
+			ui.window.addEventListener("touchstart", closeAllCards);*/
 
 			//销毁容器的函数
 			container.destroyContainer = () => {
-				ui.window.removeEventListener("touchstart", closeAllCards);
+				//ui.window.removeEventListener("touchstart", closeAllCards);
 				container.removeEventListener("wheel", wheelCards);
 				container.removeEventListener("touchstart", activateCards);
 				container.delete();

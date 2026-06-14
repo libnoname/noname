@@ -185,14 +185,14 @@ export class Player extends HTMLDivElement {
 		//添加updates
 		player.updates = [
 			//更新查看手牌的窗口
-			player => {
+			/*player => {
 				const dialog = _status.countDialogs[player.playerid];
 				if (dialog && dialog.handcardsContainer) {
 					const cards = player.getCards("h");
 					const container = dialog.handcardsContainer
 					game.addCardsToCountDialog(container, cards);
 				}
-			}
+			}*/
 		];
 	}
 	buildEventListener(noclick) {
@@ -204,7 +204,7 @@ export class Player extends HTMLDivElement {
 			player.addEventListener(lib.config.touchscreen ? "touchend" : "click", ui.click.target);
 			node.identity.addEventListener(lib.config.touchscreen ? "touchend" : "click", ui.click.identity);
 			node.count.addEventListener("pointerdown", ui.click.count);
-			
+
 			if (lib.config.touchscreen) {
 				player.addEventListener("touchstart", ui.click.playertouchstart);
 				player.addEventListener("touchmove", ui.click.playertouchmove);
@@ -1342,7 +1342,8 @@ export class Player extends HTMLDivElement {
 				}
 			}
 		}
-		if (!next.cards?.length) {// || !next.gaintag?.length
+		if (!next.cards?.length) {
+			// || !next.gaintag?.length
 			_status.event.next.remove(next);
 			next.resolve();
 		}
@@ -1760,10 +1761,10 @@ export class Player extends HTMLDivElement {
 		return Math.max(
 			0,
 			this.countEnabledSlot(type) -
-				this.getVEquips(type).reduce((num, card) => {
-					let types = get.subtypes(card, false);
-					return num + get.numOf(types, type);
-				}, 0)
+			this.getVEquips(type).reduce((num, card) => {
+				let types = get.subtypes(card, false);
+				return num + get.numOf(types, type);
+			}, 0)
 		);
 	}
 	/**
@@ -1795,13 +1796,13 @@ export class Player extends HTMLDivElement {
 		return Math.max(
 			0,
 			this.countEnabledSlot(type) -
-				this.getVEquips(type).reduce((num, card) => {
-					let types = get.subtypes(card, false);
-					if (!lib.filter.canBeReplaced(card, this)) {
-						num += get.numOf(types, type);
-					}
-					return num;
-				}, 0)
+			this.getVEquips(type).reduce((num, card) => {
+				let types = get.subtypes(card, false);
+				if (!lib.filter.canBeReplaced(card, this)) {
+					num += get.numOf(types, type);
+				}
+				return num;
+			}, 0)
 		);
 	}
 	/**
@@ -3226,10 +3227,10 @@ export class Player extends HTMLDivElement {
 		m = game.checkMod(from, to, m, "attackFrom", from);
 		m = game.checkMod(from, to, m, "attackTo", to);
 		const equips1 = from.getVCards("e", function (card) {
-				return !card.cards?.some(card => {
-					return ui.selected.cards?.includes(card);
-				});
-			}),
+			return !card.cards?.some(card => {
+				return ui.selected.cards?.includes(card);
+			});
+		}),
 			equips2 = to.getVCards("e", function (card) {
 				return !card.cards?.some(card => {
 					return ui.selected.cards?.includes(card);
@@ -4726,7 +4727,7 @@ export class Player extends HTMLDivElement {
 			this.node.count.innerHTML = numh;
 		}*/
 		this.node.count.innerHTML = numh.toString();
-		if (numh <10) {
+		if (numh < 10) {
 			this.node.count.dataset.condition = "low";
 		} else if (numh < 100) {
 			this.node.count.dataset.condition = "mid";
