@@ -4767,4 +4767,131 @@ export class Click {
 		e.preventDefault();
 		return false;
 	}
+	count(e) {
+		if (_status.dragged) {
+			return;
+		}
+
+		const target = this.parentNode;
+		//如果ui.window已经有对应角色的查看窗口则关闭并return
+		if (game.closeCountDialog(target)) {
+			return;
+		}
+		//没有人闲的蛋疼想这么看自己的手牌吧
+		if (game.me == target) {
+			return false;
+		}
+
+		//先筛选出究竟有没有牌可以看
+		let cards = [];
+		const allShown = target.isUnderControl(true, game.me) || (!game.observe && game.me && game.me.hasSkillTag("viewHandcard", null, target, true));
+		if (allShown) {
+			cards = target.getCards("h");
+		} else {
+			//后续有别的判断是否可见的方法丢这来
+			const checkCard = card => {
+				return get.is.shownCard(card);
+			};
+			cards = target.getCards("h", card => checkCard(card));
+		}
+		if (!cards.length && !allShown) {
+			return;
+		}
+
+		//创建对话框，到处都是啊
+		const dialog = ui.create.dialog("hidden", `${get.translation(target)}的手牌`); //"notouchscroll"
+		_status.countDialogs[target.playerid] = dialog;
+		dialog.setAttribute("id", "count_handcards_" + target.playerid);
+		//dialog.classList.add("popped");
+		dialog.classList.add("scroll1");
+		dialog.classList.add("scroll2");
+		dialog.classList.add("nobutton");
+		dialog.classList.add("static");
+
+		//创建手牌容器并通过函数将牌添加到里面
+		const container = createHandCardsContainer(target);
+		dialog.handcardsContainer = container;
+		game.addCardsToCountDialog(container, cards);
+		dialog.content.appendChild(container);
+
+		//添加关闭按钮
+		const closeButton = ui.create.div(".close-count-btn");
+		closeButton.textContent = "关闭";
+		dialog.appendChild(closeButton);
+		closeButton.onclick = function () {
+			game.closeCountDialog(target);
+		};
+
+		//打开对话框(模仿dialog.open的动画)
+		dialog.style.transform = "scale(0.8)";
+		dialog.style.transitionProperty = "opacity,transform";
+		dialog.style.opacity = "0";
+		ui.window.appendChild(dialog);
+		ui.refresh(dialog);
+		lib.placePoppedDialog(dialog, e);
+		dialog.style.transform = "scale(1)";
+		dialog.style.opacity = "1";
+		setTimeout(() => {
+			dialog.style.transitionProperty = "";
+		}, 500);
+		/**
+		 * 创建一个手牌容器
+		 * @param {Player} target
+		 * @returns {HTMLDivElement} 返回配置好的容器
+		 */
+		function createHandCardsContainer(target) {
+			const container = document.createElement("div");
+			container.className = "count-handcards-container";
+			container.setAttribute("id", `count_handcards_container_${target.playerid}`);
+
+			//滚动查看手牌的监听
+			const wheelCards = e => {
+				if (e.deltaY !== 0) {
+					e.preventDefault();
+					container.scrollLeft += e.deltaY * 1.2;
+				}
+			};
+			container.addEventListener("wheel", wheelCards, { passive: false });
+
+			//移动端点击查看手牌的监听
+			const activateCards = e => {
+				const card = e.target.closest(".count-handcards-container > *");
+				if (!card) {
+					return;
+				}
+
+				const isActive = card.classList.contains("count-card-active");
+
+				Array.from(container.children).forEach(child => {
+					child.classList.remove("count-card-active");
+				});
+
+				if (!isActive) {
+					card.classList.add("count-card-active");
+				}
+
+				e.stopPropagation();
+			};
+			container.addEventListener("touchstart", activateCards);
+
+			const closeAllCards = e => {
+				if (!container.contains(e.target)) {
+					Array.from(container.children).forEach(child => {
+						child.classList.remove("count-card-active");
+					});
+				}
+			};
+			ui.window.addEventListener("touchstart", closeAllCards);
+
+			//销毁容器的函数
+			container.destroyContainer = () => {
+				ui.window.removeEventListener("touchstart", closeAllCards);
+				container.removeEventListener("wheel", wheelCards);
+				container.removeEventListener("touchstart", activateCards);
+				container.delete();
+			};
+
+			return container;
+		}
+	}
 }

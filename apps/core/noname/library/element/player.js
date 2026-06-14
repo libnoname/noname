@@ -182,6 +182,18 @@ export class Player extends HTMLDivElement {
 			equips: [],
 			judges: [],
 		};
+		//添加updates
+		player.updates = [
+			//更新查看手牌的窗口
+			player => {
+				const dialog = _status.countDialogs[player.playerid];
+				if (dialog && dialog.handcardsContainer) {
+					const cards = player.getCards("h");
+					const container = dialog.handcardsContainer
+					game.addCardsToCountDialog(container, cards);
+				}
+			}
+		];
 	}
 	buildEventListener(noclick) {
 		let player = this;
@@ -191,7 +203,7 @@ export class Player extends HTMLDivElement {
 		} else {
 			player.addEventListener(lib.config.touchscreen ? "touchend" : "click", ui.click.target);
 			node.identity.addEventListener(lib.config.touchscreen ? "touchend" : "click", ui.click.identity);
-			//node.count.addEventListener("pointerdown", ui.click.countOpen);
+			node.count.addEventListener("pointerdown", ui.click.count);
 			
 			if (lib.config.touchscreen) {
 				player.addEventListener("touchstart", ui.click.playertouchstart);
@@ -405,6 +417,11 @@ export class Player extends HTMLDivElement {
 	 * @type { import("./client.js").Client | undefined }
 	 */
 	ws;
+	/**
+	 * $update里面用到的钩子
+	 * @type { ((player: Player) => void)[] }
+	 */
+	updates;
 
 	/**
 	 * 添加视为装备

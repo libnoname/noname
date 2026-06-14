@@ -5129,7 +5129,8 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				}
 			}
 
-			if (!node.noclick) {
+			//旧的查看手牌的写法，manba out！
+			/*if (!node.noclick) {
 				const allShown = node.isUnderControl() || (!game.observe && game.me && game.me.hasSkillTag("viewHandcard", null, node, true));
 				const shownHs = node.getShownCards();
 				if (shownHs.length) {
@@ -5150,7 +5151,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 						uiintro.addSmall(hs);
 					}
 				}
-			}
+			}*/
 
 			var skills = node.getSkills(null, false, false).slice(0);
 			var skills2 = game.filterSkills(skills, node);

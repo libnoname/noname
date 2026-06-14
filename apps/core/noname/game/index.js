@@ -10439,6 +10439,61 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		}
 	}
 	/**
+	 * 关闭对应角色的手牌查看对话框
+	 * @param { Player } target
+	 * @returns { boolean } 是否有关闭到对话框
+	 */
+	closeCountDialog(target) {
+		if (_status.countDialogs[target.playerid]) {
+			const dialog = _status.countDialogs[target.playerid];
+			const container = dialog.handcardsContainer;
+			container.destroyContainer();
+			dialog?.delete();
+			delete _status.countDialogs[target.playerid];
+			return true;
+		}
+		return false;
+	}
+	/**
+	 * 往查看手牌的对话框的容器里塞牌（默认清除原有的牌）
+	 * @param { HTMLElement } container
+	 * @param { Card[] } cards
+	 * @returns { HTMLElement | undefined }
+	 */
+	addCardsToCountDialog(container, cards) {
+		if (!container.id.startsWith("count_handcards_container_")) {
+			return;
+		}
+		//清空原来的牌
+		if (typeof container.replaceChildren == "function") {
+			container.replaceChildren();
+		} else {
+			while (container.firstChild) {
+				container.removeChild(container.firstChild);
+			}
+		}
+
+		//计算偏移
+		const num = cards.length;
+		if (num) {
+			const minShrinkWidth = "-66px";
+			let marginRight = 0;
+			if (num > 4 && num < 10) {
+				marginRight = `-${90 - 240 / (num - 1)}px`;
+			} else if (num >= 10) {
+				marginRight = minShrinkWidth;
+			}
+
+			ui.create.buttons(cards, "card", container);
+			[...container.children].forEach(button => {
+				button.style.setProperty("margin-right", marginRight);
+			});
+		} else {
+			container.textContent = "空空如也";
+		}
+		return container;
+	}
+	/**
 	 * find the skillname of the event
 	 * 获取触发事件的技能
 	 * @param { GameEvent } event

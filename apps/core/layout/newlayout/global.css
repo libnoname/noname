@@ -338,6 +338,71 @@
 	background: rgba(148, 27, 27, 1);
 	border: 1px solid rgba(86, 9, 9, 1);
 }*/
+/*查看手牌对话框里容器的样式*/
+.count-handcards-container {
+	display: flex;
+	align-items: flex-end;
+	overflow-x: auto;
+	overflow-y: hidden;
+	max-width: 750px;
+	width: 100%;
+	padding: 10px 10px 10px 0px;
+	box-sizing: border-box;
+	background: transparent;
+
+	scroll-behavior: smooth;
+	-webkit-overflow-scrolling: touch;
+	scrollbar-width: none;
+
+	line-height: 102px;
+	justify-content: center;
+	font-size: 24px;
+}
+.count-handcards-container > .card {
+	flex-shrink: 0;
+	transition: margin-right 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+	margin-right: auto;
+	position: relative;
+	cursor: pointer;
+	-webkit-tap-highlight-color: transparent;
+	line-height: normal;
+}
+.count-handcards-container > .card:last-child {
+	margin-right: 0 !important;
+}
+@media (hover: hover) {
+	.count-handcards-container > .card:hover {
+		transform: translateY(-16px);
+		transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+		margin-right: 4px !important;
+	}
+}
+.count-handcards-container > .card.count-card-active {
+	transform: translateY(-16px);
+	transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+	margin-right: 4px !important;
+}
+
+/*查看手牌对话框的关闭按钮*/
+.close-count-btn {
+	position: absolute;
+	top: 5px;
+	right: 5px;
+	background: rgba(0, 0, 0, 0.6);
+	color: white;
+	border: none;
+	border-radius: 4px;
+	padding: 4px 8px;
+	font-size: 16px;
+	cursor: pointer;
+	opacity: 0.7;
+	transition: opacity 0.2s;
+}
+.close-count-btn:hover {
+	opacity: 1;
+	background: rgba(43, 90, 132, 0.8);
+}
+
 
 .player .identity {
 	right: -6px;
