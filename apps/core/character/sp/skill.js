@@ -798,34 +798,6 @@ const skills = {
 	olchunhui: {
 		audio: 2,
 		forced: true,
-		trigger: {
-			global: "useCardAfter",
-		},
-		filter(event, player) {
-			const bool = player.storage["olchunhui_rewrite"];
-			const color = get.color(event.card);
-			if (color == "red" && (bool || !player.isDamaged())) {
-				return false;
-			}
-			return game.getRoundHistory("useCard").indexOf(event) == 0;
-		},
-		async content(event, trigger, player) {
-			const bool = player.storage[`${event.name}_rewrite`];
-			const color = get.color(trigger.card);
-			if (color == "red" && !bool) {
-				await player.recover();
-			}
-			if (color == "black") {
-				if (bool) {
-					await player.recover();
-				}
-				await player.draw();
-			}
-		},
-	},
-	olxiasheng: {
-		audio: 2,
-		forced: true,
 		locked: false,
 		trigger: {
 			player: ["damageEnd", "phaseZhunbeiBegin"],
@@ -837,22 +809,33 @@ const skills = {
 			const bool = player.storage[`${event.name}_rewrite`];
 			const color = bool ? "black" : "red";
 			const result = await player
-				.chooseTarget(`###${get.translation(event.name)}###令一名角色交给你一张牌`, true, (card, player, target) => {
-					return target != player && target.countCards("he");
+				.chooseTarget({
+					prompt: `###${get.translation(event.name)}###令一名角色交给你一张牌`,
+					forced: true,
+					filterTarget(card, player, target) {
+						return target != player && target.countCards("he");
+					},
+					ai(target) {
+						return -get.attitude(get.player(), target) * (114514 - target.countCards("he"));
+					}
 				})
-				.set("ai", target => -get.attitude(get.player(), target) * (114514 - target.countCards("he")))
 				.forResult();
 			const {
 				targets: [target],
 			} = result;
 			player.line(target);
 			const result2 = await target
-				.chooseToGive(`夏晟：交给${get.translation(player)}一张牌`, true, "he", player)
-				.set("ai", card => {
-					if (get.color(card, false) == "black") {
-						return 7 - get.value(card);
+				.chooseToGive({
+					prompt: `夏晟：交给${get.translation(player)}一张牌`,
+					forced: true,
+					position: "he",
+					target: player,
+					ai(card) {
+						if (get.color(card, false) == "black") {
+							return 7 - get.value(card);
+						}
+						return 6 - get.value(card);
 					}
-					return 6 - get.value(card);
 				})
 				.forResult();
 			const {
@@ -875,7 +858,7 @@ const skills = {
 				forced: true,
 				popup: false,
 				filter(event, player) {
-					return get.color(event.card) == player.storage.olxiasheng_effect;
+					return get.color(event.card) == player.storage.olchunhui_effect;
 				},
 				async content(event, trigger, player) {
 					player.removeSkill(event.name);
@@ -893,20 +876,23 @@ const skills = {
 					//能否增加和能否减少分开判断
 					if (bool1 || bool2) {
 						const next = player
-							.chooseTarget(`###${get.translation(event.name)}###为${get.translation(card)}增加或减少一个目标（至多减至一）`, (card, player, target) => {
-								const { bool1, bool2, targetsx, targetsy } = get.event();
-								return (bool1 && targetsx.includes(target)) || (bool2 && targetsy.includes(target));
+							.chooseTarget({
+								prompt: `###${get.translation(event.name)}###为${get.translation(card)}增加或减少一个目标（至多减至一）`,
+								filterTarget(card, player, target) {
+									const { bool1, bool2, targetsx, targetsy } = get.event();
+									return (bool1 && targetsx.includes(target)) || (bool2 && targetsy.includes(target));
+								},
+								ai(target) {
+									const targets = get.event().targetsy;
+									const card = get.event().getTrigger().card;
+									const player = get.player();
+									return get.effect(target, card, player, player) * (targets.includes(target) ? -1 : 1);
+								}
 							})
 							.set("bool1", bool1)
 							.set("bool2", bool2)
 							.set("targetsx", addTargets)
-							.set("targetsy", targets)
-							.set("ai", target => {
-								const targets = get.event().targetsy;
-								const card = get.event().getTrigger().card;
-								const player = get.player();
-								return get.effect(target, card, player, player) * (targets.includes(target) ? -1 : 1);
-							});
+							.set("targetsy", targets);
 						//加个宝宝提示（）
 						next.targetprompt2.push(target => {
 							if (!target.classList.contains("selectable")) {
@@ -938,20 +924,98 @@ const skills = {
 			},
 		},
 	},
+	olxiasheng: {
+		audio: 2,
+		trigger: {
+			player: ["useCard", "useCard2"],
+		},
+		filter(event, player, name) {
+			const black = player.countCards("h", { color: "black" });
+			const red = player.countCards("h", { color: "red" });
+			const { targets, card } = event;
+			const info = get.info(card);
+			const color = get.color(card);
+			const bool = name == "useCard" ? true : (() =>{
+				return info.allowMultiple !== false && !info.multitarget && targets?.length && game.hasPlayer(function (target) {
+					return !targets.includes(target) && lib.filter.targetEnabled2(card, player, target) && lib.filter.targetInRange(card, player, target);
+				})
+			})()
+			if (player.storage.olxiasheng_rewrite) {
+				return black > red && color == "black" && bool;
+			}
+			if (name == "useCard") {
+				return black < red && color == "black" && bool;
+			}
+			if (name == "useCard2") {
+				return black > red && color == "red" && bool;
+			}
+			return false;
+		},
+		forced: true,
+		async content(event, trigger, player) {
+			if (event.triggername == "useCard") {
+				await player.draw({ nodelay: true });
+			} else {
+				const { targets, card } = trigger;
+				const result = await player
+					.chooseTarget({
+						prompt: `###${get.translation(event.name)}###为${get.translation(card)}增加一个目标`,
+						filterTarget(card, player, target) {
+							const { targets } = get.event();
+							return targets.includes(target);
+						},
+						ai(target) {
+							const card = get.event().getTrigger().card;
+							const player = get.player();
+							return get.effect(target, card, player, player);
+						}
+					})
+					.set("targets", game.filterPlayer(target => {
+						return !targets.includes(target) && lib.filter.targetEnabled2(card, player, target) && lib.filter.targetInRange(card, player, target);
+					}))
+					.forResult();
+				if (result?.bool && result.targets?.length) {
+					const {
+						targets: [target],
+					} = result;
+					player.line(target);
+					trigger.targets.add(target);
+					game.log(target, "成为", card, "的额外目标");
+				}
+			}
+		}
+	},
 	olqiumu: {
 		audio: 2,
 		forced: true,
-		trigger: { player: "dyingAfter" },
+		trigger: { global: "dying" },
 		filter(event, player) {
 			const color = player.storage.olqiumu_rewrite ? "black" : "red";
-			return player.hasCard(card => get.color(card) == color && player.canRecast(card), "he");
+			return game.hasGlobalHistory("useCard", evt => evt.targets.includes(event.player) && get.color(evt.card) == color);
 		},
+		logTarget: "player",
 		async content(event, trigger, player) {
-			const color = player.storage[`${event.name}_rewrite`] ? "black" : "red";
-			const cards = player.getCards("he", card => get.color(card) == color && player.canRecast(card));
-			await player.recast(cards);
+			const { targets: [target] } = event;
+			const cards = target.getGainableCards(player, "he", card => get.color(card) == "black");
+			if (cards.length) {
+				await player.gain({
+					cards,
+					source: target,
+					animate: "giveAuto",
+				})
+			}
 			if (!player.storage[`${event.name}_rewrite`]) {
-				["olchunhui", "olxiasheng", "olqiumu"].forEach(i => player.setStorage(`${i}_rewrite`, true));
+				const list = ["olchunhui", "olxiasheng", "olqiumu"].filter(i =>!player.storage[`${i}_rewrite`]);
+				const result = await player
+					.chooseControl({
+						prompt: "秋暮：请选择要修改的技能",
+						controls: list,
+						choice: 0,
+					})
+					.forResult();
+				const { control } = result;
+				game.log(player, "修改了", `#g【${get.translation(control)}】`);
+				player.setStorage(`${control}_rewrite`, true);
 			}
 		},
 	},

@@ -8325,11 +8325,12 @@ const skills = {
 		audio: 2,
 		trigger: { player: "damageBegin4" },
 		filter(event, player) {
-			return player.getRoundHistory("damage").length >= Math.min(3, game.roundNumber);
+			return player.getRoundHistory("damage").length >= Math.min(3, game.roundNumber) && player.hasDiscardableCards(player, "he");
 		},
 		forced: true,
 		locked: false,
-		content() {
+		async content(event, trigger, player) {
+			await player.chooseToDiscard({ position: "he", forced: true });
 			trigger.cancel();
 		},
 		ai: {
