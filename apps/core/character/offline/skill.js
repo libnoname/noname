@@ -18557,7 +18557,7 @@ const skills = {
 			}
 		},
 		filter(event, player) {
-			if (event.responded || !player.countCharge()) {
+			if (event.responded || !player.countCharge() || event.cadingxi_result) {
 				return false;
 			}
 			return lib.skill["cadingxi"].getCanUse(event, player).length;
