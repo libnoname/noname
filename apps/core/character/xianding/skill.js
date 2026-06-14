@@ -37451,7 +37451,6 @@ const skills = {
 			player.storage.dccili_mark = [target, target.getHp()];
 			target
 				.when("phaseEnd")
-				.vars({ player: player })
 				.then(async (event, trigger, player2) => {
 					const record = player.storage.dccili_mark;
 					player.removeSkill("dccili_mark");
