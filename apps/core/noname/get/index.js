@@ -4450,12 +4450,6 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		if (index == null) {
 			index = 0;
 		}
-		const matches = (value, target) => {
-			if (Array.isArray(value)) {
-				return value.includes(target);
-			}
-			return target == value;
-		};
 		const result = (...args) => {
 			const item = args[index];
 			if (filter == null) {
@@ -4487,6 +4481,13 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		};
 		result._filter_args = [filter, index];
 		return result;
+
+		function matches(value, target) {
+			if (Array.isArray(value)) {
+				return value.includes(target);
+			}
+			return target == value;
+		}
 	}
 	/**
 	 * 返回玩家本回合牌的使用次数
