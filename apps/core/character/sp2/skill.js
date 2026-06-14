@@ -3352,7 +3352,6 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			player.storage.starjuefa = true;
 			player.addSkill("starjuefa_effect");
 		},
 		subSkill: {
@@ -3400,8 +3399,8 @@ const skills = {
 						player.storage.starjuefa_remove.remove = true;
 					} else {
 						delete player.storage.starweigu;
-						player.removeSkill("jufa_effect");
-						player.removeSkill("jufa_remove");
+						player.removeSkill("starjuefa_effect");
+						player.removeSkill("starjuefa_remove");
 						if (player.storage.starjuefa_remove.die) {
 							if (player.hp > 0) {
 								await player.loseHp(player.hp);
