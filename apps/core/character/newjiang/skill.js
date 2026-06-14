@@ -925,7 +925,7 @@ const skills = {
 				player.markAuto(event.name, suits);
 				player.addTip(
 					event.name,
-					`忧叹${player
+					`藏铗${player
 						.getStorage(event.name)
 						.sort((a, b) => lib.suit.indexOf(b) - lib.suit.indexOf(a))
 						.map(i => get.translation(i))
@@ -1047,7 +1047,7 @@ const skills = {
 				return;
 			}
 			const result = await player
-				.chooseButton(["展才：移去一个花色", [list.map(suit => ["", "", `lukai_${suit}`]), "vcard"]], true)
+				.chooseButton(["跃渊：移去一个花色", [list.map(suit => ["", "", `lukai_${suit}`]), "vcard"]], true)
 				.set("ai", button => {
 					const player = get.player(),
 						suit = button.link[2].slice(6);
@@ -1067,7 +1067,7 @@ const skills = {
 				);
 				player.addTip(
 					skill,
-					`忧叹${player
+					`藏铗${player
 						.getStorage(skill)
 						.map(i => get.translation(i))
 						.join("")}`
