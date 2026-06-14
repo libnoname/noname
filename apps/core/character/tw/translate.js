@@ -65,7 +65,7 @@ const translates = {
 	duohui: "堕洄",
 	duohui_info: "其他角色的准备阶段，其可以交给你一张牌，然后你须选择一项：1.交给其另一张同花色牌；2.令其摸一张牌。",
 	yueyuan: "跃渊",
-	yueyuan_info: `出牌阶段限四次，你可以摸${get.poptip("youtan")}记录花色数张牌，然后清除一个花色记录。`,
+	yueyuan_info: `出牌阶段限四次，你可以摸${get.poptip("cangjia")}记录花色数张牌，然后清除一个花色记录。`,
 	tw_gexuan: "TW葛玄",
 	tw_gexuan_prefix: "TW",
 	twdanfa: "丹法",
