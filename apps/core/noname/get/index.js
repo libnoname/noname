@@ -1175,7 +1175,7 @@ export class Get {
 	 *
 	 * @param { any[] } list
 	 * @param { string | ((item: any) => number)} func
-	 * @param { string | undefined } type
+	 * @param { "item" | "list" | undefined } type
 	 * @param { number } sign - 正为max，负为min
 	 */
 	static #_extreme(list, func, type, sign) {
@@ -1189,11 +1189,14 @@ export class Get {
 
 		switch (type) {
 			case "list":
-				return sorted.length ? sorted.filter(item => item[1] == sorted[0][1]).map(item => item[0]) : [];
+				return sorted.filter(item => item[1] == sorted[0][1]).map(item => item[0]);
 			case "item":
 				return sorted.length ? sorted[0][0] : undefined;
 			default:
-				return sorted.length ? sorted[0][1] : undefined;
+				if (sorted.length) {
+					return sorted[0][1];
+				}
+				return func(undefined);
 		}
 	}
 	/**
