@@ -6400,10 +6400,10 @@ const skills = {
 				log: false,
 				check(card) {
 					const player = get.player();
-					if (_status.event.type == "phase") {
+					if (_status.event.type === "phase") {
 						const name = ["sha", "shan", "tao", "jiu"][get.subtype(card, player)?.slice(5) - 1];
 						if (name) {
-							const vcard = new lib.element.VCard({ name: name, isCard: true, storage: { wzxiuge: true } });
+							const vcard = get.autoViewAs({ name: name, isCard: true, storage: { wzxiuge: true } });
 							if (player.getUseValue(vcard) > 0) {
 								return 14 - get.value(card);
 							}
@@ -6416,31 +6416,36 @@ const skills = {
 					return get.skillInfoTranslation("mbweizhuang_xiugex", player);
 				},
 				async precontent(event, trigger, player) {
-					let name = event.result.card?.name,
-						nature = event.result.card?.nature,
-						cards = event.result.cards;
-					if (name == "sha" && get.subtype(cards[0], player) == "equip1") {
-						const parent = event.getParent();
+					const name = event.result.card?.name;
+					let nature = event.result.card?.nature;
+					const cards = event.result.cards;
+					const parent = event.getParent();
+					if (parent == null) {
+						return;
+					}
+					if (name === "sha" && get.subtype(cards[0], player) === "equip1") {
 						const list = [null].concat(lib.inpile_nature).filter(nature => {
 							const vcard = { name: "sha", isCard: true, storage: { wzxiuge: true } };
 							if (nature) {
 								vcard.nature = nature;
 							}
-							return parent.filterCard(new lib.element.VCard(vcard), player, parent);
+							return parent.filterCard(get.autoViewAs(vcard), player, parent);
 						});
 						if (list.length > 1) {
 							const result = await player
-								.chooseControl(list.map(nature => nature || "普通杀"))
-								.set("prompt", "绣阁：请选择视为使用的【杀】")
+								.chooseControl({
+									prompt: "绣阁：请选择视为使用的【杀】",
+									controls: list.map(nature => nature || "普通杀"),
+								})
 								.forResult();
-							nature = result.control == "普通杀" ? null : result.control;
+							nature = result.control === "普通杀" ? null : result.control;
 						} else {
 							nature = list[0];
 						}
 					}
 					player.addTempSkill("mbweizhuang_blocker");
 					player.markAuto("mbweizhuang_blocker", name);
-					event.getParent().addCount = false;
+					parent.addCount = false;
 					const count = get
 						.info("mbweizhuang")
 						.getFaceupCards(player)
@@ -6452,21 +6457,24 @@ const skills = {
 					} else {
 						const index = ["sha", "jiu", "tao", "shan"].indexOf(name) + 3;
 						player.logSkill("mbweizhuang_xiuge", null, null, null, [index]);
-						await player.modedDiscard(cards);
+						await player.modedDiscard({ cards });
 					}
 					const vcard = { name: name, isCard: true, storage: { wzxiuge: true } };
 					if (nature) {
 						vcard.nature = nature;
 					}
-					event.result.card = new lib.element.VCard(vcard);
+					event.result.card = get.autoViewAs(vcard);
 					event.result.cards = [];
 					player
 						.when("useCardAfter")
-						.filter(evt => evt.getParent() == event.getParent())
+						.filter(evt => evt.getParent() === event.getParent())
 						.step(async (event, trigger, player) => {
 							const card = get.cardPile(card => get.suit(card) == get.suit(cards[0]));
 							if (card) {
-								await player.gain(card, "gain2");
+								await player.gain({
+									cards: [card],
+									animate: "gain2",
+								});
 							}
 						});
 				},
@@ -10584,8 +10592,8 @@ const skills = {
 			}
 			return true;
 		},
-		check(event, player) {
-			return event.name != "roundStart";
+		check(event, player, name) {
+			return name !== "roundStart";
 		},
 		round: 1,
 		popup: false,
@@ -10610,12 +10618,13 @@ const skills = {
 					return typeof player.storage.friendyance !== "number" || player.hasMark("friendyance");
 				})
 				.set("ai", button => {
-					const trigger = get.event().getTrigger();
-					if (trigger?.name == "roundStart") {
+					const { triggername } = get.event();
+					if (triggername === "roundStart") {
 						return 0;
 					}
-					return button.link == "minigame" ? 2 : 1;
+					return button.link === "minigame" ? 2 : 1;
 				})
+				.set("triggername", event.triggername)
 				.forResult();
 			event.result = {
 				bool: result.bool,
@@ -10660,7 +10669,7 @@ const skills = {
 				.set("ai", () => get.rand(0, 1))
 				.forResult();
 			const type = lib.inpile.map(c => get.type2(c)).unique();
-			const color = Object.keys(lib.color).filter(color => color != "none");
+			const color = Object.keys(lib.color).filter(color => color !== "none");
 			const list = [];
 			if (control === "颜色预测") {
 				list.addArray(color);
@@ -10782,7 +10791,7 @@ const skills = {
 							}
 						} else {
 							player.logSkill("friendyance", null, null, null, [trueArr.length === storage[3] ? 7 : 6]);
-							const choice = storage[2] == "color" ? Object.keys(lib.color).filter(color => color != "none") : lib.inpile.map(name => get.type2(name)).unique();
+							const choice = storage[2] == "color" ? Object.keys(lib.color).filter(color => color !== "none") : lib.inpile.map(name => get.type2(name)).unique();
 							const control =
 								choice.length > 1
 									? (
