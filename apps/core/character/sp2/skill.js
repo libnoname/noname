@@ -3216,7 +3216,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			let prompt = "弃置一张可指定自己为目标的牌，然后选择一项:";
-			if (player.storage?.starweigu) {
+			if (player.getStorage(event.name)) {
 				prompt += "<span class=text center>1、对一名角色造成2点伤害；</span>";
 			} else {
 				prompt += "<span class=text center>1、移动场上一张牌；</span>";
@@ -3257,9 +3257,9 @@ const skills = {
 			return lib.filter.targetEnabled3(card, player, evt);
 		},
 		async content(event, trigger, player) {
-			await player.discard({ cards:event.cards });
+			await player.discard({ cards: event.cards });
 			const choiceList = [];
-			if (!player.storage || !player.storage.starweigu) {
+			if (!player.getStorage(event.name)) {
 				if (player.canMoveCard()) {
 					choiceList.push(["move", "移动场上的一张牌"]);
 				}
@@ -3348,7 +3348,7 @@ const skills = {
 		animationColor: "red",
 		manualConfirm: true,
 		filter(event, player) {
-			return !player.storage || !player.storage.starweigu;
+			return !player.getStorage("starweigu");
 		},
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
@@ -3359,18 +3359,15 @@ const skills = {
 				charlotte: true,
 				forced: true,
 				init(player, skill) {
-					player.storage.starweigu = true;
+					player.markAuto("starweigu");
 					player.addSkill("starjuefa_remove");
-					if (!player.storage.starjuefa_remove) {
-						player.storage.starjuefa_remove = {};
-					}
-					player.storage.starjuefa_remove.die = true;
+					player.markAuto("starjuefa_remove", "die");
 				},
 				trigger: {
 					source: "dieAfter",
 				},
 				async content(event, trigger, player) {
-					delete player.storage.starjuefa_remove.die;
+					player.unmarkAuto("starjuefa_remove", "die");
 					if (trigger.reason?.getParent("starweigu")) {
 						const num1 = player.countCards("h");
 						const num2 = player.maxHp;
@@ -3395,15 +3392,15 @@ const skills = {
 					player: "phaseEnd",
 				},
 				async content(event, trigger, player) {
-					if (!player.storage.starjuefa_remove.remove) {
-						player.storage.starjuefa_remove.remove = true;
+					if (!player.getStorage("starjuefa_remove", "remove")) {
+						player.markAuto("starjuefa_remove", "remove");
 					} else {
-						delete player.storage.starweigu;
+						player.unmarkAuto("starweigu");
 						player.removeSkill("starjuefa_effect");
 						player.removeSkill("starjuefa_remove");
-						if (player.storage.starjuefa_remove.die) {
+						if (player.getStorage("starjuefa_remove", "die")) {
 							if (player.hp > 0) {
-								await player.loseHp(player.hp);
+								await player.loseHp(player.getHp());
 							}
 						}
 					}
