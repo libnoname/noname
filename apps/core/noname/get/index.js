@@ -4310,29 +4310,37 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		}
 		return skills;
 	}
+	/**
+	 * 返回所有可获得的技能列表（遍历所有武将并排除禁将、Boss、隐藏等特殊武将，同时支持自定义筛选和combo技能前置校验）
+	 *
+	 * @param { ((info: object, skill: string, character: string) => boolean) } [func] - 自定义筛选函数，返回falsy则排除该技能
+	 * @param { Player } [player] - 当前玩家，用于校验combo技能的前置条件
+	 * @returns { string[] } 可获得的技能名数组
+	 */
 	gainableSkills(func, player) {
-		var list = [];
-		for (var i in lib.character) {
+		const list = [];
+		for (const i in lib.character) {
 			if (lib.filter.characterDisabled(i)) {
 				continue;
 			}
 			if (lib.filter.characterDisabled2(i)) {
 				continue;
 			}
-			if (lib.character[i].isBoss) {
+			const character = lib.character[i];
+			if (character.isBoss) {
 				continue;
 			}
-			if (lib.character[i].isHiddenBoss) {
+			if (character.isHiddenBoss) {
 				continue;
 			}
-			if (lib.character[i].isMinskin) {
+			if (character.isMinskin) {
 				continue;
 			}
-			if (lib.character[i].isUnseen) {
+			if (character.isUnseen) {
 				continue;
 			}
-			for (var skill of lib.character[i].skills) {
-				var info = lib.skill[skill];
+			for (const skill of character.skills) {
+				const info = lib.skill[skill];
 				if (lib.filter.skillDisabled(skill)) {
 					continue;
 				}
@@ -4344,7 +4352,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 					if (!Array.isArray(skills)) {
 						skills = [skills];
 					}
-					if (!skills.every(skill => player.hasSkill(skill, null, null, false))) {
+					if (!skills.every(comboSkill => player.hasSkill(comboSkill, null, null, false))) {
 						continue;
 					}
 				}
@@ -4353,42 +4361,57 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		}
 		return list;
 	}
+	/**
+	 * 返回指定武将的所有可获得技能（排除Boss、隐藏等特殊判定，同时支持自定义筛选）
+	 *
+	 * @param { string } name - 武将名
+	 * @param { ((info: object, skill: string, character: string) => boolean) } [func] - 自定义筛选函数，返回falsy则排除该技能
+	 * @returns { string[] } 该武将可获得的技能名数组；武将不存在时返回空数组
+	 */
 	gainableSkillsName(name, func) {
-		var list = [];
-		if (name && lib.character[name]) {
-			if (lib.character[name].isBoss) {
-				return list;
+		const list = [];
+		if (!name || !lib.character[name]) {
+			return list;
+		}
+		const character = lib.character[name];
+		if (character.isBoss) {
+			return list;
+		}
+		if (character.isHiddenBoss) {
+			return list;
+		}
+		if (character.isMinskin) {
+			return list;
+		}
+		if (character.isUnseen) {
+			return list;
+		}
+		for (const skill of character.skills) {
+			const info = lib.skill[skill];
+			if (lib.filter.skillDisabled(skill)) {
+				continue;
 			}
-			if (lib.character[name].isHiddenBoss) {
-				return list;
+			if (func && !func(info, skill, name)) {
+				continue;
 			}
-			if (lib.character[name].isMinskin) {
-				return list;
-			}
-			if (lib.character[name].isUnseen) {
-				return list;
-			}
-			for (var skill of lib.character[name].skills) {
-				var info = lib.skill[skill];
-				if (lib.filter.skillDisabled(skill)) {
-					continue;
-				}
-				if (func && !func(info, skill, name)) {
-					continue;
-				}
-				list.add(skill);
-			}
+			list.add(skill);
 		}
 		return list;
 	}
+	/**
+	 * 返回所有可获得技能的武将列表（排除禁将等不可选武将，同时支持自定义筛选和排除场上已有武将）
+	 *
+	 * @param { ((info: object, name: string) => boolean) | true } [func] - 自定义筛选函数（返回falsy则排除该武将），或传入`true`以额外排除场上（含已死亡）玩家的武将
+	 * @returns { string[] } 可获得的武将名数组
+	 */
 	gainableCharacters(func) {
-		var list = [];
-		for (var i in lib.character) {
-			var info = lib.character[i];
+		const list = [];
+		for (const i in lib.character) {
+			const info = lib.character[i];
 			if (!info) {
 				continue;
 			}
-			if (typeof func == "function" && !func(info, i)) {
+			if (typeof func === "function" && !func(info, i)) {
 				continue;
 			}
 			if (lib.filter.characterDisabled(i)) {
@@ -4400,11 +4423,11 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			list.push(i);
 		}
 		if (func === true) {
-			var players = game.players.concat(game.dead);
-			for (var i = 0; i < players.length; i++) {
-				list.remove(players[i].name);
-				list.remove(players[i].name1);
-				list.remove(players[i].name2);
+			const players = game.players.concat(game.dead);
+			for (const player of players) {
+				list.remove(player.name);
+				list.remove(player.name1);
+				list.remove(player.name2);
 			}
 		}
 		return list;
