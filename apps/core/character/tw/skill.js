@@ -28639,7 +28639,6 @@ const skills = {
 	},
 	duohui: {
 		audio: "ciren",
-		audio: 2,
 		global: "duohui_global",
 		subSkill: {
 			global: {
