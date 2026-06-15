@@ -301,7 +301,7 @@ const skills = {
 					position: "he",
 					ai(card) {
 						return 6 - get.value(card);
-					}
+					},
 				})
 				.forResult();
 		},
@@ -533,8 +533,8 @@ const skills = {
 						player.line(target);
 						await target.gain({ cards: toGive, animate: "gain2" });
 					}
-				}
-			}
+				},
+			},
 		},
 	},
 	olchengen: {
@@ -2297,7 +2297,7 @@ const skills = {
 					ai(target) {
 						const player = get.player();
 						return get.attitude(player, target) * target.countCards("he");
-					}
+					},
 				})
 				.forResult();
 		},
@@ -2317,7 +2317,7 @@ const skills = {
 								return 20 - get.value(card);
 							}
 							return 7 - get.value(card);
-						}
+						},
 					})
 					.set("suit", get.suit(trigger.card))
 					.set("source", player)
@@ -2366,7 +2366,7 @@ const skills = {
 						if (get.name(card) == "tao" && player != target) {
 							return false;
 						}
-					}
+					},
 				},
 				trigger: {
 					global: "dying",
@@ -14670,7 +14670,7 @@ const skills = {
 				if (event.getStepCache("useShaValue") === undefined) {
 					event.putStepCache("useShaValue", player.getUseValue("sha", true, false));
 				}
-				return  event.getStepCache("useShaValue") > 0 ? 10 : -1;
+				return event.getStepCache("useShaValue") > 0 ? 10 : -1;
 			}
 			return 6 - get.value(card);
 		},
@@ -32826,6 +32826,11 @@ const skills = {
 							return 1;
 						}
 						const awakened = Object.keys(player.storage).some(i => typeof i == "string" && i.indexOf("fuhan") != -1);
+						if (!awakened || !player.awakenedSkills.some(i => i.indexOf("fuhan"))) {
+							if (player.countMark("fanghun") < 2 && player.getHp() > 1) {
+								return 0;
+							}
+						}
 						if (_status.event.type == "phase") {
 							var max = 0;
 							var list = ["sha", "tao", "jiu"];
