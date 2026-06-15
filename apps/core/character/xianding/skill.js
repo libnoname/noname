@@ -404,9 +404,9 @@ const skills = {
 				mod: {
 					maxHandcard(player, num) {
 						if (
-							game.countPlayer(function (current) {
-								return current.hasSkill("nzry_jieying");
-							}) > 0 &&
+							game.hasPlayer(function (current) {
+								return current.hasSkill("dcjieying");
+							}) &&
 							player.isLinked()
 						) {
 							return num + 2;
