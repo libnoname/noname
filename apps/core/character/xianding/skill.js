@@ -37266,28 +37266,23 @@ const skills = {
 	},
 	// 环怀瑾
 	dclianyou: {
-		init(player, skill) {
-			if (!player.storage[skill]) {
-				player.storage[skill] = {};
-			}
-		},
 		trigger: {
 			player: "damageEnd",
 		},
 		filter(event, player) {
-			return !(player.storage.dclianyou["recover"] && player.storage.dclianyou["equip"] && player.storage.dclianyou["draw"]);
+			return !(player.getStorage("dclianyou").includes("recover") && player.getStorage("dclianyou").includes("euip") && player.getStorage("dclianyou").includes("draw"));
 		},
 		async cost(event, trigger, player) {
 			const choiceList = [];
-			if (!player.storage.dclianyou["recover"]) {
+			if (!player.getStorage(event.name).includes("recover")) {
 				if (game.hasPlayer(current => current.isMinHp() && current.isDamaged())) {
 					choiceList.push(["recover", "令一名体力值最小的角色回复2点体力"]);
 				}
 			}
-			if (!player.storage.dclianyou["equip"]) {
+			if (!player.getStorage(event.name).includes("equip")) {
 				choiceList.push(["equip", "令一名装备区牌最少的角色随机使用两张装备牌"]);
 			}
-			if (!player.storage.dclianyou["draw"]) {
+			if (!player.getStorage(event.name).includes("draw")) {
 				choiceList.push(["draw", "摸三张牌并可以交给一名手牌最少的其他角色三张牌"]);
 			}
 			if (choiceList.length) {
@@ -37331,12 +37326,12 @@ const skills = {
 							if (target === true) {
 								return 4;
 							}
-						}
+						},
 					})
 					.set("choiceList", choiceList)
 					.forResult();
 				if (result.bool) {
-					player.storage.dclianyou[result.links[0]] = true;
+					player.markAuto(event.name, result.links[0]);
 					event.result = { bool: true, cost_data: { choice: result.links[0] } };
 				}
 			}
@@ -37370,7 +37365,7 @@ const skills = {
 						forced: true,
 						ai(target) {
 							return get.attitude(get.player(), target);
-						}
+						},
 					})
 					.set("min", Math.min(...game.filterPlayer().map(current => current.countCards("e"))))
 					.forResult();
@@ -37425,7 +37420,7 @@ const skills = {
 					global: "roundStart",
 				},
 				async content(event, trigger, player) {
-					player.storage.dclianyou = {};
+					player.unmarkAuto("dclianyou");
 				},
 			},
 		},
@@ -37448,48 +37443,47 @@ const skills = {
 		async content(event, trigger, player) {
 			const target = event.targets[0];
 			player.addSkill("dccili_mark");
-			player.storage.dccili_mark = [target, target.getHp()];
-			target
-				.when("phaseEnd")
-				.then(async (event, trigger, player2) => {
-					const record = player.storage.dccili_mark;
-					player.removeSkill("dccili_mark");
-					if (!record || record[0] != target) {
-						return;
-					}
-					const num = player2.countHistory("useCard");
-					if (record[1] > 0) {
-						if (num < record[1]) {
-							const result = await player
-								.chooseTarget({
-									prompt: `令一名角色随机弃置${record[1]}张牌`,
-									filterTarget(card, player, target) {
-										return target.hasCards("he");
-									},
-									ai(target) {
-										return -get.attitude(player, target) * (0.7 + (target.countCards("he") >= 5));
-									}
-								})
-								.forResult();
-							if (result.bool){ 
-								await result.targets[0].randomDiscard(record[1]);
-							}
-						} else {
-							const result = await player
-								.chooseTarget({
-									prompt: `令一名角色摸${record[1]}张牌`,
-									ai(target) {
-										return get.attitude(player, target);
-									},
-								})
-								.forResult();
-							if (result.bool) {
-								await result.targets[0].draw(record[1]);
-							}
+			// player.storage.dccili_mark = [target, target.getHp()];
+			player.setStorage("dccili_mark", [target, target.getHp()], true);
+			target.when("phaseEnd").then(async (event, trigger, player2) => {
+				const record = player.getStorage("dccili_mark");
+				player.removeSkill("dccili_mark");
+				if (!record || record[0] != target) {
+					return;
+				}
+				const num = player2.countHistory("useCard");
+				if (record[1] > 0) {
+					if (num < record[1]) {
+						const result = await player
+							.chooseTarget({
+								prompt: `令一名角色随机弃置${record[1]}张牌`,
+								filterTarget(card, player, target) {
+									return target.hasCards("he");
+								},
+								ai(target) {
+									return -get.attitude(player, target) * (0.7 + (target.countCards("he") >= 5));
+								},
+							})
+							.forResult();
+						if (result.bool) {
+							await result.targets[0].randomDiscard(record[1]);
+						}
+					} else {
+						const result = await player
+							.chooseTarget({
+								prompt: `令一名角色摸${record[1]}张牌`,
+								ai(target) {
+									return get.attitude(player, target);
+								},
+							})
+							.forResult();
+						if (result.bool) {
+							await result.targets[0].draw(record[1]);
 						}
 					}
-					delete player.storage.dccili_mark;
-				});
+				}
+				player.unmarkAuto("dccili_mark");
+			});
 		},
 		subSkill: {
 			mark: {
@@ -37505,7 +37499,7 @@ const skills = {
 						}
 						const name = storage[0];
 						const num = storage[1];
-						return `${get.translation(name)}啊，你当时是${num}点体力值<br />下回合用不到${num}张牌可是要打皮鼓的哟`;
+						return `${get.translation(name)}啊，你当时是${num}点体力值<br>下回合用不到${num}张牌可是要打皮鼓的哟`;
 					},
 				},
 			},
