@@ -29,18 +29,22 @@ game.import("card", function () {
 						game.addGlobalSkill("zhaoshu_global");
 					}
 				},
-				onEquip() {
+				async onEquip(event, trigger, player) {
 					if (player.getStat().skill.zhaoshu_skill) {
 						delete player.getStat().skill.zhaoshu_skill;
 					}
-					game.countPlayer2(current => {
+					for (const current of game.filterPlayer2()) {
 						if (current.getStat().skill.zhaoshu_global) {
 							delete current.getStat().skill.zhaoshu_global;
 						}
-					});
+					}
 					if (player.isAlive()) {
-						player.addToExpansion(card, "giveAuto").gaintag.add("zhaoshu_skill");
-						player.markAuto("zhaoshu_skill", [card]);
+						player.addToExpansion({
+							cards: [event.card],
+							animate: "giveAuto",
+							gaintag: ["zhaoshu_skill"],
+						});
+						player.markAuto("zhaoshu_skill", [event.card]);
 						player.addSkill("zhaoshu_skill");
 						game.addGlobalSkill("zhaoshu_global");
 					}
@@ -508,7 +512,7 @@ game.import("card", function () {
 						equipValue: 6.5,
 					},
 				},
-				onLose() {
+				async onLose(event, trigger, player) {
 					if (player.getStat().skill.dinglanyemingzhu_skill) {
 						delete player.getStat().skill.dinglanyemingzhu_skill;
 					}
@@ -583,7 +587,7 @@ game.import("card", function () {
 					return true;
 				},
 				loseDelay: false,
-				onLose() {
+				async onLose(event, trigger, player) {
 					player.addTempSkill("taipingyaoshu_lose");
 				},
 			},
