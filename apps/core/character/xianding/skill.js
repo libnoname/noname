@@ -37270,7 +37270,7 @@ const skills = {
 			player: "damageEnd",
 		},
 		filter(event, player) {
-			return !(player.getStorage("dclianyou").includes("recover") && player.getStorage("dclianyou").includes("euip") && player.getStorage("dclianyou").includes("draw"));
+			return !(player.getStorage("dclianyou").includes("recover") && player.getStorage("dclianyou").includes("equip") && player.getStorage("dclianyou").includes("draw"));
 		},
 		async cost(event, trigger, player) {
 			const choiceList = [];
@@ -37443,7 +37443,6 @@ const skills = {
 		async content(event, trigger, player) {
 			const target = event.targets[0];
 			player.addSkill("dccili_mark");
-			// player.storage.dccili_mark = [target, target.getHp()];
 			player.setStorage("dccili_mark", [target, target.getHp()], true);
 			target.when("phaseEnd").then(async (event, trigger, player2) => {
 				const record = player.getStorage("dccili_mark");
