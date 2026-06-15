@@ -496,7 +496,7 @@ const skills = {
 						return false;
 					}
 					const storage = player.getStorage("potfuan");
-					return get.discarded().some(i => storage.includes(get.suit(i))) && player.hasUseTarget(get.autoViewAs({ name: "sha", isCard: true}), false, false);
+					return get.discarded().some(i => storage.includes(get.suit(i))) && player.hasUseTarget(get.autoViewAs({ name: "sha", isCard: true }), false, false);
 				},
 				async cost(event, trigger, player) {
 					const storage = player.getStorage("potfuan");
@@ -2708,18 +2708,16 @@ const skills = {
 						.unique()
 				).length;
 				const resultx = await player
-					.chooseToDiscard(`凶图：取消并弃置${get.translation(card)}或弃置${num}张牌对${get.translation(target)}造成1点伤害`, "he", [0, Infinity])
-					.set("filterOk", () => {
-						if (ui.selected.cards.length == get.event().num) {
-							return true;
+					.chooseToDiscard({
+						prompt: `凶图：取消并弃置${get.translation(card)}或弃置${num}张牌对${get.translation(target)}造成1点伤害`,
+						position: "he",
+						selectCard: num,
+						ai(card) {
+							if (get.event().num > 2) {
+								return 0;
+							}
+							return 6 - get.value(card);
 						}
-						return false;
-					})
-					.set("ai", card => {
-						if (get.event().num > 2) {
-							return 0;
-						}
-						return 6 - get.value(card);
 					})
 					.set("num", num)
 					.forResult();
@@ -2751,15 +2749,16 @@ const skills = {
 				},
 				async content(event, trigger, player) {
 					player.removeSkill(event.name);
-					player.addTempSkill("mbxiongtu_double", "phaseChange")
+					player.addTempSkill("mbxiongtu_double", "phaseChange");
+					await player.draw();
 				},
 				mark: true,
 				intro: {
-					content: "下次不因此技能造成伤害后，改为限两次",
+					content: "下次不因此技能造成伤害后，摸一张牌并改为限两次",
 				}
 			},
 			double: {
-				charlotte: true,	
+				charlotte: true,
 			}
 		},
 	},
@@ -5708,11 +5707,11 @@ const skills = {
 						await player.draw();
 					} else {
 						const history = player.getHistory("lose", evt => {
-								if ((evt.relatedEvent || evt.getParent()) !== trigger) {
-									return false;
-								}
-								return Object.values(evt.gaintag_map).flat().includes("potfuji");
-							})[0],
+							if ((evt.relatedEvent || evt.getParent()) !== trigger) {
+								return false;
+							}
+							return Object.values(evt.gaintag_map).flat().includes("potfuji");
+						})[0],
 							cards = history.getl(player).cards2.filter(card => history.gaintag_map[card.cardid]?.includes("potfuji"));
 						let gains = [];
 						for (const card of cards) {
@@ -5917,18 +5916,18 @@ const skills = {
 						get.info("potzhanlie").limit - player.countMark("potzhanlie_lie"),
 						Math.max(
 							player.countMark("potzhanlie_addMark") -
-								game
-									.getGlobalHistory(
-										"everything",
-										evt => {
-											if (evt === event) {
-												return false;
-											}
-											return ["lose", "loseAsync", "cardsDiscard"].includes(evt.name) && evt.getd().some(i => i.name === "sha");
-										},
-										event
-									)
-									.reduce((sum, evt) => sum + evt.getd().filter(i => i.name === "sha").length, 0),
+							game
+								.getGlobalHistory(
+									"everything",
+									evt => {
+										if (evt === event) {
+											return false;
+										}
+										return ["lose", "loseAsync", "cardsDiscard"].includes(evt.name) && evt.getd().some(i => i.name === "sha");
+									},
+									event
+								)
+								.reduce((sum, evt) => sum + evt.getd().filter(i => i.name === "sha").length, 0),
 							0
 						)
 					);
@@ -6011,12 +6010,12 @@ const skills = {
 										return (
 											sum +
 											effect *
-												(target.hasSkillTag("filterDamage", null, {
-													player: player,
-													card: trigger.card,
-												})
-													? 1
-													: 1 + (trigger.baseDamage || 1) + (trigger.extraDamage || 0))
+											(target.hasSkillTag("filterDamage", null, {
+												player: player,
+												card: trigger.card,
+											})
+												? 1
+												: 1 + (trigger.baseDamage || 1) + (trigger.extraDamage || 0))
 										);
 									}, 0);
 								case "弃牌响应":
@@ -6172,7 +6171,7 @@ const skills = {
 								})()
 							)
 						) *
-							get.effect(target, { name: "draw" }, player, player)
+						get.effect(target, { name: "draw" }, player, player)
 					);
 				},
 			},
