@@ -28625,6 +28625,7 @@ const skills = {
 						const result = await source
 							.chooseToDiscard({
 								prompt: `弃置一张牌，否则${get.translation(trigger.card)}对${get.translation(player)}无效`,
+								position:"he",
 								ai(card) {
 									return 20 - get.value(card);
 								},
