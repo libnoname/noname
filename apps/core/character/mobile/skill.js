@@ -6416,11 +6416,30 @@ const skills = {
 					return get.skillInfoTranslation("mbweizhuang_xiugex", player);
 				},
 				async precontent(event, trigger, player) {
-					const name = event.result.card?.name,
+					let name = event.result.card?.name,
+						nature = event.result.card?.nature,
 						cards = event.result.cards;
+					if (name == "sha" && get.subtype(cards[0], player) == "equip1") {
+						const parent = event.getParent();
+						const list = [null].concat(lib.inpile_nature).filter(nature => {
+							const vcard = { name: "sha", isCard: true, storage: { wzxiuge: true } };
+							if (nature) {
+								vcard.nature = nature;
+							}
+							return parent.filterCard(new lib.element.VCard(vcard), player, parent);
+						});
+						if (list.length > 1) {
+							const result = await player
+								.chooseControl(list.map(nature => nature || "普通杀"))
+								.set("prompt", "绣阁：请选择视为使用的【杀】")
+								.forResult();
+							nature = result.control == "普通杀" ? null : result.control;
+						} else {
+							nature = list[0];
+						}
+					}
 					player.addTempSkill("mbweizhuang_blocker");
 					player.markAuto("mbweizhuang_blocker", name);
-					//delete event.result.skill;
 					event.getParent().addCount = false;
 					const count = get
 						.info("mbweizhuang")
@@ -6435,7 +6454,11 @@ const skills = {
 						player.logSkill("mbweizhuang_xiuge", null, null, null, [index]);
 						await player.modedDiscard(cards);
 					}
-					event.result.card = new lib.element.VCard({ name: name, isCard: true, storage: { wzxiuge: true } });
+					const vcard = { name: name, isCard: true, storage: { wzxiuge: true } };
+					if (nature) {
+						vcard.nature = nature;
+					}
+					event.result.card = new lib.element.VCard(vcard);
 					event.result.cards = [];
 					player
 						.when("useCardAfter")
@@ -10561,6 +10584,9 @@ const skills = {
 			}
 			return true;
 		},
+		check(event, player) {
+			return event.name != "roundStart";
+		},
 		round: 1,
 		popup: false,
 		logAudio: index => (typeof index === "number" ? "friendyance" + index + ".mp3" : 1),
@@ -10583,7 +10609,13 @@ const skills = {
 					const player = get.player();
 					return typeof player.storage.friendyance !== "number" || player.hasMark("friendyance");
 				})
-				.set("ai", button => (button.link == "minigame" ? 2 : 1))
+				.set("ai", button => {
+					const trigger = get.event().getTrigger();
+					if (trigger?.name == "roundStart") {
+						return 0;
+					}
+					return button.link == "minigame" ? 2 : 1;
+				})
 				.forResult();
 			event.result = {
 				bool: result.bool,
@@ -10628,7 +10660,7 @@ const skills = {
 				.set("ai", () => get.rand(0, 1))
 				.forResult();
 			const type = lib.inpile.map(c => get.type2(c)).unique();
-			const color = Object.keys(lib.color);
+			const color = Object.keys(lib.color).filter(color => color != "none");
 			const list = [];
 			if (control === "颜色预测") {
 				list.addArray(color);
@@ -10750,14 +10782,14 @@ const skills = {
 							}
 						} else {
 							player.logSkill("friendyance", null, null, null, [trueArr.length === storage[3] ? 7 : 6]);
-							const choice = storage[2] == "color" ? Object.keys(lib.color) : lib.inpile.map(name => get.type2(name)).unique();
+							const choice = storage[2] == "color" ? Object.keys(lib.color).filter(color => color != "none") : lib.inpile.map(name => get.type2(name)).unique();
 							const control =
 								choice.length > 1
 									? (
 											await player
 												.chooseControl(choice)
 												.set("ai", () => {
-													return get.event().controls.remove("none").randomGet();
+													return get.event().controls.randomGet();
 												})
 												.set("prompt", `请选择获得牌的条件`)
 												.forResult()
