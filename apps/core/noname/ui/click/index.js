@@ -4774,7 +4774,7 @@ export class Click {
 
 		const target = this.parentNode;
 		//如果ui.window已经有对应角色的查看窗口则关闭并return
-		if (game.closeCountDialog(target)) {
+		if (closeCountDialog(target)) {
 			return;
 		}
 		//没有人闲的蛋疼想这么看自己的手牌吧
@@ -4811,7 +4811,7 @@ export class Click {
 		//创建手牌容器并通过函数将牌添加到里面
 		const container = createHandCardsContainer(target);
 		dialog.handcardsContainer = container;
-		game.addCardsToCountDialog(container, cards);
+		addCardsToCountDialog(container, cards);
 		dialog.content.appendChild(container);
 
 		//添加关闭按钮
@@ -4819,7 +4819,7 @@ export class Click {
 		closeButton.textContent = "关闭";
 		dialog.appendChild(closeButton);
 		closeButton.onclick = function () {
-			game.closeCountDialog(target);
+			closeCountDialog(target);
 		};
 
 		const intervalId = setInterval(() => {
@@ -4835,11 +4835,11 @@ export class Click {
 				cards = target.getCards("h", card => checkCard(card));
 			}
 			if (!cards.length && !allShown) {
-				game.closeCountDialog(target);
+				closeCountDialog(target);
 				return;
 			}
-			game.addCardsToCountDialog(container, cards);
-		}, 500);
+			addCardsToCountDialog(container, cards);
+		}, 200);
 		dialog._intervalId = intervalId;
 		//打开对话框(模仿dialog.open的动画)
 		dialog.style.transform = "scale(0.8)";
@@ -4910,6 +4910,68 @@ export class Click {
 				container.delete();
 			};
 
+			return container;
+		}
+
+		/**
+		 * 关闭对应角色的手牌查看对话框
+		 * @param { Player } target
+		 * @returns { boolean } 是否有关闭到对话框
+		 */
+		function closeCountDialog(target) {
+			if (_status.countDialogs[target.playerid]) {
+				const dialog = _status.countDialogs[target.playerid];
+				clearInterval(dialog._intervalId);
+				const container = dialog.handcardsContainer;
+				container.destroyContainer();
+				dialog?.delete();
+				delete _status.countDialogs[target.playerid];
+				return true;
+			}
+			return false;
+		}
+
+		/**
+		 * 往查看手牌的对话框的容器里塞牌（默认清除原有的牌）
+		 * @param { HTMLElement } container
+		 * @param { Card[] } cards
+		 * @returns { HTMLElement | undefined }
+		 */
+		function addCardsToCountDialog(container, cards) {
+			if (!container.id.startsWith("count_handcards_container_")) {
+				return;
+			}
+			if (container.buttons?.length == cards.length && container.buttons?.every((button, index) => button.link == cards[index])) {
+				return;
+			}
+			//清空原来的牌
+			if (typeof container.replaceChildren == "function") {
+				container.replaceChildren();
+			} else {
+				while (container.firstChild) {
+					container.removeChild(container.firstChild);
+				}
+			}
+
+			//计算偏移
+			const num = cards.length;
+			if (num) {
+				const minShrinkWidth = "-66px";
+				let marginRight = 0;
+				if (num > 4 && num < 10) {
+					marginRight = `-${90 - 240 / (num - 1)}px`;
+				} else if (num >= 10) {
+					marginRight = minShrinkWidth;
+				}
+
+				const buttons = ui.create.buttons(cards, "card", container);
+				container.buttons = buttons;
+				buttons.forEach(button => {
+					button.style.setProperty("margin-right", marginRight);
+				});
+			} else {
+				container.textContent = "空空如也";
+			}
 			return container;
 		}
 	}

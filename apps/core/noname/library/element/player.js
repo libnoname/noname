@@ -183,17 +183,7 @@ export class Player extends HTMLDivElement {
 			judges: [],
 		};
 		//添加updates
-		player.updates = [
-			//更新查看手牌的窗口
-			/*player => {
-				const dialog = _status.countDialogs[player.playerid];
-				if (dialog && dialog.handcardsContainer) {
-					const cards = player.getCards("h");
-					const container = dialog.handcardsContainer
-					game.addCardsToCountDialog(container, cards);
-				}
-			}*/
-		];
+		player.updates = [];
 	}
 	buildEventListener(noclick) {
 		let player = this;
