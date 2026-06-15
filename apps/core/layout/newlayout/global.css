@@ -344,8 +344,6 @@
 	align-items: flex-end;
 	overflow-x: auto;
 	overflow-y: hidden;
-	max-width: 750px;
-	width: 100%;
 	padding: 10px 10px 10px 0px;
 	box-sizing: border-box;
 	background: transparent;
@@ -354,8 +352,10 @@
 	-webkit-overflow-scrolling: touch;
 	scrollbar-width: none;
 
-	line-height: 102px;
-	justify-content: center;
+	max-width: 750px;
+	width: 100%;
+	min-height: 120px;
+	justify-content: flex-start;
 	font-size: 24px;
 }
 .count-handcards-container > .card {

@@ -3429,12 +3429,12 @@ export class Click {
 										});
 										createButtons(list);
 									},
-									() => { }
+									() => {}
 								);
 							};
 						}
 					},
-					() => { }
+					() => {}
 				);
 			}
 		}
@@ -4777,23 +4777,13 @@ export class Click {
 		if (closeCountDialog(target)) {
 			return;
 		}
-		//没有人闲的蛋疼想这么看自己的手牌吧
+		//排除自己（没有人闲的蛋疼想这么看自己的手牌吧）
 		if (game.me == target) {
 			return false;
 		}
 
 		//先筛选出究竟有没有牌可以看
-		let cards = [];
-		const allShown = target.isUnderControl(true, game.me) || (!game.observe && game.me && game.me.hasSkillTag("viewHandcard", null, target, true));
-		if (allShown) {
-			cards = target.getCards("h");
-		} else {
-			//后续有别的判断是否可见的方法丢这来
-			const checkCard = card => {
-				return get.is.shownCard(card);
-			};
-			cards = target.getCards("h", card => checkCard(card));
-		}
+		const { cards, allShown } = getVisibleCards(target);
 		if (!cards.length && !allShown) {
 			return;
 		}
@@ -4823,17 +4813,7 @@ export class Click {
 		};
 
 		const intervalId = setInterval(() => {
-			let cards = [];
-			const allShown = target.isUnderControl(true, game.me) || (!game.observe && game.me && game.me.hasSkillTag("viewHandcard", null, target, true));
-			if (allShown) {
-				cards = target.getCards("h");
-			} else {
-				//后续有别的判断是否可见的方法丢这来
-				const checkCard = card => {
-					return get.is.shownCard(card);
-				};
-				cards = target.getCards("h", card => checkCard(card));
-			}
+			const { cards, allShown } = getVisibleCards(target);
 			if (!cards.length && !allShown) {
 				closeCountDialog(target);
 				return;
@@ -4854,6 +4834,24 @@ export class Click {
 			dialog.style.transitionProperty = "";
 		}, 500);
 		/**
+		 * 判断手牌的可见性
+		 * @param { Player } target
+		 * @returns { { cards: Card[], allShown: boolean } }
+		 */
+		function getVisibleCards(target) {
+			const allShown = target.isUnderControl(true, game.me) || (!game.observe && game.me && game.me.hasSkillTag("viewHandcard", null, target, true));
+			if (allShown) {
+				return { cards: target.getCards("h"), allShown };
+			} else {
+				//后续有别的判断是否可见的方法丢这来
+				const filterCard = card => {
+					return get.is.shownCard(card);
+				};
+				return { cards: target.getCards("h", card => filterCard(card)), allShown };
+			}
+		}
+
+		/**
 		 * 创建一个手牌容器
 		 * @param {Player} target
 		 * @returns {HTMLDivElement} 返回配置好的容器
@@ -4867,7 +4865,7 @@ export class Click {
 			const wheelCards = e => {
 				if (e.deltaY !== 0) {
 					e.preventDefault();
-					container.scrollLeft += e.deltaY * 1.2;
+					container.scrollLeft += e.deltaY;
 				}
 			};
 			container.addEventListener("wheel", wheelCards, { passive: false });
@@ -4893,18 +4891,8 @@ export class Click {
 			};
 			container.addEventListener("touchstart", activateCards);
 
-			/*const closeAllCards = e => {
-				if (!container.contains(e.target)) {
-					Array.from(container.children).forEach(child => {
-						child.classList.remove("count-card-active");
-					});
-				}
-			};
-			ui.window.addEventListener("touchstart", closeAllCards);*/
-
 			//销毁容器的函数
 			container.destroyContainer = () => {
-				//ui.window.removeEventListener("touchstart", closeAllCards);
 				container.removeEventListener("wheel", wheelCards);
 				container.removeEventListener("touchstart", activateCards);
 				container.delete();
@@ -4921,10 +4909,12 @@ export class Click {
 		function closeCountDialog(target) {
 			if (_status.countDialogs[target.playerid]) {
 				const dialog = _status.countDialogs[target.playerid];
-				clearInterval(dialog._intervalId);
-				const container = dialog.handcardsContainer;
-				container.destroyContainer();
-				dialog?.delete();
+				if (ui.window.querySelector(`#${dialog.id}`)) {
+					clearInterval(dialog._intervalId);
+					const container = dialog.handcardsContainer;
+					container.destroyContainer();
+					dialog?.delete();
+				}
 				delete _status.countDialogs[target.playerid];
 				return true;
 			}
@@ -4941,7 +4931,7 @@ export class Click {
 			if (!container.id.startsWith("count_handcards_container_")) {
 				return;
 			}
-			if (container.buttons?.length == cards.length && container.buttons?.every((button, index) => button.link == cards[index])) {
+			if (container.buttons?.length == cards.length && (cards.length == 0 || container.buttons?.every((button, index) => button.link == cards[index]))) {
 				return;
 			}
 			//清空原来的牌
@@ -4959,6 +4949,7 @@ export class Click {
 				const minShrinkWidth = "-66px";
 				let marginRight = 0;
 				if (num > 4 && num < 10) {
+					//目前最多能一次看见10张牌，最终的宽度为24*10+90=330，因此除最后一张所需的宽度再被90减去即可得到偏移量
 					marginRight = `-${90 - 240 / (num - 1)}px`;
 				} else if (num >= 10) {
 					marginRight = minShrinkWidth;
@@ -4970,7 +4961,8 @@ export class Click {
 					button.style.setProperty("margin-right", marginRight);
 				});
 			} else {
-				container.textContent = "空空如也";
+				container.buttons = [];
+				container.innerHTML = ``;
 			}
 			return container;
 		}

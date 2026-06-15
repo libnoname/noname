@@ -301,7 +301,7 @@ const skills = {
 					position: "he",
 					ai(card) {
 						return 6 - get.value(card);
-					}
+					},
 				})
 				.forResult();
 		},
@@ -487,7 +487,10 @@ const skills = {
 				.chooseCard({
 					prompt: get.prompt2(event.skill),
 					position: "he",
-					selectCard: Math.min(player.countCards("he", card => player.canRecast(card)), 3),
+					selectCard: Math.min(
+						player.countCards("he", card => player.canRecast(card)),
+						3
+					),
 					filterCard: (card, player) => player.canRecast(card),
 					ai(card) {
 						return 6 - get.value(card);
@@ -533,8 +536,8 @@ const skills = {
 						player.line(target);
 						await target.gain({ cards: toGive, animate: "gain2" });
 					}
-				}
-			}
+				},
+			},
 		},
 	},
 	olchengen: {
@@ -817,7 +820,7 @@ const skills = {
 					},
 					ai(target) {
 						return -get.attitude(get.player(), target) * (114514 - target.countCards("he"));
-					}
+					},
 				})
 				.forResult();
 			const {
@@ -835,7 +838,7 @@ const skills = {
 							return 7 - get.value(card);
 						}
 						return 6 - get.value(card);
-					}
+					},
 				})
 				.forResult();
 			const {
@@ -887,7 +890,7 @@ const skills = {
 									const card = get.event().getTrigger().card;
 									const player = get.player();
 									return get.effect(target, card, player, player) * (targets.includes(target) ? -1 : 1);
-								}
+								},
 							})
 							.set("bool1", bool1)
 							.set("bool2", bool2)
@@ -935,11 +938,15 @@ const skills = {
 			const { targets, card } = event;
 			const info = get.info(card);
 			const color = get.color(card);
-			const bool = name == "useCard" ? true : (() =>{
-				return info.allowMultiple !== false && !info.multitarget && targets?.length && game.hasPlayer(function (target) {
-					return !targets.includes(target) && lib.filter.targetEnabled2(card, player, target) && lib.filter.targetInRange(card, player, target);
-				})
-			})()
+			const bool =
+				name == "useCard"
+					? true
+					: info.allowMultiple !== false &&
+						!info.multitarget &&
+						targets?.length &&
+						game.hasPlayer(function (target) {
+							return !targets.includes(target) && lib.filter.targetEnabled2(card, player, target) && lib.filter.targetInRange(card, player, target);
+						});
 			if (player.storage.olxiasheng_rewrite) {
 				return black > red && color == "black" && bool;
 			}
@@ -968,11 +975,14 @@ const skills = {
 							const card = get.event().getTrigger().card;
 							const player = get.player();
 							return get.effect(target, card, player, player);
-						}
+						},
 					})
-					.set("targets", game.filterPlayer(target => {
-						return !targets.includes(target) && lib.filter.targetEnabled2(card, player, target) && lib.filter.targetInRange(card, player, target);
-					}))
+					.set(
+						"targets",
+						game.filterPlayer(target => {
+							return !targets.includes(target) && lib.filter.targetEnabled2(card, player, target) && lib.filter.targetInRange(card, player, target);
+						})
+					)
 					.forResult();
 				if (result?.bool && result.targets?.length) {
 					const {
@@ -983,7 +993,7 @@ const skills = {
 					game.log(target, "成为", card, "的额外目标");
 				}
 			}
-		}
+		},
 	},
 	olqiumu: {
 		audio: 2,
@@ -995,17 +1005,19 @@ const skills = {
 		},
 		logTarget: "player",
 		async content(event, trigger, player) {
-			const { targets: [target] } = event;
+			const {
+				targets: [target],
+			} = event;
 			const cards = target.getGainableCards(player, "he", card => get.color(card) == "black");
 			if (cards.length) {
 				await player.gain({
 					cards,
 					source: target,
 					animate: "giveAuto",
-				})
+				});
 			}
 			if (!player.storage[`${event.name}_rewrite`]) {
-				const list = ["olchunhui", "olxiasheng", "olqiumu"].filter(i =>!player.storage[`${i}_rewrite`]);
+				const list = ["olchunhui", "olxiasheng", "olqiumu"].filter(i => !player.storage[`${i}_rewrite`]);
 				const result = await player
 					.chooseControl({
 						prompt: "秋暮：请选择要修改的技能",
@@ -2361,7 +2373,7 @@ const skills = {
 					ai(target) {
 						const player = get.player();
 						return get.attitude(player, target) * target.countCards("he");
-					}
+					},
 				})
 				.forResult();
 		},
@@ -2381,7 +2393,7 @@ const skills = {
 								return 20 - get.value(card);
 							}
 							return 7 - get.value(card);
-						}
+						},
 					})
 					.set("suit", get.suit(trigger.card))
 					.set("source", player)
@@ -2430,7 +2442,7 @@ const skills = {
 						if (get.name(card) == "tao" && player != target) {
 							return false;
 						}
-					}
+					},
 				},
 				trigger: {
 					global: "dying",
@@ -14734,7 +14746,7 @@ const skills = {
 				if (event.getStepCache("useShaValue") === undefined) {
 					event.putStepCache("useShaValue", player.getUseValue("sha", true, false));
 				}
-				return  event.getStepCache("useShaValue") > 0 ? 10 : -1;
+				return event.getStepCache("useShaValue") > 0 ? 10 : -1;
 			}
 			return 6 - get.value(card);
 		},
