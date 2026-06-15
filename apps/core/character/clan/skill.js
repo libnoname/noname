@@ -2545,10 +2545,21 @@ const skills = {
 			global: "phaseAnyEnd",
 		},
 		filter(event, player, name) {
-			if (name !== "phaseZhunbeiBegin" && !game.hasGlobalHistory("changeHp", evt => evt.player === player && evt.changedHp !== 0 && evt.getParent(event.name) === event)) {
-				return false;
+			if (name == "phaseZhunbeiBegin") {
+				return true;
 			}
-			return true;
+			return game.hasGlobalHistory("everything", evt => {
+				if (["changeHp", "gainMaxHp", "loseMaxHp"].includes(evt.name)) {
+					if (evt.player != player || evt.getParent(event.name) !== event) {
+						return false;
+					}
+					if (evt.name == "changeHp") {
+						return evt.changedHp !== 0;
+					}
+					return true;
+				}
+				return false;
+			});
 		},
 		direct: true,
 		clearTime: true,
@@ -2612,20 +2623,15 @@ const skills = {
 	},
 	clandandao: {
 		audio: 2,
-		trigger: { player: "judgeAfter" },
+		trigger: { global: "judgeAfter" },
 		forced: true,
 		filter(event, player) {
-			return _status.currentPhase?.isIn() && game.getGlobalHistory("everything", evt => evt.name == "judge" && evt.player == player).indexOf(event) == 0;
+			return game.getAllGlobalHistory("everything", evt => evt.name == "judge" && evt.player == event.player).indexOf(event) == 0;
 		},
 		async content(event, trigger, player) {
-			const target = _status.currentPhase;
-			if (!target?.isIn()) {
-				return;
-			}
-			target.addSkill(event.name + "_add");
-			target.addMark(event.name + "_add", 1, false);
+			await player.gainMaxHp();
 		},
-		subSkill: {
+		/*subSkill: {
 			add: {
 				charlotte: true,
 				onremove: true,
@@ -2636,17 +2642,17 @@ const skills = {
 				},
 				mod: { maxHandcard: (player, num) => num + player.countMark("clandandao_add") },
 			},
-		},
+		},*/
 	},
 	clanqingli: {
 		audio: 2,
 		trigger: { global: "phaseEnd" },
 		forced: true,
 		filter(event, player) {
-			return player.countCards("h") < Math.min(5, player.getHandcardLimit());
+			return player.countCards("h") < Math.min(5, player.maxHp);
 		},
 		async content(event, trigger, player) {
-			await player.drawTo(Math.min(player.getHandcardLimit(), 5));
+			await player.drawTo(Math.min(player.maxHp, 5));
 		},
 	},
 	//族杨修 —— by 刘巴

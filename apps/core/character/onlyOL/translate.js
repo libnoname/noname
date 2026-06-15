@@ -1,6 +1,12 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	ol_quancong: "OL界全琮",
+	ol_quancong_prefix: "OL界",
+	olyaoming: "邀名",
+	olyaoming_info: `每回合限一次，当你造成或受到伤害后，你可以选择一名角色，若其手牌数: 大于等于你，你弃置其一张牌； 小于等于你，其摸一张牌。 然后其回合内，你视为拥有技能${get.poptip("olzhenshan")}。`,
+	olzhenshan: "赈赡",
+	olzhenshan_info: `每回合限一次，当你需要使用或打出基本牌时，你可以与手数小于你的一名角色交换手牌，视为使用或打出之，然后${get.poptip("olyaoming")}视为未发动过。`,
 	ol_caoxiu: "OL界曹休",
 	ol_caoxiu_prefix: "OL界",
 	olqianju: "千驹",
@@ -82,7 +88,7 @@ const translates = {
 	ol_caojie: "OL界曹节",
 	ol_caojie_prefix: "OL界",
 	olshouxi: "守玺",
-	olshouxi_info: "每回合限一次，当你成为【杀】的目标后，你可弃置至少一张【杀】，对使用者造成1点伤害。然后若此【杀】未对你造成伤害，你将手牌摸至手牌上限（至多摸至5）。",
+	olshouxi_info: "每回合限一次，当你成为伤害牌的目标后，你可弃置至少一张伤害牌，对使用者造成1点伤害。然后若此牌未对你造成伤害，你摸牌至手牌上限。",
 	olhuimin: "惠民",
 	olhuimin_info: "出牌阶段限一次，你可令任意手牌数小于等于体力值的角色摸一张牌，然后你的手牌上限+X至你的下个回合开始（X为这些角色中手牌数大于体力值的角色数）。",
 	ol_re_xinxianying: "OL界辛宪英",
@@ -96,7 +102,7 @@ const translates = {
 	olsbliduan: "戾断",
 	olsbliduan_info: "你使用【杀】后，令你使用的下一张锦囊牌可以多指定一个目标；你使用锦囊牌后，令你使用的下一张【杀】可以多指定一个目标。",
 	olsbdanchi: "胆持",
-	olsbdanchi_info: "每回合限一次，你造成或受到伤害后，你可令受到伤害的角色选择一个类型。然后伤害来源本回合使用下一张牌后，你视为使用一张【无中生有】，若与”胆持”选择的类型不同，你额外可视为使用一张【杀】。",
+	olsbdanchi_info: "每回合限一次，与你距离1以内的角色受到伤害后，你可令受到伤害的角色选择一个类型。然后伤害来源本回合使用下一张牌后，你视为使用一张【无中生有】，若与”胆持”选择的类型不同，你可额外视为使用一张【杀】。",
 	old_olsbdanchi: "胆持",
 	old_olsbdanchi_info: "你每回合首次因牌造成伤害或受到伤害后，你可令此牌目标角色同时猜测，伤害来源本回合使用的下一张牌为【杀】或锦囊牌。此回合结束时，若有角色猜对，你摸两张牌；若有角色猜错，你视为使用一张【杀】。",
 	ol_sb_dongzhao: "OL谋董昭",

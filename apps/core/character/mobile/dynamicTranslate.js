@@ -1,6 +1,19 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const dynamicTranslates = {
+	rejuzhan(player, skill) {
+		const bool = player.storage[skill];
+		let yang = "当你或者此状态下第三次有角色成为【杀】的目标后，你可以与此【杀】的使用者各摸一张牌，然后其本回合不能对你使用牌",
+			yin = "当你或者此状态下第三次有角色使用【杀】指定目标后，你可以获得此【杀】的目标角色一张牌，然后你本回合不能对其使用牌";
+		if (bool) {
+			yin = `<span class='bluetext'>${yin}</span>`;
+		} else {
+			yang = `<span class='firetext'>${yang}</span>`;
+		}
+		let start = "转换技，",
+			end = `。${get.poptip("rule_chengshi")}：你于出牌阶段内使用【杀】的次数+1，且此【杀】结算完毕后，你获得之。`;
+		return `${start}阳：${yang}；阴：${yin}${end}`;
+	},
 	mbkubai(player, skill) {
 		const level = player.countMark(skill);
 		if (!level) {

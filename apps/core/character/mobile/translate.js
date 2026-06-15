@@ -1,6 +1,16 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	re_zhoufei: "手杀界周妃",
+	re_zhoufei_prefix: "手杀界",
+	reliangyin: "良姻",
+	reliangyin_info: "①当有牌被置于武将牌上时，你可令一名角色摸一张牌；②当任意角色获得一名角色武将牌上的牌时，你可令一名角色弃置一张牌。③每轮结束时，你可令本轮唯一成为“良姻”目标的角色回复1点体力，或令本轮唯一未成为“良姻”目标的角色失去1点体力。",
+	rekongsheng: "箜声",
+	rekongsheng_info: "准备阶段、当你失去体力时或者当你回复体力时，你可以将当前回合角色的任意张牌置于武将牌上。若如此做，该角色的结束阶段，你可以使用其中一张牌，然后其获得其余的牌。",
+	re_yanyan: "手杀界严颜",
+	re_yanyan_prefix: "手杀界",
+	rejuzhan: "拒战",
+	rejuzhan_info: `转换技，阳：当你或者此状态下第三次有角色成为【杀】的目标后，你可以与此【杀】的使用者各摸一张牌，然后其本回合不能对你使用牌；阴：当你或者此状态下第三次有角色使用【杀】指定目标后，你可以获得此【杀】的目标角色一张牌，然后你本回合不能对其使用牌。${get.poptip("rule_chengshi")}：你于出牌阶段内使用【杀】的次数+1，且此【杀】结算完毕后，你获得之。`,
 	mb_gaoxiang: "手杀高翔",
 	mb_gaoxiang_prefix: "手杀",
 	mbgxchiyuan: "驰援",

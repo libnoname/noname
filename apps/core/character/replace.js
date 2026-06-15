@@ -221,7 +221,7 @@ window.noname_character_replace = {
 	qiaozhou: ["yj_qiaozhou", "qiaozhou", "tw_qiaozhou"],
 	qinghegongzhu: ["qinghegongzhu", "dc_qinghegongzhu", "mb_qinghegongzhu", "std_qinghegongzhu"],
 	qinlang: ["ol_qinlang", "qinlang"],
-	quancong: ["quancong", "re_quancong", "xin_quancong", "yy_quancong", "old_quancong"],
+	quancong: ["quancong", "ol_quancong", "re_quancong", "xin_quancong", "yy_quancong", "old_quancong"],
 	quyi: ["quyi", "re_quyi", "yy_quyi", "std_quyi", "tw_dm_quyi"],
 	ruiji: ["ruiji", "dc_ruiji", "shinin_ruiji"],
 	shamoke: ["shamoke", "ty_shamoke"],
@@ -357,7 +357,7 @@ window.noname_character_replace = {
 	zhoubuyi: ["zhoubuyi", "yj_zhoubuyi"],
 	zhoucang: ["zhoucang", "re_zhoucang", "xin_zhoucang", "drag_zhoucang"],
 	zhouchu: ["jin_zhouchu", "zhouchu", "tw_zhouchu", "std_zhouchu"],
-	zhoufei: ["zhoufei", "yue_zhoufei"],
+	zhoufei: ["zhoufei", "yue_zhoufei", "re_zhoufei"],
 	zhouqun: ["ol_zhouqun", "zhouqun"],
 	zhoutai: ["zhoutai", "xin_zhoutai", "old_zhoutai"],
 	zhouyu: ["zhouyu", "re_zhouyu", "dc_sb_zhouyu", "yue_zhouyu", "sb_zhouyu", "jx_zhouyu", "ps1062_zhouyu", "ps2080_zhouyu", "jy_zhouyu", "mb_zhouyu", "tw_dm_zhouyu", "sxrm_zhouyu"],
@@ -464,4 +464,5 @@ window.noname_character_replace = {
 	sunchen: ["sunchen", "pot_sunchen"],
 	wutugu: ["wutugu", "mb_wutugu"],
 	cuimao: ["cuimao", "mb_cuimao"],
+	yanyan: ["yanyan", "re_yanyan"],
 };

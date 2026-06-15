@@ -688,6 +688,7 @@ const skills = {
 			storage[target.playerid] ??= 0;
 			storage[target.playerid] = Math.min(3, ++storage[target.playerid]);
 			player.setStorage(name, storage, true);
+			await player.draw(storage[target.playerid]);
 			target.markAuto(`${name}_debuff`, player);
 			target.addAdditionalSkill(`${name}_debuff_${player.playerid}`, `${name}_debuff`);
 			target.addTempSkill(`${name}_reset`, { player: "dieAfter" });
