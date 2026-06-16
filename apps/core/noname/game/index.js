@@ -2168,6 +2168,7 @@ export class Game {
 		_status.connectCallback = callback;
 		try {
 			if (game.ws) {
+				clearTimeout(game.ws._connectTimeout);
 				game.ws._nocallback = true;
 				game.ws.close();
 				delete game.ws;
