@@ -1,6 +1,12 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	yj_wanglang: "☆王朗",
+	yj_wanglang_prefix: "☆",
+	fuyu: "负隅",
+	fuyu_info: "每回合每项各限一次，当你成为其他角色使用牌的唯一目标后，或你使用牌指定其他角色为唯一目标后，你可与其拼点：若此牌的使用者赢，此牌额外结算一次；若此牌的使用者没赢，此牌无效。若你的拼点结果与上一次发动此技能时相同，你摸2张牌。",
+	zhanshi: "瞻势",
+	zhanshi_info: "当有角色进行拼点时，你可选择此次拼点中的任意名角色并弃置等量张牌，此次拼点结算后，你选择的角色中每有一名角色赢，你摸两张牌。",
 	v_sunce: "威孙策",
 	v_sunce_prefix: "威",
 	dczhifeng: "猘锋",
@@ -255,11 +261,11 @@ const translates = {
 	yj_yanyu_info: "限定技。出牌阶段，你可以展示两张手牌然后选择一名其他角色A，将牌堆中的一张【藤甲】置入其防具区内（顶替原装备），若如此做，你与所有其他不为A的角色手牌中与这两张牌花色相同的基本牌视为火【杀】、锦囊牌视为【火攻】、装备牌视为【铁索连环】，且这些牌被使用后你摸一张牌。",
 	yj_fazheng: "☆法正",
 	yj_fazheng_prefix: "☆",
-	youtan: "忧叹",
+	youtan: "藏铗",
 	youtan_info: "锁定技，你于出牌阶段外获得牌时，记录此牌花色；你于出牌阶段内不能使用此技能未记录的花色的牌。",
-	ciren: "辞任",
+	ciren: "堕洄",
 	ciren_info: "其他角色的准备阶段，其可以交给你一张牌，然后你须选择一项：1.交给其另一张同花色牌；2.令其摸一张牌。",
-	zhancai: "展才",
+	zhancai: "跃渊",
 	zhancai_info: `出牌阶段限一次，你可以摸${get.poptip("youtan")}记录花色数张牌，然后清除一个记录的花色。`,
 	yj_x_xunxu: "笛音荀勖",
 	yj_x_xunxu_prefix: "笛音",

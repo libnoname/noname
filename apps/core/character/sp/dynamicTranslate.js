@@ -16,15 +16,15 @@ const dynamicTranslates = {
 	},
 	olchunhui(player, skill) {
 		const bool = player.storage[`${skill}_rewrite`];
-		return `锁定技，每轮首张牌被使用后，若此牌为: ${bool? "黑色" : "红色"}，你回复1点体力；黑色，你摸一张牌。`;
+		return `准备阶段或当你受到伤害后，令一名其他角色交给你一张牌。若此牌为黑色，本轮你与其下一次使用${bool? "黑色" : "红色"}牌时，可为此牌增加或减少一个目标（至多减至1）。`;
 	},
 	olxiasheng(player, skill) {
 		const bool = player.storage[`${skill}_rewrite`];
-		return `准备阶段或当你受到伤害后，令一名其他角色交给你一张牌。若此牌为黑色，本轮你与其下一次使用${bool? "黑色" : "红色"}牌时，可为此牌增加或减少一个目标（至多减至1）。`;
+		return `锁定技，若你手牌中：${bool? "黑色" : "红色"}牌较多，你使用黑色牌时摸一张牌；黑色牌较多，你使用${bool? "黑色" : "红色"}牌可多指定一个目标。`;
 	},
 	olqiumu(player, skill) {
 		const bool = player.storage[`${skill}_rewrite`];
-		return `锁定技，你脱离濒死状态后，你重铸所有${bool? "黑色" : "红色"}牌，并将${get.poptip("olchunhui")}${get.poptip("olxiasheng")}〖秋暮〗描述中的“红色”均改为“黑色”。`;
+		return `锁定技，本回合成为过${bool? "黑色" : "红色"}牌目标的角色进入濒死状态时，你获得其所有黑色牌，并将${get.poptip("olchunhui")}、${get.poptip("olxiasheng")}或〖秋暮〗描述中的“${bool? "黑色" : "红色"}”均改为“黑色”。`;
 	},
 	olwenyi(player) {
 		let info = lib.translate["olwenyi_info"],
@@ -121,7 +121,7 @@ const dynamicTranslates = {
 		if (count < 3) {
 			return lib.translate.olbixin_info.slice(count * 5);
 		}
-		return "你可以声明一种牌的类型（每种类型限[3]次），并选择一种你本轮未使用过且有合法目标的的基本牌。你摸[1]张牌，然后若你有此类型的手牌，你将所有此类型的手牌当此基本牌使用。";
+		return "你可以声明一种牌的类型（每种类型限[3]次），并选择一种你本轮未使用过且有合法目标的基本牌。你摸[1]张牌，然后若你有此类型的手牌，你将所有此类型的手牌当此基本牌使用。";
 	},
 	olfeibai(player) {
 		const bool = player.storage.olfeibai;

@@ -6,103 +6,7 @@ export const type = "mode";
 export default () => {
 	return {
 		name: "single",
-		changbanCharacter: [
-			"key_rei",
-			"key_yoshino",
-			"key_noda",
-			"key_nagisa",
-			"re_caocao",
-			"re_caozhang",
-			"re_diaochan",
-			"re_ganning",
-			"re_gongsunzan",
-			"re_guojia",
-			"re_huangyueying",
-			"re_lidian",
-			"re_lvbu",
-			"re_simayi",
-			"sunquan",
-			"re_xiahoudun",
-			"re_xushu",
-			"yuanshu",
-			"xf_yiji",
-			"re_zhangfei",
-			"re_zhangliao",
-			"re_xuzhu",
-			"re_zhaoyun",
-			"re_zhouyu",
-			"re_zhugeliang",
-			"ol_xiahouyuan",
-			"re_huangzhong",
-			"re_weiyan",
-			"dianwei",
-			"te_yanwen",
-			"re_pangde",
-			"re_zhurong",
-			"re_sunjian",
-			"jiaxu",
-			"dengai",
-			"re_jiangwei",
-			"re_sunben",
-			"wangji",
-			"wangping",
-			"guanqiujian",
-			"chendao",
-			"ol_yujin",
-			"re_caozhi",
-			"xin_masu",
-			"re_lingtong",
-			"xusheng",
-			"re_gaoshun",
-			"xunyou",
-			"guanzhang",
-			"madai",
-			"handang",
-			"caochong",
-			"re_guohuai",
-			"guanping",
-			"liufeng",
-			"re_zhuran",
-			"xin_liru",
-			"hanhaoshihuan",
-			"guyong",
-			"zhuhuan",
-			"caoxiu",
-			"liuchen",
-			"re_zhangyi",
-			"re_quancong",
-			"sunxiu",
-			"sundeng",
-			"guohuanghou",
-			"re_jikang",
-			"xuezong",
-			"qinmi",
-			"lvdai",
-			"re_zhangliang",
-			"lingcao",
-			"sunru",
-			"zhuling",
-			"sp_caoren",
-			"fanchou",
-			"fuwan",
-			"sp_ganning",
-			"guanyinping",
-			"guosi",
-			"heqi",
-			"sp_jiangwei",
-			"litong",
-			"re_panfeng",
-			"sp_pangde",
-			"xf_sufei",
-			"xf_tangzi",
-			"xiahouba",
-			"xujing",
-			"yuejin",
-			"sp_zhangfei",
-			"zhangji",
-			"zhangyì",
-			"dongcheng",
-		],
+		changbanCharacter: ["key_rei", "key_yoshino", "key_noda", "key_nagisa", "re_caocao", "re_caozhang", "re_diaochan", "re_ganning", "re_gongsunzan", "re_guojia", "re_huangyueying", "re_lidian", "re_lvbu", "re_simayi", "sunquan", "re_xiahoudun", "re_xushu", "yuanshu", "xf_yiji", "re_zhangfei", "re_zhangliao", "re_xuzhu", "re_zhaoyun", "re_zhouyu", "re_zhugeliang", "ol_xiahouyuan", "re_huangzhong", "re_weiyan", "dianwei", "te_yanwen", "re_pangde", "re_zhurong", "re_sunjian", "jiaxu", "dengai", "re_jiangwei", "re_sunben", "wangji", "wangping", "guanqiujian", "chendao", "ol_yujin", "re_caozhi", "xin_masu", "re_lingtong", "xusheng", "re_gaoshun", "xunyou", "guanzhang", "madai", "handang", "caochong", "re_guohuai", "guanping", "liufeng", "re_zhuran", "xin_liru", "hanhaoshihuan", "guyong", "zhuhuan", "caoxiu", "liuchen", "re_zhangyi", "re_quancong", "sunxiu", "sundeng", "guohuanghou", "re_jikang", "xuezong", "qinmi", "lvdai", "re_zhangliang", "lingcao", "sunru", "zhuling", "sp_caoren", "fanchou", "fuwan", "sp_ganning", "guanyinping", "guosi", "heqi", "sp_jiangwei", "litong", "re_panfeng", "sp_pangde", "xf_sufei", "xf_tangzi", "xiahouba", "xujing", "yuejin", "sp_zhangfei", "zhangji", "zhangyì", "dongcheng"],
 		singlePile: [
 			["spade", 5, "sha"],
 			["spade", 7, "sha"],
@@ -754,7 +658,7 @@ export default () => {
 		},
 		game: {
 			canReplaceViewpoint: () => true,
-			addRecord: function (bool) {
+			addRecord(bool) {
 				if (typeof bool == "boolean") {
 					var mode = _status.mode;
 					var data = lib.config.gameRecord.single.data;
@@ -785,7 +689,7 @@ export default () => {
 					game.saveConfig("gameRecord", lib.config.gameRecord);
 				}
 			},
-			getState: function () {
+			getState() {
 				var state = {};
 				for (var i in lib.playerOL) {
 					var player = lib.playerOL[i];
@@ -793,7 +697,7 @@ export default () => {
 				}
 				return state;
 			},
-			updateState: function (state) {
+			updateState(state) {
 				for (var i in state) {
 					var player = lib.playerOL[i];
 					if (player) {
@@ -801,7 +705,7 @@ export default () => {
 					}
 				}
 			},
-			getRoomInfo: function (uiintro) {
+			getRoomInfo(uiintro) {
 				if (lib.configOL.single_mode == "normal") {
 					uiintro.add('<div class="text chat">晋势力武将：' + (lib.configOL.enable_jin ? "开启" : "关闭"));
 				}
@@ -810,7 +714,7 @@ export default () => {
 				}
 				uiintro.style.paddingBottom = "8px";
 			},
-			getVideoName: function () {
+			getVideoName() {
 				var str = get.translation(game.me.name);
 				if (game.me.name2) {
 					str += "/" + get.translation(game.me.name2);
@@ -818,14 +722,14 @@ export default () => {
 				var name = [str, get.translation(_status.mode + 2) + " - " + lib.translate[game.me.identity + "2"]];
 				return name;
 			},
-			showIdentity: function () {},
-			checkResult: function () {
+			showIdentity() {},
+			checkResult() {
 				game.over((game.me._trueMe || game.me).isAlive());
 			},
-			checkOnlineResult: function (player) {
+			checkOnlineResult(player) {
 				return player.isAlive();
 			},
-			chooseCharacterDianjiang: function () {
+			chooseCharacterDianjiang() {
 				var next = game.createEvent("chooseCharacter");
 				next.showConfig = true;
 				next.setContent(function () {
@@ -916,6 +820,7 @@ export default () => {
 						ui.arena.classList.remove("choose-character");
 					}, 500);
 					if (get.config("single_control")) {
+						game.checkResult = () => game.over(true);
 						game.addGlobalSkill("autoswap");
 						game.me.next._trueMe = game.me;
 					}
@@ -1088,7 +993,7 @@ export default () => {
 					}, 500);
 				});
 			},
-			chooseCharacter: function () {
+			chooseCharacter() {
 				if (_status.mode == "dianjiang") {
 					game.chooseCharacterDianjiang();
 					return;
@@ -1300,7 +1205,7 @@ export default () => {
 					}, 500);
 				});
 			},
-			chooseCharacterDianjiangOL: function () {
+			chooseCharacterDianjiangOL() {
 				var next = game.createEvent("chooseCharacter");
 				next.showConfig = true;
 				next.setContent(function () {
@@ -1644,7 +1549,7 @@ export default () => {
 					}, 500);
 				});
 			},
-			chooseCharacterOL: function () {
+			chooseCharacterOL() {
 				if (_status.mode == "dianjiang") {
 					game.chooseCharacterDianjiangOL();
 					return;
@@ -1883,12 +1788,12 @@ export default () => {
 		},
 		element: {
 			player: {
-				dieAfter: function () {
+				dieAfter() {
 					if (_status.mode != "normal" || _status.characterChoice[this.identity].length <= 3) {
 						game.checkResult();
 					}
 				},
-				dieAfter2: function () {
+				dieAfter2() {
 					if (_status.mode != "normal") {
 						return;
 					}
@@ -1933,8 +1838,8 @@ export default () => {
 						_status.characterChoice[player.identity].remove(name);
 					});
 				},
-				logAi: function (targets, card) {},
-				showIdentity: function () {
+				logAi(targets, card) {},
+				showIdentity() {
 					game.broadcastAll(
 						function (player, identity) {
 							player.identity = identity;
@@ -1986,10 +1891,10 @@ export default () => {
 				audio: 2,
 				trigger: { target: "useCardToTargeted" },
 				frequent: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.card.name == "sha";
 				},
-				content: function () {
+				content() {
 					player.draw();
 				},
 			},
@@ -2005,10 +1910,10 @@ export default () => {
 				enable: "phaseUse",
 				skillAnimation: true,
 				animationColor: "water",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target != player && player.canCompare(target);
 				},
-				content: function () {
+				content() {
 					"step 0";
 					player.awakenSkill(event.name);
 					player.chooseToCompare(target);
@@ -2022,7 +1927,7 @@ export default () => {
 				ai: {
 					order: 1,
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							if (
 								player.countCards("h", function (card) {
 									return get.value(card) <= 5 && get.number(card) >= 12;
@@ -2043,7 +1948,7 @@ export default () => {
 					global: "gameDrawAfter",
 				},
 				direct: true,
-				content: function () {
+				content() {
 					player.chooseUseTarget("shuiyanqijunx", get.prompt("huwei"), "视为使用一张【水淹七军】").logSkill = "huwei";
 				},
 			},
@@ -2078,10 +1983,10 @@ export default () => {
 				audio: "kuanggu",
 				trigger: { source: "damageSource" },
 				frequent: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return player.isDamaged();
 				},
-				content: function () {
+				content() {
 					"step 0";
 					player.judge(function (result) {
 						return get.color(result) == "black" ? 2 : -2;
@@ -2098,13 +2003,13 @@ export default () => {
 			cangji: {
 				audio: 2,
 				trigger: { player: "die" },
-				filter: function (event, player) {
+				filter(event, player) {
 					return player.countCards("e") > 0;
 				},
 				forceDie: true,
 				skillAnimation: true,
 				animationColor: "orange",
-				content: function () {
+				content() {
 					var cards = player.getCards("e");
 					player.cangji_yozuru = cards;
 					player.lose(cards, ui.special);
@@ -2119,7 +2024,7 @@ export default () => {
 						forced: true,
 						popup: false,
 						//onremove:true,
-						content: function () {
+						content() {
 							var cards = player.cangji_yozuru.slice(0);
 							for (var i = 0; i < cards.length; i++) {
 								player.equip(cards[i]);
@@ -2134,10 +2039,10 @@ export default () => {
 				audio: 2,
 				trigger: { target: "useCardToTargeted" },
 				direct: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.player != player && event.player.isPhaseUsing() && (event.card.name == "sha" || get.type(event.card) == "trick");
 				},
-				content: function () {
+				content() {
 					if (!player.hasSkill("sgrenwang_one")) {
 						player.addTempSkill("sgrenwang_one", "phaseUseEnd");
 					} else if (trigger.player.countDiscardableCards(player, "he")) {
@@ -2150,19 +2055,19 @@ export default () => {
 				group: "sgduanliang_gdm",
 				audio: "duanliang1",
 				enable: "chooseToUse",
-				filterCard: function (card) {
+				filterCard(card) {
 					if (get.type(card) != "basic" && get.type(card) != "equip") {
 						return false;
 					}
 					return get.color(card) == "black";
 				},
-				filter: function (event, player) {
+				filter(event, player) {
 					return player.hasSkill("sgduanliang_sss") && player.countCards("he", { type: ["basic", "equip"], color: "black" });
 				},
 				position: "he",
 				viewAs: { name: "bingliang" },
 				prompt: "将一黑色的基本牌或装备牌当兵粮寸断使用",
-				check: function (card) {
+				check(card) {
 					return 6 - get.value(card);
 				},
 				ai: {
@@ -2174,7 +2079,7 @@ export default () => {
 						forced: true,
 						silent: true,
 						popup: false,
-						content: function () {
+						content() {
 							if (trigger.target != player) {
 								player.addTempSkill("sgduanliang_sss");
 							}
@@ -2188,26 +2093,26 @@ export default () => {
 				enable: ["chooseToRespond", "chooseToUse"],
 				filterCard: true,
 				viewAs: { name: "shan" },
-				viewAsFilter: function (player) {
+				viewAsFilter(player) {
 					if (!player.countCards("e")) {
 						return false;
 					}
 				},
 				prompt: "将一张装备区中的牌当闪使用或打出",
 				position: "e",
-				check: function () {
+				check() {
 					return 1;
 				},
 				ai: {
 					order: 0.5,
 					respondShan: true,
-					skillTagFilter: function (player) {
+					skillTagFilter(player) {
 						if (!player.countCards("e")) {
 							return false;
 						}
 					},
 					effect: {
-						target: function (card, player, target, current) {
+						target(card, player, target, current) {
 							if (target.countCards("e") && get.tag(card, "respondShan") && current < 0) {
 								return 0.6;
 							}
@@ -2219,17 +2124,19 @@ export default () => {
 				audio: 2,
 				trigger: { player: "enterGame" },
 				forced: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.getParent("phase").player == player.enemy;
 				},
-				content: function () {
-					var evt = _status.event.getParent("phase");
+				async content(event, trigger, player) {
+					const evt = event.getParent("phase", true);
 					if (evt) {
-						game.log(player, "结束了", evt.player, "的回合");
-						game.resetSkills();
-						_status.event = evt;
-						_status.event.finish();
-						_status.event.untrigger(true);
+						game.log(player, "结束了回合");
+						evt.num = evt.phaseList.length;
+						evt.goto(11);
+					}
+					const evtx = event.getParent("phaseUse", true);
+					if (evtx) {
+						evtx.skipped = true;
 					}
 				},
 			},
@@ -2265,7 +2172,7 @@ export default () => {
 			yinli: {
 				audio: 2,
 				trigger: { global: "loseEnd" },
-				filter: function (event, player) {
+				filter(event, player) {
 					if (event.player == player || event.player != _status.currentPhase || event.getParent().name == "useCard") {
 						return false;
 					}
@@ -2277,7 +2184,7 @@ export default () => {
 					return false;
 				},
 				frequent: true,
-				content: function () {
+				content() {
 					var list = [];
 					for (var i = 0; i < trigger.cards.length; i++) {
 						if (get.type(trigger.cards[i]) == "equip" && get.position(trigger.cards[i]) == "d") {
@@ -2293,11 +2200,14 @@ export default () => {
 				audio: 2,
 				mod: {
 					maxHandcard: function (player, num) {
-						if (player.enemy && player.enemy.hp) {
-							return num + player.enemy.hp;
+						if (player.enemy) {
+							return num + player.enemy.getHp();
 						}
 					},
 				},
+				trigger: { player: "phaseDiscardBefore" },
+				forced: true,
+				async content(event, trigger, player) {},
 			},
 			puji: {
 				// audio: "chulao",
@@ -2360,10 +2270,10 @@ export default () => {
 				trigger: { global: "gameDrawAfter" },
 				silent: true,
 				popup: false,
-				filter: function (event, player) {
+				filter(event, player) {
 					return _status.mode == "changban" && player.maxHp <= 3;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					player.chooseBool("是否更换手牌？").ai = function () {
 						var hs = player.getCards("h");
@@ -2435,7 +2345,7 @@ export default () => {
 				popup: true,
 				charlotte: true,
 				async content(_, trigger) {
-					trigger.num ++;
+					trigger.num++;
 				},
 			},
 			wuxianhuoli_liuanhuaming: {
@@ -2795,29 +2705,41 @@ export default () => {
 
 			wanrong: "婉容",
 			wanrong_info: "当你成为【杀】的目标后，你可以摸一张牌。",
+			"#wanrong1": "狂蜂浪蝶，休想得逞！",
+			"#wanrong2": "无礼之徒，速速退下。",
 			sgzhiheng: "制衡",
 			sgzhiheng_info: "出牌阶段限一次，你可以弃置至多两张牌，然后摸等量的牌。",
 			xiechan: "挟缠",
 			xiechan_info: "限定技，出牌阶段，你可以和对手拼点。然后赢的角色视为对没赢的角色使用一张【决斗】。",
+			"#xiechan1": "休走！你我今日定要分个胜负！",
+			"#xiechan2": "不是你死，便是我亡！",
 			huwei: "虎威",
 			huwei_info: "当你登场时，你可以视为使用一张【水淹七军】。",
+			"#huwei1": "传令，发动水计！",
+			"#huwei2": "来人，引水对敌！",
 			sgliegong: "烈弓",
 			sgliegong_info: "当你使用【杀】指定目标后，若对手的手牌数大于等于你的体力值，你可令此【杀】不可被【闪】响应。",
 			sgkuanggu: "狂骨",
 			sgkuanggu_info: "当你造成伤害后，若你已受伤，你可以进行判定：若结果为黑色，你回复1点体力。",
 			suzi: "肃资",
+			"#suzi1": "来来来！清点缴获！哈哈哈！",
+			"#suzi2": "抢夺资材，快，快，快！",
 			cangji: "藏机",
 			cangji_info: "当你死亡时，你可以将装备区内的所有牌移动到游戏外。若如此做，你的下一名角色登场时，你将这些牌置入你的装备区。",
 			"#cangji1": "乾坤之道，我也略知一二。",
 			"#cangji2": "聪慧之人，自有藏巧之计。",
 			sgrenwang: "仁望",
 			sgrenwang_info: "当你于一名其他角色的出牌阶段内成为该角色使用的【杀】或普通锦囊牌的目标后，若此牌不是其本阶段内对你使用的第一张【杀】或普通锦囊牌，则你可以弃置该角色的一张牌。",
+			"#sgrenwang1": "民心，就是最好的武器！",
+			"#sgrenwang2": "仁德之世，岂能毁于你手！",
 			sgduanliang: "断粮",
 			sgduanliang_info: "出牌阶段，若你本回合内使用牌指定过其他角色为目标，则你可以将一张黑色基本牌或装备牌当做【兵粮寸断】使用。",
 			sgqingguo: "倾国",
 			sgqingguo_info: "你可以将一张装备区内的牌当做【闪】使用或打出。",
 			pianyi: "翩仪",
 			pianyi_info: "锁定技，当你于对手的回合内登场时，你结束此回合。",
+			"#pianyi1": "呵呵，不能动了吧~",
+			"#pianyi2": "将军，看呆了么~",
 			sgxiaoji: "枭姬",
 			sgxiaoji_info: "当你失去一张装备区内的牌后，你可以摸两张牌或回复1点体力。",
 			"#sgxiaoji1": "你可要看好了！",
@@ -2826,6 +2748,8 @@ export default () => {
 			yinli_info: "其他角色的装备牌于其回合内进入弃牌堆后，你可以获得之。",
 			shenju: "慎拒",
 			shenju_info: "锁定技，你的手牌上限+X（X为你对手的体力值）。",
+			"#shenju1": "谨慎为妙。",
+			"#shenju2": "时机未到。",
 			puji: "普济",
 			puji_info: "出牌阶段限一次，你可弃置你与对手各一张牌，然后被弃置黑桃牌的角色各摸一张牌。",
 		},

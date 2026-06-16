@@ -1,4 +1,56 @@
 const characters = {
+	re_zhoufei: {
+		sex: "female",
+		group: "wu",
+		hp: 3,
+		skills: ["reliangyin", "rekongsheng"],
+		names: "周|null",
+	},
+	re_yanyan: {
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		skills: ["rejuzhan"],
+	},
+	mb_gaoxiang: {
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		skills: ["mbgxchiyuan", "mberdi"],
+	},
+	mb_cuimao: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["mbzhengbi", "mbfengying"],
+		names: "崔|琰-毛|玠",
+	},
+	mb_zhongyao: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["rehuomo", "mbzuoding"],
+		clans: ["颍川钟氏"],
+	},
+	mb_wutugu: {
+		sex: "male",
+		group: "qun",
+		hp: 15,
+		skills: ["mbranshang", "mbhanyong"],
+		names: "null|null",
+	},
+	mb_chengyu: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["mbshefu", "mbbenyu"],
+	},
+	mb_dongbai: {
+		sex: "female",
+		group: "qun",
+		hp: 3,
+		skills: ["mblianzhu", "mbxiahui"],
+	},
 	mb_zhugeguo: {
 		sex: "female",
 		group: "shu",

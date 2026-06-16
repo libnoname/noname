@@ -1,5 +1,8 @@
 export default {
-	//dc_shen_caopi: "",
+	dc_shen_guanyu: "鬼神再临",
+	dc_shen_liubei: "誓守桃园义",
+	dc_shen_zhangliao: "雁门之刑天",
+	dc_shen_caopi: "月晦书轮回",
 	//dc_xia_wangyue: "",
 	//shie: "",
 	dc_sb_zhangren: "尖锋致溃",
@@ -76,6 +79,7 @@ export default {
 	caomao: "霸业的终耀",
 	liubian: "弘农怀王",
 	dc_liuyu: "维城燕北",
+    dc_huanhuaijin: "慧心育麟",
 	quanhuijie: "春早宫深",
 	dingshangwan: "与君不载",
 	yuanji: "袁门贵女",

@@ -4767,4 +4767,204 @@ export class Click {
 		e.preventDefault();
 		return false;
 	}
+	count(e) {
+		if (_status.dragged) {
+			return;
+		}
+
+		const target = this.parentNode;
+		//如果ui.window已经有对应角色的查看窗口则关闭并return
+		if (closeCountDialog(target)) {
+			return;
+		}
+		//排除自己（没有人闲的蛋疼想这么看自己的手牌吧）
+		if (game.me == target) {
+			return false;
+		}
+
+		//先筛选出究竟有没有牌可以看
+		const { cards, allShown } = getVisibleCards(target);
+		if (!cards.length && !allShown) {
+			return;
+		}
+
+		//创建对话框，到处都是啊
+		const dialog = ui.create.dialog("hidden", `${get.translation(target)}的手牌`); //"notouchscroll"
+		_status.countDialogs[target.playerid] = dialog;
+		dialog.setAttribute("id", "count_handcards_" + target.playerid);
+		//dialog.classList.add("popped");
+		dialog.classList.add("scroll1");
+		dialog.classList.add("scroll2");
+		dialog.classList.add("nobutton");
+		dialog.classList.add("static");
+
+		//创建手牌容器并通过函数将牌添加到里面
+		const container = createHandCardsContainer(target);
+		dialog.handcardsContainer = container;
+		addCardsToCountDialog(container, cards);
+		dialog.content.appendChild(container);
+
+		//添加关闭按钮
+		const closeButton = ui.create.div(".close-count-btn");
+		closeButton.textContent = "关闭";
+		dialog.appendChild(closeButton);
+		closeButton.onclick = function () {
+			closeCountDialog(target);
+		};
+
+		const intervalId = setInterval(() => {
+			const { cards, allShown } = getVisibleCards(target);
+			if (!cards.length && !allShown) {
+				closeCountDialog(target);
+				return;
+			}
+			addCardsToCountDialog(container, cards);
+		}, 200);
+		dialog._intervalId = intervalId;
+		//打开对话框(模仿dialog.open的动画)
+		dialog.style.transform = "scale(0.8)";
+		dialog.style.transitionProperty = "opacity,transform";
+		dialog.style.opacity = "0";
+		ui.window.appendChild(dialog);
+		ui.refresh(dialog);
+		lib.placePoppedDialog(dialog, e);
+		dialog.style.transform = "scale(1)";
+		dialog.style.opacity = "1";
+		setTimeout(() => {
+			dialog.style.transitionProperty = "";
+		}, 500);
+		/**
+		 * 判断手牌的可见性
+		 * @param { Player } target
+		 * @returns { { cards: Card[], allShown: boolean } }
+		 */
+		function getVisibleCards(target) {
+			const allShown = target.isUnderControl(true, game.me) || (!game.observe && game.me && game.me.hasSkillTag("viewHandcard", null, target, true));
+			if (allShown) {
+				return { cards: target.getCards("h"), allShown };
+			} else {
+				//后续有别的判断是否可见的方法丢这来
+				const filterCard = card => {
+					return get.is.shownCard(card);
+				};
+				return { cards: target.getCards("h", card => filterCard(card)), allShown };
+			}
+		}
+
+		/**
+		 * 创建一个手牌容器
+		 * @param {Player} target
+		 * @returns {HTMLDivElement} 返回配置好的容器
+		 */
+		function createHandCardsContainer(target) {
+			const container = document.createElement("div");
+			container.className = "count-handcards-container";
+			container.setAttribute("id", `count_handcards_container_${target.playerid}`);
+
+			//滚动查看手牌的监听
+			const wheelCards = e => {
+				if (e.deltaY !== 0) {
+					e.preventDefault();
+					container.scrollLeft += e.deltaY;
+				}
+			};
+			container.addEventListener("wheel", wheelCards, { passive: false });
+
+			//移动端点击查看手牌的监听
+			const activateCards = e => {
+				const card = e.target.closest(".count-handcards-container > *");
+				if (!card) {
+					return;
+				}
+
+				const isActive = card.classList.contains("count-card-active");
+
+				Array.from(container.children).forEach(child => {
+					child.classList.remove("count-card-active");
+				});
+
+				if (!isActive) {
+					card.classList.add("count-card-active");
+				}
+
+				e.stopPropagation();
+			};
+			container.addEventListener("touchstart", activateCards);
+
+			//销毁容器的函数
+			container.destroyContainer = () => {
+				container.removeEventListener("wheel", wheelCards);
+				container.removeEventListener("touchstart", activateCards);
+				container.delete();
+			};
+
+			return container;
+		}
+
+		/**
+		 * 关闭对应角色的手牌查看对话框
+		 * @param { Player } target
+		 * @returns { boolean } 是否有关闭到对话框
+		 */
+		function closeCountDialog(target) {
+			if (_status.countDialogs[target.playerid]) {
+				const dialog = _status.countDialogs[target.playerid];
+				if (ui.window.querySelector(`#${dialog.id}`)) {
+					clearInterval(dialog._intervalId);
+					const container = dialog.handcardsContainer;
+					container.destroyContainer();
+					dialog?.delete();
+				}
+				delete _status.countDialogs[target.playerid];
+				return true;
+			}
+			return false;
+		}
+
+		/**
+		 * 往查看手牌的对话框的容器里塞牌（默认清除原有的牌）
+		 * @param { HTMLElement } container
+		 * @param { Card[] } cards
+		 * @returns { HTMLElement | undefined }
+		 */
+		function addCardsToCountDialog(container, cards) {
+			if (!container.id.startsWith("count_handcards_container_")) {
+				return;
+			}
+			if (container.buttons?.length == cards.length && (cards.length == 0 || container.buttons?.every((button, index) => button.link == cards[index]))) {
+				return;
+			}
+			//清空原来的牌
+			if (typeof container.replaceChildren == "function") {
+				container.replaceChildren();
+			} else {
+				while (container.firstChild) {
+					container.removeChild(container.firstChild);
+				}
+			}
+
+			//计算偏移
+			const num = cards.length;
+			if (num) {
+				const minShrinkWidth = "-66px";
+				let marginRight = 0;
+				if (num > 4 && num < 10) {
+					//目前最多能一次看见10张牌，最终的宽度为24*10+90=330，因此除最后一张所需的宽度再被90减去即可得到偏移量
+					marginRight = `-${90 - 240 / (num - 1)}px`;
+				} else if (num >= 10) {
+					marginRight = minShrinkWidth;
+				}
+
+				const buttons = ui.create.buttons(cards, "card", container);
+				container.buttons = buttons;
+				buttons.forEach(button => {
+					button.style.setProperty("margin-right", marginRight);
+				});
+			} else {
+				container.buttons = [];
+				container.innerHTML = ``;
+			}
+			return container;
+		}
+	}
 }

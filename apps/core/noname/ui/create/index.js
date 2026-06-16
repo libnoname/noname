@@ -3167,7 +3167,7 @@ export class Create {
 			lib.arenaReady?.shift()();
 		}
 		delete lib.arenaReady;
-		if (lib.config.auto_check_update && !sessionStorage.getItem("auto_check_update")) {
+		/*if (lib.config.auto_check_update && !sessionStorage.getItem("auto_check_update")) {
 			setTimeout(() => {
 				sessionStorage.setItem("auto_check_update", "1");
 				game.checkForUpdate(false);
@@ -3198,7 +3198,7 @@ export class Create {
 					}
 				}, 3000);
 			});
-		}
+		}*/
 		if (localStorage.getItem(lib.configprefix + "playback")) {
 			setTimeout(lib.init.onfree);
 		}

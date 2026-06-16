@@ -11,7 +11,7 @@ const characterSort = {
 	tw_beiding: ["huan_luxun", "huan_liushan", "huan_zhugeliang", "huan_jiangwei", "huan_zhanghe", "huan_zhugeguo", "huan_weiyan", "huan_simayi", "huan_zhaoyun"],
 	tw_weiang: ["huan_liufeng", "huan_caoang", "huan_huanggai", "huan_dingshangwan", "huan_dianwei", "huan_caopi", "huan_caozhi", "huan_caochong"],
 	tw_jsrg: ["tw_jsrg_wangyun", "tw_jsrg_hejin", "tw_jsrg_caocao", "tw_jsrg_huangfusong", "tw_jsrg_sunjian", "tw_jsrg_liubei"],
-	tw_mobile: ["nashime", "tw_gexuan", "tw_zhugeguo", "tw_yj_zhanghe"],
+	tw_mobile: ["nashime", "tw_gexuan", "tw_zhugeguo", "tw_yj_zhanghe", "tw_yj_fazheng"],
 	tw_standard: ["tw_zhangfei"],
 	tw_shenhua_yin: ["tw_yl_luzhi"],
 	tw_shenhua_lei: ["tw_guanqiujian"],
