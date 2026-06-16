@@ -23,8 +23,8 @@
  */
 export function decideReconnect(state) {
 	const { wasOnline, wasGameOver, noReconnect, reconnecting, hasIp } = state;
-	const attempts = state.attempts || 0;
-	const maxAttempts = state.maxAttempts || 5;
+	const attempts = state.attempts ?? 0;
+	const maxAttempts = state.maxAttempts ?? 5;
 
 	// 是否需要重连：本次为联机中的异常断开，或正处于重试链中（续连）。
 	// 用独立的 reconnecting 标志驱动续连，避免依赖 onlineroom/online —— 纯大厅
