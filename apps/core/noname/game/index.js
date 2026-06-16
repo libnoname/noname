@@ -2168,7 +2168,6 @@ export class Game {
 		_status.connectCallback = callback;
 		try {
 			if (game.ws) {
-				clearTimeout(game.ws._connectTimeout);
 				game.ws._nocallback = true;
 				game.ws.close();
 				delete game.ws;
@@ -2187,15 +2186,11 @@ export class Game {
 		game.ws.onmessage = lib.element.ws.onmessage;
 		game.ws.onerror = lib.element.ws.onerror;
 		game.ws.onclose = lib.element.ws.onclose;
-		// 连接超时：服务端无响应时避免无限等待（onopen/onerror/onclose 中清除）
-		game.ws._connectTimeout = setTimeout(() => {
-			if (game.ws && game.ws.readyState !== 1) {
-				game.ws._nocallback = true;
-				game.ws.close();
-				if (callback && _status.connectCallback === callback) {
-					callback(false);
-					delete _status.connectCallback;
-				}
+		// 连接超时处理
+		const ws = game.ws;
+		ws._connectTimeout = setTimeout(() => {
+			if (game.ws === ws && ws.readyState !== 1) {
+				ws.close();
 			}
 		}, 10000);
 		_status.ip = ip;
