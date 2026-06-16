@@ -37274,15 +37274,16 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			const choiceList = [];
-			if (!player.getStorage(event.name).includes("recover")) {
+			const name = "dclianyou";
+			if (!player.getStorage(name).includes("recover")) {
 				if (game.hasPlayer(current => current.isMinHp() && current.isDamaged())) {
 					choiceList.push(["recover", "令一名体力值最小的角色回复2点体力"]);
 				}
 			}
-			if (!player.getStorage(event.name).includes("equip")) {
+			if (!player.getStorage(name).includes("equip")) {
 				choiceList.push(["equip", "令一名装备区牌最少的角色随机使用两张装备牌"]);
 			}
-			if (!player.getStorage(event.name).includes("draw")) {
+			if (!player.getStorage(name).includes("draw")) {
 				choiceList.push(["draw", "摸三张牌并可以交给一名手牌最少的其他角色三张牌"]);
 			}
 			if (choiceList.length) {
@@ -37331,7 +37332,7 @@ const skills = {
 					.set("choiceList", choiceList)
 					.forResult();
 				if (result.bool) {
-					player.markAuto(event.name, result.links[0]);
+					player.markAuto(name, result.links[0]);
 					event.result = { bool: true, cost_data: { choice: result.links[0] } };
 				}
 			}
@@ -37415,12 +37416,12 @@ const skills = {
 				charlotte: true,
 				forced: true,
 				firstDo: true,
-				nopopup: true,
+				popup: false,
 				trigger: {
 					global: "roundStart",
 				},
 				async content(event, trigger, player) {
-					player.unmarkAuto("dclianyou");
+					["recover", "equip", "draw"].forEach(index => player.unmarkAuto("dclianyou", index));
 				},
 			},
 		},
@@ -37482,6 +37483,7 @@ const skills = {
 					}
 				}
 				player.unmarkAuto("dccili_mark");
+				player.removeSkill("dccili_mark");
 			});
 		},
 		subSkill: {
@@ -37498,7 +37500,7 @@ const skills = {
 						}
 						const name = storage[0];
 						const num = storage[1];
-						return `${get.translation(name)}啊，你当时是${num}点体力值<br>下回合用不到${num}张牌可是要打皮鼓的哟`;
+						return `${get.translation(name)}啊，你当时是${num}点体力值<br>下回合用不到${num}张牌，有人要被打皮鼓哟`;
 					},
 				},
 			},
