@@ -2191,10 +2191,10 @@ export class Game {
 			if (game.ws && game.ws.readyState !== 1) {
 				game.ws._nocallback = true;
 				game.ws.close();
-				if (callback) {
+				if (callback && _status.connectCallback === callback) {
 					callback(false);
+					delete _status.connectCallback;
 				}
-				delete _status.connectCallback;
 			}
 		}, 10000);
 		_status.ip = ip;
