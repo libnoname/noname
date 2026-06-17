@@ -3753,7 +3753,7 @@ export default {
 							}
 							return lib.filter.filterCard.apply(this, arguments);
 						},
-						filterTarget: get.filter(trigger.target),
+						filterTarget: get.filter(trigger.target, 2),
 						selectTarget: -1,
 					})
 					.set("addCount", false)
