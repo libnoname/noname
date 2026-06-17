@@ -435,9 +435,9 @@ const skills = {
 					content(storage, player) {
 						let str = "";
 						if (storage?.length) {
-							str = "本回合不能使用" + storage.map(i => get.translation(i)).join("、") + "牌";
+							str = "本回合不能使用" + storage.map(i => get.translation(i)).join("、") + "牌且";
 						}
-						str += "且受到的伤害+1";
+						str += "受到的伤害+1";
 						return str;
 					},
 				},
@@ -494,10 +494,10 @@ const skills = {
 			if (!skill) {
 				return;
 			}
-			target.removeSkill(skill);
+			await target.removeSkill(skill);
 			for (const current of [player, target]) {
 				current.storage.sxrmfusui_skill = skill;
-				current.addSkill("sxrmbiyi");
+				await current.addSkill("sxrmbiyi");
 				current.addTempSkill("sxrmfusui_prevent", { player: "roundStart" });
 			}
 		},
@@ -516,6 +516,10 @@ const skills = {
 				charlotte: true,
 				async content(event, trigger, player) {
 					trigger.cancel();
+				},
+				mark: true,
+				intro: {
+					content: "防止本轮受到的伤害",
 				},
 				ai: {
 					nofire: true,
@@ -563,7 +567,7 @@ const skills = {
 			player: ["useSkill", "logSkillBegin"],
 		},
 		filter(event, player) {
-			const skill = event.skill || event.sourceSkill;
+			const skill = get.sourceSkillFor(event);
 			if (!skill) {
 				return false;
 			}
@@ -575,8 +579,6 @@ const skills = {
 			if (info && info.charlotte) {
 				return false;
 			}
-			console.log(skill);
-			console.log(currentSkill);
 			return skill == currentSkill;
 		},
 		async content(event, trigger, player) {
@@ -595,9 +597,6 @@ const skills = {
 	//嗔张昭
 	sxrmxiezhong: {
 		audio: 2,
-		trigger: {
-			player: "phaseZhunbeiBegin",
-		},
 		filter(event, player) {
 			return game.countPlayer() > 1;
 		},
@@ -718,7 +717,7 @@ const skills = {
 					prompt: `选择一名角色，令其执行两次“${num == 0 ? "摸两张牌并失去一点体力" : "将两张牌当【杀】使用"}”的选项`,
 					filterTarget(card, player, target) {
 						const { targets } = get.event();
-						return !targets.includes(target);
+						return !targets?.includes(target);
 					},
 					forced: true,
 					ai(target) {
@@ -799,7 +798,7 @@ const skills = {
 						return false;
 					}
 					const card0 = get.autoViewAs({ name: "sha" }, [card1, card2]);
-					return lib.filter.cardEnabled(card0, player);
+					return lib.filter.cardEnabled(card0, player) && player.hasUseTarget(get.autoViewAs({name:'sha',cards)}));
 				});
 			});
 		},
