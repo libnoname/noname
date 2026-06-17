@@ -1128,6 +1128,12 @@ const characters = {
 		hp: 3,
 		skills: ["dcsuifu", "dcpijing"],
 	},
+	dc_huanhuaijin: {
+		sex: "female",
+		group: "wei",
+		hp: 3,
+		skills: ["dclianyou","dccili"],
+	},
 	dc_huangzu: {
 		sex: "male",
 		group: "qun",

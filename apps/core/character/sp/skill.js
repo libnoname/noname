@@ -32902,6 +32902,11 @@ const skills = {
 							return 1;
 						}
 						const awakened = Object.keys(player.storage).some(i => typeof i == "string" && i.indexOf("fuhan") != -1);
+						if (!awakened || !player.awakenedSkills.some(i => i.indexOf("fuhan"))) {
+							if (player.countMark("fanghun") < 2 && player.getHp() > 1) {
+								return 0;
+							}
+						}
 						if (_status.event.type == "phase") {
 							var max = 0;
 							var list = ["sha", "tao", "jiu"];

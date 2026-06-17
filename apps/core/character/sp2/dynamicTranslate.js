@@ -7,6 +7,16 @@ const dynamicTranslates = {
 		}
 		return lib.translate["starchongzu_info"];
 	},
+	starweigu(player) {
+		let str = "你使用伤害牌指定唯一目标或成为伤害牌唯一目标时，你可以弃置一张可指定自己为目标（toself为true或牌面目标合法）的牌，然后选择一项:";
+		if (player.storage?.starweigu) {
+			str += "<span class=bluetext>1、对一名角色造成2点伤害；</span>";
+		} else {
+			str += "<span class=bluetext>1、移动场上一张牌；</span>";
+		}
+		str += "2、令你攻击范围内的所有角色也成为此牌目标（不包括此牌使用者）。此牌结算后若牌未造成伤害，你失去1点体力并摸两张牌。";
+		return str;
+	},
 	mubing(player) {
 		if (player.storage.mubing2) {
 			return "出牌阶段开始时，你可以亮出牌堆顶的四张牌。你可弃置任意张手牌，并可获得任意张点数之和不大于你弃置的牌点数之和的牌。然后你可将以此法得到的牌以任意方式交给其他角色。";

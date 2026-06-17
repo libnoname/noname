@@ -110,6 +110,13 @@ const characters = {
 		maxHp: 5,
 		skills: ["starruijun", "stargangyi"],
 	},
+	star_xiahouba: {
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		skills: ["starweigu","starjuefa"],
+		names: "夏侯|霸",
+	},
 	liqueguosi: {
 		sex: "male",
 		group: "qun",

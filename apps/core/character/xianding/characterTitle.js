@@ -79,6 +79,7 @@ export default {
 	caomao: "霸业的终耀",
 	liubian: "弘农怀王",
 	dc_liuyu: "维城燕北",
+    dc_huanhuaijin: "慧心育麟",
 	quanhuijie: "春早宫深",
 	dingshangwan: "与君不载",
 	yuanji: "袁门贵女",

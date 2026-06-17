@@ -369,7 +369,7 @@ const skills = {
 					const list = event.cards.filter(card => {
 						if (["equip3", "equip4", "equip3_4"].includes(get.subtype(card))) {
 							return true;
-						} else if (get.type2(card) == "basic") {
+						} else if (get.type2(card) == "trick") {
 							return true;
 						}
 						return ["sha", "jiu"].includes(get.name(card));
