@@ -1872,7 +1872,7 @@ const skills = {
 					async content(event, trigger, player) {
 						const storage = player.getStorage("v_zhangxingcai_changeSkin", false);
 						if (storage) {
-							player.changeSkin(event.name, "v_zhangxingcai");
+							player.changeSkin("dchuangnu", "v_zhangxingcai");
 							player.setStorage("v_zhangxingcai_changeSkin", !storage);
 						}
 						const num = player.getHistory("useSkill", evt => get.sourceSkillFor(evt.skill) == "dchuangnu").length;
@@ -1952,7 +1952,7 @@ const skills = {
 				async content(event, trigger, player) {
 					const storage = player.getStorage("v_zhangxingcai_changeSkin", false);
 					if (storage) {
-						player.changeSkin(event.name, "v_zhangxingcai");
+						player.changeSkin("dchuangnu", "v_zhangxingcai");
 						player.setStorage("v_zhangxingcai_changeSkin", !storage);
 					}
 					const num = player.getHistory("useSkill", evt => get.sourceSkillFor(evt.skill) == "dchuangnu").length;
