@@ -528,7 +528,7 @@ const translates = {
 	decadezhenjun: "镇军",
 	decadezhenjun_info: "准备阶段或结束阶段，你可以弃置一名角色X张牌（X为其手牌数减体力值且至少为1），若其中没有装备牌，你选择一项：1.你弃一张牌；2.该角色摸等量的牌。",
 	decadejingce: "精策",
-	decadejingce_info: "结束阶段，若你本回合使用过的牌数不小于你的体力值，则你可执行一个摸牌阶段或出牌阶段；若这些牌包含的花色数也不小于你的体力值，则你将“或”改为“并”。",
+	decadejingce_info: "结束阶段，若你本回合使用过的牌数不小于你的体力值，则你可执行一个摸牌阶段或出牌阶段；若这些牌包含的花色数也不小于你的体力值，则你将“或”改为“和”。",
 	re_guanping: "界关平",
 	re_guanping_prefix: "界",
 	relongyin: "龙吟",
