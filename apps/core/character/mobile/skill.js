@@ -673,12 +673,12 @@ const skills = {
 				filter(event, player) {
 					return player.countMark("mbranshang") > 0;
 				},
-				async content(event, trigger, player) {
-					await player.loseHp(player.countMark("mbranshang"));
-					if (player.countMark("mbranshang") >= player.getDamagedHp()) {
-						await player.loseMaxHp({ num: 2 });
-						await player.draw(2);
-					}
+				content() {
+			        player.loseHp(player.countMark("mbranshang"));
+			        if (player.countMark("mbranshang") > 1) {
+				    player.loseMaxHp(2);
+			    	player.draw(2);
+    			    }
 				},
 			},
 		},
