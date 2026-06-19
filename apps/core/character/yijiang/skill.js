@@ -8619,7 +8619,7 @@ const skills = {
 			return (
 				get.suit(event.card) == "spade" &&
 				_status.currentPhase == event.player &&
-				event.targets &&
+				event.targets && event.player.isPhaseUsing() &&
 				event.targets.length &&
 				event.player != player &&
 				game.countPlayer2(function (current) {
