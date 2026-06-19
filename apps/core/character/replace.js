@@ -296,7 +296,7 @@ window.noname_character_replace = {
 	xunyou: ["xunyou", "clan_xunyou", "re_xunyou"],
 	xunyu: ["xunyu", "ol_xunyu", "dc_sb_xunyu", "star_xunyu", "re_xunyu", "sb_xunyu", "sxrm_xunyu", "xy_xunyu", "clan_xunyu"],
 	xushao: ["xushao", "jsrg_xushao", "std_xushao"],
-	xusheng: ["xusheng", "xin_xusheng", "re_xusheng", "old_xusheng", "drag_xusheng", "dc_sb_xushneg"],
+	xusheng: ["xusheng", "xin_xusheng", "re_xusheng", "old_xusheng", "drag_xusheng", "dc_sb_xusheng"],
 	xushi: ["xushi", "zc26_sp_xushi"],
 	xushu: ["xin_xushu", "re_xushu", "dc_xushu", "friend_xushu", "xia_xushu", "std_xushu", "xushu", "xk_shanfu"],
 	xuwen: ["xuwen"],
