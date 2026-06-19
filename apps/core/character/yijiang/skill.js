@@ -7339,6 +7339,7 @@ const skills = {
 	},
 	longyin: {
 		audio: 2,
+		audioname: ["ol_guanping"],
 		init: player => {
 			game.addGlobalSkill("longyin_order");
 		},
