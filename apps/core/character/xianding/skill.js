@@ -15043,7 +15043,7 @@ const skills = {
 				});
 				if (vcards.length) {
 					const result = await player
-						.chooseButton([`###圆融：你可以将本回合进入弃牌堆的一张红色牌当任意基本使用###弃牌堆`, redCards, "###可转化基本牌###", [vcards, "vcard"]], 2)
+						.chooseButton([`###圆融：你可以将本回合进入弃牌堆的一张红色牌当任意基本牌使用###弃牌堆`, redCards, "###可转化基本牌###", [vcards, "vcard"]], 2)
 						.set("filterButton", button => {
 							if (!Array.isArray(button.link)) {
 								return ui.selected.buttons.length == 0;
