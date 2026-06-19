@@ -10877,6 +10877,7 @@ const skills = {
 	//手杀薛综
 	mbfunan: {
 		audio: "funan",
+		derivation: ["mbfunan_rewrite",],
 		trigger: { global: ["respond", "useCard"] },
 		filter(event, player) {
 			if (!event.respondTo) {
