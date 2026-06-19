@@ -696,7 +696,7 @@ const skills = {
 			const result = await player
 				.chooseControl({
 					prompt: get.prompt2(event.skill),
-					choiceList: [`摸一张牌`, `令${get.translation(card)}造成的伤害+1`, `背水！获得一个“燃”`],
+					choiceList: [`摸两张牌`, `令${get.translation(card)}造成的伤害+1`, `背水！获得一个“燃”`],
 					controls: ["选项一", "选项二", "背水！", "cancel2"],
 					choice: (() => {
 						if (!get.is.damageCard(card)) {
@@ -721,7 +721,7 @@ const skills = {
 				cost_data: { index },
 			} = event;
 			if (index % 2 == 0) {
-				await player.draw();
+				await player.draw(2);
 			}
 			if (index > 0) {
 				game.log(trigger.card, "的基础伤害+1");
