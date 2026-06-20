@@ -673,7 +673,7 @@ const skills = {
 				filter(event, player) {
 					return player.countMark("mbranshang") > 0;
 				},
-				content() {
+				async content(event, trigger, player) {
 			        player.loseHp(player.countMark("mbranshang"));
 			        if (player.countMark("mbranshang") > 1) {
 				    player.loseMaxHp(2);
