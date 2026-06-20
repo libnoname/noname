@@ -24033,14 +24033,14 @@ const skills = {
 		ai: {
 			result: {
 				player(player, target) {
-					let num = target.getAllHistory("useCard", evt => evt.card.name == "sha").length + 1;
+					let num = Math.max(target.getAllHistory("useCard", evt => evt.card.name == "sha").length,1);
 					if (num < target.hp) {
 						return 0;
 					}
 					return num * lib.card.juedou.ai.result.player.apply(this, arguments);
 				},
 				target(player, target) {
-					let num = target.getAllHistory("useCard", evt => evt.card.name == "sha").length + 1;
+					let num = Math.max(target.getAllHistory("useCard", evt => evt.card.name == "sha").length,1);
 					if (num < target.hp) {
 						return 0;
 					}
@@ -24064,7 +24064,7 @@ const skills = {
 				},
 				content() {
 					var target = trigger.getParent().target;
-					trigger.num = 1 + target.getAllHistory("useCard", evt => evt.card.name == "sha").length;
+					trigger.num = Math.max( target.getAllHistory("useCard", evt => evt.card.name == "sha").length,1);
 					target.addTempSkills("juesheng", { player: "phaseAfter" });
 				},
 			},
