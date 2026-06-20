@@ -1774,7 +1774,7 @@ const skills = {
 					.chooseTarget({
 						prompt: `煌怒：选择一名角色令其随机弃置一张你指定类型的牌`,
 						filterTarget(card, player, target) {
-							return target.countDiscardableCards(target, "h") > 0;
+							return target.countDiscardableCards(target, "he") > 0;
 						},
 						ai(target) {
 							return get.effect(target, { name: "guohe_copy2", position: "h" }, get.player(), get.player());
