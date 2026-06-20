@@ -553,6 +553,7 @@ window.noname_character_rank = {
 		"yj_zhenji",
 	],
 	bp: [
+		"pot_lvyi",
 		"dc_shen_liubei",
 		"pot_zhangren",
 		"pot_sunchen",
@@ -2668,6 +2669,7 @@ window.noname_character_rank = {
 			"v_sunce",
 		],
 		epic: [
+			"pot_lvyi",
 			"dc_shen_liubei",
 			"dc_shen_zhangliao",
 			"dc_muludawang",

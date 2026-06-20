@@ -1,4 +1,5 @@
 export default {
+	//pot_lvyi: "",
 	pot_caoshuang: "擅政专权",
 	//pot_zhangren: "",
 	pot_sunchen: "凶竖盈溢",
@@ -7,7 +8,7 @@ export default {
 	//pot_chenjiao: "",
 	//pot_zanghong: "",
 	sp_zhonghui: "荡蜚缴志",
-	mb_chenzhi: "承担接贤", 
+	mb_chenzhi: "承担接贤",
 	mb_sunjun: "横逆自固",
 	guoyuan: "清介有守",
 	mb_huangzu: "守殁枭寒",

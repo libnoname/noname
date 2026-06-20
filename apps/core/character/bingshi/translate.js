@@ -1,6 +1,14 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	pot_lvyi: "势吕壹",
+	pot_lvyi_prefix: "势",
+	pothuilv: "隳律",
+	pothuilv_info: "每轮每种颜色限一次，其他角色的出牌阶段开始时，你可以选择一种颜色，令其从牌堆中随机获得一张该颜色的牌并展示。此阶段结束时，若该角色于此阶段内使用过此牌，你对其造成1点伤害；若此牌不在弃牌堆，其对你造成1点虚拟伤害，然后你可将该牌交给另一名角色。",
+	potsongyan: "耸言",
+	potsongyan_info: "准备阶段或当你受到伤害后，你可以视为使用一张【无中生有】，此【无中生有】结算过程中，本轮因弃置失去过牌的角色可以将一张与其本轮弃置的牌颜色相同的牌当做【无懈可击】使用。",
+	potshishi: "恃势",
+	potshishi_info: "锁定技，对你造成过伤害的角色不能响应你使用的牌，直到你使用的牌被其他角色响应。",
 	pot_caoshuang: "势曹爽",
 	pot_caoshuang_prefix: "势",
 	potdianyi: "典易",
