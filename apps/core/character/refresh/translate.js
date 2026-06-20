@@ -518,7 +518,7 @@ const translates = {
 	re_guotufengji_prefix: "界",
 	rejigong: "急攻",
 	rejigong2: "急攻",
-	rejigong_info: "出牌阶段开始时，你可以摸至多三张牌。若如此做，你本回合的手牌上限基数改为X，且弃牌阶段结束时，若X不小于Y，则你回复1点体力。（X为你本回合内造成的伤害值之和，Y为你本回合内因〖急攻〗摸牌而得到的牌的数量总和）",
+	rejigong_info: "出牌阶段开始时，你可以摸至多三张牌。若如此做，你本回合的手牌上限基数改为X，且此阶段结束时，若X不小于Y，则你回复1点体力。（X为你本回合内造成的伤害值之和，Y为你本回合内因〖急攻〗摸牌而得到的牌的数量总和）",
 	ol_jiangwei: "界姜维",
 	ol_jiangwei_prefix: "界",
 	oltiaoxin: "挑衅",
