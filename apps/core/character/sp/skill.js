@@ -25402,7 +25402,7 @@ const skills = {
 					event.result = await player
 						.chooseTarget([1, 2], "是否弃置“颂”标记？", `为${get.translation(trigger.card)}增加至多两个目标`, (card, player, target) => {
 							const evt = get.event().getTrigger();
-							return target != player && target != evt.targets[0] && lib.filter.targetEnabled2(evt.card, player, target);
+							return target != player && target != evt.targets[0] && lib.filter.targetEnabled2(evt.card, player, target) && lib.filter.targetInRange(evt.card, player, target);
 						})
 						.set("ai", target => {
 							const evt = get.event().getTrigger();
