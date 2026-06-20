@@ -30134,11 +30134,16 @@ const skills = {
 			notsha: {
 				mark: true,
 				intro: {
-					content: "不能使用【杀】",
+					content: "不能使用或打出【杀】",
 				},
 				charlotte: true,
 				mod: {
 					cardEnabled(card) {
+						if (card.name == "sha") {
+							return false;
+						}
+					},
+					cardRespondable(card) {
 						if (card.name == "sha") {
 							return false;
 						}
