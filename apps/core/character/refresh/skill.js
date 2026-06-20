@@ -7404,7 +7404,7 @@ const skills = {
 				return num;
 			},
 		},
-		trigger: { player: "phaseDiscardEnd" },
+		trigger: { player: "phaseUseEnd" },
 		forced: true,
 		charlotte: true,
 		sourceSkill: "rejigong",
