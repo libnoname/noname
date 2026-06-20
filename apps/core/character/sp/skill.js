@@ -4134,8 +4134,7 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		filterTarget(card, player, target) {
-			if (player == target) {
-				return false;
+				return player !== target;
 			}
 			return target.countCards("h") > 0;
 		},
