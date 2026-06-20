@@ -7372,7 +7372,7 @@ const skills = {
 			player.addSkills("reguanxing");
 		},
 	},
-	//界郭图张嶷
+	//界郭图逢纪
 	rejigong: {
 		audio: 2,
 		direct: true,
