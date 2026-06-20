@@ -62,7 +62,7 @@ const skills = {
 			}
 			const list = [player.getDamagedHp(), player.getHp()].sort((a, b) => a - b);
 			const hs = player.getCards("h", card => result.cards.includes(card));
-			if (hs.length <= list[0]) {
+			if (hs.length <= list[1]) {
 				result = { bool: true, cards: hs };
 			} else {
 				result = await player
