@@ -7412,7 +7412,7 @@ const skills = {
 				.slice()
 				.map(i => get.name(i, false))
 				.unique();
-			const resultx = await target.chooseToGive(player, "he", true).forResult();
+			const resultx = await target.chooseToGive(player, "h", true).forResult();
 			if (resultx?.bool && resultx.cards?.length) {
 				if (names.includes(get.name(resultx.cards[0], false))) {
 					const str = get.translation(target);
