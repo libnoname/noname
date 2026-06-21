@@ -32593,9 +32593,6 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			let num = player.storage.fanghun;
-			if (num) {
-				await player.draw(num);
-			}
 			player.removeMark("fanghun", num);
 			player.awakenSkill(event.name);
 			num = Math.max(2, player.storage.fanghun2 || 0);
