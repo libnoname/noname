@@ -25052,7 +25052,8 @@ const skills = {
 				await target.draw("nodelay");
 			}
 			await game.delayx();
-			const targetsx = targets.filter(current => current.isMinHp(false, false, targets.includes(current)));
+			const minHp = Math.min(...targets.map(p => p.hp));
+			const targetsx = targets.filter(p => p.hp === minHp);
 			if (targetsx.length) {
 				await targetsx.randomGet().recover();
 			}
