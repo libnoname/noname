@@ -16,6 +16,12 @@ type triggerPlayerTodo = {
 	todoList: triggerSkillTodo[];
 	doneList: triggerSkillTodo[];
 };
+/**
+ * 等待子事件时的错误传播模式。
+ *
+ * - strict: 子事件报错会继续向当前等待方抛出。
+ * - safe: 子事件报错只记录并继续等待流程，主要供裸 await 事件使用。
+ */
 type WaitNextMode = "strict" | "safe";
 export class GameEvent implements PromiseLike<void> {
 	constructor(name: string = "", trigger: boolean = true, manager: GameEventManager = _status.eventManager) {
@@ -85,6 +91,12 @@ export class GameEvent implements PromiseLike<void> {
 	cost_data: Result["cost_data"];
 	error?: unknown;
 	#errorReported = false;
+	/**
+	 * 记录事件执行过程中出现的错误。
+	 *
+	 * @param error 捕获到的错误对象。
+	 * @param report 是否立即通过游戏日志和控制台报告；同一事件只报告一次。
+	 */
 	recordError(error: unknown, report = false) {
 		this.error = error;
 		if (report && !this.#errorReported) {
@@ -94,6 +106,14 @@ export class GameEvent implements PromiseLike<void> {
 			console.error(error);
 		}
 	}
+	/**
+	 * 以指定错误传播模式等待当前事件完成。
+	 *
+	 * 当前事件有父事件时，会委托父事件推进 next 队列；safe 模式仅保护当前事件本身。
+	 * 当前事件没有父事件时，直接启动自身。
+	 *
+	 * @param mode 等待时采用的错误传播模式。
+	 */
 	#doAsync(mode: WaitNextMode): Promise<void> {
 		if (this.parent) {
 			return this.parent.waitNext(mode, mode === "safe" ? this : undefined).then(() => undefined);
@@ -143,6 +163,12 @@ export class GameEvent implements PromiseLike<void> {
 			}
 		);
 	}
+	/**
+	 * 显式声明当前事件依赖此事件完成。
+	 *
+	 * 与裸 await 事件不同，link 会使用 strict 模式等待；如果被等待事件已经记录过错误，
+	 * 也会在这里重新抛出，让当前事件流程受到影响。
+	 */
 	async link(): Promise<void> {
 		await this.#doAsync("strict");
 		if (this.error) {
@@ -335,6 +361,17 @@ export class GameEvent implements PromiseLike<void> {
 	#waitNext?: Promise<Partial<Result> | void>;
 	#waitNextMode: WaitNextMode = "strict";
 	#waitNextSafeEvents = new Set<GameEvent>();
+	/**
+	 * 推进并等待当前事件 next 队列中的子事件。
+	 *
+	 * 默认 strict 模式会保持原有流程语义：子事件报错会中断当前等待。
+	 * safe 模式用于裸 await 事件，只记录指定 safeEvent 的错误并继续推进队列；
+	 * 后续 strict 等待会将正在进行的 safe 等待升级为 strict。
+	 *
+	 * @param mode 等待子事件时的错误传播模式，默认为 strict。
+	 * @param safeEvent safe 模式下允许被保底处理的目标子事件；不传则允许当前 safe 轮次处理所有子事件。
+	 * @returns 最后一个有 result 的子事件结果。
+	 */
 	waitNext(mode: WaitNextMode = "strict", safeEvent?: GameEvent): Promise<Partial<Result> | void> {
 		if (mode === "safe" && safeEvent) {
 			this.#waitNextSafeEvents.add(safeEvent);

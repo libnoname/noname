@@ -163,6 +163,9 @@ Object.assign(lib.element.GameEvent.prototype, {
 			onrejected
 		);
 	},
+	/**
+	 * 显式声明当前事件依赖此事件完成，等待事件报错时会影响当前流程。
+	 */
 	async link() {
 		const event = /** @type { any } */ (this);
 		await (event.parent ? event.parent.waitNext() : event.start());
