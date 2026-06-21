@@ -1284,7 +1284,57 @@ const skills = {
 		},
 	},
 	//史阿
-	
+	    liren: {
+		audio: 2,
+		forced: true,
+		mod: {
+			attackRangeFinal(player, num) {
+				return 2;
+			},
+		},
+		trigger: {
+			global: ["damageSource", "shaMiss", "eventNeutralized"],
+		},
+		filter(event, player) {
+			if (player.countMark("liren") >= 3) {
+				return false;
+			}
+			if (event.card?.name != "sha") {
+				return false;
+			}
+			if (event.name == "damage") {
+				return event.cards.someInD("od");
+			}
+			return true;
+		},
+		intro: {
+			content: "本回合已获得#张牌",
+		},
+		async content(event, trigger, player) {
+			player.addTempSkill(event.name + "_clear");
+			const count = player.countMark(event.name);
+			if (trigger.name == "damage") {
+				let cards = trigger.cards.filterInD("od");
+				cards = cards.slice(0, Math.min(cards.length, 3 - count));
+				if (cards.length) {
+					player.addMark(event.name, cards.length, false);
+					await player.gain({ cards, animate: "gain2" });
+				}
+			}
+			else {
+				player.addMark(event.name, 1, false);
+				await player.draw();
+			}
+		},
+		subSkill: {
+			clear: {
+				charlotte: true,
+				onremove(player, skill) {
+					player.clearMark(skill.slice(0, -6), false);
+				}
+			},
+		},
+	},
 	sejianchu: {
 		audio: 2,
 		derivation: ["jige", "liren"],
