@@ -1285,33 +1285,82 @@ const skills = {
 	},
 	//史阿
 	liren: {
-		audio: 2,
-		trigger: {
-			global: ["damageSource", "shaMiss", "eventNeutralized"],
-		},
-		forced: true,
-		filter(event, player) {
-			if (event.card?.name != "sha") {
-				return false;
-			}
-			if (event.name == "damage") {
-				return event.cards.someInD("od");
-			}
-			return true;
-		},
-		async content(event, trigger, player) {
-			if (trigger.name == "damage") {
-				await player.gain({ cards: trigger.cards.filterInD("od"), animate: "gain2" });
-			} else {
-				await player.draw();
-			}
-		},
-		mod: {
-			attackRangeFinal(player, num) {
-				return 2;
-			},
-		},
-	},
+    audio: 2,
+    forced: true,
+    // 通过 group 绑定两个子技能：效果触发 + 回合重置
+    group: ["liren_effect", "liren_clear"],
+    mod: {
+        attackRangeFinal(player, num) {
+            return 2;
+        },
+    },
+    subSkill: {
+        // ---------- 核心效果子技能 ----------
+        effect: {
+            audio: 2,
+            trigger: {
+                global: ["damageSource", "shaMiss", "eventNeutralized"],
+            },
+            forced: true,
+            filter(event, player) {
+                // ① 每回合最多3张牌的限制（由标记控制）
+                if (player.countMark("liren_count") >= 3) {
+                    return false;
+                }
+                // ② 必须与【杀】相关
+                if (event.card?.name != "sha") {
+                    return false;
+                }
+                // ③ 伤害分支：需确保【杀】仍在处理区/弃牌堆（od）
+                if (event.name == "damage") {
+                    return event.cards.someInD("od");
+                }
+                // ④ 未命中/被抵消：直接放行
+                return true;
+            },
+            async content(event, trigger, player) {
+                let gainNum = 0; // 本次理论获得牌数
+
+                // ---- 分支A：造成伤害，回收【杀】 ----
+                if (trigger.name == "damage") {
+                    const cards = trigger.cards.filterInD("od");
+                    if (cards.length) {
+                        await player.gain({ cards: cards, animate: "gain2" });
+                        gainNum = cards.length; // 记录实际回收张数（通常为1）
+                    }
+                } 
+                // ---- 分支B：未命中/被抵消，摸1张 ----
+                else {
+                    await player.draw();
+                    gainNum = 1;
+                }
+
+                // ---- 动态截断：确保累计不超过3 ----
+                if (gainNum > 0) {
+                    const currentCount = player.countMark("liren_count");
+                    const actualGain = Math.min(gainNum, 3 - currentCount);
+                    player.addMark("liren_count", actualGain, false);
+                }
+            },
+        },
+
+        // ---------- 回合重置子技能（模仿 kangge_clear） ----------
+        clear: {
+            trigger: { global: "phaseBeginStart" }, // 任意角色回合开始时
+            firstDo: true,      // 优先于其他技能执行
+            forced: true,
+            popup: false,       // 不显示弹窗提示
+            charlotte: true,    // 引擎优化标记，避免循环
+            filter(event, player) {
+                return player.countMark("liren_count") > 0;
+            },
+            content() {
+                // 移除所有“liren_count”标记，归零
+                player.removeMark("liren_count", player.countMark("liren_count"), false);
+            },
+        },
+    },
+},
 	sejianchu: {
 		audio: 2,
 		derivation: ["jige", "liren"],
