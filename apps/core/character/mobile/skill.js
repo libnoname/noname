@@ -671,13 +671,13 @@ const skills = {
 				trigger: { player: "phaseJieshuBegin" },
 				forced: true,
 				filter(event, player) {
-					return player.countMark("mbranshang") > 0;
+					return player.hasMark("mbranshang");
 				},
 				async content(event, trigger, player) {
 			        await player.loseHp(player.countMark("mbranshang"));
 			        if (player.countMark("mbranshang") > 1) {
-				    await player.loseMaxHp(2);
-			    	await player.draw(2);
+				    	await player.loseMaxHp(2);
+			    		await player.draw(2);
     			    }
 				},
 			},
