@@ -130,7 +130,7 @@ export class GameEvent implements PromiseLike<void> {
 	 */
 	async forResult(): Promise<Partial<Result>> {
 		await this;
-		return this.result;
+		return this.result ?? {};
 	}
 	// #endregion
 
