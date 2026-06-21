@@ -140,7 +140,12 @@ Object.assign(lib.element.GameEvent.prototype, {
 Object.assign(lib.element.GameEvent.prototype, {
 	then(onfulfilled, onrejected) {
 		const event = /** @type { any } */ (this);
-		return (event.parent ? event.parent.waitNext("safe") : event.start()).then(
+		const promise = event.parent
+			? event.parent.waitNext("safe", event)
+			: event.start().catch(error => {
+					event.recordError(error, true);
+				});
+		return promise.then(
 			onfulfilled
 				? () => {
 						return onfulfilled(
@@ -158,11 +163,18 @@ Object.assign(lib.element.GameEvent.prototype, {
 			onrejected
 		);
 	},
-	async forResult(...params) {
+	async link() {
 		const event = /** @type { any } */ (this);
 		await (event.parent ? event.parent.waitNext() : event.start());
+		if (event.error) {
+			throw event.error;
+		}
+	},
+	async forResult(...params) {
+		const event = /** @type { any } */ (this);
+		await event.link();
 		if (params.length == 0) {
-			return event.result;
+			return event.result ?? {};
 		}
 		if (params.length == 1) {
 			return event.result[params[0]];

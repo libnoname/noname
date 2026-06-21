@@ -95,7 +95,15 @@ export class GameEvent implements PromiseLike<void> {
 		}
 	}
 	#doAsync(mode: WaitNextMode): Promise<void> {
-		return this.parent ? this.parent.waitNext(mode).then(() => undefined) : this.start();
+		if (this.parent) {
+			return this.parent.waitNext(mode, mode === "safe" ? this : undefined).then(() => undefined);
+		}
+		if (mode === "safe") {
+			return this.start().catch(error => {
+				this.recordError(error, true);
+			});
+		}
+		return this.start();
 	}
 	/**
 	 * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -135,8 +143,11 @@ export class GameEvent implements PromiseLike<void> {
 			}
 		);
 	}
-	link() {
-		return this.#doAsync("strict");
+	async link(): Promise<void> {
+		await this.#doAsync("strict");
+		if (this.error) {
+			throw this.error;
+		}
 	}
 	/**
 	 * 获取 Result 对象中的信息。
@@ -322,10 +333,19 @@ export class GameEvent implements PromiseLike<void> {
 		return true;
 	}
 	#waitNext?: Promise<Partial<Result> | void>;
-	waitNext(mode: WaitNextMode = "strict"): Promise<Partial<Result> | void> {
+	#waitNextMode: WaitNextMode = "strict";
+	#waitNextSafeEvents = new Set<GameEvent>();
+	waitNext(mode: WaitNextMode = "strict", safeEvent?: GameEvent): Promise<Partial<Result> | void> {
+		if (mode === "safe" && safeEvent) {
+			this.#waitNextSafeEvents.add(safeEvent);
+		}
 		if (this.#waitNext) {
+			if (mode === "strict") {
+				this.#waitNextMode = "strict";
+			}
 			return this.#waitNext;
 		}
+		this.#waitNextMode = mode;
 		this.#waitNext = (async () => {
 			let result;
 			while (true) {
@@ -345,7 +365,8 @@ export class GameEvent implements PromiseLike<void> {
 				try {
 					await next.start();
 				} catch (error) {
-					if (mode === "strict") {
+					const safe = this.#waitNextMode === "safe" && (!this.#waitNextSafeEvents.size || this.#waitNextSafeEvents.has(next));
+					if (!safe) {
 						throw error;
 					}
 					next.recordError(error, true);
@@ -357,7 +378,11 @@ export class GameEvent implements PromiseLike<void> {
 				}
 				this.next.shift();
 			}
-		})().finally(() => (this.#waitNext = undefined));
+		})().finally(() => {
+			this.#waitNext = undefined;
+			this.#waitNextMode = "strict";
+			this.#waitNextSafeEvents.clear();
+		});
 		return this.#waitNext;
 	}
 	// #endregion
