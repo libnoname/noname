@@ -1284,7 +1284,7 @@ const skills = {
 		},
 	},
 	//史阿
-	    liren: {
+	liren: {
 		audio: 2,
 		forced: true,
 		mod: {
