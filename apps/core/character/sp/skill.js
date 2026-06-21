@@ -28126,7 +28126,7 @@ const skills = {
 		subSkill: {
 			draw: {
 				audio: "shanzhuan",
-				trigger: { player: "phaseEnd" },
+				trigger: { player: "phaseJieshuBegin" },
 				frequent: true,
 				prompt: "是否发动【擅专】摸一张牌？",
 				filter(event, player) {
