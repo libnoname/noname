@@ -13150,7 +13150,7 @@ const skills = {
 		audioname: ["sp_key_yuri"],
 		trigger: { source: "damageBegin2" },
 		filter(event, player) {
-			return event.player != player && !player.getStorage("ziqu").includes(event.player) && event.player.countCards("he") > 0;
+			return event.player != player && !player.getStorage("ziqu").includes(event.player);
 		},
 		check(event, player) {
 			var target = event.player;
