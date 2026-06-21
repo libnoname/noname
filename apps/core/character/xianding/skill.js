@@ -8750,7 +8750,7 @@ const skills = {
 					`${event.name}_draw_${player.playerid}`,
 					get.translation(event.name)
 				);
-				const next = target.gain(gain, "gain2");
+				const next = target.gain(gain, "draw");
 				next.gaintag.add(`${event.name}_draw_${player.playerid}`);
 				await next;
 			}
