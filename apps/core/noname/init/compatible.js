@@ -139,11 +139,12 @@ Object.assign(lib.element.GameEvent.prototype, {
 // forResult
 Object.assign(lib.element.GameEvent.prototype, {
 	then(onfulfilled, onrejected) {
-		return (this.parent ? this.parent.waitNext() : this.start()).then(
+		const event = /** @type { any } */ (this);
+		return (event.parent ? event.parent.waitNext("safe") : event.start()).then(
 			onfulfilled
 				? () => {
 						return onfulfilled(
-							new Proxy(this, {
+							new Proxy(event, {
 								get(target, p, receiver) {
 									if (p === "then") {
 										return void 0;
@@ -158,14 +159,15 @@ Object.assign(lib.element.GameEvent.prototype, {
 		);
 	},
 	async forResult(...params) {
-		await this;
+		const event = /** @type { any } */ (this);
+		await (event.parent ? event.parent.waitNext() : event.start());
 		if (params.length == 0) {
-			return this.result;
+			return event.result;
 		}
 		if (params.length == 1) {
-			return this.result[params[0]];
+			return event.result[params[0]];
 		}
-		return Array.from(params).map(key => this.result[key]);
+		return Array.from(params).map(key => event.result[key]);
 	},
 	forResultBool() {
 		return this.forResult().then(r => r.bool);

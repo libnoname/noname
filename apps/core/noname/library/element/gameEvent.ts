@@ -16,6 +16,7 @@ type triggerPlayerTodo = {
 	todoList: triggerSkillTodo[];
 	doneList: triggerSkillTodo[];
 };
+type WaitNextMode = "strict" | "safe";
 export class GameEvent implements PromiseLike<void> {
 	constructor(name: string = "", trigger: boolean = true, manager: GameEventManager = _status.eventManager) {
 		//@ts-ignore
@@ -82,6 +83,20 @@ export class GameEvent implements PromiseLike<void> {
 	 */
 	result: Partial<Result>;
 	cost_data: Result["cost_data"];
+	error?: unknown;
+	#errorReported = false;
+	recordError(error: unknown, report = false) {
+		this.error = error;
+		if (report && !this.#errorReported) {
+			this.#errorReported = true;
+			game.print("游戏出错：" + this.name);
+			game.print(error?.toString?.() ?? String(error));
+			console.error(error);
+		}
+	}
+	#doAsync(mode: WaitNextMode): Promise<void> {
+		return this.parent ? this.parent.waitNext(mode).then(() => undefined) : this.start();
+	}
 	/**
 	 * Attaches callbacks for the resolution and/or rejection of the Promise.
 	 * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -89,7 +104,7 @@ export class GameEvent implements PromiseLike<void> {
 	 * @returns A Promise for the completion of which ever callback is executed.
 	 */
 	then<TResult1, TResult2>(onfulfilled?: (() => TResult1 | Promise<TResult1>) | null, onrejected?: ((reason: any) => TResult2 | Promise<TResult2>) | null): Promise<TResult1 | TResult2> {
-		return (this.parent ? this.parent.waitNext().then(() => undefined) : this.start()).then(onfulfilled, onrejected);
+		return this.#doAsync("safe").then(onfulfilled, onrejected);
 	}
 	/**
 	 * Attaches a callback for only the rejection of the Promise.
@@ -120,6 +135,9 @@ export class GameEvent implements PromiseLike<void> {
 			}
 		);
 	}
+	link() {
+		return this.#doAsync("strict");
+	}
 	/**
 	 * 获取 Result 对象中的信息。
 	 * @example
@@ -129,7 +147,7 @@ export class GameEvent implements PromiseLike<void> {
 	 * ```
 	 */
 	async forResult(): Promise<Partial<Result>> {
-		await this;
+		await this.link();
 		return this.result ?? {};
 	}
 	// #endregion
@@ -237,10 +255,12 @@ export class GameEvent implements PromiseLike<void> {
 			// }
 			// this.manager.eventStack.push(this);
 			this.manager.setStatusEvent(this, true);
-			await this.loop().then(() => {
+			try {
+				await this.loop();
+			} finally {
 				// this.manager.eventStack.pop();
 				this.manager.popStatusEvent();
-			});
+			}
 		})();
 		return this.#start;
 	}
@@ -265,10 +285,9 @@ export class GameEvent implements PromiseLike<void> {
 				} else {
 					this.#inContent = true;
 					let next = this.content(this).catch(error => {
+						this.recordError(error, lib.config.ignore_error || (_status.connectMode && !lib.config.debug));
 						if (lib.config.ignore_error || (_status.connectMode && !lib.config.debug)) {
-							game.print("游戏出错：" + this.name);
-							game.print(error.toString());
-							console.error(error);
+							return;
 						} else {
 							throw error;
 						}
@@ -303,7 +322,7 @@ export class GameEvent implements PromiseLike<void> {
 		return true;
 	}
 	#waitNext?: Promise<Partial<Result> | void>;
-	waitNext(): Promise<Partial<Result> | void> {
+	waitNext(mode: WaitNextMode = "strict"): Promise<Partial<Result> | void> {
 		if (this.#waitNext) {
 			return this.#waitNext;
 		}
@@ -323,7 +342,16 @@ export class GameEvent implements PromiseLike<void> {
 					return result;
 				}
 				const next = this.next[0];
-				await next.start();
+				try {
+					await next.start();
+				} catch (error) {
+					if (mode === "strict") {
+						throw error;
+					}
+					next.recordError(error, true);
+					this.next.shift();
+					continue;
+				}
 				if (next.result) {
 					result = next.result;
 				}
