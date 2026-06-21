@@ -33892,7 +33892,7 @@ const skills = {
 		audio: 2,
 		audioname: ["xinping"],
 		limited: true,
-		trigger: { player: "phaseZhunbeiBegin" },
+		trigger: { player: "phaseBegin" },
 		animationColor: "thunder",
 		skillAnimation: "legend",
 		async cost(event, trigger, player) {
