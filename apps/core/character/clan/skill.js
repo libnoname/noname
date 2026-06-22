@@ -1979,6 +1979,13 @@ const skills = {
 				tanfeng: true,
 			},
 		},
+		mod: {
+			cardUsable(card, player) {
+				if (card?.storage?.tanfeng) {
+					return Infinity;
+				}
+			},
+		},
 		async precontent(event, trigger, player) {
 			if (event.getParent().addCount !== false) {
 				event.getParent().addCount = false;

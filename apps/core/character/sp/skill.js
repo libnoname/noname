@@ -3831,7 +3831,19 @@ const skills = {
 					if (event.name === "phase" || name === "enterGame") {
 						return event.name !== "phase" || game.phaseNumber === 0;
 					}
-					return player.hasMark("olshanjia");
+					if (!player.hasMark("olshanjia")) {
+                        return false;
+                    }   
+        // 3. 【核心新增逻辑】：排除“因主动使用装备牌”而失去装备的情况
+        // 获取当前失去牌事件的父级事件（通常是 useCard）
+        const parentEvt = event.relatedEvent || event.getParent();
+        
+        // 如果父级事件是“使用牌”，且使用者是自己，且使用的牌是“装备”，则不扣除标记
+        if (parentEvt && parentEvt.name === "useCard" && parentEvt.player === player && get.type(parentEvt.card, null, false) === "equip") {
+            return false;
+        }
+        // 4. 排除以上情况后，允许扣除标记
+                   return true;
 				},
 				forced: true,
 				locked: false,
@@ -4122,8 +4134,7 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		filterTarget(card, player, target) {
-			if (player == target) {
-				return false;
+				return player !== target;
 			}
 			return target.countCards("h") > 0;
 		},
@@ -7400,7 +7411,7 @@ const skills = {
 				.slice()
 				.map(i => get.name(i, false))
 				.unique();
-			const resultx = await target.chooseToGive(player, "he", true).forResult();
+			const resultx = await target.chooseToGive(player, "h", true).forResult();
 			if (resultx?.bool && resultx.cards?.length) {
 				if (names.includes(get.name(resultx.cards[0], false))) {
 					const str = get.translation(target);
@@ -13550,7 +13561,7 @@ const skills = {
 			"step 0";
 			var cards = get.bottomCards(3, true);
 			player
-				.chooseButton(["###藏心：请选择要弃置的牌###若以此法弃置了红桃牌，则减少弃置红桃牌数的伤害", cards], [1, cards.length], true, "allowChooseAll")
+				.chooseButton(["###藏心：请选择要弃置的牌###若以此法弃置了红桃牌，则减少弃置红桃牌数的伤害", cards], [0, cards.length], true, "allowChooseAll")
 				.set("ai", function (button) {
 					if (!_status.event.bool && get.suit(button.link, false) == "heart") {
 						return 0;
@@ -24022,14 +24033,14 @@ const skills = {
 		ai: {
 			result: {
 				player(player, target) {
-					let num = target.getAllHistory("useCard", evt => evt.card.name == "sha").length + 1;
+					let num = Math.max(target.getAllHistory("useCard", evt => evt.card.name == "sha").length,1);
 					if (num < target.hp) {
 						return 0;
 					}
 					return num * lib.card.juedou.ai.result.player.apply(this, arguments);
 				},
 				target(player, target) {
-					let num = target.getAllHistory("useCard", evt => evt.card.name == "sha").length + 1;
+					let num = Math.max(target.getAllHistory("useCard", evt => evt.card.name == "sha").length,1);
 					if (num < target.hp) {
 						return 0;
 					}
@@ -24053,7 +24064,7 @@ const skills = {
 				},
 				content() {
 					var target = trigger.getParent().target;
-					trigger.num = 1 + target.getAllHistory("useCard", evt => evt.card.name == "sha").length;
+					trigger.num = Math.max( target.getAllHistory("useCard", evt => evt.card.name == "sha").length,1);
 					target.addTempSkills("juesheng", { player: "phaseAfter" });
 				},
 			},
@@ -25402,7 +25413,7 @@ const skills = {
 					event.result = await player
 						.chooseTarget([1, 2], "是否弃置“颂”标记？", `为${get.translation(trigger.card)}增加至多两个目标`, (card, player, target) => {
 							const evt = get.event().getTrigger();
-							return target != player && target != evt.targets[0] && lib.filter.targetEnabled2(evt.card, player, target);
+							return target != player && target != evt.targets[0] && lib.filter.targetEnabled2(evt.card, player, target) && lib.filter.targetInRange(evt.card, player, target);
 						})
 						.set("ai", target => {
 							const evt = get.event().getTrigger();
@@ -28115,7 +28126,7 @@ const skills = {
 		subSkill: {
 			draw: {
 				audio: "shanzhuan",
-				trigger: { player: "phaseEnd" },
+				trigger: { player: "phaseJieshuBegin" },
 				frequent: true,
 				prompt: "是否发动【擅专】摸一张牌？",
 				filter(event, player) {
@@ -30134,11 +30145,16 @@ const skills = {
 			notsha: {
 				mark: true,
 				intro: {
-					content: "不能使用【杀】",
+					content: "不能使用或打出【杀】",
 				},
 				charlotte: true,
 				mod: {
 					cardEnabled(card) {
+						if (card.name == "sha") {
+							return false;
+						}
+					},
+					cardRespondable(card) {
 						if (card.name == "sha") {
 							return false;
 						}
@@ -32577,9 +32593,6 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			let num = player.storage.fanghun;
-			if (num) {
-				await player.draw(num);
-			}
 			player.removeMark("fanghun", num);
 			player.awakenSkill(event.name);
 			num = Math.max(2, player.storage.fanghun2 || 0);
@@ -33879,7 +33892,7 @@ const skills = {
 		audio: 2,
 		audioname: ["xinping"],
 		limited: true,
-		trigger: { player: "phaseZhunbeiBegin" },
+		trigger: { player: "phaseBegin" },
 		animationColor: "thunder",
 		skillAnimation: "legend",
 		async cost(event, trigger, player) {

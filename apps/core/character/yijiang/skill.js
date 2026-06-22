@@ -7339,6 +7339,7 @@ const skills = {
 	},
 	longyin: {
 		audio: 2,
+		audioname: ["ol_guanping"],
 		init: player => {
 			game.addGlobalSkill("longyin_order");
 		},
@@ -8619,7 +8620,7 @@ const skills = {
 			return (
 				get.suit(event.card) == "spade" &&
 				_status.currentPhase == event.player &&
-				event.targets &&
+				event.targets && event.player.isPhaseUsing() &&
 				event.targets.length &&
 				event.player != player &&
 				game.countPlayer2(function (current) {
@@ -14613,7 +14614,7 @@ const skills = {
 			if (targets?.length && targets[0]?.isIn()) {
 				result = await targets[0]
 					.chooseToDiscard({
-						prompt: "弃置一张不为" + get.translation(type) + "牌的牌或令" + get.translation(player) + "回复1点体力",
+						prompt: "弃置一张不为" + get.translation(type) + "牌的手牌或令" + get.translation(player) + "回复1点体力",
 						filterCard(card) {
 							return get.type(card, "trick") != _status.event.type;
 						},

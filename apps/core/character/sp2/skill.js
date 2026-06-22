@@ -62,7 +62,7 @@ const skills = {
 			}
 			const list = [player.getDamagedHp(), player.getHp()].sort((a, b) => a - b);
 			const hs = player.getCards("h", card => result.cards.includes(card));
-			if (hs.length <= list[0]) {
+			if (hs.length <= list[1]) {
 				result = { bool: true, cards: hs };
 			} else {
 				result = await player
@@ -1874,11 +1874,8 @@ const skills = {
 	starzhiji: {
 		audio: 2,
 		trigger: { player: "phaseZhunbeiBegin" },
-		filter(event, player) {
-			return player.hasCard(card => _status.connectMode || lib.filter.cardDiscardable(card, player), "h");
-		},
 		async cost(event, trigger, player) {
-			const next = player.chooseToDiscard(get.prompt2(event.skill), [1, Infinity], "allowChooseAll").set("logSkill", "starzhiji");
+			const next = player.chooseToDiscard(get.prompt2(event.skill), [0, Infinity], "allowChooseAll").set("logSkill", "starzhiji");
 			if (_status.auto || !(player === game.me || player.isOnline())) {
 				next.complexCard = true;
 				next.ai = function (card) {
@@ -1900,7 +1897,8 @@ const skills = {
 		},
 		popup: false,
 		async content(event, trigger, player) {
-			const num = event.cards.length - ((await player.drawTo(5).forResult()).cards || []).length;
+			const discardedCards = event.cards || [];
+			const num = discaredCards.length - ((await player.drawTo(5).forResult()).cards || []).length;
 			switch (get.sgn(num)) {
 				case 1: {
 					const result = await player
@@ -13152,7 +13150,7 @@ const skills = {
 		audioname: ["sp_key_yuri"],
 		trigger: { source: "damageBegin2" },
 		filter(event, player) {
-			return event.player != player && !player.getStorage("ziqu").includes(event.player) && event.player.countCards("he") > 0;
+			return event.player != player && !player.getStorage("ziqu").includes(event.player);
 		},
 		check(event, player) {
 			var target = event.player;
@@ -15280,7 +15278,7 @@ const skills = {
 				event.finish();
 				return;
 			}
-			target.chooseToDiscard(true, "h", [1, player.countCards("h")], "弃置至多" + get.cnNumber(player.countCards("h")) + "张手牌，并获得" + get.translation(player) + "等量的手牌", "allowChooseAll").ai = function (card) {
+			target.chooseToDiscard(true, "h", [0, player.countCards("h")], "弃置至多" + get.cnNumber(player.countCards("h")) + "张手牌，并获得" + get.translation(player) + "等量的手牌", "allowChooseAll").ai = function (card) {
 				if (ui.selected.cards.length > 1) {
 					return -1;
 				}
