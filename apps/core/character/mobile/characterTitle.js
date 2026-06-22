@@ -1,4 +1,6 @@
 export default {
+	//mb_dingshangwan: "",
+	//re_wangji: "",
 	//re_zhoufei: "",
 	//re_yanyan: "",
 	//mb_gaoxiang: "",
@@ -103,7 +105,7 @@ export default {
 	sunhanhua: "挣绽的青莲",
 	mb_zhangfen: "究械菁杰",
 	mb_zerong: "持宗事魔",
-	mb_simazhao: "堕节肇业", 
+	mb_simazhao: "堕节肇业",
 	mb_simafu: "徒难夷惠",
 	mb_wenqin: "淮山骄腕",
 	mb_simazhou: "温恭克己",
