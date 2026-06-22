@@ -22,6 +22,7 @@ game.import("character", function () {
 		},
 		characterSubstitute: {
 			v_sunshangxiang: [["v_sunshangxiang_shadow", []]],
+			v_zhangxingcai: [["v_zhangxingcai_shadow", []]],
 			dc_sb_simayi: [["dc_sb_simayi_shadow", []]],
 			dc_sb_zhouyu: [["dc_sb_zhouyu_shadow", []]],
 			dc_sb_lusu: [["dc_sb_lusu_shadow", []]],

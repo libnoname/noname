@@ -1353,6 +1353,7 @@ const skills = {
 				},
 			},
 			die: {
+				audio: "sejianchu",
 				charlotte: true,
 				trigger: {
 					player: "die",
@@ -1766,6 +1767,7 @@ const skills = {
 	//张星彩
 	dchuangnu: {
 		audio: 2,
+		audioname: ["v_zhangxingcai_shadow"],
 		enable: "phaseUse",
 		group: ["dchuangnu_damage"],
 		choiceMap: {
@@ -1868,6 +1870,11 @@ const skills = {
 					audio: "dchuangnu",
 					choice: links[0],
 					async content(event, trigger, player) {
+						const storage = player.getStorage("v_zhangxingcai_changeSkin", false);
+						if (storage) {
+							player.changeSkin("dchuangnu", "v_zhangxingcai");
+							player.setStorage("v_zhangxingcai_changeSkin", !storage);
+						}
 						const num = player.getHistory("useSkill", evt => get.sourceSkillFor(evt.skill) == "dchuangnu").length;
 						const { choice } = get.info(event.name);
 						const map = get.info("dchuangnu").choiceMap;
@@ -1943,6 +1950,11 @@ const skills = {
 					}
 				},
 				async content(event, trigger, player) {
+					const storage = player.getStorage("v_zhangxingcai_changeSkin", false);
+					if (storage) {
+						player.changeSkin("dchuangnu", "v_zhangxingcai");
+						player.setStorage("v_zhangxingcai_changeSkin", !storage);
+					}
 					const num = player.getHistory("useSkill", evt => get.sourceSkillFor(evt.skill) == "dchuangnu").length;
 					const { cost_data: choice } = event;
 					const map = get.info("dchuangnu").choiceMap;
@@ -1978,6 +1990,7 @@ const skills = {
 	},
 	dcxiankuang: {
 		audio: 2,
+		audioname: ["v_zhangxingcai_shadow"],
 		trigger: {
 			global: ["loseAfter", "loseAsyncAfter", "cardsDiscardAfter"],
 		},
@@ -2004,6 +2017,11 @@ const skills = {
 			return true;
 		},
 		async content(event, trigger, player) {
+			const storage = player.getStorage("v_zhangxingcai_changeSkin", false);
+			if (!storage) {
+				player.changeSkin(event.name, "v_zhangxingcai_shadow");
+				player.setStorage("v_zhangxingcai_changeSkin", !storage);
+			}
 			const {
 				targets: [target],
 			} = event;
