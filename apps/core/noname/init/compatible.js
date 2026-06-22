@@ -171,7 +171,7 @@ Object.assign(lib.element.GameEvent.prototype, {
 		const event = /** @type { any } */ (this);
 		event._awaitingMode = "strict";
 		await (event.parent ? event.parent.waitNext() : event.start());
-		if (event.error) {
+		if (event.error && !lib.config.ignore_error) {
 			throw event.error;
 		}
 	},

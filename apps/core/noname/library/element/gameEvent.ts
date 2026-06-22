@@ -178,7 +178,7 @@ export class GameEvent implements PromiseLike<void> {
 	 */
 	async link(): Promise<void> {
 		await this.#doAsync("strict");
-		if (this.error) {
+		if (this.error && !lib.config.ignore_error) {
 			throw this.error;
 		}
 	}
