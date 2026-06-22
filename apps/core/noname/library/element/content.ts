@@ -381,7 +381,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				}
 			};
 		}
-		await next;
+		await next.link();
 		//变更角色的所属势力。如果新将是双势力，重选一下势力。 国战不因换将而重选势力
 		if (event.changeGroup !== false && get.mode() != "guozhan") {
 			let newGroups = [];
@@ -393,10 +393,10 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			if (newGroups.length > 1) {
 				const { control: newGroup } = await player.chooseControl(newGroups).set("prompt", "请选择一个新的势力").forResult();
 				if (newGroup != player.group) {
-					await player.changeGroup(newGroup);
+					await player.changeGroup(newGroup).link();
 				}
 			} else if (newGroups.length == 1 && newGroups[0] != player.group) {
-				await player.changeGroup(newGroups[0]);
+				await player.changeGroup(newGroups[0]).link();
 			}
 		}
 	},
@@ -604,7 +604,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 					}
 					next.player = player;
 
-					await next;
+					await next.link();
 				}
 			} else {
 				const next = game.createEvent(cardName);
@@ -626,7 +626,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 					autoViewAs.expired = card.expired;
 				}
 				next.player = player;
-				await next;
+				await next.link();
 			}
 		}
 
@@ -648,7 +648,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 
 				const next = player.loseToDiscardpile(card);
 				next.log = false;
-				await next;
+				await next.link();
 
 				await event.trigger("giftDenied");
 
@@ -664,11 +664,11 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			if (get.type(card) == "equip") {
 				const next = target.equip(card);
 				next.log = false;
-				await next;
+				await next.link();
 			} else {
 				const next = target.gain(card, player);
 				next.visible = true;
-				await next;
+				await next.link();
 			}
 
 			await event.trigger("giftAccepted");
@@ -790,7 +790,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 
 		player.$syncDisable();
 		if (cards.length > 0) {
-			await player.loseToDiscardpile(cards);
+			await player.loseToDiscardpile(cards).link();
 		}
 	},
 	async enableEquip(event, trigger, player) {
@@ -982,7 +982,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 					// @ts-expect-error ignore
 					next.visible = true;
 				}
-				await next;
+				await next.link();
 				event.relatedLose = next;
 			}
 			for (const [key, value] of lib.commonArea) {
@@ -993,7 +993,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 					next.cards = list;
 					next.player = player;
 					next.type = event.name;
-					await next;
+					await next.link();
 				}
 			}
 		}
@@ -1003,7 +1003,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			// @ts-expect-error ignore
 			const cardInfo = get.info(card, false);
 			if (player.isMin() || !player.canEquip(card)) {
-				await game.cardsDiscard(cards);
+				await game.cardsDiscard(cards).link();
 				delete player.equiping;
 				return;
 			}
@@ -1036,14 +1036,14 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 						next.setContent(onEquip);
 						next.player = player;
 						next.card = event.vcards[0];
-						await next;
+						await next.link();
 					}
 				} else {
 					const next = game.createEvent(`equip_${card.name}`);
 					next.setContent(cardInfo.onEquip);
 					next.player = player;
 					next.card = event.vcards[0];
-					await next;
+					await next.link();
 				}
 				if (cardInfo.equipDelay != false) {
 					await game.delayx();
@@ -1069,7 +1069,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 		}
 		if (stop) {
 			if (list.length) {
-				await game.cardsDiscard(list);
+				await game.cardsDiscard(list).link();
 			}
 			return;
 		}
@@ -1094,7 +1094,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			next.setContent(cardInfo.prepareEquip);
 			next.player = player;
 			next.card = event.card;
-			await next;
+			await next.link();
 		}
 		//同时播放所有装备牌的装备动画
 		if (event.cards.length) {
@@ -1138,7 +1138,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			if (get.info(event.card, true)?.loseThrow) {
 				player.$throw(result.cards, 1000);
 			}
-			await loseEvent;
+			await loseEvent.link();
 			// @ts-expect-error ignore
 			for (const card of result.cards) {
 				if (card.willBeDestroyed("discardPile", player, event)) {
@@ -1361,7 +1361,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			next.debateResult = get.copy(event.result);
 			next.setContent(event.callback);
 
-			await next;
+			await next.link();
 		}
 
 		return;
@@ -2703,7 +2703,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 						player.logSkill.apply(player, event.logSkill);
 					}
 				}
-				await next;
+				await next.link();
 			} else {
 				event.result = { bool: false };
 			}
@@ -2950,12 +2950,12 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				waitings.push(next);
 			}
 		}
-		await Promise.all(waitings);
+		await Promise.all(waitings.map(event => event?.link?.()));
 	},
 	async orderingDiscard(event, trigger, player) {
 		const cards = event.relatedEvent.orderingCards.filter(card => get.position(card, true) == "o");
 		if (cards.length) {
-			await game.cardsDiscard(cards);
+			await game.cardsDiscard(cards).link();
 		}
 	},
 	async cardsGotoOrdering(event, trigger, player) {
@@ -3005,7 +3005,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			evt.orderingCards.addArray(cards);
 		}
 		event.result = { cards };
-		await Promise.all(waitings);
+		await Promise.all(waitings.map(event => event?.link?.()));
 	},
 	async cardsGotoSpecial(event, trigger, player) {
 		const { cards } = event;
@@ -3041,7 +3041,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			}
 		}
 
-		await Promise.all(waitings);
+		await Promise.all(waitings.map(event => event?.link?.()));
 	},
 	async cardsGotoPile(event, trigger, player) {
 		const { cards } = event;
@@ -3070,7 +3070,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			}
 		}
 
-		await Promise.all(waitings);
+		await Promise.all(waitings.map(event => event?.link?.()));
 	},
 	async chooseToEnable(event, trigger, player) {
 		const { source } = event;
@@ -3253,14 +3253,14 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			if (vcard.cards?.length && vcard.cards.some(i => get.position(i, true) !== "o")) {
 				continue;
 			}
-			await player.equip(vcard);
+			await player.equip(vcard).link();
 		}
 		for (const card of cards[0]) {
 			const vcard = card[card.cardSymbol];
 			if (vcard.cards?.length && vcard.cards.some(i => get.position(i, true) !== "o")) {
 				continue;
 			}
-			await target.equip(vcard);
+			await target.equip(vcard).link();
 		}
 	},
 	async disableJudge(event, trigger, player) {
@@ -3268,7 +3268,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 		const js = player.getCards("j");
 		player.storage._disableJudge = true;
 		if (js.length) {
-			await player.discard(js);
+			await player.discard(js).link();
 		}
 		game.broadcastAll((player, card) => {
 			player.$disableJudge();
@@ -3595,14 +3595,14 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 	async addJudgeCard(event) {
 		const { target, card, cards } = event;
 		if (!card?.cards.some(card => get.position(card, true) !== "o") && target.canAddJudge(card)) {
-			await target.addJudge(card, cards);
+			await target.addJudge(card, cards).link();
 		}
 	},
 	async equipCard(event) {
 		const { card, target } = event;
 
 		if (!card?.cards.some(card => get.position(card, true) !== "o")) {
-			await target.equip(card);
+			await target.equip(card).link();
 		}
 		//if (cards.length && get.position(cards[0], true) == "o") target.equip(cards[0]);
 	},
@@ -3669,7 +3669,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			event.changeCard = "disabled";
 		}
 
-		await Promise.all(waitings);
+		await Promise.all(waitings.map(event => event?.link?.()));
 
 		if (!targets.includes(game.me) || event.changeCard == "disabled" || _status.auto || !game.me.countCards("h")) {
 			return;
@@ -3788,7 +3788,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 					}
 				}
 				event.next.push(phase);
-				await phase;
+				await phase.link();
 			}
 			await event.trigger("phaseOver");
 			const findNext = current => {
@@ -4225,7 +4225,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 		}
 		next.indexedData = event.indexedData;
 
-		await next;
+		await next.link();
 
 		//删除when生成的临时技能
 		if (event.skill.startsWith("player_when_")) {
@@ -4867,7 +4867,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				event.redo();
 			} else {
 				if (event.card) {
-					await player.lose(event.card, "visible", ui.ordering);
+					await player.lose(event.card, "visible", ui.ordering).link();
 				}
 				player.$phaseJudge(event.card);
 				event.cancelled = false;
@@ -4901,7 +4901,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 					next.card = VJudge;
 					next.cards = VJudge?.cards ?? [];
 					next.player = player;
-					await next;
+					await next.link();
 				}
 			} else {
 				const next = game.createEvent(name);
@@ -4910,7 +4910,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				next.card = VJudge;
 				next.cards = VJudge?.cards ?? [];
 				next.player = player;
-				await next;
+				await next.link();
 			}
 			ui.clear();
 			event.goto(1);
@@ -5995,7 +5995,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 						next.setContent(info.precontent);
 						next.set("result", event.result);
 						next.set("player", player);
-						await next;
+						await next.link();
 					}
 				}
 			}
@@ -6029,7 +6029,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 					}
 					next.discarder = player;
 					event.done = next;
-					await next;
+					await next.link();
 				}
 			} else if (event._sendskill) {
 				event.result._sendskill = event._sendskill;
@@ -6047,7 +6047,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 		}
 		if (player && cards) {
 			event._lose = true;
-			await player.lose(cards, ui.special).set("type", "gain").set("forceDie", true).set("getlx", false);
+			await player.lose(cards, ui.special).set("type", "gain").set("forceDie", true).set("getlx", false).link();
 		}
 
 		let delay;
@@ -6147,7 +6147,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			}
 		}
 		await delay;
-		await Promise.all(nexts);
+		await Promise.all(nexts.map(event => event?.link?.()));
 		await game.delayx();
 	},
 	async discardMultiple(event, trigger, player) {
@@ -6225,7 +6225,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			}
 		}
 
-		await Promise.all(events);
+		await Promise.all(events.map(event => event?.link?.()));
 
 		if (event.delay != false) {
 			if (event.waitingForTransition) {
@@ -6286,7 +6286,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 					if (event.visible == true) {
 						next.set("visible", true);
 					}
-					await next;
+					await next.link();
 				}
 			} else {
 				event.finish();
@@ -6337,7 +6337,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 						next.cards = cards;
 						next.player = source;
 						next.type = event.type;
-						await next;
+						await next.link();
 					}
 				}
 			}
@@ -6610,7 +6610,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			next.getlx = false;
 			waitings.push(next);
 		}
-		await Promise.all(waitings);
+		await Promise.all(waitings.map(event => event?.link?.()));
 	},
 	chooseToCompareMeanwhile: [
 		async (event, trigger, player) => {
@@ -7127,8 +7127,8 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 					.step(async (event, trigger, player) => {
 						if (cards?.some(card => get.position(card) == "s")) {
 							evt.isDestroyed = true;
-							await game.cardsGotoOrdering(cards);
-							await game.cardsDiscard(cards);
+							await game.cardsGotoOrdering(cards).link();
+							await game.cardsDiscard(cards).link();
 						}
 					});
 				event.untrigger();
@@ -7249,7 +7249,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 		},
 		async (event, trigger, player) => {
 			const target = event.target;
-			await game.cardsGotoOrdering([event.card1, event.card2]);
+			await game.cardsGotoOrdering([event.card1, event.card2]).link();
 			game.log(player, "揭示了和", target, "的延时拼点结果");
 			await game.delayx();
 			await event.trigger("compareCardShowBefore");
@@ -7454,10 +7454,10 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			}
 			if (togain) {
 				if (event.use) {
-					await player.chooseUseTarget(togain);
+					await player.chooseUseTarget(togain).link();
 				} else if (!event.nogain) {
 					game.log(player, "获得了一张牌");
-					await player.gain(togain, "draw");
+					await player.gain(togain, "draw").link();
 				}
 			}
 		}
@@ -8452,9 +8452,9 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			if (result?.control == "draw_card") {
 				const next = target.draw(event.num1);
 				next.gaintag.addArray(event.gaintag);
-				await next;
+				await next.link();
 			} else if (result?.control == "recover_hp") {
-				await target.recover(event.num2);
+				await target.recover(event.num2).link();
 			}
 		}
 		event.result = result;
@@ -8853,7 +8853,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				if (event.delay === false) {
 					next.set("delay", false);
 				}
-				await next;
+				await next.link();
 			}
 		},
 	],
@@ -9125,7 +9125,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 		game.log(player, "展示了", cards);
 		game.addVideo("showCards", player, [str, get.cardsInfo(cards)]);
 		await game.delayx(2);
-		await next;
+		await next.link();
 		game.broadcast("closeDialog", event.dialogid);
 		event.dialog.close();
 	},
@@ -9214,10 +9214,10 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			if (Array.from(ownerLose.values())?.flat()?.length > 0) {
 				const next = game.loseAsync({ lose_list: Array.from(ownerLose.entries()) }).set("relatedEvent", event.relatedEvent || event.getParent());
 				next.setContent("chooseToCompareLose");
-				await next;
+				await next.link();
 			}
 			if (directLose.length > 0) {
-				await game.cardsGotoOrdering(directLose).set("relatedEvent", event.relatedEvent || event.getParent());
+				await game.cardsGotoOrdering(directLose).set("relatedEvent", event.relatedEvent || event.getParent()).link();
 			}
 		}
 
@@ -9400,7 +9400,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			next.cards = event.result.cards;
 			next.result = event.result;
 			next.setContent(event.callback);
-			await next;
+			await next.link();
 		}
 	},
 	async viewCards(event, trigger, player) {
@@ -9951,20 +9951,20 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 									const id = owner.playerid;
 									const onLoseCards = cards.filter(card => get.owner(card) == owner);
 									event.cards.removeArray(onLoseCards);
-									await owner.lose(onLoseCards, "visible", ui.ordering).set("relatedEvent", event.getParent()).set("getlx", false).set("type", "use");
+									await owner.lose(onLoseCards, "visible", ui.ordering).set("relatedEvent", event.getParent()).set("getlx", false).set("type", "use").link();
 								}
 							}
 							if (cards_noowner.length) {
-								await game.cardsGotoOrdering(cards_noowner).set("relatedEvent", event.getParent());
+								await game.cardsGotoOrdering(cards_noowner).set("relatedEvent", event.getParent()).link();
 							}
 						});
 					} else {
-						await ownerx.lose(ownerCards, "visible", ui.ordering).set("type", "use");
+						await ownerx.lose(ownerCards, "visible", ui.ordering).set("type", "use").link();
 					}
 				}
 				if (directDiscard.length) {
 					event.lose_map.noowner.addArray(directDiscard);
-					await game.cardsGotoOrdering(directDiscard);
+					await game.cardsGotoOrdering(directDiscard).link();
 				}
 			}
 			await event.trigger("useCard0");
@@ -10126,7 +10126,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				if (event.forceDie) {
 					next.forceDie = true;
 				}
-				await next;
+				await next.link();
 				event.redo();
 			}
 		},
@@ -10159,7 +10159,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				if (event.forceDie) {
 					next.forceDie = true;
 				}
-				await next;
+				await next.link();
 				event.redo();
 			}
 		},
@@ -10206,7 +10206,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				if (event.forceDie) {
 					next.forceDie = true;
 				}
-				await next;
+				await next.link();
 				event.redo();
 			}
 		},
@@ -10242,7 +10242,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				if (targets.length == event.triggeredTargets4.length) {
 					event.sortTarget();
 				}
-				await next;
+				await next.link();
 				event.redo();
 			}
 		},
@@ -10266,7 +10266,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				if (event.forceDie) {
 					next.forceDie = true;
 				}
-				await next;
+				await next.link();
 			} else if (info.reverseOrder && get.is.versus() && targets.length > 1) {
 				const next = game.createEvent(`${event.card.name}ContentBefore`);
 				next.setContent("reverseOrder");
@@ -10279,7 +10279,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				if (event.forceDie) {
 					next.forceDie = true;
 				}
-				await next;
+				await next.link();
 			} else if (info.singleCard && info.filterAddedTarget && event.addedTargets && event.addedTargets.length < targets.length) {
 				const next = game.createEvent(`${event.card.name}ContentBefore`);
 				next.setContent("addExtraTarget");
@@ -10295,7 +10295,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				if (event.forceDie) {
 					next.forceDie = true;
 				}
-				await next;
+				await next.link();
 			}
 		},
 		async (event, trigger, player) => {
@@ -10325,7 +10325,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				next.card = event.card;
 				next.cards = cards;
 				next.player = player;
-				await next;
+				await next.link();
 				return;
 			}
 			if (targets.length == 0 && !info.notarget) {
@@ -10340,7 +10340,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				next.card = event.card;
 				next.cards = cards;
 				next.player = player;
-				await next;
+				await next.link();
 				return;
 			}
 			const next = game.createEvent(event.card.name);
@@ -10422,7 +10422,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				if (event.forceDie) {
 					next.forceDie = true;
 				}
-				await next;
+				await next.link();
 			}
 		},
 		async (event, trigger, player) => {
@@ -10668,7 +10668,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				await event.trigger("useSkill");
 			}
 
-			return Promise.all(waitings);
+			return Promise.all(waitings.map(event => event?.link?.()));
 		},
 		async (event, trigger, player) => {
 			const { cards, targets } = event;
@@ -10870,7 +10870,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				game.log(...logList);
 			}
 			next.gaintag.addArray(event.gaintag);
-			await next;
+			await next.link();
 		}
 		event.result = {
 			bool: true,
@@ -10885,7 +10885,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 		if (event.discarder) {
 			event.done.discarder = event.discarder;
 		}
-		await event.done;
+		await event.done.link();
 		await event.trigger("discard");
 	},
 	async loseToDiscardpile(event, trigger, player) {
@@ -10905,7 +10905,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 		}
 		next.type = "loseToDiscardpile";
 		event.done = next;
-		await next;
+		await next.link();
 		await event.trigger("loseToDiscardpile");
 	},
 	respond: [
@@ -11113,20 +11113,20 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 									const id = owner.playerid;
 									const onLoseCards = cards.filter(card => get.owner(card) == owner);
 									event.cards.removeArray(onLoseCards);
-									await owner.lose(onLoseCards, "visible", ui.ordering).set("relatedEvent", event.getParent()).set("getlx", false).set("type", "use");
+									await owner.lose(onLoseCards, "visible", ui.ordering).set("relatedEvent", event.getParent()).set("getlx", false).set("type", "use").link();
 								}
 							}
 							if (cards_noowner.length) {
-								await game.cardsGotoOrdering(cards_noowner).set("relatedEvent", event.getParent());
+								await game.cardsGotoOrdering(cards_noowner).set("relatedEvent", event.getParent()).link();
 							}
 						});
 					} else {
-						await ownerx.lose(ownerCards, "visible", ui.ordering).set("type", "use");
+						await ownerx.lose(ownerCards, "visible", ui.ordering).set("type", "use").link();
 					}
 				}
 				if (directDiscard.length) {
 					event.lose_map.noowner.addArray(directDiscard);
-					await game.cardsGotoOrdering(directDiscard);
+					await game.cardsGotoOrdering(directDiscard).link();
 				}
 			}
 			await event.trigger("respond");
@@ -11175,7 +11175,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			next1.delay = false;
 		}
 
-		await next1;
+		await next1.link();
 
 		cards = event.cards2;
 		const next2 = target.lose(cards, ui.ordering);
@@ -11187,7 +11187,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			next2.delay = false;
 		}
 
-		await next2;
+		await next2.link();
 
 		if (!delayed) {
 			await game.delay();
@@ -11306,7 +11306,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 					next.cards = cards;
 					next.player = player;
 					next.type = event.name;
-					await next;
+					await next.link();
 				}
 			}
 		},
@@ -11572,7 +11572,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 					next.cards = cards;
 					next.player = player;
 					next.type = event.name;
-					await next;
+					await next.link();
 				}
 			}
 		},
@@ -12068,7 +12068,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 					next.cards = cards;
 					next.relatedEvent = event;
 					next.type = event.name;
-					await next;
+					await next.link();
 				}
 			}
 		},
@@ -12305,7 +12305,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			player.$damagepop(num, "wood");
 			game.log(player, `回复了${get.cnNumber(num)}点体力`);
 
-			await player.changeHp(num, false);
+			await player.changeHp(num, false).link();
 		} else {
 			event._triggered = null;
 		}
@@ -12327,18 +12327,18 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 		});
 		game.log(player, `失去了${get.cnNumber(num)}点体力`);
 
-		await player.changeHp(-num);
+		await player.changeHp(-num).link();
 
 		if (player.hp <= 0 && !event.nodying) {
 			await game.delayx();
 			event._dyinged = true;
-			await player.dying(event);
+			await player.dying(event).link();
 		}
 	},
 	async doubleDraw(event, trigger, player) {
 		const result = await player.chooseBool("你的主副将体力上限之和是奇数，是否摸一张牌？").forResult();
 		if (result.bool) {
-			await player.draw();
+			await player.draw().link();
 		}
 	},
 	async loseMaxHp(event, trigger, player) {
@@ -12361,7 +12361,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 		event.changedHp = player.getHp() - Math.max(0, event.originalHp);
 
 		if (player.maxHp <= 0) {
-			await player.die(event);
+			await player.die(event).link();
 		}
 	},
 	async gainMaxHp(event, trigger, player) {
@@ -12493,7 +12493,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 					next.triggername = "_save";
 					next.forceDie = true;
 					next.setContent("_save");
-					await next;
+					await next.link();
 				}
 			}
 		},
@@ -12503,7 +12503,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				_status.dying = list;
 			}, _status.dying);
 			if (player.hp <= 0 && !event.nodying && !player.nodying) {
-				await player.die(event.reason);
+				await player.die(event.reason).link();
 			}
 		},
 	],
@@ -12583,14 +12583,14 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				game.over();
 			} else */
 			if (player.hp != 0) {
-				await player.changeHp(0 - player.hp, false).set("forceDie", true);
+				await player.changeHp(0 - player.hp, false).set("forceDie", true).link();
 			}
 		},
 		async (event, trigger, player) => {
 			const { source } = event;
 			//是否执行展示身份牌和胜负判断的操作
 			if (player.dieAfter && !event.reserveOut && !event.noDieAfter) {
-				await player.dieAfter(source);
+				await player.dieAfter(source).link();
 			}
 		},
 		async (event, trigger, player) => {
@@ -12659,7 +12659,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				//死亡弃置所有牌包括s和x区域的
 				event.cards = player.getCards("hejsx");
 				if (event.cards.length) {
-					await player.discard(event.cards).set("forceDie", true);
+					await player.discard(event.cards).set("forceDie", true).link();
 					//player.$throw(event.cards,1000);
 				}
 			}
@@ -12668,7 +12668,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			const { source } = event;
 			//是否执行击杀奖惩的操作
 			if (player.dieAfter2 && !event.reserveOut && !event.noDieAfter2) {
-				await player.dieAfter2(source);
+				await player.dieAfter2(source).link();
 			}
 		},
 		async (event, trigger, player) => {
@@ -12823,7 +12823,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 		}, player);
 		player.removeSkill("undist");
 
-		await player.reviveEvent(hp, false);
+		await player.reviveEvent(hp, false).link();
 		await event.trigger("restEnd");
 	},
 	//复活事件
@@ -12971,7 +12971,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 					// @ts-expect-error ignore
 					next.visible = true;
 				}
-				await next;
+				await next.link();
 				event.relatedLose = next;
 			}
 			let stop = false;
@@ -12988,14 +12988,14 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			}
 			if (stop) {
 				if (list.length) {
-					await game.cardsDiscard(list);
+					await game.cardsDiscard(list).link();
 				}
 				return;
 			}
 		}
 		if (!cardInfo.effect && !cardInfo.noEffect) {
 			if (event.cards.length) {
-				await game.cardsDiscard(event.cards);
+				await game.cardsDiscard(event.cards).link();
 			}
 			return;
 		}
@@ -13154,9 +13154,9 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 					}
 				}
 			}
-			await triggerFixing;
+			await triggerFixing.link();
 			if (event.next.includes(callback)) {
-				await callback;
+				await callback.link();
 			}
 		},
 	],
@@ -13185,7 +13185,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 	},
 	async chooseToGuanxing(event, trigger, player) {
 		const cards = get.cards(event.num);
-		await game.cardsGotoOrdering(cards);
+		await game.cardsGotoOrdering(cards).link();
 		const next = player.chooseToMove("allowChooseAll");
 		next.set("forceDie", event.forceDie);
 		next.set("includeOut", event.includeOut);
@@ -13283,12 +13283,14 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 		const top = result?.moved?.[0] || [];
 		const bottom = result?.moved?.[1] || [];
 		top.reverse();
-		await game.cardsGotoPile(top.concat(bottom), ["top_cards", top], (event, card) => {
-			if (event.top_cards.includes(card)) {
-				return ui.cardPile.firstChild;
-			}
-			return null;
-		});
+		await game
+			.cardsGotoPile(top.concat(bottom), ["top_cards", top], (event, card) => {
+				if (event.top_cards.includes(card)) {
+					return ui.cardPile.firstChild;
+				}
+				return null;
+			})
+			.link();
 		game.addCardKnower(top, player);
 		game.addCardKnower(bottom, player);
 		event.result = {
