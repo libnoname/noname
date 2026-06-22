@@ -114,16 +114,23 @@ export class GameEvent implements PromiseLike<void> {
 	 *
 	 * @param mode 等待时采用的错误传播模式。
 	 */
-	#doAsync(mode: WaitNextMode): Promise<void> {
+	async #doAsync(mode: WaitNextMode): Promise<void> {
+		if (mode === "strict" || !this._awaitingMode) {
+			this._awaitingMode = mode;
+		}
 		if (this.parent) {
-			return this.parent.waitNext(mode, mode === "safe" ? this : undefined).then(() => undefined);
+			await this.parent.waitNext();
+			return;
 		}
-		if (mode === "safe") {
-			return this.start().catch(error => {
-				this.recordError(error, true);
-			});
+		// 我不确定根事件safe是否合理，但以防万一，确保safe的一致性
+		try {
+			await this.start();
+		} catch (error) {
+			if (mode === "strict") {
+				throw error;
+			}
+			this.recordError(error, true);
 		}
-		return this.start();
 	}
 	/**
 	 * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -359,30 +366,19 @@ export class GameEvent implements PromiseLike<void> {
 		return true;
 	}
 	#waitNext?: Promise<Partial<Result> | void>;
-	#waitNextMode: WaitNextMode = "strict";
-	#waitNextSafeEvents = new Set<GameEvent>();
+	/**
+	 * 当前事件被等待时采用的错误传播模式。
+	 */
+	protected _awaitingMode?: WaitNextMode;
 	/**
 	 * 推进并等待当前事件 next 队列中的子事件。
 	 *
-	 * 默认 strict 模式会保持原有流程语义：子事件报错会中断当前等待。
-	 * safe 模式用于裸 await 事件，只记录指定 safeEvent 的错误并继续推进队列；
-	 * 后续 strict 等待会将正在进行的 safe 等待升级为 strict。
-	 *
-	 * @param mode 等待子事件时的错误传播模式，默认为 strict。
-	 * @param safeEvent safe 模式下允许被保底处理的目标子事件；不传则允许当前 safe 轮次处理所有子事件。
 	 * @returns 最后一个有 result 的子事件结果。
 	 */
-	waitNext(mode: WaitNextMode = "strict", safeEvent?: GameEvent): Promise<Partial<Result> | void> {
-		if (mode === "safe" && safeEvent) {
-			this.#waitNextSafeEvents.add(safeEvent);
-		}
+	waitNext(): Promise<Partial<Result> | void> {
 		if (this.#waitNext) {
-			if (mode === "strict") {
-				this.#waitNextMode = "strict";
-			}
 			return this.#waitNext;
 		}
-		this.#waitNextMode = mode;
 		this.#waitNext = (async () => {
 			let result;
 			while (true) {
@@ -402,9 +398,15 @@ export class GameEvent implements PromiseLike<void> {
 				try {
 					await next.start();
 				} catch (error) {
-					const safe = this.#waitNextMode === "safe" && (!this.#waitNextSafeEvents.size || this.#waitNextSafeEvents.has(next));
+					const safe = next._awaitingMode === "safe";
 					if (!safe) {
+						if (lib.config.dev) {
+							console.info("%s 事件的报错已由 %s 重新抛出", next.name, this.name);
+						}
 						throw error;
+					}
+					if (lib.config.dev) {
+						console.info("%s 事件的报错已在 %s 屏蔽", next.name, this.name);
 					}
 					next.recordError(error, true);
 					this.next.shift();
@@ -417,8 +419,6 @@ export class GameEvent implements PromiseLike<void> {
 			}
 		})().finally(() => {
 			this.#waitNext = undefined;
-			this.#waitNextMode = "strict";
-			this.#waitNextSafeEvents.clear();
 		});
 		return this.#waitNext;
 	}

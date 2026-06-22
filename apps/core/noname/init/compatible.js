@@ -140,8 +140,9 @@ Object.assign(lib.element.GameEvent.prototype, {
 Object.assign(lib.element.GameEvent.prototype, {
 	then(onfulfilled, onrejected) {
 		const event = /** @type { any } */ (this);
+		event._awaitingMode ??= "safe";
 		const promise = event.parent
-			? event.parent.waitNext("safe", event)
+			? event.parent.waitNext()
 			: event.start().catch(error => {
 					event.recordError(error, true);
 				});
@@ -168,6 +169,7 @@ Object.assign(lib.element.GameEvent.prototype, {
 	 */
 	async link() {
 		const event = /** @type { any } */ (this);
+		event._awaitingMode = "strict";
 		await (event.parent ? event.parent.waitNext() : event.start());
 		if (event.error) {
 			throw event.error;
