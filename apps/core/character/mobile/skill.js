@@ -671,14 +671,14 @@ const skills = {
 				trigger: { player: "phaseJieshuBegin" },
 				forced: true,
 				filter(event, player) {
-					return player.countMark("mbranshang") > 0;
+					return player.hasMark("mbranshang");
 				},
 				async content(event, trigger, player) {
-					await player.loseHp(player.countMark("mbranshang"));
-					if (player.countMark("mbranshang") >= player.getDamagedHp()) {
-						await player.loseMaxHp({ num: 2 });
-						await player.draw(2);
-					}
+			        await player.loseHp(player.countMark("mbranshang"));
+			        if (player.countMark("mbranshang") > 1) {
+				    	await player.loseMaxHp(2);
+			    		await player.draw(2);
+    			    }
 				},
 			},
 		},
@@ -696,7 +696,7 @@ const skills = {
 			const result = await player
 				.chooseControl({
 					prompt: get.prompt2(event.skill),
-					choiceList: [`摸一张牌`, `令${get.translation(card)}造成的伤害+1`, `背水！获得一个“燃”`],
+					choiceList: [`摸两张牌`, `令${get.translation(card)}造成的伤害+1`, `背水！获得一个“燃”`],
 					controls: ["选项一", "选项二", "背水！", "cancel2"],
 					choice: (() => {
 						if (!get.is.damageCard(card)) {
@@ -721,7 +721,7 @@ const skills = {
 				cost_data: { index },
 			} = event;
 			if (index % 2 == 0) {
-				await player.draw();
+				await player.draw(2);
 			}
 			if (index > 0) {
 				game.log(trigger.card, "的基础伤害+1");
@@ -10877,6 +10877,7 @@ const skills = {
 	//手杀薛综
 	mbfunan: {
 		audio: "funan",
+		derivation: ["mbfunan_rewrite",],
 		trigger: { global: ["respond", "useCard"] },
 		filter(event, player) {
 			if (!event.respondTo) {
@@ -16540,7 +16541,7 @@ const skills = {
 				.chooseToDuiben(target)
 				.set("title", "谋弈")
 				.set("namelist", ["反抗", "归顺", "镇压", "安抚"])
-				.set("translationList", [`对方选择镇压：${get.translation(player)}对你造成1点伤害，然后其摸一张牌<br>对方选择安抚：${get.translation(player)}受到1点伤害，然后其摸两张牌`, `对方选择镇压：${get.translation(player)}获得你一张牌，然后其交给你两张牌<br>对方选择安抚：你须交给${get.translation(player)}两张牌（若你牌数不足两张，则改为其令你跳过你下个摸牌阶段）`, `对方选择反抗：你对${get.translation(target)}造成1点伤害，然后你摸一张牌<br>对方选择归顺：你获得${get.translation(target)}一张牌，然后你交给其两张牌`, `对方选择反抗：你受到1点伤害，然后你摸两张牌<br>对方选择归顺：${get.translation(target)}须交给你两张牌（若其牌数不足两张，则改为令其跳过其下个摸牌阶段）`])
+				.set("translationList", [`对方选择镇压：${get.translation(player)}对你造成1点伤害，然后其摸一张牌<br>对方选择安抚：${get.translation(player)}受到1点伤害，然后其摸一张牌`, `对方选择镇压：${get.translation(player)}获得你一张牌，然后其交给你两张牌<br>对方选择安抚：你须交给${get.translation(player)}两张牌（若你牌数不足两张，则改为其令你跳过你下个摸牌阶段）`, `对方选择反抗：你对${get.translation(target)}造成1点伤害，然后你摸一张牌<br>对方选择归顺：你获得${get.translation(target)}一张牌，然后你交给其两张牌`, `对方选择反抗：你受到1点伤害，然后你摸一张牌<br>对方选择归顺：${get.translation(target)}须交给你两张牌（若其牌数不足两张，则改为令其跳过其下个摸牌阶段）`])
 				.set("ai", button => 1 + Math.random());
 			"step 1";
 			if (result.bool) {
@@ -16567,7 +16568,7 @@ const skills = {
 					event.goto(3);
 				} else {
 					player.damage();
-					player.draw(2);
+					player.draw();
 					event.finish();
 				}
 			}

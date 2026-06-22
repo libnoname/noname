@@ -1286,11 +1286,19 @@ const skills = {
 	//史阿
 	liren: {
 		audio: 2,
+		forced: true,
+		mod: {
+			attackRangeFinal(player, num) {
+				return 2;
+			},
+		},
 		trigger: {
 			global: ["damageSource", "shaMiss", "eventNeutralized"],
 		},
-		forced: true,
 		filter(event, player) {
+			if (player.countMark("liren") >= 3) {
+				return false;
+			}
 			if (event.card?.name != "sha") {
 				return false;
 			}
@@ -1299,16 +1307,31 @@ const skills = {
 			}
 			return true;
 		},
+		intro: {
+			content: "本回合已获得#张牌",
+		},
 		async content(event, trigger, player) {
+			player.addTempSkill(event.name + "_clear");
+			const count = player.countMark(event.name);
 			if (trigger.name == "damage") {
-				await player.gain({ cards: trigger.cards.filterInD("od"), animate: "gain2" });
-			} else {
+				let cards = trigger.cards.filterInD("od");
+				cards = cards.slice(0, Math.min(cards.length, 3 - count));
+				if (cards.length) {
+					player.addMark(event.name, cards.length, false);
+					await player.gain({ cards, animate: "gain2" });
+				}
+			}
+			else {
+				player.addMark(event.name, 1, false);
 				await player.draw();
 			}
 		},
-		mod: {
-			attackRangeFinal(player, num) {
-				return 2;
+		subSkill: {
+			clear: {
+				charlotte: true,
+				onremove(player, skill) {
+					player.clearMark(skill.slice(0, -6), false);
+				}
 			},
 		},
 	},
@@ -1776,7 +1799,7 @@ const skills = {
 					.chooseTarget({
 						prompt: `煌怒：选择一名角色令其随机弃置一张你指定类型的牌`,
 						filterTarget(card, player, target) {
-							return target.countDiscardableCards(target, "h") > 0;
+							return target.countDiscardableCards(target, "he") > 0;
 						},
 						ai(target) {
 							return get.effect(target, { name: "guohe_copy2", position: "h" }, get.player(), get.player());
@@ -8768,7 +8791,7 @@ const skills = {
 					`${event.name}_draw_${player.playerid}`,
 					get.translation(event.name)
 				);
-				const next = target.gain(gain, "gain2");
+				const next = target.gain(gain, "draw");
 				next.gaintag.add(`${event.name}_draw_${player.playerid}`);
 				await next;
 			}
@@ -15061,7 +15084,7 @@ const skills = {
 				});
 				if (vcards.length) {
 					const result = await player
-						.chooseButton([`###圆融：你可以将本回合进入弃牌堆的一张红色牌当任意基本使用###弃牌堆`, redCards, "###可转化基本牌###", [vcards, "vcard"]], 2)
+						.chooseButton([`###圆融：你可以将本回合进入弃牌堆的一张红色牌当任意基本牌使用###弃牌堆`, redCards, "###可转化基本牌###", [vcards, "vcard"]], 2)
 						.set("filterButton", button => {
 							if (!Array.isArray(button.link)) {
 								return ui.selected.buttons.length == 0;
@@ -25070,7 +25093,8 @@ const skills = {
 				await target.draw("nodelay");
 			}
 			await game.delayx();
-			const targetsx = targets.filter(current => current.isMinHp(false, false, targets.includes(current)));
+			const minHp = Math.min(...targets.map(p => p.hp));
+			const targetsx = targets.filter(p => p.hp === minHp);
 			if (targetsx.length) {
 				await targetsx.randomGet().recover();
 			}

@@ -7372,7 +7372,7 @@ const skills = {
 			player.addSkills("reguanxing");
 		},
 	},
-	//界郭图张嶷
+	//界郭图逢纪
 	rejigong: {
 		audio: 2,
 		direct: true,
@@ -7404,7 +7404,7 @@ const skills = {
 				return num;
 			},
 		},
-		trigger: { player: "phaseDiscardEnd" },
+		trigger: { player: "phaseUseEnd" },
 		forced: true,
 		charlotte: true,
 		sourceSkill: "rejigong",

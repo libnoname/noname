@@ -38,7 +38,7 @@ const characters = {
 	shie: {
 		sex: "male",
 		group: "qun",
-		hp: 4,
+		hp: 5,
 		skills: ["liren", "sejianchu"],
 	},
 	dc_sb_zhangren: {
