@@ -37445,46 +37445,51 @@ const skills = {
 			const target = event.targets[0];
 			player.addSkill("dccili_mark");
 			player.setStorage("dccili_mark", [target, target.getHp()], true);
-			target.when("phaseEnd").then(async (event, trigger, player2) => {
-				const record = player.getStorage("dccili_mark");
-				player.removeSkill("dccili_mark");
-				if (!record || record[0] != target) {
-					return;
-				}
-				const num = player2.countHistory("useCard");
-				if (record[1] > 0) {
-					if (num < record[1]) {
-						const result = await player
-							.chooseTarget({
-								prompt: `令一名角色随机弃置${record[1]}张牌`,
-								filterTarget(card, player, target) {
-									return target.hasCards("he");
-								},
-								ai(target) {
-									return -get.attitude(player, target) * (0.7 + (target.countCards("he") >= 5));
-								},
-							})
-							.forResult();
-						if (result.bool) {
-							await result.targets[0].randomDiscard(record[1]);
-						}
-					} else {
-						const result = await player
-							.chooseTarget({
-								prompt: `令一名角色摸${record[1]}张牌`,
-								ai(target) {
-									return get.attitude(player, target);
-								},
-							})
-							.forResult();
-						if (result.bool) {
-							await result.targets[0].draw(record[1]);
+			player
+				.when({global:"phaseEnd"})
+				.filter((event2,player2)=>{
+					return event2.player === target;
+				})
+				.then(async (event, trigger, player2) => {
+					const record = player.getStorage("dccili_mark");
+					player.removeSkill("dccili_mark");
+					if (!record || record[0] != target) {
+						return;
+					}
+					const num = player2.countHistory("useCard");
+					if (record[1] > 0) {
+						if (num < record[1]) {
+							const result = await player
+								.chooseTarget({
+									prompt: `令一名角色随机弃置${record[1]}张牌`,
+									filterTarget(card, player, target) {
+										return target.hasCards("he");
+									},
+									ai(target) {
+										return -get.attitude(player, target) * (0.7 + (target.countCards("he") >= 5));
+									},
+								})
+								.forResult();
+							if (result.bool) {
+								await result.targets[0].randomDiscard(record[1]);
+							}
+						} else {
+							const result = await player
+								.chooseTarget({
+									prompt: `令一名角色摸${record[1]}张牌`,
+									ai(target) {
+										return get.attitude(player, target);
+									},
+								})
+								.forResult();
+							if (result.bool) {
+								await result.targets[0].draw(record[1]);
+							}
 						}
 					}
-				}
-				player.unmarkAuto("dccili_mark");
-				player.removeSkill("dccili_mark");
-			});
+					player.unmarkAuto("dccili_mark");
+					player.removeSkill("dccili_mark");
+				});
 		},
 		subSkill: {
 			mark: {
