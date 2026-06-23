@@ -2,6 +2,7 @@
 import { _status, game, get, lib, ui, ai } from "noname";
 import { GameEvent } from "./gameEvent.js";
 import { Player } from "./player.js";
+import type { GainAnimate } from "./Player/type";
 
 import { delay } from "@/util/index.js";
 
@@ -11370,126 +11371,75 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 					event.gaintag
 				);
 			};
-			if (event.animate == "draw") {
-				player.$draw(cards.length);
-				game.pause();
-				setTimeout(
-					() => {
-						addv();
-						player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
-						player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
-						player.update();
-						if (player == game.me) {
-							ui.updatehl();
-						}
-						broadcast();
-						game.resume();
-					},
-					get.delayx(500, 500)
-				);
-			} else if (event.animate == "gain") {
-				player.$gain(cards, event.log);
-				game.pause();
-				setTimeout(
-					() => {
-						addv();
-						player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
-						player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
-						player.update();
-						if (player == game.me) {
-							ui.updatehl();
-						}
-						broadcast();
-						game.resume();
-					},
-					get.delayx(700, 700)
-				);
-			} else if (event.animate == "gain2" || event.animate == "draw2") {
-				let gain2t = 300;
-				if (player.$gain2(cards, event.log) && player == game.me) {
-					gain2t = 500;
-				}
-				game.pause();
-				setTimeout(
-					() => {
-						addv();
-						player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
-						player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
-						player.update();
-						if (player == game.me) {
-							ui.updatehl();
-						}
-						broadcast();
-						game.resume();
-					},
-					get.delayx(gain2t, gain2t)
-				);
-			} else if (event.animate == "give" || event.animate == "giveAuto") {
-				const evtmap = event.losing_map;
-				if (event.animate == "give") {
-					for (const i in evtmap) {
-						const source = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
-						source.$give(evtmap[i][0], player, event.log);
-					}
-				} else {
-					for (const i in evtmap) {
-						const source = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
-						if (evtmap[i][1].length) {
-							source.$giveAuto(evtmap[i][1], player, event.log);
-						}
-						if (evtmap[i][2].length) {
-							source.$give(evtmap[i][2], player, event.log);
-						}
-					}
-				}
-				game.pause();
-				setTimeout(
-					() => {
-						addv();
-						player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
-						player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
-						player.update();
-						if (player == game.me) {
-							ui.updatehl();
-						}
-						broadcast();
-						game.resume();
-					},
-					get.delayx(500, 500)
-				);
-			} else if (typeof event.animate == "function") {
-				const time = event.animate(event);
-				game.pause();
-				setTimeout(
-					() => {
-						addv();
-						player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
-						player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
-						player.update();
-						if (player == game.me) {
-							ui.updatehl();
-						}
-						broadcast();
-						game.resume();
-					},
-					get.delayx(time, time)
-				);
-			} else {
+			const postAnimate = () => {
 				addv();
 				player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
 				player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
 				player.update();
-				if (player == game.me) {
+				if (player === game.me) {
 					ui.updatehl();
 				}
 				broadcast();
-				event.finish();
+			};
+
+			let animateTime: number | Promise<void> | null = null;
+			const animate: GainAnimate | null = event.animate;
+			switch (animate) {
+				case "draw":
+					player.$draw(cards.length);
+					animateTime = 500;
+					break;
+				case "gain":
+					player.$gain(cards, event.log);
+					animateTime = 700;
+					break;
+				case "draw2":
+				case "gain2":
+					animateTime = 300;
+					if (player.$gain2(cards, event.log) && player === game.me) {
+						animateTime = 500;
+					}
+					break;
+				case "give":
+				case "giveAuto": {
+					const evtmap = event.losing_map;
+					if (animate === "give") {
+						for (const id in evtmap) {
+							const source = (_status.connectMode ? lib.playerOL : game.playerMap)[id];
+							source.$give(evtmap[id][0], player, event.log);
+						}
+					} else {
+						for (const id in evtmap) {
+							const source = (_status.connectMode ? lib.playerOL : game.playerMap)[id];
+							if (evtmap[id][1].length) {
+								source.$giveAuto(evtmap[id][1], player, event.log);
+							}
+							if (evtmap[id][2].length) {
+								source.$give(evtmap[id][2], player, event.log);
+							}
+						}
+					}
+					animateTime = 500;
+					break;
+				}
+				default: {
+					if (animate == null) {
+						break;
+					}
+					animateTime = animate(event);
+					break;
+				}
 			}
-		},
-		async (event, trigger, player) => {
-			game.delayx();
+			if (animateTime != null) {
+				await typeof animateTime === "number" ? delay(get.delayx(animateTime, animateTime)) : animateTime;
+			}
+
+			postAnimate();
 			if (event.updatePile) {
 				game.updateRoundNumber();
+			}
+			if (animateTime != null) {
+				await game.delayx();
 			}
 		},
 	],
