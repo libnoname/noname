@@ -3214,7 +3214,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			let prompt = "弃置一张可指定自己为目标的牌，然后选择一项:";
-			if (player.storage.starweigu) {
+			if (player.getStorage("starweigu").includes("changed")) {
 				prompt += "<span class=text center>1、对一名角色造成2点伤害；</span>";
 			} else {
 				prompt += "<span class=text center>1、移动场上一张牌；</span>";
@@ -3257,7 +3257,7 @@ const skills = {
 		async content(event, trigger, player) {
 			await player.discard({ cards: event.cards });
 			const choiceList = [];
-			if (!player.storage.starweigu) {
+			if (!player.getStorage("starweigu").includes("changed")) {
 				if (player.canMoveCard()) {
 					choiceList.push(["move", "移动场上的一张牌"]);
 				}
@@ -3346,7 +3346,7 @@ const skills = {
 		animationColor: "red",
 		manualConfirm: true,
 		filter(event, player) {
-			return !player.storage.starweigu;
+			return !player.getStorage("starweigu").includes("changed");
 		},
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
@@ -3357,7 +3357,7 @@ const skills = {
 				charlotte: true,
 				forced: true,
 				init(player, skill) {
-					player.storage.starweigu = true;
+					player.markAuto("starweigu", "changed");
 					player.addSkill("starjuefa_remove");
 					player.markAuto("starjuefa_remove", "die");
 				},
@@ -3393,7 +3393,7 @@ const skills = {
 					if (!player.getStorage("starjuefa_remove").includes("remove")) {
 						player.markAuto("starjuefa_remove", "remove");
 					} else {
-						player.storage.starweigu = false;
+						player.unmarkAuto("starweigu", "changed");
 						player.removeSkill("starjuefa_effect");
 						player.removeSkill("starjuefa_remove");
 						if (player.getStorage("starjuefa_remove").includes("die")) {
