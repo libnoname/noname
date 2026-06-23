@@ -11430,16 +11430,17 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 					break;
 				}
 			}
-			if (animateTime != null) {
-				await typeof animateTime === "number" ? delay(get.delayx(animateTime, animateTime)) : animateTime;
+			if (animateTime == null) {
+				postAnimate();
+			} else {
+				const waiting = typeof animateTime === "number" ? delay(get.delayx(animateTime, animateTime)) : animateTime;
+				waiting.then(postAnimate).finally(() => void game.resume());
+				await game.pause();
+				game.delayx();
 			}
 
-			postAnimate();
 			if (event.updatePile) {
 				game.updateRoundNumber();
-			}
-			if (animateTime != null) {
-				await game.delayx();
 			}
 		},
 	],
