@@ -7,7 +7,7 @@ const skills = {
 		audio: 2,
 		enable: "chooseToUse",
 		usable(skill, player) {
-			return 1 + player.countMark("sbdengxian_used");
+			return 1 + player.countMark("sbdengxian_count");
 		},
 		filter(event, player) {
 			if (!player.countCards("e")) {
@@ -54,6 +54,7 @@ const skills = {
 				return _status.event.getParent().filterCard(
 					{
 						name: button.link[2],
+						nature: button.link[3],
 					},
 					player,
 					_status.event.getParent()
@@ -90,8 +91,7 @@ const skills = {
 								player: ["useCardAfter"],
 							})
 							.filter(evt => evt.getParent() == event.getParent())
-							.step(async (event, trigger, player) => {
-								player.removeSkill(event.name);
+							.then(async (event, trigger, player) => {
 								const bool1 = player.isDamaged(),
 									bool2 = trigger.targets?.some(target => !target.isDamaged());
 								if (bool1) {
@@ -99,39 +99,25 @@ const skills = {
 									await player.gainMultiple(trigger.targets.sortBySeat(), "he");
 								}
 								if (bool2) {
-									player.addTempSkill("sbdengxian_used");
-									player.addMark("sbdengxian_used", 1, false);
+									player.addTempSkill("sbdengxian_count");
+									player.addMark("sbdengxian_count", 1, false);
 								}
 								if (bool1 && bool2) {
 									player.popup("乘势");
-									let cards = Array.from(ui.discardPile.childNodes).filter(card => get.type(card) == "equip"),
-										gains = cards.slice(0);
-									const history = game.getGlobalHistory("cardMove", evt => {
-										if (evt.name == "lose") {
-											return evt.position == ui.discardPile;
+									const cards = [];
+									game.checkGlobalHistory("cardMove", evt => {
+										if (evt.name == "lose" && evt.position == ui.discardPile) {
+											cards.addArray(evt.cards.filterInD("d"));
 										}
-										return evt.name == "cardsDiscard";
+										if (evt.name == "cardsDiscard" && !get.info("dcfuxue").isUse(evt)) {
+											cards.addArray(evt.cards.filterInD("d"));
+										}
 									});
-									for (let i = history.length - 1; i >= 0; i--) {
-										const evt = history[i];
-										const cards2 = evt.cards.filter(card => {
-											return cards.includes(card);
-										});
-										if (cards2.length) {
-											if (get.info("dcfuxue").isUse(evt)) {
-												gains.removeArray(cards2);
-											}
-											cards.removeArray(cards2);
-										}
-										if (!cards.length) {
-											break;
-										}
-									}
-									if (gains.length) {
-										const card = gains.randomGet();
-										await player.gain(card, "gain2");
-										if (player.canEquip(card)) {
-											await player.equip(card);
+									if (cards.some(card => player.canEquip(card, true))) {
+										const card = cards.filter(card => player.canEquip(card, true)).randomGet();
+										await player.gain({ cards: [card], animate: "gain2" });
+										if (player.getCards("h").includes(card)) {
+											await player.chooseUseTarget({ card, forced: true });
 										}
 									} else {
 										player.popup("杯具");
@@ -182,7 +168,7 @@ const skills = {
 		},
 		subSkill: {
 			backup: {},
-			used: { charlotte: true, onremove: true },
+			count: { charlotte: true, onremove: true },
 			round: { charlotte: true, onremove: true },
 		},
 	},

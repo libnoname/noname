@@ -138,11 +138,14 @@ const skills = {
 					if (player.getStorage("dcsbjingmou_mark2").length >= 7) {
 						await player.addSkills("dcsbdingnan");
 					}
+					const {
+						targets: [target],
+					} = event;
 					if (!player.storage.dcsbjingmou) {
 						const result = await player
 							.chooseBool({
-								prompt: get.prompt(event.name),
-								prompt2: `令${get.translation(trigger.card)}无效并弃置牌堆顶的一张牌。若与此牌花色相同则对${get.translation(trigger.player)}造成一点火焰伤害`,
+								prompt: get.prompt(event.name, target),
+								prompt2: `令${get.translation(trigger.card)}无效并弃置牌堆顶的一张牌。若与此牌花色相同则对其造成一点火焰伤害`,
 								ai() {
 									const { player, target, card, targets } = get.event();
 									let effect = 0;
@@ -170,7 +173,7 @@ const skills = {
 									return false;
 								},
 							})
-							.set("target", trigger.player)
+							.set("target", target)
 							.set("targets", trigger.targets)
 							.set("card", trigger.card)
 							.forResult();
@@ -247,11 +250,11 @@ const skills = {
 			for (const target of targets.sortBySeat()) {
 				const result = await target
 					.chooseToRespond({
-						filterCard(card, player) {
+						filterCard(card, player, event) {
 							if (get.name(card) !== "sha") {
 								return false;
 							}
-							return lib.filter.cardRespondable(card, player);
+							return lib.filter.cardRespondable(card, player, event);
 						},
 						prompt: `定南：打出一张【杀】，否则受到${get.translation(player)}的一点伤害`,
 						ai(card) {
@@ -274,7 +277,7 @@ const skills = {
 	},
 	dcsbguyi: {
 		audio: 2,
-		locked: true,
+		forced: true,
 		trigger: {
 			player: "loseAfter",
 			global: ["gameDrawAfter", "phaseEnd", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
@@ -300,35 +303,21 @@ const skills = {
 				return 1;
 			}
 			let num = 0;
-			if (event.name === "lose") {
-				for (const i in event.gaintag_map) {
-					if (event.gaintag_map[i].includes("dcsbguyi_tag")) {
-						num++;
-					}
+			const evt = event.getl(player);
+			for (const i in evt.gaintag_map) {
+				if (evt.gaintag_map[i].includes("dcsbguyi_tag")) {
+					num++;
 				}
-			} else {
-				player.getHistory("lose", evt => {
-					if (event !== evt.getParent()) {
-						return false;
-					}
-					for (const i in evt.gaintag_map) {
-						if (evt.gaintag_map[i].includes("dcsbguyi_tag")) {
-							num++;
-						}
-					}
-				});
 			}
 			return num;
 		},
-		async cost(event, trigger, player) {
-			if (trigger.name != "gameDraw") {
-				event.result = {
-					bool: true,
-				};
-			} else {
-				event.result = await player
+		async content(event, trigger, player) {
+			if (trigger.name == "phase") {
+				await player.draw({ num: 1, gaintag: ["dcsbguyi_tag"] });
+			} else if (trigger.name == "gameDraw") {
+				const result = await player
 					.chooseCard({
-						prompt2: "选择一张手牌标记为“熠”",
+						prompt: "孤熠：选择一张手牌标记为“熠”",
 						forced: true,
 						position: "h",
 						ai(card) {
@@ -336,14 +325,7 @@ const skills = {
 						},
 					})
 					.forResult();
-			}
-		},
-		async content(event, trigger, player) {
-			if (trigger.name == "phase") {
-				await player.draw({ num: 1, gaintag: ["dcsbguyi_tag"] });
-			} else if (trigger.name == "gameDraw") {
-				const { cards } = event;
-				player.addGaintag(cards, event.name + "_tag");
+				player.addGaintag(result.cards, event.name + "_tag");
 			} else {
 				const num = Math.min(7, player.countMark("dcsbguyi_round") + 1);
 				const cards = get.cards(num, true);
@@ -363,7 +345,7 @@ const skills = {
 							return moved[1].length == 1;
 						},
 						processAI(list) {
-							const cards = list[0][1].slice(0).sort(a, b => {
+							const cards = list[0][1].slice(0).sort((a, b) => {
 								return get.value(b) - get.value(a);
 							});
 							return [cards.splice(1), cards];
@@ -385,7 +367,7 @@ const skills = {
 							gaintag: ["dcsbguyi_tag"],
 						});
 					}
-					game.cardsGotoPile(top, "insert");
+					await game.cardsGotoPile(top.reserve(), "insert");
 				}
 			}
 		},
