@@ -84,9 +84,9 @@ const skills = {
 				audio: "potlibing",
 				trigger: { player: "useCard" },
 				filter(event, player) {
-					return get.is.damageCard(event.card) && player.countMark("potlibing_dam");
+					return get.is.damageCard(event.card) && player.hasMark("potlibing_dam");
 				},
-				content() {
+				async content(event, trigger, player) {
 					if (typeof trigger.baseDamage != "number") {
 						trigger.baseDamage = 1;
 					}
@@ -115,27 +115,25 @@ const skills = {
 				cards = evt.cards2.filter(card => card.name == "sha" && player.hasUseTarget(card, false, false));
 			return cards;
 		},
-		popup: false,
-		async cost(event, trigger, player) {
+		direct: true,
+		async content(event, trigger, player) {
 			const card = event.indexedData;
 			if (player.hasUseTarget(card, false, false)) {
-				const result = await player
-					.chooseUseTarget(card, true, false, "nodistance")
+				await player
+					.chooseUseTarget({
+						card,
+						forced: true,
+						addCount: false,
+						nodistance: true,
+					})
 					.set("oncard", () => {
-						const event = _status.event;
+						const event = get.event();
 						const targets = game.filterPlayer(current => current.countCards("h") <= player.countCards("h"));
 						event.directHit.addArray(targets);
 					})
-					.set("logSkill", event.skill)
-					.forResult();
-				if (result?.bool) {
-					event.result = {
-						bool: true,
-					};
-				}
+					.set("logSkill", event.name);
 			}
 		},
-		async content(event, trigger, player) {},
 	},
 	//势陈群------by 清风
 	potfaen: {
@@ -168,7 +166,7 @@ const skills = {
 						if (get.attitude(player, target) > 0) {
 							controls.remove(controls[1]);
 						}
-						return controls.slice(0).remove("cancel2").randomGet();
+						return controls.slice(0, -1).randomGet();
 					},
 				})
 				.set("target", target)
@@ -190,7 +188,7 @@ const skills = {
 				await target.draw({ num: 1 });
 			} else {
 				if (target.countDiscardableCards(target, "he")) {
-					await target.chooseToDiscard(true, "he");
+					await target.chooseToDiscard({ forced: true, position: "he" });
 				}
 			}
 			player.addTempSkill(event.name + "_effect");
@@ -214,13 +212,15 @@ const skills = {
 				},
 				logTarget: "player",
 				async content(event, trigger, player) {
-					if (player.getStorage(event.name).includes("draw")) {
-						await trigger.player.draw({ num: 1 });
-					}
-					if (player.getStorage(event.name).includes("discard") && trigger.player.countDiscardableCards(trigger.player, "he")) {
-						await trigger.player.chooseToDiscard(true, "he");
-					}
+					const { targets: [target] } = event;
+					const storage = player.getStorage(event.name).slice();
 					player.removeSkill(event.name);
+					if (storage.includes("draw")) {
+						await target.draw({ num: 1 });
+					}
+					if (storage.includes("discard") && target.countDiscardableCards(target, "he")) {
+						await target.chooseToDiscard({ forced: true, position: "he" });
+					}
 				},
 			},
 		},
@@ -230,7 +230,7 @@ const skills = {
 		round: 1,
 		trigger: { global: "phaseEnd" },
 		filter(event, player) {
-			return game.hasPlayer(current => current.hasHistory("lose", evt => evt.cards?.length));
+			return game.hasPlayer(current => current.hasHistory("lose", evt => evt.cards2?.length));
 		},
 		async cost(event, trigger, player) {
 			let maxLose = 0,
@@ -239,21 +239,19 @@ const skills = {
 				const lose = target.getHistory("lose").reduce((sum, evt) => sum + evt.cards.length, 0);
 				if (lose > maxLose) {
 					maxLose = lose;
-					targets = [];
-					targets.push(target);
+					targets = [target];
 				} else if (lose === maxLose) {
 					targets.push(target);
 				}
 			}
 			event.result = await player
 				.chooseTarget({
-					prompt: get.prompt(event.skill),
-					prompt2: "令一名角色执行一个额外的摸牌阶段",
+					prompt: get.prompt2(event.skill),
 					filterTarget(card, player, target) {
 						return get.event().targets.includes(target);
 					},
 					ai(target) {
-						return get.attitude(get.player(), target);
+						return get.attitude(get.player(), target) * (114514 - target.countCards("h"));
 					},
 				})
 				.set("targets", targets)
@@ -263,6 +261,7 @@ const skills = {
 			const {
 				targets: [target],
 			} = event;
+			//我不好说
 			const next = target.phaseDraw();
 			event.next.remove(next);
 			trigger.next.push(next);
@@ -279,7 +278,7 @@ const skills = {
 			return game.hasPlayer(current => get.attitude(player, current) < 0);
 		},
 		async content(event, trigger, player) {
-			const cards = get.cards(4);
+			const cards = get.cards(4, true);
 			if (!cards.length) {
 				return;
 			}
@@ -311,9 +310,7 @@ const skills = {
 					cards.removeArray(links);
 					player.line(target);
 					targets.add(target);
-					const next = target.addToExpansion(links.reverse(), player, "give");
-					next.gaintag.add(event.name);
-					await next;
+					await target.addToExpansion({ cards: links.reverse(), source: player, animate: "give", gaintag: [event.name] });
 				}
 			}
 		},
@@ -329,15 +326,16 @@ const skills = {
 				forced: true,
 				trigger: { global: "useCardAfter" },
 				filter(event, player) {
-					return event.player.getExpansions("potsifeng").length && event.player == _status.currentPhase;
+					return event.player.hasExpansions("potsifeng") && event.player == _status.currentPhase;
 				},
 				logTarget: "player",
 				async content(event, trigger, player) {
 					const suit = get.suit(trigger.card),
-						card = trigger.player.getExpansions("potsifeng")[0];
-					await trigger.player.loseToDiscardpile(card);
-					if (suit != get.suit(card) && trigger.player.countDiscardableCards(trigger.player, "h")) {
-						await trigger.player.chooseToDiscard(true, "h");
+						{ targets: [target] } = event,
+						card = target.getExpansions("potsifeng")[0];
+					await target.loseToDiscardpile({ cards: [card] });
+					if (suit != get.suit(card) && target.countDiscardableCards(target, "h")) {
+						await target.chooseToDiscard({ forced: true, position: "h" });
 					}
 				},
 			},
@@ -345,7 +343,7 @@ const skills = {
 				audio: "potsifeng",
 				trigger: { global: "phaseEnd" },
 				filter(event, player) {
-					return event.player.getExpansions("potsifeng").length;
+					return event.player.hasExpansions("potsifeng");
 				},
 				lotTarget: "player",
 				async cost(event, trigger, player) {
@@ -376,10 +374,10 @@ const skills = {
 					}
 				},
 				async content(event, trigger, player) {
-					const target = trigger.player,
+					const target = event.targets[0],
 						cards = target.getExpansions("potsifeng");
 					if (event.cost_data == 0) {
-						await target.loseToDiscardpile(cards);
+						await target.loseToDiscardpile({ cards });
 						await target.damage();
 					} else {
 						await player.gain({ cards: cards, animate: "gain2" });
@@ -441,7 +439,7 @@ const skills = {
 				player
 					.when({ global: "phaseUseEnd" })
 					.filter(evt => evt == trigger)
-					.step(async (event, trigger, player) => {
+					.then(async (event, trigger, player) => {
 						trigger.pothuilv_check = true;
 					});
 				target.addTempSkill(event.name + "_mark", "phaseUseAfter");
@@ -479,14 +477,14 @@ const skills = {
 				forced: true,
 				logTarget: "player",
 				async content(event, trigger, player) {
-					const target = trigger.player;
+					const target = event.targets[0];
 					const bool1 = target.hasHistory("useCard", evt => evt.getParent("phaseUse") == trigger && evt.cards?.some(card => player.getStorage(event.name).includes(card)));
 					const bool2 = player.getStorage(event.name).some(card => get.position(card) !== "d");
 					if (bool1) {
 						await target.damage();
 					}
 					if (bool2) {
-						await player.damage(target, "unreal");
+						await player.damage({ source: target, unreal: true });
 						const cards = player.getStorage(event.name).filter(card => get.position(card) !== "d");
 						if (cards.length && game.hasPlayer(current => current != target)) {
 							const result = await player
