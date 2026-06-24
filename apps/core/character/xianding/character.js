@@ -716,6 +716,12 @@ const characters = {
 		skills: ["zhengbi", "fengying"],
 		names: "崔|琰-毛|玠",
 	},
+	fugan: {
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		skills: ["qiaojian", "xica"],
+	},
 	huzun: {
 		sex: "male",
 		group: "wei",

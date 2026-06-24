@@ -25409,6 +25409,293 @@ const skills = {
 			},
 		},
 	},
+	// 傅干
+	qiaojian: {
+		enable: "phaseUse",
+		locked: false,
+		filter(event, player) {
+			return game.hasPlayer(current => lib.filter.notMe && !player.getStorage("qiaojian_used").includes(current));
+		},
+		selectTarget: 1,
+		prompt2: "选择一名其他角色，双方弃置任意张牌并触发后续效果",
+		filterTarget(card, player, target) {
+			if (target === player) {
+				return false;
+			}
+			if (player.getStorage("qiaojian_used").includes(target)) {
+				return false;
+			}
+			return true;
+		},
+		async content(event, trigger, player) {
+			const targets = event.targets;
+			player.addTempSkill("qiaojian_used", "phaseChange");
+			targets.forEach(target => player.markAuto("qiaojian_used", target));
+			const resultMap = await game.chooseAnyOL([...targets, player], get.info(event.name).chooseToDiscard, [player, targets]).forResult();
+			const resultp = resultMap.get(player);
+			let discardedCards = resultp?.cards?.length ? [...resultp.cards] : [];
+			for (const target of targets) {
+				const resultt = resultMap.get(target);
+				let numt = 0;
+				if (resultt?.cards?.length) discardedCards.addArray(resultt.cards);
+				resultt?.cards?.forEach(card => (numt += get.number(card)));
+				let nump = 0;
+				resultp?.cards?.forEach(card => (nump += get.number(card)));
+				if (nump > numt) {
+					await player.recover();
+					const choices = ["其下个回合首次使用【杀】与锦囊牌可各额外结算一次", "其下个回合不可使用伤害牌"];
+					const result = await player
+						.chooseControl({
+							controls: choices,
+							prompt: `巧谏：选择一项令${get.translation(target)}执行`,
+							forced: true,
+							att: get.attitude(player, target),
+							ai() {
+								return get.event().att > 0 ? "其下个回合首次使用【杀】与锦囊牌可各额外结算一次" : "其下个回合不可使用伤害牌";
+							},
+						})
+						.forResult();
+					let skillNext;
+					if (result.index === 0) skillNext = "qiaojian_extra";
+					if (result.index === 1) skillNext = "qiaojian_nouse";
+					target.addSkill("qiaojian_mark");
+					target.markAuto("qiaojian_mark", skillNext);
+					target
+						.when("phaseBegin")
+						.assign({ firstDo: true })
+						.vars({ skillNext: skillNext })
+						.then(async (event2, trigger2, player2) => {
+							player2.addTempSkill(skillNext);
+							player2.unmarkSkill("qiaojian_mark");
+							player2.removeSkill("qiaojian_mark");
+						});
+				} else {
+					if (!discardedCards.length) return;
+					game.log(player, "获得了", discardedCards);
+					await player.gain(discardedCards, "gain2");
+					player.addGaintag(discardedCards, "qiaojian_tag");
+				}
+			}
+		},
+		mod: {
+			ignoredHandcard(card, player) {
+				if (card.hasGaintag("qiaojian_tag")) {
+					return true;
+				}
+			},
+			cardDiscardable(card, player, name) {
+				if (name === "phaseDiscard" && card.hasGaintag("qiaojian_tag")) {
+					return false;
+				}
+			},
+		},
+		chooseToDiscard(player, source, targetList, eventId) {
+			const next = player.chooseToDiscard({
+				position: "he",
+				selectCard: [1, Infinity],
+				prompt: "巧谏：弃置任意张牌，根据弃牌点数和触发后续效果",
+				ai(card) {
+					// 敌人之间：如果是自己就弃到其手牌-1或2张停下(牌少只弃一张)，否则看心情决定数量
+					// 队友之间：一张/不弃牌
+					const player = get.player();
+					const sourcex = get.event().sourcex;
+					const target = get.event().targets[0];
+					const att = get.attitude(sourcex, target);
+					if (player === sourcex) {
+						if (att < 0) {
+							let num = 2;
+							if (player.countCards("h") < 4) {
+								num = 1;
+								if (Math.random() < 0.5) num = 0;
+							}
+							if (ui.selected.cards.length < Math.min(2, target.countCards("h") - 1)) {
+								return 6 - get.value(card);
+							}
+						} else {
+							if (ui.selected.cards.length) return 0;
+							return 6 - get.value(card);
+						}
+					} else {
+						if (att < 0) {
+							if (ui.selected.cards.length <= Math.floor(Math.random() * 4)) {
+								return 6 - get.value(card);
+							}
+						} else {
+							return 0;
+						}
+					}
+					return 0;
+				},
+			});
+			next.set("sourcex", source);
+			next.set("id", eventId);
+			next.set("targets", targetList);
+			next.set("_global_waiting", true);
+			return next;
+		},
+		ai: {
+			order: 7,
+			result: {
+				player(player, target) {
+					if (player.countCards("h") > 2) {
+						if (get.attitude(player, target) < 0) {
+							return 65.7 + Math.random();
+						} else {
+							return 66;
+						}
+					}
+				},
+			},
+		},
+		subSkill: {
+			extra: {
+				charlotte: true,
+				mark: true,
+				marktext: "多",
+				intro: {
+					markcount: () => 0,
+					content: "本回合首次使用【杀】与锦囊牌可各额外结算一次",
+				},
+				trigger: { player: "useCard" },
+				prompt2(event, player) {
+					return `令${get.translation(event.card)}额外结算一次？`;
+				},
+				filter(event, player) {
+					const card = event.card;
+					if (get.type(card) !== "trick" && get.name(card) !== "sha") {
+						return false;
+					}
+					let filter;
+					const storage = player.getStorage("qiaojian_used");
+					if (get.name(card) !== "sha") {
+						if (storage.includes("sha")) return;
+						filter = function (card) {
+							return get.name(card) === "sha";
+						};
+					}
+					if (get.type(card) !== "trick") {
+						if (storage.includes("trick")) return;
+						filter = function (card) {
+							return get.type(card) === "trick";
+						};
+					}
+					if (!filter) {
+						return false;
+					}
+					if (
+						player.hasHistory(
+							"useCard",
+							evt => {
+								return evt !== event && filter(card);
+							},
+							event
+						)
+					) {
+						return false;
+					}
+					return true;
+				},
+				content() {
+					player.markAuto("qiaojian_extra", get.type(trigger.card));
+					game.log(get.translation(trigger.card), "额外结算一次");
+					trigger.effectCount++;
+				},
+			},
+			nouse: {
+				charlotte: true,
+				mark: true,
+				marktext: "禁",
+				intro: {
+					content: "不可使用伤害牌",
+				},
+				mod: {
+					cardEnabled(card, player) {
+						if (get.tag(card, "damage")) {
+							return false;
+						}
+					},
+				},
+			},
+			mark: {
+				mark: true,
+				marktext: "巧",
+				charlotte: true,
+				intro: {
+					name: "巧谏",
+					content(storage, player) {
+						if (player.getStorage("qiaojian_mark").includes("qiaojian_extra")) {
+							return "下个回合首次使用【杀】与锦囊牌可各额外结算一次";
+						}
+						if (player.getStorage("qiaojian_mark").includes("qiaojian_nouse")) {
+							return "下个回合不可使用伤害牌";
+						}
+					},
+				},
+			},
+			used: {
+				charlotte: true,
+				onremove: true,
+				mark: true,
+				marktext: "谏",
+				intro: {
+					content: "已对$发动过",
+				},
+			},
+		},
+	},
+	xica: {
+		trigger: { player: "damageEnd" },
+		filter(event, player) {
+			if (event.source?.countCards("h") !== 0) {
+				return true;
+			}
+		},
+		getIndex(event, player) {
+			return event.num;
+		},
+		check(event, player) {
+			return get.attitude(player, event.source) < 0;
+		},
+		async content(event, trigger, player) {
+			let num;
+			const target = trigger.source;
+			if (target.countCards("h") < 2) num = 1;
+			else num = 2;
+			const result = await player
+				.chooseButton([`析察：秘密选择${get.cnNumber(num)}张牌`, target.getCards("h")], true, num)
+				.set("ai", function (button) {
+					const target = get.event().targetx;
+					const card = button.link;
+					const val = target.getUseValue(card);
+					if (val > 0) {
+						return val;
+					}
+					return get.value(card);
+				})
+				.set("targetx", target)
+				.forResult();
+			if (result?.bool) {
+				target.addGaintag(result.links, "xica_tag");
+				target.when("useCard").then(async (event2, trigger2, player2) => {
+					const card = trigger2.card;
+					player2.removeGaintag("xica_tag", player2.getCards("h"));
+					if (
+						player2.hasHistory("lose", evt => {
+							const evtx = evt.relatedEvent || evt.getParent();
+							return evtx === trigger2 && Object.values(evt.gaintag_map).flat().includes("xica_tag");
+						})
+					) {
+						trigger2.targets.length = 0;
+						trigger2.all_excluded = true;
+						game.log(card, "被无效了");
+						if (card.cards?.someInD()) {
+							await player.gain(card.cards.filterInD(), "gain2");
+						}
+					}
+				});
+			}
+		},
+	},
 	//胡遵
 	dczhantao: {
 		getNumber(card) {
