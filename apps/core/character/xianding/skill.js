@@ -2770,6 +2770,7 @@ const skills = {
 				game.initCharacterList();
 			}
 		},
+		keepSkill: true,
 		enable: "phaseUse",
 		usable: 1,
 		filterTarget: true,

@@ -21975,6 +21975,7 @@ const skills = {
 			//最后用全局变量存储，就不需要反复执行这个函数了
 			_status.viewAsSkills = list;
 		},
+		keepSkill: true,
 		trigger: { player: ["phaseZhunbeiBegin", "damageEnd"] },
 		filter(event, player) {
 			if (event.name == "damage") {
