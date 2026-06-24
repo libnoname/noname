@@ -243,6 +243,7 @@ const skills = {
 					filterTarget(card, player, target) {
 						return player !== target;
 					},
+					selectTarget: [1, num],
 					ai(target) {
 						const player = get.player();
 						let att = get.attitude(player, target) / Math.sqrt(1 + target.countCards("h"));
@@ -10874,7 +10875,7 @@ const skills = {
 			return (color == "red" && get.position(card) == "h" ? 8 : 4) - get.value(card);
 		},
 		async content(event, trigger, player) {
-			player.draw();
+			await player.draw();
 		},
 		ai: {
 			order: 9,
