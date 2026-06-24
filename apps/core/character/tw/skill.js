@@ -6978,7 +6978,7 @@ const skills = {
 			if (evt.changedMaxHp < 0) return !player.isDamaged() && evt.changedHp !== evt.changedMaxHp;
 			return true;
 		},
-		skipDiscard() {
+		async skipDiscard(event, trigger, player) {
 			if (result.bool === false) {
 				player.skip("phaseDiscard");
 			}
