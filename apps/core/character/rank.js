@@ -2,6 +2,7 @@ window.noname_character_rank = {
 	s: ["yue_caozhi", "v_sunshangxiang", "two_yj_puyuan", "x_yao_yuanshu", "lord_goblin", "pe_guozhao", "xia_caopi", "pe_jun_caopi", "wn_shen_machao", "pe_que", "hm_shen_huangfusong", "tw_jsrg_huangfusong", "key_shiki", "sp_xiahoushi", "ns_zhangwei", "key_mio", "key_midori", "key_yuri", "key_yui", "key_lucia", "db_key_hina", "sp_key_kanade", "key_shizuru", "key_sakuya", "boss_zhaoyun", "noname", "ns_shijian", "key_iriya", "ol_nanhualaoxian", "huzun", "dc_xujing", "ty_shen_zhangfei", "vtb_xiaole", "yj_zhonghui", "duosidawang", "re_sp_zhugeliang", "re_pangtong", "tw_wujing", "dengzhi", "xin_chengpu", "tw_dongzhao", "sunwukong", "ps_shen_machao", "pk_sp_duyu", "std_pengyang", "diy_liaohua", "drag_xusheng"],
 	ap: [
 		"dc_sb_zhuran",
+		"huan_daqiao",
 		"mb_cuilingyi",
 		"mb_zhangzhi",
 		"sm_shen_machao",
@@ -104,6 +105,7 @@ window.noname_character_rank = {
 	a: [
 		"dc_muludawang",
 		"mb_shen_machao",
+		"fugan",
 		"dm_zhangfei",
 		"mb_shen_jiangwei",
 		"ol_sb_dongzhao",
@@ -2679,6 +2681,8 @@ window.noname_character_rank = {
 		],
 		epic: [
 			"pot_lvyi",
+			"huan_daqiao",
+			"fugan",
 			"pot_caozhen",
 			"dc_shen_liubei",
 			"dc_shen_zhangliao",

@@ -63,7 +63,7 @@ window.noname_character_replace = {
 	cuilingyi: ["cuilingyi", "mb_cuilingyi"],
 	cuiyan: ["ol_cuiyan", "cuiyan", "sp_cuiyan"],
 	chunyuqiong: ["chunyuqiong", "re_chunyuqiong", "jsrg_chunyuqiong", "dc_sb_chunyuqiong"],
-	daqiao: ["daqiao", "re_daqiao", "yue_daqiao", "sb_daqiao", "jd_sb_daqiao", "sp_daqiao"],
+	daqiao: ["daqiao", "re_daqiao", "yue_daqiao", "sb_daqiao", "jd_sb_daqiao", "sp_daqiao", "huan_daqiao"],
 	daxiaoqiao: ["daxiaoqiao", "dc_daxiaoqiao", "tw_daxiaoqiao"],
 	dengai: ["dengai", "ol_dengai", "ol_sb_dengai", "re_dengai", "jsrg_dengai", "ren_dengai", "dc_sb_dengai", "bigsb_dengai", "pot_dengai"],
 	dengzhi: ["ol_dengzhi", "re_dengzhi", "dengzhi", "tw_dengzhi", "std_re_dengzhi"],
