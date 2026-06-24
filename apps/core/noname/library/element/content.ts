@@ -6131,16 +6131,16 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				break;
 			}
 			default: {
-				if (animate == null) {
-					break;
+				if (typeof animate === "function") {
+					const animateResult = animate(event);
+					if (typeof animateResult === "number") {
+						delay = game.delay(0, get.delayx(animateResult, animateResult));
+					} else {
+						animateResult.finally(() => void game.resume());
+						delay = game.pause();
+					}
 				}
-				const animateResult = animate(event);
-				if (typeof animateResult === "number") {
-					delay = game.delay(0, get.delayx(animateResult, animateResult));
-				} else {
-					animateResult.finally(() => void game.resume());
-					delay = game.pause();
-				}
+				break;
 			}
 		}
 		const nexts = [];
@@ -6452,10 +6452,9 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 						break;
 					}
 					default:
-						if (animate == null) {
-							break;
+						if (typeof animate === "function") {
+							animateTime = animate(event);
 						}
-						animateTime = animate(event);
 						break;
 				}
 
@@ -11379,10 +11378,9 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 					break;
 				}
 				default:
-					if (animate == null) {
-						break;
+					if (typeof animate === "function") {
+						animateTime = animate(event);
 					}
-					animateTime = animate(event);
 					break;
 			}
 			if (animateTime == null) {
@@ -11565,10 +11563,9 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 					break;
 				}
 				default:
-					if (animate == null) {
-						break;
+					if (typeof animate === "function") {
+						animateTime = animate(event);
 					}
-					animateTime = animate(event);
 					break;
 			}
 
