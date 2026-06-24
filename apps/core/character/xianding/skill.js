@@ -1738,7 +1738,10 @@ const skills = {
 				onremove(player, skill) {
 					player.clearMark(skill.slice(0, -6), false);
 				},
+			},
 		},
+	},
+	sejianchu: {
 		derivation: ["jige", "liren"],
 		juexingji: true,
 		skillAnimation: true,
