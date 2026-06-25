@@ -740,9 +740,14 @@ const translates = {
 	huan_daqiao: "幻大乔",
 	huan_daqiao_prefix: "幻",
 	huanguose: "帼色",
-	huanguose_info: "有角色受伤状态变化后，若其判定区未废除且没有【乐不思蜀】，你可将你或其的一张牌当作【乐不思蜀】置入其判定区中，然后你摸两张牌。有【乐不思蜀】判定生效后，你可将此【乐不思蜀】改为跳过弃牌阶段。",
+	huanguose_info: `有角色${get.poptip({
+		id: "huanguose_tip",
+		name: "受伤状态",
+		type: "character",
+		info: "当体力值或体力上限变化后，若两者关系在未受伤/受伤/濒死之间发生变化，即为受伤状态变化。"
+	})}变化后，若其判定区未废除且没有【乐不思蜀】，你可将你或其的一张牌当作【乐不思蜀】置入其判定区中，然后你摸两张牌。有【乐不思蜀】判定生效后，你可将此【乐不思蜀】改为跳过弃牌阶段。`,
 	huanliuli: "流俪",
-	huanliuli_info: "有角色成为伤害牌的目标后，你可弃置其场上一张红色牌，令此牌对其无效，然后若其受伤状态与你相同，你摸两张牌。",
+	huanliuli_info: `有角色成为伤害牌的目标后，你可弃置其场上一张红色牌，令此牌对其无效，然后若其${get.poptip("huanguose_tip")}与你相同，你摸两张牌。`,
 	huan_zhanghe: "幻张郃",
 	huan_zhanghe_prefix: "幻",
 	twkuiduan: "溃端",

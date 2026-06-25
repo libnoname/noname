@@ -6973,12 +6973,15 @@ const skills = {
 			return get.info("huanguose").damageStatusChanged(event.player, event);
 		},
 		damageStatusChanged(player, evt) {
-			if (evt.changedHp > 0) return !player.isDamaged();
-			if (evt.changedMaxHp > 0) return !player.isDamaged();
+			if (!evt.changedMaxHp) {
+				if (evt.changedHp > 0) return !player.isDamaged() || (player.getHp() > 0 && player.getHp() - evt.changedHp < 0);
+				if (evt.changedHp < 0) return player.hp - evt.changedHp === player.maxHp || (player.hp <= 0 && player.hp - evt.changedHp > 0);
+			}
+			if (evt.changedMaxHp > 0) return player.maxHp - evt.changedMaxHp === player.getHp();
 			if (evt.changedMaxHp < 0) return !player.isDamaged() && evt.changedHp !== evt.changedMaxHp;
-			return true;
+			return false;
 		},
-		async skipDiscard(event, trigger, player) {
+		skipDiscard() {
 			if (result.bool === false) {
 				player.skip("phaseDiscard");
 			}
@@ -6987,29 +6990,26 @@ const skills = {
 			const target = trigger.player;
 			if (target.hasJudge("lebu")) return;
 			const result = await player
-				.chooseTarget({
-					prompt: get.prompt2("huanguose"),
-					filterTarget(card, player, target2) {
-						const targetx = get.event().targetx;
-						if (![player, targetx].includes(target2)) {
-							return false;
-						}
-						if (!target2.hasCards("he")) {
-							return false;
-						}
-						return !targetx.hasJudge("lebu");
-					},
-					ai(target) {
-						// 如果是队友就随机盖一方的牌（若残血盖自己的）
-						// 如果是敌人且贴乐收益为正则选对方的牌
-						const player = get.player();
-						const targetx = get.event().targetx;
-						const att = get.attitude(player, targetx);
-						if (target === player && att >= 0) return Math.random();
-						if (att <= 0) return 20 + get.effect(targetx, { name: "lebu" }, player, player);
-						else if (targetx.hp <= 1) return 0;
-						return Math.random();
-					},
+				.chooseTarget(get.prompt2("huanguose"), (card, player, target2) => {
+					const targetx = get.event().targetx;
+					if (![player, targetx].includes(target2)) {
+						return false;
+					}
+					if (!target2.hasCards("he")) {
+						return false;
+					}
+					return !targetx.hasJudge("lebu");
+				})
+				.set("ai", target => {
+					// 如果是队友就随机盖一方的牌（若残血盖自己的）
+					// 如果是敌人且贴乐收益为正则选对方的牌
+					const player = get.player();
+					const targetx = get.event().targetx;
+					const att = get.attitude(player, targetx);
+					if (target === player && att >= 0) return Math.random();
+					if (att <= 0) return 20 + get.effect(targetx, { name: "lebu" }, player, player);
+					else if (targetx.hp <= 1) return 0;
+					return Math.random();
 				})
 				.set("targetx", target)
 				.forResult();
