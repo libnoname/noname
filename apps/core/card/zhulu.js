@@ -198,32 +198,25 @@ game.import("card", function () {
 				selectTarget: -1,
 				toself: true,
 				filterTarget(card, player, target) {
-					return target == player;
+					return target === player;
 				},
 				modTarget: true,
-				content() {
-					"step 0";
-					if (!target.countCards("he")) {
-						event.finish();
+				async content(event, trigger, player) {
+					const { target } = event;
+					if (!target.hasCards("he")) {
 						return;
 					}
-					target.chooseToDiscard(true, "he", [1, 2]).set("ai", function (card) {
-						if (!ui.selected.cards.length && get.type(card) == "equip") {
+					const result = await target.chooseToDiscard(true, "he", [1, 2]).set("ai", card => {
+						if (!ui.selected.cards.length && get.type(card) === "equip") {
 							return 8 - get.value(card);
 						}
 						return 6 - get.value(card);
-					});
-					"step 1";
-					if (result.bool && result.cards) {
-						var bool = 0;
-						for (var i = 0; i < result.cards.length; i++) {
-							if (get.type(result.cards[i]) == "equip") {
-								bool = 1;
-								break;
-							}
-						}
-						target.draw(result.cards.length + bool);
+					}).forResult();
+					if (!result.bool || !result.cards) {
+						return;
 					}
+					const equips = result.cards.some(card => get.type(card) === "equip");
+					await target.draw(result.cards.length + (equips ? 1 : 0));
 				},
 				ai: {
 					wuxie() {
@@ -236,12 +229,12 @@ game.import("card", function () {
 					},
 					result: {
 						target(player, target, card) {
-							var cards = ui.selected.cards.concat(card.cards || []);
-							var num = player.countCards("he", function (card) {
+							const cards = ui.selected.cards.concat(card.cards || []);
+							const num = player.countCards("he", card => {
 								if (cards.includes(card)) {
 									return false;
 								}
-								if (get.type(card) == "equip") {
+								if (get.type(card) === "equip") {
 									return 8 > get.value(card);
 								}
 								return 6 > get.value(card);
@@ -250,11 +243,11 @@ game.import("card", function () {
 								return 0;
 							}
 							if (
-								player.countCards("he", function (card) {
+								player.countCards("he", card => {
 									if (cards.includes(card)) {
 										return false;
 									}
-									if (get.type(card) == "equip") {
+									if (get.type(card) === "equip") {
 										return 4 > get.value(card);
 									}
 									return false;
