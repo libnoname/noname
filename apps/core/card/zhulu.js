@@ -568,7 +568,7 @@ game.import("card", function () {
 				subtype: "equip2",
 				bingzhu: ["司马懿", "诸葛亮"],
 				filterTarget(card, player, target) {
-					if (player == target) {
+					if (player === target) {
 						return false;
 					}
 					return target.canEquip(card, true);
@@ -576,54 +576,44 @@ game.import("card", function () {
 				selectTarget: 1,
 				toself: false,
 				loseDelay: false,
-				onEquip() {
-					if (
-						player.sex == "male" &&
-						player.countCards("he", function (cardx) {
-							return card.cards && !card.cards.includes(cardx);
-						})
-					) {
+				async onEquip(event, trigger, player) {
+					const { card } = event;
+					if (player.sex === "male" && player.hasCards("he", cardx => card.cards && !card.cards.includes(cardx))) {
 						player
-							.chooseToDiscard(
-								true,
-								function (card) {
-									return !_status.event.card?.cards.includes(card);
-								},
-								"he"
-							)
-							.set("card", card);
+							.chooseToDiscard(true, cardx => !_status.event.card?.cards.includes(cardx), "he")
+							.set("card", card)
+							.forResult();
 					}
 				},
-				onLose() {
-					if (player.sex != "male") {
+				async onLose(event, trigger, player) {
+					if (player.sex !== "male") {
 						return;
 					}
-					var next = game.createEvent("nvzhuang_lose");
+					const next = game.createEvent("nvzhuang_lose");
 					event.next.remove(next);
-					var evt = event.getParent();
+					let evt = event.getParent();
 					if (evt.getlx === false) {
 						evt = evt.getParent();
 					}
 					evt.after.push(next);
 					next.player = player;
-					next.setContent(function () {
-						if (player.countCards("he")) {
-							player.popup("nvzhuang");
-							player.chooseToDiscard(true, "he");
+					next.setContent(async (event, trigger, player) => {
+						if (!player.countCards("he")) {
+							return;
 						}
+						player.popup("nvzhuang");
+						player.chooseToDiscard(true, "he");
 					});
 				},
 				ai: {
 					order: 9.5,
 					equipValue(card, player) {
 						if (player.getEquips(2).includes(card)) {
-							if (player.sex != "male") {
+							if (player.sex !== "male") {
 								return 0;
 							}
-							var num = player.countCards("he", function (cardx) {
-								return cardx != card;
-							});
-							if (num == 0) {
+							const num = player.countCards("he", cardx => cardx !== card);
+							if (num === 0) {
 								return 0;
 							}
 							return 4 / num;
@@ -639,26 +629,24 @@ game.import("card", function () {
 					result: {
 						keepAI: true,
 						target(player, target) {
-							var card = target.getEquip(2);
-							if (target.sex == "male") {
-								var val = 0;
-								var val2 = 0;
+							const card = target.getEquip(2);
+							if (target.sex === "male") {
+								let val = 0;
+								let val2 = 0;
 								if (card) {
 									val2 = get.value(card, target);
 									if (val2 < 0) {
 										return 0;
 									}
 								}
-								var num = target.countCards("he", function (cardx) {
-									return cardx != card;
-								});
+								const num = target.countCards("he", cardx => cardx !== card);
 								if (num > 0) {
 									val += 4 / num;
 								}
 								return -val;
 							}
 							if (card) {
-								var val2 = get.value(card, target);
+								const val2 = get.value(card, target);
 								if (val2 > 0) {
 									return -val2 / 4;
 								}
