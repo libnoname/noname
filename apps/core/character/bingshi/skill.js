@@ -236,7 +236,10 @@ const skills = {
 			let maxLose = 0,
 				targets = [];
 			for (const target of game.filterPlayer()) {
-				const lose = target.getHistory("lose").reduce((sum, evt) => sum + evt.cards2.length, 0);
+				const lose = target
+					.iterHistory("lose", evt => evt.cards2?.length)
+					.map(evt => evt.cards2.length)
+					.reduce((sum, len) => sum + len, 0);
 				if (lose > maxLose) {
 					maxLose = lose;
 					targets = [target];
