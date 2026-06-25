@@ -348,7 +348,7 @@ export default {
 			type: "equip",
 			subtype: "equip4",
 			filterTarget(card, player, target) {
-				if (player == target) {
+				if (player === target) {
 					return false;
 				}
 				return target.canEquip(card, true);
@@ -379,11 +379,11 @@ export default {
 				result: {
 					keepAI: true,
 					target(player, target) {
-						var cards = target.getCards("e");
-						if (cards.length == 1 && cards[0].name == "nvzhuang") {
+						const cards = target.getCards("e");
+						if (cards.length === 1 && cards[0].name === "nvzhuang") {
 							return 0;
 						}
-						var val = get.value(cards, target);
+						const val = get.value(cards, target);
 						if (val > 0) {
 							return -val;
 						}
@@ -401,16 +401,14 @@ export default {
 			skills: ["yajiaoqiang_skill"],
 			ai: {
 				equipValue(card, player) {
-					var skills = ["longdan", "kanpo", "rekanpo", "qingguo", "reqingguo", "ollongdan", "refanghun"];
-					for (var i = 0; i < skills.length; i++) {
-						if (player.hasSkill(skills[i])) {
+					const skills = ["longdan", "kanpo", "rekanpo", "qingguo", "reqingguo", "ollongdan", "refanghun"];
+					for (const skill of skills) {
+						if (player.hasSkill(skill)) {
 							return 5;
 						}
 					}
 					if (
-						player.countCards("h", function (card) {
-							return get.color(card) == "black" && ["wuxie", "caochuan"].includes(card);
-						})
+						player.countCards("h", card => get.color(card) === "black" && ["wuxie", "caochuan"].includes(card))
 					) {
 						return 5;
 					}
@@ -426,7 +424,7 @@ export default {
 			type: "equip",
 			subtype: "equip1",
 			filterTarget(card, player, target) {
-				if (player == target) {
+				if (player === target) {
 					return false;
 				}
 				return target.canEquip(card, true);
@@ -437,7 +435,7 @@ export default {
 			ai: {
 				order: 9,
 				equipValue(card, player) {
-					if (get.position(card) == "e") {
+					if (get.position(card) === "e") {
 						return -2;
 					}
 					return 2;
@@ -457,9 +455,9 @@ export default {
 				result: {
 					keepAI: true,
 					target(player, target) {
-						var val = 2;
-						var val2 = 0;
-						var card = target.getEquip(1);
+						const val = 2;
+						let val2 = 0;
+						const card = target.getEquip(1);
 						if (card) {
 							val2 = get.value(card, target);
 							if (val2 < 0) {
@@ -476,7 +474,7 @@ export default {
 			type: "equip",
 			subtype: "equip1",
 			filterTarget(card, player, target) {
-				if (player == target) {
+				if (player === target) {
 					return false;
 				}
 				return target.canEquip(card, true);
@@ -487,7 +485,7 @@ export default {
 			ai: {
 				order: 9,
 				equipValue(card, player) {
-					if (get.position(card) == "e") {
+					if (get.position(card) === "e") {
 						return -2;
 					}
 					return 2;
@@ -504,9 +502,9 @@ export default {
 				result: {
 					keepAI: true,
 					target(player, target) {
-						var val = 2.5;
-						var val2 = 0;
-						var card = target.getEquip(1);
+						const val = 2.5;
+						let val2 = 0;
+						const card = target.getEquip(1);
 						if (card) {
 							val2 = get.value(card, target);
 							if (val2 < 0) {
@@ -523,7 +521,7 @@ export default {
 			type: "equip",
 			subtype: "equip2",
 			filterTarget(card, player, target) {
-				if (player == target) {
+				if (player === target) {
 					return false;
 				}
 				return target.canEquip(card, true);
@@ -534,7 +532,7 @@ export default {
 			ai: {
 				order: 9,
 				equipValue(card, player) {
-					if (get.position(card) == "e") {
+					if (get.position(card) === "e") {
 						return -7;
 					}
 					return 1;
@@ -551,9 +549,9 @@ export default {
 				result: {
 					keepAI: true,
 					target(player, target) {
-						var val = 2;
-						var val2 = 0;
-						var card = target.getEquip(2);
+						const val = 2;
+						let val2 = 0;
+						const card = target.getEquip(2);
 						if (card) {
 							val2 = get.value(card, target);
 							if (val2 < 0) {
@@ -782,15 +780,15 @@ export default {
 				if (event.getl === false) {
 					return false;
 				}
-				if (!event.getd(player).length || !_status.jinhe || (event.getParent(2).name == "jinhe_skill" && event.getParent(2).player == player)) {
+				if (!event.getd(player).length || !_status.jinhe || (event.getParent(2).name === "jinhe_skill" && event.getParent(2).player === player)) {
 					return false;
 				}
-				var evt = event.getl(player);
+				const evt = event.getl(player);
 				if (!evt) {
 					return false;
 				}
-				for (var i = 0; i < evt.es.length; i++) {
-					if (evt.es[i].name == "jinhe" && _status.jinhe[evt.es[i].cardid]) {
+				for (const equip of evt.es) {
+					if (equip.name === "jinhe" && _status.jinhe[equip.cardid]) {
 						return true;
 					}
 				}
@@ -825,9 +823,9 @@ export default {
 			equipSkill: true,
 			intro: {
 				mark(dialog, storage, player) {
-					var card = player.getEquip("jinhe");
+					const card = player.getEquip("jinhe");
 					if (card && _status.jinhe && _status.jinhe[card.cardid]) {
-						if (_status.jinhe[card.cardid].player == game.me || _status.jinhe[card.cardid].player.isUnderControl()) {
+						if (_status.jinhe[card.cardid].player === game.me || _status.jinhe[card.cardid].player.isUnderControl()) {
 							dialog.addAuto([_status.jinhe[card.cardid].card]);
 						} else {
 							return "共有一张「礼」";
@@ -844,12 +842,12 @@ export default {
 				if (!_status.jinhe) {
 					return false;
 				}
-				var card = player.getEquip("jinhe");
-				return card && card.name == "jinhe" && _status.jinhe[card.cardid] != undefined;
+				const card = player.getEquip("jinhe");
+				return card && card.name === "jinhe" && _status.jinhe[card.cardid] !== undefined;
 			},
 			prepare(cards, player) {
 				const card = player.getEquip("jinhe");
-				if (card && card.name == "jinhe" && _status.jinhe[card.cardid]) {
+				if (card && card.name === "jinhe" && _status.jinhe[card.cardid]) {
 					const tothrow = _status.jinhe[card.cardid].card;
 					player.$throw(tothrow);
 					game.log(player, "将", tothrow, "置入了弃牌堆");
@@ -883,10 +881,8 @@ export default {
 				order: 1,
 				result: {
 					player(player) {
-						var suit = get.suit(_status.jinhe[player.getEquip("jinhe").cardid].card);
-						var hs = player.getCards("h", function (card) {
-							return get.suit(card) == suit;
-						});
+						const suit = get.suit(_status.jinhe[player.getEquip("jinhe").cardid].card);
+						const hs = player.getCards("h", card => get.suit(card) === suit);
 						if (!hs.length || get.value(hs) < 5) {
 							return 1;
 						}
@@ -900,8 +896,8 @@ export default {
 			mod: {
 				targetEnabled(card, player, target) {
 					if (
-						get.color(card) == "black" &&
-						get.type(card, "trick") == "trick" &&
+						get.color(card) === "black" &&
+						get.type(card, "trick") === "trick" &&
 						!target.hasSkillTag("unequip2") &&
 						!player.hasSkillTag("unequip", false, {
 							name: card ? card.name : null,
@@ -922,7 +918,7 @@ export default {
 			forced: true,
 			equipSkill: true,
 			filter(event, player) {
-				if (get.type(event.card, "trick") != "trick") {
+				if (get.type(event.card, "trick") !== "trick") {
 					return false;
 				}
 				if (player.hasSkillTag("unequip2")) {
@@ -949,13 +945,11 @@ export default {
 			trigger: { player: "useCard" },
 			forced: true,
 			filter(event, player) {
-				if (event.card.name != "sha") {
+				if (event.card.name !== "sha") {
 					return false;
 				}
-				var cards = player.getEquips("wufengjian");
-				return player.hasCard(function (card) {
-					return !cards.includes(card);
-				}, "he");
+				const cards = player.getEquips("wufengjian");
+				return player.hasCard(card => !cards.includes(card), "he");
 			},
 			async content(event, trigger, player) {
 				if (player !== game.me && !player.isUnderControl() && !player.isOnline()) {
@@ -968,13 +962,13 @@ export default {
 			equipSkill: true,
 			trigger: { player: "useCardAfter" },
 			filter(event, player) {
-				if (_status.currentPhase == player || get.color(event.card) != "black" || event.cards.filterInD().length == 0) {
+				if (_status.currentPhase === player || get.color(event.card) !== "black" || event.cards.filterInD().length === 0) {
 					return false;
 				}
-				return player.getHistory("useCard", evt => get.color(evt.card) == "black").indexOf(event) == 0;
+				return player.getHistory("useCard", evt => get.color(evt.card) === "black").indexOf(event) === 0;
 			},
 			prompt2(event, player) {
-				return "获得" + get.translation(event.cards.filterInD());
+				return `获得${get.translation(event.cards.filterInD())}`;
 			},
 			async content(event, trigger, player) {
 				player.gain(trigger.cards.filterInD(), "gain2", "log");
