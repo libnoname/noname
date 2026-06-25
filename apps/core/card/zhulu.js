@@ -937,7 +937,7 @@ game.import("card", function () {
 					}
 					return true;
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.num++;
 				},
 			},
@@ -954,14 +954,12 @@ game.import("card", function () {
 						return !cards.includes(card);
 					}, "he");
 				},
-				content() {
-					if (player != game.me && !player.isUnderControl() && !player.isOnline()) {
+				async content(event, trigger, player) {
+					if (player !== game.me && !player.isUnderControl() && !player.isOnline()) {
 						game.delayx();
 					}
-					player
-						.chooseToDiscard(true, "he", function (card) {
-							return !_status.event.cards?.includes(card);
-						})
+					await player
+						.chooseToDiscard(true, "he", card => !_status.event.cards?.includes(card))
 						.set("cards", player.getEquips("wufengjian"));
 				},
 			},
@@ -974,16 +972,14 @@ game.import("card", function () {
 					}
 					return (
 						player
-							.getHistory("useCard", function (evt) {
-								return get.color(evt.card) == "black";
-							})
+							.getHistory("useCard", evt => get.color(evt.card) == "black")
 							.indexOf(event) == 0
 					);
 				},
 				prompt2(event, player) {
 					return "获得" + get.translation(event.cards.filterInD());
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.gain(trigger.cards.filterInD(), "gain2", "log");
 				},
 			},
