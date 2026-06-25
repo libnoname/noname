@@ -1335,6 +1335,13 @@ const characters = {
 		isUnseen: true,
 		trashBin: ["sex:male_castrated"],
 	},
+	mb_lingju: {
+		sex: "female",
+		group: "qun",
+		hp: 3,
+		skills: ["mbjieyuan", "mbfenxin"],
+		names: "吕|null",
+	},
 };
 
 export default characters;
