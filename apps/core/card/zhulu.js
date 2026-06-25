@@ -1011,20 +1011,18 @@ game.import("card", function () {
 					}
 					return player.hasUsableCard("caochuan");
 				},
-				content() {
-					var next = player.chooseToUse();
-					next.set("prompt", "是否使用【草船借箭】响应" + get.translation(trigger.player) + "使用的" + get.translation(trigger.card) + "？");
-					next.set("filterCard", function (card, player) {
-						if (get.name(card) != "caochuan") {
+				async content(event, trigger, player) {
+					const next = player.chooseToUse();
+					next.set("prompt", `是否使用【草船借箭】响应${get.translation(trigger.player)}使用的${get.translation(trigger.card)}？`);
+					next.set("filterCard", (card, player) => {
+						if (get.name(card) !== "caochuan") {
 							return false;
 						}
 						return lib.filter.cardEnabled(card, player, "forceEnable");
 					});
 					next.set("respondTo", [trigger.player, trigger.card]);
 					next.set("goon", -get.effect(player, trigger.card, trigger.player, player));
-					next.set("ai1", function (card) {
-						return _status.event.goon;
-					});
+					next.set("ai1", () => _status.event.goon);
 				},
 			},
 		},
