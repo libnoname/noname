@@ -6987,6 +6987,9 @@ const skills = {
 			}
 		},
 		async cost(event, trigger, player) {
+			const target = trigger.player;
+			if (target.hasJudge("lebu")) return;
+			const result = await player
 				.chooseTarget({
 					prompt: get.prompt2("huanguose"),
 					filterTarget(card, player, target2) {
