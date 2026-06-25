@@ -316,19 +316,20 @@ game.import("card", function () {
 				wuxieable: true,
 				global: ["caochuan_skill"],
 				notarget: true,
-				content() {
-					var evt2 = event.getParent(3)._trigger;
+				async content(event, trigger, player) {
+					const evt2 = event.getParent(3)._trigger;
 					evt2.neutralize();
-					var evt = evt2.getParent();
-					var next = game.createEvent("caochuan_gain");
+					const evt = evt2.getParent();
+					const next = game.createEvent("caochuan_gain");
 					_status.event.next.remove(next);
 					evt.after.unshift(next);
 					next.player = player;
-					next.setContent(function () {
-						var cards = event.getParent().cards.filterInD();
-						if (cards.length) {
-							player.gain(cards, "gain2", "log");
+					next.setContent(async (event, trigger, player) => {
+						const cards = event.getParent().cards.filterInD();
+						if (!cards.length) {
+							return;
 						}
+						await player.gain(cards, "gain2", "log");
 					});
 				},
 				ai: {
