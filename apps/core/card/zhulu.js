@@ -793,27 +793,28 @@ game.import("card", function () {
 					}
 					return false;
 				},
-				content() {
-					"step 0";
-					var es = trigger.getl(player).es;
-					for (var i = 0; i < es.length; i++) {
-						if (es[i].name == "jinhe" && _status.jinhe[es[i].cardid]) {
-							var card = _status.jinhe[es[i].cardid].card;
-							game.cardsDiscard(card);
-							player.$throw(card);
-							game.log(card, "进入了弃牌堆");
-							delete _status.jinhe[es[i].cardid];
+				async content(event, trigger, player) {
+					const es = trigger.getl(player).es;
+					const discards = [];
+					for (const equip of es) {
+						if (equip.name !== "jinhe" || !_status.jinhe[equip.cardid]) {
+							continue;
 						}
+						const card = _status.jinhe[equip.cardid].card;
+						const discard = game.cardsDiscard(card);
+						player.$throw(card);
+						game.log(card, "进入了弃牌堆");
+						delete _status.jinhe[equip.cardid];
+						discards.push(discard);
 					}
-					game.broadcastAll(function (jinhe) {
+					game.broadcastAll(jinhe => {
 						_status.jinhe = jinhe;
 					}, _status.jinhe);
-					("step 1");
-					let hs = player.getDiscardableCards(player, "h");
+					await Promise.all(discards);
+					const hs = player.getDiscardableCards(player, "h");
 					if (hs.length) {
-						player.discard(hs);
+						await player.discard({ cards: hs });
 					}
-					("step 2");
 					game.broadcastAll(ui.clear);
 				},
 			},
@@ -844,37 +845,35 @@ game.import("card", function () {
 					return card && card.name == "jinhe" && _status.jinhe[card.cardid] != undefined;
 				},
 				prepare(cards, player) {
-					var card = player.getEquip("jinhe");
+					const card = player.getEquip("jinhe");
 					if (card && card.name == "jinhe" && _status.jinhe[card.cardid]) {
-						var tothrow = _status.jinhe[card.cardid].card;
+						const tothrow = _status.jinhe[card.cardid].card;
 						player.$throw(tothrow);
 						game.log(player, "将", tothrow, "置入了弃牌堆");
 					}
 				},
-				content() {
-					"step 0";
-					var card = player.getEquip("jinhe");
-					if (card && card.name == "jinhe" && _status.jinhe[card.cardid]) {
-						game.cardsDiscard(_status.jinhe[card.cardid].card);
-						event.suit = get.suit(_status.jinhe[card.cardid].card);
-						delete _status.jinhe[card.cardid];
-						game.broadcastAll(function (jinhe) {
-							_status.jinhe = jinhe;
-						}, _status.jinhe);
-					} else {
-						event.finish();
+				async content(event, trigger, player) {
+					const card = player.getEquip("jinhe");
+					if (!card || card.name !== "jinhe" || !_status.jinhe[card.cardid]) {
+						return;
 					}
-					("step 1");
-					var cards = player.getCards("he", function (card) {
-						if (get.position(card) == "h") {
-							return get.suit(card) == event.suit;
+					const gift = _status.jinhe[card.cardid].card;
+					const discard = game.cardsDiscard(gift);
+					const suit = get.suit(gift);
+					delete _status.jinhe[card.cardid];
+					game.broadcastAll(jinhe => {
+						_status.jinhe = jinhe;
+					}, _status.jinhe);
+					await discard;
+					const cards = player.getCards("he", card => {
+						if (get.position(card) === "h") {
+							return get.suit(card) === suit;
 						}
-						return get.position(card) == "e" && card.name == "jinhe";
+						return get.position(card) === "e" && card.name === "jinhe";
 					});
 					if (cards.length) {
-						player.discard(cards);
+						await player.discard({ cards });
 					}
-					("step 2");
 					game.broadcastAll(ui.clear);
 				},
 				ai: {
