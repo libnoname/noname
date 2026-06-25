@@ -153,7 +153,7 @@ window.noname_character_replace = {
 	lifeng: ["ol_lifeng", "dc_lifeng", "lifeng"],
 	lijue: ["lijue", "std_lijue", "ns_lijue", "ca_lijue"],
 	lingcao: ["lingcao", "dc_lingcao"],
-	lingju: ["lingju", "old_lingju"],
+	lingju: ["lingju", "old_lingju", "mb_lingju"],
 	lingtong: ["lingtong", "ol_lingtong", "re_lingtong", "xin_lingtong", "old_lingtong"],
 	liru: ["xin_liru", "ol_liru", "dc_liru", "re_liru", "std_liru", "yj_liru", "liru", "wild_liru"],
 	lisu: ["ol_lisu", "lisu"],
