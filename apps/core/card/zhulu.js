@@ -206,12 +206,15 @@ game.import("card", function () {
 					if (!target.hasCards("he")) {
 						return;
 					}
-					const result = await target.chooseToDiscard(true, "he", [1, 2]).set("ai", card => {
-						if (!ui.selected.cards.length && get.type(card) === "equip") {
-							return 8 - get.value(card);
-						}
-						return 6 - get.value(card);
-					}).forResult();
+					const result = await target
+						.chooseToDiscard(true, "he", [1, 2])
+						.set("ai", card => {
+							if (!ui.selected.cards.length && get.type(card) === "equip") {
+								return 8 - get.value(card);
+							}
+							return 6 - get.value(card);
+						})
+						.forResult();
 					if (!result.bool || !result.cards) {
 						return;
 					}
@@ -299,10 +302,7 @@ game.import("card", function () {
 							if (e5 && e5.name === "muniu" && e5.cards && e5.cards.length > 1) {
 								return -1;
 							}
-							if (
-								target.countCards("e", card => get.value(card, target) <= 0) ||
-								target.hasSkillTag("noe")
-							) {
+							if (target.countCards("e", card => get.value(card, target) <= 0) || target.hasSkillTag("noe")) {
 								return 1;
 							}
 							return 0;
@@ -673,7 +673,7 @@ game.import("card", function () {
 				type: "equip",
 				subtype: "equip5",
 				filterTarget(card, player, target) {
-					if (player == target) {
+					if (player === target) {
 						return false;
 					}
 					return target.canEquip(card, true);
@@ -683,52 +683,51 @@ game.import("card", function () {
 				skills: ["jinhe_skill"],
 				global: ["jinhe_lose"],
 				loseDelay: false,
-				onEquip() {
-					"step 0";
-					player.markSkill("jinhe_skill");
-					if (event.getParent(2).name != "jinhe") {
-						event.finish();
-					} else {
-						event.target = player;
-						event.player = event.getParent(2).player;
+				async onEquip(event, trigger, player) {
+					const { card } = event;
+					const target = player;
+					target.markSkill("jinhe_skill");
+					const parent = event.getParent(2);
+					if (parent.name !== "jinhe") {
+						return;
 					}
-					"step 1";
-					var id = card.cardid;
-					event.cardid = id;
+					const source = parent.player;
+					event.target = target;
+					event.player = source;
+					const id = card.cardid;
 					if (!_status.jinhe) {
 						_status.jinhe = {};
 					}
 					if (_status.jinhe[id]) {
-						game.cardsDiscard(_status.jinhe[id].card);
+						await game.cardsDiscard(_status.jinhe[id].card);
 						delete _status.jinhe[id];
 					}
-					var cards2 = get.cards(2);
-					event.cards2 = cards2;
-					player.chooseButton(["选择一张牌作为「礼」", cards2], true);
-					"step 2";
-					var id = event.cardid;
+					const cards2 = get.cards(2);
+					const result = await source.chooseButton(["选择一张牌作为「礼」", cards2], true).forResult();
 					_status.jinhe[id] = {
-						player: player,
+						player: source,
 						card: result.links[0],
 					};
-					game.broadcast(function (jinhe) {
+					game.broadcast(jinhe => {
 						_status.jinhe = jinhe;
 					}, _status.jinhe);
-					game.cardsGotoSpecial(result.links[0]);
-					event.cards2.remove(result.links[0]);
-					event.cards2[0].fix();
-					ui.cardPile.insertBefore(event.cards2[0], ui.cardPile.firstChild);
+					await game.cardsGotoSpecial(result.links[0]);
+					cards2.remove(result.links[0]);
+					cards2[0].fix();
+					ui.cardPile.insertBefore(cards2[0], ui.cardPile.firstChild);
 					game.updateRoundNumber();
 					target.markSkill("jinhe_skill");
 				},
-				onLose() {
+				async onLose(event, trigger, player) {
+					const { card } = event;
 					player.unmarkSkill("jinhe_skill");
-					var id = card.cardid;
-					if (event.getParent(2) && event.getParent(2).name != "swapEquip" && get.position(card?.cards?.[0]) != "d" && event.parent.type != "equip" && _status.jinhe && _status.jinhe[id]) {
-						var card2 = _status.jinhe[id].card;
+					const id = card.cardid;
+					const parent = event.getParent(2);
+					if (parent && parent.name !== "swapEquip" && get.position(card?.cards?.[0]) !== "d" && event.parent.type !== "equip" && _status.jinhe && _status.jinhe[id]) {
+						const card2 = _status.jinhe[id].card;
 						player.$throw(card2, 1000);
 						game.log(card, "掉落了", card2);
-						game.cardsDiscard(card2);
+						await game.cardsDiscard(card2);
 						delete _status.jinhe[id];
 					}
 				},
@@ -738,7 +737,7 @@ game.import("card", function () {
 						if (!player.getEquips(5).includes(card)) {
 							return 5;
 						}
-						if (_status.jinhe && _status.jinhe[card.cardid] && _status.event.name != "gainPlayerCard") {
+						if (_status.jinhe && _status.jinhe[card.cardid] && _status.event.name !== "gainPlayerCard") {
 							return 3 * player.countCards("h");
 						}
 						return 0;
@@ -755,7 +754,7 @@ game.import("card", function () {
 							if (_status.jinhe && _status.jinhe[cardx.cardid]) {
 								return -0.5 - 2 * target.countCards("h");
 							}
-							var card = target.getEquip(5);
+							const card = target.getEquip(5);
 							if (!card) {
 								return 0;
 							}
@@ -809,12 +808,12 @@ game.import("card", function () {
 					game.broadcastAll(function (jinhe) {
 						_status.jinhe = jinhe;
 					}, _status.jinhe);
-					"step 1";
+					("step 1");
 					let hs = player.getDiscardableCards(player, "h");
 					if (hs.length) {
 						player.discard(hs);
 					}
-					"step 2";
+					("step 2");
 					game.broadcastAll(ui.clear);
 				},
 			},
@@ -865,7 +864,7 @@ game.import("card", function () {
 					} else {
 						event.finish();
 					}
-					"step 1";
+					("step 1");
 					var cards = player.getCards("he", function (card) {
 						if (get.position(card) == "h") {
 							return get.suit(card) == event.suit;
@@ -875,7 +874,7 @@ game.import("card", function () {
 					if (cards.length) {
 						player.discard(cards);
 					}
-					"step 2";
+					("step 2");
 					game.broadcastAll(ui.clear);
 				},
 				ai: {
