@@ -8671,7 +8671,11 @@ ${e instanceof Error ? e.stack : String(e)}`);
 						if (value === "audio" && (typeof info[value] === "number" || typeof info[value] === "boolean")) {
 							info[value] = info.inherit;
 						} else {
-							info[value] = skill[value];
+							if (typeof skill[value] === "object") {
+								info[value] = get.copy(skill[value]);
+							} else {
+								info[value] = skill[value];
+							}
 						}
 					}
 				});
@@ -8701,7 +8705,11 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			if (card) {
 				Object.keys(card).forEach(value => {
 					if (skill[value] == null) {
-						skill[value] = card[value];
+						if (typeof card[value] === "object") {
+							skill[value] = get.copy(card[value]);
+						} else {
+							skill[value] = card[value];
+						}
 					} else if (typeof skill[value] === "object") {
 						Object.keys(card[value]).forEach(element => {
 							if (skill[value][element] == null) {
