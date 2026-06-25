@@ -25414,10 +25414,10 @@ const skills = {
 		enable: "phaseUse",
 		locked: false,
 		filter(event, player) {
-			return game.hasPlayer(current => lib.filter.notMe && !player.getStorage("qiaojian_used").includes(current));
+			return game.hasPlayer(current => current !== player && !player.getStorage("qiaojian_used").includes(current));
 		},
 		selectTarget: 1,
-		prompt2: "选择一名其他角色，双方弃置任意张牌并触发后续效果",
+		prompt2: "选择一名其他角色，双方同时弃置任意张牌并触发后续效果",
 		filterTarget(card, player, target) {
 			if (target === player) {
 				return false;
@@ -25595,7 +25595,7 @@ const skills = {
 					}
 					return true;
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.markAuto("qiaojian_extra", get.type(trigger.card));
 					game.log(get.translation(trigger.card), "额外结算一次");
 					trigger.effectCount++;
@@ -25662,17 +25662,21 @@ const skills = {
 			if (target.countCards("h") < 2) num = 1;
 			else num = 2;
 			const result = await player
-				.chooseButton([`析察：秘密选择${get.cnNumber(num)}张牌`, target.getCards("h")], true, num)
-				.set("ai", function (button) {
-					const target = get.event().targetx;
-					const card = button.link;
-					const val = target.getUseValue(card);
-					if (val > 0) {
-						return val;
-					}
-					return get.value(card);
+				.chooseButton({
+					createDialog: [`析察：秘密选择${get.cnNumber(num)}张牌，若其下一张牌为这些牌则失效且你获得之`, target.getCards("h")],
+					forced: true,
+					selectButton: num,
+					ai(button) {
+						const target = get.event().targetx;
+						const card = button.link;
+						const val = target.getUseValue(card);
+						if (val > 0) {
+							return val;
+						}
+						return get.value(card);
+					},
+					targetx: target,
 				})
-				.set("targetx", target)
 				.forResult();
 			if (result?.bool) {
 				target.addGaintag(result.links, "xica_tag");
