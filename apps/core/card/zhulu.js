@@ -275,11 +275,13 @@ game.import("card", function () {
 				filterTarget(card, player, target) {
 					return target.countCards("e") > 0;
 				},
-				content() {
-					var es = target.getCards("e");
-					if (es.length) {
-						target.gain(es, "gain2", "log");
+				async content(event, trigger, player) {
+					const { target } = event;
+					const es = target.getCards("e");
+					if (!es.length) {
+						return;
 					}
+					await target.gain(es, "gain2", "log");
 				},
 				ai: {
 					order: 10,
@@ -293,14 +295,12 @@ game.import("card", function () {
 					},
 					result: {
 						target(player, target) {
-							var e5 = target.getEquip("muniu");
-							if (e5 && e5.name == "muniu" && e5.cards && e5.cards.length > 1) {
+							const e5 = target.getEquip("muniu");
+							if (e5 && e5.name === "muniu" && e5.cards && e5.cards.length > 1) {
 								return -1;
 							}
 							if (
-								target.countCards("e", function (card) {
-									return get.value(card, target) <= 0;
-								}) ||
+								target.countCards("e", card => get.value(card, target) <= 0) ||
 								target.hasSkillTag("noe")
 							) {
 								return 1;
