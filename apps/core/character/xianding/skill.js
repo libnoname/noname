@@ -367,7 +367,7 @@ const skills = {
 							gaintag: ["dcsbguyi_tag"],
 						});
 					}
-					await game.cardsGotoPile(top.reserve(), "insert");
+					await game.cardsGotoPile(top.reverse(), "insert");
 				}
 			}
 		},

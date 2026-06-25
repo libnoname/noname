@@ -166,7 +166,7 @@ const skills = {
 						if (get.attitude(player, target) > 0) {
 							controls.remove(controls[1]);
 						}
-						return controls.slice(0, -1).randomGet();
+						return controls.slice(0).remove("cancel2").randomGet();
 					},
 				})
 				.set("target", target)
@@ -236,7 +236,7 @@ const skills = {
 			let maxLose = 0,
 				targets = [];
 			for (const target of game.filterPlayer()) {
-				const lose = target.getHistory("lose").reduce((sum, evt) => sum + evt.cards.length, 0);
+				const lose = target.getHistory("lose").reduce((sum, evt) => sum + evt.cards2.length, 0);
 				if (lose > maxLose) {
 					maxLose = lose;
 					targets = [target];
