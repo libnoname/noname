@@ -2593,7 +2593,7 @@ export default () => {
 					let num = result.cards.length,
 						hs = player.getCards("he"),
 						resultx;
-					if (hs.length) {
+					if (hs.length && target?.isIn()) {
 						if (hs.length <= num) {
 							resultx = { bool: true, cards: hs };
 						} else {
@@ -2979,7 +2979,7 @@ export default () => {
 						return event.finish();
 					}
 					const hs = player.getCards("h");
-					if (hs.length) {
+					if (hs.length && target?.isIn()) {
 						let resultx;
 						if (hs.length == 1) {
 							resultx = { bool: true, cards: hs };

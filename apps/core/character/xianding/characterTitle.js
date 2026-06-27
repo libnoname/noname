@@ -1,4 +1,5 @@
 export default {
+	//dc_sb_zhugeliang: "",
 	dc_shen_guanyu: "鬼神再临",
 	dc_shen_liubei: "誓守桃园义",
 	dc_shen_zhangliao: "雁门之刑天",
@@ -75,6 +76,7 @@ export default {
 	dc_yangbiao: "德彰海内",
 	ruanji: "命世大贤",
 	cuimao: "日出月盛",
+	fugan: "察策明谏",
 	dc_xiahouhui: "雅有识度",
 	caomao: "霸业的终耀",
 	liubian: "弘农怀王",

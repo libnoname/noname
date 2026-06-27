@@ -4134,6 +4134,7 @@ const skills = {
 			}
 			return str;
 		},
+		keepSkill: true,
 		async content(event, trigger, player) {
 			const map = lib.skill.zhinang.getMap(),
 				type = get.type2(trigger.card) == "equip" ? "name" : "info",

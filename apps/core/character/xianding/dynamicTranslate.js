@@ -1,6 +1,19 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const dynamicTranslates = {
+	dcsbjingmou(player) {
+		const bool = player.storage.dcsbjingmou;
+		let yang = "你可令此牌无效并弃置牌堆顶一张牌，若与此牌花色一致对其造成1点火焰伤害",
+			yin = "此牌结算后将其交给任意一名角色";
+		if (bool) {
+			yin = `<span class="bluetext">${yin}</span>`;
+		} else {
+			yang = `<span class="firetext">${yang}</span>`;
+		}
+		const start = `转换技，①游戏开始时，你可以转换此技能状态；②任意角色出牌阶段开始时，若你未有记录的花色或牌类型，你可弃置任意张牌并秘密记录其中包含的至多三种花色与牌类型。有角色使用与你记录的花色或类型相同的牌时，移除该记录。`,
+			end = `。若你移除过所有花色与类型，你获得${get.poptip("dcsbdingnan")}。`;
+		return `${start}阳：${yang}；阴：${yin}${end}`;
+	},
 	dclongnu(player) {
 		const bool = player?.hasSkill("dclongnu_2") || player?.getStorage("dclongnu", false);
 		let yang = "你失去1点体力并摸等同于你损失体力值张牌，然后本回合你的红色手牌均视为【火杀】（无距离限制）",

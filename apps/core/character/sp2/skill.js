@@ -3207,14 +3207,14 @@ const skills = {
 			if (event.targets.length !== 1) {
 				return false;
 			}
-			if (!player.hasCards("he", card => lib.skill.starweigu.isSelf(card, player) && lib.filter.cardDiscardable(card, player, "starweigu"))) {
+			if (!player.hasCards("he", card => get.info("starweigu").isSelf(card, player) && lib.filter.cardDiscardable(card, player, "starweigu"))) {
 				return false;
 			}
 			return true;
 		},
 		async cost(event, trigger, player) {
 			let prompt = "弃置一张可指定自己为目标的牌，然后选择一项:";
-			if (player.getStorage(event.name)) {
+			if (player.getStorage("starweigu", false)) {
 				prompt += "<span class=text center>1、对一名角色造成2点伤害；</span>";
 			} else {
 				prompt += "<span class=text center>1、移动场上一张牌；</span>";
@@ -3224,7 +3224,7 @@ const skills = {
 				.chooseToDiscard({
 					prompt: get.prompt("starweigu"),
 					prompt2: prompt,
-					filterCard: lib.skill.starweigu.isSelf,
+					filterCard: get.info("starweigu").isSelf,
 					position: "he",
 					ai(card) {
 						return get.value(card);
@@ -3252,19 +3252,19 @@ const skills = {
 			if (info.toself) {
 				return true;
 			}
-			return lib.filter.targetEnabled3(card, player, evt);
+			return lib.filter.targetEnabled3(card, player, player);
 		},
 		async content(event, trigger, player) {
 			await player.discard({ cards: event.cards });
 			const choiceList = [];
-			if (!player.getStorage(event.name)) {
+			if (!player.getStorage("starweigu", false)) {
 				if (player.canMoveCard()) {
 					choiceList.push(["move", "移动场上的一张牌"]);
 				}
 			} else {
 				choiceList.push(["damage", "对一名角色造成2点伤害"]);
 			}
-			const targets = lib.skill.starweigu.getTargets(trigger.card, player);
+			const targets = get.info("starweigu").getTargets(trigger.card, player);
 			if (targets.length) {
 				choiceList.push(["addtarget", `令${get.translation(targets)}成为${get.translation(trigger.card)}的额外目标`]);
 			}
@@ -3346,7 +3346,7 @@ const skills = {
 		animationColor: "red",
 		manualConfirm: true,
 		filter(event, player) {
-			return !player.getStorage("starweigu");
+			return !player.getStorage("starweigu", false);
 		},
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
@@ -3357,7 +3357,7 @@ const skills = {
 				charlotte: true,
 				forced: true,
 				init(player, skill) {
-					player.markAuto("starweigu");
+					player.setStorage("starweigu", true);
 					player.addSkill("starjuefa_remove");
 					player.markAuto("starjuefa_remove", "die");
 				},
@@ -3390,13 +3390,13 @@ const skills = {
 					player: "phaseEnd",
 				},
 				async content(event, trigger, player) {
-					if (!player.getStorage("starjuefa_remove", "remove")) {
+					if (!player.getStorage("starjuefa_remove").includes("remove")) {
 						player.markAuto("starjuefa_remove", "remove");
 					} else {
-						player.unmarkAuto("starweigu");
+						player.setStorage("starweigu", false);
 						player.removeSkill("starjuefa_effect");
 						player.removeSkill("starjuefa_remove");
-						if (player.getStorage("starjuefa_remove", "die")) {
+						if (player.getStorage("starjuefa_remove").includes("die")) {
 							if (player.hp > 0) {
 								await player.loseHp(player.getHp());
 							}

@@ -1,4 +1,5 @@
 export default {
+	tcmj_lishimin: "天策上将",
 	ylyg_xuhuang: "公明大义",
 	ylyg_zhurong: "刺美人",
 	wxdl_caozhi: "白马饰金羁",

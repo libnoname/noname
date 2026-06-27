@@ -1,4 +1,11 @@
 const characters = {
+	dc_sb_zhugeliang: {
+		sex: "male",
+		group: "shu",
+		hp: 3,
+		skills: ["dcsbjingmou", "dcsbguyi"],
+		names: "诸葛|亮",
+	},
 	dc_shen_guanyu: {
 		sex: "male",
 		group: "shen",
@@ -709,6 +716,12 @@ const characters = {
 		skills: ["zhengbi", "fengying"],
 		names: "崔|琰-毛|玠",
 	},
+	fugan: {
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		skills: ["qiaojian", "xica"],
+	},
 	huzun: {
 		sex: "male",
 		group: "wei",
@@ -1132,7 +1145,7 @@ const characters = {
 		sex: "female",
 		group: "wei",
 		hp: 3,
-		skills: ["dclianyou","dccili"],
+		skills: ["dclianyou", "dccili"],
 	},
 	dc_huangzu: {
 		sex: "male",

@@ -737,6 +737,17 @@ const translates = {
 	twjiezhan_info: "其他角色的出牌阶段开始时，若其在你攻击范围内，你可以摸一张牌，然后其视为对你使用一张无距离限制的普通【杀】（计入【杀】的使用次数）。",
 	twlongjin: "龙烬",
 	twlongjin_info: "觉醒技，当你进入濒死状态时，你将体力值回复至2点，此后的五个回合，你视为拥有技能〖龙胆〗和〖冲阵〗，且你计算与其他角色的距离视为1。",
+	huan_daqiao: "幻大乔",
+	huan_daqiao_prefix: "幻",
+	huanguose: "帼色",
+	huanguose_info: `有角色${get.poptip({
+		id: "huanguose_tip",
+		name: "受伤状态",
+		type: "character",
+		info: "当体力值或体力上限变化后，若两者关系在未受伤/受伤/濒死之间发生变化，即为受伤状态变化。"
+	})}变化后，若其判定区未废除且没有【乐不思蜀】，你可将你或其的一张牌当作【乐不思蜀】置入其判定区中，然后你摸两张牌。有【乐不思蜀】判定生效后，你可将此【乐不思蜀】改为跳过弃牌阶段。`,
+	huanliuli: "流俪",
+	huanliuli_info: `有角色成为伤害牌的目标后，你可弃置其场上一张红色牌，令此牌对其无效，然后若其${get.poptip("huanguose_tip")}与你相同，你摸两张牌。`,
 	huan_zhanghe: "幻张郃",
 	huan_zhanghe_prefix: "幻",
 	twkuiduan: "溃端",

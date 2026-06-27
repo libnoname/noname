@@ -339,7 +339,7 @@
 	border: 1px solid rgba(86, 9, 9, 1);
 }*/
 /*查看手牌对话框里容器的样式*/
-.count-handcards-container {
+.handcards-container {
 	display: flex;
 	align-items: flex-end;
 	overflow-x: auto;
@@ -358,33 +358,33 @@
 	justify-content: flex-start;
 	font-size: 24px;
 }
-.count-handcards-container > .card {
+.handcards-container > .card {
 	flex-shrink: 0;
-	transition: margin-right 0.25s cubic-bezier(0.25, 1, 0.5, 1);
 	margin-right: auto;
 	position: relative;
 	cursor: pointer;
 	-webkit-tap-highlight-color: transparent;
 	line-height: normal;
+	transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1),
+		margin-right 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+	will-change: transform, margin-right;
 }
-.count-handcards-container > .card:last-child {
+.handcards-container > .card:last-child {
 	margin-right: 0 !important;
 }
 @media (hover: hover) {
-	.count-handcards-container > .card:hover {
-		transform: translateY(-16px);
-		transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+	.handcards-container > .card:hover {
+		transform: translateY(-10%);
 		margin-right: 4px !important;
 	}
 }
-.count-handcards-container > .card.count-card-active {
-	transform: translateY(-16px);
-	transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+.handcards-container > .card.card-active {
+	transform: translateY(-10%);
 	margin-right: 4px !important;
 }
 
 /*查看手牌对话框的关闭按钮*/
-.close-count-btn {
+.close-btn {
 	position: absolute;
 	top: 5px;
 	right: 5px;
@@ -398,7 +398,7 @@
 	opacity: 0.7;
 	transition: opacity 0.2s;
 }
-.close-count-btn:hover {
+.close-btn:hover {
 	opacity: 1;
 	background: rgba(43, 90, 132, 1);
 }

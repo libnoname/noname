@@ -9,7 +9,7 @@ const dynamicTranslates = {
 	},
 	starweigu(player) {
 		let str = "你使用伤害牌指定唯一目标或成为伤害牌唯一目标时，你可以弃置一张可指定自己为目标（toself为true或牌面目标合法）的牌，然后选择一项:";
-		if (player.storage?.starweigu) {
+		if (player.getStorage("starweigu", false)) {
 			str += "<span class=bluetext>1、对一名角色造成2点伤害；</span>";
 		} else {
 			str += "<span class=bluetext>1、移动场上一张牌；</span>";

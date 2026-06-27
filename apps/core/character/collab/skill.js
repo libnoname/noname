@@ -6263,6 +6263,7 @@ const skills = {
 			global: "phaseBefore",
 			player: ["enterGame", "useCardAfter", "respondAfter"],
 		},
+		keepSkill: true,
 		filter(event, player) {
 			if (["useCard", "respond"].includes(event.name)) {
 				if (get.type(event.card) != "basic") {

@@ -1,6 +1,13 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	tcmj_lishimin: "李世民",
+	tcmjpozhen: "破阵",
+    tcmjpozhen_info: `${get.poptip("rule_chihengji")}，你对其他角色造成伤害后，令其选择一项其本回合未选择的：1.你对其使用牌无次数距离限制；2.其交给你一个区域内的所有牌；3.其体力上限调整至1且失去所有技能。`,
+    tcmjtaoge: "韬戈",
+    tcmjtaoge_info: "每回合每种类别限一次，你可以将一张非装备牌当做同类别的牌使用。",
+    tcmjzhenguan: "贞观",
+    tcmjzhenguan_info: "主公技，每轮开始时或结束时，你令每种势力的一名其他角色摸一张牌，然后你摸X张牌（X为场上势力数）。",
 	ylyg_zhurong: "雁翎祝融",
 	ylyg_zhurong_prefix: "雁翎",
 	ylyg_lieren: "烈刃",

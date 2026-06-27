@@ -42,12 +42,6 @@ const characters = {
 		hp: 4,
 		skills: ["potnigu", "potlulian"],
 	},
-	zhuji: {
-		sex: "male",
-		group: "wu",
-		hp: 4,
-		skills: ["potjiezhu", "pothuanshi"],
-	},
 	sp_zhonghui: {
 		sex: "male",
 		group: "wei",

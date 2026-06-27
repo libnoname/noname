@@ -111,5 +111,17 @@ const dynamicTranslates = {
 		str += "。";
 		return str;
 	},
+	mbjieyuan(player) {
+		const beishui = player?.getStorage("mbjieyuan_beishui", false);
+		const removed = player?.getStorage("mbjieyuan_removed", "");
+		if (beishui) {
+			if (removed === "damageSource") {
+				return "锁定技，你受到伤害时，你可以选择一项：1、弃置一张红色牌，令此伤害-2；2、从牌堆中获得两张红色牌。";
+			}else if (removed === "damage") {
+				return "锁定技，你造成伤害时，你可以选择一项：1、弃置一张黑色牌，令此伤害+2；2、从牌堆中获得两张黑色牌。";
+			}
+		}
+		return `你造成伤害时，你可以选择一项：1、弃置一张黑色牌，令此伤害+1；2、从牌堆中获得一张黑色牌。你受到伤害时，你可以选择一项：1、弃置一张红色牌，令此伤害-1；2、从牌堆中获得一张红色牌。${get.poptip("rule_beishui")}：删除另一个时机的效果，将伤害的增减、获得牌的数量改为2，然后失去背水选项。`;
+	},
 };
 export default dynamicTranslates;

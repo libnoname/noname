@@ -4805,7 +4805,7 @@ export class Click {
 		dialog.content.appendChild(container);
 
 		//添加关闭按钮
-		const closeButton = ui.create.div(".close-count-btn");
+		const closeButton = ui.create.div(".close-btn");
 		closeButton.textContent = "关闭";
 		dialog.appendChild(closeButton);
 		closeButton.onclick = function () {
@@ -4857,8 +4857,7 @@ export class Click {
 		 * @returns {HTMLDivElement} 返回配置好的容器
 		 */
 		function createHandCardsContainer(target) {
-			const container = document.createElement("div");
-			container.className = "count-handcards-container";
+			const container = ui.create.div(".handcards-container");
 			container.setAttribute("id", `count_handcards_container_${target.playerid}`);
 
 			//滚动查看手牌的监听
@@ -4872,19 +4871,19 @@ export class Click {
 
 			//移动端点击查看手牌的监听
 			const activateCards = e => {
-				const card = e.target.closest(".count-handcards-container > *");
+				const card = e.target.closest(".handcards-container > .card");
 				if (!card) {
 					return;
 				}
 
-				const isActive = card.classList.contains("count-card-active");
+				const isActive = card.classList.contains("card-active");
 
 				Array.from(container.children).forEach(child => {
-					child.classList.remove("count-card-active");
+					child.classList.remove("card-active");
 				});
 
 				if (!isActive) {
-					card.classList.add("count-card-active");
+					card.classList.add("card-active");
 				}
 
 				e.stopPropagation();
