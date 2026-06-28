@@ -24,9 +24,10 @@ const characterSort = {
 	sp2_youlin: ["dc_sb_hulie", "dc_sb_dengai"],
 	sp2_boyan: ["dc_sb_huangquan", "dc_sb_luotong", "dc_sb_xusheng", "dc_sb_zhuran"],
 	sp2_fengchu: ["dc_sb_zhangren", "dc_sb_liuzhang", "dc_sb_wuyi", "dc_sb_fazheng"],
+	sp2_wuhou: ["dc_sb_masu", "dc_sb_wangping"],
 	sp2_weizhen: ["v_gongsunzan", "v_zhangliao", "v_lvbu", "v_dongzhuo", "v_machao"],
 	sp2_junwei: ["v_caopi", "v_sunquan", "v_caocao", "v_liubei"],
-	sp2_pianyu: ["v_zhangxingcai", "v_sunshangxiang"],
+	sp2_pianyu: ["v_zhangxingcai", "v_sunshangxiang", "v_guanyinping"],
 	sp2_waitingforsort: [],
 };
 
@@ -55,6 +56,7 @@ const characterSortTranslate = {
 	sp2_youlin: "幼麟绝战",
 	sp2_boyan: "伯言绽火",
 	sp2_fengchu: "凤雏溯攻",
+	sp2_wuhou: "武侯定南",
 	sp2_weizhen: "威震天下",
 	sp2_junwei: "君威盖世",
 	sp2_pianyu: "片羽威凤",
