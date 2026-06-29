@@ -1,24 +1,6 @@
 import skills from "./skill";
 
 const characters = {
-	v_guanyinping: {
-		sex: "female",
-		group: "shu",
-		hp: 4,
-		skills: ["dcshaowei", "dcdichou"],
-	},
-	dc_sb_wangping: {
-		sex: "male",
-		group: "shu",
-		hp: 4,
-		skills: ["dcsbyouyi", "dcsbfangong"],
-	},
-	dc_sb_masu: {
-		sex: "male",
-		group: "shu",
-		hp: 3,
-		skills: ["dcsbchengce", "dcsbxinzhan"],
-	},
 	dc_shen_caopi: {
 		sex: "male",
 		group: "shen",
@@ -35,7 +17,7 @@ const characters = {
 	shie: {
 		sex: "male",
 		group: "qun",
-		hp: 4,
+		hp: 5,
 		skills: ["liren", "sejianchu"],
 	},
 	dc_sb_zhangren: {
@@ -706,6 +688,12 @@ const characters = {
 		skills: ["zhengbi", "fengying"],
 		names: "崔|琰-毛|玠",
 	},
+	fugan: {
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		skills: ["qiaojian", "xicha"],
+	},
 	huzun: {
 		sex: "male",
 		group: "wei",
@@ -1124,6 +1112,12 @@ const characters = {
 		group: "qun",
 		hp: 3,
 		skills: ["dcsuifu", "dcpijing"],
+	},
+	dc_huanhuaijin: {
+		sex: "female",
+		group: "wei",
+		hp: 3,
+		skills: ["dclianyou", "dccili"],
 	},
 	dc_huangzu: {
 		sex: "male",

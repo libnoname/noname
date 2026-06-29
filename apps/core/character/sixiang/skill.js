@@ -5668,9 +5668,7 @@ const skills = {
 	},
 	stdzhuikong: {
 		audio: "rezhuikong",
-		trigger: {
-			global: "phaseZhunbeiBegin",
-		},
+		trigger: { global: "phaseZhunbeiBegin" },
 		check(event, player) {
 			if (get.attitude(player, event.player) < -2) {
 				var cards = player.getCards("h");
@@ -5690,14 +5688,19 @@ const skills = {
 			return false;
 		},
 		filter(event, player) {
+			if (player == event.player) {
+				return false;
+			}
 			if (!player.canCompare(event.player)) {
 				return false;
 			}
-			return (_status.connectMode && player.countCards("h")) || player.countCards("h", "sha");
+			return (_status.connectMode && player.hasCards("h")) || player.hasCards("h", card => get.name(card) == "sha");
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseCard(get.prompt(event.skill, trigger.player), "使用一张【杀】与其拼点", { name: "sha" })
+				.chooseCard(get.prompt(event.skill, trigger.player), "使用一张【杀】与其拼点", card => {
+					return get.name(card) == "sha";
+				})
 				.set("ai", card => {
 					if (_status.event.effect) {
 						return 6 - get.value(card);
@@ -5706,8 +5709,8 @@ const skills = {
 				})
 				.set("effect", lib.skill.stdzhuikong.check(trigger, player))
 				.forResult();
-			event.result.targets = [trigger.player];
 		},
+		logTarget: "player",
 		async content(event, trigger, player) {
 			const target = event.targets[0];
 			const next = player.chooseToCompare(target);
@@ -5716,7 +5719,7 @@ const skills = {
 			}
 			next.fixedResult[player.playerid] = event.cards[0];
 			const result = await next.forResult();
-			if (result.winner) {
+			if (result?.winner) {
 				const card = result[result.winner == player ? "target" : "player"];
 				if (!card || !result.winner.hasUseTarget(card)) {
 					return;

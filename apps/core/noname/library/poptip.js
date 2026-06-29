@@ -82,23 +82,29 @@ export class PoptipManager {
 	 * @type {Map<string, string | ((dialog: Dialog, poptip: string) => Dialog)>}
 	 */
 	createDialog = new Map([
-		["cardDialog", (dialog, poptip) => {
-			dialog.addSmall([[poptip], "vcard"]);
-			const node = dialog.buttons[0];
-			get.nodeintro(node, null, null, dialog);
-			return dialog;
-		}],
-		["characterDialog", (dialog, poptip) => {
-			const name = poptip.startsWith("character_") ? poptip.slice(10) : poptip;
-			if (name.startsWith("characterx_")) {
-				dialog.addSmall([[name.slice(11)], "character"]);
-			} else {
-				dialog.addSmall([[name], "character"]);
+		[
+			"cardDialog",
+			(dialog, poptip) => {
+				dialog.addSmall([[poptip], "vcard"]);
 				const node = dialog.buttons[0];
 				get.nodeintro(node, null, null, dialog);
-			}
-			return dialog;
-		}],
+				return dialog;
+			},
+		],
+		[
+			"characterDialog",
+			(dialog, poptip) => {
+				const name = poptip.startsWith("character_") ? poptip.slice(10) : poptip;
+				if (name.startsWith("characterx_")) {
+					dialog.addSmall([[name.slice(11)], "character"]);
+				} else {
+					dialog.addSmall([[name], "character"]);
+					const node = dialog.buttons[0];
+					get.nodeintro(node, null, null, dialog);
+				}
+				return dialog;
+			},
+		],
 	]);
 
 	init() {
@@ -272,7 +278,7 @@ export class HTMLPoptipElement extends HTMLElement {
 	}
 
 	createdCallback() {
-		this.textContent = this.name;
+		this.innerHTML = this.name;
 	}
 
 	/**
@@ -303,7 +309,7 @@ export class HTMLPoptipElement extends HTMLElement {
 		if (poptip && lib.poptip.createDialog.has(poptip)) {
 			dialog = lib.poptip.createDialog.get(poptip);
 			if (typeof dialog == "string" && lib.poptip.createDialog.has(dialog)) {
-				dialog = lib.poptip.createDialog.get(dialog)
+				dialog = lib.poptip.createDialog.get(dialog);
 			}
 		}
 		return dialog || this.info;

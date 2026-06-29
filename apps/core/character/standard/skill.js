@@ -1142,7 +1142,12 @@ const skills = {
 				if (current.group === "shu") {
 					const next = current.chooseToRespond({
 						prompt: `是否替${get.translation(player)}打出一张杀？`,
-						card: get.autoViewAs({ name: "sha" }),
+						filterCard: function (card, player) {
+							if (get.name(card) !== "sha") {
+								return false;
+							}
+							return lib.filter.cardRespondable(card, player);
+						},
 						ai() {
 							const event = get.event();
 							return get.attitude(event.player, event.source) - 2;

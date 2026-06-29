@@ -960,7 +960,7 @@ const skills = {
 	dcweiqu: {
 		audio: 2,
 		trigger: {
-			target: "useCardToTargeted",
+			target: "useCardToTarget",
 		},
 		filter(event, player) {
 			return event.targets.length == 1 && event.cards.length > 0 && player.countCards("he") > 0;
@@ -6263,6 +6263,7 @@ const skills = {
 			global: "phaseBefore",
 			player: ["enterGame", "useCardAfter", "respondAfter"],
 		},
+		keepSkill: true,
 		filter(event, player) {
 			if (["useCard", "respond"].includes(event.name)) {
 				if (get.type(event.card) != "basic") {

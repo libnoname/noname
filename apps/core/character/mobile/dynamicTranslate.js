@@ -1,6 +1,19 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const dynamicTranslates = {
+	rejuzhan(player, skill) {
+		const bool = player.storage[skill];
+		let yang = "当你或者此状态下第三次有角色成为【杀】的目标后，你可以与此【杀】的使用者各摸一张牌，然后其本回合不能对你使用牌",
+			yin = "当你或者此状态下第三次有角色使用【杀】指定目标后，你可以获得此【杀】的目标角色一张牌，然后你本回合不能对其使用牌";
+		if (bool) {
+			yin = `<span class='bluetext'>${yin}</span>`;
+		} else {
+			yang = `<span class='firetext'>${yang}</span>`;
+		}
+		let start = "转换技，",
+			end = `。${get.poptip("rule_chengshi")}：你于出牌阶段内使用【杀】的次数+1，且此【杀】结算完毕后，你获得之。`;
+		return `${start}阳：${yang}；阴：${yin}${end}`;
+	},
 	mbkubai(player, skill) {
 		const level = player.countMark(skill);
 		if (!level) {
@@ -97,6 +110,18 @@ const dynamicTranslates = {
 		}
 		str += "。";
 		return str;
+	},
+	mbjieyuan(player) {
+		const beishui = player?.getStorage("mbjieyuan_beishui", false);
+		const removed = player?.getStorage("mbjieyuan_removed", "");
+		if (beishui) {
+			if (removed === "damageSource") {
+				return "锁定技，你受到伤害时，你可以选择一项：1、弃置一张红色牌，令此伤害-2；2、从牌堆中获得两张红色牌。";
+			}else if (removed === "damage") {
+				return "锁定技，你造成伤害时，你可以选择一项：1、弃置一张黑色牌，令此伤害+2；2、从牌堆中获得两张黑色牌。";
+			}
+		}
+		return `你造成伤害时，你可以选择一项：1、弃置一张黑色牌，令此伤害+1；2、从牌堆中获得一张黑色牌。你受到伤害时，你可以选择一项：1、弃置一张红色牌，令此伤害-1；2、从牌堆中获得一张红色牌。${get.poptip("rule_beishui")}：删除另一个时机的效果，将伤害的增减、获得牌的数量改为2，然后失去背水选项。`;
 	},
 };
 export default dynamicTranslates;

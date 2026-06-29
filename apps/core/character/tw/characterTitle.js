@@ -1,4 +1,5 @@
 export default {
+	tw_yj_fazheng: "弹铗待试",
 	tw_shen_guanyu: "魂追弗届",
 	tw_shen_lvmeng: "兼资文武",
 	tw_huangfusong: "铁血柔肠",

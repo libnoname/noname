@@ -22,6 +22,7 @@ game.import("character", function () {
 		},
 		characterSubstitute: {
 			v_sunshangxiang: [["v_sunshangxiang_shadow", []]],
+			v_zhangxingcai: [["v_zhangxingcai_shadow", []]],
 			dc_sb_simayi: [["dc_sb_simayi_shadow", []]],
 			dc_sb_zhouyu: [["dc_sb_zhouyu_shadow", []]],
 			dc_sb_lusu: [["dc_sb_lusu_shadow", []]],
@@ -30,6 +31,7 @@ game.import("character", function () {
 			dc_sb_jiangwei: [["dc_sb_jiangwei_shadow", []]],
 			dc_sb_luxun: [["dc_sb_luxun_shadow", []]],
 			dc_sb_pangtong: [["dc_sb_pangtong_shadow", []]],
+			dc_sb_zhugeliang: [["dc_sb_zhugeliang_shadow", []]],
 		},
 		characterFilter: { ...characterFilters },
 		characterTitle: { ...characterTitles },

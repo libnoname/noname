@@ -3,7 +3,7 @@ const characterSort = {
 	mobile_shijixin: ["wujing", "sp_mifuren", "sp_xinpi", "wangling", "wangfuzhaolei", "zhouchu", "sp_kongrong", "sp_yanghu","shen_taishici", "shen_sunce"],
 	mobile_shijiren: ["caizhenji", "xiangchong", "sp_huaxin", "sp_xujing", "zhangzhongjing", "sp_zhangwen", "liuzhang", "qiaogong","shen_huatuo", "shen_lusu"],
 	mobile_shijiyong: ["db_wenyang", "sp_chendong", "yuanhuan", "sp_zongyu", "sp_wangshuang", "sunyi", "sp_gaolan", "sp_huaman"],
-	mobile_shijiyan: ["sp_cuiyan", "sp_zhangchangpu", "sp_jiangwan", "sp_jiangqing", "sp_lvfan", "sp_huangfusong", "sp_zhujun", "liuba","mb_shen_jiangwei"],
+	mobile_shijiyan: ["sp_cuiyan", "sp_zhangchangpu", "sp_jiangwan", "sp_jiangqing", "sp_lvfan", "sp_huangfusong", "sp_zhujun", "liuba","mb_shen_jiangwei", "mb_shen_machao"],
 };
 
 const characterSortTranslate = {
