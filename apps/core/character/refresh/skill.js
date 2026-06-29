@@ -3412,7 +3412,7 @@ const skills = {
 		audio: 2,
 		trigger: { player: "damageBegin2" },
 		filter(event, player) {
-			return event.source && event.source.isIn();
+			return event.source && event.source.isIn() && event.source != player;
 		},
 		logTarget: "source",
 		async content(event, trigger, player) {
