@@ -1889,7 +1889,7 @@ const skills = {
 		popup: false,
 		async content(event, trigger, player) {
 			const discardedCards = event.cards || [];
-			const num = discaredCards.length - ((await player.drawTo(5).forResult()).cards || []).length;
+			const num = discardedCards.length - ((await player.drawTo(5).forResult()).cards || []).length;
 			switch (get.sgn(num)) {
 				case 1: {
 					const result = await player
