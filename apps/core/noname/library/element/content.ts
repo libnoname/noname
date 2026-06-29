@@ -10026,22 +10026,19 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 		async (event, trigger, player) => {
 			const { cards, card, targets, num } = event;
 			event.sortTarget = (animate, sort) => {
-				const info = get.info(event.card, false);
-				if (num == 0 && targets.length > 1) {
-					if (!info.multitarget) {
-						if (!event.fixedSeat && !sort) {
-							targets.sortBySeat(_status.currentPhase || player);
-						}
-						if (animate) {
-							for (const target of targets) {
-								target.addTempClass("target");
-							}
-						}
-					} else if (animate) {
-						for (const target of targets) {
-							target.addTempClass("target");
-						}
-					}
+				const { card, targets, num, fixedSeat } = event;
+				const info = get.info(card, false);
+				if (num !== 0 || targets.length <= 1) {
+					return;
+				}
+				if (!info.multitarget && !fixedSeat && !sort) {
+					targets.sortBySeat(_status.currentPhase || player);
+				}
+				if (!animate) {
+					return;
+				}
+				for (const target of targets) {
+					target.addTempClass("target");
 				}
 			};
 			event.sortTarget();
