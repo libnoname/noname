@@ -1661,7 +1661,7 @@ const skills = {
 		audio: "zhenwei",
 		inherit: "zhenwei",
 		filter(event, player) {
-			if (player == event.target) {
+			if (player == event.target || player == event.player) {
 				return false;
 			}
 			if (!player.countCards("he")) {
