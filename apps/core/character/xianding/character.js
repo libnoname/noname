@@ -1,5 +1,3 @@
-import skills from "./skill";
-
 const characters = {
 	v_guanyinping: {
 		sex: "female",
@@ -18,6 +16,36 @@ const characters = {
 		group: "shu",
 		hp: 3,
 		skills: ["dcsbchengce", "dcsbxinzhan"],
+	},
+	dc_sb_zhugeliang: {
+		sex: "male",
+		group: "shu",
+		hp: 3,
+		skills: ["dcsbjingmou", "dcsbguyi"],
+		names: "诸葛|亮",
+	},
+	dc_shen_guanyu: {
+		sex: "male",
+		group: "shen",
+		hp: 4,
+		maxHp: 5,
+		skills: ["dcwushen", "dcwuhun"],
+		groupInGuozhan: "shu",
+	},
+	dc_shen_liubei: {
+		sex: "male",
+		group: "shen",
+		hp: 4,
+		maxHp: 6,
+		skills: ["dclongnu", "dcjieying"],
+		groupInGuozhan: "shu",
+	},
+	dc_shen_zhangliao: {
+		sex: "male",
+		group: "shen",
+		hp: 4,
+		skills: ["dccuxi", "dcduorui", "dczhiti"],
+		groupInGuozhan: "wei",
 	},
 	dc_shen_caopi: {
 		sex: "male",
