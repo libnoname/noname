@@ -43563,7 +43563,7 @@ const skills = {
 			player: "damageBegin4",
 		},
 		filter(event, player) {
-			return get.itemtype(event.source) == "player";
+			return event.source && event.source.isIn() && event.source != player;
 		},
 		logTarget: "source",
 		content() {
