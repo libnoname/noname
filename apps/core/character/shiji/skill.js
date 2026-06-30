@@ -10186,7 +10186,6 @@ const skills = {
 							.when({ player: ["useCardAfter", "respondAfter"] })
 							.filter(evt => evt.getParent() == event.getParent())
 							.step(async (event, trigger, player) => {
-								player.removeSkill(event.name);
 								await player.draw();
 							});
 						player.addTempSkill("spmiewu_used");

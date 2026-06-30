@@ -8299,7 +8299,7 @@ const skills = {
 				player(player) {
 					let num1 = 0,
 						num2 = 0;
-					game.countPlayer(function (current) {
+					game.countPlayer(current => {
 						if (player == current) {
 							return;
 						}
@@ -8422,7 +8422,7 @@ const skills = {
 				async content(event, trigger, player) {
 					const result = await player
 						.chooseTarget("请选择【暴雨】的目标", "令目标角色弃置所有手牌。若其没有手牌，则其改为失去1点体力。")
-						.set("ai", target => {
+						.set("ai", current => {
 							const es = current.getCards("h"),
 								player = get.player();
 							if (es.length > 0) {

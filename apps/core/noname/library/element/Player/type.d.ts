@@ -294,7 +294,7 @@ export interface EventChooseToUseParams extends ChooseBase, CheckCardTargetParam
 
 export interface EventChooseToRespondParams extends ChooseBase, CheckCardParams {
 	nosource?: boolean;
-	card?: VCard;
+	card?: CardBaseUIData;
 }
 
 export interface EventChooseToGiveParams extends ChooseBase, CheckCardParams {

@@ -1,6 +1,22 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	dc_sb_guanyu: "新杀谋关羽",
+	dc_sb_guanyu_prefix: "新杀谋",
+	dcsbguanwu: "冠武",
+	dcsbguanwu_info: "锁定技，回合开始时，从场上，弃牌堆，牌堆中获得【青龙偃月刀】。本轮你每使用两张【杀】，你本轮的杀伤害+1。",
+	dcsbweishi: "威势",
+	dcsbweishi_info: "每回合每项限一次，1、你成为其他角色非伤害牌目标后，可弃置半数手牌（向上取整），令此牌对你无效；2、你成为其他角色伤害牌目标结算后，你摸两张牌，并可对其使用一张【杀】。",
+	dcsbjuao: "倨傲",
+	dcsbjuao_info: "出牌阶段限一次，你可以弃置一张牌视为对攻击范围内任意名其他角色使用一张【杀】或普通锦囊牌，若如此做，此牌目标下次使用【杀】或普通锦囊牌必须指定你为目标，且无距离次数限制。",
+	wu_zhangfei: "武张飞",
+	wu_zhangfei_prefix: "武",
+	dczisheng: "恣胜",
+	dczisheng_info: "你使用点数大于3且为3的倍数的牌时，可从牌堆中随机三张点数为3的牌(若多张则点数相加)，选择其中一张获得；你弃置或获得其他角色牌时，可对该角色造成与弃置或获得牌数相等的伤害（不超过该角色当前体力值）。",
+	dcxianlve: "显略",
+	dcxianlve_info: `出牌阶段每名角色限一次，你可以观看本回合受到过伤害或失去过牌的一名其他角色的手牌并记录其中所有牌的点数。当本次记录点数的数量超过3、 6、9时，你摸三张牌。若已因此记录了所有点数，则清除记录且${get.poptip("dchaoxian")}视为未发动过。你每次造成伤害令其他角色进入濒死状态后，本次记录触发后续的点数减少3个。`,
+	dchaoxian: "豪贤",
+	dchaoxian_info: "限定技，出牌阶段，你可以将弃牌堆中所有点数为3的牌洗入牌库，然后获得其他角色手牌中点数为3的牌。",
 	dc_sb_zhugeliang: "新杀谋诸葛亮",
 	dc_sb_zhugeliang_prefix: "新杀谋",
 	dcsbjingmou: "靖谋",
