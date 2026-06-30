@@ -10042,81 +10042,12 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				}
 			};
 			event.sortTarget();
-			event.getTriggerTarget = (list1, list2) => {
-				const listx = list1.slice(0).sortBySeat(_status.currentPhase || player);
-				for (const target of listx) {
-					if (get.numOf(list2, target) < get.numOf(listx, target)) {
-						return target;
-					}
-				}
-				return null;
-			};
 		},
 		async (event, trigger, player) => {
-			const { cards, card, targets, num } = event;
-			if (event.all_excluded) {
-				return;
-			}
-			if (!event.triggeredTargets1) {
-				event.triggeredTargets1 = [];
-			}
-			const target = event.getTriggerTarget(targets, event.triggeredTargets1);
-			if (target) {
-				event.triggeredTargets1.push(target);
-				const next = game.createEvent("useCardToPlayer", false);
-				if (!event.isFirstTarget1) {
-					event.isFirstTarget1 = true;
-					next.isFirstTarget = true;
-				}
-				next.setContent("emptyEvent");
-				next.targets = targets;
-				next.target = target;
-				next.card = event.card;
-				next.cards = cards;
-				next.player = player;
-				next.skill = event.skill;
-				next.excluded = event.excluded;
-				next.directHit = event.directHit;
-				next.customArgs = event.customArgs;
-				if (event.forceDie) {
-					next.forceDie = true;
-				}
-				await next;
-				event.redo();
-			}
+			await triggerUseCardToEvent(event, player, "useCardToPlayer", "triggeredTargets1", "isFirstTarget1");
 		},
 		async (event, trigger, player) => {
-			const { cards, card, targets, num } = event;
-			if (event.all_excluded) {
-				return;
-			}
-			if (!event.triggeredTargets2) {
-				event.triggeredTargets2 = [];
-			}
-			const target = event.getTriggerTarget(targets, event.triggeredTargets2);
-			if (target) {
-				event.triggeredTargets2.push(target);
-				const next = game.createEvent("useCardToTarget", false);
-				if (!event.isFirstTarget2) {
-					event.isFirstTarget2 = true;
-					next.isFirstTarget = true;
-				}
-				next.setContent("emptyEvent");
-				next.targets = targets;
-				next.target = target;
-				next.card = event.card;
-				next.cards = cards;
-				next.player = player;
-				next.skill = event.skill;
-				next.excluded = event.excluded;
-				next.directHit = event.directHit;
-				next.customArgs = event.customArgs;
-				if (event.forceDie) {
-					next.forceDie = true;
-				}
-				await next;
-				event.redo();
-			}
+			await triggerUseCardToEvent(event, player, "useCardToTarget", "triggeredTargets2", "isFirstTarget2");
 		},
 		async (event, trigger, player) => {
 			const { cards, card, targets, num } = event;
@@ -10133,73 +10064,14 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			}
 		},
 		async (event, trigger, player) => {
-			const { cards, card, targets, num } = event;
-			if (event.all_excluded) {
-				return;
-			}
-			if (!event.triggeredTargets3) {
-				event.triggeredTargets3 = [];
-			}
-			const target = event.getTriggerTarget(targets, event.triggeredTargets3);
-			if (target) {
-				event.triggeredTargets3.push(target);
-				const next = game.createEvent("useCardToPlayered", false);
-				if (!event.isFirstTarget3) {
-					event.isFirstTarget3 = true;
-					next.isFirstTarget = true;
-				}
-				next.setContent("emptyEvent");
-				next.targets = targets;
-				next.target = target;
-				next.card = event.card;
-				next.cards = cards;
-				next.player = player;
-				next.skill = event.skill;
-				next.excluded = event.excluded;
-				next.directHit = event.directHit;
-				next.customArgs = event.customArgs;
-				if (event.forceDie) {
-					next.forceDie = true;
-				}
-				await next;
-				event.redo();
-			}
+			await triggerUseCardToEvent(event, player, "useCardToPlayered", "triggeredTargets3", "isFirstTarget3");
 		},
 		async (event, trigger, player) => {
-			const { cards, card, targets, num } = event;
-			if (event.all_excluded) {
-				return;
-			}
-			if (!event.triggeredTargets4) {
-				event.triggeredTargets4 = [];
-			}
-			const target = event.getTriggerTarget(targets, event.triggeredTargets4);
-			if (target) {
-				event.triggeredTargets4.push(target);
-				const next = game.createEvent("useCardToTargeted", false);
-				if (!event.isFirstTarget4) {
-					event.isFirstTarget4 = true;
-					next.isFirstTarget = true;
-				}
-				next.setContent("emptyEvent");
-				next.targets = targets;
-				next.target = target;
-				next.card = event.card;
-				next.cards = cards;
-				next.player = player;
-				next.skill = event.skill;
-				next.excluded = event.excluded;
-				next.directHit = event.directHit;
-				next.customArgs = event.customArgs;
-				if (event.forceDie) {
-					next.forceDie = true;
-				}
-				if (targets.length == event.triggeredTargets4.length) {
+			await triggerUseCardToEvent(event, player, "useCardToTargeted", "triggeredTargets4", "isFirstTarget4", () => {
+				if (event.targets.length == event.triggeredTargets4.length) {
 					event.sortTarget();
 				}
-				await next;
-				event.redo();
-			}
+			});
 		},
 		async (event, trigger, player) => {
 			const { cards, card, targets, num, target } = event;
@@ -13358,3 +13230,72 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 		event.result = result;
 	},
 };
+
+type UseCardToEventName = "useCardToPlayer" | "useCardToTarget" | "useCardToPlayered" | "useCardToTargeted";
+type UseCardToTargetsKey = "triggeredTargets1" | "triggeredTargets2" | "triggeredTargets3" | "triggeredTargets4";
+type UseCardToFirstTargetKey = "isFirstTarget1" | "isFirstTarget2" | "isFirstTarget3" | "isFirstTarget4";
+
+function getUseCardToTriggerTarget(event: GameEvent, player: Player, triggeredTargets: Player[]) {
+	const sortedTargets = [...event.targets];
+	const remainingTargets = new Map<Player, number>();
+	for (const target of sortedTargets) {
+		remainingTargets.set(target, (remainingTargets.get(target) || 0) + 1);
+	}
+	for (const target of triggeredTargets) {
+		const count = remainingTargets.get(target);
+		if (count) {
+			remainingTargets.set(target, count - 1);
+		}
+	}
+	sortedTargets.sortBySeat(_status.currentPhase || player);
+	for (const target of sortedTargets) {
+		if ((remainingTargets.get(target) || 0) > 0) {
+			return target;
+		}
+	}
+	return null;
+}
+
+async function triggerUseCardToEvent(
+	event: GameEvent,
+	player: Player,
+	name: UseCardToEventName,
+	triggeredTargetsKey: UseCardToTargetsKey,
+	isFirstTargetKey: UseCardToFirstTargetKey,
+	beforeTrigger?: () => void
+) {
+	const { cards, targets } = event;
+	if (event.all_excluded) {
+		return;
+	}
+	if (!event[triggeredTargetsKey]) {
+		event[triggeredTargetsKey] = [];
+	}
+	const triggeredTargets = event[triggeredTargetsKey] as Player[];
+	const target = getUseCardToTriggerTarget(event, player, triggeredTargets);
+	if (!target) {
+		return;
+	}
+	triggeredTargets.push(target);
+	const next = game.createEvent(name, false);
+	if (!event[isFirstTargetKey]) {
+		event[isFirstTargetKey] = true;
+		next.isFirstTarget = true;
+	}
+	next.setContent("emptyEvent");
+	next.targets = targets;
+	next.target = target;
+	next.card = event.card;
+	next.cards = cards;
+	next.player = player;
+	next.skill = event.skill;
+	next.excluded = event.excluded;
+	next.directHit = event.directHit;
+	next.customArgs = event.customArgs;
+	if (event.forceDie) {
+		next.forceDie = true;
+	}
+	beforeTrigger?.();
+	await next;
+	event.redo();
+}
