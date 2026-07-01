@@ -10855,7 +10855,17 @@ export class Library {
 		},
 	};
 	filter = {
+		/**
+		 * 恒真函数，用于允许所有传递的对象
+		 *
+		 * @returns { true }
+		 */
 		all: () => true,
+		/**
+		 * 恒假函数，用于过滤所有传递的对象
+		 *
+		 * @returns { false }
+		 */
 		none: () => false,
 		/**
 		 * Check if the card does not count toward the player's hand limit
