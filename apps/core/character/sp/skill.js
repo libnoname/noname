@@ -2756,7 +2756,7 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		filter(event, player) {
-			return player.getExpansions("olxiewei").length && game.hasPlayer(target => player.canCompare(target, true));
+			return player.getExpansions("olxiewei").length && player.countCards("h") > 0 && game.hasPlayer(target => player.canCompare(target, true));
 		},
 		delay: false,
 		lose: false,
