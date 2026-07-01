@@ -36354,7 +36354,7 @@ const skills = {
 	},
 	qirang: {
 		audio: 2,
-		trigger: { player: "useCard" },
+		trigger: { player: "useCardAfter" },
 		frequent: true,
 		filter(event, player) {
           return get.type(event.card) == "equip";
