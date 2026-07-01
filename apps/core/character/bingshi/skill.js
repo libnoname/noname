@@ -5391,7 +5391,7 @@ const skills = {
 					const evt = get.event();
 					evt.directHit.addArray(
 						evt.targets.filter(target => {
-							return !target.hasCard(cardx => get.color(cardx, target) == get.color(card), "h");
+							return !target.hasCard(cardx => get.suit(cardx, target) == get.suit(card), "h");
 						})
 					);
 				},
