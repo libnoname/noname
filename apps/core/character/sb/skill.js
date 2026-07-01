@@ -10631,10 +10631,6 @@ const skills = {
 					global: "phaseBefore",
 					player: "enterGame",
 				},
-				forced: true,
-				locked: false,
-				direct: true,
-				dutySkill: true,
 				filter(event, player) {
 					return game.hasPlayer(current => current != player && !current.hasMark("sbjieyin_mark")) && (event.name != "phase" || game.phaseNumber == 0);
 				},

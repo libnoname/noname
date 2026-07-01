@@ -8376,7 +8376,7 @@ const skills = {
 			for (let i = 0; i < 2; i++) {
 				const next = [player, target][i].draw(...[i === 0 ? "nodelay" : "bottom"]);
 				const result = (await next.forResult()).cards;
-				if (Array.isArray(result)) {
+				if (get.itemtype(result) == "cards") {
 					gains.push([[player, target][i], result[0]]);
 				}
 			}
@@ -25346,16 +25346,15 @@ const skills = {
 			source: "damageSource",
 		},
 		usable: 1,
-		content() {
-			"step 0";
-			player.draw(2);
-			"step 1";
-			if (Array.isArray(result) && result.length > 1) {
-				var color = get.color(result[0], player);
-				for (var i = 1; i < result.length; i++) {
-					if (get.color(result[i], player) != color) {
-						if (player.countCards("h")) {
-							player.chooseToDiscard("h", true);
+		async content(event, trigger, player) {
+			const result = await player.draw(2).forResult();
+			if (get.itemtype(result?.cards) == "cards" && result.cards.length > 1) {
+				const { cards } = result;
+				const color = get.color(cards[0], player);
+				for (let i = 1; i < cards.length; i++) {
+					if (get.color(cards[i], player) != color) {
+						if (player.hasCards("h")) {
+							await player.chooseToDiscard("h", true);
 						}
 						break;
 					}
@@ -43564,7 +43563,7 @@ const skills = {
 			player: "damageBegin4",
 		},
 		filter(event, player) {
-			return get.itemtype(event.source) == "player";
+			return event.source && event.source.isIn() && event.source != player;
 		},
 		logTarget: "source",
 		content() {

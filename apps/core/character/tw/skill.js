@@ -5310,7 +5310,7 @@ const skills = {
 						card = event.cards[0];
 					} else {
 						const result = (await target.draw().forResult()).cards;
-						card = result[0];
+						card = result?.[0];
 					}
 					if (nums[0] > nums[1]) {
 						nums.reverse();
@@ -6974,33 +6974,40 @@ const skills = {
 		},
 		damageStatusChanged(player, evt) {
 			if (!evt.changedMaxHp) {
-				if (evt.changedHp > 0) return !player.isDamaged() || (player.getHp() > 0 && player.getHp() - evt.changedHp < 0);
-				if (evt.changedHp < 0) return player.hp - evt.changedHp === player.maxHp || (player.hp <= 0 && player.hp - evt.changedHp > 0);
+				if (evt.changedHp > 0) {
+					return !player.isDamaged() || (player.getHp() > 0 && player.getHp() - evt.changedHp < 0);
+				}
+				if (evt.changedHp < 0) {
+					return player.hp - evt.changedHp === player.maxHp || (player.hp <= 0 && player.hp - evt.changedHp > 0);
+				}
 			}
-			if (evt.changedMaxHp > 0) return player.maxHp - evt.changedMaxHp === player.getHp();
-			if (evt.changedMaxHp < 0) return !player.isDamaged() && evt.changedHp !== evt.changedMaxHp;
+			if (evt.changedMaxHp > 0) {
+				return player.maxHp - evt.changedMaxHp === player.getHp();
+			}
+			if (evt.changedMaxHp < 0) {
+				return !player.isDamaged() && evt.changedHp !== evt.changedMaxHp;
+			}
 			return false;
 		},
 		async skipDiscard(event, trigger, player) {
-			if (result.bool === false) {
+			if (event._result.bool === false) {
 				player.skip("phaseDiscard");
 			}
 		},
 		async cost(event, trigger, player) {
 			const target = trigger.player;
-			if (target.hasJudge("lebu")) return;
-			const result = await player
+			if (target.hasJudge("lebu")) {
+				return;
+			}
+			event.result = await player
 				.chooseTarget({
-					prompt: get.prompt2("huanguose"),
-					filterTarget(card, player, target2) {
+					prompt: get.prompt2(event.skill),
+					filterTarget(card, player, target) {
 						const targetx = get.event().targetx;
-						if (![player, targetx].includes(target2)) {
+						if (![player, targetx].includes(target)) {
 							return false;
 						}
-						if (!target2.hasCards("he")) {
-							return false;
-						}
-						return !targetx.hasJudge("lebu");
+						return target.hasCards("he", cardx => targetx.canAddJudge(get.autoViewAs({ name: "lebu" }, [cardx])));
 					},
 					ai(target) {
 						// 如果是队友就随机盖一方的牌（若残血盖自己的）
@@ -7008,27 +7015,38 @@ const skills = {
 						const player = get.player();
 						const targetx = get.event().targetx;
 						const att = get.attitude(player, targetx);
-						if (target === player && att >= 0) return Math.random();
-						if (att <= 0) return 20 + get.effect(targetx, { name: "lebu" }, player, player);
-						else if (targetx.hp <= 1) return 0;
+						if (target === player && att >= 0) {
+							return Math.random();
+						}
+						if (att <= 0) {
+							return 20 + get.effect(targetx, { name: "lebu" }, player, player);
+						} else if (targetx.hp <= 1) {
+							return 0;
+						}
 						return Math.random();
 					},
 				})
 				.set("targetx", target)
 				.forResult();
-			if (result.bool) {
-				event.result = { bool: true, cost_data: result.targets };
-			}
 		},
 		async content(event, trigger, player) {
-			const target = event.cost_data[0];
-			const cardResult = await player
+			const target = event.targets[0];
+			if (!target.hasCards("he", card => trigger.player.canAddJudge(get.autoViewAs({ name: "lebu" }, [card])))) {
+				return;
+			}
+			const result = await player
 				.choosePlayerCard({
-					prompt: `选择一张牌当作【乐不思蜀】置入${get.translation(trigger.target)}的判定区`,
+					prompt: `选择一张牌当作【乐不思蜀】置入${get.translation(trigger.player)}的判定区`,
+					filterButton(button) {
+						const targetx = get.event().targetx;
+						return targetx.canAddJudge(get.autoViewAs({ name: "lebu" }, [button.link]));
+					},
 					target,
+					targetx: trigger.player,
 					position: "he",
 					forced: true,
 					ai(button) {
+						const player = get.player();
 						// 如果不是自己就随机选，否则若变化角色为队友就优先红
 						if (get.event().target !== player) {
 							return Math.random();
@@ -7040,8 +7058,8 @@ const skills = {
 					att: get.attitude(player, trigger.player),
 				})
 				.forResult();
-			if (cardResult?.bool) {
-				const card = cardResult.cards[0];
+			if (result?.bool) {
+				const card = result.cards[0];
 				target.$give(card, trigger.player, false);
 				await trigger.player.addJudge({ name: "lebu" }, [card]);
 				await player.draw(2);
@@ -7052,23 +7070,24 @@ const skills = {
 			effect: {
 				trigger: { global: "judgeEnd" },
 				filter(event, player) {
-					return event.card?.name === "lebu" && event.result?.judge < 0;
+					return event.card?.name === "lebu" && !event.result?.bool;
 				},
 				prompt2(event, player) {
-					return `是否将${get.translation(event.player)}的此【乐不思蜀】改为跳过弃牌阶段？`;
+					return `将${get.translation(event.player)}的${get.translation(event.card)}的效果改为跳过弃牌阶段？`;
 				},
 				check(event, player) {
 					return get.attitude(player, event.player) > 0;
 				},
+				logTarget: "player",
 				async content(event, trigger, player) {
+					const target = event.targets[0];
 					const card = trigger.card;
-					const evt = trigger.getParent("phaseJudge");
-					trigger.player.when("lebuBegin").then(async (event2, trigger2, player2) => {
-						if (event2.getParent("phaseJudge") !== evt) {
-							return;
-						}
-						trigger2.setContent(get.info("huanguose").skipDiscard);
-					});
+					target
+						.when("lebuBegin")
+						.filter(evt => evt.getParent() == trigger.getParent())
+						.then(async (event, trigger, player) => {
+							trigger.setContent(get.info("huanguose").skipDiscard);
+						});
 					game.log(player, "将", get.translation(card), "改为跳过弃牌阶段");
 				},
 				ai: {
@@ -7084,24 +7103,20 @@ const skills = {
 		},
 	},
 	huanliuli: {
-		// 批量改名时记得这里有huanguose
 		audio: 2,
 		trigger: { global: "useCardToTargeted" },
 		filter(event, player) {
 			const card = event.card;
 			const target = event.target;
-			if (!get.tag(card, "damage")) {
+			if (!get.is.damageCard(card)) {
 				return false;
 			}
-			if (!target.hasCards("ej", card => lib.filter.cardDiscardable(card, player, "huanliuli") && get.color(card) === "red")) {
-				return false;
-			}
-			return true;
+			return target.hasCards("ej", card => lib.filter.cardDiscardable(card, player, "huanliuli") && get.color(card) === "red");
 		},
 		async cost(event, trigger, player) {
 			const target = trigger.target;
-			const result = await player
-				.choosePlayerCard({
+			event.result = await player
+				.discardPlayerCard({
 					target,
 					position: "ej",
 					prompt: `是否弃置${get.translation(target)}场上的一张红色牌，令${get.translation(trigger.card)}对其无效？`,
@@ -7112,15 +7127,13 @@ const skills = {
 						return 6 - get.value(button.link);
 					},
 				})
+				.set("chooseonly", true)
 				.forResult();
-			if (result.bool) {
-				event.result = { bool: true, cost_data: result.cards };
-			}
 		},
+		logTarget: "target",
 		async content(event, trigger, player) {
-			const discardCards = event.cost_data;
 			const target = trigger.target;
-			await player.discard(discardCards);
+			await target.discard(event.cards).set("discarder", player);
 			trigger.getParent().excluded.add(target);
 			game.log(trigger.card, "对", target, "无效");
 			if (player.isDamaged() === target.isDamaged()) {
@@ -16436,7 +16449,7 @@ const skills = {
 			}
 			return (Math.max(4, 7.1 - num) - get.value(card)) / num;
 		},
-		filterCard: true,
+		filterCard: lib.filter.cardDiscardable,
 		position: "he",
 		content() {
 			player.draw();

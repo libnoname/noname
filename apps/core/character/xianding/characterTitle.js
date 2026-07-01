@@ -1,4 +1,6 @@
 export default {
+	wu_zhangfei: "烈武桓威",
+	dc_sb_guanyu: "单刀赴会",
 	//dc_sb_zhugeliang: "",
 	dc_shen_guanyu: "鬼神再临",
 	dc_shen_liubei: "誓守桃园义",

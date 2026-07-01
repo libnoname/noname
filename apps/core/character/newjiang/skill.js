@@ -36,7 +36,6 @@ const skills = {
 			} else {
 				game.log(trigger.card, "被无效了");
 				trigger.getParent().all_excluded = true;
-				trigger.getParent().targets.length = 0;
 			}
 			const playerResult = result.bool;
 			const lastResult = player.getStorage(event.name + "_last", void 0);
@@ -5551,13 +5550,17 @@ const skills = {
 						if (!card.cards) {
 							return;
 						}
-						return card.cards.some(i => i.hasGaintag("cibei_mark"));
+						if (card.cards.some(i => i.hasGaintag("cibei_mark"))) {
+							return true;
+						}
 					},
 					cardUsable(card, player) {
 						if (!card.cards) {
 							return;
 						}
-						return card.cards.some(i => i.hasGaintag("cibei_mark"));
+						if (card.cards.some(i => i.hasGaintag("cibei_mark"))) {
+							return true;
+						}
 					},
 				},
 			},

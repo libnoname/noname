@@ -2141,7 +2141,6 @@ const skills = {
 			} else {
 				await player.discard(event.cards);
 				trigger.getParent().all_excluded = true;
-				trigger.getParent().targets.length = 0;
 			}
 		},
 	},

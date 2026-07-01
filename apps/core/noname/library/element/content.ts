@@ -7534,7 +7534,9 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 						.catch(() => resolve({}));
 				} else {
 					const next = chooseLocal(current);
-					next.forResult().then(resolve).catch(() => resolve({}));
+					next.forResult()
+						.then(resolve)
+						.catch(() => resolve({}));
 				}
 			});
 		};
@@ -7564,7 +7566,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				);
 			}
 		}
-		
+
 		Reflect.set(event, "result", results);
 	},
 	async chooseButtonOL(event, trigger, player) {
@@ -11178,7 +11180,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			if (event.animate == "give" || event.animate == "gain2" || event.animate == "draw2") {
 				event.visible = true;
 			}
-			if (get.itemtype(cards) == "cards") {
+			if (Array.isArray(cards) && !cards.some(card => get.itemtype(card) !== "card")) {
 				const map = {};
 				for (const i of cards) {
 					const owner = get.owner(i, "judge");
@@ -11507,7 +11509,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				for (const gaintag of event.gaintag) {
 					player.markSkill(gaintag);
 				}
-			}
+			};
 
 			let animateTime: number | Promise<void> | null = null;
 			const animate: GainAnimate | null = event.animate;
