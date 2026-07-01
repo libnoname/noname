@@ -36354,8 +36354,11 @@ const skills = {
 	},
 	qirang: {
 		audio: 2,
-		trigger: { player: "equipEnd" },
+		trigger: { player: "useCard" },
 		frequent: true,
+		filter(event, player) {
+          return get.type(event.card) == "equip";
+        },
 		content() {
 			var card = get.cardPile(function (card) {
 				return get.type(card, "trick") == "trick";
