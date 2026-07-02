@@ -1,4 +1,9 @@
 export default {
+	"#huanguose1": "夫君今统一方，更应慎之再慎。",
+	"#huanguose2": "如今江南初定，何不与民生息？",
+	"#huanliuli1": "每忆数载情深，更忧生死别离。",
+	"#huanliuli2": "居安防微杜渐，危时方得无忧。",
+	"#huan_daqiao:die": "不求肇建之功，只求此生不离……",
 	"#huan_caochong:die": "骨肉至亲，何必至此……",
 	"#twfushu1": "东风不吝回青意，当还病树万木春。",
 	"#twfushu2": "常怀仁爱之心，天必不绝其路。",
