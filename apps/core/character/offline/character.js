@@ -1,4 +1,27 @@
 const characters = {
+	sm_shen_sunquan: {
+		sex: "male",
+		group: "shen",
+		hp: 0,
+		maxHp: 10,
+		skills: ["smshenjiang", "smshengshou", "smshifeng"],
+		isUnseen: true,
+	},
+	sm_mo_sunquan: {
+		sex: "male",
+		group: "devil",
+		hp: 0,
+		maxHp: 3,
+		skills: ["smmobian", "smyanshi", "smpoyu"],
+		isUnseen: true,
+	},
+	sm_shenmo_sunquan: {
+		sex: "male",
+		group: "shen",
+		hp: 6,
+		skills: ["smsibian", "smqihua", "smdue"],
+		doubleGroup: ["shen", "devil"],
+	},
 	pe_liuhui: {
 		sex: "male",
 		group: "qun",
