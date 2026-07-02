@@ -1,4 +1,11 @@
 export default {
+	"#potsifeng1": "各路坚守自固，蜀军疲而自退矣。",
+	"#potsifeng2": "我军十倍于贼，又有何惧之有。",
+	"#potsifeng3": "哼！以此观之，蜀军不过尔尔。",
+	"#potsifeng4": "蜀军惯用此计，嫣能再诈于我。",
+	"#potsifeng5": "速割陇上之粮，勿教蜀军清获。",
+	"#potsifeng6": "蜀军兵败溃散，正宜吾等追击。",
+	"#pot_caozhen:die": "这诸葛亮……万不可深追啊……",
 	"#potduzuo1": "你我各执万军，曹贼将以何胜？",
 	"#potduzuo2": "如今大敌临前，我当为君助！",
 	"#potbiqian1": "江东有我在日，孙氏自然不倾！",

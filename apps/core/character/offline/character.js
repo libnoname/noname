@@ -30,7 +30,7 @@ const characters = {
 		skills: ["pexunji", "peshuangfeng"],
 		names: "夏侯|岚",
 	},
-	tcmj_lishimin: {
+	pe_lishimin: {
 		sex: "male",
 		group: "qun",
 		hp: 4,

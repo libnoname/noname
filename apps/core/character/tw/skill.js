@@ -6960,7 +6960,7 @@ const skills = {
 		derivation: ["ollongdan", "chongzhen"],
 	},
 	// 幻大乔
-	huanguose: {
+	twguose: {
 		audio: 2,
 		trigger: { global: ["changeHpAfter", "gainMaxHpAfter", "loseMaxHpAfter"] },
 		filter(event, player) {
@@ -6970,7 +6970,7 @@ const skills = {
 			if (!player.hasCards("he") && !event.player.hasCards("he")) {
 				return false;
 			}
-			return get.info("huanguose").damageStatusChanged(event.player, event);
+			return get.info("twguose").damageStatusChanged(event.player, event);
 		},
 		damageStatusChanged(player, evt) {
 			if (!evt.changedMaxHp) {
@@ -7065,7 +7065,7 @@ const skills = {
 				await player.draw(2);
 			}
 		},
-		group: "huanguose_effect",
+		group: "twguose_effect",
 		subSkill: {
 			effect: {
 				trigger: { global: "judgeEnd" },
@@ -7086,7 +7086,7 @@ const skills = {
 						.when("lebuBegin")
 						.filter(evt => evt.getParent() == trigger.getParent())
 						.then(async (event, trigger, player) => {
-							trigger.setContent(get.info("huanguose").skipDiscard);
+							trigger.setContent(get.info("twguose").skipDiscard);
 						});
 					game.log(player, "将", get.translation(card), "改为跳过弃牌阶段");
 				},
@@ -7102,7 +7102,7 @@ const skills = {
 			},
 		},
 	},
-	huanliuli: {
+	twliuli: {
 		audio: 2,
 		trigger: { global: "useCardToTargeted" },
 		filter(event, player) {
@@ -7111,7 +7111,7 @@ const skills = {
 			if (!get.is.damageCard(card)) {
 				return false;
 			}
-			return target.hasCards("ej", card => lib.filter.cardDiscardable(card, player, "huanliuli") && get.color(card) === "red");
+			return target.hasCards("ej", card => lib.filter.cardDiscardable(card, player, "twliuli") && get.color(card) === "red");
 		},
 		async cost(event, trigger, player) {
 			const target = trigger.target;
@@ -7121,7 +7121,7 @@ const skills = {
 					position: "ej",
 					prompt: `是否弃置${get.translation(target)}场上的一张红色牌，令${get.translation(trigger.card)}对其无效？`,
 					filterButton(button) {
-						return get.color(button.link) === "red" && lib.filter.cardDiscardable(button.link, get.player(), "huanliuli");
+						return get.color(button.link) === "red" && lib.filter.cardDiscardable(button.link, get.player(), "twliuli");
 					},
 					ai(button) {
 						return 6 - get.value(button.link);

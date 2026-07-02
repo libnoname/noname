@@ -775,7 +775,8 @@ const skills = {
 	},
 	//界周妃
 	reliangyin: {
-		audio: 2,
+		audio: 4,
+		logAudio: () => 2,
 		trigger: {
 			global: ["addToExpansionAfter", "loseAsyncAfter", "gainAfter"],
 		},
@@ -839,6 +840,7 @@ const skills = {
 		subSkill: {
 			end: {
 				audio: "reliangyin",
+				logAudio: () => ["reliangyin3.mp3", "reliangyin4.mp3"],
 				trigger: {
 					global: "roundEnd",
 				},

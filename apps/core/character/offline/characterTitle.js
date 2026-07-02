@@ -4,7 +4,7 @@ export default {
 	pe_huamulan: "孝烈巾帼",
 	pe_yangyuhuan: "贵妃醉酒",
 	pe_xiahoulan: "不驯巾帼",
-	tcmj_lishimin: "天策上将",
+	pe_lishimin: "天策上将",
 	ylyg_xuhuang: "公明大义",
 	ylyg_zhurong: "刺美人",
 	wxdl_caozhi: "白马饰金羁",

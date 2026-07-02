@@ -32,7 +32,7 @@ const skills = {
 						ai(card) {
 							const { player, target } = get.event();
 							if (get.attitude(player, target) > 0) {
-								return get.value(card) * get.suit(card) !== "spade" ? 2 : 1;
+								return get.value(card) * (get.suit(card) !== "spade" ? 2 : 1);
 							}
 							return -get.value(card);
 						},
@@ -325,6 +325,7 @@ const skills = {
 	olqinling: {
 		audio: 2,
 		enable: "chooseToUse",
+		usable: 1,
 		locked: false,
 		mod: {
 			cardUsable(card) {
@@ -367,6 +368,7 @@ const skills = {
 							{
 								name: info[2],
 								nature: info[3],
+								storage: { olqinling: true },
 							},
 							"unsure"
 						),
@@ -380,6 +382,8 @@ const skills = {
 				return _status.event.getParent().filterCard(
 					{
 						name: button.link[2],
+						nature: button.link[3],
+						storage: { olqinling: true },
 					},
 					player,
 					_status.event.getParent()
@@ -452,7 +456,7 @@ const skills = {
 					return false;
 				}
 			},
-			order: 7,
+			order: 3,
 			result: {
 				player: 1,
 			},

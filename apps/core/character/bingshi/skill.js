@@ -351,7 +351,8 @@ const skills = {
 	},
 	//势曹真------by 清风
 	potsifeng: {
-		audio: 2,
+		audio: 6,
+		logAudio: () => 2,
 		trigger: { player: "phaseJieshuBegin" },
 		filter(event, player) {
 			return game.hasPlayer(current => current != player);
@@ -405,6 +406,7 @@ const skills = {
 		subSkill: {
 			use: {
 				audio: "potsifeng",
+				logAudio: () => ["potsifeng3.mp3", "potsifeng4.mp3"],
 				forced: true,
 				trigger: { global: "useCardAfter" },
 				filter(event, player) {
@@ -423,6 +425,7 @@ const skills = {
 			},
 			effect: {
 				audio: "potsifeng",
+				logAudio: () => ["potsifeng5.mp5", "potsifeng6.mp3"],
 				trigger: { global: "phaseEnd" },
 				filter(event, player) {
 					return event.player.hasExpansions("potsifeng");

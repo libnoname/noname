@@ -950,7 +950,7 @@ const skills = {
 		},
 	},
 	//天策上将-李世民------by 清风
-	tcmjpozhen: {
+	pepozhen: {
 		audio: 2,
 		persevereSkill: true,
 		forced: true,
@@ -961,13 +961,13 @@ const skills = {
 			if (player == target) {
 				return false;
 			}
-			if (!target.getStorage("tcmjpozhen_used").includes("选项一") && !player.getStorage("tcmjpozhen_use").includes(target)) {
+			if (!target.getStorage("pepozhen_used").includes("选项一") && !player.getStorage("pepozhen_use").includes(target)) {
 				return true;
 			}
-			if (!target.getStorage("tcmjpozhen_used").includes("选项二") && target.countGainableCards(player, "hej")) {
+			if (!target.getStorage("pepozhen_used").includes("选项二") && target.countGainableCards(player, "hej")) {
 				return true;
 			}
-			if (!target.getStorage("tcmjpozhen_used").includes("选项三")) {
+			if (!target.getStorage("pepozhen_used").includes("选项三")) {
 				return true;
 			}
 			return false;
@@ -977,17 +977,17 @@ const skills = {
 			const target = trigger.player;
 			const list = [],
 				choiceList = ["令" + get.translation(player) + "对你使用牌无距离次数限制", "交给" + get.translation(player) + "一个区域内的所有牌", "体力上限调整为1且失去所有技能"];
-			if (!target.getStorage("tcmjpozhen_used").includes("选项一") && !player.getStorage("tcmjpozhen_use").includes(target)) {
+			if (!target.getStorage("pepozhen_used").includes("选项一") && !player.getStorage("pepozhen_use").includes(target)) {
 				list.push("选项一");
 			} else {
 				choiceList[0] = `<span style="opacity:0.5">` + choiceList[0] + "</span>";
 			}
-			if (!target.getStorage("tcmjpozhen_used").includes("选项二") && target.countGainableCards(player, "hej")) {
+			if (!target.getStorage("pepozhen_used").includes("选项二") && target.countGainableCards(player, "hej")) {
 				list.push("选项二");
 			} else {
 				choiceList[1] = `<span style="opacity:0.5">` + choiceList[1] + "</span>";
 			}
-			if (!target.getStorage("tcmjpozhen_used").includes("选项三")) {
+			if (!target.getStorage("pepozhen_used").includes("选项三")) {
 				list.push("选项三");
 			} else {
 				choiceList[2] = `<span style="opacity:0.5">` + choiceList[2] + "</span>";
@@ -1087,12 +1087,12 @@ const skills = {
 				intro: { content: "对$使用牌无距离次数限制" },
 				mod: {
 					targetInRange(card, player, target) {
-						if (player.getStorage("tcmjpozhen_use").includes(target)) {
+						if (player.getStorage("pepozhen_use").includes(target)) {
 							return true;
 						}
 					},
 					cardUsableTarget(card, player, target) {
-						if (player.getStorage("tcmjpozhen_use").includes(target)) {
+						if (player.getStorage("pepozhen_use").includes(target)) {
 							return Infinity;
 						}
 					},
@@ -1100,15 +1100,15 @@ const skills = {
 			},
 		},
 	},
-	tcmjtaoge: {
+	petaoge: {
 		audio: 2,
 		enable: ["chooseToUse"],
 		filter(event, player) {
-			if (!["basic", "trick"].some(type => player.hasCard(card => get.type2(card) == type, "he") && !player.getStorage("tcmjtaoge_used").includes(type))) {
+			if (!["basic", "trick"].some(type => player.hasCard(card => get.type2(card) == type, "he") && !player.getStorage("petaoge_used").includes(type))) {
 				return false;
 			}
 			return get.inpileVCardList(info => {
-				const types = ["basic", "trick"].removeArray(player.getStorage("tcmjtaoge_used"));
+				const types = ["basic", "trick"].removeArray(player.getStorage("petaoge_used"));
 				if (!types.includes(get.type2(info[2]))) {
 					return false;
 				}
@@ -1128,7 +1128,7 @@ const skills = {
 		chooseButton: {
 			dialog(event, player) {
 				const list = get.inpileVCardList(info => {
-					const types = ["basic", "trick"].removeArray(player.getStorage("tcmjtaoge_used")).filter(i => player.hasCard(card => get.type2(card) == i, "he"));
+					const types = ["basic", "trick"].removeArray(player.getStorage("petaoge_used")).filter(i => player.hasCard(card => get.type2(card) == i, "he"));
 					if (!types.includes(get.type2(info[2]))) {
 						return false;
 					}
@@ -1172,9 +1172,9 @@ const skills = {
 				return {
 					link: links[0][2],
 					filterCard(card) {
-						return get.type2(card) == get.type2(lib.skill.tcmjtaoge_backup.link);
+						return get.type2(card) == get.type2(lib.skill.petaoge_backup.link);
 					},
-					audio: "tcmjtaoge",
+					audio: "petaoge",
 					popname: true,
 					check(card) {
 						return 8 - get.value(card);
@@ -1186,9 +1186,9 @@ const skills = {
 					},
 					log: false,
 					async precontent(event, trigger, player) {
-						player.logSkill("tcmjtaoge");
-						player.addTempSkill("tcmjtaoge_used");
-						player.markAuto("tcmjtaoge_used", [get.type2(event.result.card)]);
+						player.logSkill("petaoge");
+						player.addTempSkill("petaoge_used");
+						player.markAuto("petaoge_used", [get.type2(event.result.card)]);
 					},
 				};
 			},
@@ -1201,14 +1201,14 @@ const skills = {
 				return false;
 			}
 			const type = get.type2(name);
-			return ["basic", "trick"].removeArray(player.getStorage("tcmjtaoge_used")).includes(type);
+			return ["basic", "trick"].removeArray(player.getStorage("petaoge_used")).includes(type);
 		},
 		ai: {
 			fireAttack: true,
 			respondSha: true,
 			respondShan: true,
 			skillTagFilter(player) {
-				if (!player.countCards("he") || player.getStorage("tcmjtaoge_used").includes("basic")) {
+				if (!player.countCards("he") || player.getStorage("petaoge_used").includes("basic")) {
 					return false;
 				}
 			},
@@ -1224,7 +1224,7 @@ const skills = {
 		},
 		subSkill: { backup: {} },
 	},
-	tcmjzhenguan: {
+	pezhenguan: {
 		audio: 2,
 		zhuSkill: true,
 		forced: true,
