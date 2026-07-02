@@ -16313,6 +16313,7 @@ const skills = {
 				sub: true,
 			},
 			discard: {
+				audio: "xinfu_bijing",
 				trigger: {
 					player: "phaseZhunbeiBegin",
 				},
