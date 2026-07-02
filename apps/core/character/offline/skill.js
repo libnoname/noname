@@ -10,6 +10,7 @@ const skills = {
 		juexingji: true,
 		skillAnimation: true,
 		animationColor: "thunder",
+		initGroup: "shen",
 		trigger: { player: "phaseBegin" },
 		filter(event, player) {
 			return (player.getHp() % 2 == 1 && player.countMark("smqihua_shen") > player.countMark("smqihua_mo")) || (player.getHp() % 2 == 0 && player.countMark("smqihua_shen") < player.countMark("smqihua_mo"));
