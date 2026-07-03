@@ -10919,20 +10919,20 @@ export class Library {
 			}
 			return true;
 		},
-		//装备栏相关
 		/**
-		 * @param { Card } card
-		 * @param { Player } player
+		 * 判断一张装备牌是否可以被替换。
+		 *
+		 * @param { Card | VCard } card - 需要判断的装备牌
+		 * @param { Player } player - 持有/装备此牌的角色
 		 * @returns { boolean }
 		 */
-		canBeReplaced: function (card, player) {
-			var mod = game.checkMod(card, player, "unchanged", "canBeReplaced", player);
-			if (mod != "unchanged") {
-				return mod;
+		canBeReplaced(card, player) {
+			const mod = game.checkMod(card, player, "unchanged", "canBeReplaced", player);
+			if (mod !== "unchanged") {
+				return Boolean(mod);
 			}
 			return true;
 		},
-		//装备栏 END
 		buttonIncluded: function (button) {
 			return !(_status.event.excludeButton && _status.event.excludeButton.includes(button));
 		},
@@ -11773,17 +11773,26 @@ export class Library {
 			}
 			return range;
 		},
-		judge: function (card, player, target) {
+		/**
+		 * 判断一张延时锦囊/判定牌是否可以置入目标判定区。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 需要判断的牌
+		 * @param { Player } player - 使用/置入此牌的角色
+		 * @param { Player } target - 被置入判定区的目标角色
+		 * @returns { boolean }
+		 */
+		judge(card, player, target) {
+			// @ts-expect-error 类型问题已经理不清了
 			if (!target.canAddJudge(card, player)) {
 				return false;
 			}
-			let mod = game.checkMod(card, player, target, "unchanged", "playerEnabled", player);
-			if (mod != "unchanged") {
-				return mod;
+			const playerEnabled = game.checkMod(card, player, target, "unchanged", "playerEnabled", player);
+			if (playerEnabled !== "unchanged") {
+				return Boolean(playerEnabled);
 			}
-			let mod2 = game.checkMod(card, player, target, "unchanged", "targetEnabled", target);
-			if (mod2 != "unchanged") {
-				return mod2;
+			const targetEnabled = game.checkMod(card, player, target, "unchanged", "targetEnabled", target);
+			if (targetEnabled !== "unchanged") {
+				return Boolean(targetEnabled);
 			}
 			return true;
 		},
