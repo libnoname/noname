@@ -2400,7 +2400,7 @@ const skills = {
 				.set("ai", card => {
 					let val = 0;
 					const { shown } = get.event();
-					if (shown.some(i => get.suit(i) == get.suit(card))) {
+					if (shown.some(i => get.color(i) == get.color(card))) {
 						val += 1;
 					}
 					if (shown.some(i => get.name(i) == get.name(card))) {
@@ -2413,7 +2413,7 @@ const skills = {
 				cards: [card],
 			} = result2;
 			await player.showCards(card);
-			if (shown.some(i => get.suit(i) == get.suit(card))) {
+			if (shown.some(i => get.color(i) == get.color(card))) {
 				const result = await player
 					.discardPlayerCard({
 						prompt: `忠鉴：弃置${get.translation(target)}一张牌或取消你摸一张牌`,

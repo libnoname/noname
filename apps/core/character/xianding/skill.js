@@ -5348,6 +5348,9 @@ const skills = {
 			},
 		},
 		isXunshi(card) {
+			if (get.position(card) !== "h") {
+				return false;
+			}
 			var info = lib.card[card.name];
 			if (!info || (info.type != "trick" && info.type != "delay")) {
 				return false;

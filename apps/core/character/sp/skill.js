@@ -2756,7 +2756,7 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		filter(event, player) {
-			return player.getExpansions("olxiewei").length && game.hasPlayer(target => player.canCompare(target, true));
+			return player.getExpansions("olxiewei").length && game.hasPlayer(target => player.canCompare(target));
 		},
 		delay: false,
 		lose: false,
@@ -34649,7 +34649,7 @@ const skills = {
 			if (event._notrigger.includes(event.player)) {
 				return false;
 			}
-			return _status.currentPhase == player && event.player.isIn() && event.player.countCards("hej") > 0 && event.player != player && !player.hasSkill("zhidao2");
+			return player.isPhaseUsing() && event.player.isIn() && event.player.countCards("hej") > 0 && event.player != player && !player.hasSkill("zhidao2");
 		},
 		forced: true,
 		content() {
@@ -36354,8 +36354,11 @@ const skills = {
 	},
 	qirang: {
 		audio: 2,
-		trigger: { player: "equipEnd" },
+		trigger: { player: "useCardAfter" },
 		frequent: true,
+		filter(event, player) {
+          return get.type(event.card) == "equip";
+        },
 		content() {
 			var card = get.cardPile(function (card) {
 				return get.type(card, "trick") == "trick";
