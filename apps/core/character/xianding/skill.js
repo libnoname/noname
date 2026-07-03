@@ -1498,7 +1498,7 @@ const skills = {
 						if (!info.player?.isIn() || info.phaseUse == trigger) {
 							newStorage.push(info);
 						}
-						if (!info.equip?.length && !info.skill?.length) {
+						if (!info.equip?.length && info.skill?.length) {
 							continue;
 						}
 						if (info.equip?.length) {
@@ -5348,9 +5348,6 @@ const skills = {
 			},
 		},
 		isXunshi(card) {
-			if (get.position(card) !== "h") {
-				return false;
-			}
 			var info = lib.card[card.name];
 			if (!info || (info.type != "trick" && info.type != "delay")) {
 				return false;
@@ -38532,7 +38529,7 @@ const skills = {
 	// 环怀瑾
 	dclianyou: {
 		trigger: {
-			player: "damageEnd",
+			player: ["damageEnd", "phaseBegin"],
 		},
 		filter(event, player) {
 			return !(player.getStorage("dclianyou").includes("recover") && player.getStorage("dclianyou").includes("equip") && player.getStorage("dclianyou").includes("draw"));
@@ -38541,15 +38538,15 @@ const skills = {
 			const choiceList = [];
 			const name = "dclianyou";
 			if (!player.getStorage(name).includes("recover")) {
-				if (game.hasPlayer(current => current.isMinHp() && current.isDamaged())) {
-					choiceList.push(["recover", "令一名体力值最小的角色回复2点体力"]);
+				if (game.hasPlayer(current => current.isDamaged())) {
+					choiceList.push(["recover", "令一名角色回复2点体力"]);
 				}
 			}
 			if (!player.getStorage(name).includes("equip")) {
-				choiceList.push(["equip", "令一名装备区牌最少的角色随机使用两张装备牌"]);
+				choiceList.push(["equip", "令一名角色随机使用两张装备牌"]);
 			}
 			if (!player.getStorage(name).includes("draw")) {
-				choiceList.push(["draw", "摸三张牌并可以交给一名手牌最少的其他角色三张牌"]);
+				choiceList.push(["draw", "摸三张牌并可以交给一名其他角色三张牌"]);
 			}
 			if (choiceList.length) {
 				const result = await player
@@ -38560,9 +38557,6 @@ const skills = {
 							if (button.link === "recover") {
 								let max = 0;
 								for (const current of game.filterPlayer()) {
-									if (!current.isMinHp()) {
-										continue;
-									}
 									const num = Math.min(current.getDamagedHp(), 2) * get.recoverEffect(current, player, player);
 									if (num > max) {
 										max = num;
@@ -38573,25 +38567,10 @@ const skills = {
 							if (button.link === "draw") {
 								return 3.95 + 0.1 * Math.random();
 							}
-							let min = Infinity;
-							let target;
-							for (const current of game.filterPlayer()) {
-								if (target === true) {
-									continue;
-								}
-								const num = current.countCards("e");
-								if (num <= min) {
-									min = num;
-									if (get.attitude(player, current) > 0) {
-										target = true;
-									} else {
-										target = false;
-									}
-								}
-							}
-							if (target === true) {
+							if (button.link === "equip") {
 								return 4;
 							}
+							return 0;
 						},
 					})
 					.set("choiceList", choiceList)
@@ -38607,9 +38586,9 @@ const skills = {
 			if (choice === "recover") {
 				const result = await player
 					.chooseTarget({
-						prompt: "令一名体力值最小的角色回复2点体力",
+						prompt: "令一名角色回复2点体力",
 						filterTarget(card, player, target) {
-							return target.isMinHp() && target.isDamaged();
+							return target.isDamaged();
 						},
 						forced: true,
 						ai(target) {
@@ -38624,16 +38603,11 @@ const skills = {
 				const result = await player
 					.chooseTarget({
 						prompt: "选择一名角色，随机使用两张装备牌",
-						filterTarget(card, player, target) {
-							const num = get.event().min;
-							return target.countCards("e") === num;
-						},
 						forced: true,
 						ai(target) {
 							return get.attitude(get.player(), target);
 						},
 					})
-					.set("min", Math.min(...game.filterPlayer().map(current => current.countCards("e"))))
 					.forResult();
 				if (result?.targets?.length) {
 					const target = result.targets[0];
@@ -38651,9 +38625,9 @@ const skills = {
 				const result = await player
 					.chooseCardTarget({
 						filterTarget(card, player, target) {
-							return lib.filter.notMe && target.isMinHandcard();
+							return lib.filter.notMe;
 						},
-						prompt: "是否交给手牌最少的角色三张牌？",
+						prompt: "是否交给一名其他角色三张牌？",
 						selectCard: 3,
 						position: "he",
 						ai1(card) {
@@ -38709,7 +38683,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const target = event.targets[0];
 			player.addSkill("dccili_mark");
-			player.setStorage("dccili_mark", [target, target.getHp()], true);
+			player.setStorage("dccili_mark", [target, target.getHp(), 0], true);
 			player
 				.when({ global: "phaseEnd" })
 				.filter((event2, player2) => {
@@ -38718,15 +38692,15 @@ const skills = {
 				.then(async (event, trigger, player2) => {
 					const record = player.getStorage("dccili_mark");
 					player.removeSkill("dccili_mark");
-					if (!record || record[0] != target) {
+					if (!record || record[0] !== target) {
 						return;
 					}
-					const num = player2.countHistory("useCard");
+					const num = record[2];
 					if (record[1] > 0) {
 						if (num < record[1]) {
 							const result = await player
 								.chooseTarget({
-									prompt: `令一名角色随机弃置${record[1]}张牌`,
+									prompt: `令一名角色弃置${record[1]}张牌`,
 									filterTarget(card, player, target) {
 										return target.hasCards("he");
 									},
@@ -38736,7 +38710,11 @@ const skills = {
 								})
 								.forResult();
 							if (result.bool) {
-								await result.targets[0].randomDiscard(record[1]);
+								await result.targets[0].chooseToDiscard({
+									forced: true,
+									selectCard: record[1],
+									position: "he",
+								});
 							}
 						} else {
 							const result = await player
@@ -38770,8 +38748,19 @@ const skills = {
 						}
 						const name = storage[0];
 						const num = storage[1];
-						return `${get.translation(name)}啊，你当时是${num}点体力值<br>下回合用不到${num}张牌，有人要被打皮鼓哟`;
+						const times = storage[2];
+						return `${get.translation(name)}啊，你当时是${num}点体力值<br>你已经用了${times}张牌<br>到下回合结束用不到${num}张牌，有人要被打皮鼓哟`;
 					},
+				},
+				direct: true,
+				firstDo: true,
+				trigger: { global: "useCard" },
+				filter(event, player) {
+					return event.player === player.getStorage("dccili_mark")[0];
+				},
+				async content(event, trigger, player) {
+					const data = player.getStorage("dccili_mark");
+					player.setStorage("dccili_mark", [data[0], data[1], data[2] + 1]);
 				},
 			},
 		},
@@ -42987,7 +42976,7 @@ const skills = {
 						return target.isFriendOf(player) && target.countDiscardableCards(player, "hej") > 0;
 					}, get.prompt2(event.skill))
 					.set("ai", function (target) {
-						let min = 6;
+						let min = 10;
 						if (
 							target.hasCard(card => {
 								const val = get.value(card, target);
@@ -43044,10 +43033,7 @@ const skills = {
 								}
 								values[color] += Math.max(0, get.value(card));
 							});
-							if (Math.max(...Object.values(values)) > 8) {
-								return true;
-							}
-							return current.hasCards("h");
+							return Math.max(...Object.values(values)) > 8;
 						})
 					)
 					.forResult();
@@ -43057,14 +43043,14 @@ const skills = {
 						return get.distance(player, target) <= 1 && target.countDiscardableCards(player, "hej") > 0;
 					}, get.prompt2(event.skill))
 					.set("ai", function (target) {
-						let min = 6;
+						let min = 10;
 						const player = get.event().player,
 							att = get.attitude(player, target);
 						if (att === 0) {
 							min = 0;
 						}
 						if (
-							target.hasCards("e", card => {
+							target.hasCard(card => {
 								const val = get.value(card, target);
 								if (att < 0) {
 									if (val > 0) {
@@ -43078,12 +43064,12 @@ const skills = {
 								if (val < min) {
 									min = val;
 								}
-							})
+							}, "e")
 						) {
 							return 12;
 						}
 						if (
-							target.hasCards("j", card => {
+							target.hasCard(card => {
 								const eff = get.effect(
 									target,
 									{
@@ -43105,7 +43091,7 @@ const skills = {
 								if (eff < min) {
 									min = eff;
 								}
-							})
+							}, "j")
 						) {
 							return 14;
 						}
@@ -43122,21 +43108,18 @@ const skills = {
 									}
 									values[color] += Math.max(0, get.value(card));
 								});
-								if (Math.max(...Object.values(values)) > 8) {
-									return true;
-								}
-								return current.hasCards("h");
+								return Math.max(...Object.values(values)) > 8;
 							})
 						) {
 							return 0;
 						}
 						if (att <= 0) {
-							return 7 - min + (1 / (1 + target.countCards("hej"))) * att;
+							return 7 - min + 1 / (1 + target.countCards("h"));
 						}
 						if (min > 6 && target.countCards("h")) {
 							min = 6;
 						}
-						return 7 - min - (1 / (1 + target.countCards("hej"))) * att;
+						return 7 - min - 1 / (1 + target.countCards("h"));
 					})
 					.forResult();
 			}
@@ -43261,9 +43244,10 @@ const skills = {
 				for (let i in map) {
 					let source = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
 					if (map2[i]) {
-						player.line(source);
 						await player.gain(map2[i], source, "bySelf", "give");
 					}
+					player.line(source);
+					game.log(player, "展示了", source, "的", map[i]);
 				}
 			} else {
 				let dialog = ["请选择要弃置的牌"];
