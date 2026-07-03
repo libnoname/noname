@@ -17,6 +17,9 @@ const skills = {
 			if (event.targets?.length !== 1 || !event.isFirstTarget) {
 				return false;
 			}
+			if (!["basic", "trick"].includes(get.type(event.card))) {
+				return false;
+			}
 			const target = name === "useCardToTargeted" ? event.player : event.targets[0];
 			if (!player.canCompare(target) || target == player) {
 				return false;
@@ -111,7 +114,7 @@ const skills = {
 					const winCount = targets.filter(t => t === winner).length;
 					if (winCount > 0) {
 						player.logSkill("zhanshi", null, null, null, [get.rand(3, 4)]);
-						await player.draw(winCount * 2);
+						await player.draw(winCount * 3);
 					}
 				},
 			},

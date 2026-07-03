@@ -36,7 +36,7 @@ const skills = {
 	},
 	potbiqian: {
 		audio: 2,
-		trigger: { global: "damageBegin4" },
+		trigger: { global: "damageBegin3" },
 		filter(event, player) {
 			if (!event.card || event.card.name != "sha") {
 				return false;
@@ -75,7 +75,7 @@ const skills = {
 			const target = event.targets[0];
 			const num = target.countCards("h") - target.getHp();
 			if (target.hasDiscardableCards(target, "h")) {
-				const { cards } = await target.chooseToDiscard({ forced: true, position: "h", num: num }).forResult();
+				const { cards } = await target.chooseToDiscard({ forced: true, position: "h", selectCard: num }).forResult();
 				if (cards?.length >= num) {
 					trigger.num--;
 				}
@@ -414,11 +414,11 @@ const skills = {
 				},
 				logTarget: "player",
 				async content(event, trigger, player) {
-					const suit = get.suit(trigger.card),
+					const color = get.color(trigger.card),
 						{ targets: [target] } = event,
 						card = target.getExpansions("potsifeng")[0];
 					await target.loseToDiscardpile({ cards: [card] });
-					if (suit != get.suit(card) && target.countDiscardableCards(target, "h")) {
+					if (color != get.color(card) && target.hasDiscardableCards(target, "h")) {
 						await target.chooseToDiscard({ forced: true, position: "h" });
 					}
 				},
