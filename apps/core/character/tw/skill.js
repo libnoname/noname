@@ -7068,7 +7068,7 @@ const skills = {
 		group: "twguose_effect",
 		subSkill: {
 			effect: {
-				audio: "huanguose",
+				audio: "twguose",
 				trigger: { global: "judgeEnd" },
 				filter(event, player) {
 					return event.card?.name === "lebu" && !event.result?.bool;
