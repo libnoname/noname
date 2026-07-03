@@ -10868,57 +10868,54 @@ export class Library {
 		 */
 		none: () => false,
 		/**
-		 * Check if the card does not count toward the player's hand limit
-		 *
 		 * 检测此牌是否不计入此角色的手牌上限
-		 * @param { Card } card
-		 * @param { Player } player
+		 *
+		 * @param { Card } card - 需要判断的牌
+		 * @param { Player } player - 拥有此牌的玩家
 		 * @returns { boolean }
 		 */
-		ignoredHandcard: (card, player) => game.checkMod(card, player, false, "ignoredHandcard", player),
+		ignoredHandcard: (card, player) => Boolean(game.checkMod(card, player, false, "ignoredHandcard", player)),
 		/**
-		 * Check if the card is giftable
-		 *
 		 * 检测此牌是否可赠予
-		 * @param { Card } card
-		 * @param { Player } player
-		 * @param { Player } target
-		 * @param { boolean } [strict]
+		 *
+		 * @param { Card } card - 需要判断的牌
+		 * @param { Player } player - 发起赠与的玩家
+		 * @param { Player } target - 被赠与的对象
+		 * @param { boolean } [strict] - 是否执行合法性校验
+		 * @returns { boolean }
 		 */
-		cardGiftable: (card, player, target, strict) => {
+		cardGiftable(card, player, target, strict) {
 			const mod = game.checkMod(card, player, target, "unchanged", "cardGiftable", player);
-			if (!mod || (strict && ((mod == "unchanged" && (get.position(card) != "h" || !get.cardtag(card, "gifts"))) || player == target))) {
+			if (!mod || (strict && ((mod === "unchanged" && (get.position(card) !== "h" || !get.cardtag(card, "gifts"))) || player === target))) {
 				return false;
 			}
-			return get.type(card, null, target) != "equip" || target.canEquip(card, true);
+			return get.type(card, null, target) !== "equip" || target.canEquip(card, true);
 		},
 		/**
-		 * Check if the card is recastable
-		 *
 		 * 检查此牌是否可重铸
-		 * @param { Card } card
-		 * @param { Player } player
-		 * @param { Player } [source]
-		 * @param { boolean } [strict]
+		 *
+		 * @param { Card } card - 需要判断的牌
+		 * @param { Player } [player] - 拥有牌的角色
+		 * @param { Player } [source] - 执行重铸的玩家
+		 * @param { boolean } [strict] - 是否执行合法性校验
 		 */
-		cardRecastable: (card, player = get.owner(card), source, strict) => {
-			if (!player) {
-				if (player === null) {
-					console.trace(`cardRecastable的player参数不应传入null,可以用void 0或undefined占位`);
-				}
-				player = get.owner(card);
+		cardRecastable(card, player, source, strict) {
+			player ??= get.owner(card);
+			if (player == null) {
+				throw new ReferenceError("尝试检查一张无拥有者牌是否可以重铸");
 			}
+			source ??= player;
 			const mod = game.checkMod(card, player, source, "unchanged", "cardRecastable", player);
 			if (!mod) {
 				return false;
 			}
-			if (strict && mod == "unchanged") {
-				if (get.position(card) != "h") {
+			if (strict && mod === "unchanged") {
+				if (get.position(card) !== "h") {
 					return false;
 				}
-				const info = get.info(card),
-					recastable = info.recastable || info.chongzhu;
-				return Boolean(typeof recastable == "function" ? recastable(_status.event, player) : recastable);
+				const info = get.info(card);
+				const recastable = info.recastable || info.chongzhu;
+				return Boolean(typeof recastable === "function" ? recastable(_status.event, player) : recastable);
 			}
 			return true;
 		},
@@ -10942,21 +10939,30 @@ export class Library {
 		filterButton: function (button) {
 			return true;
 		},
-		cardSavable: function (card, player, target) {
-			if (get.itemtype(card) == "card") {
-				var mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
-				if (mod2 != "unchanged") {
-					return mod2;
+		/**
+		 * 检测此牌是否可用于救助目标
+		 *
+		 * @param { Card | VCard | CardBaseUIData  } card - 需要判断的牌
+		 * @param { Player } player - 使用此牌的玩家
+		 * @param { Player } target - 被救助的目标
+		 * @returns { boolean }
+		 */
+		cardSavable(card, player, target) {
+			if (get.itemtype(card) === "card") {
+				// @ts-expect-error 我们需要ts
+				const mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
+				if (mod2 !== "unchanged") {
+					return Boolean(mod2);
 				}
 			}
-			card = get.autoViewAs(card);
-			var mod = game.checkMod(card, player, target, "unchanged", "cardSavable", player);
-			if (mod != "unchanged") {
-				return mod;
+			const card2 = get.autoViewAs(card);
+			let mod = game.checkMod(card2, player, target, "unchanged", "cardSavable", player);
+			if (mod !== "unchanged") {
+				return Boolean(mod);
 			}
-			var savable = get.info(card).savable;
-			if (typeof savable == "function") {
-				savable = savable(card, player, target);
+			let savable = get.info(card2).savable;
+			if (typeof savable === "function") {
+				savable = savable(card2, player, target);
 			}
 			return savable;
 		},
@@ -11237,74 +11243,91 @@ export class Library {
 			}
 			return true;
 		},
-		cardEnabled: function (card, player, event) {
-			if (player == undefined) {
-				player = _status.event.player;
-			}
+		/**
+		 * 判断一张牌对某角色在指定事件中是否可用。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 需要判断的牌
+		 * @param { Player } [player] - 使用/发动此牌的角色。
+		 * @param { GameEvent | "forceEnable" } [event] - 当前事件上下文；传`"forceEnable"`时强制跳过牌自身 enable 判断。
+		 * @returns { boolean }
+		 */
+		cardEnabled(card, player, event) {
+			player ??= get.player();
 			if (!player) {
 				return false;
 			}
-			if (get.itemtype(card) == "card") {
-				var mod2 = game.checkMod(card, player, event, "unchanged", "cardEnabled2", player);
-				if (mod2 != "unchanged") {
-					return mod2;
+			if (get.itemtype(card) === "card") {
+				// @ts-expect-error 我们需要ts
+				const mod2 = game.checkMod(card, player, event, "unchanged", "cardEnabled2", player);
+				if (mod2 !== "unchanged") {
+					return Boolean(mod2);
 				}
 			}
-			card = get.autoViewAs(card);
+			const card2 = get.autoViewAs(card);
 			if (event === "forceEnable") {
-				var mod = game.checkMod(card, player, event, "unchanged", "cardEnabled", player);
+				// @ts-expect-error 我们需要ts
+				const mod = game.checkMod(card, player, event, "unchanged", "cardEnabled", player);
 				if (mod != "unchanged") {
-					return mod;
+					return Boolean(mod);
 				}
 				return true;
 			} else {
-				var filter = get.info(card).enable;
+				const filter = get.info(card).enable;
 				if (!filter) {
-					return;
+					return false;
 				}
-				var mod = game.checkMod(card, player, event, "unchanged", "cardEnabled", player);
-				if (mod != "unchanged") {
-					return mod;
+				// @ts-expect-error 我们需要ts
+				const mod = game.checkMod(card, player, event, "unchanged", "cardEnabled", player);
+				if (mod !== "unchanged") {
+					return Boolean(mod);
 				}
-				if (typeof filter == "boolean") {
+				if (typeof filter === "boolean") {
 					return filter;
 				}
-				if (typeof filter == "function") {
+				if (typeof filter === "function") {
 					return filter(card, player, event);
 				}
 			}
+			return false;
 		},
-		cardRespondable: function (card, player, event) {
-			event = event || _status.event;
-			if (event.name != "chooseToRespond") {
+		/**
+		 * 判断一张牌对某角色在指定事件中是否可以打出。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card 
+		 * @param { Player } [player]
+		 * @param { GameEvent } [event]
+		 * @returns { boolean }
+		 */
+		cardRespondable(card, player, event) {
+			event ??= _status.event;
+			if (event.name !== "chooseToRespond") {
 				return true;
 			}
-			if (player == undefined) {
-				player = _status.event.player;
-			}
+			player ??= get.player();
 			if (!player) {
 				return false;
 			}
-			var source = event.getParent().player;
-			if (source && source != player) {
+			const source = event.getParent()?.player;
+			if (source && source !== player) {
 				if (source.hasSkillTag("norespond", false, [card, player, event], true)) {
 					return false;
 				}
 			}
-			if (get.itemtype(card) == "card") {
-				var mod2 = game.checkMod(card, player, event, "unchanged", "cardEnabled2", player);
-				if (mod2 != "unchanged") {
-					return mod2;
+			if (get.itemtype(card) === "card") {
+				// @ts-expect-error 我们需要ts
+				const mod2 = game.checkMod(card, player, event, "unchanged", "cardEnabled2", player);
+				if (mod2 !== "unchanged") {
+					return Boolean(mod2);
 				}
 			}
-			card = get.autoViewAs(card);
-			var mod = game.checkMod(card, player, "unchanged", "cardRespondable", player);
-			if (mod != "unchanged") {
-				return mod;
+			const card2 = get.autoViewAs(card);
+			const mod = game.checkMod(card2, player, "unchanged", "cardRespondable", player);
+			if (mod !== "unchanged") {
+				return Boolean(mod);
 			}
 			return true;
 		},
-		cardUsable2: function (card, player, event) {
+		cardUsable2(card, player, event) {
 			card = get.autoViewAs(card);
 			var info = get.info(card);
 			if (info.updateUsable == "phaseUse") {
