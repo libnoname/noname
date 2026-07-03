@@ -1498,7 +1498,7 @@ const skills = {
 						if (!info.player?.isIn() || info.phaseUse == trigger) {
 							newStorage.push(info);
 						}
-						if (!info.equip?.length && info.skill?.length) {
+						if (!info.equip?.length && !info.skill?.length) {
 							continue;
 						}
 						if (info.equip?.length) {
@@ -42984,7 +42984,7 @@ const skills = {
 						return target.isFriendOf(player) && target.countDiscardableCards(player, "hej") > 0;
 					}, get.prompt2(event.skill))
 					.set("ai", function (target) {
-						let min = 10;
+						let min = 6;
 						if (
 							target.hasCard(card => {
 								const val = get.value(card, target);
@@ -43041,7 +43041,10 @@ const skills = {
 								}
 								values[color] += Math.max(0, get.value(card));
 							});
-							return Math.max(...Object.values(values)) > 8;
+							if (Math.max(...Object.values(values)) > 8) {
+								return true;
+							}
+							return current.hasCards("h");
 						})
 					)
 					.forResult();
@@ -43051,14 +43054,14 @@ const skills = {
 						return get.distance(player, target) <= 1 && target.countDiscardableCards(player, "hej") > 0;
 					}, get.prompt2(event.skill))
 					.set("ai", function (target) {
-						let min = 10;
+						let min = 6;
 						const player = get.event().player,
 							att = get.attitude(player, target);
 						if (att === 0) {
 							min = 0;
 						}
 						if (
-							target.hasCard(card => {
+							target.hasCards("e", card => {
 								const val = get.value(card, target);
 								if (att < 0) {
 									if (val > 0) {
@@ -43072,12 +43075,12 @@ const skills = {
 								if (val < min) {
 									min = val;
 								}
-							}, "e")
+							})
 						) {
 							return 12;
 						}
 						if (
-							target.hasCard(card => {
+							target.hasCards("j", card => {
 								const eff = get.effect(
 									target,
 									{
@@ -43099,7 +43102,7 @@ const skills = {
 								if (eff < min) {
 									min = eff;
 								}
-							}, "j")
+							})
 						) {
 							return 14;
 						}
@@ -43116,18 +43119,21 @@ const skills = {
 									}
 									values[color] += Math.max(0, get.value(card));
 								});
-								return Math.max(...Object.values(values)) > 8;
+								if (Math.max(...Object.values(values)) > 8) {
+									return true;
+								}
+								return current.hasCards("h");
 							})
 						) {
 							return 0;
 						}
 						if (att <= 0) {
-							return 7 - min + 1 / (1 + target.countCards("h"));
+							return 7 - min + (1 / (1 + target.countCards("hej"))) * att;
 						}
 						if (min > 6 && target.countCards("h")) {
 							min = 6;
 						}
-						return 7 - min - 1 / (1 + target.countCards("h"));
+						return 7 - min - (1 / (1 + target.countCards("hej"))) * att;
 					})
 					.forResult();
 			}
@@ -43252,10 +43258,9 @@ const skills = {
 				for (let i in map) {
 					let source = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
 					if (map2[i]) {
+						player.line(source);
 						await player.gain(map2[i], source, "bySelf", "give");
 					}
-					player.line(source);
-					game.log(player, "展示了", source, "的", map[i]);
 				}
 			} else {
 				let dialog = ["请选择要弃置的牌"];
