@@ -11,6 +11,9 @@ const skills = {
 			return game.countPlayer(current => get.info("olanxu").filterTarget(null, player, current)) > 1;
 		},
 		filterTarget(card, player, target) {
+			if(player == target) {
+				return target.hasGainableCards(player, "e");
+			}
 			return target.hasGainableCards(player, "he");
 		},
 		selectTarget: 2,
@@ -18,7 +21,9 @@ const skills = {
 		multitarget: true,
 		async content(event, trigger, player) {
 			const { targets } = event;
-			await player.gainMultiple(targets, "he");
+			for(const target of targets.sortBySeat()) {
+				await player.gainPlayerCard({ target, position: player == target ? "e" : "he", forced: true });
+			}
 			if (targets[0].countCards("h") === targets[1].countCards("h")) {
 				return;
 			}
