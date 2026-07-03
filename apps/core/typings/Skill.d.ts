@@ -63,7 +63,7 @@ declare interface Mod {
 	/**
 	 * 卡牌能否主动弃置
 	 */
-	cardDiscardable?(card: Card, player: Player, eventName: string, result: boolean | "unchanged"): boolean | "unchanged" | void;
+	cardDiscardable?(card: Card, player: Player, eventName: string | undefined, result: boolean | "unchanged"): boolean | "unchanged" | void;
 	/**
 	 * 卡牌是否可用(卡牌能否被选择)
 	 * 比cardEnabled2更弱一些
@@ -89,11 +89,11 @@ declare interface Mod {
 	 * 
 	 * 要与cardEnabled一起使用（目前看来两个效果一致）
 	 * 
-	 * @param card  牌
-	 * @param player  玩家
-	 * @param num 使用次数
+	 * @param card - 牌
+	 * @param player - 玩家
+	 * @param num - 使用次数
 	 */
-	cardUsable?(card: Card, player: Player, num: number): boolean | number | void;
+	cardUsable?(card: Card | VCard, player: Player, num: number): boolean | number | void;
 	/**
 	 * 卡牌是否可以响应
 	 * 
@@ -161,7 +161,7 @@ declare interface Mod {
 	/**
 	 * 选择的目标范围,直接对range进行修改即可，无需返回值。
 	 */
-	selectTarget?(card: Card, player: Player, range: Select): void;
+	selectTarget?(card: Card | VCard | CardBaseUIData, player: Player, range: Select): void;
 	/**
 	* 【表示能否成为你的目标，返回true表示必须是你的目标，false不能成为你的目标】
 	* @param card
@@ -192,12 +192,12 @@ declare interface Mod {
 	 */
 	ignoredHandcard?(card: Card, player: Player, current: boolean): boolean | void;
 	/** 表示自己牌能否被别人弃置 */
-	canBeDiscarded?(card: Card, player: Player, target: Player, eventName: string, result: boolean): boolean | void;
+	canBeDiscarded?(card: Card | VCard, player: Player, target: Player, eventName: string | undefined, result: boolean | "unchanged"): boolean | "unchanged" | void;
 	/** 
 	 * 自己的牌能否被别人获得
 	 * 装备区的牌能否被移动到其他角色装备区内
 	 */
-	canBeGained?(card: Card, player: Player, target: Player, eventName: string, reslut: boolean): boolean | void;
+	canBeGained?(card: Card, player: Player, target: Player, eventName: string | undefined, reslut: boolean | "unchanged"): boolean | "unchanged" | void;
 	/**往往用于装备牌，能否被顶替 */
 	canBeReplaced?(card: Card, player: Player, current: boolean): boolean | void;
 	/**
@@ -229,7 +229,7 @@ declare interface Mod {
 	/** 改变最终花色	用于get.suit*/
 	cardsuit?(card: Card, player: Player, suit: string): string | void;
 	/** 对特定角色使用牌的次数限制（用于优化【对特定角色使用牌无次数限制】的机制）【v1.9.105】 */
-	cardUsableTarget?(card: Card, player: Player, target: Player, result: boolean): boolean | void;
+	cardUsableTarget?(card: Card | VCard, player: Player, target: Player, result: boolean): boolean | void;
 
 	/** 用于get.value，对最后得返回value结果做处理 */
 	aiValue?(player: Player, card: Card, num: number): number | void;

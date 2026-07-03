@@ -11327,176 +11327,215 @@ export class Library {
 			}
 			return true;
 		},
+		/**
+		 * 判断一张牌对某角色在指定事件中是否仍有使用次数。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 需要判断的牌
+		 * @param { Player } [player] - 使用/发动此牌的角色。
+		 * @param { GameEvent } [event] - 当前事件上下文。
+		 * @returns { boolean }
+		 */
 		cardUsable2(card, player, event) {
-			card = get.autoViewAs(card);
-			var info = get.info(card);
-			if (info.updateUsable == "phaseUse") {
-				event = event || _status.event;
-				if (event.type == "chooseToUse_button") {
+			const card2 = get.autoViewAs(card);
+			const info = get.info(card2);
+			if (info.updateUsable === "phaseUse") {
+				event ??= _status.event;
+				if (event.type === "chooseToUse_button") {
 					event = event.getParent();
+					if (event == null) {
+						return false;
+					}
 				}
-				if (player != _status.event.player) {
+				if (player !== get.player()) {
 					return true;
 				}
-				if (event.getParent().name != "phaseUse") {
+				const phaseUseEvent = event.getParent();
+				if (phaseUseEvent == null) {
+					return false;
+				}
+				if (phaseUseEvent.name !== "phaseUse") {
 					return true;
 				}
-				if (event.getParent().player != player) {
+				if (phaseUseEvent.player !== player) {
 					return true;
 				}
 			}
-			var num = info.usable;
-			if (typeof num == "function") {
-				num = num(card, player);
+			player ??= get.player();
+			if (!player) {
+				return false;
 			}
-			num = game.checkMod(card, player, num, "cardUsable", player);
-			if (typeof num != "number") {
+			let num = info.usable;
+			if (typeof num === "function") {
+				num = num(card2, player);
+			}
+			num = game.checkMod(card2, player, num, "cardUsable", player);
+			if (typeof num !== "number") {
 				return true;
-			} else {
-				return player.countUsed(card) < num;
 			}
+			return player.countUsed(card2) < num;
 		},
+		/**
+		 * 判断一张牌对某角色在指定事件中是否可使用。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 需要判断的牌
+		 * @param { Player } player - 使用/发动此牌的角色。
+		 * @param { GameEvent } [event] - 当前事件上下文。
+		 * @returns { boolean }
+		 */
 		cardUsable(card, player, event) {
-			card = get.autoViewAs(card);
-			var info = get.info(card);
-			event = event || _status.event;
-			if (event.type == "chooseToUse_button") {
+			const card2 = get.autoViewAs(card);
+			const info = get.info(card2);
+			event ??= _status.event;
+			if (event.type === "chooseToUse_button") {
 				event = event.getParent();
+				if (event == null) {
+					return false;
+				}
 			}
-			if (player != event.player) {
+			if (player !== event.player) {
 				return true;
 			}
-			if (info.updateUsable == "phaseUse") {
-				if (event.getParent().name != "phaseUse") {
+			if (info.updateUsable === "phaseUse") {
+				const phaseUseEvent = event.getParent();
+				if (phaseUseEvent == null) {
+					return false;
+				}
+				if (phaseUseEvent.name !== "phaseUse") {
 					return true;
 				}
-				if (event.getParent().player != player) {
+				if (phaseUseEvent.player !== player) {
 					return true;
 				}
 			}
 			event.addCount_extra = true;
-			var num = info.usable;
-			if (typeof num == "function") {
-				num = num(card, player);
+			let num = info.usable;
+			if (typeof num === "function") {
+				num = num(card2, player);
 			}
-			num = game.checkMod(card, player, num, "cardUsable", player);
-			if (typeof num != "number") {
-				return typeof num == "boolean" ? num : true;
+			num = game.checkMod(card2, player, num, "cardUsable", player);
+			if (typeof num !== "number") {
+				return typeof num === "boolean" ? num : true;
 			}
-			if (player.countUsed(card) < num) {
+			if (player.countUsed(card2) < num) {
 				return true;
 			}
-			if (
-				game.hasPlayer2(function (current) {
-					return game.checkMod(card, player, current, false, "cardUsableTarget", player);
-				}, true)
-			) {
-				return true;
-			}
-			return false;
+			return game.hasPlayer2(current => Boolean(game.checkMod(card2, player, current, false, "cardUsableTarget", player)), true);
 		},
 		/**
 		 * player的card在event事件中能否被自己弃置
-		 * @param { Card } card 要被弃置的牌
-		 * @param { Player } player 执行弃牌的角色
-		 * @param { string } [event] 弃置牌事件的名称
+		 *
+		 * @param { Card } card - 需要判断的牌
+		 * @param { Player } player - 执行弃牌的角色
+		 * @param { string | GameEvent } [event] - 弃置牌事件或事件名称
 		 * @returns { boolean }
 		 */
-		cardDiscardable: function (card, player, event) {
-			event = event || _status.event;
-			if (typeof event != "string") {
-				event = event.getParent().name;
+		cardDiscardable(card, player, event) {
+			event ??= get.event();
+			if (event != null && typeof event !== "string") {
+				event = event.getParent()?.name;
 			}
-			var mod = game.checkMod(card, player, event, "unchanged", "cardDiscardable", player);
-			if (mod != "unchanged") {
-				return mod;
+			const mod = game.checkMod(card, player, event, "unchanged", "cardDiscardable", player);
+			if (mod !== "unchanged") {
+				return Boolean(mod);
 			}
 			return true;
 		},
 		/**
 		 * target的card在event事件中能否被player弃置
-		 * @param { Card } card 要被弃置的牌
-		 * @param { Player } player 执行弃牌的角色
-		 * @param { Player } target 被弃置牌的现持有者
-		 * @param { string } [event] 弃置牌事件的名称
+		 *
+		 * @param { Card } card - 需要判断的牌
+		 * @param { Player } player - 执行弃牌的角色
+		 * @param { Player } target - 被弃置牌的现持有者
+		 * @param { string | GameEvent } [event] - 弃置牌事件或事件名称
 		 * @returns { boolean }
 		 */
-		canBeDiscarded: function (card, player, target, event) {
-			event = event || _status.event;
-			if (typeof event != "string") {
-				event = event.getParent().name;
+		canBeDiscarded(card, player, target, event) {
+			event ??= _status.event;
+			if (typeof event !== "string") {
+				event = event.getParent()?.name;
 			}
-			if (player == target && !lib.filter.cardDiscardable(card, player, event)) {
+			if (player === target && !lib.filter.cardDiscardable(card, player, event)) {
 				return false;
 			}
-			var mod = game.checkMod(card, player, target, event, "unchanged", "canBeDiscarded", target);
-			if (mod != "unchanged") {
-				return mod;
+			const mod = game.checkMod(card, player, target, event, "unchanged", "canBeDiscarded", target);
+			if (mod !== "unchanged") {
+				return Boolean(mod);
 			}
 			return true;
 		},
 		/**
 		 * target的card在event事件中能否被player获得
-		 * @param { Card } card 要被获得的牌
-		 * @param { Player } player 获得牌的角色
-		 * @param { Player } target 被获得牌的现持有者
-		 * @param { string } [event] 获得牌事件的名称
+		 *
+		 * @param { Card } card - 需要判断的牌
+		 * @param { Player } player - 获得牌的角色
+		 * @param { Player } target - 被获得牌的现持有者
+		 * @param { string | GameEvent } [event] - 获得牌事件或事件名称
 		 * @returns { boolean }
 		 */
-		canBeGained: function (card, player, target, event) {
-			event = event || _status.event;
-			if (typeof event != "string") {
-				event = event.getParent().name;
+		canBeGained(card, player, target, event) {
+			event ??= _status.event;
+			if (typeof event !== "string") {
+				event = event.getParent()?.name;
 			}
-			var mod = game.checkMod(card, player, target, event, "unchanged", "canBeGained", target);
-			if (mod != "unchanged") {
-				return mod;
+			const mod = game.checkMod(card, player, target, event, "unchanged", "canBeGained", target);
+			if (mod !== "unchanged") {
+				return Boolean(mod);
 			}
 			return true;
 		},
-		cardAiIncluded: function (card) {
-			if (_status.event.isMine()) {
+		/**
+		 * 判断一张牌是否应包含在当前事件的AI选择中。
+		 *
+		 * @param { string } card - 需要判断的牌
+		 * @returns { boolean }
+		 */
+		cardAiIncluded(card) {
+			const event = get.event();
+			if (event.isMine()) {
 				return true;
 			}
-			return _status.event._aiexclude.includes(card) == false;
+			return event._aiexclude.includes(card) === false;
 		},
+		/**
+		 * 判断一张牌对某角色在指定事件中是否可被选择。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 需要判断的牌
+		 * @param { Player } [player] - 使用/发动此牌的角色。
+		 * @param { GameEvent } [event] - 当前事件上下文。
+		 * @returns { boolean }
+		 */
 		filterCard(card, player, event) {
-			var info = get.info(card);
-			//if(info.toself&&!lib.filter.targetEnabled(card,player,player)) return false;
-			if (player == undefined) {
-				player = _status.event.player;
-			}
+			const info = get.info(card);
+			player ??= get.player();
 			if (!lib.filter.cardEnabled(card, player, event) || !lib.filter.cardUsable(card, player, event)) {
 				return false;
 			}
 			if (info.notarget) {
 				return true;
 			}
-			var range;
-			var select = get.copy(info.selectTarget);
-			if (select == undefined) {
-				if (info.filterTarget == undefined) {
+			let range;
+			const select = get.copy(info.selectTarget);
+			if (select == null) {
+				if (info.filterTarget == null) {
 					return true;
 				}
 				range = [1, 1];
-			} else if (typeof select == "number") {
+			} else if (typeof select === "number") {
 				range = [select, select];
-			} else if (get.itemtype(select) == "select") {
+			} else if (get.itemtype(select) === "select") {
 				range = select;
-			} else if (typeof select == "function") {
+			} else if (typeof select === "function") {
 				range = select(card, player);
-				if (typeof range == "number") {
+				if (typeof range === "number") {
 					range = [range, range];
 				}
 			}
 			game.checkMod(card, player, range, "selectTarget", player);
-			if (!range || range[1] != -1) {
+			if (!range || range[1] !== -1) {
 				return true;
 			}
-			var filterTarget = event && event.filterTarget ? event.filterTarget : lib.filter.filterTarget;
-			return game.hasPlayer2(function (current) {
-				return filterTarget(card, player, current);
-			}, true);
+			const filterTarget = event?.filterTarget || lib.filter.filterTarget;
+			return game.hasPlayer2(current => filterTarget(card, player, current), true);
 		},
 		targetEnabledx(card, player, target) {
 			if (!card || !target || target.removed) {
