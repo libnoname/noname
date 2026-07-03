@@ -417,16 +417,17 @@ const skills = {
 						nature: links[0][3],
 						isCard: true,
 						suit: "none",
+						color: "none",
 						number: null,
 					},
 					log: false,
-					discard: false,
-					lose: false,
+					ignoreMod: true,
 					async precontent(event, trigger, player) {
 						player.logSkill("olqinling");
 						event.getParent().addCount = false;
 						const { cards } = event.result;
 						await player.modedDiscard(cards);
+						event.result.cards = [];
 						player
 							.when({ player: "useCardAfter" })
 							.filter(evt => evt.getParent() == event.getParent())
