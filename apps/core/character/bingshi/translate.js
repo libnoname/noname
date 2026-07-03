@@ -1,6 +1,12 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	pot_chengpu: "势程普",
+	pot_chengpu_prefix: "势",
+	potduzuo: "督佐",
+	potduzuo_info: "你不因此技能获得牌后，可令一名角色获得一张火【杀】。",
+	potbiqian: "蔽扦",
+	potbiqian_info: "一名角色受到【杀】的伤害时，你可令你或其将手牌弃至当前体力值，令此【杀】伤害-1。",
 	pot_xiahouba: "势夏侯霸",
 	pot_xiahouba_prefix: "势",
 	potlibing: "厉兵",
@@ -47,13 +53,6 @@ const translates = {
 	potnigu_info: "出牌阶段限一次，你可以弃置任意张花色不同的牌，令攻击范围内的角色同时选择是否交给你一张牌，然后你本回合造成的下X次伤害+1（X为选择不交给你牌的角色数）。",
 	potlulian: "戮连",
 	potlulian_info: `锁定技，你使用手牌结算后，若你没有此类别的手牌，且有目标角色：体力值小于等于你，横置此牌所有目标；装备区牌数小于等于你，你摸一张牌。${get.poptip("rule_chengshi")}：你对一名体力值不为最小的角色造成1点火焰伤害。`,
-	zhuji: "朱绩",
-	potjiezhu: "竭逐",
-	potjiezhu_info: "每回合限一次，你可将手牌弃置至最接近的唯一值，视为使用一张指定至多X名角色为目标，无距离限制的普通【杀】（X为弃置牌数）。此【杀】结算后，若此【杀】目标数为X且对所有目标造成伤害，你将手牌摸至最接近的唯一值。",
-	pothuanshi: "还施",
-	pothuanshi_info: `使命技，你每回合使用首张【杀】伤害+1；你于非濒死状态时无法使用但可重铸【酒】。成功：你造成或受到伤害后，若本次伤害值等于你体力值，你获得${get.poptip("potjianlv")}。`,
-	potjianlv: "兼虑",
-	potjianlv_info: "你一次性弃置至少X张牌时（X为本技能已触发次数+1），你可对一名其他角色造成1点伤害。若其因此死亡，你选择一项：1.重置此技能的X；2.对一名其他角色造成1点伤害。",
 	sp_zhonghui: "势钟会",
 	sp_zhonghui_prefix: "势",
 	mbsizi: "肆恣",
@@ -115,7 +114,7 @@ const translates = {
 	sunsháo: "势孙韶",
 	sunsháo_prefix: "势",
 	mbganjue: "敢决",
-	mbganjue_info: "出牌阶段限一次，你可以将一张装备区的牌当做不计入次数且无距离和次数限制的普通【杀】使用，若目标角色没有与此【杀】颜色相同的手牌，其不可响应此【杀】。",
+	mbganjue_info: "出牌阶段限一次，你可以将一张装备区的牌当做不计入次数且无距离和次数限制的普通【杀】使用，若目标角色没有与此【杀】花色相同的手牌，其不可响应此【杀】。",
 	mbzhuji: "筑墼",
 	mbzhuji_info: "出牌阶段结束时，你可弃置一种花色的所有手牌（至少一张），获得并使用牌堆中一张该花色的装备牌。若你弃置的牌数大于等于你弃牌时装备区的牌数，你选择一项：1.摸两张牌；2.回复1点体力；3.获得1点护甲。", //；
 	mb_xiahoushang: "势夏侯尚",

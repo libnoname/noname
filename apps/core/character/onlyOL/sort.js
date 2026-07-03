@@ -1,8 +1,8 @@
 const characterSort = {
 	extra_ol: ["shen_dianwei", "ol_zhangliao", "shen_caopi", "shen_zhenji", "shen_sunquan", "junk_zhangjiao"],
 	onlyOL_yijiang1: ["ol_zhangchunhua", "ol_lingtong", "ol_gaoshun", "ol_fazheng", "ol_wuguotai", "ol_caozhi", "ol_re_yujin"],
-	onlyOL_yijiang2: ["ol_liaohua", "ol_caozhang", "ol_chengpu", "ol_wangyi", "ol_liubiao", "ol_guanzhang", "ol_madai"],
-	onlyOL_yijiang3: ["ol_jianyong", "ol_guohuai", "ol_fuhuanghou", "ol_yufan", "ol_liru", "ol_caochong", "ol_guanping"],
+	onlyOL_yijiang2: ["ol_liaohua", "ol_caozhang", "ol_chengpu", "ol_wangyi", "ol_liubiao", "ol_guanzhang", "ol_madai", "ol_bulianshi"],
+	onlyOL_yijiang3: ["ol_jianyong", "ol_guohuai", "ol_fuhuanghou", "ol_yufan", "ol_liru", "ol_caochong", "ol_guanping", "ol_liufeng"],
 	onlyOL_yijiang4: ["ol_zhangsong", "ol_caifuren", "ol_sunluban"],
 	onlyOL_yijiang5: ["ol_xiahoushi", "ol_sunxiu", "ol_quancong"],
 	onlyOL_yijiang6: ["ol_guohuanghou"],

@@ -4,7 +4,10 @@ import { lib, game, ui, get, ai, _status } from "noname";
 const skills = {
 	//☆王朗
 	fuyu: {
-		audio: 2,
+		audio: 4,
+		logAudio(event, player, name) {
+			return name == "useCardToPlayered" ? 2 : ["fuyu3.mp3", "fuyu4.mp3"];
+		},
 		trigger: {
 			player: "useCardToPlayered",
 			target: "useCardToTargeted",
@@ -12,6 +15,9 @@ const skills = {
 		usable: 2,
 		filter(event, player, name) {
 			if (event.targets?.length !== 1 || !event.isFirstTarget) {
+				return false;
+			}
+			if (!["basic", "trick"].includes(get.type(event.card))) {
 				return false;
 			}
 			const target = name === "useCardToTargeted" ? event.player : event.targets[0];
@@ -36,7 +42,6 @@ const skills = {
 			} else {
 				game.log(trigger.card, "被无效了");
 				trigger.getParent().all_excluded = true;
-				trigger.getParent().targets.length = 0;
 			}
 			const playerResult = result.bool;
 			const lastResult = player.getStorage(event.name + "_last", void 0);
@@ -57,7 +62,8 @@ const skills = {
 		},
 	},
 	zhanshi: {
-		audio: 2,
+		audio: 4,
+		logAudio: index => (typeof index === "number" ? "zhanshi" + index + ".mp3" : 2),
 		trigger: { global: "chooseToCompareBegin" },
 		filter(event, player) {
 			return player.hasDiscardableCards(player, "he");
@@ -107,7 +113,8 @@ const skills = {
 					const winner = trigger.winner || trigger.result?.winner;
 					const winCount = targets.filter(t => t === winner).length;
 					if (winCount > 0) {
-						await player.draw(winCount * 2);
+						player.logSkill("zhanshi", null, null, null, [get.rand(3, 4)]);
+						await player.draw(winCount * 3);
 					}
 				},
 			},
@@ -5551,13 +5558,17 @@ const skills = {
 						if (!card.cards) {
 							return;
 						}
-						return card.cards.some(i => i.hasGaintag("cibei_mark"));
+						if (card.cards.some(i => i.hasGaintag("cibei_mark"))) {
+							return true;
+						}
 					},
 					cardUsable(card, player) {
 						if (!card.cards) {
 							return;
 						}
-						return card.cards.some(i => i.hasGaintag("cibei_mark"));
+						if (card.cards.some(i => i.hasGaintag("cibei_mark"))) {
+							return true;
+						}
 					},
 				},
 			},

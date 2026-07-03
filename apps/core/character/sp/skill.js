@@ -2756,7 +2756,7 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		filter(event, player) {
-			return player.getExpansions("olxiewei").length && game.hasPlayer(target => player.canCompare(target, true));
+			return player.getExpansions("olxiewei").length && game.hasPlayer(target => player.canCompare(target));
 		},
 		delay: false,
 		lose: false,
@@ -8376,7 +8376,7 @@ const skills = {
 			for (let i = 0; i < 2; i++) {
 				const next = [player, target][i].draw(...[i === 0 ? "nodelay" : "bottom"]);
 				const result = (await next.forResult()).cards;
-				if (Array.isArray(result)) {
+				if (get.itemtype(result) == "cards") {
 					gains.push([[player, target][i], result[0]]);
 				}
 			}
@@ -25346,16 +25346,15 @@ const skills = {
 			source: "damageSource",
 		},
 		usable: 1,
-		content() {
-			"step 0";
-			player.draw(2);
-			"step 1";
-			if (Array.isArray(result) && result.length > 1) {
-				var color = get.color(result[0], player);
-				for (var i = 1; i < result.length; i++) {
-					if (get.color(result[i], player) != color) {
-						if (player.countCards("h")) {
-							player.chooseToDiscard("h", true);
+		async content(event, trigger, player) {
+			const result = await player.draw(2).forResult();
+			if (get.itemtype(result?.cards) == "cards" && result.cards.length > 1) {
+				const { cards } = result;
+				const color = get.color(cards[0], player);
+				for (let i = 1; i < cards.length; i++) {
+					if (get.color(cards[i], player) != color) {
+						if (player.hasCards("h")) {
+							await player.chooseToDiscard("h", true);
 						}
 						break;
 					}
@@ -34650,7 +34649,7 @@ const skills = {
 			if (event._notrigger.includes(event.player)) {
 				return false;
 			}
-			return _status.currentPhase == player && event.player.isIn() && event.player.countCards("hej") > 0 && event.player != player && !player.hasSkill("zhidao2");
+			return player.isPhaseUsing() && event.player.isIn() && event.player.countCards("hej") > 0 && event.player != player && !player.hasSkill("zhidao2");
 		},
 		forced: true,
 		content() {
@@ -36355,8 +36354,11 @@ const skills = {
 	},
 	qirang: {
 		audio: 2,
-		trigger: { player: "equipEnd" },
+		trigger: { player: "useCardAfter" },
 		frequent: true,
+		filter(event, player) {
+          return get.type(event.card) == "equip";
+        },
 		content() {
 			var card = get.cardPile(function (card) {
 				return get.type(card, "trick") == "trick";
@@ -43404,13 +43406,18 @@ const skills = {
 		async cost(event, trigger, player) {
 			const { player: target } = trigger;
 			event.result = await player
-				.chooseToDiscard("he", get.prompt(event.name.slice(0, -5), target), "弃置一张牌，令其摸两张牌并进行一个额外的出牌阶段。")
-				.set("ai", card => {
-					const { player, targetx } = get.event();
-					if (get.attitude(player, targetx) < 1) {
-						return 0;
-					}
-					return 9 - get.value(card);
+				.chooseToDiscard({
+					prompt: get.prompt(event.skill, target),
+					prompt2: "弃置一张牌，令其摸两张牌并进行一个额外的出牌阶段",
+					position: "he",
+					ai(card) {
+						const { player, targetx } = get.event();
+						if (get.attitude(player, targetx) < 1) {
+							return 0;
+						}
+						return 9 - get.value(card);
+					},
+					chooseonly: true,
 				})
 				.set("targetx", target)
 				.forResult();
@@ -43418,6 +43425,8 @@ const skills = {
 		logTarget: "player",
 		async content(event, trigger, player) {
 			const { player: target } = trigger;
+			const { cards } = event;
+			await player.modedDiscard(cards);
 			player.line(target, "green");
 			await target.draw(2);
 			const evt = trigger.getParent("phase", true);
@@ -43564,7 +43573,7 @@ const skills = {
 			player: "damageBegin4",
 		},
 		filter(event, player) {
-			return get.itemtype(event.source) == "player";
+			return event.source && event.source.isIn() && event.source != player;
 		},
 		logTarget: "source",
 		content() {

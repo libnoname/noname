@@ -1142,7 +1142,12 @@ const skills = {
 				if (current.group === "shu") {
 					const next = current.chooseToRespond({
 						prompt: `是否替${get.translation(player)}打出一张杀？`,
-						card: get.autoViewAs({ name: "sha" }),
+						filterCard: function (card, player) {
+							if (get.name(card) !== "sha") {
+								return false;
+							}
+							return lib.filter.cardRespondable(card, player);
+						},
 						ai() {
 							const event = get.event();
 							return get.attitude(event.player, event.source) - 2;
@@ -2333,11 +2338,11 @@ const skills = {
 		},
 	},
 	new_jiangchi: {
-		audio: 2,
+		audio: "jiangchi",
 		trigger: {
 			player: "phaseDrawEnd",
 		},
-		logAudio: (event, player, name, indexedData, costResult) => (costResult.cost_data.control === "弃牌" ? "new_jiangchi1.mp3" : "new_jiangchi2.mp3"),
+		logAudio: (event, player, name, indexedData, costResult) => (costResult.cost_data.control === "弃牌" ? "jiangchi2.mp3" : "jiangchi1.mp3"),
 		async cost(event, trigger, player) {
 			const list = ["弃牌", "摸牌", "cancel2"];
 			if (!player.hasCards("he")) {

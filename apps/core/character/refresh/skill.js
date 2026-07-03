@@ -1661,7 +1661,7 @@ const skills = {
 		audio: "zhenwei",
 		inherit: "zhenwei",
 		filter(event, player) {
-			if (player == event.target) {
+			if (player == event.target || player == event.player) {
 				return false;
 			}
 			if (!player.countCards("he")) {
@@ -2518,7 +2518,7 @@ const skills = {
 							.set("res", get.damageEffect(target, player, target, "fire"))
 							.forResult();
 
-						if (!result.bool) {
+						if (!result?.bool) {
 							await target.damage(2, "fire");
 							num = 1;
 						} else {
@@ -3412,7 +3412,7 @@ const skills = {
 		audio: 2,
 		trigger: { player: "damageBegin2" },
 		filter(event, player) {
-			return event.source && event.source.isIn();
+			return event.source && event.source.isIn() && event.source != player;
 		},
 		logTarget: "source",
 		async content(event, trigger, player) {
@@ -5778,7 +5778,7 @@ const skills = {
 			var needRecover = false;
 			result = await target.draw("visible").forResult();
 
-			var card = result[0];
+			var card = result?.cards?.[0];
 			if (get.type(card) == "basic") {
 				player.draw();
 			}
@@ -5922,7 +5922,13 @@ const skills = {
 
 			while (current != player) {
 				if (current.group == "shu") {
-					var next = current.chooseToRespond("是否替" + get.translation(player) + "打出一张杀？", { name: "sha" });
+					var next = current.chooseToRespond("是否替" + get.translation(player) + "打出一张杀？");
+					next.set("filterCard", function (card, player) {
+                        if (get.name(card) !== "sha") {
+                            return false;
+                        }
+                        return lib.filter.cardRespondable(card, player);
+                    });
 					next.set("ai", function () {
 						var event = _status.event;
 						return get.attitude(event.player, event.source) - 2;
@@ -6367,7 +6373,7 @@ const skills = {
 			}
 			return (Math.max(4, 7.1 - num) - get.value(card)) / num;
 		},
-		filterCard: true,
+		filterCard: lib.filter.cardDiscardable,
 		position: "he",
 		async content(event, trigger, player) {
 			await player.draw();

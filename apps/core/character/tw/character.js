@@ -273,6 +273,12 @@ const characters = {
 		hp: 4,
 		skills: ["twjiezhan", "twlongjin"],
 	},
+	huan_daqiao: {
+		sex: "female",
+		group: "wu",
+		hp: 3,
+		skills: ["twguose", "twliuli"],
+	},
 	huan_simayi: {
 		sex: "male",
 		group: "wei",

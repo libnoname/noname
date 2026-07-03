@@ -1,6 +1,18 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	ol_liufeng: "OL界刘封",
+	ol_liufeng_prefix: "OL界",
+	olxiansi: "陷嗣",
+	olxiansi_info: "准备阶段，你可以将至多两名角色共计至多两张牌置于你的武将牌上，称为“逆”。其他角色可以移去两张“逆”视为对你使用一张【杀】。",
+	olqinling: "侵凌",
+	olqinling_info: "每回合限一次，你可以弃置一张牌，视为使用一张【杀】。若此【杀】造成了伤害，你摸一张牌，否则你将你弃置的牌置为“逆”。",
+	ol_bulianshi: "OL界步练师",
+	ol_bulianshi_prefix: "OL界",
+	olanxu: "安恤",
+	olanxu_info: "出牌阶段限一次，你可以获得两名角色各一张牌。然后你展示一张牌并交给其中手牌较少的角色，若不为黑桃，你摸一张牌。",
+	olzhuiyi: "追忆",
+	olzhuiyi_info: "限定技，结束阶段，你可令一名其他角色摸三张牌并回复1点体力。然后你死亡时，可以对其再次发动此技能。",
 	ol_quancong: "OL界全琮",
 	ol_quancong_prefix: "OL界",
 	olyaoming: "邀名",

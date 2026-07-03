@@ -1,4 +1,10 @@
 const characters = {
+	pot_chengpu: {
+		sex: "male",
+		group: "wu",
+		hp: 4,
+		skills: ["potduzuo", "potbiqian"],
+	},
 	pot_xiahouba: {
 		sex: "male",
 		group: "shu",
@@ -41,12 +47,6 @@ const characters = {
 		group: "wu",
 		hp: 4,
 		skills: ["potnigu", "potlulian"],
-	},
-	zhuji: {
-		sex: "male",
-		group: "wu",
-		hp: 4,
-		skills: ["potjiezhu", "pothuanshi"],
 	},
 	sp_zhonghui: {
 		sex: "male",

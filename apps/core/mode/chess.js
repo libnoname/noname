@@ -5130,7 +5130,9 @@ export default () => {
 							},
 						})
 						.forResult();
-
+					if(!result?.bool || !result.links?.length) {
+						return;
+					}
 					event.result = {
 						bool: result.bool,
 						cost_data: {
