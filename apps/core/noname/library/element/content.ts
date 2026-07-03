@@ -747,7 +747,15 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				player.disabledSlots[slot_key] ??= 0;
 				player.disabledSlots[slot_key] += lose;
 
-				const discardingCards = player.getCards("e", card => get.subtypes(card).includes(slot) && !event.cards.includes(card));
+				const discardingCards = player.getCards("e", card => {
+					if (event.cards.includes(card)) {
+						return false;
+					}
+					if (slot == "equip3_4") {
+						return get.subtypes(card).some(subtype => subtype == "equip3" || subtype == "equip4");
+					}
+					return get.subtypes(card).includes(slot);
+				});
 				if (discardingCards.length < 0) {
 					continue;
 				}
