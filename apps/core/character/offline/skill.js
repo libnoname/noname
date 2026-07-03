@@ -37,7 +37,7 @@ const skills = {
 	},
 	smqihua: {
 		audio: 2,
-		trigger: { global: "damageBegin3" },
+		trigger: { global: "damageBegin4" },
 		filter(event, player) {
 			if (!event.num || !event.player?.isIn()) {
 				return false;
@@ -913,6 +913,9 @@ const skills = {
 				}
 			}
 		},
+		onremove(player, skill) {
+			get.info(skill).removeVisitors(player.getStorage(skill), player);
+		},
 		addVisitors(characters, player) {
 			_status.characterlist.removeArray(characters);
 			game.log(player, "将", "#y" + get.translation(characters), "加入了", "#g“戎弁”");
@@ -945,9 +948,11 @@ const skills = {
 			player.unmarkAuto("perongbian", characters);
 			_status.characterlist.addArray(characters);
 			game.log(player, "移去了", "#y" + get.translation(characters));
-			const skills = lib.card["huashen_card_" + characters[0]].skills;
-			if (skills?.length) {
-				player.removeSkills(skills);
+			for(const character of characters) {
+			const skills = lib.card["huashen_card_" + character]?.skills;
+				if (skills?.length) {
+					player.removeSkills(skills);
+				}
 			}
 		},
 		intro: {
