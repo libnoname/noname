@@ -1498,7 +1498,7 @@ const skills = {
 						if (!info.player?.isIn() || info.phaseUse == trigger) {
 							newStorage.push(info);
 						}
-						if (!info.equip?.length && info.skill?.length) {
+						if (!info.equip?.length && !info.skill?.length) {
 							continue;
 						}
 						if (info.equip?.length) {
