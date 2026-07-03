@@ -7001,7 +7001,8 @@ const skills = {
 			}
 			event.result = await player
 				.chooseTarget({
-					prompt: get.prompt(event.skill, target) + `选择一名角色，将其一张牌当【乐不思蜀】置入${target}的判定区，然后摸两张牌`,
+					prompt: get.prompt(event.skill, target),
+					prompt2: `选择一名角色，将其一张牌当【乐不思蜀】置入${get.translation(target)}的判定区，然后摸两张牌`,
 					filterTarget(card, player, target) {
 						const targetx = get.event().targetx;
 						if (![player, targetx].includes(target)) {
