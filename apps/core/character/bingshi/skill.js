@@ -11,7 +11,7 @@ const skills = {
 			global: "loseAsyncAfter",
 		},
 		filter(event, player) {
-			return event.getg?.(player).length && event.getParent().name != "potduzuo";
+			return event.getg?.(player)?.length && event.getParent().name != "potduzuo";
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
@@ -75,7 +75,7 @@ const skills = {
 			const target = event.targets[0];
 			const num = target.countCards("h") - target.getHp();
 			if (target.hasDiscardableCards(target, "h")) {
-				const { cards } = await target.chooseToDiscard({ forced: true, position: "h", num }).forResult();
+				const { cards } = await target.chooseToDiscard({ forced: true, position: "h", num: num }).forResult();
 				if (cards?.length >= num) {
 					trigger.num--;
 				}
@@ -361,7 +361,7 @@ const skills = {
 			return game.hasPlayer(current => get.attitude(player, current) < 0);
 		},
 		async content(event, trigger, player) {
-			const cards = get.cards(4, true);
+			const cards = get.cards(3, true);
 			if (!cards.length) {
 				return;
 			}
@@ -425,7 +425,7 @@ const skills = {
 			},
 			effect: {
 				audio: "potsifeng",
-				logAudio: () => ["potsifeng5.mp5", "potsifeng6.mp3"],
+				logAudio: () => ["potsifeng5.mp3", "potsifeng6.mp3"],
 				trigger: { global: "phaseEnd" },
 				filter(event, player) {
 					return event.player.hasExpansions("potsifeng");

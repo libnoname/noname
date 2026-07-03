@@ -262,7 +262,6 @@ const skills = {
 						if (current.hasSkill("olxiansi_x") && current.getExpansions("olxiansi").length > 1) {
 							bool = true;
 						}
-						break;
 					}
 					if (!bool && (!target.hasSkill("olxiansi_x") || target.getExpansions("olxiansi").length <= 1)) {
 						return false;

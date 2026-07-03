@@ -14745,7 +14745,6 @@ const skills = {
 				if (current.hasSkill("xiansix") && current.getExpansions("xiansi").length > 1) {
 					bool = true;
 				}
-				break;
 			}
 			if (!bool && (!target.hasSkill("xiansix") || target.getExpansions("xiansi").length <= 1)) {
 				return false;

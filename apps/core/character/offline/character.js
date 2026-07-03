@@ -57,7 +57,7 @@ const characters = {
 		sex: "male",
 		group: "qun",
 		hp: 4,
-		skills: ["tcmjpozhen", "tcmjtaoge", "tcmjzhenguan"],
+		skills: ["pepozhen", "petaoge", "pezhenguan"],
 	},
 	ylyg_xuhuang: {
 		sex: "male",

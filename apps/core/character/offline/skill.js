@@ -579,8 +579,7 @@ const skills = {
 				.getHistory("lose", evt => {
 					return evt.getParent() == event.getParent() && evt.cards2?.length && Object.values(evt.gaintag_map).flat().includes("pejieshu_tag");
 				})
-				.map(evt => evt.cards2)
-				.reduce((a, b) => b.addArray(a), []);
+				.flatMap(evt => evt.cards2 || []);
 			return event.cards?.filterInD("od")?.some(card => !cards.includes(card));
 		},
 		prompt2(event, player) {
@@ -659,9 +658,9 @@ const skills = {
 			if (get.distance(player, target) != get.distance(player, player.storage.pegeyuan_mark) && player.hasDiscardableCards(player, "he")) {
 				await player.chooseToDiscard({ forced: true, position: "he", selectCard: 2 });
 			} else {
-				await player.draw(2);
+				await player.draw({ num: 2 });
 			}
-			if (!player.getStorage(event.name).some(i => i.every(item => item === target && item === player.storage.pegeyuan_mark))) {
+			if (!player.getStorage(event.name).some(i => i.includes(target) && i.includes(player.storage.pegeyuan_mark))) {
 				player.markAuto(event.name, [[target, player.storage.pegeyuan_mark]]);
 			}
 		},
@@ -914,7 +913,9 @@ const skills = {
 			}
 		},
 		onremove(player, skill) {
-			get.info(skill).removeVisitors(player.getStorage(skill), player);
+			if(player.getStorage(skill).length) {
+				get.info(skill).removeVisitors(player.getStorage(skill), player);
+			}
 		},
 		addVisitors(characters, player) {
 			_status.characterlist.removeArray(characters);
