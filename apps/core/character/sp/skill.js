@@ -3833,17 +3833,12 @@ const skills = {
 					}
 					if (!player.hasMark("olshanjia")) {
                         return false;
-                    }   
-        // 3. 【核心新增逻辑】：排除“因主动使用装备牌”而失去装备的情况
-        // 获取当前失去牌事件的父级事件（通常是 useCard）
-        const parentEvt = event.relatedEvent || event.getParent();
-        
-        // 如果父级事件是“使用牌”，且使用者是自己，且使用的牌是“装备”，则不扣除标记
-        if (parentEvt && parentEvt.name === "useCard" && parentEvt.player === player && get.type(parentEvt.card, null, false) === "equip") {
-            return false;
-        }
-        // 4. 排除以上情况后，允许扣除标记
-                   return true;
+                    }
+					const parentEvt = event.relatedEvent || event.getParent();
+					if (parentEvt && parentEvt.name === "useCard" && parentEvt.player === player && get.type(parentEvt.card, null, false) === "equip") {
+						return false;
+					}
+					return true;
 				},
 				forced: true,
 				locked: false,
