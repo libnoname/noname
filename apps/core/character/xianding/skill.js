@@ -32705,25 +32705,20 @@ const skills = {
 				intro: { content: "对$使用牌无距离和次数限制" },
 				forced: true,
 				trigger: { player: "useCard1" },
-    // 2. 新增过滤条件：确保只拦截对标记目标使用的【杀】
-    filter(event, player) {
-        // 如果目标不在标记列表中，不触发
-        if (!event.targets?.some(target => player.getStorage("dcwencan_paoxiao").includes(target))) {
-            return false;
-        }
-        // 必须是【杀】才触发
-        return event.card.name === "sha";
-    },
-    // 3. 新增执行内容：在卡牌使用时，强制将使用次数减 1
-    async content(event, trigger, player) {
-        trigger.addCount = false; // 告诉系统不要增加使用次数
-        const stat = player.getStat().card;
-        const name = trigger.card.name;
-        // 抵消系统默认增加的次数，实现真正的“无次数限制”
-        if (typeof stat[name] === "number") {
-            stat[name]--;
-        }
-    },
+				filter(event, player) {
+					if (!event.targets?.some(target => player.getStorage("dcwencan_paoxiao").includes(target))) {
+						return false;
+					}
+					return event.card.name === "sha";
+				},
+				async content(event, trigger, player) {
+					trigger.addCount = false;
+					const stat = player.getStat().card;
+					const name = trigger.card.name;
+					if (typeof stat[name] === "number") {
+						stat[name]--;
+					}
+				},
 				mod: {
 					cardUsableTarget(card, player, target) {
 						if (player.getStorage("dcwencan_paoxiao").includes(target)) {
