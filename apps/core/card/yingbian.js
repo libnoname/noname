@@ -18,7 +18,8 @@ game.import("card", function () {
 					return target != player && target.countCards("hej") > 0;
 				},
 				defaultYingbianEffect: "add",
-				content() {
+				async content(event, trigger, player) {
+					const { card, target } = event;
 					var dist = get.distance(player, target);
 					if (dist > 1 || card.yingbian_all) {
 						player.discardPlayerCard(target, "hej", true).set("target", target).set("ai", lib.card.guohe.ai.button);
@@ -29,7 +30,7 @@ game.import("card", function () {
 				},
 				fullskin: true,
 				postAi(targets) {
-					return targets.length == 1 && targets[0].countCards("j");
+					return targets.length == 1 && targets[0].hasCards("j");
 				},
 				ai: {
 					wuxie(target, card, player, viewer, status) {
@@ -221,19 +222,18 @@ game.import("card", function () {
 					return target != player && target.countCards("h") > 0;
 				},
 				defaultYingbianEffect: "add",
-				content() {
-					"step 0";
-					if (player.isDead() || !target.countCards("h")) {
-						event.finish();
+				async content(event, trigger, player) {
+					const { target, card } = event;
+					if (player.isDead() || !target.hasCards("h")) {
 						return;
 					}
-					player.choosePlayerCard(target, "h", true);
-					"step 1";
-					if (result.bool) {
-						target.showCards(result.cards);
-						if (get.suit(card) != get.suit(result.cards[0])) {
-							target.damage();
-						}
+					const result = await player.choosePlayerCard(target, "h", true).forResult();
+					if (!result.bool) {
+						return;
+					}
+					await target.showCards(result.cards);
+					if (get.suit(card) !== get.suit(result.cards[0])) {
+						await target.damage();
 					}
 				},
 				ai: {
@@ -349,7 +349,7 @@ game.import("card", function () {
 				subtype: "equip5",
 				cardcolor: "club",
 				skills: ["tianjitu_skill"],
-				onLose() {
+				async onLose({ player }) {
 					player.addTempSkill("tianjitu_skill_lose");
 				},
 				loseDelay: false,
@@ -442,7 +442,7 @@ game.import("card", function () {
 					var type = get.type(event.card);
 					return type == "basic" || type == "trick";
 				},
-				content() {
+				async content(event, trigger, player) {
 					if (event.triggername == "phaseBeginStart") {
 						delete player.storage.suijiyingbian;
 						delete player.storage.suijiyingbian_nature;
@@ -460,21 +460,20 @@ game.import("card", function () {
 				},
 				audio: true,
 				direct: true,
-				content() {
-					"step 0";
-					var list = lib.linked.slice(0);
+				async content(event, trigger, player) {
+					const list = lib.linked.slice(0);
 					list.remove("kami");
 					list.removeArray(get.natureList(trigger.card));
 					list.push("cancel2");
-					player
+					const result = await player
 						.chooseControl(list)
 						.set("prompt", get.prompt("wuxinghelingshan_skill"))
-						.set("prompt2", "将" + get.translation(trigger.card) + "转换为以下属性之一");
-					"step 1";
-					if (result.control != "cancel2") {
+						.set("prompt2", `将${get.translation(trigger.card)}转换为以下属性之一`)
+						.forResult();
+					if (result.control !== "cancel2") {
 						player.logSkill("wuxinghelingshan_skill");
-						player.popup(get.translation(result.control) + "杀", result.control);
-						game.log(trigger.card, "被转为了", "#y" + get.translation(result.control), "属性");
+						player.popup(`${get.translation(result.control)}杀`, result.control);
+						game.log(trigger.card, "被转为了", `#y${get.translation(result.control)}`, "属性");
 						game.setNature(trigger.card, result.control);
 					}
 				},
@@ -488,7 +487,7 @@ game.import("card", function () {
 					return event.card.name == "sha" && !event.target.isLinked(); //||event.target.countCards('h'));
 				},
 				logTarget: "target",
-				content() {
+				async content(event, trigger, player) {
 					var target = trigger.target;
 					if (!target.isLinked()) {
 						target.link();
@@ -528,7 +527,7 @@ game.import("card", function () {
 					}
 					return true;
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.excluded.add(player);
 				},
 				global: "heiguangkai_ai",
@@ -538,7 +537,7 @@ game.import("card", function () {
 				equipSkill: true,
 				forced: true,
 				filter: (event, player) => get.is.yingbianConditional(event.card) && player.getHistory("useCard", evt => get.is.yingbianConditional(evt.card)).length < 2,
-				content: () => {
+				async content(event, trigger, player) {
 					trigger.forceYingbian = true;
 				},
 			},
@@ -555,7 +554,7 @@ game.import("card", function () {
 						return !event.cards.includes(card) && lib.filter.cardDiscardable(card, player, "tianjitu_skill");
 					}, "he");
 				},
-				content: () => {
+				async content(event, trigger, player) {
 					player.chooseToDiscard(true, card => !get.event().getTrigger().cards?.includes(card), "he");
 				},
 				subSkill: {
@@ -582,7 +581,7 @@ game.import("card", function () {
 							});
 							return lostCards.length;
 						},
-						content() {
+						async content(event, trigger, player) {
 							player.drawTo(5);
 						},
 					},
@@ -594,17 +593,16 @@ game.import("card", function () {
 				trigger: { player: "phaseUseEnd" },
 				direct: true,
 				filter(event, player) {
-					return player.countCards("h") > 0;
+					return player.hasCards("h");
 				},
-				content() {
-					"step 0";
-					player.chooseCard("h", "是否发动【太公阴符】重铸一张手牌？", lib.filter.cardRecastable).set("ai", function (card) {
-						return 5 - get.value(card);
-					});
-					"step 1";
+				async content(event, trigger, player) {
+					const result = await player
+						.chooseCard("h", "是否发动【太公阴符】重铸一张手牌？", lib.filter.cardRecastable)
+						.set("ai", card => 5 - get.value(card))
+						.forResult();
 					if (result.bool) {
 						player.logSkill("taigongyinfu_skill");
-						player.recast(result.cards);
+						await player.recast(result.cards);
 					}
 				},
 			},
@@ -612,29 +610,16 @@ game.import("card", function () {
 				audio: "taigongyinfu_skill",
 				trigger: { player: "phaseUseBegin" },
 				equipSkill: true,
-				//filter:function(event,player){
-				//	return game.hasPlayer(function(current){
-				//		return !current.isLinked();
-				//	});
-				//},
 				direct: true,
-				content() {
-					"step 0";
-					player
-						.chooseTarget(
-							//function(card,player,target){
-							//	return !target.isLinked();
-							//},
-							"是否发动【太公阴符】横置或重置一名角色？"
-						)
-						.set("ai", function (target) {
-							return get.effect(target, { name: "tiesuo" }, _status.event.player, _status.event.player);
-						});
-					"step 1";
+				async content(event, trigger, player) {
+					const result = await player
+						.chooseTarget("是否发动【太公阴符】横置或重置一名角色？")
+						.set("ai", target => get.effect(target, { name: "tiesuo" }, _status.event.player, _status.event.player))
+						.forResult();
 					if (result.bool) {
-						var target = result.targets[0];
+						const target = result.targets[0];
 						player.logSkill("taigongyinfu_link", target);
-						target.link();
+						await target.link();
 					}
 				},
 				ai: {
@@ -766,48 +751,43 @@ game.import("card", function () {
 					}
 					return false;
 				},
-				content() {
-					"step 0";
+				async content(event, trigger, player) {
 					if (trigger.yingbian_addTarget) {
-						player
-							.chooseTarget("应变：是否为" + get.translation(trigger.card) + "增加一个目标？", function (card, player, target) {
-								var trigger = _status.event.getTrigger();
-								var card = trigger.card;
-								return !trigger.targets.includes(target) && lib.filter.targetEnabled2(card, player, target) && lib.filter.targetInRange(card, player, target);
+						const result = await player
+							.chooseTarget(`应变：是否为${get.translation(trigger.card)}增加一个目标？`, (card, player, target) => {
+								const evt = _status.event.getTrigger();
+								const triggerCard = evt.card;
+								return !evt.targets.includes(target) && lib.filter.targetEnabled2(triggerCard, player, target) && lib.filter.targetInRange(triggerCard, player, target);
 							})
-							.set("ai", function (target) {
-								var player = _status.event.player;
-								var card = _status.event.getTrigger().card;
+							.set("ai", target => {
+								const player = _status.event.player;
+								const card = _status.event.getTrigger().card;
 								return get.effect(target, card, player, player);
-							});
-					} else {
-						event.goto(2);
-					}
-					"step 1";
-					if (result.bool) {
-						var target = result.targets[0];
-						player.line(target, "green");
-						game.log(player, "发动应变效果，令", target, "也成为了", trigger.card, "的目标");
-						trigger.targets.add(target);
-					}
-					"step 2";
-					if (trigger.yingbian_removeTarget && trigger.targets.length > 1) {
-						player
-							.chooseTarget("应变：是否为" + get.translation(trigger.card) + "减少一个目标？", function (card, player, target) {
-								var trigger = _status.event.getTrigger();
-								return trigger.targets.includes(target);
 							})
-							.set("ai", function (target) {
-								var player = _status.event.player;
-								var card = _status.event.getTrigger().card;
-								return -get.effect(target, card, player, player);
-							});
-					} else {
-						event.finish();
+							.forResult();
+						if (result.bool) {
+							const target = result.targets[0];
+							player.line(target, "green");
+							game.log(player, "发动应变效果，令", target, "也成为了", trigger.card, "的目标");
+							trigger.targets.add(target);
+						}
 					}
-					"step 3";
+					if (!trigger.yingbian_removeTarget || trigger.targets.length <= 1) {
+						return;
+					}
+					const result = await player
+						.chooseTarget(`应变：是否为${get.translation(trigger.card)}减少一个目标？`, (card, player, target) => {
+							const evt = _status.event.getTrigger();
+							return evt.targets.includes(target);
+						})
+						.set("ai", target => {
+							const player = _status.event.player;
+							const card = _status.event.getTrigger().card;
+							return -get.effect(target, card, player, player);
+						})
+						.forResult();
 					if (result.bool) {
-						var target = result.targets[0];
+						const target = result.targets[0];
 						player.line(target, "green");
 						game.log(player, "发动应变效果，将", target, "从", trigger.card, "的目标中移除了");
 						trigger.targets.remove(target);
