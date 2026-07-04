@@ -394,6 +394,7 @@ export function createServer(options: ServerOptions = {}): ServerInstance {
 
 				const handleError = (error: Error) => {
 					server.off("listening", handleListening);
+					server.off("connection", handleConnection);
 					wss = undefined;
 					reject(error);
 				};
