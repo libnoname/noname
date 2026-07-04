@@ -1,6 +1,16 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	pot_zhouyu: "势周瑜",
+	pot_zhouyu_prefix: "势",
+	potchiyun: "炽沄",
+	potchiyun_info: "你每阶段首次获得牌后，可交给一名其他角色任意张手牌，其选择一项：1.展示所有与这些牌颜色相同的手牌，你对其造成1点火焰伤害；2.你摸两张牌，其进入连环状态。",
+	potyanhui: "焰洄",
+	potyanhui_info: "你使用牌指定目标后，可展示一名目标角色的一张手牌，若此牌本回合已被展示过，你弃置之。此阶段结束时，你选择一项：1.对一名本阶段因此弃置过牌的角色造成1点火焰伤害；2，摸X张牌（X为本回合展示过牌的角色数）。",
+	potfentao: "焚涛",
+	potfentao_info: "锁定技，有连环状态的其他角色受到火焰伤害时，其选择一项：1.此次传导中的伤害+1；2.弃置一半牌（向上取整），此伤害结算后其进入连环状态。",
+	potxiongzi: "雄姿",
+	potxiongzi_info: `限定技，准备阶段，你可令本局游戏的${get.poptip("potchiyun")}、${get.poptip("potyanhui")}和${get.poptip("potfentao")}只能在你的回合内发动，然后仅保留其中全部的一选项或二选项，并摸两张牌。`,
 	pot_chengpu: "势程普",
 	pot_chengpu_prefix: "势",
 	potduzuo: "督佐",
