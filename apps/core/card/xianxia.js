@@ -23,12 +23,12 @@ game.import("card", function () {
 					},
 				},
 				skills: ["tiejili_skill"],
-				onLose() {
+				async onLose(event, trigger, player) {
 					delete player.storage.tiejili_skill;
 					player.unmarkSkill("tiejili_skill");
 				},
 				destroy: true,
-				onEquip() {
+				async onEquip({ player, card }) {
 					if (!card.storage.tiejili_skill) {
 						card.storage.tiejili_skill = 2;
 					}
@@ -212,45 +212,42 @@ game.import("card", function () {
 					}
 					return false;
 				},
-				effect() {
-					"step 0";
-					if (result.bool == false && player.countCards("e")) {
-						player
+				async effect(event, trigger, player, result) {
+					if (result.bool === false && player.hasCards("e")) {
+						const result = await player
 							.choosePlayerCard("e", player, true)
 							.set("filterButton", button => {
-								let player = get.player(),
-									filter = card => ["equip3", "equip4", "equip6"].includes(get.subtype(card));
-								if (player.countCards("e", card => filter(card))) {
+								const current = get.player();
+								const filter = card => ["equip3", "equip4", "equip6"].includes(get.subtype(card));
+								if (current.hasCards("e", card => filter(card))) {
 									return filter(button.link);
 								}
 								return true;
 							})
 							.set("ai", button => {
-								let player = get.player(),
-									att = get.attitude(player, player.getNext());
+								const current = get.player();
+								const att = get.attitude(current, current.getNext());
 								if (att > 0) {
-									return player.getNext().getUseValue(button.link) - player.getUseValue(button.link);
+									return current.getNext().getUseValue(button.link) - current.getUseValue(button.link);
 								}
 								return 6 - get.value(button.link);
-							});
-					} else {
-						event.goto(2);
-					}
-					"step 1";
-					if (result.cards) {
-						let target = player.getNext(),
-							card = result.cards[0];
-						if (target.canEquip(card)) {
-							target.equip(card);
-							player.$give(card, target);
-						} else {
-							player.give(card, target);
+							})
+							.forResult();
+						if (result.cards) {
+							const target = player.getNext();
+							const card = result.cards[0];
+							if (target.canEquip(card)) {
+								const equipEvent = target.equip(card);
+								player.$give(card, target);
+								await equipEvent;
+							} else {
+								await player.give(card, target);
+							}
 						}
 					}
-					"step 2";
-					player.addJudgeNext(event.card);
+					await player.addJudgeNext(event.card);
 				},
-				cancel() {
+				async cancel({ player, card }) {
 					player.addJudgeNext(card);
 				},
 				ai: {
@@ -291,7 +288,7 @@ game.import("card", function () {
 				distance: { attackFrom: -1 },
 				ai: { basic: { equipValue: 2 } },
 				skills: ["ty_feilongduofeng_skill"],
-				onLose() {
+				async onLose({ player }) {
 					if (player.storage.counttrigger?.ty_feilongduofeng_skill > 0) {
 						delete player.storage.counttrigger.ty_feilongduofeng_skill;
 					}
@@ -333,7 +330,7 @@ game.import("card", function () {
 				nopower: true,
 				skills: ["mengchong_skill"],
 				loseDelay: false,
-				onLose() {
+				async onLose({ player }) {
 					delete player.storage.mengchong_skill;
 					player.unmarkSkill("mengchong_skill");
 				},
@@ -748,7 +745,7 @@ game.import("card", function () {
 							var cards = player.getEquips("shangfangbaojian");
 							return event.cards.some(card => cards.includes(card));
 						},
-						content() {
+						async content(event, trigger, player) {
 							trigger.cards.removeArray(player.getEquips("shangfangbaojian"));
 						},
 					},
@@ -856,7 +853,7 @@ game.import("card", function () {
 						trigger: {
 							player: "phaseBegin",
 						},
-						content() {
+						async content(event, trigger, player) {
 							player.storage.mengchong_skill = 0;
 							player.unmarkSkill("mengchong_skill");
 						},
