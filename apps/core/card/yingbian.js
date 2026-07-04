@@ -647,7 +647,7 @@ game.import("card", function () {
 				popup: false,
 				ruleSkill: true,
 				forceLoad: true,
-				filter: (event, player) => {
+				filter(event, player) {
 					if (event.card.yingbian) {
 						return false;
 					}
@@ -666,75 +666,78 @@ game.import("card", function () {
 					const complexYingbianConditions = get.complexYingbianConditions();
 					return temporaryYingbian.some(value => complexYingbianConditions.includes(value)) || get.is.complexlyYingbianConditional(card);
 				},
-				content: () => {
-					"step 0";
-					event.card = trigger.card;
-					event.temporaryYingbian = trigger.temporaryYingbian || [];
-					var yingbianConditionSatisfied = false;
-					lib.yingbian.condition.simple.forEach((value, key) => {
-						if ((!event.temporaryYingbian.includes(key) && !get.cardtag(event.card, `yingbian_${key}`)) || !value(trigger)) {
-							return;
-						}
-						player.popup(`yingbian_${key}_tag`, lib.yingbian.condition.color.get(key));
-						if (!yingbianConditionSatisfied) {
+				content: [
+					// step 0
+					async (event, trigger, player) => {
+						event.card = trigger.card;
+						event.temporaryYingbian = trigger.temporaryYingbian || [];
+						let yingbianConditionSatisfied = false;
+						lib.yingbian.condition.simple.forEach((value, key) => {
+							if ((!event.temporaryYingbian.includes(key) && !get.cardtag(event.card, `yingbian_${key}`)) || !value(trigger)) {
+								return;
+							}
+							player.popup(`yingbian_${key}_tag`, lib.yingbian.condition.color.get(key));
+							yingbianConditionSatisfied = true;
+						});
+						if (event.temporaryYingbian.includes("force") || get.cardtag(event.card, "yingbian_force") || trigger.forceYingbian || player.hasSkillTag("forceYingbian")) {
+							player.popup("yingbian_force_tag", lib.yingbian.condition.color.get("force"));
 							yingbianConditionSatisfied = true;
 						}
-					});
-					if (event.temporaryYingbian.includes("force") || get.cardtag(event.card, "yingbian_force") || trigger.forceYingbian || player.hasSkillTag("forceYingbian")) {
-						player.popup("yingbian_force_tag", lib.yingbian.condition.color.get("force"));
-						if (!yingbianConditionSatisfied) {
-							yingbianConditionSatisfied = true;
+						if (yingbianConditionSatisfied) {
+							game.log(player, "触发了", event.card, "的应变条件");
+							event.goto(4);
+						} else if ((event.num = 0) >= (event.yingbianConditions = get.complexYingbianConditions()).length) {
+							event.finish();
 						}
-					}
-					if (yingbianConditionSatisfied) {
-						game.log(player, "触发了", event.card, "的应变条件");
-						event.goto(4);
-					} else if ((event.num = 0) >= (event.yingbianConditions = get.complexYingbianConditions()).length) {
-						event.finish();
-					}
-					"step 1";
-					var yingbianCondition = event.yingbianConditions[num];
-					if (event.temporaryYingbian.includes(yingbianCondition) || get.cardtag(card, `yingbian_${yingbianCondition}`)) {
-						lib.yingbian.condition.complex.get(yingbianCondition)(trigger);
-					} else {
-						event.goto(3);
-					}
-					"step 2";
-					if (result.bool) {
-						event.goto(4);
-					}
-					"step 3";
-					event.num++;
-					if (event.num < event.yingbianConditions.length) {
-						event.goto(1);
-					} else {
-						event.finish();
-					}
-					"step 4";
-					trigger.card.yingbian = true;
-					var yingbianEffectExecuted = false;
-					lib.yingbian.effect.forEach((value, key) => {
-						if (!event.temporaryYingbian.includes(key) && !get.cardtag(card, `yingbian_${key}`)) {
-							return;
+					},
+					// step 1
+					async (event, trigger) => {
+						const yingbianCondition = event.yingbianConditions[event.num];
+						if (event.temporaryYingbian.includes(yingbianCondition) || get.cardtag(event.card, `yingbian_${yingbianCondition}`)) {
+							lib.yingbian.condition.complex.get(yingbianCondition)?.(trigger);
+						} else {
+							event.goto(3);
 						}
-						game.yingbianEffect(trigger, value);
-						if (!yingbianEffectExecuted) {
+					},
+					// step 2
+					async (event, _trigger, _player, result) => {
+						if (result.bool) {
+							event.goto(4);
+						}
+					},
+					// step 3
+					async (event) => {
+						event.num++;
+						if (event.num < event.yingbianConditions.length) {
+							event.goto(1);
+						} else {
+							event.finish();
+						}
+					},
+					// step 4
+					async (event, trigger, player) => {
+						const { card } = event;
+						trigger.card.yingbian = true;
+						let yingbianEffectExecuted = false;
+						lib.yingbian.effect.forEach((value, key) => {
+							if (!event.temporaryYingbian.includes(key) && !get.cardtag(card, `yingbian_${key}`)) {
+								return;
+							}
+							game.yingbianEffect(trigger, value);
 							yingbianEffectExecuted = true;
-						}
-					});
-					if (!yingbianEffectExecuted) {
-						var defaultYingbianEffect = get.defaultYingbianEffect(card);
-						if (lib.yingbian.effect.has(defaultYingbianEffect)) {
-							game.yingbianEffect(trigger, lib.yingbian.effect.get(defaultYingbianEffect));
-							if (!yingbianEffectExecuted) {
+						});
+						if (!yingbianEffectExecuted) {
+							const defaultYingbianEffect = get.defaultYingbianEffect(card);
+							if (lib.yingbian.effect.has(defaultYingbianEffect)) {
+								game.yingbianEffect(trigger, lib.yingbian.effect.get(defaultYingbianEffect));
 								yingbianEffectExecuted = true;
 							}
 						}
+						if (yingbianEffectExecuted) {
+							player.addTempSkill("yingbian_changeTarget");
+						}
 					}
-					if (yingbianEffectExecuted) {
-						player.addTempSkill("yingbian_changeTarget");
-					}
-				},
+				],
 			},
 			yingbian_changeTarget: {
 				trigger: { player: "useCard2" },
