@@ -18,12 +18,12 @@ export default {
 			enable: true,
 			audio: true,
 			filterTarget(card, player, target) {
-				return target != player && target.countCards("hej") > 0;
+				return target !== player && target.countCards("hej") > 0;
 			},
 			defaultYingbianEffect: "add",
 			async content(event, trigger, player) {
 				const { card, target } = event;
-				var dist = get.distance(player, target);
+				const dist = get.distance(player, target);
 				if (dist > 1 || card.yingbian_all) {
 					player.discardPlayerCard(target, "hej", true).set("target", target).set("ai", lib.card.guohe.ai.button);
 				}
@@ -33,7 +33,7 @@ export default {
 			},
 			fullskin: true,
 			postAi(targets) {
-				return targets.length == 1 && targets[0].hasCards("j");
+				return targets.length === 1 && targets[0].hasCards("j");
 			},
 			ai: {
 				wuxie(target, card, player, viewer, status) {
@@ -44,8 +44,8 @@ export default {
 						!card.yingbian_all &&
 						get.distance(player, target) > 1 &&
 						!target.hasCard(i => {
-							let val = get.value(i, target),
-								subtypes = get.subtypes(i);
+							const val = get.value(i, target);
+							const subtypes = get.subtypes(i);
 							if (val < 8 && target.hp < 2 && !subtypes.includes("equip2") && !subtypes.includes("equip5")) {
 								return false;
 							}
@@ -60,21 +60,21 @@ export default {
 					if (get.attitude(viewer, player) <= 0) {
 						return 0;
 					}
-					var base = 0;
+					let base = 0;
 					if (get.cardtag(card, "yingbian_all")) {
 						if (
-							targets.some(function (current) {
-								var att = get.attitude(player, current);
+							targets.some(current => {
+								const att = get.attitude(player, current);
 								if (att <= 0) {
 									return (
-										current.countCards("he", function (card) {
+										current.countCards("he", card => {
 											return get.value(card, current) > 0;
 										}) > 1
 									);
 								}
 								return (
-									current.countCards("ej", function (card) {
-										return get.position(card) == "j" || get.value(card, current) <= 0;
+									current.countCards("ej", card => {
+										return get.position(card) === "j" || get.value(card, current) <= 0;
 									}) > 1
 								);
 							})
@@ -84,7 +84,7 @@ export default {
 					}
 					if (get.cardtag(card, "yingbian_add")) {
 						if (
-							game.hasPlayer(function (current) {
+							game.hasPlayer(current => {
 								return !targets.includes(current) && lib.filter.targetEnabled2(card, player, current) && get.effect(current, card, player, player) > 0;
 							})
 						) {
@@ -93,7 +93,7 @@ export default {
 					}
 					if (get.cardtag(card, "yingbian_hit")) {
 						if (
-							game.hasPlayer(function (current) {
+							game.hasPlayer(current => {
 								return get.attitude(current, player) < 0 && current.hasWuxie();
 							})
 						) {
@@ -126,20 +126,20 @@ export default {
 				},
 				result: {
 					target(player, target) {
-						var discard = get.distance(player, target) > 1;
+						const discard = get.distance(player, target) > 1;
 						if (get.attitude(player, target) <= 0) {
-							return target.countCards("he", function (card) {
-								return get.value(card, target) > 0 && (discard || card != target.getEquip("jinhe"));
+							return target.countCards("he", card => {
+								return get.value(card, target) > 0 && (discard || card !== target.getEquip("jinhe"));
 							}) > 0
 								? -1.5
 								: 1.5;
 						}
-						var js = target.getCards("j");
+						const js = target.getCards("j");
 						if (
 							js.length &&
 							js.some(i => {
-								let cardj = i.viewAs ? { name: i.viewAs } : i;
-								if (cardj.name == "xumou_jsrg") {
+								const cardj = i.viewAs ? { name: i.viewAs } : i;
+								if (cardj.name === "xumou_jsrg") {
 									return false;
 								}
 								return get.effect(target, cardj, target, player) < 0;
@@ -155,19 +155,19 @@ export default {
 						}
 						if (
 							get.attitude(player, target) < 0 &&
-							!target.countCards("he", function (card) {
-								return get.value(card, target) > 0 && card != target.getEquip("jinhe");
+							!target.countCards("he", card => {
+								return get.value(card, target) > 0 && card !== target.getEquip("jinhe");
 							})
 						) {
 							return 0;
 						}
 						if (get.attitude(player, target) > 1) {
-							var js = target.getCards("j");
+							const js = target.getCards("j");
 							if (
 								js.length &&
 								js.some(i => {
-									let cardj = i.viewAs ? { name: i.viewAs } : i;
-									if (cardj.name == "xumou_jsrg") {
+									const cardj = i.viewAs ? { name: i.viewAs } : i;
+									if (cardj.name === "xumou_jsrg") {
 										return false;
 									}
 									return get.effect(target, cardj, target, player) < 0;
@@ -194,7 +194,7 @@ export default {
 			selectTarget: -1,
 			toself: true,
 			filterTarget(card, player, target) {
-				return target == player;
+				return target === player;
 			},
 			modTarget: true,
 			async content(event, trigger, player) {
@@ -222,7 +222,7 @@ export default {
 			type: "trick",
 			fullskin: true,
 			filterTarget(card, player, target) {
-				return target != player && target.countCards("h") > 0;
+				return target !== player && target.countCards("h") > 0;
 			},
 			defaultYingbianEffect: "add",
 			async content(event, trigger, player) {
@@ -250,7 +250,7 @@ export default {
 						return 0;
 					}
 					if (
-						game.hasPlayer(function (current) {
+						game.hasPlayer(current => {
 							return !targets.includes(current) && lib.filter.targetEnabled2(card, player, current) && get.effect(current, card, player, player) > 0;
 						})
 					) {
@@ -261,10 +261,10 @@ export default {
 				result: {
 					target: (player, target, card) => {
 						//if(typeof card!=='object') return -2;
-						let suit = get.suit(card),
-							view = player.hasSkillTag("viewHandcard", null, target, true),
-							fz = 0,
-							fm = 0;
+						const suit = get.suit(card);
+						const view = player.hasSkillTag("viewHandcard", null, target, true);
+						let fz = 0;
+						let fm = 0;
 						target.getCards("h", i => {
 							if (i.isKnownBy(player)) {
 								if (suit !== get.suit(i)) {
@@ -358,13 +358,13 @@ export default {
 			loseDelay: false,
 			ai: {
 				value(card, player) {
-					if (player.countCards("h") > 3 || get.position(card) != "e") {
+					if (player.countCards("h") > 3 || get.position(card) !== "e") {
 						return 0.5;
 					}
 					return (player.countCards("h") - 4) * 5;
 				},
 				equipValue(card, player) {
-					if (player.countCards("h") > 3 || get.position(card) != "e") {
+					if (player.countCards("h") > 3 || get.position(card) !== "e") {
 						return 0.5;
 					}
 					return (player.countCards("h") - 4) * 5;
@@ -411,7 +411,7 @@ export default {
 				source: "damageSource",
 			},
 			filter(event, player) {
-				return event.card?.name == "sha" && event.notLink() && event.player?.isIn() && event.player.countGainableCards(player, "h");
+				return event.card?.name === "sha" && event.notLink() && event.player?.isIn() && event.player.countGainableCards(player, "h");
 			},
 			prompt2: "获得其一张手牌",
 			logTarget: "player",
@@ -422,12 +422,12 @@ export default {
 		suijiyingbian_skill: {
 			mod: {
 				cardname(card, player) {
-					if (card.name == "suijiyingbian" && player.storage.suijiyingbian) {
+					if (card.name === "suijiyingbian" && player.storage.suijiyingbian) {
 						return player.storage.suijiyingbian;
 					}
 				},
 				cardnature(card, player) {
-					if (card.name == "suijiyingbian" && player.storage.suijiyingbian_nature) {
+					if (card.name === "suijiyingbian" && player.storage.suijiyingbian_nature) {
 						return player.storage.suijiyingbian_nature;
 					}
 				},
@@ -439,14 +439,14 @@ export default {
 			silent: true,
 			firstDo: true,
 			filter(event, player, name) {
-				if (name == "phaseBeginStart") {
+				if (name === "phaseBeginStart") {
 					return true;
 				}
-				var type = get.type(event.card);
-				return type == "basic" || type == "trick";
+				const type = get.type(event.card);
+				return type === "basic" || type === "trick";
 			},
 			async content(event, trigger, player) {
-				if (event.triggername == "phaseBeginStart") {
+				if (event.triggername === "phaseBeginStart") {
 					delete player.storage.suijiyingbian;
 					delete player.storage.suijiyingbian_nature;
 				} else {
@@ -459,7 +459,7 @@ export default {
 			equipSkill: true,
 			trigger: { player: "useCard1" },
 			filter(event, player) {
-				return event.card.name == "sha" && lib.linked.some(n => n != "kami" && game.hasNature(event.card, n));
+				return event.card.name === "sha" && lib.linked.some(n => n !== "kami" && game.hasNature(event.card, n));
 			},
 			audio: true,
 			direct: true,
@@ -487,11 +487,11 @@ export default {
 			equipSkill: true,
 			audio: true,
 			filter(event, player) {
-				return event.card.name == "sha" && !event.target.isLinked(); //||event.target.countCards('h'));
+				return event.card.name === "sha" && !event.target.isLinked(); //||event.target.countCards('h'));
 			},
 			logTarget: "target",
 			async content(event, trigger, player) {
-				var target = trigger.target;
+				const target = trigger.target;
 				if (!target.isLinked()) {
 					target.link();
 				}
@@ -507,12 +507,12 @@ export default {
 				if (event.targets.length < 2) {
 					return false;
 				}
-				if (event.card.name != "sha") {
-					var type = get.type(event.card);
-					if (type != "trick") {
+				if (event.card.name !== "sha") {
+					const type = get.type(event.card);
+					if (type !== "trick") {
 						return false;
 					}
-					if (get.color(event.card) != "black" && !get.tag(event.card, "damage")) {
+					if (get.color(event.card) !== "black" && !get.tag(event.card, "damage")) {
 						return false;
 					}
 				}
@@ -639,8 +639,8 @@ export default {
 				if (event.card.yingbian) {
 					return false;
 				}
-				const temporaryYingbian = event.temporaryYingbian || [],
-					card = event.card;
+				const temporaryYingbian = event.temporaryYingbian || [];
+				const card = event.card;
 				if (temporaryYingbian.includes("force") || get.cardtag(card, "yingbian_force")) {
 					return true;
 				}
@@ -739,13 +739,13 @@ export default {
 				if (!event.yingbian_addTarget) {
 					return false;
 				}
-				var info = get.info(event.card);
-				if (info.allowMultiple == false) {
+				const info = get.info(event.card);
+				if (info.allowMultiple === false) {
 					return false;
 				}
 				if (event.targets && !info.multitarget) {
 					if (
-						game.hasPlayer(function (current) {
+						game.hasPlayer(current => {
 							return !event.targets.includes(current) && lib.filter.targetEnabled2(event.card, player, current) && lib.filter.targetInRange(event.card, player, current);
 						})
 					) {
@@ -820,10 +820,10 @@ export default {
 						) {
 							return;
 						}
-						let targets = [],
-							evt = _status.event.getParent("useCard");
+						const targets = [];
+						const evt = _status.event.getParent("useCard");
 						targets.addArray(ui.selected.targets);
-						if (evt && evt.card == card) {
+						if (evt && evt.card === card) {
 							targets.addArray(evt.targets);
 						}
 						if (targets.length) {
@@ -832,13 +832,13 @@ export default {
 							}
 							return;
 						}
-						let info = get.info(card);
+						const info = get.info(card);
 						if (!info || info.notarget || !info.filterTarget) {
 							return;
 						}
-						let range,
-							select = get.copy(info.selectTarget),
-							filter;
+						let range;
+						const select = get.copy(info.selectTarget);
+						let filter;
 						if (select === undefined) {
 							range = [1, 1];
 						} else if (typeof select === "number") {
@@ -847,7 +847,7 @@ export default {
 							range = select;
 						} else if (typeof select === "function") {
 							range = select(card, player);
-							if (typeof range == "number") {
+							if (typeof range === "number") {
 								range = [range, range];
 							}
 						}
@@ -1093,6 +1093,6 @@ export default {
 		["diamond", 5, "muniu"],
 	],
 	help: {
-		应变篇: '<div style="margin:10px">应变机制</div><ul style="margin-top:0">' + "<li>当一名角色声明使用右下角标注了应变条件的卡牌后，若其满足应变条件，则其触发此牌的“应变”效果。<br><li>长按或鼠标右键点击卡牌，即可查看此牌所拥有的应变效果。" + '<br><li>应变条件<br><ul style="padding-left:20px;padding-top:5px"><li>空巢：该角色声明使用此牌后，其手牌数为0。<br><li>富甲：该角色声明使用此牌后，其手牌数为全场最多或之一。<br><li>残躯：该角色声明使用此牌后，其体力值为1。<br><li>助战：该角色声明使用此牌后，其发起“助战”。其他角色可弃置一张与此牌类型相同的卡牌，响应此“助战”。若有角色响应，则视为其应变成功。</ul></ul>',
+		应变篇: `<div style="margin:10px">应变机制</div><ul style="margin-top:0"><li>当一名角色声明使用右下角标注了应变条件的卡牌后，若其满足应变条件，则其触发此牌的“应变”效果。<br><li>长按或鼠标右键点击卡牌，即可查看此牌所拥有的应变效果。<br><li>应变条件<br><ul style="padding-left:20px;padding-top:5px"><li>空巢：该角色声明使用此牌后，其手牌数为0。<br><li>富甲：该角色声明使用此牌后，其手牌数为全场最多或之一。<br><li>残躯：该角色声明使用此牌后，其体力值为1。<br><li>助战：该角色声明使用此牌后，其发起“助战”。其他角色可弃置一张与此牌类型相同的卡牌，响应此“助战”。若有角色响应，则视为其应变成功。</ul></ul>`,
 	},
 };
