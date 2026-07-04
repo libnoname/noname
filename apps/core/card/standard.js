@@ -132,13 +132,14 @@ export default {
 			},
 			async content(event, trigger, player) {
 				const { target } = event;
-				const triggerWithFallback = async (name, fallback) => {
+				const triggerWithFallback = async (name, result) => {
 					const next = event.trigger(name);
 					if (!next) {
-						return fallback;
+						return result;
 					}
-					const result = await next.forResult();
-					return result ?? fallback;
+					event._result = result;
+					await next;
+					return event._result;
 				};
 				const damageTarget = async () => {
 					if (!event.directHit && !event.directHit2 && lib.filter.cardEnabled(new lib.element.VCard({ name: "shan" }), target, "forceEnable") && target.countCards("hs") > 0 && get.damageEffect(target, player, target) < 0) {
