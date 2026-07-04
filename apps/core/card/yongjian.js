@@ -55,7 +55,7 @@ export default {
 			fullskin: true,
 			enable: true,
 			filterTarget(card, player, target) {
-				return target != player && target.hasCards("h");
+				return target !== player && target.hasCards("h");
 			},
 			async content(event, trigger, player) {
 				const { target } = event;
@@ -122,7 +122,7 @@ export default {
 			fullskin: true,
 			enable: true,
 			filterTarget(card, player, target) {
-				return target != player && target.countGainableCards(player, "hej") > 0;
+				return target !== player && target.countGainableCards(player, "hej") > 0;
 			},
 			range: { global: 1 },
 			async content(event, trigger, player) {
@@ -132,8 +132,8 @@ export default {
 				}
 				const result = await player.gainPlayerCard(target, "hej", true, [1, 2]).forResult();
 				if (result?.bool && result?.cards?.length && target.isIn()) {
-					const num = result.cards.length,
-						he = player.getCards("he");
+					const num = result.cards.length;
+					const he = player.getCards("he");
 					if (!he.length) {
 						return;
 					}
@@ -155,21 +155,21 @@ export default {
 					target(player, target) {
 						if (get.attitude(player, target) <= 0) {
 							return (
-								(target.countCards("he", function (card) {
-									return get.value(card, target) > 0 && card != target.getEquip("jinhe");
-								}) > 0
+								(target.hasCards("he", card => {
+									return get.value(card, target) > 0 && card !== target.getEquip("jinhe");
+								})
 									? -0.3
 									: 0.3) * Math.sqrt(player.countCards("h"))
 							);
 						}
 						return (
-							(target.countCards("ej", function (card) {
-								if (get.position(card) == "e") {
+							(target.hasCards("ej", card => {
+								if (get.position(card) === "e") {
 									return get.value(card, target) <= 0;
 								}
-								var cardj = card.viewAs ? { name: card.viewAs } : card;
+								const cardj = card.viewAs ? { name: card.viewAs } : card;
 								return get.effect(target, cardj, target, player) < 0;
-							}) > 0
+							})
 								? 1.5
 								: -0.3) * Math.sqrt(player.countCards("h"))
 						);
@@ -219,10 +219,10 @@ export default {
 				result: {
 					keepAI: true,
 					target(player, target) {
-						var cards = target.getCards("e"),
-							js = target.getCards("j");
-						var val = get.value(cards, target);
-						for (var card of js) {
+						const cards = target.getCards("e");
+						const js = target.getCards("j");
+						let val = get.value(cards, target);
+						for (const card of js) {
 							val -= get.effect(target, card.viewAs ? { name: card.viewAs } : card, target, player);
 						}
 						return -val;
@@ -240,7 +240,7 @@ export default {
 			ai: {
 				order: 9,
 				equipValue(card, player) {
-					if (get.position(card) == "e") {
+					if (get.position(card) === "e") {
 						return -2;
 					}
 					return 2;
@@ -257,9 +257,9 @@ export default {
 				result: {
 					keepAI: true,
 					target(player, target) {
-						var val = 2.5;
-						var val2 = 0;
-						var card = target.getEquip(1);
+						const val = 2.5;
+						let val2 = 0;
+						const card = target.getEquip(1);
 						if (card) {
 							val2 = get.value(card, target);
 							if (val2 < 0) {
@@ -281,7 +281,7 @@ export default {
 			ai: {
 				order: 9,
 				equipValue(card, player) {
-					if (get.position(card) == "e") {
+					if (get.position(card) === "e") {
 						if (player.hasSex("male")) {
 							return -7;
 						}
@@ -304,9 +304,9 @@ export default {
 				result: {
 					keepAI: true,
 					target(player, target) {
-						var val = target.hasSex("male") ? 2.5 : 0;
-						var val2 = 0;
-						var card = target.getEquip(1);
+						const val = target.hasSex("male") ? 2.5 : 0;
+						let val2 = 0;
+						const card = target.getEquip(1);
 						if (card) {
 							val2 = get.value(card, target);
 							if (val2 < 0) {
@@ -328,7 +328,7 @@ export default {
 			ai: {
 				order: 9,
 				equipValue(card, player) {
-					if (get.position(card) == "e") {
+					if (get.position(card) === "e") {
 						return -8;
 					}
 					return 1;
@@ -345,9 +345,9 @@ export default {
 				result: {
 					keepAI: true,
 					target(player, target) {
-						var val = 2;
-						var val2 = 0;
-						var card = target.getEquip(2);
+						const val = 2;
+						let val2 = 0;
+						const card = target.getEquip(2);
 						if (card) {
 							val2 = get.value(card, target);
 							if (val2 < 0) {
@@ -420,7 +420,7 @@ export default {
 			direct: true,
 			equipSkill: true,
 			filter(event, player) {
-				return event.card && event.card.name == "sha" && event.getParent().name == "sha" && player.isDamaged() && player.hasCards("h");
+				return event.card && event.card.name === "sha" && event.getParent().name === "sha" && player.isDamaged() && player.hasCards("h");
 			},
 			async content(event, trigger, player) {
 				const result = await player
@@ -451,7 +451,7 @@ export default {
 				) {
 					return false;
 				}
-				return event.card.name == "sha" && player.hasSex("male");
+				return event.card.name === "sha" && player.hasSex("male");
 			},
 			async content(event, trigger, player) {
 				const next = player.judge(card => (get.color(card) === "black" ? -2 : 0));
@@ -480,7 +480,7 @@ export default {
 				if (player.hasSkillTag("unequip2")) {
 					return false;
 				}
-				if (event.name == "damage") {
+				if (event.name === "damage") {
 					if (
 						event.source &&
 						event.source.hasSkillTag("unequip", false, {
@@ -491,9 +491,9 @@ export default {
 					) {
 						return false;
 					}
-					return event.card && get.type2(event.card) == "trick";
+					return event.card && get.type2(event.card) === "trick";
 				}
-				return event.type == "du";
+				return event.type === "du";
 			},
 			async content(event, trigger, player) {
 				trigger.num++;
@@ -504,7 +504,7 @@ export default {
 			equipSkill: true,
 			forced: true,
 			trigger: { target: "gift" },
-			filter: (event, player) => event.player != player,
+			filter: (event, player) => event.player !== player,
 			logTarget: "player",
 			async content(event, trigger, player) {
 				trigger.deniedGifts.add(trigger.card);
@@ -524,8 +524,8 @@ export default {
 			position: "h",
 			filterTarget: lib.filter.notMe,
 			check(card) {
-				var player = _status.event.player;
-				var val = 5;
+				const player = _status.event.player;
+				let val = 5;
 				if (player.needsToDiscard()) {
 					val = 15;
 				}
@@ -559,7 +559,7 @@ export default {
 			forced: true,
 			equipSkill: true,
 			filter(event, player) {
-				if (!event.card || event.card.name != "qixingbaodao") {
+				if (!event.card || event.card.name !== "qixingbaodao") {
 					return false;
 				}
 				return (
@@ -586,36 +586,30 @@ export default {
 			},
 			cardSkill: true,
 			filter(event, player, name) {
-				if (name == "compare") {
-					if (player == event.player) {
+				if (name === "compare") {
+					if (player === event.player) {
 						if (event.iwhile > 0) {
 							return false;
 						}
-						return event.card1.name == "du";
+						return event.card1.name === "du";
 					}
-					return event.card2.name == "du";
+					return event.card2.name === "du";
 				}
-				if (event.name != "equip" && !event.visible) {
+				if (event.name !== "equip" && !event.visible) {
 					return false;
 				}
-				var evt = event.getl(player);
-				if (
-					!evt ||
-					!evt.hs ||
-					!evt.hs.filter(function (i) {
-						return get.name(i, player) == "du";
-					}).length
-				) {
+				const evt = event.getl(player);
+				if (!evt || !evt.hs || !evt.hs.filter(i => get.name(i, player) === "du").length) {
 					return false;
 				}
-				for (var i of lib.skill.g_du.whiteListFilter) {
+				for (const i of lib.skill.g_du.whiteListFilter) {
 					if (i(event, player)) {
 						return false;
 					}
 				}
 				return true;
 			},
-			whiteListFilter: [event => event.getParent().name == "g_du_give", event => event.getParent(3).name == "guaguliaodu"],
+			whiteListFilter: [event => event.getParent().name === "g_du_give", event => event.getParent(3).name === "guaguliaodu"],
 			forced: true,
 			popup: false,
 			async content(event, trigger, player) {
@@ -640,26 +634,26 @@ export default {
 			cardSkill: true,
 			direct: true,
 			filter(event, player) {
-				if (event.name == "phase") {
-					if (game.phaseNumber != 0) {
+				if (event.name === "phase") {
+					if (game.phaseNumber !== 0) {
 						return false;
 					}
 					if (!player._start_cards) {
 						return false;
 					}
-					let hs = player.getCards("h");
-					for (let card of player._start_cards) {
-						if (get.name(card, player) == "du" && hs.includes(card)) {
+					const hs = player.getCards("h");
+					for (const card of player._start_cards) {
+						if (get.name(card, player) === "du" && hs.includes(card)) {
 							return true;
 						}
 					}
 				} else {
-					if (event.getParent().name != "draw") {
+					if (event.getParent().name !== "draw") {
 						return false;
 					}
-					let hs = player.getCards("h");
-					for (let card of event.getg(player)) {
-						if (get.name(card, player) == "du" && hs.includes(card)) {
+					const hs = player.getCards("h");
+					for (const card of event.getg(player)) {
+						if (get.name(card, player) === "du" && hs.includes(card)) {
 							return true;
 						}
 					}
@@ -779,16 +773,15 @@ export default {
 			delay: false,
 			check(card) {
 				const player = get.player();
-				if (!player.needsToDiscard() && get.position(card) == "h") {
+				if (!player.needsToDiscard() && get.position(card) === "h") {
 					return 0;
 				}
 				const cache = lib.skill._gifting.selectTargetAi(_status.event, player);
 				if (cache?.length) {
-					let max = 0,
-						temp = 0,
-						cardx;
-					for (let i = 0; i < cache.length; i++) {
-						const data = cache[i];
+					let max = 0;
+					let temp = 0;
+					let cardx;
+					for (const data of cache) {
 						const list = data[1];
 						const element = list.find(item => item.card === card);
 						if (element) {
@@ -799,7 +792,7 @@ export default {
 							}
 						}
 					}
-					if (cardx == card) {
+					if (cardx === card) {
 						return 1;
 					}
 					return 0;
@@ -840,7 +833,7 @@ export default {
 					target(player, target) {
 						let cache = _status.event.getTempCache("_gifting", player.playerid);
 						if (Array.isArray(cache)) {
-							for (let arr of cache) {
+							for (const arr of cache) {
 								if (target === arr[0]) {
 									const element = arr[1].find(item => item.card === ui.selected.cards[0]);
 									return element?.value || 0;
