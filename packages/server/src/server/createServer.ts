@@ -1,41 +1,11 @@
 import type { IncomingMessage } from "node:http";
-import { WebSocket, WebSocketServer } from "ws";
+import { WebSocketServer, type WebSocket } from "ws";
 
-import type { ServerInstance, ServerOptions } from "../types";
-
-interface Client extends WebSocket {
-	wsid: string;
-	nickname: string;
-	avatar: string;
-	clientIp: string;
-	onlineKey?: string;
-	status?: string;
-	owner?: Client;
-	room?: Room;
-	servermode?: boolean;
-	beat?: boolean;
-	keyCheck?: NodeJS.Timeout;
-	heartbeat?: NodeJS.Timeout;
-}
-
-interface Room {
-	key: string;
-	owner?: Client;
-	config?: any;
-	servermode?: boolean;
-}
-
-interface EventItem {
-	id: string;
-	creator: string;
-	nickname: string;
-	avatar: string;
-	utc: number;
-	day: number;
-	hour: number;
-	content: string;
-	members: string[];
-}
+import { decodeRawMessage } from "../protocol/codec";
+import type { Client, EventItem, Room, ServerInstance, ServerOptions } from "../types";
+import { isBannedText } from "../utils/ban";
+import { newId } from "../utils/id";
+import { sendMessage, sendRaw } from "../utils/send";
 
 export function createServer(options: ServerOptions = {}): ServerInstance {
 	const port = options.port ?? 8082;
@@ -60,22 +30,6 @@ export function createServer(options: ServerOptions = {}): ServerInstance {
 			return typeof str === "string" ? str.slice(0, 12) : "无名玩家";
 		},
 
-		isBanned(str: string): boolean {
-			return bannedKeyWords.some(k => str.includes(k));
-		},
-
-		sendl(client: Client, ...args: any[]) {
-			try {
-				client.send(JSON.stringify(args));
-			} catch {
-				client.close();
-			}
-		},
-
-		newId(): string {
-			return Math.floor(1e9 + Math.random() * 9e9).toString();
-		},
-
 		buildRoomList(): any[] {
 			const roomList: any[] = [];
 			const clientCount = new Map<string, number>();
@@ -98,7 +52,7 @@ export function createServer(options: ServerOptions = {}): ServerInstance {
 					roomList.push("server");
 				} else if (room.owner && room.config) {
 					if (count === 0) {
-						util.sendl(room.owner, "reloadroom");
+						sendMessage(room.owner, "reloadroom");
 					}
 					roomList.push([room.owner.nickname, room.owner.avatar, room.config, count, room.key]);
 				}
@@ -119,14 +73,14 @@ export function createServer(options: ServerOptions = {}): ServerInstance {
 			const roomList = util.buildRoomList();
 			const clientList = util.buildClientList();
 			clients.forEach(c => {
-				if (!c.room) util.sendl(c, "updaterooms", roomList, clientList);
+				if (!c.room) sendMessage(c, "updaterooms", roomList, clientList);
 			});
 		},
 
 		updateClients() {
 			const list = util.buildClientList();
 			clients.forEach(c => {
-				if (!c.room) util.sendl(c, "updateclients", list);
+				if (!c.room) sendMessage(c, "updateclients", list);
 			});
 		},
 
@@ -143,7 +97,7 @@ export function createServer(options: ServerOptions = {}): ServerInstance {
 		updateEvents() {
 			util.checkEvents();
 			clients.forEach(c => {
-				if (!c.room) util.sendl(c, "updateevents", events);
+				if (!c.room) sendMessage(c, "updateevents", events);
 			});
 		},
 	};
@@ -161,27 +115,27 @@ export function createServer(options: ServerOptions = {}): ServerInstance {
 			client.room = room;
 			delete client.status;
 
-			util.sendl(client, "createroom", key);
+			sendMessage(client, "createroom", key);
 			util.updateRooms();
 		},
 
 		enter(client: Client, key: string, nickname: string, avatar: string) {
 			const room = rooms.get(key);
-			if (!room) return util.sendl(client, "enterroomfailed");
+			if (!room) return sendMessage(client, "enterroomfailed");
 
 			client.nickname = util.nickname(nickname);
 			client.avatar = avatar;
 			client.room = room;
 			delete client.status;
 
-			if (!room.owner) return util.sendl(client, "enterroomfailed");
+			if (!room.owner) return sendMessage(client, "enterroomfailed");
 
 			if (!room.config || (room.config.gameStarted && (!room.config.observe || !room.config.observeReady))) {
-				return util.sendl(client, "enterroomfailed");
+				return sendMessage(client, "enterroomfailed");
 			}
 
 			client.owner = room.owner;
-			util.sendl(room.owner, "onconnection", client.wsid);
+			sendMessage(room.owner, "onconnection", client.wsid);
 			util.updateRooms();
 		},
 
@@ -193,7 +147,7 @@ export function createServer(options: ServerOptions = {}): ServerInstance {
 
 		key(client: Client, id: any) {
 			if (!id || typeof id !== "object") {
-				util.sendl(client, "denied", "key");
+				sendMessage(client, "denied", "key");
 				return client.close();
 			}
 			if (bannedKeys.has(id[0])) {
@@ -236,16 +190,16 @@ export function createServer(options: ServerOptions = {}): ServerInstance {
 					}
 				}
 			} else if (cfg && typeof cfg === "object" && "utc" in cfg && "day" in cfg && "hour" in cfg && "content" in cfg) {
-				if (events.length >= 20) util.sendl(client, "eventsdenied", "total");
-				else if (cfg.utc <= now) util.sendl(client, "eventsdenied", "time");
-				else if (util.isBanned(cfg.content)) util.sendl(client, "eventsdenied", "ban");
+				if (events.length >= 20) sendMessage(client, "eventsdenied", "total");
+				else if (cfg.utc <= now) sendMessage(client, "eventsdenied", "time");
+				else if (isBannedText(cfg.content, bannedKeyWords)) sendMessage(client, "eventsdenied", "ban");
 				else {
 					const item: EventItem = {
 						...cfg,
 						nickname: util.nickname(cfg.nickname),
 						avatar: cfg.avatar || "caocao",
 						creator: id,
-						id: util.newId(),
+						id: newId(),
 						members: [id],
 					};
 					events.unshift(item);
@@ -276,11 +230,7 @@ export function createServer(options: ServerOptions = {}): ServerInstance {
 		send(client: Client, id: string, message: string) {
 			const target = clients.get(id);
 			if (target && target.owner === client) {
-				try {
-					target.send(message);
-				} catch {
-					target.close();
-				}
+				sendRaw(target, message);
 			}
 		},
 
@@ -296,20 +246,20 @@ export function createServer(options: ServerOptions = {}): ServerInstance {
 
 		// ban check
 		if (bannedIps.has(ip)) {
-			util.sendl(client, "denied", "banned");
+			sendMessage(client, "denied", "banned");
 			return setTimeout(() => ws.close(), 500);
 		}
 
-		client.wsid = util.newId();
+		client.wsid = newId();
 		client.clientIp = ip;
 		clients.set(client.wsid, client);
 
 		client.keyCheck = setTimeout(() => {
-			util.sendl(client, "denied", "key");
+			sendMessage(client, "denied", "key");
 			setTimeout(() => client.close(), 500);
 		}, 2000);
 
-		util.sendl(client, "roomlist", util.buildRoomList(), util.checkEvents(), util.buildClientList(), client.wsid);
+		sendMessage(client, "roomlist", util.buildRoomList(), util.checkEvents(), util.buildClientList(), client.wsid);
 
 		// heartbeat
 		client.heartbeat = setInterval(() => {
@@ -319,11 +269,7 @@ export function createServer(options: ServerOptions = {}): ServerInstance {
 				return;
 			}
 			client.beat = true;
-			try {
-				client.send("heartbeat");
-			} catch {
-				client.close();
-			}
+			sendRaw(client, "heartbeat");
 		}, 60000);
 
 		// message handler
@@ -336,26 +282,22 @@ export function createServer(options: ServerOptions = {}): ServerInstance {
 
 			// forward from slave to owner
 			if (client.owner) {
-				util.sendl(client.owner, "onmessage", client.wsid, raw);
+				sendMessage(client.owner, "onmessage", client.wsid, raw);
 				return;
 			}
 
-			let arr: any[];
-			try {
-				arr = JSON.parse(raw);
-				if (!Array.isArray(arr)) throw new Error();
-			} catch {
-				util.sendl(client, "denied", "banned");
+			const message = decodeRawMessage(raw);
+			if (!message) {
+				sendMessage(client, "denied", "banned");
 				return;
 			}
 
-			if (arr.shift() !== "server") return;
+			if (message.type === "ignored") return;
 
-			const type = arr.shift();
-			const handler = handlers[type];
+			const handler = handlers[message.command];
 			if (!handler) return;
 
-			handler(client, ...arr);
+			handler(client, ...message.args);
 		});
 
 		// disconnect handler
@@ -368,7 +310,7 @@ export function createServer(options: ServerOptions = {}): ServerInstance {
 					// notify all clients in this room
 					clients.forEach(c => {
 						if (c.room === room && c !== client) {
-							util.sendl(c, "selfclose");
+							sendMessage(c, "selfclose");
 						}
 					});
 					rooms.delete(key);
@@ -376,7 +318,7 @@ export function createServer(options: ServerOptions = {}): ServerInstance {
 			});
 
 			// notify owner if client was slave
-			if (client.owner) util.sendl(client.owner, "onclose", client.wsid);
+			if (client.owner) sendMessage(client.owner, "onclose", client.wsid);
 
 			clients.delete(client.wsid);
 
