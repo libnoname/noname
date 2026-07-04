@@ -11136,6 +11136,8 @@ const skills = {
 			const suits = get.info(event.skill).getSuitsMap();
 			const num = player.countMark("mbjiexun_used") + 1;
 			const str = lib.suit
+				.slice()
+				.reverse()
 				.map(suit => {
 					return `${get.translation(suit)}：${get.cnNumber(suits[suit] || 0)}张`;
 				})
