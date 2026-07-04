@@ -393,7 +393,7 @@ const skills = {
 					controls: ["保留选项一", "保留选项二", "cancel2"],
 					prompt: get.prompt2(event.skill),
 					ai() {
-						return [("保留选项一", "保留选项二")].randomGet();
+						return ["保留选项一", "保留选项二"].randomGet();
 					},
 				})
 				.forResult();
