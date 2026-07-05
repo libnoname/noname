@@ -164,9 +164,9 @@ const dynamicTranslates = {
 	},
 	oldongdao(player) {
 		if (player.storage.oldongdao) {
-			return '农民的回合结束时：阴，你可以令地主进行一个额外回合；<span class="bluetext">阳，其可以进行一个额外回合</span>。';
+			return '农民的回合结束时：阳，你可以令地主进行一个额外回合；<span class="bluetext">阴，其可以进行一个额外回合</span>。';
 		}
-		return '农民的回合结束时：<span class="bluetext">阴，你可以令地主进行一个额外回合</span>；阳，其可以进行一个额外回合。';
+		return '农民的回合结束时：<span class="firetext">阳，你可以令地主进行一个额外回合</span>；阴，其可以进行一个额外回合。';
 	},
 	ollangdao(player) {
 		var str = "当你使用【杀】指定唯一目标时，你可以与该目标角色同时选择一项：";

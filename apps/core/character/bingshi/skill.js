@@ -457,7 +457,7 @@ const skills = {
 			}
 		},
 	},
-	potbiqian: {
+	potbihan: {
 		audio: 2,
 		trigger: { global: "damageBegin3" },
 		filter(event, player) {
