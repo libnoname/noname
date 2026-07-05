@@ -18,7 +18,9 @@
     "scripts": {
         "build": "tsup",
         "dev": "tsx src/cli.ts",
-        "lint": "pnpm eslint src/**"
+        "lint": "pnpm eslint src/**",
+        "test": "vitest run",
+        "test:watch": "vitest"
     },
     "dependencies": {
         "ws": "^8.19.0"
@@ -26,6 +28,7 @@
     "devDependencies": {
         "@types/ws": "^8.18.1",
         "tsup": "^8.5.1",
-        "typescript": "^5.9.3"
+        "typescript": "^5.9.3",
+        "vitest": "^4.1.9"
     }
 }
