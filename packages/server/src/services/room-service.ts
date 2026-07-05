@@ -37,28 +37,22 @@ export class RoomService {
 	}
 
 	closeRoom(room: Room, _reason: string): boolean {
-		let closed = false;
+		if (this.state.getRoom(room.key) !== room) return false;
 
-		this.state.rooms.forEach((currentRoom, key) => {
-			if (currentRoom !== room) return;
+		this.state.clients.forEach(client => {
+			if (client.room !== room) return;
 
-			this.state.clients.forEach(client => {
-				if (client.room !== room) return;
-
-				if (client !== room.owner) {
-					sendMessage(client, "selfclose");
-				}
-				if (client.owner === room.owner) {
-					delete client.owner;
-				}
-				delete client.room;
-			});
-
-			this.state.deleteRoom(key);
-			closed = true;
+			if (client !== room.owner) {
+				sendMessage(client, "selfclose");
+			}
+			if (client.owner === room.owner) {
+				delete client.owner;
+			}
+			delete client.room;
 		});
 
-		return closed;
+		this.state.deleteRoom(room.key);
+		return true;
 	}
 
 	closeOwnedRooms(client: Client): boolean {
