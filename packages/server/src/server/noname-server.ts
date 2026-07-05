@@ -7,15 +7,11 @@ import { LobbyService } from "../services/lobby-service";
 import { RoomService } from "../services/room-service";
 import { ServerState } from "../state/server-state";
 import type { Client, ServerInstance, ServerLogger, ServerOptions } from "../types";
+import type { LogInput } from "../utils/log";
+import { writeLog } from "../utils/log";
 import { sendMessage } from "../utils/send";
 import { ClientSession } from "./client-session";
 import { allowAllResourcePolicy } from "./resource-policy";
-
-type LogInput = {
-	level: Parameters<ServerLogger>[0]["level"];
-	event: string;
-	[key: string]: unknown;
-};
 
 export class NonameServer implements ServerInstance {
 	readonly state = new ServerState();
@@ -170,9 +166,6 @@ export class NonameServer implements ServerInstance {
 	}
 
 	private log(event: LogInput) {
-		this.logger({
-			...event,
-			at: Date.now(),
-		});
+		writeLog(this.logger, event);
 	}
 }

@@ -9,14 +9,10 @@ import type { RoomService } from "../services/room-service";
 import type { ServerState } from "../state/server-state";
 import type { Client, ServerLogger } from "../types";
 import { newId } from "../utils/id";
+import type { LogInput } from "../utils/log";
+import { writeLog } from "../utils/log";
 import { sendMessage, sendRaw } from "../utils/send";
 import type { ResourcePolicy } from "./resource-policy";
-
-type LogInput = {
-	level: Parameters<ServerLogger>[0]["level"];
-	event: string;
-	[key: string]: unknown;
-};
 
 export interface ClientSessionOptions {
 	socket: WebSocket;
@@ -217,9 +213,6 @@ export class ClientSession {
 	}
 
 	private log(event: LogInput) {
-		this.options.logger({
-			...event,
-			at: Date.now(),
-		});
+		writeLog(this.options.logger, event);
 	}
 }
