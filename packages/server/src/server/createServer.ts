@@ -1,6 +1,7 @@
 import type { IncomingMessage } from "node:http";
 import { WebSocketServer, type WebSocket } from "ws";
 
+import { createCommandDispatcher } from "../handlers";
 import { decodeRawMessage } from "../protocol/codec";
 import { EventService } from "../services/eventService";
 import { LobbyService } from "../services/lobbyService";
@@ -28,83 +29,16 @@ export function createServer(options: ServerOptions = {}): ServerInstance {
 		return typeof str === "string" ? str.slice(0, 12) : "无名玩家";
 	};
 	const eventService = new EventService(state, normalizeNickname);
-
-	const handlers: Record<string, (client: Client, ...args: any[]) => void> = {
-		create(client: Client, key: string, nickname: string, avatar: string, config: any, mode: string) {
-			if (client.onlineKey !== key) return;
-
-			client.nickname = normalizeNickname(nickname);
-			client.avatar = avatar;
-
-			roomService.createRoom(client, key);
-			sendMessage(client, "createroom", key);
-			lobbyService.updateRooms();
-		},
-
-		enter(client: Client, key: string, nickname: string, avatar: string) {
-			const room = state.getRoom(key);
-			if (!room) return sendMessage(client, "enterroomfailed");
-
-			client.nickname = normalizeNickname(nickname);
-			client.avatar = avatar;
-			roomService.enterRoom(client, room);
-
-			if (!room.owner) return sendMessage(client, "enterroomfailed");
-
-			if (!room.config || (room.config.gameStarted && (!room.config.observe || !room.config.observeReady))) {
-				return sendMessage(client, "enterroomfailed");
-			}
-
-			roomService.notifyRoomOwner(client, room);
-			lobbyService.updateRooms();
-		},
-
-		changeAvatar(client: Client, nickname: string, avatar: string) {
-			client.nickname = normalizeNickname(nickname);
-			client.avatar = avatar;
-			lobbyService.updateClients();
-		},
-
-		key(client: Client, id: any) {
-			if (!id || typeof id !== "object") {
-				sendMessage(client, "denied", "key");
-				return client.close();
-			}
-			if (state.isKeyBanned(id[0])) {
-				state.banIp(client.clientIp);
-				return client.close();
-			}
-			client.onlineKey = id[0];
+	const dispatchCommand = createCommandDispatcher({
+		state,
+		lobbyService,
+		roomService,
+		eventService,
+		normalizeNickname,
+		clearKeyCheck(client) {
 			clearTimeout(client.keyCheck);
 		},
-
-		events(client: Client, cfg: any, id: string, type: string) {
-			eventService.handleEvents(client, cfg, id, type);
-		},
-
-		config(client: Client, config: any) {
-			if (!roomService.configureRoom(client, config)) return;
-			lobbyService.updateRooms();
-		},
-
-		status(client: Client, str: any) {
-			if (typeof str === "string") client.status = str;
-			else delete client.status;
-			lobbyService.updateClients();
-		},
-
-		send(client: Client, id: string, message: string) {
-			const target = state.getClient(id);
-			if (target && target.owner === client) {
-				sendRaw(target, message);
-			}
-		},
-
-		close(client: Client, id: string) {
-			const target = state.getClient(id);
-			if (target && target.owner === client) target.close();
-		},
-	};
+	});
 
 	const handleConnection = (ws: WebSocket, req: IncomingMessage) => {
 		const client = ws as Client;
@@ -160,10 +94,7 @@ export function createServer(options: ServerOptions = {}): ServerInstance {
 
 			if (message.type === "ignored") return;
 
-			const handler = handlers[message.command];
-			if (!handler) return;
-
-			handler(client, ...message.args);
+			dispatchCommand(client, message.command, ...message.args);
 		});
 
 		// disconnect handler
