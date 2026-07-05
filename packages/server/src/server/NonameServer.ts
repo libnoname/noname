@@ -6,9 +6,16 @@ import { EventService } from "../services/eventService";
 import { LobbyService } from "../services/lobbyService";
 import { RoomService } from "../services/roomService";
 import { ServerState } from "../state/ServerState";
-import type { Client, ServerInstance, ServerOptions } from "../types";
+import type { Client, ServerInstance, ServerLogger, ServerOptions } from "../types";
 import { sendMessage } from "../utils/send";
 import { ClientSession } from "./ClientSession";
+import { allowAllResourcePolicy } from "./ResourcePolicy";
+
+type LogInput = {
+	level: Parameters<ServerLogger>[0]["level"];
+	event: string;
+	[key: string]: unknown;
+};
 
 export class NonameServer implements ServerInstance {
 	readonly state = new ServerState();
@@ -17,6 +24,8 @@ export class NonameServer implements ServerInstance {
 	readonly eventService = new EventService(this.state, value => this.normalizeNickname(value));
 
 	private readonly port: number;
+	private readonly logger: ServerLogger;
+	private readonly resourcePolicy = allowAllResourcePolicy;
 	private readonly sessions = new Set<ClientSession>();
 	private readonly dispatchCommand = createCommandDispatcher({
 		state: this.state,
@@ -33,6 +42,7 @@ export class NonameServer implements ServerInstance {
 
 	constructor(options: ServerOptions = {}) {
 		this.port = options.port ?? 8082;
+		this.logger = options.logger ?? (() => {});
 	}
 
 	start(): Promise<void> {
@@ -49,6 +59,11 @@ export class NonameServer implements ServerInstance {
 			};
 			const handleListening = () => {
 				server.off("error", handleError);
+				this.log({
+					level: "info",
+					event: "server_start",
+					port: this.port,
+				});
 				resolve();
 			};
 
@@ -70,8 +85,21 @@ export class NonameServer implements ServerInstance {
 
 		return new Promise<void>((resolve, reject) => {
 			server.close(error => {
-				if (error) reject(error);
-				else resolve();
+				if (error) {
+					this.log({
+						level: "error",
+						event: "server_stop_failure",
+						error,
+					});
+					reject(error);
+				} else {
+					this.log({
+						level: "info",
+						event: "server_stop",
+						port: this.port,
+					});
+					resolve();
+				}
 			});
 		});
 	}
@@ -80,29 +108,71 @@ export class NonameServer implements ServerInstance {
 		const ip = req.socket.remoteAddress ?? "";
 
 		if (this.state.isIpBanned(ip)) {
+			this.log({
+				level: "warn",
+				event: "connection_denied",
+				ip,
+				reason: "banned",
+			});
 			sendMessage(ws as Client, "denied", "banned");
 			setTimeout(() => ws.close(), 500);
 			return;
 		}
 
-		const session = new ClientSession({
-			socket: ws,
+		const decision = this.resourcePolicy.checkConnection({
+			ip,
 			request: req,
-			state: this.state,
-			lobbyService: this.lobbyService,
-			roomService: this.roomService,
-			eventService: this.eventService,
-			dispatchCommand: this.dispatchCommand,
-			onClose: closedSession => {
-				this.sessions.delete(closedSession);
-			},
+			sessionCount: this.sessions.size,
 		});
+		if (!decision.allowed) {
+			this.log({
+				level: "warn",
+				event: "connection_denied",
+				ip,
+				reason: decision.reason ?? "policy",
+			});
+			ws.close();
+			return;
+		}
 
-		this.sessions.add(session);
-		session.start();
+		try {
+			const session = new ClientSession({
+				socket: ws,
+				request: req,
+				state: this.state,
+				lobbyService: this.lobbyService,
+				roomService: this.roomService,
+				eventService: this.eventService,
+				dispatchCommand: this.dispatchCommand,
+				resourcePolicy: this.resourcePolicy,
+				logger: this.logger,
+				onClose: closedSession => {
+					this.sessions.delete(closedSession);
+				},
+			});
+
+			this.sessions.add(session);
+			session.start();
+		} catch (error) {
+			this.log({
+				level: "error",
+				event: "session_crash",
+				ip,
+				phase: "start",
+				error,
+			});
+			ws.close();
+		}
 	};
 
 	private normalizeNickname(value: any): string {
 		return typeof value === "string" ? value.slice(0, 12) : "无名玩家";
+	}
+
+	private log(event: LogInput) {
+		this.logger({
+			...event,
+			at: Date.now(),
+		});
 	}
 }

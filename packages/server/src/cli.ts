@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { createServer } from "./server/createServer";
+import type { ServerLogEvent, ServerLogger } from "./types";
 
 function readPort(): number {
 	const portArgIndex = process.argv.findIndex(arg => arg === "--port" || arg === "-p");
@@ -15,7 +16,13 @@ function readPort(): number {
 }
 
 const port = readPort();
-const server = createServer({ port });
+const logger: ServerLogger = event => {
+	const output = JSON.stringify(normalizeLogEvent(event));
+	if (event.level === "error") console.error(output);
+	else if (event.level === "warn") console.warn(output);
+	else console.log(output);
+};
+const server = createServer({ port, logger });
 
 const stop = async () => {
 	await server.stop();
@@ -25,12 +32,20 @@ const stop = async () => {
 process.on("SIGINT", stop);
 process.on("SIGTERM", stop);
 
-async function main() {
-	await server.start();
-	console.log(`Server listening on port ${port}`);
-}
-
-main().catch(error => {
+server.start().catch(error => {
 	console.error(error);
 	process.exit(1);
 });
+
+function normalizeLogEvent(event: ServerLogEvent): ServerLogEvent {
+	if (!(event.error instanceof Error)) return event;
+
+	return {
+		...event,
+		error: {
+			name: event.error.name,
+			message: event.error.message,
+			stack: event.error.stack,
+		},
+	};
+}

@@ -36,17 +36,40 @@ export class RoomService {
 		return true;
 	}
 
-	closeOwnedRooms(client: Client) {
-		this.state.rooms.forEach((room, key) => {
-			if (room.owner === client) {
-				// notify all clients in this room
-				this.state.clients.forEach(c => {
-					if (c.room === room && c !== client) {
-						sendMessage(c, "selfclose");
-					}
-				});
-				this.state.deleteRoom(key);
-			}
+	closeRoom(room: Room, _reason: string): boolean {
+		let closed = false;
+
+		this.state.rooms.forEach((currentRoom, key) => {
+			if (currentRoom !== room) return;
+
+			this.state.clients.forEach(client => {
+				if (client.room !== room) return;
+
+				if (client !== room.owner) {
+					sendMessage(client, "selfclose");
+				}
+				if (client.owner === room.owner) {
+					delete client.owner;
+				}
+				delete client.room;
+			});
+
+			this.state.deleteRoom(key);
+			closed = true;
 		});
+
+		return closed;
+	}
+
+	closeOwnedRooms(client: Client): boolean {
+		let closed = false;
+
+		for (const room of [...this.state.rooms.values()]) {
+			if (room.owner === client) {
+				closed = this.closeRoom(room, "owner_closed") || closed;
+			}
+		}
+
+		return closed;
 	}
 }

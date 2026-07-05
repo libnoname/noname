@@ -1,5 +1,5 @@
 import type { IncomingMessage } from "node:http";
-import type { RawData, WebSocket } from "ws";
+import { WebSocket, type RawData } from "ws";
 
 import type { CommandDispatcher } from "../handlers";
 import { decodeRawMessage } from "../protocol/codec";
@@ -7,9 +7,16 @@ import type { EventService } from "../services/eventService";
 import type { LobbyService } from "../services/lobbyService";
 import type { RoomService } from "../services/roomService";
 import type { ServerState } from "../state/ServerState";
-import type { Client } from "../types";
+import type { Client, ServerLogger } from "../types";
 import { newId } from "../utils/id";
 import { sendMessage, sendRaw } from "../utils/send";
+import type { ResourcePolicy } from "./ResourcePolicy";
+
+type LogInput = {
+	level: Parameters<ServerLogger>[0]["level"];
+	event: string;
+	[key: string]: unknown;
+};
 
 export interface ClientSessionOptions {
 	socket: WebSocket;
@@ -19,13 +26,19 @@ export interface ClientSessionOptions {
 	roomService: RoomService;
 	eventService: EventService;
 	dispatchCommand: CommandDispatcher;
+	resourcePolicy: ResourcePolicy;
+	logger: ServerLogger;
 	onClose(session: ClientSession): void;
 }
+
+export type ClientCloseReason = "server" | "client" | "key_timeout" | "heartbeat_timeout" | "policy" | "crash";
+export type ClientCrashPhase = "start" | "message" | "cleanup";
 
 export class ClientSession {
 	readonly client: Client;
 
 	private closed = false;
+	private closeReason: ClientCloseReason = "client";
 	private readonly closedPromise: Promise<void>;
 	private resolveClosed!: () => void;
 
@@ -39,34 +52,60 @@ export class ClientSession {
 	}
 
 	start() {
-		this.options.state.addClient(this.client);
-
-		this.client.keyCheck = setTimeout(() => {
-			sendMessage(this.client, "denied", "key");
-			setTimeout(() => this.client.close(), 500);
-		}, 2000);
-
-		sendMessage(this.client, "roomlist", this.options.lobbyService.buildRoomList(), this.options.eventService.checkEvents(), this.options.lobbyService.buildClientList(), this.client.wsid);
-
-		this.client.heartbeat = setInterval(() => {
-			if (this.client.beat) {
-				this.client.close();
-				clearInterval(this.client.heartbeat);
-				return;
-			}
-			this.client.beat = true;
-			sendRaw(this.client, "heartbeat");
-		}, 60000);
-
 		this.client.on("message", this.handleMessage);
 		this.client.on("close", this.handleClose);
+
+		this.guard("start", () => {
+			this.options.state.addClient(this.client);
+			this.log({
+				level: "info",
+				event: "session_connect",
+				wsid: this.client.wsid,
+				ip: this.client.clientIp,
+			});
+
+			this.client.keyCheck = setTimeout(() => {
+				sendMessage(this.client, "denied", "key");
+				setTimeout(() => this.close("key_timeout"), 500);
+			}, 2000);
+
+			sendMessage(this.client, "roomlist", this.options.lobbyService.buildRoomList(), this.options.eventService.checkEvents(), this.options.lobbyService.buildClientList(), this.client.wsid);
+
+			this.client.heartbeat = setInterval(() => {
+				if (this.client.beat) {
+					this.close("heartbeat_timeout");
+					clearInterval(this.client.heartbeat);
+					return;
+				}
+				this.client.beat = true;
+				sendRaw(this.client, "heartbeat");
+			}, 60000);
+		});
 	}
 
-	close(): Promise<void> {
+	close(reason: ClientCloseReason = "server"): Promise<void> {
+		this.closeReason = reason;
 		if (this.closed) return this.closedPromise;
+
+		if (this.client.readyState === WebSocket.CLOSED) {
+			this.handleClose();
+			return this.closedPromise;
+		}
 
 		this.client.close();
 		return this.closedPromise;
+	}
+
+	crash(error: unknown, phase: ClientCrashPhase) {
+		this.log({
+			level: "error",
+			event: "session_crash",
+			wsid: this.client.wsid,
+			ip: this.client.clientIp,
+			phase,
+			error,
+		});
+		this.close("crash");
 	}
 
 	dispose() {
@@ -76,28 +115,46 @@ export class ClientSession {
 		this.client.off("close", this.handleClose);
 	}
 
-	private handleMessage = (msg: RawData) => {
-		const raw = msg.toString();
-		if (raw === "heartbeat") {
-			this.client.beat = false;
-			return;
-		}
+	private handleMessage = (msg: RawData) =>
+		this.guard("message", () => {
+			const raw = msg.toString();
+			if (raw === "heartbeat") {
+				this.client.beat = false;
+				return;
+			}
 
-		if (this.client.owner) {
-			sendMessage(this.client.owner, "onmessage", this.client.wsid, raw);
-			return;
-		}
+			const decision = this.options.resourcePolicy.checkMessage({
+				client: this.client,
+				raw,
+				byteLength: Buffer.byteLength(raw),
+			});
+			if (!decision.allowed) {
+				this.log({
+					level: "warn",
+					event: "message_denied",
+					wsid: this.client.wsid,
+					ip: this.client.clientIp,
+					reason: decision.reason ?? "policy",
+				});
+				this.close("policy");
+				return;
+			}
 
-		const message = decodeRawMessage(raw);
-		if (!message) {
-			sendMessage(this.client, "denied", "banned");
-			return;
-		}
+			if (this.client.owner) {
+				sendMessage(this.client.owner, "onmessage", this.client.wsid, raw);
+				return;
+			}
 
-		if (message.type === "ignored") return;
+			const message = decodeRawMessage(raw);
+			if (!message) {
+				sendMessage(this.client, "denied", "banned");
+				return;
+			}
 
-		this.options.dispatchCommand(this.client, message.command, ...message.args);
-	};
+			if (message.type === "ignored") return;
+
+			this.options.dispatchCommand(this.client, message.command, ...message.args);
+		});
 
 	private handleClose = () => {
 		if (this.closed) return;
@@ -105,16 +162,64 @@ export class ClientSession {
 
 		this.dispose();
 
-		this.options.roomService.closeOwnedRooms(this.client);
+		const wasInRoom = Boolean(this.client.room);
+		let roomsChanged = false;
 
-		if (this.client.owner) sendMessage(this.client.owner, "onclose", this.client.wsid);
+		try {
+			roomsChanged = this.options.roomService.closeOwnedRooms(this.client);
+		} catch (error) {
+			this.logCleanupFailure(error);
+		}
+
+		try {
+			if (this.client.owner) sendMessage(this.client.owner, "onclose", this.client.wsid);
+		} catch (error) {
+			this.logCleanupFailure(error);
+		}
 
 		this.options.state.deleteClient(this.client.wsid);
 
-		if (this.client.room) this.options.lobbyService.updateRooms();
-		else this.options.lobbyService.updateClients();
+		try {
+			if (roomsChanged || wasInRoom) this.options.lobbyService.updateRooms();
+			else this.options.lobbyService.updateClients();
+		} catch (error) {
+			this.logCleanupFailure(error);
+		}
 
 		this.options.onClose(this);
+		this.log({
+			level: "info",
+			event: "session_close",
+			wsid: this.client.wsid,
+			ip: this.client.clientIp,
+			reason: this.closeReason,
+		});
 		this.resolveClosed();
 	};
+
+	private guard(phase: ClientCrashPhase, fn: () => void) {
+		try {
+			fn();
+		} catch (error) {
+			this.crash(error, phase);
+		}
+	}
+
+	private logCleanupFailure(error: unknown) {
+		this.log({
+			level: "error",
+			event: "cleanup_failure",
+			wsid: this.client.wsid,
+			ip: this.client.clientIp,
+			phase: "cleanup",
+			error,
+		});
+	}
+
+	private log(event: LogInput) {
+		this.options.logger({
+			...event,
+			at: Date.now(),
+		});
+	}
 }
