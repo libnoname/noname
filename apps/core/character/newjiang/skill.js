@@ -5,9 +5,7 @@ const skills = {
 	//☆王朗
 	fuyu: {
 		audio: 4,
-		logAudio(event, player, name) {
-			return name == "useCardToPlayered" ? 2 : ["fuyu3.mp3", "fuyu4.mp3"];
-		},
+		logAudio: index => (typeof index === "number" ? "fuyu" + index + ".mp3" : 2),
 		trigger: {
 			player: "useCardToPlayered",
 			target: "useCardToTargeted",
@@ -46,6 +44,7 @@ const skills = {
 			const playerResult = result.bool;
 			const lastResult = player.getStorage(event.name + "_last", void 0);
 			if (playerResult === lastResult) {
+				player.logSkill(event.name, null, null, null, [get.rand(3, 4)]);
 				await player.draw(2);
 			}
 			player.setStorage(event.name + "_last", playerResult);
