@@ -373,6 +373,7 @@ const skills = {
 						.when({ player: "damageAfter" })
 						.filter(evt => evt === trigger)
 						.step(async (event, trigger, player2) => {
+							player.logSkill("potfentao", target, null, null, [event, player]);
 							await player2.link(true);
 						});
 				}
