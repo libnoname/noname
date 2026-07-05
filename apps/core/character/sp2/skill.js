@@ -3187,6 +3187,7 @@ const skills = {
 	},
 	// 星夏侯霸
 	starweigu: {
+		audio: 2,
 		trigger: {
 			player: "useCardToPlayer",
 			target: "useCardToTarget",
@@ -3331,6 +3332,7 @@ const skills = {
 	},
 	starjuefa: {
 		//批量改名前记得这里有starweigu
+		audio: 2,
 		enable: "phaseUse",
 		skillAnimation: true,
 		limited: true,
@@ -3345,6 +3347,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
+				audio: "starjuefa",
 				charlotte: true,
 				forced: true,
 				init(player, skill) {
@@ -3375,6 +3378,7 @@ const skills = {
 				},
 			},
 			remove: {
+				audio: "starjuefa",
 				charlotte: true,
 				forced: true,
 				trigger: {
