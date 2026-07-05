@@ -6,7 +6,12 @@ const skills = {
 	//势周瑜------by 清风
 	potchiyun: {
 		audio: 2,
-		audioname: ["pot_zhouyu_shadow", "pot_zhouyu_shadow2"],
+		audioname2: {
+			pot_zhouyu_shadow: "potchiyun_pot_zhouyu_shadow",
+		},
+		logAudio2: {
+			pot_zhouyu_shadow: (event, player) => ("potchiyun_pot_zhouyu_shadow" + (player.storage.potchiyun1 ? get.rand(3, 4) : get.rand(1, 2)) + ".mp3"),
+		},
 		trigger: {
 			player: "gainAfter",
 			global: "loseAsyncAfter",
@@ -97,10 +102,13 @@ const skills = {
 				}
 			}
 		},
+		subSkill: {
+			pot_zhouyu_shadow: { audio: 4 },
+		},
 	},
 	potyanhui: {
 		audio: 6,
-		audioname: ["pot_zhouyu_shadow", "pot_zhouyu_shadow2"],
+		audioname: ["pot_zhouyu_shadow"],
 		logAudio: (player, indexedData) => "potyanhui" + (lib.skill.potyanhui.audioname.includes(player.skin.name) ? "_pot_zhouyu_shadow" : "") + (indexedData ? indexedData : get.rand(1, 2)) + ".mp3",
 		popup: false,
 		trigger: { player: "useCardToPlayered" },
@@ -298,13 +306,14 @@ const skills = {
 			},
 		},
 	},
-	potfentao_pot_zhouyu_shadow: { audio: 4 },
 	potfentao: {
 		audio: 2,
 		forced: true,
 		audioname2: {
 			pot_zhouyu_shadow: "potfentao_pot_zhouyu_shadow",
-			pot_zhouyu_shadow2: "potfentao_pot_zhouyu_shadow",
+		},
+		logAudio2: {
+			pot_zhouyu_shadow: (event, player) => ("potfentao_pot_zhouyu_shadow" + (player.storage.potfentao2 ? get.rand(3, 4) : get.rand(1, 2)) + ".mp3"),
 		},
 		trigger: { global: "damageBegin4" },
 		filter(event, player) {
@@ -364,13 +373,16 @@ const skills = {
 						.when({ player: "damageAfter" })
 						.filter(evt => evt === trigger)
 						.step(async (event, trigger, player2) => {
-							player.logSkill("potfentao", target);
+							player.logSkill("potfentao", target, null, null, [event, player]);
 							await player2.link(true);
 						});
 				}
 			}
 		},
-		subSkill: { dam: { charlotte: true, onremove: true } },
+		subSkill: { 
+			dam: { charlotte: true, onremove: true },
+			pot_zhouyu_shadow: { audio: 4 },
+		},
 	},
 	potxiongzi: {
 		audio: 4,
@@ -407,7 +419,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const { cost_data: link } = event;
 			player.awakenSkill(event.name);
-			player.changeSkin({ characterName: "pot_zhouyu" }, link === "保留选项一" ? "pot_zhouyu_shadow" : "pot_zhouyu_shadow2");
+			player.changeSkin({ characterName: "pot_zhouyu" }, "pot_zhouyu_shadow");
 			for (const skill of ["potchiyun", "potyanhui", "potfentao"]) {
 				player.setStorage(skill + (link === "保留选项一" ? "2" : "1"), true, true);
 			}
