@@ -84,9 +84,9 @@ export class ClientSession {
 	}
 
 	close(reason: ClientCloseReason = "server"): Promise<void> {
-		this.closeReason = reason;
 		if (this.closed) return this.closedPromise;
 
+		this.closeReason = reason;
 		if (this.client.readyState === WebSocket.CLOSED) {
 			this.handleClose();
 			return this.closedPromise;
