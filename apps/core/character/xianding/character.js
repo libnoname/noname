@@ -21,16 +21,14 @@ const characters = {
 	dc_shen_guanyu: {
 		sex: "male",
 		group: "shen",
-		hp: 4,
-		maxHp: 5,
+		hp: 5,
 		skills: ["dcwushen", "dcwuhun"],
 		groupInGuozhan: "shu",
 	},
 	dc_shen_liubei: {
 		sex: "male",
 		group: "shen",
-		hp: 4,
-		maxHp: 6,
+		hp: 6,
 		skills: ["dclongnu", "dcjieying"],
 		groupInGuozhan: "shu",
 	},

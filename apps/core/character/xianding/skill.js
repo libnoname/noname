@@ -32703,6 +32703,22 @@ const skills = {
 				onremove: true,
 				marktext: "灿",
 				intro: { content: "对$使用牌无距离和次数限制" },
+				forced: true,
+				trigger: { player: "useCard1" },
+				filter(event, player) {
+					if (!event.targets?.some(target => player.getStorage("dcwencan_paoxiao").includes(target))) {
+						return false;
+					}
+					return event.card.name === "sha";
+				},
+				async content(event, trigger, player) {
+					trigger.addCount = false;
+					const stat = player.getStat().card;
+					const name = trigger.card.name;
+					if (typeof stat[name] === "number") {
+						stat[name]--;
+					}
+				},
 				mod: {
 					cardUsableTarget(card, player, target) {
 						if (player.getStorage("dcwencan_paoxiao").includes(target)) {

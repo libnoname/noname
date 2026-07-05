@@ -14,7 +14,7 @@
     ],
     "scripts": {
         "build": "tsup",
-        "dev": "tsx src/index.ts",
+        "dev": "tsx src/cli.ts",
         "lint": "pnpm eslint src/**"
     },
     "dependencies": {
