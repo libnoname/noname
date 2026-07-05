@@ -11192,7 +11192,7 @@ const skills = {
 			const drawNum = Math.min(5, get.info(event.name).getSuitsMap()[suit] || 0);
 			const discardNum = player.countMark(event.name + "_used");
 			await target.draw(drawNum);
-			const handCardsBefore == target.countCards('h');
+			const handCardsBefore = target.countCards('h');
 			const result = await target
 				.chooseToDiscard({
 					selectCard: discardNum,
