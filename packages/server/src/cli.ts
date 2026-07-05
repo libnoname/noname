@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { createServer } from "./server/createServer";
+import { createServer } from "./server/create-server";
 import type { ServerLogEvent, ServerLogger } from "./types";
 
 function readPort(): number {

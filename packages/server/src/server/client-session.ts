@@ -3,14 +3,14 @@ import { WebSocket, type RawData } from "ws";
 
 import type { CommandDispatcher } from "../handlers";
 import { decodeRawMessage } from "../protocol/codec";
-import type { EventService } from "../services/eventService";
-import type { LobbyService } from "../services/lobbyService";
-import type { RoomService } from "../services/roomService";
-import type { ServerState } from "../state/ServerState";
+import type { EventService } from "../services/event-service";
+import type { LobbyService } from "../services/lobby-service";
+import type { RoomService } from "../services/room-service";
+import type { ServerState } from "../state/server-state";
 import type { Client, ServerLogger } from "../types";
 import { newId } from "../utils/id";
 import { sendMessage, sendRaw } from "../utils/send";
-import type { ResourcePolicy } from "./ResourcePolicy";
+import type { ResourcePolicy } from "./resource-policy";
 
 type LogInput = {
 	level: Parameters<ServerLogger>[0]["level"];

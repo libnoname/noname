@@ -1,4 +1,4 @@
-import { ServerState } from "../state/ServerState";
+import { ServerState } from "../state/server-state";
 import { sendMessage } from "../utils/send";
 
 export class LobbyService {

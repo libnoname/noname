@@ -1,12 +1,12 @@
-import type { EventService } from "../services/eventService";
-import type { LobbyService } from "../services/lobbyService";
-import type { RoomService } from "../services/roomService";
-import type { ServerState } from "../state/ServerState";
+import type { EventService } from "../services/event-service";
+import type { LobbyService } from "../services/lobby-service";
+import type { RoomService } from "../services/room-service";
+import type { ServerState } from "../state/server-state";
 import type { Client } from "../types";
-import { authHandlers } from "./authHandlers";
-import { lobbyHandlers } from "./lobbyHandlers";
-import { relayHandlers } from "./relayHandlers";
-import { roomHandlers } from "./roomHandlers";
+import { authHandlers } from "./auth-handlers";
+import { lobbyHandlers } from "./lobby-handlers";
+import { relayHandlers } from "./relay-handlers";
+import { roomHandlers } from "./room-handlers";
 
 export interface HandlerContext {
 	state: ServerState;

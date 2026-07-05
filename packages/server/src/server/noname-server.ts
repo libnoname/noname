@@ -2,14 +2,14 @@ import type { IncomingMessage } from "node:http";
 import { WebSocketServer, type WebSocket } from "ws";
 
 import { createCommandDispatcher } from "../handlers";
-import { EventService } from "../services/eventService";
-import { LobbyService } from "../services/lobbyService";
-import { RoomService } from "../services/roomService";
-import { ServerState } from "../state/ServerState";
+import { EventService } from "../services/event-service";
+import { LobbyService } from "../services/lobby-service";
+import { RoomService } from "../services/room-service";
+import { ServerState } from "../state/server-state";
 import type { Client, ServerInstance, ServerLogger, ServerOptions } from "../types";
 import { sendMessage } from "../utils/send";
-import { ClientSession } from "./ClientSession";
-import { allowAllResourcePolicy } from "./ResourcePolicy";
+import { ClientSession } from "./client-session";
+import { allowAllResourcePolicy } from "./resource-policy";
 
 type LogInput = {
 	level: Parameters<ServerLogger>[0]["level"];

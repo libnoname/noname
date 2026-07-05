@@ -1,5 +1,5 @@
 import type { Client, EventItem } from "../types";
-import { ServerState } from "../state/ServerState";
+import { ServerState } from "../state/server-state";
 import { isBannedText } from "../utils/ban";
 import { newId } from "../utils/id";
 import { sendMessage } from "../utils/send";
