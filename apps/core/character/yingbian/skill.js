@@ -623,7 +623,7 @@ const skills = {
 				targets: [player], 
 				addCount: false,
 			});
-			const num = player.hasHistory("damage", evt => evt.card === cardx) ? 2 : 1;
+			const num = player.hasHistory("damage", evt => evt.source === target) ? 2 : 1;
 			await player.draw(num);
 		},
 		ai: {
