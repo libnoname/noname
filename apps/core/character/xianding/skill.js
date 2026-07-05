@@ -16533,33 +16533,23 @@ const skills = {
 			const bool2 = get.type2(trigger.card) === get.type2(history[index - 1].card);
 			if (bool1 && bool2) {
 				const result = await player
-					.chooseButton([
-						get.prompt2(event.skill),
-						[
-							[
-								["draw", `摸两张牌`],
-								["noCount", `令${get.translation(trigger.card)}不计入次数`],
-							],
-							"textbutton",
-						],
-					])
-					.set("ai", button => {
-						if (button.link == "draw") {
-							return 2;
-						}
-						if (button.link == "noCount") {
-							const usable = get.player().getCardUsable(get.event().getTrigger().card);
-							if (usable > 0) {
-								return 1.5;
+					.chooseControl({
+						prompt: get.prompt2(event.skill),
+						controls: ["摸两张牌", `令${get.translation(trigger.card)}不计入次数`],
+						ai() {
+							const { player, controls } = get.event();
+							const usable = player.getCardUsable(get.event().getTrigger().card);
+							if(usable <= 0) {
+								return controls[1];
 							}
-							return 2.5;
-						}
+							return controls[0];
+						},
 					})
 					.forResult();
-				if (result?.links?.length) {
+				if (typeof result?.control == "string") {
 					event.result = {
 						bool: true,
-						cost_data: result.links[0],
+						cost_data: result.control,
 					};
 				}
 			} else if (!bool1 && !bool2) {
@@ -16571,10 +16561,10 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const link = event.cost_data;
-			if (link == "draw") {
-				await player.draw(2);
+			if (link == "摸两张牌") {
+				await player.draw({ num: 2 });
 			}
-			if (link == "noCount") {
+			if (link == `令${get.translation(trigger.card)}不计入次数`) {
 				if (trigger.addCount !== false) {
 					trigger.addCount = false;
 					const stat = player.getStat().card,
