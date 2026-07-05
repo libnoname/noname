@@ -139,6 +139,13 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
+		mod: {
+			cardUsable(card, player) {
+				if (card?.storage?.dcsbjuao) {
+					return Infinity;
+				}
+			}
+		}
 		filter(event, player) {
 			if (!player.hasDiscardableCards(player, "he")) {
 				return false;
@@ -222,6 +229,7 @@ const skills = {
 						suit: "none",
 						number: null,
 						isCard: true,
+						storage:{ dcsbjuao: true }
 					},
 					multitarget: true,
 					multiline: true,
