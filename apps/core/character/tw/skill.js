@@ -28803,7 +28803,7 @@ const skills = {
 					target: "useCardToTargeted",
 				},
 				filter(event, player) {
-					if(!event.player || event.player === player) {
+					if (!event.player || event.player === player) {
 						return false;
 					}
 					return !player.getStorage("cangjia").includes(get.suit(event.card));
