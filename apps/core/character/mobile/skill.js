@@ -32446,7 +32446,6 @@ const skills = {
 					const result = await player
 						.chooseToDiscard({
 							position: "he",
-							forced: true,
 							prompt: "竭缘：请选择一张" + get.translation(color) + "牌弃置",
 							filterCard(card) {
 								return get.color(card) === get.event().color;
@@ -32454,7 +32453,7 @@ const skills = {
 						})
 						.set("color", color)
 						.forResult();
-					if (result.bool && result.cards?.length > 0) {
+					if (result?.bool && result.cards?.length > 0) {
 						if (isSource) {
 							trigger.num += effectNum;
 							game.log(player, "令此次伤害+" + effectNum);
