@@ -11537,6 +11537,16 @@ export class Library {
 			const filterTarget = event?.filterTarget || lib.filter.filterTarget;
 			return game.hasPlayer2(current => filterTarget(card, player, current), true);
 		},
+		/**
+		 * 判断一张牌在当前选择事件中是否可以指定目标。
+		 *
+		 * 此函数在常规目标合法性前，额外校验当前事件中的牌可用性、使用次数和singleCard追加目标规则。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 需要判断的牌
+		 * @param { Player } player - 使用/指定此目标的角色
+		 * @param { Player } target - 被指定的目标角色
+		 * @returns { boolean }
+		 */
 		targetEnabledx(card, player, target) {
 			if (!card || !target || target.removed) {
 				return false;
@@ -11548,28 +11558,37 @@ export class Library {
 			if (!info?.includeOut && target.isOut()) {
 				return false;
 			}
-			let event = _status.event,
-				evt = event.getParent("chooseToUse");
+			const event = _status.event;
+			let evt = event.getParent("chooseToUse");
 			if (get.itemtype(evt) !== "event") {
 				evt = event;
 			}
 			if (
 				event._backup &&
-				event._backup.filterCard == lib.filter.filterCard &&
+				event._backup.filterCard === lib.filter.filterCard &&
 				(!lib.filter.cardEnabled(card, player, event) || !lib.filter.cardUsable(card, player, evt))
 			) {
 				return false;
 			}
 			if (event.addCount_extra) {
-				if (!lib.filter.cardUsable2(card, player) && !game.checkMod(card, player, target, false, "cardUsableTarget", player)) {
+				const usableTarget = game.checkMod(card, player, target, false, "cardUsableTarget", player);
+				if (!lib.filter.cardUsable2(card, player) && !usableTarget) {
 					return false;
 				}
 			}
 			if (info.singleCard && info.filterAddedTarget && ui.selected.targets.length) {
 				return Boolean(info.filterAddedTarget(card, player, target, ui.selected.targets[ui.selected.targets.length - 1]));
 			}
-			return lib.filter.targetEnabled.apply(this, arguments);
+			return lib.filter.targetEnabled(card, player, target);
 		},
+		/**
+		 * 判断一张牌是否可以按常规规则指定目标。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 需要判断的牌
+		 * @param { Player } player - 使用/指定此目标的角色
+		 * @param { Player } target - 被指定的目标角色
+		 * @returns { boolean }
+		 */
 		targetEnabled(card, player, target) {
 			if (!card || !target || target.removed) {
 				return false;
@@ -11581,24 +11600,33 @@ export class Library {
 			if (!info?.includeOut && target.isOut()) {
 				return false;
 			}
-			const filter = info.filterTarget;
-			if (!info.singleCard || ui.selected.targets.length == 0) {
-				let mod = game.checkMod(card, player, target, "unchanged", "playerEnabled", player);
-				if (mod != "unchanged") {
-					return mod;
+			if (!info.singleCard || ui.selected.targets.length === 0) {
+				const playerEnabled = game.checkMod(card, player, target, "unchanged", "playerEnabled", player);
+				if (playerEnabled !== "unchanged") {
+					return Boolean(playerEnabled);
 				}
-				mod = game.checkMod(card, player, target, "unchanged", "targetEnabled", target);
-				if (mod != "unchanged") {
-					return mod;
+				const targetEnabled = game.checkMod(card, player, target, "unchanged", "targetEnabled", target);
+				if (targetEnabled !== "unchanged") {
+					return Boolean(targetEnabled);
 				}
 			}
-			if (typeof filter == "boolean") {
-				return filter;
+			const filterTarget = info.filterTarget;
+			if (typeof filterTarget === "boolean") {
+				return filterTarget;
 			}
-			if (typeof filter == "function") {
-				return Boolean(filter(card, player, target));
+			if (typeof filterTarget === "function") {
+				return Boolean(filterTarget(card, player, target));
 			}
+			return false;
 		},
+		/**
+		 * 判断一张牌是否可以指定目标，或是否可通过牌的modTarget额外影响目标。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 需要判断的牌
+		 * @param { Player } player - 使用/指定此目标的角色
+		 * @param { Player } target - 被指定或额外影响的目标角色
+		 * @returns { boolean }
+		 */
 		targetEnabled2(card, player, target) {
 			if (!card || !target || target.removed) {
 				return false;
@@ -11614,22 +11642,32 @@ export class Library {
 				return true;
 			}
 
-			if (game.checkMod(card, player, target, "unchanged", "playerEnabled", player) == false) {
+			const playerEnabled = game.checkMod(card, player, target, "unchanged", "playerEnabled", player);
+			if (playerEnabled === false) {
 				return false;
 			}
-			if (game.checkMod(card, player, target, "unchanged", "targetEnabled", target) == false) {
+			const targetEnabled = game.checkMod(card, player, target, "unchanged", "targetEnabled", target);
+			if (targetEnabled === false) {
 				return false;
 			}
 
-			const filter = get.info(card).modTarget;
-			if (typeof filter == "boolean") {
-				return filter;
+			const modTarget = info.modTarget;
+			if (typeof modTarget === "boolean") {
+				return modTarget;
 			}
-			if (typeof filter == "function") {
-				return Boolean(filter(card, player, target));
+			if (typeof modTarget === "function") {
+				return Boolean(modTarget(card, player, target));
 			}
 			return false;
 		},
+		/**
+		 * 仅根据牌自身的filterTarget或modTarget定义判断目标是否可被涉及。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 需要判断的牌
+		 * @param { Player } player - 使用/指定此目标的角色
+		 * @param { Player } target - 被指定或涉及的目标角色
+		 * @returns { boolean }
+		 */
 		targetEnabled3(card, player, target) {
 			if (!card || !target || target.removed) {
 				return false;
@@ -11642,76 +11680,86 @@ export class Library {
 				return false;
 			}
 
-			if (info.filterTarget == true) {
+			const { filterTarget, modTarget } = info;
+			if (filterTarget === true) {
 				return true;
 			}
-			if (typeof info.filterTarget == "function" && info.filterTarget(card, player, target)) {
+			if (typeof filterTarget === "function" && filterTarget(card, player, target)) {
 				return true;
 			}
 
-			if (info.modTarget == true) {
+			if (modTarget === true) {
 				return true;
 			}
-			if (typeof info.modTarget == "function" && info.modTarget(card, player, target)) {
-				return true;
+			if (typeof modTarget === "function") {
+				return Boolean(modTarget(card, player, target));
 			}
 			return false;
 		},
-		targetInRange: function (card, player, target) {
-			var info = get.info(card);
-			var range = info.range;
-			var outrange = info.outrange;
-			if (range == undefined && outrange == undefined) {
+		/**
+		 * 判断目标是否满足一张牌的距离范围限制。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 需要判断的牌
+		 * @param { Player } player - 使用/指定此目标的角色
+		 * @param { Player } target - 被指定的目标角色
+		 * @returns { boolean }
+		 */
+		targetInRange(card, player, target) {
+			const info = get.info(card);
+			const { range, outrange } = info;
+			const hasRange = range != null;
+			const hasOutrange = outrange != null;
+			if (!hasRange && !hasOutrange) {
 				return true;
 			}
 
-			var mod = game.checkMod(card, player, target, "unchanged", "targetInRange", player);
-			var extra = 0;
-			if (mod != "unchanged") {
-				if (typeof mod == "boolean") {
+			const mod = game.checkMod(card, player, target, "unchanged", "targetInRange", player);
+			let extra = 0;
+			if (mod !== "unchanged") {
+				if (typeof mod === "boolean") {
 					return mod;
 				}
-				if (typeof mod == "number") {
+				if (typeof mod === "number") {
 					extra = mod;
 				}
 			}
-			if (typeof info.range == "function") {
-				return info.range(card, player, target);
+			if (typeof range === "function") {
+				return Boolean(range(card, player, target));
 			}
 
 			if (player.hasSkill("undist") || target.hasSkill("undist")) {
 				return false;
 			}
-			for (var i in range) {
-				if (i == "attack") {
-					var range2 = player.getAttackRange();
-					if (range2 <= 0) {
+			for (const type in range ?? {}) {
+				if (type === "attack") {
+					const attackRange = player.getAttackRange();
+					if (attackRange <= 0) {
 						return false;
 					}
-					var distance = get.distance(player, target) + extra;
-					if (range[i] <= distance - range2) {
+					const distance = get.distance(player, target) + extra;
+					if (range[type] <= distance - attackRange) {
 						return false;
 					}
 				} else {
-					var distance = get.distance(player, target, i) + extra;
-					if (range[i] < distance) {
+					const distance = get.distance(player, target, type) + extra;
+					if (range[type] < distance) {
 						return false;
 					}
 				}
 			}
-			for (var i in outrange) {
-				if (i == "attack") {
-					var range2 = player.getAttackRange();
-					if (range2 <= 0) {
+			for (const type in outrange ?? {}) {
+				if (type === "attack") {
+					const attackRange = player.getAttackRange();
+					if (attackRange <= 0) {
 						return false;
 					}
-					var distance = get.distance(player, target) + extra;
-					if (outrange[i] > distance - range2 + 1) {
+					const distance = get.distance(player, target) + extra;
+					if (outrange[type] > distance - attackRange + 1) {
 						return false;
 					}
 				} else {
-					var distance = get.distance(player, target, i) + extra;
-					if (outrange[i] > distance) {
+					const distance = get.distance(player, target, type) + extra;
+					if (outrange[type] > distance) {
 						return false;
 					}
 				}

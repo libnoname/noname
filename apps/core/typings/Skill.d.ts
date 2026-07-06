@@ -184,7 +184,7 @@ declare interface Mod {
 	 * @param target 目标
 	 * @return 返回bool值可以不接受，范围检测，使用返回的结果;返回number，即计算距离是增加该距离；不返回，默认正常的范围检测
 	 */
-	targetInRange?(card: Card, player: Player, target: Player, result: boolean | number): boolean | number | void;
+	targetInRange?(card: Card | VCard | CardBaseUIData, player: Player, target: Player, result: boolean | "unchanged" | number): boolean | number | "unchanged" | void;
 	/**
 	 * 弃牌阶段时，忽略弃置的手牌
 	 * @param card 
@@ -229,7 +229,7 @@ declare interface Mod {
 	/** 改变最终花色	用于get.suit*/
 	cardsuit?(card: Card, player: Player, suit: string): string | void;
 	/** 对特定角色使用牌的次数限制（用于优化【对特定角色使用牌无次数限制】的机制）【v1.9.105】 */
-	cardUsableTarget?(card: Card | VCard, player: Player, target: Player, result: boolean): boolean | void;
+	cardUsableTarget?(card: Card | VCard | CardBaseUIData, player: Player, target: Player, result: boolean): boolean | void;
 
 	/** 用于get.value，对最后得返回value结果做处理 */
 	aiValue?(player: Player, card: Card, num: number): number | void;
