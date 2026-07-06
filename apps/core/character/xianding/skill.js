@@ -144,8 +144,9 @@ const skills = {
 				if (card?.storage?.dcsbjuao) {
 					return Infinity;
 				}
-			}
-		}
+			},
+		},
+		locked: false,
 		filter(event, player) {
 			if (!player.hasDiscardableCards(player, "he")) {
 				return false;
@@ -160,6 +161,7 @@ const skills = {
 						name: info[2],
 						nature: info[3],
 						isCard: true,
+						storage:{ dcsbjuao: true },
 					},
 					"unsure"
 				);
@@ -178,6 +180,7 @@ const skills = {
 							name: info[2],
 							nature: info[3],
 							isCard: true,
+							storage:{ dcsbjuao: true },
 						},
 						"unsure"
 					);
@@ -190,6 +193,7 @@ const skills = {
 				return player.getUseValue({
 					name: button.link[2],
 					nature: button.link[3],
+					storage:{ dcsbjuao: true },
 				});
 			},
 			backup(links, player) {
@@ -205,6 +209,7 @@ const skills = {
 									name: link[2],
 									nature: link[3],
 									isCard: true,
+									storage:{ dcsbjuao: true },
 								},
 								"unsure"
 							);
@@ -913,7 +918,7 @@ const skills = {
 	},
 	//神关羽
 	dcwushen: {
-		audio: 2,
+		audio: "wushen",
 		mod: {
 			cardname(card, player, name) {
 				if (get.suit(card) === "heart") {
@@ -997,7 +1002,7 @@ const skills = {
 			content: "mark",
 			onunmark: true,
 		},
-		audio: 2,
+		audio: "wuhun2",
 		trigger: {
 			source: "damageSource",
 			player: "damageEnd",
@@ -1017,7 +1022,7 @@ const skills = {
 		group: "dcwuhun_die",
 		subSkill: {
 			die: {
-				audio: "dcwuhun",
+				audio: "wuhun2",
 				trigger: {
 					player: "die",
 				},
@@ -1118,7 +1123,7 @@ const skills = {
 	},
 	//神刘备
 	dclongnu: {
-		audio: 2,
+		audio: "nzry_longnu",
 		zhuanhuanji: true,
 		mark: true,
 		marktext: "☯",
@@ -1237,7 +1242,7 @@ const skills = {
 		},
 	},
 	dcjieying: {
-		audio: 2,
+		audio: "nzry_jieying",
 		trigger: {
 			player: ["linkBefore", "enterGame"],
 			global: "phaseBefore",
@@ -1260,7 +1265,7 @@ const skills = {
 		global: "dcjieying_global",
 		subSkill: {
 			phaseJieshu: {
-				audio: "dcjieying",
+				audio: "nzry_jieying",
 				trigger: {
 					player: "phaseJieshuBegin",
 				},

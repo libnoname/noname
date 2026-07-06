@@ -10,7 +10,7 @@ const skills = {
 			pot_zhouyu_shadow: "potchiyun_pot_zhouyu_shadow",
 		},
 		logAudio2: {
-			pot_zhouyu_shadow: (event, player) => ("potchiyun_pot_zhouyu_shadow" + (player.storage.potchiyun1 ? get.rand(3, 4) : get.rand(1, 2)) + ".mp3"),
+			pot_zhouyu_shadow: (event, player) => "potchiyun_pot_zhouyu_shadow" + (player.storage.potchiyun1 ? get.rand(3, 4) : get.rand(1, 2)) + ".mp3",
 		},
 		trigger: {
 			player: "gainAfter",
@@ -285,11 +285,42 @@ const skills = {
 				trigger: {
 					global: ["showCardsAfter", "gainAfter", "loseAsyncAfter", "phaseAfter"],
 				},
+				filter(event, player) {
+					return player == _status.currentPhase || (!player.storage.potyanhui1 && !player.storage.potyanhui2);
+				},
+				getIndex(event, player) {
+					if (event.name == "phase") {
+						return game.filterPlayer();
+					}
+					if (event.name == "showCards") {
+						return [event.player];
+					}
+					return game.filterPlayer(current => {
+						if (!event.getg?.(current)?.length) {
+							return false;
+						}
+						return current.hasCards("h", card => {
+							const shown = game
+								.getGlobalHistory("everything", evt => {
+									return evt.name == "showCards" && evt.cards?.length > 0;
+								})
+								.map(evt => evt.cards)
+								.flat();
+							return shown.includes(card);
+						});
+					});
+				},
 				async content(event, trigger, player) {
+					const target = event.indexedData;
 					if (trigger.name == "phase") {
-						game.countPlayer(current => current.removeGaintag("potyanhui"));
+						target.removeGaintag("potyanhui");
+					} else if (trigger.name == "showCards") {
+						const cards = trigger.cards;
+						game.broadcastAll(cards => {
+							cards.forEach(card => card.addGaintag("potyanhui"));
+						}, cards);
 					} else {
-						const cards = trigger.player.getCards("h", card => {
+						const cards = target.getCards("h", card => {
 							const shown = game
 								.getGlobalHistory("everything", evt => {
 									return evt.name == "showCards" && evt.cards?.length > 0;
@@ -299,7 +330,7 @@ const skills = {
 							return shown.includes(card);
 						});
 						if (cards.length) {
-							trigger.player.addGaintag(cards, "potyanhui");
+							target.addGaintag(cards, "potyanhui");
 						}
 					}
 				},
@@ -313,7 +344,7 @@ const skills = {
 			pot_zhouyu_shadow: "potfentao_pot_zhouyu_shadow",
 		},
 		logAudio2: {
-			pot_zhouyu_shadow: (event, player) => ("potfentao_pot_zhouyu_shadow" + (player.storage.potfentao2 ? get.rand(3, 4) : get.rand(1, 2)) + ".mp3"),
+			pot_zhouyu_shadow: (event, player) => "potfentao_pot_zhouyu_shadow" + (player.storage.potfentao2 ? get.rand(3, 4) : get.rand(1, 2)) + ".mp3",
 		},
 		trigger: { global: "damageBegin4" },
 		filter(event, player) {
@@ -379,7 +410,7 @@ const skills = {
 				}
 			}
 		},
-		subSkill: { 
+		subSkill: {
 			dam: { charlotte: true, onremove: true },
 			pot_zhouyu_shadow: { audio: 4 },
 		},
