@@ -823,7 +823,7 @@ const skills = {
 			}
 			await game.cardsGotoOrdering(cards);
 			const targets = [];
-			while (cards.length && targets.length < 2) {
+			while (cards.length && targets.length < 3) {
 				const num = targets.length || game.countPlayer(current => current != player) == 1 ? cards.length : [1, Infinity];
 				const result = await player
 					.chooseButtonTarget({
