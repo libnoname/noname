@@ -1136,6 +1136,10 @@ const skills = {
 			}
 			return true;
 		},
+		check(event, player) {
+			const hs = player.getCards("h");
+			return hs.length < 3 && hs.every(card => !player.hasUseTarget(card));
+		},
 		async content(event, trigger, player) {
 			let card = get.cardPile(card => get.type(card) == "equip" && player.hasUseTarget(card));
 			await player.chooseUseTarget(card, true);

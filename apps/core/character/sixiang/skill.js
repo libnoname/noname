@@ -6430,21 +6430,16 @@ const skills = {
 		audio: "chunlao",
 		trigger: { player: "phaseDiscardEnd" },
 		filter(event, player) {
-			return (
-				(event.cards || []).length >= 2 &&
-				game.hasPlayer(target => {
-					return target != player && target.countCards("h");
-				})
-			);
+			return (event.cards || []).length >= 2 && game.hasPlayer(target => target != player);
 		},
 		async cost(event, trigger, player) {
 			const cards = trigger.cards;
 			event.result = await player
-				.chooseTarget(get.prompt(event.skill), "用" + get.translation(cards) + "交换一名其他角色的手牌", (card, player, target) => {
-					return target != player && target.countCards("h");
-				})
+				.chooseTarget(get.prompt(event.skill), "用" + get.translation(cards) + "交换一名其他角色的手牌", (card, player, target) => target != player)
 				.set("ai", target => {
-					return get.event().cards.length - target.countCards("h") - 0.5;
+					const { cards, player } = get.event();
+					const att = get.attitude(player, target);
+					return (cards.length - target.countCards("h") + 0.1) * att;
 				})
 				.set("cards", cards)
 				.forResult();

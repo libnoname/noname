@@ -1,7 +1,7 @@
 export default {
 	//mb_dingshangwan: "",
 	//re_wangji: "",
-	//re_zhoufei: "",
+	re_zhoufei: "舫玉游鸾",
 	//re_yanyan: "",
 	//mb_gaoxiang: "",
 	//mb_cuimao: "",

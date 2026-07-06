@@ -3187,6 +3187,7 @@ const skills = {
 	},
 	// 星夏侯霸
 	starweigu: {
+		audio: 2,
 		trigger: {
 			player: "useCardToPlayer",
 			target: "useCardToTarget",
@@ -3195,7 +3196,7 @@ const skills = {
 			if (!get.is.damageCard(event.card)) {
 				return false;
 			}
-			if (event.targets.length !== 1) {
+			if (event.targets?.length !== 1) {
 				return false;
 			}
 			if (!player.hasCards("he", card => get.info("starweigu").isSelf(card, player) && lib.filter.cardDiscardable(card, player, "starweigu"))) {
@@ -3331,6 +3332,7 @@ const skills = {
 	},
 	starjuefa: {
 		//批量改名前记得这里有starweigu
+		audio: 2,
 		enable: "phaseUse",
 		skillAnimation: true,
 		limited: true,
@@ -3345,6 +3347,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
+				audio: "starjuefa",
 				charlotte: true,
 				forced: true,
 				init(player, skill) {
@@ -3375,6 +3378,7 @@ const skills = {
 				},
 			},
 			remove: {
+				audio: "starjuefa",
 				charlotte: true,
 				forced: true,
 				trigger: {
@@ -16313,6 +16317,7 @@ const skills = {
 				sub: true,
 			},
 			discard: {
+				audio: "xinfu_bijing",
 				trigger: {
 					player: "phaseZhunbeiBegin",
 				},

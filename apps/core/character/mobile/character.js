@@ -63,6 +63,7 @@ const characters = {
 		hp: 15,
 		skills: ["mbranshang", "mbhanyong"],
 		names: "null|null",
+		dieAudios: ["wutugu"],
 	},
 	mb_chengyu: {
 		sex: "male",
@@ -75,6 +76,7 @@ const characters = {
 		group: "qun",
 		hp: 3,
 		skills: ["mblianzhu", "mbxiahui"],
+		dieAudios: ["dongbai"],
 	},
 	mb_zhugeguo: {
 		sex: "female",
@@ -82,12 +84,14 @@ const characters = {
 		hp: 3,
 		skills: ["mbqirang", "mbyuhua"],
 		names: "诸葛|果",
+		dieAudios: ["zhugeguo"],
 	},
 	mb_caochun: {
 		sex: "male",
 		group: "wei",
 		hp: 4,
 		skills: ["mbshanjia"],
+		dieAudios: ["caochun"],
 	},
 	mb_xiahoumao: {
 		sex: "male",
@@ -1047,6 +1051,7 @@ const characters = {
 		group: "wu",
 		hp: 4,
 		skills: ["reqizhou", "reshanxi"],
+		tempname: ["heqi"],
 		dieAudios: ["heqi"],
 	},
 	yangbiao: {
@@ -1348,6 +1353,7 @@ const characters = {
 		hp: 3,
 		skills: ["mbjieyuan", "mbfenxin"],
 		names: "吕|null",
+		dieAudios: ["lingju"],
 	},
 };
 

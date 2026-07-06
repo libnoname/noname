@@ -1,7 +1,9 @@
 export default {
+	pot_zhouyu: "燎琰涤浪",
+	pot_chengpu: "焚乌荡寇",
 	//pot_xiahouba: "",
 	//pot_chenqun: "",
-	//pot_caozhen: "",
+	pot_caozhen: "荷国天督",
 	//pot_lvyi: "",
 	pot_caoshuang: "擅政专权",
 	//pot_zhangren: "",
