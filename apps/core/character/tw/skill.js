@@ -28819,7 +28819,7 @@ const skills = {
 					} else {
 						const result = await source
 							.chooseToDiscard({
-								prompt: `弃置一张牌，否则${get.translation(trigger.card)}对${get.translation(player)}无效`,
+								prompt: `藏铗：弃置一张牌，否则${get.translation(trigger.card)}对${get.translation(player)}无效`,
 								position:"he",
 								ai(card) {
 									return 20 - get.value(card);
@@ -28880,7 +28880,7 @@ const skills = {
 					await target.logSkill("duohui", player);
 					await player.give(cards, target);
 					const result = await target
-						.chooseToGive(player, `交给${get.translation(player)}另一张${get.translation(suit)}牌，否则其摸一张牌`, "he")
+						.chooseToGive(player, `堕洄：交给${get.translation(player)}另一张${get.translation(suit)}牌，否则其摸一张牌`, "he")
 						.set("filterCard", card => {
 							const { player, preCards, suit } = get.event();
 							return !preCards.includes(card) && get.suit(card) == suit;
