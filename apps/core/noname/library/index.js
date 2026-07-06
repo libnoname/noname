@@ -11784,7 +11784,12 @@ export class Library {
 		globalFrom: function (card, player, target) {
 			return get.distance(player, target) <= 1;
 		},
-		selectCard: function () {
+		/**
+		 * 返回默认选牌数量范围。
+		 *
+		 * @returns { [number, number] }
+		 */
+		selectCard() {
 			return [1, 1];
 		},
 		selectTarget: function (card, player) {
@@ -11844,40 +11849,52 @@ export class Library {
 			}
 			return true;
 		},
-		autoRespondSha: function () {
+		/**
+		 * 判断当前响应事件是否应自动跳过出杀。
+		 *
+		 * @this {{ player: Player }}
+		 * @returns { boolean }
+		 */
+		autoRespondSha() {
 			return !this.player.hasSha("respond");
 		},
-		autoRespondShan: function () {
+		/**
+		 * 判断当前响应事件是否应自动跳过出闪。
+		 *
+		 * @this {{ player: Player }}
+		 * @returns { boolean }
+		 */
+		autoRespondShan() {
 			return !this.player.hasShan("respond");
 		},
-		wuxieSwap: function (event) {
-			if (event.type == "wuxie") {
-				if (ui.wuxie && ui.wuxie.classList.contains("glow")) {
+		/**
+		 * 判断无懈响应事件是否应跳过自动切换控制角色。
+		 *
+		 * @param { GameEvent } event - 当前响应事件
+		 * @returns { boolean }
+		 */
+		wuxieSwap(event) {
+			if (event.type !== "wuxie") {
+				return false;
+			}
+			if (ui.wuxie?.classList.contains("glow")) {
+				return true;
+			}
+			if (ui.tempnowuxie?.classList.contains("glow") && event.state > 0) {
+				const triggerEvent = event.getTrigger();
+				if (triggerEvent) {
+					if (ui.tempnowuxie._origin === triggerEvent.parent.id) {
+						return true;
+					}
+				} else if (ui.tempnowuxie._origin === _status.event.id2) {
 					return true;
 				}
-				if (ui.tempnowuxie && ui.tempnowuxie.classList.contains("glow") && event.state > 0) {
-					var triggerevent = event.getTrigger();
-					if (triggerevent) {
-						if (ui.tempnowuxie._origin == triggerevent.parent.id) {
-							return true;
-						}
-					} else if (ui.tempnowuxie._origin == _status.event.id2) {
-						return true;
-					}
-				}
-				if (lib.config.wuxie_self) {
-					var tw = event.info_map;
-					if (
-						tw.player &&
-						tw.player.isUnderControl(true) &&
-						!tw.player.hasSkillTag("noautowuxie") &&
-						(!tw.targets || tw.targets.length <= 1) &&
-						!tw.noai
-					) {
-						return true;
-					}
-				}
 			}
+			if (!lib.config.wuxie_self) {
+				return false;
+			}
+			const infoMap = event.info_map;
+			return Boolean(infoMap.player && infoMap.player.isUnderControl(true) && !infoMap.player.hasSkillTag("noautowuxie") && (!infoMap.targets || infoMap.targets.length <= 1) && !infoMap.noai);
 		},
 	};
 	sort = {
