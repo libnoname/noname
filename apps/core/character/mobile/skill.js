@@ -1593,7 +1593,7 @@ const skills = {
 		group: "mbshefu_exclude",
 		subSkill: {
 			exclude: {
-				audio: "mbshefu",
+				audio: "shefu",
 				trigger: {
 					global: ["useCard"],
 				},
@@ -1954,7 +1954,7 @@ const skills = {
 	},
 	// 诸葛果
 	mbqirang: {
-		audio: 2,
+		audio: "qirang",
 		trigger: { player: "equipEnd" },
 		frequent: true,
 		async content(event, trigger, player) {
@@ -1990,7 +1990,7 @@ const skills = {
 						}
 					},
 				},
-				audio: "mbqirang",
+				audio: "qirang",
 				trigger: { player: "useCard" },
 				filter(event, player) {
 					if (get.type2(event.card) != "trick") {
@@ -2011,7 +2011,7 @@ const skills = {
 		},
 	},
 	mbyuhua: {
-		audio: 2,
+		audio: "yuhua",
 		trigger: { player: "phaseJieshuBegin" },
 		forced: true,
 		filter(event, player) {
@@ -2043,7 +2043,7 @@ const skills = {
 	},
 	// 曹纯
 	mbshanjia: {
-		audio: 2,
+		audio: "shanjia",
 		enable: "phaseUse",
 		usable: 1,
 		init(player) {
@@ -28539,7 +28539,7 @@ const skills = {
 		},
 	},
 	reshanxi: {
-		audio: 2,
+		audio: "shanxi",
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
@@ -32368,7 +32368,7 @@ const skills = {
 		},
 	},
 	mbjieyuan: {
-		audio: 2,
+		audio: ["jieyuan_more.mp3", "jieyuan_less.mp3"],
 		trigger: {
 			source: "damageBegin1",
 			player: "damageBegin3",
@@ -32487,7 +32487,7 @@ const skills = {
 	},
 	mbfenxin: {
 		mode: ["identity", "doudizhu"],
-		audio: 2,
+		audio: "fenxin",
 		trigger: {
 			source: "dieBegin",
 		},
