@@ -144,8 +144,9 @@ const skills = {
 				if (card?.storage?.dcsbjuao) {
 					return Infinity;
 				}
-			}
-		}
+			},
+		},
+		locked: false,
 		filter(event, player) {
 			if (!player.hasDiscardableCards(player, "he")) {
 				return false;
@@ -160,6 +161,7 @@ const skills = {
 						name: info[2],
 						nature: info[3],
 						isCard: true,
+						storage:{ dcsbjuao: true },
 					},
 					"unsure"
 				);
@@ -178,6 +180,7 @@ const skills = {
 							name: info[2],
 							nature: info[3],
 							isCard: true,
+							storage:{ dcsbjuao: true },
 						},
 						"unsure"
 					);
@@ -190,6 +193,7 @@ const skills = {
 				return player.getUseValue({
 					name: button.link[2],
 					nature: button.link[3],
+					storage:{ dcsbjuao: true },
 				});
 			},
 			backup(links, player) {
@@ -205,6 +209,7 @@ const skills = {
 									name: link[2],
 									nature: link[3],
 									isCard: true,
+									storage:{ dcsbjuao: true },
 								},
 								"unsure"
 							);

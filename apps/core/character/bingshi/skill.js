@@ -285,6 +285,9 @@ const skills = {
 				trigger: {
 					global: ["showCardsAfter", "gainAfter", "loseAsyncAfter", "phaseAfter"],
 				},
+				filter(event, player) {
+					return player == _status.currentPhase || (!player.storage.potyanhui1 && !player.storage.potyanhui2);
+				},
 				getIndex(event, player) {
 					if (event.name == "phase") {
 						return game.filterPlayer();
