@@ -54,7 +54,7 @@ const characterSortTranslate = {
 	offline_piracyE_xk: "官盗E系列·侠客行",
 	offline_piracyE_jb: "官盗E系列·君霸天下",
 	offline_piracyE_hl: "官盗E系列·神霸虎牢",
-	offline_piracyE_shenmo: "官盗E系列·神魔传",
+	offline_piracyE_shenmo: "官盗E系列·一念神魔",
 	offline_piracyE: "官盗E系列",
 	offline_piracyS: "官盗S系列",
 	offline_vtuber: "天书乱斗·虚拟偶像",

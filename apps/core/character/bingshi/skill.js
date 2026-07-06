@@ -824,16 +824,15 @@ const skills = {
 			await game.cardsGotoOrdering(cards);
 			const targets = [];
 			while (cards.length && targets.length < 3) {
-				const num = targets.length || game.countPlayer(current => current != player) == 1 ? cards.length : [1, Infinity];
 				const result = await player
 					.chooseButtonTarget({
 						createDialog: [`伺锋：请选择要分配的“伺锋”牌和目标（先选择的牌在前面）`, cards],
 						forced: true,
 						allowChooseAll: true,
-						selectButton: num,
+						selectButton: [1, Infinity],
 						filterTarget: lib.filter.notMe,
 						ai1(button) {
-							return get.value(button.link);
+							return 1 + Math.random();
 						},
 						ai2(target) {
 							const player = get.player();
