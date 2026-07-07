@@ -2216,7 +2216,7 @@ const skills = {
 				return false;
 			}
 			if (event.name == "damage") {
-				return event.cards.someInD("od");
+				return event.cards?.someInD("od");
 			}
 			return true;
 		},
