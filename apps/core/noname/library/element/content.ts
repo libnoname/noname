@@ -7519,7 +7519,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 	],
 	async chooseCardOL(event, trigger, player) {
 		const targets: Player[] = event.list;
-
+		event.targets = targets.slice(0);
 		type ChooseCardOLResult = Partial<Result> | "ai";
 		const chooseRemote = (args, set) => {
 			game.me.chooseCard(...args).set(set);
