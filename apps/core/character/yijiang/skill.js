@@ -2760,7 +2760,7 @@ const skills = {
 					.forResult();
 
 				if (result?.cards?.length > 0 && result.autochoose && result.cards?.length === result.rawcards?.length) {
-					player.clearMarkMark("xinjiexun", false);
+					player.clearMark("xinjiexun", false);
 					player.addSkill("funan_jiexun");
 				}
 			}
