@@ -7258,7 +7258,7 @@ const skills = {
 			if (cards.length) {
 				await player.gain({
 					cards,
-					animate: "gain2",
+					animate: "draw",
 				});
 			}
 		},
