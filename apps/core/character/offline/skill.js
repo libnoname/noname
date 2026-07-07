@@ -5299,7 +5299,7 @@ const skills = {
 				popup: false,
 				charlotte: true,
 				priority: 10,
-				filter(event, player) {
+				filter(event, player, name, indexedData) {
 					if (event.revealed) {
 						return false;
 					}
@@ -5309,7 +5309,10 @@ const skills = {
 					}
 					const skills = lib.skill.sm_tuanlian.getSkills(player.getStorage("sm_tuanlian"), player);
 					game.expandSkills(skills);
-					return skills.includes(event.skill);
+					if (!skills.includes(event.skill)) {
+						return false;
+					}
+					return lib.filter.filterTrigger(event, player, name, event.skill, indexedData);
 				},
 				async content(evt, event, player) {
 					const info = get.info(event.skill);
