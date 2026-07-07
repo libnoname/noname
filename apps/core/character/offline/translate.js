@@ -7,12 +7,12 @@ const translates = {
 	smsibian_info: `觉醒技，回合开始时，若你的体力值为奇数且“神格”多于“魔心”，你${get.poptip({
 		id: "smsibian_huashen",
 		name: "化神",
-		info: `<br>失去技能${get.poptip("smsibian")}、${get.poptip("smqihua")}和${get.poptip("smdue")}<br>获得技能${get.poptip("smshenjiang")}、${get.poptip("smshengshou")}和${get.poptip("smshifeng")}`,
+		info: `<br>失去技能${get.poptip("smsibian")}、${get.poptip("smqihua")}和${get.poptip("smdue")}<br>获得技能${get.poptip("smshenjiang")}、${get.poptip("smshengshou")}和${get.poptip("smshifeng")}<br>调整体力上限为10`,
 		type: "character",
 	})}；若你的体力值为偶数且“魔心”多于”神格”，你${get.poptip({
 		id: "smsibian_rumo",
 		name: "入魔",
-		info: `<br>失去技能${get.poptip("smsibian")}、${get.poptip("smqihua")}和${get.poptip("smdue")}<br>获得技能${get.poptip("smmobian")}、${get.poptip("smyanshi")}和${get.poptip("smpoyu")}`,
+		info: `<br>失去技能${get.poptip("smsibian")}、${get.poptip("smqihua")}和${get.poptip("smdue")}<br>获得技能${get.poptip("smmobian")}、${get.poptip("smyanshi")}和${get.poptip("smpoyu")}<br>调整体力上限为3`,
 		type: "character",
 	})}。`,
 	smqihua: "启化",
