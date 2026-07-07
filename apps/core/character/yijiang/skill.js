@@ -2734,6 +2734,7 @@ const skills = {
 						return coeff * get.attitude(player, target);
 					},
 				})
+				.set("coeff", num1 >= num2 ? 1 : -1)
 				.forResult();
 
 			event.result.cost_data = {
@@ -2760,7 +2761,7 @@ const skills = {
 					.forResult();
 
 				if (result?.cards?.length > 0 && result.autochoose && result.cards?.length === result.rawcards?.length) {
-					player.clearMarkMark("xinjiexun", false);
+					player.clearMark("xinjiexun", false);
 					player.addSkill("funan_jiexun");
 				}
 			}

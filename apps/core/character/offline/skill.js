@@ -19,15 +19,19 @@ const skills = {
 			player.awakenSkill(event.name);
 			const num = player.getHp();
 			if (player.getHp() % 2 == 1 && player.countMark("smqihua_shen") > player.countMark("smqihua_mo")) {
-				player.init("sm_shen_sunquan");
-				player.markSkill("smqihua_shen");
+				player.changeSkin({ characterName: "sm_shenmo_sunquan" }, "sm_shen_sunquan");
+				await player.changeSkills(["smshenjiang", "smshengshou", "smshifeng"], ["smsibian", "smqihua", "smdue"]);
+				await player.changeGroup("shen");
+				player.maxHp = 10;
 				const next = game.createEvent("SmhuashenAfter", false);
 				next.player = player;
 				next.num = num;
 				next.setContent("emptyEvent");
 			} else {
-				player.init("sm_mo_sunquan");
-				player.markSkill("smqihua_mo");
+				player.changeSkin({ characterName: "sm_shenmo_sunquan" }, "sm_mo_sunquan");
+				await player.changeSkills(["smmobian", "smyanshi", "smpoyu"], ["smsibian", "smqihua", "smdue"]);
+				await player.changeGroup("devil");
+				player.maxHp = 3;
 				const next = game.createEvent("SmrumoAfter", false);
 				next.player = player;
 				next.num = num;
