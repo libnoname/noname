@@ -3437,11 +3437,18 @@ const skills = {
 					.chooseControl()
 					.set("choiceList", choiceList)
 					.set("prompt", "安东：请选择一项")
-					.set("ai", function (event, player) {
-						var target = _status.event.getParent().player;
-						var player = _status.event.player;
-						if (get.attitude(player, target) > 0) {
+					.set("ai", function (event, target) {
+						const player = event.player;
+						const trigger = event.getTrigger();
+						if (get.attitude(target, player) > 0) {
 							return 0;
+						}
+						const hs = target.getGainableCards(player, "h", card => get.suit(card) == "heart");
+						if (hs.length) {
+							const recover = hs.filter(card => get.tag(card, "save") || get.tag(card, "recover")).length;
+							if (trigger.num <= recover) {
+								return 0;
+							}
 						}
 						return 1;
 					})
@@ -3474,19 +3481,20 @@ const skills = {
 						return [1, -1];
 					}
 					if (get.tag(card, "damage") && player != target && get.attitude(player, target) < 0) {
-						var cards = player.getCards("h", function (cardx) {
+						let cards = player.getCards("h", function (cardx) {
 							return card != cardx && (!card.cards || !card.cards.includes(cardx)) && get.suit(cardx) == "heart";
 						});
 						if (!cards.length) {
 							return;
 						}
-						for (var i of cards) {
-							if (get.name(i, target) == "tao") {
-								return "zeroplayertarget";
-							}
+						const recover = hs.filter(card => get.tag(card, "save") || get.tag(card, "recover")).length;
+						if (recover >= target.getDamagedHp()) {
+							let eff = player.needsToDiscard(0, (card, player) => get.suit(card) != "heart" || !player.canIgnoreHandcard(card));
+							return [0, 0, 0, eff / 10];
 						}
-						if (get.value(cards, target) >= 6 + target.getDamagedHp()) {
-							return "zeroplayertarget";
+						const val = get.value(cards, target);
+						if (val >= 6 + target.getDamagedHp()) {
+							return [1, val / 10, 1, -val / 10];
 						}
 						return [1, 0.6];
 					}
@@ -5924,11 +5932,11 @@ const skills = {
 				if (current.group == "shu") {
 					var next = current.chooseToRespond("是否替" + get.translation(player) + "打出一张杀？");
 					next.set("filterCard", function (card, player) {
-                        if (get.name(card) !== "sha") {
-                            return false;
-                        }
-                        return lib.filter.cardRespondable(card, player);
-                    });
+						if (get.name(card) !== "sha") {
+							return false;
+						}
+						return lib.filter.cardRespondable(card, player);
+					});
 					next.set("ai", function () {
 						var event = _status.event;
 						return get.attitude(event.player, event.source) - 2;
