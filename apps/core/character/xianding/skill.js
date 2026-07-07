@@ -38632,6 +38632,7 @@ const skills = {
 					const target = result.targets[0];
 					for (let i = 1; i <= 2; i++) {
 						const card = get.cardPile(card => get.type(card) === "equip" && target.canUse(card, target), undefined, "bottom");
+						if (!card) break;
 						await target.chooseUseTarget({
 							card,
 							forced: true,
