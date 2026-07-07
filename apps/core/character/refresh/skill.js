@@ -4575,26 +4575,24 @@ const skills = {
 						let result;
 
 						// step 0
-						let card = false,
-							info = lib.skill.rejianyan_backup.info;
+						let card = false;
+						let	info = lib.skill.rejianyan_backup.info;
+						let	info2 = info in lib.color ? "color" : "type";
 						player.addTempSkill("rejianyan_used", "phaseUseEnd");
-						if (info == "red" || info == "black") {
-							player.markAuto("rejianyan_used", "color");
-							card = get.cardPile2(function (card) {
-								return get.color(card) == info;
-							}, "top");
-						} else {
-							player.markAuto("rejianyan_used", "type");
-							card = get.cardPile2(function (card) {
-								return get.type(card) == info;
-							}, "top");
+						let func = card => get[info2 == "type" ? "type2" : "color"](card) == info;
+						player.markAuto("rejianyan_used", info2);
+						card = get.cardPile2(func, "top");
+						event.card = card;
+						if (!card) {
+							if (get.discardPile(func, "top")) {
+								await game.washCard();
+								card = get.cardPile2(func, "top");
+							}
+							if (!card) {
+								return;
+							}
 						}
-						if (card) {
-							event.card = card;
-							player.showCards(card, get.translation(player) + "发动了【荐言】");
-						} else {
-							return;
-						}
+						player.showCards(card, get.translation(player) + "发动了【荐言】");
 
 						// step 1
 						result = await player
@@ -17114,21 +17112,24 @@ const skills = {
 				.forResult();
 
 			// step 1
-			event.card = get.cardPile(
-				function (card) {
-					if (get.color(card) == result.control) {
-						return true;
-					}
-					if (get.type(card, "trick") == result.control) {
-						return true;
-					}
-					return false;
-				},
-				"cardPile",
-				"top"
-			);
+			let func = function (card) {
+				if (get.color(card) == result.control) {
+					return true;
+				}
+				if (get.type(card, "trick") == result.control) {
+					return true;
+				}
+				return false;
+			};
+			event.card = get.cardPile(func, "cardPile", "top");
 			if (!event.card) {
-				return;
+				if (get.cardPile(func, "discardPile", "top")) {
+					await game.washCard();
+					event.card = get.cardPile(func, "cardPile", "top");
+				}
+				if (!event.card) {
+					return;
+				}
 			}
 			await player.showCards([event.card]);
 
