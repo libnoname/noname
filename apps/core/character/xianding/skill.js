@@ -34447,6 +34447,50 @@ const skills = {
 		},
 	},
 	dczhanmeng: {
+		mark: true,
+		intro: {
+			mark(dialog, storage, player) {
+				if (!player.hasStorage("dczhanmeng_choice", 0)) {
+					const history1 = game
+						.filterPlayer2(lib.filter.all, true)
+						.reduce((list, current) => {
+							const history = current.actionHistory;
+							if (history.length <2) {
+								return list;
+							}
+							for (let i = history.length - 2; i >= 0; i--) {
+								if (history[i].isSkipped) {
+									continue;
+								}
+								list.addArray(history[i].useCard.map(evt => get.translation(evt.card.name)));
+								return list;
+							}
+							return list;
+						}, [])
+						.sort(lib.sort.card);
+					if (history1.length) {
+						dialog.addText("占梦①：");
+						dialog.addText(history1.join("、"));
+					}
+				}
+				if (player.hasSkill("dczhanmeng_delay")) {
+					const history = player.actionHistory;
+					if (history.length < 2) {
+						return false;
+					}
+					const history2 = history[history.length - 2].useCard.reduce((list, evt) => {
+						if (evt["dczhanmeng_" + player.playerid]) {
+							list.add(get.translation(evt.card.name));
+						}
+						return list;
+					}, []);
+					if (history2.length) {
+						dialog.addText("占梦②：");
+						dialog.addText(history2.join("、"));
+					}
+				}
+			},
+		},
 		audio: 2,
 		trigger: { player: "useCard" },
 		filter(event, player) {
