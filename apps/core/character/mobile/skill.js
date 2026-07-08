@@ -11008,7 +11008,7 @@ const skills = {
 		limited: true,
 		trigger: { player: "friendyance_minigame" },
 		check(event, player) {
-			return event.player === player;
+			return _status.currentPhase === player;
 		},
 		skillAnimation: true,
 		animationColor: "metal",
