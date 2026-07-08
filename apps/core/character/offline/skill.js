@@ -1416,7 +1416,7 @@ const skills = {
 			} else {
 				await player.draw({ num: 2 });
 			}
-			if (!player.getStorage(event.name).some(i => i.includes(target) && i.includes(player.storage.pegeyuan_mark))) {
+			if (!player.getStorage(event.name).some(i => (i[0] === target && i[1] === player.storage.pegeyuan_mark) || (i[1] === target && i[0] === player.storage.pegeyuan_mark))) {
 				player.markAuto(event.name, [[target, player.storage.pegeyuan_mark]]);
 			}
 		},
