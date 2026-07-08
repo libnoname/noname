@@ -1,7 +1,5 @@
 export default {
 	sm_shenmo_sunquan: "一念神魔",
-	sm_mo_sunquan: "魔睨东吴",
-	sm_shen_sunquan: "神权帝胄",
 	pe_liuhui: "周天古率",
 	pe_baiqi: "大良造",
 	pe_huamulan: "孝烈巾帼",

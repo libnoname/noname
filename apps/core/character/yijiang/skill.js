@@ -2734,6 +2734,7 @@ const skills = {
 						return coeff * get.attitude(player, target);
 					},
 				})
+				.set("coeff", num1 >= num2 ? 1 : -1)
 				.forResult();
 
 			event.result.cost_data = {
