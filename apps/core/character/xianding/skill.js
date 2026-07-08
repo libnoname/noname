@@ -20621,8 +20621,69 @@ const skills = {
 			event.getParent().addCount = false;
 		},
 		position: "hes",
+		group: ["dcpeiniang_dying"],
+		subSkill: {
+			dying: {
+				trigger: {
+					global: "dying",
+				},
+				filter(event, player) {
+					return event.player != player;
+				},
+				direct: true,
+				async content(event, trigger, player) {
+					await player.chooseToUse({
+						prompt: `醅酿：是否对${get.translation(trigger.player)}使用一张酒？`,
+						prompt2: `当前体力：${trigger.player.hp}`,
+						filterCard(card, player) {
+							return get.name(card) == "jiu";
+						},
+						filterTarget(card, player, target) {
+							if (target != _status.event.dying) {
+								return false;
+							}
+							if (!card) {
+								return false;
+							}
+							const info = get.info(card);
+							if (!info.singleCard || ui.selected.targets.length == 0) {
+								let mod = game.checkMod(card, player, target, "unchanged", "playerEnabled", player);
+								if (mod == false) {
+									return false;
+								}
+								mod = game.checkMod(card, player, target, "unchanged", "targetEnabled", target);
+								if (mod !== "unchanged") {
+									return mod ?? false;
+								}
+							}
+							return true;
+						},
+						ai1(card) {
+							if (typeof card == "string") {
+								const info = get.info(card);
+								if (info.ai && info.ai.order) {
+									if (typeof info.ai.order == "number") {
+										return info.ai.order;
+									} else if (typeof info.ai.order == "function") {
+										return info.ai.order();
+									}
+								}
+							}
+							return 1;
+						},
+						ai2(target) {
+							const effect_use = get.effect_use(target);
+							if (effect_use <= 0) {
+								return effect_use;
+							}
+							return get.effect(target);
+						},
+						dying: trigger.player,
+					});
+				},
+			},
+		},
 		ai: {
-			jiuOther: true,
 			combo: "dcyitong",
 		},
 	},
