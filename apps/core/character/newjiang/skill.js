@@ -6462,7 +6462,7 @@ const skills = {
 				locked: false,
 				async content(event, trigger, player) {
 					const list = lib.skill.lkbushi.getBushi(player);
-					const card = get.cardPile(card => get.suit(card, false) === list[3]);
+					const card = get.cardPile2(card => get.suit(card, false) === list[3]);
 					if (card) {
 						await player.gain({
 							cards: [card],

@@ -7553,11 +7553,11 @@ const skills = {
 						const list = [];
 						for (const name of player.storage.olguifu_record.card) {
 							list.push([get.type(name), "", name]);
-							if (name == "sha") {
-								for (const nature of lib.inpile_nature) {
-									list.push([get.type(name), "", name, nature]);
-								}
-							}
+							//if (name == "sha") {
+							//	for (const nature of lib.inpile_nature) {
+							//		list.push([get.type(name), "", name, nature]);
+							//	}
+							//}
 						}
 						return ui.create.dialog("诡伏", [list, "vcard"], "hidden");
 					},

@@ -3043,6 +3043,9 @@ const skills = {
 			rouhe: {
 				audio: "qingxian",
 				trigger: { player: "recoverEnd" },
+				filter(event, player) {
+					return !_status.dying.length;
+				},
 				async cost(event, trigger, player) {
 					if (_status.dying.length) {
 						player.storage.qingxian ??= 0;
@@ -3089,7 +3092,7 @@ const skills = {
 				audio: "qingxian",
 				trigger: { player: "damageEnd" },
 				filter(event, player) {
-					return event.source && event.source.isIn();
+					return event.source && event.source.isIn() && !_status.dying.length;
 				},
 				check(event, player) {
 					if (get.attitude(player, event.source) > 0 && event.source.isHealthy()) {
@@ -3215,7 +3218,7 @@ const skills = {
 				},
 				trigger: { player: "damageEnd" },
 				filter(event, player) {
-					return event.source && event.source.isIn() && event.source != player;
+					return event.source && event.source.isIn() && event.source != player && !_status.dying.length;
 				},
 				check(event, player) {
 					return get.attitude(player, event.source) < 0;
@@ -3259,6 +3262,9 @@ const skills = {
 
 					return triggername === "dyingAfter" ? player.storage.juexiang_lie : 1;
 				},
+				filter(event, player) {
+					return !_status.dying.length;
+				},
 				async cost(event, trigger, player) {
 					if (event.triggername == "dyingAfter") {
 						if (!player.countMark("juexiang_lie")) {
@@ -3299,7 +3305,7 @@ const skills = {
 				},
 				trigger: { player: "damageEnd" },
 				filter(event, player) {
-					return event.source && event.source.isIn() && event.source != player;
+					return event.source && event.source.isIn() && event.source != player && !_status.dying.length;
 				},
 				check(event, player) {
 					var att = get.attitude(player, event.source);
@@ -3335,6 +3341,9 @@ const skills = {
 					content: "info",
 				},
 				trigger: { player: "recoverEnd" },
+				filter(event, player) {
+					return !_status.dying.length;
+				},
 				async cost(event, trigger, player) {
 					event.result = await player
 						.chooseTarget({
@@ -3405,9 +3414,9 @@ const skills = {
 		locked: false,
 		async content(event, trigger, player) {
 			await player.addToExpansion({
-				cards: get.cards(), 
+				cards: get.cards(),
 				animate: "gain2",
-				gaintag: ["bizhuan"]
+				gaintag: ["bizhuan"],
 			});
 		},
 		mod: {
@@ -8641,7 +8650,8 @@ const skills = {
 			return (
 				get.suit(event.card) == "spade" &&
 				_status.currentPhase == event.player &&
-				event.targets && event.player.isPhaseUsing() &&
+				event.targets &&
+				event.player.isPhaseUsing() &&
 				event.targets.length &&
 				event.player != player &&
 				game.countPlayer2(function (current) {
