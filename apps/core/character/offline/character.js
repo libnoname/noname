@@ -5,6 +5,7 @@ const characters = {
 		hp: 4,
 		maxHp: 7,
 		skills: ["psjimou", "psyuxue", "pskuifa"],
+		groupInGuozhan: "shu",
 	},
 	ps_devil_weiyan: {
 		sex: "male",
@@ -12,6 +13,7 @@ const characters = {
 		hp: 2,
 		hujia: 4,
 		skills: ["psnimou", "pskexue", "psjiefa"],
+		groupInGuozhan: "shu",
 	},
 	sm_shenmo_sunquan: {
 		sex: "male",
@@ -20,6 +22,7 @@ const characters = {
 		skills: ["smsibian", "smqihua", "smdue"],
 		doubleGroup: ["shen", "devil"],
 		groupBorder: "devil",
+		groupInGuozhan: "wu",
 	},
 	pe_liuhui: {
 		sex: "male",

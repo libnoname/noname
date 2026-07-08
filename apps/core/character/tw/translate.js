@@ -1,6 +1,12 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	twsb_xiahoudun: "TW谋夏侯惇",
+	twsb_xiahoudun_prefix: "TW谋",
+	twsbganglie: "刚烈",
+	twsbganglie_info: "出牌阶段限一次。你可以选择任意名本局游戏对你造成过伤害且你未以此法选择过的角色，你对其造成2点伤害。",
+	twsbqingjian: "清俭",
+	twsbqingjian_info: "①当有一张牌不因使用而进入弃牌堆后，若你的“清俭”数小于X，你将此牌置于你的武将牌上，称为“清俭”（X为你的体力值+1，且至少为1）。②出牌阶段结束时，你将所有“清俭”分配给任意角色。",
 	tw_shen_guanyu: "TW神关羽",
 	tw_shen_guanyu_prefix: "TW神",
 	twwushen: "武神",
