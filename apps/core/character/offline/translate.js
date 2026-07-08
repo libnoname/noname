@@ -1,6 +1,22 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	ps_shen_weiyan: "★神魏延",
+	ps_shen_weiyan_prefix: "★|神",
+	ps_devil_weiyan: "★魔魏延",
+	ps_devil_weiyan_prefix: "★|魔",
+	psjimou: "极谋",
+	psjimou_info: "限定技，准备阶段，你可失去任意点体力上限并选择一名其他角色，除你与其之外的角色须进入“休整”状态直到有角色死亡或此后你与其进行了等量个回合。",
+	psyuxue: "浴血",
+	psyuxue_info: "每回合限一次，你可将任意张非伤害牌当做一张可指定等量目标且无距离限制的【杀】使用，你可“吸取”因此牌受伤的目标角色的1点体力上限。",
+	pskuifa: "馈伐",
+	pskuifa_info: `你使用多目标伤害牌时，选择一项：1.若此牌指定目标数小于存活人数时，你可令你本回合的出【杀】次数+1；2.若此牌指定目标数不小于你的体力值时，你可摸不为此牌目标的其他角色数张牌。<br>${get.poptip("rule_chengshi")}：此牌不可被响应。<br>${get.poptip("rule_beishui")}：你失去X点体力（X为你的背水次数）。`,
+	psnimou: "逆谋",
+	psnimou_info: "限定技，准备阶段，你可失去任意点体力上限并选择等量名其他角色，其进入“休整”状态直到有角色死亡或此后其他角色均进行了回合。",
+	pskexue: "渴血",
+	pskexue_info: "每回合限一次，你可以将任意张非伤害牌当做一张须等量【闪】抵消的【杀】使用，若此【杀】造成伤害且目标角色未打出【闪】，你可“吸取”目标角色1点体力上限。",
+	psjiefa: "竭伐",
+	psjiefa_info: `你使用伤害牌指定单一目标时，选择一项：1.若目标体力值大于游戏内角色数，此牌可额外指定一个目标；2.若你的体力上限小于其，你可令此牌额外执行一次。<br>${get.poptip("rule_chengshi")}：你将体力回复至上限或将手牌摸至上限。<br>${get.poptip("rule_beishui")}：你失去X点体力（X为你背水的次数）。`,
 	sm_shenmo_sunquan: "PE神魔孙权",
 	sm_shenmo_sunquan_prefix: "PE|神|魔",
 	smsibian: "俟变",

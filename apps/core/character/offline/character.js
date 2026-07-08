@@ -1,4 +1,18 @@
 const characters = {
+	ps_shen_weiyan: {
+		sex: "male",
+		group: "shen",
+		hp: 4,
+		maxHp: 7,
+		skills: ["psjimou", "psyuxue", "pskuifa"],
+	},
+	ps_devil_weiyan: {
+		sex: "male",
+		group: "devil",
+		hp: 2,
+		hujia: 4,
+		skills: ["psnimou", "pskexue", "psjiefa"],
+	},
 	sm_shenmo_sunquan: {
 		sex: "male",
 		group: "shen",

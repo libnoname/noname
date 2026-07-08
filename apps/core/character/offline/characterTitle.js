@@ -1,4 +1,6 @@
 export default {
+	ps_shen_weiyan: "子午创世神",
+	ps_devil_weiyan: "戾骨噬汉魔",
 	sm_shenmo_sunquan: "一念神魔",
 	pe_liuhui: "周天古率",
 	pe_baiqi: "大良造",
