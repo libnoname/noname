@@ -27141,7 +27141,7 @@ const skills = {
 				charlotte: true,
 				mark: true,
 				intro: {
-					content: "下一次使用火【杀】或【火攻】额外指定1个目标",
+					content: "下一次使用火【杀】或【火攻】可以额外指定1个目标",
 				},
 				forced: true,
 				popup: false,
@@ -27265,19 +27265,19 @@ const skills = {
 					discard = true;
 				while (true) {
 					const cards = source.getCards("h", card => {
-						if (get.name(card) != "sha" && (get.type(card) != "trick" || !get.tag(card, "damage"))) {
-							return false;
-						}
-						return source.canUse(card, target, false);
+						return get.name(card) == "sha" || (get.type(card) == "trick" && get.tag(card, "damage"));
 					});
 					if (cards.length) {
 						if (discard) {
 							discard = false;
 						}
-						const next = source.useCard(cards.randomGet(), target, false);
-						await next;
-						if (target.hasHistory("damage", evt => evt.card == next.card)) {
-							bool = true;
+						let card = cards.filter(cardx => source.canUse(cardx, target, false)).randomGet();
+						if (card) {
+							const next = source.useCard(card, target, false);
+							await next;
+							if (target.hasHistory("damage", evt => evt.card == next.card)) {
+								bool = true;
+							}
 						}
 					} else {
 						break;
