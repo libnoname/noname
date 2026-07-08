@@ -7258,7 +7258,7 @@ const skills = {
 			if (cards.length) {
 				await player.gain({
 					cards,
-					animate: "gain2",
+					animate: "draw",
 				});
 			}
 		},
@@ -13181,7 +13181,7 @@ const skills = {
 				return false;
 			}
 			for (var i of event.cards) {
-				if (get.suit(i, event.player) == "diamond") {
+				if (get.suit(i, event.player) == "diamond" && get.position(i) === "d") {
 					return true;
 				}
 			}

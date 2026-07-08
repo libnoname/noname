@@ -603,7 +603,7 @@ const translates = {
 	re_guohuanghou: "界郭皇后",
 	re_guohuanghou_prefix: "界",
 	rejiaozhao: "矫诏",
-	rejiaozhao_info: "出牌阶段限一次。你可以展示一张手牌，并令一名距离你最近的角色选择一种基本牌或普通锦囊牌的牌名。你可将此牌当做其声明的牌使用直到此阶段结束（你不是此牌的合法目标）。",
+	rejiaozhao_info: "出牌阶段限一次。你可以展示一张手牌，并令一名距离你最近的其他角色选择一种基本牌或普通锦囊牌的牌名。你可将此牌当做其声明的牌使用直到此阶段结束（你不是此牌的合法目标）。",
 	rejiaozhao_lv2: "矫诏·升级 Lv.1",
 	rejiaozhao_lv2_info: "出牌阶段限一次。你可以将一张手牌当做一张基本牌或普通锦囊牌使用（你不是此牌的合法目标）。",
 	rejiaozhao_lv3: "矫诏·升级 Lv.2",

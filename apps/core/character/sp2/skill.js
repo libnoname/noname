@@ -16032,7 +16032,7 @@ const skills = {
 			event.num = player.storage.xinfu_lveming;
 			event.toequip = [];
 			"step 1";
-			var equip = get.cardPile(
+			var equip = get.cardPile2(
 				function (card) {
 					var bool1 = true;
 					for (var i = 0; i < event.toequip.length; i++) {
@@ -16040,7 +16040,7 @@ const skills = {
 							bool1 = false;
 						}
 					}
-					return get.type(card) == "equip" && !event.toequip.includes(card) && target.hasEmptySlot(card) && bool1;
+					return get.type(card) == "equip" && !event.toequip.includes(card) && target.hasEmptySlot(get.subtype(card)) && bool1;
 				},
 				false,
 				"random"
