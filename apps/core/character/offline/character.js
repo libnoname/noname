@@ -29,6 +29,7 @@ const characters = {
 		group: "qun",
 		hp: 4,
 		skills: ["pejieshu", "pegeyuan", "pegusuan"],
+		dieAudios: ["liuhui"],
 	},
 	pe_baiqi: {
 		sex: "male",

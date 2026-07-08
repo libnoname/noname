@@ -10991,6 +10991,7 @@ const skills = {
 									player.addMark("friendyance", Math.min(7 - player.countMark("friendyance"), 1 + num), false);
 								}
 								if (storage[4] && storage[3] >= 3) {
+									player.logSkill("friendfangqiu", null, null, null, [3]);
 									player.restoreSkill("friendfangqiu");
 								}
 							}
@@ -11003,6 +11004,7 @@ const skills = {
 	},
 	friendfangqiu: {
 		audio: 3,
+		logAudio: index => (typeof index === "number" ? "friendfangqiu" + index + ".mp3" : 2),
 		limited: true,
 		trigger: { player: "friendyance_minigame" },
 		check(event, player) {
