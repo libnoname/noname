@@ -6,6 +6,7 @@ const characters = {
 		maxHp: 4,
 		hujia: 1,
 		skills: ["twsbganglie", "twsbqingjian"],
+		dieAudios: ["sb_xiahoudun"],
 		names: "夏侯|惇",
 	},
 	tw_shen_guanyu: {

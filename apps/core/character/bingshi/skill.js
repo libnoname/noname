@@ -822,8 +822,7 @@ const skills = {
 				return;
 			}
 			await game.cardsGotoOrdering(cards);
-			const targets = [];
-			while (cards.length && targets.length < 3) {
+			while (cards.length) {
 				const result = await player
 					.chooseButtonTarget({
 						createDialog: [`伺锋：请选择要分配的“伺锋”牌和目标（先选择的牌在前面）`, cards],
@@ -847,7 +846,6 @@ const skills = {
 					} = result;
 					cards.removeArray(links);
 					player.line(target);
-					targets.add(target);
 					await target.addToExpansion({ cards: links.reverse(), source: player, animate: "give", gaintag: [event.name] });
 				}
 			}
