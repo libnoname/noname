@@ -394,6 +394,7 @@ const skills = {
 		subSkill: {
 			sha: {
 				charlotte: true,
+				onremove: true,
 				mod: {
 					cardUsable(card, player, num) {
 						if (card.name == "sha") {
