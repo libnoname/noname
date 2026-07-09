@@ -4455,7 +4455,7 @@ const skills = {
 	jsrgdingce: {
 		trigger: { player: "damageEnd" },
 		filter(event, player) {
-			if (!event.source || !event.source.isIn()) {
+			if (!event.source?.isIn()) {
 				return false;
 			}
 			return player.hasCard(card => {
@@ -4464,15 +4464,15 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			const { source: target } = trigger;
-
-			const result = await player
+			event.result = await player
 				.chooseToDiscard({
-					prompt: get.prompt("jsrgdingce", target),
+					prompt: get.prompt(event.skill, target),
 					prompt2: "弃置你与其的各一张手牌。若这两张牌颜色相同，你视为使用一张【洞烛先机】。",
 					ai(card) {
 						return _status.event.goon ? 6 - get.value(card) : 0;
 					},
 				})
+				.set("chooseonly", true)
 				.set(
 					"goon",
 					get.attitude(player, target) < 0 ||
@@ -4482,19 +4482,12 @@ const skills = {
 							.filter(card => get.value(card) < 5.5).length >= 2
 				)
 				.forResult();
-
-			event.result = {
-				bool: result.bool,
-				cards: result.cards,
-				targets: result.targets,
-			};
 		},
-		logTarget: "targets",
 		async content(event, trigger, player) {
 			const { source: target } = trigger;
-
+			await player.discard(event.cards);
 			const card = event.cards[0];
-			if (!target.countDiscardableCards(player, "h")) {
+			if (!target.hasDiscardableCards(player, "h")) {
 				return;
 			}
 
@@ -4512,11 +4505,11 @@ const skills = {
 			}
 			const result = await next.forResult();
 
-			if (!result.bool || !result.cards?.length) {
+			if (!result?.bool || !result.cards?.length) {
 				return;
 			}
 			const discardedCard = result.cards[0];
-			if (get.color(event.card, false) === get.color(discardedCard, false)) {
+			if (get.color(card, false) === get.color(discardedCard, false)) {
 				await game.delayex();
 				await player.chooseUseTarget({
 					card: get.autoViewAs({ name: "dongzhuxianji", isCard: true }),
@@ -6976,7 +6969,13 @@ const skills = {
 				const names = list.map(i => "【" + get.translation(i) + "】").join("或");
 				const next = target.chooseToRespond({
 					prompt: "是否替" + get.translation(player) + "打出一张" + names + "？",
-					card: get.autoViewAs({ name: list }),
+					filterCard: function (card, player) {
+						if (!get.event().namex.includes(get.name(card))) {
+							return false;
+						}
+						return lib.filter.cardRespondable(card, player);
+					},
+					namex: list,
 				});
 				next.set("ai", () => {
 					const event = _status.event;

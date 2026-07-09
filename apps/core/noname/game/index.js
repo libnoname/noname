@@ -8644,21 +8644,21 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		}
 	}
 	finishSkill(skillId, sub) {
-		const mode = get.mode(),
-			info = lib.skill[skillId],
-			iInfo = `${skillId}_info`;
-		if (_status.mode && lib.translate[iInfo + "_" + mode + "_" + _status.mode]) {
-			lib.translate[iInfo] = lib.translate[iInfo + "_" + mode + "_" + _status.mode];
+		const mode = get.mode();
+		const info = lib.skill[skillId];
+		const iInfo = `${skillId}_info`;
+		if (_status.mode && lib.translate[`${iInfo}_${mode}_${_status.mode}`]) {
+			lib.translate[iInfo] = lib.translate[`${iInfo}_${mode}_${_status.mode}`];
 		} else if (lib.translate[`${iInfo}_${mode}`]) {
 			lib.translate[iInfo] = lib.translate[`${iInfo}_${mode}`];
-		} else if (lib.translate[`${iInfo}_zhu`] && (mode == "identity" || (mode == "guozhan" && _status.mode == "four"))) {
+		} else if (lib.translate[`${iInfo}_zhu`] && (mode === "identity" || (mode === "guozhan" && _status.mode === "four"))) {
 			lib.translate[iInfo] = lib.translate[`${iInfo}_zhu`];
 		} else if (lib.translate[`${iInfo}_combat`] && get.is.versus()) {
 			lib.translate[iInfo] = lib.translate[`${iInfo}_combat`];
 		}
 		info.skill_id ??= skillId;
-		let deleteSkill = function (skill, iInfo) {
-			let { audio, audioname, audioname2, skillID } = lib.skill[skill] || {};
+		const deleteSkill = (skill, iInfo) => {
+			const { audio, audioname, audioname2, skillID } = lib.skill[skill] || {};
 			lib.skill[skill] = { audio, audioname, audioname2, skillID };
 			lib.translate[iInfo] &&= "此模式下不可用";
 			lib.dynamicTranslate[skill] &&= () => "此模式下不可用";
@@ -8667,11 +8667,15 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			const skill = lib.skill[info.inherit];
 			if (skill) {
 				Object.keys(skill).forEach(value => {
-					if (info[value] == undefined) {
-						if (value == "audio" && (typeof info[value] == "number" || typeof info[value] == "boolean")) {
+					if (info[value] == null) {
+						if (value === "audio" && (typeof info[value] === "number" || typeof info[value] === "boolean")) {
 							info[value] = info.inherit;
 						} else {
-							info[value] = skill[value];
+							if (typeof skill[value] === "object") {
+								info[value] = get.copy(skill[value]);
+							} else {
+								info[value] = skill[value];
+							}
 						}
 					}
 				});
@@ -8679,12 +8683,12 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			lib.translate[skillId] ??= lib.translate[info.inherit];
 			lib.translate[iInfo] ??= lib.translate[`${info.inherit}_info`];
 		}
-		if (info.forbid?.includes(mode) || info.mode?.includes(mode) == false || info.available?.(mode) == false) {
+		if (info.forbid?.includes(mode) || info.mode?.includes(mode) === false || info.available?.(mode) === false) {
 			deleteSkill(skillId, iInfo);
 			return;
 		}
-		if (info.viewAs && typeof info.viewAs != "function") {
-			if (typeof info.viewAs == "string") {
+		if (info.viewAs && typeof info.viewAs !== "function") {
+			if (typeof info.viewAs === "string") {
 				info.viewAs = {
 					name: info.viewAs,
 				};
@@ -8693,18 +8697,22 @@ ${e instanceof Error ? e.stack : String(e)}`);
 				deleteSkill(skillId, iInfo);
 				return;
 			}
-			if (info.ai == undefined) {
+			if (info.ai == null) {
 				info.ai = {};
 			}
-			const skill = info.ai,
-				card = lib.card[info.viewAs.name].ai;
+			const skill = info.ai;
+			const card = lib.card[info.viewAs.name].ai;
 			if (card) {
 				Object.keys(card).forEach(value => {
-					if (skill[value] == undefined) {
-						skill[value] = card[value];
-					} else if (typeof skill[value] == "object") {
+					if (skill[value] == null) {
+						if (typeof card[value] === "object") {
+							skill[value] = get.copy(card[value]);
+						} else {
+							skill[value] = card[value];
+						}
+					} else if (typeof skill[value] === "object") {
 						Object.keys(card[value]).forEach(element => {
-							if (skill[value][element] == undefined) {
+							if (skill[value][element] == null) {
 								skill[value][element] = card[value][element];
 							}
 						});
@@ -8743,7 +8751,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		}
 		if (info.round) {
 			const k = `${skillId}_roundcount`;
-			if (typeof info.group == "string") {
+			if (typeof info.group === "string") {
 				info.group = [info.group, k];
 			} else if (Array.isArray(info.group)) {
 				info.group.add(k);
@@ -8757,7 +8765,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 					}
 				},
 				intro: {
-					content: (storage, player) => {
+					content(storage, player) {
 						let str = "";
 						const info = get.info(name.slice(0, name.indexOf("_roundcount")));
 						if (info && info.addintro) {
@@ -8777,7 +8785,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 				forced: true,
 				popup: false,
 				silent: true,
-				content: async (event, trigger, player) => {
+				async content(event, trigger, player) {
 					if (lib.skill[event.name.slice(0, event.name.indexOf("_roundcount"))].round - (game.roundNumber - player.storage[event.name]) > 0) {
 						player.updateMarks();
 					} else {
@@ -8818,7 +8826,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			}
 			info._priority = priority;
 		}
-		if (skillId[0] == "_") {
+		if (skillId[0] === "_") {
 			game.addGlobalSkill(skillId);
 		}
 	}

@@ -1,4 +1,16 @@
 const characters = {
+	dc_sb_guanyu: {
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		skills: ["dcsbguanwu", "dcsbweishi", "dcsbjuao"],
+	},
+	wu_zhangfei: {
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		skills: ["dczisheng", "dcxianlve", "dchaoxian"],
+	},
 	dc_sb_zhugeliang: {
 		sex: "male",
 		group: "shu",
@@ -9,18 +21,18 @@ const characters = {
 	dc_shen_guanyu: {
 		sex: "male",
 		group: "shen",
-		hp: 4,
-		maxHp: 5,
+		hp: 5,
 		skills: ["dcwushen", "dcwuhun"],
 		groupInGuozhan: "shu",
+		dieAudios: ["shen_guanyu"],
 	},
 	dc_shen_liubei: {
 		sex: "male",
 		group: "shen",
-		hp: 4,
-		maxHp: 6,
+		hp: 6,
 		skills: ["dclongnu", "dcjieying"],
 		groupInGuozhan: "shu",
+		dieAudios: ["shen_liubei"],
 	},
 	dc_shen_zhangliao: {
 		sex: "male",
@@ -716,6 +728,12 @@ const characters = {
 		skills: ["zhengbi", "fengying"],
 		names: "崔|琰-毛|玠",
 	},
+	fugan: {
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		skills: ["qiaojian", "xicha"],
+	},
 	huzun: {
 		sex: "male",
 		group: "wei",
@@ -1139,7 +1157,7 @@ const characters = {
 		sex: "female",
 		group: "wei",
 		hp: 3,
-		skills: ["dclianyou","dccili"],
+		skills: ["dclianyou", "dccili"],
 	},
 	dc_huangzu: {
 		sex: "male",

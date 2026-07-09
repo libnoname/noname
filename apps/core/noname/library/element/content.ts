@@ -2,6 +2,7 @@
 import { _status, game, get, lib, ui, ai } from "noname";
 import { GameEvent } from "./gameEvent.js";
 import { Player } from "./player.js";
+import type { GainAnimate } from "./Player/type";
 
 import { delay } from "@/util/index.js";
 
@@ -746,7 +747,15 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				player.disabledSlots[slot_key] ??= 0;
 				player.disabledSlots[slot_key] += lose;
 
-				const discardingCards = player.getCards("e", card => get.subtypes(card).includes(slot) && !event.cards.includes(card));
+				const discardingCards = player.getCards("e", card => {
+					if (event.cards.includes(card)) {
+						return false;
+					}
+					if (slot == "equip3_4") {
+						return get.subtypes(card).some(subtype => subtype == "equip3" || subtype == "equip4");
+					}
+					return get.subtypes(card).includes(slot);
+				});
 				if (discardingCards.length < 0) {
 					continue;
 				}
@@ -6051,7 +6060,8 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 		}
 
 		let delay;
-		switch (event.animate) {
+		const animate: GainAnimate | null = event.animate;
+		switch (animate) {
 			case "draw":
 				for (const pair of event.gain_list) {
 					if (get.itemtype(pair[1]) == "card") {
@@ -6126,6 +6136,18 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 					}
 				}
 				delay = game.delay(0, get.delayx(500, 500));
+				break;
+			}
+			default: {
+				if (typeof animate === "function") {
+					const animateResult = animate(event);
+					if (typeof animateResult === "number") {
+						delay = game.delay(0, get.delayx(animateResult, animateResult));
+					} else {
+						animateResult.finally(() => void game.resume());
+						delay = game.pause();
+					}
+				}
 				break;
 			}
 		}
@@ -6343,183 +6365,125 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			}
 		},
 		async (event, trigger, player) => {
-			let loopedCount = 0;
-			const mapLength = Object.keys(event.gaining_map).length;
-			for (const j in event.gaining_map) {
-				loopedCount++;
-				const map = {};
-				const player = (_status.connectMode ? lib.playerOL : game.playerMap)[j];
-				const cards = event.gaining_map[j];
-				const hs = player.getCards("x");
-				for (let i = 0; i < cards.length; i++) {
-					if (hs.includes(cards[i])) {
-						cards.splice(i--, 1);
-					}
+			const animate: GainAnimate | null = event.animate;
+			const postAnimate = (player, cards) => {
+				player.$addToExpansion(cards, null, event.gaintag);
+				for (const id of event.gaintag) {
+					player.markSkill(id);
 				}
-				for (const card of cards) {
+			};
+
+			const waitings: Promise<void>[] = [];
+			for (const [id, cards] of Object.entries(event.gaining_map)) {
+				const player2 = (_status.connectMode ? lib.playerOL : game.playerMap)[id];
+				const hs = player2.getCards("x");
+				const cards2: Card[] = cards.filter(card => !hs.includes(card));
+				for (const card of cards2) {
 					if (_status.discarded) {
 						_status.discarded.remove(card);
 					}
-					for (let num2 = 0; num2 < card.vanishtag.length; num2++) {
-						if (card.vanishtag[num2][0] != "_") {
-							card.vanishtag.splice(num2--, 1);
+					for (let i = 0; i < card.vanishtag.length; i++) {
+						if (card.vanishtag[i][0] !== "_") {
+							card.vanishtag.splice(i--, 1);
 						}
 					}
 				}
-				if (event.animate == "draw") {
-					player.$draw(cards.length);
-					if (event.log) {
-						game.log(player, "将", get.cnNumber(cards.length), "张牌置于了武将牌上");
-					}
-					game.pause();
-					setTimeout(
-						(player, cards, resume) => {
-							player.$addToExpansion(cards, null, event.gaintag);
-							for (const i of event.gaintag) {
-								player.markSkill(i);
-							}
-							if (resume) {
-								game.resume();
-							}
-						},
-						get.delayx(500, 500),
-						player,
-						cards,
-						loopedCount === mapLength
-					);
-				} else if (event.animate == "gain") {
-					player.$gain(cards, false);
-					game.pause();
-					setTimeout(
-						(player, cards, resume) => {
-							player.$addToExpansion(cards, null, event.gaintag);
-							for (const i of event.gaintag) {
-								player.markSkill(i);
-							}
-							if (resume) {
-								game.resume();
-							}
-						},
-						get.delayx(700, 700),
-						player,
-						cards,
-						loopedCount === mapLength
-					);
-				} else if (event.animate == "gain2" || event.animate == "draw2") {
-					let gain2t = 300;
-					if (player.$gain2(cards) && player == game.me) {
-						gain2t = 500;
-					}
-					game.pause();
-					setTimeout(
-						(player, cards, resume) => {
-							player.$addToExpansion(cards, null, event.gaintag);
-							for (const i of event.gaintag) {
-								player.markSkill(i);
-							}
-							if (resume) {
-								game.resume();
-							}
-						},
-						get.delayx(gain2t, gain2t),
-						player,
-						cards,
-						loopedCount === mapLength
-					);
-				} else if (event.animate == "give" || event.animate == "giveAuto") {
-					const evtmap = event.losing_map;
-					const entries = Object.entries(evtmap).map(entry => [entry[0], entry[1][0]]);
-					const getOwner = card => {
-						const entry = entries.find(entry => entry[1].includes(card));
-						if (entry) {
-							return (_status.connectMode ? lib.playerOL : game.playerMap)[entry[0]];
+
+				let animateTime: number | Promise<void> | null = null;
+				switch (animate) {
+					case "draw":
+						player2.$draw(cards2.length);
+						if (event.log) {
+							game.log(player2, "将", get.cnNumber(cards2.length), "张牌置于了武将牌上");
 						}
-						return null;
-					};
-					const gainmap = {};
-					for (const cardx of cards) {
-						const owner = getOwner(cardx);
-						if (owner) {
-							const id = owner.playerid;
-							if (!gainmap[id]) {
-								gainmap[id] = [];
-							}
-							gainmap[id].push(cardx);
+						animateTime = 500;
+						break;
+					case "gain":
+						player2.$gain(cards2, false);
+						animateTime = 700;
+						break;
+					case "gain2":
+					case "draw2":
+						animateTime = 300;
+						if (player2.$gain2(cards2) && player2 === game.me) {
+							animateTime = 500;
 						}
-					}
-					if (event.animate == "give") {
-						for (const i in gainmap) {
-							const source = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
-							source.$give(evtmap[i][0], player, false);
-							if (event.log) {
-								game.log(player, "将", evtmap[i][0], "置于了武将牌上");
+						break;
+					case "give":
+					case "giveAuto": {
+						const evtmap = event.losing_map;
+						const entries = Object.entries(evtmap).map(entry => [entry[0], entry[1][0]]);
+						const getOwner = card => {
+							const entry = entries.find(entry => entry[1].includes(card));
+							if (entry) {
+								return (_status.connectMode ? lib.playerOL : game.playerMap)[entry[0]];
+							}
+							return null;
+						};
+						const gainmap = {};
+						for (const cardx of cards2) {
+							const owner = getOwner(cardx);
+							if (owner) {
+								const id = owner.playerid;
+								if (!gainmap[id]) {
+									gainmap[id] = [];
+								}
+								gainmap[id].push(cardx);
 							}
 						}
-					} else {
-						for (const i in gainmap) {
-							const source = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
-							if (evtmap[i][1].length) {
-								source.$giveAuto(evtmap[i][1], player, false);
+						if (animate === "give") {
+							for (const i in gainmap) {
+								const source = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
+								source.$give(evtmap[i][0], player2, false);
 								if (event.log) {
-									game.log(player, "将", get.cnNumber(evtmap[i][1].length), "张牌置于了武将牌上");
+									game.log(player2, "将", evtmap[i][0], "置于了武将牌上");
 								}
 							}
-							if (evtmap[i][2].length) {
-								source.$give(evtmap[i][2], player, false);
-								if (event.log) {
-									game.log(player, "将", evtmap[i][2], "置于了武将牌上");
+						} else {
+							for (const id in gainmap) {
+								const source = (_status.connectMode ? lib.playerOL : game.playerMap)[id];
+								if (evtmap[id][1].length) {
+									source.$giveAuto(evtmap[id][1], player2, false);
+									if (event.log) {
+										game.log(player2, "将", get.cnNumber(evtmap[id][1].length), "张牌置于了武将牌上");
+									}
+								}
+								if (evtmap[id][2].length) {
+									source.$give(evtmap[id][2], player2, false);
+									if (event.log) {
+										game.log(player2, "将", evtmap[id][2], "置于了武将牌上");
+									}
 								}
 							}
 						}
+						animateTime = 500;
+						break;
 					}
-					game.pause();
-					setTimeout(
-						(player, cards, resume) => {
-							player.$addToExpansion(cards, null, event.gaintag);
-							for (const i of event.gaintag) {
-								player.markSkill(i);
-							}
-							if (resume) {
-								game.resume();
-							}
-						},
-						get.delayx(500, 500),
-						player,
-						cards,
-						loopedCount === mapLength
-					);
-				} else if (typeof event.animate == "function") {
-					const time = event.animate(event);
-					game.pause();
-					setTimeout(
-						(player, cards, resume) => {
-							player.$addToExpansion(cards, null, event.gaintag);
-							for (const i of event.gaintag) {
-								player.markSkill(i);
-							}
-							if (resume) {
-								game.resume();
-							}
-						},
-						get.delayx(time, time),
-						player,
-						cards,
-						loopedCount === mapLength
-					);
-				} else {
-					player.$addToExpansion(cards, null, event.gaintag);
-					for (const i of event.gaintag) {
-						player.markSkill(i);
-					}
-					event.finish();
+					default:
+						if (typeof animate === "function") {
+							animateTime = animate(event);
+						}
+						break;
 				}
+
+				if (animateTime == null) {
+					postAnimate(player2, cards2);
+					continue;
+				}
+
+				const waiting = typeof animateTime === "number" ? delay(get.delayx(animateTime, animateTime)) : animateTime;
+				waitings.push(waiting.then(() => postAnimate(player2, cards2)));
 			}
-		},
-		async (event, trigger, player) => {
+
+			if (waitings.length) {
+				Promise.allSettled(waitings).finally(() => void game.resume());
+				await game.pause();
+				game.delayx();
+			}
+
 			if (event.updatePile) {
 				game.updateRoundNumber();
 			}
-			await game.delayx();
 		},
 	],
 	loseToDiscardpileMultiple: [
@@ -7555,7 +7519,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 	],
 	async chooseCardOL(event, trigger, player) {
 		const targets: Player[] = event.list;
-
+		event.targets = targets.slice(0);
 		type ChooseCardOLResult = Partial<Result> | "ai";
 		const chooseRemote = (args, set) => {
 			game.me.chooseCard(...args).set(set);
@@ -7578,7 +7542,9 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 						.catch(() => resolve({}));
 				} else {
 					const next = chooseLocal(current);
-					next.forResult().then(resolve).catch(() => resolve({}));
+					next.forResult()
+						.then(resolve)
+						.catch(() => resolve({}));
 				}
 			});
 		};
@@ -7608,7 +7574,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				);
 			}
 		}
-		
+
 		Reflect.set(event, "result", results);
 	},
 	async chooseButtonOL(event, trigger, player) {
@@ -10068,100 +10034,88 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 		async (event, trigger, player) => {
 			const { cards, card, targets, num } = event;
 			event.sortTarget = (animate, sort) => {
-				const info = get.info(event.card, false);
-				if (num == 0 && targets.length > 1) {
-					if (!info.multitarget) {
-						if (!event.fixedSeat && !sort) {
-							targets.sortBySeat(_status.currentPhase || player);
-						}
-						if (animate) {
-							for (const target of targets) {
-								target.addTempClass("target");
-							}
-						}
-					} else if (animate) {
-						for (const target of targets) {
-							target.addTempClass("target");
-						}
-					}
+				const { card, targets, num, fixedSeat } = event;
+				const info = get.info(card, false);
+				if (num !== 0 || targets.length <= 1) {
+					return;
+				}
+				if (!info.multitarget && !fixedSeat && !sort) {
+					targets.sortBySeat(_status.currentPhase || player);
+				}
+				if (!animate) {
+					return;
+				}
+				for (const target of targets) {
+					target.addTempClass("target");
 				}
 			};
 			event.sortTarget();
-			event.getTriggerTarget = (list1, list2) => {
-				const listx = list1.slice(0).sortBySeat(_status.currentPhase || player);
-				for (const target of listx) {
-					if (get.numOf(list2, target) < get.numOf(listx, target)) {
-						return target;
-					}
+			event._triggerTo = async (name: string, key: string, first: string, last?: boolean) => {
+				const { cards, targets } = event;
+				if (event.all_excluded) {
+					return;
 				}
-				return null;
+				if (!event[key]) {
+					event[key] = [];
+				}
+				const triggeredTargets = event[key] as Player[];
+				const target = getTriggerTarget(event, triggeredTargets);
+				if (!target) {
+					return;
+				}
+				triggeredTargets.push(target);
+				const next = game.createEvent(name, false);
+				if (!event[first]) {
+					event[first] = true;
+					next.isFirstTarget = true;
+				}
+				next.setContent("emptyEvent");
+				next.targets = targets;
+				next.target = target;
+				next.card = event.card;
+				next.cards = cards;
+				next.player = player;
+				next.skill = event.skill;
+				next.excluded = event.excluded;
+				next.directHit = event.directHit;
+				next.customArgs = event.customArgs;
+				if (event.forceDie) {
+					next.forceDie = true;
+				}
+				if (last && event.targets.length === event[key].length) {
+					event.sortTarget();
+				}
+				await next;
+				event.redo();
+				return;
+
+				function getTriggerTarget(event: GameEvent, triggered: Player[]) {
+					const sortedTargets = [...event.targets];
+					const remainingTargets = new Map<Player, number>();
+					for (const target of sortedTargets) {
+						remainingTargets.set(target, (remainingTargets.get(target) || 0) + 1);
+					}
+					for (const target of triggered) {
+						const count = remainingTargets.get(target);
+						if (count) {
+							remainingTargets.set(target, count - 1);
+						}
+					}
+					sortedTargets.sortBySeat(_status.currentPhase || event.player);
+					for (const target of sortedTargets) {
+						if ((remainingTargets.get(target) || 0) > 0) {
+							return target;
+						}
+					}
+					return null;
+				}
 			};
 		},
 		async (event, trigger, player) => {
-			const { cards, card, targets, num } = event;
-			if (event.all_excluded) {
-				return;
-			}
-			if (!event.triggeredTargets1) {
-				event.triggeredTargets1 = [];
-			}
-			const target = event.getTriggerTarget(targets, event.triggeredTargets1);
-			if (target) {
-				event.triggeredTargets1.push(target);
-				const next = game.createEvent("useCardToPlayer", false);
-				if (!event.isFirstTarget1) {
-					event.isFirstTarget1 = true;
-					next.isFirstTarget = true;
-				}
-				next.setContent("emptyEvent");
-				next.targets = targets;
-				next.target = target;
-				next.card = event.card;
-				next.cards = cards;
-				next.player = player;
-				next.skill = event.skill;
-				next.excluded = event.excluded;
-				next.directHit = event.directHit;
-				next.customArgs = event.customArgs;
-				if (event.forceDie) {
-					next.forceDie = true;
-				}
-				await next;
-				event.redo();
-			}
+			await event._triggerTo("useCardToPlayer", "triggeredTargets1", "isFirstTarget1");
 		},
 		async (event, trigger, player) => {
-			const { cards, card, targets, num } = event;
-			if (event.all_excluded) {
-				return;
-			}
-			if (!event.triggeredTargets2) {
-				event.triggeredTargets2 = [];
-			}
-			const target = event.getTriggerTarget(targets, event.triggeredTargets2);
-			if (target) {
-				event.triggeredTargets2.push(target);
-				const next = game.createEvent("useCardToTarget", false);
-				if (!event.isFirstTarget2) {
-					event.isFirstTarget2 = true;
-					next.isFirstTarget = true;
-				}
-				next.setContent("emptyEvent");
-				next.targets = targets;
-				next.target = target;
-				next.card = event.card;
-				next.cards = cards;
-				next.player = player;
-				next.skill = event.skill;
-				next.excluded = event.excluded;
-				next.directHit = event.directHit;
-				next.customArgs = event.customArgs;
-				if (event.forceDie) {
-					next.forceDie = true;
-				}
-				await next;
-				event.redo();
-			}
+			await event._triggerTo("useCardToTarget", "triggeredTargets2", "isFirstTarget2");
 		},
 		async (event, trigger, player) => {
 			const { cards, card, targets, num } = event;
@@ -10178,73 +10132,10 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			}
 		},
 		async (event, trigger, player) => {
-			const { cards, card, targets, num } = event;
-			if (event.all_excluded) {
-				return;
-			}
-			if (!event.triggeredTargets3) {
-				event.triggeredTargets3 = [];
-			}
-			const target = event.getTriggerTarget(targets, event.triggeredTargets3);
-			if (target) {
-				event.triggeredTargets3.push(target);
-				const next = game.createEvent("useCardToPlayered", false);
-				if (!event.isFirstTarget3) {
-					event.isFirstTarget3 = true;
-					next.isFirstTarget = true;
-				}
-				next.setContent("emptyEvent");
-				next.targets = targets;
-				next.target = target;
-				next.card = event.card;
-				next.cards = cards;
-				next.player = player;
-				next.skill = event.skill;
-				next.excluded = event.excluded;
-				next.directHit = event.directHit;
-				next.customArgs = event.customArgs;
-				if (event.forceDie) {
-					next.forceDie = true;
-				}
-				await next;
-				event.redo();
-			}
+			await event._triggerTo("useCardToPlayered", "triggeredTargets3", "isFirstTarget3");
 		},
 		async (event, trigger, player) => {
-			const { cards, card, targets, num } = event;
-			if (event.all_excluded) {
-				return;
-			}
-			if (!event.triggeredTargets4) {
-				event.triggeredTargets4 = [];
-			}
-			const target = event.getTriggerTarget(targets, event.triggeredTargets4);
-			if (target) {
-				event.triggeredTargets4.push(target);
-				const next = game.createEvent("useCardToTargeted", false);
-				if (!event.isFirstTarget4) {
-					event.isFirstTarget4 = true;
-					next.isFirstTarget = true;
-				}
-				next.setContent("emptyEvent");
-				next.targets = targets;
-				next.target = target;
-				next.card = event.card;
-				next.cards = cards;
-				next.player = player;
-				next.skill = event.skill;
-				next.excluded = event.excluded;
-				next.directHit = event.directHit;
-				next.customArgs = event.customArgs;
-				if (event.forceDie) {
-					next.forceDie = true;
-				}
-				if (targets.length == event.triggeredTargets4.length) {
-					event.sortTarget();
-				}
-				await next;
-				event.redo();
-			}
+			await event._triggerTo("useCardToTargeted", "triggeredTargets4", "isFirstTarget4", true);
 		},
 		async (event, trigger, player) => {
 			const { cards, card, targets, num, target } = event;
@@ -11222,7 +11113,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			if (event.animate == "give" || event.animate == "gain2" || event.animate == "draw2") {
 				event.visible = true;
 			}
-			if (get.itemtype(cards) == "cards") {
+			if (Array.isArray(cards) && !cards.some(card => get.itemtype(card) !== "card")) {
 				const map = {};
 				for (const i of cards) {
 					const owner = get.owner(i, "judge");
@@ -11370,124 +11261,72 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 					event.gaintag
 				);
 			};
-			if (event.animate == "draw") {
-				player.$draw(cards.length);
-				game.pause();
-				setTimeout(
-					() => {
-						addv();
-						player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
-						player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
-						player.update();
-						if (player == game.me) {
-							ui.updatehl();
-						}
-						broadcast();
-						game.resume();
-					},
-					get.delayx(500, 500)
-				);
-			} else if (event.animate == "gain") {
-				player.$gain(cards, event.log);
-				game.pause();
-				setTimeout(
-					() => {
-						addv();
-						player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
-						player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
-						player.update();
-						if (player == game.me) {
-							ui.updatehl();
-						}
-						broadcast();
-						game.resume();
-					},
-					get.delayx(700, 700)
-				);
-			} else if (event.animate == "gain2" || event.animate == "draw2") {
-				let gain2t = 300;
-				if (player.$gain2(cards, event.log) && player == game.me) {
-					gain2t = 500;
-				}
-				game.pause();
-				setTimeout(
-					() => {
-						addv();
-						player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
-						player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
-						player.update();
-						if (player == game.me) {
-							ui.updatehl();
-						}
-						broadcast();
-						game.resume();
-					},
-					get.delayx(gain2t, gain2t)
-				);
-			} else if (event.animate == "give" || event.animate == "giveAuto") {
-				const evtmap = event.losing_map;
-				if (event.animate == "give") {
-					for (const i in evtmap) {
-						const source = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
-						source.$give(evtmap[i][0], player, event.log);
-					}
-				} else {
-					for (const i in evtmap) {
-						const source = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
-						if (evtmap[i][1].length) {
-							source.$giveAuto(evtmap[i][1], player, event.log);
-						}
-						if (evtmap[i][2].length) {
-							source.$give(evtmap[i][2], player, event.log);
-						}
-					}
-				}
-				game.pause();
-				setTimeout(
-					() => {
-						addv();
-						player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
-						player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
-						player.update();
-						if (player == game.me) {
-							ui.updatehl();
-						}
-						broadcast();
-						game.resume();
-					},
-					get.delayx(500, 500)
-				);
-			} else if (typeof event.animate == "function") {
-				const time = event.animate(event);
-				game.pause();
-				setTimeout(
-					() => {
-						addv();
-						player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
-						player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
-						player.update();
-						if (player == game.me) {
-							ui.updatehl();
-						}
-						broadcast();
-						game.resume();
-					},
-					get.delayx(time, time)
-				);
-			} else {
+			const postAnimate = () => {
 				addv();
 				player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
 				player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
 				player.update();
-				if (player == game.me) {
+				if (player === game.me) {
 					ui.updatehl();
 				}
 				broadcast();
-				event.finish();
+			};
+
+			let animateTime: number | Promise<void> | null = null;
+			const animate: GainAnimate | null = event.animate;
+			switch (animate) {
+				case "draw":
+					player.$draw(cards.length);
+					animateTime = 500;
+					break;
+				case "gain":
+					player.$gain(cards, event.log);
+					animateTime = 700;
+					break;
+				case "draw2":
+				case "gain2":
+					animateTime = 300;
+					if (player.$gain2(cards, event.log) && player === game.me) {
+						animateTime = 500;
+					}
+					break;
+				case "give":
+				case "giveAuto": {
+					const evtmap = event.losing_map;
+					if (animate === "give") {
+						for (const id in evtmap) {
+							const source = (_status.connectMode ? lib.playerOL : game.playerMap)[id];
+							source.$give(evtmap[id][0], player, event.log);
+						}
+					} else {
+						for (const id in evtmap) {
+							const source = (_status.connectMode ? lib.playerOL : game.playerMap)[id];
+							if (evtmap[id][1].length) {
+								source.$giveAuto(evtmap[id][1], player, event.log);
+							}
+							if (evtmap[id][2].length) {
+								source.$give(evtmap[id][2], player, event.log);
+							}
+						}
+					}
+					animateTime = 500;
+					break;
+				}
+				default:
+					if (typeof animate === "function") {
+						animateTime = animate(event);
+					}
+					break;
 			}
-		},
-		async (event, trigger, player) => {
-			game.delayx();
+			if (animateTime == null) {
+				postAnimate();
+			} else {
+				const waiting = typeof animateTime === "number" ? delay(get.delayx(animateTime, animateTime)) : animateTime;
+				waiting.then(postAnimate).finally(() => void game.resume());
+				await game.pause();
+				game.delayx();
+			}
+
 			if (event.updatePile) {
 				game.updateRoundNumber();
 			}
@@ -11597,112 +11436,83 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 					}
 				}
 			}
-			if (event.animate == "draw") {
-				player.$draw(cards.length);
-				if (event.log) {
-					game.log(player, "将", get.cnNumber(cards.length), "张牌置于了武将牌上");
-				}
-				game.pause();
-				setTimeout(
-					() => {
-						player.$addToExpansion(cards, null, event.gaintag);
-						for (const i of event.gaintag) {
-							player.markSkill(i);
-						}
-						game.resume();
-					},
-					get.delayx(500, 500)
-				);
-			} else if (event.animate == "gain") {
-				player.$gain(cards, false);
-				game.pause();
-				setTimeout(
-					() => {
-						player.$addToExpansion(cards, null, event.gaintag);
-						for (const i of event.gaintag) {
-							player.markSkill(i);
-						}
-						game.resume();
-					},
-					get.delayx(700, 700)
-				);
-			} else if (event.animate == "gain2" || event.animate == "draw2") {
-				let gain2t = 300;
-				if (player.$gain2(cards) && player == game.me) {
-					gain2t = 500;
-				}
-				game.pause();
-				setTimeout(
-					() => {
-						player.$addToExpansion(cards, null, event.gaintag);
-						for (const i of event.gaintag) {
-							player.markSkill(i);
-						}
-						game.resume();
-					},
-					get.delayx(gain2t, gain2t)
-				);
-			} else if (event.animate == "give" || event.animate == "giveAuto") {
-				const evtmap = event.losing_map;
-				if (event.animate == "give") {
-					for (const i in evtmap) {
-						const source = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
-						source.$give(evtmap[i][0], player, false);
-						if (event.log) {
-							game.log(player, "将", evtmap[i][0], "置于了武将牌上");
-						}
-					}
-				} else {
-					for (const i in evtmap) {
-						const source = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
-						if (evtmap[i][1].length) {
-							source.$giveAuto(evtmap[i][1], player, false);
-							if (event.log) {
-								game.log(player, "将", get.cnNumber(evtmap[i][1].length), "张牌置于了武将牌上");
-							}
-						}
-						if (evtmap[i][2].length) {
-							source.$give(evtmap[i][2], player, false);
-							if (event.log) {
-								game.log(player, "将", evtmap[i][2], "置于了武将牌上");
-							}
-						}
-					}
-				}
-				game.pause();
-				setTimeout(
-					() => {
-						player.$addToExpansion(cards, null, event.gaintag);
-						for (const i of event.gaintag) {
-							player.markSkill(i);
-						}
-						game.resume();
-					},
-					get.delayx(500, 500)
-				);
-			} else if (typeof event.animate == "function") {
-				const time = event.animate(event);
-				game.pause();
-				setTimeout(
-					() => {
-						player.$addToExpansion(cards, null, event.gaintag);
-						for (const i of event.gaintag) {
-							player.markSkill(i);
-						}
-						game.resume();
-					},
-					get.delayx(time, time)
-				);
-			} else {
+
+			const postAnimate = () => {
 				player.$addToExpansion(cards, null, event.gaintag);
-				for (const i of event.gaintag) {
-					player.markSkill(i);
+				for (const gaintag of event.gaintag) {
+					player.markSkill(gaintag);
 				}
-				event.finish();
+			};
+
+			let animateTime: number | Promise<void> | null = null;
+			const animate: GainAnimate | null = event.animate;
+			switch (animate) {
+				case "draw":
+					player.$draw(cards.length);
+					if (event.log) {
+						game.log(player, "将", get.cnNumber(cards.length), "张牌置于了武将牌上");
+					}
+					animateTime = 500;
+					break;
+				case "gain":
+					player.$gain(cards, false);
+					animateTime = 700;
+					break;
+				case "gain2":
+				case "draw2": {
+					animateTime = 300;
+					if (player.$gain2(cards) && player === game.me) {
+						animateTime = 500;
+					}
+					break;
+				}
+				case "give":
+				case "giveAuto": {
+					const evtmap = event.losing_map;
+					if (animate === "give") {
+						for (const id in evtmap) {
+							const source = (_status.connectMode ? lib.playerOL : game.playerMap)[id];
+							source.$give(evtmap[id][0], player, false);
+							if (event.log) {
+								game.log(player, "将", evtmap[id][0], "置于了武将牌上");
+							}
+						}
+					} else {
+						for (const id in evtmap) {
+							const source = (_status.connectMode ? lib.playerOL : game.playerMap)[id];
+							if (evtmap[id][1].length) {
+								source.$giveAuto(evtmap[id][1], player, false);
+								if (event.log) {
+									game.log(player, "将", get.cnNumber(evtmap[id][1].length), "张牌置于了武将牌上");
+								}
+							}
+							if (evtmap[id][2].length) {
+								source.$give(evtmap[id][2], player, false);
+								if (event.log) {
+									game.log(player, "将", evtmap[id][2], "置于了武将牌上");
+								}
+							}
+						}
+					}
+					animateTime = 500;
+					break;
+				}
+				default:
+					if (typeof animate === "function") {
+						animateTime = animate(event);
+					}
+					break;
 			}
-		},
-		async (event, trigger, player) => {
-			game.delayx();
+
+			if (animateTime == null) {
+				postAnimate();
+			} else {
+				const waiting = typeof animateTime === "number" ? delay(get.delayx(animateTime, animateTime)) : animateTime;
+				waiting.then(postAnimate).finally(() => void game.resume());
+				await game.pause();
+				game.delayx();
+			}
+
 			if (event.updatePile) {
 				game.updateRoundNumber();
 			}

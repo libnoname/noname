@@ -6683,7 +6683,7 @@ export default {
 			"step 0";
 			target.draw("visible");
 			"step 1";
-			var card = result[0];
+			var card = result?.cards?.[0];
 			if (
 				card &&
 				game.hasPlayer(function (current) {

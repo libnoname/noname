@@ -1,4 +1,6 @@
 export default {
+	//ol_bulianshi: "",
+	//ol_liufeng: "",
 	//ol_quancong: "",
 	//ol_caoxiu: "",
 	ol_guanping: "威灵显化",

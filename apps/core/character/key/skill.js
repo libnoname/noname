@@ -129,8 +129,10 @@ const skills = {
 				await player.loseHp();
 			}
 			const cards = get.cards(player.hp <= player.maxHp / 2 ? 5 : 3);
-			player.showCards(cards, get.translation(player) + "发动了【天全】");
-			game.cardsGotoOrdering(cards).relatedEvent = trigger.getParent();
+			await player.showCards(cards, get.translation(player) + "发动了【天全】");
+			const next = game.cardsGotoOrdering(cards);
+			next.relatedEvent = trigger.getParent();
+			await next;
 			const num = cards.filter(card => get.type(card, null, false) == "basic").length;
 			if (num && trigger.card.name == "sha") {
 				const id = trigger.target.playerid;
@@ -148,10 +150,10 @@ const skills = {
 				const next = game.createEvent("tenzen_retianqua_gain");
 				next.cards = cards;
 				next.player = player;
-				next.setContent(() => {
-					if (player.getHistory("sourceDamage", evt => evt.card == event.parent.card).length > 0) {
-						player.gain(
-							cards.filter(card => get.type(card, null, false) != "basic"),
+				next.setContent(async (event, trigger, player) => {
+					if (player.getHistory("sourceDamage", evt => evt.card == event.getParent().card).length > 0) {
+						await player.gain(
+							event.cards.filter(card => get.type(card, null, false) != "basic"),
 							"gain2"
 						);
 					}

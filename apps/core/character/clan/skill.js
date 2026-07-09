@@ -2141,7 +2141,6 @@ const skills = {
 			} else {
 				await player.discard(event.cards);
 				trigger.getParent().all_excluded = true;
-				trigger.getParent().targets.length = 0;
 			}
 		},
 	},
@@ -2492,7 +2491,7 @@ const skills = {
 		limited: true,
 		trigger: { player: "phaseJieshuBegin" },
 		filter(event, player) {
-			return player.countCards("h", card => player.canRecast(card)) > 1;
+			return player.countCards("he", card => player.canRecast(card)) > 1;
 		},
 		async cost(event, trigger, player) {
 			event.result = await player

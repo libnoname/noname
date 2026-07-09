@@ -2479,10 +2479,10 @@ const skills = {
 				}
 				return 2;
 			},
-			backup(result, player) {
+			backup(links, player) {
 				return {
 					audio: "dcfuxie",
-					choice: result[0],
+					choice: links[0],
 					filterCard(card) {
 						const { choice } = get.info("dcfuxie_backup");
 						if (Array.isArray(choice)) {
@@ -2520,8 +2520,8 @@ const skills = {
 					},
 				};
 			},
-			prompt(result, player) {
-				let prompt = Array.isArray(result[0]) ? "弃置一张武器牌" : `失去【${get.translation(result[0])}】`;
+			prompt(links, player) {
+				let prompt = Array.isArray(links[0]) ? "弃置一张武器牌" : `失去【${get.translation(links[0])}】`;
 				return `${prompt}，令一名角色弃置两张牌`;
 			},
 		},
@@ -4439,6 +4439,7 @@ const skills = {
 						givenCards.push(links[i]);
 						game.log(player, "将", links[i], "交给了", target);
 					});
+					event.getParent().set("givenCards", givenCards);
 
 					await game
 						.loseAsync({
@@ -7257,7 +7258,7 @@ const skills = {
 			if (cards.length) {
 				await player.gain({
 					cards,
-					animate: "gain2",
+					animate: "draw",
 				});
 			}
 		},
@@ -12078,36 +12079,32 @@ const skills = {
 	dcchongwang: {
 		audio: 2,
 		trigger: { global: "useCard" },
-		direct: true,
 		filter(event, player) {
 			if (player == event.player) {
 				return false;
 			}
-			var type = get.type(event.card);
-			if (type != "basic" && type != "trick") {
+			const type = get.type(event.card);
+			if (!["basic", "trick"].includes(type)) {
 				return false;
 			}
-			var history = game.getAllGlobalHistory("useCard");
-			var index = history.indexOf(event);
+			const history = game.getAllGlobalHistory("useCard");
+			const index = history.indexOf(event);
 			if (index > 0) {
 				return history[index - 1].player == player;
 			}
 			return false;
 		},
-		async content(event, trigger, player) {
-			let result;
-
-			// step 0
+		async cost(event, trigger, player) {
 			const source = trigger.player;
-			const list = [["exclude", "令" + get.translation(trigger.card) + "无效"]];
+			const list = [["exclude", `令${get.translation(trigger.card)}无效`]];
 			const cards = trigger.cards.filterInD();
 			if (source.isIn() && cards.length > 0) {
-				list.push(["gain", "令" + get.translation(source) + "收回" + get.translation(cards)]);
+				list.push(["gain", `令${get.translation(source)}收回${get.translation(cards)}`]);
 			}
-			result = await player
-				.chooseButton([get.prompt("dcchongwang", source), [list, "textbutton"], "noforcebutton"])
-				.set("ai", function (button) {
-					const player = _status.event.player;
+			const result = await player
+				.chooseButton([get.prompt(event.skill, source), [list, "textbutton"], "noforcebutton"])
+				.set("ai", button => {
+					const player = get.player();
 					const choice = button.link;
 					const evt = _status.event.getTrigger();
 					if (choice == "exclude") {
@@ -12125,25 +12122,23 @@ const skills = {
 					}
 				})
 				.forResult();
-			// step 1
-			if (result.bool) {
-				if (!event.isMine() && !event.isOnline()) {
-					await game.delayx();
-				}
-			} else {
-				return;
+			event.result = {
+				bool: result.bool,
+				cost_data: result.links,
+			};
+		},
+		logTarget: "player",
+		async content(event, trigger, player) {
+			if (!event.isMine() && !event.isOnline()) {
+				await game.delayx();
 			}
-			// step 2
-			if (result.bool) {
-				player.logSkill("dcchongwang", trigger.player);
-				if (result.links[0] == "gain") {
-					player.addTempSkill("dcchongwang_gain");
-					trigger._dcchongwang = true;
-				} else {
-					trigger.targets.length = 0;
-					trigger.all_excluded = true;
-					game.log(trigger.card, "被无效了");
-				}
+			if (event.cost_data[0] == "gain") {
+				player.addTempSkill("dcchongwang_gain");
+				trigger._dcchongwang = true;
+			} else {
+				trigger.targets.length = 0;
+				trigger.all_excluded = true;
+				game.log(trigger.card, "被无效了");
 			}
 		},
 		ai: {
@@ -13186,7 +13181,7 @@ const skills = {
 				return false;
 			}
 			for (var i of event.cards) {
-				if (get.suit(i, event.player) == "diamond") {
+				if (get.suit(i, event.player) == "diamond" && get.position(i) === "d") {
 					return true;
 				}
 			}
@@ -14572,7 +14567,7 @@ const skills = {
 		trigger: { global: ["loseAfter", "loseAsyncAfter"] },
 		forced: true,
 		filter(event, player) {
-			if (event.getParent("lieyi")) {
+			if (event.getParent("lieyi", true)) {
 				return false;
 			}
 			if (event.type != "discard" || event.getlx === false || player.getExpansions("xunli").length >= 9) {
@@ -16952,13 +16947,13 @@ const skills = {
 				})
 			) {
 				event.result = await player
-					.chooseToDiscard("h", get.prompt(event.skill), "弃置一张牌并令伤害-1", "chooseonly")
+					.chooseToDiscard("h", get.prompt(event.skill), "弃置一张手牌并令伤害-1", "chooseonly")
 					.set("ai", function (card) {
 						return 7 - get.value(card);
 					})
 					.forResult();
 			} else {
-				event.result = await player.chooseBool(get.prompt(event.skill), "随机弃置一张牌并令伤害-1").forResult();
+				event.result = await player.chooseBool(get.prompt(event.skill), "随机弃置一张手牌并令伤害-1").forResult();
 			}
 		},
 		async content(event, trigger, player) {

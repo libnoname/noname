@@ -1,4 +1,5 @@
 export default {
+	tw_sb_xiahoudun: "独眼的罗刹",
 	tw_yj_fazheng: "弹铗待试",
 	tw_shen_guanyu: "魂追弗届",
 	tw_shen_lvmeng: "兼资文武",

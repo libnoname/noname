@@ -1,9 +1,66 @@
 const characters = {
-	tcmj_lishimin: {
+	ps_shen_weiyan: {
+		sex: "male",
+		group: "shen",
+		hp: 4,
+		maxHp: 7,
+		skills: ["psjimou", "psyuxue", "pskuifa"],
+		groupInGuozhan: "shu",
+	},
+	ps_devil_weiyan: {
+		sex: "male",
+		group: "devil",
+		hp: 2,
+		hujia: 4,
+		skills: ["psnimou", "pskexue", "psjiefa"],
+		groupInGuozhan: "shu",
+	},
+	sm_shenmo_sunquan: {
+		sex: "male",
+		group: "shen",
+		hp: 6,
+		skills: ["smsibian", "smqihua", "smdue"],
+		doubleGroup: ["shen", "devil"],
+		groupBorder: "devil",
+		groupInGuozhan: "wu",
+	},
+	pe_liuhui: {
 		sex: "male",
 		group: "qun",
 		hp: 4,
-		skills: ["tcmjpozhen", "tcmjtaoge", "tcmjzhenguan"],
+		skills: ["pejieshu", "pegeyuan", "pegusuan"],
+		dieAudios: ["liuhui"],
+	},
+	pe_baiqi: {
+		sex: "male",
+		group: "qun",
+		hp: 5,
+		skills: ["pewuan", "peshashen"],
+	},
+	pe_huamulan: {
+		sex: "female",
+		group: "qun",
+		hp: 4,
+		skills: ["perongbian", "peliezhan", "petijun"],
+	},
+	pe_yangyuhuan: {
+		sex: "female",
+		group: "qun",
+		hp: 3,
+		skills: ["peyichuan", "pexiuhua"],
+	},
+	pe_xiahoulan: {
+		sex: "female",
+		group: "shu",
+		hp: 3,
+		skills: ["pexunji", "peshuangfeng"],
+		names: "夏侯|岚",
+	},
+	pe_lishimin: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["pepozhen", "petaoge", "pezhenguan"],
 	},
 	ylyg_xuhuang: {
 		sex: "male",
@@ -1104,7 +1161,8 @@ const characters = {
 		hp: 5,
 		skills: ["psxiaofan", "psjiaohu", "psquanpan", "pshuoluan"],
 		//doubleGroup: ["qun", "shu", "wu"],
-	}, hm_shen_zhangjiao: {
+	},
+	hm_shen_zhangjiao: {
 		sex: "male",
 		group: "shen",
 		hp: 4,

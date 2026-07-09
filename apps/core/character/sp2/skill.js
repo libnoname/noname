@@ -319,12 +319,8 @@ const skills = {
 				audio: "starfanglang",
 				charlotte: true,
 				onremove: true,
-				intro: {
-					content: "cards",
-				},
-				trigger: {
-					player: ["useCard", "respond"],
-				},
+				intro: { content: "cards" },
+				trigger: { player: ["useCard", "respond"] },
 				forced: true,
 				filter(event, player) {
 					const storage = player.getStorage("starfanglang_draw");
@@ -343,29 +339,24 @@ const skills = {
 			},
 			gain: {
 				audio: "starfanglang",
-				trigger: {
-					player: "phaseJieshuBegin",
-				},
+				trigger: { player: "phaseJieshuBegin" },
 				filter(event, player) {
-					return player.countDiscardableCards(player, "he") > 0 && player.getStorage("starfanglang_draw").length > 0;
+					return player.hasDiscardableCards(player, "he");
 				},
 				async cost(event, trigger, player) {
 					event.result = await player
-						.chooseToDiscard(`###${get.prompt(event.skill)}###你可以弃置一张牌，然后你获得弃牌堆中与放浪展示牌类别、点数、花色相同的牌各一张牌。`, "he", "chooseonly")
-						.set("ai", card => 6 - get.value(card))
+						.chooseToDiscard(`###${get.prompt(event.skill)}###你可以弃置一张牌，然后你获得弃牌堆中与此牌类别、点数、花色相同的牌各一张牌。`, "he", "chooseonly")
+						.set("ai", card => 7 - get.value(card))
 						.forResult();
 				},
 				async content(event, trigger, player) {
 					const { cards } = event;
 					await player.discard(cards);
-					const getList = get.info("starxisong").getList;
 					const gain = [];
 					const keys = ["type2", "suit", "number"];
-					const list = player.getStorage("starfanglang_draw").map(i => getList(i));
 					keys.forEach((key, idx) => {
 						const card = get.discardPile(card => {
-							const val = get[key](card);
-							return !gain.includes(card) && list.some(i => i[idx] == val);
+							return !gain.includes(card) &&get[key](card)==get[key](cards[0]);
 						});
 						if (card) {
 							gain.push(card);
@@ -1898,7 +1889,7 @@ const skills = {
 		popup: false,
 		async content(event, trigger, player) {
 			const discardedCards = event.cards || [];
-			const num = discaredCards.length - ((await player.drawTo(5).forResult()).cards || []).length;
+			const num = discardedCards.length - ((await player.drawTo(5).forResult()).cards || []).length;
 			switch (get.sgn(num)) {
 				case 1: {
 					const result = await player
@@ -3196,6 +3187,7 @@ const skills = {
 	},
 	// 星夏侯霸
 	starweigu: {
+		audio: 2,
 		trigger: {
 			player: "useCardToPlayer",
 			target: "useCardToTarget",
@@ -3204,7 +3196,7 @@ const skills = {
 			if (!get.is.damageCard(event.card)) {
 				return false;
 			}
-			if (event.targets.length !== 1) {
+			if (event.targets?.length !== 1) {
 				return false;
 			}
 			if (!player.hasCards("he", card => get.info("starweigu").isSelf(card, player) && lib.filter.cardDiscardable(card, player, "starweigu"))) {
@@ -3340,6 +3332,7 @@ const skills = {
 	},
 	starjuefa: {
 		//批量改名前记得这里有starweigu
+		audio: 2,
 		enable: "phaseUse",
 		skillAnimation: true,
 		limited: true,
@@ -3354,6 +3347,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
+				audio: "starjuefa",
 				charlotte: true,
 				forced: true,
 				init(player, skill) {
@@ -3384,6 +3378,7 @@ const skills = {
 				},
 			},
 			remove: {
+				audio: "starjuefa",
 				charlotte: true,
 				forced: true,
 				trigger: {
@@ -16037,7 +16032,7 @@ const skills = {
 			event.num = player.storage.xinfu_lveming;
 			event.toequip = [];
 			"step 1";
-			var equip = get.cardPile(
+			var equip = get.cardPile2(
 				function (card) {
 					var bool1 = true;
 					for (var i = 0; i < event.toequip.length; i++) {
@@ -16045,7 +16040,7 @@ const skills = {
 							bool1 = false;
 						}
 					}
-					return get.type(card) == "equip" && !event.toequip.includes(card) && target.hasEmptySlot(card) && bool1;
+					return get.type(card) == "equip" && !event.toequip.includes(card) && target.hasEmptySlot(get.subtype(card)) && bool1;
 				},
 				false,
 				"random"
@@ -16322,6 +16317,7 @@ const skills = {
 				sub: true,
 			},
 			discard: {
+				audio: "xinfu_bijing",
 				trigger: {
 					player: "phaseZhunbeiBegin",
 				},
@@ -16931,7 +16927,7 @@ const skills = {
 			"step 0";
 			target.draw();
 			"step 1";
-			var card = result[0];
+			var card = result?.cards?.[0];
 			if (
 				card &&
 				game.hasPlayer(function (current) {
@@ -16981,7 +16977,7 @@ const skills = {
 			"step 0";
 			player.draw();
 			"step 1";
-			event.card = result[0];
+			event.card = result?.cards?.[0];
 			var ablers = player.getLastUsed(1).targets.slice(0);
 			for (var i = 0; i < ablers.length; i++) {
 				if (ablers[i] == player || !trigger.targets.includes(ablers[i])) {

@@ -80,7 +80,6 @@ const characters = {
 		group: "wei",
 		hp: 4,
 		maxHp: 4,
-		hujia: 1,
 		skills: ["sbganglie", "sbqingjian"],
 		names: "夏侯|惇",
 	},

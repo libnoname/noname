@@ -1,4 +1,5 @@
 export default {
+	yj_wanglang: "负固不服",
 	//yj_puyuan: "",
 	//yao_yuanshu: "",
 	yj_fazheng: "弹铗待试",
