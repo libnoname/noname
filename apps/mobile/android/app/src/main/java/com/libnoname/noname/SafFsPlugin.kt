@@ -2,7 +2,6 @@ package com.libnoname.noname
 
 import android.app.Activity
 import android.content.Intent
-import android.net.Uri
 import android.provider.DocumentsContract
 import android.util.Base64
 import androidx.activity.result.ActivityResult
@@ -19,14 +18,8 @@ import java.nio.charset.Charset
 
 @CapacitorPlugin(name = "SafFs")
 class SafFsPlugin : Plugin() {
-    private val prefsName = "SafFs"
-    private val rootUriKey = "rootUri"
-
-    private val rootUri: Uri?
-        get() = getContext()
-            .getSharedPreferences(prefsName, 0)
-            .getString(rootUriKey, null)
-            ?.let(Uri::parse)
+    private val store: SafOverlayStore
+        get() = SafOverlayStore(getContext())
 
     @PluginMethod
     fun hasAccess(call: PluginCall) {
@@ -35,7 +28,7 @@ class SafFsPlugin : Plugin() {
 
     @PluginMethod
     fun requestAccess(call: PluginCall) {
-        if (hasPersistedAccess()) {
+        if (store.hasPersistedAccess()) {
             call.resolve(accessResult())
             return
         }
@@ -69,11 +62,7 @@ class SafFsPlugin : Plugin() {
 
         try {
             getContext().contentResolver.takePersistableUriPermission(uri, takeFlags)
-            getContext()
-                .getSharedPreferences(prefsName, 0)
-                .edit()
-                .putString(rootUriKey, uri.toString())
-                .apply()
+            store.saveRootUri(uri)
             call.resolve(accessResult())
         } catch (e: Exception) {
             call.reject("保存目录授权失败: ${e.message}", e)
@@ -84,12 +73,15 @@ class SafFsPlugin : Plugin() {
     fun checkFile(call: PluginCall) {
         wrap(call) {
             val fileName = call.getString("fileName") ?: throw IllegalArgumentException("缺少 fileName")
-            val file = find(fileName)
+            val file = store.findSaf(fileName)
             JSObject().put("type", when {
-                file == null -> "none"
-                file.isFile -> "file"
-                file.isDirectory -> "directory"
-                else -> "none"
+                file != null && file.isFile -> "file"
+                file != null && file.isDirectory -> "directory"
+                else -> when (store.assetType(fileName)) {
+                    EntryType.FILE -> "file"
+                    EntryType.DIRECTORY -> "directory"
+                    EntryType.NONE -> "none"
+                }
             })
         }
     }
@@ -98,12 +90,15 @@ class SafFsPlugin : Plugin() {
     fun checkDir(call: PluginCall) {
         wrap(call) {
             val dir = call.getString("dir") ?: throw IllegalArgumentException("缺少 dir")
-            val file = find(dir)
+            val file = store.findSaf(dir)
             JSObject().put("type", when {
-                file == null -> "none"
-                file.isFile -> "file"
-                file.isDirectory -> "directory"
-                else -> "none"
+                file != null && file.isFile -> "file"
+                file != null && file.isDirectory -> "directory"
+                else -> when (store.assetType(dir)) {
+                    EntryType.FILE -> "file"
+                    EntryType.DIRECTORY -> "directory"
+                    EntryType.NONE -> "none"
+                }
             })
         }
     }
@@ -112,12 +107,11 @@ class SafFsPlugin : Plugin() {
     fun readFile(call: PluginCall) {
         wrap(call) {
             val fileName = call.getString("fileName") ?: throw IllegalArgumentException("缺少 fileName")
-            val file = requireFile(fileName)
-            val bytes = getContext().contentResolver.openInputStream(file.uri)?.use { input ->
+            val bytes = openOverlayInput(fileName).use { input ->
                 val output = ByteArrayOutputStream()
                 input.copyTo(output)
                 output.toByteArray()
-            } ?: throw IllegalStateException("无法读取文件")
+            }
             JSObject().put("data", Base64.encodeToString(bytes, Base64.NO_WRAP))
         }
     }
@@ -126,10 +120,9 @@ class SafFsPlugin : Plugin() {
     fun readFileAsText(call: PluginCall) {
         wrap(call) {
             val fileName = call.getString("fileName") ?: throw IllegalArgumentException("缺少 fileName")
-            val file = requireFile(fileName)
-            val text = getContext().contentResolver.openInputStream(file.uri)?.use { input ->
+            val text = openOverlayInput(fileName).use { input ->
                 input.bufferedReader(Charset.forName("UTF-8")).readText()
-            } ?: throw IllegalStateException("无法读取文件")
+            }
             JSObject().put("data", text)
         }
     }
@@ -152,7 +145,14 @@ class SafFsPlugin : Plugin() {
     fun removeFile(call: PluginCall) {
         wrap(call) {
             val fileName = call.getString("fileName") ?: throw IllegalArgumentException("缺少 fileName")
-            val file = requireFile(fileName)
+            val file = store.findSaf(fileName)
+            if (file == null) {
+                if (store.assetType(fileName) != EntryType.NONE) {
+                    throw IllegalArgumentException("内置资源只读: $fileName")
+                }
+                throw IllegalArgumentException("$fileName 不存在")
+            }
+            if (!file.isFile) throw IllegalArgumentException("$fileName 不是文件")
             if (!file.delete()) throw IllegalStateException("删除文件失败")
             JSObject().put("success", true)
         }
@@ -162,16 +162,27 @@ class SafFsPlugin : Plugin() {
     fun getFileList(call: PluginCall) {
         wrap(call) {
             val dir = call.getString("dir") ?: ""
-            val folder = requireDirectory(dir)
+            val entries = linkedMapOf<String, Boolean>()
+
+            store.listAsset(dir)
+                .filter { entry -> isVisible(entry.name) }
+                .forEach { entry -> entries[entry.name] = entry.isDirectory }
+
+            val safFolder = store.findSaf(dir)
+            if (safFolder != null) {
+                if (!safFolder.isDirectory) throw IllegalArgumentException("$dir 不是文件夹")
+                safFolder.listFiles()
+                    .filter { file -> !file.name.isNullOrEmpty() && isVisible(file.name!!) }
+                    .forEach { file -> entries[file.name!!] = file.isDirectory }
+            } else if (entries.isEmpty() && store.assetType(dir) == EntryType.NONE) {
+                throw IllegalArgumentException("$dir 不存在")
+            }
+
             val folders = JSArray()
             val files = JSArray()
-
-            folder.listFiles()
-                .filter { file -> !file.name.isNullOrEmpty() }
-                .filter { file -> !file.name!!.startsWith(".") && !file.name!!.startsWith("_") }
-                .forEach { file ->
-                    if (file.isDirectory) folders.put(file.name) else files.put(file.name)
-                }
+            entries.forEach { (name, isDirectory) ->
+                if (isDirectory) folders.put(name) else files.put(name)
+            }
 
             JSObject()
                 .put("folders", folders)
@@ -182,7 +193,7 @@ class SafFsPlugin : Plugin() {
     @PluginMethod
     fun createDir(call: PluginCall) {
         wrap(call) {
-            val dir = call.getString("dir") ?: throw IllegalArgumentException("缺少 dir")
+            val dir = call.getString("dir") ?: ""
             ensureDirectory(dir)
             JSObject().put("success", true)
         }
@@ -192,10 +203,31 @@ class SafFsPlugin : Plugin() {
     fun removeDir(call: PluginCall) {
         wrap(call) {
             val dir = call.getString("dir") ?: throw IllegalArgumentException("缺少 dir")
-            val folder = requireDirectory(dir)
+            val folder = store.findSaf(dir)
+            if (folder == null) {
+                if (store.assetType(dir) != EntryType.NONE) {
+                    throw IllegalArgumentException("内置资源只读: $dir")
+                }
+                throw IllegalArgumentException("$dir 不存在")
+            }
+            if (!folder.isDirectory) throw IllegalArgumentException("$dir 不是文件夹")
             if (!folder.delete()) throw IllegalStateException("删除目录失败")
             JSObject().put("success", true)
         }
+    }
+
+    private fun isVisible(name: String): Boolean {
+        return !name.startsWith(".") && !name.startsWith("_")
+    }
+
+    private fun openOverlayInput(path: String): java.io.InputStream {
+        val safFile = store.findSaf(path)
+        if (safFile != null) {
+            if (!safFile.isFile) throw IllegalArgumentException("$path 不是文件")
+            return store.openSafInput(safFile) ?: throw IllegalStateException("无法读取文件")
+        }
+
+        return store.openAsset(path) ?: throw IllegalArgumentException("$path 不存在")
     }
 
     private fun wrap(call: PluginCall, block: () -> JSObject) {
@@ -207,60 +239,14 @@ class SafFsPlugin : Plugin() {
     }
 
     private fun accessResult(): JSObject {
-        val uri = rootUri
+        val uri = store.rootUri
         return JSObject()
-            .put("granted", hasPersistedAccess())
+            .put("granted", store.hasPersistedAccess())
             .put("rootUri", uri?.toString())
     }
 
-    private fun hasPersistedAccess(): Boolean {
-        val uri = rootUri ?: return false
-        return getContext().contentResolver.persistedUriPermissions.any { permission ->
-            permission.uri == uri && permission.isReadPermission && permission.isWritePermission
-        }
-    }
-
-    private fun root(): DocumentFile {
-        val uri = rootUri ?: throw IllegalStateException("尚未授权游戏目录")
-        if (!hasPersistedAccess()) throw IllegalStateException("游戏目录授权已失效")
-        return DocumentFile.fromTreeUri(getContext(), uri)
-            ?: throw IllegalStateException("无法打开游戏目录")
-    }
-
-    private fun segments(path: String): List<String> {
-        val normalized = path.replace('\\', '/').trim('/')
-        if (normalized.isEmpty()) return emptyList()
-
-        return normalized
-            .split("/")
-            .filter { it.isNotEmpty() && it != "." }
-            .map {
-                if (it == "..") throw IllegalArgumentException("路径不能包含 ..")
-                it
-            }
-    }
-
-    private fun find(path: String): DocumentFile? {
-        return segments(path).fold(root() as DocumentFile?) { current, name ->
-            current?.findFile(name)
-        }
-    }
-
-    private fun requireFile(path: String): DocumentFile {
-        val file = find(path) ?: throw IllegalArgumentException("$path 不存在")
-        if (!file.isFile) throw IllegalArgumentException("$path 不是文件")
-        return file
-    }
-
-    private fun requireDirectory(path: String): DocumentFile {
-        val folder = if (segments(path).isEmpty()) root() else find(path)
-        if (folder == null) throw IllegalArgumentException("$path 不存在")
-        if (!folder.isDirectory) throw IllegalArgumentException("$path 不是文件夹")
-        return folder
-    }
-
     private fun ensureDirectory(path: String): DocumentFile {
-        return segments(path).fold(root()) { current, name ->
+        return store.segments(path).fold(store.root()) { current, name ->
             val existing = current.findFile(name)
             when {
                 existing == null -> current.createDirectory(name)
@@ -272,7 +258,7 @@ class SafFsPlugin : Plugin() {
     }
 
     private fun createOrReplaceFile(path: String): DocumentFile {
-        val parts = segments(path)
+        val parts = store.segments(path)
         if (parts.isEmpty()) throw IllegalArgumentException("缺少文件路径")
 
         val parent = ensureDirectory(parts.dropLast(1).joinToString("/"))

@@ -5,30 +5,32 @@ import android.util.Log
 import android.webkit.MimeTypeMap
 import android.webkit.WebResourceResponse
 import androidx.webkit.WebViewAssetLoader
-import java.io.IOException
-import java.nio.file.Paths
 
 
 class JsAwarePathHandler(
     private val context: Context,
     private val basePath: String?
 ) : WebViewAssetLoader.PathHandler {
+    private val store = SafOverlayStore(context)
 
     override fun handle(path: String): WebResourceResponse? {
         return try {
-            val normalized = path.trimStart('/').replace(".pnpm", "_pnpm")
+            val normalized = store.normalize(path)
+            val safFile = store.findSaf(normalized, pnpmCompat = true)
 
-            val assetPath = if (basePath != null) {
-                Paths.get(basePath, normalized).toString()
-            } else {
-                normalized
+            if (safFile != null && safFile.isFile) {
+                val stream = store.openSafInput(safFile)
+                if (stream != null) {
+                    return WebResourceResponse(guessMime(normalized), "UTF-8", stream)
+                }
             }
 
+            val assetPath = store.assetPath(normalized, basePath)
             val stream = context.assets.open(assetPath)
             val mime = guessMime(assetPath)
             WebResourceResponse(mime, "UTF-8", stream)
 
-        } catch (e: IOException) {
+        } catch (e: Exception) {
             Log.e("NonameFileServer", "Failed to fetch $path ${e.toString()}")
             null
         }
@@ -48,4 +50,3 @@ class JsAwarePathHandler(
             }
     }
 }
-

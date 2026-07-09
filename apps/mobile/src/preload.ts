@@ -102,7 +102,7 @@ export default async function preload({ lib, game }) {
 
 	const rootCheck = await SafFs.checkFile({ fileName: "noname.js" });
 	if (rootCheck.type !== "file") {
-		throw new Error("请选择包含 noname.js 的完整游戏根目录");
+		throw new Error("游戏资源缺失: noname.js");
 	}
 
 	game.export = function (data: string | Blob, name?: string) {
