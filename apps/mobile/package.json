@@ -15,7 +15,8 @@
     "@capacitor/android": "^8.1.0",
     "@capacitor/app": "^8.0.1",
     "@capacitor/core": "^8.1.0",
-    "@capacitor/filesystem": "^8.1.1"
+    "@capacitor/filesystem": "^8.1.1",
+    "path-browserify-esm": "1.0.6"
   },
   "devDependencies": {
     "@capacitor/cli": "^8.1.0",

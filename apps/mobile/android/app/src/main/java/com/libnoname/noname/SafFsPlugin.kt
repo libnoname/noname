@@ -1,380 +1,297 @@
 package com.libnoname.noname
 
-import android.annotation.SuppressLint
-import android.content.Context
+import android.app.Activity
 import android.content.Intent
 import android.net.Uri
+import android.provider.DocumentsContract
+import android.util.Base64
 import androidx.activity.result.ActivityResult
 import androidx.documentfile.provider.DocumentFile
-import com.getcapacitor.*
+import com.getcapacitor.JSArray
+import com.getcapacitor.JSObject
+import com.getcapacitor.Plugin
+import com.getcapacitor.PluginCall
+import com.getcapacitor.PluginMethod
 import com.getcapacitor.annotation.ActivityCallback
 import com.getcapacitor.annotation.CapacitorPlugin
-import org.json.JSONArray
 import java.io.ByteArrayOutputStream
-import java.util.Base64
-import androidx.core.content.edit
-import androidx.core.net.toUri
+import java.nio.charset.Charset
 
 @CapacitorPlugin(name = "SafFs")
 class SafFsPlugin : Plugin() {
+    private val prefsName = "SafFs"
+    private val rootUriKey = "rootUri"
 
-    private val prefsName = "saffs_prefs"
-    private val keyTreeUri = "tree_uri"
+    private val rootUri: Uri?
+        get() = getContext()
+            .getSharedPreferences(prefsName, 0)
+            .getString(rootUriKey, null)
+            ?.let(Uri::parse)
 
     @PluginMethod
-    fun pickDirectory(call: PluginCall) {
-        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply {
-            addFlags(
-                Intent.FLAG_GRANT_READ_URI_PERMISSION or
-                        Intent.FLAG_GRANT_WRITE_URI_PERMISSION or
-                        Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION or
-                        Intent.FLAG_GRANT_PREFIX_URI_PERMISSION
-            )
-        }
-        startActivityForResult(call, intent, "onPickDirectoryResult")
+    fun hasAccess(call: PluginCall) {
+        call.resolve(accessResult())
     }
 
-    @SuppressLint("WrongConstant")
-    @ActivityCallback
-    private fun onPickDirectoryResult(call: PluginCall, result: ActivityResult) {
-        if (result.resultCode != android.app.Activity.RESULT_OK) {
-            call.reject("User cancelled")
-            return
-        }
-        val uri: Uri? = result.data?.data
-        if (uri == null) {
-            call.reject("No directory selected")
+    @PluginMethod
+    fun requestAccess(call: PluginCall) {
+        if (hasPersistedAccess()) {
+            call.resolve(accessResult())
             return
         }
 
-        // 持久化权限
-        val flags = result.data?.flags ?: 0
-        val takeFlags = flags and
-                (Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply {
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+            addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+            addFlags(Intent.FLAG_GRANT_PREFIX_URI_PERMISSION)
+        }
+        startActivityForResult(call, intent, "handleOpenDocumentTree")
+    }
+
+    @ActivityCallback
+    fun handleOpenDocumentTree(call: PluginCall, result: ActivityResult) {
+        if (result.resultCode != Activity.RESULT_OK) {
+            call.reject("未选择游戏目录")
+            return
+        }
+
+        val uri = result.data?.data
+        if (uri == null) {
+            call.reject("未获取到目录授权")
+            return
+        }
+
+        val grantFlags =
+            Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+        val flags = result.data?.flags ?: grantFlags
+        val takeFlags = flags and grantFlags
 
         try {
-            context.contentResolver.takePersistableUriPermission(uri, takeFlags)
-        } catch (_: SecurityException) {
-            // 有的设备会给不到 write；至少保存 uri
+            getContext().contentResolver.takePersistableUriPermission(uri, takeFlags)
+            getContext()
+                .getSharedPreferences(prefsName, 0)
+                .edit()
+                .putString(rootUriKey, uri.toString())
+                .apply()
+            call.resolve(accessResult())
+        } catch (e: Exception) {
+            call.reject("保存目录授权失败: ${e.message}", e)
         }
-
-        saveTreeUri(uri.toString())
-        val ret = JSObject()
-        ret.put("uri", uri.toString())
-        call.resolve(ret)
     }
 
     @PluginMethod
-    fun getDirectory(call: PluginCall) {
-        val uri = loadTreeUri()
-        val ret = JSObject()
-        ret.put("uri", uri)
-        call.resolve(ret)
+    fun checkFile(call: PluginCall) {
+        wrap(call) {
+            val fileName = call.getString("fileName") ?: throw IllegalArgumentException("缺少 fileName")
+            val file = find(fileName)
+            JSObject().put("type", when {
+                file == null -> "none"
+                file.isFile -> "file"
+                file.isDirectory -> "directory"
+                else -> "none"
+            })
+        }
     }
 
-    // ------------------------
-    // Minimal FS API
-    // ------------------------
-
     @PluginMethod
-    fun list(call: PluginCall) {
-        val path = call.getString("path", "") ?: ""
-        val root = requireRoot(call) ?: return
-        val dir = resolveDir(root, path) ?: run {
-            call.reject("Directory not found: $path")
-            return
+    fun checkDir(call: PluginCall) {
+        wrap(call) {
+            val dir = call.getString("dir") ?: throw IllegalArgumentException("缺少 dir")
+            val file = find(dir)
+            JSObject().put("type", when {
+                file == null -> "none"
+                file.isFile -> "file"
+                file.isDirectory -> "directory"
+                else -> "none"
+            })
         }
-        if (!dir.isDirectory) {
-            call.reject("Not a directory: $path")
-            return
-        }
-
-        val arr = JSONArray()
-        dir.listFiles().forEach { f ->
-            arr.put(statToJson(f, combine(path, f.name ?: "")))
-        }
-
-        val ret = JSObject()
-        ret.put("items", arr)
-        call.resolve(ret)
     }
 
     @PluginMethod
     fun readFile(call: PluginCall) {
-        val path = call.getString("path")
-        if (path.isNullOrBlank()) {
-            call.reject("Missing path")
-            return
+        wrap(call) {
+            val fileName = call.getString("fileName") ?: throw IllegalArgumentException("缺少 fileName")
+            val file = requireFile(fileName)
+            val bytes = getContext().contentResolver.openInputStream(file.uri)?.use { input ->
+                val output = ByteArrayOutputStream()
+                input.copyTo(output)
+                output.toByteArray()
+            } ?: throw IllegalStateException("无法读取文件")
+            JSObject().put("data", Base64.encodeToString(bytes, Base64.NO_WRAP))
         }
-        val root = requireRoot(call) ?: return
-        val file = resolveFile(root, path) ?: run {
-            call.reject("File not found: $path")
-            return
-        }
-        if (file.isDirectory) {
-            call.reject("Path is a directory: $path")
-            return
-        }
+    }
 
-        try {
-            val uri = file.uri
-            val bytes = context.contentResolver.openInputStream(uri)?.use { input ->
-                val bos = ByteArrayOutputStream()
-                val buf = ByteArray(8192)
-                while (true) {
-                    val r = input.read(buf)
-                    if (r <= 0) break
-                    bos.write(buf, 0, r)
-                }
-                bos.toByteArray()
-            } ?: run {
-                call.reject("Failed to open input stream")
-                return
-            }
-
-            val b64 = Base64.getEncoder().encodeToString(bytes)
-            val ret = JSObject()
-            ret.put("data", b64)
-            call.resolve(ret)
-        } catch (e: Exception) {
-            call.reject("Read failed: ${e.message}", e)
+    @PluginMethod
+    fun readFileAsText(call: PluginCall) {
+        wrap(call) {
+            val fileName = call.getString("fileName") ?: throw IllegalArgumentException("缺少 fileName")
+            val file = requireFile(fileName)
+            val text = getContext().contentResolver.openInputStream(file.uri)?.use { input ->
+                input.bufferedReader(Charset.forName("UTF-8")).readText()
+            } ?: throw IllegalStateException("无法读取文件")
+            JSObject().put("data", text)
         }
     }
 
     @PluginMethod
     fun writeFile(call: PluginCall) {
-        val path = call.getString("path")
-        val data = call.getString("data")
-        val overwrite = call.getBoolean("overwrite", true) ?: true
-
-        if (path.isNullOrBlank() || data.isNullOrBlank()) {
-            call.reject("Missing path or data")
-            return
-        }
-
-        val root = requireRoot(call) ?: return
-
-        try {
-            val parentPath = parentOf(path)
-            val name = nameOf(path)
-            val parentDir = ensureDir(root, parentPath) ?: run {
-                call.reject("Failed to create parent directory: $parentPath")
-                return
-            }
-
-            var target = parentDir.findFile(name)
-            if (target != null && target.isDirectory) {
-                call.reject("Target is a directory: $path")
-                return
-            }
-
-            if (target != null && !overwrite) {
-                call.reject("File exists and overwrite=false: $path")
-                return
-            }
-
-            if (target == null) {
-                // MIME 最简处理：统一 application/octet-stream
-                target = parentDir.createFile("application/octet-stream", name)
-                    ?: run {
-                        call.reject("Failed to create file: $path")
-                        return
-                    }
-            }
-
-            val bytes = Base64.getDecoder().decode(data)
-            context.contentResolver.openOutputStream(target.uri, "wt")?.use { out ->
-                out.write(bytes)
-                out.flush()
-            } ?: run {
-                call.reject("Failed to open output stream")
-                return
-            }
-
-            call.resolve()
-        } catch (e: Exception) {
-            call.reject("Write failed: ${e.message}", e)
+        wrap(call) {
+            val path = call.getString("path") ?: throw IllegalArgumentException("缺少 path")
+            val data = call.getString("data") ?: throw IllegalArgumentException("缺少 data")
+            val bytes = Base64.decode(data, Base64.DEFAULT)
+            val file = createOrReplaceFile(path)
+            getContext().contentResolver.openOutputStream(file.uri, "rwt")?.use { output ->
+                output.write(bytes)
+            } ?: throw IllegalStateException("无法写入文件")
+            JSObject().put("success", true)
         }
     }
 
     @PluginMethod
-    fun mkdir(call: PluginCall) {
-        val path = call.getString("path", "") ?: ""
-        val root = requireRoot(call) ?: return
-        val dir = ensureDir(root, path)
-        if (dir == null) {
-            call.reject("Failed to create directory: $path")
-            return
-        }
-        call.resolve()
-    }
-
-    @PluginMethod
-    fun delete(call: PluginCall) {
-        val path = call.getString("path")
-        val recursive = call.getBoolean("recursive", true) ?: true
-        if (path.isNullOrBlank()) {
-            call.reject("Missing path")
-            return
-        }
-        val root = requireRoot(call) ?: return
-        val node = resolveAny(root, path) ?: run {
-            call.reject("Not found: $path")
-            return
-        }
-
-        try {
-            val ok = if (node.isDirectory && recursive) deleteRecursive(node) else node.delete()
-            if (!ok) {
-                call.reject("Delete failed: $path")
-                return
-            }
-            call.resolve()
-        } catch (e: Exception) {
-            call.reject("Delete failed: ${e.message}", e)
+    fun removeFile(call: PluginCall) {
+        wrap(call) {
+            val fileName = call.getString("fileName") ?: throw IllegalArgumentException("缺少 fileName")
+            val file = requireFile(fileName)
+            if (!file.delete()) throw IllegalStateException("删除文件失败")
+            JSObject().put("success", true)
         }
     }
 
     @PluginMethod
-    fun stat(call: PluginCall) {
-        val path = call.getString("path", "")
-        if (path == null) {
-            call.reject("Missing path")
-            return
-        }
-        val root = requireRoot(call) ?: return
-        val node = if (path.isBlank()) root else resolveAny(root, path)
-        if (node == null) {
-            call.reject("Not found: $path")
-            return
-        }
-        call.resolve(statToJson(node, path))
-    }
+    fun getFileList(call: PluginCall) {
+        wrap(call) {
+            val dir = call.getString("dir") ?: ""
+            val folder = requireDirectory(dir)
+            val folders = JSArray()
+            val files = JSArray()
 
-    @PluginMethod
-    fun exists(call: PluginCall) {
-        val path = call.getString("path", "")
-        if (path == null) {
-            call.reject("Missing path")
-            return
-        }
-        val root = requireRoot(call) ?: return
-        val node = if (path.isBlank()) root else resolveAny(root, path)
-        val ret = JSObject()
-        ret.put("exists", node != null)
-        call.resolve(ret)
-    }
-
-    // ------------------------
-    // Helpers
-    // ------------------------
-
-    private fun requireRoot(call: PluginCall): DocumentFile? {
-        val uriStr = loadTreeUri()
-        if (uriStr.isNullOrBlank()) {
-            call.reject("No directory authorized. Call pickDirectory() first.")
-            return null
-        }
-        val uri = uriStr.toUri()
-        val root = DocumentFile.fromTreeUri(context, uri)
-        if (root == null || !root.exists() || !root.isDirectory) {
-            call.reject("Authorized directory is invalid. Please pickDirectory() again.")
-            return null
-        }
-        return root
-    }
-
-    private fun saveTreeUri(uri: String) {
-        context.getSharedPreferences(prefsName, Context.MODE_PRIVATE)
-            .edit {
-                putString(keyTreeUri, uri)
-            }
-    }
-
-    private fun loadTreeUri(): String? {
-        return context.getSharedPreferences(prefsName, Context.MODE_PRIVATE)
-            .getString(keyTreeUri, null)
-    }
-
-    private fun normalize(path: String): List<String> {
-        return path.split("/")
-            .map { it.trim() }
-            .filter { it.isNotEmpty() && it != "." }
-            .also {
-                if (it.any { seg -> seg == ".." }) {
-                    throw IllegalArgumentException("Path must not contain '..'")
+            folder.listFiles()
+                .filter { file -> !file.name.isNullOrEmpty() }
+                .filter { file -> !file.name!!.startsWith(".") && !file.name!!.startsWith("_") }
+                .forEach { file ->
+                    if (file.isDirectory) folders.put(file.name) else files.put(file.name)
                 }
+
+            JSObject()
+                .put("folders", folders)
+                .put("files", files)
+        }
+    }
+
+    @PluginMethod
+    fun createDir(call: PluginCall) {
+        wrap(call) {
+            val dir = call.getString("dir") ?: throw IllegalArgumentException("缺少 dir")
+            ensureDirectory(dir)
+            JSObject().put("success", true)
+        }
+    }
+
+    @PluginMethod
+    fun removeDir(call: PluginCall) {
+        wrap(call) {
+            val dir = call.getString("dir") ?: throw IllegalArgumentException("缺少 dir")
+            val folder = requireDirectory(dir)
+            if (!folder.delete()) throw IllegalStateException("删除目录失败")
+            JSObject().put("success", true)
+        }
+    }
+
+    private fun wrap(call: PluginCall, block: () -> JSObject) {
+        try {
+            call.resolve(block())
+        } catch (e: Exception) {
+            call.reject(e.message ?: e.toString(), e)
+        }
+    }
+
+    private fun accessResult(): JSObject {
+        val uri = rootUri
+        return JSObject()
+            .put("granted", hasPersistedAccess())
+            .put("rootUri", uri?.toString())
+    }
+
+    private fun hasPersistedAccess(): Boolean {
+        val uri = rootUri ?: return false
+        return getContext().contentResolver.persistedUriPermissions.any { permission ->
+            permission.uri == uri && permission.isReadPermission && permission.isWritePermission
+        }
+    }
+
+    private fun root(): DocumentFile {
+        val uri = rootUri ?: throw IllegalStateException("尚未授权游戏目录")
+        if (!hasPersistedAccess()) throw IllegalStateException("游戏目录授权已失效")
+        return DocumentFile.fromTreeUri(getContext(), uri)
+            ?: throw IllegalStateException("无法打开游戏目录")
+    }
+
+    private fun segments(path: String): List<String> {
+        val normalized = path.replace('\\', '/').trim('/')
+        if (normalized.isEmpty()) return emptyList()
+
+        return normalized
+            .split("/")
+            .filter { it.isNotEmpty() && it != "." }
+            .map {
+                if (it == "..") throw IllegalArgumentException("路径不能包含 ..")
+                it
             }
     }
 
-    private fun resolveAny(root: DocumentFile, relPath: String): DocumentFile? {
-        val segs = normalize(relPath)
-        var cur: DocumentFile? = root
-        for (s in segs) {
-            cur = cur?.findFile(s) ?: return null
+    private fun find(path: String): DocumentFile? {
+        return segments(path).fold(root() as DocumentFile?) { current, name ->
+            current?.findFile(name)
         }
-        return cur
     }
 
-    private fun resolveDir(root: DocumentFile, relPath: String): DocumentFile? {
-        if (relPath.isBlank()) return root
-        val node = resolveAny(root, relPath) ?: return null
-        return if (node.isDirectory) node else null
+    private fun requireFile(path: String): DocumentFile {
+        val file = find(path) ?: throw IllegalArgumentException("$path 不存在")
+        if (!file.isFile) throw IllegalArgumentException("$path 不是文件")
+        return file
     }
 
-    private fun resolveFile(root: DocumentFile, relPath: String): DocumentFile? {
-        val node = resolveAny(root, relPath) ?: return null
-        return if (node.isFile) node else null
+    private fun requireDirectory(path: String): DocumentFile {
+        val folder = if (segments(path).isEmpty()) root() else find(path)
+        if (folder == null) throw IllegalArgumentException("$path 不存在")
+        if (!folder.isDirectory) throw IllegalArgumentException("$path 不是文件夹")
+        return folder
     }
 
-    private fun ensureDir(root: DocumentFile, relPath: String): DocumentFile? {
-        val segs = normalize(relPath)
-        var cur: DocumentFile = root
-        for (s in segs) {
-            val next = cur.findFile(s)
-            cur = when {
-                next == null -> cur.createDirectory(s) ?: return null
-                next.isDirectory -> next
-                else -> return null
+    private fun ensureDirectory(path: String): DocumentFile {
+        return segments(path).fold(root()) { current, name ->
+            val existing = current.findFile(name)
+            when {
+                existing == null -> current.createDirectory(name)
+                    ?: throw IllegalStateException("创建目录失败: $name")
+                existing.isDirectory -> existing
+                else -> throw IllegalArgumentException("$name 已存在且不是文件夹")
             }
         }
-        return cur
     }
 
-    private fun deleteRecursive(dir: DocumentFile): Boolean {
-        dir.listFiles().forEach { f ->
-            val ok = if (f.isDirectory) deleteRecursive(f) else f.delete()
-            if (!ok) return false
+    private fun createOrReplaceFile(path: String): DocumentFile {
+        val parts = segments(path)
+        if (parts.isEmpty()) throw IllegalArgumentException("缺少文件路径")
+
+        val parent = ensureDirectory(parts.dropLast(1).joinToString("/"))
+        val name = parts.last()
+        val existing = parent.findFile(name)
+
+        if (existing != null) {
+            if (!existing.isFile) throw IllegalArgumentException("$path 不是文件")
+            return existing
         }
-        return dir.delete()
-    }
 
-    private fun statToJson(f: DocumentFile, path: String): JSObject {
-        val o = JSObject()
-        o.put("path", path)
-        o.put("name", f.name ?: "")
-        o.put("isDir", f.isDirectory)
-        if (f.isFile) {
-            o.put("size", f.length())
-        }
-        // SAF 下 lastModified() 在部分 provider 下可能为 0
-        val lm = f.lastModified()
-        if (lm > 0) o.put("mtime", lm)
-        return o
-    }
+        val uri = DocumentsContract.createDocument(
+            getContext().contentResolver,
+            parent.uri,
+            "application/octet-stream",
+            name
+        ) ?: throw IllegalStateException("创建文件失败: $path")
 
-    private fun parentOf(path: String): String {
-        val segs = normalize(path)
-        return if (segs.size <= 1) "" else segs.dropLast(1).joinToString("/")
-    }
-
-    private fun nameOf(path: String): String {
-        val segs = normalize(path)
-        if (segs.isEmpty()) throw IllegalArgumentException("Invalid path")
-        return segs.last()
-    }
-
-    private fun combine(base: String, name: String): String {
-        return if (base.isBlank()) name else "$base/$name"
+        return DocumentFile.fromSingleUri(getContext(), uri)
+            ?: throw IllegalStateException("无法打开新建文件: $path")
     }
 }
