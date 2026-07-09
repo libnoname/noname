@@ -11,7 +11,7 @@ pnpm build
 pnpm -F @noname/mobile sync
 ```
 
-`sync` runs `cap sync` and then renames packaged `.pnpm` assets to `_pnpm` for Android assets compatibility. After syncing, open `apps/mobile/android` in Android Studio or build with Gradle.
+`sync` first bundles `src/preload.ts` into `../../dist/preload.js`, then runs `cap sync`, and finally renames packaged `.pnpm` assets to `_pnpm` for Android assets compatibility. After syncing, open `apps/mobile/android` in Android Studio or build with Gradle.
 
 Use JDK 21 for Gradle builds. JDK 25 currently fails during Android project configuration.
 

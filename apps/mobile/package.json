@@ -8,7 +8,7 @@
     "mobile"
   ],
   "scripts": {
-    "sync": "cap sync & tsx afterSync.ts",
+    "sync": "tsx afterSync.ts",
     "lint": "pnpm eslint src/**"
   },
   "dependencies": {
