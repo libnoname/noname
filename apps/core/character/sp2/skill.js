@@ -3271,6 +3271,7 @@ const skills = {
 							ai(button) {
 								const player2 = get.player();
 								const { card, targets } = get.event();
+								console.log(card)
 								if (button.link === "move") {
 									return 1;
 								} else if (button.link === "damage") {
@@ -3281,7 +3282,7 @@ const skills = {
 									}
 								} else if (button.link === "addtarget") {
 									let num = 0;
-									targets.forEach(target => (num += get.effect(target, { name: card }, player2, player2)));
+									targets.forEach(target => (num += get.effect(target, { name: card.name }, player2, player2)));
 									return num;
 								}
 								return 0;
