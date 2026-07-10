@@ -4,6 +4,190 @@ import cards from "../sp2/card.js";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//谋杨奉
+	dcsbxieshi: {
+		audio: 2,
+		trigger: { global: "phaseJieshuBegin" },
+		getZhongyangCards(player) {
+			let cards = game
+				.getGlobalHistory("cardMove", evt => {
+					return (evt.name == "lose" && evt.position == ui.discardPile) || evt.name == "cardsDiscard";
+				})
+				.map(evt => evt.cards)
+				.flat()
+				.unique()
+				.filter(card => {
+					if (!["basic", "trick"].includes(get.type(card))) return false;
+					const cardx = new lib.element.VCard({ name: card.name, nature: card.nature, isCard: true });
+					return player.hasUseTarget(cardx);
+				});
+			if (!cards?.length) cards = [];
+			return cards;
+		},
+		filter(event, player) {
+			let storage = player.getStorage("dcsbxieshi_mark");
+			if (typeof storage != "number") return false;
+			return event.player != player && storage != player.countCards("h") && lib.skill["dcsbxieshi"].getZhongyangCards(player).length;
+		},
+		async cost(event, trigger, player) {
+			const cards = lib.skill["dcsbxieshi"].getZhongyangCards(player);
+			const result = await player
+				.chooseButton({
+					createDialog: ["挟势：视为使用一张本回合进入过弃牌堆的牌", cards],
+					ai: (button) => {
+						const card = button.link, player = get.player();
+						const cardx = new lib.element.VCard({ name: card.name, nature: card.nature, isCard: true });
+						return player.getUseValue(cardx);
+					},
+				})
+				.forResult();
+			event.result = {
+				bool: result.bool,
+				cost_data: result.bool ? result.links[0] : undefined,
+			},
+		},
+		async content(event, trigger, player) {
+			const card = event.result.cost_data;
+			if (!card) {
+				return;
+			}
+			const cardx = new lib.element.VCard({ name: card.name, nature: card.nature, isCard: true });
+			if (!player.hasUseTarget(cardx)) {
+				return;
+			}
+			await player.chooseUseTarget(cardx, true);
+		},
+		group: "dcsbxieshi_record",
+		subSkill: {
+			record: {
+				trigger: { global: "phaseBegin" },
+				filter(event, player) {
+					return event.player != player;
+				},
+				forced: true,
+				popup: false,
+				charlotte: true,
+				async content(event, trigger, player) {
+					player.addTempSkill("dcsbxieshi_mark");
+					player.storage["dcsbxieshi_mark"] = player.countCards("h");
+				},
+				sub: true,
+				sourceSkill: "dcsbxieshi",
+			},
+			mark: {
+				charlotte: true,
+				onremove(player, skill) {
+					delete player.storage[skill];
+				},
+				sub: true,
+				sourceSkill: "dcsbxieshi",
+			},
+		}
+	},
+	dcsbzhubo: {
+		usable: 1,
+		trigger: {
+			global: ["damageBegin1", "damageBegin3"],
+		},
+		init(player, skill) {
+			player.storage[skill] = {
+				awaken1: false,
+				awaken2: false,
+			};
+		},
+		filter(event, player, name) {
+			const target = name == "damageBegin1" ? event.source : event.player;
+			if (target.isPhaseUsing()) {
+				return false;
+			}
+			let awaken1 = false, awaken2 = false;
+			if (player.storage["dcsbzhubo"]) {
+				{ awaken1, awaken2 } = player.storage["dcsbzhubo"];
+			}
+			return (awaken2 && target == player) ||
+				(awaken1 && name == "damageBegin3") ||
+				name == "damageBegin1";
+		},
+		async content(event, trigger, player) {
+			let triggername = event.triggername;
+			let awaken1 = false, awaken2 = false;
+			if (player.storage["dcsbzhubo"]) {
+				{ awaken1, awaken2 } = player.storage["dcsbzhubo"];
+			}
+			if (!awaken2) {
+				await player.loseHp();
+			}
+			const target = triggername == "damageBegin1" ? trigger.source : trigger.player;
+			const result = await player
+				.chooseControl({
+					controls: ["伤害+1", "各摸2张牌"],
+					controlList: [
+						`令${get.translation(target)}${triggername == "damageBegin1" ? "造成" : "受到"}的伤害+1`,
+						`与${get.translation(target)}各摸2张牌`
+					],
+					ai: () => {
+						const { target, triggername } = get.event, player = get.player();
+						if (get.attitude(player, target) > 0) {
+							return 1;
+						}
+						if (triggername == "damageBegin1") {
+							return 1;
+						}
+						return 0;
+					},
+				})
+				.set("target", target)
+				.set("triggername", triggername)
+				.forResult();
+			if (result.index == 0) {
+				trigger.num++;
+			}
+			else {
+				await game.asyncDraw([player, target], 2);
+			}
+		},
+		check(event, player, name) {
+			let awaken1 = false, awaken2 = false;
+			if (player.storage["dcsbzhubo"]) {
+				{ awaken1, awaken2 } = player.storage["dcsbzhubo"];
+			}
+			let target = name == "damageBegin1" ? event.source : event.player;
+			if (get.attitude(player, target) > 0) {
+				return true;
+			}
+			return name == "damageBegin3";
+		},
+	},
+	dcsbqijue: {
+		limited: true,
+		skillAnimation: true,
+		animationColor: "gray",
+		init(player, skill) {
+			player.storage[skill] = false;
+		},
+		trigger: {
+			global: "dying",
+		},
+		check(event, player) {
+			return get.attitude(player, event.player);
+		},
+		async content(event, trigger, player) {
+			player.awakenSkill(event.name);
+			const target = event.player;
+			await event.player.recover(2);
+			await event.player.draw(2);
+			if (!player.hasSkill("dcsbzhubo")) {
+				return;
+			}
+			if (!player.storage["dcsbzhubo"]) {
+				player.storage["dcsbzhubo"] = {
+					awaken1: false,
+					awaken2: false,
+				};
+			}
+			player.storage["dcsbzhubo"][player == event.player ? "awaken2" : "awaken1"] = true;
+		},
+	},
 	//威关银屏
 	dcshaowei:{
 		audio: 2,

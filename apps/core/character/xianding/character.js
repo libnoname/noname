@@ -1,6 +1,12 @@
 import skills from "./skill";
 
 const characters = {
+	dc_sb_yangfeng: {
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		skills: ["dcsbzhubo", "dcsbxieshi", "dcsbqijue"],
+	},
 	v_guanyinping: {
 		sex: "female",
 		group: "shu",
