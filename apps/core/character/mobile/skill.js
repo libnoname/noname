@@ -20521,135 +20521,200 @@ const skills = {
 	//沮授
 	xinjianying: {
 		audio: 2,
-		subfrequent: ["draw"],
-		enable: "phaseUse",
-		usable: 1,
-		filter(event, player) {
-			if (!player.countCards("he")) {
-				return false;
-			}
-			for (var i of lib.inpile) {
-				if (i != "du" && get.type(i, null, false) == "basic") {
-					if (event.filterCard({ name: i }, player, event)) {
-						return true;
-					}
-					if (i == "sha") {
-						for (var j of lib.inpile_nature) {
-							if (event.filterCard({ name: i, nature: j }, player, event)) {
-								return true;
-							}
-						}
+		locked: false,
+		mod: {
+			aiOrder(player, card, num) {
+				if (typeof card == "object" && player.isPhaseUsing()) {
+					var evt = lib.skill.xinjianying.getLastUsed(player);
+					if (evt && evt.card && ((get.suit(evt.card) && get.suit(evt.card) == get.suit(card)) || (evt.card.number && evt.card.number == get.number(card)))) {
+						return num + 10;
 					}
 				}
+			},
+		},
+		trigger: { player: "useCard" },
+		frequent: true,
+		getLastUsed(player, event) {
+			var history = player.getAllHistory("useCard");
+			var index;
+			if (event) {
+				index = history.indexOf(event) - 1;
+			} else {
+				index = history.length - 1;
+			}
+			if (index >= 0) {
+				return history[index];
 			}
 			return false;
 		},
-		onChooseToUse(event) {
-			if (event.type == "phase" && !game.online) {
-				var last = event.player.getLastUsed();
-				if (last && last.getParent("phaseUse") == event.getParent()) {
-					var suit = get.suit(last.card, false);
-					if (suit != "none") {
-						event.set("xinjianying_suit", suit);
-					}
-				}
+		filter(event, player) {
+			var evt = lib.skill.xinjianying.getLastUsed(player, event);
+			if (!evt || !evt.card) {
+				return false;
 			}
+			return (lib.suit.includes(get.suit(evt.card)) && get.suit(evt.card) == get.suit(event.card)) || (typeof get.number(evt.card, false) == "number" && get.number(evt.card, false) == get.number(event.card));
 		},
-		chooseButton: {
-			dialog(event, player) {
-				var list = [];
-				var suit = event.xinjianying_suit || "",
-					str = get.translation(suit);
-				for (var i of lib.inpile) {
-					if (i != "du" && get.type(i, null, false) == "basic") {
-						if (event.filterCard({ name: i }, player, event)) {
-							list.push(["基本", str, i]);
-						}
-						if (i == "sha") {
-							for (var j of lib.inpile_nature) {
-								if (event.filterCard({ name: i, nature: j }, player, event)) {
-									list.push(["基本", str, i, j]);
-								}
-							}
-						}
-					}
-				}
-				return ui.create.dialog("渐营", [list, "vcard"]);
-			},
-			check(button) {
-				if (button.link[2] == "jiu") {
-					return 0;
-				}
-				return _status.event.player.getUseValue({
-					name: button.link[2],
-					nature: button.link[3],
-				});
-			},
-			backup(links, player) {
-				var next = {
-					audio: "xinjianying",
-					filterCard: true,
-					popname: true,
-					position: "he",
-					viewAs: {
-						name: links[0][2],
-						nature: links[0][3],
-					},
-					ai1(card) {
-						return 7 - _status.event.player.getUseValue(card, null, true);
-					},
-				};
-				if (_status.event.xinjianying_suit) {
-					next.viewAs.suit = _status.event.xinjianying_suit;
-				}
-				return next;
-			},
-			prompt(links) {
-				return "将一张牌当做" + (get.translation(links[0][3]) || "") + get.translation(links[0][2]) + (_status.event.xinjianying_suit ? "(" + get.translation(_status.event.xinjianying_suit) + ")" : "") + "使用";
-			},
+		async content(event, trigger, player) {
+			await player.draw("nodelay");
 		},
-		ai: {
-			order(item, player) {
-				if (_status.event.xinjianying_suit) {
-					return 16;
-				}
-				return 3;
-			},
-			result: { player: 7 },
-		},
-		group: ["xinjianying_draw", "jianying_mark"],
+		group: ["xinjianying_mark", "xinjianying_nianen"],
 		init(player) {
-			if (player.isPhaseUsing()) {
-				var evt = _status.event.getParent("phaseUse");
-				var history = player.getHistory("useCard", function (evt2) {
-					return evt2.getParent("phaseUse") == evt;
-				});
-				if (history.length) {
-					var trigger = history[history.length - 1];
-					player.storage.jianying_mark = trigger.card;
-					player.markSkill("jianying_mark");
-					game.broadcastAll(
-						function (player, suit) {
-							if (player.marks.jianying_mark) {
-								player.marks.jianying_mark.firstChild.innerHTML = get.translation(suit);
-							}
-						},
-						player,
-						get.suit(trigger.card, player)
-					);
-					player.when("phaseUseAfter").step(async () => {
-						player.unmarkSkill("jianying_mark");
-						delete player.storage.jianying_mark;
-					});
+			var history = player.getAllHistory("useCard");
+			if (history.length) {
+				var trigger = history[history.length - 1];
+				if (get.suit(trigger.card, player) == "none" || typeof get.number(trigger.card, player) != "number") {
+					return;
 				}
+				player.storage.xinjianying_mark = trigger.card;
+				player.markSkill("xinjianying_mark");
+				game.broadcastAll(
+					function (player, suit) {
+						if (player.marks.xinjianying_mark) {
+							player.marks.xinjianying_mark.firstChild.innerHTML = get.translation(suit);
+						}
+					},
+					player,
+					get.suit(trigger.card, player)
+				);
 			}
 		},
 		onremove(player) {
-			player.unmarkSkill("jianying_mark");
-			delete player.storage.jianying_mark;
+			player.unmarkSkill("xinjianying_mark");
+			delete player.storage.xinjianying_mark;
 		},
 		subSkill: {
-			draw: { inherit: "jianying", audio: "xinjianying" },
+			mark: {
+				charlotte: true,
+				trigger: { player: "useCard1" },
+				forced: true,
+				popup: false,
+				firstDo: true,
+				async content(event, trigger, player) {
+					if (get.suit(trigger.card, player) == "none" || typeof get.number(trigger.card, player) != "number") {
+						player.unmarkSkill("xinjianying_mark");
+					} else {
+						player.storage.xinjianying_mark = trigger.card;
+						player.markSkill("xinjianying_mark");
+						game.broadcastAll(
+							function (player, suit) {
+								if (player.marks.xinjianying_mark) {
+									player.marks.xinjianying_mark.firstChild.innerHTML = get.translation(suit);
+								}
+							},
+							player,
+							get.suit(trigger.card, player)
+						);
+					}
+				},
+				intro: {
+					markcount(card, player) {
+						return get.strNumber(get.number(card, player));
+					},
+					content(card, player) {
+						var suit = get.suit(card, player);
+						var num = get.number(card, player);
+						var str = "<li>上一张牌的花色：" + get.translation(suit);
+						str += "<br><li>上一张牌的点数：" + get.strNumber(num);
+						return str;
+					},
+				},
+			},
+			nianen: {
+				audio: "xinjianying",
+				subfrequent: ["draw"],
+				enable: "phaseUse",
+				usable: 1,
+				locked: false,
+				filter(event, player) {
+					if (!player.countCards("he")) return false;
+					for (var i of lib.inpile) {
+						if (i != "du" && get.type(i, null, false) == "basic") {
+							var card = { name: i };
+							if (player.hasUseTarget(card)) return true;
+						}
+					}
+					return false;
+				},
+				onChooseToUse(event) {
+					if (event.type == "phase" && !game.online) {
+						var player = event.player;
+						var lastCard = player.storage.xinjianying_mark;
+						if (lastCard) {
+							var suit = get.suit(lastCard, false);
+							if (suit != "none") event.set("xinjianying_nianen_suit", suit);
+						}
+					}
+				},
+				chooseButton: {
+					dialog(event, player) {
+						var list = [];
+						var suit = event.xinjianying_nianen_suit || "",
+							str = get.translation(suit);
+						for (var i of lib.inpile) {
+							if (i != "du" && get.type(i, null, false) == "basic") {
+								if (i == "sha") {
+									for (var j of lib.inpile_nature) {
+										var card = { name: i, nature: j };
+										if (player.hasUseTarget(card)) list.push(["基本", str, i, j]);
+									}
+								}
+								if (i == "sha" || i == "jiu") {
+									var card = { name: i };
+									if (player.hasUseTarget(card)) list.push(["基本", str, i]);
+								} else if (event.filterCard({ name: i }, player, event)) list.push(["基本", str, i]);
+							}
+						}
+						return ui.create.dialog("渐营", [list, "vcard"]);
+					},
+					check(button) {
+						if (button.link[2] == "jiu") return 0;
+						return _status.event.player.getUseValue({
+							name: button.link[2],
+							nature: button.link[3],
+						});
+					},
+					backup(links, player) {
+						var next = {
+							audio: "xinjianying",
+							filterCard: true,
+							popname: true,
+							position: "he",
+							viewAs: {
+								name: links[0][2],
+								nature: links[0][3],
+								storage: { xinjianying_nianen: true },
+							},
+							ai1(card) {
+								return 7 - _status.event.player.getUseValue(card, null, true);
+							},
+							precontent() {
+								// 让本次使用不计入次数统计
+								event.getParent().addCount = false;
+							},
+						};
+						if (_status.event.xinjianying_nianen_suit) next.viewAs.suit = _status.event.xinjianying_nianen_suit;
+						return next;
+					},
+					prompt(links) {
+						return "将一张牌当做" + (get.translation(links[0][3]) || "") + get.translation(links[0][2]) + (_status.event.xinjianying_nianen_suit ? "(" + get.translation(_status.event.xinjianying_nianen_suit) + ")" : "") + "使用";
+					},
+				},
+
+				mod: {
+					cardUsable(card, player, num) {
+						if (card.storage && card.storage.xinjianying_nianen) return Infinity;
+					},
+				},
+				ai: {
+					order(item, player) {
+						if (_status.event.xinjianying_nianen_suit) return 16;
+						return 3;
+					},
+					result: {
+						player: 7,
+					},
+				},
+			},
 		},
 	},
 	//步练师
