@@ -63,7 +63,7 @@ const characters = {
 	dc_sb_zhangren: {
 		sex: "male",
 		group: "qun",
-		hp: 4,
+		hp: 5,
 		skills: ["dcsbshedao", "dcsbxunshi", "dcsbzhengong"],
 	},
 	v_zhangxingcai: {
