@@ -3510,121 +3510,81 @@ const skills = {
 		audio: "spdiaodu",
 		trigger: { player: "phaseZhunbeiBegin" },
 		filter(event, player) {
-			return game.hasPlayer(function (target) {
-				return target.countCards("e", function (card) {
-					return game.hasPlayer(function (current) {
-						return current != player && current != target && current.canEquip(card);
-					});
-				});
-			});
+			return game.hasPlayer(target => target.hasCards("e", card => game.hasPlayer(current => current !== player && current !== target && current.canEquip(card))));
 		},
-		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt2("mbdiaodu"), function (card, player, target) {
-					return target.countCards("e", function (card) {
-						return game.hasPlayer(function (current) {
-							return current != player && current != target && current.canEquip(card);
-						});
-					});
-				})
-				.set("ai", function (target) {
-					var player = _status.event.player,
-						att = get.attitude(player, target);
-					if (att > 0) {
-						if (
-							target.hasCard(function (card) {
-								if (
-									get.value(card, target) <= 0 &&
-									game.hasPlayer(function (current) {
-										return current != player && current != target && current.canEquip(card, false) && get.effect(current, card, player, player) > 0;
-									})
-								) {
-									return true;
-								}
-								return false;
-							}, "e")
-						) {
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2("mbdiaodu"),
+					filterTarget(card, player, target) {
+						return target.hasCards("e", card => game.hasPlayer(current => current !== player && current !== target && current.canEquip(card)));
+					},
+					ai(target) {
+						const player = get.player();
+						const att = get.attitude(player, target);
+						if (att > 0 && target.hasCard(card => get.value(card, target) <= 0 && game.hasPlayer(current => current !== player && current !== target && current.canEquip(card, false) && get.effect(current, card, player, player) > 0), "e")) {
 							return 2 * att;
 						}
-					} else if (att < 0) {
-						if (
-							target.hasCard(function (card) {
-								if (
-									get.value(card, target) >= 4.5 &&
-									game.hasPlayer(function (current) {
-										return current != player && current != target && current.canEquip(card) && get.effect(current, card, player, player) > 0;
-									})
-								) {
-									return true;
-								}
-								return false;
-							}, "e")
-						) {
+						if (att < 0 && target.hasCard(card => get.value(card, target) >= 4.5 && game.hasPlayer(current => current !== player && current !== target && current.canEquip(card) && get.effect(current, card, player, player) > 0), "e")) {
 							return -att;
 						}
-					}
-					return 0;
-				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("mbdiaodu", target);
-			} else {
-				event.finish();
+						return 0;
+					},
+				})
+				.forResult();
+		},
+		logTarget: "targets",
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+
+			const es = target.getCards("e", card => game.hasPlayer(current => current !== target && current.canEquip(card)));
+			const result =
+				es.length === 1
+					? { bool: true, links: es }
+					: await player
+							.chooseButton({
+								createDialog: [`移动${get.translation(target)}的一张装备牌`, es],
+								forced: true,
+								ai(button) {
+									const { player, target } = get.event();
+									const card = button.link;
+									if (game.hasPlayer(current => current !== player && current !== target && current.canEquip(card) && get.effect(current, card, player, player) > 0)) {
+										return -get.value(card, target) * get.attitude(player, target);
+									}
+									return 0;
+								}
+							})
+							.set("target", target)
+							.forResult();
+			if (!result?.bool || !result.links?.length) {
+				return;
 			}
-			"step 2";
-			var es = target.getCards("e", function (card) {
-				return game.hasPlayer(function (current) {
-					return current != target && current.canEquip(card);
-				});
-			});
-			if (es.length == 1) {
-				event._result = { bool: true, links: es };
-			} else {
-				player.chooseButton(["移动" + get.translation(target) + "的一张装备牌", es], true).set("ai", function (button) {
-					var player = _status.event.player,
-						target = _status.event.getParent().target,
-						card = button.link;
-					if (
-						game.hasPlayer(function (current) {
-							return current != player && current != target && current.canEquip(card) && get.effect(current, card, player, player) > 0;
-						})
-					) {
-						return -get.value(card, target) * get.attitude(player, target);
-					}
-					return 0;
-				});
+			const card = result.links[0];
+
+			const result2 = await player
+				.chooseTarget({
+					prompt: `请选择${get.translation(card)}的移动目标`,
+					filterTarget(card, player, target) {
+						const { card2 } = get.event();
+						return target !== player && target.canEquip(card2);
+					},
+					forced: true,
+					ai(target) {
+						const { player, card } = get.event();
+						return get.effect(target, card, player, player);
+					},
+				})
+				.set("card", card)
+				.forResult();
+			if (!result2?.bool || !result2.targets?.length) {
+				return;
 			}
-			"step 3";
-			if (result.bool) {
-				event.card = result.links[0];
-				player
-					.chooseTarget("请选择" + get.translation(event.card) + "的移动目标", true, function (card, player, target) {
-						return target != player && target.canEquip(_status.event.card);
-					})
-					.set("card", event.card)
-					.set("ai", function (target) {
-						var evt = _status.event;
-						return get.effect(target, evt.getParent().card, evt.player, evt.player);
-					});
-			} else {
-				event.finish();
-			}
-			"step 4";
-			if (result.bool) {
-				var target2 = result.targets[0];
-				target.line(target2);
-				target.$give(card, target2);
-				game.delay(0.5);
-				target2.equip(card);
-			} else {
-				event.finish();
-			}
-			"step 5";
-			target.draw();
+			const target2 = result2.targets[0];
+			target.line(target2);
+			target.$give(card, target2);
+			await game.delay(0.5);
+			await target2.equip(card);
+			await target.draw();
 		},
 	},
 	mbdiancai: {
