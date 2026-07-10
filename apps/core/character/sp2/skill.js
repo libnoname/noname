@@ -3281,7 +3281,7 @@ const skills = {
 									}
 								} else if (button.link === "addtarget") {
 									let num = 0;
-									targets.forEach(target => (num += get.effect(target, { name: card }, player2, player2)));
+									targets.forEach(target => (num += get.effect(target, { name: card.name }, player2, player2)));
 									return num;
 								}
 								return 0;

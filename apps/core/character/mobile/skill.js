@@ -32443,6 +32443,15 @@ const skills = {
 			const isOption1 = control.startsWith("弃" + colorText + "牌");
 			const isOption2 = control.startsWith("获得" + colorText + "牌");
 			const isBeishui = control === "背水";
+			if (isOption2 || isBeishui) {
+				const pileCards = Array.from(ui.cardPile.childNodes);
+				const colorCards = pileCards.filter(card => get.color(card) === color);
+				const toGain = colorCards.slice(0, effectNum);
+				if (toGain.length > 0) {
+					game.log(player, "获得了" + effectNum + "张" + get.translation(color) + "牌");
+					await player.gain({ cards: toGain, animate: "draw2" });
+				}
+			}
 			if (isOption1 || isBeishui) {
 				if (canDiscard) {
 					const result = await player
@@ -32464,15 +32473,6 @@ const skills = {
 							game.log(player, "令此次伤害-" + effectNum);
 						}
 					}
-				}
-			}
-			if (isOption2 || isBeishui) {
-				const pileCards = Array.from(ui.cardPile.childNodes);
-				const colorCards = pileCards.filter(card => get.color(card) === color);
-				const toGain = colorCards.slice(0, effectNum);
-				if (toGain.length > 0) {
-					game.log(player, "获得了" + effectNum + "张" + get.translation(color) + "牌");
-					await player.gain({ cards: toGain, animate: "draw2" });
 				}
 			}
 			if (isBeishui) {

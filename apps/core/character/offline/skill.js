@@ -394,6 +394,7 @@ const skills = {
 		subSkill: {
 			sha: {
 				charlotte: true,
+				onremove: true,
 				mod: {
 					cardUsable(card, player, num) {
 						if (card.name == "sha") {
@@ -2099,7 +2100,7 @@ const skills = {
 				return false;
 			}
 			return lib.phaseName.some(phase => {
-				return player.getHistory("gain", evt => evt.getParent(phase) === event.getParent(phase)).indexOf(event) === 0;
+				return player.getHistory("gain", evt => evt.getParent(phase) === event.getParent(phase)).map(evt => event.name == "gain" ? evt : evt.getParent()).indexOf(event) === 0;
 			});
 		},
 		async cost(event, trigger, player) {
