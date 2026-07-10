@@ -11,7 +11,7 @@ export default {
 			type: "basic",
 			fullskin: true,
 			global: ["g_du", "g_du_give"],
-			async content(_) {},
+			async content(_) { },
 			ai: {
 				value: -5,
 				useful: 6,
@@ -37,7 +37,7 @@ export default {
 				const { target } = event;
 				await target.recover();
 				if (target.hasCard(card => _status.connectMode || get.name(card, target) === "du", "h")) {
-					await target.chooseToDiscard("h", { name: "du" }, "是否弃置一张【毒】？（不失去体力）").set("ai", () => 1);
+					await target.chooseToDiscard("h", (card) => get.name(card) == "du", "是否弃置一张【毒】？（不失去体力）").set("ai", () => 1);
 				}
 			},
 			ai: {
