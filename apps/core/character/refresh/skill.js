@@ -3487,7 +3487,7 @@ const skills = {
 						if (!cards.length) {
 							return;
 						}
-						const recover = hs.filter(card => get.tag(card, "save") || get.tag(card, "recover")).length;
+						const recover = cards.filter(card => get.tag(card, "save") || get.tag(card, "recover")).length;
 						if (recover >= target.getDamagedHp()) {
 							let eff = player.needsToDiscard(0, (card, player) => get.suit(card) != "heart" || !player.canIgnoreHandcard(card));
 							return [0, 0, 0, eff / 10];
