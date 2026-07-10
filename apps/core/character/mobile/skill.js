@@ -20610,6 +20610,9 @@ const skills = {
 					ai1(card) {
 						return 7 - _status.event.player.getUseValue(card, null, true);
 					},
+					async precontent(event, trigger, player) {
+						event.getParent().addCount = false;
+					},
 				};
 				if (_status.event.xinjianying_suit) {
 					next.viewAs.suit = _status.event.xinjianying_suit;
