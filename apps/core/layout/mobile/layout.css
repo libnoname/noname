@@ -253,13 +253,13 @@
 	border-radius: 0 2px 2px 0;
 	left: -1px;
 	z-index: 3;
-	text-align: right;
+	text-align: center;
 }
 #arena:not(.chess).slim_player .player[data-position="0"]:not(.minskin) > .count {
 	border-radius: 0 2px 2px 0;
 	left: -1px;
 	z-index: 3;
-	text-align: right;
+	text-align: center;
 }
 #arena:not(.chess) .player[data-position="0"] > .hp.actcount {
 	top: 10px;

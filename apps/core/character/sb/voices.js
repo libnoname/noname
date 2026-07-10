@@ -140,6 +140,8 @@ export default {
 	"#sb_lvmeng:die": "义封胆略过人，主公可任之……",
 	"#sbjieyin1": "君若不负吾心，妾自随君千里。",
 	"#sbjieyin2": "夫妻之情既断，何必再问归期！",
+	"#sbjieyin3": "此生得遇夫君，实乃妾身幸事。",
+	"#sbjieyin4": "今日良姻即结，你我永为夫妇。",
 	"#sbliangzhu1": "助君得胜战，跃马提缨枪！",
 	"#sbliangzhu2": "平贼成君业，何惜上沙场！",
 	"#sbxiaoji1": "吾之所通，何止十八般兵刃！",

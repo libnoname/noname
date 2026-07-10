@@ -6,13 +6,8 @@ const skills = {
 	//幻小无
 	noname_gongchuang: {
 		forced: true,
-		trigger: {
-			player: "phaseZhunbeiBegin",
-		},
-		filter(event, player) {
-			return game.players.length > 0;
-		},
-		logTarget: () => game.players,
+		trigger: { player: "phaseZhunbeiBegin" },
+		logTarget: () => game.filterPlayer().sortBySeat(),
 		async content(event, trigger, player) {
 			const { targets } = event;
 			await game.doAsyncInOrder(targets, async target => {
@@ -40,7 +35,7 @@ const skills = {
 						.set("sourcex", player)
 						.forResult();
 				}
-				if (!result.bool) {
+				if (!result?.bool) {
 					get.info(event.name).addMark(player, 2);
 					target.chat("不给！");
 					await game.delayx();
@@ -218,16 +213,13 @@ const skills = {
 		},
 		ai: {
 			order: 7,
-			result: {
-				target: -1,
-			},
+			result: { target: -1 },
+			combo: "noname_gongchuang",
 		},
 		group: ["huan_duocai_target", "huan_duocai_damage"],
 		subSkill: {
 			target: {
-				trigger: {
-					target: "useCardToTarget",
-				},
+				trigger: { target: "useCardToTarget" },
 				filter(event, player) {
 					return event.player != player && player.countMark("noname_gongchuang") > 0;
 				},
@@ -243,9 +235,7 @@ const skills = {
 				},
 			},
 			damage: {
-				trigger: {
-					player: "damageEnd",
-				},
+				trigger: { player: "damageEnd" },
 				filter(event, player) {
 					return event.source?.isIn();
 				},
@@ -9073,7 +9063,7 @@ const skills = {
 			await player.gain(card, target, "giveAuto", "bySelf");
 			result = await player.draw().forResult();
 
-			if (Array.isArray(result) && get.color(card) != get.color(result[0])) {
+			if (Array.isArray(result?.cards) && get.color(card) != get.color(result.cards[0])) {
 				await player.loseHp();
 			}
 		},

@@ -166,6 +166,11 @@ export class status {
 	 * @type { string[] }
 	 */
 	characterlist;
+	/**
+	 * 点击count节点打开的对话框
+	 * @type { Record<string, Dialog> }
+	 */
+	countDialogs = {};
 }
 
 export let _status = new status();

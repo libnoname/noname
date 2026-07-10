@@ -2463,9 +2463,9 @@ export class Game {
 			args.length === 1 && get.objtype(args[0]) === "object"
 				? args[0]
 				: {
-						path: args.filter(arg => typeof arg === "string" || typeof arg === "number").join("/"),
-						onError: args.find(arg => typeof arg === "function"),
-					};
+					path: args.filter(arg => typeof arg === "string" || typeof arg === "number").join("/"),
+					onError: args.find(arg => typeof arg === "function"),
+				};
 
 		const {
 			path = "",
@@ -5086,7 +5086,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			}
 		}
 		if (!callback) {
-			callback = function () {};
+			callback = function () { };
 		}
 		//try{
 		//	if(noinput){
@@ -6550,7 +6550,18 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		if (game.me._trueMe) {
 			game.swapPlayer(game.me._trueMe);
 		}
-		let i, j, k, num, table, tr, td, dialog;
+		let i,
+			j,
+			k,
+			num,
+			table,
+			tr,
+			td,
+			dialog,
+			hsMap = new Map([]);
+		for (const target of [...game.players, ...game.dead]) {
+			hsMap.set(target, target.getCards("h"));
+		}
 		_status.over = true;
 		ui.control.show();
 		ui.clear();
@@ -6580,22 +6591,6 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			}
 			ui.update();
 			dialog.add(ui.create.div(".placeholder"));
-			for (let i = 0; i < game.players.length; i++) {
-				let hs = game.players[i].getCards("h");
-				if (hs.length) {
-					dialog.add('<div class="text center">' + get.translation(game.players[i]) + "</div>");
-					dialog.addSmall(hs);
-				}
-			}
-
-			for (let j = 0; j < game.dead.length; j++) {
-				let hs = game.dead[j].getCards("h");
-				if (hs.length) {
-					dialog.add('<div class="text center">' + get.translation(game.dead[j]) + "</div>");
-					dialog.addSmall(hs);
-				}
-			}
-
 			dialog.add(ui.create.div(".placeholder.slim"));
 			if (lib.config.background_audio) {
 				if (result2 === true) {
@@ -6783,7 +6778,6 @@ ${e instanceof Error ? e.stack : String(e)}`);
 				ui.ladder.innerHTML = game.getLadderName(lib.storage.ladder.current);
 			}
 		}
-		// if(true){
 		if (game.players.length) {
 			table = document.createElement("table");
 			tr = document.createElement("tr");
@@ -6802,6 +6796,9 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			tr.appendChild(td);
 			td = document.createElement("td");
 			td.innerHTML = "杀敌";
+			tr.appendChild(td);
+			td = document.createElement("td");
+			td.innerHTML = "手牌";
 			tr.appendChild(td);
 			table.appendChild(tr);
 			for (i = 0; i < game.players.length; i++) {
@@ -6854,6 +6851,18 @@ ${e instanceof Error ? e.stack : String(e)}`);
 				}
 				td.innerHTML = num;
 				tr.appendChild(td);
+				td = document.createElement("td");
+				let target = game.players[i];
+				td.innerHTML = get.poptip({
+					name: `<img style="width:15px; vertical-align: middle;" src="${lib.assetURL}image/card/handcard.png">`,
+					dialog(dialog) {
+						let hs = hsMap.get(target) ?? [];
+						dialog.add(`${get.translation(target)}的手牌`);
+						dialog[hs.length > 0 ? "addSmall" : "addText"](hs.length > 0 ? hs : "（没有手牌）");
+						return dialog;
+					},
+				});
+				tr.appendChild(td);
 				table.appendChild(tr);
 			}
 			dialog.add(ui.create.div(".placeholder"));
@@ -6879,6 +6888,9 @@ ${e instanceof Error ? e.stack : String(e)}`);
 				tr.appendChild(td);
 				td = document.createElement("td");
 				td.innerHTML = "杀敌";
+				tr.appendChild(td);
+				td = document.createElement("td");
+				td.innerHTML = "手牌";
 				tr.appendChild(td);
 				table.appendChild(tr);
 			}
@@ -6931,6 +6943,18 @@ ${e instanceof Error ? e.stack : String(e)}`);
 					}
 				}
 				td.innerHTML = num;
+				tr.appendChild(td);
+				td = document.createElement("td");
+				let target = game.dead[i];
+				td.innerHTML = get.poptip({
+					name: `<img style="width:15px; vertical-align: middle;" src="${lib.assetURL}image/card/handcard.png">`,
+					dialog(dialog) {
+						let hs = hsMap.get(target) ?? [];
+						dialog.add(`${get.translation(target)}的手牌`);
+						dialog[hs.length > 0 ? "addSmall" : "addText"](hs.length > 0 ? hs : "（没有手牌）");
+						return dialog;
+					},
+				});
 				tr.appendChild(td);
 				table.appendChild(tr);
 			}
@@ -6990,6 +7014,17 @@ ${e instanceof Error ? e.stack : String(e)}`);
 				}
 				td.innerHTML = num;
 				tr.appendChild(td);
+				td = document.createElement("td");
+				let target = game.additionaldead[i];
+				td.innerHTML = get.poptip({
+					name: `<img style="width:15px; vertical-align: middle;" src="${lib.assetURL}image/card/handcard.png">`,
+					dialog(dialog) {
+						let hs = hsMap.get(target) ?? [];
+						dialog.add(`${get.translation(target)}的手牌`);
+						dialog[hs.length > 0 ? "addSmall" : "addText"](hs.length > 0 ? hs : "（没有手牌）");
+						return dialog;
+					},
+				});
 				table.appendChild(tr);
 			}
 			dialog.add(ui.create.div(".placeholder"));
@@ -7006,27 +7041,6 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		}
 
 		dialog.add(ui.create.div(".placeholder"));
-
-		for (let i = 0; i < game.players.length; i++) {
-			if (!_status.connectMode && game.players[i].isUnderControl(true) && game.layout != "long2") {
-				continue;
-			}
-			let hs = game.players[i].getCards("h");
-			if (hs.length) {
-				dialog.add('<div class="text center">' + get.translation(game.players[i]) + "</div>");
-				dialog.addSmall(hs);
-			}
-		}
-		for (let i = 0; i < game.dead.length; i++) {
-			if (!_status.connectMode && game.dead[i].isUnderControl(true) && game.layout != "long2") {
-				continue;
-			}
-			let hs = game.dead[i].getCards("h");
-			if (hs.length) {
-				dialog.add('<div class="text center">' + get.translation(game.dead[i]) + "</div>");
-				dialog.addSmall(hs);
-			}
-		}
 		dialog.add(ui.create.div(".placeholder.slim"));
 		game.addVideo("over", null, dialog.content.innerHTML);
 		let vinum = parseInt(lib.config.video);
@@ -8630,21 +8644,21 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		}
 	}
 	finishSkill(skillId, sub) {
-		const mode = get.mode(),
-			info = lib.skill[skillId],
-			iInfo = `${skillId}_info`;
-		if (_status.mode && lib.translate[iInfo + "_" + mode + "_" + _status.mode]) {
-			lib.translate[iInfo] = lib.translate[iInfo + "_" + mode + "_" + _status.mode];
+		const mode = get.mode();
+		const info = lib.skill[skillId];
+		const iInfo = `${skillId}_info`;
+		if (_status.mode && lib.translate[`${iInfo}_${mode}_${_status.mode}`]) {
+			lib.translate[iInfo] = lib.translate[`${iInfo}_${mode}_${_status.mode}`];
 		} else if (lib.translate[`${iInfo}_${mode}`]) {
 			lib.translate[iInfo] = lib.translate[`${iInfo}_${mode}`];
-		} else if (lib.translate[`${iInfo}_zhu`] && (mode == "identity" || (mode == "guozhan" && _status.mode == "four"))) {
+		} else if (lib.translate[`${iInfo}_zhu`] && (mode === "identity" || (mode === "guozhan" && _status.mode === "four"))) {
 			lib.translate[iInfo] = lib.translate[`${iInfo}_zhu`];
 		} else if (lib.translate[`${iInfo}_combat`] && get.is.versus()) {
 			lib.translate[iInfo] = lib.translate[`${iInfo}_combat`];
 		}
 		info.skill_id ??= skillId;
-		let deleteSkill = function (skill, iInfo) {
-			let { audio, audioname, audioname2, skillID } = lib.skill[skill] || {};
+		const deleteSkill = (skill, iInfo) => {
+			const { audio, audioname, audioname2, skillID } = lib.skill[skill] || {};
 			lib.skill[skill] = { audio, audioname, audioname2, skillID };
 			lib.translate[iInfo] &&= "此模式下不可用";
 			lib.dynamicTranslate[skill] &&= () => "此模式下不可用";
@@ -8653,11 +8667,15 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			const skill = lib.skill[info.inherit];
 			if (skill) {
 				Object.keys(skill).forEach(value => {
-					if (info[value] == undefined) {
-						if (value == "audio" && (typeof info[value] == "number" || typeof info[value] == "boolean")) {
+					if (info[value] == null) {
+						if (value === "audio" && (typeof info[value] === "number" || typeof info[value] === "boolean")) {
 							info[value] = info.inherit;
 						} else {
-							info[value] = skill[value];
+							if (typeof skill[value] === "object") {
+								info[value] = get.copy(skill[value]);
+							} else {
+								info[value] = skill[value];
+							}
 						}
 					}
 				});
@@ -8665,12 +8683,12 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			lib.translate[skillId] ??= lib.translate[info.inherit];
 			lib.translate[iInfo] ??= lib.translate[`${info.inherit}_info`];
 		}
-		if (info.forbid?.includes(mode) || info.mode?.includes(mode) == false || info.available?.(mode) == false) {
+		if (info.forbid?.includes(mode) || info.mode?.includes(mode) === false || info.available?.(mode) === false) {
 			deleteSkill(skillId, iInfo);
 			return;
 		}
-		if (info.viewAs && typeof info.viewAs != "function") {
-			if (typeof info.viewAs == "string") {
+		if (info.viewAs && typeof info.viewAs !== "function") {
+			if (typeof info.viewAs === "string") {
 				info.viewAs = {
 					name: info.viewAs,
 				};
@@ -8679,18 +8697,22 @@ ${e instanceof Error ? e.stack : String(e)}`);
 				deleteSkill(skillId, iInfo);
 				return;
 			}
-			if (info.ai == undefined) {
+			if (info.ai == null) {
 				info.ai = {};
 			}
-			const skill = info.ai,
-				card = lib.card[info.viewAs.name].ai;
+			const skill = info.ai;
+			const card = lib.card[info.viewAs.name].ai;
 			if (card) {
 				Object.keys(card).forEach(value => {
-					if (skill[value] == undefined) {
-						skill[value] = card[value];
-					} else if (typeof skill[value] == "object") {
+					if (skill[value] == null) {
+						if (typeof card[value] === "object") {
+							skill[value] = get.copy(card[value]);
+						} else {
+							skill[value] = card[value];
+						}
+					} else if (typeof skill[value] === "object") {
 						Object.keys(card[value]).forEach(element => {
-							if (skill[value][element] == undefined) {
+							if (skill[value][element] == null) {
 								skill[value][element] = card[value][element];
 							}
 						});
@@ -8729,7 +8751,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		}
 		if (info.round) {
 			const k = `${skillId}_roundcount`;
-			if (typeof info.group == "string") {
+			if (typeof info.group === "string") {
 				info.group = [info.group, k];
 			} else if (Array.isArray(info.group)) {
 				info.group.add(k);
@@ -8743,7 +8765,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 					}
 				},
 				intro: {
-					content: (storage, player) => {
+					content(storage, player) {
 						let str = "";
 						const info = get.info(name.slice(0, name.indexOf("_roundcount")));
 						if (info && info.addintro) {
@@ -8763,7 +8785,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 				forced: true,
 				popup: false,
 				silent: true,
-				content: async (event, trigger, player) => {
+				async content(event, trigger, player) {
 					if (lib.skill[event.name.slice(0, event.name.indexOf("_roundcount"))].round - (game.roundNumber - player.storage[event.name]) > 0) {
 						player.updateMarks();
 					} else {
@@ -8804,7 +8826,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			}
 			info._priority = priority;
 		}
-		if (skillId[0] == "_") {
+		if (skillId[0] === "_") {
 			game.addGlobalSkill(skillId);
 		}
 	}
@@ -9433,59 +9455,59 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		return new Promise(
 			query
 				? (resolve, reject) => {
-						lib.status.reload++;
-						const idbRequest = lib.db.transaction([storeName], "readwrite").objectStore(storeName).get(query);
-						idbRequest.onerror = event => {
-							if (typeof onError == "function") {
-								onError(event);
-								game.reload2();
-								resolve();
-							} else {
-								game.reload2();
-								reject(event);
-							}
-						};
-						idbRequest.onsuccess = event => {
-							const result = event.target.result;
-							if (typeof onSuccess == "function") {
-								_status.dburgent = true;
-								onSuccess(result);
-								delete _status.dburgent;
-							}
+					lib.status.reload++;
+					const idbRequest = lib.db.transaction([storeName], "readwrite").objectStore(storeName).get(query);
+					idbRequest.onerror = event => {
+						if (typeof onError == "function") {
+							onError(event);
 							game.reload2();
-							resolve(result);
-						};
-					}
+							resolve();
+						} else {
+							game.reload2();
+							reject(event);
+						}
+					};
+					idbRequest.onsuccess = event => {
+						const result = event.target.result;
+						if (typeof onSuccess == "function") {
+							_status.dburgent = true;
+							onSuccess(result);
+							delete _status.dburgent;
+						}
+						game.reload2();
+						resolve(result);
+					};
+				}
 				: (resolve, reject) => {
-						lib.status.reload++;
-						const idbRequest = lib.db.transaction([storeName], "readwrite").objectStore(storeName).openCursor(),
-							object = {};
-						idbRequest.onerror = event => {
-							if (typeof onError == "function") {
-								onError(event);
-								game.reload2();
-								resolve();
-							} else {
-								game.reload2();
-								reject(event);
-							}
-						};
-						idbRequest.onsuccess = event => {
-							const result = event.target.result;
-							if (result) {
-								object[result.key] = result.value;
-								result.continue();
-								return;
-							}
-							if (typeof onSuccess == "function") {
-								_status.dburgent = true;
-								onSuccess(object);
-								delete _status.dburgent;
-							}
+					lib.status.reload++;
+					const idbRequest = lib.db.transaction([storeName], "readwrite").objectStore(storeName).openCursor(),
+						object = {};
+					idbRequest.onerror = event => {
+						if (typeof onError == "function") {
+							onError(event);
 							game.reload2();
-							resolve(object);
-						};
-					}
+							resolve();
+						} else {
+							game.reload2();
+							reject(event);
+						}
+					};
+					idbRequest.onsuccess = event => {
+						const result = event.target.result;
+						if (result) {
+							object[result.key] = result.value;
+							result.continue();
+							return;
+						}
+						if (typeof onSuccess == "function") {
+							_status.dburgent = true;
+							onSuccess(object);
+							delete _status.dburgent;
+						}
+						game.reload2();
+						resolve(object);
+					};
+				}
 		);
 	}
 	/**
@@ -9530,47 +9552,47 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		}
 		return query
 			? new Promise((resolve, reject) => {
-					lib.status.reload++;
-					const record = lib.db.transaction([storeName], "readwrite").objectStore(storeName).delete(query);
-					record.onerror = event => {
-						if (typeof onError == "function") {
-							onError(event);
-							game.reload2();
-							resolve();
-						} else {
-							game.reload2();
-							reject(event);
-						}
-					};
-					record.onsuccess = event => {
-						if (typeof onSuccess == "function") {
-							onSuccess(event);
-						}
+				lib.status.reload++;
+				const record = lib.db.transaction([storeName], "readwrite").objectStore(storeName).delete(query);
+				record.onerror = event => {
+					if (typeof onError == "function") {
+						onError(event);
 						game.reload2();
-						resolve(event);
-					};
-				})
+						resolve();
+					} else {
+						game.reload2();
+						reject(event);
+					}
+				};
+				record.onsuccess = event => {
+					if (typeof onSuccess == "function") {
+						onSuccess(event);
+					}
+					game.reload2();
+					resolve(event);
+				};
+			})
 			: game.getDB(storeName).then(object => {
-					const keys = Object.keys(object);
-					lib.status.reload += keys.length;
-					const store = lib.db.transaction([storeName], "readwrite").objectStore(storeName);
-					return Promise.allSettled(
-						keys.map(
-							key =>
-								new Promise((resolve, reject) => {
-									const request = store.delete(key);
-									request.onerror = event => {
-										game.reload2();
-										reject(event);
-									};
-									request.onsuccess = event => {
-										game.reload2();
-										resolve(event);
-									};
-								})
-						)
-					);
-				});
+				const keys = Object.keys(object);
+				lib.status.reload += keys.length;
+				const store = lib.db.transaction([storeName], "readwrite").objectStore(storeName);
+				return Promise.allSettled(
+					keys.map(
+						key =>
+							new Promise((resolve, reject) => {
+								const request = store.delete(key);
+								request.onerror = event => {
+									game.reload2();
+									reject(event);
+								};
+								request.onsuccess = event => {
+									game.reload2();
+									resolve(event);
+								};
+							})
+					)
+				);
+			});
 	}
 	/**
 	 * @param { string } key
@@ -10160,7 +10182,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		return game.players.concat(game.dead).some(value => (includeOut || !value.isOut()) && func(value));
 	}
 	/**
-	 * @param { (player: Player) => boolean } [func]
+	 * @param { (player: Player) => number | boolean } [func]
 	 * @param { boolean } [includeOut]
 	 */
 	countPlayer(func, includeOut) {
@@ -10181,7 +10203,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		}, 0);
 	}
 	/**
-	 * @param { (player: Player) => boolean } func
+	 * @param { (player: Player) => number | boolean } func
 	 * @param { boolean } [includeOut]
 	 */
 	countPlayer2(func = lib.filter.all, includeOut) {
@@ -10501,7 +10523,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			ui.arena.setNumber(parseInt(ui.arena.dataset.number) + 1);
 			let position = !isNext ? parseInt(target.dataset.position) : parseInt(target.dataset.position) + 1;
 			if (position == 0) {
-				position = players.length;
+				position = parseInt(ui.arena.dataset.number) - 1;
 			}
 			players.forEach(value => {
 				if (parseInt(value.dataset.position) >= position) {
@@ -10613,7 +10635,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 						)
 						.finished.then(() => wave.remove());
 					list.push(shockWave);
-					return Promise.all(list);
+					return Promise.allSettled(list);
 				});
 			};
 			await animate(player);
@@ -10647,11 +10669,25 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			custom: [],
 			useSkill: [],
 		});
+		for (let i = 0; i < players[0].actionHistory.length; i++) {
+			["isRound", "isSkipped"].forEach(key => {
+				if (players[0].actionHistory[i][key]) {
+					player.actionHistory[i][key] = true;
+				}
+			});
+		}
 		player.stat = new Array(players[0].stat.length).fill({
 			card: {},
 			skill: {},
 			triggerSkill: {},
 		});
+		for (let i = 0; i < players[0].stat.length; i++) {
+			["isRound", "isSkipped"].forEach(key => {
+				if (players[0].stat[i][key]) {
+					player.stat[i][key] = true;
+				}
+			});
+		}
 		return player;
 	}
 	/**
@@ -10710,6 +10746,12 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		//联机需要删除掉，不然重进会多一个dead（）
 		if (_status.connectMode) {
 			delete lib.playerOL[player.playerid];
+		}
+		//如果被移除角色为当前回合角色，需要特殊处理
+		const evt = get.event();
+		const loop = evt.getParent("phaseLoop", true);
+		if (loop?.player == player) {
+			loop.player = player.previousSeat;
 		}
 		//移除角色的具体步骤
 		const removePlayer = async (player, config, configOL) => {
@@ -10791,7 +10833,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 					);
 				}
 
-				//玩家dom自身的溃散动画（缩小并变灰），建议removePlayer的不要加onfinish后续移除角色的dom需要用到onfinish
+				//玩家dom自身的溃散动画（缩小并变灰）
 				const animation = player.animate(
 					[
 						{ transform: "scale(1)", filter: "brightness(1) grayscale(0)", opacity: 1 },
@@ -10804,53 +10846,53 @@ ${e instanceof Error ? e.stack : String(e)}`);
 					}
 				).finished;
 				list.push(animation);
-				return Promise.all(list);
+				return Promise.allSettled(list);
 			};
-			await animate(player).then(() => {
-				//移除角色的dom，隐藏dom是为了避免动画结束后的拖影（）
-				player.classList.add("dead");
-				player.classList.add("out");
-				player.style.display = "none";
-				player.delete();
-				//调整布局
-				const players = game.players.concat(game.dead);
-				const position = parseInt(player.dataset.position);
-				players.forEach(value => {
-					if (parseInt(value.dataset.position) > position) {
-						value.dataset.position = parseInt(value.dataset.position) - 1;
-					}
-				});
-				ui.arena.setNumber(parseInt(ui.arena.dataset.number) - 1);
-				player.removed = true;
-				if (player == game.me) {
-					//把角色移入旁观，主机不可能真的进旁观的，所以不必在意
-					const func = (player, config) => {
-						game.swapPlayer(game.players.find(i => i != player));
-						const replacePlayer = function (e) {
-							if (!_status.auto || !game.notMe) {
-								return;
-							}
-							game.swapPlayer(this || e.target.parentElement);
-						};
-						game.players.forEach(p => p.addEventListener(lib.config.touchscreen ? "touchend" : "click", replacePlayer));
-						game.notMe = true;
-						_status.auto = true;
-						if (game.online) {
-							if (!config.observe_handcard) {
-								ui.arena.classList.add("observe");
-							}
-							game.observe = true;
-						}
-					};
-					func(player, configOL);
-					//ui.me.hide();
-					ui.auto.hide();
-					ui.wuxie.hide();
+			await animate(player);
+			//移除角色的dom，隐藏dom是为了避免动画结束后的拖影（）
+			player.classList.add("dead");
+			player.classList.add("out");
+			player.style.display = "none";
+			player.delete();
+			await game.delay(1);
+			//调整布局
+			const players = game.players.concat(game.dead);
+			const position = parseInt(player.dataset.position);
+			players.forEach(value => {
+				if (parseInt(value.dataset.position) > position) {
+					value.dataset.position = parseInt(value.dataset.position) - 1;
 				}
-				setTimeout(() => {
-					player.removeAttribute("style");
-				}, 500);
 			});
+			ui.arena.setNumber(parseInt(ui.arena.dataset.number) - 1);
+			player.removed = true;
+			if (player == game.me) {
+				//把角色移入旁观，主机不可能真的进旁观的，所以不必在意
+				const func = (player, config) => {
+					game.swapPlayer(game.players.find(i => i != player));
+					const replacePlayer = function (e) {
+						if (!_status.auto || !game.notMe) {
+							return;
+						}
+						game.swapPlayer(this || e.target.parentElement);
+					};
+					game.players.forEach(p => p.addEventListener(lib.config.touchscreen ? "touchend" : "click", replacePlayer));
+					game.notMe = true;
+					_status.auto = true;
+					if (game.online) {
+						if (!config.observe_handcard) {
+							ui.arena.classList.add("observe");
+						}
+						game.observe = true;
+					}
+				};
+				func(player, configOL);
+				//ui.me.hide();
+				ui.auto.hide();
+				ui.wuxie.hide();
+			}
+			setTimeout(() => {
+				player.removeAttribute("style");
+			}, 500);
 		};
 		game.broadcast(removePlayer, player, config, get.copy(lib.configOL));
 		await removePlayer(player, config, get.copy(lib.configOL));

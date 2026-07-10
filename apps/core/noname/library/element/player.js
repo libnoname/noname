@@ -182,6 +182,8 @@ export class Player extends HTMLDivElement {
 			equips: [],
 			judges: [],
 		};
+		//添加updates
+		player.updates = [];
 	}
 	buildEventListener(noclick) {
 		let player = this;
@@ -191,6 +193,8 @@ export class Player extends HTMLDivElement {
 		} else {
 			player.addEventListener(lib.config.touchscreen ? "touchend" : "click", ui.click.target);
 			node.identity.addEventListener(lib.config.touchscreen ? "touchend" : "click", ui.click.identity);
+			node.count.addEventListener("pointerdown", ui.click.count);
+
 			if (lib.config.touchscreen) {
 				player.addEventListener("touchstart", ui.click.playertouchstart);
 				player.addEventListener("touchmove", ui.click.playertouchmove);
@@ -403,6 +407,11 @@ export class Player extends HTMLDivElement {
 	 * @type { import("./client.js").Client | undefined }
 	 */
 	ws;
+	/**
+	 * $update里面用到的钩子
+	 * @type { ((player: Player) => void)[] }
+	 */
+	updates;
 
 	/**
 	 * 添加视为装备
@@ -1323,7 +1332,8 @@ export class Player extends HTMLDivElement {
 				}
 			}
 		}
-		if (!next.cards?.length) {// || !next.gaintag?.length
+		if (!next.cards?.length) {
+			// || !next.gaintag?.length
 			_status.event.next.remove(next);
 			next.resolve();
 		}
@@ -1741,10 +1751,10 @@ export class Player extends HTMLDivElement {
 		return Math.max(
 			0,
 			this.countEnabledSlot(type) -
-				this.getVEquips(type).reduce((num, card) => {
-					let types = get.subtypes(card, false);
-					return num + get.numOf(types, type);
-				}, 0)
+			this.getVEquips(type).reduce((num, card) => {
+				let types = get.subtypes(card, false);
+				return num + get.numOf(types, type);
+			}, 0)
 		);
 	}
 	/**
@@ -1776,13 +1786,13 @@ export class Player extends HTMLDivElement {
 		return Math.max(
 			0,
 			this.countEnabledSlot(type) -
-				this.getVEquips(type).reduce((num, card) => {
-					let types = get.subtypes(card, false);
-					if (!lib.filter.canBeReplaced(card, this)) {
-						num += get.numOf(types, type);
-					}
-					return num;
-				}, 0)
+			this.getVEquips(type).reduce((num, card) => {
+				let types = get.subtypes(card, false);
+				if (!lib.filter.canBeReplaced(card, this)) {
+					num += get.numOf(types, type);
+				}
+				return num;
+			}, 0)
 		);
 	}
 	/**
@@ -3207,10 +3217,10 @@ export class Player extends HTMLDivElement {
 		m = game.checkMod(from, to, m, "attackFrom", from);
 		m = game.checkMod(from, to, m, "attackTo", to);
 		const equips1 = from.getVCards("e", function (card) {
-				return !card.cards?.some(card => {
-					return ui.selected.cards?.includes(card);
-				});
-			}),
+			return !card.cards?.some(card => {
+				return ui.selected.cards?.includes(card);
+			});
+		}),
 			equips2 = to.getVCards("e", function (card) {
 				return !card.cards?.some(card => {
 					return ui.selected.cards?.includes(card);
@@ -4687,11 +4697,11 @@ export class Player extends HTMLDivElement {
 				hp.style.transition = "";
 			});
 		}
-		var numh = this.countCards("h");
+		let numh = this.countCards("h");
 		if (_status.video) {
 			numh = arguments[0];
 		}
-		if (numh >= 10) {
+		/*if (numh >= 10) {
 			this.node.count.dataset.condition = "low";
 			this.node.count.innerHTML = Array.from(numh.toString()).join("<br>");
 		} else {
@@ -4705,6 +4715,14 @@ export class Player extends HTMLDivElement {
 				this.node.count.dataset.condition = "none";
 			}
 			this.node.count.innerHTML = numh;
+		}*/
+		this.node.count.innerHTML = numh.toString();
+		if (numh < 10) {
+			this.node.count.dataset.condition = "low";
+		} else if (numh < 100) {
+			this.node.count.dataset.condition = "mid";
+		} else {
+			this.node.count.dataset.condition = "high";
 		}
 		if (this.updates) {
 			for (var i = 0; i < this.updates.length; i++) {
@@ -6483,13 +6501,24 @@ export class Player extends HTMLDivElement {
 	 * @returns {GameEvent}
 	 */
 	chooseCardOL(params) {
-		var next = game.createEvent("chooseCardOL");
+		const next = game.createEvent("chooseCardOL");
 		next._args = [];
 
 		const args = [...arguments];
-		if (args.length == 1 && get.is.object(params) && get.itemtype(params) == null) {
+		if (args.length == 1 && params != null && get.is.object(params) && get.itemtype(params) == null) {
 			next.list = params.list;
-			next._args = params.args;
+			if (params.args) {
+				next._args = params.args;
+				next._args.add("glow_result");
+			} else {
+				/** @type {import("./Player/type.d").EventChooseCardParams} */
+				const newArgs = { ...params };
+				Reflect.deleteProperty(newArgs, "list");
+				if (newArgs.glow_result == null) {
+					newArgs.glow_result = true;
+				}
+				next._args = [newArgs];
+			}
 		} else {
 			for (const arg of args) {
 				if (get.itemtype(arg) == "players") {
@@ -6498,9 +6527,9 @@ export class Player extends HTMLDivElement {
 					next._args.push(arg);
 				}
 			}
+			next._args.add("glow_result");
 		}
 		next.setContent("chooseCardOL");
-		next._args.add("glow_result");
 		return next;
 	}
 	/**
@@ -7324,7 +7353,7 @@ export class Player extends HTMLDivElement {
 			next.resolve();
 		}
 		next.flashAnimation = flashAnimation;
-		if (flashAnimation && !isFlash) {
+		if (flashAnimation && isFlash == undefined) {
 			next.isFlash = true;
 		} else {
 			next.isFlash = false;

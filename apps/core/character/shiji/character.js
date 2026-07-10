@@ -44,6 +44,12 @@ const characters = {
 		skills: ["reshuishi", "stianyi", "resghuishi"],
 		groupInGuozhan: "wei",
 	},
+	mb_shen_machao: {
+		sex: "male",
+		group: "shen",
+		hp: 4,
+		skills: ["yuli", "tingwei", "jimie"],
+	},
 	mb_shen_jiangwei: {
 		sex: "male",
 		group: "shen",

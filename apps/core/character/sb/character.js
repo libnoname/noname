@@ -1,4 +1,11 @@
 const characters = {
+	sb_chentai: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["sbdengxian", "sbzhejian"],
+		clans: ["颍川陈氏"],
+	},
 	sb_zhuran: {
 		sex: "male",
 		group: "wu",
@@ -331,7 +338,7 @@ const characters = {
 		sex: "male",
 		group: "qun",
 		hp: 3,
-		skills: ["sbmingren", "sbzhenliang"],
+		skills: ["sbmingren", "sbweiliu"],
 	},
 	sb_xiaoqiao: {
 		sex: "female",

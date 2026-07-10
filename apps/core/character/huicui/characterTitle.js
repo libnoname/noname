@@ -1,4 +1,6 @@
 export default {
+	yue_caozhi: "漱律缀章",
+	dc_muludawang: "八纳洞主",
 	dc_zhangshiping: "慷赀桃园",
 	dc_weifeng: "趁浪逐波",
 	mamiao: "退路自有",
