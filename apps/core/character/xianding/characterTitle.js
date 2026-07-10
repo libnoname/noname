@@ -1,4 +1,6 @@
 export default {
+	wu_zhangfei: "烈武桓威",
+	dc_sb_guanyu: "单刀赴会",
 	//dc_sb_yangfeng: "",
 	//v_guanyinping: "",
 	//dc_sb_wangping: "",

@@ -14,8 +14,8 @@ import com.getcapacitor.BridgeActivity
 class MainActivity : BridgeActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
         registerPlugin(SafFsPlugin::class.java)
+        super.onCreate(savedInstanceState)
 
         val webView = bridge.webView
         if (BuildConfig.DEBUG) {
@@ -61,4 +61,3 @@ class MainActivity : BridgeActivity() {
         webView.loadUrl("https://localhost/index.html")
     }
 }
-

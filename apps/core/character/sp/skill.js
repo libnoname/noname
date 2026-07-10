@@ -2756,7 +2756,7 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		filter(event, player) {
-			return player.getExpansions("olxiewei").length && game.hasPlayer(target => player.canCompare(target, true));
+			return player.getExpansions("olxiewei").length && game.hasPlayer(target => player.canCompare(target));
 		},
 		delay: false,
 		lose: false,
@@ -3833,17 +3833,12 @@ const skills = {
 					}
 					if (!player.hasMark("olshanjia")) {
                         return false;
-                    }   
-        // 3. 【核心新增逻辑】：排除“因主动使用装备牌”而失去装备的情况
-        // 获取当前失去牌事件的父级事件（通常是 useCard）
-        const parentEvt = event.relatedEvent || event.getParent();
-        
-        // 如果父级事件是“使用牌”，且使用者是自己，且使用的牌是“装备”，则不扣除标记
-        if (parentEvt && parentEvt.name === "useCard" && parentEvt.player === player && get.type(parentEvt.card, null, false) === "equip") {
-            return false;
-        }
-        // 4. 排除以上情况后，允许扣除标记
-                   return true;
+                    }
+					const parentEvt = event.relatedEvent || event.getParent();
+					if (parentEvt && parentEvt.name === "useCard" && parentEvt.player === player && get.type(parentEvt.card, null, false) === "equip") {
+						return false;
+					}
+					return true;
 				},
 				forced: true,
 				locked: false,
@@ -34649,7 +34644,7 @@ const skills = {
 			if (event._notrigger.includes(event.player)) {
 				return false;
 			}
-			return _status.currentPhase == player && event.player.isIn() && event.player.countCards("hej") > 0 && event.player != player && !player.hasSkill("zhidao2");
+			return player.isPhaseUsing() && event.player.isIn() && event.player.countCards("hej") > 0 && event.player != player && !player.hasSkill("zhidao2");
 		},
 		forced: true,
 		content() {
@@ -36354,8 +36349,11 @@ const skills = {
 	},
 	qirang: {
 		audio: 2,
-		trigger: { player: "equipEnd" },
+		trigger: { player: "useCardAfter" },
 		frequent: true,
+		filter(event, player) {
+          return get.type(event.card) == "equip";
+        },
 		content() {
 			var card = get.cardPile(function (card) {
 				return get.type(card, "trick") == "trick";
@@ -43403,13 +43401,18 @@ const skills = {
 		async cost(event, trigger, player) {
 			const { player: target } = trigger;
 			event.result = await player
-				.chooseToDiscard("he", get.prompt(event.name.slice(0, -5), target), "弃置一张牌，令其摸两张牌并进行一个额外的出牌阶段。")
-				.set("ai", card => {
-					const { player, targetx } = get.event();
-					if (get.attitude(player, targetx) < 1) {
-						return 0;
-					}
-					return 9 - get.value(card);
+				.chooseToDiscard({
+					prompt: get.prompt(event.skill, target),
+					prompt2: "弃置一张牌，令其摸两张牌并进行一个额外的出牌阶段",
+					position: "he",
+					ai(card) {
+						const { player, targetx } = get.event();
+						if (get.attitude(player, targetx) < 1) {
+							return 0;
+						}
+						return 9 - get.value(card);
+					},
+					chooseonly: true,
 				})
 				.set("targetx", target)
 				.forResult();
@@ -43417,6 +43420,8 @@ const skills = {
 		logTarget: "player",
 		async content(event, trigger, player) {
 			const { player: target } = trigger;
+			const { cards } = event;
+			await player.modedDiscard(cards);
 			player.line(target, "green");
 			await target.draw(2);
 			const evt = trigger.getParent("phase", true);
@@ -43563,7 +43568,7 @@ const skills = {
 			player: "damageBegin4",
 		},
 		filter(event, player) {
-			return get.itemtype(event.source) == "player";
+			return event.source && event.source.isIn() && event.source != player;
 		},
 		logTarget: "source",
 		content() {

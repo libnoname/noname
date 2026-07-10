@@ -3505,7 +3505,7 @@ const skills = {
 			source: "damageSource",
 		},
 		filter(event, player) {
-			if (player.storage.drlt_duorui.length) {
+			if (player.storage.drlt_duorui.length || event.player === player) {
 				return false;
 			}
 			return event.player.isIn() && _status.currentPhase == player;

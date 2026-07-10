@@ -1,4 +1,11 @@
 export default {
+	"#reliangyin1": "愿作深山木，枝枝连理生。",
+	"#reliangyin2": "河汉清且浅，相去复几许。",
+	"#reliangyin3": "少年夫妻老来伴，执手相看两不厌。",
+	"#reliangyin4": "至高至明日月，至亲至疏夫妻。",
+	"#rekongsheng1": "弦动人欲醉，声闻一时醒。",
+	"#rekongsheng2": "静弹箜篌引，寄我悠悠心。",
+	"#re_zhoufei:die": "相思相见知何日，此时此夜难为情。",
 	"#potjiezhu1": "趁魏军退走，我等可急令进军。",
 	"#potjiezhu2": "虽攻敌不足，然退守有余矣。",
 	"#potjiezhu_zhuji_shadow1": "城头旌旗不倒，吴土寸步不让！",

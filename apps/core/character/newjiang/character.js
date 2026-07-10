@@ -1,8 +1,8 @@
 const characters = {
 	yj_wanglang: {
 		sex: "male",
-		group: "wei",
-		hp: 3,
+		group: "qun",
+		hp: 4,
 		skills: ["fuyu", "zhanshi"],
 	},
 	yj_x_xunxu: {

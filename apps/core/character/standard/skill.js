@@ -2338,11 +2338,11 @@ const skills = {
 		},
 	},
 	new_jiangchi: {
-		audio: 2,
+		audio: "jiangchi",
 		trigger: {
 			player: "phaseDrawEnd",
 		},
-		logAudio: (event, player, name, indexedData, costResult) => (costResult.cost_data.control === "弃牌" ? "new_jiangchi1.mp3" : "new_jiangchi2.mp3"),
+		logAudio: (event, player, name, indexedData, costResult) => (costResult.cost_data.control === "弃牌" ? "jiangchi2.mp3" : "jiangchi1.mp3"),
 		async cost(event, trigger, player) {
 			const list = ["弃牌", "摸牌", "cancel2"];
 			if (!player.hasCards("he")) {

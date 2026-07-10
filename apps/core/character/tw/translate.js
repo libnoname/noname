@@ -1,6 +1,12 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	twsb_xiahoudun: "TW谋夏侯惇",
+	twsb_xiahoudun_prefix: "TW谋",
+	twsbganglie: "刚烈",
+	twsbganglie_info: "出牌阶段限一次。你可以选择任意名本局游戏对你造成过伤害且你未以此法选择过的角色，你对其造成2点伤害。",
+	twsbqingjian: "清俭",
+	twsbqingjian_info: "①当有一张牌不因使用而进入弃牌堆后，若你的“清俭”数小于X，你将此牌置于你的武将牌上，称为“清俭”（X为你的体力值+1，且至少为1）。②出牌阶段结束时，你将所有“清俭”分配给任意角色。",
 	tw_shen_guanyu: "TW神关羽",
 	tw_shen_guanyu_prefix: "TW神",
 	twwushen: "武神",
@@ -739,15 +745,15 @@ const translates = {
 	twlongjin_info: "觉醒技，当你进入濒死状态时，你将体力值回复至2点，此后的五个回合，你视为拥有技能〖龙胆〗和〖冲阵〗，且你计算与其他角色的距离视为1。",
 	huan_daqiao: "幻大乔",
 	huan_daqiao_prefix: "幻",
-	huanguose: "帼色",
-	huanguose_info: `有角色${get.poptip({
-		id: "huanguose_tip",
+	twguose: "帼色",
+	twguose_info: `有角色${get.poptip({
+		id: "twguose_tip",
 		name: "受伤状态",
 		type: "character",
-		info: "当体力值或体力上限变化后，若两者关系在未受伤/受伤/濒死之间发生变化，即为受伤状态变化。"
+		info: "即未受伤/受伤的状态，受伤状态变化后即体力值/上限变化后，若该状态发生变化。"
 	})}变化后，若其判定区未废除且没有【乐不思蜀】，你可将你或其的一张牌当作【乐不思蜀】置入其判定区中，然后你摸两张牌。有【乐不思蜀】判定生效后，你可将此【乐不思蜀】的效果改为跳过弃牌阶段。`,
-	huanliuli: "流俪",
-	huanliuli_info: `有角色成为伤害牌的目标后，你可弃置其场上一张红色牌，令此牌对其无效，然后若其${get.poptip("huanguose_tip")}与你相同，你摸两张牌。`,
+	twliuli: "流俪",
+	twliuli_info: `有角色成为伤害牌的目标后，你可弃置其场上一张红色牌，令此牌对其无效，然后若其${get.poptip("twguose_tip")}与你相同，你摸两张牌。`,
 	huan_zhanghe: "幻张郃",
 	huan_zhanghe_prefix: "幻",
 	twkuiduan: "溃端",

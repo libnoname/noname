@@ -4716,7 +4716,7 @@ export class Player extends HTMLDivElement {
 			}
 			this.node.count.innerHTML = numh;
 		}*/
-		this.node.count.innerHTML = numh.toString();
+		this.node.count.innerHTML = numh?.toString();
 		if (numh < 10) {
 			this.node.count.dataset.condition = "low";
 		} else if (numh < 100) {

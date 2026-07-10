@@ -1,8 +1,8 @@
 const characterSort = {
 	bingshi_qi: ["pot_zhangren", "pot_sunchen", "pot_lougui", "pot_yuji", "mb_xiahoushang", "sunsháo", "mb_yanghong", "pot_dengai", "pot_lvyi", "pot_xiahouba"],
-	bingshi_zheng: ["pot_chenjiao", "mb_sunjun", "guoyuan", "pot_taishici", "pot_chendao", "mb_tianfeng", "pot_chenqun"],
-	bingshi_shi: ["pot_weiyan", "mb_huangzu", "pot_dongzhao", "pangxi", "mb_zhangyan", "mb_chenzhi", "sp_zhonghui", "pot_caozhen"],
-	bingshi_jie: ["pot_xinxianying", "pot_lusu", "mb_luyusheng", "pot_huanjie", "pot_zanghong"],
+	bingshi_zheng: ["pot_chenjiao", "mb_sunjun", "guoyuan", "pot_taishici", "pot_chendao", "mb_tianfeng", "pot_chenqun", "pot_chengpu"],
+	bingshi_shi: ["pot_weiyan", "mb_huangzu", "pot_dongzhao", "pangxi", "mb_zhangyan", "mb_chenzhi", "sp_zhonghui", "pot_zhouyu"],
+	bingshi_jie: ["pot_xinxianying", "pot_lusu", "mb_luyusheng", "pot_huanjie", "pot_zanghong", "pot_caozhen"],
 };
 
 const characterSortTranslate = {

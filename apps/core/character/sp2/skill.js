@@ -1889,7 +1889,7 @@ const skills = {
 		popup: false,
 		async content(event, trigger, player) {
 			const discardedCards = event.cards || [];
-			const num = discaredCards.length - ((await player.drawTo(5).forResult()).cards || []).length;
+			const num = discardedCards.length - ((await player.drawTo(5).forResult()).cards || []).length;
 			switch (get.sgn(num)) {
 				case 1: {
 					const result = await player
@@ -3187,6 +3187,7 @@ const skills = {
 	},
 	// 星夏侯霸
 	starweigu: {
+		audio: 2,
 		trigger: {
 			player: "useCardToPlayer",
 			target: "useCardToTarget",
@@ -3195,7 +3196,7 @@ const skills = {
 			if (!get.is.damageCard(event.card)) {
 				return false;
 			}
-			if (event.targets.length !== 1) {
+			if (event.targets?.length !== 1) {
 				return false;
 			}
 			if (!player.hasCards("he", card => get.info("starweigu").isSelf(card, player) && lib.filter.cardDiscardable(card, player, "starweigu"))) {
@@ -3280,7 +3281,7 @@ const skills = {
 									}
 								} else if (button.link === "addtarget") {
 									let num = 0;
-									targets.forEach(target => (num += get.effect(target, { name: card }, player2, player2)));
+									targets.forEach(target => (num += get.effect(target, { name: card.name }, player2, player2)));
 									return num;
 								}
 								return 0;
@@ -3331,6 +3332,7 @@ const skills = {
 	},
 	starjuefa: {
 		//批量改名前记得这里有starweigu
+		audio: 2,
 		enable: "phaseUse",
 		skillAnimation: true,
 		limited: true,
@@ -3345,6 +3347,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
+				audio: "starjuefa",
 				charlotte: true,
 				forced: true,
 				init(player, skill) {
@@ -3375,6 +3378,7 @@ const skills = {
 				},
 			},
 			remove: {
+				audio: "starjuefa",
 				charlotte: true,
 				forced: true,
 				trigger: {
@@ -16028,7 +16032,7 @@ const skills = {
 			event.num = player.storage.xinfu_lveming;
 			event.toequip = [];
 			"step 1";
-			var equip = get.cardPile(
+			var equip = get.cardPile2(
 				function (card) {
 					var bool1 = true;
 					for (var i = 0; i < event.toequip.length; i++) {
@@ -16036,7 +16040,7 @@ const skills = {
 							bool1 = false;
 						}
 					}
-					return get.type(card) == "equip" && !event.toequip.includes(card) && target.hasEmptySlot(card) && bool1;
+					return get.type(card) == "equip" && !event.toequip.includes(card) && target.hasEmptySlot(get.subtype(card)) && bool1;
 				},
 				false,
 				"random"
@@ -16313,6 +16317,7 @@ const skills = {
 				sub: true,
 			},
 			discard: {
+				audio: "xinfu_bijing",
 				trigger: {
 					player: "phaseZhunbeiBegin",
 				},

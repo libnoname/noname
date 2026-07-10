@@ -2491,7 +2491,7 @@ const skills = {
 		limited: true,
 		trigger: { player: "phaseJieshuBegin" },
 		filter(event, player) {
-			return player.countCards("h", card => player.canRecast(card)) > 1;
+			return player.countCards("he", card => player.canRecast(card)) > 1;
 		},
 		async cost(event, trigger, player) {
 			event.result = await player

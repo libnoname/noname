@@ -7258,7 +7258,7 @@ const skills = {
 			if (cards.length) {
 				await player.gain({
 					cards,
-					animate: "gain2",
+					animate: "draw",
 				});
 			}
 		},
@@ -13181,7 +13181,7 @@ const skills = {
 				return false;
 			}
 			for (var i of event.cards) {
-				if (get.suit(i, event.player) == "diamond") {
+				if (get.suit(i, event.player) == "diamond" && get.position(i) === "d") {
 					return true;
 				}
 			}
@@ -16947,13 +16947,13 @@ const skills = {
 				})
 			) {
 				event.result = await player
-					.chooseToDiscard("h", get.prompt(event.skill), "弃置一张牌并令伤害-1", "chooseonly")
+					.chooseToDiscard("h", get.prompt(event.skill), "弃置一张手牌并令伤害-1", "chooseonly")
 					.set("ai", function (card) {
 						return 7 - get.value(card);
 					})
 					.forResult();
 			} else {
-				event.result = await player.chooseBool(get.prompt(event.skill), "随机弃置一张牌并令伤害-1").forResult();
+				event.result = await player.chooseBool(get.prompt(event.skill), "随机弃置一张手牌并令伤害-1").forResult();
 			}
 		},
 		async content(event, trigger, player) {
