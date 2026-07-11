@@ -798,7 +798,7 @@ const skills = {
 						return false;
 					}
 					const card0 = get.autoViewAs({ name: "sha" }, [card1, card2]);
-					return lib.filter.cardEnabled(card0, player) && player.hasUseTarget(get.autoViewAs({name:'sha',cards)}));
+					return lib.filter.cardEnabled(card0, player) && player.hasUseTarget(get.autoViewAs({ name: "sha", cards }));
 				});
 			});
 		},
