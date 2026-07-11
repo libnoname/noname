@@ -3968,7 +3968,7 @@ export class Create {
 			}
 		};
 
-		container.addCards = function (cards) {
+		container.addCards = function (cards, noClear) {
 			if (
 				this.buttons?.length == cards.length &&
 				(cards.length == 0 ||
@@ -3981,7 +3981,9 @@ export class Create {
 			}
 
 			//清空原来的牌
-			this.clearCards();
+			if (!noClear) {
+				this.clearCards();
+			}
 
 			//计算和添加偏移
 			const num = cards.length;
@@ -4008,6 +4010,16 @@ export class Create {
 			} else {
 				container.buttons = [];
 			}
+		};
+		container.removeCards = function (cards) {
+			if (!cards?.length) {
+				return;
+			}
+			this.buttons.forEach(button => {
+				if (cards.includes(button)) {
+					button.remove();
+				}
+			});
 		};
 		if (position) {
 			position.appendChild(container);
