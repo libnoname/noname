@@ -4801,7 +4801,7 @@ export class Click {
 		//创建手牌容器并通过函数将牌添加到里面
 		const container = createHandCardsContainer(target);
 		dialog.handcardsContainer = container;
-		dialog.content.appendChild(container);	
+		dialog.content.appendChild(container);
 
 		//添加关闭按钮
 		const closeButton = ui.create.div(".close-btn");
