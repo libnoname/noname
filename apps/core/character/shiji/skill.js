@@ -4798,52 +4798,55 @@ const skills = {
 		trigger: { player: "phaseZhunbeiBegin" },
 		forced: true,
 		filter(event, player) {
-			return (
-				player.storage.yaohu &&
-				game.hasPlayer(function (current) {
-					return current.group == player.storage.yaohu;
-				})
-			);
+			return player.storage.yaohu && game.hasPlayer(current => current.group === player.storage.yaohu);
 		},
-		content() {
-			"step 0";
-			var cards = player.getExpansions("jutu");
+		async content(event, trigger, player) {
+			const cards = player.getExpansions("jutu");
 			if (cards.length > 0) {
-				player.gain(cards, "gain2");
+				await player.gain({
+					cards,
+					animate: "gain2",
+				});
 			}
-			"step 1";
-			event.num = game.countPlayer(function (current) {
-				return current.group == player.storage.yaohu;
-			});
-			player.draw(event.num + 1);
-			if (!event.num) {
-				event.finish();
+			const num = game.countPlayer(current => current.group === player.storage.yaohu);
+			await player.draw(num + 1);
+			if (!num) {
+				return;
 			}
-			"step 2";
-			var he = player.getCards("he");
+			const he = player.getCards("he");
 			if (!he.length) {
-				event.finish();
-			} else if (he.length < num) {
-				event._result = { bool: true, cards: he };
-			} else {
-				player.chooseCard("he", true, num, "选择" + get.cnNumber(num) + "张牌作为生");
+				return;
 			}
-			"step 3";
-			if (result.bool) {
-				var cards = result.cards;
-				player.addToExpansion(player, "give", cards).gaintag.add("jutu");
+			let cards2 = he;
+			if (he.length >= num) {
+				const result = await player.chooseCard({
+					prompt: `选择${get.cnNumber(num)}张牌作为生`,
+					selectCard: num,
+					position: "he",
+					forced: true,
+				}).forResult();
+				if (result.bool && result.cards?.length) {
+					cards2 = result.cards;
+				}
 			}
-			"step 4";
-			game.delayx();
+			if (cards2) {
+				await player.addToExpansion({
+					cards: cards2,
+					source: player,
+					animate: "give",
+					gaintag: ["jutu"],
+				});
+			}
+			await game.delayx();
 		},
 		intro: {
 			content: "expansion",
 			markcount: "expansion",
 		},
 		onremove(player, skill) {
-			var cards = player.getExpansions(skill);
+			const cards = player.getExpansions(skill);
 			if (cards.length) {
-				player.loseToDiscardpile(cards);
+				player.loseToDiscardpile({ cards });
 			}
 		},
 		ai: {
