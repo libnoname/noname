@@ -2861,42 +2861,43 @@ const skills = {
 	tongduo: {
 		audio: 2,
 		trigger: { target: "useCardToTargeted" },
-		direct: true,
 		usable: 1,
 		filter(event, player) {
-			return (
-				player != event.player &&
-				event.targets.length == 1 &&
-				game.hasPlayer(function (current) {
-					return current.countCards("he") > 0;
-				})
-			);
+			return player !== event.player && event.targets.length === 1 && game.hasPlayer(current => current.countCards("he") > 0);
 		},
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt("tongduo"), "令一名角色重铸一张牌", function (card, player, target) {
-					return target.hasCard(lib.filter.cardRecastable, "he");
+		async cost(event, trigger, player) {
+			event.result = await await player
+				.chooseTarget({
+					prompt: get.prompt("tongduo"),
+					prompt2: "令一名角色重铸一张牌",
+					filterTarget(card, player, target) {
+						return target.hasCards("he", lib.filter.cardRecastable);
+					},
+					ai(target) {
+						return get.attitude(_status.event.player, target) * Math.min(3, Math.floor(target.countCards("h", lib.filter.cardRecastable) / 2));
+					},
 				})
-				.set("ai", function (target) {
-					return get.attitude(_status.event.player, target) * Math.min(3, Math.floor(target.countCards("h", lib.filter.cardRecastable) / 2));
-				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("tongduo", target);
-			} else {
-				event.finish();
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			if (!target.hasCards("he", lib.filter.cardRecastable)) {
+				return;
 			}
-			"step 2";
-			if (!target.hasCard(lib.filter.cardRecastable, "he")) {
-				event.finish();
-			} else {
-				target.chooseCard("he", true, "请重铸一张牌", lib.filter.cardRecastable);
+			const result = await target
+				.chooseCard({
+					prompt: "请重铸一张牌",
+					filterCard(card, player) {
+						return lib.filter.cardRecastable(card, player);
+					},
+					position: "he",
+					forced: true,
+				})
+				.forResult();
+			if (!result?.bool || !result.cards?.length) {
+				return;
 			}
-			"step 3";
-			target.recast(result.cards);
+			await target.recast(result.cards);
 		},
 	},
 	//朱儁
