@@ -123,11 +123,15 @@ const skills = {
 			await game.asyncDraw(trigger.targets);
 			player
 				.when({ global: "shaMiss" })
-				.filter(evt => evt.player === trigger.player)
+				.filter(evt => evt.player === trigger.player && evt.card === trigger.card)
 				.step(async (event, trigger2, player) => {
-					trigger.getParent().targets.length = 0;
-					trigger.getParent().all_excluded = true;
-					game.log(trigger.card, "对其余目标无效");
+					const targets = trigger.targets;
+					const index = targets.indexOf(trigger2.target);
+					if (index !== -1) {
+						const targetx = targets.slice(index + 1, targets.length);
+						trigger.getParent().excluded.addArray(targetx);
+						game.log(trigger.card, "对", targetx, "无效");
+					}
 				});
 		},
 	},
@@ -173,7 +177,7 @@ const skills = {
 					target2.markAuto("ymjiuji_effect", [target1]);
 				});
 			target2
-				.when({ player: "phaseAfter" })
+				.when({ player: ["phaseAfter", "phaseCancelled"] })
 				.filter(evt => evt.skill == event.name)
 				.step(async (event, trigger, player) => {
 					target1.changeSkills(skills1, skills2);
@@ -320,7 +324,7 @@ const skills = {
 		},
 		check(event, player) {
 			const target = game.findPlayer(target => target.getSeatNum() == 1);
-			if(target?.isIn()) {
+			if (target?.isIn()) {
 				return get.attitude(player, target) > 0;
 			}
 			return 1;
