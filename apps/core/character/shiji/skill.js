@@ -4606,73 +4606,26 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
-		//filterTarget:function(card,player,target){
-		//	return target!=player&&target.getEquip(1);
-		//},
-		//selectTarget:[0,1],
-		content() {
-			var card = get.cardPile2(function (card) {
-				return get.subtype(card) == "equip1";
-			});
+		async content(event, trigger, player) {
+			const card = get.cardPile2(card => get.subtype(card) === "equip1");
 			if (card) {
-				player.gain(card, "gain2");
-			} else {
-				var targets = game.filterPlayer(function (current) {
-					return current.getEquips(1).length > 0;
+				await player.gain({
+					cards: [card],
+					animate: "gain2",
 				});
-				if (targets.length) {
-					var target = targets.randomGet();
-					player.gain(target.getEquips(1), target, "give", "bySelf");
-				}
+				return;
 			}
-		},
-		content_old() {
-			"step 0";
-			if (!target) {
-				var card = get.cardPile2(function (card) {
-					return get.subtype(card) == "equip1";
-				});
-				if (card) {
-					player.gain(card, "gain2");
-				}
-				event.finish();
-			} else {
-				var card = target.getEquip(1);
-				if (card) {
-					event.card = card;
-					player.gain(card, target, "give");
-				} else {
-					event.finish();
-				}
+			const targets = game.filterPlayer(current => current.getEquips(1).length > 0);
+			if (!targets.length) {
+				return;
 			}
-			"step 1";
-			if (player.getCards("h").includes(card) && get.type(card, null, player) == "equip" && player.hasUseTarget(card)) {
-				player.chooseUseTarget(card, true, "nopopup");
-			}
-			"step 2";
-			var hs = target.getCards("h", function (card) {
-				return target.canUse(get.autoViewAs({ name: "sha" }, [card]), player, false);
+			const target = targets.randomGet();
+			await player.gain({
+				cards: target.getEquips(1),
+				source: target,
+				animate: "give",
+				bySelf: true,
 			});
-			if (hs.length) {
-				if (hs.length == 1) {
-					event._result = { bool: true, cards: hs };
-				} else {
-					target
-						.chooseCard("h", true, "将一张牌当做【杀】对" + get.translation(player) + "使用", function (card) {
-							return _status.event.cards.includes(card);
-						})
-						.set("cards", hs)
-						.set("ai", function (card) {
-							return get.effect(_status.event.getParent().player, get.autoViewAs({ name: "sha" }, [card]), _status.event.player);
-						});
-				}
-			} else {
-				event.finish();
-			}
-			"step 3";
-			if (result.bool) {
-				target.useCard({ name: "sha" }, result.cards, player, false);
-			}
 		},
 		ai: {
 			order: 9,
@@ -4685,14 +4638,14 @@ const skills = {
 				forced: true,
 				locked: false,
 				filter(event, player) {
-					if (event.card.name != "shan" || event.getParent(2).player != player) {
+					if (event.card.name !== "shan" || event.getParent(2)?.player !== player) {
 						return false;
 					}
-					var num = get.number(event.card);
-					return !num || num <= player.getAttackRange() * 2;
+					const num = get.number(event.card);
+					return typeof num !== "number" || num <= player.getAttackRange() * 2;
 				},
 				logTarget: "player",
-				content() {
+				async content(event, trigger, player) {
 					trigger.all_excluded = true;
 				},
 				sub: true,
@@ -4700,10 +4653,10 @@ const skills = {
 			shan: {
 				trigger: { player: "useCardToPlayered" },
 				filter(event, player) {
-					return event.target.isAlive() && event.card.name == "sha";
+					return event.target.isAlive() && event.card.name === "sha";
 				},
 				silent: true,
-				content() {
+				async content(event, trigger, player) {
 					trigger.target.addTempSkill("shanxie_banned");
 					trigger.target.storage.shanxie_banned = {
 						card: trigger.card,
@@ -4721,17 +4674,17 @@ const skills = {
 				},
 				trigger: { global: "useCardEnd" },
 				filter(event, player) {
-					return event.card == player.storage.shanxie_banned.card;
+					return event.card === player.storage.shanxie_banned.card;
 				},
 				silent: true,
-				content() {
+				async content(event, trigger, player) {
 					player.removeSkill("shanxie_banned");
 				},
 				ai: {
 					effect: {
 						player(card, player, target) {
-							if (get.name(card) == "shan") {
-								let num = get.number(card);
+							if (get.name(card) === "shan") {
+								const num = get.number(card);
 								if (!num || num <= player.storage.shanxie_banned.num) {
 									return "zeroplayertarget";
 								}
