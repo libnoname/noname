@@ -2910,55 +2910,63 @@ const skills = {
 			return !player.hasSkillTag("noCompareSource");
 		},
 		filterTarget(card, player, target) {
-			return target != player && target.countCards("h") > 0 && !target.hasSkillTag("noCompareTarget");
+			return target !== player && target.hasCards("h") && !target.hasSkillTag("noCompareTarget");
 		},
-		content() {
-			"step 0";
-			player.draw();
-			"step 1";
-			if (player.canCompare(target)) {
-				player.chooseToCompare(target).set("small", true);
-			} else {
-				event.finish();
+		async content(event, trigger, player) {
+			const target = event.target;
+			await player.draw();
+			if (!player.canCompare(target)) {
+				return;
 			}
-			"step 2";
-			if (!result.bool) {
-				var cards = [result.player, result.target].filterInD("d");
-				if (!cards.length || !game.hasPlayer(current => current != player && current != target)) {
-					event.finish();
-				} else {
-					event.cards = cards;
-					player
-						.chooseTarget("请选择一名角色", "令其获得" + get.translation(cards) + "，且视为对" + get.translation(target) + "使用一张火【杀】", function (card, player, target) {
-							return target != player && target != _status.event.getParent().target;
-						})
-						.set("ai", function (target) {
-							var player = _status.event.player,
-								cards = _status.event.getParent().cards,
-								target2 = _status.event.getParent().target;
-							var val = get.value(cards, target) * get.attitude(player, target);
-							if (val <= 0) {
-								return 0;
-							}
-							return val + target.canUse({ name: "sha", nature: "fire", isCard: true }, target2, false) ? get.effect(target2, { name: "sha", nature: "fire", isCard: true }, target, player) : 0;
-						});
-				}
-			} else {
-				event.finish();
-			}
-			"step 3";
+			const result = await player.chooseToCompare(target).set("small", true).forResult();
 			if (result.bool) {
-				var source = result.targets[0];
-				event.source = source;
-				player.line(source);
-				source.gain(cards, "gain2");
-			} else {
-				event.finish();
+				return;
 			}
-			"step 4";
-			var card = { name: "sha", nature: "fire", isCard: true };
+			const cards = [result.player, result.target].filterInD("d");
+			if (!cards.length || !game.hasPlayer(current => current !== player && current !== target)) {
+				return;
+			}
+			event.cards = cards;
+			const result2 = await player
+				.chooseTarget({
+					prompt: "请选择一名角色",
+					prompt2: `令其获得${get.translation(cards)}，且视为对${get.translation(target)}使用一张火【杀】`,
+					filterTarget(card, player, target) {
+						return target !== player && target !== get.event().getParent()?.target;
+					},
+					ai(target) {
+						const player = get.player();
+						const evt = get.event().getParent();
+						if (evt == null) {
+							return 0;
+						}
+						const cards = evt.cards;
+						const target2 = evt.target;
+						const val = get.value(cards, target) * get.attitude(player, target);
+						if (val <= 0) {
+							return 0;
+						}
+						return val + (target.canUse({ name: "sha", nature: "fire", isCard: true }, target2, false) ? get.effect(target2, { name: "sha", nature: "fire", isCard: true }, target, player) : 0);
+					}
+				})
+				.forResult();
+			if (!result2?.bool || !result2.targets?.length) {
+				return;
+			}
+			const source = result2.targets[0];
+			event.source = source;
+			player.line(source);
+			await source.gain({
+				cards,
+				animate: "gain2",
+			});
+			const card = get.autoViewAs({ name: "sha", nature: "fire", isCard: true });
 			if (target.isIn() && source.isIn() && source.canUse(card, target, false)) {
-				source.useCard(card, target, false);
+				await source.useCard({
+					card,
+					targets: [target],
+					addCount: false,
+				});
 			}
 		},
 		subSkill: {
@@ -2967,10 +2975,10 @@ const skills = {
 				forced: true,
 				popup: false,
 				filter(event, player) {
-					return event.getParent().name == "yangjie" && event.num1 > 1 && player.isDamaged();
+					return event.getParent()?.name === "yangjie" && event.num1 > 1 && player.isDamaged();
 				},
-				content() {
-					var num = player.getDamagedHp();
+				async content(event, trigger, player) {
+					const num = player.getDamagedHp();
 					game.log(player, "的拼点牌点数-", num);
 					trigger.num1 = Math.max(1, trigger.num1 - num);
 				},
