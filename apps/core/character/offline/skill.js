@@ -813,9 +813,29 @@ const skills = {
 		audio: 2,
 		trigger: { player: "useCard" },
 		onremove: true,
+		kuifa(card) {
+			const info = lib.card[card.name];
+			if (!info || info.notarget) {
+				return false;
+			}
+			if (info.selectTarget != undefined) {
+				if (Array.isArray(info.selectTarget)) {
+					if (info.selectTarget[0] < 0) {
+						return !info.toself;
+					}
+					return info.selectTarget[0] != 1 || info.selectTarget[1] != 1;
+				} else {
+					if (info.selectTarget < 0) {
+						return !info.toself;
+					}
+					return info.selectTarget != 1;
+				}
+			}
+			return false;
+		},
 		filter(event, player) {
 			const targets = event.targets;
-			if (!targets?.length || targets.length === 1) {
+			if (!targets?.length) {
 				return false;
 			}
 			const num = game.countPlayer(current => !targets.includes(current));
@@ -824,7 +844,7 @@ const skills = {
 			if (!bool1 && !bool2) {
 				return false;
 			}
-			return get.is.damageCard(event.card);
+			return get.is.damageCard(event.card) && get.info("pskuifa").kuifa(event.card);
 		},
 		async cost(event, trigger, player) {
 			const targets = trigger.targets;
