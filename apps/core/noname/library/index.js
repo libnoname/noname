@@ -13721,6 +13721,13 @@ export class Library {
 			},
 		],
 		[
+			"嗔",
+			{
+				color: "#5a6968",
+				nature: "graymm",
+			},
+		],
+		[
 			"用间",
 			{
 				color: "#c3f9ff",
