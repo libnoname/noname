@@ -2779,12 +2779,12 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		filter(event, player) {
-			var num1 = 0,
-				num2 = 0;
-			var count = game.countPlayer(function (current) {
+			let num1 = 0;
+			let num2 = 0;
+			const count = game.countPlayer(current => {
 				num1 += current.countCards("h");
 				num2++;
-				return current != player;
+				return current !== player;
 			});
 			return count > 0 && num1 > num2 * 2;
 		},
@@ -2794,60 +2794,63 @@ const skills = {
 		multiline: true,
 		skillAnimation: true,
 		animationColor: "orange",
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			event.num = 0;
-			event.cards = [];
-			event.targets.sortBySeat();
-			event.targets.remove(player);
-			"step 1";
-			var target = targets[num];
-			var num = Math.min(3, Math.floor(target.countCards("h") / 2));
-			if (num > 0) {
-				target.chooseToDiscard("h", true, num);
-			} else {
-				event._result = { bool: false };
+			const cards = [];
+			const targets = event.targets.sortBySeat();
+			targets.remove(player);
+			for (const target of targets) {
+				const num = Math.min(3, Math.floor(target.countCards("h") / 2));
+				if (num <= 0) {
+					continue;
+				}
+				const result = await target
+					.chooseToDiscard({
+						selectCard: num,
+						position: "h",
+						forced: true,
+					})
+					.forResult();
+				if (result.bool && Array.isArray(result.cards)) {
+					cards.addArray(result.cards);
+				}
 			}
-			"step 2";
-			if (result.bool && Array.isArray(result.cards)) {
-				event.cards.addArray(result.cards);
+			const cards2 = cards.filter(card => get.position(card, true) === "d");
+			if (!cards2.length) {
+				return;
 			}
-			event.num++;
-			if (event.num < targets.length) {
-				event.goto(1);
+			const gainText = cards2.length > 3 ? "随机获得三" : `获得${get.cnNumber(cards2.length)}`;
+			const result = await player
+				.chooseTarget({
+					prompt: `是否令一名角色${gainText}张被弃置的牌？`,
+					ai(target) {
+						const player = get.player();
+						let att = get.attitude(player, target);
+						if (target.hasSkillTag("nogain")) {
+							att /= 10;
+						}
+						if (target.hasJudge("lebu")) {
+							att /= 4;
+						}
+						return att * Math.sqrt(Math.max(1, 5 - target.countCards("h")));
+					},
+				})
+				.forResult();
+			if (!result?.bool || !result.targets?.length) {
+				return;
 			}
-			"step 3";
-			event.cards = cards.filter(function (i) {
-				return get.position(i, true) == "d";
+			const target = result.targets[0];
+			player.line(target, "fire");
+			await target.gain({
+				cards: cards2.randomGets(3),
+				animate: "gain2",
 			});
-			if (!event.cards.length) {
-				event.finish();
-			} else {
-				player.chooseTarget("是否令一名角色" + (event.cards.length > 3 ? "随机获得三" : "获得" + get.cnNumber(event.cards.length)) + "张被弃置的牌？").set("ai", function (target) {
-					var player = _status.event.player,
-						att = get.attitude(player, target);
-					if (target.hasSkillTag("nogain")) {
-						att /= 10;
-					}
-					if (target.hasJudge("lebu")) {
-						att /= 4;
-					}
-					return att * Math.sqrt(Math.max(1, 5 - target.countCards("h")));
-				});
-			}
-			"step 4";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.line(target, "fire");
-				target.gain(cards.randomGets(3), "gain2");
-			}
 		},
 		ai: {
 			order: 10,
 			result: {
 				target(player, target) {
-					if (player == target) {
+					if (player === target) {
 						return 3;
 					}
 					return -Math.min(3, Math.floor(target.countCards("h") / 2));
