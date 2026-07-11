@@ -6525,12 +6525,12 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			var hs = player.getCards("h");
+			const hs = player.getCards("h");
 			if (!hs.length) {
 				return false;
 			}
-			for (var i of hs) {
-				if (!lib.filter.cardDiscardable(i, player, "splirang")) {
+			for (const card of hs) {
+				if (!lib.filter.cardDiscardable(card, player, "splirang")) {
 					return false;
 				}
 			}
@@ -6538,53 +6538,56 @@ const skills = {
 		},
 		filterCard: true,
 		selectCard: -1,
-		content() {
-			"step 0";
-			cards = cards.filterInD("d");
-			if (!cards.length || player.hp < 1) {
-				event.goto(3);
-			} else {
-				player.chooseButton(["将任意张牌交给一名其他角色", cards], [1, Math.min(cards.length, player.hp)]).set("ai", function (button) {
-					return get.value(button.link);
-				});
-			}
-			"step 1";
-			if (result.bool) {
-				event.cards = result.links;
-				player.chooseTarget(true, "令一名角色获得" + get.translation(event.cards), lib.filter.notMe).set("ai", function (target) {
-					var player = _status.event.player,
-						att = get.attitude(player, target);
-					if (target.hasSkillTag("nogain")) {
-						att /= 10;
+		async content(event, trigger, player) {
+			const cards = event.cards.filterInD("d");
+			if (cards.length && player.hp > 0) {
+				const result = await player
+					.chooseButton({
+						createDialog: ["将任意张牌交给一名其他角色", cards],
+						selectButton: [1, Math.min(cards.length, player.hp)],
+						ai(button) {
+							return get.value(button.link);
+						},
+					})
+					.forResult();
+				if (result.bool && result.links?.length) {
+					const cards2 = result.links;
+					const result2 = await player
+						.chooseTarget({
+							prompt: `令一名角色获得${get.translation(event.cards)}`,
+							filterTarget: lib.filter.notMe,
+							forced: true,
+							ai(target) {
+								const player = get.player();
+								let att = get.attitude(player, target);
+								if (target.hasSkillTag("nogain")) {
+									att /= 10;
+								}
+								if (target.hasJudge("lebu")) {
+									att /= 5;
+								}
+								return att;
+							},
+						})
+						.forResult();
+					if (result2.targets?.length) {
+						const target = result2.targets[0];
+						player.line(target, "green");
+						await target.gain({
+							cards2,
+							animate: "gain2",
+						});
 					}
-					if (target.hasJudge("lebu")) {
-						att /= 5;
-					}
-					return att;
-				});
-			} else {
-				event.goto(3);
+				}
 			}
-			"step 2";
-			if (result.targets && result.targets.length) {
-				var target = result.targets[0];
-				player.line(target, "green");
-				target.gain(cards, "gain2");
-			}
-			"step 3";
-			player.draw();
+			await player.draw();
 		},
 		ai: {
 			order: 0.1,
 			result: {
 				player(player) {
-					var hs = player.getCards("h");
-					if (
-						hs.length <= player.hp &&
-						game.hasPlayer(function (current) {
-							return current != player && get.attitude(player, current) > 0 && !current.hasJudge("lebu") && !current.hasSkillTag("nogain");
-						})
-					) {
+					const hs = player.getCards("h");
+					if (hs.length <= player.hp && game.hasPlayer(current => current !== player && get.attitude(player, current) > 0 && !current.hasJudge("lebu") && !current.hasSkillTag("nogain"))) {
 						return 1;
 					}
 					if (get.value(hs, player) < 6) {
