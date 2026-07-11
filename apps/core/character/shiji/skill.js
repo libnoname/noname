@@ -6735,67 +6735,62 @@ const skills = {
 		trigger: { player: "phaseUseBegin" },
 		direct: true,
 		filter(event, player) {
-			return (
-				player.storage.mingfa &&
-				player.countCards("h") > 0 &&
-				player.getCards("he").includes(player.storage.mingfa) &&
-				!player.hasSkillTag("noCompareSource") &&
-				game.hasPlayer(function (current) {
-					return current != player && player.canCompare(current);
-				})
-			);
+			return player.storage.mingfa && player.hasCards("h") && player.getCards("he").includes(player.storage.mingfa) && !player.hasSkillTag("noCompareSource") && game.hasPlayer(current => current !== player && player.canCompare(current));
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			event.card = player.storage.mingfa;
 			delete player.storage.mingfa;
-			player
-				.chooseTarget(get.prompt("mingfa"), "用" + get.translation(event.card) + "和一名其他角色拼点", function (card, player, target) {
-					return player.canCompare(target);
+			const result = await player
+				.chooseTarget({
+					prompt: get.prompt("mingfa"),
+					prompt2: `用${get.translation(event.card)}和一名其他角色拼点`,
+					filterTarget(card, player, target) {
+						return player.canCompare(target);
+					},
+					ai(target) {
+						const player = get.player();
+						const evt = get.event().getParent();
+						if (evt == null) {
+							return 0;
+						}
+						const card = evt.card;
+						if (card.number > 9 || !target.hasCards("h", cardx => cardx.number >= card.number + 2)) {
+							return -get.attitude(player, target) / Math.sqrt(target.countCards("h"));
+						}
+						return 0;
+					},
 				})
-				.set("ai", function (target) {
-					var player = _status.event.player,
-						card = _status.event.getParent().card;
-					if (
-						card.number > 9 ||
-						!target.countCards("h", function (cardx) {
-							return cardx.number >= card.number + 2;
-						})
-					) {
-						return -get.attitude(player, target) / Math.sqrt(target.countCards("h"));
-					}
-					return 0;
-				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("mingfa", target);
-				var next = player.chooseToCompare(target);
-				if (!next.fixedResult) {
-					next.fixedResult = {};
-				}
-				next.fixedResult[player.playerid] = event.card;
-			} else {
+				.forResult();
+			if (!result?.bool | !result.targets?.length) {
 				player.removeGaintag("mingfa");
-				event.finish();
+				return;
 			}
-			"step 2";
-			if (result.bool) {
-				player.gainPlayerCard(target, true, "he");
-				if (event.card.number == 1) {
-					event.finish();
-				}
-			} else {
+			const target = result.targets[0];
+			player.logSkill("mingfa", target);
+			const next = player.chooseToCompare(target);
+			if (!next.fixedResult) {
+				next.fixedResult = {};
+			}
+			next.fixedResult[player.playerid] = event.card;
+			const result2 = await next.forResult();
+			if (!result2.bool) {
 				player.addTempSkill("mingfa_block");
-				event.finish();
+				return;
 			}
-			"step 3";
-			var card = get.cardPile2(function (card) {
-				return card.number == event.card.number - 1;
+			await player.gainPlayerCard({
+				target,
+				position: "he",
+				forced: true,
 			});
+			if (event.card.number === 1) {
+				return;
+			}
+			const card = get.cardPile2(card => card.number === event.card.number - 1);
 			if (card) {
-				player.gain(card, "gain2");
+				await player.gain({
+					cards: [card],
+					animate: "gain2",
+				});
 			}
 		},
 		group: ["mingfa_choose", "mingfa_add", "mingfa_mark"],
@@ -6803,7 +6798,7 @@ const skills = {
 			block: {
 				mod: {
 					playerEnabled(card, player, target) {
-						if (player != target) {
+						if (player !== target) {
 							return false;
 						}
 					},
@@ -6815,44 +6810,44 @@ const skills = {
 				filter(event, player) {
 					return player.countCards("he") > 0;
 				},
-				content() {
-					"step 0";
-					player.chooseCard("he", get.prompt("mingfa"), "选择展示自己的一张牌").set("ai", function (card) {
-						return Math.min(13, get.number(card) + 2) / Math.pow(Math.min(2, get.value(card)), 0.25);
-					});
-					"step 1";
-					if (result.bool) {
-						var card = result.cards[0];
-						player.logSkill("mingfa");
-						player.removeGaintag("mingfa");
-						player.addGaintag(card, "mingfa");
-						player.storage.mingfa = card;
-						player.showCards(card, get.translation(player) + "发动了【明伐】");
+				async content(event, trigger, player) {
+					const result = await player
+						.chooseCard({
+							prompt: get.prompt("mingfa"),
+							prompt2: "选择展示自己的一张牌",
+							position: "he",
+							ai(card) {
+								return Math.min(13, get.number(card) + 2) / Math.pow(Math.min(2, get.value(card)), 0.25);
+							},
+						})
+						.forResult();
+					if (!result.bool || !result.cards?.length) {
+						return;
 					}
+					const card = result.cards[0];
+					player.logSkill("mingfa");
+					player.removeGaintag("mingfa");
+					player.addGaintag(card, "mingfa");
+					player.storage.mingfa = card;
+					await player.showCards(card, `${get.translation(player)}发动了【明伐】`);
 				},
 			},
 			add: {
 				audio: "mingfa",
 				trigger: { player: "compare", target: "compare" },
 				filter(event, player) {
-					if (event.player == player) {
+					if (event.player === player) {
 						return !event.iwhile;
 					}
 					return true;
 				},
 				forced: true,
 				locked: false,
-				content() {
-					if (player == trigger.player) {
-						trigger.num1 += 2;
-						if (trigger.num1 > 13) {
-							trigger.num1 = 13;
-						}
+				async content(event, trigger, player) {
+					if (player === trigger.player) {
+						trigger.num1 = Math.min(13, trigger.num1 + 2);
 					} else {
-						trigger.num2 += 2;
-						if (trigger.num2 > 13) {
-							trigger.num2 = 13;
-						}
+						trigger.num2 = Math.min(13, trigger.num2 + 2);
 					}
 					game.log(player, "的拼点牌点数+2");
 				},
@@ -6864,7 +6859,7 @@ const skills = {
 				filter(event, player) {
 					return player.storage.mingfa && event.cards.includes(player.storage.mingfa) && player.getCards("h").includes(player.storage.mingfa);
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.addGaintag(player.storage.mingfa, "mingfa");
 				},
 			},
