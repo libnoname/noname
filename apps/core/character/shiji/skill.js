@@ -7159,45 +7159,45 @@ const skills = {
 		trigger: { player: "phaseZhunbeiBegin" },
 		forced: true,
 		filter(event, player) {
-			return (
-				player.storage.yinlang &&
-				game.hasPlayer(function (current) {
-					return current.group == player.storage.yinlang;
-				})
-			);
+			return player.storage.yinlang && game.hasPlayer(current => current.group === player.storage.yinlang);
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			if (player.storage.xiusheng && player.storage.xiusheng.length > 0) {
 				player.unmarkSkill("xiusheng");
 			}
-			"step 1";
-			event.num = game.countPlayer(function (current) {
-				return current.group == player.storage.yinlang;
-			});
-			if (event.num > 0) {
-				player.draw(event.num);
-			} else {
-				event.finish();
+			const num = game.countPlayer(current => current.group === player.storage.yinlang);
+			if (num <= 0) {
+				return;
 			}
-			"step 2";
-			var he = player.getCards("he");
+			await player.draw(num);
+			const he = player.getCards("he");
 			if (!he.length) {
-				event.finish();
-			} else if (he.length < num) {
-				event._result = { bool: true, cards: he };
-			} else {
-				player.chooseCard("he", true, num, "选择" + get.cnNumber(num) + "张牌作为生");
+				return;
 			}
-			"step 3";
-			if (result.bool) {
-				var cards = result.cards;
-				player.markAuto("xiusheng", cards);
-				game.log(player, "将", cards, "放在了武将牌上");
-				player.lose(cards, ui.special, "toStorage");
+			let cards = he;
+			if (he.length >= num) {
+				const result = await player
+					.chooseCard({
+						prompt: `选择${get.cnNumber(num)}张牌作为生`,
+						selectCard: num,
+						position: "he",
+						forced: true,
+					})
+					.forResult();
+				if (!result?.bool || !result.cards?.length) {
+					await game.delayx();
+					return;
+				}
+				cards = result.cards;
 			}
-			"step 4";
-			game.delayx();
+			player.markAuto("xiusheng", cards);
+			game.log(player, "将", cards, "放在了武将牌上");
+			await player.lose({
+				cards,
+				position: ui.special,
+				toStorage: true,
+			});
+			await game.delayx();
 		},
 		intro: {
 			content: "cards",
