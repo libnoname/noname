@@ -893,8 +893,10 @@ const skills = {
 						}
 					});
 					event.result = await next.forResult();
-					event.result.cost_data ??= {};
-					event.result.cost_data.funcName = targeted.includes(event.result.targets[0]) ? "recover" : "loseHp";
+					if (event.result?.bool && event.result.targets?.length) {
+						event.result.cost_data ??= {};
+						event.result.cost_data.funcName = targeted.includes(event.result.targets[0]) ? "recover" : "loseHp";
+					}
 				},
 				async content(event, trigger, player) {
 					const {

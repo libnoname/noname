@@ -4015,11 +4015,12 @@ export class Create {
 			if (!cards?.length) {
 				return;
 			}
-			this.buttons.forEach(button => {
+			for (const button of this.buttons.slice()) {
 				if (cards.includes(button)) {
+					this.buttons.remove(button);
 					button.remove();
 				}
-			});
+			}
 		};
 		if (position) {
 			position.appendChild(container);
