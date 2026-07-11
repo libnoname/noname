@@ -797,6 +797,7 @@ const skills = {
 						)
 						.sortBySeat();
 				}
+				return 0;
 			}
 			if (event.name == "gain") {
 				return game.hasPlayer2(target => event.getl(target)?.xs?.length, true) ? 1 : 0;
@@ -849,37 +850,50 @@ const skills = {
 						.getRoundHistory("useSkill", evt => evt.skill == "reliangyin")
 						.flatMap(evt => evt.targets)
 						.unique();
-					return game.countPlayer(target => !targets.includes(target)) == 1 || targets.length == 1;
+					return game.countPlayer(target => !targets.includes(target)) == 1 || (targets.length == 1 && targets[0].isDamaged());
 				},
 				async cost(event, trigger, player) {
-					const targets = player
+					const targeted = player
 						.getRoundHistory("useSkill", evt => evt.skill == "reliangyin")
 						.flatMap(evt => evt.targets)
 						.unique();
-					let funcName;
-					let target;
-					if (targets.length == 1) {
-						funcName = "recover";
-						target = targets[0];
-					} else {
-						funcName = "loseHp";
-						target = game.findPlayer(target => !targets.includes(target));
-					}
-					event.result = await player
-						.chooseBool({
-							prompt: get.prompt(event.skill, target),
-							prompt2: `令其${funcName == "recover" ? "回复" : "失去"}一点体力`,
-							chioce: (() => {
-								if (funcName == "recover") {
-									return get.recoverEffect(target, player, player) > 0;
+					const untargeted = game.filterPlayer(target => !targeted.includes(target));
+					const next = player
+						.chooseTarget({
+							prompt: get.prompt(event.skill),
+							prompt2: "令本轮唯一成为“良姻”目标的角色回复1点体力，或令本轮唯一未成为“良姻”目标的角色失去1点体力",
+							filterTarget(card, player, target) {
+								const { targeted, untargeted } = get.event();
+								return (targeted.includes(target) && targeted.length == 1 && target.isDamaged()) || (untargeted.includes(target) && untargeted.length == 1);
+							},
+							ai(target) {
+								const { targeted, untargeted, player } = get.event();
+								if (targeted.includes(target)) {
+									return get.recoverEffect(target, player, player);
 								}
-								return get.effect(target, { name: "losehp" }, player, player) > 0;
-							})(),
+								if (untargeted.includes(target)) {
+									return get.effect(target, { name: "losehp" }, player, player);
+								}
+								return 0;
+							},
 						})
-						.forResult();
+						.set("targeted", targeted)
+						.set("untargeted", untargeted);
+					next.targetprompt2.push(target => {
+						if (!target.classList.contains("selectable")) {
+							return;
+						}
+						const { targeted, untargete } = get.event();
+						if (targeted.includes(target)) {
+							return "回复体力";
+						}
+						if (untargeted.includes(target)) {
+							return "失去体力";
+						}
+					});
+					event.result = await next.forResult();
 					event.result.cost_data ??= {};
-					event.result.targets = [target];
-					event.result.cost_data.funcName = funcName;
+					event.result.cost_data.funcName = targeted.includes(event.result.targets[0]) ? "recover" : "loseHp";
 				},
 				async content(event, trigger, player) {
 					const {
