@@ -831,6 +831,7 @@ const skills = {
 				cost_data: { funcName },
 				targets: [target],
 			} = event;
+			target.addTip(event.name, get.translation(event.name), "roundStart", { width: "fit-content" });
 			if (funcName == "discard") {
 				await target.chooseToDiscard({ forced: true, position: "he" });
 			} else {
