@@ -320,7 +320,10 @@ const skills = {
 		},
 		check(event, player) {
 			const target = game.findPlayer(target => target.getSeatNum() == 1);
-			return get.attitude(player, target) > 0;
+			if(target?.isIn()) {
+				return get.attitude(player, target) > 0;
+			}
+			return 1;
 		},
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
@@ -452,8 +455,8 @@ const skills = {
 						},
 						selectTarget: [1, player.countMark("pelinjie")],
 						ai(target) {
-							if (game.hasPlayer(current => get.attitude(player, current) > 2 && current.hasCards("j", card => get.name(card) == "lebu"))) {
-								return get.attitude(player, target) * current.hasCards("j", card => get.name(card) == "lebu") ? 2 : 0;
+							if (game.hasPlayer(current => get.attitude(player, current) > 2 && current.hasCards("j", card => ["lebu", "bingliang", "shandian"].includes(card.name)))) {
+								return get.attitude(player, target) * target.hasCards("j", card => get.name(card) == "lebu") ? 2 : 0;
 							}
 							return -get.attitude(get.player(), target);
 						},
@@ -474,6 +477,7 @@ const skills = {
 		subSkill: {
 			effect: {
 				charlotte: true,
+				onremove: true,
 				intro: { content: "$的回合开始前，你可跳过其一个阶段" },
 				trigger: { global: "phaseBefore" },
 				filter(event, player) {
