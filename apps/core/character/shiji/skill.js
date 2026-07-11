@@ -3365,115 +3365,92 @@ const skills = {
 	spdiaodu: {
 		audio: 2,
 		trigger: { player: "phaseZhunbeiBegin" },
-		direct: true,
-		content() {
-			"step 0";
-			player.chooseTarget(get.prompt("spdiaodu"), "令一名角色摸一张牌，然后移动其装备区内的一张牌").set("ai", function (target) {
-				var player = _status.event.player,
-					att = get.attitude(player, target);
-				if (att > 0) {
-					if (
-						target.hasCard(function (card) {
-							if (
-								get.value(card, target) <= 0 &&
-								game.hasPlayer(function (current) {
-									return current != target && current.canEquip(card, false) && get.effect(current, card, player, player) > 0;
-								})
-							) {
-								return true;
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt("spdiaodu"),
+					prompt2: "令一名角色摸一张牌，然后移动其装备区内的一张牌",
+					ai(target) {
+						const player = _status.event.player;
+						const att = get.attitude(player, target);
+						if (att > 0) {
+							if (target.hasCards("e", card => get.value(card, target) <= 0 && game.hasPlayer(current => current !== target && current.canEquip(card, false) && get.effect(current, card, player, player) > 0))) {
+								return 2 * att;
 							}
-							return false;
-						}, "e")
-					) {
-						return 2 * att;
-					}
-					if (
-						!target.hasCard(function (card) {
-							return game.hasPlayer(function (current) {
-								return current != target && current.canEquip(card);
-							});
-						}, "e")
-					) {
-						return 1;
-					}
-				} else if (att < 0) {
-					if (
-						target.hasCard(function (card) {
-							if (
-								get.value(card, target) >= 4.5 &&
-								game.hasPlayer(function (current) {
-									return current != target && current.canEquip(card) && get.effect(current, card, player, player) > 0;
-								})
-							) {
-								return true;
+							if (!target.hasCards("e", card => game.hasPlayer(current => current !== target && current.canEquip(card)))) {
+								return 1;
 							}
-							return false;
-						}, "e")
-					) {
-						return -att;
-					}
-				}
-				return 0;
-			});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("spdiaodu", target);
-				target.draw();
-			} else {
-				event.finish();
-			}
-			"step 2";
-			var es = target.getCards("e", function (card) {
-				return game.hasPlayer(function (current) {
-					return current != target && current.canEquip(card);
-				});
-			});
-			if (es.length) {
-				if (es.length == 1) {
-					event._result = { bool: true, links: es };
-				} else {
-					player.chooseButton(["移动" + get.translation(target) + "的一张装备牌", es], true).set("ai", function (button) {
-						var player = _status.event.player,
-							target = _status.event.getParent().target,
-							card = button.link;
-						if (
-							game.hasPlayer(function (current) {
-								return current != target && current.canEquip(card) && get.effect(current, card, player, player) > 0;
-							})
-						) {
-							return -get.value(card, target) * get.attitude(player, target);
+							return 0;
+						}
+						if (att >= 0) {
+							return 0;
+						}
+						if (target.hasCards("e", card => get.value(card, target) >= 4.5 && game.hasPlayer(current => current !== target && current.canEquip(card) && get.effect(current, card, player, player) > 0))) {
+							return -att;
 						}
 						return 0;
-					});
-				}
-			} else {
-				event.finish();
+					},
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			event.target = target;
+			await target.draw();
+			const es = target.getCards("e", card => game.hasPlayer(current => current !== target && current.canEquip(card)));
+			if (!es.length) {
+				return;
 			}
-			"step 3";
-			if (result.bool) {
-				event.card = result.links[0];
-				player
-					.chooseTarget(true, "选择" + get.translation(event.card) + "的移动目标", function (card, player, target) {
-						return target.canEquip(_status.event.card);
+			let card;
+			if (es.length === 1) {
+				card = es[0];
+			} else {
+				const result = await player
+					.chooseButton({
+						createDialog: [`移动${get.translation(target)}的一张装备牌`, es],
+						forced: true,
+						ai(button) {
+							const player = get.player();
+							const evt = get.event().getParent();
+							if (evt == null) {
+								return 0;
+							}
+							const target = evt.target;
+							const card = button.link;
+							if (!game.hasPlayer(current => current !== target && current.canEquip(card) && get.effect(current, card, player, player) > 0)) {
+								return 0;
+							}
+							return -get.value(card, target) * get.attitude(player, target);
+						}
 					})
-					.set("card", event.card)
-					.set("ai", function (target) {
-						var evt = _status.event;
-						return get.effect(target, evt.getParent().card, evt.player, evt.player);
-					});
-			} else {
-				event.finish();
+					.forResult();
+				if (!result?.bool || !result.links?.length) {
+					return;
+				}
+				card = result.links[0];
 			}
-			"step 4";
-			if (result.bool) {
-				var target2 = result.targets[0];
-				target.line(target2);
-				target.$give(card, target2);
-				game.delay(0.5);
-				target2.equip(card);
+			const result = await player
+				.chooseTarget({
+					prompt: `选择${get.translation(card)}的移动目标`,
+					filterTarget(card, player, target) {
+						return target.canEquip(get.event().card);
+					},
+					forced: true,
+					ai(target) {
+						const evt = get.event();
+						return get.effect(target, evt.card, evt.player, evt.player);
+					}
+				})
+				.set("card", card)
+				.forResult();
+			if (!result?.bool || !result.targets?.length) {
+				return;
 			}
+			const target2 = result.targets[0];
+			target.line(target2);
+			target.$give(card, target2);
+			await game.delay(0.5);
+			await target2.equip(card);
 		},
 	},
 	spdiancai: {
