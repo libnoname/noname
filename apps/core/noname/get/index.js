@@ -835,6 +835,9 @@ export class Get {
 		if (info.feedPigSkill) {
 			list.add("威主技");
 		}
+		if (get.is.qidingSkill(skill, player)) {
+			list.add("契定技");
+		}
 		if (info.categories) {
 			list.addArray(info.categories(skill, player));
 		}
@@ -4969,6 +4972,12 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 					return "已发动";
 				}
 				return "未发动";
+			}
+			case "qidingSkill": {
+				if (content) {
+					return "此事已成";
+				}
+				return "契约未定";
 			}
 			case "info": {
 				return lib.translate[skill + "_info"];
