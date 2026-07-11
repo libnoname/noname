@@ -815,7 +815,7 @@ const skills = {
 		onremove: true,
 		filter(event, player) {
 			const targets = event.targets;
-			if (!targets?.length || targets.length !== 1) {
+			if (!targets?.length || targets.length === 1) {
 				return false;
 			}
 			const num = game.countPlayer(current => !targets.includes(current));
