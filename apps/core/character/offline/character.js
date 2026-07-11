@@ -1,4 +1,26 @@
 const characters = {
+	ym_jsrg_diaochan: {
+		sex: "female",
+		group: "shu",
+		hp: 3,
+		skills: ["ymdiyu", "ymfuyi", "ymjiuji"],
+	},
+	ym_friend_zhugeliang: {
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		skills: ["ymfriendyance", "ymfriendfangqiu"],
+		names: "诸葛|亮",
+		dieAudios: ["friend_zhugeliang"],
+	},
+	pe_shen_zhonghui: {
+		sex: "male",
+		group: "shen",
+		hp: 4,
+		skills: ["pelinjie", "peduzhang", "pejianghuo"],
+		groupInGuozhan: "wei",
+		dieAudios: ["shen_zhonghui"],
+	},
 	ps_shen_weiyan: {
 		sex: "male",
 		group: "shen",
