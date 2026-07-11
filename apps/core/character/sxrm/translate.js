@@ -145,7 +145,7 @@ const translates = {
 	sxrmbingqu: "并驱",
 	sxrmbingqu_info: "准备阶段，你可以与一名其他角色各声明一种普通锦囊牌，然后双方依次将半数手牌（向上取整）当对方声明的牌使用。",
 	sxrmfanxin: "燔心",
-	sxrmfanxin_info: "游戏开始或“燔心”角色死亡后，你可以令一名其他角色获得【${get.poptip("baonu")}】【${get.poptip("wumou")}】；其回合开始时，你可以移去其至多5枚“暴怒”并摸等量的牌。",
+	sxrmfanxin_info: `游戏开始或“燔心”角色死亡后，你可以令一名其他角色获得${get.poptip("baonu")}${get.poptip("wumou")}；其回合开始时，你可以移去其至多5枚“暴怒”并摸等量的牌。`,
 	sxrm_jiahua: "嗔贾华",
 	sxrm_jiahua_prefix: "嗔",
 	sxrmfubei: "伏备",
