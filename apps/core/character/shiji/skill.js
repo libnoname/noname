@@ -6920,40 +6920,48 @@ const skills = {
 		trigger: { player: "phaseJieshuBegin" },
 		forced: true,
 		locked: false,
-		content() {
-			"step 0";
-			player.draw(2);
-			"step 1";
-			var hs = player.getCards("he");
+		async content(event, trigger, player) {
+			await player.draw(2);
+			const hs = player.getCards("he");
 			if (!hs.length) {
-				event.finish();
-			} else if (hs.length <= 2) {
-				event._result = { bool: true, cards: hs };
-			} else {
-				player.chooseCard("he", true, 2, "选择两张牌洗入牌堆");
+				return;
 			}
-			"step 2";
-			if (result.bool) {
-				player.$throw(result.cards.length, 1000);
-				player.lose(result.cards, ui.cardPile).insert_index = function () {
-					return ui.cardPile.childNodes[get.rand(0, game.players.length * 2 - 2)];
-				};
-				player.markAuto("yizhu", result.cards);
+			let cards;
+			if (hs.length <= 2) {
+				cards = hs;
 			} else {
-				event.finish();
+				const result = await player
+					.chooseCard({
+						prompt: "选择两张牌洗入牌堆",
+						selectCard: 2,
+						position: "he",
+						forced: true,
+					})
+					.forResult();
+				if (!result.bool || !result.cards?.length) {
+					return;
+				}
+				cards = result.cards;
 			}
-			"step 3";
+			player.$throw(cards.length, 1000);
+			const loseEvent = player.lose({
+				cards,
+				position: ui.cardPile,
+			});
+			loseEvent.insert_index = () => ui.cardPile.childNodes[get.rand(0, game.players.length * 2 - 2)];
+			player.markAuto("yizhu", cards);
+			await loseEvent;
 			game.updateRoundNumber();
-			game.delayx();
+			await game.delayx();
 		},
 		intro: {
 			mark(dialog, content, player) {
-				if (player == game.me || player.isUnderControl()) {
+				if (player === game.me || player.isUnderControl()) {
 					dialog.addAuto(content);
 				} else {
-					var names = [];
-					for (var i of content) {
-						names.add(i.name);
+					const names = [];
+					for (const card of content) {
+						names.add(card.name);
 					}
 					return get.translation(names);
 				}
@@ -6965,32 +6973,22 @@ const skills = {
 				audio: "yizhu",
 				trigger: { global: "useCardToPlayer" },
 				filter(event, player) {
-					return (
-						player.storage.yizhu &&
-						player.storage.yizhu.length &&
-						event.player != player &&
-						event.targets.length == 1 &&
-						event.cards.filter(function (i) {
-							return player.storage.yizhu.includes(i);
-						}).length > 0
-					);
+					return player.storage.yizhu && player.storage.yizhu.length && event.player !== player && event.targets.length === 1 && event.cards.filter(card => player.storage.yizhu.includes(card)).length > 0;
 				},
 				logTarget: "player",
 				check(event, player) {
 					return get.effect(event.targets[0], event.card, event.player, player) < 0;
 				},
 				prompt2(event, player) {
-					return "令" + get.translation(event.card) + "无效";
+					return `令${get.translation(event.card)}无效`;
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.cancel();
 					trigger.targets.length = 0;
 					trigger.getParent().triggeredTargets1.length = 0;
-					var list = trigger.cards.filter(function (i) {
-						return player.storage.yizhu.includes(i);
-					});
+					const list = trigger.cards.filter(card => player.storage.yizhu.includes(card));
 					player.unmarkAuto("yizhu", list);
-					game.delayx();
+					await game.delayx();
 				},
 			},
 		},
