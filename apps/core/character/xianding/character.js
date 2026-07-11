@@ -11,6 +11,30 @@ const characters = {
 		hp: 4,
 		skills: ["dczisheng", "dcxianlve", "dchaoxian"],
 	},
+	dc_sb_yangfeng: {
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		skills: ["dcsbzhubo", "dcsbxieshi", "dcsbqijue"],
+	},
+	v_guanyinping: {
+		sex: "female",
+		group: "shu",
+		hp: 4,
+		skills: ["dcshaowei", "dcdichou"],
+	},
+	dc_sb_wangping: {
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		skills: ["dcsbyouyi", "dcsbfangong"],
+	},
+	dc_sb_masu: {
+		sex: "male",
+		group: "shu",
+		hp: 3,
+		skills: ["dcsbchengce", "dcsbxinzhan"],
+	},
 	dc_sb_zhugeliang: {
 		sex: "male",
 		group: "shu",
