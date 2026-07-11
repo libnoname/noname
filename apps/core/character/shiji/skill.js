@@ -3018,57 +3018,72 @@ const skills = {
 		audio: "yangjie",
 		enable: "phaseUse",
 		filter(event, player) {
-			return game.hasPlayer(function (target) {
-				return player.canCompare(target);
-			});
+			return game.hasPlayer(target => player.canCompare(target));
 		},
 		filterTarget(card, player, target) {
 			return player.canCompare(target);
 		},
 		usable: 1,
-		content() {
-			"step 0";
-			player.chooseToCompare(target).set("small", true);
-			"step 1";
-			if (
-				!result.bool &&
-				game.hasPlayer(function (current) {
-					return current != player && current != target && current.canUse({ name: "sha", nature: "fire", isCard: true }, target, false);
-				})
-			) {
-				player
-					.chooseTarget("佯解：是否选择另一名其他角色？", "令其视为对" + get.translation(target) + "使用一张火【杀】", function (card, player, target) {
-						return target != player && target != _status.event.getParent().target;
-					})
-					.set("ai", function (target) {
-						var player = _status.event.player,
-							target2 = _status.event.getParent().target;
-						return get.effect(target2, { name: "sha", nature: "fire", isCard: true }, target, player);
-					});
-			} else {
-				event.finish();
-			}
-			"step 2";
+		async content(event, trigger, player) {
+			const target = event.target;
+			const result = await player.chooseToCompare(target).set("small", true).forResult();
 			if (result.bool) {
-				var source = result.targets[0];
-				player.line(source);
-				game.log(player, "选择了", source);
-				var card = { name: "sha", nature: "fire", isCard: true };
-				if (target.isIn() && source.isIn() && source.canUse(card, target, false)) {
-					source.useCard(card, target, false, "noai");
-				}
+				return;
 			}
+			if (!game.hasPlayer(current => current !== player && current !== target && current.canUse({ name: "sha", nature: "fire", isCard: true }, target, false))) {
+				return;
+			}
+			const result2 = await player
+				.chooseTarget({
+					prompt: "佯解：是否选择另一名其他角色？",
+					prompt2: `令其视为对${get.translation(target)}使用一张火【杀】`,
+					filterTarget(card, player, target) {
+						const evt = get.event().getParent();
+						if (evt == null) {
+							return false;
+						}
+						return target !== player && target !== evt.target;
+					},
+					ai(target) {
+						const player = get.player();
+
+						const evt = get.event().getParent();
+						if (evt == null) {
+							return 0;
+						}
+						const target2 = evt.target;
+						return get.effect(target2, { name: "sha", nature: "fire", isCard: true }, target, player);
+					}
+				})
+				.set("ai", target => {
+					const player = _status.event.player;
+					const target2 = _status.event.getParent().target;
+					return get.effect(target2, { name: "sha", nature: "fire", isCard: true }, target, player);
+				})
+				.forResult();
+			if (!result2.bool || !result2.targets?.length) {
+				return;
+			}
+			const source = result2.targets[0];
+			player.line(source);
+			game.log(player, "选择了", source);
+			const card = get.autoViewAs({ name: "sha", nature: "fire", isCard: true });
+			if (!target.isIn() || !source.isIn() || !source.canUse(card, target, false)) {
+				return;
+			}
+			await source.useCard({
+				card,
+				targets: [target], 
+				addCount: false,
+				noai: true,
+			});
 		},
 		ai: {
 			order: 3,
 			result: {
 				target(player, target) {
-					var hs = player.getCards("h").sort(function (a, b) {
-						return a.number - b.number;
-					});
-					var ts = target.getCards("h").sort(function (a, b) {
-						return a.number - b.number;
-					});
+					const hs = player.getCards("h").sort((a, b) => a.number - b.number);
+					const ts = target.getCards("h").sort((a, b) => a.number - b.number);
 					if (!hs.length || !ts.length) {
 						return 0;
 					}
