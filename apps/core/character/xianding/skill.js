@@ -124,8 +124,7 @@ const skills = {
                             return target == event.player;
                         },
                         async content(event, trigger, player) {
-                            await player.loseHp(player.hp);
-                            player.die();
+                           await player.die();
                         },
                     },
                 },
