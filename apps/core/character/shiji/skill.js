@@ -8194,8 +8194,8 @@ const skills = {
 			if (!event.source || !event.source.isIn()) {
 				return false;
 			}
-			for (var i = 0; i < 4; i++) {
-				if (event.source.hasSkill("mjdingyi_" + i)) {
+			for (const i of [0, 1, 2, 3]) {
+				if (event.source.hasSkill(`mjdingyi_${i}`)) {
 					return true;
 				}
 			}
@@ -8203,29 +8203,30 @@ const skills = {
 		},
 		logTarget: "source",
 		check: () => false,
-		content() {
-			"step 0";
-			var target = trigger.source;
-			event.target = target;
-			for (var i = 0; i < 4; i++) {
-				if (target.hasSkill("mjdingyi_" + i)) {
-					target.removeSkill("mjdingyi_" + i);
+		async content(event, trigger, player) {
+			const target = trigger.source;
+			for (const i of [0, 1, 2, 3]) {
+				if (target.hasSkill(`mjdingyi_${i}`)) {
+					target.removeSkill(`mjdingyi_${i}`);
 				}
 			}
-			"step 1";
-			var list = get.zhinangs();
-			if (list.length) {
-				player.chooseButton(["选择要令" + get.translation(target) + "获得的智囊", [list, "vcard"]], true);
-			} else {
-				event.finish();
+			const list = get.zhinangs();
+			if (!list.length) {
+				return;
 			}
-			"step 2";
+			const result = await player
+				.chooseButton({
+					createDialog: [`选择要令${get.translation(target)}获得的智囊`, [list, "vcard"]],
+					forced: true,
+				})
+				.forResult();
 			if (result.bool) {
-				var card = get.cardPile2(function (card) {
-					return card.name == result.links[0][2];
-				});
+				const card = get.cardPile2(card => card.name === result.links[0][2]);
 				if (card) {
-					target.gain(card, "gain2");
+					await target.gain({
+						cards: [card],
+						animate: "gain2",
+					});
 				}
 			}
 		},
