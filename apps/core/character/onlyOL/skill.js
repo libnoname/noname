@@ -530,12 +530,16 @@ const skills = {
 			if (player.countCards("h") >= target.countCards("h")) {
 				await target.draw();
 			}
+			if (_status.currentPhase == target) {
+				player.addTempSkill("olzhenshan");
+			}
+			player.addSkill(event.name + "_effect");
 			player.markAuto(event.name + "_effect", target);
 		},
-		group: "olyaoming_effect",
 		subSkill: {
 			effect: {
 				forced: true,
+				charlotte: true,
 				popup: false,
 				trigger: {
 					global: ["phaseBeginStart"],
