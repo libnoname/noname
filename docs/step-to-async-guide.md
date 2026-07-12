@@ -70,7 +70,15 @@ content: function () {
 }
 ```
 
-`"step 0"`、`"step 1"` 不是普通注释，而是 `StepCompiler` 识别的分隔标记。
+或者单纯的:
+
+```js
+content: function () {
+  player.draw();
+}
+```
+
+`"step 0"`、`"step 1"` 不是普通注释，而是 `StepCompiler` 识别的分隔标记。对于不存在`"step X"`的普通function，应视为Step Content，因为这些函数仍然会经过`StepCompiler`处理，并将函数内部视为存在`"step 0"`。
 
 编译器会把它拆成类似：
 
