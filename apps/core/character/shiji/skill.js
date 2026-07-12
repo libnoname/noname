@@ -3472,42 +3472,38 @@ const skills = {
 	spdiancai: {
 		audio: 2,
 		trigger: { global: "phaseJieshuBegin" },
-		direct: true,
 		filter(event, player) {
-			return (
-				player != event.player &&
-				player.hasHistory("lose", function (evt) {
-					return evt.hs && evt.hs.length > 0;
-				})
-			);
+			return player !== event.player && player.hasHistory("lose", evt => evt.hs && evt.hs.length > 0);
 		},
-		content() {
-			"step 0";
-			var num = 0;
-			player.getHistory("lose", function (evt) {
-				if (evt.hs) {
-					num += evt.hs.length;
-				}
-			});
+		async cost(event, trigger, player) {
+			let num = player
+				.getHistory("lose", evt => evt.hs)
+				.map(evt => evt.hs.length)
+				.reduce((a, b) => a + b);
 			num = Math.min(num, game.countPlayer());
-			player.chooseTarget(get.prompt("spdiancai"), [1, num], "令至多" + get.cnNumber(num) + "名角色各摸一张牌").set("ai", function (target) {
-				return get.attitude(_status.event.player, target);
-			});
-			"step 1";
-			if (result.bool) {
-				var targets = result.targets.sortBySeat(trigger.player);
-				player.logSkill("spdiancai", targets);
-				if (targets.length == 1) {
-					targets[0].draw();
-					event.finish();
-				} else {
-					game.asyncDraw(targets);
-				}
-			} else {
-				event.finish();
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt("spdiancai"),
+					prompt2: `令至多${get.cnNumber(num)}名角色各摸一张牌`,
+					selectTarget: [1, num],
+					ai(target) {
+						const player = get.player();
+						return get.attitude(player, target);
+					},
+				})
+				.forResult();
+			if (event.result.targets?.length) {
+				event.result.targets.sortBySeat(trigger.player);
 			}
-			"step 2";
-			game.delayx();
+		},
+		async content(event, trigger, player) {
+			const targets = event.targets;
+			if (targets.length === 1) {
+				await targets[0].draw();
+				return;
+			}
+			await game.asyncDraw(targets);
+			await game.delayx();
 		},
 	},
 	mbdiaodu: {
