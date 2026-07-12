@@ -7812,21 +7812,17 @@ const skills = {
 			next._args.remove("glow_result");
 			const result2 = await next.forResult();
 			const [playerCards, targetCards] = result2.map(i => i.cards);
-			const videoId = lib.status.videoId++;
-			game.broadcastAll(
-				(cards, id, player, target) => {
-					const dialog = ui.create.dialog(`${get.translation(player)}发动了【栗索】</div>`, `<div class="text center">${get.translation(player)}</div>`, cards[0], `<div class="text center">${get.translation(target)}</div>`, cards[1]);
-					dialog.videoId = id;
-				},
-				[playerCards, targetCards],
-				videoId,
-				player,
-				target
-			);
-			await game.delay(3);
-			game.broadcastAll("closeDialog", videoId);
-			game.log(player, "展示了", playerCards);
-			game.log(target, "展示了", targetCards);
+			const cards = [...playerCards, ...targetCards];
+			await player
+				.showCards(cards, get.translation(player) + "发动了【栗索】")
+				.set("customButton", button => {
+					const target = get.owner(button.link);
+					if (target) {
+						game.createButtonCardsetion(`${target.getName(true)}`, button);
+					}
+				})
+				.set("delay_time", 4)
+				.set("multipleShow", true);
 			let sgn = playerCards.length - targetCards.length;
 			if (sgn > 0) {
 				target.addTempSkill(event.name + "_zhixi", { player: "phaseUseAfter" });
