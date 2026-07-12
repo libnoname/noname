@@ -1390,7 +1390,7 @@ const skills = {
 		animationColor: "fire",
 		trigger: { player: "changeHpAfter" },
 		filter(event, player) {
-			return ["smqihua_mo", "smqihua_shen"].some(mark => player.hasMark(mark));
+			return ["smqihua_mo", "smqihua_shen"].some(mark => player.hasMark(mark)) && player.countMark("smqihua_mo") !== player.countMark("smqihua_shen");
 		},
 		check(event, player) {
 			return player.countMark("smqihua_mo") > player.countMark("smqihua_shen");
