@@ -460,7 +460,7 @@ const skills = {
 						selectTarget: [1, player.countMark("pelinjie")],
 						ai(target) {
 							if (game.hasPlayer(current => get.attitude(player, current) > 2 && current.hasCards("j", card => ["lebu", "bingliang", "shandian"].includes(card.name)))) {
-								return get.attitude(player, target) * target.hasCards("j", card => get.name(card) == "lebu") ? 2 : 0;
+								return get.attitude(player, target) * (target.hasCards("j", card => get.name(card) == "lebu") ? 2 : 0);
 							}
 							return -get.attitude(get.player(), target);
 						},
