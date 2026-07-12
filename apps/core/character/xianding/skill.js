@@ -3654,7 +3654,7 @@ const skills = {
 						.chooseControl({
 							controls: ["basic", "trick", "equip"],
 							prompt: `煌怒：令${get.translation(player)}随机弃置一种类型的一张牌`,
-							choice: "basic",
+							ai: () => "basic",
 						})
 						.forResult();
 					const { control } = result;
