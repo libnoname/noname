@@ -696,6 +696,14 @@ const skills = {
 		ai: {
 			order: 3,
 		},
+		locked: false,
+		mod: {
+			cardUsable(card, player) {
+				if (card.storage?.clanfenjian) {
+					return Infinity;
+				}
+			}
+		},
 		group: ["clanfenjian_effect"],
 		subSkill: {
 			effect: {
