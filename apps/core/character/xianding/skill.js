@@ -471,7 +471,11 @@ const skills = {
 				onremove: true,
 				intro: {
 					content(storage, player) {
-						return `已记录点数：${storage}`;
+						let str = `已记录点数：${storage}`;
+						if(player.storage.dcxianlve_dying && player.storage.dcxianlve_dying > 0) {
+							str += `<br>刷新【豪贤】所需要点数数量-${get.translation(player.storage.dcxianlve_dying)}`;
+						}
+						return str;
 					},
 				},
 			},
