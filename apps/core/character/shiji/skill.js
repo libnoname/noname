@@ -7137,70 +7137,59 @@ const skills = {
 	yinlang: {
 		audio: 2,
 		trigger: { player: "phaseBegin" },
-		direct: true,
 		filter(event, player) {
-			return (
-				!player.hasSkill("yinlang_round") &&
-				game.hasPlayer(function (current) {
-					return current.group && current.group != "unknown";
-				})
-			);
+			return !player.hasSkill("yinlang_round") && game.hasPlayer(current => current.group && current.group !== "unknown");
 		},
-		content() {
-			"step 0";
-			var list = [];
-			game.countPlayer(function (current) {
-				if (current.group && current.group != "unknown") {
-					list.add(current.group);
-				}
-			});
-			list.sort(function (a, b) {
-				return lib.group.indexOf(a) - lib.group.indexOf(b);
-			});
+		async cost(event, trigger, player) {
+			const list = game
+				.filterPlayer(current => current.group && current.group !== "unknown")
+				.map(current => current.group)
+				.toUniqued();
+			list.sort((a, b) => lib.group.indexOf(a) - lib.group.indexOf(b));
 			if (!player.hasSkill("yinlang")) {
 				list.push("cancel2");
 			}
-			player
-				.chooseControl(list)
-				.set("prompt", "引狼：请选择一个势力")
-				.set("ai", function () {
-					return _status.event.choice;
+
+			const getn = group =>
+				game.countPlayer(current => {
+					if (current.group !== group) {
+						return false;
+					}
+					if (get.attitude(current, player) > 0) {
+						return 1.5;
+					}
+					if (!current.inRange(player)) {
+						return 1;
+					}
+					return 0.6;
+				});
+			const choice = list.toSorted((a, b) => getn(b) - getn(a))[0];
+
+			const result = await player
+				.chooseControl({
+					prompt: "引狼：请选择一个势力",
+					controls: list,
+					ai() {
+						return get.event().choice;
+					},
 				})
-				.set(
-					"choice",
-					(function () {
-						var getn = function (group) {
-							return game.countPlayer(function (current) {
-								if (current.group != group) {
-									return false;
-								}
-								if (get.attitude(current, player) > 0) {
-									return 1.5;
-								}
-								if (!current.inRange(player)) {
-									return 1;
-								}
-								return 0.6;
-							});
-						};
-						list.sort(function (a, b) {
-							return getn(b) - getn(a);
-						});
-						return list[0];
-					})()
-				);
-			"step 1";
-			if (result.control != "cancel2") {
-				player.logSkill(
-					"yinlang",
-					game.filterPlayer(function (current) {
-						return current.group == result.control;
-					})
-				);
-				game.log(player, "选择了", "#y" + get.translation(result.control + 2));
-				player.storage.yinlang = result.control;
-				player.markSkill("yinlang");
-			}
+				.set("choice", choice)
+				.forResult();
+			
+			event.result = {
+				bool: result.control !== "cancel2",
+				targets: game.filterPlayer(current => current.group === result.control),
+				cost_data: {
+					group: result.control,
+				},
+			};
+		},
+		async content(event, trigger, player) {
+			const group = event.cost_data.group;
+
+			game.log(player, "选择了", `#y${get.translation(`${group}2`)}`);
+			player.storage.yinlang = group;
+			player.markSkill("yinlang");
 		},
 		ai: { combo: "xiusheng" },
 		intro: { content: "已选择了$势力" },
@@ -7213,42 +7202,41 @@ const skills = {
 				forced: true,
 				locked: false,
 				filter(event, player) {
-					return event.player.group == player.storage.yinlang && event.player.isIn() && player.getStorage("xiusheng").length > 0;
+					return event.player.group === player.storage.yinlang && event.player.isIn() && player.getStorage("xiusheng").length > 0;
 				},
 				logTarget: "player",
-				content() {
-					"step 0";
-					var str = get.translation(player);
-					event.target = trigger.player;
-					event.target
-						.chooseControl()
-						.set("choiceList", ["获得" + str + "的一张“生”，然后本阶段使用牌时只能指定其为目标", "令" + str + "获得一张“生”"])
-						.set("ai", function () {
-							var evt = _status.event.getParent(),
-								player = evt.target,
-								target = evt.player;
-							if (get.attitude(player, target) > 0) {
+				async content(event, trigger, player) {
+					const str = get.translation(player);
+					const target = trigger.player;
+					const result = await target
+						.chooseControl({
+							choiceList: [`获得${str}的一张“生”，然后本阶段使用牌时只能指定其为目标`, `令${str}获得一张“生”`],
+							ai() {
+								const evt = _status.event.getParent();
+								if (evt == null) {
+									return 0;
+								}
+								const { player, target } = evt;
+								if (get.attitude(player, target) > 0) {
+									return 1;
+								}
+								if (!player.hasCards("hs", card => player.hasValueTarget(card, null, true) && (!player.canUse(card, target, null, true) || get.effect(target, card, player, player) < 0))) {
+									return 0;
+								}
 								return 1;
-							}
-							if (
-								!player.countCards("hs", function (card) {
-									return player.hasValueTarget(card, null, true) && (!player.canUse(card, target, null, true) || get.effect(target, card, player, player) < 0);
-								})
-							) {
-								return 0;
-							}
-							return 1;
-						});
-					"step 1";
-					event.gainner = result.index == 0 ? target : player;
-					if (result.index == 0) {
-						event.block = true;
-					}
-					event.gainner.chooseButton(["选择获得一张“生”", player.storage.xiusheng], true);
-					"step 2";
-					player.unmarkAuto("xiusheng", result.links);
-					event.gainner.gain(result.links, "gain2");
-					if (event.block) {
+							},
+						})
+						.forResult();
+					const gainner = result.index === 0 ? target : player;
+					const result2 = await gainner
+						.chooseButton({
+							createDialog: ["选择获得一张“生”", player.storage.xiusheng],
+							forced: true,
+						})
+						.forResult();
+					player.unmarkAuto("xiusheng", result2.links);
+					await gainner.gain(result2.links, "gain2");
+					if (result.index === 0) {
 						target.markAuto("yinlang_block", [player]);
 						target.addTempSkill("yinlang_block", "phaseUseAfter");
 					}
@@ -7257,7 +7245,7 @@ const skills = {
 			block: {
 				mod: {
 					playerEnabled(card, player, target) {
-						var info = get.info(card);
+						const info = get.info(card);
 						if (info && info.singleCard && ui.selected.cards.length) {
 							return;
 						}
