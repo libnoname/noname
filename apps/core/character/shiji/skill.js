@@ -7553,7 +7553,7 @@ const skills = {
 				return ui.create.dialog("病论", _status.renku);
 			},
 			backup(links, player) {
-				var obj = lib.skill.binglun_backup;
+				const obj = lib.skill.binglun_backup;
 				obj.card = links[0];
 				return obj;
 			},
@@ -7566,26 +7566,21 @@ const skills = {
 				selectCard: -1,
 				filterTarget: true,
 				delay: false,
-				content() {
-					"step 0";
-					var card = lib.skill.binglun_backup.card;
+				async content(event, trigger, player) {
+					const card = lib.skill.binglun_backup.card;
 					game.log(card, "从仁库进入了弃牌堆");
 					player.$throw(card, 1000);
-					game.delayx();
-					game.cardsDiscard(card).fromRenku = true;
-					"step 1";
-					target
+					await game.delayx();
+					const discard = game.cardsDiscard(card);
+					discard.fromRenku = true;
+					await discard;
+					const control = await target
 						.chooseControl()
 						.set("choiceList", ["摸一张牌", "于自己的下回合结束后回复1点体力"])
-						.set("ai", function () {
-							if (_status.event.player.isHealthy()) {
-								return 0;
-							}
-							return 1;
-						});
-					"step 2";
-					if (result.index == 0) {
-						target.draw();
+						.set("ai", () => (_status.event.player.isHealthy() ? 0 : 1))
+						.forResult();
+					if (control.index === 0) {
+						await target.draw();
 					} else {
 						target.addSkill("binglun_recover");
 						target.addMark("binglun_recover", 1, false);
@@ -7608,10 +7603,10 @@ const skills = {
 				popup: false,
 				onremove: true,
 				charlotte: true,
-				content() {
+				async content(event, trigger, player) {
 					if (player.isDamaged()) {
 						player.logSkill("binglun_recover");
-						player.recover(player.countMark("binglun_recover"));
+						player.recover({ num: player.countMark("binglun_recover") });
 					}
 					player.removeSkill("binglun_recover");
 				},
