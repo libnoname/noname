@@ -13867,6 +13867,13 @@ export class Library {
 			},
 		],
 		[
+			"嗔",
+			{
+				color: "#5a6968",
+				nature: "graymm",
+			},
+		],
+		[
 			"用间",
 			{
 				color: "#c3f9ff",
@@ -14561,6 +14568,13 @@ export class Library {
 			{
 				color: "#2e002e",
 				nature: "firemm",
+			},
+		],
+		[
+			"墨",
+			{
+				color: "#131313",
+				nature: "thundermm",
 			},
 		],
 		[

@@ -42,7 +42,7 @@ const skills = {
 				trigger.getParent().all_excluded = true;
 			}
 			const playerResult = result.bool;
-			const lastResult = player.getStorage(event.name + "_last", void 0);
+			const lastResult = player.storage[event.name + "_last"];
 			if (playerResult === lastResult) {
 				player.logSkill(event.name, null, null, null, [get.rand(3, 4)]);
 				await player.draw(2);
@@ -63,7 +63,7 @@ const skills = {
 	zhanshi: {
 		audio: 4,
 		logAudio: index => (typeof index === "number" ? "zhanshi" + index + ".mp3" : 2),
-		trigger: { global: "chooseToCompareBegin" },
+		trigger: { global: "compareCardShowBefore" },
 		filter(event, player) {
 			return player.hasDiscardableCards(player, "he");
 		},
@@ -6462,7 +6462,7 @@ const skills = {
 				locked: false,
 				async content(event, trigger, player) {
 					const list = lib.skill.lkbushi.getBushi(player);
-					const card = get.cardPile(card => get.suit(card, false) === list[3]);
+					const card = get.cardPile2(card => get.suit(card, false) === list[3]);
 					if (card) {
 						await player.gain({
 							cards: [card],

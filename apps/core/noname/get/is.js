@@ -643,6 +643,23 @@ export class Is {
 	}
 
 	/**
+	 * @param { string } skill
+	 * @param { Player } player
+	 * @returns
+	 */
+	qidingSkill(skill, player) {
+		const info = get.info(skill);
+		if (!info) {
+			return false;
+		}
+		const { qidingSkill } = info;
+		if (typeof qidingSkill === "function") {
+			return Boolean(qidingSkill(skill, player));
+		}
+		return Boolean(qidingSkill);
+	}
+
+	/**
 	 * 检查指定玩家的名称的子串是否包含指定字符串
 	 *
 	 * @author tangXins

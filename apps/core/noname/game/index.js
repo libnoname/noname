@@ -10645,6 +10645,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		const players = game.players.concat(game.dead);
 		game.broadcast(addPlayer, id, target, character, character2, isNext, config);
 		const player = await addPlayer(id, target, character, character2, isNext, config);
+		await game.delay(2);
 		//分配座位号
 		const firstSeat = players.find(value => value.getSeatNum() == 1);
 		if (firstSeat) {
@@ -10854,7 +10855,6 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			player.classList.add("out");
 			player.style.display = "none";
 			player.delete();
-			await game.delay(1);
 			//调整布局
 			const players = game.players.concat(game.dead);
 			const position = parseInt(player.dataset.position);
@@ -10896,6 +10896,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		};
 		game.broadcast(removePlayer, player, config, get.copy(lib.configOL));
 		await removePlayer(player, config, get.copy(lib.configOL));
+		await game.delay(2);
 		//判断胜负，避免移除后对局变成死局
 		player.dieAfter();
 		return player;

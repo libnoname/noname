@@ -1,7 +1,10 @@
 export default {
+	ym_jsrg_diaochan: "群芳之魁",
+	ym_friend_zhugeliang: "龙骧九天",
+	pe_shen_zhonghui: "荡徊的蜚螭",
+	ps_shen_weiyan: "子午创世神",
+	ps_devil_weiyan: "戾骨噬汉魔",
 	sm_shenmo_sunquan: "一念神魔",
-	sm_mo_sunquan: "魔睨东吴",
-	sm_shen_sunquan: "神权帝胄",
 	pe_liuhui: "周天古率",
 	pe_baiqi: "大良造",
 	pe_huamulan: "孝烈巾帼",

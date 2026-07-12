@@ -2734,6 +2734,7 @@ const skills = {
 						return coeff * get.attitude(player, target);
 					},
 				})
+				.set("coeff", num1 >= num2 ? 1 : -1)
 				.forResult();
 
 			event.result.cost_data = {
@@ -2760,7 +2761,7 @@ const skills = {
 					.forResult();
 
 				if (result?.cards?.length > 0 && result.autochoose && result.cards?.length === result.rawcards?.length) {
-					player.clearMarkMark("xinjiexun", false);
+					player.clearMark("xinjiexun", false);
 					player.addSkill("funan_jiexun");
 				}
 			}
@@ -2995,61 +2996,13 @@ const skills = {
 			},
 		},
 		subSkill: {
-			dying: {
-				audio: "qingxian",
-				trigger: { global: "dyingAfter" },
-				filter(event, player) {
-					return player.storage.qingxian && player.storage.qingxian > 0 && !_status.dying.length;
-				},
-				getIndex(event, player) {
-					return player.storage.qingxian;
-				},
-				async cost(event, trigger, player) {
-					event.result = await player
-						.chooseTarget({
-							prompt: get.prompt("qingxian"),
-							prompt2: "当你回复体力后，你可以令一名其他角色执行一项：失去1点体力，随机使用一张装备牌；回复1点体力，弃置一张装备牌。若其以此法使用或弃置的牌为梅花，你回复1点体力",
-							filterTarget(card, player, target) {
-								return target !== player;
-							},
-							ai(target) {
-								const att = get.attitude(_status.event.player, target);
-								if (target.isHealthy() && att > 0) {
-									return 0;
-								}
-								if (target.hp == 1 && att != 0) {
-									if (att > 0) {
-										return 9;
-									} else {
-										return 10;
-									}
-								} else {
-									return Math.sqrt(Math.abs(att));
-								}
-							},
-						})
-						.forResult();
-				},
-				logTarget: "targets",
-				async content(event, trigger, player) {
-					const target = event.targets[0];
-					event.insert(lib.skill.qingxian.content_choose, {
-						target,
-						player,
-					});
-				},
-			},
 			rouhe: {
 				audio: "qingxian",
 				trigger: { player: "recoverEnd" },
+				filter(event, player) {
+					return !_status.dying.length;
+				},
 				async cost(event, trigger, player) {
-					if (_status.dying.length) {
-						player.storage.qingxian ??= 0;
-						player.storage.qingxian++;
-						event.result = { bool: false };
-						return;
-					}
-
 					event.result = await player
 						.chooseTarget({
 							prompt: get.prompt("qingxian"),
@@ -3077,18 +3030,14 @@ const skills = {
 				},
 				logTarget: "targets",
 				async content(event, trigger, player) {
-					const target = event.targets[0];
-					event.insert(lib.skill.qingxian.content_choose, {
-						target,
-						player,
-					});
+					await lib.skill.qingxian.content_choose(event, trigger, player);
 				},
 			},
 			jilie: {
 				audio: "qingxian",
 				trigger: { player: "damageEnd" },
 				filter(event, player) {
-					return event.source && event.source.isIn();
+					return event.source?.isIn() && !_status.dying.length;
 				},
 				check(event, player) {
 					if (get.attitude(player, event.source) > 0 && event.source.isHealthy()) {
@@ -3099,10 +3048,7 @@ const skills = {
 				logTarget: "source",
 				prompt2: "当你受到伤害后，你可以令伤害来源执行一项：失去1点体力，随机使用一张装备牌；回复1点体力，弃置一张装备牌。若其以此法使用或弃置的牌为梅花，你回复1点体力",
 				async content(event, trigger, player) {
-					event.insert(lib.skill.qingxian.content_choose, {
-						target: trigger.source,
-						player,
-					});
+					await lib.skill.qingxian.content_choose(event, trigger, player);
 				},
 			},
 		},
@@ -3110,7 +3056,7 @@ const skills = {
 		 * @type {ContentFuncByAll}
 		 */
 		async content_choose(event, trigger, player) {
-			const { target } = event;
+			const { targets: [target] } = event;
 
 			let resultIndex;
 			if (target.isHealthy()) {
@@ -3214,7 +3160,7 @@ const skills = {
 				},
 				trigger: { player: "damageEnd" },
 				filter(event, player) {
-					return event.source && event.source.isIn() && event.source != player;
+					return event.source && event.source.isIn() && event.source != player && !_status.dying.length;
 				},
 				check(event, player) {
 					return get.attitude(player, event.source) < 0;
@@ -3258,6 +3204,9 @@ const skills = {
 
 					return triggername === "dyingAfter" ? player.storage.juexiang_lie : 1;
 				},
+				filter(event, player) {
+					return !_status.dying.length;
+				},
 				async cost(event, trigger, player) {
 					if (event.triggername == "dyingAfter") {
 						if (!player.countMark("juexiang_lie")) {
@@ -3298,7 +3247,7 @@ const skills = {
 				},
 				trigger: { player: "damageEnd" },
 				filter(event, player) {
-					return event.source && event.source.isIn() && event.source != player;
+					return event.source && event.source.isIn() && event.source != player && !_status.dying.length;
 				},
 				check(event, player) {
 					var att = get.attitude(player, event.source);
@@ -3334,6 +3283,9 @@ const skills = {
 					content: "info",
 				},
 				trigger: { player: "recoverEnd" },
+				filter(event, player) {
+					return !_status.dying.length;
+				},
 				async cost(event, trigger, player) {
 					event.result = await player
 						.chooseTarget({
@@ -3404,9 +3356,9 @@ const skills = {
 		locked: false,
 		async content(event, trigger, player) {
 			await player.addToExpansion({
-				cards: get.cards(), 
+				cards: get.cards(),
 				animate: "gain2",
-				gaintag: ["bizhuan"]
+				gaintag: ["bizhuan"],
 			});
 		},
 		mod: {
@@ -8640,7 +8592,8 @@ const skills = {
 			return (
 				get.suit(event.card) == "spade" &&
 				_status.currentPhase == event.player &&
-				event.targets && event.player.isPhaseUsing() &&
+				event.targets &&
+				event.player.isPhaseUsing() &&
 				event.targets.length &&
 				event.player != player &&
 				game.countPlayer2(function (current) {

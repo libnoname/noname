@@ -530,12 +530,16 @@ const skills = {
 			if (player.countCards("h") >= target.countCards("h")) {
 				await target.draw();
 			}
+			if (_status.currentPhase == target) {
+				player.addTempSkill("olzhenshan");
+			}
+			player.addSkill(event.name + "_effect");
 			player.markAuto(event.name + "_effect", target);
 		},
-		group: "olyaoming_effect",
 		subSkill: {
 			effect: {
 				forced: true,
+				charlotte: true,
 				popup: false,
 				trigger: {
 					global: ["phaseBeginStart"],
@@ -7553,11 +7557,11 @@ const skills = {
 						const list = [];
 						for (const name of player.storage.olguifu_record.card) {
 							list.push([get.type(name), "", name]);
-							if (name == "sha") {
-								for (const nature of lib.inpile_nature) {
-									list.push([get.type(name), "", name, nature]);
-								}
-							}
+							//if (name == "sha") {
+							//	for (const nature of lib.inpile_nature) {
+							//		list.push([get.type(name), "", name, nature]);
+							//	}
+							//}
 						}
 						return ui.create.dialog("诡伏", [list, "vcard"], "hidden");
 					},

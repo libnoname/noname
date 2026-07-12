@@ -1,4 +1,14 @@
 const characters = {
+	tw_sb_xiahoudun: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		maxHp: 4,
+		hujia: 1,
+		skills: ["twsbganglie", "twsbqingjian"],
+		dieAudios: ["sb_xiahoudun"],
+		names: "夏侯|惇",
+	},
 	tw_shen_guanyu: {
 		sex: "male",
 		group: "shen",

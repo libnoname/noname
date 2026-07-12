@@ -20,6 +20,9 @@ importers:
       '@capacitor/filesystem':
         specifier: ^8.1.1
         version: 8.1.1(@capacitor/core@8.1.0)
+      path-browserify-esm:
+        specifier: 1.0.6
+        version: 1.0.6
     devDependencies:
       '@capacitor/cli':
         specifier: ^8.1.0
@@ -597,6 +600,9 @@ packages:
 
   package-json-from-dist@1.0.1:
     resolution: {integrity: sha512-UEZIS3/by4OC8vL3P2dTXRETpebLI2NiI5vIrjaD/5UtrkFX/tNbwjTSRAGC/+7CAo2pIcBaRgWmcBBHcsaCIw==}
+
+  path-browserify-esm@1.0.6:
+    resolution: {integrity: sha512-9nUwYvvu/yq1PYrUyYCihNWmpzacaRYF6gGbjLWErrZ4MRDWyfPN7RpE8E7tsw8eqBU/rr7mcoTXbS+Vih8uUA==}
 
   path-key@3.1.1:
     resolution: {integrity: sha512-ojmeN0qd+y0jszEtoY48r0Peq5dwMEkIlCOu6Q5f41lfkswXuKtYrhgoTpLnyIcHm24Uhqx+5Tqm2InSwLhE6Q==}
@@ -1272,6 +1278,8 @@ snapshots:
       is-wsl: 2.2.0
 
   package-json-from-dist@1.0.1: {}
+
+  path-browserify-esm@1.0.6: {}
 
   path-key@3.1.1: {}
 

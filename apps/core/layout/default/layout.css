@@ -1480,10 +1480,12 @@ body > .background.land {
 	border-radius: 14px;
 }
 
-div:not(.handcards) > .card:not(.thrown) > .info,
+div:not(.handcards):not(.handcards-container) > .card:not(.thrown) > .info,
+div:not(.handcards):not(.handcards-container) > .card:not(.thrown) > .name,
 .handcards > .card:last-child > .info,
-div:not(.handcards) > .card:not(.thrown) > .name,
-.handcards > .card:last-child > .name {
+.handcards > .card:last-child > .name,
+.handcards-container > .card:last-child > .info,
+.handcards-container > .card:last-child > .name {
 	transform: none !important;
 }
 
