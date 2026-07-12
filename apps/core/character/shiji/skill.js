@@ -5189,45 +5189,35 @@ const skills = {
 		logTarget: "player",
 		round: 1,
 		filter(event, player) {
-			return event.player != player && event.target != player && event.player != event.target && event.player.hp > event.target.hp && event.targets.length == 1 && event.player.countCards("h") > 0 && !event.target.isDying() && !event.player.hasSkillTag("noCompareTarget") && !player.hasSkillTag("noCompareSource");
+			return event.player !== player && event.target !== player && event.player !== event.target && event.player.hp > event.target.hp && event.targets.length === 1 && event.player.hasCards("h") && !event.target.isDying() && !event.player.hasSkillTag("noCompareTarget") && !player.hasSkillTag("noCompareSource");
 		},
 		check(event, player) {
-			var target = event.target,
-				source = event.player;
-			var eff1 = get.effect(target, event.card, source, player);
+			const target = event.target;
+			const source = event.player;
+			const eff1 = get.effect(target, event.card, source, player);
 			if (eff1 >= 0) {
 				return false;
 			}
-			var eff2 = get.effect(player, event.card, source, player);
+			const eff2 = get.effect(player, event.card, source, player);
 			if (eff2 >= 0) {
 				return true;
 			}
 			if (eff2 > eff1 / 3) {
-				return player.hasCard(function (card) {
-					return (card.number >= 9 && get.value(card) <= 5) || get.value(card) <= 3;
-				});
+				return player.hasCard(card => (card.number >= 9 && get.value(card) <= 5) || get.value(card) <= 3);
 			}
 			if (eff2 > eff1 / 2) {
-				return player.hasCard(function (card) {
-					return card.number > 10 && get.value(card) <= 5;
-				});
+				return player.hasCard(card => card.number > 10 && get.value(card) <= 5);
 			}
-			return player.hasCard(function (card) {
-				return card.number > 11 && get.value(card) <= 5;
-			});
+			return player.hasCard(card => card.number > 11 && get.value(card) <= 5);
 		},
-		content() {
-			"step 0";
-			player.draw();
-			"step 1";
-			if (player.canCompare(trigger.player)) {
-				player.chooseToCompare(trigger.player);
-			} else {
-				event.finish();
+		async content(event, trigger, player) {
+			await player.draw();
+			if (!player.canCompare(trigger.player)) {
+				return;
 			}
-			"step 2";
+			const result = await player.chooseToCompare(trigger.player).forResult();
 			trigger.targets.remove(trigger.target);
-			trigger.getParent().triggeredTargets1.remove(trigger.target);
+			trigger.getParent()?.triggeredTargets1.remove(trigger.target);
 			trigger.untrigger();
 			if (!result.bool) {
 				trigger.targets.push(player);
