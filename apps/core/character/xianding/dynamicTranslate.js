@@ -30,7 +30,7 @@ const dynamicTranslates = {
 	dcsbzhubo(player, skill) {
 		let awaken1 = false, awaken2 = false;
 		if (player.storage["dcsbzhubo"]) {
-			{ awaken1, awaken2 } = player.storage["dcsbzhubo"];
+			({ awaken1, awaken2 } = player.storage["dcsbzhubo"]);
 		}
 		let str = "有角色于其出牌阶段外造成伤害时";
 		if (awaken2) str = "你于出牌阶段外造成或受到伤害时";
