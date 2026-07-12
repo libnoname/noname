@@ -19270,6 +19270,85 @@ const skills = {
 			},
 		},
 	},
+	// 夏侯恩
+	chijian: {
+		locked: false,
+		init(player, skill) {
+			player.addExtraEquip(skill, "qinggang", true, player2 => player2.hasEmptySlot(1) && lib.card.qinggang);
+		},
+		onremove(player, skill) {
+			player.removeExtraEquip(skill);
+		},
+		mod: {
+			cardUsable(card, player, num) {
+				if (card.name === "sha") {
+					return num + 1;
+				}
+			},
+		},
+	},
+	shiwu: {
+		trigger: { global: "phaseBegin" },
+		filter(event, player) {
+			if (event.player === player) {
+				return false;
+			}
+			return player.canUse({ name: "juedou", isCard: true }, event.player);
+		},
+		prompt(event, player) {
+			return get.prompt("shiwu");
+		},
+		prompt2(event, player) {
+			return `视为对${get.translation(event.player)}使用【决斗】，失败则本回合抢走你的剑。`;
+		},
+		check(event, player) {
+			if (!get.effect(event.player, { name: "juedou", isCard: true }, player, player) > 0) {
+				return false;
+			}
+			if (get.attitude(player, event.player) > 0) {
+				return false;
+			}
+			return player.countCards("h", card => card.name === "sha") * 3 - event.player.countCards("h") >= 0;
+		},
+		async content(event, trigger, player) {
+			const target = trigger.player;
+			const next = player.useCard({
+				card: { name: "juedou", isCard: true },
+				targets: [target],
+			});
+			await next;
+			const damagedEvents = game.getAllGlobalHistory("everything", evt => evt.name === "damage" && evt.card === next.card);
+			if (damagedEvents.some(evt => evt.source === player && evt.player === target)) {
+				const card = get.cardPile(card => get.is.damageCard(card) && target.canUse(card, target), "bottom");
+				if (card) await player.gain(card, "gain2");
+			}
+			if (damagedEvents.some(evt => evt.source === target && evt.player === player)) {
+				target.addTempSkill("chijian");
+				player.removeSkill("chijian");
+				player
+					.when({ global: "phaseEnd" })
+					.filter(evt => trigger.getParent("phase", true, true) === evt)
+					.step(async (event2, trigger2, player2) => {
+						player.addSkill("chijian");
+					});
+			}
+		},
+		group: "shiwu_lose",
+		subSkill: {
+			lose: {
+				forced: true,
+				locked: false,
+				forceDie: true,
+				trigger: { player: "dieAfter" },
+				filter(event, player) {
+					return event.source;
+				},
+				async content(event, trigger, player) {
+					trigger.source.addSkill("chijian");
+				},
+			},
+		},
+	},
 	//新潘凤
 	xinkuangfu: {
 		enable: "phaseUse",
