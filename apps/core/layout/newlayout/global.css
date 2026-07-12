@@ -369,6 +369,12 @@
 		margin-right 0.4s cubic-bezier(0.23, 1, 0.32, 1);
 	will-change: transform, margin-right;
 }
+.handcards-container > .card > .info {
+	transform: translateX(-52px) translateY(-3px);
+}
+.handcards-container > .card > .name {
+	transform: translateY(14px);
+}
 .handcards-container > .card:last-child {
 	margin-right: 0 !important;
 }

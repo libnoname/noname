@@ -5,7 +5,6 @@ export default {
 	//v_guanyinping: "",
 	//dc_sb_wangping: "",
 	//dc_sb_masu: "",
-	//dc_shen_caopi: "",
 	//dc_sb_zhugeliang: "",
 	dc_shen_guanyu: "鬼神再临",
 	dc_shen_liubei: "誓守桃园义",
