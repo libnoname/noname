@@ -880,18 +880,18 @@ const skills = {
 						})
 						.set("targeted", targeted)
 						.set("untargeted", untargeted);
-					next.targetprompt2.push(target => {
+					next.set("targetprompt2", next.targetprompt2.concat(target => {
 						if (!target.classList.contains("selectable")) {
 							return;
 						}
-						const { targeted, untargete } = get.event();
+						const { targeted, untargeted } = get.event();
 						if (targeted.includes(target)) {
 							return "回复体力";
 						}
 						if (untargeted.includes(target)) {
 							return "失去体力";
 						}
-					});
+					}));
 					event.result = await next.forResult();
 					if (event.result?.bool && event.result.targets?.length) {
 						event.result.cost_data ??= {};

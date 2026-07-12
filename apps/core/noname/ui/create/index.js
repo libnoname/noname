@@ -3959,6 +3959,7 @@ export class Create {
 
 		//清空容器里的牌
 		container.clearCards = function () {
+			this.buttons = [];
 			if (typeof this.replaceChildren == "function") {
 				this.replaceChildren();
 			} else {
@@ -4016,7 +4017,7 @@ export class Create {
 				return;
 			}
 			for (const button of this.buttons.slice()) {
-				if (cards.includes(button)) {
+				if (cards.includes(button.link)) {
 					this.buttons.remove(button);
 					button.remove();
 				}
