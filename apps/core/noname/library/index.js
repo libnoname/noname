@@ -14425,6 +14425,13 @@ export class Library {
 			},
 		],
 		[
+			"墨",
+			{
+				color: "#131313",
+				nature: "thundermm",
+			},
+		],
+		[
 			"青史",
 			{
 				getSpan: () => {

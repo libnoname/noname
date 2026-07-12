@@ -68,7 +68,7 @@ window.noname_character_replace = {
 	dengai: ["dengai", "ol_dengai", "ol_sb_dengai", "re_dengai", "jsrg_dengai", "ren_dengai", "dc_sb_dengai", "bigsb_dengai", "pot_dengai"],
 	dengzhi: ["ol_dengzhi", "re_dengzhi", "dengzhi", "tw_dengzhi", "std_re_dengzhi"],
 	dianwei: ["dianwei", "ol_dianwei", "dc_sb_dianwei", "re_dianwei", "xia_dianwei", "huan_dianwei", "ylyg_dianwei"],
-	diaochan: ["diaochan", "re_diaochan", "sp_diaochan", "dm_diaochan", "yue_diaochan", "sb_diaochan"],
+	diaochan: ["diaochan", "re_diaochan", "sp_diaochan", "dm_diaochan", "yue_diaochan", "sb_diaochan", "ym_jsrg_diaochan"],
 	dingfeng: ["dingfeng", "star_dingfeng", "tw_dingfeng", "std_dingfeng", "old_dingfeng", "zj_dingfeng"],
 	dingshangwan: ["dingshangwan", "ol_dingshangwan", "huan_dingshangwan", "mb_dingshangwan"],
 	dingyuan: ["ol_dingyuan", "dingyuan"],
@@ -364,7 +364,7 @@ window.noname_character_replace = {
 	zhugedan: ["zhugedan", "re_zhugedan", "jsrg_zhugedan"],
 	zhugeguo: ["zhugeguo", "yue_zhugeguo", "tw_zhugeguo", "huan_zhugeguo", "mb_zhugeguo"],
 	zhugejin: ["zhugejin", "dc_sb_zhugejin", "sb_zhugejin"],
-	zhugeliang: ["zhugeliang", "re_zhugeliang", "ol_sb_zhugeliang", "wu_zhugeliang", "friend_zhugeliang", "huan_zhugeliang", "jsrg_zhugeliang", "ps_zhugeliang", "ps2066_zhugeliang", "prp_zhugeliang", "ns_zhugeliang", "jy_zhugeliang", "zj_zhugeliang", "ol_le_zhugeliang", "you_zhugeliang", "dc_sb_zhugeliang"],
+	zhugeliang: ["zhugeliang", "re_zhugeliang", "ol_sb_zhugeliang", "wu_zhugeliang", "friend_zhugeliang", "huan_zhugeliang", "jsrg_zhugeliang", "ps_zhugeliang", "ps2066_zhugeliang", "prp_zhugeliang", "ns_zhugeliang", "jy_zhugeliang", "zj_zhugeliang", "ol_le_zhugeliang", "you_zhugeliang", "dc_sb_zhugeliang", "ym_friend_zhugeliang"],
 	zhugezhan: ["zhugezhan", "old_zhugezhan", "zj_zhugezhan"],
 	zhuhuan: ["zhuhuan", "re_zhuhuan", "xin_zhuhuan", "old_zhuhuan"],
 	zhujun: ["ol_zhujun", "ol_jsrg_zhujun", "zhujun", "sp_zhujun", "jsrg_zhujun"],
@@ -468,4 +468,5 @@ window.noname_character_replace = {
 	wangji: ["wangji", "re_wangji"],
 	cheliji: ["cheliji", "mb_cheliji"],
 	ns_huamulan: ["ns_huamulan", "pe_huamulan"],
+	shen_zhonghui: ["shen_zhonghui", "pe_shen_zhonghui"],
 };
