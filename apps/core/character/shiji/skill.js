@@ -5529,37 +5529,36 @@ const skills = {
 		filterTarget(card, player, target) {
 			return player.canCompare(target, true);
 		},
-		content() {
-			"step 0";
-			player.draw();
-			"step 1";
-			if (player.canCompare(target)) {
-				player.chooseToCompare(target);
-			} else {
-				event.finish();
+		async content(event, trigger, player) {
+			const { target } = event;
+			await player.draw();
+			if (!player.canCompare(target)) {
+				return;
 			}
-			"step 2";
+			const result = await player.chooseToCompare(target).forResult();
 			if (result.bool) {
 				player.storage.chuhai2 = target;
 				player.addTempSkill("chuhai2", "phaseUseEnd");
-				if (target.countCards("h") > 0) {
+				if (target.hasCards("h")) {
 					player.viewHandcards(target);
-					var types = [],
-						cards = [],
-						hs = target.getCards("h");
-					for (var i of hs) {
+					const types = [];
+					const cards = [];
+					const hs = target.getCards("h");
+					for (const i of hs) {
 						types.add(get.type2(i, target));
 					}
-					for (var i of types) {
-						var card = get.cardPile(function (card) {
-							return get.type2(card, false) == i;
-						});
+					for (const i of types) {
+						const card = get.cardPile(card => get.type2(card, false) === i);
 						if (card) {
 							cards.push(card);
 						}
 					}
 					if (cards.length) {
-						player.gain(cards, "gain2", "log");
+						await player.gain({
+							cards,
+							animate: "gain2",
+							log: true,
+						});
 					}
 				}
 			}
@@ -5568,11 +5567,7 @@ const skills = {
 			order: 9,
 			result: {
 				target(player, target) {
-					if (
-						player.countCards("hs", function (card) {
-							return get.tag(card, "damage") > 0 && player.canUse(card, target, null, true) && get.effect(target, card, player, player) > 0 && player.hasValueTarget(card, null, true);
-						}) > 0
-					) {
+					if (player.hasCards("hs", card => get.tag(card, "damage") > 0 && player.canUse(card, target, null, true) && get.effect(target, card, player, player) > 0 && player.hasValueTarget(card, null, true))) {
 						return -3;
 					}
 					return -1;
@@ -5587,27 +5582,25 @@ const skills = {
 		onremove: true,
 		sourceSkill: "chuhai",
 		filter(event, player) {
-			if (event.player != player.storage.chuhai2) {
+			if (event.player !== player.storage.chuhai2) {
 				return false;
 			}
-			for (var i = 1; i < 6; i++) {
+			for (const i of [1, 2, 3, 4, 5]) {
 				if (player.hasEmptySlot(i)) {
 					return true;
 				}
 			}
 			return false;
 		},
-		content() {
-			for (var i = 1; i < 7; i++) {
+		async content(event, trigger, player) {
+			for (const i of [1, 2, 3, 4, 5, 6]) {
 				if (player.hasEmptySlot(i)) {
-					var sub = "equip" + i,
-						card = get.cardPile(function (card) {
-							return get.subtype(card, false) == sub && !get.cardtag(card, "gifts") && player.canEquip(card);
-						});
+					const sub = `equip${i}`;
+					const card = get.cardPile(card => get.subtype(card, false) === sub && !get.cardtag(card, "gifts") && player.canEquip(card));
 					if (card) {
 						player.$gain2(card);
-						game.delayx();
-						player.equip(card);
+						await game.delayx();
+						await player.equip(card);
 						break;
 					}
 				}
