@@ -3916,21 +3916,24 @@ const skills = {
 		trigger: { player: "damageEnd" },
 		forced: true,
 		usable: 1,
-		content() {
-			"step 0";
-			var next = player.chooseToDiscard("h", "抵诽：弃置一张手牌或摸一张牌");
+		async content(event, trigger, player) {
+			const next = player.chooseToDiscard({
+				prompt: "抵诽：弃置一张手牌或摸一张牌",
+				position: "h",
+				ai(card) {
+					return -get.value(card);
+				}
+			});
 			if (trigger.card) {
-				var suit = get.suit(trigger.card, false);
-				if (lib.suit.includes(suit)) {
+				const suit = get.suit(trigger.card, false);
+				if (suit != null && lib.suit.includes(suit)) {
 					next.set("suit", suit);
-					next.set("prompt2", "然后若没有" + get.translation(suit) + "手牌则回复1点体力");
-					next.set("ai", function (card) {
-						var player = _status.event.player,
-							suit = _status.event.suit;
+					next.set("prompt2", `然后若没有${get.translation(suit)}手牌则回复1点体力`);
+					next.set("ai", card => {
+						const player = get.player(),
+							suit = get.event().suit;
 						if (
-							player.hasCard(function (cardx) {
-								return cardx != card && get.suit(cardx) == suit;
-							}, "h")
+							player.hasCard(cardx => cardx !== card && get.suit(cardx) == suit, "h")
 						) {
 							return 0;
 						}
@@ -3939,22 +3942,17 @@ const skills = {
 						}
 						return 5 - get.value(card);
 					});
-				} else {
-					next.set("ai", function (card) {
-						return -get.value(card);
-					});
 				}
 			}
-			"step 1";
+			const result = await next.forResult();
 			if (!result.bool) {
-				player.draw();
+				await player.draw();
 			}
-			"step 2";
-			player.showHandcards();
+			await player.showHandcards();
 			if (trigger.card) {
-				var suit = get.suit(trigger.card, false);
-				if (!lib.suit.includes(suit) || !player.countCards("h", { suit: suit })) {
-					player.recover();
+				const suit = get.suit(trigger.card, false);
+				if (suit != null && !lib.suit.includes(suit) || !player.hasCards("h", { suit })) {
+					await player.recover();
 				}
 			}
 		},
