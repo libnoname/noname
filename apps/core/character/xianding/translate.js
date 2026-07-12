@@ -1238,7 +1238,7 @@ const translates = {
 	dc_sb_xusheng_prefix: "新杀谋",
 	dc_sb_xusheng: "新杀谋徐盛",
 	dcsbqinqiang: "勤强",
-	dcsbqinqiang_info: "每回合每项限一次，你使用手牌时，可选择一项：1.令此牌伤害+X；2.摸X张牌。（X为你本回合当前连续使用与此牌颜色相同的牌数）",
+	dcsbqinqiang_info: "每回合每项限一次，你使用手牌时，可选择一项：1.令此牌伤害+X；2.摸X张牌。（X为你本回合此前与此牌连续使用同颜色的牌数）",
 	dcsbyizhen: "疑阵",
 	dcsbyizhen_info: "当你受到伤害后，你可以与伤害来源同时观看的对方手牌并弃置其中一张牌，若这两张牌颜色相同，则你获得之。",
 	xuwen: "徐妏",

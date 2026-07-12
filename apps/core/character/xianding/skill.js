@@ -12774,7 +12774,7 @@ const skills = {
 			const color = get.color(event.card);
 			let num = 0;
 			const history = player.getHistory("useCard", () => true, event);
-			for (let i = history.length - 1; i >= 0; i--) {
+			for (let i = history.length - 2; i >= 0; i--) {
 				const evt = history[i];
 				const colorx = get.color(evt.card);
 				if (colorx === color) {
