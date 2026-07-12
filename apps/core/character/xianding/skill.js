@@ -3025,7 +3025,8 @@ const skills = {
 			} else {
 				if (get.name(trigger.card) == "juedou") {
 					player.addTempSkill(`${event.name}_directHit`, { player: "dieAfter" });
-				} else {
+				}
+				if ((player.getAllHistory("sourceDamage").indexOf(trigger) + 1) % 2 == 0) {
 					player.addSkill(`${event.name}_effect`);
 					player.addMark(`${event.name}_effect`, 1, false);
 					if (!player.hasDiscardableCards(player, "h")) {
