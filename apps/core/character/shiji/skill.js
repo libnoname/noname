@@ -4484,44 +4484,42 @@ const skills = {
 		audio: 2,
 		forced: true,
 		filter(event, player) {
-			return player.countMark("zaoli") > 0;
+			return player.hasMark("zaoli");
 		},
-		content() {
-			"step 0";
-			event.num = player.storage.zaoli;
-			player.removeMark("zaoli", event.num);
-			if (player.countCards("he") > 0) {
-				player.chooseToDiscard(true, "he", [1, Infinity], "躁厉：弃置至少一张牌", "allowChooseAll").set("ai", function (card) {
-					if (card.hasGaintag("zaoli")) {
-						return 1;
-					}
-					return 5 - get.value(card);
-				});
-			}
-			"step 1";
-			if (result.bool) {
-				num += result.cards.length;
-			}
-			player.draw(num);
-			"step 2";
-			if (event.num > 2) {
-				player.loseHp();
+		async content(event, trigger, player) {
+			const num = player.storage.zaoli;
+			player.removeMark("zaoli", num);
+			const result = player.hasCards("he")
+				? await player
+						.chooseToDiscard({
+							prompt: "躁厉：弃置至少一张牌",
+							selectCard: [1, Infinity],
+							position: "he",
+							forced: true,
+							allowChooseAll: true,
+							ai(card) {
+								return card.hasGaintag("zaoli") ? 1 : 5 - get.value(card);
+							},
+						})
+						.forResult()
+				: { bool: false, cards: [] };
+			await player.draw(num + (result.bool ? result.cards?.length : 0));
+			if (num > 2) {
+				await player.loseHp();
 			}
 		},
 		mod: {
 			cardEnabled2(card, player) {
-				if (player == _status.currentPhase && get.itemtype(card) == "card" && card.hasGaintag("zaoli")) {
+				if (player === _status.currentPhase && get.itemtype(card) === "card" && card.hasGaintag("zaoli")) {
 					return false;
 				}
 			},
 		},
 		group: ["zaoli_add", "zaoli_count"],
 		init(player) {
-			if (player == _status.currentPhase) {
-				var hs = player.getCards("h");
-				player.getHistory("gain", function (evt) {
-					hs.removeArray(evt.cards);
-				});
+			if (player === _status.currentPhase) {
+				const gains = player.getHistory("gain").flatMap(evt => evt.cards);
+				const hs = player.getCards("h", card => !gains.includes(card));
 				if (hs.length) {
 					player.addGaintag(hs, "zaoli");
 				}
@@ -4540,13 +4538,13 @@ const skills = {
 				filter(event, player) {
 					return (
 						player.countMark("zaoli") < 4 &&
-						player.hasHistory("lose", function (evt) {
+						player.hasHistory("lose", evt => {
 							const evtx = evt.relatedEvent || evt.getParent();
-							return evt.hs && evt.hs.length > 0 && evtx == event;
+							return evt.hs && evt.hs.length > 0 && evtx === event;
 						})
 					);
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.addMark("zaoli", 1);
 				},
 			},
@@ -4556,15 +4554,13 @@ const skills = {
 				firstDo: true,
 				silent: true,
 				filter(event, player) {
-					if (player == event.player) {
-						return player.countCards("h") > 0;
+					if (player === event.player) {
+						return player.hasCards("h");
 					}
-					return player.hasCard(function (card) {
-						return card.hasGaintag("zaoli");
-					}, "h");
+					return player.hasCard(card => card.hasGaintag("zaoli"));
 				},
-				content() {
-					if (player == trigger.player) {
+				async content(event, trigger, player) {
+					if (player === trigger.player) {
 						player.addGaintag(player.getCards("h"), "zaoli");
 					} else {
 						player.removeGaintag("zaoli");
