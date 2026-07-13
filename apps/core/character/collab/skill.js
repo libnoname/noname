@@ -17,7 +17,7 @@ const skills = {
 				if (num > 0) {
 					await player.loseMaxHp(num);
 					await player.draw({ num });
-					if (num > game.players.length && game.hasPlayer(current => current.group !== "wei")) {
+					if (num >= game.players.length && game.hasPlayer(current => current.group !== "wei")) {
 						const result = await player
 							.chooseTarget({
 								prompt: "魏代：将一名角色的势力变更为魏",
