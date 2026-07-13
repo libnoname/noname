@@ -10855,115 +10855,145 @@ export class Library {
 		},
 	};
 	filter = {
+		/**
+		 * 恒真函数，用于允许所有传递的对象
+		 *
+		 * @returns { true }
+		 */
 		all: () => true,
+		/**
+		 * 恒假函数，用于过滤所有传递的对象
+		 *
+		 * @returns { false }
+		 */
 		none: () => false,
 		/**
-		 * Check if the card does not count toward the player's hand limit
-		 *
 		 * 检测此牌是否不计入此角色的手牌上限
-		 * @param { Card } card
-		 * @param { Player } player
+		 *
+		 * @param { Card } card - 需要判断的牌
+		 * @param { Player } player - 拥有此牌的玩家
 		 * @returns { boolean }
 		 */
-		ignoredHandcard: (card, player) => game.checkMod(card, player, false, "ignoredHandcard", player),
+		ignoredHandcard: (card, player) => Boolean(game.checkMod(card, player, false, "ignoredHandcard", player)),
 		/**
-		 * Check if the card is giftable
-		 *
 		 * 检测此牌是否可赠予
-		 * @param { Card } card
-		 * @param { Player } player
-		 * @param { Player } target
-		 * @param { boolean } [strict]
+		 *
+		 * @param { Card } card - 需要判断的牌
+		 * @param { Player } player - 发起赠与的玩家
+		 * @param { Player } target - 被赠与的对象
+		 * @param { boolean } [strict] - 是否执行合法性校验
+		 * @returns { boolean }
 		 */
-		cardGiftable: (card, player, target, strict) => {
+		cardGiftable(card, player, target, strict) {
 			const mod = game.checkMod(card, player, target, "unchanged", "cardGiftable", player);
-			if (!mod || (strict && ((mod == "unchanged" && (get.position(card) != "h" || !get.cardtag(card, "gifts"))) || player == target))) {
+			if (!mod || (strict && ((mod === "unchanged" && (get.position(card) !== "h" || !get.cardtag(card, "gifts"))) || player === target))) {
 				return false;
 			}
-			return get.type(card, null, target) != "equip" || target.canEquip(card, true);
+			return get.type(card, null, target) !== "equip" || target.canEquip(card, true);
 		},
 		/**
-		 * Check if the card is recastable
-		 *
 		 * 检查此牌是否可重铸
-		 * @param { Card } card
-		 * @param { Player } player
-		 * @param { Player } [source]
-		 * @param { boolean } [strict]
+		 *
+		 * @param { Card } card - 需要判断的牌
+		 * @param { Player } [player] - 拥有牌的角色
+		 * @param { Player } [source] - 执行重铸的玩家
+		 * @param { boolean } [strict] - 是否执行合法性校验
 		 */
-		cardRecastable: (card, player = get.owner(card), source, strict) => {
-			if (!player) {
-				if (player === null) {
-					console.trace(`cardRecastable的player参数不应传入null,可以用void 0或undefined占位`);
-				}
-				player = get.owner(card);
+		cardRecastable(card, player, source, strict) {
+			player ??= get.owner(card);
+			if (player == null) {
+				throw new ReferenceError("尝试检查一张无拥有者牌是否可以重铸");
 			}
+			source ??= player;
 			const mod = game.checkMod(card, player, source, "unchanged", "cardRecastable", player);
 			if (!mod) {
 				return false;
 			}
-			if (strict && mod == "unchanged") {
-				if (get.position(card) != "h") {
+			if (strict && mod === "unchanged") {
+				if (get.position(card) !== "h") {
 					return false;
 				}
-				const info = get.info(card),
-					recastable = info.recastable || info.chongzhu;
-				return Boolean(typeof recastable == "function" ? recastable(_status.event, player) : recastable);
+				const info = get.info(card);
+				const recastable = info.recastable || info.chongzhu;
+				return Boolean(typeof recastable === "function" ? recastable(_status.event, player) : recastable);
 			}
 			return true;
 		},
-		//装备栏相关
 		/**
-		 * @param { Card } card
-		 * @param { Player } player
+		 * 判断一张装备牌是否可以被替换。
+		 *
+		 * @param { Card | VCard } card - 需要判断的装备牌
+		 * @param { Player } player - 持有/装备此牌的角色
 		 * @returns { boolean }
 		 */
-		canBeReplaced: function (card, player) {
-			var mod = game.checkMod(card, player, "unchanged", "canBeReplaced", player);
-			if (mod != "unchanged") {
-				return mod;
+		canBeReplaced(card, player) {
+			const mod = game.checkMod(card, player, "unchanged", "canBeReplaced", player);
+			if (mod !== "unchanged") {
+				return Boolean(mod);
 			}
 			return true;
 		},
-		//装备栏 END
-		buttonIncluded: function (button) {
-			return !(_status.event.excludeButton && _status.event.excludeButton.includes(button));
+		/**
+		 * 判断按钮是否未被当前事件排除。
+		 *
+		 * @param { Button } button - 待判断的按钮
+		 * @returns { boolean }
+		 */
+		buttonIncluded(button) {
+			return !_status.event.excludeButton?.includes(button);
 		},
-		filterButton: function (button) {
+		/**
+		 * 默认的按钮筛选条件，允许所有按钮。
+		 *
+		 * @param { Button } button - 待筛选的按钮
+		 * @returns { boolean }
+		 */
+		filterButton(button) {
 			return true;
 		},
-		cardSavable: function (card, player, target) {
-			if (get.itemtype(card) == "card") {
-				var mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
-				if (mod2 != "unchanged") {
-					return mod2;
+		/**
+		 * 检测此牌是否可用于救助目标
+		 *
+		 * @param { Card | VCard | CardBaseUIData  } card - 需要判断的牌
+		 * @param { Player } player - 使用此牌的玩家
+		 * @param { Player } target - 被救助的目标
+		 * @returns { boolean }
+		 */
+		cardSavable(card, player, target) {
+			if (get.itemtype(card) === "card") {
+				// @ts-expect-error 我们需要ts
+				const mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
+				if (mod2 !== "unchanged") {
+					return Boolean(mod2);
 				}
 			}
-			card = get.autoViewAs(card);
-			var mod = game.checkMod(card, player, target, "unchanged", "cardSavable", player);
-			if (mod != "unchanged") {
-				return mod;
+			const card2 = get.autoViewAs(card);
+			let mod = game.checkMod(card2, player, target, "unchanged", "cardSavable", player);
+			if (mod !== "unchanged") {
+				return Boolean(mod);
 			}
-			var savable = get.info(card).savable;
-			if (typeof savable == "function") {
-				savable = savable(card, player, target);
+			let savable = get.info(card2).savable;
+			if (typeof savable === "function") {
+				savable = savable(card2, player, target);
 			}
 			return savable;
 		},
 		/**
+		 * 判断技能是否可响应指定事件。
 		 *
-		 * @param {GameEvent} event
-		 * @param {Player} player
-		 * @param {string} triggername
-		 * @param {string} skill
-		 * @returns {boolean}
+		 * @param { GameEvent } event - 待响应的事件
+		 * @param { Player } player - 技能所属角色
+		 * @param { string } triggerName - 触发时机名称
+		 * @param { string } skill - 技能名称
+		 * @param { any } [indexedData] - 触发时附带的索引数据
+		 * @returns { boolean }
 		 */
-		filterTrigger: function (event, player, triggername, skill, indexedData) {
+		filterTrigger(event, player, triggerName, skill, indexedData) {
 			if (
 				player._hookTrigger &&
 				player._hookTrigger.some(i => {
 					const info = lib.skill[i].hookTrigger;
-					return info && info.block && info.block(event, player, triggername, skill);
+					return info && info.block && info.block(event, player, triggerName, skill);
 				})
 			) {
 				return false;
@@ -10978,7 +11008,7 @@ export class Library {
 			}
 			if (!game.expandSkills(player.getSkills(false).concat(lib.skill.global)).includes(skill)) {
 				//hiddenSkills
-				if (get.mode() != "guozhan") {
+				if (get.mode() !== "guozhan") {
 					return false;
 				}
 				if (info.noHidden) {
@@ -10996,16 +11026,16 @@ export class Library {
 			}
 			if (
 				!Object.keys(info.trigger).some(role => {
-					if (role != "global" && player != event[role]) {
+					if (role !== "global" && player !== event[role]) {
 						return false;
 					}
 					const list = [];
-					if (typeof info.trigger[role] == "string") {
+					if (typeof info.trigger[role] === "string") {
 						list.add(info.trigger[role]);
 					} else if (Array.isArray(info.trigger[role])) {
 						list.addArray(info.trigger[role]);
 					}
-					if (list.includes(triggername)) {
+					if (list.includes(triggerName)) {
 						return true;
 					}
 					const map = lib.relatedTrigger,
@@ -11017,12 +11047,12 @@ export class Library {
 							}
 						}
 					}
-					return list.includes(triggername);
+					return list.includes(triggerName);
 				})
 			) {
 				return false;
 			}
-			if (info.filter && !info.filter(event, player, triggername, indexedData)) {
+			if (info.filter && !info.filter(event, player, triggerName, indexedData)) {
 				return false;
 			}
 			if (event._notrigger.includes(player) && !lib.skill.global.includes(skill)) {
@@ -11041,35 +11071,34 @@ export class Library {
 				return false;
 			}
 			for (const item in player.storage) {
-				if (item.startsWith("temp_ban_")) {
-					if (player.storage[item] !== true) {
-						continue;
-					}
-					const skillName = item.slice(9);
-					if (lib.skill[skillName]) {
-						const skills = game.expandSkills([skillName]);
-						if (skills.includes(skill)) {
-							return false;
-						}
-					}
+				if (!item.startsWith("temp_ban_") || player.storage[item] !== true) {
+					continue;
+				}
+				const skillName = item.slice(9);
+				if (!lib.skill[skillName]) {
+					continue;
+				}
+				const skills = game.expandSkills([skillName]);
+				if (skills.includes(skill)) {
+					return false;
 				}
 			}
 			return true;
 		},
 		/**
+		 * 判断技能是否可在当前事件中发动。
 		 *
-		 * @param {GameEvent} event
-		 * @param {Player} player
-		 * @param {string} skill
-		 * @returns {boolean}
+		 * @param { GameEvent } event - 当前事件
+		 * @param { Player } player - 技能所属角色
+		 * @param { string } skill - 技能名称
+		 * @returns { boolean }
 		 */
-		filterEnable: function (event, player, skill) {
+		filterEnable(event, player, skill) {
 			const info = get.info(skill);
 			if (!info) {
 				console.error(new ReferenceError("缺少info的技能:", skill));
 				return false;
 			}
-			// if (!game.expandSkills(player.getSkills('invisible').concat(lib.skill.global)).includes(skill)) return false;
 			if (!game.expandSkills(player.getSkills(false).concat(lib.skill.global)).includes(skill)) {
 				//hiddenSkills
 				if (player.hasSkillTag("nomingzhi", false, null, true)) {
@@ -11144,327 +11173,394 @@ export class Library {
 			}
 			return true;
 		},
-		characterDisabled: function (i, libCharacter) {
-			const args = Array.from(arguments).slice(2);
-			if (!lib.character[i]) {
+		/**
+		 * 判断武将是否因配置、模式或禁用列表而不可选用。
+		 *
+		 * @param { string } name - 武将名称
+		 * @param { Record<string, Character> } [_characters] - 候选武将表；保留此参数以兼容现有调用。
+		 * @param { ...string } options - 附加选项，包含 `"ignoreForibidden"` 时忽略 AI 禁用标记。
+		 * @returns { boolean }
+		 */
+		characterDisabled(name, _characters, ...options) {
+			const character = lib.character[name];
+			if (!character || character.isUnseen) {
 				return true;
 			}
-			if (lib.character[i].isUnseen) {
-				return true;
-			}
-			if (!args.includes("ignoreForibidden")) {
-				if (lib.config.forbidai.includes(i) || lib.character[i].isAiForbidden) {
+			if (!options.includes("ignoreForibidden")) {
+				if (lib.config.forbidai.includes(name) || character.isAiForbidden) {
 					return true;
 				}
 			}
-			if (lib.characterFilter[i] && !lib.characterFilter[i](get.mode())) {
+			if (lib.characterFilter[name] && !lib.characterFilter[name](get.mode())) {
 				return true;
 			}
 			if (_status.connectMode) {
-				if (lib.configOL.banned.includes(i) || lib.connectBanned.includes(i)) {
+				if (lib.configOL.banned.includes(name) || lib.connectBanned.includes(name)) {
 					return true;
 				}
-				var double_character = false;
-				if (lib.configOL.mode == "guozhan") {
-					double_character = true;
-				} else if (lib.configOL.double_character && (lib.configOL.mode == "identity" || lib.configOL.mode == "stone")) {
-					double_character = true;
-				} else if (lib.configOL.double_character_jiange && lib.configOL.mode == "versus" && _status.mode == "jiange") {
-					double_character = true;
-				}
-				if (double_character && lib.config.forbiddouble.includes(i)) {
+				const doubleCharacter = lib.configOL.mode === "guozhan" || (lib.configOL.double_character && (lib.configOL.mode === "identity" || lib.configOL.mode === "stone")) || (lib.configOL.double_character_jiange && lib.configOL.mode === "versus" && _status.mode === "jiange");
+				if (doubleCharacter && lib.config.forbiddouble.includes(name)) {
 					return true;
 				}
 			} else {
-				if (lib.config.banned.includes(i)) {
+				if (lib.config.banned.includes(name)) {
 					return true;
 				}
-				var double_character = false;
-				if (get.mode() == "guozhan") {
-					double_character = true;
-				} else if (get.config("double_character") && (lib.config.mode == "identity" || lib.config.mode == "stone")) {
-					double_character = true;
-				} else if (get.config("double_character_jiange") && lib.config.mode == "versus" && _status.mode == "jiange") {
-					double_character = true;
-				}
-				if (double_character && lib.config.forbiddouble.includes(i)) {
+				const doubleCharacter = get.mode() === "guozhan" || (get.config("double_character") && (lib.config.mode === "identity" || lib.config.mode === "stone")) || (get.config("double_character_jiange") && lib.config.mode === "versus" && _status.mode === "jiange");
+				if (doubleCharacter && lib.config.forbiddouble.includes(name)) {
 					return true;
 				}
-			}
-		},
-		characterDisabled2: function (i) {
-			var info = lib.character[i];
-			const args = Array.from(arguments).slice(1);
-			if (!info) {
-				return true;
-			}
-			if (info[4]) {
-				if (info.isBoss || info.isHiddenBoss) {
-					return !lib.config?.plays?.includes("boss");
-				}
-				if (info.isMinskin) {
-					return true;
-				}
-				if (info.isUnseen) {
-					return true;
-				}
-				if (!args.includes("ignoreForibidden") && info.isAiForbidden && (!_status.event.isMine || !_status.event.isMine())) {
-					return true;
-				}
-				if (lib.characterFilter[i] && !lib.characterFilter[i](get.mode())) {
-					return true;
-				}
-			}
-			return false;
-		},
-		skillDisabled: function (skill) {
-			if (!lib.translate[skill] || !lib.translate[skill + "_info"]) {
-				return true;
-			}
-			var info = lib.skill[skill];
-			if (info && !info.unique && !info.temp && !info.sub && !info.fixed && !info.vanish) {
-				return false;
-			}
-			return true;
-		},
-		cardEnabled: function (card, player, event) {
-			if (player == undefined) {
-				player = _status.event.player;
-			}
-			if (!player) {
-				return false;
-			}
-			if (get.itemtype(card) == "card") {
-				var mod2 = game.checkMod(card, player, event, "unchanged", "cardEnabled2", player);
-				if (mod2 != "unchanged") {
-					return mod2;
-				}
-			}
-			card = get.autoViewAs(card);
-			if (event === "forceEnable") {
-				var mod = game.checkMod(card, player, event, "unchanged", "cardEnabled", player);
-				if (mod != "unchanged") {
-					return mod;
-				}
-				return true;
-			} else {
-				var filter = get.info(card).enable;
-				if (!filter) {
-					return;
-				}
-				var mod = game.checkMod(card, player, event, "unchanged", "cardEnabled", player);
-				if (mod != "unchanged") {
-					return mod;
-				}
-				if (typeof filter == "boolean") {
-					return filter;
-				}
-				if (typeof filter == "function") {
-					return filter(card, player, event);
-				}
-			}
-		},
-		cardRespondable: function (card, player, event) {
-			event = event || _status.event;
-			if (event.name != "chooseToRespond") {
-				return true;
-			}
-			if (player == undefined) {
-				player = _status.event.player;
-			}
-			if (!player) {
-				return false;
-			}
-			var source = event.getParent().player;
-			if (source && source != player) {
-				if (source.hasSkillTag("norespond", false, [card, player, event], true)) {
-					return false;
-				}
-			}
-			if (get.itemtype(card) == "card") {
-				var mod2 = game.checkMod(card, player, event, "unchanged", "cardEnabled2", player);
-				if (mod2 != "unchanged") {
-					return mod2;
-				}
-			}
-			card = get.autoViewAs(card);
-			var mod = game.checkMod(card, player, "unchanged", "cardRespondable", player);
-			if (mod != "unchanged") {
-				return mod;
-			}
-			return true;
-		},
-		cardUsable2: function (card, player, event) {
-			card = get.autoViewAs(card);
-			var info = get.info(card);
-			if (info.updateUsable == "phaseUse") {
-				event = event || _status.event;
-				if (event.type == "chooseToUse_button") {
-					event = event.getParent();
-				}
-				if (player != _status.event.player) {
-					return true;
-				}
-				if (event.getParent().name != "phaseUse") {
-					return true;
-				}
-				if (event.getParent().player != player) {
-					return true;
-				}
-			}
-			var num = info.usable;
-			if (typeof num == "function") {
-				num = num(card, player);
-			}
-			num = game.checkMod(card, player, num, "cardUsable", player);
-			if (typeof num != "number") {
-				return true;
-			} else {
-				return player.countUsed(card) < num;
-			}
-		},
-		cardUsable(card, player, event) {
-			card = get.autoViewAs(card);
-			var info = get.info(card);
-			event = event || _status.event;
-			if (event.type == "chooseToUse_button") {
-				event = event.getParent();
-			}
-			if (player != event.player) {
-				return true;
-			}
-			if (info.updateUsable == "phaseUse") {
-				if (event.getParent().name != "phaseUse") {
-					return true;
-				}
-				if (event.getParent().player != player) {
-					return true;
-				}
-			}
-			event.addCount_extra = true;
-			var num = info.usable;
-			if (typeof num == "function") {
-				num = num(card, player);
-			}
-			num = game.checkMod(card, player, num, "cardUsable", player);
-			if (typeof num != "number") {
-				return typeof num == "boolean" ? num : true;
-			}
-			if (player.countUsed(card) < num) {
-				return true;
-			}
-			if (
-				game.hasPlayer2(function (current) {
-					return game.checkMod(card, player, current, false, "cardUsableTarget", player);
-				}, true)
-			) {
-				return true;
 			}
 			return false;
 		},
 		/**
-		 * player的card在event事件中能否被自己弃置
-		 * @param { Card } card 要被弃置的牌
-		 * @param { Player } player 执行弃牌的角色
-		 * @param { string } [event] 弃置牌事件的名称
+		 * 判断武将是否因特殊标签或模式限制而不可选用。
+		 *
+		 * @param { string } name - 武将名称
+		 * @param { ...string } options - 附加选项，包含 `"ignoreForibidden"` 时忽略 AI 禁用标记。
 		 * @returns { boolean }
 		 */
-		cardDiscardable: function (card, player, event) {
-			event = event || _status.event;
-			if (typeof event != "string") {
-				event = event.getParent().name;
+		characterDisabled2(name, ...options) {
+			const character = lib.character[name];
+			if (!character) {
+				return true;
 			}
-			var mod = game.checkMod(card, player, event, "unchanged", "cardDiscardable", player);
-			if (mod != "unchanged") {
-				return mod;
+			if (character[4]) {
+				if (character.isBoss || character.isHiddenBoss) {
+					return !lib.config?.plays?.includes("boss");
+				}
+				if (character.isMinskin) {
+					return true;
+				}
+				if (character.isUnseen) {
+					return true;
+				}
+				if (!options.includes("ignoreForibidden") && character.isAiForbidden && (!_status.event.isMine || !_status.event.isMine())) {
+					return true;
+				}
+				if (lib.characterFilter[name] && !lib.characterFilter[name](get.mode())) {
+					return true;
+				}
+			}
+			return false;
+		},
+		/**
+		 * 判断技能是否因缺少翻译或具有非普通技能标签而不可选用。
+		 *
+		 * @param { string } skill - 技能名称
+		 * @returns { boolean }
+		 */
+		skillDisabled(skill) {
+			if (!lib.translate[skill] || !lib.translate[skill + "_info"]) {
+				return true;
+			}
+			const info = lib.skill[skill];
+			return Boolean(!info || info.unique || info.temp || info.sub || info.fixed || info.vanish);
+		},
+		/**
+		 * 判断一张牌对某角色在指定事件中是否可用。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 需要判断的牌
+		 * @param { Player } [player] - 使用/发动此牌的角色。
+		 * @param { GameEvent | "forceEnable" } [event] - 当前事件上下文；传`"forceEnable"`时强制跳过牌自身 enable 判断。
+		 * @returns { boolean }
+		 */
+		cardEnabled(card, player, event) {
+			player ??= get.player();
+			if (!player) {
+				return false;
+			}
+			if (get.itemtype(card) === "card") {
+				// @ts-expect-error 我们需要ts
+				const mod2 = game.checkMod(card, player, event, "unchanged", "cardEnabled2", player);
+				if (mod2 !== "unchanged") {
+					return Boolean(mod2);
+				}
+			}
+			const card2 = get.autoViewAs(card);
+			if (event === "forceEnable") {
+				// @ts-expect-error 我们需要ts
+				const mod = game.checkMod(card, player, event, "unchanged", "cardEnabled", player);
+				if (mod != "unchanged") {
+					return Boolean(mod);
+				}
+				return true;
+			} else {
+				const filter = get.info(card).enable;
+				if (!filter) {
+					return false;
+				}
+				// @ts-expect-error 我们需要ts
+				const mod = game.checkMod(card, player, event, "unchanged", "cardEnabled", player);
+				if (mod !== "unchanged") {
+					return Boolean(mod);
+				}
+				if (typeof filter === "boolean") {
+					return filter;
+				}
+				if (typeof filter === "function") {
+					return filter(card, player, event);
+				}
+			}
+			return false;
+		},
+		/**
+		 * 判断一张牌对某角色在指定事件中是否可以打出。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card 
+		 * @param { Player } [player]
+		 * @param { GameEvent } [event]
+		 * @returns { boolean }
+		 */
+		cardRespondable(card, player, event) {
+			event ??= _status.event;
+			if (event.name !== "chooseToRespond") {
+				return true;
+			}
+			player ??= get.player();
+			if (!player) {
+				return false;
+			}
+			const source = event.getParent()?.player;
+			if (source && source !== player) {
+				if (source.hasSkillTag("norespond", false, [card, player, event], true)) {
+					return false;
+				}
+			}
+			if (get.itemtype(card) === "card") {
+				// @ts-expect-error 我们需要ts
+				const mod2 = game.checkMod(card, player, event, "unchanged", "cardEnabled2", player);
+				if (mod2 !== "unchanged") {
+					return Boolean(mod2);
+				}
+			}
+			const card2 = get.autoViewAs(card);
+			const mod = game.checkMod(card2, player, "unchanged", "cardRespondable", player);
+			if (mod !== "unchanged") {
+				return Boolean(mod);
+			}
+			return true;
+		},
+		/**
+		 * 判断一张牌对某角色在指定事件中是否仍有使用次数。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 需要判断的牌
+		 * @param { Player } [player] - 使用/发动此牌的角色。
+		 * @param { GameEvent } [event] - 当前事件上下文。
+		 * @returns { boolean }
+		 */
+		cardUsable2(card, player, event) {
+			const card2 = get.autoViewAs(card);
+			const info = get.info(card2);
+			if (info.updateUsable === "phaseUse") {
+				event ??= _status.event;
+				if (event.type === "chooseToUse_button") {
+					event = event.getParent();
+					if (event == null) {
+						return false;
+					}
+				}
+				if (player !== get.player()) {
+					return true;
+				}
+				const phaseUseEvent = event.getParent();
+				if (phaseUseEvent == null) {
+					return false;
+				}
+				if (phaseUseEvent.name !== "phaseUse") {
+					return true;
+				}
+				if (phaseUseEvent.player !== player) {
+					return true;
+				}
+			}
+			player ??= get.player();
+			if (!player) {
+				return false;
+			}
+			let num = info.usable;
+			if (typeof num === "function") {
+				num = num(card2, player);
+			}
+			num = game.checkMod(card2, player, num, "cardUsable", player);
+			if (typeof num !== "number") {
+				return true;
+			}
+			return player.countUsed(card2) < num;
+		},
+		/**
+		 * 判断一张牌对某角色在指定事件中是否可使用。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 需要判断的牌
+		 * @param { Player } player - 使用/发动此牌的角色。
+		 * @param { GameEvent } [event] - 当前事件上下文。
+		 * @returns { boolean }
+		 */
+		cardUsable(card, player, event) {
+			const card2 = get.autoViewAs(card);
+			const info = get.info(card2);
+			event ??= _status.event;
+			if (event.type === "chooseToUse_button") {
+				event = event.getParent();
+				if (event == null) {
+					return false;
+				}
+			}
+			if (player !== event.player) {
+				return true;
+			}
+			if (info.updateUsable === "phaseUse") {
+				const phaseUseEvent = event.getParent();
+				if (phaseUseEvent == null) {
+					return false;
+				}
+				if (phaseUseEvent.name !== "phaseUse") {
+					return true;
+				}
+				if (phaseUseEvent.player !== player) {
+					return true;
+				}
+			}
+			event.addCount_extra = true;
+			let num = info.usable;
+			if (typeof num === "function") {
+				num = num(card2, player);
+			}
+			num = game.checkMod(card2, player, num, "cardUsable", player);
+			if (typeof num !== "number") {
+				return typeof num === "boolean" ? num : true;
+			}
+			if (player.countUsed(card2) < num) {
+				return true;
+			}
+			return game.hasPlayer2(current => Boolean(game.checkMod(card2, player, current, false, "cardUsableTarget", player)), true);
+		},
+		/**
+		 * player的card在event事件中能否被自己弃置
+		 *
+		 * @param { Card } card - 需要判断的牌
+		 * @param { Player } player - 执行弃牌的角色
+		 * @param { string | GameEvent } [event] - 弃置牌事件或事件名称
+		 * @returns { boolean }
+		 */
+		cardDiscardable(card, player, event) {
+			event ??= get.event();
+			if (event != null && typeof event !== "string") {
+				event = event.getParent()?.name;
+			}
+			const mod = game.checkMod(card, player, event, "unchanged", "cardDiscardable", player);
+			if (mod !== "unchanged") {
+				return Boolean(mod);
 			}
 			return true;
 		},
 		/**
 		 * target的card在event事件中能否被player弃置
-		 * @param { Card } card 要被弃置的牌
-		 * @param { Player } player 执行弃牌的角色
-		 * @param { Player } target 被弃置牌的现持有者
-		 * @param { string } [event] 弃置牌事件的名称
+		 *
+		 * @param { Card } card - 需要判断的牌
+		 * @param { Player } player - 执行弃牌的角色
+		 * @param { Player } target - 被弃置牌的现持有者
+		 * @param { string | GameEvent } [event] - 弃置牌事件或事件名称
 		 * @returns { boolean }
 		 */
-		canBeDiscarded: function (card, player, target, event) {
-			event = event || _status.event;
-			if (typeof event != "string") {
-				event = event.getParent().name;
+		canBeDiscarded(card, player, target, event) {
+			event ??= _status.event;
+			if (typeof event !== "string") {
+				event = event.getParent()?.name;
 			}
-			if (player == target && !lib.filter.cardDiscardable(card, player, event)) {
+			if (player === target && !lib.filter.cardDiscardable(card, player, event)) {
 				return false;
 			}
-			var mod = game.checkMod(card, player, target, event, "unchanged", "canBeDiscarded", target);
-			if (mod != "unchanged") {
-				return mod;
+			const mod = game.checkMod(card, player, target, event, "unchanged", "canBeDiscarded", target);
+			if (mod !== "unchanged") {
+				return Boolean(mod);
 			}
 			return true;
 		},
 		/**
 		 * target的card在event事件中能否被player获得
-		 * @param { Card } card 要被获得的牌
-		 * @param { Player } player 获得牌的角色
-		 * @param { Player } target 被获得牌的现持有者
-		 * @param { string } [event] 获得牌事件的名称
+		 *
+		 * @param { Card } card - 需要判断的牌
+		 * @param { Player } player - 获得牌的角色
+		 * @param { Player } target - 被获得牌的现持有者
+		 * @param { string | GameEvent } [event] - 获得牌事件或事件名称
 		 * @returns { boolean }
 		 */
-		canBeGained: function (card, player, target, event) {
-			event = event || _status.event;
-			if (typeof event != "string") {
-				event = event.getParent().name;
+		canBeGained(card, player, target, event) {
+			event ??= _status.event;
+			if (typeof event !== "string") {
+				event = event.getParent()?.name;
 			}
-			var mod = game.checkMod(card, player, target, event, "unchanged", "canBeGained", target);
-			if (mod != "unchanged") {
-				return mod;
+			const mod = game.checkMod(card, player, target, event, "unchanged", "canBeGained", target);
+			if (mod !== "unchanged") {
+				return Boolean(mod);
 			}
 			return true;
 		},
-		cardAiIncluded: function (card) {
-			if (_status.event.isMine()) {
+		/**
+		 * 判断一张牌是否应包含在当前事件的AI选择中。
+		 *
+		 * @param { string } card - 需要判断的牌
+		 * @returns { boolean }
+		 */
+		cardAiIncluded(card) {
+			const event = get.event();
+			if (event.isMine()) {
 				return true;
 			}
-			return _status.event._aiexclude.includes(card) == false;
+			return event._aiexclude.includes(card) === false;
 		},
+		/**
+		 * 判断一张牌对某角色在指定事件中是否可被选择。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 需要判断的牌
+		 * @param { Player } [player] - 使用/发动此牌的角色。
+		 * @param { GameEvent } [event] - 当前事件上下文。
+		 * @returns { boolean }
+		 */
 		filterCard(card, player, event) {
-			var info = get.info(card);
-			//if(info.toself&&!lib.filter.targetEnabled(card,player,player)) return false;
-			if (player == undefined) {
-				player = _status.event.player;
-			}
+			const info = get.info(card);
+			player ??= get.player();
 			if (!lib.filter.cardEnabled(card, player, event) || !lib.filter.cardUsable(card, player, event)) {
 				return false;
 			}
 			if (info.notarget) {
 				return true;
 			}
-			var range;
-			var select = get.copy(info.selectTarget);
-			if (select == undefined) {
-				if (info.filterTarget == undefined) {
+			let range;
+			const select = get.copy(info.selectTarget);
+			if (select == null) {
+				if (info.filterTarget == null) {
 					return true;
 				}
 				range = [1, 1];
-			} else if (typeof select == "number") {
+			} else if (typeof select === "number") {
 				range = [select, select];
-			} else if (get.itemtype(select) == "select") {
+			} else if (get.itemtype(select) === "select") {
 				range = select;
-			} else if (typeof select == "function") {
+			} else if (typeof select === "function") {
 				range = select(card, player);
-				if (typeof range == "number") {
+				if (typeof range === "number") {
 					range = [range, range];
 				}
 			}
 			game.checkMod(card, player, range, "selectTarget", player);
-			if (!range || range[1] != -1) {
+			if (!range || range[1] !== -1) {
 				return true;
 			}
-			var filterTarget = event && event.filterTarget ? event.filterTarget : lib.filter.filterTarget;
-			return game.hasPlayer2(function (current) {
-				return filterTarget(card, player, current);
-			}, true);
+			const filterTarget = event?.filterTarget || lib.filter.filterTarget;
+			return game.hasPlayer2(current => filterTarget(card, player, current), true);
 		},
+		/**
+		 * 判断一张牌在当前选择事件中是否可以指定目标。
+		 *
+		 * 此函数在常规目标合法性前，额外校验当前事件中的牌可用性、使用次数和singleCard追加目标规则。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 需要判断的牌
+		 * @param { Player } player - 使用/指定此目标的角色
+		 * @param { Player } target - 被指定的目标角色
+		 * @returns { boolean }
+		 */
 		targetEnabledx(card, player, target) {
 			if (!card || !target || target.removed) {
 				return false;
@@ -11476,28 +11572,37 @@ export class Library {
 			if (!info?.includeOut && target.isOut()) {
 				return false;
 			}
-			let event = _status.event,
-				evt = event.getParent("chooseToUse");
+			const event = _status.event;
+			let evt = event.getParent("chooseToUse");
 			if (get.itemtype(evt) !== "event") {
 				evt = event;
 			}
 			if (
 				event._backup &&
-				event._backup.filterCard == lib.filter.filterCard &&
+				event._backup.filterCard === lib.filter.filterCard &&
 				(!lib.filter.cardEnabled(card, player, event) || !lib.filter.cardUsable(card, player, evt))
 			) {
 				return false;
 			}
 			if (event.addCount_extra) {
-				if (!lib.filter.cardUsable2(card, player) && !game.checkMod(card, player, target, false, "cardUsableTarget", player)) {
+				const usableTarget = game.checkMod(card, player, target, false, "cardUsableTarget", player);
+				if (!lib.filter.cardUsable2(card, player) && !usableTarget) {
 					return false;
 				}
 			}
 			if (info.singleCard && info.filterAddedTarget && ui.selected.targets.length) {
 				return Boolean(info.filterAddedTarget(card, player, target, ui.selected.targets[ui.selected.targets.length - 1]));
 			}
-			return lib.filter.targetEnabled.apply(this, arguments);
+			return lib.filter.targetEnabled(card, player, target);
 		},
+		/**
+		 * 判断一张牌是否可以按常规规则指定目标。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 需要判断的牌
+		 * @param { Player } player - 使用/指定此目标的角色
+		 * @param { Player } target - 被指定的目标角色
+		 * @returns { boolean }
+		 */
 		targetEnabled(card, player, target) {
 			if (!card || !target || target.removed) {
 				return false;
@@ -11509,24 +11614,33 @@ export class Library {
 			if (!info?.includeOut && target.isOut()) {
 				return false;
 			}
-			const filter = info.filterTarget;
-			if (!info.singleCard || ui.selected.targets.length == 0) {
-				let mod = game.checkMod(card, player, target, "unchanged", "playerEnabled", player);
-				if (mod != "unchanged") {
-					return mod;
+			if (!info.singleCard || ui.selected.targets.length === 0) {
+				const playerEnabled = game.checkMod(card, player, target, "unchanged", "playerEnabled", player);
+				if (playerEnabled !== "unchanged") {
+					return Boolean(playerEnabled);
 				}
-				mod = game.checkMod(card, player, target, "unchanged", "targetEnabled", target);
-				if (mod != "unchanged") {
-					return mod;
+				const targetEnabled = game.checkMod(card, player, target, "unchanged", "targetEnabled", target);
+				if (targetEnabled !== "unchanged") {
+					return Boolean(targetEnabled);
 				}
 			}
-			if (typeof filter == "boolean") {
-				return filter;
+			const filterTarget = info.filterTarget;
+			if (typeof filterTarget === "boolean") {
+				return filterTarget;
 			}
-			if (typeof filter == "function") {
-				return Boolean(filter(card, player, target));
+			if (typeof filterTarget === "function") {
+				return Boolean(filterTarget(card, player, target));
 			}
+			return false;
 		},
+		/**
+		 * 判断一张牌是否可以指定目标，或是否可通过牌的modTarget额外影响目标。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 需要判断的牌
+		 * @param { Player } player - 使用/指定此目标的角色
+		 * @param { Player } target - 被指定或额外影响的目标角色
+		 * @returns { boolean }
+		 */
 		targetEnabled2(card, player, target) {
 			if (!card || !target || target.removed) {
 				return false;
@@ -11542,22 +11656,32 @@ export class Library {
 				return true;
 			}
 
-			if (game.checkMod(card, player, target, "unchanged", "playerEnabled", player) == false) {
+			const playerEnabled = game.checkMod(card, player, target, "unchanged", "playerEnabled", player);
+			if (playerEnabled === false) {
 				return false;
 			}
-			if (game.checkMod(card, player, target, "unchanged", "targetEnabled", target) == false) {
+			const targetEnabled = game.checkMod(card, player, target, "unchanged", "targetEnabled", target);
+			if (targetEnabled === false) {
 				return false;
 			}
 
-			const filter = get.info(card).modTarget;
-			if (typeof filter == "boolean") {
-				return filter;
+			const modTarget = info.modTarget;
+			if (typeof modTarget === "boolean") {
+				return modTarget;
 			}
-			if (typeof filter == "function") {
-				return Boolean(filter(card, player, target));
+			if (typeof modTarget === "function") {
+				return Boolean(modTarget(card, player, target));
 			}
 			return false;
 		},
+		/**
+		 * 仅根据牌自身的filterTarget或modTarget定义判断目标是否可被涉及。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 需要判断的牌
+		 * @param { Player } player - 使用/指定此目标的角色
+		 * @param { Player } target - 被指定或涉及的目标角色
+		 * @returns { boolean }
+		 */
 		targetEnabled3(card, player, target) {
 			if (!card || !target || target.removed) {
 				return false;
@@ -11570,128 +11694,198 @@ export class Library {
 				return false;
 			}
 
-			if (info.filterTarget == true) {
+			const { filterTarget, modTarget } = info;
+			if (filterTarget === true) {
 				return true;
 			}
-			if (typeof info.filterTarget == "function" && info.filterTarget(card, player, target)) {
+			if (typeof filterTarget === "function" && filterTarget(card, player, target)) {
 				return true;
 			}
 
-			if (info.modTarget == true) {
+			if (modTarget === true) {
 				return true;
 			}
-			if (typeof info.modTarget == "function" && info.modTarget(card, player, target)) {
-				return true;
+			if (typeof modTarget === "function") {
+				return Boolean(modTarget(card, player, target));
 			}
 			return false;
 		},
-		targetInRange: function (card, player, target) {
-			var info = get.info(card);
-			var range = info.range;
-			var outrange = info.outrange;
-			if (range == undefined && outrange == undefined) {
+		/**
+		 * 判断目标是否满足一张牌的距离范围限制。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 需要判断的牌
+		 * @param { Player } player - 使用/指定此目标的角色
+		 * @param { Player } target - 被指定的目标角色
+		 * @returns { boolean }
+		 */
+		targetInRange(card, player, target) {
+			const info = get.info(card);
+			const { range, outrange } = info;
+			const hasRange = range != null;
+			const hasOutrange = outrange != null;
+			if (!hasRange && !hasOutrange) {
 				return true;
 			}
 
-			var mod = game.checkMod(card, player, target, "unchanged", "targetInRange", player);
-			var extra = 0;
-			if (mod != "unchanged") {
-				if (typeof mod == "boolean") {
+			const mod = game.checkMod(card, player, target, "unchanged", "targetInRange", player);
+			let extra = 0;
+			if (mod !== "unchanged") {
+				if (typeof mod === "boolean") {
 					return mod;
 				}
-				if (typeof mod == "number") {
+				if (typeof mod === "number") {
 					extra = mod;
 				}
 			}
-			if (typeof info.range == "function") {
-				return info.range(card, player, target);
+			if (typeof range === "function") {
+				return Boolean(range(card, player, target));
 			}
 
 			if (player.hasSkill("undist") || target.hasSkill("undist")) {
 				return false;
 			}
-			for (var i in range) {
-				if (i == "attack") {
-					var range2 = player.getAttackRange();
-					if (range2 <= 0) {
+			for (const type in range ?? {}) {
+				if (type === "attack") {
+					const attackRange = player.getAttackRange();
+					if (attackRange <= 0) {
 						return false;
 					}
-					var distance = get.distance(player, target) + extra;
-					if (range[i] <= distance - range2) {
+					const distance = get.distance(player, target) + extra;
+					if (range[type] <= distance - attackRange) {
 						return false;
 					}
 				} else {
-					var distance = get.distance(player, target, i) + extra;
-					if (range[i] < distance) {
+					const distance = get.distance(player, target, type) + extra;
+					if (range[type] < distance) {
 						return false;
 					}
 				}
 			}
-			for (var i in outrange) {
-				if (i == "attack") {
-					var range2 = player.getAttackRange();
-					if (range2 <= 0) {
+			for (const type in outrange ?? {}) {
+				if (type === "attack") {
+					const attackRange = player.getAttackRange();
+					if (attackRange <= 0) {
 						return false;
 					}
-					var distance = get.distance(player, target) + extra;
-					if (outrange[i] > distance - range2 + 1) {
+					const distance = get.distance(player, target) + extra;
+					if (outrange[type] > distance - attackRange + 1) {
 						return false;
 					}
 				} else {
-					var distance = get.distance(player, target, i) + extra;
-					if (outrange[i] > distance) {
+					const distance = get.distance(player, target, type) + extra;
+					if (outrange[type] > distance) {
 						return false;
 					}
 				}
 			}
 			return true;
 		},
-		filterTarget: function (card, player, target) {
+		/**
+		 * 判断是否可指定目标，且目标处于使用距离内。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 使用的牌
+		 * @param { Player } player - 使用牌的角色
+		 * @param { Player } target - 被指定的目标角色
+		 * @returns { boolean }
+		 */
+		filterTarget(card, player, target) {
 			return lib.filter.targetEnabledx(card, player, target) && lib.filter.targetInRange(card, player, target);
 		},
-		filterTarget2: function (card, player, target) {
+		/**
+		 * 判断是否可通过常规或额外目标规则指定目标，且目标处于使用距离内。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 使用的牌
+		 * @param { Player } player - 使用牌的角色
+		 * @param { Player } target - 被指定的目标角色
+		 * @returns { boolean }
+		 */
+		filterTarget2(card, player, target) {
 			return lib.filter.targetEnabled2(card, player, target) && lib.filter.targetInRange(card, player, target);
 		},
-		notMe: function (card, player, target) {
-			return player != target;
+		/**
+		 * 判断目标是否不是使用者自身。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 当前牌
+		 * @param { Player } player - 使用牌的角色
+		 * @param { Player } target - 被判断的目标角色
+		 * @returns { boolean }
+		 */
+		notMe(card, player, target) {
+			return player !== target;
 		},
-		isMe: function (card, player, target) {
-			return player == target;
+		/**
+		 * 判断目标是否为使用者自身。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 当前牌
+		 * @param { Player } player - 使用牌的角色
+		 * @param { Player } target - 被判断的目标角色
+		 * @returns { boolean }
+		 */
+		isMe(card, player, target) {
+			return player === target;
 		},
-		attackFrom: function (card, player, target) {
+		/**
+		 * 判断目标与使用者的攻击距离是否至多为 1。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 当前牌
+		 * @param { Player } player - 使用牌的角色
+		 * @param { Player } target - 被判断的目标角色
+		 * @returns { boolean }
+		 */
+		attackFrom(card, player, target) {
 			return get.distance(player, target, "attack") <= 1;
 		},
-		globalFrom: function (card, player, target) {
+		/**
+		 * 判断目标与使用者的全局距离是否至多为 1。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 当前牌
+		 * @param { Player } player - 使用牌的角色
+		 * @param { Player } target - 被判断的目标角色
+		 * @returns { boolean }
+		 */
+		globalFrom(card, player, target) {
 			return get.distance(player, target) <= 1;
 		},
-		selectCard: function () {
+		/**
+		 * 返回默认选牌数量范围。
+		 *
+		 * @returns { [number, number] }
+		 */
+		selectCard() {
 			return [1, 1];
 		},
-		selectTarget: function (card, player) {
+		/**
+		 * 返回可选择目标数量的范围。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } [card] - 待使用的牌，默认取当前牌
+		 * @param { Player } [player] - 使用牌的角色，默认取当前角色
+		 * @returns { [number, number] | undefined }
+		 */
+		selectTarget(card, player) {
 			if (!card) {
 				card = get.card();
 			}
 			if (!player) {
 				player = get.player();
 			}
-			if (card == undefined) {
+			if (card == null) {
 				return;
 			}
-			var range,
-				info = get.info(card);
-			var select = get.copy(info.selectTarget);
-			if (select == undefined) {
-				if (info.filterTarget == undefined) {
+			let range;
+			const info = get.info(card);
+			const select = get.copy(info.selectTarget);
+			if (select === undefined || select === null) {
+				if (info.filterTarget === undefined || info.filterTarget === null) {
 					return [0, 0];
 				}
 				range = [1, 1];
-			} else if (typeof select == "number") {
+			} else if (typeof select === "number") {
 				range = [select, select];
-			} else if (get.itemtype(select) == "select") {
+			} else if (get.itemtype(select) === "select") {
 				range = select;
-			} else if (typeof select == "function") {
+			} else if (typeof select === "function") {
 				range = select(card, player);
-				if (typeof range == "number") {
+				if (typeof range === "number") {
 					range = [range, range];
 				}
 			}
@@ -11701,54 +11895,75 @@ export class Library {
 			}
 			return range;
 		},
-		judge: function (card, player, target) {
+		/**
+		 * 判断一张延时锦囊/判定牌是否可以置入目标判定区。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 需要判断的牌
+		 * @param { Player } player - 使用/置入此牌的角色
+		 * @param { Player } target - 被置入判定区的目标角色
+		 * @returns { boolean }
+		 */
+		judge(card, player, target) {
+			// @ts-expect-error 类型问题已经理不清了
 			if (!target.canAddJudge(card, player)) {
 				return false;
 			}
-			let mod = game.checkMod(card, player, target, "unchanged", "playerEnabled", player);
-			if (mod != "unchanged") {
-				return mod;
+			const playerEnabled = game.checkMod(card, player, target, "unchanged", "playerEnabled", player);
+			if (playerEnabled !== "unchanged") {
+				return Boolean(playerEnabled);
 			}
-			let mod2 = game.checkMod(card, player, target, "unchanged", "targetEnabled", target);
-			if (mod2 != "unchanged") {
-				return mod2;
+			const targetEnabled = game.checkMod(card, player, target, "unchanged", "targetEnabled", target);
+			if (targetEnabled !== "unchanged") {
+				return Boolean(targetEnabled);
 			}
 			return true;
 		},
-		autoRespondSha: function () {
+		/**
+		 * 判断当前响应事件是否应自动跳过出杀。
+		 *
+		 * @this {{ player: Player }}
+		 * @returns { boolean }
+		 */
+		autoRespondSha() {
 			return !this.player.hasSha("respond");
 		},
-		autoRespondShan: function () {
+		/**
+		 * 判断当前响应事件是否应自动跳过出闪。
+		 *
+		 * @this {{ player: Player }}
+		 * @returns { boolean }
+		 */
+		autoRespondShan() {
 			return !this.player.hasShan("respond");
 		},
-		wuxieSwap: function (event) {
-			if (event.type == "wuxie") {
-				if (ui.wuxie && ui.wuxie.classList.contains("glow")) {
+		/**
+		 * 判断无懈响应事件是否应跳过自动切换控制角色。
+		 *
+		 * @param { GameEvent } event - 当前响应事件
+		 * @returns { boolean }
+		 */
+		wuxieSwap(event) {
+			if (event.type !== "wuxie") {
+				return false;
+			}
+			if (ui.wuxie?.classList.contains("glow")) {
+				return true;
+			}
+			if (ui.tempnowuxie?.classList.contains("glow") && event.state > 0) {
+				const triggerEvent = event.getTrigger();
+				if (triggerEvent) {
+					if (ui.tempnowuxie._origin === triggerEvent.parent.id) {
+						return true;
+					}
+				} else if (ui.tempnowuxie._origin === _status.event.id2) {
 					return true;
 				}
-				if (ui.tempnowuxie && ui.tempnowuxie.classList.contains("glow") && event.state > 0) {
-					var triggerevent = event.getTrigger();
-					if (triggerevent) {
-						if (ui.tempnowuxie._origin == triggerevent.parent.id) {
-							return true;
-						}
-					} else if (ui.tempnowuxie._origin == _status.event.id2) {
-						return true;
-					}
-				}
-				if (lib.config.wuxie_self) {
-					var tw = event.info_map;
-					if (
-						tw.player &&
-						tw.player.isUnderControl(true) &&
-						!tw.player.hasSkillTag("noautowuxie") &&
-						(!tw.targets || tw.targets.length <= 1) &&
-						!tw.noai
-					) {
-						return true;
-					}
-				}
 			}
+			if (!lib.config.wuxie_self) {
+				return false;
+			}
+			const infoMap = event.info_map;
+			return Boolean(infoMap.player && infoMap.player.isUnderControl(true) && !infoMap.player.hasSkillTag("noautowuxie") && (!infoMap.targets || infoMap.targets.length <= 1) && !infoMap.noai);
 		},
 	};
 	sort = {
