@@ -4013,7 +4013,7 @@ export class Create {
 						button.node.info.style.setProperty("transform", "translateX(-52px) translateY(-3px)", "important");
 						button.node.name.style.setProperty("transform", "translateY(14px)", "important");
 					}
- 					const card = cards[index];
+					const card = cards[index];
 					if (get.name(card) !== card.name || !get.is.sameNature(get.nature(card), card.nature, true)) {
 						ui.create.cardTempName(get.autoViewAs({ name: get.name(card), nature: get.nature(card) }), button);
 					}
