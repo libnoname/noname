@@ -3119,22 +3119,29 @@ const skills = {
 		round: 1,
 		logAudio: () => 1,
 		logTarget: "player",
-		content() {
-			"step 0";
-			player.chooseButton(["选择" + get.translation(trigger.player) + "要进行的整肃类型", [["zhengsu_leijin", "zhengsu_bianzhen", "zhengsu_mingzhi"].filter(i => !trigger.player.hasSkill(i)), "vcard"]], true).set("ai", () => Math.random());
-			"step 1";
-			if (result.bool) {
-				var name = result.links[0][2],
-					target = trigger.player;
-				target.addTempSkill("houfeng_share", {
-					player: ["phaseDiscardAfter", "phaseAfter"],
-				});
-				target.markAuto("houfeng_share", [[player, name]]);
-				target.addTempSkill(name, { player: ["phaseDiscardAfter", "phaseAfter"] });
-				target.markAuto("houfeng", name);
-				target.popup(name, "thunder");
-				game.delayx();
+		async content(event, trigger, player) {
+			const target = trigger.player;
+			const result = await player
+				.chooseButton({
+					createDialog: [`选择${get.translation(target)}要进行的整肃类型`, [["zhengsu_leijin", "zhengsu_bianzhen", "zhengsu_mingzhi"].filter(i => !target.hasSkill(i)), "vcard"]],
+					forced: true,
+					ai() {
+						return Math.random();
+					},
+				})
+				.forResult();
+			if (!result.bool || !result.links?.length) {
+				return;
 			}
+			const name = result.links[0][2];
+			target.addTempSkill("houfeng_share", {
+				player: ["phaseDiscardAfter", "phaseAfter"],
+			});
+			target.markAuto("houfeng_share", [[player, name]]);
+			target.addTempSkill(name, { player: ["phaseDiscardAfter", "phaseAfter"] });
+			target.markAuto("houfeng", name);
+			target.popup(name, "thunder");
+			await game.delayx();
 		},
 		subSkill: {
 			share: {
@@ -3161,27 +3168,30 @@ const skills = {
 					}
 					player.popup("整肃成功", "wood");
 					game.log(player, "整肃成功");
-					var list = player
+					const list = player
 						.getStorage("houfeng_share")
-						.filter(i => i[1] == event.indexedData && i[0].isIn())
-						.map(i => i[0]);
+						.filter(entry => entry[1] === event.indexedData && entry[0].isIn())
+						.map(entry => entry[0]);
 					list.unshift(player);
 					let control;
 					if (list.some(i => i.isDamaged())) {
-						var num1 = 0,
-							num2 = 0;
-						for (var target of list) {
-							num1 += 2 * get.effect(target, { name: "draw" }, player, player);
-							num2 += get.recoverEffect(target, player, player);
+						let drawEffect = 0;
+						let recoverEffect = 0;
+						for (const target of list) {
+							drawEffect += 2 * get.effect(target, { name: "draw" }, player, player);
+							recoverEffect += get.recoverEffect(target, player, player);
 						}
 						control = (
 							await trigger.player
-								.chooseControl("摸两张牌", "回复体力")
-								.set("prompt", "整肃奖励：请选择" + get.translation(list) + "的整肃奖励")
-								.set("ai", function () {
-									return ["摸两张牌", "回复体力"][_status.event.goon.indexOf(Math.max.apply(Math, _status.event.goon))];
+								.chooseControl({
+									prompt: `整肃奖励：请选择${get.translation(list)}的整肃奖励`,
+									controls: ["摸两张牌", "回复体力"],
+									ai() {
+										const evt = get.event();
+										return ["摸两张牌", "回复体力"][evt.goon.indexOf(Math.max(...evt.goon))];
+									}
 								})
-								.set("goon", [num1, num2])
+								.set("goon", [drawEffect, recoverEffect])
 								.forResult()
 						).control;
 					} else {
@@ -3194,7 +3204,7 @@ const skills = {
 							await target.recover();
 						}
 					}
-					game.delayx();
+					await game.delayx();
 				},
 			},
 		},
