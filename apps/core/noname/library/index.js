@@ -10933,10 +10933,22 @@ export class Library {
 			}
 			return true;
 		},
-		buttonIncluded: function (button) {
-			return !(_status.event.excludeButton && _status.event.excludeButton.includes(button));
+		/**
+		 * 判断按钮是否未被当前事件排除。
+		 *
+		 * @param { Button } button - 待判断的按钮
+		 * @returns { boolean }
+		 */
+		buttonIncluded(button) {
+			return !_status.event.excludeButton?.includes(button);
 		},
-		filterButton: function (button) {
+		/**
+		 * 默认的按钮筛选条件，允许所有按钮。
+		 *
+		 * @param { Button } button - 待筛选的按钮
+		 * @returns { boolean }
+		 */
+		filterButton(button) {
 			return true;
 		},
 		/**
