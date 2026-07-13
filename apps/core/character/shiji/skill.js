@@ -9611,8 +9611,8 @@ const skills = {
 		audio: "zuici",
 		enable: "chooseToUse",
 		filter(event, player) {
-			if (event.type == "phase" || (event.type == "dying" && player == event.dying)) {
-				return player.isDamaged() && player.countCards("e") > 0;
+			if (event.type === "phase" || (event.type === "dying" && player === event.dying)) {
+				return player.isDamaged() && player.hasCards("e");
 			}
 			return false;
 		},
@@ -9621,8 +9621,8 @@ const skills = {
 				return ui.create.dialog("###罪辞###选择废除一个有牌的装备栏，然后回复2点体力，并可移动“辅弼”标记。");
 			},
 			chooseControl(event, player) {
-				var list = [];
-				for (var i = 1; i < 6; i++) {
+				const list = [];
+				for (let i = 1; i < 6; i++) {
 					if (player.getEquips(i).length > 0) {
 						list.push("equip" + i);
 					}
@@ -9634,21 +9634,19 @@ const skills = {
 				if (player.hp > 1 && player.getDamagedHp() < 2) {
 					return "cancel2";
 				}
-				var cards = player.getCards("e").sort(function (a, b) {
-					return get.value(a) - get.value(b);
-				});
-				var sub = get.subtype(cards[0], false);
+				const cards = player.getCards("e").sort((a, b) => get.value(a) - get.value(b));
+				const sub = get.subtype(cards[0], false);
 				if (player.hp < 1) {
 					return sub;
 				}
-				var val = get.value(cards[0]);
+				const val = get.value(cards[0]);
 				if (val < 0) {
 					return sub;
 				}
 				return val < 4 ? sub : "cancel2";
 			},
 			backup(result) {
-				var next = get.copy(lib.skill.rezuicix);
+				const next = get.copy(lib.skill.rezuicix);
 				next.position = result.control;
 				return next;
 			},
@@ -9660,64 +9658,63 @@ const skills = {
 			},
 			save: true,
 			skillTagFilter(player, tag, arg) {
-				return player == arg;
+				return player === arg;
 			},
 		},
 	},
 	rezuicix: {
 		audio: "zuici",
 		sourceSkill: "rezuici",
-		content() {
-			"step 0";
-			player.disableEquip(lib.skill.rezuici_backup.position);
-			player.recover(2);
-			"step 1";
-			var b1 = false,
-				b2 = false;
-			for (var i of game.players) {
-				if (i.hasMark("refubi")) {
-					b1 = true;
-				} else if (i != player) {
-					b2 = true;
+		async content(event, trigger, player) {
+			await player.disableEquip(lib.skill.rezuici_backup.position);
+			await player.recover(2);
+			let hasRefubi = false;
+			let hasTarget = false;
+			for (const current of game.players) {
+				if (current.hasMark("refubi")) {
+					hasRefubi = true;
+				} else if (current !== player) {
+					hasTarget = true;
 				}
-				if (b1 && b2) {
+				if (hasRefubi && hasTarget) {
 					break;
 				}
 			}
-			if (b1 && b2) {
-				player
-					.chooseTarget("是否转移“辅弼”标记？", function (card, player, target) {
-						return target != player && !target.hasMark("refubi");
-					})
-					.set("ai", function (target) {
-						var player = _status.event.player;
-						var att = get.attitude(player, target);
-						return Math.min(att, att - _status.event.preatt);
-					})
-					.set(
-						"preatt",
-						get.attitude(
-							player,
-							game.findPlayer(function (current) {
-								return current.hasMark("refubi");
-							})
-						)
-					);
-			} else {
-				event.finish();
+			if (!hasRefubi || !hasTarget) {
+				return;
 			}
-			"step 2";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.line(target, "group");
-				game.countPlayer(function (current) {
-					var num = current.countMark("refubi");
-					if (num) {
-						current.removeMark("refubi", 1, false);
-					}
-				});
-				target.addMark("refubi", 1);
+			const result = await player
+				.chooseTarget({
+					prompt: "是否转移“辅弼”标记？",
+					filterTarget(card, player, target) {
+						return target !== player && !target.hasMark("refubi");
+					},
+					ai(target) {
+						const player = get.player();
+						const attitude = get.attitude(player, target);
+						return Math.min(attitude, attitude - get.event().preatt);
+					},
+				})
+				.set(
+					"preatt",
+					get.attitude(
+						player,
+						game.findPlayer(current => current.hasMark("refubi"))
+					)
+				)
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
+			const target = result.targets[0];
+			player.line(target, "group");
+			for (const current of game.filterPlayer()) {
+				const num = current.countMark("refubi");
+				if (num) {
+					current.removeMark("refubi", 1, false);
+				}
+			}
+			target.addMark("refubi", 1);
 		},
 		ai: {
 			result: {
