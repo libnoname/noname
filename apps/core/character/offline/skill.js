@@ -471,10 +471,10 @@ const skills = {
 				);
 			},
 			check(button) {
-				if (_status.event.getParent().type != "phase") {
+				if (get.event().getParent()?.type !== "phase") {
 					return 1;
 				}
-				return player.getUseValue({
+				return get.player().getUseValue({
 					name: button.link[2],
 					nature: button.link[3],
 				});
