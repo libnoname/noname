@@ -8420,83 +8420,77 @@ const skills = {
 		trigger: { global: "gainAfter" },
 		forced: true,
 		filter(event, player) {
-			var evt = event.getParent(),
-				target = event.player;
-			if (evt.name != "boming" || evt.player != player || player.getStorage("ejian").includes(target) || !target.isIn()) {
+			const evt = event.getParent();
+			const target = event.player;
+			if (evt.name !== "boming" || evt.player !== player || player.getStorage("ejian").includes(target) || !target.isIn()) {
 				return false;
 			}
-			var he = target.getCards("he"),
-				card = event.cards[0];
+			const he = target.getCards("he");
+			const card = event.cards[0];
 			if (!he.includes(card)) {
 				return false;
 			}
-			var type = get.type2(card);
-			for (var i of he) {
-				if (i != card && get.type2(i) == type) {
+			const type = get.type2(card);
+			for (const current of he) {
+				if (current !== card && get.type2(current) === type) {
 					return true;
 				}
 			}
 			return false;
 		},
 		logTarget: "player",
-		content() {
-			"step 0";
-			event.cardType = get.type2(trigger.cards[0]);
-			event.target = trigger.player;
-			player.markAuto("ejian", [event.target]);
-			event.target
-				.chooseControl()
-				.set("choiceList", ["受到1点伤害", "展示手牌并弃置所有" + get.translation(event.cardType) + "牌"])
-				.set("ai", function (event, player) {
-					if (get.damageEffect(player, _status.event.getParent().player, player) >= 0) {
-						return 0;
-					}
-					var type = _status.event.cardType,
-						cards = player.getCards("he", function (card) {
-							return get.type2(card) == type;
-						});
-					if (cards.length == 1) {
-						return 1;
-					}
-					if (cards.length >= 2) {
-						for (var i = 0; i < cards.length; i++) {
-							if (get.tag(cards[i], "save")) {
+		async content(event, trigger, player) {
+			const cardType = get.type2(trigger.cards[0]);
+			const target = trigger.player;
+			player.markAuto("ejian", [target]);
+			const result = await target
+				.chooseControl({
+					choiceList: ["受到1点伤害", `展示手牌并弃置所有${get.translation(cardType)}牌`],
+					ai(evt, current) {
+						if (get.damageEffect(current, evt.getParent().player, current) >= 0) {
+							return 0;
+						}
+						const type = evt.cardType;
+						const cards = current.getCards("he", card => get.type2(card) === type);
+						if (cards.length === 1) {
+							return 1;
+						}
+						if (cards.length >= 2) {
+							for (const card of cards) {
+								if (get.tag(card, "save")) {
+									return 0;
+								}
+							}
+						}
+						if (current.hp === 1) {
+							return 1;
+						}
+						for (const card of cards) {
+							if (get.value(card) >= 8) {
 								return 0;
 							}
 						}
-					}
-					if (player.hp == 1) {
-						return 1;
-					}
-					for (var i = 0; i < cards.length; i++) {
-						if (get.value(cards[i]) >= 8) {
+						if (cards.length > 2 && current.hp > 2) {
 							return 0;
 						}
-					}
-					if (cards.length > 2 && player.hp > 2) {
-						return 0;
-					}
-					if (cards.length > 3) {
-						return 0;
-					}
-					return 1;
+						if (cards.length > 3) {
+							return 0;
+						}
+						return 1;
+					},
 				})
-				.set("cardType", event.cardType);
-			"step 1";
-			if (result.index == 1) {
-				if (target.countCards("h") > 0) {
-					target.showHandcards();
-				}
-			} else {
-				target.damage();
-				event.finish();
+				.set("cardType", cardType)
+				.forResult();
+			if (result.index !== 1) {
+				await target.damage();
+				return;
 			}
-			"step 2";
-			target.discard(
-				target.getCards("he", function (card) {
-					return get.type2(card) == event.cardType;
-				})
-			);
+			if (target.hasCards("h")) {
+				await target.showHandcards();
+			}
+			await target.discard({
+				cards: target.getCards("he", card => get.type2(card) === cardType),
+			});
 		},
 		ai: { combo: "boming", halfneg: true },
 		onremove: true,
