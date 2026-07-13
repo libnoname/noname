@@ -95,7 +95,7 @@ const skills = {
 						return false;
 					}
 					const index = player.getHistory("useCard", evt => get.name(evt.card) == "jiu").indexOf(event);
-					const num = game.countPlayer(current => current.group === "wei");
+					const num = game.countGroup("wei");
 					return index < num && event.addCount !== false;
 				},
 				async content(event, trigger, player) {
