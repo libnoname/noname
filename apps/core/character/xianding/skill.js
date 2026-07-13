@@ -68,6 +68,9 @@ const skills = {
 				},
 				async content(event, trigger, player) {
 					const target = event.targets[0];
+					if (trigger.player === target) {
+                        [player, target] = [target, player];
+					}
 					if (trigger.name.startsWith("lose")) {
 						await player.gain(trigger.getl(target).hs.filterInD("od"));
 					} else {
@@ -76,7 +79,7 @@ const skills = {
 						if (target.isIn() && !target.hasMark("dcmingjie_tally")) {
 							const result = await player
 								.chooseBool("是否令" + get.translation(target) + "防止下次受到的伤害？")
-								.set("ai", () => get.attitude(skippedPlayer, other) > 0)
+								.set("ai", () => get.attitude(player, target) > 0)
 								.forResult();
 							if (result?.bool) {
 								player.line(target);
@@ -136,7 +139,7 @@ const skills = {
 			const phases = lib.phaseName.filter(item => !["phaseZhunbei", "phaseJieshu"].includes(item) && !player.skipList.includes(item));
 			const result = await player
 				.chooseControl(phases, "cancel2")
-				.set("prompt", "娴辅：选择跳过下回合的一个阶段，令此牌对你无效，并与" + get.translation(target) + "互相观看手牌")
+				.set("prompt", "娴辅：请选择一个阶段跳过，令此牌对你无效，并与" + get.translation(target) + "互相观看手牌")
 				.set("ai", () => {
 					const { player, controls } = get.event();
 					const trigger = get.event().getTrigger();
@@ -151,7 +154,7 @@ const skills = {
 		usable: 1,
 		async content(event, trigger, player) {
 			player.skip(event.cost_data);
-			game.log(player, "将于下回合跳过", get.translation(event.cost_data));
+			game.log(player, "将于下次跳过", get.translation(event.cost_data));
 			trigger.getParent().excluded.add(player);
 			game.log(trigger.card, "对", player, "无效");
 			const target = player.getStorage("dcmingjie_effect");
