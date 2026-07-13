@@ -5378,7 +5378,7 @@ const skills = {
 		},
 	},
 	sbweiliu: {
-		audio: ["sbzhenliang1.mp3", "sbzhenliang2.mp3"],
+		audio: "sbzhenliang",
 		trigger: {
 			global: "phaseBegin",
 		},
