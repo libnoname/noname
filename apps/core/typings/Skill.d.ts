@@ -63,7 +63,7 @@ declare interface Mod {
 	/**
 	 * 卡牌能否主动弃置
 	 */
-	cardDiscardable?(card: Card, player: Player, eventName: string, result: boolean | "unchanged"): boolean | "unchanged" | void;
+	cardDiscardable?(card: Card, player: Player, eventName: string | undefined, result: boolean | "unchanged"): boolean | "unchanged" | void;
 	/**
 	 * 卡牌是否可用(卡牌能否被选择)
 	 * 比cardEnabled2更弱一些
@@ -71,7 +71,7 @@ declare interface Mod {
 	 * 适用范围：player.canUse，lib.filter.cardEnabled，默认lib.filter.filterCard
 	 * 
 	 */
-	cardEnabled?(card: Card, player: Player, result: boolean | "unchanged"): boolean | "unchanged" | void;
+	cardEnabled?(card: Card | VCard, player: Player, event: GameEvent | "forceEnable" | undefined, result: boolean | "unchanged"): boolean | "unchanged" | void;
 	/**
 	 * 卡牌是否可用（适用范围基本可以视为所有情况下）
 	 * 
@@ -79,28 +79,28 @@ declare interface Mod {
 	 * 
 	 * 适用范围：event.backup中技能信息触发（viewAS），cardEnabled（优先于该mod的触发），cardRespondable（优先于该mod的触发），_save（优先于cardSavable的mod触发）中均触发
 	 */
-	cardEnabled2?(card: Card, player: Player, result: boolean | "unchanged"): boolean | "unchanged" | void;
+	cardEnabled2?(card: Card | VCard, player: Player, event: GameEvent | "forceEnable" | undefined, result: boolean | "unchanged"): boolean | "unchanged" | void;
 	/**卡牌能否被赠与 */
-	cardGiftable?(card: Card, player: Player, target: Player, current: boolean): boolean | void
+	cardGiftable?(card: Card, player: Player, target: Player, current: boolean | "unchanged"): boolean | "unchanged" | void;
 	/**卡牌能否被重铸 */
-	cardRecastable?(card: Card, player: Player, source: Player, result: boolean): boolean | void
+	cardRecastable?(card: Card, player: Player, source: Player, result: boolean | "unchanged"): boolean | "unchanged" | void
 	/**
 	 * 卡牌是否可用（改变卡牌的使用次数）
 	 * 
 	 * 要与cardEnabled一起使用（目前看来两个效果一致）
 	 * 
-	 * @param card  牌
-	 * @param player  玩家
-	 * @param num 使用次数
+	 * @param card - 牌
+	 * @param player - 玩家
+	 * @param num - 使用次数
 	 */
-	cardUsable?(card: Card, player: Player, num: number): boolean | number | void;
+	cardUsable?(card: Card | VCard, player: Player, num: number): boolean | number | void;
 	/**
 	 * 卡牌是否可以响应
 	 * 
 	 * 要与cardEnabled一起使用（目前看来两个效果一致）
 	 * 
 	 */
-	cardRespondable?(card: Card, player: Player, result: boolean | "unchanged"): boolean | "unchanged" | void;
+	cardRespondable?(card: Card | VCard, player: Player, result: boolean | "unchanged"): boolean | "unchanged" | void;
 	/**
 	 * 卡牌是否可以救人
 	 * 
@@ -112,11 +112,11 @@ declare interface Mod {
 	 * 
 	 * 适用范围：濒死阶段的filterCard
 	 * 
-	 * @param card 牌
-	 * @param player 玩家
-	 * @param taregt 当前处于濒死求救得玩家
+	 * @param card - 牌
+	 * @param player - 玩家
+	 * @param taregt - 当前处于濒死求救得玩家
 	 */
-	cardSavable?(card: Card, player: Player, taregt: Player, result: boolean): boolean | "unchanged" | void;
+	cardSavable?(card: Card | VCard | CardBaseUIData, player: Player, taregt: Player, result: boolean | "unchanged"): boolean | "unchanged" | void;
 	/** 
 	 * 在全局的防御范围 （globalToYou其他玩家到你的距离）
 	 * 注：防御距离就是要和别人的距离越远，所以，拉开距离需要增加；
@@ -161,21 +161,21 @@ declare interface Mod {
 	/**
 	 * 选择的目标范围,直接对range进行修改即可，无需返回值。
 	 */
-	selectTarget?(card: Card, player: Player, range: Select): void;
+	selectTarget?(card: Card | VCard | CardBaseUIData, player: Player, range: Select): void;
 	/**
 	* 【表示能否成为你的目标，返回true表示必须是你的目标，false不能成为你的目标】
 	* @param card
 	* @param player 源玩家（使用牌的角色）
 	* @param target 目标玩家
 	*/
-	playerEnabled?(card: Card, player: Player, target: Player, result: boolean | "unchanged"): boolean | "unchanged" | void;
+	playerEnabled?(card: Card | VCard | CardBaseUIData, player: Player, target: Player, result: boolean | "unchanged"): boolean | "unchanged" | void;
 	/**
 	* 【表示你能否成为其他角色的目标】 
 	* @param card
 	* @param player 使用牌的角色
 	* @param target 玩家
 	*/
-	targetEnabled?(card: Card, player: Player, target: Player, result: boolean | "unchanged"): boolean | "unchanged" | void;
+	targetEnabled?(card: Card | VCard | CardBaseUIData, player: Player, target: Player, result: boolean | "unchanged"): boolean | "unchanged" | void;
 
 	/**
 	 * 可以指定任意（范围内）目标
@@ -184,7 +184,7 @@ declare interface Mod {
 	 * @param target 目标
 	 * @return 返回bool值可以不接受，范围检测，使用返回的结果;返回number，即计算距离是增加该距离；不返回，默认正常的范围检测
 	 */
-	targetInRange?(card: Card, player: Player, target: Player, result: boolean | number): boolean | number | void;
+	targetInRange?(card: Card | VCard | CardBaseUIData, player: Player, target: Player, result: boolean | "unchanged" | number): boolean | number | "unchanged" | void;
 	/**
 	 * 弃牌阶段时，忽略弃置的手牌
 	 * @param card 
@@ -192,14 +192,14 @@ declare interface Mod {
 	 */
 	ignoredHandcard?(card: Card, player: Player, current: boolean): boolean | void;
 	/** 表示自己牌能否被别人弃置 */
-	canBeDiscarded?(card: Card, player: Player, target: Player, eventName: string, result: boolean): boolean | void;
+	canBeDiscarded?(card: Card | VCard, player: Player, target: Player, eventName: string | undefined, result: boolean | "unchanged"): boolean | "unchanged" | void;
 	/** 
 	 * 自己的牌能否被别人获得
 	 * 装备区的牌能否被移动到其他角色装备区内
 	 */
-	canBeGained?(card: Card, player: Player, target: Player, eventName: string, reslut: boolean): boolean | void;
+	canBeGained?(card: Card, player: Player, target: Player, eventName: string | undefined, reslut: boolean | "unchanged"): boolean | "unchanged" | void;
 	/**往往用于装备牌，能否被顶替 */
-	canBeReplaced?(card: Card, player: Player, current: boolean): boolean | void;
+	canBeReplaced?(card: Card | VCard, player: Player, current: boolean | "unchanged"): boolean | "unchanged" | void;
 	/**
 	 * 改变花色	用于get.suit
 	 */
@@ -229,7 +229,7 @@ declare interface Mod {
 	/** 改变最终花色	用于get.suit*/
 	cardsuit?(card: Card, player: Player, suit: string): string | void;
 	/** 对特定角色使用牌的次数限制（用于优化【对特定角色使用牌无次数限制】的机制）【v1.9.105】 */
-	cardUsableTarget?(card: Card, player: Player, target: Player, result: boolean): boolean | void;
+	cardUsableTarget?(card: Card | VCard | CardBaseUIData, player: Player, target: Player, result: boolean): boolean | void;
 
 	/** 用于get.value，对最后得返回value结果做处理 */
 	aiValue?(player: Player, card: Card, num: number): number | void;

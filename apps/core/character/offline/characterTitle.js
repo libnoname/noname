@@ -1,4 +1,10 @@
 export default {
+	ym_zhaoxiang: "暗香吟雪",
+	ym_guanyinping: "铁衣蔷薇",
+	ym_zhangxingcai: "兰芷锋镝",
+	ym_jsrg_diaochan: "群芳之魁",
+	ym_friend_zhugeliang: "龙骧九天",
+	pe_shen_zhonghui: "荡徊的蜚螭",
 	ps_shen_weiyan: "子午创世神",
 	ps_devil_weiyan: "戾骨噬汉魔",
 	sm_shenmo_sunquan: "一念神魔",

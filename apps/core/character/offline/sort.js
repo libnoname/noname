@@ -1,5 +1,5 @@
 const characterSort = {
-	extra_offline: ["shen_jiaxu", "shen_diaochan", "boss_zhaoyun", "le_shen_jiaxu", "ps_shen_machao", "mark_shen_machao", "zc26_shen_huangyueying", "sm_shen_machao", "sp_sm_shen_machao"],
+	extra_offline: ["shen_jiaxu", "shen_diaochan", "boss_zhaoyun", "le_shen_jiaxu", "ps_shen_machao", "mark_shen_machao", "zc26_shen_huangyueying", "sm_shen_machao", "sp_sm_shen_machao", "pe_shen_zhonghui"],
 	offline_scl: ["scl_lvbu", "scl_pangdegong", "scl_sunhanhua", "scl_miheng", "scl_peixiu", "scl_caoying", "scl_luotong", "scl_jiaxu"],
 	offline_star: ["jsp_ganfuren", "sp_xiahoushi", "jsp_zhaoyun", "huangjinleishi", "sp_pangtong", "sp_daqiao", "sp_ganning", "sp_xiahoudun", "sp_lvmeng", "sp_zhangfei", "sp_liubei", "old_machao", "zhangliang", "jsp_caoren"],
 	offline_sticker: ["sp_gongsunzan", "sp_simazhao", "sp_wangyuanji", "sp_xinxianying", "sp_liuxie"],
@@ -32,6 +32,7 @@ const characterSort = {
 	offline_shichangshi: ["ps_zhangrang", "ps_zhaozhong", "ps_sunzhang", "ps_bilan", "ps_xiayun", "ps_hankui", "ps_lisong", "ps_duangui", "ps_guosheng", "ps_gaowang"],
 	offline_prettyDerby: ["sm_chixia", "sm_qiulin", "sm_zhuahuang", "sm_zijian", "sm_jieying", "sm_liaoyuan", "sm_dailu"],
 	offline_qingshi: ["chenshou", "hs_liuxuan", "hs_caohuan", "hs_liuxie", "hs_sunhao"],
+	offline_chunqiu: ["ym_friend_zhugeliang", "ym_jsrg_diaochan", "ym_zhangxingcai", "ym_guanyinping", "ym_zhaoxiang"],
 	offline_fengyun: ["ps_caocao", "ps_liubei", "ps_sunquan"],
 	offline_xy: ["xy_caocao", "xy_chengyu", "xy_xunyu", "xy_chengong", "xy_zhangkai", "xy_lvbu", "xy_zhangmiao", "xy_caosong"],
 	offline_zc26: ["zc26_sp_xushi", "zc26_lusu", "zc26_jiaxu", "zc26_zhanghe", "zc26_taishici"],
@@ -74,6 +75,7 @@ const characterSortTranslate = {
 	offline_yanyou: "燕幽烽火",
 	offline_jingyang: "荆扬对垒",
 	offline_qingshi: "特典·青史翰墨",
+	offline_chunqiu: "春秋演墨",
 	offline_shichangshi: "蛇年限定·十常侍",
 	offline_prettyDerby: "马年限定·赛马娘",
 	offline_fengyun: "风云际会",

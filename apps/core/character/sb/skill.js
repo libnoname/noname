@@ -5378,7 +5378,7 @@ const skills = {
 		},
 	},
 	sbweiliu: {
-		audio: 2,
+		audio: "sbzhenliang",
 		trigger: {
 			global: "phaseBegin",
 		},
