@@ -24,12 +24,7 @@ const skills = {
 			if (player === event.player) {
 				return false;
 			}
-			return (
-				num >
-				event.player.countHistory("useCard", evt => {
-					return evt.getParent("phaseUse") == event && evt.card.name == "sha" && evt.addCount !== false;
-				})
-			);
+			return num > 0;
 		},
 		direct: true,
 		clearTime: true,
