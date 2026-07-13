@@ -7568,6 +7568,7 @@ const skills = {
 				delay: false,
 				async content(event, trigger, player) {
 					const card = lib.skill.binglun_backup.card;
+					const { target } = event;
 					game.log(card, "从仁库进入了弃牌堆");
 					player.$throw(card, 1000);
 					await game.delayx();
@@ -9338,6 +9339,7 @@ const skills = {
 		},
 		filterTarget: lib.filter.notMe,
 		async content(event, trigger, player) {
+			const { target } = event;
 			await player.turnOver();
 			const card = get.cardPile(card => card.name === "sha");
 			if (card) {
@@ -10139,14 +10141,10 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return (
-				player.countCards("he", function (card) {
-					return get.type(card) != "basic";
-				}) > 0
-			);
+			return player.hasCards("he", card => get.type(card) !== "basic");
 		},
 		filterCard(card) {
-			return get.type(card) != "basic";
+			return get.type(card) !== "basic";
 		},
 		position: "he",
 		filterTarget: lib.filter.notMe,
@@ -10154,8 +10152,8 @@ const skills = {
 		discard: false,
 		lose: false,
 		check(card) {
-			var player = _status.event.player;
-			if (get.position(card) == "e" && card.name == "jinhe") {
+			const player = _status.event.player;
+			if (get.position(card) === "e" && card.name === "jinhe") {
 				return 10;
 			}
 			if (player.isHealthy()) {
@@ -10163,26 +10161,26 @@ const skills = {
 			}
 			return 9 - get.value(card);
 		},
-		content() {
-			"step 0";
-			player.give(cards, target, true);
-			"step 1";
+		async content(event, trigger, player) {
+			const { cards, target } = event;
+			await player.give(cards, target, true);
 			if (!target.isIn()) {
-				event.finish();
 				return;
 			}
 			if (player.isHealthy()) {
-				event._result = { index: 1 };
-			} else {
-				var str = get.translation(player);
-				target.chooseControl().set("choiceList", ["令" + str + "回复1点体力", "令" + str + "摸两张牌"]);
+				await player.draw(2);
+				return;
 			}
-			"step 2";
-			if (result.index == 0) {
-				player.recover();
-			} else {
-				player.draw(2);
+			const result = await target
+				.chooseControl({
+					choiceList: [`令${get.translation(player)}回复1点体力`, `令${get.translation(player)}摸两张牌`],
+				})
+				.forResult();
+			if (result.index === 0) {
+				await player.recover();
+				return;
 			}
+			await player.draw(2);
 		},
 		ai: {
 			order: 8,
@@ -10190,15 +10188,15 @@ const skills = {
 				player: 1,
 				target(player, target) {
 					if (ui.selected.cards.length) {
-						var card = ui.selected.cards[0];
-						var val = get.value(card, target);
+						const card = ui.selected.cards[0];
+						const val = get.value(card, target);
 						if (val < 0) {
 							return -1;
 						}
 						if (target.hasSkillTag("nogain")) {
 							return 0;
 						}
-						var useval = target.getUseValue(card);
+						const useval = target.getUseValue(card);
 						if (val < 1 || useval <= 0) {
 							return 0.1;
 						}
