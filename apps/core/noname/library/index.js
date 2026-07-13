@@ -11768,22 +11768,70 @@ export class Library {
 			}
 			return true;
 		},
-		filterTarget: function (card, player, target) {
+		/**
+		 * 判断是否可指定目标，且目标处于使用距离内。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 使用的牌
+		 * @param { Player } player - 使用牌的角色
+		 * @param { Player } target - 被指定的目标角色
+		 * @returns { boolean }
+		 */
+		filterTarget(card, player, target) {
 			return lib.filter.targetEnabledx(card, player, target) && lib.filter.targetInRange(card, player, target);
 		},
-		filterTarget2: function (card, player, target) {
+		/**
+		 * 判断是否可通过常规或额外目标规则指定目标，且目标处于使用距离内。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 使用的牌
+		 * @param { Player } player - 使用牌的角色
+		 * @param { Player } target - 被指定的目标角色
+		 * @returns { boolean }
+		 */
+		filterTarget2(card, player, target) {
 			return lib.filter.targetEnabled2(card, player, target) && lib.filter.targetInRange(card, player, target);
 		},
-		notMe: function (card, player, target) {
-			return player != target;
+		/**
+		 * 判断目标是否不是使用者自身。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 当前牌
+		 * @param { Player } player - 使用牌的角色
+		 * @param { Player } target - 被判断的目标角色
+		 * @returns { boolean }
+		 */
+		notMe(card, player, target) {
+			return player !== target;
 		},
-		isMe: function (card, player, target) {
-			return player == target;
+		/**
+		 * 判断目标是否为使用者自身。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 当前牌
+		 * @param { Player } player - 使用牌的角色
+		 * @param { Player } target - 被判断的目标角色
+		 * @returns { boolean }
+		 */
+		isMe(card, player, target) {
+			return player === target;
 		},
-		attackFrom: function (card, player, target) {
+		/**
+		 * 判断目标与使用者的攻击距离是否至多为 1。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 当前牌
+		 * @param { Player } player - 使用牌的角色
+		 * @param { Player } target - 被判断的目标角色
+		 * @returns { boolean }
+		 */
+		attackFrom(card, player, target) {
 			return get.distance(player, target, "attack") <= 1;
 		},
-		globalFrom: function (card, player, target) {
+		/**
+		 * 判断目标与使用者的全局距离是否至多为 1。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 当前牌
+		 * @param { Player } player - 使用牌的角色
+		 * @param { Player } target - 被判断的目标角色
+		 * @returns { boolean }
+		 */
+		globalFrom(card, player, target) {
 			return get.distance(player, target) <= 1;
 		},
 		/**
@@ -11794,31 +11842,38 @@ export class Library {
 		selectCard() {
 			return [1, 1];
 		},
-		selectTarget: function (card, player) {
+		/**
+		 * 返回可选择目标数量的范围。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } [card] - 待使用的牌，默认取当前牌
+		 * @param { Player } [player] - 使用牌的角色，默认取当前角色
+		 * @returns { [number, number] | undefined }
+		 */
+		selectTarget(card, player) {
 			if (!card) {
 				card = get.card();
 			}
 			if (!player) {
 				player = get.player();
 			}
-			if (card == undefined) {
+			if (card == null) {
 				return;
 			}
-			var range,
-				info = get.info(card);
-			var select = get.copy(info.selectTarget);
-			if (select == undefined) {
-				if (info.filterTarget == undefined) {
+			let range;
+			const info = get.info(card);
+			const select = get.copy(info.selectTarget);
+			if (select === undefined || select === null) {
+				if (info.filterTarget === undefined || info.filterTarget === null) {
 					return [0, 0];
 				}
 				range = [1, 1];
-			} else if (typeof select == "number") {
+			} else if (typeof select === "number") {
 				range = [select, select];
-			} else if (get.itemtype(select) == "select") {
+			} else if (get.itemtype(select) === "select") {
 				range = select;
-			} else if (typeof select == "function") {
+			} else if (typeof select === "function") {
 				range = select(card, player);
-				if (typeof range == "number") {
+				if (typeof range === "number") {
 					range = [range, range];
 				}
 			}
