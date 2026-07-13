@@ -8661,28 +8661,29 @@ const skills = {
 			return player.getStorage("debao").length > 1;
 		},
 		logTarget: "player",
-		content() {
-			"step 0";
-			var cards = player.getStorage("debao");
-			if (cards.length == 2) {
-				event._result = { bool: true, links: cards.slice(0) };
-			} else {
-				player.chooseButton(["不弃：请选择移去两张“仁”", cards], 2, true);
+		async content(event, trigger, player) {
+			const storageCards = player.getStorage("debao");
+			const result =
+				storageCards.length === 2
+					? { bool: true, links: storageCards.slice() }
+					: await player
+							.chooseButton({
+								createDialog: ["不弃：请选择移去两张“仁”", storageCards],
+								selectButton: 2,
+								forced: true,
+							})
+							.forResult();
+			if (!result.bool) {
+				return;
 			}
-			"step 1";
-			if (result.bool) {
-				var cards = result.links;
-				player.unmarkAuto("debao", cards);
-				player.$throw(cards, 1000);
-				game.log(player, "将", cards, "置入了弃牌堆");
-				game.delayx();
-				game.cardsDiscard(cards);
-			} else {
-				event.finish();
-			}
-			"step 2";
+			const cards = result.links;
+			player.unmarkAuto("debao", cards);
+			player.$throw(cards, 1000);
+			game.log(player, "将", cards, "置入了弃牌堆");
+			await game.delayx();
+			await game.cardsDiscard(cards);
 			if (trigger.player.isIn() && trigger.player.isDamaged()) {
-				trigger.player.recover();
+				await trigger.player.recover();
 			}
 		},
 		group: "buqi_die",
@@ -8694,7 +8695,7 @@ const skills = {
 				filter(event, player) {
 					return player.getStorage("debao").length > 0;
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.unmarkSkill("debao");
 				},
 			},
