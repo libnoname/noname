@@ -9337,17 +9337,15 @@ const skills = {
 			return !player.isTurnedOver();
 		},
 		filterTarget: lib.filter.notMe,
-		content() {
-			"step 0";
-			player.turnOver();
-			"step 1";
-			var card = get.cardPile(function (card) {
-				return card.name == "sha";
-			});
+		async content(event, trigger, player) {
+			await player.turnOver();
+			const card = get.cardPile(card => card.name === "sha");
 			if (card) {
-				target.gain(card, "gain2");
+				await target.gain({
+					cards: [card],
+					animate: "gain2",
+				});
 			}
-			"step 2";
 			target.addSkill("spcunsi2");
 			target.addMark("spcunsi2", 1, false);
 		},
@@ -9355,11 +9353,11 @@ const skills = {
 			order: 1,
 			result: {
 				target(player, target) {
-					var card = { name: "sha", isCard: true };
+					const card = { name: "sha", isCard: true };
 					if (
 						!target.hasSkillTag("nogain") &&
-						game.hasPlayer(function (current) {
-							return (
+						game.hasPlayer(
+							current =>
 								get.attitude(target, current) < 0 &&
 								!current.hasShan() &&
 								target.canUse(card, current) &&
@@ -9369,8 +9367,7 @@ const skills = {
 									jiu: true,
 								}) &&
 								get.effect(current, card, target) > 0
-							);
-						})
+						)
 					) {
 						return 4;
 					}
@@ -9388,9 +9385,9 @@ const skills = {
 		onremove: true,
 		sourceSkill: "spcunsi",
 		filter(event, player) {
-			return event.card.name == "sha";
+			return event.card.name === "sha";
 		},
-		content() {
+		async content(event, trigger, player) {
 			trigger.baseDamage += player.countMark("spcunsi2");
 			player.removeSkill("spcunsi2");
 		},
