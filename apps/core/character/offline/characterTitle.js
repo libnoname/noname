@@ -1,4 +1,7 @@
 export default {
+	ym_zhaoxiang: "暗香吟雪",
+	ym_guanyinping: "铁衣蔷薇",
+	ym_zhangxingcai: "兰芷锋镝",
 	ym_jsrg_diaochan: "群芳之魁",
 	ym_friend_zhugeliang: "龙骧九天",
 	pe_shen_zhonghui: "荡徊的蜚螭",

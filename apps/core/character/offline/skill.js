@@ -3,6 +3,524 @@ import html from "dedent";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//张星彩------ by 清风
+	ymhengren: {
+		audio: 2,
+		zhuanhuanji: true,
+		marktext: "☯",
+		mark: true,
+		intro: {
+			content(storage, player) {
+				return "其他角色的出牌阶段" + (storage ? "结束时" : "开始时") + "，若其本阶段有【杀】的剩余使用次数，你可以使用一张【杀】（将计入其使用次数且伤害+1）。";
+			},
+		},
+		trigger: { global: ["phaseUseBegin", "phaseUseEnd"] },
+		filter(event, player, name) {
+			const storage = player.storage.ymhengren,
+				num = event.player.getCardUsable("sha", false);
+			if (name != "phaseUse" + (storage ? "End" : "Begin")) {
+				return false;
+			}
+			if (player === event.player) {
+				return false;
+			}
+			return (
+				num >
+				event.player.countHistory("useCard", evt => {
+					return evt.getParent("phaseUse") == event && evt.card.name == "sha" && evt.addCount !== false;
+				})
+			);
+		},
+		direct: true,
+		clearTime: true,
+		async content(event, trigger, player) {
+			const target = trigger.player;
+			const result = await player
+				.chooseToUse({
+					filterCard(card) {
+						if (get.name(card) !== "sha") {
+							return false;
+						}
+						return lib.filter.filterCard.apply(this, arguments);
+					},
+					prompt: "横刃：你可以使用一张【杀】",
+					ai1(card) {
+						return 10 - get.value(card);
+					},
+				})
+				.set("logSkill", event.name)
+				.set("oncard", () => {
+					const evt = _status.event;
+					if (typeof evt.baseDamage !== "number") {
+						evt.baseDamage = 1;
+					}
+					evt.baseDamage++;
+				})
+				.forResult();
+			if (result?.bool) {
+				player.changeZhuanhuanji(event.name);
+				const stat = target.getStat("card"),
+					name = "sha";
+				if (typeof stat[name] !== "number") {
+					stat[name] = 0;
+				}
+				stat[name]++;
+			}
+		},
+	},
+	ymdanjue: {
+		audio: 2,
+		trigger: { global: "useCardToTargeted" },
+		filter(event, player) {
+			return event.card.name === "sha" && get.distance(event.target, player) <= 1 && event.getParent().addCount !== false;
+		},
+		check(event, player) {
+			if (get.attitude(player, event.player) > 0 && event.player.countCards("h") > 3) {
+				return true;
+			}
+			if (get.attitude(player, event.target) > 0 && event.player.countCards("h") <= 3) {
+				return true;
+			}
+			return false;
+		},
+		async content(event, trigger, player) {
+			trigger.getParent().addCount = false;
+			const stat = trigger.player.getStat("card"),
+				name = trigger.card.name;
+			if (typeof stat[name] == "number" && stat[name] > 0) {
+				stat[name]--;
+			}
+			if (trigger.target?.isIn()) {
+				await trigger.target.draw({ num: 1 });
+				if (player === trigger.target) {
+					return;
+				}
+				await trigger.target
+					.chooseToGive({
+						target: player,
+						position: "he",
+						prompt: `你可以交给${get.translation(player)}一张牌`,
+						ai(card) {
+							const { player, target } = get.event();
+							if (get.attitude(player, target) > 0) {
+								return 10 - get.value(card);
+							}
+							return 0;
+						},
+					})
+					.set("target", player);
+			}
+		},
+	},
+	//关银屏
+	ymsaxue: {
+		audio: 2,
+		trigger: { player: "phaseZhunbeiBegin" },
+		filter(event, player) {
+			return game.countPlayer(current => !current.isLinked()) > 1;
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt(event.skill),
+					prompt2: "横置两名角色",
+					filterTarget(card, player, target) {
+						return !target.isLinked();
+					},
+					selectTarget: 2,
+					ai(target) {
+						const player = get.player();
+						if (target === player) {
+							return 1;
+						}
+						return -get.attitude(player, target);
+					},
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const targets = event.targets.sortBySeat();
+			await game.doAsyncInOrder(targets, async target => {
+				await target.link(true);
+			});
+			let result;
+			if (game.hasPlayer(current => current !== player)) {
+				result = await player
+					.chooseTarget({
+						prompt: "洒血：选择一名其他角色对你和其造成共计2点火焰伤害",
+						filterTarget: lib.filter.notMe,
+						forced: true,
+						ai(target) {
+							return -get.attitude(get.player(), target) * (target.isLinked() ? 2 : 0);
+						},
+					})
+					.forResult();
+				if (result?.bool && result.targets?.length) {
+					const target = result.targets[0];
+					player.line(target);
+					const func = () => {
+						const event = get.event();
+						const controls = [
+							link => {
+								const targets = game.filterPlayer();
+								if (targets.length) {
+									for (let i = 0; i < targets.length; i++) {
+										const target = targets[i];
+										target.classList.remove("selectable");
+										target.classList.remove("selected");
+										const counterNode = target.querySelector(".caption");
+										if (counterNode) {
+											counterNode.childNodes[0].innerHTML = ``;
+										}
+									}
+									ui.selected.targets.length = 0;
+									game.check();
+								}
+								return;
+							},
+						];
+						event.controls = [ui.create.control(controls.concat(["清除选择", "stayleft"]))];
+					};
+					if (event.isMine()) {
+						func();
+					} else if (event.isOnline()) {
+						event.player.send(func);
+					}
+					const num = 2;
+					result = await target
+						.chooseTarget({
+							prompt: `${get.translation(player)}对你发动了洒血：请分配两点火焰伤害`,
+							filterTarget(card, player, target) {
+								return target === player || target === get.event().targetx;
+							},
+							selectTarget: 2,
+							ai(target) {
+								const player = get.player();
+								return get.damageEffect(target, player, player, "fire");
+							},
+							forced: true,
+							custom: {
+								add: {
+									confirm(bool) {
+										if (bool != true) {
+											return;
+										}
+										const event = get.event().parent;
+										if (event.controls) {
+											event.controls.forEach(i => {
+												if (i.innerText == "清除选择") {
+													i.custom();
+												}
+												i.close();
+											});
+										}
+										if (ui.confirm) {
+											ui.confirm.close();
+										}
+										game.uncheck();
+									},
+									target() {
+										if (ui.selected.targets.length) {
+											return;
+										}
+										const targets = game.filterPlayer();
+										if (targets.length) {
+											for (let i = 0; i < targets.length; i++) {
+												const target = targets[i];
+												const counterNode = target.querySelector(".caption");
+												if (counterNode) {
+													counterNode.childNodes[0].innerHTML = ``;
+												}
+											}
+										}
+										if (!ui.selected.targets.length) {
+											const evt = event.parent;
+											if (evt.controls) {
+												evt.controls[0].classList.add("disabled");
+											}
+										}
+									},
+								},
+								replace: {
+									target(target) {
+										const event = get.event(),
+											sum = get.event().sum;
+										if (!event.isMine()) {
+											return;
+										}
+										if (target.classList.contains("selectable") == false) {
+											return;
+										}
+										if (ui.selected.targets.length >= sum) {
+											return false;
+										}
+										target.classList.add("selected");
+										ui.selected.targets.push(target);
+										let counterNode = target.querySelector(".caption");
+										const count = ui.selected.targets.filter(i => i == target).length;
+										if (counterNode) {
+											counterNode = counterNode.childNodes[0];
+											counterNode.innerHTML = `×${count}`;
+										} else {
+											counterNode = ui.create.caption(`<span style="font-size:24px; font-family:xinwei; text-shadow:#FFF 0 0 4px, #FFF 0 0 4px, rgba(74,29,1,1) 0 0 3px;">×${count}</span>`, target);
+											counterNode.style.right = "30px";
+											counterNode.style.bottom = "15px";
+										}
+										const evt = event.parent;
+										if (evt.controls) {
+											evt.controls[0].classList.remove("disabled");
+										}
+										game.check();
+									},
+								},
+							},
+						})
+						.set("targetx", player)
+						.set("sum", num)
+						.forResult();
+					if (result?.bool && result.targets?.length) {
+						if (!event.isMine()) {
+							await game.delay();
+						}
+						const targets = result.targets.sortBySeat();
+						for (const i of [player, target]) {
+							if (targets.includes(i)) {
+								i.classList.remove("selectable");
+								i.classList.remove("selected");
+								const counterNode = i.querySelector(".caption");
+								if (counterNode) {
+									counterNode.childNodes[0].innerHTML = ``;
+								}
+								await i.damage({ source: target, nature: "fire", num: targets.filter(y => y == i).length });
+							}
+						}
+					}
+				}
+			}
+		},
+	},
+	ymxianfeng: {
+		audio: 2,
+		trigger: { player: "damageEnd" },
+		filter(event, player) {
+			return event.source?.isIn() && event.source.hasDiscardableCards(player, "he");
+		},
+		getIndex: event => event.num,
+		async cost(event, trigger, player) {
+			const target = trigger.source;
+			const list = [event.skill, target];
+			event.result = await player
+				.discardPlayerCard({
+					target,
+					prompt: get.prompt(...list),
+					prompt2: "弃置其一张牌，若此牌花色为本回合首次进入弃牌堆，你获得之",
+					position: "he",
+					ai(button) {
+						if (!get.event().att) {
+							return 0;
+						}
+						const card = button.link;
+						if (get.position(card) !== "e") {
+							return 1;
+						}
+						return get.value(card) * (get.subtypes(card).includes("equip2") ? 5 : 1);
+					},
+				})
+				.set("att", get.attitude(player, target) < 0)
+				.set("logSkill", list)
+				.forResult();
+		},
+		popup: false,
+		logTarget: "source",
+		async content(event, trigger, player) {
+			const {
+				cards: [card],
+			} = event;
+			const suit = get.suit(card);
+			let num = 0;
+			game.getGlobalHistory("cardMove", evt => {
+				if (evt.name != "lose" && evt.name != "cardsDiscard") {
+					return false;
+				}
+				if (evt.name == "lose" && evt.position != ui.discardPile) {
+					return false;
+				}
+				if (evt == trigger || evt.getParent() == trigger) {
+					return false;
+				}
+				if (evt.cards?.some(card => get.suit(card) == suit)) {
+					num++;
+				}
+			});
+			if (num === 1) {
+				await player.gain({ cards: [card], animate: "gain2" });
+			}
+		},
+	},
+	//赵襄
+	ymqianling: {
+		audio: 2,
+		enable: "phaseUse",
+		usable: 2,
+		filter(event, player) {
+			return player.hasCards("h") && game.hasPlayer(current => get.info("ymqianling").filterTarget(null, player, current));
+		},
+		filterTarget(card, player, target) {
+			return player !== target && target.hasCards("h");
+		},
+		selectTarget: [1, 3],
+		multiline: true,
+		multitarget: true,
+		async content(event, trigger, player) {
+			const targets = event.targets.concat(player).filter(i => i.hasCards("h"));
+			targets.sortBySeat();
+			const cards = targets.map(target => target.getCards("h")).flat();
+			await player
+				.showCards(cards, get.translation(player) + "发动了【潜聆】")
+				.set("customButton", button => {
+					const target = get.owner(button.link);
+					if (target) {
+						game.createButtonCardsetion(`${target.getName(true)}`, button);
+					}
+				})
+				.set("delay_time", 4)
+				.set("multipleShow", true);
+			if (targets.some(target => target !== player && target.countCards("h", card => get.color(card) == "black") == player.countCards("h", card => get.color(card) == "black"))) {
+				const result = await player
+					.chooseTarget({
+						prompt: "潜聆：你可以与一名黑色手牌数与你相同的其他角色交换手牌",
+						filterTarget(card, player, target) {
+							return target !== player && get.event().targets.includes(target) && target.countCards("h", card => get.color(card) == "black") == player.countCards("h", card => get.color(card) == "black");
+						},
+						ai(target) {
+							const player = get.player();
+							if (get.attitude(player, target) < 0) {
+								return target.getCards("h").reduce((a, b) => a + get.value(b), 0) > player.getCards("h").reduce((a, b) => a + get.value(b), 0);
+							}
+							return 0;
+						},
+					})
+					.set("targets", targets)
+					.forResult();
+				if (result?.bool && result.targets?.length) {
+					await player.swapHandcards(result.targets[0]);
+				}
+			}
+		},
+		ai: {
+			order: 1,
+			result: {
+				player: 1,
+				target(player, target) {
+					return target.countCards("h");
+				},
+			},
+		},
+	},
+	ymqueying: {
+		audio: 2,
+		enable: ["chooseToUse"],
+		filter(event, player) {
+			if (player.countCards("h") >= player.maxHp) {
+				return false;
+			}
+			return get.inpileVCardList(info => {
+				if (!["sha", "shan"].includes(info[2])) {
+					return false;
+				}
+				return event.filterCard(
+					get.autoViewAs(
+						{
+							name: info[2],
+							nature: info[3],
+						},
+						"unsure"
+					),
+					player,
+					event
+				);
+			}).length;
+		},
+		chooseButton: {
+			dialog(event, player) {
+				const list = get.inpileVCardList(info => {
+					if (!["sha", "shan"].includes(info[2])) {
+						return false;
+					}
+					return event.filterCard(
+						get.autoViewAs(
+							{
+								name: info[2],
+								nature: info[3],
+							},
+							"unsure"
+						),
+						player,
+						event
+					);
+				});
+				return ui.create.dialog("雀影", [list, "vcard"]);
+			},
+			filter(button, player) {
+				return _status.event.getParent().filterCard(
+					{
+						name: button.link[2],
+					},
+					player,
+					_status.event.getParent()
+				);
+			},
+			check(button) {
+				if (_status.event.getParent().type != "phase") {
+					return 1;
+				}
+				return player.getUseValue({
+					name: button.link[2],
+					nature: button.link[3],
+				});
+			},
+			backup(links, player) {
+				return {
+					filterCard: () => false,
+					selectCard: -1,
+					audio: "ymqueying",
+					popname: true,
+					viewAs: {
+						name: links[0][2],
+						nature: links[0][3],
+					},
+					log: false,
+					async precontent(event, trigger, player) {
+						player.logSkill("ymqueying");
+						await player.gain({ cards: lib.card.ying.getYing(1), animate: "gain2" });
+					},
+				};
+			},
+			prompt(links, player) {
+				return "获得一张【影】然后视为使用一张" + (get.translation(links[0][3]) || "") + get.translation(links[0][2]);
+			},
+		},
+		hiddenCard(player, name) {
+			if (!lib.inpile.includes(name)) {
+				return false;
+			}
+			return ["sha", "shan"].includes(name) && player.countCards("h") < player.maxHp;
+		},
+		ai: {
+			order: 7,
+			fireAttack: true,
+			respondSha: true,
+			respondShan: true,
+			skillTagFilter(player) {
+				if (player.countCards("h") >= player.maxHp) {
+					return false;
+				}
+			},
+			result: {
+				player: 1,
+			},
+		},
+	},
 	//梦貂蝉------by 清风
 	ymdiyu: {
 		audio: 2,

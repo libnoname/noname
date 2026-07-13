@@ -14425,9 +14425,9 @@ export class Library {
 			},
 		],
 		[
-			"墨",
+			"春秋",
 			{
-				color: "#131313",
+				color: "#10e98e",
 				nature: "thundermm",
 			},
 		],

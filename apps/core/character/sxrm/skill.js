@@ -3362,7 +3362,7 @@ const skills = {
 							const cards = get
 								.event()
 								.list?.map(i => i[0])
-								.flat();
+								.flat() || [];
 							return -get.attitude(player, target) * target.countCards("h", cardx => !cards?.includes(cardx));
 						},
 					})
