@@ -10967,19 +10967,21 @@ export class Library {
 			return savable;
 		},
 		/**
+		 * 判断技能是否可响应指定事件。
 		 *
-		 * @param {GameEvent} event
-		 * @param {Player} player
-		 * @param {string} triggername
-		 * @param {string} skill
-		 * @returns {boolean}
+		 * @param { GameEvent } event - 待响应的事件
+		 * @param { Player } player - 技能所属角色
+		 * @param { string } triggerName - 触发时机名称
+		 * @param { string } skill - 技能名称
+		 * @param { any } [indexedData] - 触发时附带的索引数据
+		 * @returns { boolean }
 		 */
-		filterTrigger: function (event, player, triggername, skill, indexedData) {
+		filterTrigger(event, player, triggerName, skill, indexedData) {
 			if (
 				player._hookTrigger &&
 				player._hookTrigger.some(i => {
 					const info = lib.skill[i].hookTrigger;
-					return info && info.block && info.block(event, player, triggername, skill);
+					return info && info.block && info.block(event, player, triggerName, skill);
 				})
 			) {
 				return false;
@@ -10994,7 +10996,7 @@ export class Library {
 			}
 			if (!game.expandSkills(player.getSkills(false).concat(lib.skill.global)).includes(skill)) {
 				//hiddenSkills
-				if (get.mode() != "guozhan") {
+				if (get.mode() !== "guozhan") {
 					return false;
 				}
 				if (info.noHidden) {
@@ -11012,16 +11014,16 @@ export class Library {
 			}
 			if (
 				!Object.keys(info.trigger).some(role => {
-					if (role != "global" && player != event[role]) {
+					if (role !== "global" && player !== event[role]) {
 						return false;
 					}
 					const list = [];
-					if (typeof info.trigger[role] == "string") {
+					if (typeof info.trigger[role] === "string") {
 						list.add(info.trigger[role]);
 					} else if (Array.isArray(info.trigger[role])) {
 						list.addArray(info.trigger[role]);
 					}
-					if (list.includes(triggername)) {
+					if (list.includes(triggerName)) {
 						return true;
 					}
 					const map = lib.relatedTrigger,
@@ -11033,12 +11035,12 @@ export class Library {
 							}
 						}
 					}
-					return list.includes(triggername);
+					return list.includes(triggerName);
 				})
 			) {
 				return false;
 			}
-			if (info.filter && !info.filter(event, player, triggername, indexedData)) {
+			if (info.filter && !info.filter(event, player, triggerName, indexedData)) {
 				return false;
 			}
 			if (event._notrigger.includes(player) && !lib.skill.global.includes(skill)) {
@@ -11057,35 +11059,34 @@ export class Library {
 				return false;
 			}
 			for (const item in player.storage) {
-				if (item.startsWith("temp_ban_")) {
-					if (player.storage[item] !== true) {
-						continue;
-					}
-					const skillName = item.slice(9);
-					if (lib.skill[skillName]) {
-						const skills = game.expandSkills([skillName]);
-						if (skills.includes(skill)) {
-							return false;
-						}
-					}
+				if (!item.startsWith("temp_ban_") || player.storage[item] !== true) {
+					continue;
+				}
+				const skillName = item.slice(9);
+				if (!lib.skill[skillName]) {
+					continue;
+				}
+				const skills = game.expandSkills([skillName]);
+				if (skills.includes(skill)) {
+					return false;
 				}
 			}
 			return true;
 		},
 		/**
+		 * 判断技能是否可在当前事件中发动。
 		 *
-		 * @param {GameEvent} event
-		 * @param {Player} player
-		 * @param {string} skill
-		 * @returns {boolean}
+		 * @param { GameEvent } event - 当前事件
+		 * @param { Player } player - 技能所属角色
+		 * @param { string } skill - 技能名称
+		 * @returns { boolean }
 		 */
-		filterEnable: function (event, player, skill) {
+		filterEnable(event, player, skill) {
 			const info = get.info(skill);
 			if (!info) {
 				console.error(new ReferenceError("缺少info的技能:", skill));
 				return false;
 			}
-			// if (!game.expandSkills(player.getSkills('invisible').concat(lib.skill.global)).includes(skill)) return false;
 			if (!game.expandSkills(player.getSkills(false).concat(lib.skill.global)).includes(skill)) {
 				//hiddenSkills
 				if (player.hasSkillTag("nomingzhi", false, null, true)) {
@@ -11160,88 +11161,89 @@ export class Library {
 			}
 			return true;
 		},
-		characterDisabled: function (i, libCharacter) {
-			const args = Array.from(arguments).slice(2);
-			if (!lib.character[i]) {
+		/**
+		 * 判断武将是否因配置、模式或禁用列表而不可选用。
+		 *
+		 * @param { string } name - 武将名称
+		 * @param { Record<string, Character> } [_characters] - 候选武将表；保留此参数以兼容现有调用。
+		 * @param { ...string } options - 附加选项，包含 `"ignoreForibidden"` 时忽略 AI 禁用标记。
+		 * @returns { boolean }
+		 */
+		characterDisabled(name, _characters, ...options) {
+			const character = lib.character[name];
+			if (!character || character.isUnseen) {
 				return true;
 			}
-			if (lib.character[i].isUnseen) {
-				return true;
-			}
-			if (!args.includes("ignoreForibidden")) {
-				if (lib.config.forbidai.includes(i) || lib.character[i].isAiForbidden) {
+			if (!options.includes("ignoreForibidden")) {
+				if (lib.config.forbidai.includes(name) || character.isAiForbidden) {
 					return true;
 				}
 			}
-			if (lib.characterFilter[i] && !lib.characterFilter[i](get.mode())) {
+			if (lib.characterFilter[name] && !lib.characterFilter[name](get.mode())) {
 				return true;
 			}
 			if (_status.connectMode) {
-				if (lib.configOL.banned.includes(i) || lib.connectBanned.includes(i)) {
+				if (lib.configOL.banned.includes(name) || lib.connectBanned.includes(name)) {
 					return true;
 				}
-				var double_character = false;
-				if (lib.configOL.mode == "guozhan") {
-					double_character = true;
-				} else if (lib.configOL.double_character && (lib.configOL.mode == "identity" || lib.configOL.mode == "stone")) {
-					double_character = true;
-				} else if (lib.configOL.double_character_jiange && lib.configOL.mode == "versus" && _status.mode == "jiange") {
-					double_character = true;
-				}
-				if (double_character && lib.config.forbiddouble.includes(i)) {
+				const doubleCharacter = lib.configOL.mode === "guozhan" || (lib.configOL.double_character && (lib.configOL.mode === "identity" || lib.configOL.mode === "stone")) || (lib.configOL.double_character_jiange && lib.configOL.mode === "versus" && _status.mode === "jiange");
+				if (doubleCharacter && lib.config.forbiddouble.includes(name)) {
 					return true;
 				}
 			} else {
-				if (lib.config.banned.includes(i)) {
+				if (lib.config.banned.includes(name)) {
 					return true;
 				}
-				var double_character = false;
-				if (get.mode() == "guozhan") {
-					double_character = true;
-				} else if (get.config("double_character") && (lib.config.mode == "identity" || lib.config.mode == "stone")) {
-					double_character = true;
-				} else if (get.config("double_character_jiange") && lib.config.mode == "versus" && _status.mode == "jiange") {
-					double_character = true;
-				}
-				if (double_character && lib.config.forbiddouble.includes(i)) {
-					return true;
-				}
-			}
-		},
-		characterDisabled2: function (i) {
-			var info = lib.character[i];
-			const args = Array.from(arguments).slice(1);
-			if (!info) {
-				return true;
-			}
-			if (info[4]) {
-				if (info.isBoss || info.isHiddenBoss) {
-					return !lib.config?.plays?.includes("boss");
-				}
-				if (info.isMinskin) {
-					return true;
-				}
-				if (info.isUnseen) {
-					return true;
-				}
-				if (!args.includes("ignoreForibidden") && info.isAiForbidden && (!_status.event.isMine || !_status.event.isMine())) {
-					return true;
-				}
-				if (lib.characterFilter[i] && !lib.characterFilter[i](get.mode())) {
+				const doubleCharacter = get.mode() === "guozhan" || (get.config("double_character") && (lib.config.mode === "identity" || lib.config.mode === "stone")) || (get.config("double_character_jiange") && lib.config.mode === "versus" && _status.mode === "jiange");
+				if (doubleCharacter && lib.config.forbiddouble.includes(name)) {
 					return true;
 				}
 			}
 			return false;
 		},
-		skillDisabled: function (skill) {
+		/**
+		 * 判断武将是否因特殊标签或模式限制而不可选用。
+		 *
+		 * @param { string } name - 武将名称
+		 * @param { ...string } options - 附加选项，包含 `"ignoreForibidden"` 时忽略 AI 禁用标记。
+		 * @returns { boolean }
+		 */
+		characterDisabled2(name, ...options) {
+			const character = lib.character[name];
+			if (!character) {
+				return true;
+			}
+			if (character[4]) {
+				if (character.isBoss || character.isHiddenBoss) {
+					return !lib.config?.plays?.includes("boss");
+				}
+				if (character.isMinskin) {
+					return true;
+				}
+				if (character.isUnseen) {
+					return true;
+				}
+				if (!options.includes("ignoreForibidden") && character.isAiForbidden && (!_status.event.isMine || !_status.event.isMine())) {
+					return true;
+				}
+				if (lib.characterFilter[name] && !lib.characterFilter[name](get.mode())) {
+					return true;
+				}
+			}
+			return false;
+		},
+		/**
+		 * 判断技能是否因缺少翻译或具有非普通技能标签而不可选用。
+		 *
+		 * @param { string } skill - 技能名称
+		 * @returns { boolean }
+		 */
+		skillDisabled(skill) {
 			if (!lib.translate[skill] || !lib.translate[skill + "_info"]) {
 				return true;
 			}
-			var info = lib.skill[skill];
-			if (info && !info.unique && !info.temp && !info.sub && !info.fixed && !info.vanish) {
-				return false;
-			}
-			return true;
+			const info = lib.skill[skill];
+			return Boolean(!info || info.unique || info.temp || info.sub || info.fixed || info.vanish);
 		},
 		/**
 		 * 判断一张牌对某角色在指定事件中是否可用。
