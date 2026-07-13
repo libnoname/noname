@@ -2998,18 +2998,16 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "thunder",
 		filter(event, player) {
-			return event.player != player && event.player.isIn();
+			return event.player !== player && event.player.isIn();
 		},
 		check(event, player) {
 			return get.damageEffect(event.player, player, player) > 0;
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			trigger.player.damage();
-			"step 1";
+			await trigger.player.damage();
 			if (trigger.player.maxHp > 0) {
-				player.draw(trigger.player.maxHp);
+				await player.draw(trigger.player.maxHp);
 			}
 		},
 		ai: { expose: 10 },
