@@ -16,7 +16,7 @@ const translates = {
 	ol_quancong: "OL界全琮",
 	ol_quancong_prefix: "OL界",
 	olyaoming: "邀名",
-	olyaoming_info: `每回合限一次，当你造成或受到伤害后，你可以选择一名角色，若其手牌数: 大于等于你，你弃置其一张牌； 小于等于你，其摸一张牌。 然后其回合内，你视为拥有技能${get.poptip("olzhenshan")}。`,
+	olyaoming_info: `每回合限一次，当你造成或受到伤害后，你可以选择一名角色，若其手牌数: 大于等于你，你弃置其一张牌； 小于等于你，其摸一张牌。然后其回合内，你视为拥有技能${get.poptip("olzhenshan")}。`,
 	olzhenshan: "赈赡",
 	olzhenshan_info: `每回合限一次，当你需要使用或打出基本牌时，你可以与手数小于你的一名角色交换手牌，视为使用或打出之，然后${get.poptip("olyaoming")}视为未发动过。`,
 	ol_caoxiu: "OL界曹休",
