@@ -19275,7 +19275,7 @@ const skills = {
 		audio: 2,
 		locked: false,
 		init(player, skill) {
-			player.addExtraEquip(skill, "qinggang", true, player2 => player2.hasEmptySlot(1) && !player.getVEquip(1) && lib.card.qinggang);
+			player.addExtraEquip(skill, "qinggang", true, player => player.hasEmptySlot(1) && !player.getVEquip(1) && lib.card.qinggang);
 		},
 		onremove(player, skill) {
 			player.removeExtraEquip(skill);
