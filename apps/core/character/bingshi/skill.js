@@ -39,7 +39,7 @@ const skills = {
 			event.result = await player
 				.chooseCardTarget({
 					prompt: get.prompt(event.skill),
-					prompt2: "选择任意手牌交给一名其他角色",
+					prompt2: "炽沄：交给一名其他角色任意张手牌",
 					filterCard: true,
 					selectCard: [1, Infinity],
 					filterTarget: lib.filter.notMe,
@@ -127,7 +127,7 @@ const skills = {
 			event.result = await player
 				.chooseTarget({
 					prompt: get.prompt(event.skill),
-					prompt2: "展示一名目标角色的一张手牌",
+					prompt2: "焰洄：展示一名目标角色的一张手牌",
 					filterTarget(card, player, target) {
 						return get.event().targets?.includes(target);
 					},
@@ -379,7 +379,7 @@ const skills = {
 						? await target
 								.chooseToDiscard({
 									forced,
-									prompt: "弃置一半牌" + (bool1 ? "" : "或点击“取消”令本次传导伤害+1"),
+									prompt: `${get.translation(player)}对你发动了焚涛：请选择弃置一半牌` + (bool1 ? "" : "或点击“取消”令本次传导伤害+1"),
 									position: "he",
 									selectCard: Math.ceil(target.countCards("he") / 2),
 									ai(card) {
