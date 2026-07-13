@@ -1120,7 +1120,7 @@ const skills = {
 						prompt: `是否失去一点体力并摸一张牌，令${get.translation(player)}重新选择？`,
 						ai: () => {
 							const player = get.player(),
-								cards = get.event("cards");
+								cards = get.event().cards;
 							return player.hp > 3 && !cards.some(i => get.color(i) == "red");
 						},
 					})
@@ -1235,7 +1235,7 @@ const skills = {
 						forced: true,
 						ai: button => {
 							const player = get.player(),
-								target = get.event("target");
+								target = get.event().target;
 							return get.effect(player, { name: button.link[2] }, target, player);
 						},
 					})
@@ -1337,7 +1337,7 @@ const skills = {
 							prompt2: `移去${get.translation(target)}的至多5个暴怒标记并摸等量的牌`,
 							controls: list,
 							ai: () => {
-								const num = get.event("num");
+								const num = get.event().num;
 								return num - 1;
 							},
 						})
@@ -1402,7 +1402,7 @@ const skills = {
 						return event.numbers.toUniqued()?.length == 2;
 					},
 					processAI: () => {
-						const list = Array.from({ length: get.event("range0") }).map((val, idx) => idx + 1);
+						const list = Array.from({ length: get.event().range0 }).map((val, idx) => idx + 1);
 						if (list.length >= 2) {
 							list.remove(1);
 						}
@@ -1418,8 +1418,8 @@ const skills = {
 			await player
 				.lose(cards, ui.cardPile)
 				.set("insert_index", (event, card) => {
-					const nums = get.event("nums"),
-						cardsx = get.event("cardsx");
+					const nums = get.event().nums,
+						cardsx = get.event().cardsx;
 					return ui.cardPile.childNodes[nums[cardsx.indexOf(card)] - 1];
 				})
 				.set("nums", [num1, num2])
@@ -1535,7 +1535,7 @@ const skills = {
 							prompt2: description,
 							ai: () => {
 								const player = get.player(),
-									target = get.event("target");
+									target = get.event().target;
 								return get.attitude(player, target) < 0;
 							},
 						})
@@ -1559,7 +1559,7 @@ const skills = {
 						},
 						ai: card => {
 							const player = get.player(),
-								target = get.event("target");
+								target = get.event().target;
 							if (get.attitude(player, target) >= 0) {
 								return -1;
 							}
