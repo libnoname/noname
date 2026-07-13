@@ -10421,28 +10421,33 @@ const skills = {
 	zuici: {
 		audio: 2,
 		trigger: { player: "dying" },
-		direct: true,
 		filter(event, player) {
-			return player.countCards("e") > 0;
+			return player.hasCards("e");
 		},
-		content() {
-			"step 0";
-			var list = [];
-			var cards = player.getCards("e");
-			for (var i of cards) {
-				list.push(get.subtype(i));
-			}
-			list.push("cancel2");
-			player.chooseControl(list).set("prompt", get.prompt2("zuici"));
-			"step 1";
-			if (result.control != "cancel2") {
-				player.disableEquip(result.control);
-			} else {
-				event.finish();
-			}
-			"step 2";
+		async cost(event, trigger, player) {
+			const types = player
+				.getCards("e")
+				.map(card => get.subtype(card))
+				.toUniqued();
+			types.push("cancel2");
+			const result = await player
+				.chooseControl({
+					prompt: get.prompt2("zuici"),
+					controls: types,
+				})
+				.forResult();
+			event.result = {
+				bool: result.control !== "cancel2",
+				cost_data: {
+					type: result.control,
+				},
+			};
+		},
+		async content(event, trigger, player) {
+			const { type } = event.cost_data;
+			await player.disableEquip(type);
 			if (player.hp < 1) {
-				player.recover(1 - player.hp);
+				await player.recover(1 - player.hp);
 			}
 		},
 	},
