@@ -10287,20 +10287,14 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			return func(value, lib.card[value]);
 		});
 	}
-	countGroup(group) {
+	countGroup() {
 		const list = lib.group.slice(0);
 		return game.countPlayer(current => {
 			if (!list.includes(current.group)) {
 				return false;
 			}
-			if (group) {
-				if(group === current.group) {
-					return true;
-				}
-			} else {
-				list.remove(current.group);
-				return true;
-			}
+			list.remove(current.group);
+			return true;
 		});
 	}
 	/**
