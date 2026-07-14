@@ -4593,37 +4593,37 @@ const skills = {
 		audio: 2,
 		trigger: { player: "damageEnd" },
 		filter(event, player) {
-			return event.card && event.card.name == "sha" && event.source && event.source.isIn() && player != event.source && event.cards.filterInD().length > 0 && player.getEquips(1).length > 0;
+			return event.card && event.card.name === "sha" && event.source && event.source.isIn() && player !== event.source && event.cards.filterInD().length > 0 && player.getEquips(1).length > 0;
 		},
 		check(event, player) {
-			var card = {
-					name: "sha",
-					cards: event.cards.filterInD(),
-				},
-				target = event.source;
+			const card = {
+				name: "sha",
+				cards: event.cards.filterInD(),
+			};
+			const target = event.source;
 			return !player.canUse(card, target, false) || get.effect(target, card, player, player) > 0;
 		},
-		content() {
-			"step 0";
-			event.cards = trigger.cards.filterInD();
-			player.gain(event.cards, "gain2");
-			"step 1";
-			var target = trigger.source,
-				hs = player.getCards("h");
-			if (
-				target &&
-				target.isIn() &&
-				hs.length >= cards.length &&
-				cards.filter(function (i) {
-					return hs.includes(i);
-				}).length == cards.length &&
-				player.canUse({ name: "sha", cards: cards }, target, false)
-			) {
-				var next = player.useCard({ name: "sha" }, cards, target, false);
-				if (!target.getEquips(1).length) {
-					next.baseDamage = 2;
-				}
+		async content(event, trigger, player) {
+			const cards = trigger.cards.filterInD();
+			await player.gain({
+				cards,
+				animate: "gain2",
+			});
+			const target = trigger.source;
+			const handcards = player.getCards("h");
+			if (!target || !target.isIn() || handcards.length < cards.length || !cards.every(card => handcards.includes(card)) || !player.canUse({ name: "sha", cards }, target, false)) {
+				return;
 			}
+			const useCardEvent = player.useCard({
+				card: get.autoViewAs({ name: "sha" }),
+				cards,
+				targets: [target],
+				addCount: false,
+			});
+			if (!target.getEquips(1).length) {
+				useCardEvent.baseDamage = 2;
+			}
+			await useCardEvent;
 		},
 	},
 	shanxie: {
