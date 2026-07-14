@@ -1168,7 +1168,7 @@ const skills = {
 					controls: controlList,
 					choiceList: choiceList,
 					ai: () => {
-						const list = get.event("list"),
+						const list = get.event().list,
 							player = get.player();
 						if (
 							list.includes("弃置牌") &&
