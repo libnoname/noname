@@ -48,37 +48,31 @@ const skills = {
 				charlotte: true,
 				intro: { content: "players" },
 				trigger: {
-					get global() {
-						let list = ["loseAfter", "loseAsyncAfter"];
-						if (Array.isArray(lib.phaseName)) {
-							list.addArray(lib.phaseName.map(i => [`${i}Skipped`, `${i}Cancelled`]).flat());
-						}
-						return list;
+					global: ["loseAfter", "loseAsyncAfter"],
+					get player() {
+						if (!Array.isArray(lib.phaseName)) return [];
+						return lib.phaseName.map(i => [`${i}Skipped`, `${i}Cancelled`]).flat();
 					},
 				},
 				filter(event, player) {
 					const target = player.getStorage("dcmingjie_effect");
 					if (!target?.isIn()) return false;
 					if (event.name.startsWith("lose")) {
-						if (!event.getParent("phaseDiscard", true) || event.type !== "discard" || event.getlx === false) {
-							return false;
-						}
+						if (!event.getParent("phaseDiscard", true) || event.type !== "discard" || event.getlx === false) return false;
 						const evt = event.getl?.(target);
 						return evt?.hs?.someInD("od");
 					}
-					return event.player === player;
+					return true;
 				},
 				forced: true,
 				logTarget(event, player) {
 					return player.getStorage("dcmingjie_effect");
 				},
 				async content(event, trigger, player) {
-					const target = player.getStorage("dcmingjie_effect");
+					const target = event.targets[0];
 					if (trigger.name.startsWith("lose")) {
 						await player.gain(trigger.getl(target).hs.filterInD("od"));
 					} else {
-						const skippedPlayer = trigger.player;
-						const other = skippedPlayer === player ? target : player;
 						await game.asyncDraw([player, target], 2);
 						await game.delayx();
 						if (target.isIn() && !target.hasMark("dcmingjie_tally")) {
@@ -106,11 +100,9 @@ const skills = {
 				forced: true,
 				content() {
 					trigger.cancel();
-					player.removeMark("dcmingjie_tally", 1);
-					game.log(player, "的“节”标记防止了伤害");
-					if (!player.hasMark("dcmingjie_tally")) {
-						player.removeSkill("dcmingjie_tally");
-					}
+					player.removeMark("dcmingjie_tally", 1, false);
+					game.log(player, "防止了此伤害");
+					if (!player.hasMark("dcmingjie_tally")) player.removeSkill("dcmingjie_tally");
 				},
 				ai: { threaten: 0.8 },
 			},
@@ -150,6 +142,7 @@ const skills = {
 				.set("ai", () => {
 					const { player, controls } = get.event();
 					const trigger = get.event().getTrigger();
+					if (get.effect(player, trigger.card, trigger.player, player) >= 0) return "cancel2";
 					return ["phaseDiscard", "phaseJudge", "phaseUse", "phaseDraw"].find(i => controls.includes(i)) || controls.at(-2);
 				})
 				.forResult();
