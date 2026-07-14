@@ -4394,17 +4394,17 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		filter(event, player) {
-			var num = player.countMark("spjungong_used");
+			const num = player.countMark("spjungong_used");
 			return num < player.hp || num <= player.countCards("he");
 		},
 		filterTarget(card, player, target) {
-			return target != player && player.canUse("sha", target, false);
+			return target !== player && player.canUse("sha", target, false);
 		},
 		filterCard: true,
 		position: "he",
 		selectCard() {
-			var player = _status.event.player,
-				num = player.countMark("spjungong_used") + 1;
+			const player = get.player();
+			const num = player.countMark("spjungong_used") + 1;
 			if (ui.selected.cards.length || num > player.hp) {
 				return num;
 			}
@@ -4414,27 +4414,30 @@ const skills = {
 			return 6 - get.value(card);
 		},
 		prompt() {
-			var player = _status.event.player,
-				num = get.cnNumber(player.countMark("spjungong_used") + 1);
-			return "弃置" + num + "张牌或失去" + num + "点体力，视为使用杀";
+			const player = get.player();
+			const num = get.cnNumber(player.countMark("spjungong_used") + 1);
+			return `弃置${num}张牌或失去${num}点体力，视为使用杀`;
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
+			const { cards, target } = event;
 			player.addTempSkill("spjungong_used");
 			player.addMark("spjungong_used", 1, false);
 			if (!cards.length) {
-				player.loseHp(player.countMark("spjungong_used"));
+				await player.loseHp(player.countMark("spjungong_used"));
 			}
-			player.useCard({ name: "sha", isCard: true }, target, false);
-			"step 1";
+			await player.useCard({
+				card: get.autoViewAs({ name: "sha", isCard: true }), 
+				targets: [target],
+				addCount: false,
+			});
 			if (
-				player.hasHistory("sourceDamage", function (evt) {
-					var card = evt.card;
-					if (!card || card.name != "sha") {
+				player.hasHistory("sourceDamage", evt => {
+					const card = evt.card;
+					if (!card || card.name !== "sha") {
 						return false;
 					}
-					var evtx = evt.getParent("useCard");
-					return evtx.card == card && evtx.getParent() == event;
+					const useEvent = evt.getParent("useCard");
+					return useEvent != null && useEvent.card === card && useEvent.getParent() === event;
 				})
 			) {
 				player.tempBanSkill("spjungong");
