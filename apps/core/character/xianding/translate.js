@@ -1,6 +1,11 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	lizhaoyi: "李昭仪",
+	dcmingjie: "明节",
+	dcmingjie_info: "游戏开始时，你选择一名其他角色，你与其获得对方因弃牌阶段弃置的牌，你或其的阶段被跳过时，你与其各摸两张牌并可令对方防止下次受到的伤害。其死亡时，你死亡。",
+	dcxianfu: "娴辅",
+	dcxianfu_info: "每回合限一次，当你成为牌的目标时，你可以跳过你下回合的除准备阶段和结束阶段外的一个阶段，令此牌对你无效。然后你与“明节”角色互相观看对方手牌并可获得其中至多三张手牌。",
 	dc_sb_guanyu: "新杀谋关羽",
 	dc_sb_guanyu_prefix: "新杀谋",
 	dcsbguanwu: "冠武",
@@ -1238,7 +1243,7 @@ const translates = {
 	dc_sb_xusheng_prefix: "新杀谋",
 	dc_sb_xusheng: "新杀谋徐盛",
 	dcsbqinqiang: "勤强",
-	dcsbqinqiang_info: "每回合每项限一次，你使用手牌时，可选择一项：1.令此牌伤害+X；2.摸X张牌。（X为你本回合当前连续使用与此牌颜色相同的牌数）",
+	dcsbqinqiang_info: "每回合每项限一次，你使用手牌时，可选择一项：1.令此牌伤害+X；2.摸X张牌。（X为你本回合此前与此牌连续使用同颜色的牌数）",
 	dcsbyizhen: "疑阵",
 	dcsbyizhen_info: "当你受到伤害后，你可以与伤害来源同时观看的对方手牌并弃置其中一张牌，若这两张牌颜色相同，则你获得之。",
 	xuwen: "徐妏",

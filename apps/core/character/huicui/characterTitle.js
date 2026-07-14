@@ -6,6 +6,7 @@ export default {
 	mamiao: "退路自有",
 	re_panfeng: "联军上将",
 	xingdaorong: "零陵上将",
+	dc_xiahouen: "乌禾同仓",
 	caoxing: "健儿",
 	re_chunyuqiong: "西园右校尉",
 	xiahoujie: "当阳虎胆",

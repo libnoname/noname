@@ -1,4 +1,11 @@
 const characters = {
+	lizhaoyi: {
+    sex: "female",
+    group: "shu",
+    hp: 3,
+    skills: ["dcmingjie", "dcxianfu"],
+    names: "李|昭仪",
+    },
 	dc_sb_guanyu: {
 		sex: "male",
 		group: "shu",

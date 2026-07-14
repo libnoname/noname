@@ -207,7 +207,7 @@ const skills = {
 					}
 					if (obtained.length > 0) {
 						await player.gain({
-							cards: obtained, 
+							cards: obtained,
 							animate: "gain2",
 						});
 						obtainedFromPile = true;
@@ -4452,7 +4452,7 @@ const skills = {
 						.setContent("gaincardMultiple");
 					const names = givenCards.map(card => card.name).toUniqued();
 					await game.delayx();
-						const newNames = names.filter(name => !player.getStorage(event.name).includes(name));
+					const newNames = names.filter(name => !player.getStorage(event.name).includes(name));
 					if (newNames.length) {
 						player.markAuto(event.name, newNames);
 						await player.draw(newNames.length);
@@ -19266,6 +19266,94 @@ const skills = {
 				async content(event, trigger, player) {
 					player.gainMaxHp();
 					player.chooseDrawRecover(2, true);
+				},
+			},
+		},
+	},
+	// 夏侯恩
+	chijian: {
+		audio: 2,
+		locked: false,
+		init(player, skill) {
+			player.addExtraEquip(skill, "qinggang", true, player => player.hasEmptySlot(1) && !player.getVEquip(1) && lib.card.qinggang);
+		},
+		onremove(player, skill) {
+			player.removeExtraEquip(skill);
+		},
+		mod: {
+			cardUsable(card, player, num) {
+				if (card.name === "sha" && player.isPhaseUsing()) return num + 1;
+			},
+		},
+		group: "chijian_qinggang",
+		subSkill: {
+			qinggang: {
+				mod: {
+					attackRange(player, num) {
+						if (player.hasEmptySlot(1) && !player.getVEquip(1)) return num + 1;
+					},
+				},
+				audio: "chijian",
+				inherit: "qinggang_skill",
+				filter(event, player) {
+					if (!player.hasEmptySlot(1) || player.getVEquip(1)) return false;
+					return event.card.name == "sha";
+				},
+			},
+		},
+	},
+	shiwu: {
+		audio: 2,
+		trigger: { global: "phaseBegin" },
+		filter(event, player) {
+			if (event.player === player) return false;
+			const juedou = new lib.element.VCard({ name: "juedou", isCard: true });
+			return player.canUse(juedou, event.player);
+		},
+		prompt2(event, player) {
+			return `视为对${get.translation(event.player)}使用【决斗】，失败则本回合抢走你的剑`;
+		},
+		check(event, player) {
+			const juedou = new lib.element.VCard({ name: "juedou", isCard: true });
+			return get.effect(event.player, juedou, player, player) > 0 && get.attitude(player, event.player) <= 0;
+		},
+		logTarget: "player",
+		async content(event, trigger, player) {
+			const target = trigger.player;
+			const next = player.useCard({
+				card: new lib.element.VCard({ name: "juedou", isCard: true }),
+				targets: [target],
+			});
+			await next;
+			const damagedEvents = game.getAllGlobalHistory("everything", evt => evt.name === "damage" && evt.card === next.card);
+			if (damagedEvents.some(evt => evt.source === player && evt.player === target)) {
+				const card = get.cardPile(card => get.is.damageCard(card), "bottom");
+				if (card) await player.gain(card, "gain2");
+			}
+			if (damagedEvents.some(evt => evt.source === target && evt.player === player)) {
+				await target.addTempSkills("chijian");
+				await player.removeSkills("chijian");
+				player
+					.when({ global: "phaseEnd" })
+					.filter(evt => trigger.getParent("phase", true, true) === evt)
+					.step(async (event2, trigger2, player2) => {
+						await player.addSkills("chijian");
+					});
+			}
+		},
+		group: "shiwu_lose",
+		subSkill: {
+			lose: {
+				audio: "shiwu",
+				trigger: { player: "dieAfter" },
+				filter(event, player) {
+					return event.source?.isIn();
+				},
+				forced: true,
+				locked: false,
+				forceDie: true,
+				async content(event, trigger, player) {
+					await trigger.source.addSkills("chijian");
 				},
 			},
 		},
