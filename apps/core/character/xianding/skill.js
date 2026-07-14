@@ -9,9 +9,7 @@ const skills = {
 		audio: 2,
 		onremove(player, skill) {
 			const target = player.storage[`${skill}_effect`];
-			if (target?.isIn()) {
-				target.removeSkill(`${skill}_effect`);
-			}
+			if (target?.isIn()) target.removeSkill(`${skill}_effect`);
 			player.removeSkill(`${skill}_effect`);
 			player.removeSkill(`${skill}_death`);
 		},
@@ -128,9 +126,7 @@ const skills = {
 		trigger: { target: "useCardToTarget" },
 		filter(event, player) {
 			const target = player.getStorage("dcmingjie_effect");
-			if (!target?.isIn() || !Array.isArray(lib.phaseName)) {
-				return false;
-			}
+			if (!target?.isIn() || !Array.isArray(lib.phaseName)) return false;
 			return lib.phaseName.some(item => !["phaseZhunbei", "phaseJieshu"].includes(item) && !player.skipList.includes(item));
 		},
 		async cost(event, trigger, player) {
@@ -168,9 +164,7 @@ const skills = {
 						.set("ai", button => get.value(button.link, player))
 						.forResult()
 				);
-			} else {
-				promises.push(Promise.resolve({ bool: false }));
-			}
+			} else promises.push(Promise.resolve({ bool: false }));
 			if (playerCards.length > 0) {
 				promises.push(
 					target
@@ -178,41 +172,27 @@ const skills = {
 						.set("ai", button => get.value(button.link, target))
 						.forResult()
 				);
-			} else {
-				promises.push(Promise.resolve({ bool: false }));
-			}
+			} else promises.push(Promise.resolve({ bool: false }));
 			const [result1, result2] = await Promise.all(promises);
 			const goon1 = result1?.bool && result1.links?.length > 0;
 			const goon2 = result2?.bool && result2.links?.length > 0;
-			if (goon1 && goon2) {
-				await player.swapHandcards(target, result2.links, result1.links);
-			} else if (goon1) {
-				await player.gain(result1.links, target, "give");
-			} else if (goon2) {
-				await target.gain(result2.links, player, "give");
-			}
+			if (goon1 && goon2) await player.swapHandcards(target, result2.links, result1.links);
+			else if (goon1) await player.gain(result1.links, target, "give");
+			else if (goon2) await target.gain(result2.links, player, "give");
 		},
 		ai: {
 			threaten: 0.8,
 			expose: 0.2,
 			effect: {
 				target(card, player, target) {
-					if (_status._dcxianfu_check) {
-						return;
-					}
+					if (_status._dcxianfu_check) return;
 					const mingjie = target.getStorage("dcmingjie_effect");
-					if (!mingjie?.isIn() || !Array.isArray(lib.phaseName)) {
-						return;
-					}
-					if (!lib.phaseName.some(item => !["phaseZhunbei", "phaseJieshu"].includes(item) && !target.skipList.includes(item))) {
-						return;
-					}
+					if (!mingjie?.isIn() || !Array.isArray(lib.phaseName)) return;
+					if (!lib.phaseName.some(item => !["phaseZhunbei", "phaseJieshu"].includes(item) && !target.skipList.includes(item))) return;
 					_status._dcxianfu_check = true;
 					const eff = get.effect(target, card, player, target);
 					delete _status._dcxianfu_check;
-					if (eff < 0) {
-						return 0.5;
-					}
+					if (eff < 0) return 0.5;
 				},
 			},
 		},
