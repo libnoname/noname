@@ -2923,18 +2923,21 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return player.canMoveCard();
+			return player.countCards("h") !== 5;
 		},
+		manualConfirm: true,
 		async content(event, trigger, player) {
-			await player.moveCard(true);
-			const num = player.countCards("he") - 5;
+			const num = player.countCards("h") - 5;
 			if (num == 0) {
 				return;
 			}
 			if (num > 0) {
-				await player.chooseToDiscard("he", num, true, "allowChooseAll");
+				await player.chooseToDiscard({ position: "h", num, forced: true, allowChooseAll: true });
 			} else {
-				await player.draw(-num);
+				await player.draw({ num: -num });
+			}
+			if (player.canMoveCard()) {
+				await player.moveCard(true);
 			}
 			const lose = player.hasHistory("lose", evt => evt.getParent(3) == event);
 			const bool1 = lose && player.hasHistory("gain", evt => evt.getParent(2) == event);
@@ -2942,6 +2945,7 @@ const skills = {
 			if (bool1 || bool2) {
 				player.addTempSkill(event.name + "_effect");
 				player.addMark(event.name + "_effect", 1, false);
+				player.addTempSkill(event.name + "_effect2");
 			}
 		},
 		ai: {
@@ -2953,15 +2957,22 @@ const skills = {
 				return 9;
 			},
 			result: {
-				player(player) {
-					if (player.canMoveCard(true)) {
-						return 1;
-					}
-					return 0;
-				},
+				player: 1,
 			},
 		},
 		subSkill: {
+			effect2: {
+				charlotte: true,
+				mark: true,
+				forced: true,
+				trigger: { player: "useCard" },
+				intro: { content: "使用下一张牌不可被响应" },
+				async content(event, trigger, player) {
+					player.removeSkill(event.name);
+					trigger.directHit.addArray(game.players);
+					game.log(trigger.card, "不可被响应");
+				},
+			},
 			effect: {
 				charlotte: true,
 				onremove: true,
