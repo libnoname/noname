@@ -5249,22 +5249,29 @@ const skills = {
 		trigger: { player: "phaseZhunbeiBegin" },
 		forced: true,
 		filter(event, player) {
-			return game.hasPlayer(current => current != player);
+			return game.hasPlayer(current => current !== player);
 		},
-		content() {
-			"step 0";
-			player.chooseTarget("请选择【奉节】的目标", "选择一名其他角色并获得如下效果直到你下回合开始：一名角色的结束阶段开始时，你将手牌摸至（至多摸至四张）或弃置至与其体力值相等。", lib.filter.notMe, true).set("ai", function (target) {
-				return (target.hp - player.countCards("h")) / get.threaten(target);
-			});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.line(target, "green");
-				game.log(player, "选择了", target);
-				player.storage.fengjie2 = target;
-				player.addTempSkill("fengjie2", { player: "phaseBegin" });
-				game.delayx();
+		async content(event, trigger, player) {
+			const result = await player
+				.chooseTarget({
+					prompt: "请选择【奉节】的目标",
+					prompt2: "选择一名其他角色并获得如下效果直到你下回合开始：一名角色的结束阶段开始时，你将手牌摸至（至多摸至四张）或弃置至与其体力值相等。",
+					filterTarget: lib.filter.notMe,
+					forced: true,
+					ai(target) {
+						return (target.hp - player.countCards("h")) / get.threaten(target);
+					},
+				})
+				.forResult();
+			if (!result.bool || !result.targets?.length) {
+				return;
 			}
+			const target = result.targets[0];
+			player.line(target, "green");
+			game.log(player, "选择了", target);
+			player.storage.fengjie2 = target;
+			player.addTempSkill("fengjie2", { player: "phaseBegin" });
+			await game.delayx();
 		},
 	},
 	fengjie2: {
@@ -5278,19 +5285,26 @@ const skills = {
 			if (!player.storage.fengjie2 || !player.storage.fengjie2.isIn()) {
 				return false;
 			}
-			var num1 = player.countCards("h"),
-				num2 = player.storage.fengjie2.hp;
-			return num1 != num2;
+			const num1 = player.countCards("h");
+			const num2 = player.storage.fengjie2.hp;
+			return num1 !== num2;
 		},
-		logTarget: (event, player) => player.storage.fengjie2,
-		content() {
-			var num1 = player.countCards("h"),
-				num2 = player.storage.fengjie2.hp;
+		logTarget(event, player) {
+			return player?.storage.fengjie2;
+		},
+		async content(event, trigger, player) {
+			const num1 = player.countCards("h");
+			const num2 = player.storage.fengjie2.hp;
 			if (num1 > num2) {
-				player.chooseToDiscard("h", true, num1 - num2, "allowChooseAll");
-			} else {
-				player.drawTo(Math.min(4, num2));
+				await player.chooseToDiscard({
+					selectCard: num1 - num2,
+					position: "h",
+					forced: true,
+					allowChooseAll: true,
+				});
+				return;
 			}
+			await player.drawTo(Math.min(4, num2));
 		},
 	},
 	//陈武董袭
