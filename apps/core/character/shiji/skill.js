@@ -3322,66 +3322,78 @@ const skills = {
 		trigger: { global: "judgeFixing" },
 		usable: 1,
 		filter(event, player) {
-			return event.result && event.result.suit == "spade";
+			return event.result && event.result.suit === "spade";
 		},
 		check(event, player) {
 			return event.result.judge * get.attitude(player, event.player) <= 0;
 		},
-		content() {
-			"step 0";
-			var evt = trigger.getParent();
-			if (evt.name == "phaseJudge") {
-				evt.excluded = true;
-			} else {
-				evt.finish();
-				evt._triggered = null;
-				if (evt.name.startsWith("pre_")) {
-					var evtx = evt.getParent();
-					evtx.finish();
-					evtx._triggered = null;
-				}
-				var nexts = trigger.next.slice();
-				for (var next of nexts) {
-					if (next.name == "judgeCallback") {
-						trigger.next.remove(next);
-					}
-				}
-				var evts = game.getGlobalHistory("cardMove", function (evt) {
-					return evt.getParent(2) == trigger.getParent();
-				});
-				var cards = [];
-				for (var i = evts.length - 1; i >= 0; i--) {
-					var evt = evts[i];
-					for (var card of evt.cards) {
-						if (get.position(card, true) == "o") {
-							cards.push(card);
+		async content(event, trigger, player) {
+			const evt = trigger.getParent();
+			if (evt != null) {
+				if (evt.name === "phaseJudge") {
+					evt.excluded = true;
+				} else {
+					evt.finish();
+					evt._triggered = null;
+					if (evt.name.startsWith("pre_")) {
+						const parent = evt.getParent();
+						if (parent != null) {
+							parent.finish();
+							parent._triggered = null;
 						}
 					}
+					const nexts = trigger.next.slice();
+					for (const next of nexts) {
+						if (next.name === "judgeCallback") {
+							trigger.next.remove(next);
+						}
+					}
+					const events = game.getGlobalHistory("cardMove", current => current.getParent(2) === trigger.getParent());
+					const cards = [];
+					for (const current of events.slice().reverse()) {
+						for (const card of current.cards) {
+							if (get.position(card, true) === "o") {
+								cards.push(card);
+							}
+						}
+					}
+					trigger.orderingCards.addArray(cards);
 				}
-				trigger.orderingCards.addArray(cards);
 			}
-			var list = [];
-			if (get.position(trigger.result.card) == "d") {
+
+			const list = [];
+			if (get.position(trigger.result.card) === "d") {
 				list.push(0);
 			}
 			if (trigger.player.isIn() && player.canUse({ name: "sha", nature: "fire", isCard: true }, trigger.player, false)) {
 				list.push(1);
 			}
-			if (list.length == 2) {
-				player
-					.chooseControl()
-					.set("choiceList", ["获得" + get.translation(trigger.result.card), "视为对" + get.translation(trigger.player) + "使用一张火【杀】"])
-					.set("choice", get.effect(trigger.player, { name: "sha" }, player, player) > 0 ? 1 : 0);
-			} else if (list.length == 1) {
-				event._result = { index: list[0] };
-			} else {
-				event.finish();
+			if (!list.length) {
+				return;
 			}
-			"step 1";
-			if (result.index == 0) {
-				player.gain(trigger.result.card, "gain2");
+			let index = list[0];
+			if (list.length === 2) {
+				const result = await player
+					.chooseControl({
+						choiceList: [`获得${get.translation(trigger.result.card)}`, `视为对${get.translation(trigger.player)}使用一张火【杀】`],
+						choice: get.effect(trigger.player, { name: "sha" }, player, player) > 0 ? 1 : 0,
+					})
+					.forResult();
+				if (result.index != null) {
+					index = result.index;
+				}
+			}
+			if (index === 0) {
+				await player.gain({
+					cards: [trigger.result.card],
+					animate: "gain2",
+				});
 			} else {
-				player.useCard({ name: "sha", nature: "fire", isCard: true }, trigger.player, false);
+				await player.useCard({
+					card: get.autoViewAs({ name: "sha", nature: "fire", isCard: true }),
+					targets: [trigger.player],
+					addCount: false,
+				});
 			}
 		},
 	},
