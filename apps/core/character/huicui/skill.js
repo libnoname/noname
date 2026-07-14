@@ -4635,7 +4635,7 @@ const skills = {
 						player.addTempSkill("dcshiju_range");
 						player.addMark("dcshiju_range", count, false);
 					}
-					if(get.type(card) == "equip" || player.hasHistory("sourceDamage", evt => evt.getParent(2) === next)) {
+					if(get.type(card) == "equip" || player.hasHistory("sourceDamage", evt => evt.getParent(3) === next)) {
 						await game.asyncDraw([player, target], 2);
 					}
 				},

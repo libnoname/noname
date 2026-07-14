@@ -13918,8 +13918,10 @@ const skills = {
 			await player.give(cards, target);
 			if (trigger.player === player) {
 				trigger.getParent().effectCount++;
+				game.log(trigger.card, "额外结算一次");
 			} else {
-				trigger.all_excluded = true;
+				trigger.getParent().all_excluded = true;
+				game.log(trigger.card, "无效了");
 			}
 		},
 	},
