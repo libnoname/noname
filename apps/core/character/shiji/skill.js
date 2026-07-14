@@ -5129,58 +5129,59 @@ const skills = {
 		forced: true,
 		logTarget: "player",
 		filter(event, player) {
-			return event.card.name == "sha" && event.card.isCard && typeof get.number(event.card) == "number" && player.hp < event.player.hp;
+			return event.card.name === "sha" && event.card.isCard && typeof get.number(event.card) === "number" && player.hp < event.player.hp;
 		},
-		content() {
-			"step 0";
-			var num = get.number(trigger.card);
+		async content(event, trigger, player) {
+			const num = get.number(trigger.card);
+			/** @type {Partial<Result>} */
+			let result = { bool: false };
 			if (
-				num >= 13 ||
-				!trigger.player.hasCard(function (card) {
-					if (_status.connectMode && get.position(card) == "h") {
+				typeof num === "number" &&
+				num < 13 &&
+				trigger.player.hasCards("he", card => {
+					if (_status.connectMode && get.position(card) === "h") {
 						return true;
 					}
-					return get.number(card) > num;
-				}, "he")
+					const numx = get.number(card);
+					return typeof numx === "number" && numx > num;
+				})
 			) {
-				event._result = { bool: false };
-			} else {
-				trigger.player
-					.chooseCard(
-						"he",
-						function (card) {
-							return get.number(card) > _status.event.number;
+				result = await trigger.player
+					.chooseCard({
+						prompt: `交给${get.translation(player)}一张点数大于${get.cnNumber(num)}的牌，或令${get.translation(trigger.card)}对其无效`,
+						filterCard(card) {
+							const { number } = get.event();
+							const numx = get.number(card);
+							return typeof numx === "number" && numx > number;
 						},
-						"交给" + get.translation(player) + "一张点数大于" + get.cnNumber(num) + "的牌，或令" + get.translation(trigger.card) + "对其无效"
-					)
+						position: "he",
+						ai(card) {
+							if (["shan", "tao", "jiu"].includes(card.name)) {
+								return 0;
+							}
+							return 6 - get.value(card);
+						},
+					})
 					.set("number", num)
-					.set("", function (card) {
-						if (card.name == "shan" || card.name == "tao" || card.name == "jiu") {
-							return false;
-						}
-						return 6 - get.value(card);
-					});
+					.forResult();
 			}
-			"step 1";
-			if (result.bool) {
-				trigger.player.give(result.cards, player);
-			} else {
-				trigger.targets.remove(player);
-				trigger.getParent().triggeredTargets2.remove(player);
-				trigger.untrigger();
+			if (result.bool && result.cards?.length) {
+				await trigger.player.give(result.cards, player);
+				return;
 			}
+			trigger.targets.remove(player);
+			trigger.getParent()?.triggeredTargets2.remove(player);
+			trigger.untrigger();
 		},
 		ai: {
 			effect: {
 				target(card, player, target, current) {
-					if (card.name == "sha" && player.hp > target.hp && get.attitude(player, target) < 0) {
-						var num = get.number(card);
-						if (typeof num != "number") {
+					if (card.name === "sha" && player.hp > target.hp && get.attitude(player, target) < 0) {
+						const num = get.number(card);
+						if (typeof num !== "number") {
 							return false;
 						}
-						var bs = player.getCards("h", function (cardx) {
-							return get.number(cardx) > num && !["", "", ""].includes(cardx.name);
-						});
+						const bs = player.getCards("h", cardx => get.number(cardx) > num && !["", "", ""].includes(cardx.name));
 						if (bs.length < 2) {
 							return 0;
 						}
@@ -5188,8 +5189,8 @@ const skills = {
 							return;
 						}
 						if (bs.length <= 2) {
-							for (var i = 0; i < bs.length; i++) {
-								if (get.value(bs[i]) < 6) {
+							for (const cardx of bs) {
+								if (get.value(cardx) < 6) {
 									return [1, 0, 1, -0.5];
 								}
 							}
