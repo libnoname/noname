@@ -9,7 +9,9 @@ const skills = {
 		audio: 2,
 		onremove(player, skill) {
 			const target = player.storage[`${skill}_effect`];
-			if (target?.isIn()) target.removeSkill(`${skill}_effect`);
+			if (target?.isIn()) {
+				target.removeSkill(`${skill}_effect`);
+			}
 			player.removeSkill(`${skill}_effect`);
 			player.removeSkill(`${skill}_death`);
 		},
@@ -48,7 +50,9 @@ const skills = {
 				trigger: {
 					get global() {
 						let list = ["loseAfter", "loseAsyncAfter"];
-						if (Array.isArray(lib.phaseName)) list.addArray(lib.phaseName.map(i => [`${i}Skipped`, `${i}Cancelled`]).flat());
+						if (Array.isArray(lib.phaseName)) {
+							list.addArray(lib.phaseName.map(i => [`${i}Skipped`, `${i}Cancelled`]).flat());
+						}
 						return list;
 					},
 				},
@@ -56,27 +60,31 @@ const skills = {
 					const target = player.getStorage("dcmingjie_effect");
 					if (!target?.isIn()) return false;
 					if (event.name.startsWith("lose")) {
-						if (!event.getParent("phaseDiscard", true) || event.type !== "discard" || event.getlx === false) return false;
-						const evt = event.getl(target);
+						if (!event.getParent("phaseDiscard", true) || event.type !== "discard" || event.getlx === false) {
+							return false;
+						}
+						const evt = event.getl?.(target);
 						return evt?.hs?.someInD("od");
 					}
-					return event.player === target;
+					return event.player === player;
 				},
 				forced: true,
 				logTarget(event, player) {
 					return player.getStorage("dcmingjie_effect");
 				},
 				async content(event, trigger, player) {
-					const target = event.targets[0];
+					const target = player.getStorage("dcmingjie_effect");
 					if (trigger.name.startsWith("lose")) {
 						await player.gain(trigger.getl(target).hs.filterInD("od"));
 					} else {
+						const skippedPlayer = trigger.player;
+						const other = skippedPlayer === player ? target : player;
 						await game.asyncDraw([player, target], 2);
 						await game.delayx();
 						if (target.isIn() && !target.hasMark("dcmingjie_tally")) {
 							const result = await player
 								.chooseBool("是否令" + get.translation(target) + "防止下次受到的伤害？")
-								.set("ai", () => get.attitude(skippedPlayer, other) > 0)
+								.set("choice", get.attitude(player, target) > 0)
 								.forResult();
 							if (result?.bool) {
 								player.line(target);
@@ -128,7 +136,9 @@ const skills = {
 		trigger: { target: "useCardToTarget" },
 		filter(event, player) {
 			const target = player.getStorage("dcmingjie_effect");
-			if (!target?.isIn() || !Array.isArray(lib.phaseName)) return false;
+			if (!target?.isIn() || !Array.isArray(lib.phaseName)) {
+				return false;
+			}
 			return lib.phaseName.some(item => !["phaseZhunbei", "phaseJieshu"].includes(item) && !player.skipList.includes(item));
 		},
 		async cost(event, trigger, player) {
@@ -136,7 +146,7 @@ const skills = {
 			const phases = lib.phaseName.filter(item => !["phaseZhunbei", "phaseJieshu"].includes(item) && !player.skipList.includes(item));
 			const result = await player
 				.chooseControl(phases, "cancel2")
-				.set("prompt", "娴辅：选择跳过下回合的一个阶段，令此牌对你无效，并与" + get.translation(target) + "互相观看手牌")
+				.set("prompt", "娴辅：选择一个阶段跳过，令此牌对你无效，并与" + get.translation(target) + "互相观看手牌")
 				.set("ai", () => {
 					const { player, controls } = get.event();
 					const trigger = get.event().getTrigger();
@@ -151,7 +161,7 @@ const skills = {
 		usable: 1,
 		async content(event, trigger, player) {
 			player.skip(event.cost_data);
-			game.log(player, "将于下回合跳过", get.translation(event.cost_data));
+			game.log(player, "将于下次跳过", get.translation(event.cost_data));
 			trigger.getParent().excluded.add(player);
 			game.log(trigger.card, "对", player, "无效");
 			const target = player.getStorage("dcmingjie_effect");
@@ -165,7 +175,9 @@ const skills = {
 						.set("ai", button => get.value(button.link, player))
 						.forResult()
 				);
-			} else promises.push(Promise.resolve({ bool: false }));
+			} else {
+				promises.push(Promise.resolve({ bool: false }));
+			}
 			if (playerCards.length > 0) {
 				promises.push(
 					target
@@ -173,27 +185,41 @@ const skills = {
 						.set("ai", button => get.value(button.link, target))
 						.forResult()
 				);
-			} else promises.push(Promise.resolve({ bool: false }));
+			} else {
+				promises.push(Promise.resolve({ bool: false }));
+			}
 			const [result1, result2] = await Promise.all(promises);
 			const goon1 = result1?.bool && result1.links?.length > 0;
 			const goon2 = result2?.bool && result2.links?.length > 0;
-			if (goon1 && goon2) await player.swapHandcards(target, result2.links, result1.links);
-			else if (goon1) await player.gain(result1.links, target, "give");
-			else if (goon2) await target.gain(result2.links, player, "give");
+			if (goon1 && goon2) {
+				await player.swapHandcards(target, result2.links, result1.links);
+			} else if (goon1) {
+				await player.gain(result1.links, target, "give");
+			} else if (goon2) {
+				await target.gain(result2.links, player, "give");
+			}
 		},
 		ai: {
 			threaten: 0.8,
 			expose: 0.2,
 			effect: {
 				target(card, player, target) {
-					if (_status._dcxianfu_check) return;
+					if (_status._dcxianfu_check) {
+						return;
+					}
 					const mingjie = target.getStorage("dcmingjie_effect");
-					if (!mingjie?.isIn() || !Array.isArray(lib.phaseName)) return;
-					if (!lib.phaseName.some(item => !["phaseZhunbei", "phaseJieshu"].includes(item) && !target.skipList.includes(item))) return;
+					if (!mingjie?.isIn() || !Array.isArray(lib.phaseName)) {
+						return;
+					}
+					if (!lib.phaseName.some(item => !["phaseZhunbei", "phaseJieshu"].includes(item) && !target.skipList.includes(item))) {
+						return;
+					}
 					_status._dcxianfu_check = true;
 					const eff = get.effect(target, card, player, target);
 					delete _status._dcxianfu_check;
-					if (eff < 0) return 0.5;
+					if (eff < 0) {
+						return 0.5;
+					}
 				},
 			},
 		},
@@ -668,7 +694,7 @@ const skills = {
 				intro: {
 					content(storage, player) {
 						let str = `已记录点数：${storage}`;
-						if(player.storage.dcxianlve_dying && player.storage.dcxianlve_dying > 0) {
+						if (player.storage.dcxianlve_dying && player.storage.dcxianlve_dying > 0) {
 							str += `<br>刷新【豪贤】所需要点数数量-${get.translation(player.storage.dcxianlve_dying)}`;
 						}
 						return str;
@@ -1168,8 +1194,7 @@ const skills = {
 					controls: controlList,
 					choiceList: choiceList,
 					ai: () => {
-						const list = get.event().list,
-							player = get.player();
+						const { player, list } = get.event();
 						if (
 							list.includes("弃置牌") &&
 							player.countCards("he", i => {
@@ -1602,7 +1627,7 @@ const skills = {
 		},
 		check: (event, player) => {
 			return game.hasPlayer(current => {
-				return current != player && get.attitude(player, target) > 0;
+				return current != player && get.attitude(player, current) > 0;
 			});
 		},
 		subSkill: {
