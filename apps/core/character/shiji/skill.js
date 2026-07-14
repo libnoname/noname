@@ -3693,41 +3693,37 @@ const skills = {
 		trigger: { global: "phaseEnd" },
 		forced: true,
 		filter(event, player) {
-			return (
-				player != event.player &&
-				game.getGlobalHistory("cardMove", function (evt) {
-					if (evt.name != "lose" || evt.type != "discard") {
-						return false;
-					}
-					for (var i of evt.cards) {
-						if (get.subtype(i, false) == "equip2" && get.position(i, true) == "d") {
-							return true;
-						}
-					}
-					return false;
-				}).length > 0
-			);
+			return player !== event.player && game.getGlobalHistory("cardMove", evt => evt.name === "lose" && evt.type === "discard" && evt.cards.some(card => get.subtype(card, false) === "equip2" && get.position(card, true) === "d")).length > 0;
 		},
-		content() {
-			"step 0";
-			var cards = [];
-			game.getGlobalHistory("cardMove", function (evt) {
-				if (evt.name != "lose" || evt.type != "discard") {
-					return false;
+		async content(event, trigger, player) {
+			const cards = [];
+			for (const evt of game.getGlobalHistory("cardMove")) {
+				if (evt.name !== "lose" || evt.type !== "discard") {
+					continue;
 				}
-				for (var i of evt.cards) {
-					if (get.subtype(i, false) == "equip2" && get.position(i, true) == "d") {
-						cards.push(i);
+				for (const card of evt.cards) {
+					if (get.subtype(card, false) === "equip2" && get.position(card, true) === "d") {
+						cards.push(card);
 					}
 				}
-			});
-			player.chooseButton(["俭衣：获得一张防具牌", cards], true).set("ai", function (button) {
-				return get.value(button.link, _status.event.player);
-			});
-			"step 1";
-			if (result.bool) {
-				player.gain(result.links, "gain2");
 			}
+			const result = await player
+				.chooseButton({
+					createDialog: ["俭衣：获得一张防具牌", cards],
+					forced: true,
+					ai(button) {
+						const player = get.player();
+						return get.value(button.link, player);
+					},
+				})
+				.forResult();
+			if (!result.bool || !result.links?.length) {
+				return;
+			}
+			await player.gain({
+				cards: result.links,
+				animate: "gain2",
+			});
 		},
 	},
 	spshangyi: {
