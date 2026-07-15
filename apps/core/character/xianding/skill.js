@@ -2524,7 +2524,7 @@ const skills = {
 		},
 	},
 	dcduorui: {
-		audio: 2,
+		audio: "drlt_duorui",
 		trigger: {
 			source: "damageBegin1",
 		},
@@ -2645,7 +2645,7 @@ const skills = {
 		},
 	},
 	dczhiti: {
-		audio: 2,
+		audio: "drlt_zhiti",
 		trigger: {
 			player: "phaseDrawBegin2",
 		},

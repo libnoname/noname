@@ -1,9 +1,9 @@
 export default {
 	"#dcmingjie1": "今国破家亡，妾岂牵此羊！",
-    "#dcmingjie2": "锦官花谢，当以颈血溅之。",
-    "#dcxianfu1": "愿陛下揽镜，察尽天下秋毫。",
-    "#dcxianfu2": "治世如棋，急则生乱，缓则失机。",
-    "#lizhaoyi:die": "清白虽死不可辱！",
+	"#dcmingjie2": "锦官花谢，当以颈血溅之。",
+	"#dcxianfu1": "愿陛下揽镜，察尽天下秋毫。",
+	"#dcxianfu2": "治世如棋，急则生乱，缓则失机。",
+	"#lizhaoyi:die": "清白虽死不可辱！",
 	"#dcsbqinqiang1": "江中鱼蟹，不食魏卒血肉久矣！",
 	"#dcsbqinqiang2": "今日多流一斗汗，他日少溅三升血！",
 	"#dcsbyizhen1": "十面虚网已张，正待魏主入彀！",
