@@ -12311,7 +12311,7 @@ const skills = {
 			return game.hasPlayer(current => get.info("dcsbjielu").filterTarget(null, player, current));
 		},
 		filterTarget(card, player, target) {
-			if (["nzry_jieying", "dcjieying"].some(skill => player.hasSkill(skill, null, false, false))) {
+			if (["nzry_jieying", "dcjieying"].some(skill => target.hasSkill(skill, null, false, false))) {
 				return target.isLinked() && target.hasDiscardableCards(player, "he");
 			}
 			return target.isLinked();
