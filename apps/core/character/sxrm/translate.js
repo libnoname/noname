@@ -3,12 +3,14 @@ import { lib, game, ui, get, ai, _status } from "noname";
 const translates = {
 	sxrm: "蚀心入魔",
 	//蚀心入魔·疑
-	sxrm_caocao: "魔曹操",
-	sxrm_caocao_prefix: "魔",
+	sxrm_caocao: "疑曹操",
+	sxrm_caocao_prefix: "疑",
 	sxrmkuxin: "枯心",
 	sxrmkuxin_info: "你受到伤害后，可以令所有其他角色依次选择展示任意张手牌，然后你获得所有角色展示的牌或一名角色未展示的手牌并展示之，若你未以此法获得♥牌，你弃置这些牌并翻面。",
 	sxrmsigu: "似故",
 	sxrmsigu_info: `出牌阶段限一次，你可令一名其他角色进行判定，令其获得${["zhichi", "reganglie", "refankui", "new_reyiji", "oljieming", "fangzhu", "shibei", "rechengxiang", "zhiyu", "jilei", "benyu", "chouce", "new_wuhun"].map(skill => get.poptip(skill)).join("")}中的第X个技能（X为判定点数）。若如此做，你对其造成两次1点伤害，然后其失去以此法获得的技能。`,
+	sxrmkuimu: "窥目",
+	sxrmkuimu_info: "每轮限一次，当一名角色的判定牌生效前，你可观看其所有手牌并选择一张代替之。若花色不同，你受到其造成的1点伤害。",
 	sxrm_liubei: "疑刘备",
 	sxrm_liubei_prefix: "疑",
 	sxrmchengbian: "乘变",
