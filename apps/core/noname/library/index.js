@@ -11271,7 +11271,6 @@ export class Library {
 				return false;
 			}
 			if (get.itemtype(card) === "card") {
-				// @ts-expect-error 我们需要ts
 				const mod2 = game.checkMod(card, player, event, "unchanged", "cardEnabled2", player);
 				if (mod2 !== "unchanged") {
 					return Boolean(mod2);
