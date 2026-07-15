@@ -766,13 +766,15 @@ const skills = {
 					},
 				})
 				.forResult();
-			event.result = {
-				bool: result.bool,
-				cost_data: result.bool ? result.links[0] : undefined,
-			};
+			if (result?.bool && result.links?.length) {
+				event.result = {
+					bool: true,
+					cost_data: result.links[0],
+				};
+			}
 		},
 		async content(event, trigger, player) {
-			const card = event.result.cost_data;
+			const card = event.cost_data;
 			if (!card) {
 				return;
 			}
@@ -1505,7 +1507,7 @@ const skills = {
 				})
 				.forResult();
 			event.forceDie = true;
-			if (result.moved[1]?.length) {
+			if (result?.moved?.[1]?.length) {
 				const lose = result.moved[0].slice();
 				const gain = result.moved[1].slice().filter(i => !get.owner(i));
 				if (lose.some(i => get.owner(i))) {
@@ -22139,11 +22141,12 @@ const skills = {
 						})()
 					)
 					.set("ai", (event, player) => {
-						if (get.event().effect > 0 || player.hasStorage("dcsbyaozuo_effect", event.targets[0])) {
+						if (get.event().effect > 0 || player.hasStorage("dcsbyaozuo_effect", get.event().target)) {
 							return "使用伤害牌";
 						}
 						return "获得非伤害牌";
 					})
+					.set("target", target)
 					.forResult();
 				if (result?.control == "使用伤害牌") {
 					while (damages.length) {
