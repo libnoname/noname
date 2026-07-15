@@ -12308,9 +12308,12 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		filter(event, player) {
-			return game.hasPlayer(current => current.isLinked());
+			return game.hasPlayer(current => get.info("dcsbjielu").filterTarget(null, player, current));
 		},
 		filterTarget(card, player, target) {
+			if (["nzry_jieying", "dcjieying"].some(skill => player.hasSkill(skill, null, false, false))) {
+				return target.isLinked() && target.hasDiscardableCards(player, "he");
+			}
 			return target.isLinked();
 		},
 		async content(event, trigger, player) {
