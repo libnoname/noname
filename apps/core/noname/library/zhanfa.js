@@ -1308,7 +1308,7 @@ const _zhanfa = {
 		skill: {
 			trigger: { global: "recoverBegin" },
 			filter(event, player) {
-				return event.player.isFriendsOf(player, false) && event.getParent()?.name == "taoyuan";
+				return event.player.isFriendsOf(player, false) && event.getParent()?.name == "taoyuan" && event.getParent().player == player;
 			},
 			async content(event, trigger, player) {
 				trigger.num *= 2;

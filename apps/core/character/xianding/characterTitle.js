@@ -1,6 +1,11 @@
 export default {
+	lizhaoyi: "贞骨陨玉",
 	wu_zhangfei: "烈武桓威",
 	dc_sb_guanyu: "单刀赴会",
+	//dc_sb_yangfeng: "",
+	//v_guanyinping: "",
+	//dc_sb_wangping: "",
+	//dc_sb_masu: "",
 	//dc_sb_zhugeliang: "",
 	dc_shen_guanyu: "鬼神再临",
 	dc_shen_liubei: "誓守桃园义",

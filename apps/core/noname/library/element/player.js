@@ -11500,6 +11500,17 @@ export class Player extends HTMLDivElement {
 		_status.event.clearStepCache();
 		return this;
 	}
+	awakenQidingSkill(skill){
+		if (this.storage[skill]) {
+			return;
+		}
+		if (this.storage[skill] === undefined || this.storage[skill] === false) {
+			this.storage[skill] = true;
+		}
+		game.log(`契约已成，${get.translation(this)}将【${get.translation(skill)}】改为锁定技。`);
+		_status.event.clearStepCache();
+		return this;
+	}
 	restoreSkill(skill, nomark) {
 		if (this.storage[skill] === true) {
 			this.storage[skill] = false;

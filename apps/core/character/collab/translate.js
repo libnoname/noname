@@ -1,10 +1,16 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	ol_le_caopi: "OL乐曹丕",
+	ol_le_caopi_prefix: "OL乐",
+	olweidai: "魏代",
+	olweidai_info: "锁定技，当魏势力角色对你使用牌后，你加1点体力上限，然后若你的体力上限为全场最大，你将体力上限调整至体力值并摸减少体力上限张牌；若摸牌数大于等于存活角色数，你令一名角色变更势力为魏。",
+	olliangzi: "梁姿",
+	olliangzi_info: "锁定技，你的装备牌只能当【酒】使用。你每回合使用前X张【酒】无次数限制（X为魏势力角色数）。",
 	bachiqionggouyu: "八尺琼勾玉",
-	bachiqionggouyu_info: "锁定技，出牌阶段结束时回复1点体力;摸牌阶段开始时，若你的体力为满，则摸牌数+2。",
+	bachiqionggouyu_info: "锁定技，出牌阶段结束时回复1点体力；摸牌阶段开始时，若你的体力为满，则摸牌数+2。",
 	bachiqionggouyu_skill: "八尺琼勾玉",
-	bachiqionggouyu_skill_info: "锁定技，出牌阶段结束时回复1点体力;摸牌阶段开始时，若你的体力为满，则摸牌数+2。",
+	bachiqionggouyu_skill_info: "锁定技，出牌阶段结束时回复1点体力；摸牌阶段开始时，若你的体力为满，则摸牌数+2。",
 	bazhijing: "八咫鏡",
 	bazhijing_info: "锁定技，在你受到一张锦囊牌伤害后，防止同名锦囊牌对你造成的伤害，失去此装备后清除记录。",
 	bazhijing_skill: "八咫鏡",

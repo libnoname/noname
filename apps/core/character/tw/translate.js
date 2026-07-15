@@ -1,8 +1,8 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
-	twsb_xiahoudun: "TW谋夏侯惇",
-	twsb_xiahoudun_prefix: "TW谋",
+	tw_sb_xiahoudun: "TW谋夏侯惇",
+	tw_sb_xiahoudun_prefix: "TW谋",
 	twsbganglie: "刚烈",
 	twsbganglie_info: "出牌阶段限一次。你可以选择任意名本局游戏对你造成过伤害且你未以此法选择过的角色，你对其造成2点伤害。",
 	twsbqingjian: "清俭",

@@ -733,6 +733,13 @@ const characters = {
 		maxHp: 6,
 		skills: ["xuxie"],
 	},
+	dc_xiahouen: {
+		sex: "male",
+		group: "wei",
+		hp: 5,
+		skills: ["chijian", "shiwu"],
+    	names: "夏侯|恩",
+	},
 	re_panfeng: {
 		sex: "male",
 		group: "qun",

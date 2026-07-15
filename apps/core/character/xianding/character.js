@@ -1,4 +1,11 @@
 const characters = {
+	lizhaoyi: {
+    sex: "female",
+    group: "shu",
+    hp: 3,
+    skills: ["dcmingjie", "dcxianfu"],
+    names: "李|昭仪",
+    },
 	dc_sb_guanyu: {
 		sex: "male",
 		group: "shu",
@@ -10,6 +17,30 @@ const characters = {
 		group: "shu",
 		hp: 4,
 		skills: ["dczisheng", "dcxianlve", "dchaoxian"],
+	},
+	dc_sb_yangfeng: {
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		skills: ["dcsbzhubo", "dcsbxieshi", "dcsbqijue"],
+	},
+	v_guanyinping: {
+		sex: "female",
+		group: "shu",
+		hp: 4,
+		skills: ["dcshaowei", "dcdichou"],
+	},
+	dc_sb_wangping: {
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		skills: ["dcsbyouyi", "dcsbfangong"],
+	},
+	dc_sb_masu: {
+		sex: "male",
+		group: "shu",
+		hp: 3,
+		skills: ["dcsbchengce", "dcsbxinzhan"],
 	},
 	dc_sb_zhugeliang: {
 		sex: "male",
@@ -44,7 +75,7 @@ const characters = {
 	dc_shen_caopi: {
 		sex: "male",
 		group: "shen",
-		hp: 3,
+		hp: 4,
 		skills: ["dcyinzhi", "dckeming"],
 		groupInGuozhan: "wei",
 	},
@@ -63,7 +94,7 @@ const characters = {
 	dc_sb_zhangren: {
 		sex: "male",
 		group: "qun",
-		hp: 4,
+		hp: 5,
 		skills: ["dcsbshedao", "dcsbxunshi", "dcsbzhengong"],
 	},
 	v_zhangxingcai: {

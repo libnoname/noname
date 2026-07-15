@@ -27,6 +27,18 @@ const dynamicTranslates = {
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
+	dcsbzhubo(player, skill) {
+		let awaken1 = false, awaken2 = false;
+		if (player.storage["dcsbzhubo"]) {
+			({ awaken1, awaken2 } = player.storage["dcsbzhubo"]);
+		}
+		let str = "有角色于其出牌阶段外造成伤害时";
+		if (awaken2) str = "你于出牌阶段外造成或受到伤害时";
+		else if (awaken1) str = "有角色于其出牌阶段外受到伤害时";
+		let str2 = awaken2 ? "" : "失去一点体力并";
+		let str3 = awaken2 ? "自己" : "其";
+		return `每回合限一次，${str}，你可以${str2}选择一项：1.你与${str3}各摸2张牌；2.此伤害+1。`
+	},
 	fengliao(player) {
 		const bool = player.storage.fengliao;
 		let yang = "你令其摸一张牌",
@@ -237,14 +249,14 @@ const dynamicTranslates = {
 	},
 	dcsbmengmou(player) {
 		const bool = player.storage.dcsbmengmou;
-		let yang = "你可以令该角色使用至多X张【杀】，且其每以此法造成1点伤害，其回复1点体力",
+		let yang = "你可以令该角色使用至多X张【杀】，且其每以此法造成1点伤害，你与其回复1点体力",
 			yin = "你可令该角色打出至多X张【杀】，然后其失去Y点体力";
 		if (bool) {
 			yin = `<span class='bluetext'>${yin}</span>`;
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。①游戏开始时，你可以转换此技能状态；②每回合每项各限一次，当你得到其他角色的手牌后，或其他角色得到你的手牌后：",
+		let start = "转换技。①游戏开始时，你可以转换此技能状态；②每回合每项各限一次，当你得到其他角色的牌后，或其他角色得到你的牌后：",
 			end = "（X为你的体力上限，Y为X-其打出【杀】数）。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},

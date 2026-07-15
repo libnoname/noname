@@ -3487,7 +3487,7 @@ const skills = {
 						if (!cards.length) {
 							return;
 						}
-						const recover = hs.filter(card => get.tag(card, "save") || get.tag(card, "recover")).length;
+						const recover = cards.filter(card => get.tag(card, "save") || get.tag(card, "recover")).length;
 						if (recover >= target.getDamagedHp()) {
 							let eff = player.needsToDiscard(0, (card, player) => get.suit(card) != "heart" || !player.canIgnoreHandcard(card));
 							return [0, 0, 0, eff / 10];
@@ -4576,8 +4576,8 @@ const skills = {
 
 						// step 0
 						let card = false;
-						let	info = lib.skill.rejianyan_backup.info;
-						let	info2 = info in lib.color ? "color" : "type";
+						let info = lib.skill.rejianyan_backup.info;
+						let info2 = info in lib.color ? "color" : "type";
 						player.addTempSkill("rejianyan_used", "phaseUseEnd");
 						let func = card => get[info2 == "type" ? "type2" : "color"](card) == info;
 						player.markAuto("rejianyan_used", info2);
@@ -16793,7 +16793,6 @@ const skills = {
 		logTarget: "target",
 		async content(event, trigger, player) {
 			let result;
-			// step 0
 			result = await player
 				.judge(function () {
 					return 0;
@@ -16802,30 +16801,37 @@ const skills = {
 			if (!trigger.target.hasSkill("fengyin")) {
 				trigger.target.addTempSkill("fengyin");
 			}
-			// step 1
 			const suit = result.suit;
 			const target = trigger.target;
 			const num = target.countCards("h", "shan");
 			result = await target
-				.chooseToDiscard("请弃置一张" + get.translation(suit) + "牌，否则不能使用闪抵消此杀", "he", function (card) {
-					return get.suit(card) == _status.event.suit;
-				})
-				.set("ai", function (card) {
-					var num = _status.event.num;
-					if (num == 0) {
-						return 0;
-					}
-					if (card.name == "shan") {
-						return num > 1 ? 2 : 0;
-					}
-					return 8 - get.value(card);
+				.chooseToGive({
+					target: player,
+					filterCard(card) {
+						return get.suit(card) === get.event().suit;
+					},
+					position: "he",
+					prompt: `请交给${get.translation(player)}一张${get.translation(suit)}牌，否则不能使用闪抵消此杀且此杀伤害+1`,
+					ai(card) {
+						const num = get.event().num;
+						if (num == 0) {
+							return 0;
+						}
+						if (card.name == "shan") {
+							return num > 1 ? 2 : 0;
+						}
+						return 8 - get.value(card);
+					},
 				})
 				.set("num", num)
 				.set("suit", suit)
 				.forResult();
-			// step 2
 			if (!result.bool) {
 				trigger.getParent().directHit.add(trigger.target);
+				if (typeof trigger.getParent().baseDamage !== "number") {
+					trigger.getParent().baseDamage = 1;
+				}
+				trigger.getParent().baseDamage++;
 			}
 		},
 		ai: {

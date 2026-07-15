@@ -26,7 +26,12 @@ const skills = {
 			return (
 				event.getg?.(player)?.length &&
 				lib.phaseName.some(phase => {
-					return player.getHistory("gain", evt => evt.getParent(phase) === event.getParent(phase)).map(evt => event.name == "gain" ? evt : evt.getParent()).indexOf(event) === 0;
+					return (
+						player
+							.getHistory("gain", evt => evt.getParent(phase) === event.getParent(phase))
+							.map(evt => (event.name == "gain" ? evt : evt.getParent()))
+							.indexOf(event) === 0
+					);
 				})
 			);
 		},
@@ -34,7 +39,7 @@ const skills = {
 			event.result = await player
 				.chooseCardTarget({
 					prompt: get.prompt(event.skill),
-					prompt2: "选择任意手牌交给一名其他角色",
+					prompt2: "炽沄：交给一名其他角色任意张手牌",
 					filterCard: true,
 					selectCard: [1, Infinity],
 					filterTarget: lib.filter.notMe,
@@ -122,7 +127,7 @@ const skills = {
 			event.result = await player
 				.chooseTarget({
 					prompt: get.prompt(event.skill),
-					prompt2: "展示一名目标角色的一张手牌",
+					prompt2: "焰洄：展示一名目标角色的一张手牌",
 					filterTarget(card, player, target) {
 						return get.event().targets?.includes(target);
 					},
@@ -374,7 +379,7 @@ const skills = {
 						? await target
 								.chooseToDiscard({
 									forced,
-									prompt: "弃置一半牌" + (bool1 ? "" : "或点击“取消”令本次传导伤害+1"),
+									prompt: `${get.translation(player)}对你发动了焚涛：请选择弃置一半牌` + (bool1 ? "" : "或点击“取消”令本次传导伤害+1"),
 									position: "he",
 									selectCard: Math.ceil(target.countCards("he") / 2),
 									ai(card) {
@@ -4359,23 +4364,16 @@ const skills = {
 						card = result[i].cards[0];
 					cards.push(card);
 				}
-				event.videoId = lib.status.videoId++;
-				game.log(player, "展示了", targets, "的", cards);
-				game.broadcastAll(
-					(targets, cards, id, player) => {
-						const dialog = ui.create.dialog(get.translation(player) + "发动了【飞径】", cards);
-						dialog.videoId = id;
-						for (let i = 0; i < targets.length; i++) {
-							game.createButtonCardsetion(`${targets[i].getName(true)}${get.translation(cards[i].suit)}`, dialog.buttons[i]);
+				await player
+					.showCards(cards, get.translation(player) + "发动了【飞径】")
+					.set("customButton", button => {
+						const target = get.owner(button.link);
+						if (target) {
+							game.createButtonCardsetion(`${target.getName(true)}`, button);
 						}
-					},
-					targets,
-					cards,
-					event.videoId,
-					player
-				);
-				await game.delay(4);
-				game.broadcastAll("closeDialog", event.videoId);
+					})
+					.set("delay_time", 4)
+					.set("multipleShow", true);
 				const colors = {};
 				for (let i = 0; i < result.length; i++) {
 					const current = targets[i],
