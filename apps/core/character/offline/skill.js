@@ -17451,7 +17451,7 @@ const skills = {
 					const skillsx = get.character(character, 3);
 					skillsx.forEach(skill => {
 						const info = get.info(skill);
-						if (!info || info.charlotte) {
+						if (!info || !Object.keys(info).length || info.charlotte) {
 							return false;
 						}
 						if (info.derivation) {
@@ -17461,7 +17461,7 @@ const skills = {
 							}
 							list.forEach(deriSkill => {
 								const infox = get.info(deriSkill);
-								if (!infox || infox.charlotte) {
+								if (!infox || !Object.keys(infox).length || infox.charlotte) {
 									return false;
 								}
 								if (!get.skillInfoTranslation(deriSkill).includes(`【${get.translation(name)}】`)) {

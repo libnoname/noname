@@ -1980,6 +1980,9 @@ const skills = {
 			) {
 				return false;
 			}
+			if (!event.card) {
+				return false;
+			}
 			const bool = player.getStorage("bazhijing").includes(event.card.name);
 			if (triggername == "damageAfter") {
 				return !bool;
