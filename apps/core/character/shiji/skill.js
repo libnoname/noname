@@ -6417,13 +6417,13 @@ const skills = {
 		trigger: { global: "phaseDrawBegin2" },
 		logTarget: "player",
 		filter(event, player) {
-			return !event.numFixed && event.player != player && player.countMark("xinlirang") == 0;
+			return !event.numFixed && event.player !== player && player.countMark("xinlirang") === 0;
 		},
 		prompt2: "获得一枚“谦”并令其多摸两张牌",
 		check(event, player) {
 			return get.attitude(player, event.player) > 0;
 		},
-		content() {
+		async content(event, trigger, player) {
 			trigger.num += 2;
 			player.addMark("xinlirang", 1);
 			player.addTempSkill("xinlirang_gain");
@@ -6440,24 +6440,30 @@ const skills = {
 				trigger: { global: "phaseDiscardEnd" },
 				direct: true,
 				filter(event, player) {
-					return event.player.hasHistory("lose", function (evt) {
-						return evt.type == "discard" && evt.cards2.filterInD("d").length > 0 && evt.getParent("phaseDiscard") == event;
-					});
+					return event.player.hasHistory("lose", evt => evt.type === "discard" && evt.cards2.filterInD("d").length > 0 && evt.getParent("phaseDiscard") === event);
 				},
-				content() {
-					"step 0";
-					var cards = [];
-					trigger.player.getHistory("lose", function (evt) {
-						if (evt.type == "discard" && evt.getParent("phaseDiscard") == trigger) {
-							cards.addArray(evt.cards2.filterInD("d"));
-						}
+				async cost(event, trigger, player) {
+					const cards = trigger.player
+						.getHistory("lose", evt => evt.type === "discard" && evt.getParent("phaseDiscard") === trigger)
+						.flatMap(evt => evt.cards2.filterInD("d"))
+						.toUniqued();
+					const result = await player
+						.chooseButton({
+							createDialog: ["礼让：是否获得其中至多两张牌？", cards],
+							selectButton: [1, 2],
+						})
+						.forResult();
+					event.result = {
+						bool: result.bool,
+						cards: result.cards,
+					};
+				},
+				logTarget: "player",
+				async content(event, trigger, player) {
+					await player.gain({
+						cards: event.cards,
+						animate: "gain2",
 					});
-					player.chooseButton(["礼让：是否获得其中至多两张牌？", cards], [1, 2]);
-					"step 1";
-					if (result.bool) {
-						player.logSkill("xinlirang_gain", trigger.player);
-						player.gain(result.links, "gain2");
-					}
 				},
 			},
 			skip: {
