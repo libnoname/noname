@@ -23,6 +23,7 @@ const characterSort = {
 	tw_yijiang7: ["tw_xuezong"],
 	tw_yijiang: ["tw_caoang", "tw_caohong", "tw_zumao", "tw_dingfeng", "tw_maliang", "tw_xiahouba"],
 	tw_english: ["kaisa"],
+	tw_sxrm: ["tw_sxrm_huatuo", "tw_sxrm_liubei", "tw_sxrm_caocao", "tw_sxrm_fuhuanghou"],
 	tw_waitingforsort: [],
 };
 
@@ -51,7 +52,8 @@ const characterSortTranslate = {
 	tw_yijiang: "一将成名TW",
 	tw_english: "英文版",
 	tw_waitingforsort: "等待分包",
-	extra_tw: "神将异构·海外服"
+	extra_tw: "神将异构·海外服",
+	tw_sxrm: "海外服·噬心入魔",
 };
 
 export { characterSort, characterSortTranslate };
