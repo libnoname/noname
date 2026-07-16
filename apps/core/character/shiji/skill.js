@@ -6264,7 +6264,8 @@ const skills = {
 		check(card) {
 			return 8 - get.value(card);
 		},
-		content() {
+		async content(event, trigger, player) {
+			const { cards, target } = event;
 			player.give(cards, target);
 			if (!target.storage.mouli2) {
 				target.storage.mouli2 = [];
@@ -6289,33 +6290,36 @@ const skills = {
 				forced: true,
 				charlotte: true,
 				filter(event, player) {
-					if (event.card.name != "sha" && event.card.name != "shan") {
+					if (event.card.name !== "sha" && event.card.name !== "shan") {
 						return false;
 					}
-					for (var i of player.storage.mouli3) {
-						if (i.isIn()) {
+					for (const target of player.storage.mouli3) {
+						if (target.isIn()) {
 							return true;
 						}
 					}
 					return false;
 				},
 				logTarget(event, player) {
-					return player.storage.mouli3;
+					return player?.storage.mouli3;
 				},
-				content() {
-					"step 0";
-					game.delayx();
-					player.storage.mouli3.sortBySeat();
-					if (player.storage.mouli3.length == 1) {
-						player.storage.mouli3[0].draw(3);
-						player.storage.mouli3.length = 0;
-						event.finish();
-					} else {
-						game.asyncDraw(player.storage.mouli3, 3);
+				async content(event, trigger, player) {
+					const delay = game.delayx();
+					const targets = player.storage.mouli3;
+					targets.sortBySeat();
+					if (targets.length === 1) {
+						const target = targets[0];
+						const draw = target.draw(3);
+						targets.length = 0;
+						await delay;
+						await draw;
+						return;
 					}
-					"step 1";
-					player.storage.mouli3.length = 0;
-					game.delayx();
+					const draw = game.asyncDraw(targets, 3);
+					await delay;
+					await draw;
+					targets.length = 0;
+					await game.delayx();
 				},
 				group: ["mouli_sha", "mouli_shan", "mouli_clear"],
 				mark: true,
@@ -6369,13 +6373,13 @@ const skills = {
 				lastDo: true,
 				forceDie: true,
 				filter(event, player) {
-					if (event.name == "die" && player == event.player) {
+					if (event.name === "die" && player === event.player) {
 						return true;
 					}
 					return player.storage.mouli2.includes(event.player);
 				},
-				content() {
-					if (trigger.name == "die" && player == trigger.player) {
+				async content(event, trigger, player) {
+					if (trigger.name === "die" && player === trigger.player) {
 						player.removeSkill("mouli_effect");
 						delete player.storage.mouli2;
 						delete player.storage.mouli3;
