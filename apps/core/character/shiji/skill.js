@@ -6919,34 +6919,28 @@ const skills = {
 			return game.hasPlayer(current => lib.skill.rongbei.filterTarget(null, player, current));
 		},
 		filterTarget(card, player, target) {
-			for (var i = 1; i < 6; i++) {
+			for (const i of [1, 2, 3, 4, 5]) {
 				if (target.hasEmptySlot(i)) {
 					return true;
 				}
 			}
 			return false;
 		},
-		content() {
-			"step 0";
-			event.num = 1;
+		async content(event, trigger, player) {
+			const { target } = event;
 			player.awakenSkill(event.name);
-			"step 1";
-			while (!target.hasEmptySlot(event.num)) {
-				event.num++;
-				if (event.num > 5) {
-					event.finish();
-					return;
+			for (const num of [1, 2, 3, 4, 5]) {
+				if (!target.hasEmptySlot(num)) {
+					continue;
 				}
-			}
-			var card = get.cardPile2(function (card) {
-				return get.subtype(card) == "equip" + event.num && target.canUse(card, target);
-			});
-			if (card) {
-				target.chooseUseTarget(card, true, "nopopup");
-			}
-			event.num++;
-			if (event.num <= 5) {
-				event.redo();
+				const card = get.cardPile2(card => get.subtype(card) === `equip${num}` && target.canUse(card, target));
+				if (card) {
+					await target.chooseUseTarget({
+						card,
+						forced: true,
+						nopopup: true,
+					});
+				}
 			}
 		},
 		ai: {
