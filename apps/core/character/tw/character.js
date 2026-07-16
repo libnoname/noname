@@ -1049,6 +1049,24 @@ const characters = {
 		skills: ["zhengfu"],
 		names: "尤利乌斯|盖乌斯",
 	},
+	tw_sxrm_huatuo: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["twmiehai"],
+	},
+	tw_sxrm_liubei: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["twchengbian"],
+	},
+	tw_sxrm_caocao: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["twkuxin", "twmsigu","twkuimu"],
+	},
 };
 
 export default characters;

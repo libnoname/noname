@@ -122,7 +122,7 @@ const characters = {
 		sex: "male",
 		group: "devil",
 		hp: 3,
-		skills: ["sxrmkuxin", "sxrmsigu", "sxrmkuimu"],
+		skills: ["sxrmkuxin", "sxrmsigu"],
 		groupInGuozhan: "wei",
 	},
 	sxrm_caopi: {
