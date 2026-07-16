@@ -7521,6 +7521,7 @@ const skills = {
 	dczuowei: {
 		audio: 2,
 		trigger: { player: "useCard" },
+		frequent: true,	//我是子右，这是星语干的
 		filter(event, player) {
 			if (_status.currentPhase != player) {
 				return false;
