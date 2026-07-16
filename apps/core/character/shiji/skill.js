@@ -6208,24 +6208,31 @@ const skills = {
 			return player.getStorage("xingqi").length > 0;
 		},
 		filterTarget: lib.filter.notMe,
-		content() {
-			"step 0";
-			target.chooseButton(["谋立：是否获得一张牌？", [player.getStorage("xingqi"), "vcard"]], true).set("ai", function (button) {
-				var card = { name: button.link[2] },
-					player = _status.event.player;
-				return get.value(card, player);
-			});
-			"step 1";
-			if (result.bool) {
-				var name = result.links[0][2];
-				game.log(player, "移去了一个", "#g【备(" + get.translation(name) + ")】");
-				player.unmarkAuto("xingqi", [name]);
-				var card = get.cardPile2(function (card) {
-					return card.name == name;
+		async content(event, trigger, player) {
+			const { target } = event;
+			const result = await target
+				.chooseButton({
+					createDialog: ["谋立：是否获得一张牌？", [player.getStorage("xingqi"), "vcard"]],
+					forced: true,
+					ai(button) {
+						const card = { name: button.link[2] };
+						const currentPlayer = _status.event.player;
+						return get.value(card, currentPlayer);
+					},
+				})
+				.forResult();
+			if (!result.bool || !result.links?.length) {
+				return;
+			}
+			const name = result.links[0][2];
+			game.log(player, "移去了一个", `#g【备(${get.translation(name)})】`);
+			player.unmarkAuto("xingqi", [name]);
+			const card = get.cardPile2(cardx => cardx.name === name);
+			if (card) {
+				await target.gain({
+					cards: [card],
+					animate: "gain2",
 				});
-				if (card) {
-					target.gain(card, "gain2");
-				}
 			}
 		},
 		ai: {
