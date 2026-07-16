@@ -678,7 +678,9 @@ const skills = {
 				const info = get.info(skill);
 				return info && !info.charlotte;
 			});
-			target1
+			player.addTempSkill(event.name + "_effect2", "roundStart");
+			player.setStorage(event.name + "_effect2", [target1, target2, skills1, skills2], true);
+			/*target1
 				.when({ player: "phaseBefore" })
 				.filter(evt => evt.skill == event.name)
 				.step(async (event, trigger, player) => {
@@ -710,11 +712,65 @@ const skills = {
 					}
 					target2.changeSkills(skills2, skills1);
 					target2.removeSkill("ymjiuji_effect");
-				});
+				});*/
 			target1.insertPhase();
 			target2.insertPhase();
 		},
 		subSkill: {
+			effect2: {
+				charlotte: true,
+				silent: true,
+				lastDo: true,
+				popup: false,
+				onremove(player, skill) {
+					const storage = player.storage[skill];
+					if (storage?.length && player.storage[skill + "2"]) {
+						const [target1, target2, skills1, skills2] = storage;
+						target1.changeSkills(skills1, skills2);
+						target1.removeSkill("ymjiuji_effect");
+						target2.changeSkills(skills2, skills1);
+						target2.removeSkill("ymjiuji_effect");
+					}
+					delete player.storage[skill];
+					delete player.storage[skill + "2"];
+				},
+				trigger: {
+					global: ["phaseBefore", "phaseAfter", "phaseCancelled"],
+				},
+				filter(event, player, name) {
+					const storage = player.storage["ymjiuji_effect2"];
+					if (storage?.length) {
+						const [target1, target2, skills1, skills2] = storage;
+						if (name == "phaseBefore") {
+							return event.player == target1 && event.skill == "ymjiuji";
+						} else if (name == "phaseCancelled") {
+							return event.player == target2 && event.skill == "ymjiuji";
+						}
+						return (event.player == target2 && event.skill == "ymjiuji") || !target2?.isIn();
+					}
+					return false;
+				},
+				async content(event, trigger, player) {
+					const storage = player.storage["ymjiuji_effect2"];
+					if (storage?.length) {
+						const [target1, target2, skills1, skills2] = storage;
+						const name = event.triggername;
+						if (name == "phaseBefore") {
+							player.setStorage(event.name + "2", true, true);
+							target1.changeSkills(skills2, skills1);
+							target1.addSkill("ymjiuji_effect");
+							target1.markAuto("ymjiuji_effect", [target2]);
+							if (target2?.isIn()) {
+								target2.changeSkills(skills1, skills2);
+								target2.addSkill("ymjiuji_effect");
+								target2.markAuto("ymjiuji_effect", [target1]);
+							}
+						} else {
+							player.removeSkill(event.name);
+						}
+					}
+				},
+			},
 			effect: {
 				charlotte: true,
 				onremove: true,

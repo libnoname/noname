@@ -1522,7 +1522,9 @@ const skills = {
 					await player.gain(gain, "draw");
 				}
 			} else {
-				await game.cardsGotoPile(result.moved[0].slice().reverse(), "insert");
+				if (result?.moved?.[0]?.length) {
+					await game.cardsGotoPile(result.moved[0].slice().reverse(), "insert");
+				}
 			}
 			if (game.countPlayer() < 2) {
 				return;
