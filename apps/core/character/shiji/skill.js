@@ -6135,41 +6135,35 @@ const skills = {
 			if (!player.storage.xingqi || !player.storage.xingqi.length) {
 				return false;
 			}
-			var map = { basic: 0, trick: 0, equip: 0 };
-			for (var i of player.storage.xingqi) {
-				var type = get.type(i);
-				if (typeof map[type] == "number") {
+			const map = { basic: 0, trick: 0, equip: 0 };
+			for (const name of player.storage.xingqi) {
+				const type = get.type(name);
+				if (typeof map[type] === "number") {
 					map[type]++;
 				}
 			}
-			for (var i in map) {
-				if (map[i] < 2) {
-					return false;
-				}
-			}
-			return true;
+			return Object.values(map).every(num => num >= 2);
 		},
 		logAudio: () => 1,
 		skillAnimation: true,
 		animationColor: "water",
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			game.log(player, "成功完成使命");
-			var list = ["basic", "equip", "trick"],
-				cards = [];
-			for (var i of list) {
-				var card = get.cardPile2(function (card) {
-					return get.type(card) == i;
-				});
+			const types = ["basic", "equip", "trick"];
+			const cards = [];
+			for (const type of types) {
+				const card = get.cardPile2(card => get.type(card) === type);
 				if (card) {
 					cards.push(card);
 				}
 			}
 			if (cards.length) {
-				player.gain(cards, "gain2");
+				await player.gain({
+					cards,
+					animate: "gain2",
+				});
 			}
-			"step 1";
 			player.addSkills("xinmouli");
 		},
 		ai: {
@@ -6186,7 +6180,7 @@ const skills = {
 				filter(event, player) {
 					return !player.getStorage("xingqi").length;
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.addTempSkill("mibei_mark");
 				},
 			},
@@ -6198,10 +6192,10 @@ const skills = {
 					return !player.getStorage("xingqi").length && player.hasSkill("mibei_mark");
 				},
 				forced: true,
-				content() {
+				async content(event, trigger, player) {
 					game.log(player, "使命失败");
 					player.awakenSkill("mibei");
-					player.loseMaxHp();
+					await player.loseMaxHp();
 				},
 			},
 		},
