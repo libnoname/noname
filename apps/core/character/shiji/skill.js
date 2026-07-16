@@ -5768,21 +5768,23 @@ const skills = {
 		enable: "chooseToUse",
 		usable: 2,
 		viewAsFilter(player) {
-			return player.group == "wei" && player.hp > 0;
+			return player.group === "wei" && player.hp > 0;
 		},
 		viewAs: { name: "juedou", isCard: true },
 		filterCard: () => false,
 		selectCard: -1,
 		log: false,
-		precontent() {
-			"step 0";
+		async precontent(event, trigger, player) {
 			player.logSkill("dbzhuifeng");
-			player.loseHp();
+			const loseHpEvent = player.loseHp();
 			event.forceDie = true;
-			"step 1";
+			await loseHpEvent;
 			//特殊处理
 			if (player.isDead()) {
-				player.useResult(event.result, event.getParent()).forceDie = true;
+				const result = player.useResult(event.result, event.getParent());
+				if (result != null) {
+					result.forceDie = true;
+				}
 			}
 		},
 		ai: {
@@ -5797,10 +5799,10 @@ const skills = {
 				trigger: { player: "damageBegin2" },
 				forced: true,
 				filter(event, player) {
-					var evt = event.getParent();
-					return evt.skill == "dbzhuifeng" && evt.player == player;
+					const evt = event.getParent();
+					return evt?.skill === "dbzhuifeng" && evt.player === player;
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.cancel();
 					player.tempBanSkill("dbzhuifeng", { player: "phaseUseEnd" });
 				},
