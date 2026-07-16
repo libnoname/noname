@@ -6486,24 +6486,33 @@ const skills = {
 		forced: true,
 		logTarget: "source",
 		filter(event, player) {
-			return event.source && event.source.isIn() && player.hasMark("xinlirang") && event.source.countCards("hej") > 0;
+			return event.source && event.source.isIn() && player.hasMark("xinlirang") && event.source.hasCards("hej");
 		},
-		content() {
-			"step 0";
-			trigger.source
-				.discardPlayerCard(trigger.source, "hej", true)
+		async content(event, trigger, player) {
+			const result = await trigger.source
+				.discardPlayerCard({
+					target: trigger.source,
+					position: "hej",
+					forced: true,
+					ai(card) {
+						return (get.color(card.link) === get.event().color ? 4 : 0) - get.value(card.link);
+					},
+				})
 				.set("color", get.attitude(trigger.source, player) > 0 ? "red" : "black")
-				.set("ai", function (card) {
-					return (get.color(card.link) == _status.event.color ? 4 : 0) - get.value(card.link);
+				.forResult();
+			if (!result.bool || !result.cards?.length) {
+				return;
+			}
+			const card = result.cards[0];
+			if (get.color(card, trigger.source) === "red") {
+				await player.recover();
+				return;
+			}
+			if (get.position(card, true) === "d") {
+				await player.gain({
+					cards: [card],
+					animate: "gain2",
 				});
-			"step 1";
-			if (result.bool && result.cards && result.cards.length) {
-				var card = result.cards[0];
-				if (get.color(card, trigger.source) == "red") {
-					player.recover();
-				} else if (get.position(card, true) == "d") {
-					player.gain(card, "gain2");
-				}
 			}
 		},
 		ai: {
@@ -6511,7 +6520,7 @@ const skills = {
 			effect: {
 				target(card, player, target) {
 					if (get.tag(card, "damage") && target.hasMark("xinlirang")) {
-						var cards = [card];
+						const cards = [card];
 						if (card.cards && card.cards.length) {
 							cards.addArray(card.cards);
 						}
@@ -6519,16 +6528,12 @@ const skills = {
 							cards.addArray(ui.selected.cards);
 						}
 						if (
-							!player.countCards("he", function (card) {
-								return !cards.includes(card);
-							})
+							!player.countCards("he", current => !cards.includes(current))
 						) {
 							return;
 						}
 						if (
-							!player.countCards("h", function (card) {
-								return !cards.includes(card) && get.color(card) == "black" && get.value(card, player) < 6;
-							})
+							!player.countCards("h", current => !cards.includes(current) && get.color(current) === "black" && get.value(current, player) < 6)
 						) {
 							return "zerotarget";
 						}
