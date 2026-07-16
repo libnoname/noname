@@ -680,39 +680,6 @@ const skills = {
 			});
 			player.addTempSkill(event.name + "_effect2", "roundStart");
 			player.setStorage(event.name + "_effect2", [target1, target2, skills1, skills2], true);
-			/*target1
-				.when({ player: "phaseBefore" })
-				.filter(evt => evt.skill == event.name)
-				.step(async (event, trigger, player) => {
-					target1.changeSkills(skills2, skills1);
-					target1.addSkill("ymjiuji_effect");
-					target1.markAuto("ymjiuji_effect", [target2]);
-					if (target2.isIn()) {
-						target2.changeSkills(skills1, skills2);
-						target2.addSkill("ymjiuji_effect");
-						target2.markAuto("ymjiuji_effect", [target1]);
-					}
-				});
-			target1
-				.when({ player: ["phaseAfter"] })
-				.filter(evt => evt.skill == event.name)
-				.step(async (event, trigger, player) => {
-					if (!target2?.isIn()) {
-						target1.changeSkills(skills1, skills2);
-						target1.removeSkill("ymjiuji_effect");
-					}
-				});
-			target2
-				.when({ player: ["phaseAfter", "phaseCancelled"] })
-				.filter(evt => evt.skill == event.name)
-				.step(async (event, trigger, player) => {
-					if (target1.isIn()) {
-						target1.changeSkills(skills1, skills2);
-						target1.removeSkill("ymjiuji_effect");
-					}
-					target2.changeSkills(skills2, skills1);
-					target2.removeSkill("ymjiuji_effect");
-				});*/
 			target1.insertPhase();
 			target2.insertPhase();
 		},
