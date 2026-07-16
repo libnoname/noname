@@ -11271,7 +11271,6 @@ export class Library {
 				return false;
 			}
 			if (get.itemtype(card) === "card") {
-				// @ts-expect-error 我们需要ts
 				const mod2 = game.checkMod(card, player, event, "unchanged", "cardEnabled2", player);
 				if (mod2 !== "unchanged") {
 					return Boolean(mod2);
@@ -11279,19 +11278,17 @@ export class Library {
 			}
 			const card2 = get.autoViewAs(card);
 			if (event === "forceEnable") {
-				// @ts-expect-error 我们需要ts
-				const mod = game.checkMod(card, player, event, "unchanged", "cardEnabled", player);
+				const mod = game.checkMod(card2, player, event, "unchanged", "cardEnabled", player);
 				if (mod != "unchanged") {
 					return Boolean(mod);
 				}
 				return true;
 			} else {
-				const filter = get.info(card).enable;
+				const filter = get.info(card2).enable;
 				if (!filter) {
 					return false;
 				}
-				// @ts-expect-error 我们需要ts
-				const mod = game.checkMod(card, player, event, "unchanged", "cardEnabled", player);
+				const mod = game.checkMod(card2, player, event, "unchanged", "cardEnabled", player);
 				if (mod !== "unchanged") {
 					return Boolean(mod);
 				}
@@ -11299,7 +11296,7 @@ export class Library {
 					return filter;
 				}
 				if (typeof filter === "function") {
-					return filter(card, player, event);
+					return filter(card2, player, event);
 				}
 			}
 			return false;
@@ -11328,7 +11325,6 @@ export class Library {
 				}
 			}
 			if (get.itemtype(card) === "card") {
-				// @ts-expect-error 我们需要ts
 				const mod2 = game.checkMod(card, player, event, "unchanged", "cardEnabled2", player);
 				if (mod2 !== "unchanged") {
 					return Boolean(mod2);

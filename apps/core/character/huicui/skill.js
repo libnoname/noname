@@ -4588,18 +4588,18 @@ const skills = {
 						) {
 							valueFix += 5;
 						}
-						if (player.countCards("he", { subtype }) > 1) {
-							return valueFix + 12 - get.equipValue(card);
-						}
 						return valueFix + 6 - get.value(card);
 					}
-					return 4 - get.value(card);
+					if(get.is.damageCard(card)) {
+						return 10 - get.value(card);
+					}
+					return 6 - get.value(card);
 				},
 				prompt() {
 					const list = game.filterPlayer(current => {
 						return current.hasSkill("dcshiju") && !current.hasSkill("dcshiju_targeted");
 					});
-					return `将一张牌交给${get.translation(list)}${list.length > 1 ? "中的一人" : ""}，若此牌为装备牌，其可以使用之，且你本回合的攻击范围+X（X为其装备区的牌数）。若其以此法替换了装备，你与其各摸两张牌。`;
+					return `将一张牌交给${get.translation(list)}${list.length > 1 ? "中的一人" : ""}，其可以使用此牌，且你本回合的攻击范围+X（X为其装备区的牌数）。若此牌为装备牌或此牌造成了伤害，你与其各摸两张牌。`;
 				},
 				discard: false,
 				lose: false,
@@ -4616,44 +4616,38 @@ const skills = {
 					} else if (get.type(card) == "equip" && get.position(card) == "e") {
 						await player.give(card, target);
 					}
-					if (!target.getCards("h").includes(card) || get.type(card) !== "equip") {
+					if (!target.getCards("h").includes(card)) {
 						return;
 					}
-					const { bool } = await target
+					const next = target
 						.chooseUseTarget(card)
 						.set("ai", (event, player) => {
 							const { giver } = event;
 							return get.attitude(player, giver) >= 0;
 						})
-						.set("giver", player)
-						.forResult();
-					if (!bool) {
+						.set("giver", player);
+					const result = await next.forResult();
+					if (!result?.bool) {
 						return;
 					}
 					const count = target.countCards("e");
 					if (count > 0) {
 						player.addTempSkill("dcshiju_range");
 						player.addMark("dcshiju_range", count, false);
-						if (
-							target.hasHistory("lose", evt => {
-								return evt.getParent().name === "equip" && evt.getParent(5) === event && evt.es && evt.es.length > 0;
-							})
-						) {
-							for (const current of [player, target]) {
-								await current.draw(2);
-							}
-						}
+					}
+					if(get.type(card) == "equip" || player.hasHistory("sourceDamage", evt => evt.getParent(3) === next)) {
+						await game.asyncDraw([player, target], 2);
 					}
 				},
 				ai: {
-					order: 10,
+					order: 8,
 					result: {
 						target(player, target) {
 							const card = ui.selected.cards[0];
 							if (!card) {
 								return;
 							}
-							if (target.hasSkillTag("nogain") && get.type(card) != "equip") {
+							if (target.hasSkillTag("nogain")) {
 								return 0;
 							}
 							if (card.name == "du" && target.hasSkillTag("nodu")) {

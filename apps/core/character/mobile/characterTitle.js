@@ -184,7 +184,7 @@ export default {
 	mb_xuezong: "彬彬名儒",
 	old_yuanshu: "南方霸主",
 	re_baosanniang: "南中武娘",
-	fx_baosanniang: "嫣然一笑",
+	fx_baosanniang: "慕花之姝",
 	shenpei: "正南义北",
 	scs_zhangrang: "玉翎琢雉",
 	scs_zhaozhong: "奉天司鸣",

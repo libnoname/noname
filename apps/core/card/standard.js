@@ -3662,7 +3662,8 @@ export default {
 							}
 							return 1.8 / Math.min(1.8, trigger.target.getHp());
 						})()
-					);
+					)
+					.forResult();
 
 				if (!result?.bool) {
 					player.draw();
