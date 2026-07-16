@@ -685,16 +685,29 @@ const skills = {
 					target1.changeSkills(skills2, skills1);
 					target1.addSkill("ymjiuji_effect");
 					target1.markAuto("ymjiuji_effect", [target2]);
-					target2.changeSkills(skills1, skills2);
-					target2.addSkill("ymjiuji_effect");
-					target2.markAuto("ymjiuji_effect", [target1]);
+					if (target2.isIn()) {
+						target2.changeSkills(skills1, skills2);
+						target2.addSkill("ymjiuji_effect");
+						target2.markAuto("ymjiuji_effect", [target1]);
+					}
+				});
+			target1
+				.when({ player: ["phaseAfter"] })
+				.filter(evt => evt.skill == event.name)
+				.step(async (event, trigger, player) => {
+					if (!target2?.isIn()) {
+						target1.changeSkills(skills1, skills2);
+						target1.removeSkill("ymjiuji_effect");
+					}
 				});
 			target2
 				.when({ player: ["phaseAfter", "phaseCancelled"] })
 				.filter(evt => evt.skill == event.name)
 				.step(async (event, trigger, player) => {
-					target1.changeSkills(skills1, skills2);
-					target1.removeSkill("ymjiuji_effect");
+					if (target1.isIn()) {
+						target1.changeSkills(skills1, skills2);
+						target1.removeSkill("ymjiuji_effect");
+					}
 					target2.changeSkills(skills2, skills1);
 					target2.removeSkill("ymjiuji_effect");
 				});
