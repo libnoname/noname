@@ -8152,41 +8152,42 @@ const skills = {
 		forced: true,
 		locked: false,
 		filter(event, player) {
-			return event.name != "phase" || game.phaseNumber == 0;
+			return event.name !== "phase" || game.phaseNumber === 0;
 		},
 		logTarget() {
 			return game.players;
 		},
-		content() {
-			"step 0";
-			var list = [];
-			for (var i = 0; i < 4; i++) {
-				list.push(lib.skill["mjdingyi_" + i].title);
+		async content(event, trigger, player) {
+			const list = [];
+			for (const i of [0, 1, 2, 3]) {
+				list.push(lib.skill[`mjdingyi_${i}`].title);
 			}
-			player
-				.chooseControl()
-				.set("choiceList", list)
-				.set("prompt", "定仪：请选择一个全局效果")
-				.set("ai", function (target) {
-					var list1 = player.getEnemies().length;
-					var list2 = game.players.length - list1;
-					if (list2 - list1 > 1) {
-						return 0;
-					}
-					if (game.players.length < 6) {
-						return 2;
-					}
-					return 3;
-				});
-			"step 1";
-			if (typeof result.index == "number") {
-				var skill = "mjdingyi_" + result.index;
-				game.log(player, "选择了", "#g" + lib.skill[skill].title);
-				for (var i of game.players) {
-					i.addSkill(skill);
-				}
-				game.delayx();
+			const { index } = await player
+				.chooseControl({
+					prompt: "定仪：请选择一个全局效果",
+					choiceList: list,
+					ai() {
+						const list1 = player.getEnemies().length;
+						const list2 = game.players.length - list1;
+						if (list2 - list1 > 1) {
+							return 0;
+						}
+						if (game.players.length < 6) {
+							return 2;
+						}
+						return 3;
+					},
+				})
+				.forResult();
+			if (typeof index !== "number") {
+				return;
 			}
+			const skill = `mjdingyi_${index}`;
+			game.log(player, "选择了", `#g${lib.skill[skill].title}`);
+			for (const target of game.players) {
+				target.addSkill(skill);
+			}
+			await game.delayx();
 		},
 		subSkill: {
 			0: {
@@ -8199,12 +8200,12 @@ const skills = {
 				filter(event, player) {
 					return !event.numFixed;
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.num += (player.storage.mjdingyi_plus || 0) + 1;
 				},
 				intro: {
 					content(storage, player) {
-						return "摸牌阶段的额定摸牌数+" + 1 * ((player.storage.mjdingyi_plus || 0) + 1);
+						return `摸牌阶段的额定摸牌数+${1 * ((player.storage.mjdingyi_plus || 0) + 1)}`;
 					},
 				},
 			},
@@ -8220,7 +8221,7 @@ const skills = {
 				},
 				intro: {
 					content(storage, player) {
-						return "手牌上限+" + 2 * ((player.storage.mjdingyi_plus || 0) + 1);
+						return `手牌上限+${2 * ((player.storage.mjdingyi_plus || 0) + 1)}`;
 					},
 				},
 			},
@@ -8236,7 +8237,7 @@ const skills = {
 				},
 				intro: {
 					content(storage, player) {
-						return "攻击范围+" + ((player.storage.mjdingyi_plus || 0) + 1);
+						return `攻击范围+${(player.storage.mjdingyi_plus || 0) + 1}`;
 					},
 				},
 			},
@@ -8250,12 +8251,12 @@ const skills = {
 				filter(event, player) {
 					return player.isDamaged();
 				},
-				content() {
-					player.recover((player.storage.mjdingyi_plus || 0) + 1);
+				async content(event, trigger, player) {
+					await player.recover((player.storage.mjdingyi_plus || 0) + 1);
 				},
 				intro: {
 					content(storage, player) {
-						return "脱离濒死状态后回复" + ((player.storage.mjdingyi_plus || 0) + 1) + "点体力";
+						return `脱离濒死状态后回复${(player.storage.mjdingyi_plus || 0) + 1}点体力`;
 					},
 				},
 			},
