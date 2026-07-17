@@ -8316,27 +8316,28 @@ const skills = {
 			if (player.hasSkill("mjfubi_round")) {
 				return false;
 			}
-			return game.hasPlayer(function (current) {
-				for (var i = 0; i < 4; i++) {
-					if (current.hasSkill("mjdingyi_" + i)) {
+			return game.hasPlayer(current => {
+				for (const i of [0, 1, 2, 3]) {
+					if (current.hasSkill(`mjdingyi_${i}`)) {
 						return true;
 					}
 				}
+				return false;
 			});
 		},
 		filterCard: true,
 		selectCard: [0, 1],
 		filterTarget(card, player, target) {
 			if (ui.selected.cards.length) {
-				for (var i = 0; i < 4; i++) {
-					if (target.hasSkill("mjdingyi_" + i)) {
+				for (const i of [0, 1, 2, 3]) {
+					if (target.hasSkill(`mjdingyi_${i}`)) {
 						return true;
 					}
 				}
 			}
-			var num = 0;
-			for (var i = 0; i < 4; i++) {
-				if (target.hasSkill("mjdingyi_" + i)) {
+			const num = 0;
+			for (const i of [0, 1, 2, 3]) {
+				if (target.hasSkill(`mjdingyi_${i}`)) {
 					return true;
 				}
 			}
@@ -8344,50 +8345,50 @@ const skills = {
 		},
 		check: () => false,
 		position: "he",
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
+			const cards = event.cards;
+			const target = event.target;
 			player.addTempSkill("mjfubi_round", "roundStart");
 			if (cards.length) {
 				player.addSkill("mjfubi_clear");
 				player.markAuto("mjfubi_clear", [target]);
 				target.addMark("mjdingyi_plus", 1, false);
 				game.log(target, "的", "#g【定仪】", "效果增加一倍");
-				event.finish();
 				return;
 			}
-			var list = [],
-				nums = [];
-			for (var i = 0; i < 4; i++) {
-				if (!target.hasSkill("mjdingyi_" + i)) {
-					list.push(lib.skill["mjdingyi_" + i].title);
+			const list = [];
+			const nums = [];
+			for (const i of [0, 1, 2, 3]) {
+				if (!target.hasSkill(`mjdingyi_${i}`)) {
+					list.push(lib.skill[`mjdingyi_${i}`].title);
 					nums.push(i);
 				}
 			}
-			if (list.length) {
-				event.nums = nums;
-				player
-					.chooseControl()
-					.set("choiceList", list)
-					.set("prompt", "辅弼：请选择为" + get.translation(target) + "更换的〖定仪〗效果")
-					.set("ai", function () {
-						var player = _status.event.player,
-							target = _status.event.getParent().target;
-						if (get.attitude(player, target) > 0 && !target.hasSkill("mjdingyi_0")) {
+			if (!list.length) {
+				return;
+			}
+			const result = await player
+				.chooseControl({
+					prompt: `辅弼：请选择为${get.translation(target)}更换的〖定仪〗效果`,
+					choiceList: list,
+					ai() {
+						const currentPlayer = _status.event.player;
+						const currentTarget = _status.event.getParent()?.target;
+						if (get.attitude(currentPlayer, currentTarget) > 0 && !currentTarget?.hasSkill("mjdingyi_0")) {
 							return 0;
 						}
-						return _status.event.getParent().nums.length - 1;
-					});
-			} else {
-				event.finish();
-			}
-			"step 1";
-			for (var i = 0; i < 4; i++) {
-				if (target.hasSkill("mjdingyi_" + i)) {
-					target.removeSkill("mjdingyi_" + i);
+						return nums.length - 1;
+					},
+				})
+				.forResult();
+			for (const i of [0, 1, 2, 3]) {
+				if (target.hasSkill(`mjdingyi_${i}`)) {
+					target.removeSkill(`mjdingyi_${i}`);
 				}
 			}
-			target.addSkill("mjdingyi_" + event.nums[result.index]);
-			game.log(target, "的效果被改为", "#g" + lib.skill["mjdingyi_" + event.nums[result.index]].title);
+			const skill = `mjdingyi_${nums[result.index]}`;
+			target.addSkill(skill);
+			game.log(target, "的效果被改为", `#g${lib.skill[skill].title}`);
 		},
 		ai: {
 			order: 10,
@@ -8409,9 +8410,8 @@ const skills = {
 				forced: true,
 				popup: false,
 				charlotte: true,
-				content() {
-					while (player.storage.mjfubi_clear && player.storage.mjfubi_clear.length) {
-						var target = player.storage.mjfubi_clear.shift();
+				async content(event, trigger, player) {
+					for (const target of player.storage.mjfubi_clear || []) {
 						if (target.hasMark("mjdingyi_plus")) {
 							target.removeMark("mjdingyi_plus", 1, false);
 						}
