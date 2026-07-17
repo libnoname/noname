@@ -9223,7 +9223,7 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return player.countCards("he") > 0;
+			return player.hasCards("he");
 		},
 		filterCard: true,
 		position: "he",
@@ -9234,13 +9234,13 @@ const skills = {
 		check(card) {
 			return 3 - get.value(card);
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
+			const cards = event.cards;
+			const target = event.target;
 			player.$give(cards[0], target, false);
 			target.markAuto("reduoji", cards);
 			game.log(player, "将", cards[0], "放在了", target, "的武将牌上");
-			"step 1";
-			game.delay();
+			await game.delay();
 		},
 		group: ["reduoji_equip", "reduoji_gain"],
 		intro: {
@@ -9257,26 +9257,24 @@ const skills = {
 				trigger: { global: "equipAfter" },
 				forced: true,
 				filter(event, player) {
-					if (player == event.player || !event.player.getStorage("reduoji").length || !event.player.getCards("e").includes(event.card)) {
+					if (player === event.player || !event.player.getStorage("reduoji").length || !event.player.getCards("e").includes(event.card)) {
 						return false;
 					}
-					var evt = event.getParent(2);
-					return evt.name == "useCard" && evt.player == event.player;
+					const evt = event.getParent(2);
+					return evt?.name === "useCard" && evt.player === event.player;
 				},
 				logTarget: "player",
-				content() {
-					"step 0";
-					player.gain(trigger.card, trigger.player, "give", "bySelf");
-					"step 1";
-					var target = trigger.player,
-						storage = target.getStorage("reduoji");
+				async content(event, trigger, player) {
+					await player.gain(trigger.card, trigger.player, "give", "bySelf");
+					const target = trigger.player;
+					const storage = target.getStorage("reduoji");
 					if (storage.length) {
-						var card = storage[0];
+						const card = storage[0];
 						target.$throw(card, 1000);
 						target.unmarkAuto("reduoji", [card]);
 						game.log(target, "移去了", card);
-						game.cardsDiscard(card);
-						target.draw();
+						await game.cardsDiscard(card);
+						await target.draw();
 					}
 				},
 			},
@@ -9288,14 +9286,14 @@ const skills = {
 					return event.player.getStorage("reduoji").length > 0;
 				},
 				logTarget: "player",
-				content() {
-					var target = trigger.player,
-						cards = target.storage.reduoji;
+				async content(event, trigger, player) {
+					const target = trigger.player;
+					const cards = target.storage.reduoji;
 					target.$give(cards, player);
-					player.gain(cards, "fromStorage");
+					await player.gain(cards, "fromStorage");
 					cards.length = 0;
 					target.unmarkSkill("reduoji");
-					game.delay();
+					await game.delay();
 				},
 			},
 		},
