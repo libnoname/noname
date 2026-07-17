@@ -7345,23 +7345,34 @@ const skills = {
 			return event.player.hp > player.hp && player.hp > 0 && !event.numFixed && _status.renku.length > 0;
 		},
 		check(event, player) {
-			var num = Math.min(5, player.hp, _status.renku.length);
+			const num = Math.min(5, player.hp, _status.renku.length);
 			if (num <= event.num) {
 				return get.attitude(player, event.player) < 0;
 			}
 			return false;
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			trigger.changeToZero();
-			var num = Math.min(5, player.hp, _status.renku.length);
-			trigger.player.chooseButton(["选择获得" + get.cnNumber(num) + "张牌", _status.renku], true, num);
-			"step 1";
-			if (result.bool) {
-				var cards = result.links;
-				trigger.player.gain(cards, "gain2", "fromRenku");
-				trigger.player.addTempSkill("spsongshu_block");
+			const num = Math.min(5, player.hp, _status.renku.length);
+			const target = trigger.player;
+			const result = await target
+				.chooseButton({
+					createDialog: [`选择获得${get.cnNumber(num)}张牌`, _status.renku],
+					selectButton: num,
+					forced: true,
+				})
+				.forResult();
+			if (!result.bool || !result.links?.length) {
+				return;
 			}
+			const cards = result.links;
+			const gainEvent = target.gain({
+				cards,
+				animate: "gain2",
+				areaNames: ["renku"],
+			});
+			target.addTempSkill("spsongshu_block");
+			await gainEvent;
 		},
 		init(player) {
 			player.storage.renku = true;
@@ -7370,7 +7381,7 @@ const skills = {
 			block: {
 				mod: {
 					playerEnabled(card, player, target) {
-						if (player != target) {
+						if (player !== target) {
 							return false;
 						}
 					},
