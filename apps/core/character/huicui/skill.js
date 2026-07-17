@@ -4599,7 +4599,7 @@ const skills = {
 					const list = game.filterPlayer(current => {
 						return current.hasSkill("dcshiju") && !current.hasSkill("dcshiju_targeted");
 					});
-					return `将一张牌交给${get.translation(list)}${list.length > 1 ? "中的一人" : ""}，其可以使用此牌，且你本回合的攻击范围+X（X为其装备区的牌数）。若此牌为装备牌或此牌造成了伤害，你与其各摸两张牌。`;
+					return `将一张牌交给${get.translation(list)}${list.length > 1 ? "中的一人" : ""}，其可以使用此牌，且你本回合的攻击范围+X（X为其装备区的牌数+1）。若此牌为装备牌或此牌造成了伤害，你与其各摸两张牌。`;
 				},
 				discard: false,
 				lose: false,
@@ -4619,22 +4619,14 @@ const skills = {
 					if (!target.getCards("h").includes(card)) {
 						return;
 					}
-					const next = target
-						.chooseUseTarget(card)
-						.set("ai", (event, player) => {
-							const { giver } = event;
-							return get.attitude(player, giver) >= 0;
-						})
-						.set("giver", player);
+					const next = target.chooseUseTarget(card);
 					const result = await next.forResult();
 					if (!result?.bool) {
 						return;
 					}
-					const count = target.countCards("e");
-					if (count > 0) {
-						player.addTempSkill("dcshiju_range");
-						player.addMark("dcshiju_range", count, false);
-					}
+					const count = target.countCards("e") + 1;
+					player.addTempSkill("dcshiju_range");
+					player.addMark("dcshiju_range", count, false);
 					if(get.type(card) == "equip" || player.hasHistory("sourceDamage", evt => evt.getParent(3) === next)) {
 						await game.asyncDraw([player, target], 2);
 					}
