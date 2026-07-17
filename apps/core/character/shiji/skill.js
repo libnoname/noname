@@ -8021,40 +8021,42 @@ const skills = {
 		trigger: { player: "phaseJieshuBegin" },
 		direct: true,
 		filter(event, player) {
-			return player.getHistory("useCard").length > 0 && player.getHistory("sourceDamage").length == 0;
+			return player.hasHistory("useCard") && !player.hasHistory("sourceDamage");
 		},
-		content() {
-			"step 0";
-			var list = get.zhinangs();
-			player.chooseButton(["###" + get.prompt("mjshengxi") + "###获得一张智囊或摸一张牌", [list, "vcard"], [["摸一张牌", "取消"], "tdnodes"]], true).set("ai", function (card) {
-				if (card.link[2]) {
-					if (
-						!get.cardPile2(function (cardx) {
-							return cardx.name == card.link[2];
-						})
-					) {
+		async content(event, trigger, player) {
+			const list = get.zhinangs();
+			const { bool, links } = await player
+				.chooseButton({
+					createDialog: [`###${get.prompt("mjshengxi")}###获得一张智囊或摸一张牌`, [list, "vcard"], [["摸一张牌", "取消"], "tdnodes"]],
+					forced: true,
+					ai(card) {
+						if (card.link[2]) {
+							if (!get.cardPile2(cardx => cardx.name === card.link[2])) {
+								return 0;
+							}
+							return (Math.random() + 1.5) * get.value({ name: card.link[2] }, _status.event.player);
+						}
+						if (card.link === "摸一张牌") {
+							return 1;
+						}
 						return 0;
-					}
-					return (Math.random() + 1.5) * get.value({ name: card.link[2] }, _status.event.player);
-				}
-				if (card.link == "摸一张牌") {
-					return 1;
-				}
-				return 0;
-			});
-			"step 1";
-			if (result.bool && result.links[0] != "取消") {
-				player.logSkill("mjshengxi");
-				if (result.links[0] == "摸一张牌") {
-					player.draw();
-				} else {
-					var card = get.cardPile2(function (card) {
-						return card.name == result.links[0][2];
-					});
-					if (card) {
-						player.gain(card, "gain2");
-					}
-				}
+					},
+				})
+				.forResult();
+			if (!bool || !links?.length || links[0] === "取消") {
+				return;
+			}
+			player.logSkill("mjshengxi");
+			if (links[0] === "摸一张牌") {
+				await player.draw();
+				return;
+			}
+			const card = get.cardPile2(card => card.name === links[0][2]);
+			if (card) {
+				await player.gain({
+					cards: [card],
+					animate: "gain2",
+				});
 			}
 		},
 		group: "mjshengxi_zhunbei",
@@ -8066,7 +8068,7 @@ const skills = {
 				trigger: { player: "phaseZhunbeiBegin" },
 				frequent: true,
 				prompt2: "从游戏外或牌堆中获得一张【调剂盐梅】",
-				content() {
+				async content(event, trigger, player) {
 					if (!_status.tiaojiyanmei_suits || _status.tiaojiyanmei_suits.length > 0) {
 						if (!lib.inpile.includes("tiaojiyanmei")) {
 							lib.inpile.add("tiaojiyanmei");
@@ -8074,14 +8076,15 @@ const skills = {
 						if (!_status.tiaojiyanmei_suits) {
 							_status.tiaojiyanmei_suits = lib.suit.slice(0);
 						}
-						player.gain(game.createCard2("tiaojiyanmei", _status.tiaojiyanmei_suits.randomRemove(), 6), "gain2");
-					} else {
-						var card = get.cardPile2(function (card) {
-							return card.name == "tiaojiyanmei";
+						await player.gain(game.createCard2("tiaojiyanmei", _status.tiaojiyanmei_suits.randomRemove(), 6), "gain2");
+						return;
+					}
+					const card = get.cardPile2(card => card.name === "tiaojiyanmei");
+					if (card) {
+						await player.gain({
+							cards: [card],
+							animate: "gain2",
 						});
-						if (card) {
-							player.gain(card, "gain2");
-						}
 					}
 				},
 			},
