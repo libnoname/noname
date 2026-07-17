@@ -29247,7 +29247,7 @@ const skills = {
 			name: "sha",
 			nature: "stab",
 			storage: {
-				miehai: true,
+				twmiehai: true,
 			},
 		},
 		complexCard: true,
@@ -29270,12 +29270,17 @@ const skills = {
 				for (const target of targets) {
 					await target.recover();
 				}
-				const drawTargets = await player2.chooseTarget([0, targets.length], "【灭害】选择令任意名角色摸两张牌", (card, player, target) => {
-						return targets.includes(target);
-					}).set("multitarget", true).forResult();
+				const drawTargets = await player2.chooseTarget({
+                    selectTarget: [0, targets.length],
+                    prompt: "【灭害】选择令任意名角色摸两张牌",
+                    filterTarget(card, player, target) {
+                        return targets.includes(target);
+                    },
+                    multitarget: true,
+                }).forResult();
 				if (drawTargets?.targets?.length) {
 					for (const target of drawTargets.targets) {
-						await target.draw(2);
+						await game.asyncDraw(drawTargets.targets, 2);
 					}
 				}
 			});
@@ -29296,10 +29301,10 @@ const skills = {
 		locked: false,
 		mod: {
 			targetInRange(card) {
-				if (card?.storage?.miehai) return true;
+				if (card?.storage?.twmiehai) return true;
 			},
 			cardUsable(card, player, num) {
-				if (card?.storage?.miehai) return Infinity;
+				if (card?.storage?.twmiehai) return Infinity;
 			},
 		},
 	},
@@ -29593,7 +29598,7 @@ const skills = {
 			if (!result?.number || result.number < 1 || result.number > 13) return;
 			const name = get.info(event.name).pasts[result.number - 1];
 			const skill = get.info(event.name).derivation[result.number - 1];
-			const mark = `desigu_${player.playerid}`;
+			const mark = `twsigu_${player.playerid}`;
 			if (name && skill) {
 				await target.addAdditionalSkills(mark, [skill], true);
 				target.addTip(mark, `似故 ${get.translation(skill)}`);
@@ -29792,7 +29797,7 @@ const skills = {
 						const result3 = await target.chooseToCompare(targetx).forResult();
 						if (result3.winner) {
 							const loser = [target, targetx].find(i => i != result3.winner),
-								sha = new lib.element.VCard({ name: "sha" });
+								sha = new lib.element.VCard({ name: "sha" }, isCard: true );
 							if (loser && result3.winner.canUse(sha, loser, false)) {
 								await result3.winner.useCard(sha, loser, false);
 							}
@@ -29859,7 +29864,8 @@ const skills = {
 		frequent: true,
 		logTarget: "target",
 		async content(event, trigger, player) {
-			const { cards } = await game.cardsGotoOrdering(get.bottomCards(3));
+			const cards = get.bottomCards(3);
+			await game.cardsGotoOrdering(cards);
 			const suits = cards.map(i => get.suit(i)).toUniqued();
 			if (suits.length === 1 || suits.length === cards.length) {
 				const result = await player
