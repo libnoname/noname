@@ -605,18 +605,25 @@ const skills = {
 						.chooseTarget(lib.filter.notMe)
 						.set("createDialog", [`###${get.prompt(event.skill)}###将这些牌交给一名其他角色，其于此回合结束时失去1点体力（不叠加）`, cards, [dialog => dialog.buttons.forEach(i => (i.style.opacity = 1)), "handle"]])
 						.set("ai", target => {
-							const { cards, player } = get.event();
+							const { cardsVal, targetsList, player } = get.event();
 							const att = get.attitude(player, target);
 							const eff = get.effect(target, { name: "losehp" }, player, player);
-							if (cards.length == 1 && att < 0) {
-								if (target.hasSkill("ylygtianxiang_loseHp")) {
-									return 0;
-								}
-								return -att * eff;
+							if (target.hasSkill("ylygtianxiang_loseHp") && att < 0) {
+								return 0;
 							}
-							return att * (get.value(cards) - eff);
+							return att * (cardsVal - eff) * (targetsList.indexOf(target) / targetsList);
 						})
-						.set("cards", cards)
+						.set("cardsVal", get.value(cards))
+						.set(
+							"targetsList",
+							(function () {
+								return game
+									.filterPlayer(current => current != player)
+									.sort((a, b) => {
+										return get.attitude(player, b) - get.attitude(player, a);
+									});
+							})()
+						)
 						.forResult();
 				},
 				async content(event, trigger, player) {
