@@ -1067,9 +1067,10 @@ const characters = {
 		skills: ["twkuxin", "twmsigu","twkuimu"],
 	},
 	tw_sxrm_fuhuanghou: {
-		sex: "male",
+		sex: "female",
 		group: "qun",
-		hp: 4,
+\		hp: 3,
+		maxHp: 4,
 		skills: ["twmitu", "twqianliu"],
 	},
 };
