@@ -29279,9 +29279,7 @@ const skills = {
                     multitarget: true,
                 }).forResult();
 				if (drawTargets?.targets?.length) {
-					for (const target of drawTargets.targets) {
-						await game.asyncDraw(drawTargets.targets, 2);
-					}
+					await game.asyncDraw(drawTargets.targets, 2);
 				}
 			});
 		},
@@ -29603,6 +29601,15 @@ const skills = {
 				await target.addAdditionalSkills(mark, [skill], true);
 				target.addTip(mark, `似故 ${get.translation(skill)}`);
 				target.setAvatar(target.name, name);
+				game.broadcastAll(skill => {
+					const info = lib.skill[skill];
+					if (info && !info.audioname2) {
+						info.audioname2 = {};
+					}
+					if (info?.audioname2) {
+						info.audioname2["tw_sxrm_caocao"] = "twsigu";
+					}
+				}, skill);
 			} else {
 				player.chat("孩子你是谁？");
 			}
@@ -29736,6 +29743,7 @@ const skills = {
 	},
 	//tw疑伏皇后 当当当当当 看精彩纷纷 ☁袁神 by子右
 	twmitu: {
+		audio: 2,
 		trigger: {
 			player: "phaseZhunbeiBegin",
 		},
@@ -29758,9 +29766,9 @@ const skills = {
 				const next = target.draw();
 				next.gaintag.add("twmitu");
 				const result = await next.forResult();
-				if (result?.length) {
-					await target.showCards(result, "密图");
-					event[target.playerid] = result[0];
+				if (result?.cards?.length) {
+					await target.showCards(result.cards, "密图");
+					event[target.playerid] = result.cards[0];
 				}
 				target.addTempSkill("twmitu_ai", "phaseChange");
 			}
@@ -29797,7 +29805,7 @@ const skills = {
 						const result3 = await target.chooseToCompare(targetx).forResult();
 						if (result3.winner) {
 							const loser = [target, targetx].find(i => i != result3.winner),
-								sha = new lib.element.VCard({ name: "sha" }, isCard: true );
+								sha = new lib.element.VCard({ name: "sha", isCard: true });
 							if (loser && result3.winner.canUse(sha, loser, false)) {
 								await result3.winner.useCard(sha, loser, false);
 							}
@@ -29855,6 +29863,7 @@ const skills = {
 		},
 	},
 	twqianliu: {
+		audio: 2,
 		trigger: {
 			global: "useCardToTargeted",
 		},

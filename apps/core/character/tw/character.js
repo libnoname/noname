@@ -1048,6 +1048,7 @@ const characters = {
 		hp: 4,
 		skills: ["zhengfu"],
 		names: "尤利乌斯|盖乌斯",
+	},
 	tw_sxrm_huatuo: {
 		sex: "male",
 		group: "qun",
@@ -1064,7 +1065,7 @@ const characters = {
 		sex: "male",
 		group: "wei",
 		hp: 3,
-		skills: ["twkuxin", "twmsigu","twkuimu"],
+		skills: ["twkuxin", "twsigu","twkuimu"],
 	},
 	tw_sxrm_fuhuanghou: {
 		sex: "female",
