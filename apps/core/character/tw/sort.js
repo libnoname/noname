@@ -53,7 +53,7 @@ const characterSortTranslate = {
 	tw_english: "英文版",
 	tw_waitingforsort: "等待分包",
 	extra_tw: "神将异构·海外服",
-	tw_sxrm: "海外服·噬心入魔",
+	tw_sxrm: "海外服·蚀心入魔",
 };
 
 export { characterSort, characterSortTranslate };
