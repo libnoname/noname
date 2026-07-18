@@ -7668,6 +7668,8 @@ const skills = {
 			},
 			backup(links, player) {
 				return {
+					audio: "mbfangxu",
+					logAudio: () => 1,
 					filterCard(card, player) {
 						return get.event().mbfangxu?.[player.playerid]?.includes(card);
 					},
@@ -7697,6 +7699,8 @@ const skills = {
 		subSkill: {
 			backup: {},
 			effect: {
+				audio: "mbfangxu",
+				logAudio: index => typeof index === "number" ? "mbfangxu" + index + ".mp3" : "",
 				charlotte: true,
 				trigger: { player: ["useCard", "useCardAfter"] },
 				filter(event, player, name) {
@@ -7723,6 +7727,7 @@ const skills = {
 								return guess;
 							})
 							.forResult();
+						player.logSkill(event.name, null, null, null, [2]);
 						trigger.set(
 							"mbfangxu_guess",
 							(() => {
@@ -7741,7 +7746,7 @@ const skills = {
 							case 0: {
 								const targets = game.filterPlayer(i => i.hasHistory("damage", evt => evt.card === card)).sortBySeat();
 								if (targets.length) {
-									player.line(targets);
+									player.logSkill(event.name, targets, null, null, [3]);
 									for (const i of targets) {
 										await player.discardPlayerCard(i, [1, 2], "he", true);
 									}
@@ -7750,7 +7755,7 @@ const skills = {
 							}
 							case 1: {
 								if (target?.isIn()) {
-									player.line(target);
+									player.logSkill(event.name, [target], null, null, [4]);
 									await target.draw(2);
 								}
 								break;
@@ -7763,6 +7768,7 @@ const skills = {
 	},
 	mbzhuguan: {
 		audio: 4,
+		logAudio: event => event.name == "phase" ? ["mbzhuguan3.mp3", "mbzhuguan4.mp3"] : 2,
 		trigger: { player: ["useCard", "phaseBegin"] },
 		filter(event, player) {
 			if (event.name === "phase") {

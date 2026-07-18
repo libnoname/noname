@@ -252,9 +252,9 @@ const card = {
 			event.videoId = videoId;
 			//返回玩家弃牌/其他操作的结果，给出默认逻辑
 			event.chooseToDiscard ??= async (event, player, target) => {
-				const { discardPostion = "h", cards2, filterDiscard = { suit: get.suit(cards2[0]) } } = event;
+				const { discardPosition = "h", cards2, filterDiscard = { suit: get.suit(cards2[0]) } } = event;
 				const result = await player
-					.chooseToDiscard(discardPostion, filterDiscard)
+					.chooseToDiscard(discardPosition, filterDiscard)
 					.set("ai", card => {
 						const evt = _status.event.getParent();
 						if (get.damageEffect(evt.target, evt.player, evt.player, "thunder") > 0) {
