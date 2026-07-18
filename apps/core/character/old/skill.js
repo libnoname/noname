@@ -11,7 +11,7 @@ const skills = {
 			}
 			return ["jiechou3.mp3", "jiechou4.mp3"];
 		},
-		usable: 2,
+		usable: 1,
 		trigger: {
 			global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
 		},
@@ -47,22 +47,23 @@ const skills = {
 				return get.value(card, target) * get.sgnAttitude(player, target) > 4;
 			}),
 		async cost(event, trigger, player) {
-			const choiceList = [`对${get.translation(trigger.player)}造成1点伤害`, `摸两张牌，然后交给${get.translation(trigger.player)}两张牌`];
+			const target = event.indexedData;
+			const choiceList = [`对${get.translation(target)}造成1点伤害`, `摸一张牌，然后交给${get.translation(target)}一张牌`];
 			const controls = ["选项一", "选项二", "cancel2"];
 			const result = await player
 				.chooseControl({
 					controls: [...controls],
 					choiceList,
 					choice: (() => {
-						const bool1 = get.damageEffect(trigger.player, player, player) > 3;
-						const bool2 = player.hasCards("h", card => get.name(card) == "du") && get.attitude(player, trigger.player) < 0;
+						const bool1 = get.damageEffect(target, player, player) > 3;
+						const bool2 = player.hasCards("h", card => get.name(card) == "du") && get.attitude(player, target) < 0;
 						if (bool2) {
 							return 1;
 						}
 						if (bool1) {
 							return 0;
 						}
-						if (trigger.player == player && player.hp > 1 && get.info("chouyuan").countIdentity().length > 1 && player.hasSkill("ciju") && player.hasSkill("chouyuan") && Array.from(ui.discardPile.childNodes).filter(card => card.name == "sha") >= get.info("chouyuan").countIdentity().length) return 0;
+						if (target == player && player.hp > 1 && get.info("chouyuan").countIdentity().length > 1 && player.hasSkill("ciju") && player.hasSkill("chouyuan") && Array.from(ui.discardPile.childNodes).filter(card => card.name == "sha") >= get.info("chouyuan").countIdentity().length) return 0;
 						return 1;
 					})(),
 					prompt: get.prompt(event.skill),
@@ -83,11 +84,11 @@ const skills = {
 			if (index == 0) {
 				await target.damage();
 			} else {
-				await player.draw({ num: 2 });
+				await player.draw({ num: 1 });
 				if ((target == player && !player.hasCards("e")) || !player.hasCards("he")) return;
 				await player.chooseToGive({
-					prompt: `竭雠：交给${get.translation(target)}两张牌`,
-					selectCard: 2,
+					prompt: `竭雠：交给${get.translation(target)}一张牌`,
+					selectCard: 1,
 					forced: true,
 					position: "he",
 					target: target,
@@ -139,6 +140,7 @@ const skills = {
 				intro: {
 					content: "你被强化了",
 				},
+				onremove: true,
 				mod: {
 					cardUsable(card, player, num) {
 						return Infinity;
@@ -158,9 +160,7 @@ const skills = {
 					if (name == "useCard1") {
 						return event.addCount != false;
 					}
-					return player.hasHistory("useCard", evt => {
-						return evt.card.name != event.card.name;
-					});
+					return true;
 				},
 				async content(event, trigger, player) {
 					if (trigger.name == "useCard1") {
@@ -171,7 +171,11 @@ const skills = {
 							stat[name]--;
 						}
 					} else {
-						player.removeSkill(event.name);
+						if (player.storage[event.name] && player.storage[event.name] != trigger.card.name) {
+							player.removeSkill(event.name);
+						} else {
+							player.storage[event.name] = trigger.card.name;
+						}
 					}
 				},
 			},
@@ -182,10 +186,10 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filterTarget(card, player, target) {
-			return target.countDiscardableCards(player, "he") > 0;
+			return target.hasDiscardableCards(player, "he");
 		},
 		filter(event, player) {
-			return get.info("chouyuan").countIdentity().length > 0 && game.hasPlayer(target => target.countDiscardableCards(player, "he") > 0);
+			return get.info("chouyuan").countIdentity().length > 0 && game.hasPlayer(target => target.hasDiscardableCards(player, "he"));
 		},
 		countIdentity() {
 			return game
@@ -200,12 +204,14 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			const num = get.info(event.name).countIdentity().length;
-			await player.discardPlayerCard({ target, position: "he", selectButton: num, forced: true, allowChooseAll: true});
+			let num = get.info(event.name).countIdentity().length;
+			if (!target.hasDiscardableCards(player, "he")) return;
+			const { cards } = await player.discardPlayerCard({ target, position: "he", selectButton: [1, num], forced: true, allowChooseAll: true}).forResult();
+			num = cards.length;
 			if (ui["discardPile"].childNodes.length == 0) return;
-			var list = [];
-			for (var i = 0; i < ui["discardPile"].childNodes.length; i++) {
-				var card = ui["discardPile"].childNodes[i];
+			const list = [];
+			for (let i = 0; i < ui["discardPile"].childNodes.length; i++) {
+				const card = ui["discardPile"].childNodes[i];
 				if (card.name == "sha") {
 					list.push(card);
 					if (list.length >= num) {

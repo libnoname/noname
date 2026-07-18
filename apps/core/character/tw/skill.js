@@ -10,21 +10,23 @@ const skills = {
 			player: "damageBegin4",
 		},
 		filter(event, player, name) {
-			if (event.source && (event.source == event.player) == player) return false;
-			if (event.isOnline() || player.storage.twfenxin_achieve) return player.hasCards("h");
+			if ((name == "damageBegin4" ? event.source : event.player) == player) return false;
+			const position = player.storage.twfenxin_achieve ? "he" : "h";
+			if (event.isOnline() || player.storage.twfenxin_achieve) return player.hasCards(position);
 			if (name == "damageBegin2")
 				return (
+					event.player &&
 					event.player.hp >= player.hp &&
 					player.hasCard(card => {
 						return get.color(card) == "black" && lib.filter.canBeDiscarded(card, player, player);
-					}, "h")
+					}, position)
 				);
 			return (
 				event.source &&
 				event.source.hp >= player.hp &&
 				player.hasCard(card => {
 					return get.color(card) == "red" && lib.filter.canBeDiscarded(card, player, player);
-				}, "h")
+				}, position)
 			);
 		},
 		async cost(event, trigger, player) {
@@ -71,14 +73,12 @@ const skills = {
 				}
 			},
 		},
-		trigger: {
-			global: ["damageEnd"],
-		},
+		trigger: { global: "damageEnd" },
 		filter(event, player) {
 			return [player].concat(game.findPlayer(current => current.hasMark("twfenxin_mark"))).includes(event.player);
 		},
 		async content(event, trigger, player) {
-			player.draw();
+			player.draw({ num: 1 });
 		},
 		group: ["twfenxin_achieve", "twfenxin_fail", "twfenxin_init"],
 		subSkill: {
@@ -114,7 +114,7 @@ const skills = {
 				async content(event, trigger, player) {
 					player.awakenSkill("twfenxin");
 					game.log(player, "使命成功");
-					player.storage.twfenxin_achieve = true;
+					player.setStorage("twfenxin_achieve", true, true);
 				},
 			},
 			mark: {
