@@ -25390,13 +25390,28 @@ const skills = {
 						return target != player && target != _status.event.getTrigger().player;
 					})
 					.set("ai", function (target) {
-						var player = _status.event.player;
-						var card = _status.event.getParent().card;
-						if (target.hasSkillTag("nogain") || !player.needsToDiscard() || (get.tag(card, "damage") && player.hasValueTarget(card, null, false) && get.effect(_status.event.getTrigger().player, card, null, false) > 0)) {
+						const event = get.event();
+						const { player, giveCheck } = event;
+						const card = event.getParent().card;
+						if (target.hasSkillTag("nogain") || !player.needsToDiscard() || giveCheck === false) {
 							return 0;
 						}
+						if (typeof giveCheck === "number") {
+							if (target.getUseValue(card) < giveCheck) {
+								return 0;
+							}
+						}
 						return get.attitude(player, target) / (1 + target.countCards("h"));
-					});
+					})
+					.set(
+						"giveCheck",
+						(function () {
+							if (!player.needsToDiscard() || player.hasValueTarget(card, null, false)) {
+								return false;
+							}
+							return player.getUseValue(card);
+						})()
+					);
 			} else {
 				event.finish();
 			}
