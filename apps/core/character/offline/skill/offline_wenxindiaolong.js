@@ -52,7 +52,11 @@ const skills = {
 					prompt: get.prompt(event.skill),
 					prompt2: "令一名其他角色翻面" + (draw > 0 ? "并摸" + get.cnNumber(draw) + "张牌" : ""),
 					filterTarget(card, player, target) {
-						if (!get.event().storage?.length) {
+						if(player == target) {
+							return false;
+						}
+						const storage = get.event().storage;
+						if (!storage?.length) {
 							return true;
 						}
 						return storage.includes(target);

@@ -105,7 +105,7 @@ const skills = {
 			await player.addSkills("penvdi");
 			player.insertPhase();
 			//村村的规   有需要自己改
-			if (player !== trigger.player && player.identity !== trigger.player.identity && ["identity", "doudizhu", "single", "brawl"].includes(get.mode())) {
+			if (player !== trigger.player && player.identity !== trigger.player.identity && ["identity", "doudizhu", "brawl"].includes(get.mode())) {
 				game.broadcastAll(
 					(player, target) => {
 						player.identity = target.identity;
