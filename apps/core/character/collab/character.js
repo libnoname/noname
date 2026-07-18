@@ -1,4 +1,11 @@
 const characters = {
+	ol_le_caopi: {
+		sex: "male",
+		group: "wei",
+		hp: 2,
+		maxHp: 4,
+		skills: ["olweidai", "olliangzi"],
+	},
 	tw_dm_zhouyu: {
 		sex: "male",
 		group: "qun",

@@ -1,4 +1,5 @@
 export default {
+	lizhaoyi: "贞骨陨玉",
 	wu_zhangfei: "烈武桓威",
 	dc_sb_guanyu: "单刀赴会",
 	//dc_sb_yangfeng: "",

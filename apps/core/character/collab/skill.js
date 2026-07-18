@@ -2,13 +2,120 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//乐曹丕------by 清风
+	olweidai: {
+		audio: 2,
+		forced: true,
+		trigger: { global: "useCardAfter" },
+		filter(event, player) {
+			return event.player.group == "wei" && event.targets?.includes(player);
+		},
+		async content(event, trigger, player) {
+			await player.gainMaxHp();
+			if (player.isMaxMaxHp()) {
+				const num = player.maxHp - player.getHp();
+				if (num > 0) {
+					await player.loseMaxHp(num);
+					await player.draw({ num });
+					if (num >= game.players.length && game.hasPlayer(current => current.group !== "wei")) {
+						const result = await player
+							.chooseTarget({
+								prompt: "魏代：将一名角色的势力变更为魏",
+								forced: true,
+								filterTarget(card, player, target) {
+									return target.group !== "wei";
+								},
+								ai(target) {
+									return 1 + Math.random();
+								},
+							})
+							.forResult();
+						if (result?.bool && result.targets?.length) {
+							const target = result.targets[0];
+							player.line(target);
+							await target.changeGroup("wei");
+						}
+					}
+				}
+			}
+		},
+	},
+	olliangzi: {
+		audio: 2,
+		forced: true,
+		mod: {
+			cardEnabled(card, player) {
+				if (get.name(card) === "jiu") {
+					return;
+				}
+				const hs = player.getCards("he", card => get.type(card) == "equip");
+				if (get.type(card) == "equip" && "cards" in card && Array.isArray(card.cards) && card.cards.containsSome(...hs)) {
+					return false;
+				}
+			},
+			cardSavable(card, player) {
+				if (get.name(card) === "jiu") {
+					return;
+				}
+				const hs = player.getCards("he", card => get.type(card) == "equip");
+				if (get.type(card) == "equip" && "cards" in card && Array.isArray(card.cards) && card.cards.containsSome(...hs)) {
+					return false;
+				}
+			},
+		},
+		enable: "chooseToUse",
+		filterCard(card) {
+			return get.type(card) == "equip";
+		},
+		viewAsFilter(player) {
+			return player.countCards("he", card => get.type(card) == "equip") > 0;
+		},
+		viewAs: {
+			name: "jiu",
+		},
+		position: "he",
+		prompt: "将一张装备牌当做【酒】使用",
+		check(card) {
+			return 114514 - get.value(card);
+		},
+		ai: {
+			order: 8,
+			result: {
+				player: 1,
+			},
+		},
+		group: "olliangzi_use",
+		subSkill: {
+			use: {
+				forced: true,
+				audio: "olliangzi",
+				trigger: { player: "useCard" },
+				filter(event, player) {
+					if (get.name(event.card) !== "jiu") {
+						return false;
+					}
+					const index = player.getHistory("useCard", evt => get.name(evt.card) == "jiu").indexOf(event);
+					const num = game.countPlayer(current => current.group === "wei");
+					return index < num && event.addCount !== false;
+				},
+				async content(event, trigger, player) {
+					trigger.addCount = false;
+					const stat = trigger.player.getStat("card"),
+						name = trigger.card.name;
+					if (typeof stat[name] == "number" && stat[name] > 0) {
+						stat[name]--;
+					}
+				},
+			},
+		},
+	},
 	// 魔周瑜
 	yiran: {
 		audio: 2,
 		trigger: { player: "damageBegin3" },
 		forced: true,
 		filter(event, player) {
-			return  event.hasNature("fire");
+			return event.hasNature("fire");
 		},
 		async content(event, trigger, player) {
 			trigger.num++;

@@ -32,7 +32,7 @@ const characterSort = {
 	offline_shichangshi: ["ps_zhangrang", "ps_zhaozhong", "ps_sunzhang", "ps_bilan", "ps_xiayun", "ps_hankui", "ps_lisong", "ps_duangui", "ps_guosheng", "ps_gaowang"],
 	offline_prettyDerby: ["sm_chixia", "sm_qiulin", "sm_zhuahuang", "sm_zijian", "sm_jieying", "sm_liaoyuan", "sm_dailu"],
 	offline_qingshi: ["chenshou", "hs_liuxuan", "hs_caohuan", "hs_liuxie", "hs_sunhao"],
-	offline_chunqiu: ["ym_friend_zhugeliang", "ym_jsrg_diaochan"],
+	offline_chunqiu: ["ym_friend_zhugeliang", "ym_jsrg_diaochan", "ym_zhangxingcai", "ym_guanyinping", "ym_zhaoxiang"],
 	offline_fengyun: ["ps_caocao", "ps_liubei", "ps_sunquan"],
 	offline_xy: ["xy_caocao", "xy_chengyu", "xy_xunyu", "xy_chengong", "xy_zhangkai", "xy_lvbu", "xy_zhangmiao", "xy_caosong"],
 	offline_zc26: ["zc26_sp_xushi", "zc26_lusu", "zc26_jiaxu", "zc26_zhanghe", "zc26_taishici"],

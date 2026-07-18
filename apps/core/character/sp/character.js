@@ -298,7 +298,7 @@ const characters = {
 		sex: "male",
 		group: "wei",
 		hp: 4,
-		skills: ["olmaozhu", "oljinlan"],
+		skills: ["olremaozhu", "olrejinlan", "olcaifeng"],
 		groupBorder: "jin",
 	},
 	yadan: {

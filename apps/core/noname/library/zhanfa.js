@@ -2410,9 +2410,9 @@ const _zhanfa = {
 			trigger: { player: "huogongBegin" },
 			async content(event, trigger, player) {
 				trigger.set("chooseToDiscard", async (event, player, target) => {
-					const { discardPostion = "h", cards2, filterDiscard = { suit: get.suit(cards2[0]) } } = event;
+					const { discardPosition = "h", cards2, filterDiscard = { suit: get.suit(cards2[0]) } } = event;
 					const result = await player
-						.chooseCard(`请选择火攻要展示的牌`, discardPostion, filterDiscard)
+						.chooseCard(`请选择火攻要展示的牌`, discardPosition, filterDiscard)
 						.set("ai", () => Math.random())
 						.forResult();
 					if (result?.bool && result.cards?.length) {

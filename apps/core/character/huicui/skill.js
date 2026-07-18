@@ -207,7 +207,7 @@ const skills = {
 					}
 					if (obtained.length > 0) {
 						await player.gain({
-							cards: obtained, 
+							cards: obtained,
 							animate: "gain2",
 						});
 						obtainedFromPile = true;
@@ -4452,7 +4452,7 @@ const skills = {
 						.setContent("gaincardMultiple");
 					const names = givenCards.map(card => card.name).toUniqued();
 					await game.delayx();
-						const newNames = names.filter(name => !player.getStorage(event.name).includes(name));
+					const newNames = names.filter(name => !player.getStorage(event.name).includes(name));
 					if (newNames.length) {
 						player.markAuto(event.name, newNames);
 						await player.draw(newNames.length);
@@ -4588,18 +4588,18 @@ const skills = {
 						) {
 							valueFix += 5;
 						}
-						if (player.countCards("he", { subtype }) > 1) {
-							return valueFix + 12 - get.equipValue(card);
-						}
 						return valueFix + 6 - get.value(card);
 					}
-					return 4 - get.value(card);
+					if(get.is.damageCard(card)) {
+						return 10 - get.value(card);
+					}
+					return 6 - get.value(card);
 				},
 				prompt() {
 					const list = game.filterPlayer(current => {
 						return current.hasSkill("dcshiju") && !current.hasSkill("dcshiju_targeted");
 					});
-					return `将一张牌交给${get.translation(list)}${list.length > 1 ? "中的一人" : ""}，若此牌为装备牌，其可以使用之，且你本回合的攻击范围+X（X为其装备区的牌数）。若其以此法替换了装备，你与其各摸两张牌。`;
+					return `将一张牌交给${get.translation(list)}${list.length > 1 ? "中的一人" : ""}，其可以使用此牌，且你本回合的攻击范围+X（X为其装备区的牌数）。若此牌为装备牌或此牌造成了伤害，你与其各摸两张牌。`;
 				},
 				discard: false,
 				lose: false,
@@ -4616,44 +4616,38 @@ const skills = {
 					} else if (get.type(card) == "equip" && get.position(card) == "e") {
 						await player.give(card, target);
 					}
-					if (!target.getCards("h").includes(card) || get.type(card) !== "equip") {
+					if (!target.getCards("h").includes(card)) {
 						return;
 					}
-					const { bool } = await target
+					const next = target
 						.chooseUseTarget(card)
 						.set("ai", (event, player) => {
 							const { giver } = event;
 							return get.attitude(player, giver) >= 0;
 						})
-						.set("giver", player)
-						.forResult();
-					if (!bool) {
+						.set("giver", player);
+					const result = await next.forResult();
+					if (!result?.bool) {
 						return;
 					}
 					const count = target.countCards("e");
 					if (count > 0) {
 						player.addTempSkill("dcshiju_range");
 						player.addMark("dcshiju_range", count, false);
-						if (
-							target.hasHistory("lose", evt => {
-								return evt.getParent().name === "equip" && evt.getParent(5) === event && evt.es && evt.es.length > 0;
-							})
-						) {
-							for (const current of [player, target]) {
-								await current.draw(2);
-							}
-						}
+					}
+					if(get.type(card) == "equip" || player.hasHistory("sourceDamage", evt => evt.getParent(3) === next)) {
+						await game.asyncDraw([player, target], 2);
 					}
 				},
 				ai: {
-					order: 10,
+					order: 8,
 					result: {
 						target(player, target) {
 							const card = ui.selected.cards[0];
 							if (!card) {
 								return;
 							}
-							if (target.hasSkillTag("nogain") && get.type(card) != "equip") {
+							if (target.hasSkillTag("nogain")) {
 								return 0;
 							}
 							if (card.name == "du" && target.hasSkillTag("nodu")) {
@@ -19266,6 +19260,94 @@ const skills = {
 				async content(event, trigger, player) {
 					player.gainMaxHp();
 					player.chooseDrawRecover(2, true);
+				},
+			},
+		},
+	},
+	// 夏侯恩
+	chijian: {
+		audio: 2,
+		locked: false,
+		init(player, skill) {
+			player.addExtraEquip(skill, "qinggang", true, player => player.hasEmptySlot(1) && !player.getVEquip(1) && lib.card.qinggang);
+		},
+		onremove(player, skill) {
+			player.removeExtraEquip(skill);
+		},
+		mod: {
+			cardUsable(card, player, num) {
+				if (card.name === "sha" && player.isPhaseUsing()) return num + 1;
+			},
+		},
+		group: "chijian_qinggang",
+		subSkill: {
+			qinggang: {
+				mod: {
+					attackRange(player, num) {
+						if (player.hasEmptySlot(1) && !player.getVEquip(1)) return num + 1;
+					},
+				},
+				audio: "chijian",
+				inherit: "qinggang_skill",
+				filter(event, player) {
+					if (!player.hasEmptySlot(1) || player.getVEquip(1)) return false;
+					return event.card.name == "sha";
+				},
+			},
+		},
+	},
+	shiwu: {
+		audio: 2,
+		trigger: { global: "phaseBegin" },
+		filter(event, player) {
+			if (event.player === player) return false;
+			const juedou = new lib.element.VCard({ name: "juedou", isCard: true });
+			return player.canUse(juedou, event.player);
+		},
+		prompt2(event, player) {
+			return `视为对${get.translation(event.player)}使用【决斗】，失败则本回合抢走你的剑`;
+		},
+		check(event, player) {
+			const juedou = new lib.element.VCard({ name: "juedou", isCard: true });
+			return get.effect(event.player, juedou, player, player) > 0 && get.attitude(player, event.player) <= 0;
+		},
+		logTarget: "player",
+		async content(event, trigger, player) {
+			const target = trigger.player;
+			const next = player.useCard({
+				card: new lib.element.VCard({ name: "juedou", isCard: true }),
+				targets: [target],
+			});
+			await next;
+			const damagedEvents = game.getAllGlobalHistory("everything", evt => evt.name === "damage" && evt.card === next.card);
+			if (damagedEvents.some(evt => evt.source === player && evt.player === target)) {
+				const card = get.cardPile(card => get.is.damageCard(card), "bottom");
+				if (card) await player.gain(card, "gain2");
+			}
+			if (damagedEvents.some(evt => evt.source === target && evt.player === player)) {
+				await target.addTempSkills("chijian");
+				await player.removeSkills("chijian");
+				player
+					.when({ global: "phaseEnd" })
+					.filter(evt => trigger.getParent("phase", true, true) === evt)
+					.step(async (event2, trigger2, player2) => {
+						await player.addSkills("chijian");
+					});
+			}
+		},
+		group: "shiwu_lose",
+		subSkill: {
+			lose: {
+				audio: "shiwu",
+				trigger: { player: "dieAfter" },
+				filter(event, player) {
+					return event.source?.isIn();
+				},
+				forced: true,
+				locked: false,
+				forceDie: true,
+				async content(event, trigger, player) {
+					await trigger.source.addSkills("chijian");
 				},
 			},
 		},

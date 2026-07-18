@@ -3919,7 +3919,7 @@ export class Create {
 	 * @param {Object} [options]
 	 */
 	handcardsContainer(cards, position, options) {
-		const container = ui.create.div(".handcards-container");
+		const container = ui.create.div(".handcards-container", position);
 		//滚动查看手牌的监听
 		const wheelCards = e => {
 			if (e.deltaY !== 0) {
@@ -3992,17 +3992,27 @@ export class Create {
 				const buttons = ui.create.buttons(cards, "card", container);
 				container.buttons = buttons;
 				let marginRight = 0;
+				let isShrink = true;
 				const cardWidth = (buttons[0].offsetWidth || 90) + 6;
 				const minShrinkWidth = 60 * ((buttons[0].offsetWidth || 90) / 90);
 				const containerWidth = container.offsetWidth;
-				const neededWidth = num * (cardWidth - minShrinkWidth) + minShrinkWidth;
-				if (neededWidth > containerWidth) {
-					marginRight = `-${minShrinkWidth}px`;
+				if (num * cardWidth <= containerWidth) {
+					marginRight = "0";
+					isShrink = false;
 				} else {
-					marginRight = `-${cardWidth - (containerWidth - cardWidth) / (num - 1)}px`;
+					const neededWidth = num * (cardWidth - minShrinkWidth) + minShrinkWidth;
+					if (neededWidth > containerWidth) {
+						marginRight = `-${minShrinkWidth}px`;
+					} else {
+						marginRight = `-${cardWidth - (containerWidth - cardWidth) / (num - 1)}px`;
+					}
 				}
 				buttons.forEach((button, index) => {
 					button.style.setProperty("margin-right", marginRight);
+					if (isShrink) {
+						button.node.info.style.setProperty("transform", "translateX(-52px) translateY(-3px)", "important");
+						button.node.name.style.setProperty("transform", "translateY(14px)", "important");
+					}
 					const card = cards[index];
 					if (get.name(card) !== card.name || !get.is.sameNature(get.nature(card), card.nature, true)) {
 						ui.create.cardTempName(get.autoViewAs({ name: get.name(card), nature: get.nature(card) }), button);
@@ -4023,9 +4033,6 @@ export class Create {
 				}
 			}
 		};
-		if (position) {
-			position.appendChild(container);
-		}
 		if (cards?.length) {
 			container.addCards(cards);
 		}
