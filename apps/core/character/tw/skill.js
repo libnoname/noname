@@ -7298,7 +7298,7 @@ const skills = {
 							if (card.name != "lebu") {
 								return;
 							}
-							if (game.hasPlayer(current => current.hasSkill("twguose") && get.attitude(target,current) > 1)) {
+							if (game.hasPlayer(current => current.hasSkill("twguose") && get.attitude(current, target) > 1)) {
 								if (result2 < 0) {
 									return [-1, 0];
 								}

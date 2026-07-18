@@ -611,7 +611,7 @@ const skills = {
 							if (target.hasSkill("ylygtianxiang_loseHp") && att < 0) {
 								return 0;
 							}
-							return att * (cardsVal - eff) * (targetsList.indexOf(target) / targetsList);
+							return att * (cardsVal - eff) * (targetsList.indexOf(target) / targetsList.length);
 						})
 						.set("cardsVal", get.value(cards))
 						.set(

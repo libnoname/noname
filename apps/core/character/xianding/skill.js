@@ -3755,13 +3755,13 @@ const skills = {
 						}
 						return 0;
 					},
-					check(target) {
-						let damage = get.damageEffect(target, player, player) + 0.1;
+					check(target, targets) {
+						let damage = get.damageEffect(target, player, player);
 						if (damage <= 0) {
 							return 0;
 						}
 						if (ui.selected.targets.includes(target)) {
-							damage = Math.log(damage) / Math.log(get.numOf(ui.selected.targets, target));
+							damage *= 1 - get.numOf(ui.selected.targets, target) / get.event().num;
 						}
 						return damage;
 					},
@@ -3769,14 +3769,14 @@ const skills = {
 						const event = get.event();
 						const range = [num, num],
 							forced = event.forced;
-						let i, j, targets, targets2, effect;
 						let ok = false;
 						let iwhile = 100;
+						let	targets = game.filterPlayer(current => current != player);
+						let i, j, targets2, effect;
 						while (iwhile--) {
 							if (ui.selected.targets.length >= range[0]) {
 								ok = true;
 							}
-							targets = game.filterPlayer(current => current != player);
 							targets2 = targets.slice(0);
 							let ix = 0;
 							CacheContext.setCacheContext(new CacheContext({ lib, game, get }));
