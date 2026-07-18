@@ -115,6 +115,7 @@ window.noname_character_rank = {
 		"mb_shen_jiangwei",
 		"mb_lingju",
 		"cy_lingju",
+		"tw_lingju",
 		"ol_sb_dongzhao",
 		"ol_sb_chengyu",
 		"ol_cuiyan",
@@ -2719,6 +2720,7 @@ window.noname_character_rank = {
 			"v_sunce",
 			"mb_lingju",
 			"cy_lingju",
+			"tw_lingju",
 			"mb_shen_jiangwei",
 		],
 		epic: [

@@ -1,4 +1,5 @@
 export default {
+	tw_lingju: "情随梦逝",
 	tw_sb_xiahoudun: "独眼的罗刹",
 	tw_yj_fazheng: "弹铗待试",
 	tw_shen_guanyu: "魂追弗届",
