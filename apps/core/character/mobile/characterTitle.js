@@ -22,6 +22,7 @@ export default {
 	//mb_caozhi: "",
 	//mb_zhouyu: "",
 	//mb_liuhui: "",
+	mb_lingju: "情随梦逝",
 	hefei_zhangliao: "气夺三军",
 	hefei_lidian: "义忘私隙",
 	hefei_yuejin: "折冲御晦",

@@ -2,6 +2,235 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//仇渊灵雎
+	jiechou: {
+		audio: 4,
+		logAudio(event, player, triggername, _, costResult) {
+			if (costResult.cost_data?.index == 0) {
+				return 2;
+			}
+			return ["jiechou3.mp3", "jiechou4.mp3"];
+		},
+		usable: 2,
+		trigger: {
+			global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
+		},
+		locked: false,
+		mod: {
+			aiOrder: (player, card, order) => {
+				if (get.name(card) == "sha" && get.info("jiechou").clearMind(player)) {
+					order += 9;
+				}
+				return order;
+			},
+		},
+		clearMind(player) {
+			if (!player.hasSkill("ciju") || !player.hasSkill("chouyuan")) return false;
+			return player.countCards("h", card => get.is.damageCard(card)) == player.countCards("h", { name: "sha" }) && player.countCards("h") > 2;
+		},
+		getIndex(event, player) {
+			return game
+				.filterPlayer(current => {
+					if (current.countCards("h", card => get.is.damageCard(card))) {
+						return false;
+					}
+					const evt = event.getl?.(current);
+					return evt?.hs?.some(card => get.is.damageCard(card));
+				})
+				.sortBySeat(_status.currentPhase);
+		},
+		filter: (event, player, name, target) => target?.isIn(),
+		logTarget: (event, player, name, target) => target,
+		check: (event, player, name, target) =>
+			get.attitude(player, target) < 0 ||
+			player.hasCards("he", card => {
+				return get.value(card, target) * get.sgnAttitude(player, target) > 4;
+			}),
+		async cost(event, trigger, player) {
+			const choiceList = [`对${get.translation(trigger.player)}造成1点伤害`, `摸两张牌，然后交给${get.translation(trigger.player)}两张牌`];
+			const controls = ["选项一", "选项二", "cancel2"];
+			const result = await player
+				.chooseControl({
+					controls: [...controls],
+					choiceList,
+					choice: (() => {
+						const bool1 = get.damageEffect(trigger.player, player, player) > 3;
+						const bool2 = player.hasCards("h", card => get.name(card) == "du") && get.attitude(player, trigger.player) < 0;
+						if (bool2) {
+							return 1;
+						}
+						if (bool1) {
+							return 0;
+						}
+						if (trigger.player == player && player.hp > 1 && get.info("chouyuan").countIdentity().length > 1 && player.hasSkill("ciju") && player.hasSkill("chouyuan") && Array.from(ui.discardPile.childNodes).filter(card => card.name == "sha") >= get.info("chouyuan").countIdentity().length) return 0;
+						return 1;
+					})(),
+					prompt: get.prompt(event.skill),
+				})
+				.forResult();
+			event.result = {
+				bool: result?.control != "cancel2",
+				cost_data: {
+					index: ["选项一", "选项二"].indexOf(result.control),
+				},
+			};
+		},
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+			} = event;
+			const { index } = event.cost_data;
+			if (index == 0) {
+				await target.damage();
+			} else {
+				await player.draw({ num: 2 });
+				if ((target == player && !player.hasCards("e")) || !player.hasCards("he")) return;
+				await player.chooseToGive({
+					prompt: `竭雠：交给${get.translation(target)}两张牌`,
+					selectCard: 2,
+					forced: true,
+					position: "he",
+					target: target,
+					ai(card) {
+						return 6 - get.value(card);
+					},
+				});
+			}
+		},
+	},
+	ciju: {
+		audio: 2,
+		trigger: {
+			player: "damageEnd",
+		},
+		filter(event, player) {
+			const current = _status.currentPhase;
+			return current?.isIn() && current.getHandcardLimit() > 0;
+		},
+		check(event, player) {
+			const current = _status.currentPhase;
+			if (current == player && current.countCards("h", card => card.name == "sha" && current.hasUseTarget(card, true, false)) > 1) return true;
+			if (get.attitude(player, current) < 0 && (player.hp > 2 || current.countCards("h") < 4)) return true;
+			if (get.attitude(player, current) > 0 && current.mayHaveSha(player, "use", false, 2)) return true;
+			if (event.source && event.source == player) return true;
+			return false;
+		},
+		async content(event, trigger, player) {
+			_status.currentPhase.addTempSkills(["ciju_handcard", "ciju_use"]);
+		},
+		subSkill: {
+			handcard: {
+				charlotte: true,
+				mark: true,
+				marktext: "踽",
+				intro: {
+					content: "膝盖中了一箭",
+				},
+				mod: {
+					maxHandcardFinal(player, num) {
+						return 0;
+					},
+				},
+			},
+			use: {
+				charlotte: true,
+				mark: true,
+				marktext: "刺",
+				intro: {
+					content: "你被强化了",
+				},
+				mod: {
+					cardUsable(card, player, num) {
+						return Infinity;
+					},
+					aiOrder: (player, card, order) => {
+						if (get.name(card) == "sha") {
+							order += 9;
+						}
+						return order;
+					},
+				},
+				trigger: {
+					player: ["useCard1", "useCardAfter"],
+				},
+				silent: true,
+				filter(event, player, name) {
+					if (name == "useCard1") {
+						return event.addCount != false;
+					}
+					return player.hasHistory("useCard", evt => {
+						return evt.card.name != event.card.name;
+					});
+				},
+				async content(event, trigger, player) {
+					if (trigger.name == "useCard1") {
+						trigger.addCount = false;
+						const stat = player.getStat().card,
+							name = trigger.card.name;
+						if (typeof stat[name] === "number") {
+							stat[name]--;
+						}
+					} else {
+						player.removeSkill(event.name);
+					}
+				},
+			},
+		},
+	},
+	chouyuan: {
+		audio: 2,
+		enable: "phaseUse",
+		usable: 1,
+		filterTarget(card, player, target) {
+			return target.countDiscardableCards(player, "he") > 0;
+		},
+		filter(event, player) {
+			return get.info("chouyuan").countIdentity().length > 0 && game.hasPlayer(target => target.countDiscardableCards(player, "he") > 0);
+		},
+		countIdentity() {
+			return game
+				.filterPlayer2(current => current.identityShown)
+				.reduce((arr, pl) => {
+					const index = arr.some(item => item == pl.identity);
+					if (!index) {
+						arr.push(pl.identity);
+					}
+					return arr;
+				}, []);
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const num = get.info(event.name).countIdentity().length;
+			await player.discardPlayerCard({ target, position: "he", selectButton: num, forced: true, allowChooseAll: true});
+			if (ui["discardPile"].childNodes.length == 0) return;
+			var list = [];
+			for (var i = 0; i < ui["discardPile"].childNodes.length; i++) {
+				var card = ui["discardPile"].childNodes[i];
+				if (card.name == "sha") {
+					list.push(card);
+					if (list.length >= num) {
+						break;
+					}
+				}
+			}
+			if (list.length) {
+				await target.gain({ cards: list, animate: "gain2" });
+			}
+		},
+		ai: {
+			order(item, player) {
+				player ??= get.player();
+				if (player.hasSkill("ciju") && player.hasSkill("jiechou") && get.info("jiechou").clearMind(player)) return get.order({ name: "sha" }, player) - 0.1;
+				return get.order({ name: "sha" }, player) + 0.1;
+			},
+			result: {
+				target(player, target) {
+					if (player.hasSkill("ciju_use")) return target == player;
+					return get.effect(target, { name: "guohe_copy" }, player, player);
+				},
+			},
+		},
+	},
 	//寒冰剑
 	chegu: {
 		audio: 2,
