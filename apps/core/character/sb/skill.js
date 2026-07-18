@@ -3241,12 +3241,14 @@ const skills = {
 			global: ["loseAsyncAfter", "loseAfter"],
 		},
 		getIndex(event, player) {
-			return game.filterPlayer(current => {
-				if (player.getStorage("sbqingjian_round").includes(current)) {
-            		return false;
-        		}
-				return event.type == "discard" && event.getl?.(current)?.cards2?.length == 1;
-			}).sortBySeat();
+			return game
+				.filterPlayer(current => {
+					if (player.getStorage("sbqingjian_round").includes(current)) {
+						return false;
+					}
+					return event.type == "discard" && event.getl?.(current)?.cards2?.length == 1;
+				})
+				.sortBySeat();
 		},
 		logTarget(event, player, name, index) {
 			return index;

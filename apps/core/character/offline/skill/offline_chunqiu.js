@@ -561,9 +561,7 @@ const skills = {
 									ai(button) {
 										const { player, skills, target } = get.event();
 										if (get.attitude(player, target) > 0 && skills.containsSome("benghuai", "tongji")) {
-											return ["benghuai", "tongji"].randomGet();
-										} else if(skills.containsSome("olbihun", "dcyiju")) {
-											return ["olbihun", "dcyiju"].randomGet();
+											return button.link == ["benghuai", "tongji"].removeArray(skills).randomGet();
 										}
 										return button.link === skills.randomGet();
 									},
