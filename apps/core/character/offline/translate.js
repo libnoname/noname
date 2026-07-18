@@ -1,6 +1,23 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	wxdl_caopi: "文心雕龙曹丕",
+	wxdl_caopi_prefix: "文心雕龙",
+	wxdlyishi: "遗世",
+	wxdlyishi_info: `限定技，出牌阶段，你可对所有其他角色发动一次${get.poptip("wxdlfangzhu")}。然后所有其他角色本局游戏获得仅能对你发动的${get.poptip("wxdlfangzhu")}。`,
+	wxdlfangzhu: "放逐",
+	wxdlfangzhu_info: "当你受到伤害后，你可令一名其他角色摸X张牌（X为你已损失体力值），然后该角色翻面。",
+	wxdlnianjun: "念君",
+	wxdlnianjun_info: `结束阶段，你可${get.poptip("sxrm_connect")}你和任意名其他角色各一张手牌；有${get.poptip("sxrm_connect")}牌的角色对彼此使用牌无次数限制。每回合最先失去${get.poptip("sxrm_connect")}牌的角色失去1点体力。`,
+	wxdlqianqian: "慊慊",
+	wxdlqianqian_info: "锁定技，你每回合使用的首张牌不能为♥️。",
+	pe_wuzetian: "武曌",
+	peersheng: "二圣",
+	peersheng_info: "一号位不以此法获得牌时，你摸等量的牌；一号位回合结束时，你可以视为使用其本回合使用过的任意张不同名的基本或普通锦囊牌。",
+	pelinchao: "临朝",
+	pelinchao_info: `限定技，一号位死去时，你可以回复所有体力并结束当前回合，然后你执行一个额外回合，并获得其身份牌（只生效身份场、斗地主）和${get.poptip("penvdi")}。`,
+	penvdi: "女帝",
+	penvdi_info: "主公技，锁定技，女性角色摸牌数+1，每回合首次受到伤害时防止之；你对对你使用过伤害牌的角色使用牌无次数限制，且你用牌每次指定其时，其减X点体力上限（X为你与其互相指定为目标的次数之和）。",
 	ym_zhaoxiang: "春秋赵襄",
 	ym_zhaoxiang_prefix: "春秋",
 	ymqianling: "潜聆",

@@ -1,4 +1,6 @@
 export default {
+	wxdl_caopi: "秋风萧瑟",
+	pe_wuzetian: "助天承圣皇帝",
 	ym_zhaoxiang: "暗香吟雪",
 	ym_guanyinping: "铁衣蔷薇",
 	ym_zhangxingcai: "兰芷锋镝",

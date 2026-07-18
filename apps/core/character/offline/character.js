@@ -1,4 +1,16 @@
 const characters = {
+	wxdl_caopi: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["wxdlyishi", "wxdlnianjun", "wxdlqianqian"],
+	},
+	pe_wuzetian: {
+		sex: "female",
+		group: "qun",
+		hp: 3,
+		skills: ["peersheng", "pelinchao"],
+	},
 	ym_zhaoxiang: {
 		sex: "female",
 		group: "shu",
