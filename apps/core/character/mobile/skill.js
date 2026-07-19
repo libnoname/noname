@@ -922,12 +922,12 @@ const skills = {
 			if (!current) {
 				const history = _status.globalHistory;
 				for (let i = history.length - 1; i >= 0; i--) {
-					game.filterPlayer2(current2 => {
+					for (const current2 of game.filterPlayer2()) {
 						const action = current2.actionHistory[i];
 						if (action.isMe && !action.isSkipped) {
 							current = current2;
 						}
-					});
+					}
 					if (current) break;
 					if (history[i].isRound) {
 						break;
