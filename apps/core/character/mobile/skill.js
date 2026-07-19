@@ -921,7 +921,7 @@ const skills = {
 			for (const current of game.filterPlayer()) {
 				const cards = current.getExpansions(skill);
 				if (cards.length) {
-					await current.loseToDiscardpile(cards);
+					await current.gain(cards, "gain2");
 				}
 			}
 		},
@@ -1030,7 +1030,7 @@ const skills = {
 								player.logSkill("rekongsheng");
 								logged = 1;
 							}
-							await current.loseToDiscardpile(cards);
+							await current.gain(cards, "gain2");
 						}
 					}
 				},
