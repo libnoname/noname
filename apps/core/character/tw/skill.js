@@ -29601,15 +29601,6 @@ const skills = {
 				await target.addAdditionalSkills(mark, [skill], true);
 				target.addTip(mark, `似故 ${get.translation(skill)}`);
 				target.setAvatar(target.name, name);
-				game.broadcastAll(skill => {
-					const info = lib.skill[skill];
-					if (info && !info.audioname2) {
-						info.audioname2 = {};
-					}
-					if (info?.audioname2) {
-						info.audioname2["tw_sxrm_caocao"] = "twsigu";
-					}
-				}, skill);
 			} else {
 				player.chat("孩子你是谁？");
 			}
@@ -29650,7 +29641,7 @@ const skills = {
 		trigger: { global: "judge" },
 		filter(event, player) {
 			if (player.hasSkill("twkuimu_used")) return false;
-			return event.player !== player && event.player.hasCards("h");
+			return event.player.hasCards("h");
 		},
 		async cost(event, trigger, player) {
 			const target = trigger.player;
