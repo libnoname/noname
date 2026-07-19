@@ -3488,7 +3488,7 @@ const skills = {
 			}
 			const name = get.info(event.name).pasts[result.number - 1],
 				skill = get.info(event.name).derivation[result.number - 1];
-			const mark = `desigu_${player.playerid}`;
+			const mark = `twsigu_${player.playerid}`;
 			if (name && skill) {
 				await target.addAdditionalSkills(mark, [skill], true);
 				//写个标记吧
