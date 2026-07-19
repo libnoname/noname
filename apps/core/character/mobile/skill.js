@@ -917,23 +917,22 @@ const skills = {
 			const current = get.info("rekongsheng").getFakeCurrent();
 			return current?.isIn() && current.hasCards("he");
 		},
-		async onremove(player, skill) {
-			for (const current of game.filterPlayer()) {
-				const cards = current.getExpansions(skill);
-				if (cards.length) {
-					await current.gain(cards, "gain2");
-				}
-			}
-		},
 		getFakeCurrent() {
 			let current = _status.currentPhase;
 			if (!current) {
 				const history = _status.globalHistory;
-				game.hasPlayer2(current2 => {
-					if (current2.actionHistory[history.length - 1].isMe) {
-						current = current2;
+				for (let i = history.length - 1; i >= 0; i--) {
+					game.filterPlayer2(current2 => {
+						const action = current2.actionHistory[i];
+						if (action.isMe && !action.isSkipped) {
+							current = current2;
+						}
+					});
+					if (current) break;
+					if (history[i].isRound) {
+						break;
 					}
-				});
+				}
 			}
 			return current;
 		},
