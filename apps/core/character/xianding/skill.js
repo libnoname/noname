@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { lib, game, ui, get, ai, _status } from "noname";
 import cards from "../sp2/card.js";
+import { CacheContext } from "../../noname/library/cache/cacheContext.js";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
@@ -3740,22 +3741,75 @@ const skills = {
 			const result = await player
 				.chooseTarget({
 					prompt: `震弓：请分配${num}点伤害给其他角色`,
-					selectTarget: [num, num + 1],
+					selectTarget: [num, num],
 					forced: true,
 					filterTarget(card, player, target) {
-						const { targets } = ui.selected;
-						if (targets.length >= get.event().selectTarget[0]) {
-							return false;
-						}
 						return target != player;
 					},
+					complexTarget: true,
 					ai(target) {
-						const eff = get.damageEffect(target, get.player(), get.player());
-						if (ui.selected.targets.includes(target)) {
-							return eff;
+						if (!_status.event.extraAIed) {
+							_status.event.extraAIed = true;
+							const { player, num, extraAI, check } = get.event();
+							extraAI(check, player, num);
 						}
-						return eff + 2;
+						return 0;
 					},
+					check(target, targets) {
+						let damage = get.damageEffect(target, player, player);
+						if (damage <= 0) {
+							return 0;
+						}
+						if (ui.selected.targets.includes(target)) {
+							damage *= 1 - get.numOf(ui.selected.targets, target) / get.event().num;
+						}
+						return damage;
+					},
+					extraAI(check, player, num) {
+						const event = get.event();
+						const range = [num, num],
+							forced = event.forced;
+						let ok = false;
+						let iwhile = 100;
+						let	targets = game.filterPlayer(current => current != player);
+						let i, j, targets2, effect;
+						while (iwhile--) {
+							if (ui.selected.targets.length >= range[0]) {
+								ok = true;
+							}
+							targets2 = targets.slice(0);
+							let ix = 0;
+							CacheContext.setCacheContext(new CacheContext({ lib, game, get }));
+							CacheContext.setInCacheEnvironment(true);
+							let checkix = check(targets[0], targets2);
+							for (i = 1; i < targets.length; i++) {
+								let checkixtmp = check(targets[i], targets2);
+								if (checkixtmp > checkix) {
+									ix = i;
+									checkix = checkixtmp;
+								}
+							}
+							if (check(targets[ix]) <= 0) {
+								if (!forced || ok) {
+									CacheContext.setInCacheEnvironment(false);
+									CacheContext.removeCacheContext();
+									return;
+								}
+							}
+							CacheContext.setInCacheEnvironment(false);
+							CacheContext.removeCacheContext();
+							targets[ix].classList.add("selected");
+							ui.selected.targets.push(targets[ix]);
+							game.check();
+							if (ui.selected.targets.length >= range[0]) {
+								ok = true;
+							}
+							if (ui.selected.targets.length >= range[1]) {
+								return;
+							}
+						}
+					},
+					num,
 				})
 				.set("promptbar", "none")
 				.set("custom", {

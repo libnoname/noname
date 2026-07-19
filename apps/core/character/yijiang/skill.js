@@ -6088,7 +6088,7 @@ const skills = {
 		trigger: { player: "phaseJieshuBegin" },
 		logAudio: () => 2,
 		async cost(event, trigger, player) {
-			event.result = await await player
+			event.result = await player
 				.chooseCardTarget({
 					filterTarget(card, player, target) {
 						return target != player && target.countCards("he") > 0;
@@ -6100,7 +6100,7 @@ const skills = {
 					ai2(target) {
 						return 1 - get.attitude(_status.event.player, target);
 					},
-					prompt: get.prompt2("jieyue"),
+					prompt: get.prompt2(event.skill),
 				})
 				.forResult();
 		},

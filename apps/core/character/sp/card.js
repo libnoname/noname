@@ -1,6 +1,18 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const cards = {
+	// 螭纹玉佩
+	chiwenyupei: {
+		fullskin: true,
+		cardcolor: "diamond",
+		type: "equip",
+		subtype: "equip5",
+		skills: ["chiwenyupei"],
+		ai: {
+			equipValue: 5,
+			basic: { equipValue: 5 },
+		},
+	},
 	//曹婴三种类型
 	caoying_basic: {
 		fullskin: true,
@@ -312,10 +324,7 @@ const cards = {
 		skills: ["zhuangshu_basic"],
 		forceDie: true,
 		onLose() {
-			if (
-				(!event.getParent(2) || event.getParent(2).name != "swapEquip") &&
-				(event.getParent().type != "equip" || event.getParent().swapEquip)
-			) {
+			if ((!event.getParent(2) || event.getParent(2).name != "swapEquip") && (event.getParent().type != "equip" || event.getParent().swapEquip)) {
 				cards.forEach(card => {
 					card.fix();
 					card.remove();
@@ -343,10 +352,7 @@ const cards = {
 		forceDie: true,
 		skills: ["zhuangshu_trick"],
 		onLose() {
-			if (
-				(!event.getParent(2) || event.getParent(2).name != "swapEquip") &&
-				(event.getParent().type != "equip" || event.getParent().swapEquip)
-			) {
+			if ((!event.getParent(2) || event.getParent(2).name != "swapEquip") && (event.getParent().type != "equip" || event.getParent().swapEquip)) {
 				cards.forEach(card => {
 					card.fix();
 					card.remove();
@@ -369,10 +375,7 @@ const cards = {
 		forceDie: true,
 		inherit: "zhuangshu_basic",
 		onLose() {
-			if (
-				(!event.getParent(2) || event.getParent(2).name != "swapEquip") &&
-				(event.getParent().type != "equip" || event.getParent().swapEquip)
-			) {
+			if ((!event.getParent(2) || event.getParent(2).name != "swapEquip") && (event.getParent().type != "equip" || event.getParent().swapEquip)) {
 				cards.forEach(card => {
 					card.fix();
 					card.remove();
@@ -396,10 +399,7 @@ const cards = {
 		},
 		async onLose(event, trigger, player) {
 			const { cards } = event;
-			if (
-				(!event.getParent(2) || event.getParent(2).name != "swapEquip") &&
-				(event.getParent().type != "equip" || event.getParent().swapEquip)
-			) {
+			if ((!event.getParent(2) || event.getParent(2).name != "swapEquip") && (event.getParent().type != "equip" || event.getParent().swapEquip)) {
 				cards.forEach(card => {
 					card.fix();
 					card.remove();

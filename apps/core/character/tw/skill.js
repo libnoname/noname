@@ -7264,6 +7264,7 @@ const skills = {
 			}
 		},
 		group: "twguose_effect",
+		global: "twguose_ai",
 		subSkill: {
 			effect: {
 				audio: "twguose",
@@ -7289,11 +7290,18 @@ const skills = {
 						});
 					game.log(player, "将", get.translation(card), "改为跳过弃牌阶段");
 				},
+			},
+			ai: {
 				ai: {
 					effect: {
-						target(card) {
-							if (get.name(card) === "lebu") {
-								return [-1, 0];
+						target(card, player, target, result2) {
+							if (card.name != "lebu") {
+								return;
+							}
+							if (game.hasPlayer(current => current.hasSkill("twguose") && get.attitude(current, target) > 1)) {
+								if (result2 < 0) {
+									return [-1, 0];
+								}
 							}
 						},
 					},

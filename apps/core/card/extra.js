@@ -297,11 +297,11 @@ export default {
 				event.videoId = videoId;
 				//返回玩家弃牌/其他操作的结果，给出默认逻辑
 				event.chooseToDiscard ??= async (event, player, target) => {
-					const discardPostion = event.discardPostion === undefined ? "h" : event.discardPostion;
+					const discardPosition = event.discardPosition === undefined ? "h" : event.discardPosition;
 					const cards2 = event.cards2;
 					const filterDiscard = event.filterDiscard === undefined ? { suit: get.suit(cards2[0]) } : event.filterDiscard;
 					const result = await player
-						.chooseToDiscard(discardPostion, filterDiscard)
+						.chooseToDiscard(discardPosition, filterDiscard)
 						.set("ai", card => {
 							const evt = _status.event.getParent();
 							if (get.damageEffect(evt.target, evt.player, evt.player, "fire") > 0) {
