@@ -3464,6 +3464,21 @@ const skills = {
 	},
 	sxrmsigu: {
 		audio: 2,
+		audioname2: {
+			chengong: "zhichi_sxrm_caocao",
+			re_xiahoudun: "reganglie_sxrm_caocao",
+			re_simayi: "refankui_sxrm_caocao",
+			re_guojia: "reyiji_sxrm_caocao",
+			ol_xunyu: "oljieming_sxrm_caocao",
+			sb_caopi: "fangzhu_sxrm_caocao",
+			jushou: "shibei_sxrm_caocao",
+			re_caochong: "rechengxiang_sxrm_caocao",
+			re_xunyou: "zhiyu_sxrm_caocao",
+			yangxiu: "jilei_sxrm_caocao",
+			chengyu: "benyu_sxrm_caocao",
+			xizhicai: "chouce_sxrm_caocao",
+			shen_guanyu: "wuhun_sxrm_caocao",
+		},
 		enable: "phaseUse",
 		filter(event, player) {
 			return game.hasPlayer(current => player !== current);
@@ -3531,7 +3546,7 @@ const skills = {
 				damage: 1,
 			},
 		},
-		pasts: ["chengong", "re_xiahoudun", "re_simayi", "re_guojia", "ol_xunyu", "sb_caopi", "shenpei", "re_caochong", "re_xunyou", "yangxiu", "chengyu", "xizhicai", "shen_guanyu"],
+		pasts: ["chengong", "re_xiahoudun", "re_simayi", "re_guojia", "ol_xunyu", "sb_caopi", "jushou", "re_caochong", "re_xunyou", "yangxiu", "chengyu", "xizhicai", "shen_guanyu"],
 		derivation: ["zhichi", "reganglie", "refankui", "new_reyiji", "oljieming", "fangzhu", "shibei", "rechengxiang", "zhiyu", "jilei", "benyu", "chouce", "new_wuhun"],
 	},
 	//刘备

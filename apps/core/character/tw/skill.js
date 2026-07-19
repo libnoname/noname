@@ -29237,7 +29237,7 @@ const skills = {
 	},
 	//tw疑华佗 疑？☁ -by子右
 	twmiehai: {
-		audio: 2,
+		audio: "sxrmmiehai",
 		enable: "chooseToUse",
 		filterCard: true,
 		selectCard: 2,
@@ -29308,7 +29308,7 @@ const skills = {
 	},
 	//tw疑刘备 哒哒哒哒哒 by子右
 	twchengbian: {
-		audio: 2,
+		audio: "sxrmchengbian",
 		trigger: {
 			player: ["phaseZhunbeiBegin", "phaseJieshuBegin"],
 		},
@@ -29409,7 +29409,7 @@ const skills = {
 	},
 	//tw疑曹操 好想玩袁神 ☁袁神 by子右
 	twkuxin: {
-		audio: 2,
+		audio: "sxrmkuxin",
 		trigger: { player: "damageEnd" },
 		filter(event, player) {
 			return game.hasPlayer((current) => current !== player && current.countCards("h") > 0);
@@ -29579,7 +29579,22 @@ const skills = {
 		}
 	},
 	twsigu: {
-		audio: 2,
+		audio: "sxrmsigu",
+		audioname2: {
+			chengong: "zhichi_sxrm_caocao",
+			re_xiahoudun: "reganglie_sxrm_caocao",
+			re_simayi: "refankui_sxrm_caocao",
+			re_guojia: "reyiji_sxrm_caocao",
+			ol_xunyu: "oljieming_sxrm_caocao",
+			sb_caopi: "fangzhu_sxrm_caocao",
+			jushou: "shibei_sxrm_caocao",
+			re_caochong: "rechengxiang_sxrm_caocao",
+			re_xunyou: "zhiyu_sxrm_caocao",
+			yangxiu: "jilei_sxrm_caocao",
+			chengyu: "benyu_sxrm_caocao",
+			xizhicai: "chouce_sxrm_caocao",
+			shen_guanyu: "wuhun_sxrm_caocao",
+		},
 		enable: "phaseUse",
 		filter(event, player) {
 			return game.hasPlayer((current) => player !== current);
@@ -29633,7 +29648,7 @@ const skills = {
 				damage: 1
 			}
 		},
-		pasts: ["chengong", "re_xiahoudun", "re_simayi", "re_guojia", "ol_xunyu", "sb_caopi", "shenpei", "re_caochong", "re_xunyou", "yangxiu", "chengyu", "xizhicai", "shen_guanyu"],
+		pasts: ["chengong", "re_xiahoudun", "re_simayi", "re_guojia", "ol_xunyu", "sb_caopi", "jushou", "re_caochong", "re_xunyou", "yangxiu", "chengyu", "xizhicai", "shen_guanyu"],
 		derivation: ["zhichi", "reganglie", "refankui", "new_reyiji", "oljieming", "fangzhu", "shibei", "rechengxiang", "zhiyu", "jilei", "benyu", "chouce", "new_wuhun"]
 	},
 	twkuimu: {
@@ -29734,7 +29749,7 @@ const skills = {
 	},
 	//tw疑伏皇后 当当当当当 看精彩纷纷 ☁袁神 by子右
 	twmitu: {
-		audio: 2,
+		audio: "sxrmmitu",
 		trigger: {
 			player: "phaseZhunbeiBegin",
 		},
@@ -29854,7 +29869,7 @@ const skills = {
 		},
 	},
 	twqianliu: {
-		audio: 2,
+		audio: "sxrmqianliu",
 		trigger: {
 			global: "useCardToTargeted",
 		},
