@@ -9379,27 +9379,28 @@ const skills = {
 		trigger: { target: "useCardToTarget" },
 		usable: 1,
 		filter(event, player) {
-			return event.player != player && event.targets.length == 1;
+			return event.player !== player && event.targets.length === 1;
 		},
 		check(event, player) {
 			return get.effect(player, event.card, event.player, player) < 0;
 		},
-		content() {
-			"step 0";
-			player.judge(function (card) {
-				if (get.number(card) > 6) {
-					return 2;
-				}
-				return 0;
-			}).judge2 = function (result) {
-				return result.bool ? true : false;
-			};
-			"step 1";
-			if (result.bool) {
-				trigger.targets.length = 0;
-				trigger.getParent().triggeredTargets2.length = 0;
-				trigger.cancel();
+		async content(event, trigger, player) {
+			const result = await player
+				.judge({
+					judge(card) {
+						return get.number(card) > 6 ? 2 : 0;
+					},
+					judge2(result) {
+						return result.bool;
+					},
+				})
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
+			trigger.targets.length = 0;
+			trigger.getParent().triggeredTargets2.length = 0;
+			trigger.cancel();
 		},
 	},
 	//糜夫人
