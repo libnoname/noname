@@ -9304,32 +9304,33 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filterTarget: lib.filter.notMe,
-		content() {
-			"step 0";
-			target
-				.chooseToUse(
-					function (card, player, event) {
-						if (get.name(card) != "sha") {
+		async content(event, trigger, player) {
+			const target = event.target;
+			const result = await target
+				.chooseToUse({
+					prompt: `引裾：对${get.translation(player)}使用一张杀，或跳过下回合的出牌阶段和弃牌阶段`,
+					filterCard(card, player, event) {
+						if (get.name(card) !== "sha") {
 							return false;
 						}
-						return lib.filter.filterCard.apply(this, arguments);
+						return lib.filter.filterCard(card, player, event);
 					},
-					"引裾：对" + get.translation(player) + "使用一张杀，或跳过下回合的出牌阶段和弃牌阶段"
-				)
+					filterTarget(card, player, target) {
+						if (target !== _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
+							return false;
+						}
+						return lib.filter.targetEnabled(card, player, target);
+					},
+				})
 				.set("targetRequired", true)
 				.set("complexSelect", true)
 				.set("complexTarget", true)
-				.set("filterTarget", function (card, player, target) {
-					if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
-						return false;
-					}
-					return lib.filter.targetEnabled.apply(this, arguments);
-				})
-				.set("sourcex", player);
-			"step 1";
-			if (!result.bool) {
-				target.addSkill("spyinju2");
+				.set("sourcex", player)
+				.forResult();
+			if (result.bool) {
+				return;
 			}
+			target.addSkill("spyinju2");
 		},
 		ai: {
 			order: 1,
@@ -9340,13 +9341,13 @@ const skills = {
 					if (!target.canUse("sha", player)) {
 						return 0;
 					}
-					if (target.countCards("h") == 0) {
+					if (target.countCards("h") === 0) {
 						return 0;
 					}
-					if (target.countCards("h") == 1) {
+					if (target.countCards("h") === 1) {
 						return -0.1;
 					}
-					if (player.countCards("h", "shan") == 0) {
+					if (player.countCards("h", "shan") === 0) {
 						return -1;
 					}
 					if (player.hp < 2) {
@@ -9363,7 +9364,7 @@ const skills = {
 		forced: true,
 		charlotte: true,
 		sourceSkill: "spyinju",
-		content() {
+		async content(event, trigger, player) {
 			player.skip("phaseUse");
 			player.skip("phaseDiscard");
 			player.removeSkill("spyinju2");
