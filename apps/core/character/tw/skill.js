@@ -29588,21 +29588,6 @@ const skills = {
 	},
 	twsigu: {
 		audio: "sxrmsigu",
-		audioname2: {
-			chengong: "zhichi_sxrm_caocao",
-			re_xiahoudun: "reganglie_sxrm_caocao",
-			re_simayi: "refankui_sxrm_caocao",
-			re_guojia: "reyiji_sxrm_caocao",
-			ol_xunyu: "oljieming_sxrm_caocao",
-			sb_caopi: "fangzhu_sxrm_caocao",
-			jushou: "shibei_sxrm_caocao",
-			re_caochong: "rechengxiang_sxrm_caocao",
-			re_xunyou: "zhiyu_sxrm_caocao",
-			yangxiu: "jilei_sxrm_caocao",
-			chengyu: "benyu_sxrm_caocao",
-			xizhicai: "chouce_sxrm_caocao",
-			shen_guanyu: "wuhun_sxrm_caocao",
-		},
 		enable: "phaseUse",
 		filter(event, player) {
 			return game.hasPlayer((current) => player !== current);
@@ -29624,6 +29609,10 @@ const skills = {
 				await target.addAdditionalSkills(mark, [skill], true);
 				target.addTip(mark, `似故 ${get.translation(skill)}`);
 				target.setAvatar(target.name, name);
+				const voice = get.info(event.name).voices[name];
+				if (voice) {
+					game.playAudio(`../audio/skill/${voice}.mp3`);
+				}
 			} else {
 				player.chat("孩子你是谁？");
 			}
@@ -29657,7 +29646,22 @@ const skills = {
 			}
 		},
 		pasts: ["chengong", "re_xiahoudun", "re_simayi", "re_guojia", "ol_xunyu", "sb_caopi", "jushou", "re_caochong", "re_xunyou", "yangxiu", "chengyu", "xizhicai", "shen_guanyu"],
-		derivation: ["zhichi", "reganglie", "refankui", "new_reyiji", "oljieming", "fangzhu", "shibei", "rechengxiang", "zhiyu", "jilei", "benyu", "chouce", "new_wuhun"]
+		derivation: ["zhichi", "reganglie", "refankui", "new_reyiji", "oljieming", "fangzhu", "shibei", "rechengxiang", "zhiyu", "jilei", "benyu", "chouce", "new_wuhun"],
+		voices: {
+			chengong: "zhichi_sxrm_caocao",
+			re_xiahoudun: "reganglie_sxrm_caocao",
+			re_simayi: "refankui_sxrm_caocao",
+			re_guojia: "reyiji_sxrm_caocao",
+			ol_xunyu: "oljieming_sxrm_caocao",
+			sb_caopi: "fangzhu_sxrm_caocao",
+			jushou: "shibei_sxrm_caocao",
+			re_caochong: "rechengxiang_sxrm_caocao",
+			re_xunyou: "zhiyu_sxrm_caocao",
+			yangxiu: "jilei_sxrm_caocao",
+			chengyu: "benyu_sxrm_caocao",
+			xizhicai: "chouce_sxrm_caocao",
+			shen_guanyu: "wuhun_sxrm_caocao"
+		}
 	},
 	twkuimu: {
 		audio: 2,
@@ -29779,10 +29783,10 @@ const skills = {
 			for (const target of event.targets) {
 				const next = target.draw();
 				next.gaintag.add("twmitu");
-				const result = await next.forResult();
-				if (result?.cards?.length) {
-					await target.showCards(result.cards, "密图");
-					event[target.playerid] = result.cards[0];
+				const result = (await next.forResult()).cards;
+				if (result?.length) {
+					await target.showCards(result, "密图");
+					event[target.playerid] = result[0];
 				}
 				target.addTempSkill("twmitu_ai", "phaseChange");
 			}
@@ -29794,7 +29798,7 @@ const skills = {
 					.chooseTarget(
 						`为${get.translation(target)}指定拼点目标`,
 						(card, player, target) => {
-							return get.event("comparer").canCompare(target);
+							return get.event().comparer.canCompare(target);
 						},
 						true
 					)
@@ -29842,7 +29846,7 @@ const skills = {
 							return;
 						}
 						if (num > 0 && get.itemtype(card) === "card" && card.hasGaintag("twmitu")) {
-							return -114514;
+							return -666;
 						}
 					},
 				},
