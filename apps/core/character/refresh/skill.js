@@ -717,7 +717,7 @@ const skills = {
 	//不想突破可以不突破的界曹冲
 	rechengxiang: {
 		audio: 2,
-		audioname2: { sxrm_caocao: "rechengxiang_sxrm_caocao" },
+		audioname2: { sxrm_caocao: "rechengxiang_sxrm_caocao", tw_sxrm_caocao: "rechengxiang_sxrm_caocao" },
 		inherit: "chengxiang",
 		async callback(event, trigger, player) {
 			if (
@@ -3007,7 +3007,7 @@ const skills = {
 	//界荀彧
 	oljieming: {
 		audio: 2,
-		audioname2: { sxrm_caocao: "oljieming_sxrm_caocao" },
+		audioname2: { sxrm_caocao: "oljieming_sxrm_caocao", tw_sxrm_caocao: "oljieming_sxrm_caocao" },
 		trigger: { player: ["damageEnd", "die"] },
 		forceDie: true,
 		filter(event, player) {
@@ -14300,7 +14300,7 @@ const skills = {
 	new_reyiji: {
 		audio: "reyiji",
 		audioname: ["yj_sb_guojia", "yj_sb_guojia_shadow"],
-		audioname2: { sxrm_caocao: "reyiji_sxrm_caocao" },
+		audioname2: { sxrm_caocao: "reyiji_sxrm_caocao", tw_sxrm_caocao: "reyiji_sxrm_caocao" },
 		trigger: {
 			player: "damageEnd",
 		},
@@ -15810,7 +15810,7 @@ const skills = {
 	},
 	refankui: {
 		audio: 2,
-		audioname2: { boss_chujiangwang: "boss_chujiangwang_fankui", sxrm_caocao: "refankui_sxrm_caocao" },
+		audioname2: { boss_chujiangwang: "boss_chujiangwang_fankui", sxrm_caocao: "refankui_sxrm_caocao", tw_sxrm_caocao: "refankui_sxrm_caocao" },
 		trigger: { player: "damageEnd" },
 		filter(event, player) {
 			return event.source && event.source.countGainableCards(player, event.source != player ? "he" : "e") && event.num > 0;
@@ -15905,7 +15905,7 @@ const skills = {
 	},
 	reganglie: {
 		audio: 2,
-		audioname2: { sxrm_caocao: "reganglie_sxrm_caocao" },
+		audioname2: { sxrm_caocao: "reganglie_sxrm_caocao", tw_sxrm_caocao: "reganglie_sxrm_caocao" },
 		trigger: { player: "damageEnd" },
 		getIndex(event, player, triggername) {
 			if (get.mode() == "guozhan") {

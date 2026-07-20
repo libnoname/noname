@@ -34037,7 +34037,7 @@ const skills = {
 	},
 	chouce: {
 		audio: 2,
-		audioname2: { sxrm_caocao: "chouce_sxrm_caocao" },
+		audioname2: { sxrm_caocao: "chouce_sxrm_caocao", tw_sxrm_caocao: "chouce_sxrm_caocao" },
 		trigger: { player: "damageEnd" },
 		getIndex: event => event.num,
 		filter(event) {
@@ -37694,7 +37694,7 @@ const skills = {
 	},
 	benyu: {
 		audio: 2,
-		audioname2: { sxrm_caocao: "benyu_sxrm_caocao" },
+		audioname2: { sxrm_caocao: "benyu_sxrm_caocao", tw_sxrm_caocao: "benyu_sxrm_caocao" },
 		trigger: { player: "damageEnd" },
 		filter(event, player) {
 			if (!event.source) {
@@ -40873,7 +40873,7 @@ const skills = {
 	jilei: {
 		trigger: { player: "damageEnd" },
 		audio: 2,
-		audioname2: { sxrm_caocao: "jilei_sxrm_caocao" },
+		audioname2: { sxrm_caocao: "jilei_sxrm_caocao", tw_sxrm_caocao: "jilei_sxrm_caocao" },
 		filter(event) {
 			return event.source && event.source.isIn();
 		},
