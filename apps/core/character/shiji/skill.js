@@ -4835,14 +4835,13 @@ const skills = {
 	yaohu: {
 		audio: "yinlang",
 		trigger: { player: "phaseBegin" },
-		forced: true,
 		locked: false,
 		filter(event, player) {
 			return !player.hasSkill("yaohu_round") && game.hasPlayer(current => current.group && current.group !== "unknown");
 		},
 		async cost(event, trigger, player) {
 			const list = game
-				.filterPlayer(current => current.group && current.group !== "unknown")
+				.filterPlayer(current => current.group != null && current.group !== "unknown")
 				.map(current => current.group)
 				.unique();
 			list.sort((a, b) => lib.group.indexOf(a) - lib.group.indexOf(b));
@@ -4901,7 +4900,6 @@ const skills = {
 			gain: {
 				audio: "yinlang",
 				trigger: { global: "phaseUseBegin" },
-				forced: true,
 				locked: false,
 				filter(event, player) {
 					return event.player !== player && event.player.group === player.storage.yaohu && event.player.isIn() && player.hasExpansions("jutu");
