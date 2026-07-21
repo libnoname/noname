@@ -37,9 +37,10 @@
 | `apps\core\noname\game\index.js` | `7036-7040` | 修改 | 把纯数据载荷作为第四个 `send` 实参发送。 |
 | `apps\core\noname\library\poptip.js` | `208-244` | 只读参考 | 已支持显式 `id`、名称和 `createDialog` 注册；本计划不改动。 |
 | `apps\core\noname\get\index.js` | `2302-2342` | 只读参考 | 提供 `get.cardsInfo`、`get.infoCard`、`get.infoCards`；本计划不复制序列化逻辑。 |
-| `docs\superpowers\specs\2026-07-21-online-game-over-handcards-design.md` | `1-247` | 只读参考 | 设计约束和验收来源。 |
+| `docs\superpowers\specs\2026-07-21-online-game-over-handcards-design.md` | `1-247` | 修改 | 同步严格 guard、恢复 postcondition 和测试矩阵。 |
+| `docs\superpowers\plans\2026-07-22-online-game-over-handcards.md` | 本文 | 修改 | 同步 JSDoc/helper 接口、malformed nature 注入步骤和验证矩阵。 |
 
-不创建自动化测试文件。失败复现、边界断言和回归检查都通过项目现有浏览器运行时执行；静态验证使用现有 lint/build 命令。
+不创建提交到仓库的自动化测试文件。严格卡牌恢复边界使用 `.superpowers\sdd\strict-card-recovery-assertions.mjs` 这类 ignored Node/VM/source boundary script 先 RED 后 GREEN 记录；浏览器回归仍通过项目现有运行时执行，静态验证使用现有 lint/build 命令。
 
 当前 `additionaldead` 段虽然创建了一个手牌 `td`，但没有执行 `tr.appendChild(td)`，因此页面没有第三个可见手牌入口。为遵守“不改变结算 HTML”的设计边界，本计划只统一实际显示的存活和阵亡两处入口，不补列、不为不可见入口发送多余载荷。
 
@@ -74,10 +75,55 @@
 function createGameOverHandcardPoptip({ poptipId, name, cards }) {}
 
 /**
+ * 判断来自网络且会作为普通对象属性读取的字符串是否安全。
+ *
+ * @param {unknown} value
+ * @returns {value is string}
+ */
+function isGameOverHandcardSafeKey(value) {}
+
+/**
+ * @param {unknown} value
+ * @returns {value is string | null | undefined}
+ */
+function isGameOverHandcardSuit(value) {}
+
+/**
+ * @param {unknown} value
+ * @returns {value is number | string | null | undefined}
+ */
+function isGameOverHandcardNumber(value) {}
+
+/**
+ * @param {unknown} value
+ * @returns {string | null}
+ */
+function normalizeGameOverHandcardNature(value) {}
+
+/**
+ * @param {unknown} value
+ * @returns {value is string | null | undefined}
+ */
+function isGameOverHandcardNature(value) {}
+
+/**
+ * @param {unknown} value
+ * @returns {value is string | null | undefined}
+ */
+function isGameOverHandcardCardId(value) {}
+
+/**
  * @param {unknown} value
  * @returns {value is GameOverHandcardCardInfo}
  */
 function isGameOverHandcardCardInfo(value) {}
+
+/**
+ * @param {unknown} card
+ * @param {GameOverHandcardCardInfo} info
+ * @returns {card is Card}
+ */
+function isRecoveredGameOverHandcardCard(card, info) {}
 
 /**
  * @param {unknown} value
@@ -518,28 +564,87 @@ console.assert(
 
 - [ ] **Step 2: 增加卡牌条目和载荷类型守卫**
 
-在 `createGameOverHandcardPoptip` 后加入：
+在 `createGameOverHandcardPoptip` 后加入小型 guard/normalization helper，避免把主 guard 写成难读的大表达式：
 
 ```js
 const GAME_OVER_HANDCARD_POPTIP_ID_PATTERN = /^game_over_handcards_\d+$/;
+const GAME_OVER_HANDCARD_CARD_ID_PATTERN = /^\d+$/;
+const GAME_OVER_HANDCARD_DANGEROUS_KEYS = new Set(["__proto__", "prototype", "constructor"]);
 
 /**
+ * 判断来自网络且会作为普通对象属性读取的字符串是否安全。
+ *
+ * @param {unknown} value
+ * @returns {value is string}
+ */
+function isGameOverHandcardSafeKey(value) {
+	return typeof value === "string" && value.length > 0 && !GAME_OVER_HANDCARD_DANGEROUS_KEYS.has(value) && !(value in Object.prototype);
+}
+
+/**
+ * 校验 wire 花色；只接受 get.cardsInfo 产生的空值或当前牌堆注册花色。
+ *
+ * @param {unknown} value
+ * @returns {value is string | null | undefined}
+ */
+function isGameOverHandcardSuit(value) {
+	return value == null || (typeof value === "string" && lib.suits.includes(value));
+}
+
+/**
+ * 校验 wire 点数；禁止对象、函数和会让 Card.init 得到非有限数值的 number。
+ *
+ * @param {unknown} value
+ * @returns {value is number | string | null | undefined}
+ */
+function isGameOverHandcardNumber(value) {
+	return value == null || typeof value === "string" || (typeof value === "number" && Number.isFinite(value));
+}
+
+/**
+ * 将 wire 或 Card 上的属性字符串规范化为 Card.$init 使用的排序复合属性。
+ * nullish 与空字符串都视为无属性；其他值必须拆成已注册且无空白的非空 token。
+ *
+ * @param {unknown} value
+ * @returns {string | null} 合法时返回规范化属性字符串，无属性返回空字符串，非法返回 null
+ */
+function normalizeGameOverHandcardNature(value) {
+	if (value == null || value === "") return "";
+	if (typeof value !== "string") return null;
+	const natures = get.natureList(value);
+	if (!natures.length || natures.some(nature => !nature || nature !== nature.trim() || !lib.nature.has(nature))) return null;
+	return natures.slice().sort(lib.sort.nature).join(lib.natureSeparator);
+}
+
+/**
+ * 校验 wire 属性；在进入 Card.init 前拒绝 classList.add 会抛错的空白或未知 token。
+ *
+ * @param {unknown} value
+ * @returns {value is string | null | undefined}
+ */
+function isGameOverHandcardNature(value) {
+	return normalizeGameOverHandcardNature(value) !== null;
+}
+
+/**
+ * 校验 wire cardid；只接受 get.id 现有数字字符串形态，避免对象或原型键进入 cardOL。
+ *
+ * @param {unknown} value
+ * @returns {value is string | null | undefined}
+ */
+function isGameOverHandcardCardId(value) {
+	return value == null || (typeof value === "string" && GAME_OVER_HANDCARD_CARD_ID_PATTERN.test(value));
+}
+
+/**
+ * 校验单张结算手牌的 wire tuple。该边界只阻止 payload primitive 触发已知
+ * Card.init 半初始化路径，不要求卡牌名必须已存在于 lib.card，以保留扩展兼容性。
+ *
  * @param {unknown} value
  * @returns {value is GameOverHandcardCardInfo}
  */
 function isGameOverHandcardCardInfo(value) {
-	return (
-		Array.isArray(value) &&
-		value.length >= 3 &&
-		value.length <= 5 &&
-		typeof value[2] === "string" &&
-		(value[0] == null || typeof value[0] === "string") &&
-		(value[1] == null ||
-			typeof value[1] === "number" ||
-			typeof value[1] === "string") &&
-		(value[3] == null || typeof value[3] === "string") &&
-		(value[4] == null || typeof value[4] === "string")
-	);
+	return Array.isArray(value) && value.length >= 3 && value.length <= 5 && isGameOverHandcardSuit(value[0]) && isGameOverHandcardNumber(value[1]) && isGameOverHandcardSafeKey(value[2]) && isGameOverHandcardNature(value[3]) && isGameOverHandcardCardId(value[4]);
 }
 
 /**
@@ -562,13 +667,29 @@ function isGameOverHandcardPoptipPayload(value) {
 }
 ```
 
-预期：零长度 `cards` 通过；非数组、长度小于三或大于五、缺少字符串卡牌名的条目失败；suit/nature/cardid 只接受 string/nullish，number 只接受 number/string/nullish，拒绝对象和函数。
+预期：零长度 `cards` 通过；非数组、长度小于三或大于五、缺少非空安全卡牌名的条目失败。suit 只接受 nullish 或 `lib.suits` 中的字符串；number 只接受 nullish、字符串或有限 number；name 拒绝 `__proto__`、`prototype`、`constructor` 和原型链键但不要求 `hasOwn(lib.card)`，保留 `huosha`/`leisha`/`cisha` 与扩展卡名；nature 只接受 nullish、空字符串或 `get.natureList(value)` 拆出的已注册非空 token；cardid 只接受 nullish 或 `get.id` 数字字符串。
 
 - [ ] **Step 3: 增加逐项恢复函数和精确告警**
 
 继续加入：
 
 ```js
+/**
+ * 校验 get.infoCards 返回的 Card 是否完整对应其可能被 Card.init 原地规范化后的 wire tuple。
+ *
+ * @param {unknown} card
+ * @param {GameOverHandcardCardInfo} info
+ * @returns {card is Card}
+ */
+function isRecoveredGameOverHandcardCard(card, info) {
+	if (card === info || Array.isArray(card) || typeof card !== "object" || card === null) return false;
+	if (card.suit !== info[0] || card.number !== (parseInt(info[1]) || 0) || card.name !== info[2]) return false;
+	const expectedNature = normalizeGameOverHandcardNature(info[3]);
+	const actualNature = normalizeGameOverHandcardNature(card.nature);
+	if (expectedNature === null || actualNature === null || expectedNature !== actualNature) return false;
+	return info[4] == null || card.cardid === info[4];
+}
+
 /**
  * 恢复客机结算手牌 poptip；参数缺省时保持旧调用行为。
  *
@@ -623,17 +744,7 @@ function restoreGameOverHandcardPoptips(handcardPoptips) {
 		if (
 			!Array.isArray(cards) ||
 			cards.length !== payload.cards.length ||
-			cards.some((card, cardIndex) => {
-				const wireName = payload.cards[cardIndex]?.[2];
-				return (
-					card === payload.cards[cardIndex] ||
-					Array.isArray(card) ||
-					typeof card !== "object" ||
-					card === null ||
-					typeof card.name !== "string" ||
-					card.name !== wireName
-				);
-			})
+			cards.some((card, cardIndex) => !isRecoveredGameOverHandcardCard(card, payload.cards[cardIndex]))
 		) {
 			console.warn(
 				`联机结算手牌恢复结果无效（poptipId: ${payload.poptipId}, position: ${payload.position}）`,
@@ -651,7 +762,7 @@ function restoreGameOverHandcardPoptips(handcardPoptips) {
 }
 ```
 
-预期：只捕获 `get.infoCards` 的转换错误；无宽泛包裹整个循环。缺失 Player 只告警，不阻止快照注册。
+预期：只捕获 `get.infoCards` 的转换错误；无宽泛包裹整个循环。`get.infoCards` 调用后按被 `Card.init` 原地规范化后的 tuple 比较对象/non-array、suit、`parseInt(wireNumber) || 0` 后的 number、name、经 `get.natureList`/`lib.nature`/`lib.sort.nature`/`lib.natureSeparator` 规范化的 nature，以及存在 wire cardid 时的 cardid；任一不匹配都告警并跳过该 payload。缺失 Player 只告警，不阻止快照注册。
 
 - [ ] **Step 4: 在插入 HTML 前恢复收到的第三参数**
 
@@ -728,6 +839,12 @@ console.assert(
 				name: "快照角色",
 				cards: [],
 			},
+			{
+				poptipId: "game_over_handcards_10000",
+				position: "0",
+				name: "坏属性",
+				cards: [[null, null, "shan", "bad nature", null]],
+			},
 			null,
 			{
 				poptipId: "invalid-id",
@@ -750,7 +867,7 @@ console.assert(
 
 结束游戏后，客机预期：
 
-1. 控制台分别出现缺失角色、空对象、非法 ID、坏 `cards`、重复 ID 的明确 `console.warn`。
+1. 控制台分别出现缺失角色、malformed nature 载荷无效、空对象、非法 ID、坏 `cards`、重复 ID 的明确 `console.warn`；malformed nature 使用合法独立 `poptipId`，不得先被重复 ID 拦截。
 2. 正常存活和阵亡角色入口仍可点击。
 3. 新增的“快照角色”入口已注册，点击后显示“（没有手牌）”。
 4. 没有未捕获异常，胜负结果和退出按钮正常。
@@ -866,6 +983,7 @@ Test-Path $baseline
 
 ## 测试
 
+- `node .superpowers\sdd\strict-card-recovery-assertions.mjs`（RED 覆盖旧 guard 接受 `bad nature`、name-only postcondition 接受半初始化 Card；GREEN 覆盖合法 suits/nullish/finite number/string/单或复合 nature/`huosha`/`leisha`/`cisha`/三四五元组，以及 bad nature、空白 token、危险 name/id、object field、`NaN`、`Infinity`、标准字段 mismatch 和规范化完整 Card）
 - `pnpm --filter noname lint`
 - `pnpm build`
 - 主机与客机：存活、阵亡、多张、零张、坏条目、缺失 Player

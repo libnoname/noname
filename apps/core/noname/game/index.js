@@ -42,6 +42,8 @@ import { debounce } from "@/util/utils.js";
 
 const GAME_OVER_HANDCARD_POPTIP_PREFIX = "game_over_handcards_";
 const GAME_OVER_HANDCARD_POPTIP_ID_PATTERN = /^game_over_handcards_\d+$/;
+const GAME_OVER_HANDCARD_CARD_ID_PATTERN = /^\d+$/;
+const GAME_OVER_HANDCARD_DANGEROUS_KEYS = new Set(["__proto__", "prototype", "constructor"]);
 
 /**
  * 注册结算手牌 poptip，并返回现有手牌图标 HTML。
@@ -62,20 +64,107 @@ function createGameOverHandcardPoptip({ poptipId, name, cards }) {
 }
 
 /**
+ * 判断来自网络且会作为普通对象属性读取的字符串是否安全。
+ *
+ * @param {unknown} value
+ * @returns {value is string}
+ */
+function isGameOverHandcardSafeKey(value) {
+	return typeof value === "string" && value.length > 0 && !GAME_OVER_HANDCARD_DANGEROUS_KEYS.has(value) && !(value in Object.prototype);
+}
+
+/**
+ * 校验 wire 花色；只接受 get.cardsInfo 产生的空值或当前牌堆注册花色。
+ *
+ * @param {unknown} value
+ * @returns {value is string | null | undefined}
+ */
+function isGameOverHandcardSuit(value) {
+	return value == null || (typeof value === "string" && lib.suits.includes(value));
+}
+
+/**
+ * 校验 wire 点数；禁止对象、函数和会让 Card.init 得到非有限数值的 number。
+ *
+ * @param {unknown} value
+ * @returns {value is number | string | null | undefined}
+ */
+function isGameOverHandcardNumber(value) {
+	return value == null || typeof value === "string" || (typeof value === "number" && Number.isFinite(value));
+}
+
+/**
+ * 将 wire 或 Card 上的属性字符串规范化为 Card.$init 使用的排序复合属性。
+ * nullish 与空字符串都视为无属性；其他值必须拆成已注册且无空白的非空 token。
+ *
+ * @param {unknown} value
+ * @returns {string | null} 合法时返回规范化属性字符串，无属性返回空字符串，非法返回 null
+ */
+function normalizeGameOverHandcardNature(value) {
+	if (value == null || value === "") {
+		return "";
+	}
+	if (typeof value !== "string") {
+		return null;
+	}
+	const natures = get.natureList(value);
+	if (!natures.length || natures.some(nature => !nature || nature !== nature.trim() || !lib.nature.has(nature))) {
+		return null;
+	}
+	return natures.slice().sort(lib.sort.nature).join(lib.natureSeparator);
+}
+
+/**
+ * 校验 wire 属性；在进入 Card.init 前拒绝 classList.add 会抛错的空白或未知 token。
+ *
+ * @param {unknown} value
+ * @returns {value is string | null | undefined}
+ */
+function isGameOverHandcardNature(value) {
+	return normalizeGameOverHandcardNature(value) !== null;
+}
+
+/**
+ * 校验 wire cardid；只接受 get.id 现有数字字符串形态，避免对象或原型键进入 cardOL。
+ *
+ * @param {unknown} value
+ * @returns {value is string | null | undefined}
+ */
+function isGameOverHandcardCardId(value) {
+	return value == null || (typeof value === "string" && GAME_OVER_HANDCARD_CARD_ID_PATTERN.test(value));
+}
+
+/**
+ * 校验单张结算手牌的 wire tuple。该边界只阻止 payload primitive 触发已知
+ * Card.init 半初始化路径，不要求卡牌名必须已存在于 lib.card，以保留扩展兼容性。
+ *
  * @param {unknown} value
  * @returns {value is GameOverHandcardCardInfo}
  */
 function isGameOverHandcardCardInfo(value) {
-	return (
-		Array.isArray(value) &&
-		value.length >= 3 &&
-		value.length <= 5 &&
-		typeof value[2] === "string" &&
-		(value[0] == null || typeof value[0] === "string") &&
-		(value[1] == null || typeof value[1] === "number" || typeof value[1] === "string") &&
-		(value[3] == null || typeof value[3] === "string") &&
-		(value[4] == null || typeof value[4] === "string")
-	);
+	return Array.isArray(value) && value.length >= 3 && value.length <= 5 && isGameOverHandcardSuit(value[0]) && isGameOverHandcardNumber(value[1]) && isGameOverHandcardSafeKey(value[2]) && isGameOverHandcardNature(value[3]) && isGameOverHandcardCardId(value[4]);
+}
+
+/**
+ * 校验 get.infoCards 返回的 Card 是否完整对应其可能被 Card.init 原地规范化后的 wire tuple。
+ *
+ * @param {unknown} card
+ * @param {GameOverHandcardCardInfo} info
+ * @returns {card is Card}
+ */
+function isRecoveredGameOverHandcardCard(card, info) {
+	if (card === info || Array.isArray(card) || typeof card !== "object" || card === null) {
+		return false;
+	}
+	if (card.suit !== info[0] || card.number !== (parseInt(info[1]) || 0) || card.name !== info[2]) {
+		return false;
+	}
+	const expectedNature = normalizeGameOverHandcardNature(info[3]);
+	const actualNature = normalizeGameOverHandcardNature(card.nature);
+	if (expectedNature === null || actualNature === null || expectedNature !== actualNature) {
+		return false;
+	}
+	return info[4] == null || card.cardid === info[4];
 }
 
 /**
@@ -140,17 +229,7 @@ function restoreGameOverHandcardPoptips(handcardPoptips) {
 		if (
 			!Array.isArray(cards) ||
 			cards.length !== payload.cards.length ||
-			cards.some((card, cardIndex) => {
-				const wireName = payload.cards[cardIndex]?.[2];
-				return (
-					card === payload.cards[cardIndex] ||
-					Array.isArray(card) ||
-					typeof card !== "object" ||
-					card === null ||
-					typeof card.name !== "string" ||
-					card.name !== wireName
-				);
-			})
+			cards.some((card, cardIndex) => !isRecoveredGameOverHandcardCard(card, payload.cards[cardIndex]))
 		) {
 			console.warn(`联机结算手牌恢复结果无效（poptipId: ${payload.poptipId}, position: ${payload.position}）`, payload);
 			return;
