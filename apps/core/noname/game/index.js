@@ -41,6 +41,7 @@ import { save } from "@/util/config.js";
 import { debounce } from "@/util/utils.js";
 
 const GAME_OVER_HANDCARD_POPTIP_PREFIX = "game_over_handcards_";
+const GAME_OVER_HANDCARD_POPTIP_ID_PATTERN = /^game_over_handcards_\d+$/;
 
 /**
  * 注册结算手牌 poptip，并返回现有手牌图标 HTML。
@@ -57,6 +58,86 @@ function createGameOverHandcardPoptip({ poptipId, name, cards }) {
 			dialog[cards.length > 0 ? "addSmall" : "addText"](cards.length > 0 ? cards : "（没有手牌）");
 			return dialog;
 		},
+	});
+}
+
+/**
+ * @param {unknown} value
+ * @returns {value is GameOverHandcardCardInfo}
+ */
+function isGameOverHandcardCardInfo(value) {
+	return Array.isArray(value) && value.length >= 3 && value.length <= 5 && typeof value[2] === "string";
+}
+
+/**
+ * @param {unknown} value
+ * @returns {value is GameOverHandcardPoptipPayload}
+ */
+function isGameOverHandcardPoptipPayload(value) {
+	return (
+		typeof value === "object" &&
+		value !== null &&
+		!Array.isArray(value) &&
+		typeof value.poptipId === "string" &&
+		GAME_OVER_HANDCARD_POPTIP_ID_PATTERN.test(value.poptipId) &&
+		typeof value.position === "string" &&
+		value.position.length > 0 &&
+		typeof value.name === "string" &&
+		Array.isArray(value.cards) &&
+		value.cards.every(isGameOverHandcardCardInfo)
+	);
+}
+
+/**
+ * 恢复客机结算手牌 poptip；参数缺省时保持旧调用行为。
+ *
+ * @param {unknown} handcardPoptips
+ * @returns {void}
+ */
+function restoreGameOverHandcardPoptips(handcardPoptips) {
+	if (handcardPoptips === undefined) {
+		return;
+	}
+	if (!Array.isArray(handcardPoptips)) {
+		console.warn("联机结算手牌载荷无效：载荷必须是数组", handcardPoptips);
+		return;
+	}
+
+	const poptipIds = new Set();
+	const players = [...game.players, ...game.dead, ...(game.additionaldead ?? [])];
+	handcardPoptips.forEach((payload, index) => {
+		if (!isGameOverHandcardPoptipPayload(payload)) {
+			console.warn(`联机结算手牌载荷无效（索引 ${index}）`, payload);
+			return;
+		}
+		if (poptipIds.has(payload.poptipId)) {
+			console.warn(`联机结算手牌载荷无效：重复 poptipId ${payload.poptipId}`, payload);
+			return;
+		}
+		poptipIds.add(payload.poptipId);
+
+		const target = players.find(player => String(player.dataset.position) === payload.position);
+		if (!target) {
+			console.warn(`联机结算手牌找不到角色（poptipId: ${payload.poptipId}, position: ${payload.position}），使用载荷快照`, payload);
+		}
+
+		let cards;
+		try {
+			cards = get.infoCards(payload.cards);
+		} catch (error) {
+			console.warn(`联机结算手牌恢复失败（poptipId: ${payload.poptipId}, position: ${payload.position}）`, error);
+			return;
+		}
+		if (cards.length !== payload.cards.length || cards.some(Array.isArray)) {
+			console.warn(`联机结算手牌恢复结果无效（poptipId: ${payload.poptipId}, position: ${payload.position}）`, payload);
+			return;
+		}
+
+		createGameOverHandcardPoptip({
+			poptipId: payload.poptipId,
+			name: payload.name,
+			cards,
+		});
 	});
 }
 
@@ -6621,6 +6702,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		if (game.online) {
 			let dialog = ui.create.dialog();
 			dialog.noforcebutton = true;
+			restoreGameOverHandcardPoptips(handcardPoptips);
 			dialog.content.innerHTML = result;
 			dialog.forcebutton = true;
 			let result2 = arguments[1];
