@@ -357,6 +357,7 @@ const skills = {
 
 	natuyi: {
 		audio: 2,
+		logAudio: index => (typeof index == "number" ? `natuyi${index}.mp3` : 1),
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
@@ -419,7 +420,7 @@ const skills = {
 			let result;
 			const colors = cardx.map(card => get.color(card)).unique();
 			const list = [];
-			const card = get.autoViewAs({ name: "sha", storage: { natuyi: true } }, cardx);
+			let card = get.autoViewAs({ name: "sha", storage: { natuyi: true } }, cardx);
 			if (targets.some(target => player.canUse(card, target, false, false))) {
 				list.push("使用杀");
 			}
@@ -442,6 +443,31 @@ const skills = {
 							.forResult()
 					: { control: list[0] };
 			if (result?.control == "使用杀") {
+				const list = get.inpileVCardList(info => {
+					if (info[2] != "sha") {
+						return false;
+					}
+					const card = get.autoViewAs({ name: info[2], nature: info[3], storage: { natuyi: true } }, cardx);
+					return targets.some(target => player.canUse(card, target, false, false));
+				});
+				if (!list.length) {
+					return;
+				}
+				result = await player
+					.chooseButton({
+						createDialog: [`义：选择一张【杀】对${get.translation(targets)}使用`, [list, "vcard"]],
+						forced: true,
+						ai(button) {
+							const card = get.autoViewAs({ name: button.link[2], nature: button.link[3], storage: { natuyi: true } }, get.event().cardx);
+							return player.getUseValue(card);
+						},
+					})
+					.set("cardx", cardx)
+					.forResult();
+				if (!result?.bool || !result.links?.length) {
+					return;
+				}
+				card = get.autoViewAs({ name: result.links[0][2], nature: result.links[0][3], storage: { natuyi: true } }, cardx);
 				const next = player
 					.chooseUseTarget(card, true, false, "nodistance", cardx, `请选择【杀】的目标（${get.translation(cardx)}）`)
 					.set("filterTarget", (card, player, target) => {
