@@ -9591,32 +9591,32 @@ const skills = {
 			global: "phaseBefore",
 			player: "enterGame",
 		},
-		direct: true,
 		filter(event, player) {
-			return event.name != "phase" || game.phaseNumber == 0;
+			return event.name !== "phase" || game.phaseNumber === 0;
 		},
-		content() {
-			"step 0";
-			player.chooseTarget(get.prompt2("refubi"), lib.filter.notMe).set("ai", function (target) {
-				return 1 + get.attitude(_status.event.player, target);
-			});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("refubi", target);
-				target.addMark("refubi", 1);
-			}
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2("refubi"),
+					filterTarget: lib.filter.notMe,
+					ai(target) {
+						return 1 + get.attitude(_status.event.player, target);
+					},
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			target.addMark("refubi", 1);
 		},
 		intro: {
 			content(info, player) {
-				var str = "已获得“辅弼”标记";
+				let str = "已获得“辅弼”标记";
 				if (player.storage.refubi_effect0) {
-					str += "；本回合使用【杀】的次数上限+";
-					str += player.storage.refubi_effect0;
+					str = `${str}；本回合使用【杀】的次数上限+${player.storage.refubi_effect0}`;
 				}
 				if (player.storage.refubi_effect1) {
-					str += "；本回合的手牌上限+";
-					str += player.storage.refubi_effect1 * 3;
+					str = `${str}；本回合的0手牌上限+${player.storage.refubi_effect1 * 3}`;
 				}
 				return str;
 			},
@@ -9626,48 +9626,50 @@ const skills = {
 		subSkill: {
 			buff: {
 				trigger: { global: "phaseZhunbeiBegin" },
-				direct: true,
 				filter(event, player) {
-					return event.player != player && event.player.hasMark("refubi");
+					return event.player !== player && event.player.hasMark("refubi");
 				},
-				content() {
-					"step 0";
-					var str = get.translation(trigger.player);
-					player
-						.chooseControl("cancel2")
-						.set("choiceList", ["令" + str + "本回合使用【杀】的次数上限+1", "令" + str + "本回合的手牌上限+3"])
-						.set("ai", function () {
-							var player = _status.event.player,
-								target = _status.event.getTrigger().player;
-							if (get.attitude(player, target) <= 0) {
-								return "cancel2";
-							}
-							if (
-								!target.hasJudge("lebu") &&
-								target.countCards("h", function (card) {
-									return get.name(card, target) == "sha" && target.hasValueTarget(card);
-								}) > target.getCardUsable("sha")
-							) {
-								return 0;
-							}
-							return 1;
-						});
-					"step 1";
-					if (result.control != "cancel2") {
-						var target = trigger.player;
-						player.logSkill("refubi", target);
-						var str = "refubi_effect" + result.index;
-						target.addTempSkill(str);
-						target.addMark(str, 1, false);
-						game.log(target, ["本回合使用【杀】的次数上限+1", "本回合的手牌上限+3"][result.index]);
-					}
+				async cost(event, trigger, player) {
+					const target = trigger.player;
+					const name = get.translation(target);
+					const result = await player
+						.chooseControl({
+							controls: ["cancel2"],
+							choiceList: [`令${name}本回合使用【杀】的次数上限+1`, `令${name}本回合的手牌上限+3`],
+							ai() {
+								const player = _status.event.player;
+								const target = _status.event.getTrigger().player;
+								if (get.attitude(player, target) <= 0) {
+									return "cancel2";
+								}
+								if (!target.hasJudge("lebu") && target.countCards("h", card => get.name(card, target) === "sha" && target.hasValueTarget(card)) > target.getCardUsable("sha")) {
+									return 0;
+								}
+								return 1;
+							},
+						})
+						.forResult();
+					event.result = {
+						bool: result.control !== "cancel2",
+						targets: [target],
+						cost_data: {
+							skill: `refubi_effect${result.index}`,
+						},
+					};
+				},
+				async content(event, trigger, player) {
+					const target = trigger.player;
+					const { skill } = event.cost_data;
+					target.addTempSkill(skill);
+					target.addMark(skill, 1, false);
+					game.log(target, ["本回合使用【杀】的次数上限+1", "本回合的手牌上限+3"][result.index]);
 				},
 			},
 			effect0: {
 				onremove: true,
 				mod: {
 					cardUsable(card, player, num) {
-						if (card.name == "sha") {
+						if (card.name === "sha") {
 							return num + player.countMark("refubi_effect0");
 						}
 					},
