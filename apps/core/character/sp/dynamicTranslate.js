@@ -226,5 +226,18 @@ const dynamicTranslates = {
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
+	oltaohuai(player) {
+		const bool = player.storage.oltaohuai;
+		let yang = "最大",
+			yin = "最小";
+		if (bool) {
+			yin = `<span class='bluetext'>${yin}</span>`;
+		} else {
+			yang = `<span class='firetext'>${yang}</span>`;
+		}
+		let start = "转换技，你使用牌后，若此牌点数为你手牌中：",
+			end = "。你摸一张牌。否则你可弃置一张牌。";
+		return `${start}阳：${yang}；阴：${yin}${end}`;
+	},
 };
 export default dynamicTranslates;

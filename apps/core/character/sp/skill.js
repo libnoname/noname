@@ -47509,6 +47509,75 @@ const skills = {
 			},
 		},
 	},
+	//ol段煨 子右：R1+□🙌🏻😡↓→+□□□□😡🤜🏻power up！
+	oltaohuai: {
+		audio: 2,
+		zhuanhuanji: true,
+		mark: true,
+		marktext: "☯",
+		trigger: { player: "useCardAfter" },
+		filter(event, player) {
+			return event.card?.name;
+		},
+		async cost(event, trigger, player) {
+			const usedNumber = get.number(trigger.card);
+			const handCards = player.getCards("h");
+			const isYin = player.storage.oltaohuai;
+			let success = false;
+			if (!player.hasCards("h")) {
+				success = true;
+			} else {
+				const numbers = handCards.map(card => get.number(card));
+				numbers.push(usedNumber);
+				const maxNumber = Math.max(...numbers);
+				const minNumber = Math.min(...numbers);
+				if (!isYin && usedNumber === maxNumber) {
+					success = true;
+				} else if (isYin && usedNumber === minNumber) {
+					success = true;
+				}
+			}
+			if (success) {
+				event.result = { bool: true, cost_data: { success: true } };
+			} else {
+				const result = await player.chooseCard({
+					prompt: "讨怀：是否弃置一张牌？",
+					selectCard: [0, 1],
+					ai: (card) => {
+						return 2 - get.value(card);
+					},
+				}).forResult();
+				event.result = { bool: true, cost_data: { cards: result.cards || [], success: false } };
+			}
+		},
+		async content(event, trigger, player) {
+			if (event.cost_data?.success) {
+				await player.draw();
+			} else if (event.cost_data?.cards?.length > 0) {
+				await player.discard(event.cost_data.cards);
+			}
+			player.changeZhuanhuanji("oltaohuai");
+		},
+		check(event, player) {
+			const handCards = player.getCards("h");
+			if (player.countCards("h") > player.hp + 2) {
+				return 5;
+			}
+			if (player.countCards("h") > 3) {
+				const cardValues = handCards.map(c => get.value(c));
+				const minValue = Math.min(...cardValues);
+				if (minValue < 5) {
+					return 3;
+				}
+			}
+			const cardValues = handCards.map(c => get.value(c));
+			const minValue = Math.min(...cardValues);
+			if (minValue < 3) {
+				return 1;
+			}
+			return 0;
+		},
+	},
 };
 
 export default skills;
