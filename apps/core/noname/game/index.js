@@ -104,7 +104,7 @@ function restoreGameOverHandcardPoptips(handcardPoptips) {
 	}
 
 	const poptipIds = new Set();
-	const players = [...game.players, ...game.dead, ...(game.additionaldead ?? [])];
+	const players = [...game.players, ...game.dead];
 	handcardPoptips.forEach((payload, index) => {
 		if (!isGameOverHandcardPoptipPayload(payload)) {
 			console.warn(`联机结算手牌载荷无效（索引 ${index}）`, payload);

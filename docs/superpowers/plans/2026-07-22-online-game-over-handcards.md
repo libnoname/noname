@@ -294,13 +294,16 @@ git commit -m "refactor: 统一结算手牌入口" -m "Co-authored-by: Copilot A
 
 **Interfaces:**
 - Consumes: Task 1 的 `GAME_OVER_HANDCARD_POPTIP_PREFIX`、`createGameOverHandcardPoptip(options)` 和 `getHandcardPoptip(target)`。
-- Produces: `GameOverHandcardPoptipPayload[]` 主机快照；`clients[i].send(game.over, html, result, handcardPoptips)` 四实参调用。
+- Produces: `GameOverHandcardPoptipPayload[]` 主机快照；`clients[i].send(function (result, bool, handcardPoptips) { game.over(result, bool, handcardPoptips); }, html, result, handcardPoptips)` 四实参调用。
 
 - [ ] **Step 1: 安装运行时发送探针并确认当前调用缺少载荷**
 
 在主机开始一局联机游戏后、游戏结束前，于主机 DevTools Console 执行：
 
 ```js
+const isGameOverWrapper = fn =>
+	typeof fn === "function" &&
+	/function\s*\(\s*result\s*,\s*bool\s*,\s*handcardPoptips\s*\)\s*\{\s*game\.over\s*\(\s*result\s*,\s*bool\s*,\s*handcardPoptips\s*\)\s*;\s*\}/.test(fn.toString());
 window.__gameOverSendCalls = [];
 window.__gameOverSendRestores = game.players
 	.concat(game.dead)
@@ -308,7 +311,7 @@ window.__gameOverSendRestores = game.players
 	.map(client => {
 		const originalSend = client.send;
 		client.send = function (...args) {
-			if (args[0] === game.over) {
+			if (isGameOverWrapper(args[0])) {
 				window.__gameOverSendCalls.push({
 					args,
 					overAtSend: _status.over,
@@ -327,7 +330,10 @@ window.__gameOverSendRestores = game.players
 ```js
 console.assert(window.__gameOverSendCalls.length > 0, "必须捕获至少一次 game.over 发送");
 console.assert(
-	window.__gameOverSendCalls.every(call => call.args.length === 4 && Array.isArray(call.args[3])),
+	window.__gameOverSendCalls.every(call => {
+		const args = call.args;
+		return args.length === 4 && Array.isArray(args[3]);
+	}),
 	"当前发送只有 HTML 和胜负结果，缺少第四个手牌载荷实参"
 );
 window.__gameOverSendRestores.forEach(restore => restore());
@@ -392,7 +398,9 @@ window.__gameOverSendRestores.forEach(restore => restore());
 		for (let i = 0; i < clients.length; i++) {
 			if (clients[i].isOnline2()) {
 				clients[i].send(
-					game.over,
+					function (result, bool, handcardPoptips) {
+						game.over(result, bool, handcardPoptips);
+					},
 					dialog.content.innerHTML,
 					game.checkOnlineResult(clients[i]),
 					handcardPoptips
@@ -551,7 +559,7 @@ function restoreGameOverHandcardPoptips(handcardPoptips) {
 	}
 
 	const poptipIds = new Set();
-	const players = [...game.players, ...game.dead, ...(game.additionaldead ?? [])];
+	const players = [...game.players, ...game.dead];
 	handcardPoptips.forEach((payload, index) => {
 		if (!isGameOverHandcardPoptipPayload(payload)) {
 			console.warn(`联机结算手牌载荷无效（索引 ${index}）`, payload);
@@ -657,10 +665,13 @@ console.assert(
 
 ```js
 (() => {
+	const isGameOverWrapper = fn =>
+		typeof fn === "function" &&
+		/function\s*\(\s*result\s*,\s*bool\s*,\s*handcardPoptips\s*\)\s*\{\s*game\.over\s*\(\s*result\s*,\s*bool\s*,\s*handcardPoptips\s*\)\s*;\s*\}/.test(fn.toString());
 	const client = game.players.concat(game.dead).find(current => current.isOnline2());
 	const originalSend = client.send;
 	client.send = function (fn, html, result, payloads) {
-		if (fn !== game.over) {
+		if (!isGameOverWrapper(fn) || arguments.length !== 4 || !Array.isArray(payloads)) {
 			return originalSend.apply(this, arguments);
 		}
 		client.send = originalSend;
@@ -708,10 +719,13 @@ console.assert(
 
 ```js
 (() => {
+	const isGameOverWrapper = fn =>
+		typeof fn === "function" &&
+		/function\s*\(\s*result\s*,\s*bool\s*,\s*handcardPoptips\s*\)\s*\{\s*game\.over\s*\(\s*result\s*,\s*bool\s*,\s*handcardPoptips\s*\)\s*;\s*\}/.test(fn.toString());
 	const client = game.players.concat(game.dead).find(current => current.isOnline2());
 	const originalSend = client.send;
 	client.send = function (fn, html, result, payloads) {
-		if (fn !== game.over) {
+		if (!isGameOverWrapper(fn) || arguments.length !== 4 || !Array.isArray(payloads)) {
 			return originalSend.apply(this, arguments);
 		}
 		client.send = originalSend;
