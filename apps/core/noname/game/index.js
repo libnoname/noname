@@ -6580,9 +6580,10 @@ ${e instanceof Error ? e.stack : String(e)}`);
 	/**
 	 * @param { boolean | string } [result]
 	 * @param { boolean } [bool]
+	 * @param { GameOverHandcardPoptipPayload[] } [handcardPoptips]
 	 * @returns
 	 */
-	over(result, bool) {
+	over(result, bool, handcardPoptips) {
 		if (_status.over) {
 			return;
 		}
@@ -6673,17 +6674,28 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			}
 			return;
 		}
+		/** @type {GameOverHandcardPoptipPayload[]} */
+		handcardPoptips = [];
 		let handcardPoptipIndex = 0;
 		/**
 		 * @param {Player} target
 		 * @returns {string}
 		 */
-		const getHandcardPoptip = target =>
-			createGameOverHandcardPoptip({
+		const getHandcardPoptip = target => {
+			const cards = hsMap.get(target) ?? [];
+			const payload = {
 				poptipId: `${GAME_OVER_HANDCARD_POPTIP_PREFIX}${handcardPoptipIndex++}`,
+				position: String(target.dataset.position),
 				name: get.translation(target),
-				cards: hsMap.get(target) ?? [],
+				cards: get.cardsInfo(cards),
+			};
+			handcardPoptips.push(payload);
+			return createGameOverHandcardPoptip({
+				poptipId: payload.poptipId,
+				name: payload.name,
+				cards,
 			});
+		};
 		if (lib.config.background_audio) {
 			if (result === true) {
 				game.playAudio("effect", "win");
@@ -7068,7 +7080,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		let clients = game.players.concat(game.dead);
 		for (let i = 0; i < clients.length; i++) {
 			if (clients[i].isOnline2()) {
-				clients[i].send(game.over, dialog.content.innerHTML, game.checkOnlineResult(clients[i]));
+				clients[i].send(game.over, dialog.content.innerHTML, game.checkOnlineResult(clients[i]), handcardPoptips);
 			}
 		}
 
