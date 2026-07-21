@@ -10536,73 +10536,73 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return game.hasPlayer(function (current) {
-				return lib.skill.jianzhan.filterTarget(null, player, current);
-			});
+			return game.hasPlayer(current => lib.skill.jianzhan.filterTarget(null, player, current));
 		},
 		filterTarget(card, player, target) {
-			if (target == player) {
+			if (target === player) {
 				return false;
 			}
 			if (ui.selected.targets.length) {
-				var targetx = ui.selected.targets[0];
-				return targetx != target && targetx.countCards("h") > target.countCards("h") && targetx.inRange(target);
+				const targetx = ui.selected.targets[0];
+				return targetx !== target && targetx.countCards("h") > target.countCards("h") && targetx.inRange(target);
 			}
-			var num = target.countCards("h");
-			return game.hasPlayer(function (current) {
-				return current != target && current != player && current.countCards("h") < num && target.inRange(current);
-			});
+			const num = target.countCards("h");
+			return game.hasPlayer(current => current !== target && current !== player && current.countCards("h") < num && target.inRange(current));
 		},
 		selectTarget: 2,
 		complexTarget: true,
 		targetprompt: ["出杀", "被出杀"],
 		multitarget: true,
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
+			const targets = event.targets;
 			if (!targets[0].canUse("sha", targets[1])) {
-				event._result = { index: 1 };
-			} else {
-				targets[0]
-					.chooseControl()
-					.set("choiceList", ["视为对" + get.translation(targets[1]) + "使用一张【杀】", "令" + get.translation(player) + "摸一张牌"])
-					.set("ai", function () {
-						var evt = _status.event.getParent();
-						var eff = get.effect(evt.targets[1], { name: "sha", isCard: true }, evt.targets[0], evt.targets[0]);
-						if (eff > 0) {
+				await player.draw();
+				return;
+			}
+			const result = await targets[0]
+				.chooseControl({
+					choiceList: [`视为对${get.translation(targets[1])}使用一张【杀】`, `令${get.translation(player)}摸一张牌`],
+					ai() {
+						const effect = get.effect(targets[1], { name: "sha", isCard: true }, targets[0], targets[0]);
+						if (effect > 0) {
 							return 0;
 						}
-						if (eff < 0 || get.attitude(evt.targets[0], evt.player) > 1) {
+						if (effect < 0 || get.attitude(targets[0], player) > 1) {
 							return 1;
 						}
 						return 0;
-					});
+					},
+				})
+				.forResult();
+			if (result.index === 0) {
+				await targets[0].useCard({
+					card: get.autoViewAs({ name: "sha", isCard: true }),
+					targets: [targets[1]],
+					addCount: false,
+				});
+				return;
 			}
-			"step 1";
-			if (result.index == 0) {
-				targets[0].useCard({ name: "sha", isCard: true }, targets[1], false);
-			} else {
-				player.draw();
-			}
+			await player.draw();
 		},
 		ai: {
 			result: {
 				target(player, target) {
 					if (ui.selected.targets.length) {
-						var from = ui.selected.targets[0];
+						const from = ui.selected.targets[0];
 						return get.effect(target, { name: "sha" }, from, target);
 					}
-					var effs = [0, 0];
-					game.countPlayer(function (current) {
-						if (current != target && target.canUse("sha", current)) {
-							var eff = get.effect(current, { name: "sha" }, target, target);
-							if (eff > effs[0]) {
-								effs[0] = eff;
+					const effs = [0, 0];
+					for (const current of game.filterPlayer()) {
+						if (current !== target && target.canUse("sha", current)) {
+							const effect = get.effect(current, { name: "sha" }, target, target);
+							if (effect > effs[0]) {
+								effs[0] = effect;
 							}
-							if (eff < effs[1]) {
-								effs[1] = eff;
+							if (effect < effs[1]) {
+								effs[1] = effect;
 							}
 						}
-					});
+					};
 					return effs[get.attitude(player, target) > 0 ? 0 : 1];
 				},
 			},
