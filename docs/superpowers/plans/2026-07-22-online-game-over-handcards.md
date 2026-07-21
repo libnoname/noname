@@ -47,7 +47,7 @@
 
 ```js
 /**
- * @typedef {Array<unknown>} GameOverHandcardCardInfo
+ * @typedef {[(string|null|undefined), (number|string|null|undefined), string, (string|null|undefined)?, (string|null|undefined)?]} GameOverHandcardCardInfo
  */
 
 /**
@@ -162,7 +162,7 @@ Get-ChildItem $baseline | Select-Object -First 5
 
 ```js
 /**
- * @typedef {Array<unknown>} GameOverHandcardCardInfo
+ * @typedef {[(string|null|undefined), (number|string|null|undefined), string, (string|null|undefined)?, (string|null|undefined)?]} GameOverHandcardCardInfo
  */
 
 /**
@@ -439,7 +439,7 @@ pnpm --filter noname exec eslint noname/game/index.js
 ```js
 const isGameOverWrapper = fn =>
 	typeof fn === "function" &&
-	/function\s*\(\s*result\s*,\s*bool\s*,\s*handcardPoptips\s*\)\s*\{\s*game\.over\s*\(\s*result\s*,\s*bool\s*,\s*handcardPoptips\s*\)\s*;\s*\}/.test(fn.toString());
+	/^\s*function\s*\(\s*([^,\s()]+)\s*,\s*([^,\s()]+)\s*,\s*([^,\s()]+)\s*\)\s*\{\s*game\.over\s*\(\s*\1\s*,\s*\2\s*,\s*\3\s*\)\s*;?\s*\}\s*$/.test(fn.toString());
 const calls = window.__gameOverSendCalls;
 console.assert(calls.length > 0, "必须捕获 game.over 结算发送");
 for (const { args, overAtSend } of calls) {
@@ -532,7 +532,13 @@ function isGameOverHandcardCardInfo(value) {
 		Array.isArray(value) &&
 		value.length >= 3 &&
 		value.length <= 5 &&
-		typeof value[2] === "string"
+		typeof value[2] === "string" &&
+		(value[0] == null || typeof value[0] === "string") &&
+		(value[1] == null ||
+			typeof value[1] === "number" ||
+			typeof value[1] === "string") &&
+		(value[3] == null || typeof value[3] === "string") &&
+		(value[4] == null || typeof value[4] === "string")
 	);
 }
 
@@ -556,7 +562,7 @@ function isGameOverHandcardPoptipPayload(value) {
 }
 ```
 
-预期：零长度 `cards` 通过；非数组、长度小于三或大于五、缺少字符串卡牌名的条目失败。
+预期：零长度 `cards` 通过；非数组、长度小于三或大于五、缺少字符串卡牌名的条目失败；suit/nature/cardid 只接受 string/nullish，number 只接受 number/string/nullish，拒绝对象和函数。
 
 - [ ] **Step 3: 增加逐项恢复函数和精确告警**
 
@@ -614,7 +620,21 @@ function restoreGameOverHandcardPoptips(handcardPoptips) {
 			);
 			return;
 		}
-		if (cards.length !== payload.cards.length || cards.some(Array.isArray)) {
+		if (
+			!Array.isArray(cards) ||
+			cards.length !== payload.cards.length ||
+			cards.some((card, cardIndex) => {
+				const wireName = payload.cards[cardIndex]?.[2];
+				return (
+					card === payload.cards[cardIndex] ||
+					Array.isArray(card) ||
+					typeof card !== "object" ||
+					card === null ||
+					typeof card.name !== "string" ||
+					card.name !== wireName
+				);
+			})
+		) {
 			console.warn(
 				`联机结算手牌恢复结果无效（poptipId: ${payload.poptipId}, position: ${payload.position}）`,
 				payload
@@ -659,7 +679,7 @@ pnpm build
 启动新构建：
 
 ```powershell
-pnpm -F @noname/fs dev --dirname=".\dist" --port=8091 --server
+pnpm -F @noname/fs dev --dirname="..\..\dist" --port=8091 --server
 ```
 
 预期：打印 `Server listening on port 8091`。使用 `http://localhost:8091/` 打开两个新客户端，完成一局包含存活、阵亡、多张和零张手牌的联机游戏。在两个客户端结算页执行：
@@ -687,7 +707,7 @@ console.assert(
 (() => {
 	const isGameOverWrapper = fn =>
 		typeof fn === "function" &&
-		/function\s*\(\s*result\s*,\s*bool\s*,\s*handcardPoptips\s*\)\s*\{\s*game\.over\s*\(\s*result\s*,\s*bool\s*,\s*handcardPoptips\s*\)\s*;\s*\}/.test(fn.toString());
+		/^\s*function\s*\(\s*([^,\s()]+)\s*,\s*([^,\s()]+)\s*,\s*([^,\s()]+)\s*\)\s*\{\s*game\.over\s*\(\s*\1\s*,\s*\2\s*,\s*\3\s*\)\s*;?\s*\}\s*$/.test(fn.toString());
 	const client = game.players.concat(game.dead).find(current => current.isOnline2());
 	const originalSend = client.send;
 	client.send = function (fn, html, result, payloads) {
@@ -741,7 +761,7 @@ console.assert(
 (() => {
 	const isGameOverWrapper = fn =>
 		typeof fn === "function" &&
-		/function\s*\(\s*result\s*,\s*bool\s*,\s*handcardPoptips\s*\)\s*\{\s*game\.over\s*\(\s*result\s*,\s*bool\s*,\s*handcardPoptips\s*\)\s*;\s*\}/.test(fn.toString());
+		/^\s*function\s*\(\s*([^,\s()]+)\s*,\s*([^,\s()]+)\s*,\s*([^,\s()]+)\s*\)\s*\{\s*game\.over\s*\(\s*\1\s*,\s*\2\s*,\s*\3\s*\)\s*;?\s*\}\s*$/.test(fn.toString());
 	const client = game.players.concat(game.dead).find(current => current.isOnline2());
 	const originalSend = client.send;
 	client.send = function (fn, html, result, payloads) {

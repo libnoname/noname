@@ -52,15 +52,19 @@ clients[i].send(game.over, dialog.content.innerHTML, game.checkOnlineResult(clie
 
 ```js
 /**
+ * @typedef {[(string|null|undefined), (number|string|null|undefined), string, (string|null|undefined)?, (string|null|undefined)?]} GameOverHandcardCardInfo
+ */
+
+/**
  * @typedef {Object} GameOverHandcardPoptipPayload
  * @property {string} poptipId 结算页手牌入口的稳定 ID
  * @property {string} position 角色在联机状态中的座位标识
  * @property {string} name 结算时的角色显示名
- * @property {Array<unknown[]>} cards get.cardsInfo 生成的卡牌信息
+ * @property {GameOverHandcardCardInfo[]} cards get.cardsInfo 生成的卡牌信息
  */
 ```
 
-`cards` 的运行时校验仍按 `get.cardInfo` 最多五项的数组格式处理，不在本修复中另建一套卡牌协议类型。
+`cards` 的运行时校验按显式 wire tuple 处理：suit 为 string/nullish，number|string|nullish，name 必须 string，nature/cardid 为 string/nullish；拒绝对象、函数等会触发转换或属性键副作用的值，不在本修复中修改通用卡牌协议。
 
 ### 本地 poptip 创建辅助函数
 
@@ -152,9 +156,9 @@ clients[i].send(
    - `poptipId` 必须符合固定前缀格式且在本批次唯一。
    - `position` 必须是非空字符串。
    - `name` 必须是字符串。
-   - `cards` 必须是数组；每项也必须是数组，长度为三至五项，且索引 `2` 的卡牌名必须是字符串。花色、点数、属性和 `cardid` 继续交由现有 `get.infoCard` 兼容处理，避免拒绝已有合法牌型。
+   - `cards` 必须是数组；每项也必须是数组，长度为三至五项。suit 为 string/nullish，number|string|nullish，name 必须 string，nature/cardid 为 string/nullish；拒绝对象、函数等会触发转换或属性键副作用的值。
 5. `position` 用于诊断和匹配实际可见的 `game.players`、`game.dead` 角色；主机不会为 `game.additionaldead` 补建或发送不可见入口载荷。找不到时输出 `console.warn`，但由于载荷已包含显示名和完整卡牌快照，仍可继续注册该项，不让客户端状态差异破坏可用结果。
-6. 使用 `get.infoCards(entry.cards)` 恢复本地 `Card[]`。若结果数量与输入不一致，或仍包含 `get.infoCard` 失败时返回的原始数组，则视为恢复失败；否则调用 `createGameOverHandcardPoptip` 注册同一 ID。
+6. 使用 `get.infoCards(entry.cards)` 恢复本地 `Card[]`。若结果数量与输入不一致，任一恢复项仍是原数组、不是带 string `name` 的 Card，或 name 与对应 wire entry（考虑 `get.infoCard` 对历史 huosha/leisha/cisha 可能原地规范化）不一致，则视为恢复失败；半初始化 Card 也必须拒绝。否则调用 `createGameOverHandcardPoptip` 注册同一 ID。
 7. 单项恢复抛错或返回无效结果时，输出包含 `poptipId` 和 `position` 的 `console.warn`，跳过该项并处理下一项。
 8. 所有可用项注册完成后，才执行 `dialog.content.innerHTML = result`。自定义元素连接 DOM 时即可读取正确名称和回调。
 

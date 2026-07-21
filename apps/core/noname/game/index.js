@@ -11,7 +11,7 @@
  */
 
 /**
- * @typedef {Array<unknown>} GameOverHandcardCardInfo
+ * @typedef {[(string|null|undefined), (number|string|null|undefined), string, (string|null|undefined)?, (string|null|undefined)?]} GameOverHandcardCardInfo
  */
 
 /**
@@ -66,7 +66,16 @@ function createGameOverHandcardPoptip({ poptipId, name, cards }) {
  * @returns {value is GameOverHandcardCardInfo}
  */
 function isGameOverHandcardCardInfo(value) {
-	return Array.isArray(value) && value.length >= 3 && value.length <= 5 && typeof value[2] === "string";
+	return (
+		Array.isArray(value) &&
+		value.length >= 3 &&
+		value.length <= 5 &&
+		typeof value[2] === "string" &&
+		(value[0] == null || typeof value[0] === "string") &&
+		(value[1] == null || typeof value[1] === "number" || typeof value[1] === "string") &&
+		(value[3] == null || typeof value[3] === "string") &&
+		(value[4] == null || typeof value[4] === "string")
+	);
 }
 
 /**
@@ -128,7 +137,21 @@ function restoreGameOverHandcardPoptips(handcardPoptips) {
 			console.warn(`联机结算手牌恢复失败（poptipId: ${payload.poptipId}, position: ${payload.position}）`, error);
 			return;
 		}
-		if (cards.length !== payload.cards.length || cards.some(Array.isArray)) {
+		if (
+			!Array.isArray(cards) ||
+			cards.length !== payload.cards.length ||
+			cards.some((card, cardIndex) => {
+				const wireName = payload.cards[cardIndex]?.[2];
+				return (
+					card === payload.cards[cardIndex] ||
+					Array.isArray(card) ||
+					typeof card !== "object" ||
+					card === null ||
+					typeof card.name !== "string" ||
+					card.name !== wireName
+				);
+			})
+		) {
 			console.warn(`联机结算手牌恢复结果无效（poptipId: ${payload.poptipId}, position: ${payload.position}）`, payload);
 			return;
 		}
