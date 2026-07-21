@@ -10456,24 +10456,26 @@ const skills = {
 			global: "phaseBefore",
 			player: "enterGame",
 		},
-		direct: true,
 		skillAnimation: true,
 		animationColor: "wood",
 		filter(event, player) {
-			return event.name != "phase" || game.phaseNumber == 0;
+			return event.name !== "phase" || game.phaseNumber === 0;
 		},
-		content() {
-			"step 0";
-			player.chooseTarget(get.prompt2("fubi"), lib.filter.notMe).set("ai", function (target) {
-				return get.attitude(_status.event.player, target);
-			});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("fubi", target);
-				target.addSkill("fubi2");
-				target.storage.fubi2.push(player);
-			}
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2("fubi"),
+					filterTarget: lib.filter.notMe,
+					ai(target) {
+						return get.attitude(_status.event.player, target);
+					},
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			target.addSkill("fubi2");
+			target.storage.fubi2.push(player);
 		},
 	},
 	fubi2: {
@@ -10484,8 +10486,8 @@ const skills = {
 		},
 		mod: {
 			maxHandcard(player, num) {
-				var list = player.getStorage("fubi2");
-				for (var i of list) {
+				const list = player.getStorage("fubi2");
+				for (const i of list) {
 					if (i.isIn()) {
 						num += 3;
 					}
