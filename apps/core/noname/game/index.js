@@ -10,6 +10,25 @@
  * @typedef { { mode: string, name: string[], name1: string, name2?: string, time: number, video: Video, win: boolean } } Videos
  */
 
+/**
+ * @typedef {Array<unknown>} GameOverHandcardCardInfo
+ */
+
+/**
+ * @typedef {Object} GameOverHandcardPoptipPayload
+ * @property {string} poptipId 结算手牌入口的稳定 ID
+ * @property {string} position 角色的联机座位标识
+ * @property {string} name 结算时的角色显示名
+ * @property {GameOverHandcardCardInfo[]} cards get.cardsInfo 生成的卡牌信息
+ */
+
+/**
+ * @typedef {Object} GameOverHandcardPoptipOptions
+ * @property {string} poptipId
+ * @property {string} name
+ * @property {Card[]} cards
+ */
+
 import { _status, lib, get, ai, ui } from "noname";
 import { isClass, userAgentLowerCase, GeneratorFunction, AsyncFunction, delay } from "@/util/index.js";
 
@@ -20,6 +39,26 @@ import { Check } from "./check.js";
 import { security } from "@/util/sandbox.js";
 import { save } from "@/util/config.js";
 import { debounce } from "@/util/utils.js";
+
+const GAME_OVER_HANDCARD_POPTIP_PREFIX = "game_over_handcards_";
+
+/**
+ * 注册结算手牌 poptip，并返回现有手牌图标 HTML。
+ *
+ * @param {GameOverHandcardPoptipOptions} options
+ * @returns {string}
+ */
+function createGameOverHandcardPoptip({ poptipId, name, cards }) {
+	return get.poptip({
+		id: poptipId,
+		name: `<img style="width:15px; vertical-align: middle;" src="${lib.assetURL}image/card/handcard.png">`,
+		dialog(dialog) {
+			dialog.add(`${name}的手牌`);
+			dialog[cards.length > 0 ? "addSmall" : "addText"](cards.length > 0 ? cards : "（没有手牌）");
+			return dialog;
+		},
+	});
+}
 
 export class Game {
 	documentZoom;
@@ -6634,6 +6673,17 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			}
 			return;
 		}
+		let handcardPoptipIndex = 0;
+		/**
+		 * @param {Player} target
+		 * @returns {string}
+		 */
+		const getHandcardPoptip = target =>
+			createGameOverHandcardPoptip({
+				poptipId: `${GAME_OVER_HANDCARD_POPTIP_PREFIX}${handcardPoptipIndex++}`,
+				name: get.translation(target),
+				cards: hsMap.get(target) ?? [],
+			});
 		if (lib.config.background_audio) {
 			if (result === true) {
 				game.playAudio("effect", "win");
@@ -6852,16 +6902,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 				td.innerHTML = num;
 				tr.appendChild(td);
 				td = document.createElement("td");
-				let target = game.players[i];
-				td.innerHTML = get.poptip({
-					name: `<img style="width:15px; vertical-align: middle;" src="${lib.assetURL}image/card/handcard.png">`,
-					dialog(dialog) {
-						let hs = hsMap.get(target) ?? [];
-						dialog.add(`${get.translation(target)}的手牌`);
-						dialog[hs.length > 0 ? "addSmall" : "addText"](hs.length > 0 ? hs : "（没有手牌）");
-						return dialog;
-					},
-				});
+				td.innerHTML = getHandcardPoptip(game.players[i]);
 				tr.appendChild(td);
 				table.appendChild(tr);
 			}
@@ -6945,16 +6986,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 				td.innerHTML = num;
 				tr.appendChild(td);
 				td = document.createElement("td");
-				let target = game.dead[i];
-				td.innerHTML = get.poptip({
-					name: `<img style="width:15px; vertical-align: middle;" src="${lib.assetURL}image/card/handcard.png">`,
-					dialog(dialog) {
-						let hs = hsMap.get(target) ?? [];
-						dialog.add(`${get.translation(target)}的手牌`);
-						dialog[hs.length > 0 ? "addSmall" : "addText"](hs.length > 0 ? hs : "（没有手牌）");
-						return dialog;
-					},
-				});
+				td.innerHTML = getHandcardPoptip(game.dead[i]);
 				tr.appendChild(td);
 				table.appendChild(tr);
 			}
