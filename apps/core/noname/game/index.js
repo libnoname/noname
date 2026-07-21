@@ -7162,7 +7162,14 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		let clients = game.players.concat(game.dead);
 		for (let i = 0; i < clients.length; i++) {
 			if (clients[i].isOnline2()) {
-				clients[i].send(game.over, dialog.content.innerHTML, game.checkOnlineResult(clients[i]), handcardPoptips);
+				clients[i].send(
+					function (result, bool, handcardPoptips) {
+						game.over(result, bool, handcardPoptips);
+					},
+					dialog.content.innerHTML,
+					game.checkOnlineResult(clients[i]),
+					handcardPoptips
+				);
 			}
 		}
 

@@ -6,7 +6,7 @@
 
 ## 根因
 
-当前 `Game.over` 在主机端生成结算表格时，为每个手牌图标调用 `get.poptip({ name, dialog })`。未指定 `id` 时，`PoptipManager.add` 会生成随机 ID，并只在当前页面内存中的 `#customPoptip` 与 `createDialog` 注册表保存名称和回调。主机随后通过：
+改动前 `Game.over` 在主机端生成结算表格时，为每个手牌图标调用 `get.poptip({ name, dialog })`。未指定 `id` 时，`PoptipManager.add` 会生成随机 ID，并只在当前页面内存中的 `#customPoptip` 与 `createDialog` 注册表保存名称和回调。主机随后通过：
 
 ```js
 clients[i].send(game.over, dialog.content.innerHTML, game.checkOnlineResult(clients[i]));
@@ -18,7 +18,7 @@ clients[i].send(game.over, dialog.content.innerHTML, game.checkOnlineResult(clie
 
 - 保留现有结算页 HTML 结构和视觉样式。
 - 主机与客机使用一致、可预测且互不冲突的结算手牌 poptip ID。
-- 主机只在游戏结束后发送每个结算行的角色标识、显示名称和剩余手牌快照。
+- 主机只在游戏结束后发送实际可见的 `game.players`、`game.dead` 结算行角色标识、显示名称和剩余手牌快照。
 - 客机先恢复本地 poptip 注册，再插入收到的 HTML，使存活角色和阵亡角色的手牌入口都可用。
 - 单个坏条目不得阻断其余结算内容；诊断信息必须通过 `console.warn` 明确暴露。
 - `Game.over` 的新增参数保持可选，已有两参数调用不报错。
@@ -39,7 +39,7 @@ clients[i].send(game.over, dialog.content.innerHTML, game.checkOnlineResult(clie
 设计包含三个协作部分：
 
 1. **本地 poptip 创建辅助函数**：接收稳定 ID、角色显示名和本地 `Card[]`，注册 poptip 回调并返回现有手牌图标 HTML。
-2. **主机载荷收集**：生成每个结算行的稳定 ID，使用结算开始时的 `hsMap` 快照构造纯数据载荷，并复用辅助函数渲染主机页面。
+2. **主机载荷收集**：仅为实际可见的 `game.players` 和 `game.dead` 手牌列生成稳定 ID，使用结算开始时的 `hsMap` 快照构造纯数据载荷，并复用辅助函数渲染主机页面。
 3. **客机载荷恢复**：在 `Game.over` 的联机接收分支校验可选载荷，使用 `get.infoCards` 恢复卡牌对象，逐项调用同一辅助函数注册回调，然后再设置 `dialog.content.innerHTML`。
 
 该边界保证网络只传输可序列化数据，不传输函数、DOM 节点或主机闭包。
@@ -109,7 +109,7 @@ game_over_handcards_1
 game_over_handcards_2
 ```
 
-序号按现有三段表格的生成顺序分配：`game.players`、`game.dead`、`game.additionaldead`。不直接使用 `position` 作为唯一后缀，因为特殊模式中的 `additionaldead` 可能与当前角色复用座位；行序号能在一次结算中保证唯一，并且主机发送的 HTML 与载荷天然引用同一 ID。
+序号按实际带有可见手牌入口的结算行生成顺序分配：`game.players`、`game.dead`。不直接使用 `position` 作为唯一后缀，因为特殊模式中的不可见或复用座位入口不应参与载荷；可见行序号能在一次结算中保证唯一，并且主机发送的 HTML 与载荷天然引用同一 ID。
 
 客机只接受匹配 `^game_over_handcards_\d+$` 的 ID，并拒绝同一载荷中的重复 ID，避免覆盖其他 poptip 注册。
 
@@ -119,7 +119,7 @@ game_over_handcards_2
 
 1. `Game.over` 进入时按现有逻辑把 `game.players` 和 `game.dead` 的手牌保存到 `hsMap`，保证后续动画或清理不会改变结算快照。
 2. 初始化空的 `handcardPoptips` 数组和递增行序号。
-3. 每次生成手牌列时：
+3. 每次为 `game.players` 或 `game.dead` 生成实际可见手牌列时：
    - 生成 `poptipId`。
    - 从 `hsMap` 读取该角色的 `Card[]`，缺省为空数组。
    - 读取 `String(target.dataset.position)` 和 `get.translation(target)`。
@@ -129,7 +129,9 @@ game_over_handcards_2
 
 ```js
 clients[i].send(
-	game.over,
+	function (result, bool, handcardPoptips) {
+		game.over(result, bool, handcardPoptips);
+	},
 	dialog.content.innerHTML,
 	game.checkOnlineResult(clients[i]),
 	handcardPoptips
@@ -138,7 +140,7 @@ clients[i].send(
 
 5. 单机和主机本地页面继续使用同一辅助函数，不经过序列化往返。
 
-`game.additionaldead` 保持现有语义：由于当前 `hsMap` 不为其保存手牌，载荷中的 `cards` 为空数组。本修复只消除联机主客机差异，不顺带改变特殊阵亡角色的既有展示。
+`game.additionaldead` 保持既有 HTML：当前实现创建手牌 `td` 后未追加到行中，因此不补列、不分配稳定 ID、不加入 `handcardPoptips`，也不发送不可见入口载荷。本修复只消除联机主客机差异，不顺带改变特殊阵亡角色的既有展示。
 
 ### 客机
 
@@ -151,7 +153,7 @@ clients[i].send(
    - `position` 必须是非空字符串。
    - `name` 必须是字符串。
    - `cards` 必须是数组；每项也必须是数组，长度为三至五项，且索引 `2` 的卡牌名必须是字符串。花色、点数、属性和 `cardid` 继续交由现有 `get.infoCard` 兼容处理，避免拒绝已有合法牌型。
-5. 通过 `position` 在 `game.players`、`game.dead` 和 `game.additionaldead` 中查找本地角色。找不到时输出 `console.warn`，但由于载荷已包含显示名和完整卡牌快照，仍可继续注册该项，不让客户端状态差异破坏可用结果。
+5. `position` 用于诊断和匹配实际可见的 `game.players`、`game.dead` 角色；主机不会为 `game.additionaldead` 补建或发送不可见入口载荷。找不到时输出 `console.warn`，但由于载荷已包含显示名和完整卡牌快照，仍可继续注册该项，不让客户端状态差异破坏可用结果。
 6. 使用 `get.infoCards(entry.cards)` 恢复本地 `Card[]`。若结果数量与输入不一致，或仍包含 `get.infoCard` 失败时返回的原始数组，则视为恢复失败；否则调用 `createGameOverHandcardPoptip` 注册同一 ID。
 7. 单项恢复抛错或返回无效结果时，输出包含 `poptipId` 和 `position` 的 `console.warn`，跳过该项并处理下一项。
 8. 所有可用项注册完成后，才执行 `dialog.content.innerHTML = result`。自定义元素连接 DOM 时即可读取正确名称和回调。
