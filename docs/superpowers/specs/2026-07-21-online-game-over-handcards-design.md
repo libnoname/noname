@@ -12,7 +12,7 @@
 clients[i].send(game.over, dialog.content.innerHTML, game.checkOnlineResult(clients[i]));
 ```
 
-仅把 HTML 和胜负结果发送给客机。HTML 中包含随机 ID，但客机没有对应的名称、卡牌快照或 `createDialog` 回调，因此无法还原该 poptip。
+这段 direct send 是改动前事实，不是目标调用。现有 `Client.send` 会把首参数函数序列化进 RPC 信封，再由客机侧执行；序列化后的 `Game.over` 不保留模块私有 helper 闭包，也不能携带主机内存中的 poptip 名称、卡牌快照或 `createDialog` 回调。HTML 中包含随机 ID，但客机没有对应的本地注册，因此无法还原该 poptip。
 
 ## 目标
 
@@ -42,7 +42,7 @@ clients[i].send(game.over, dialog.content.innerHTML, game.checkOnlineResult(clie
 2. **主机载荷收集**：仅为实际可见的 `game.players` 和 `game.dead` 手牌列生成稳定 ID，使用结算开始时的 `hsMap` 快照构造纯数据载荷，并复用辅助函数渲染主机页面。
 3. **客机载荷恢复**：在 `Game.over` 的联机接收分支校验可选载荷，使用 `get.infoCards` 恢复卡牌对象，逐项调用同一辅助函数注册回调，然后再设置 `dialog.content.innerHTML`。
 
-该边界保证网络只传输可序列化数据，不传输函数、DOM 节点或主机闭包。
+该边界把 `handcardPoptips` 业务载荷限定为字符串和 `get.cardsInfo` 数组，不包含回调、DOM 节点或主机闭包；RPC 信封仍沿用现有 `Client.send`，序列化一个固定、无闭包 wrapper，并由客机侧 exec 调用客机本地 `game.over`。
 
 ## 组件接口
 
@@ -183,8 +183,9 @@ clients[i].send(
 ## 安全性与隐私
 
 - 手牌载荷只在 `_status.over` 已进入结算流程、主机准备发送结算 HTML 时发送，不提前广播，不改变对局中的隐藏信息规则。
-- 只传输字符串和 `get.cardsInfo` 产生的数组，不序列化函数、闭包、DOM 或可执行代码。
-- 客机不执行来自网络的回调；回调由本地固定辅助函数创建。
+- `handcardPoptips` 业务载荷只包含字符串和 `get.cardsInfo` 产生的数组；payload 不构造或注入可执行代码。
+- RPC 信封中的固定 wrapper 由现有 `Client.send` 序列化，wrapper 不闭包捕获主机 helper 或状态，客机侧 exec 后调用本地 `game.over`。
+- 客机不会执行来自 payload 的回调；poptip callback 由本地固定辅助函数创建。
 - `poptipId` 使用白名单格式并检查重复，不能借载荷覆盖任意 poptip。
 - 图标 HTML 由本地常量生成；载荷字段不会拼接进主结算 HTML。
 - `name` 来自主机对已存在角色执行的 `get.translation`。它仅用于现有 dialog 标题路径，不扩大当前主机权威模型。

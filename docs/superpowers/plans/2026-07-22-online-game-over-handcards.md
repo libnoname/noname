@@ -298,12 +298,22 @@ git commit -m "refactor: 统一结算手牌入口" -m "Co-authored-by: Copilot A
 
 - [ ] **Step 1: 安装运行时发送探针并确认当前调用缺少载荷**
 
+在 Task 1 代码完成、Task 2 尚未实施时，主机仍会发送旧三实参 direct `game.over` 调用。探针必须按结算发送边界识别，而不是按函数身份或最终 wrapper 形状识别。
+
 在主机开始一局联机游戏后、游戏结束前，于主机 DevTools Console 执行：
 
 ```js
-const isGameOverWrapper = fn =>
-	typeof fn === "function" &&
-	/function\s*\(\s*result\s*,\s*bool\s*,\s*handcardPoptips\s*\)\s*\{\s*game\.over\s*\(\s*result\s*,\s*bool\s*,\s*handcardPoptips\s*\)\s*;\s*\}/.test(fn.toString());
+const isGameOverResult = value => typeof value === "boolean" || typeof value === "string";
+const isGameOverHtml = value =>
+	typeof value === "string" &&
+	value.includes("<table") &&
+	value.includes("game_over_handcards_");
+const isGameOverSettlementSend = args =>
+	_status.over === true &&
+	typeof args[0] === "function" &&
+	isGameOverHtml(args[1]) &&
+	isGameOverResult(args[2]) &&
+	(args.length === 3 || (args.length === 4 && Array.isArray(args[3])));
 window.__gameOverSendCalls = [];
 window.__gameOverSendRestores = game.players
 	.concat(game.dead)
@@ -311,7 +321,7 @@ window.__gameOverSendRestores = game.players
 	.map(client => {
 		const originalSend = client.send;
 		client.send = function (...args) {
-			if (isGameOverWrapper(args[0])) {
+			if (isGameOverSettlementSend(args)) {
 				window.__gameOverSendCalls.push({
 					args,
 					overAtSend: _status.over,
@@ -328,18 +338,21 @@ window.__gameOverSendRestores = game.players
 结束游戏后在主机 Console 执行：
 
 ```js
-console.assert(window.__gameOverSendCalls.length > 0, "必须捕获至少一次 game.over 发送");
-console.assert(
-	window.__gameOverSendCalls.every(call => {
-		const args = call.args;
-		return args.length === 4 && Array.isArray(args[3]);
-	}),
-	"当前发送只有 HTML 和胜负结果，缺少第四个手牌载荷实参"
-);
+const calls = window.__gameOverSendCalls;
+console.assert(calls.length > 0, "必须捕获至少一次 game.over 结算发送；若为 0，探针仍误判了发送边界");
+if (calls.length > 0) {
+	console.assert(
+		calls.every(call => {
+			const args = call.args;
+			return args.length === 4 && Array.isArray(args[3]);
+		}),
+		"当前发送缺少第四个手牌载荷数组实参"
+	);
+}
 window.__gameOverSendRestores.forEach(restore => restore());
 ```
 
-预期：第二个断言失败；随后恢复所有临时 `send` 包装。
+预期：Task 1 后的旧 direct `game.over` 三实参调用能被捕获，`calls.length > 0` 通过；第二个断言因缺少第四个数组实参失败。`boolean` 和 `string` 胜负结果都属于合法结果形态。
 
 - [ ] **Step 2: 扩展 `Game.over` JSDoc 并初始化载荷**
 
@@ -387,7 +400,7 @@ window.__gameOverSendRestores.forEach(restore => restore());
 		};
 ```
 
-预期：载荷只含字符串和数组；回调、DOM、Player、`hsMap` 均不进入网络参数。
+预期：第四个 `handcardPoptips` 业务载荷只含字符串和数组；回调、DOM、Player、`hsMap` 均不进入该业务载荷。RPC 信封仍由现有 `Client.send` 处理固定 wrapper。
 
 - [ ] **Step 4: 把载荷作为第四个 `send` 实参发送**
 
@@ -419,41 +432,48 @@ pnpm --filter noname exec eslint noname/game/index.js
 
 预期：退出码为 `0`，没有 ESLint error。
 
-- [ ] **Step 6: 重跑发送探针并校验序列化内容**
+- [ ] **Step 6: 重跑发送探针并校验 wrapper 与序列化内容**
 
-重新开始联机游戏并安装 Step 1 的探针。确保至少一名角色有多张手牌、至少一名角色为零张手牌，然后结束游戏并执行：
+重新开始联机游戏并安装 Step 1 的探针（只复用安装代码，不执行 Step 1 的 RED 断言）。确保至少一名角色有多张手牌、至少一名角色为零张手牌，然后结束游戏并执行：
 
 ```js
+const isGameOverWrapper = fn =>
+	typeof fn === "function" &&
+	/function\s*\(\s*result\s*,\s*bool\s*,\s*handcardPoptips\s*\)\s*\{\s*game\.over\s*\(\s*result\s*,\s*bool\s*,\s*handcardPoptips\s*\)\s*;\s*\}/.test(fn.toString());
 const calls = window.__gameOverSendCalls;
-console.assert(calls.length > 0, "必须捕获 game.over 发送");
+console.assert(calls.length > 0, "必须捕获 game.over 结算发送");
 for (const { args, overAtSend } of calls) {
 	const payloads = args[3];
+	console.assert(isGameOverWrapper(args[0]), "第一个实参必须是固定 game.over wrapper");
 	console.assert(args.length === 4, "game.over 发送必须有四个实参");
 	console.assert(overAtSend === true, "手牌载荷只能在 _status.over 后发送");
 	console.assert(Array.isArray(payloads), "第四个实参必须是数组");
-	console.assert(
-		payloads.every((entry, index) =>
-			entry.poptipId === `game_over_handcards_${index}` &&
-			typeof entry.position === "string" &&
-			typeof entry.name === "string" &&
-			Array.isArray(entry.cards) &&
-			entry.cards.every(card => Array.isArray(card))
-		),
-		"每个载荷条目必须符合序列化接口"
-	);
-	console.assert(
-		payloads.some(entry => entry.cards.length === 0),
-		"载荷必须保留零张手牌"
-	);
-	console.assert(
-		payloads.some(entry => entry.cards.length > 1),
-		"载荷必须保留多张手牌"
-	);
+	if (Array.isArray(payloads)) {
+		console.assert(payloads.length >= 2, "载荷必须包含实际可见的存活和阵亡手牌入口");
+		console.assert(
+			payloads.every((entry, index) =>
+				entry.poptipId === `game_over_handcards_${index}` &&
+				typeof entry.position === "string" &&
+				typeof entry.name === "string" &&
+				Array.isArray(entry.cards) &&
+				entry.cards.every(card => Array.isArray(card))
+			),
+			"每个载荷条目必须符合序列化接口"
+		);
+		console.assert(
+			payloads.some(entry => entry.cards.length === 0),
+			"载荷必须保留零张手牌"
+		);
+		console.assert(
+			payloads.some(entry => entry.cards.length > 1),
+			"载荷必须保留多张手牌"
+		);
+	}
 }
 window.__gameOverSendRestores.forEach(restore => restore());
 ```
 
-预期：所有断言通过；客机在 Task 3 前仍无法打开 poptip，这是下一任务的失败起点。
+预期：所有断言通过；GREEN 同时证明发送函数已换成固定 wrapper，第四实参是非空数组载荷，且零张和多张手牌都保留。客机在 Task 3 前仍无法打开 poptip，这是下一任务的失败起点。
 
 - [ ] **Step 7: 提交主机快照发送**
 
