@@ -14654,6 +14654,17 @@ export class Library {
 			},
 		],
 		[
+			"那兔",
+			{
+				getSpan: () => {
+					const span = document.createElement("span");
+					span.style.fontFamily = "NonameSuits";
+					span.textContent = "🐰";
+					return span.outerHTML;
+				},
+			},
+		],
+		[
 			"风云",
 			{
 				getSpan: () => {
