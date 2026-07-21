@@ -64,7 +64,7 @@ clients[i].send(game.over, dialog.content.innerHTML, game.checkOnlineResult(clie
  */
 ```
 
-`cards` 的运行时校验按显式 wire tuple 处理：suit 为 nullish 或 `lib.suits` 中的 string；number 为 nullish、string 或有限 number；name 为非空 string，并拒绝 `__proto__`、`prototype`、`constructor` 等会命中原型属性的危险键，但不要求 `hasOwn(lib.card)`，以保留 `huosha`、`leisha`、`cisha` 和普通扩展卡牌名兼容；nature 为 nullish、空 string，或 `get.natureList(value)` 拆出的每个非空 token 均存在于 `lib.nature` 且不含空白；cardid 为 nullish 或 `get.id` 现有数字字符串格式。对象、函数、`NaN`、`Infinity`、未知/空白 nature token 和原型键在进入 `Card.init` 前被拒绝；不在本修复中修改通用卡牌协议。
+`cards` 的运行时校验按显式 wire tuple 处理：先抽取规范化 clone，镜像 `Card.init` 对 `huosha`、`leisha`、`cisha`、完整非空且已注册 `<nature>sha`、以及 `sha_<nature...>` 的别名路径；`sha_`、`sha_unknown`、`sha_bad nature` 这类空、未知或含空白 token 的 alias 在进入 `Card.init` 前被拒绝，且不修改原输入。随后对规范化 clone 校验 suit 为 nullish 或 `lib.suits` 中的 string；number 为 nullish、string 或有限 number；name 为非空安全 string，但不要求 `hasOwn(lib.card)`，以保留普通扩展卡牌名兼容；nature 为 nullish、空 string，或 `get.natureList(value)` 拆出的每个非空 token 均存在于 `lib.nature` 且不含空白；cardid 为 nullish 或 `get.id` 现有数字字符串格式。对象、函数、`NaN`、`Infinity`、未知/空白 nature token 和原型键在进入 `Card.init` 前被拒绝；不在本修复中修改通用卡牌协议。
 
 ### 本地 poptip 创建辅助函数
 
@@ -93,7 +93,7 @@ function createGameOverHandcardPoptip({ poptipId, name, cards }) {}
 
 ```js
 /**
- * @param {boolean | string} [result]
+ * @param {boolean | string | null} [result]
  * @param {boolean} [bool]
  * @param {GameOverHandcardPoptipPayload[]} [handcardPoptips]
  * @returns
@@ -102,6 +102,7 @@ over(result, bool, handcardPoptips) {}
 ```
 
 第三个参数仅供主机向客机发送结算手牌载荷。省略时沿用现有流程，不尝试恢复注册，也不抛出异常。
+`identity.checkOnlineResult` 可返回 `null`，因此结算结果探针和 `Game.over` JSDoc 均把 `result` 表达为 `boolean | string | null`；参数省略时仍允许 `undefined`。
 
 ## 稳定 ID
 
@@ -156,18 +157,19 @@ clients[i].send(
    - `poptipId` 必须符合固定前缀格式且在本批次唯一。
    - `position` 必须是非空字符串。
    - `name` 必须是字符串。
-   - `cards` 必须是数组；每项也必须是数组，长度为三至五项。suit 为 nullish 或 `lib.suits` 中的 string；number 为 nullish、string 或有限 number；name 为非空安全 string，拒绝 `__proto__`、`prototype`、`constructor` 等原型键但不要求 `hasOwn(lib.card)`；nature 为 nullish、空 string，或经 `get.natureList` 拆出的已注册非空 token；cardid 为 nullish 或数字字符串。拒绝对象、函数、`NaN`、`Infinity`、空白/未知 nature token 和原型键。
+   - `cards` 必须是数组；每项也必须是数组，长度为三至五项，并能生成合法规范化 clone。clone 镜像 `huosha`/`leisha`/`cisha`、合法 `<nature>sha` 和合法 `sha_<nature...>`；拒绝 `sha_`、`sha_unknown`、`sha_bad nature`。随后 suit 为 nullish 或 `lib.suits` 中的 string；number 为 nullish、string 或有限 number；name 为非空安全 string，拒绝 `__proto__`、`prototype`、`constructor` 等原型键但不要求 `hasOwn(lib.card)`；nature 为 nullish、空 string，或经 `get.natureList` 拆出的已注册非空 token；cardid 为 nullish 或数字字符串。拒绝对象、函数、`NaN`、`Infinity`、空白/未知 nature token 和原型键。
 5. `position` 用于诊断和匹配实际可见的 `game.players`、`game.dead` 角色；主机不会为 `game.additionaldead` 补建或发送不可见入口载荷。找不到时输出 `console.warn`，但由于载荷已包含显示名和完整卡牌快照，仍可继续注册该项，不让客户端状态差异破坏可用结果。
-6. 使用 `get.infoCards(entry.cards)` 恢复本地 `Card[]`。该调用可能原地规范化 `huosha`、`leisha`、`cisha` 的 wire tuple，因此 postcondition 在调用后逐张比较：恢复项必须是非数组对象且不能仍是原数组；`suit` 与 tuple 一致；`number` 等于 `parseInt(wireNumber) || 0`；`name` 与 tuple 一致；`nature` 按 `get.natureList`、`lib.nature`、`lib.sort.nature`、`lib.natureSeparator` 规范化后一致，且无 nature 时 nullish/空字符串等价；存在 wire cardid 时必须一致。任一不匹配视为恢复失败并跳过整个 payload；半初始化 Card 也必须拒绝。否则调用 `createGameOverHandcardPoptip` 注册同一 ID。
-7. 单项恢复抛错或返回无效结果时，输出包含 `poptipId` 和 `position` 的 `console.warn`，跳过该项并处理下一项。
-8. 所有可用项注册完成后，才执行 `dialog.content.innerHTML = result`。自定义元素连接 DOM 时即可读取正确名称和回调。
+6. 维护 restore 批次级 `Set<string>` 记录非空 cardid。每个通过 payload guard 的 entry 在调用 `get.infoCards` 前，先检查本 entry 内及此前 entry 的 cardid 唯一；重复时告警包含 poptipId/cardid/entry/card 索引并跳过整条 payload，不调用 `get.infoCards`。通过检查的非空 cardid 会在调用前预留，即使恢复抛错或 postcondition 失败，后续 entry 也不得复用。
+7. 使用 `get.infoCards(entry.cards)` 恢复本地 `Card[]`。该调用可能原地规范化 `huosha`、`leisha`、`cisha`、`<nature>sha`、`sha_<nature...>` 的 wire tuple，因此 postcondition 使用规范化 clone 逐张比较：恢复项必须是非数组对象且不能仍是原数组；`suit` 与 clone 一致；`number` 等于 `parseInt(wireNumber) || 0`；`name` 与 clone 一致；`nature` 按 `get.natureList`、`lib.nature`、`lib.sort.nature`、`lib.natureSeparator` 规范化后一致，且无 nature 时 nullish/空字符串等价；存在 wire cardid 时必须一致。任一不匹配视为恢复失败并跳过整个 payload；半初始化 Card 也必须拒绝。否则调用 `createGameOverHandcardPoptip` 注册同一 ID。
+8. 单项恢复抛错或返回无效结果时，输出包含 `poptipId` 和 `position` 的 `console.warn`，跳过该项并处理下一项。
+9. 所有可用项注册完成后，才执行 `dialog.content.innerHTML = result`。自定义元素连接 DOM 时即可读取正确名称和回调。
 
 ## 错误处理
 
 - **缺少第三个参数**：视为旧调用，不告警、不失败。
 - **载荷整体类型错误**：告警一次，忽略载荷，结算 HTML、胜负音效和退出按钮继续正常显示。
 - **条目字段错误**：告警并跳过该条目，不终止循环。
-- **重复或越界 ID**：告警并跳过，防止覆盖本地注册。
+- **重复或越界 poptipId / 重复非空 cardid**：告警并跳过整条 payload，防止覆盖本地注册或复用已污染的 `lib.cardOL` Card。
 - **本地找不到角色**：告警后使用载荷快照继续注册；`position` 用于诊断，不作为渲染的硬依赖。
 - **卡牌恢复失败**：告警并跳过该条目，不使用空数组伪装成功。
 - **零张手牌**：这是有效数据，正常注册并显示“（没有手牌）”，不告警。
@@ -208,8 +210,9 @@ clients[i].send(
 | 重复或非法 `poptipId` | 输出明确 `console.warn`，不覆盖已有 poptip |
 | 第三个参数缺省 | 不报错，结算 HTML、胜负结果和退出流程与旧调用一致 |
 | `cards` 不是数组或卡牌项格式错误 | 输出明确 `console.warn`，不把错误伪装成零手牌 |
-| 合法 card tuple：合法/缺省 suit、有限 number 或 string、单属性/复合属性、`huosha`/`leisha`/`cisha`、三/四/五元组 | guard 通过，`get.infoCards` 规范化后 postcondition 通过 |
-| 非法 card tuple：`bad nature`、空白或未知 nature token、危险 name/cardid、对象/函数字段、`NaN`、`Infinity` | 输出明确“联机结算手牌载荷无效”告警，跳过坏条目，正常条目仍注册 |
+| 合法 card tuple：合法/缺省 suit、有限 number 或 string、单属性/复合属性、`huosha`/`leisha`/`cisha`、`firesha`（或实际已注册 `<nature>sha`）、`sha_fire`、`sha_fire_thunder`、普通扩展 name、三/四/五元组 | guard 通过且不修改原输入，`get.infoCards` 规范化后 postcondition 通过 |
+| 非法 card tuple：`sha_bad nature`、`sha_`、`sha_unknown`、`bad nature`、空白或未知 nature token、危险 name/cardid、对象/函数字段、`NaN`、`Infinity` | 输出明确“联机结算手牌载荷无效”告警，跳过坏条目，正常条目仍注册，且不调用 `get.infoCards` |
+| 重复非空 cardid：同一 payload 内重复、跨 payload 重复、前项恢复失败后后项复用 | 输出包含 poptipId/cardid/索引的明确告警，跳过重复 payload 且不调用 `get.infoCards`，后续不同 id 或无 id payload 正常 |
 | `get.infoCards` 返回半初始化 Card 或 suit/number/name/nature/cardid 与规范化 tuple 不一致 | 输出明确“恢复结果无效”告警，跳过整条 payload |
 | 完整恢复 Card 的标准字段与规范化 tuple 一致 | 正常注册 poptip；若内部可信卡牌定义在标准字段已完整后抛错，不扩大通用 `get.infoCard` API |
 

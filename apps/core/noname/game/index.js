@@ -125,6 +125,47 @@ function isGameOverHandcardNature(value) {
 }
 
 /**
+ * 按 Card.init 的杀别名规则返回规范化 wire tuple clone；失败时返回 null，且不修改原输入。
+ *
+ * @param {unknown} value
+ * @returns {GameOverHandcardCardInfo | null}
+ */
+function normalizeGameOverHandcardCardInfo(value) {
+	if (!Array.isArray(value) || value.length < 3 || value.length > 5 || typeof value[2] !== "string") {
+		return null;
+	}
+	const normalized = value.slice();
+	if (normalized[2] === "huosha") {
+		normalized[2] = "sha";
+		normalized[3] = "fire";
+	} else if (normalized[2] === "leisha") {
+		normalized[2] = "sha";
+		normalized[3] = "thunder";
+	} else if (normalized[2] === "cisha") {
+		normalized[2] = "sha";
+		normalized[3] = "stab";
+	} else if (normalized[2].length > 3) {
+		const prefix = normalized[2].slice(0, normalized[2].lastIndexOf("sha"));
+		if (prefix && lib.nature.has(prefix) && prefix.length + 3 === normalized[2].length) {
+			normalized[2] = "sha";
+			normalized[3] = prefix;
+		}
+		if (normalized[2].startsWith("sha_")) {
+			const natureList = normalized[2].slice(4).split("_");
+			if (natureList.some(nature => !nature || nature !== nature.trim() || !lib.nature.has(nature))) {
+				return null;
+			}
+			normalized[2] = "sha";
+			normalized[3] = get.nature(natureList);
+		}
+	}
+	if (!isGameOverHandcardSuit(normalized[0]) || !isGameOverHandcardNumber(normalized[1]) || !isGameOverHandcardSafeKey(normalized[2]) || !isGameOverHandcardNature(normalized[3]) || !isGameOverHandcardCardId(normalized[4])) {
+		return null;
+	}
+	return normalized;
+}
+
+/**
  * 校验 wire cardid；只接受 get.id 现有数字字符串形态，避免对象或原型键进入 cardOL。
  *
  * @param {unknown} value
@@ -142,7 +183,7 @@ function isGameOverHandcardCardId(value) {
  * @returns {value is GameOverHandcardCardInfo}
  */
 function isGameOverHandcardCardInfo(value) {
-	return Array.isArray(value) && value.length >= 3 && value.length <= 5 && isGameOverHandcardSuit(value[0]) && isGameOverHandcardNumber(value[1]) && isGameOverHandcardSafeKey(value[2]) && isGameOverHandcardNature(value[3]) && isGameOverHandcardCardId(value[4]);
+	return normalizeGameOverHandcardCardInfo(value) !== null;
 }
 
 /**
@@ -153,18 +194,22 @@ function isGameOverHandcardCardInfo(value) {
  * @returns {card is Card}
  */
 function isRecoveredGameOverHandcardCard(card, info) {
+	const normalizedInfo = normalizeGameOverHandcardCardInfo(info);
+	if (normalizedInfo === null) {
+		return false;
+	}
 	if (card === info || Array.isArray(card) || typeof card !== "object" || card === null) {
 		return false;
 	}
-	if (card.suit !== info[0] || card.number !== (parseInt(info[1]) || 0) || card.name !== info[2]) {
+	if (card.suit !== normalizedInfo[0] || card.number !== (parseInt(normalizedInfo[1]) || 0) || card.name !== normalizedInfo[2]) {
 		return false;
 	}
-	const expectedNature = normalizeGameOverHandcardNature(info[3]);
+	const expectedNature = normalizeGameOverHandcardNature(normalizedInfo[3]);
 	const actualNature = normalizeGameOverHandcardNature(card.nature);
 	if (expectedNature === null || actualNature === null || expectedNature !== actualNature) {
 		return false;
 	}
-	return info[4] == null || card.cardid === info[4];
+	return normalizedInfo[4] == null || card.cardid === normalizedInfo[4];
 }
 
 /**
@@ -202,6 +247,7 @@ function restoreGameOverHandcardPoptips(handcardPoptips) {
 	}
 
 	const poptipIds = new Set();
+	const cardIds = new Set();
 	const players = [...game.players, ...game.dead];
 	handcardPoptips.forEach((payload, index) => {
 		if (!isGameOverHandcardPoptipPayload(payload)) {
@@ -213,6 +259,23 @@ function restoreGameOverHandcardPoptips(handcardPoptips) {
 			return;
 		}
 		poptipIds.add(payload.poptipId);
+		const payloadCardIds = [];
+		const duplicateCardIndex = payload.cards.findIndex(cardInfo => {
+			const cardId = cardInfo[4];
+			if (cardId == null) {
+				return false;
+			}
+			if (payloadCardIds.includes(cardId) || cardIds.has(cardId)) {
+				return true;
+			}
+			payloadCardIds.push(cardId);
+			return false;
+		});
+		if (duplicateCardIndex !== -1) {
+			console.warn(`联机结算手牌载荷无效：重复 cardid ${payload.cards[duplicateCardIndex][4]}（poptipId: ${payload.poptipId}, 索引 ${index}, 卡牌索引 ${duplicateCardIndex}）`, payload);
+			return;
+		}
+		payloadCardIds.forEach(cardId => cardIds.add(cardId));
 
 		const target = players.find(player => String(player.dataset.position) === payload.position);
 		if (!target) {
@@ -6761,7 +6824,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		}
 	}
 	/**
-	 * @param { boolean | string } [result]
+	 * @param { boolean | string | null } [result]
 	 * @param { boolean } [bool]
 	 * @param { GameOverHandcardPoptipPayload[] } [handcardPoptips]
 	 * @returns

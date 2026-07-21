@@ -108,6 +108,12 @@ function isGameOverHandcardNature(value) {}
 
 /**
  * @param {unknown} value
+ * @returns {GameOverHandcardCardInfo | null}
+ */
+function normalizeGameOverHandcardCardInfo(value) {}
+
+/**
+ * @param {unknown} value
  * @returns {value is string | null | undefined}
  */
 function isGameOverHandcardCardId(value) {}
@@ -140,7 +146,7 @@ function isGameOverHandcardPoptipPayload(value) {}
 function restoreGameOverHandcardPoptips(handcardPoptips) {}
 
 /**
- * @param {boolean | string} [result]
+ * @param {boolean | string | null} [result]
  * @param {boolean} [bool]
  * @param {GameOverHandcardPoptipPayload[]} [handcardPoptips]
  * @returns
@@ -349,7 +355,7 @@ git commit -m "refactor: 统一结算手牌入口" -m "Co-authored-by: Copilot A
 在主机开始一局联机游戏后、游戏结束前，于主机 DevTools Console 执行：
 
 ```js
-const isGameOverResult = value => typeof value === "boolean" || typeof value === "string";
+const isGameOverResult = value => value == null || typeof value === "boolean" || typeof value === "string";
 const isGameOverHtml = value =>
 	typeof value === "string" &&
 	value.includes("<table") &&
@@ -398,7 +404,7 @@ if (calls.length > 0) {
 window.__gameOverSendRestores.forEach(restore => restore());
 ```
 
-预期：Task 1 后的旧 direct `game.over` 三实参调用能被捕获，`calls.length > 0` 通过；第二个断言因缺少第四个数组实参失败。`boolean` 和 `string` 胜负结果都属于合法结果形态。
+预期：Task 1 后的旧 direct `game.over` 三实参调用能被捕获，`calls.length > 0` 通过；第二个断言因缺少第四个数组实参失败。`boolean`、`string` 与 `null` 胜负结果都属于合法结果形态，`undefined` 仍因参数可选继续安全退化。
 
 - [ ] **Step 2: 扩展 `Game.over` JSDoc 并初始化载荷**
 
@@ -406,7 +412,7 @@ window.__gameOverSendRestores.forEach(restore => restore());
 
 ```js
 	/**
-	 * @param {boolean | string} [result]
+	 * @param {boolean | string | null} [result]
 	 * @param {boolean} [bool]
 	 * @param {GameOverHandcardPoptipPayload[]} [handcardPoptips]
 	 * @returns
@@ -667,7 +673,7 @@ function isGameOverHandcardPoptipPayload(value) {
 }
 ```
 
-预期：零长度 `cards` 通过；非数组、长度小于三或大于五、缺少非空安全卡牌名的条目失败。suit 只接受 nullish 或 `lib.suits` 中的字符串；number 只接受 nullish、字符串或有限 number；name 拒绝 `__proto__`、`prototype`、`constructor` 和原型链键但不要求 `hasOwn(lib.card)`，保留 `huosha`/`leisha`/`cisha` 与扩展卡名；nature 只接受 nullish、空字符串或 `get.natureList(value)` 拆出的已注册非空 token；cardid 只接受 nullish 或 `get.id` 数字字符串。
+预期：零长度 `cards` 通过；非数组、长度小于三或大于五、缺少非空安全卡牌名的条目失败。suit 只接受 nullish 或 `lib.suits` 中的字符串；number 只接受 nullish、字符串或有限 number；name 先通过规范化 clone 镜像 `Card.init` 的 `huosha`/`leisha`/`cisha`、完整已注册 `<nature>sha`、以及 `sha_<nature...>` alias 路径；`sha_`、`sha_unknown`、`sha_bad nature` 在进入 `get.infoCards` 前失败。随后对规范化 clone 复用 suit/number/safe name/nature/cardid guard；普通扩展卡名仍不要求 `hasOwn(lib.card)`。nature 只接受 nullish、空字符串或 `get.natureList(value)` 拆出的已注册非空 token；cardid 只接受 nullish 或 `get.id` 数字字符串。
 
 - [ ] **Step 3: 增加逐项恢复函数和精确告警**
 
@@ -706,6 +712,7 @@ function restoreGameOverHandcardPoptips(handcardPoptips) {
 	}
 
 	const poptipIds = new Set();
+	const cardIds = new Set();
 	const players = [...game.players, ...game.dead];
 	handcardPoptips.forEach((payload, index) => {
 		if (!isGameOverHandcardPoptipPayload(payload)) {
@@ -720,6 +727,22 @@ function restoreGameOverHandcardPoptips(handcardPoptips) {
 			return;
 		}
 		poptipIds.add(payload.poptipId);
+		const payloadCardIds = [];
+		const duplicateCardIndex = payload.cards.findIndex(cardInfo => {
+			const cardId = cardInfo[4];
+			if (cardId == null) return false;
+			if (payloadCardIds.includes(cardId) || cardIds.has(cardId)) return true;
+			payloadCardIds.push(cardId);
+			return false;
+		});
+		if (duplicateCardIndex !== -1) {
+			console.warn(
+				`联机结算手牌载荷无效：重复 cardid ${payload.cards[duplicateCardIndex][4]}（poptipId: ${payload.poptipId}, 索引 ${index}, 卡牌索引 ${duplicateCardIndex}）`,
+				payload
+			);
+			return;
+		}
+		payloadCardIds.forEach(cardId => cardIds.add(cardId));
 
 		const target = players.find(
 			player => String(player.dataset.position) === payload.position
@@ -762,7 +785,7 @@ function restoreGameOverHandcardPoptips(handcardPoptips) {
 }
 ```
 
-预期：只捕获 `get.infoCards` 的转换错误；无宽泛包裹整个循环。`get.infoCards` 调用后按被 `Card.init` 原地规范化后的 tuple 比较对象/non-array、suit、`parseInt(wireNumber) || 0` 后的 number、name、经 `get.natureList`/`lib.nature`/`lib.sort.nature`/`lib.natureSeparator` 规范化的 nature，以及存在 wire cardid 时的 cardid；任一不匹配都告警并跳过该 payload。缺失 Player 只告警，不阻止快照注册。
+预期：只捕获 `get.infoCards` 的转换错误；无宽泛包裹整个循环。每个通过结构 guard 的 payload 在 `get.infoCards` 前先检查本 entry 内和此前 entry 的非空 cardid 唯一；重复时告警包含 poptipId、cardid、entry/card 索引并跳过整条 payload，且不会调用 `get.infoCards`。通过检查的非空 cardid 会在调用前预留，即使恢复抛错或 postcondition 失败，后续 entry 也不得复用。`get.infoCards` 调用后按规范化 clone 比较对象/non-array、suit、`parseInt(wireNumber) || 0` 后的 number、name、经 `get.natureList`/`lib.nature`/`lib.sort.nature`/`lib.natureSeparator` 规范化的 nature，以及存在 wire cardid 时的 cardid；任一不匹配都告警并跳过该 payload。缺失 Player 只告警，不阻止快照注册。
 
 - [ ] **Step 4: 在插入 HTML 前恢复收到的第三参数**
 
@@ -843,7 +866,28 @@ console.assert(
 				poptipId: "game_over_handcards_10000",
 				position: "0",
 				name: "坏属性",
-				cards: [[null, null, "shan", "bad nature", null]],
+				cards: [[null, null, "sha_bad nature", null, null]],
+			},
+			{
+				poptipId: "game_over_handcards_10001",
+				position: "0",
+				name: "同项重复 cardid",
+				cards: [
+					["spade", 7, "sha", null, "9876543210"],
+					["heart", 8, "shan", null, "9876543210"],
+				],
+			},
+			{
+				poptipId: "game_over_handcards_10002",
+				position: "0",
+				name: "先占用 cardid",
+				cards: [["spade", 7, "sha", null, "9876543211"]],
+			},
+			{
+				poptipId: "game_over_handcards_10003",
+				position: "0",
+				name: "跨项重复 cardid",
+				cards: [["heart", 8, "shan", null, "9876543211"]],
 			},
 			null,
 			{
@@ -867,7 +911,7 @@ console.assert(
 
 结束游戏后，客机预期：
 
-1. 控制台分别出现缺失角色、malformed nature 载荷无效、空对象、非法 ID、坏 `cards`、重复 ID 的明确 `console.warn`；malformed nature 使用合法独立 `poptipId`，不得先被重复 ID 拦截。
+1. 控制台分别出现缺失角色、malformed/alias nature 载荷无效、空对象、非法 ID、坏 `cards`、重复 poptipId、same-entry 重复 cardid、cross-entry 重复 cardid 的明确 `console.warn`；malformed nature 使用合法独立 `poptipId`，不得先被重复 ID 拦截。
 2. 正常存活和阵亡角色入口仍可点击。
 3. 新增的“快照角色”入口已注册，点击后显示“（没有手牌）”。
 4. 没有未捕获异常，胜负结果和退出按钮正常。
@@ -983,7 +1027,8 @@ Test-Path $baseline
 
 ## 测试
 
-- `node .superpowers\sdd\strict-card-recovery-assertions.mjs`（RED 覆盖旧 guard 接受 `bad nature`、name-only postcondition 接受半初始化 Card；GREEN 覆盖合法 suits/nullish/finite number/string/单或复合 nature/`huosha`/`leisha`/`cisha`/三四五元组，以及 bad nature、空白 token、危险 name/id、object field、`NaN`、`Infinity`、标准字段 mismatch 和规范化完整 Card）
+- `node .superpowers\sdd\strict-card-recovery-assertions.mjs`（严格恢复边界）
+- `node .superpowers\sdd\alias-cardid-boundary.mjs`（RED/GREEN 覆盖 `sha_bad nature`、`sha_`、`sha_unknown` preguard，`huosha`/`leisha`/`cisha`/`firesha`/`sha_fire`/`sha_fire_thunder` 规范化，same-entry/cross-entry/失败后重复 cardid 隔离，以及 nullable result JSDoc/probe）
 - `pnpm --filter noname lint`
 - `pnpm build`
 - 主机与客机：存活、阵亡、多张、零张、坏条目、缺失 Player
