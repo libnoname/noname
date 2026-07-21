@@ -10294,43 +10294,39 @@ const skills = {
 			}
 		},
 		trigger: { player: "phaseUseBegin" },
-		direct: true,
 		filter(event, player) {
-			return game.hasPlayer(function (current) {
-				return current != player && !current.hasMark("spshanxi");
-			});
+			return game.hasPlayer(current => current !== player && !current.hasMark("spshanxi"));
 		},
-		content() {
-			"step 0";
-			var eff = 0;
-			var target = game.findPlayer(function (current) {
-				return current != player && current.hasMark("spshanxi");
-			});
+		async cost(event, trigger, player) {
+			let eff = 0;
+			const target = game.findPlayer(current => current !== player && current.hasMark("spshanxi"));
 			if (target) {
 				eff = -get.attitude(player, target) / Math.sqrt(Math.max(1, target.hp));
 			}
-			player
-				.chooseTarget(get.prompt("spshanxi"), "令一名其他角色获得“檄”", function (card, player, target) {
-					return target != player && !target.hasMark("spshanxi");
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt("spshanxi"),
+					prompt2: "令一名其他角色获得“檄”",
+					filterTarget(card, player, target) {
+						return target !== player && !target.hasMark("spshanxi");
+					},
+					ai(target) {
+						return -get.attitude(_status.event.player, target) / Math.sqrt(Math.max(1, target.hp)) - eff;
+					},
 				})
-				.set("ai", function (target) {
-					return -get.attitude(_status.event.player, target) / Math.sqrt(Math.max(1, target.hp)) - _status.event.eff;
-				})
-				.set("eff", eff);
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("spshanxi", target);
-				game.countPlayer(function (current) {
-					if (current == target) {
-						current.addMark("spshanxi", 1);
-					} else {
-						var num = current.countMark("spshanxi");
-						if (num > 0) {
-							current.removeMark("spshanxi", num);
-						}
-					}
-				});
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			for (const current of game.filterPlayer()) {
+				if (current === target) {
+					current.addMark("spshanxi", 1);
+					continue;
+				}
+				const num = current.countMark("spshanxi");
+				if (num > 0) {
+					current.removeMark("spshanxi", num);
+				}
 			}
 		},
 		marktext: "檄",
@@ -10350,28 +10346,34 @@ const skills = {
 			return event.player.hasMark("spshanxi") && event.player.hp > 0;
 		},
 		logTarget: "player",
-		content() {
-			"step 0";
-			if (trigger.player.countCards("he") < 2) {
-				event._result = { bool: false };
-			} else {
-				trigger.player.chooseCard("he", 2, "交给" + get.translation(player) + "两张牌，或失去1点体力").set("ai", function (card) {
-					return 9 - get.value(card);
-				});
+		async content(event, trigger, player) {
+			const target = trigger.player;
+			if (target.countCards("he") < 2) {
+				await target.loseHp();
+				return;
 			}
-			"step 1";
-			if (!result.bool) {
-				trigger.player.loseHp();
-			} else {
-				trigger.player.give(result.cards, player);
+			const result = await target
+				.chooseCard({
+					prompt: `交给${get.translation(player)}两张牌，或失去1点体力`,
+					selectCard: 2,
+					position: "he",
+					ai(card) {
+						return 9 - get.value(card);
+					},
+				})
+				.forResult();
+			if (!result.bool || !result.cards?.length) {
+				await target.loseHp();
+				return;
 			}
+			await target.give(result.cards, player);
 		},
 	},
 	spshanxi_bj: {
 		trigger: { player: "dieAfter" },
 		sourceSkill: "spshanxi",
 		filter(event, player) {
-			for (let i of game.players) {
+			for (const i of game.players) {
 				if (i.hasSkill("spshanxi_suoming", null, null, false)) {
 					return false;
 				}
@@ -10381,13 +10383,13 @@ const skills = {
 		silent: true,
 		forceDie: true,
 		charlotte: true,
-		content() {
+		async content(event, trigger, player) {
 			game.removeGlobalSkill("spshanxi_bj");
 		},
 		ai: {
 			effect: {
 				target(card, player, target) {
-					let suoming = game.findPlayer(current => current.hasSkill("spshanxi_suoming"));
+					const suoming = game.findPlayer(current => current.hasSkill("spshanxi_suoming"));
 					if (suoming && _status.event && target === _status.event.dying && target.hasMark("spshanxi")) {
 						if (target.countCards("he") < 2) {
 							return "zerotarget";
