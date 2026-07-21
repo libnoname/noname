@@ -2948,7 +2948,7 @@ const skills = {
 							return 0;
 						}
 						return val + (target.canUse({ name: "sha", nature: "fire", isCard: true }, target2, false) ? get.effect(target2, { name: "sha", nature: "fire", isCard: true }, target, player) : 0);
-					}
+					},
 				})
 				.forResult();
 			if (!result2?.bool || !result2.targets?.length) {
@@ -3051,7 +3051,7 @@ const skills = {
 						}
 						const target2 = evt.target;
 						return get.effect(target2, { name: "sha", nature: "fire", isCard: true }, target, player);
-					}
+					},
 				})
 				.set("ai", target => {
 					const player = _status.event.player;
@@ -3071,7 +3071,7 @@ const skills = {
 			}
 			await source.useCard({
 				card,
-				targets: [target], 
+				targets: [target],
 				addCount: false,
 				noai: true,
 			});
@@ -3189,7 +3189,7 @@ const skills = {
 									ai() {
 										const evt = get.event();
 										return ["摸两张牌", "回复体力"][evt.goon.indexOf(Math.max(...evt.goon))];
-									}
+									},
 								})
 								.set("goon", [drawEffect, recoverEffect])
 								.forResult()
@@ -3457,7 +3457,7 @@ const skills = {
 								return 0;
 							}
 							return -get.value(card, target) * get.attitude(player, target);
-						}
+						},
 					})
 					.forResult();
 				if (!result?.bool || !result.links?.length) {
@@ -3475,7 +3475,7 @@ const skills = {
 					ai(target) {
 						const evt = get.event();
 						return get.effect(target, evt.card, evt.player, evt.player);
-					}
+					},
 				})
 				.set("card", card)
 				.forResult();
@@ -3572,7 +3572,7 @@ const skills = {
 										return -get.value(card, target) * get.attitude(player, target);
 									}
 									return 0;
-								}
+								},
 							})
 							.set("target", target)
 							.forResult();
@@ -3939,7 +3939,7 @@ const skills = {
 				position: "h",
 				ai(card) {
 					return -get.value(card);
-				}
+				},
 			});
 			if (trigger.card) {
 				const suit = get.suit(trigger.card, false);
@@ -3949,9 +3949,7 @@ const skills = {
 					next.set("ai", card => {
 						const player = get.player(),
 							suit = get.event().suit;
-						if (
-							player.hasCard(cardx => cardx !== card && get.suit(cardx) == suit, "h")
-						) {
+						if (player.hasCard(cardx => cardx !== card && get.suit(cardx) == suit, "h")) {
 							return 0;
 						}
 						if (get.name(card) != "tao" && ((get.position(card) == "h" && get.suit(card) == suit) || player.hp == 1)) {
@@ -3968,7 +3966,7 @@ const skills = {
 			await player.showHandcards();
 			if (trigger.card) {
 				const suit = get.suit(trigger.card, false);
-				if (suit != null && !lib.suit.includes(suit) || !player.hasCards("h", { suit })) {
+				if ((suit != null && !lib.suit.includes(suit)) || !player.hasCards("h", { suit })) {
 					await player.recover();
 				}
 			}
@@ -4427,7 +4425,7 @@ const skills = {
 				await player.loseHp(player.countMark("spjungong_used"));
 			}
 			await player.useCard({
-				card: get.autoViewAs({ name: "sha", isCard: true }), 
+				card: get.autoViewAs({ name: "sha", isCard: true }),
 				targets: [target],
 				addCount: false,
 			});
@@ -4798,12 +4796,14 @@ const skills = {
 			}
 			let cards2 = he;
 			if (he.length >= num) {
-				const result = await player.chooseCard({
-					prompt: `选择${get.cnNumber(num)}张牌作为生`,
-					selectCard: num,
-					position: "he",
-					forced: true,
-				}).forResult();
+				const result = await player
+					.chooseCard({
+						prompt: `选择${get.cnNumber(num)}张牌作为生`,
+						selectCard: num,
+						position: "he",
+						forced: true,
+					})
+					.forResult();
 				if (result.bool && result.cards?.length) {
 					cards2 = result.cards;
 				}
@@ -4875,7 +4875,7 @@ const skills = {
 				})
 				.set("choice", choice)
 				.forResult();
-			
+
 			event.result = {
 				bool: result.control !== "cancel2",
 				targets: game.filterPlayer(current => current.group === result.control),
@@ -4914,7 +4914,7 @@ const skills = {
 							ai(button) {
 								const player = get.player();
 								return get.value(button.link, player);
-							}
+							},
 						})
 						.forResult();
 					if (result?.bool && result.links?.length) {
@@ -5072,11 +5072,7 @@ const skills = {
 			}
 			list.push("cancel2");
 
-			const resultx = !player.isDamaged()
-				? 0
-				: player.hp <= 2 || target.hasCards("e", card => player.canEquip(card) && get.value(card, target) >= 4 + player.getDamagedHp())
-					? 1
-					: 0;
+			const resultx = !player.isDamaged() ? 0 : player.hp <= 2 || target.hasCards("e", card => player.canEquip(card) && get.value(card, target) >= 4 + player.getDamagedHp()) ? 1 : 0;
 			const result2 = await player
 				.chooseControl({
 					controls: list,
@@ -5471,9 +5467,7 @@ const skills = {
 			return get.suit(event.card) == "club";
 		},
 		async content(event, trigger, player) {
-			trigger.directHit.addArray(
-				game.filterPlayer(current => current !== player)
-			);
+			trigger.directHit.addArray(game.filterPlayer(current => current !== player));
 		},
 		group: "zhangming_damage",
 		subSkill: {
@@ -6525,14 +6519,10 @@ const skills = {
 						if (ui.selected.cards.length) {
 							cards.addArray(ui.selected.cards);
 						}
-						if (
-							!player.countCards("he", current => !cards.includes(current))
-						) {
+						if (!player.countCards("he", current => !cards.includes(current))) {
 							return;
 						}
-						if (
-							!player.countCards("h", current => !cards.includes(current) && get.color(current) === "black" && get.value(current, player) < 6)
-						) {
+						if (!player.countCards("h", current => !cards.includes(current) && get.color(current) === "black" && get.value(current, player) < 6)) {
 							return "zerotarget";
 						}
 						return 0.5;
@@ -7224,7 +7214,7 @@ const skills = {
 				})
 				.set("choice", choice)
 				.forResult();
-			
+
 			event.result = {
 				bool: result.control !== "cancel2",
 				targets: game.filterPlayer(current => current.group === result.control),
@@ -10608,7 +10598,7 @@ const skills = {
 								effs[1] = effect;
 							}
 						}
-					};
+					}
 					return effs[get.attitude(player, target) > 0 ? 0 : 1];
 				},
 			},
