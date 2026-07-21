@@ -1823,9 +1823,10 @@ const translates = {
 	pxqiaoxian_info: "当你受到伤害后，你可以摸一张牌。",
 	pxrunan: "汝南",
 	pxrunan_info: "当你获得此技能后，你可以令一名角色摸X张牌（X为你的手牌上限）。",
-	//段煨 孩子你有点吓人了
+	ol_duanwei: "OL段煨",
+	ol_duanwei_prefix: "OL",
 	oltaohuai: "讨怀",
-	oltaohuai_info: "转换技，你使用牌后，若此牌点数为你手牌中: 阳:最大；阴:最小。你摸一张牌。否则你可弃置一张牌。",
+	oltaohuai_info: "转换技，你使用手牌中点数<br>阳：最大的牌<br>阴：最小的牌<br>时摸一张牌，否则你可以弃置一张牌。",
 };
 
 export default translates;

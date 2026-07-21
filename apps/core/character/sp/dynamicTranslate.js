@@ -16,15 +16,15 @@ const dynamicTranslates = {
 	},
 	olchunhui(player, skill) {
 		const bool = player.storage[`${skill}_rewrite`];
-		return `准备阶段或当你受到伤害后，令一名其他角色交给你一张牌。若此牌为黑色，本轮你与其下一次使用${bool? "黑色" : "红色"}牌时，可为此牌增加或减少一个目标（至多减至1）。`;
+		return `准备阶段或当你受到伤害后，令一名其他角色交给你一张牌。若此牌为黑色，本轮你与其下一次使用${bool ? "黑色" : "红色"}牌时，可为此牌增加或减少一个目标（至多减至1）。`;
 	},
 	olxiasheng(player, skill) {
 		const bool = player.storage[`${skill}_rewrite`];
-		return `锁定技，若你手牌中：${bool? "黑色" : "红色"}牌较多，你使用黑色牌时摸一张牌；黑色牌较多，你使用${bool? "黑色" : "红色"}牌可多指定一个目标。`;
+		return `锁定技，若你手牌中：${bool ? "黑色" : "红色"}牌较多，你使用黑色牌时摸一张牌；黑色牌较多，你使用${bool ? "黑色" : "红色"}牌可多指定一个目标。`;
 	},
 	olqiumu(player, skill) {
 		const bool = player.storage[`${skill}_rewrite`];
-		return `锁定技，本回合成为过${bool? "黑色" : "红色"}牌目标的角色进入濒死状态时，你获得其所有黑色牌，并将${get.poptip("olchunhui")}、${get.poptip("olxiasheng")}或〖秋暮〗描述中的“${bool? "黑色" : "红色"}”均改为“黑色”。`;
+		return `锁定技，本回合成为过${bool ? "黑色" : "红色"}牌目标的角色进入濒死状态时，你获得其所有黑色牌，并将${get.poptip("olchunhui")}、${get.poptip("olxiasheng")}或〖秋暮〗描述中的“${bool ? "黑色" : "红色"}”均改为“黑色”。`;
 	},
 	olwenyi(player) {
 		let info = lib.translate["olwenyi_info"],
@@ -226,18 +226,13 @@ const dynamicTranslates = {
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
-	oltaohuai(player) {
-		const bool = player.storage.oltaohuai;
-		let yang = "最大",
-			yin = "最小";
-		if (bool) {
-			yin = `<span class='bluetext'>${yin}</span>`;
-		} else {
-			yang = `<span class='firetext'>${yang}</span>`;
-		}
-		let start = "转换技，你使用牌后，若此牌点数为你手牌中：",
-			end = "。你摸一张牌。否则你可弃置一张牌。";
-		return `${start}阳：${yang}；阴：${yin}${end}`;
+	oltaohuai(player, skill) {
+		const bool = player.storage[skill];
+		let yang = "阳：最大的牌",
+			yin = "阴：最小的牌";
+		if (bool) yin = `<span class='bluetext'>${yin}</span>`;
+		else yang = `<span class='firetext'>${yang}</span>`;
+		return `转换技，你使用手牌中点数<br>${yang}<br>${yin}<br>时摸一张牌，否则你可以弃置一张牌。`;
 	},
 };
 export default dynamicTranslates;

@@ -47513,69 +47513,117 @@ const skills = {
 	oltaohuai: {
 		audio: 2,
 		zhuanhuanji: true,
-		mark: true,
-		marktext: "☯",
-		trigger: { player: "useCardAfter" },
+		trigger: { player: "useCard" },
 		filter(event, player) {
-			return event.card?.name;
+			return player.hasHistory("lose", evt => {
+				if ((evt.relatedEvent || evt.getParent()) !== event) return false;
+				return evt.hs.some(card => typeof get.number(card, player) === "number");
+			});
 		},
 		async cost(event, trigger, player) {
-			const usedNumber = get.number(trigger.card);
-			const handCards = player.getCards("h");
-			const isYin = player.storage.oltaohuai;
-			let success = false;
-			if (!player.hasCards("h")) {
-				success = true;
-			} else {
-				const numbers = handCards.map(card => get.number(card));
-				numbers.push(usedNumber);
-				const maxNumber = Math.max(...numbers);
-				const minNumber = Math.min(...numbers);
-				if (!isYin && usedNumber === maxNumber) {
-					success = true;
-				} else if (isYin && usedNumber === minNumber) {
-					success = true;
-				}
-			}
-			if (success) {
-				event.result = { bool: true, cost_data: { success: true } };
-			} else {
-				const result = await player.chooseCard({
-					prompt: "讨怀：是否弃置一张牌？",
-					selectCard: [0, 1],
-					ai: (card) => {
-						return 2 - get.value(card);
-					},
-				}).forResult();
-				event.result = { bool: true, cost_data: { cards: result.cards || [], success: false } };
+			if (
+				(() => {
+					const hs = player.getCards("h", card => typeof get.number(card, player) === "number");
+					if (!hs.length) return true;
+					const evt = player.getHistory("lose", evt => (evt.relatedEvent || evt.getParent()) === trigger)[0];
+					const evths = evt.hs.filter(card => typeof get.number(card, player) === "number");
+					const numbers = [...hs, ...evths]
+						.unique()
+						.map(card => get.number(card, player))
+						.sort((a, b) => a - b);
+					const [max, min] = [numbers.at(-1), numbers[0]];
+					return evths.some(card => {
+						const number = get.number(card, player);
+						return number === (player.storage[event.skill] ? min : max);
+					});
+				})()
+			)
+				event.result = { bool: true };
+			else {
+				event.result = await player
+					.chooseToDiscard({
+						prompt: `${get.translation(event.skill)}：是否弃置一张牌？`,
+						position: "he",
+						ai(card) {
+							const player = get.player();
+							if (!player.isPhaseUsing() || player.hasValueTarget(card, true, true)) return -1;
+							const number = get.number(card);
+							if (get.position(card) !== "h" || typeof number !== "number") return -1;
+							const hs = player.getCards("h", card => typeof get.number(card, player) === "number");
+							const numbers = hs.map(card => get.number(card, player)).sort((a, b) => a - b);
+							const [max, min] = [numbers.at(-1), numbers[0]];
+							if (number !== (player.storage.oltaohuai ? min : max)) return -1;
+							const hs2 = player.getCards("h", card2 => card2 !== card).sort((a, b) => get.number(a) - get.number(b));
+							if (!hs2.length) return -1;
+							return player.hasValueTarget(player.storage.oltaohuai ? hs2[0] : hs2.at(-1), true, true) ? 10 : -1;
+						},
+						chooseonly: true,
+					})
+					.forResult();
 			}
 		},
+		locked: true,
 		async content(event, trigger, player) {
-			if (event.cost_data?.success) {
+			if (event.cards?.length) await player.discard(event.cards);
+			else {
+				player.changeZhuanhuanji(event.name);
 				await player.draw();
-			} else if (event.cost_data?.cards?.length > 0) {
-				await player.discard(event.cost_data.cards);
 			}
-			player.changeZhuanhuanji("oltaohuai");
 		},
-		check(event, player) {
-			const handCards = player.getCards("h");
-			if (player.countCards("h") > player.hp + 2) {
-				return 5;
-			}
-			if (player.countCards("h") > 3) {
-				const cardValues = handCards.map(c => get.value(c));
-				const minValue = Math.min(...cardValues);
-				if (minValue < 5) {
-					return 3;
-				}
-			}
-			const cardValues = handCards.map(c => get.value(c));
-			const minValue = Math.min(...cardValues);
-			if (minValue < 3) {
-				return 1;
-			}
-			return 0;
+		mark: true,
+		marktext: "☯",
+		intro: {
+			content(storage) {
+				return `使用手牌中点数最${storage ? "小" : "大"}的牌时摸一张牌，否则你可以弃置一张牌`;
+			},
+		},
+		init(player, skill) {
+			player.addSkill(`${skill}_record`);
+		},
+		onremove(player, skill) {
+			player.removeSkill(`${skill}_record`);
+		},
+		subSkill: {
+			record: {
+				charlotte: true,
+				init(player, skill) {
+					const hs = player.getCards("h", card => typeof get.number(card, player) === "number");
+					const numbers = hs.map(card => get.number(card, player)).sort((a, b) => a - b);
+					const [max, min] = [numbers.at(-1), numbers[0]];
+					const hs2 = hs.filter(card => get.number(card, player) === (player.storage.oltaohuai ? min : max));
+					const hs3 = [...hs].removeArray(hs2);
+					player.addGaintag(hs2, skill);
+					player.removeGaintag(skill, hs3);
+				},
+				onremove(player, skill) {
+					player.removeGaintag(skill);
+				},
+				trigger: {
+					player: ["loseEnd", "changeZhuanhuanjiBegin", "enterGame"],
+					global: ["phaseBefore", "loseAsyncEnd", "gainEnd", "equipEnd", "addJudgeEnd", "addToExpansionEnd"],
+				},
+				filter(event, player, name) {
+					if (name === "changeZhuanhuanjiBegin") {
+						if (event.skill !== "oltaohuai") return false;
+					} else if (!["enterGame", "phaseBefore"].includes(name)) {
+						let gain = 0,
+							lose = 0;
+						if (event.getg) gain = event.getg(player).length;
+						if (event.getl) lose = event.getl(player).hs.length;
+						if (gain === lose) return false;
+					}
+					const hs = player.getCards("h", card => typeof get.number(card, player) === "number");
+					if (!hs.length) return false;
+					const numbers = hs.map(card => get.number(card, player)).sort((a, b) => a - b);
+					const [max, min] = [numbers.at(-1), numbers[0]];
+					const hs2 = hs.filter(card => get.number(card, player) === (player.storage.oltaohuai ? min : max));
+					return hs.some(card => hs2.includes(card) === !card.hasGaintag("oltaohuai_record"));
+				},
+				silent: true,
+				async content(event, trigger, player) {
+					lib.skill[event.name].init(player, event.name);
+				},
+			},
 		},
 	},
 };
