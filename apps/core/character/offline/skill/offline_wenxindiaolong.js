@@ -3,6 +3,267 @@ import html from "dedent";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//曹丕------by 清风
+	wxdlyishi: {
+		audio: 2,
+		derivation: "wxdlfangzhu",
+		enable: "phaseUse",
+		manualConfirm: true,
+		limited: true,
+		skillAnimation: true,
+		animationColor: "wood",
+		filter(event, player) {
+			return game.players.length > 1;
+		},
+		filterTarget: lib.filter.notMe,
+		selectTarget: -1,
+		multiline: true,
+		multitarget: true,
+		async content(event, trigger, player) {
+			player.awakenSkill(event.name);
+			const targets = event.targets.sortBySeat();
+			await player.useSkill({ skill: "wxdlfangzhu", targets });
+			await game.doAsyncInOrder(targets, async target => {
+				await target.addSkills("wxdlfangzhu");
+				target.markAuto("wxdlfangzhu", [player]);
+			});
+		},
+		ai: {
+			order: 1,
+			result: {
+				player: 1,
+			},
+		},
+	},
+	wxdlfangzhu: {
+		audio: "fangzhu",
+		inherit: "fangzhu",
+		//防止useSkill重复触发
+		multitarget: true,
+		multiline: true,
+		intro: {
+			content: "只能对$发动",
+		},
+		async cost(event, trigger, player) {
+			const draw = player.getDamagedHp();
+			const storage = player.getStorage(event.skill);
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt(event.skill),
+					prompt2: "令一名其他角色翻面" + (draw > 0 ? "并摸" + get.cnNumber(draw) + "张牌" : ""),
+					filterTarget(card, player, target) {
+						if(player == target) {
+							return false;
+						}
+						const storage = get.event().storage;
+						if (!storage?.length) {
+							return true;
+						}
+						return storage.includes(target);
+					},
+					ai(target) {
+						if (target.hasSkillTag("noturn")) {
+							return 0;
+						}
+						const player2 = get.event().player;
+						const current = _status.currentPhase;
+						const dis = current ? get.distance(current, target, "absolute") : 1;
+						const draw2 = player2.getDamagedHp();
+						const att = get.attitude(player2, target);
+						if (att == 0) {
+							return target.hasJudge("lebu") ? Math.random() / 3 : Math.sqrt(get.threaten(target)) / 5 + Math.random() / 2;
+						}
+						if (att > 0) {
+							if (target.isTurnedOver()) {
+								return att + draw2;
+							}
+							if (draw2 < 4) {
+								return -1;
+							}
+							if (current && target.getSeatNum() > current.getSeatNum()) {
+								return att + draw2 / 3;
+							}
+							return (10 * Math.sqrt(Math.max(0.01, get.threaten(target)))) / (3.5 - draw2) + dis / (2 * game.countPlayer());
+						} else {
+							if (target.isTurnedOver()) {
+								return att - draw2;
+							}
+							if (draw2 >= 5) {
+								return -1;
+							}
+							if (current && target.getSeatNum() <= current.getSeatNum()) {
+								return -att + draw2 / 3;
+							}
+							return (4.25 - draw2) * 10 * Math.sqrt(Math.max(0.01, get.threaten(target))) + (2 * game.countPlayer()) / dis;
+						}
+					},
+				})
+				.set("storage", storage)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const targets = event.targets;
+			const num = player.getDamagedHp();
+			if (num > 0) {
+				await game.doAsyncInOrder(targets, async target => await target.draw({ num }));
+			}
+			await game.doAsyncInOrder(targets, async target => await target.turnOver());
+		},
+	},
+	wxdlnianjun: {
+		audio: 2,
+		global: "wxdlnianjun_sha",
+		group: "wxdlnianjun_loseHp",
+		trigger: { player: "phaseJieshuBegin" },
+		filter(event, player) {
+			return game.hasPlayer(current => current.hasCards("h")) && player.hasCards("h");
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt(event.skill),
+					prompt2: "连接你与任意名其他角色各一张手牌",
+					filterTarget(card, player, target) {
+						return player != target && target.hasCards("h");
+					},
+					selectTarget: [1, Infinity],
+					ai(target) {
+						const player = get.player();
+						const att = get.sgnAttitude(player, target);
+						return -att / (1 + target.countConnectedCards());
+					},
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const targets = event.targets.slice().concat([player]).sortBySeat(),
+				connects = new Map();
+			for (const current of targets) {
+				const cards2 = current.getCards("h");
+				if (!current?.isIn() || !cards2.length) {
+					continue;
+				}
+				const result =
+					cards2.length == 1
+						? { links: cards2 }
+						: await player
+								.choosePlayerCard({
+									target: current,
+									position: "h",
+									forced: true,
+									ai(button) {
+										const { player: player2, target } = get.event();
+										const { link } = button;
+										const att = get.attitude(player2, target);
+										let val = get.value(link, target);
+										if (att > 0) {
+											if (player2 == target && player2 == _status.currentPhase) {
+												const num = target.countConnectedCards();
+												if (num > 0) {
+													if (get.is.connectedCard(link)) {
+														val += 3;
+													}
+													return val;
+												} else if (!get.is.connectedCard(link) && !get.tag(link, "damage")) {
+													return 6.5 - val;
+												}
+												return 6 - val;
+											}
+											if (get.is.connectedCard(link)) {
+												val += 3;
+											}
+											return val;
+										}
+										if (!get.is.connectedCard(link)) {
+											val += 3;
+										}
+										return val;
+									},
+								})
+								.forResult();
+				if (result?.links?.length) {
+					connects.set(current, result.links);
+				}
+			}
+			for (const [current, cards2] of connects) {
+				await current.connectCards(cards2);
+			}
+		},
+		subSkill: {
+			loseHp: {
+				audio: "wxdlnianjun",
+				forced: true,
+				trigger: {
+					global: ["loseAfter", "loseAsyncAfter", "equipAfter", "addJudgeAfter", "addToExpansionAfter", "gainAfter"],
+				},
+				filter(event, player) {
+					const evts = game.getGlobalHistory("everything", evt => {
+						return game.hasPlayer2(current => evt?.sxrmConnectCardsMap?.has?.(current));
+					});
+					return evts.indexOf(event) == 0;
+				},
+				getIndex(event, player) {
+					return game.filterPlayer(current => {
+						const evt = event.getl(current);
+						if (!evt || !evt.cards2 || !evt.cards2.length) {
+							return false;
+						}
+						if (event.name == "lose") {
+							for (var i in event.gaintag_map) {
+								if (event.gaintag_map[i].includes("visible_sxrm_connect_tag")) {
+									return true;
+								}
+							}
+							return false;
+						}
+						return current.hasHistory("lose", evt2 => {
+							if (event != evt2.getParent()) {
+								return false;
+							}
+							for (var i2 in evt2.gaintag_map) {
+								if (evt2.gaintag_map[i2].includes("visible_sxrm_connect_tag")) {
+									return true;
+								}
+							}
+							return false;
+						});
+					});
+				},
+				logTarget(event, player, name, index) {
+					return index;
+				},
+				async content(event, trigger, player) {
+					const target = event.indexedData;
+					await target.loseHp();
+				},
+			},
+			sha: {
+				mod: {
+					cardUsableTarget(card, player, target) {
+						if (player.hasConnectedCards() && target.hasConnectedCards()) {
+							return Infinity;
+						}
+					},
+				},
+			},
+		},
+	},
+	wxdlqianqian: {
+		audio: 2,
+		locked: true,
+		mod: {
+			cardEnabled(card, player) {
+				if (!player.hasHistory("useCard") && get.suit(card) == "heart") {
+					return false;
+				}
+			},
+			cardSavable(card, player) {
+				if (!player.hasHistory("useCard") && get.suit(card) == "heart") {
+					return false;
+				}
+			},
+		},
+	},
 	//沙币文心雕龙曹植
 	wxdl_huamao: {
 		derivation: ["wushen", "liushi", "gongxin", "tianxiang", "guose", "limu", "fengpo", "jiexun", "leiji", "zuoding", "miehai", "jiyu", "luoying", "lianhuan", "zhujiu", "ninghan"].map(i => "huamao_" + i),

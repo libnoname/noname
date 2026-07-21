@@ -1,6 +1,12 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const dynamicTranslates = {
+	twjieyuan(player, skill) {
+		if (player.storage.twfenxin_achieve) {
+			return lib.translate[skill + "_info"];
+		}
+		return lib.translate[skill + "2_info"];
+	},
 	twfeifu(player) {
 		const bool = player.storage.twfeifu;
 		let yang = "当你成为【杀】的唯一目标后",

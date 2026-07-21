@@ -1,6 +1,16 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	tw_lingju: "TW灵雎",
+	tw_lingju_prefix: "TW",
+	twjieyuan: "竭缘",
+	twjieyuan_info: "当你对体力值大于等于你的其他角色造成伤害时，你可以弃置一张黑色手牌，令此伤害+1。当你受到体力值大于等于你的其他角色造成的伤害时，你可以弃置一张红色手牌，令此伤害-1。",
+	twjieyuan2: "竭缘·改",
+	twjieyuan2_info: "当你对体力值大于等于你的其他角色造成伤害时，你可以重铸一张牌，令此伤害+1。当你受到体力值大于等于你的其他角色造成的伤害时，你可以重铸一张牌，令此伤害-1。",
+	twfenxin: "焚心",
+	twfenxin_info: `使命技，游戏开始时，你选择一名其他角色，你与其互相计算距离视为1。当你或其受到伤害后，你摸一张牌。成功：当你与其累计受到4点以上伤害或其死亡后，你修改${get.poptip("twjieyuan")}为${get.poptip("twjieyuan2")}；失败：当你进入濒死状态时，你将体力回复至1点。`,
+	twfucheng: "浮沉",
+	twfucheng_info: `锁定技，回合开始时，若你的手牌均为：黑色，你获得${get.poptip("sbwushuang")}；红色,你获得${get.poptip("sbbiyue")}。`,
 	tw_sb_xiahoudun: "TW谋夏侯惇",
 	tw_sb_xiahoudun_prefix: "TW谋",
 	twsbganglie: "刚烈",
@@ -750,7 +760,7 @@ const translates = {
 		id: "twguose_tip",
 		name: "受伤状态",
 		type: "character",
-		info: "即未受伤/受伤的状态，受伤状态变化后即体力值/上限变化后，若该状态发生变化。"
+		info: "即未受伤/受伤的状态，受伤状态变化后即体力值/上限变化后，若该状态发生变化。",
 	})}变化后，若其判定区未废除且没有【乐不思蜀】，你可将你或其的一张牌当作【乐不思蜀】置入其判定区中，然后你摸两张牌。有【乐不思蜀】判定生效后，你可将此【乐不思蜀】的效果改为跳过弃牌阶段。`,
 	twliuli: "流俪",
 	twliuli_info: `有角色成为伤害牌的目标后，你可弃置其场上一张红色牌，令此牌对其无效，然后若其${get.poptip("twguose_tip")}与你相同，你摸两张牌。`,

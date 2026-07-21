@@ -4590,7 +4590,7 @@ const skills = {
 						}
 						return valueFix + 6 - get.value(card);
 					}
-					if(get.is.damageCard(card)) {
+					if (get.is.damageCard(card)) {
 						return 10 - get.value(card);
 					}
 					return 6 - get.value(card);
@@ -4619,13 +4619,7 @@ const skills = {
 					if (!target.getCards("h").includes(card)) {
 						return;
 					}
-					const next = target
-						.chooseUseTarget(card)
-						.set("ai", (event, player) => {
-							const { giver } = event;
-							return get.attitude(player, giver) >= 0;
-						})
-						.set("giver", player);
+					const next = target.chooseUseTarget(card);
 					const result = await next.forResult();
 					if (!result?.bool) {
 						return;
@@ -4635,7 +4629,7 @@ const skills = {
 						player.addTempSkill("dcshiju_range");
 						player.addMark("dcshiju_range", count, false);
 					}
-					if(get.type(card) == "equip" || player.hasHistory("sourceDamage", evt => evt.getParent(3) === next)) {
+					if (get.type(card) == "equip" || target.hasHistory("sourceDamage", evt => evt.getParent(3) === next)) {
 						await game.asyncDraw([player, target], 2);
 					}
 				},
@@ -4711,26 +4705,19 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0],
-				count = player.countCards("e");
+				count = player.countCards("e") + 1;
 			let result;
-			if (count > 0) {
-				const prompt = `###${get.translation(player)}对你发动了【应时】###弃置${get.cnNumber(count)}张牌，令其本回合不能再发动〖应时〗，或令其于此牌结算后视为对你使用一张同名牌"`;
-				result = await target
-					.chooseToDiscard(prompt, count, "he")
-					.set("ai", card => {
-						if (get.event().goon) {
-							return 15 - get.value(card);
-						}
-						return 0;
-					})
-					.set("goon", !get.tag(trigger.card, "norepeat") && get.effect(target, trigger.card, trigger.player, target) < 0)
-					.forResult();
-			} else {
-				result = await target
-					.chooseBool(`###${get.translation(player)}对你发动了【应时】###你可以令其本回合不能再发动〖应时〗，或令其于此牌结算后视为对你使用一张同名牌"`)
-					.set("choice", !get.tag(trigger.card, "norepeat") && get.effect(target, trigger.card, trigger.player, target) < 0)
-					.forResult();
-			}
+			const prompt = `###${get.translation(player)}对你发动了【应时】###弃置${get.cnNumber(count)}张牌，令其本回合不能再发动〖应时〗，或令其于此牌结算后视为对你使用一张同名牌"`;
+			result = await target
+				.chooseToDiscard(prompt, count, "he")
+				.set("ai", card => {
+					if (get.event().goon) {
+						return 15 - get.value(card);
+					}
+					return 0;
+				})
+				.set("goon", !get.tag(trigger.card, "norepeat") && get.effect(target, trigger.card, trigger.player, target) < 0)
+				.forResult();
 			if (result?.bool) {
 				player.tempBanSkill("dcyingshi");
 			} else {

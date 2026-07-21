@@ -1,4 +1,11 @@
 const characters = {
+	cy_lingju: {
+		sex: "female",
+		group: "qun",
+		hp: 3,
+		skills: ["jiechou", "ciju", "chouyuan"],
+		names: "吕|null",
+	},
 	two_yj_hanbing: {
 		sex: "female",
 		group: "qun",

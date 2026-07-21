@@ -53,7 +53,7 @@ const skills = {
 					},
 					ai2(target) {
 						const player = get.player();
-						if (player.storage.potchiyun1) {
+						if (player.storage.potchiyun1 && game.hasPlayer(current => get.attitude(player, current) > 0 && player != current)) {
 							return get.attitude(player, target);
 						} else {
 							return -get.attitude(player, target);

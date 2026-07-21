@@ -529,7 +529,7 @@ const skills = {
 					ai(target) {
 						const player = get.player();
 						if (player.getStorage("ymdiyu_gived").length > 3) {
-							return get.attitude(player, target) * Math.min(1, target.countCards("h"));
+							return get.attitude(player, target) * Math.max(1, target.countCards("h"));
 						}
 						if (player.hasCards("hs", card => get.name(card) == "shan")) {
 							return -get.attitude(player, target);
@@ -560,10 +560,8 @@ const skills = {
 									forced: true,
 									ai(button) {
 										const { player, skills, target } = get.event();
-										if (get.attitude(player, target) > 0) {
-											skills.removeArray(["olbihun", "dcyiju"]);
-										} else {
-											skills.removeArray(["benghuai", "tongji"]);
+										if (get.attitude(player, target) > 0 && skills.containsSome("benghuai", "tongji")) {
+											return button.link == ["benghuai", "tongji"].removeArray(skills).randomGet();
 										}
 										return button.link === skills.randomGet();
 									},

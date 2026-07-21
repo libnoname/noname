@@ -1,4 +1,23 @@
 const characters = {
+	natu_guanyu: {
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		skills: ["natuyi"],
+	},
+	natu_zhugeliang: {
+		sex: "male",
+		group: "shu",
+		hp: 3,
+		skills: ["natuxing", "natufu"],
+		names: "诸葛|亮",
+	},
+	natu_zhaoyun: {
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		skills: ["natulie", "natuheng"],
+	},
 	ol_le_caopi: {
 		sex: "male",
 		group: "wei",

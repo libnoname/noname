@@ -1,4 +1,11 @@
 const characters = {
+	tw_lingju: {
+		sex: "female",
+		group: "qun",
+		hp: 3,
+		skills: ["twjieyuan", "twfenxin", "twfucheng"],
+		names: "吕|null",
+	},
 	tw_sb_xiahoudun: {
 		sex: "male",
 		group: "wei",

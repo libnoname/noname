@@ -3,6 +3,191 @@ import html from "dedent";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//武则天------ by 清风
+	peersheng: {
+		audio: 2,
+		forced: true,
+		locked: false,
+		trigger: {
+			global: ["gainAfter", "loseAsyncAfter", "phaseEnd"],
+		},
+		filter(event, player) {
+			const target = game.findPlayer(current => current.getSeatNum() == 1);
+			if (_status.currentPhase !== target) {
+				return false;
+			}
+			if (event.name == "phase") {
+				const cards = event.player
+					.getHistory("useCard")
+					.filter(evt => ["basic", "trick"].includes(get.type(evt.card)))
+					.map(evt => get.autoViewAs({ name: evt.card.name, nature: evt.card.nature, isCard: true }, "unsure"))
+					.flat()
+					.unique();
+				return cards.some(card => player.hasUseTarget(card));
+			}
+			if (!event.getg?.(_status.currentPhase)?.length) {
+				return false;
+			}
+			return event.getParent(2)?.name !== "peersheng";
+		},
+		async content(event, trigger, player) {
+			if (trigger.name == "phase") {
+				const cards = trigger.player
+					.getHistory("useCard")
+					.filter(evt => ["basic", "trick"].includes(get.type(evt.card)))
+					.map(evt => get.autoViewAs({ name: evt.card.name, nature: evt.card.nature, isCard: true }, "unsure"))
+					.flat();
+				while (true) {
+					if (cards.some(card => player.hasUseTarget(card))) {
+						const result = await player
+							.chooseButton({
+								createDialog: ["二圣：你可以视为使用一张牌", [cards, "vcard"]],
+								filterButton(button) {
+									const player = get.player();
+									const card = button.link;
+									return player.hasUseTarget(card);
+								},
+								ai(button) {
+									const player = get.player();
+									const card = button.link;
+									return player.getUseValue(card);
+								},
+							})
+							.forResult();
+						if (result?.bool && result.links?.length) {
+							const card = result.links[0];
+							cards.removeArray(cards.filter(cardx => cardx.name == card.name));
+							await player.chooseUseTarget(card, true, false);
+						} else {
+							break;
+						}
+					} else {
+						break;
+					}
+				}
+			} else {
+				await player.draw({ num: trigger.getg(_status.currentPhase).length });
+			}
+		},
+	},
+	pelinchao: {
+		audio: 2,
+		limited: true,
+		derivation: "penvdi",
+		skillAnimation: true,
+		animationColor: "wood",
+		trigger: { global: "dieBegin" },
+		filter(event, player) {
+			const target = game.findPlayer(current => current.getSeatNum() == 1);
+			return event.player == target;
+		},
+		check(event, player) {
+			return get.attitude(player, event.player) > 0 || player == event.player;
+		},
+		async content(event, trigger, player) {
+			player.awakenSkill(event.name);
+			if (player == trigger.player) {
+				trigger.cancel();
+			}
+			await player.recoverTo(player.maxHp);
+			let evt = _status.event.getParent("phaseUse");
+			if (evt && evt.name == "phaseUse") {
+				evt.skipped = true;
+			}
+			evt = event.getParent("phase", true);
+			if (evt) {
+				if (_status.currentPhase) {
+					game.log(_status.currentPhase, "结束了回合");
+				}
+				evt.num = evt.phaseList.length;
+				evt.goto(11);
+			}
+			await player.addSkills("penvdi");
+			player.insertPhase();
+			//村村的规   有需要自己改
+			if (player !== trigger.player && player.identity !== trigger.player.identity && ["identity", "doudizhu", "brawl"].includes(get.mode())) {
+				game.broadcastAll(
+					(player, target) => {
+						player.identity = target.identity;
+						if (target.isZhu) {
+							delete target.isZhu;
+						}
+						if (player.identity == "zhu") {
+							game.zhu = player;
+						}
+						player.showIdentity();
+					},
+					player,
+					trigger.player
+				);
+				if (player.identity == "zhu") {
+					await event.trigger("zhuUpdate");
+				}
+			}
+		},
+	},
+	penvdi: {
+		audio: 2,
+		zhuSkill: true,
+		forced: true,
+		trigger: {
+			global: ["phaseDrawBegin2", "damageBegin3"],
+			player: "useCardToPlayer",
+		},
+		filter(event, player) {
+			if (event.name == "useCardToPlayer") {
+				return event.target.hasAllHistory("useCard", evt => get.is.damageCard(evt.card) && evt.targets?.includes(player));
+			}
+			if (!event.player.hasSex("female")) {
+				return false;
+			}
+			if (event.name == "damage") {
+				return (
+					game
+						.getGlobalHistory(
+							"everything",
+							evt => {
+								return evt.name == "damage" && evt.player == event.player;
+							},
+							event
+						)
+						.indexOf(event) == 0
+				);
+			}
+			return !event.numFixed;
+		},
+		logTarget(event, player) {
+			return event.name == "useCardToPlayer" ? event.target : event.player;
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			if (trigger.name == "useCardToPlayer") {
+				if (trigger.getParent().addCount !== false) {
+					trigger.getParent().addCount = false;
+					const stat = player.getStat("card"),
+						name = trigger.card.name;
+					if (typeof stat[name] == "number" && stat[name] > 0) {
+						stat[name]--;
+					}
+				}
+				const num = player.countAllHistory("useCard", evt => evt.targets?.includes(target)) + target.countAllHistory("useCard", evt => evt.targets?.includes(player));
+				if (num > 0) {
+					await target.loseMaxHp(num);
+				}
+			} else if (trigger.name == "damage") {
+				trigger.cancel();
+			} else {
+				trigger.num++;
+			}
+		},
+		mod: {
+			cardUsableTarget(card, player, target) {
+				if (target.hasAllHistory("useCard", evt => get.is.damageCard(evt.card) && evt.targets?.includes(player))) {
+					return Infinity;
+				}
+			},
+		},
+	},
 	//PE刘徽------by 清风
 	pejieshu: {
 		audio: "dcjieshu",
