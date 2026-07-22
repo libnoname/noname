@@ -3464,21 +3464,6 @@ const skills = {
 	},
 	sxrmsigu: {
 		audio: 2,
-		audioname2: {
-			chengong: "zhichi_sxrm_caocao",
-			re_xiahoudun: "reganglie_sxrm_caocao",
-			re_simayi: "refankui_sxrm_caocao",
-			re_guojia: "reyiji_sxrm_caocao",
-			ol_xunyu: "oljieming_sxrm_caocao",
-			sb_caopi: "fangzhu_sxrm_caocao",
-			jushou: "shibei_sxrm_caocao",
-			re_caochong: "rechengxiang_sxrm_caocao",
-			re_xunyou: "zhiyu_sxrm_caocao",
-			yangxiu: "jilei_sxrm_caocao",
-			chengyu: "benyu_sxrm_caocao",
-			xizhicai: "chouce_sxrm_caocao",
-			shen_guanyu: "wuhun_sxrm_caocao",
-		},
 		enable: "phaseUse",
 		filter(event, player) {
 			return game.hasPlayer(current => player !== current);
@@ -3837,7 +3822,6 @@ const skills = {
 		filter(event, player) {
 			return player.countCards("hes") >= 2;
 		},
-		audio: true,
 		prompt: "将两张牌当刺【杀】使用或打出",
 		async precontent(event, trigger, player) {
 			player

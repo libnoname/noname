@@ -1113,7 +1113,7 @@ const skills = {
 		filter(event, player) {
 			return get.sgn(player.getDamagedHp() - 1.5) != get.sgn(player.getDamagedHp() - 1.5 + event.num);
 		},
-		async content(_) {},
+		async content(_) { },
 		mod: {
 			globalFrom(from, to, current) {
 				return current - 1;
@@ -1381,7 +1381,7 @@ const skills = {
 			}
 			const cards = target.getCards("h").randomGets(1),
 				card = cards[0];
-			await target.showCards(cards).setContent(function () {});
+			await target.showCards(cards).setContent(function () { });
 			event.dialog = ui.create.dialog(get.translation(target) + "展示的手牌", cards);
 			event.videoId = lib.status.videoId++;
 
@@ -4798,7 +4798,7 @@ const skills = {
 		},
 		forced: true,
 		firstDo: true,
-		async content(_) {},
+		async content(_) { },
 		subSkill: {
 			global: {
 				mod: {
@@ -6028,13 +6028,13 @@ const skills = {
 
 					// step 0
 					var targets = game.filterPlayer(function (target) {
-							return (
-								target != player &&
-								!game.hasPlayer(function (current) {
-									return current != player && current != target && current.countCards("h") < target.countCards("h");
-								})
-							);
-						}),
+						return (
+							target != player &&
+							!game.hasPlayer(function (current) {
+								return current != player && current != target && current.countCards("h") < target.countCards("h");
+							})
+						);
+					}),
 						num = Math.floor(player.countCards("h") / 2);
 					result = await player
 						.chooseCardTarget({
@@ -6355,7 +6355,7 @@ const skills = {
 					var info = lib.card[event.card.name];
 					return info && info.selectTarget && info.selectTarget == -1 && !info.toself;
 				},
-				async content(_) {},
+				async content(_) { },
 			},
 		},
 	},
@@ -7826,17 +7826,17 @@ const skills = {
 				return (
 					get.order({ name: "sha" }, player) +
 					0.3 *
-						(Math.min(
-							player.getCardUsable("sha"),
-							player.countCards("hs", "sha") +
-								player.hasCard(function (card) {
-									return card.name != "sha" && get.value(card, player) < 6.3;
-								}, "hs")
-								? 1
-								: 0
-						) > 1
-							? -1
-							: 1)
+					(Math.min(
+						player.getCardUsable("sha"),
+						player.countCards("hs", "sha") +
+							player.hasCard(function (card) {
+								return card.name != "sha" && get.value(card, player) < 6.3;
+							}, "hs")
+							? 1
+							: 0
+					) > 1
+						? -1
+						: 1)
 				);
 			},
 			nokeep: true,
@@ -8655,38 +8655,38 @@ const skills = {
 				targets.length == 1
 					? { bool: true, targets }
 					: await player
-							.chooseTarget(
-								(card, player, target) => {
-									return _status.event.targets?.includes(target);
-								},
-								`选择${get.translation(target)}使用【杀】或【决斗】的目标`,
-								true
-							)
-							.set("target", target)
-							.set("ai", target => {
-								const evt = _status.event;
-								const list = [null, "juedou"].concat(lib.inpile_nature);
-								if (evt.target.hasSkill("ayato_zenshen")) {
-									list.push("kami");
-								}
-								return Math.max.apply(
-									Math,
-									list.map(item => {
-										const card = { name: "sha", isCard: true };
-										if (item == "juedou") {
-											card.name = "juedou";
-										} else if (item) {
-											card.nature = item;
-										}
-										if (!evt.target.canUse(card, target, false)) {
-											return 0;
-										}
-										return get.effect(target, card, evt.target, evt.player);
-									})
-								);
-							})
-							.set("targets", targets)
-							.forResult();
+						.chooseTarget(
+							(card, player, target) => {
+								return _status.event.targets?.includes(target);
+							},
+							`选择${get.translation(target)}使用【杀】或【决斗】的目标`,
+							true
+						)
+						.set("target", target)
+						.set("ai", target => {
+							const evt = _status.event;
+							const list = [null, "juedou"].concat(lib.inpile_nature);
+							if (evt.target.hasSkill("ayato_zenshen")) {
+								list.push("kami");
+							}
+							return Math.max.apply(
+								Math,
+								list.map(item => {
+									const card = { name: "sha", isCard: true };
+									if (item == "juedou") {
+										card.name = "juedou";
+									} else if (item) {
+										card.nature = item;
+									}
+									if (!evt.target.canUse(card, target, false)) {
+										return 0;
+									}
+									return get.effect(target, card, evt.target, evt.player);
+								})
+							);
+						})
+						.set("targets", targets)
+						.forResult();
 			if (!result?.bool) {
 				return;
 			}
@@ -11929,7 +11929,7 @@ const skills = {
 		filter(event, player) {
 			return event.card.name == "sha" && !event.skill && event.cards.length == 1 && event.cards[0].name == "jiu";
 		},
-		async content(event, trigger, player) {},
+		async content(event, trigger, player) { },
 		group: "rejinjiu2",
 		global: "rejinjiu3",
 	},
@@ -12499,13 +12499,13 @@ const skills = {
 					.set(
 						"choice",
 						get.attitude(target, player) > 0 ||
-							target.countCards("h", card => {
-								const val = get.value(card);
-								if (val < 0) return true;
-								if (val <= 5) return get.number(card) >= 12;
-								if (val <= 6) return get.number(card) >= 13;
-								return false;
-							}) > 0
+						target.countCards("h", card => {
+							const val = get.value(card);
+							if (val < 0) return true;
+							if (val <= 5) return get.number(card) >= 12;
+							if (val <= 6) return get.number(card) >= 13;
+							return false;
+						}) > 0
 					)
 					.set("ai", () => _status.event.choice)
 					.forResult();
@@ -13349,7 +13349,7 @@ const skills = {
 			return get.sgn(player.hp - 1.5) != get.sgn(player.hp - 1.5 - event.changedHp);
 		},
 		forced: true,
-		async content(event, trigger, player) {},
+		async content(event, trigger, player) { },
 	},
 	botu: {
 		audio: 2,
@@ -16863,7 +16863,7 @@ const skills = {
 		filter(event, player) {
 			return get.sgn(player.hp - 2.5) != get.sgn(player.hp - 2.5 - event.num);
 		},
-		async content(event, trigger, player) {},
+		async content(event, trigger, player) { },
 		mod: {
 			globalFrom(from, to, current) {
 				return current - 1;
