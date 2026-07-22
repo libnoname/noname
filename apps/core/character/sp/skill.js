@@ -47511,7 +47511,7 @@ const skills = {
 	},
 	//ol段煨 子右：R1+□🙌🏻😡↓→+□□□□😡🤜🏻power up！
 	oltaohuai: {
-		audio: 2,
+		audio: 3,
 		zhuanhuanji: true,
 		trigger: { player: "useCard" },
 		filter(event, player) {
