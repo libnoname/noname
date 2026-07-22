@@ -12367,7 +12367,7 @@ const skills = {
 		audio: 2,
 		trigger: { player: "damageEnd" },
 		audioname: ["re_chengong"],
-		audioname2: { sxrm_caocao: "zhichi_sxrm_caocao" },
+		audioname2: { sxrm_caocao: "zhichi_sxrm_caocao", tw_sxrm_caocao: "zhichi_sxrm_caocao" },
 		forced: true,
 		filter(event, player) {
 			return _status.currentPhase != player;
@@ -13616,7 +13616,7 @@ const skills = {
 	},
 	zhiyu: {
 		audio: 2,
-		audioname2: { sxrm_caocao: "zhiyu_sxrm_caocao" },
+		audioname2: { sxrm_caocao: "zhiyu_sxrm_caocao", tw_sxrm_caocao: "zhiyu_sxrm_caocao" },
 		trigger: { player: "damageEnd" },
 		preHidden: true,
 		async content(event, trigger, player) {
@@ -14772,7 +14772,7 @@ const skills = {
 		forced: true,
 		audio: 2,
 		audioname: ["xin_jushou"],
-		audioname2: { sxrm_caocao: "shibei_sxrm_caocao" },
+		audioname2: { sxrm_caocao: "shibei_sxrm_caocao", tw_sxrm_caocao: "shibei_sxrm_caocao" },
 		check(event, player) {
 			return player.getHistory("damage").indexOf(event) == 0;
 		},
