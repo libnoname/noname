@@ -2,6 +2,45 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	twpotgongmou: {
+		audio: "potgongmou",
+		trigger: { player: "phaseZhunbeiBegin" },
+		filter(event, player) {
+			return game.hasPlayer(target => {
+				if (target == player || target.countCards("h") + player.countCards("h") == 0) {
+					return false;
+				}
+				return true;
+			});
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget("你可发动共谋，与1名其他角色交换手牌并获得技能", (card, player, target) => {
+					if (target == player || target.countCards("h") + player.countCards("h") == 0) {
+						if (target != player) {
+							target.prompt("没牌交换", "fire");
+						}
+						return false;
+					}
+					return true;
+				})
+				.set("ai", target => {
+					const player = get.player();
+					return -get.attitude(player, target) * (target.countCards("h") - player.countCards("h"));
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			await player.swapHandcards(target);
+			await player.draw(1);
+			await player.addTempSkills(get.info(event.name).derivation[0]);
+		},
+		derivation: ["qice"],
+		ai: {
+			threaten: 3,
+		},
+	},
 	//灵雎
 	twjieyuan: {
 		audio: 2,
