@@ -253,20 +253,20 @@ const skills = {
 				game.countPlayer() <= num
 					? game.filterPlayer()
 					: (
-							await target
-								.chooseTarget({
-									prompt: `选择${num}名角色，${get.translation(player)}的额外回合内无法对这些角色使用牌`,
-									selectTarget: num,
-									forced: true,
-									ai(target) {
-										if (target === get.player()) {
-											return 5;
-										}
-										return 1;
-									},
-								})
-								.forResult()
-						).targets;
+						await target
+							.chooseTarget({
+								prompt: `选择${num}名角色，${get.translation(player)}的额外回合内无法对这些角色使用牌`,
+								selectTarget: num,
+								forced: true,
+								ai(target) {
+									if (target === get.player()) {
+										return 5;
+									}
+									return 1;
+								},
+							})
+							.forResult()
+					).targets;
 			if (!targetsx?.length) {
 				return;
 			}
@@ -1913,19 +1913,19 @@ const skills = {
 							const result =
 								targets.length > 1
 									? await event.current
-											.chooseTarget(`撼国：获得${get.translation(targets)}中的一名角色一张牌`, true, (card, player, target) => {
-												return get.event().selectTargets.includes(target);
-											})
-											.set("selectTargets", targets)
-											.set("ai", target => {
-												const player = get.player();
-												return get.effect(target, { name: "shunshou_copy2" }, player, player);
-											})
-											.forResult()
+										.chooseTarget(`撼国：获得${get.translation(targets)}中的一名角色一张牌`, true, (card, player, target) => {
+											return get.event().selectTargets.includes(target);
+										})
+										.set("selectTargets", targets)
+										.set("ai", target => {
+											const player = get.player();
+											return get.effect(target, { name: "shunshou_copy2" }, player, player);
+										})
+										.forResult()
 									: {
-											bool: true,
-											targets: targets,
-										};
+										bool: true,
+										targets: targets,
+									};
 							if (result?.bool) {
 								const target = result.targets[0];
 								await event.current.gainPlayerCard(target, "he", true);
@@ -2323,11 +2323,11 @@ const skills = {
 							cards.length == 1
 								? { bool: true, links: cards }
 								: await player
-										.choosePlayerCard(current, "h", true)
-										.set("filterButton", button => {
-											return !get.is.connectedCard(button.link);
-										})
-										.forResult();
+									.choosePlayerCard(current, "h", true)
+									.set("filterButton", button => {
+										return !get.is.connectedCard(button.link);
+									})
+									.forResult();
 						if (result?.bool) {
 							connects.set(current, result.links);
 						}
@@ -2434,36 +2434,36 @@ const skills = {
 						cards.length == 1
 							? { bool: true, links: cards }
 							: await player
-									.choosePlayerCard(current, "h", true)
-									.set("ai", button => {
-										const { player, target } = get.event();
-										const { link } = button;
-										const att = get.attitude(player, target);
-										let val = get.value(link, target);
-										if (att > 0) {
-											if (player == target && player == _status.currentPhase) {
-												const num = target.countConnectedCards();
-												if (num > 0) {
-													if (get.is.connectedCard(link)) {
-														val += 3;
-													}
-													return val;
-												} else if (!get.is.connectedCard(link) && !get.tag(link, "damage")) {
-													return 6.5 - val;
+								.choosePlayerCard(current, "h", true)
+								.set("ai", button => {
+									const { player, target } = get.event();
+									const { link } = button;
+									const att = get.attitude(player, target);
+									let val = get.value(link, target);
+									if (att > 0) {
+										if (player == target && player == _status.currentPhase) {
+											const num = target.countConnectedCards();
+											if (num > 0) {
+												if (get.is.connectedCard(link)) {
+													val += 3;
 												}
-												return 6 - val;
+												return val;
+											} else if (!get.is.connectedCard(link) && !get.tag(link, "damage")) {
+												return 6.5 - val;
 											}
-											if (get.is.connectedCard(link)) {
-												val += 3;
-											}
-											return val;
+											return 6 - val;
 										}
-										if (!get.is.connectedCard(link)) {
+										if (get.is.connectedCard(link)) {
 											val += 3;
 										}
 										return val;
-									})
-									.forResult();
+									}
+									if (!get.is.connectedCard(link)) {
+										val += 3;
+									}
+									return val;
+								})
+								.forResult();
 					if (result?.links?.length) {
 						connects.set(current, result.links);
 					}
@@ -2706,7 +2706,7 @@ const skills = {
 				async content(event, trigger, player) {
 					player
 						.when("phaseUseAfter")
-						.step(async () => {})
+						.step(async () => { })
 						.assign({
 							mod: {
 								cardUsable(card, player, num) {
@@ -2740,7 +2740,7 @@ const skills = {
 				async content(event, trigger, player) {
 					player
 						.when("phaseDiscardAfter")
-						.step(async () => {})
+						.step(async () => { })
 						.assign({
 							mod: {
 								maxHandcardFinal(player, num) {
@@ -2955,15 +2955,15 @@ const skills = {
 			const result =
 				targets.length > 1
 					? await player
-							.chooseTarget("鄙诈：与一名角色拼点", true, (card, player, target) => player.canCompare(target))
-							.set("ai", target => {
-								return -get.attitude(get.player(), target);
-							})
-							.forResult()
+						.chooseTarget("鄙诈：与一名角色拼点", true, (card, player, target) => player.canCompare(target))
+						.set("ai", target => {
+							return -get.attitude(get.player(), target);
+						})
+						.forResult()
 					: {
-							bool: true,
-							targets: targets,
-						};
+						bool: true,
+						targets: targets,
+					};
 			if (result?.bool) {
 				const target = result.targets[0];
 				const result2 = await player.chooseToCompare(target).forResult();
@@ -3051,28 +3051,28 @@ const skills = {
 				const result2 =
 					targets.length > 1
 						? await player
-								.chooseTarget(
-									`选择${get.translation(card)}的使用者`,
-									(card, player, target) => {
-										return get.event().canUse.includes(target);
-									},
-									true
-								)
-								.set("canUse", targets)
-								.set("targetx", target)
-								.set("willUse", card)
-								.set("ai", target => {
-									const { player, targetx, willUse } = get.event();
-									if (target == player) {
-										return get.effect(targetx, willUse, target, player);
-									}
-									return get.effect(player, willUse, target, player);
-								})
-								.forResult()
+							.chooseTarget(
+								`选择${get.translation(card)}的使用者`,
+								(card, player, target) => {
+									return get.event().canUse.includes(target);
+								},
+								true
+							)
+							.set("canUse", targets)
+							.set("targetx", target)
+							.set("willUse", card)
+							.set("ai", target => {
+								const { player, targetx, willUse } = get.event();
+								if (target == player) {
+									return get.effect(targetx, willUse, target, player);
+								}
+								return get.effect(player, willUse, target, player);
+							})
+							.forResult()
 						: {
-								bool: true,
-								targets: targets,
-							};
+							bool: true,
+							targets: targets,
+						};
 				if (!result2?.bool) {
 					return;
 				}
@@ -3170,7 +3170,7 @@ const skills = {
 				.when({
 					global: ["phaseAfter", "phaseBeforeStart"],
 				})
-				.step(async () => {})
+				.step(async () => { })
 				.assign({
 					mod: {
 						cardname(card, player) {
@@ -3388,12 +3388,12 @@ const skills = {
 					targets.length == 1
 						? { bool: true, targets }
 						: await player
-								.chooseTarget("枯心：选择一名其他角色获得其未展示的手牌", true, lib.filter.notMe)
-								.set("ai", target => {
-									const player = get.player();
-									return -get.attitude(player, target) * target.countCards("h");
-								})
-								.forResult();
+							.chooseTarget("枯心：选择一名其他角色获得其未展示的手牌", true, lib.filter.notMe)
+							.set("ai", target => {
+								const player = get.player();
+								return -get.attitude(player, target) * target.countCards("h");
+							})
+							.forResult();
 				if (result?.targets?.length) {
 					game.log(player, "选择了", "#g【枯心】", "的", "#y选项二");
 					const [target] = result.targets;
@@ -3427,12 +3427,12 @@ const skills = {
 						!target._dekuxin_eff &&
 						get.tag(card, "damage") &&
 						target.getHp() >
-							(player.hasSkillTag("damageBonus", true, {
-								card: card,
-								target: target,
-							})
-								? 2
-								: 1)
+						(player.hasSkillTag("damageBonus", true, {
+							card: card,
+							target: target,
+						})
+							? 2
+							: 1)
 					) {
 						if (player.hasSkillTag("jueqing", false, target)) {
 							return [1, -2];
@@ -3464,21 +3464,6 @@ const skills = {
 	},
 	sxrmsigu: {
 		audio: 2,
-		audioname2: {
-			chengong: "zhichi_sxrm_caocao",
-			re_xiahoudun: "reganglie_sxrm_caocao",
-			re_simayi: "refankui_sxrm_caocao",
-			re_guojia: "reyiji_sxrm_caocao",
-			ol_xunyu: "oljieming_sxrm_caocao",
-			sb_caopi: "fangzhu_sxrm_caocao",
-			jushou: "shibei_sxrm_caocao",
-			re_caochong: "rechengxiang_sxrm_caocao",
-			re_xunyou: "zhiyu_sxrm_caocao",
-			yangxiu: "jilei_sxrm_caocao",
-			chengyu: "benyu_sxrm_caocao",
-			xizhicai: "chouce_sxrm_caocao",
-			shen_guanyu: "wuhun_sxrm_caocao",
-		},
 		enable: "phaseUse",
 		filter(event, player) {
 			return game.hasPlayer(current => player !== current);
@@ -3503,7 +3488,7 @@ const skills = {
 			}
 			const name = get.info(event.name).pasts[result.number - 1],
 				skill = get.info(event.name).derivation[result.number - 1];
-			const mark = `twsigu_${player.playerid}`;
+			const mark = `sxrmsigu_${player.playerid}`;
 			if (name && skill) {
 				await target.addAdditionalSkills(mark, [skill], true);
 				//写个标记吧
@@ -3568,6 +3553,19 @@ const skills = {
 			shen_guanyu: "wuhun_sxrm_caocao"
 		}
 	},
+	zhichi_sxrm_caocao: { audio: 1 },
+	reganglie_sxrm_caocao: { audio: 1 },
+	refankui_sxrm_caocao: { audio: 1 },
+	reyiji_sxrm_caocao: { audio: 1 },
+	oljieming_sxrm_caocao: { audio: 1 },
+	fangzhu_sxrm_caocao: { audio: 1 },
+	shibei_sxrm_caocao: { audio: 1 },
+	rechengxiang_sxrm_caocao: { audio: 1 },
+	zhiyu_sxrm_caocao: { audio: 1 },
+	jilei_sxrm_caocao: { audio: 1 },
+	benyu_sxrm_caocao: { audio: 1 },
+	chouce_sxrm_caocao: { audio: 1 },
+	wuhun_sxrm_caocao: { audio: 1 },
 	//刘备
 	sxrmchengbian: {
 		audio: 2,
