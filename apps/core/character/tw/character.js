@@ -5,6 +5,8 @@ const characters = {
 		hp: 4,
 		hujia: 1,
 		skills: ["twpotgongmou", "potzhengshuo"],
+		dieAudios: ["pot_huanjie"],
+		tempname: ["pot_huanjie"],
 	},
 	tw_lingju: {
 		sex: "female",

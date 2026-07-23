@@ -378,7 +378,7 @@ window.noname_character_replace = {
 	zuoci: ["zuoci", "re_zuoci", "ns_zuoci"],
 	zhangyan: ["zhangyan", "yj_zhangyan", "mb_zhangyan"],
 	dc_huangwudie: ["dc_huangwudie", "std_huangwudie", "ns_huangwudie"],
-	dc_huanjie: ["dc_huanjie", "pot_huanjie"],
+	dc_huanjie: ["dc_huanjie", "pot_huanjie", "tw_pot_huanjie"],
 	dc_jiben: ["dc_jiben", "sp_jiben"],
 	dc_wangchang: ["clan_wangchang", "dc_wangchang", "tw_wangchang"],
 	dc_zhangmancheng: ["ol_zhangmancheng", "dc_zhangmancheng", "tw_zhangmancheng"],

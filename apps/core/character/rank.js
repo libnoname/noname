@@ -1163,6 +1163,7 @@ window.noname_character_rank = {
 		"ol_maliang",
 		"dc_sb_dengai",
 		"pot_huanjie",
+		"tw_pot_huanjie",
 		"pot_zanghong",
 	],
 	b: [
@@ -4516,6 +4517,7 @@ window.noname_character_rank = {
 			"ns_caimao",
 			"v_caocao",
 			"pot_huanjie",
+			"tw_pot_huanjie",
 		],
 		junk: [
 			"sb_chentai",
