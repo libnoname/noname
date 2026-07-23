@@ -1356,6 +1356,12 @@ const characters = {
 		hp: 3,
 		skills: ["xinfu_tushe", "xinfu_limu"],
 	},
+	ol_duanwei: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["oltaohuai"],
+	},
 };
 
 export default characters;

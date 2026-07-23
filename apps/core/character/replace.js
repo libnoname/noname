@@ -77,7 +77,7 @@ window.noname_character_replace = {
 	dongwan: ["dongwan", "shinin_dongwan"],
 	dongxie: ["ol_dongxie", "dongxie"],
 	dongzhuo: ["dongzhuo", "ol_dongzhuo", "ol_sb_dongzhuo", "star_dongzhuo", "v_dongzhuo", "re_dongzhuo", "new_yj_dongzhuo", "jsrg_dongzhuo", "sp_dongzhuo", "yj_dongzhuo"],
-	duanwei: ["duanwei", "junk_duanwei"],
+	duanwei: ["duanwei", "ol_duanwei", "junk_duanwei"],
 	duji: ["duji", "re_duji", "ns_duji"],
 	duyu: ["duyu", "dc_duyu", "sp_duyu", "pk_sp_duyu"],
 	fanchou: ["fanchou", "tw_fanchou", "ns_fanchou", "ca_fanchou"],

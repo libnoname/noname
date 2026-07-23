@@ -11,7 +11,9 @@ const skills = {
 				return false;
 			}
 			const num = Math.min(5, player.countHistory("useSkill", evt => evt.skill == "natulie") + 1);
-			return player.countCards("h") != num;
+			//手杀奇妙小巧思
+			//return player.countCards("h") != num;
+			return true;
 		},
 		prompt2(event, player) {
 			const num = Math.min(5, player.countHistory("useSkill", evt => evt.skill == "natulie") + 1);
@@ -442,6 +444,7 @@ const skills = {
 							})
 							.forResult()
 					: { control: list[0] };
+			player.logSkill(event.name, null, null, null, [2]);
 			if (result?.control == "使用杀") {
 				const list = get.inpileVCardList(info => {
 					if (info[2] != "sha") {

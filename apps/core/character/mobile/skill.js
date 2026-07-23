@@ -32568,6 +32568,8 @@ const skills = {
 	mbfenxin: {
 		mode: ["identity", "doudizhu"],
 		audio: "fenxin",
+		skillAnimation: true,
+		animationColor: "wood",
 		trigger: {
 			source: "dieBegin",
 		},

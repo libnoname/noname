@@ -3359,10 +3359,11 @@ const skills = {
 								return 1;
 							}
 							const player = get.player();
-							const cards = get
-								.event()
-								.list?.map(i => i[0])
-								.flat() || [];
+							const cards =
+								get
+									.event()
+									.list?.map(i => i[0])
+									.flat() || [];
 							return -get.attitude(player, target) * target.countCards("h", cardx => !cards?.includes(cardx));
 						},
 					})
@@ -3464,21 +3465,6 @@ const skills = {
 	},
 	sxrmsigu: {
 		audio: 2,
-		audioname2: {
-			chengong: "zhichi_sxrm_caocao",
-			re_xiahoudun: "reganglie_sxrm_caocao",
-			re_simayi: "refankui_sxrm_caocao",
-			re_guojia: "reyiji_sxrm_caocao",
-			ol_xunyu: "oljieming_sxrm_caocao",
-			sb_caopi: "fangzhu_sxrm_caocao",
-			jushou: "shibei_sxrm_caocao",
-			re_caochong: "rechengxiang_sxrm_caocao",
-			re_xunyou: "zhiyu_sxrm_caocao",
-			yangxiu: "jilei_sxrm_caocao",
-			chengyu: "benyu_sxrm_caocao",
-			xizhicai: "chouce_sxrm_caocao",
-			shen_guanyu: "wuhun_sxrm_caocao",
-		},
 		enable: "phaseUse",
 		filter(event, player) {
 			return game.hasPlayer(current => player !== current);
@@ -3503,23 +3489,23 @@ const skills = {
 			}
 			const name = get.info(event.name).pasts[result.number - 1],
 				skill = get.info(event.name).derivation[result.number - 1];
-			const mark = `twsigu_${player.playerid}`;
+			const mark = `sxrmsigu_${player.playerid}`;
 			if (name && skill) {
+				game.broadcastAll((player, name) => player.tempname.add(name), target, "sxrm_caocao");
 				await target.addAdditionalSkills(mark, [skill], true);
 				//写个标记吧
 				target.addTip(mark, `似故 ${get.translation(skill)}`);
 				//再加个动画
 				target.setAvatar(target.name, name);
-				const voice = get.info(event.name).voices[name];
-				if (voice) {
-					game.playAudio(`../audio/skill/${voice}.mp3`);
-				}
 			} else {
 				player.chat("孩子你是谁？");
 			}
 			await target.damage();
 			await target.damage();
 			if (name && skill) {
+				if (Array.isArray(target.tempname)) {
+					game.broadcastAll((player, name) => player.tempname.remove(name), target, "sxrm_caocao");
+				}
 				target.removeAdditionalSkills(mark);
 				target.removeTip(mark);
 				target.setAvatar(target.name, target.name);
@@ -3552,21 +3538,6 @@ const skills = {
 		},
 		pasts: ["chengong", "re_xiahoudun", "re_simayi", "re_guojia", "ol_xunyu", "sb_caopi", "jushou", "re_caochong", "re_xunyou", "yangxiu", "chengyu", "xizhicai", "shen_guanyu"],
 		derivation: ["zhichi", "reganglie", "refankui", "new_reyiji", "oljieming", "fangzhu", "shibei", "rechengxiang", "zhiyu", "jilei", "benyu", "chouce", "new_wuhun"],
-		voices: {
-			chengong: "zhichi_sxrm_caocao",
-			re_xiahoudun: "reganglie_sxrm_caocao",
-			re_simayi: "refankui_sxrm_caocao",
-			re_guojia: "reyiji_sxrm_caocao",
-			ol_xunyu: "oljieming_sxrm_caocao",
-			sb_caopi: "fangzhu_sxrm_caocao",
-			jushou: "shibei_sxrm_caocao",
-			re_caochong: "rechengxiang_sxrm_caocao",
-			re_xunyou: "zhiyu_sxrm_caocao",
-			yangxiu: "jilei_sxrm_caocao",
-			chengyu: "benyu_sxrm_caocao",
-			xizhicai: "chouce_sxrm_caocao",
-			shen_guanyu: "wuhun_sxrm_caocao"
-		}
 	},
 	//刘备
 	sxrmchengbian: {
