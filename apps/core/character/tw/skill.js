@@ -29014,12 +29014,18 @@ const skills = {
 			const target = event.targets[0];
 			const result = await target
 				.judge(card => {
-					if ([4, 5, 6, 8].includes(get.number(card))) return 2;
-					if ([9, 12].includes(get.number(card))) return 1;
+					if ([4, 5, 6, 8].includes(get.number(card))) {
+						return 2;
+					}
+					if ([9, 12].includes(get.number(card))) {
+						return 1;
+					}
 					return -1;
 				})
 				.forResult();
-			if (!result?.number || result.number < 1 || result.number > 13) return;
+			if (!result?.number || result.number < 1 || result.number > 13) {
+				return;
+			}
 			const name = get.info(event.name).pasts[result.number - 1];
 			const skill = get.info(event.name).derivation[result.number - 1];
 			const mark = `twsigu_${player.playerid}`;
