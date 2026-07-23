@@ -29024,19 +29024,19 @@ const skills = {
 			const skill = get.info(event.name).derivation[result.number - 1];
 			const mark = `twsigu_${player.playerid}`;
 			if (name && skill) {
+				game.broadcastAll((player, name) => player.tempname.add(name), target, "tw_sxrm_caocao");
 				await target.addAdditionalSkills(mark, [skill], true);
 				target.addTip(mark, `似故 ${get.translation(skill)}`);
 				target.setAvatar(target.name, name);
-				const voice = get.info(event.name).voices[name];
-				if (voice) {
-					game.playAudio(`../audio/skill/${voice}.mp3`);
-				}
 			} else {
 				player.chat("孩子你是谁？");
 			}
 			await target.damage();
 			await target.damage();
 			if (name && skill) {
+				if (Array.isArray(target.tempname)) {
+					game.broadcastAll((player, name) => player.tempname.remove(name), target, "tw_sxrm_caocao");
+				}
 				target.removeAdditionalSkills(mark);
 				target.removeTip(mark);
 				target.setAvatar(target.name, target.name);
@@ -29065,22 +29065,7 @@ const skills = {
 		},
 		pasts: ["chengong", "re_xiahoudun", "re_simayi", "re_guojia", "ol_xunyu", "sb_caopi", "jushou", "re_caochong", "re_xunyou", "yangxiu", "chengyu", "xizhicai", "shen_guanyu"],
 		derivation: ["zhichi", "reganglie", "refankui", "new_reyiji", "oljieming", "fangzhu", "shibei", "rechengxiang", "zhiyu", "jilei", "benyu", "chouce", "new_wuhun"],
-		voices: {
-			chengong: "zhichi_sxrm_caocao",
-			re_xiahoudun: "reganglie_sxrm_caocao",
-			re_simayi: "refankui_sxrm_caocao",
-			re_guojia: "reyiji_sxrm_caocao",
-			ol_xunyu: "oljieming_sxrm_caocao",
-			sb_caopi: "fangzhu_sxrm_caocao",
-			jushou: "shibei_sxrm_caocao",
-			re_caochong: "rechengxiang_sxrm_caocao",
-			re_xunyou: "zhiyu_sxrm_caocao",
-			yangxiu: "jilei_sxrm_caocao",
-			chengyu: "benyu_sxrm_caocao",
-			xizhicai: "chouce_sxrm_caocao",
-			shen_guanyu: "wuhun_sxrm_caocao",
-		},
-	}, //子右：我不行了，我真不会，等星语发出尖锐爆鸣吧
+	},
 	zhichi_sxrm_caocao: { audio: 1 },
 	reganglie_sxrm_caocao: { audio: 1 },
 	refankui_sxrm_caocao: { audio: 1 },
@@ -29098,33 +29083,37 @@ const skills = {
 		audio: 2,
 		trigger: { global: "judge" },
 		filter(event, player) {
-			if (player.hasSkill("twkuimu_used")) return false;
 			return event.player.hasCards("h");
 		},
-		async cost(event, trigger, player) {
+		round: 1,
+		prompt2(event, player) {
+			return `观看${get.translation(event.player)}所有手牌并选择一张代替之。若花色不为${get.translation(get.suit(event.player.judging[0]))}，你受到其造成的1点伤害`;
+		},
+		check(event, player) {
+			const target = event.player;
+			const cards = event.player.getCards("h");
+			const judging = target.judging[0];
+			const attitude = get.attitude(player, target);
+			const better = cards.some(card => {
+				const diff = event.judge(card) - event.judge(judging);
+				if (attitude > 0) {
+					return diff > 0;
+				}
+				if (attitude < 0) {
+					return diff < 0;
+				}
+				return false;
+			});
+			return better;
+		},
+		async content(event, trigger, player) {
 			const target = trigger.player;
-			const confirmResult = await player
-				.chooseBool(`窥目：观看${get.translation(target)}的所有手牌并选择一张代替判定牌？`)
-				.set("ai", () => {
-					const trigger2 = get.event().getTrigger();
-					const cards = target.getCards("h");
-					const judging = trigger2.player.judging[0];
-					const attitude = get.attitude(player, target);
-					const better = cards.some(card => {
-						const diff = trigger2.judge(card) - trigger2.judge(judging);
-						if (attitude > 0) return diff > 0;
-						if (attitude < 0) return diff < 0;
-						return false;
-					});
-					return better;
-				})
-				.forResult();
-			if (!confirmResult.bool) {
-				event.result = { bool: false };
+			const judging = target.judging[0];
+			if (!target.hasCards("h")) {
 				return;
 			}
 			const result = await player
-				.chooseCardButton(target.getCards("h"), 1, `窥目：观看${get.translation(target)}的所有手牌，选择一张代替判定牌`)
+				.chooseCardButton(target.getCards("h"), 1, `窥目：选择${get.translation(target)}的一张手牌代替判定牌，若花色不为${get.translation(get.suit(judging))}，则你受到其造成的1点伤害`, true)
 				.set("forced", true)
 				.set("ai", button => {
 					const card = button.link;
@@ -29138,59 +29127,35 @@ const skills = {
 					return -result2 - val;
 				})
 				.forResult();
-			event.result = {
-				bool: result?.bool && result?.links?.length > 0,
-				cards: result?.links || [],
-				cost_data: {
-					originalSuit: get.suit(trigger.player.judging[0], false),
-				},
-			};
-		},
-		preHidden: true,
-		popup: false,
-		async content(event, trigger, player) {
-			const target = trigger.player;
-			const replaceCard = event.cards[0];
-			const originalSuit = event.cost_data?.originalSuit;
-			const newSuit = get.suit(replaceCard, false);
-			player.addTempSkill("twkuimu_used", "roundStart");
-			game.broadcastAll(
-				(card, player2) => {
-					const node = player2.$throwordered(card.copy(), true);
-					node.classList.add("thrownhighlight");
-					ui.arena.classList.add("thrownhighlight");
-				},
-				replaceCard,
-				player
-			);
-			if (target.judging[0].clone) {
-				target.judging[0].clone.classList.remove("thrownhighlight");
-				game.broadcast(card => {
-					if (card.clone) card.clone.classList.remove("thrownhighlight");
-				}, target.judging[0]);
-				game.addVideo("deletenode", player, get.cardsInfo([target.judging[0].clone]));
+			if (result?.links?.length) {
+				game.broadcastAll(
+					(card, player) => {
+						const node = player.$throwordered(card.copy(), true);
+						node.classList.add("thrownhighlight");
+						ui.arena.classList.add("thrownhighlight");
+					},
+					result.links[0],
+					player
+				);
+				if (target.judging[0].clone) {
+					target.judging[0].clone.classList.remove("thrownhighlight");
+					game.broadcast(card => {
+						if (card.clone) {
+							card.clone.classList.remove("thrownhighlight");
+						}
+					}, target.judging[0]);
+					game.addVideo("deletenode", player, get.cardsInfo([target.judging[0].clone]));
+				}
+				await game.cardsDiscard(target.judging[0]);
+				await target.lose(result.links).set("noOdering", true);
+				trigger.player.judging[0] = result.links[0];
+				trigger.orderingCards.addArray(result.links);
+				game.log(trigger.player, "的判定牌改为", result.links[0]);
+				await game.delay(2);
+				if (get.suit(result.links[0]) != get.suit(judging)) {
+					await player.damage(target);
+				}
 			}
-			await game.cardsDiscard(target.judging[0]);
-			target.lose(replaceCard, ui.ordering);
-			target.judging[0] = replaceCard;
-			trigger.orderingCards.addArray([replaceCard]);
-			game.log(player, "将", target, "的判定牌改为", replaceCard);
-			await game.delay(2);
-			game.broadcastAll(() => {
-				ui.arena.classList.remove("thrownhighlight");
-			});
-			if (originalSuit && newSuit && originalSuit !== newSuit) {
-				await player.damage(target);
-				game.log(player, "因花色不同受到", target, "造成的1点伤害");
-			}
-		},
-		subSkill: {
-			used: {
-				charlotte: true,
-				mark: true,
-				marktext: "目",
-				intro: { content: "本轮已发动窥目" },
-			},
 		},
 		ai: {
 			rejudge: true,
