@@ -1541,9 +1541,9 @@ const skills = {
 		},
 		filter(event, player) {
 			const types = player
-				.getCards("he")
-				.map(card => get.type2(card))
-				.unique(),
+					.getCards("he")
+					.map(card => get.type2(card))
+					.unique(),
 				count = event.dcmuzhen_count;
 			return types.length > 0 && types.some(type => !player.getStorage("dcmuzhen_used").includes(type) && player.countCards("he", card => get.type2(card, player) == type) >= count);
 		},
@@ -1585,7 +1585,7 @@ const skills = {
 				.chooseControl(controls)
 				.set("choiceList", list)
 				.set("prompt", `睦阵：令${str}执行一项`)
-				.set("ai", () => { })
+				.set("ai", () => {})
 				.forResult();
 			if (!result?.control) {
 				return;
@@ -3835,7 +3835,7 @@ const skills = {
 				player.getHistory("useSkill", evt => {
 					return evt.skill == "dcjianzhuan" && evt.event.getParent("phaseUse") == evtx;
 				}).length <
-				4 - player.getStorage("dcjianzhuan").length
+					4 - player.getStorage("dcjianzhuan").length
 			);
 		},
 		forced: true,
@@ -6308,13 +6308,13 @@ const skills = {
 			return get.type(event.card) === "basic" && _status.currentPhase;
 		},
 		prompt2(event, player) {
-			const num = Math.pow(2, player.getStorage("dccaisi_more", 0));
+			const num = Math.pow(2, player.countMark("dccaisi_more"));
 			return `从${player == _status.currentPhase ? "" : "弃"}牌堆中随机获得${get.cnNumber(num)}张非基本牌`;
 		},
 		async content(event, trigger, player) {
 			const position = player == _status.currentPhase ? "cardPile2" : "discardPile";
 			let cards = [],
-				num = Math.pow(2, player.getStorage("dccaisi_more", 0));
+				num = Math.pow(2, player.countMark("dccaisi_more"));
 			while (num > 0) {
 				num--;
 				let card = get[position](card => get.type(card) != "basic" && !cards.includes(card), "random");
@@ -6338,14 +6338,7 @@ const skills = {
 				player.tempBanSkill("dccaisi");
 			}
 		},
-		subSkill: {
-			more: {
-				charlotte: true,
-				onremove(player) {
-					player.removeStorage("dccaisi_more");
-				},
-			},
-		},
+		subSkill: { more: { charlotte: true, onremove: true } },
 	},
 	dczhuoli: {
 		audio: 2,
@@ -6604,7 +6597,7 @@ const skills = {
 							evt.set("norestore", true);
 							evt.set("custom", {
 								add: {},
-								replace: { window() { } },
+								replace: { window() {} },
 							});
 							evt.goto(0);
 							if (target != _status.currentPhase) {
@@ -6870,9 +6863,9 @@ const skills = {
 				"弃置" +
 				get.cnNumber(
 					1 +
-					player.getHistory("useSkill", evt => {
-						return evt.skill == "dczhongji";
-					}).length
+						player.getHistory("useSkill", evt => {
+							return evt.skill == "dczhongji";
+						}).length
 				) +
 				"张牌"
 			);
@@ -7515,7 +7508,7 @@ const skills = {
 	dczuowei: {
 		audio: 2,
 		trigger: { player: "useCard" },
-		frequent: true,	//我是子右，这是星语干的
+		frequent: true, 
 		filter(event, player) {
 			if (_status.currentPhase != player) {
 				return false;
@@ -8210,22 +8203,22 @@ const skills = {
 					if (
 						target.hasSha() &&
 						player.hp +
-						player.countCards("hs", function (card) {
-							var mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
-							if (mod2 != "unchanged") {
-								return mod2;
-							}
-							var mod = game.checkMod(card, player, player, "unchanged", "cardSavable", player);
-							if (mod != "unchanged") {
-								return mod;
-							}
-							var savable = get.info(card).savable;
-							if (typeof savable == "function") {
-								savable = savable(card, player, player);
-							}
-							return savable;
-						}) <=
-						1
+							player.countCards("hs", function (card) {
+								var mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
+								if (mod2 != "unchanged") {
+									return mod2;
+								}
+								var mod = game.checkMod(card, player, player, "unchanged", "cardSavable", player);
+								if (mod != "unchanged") {
+									return mod;
+								}
+								var savable = get.info(card).savable;
+								if (typeof savable == "function") {
+									savable = savable(card, player, player);
+								}
+								return savable;
+							}) <=
+							1
 					) {
 						return 0;
 					}
@@ -8375,22 +8368,22 @@ const skills = {
 					if (
 						target.hasSha() &&
 						player.hp +
-						player.countCards("hs", function (card) {
-							var mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
-							if (mod2 != "unchanged") {
-								return mod2;
-							}
-							var mod = game.checkMod(card, player, player, "unchanged", "cardSavable", player);
-							if (mod != "unchanged") {
-								return mod;
-							}
-							var savable = get.info(card).savable;
-							if (typeof savable == "function") {
-								savable = savable(card, player, player);
-							}
-							return savable;
-						}) <=
-						player.getStorage("oldmoyu_clear").length + 1
+							player.countCards("hs", function (card) {
+								var mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
+								if (mod2 != "unchanged") {
+									return mod2;
+								}
+								var mod = game.checkMod(card, player, player, "unchanged", "cardSavable", player);
+								if (mod != "unchanged") {
+									return mod;
+								}
+								var savable = get.info(card).savable;
+								if (typeof savable == "function") {
+									savable = savable(card, player, player);
+								}
+								return savable;
+							}) <=
+							player.getStorage("oldmoyu_clear").length + 1
 					) {
 						return 0;
 					}
@@ -10248,7 +10241,7 @@ const skills = {
 			next.set("_backupevent", `${event.name}_backup`);
 			next.set("custom", {
 				add: {},
-				replace: { window() { } },
+				replace: { window() {} },
 			});
 			next.backup(`${event.name}_backup`);
 			next.set("targetRequired", true);
@@ -10758,9 +10751,9 @@ const skills = {
 				.set(
 					"damage",
 					get.damageEffect(target, player, player) > 10 &&
-					player.countCards("he", card => {
-						return lib.filter.canBeDiscarded(card, player, player) && get.value(card) < 5;
-					}) >= 3
+						player.countCards("he", card => {
+							return lib.filter.canBeDiscarded(card, player, player) && get.value(card) < 5;
+						}) >= 3
 				)
 				.forResult();
 			if (!result?.bool) {
