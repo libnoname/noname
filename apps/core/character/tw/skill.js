@@ -7563,6 +7563,387 @@ const skills = {
 			});
 		},
 	},
+	// 幻周瑜
+	twdumou: {
+		trigger: {
+			player: ["loseAfter", "gainAfter"],
+			global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
+		},
+		frequent: true,
+		filter(event, player) {
+			const isLose =
+				event.getl(player).cards.length &&
+				lib.phaseName.some(phase => {
+					return (
+						player
+							.getHistory("lose", evt => evt.getParent(phase) === event.getParent(phase))
+							.map(evt => (event.name == "lose" ? evt : evt.getParent()))
+							.indexOf(event) === 0
+					);
+				});
+			const isGain =
+				event.getg(player).length &&
+				lib.phaseName.some(phase => {
+					return (
+						player
+							.getHistory("gain", evt => evt.getParent(phase) === event.getParent(phase))
+							.map(evt => (event.name == "gain" ? evt : evt.getParent()))
+							.indexOf(event) === 0
+					);
+				});
+			return isGain || isLose;
+		},
+		async cost(event, trigger, player) {
+			const controls = ["cancel2", "展示牌堆顶的一张牌并令一名角色获得之"];
+			if (game.hasPlayer(current => current.countCards("he", card => lib.filter.cardRecastable(card, player)) >= 3)) {
+				controls.push("重铸一名角色的三张牌");
+			}
+			const result = await player
+				.chooseControl({
+					prompt: get.prompt("twdumou"),
+					prompt2: "选择一项：",
+					controls,
+					ai() {
+						// ai很长，但一般只运行一小部分，且可以决定500年内的历史(不是)决定整个技能发动周期的ai发动策略
+						const player = get.player();
+						const event2 = get.event().event2;
+						const trigger2 = get.event().trigger2;
+						// 是否是失去牌触发的，若是，则让自己获得
+						if (trigger2.getl(player).cards.length) {
+							event2.aiResult = {
+								cost_data: {
+									control: "展示牌堆顶的一张牌并令一名角色获得之",
+									target: player,
+								},
+							};
+							return "展示牌堆顶的一张牌并令一名角色获得之";
+						}
+						// 寻找伤害目标，若无则取消
+						let damageTarget;
+						let maxEffect = 0;
+						game.filterPlayer(current => {
+							const eff = get.damageEffect(current, player, player);
+							if (eff > maxEffect) {
+								maxEffect = eff;
+								damageTarget = current;
+							}
+						});
+						if (maxEffect <= 0) return "cancel2";
+						// 若是回合外，根据数量执行选项
+						if (_status.currentPhase !== player) {
+							if (damageTarget.countCards("he") >= 3) {
+								event2.aiResult = {
+									cost_data: {
+										control: "重铸一名角色的三张牌",
+										target: damageTarget,
+									},
+								};
+								return "重铸一名角色的三张牌";
+							} else {
+								event2.aiResult = {
+									cost_data: {
+										control: "展示牌堆顶的一张牌并令一名角色获得之",
+										target: damageTarget,
+									},
+								};
+								return "展示牌堆顶的一张牌并令一名角色获得之";
+							}
+						}
+						// 若不为出牌阶段或弃牌阶段，则给自己，回合内仅精算两次节省算力
+						if (!trigger2.getParent("phaseUse").name && !trigger2.getParent("phaseDiscard").name) {
+							event2.aiResult = {
+								cost_data: {
+									control: "展示牌堆顶的一张牌并令一名角色获得之",
+									target: player,
+								},
+							};
+							return "展示牌堆顶的一张牌并令一名角色获得之";
+						}
+						// 比较你与其获得牌数量，只要你不比他多，就选择自己为目标，否则根据数量决定选项，结果写入cost_data提前指定
+						let targetNum = 0;
+						damageTarget.getHistory("gain").forEach(evt => {
+							if (evt.gaintag?.includes("twdumou_tag")) {
+								targetNum += evt.cards.length;
+							}
+						});
+						// 未获得牌，对其发动
+						if (!targetNum) {
+							if (damageTarget.countCards("he") >= 3) {
+								event2.aiResult = {
+									cost_data: {
+										control: "重铸一名角色的三张牌",
+										target: damageTarget,
+									},
+								};
+								return "重铸一名角色的三张牌";
+							} else {
+								event2.aiResult = {
+									cost_data: {
+										control: "展示牌堆顶的一张牌并令一名角色获得之",
+										target: damageTarget,
+									},
+								};
+								return "展示牌堆顶的一张牌并令一名角色获得之";
+							}
+						}
+						let meNum = 0;
+						player.getHistory("gain").forEach(evt => {
+							if (evt.gaintag?.includes("twdumou_tag")) {
+								meNum += evt.cards.length;
+							}
+						});
+						// 获得过牌，比较数量
+						if (meNum > targetNum) {
+							if (damageTarget.countCards("he") >= 3) {
+								event2.aiResult = {
+									cost_data: {
+										control: "重铸一名角色的三张牌",
+										target: damageTarget,
+									},
+								};
+								return "重铸一名角色的三张牌";
+							} else {
+								event2.aiResult = {
+									cost_data: {
+										control: "展示牌堆顶的一张牌并令一名角色获得之",
+										target: damageTarget,
+									},
+								};
+								return "展示牌堆顶的一张牌并令一名角色获得之";
+							}
+						} else {
+							event2.aiResult = {
+								cost_data: {
+									control: "展示牌堆顶的一张牌并令一名角色获得之",
+									target: player,
+								},
+							};
+							return "展示牌堆顶的一张牌并令一名角色获得之";
+						}
+					},
+					event2: event,
+					trigger2: trigger,
+				})
+				.forResult();
+			if (result.control !== "cancel2") {
+				if (event.aiResult) {
+					event.result = event.aiResult;
+					event.result.bool = true;
+				} else {
+					event.result = { bool: true, cost_data: { control: result.control } };
+				}
+			} else {
+				return;
+			}
+		},
+		async content(event, trigger, player) {
+			const { control, target } = event.cost_data;
+			const targetPrompt = "督鍪：" + control;
+			if (control === "重铸一名角色的三张牌") {
+				const targetResult = await player
+					.chooseTarget({
+						filterTarget(card, player, target) {
+							return target.countCards("he", lib.filter.cardRecastable(card, player)) >= 3;
+						},
+						prompt: targetPrompt,
+						ai(target) {
+							const target2 = get.event().target2;
+							if (target2) {
+								return target === target2 ? 1 : 0;
+							} else {
+								return -get.attitude(get.player(), target);
+							}
+						},
+						forced: true,
+						target2: target,
+					})
+					.forResult();
+				if (!targetResult || targetResult.targets[0].countCards("he", card => lib.filter.cardRecastable(card, player)) < 3) {
+					return;
+				}
+				const cardResult = await player
+					.choosePlayerCard({
+						forced: true,
+						prompt: "督鍪：重铸该角色的三张牌",
+						target: targetResult.targets[0],
+						selectButton: 3,
+						allowChooseAll: true,
+						filterCard(button) {
+							return lib.filter.cardRecastable(button.link, get.player());
+						},
+					})
+					.forResult();
+				if (cardResult?.cards?.length) {
+					await targetResult.targets[0].recast(cardResult.cards, void 0, player => (player.draw(3).set("log", false).gaintag = ["twdumou_tag"]));
+				}
+			} else if (control === "展示牌堆顶的一张牌并令一名角色获得之") {
+				const card = get.cards(1);
+				if (!card) return;
+				await player.showCards(card);
+				const targetResult = await player
+					.chooseTarget({
+						filterTarget: () => true,
+						prompt: `督鍪：令一名角色获得${get.translation(card)}`,
+						forced: true,
+						ai(target) {
+							const target2 = get.event().target2;
+							if (target2) {
+								return target === target2 ? 1 : 0;
+							} else {
+								return -get.attitude(get.player(), target);
+							}
+						},
+						target2: target,
+					})
+					.forResult();
+				if (targetResult?.targets.length) {
+					const next = targetResult.targets[0].gain(card, "gain2");
+					next.gaintag = ["twdumou_tag"];
+					await next;
+				}
+			}
+		},
+		group: "twdumou_losehp",
+		subSkill: {
+			losehp: {
+				trigger: { global: "phaseEnd" },
+				direct: true,
+				async content(event, trigger, player) {
+					const gainMap = {};
+					for (const current of game.filterPlayer()) {
+						let num = 0;
+						current.getHistory("gain").forEach(evt => {
+							if (evt.gaintag?.includes("twdumou_tag")) {
+								num += evt.cards.length;
+							}
+						});
+						gainMap[current.name] = [current, num];
+					}
+					let maxNum = 0;
+					let maxCurrent;
+					for (const currentName in gainMap) {
+						if (gainMap[currentName][1] === maxNum) {
+							maxCurrent = false;
+						}
+						if (gainMap[currentName][1] > maxNum) {
+							maxNum = gainMap[currentName][1];
+							maxCurrent = gainMap[currentName][0];
+						}
+					}
+					if (maxCurrent) {
+						player.logSkill("twdumou");
+						await maxCurrent.loseHp();
+					}
+				},
+			},
+		},
+	},
+	twhantian: {
+		enable: "chooseToUse",
+		locked: false,
+		usable: 1,
+		selectCard: -1,
+		filterCard: () => false,
+		viewAs: {
+			name: "huogong",
+			isCard: true,
+			storage: {
+				twhantian: true,
+			},
+		},
+		ai: {
+			fireAttack: true,
+			order(item, player) {
+				if (
+					!player.getHistory("useCard", evt => {
+						return evt.getParent("phaseUse").name && evt.getParent("phaseUse") === get.event().getParent("phaseUse");
+					}).length
+				)
+					return 0;
+				return get.order({ name: "huogong" }, player);
+			},
+		},
+		mod: {
+			aiOrder(player, card, num) {
+				if (player.getCards("h", card2 => get.suit(card2) === get.suit(card)).length < 2) {
+					return num - 2;
+				}
+				// 鼓励屯牌算法，照搬手杀界钟会的少牌情况
+				if (player.countCards("h") <= player.hp + 1) {
+					if (get.type(card) == "equip" && !["equip2", "equip3"].includes(get.subtype(card))) {
+						return 0;
+					}
+					let eff = 6 + player.hp;
+					if (!get.tag(card, "gain") && !get.tag(card, "draw")) {
+						eff += 3;
+					}
+					if (player.getUseValue(card) < eff) {
+						return 0;
+					}
+				} else {
+					return num;
+				}
+			},
+		},
+		group: ["twhantian_effect", "twhantian_fire"],
+		subSkill: {
+			effect: {
+				trigger: { player: "huogongBegin" },
+				direct: true,
+				filter(event, player) {
+					return event.card.storage?.twhantian;
+				},
+				async content(event, trigger, player) {
+					trigger.set("chooseToShow", async (event2, player2, target2) => {
+						const showPosition2 = event2.showPosition === void 0 ? "h" : event2.showPosition;
+						const filterShow = card => {
+							const cardFilter = function (card3, player3) {
+								return (
+									player3.getHistory("gain", evt => {
+										return evt.cards.includes(card3);
+									}).length > 0
+								);
+							};
+							if (target2.countCards("h", card2 => cardFilter(card2, target2))) {
+								return cardFilter(card, target2);
+							} else {
+								return true;
+							}
+						};
+						let result3;
+						if (target2.countCards(showPosition2) === 1) {
+							result3 = { bool: true, cards: target2.getCards(showPosition2) };
+						} else {
+							result3 = await target2
+								.chooseCard(true, showPosition2, "请选择【火攻】要展示的牌", filterShow)
+								.set("ai", card => {
+									if (_status.event.getRand() < 0.5) {
+										return Math.random();
+									}
+									return get.value(card);
+								})
+								.forResult();
+						}
+						return result3;
+					});
+				},
+			},
+			fire: {
+				forced: true,
+				trigger: { source: "damageBegin1" },
+				filter(event, player) {
+					return event.hasNature("fire");
+				},
+				async content(event, trigger, player) {
+					const target = trigger.player;
+					if (!target) return;
+					const num = target.getHistory("gain").length;
+					game.log(target, "受到火焰伤害增加", num, "点");
+					trigger.num += num;
+				},
+			},
+		},
+	},
 	//幻魏延
 	twqiji: {
 		audio: 2,

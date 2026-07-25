@@ -195,6 +195,12 @@ const characters = {
 		hujia: 1,
 		skills: ["twchenxun"],
 	},
+	huan_zhouyu:{
+		sex: "male",
+		group: "wu",
+		hp: 4,
+		skills: ["twdumou", "twhantian"],
+	},
 	tw_sunluban: {
 		sex: "female",
 		group: "wu",
