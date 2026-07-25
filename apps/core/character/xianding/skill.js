@@ -2896,8 +2896,7 @@ const skills = {
 			} else {
 				event.result = await player
 					.chooseBool({
-						prompt: get.prompt(event.skill, trigger.source),
-						prompt2:`发动${get.translation(trigger.source)}的“受到伤害后”技能，若没有则随机发动一个“曹”姓武将此时机的技能。`,
+						prompt: get.prompt2(event.skill, trigger.source),
 						choice: true,
 					})
 					.forResult();
@@ -2987,14 +2986,6 @@ const skills = {
 						.skills.filter(i => checkTrigger(i))
 						.randomGets(1);
 				}
-				const result = await player.chooseBool({
-					prompt:"刻名："+get.prompt(skills),
-					prompt2:get.translation(skills+"_info"),
-					choice(){
-						return !get.info(skills)?.ai?.neg;
-					}
-				}).forResult();
-				if(!result || !result.bool) return;
 				player.addInvisibleSkill(skills);
 				player.addTempSkill(`${event.name}_check`);
 				player.markAuto(`${event.name}_check`, skills);
