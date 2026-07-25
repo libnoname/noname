@@ -7700,16 +7700,36 @@ const skills = {
 		subSkill: {
 			discard: {
 				mod: {
-					cardDiscardable(card) {
-						if (_status.currentPhase?.hasSkill("luansuo") && get.position(card) === "h") {
+					cardDiscardable(card, player) {
+						if (_status.currentPhase?.hasSkill("luansuo") && get.position(card) === "h" && player.hasCards("h", card2 => card2 === card)) {
 							return false;
 						}
 					},
-					canBeDiscarded(card) {
-						if (_status.currentPhase?.hasSkill("luansuo") && get.position(card) === "h") {
+					canBeDiscarded(card, source) {
+						if (_status.currentPhase?.hasSkill("luansuo") && get.position(card) === "h" && source.hasCards("h", card2 => card2 === card)) {
 							return false;
 						}
 					},
+				},
+				direct: true,
+				trigger: { global: "loseBegin" },
+				filter(event, player) {
+					if (!_status.currentPhase?.hasSkill("luansuo")) return;
+					if (event.player === player) return;
+					if (!event.type === "discard") return;
+					if (event.discarder !== player) return;
+					return event.cards?.length;
+				},
+				async content(event, trigger, player) {
+					// 代码来自智将黄崇
+					let logged = false;
+					for (let i = 0; i < trigger.cards.length; i++) {
+						const pos = get.position(trigger.cards[i]);
+						if ("h".includes(pos)) {
+							if (!logged) player.logSkill("luansuo");
+							trigger.cards.splice(i--, 1);
+						}
+					}
 				},
 			},
 			debuff: {
