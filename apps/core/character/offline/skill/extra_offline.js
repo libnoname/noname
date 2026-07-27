@@ -3691,33 +3691,34 @@ const skills = {
 		direct: true,
 		locked: false,
 		filter(event, player) {
-			return game.hasPlayer(i => i.countCards("ej", cardx => get.type(cardx) == "equip" && get.suit(event.card) == get.suit(cardx)));
+			return game.hasPlayer(i => i.hasCards("ej", cardx => get.type(cardx) === "equip" && get.suit(event.card) === get.suit(cardx)));
 		},
-		content() {
-			"step 0";
-			var suit = get.suit(trigger.card),
-				extra = game
-					.filterPlayer()
-					.map(i =>
-						i.countCards("ej", cardx => {
-							return get.type(cardx) == "equip" && get.suit(trigger.card) == get.suit(cardx);
-						})
-					)
-					.reduce((p, c) => p + c);
-			var prompt2 = "弃置任意张" + get.translation(suit) + "手牌，然后摸X张牌（X为你弃置的牌数+" + extra + "）";
-			player
-				.chooseToDiscard("h", [1, player.countCards("h", { suit: suit })], { suit: suit }, "allowChooseAll")
-				.set("prompt", get.prompt("pshengwu"))
-				.set("prompt2", prompt2)
+		async content(event, trigger, player) {
+			const suit = get.suit(trigger.card);
+			const extra = game
+				.filterPlayer()
+				.map(i => i.countCards("ej", cardx => get.type(cardx) === "equip" && get.suit(trigger.card) === get.suit(cardx)))
+				.reduce((p, c) => p + c);
+			const prompt2 = `弃置任意张${get.translation(suit)}手牌，然后摸X张牌（X为你弃置的牌数+${extra}）`;
+			const result = await player
+				.chooseToDiscard({
+					prompt: get.prompt("pshengwu"),
+					prompt2,
+					filterCard: card => get.suit(card) === _status.event.suit,
+					selectCard: [1, player.countCards("h", { suit })],
+					position: "h",
+					allowChooseAll: true,
+				})
+				.set("suit", suit)
 				.set("ai", card => {
 					if (_status.event.tie) {
 						return 0;
 					}
-					let player = _status.event.player;
+					const current = _status.event.player;
 					if (_status.event.goon) {
 						return 12 - get.value(card);
 					}
-					if (player == _status.currentPhase) {
+					if (current === _status.currentPhase) {
 						if (["shan", "caochuan", "tao", "wuxie"].includes(card.name)) {
 							return 8 - get.value(card);
 						}
@@ -3725,20 +3726,18 @@ const skills = {
 					}
 					return 5.5 - get.value(card);
 				})
-				.set("goon", player.countCards("h", { suit: suit }) == 1)
+				.set("goon", player.countCards("h", { suit }) === 1)
 				.set("tie", extra > ui.cardPile.childNodes.length + ui.discardPile.childNodes.length)
-				.set("logSkill", "pshengwu");
-			"step 1";
-			if (result.bool) {
-				var num = result.cards.length;
-				player.draw(
-					num +
-						game
-							.filterPlayer()
-							.map(i => i.countCards("ej", cardx => get.type(cardx) == "equip" && get.suit(trigger.card) == get.suit(cardx)))
-							.reduce((p, c) => p + c)
-				);
+				.set("logSkill", "pshengwu")
+				.forResult();
+			if (!result.bool || !result.cards?.length) {
+				return;
 			}
+			const currentExtra = game
+				.filterPlayer()
+				.map(i => i.countCards("ej", cardx => get.type(cardx) === "equip" && get.suit(trigger.card) === get.suit(cardx)))
+				.reduce((p, c) => p + c);
+			await player.draw(result.cards.length + currentExtra);
 		},
 		ai: {
 			threaten: 100,
@@ -3748,23 +3747,11 @@ const skills = {
 					if (typeof card !== "object") {
 						return;
 					}
-					let suit = get.suit(card);
-					if (
-						!lib.suit.includes(suit) ||
-						player.hasCard(function (i) {
-							return get.suit(i, player) == suit;
-						}, "h")
-					) {
+					const suit = get.suit(card);
+					if (!lib.suit.includes(suit) || player.hasCard(i => get.suit(i, player) === suit, "h")) {
 						return;
 					}
-					return [
-						1,
-						game.countPlayer(current => {
-							return current.countCards("e", card => {
-								return get.suit(card, current) == suit;
-							});
-						}),
-					];
+					return [1, game.countPlayer(current => current.countCards("e", card => get.suit(card, current) === suit))];
 				},
 				target(card, player, target) {
 					if (
@@ -3773,16 +3760,12 @@ const skills = {
 							"directHit_ai",
 							true,
 							{
-								target: target,
-								card: card,
+								target,
+								card,
 							},
 							true
 						) &&
-						game.hasPlayer(current => {
-							return current.hasCard(cardx => {
-								return get.subtype(cardx) === "equip3";
-							}, "e");
-						})
+						game.hasPlayer(current => current.hasCard(cardx => get.subtype(cardx) === "equip3", "e"))
 					) {
 						return [0, -0.5];
 					}
