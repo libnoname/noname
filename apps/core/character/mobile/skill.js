@@ -32533,7 +32533,6 @@ const skills = {
 			const colorText = isSource ? "黑" : "红";
 			const discardNum = 1;
 			const effectNum = beishui ? 2 : 1;
-			const canDiscard = player.countDiscardableCards(player, "he", card => get.color(card) === color) >= discardNum;
 			const isOption1 = control.startsWith("弃" + colorText + "牌");
 			const isOption2 = control.startsWith("获得" + colorText + "牌");
 			const isBeishui = control === "背水";
@@ -32546,6 +32545,7 @@ const skills = {
 					await player.gain({ cards: toGain, animate: "draw2" });
 				}
 			}
+			const canDiscard = player.countDiscardableCards(player, "he", card => get.color(card) === color) >= discardNum;
 			if (isOption1 || isBeishui) {
 				if (canDiscard) {
 					const result = await player
