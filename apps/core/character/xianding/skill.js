@@ -2896,7 +2896,8 @@ const skills = {
 			} else {
 				event.result = await player
 					.chooseBool({
-						prompt: get.prompt2(event.skill, trigger.source),
+						prompt: get.prompt(event.skill, trigger.source),
+						prompt2: `发动${get.translation(trigger.source)}的“受到伤害后”技能，若没有则随机发动一个“曹”姓武将此时机的技能。`,
 						choice: true,
 					})
 					.forResult();
@@ -3021,6 +3022,88 @@ const skills = {
 					player.unmarkAuto(event.name, skill);
 					if (!player.getStorage(event.name).length) {
 						player.removeSkill(event.name);
+					}
+				},
+				group: "dckeming_trigger",
+			},
+			trigger: {
+				charlotte: true,
+				trigger: { player: "triggerInvisible" },
+				filter(event, player) {
+					if (event.revealed) return false;
+					let info = get.info(event.skill);
+					if (!info || info.charlotte) return false;
+					let skills = player.getStorage("dckeming_check").slice();
+					game.expandSkills(skills);
+					return skills.includes(event.skill);
+				},
+				forced: true,
+				popup: false,
+				priority: 10,
+				forceDie: true,
+				async content(event, trigger, player) {
+					let result;
+					if (get.info(trigger.skill).silent) {
+						return;
+					} else {
+						const info = get.info(trigger.skill);
+						// 这里的trigger（event._trigger）即是content.createTrigger的event
+						const evt = trigger,
+							evtTrigger = evt._trigger;
+						let str;
+						let check = info.check;
+						// 照抄content.createTrigger的技能提示部分
+						if (info.prompt) {
+							str = info.prompt;
+						} else {
+							if (typeof info.logTarget == "string") {
+								str = get.prompt(evt.skill, evtTrigger[info.logTarget], player);
+							} else if (typeof info.logTarget == "function") {
+								const logTarget = info.logTarget(evtTrigger, player, evt.triggername, evt.indexedData);
+								if (get.itemtype(logTarget)?.indexOf("player") == 0) {
+									str = get.prompt(evt.skill, logTarget, player);
+								}
+							} else {
+								str = get.prompt(evt.skill, null, player);
+							}
+						}
+						if (typeof str == "function") {
+							str = str(evtTrigger, player, evt.triggername, evt.indexedData);
+						}
+						let next = player.chooseBool("刻名：" + str);
+						next.set("yes", !info.check || info.check(evtTrigger, player, evt.triggername, evt.indexedData));
+						next.set("hsskill", evt.skill);
+						next.set("forceDie", true);
+						next.set("ai", function () {
+							return _status.event.yes;
+						});
+						if (typeof info.prompt2 == "function") {
+							next.set("prompt2", info.prompt2(evtTrigger, player, evt.triggername, evt.indexedData));
+						} else if (typeof info.prompt2 == "string") {
+							next.set("prompt2", info.prompt2);
+						} else if (info.prompt2 != false) {
+							if (lib.dynamicTranslate[evt.skill]) {
+								next.set("prompt2", lib.dynamicTranslate[evt.skill](player, evt.skill));
+							} else if (lib.translate[evt.skill + "_info"]) {
+								next.set("prompt2", lib.translate[evt.skill + "_info"]);
+							}
+						}
+						if (trigger.skillwarn) {
+							if (next.prompt2) {
+								next.set("prompt2", '<span class="thundertext">' + trigger.skillwarn + "。</span>" + next.prompt2);
+							} else {
+								next.set("prompt2", trigger.skillwarn);
+							}
+						}
+						result = await next.forResult();
+					}
+					if (result?.bool) {
+						if (!get.info(trigger.skill).cost) {
+							trigger.revealed = true;
+						}
+					} else {
+						trigger.untrigger();
+						trigger.cancelled = true;
 					}
 				},
 			},
@@ -3771,7 +3854,7 @@ const skills = {
 							forced = event.forced;
 						let ok = false;
 						let iwhile = 100;
-						let	targets = game.filterPlayer(current => current != player);
+						let targets = game.filterPlayer(current => current != player);
 						let i, j, targets2, effect;
 						while (iwhile--) {
 							if (ui.selected.targets.length >= range[0]) {
@@ -22162,21 +22245,23 @@ const skills = {
 			let cards = next.cards;
 			await player.showCards(cards, get.translation(player) + "发动了〖撰文〗");
 			let result;
-			result = !event.targets?.length ? await player
-				.chooseTarget({
-					prompt: get.prompt2(event.name),
-					ai(target) {
-						const { player, cards } = get.event(),
-							damages = cards.filter(card => get.is.damageCard(card) && player.canUse(card, target, false)),
-							nodamages = cards.filter(card => !get.is.damageCard(card));
-						if (damages.length > 1) {
-							return -get.attitude(player, target);
-						}
-						return get.attitude(player, target);
-					},
-				})
-				.set("cards", cards)
-				.forResult() : { bool: true, targets: event.targets };
+			result = !event.targets?.length
+				? await player
+						.chooseTarget({
+							prompt: get.prompt2(event.name),
+							ai(target) {
+								const { player, cards } = get.event(),
+									damages = cards.filter(card => get.is.damageCard(card) && player.canUse(card, target, false)),
+									nodamages = cards.filter(card => !get.is.damageCard(card));
+								if (damages.length > 1) {
+									return -get.attitude(player, target);
+								}
+								return get.attitude(player, target);
+							},
+						})
+						.set("cards", cards)
+						.forResult()
+				: { bool: true, targets: event.targets };
 			if (result?.bool && result.targets?.length) {
 				const target = result.targets[0];
 				let damages = cards.filter(card => get.is.damageCard(card) && player.canUse(card, target, false)),
