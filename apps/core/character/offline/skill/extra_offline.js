@@ -3259,18 +3259,16 @@ const skills = {
 		audio: "shouli",
 		enable: ["chooseToUse", "chooseToRespond"],
 		hiddenCard(player, name) {
-			if (player != _status.currentPhase && (name == "sha" || name == "shan")) {
+			if (player !== _status.currentPhase && (name === "sha" || name === "shan")) {
 				return true;
 			}
 		},
 		filter(event, player) {
-			if (event.responded || event.psshouli || event.type == "wuxie") {
+			if (event.responded || event.psshouli || event.type === "wuxie") {
 				return false;
 			}
 			if (
-				game.hasPlayer(function (current) {
-					return current.getEquips(4).length > 0;
-				}) &&
+				game.hasPlayer(current => current.getEquips(4).length > 0) &&
 				event.filterCard(
 					get.autoViewAs(
 						{
@@ -3286,9 +3284,7 @@ const skills = {
 				return true;
 			}
 			if (
-				game.hasPlayer(function (current) {
-					return current.getEquips(3).length > 0;
-				}) &&
+				game.hasPlayer(current => current.getEquips(3).length > 0) &&
 				event.filterCard(
 					get.autoViewAs(
 						{
@@ -3308,13 +3304,13 @@ const skills = {
 		delay: false,
 		locked: true,
 		filterTarget(card, player, target) {
-			var event = _status.event,
-				evt = event;
+			const event = get.event();
+			let evt = event;
 			if (event._backup) {
 				evt = event._backup;
 			}
-			var equip3 = target.getCards("e", card => get.is.defendingMount(card, false));
-			var equip4 = target.getCards("e", card => get.is.attackingMount(card, false));
+			const equip3 = target.getCards("e", card => get.is.defendingMount(card, false));
+			const equip4 = target.getCards("e", card => get.is.attackingMount(card, false));
 			if (
 				equip3.length &&
 				equip3.some(card =>
@@ -3334,48 +3330,47 @@ const skills = {
 				return true;
 			}
 			return equip4.some(card => {
-				var sha = get.autoViewAs(
+				const sha = get.autoViewAs(
 					{
 						name: "sha",
 						storage: { psshouli: true },
 					},
 					[card]
 				);
-				if (evt.filterCard(sha, player, event)) {
-					if (!evt.filterTarget) {
-						return true;
-					}
-					return game.hasPlayer(function (current) {
-						return evt.filterTarget(sha, player, current);
-					});
+				if (!evt.filterCard(sha, player, event)) {
+					return false;
 				}
+				if (!evt.filterTarget) {
+					return true;
+				}
+				return game.hasPlayer(current => evt.filterTarget(sha, player, current));
 			});
 		},
 		prompt: "将场上的一张坐骑牌当做【杀】或【闪】使用或打出",
-		content() {
-			"step 0";
-			var evt = event.getParent(2);
+		async content(event, trigger, player) {
+			const { target } = event;
+			const evt = event.getParent(2);
+			if (evt == null) {
+				throw new ReferenceError(`【${get.translation(event.name)}】无法找到使用牌的事件`);
+			}
 			evt.set("psshouli", true);
-			var list = [];
-			var equip3 = target.getCards("e", card => get.is.defendingMount(card, false));
-			var equip4 = target.getCards("e", card => get.is.attackingMount(card, false));
-			var backupx = _status.event;
+			const list = [];
+			const equip3 = target.getCards("e", card => get.is.defendingMount(card, false));
+			const equip4 = target.getCards("e", card => get.is.attackingMount(card, false));
+			const backupx = _status.event;
 			_status.event = evt;
 			try {
 				if (
 					equip3.length &&
 					equip3.some(card => {
-						var shan = get.autoViewAs(
+						const shan = get.autoViewAs(
 							{
 								name: "shan",
 								storage: { psshouli: true },
 							},
 							[card]
 						);
-						if (evt.filterCard(shan, player, event)) {
-							return true;
-						}
-						return false;
+						return evt.filterCard(shan, player, event);
 					})
 				) {
 					list.push("shan");
@@ -3383,20 +3378,14 @@ const skills = {
 				if (
 					equip4.length &&
 					equip4.some(card => {
-						var sha = get.autoViewAs(
+						const sha = get.autoViewAs(
 							{
 								name: "sha",
 								storage: { psshouli: true },
 							},
 							[card]
 						);
-						if (
-							evt.filterCard(sha, player, evt) &&
-							(!evt.filterTarget ||
-								game.hasPlayer(function (current) {
-									return evt.filterTarget(sha, player, current);
-								}))
-						) {
+						if (evt.filterCard(sha, player, evt) && (!evt.filterTarget || game.hasPlayer(current => evt.filterTarget(sha, player, current)))) {
 							return true;
 						}
 						return false;
@@ -3408,48 +3397,59 @@ const skills = {
 				game.print(e);
 			}
 			_status.event = backupx;
-			if (list.length == 1) {
-				event.cardName = list[0];
-				var cards = list[0] == "shan" ? equip3 : equip4;
-				if (cards.length == 1) {
-					event._result = {
+			let result;
+			let cardName;
+			if (list.length === 1) {
+				cardName = list[0];
+				const cards = cardName === "shan" ? equip3 : equip4;
+				if (cards.length === 1) {
+					result = {
 						bool: true,
 						links: [cards[0]],
 					};
 				} else {
-					player
-						.choosePlayerCard(true, target, "e")
-						.set("filterButton", function (button) {
-							return _status.event.cards.includes(button.link);
+					result = await player
+						.choosePlayerCard({
+							target,
+							filterButton(button) {
+								return _status.event.cards.includes(button.link);
+							},
+							position: "e",
+							forced: true,
 						})
-						.set("cards", cards);
+						.set("cards", cards)
+						.forResult();
 				}
 			} else {
-				player.choosePlayerCard(true, target, "e").set("filterButton", function (button) {
-					var card = button.link;
-					return get.is.attackingMount(card) || get.is.defendingMount(card);
-				});
+				result = await player
+					.choosePlayerCard({
+						target,
+						filterButton(button) {
+							return get.is.attackingMount(button.link) || get.is.defendingMount(button.link);
+						},
+						position: "e",
+						forced: true,
+					})
+					.forResult();
 			}
-			"step 1";
-			var evt = event.getParent(2);
 			if (result.bool && result.links && result.links.length) {
-				var name = event.cardName || (get.is.attackingMount(result.links[0]) ? "sha" : "shan");
-				if (evt.name == "chooseToUse") {
+				const name = cardName || (get.is.attackingMount(result.links[0]) ? "sha" : "shan");
+				if (evt.name === "chooseToUse") {
 					game.broadcastAll(
-						function (result, name) {
+						(result, name) => {
 							lib.skill.psshouli_backup.viewAs = {
-								name: name,
+								name,
 								cards: [result],
 								storage: { psshouli: true },
 							};
-							lib.skill.psshouli_backup.prompt = "选择" + get.translation(name) + "（" + get.translation(result) + "）的目标";
+							lib.skill.psshouli_backup.prompt = `选择${get.translation(name)}（${get.translation(result)}）的目标`;
 						},
 						result.links[0],
 						name
 					);
 					evt.set("_backupevent", "psshouli_backup");
 					evt.backup("psshouli_backup");
-					evt.set("openskilldialog", "选择" + get.translation(name) + "（" + get.translation(result.links[0]) + "）的目标");
+					evt.set("openskilldialog", `选择${get.translation(name)}（${get.translation(result.links[0])}）的目标`);
 					evt.set("norestore", true);
 					evt.set("custom", {
 						add: {},
@@ -3460,7 +3460,7 @@ const skills = {
 					delete evt.result.skill;
 					evt.result.card = get.autoViewAs(
 						{
-							name: name,
+							name,
 							cards: [result.links[0]],
 							storage: { psshouli: true },
 						},
@@ -3468,7 +3468,7 @@ const skills = {
 					);
 					evt.result.cards = [result.links[0]];
 					target.$give(result.links[0], player, false);
-					if (player != target) {
+					if (player !== target) {
 						target.addTempSkill("fengyin");
 					}
 					target.addTempSkill("psshouli_thunder");
@@ -3483,16 +3483,14 @@ const skills = {
 			respondSha: true,
 			respondShan: true,
 			skillTagFilter(player, tag) {
-				var func = get.is[tag == "respondSha" ? "attackingMount" : "defendingMount"];
-				return game.hasPlayer(function (current) {
-					return current.hasCard(card => func(card, false), "e");
-				});
+				const func = get.is[tag === "respondSha" ? "attackingMount" : "defendingMount"];
+				return game.hasPlayer(current => current.hasCard(card => func(card, false), "e"));
 			},
 			order: 2,
 			result: {
 				player(player, target) {
-					var att = Math.max(8, get.attitude(player, target));
-					if (_status.event.type != "phase") {
+					const att = Math.max(8, get.attitude(player, target));
+					if (_status.event.type !== "phase") {
 						return 9 - att;
 					}
 					if (!player.hasValueTarget({ name: "sha" })) {
@@ -3509,7 +3507,7 @@ const skills = {
 				trigger: { player: "damageBegin1" },
 				forced: true,
 				mark: true,
-				content() {
+				async content(event, trigger, player) {
 					trigger.num++;
 					game.setNature(trigger, "thunder");
 				},
@@ -3556,7 +3554,7 @@ const skills = {
 				},
 				forced: true,
 				filter(event, player) {
-					return event.name != "phase" || game.phaseNumber == 0;
+					return event.name !== "phase" || game.phaseNumber === 0;
 				},
 				logTarget: () => game.filterPlayer(),
 				equips: [
@@ -3569,48 +3567,50 @@ const skills = {
 					["heart", 13, "zhuahuang"],
 					["heart", 3, "jingfanma"],
 				],
-				content() {
-					"step 0";
-					event.targets = game.filterPlayer().sortBySeat(_status.firstAct2 || game.zhong || game.zhu || _status.firstAct || player);
-					event.target = event.targets.shift();
-					game.delayx();
-					"step 1";
-					player.line(target, "green");
-					target
-						.chooseToUse("狩骊：使用一张坐骑牌并摸一张牌，或使用一张坐骑牌指示物", function (card, player, event) {
-							if (get.subtype(card) != "equip3" && get.subtype(card) != "equip4" && get.subtype(card) != "equip6") {
-								return false;
-							}
-							return lib.filter.filterCard.apply(this, arguments);
-						})
-						.set("ai", () => 1);
-					"step 2";
-					if (result.bool) {
-						target.draw();
-					} else {
-						var cardx = lib.skill.psshouli_init.equips.randomRemove();
-						if (!cardx) {
+				async content(event, trigger, player) {
+					const targets = game.filterPlayer().sortBySeat(_status.firstAct2 || game.zhong || game.zhu || _status.firstAct || player);
+					await game.delayx();
+					for (const target of targets) {
+						player.line(target, "green");
+						const result = await target
+							.chooseToUse({
+								prompt: "狩骊：使用一张坐骑牌并摸一张牌，或使用一张坐骑牌指示物",
+								filterCard(card, player, event) {
+									if (get.subtype(card) !== "equip3" && get.subtype(card) !== "equip4" && get.subtype(card) !== "equip6") {
+										return false;
+									}
+									return lib.filter.filterCard(card, player, event);
+								},
+							})
+							.set("ai", () => 1)
+							.forResult();
+						if (result.bool) {
+							await target.draw();
+							continue;
+						}
+						const cardInfo = lib.skill.psshouli_init.equips.randomRemove();
+						if (!cardInfo) {
 							return;
 						}
-						cardx = {
-							suit: cardx[0],
-							number: cardx[1],
-							name: cardx[2],
-						};
-						var card = game.createCard(cardx);
+						const card = game.createCard({
+							suit: cardInfo[0],
+							number: cardInfo[1],
+							name: cardInfo[2],
+						});
 						if (!_status.psshouli_equips) {
 							_status.psshouli_equips = [];
 						}
 						_status.psshouli_equips.push(card.cardid);
 						if (card) {
-							target.chooseUseTarget(card, true, "nopopup", "noanimate");
+							const next = target.chooseUseTarget({
+								card,
+								forced: true,
+								nopopup: true,
+								animate: false,
+							});
 							player.addSkill("psshouli_remove");
+							await next;
 						}
-					}
-					"step 3";
-					event.target = event.targets.shift();
-					if (event.target) {
-						event.goto(1);
 					}
 				},
 			},
@@ -3625,13 +3625,13 @@ const skills = {
 					if (!_status.psshouli_equips || !_status.psshouli_equips.length) {
 						return false;
 					}
-					var cards = event.getd();
+					const cards = event.getd();
 					return cards.filter(i => _status.psshouli_equips.includes(i.cardid)).length;
 				},
-				content() {
-					var cards = trigger.getd(),
-						remove = [];
-					for (var card of cards) {
+				async content(event, trigger, player) {
+					const cards = trigger.getd();
+					const remove = [];
+					for (const card of cards) {
 						if (_status.psshouli_equips.includes(card.cardid)) {
 							_status.psshouli_equips.remove(card.cardid);
 							remove.push(card);
@@ -3645,22 +3645,20 @@ const skills = {
 				},
 			},
 			backup: {
-				precontent() {
-					"step 0";
+				async precontent(event, trigger, player) {
 					event.result._apply_args = { throw: false, addSkillCount: false };
-					var cards = event.result.card.cards;
+					const cards = event.result.card.cards;
 					event.result.cards = cards;
-					var owner = get.owner(cards[0]);
-					event.target = owner;
+					const owner = get.owner(cards[0]);
 					owner.$throw(cards[0]);
 					player.popup(event.result.card.name, "metal");
-					game.delayx();
+					const next = game.delayx();
 					event.getParent().addCount = false;
-					"step 1";
-					if (player != target) {
-						target.addTempSkill("fengyin");
+					await next;
+					if (player !== owner) {
+						owner.addTempSkill("fengyin");
 					}
-					target.addTempSkill("psshouli_thunder");
+					owner.addTempSkill("psshouli_thunder");
 					player.addTempSkill("psshouli_thunder");
 				},
 				filterCard: () => false,
