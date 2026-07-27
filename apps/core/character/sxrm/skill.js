@@ -1150,125 +1150,160 @@ const skills = {
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget({
-					prompt: "是否与一名其他角色各声明一种普通锦囊牌？",
-					filter: lib.filter.notMe,
-					ai: target => {
+					prompt: get.prompt2(event.skill),
+					filterTarget: lib.filter.notMe,
+					ai(target) {
 						const player = get.player();
 						if (player.countCards("h") > 4) {
-							return -1;
+							return 0;
 						}
 						const att = get.attitude(player, target);
-						if (att) {
+						if (att > 0) {
 							return target.countCards("h") <= 4 ? 1 : -1;
-						} else return target.countCards("h") > 4 ? 1 : -1;
+						} else {
+							return target.countCards("h") > 4 ? 1 : -1;
+						}
 					},
 				})
 				.forResult();
 		},
 		getVcards(player) {
-			let list = lib.inpile.filter(name => {
-				return get.type(name) == "trick";
+			const vcards = get.inpileVCardList(info => {
+				if (info[0] != "trick") {
+					return false;
+				}
+				return player.hasUseTarget({ name: info[2], nature: info[3] });
 			});
-			let vcard = list
-				.filter(name => {
-					return lib.filter.cardEnabled({ name: name }, player);
-				})
-				.map(namex => {
-					let name = Array.isArray(namex) ? namex.name : namex;
-					return [get.type(name), "", name];
-				});
-			return vcard;
+			return vcards;
+		},
+		hasUseTarget(player, card) {
+			const hs = player.getCards("h");
+			const total = hs.length;
+
+			if (total === 0) {
+				return false;
+			}
+
+			const count = Math.ceil(total / 2);
+			function* combinations(cards, chooseCount) {
+				const choose = new Array(chooseCount);
+
+				function* dfs(start, depth) {
+					if (depth === chooseCount) {
+						yield choose.slice();
+						return;
+					}
+
+					const limit = cards.length - (chooseCount - depth);
+
+					for (let i = start; i <= limit; i++) {
+						choose[depth] = cards[i];
+						yield* dfs(i + 1, depth + 1);
+					}
+				}
+
+				yield* dfs(0, 0);
+			}
+
+			for (const cards of combinations(hs, count)) {
+				if (player.hasUseTarget(get.autoViewAs(card, cards))) {
+					return true;
+				}
+			}
+
+			return false;
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			let vcard1 = lib.skill["sxrmbingqu"].getVcards(target);
-			let vcard2 = lib.skill["sxrmbingqu"].getVcards(player);
-			let targetCard = {};
-			for (let i of [
-				[player, target, vcard1],
-				[target, player, vcard2],
-			]) {
-				const [playerx, targetx, vcard] = i;
-				if (!vcard?.length || !playerx.isIn()) {
+			const list = new Map();
+			for (const current of [player, target]) {
+				const vcards = get.info(event.name).getVcards(current);
+				if (!vcards.length) {
 					continue;
 				}
-				const result = await playerx
+				const targetx = current == player ? target : player;
+				const result = await current
 					.chooseButton({
-						createDialog: [`为${get.translation(targetx)}选择一个锦囊牌名`, [vcard, "vcard"]],
+						createDialog: [`###请声明一个锦囊牌名###<div class='text center'>${get.translation(targetx)}将选择其半数手牌当此牌使用</div>`, [vcards, "vcard"]],
 						forced: true,
-						ai: button => {
-							const player = get.player(),
-								target = get.event().target;
-							return get.effect(player, { name: button.link[2] }, target, player);
+						ai(button) {
+							const { player, target } = get.event();
+							return -target.getUseValue({ name: button.link[2], nature: button.link[3] });
 						},
 					})
 					.set("target", targetx)
 					.forResult();
-				const name = result.links[0][2];
-				game.log(playerx, "声明了", get.translation(name));
-				targetCard[targetx.playerid] = name;
+				if (result?.bool) {
+					const card = { name: result.links[0][2], nature: result.links[0][3] };
+					current.popup(card.name);
+					game.log(player, "声明了", card);
+					list.set(targetx, card);
+				}
 			}
-			for (let playerx of [player, target]) {
-				if (!playerx.isIn()) continue;
-				if (
-					!targetCard[playerx.playerid] ||
-					playerx.countCards("h", card => {
-						return game.checkMod(card, player, "unchanged", "cardEnabled2", player) === false;
-					}) > Math.ceil(playerx.countCards("h") / 2)
-				) {
+			if (!list?.size) {
+				return;
+			}
+			for (const current of [player, target]) {
+				if (!list.has(current) || !current.isIn()) {
 					continue;
 				}
-				const name = targetCard[playerx.playerid];
-				if (!player.hasUseTarget({ name: name })) {
+				const card = list.get(current);
+				if (!get.info(event.name).hasUseTarget(current, card)) {
 					continue;
 				}
-				const { cards } = await playerx
-					.chooseCard({
-						position: "h",
-						selectCard: Math.ceil(playerx.countCards("h") / 2),
-						forced: true,
-						prompt: `将一半手牌当作${get.translation(name)}使用`,
-						filterCard: (card, player) => {
-							return game.checkMod(card, player, "unchanged", "cardEnabled2", player) !== false;
-						},
-						ai: card => {
-							return 10 - get.value(card);
-						},
-					})
-					.forResult();
-				const cardx = get.autoViewAs({ name: name }, cards);
-				if (!lib.filter.cardEnabled(cardx, player)) {
-					continue;
-				}
-				await playerx.chooseUseTarget({
-					card: get.autoViewAs({ name: name }),
-					cards,
-					forced: true,
+				const num = Math.ceil(current.countCards("h") / 2);
+				game.broadcastAll(
+					(viewAs, num) => {
+						lib.skill.sxrmbingqu_backup.viewAs = viewAs;
+						lib.skill.sxrmbingqu_backup.selectCard = num;
+					},
+					card,
+					num
+				);
+				const next = current.chooseToUse();
+				next.set("_backupevent", "sxrmbingqu_backup");
+				next.set("openskilldialog", `将${get.cnNumber(num)}张手牌当作${get.translation(card)}使用`);
+				next.backup("sxrmbingqu_backup");
+				next.set("norestore", true);
+				next.set("custom", {
+					add: {},
+					replace: { window() {} },
 				});
+				next.set("forced", true);
+				await next;
 			}
+		},
+		subSkill: {
+			backup: {
+				filterCard(card) {
+					return get.itemtype(card) == "card";
+				},
+				position: "h",
+				log: false,
+			},
 		},
 	},
 	sxrmfanxin: {
 		audio: 2,
-		derivation: ["baonu", "wumou"],
 		trigger: {
 			global: ["phaseBefore", "dieAfter"],
 			player: "enterGame",
 		},
 		filter(event, player) {
 			if (event.name == "die") {
-				return player.storage["sxrmfanxin"]?.includes(event.player);
+				return player.getStorage("sxrmfanxin").includes(event.player);
 			}
-			return event.name != "phase" || game.phaseNumber == 0;
+			return (event.name != "phase" || game.phaseNumber == 0) && game.hasPlayer(current => current != player && !player.getStorage("sxrmfanxin").includes(current));
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget({
-					prompt: get.prompt("sxrmfanxin"),
+					prompt: get.prompt(event.skill),
+					prompt2: "选择一名其他角色，令其获得【暴怒】和【无谋】",
 					filterTarget: (card, player, target) => {
-						return target != player && !player.storage["sxrmfanxin"]?.includes(target);
+						return target != player && !player.getStorage("sxrmfanxin").includes(target);
 					},
-					ai: target => {
+					ai(target) {
 						const player = get.player();
 						return -get.attitude(player, target);
 					},
@@ -1277,44 +1312,47 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			target.addSkills(["baonu", "wumou"]);
 			player.markAuto(event.name, [target]);
+			await target.addSkills(["baonu", "wumou"]);
 		},
+		intro: { content: "当前“燔心”角色：$" },
+		onremove: true,
+		derivation: ["baonu", "wumou"],
 		group: ["sxrmfanxin_draw"],
 		subSkill: {
 			draw: {
+				audio: "sxrmfanxin",
 				trigger: { global: "phaseBegin" },
 				filter(event, player) {
 					const target = event.player;
-					return player.storage["sxrmfanxin"]?.includes(target) && target.hasSkill("baonu") && target.countMark("baonu");
+					return player.getStorage("sxrmfanxin").includes(target) && target.hasMark("baonu");
 				},
 				async cost(event, trigger, player) {
 					const target = trigger.player,
 						num = target.countMark("baonu");
-					let list = Array.from({ length: num }, (_, i) => String(i + 1));
+					let list = Array.from({ length: num }).map((_, i) => get.cnNumber(i + 1, true));
 					list.push("cancel2");
-					console.log(list);
 					const result = await player
 						.chooseControl({
-							prompt: get.prompt("sxrmbingqu"),
-							prompt2: `移去${get.translation(target)}的至多5个暴怒标记并摸等量的牌`,
+							prompt: get.prompt(event.skill, target),
+							prompt2: `移去${get.translation(target)}的至多5枚“暴怒”标记并摸等量张牌`,
 							controls: list,
-							ai: () => {
-								const num = get.event().num;
-								return num - 1;
+							ai() {
+								return _status.event.choice;
 							},
 						})
-						.set("num", num)
+						.set("choice", num - 1)
 						.forResult();
 					event.result = {
 						bool: result.control != "cancel2",
 						cost_data: result.index + 1,
 					};
 				},
+				logTarget: "player",
 				async content(event, trigger, player) {
 					const num = event.cost_data;
-					trigger.player.removeMark("baonu", num);
-					player.draw(num);
+					event.targets[0].removeMark("baonu", num);
+					await player.draw(num);
 				},
 			},
 		},
