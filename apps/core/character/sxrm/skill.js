@@ -294,106 +294,21 @@ const skills = {
 			}
 			return player.canMoveCard(null, true);
 		},
-		async cost(event, trigger, player) {
-			event.result = await player
-				.chooseTarget({
-					prompt: get.prompt2("sxrmjiaozong"),
-					filterTarget(card, player, target) {
-						return target.hasCards("e", card => game.hasPlayer(current => current !== target && current.canEquip(card)));
-					},
-					ai(target) {
-						const player = get.player();
-						let val = Math.sign(get.attitude(player, target));
-						if (val > 0) {
-							if (target.hasSkill("xiaoji")) {
-								val += 4;
-							}
-							if (game.hasPlayer(current => get.attitude(player, current) < 0 && target.hasCards("e", card => get.color(card) === "red" && current.canEquip(card) && player.inRange(current) && _status.currentPhase === player))) {
-								val += 5;
-							}
-						} else {
-							if (game.hasPlayer(current => get.attitude(player, current) > 0 && target.hasCards("e", card => current.canEquip(card)) && current !== player)) {
-								val = -val + 3;
-							}
-						}
-						return val;
-					},
-				})
-				.forResult();
-		},
+		direct: true,
 		async content(event, trigger, player) {
-			const target = event.targets[0];
-			let result = await player
-				.choosePlayerCard({
-					target,
-					position: "e",
-					forced: true,
-					ai(button) {
-						const event = get.event();
-						const from = event.from;
-						const player = get.player();
-						let val = get.value(button.link, from);
-						if (get.attitude(player, from) < 0) {
-							return 5 - val;
-						}
-						return val;
-					},
-				})
-				.set("from", target)
-				.forResult();
-			if (!result.links?.length) {
+			let result = await player.moveCard(get.prompt2(event.name)).set("logSkill", event.name).forResult();
+			if (!result?.bool) {
 				return;
 			}
-			const card = result.links[0];
-			result = await player
-				.chooseTarget({
-					prompt: `将${get.translation(card)}移动至一名角色的装备区`,
-					filterTarget(card, player, target) {
-						const { card0 } = get.event();
-						return target.canEquip(card0) && target !== target;
-					},
-					forced: true,
-				})
-				.set("ai", target => {
-					const player = get.player();
-					const { card0 } = get.event();
-					let val = Math.sign(get.attitude(player, target));
-					if (val < 0) {
-						if (player.inRange(target) && player == _status.currentPhase) {
-							val = -val + get.color(card0) == "red" ? 3 : 2;
-						} else if (target == _status.currentPhase) {
-							val = -val + 4;
-						} else {
-							val = -val;
-						}
-					} else {
-						if (target == player && player == _status.currentPhase) {
-							val -= 5;
-						}
-						if (target.hasSkillTag("nodamage")) {
-							val += 5;
-						} else {
-							val += 1;
-						}
-					}
-					return val;
-				})
-				.set("card0", card)
-				.forResult();
-			if (!result.targets?.length) {
-				return;
-			}
-			const target2 = result.targets[0];
-			player.line(target);
-			target.$give(card, target2);
-			await target2.equip(card);
-			const color = get.color(card);
-			target2.addTempSkill("sxrmjiaozong_ban");
-			target2.markAuto("sxrmjiaozong_ban", color);
+			const targets = result.targets;
+			const color = get.color(result.card);
+			targets[1].addTempSkill(event.name + "_ban");
+			targets[1].markAuto(event.name + "_ban", color);
 		},
 		subSkill: {
 			ban: {
 				charlotte: true,
+				onremove: true,
 				intro: {
 					content(storage, player) {
 						let str = "";
@@ -404,22 +319,21 @@ const skills = {
 						return str;
 					},
 				},
-				forced: true,
-				onremove: true,
-				popup: false,
 				mod: {
 					cardEnabled(card, player) {
-						if (player.getStorage("sxrmjiaozong_ban")?.includes(get.color(card))) {
+						if (player.getStorage("sxrmjiaozong_ban").includes(get.color(card))) {
 							return false;
 						}
 					},
 					cardSavable(card, player) {
-						if (player.getStorage("sxrmjiaozong_ban")?.includes(get.color(card))) {
+						if (player.getStorage("sxrmjiaozong_ban").includes(get.color(card))) {
 							return false;
 						}
 					},
 				},
 				trigger: { player: "damageBegin3" },
+				forced: true,
+				popup: false,
 				async content(event, trigger, player) {
 					trigger.num++;
 				},
@@ -429,60 +343,59 @@ const skills = {
 	sxrmfusui: {
 		audio: 2,
 		enable: "phaseUse",
-		limited: true,
-		derivation: "sxrmbiyi",
+		filter(event, player) {
+			return game.hasPlayer(current => get.info("sxrmfusui").filterTarget(null, player, current));
+		},
 		filterTarget(card, player, target) {
 			const skills = target.getSkills(null, false, false).filter(skill => {
-				const list = get.skillCategoriesOf(skill, player);
+				const list = get.skillCategoriesOf(skill, target);
 				return !list.length;
 			});
-			return target !== player && target.sex === "male" && skills.length > 0;
+			return target !== player && target.hasSex("male") && skills.length > 0;
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			player.awakenSkill("sxrmfusui");
+			player.awakenSkill(event.name);
 			const skills = target.getSkills(null, false, false).filter(skill => {
-				let list = get.skillCategoriesOf(skill, player);
+				const list = get.skillCategoriesOf(skill, target);
 				return !list.length;
 			});
 			if (!skills.length) {
 				return;
 			}
-			const { control: skill } = await player
-				.chooseControl({
-					prompt: `令${get.translation(target)}失去一个技能`,
-					controls: skills,
+			const result = await player
+				.chooseButton({
+					createDialog: [`妇随：令${get.translation(target)}失去其中一个技能`, [skills, "skill"]],
+					forced: true,
 				})
 				.forResult();
-			if (!skill) {
+			if (!result?.links?.length) {
 				return;
 			}
-			await target.removeSkill(skill);
+			const skill = result.links[0];
+			await target.removeSkills(skill);
 			for (const current of [player, target]) {
 				current.storage.sxrmfusui_skill = skill;
-				await current.addSkill("sxrmbiyi");
-				current.addTempSkill("sxrmfusui_prevent", { player: "roundStart" });
+				await current.addSkills("sxrmbiyi");
+				current.addTempSkill(event.name + "_muteki", "roundStart");
 			}
 		},
+		limited: true,
+		derivation: "sxrmbiyi",
 		ai: {
 			order: 7,
-			result: {
-				target: 2,
-			},
+			result: { target: 1 },
 		},
 		subSkill: {
-			prevent: {
-				trigger: {
-					player: "damageBegin4",
-				},
-				forced: true,
+			muteki: {
+				audio: "sxrmfusui",
 				charlotte: true,
+				mark: true,
+				intro: { content: "防止本轮受到的伤害" },
+				trigger: { player: "damageBegin4" },
+				forced: true,
 				async content(event, trigger, player) {
 					trigger.cancel();
-				},
-				mark: true,
-				intro: {
-					content: "防止本轮受到的伤害",
 				},
 				ai: {
 					nofire: true,
