@@ -150,6 +150,7 @@ const translates = {
 	sxrm_jiahua_prefix: "嗔",
 	sxrmfubei: "伏备",
 	sxrmfubei_info: "出牌阶段限一次，你可以将手牌摸至体力上限，然后将两张牌正面朝上置于牌堆顶前十张的任意位置（对其他角色可见）；每名角色回合结束时，若牌堆顶的牌正面朝上，你须对其造成1点伤害。",
+	visible_sxrmfubei: "刀斧手",
 	sxrmdancui: "殚瘁",
 	sxrmdancui_info: `${get.poptip("sxrm_qidingSkill")}。当你造成伤害时，你可以弃置两张牌（无牌则不弃，不足则全弃），令此伤害+1。`,
 	sxrm_zhaoyun: "嗔赵云",
@@ -162,7 +163,6 @@ const translates = {
 	sxrmyangbei_info: "准备阶段和结束阶段，你可以翻面并摸三张牌。当你使用【杀】或普通锦囊牌指定唯一目标后，其可以弃置所有手牌令此技能本回合失效。",
 	sxrmyinfeng: "阴锋",
 	sxrmyinfeng_info: "锁定技，当你每回合首次造成伤害后，将受伤角色体力上限减至其体力值且其接下来造成和受到的伤害均视为失去体力，直到你下回合开始。",
-
 };
 
 export default translates;

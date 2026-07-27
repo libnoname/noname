@@ -1351,31 +1351,46 @@ const skills = {
 	},
 	//嗔贾华
 	sxrmfubei: {
+		init(player, skill) {
+			player.addSkill(skill + "_effect");
+		},
+		onremove(player, skill) {
+			player.removeSkill(skill + "_effect");
+		},
 		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
+		filter(event, player) {
+			return player.countCards("h") < player.maxHp;
+		},
+		manualConfirm: true,
+		prompt(event, player) {
+			const num = player.maxHp - player.countCards("h");
+			return `摸${get.cnNumber(num)}张牌，然后将两张牌正面朝上置于牌堆顶前十张的任意位置`;
+		},
 		async content(event, trigger, player) {
 			await player.drawTo(player.maxHp);
 			if (player.countCards("h") < 2) {
 				return;
 			}
-			let { cards } = await player
+			let result = await player
 				.chooseCard({
 					prompt: "选择置入牌堆的两张牌",
 					forced: true,
 					selectCard: 2,
 					position: "he",
-					ai: card => {
+					ai(card) {
 						return 10 - get.value(card);
 					},
 				})
 				.forResult();
-			if (cards?.length != 2) {
+			if (!result?.cards?.length) {
 				return;
 			}
+			let { cards } = result;
 			const [card1, card2] = cards;
 			const insertRange = Math.min(ui.cardPile.childElementCount + 2, 10);
-			const result = await player
+			result = await player
 				.chooseNumbers({
 					prompt: "请依次选择两张牌插入的位置",
 					forced: true,
@@ -1391,10 +1406,10 @@ const skills = {
 							max: insertRange,
 						},
 					],
-					filterOk: event => {
-						return event.numbers.toUniqued()?.length == 2;
+					filterOk(event) {
+						return event.numbers.toUniqued().length == 2;
 					},
-					processAI: () => {
+					processAI() {
 						const list = Array.from({ length: get.event().range0 }).map((val, idx) => idx + 1);
 						if (list.length >= 2) {
 							list.remove(1);
@@ -1404,10 +1419,14 @@ const skills = {
 				})
 				.set("range0", insertRange)
 				.forResult();
+			if (!result?.numbers?.length) {
+				return;
+			}
 			const [num1, num2] = result.numbers;
 			if (num1 > num2) {
 				cards = [card2, card1];
 			}
+			player.setStorage("sxrmfubei_effect", player.getStorage("sxrmfubei_effect").concat(cards));
 			await player
 				.lose(cards, ui.cardPile)
 				.set("insert_index", (event, card) => {
@@ -1418,72 +1437,139 @@ const skills = {
 				.set("nums", [num1, num2])
 				.set("cardsx", [card1, card2]);
 			game.log(player, "将", card1, "与", card2, `分别置于牌堆顶的第${num1}张与第${num2}张`);
-			player.addTempSkill("sxrmfubei_damage", { global: "washCard" });
-			player.markAuto("sxrmfubei_damage", [card1, card2]);
 		},
-		group: "sxrmfubei_clear",
+		group: "sxrmfubei_damage",
 		subSkill: {
 			damage: {
-				forced: true,
-				locked: false,
-				mark: true,
-				intro: {
-					content(storage) {
-						if (!storage.length) return "";
-						let str = "地雷位置：";
-						for (let card of storage) {
-							str += `<br>${get.translation(card)}：`;
-							const pile = Array.from(ui.cardPile.childNodes);
-							let num = pile.indexOf(card) + 1;
-							if (num == 0) {
-								str += "不在牌堆中";
-							} else {
-								str += `牌堆第${num}张`;
-							}
-						}
-						return str;
-					},
-				},
+				audio: "sxrmfubei",
 				trigger: { global: "phaseEnd" },
 				filter(event, player) {
-					if (!player.storage["sxrmfubei_damage"]?.length) return false;
-					const card = ui.cardPile.childNodes[0];
-					return player.storage["sxrmfubei_damage"].includes(card);
+					return get.itemtype(_status.pileTop) === "card" && get.is.shownCard(_status.pileTop);
 				},
-				async content(event, trigger, player) {
-					const target = trigger.player;
-					player.line(target);
-					target.damage();
-				},
-				onremove: true,
-				sub: true,
-				sourceSkill: "sxrmfubei",
-			},
-			clear: {
 				forced: true,
-				charlotte: true,
-				popup: false,
-				trigger: {
-					global: ["cardsGotoOrderingEnd", "cardsGotoOrderingBegin", "gainEnd", "gainBegin", "addJudgeEnd", "addJudgeBegin", "addToExpansionEnd", "addToExpansionBegin"],
-				},
-				filter(event, player) {
-					if (!player.storage["sxrmfubei_damage"]?.length) return false;
-					const pile = Array.from(ui.cardPile.childNodes);
-					return player.storage["sxrmfubei_damage"].some(i => pile.indexOf(i) == -1);
-				},
+				locked: false,
+				logTarget: "player",
 				async content(event, trigger, player) {
-					let cards = player.getStorage("sxrmfubei_damage");
-					if (!cards?.length) return;
-					const pile = Array.from(ui.cardPile.childNodes);
-					cards.forEach(i => {
-						if (pile.indexOf(i) == -1) {
-							player.storage["sxrmfubei_damage"].remove(i);
-						}
-					});
-					player.updateMark("sxrmfubei_damage", true);
+					await event.targets[0].damage();
 				},
-				sub: true,
-				sourceSkill: "sxrmfubei",
+			},
+			effect: {
+				init(player) {
+					const func = playerid => {
+						let dialog = ui[`sxrmfubeiShow_${playerid}`];
+						if (!dialog) {
+							const map = _status.connectMode ? lib.playerOL : game.playerMap;
+							const owner = map[playerid];
+							dialog = ui[`sxrmfubeiShow_${playerid}`] = ui.create.div(ui.window);
+							dialog.owner = owner;
+							dialog.className = "dialog nobutton scroll1 scroll2";
+							dialog.style.position = "absolute";
+							dialog.style.left = "50%";
+							dialog.style.top = "50%";
+							dialog.style.transform = "translate(-50%, -50%)";
+							dialog.style.width = "fit-content";
+							dialog.style.height = "fit-content";
+							dialog.style.display = "flex";
+							dialog.style.flexDirection = "column";
+							dialog.style.background = "rgba(0,0,0,0.72)";
+							dialog.style.gap = "2.5px";
+							Object.setPrototypeOf(dialog, lib.element.dialog);
+							dialog.ontouchstart = ui.click.dragtouchdialog;
+							const title = ui.create.div(dialog);
+							title.style.position = "relative";
+							title.style.textAlign = "center";
+							title.innerHTML = "伏备-牌堆顶";
+							const container = (dialog.container = ui.create.div(".buttons", dialog));
+							container.style.position = "relative";
+							container.classList.add("smallzoom");
+							const cards = get.itemtype(_status.pileTop) === "card" ? [_status.pileTop] : [];
+							const buttons = Array.from(dialog.container.childNodes);
+							for (const card of buttons) {
+								dialog.container.removeChild(card);
+							}
+							dialog.style.width = `${cards.length > 0 ? "125" : "0"}px`;
+							if (get.is.shownCard(cards[0])) {
+								dialog.buttons = ui.create.buttons(cards, "card", dialog.container, true);
+							} else {
+								dialog.buttons = ui.create.buttons(cards, "blank", dialog.container, true);
+							}
+							dialog.updateDialog = function () {
+								const cards = get.itemtype(_status.pileTop) === "card" ? [_status.pileTop] : [];
+								const buttons = Array.from(dialog.container.childNodes);
+								for (const card of buttons) {
+									dialog.container.removeChild(card);
+									dialog.style.width = `${cards.length > 0 ? "125" : "0"}px`;
+								}
+								if (get.is.shownCard(cards[0])) {
+									dialog.buttons = ui.create.buttons(cards, "card", dialog.container, true);
+								} else {
+									dialog.buttons = ui.create.buttons(cards, "blank", dialog.container, true);
+								}
+							};
+							requestAnimationFrame(() => {
+								const rect = dialog.getBoundingClientRect();
+								const zoom = game.documentZoom || 1;
+								dialog.style.transform = "";
+								dialog.style.left = rect.left / zoom + "px";
+								dialog.style.top = rect.top / zoom + "px";
+							});
+						} else {
+							dialog.style.display = "";
+						}
+						ui[`sxrmfubeiUpdate_${playerid}`] = new MutationObserver(mutationsList => {
+							for (const mutation of mutationsList) {
+								if (mutation.type === "childList") {
+									mutation.addedNodes.forEach(card => {
+										if (dialog.owner?.getStorage("sxrmfubei_effect").includes(card)) {
+											game.broadcastAll(card => {
+												card.addGaintag("visible_sxrmfubei");
+											}, card);
+										}
+									});
+									mutation.removedNodes.forEach(card => {
+										dialog.owner?.unmarkAuto("sxrmfubei_effect", [card]);
+										game.broadcastAll(card => {
+											delete card.storage.sxrmfubei;
+											if (card?.gaintag?.length) {
+												//仅移除非永久标记
+												const tags = card.gaintag.filter(tag => !tag.startsWith("eternal_"));
+												tags.forEach(tag => card.removeGaintag(tag));
+											}
+										}, card);
+									});
+									game.broadcastAll(playerid => ui[`sxrmfubeiShow_${playerid}`]?.updateDialog?.(), playerid);
+								}
+							}
+						});
+						const config = { childList: true, subtree: false };
+						ui[`sxrmfubeiUpdate_${playerid}`].observe(ui.cardPile, config);
+					};
+					game.broadcastAll(
+						(func, playerid) => {
+							func(playerid);
+						},
+						func,
+						player.playerid
+					);
+				},
+				onremove(player) {
+					const func = playerid => {
+						if (ui[`sxrmfubeiUpdate_${playerid}`]) {
+							ui[`sxrmfubeiUpdate_${playerid}`].disconnect();
+							delete ui[`sxrmfubeiUpdate_${playerid}`];
+						}
+						if (ui[`sxrmfubeiShow_${playerid}`]) {
+							ui[`sxrmfubeiShow_${playerid}`].style.display = "none";
+						}
+					};
+					game.broadcastAll(
+						(func, playerid) => {
+							func(playerid);
+						},
+						func,
+						player.playerid
+					);
+				},
 			},
 		},
 		ai: {
@@ -1499,36 +1585,35 @@ const skills = {
 	sxrmdancui: {
 		audio: 2,
 		locked(skill, player) {
-			if (!player?.storage.sxrmdancui) {
+			if (!player?.storage?.sxrmdancui) {
 				return false;
 			}
 			return true;
 		},
 		qidingSkill(skill, player) {
-			if (!player?.storage.sxrmdancui) {
+			if (!player?.storage?.sxrmdancui) {
 				return true;
 			}
 			return false;
 		},
 		trigger: { source: "damageBegin1" },
 		async cost(event, trigger, player) {
-			const qiding = Boolean(player.storage["sxrmdancui"]),
-				target = trigger.player,
-				description = lib.dynamicTranslate["sxrmdancui"](player, "sxrmdancui");
+			const qiding = player.storage["sxrmdancui"],
+				target = trigger.player;
 			if (player.countDiscardableCards(player, "he") < 2) {
+				const cards = player.getDiscardableCards(player, "he");
 				if (qiding) {
 					event.result = {
 						bool: true,
-						cost_data: player.getDiscardableCards(player, "he"),
+						cards,
 					};
 				} else {
 					const result = await player
 						.chooseBool({
-							prompt: `是否弃置2张牌（所有牌），使${get.translation(target)}受到的伤害值+1？`,
-							prompt2: description,
-							ai: () => {
-								const player = get.player(),
-									target = get.event().target;
+							prompt: get.prompt(event.skill, target),
+							prompt2: `${cards.length ? `弃置${get.translation(cards)}，` : ""}使${get.translation(target)}受到的伤害值+1？`,
+							ai() {
+								const { player, target } = get.event();
 								return get.attitude(player, target) < 0;
 							},
 						})
@@ -1536,47 +1621,43 @@ const skills = {
 						.forResult();
 					event.result = {
 						bool: result.bool,
-						cost_data: player.getDiscardableCards(player, "he"),
+						cards,
 					};
 				}
 			} else {
-				const result = await player
-					.chooseCard({
-						prompt: `${qiding ? "" : "是否"}弃置2张牌，使${get.translation(target)}受到的伤害值+1${qiding ? "。" : "？"}`,
-						prompt2: description,
-						forced: qiding,
+				const next = player
+					.chooseToDiscard({
 						position: "he",
 						selectCard: 2,
-						filterCard: (card, player) => {
-							return player.getDiscardableCards(player, "he").includes(card);
-						},
-						ai: card => {
-							const player = get.player(),
-								target = get.event().target;
+						ai(card) {
+							const { player, target } = get.event();
 							if (get.attitude(player, target) >= 0) {
 								return -1;
 							}
 							return 5 - get.value(card);
 						},
 					})
-					.set("target", target)
-					.forResult();
-				event.result = {
-					bool: result.bool,
-					cost_data: result.cards,
-				};
+					.set("target", target);
+				if (!qiding) {
+					next.set("prompt", get.prompt(event.skill, target));
+					next.set("prompt2", `弃置两张牌，使${get.translation(target)}受到的伤害值+1`);
+				} else {
+					next.set("prompt", `殚瘁：请弃置两张牌，使${get.translation(target)}受到的伤害值+1`);
+					next.set("forced", true);
+				}
+				event.result = await next.forResult();
 			}
 		},
 		async content(event, trigger, player) {
 			player.awakenQidingSkill(event.name);
-			const cards = event.cost_data;
-			if (cards?.length) await player.discard(cards);
+			const { cards } = event;
+			if (cards?.length) {
+				await player.discard(cards);
+			}
 			trigger.num++;
 		},
 		mark: true,
-		intro: {
-			content: "qidingSkill",
-		},
+		intro: { content: "qidingSkill" },
 	},
 	//嗔赵云
 	sxrmzhaduo: {
