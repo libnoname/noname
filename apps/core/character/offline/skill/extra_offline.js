@@ -3808,17 +3808,22 @@ const skills = {
 		trigger: { global: "damageBegin3" },
 		logTarget: "player",
 		filter(event, player) {
-			return event.player != player && event.player.isIn() && event.card && event.card.name == "sha" && event.player.countGainableCards(player, "he") > 0;
+			return event.player !== player && event.player.isIn() && event.card && event.card.name === "sha" && event.player.hasGainableCards(player, "he");
 		},
-		content() {
-			"step 0";
-			player.gainPlayerCard(trigger.player, true, "he");
-			"step 1";
-			if (result.bool && result.cards && result.cards.length) {
-				var card = result.cards[0];
-				if (get.suit(card, trigger.player) == "heart") {
-					trigger.player.recover();
-				}
+		async content(event, trigger, player) {
+			const result = await player
+				.gainPlayerCard({
+					target: trigger.player,
+					position: "he",
+					forced: true,
+				})
+				.forResult();
+			if (!result.bool || !result.cards || !result.cards.length) {
+				return;
+			}
+			const card = result.cards[0];
+			if (get.suit(card, trigger.player) === "heart") {
+				await trigger.player.recover();
 			}
 		},
 	},
