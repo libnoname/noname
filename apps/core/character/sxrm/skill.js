@@ -7,19 +7,9 @@ const skills = {
 	sxrmjiehuo: {
 		//audio: 2,
 		dutySkill: true,
-		trigger: {
-			player: "phaseBegin",
-		},
-		async cost(event, trigger, player) {
-			event.result = await player
-				.chooseBool({
-					prompt: get.prompt2(event.skill),
-					ai() {
-						const player = get.player();
-						return player.hasCards("h", card => get.tag(card, "damage") && player.getUseValue(card));
-					},
-				})
-				.forResult();
+		trigger: { player: "phaseBegin" },
+		check(event, player) {
+			return player.hasCards("hs", card => get.is.damageCard(card) && player.getUseValue(card) > 0);
 		},
 		async content(event, trigger, player) {
 			player.addTempSkill(`${event.name}_damage`, { player: "dieAfter" });
@@ -27,32 +17,26 @@ const skills = {
 		group: ["sxrmjiehuo_fail"],
 		subSkill: {
 			fail: {
-				trigger: {
-					player: "sxrmjiehuoFail",
-				},
+				trigger: { global: "sxrmjiehuoFail" },
 				forced: true,
+				locked: false,
 				async content(event, trigger, player) {
 					player.awakenSkill("sxrmjiehuo");
-					game.log(player, `【${get.translation("sxrmjiehuo")}】`, "使命失败");
+					game.log(player, "使命失败");
 					await player.loseMaxHp();
 				},
 			},
 			damage: {
-				intro: {
-					content: "本局下次伤害改为3点火焰伤害",
-				},
+				intro: { content: "本局下次伤害改为3点火焰伤害" },
 				mark: true,
 				charlotte: true,
-				trigger: {
-					global: "damageBegin1",
-				},
+				trigger: { global: "damageBegin1" },
 				forced: true,
-				logTarget: "source",
+				locked: false,
 				async content(event, trigger, player) {
 					player.removeSkill(event.name);
 					game.setNature(trigger, "fire");
 					trigger.num = 3;
-					game.log(player, "令", trigger.source, "造成的伤害改为3点火焰伤害");
 					if (trigger.source !== player) {
 						await event.trigger("sxrmjiehuoFail");
 					}
@@ -70,23 +54,42 @@ const skills = {
 			const target = event.target;
 			target.addTempSkill("sxrmxianger_limit", { player: "dieAfter" });
 			target.addMark("sxrmxianger_limit", 2, false);
-			player.addSkill("sxrmxianger_mark");
-			if (!player.getStorage("sxrmxianger_mark")?.some(i => i.target === target)) {
-				let tmp = { target, damage: 0 };
-				player.markAuto("sxrmxianger_mark", tmp);
+			const skill = event.name + "_mark";
+			player.addSkill(skill);
+			const map = player.getStorage(skill, new Map());
+			if (map.has(target)) {
+				map.set(target, map.get(target) + 1);
+			} else {
+				map.set(target, 0);
 			}
+			player.setStorage(skill, map, true);
 		},
+		group: ["sxrmxianger_fail"],
 		subSkill: {
+			fail: {
+				trigger: { player: "sxrmxiangerFail" },
+				filter(event, player) {
+					const num = (event.sxrmxiangerMap ?? new Map()).get(player);
+					return typeof num == "number" && num < 2;
+				},
+				forced: true,
+				locked: false,
+				async content(event, trigger, player) {
+					player.awakenSkill("sxrmxianger");
+					game.log(player, "使命失败");
+					await player.loseMaxHp();
+				},
+			},
 			mark: {
 				intro: {
-					content(storage, player) {
-						if (!storage?.length) {
+					content(storage = new Map(), player) {
+						if (!storage?.size) {
 							return "目前没有【香饵】目标";
 						} else {
-							let str = "【香饵】目标受伤情况：";
-							storage.forEach(i => {
-								str += `<br />${get.translation(i.target)}：${i.damage}`;
-							});
+							let str = "【香饵】目标受伤情况：<br>";
+							for (const [target, num] of storage) {
+								str += `<li>${get.translation(target)}：${num}`;
+							}
 							return str;
 						}
 					},
@@ -96,14 +99,16 @@ const skills = {
 			},
 			limit: {
 				charlotte: true,
-				forced: true,
-				mark: true,
-				popup: false,
-				intro: {
-					content(storage, player) {
-						return `<li>不能使用点数大于6的牌</li><br><li>下个结束阶段回复${player.countMark("sxrmxianger_limit")}点体力</li>`;
-					},
+				onremove(player, skill) {
+					delete player.storage[skill];
+					const targets = game.filterPlayer(target => target.getStorage("sxrmxianger_mark", new Map()).has(player));
+					for (const target of targets) {
+						const map = target.getStorage("sxrmxianger_mark", new Map());
+						map.delele(player);
+						target.setStorage("sxrmxianger_mark", map, true);
+					}
 				},
+				intro: { content: "<li>不能使用点数大于6的牌<br><li>下个结束阶段回复#点体力" },
 				mod: {
 					cardEnabled(card, player) {
 						const num = get.number(card);
@@ -118,69 +123,50 @@ const skills = {
 						}
 					},
 				},
-				trigger: {
-					player: ["phaseJieshuBegin", "damageEnd"],
-				},
+				trigger: { player: ["phaseJieshuBegin", "damageEnd"] },
 				filter(event, player) {
 					if (event.name === "damage") {
-						return game.hasPlayer(target => target.hasSkill("sxrmxianger") && target.getStorage("sxrmxianger_mark")?.some(i => i.target === player));
+						return game.hasPlayer(target => target.getStorage("sxrmxianger_mark", new Map()).has(player));
 					}
 					return true;
 				},
-				onremove(player, skill) {
-					delete player.storage[skill];
-					const targets = game.filterPlayer(target => target.hasSkill("sxrmxianger") && target.getStorage("sxrmxianger_mark")?.some(i => i.target === player));
-					for (const target of targets) {
-						const item = target.storage.sxrmxianger_mark.find(i => i.target === player);
-						target.storage.sxrmxianger_mark.remove(item);
-						if (target.storage.sxrmxianger_mark?.length > 0) {
-							target.markSkill("sxrmxianger_mark");
-						} else {
-							target.unmarkSkill("sxrmxianger_mark");
-						}
-					}
-				},
+				forced: true,
+				popup: false,
 				async content(event, trigger, player) {
 					if (trigger.name === "damage") {
-						for (const target of game.filterPlayer(target => target.hasSkill("sxrmxianger") && target.getStorage("sxrmxianger_mark")?.some(i => i.target === player))) {
-							target.storage.sxrmxianger_mark.find(i => i.target === player).damage += trigger.num;
-							target.markSkill("sxrmxianger_mark");
+						for (const target of game.filterPlayer(target => target.getStorage("sxrmxianger_mark", new Map()).has(player))) {
+							const map = target.getStorage("sxrmxianger_mark", new Map());
+							if (map.has(player)) {
+								map.set(player, map.get(player) + 1);
+							} else {
+								map.set(player, 0);
+							}
+							target.setStorage("sxrmxianger_mark", map, true);
 						}
 					} else {
-						const num = player.countMark("sxrmxianger_limit");
-						const targets = game.filterPlayer(target => target.hasSkill("sxrmxianger") && target.getStorage("sxrmxianger_mark")?.some(i => i.target === player));
-						const list = [];
-						for (const target of targets.sortBySeat()) {
-							const item = target.storage.sxrmxianger_mark.find(i => i.target === player);
-							const num = item.damage;
-							list.push([target, num]);
+						const num = player.countMark(event.name);
+						const sxrmxiangerMap = new Map();
+						for (const target of game.filterPlayer(target => target.getStorage("sxrmxianger_mark", new Map()).has(player)).sortBySeat()) {
+							const num = target.getStorage("sxrmxianger_mark", new Map()).get(player) || 0;
+							sxrmxiangerMap.set(target, num);
 						}
+						event.sxrmxiangerMap = sxrmxiangerMap;
 						player.removeSkill(event.name);
 						await player.recover({ num });
-						for (const [target, num] of list) {
-							if (num < 2) {
-								target.line(player);
-								game.log(target, "【香饵】使命失败");
-								target.awakenSkill("sxrmxianger");
-								await target.loseMaxHp();
-							}
-						}
+						await event.trigger("sxrmxiangerFail");
 					}
 				},
 			},
 		},
 		ai: {
-			order: 10,
-			result: {
-				target(player, target) {
-					if (player.hasSkill("sxrmxianger_limit") || get.attitude(player, target) > 0 || player === target || !player.storage.sxrmjiehuo_mark) {
-						return 0;
+			effect: {
+				target(card, player, target) {
+					if (get.tag(card, "damage")) {
+						const targets = game.filterPlayer(current => current.getStorage("sxrmxianger_mark", new Map()).has(target));
+						if (targets.some(current => get.attitude(player, current) > 0)) {
+							return [1, -2];
+						}
 					}
-					let val = get.damageEffect(target, player, player);
-					if (player.inRange(target)) {
-						val++;
-					}
-					return -val;
 				},
 			},
 		},
@@ -188,11 +174,9 @@ const skills = {
 	sxrmmieguo: {
 		//audio: 2,
 		dutySkill: true,
-		trigger: {
-			player: "phaseEnd",
-		},
+		trigger: { player: "phaseEnd" },
 		filter(event, player) {
-			return !event.skill;
+			return !event.skill && game.hasPlayer(current => current != player && current.hasCards("he"));
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
@@ -216,15 +200,16 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			const result = await player
-				.choosePlayerCard({
+			let result = await player
+				.gainPlayerCard({
 					target,
-					prompt: "选择至多3张牌获得",
+					prompt: `选择获得${get.translation(target)}至多三张牌`,
 					selectButton: [1, 3],
 					position: "he",
 					forced: true,
+					allowChooseAll: true,
 					ai(button) {
-						const player = get.player();
+						const { player, target } = get.event();
 						if (ui.selected.buttons?.length) {
 							return -1;
 						}
@@ -239,78 +224,56 @@ const skills = {
 					},
 				})
 				.forResult();
-			const cards = result.cards;
-			if (!cards?.length) {
+			if (!result?.cards?.length) {
 				return;
 			}
-			const num = cards.length;
-			await player.gain({
-				cards,
-				source: target,
-				animate: "give",
-			});
-			const targetsx =
+			const num = result.cards.length;
+			result =
 				game.countPlayer() <= num
-					? game.filterPlayer()
-					: (
-							await target
-								.chooseTarget({
-									prompt: `选择${num}名角色，${get.translation(player)}的额外回合内无法对这些角色使用牌`,
-									selectTarget: num,
-									forced: true,
-									ai(target) {
-										if (target === get.player()) {
-											return 5;
-										}
-										return 1;
-									},
-								})
-								.forResult()
-						).targets;
-			if (!targetsx?.length) {
+					? { bool: true, targets: game.filterPlayer() }
+					: await target
+							.chooseTarget({
+								prompt: `请选择${get.cnNumber(num)}名角色，${get.translation(player)}的额外回合内无法对这些角色使用牌`,
+								selectTarget: num,
+								forced: true,
+								ai(target) {
+									if (target === get.player()) {
+										return 5;
+									}
+									return 1;
+								},
+							})
+							.forResult();
+			if (!result?.targets?.length) {
 				return;
 			}
-			target.line(targetsx);
+			target.line(result.targets);
 			player.addSkill("sxrmmieguo_ban");
-			player.markAuto("sxrmmieguo_ban", targetsx);
-			game.log(player, "执行了一个额外回合");
+			player.markAuto("sxrmmieguo_ban", result.targets);
 			player.insertPhase();
 		},
 		subSkill: {
 			ban: {
 				charlotte: true,
-				forced: true,
 				onremove: true,
-				popup: false,
-				intro: {
-					content(storage) {
-						if (!storage?.length) {
-							return "";
-						}
-						const list = [];
-						for (let i of storage) {
-							list.push(get.translation(i));
-						}
-						return "不能对" + list.join("、") + "使用牌";
-					},
-				},
+				intro: { content: "“灭虢”回合内不能对$使用牌" },
 				mod: {
 					playerEnabled(card, player, target) {
-						if (player.getStorage("sxrmmieguo_ban")?.includes(target)) {
+						if (player.getStorage("sxrmmieguo_ban").includes(target)) {
 							return false;
 						}
 					},
 				},
-				trigger: {
-					player: "phaseEnd",
-				},
+				trigger: { player: "phaseEnd" },
 				filter(event, player) {
 					return event.skill === "sxrmmieguo";
 				},
+				forced: true,
+				popup: false,
 				async content(event, trigger, player) {
 					player.removeSkill(event.name);
 					if (!player.hasHistory("useCard")) {
-						game.log(player, "【灭虢】使命失败");
+						game.log(player, "使命失败");
 						player.awakenSkill("sxrmmieguo");
 						await player.loseMaxHp();
 					}
