@@ -3777,31 +3777,29 @@ const skills = {
 	zybishi: {
 		trigger: { target: "useCardToTargeted" },
 		filter(event, player) {
-			return event.card.name == "sha" && event.player != player;
+			return event.card.name === "sha" && event.player !== player;
 		},
 		check(event, player) {
-			var effect = 0;
-			if (event.targets && event.targets.length) {
-				for (var i = 0; i < event.targets.length; i++) {
-					effect += get.effect(event.targets[i], event.card, event.player, player);
-				}
+			let effect = 0;
+			for (const target of event.targets || []) {
+				effect += get.effect(target, event.card, event.player, player);
 			}
-			if (effect < 0) {
-				var target = event.targets[0];
-				if (target == player) {
-					return !player.countCards("h", "shan");
-				} else {
-					return target.hp == 1 || (target.countCards("h") <= 2 && target.hp <= 2);
-				}
+			if (effect >= 0) {
+				return false;
 			}
-			return false;
+			const target = event.targets[0];
+			if (target === player) {
+				return !player.hasCards("h", "shan");
+			}
+			return target.hp === 1 || (target.countCards("h") <= 2 && target.hp <= 2);
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.line(trigger.player, "green");
-			trigger.player.draw();
-			var evt = trigger.getParent();
+			const next = trigger.player.draw();
+			const evt = trigger.getParent();
 			evt.all_excluded = true;
 			game.log(evt.card, "被无效了");
+			await next;
 		},
 	},
 	zyjianbing: {
