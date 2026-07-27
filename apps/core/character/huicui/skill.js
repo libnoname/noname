@@ -6305,7 +6305,7 @@ const skills = {
 		audio: 2,
 		trigger: { player: "useCardAfter" },
 		filter(event, player) {
-			return get.type(event.card) == "basic" && _status.currentPhase;
+			return get.type(event.card) === "basic" && _status.currentPhase;
 		},
 		prompt2(event, player) {
 			const num = Math.pow(2, player.countMark("dccaisi_more"));
@@ -6333,7 +6333,7 @@ const skills = {
 			const sum = player.getHistory("useSkill", evt => evt.skill == "dccaisi").length;
 			if (sum <= player.maxHp) {
 				player.addTempSkill("dccaisi_more");
-				player.addMark("dccaisi_more", 1, false);
+				player.setStorage("dccaisi_more", player.getStorage("dccaisi_more", 0) + 1);
 			} else {
 				player.tempBanSkill("dccaisi");
 			}
@@ -7508,7 +7508,7 @@ const skills = {
 	dczuowei: {
 		audio: 2,
 		trigger: { player: "useCard" },
-		frequent: true,	//我是子右，这是星语干的
+		frequent: true, 
 		filter(event, player) {
 			if (_status.currentPhase != player) {
 				return false;

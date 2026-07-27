@@ -1,4 +1,13 @@
 const characters = {
+	tw_pot_huanjie: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		hujia: 1,
+		skills: ["twpotgongmou", "potzhengshuo"],
+		dieAudios: ["pot_huanjie"],
+		tempname: ["pot_huanjie"],
+	},
 	tw_lingju: {
 		sex: "female",
 		group: "qun",
@@ -1072,7 +1081,7 @@ const characters = {
 		sex: "male",
 		group: "wei",
 		hp: 3,
-		skills: ["twkuxin", "twsigu","twkuimu"],
+		skills: ["twkuxin", "twsigu", "twkuimu"],
 	},
 	tw_sxrm_fuhuanghou: {
 		sex: "female",

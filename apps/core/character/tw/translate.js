@@ -1,6 +1,10 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	tw_pot_huanjie: "TW势桓阶",
+	tw_pot_huanjie_prefix: "TW势",
+	twpotgongmou: "共谋",
+	twpotgongmou_info: `准备阶段，你可以与一名其他角色交换手牌，若如此做，你摸一张牌且获得技能${get.poptip("qice")}至本回合结束。`,
 	tw_lingju: "TW灵雎",
 	tw_lingju_prefix: "TW",
 	twjieyuan: "竭缘",
@@ -983,7 +987,7 @@ const translates = {
 	tw_sxrm_huatuo: "TW疑华佗",
 	tw_sxrm_huatuo_prefix: "TW|疑",
 	twmiehai: "灭害",
-	twmiehai_info: "每回合限三次，你可以将两张牌当作无距离次数限制的刺【杀】使用。此【杀】结算完成后，此过程中正面失去♠牌且已受伤的角色摸两张牌并回复1点体力。",	
+	twmiehai_info: "每回合限三次，你可以将两张牌当作无距离次数限制的刺【杀】使用。此【杀】结算完成后，此过程中正面失去♠牌且已受伤的角色摸两张牌并回复1点体力。",
 	tw_sxrm_liubei: "TW疑刘备",
 	tw_sxrm_liubei_prefix: "TW|疑",
 	twchengbian: "乘变",

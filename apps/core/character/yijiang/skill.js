@@ -3056,7 +3056,9 @@ const skills = {
 		 * @type {ContentFuncByAll}
 		 */
 		async content_choose(event, trigger, player) {
-			const { targets: [target] } = event;
+			const {
+				targets: [target],
+			} = event;
 
 			let resultIndex;
 			if (target.isHealthy()) {
@@ -12380,7 +12382,7 @@ const skills = {
 		audio: "zhichi",
 		trigger: { target: "useCardToBefore" },
 		audioname: ["re_chengong"],
-		audioname2: { sxrm_caocao: "zhichi_sxrm_caocao" },
+		audioname2: { sxrm_caocao: "zhichi_sxrm_caocao", tw_sxrm_caocao: "zhichi_sxrm_caocao" },
 		forced: true,
 		charlotte: true,
 		priority: 15,
