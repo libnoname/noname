@@ -32465,6 +32465,7 @@ const skills = {
 	},
 	mbjieyuan: {
 		audio: ["jieyuan_more.mp3", "jieyuan_less.mp3"],
+		logAudio: (event, player, name) => name == "damageBegin1" ? "jieyuan_more.mp3" : "jieyuan_less.mp3",
 		trigger: {
 			source: "damageBegin1",
 			player: "damageBegin3",
