@@ -1106,7 +1106,22 @@ const skills = {
 					});
 			}
 		},
+		group: "rejuzhan_init",
 		subSkill: {
+			init: {
+				audio: "rejuzhan",
+				forced: true,
+				trigger: {
+					player: "enterGame",
+					global: "phaseBefore",
+				},
+				filter(event, player) {
+					return (event.name != "phase" || game.phaseNumber == 0) && player.group == "shu" && !player.storage.rejuzhan;
+				},
+				async content(event, trigger, player) {
+					player.changeZhuanhuanji("rejuzhan");
+				},
+			},
 			sha: {
 				charlotte: true,
 				marktext: "杀",
