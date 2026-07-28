@@ -1228,7 +1228,7 @@ const skills = {
 				trigger: { player: "recoverBefore" },
 				forced: true,
 				firstDo: true,
-				content() {
+				async content(event, trigger, player) {
 					trigger.cancel();
 				},
 				ai: {
