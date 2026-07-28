@@ -7622,7 +7622,7 @@ const skills = {
 						let damageTarget;
 						let maxEffect = 0;
 						game.filterPlayer(current => {
-							const eff = get.damageEffect(current, player, player);
+							const eff = get.effect(current, { name: "losehp" }, player, player);
 							if (eff > maxEffect) {
 								maxEffect = eff;
 								damageTarget = current;
