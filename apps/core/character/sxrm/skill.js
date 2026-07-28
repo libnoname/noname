@@ -482,14 +482,12 @@ const skills = {
 	//嗔张昭
 	sxrmxiezhong: {
 		audio: 2,
-		filter(event, player) {
-			return game.countPlayer() > 1;
-		},
+		trigger: { player: "phaseZhunbeiBegin" },
 		async cost(event, trigger, player) {
 			const num = Math.ceil(game.countPlayer() / 2);
 			event.result = await player
 				.chooseTarget({
-					prompt: get.prompt2("sxrmxiezhong"),
+					prompt: get.prompt2(event.skill),
 					selectTarget: num,
 					ai(target) {
 						const player = get.player();
@@ -516,22 +514,18 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const targets = event.targets.sortBySeat();
-			if (!targets?.length) {
-				return;
-			}
-			/** @type { [Player, number][]} */
-			let list = [];
+			const choiceMap = new Map();
 			for (const target of targets) {
 				if (!target.isIn()) {
 					continue;
 				}
 				if (!lib.skill.sxrmxiezhong.canUseSha(target)) {
-					list.push([target, 0]);
+					choiceMap.set(target, 0);
 				} else {
 					let result = await target
 						.chooseControl({
-							prompt: "请选择一项",
-							controls: ["摸两张牌并失去1点体力", "将两张牌当【杀】使用"],
+							prompt: "乞施：请选择一项",
+							choiceList: ["摸两张牌并失去1点体力", "将两张牌当【杀】使用"],
 							ai() {
 								const player = get.player();
 								if (player.hp <= 2) {
@@ -544,25 +538,21 @@ const skills = {
 							},
 						})
 						.forResult();
-					if (result.index == null) {
-						continue;
+					if (typeof result.index == "number") {
+						choiceMap.set(target, result.index);
 					}
-					list.push([target, result.index]);
 				}
 			}
-			if (!list.length) {
+			if (!choiceMap.size) {
 				return;
 			}
-			let count2 = 0;
-			for (const [current, index] of list) {
-				current.popup(index === 0 ? "摸牌" : "出杀");
-				count2 += index;
-			}
-			const count1 = list.length - count2;
-			for (const [target, index] of list) {
+			const count1 = Array.from(choiceMap.values()).filter(index => index == 0).length;
+			const count2 = choiceMap.size - count1;
+			for (const [target, index] of choiceMap) {
 				if (!target.isIn()) {
 					continue;
 				}
+				target.popup(index === 0 ? "降" : "战");
 				if (index == 0) {
 					await target.draw(2);
 					await target.loseHp();
@@ -570,27 +560,18 @@ const skills = {
 					if (!lib.skill.sxrmxiezhong.canUseSha(target)) {
 						continue;
 					}
-					const result = await target
-						.chooseCard({
-							prompt: "请选择两张牌当【杀】使用",
-							selectCard: 2,
-							position: "he",
-							forced: true,
-							ai(card) {
-								return 5 - get.value(card);
-							},
-						})
-						.forResult();
-					const cards = result.cards;
-					if (!cards?.length) {
-						continue;
-					}
-					await target.chooseUseTarget({
-						card: get.autoViewAs({ name: "sha" }),
-						cards,
-						forced: true,
-						addCount: false,
+					const next = target.chooseToUse();
+					next.set("_backupevent", "sxrmxiezhong_backup");
+					next.set("openskilldialog", `###乞施###请将两张牌当作【杀】使用`);
+					next.backup("sxrmxiezhong_backup");
+					next.set("norestore", true);
+					next.set("custom", {
+						add: {},
+						replace: { window() {} },
 					});
+					next.set("forced", true);
+					next.set("addCount", false);
+					await next;
 				}
 			}
 			if (count1 === count2 || !game.hasPlayer(target => !targets.includes(target))) {
@@ -599,7 +580,7 @@ const skills = {
 			const num = count1 > count2 ? 0 : 1;
 			const result = await player
 				.chooseTarget({
-					prompt: `选择一名角色，令其执行两次“${num == 0 ? "摸两张牌并失去一点体力" : "将两张牌当【杀】使用"}”的选项`,
+					prompt: `挟众：请选择一名角色，令其执行两次“${num == 0 ? "摸两张牌并失去1点体力" : "将两张牌当【杀】使用"}”`,
 					filterTarget(card, player, target) {
 						const { targets } = get.event();
 						return !targets?.includes(target);
@@ -635,7 +616,7 @@ const skills = {
 				.set("num", num)
 				.set("targets", targets)
 				.forResult();
-			if (!result.targets?.length) {
+			if (!result?.targets?.length) {
 				return;
 			}
 			const target = result.targets[0];
@@ -648,64 +629,67 @@ const skills = {
 					if (!lib.skill.sxrmxiezhong.canUseSha(target)) {
 						continue;
 					}
-					const result = await target
-						.chooseCard({
-							prompt: "请选择两张牌当【杀】使用",
-							selectCard: 2,
-							position: "he",
-							forced: true,
-							ai(card) {
-								return 5 - get.value(card);
-							},
-						})
-						.forResult();
-					const cards = result.cards;
-					if (!cards?.length) {
-						continue;
-					}
-					await target.chooseUseTarget({
-						card: get.autoViewAs({ name: "sha" }),
-						cards,
-						forced: true,
-						addCount: false,
+					const next = target.chooseToUse();
+					next.set("_backupevent", "sxrmxiezhong_backup");
+					next.set("openskilldialog", `###乞施###请将两张牌当作【杀】使用`);
+					next.backup("sxrmxiezhong_backup");
+					next.set("norestore", true);
+					next.set("custom", {
+						add: {},
+						replace: { window() {} },
 					});
+					next.set("forced", true);
+					next.set("addCount", false);
+					await next;
 				}
 			}
 		},
 		canUseSha(player) {
-			let cards = player.getCards("he");
+			let cards = player.getCards("hes");
 			if (cards.length < 2) {
 				return false;
 			}
-			return cards.some(card1 => {
-				return cards.some(card2 => {
-					if (card1 === card2) {
-						return false;
+			for (let i = 0; i < cards.length - 1; i++) {
+				for (let j = i + 1; j < cards.length; j++) {
+					const sha = get.autoViewAs({ name: "sha" }, [cards[i], cards[j]]);
+					if (player.hasUseTarget(sha, void 0, false)) {
+						return true;
 					}
-					const card0 = get.autoViewAs({ name: "sha" }, [card1, card2]);
-					return player.hasUseTarget(card0, void 0, false);
-				});
-			});
+				}
+			}
+			return false;
+		},
+		subSkill: {
+			backup: {
+				filterCard(card) {
+					return get.itemtype(card) == "card";
+				},
+				viewAs: { name: "sha" },
+				selectCard: 2,
+				position: "hes",
+				log: false,
+				ai1(card) {
+					return 6 - get.value(card);
+				},
+			},
 		},
 	},
 	sxrmqishi: {
 		audio: 2,
-		trigger: {
-			player: "phaseJieshuBegin",
-		},
+		trigger: { player: "phaseJieshuBegin" },
 		locked(skill, player) {
-			if (!player?.storage.sxrmqishi) {
+			if (!player?.storage?.sxrmqishi) {
 				return false;
 			}
 			return true;
 		},
 		qidingSkill(skill, player) {
-			if (!player?.storage.sxrmqishi) {
+			if (!player?.storage?.sxrmqishi) {
 				return true;
 			}
 			return false;
 		},
-		getZhongyangCards(player) {
+		getCards(player) {
 			let cards = [];
 			game.checkGlobalHistory("cardMove", evt => {
 				if (evt.name == "lose" && evt.player != player && evt.position === ui.discardPile) {
@@ -719,21 +703,19 @@ const skills = {
 				}
 			});
 			cards = cards.filterInD("d").flat().unique();
-			if (!cards.length) {
-				cards = [];
-			}
 			return cards;
 		},
 		filter(event, player) {
-			return lib.skill.sxrmqishi.getZhongyangCards(player).length;
+			return get.info("sxrmqishi").getCards(player).length > 0;
 		},
 		async cost(event, trigger, player) {
-			const forced = Boolean(player.storage.sxrmqishi);
-			const cards = lib.skill.sxrmqishi.getZhongyangCards(player);
+			const forced = Boolean(player.storage[event.skill]);
+			const cards = get.info(event.skill).getCards(player);
 			const result = await player
 				.chooseButton({
-					createDialog: ["获得本回合其他角色进入弃牌堆的至多五张牌", cards],
+					createDialog: [`${!forced ? get.prompt2(event.skill) : "###乞施###<div class='text center'>获得本回合其他角色进入弃牌堆的至多五张牌，然后你跳过下个摸牌阶段</div>"}`, cards],
 					selectButton: [1, 5],
+					allowChooseAll: true,
 					forced,
 					ai(button) {
 						const { cards } = get.event();
@@ -747,14 +729,12 @@ const skills = {
 				.forResult();
 			event.result = {
 				bool: result.bool,
-				cost_data: {
-					links: result.links,
-				},
+				cards: result.links,
 			};
 		},
 		async content(event, trigger, player) {
 			player.awakenQidingSkill(event.name);
-			const cards = event.cost_data.links;
+			const { cards } = event;
 			player.gain({
 				cards,
 				animate: "gain2",
@@ -763,17 +743,13 @@ const skills = {
 			player.addTempSkill(event.name + "_mark", { player: "phaseDrawSkipped" });
 		},
 		mark: true,
-		intro: {
-			content: "qidingSkill",
-		},
+		intro: { content: "qidingSkill" },
 		subSkill: {
 			mark: {
 				charlotte: true,
 				mark: true,
 				marktext: "饿",
-				intro: {
-					content: "跳过下个摸牌阶段",
-				},
+				intro: { content: "跳过下个摸牌阶段" },
 			},
 		},
 	},
@@ -1176,7 +1152,7 @@ const skills = {
 				);
 				const next = current.chooseToUse();
 				next.set("_backupevent", "sxrmbingqu_backup");
-				next.set("openskilldialog", `将${get.cnNumber(num)}张手牌当作${get.translation(card)}使用`);
+				next.set("openskilldialog", `###并驱###将${get.cnNumber(num)}张手牌当作【${get.translation(card)}】使用`);
 				next.backup("sxrmbingqu_backup");
 				next.set("norestore", true);
 				next.set("custom", {
@@ -1194,6 +1170,10 @@ const skills = {
 				},
 				position: "h",
 				log: false,
+				allowChooseAll: true,
+				ai1(card) {
+					return 6 - get.value(card);
+				},
 			},
 		},
 	},
