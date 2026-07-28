@@ -1645,40 +1645,54 @@ const skills = {
 	//嗔曹仁
 	sxrmyangbei: {
 		audio: 2,
-		trigger: {
-			player: ["phaseZhunbeiBegin", "phaseJieshuBegin", "useCardToPlayered"],
-		},
+		trigger: { player: ["phaseZhunbeiBegin", "phaseJieshuBegin", "useCardToPlayered"] },
 		filter(event, player, name) {
-			if (name != "useCardToPlayered") return true;
-			const { card, targets, target } = event;
-			return (card.name == "sha" || get.type(card) == "trick") && targets.length == 1 && target.countDiscardableCards(target, "h");
+			if (name != "useCardToPlayered") {
+				return true;
+			}
+			const { card } = event;
+			if ((card.name !== "sha" && get.type(card) !== "trick") || event.targets?.length != 1) {
+				return false;
+			}
+			const target = event.targets[0];
+			const hs = target.getCards("h");
+			if (!hs.length) {
+				return false;
+			}
+			if (hs.some(card => !lib.filter.cardDiscardable(card, player, "sxrmyangbei"))) {
+				return false;
+			}
+			return true;
 		},
 		async cost(event, trigger, player) {
 			if (event.triggername != "useCardToPlayered") {
 				event.result = await player
 					.chooseBool({
-						prompt: "是否摸三张牌并翻面？",
-						prompt2: get.translation("sxrmyangbei_info"),
-						ai: () => true,
+						prompt: get.prompt(event.skill),
+						prompt2: "你可以摸三张牌并翻面",
 					})
 					.forResult();
 			} else {
-				const target = trigger.target;
+				const { target, card } = trigger;
+				const hs = target.getCards("h");
 				event.result = await target
 					.chooseBool({
-						prompt: `是否弃置所有手牌，令${get.translation(player)}的技能【佯北】于本回合失效？`,
-						ai: () => {
-							const target = get.player(),
-								{ playerx } = get.event;
-							if (get.attitude(target, playerx) >= 0) return false;
-							if (!playerx.isTurnedOver()) return false;
-							switch (target.countCards("h")) {
+						prompt: `###${player == target ? "" : `${get.translation(player)}对`}你使用了${get.translation(card)}###你可以弃置${get.translation(hs)}，令${player == target ? "" : "其"}【佯北】本回合失效`,
+						ai() {
+							const { player, target } = get.event();
+							if (get.attitude(player, target) >= 0) {
+								return false;
+							}
+							if (!target.isTurnedOver()) {
+								return false;
+							}
+							switch (player.countCards("h")) {
 								case 1:
 									return true;
 								case 2:
 								case 3:
 									return (
-										target.countCards("h", card => {
+										player.countCards("h", card => {
 											return ["shan", "tao"].includes(card.name);
 										}) <= 1
 									);
@@ -1687,62 +1701,111 @@ const skills = {
 							}
 						},
 					})
-					.set("playerx", player)
+					.set("target", player)
 					.forResult();
 			}
 		},
 		async content(event, trigger, player) {
 			if (event.triggername != "useCardToPlayered") {
-				player.draw(3);
-				player.turnOver();
+				await player.draw(3);
+				await player.turnOver();
 			} else {
 				const target = trigger.target;
-				target.discard(target.getCards("h"));
+				await target.modedDiscard(target.getCards("h"));
 				player.tempBanSkill(event.name);
 			}
 		},
 	},
 	sxrmyinfeng: {
 		audio: 2,
-		forced: true,
-		trigger: { source: "damageEnd" },
+		trigger: { source: "damageSource" },
 		filter(event, player) {
-			return game.getGlobalHistory("everything", evt => evt.name == "damage" && evt.source == player).indexOf(event) == 0;
+			return player.getHistory("sourceDamage").indexOf(event) == 0 && event.player.isIn();
 		},
+		forced: true,
+		check(event, player) {
+			return get.attitude(player, event.player) <= 0;
+		},
+		logTarget: "player",
 		async content(event, trigger, player) {
-			const target = trigger.player;
-			const num = target.maxHp - target.hp;
-			if (num) {
+			const target = event.targets[0];
+			player.addSkill(event.name + "_effect");
+			player.markAuto(event.name + "_effect", [target]);
+			target.addSkill(event.name + "_debuff");
+			const num = target.maxHp - target.getHp();
+			if (num > 0) {
 				await target.loseMaxHp(num);
+				target.addMark(event.name + "_debuff", num, false);
 			}
-			await target.addSkill("sxrmyinfeng_debuff");
-			target.storage["sxrmyinfeng_debuff"] = num;
-			player.markAuto(event.name, [target]);
-			player.when({ player: "phaseBegin" }).then(() => {
-				if (!player.storage["sxrmyinfeng"]?.length) return;
-				for (let i of player.storage["sxrmyinfeng"]) {
-					if (!i.isIn() || !i.hasSkill("sxrmyinfeng_debuff") || !i.storage["sxrmyinfeng_debuff"]) {
-						continue;
-					}
-					player.line(i);
-					const num = i.storage["sxrmyinfeng_debuff"];
-					i.gainMaxHp(num);
-					i.removeSkill("sxrmyinfeng_debuff");
-				}
-				delete player.storage["sxrmyinfeng"];
-			});
 		},
 		subSkill: {
-			debuff: {
-				inherit: "gangzhi",
-				forced: true,
+			effect: {
 				charlotte: true,
+				onremove: true,
+				intro: { content: "已偷袭角色：$" },
+				trigger: { player: "phaseBegin" },
+				filter(event, player) {
+					return game.hasPlayer(current => player.getStorage("sxrmyinfeng_effect").includes(current));
+				},
+				forced: true,
 				popup: false,
-				mark: true,
-				marktext: "中箭",
+				logTarget(event, player) {
+					return game.filterPlayer(current => player.getStorage("sxrmyinfeng_effect").includes(current)).sortBySeat();
+				},
+				async content(event, trigger, player) {
+					player.removeSkill(event.name);
+					for (const target of event.targets) {
+						const num = target.countMark("sxrmyinfeng_debuff");
+						target.removeSkill("sxrmyinfeng_debuff");
+						await target.gainMaxHp(num);
+					}
+				},
+			},
+			debuff: {
+				charlotte: true,
+				init(player, skill) {
+					game.addGlobalSkill("sxrmyinfeng_jueqing");
+				},
+				onremove(player, skill) {
+					delete player.storage[skill];
+					if (!game.hasPlayer(current => current.hasSkill("sxrmyinfeng", null, null, false), true)) {
+						game.removeGlobalSkill("sxrmyinfeng_jueqing");
+					}
+				},
+				marktext: "箭",
 				intro: {
-					content(storage) {
-						return `中了冷箭，暂时损失了${storage || 0}点体力上限，期间造成与受到伤害均视为失去体力。`;
+					content(storage = 0) {
+						return `中了冷箭，${storage > 0 ? `暂时损失了${storage}点体力上限，` : ""}期间造成与受到伤害均视为失去体力。`;
+					},
+				},
+				trigger: {
+					player: "damageBefore",
+					source: "damageBefore",
+				},
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					trigger.cancel();
+					await trigger.player.loseHp(trigger.num);
+				},
+				ai: { jueqing: true },
+			},
+			juqing: {
+				trigger: { player: "dieAfter" },
+				filter(event, player) {
+					return !game.hasPlayer(cur => cur.hasSkill("sxrmyinfeng_debuff", null, null, false));
+				},
+				silent: true,
+				forceDie: true,
+				async content(event, trigger, player) {
+					game.removeGlobalSkill(event.name);
+				},
+				ai: {
+					jueqing: true,
+					skillTagFilter(player, tag, arg) {
+						if (tag === "jueqing") {
+							return arg?.hasSkill("sxrmyinfeng_debuff");
+						}
 					},
 				},
 			},

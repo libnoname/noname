@@ -160,9 +160,9 @@ const translates = {
 	sxrm_caoren: "嗔曹仁",
 	sxrm_caoren_prefix: "嗔",
 	sxrmyangbei: "佯北",
-	sxrmyangbei_info: "准备阶段和结束阶段，你可以翻面并摸三张牌。当你使用【杀】或普通锦囊牌指定唯一目标后，其可以弃置所有手牌令此技能本回合失效。",
+	sxrmyangbei_info: "准备阶段或结束阶段，你可以翻面并摸三张牌。当你使用【杀】或普通锦囊牌指定唯一目标后，其可以弃置所有手牌令此技能本回合失效。",
 	sxrmyinfeng: "阴锋",
-	sxrmyinfeng_info: "锁定技，当你每回合首次造成伤害后，将受伤角色体力上限减至其体力值且其接下来造成和受到的伤害均视为失去体力，直到你下回合开始。",
+	sxrmyinfeng_info: "锁定技，当你每回合首次造成伤害后，你令受伤角色获得以下效果直到你下回合开始：体力上限减至其体力值且其造成和受到的伤害均视为失去体力。",
 };
 
 export default translates;
