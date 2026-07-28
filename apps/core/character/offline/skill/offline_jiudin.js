@@ -434,13 +434,11 @@ const skills = {
 		audio: "sbjizhi",
 		trigger: { player: "useCard" },
 		filter(event, player) {
-			return get.type(event.card) == "trick";
+			return get.type(event.card) === "trick";
 		},
 		forced: true,
-		content() {
-			"step 0";
-			player.draw("nodelay");
-			"step 1";
+		async content(event, trigger, player) {
+			await player.draw("nodelay");
 			player.addTempSkill("jdjizhi_mark");
 			player.addMark("jdjizhi_mark", 1, false);
 		},
@@ -449,8 +447,6 @@ const skills = {
 				charlotte: true,
 				onremove: true,
 				intro: { content: "本回合手牌上限+#" },
-				// charlotte: true,
-				// onremove: true,
 				mod: {
 					maxHandcard(player, num) {
 						return num + player.countMark("jdjizhi_mark");
