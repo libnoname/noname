@@ -14,7 +14,7 @@ const skills = {
 		filter(event, player) {
 			return !event.numFixed;
 		},
-		content() {
+		async content(event, trigger, player) {
 			trigger.num += player.hp;
 		},
 		ai: {
@@ -31,7 +31,7 @@ const skills = {
 		usable: 1,
 		audio: "dcsbronghuo",
 		filter(event, player) {
-			return player.countCards("h");
+			return player.hasCards("h");
 		},
 		filterTarget: lib.filter.notMe,
 		async content(event, trigger, player) {
