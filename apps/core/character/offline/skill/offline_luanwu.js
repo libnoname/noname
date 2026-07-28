@@ -144,23 +144,23 @@ const skills = {
 	nscesuan: {
 		trigger: { player: "damageBegin3" },
 		forced: true,
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			trigger.cancel();
-			event.lose = player.loseMaxHp();
-			"step 1";
-			if (event.lose && event.lose.loseHp) {
-				player.draw();
+			const loseEvent = player.loseMaxHp();
+			await loseEvent;
+			if (loseEvent.loseHp) {
+				await player.draw();
 			}
 		},
 		ai: {
 			neg: true,
 			filterDamage: true,
 			skillTagFilter(player, tag, arg) {
-				if (tag === "filterDamage" && arg && arg.player) {
-					if (arg.player.hasSkillTag("jueqing", false, player)) {
-						return false;
-					}
+				if (tag !== "filterDamage" || !arg?.player) {
+					return;
+				}
+				if (arg.player.hasSkillTag("jueqing", false, player)) {
+					return false;
 				}
 			},
 		},
