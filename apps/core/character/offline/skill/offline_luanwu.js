@@ -14,7 +14,7 @@ const skills = {
 		filter(event, player) {
 			var info = lib.skill.nsyangwu;
 			return (
-				player.countCards("h", info.filterCard) &&
+				player.hasCards("h", info.filterCard) &&
 				game.hasPlayer(function (target) {
 					return info.filterTarget(null, player, target);
 				})
@@ -23,17 +23,24 @@ const skills = {
 		check(card) {
 			var num = 0;
 			var player = _status.event.player;
-			game.countPlayer(function (current) {
+			for (const current of game.filterPlayer()) {
 				if (current != player && get.attitude(player, current) < 0) {
 					num = Math.max(num, current.countCards("h") - player.countCards("h"));
 				}
-			});
+			}
 			return Math.ceil((num + 1) / 2) * 2 + 4 - get.value(card);
 		},
-		content() {
-			var num = Math.ceil((target.countCards("h") - player.countCards("h")) / 2);
+		async content(event, trigger, player) {
+			const target = event.target;
+			const num = Math.ceil((target.countCards("h") - player.countCards("h")) / 2);
 			if (num) {
-				player.gainPlayerCard(target, true, "h", num, "visible");
+				await player.gainPlayerCard({
+					target,
+					selectButton: num,
+					position: "h",
+					forced: true,
+					visible: true,
+				});
 			}
 		},
 		ai: {
@@ -86,8 +93,8 @@ const skills = {
 					return 0;
 			}
 		},
-		content() {
-			target.damage("nocard");
+		async content(event, trigger, player) {
+			event.target.damage({ nocard: true });
 		},
 		ai: {
 			damage: true,
