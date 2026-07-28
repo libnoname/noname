@@ -17,7 +17,7 @@ const skills = {
 		group: ["sxrmjiehuo_fail"],
 		subSkill: {
 			fail: {
-				trigger: { global: "sxrmjiehuoFail" },
+				trigger: { player: "sxrmjiehuoFail" },
 				forced: true,
 				locked: false,
 				async content(event, trigger, player) {
