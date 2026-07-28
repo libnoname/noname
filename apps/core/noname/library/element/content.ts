@@ -9694,109 +9694,40 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			if (!get.info(event.card, false).noForceDie) {
 				event.forceDie = true;
 			}
-			//player.using=cards;
-			let cardaudio = true;
-
-			if (event.skill) {
-				if (lib.skill[event.skill].audio) {
-					cardaudio = false;
-				}
-				if (lib.skill[event.skill].log != false) {
-					player.logSkill(event.skill, false, null, null, [event, event.player]);
-				}
-				if (get.info(event.skill).popname) {
-					player.tryCardAnimate(event.card, event.card.name, "metal", true);
-				}
-			} else if (!event.nopopup) {
-				if (lib.translate[`${event.card.name}_pop`]) {
-					player.tryCardAnimate(event.card, lib.translate[`${event.card.name}_pop`], "metal");
-				} else {
-					player.tryCardAnimate(event.card, event.card.name, "metal");
-				}
-			}
-			if (event.audio === false) {
-				cardaudio = false;
-			}
-			if (cardaudio) {
-				game.broadcastAll(
-					(player, card) => {
-						game.playCardAudio(card, player);
-					},
-					player,
-					event.card
-				);
-			}
-			event.id = get.id();
-			if (!Array.isArray(event.excluded)) {
-				event.excluded = [];
-			}
-			if (!Array.isArray(event.directHit)) {
-				event.directHit = [];
-			}
-			if (typeof event.customArgs != "object" || typeof event.customArgs.default != "object") {
-				event.customArgs = { default: {} };
-			}
-			if (typeof event.baseDamage != "number") {
-				event.baseDamage = get.info(event.card, false).baseDamage || 1;
-			}
-			if (typeof event.effectCount != "number") {
-				event.effectCount = get.info(event.card, false).effectCount || 1;
-			}
-			event.effectedCount = 0;
-			if (event.oncard) {
-				event.oncard(event.card, event.player);
-			}
-			player.actionHistory[player.actionHistory.length - 1].useCard.push(event);
-			game.getGlobalHistory().useCard.push(event);
-			if (event.addCount !== false) {
-				if (player.stat[player.stat.length - 1].card[event.card.name] == undefined) {
-					player.stat[player.stat.length - 1].card[event.card.name] = 1;
-				} else {
-					player.stat[player.stat.length - 1].card[event.card.name]++;
-				}
-			}
-			if (event.skill && event.addSkillCount !== false) {
-				if (player.stat[player.stat.length - 1].skill[event.skill] == undefined) {
-					player.stat[player.stat.length - 1].skill[event.skill] = 1;
-				} else {
-					player.stat[player.stat.length - 1].skill[event.skill]++;
-				}
-				const sourceSkill = get.info(event.skill).sourceSkill;
-				if (sourceSkill) {
-					if (player.stat[player.stat.length - 1].skill[sourceSkill] == undefined) {
-						player.stat[player.stat.length - 1].skill[sourceSkill] = 1;
+			event._playCardAnimation = () => {
+				let cardaudio = true;
+				if (event.skill) {
+					if (lib.skill[event.skill].audio) {
+						cardaudio = false;
+					}
+					if (get.info(event.skill).popname) {
+						player.tryCardAnimate(event.card, event.card.name, "metal", true);
+					}
+				} else if (!event.nopopup) {
+					if (lib.translate[`${event.card.name}_pop`]) {
+						player.tryCardAnimate(event.card, lib.translate[`${event.card.name}_pop`], "metal");
 					} else {
-						player.stat[player.stat.length - 1].skill[sourceSkill]++;
+						player.tryCardAnimate(event.card, event.card.name, "metal");
 					}
 				}
-			}
-			event.lose_map = {
-				noowner: [],
-			};
-			event.lose_map[player.playerid] = [];
-			const cards_ow = event.cards.slice();
-			while (cards_ow.length) {
-				const owner = get.owner(cards_ow[0]);
-				if (owner) {
-					const id = owner.playerid;
-					const Cards_card = cards.filter(card => get.owner(card) == owner);
-					cards_ow.removeArray(Cards_card);
-					owner.getCards("ej").forEach(card => {
-						const cardsx = card?.[card.cardSymbol]?.cards?.filter(cardx => cards.includes(cardx));
-						if (!cardsx?.length) {
-							return;
-						}
-						event.cards.removeArray(cardsx);
-						event.cards.add(card);
-					});
-					event.lose_map[id] ??= [];
-					event.lose_map[id].addArray(Cards_card);
-				} else {
-					event.lose_map.noowner.add(cards_ow.shift());
+				if (event.audio === false) {
+					cardaudio = false;
 				}
-			}
-			player.useCardAnimateBefore?.(event, trigger, player);
-			if (event.animate != false && event.throw !== false) {
+				if (cardaudio) {
+					game.broadcastAll(
+						(player, card) => {
+							game.playCardAudio(card, player);
+						},
+						player,
+						event.card
+					);
+				}
+			};
+			event._playThrowAnimation = () => {
+				player.useCardAnimateBefore?.(event, trigger, player);
+				if (event.animate == false || event.throw === false) {
+					return;
+				}
 				let throw_cards = event.cards;
 				let virtualCard_str = false;
 				for (const id in event.lose_map) {
@@ -9804,25 +9735,30 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 						continue;
 					}
 					const owner = (_status.connectMode ? lib.playerOL : game.playerMap)[id];
-					const throws = event.lose_map[id];
-					if (owner == player) {
-						if (!throw_cards.length && lib.config.card_animation_info) {
-							const virtualCard = ui.create.card();
-							virtualCard._destroy = true;
-							virtualCard.expired = true;
-							const info = lib.card[card.name];
-							const number = card.number;
-							virtualCard.init([get.suit(card), typeof number == "number" ? number : "虚拟", card.name, card.nature]);
-							virtualCard_str = virtualCard.querySelector(".info").innerHTML;
-							throw_cards = [virtualCard];
-							throws.add(virtualCard);
+					const originalThrows = event.lose_map[id];
+					const throws = originalThrows.slice();
+					try {
+						if (owner == player) {
+							if (!throw_cards.length && lib.config.card_animation_info) {
+								const virtualCard = ui.create.card();
+								virtualCard._destroy = true;
+								virtualCard.expired = true;
+								const number = card.number;
+								virtualCard.init([get.suit(card), typeof number == "number" ? number : "虚拟", card.name, card.nature]);
+								virtualCard_str = virtualCard.querySelector(".info").innerHTML;
+								throw_cards = [virtualCard];
+								throws.add(virtualCard);
+							}
+							if (lib.config.card_animation_info) {
+								throws.addArray(event.lose_map.noowner);
+							}
 						}
-						if (lib.config.card_animation_info) {
-							throws.addArray(event.lose_map.noowner);
+						if (throws.length) {
+							event.lose_map[id] = throws;
+							owner.$throw(throws);
 						}
-					}
-					if (throws.length) {
-						owner.$throw(throws);
+					} finally {
+						event.lose_map[id] = originalThrows;
 					}
 				}
 				if (event.lose_map.noowner.length && !lib.config.card_animation_info) {
@@ -9892,7 +9828,128 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 						delete event.waitingForTransition;
 					});
 				}
+			};
+			event._playTargetAnimation = () => {
+				const targets = event.targets;
+				if (event.animate == false || event.line === false || event.hideTargets) {
+					return;
+				}
+				if (event.card.name == "wuxie" && event.getParent()._info_map) {
+					let evtmap = event.getParent()._info_map;
+					if (evtmap._source) {
+						evtmap = evtmap._source;
+					}
+					const lining = (evtmap.multitarget ? evtmap.targets : evtmap.target) || event.player;
+					if (Array.isArray(lining) && event.getTrigger().name == "jiedao") {
+						player.line(lining[0], "green");
+					} else {
+						player.line(lining, "green");
+					}
+				} else if (event.card.name == "youdishenru" && event.getParent().source) {
+					let lining = event.getParent().sourcex || event.getParent().source2 || event.getParent().source;
+					if (lining == player && event.getParent().sourcex2) {
+						lining = event.getParent().sourcex2;
+					}
+					if (Array.isArray(lining) && event.getTrigger().name == "jiedao") {
+						player.line(lining[0], "green");
+					} else {
+						player.line(lining, "green");
+					}
+				} else {
+					const config = {};
+					const nature = get.natureList(event.card)[0];
+					if (nature || (event.card.classList && event.card.classList.contains(nature))) {
+						config.color = nature;
+					}
+					if (event.addedTarget) {
+						player.line2(targets.concat(event.addedTargets), config);
+					} else if (get.info(event.card, false).multitarget && targets.length > 1 && !get.info(event.card, false).multiline) {
+						player.line2(targets, config);
+					} else {
+						player.line(targets, config);
+					}
+				}
+			};
+			event._playUseCardAnimation = () => {
+				event._playCardAnimation();
+				event._playThrowAnimation();
+				event._playTargetAnimation();
+			};
+			//player.using=cards;
+			if (event.skill && lib.skill[event.skill].log != false) {
+				player.logSkill(event.skill, false, null, null, [event, event.player]);
 			}
+			event._playCardAnimation();
+			event.id = get.id();
+			if (!Array.isArray(event.excluded)) {
+				event.excluded = [];
+			}
+			if (!Array.isArray(event.directHit)) {
+				event.directHit = [];
+			}
+			if (typeof event.customArgs != "object" || typeof event.customArgs.default != "object") {
+				event.customArgs = { default: {} };
+			}
+			if (typeof event.baseDamage != "number") {
+				event.baseDamage = get.info(event.card, false).baseDamage || 1;
+			}
+			if (typeof event.effectCount != "number") {
+				event.effectCount = get.info(event.card, false).effectCount || 1;
+			}
+			event.effectedCount = 0;
+			if (event.oncard) {
+				event.oncard(event.card, event.player);
+			}
+			player.actionHistory[player.actionHistory.length - 1].useCard.push(event);
+			game.getGlobalHistory().useCard.push(event);
+			if (event.addCount !== false) {
+				if (player.stat[player.stat.length - 1].card[event.card.name] == undefined) {
+					player.stat[player.stat.length - 1].card[event.card.name] = 1;
+				} else {
+					player.stat[player.stat.length - 1].card[event.card.name]++;
+				}
+			}
+			if (event.skill && event.addSkillCount !== false) {
+				if (player.stat[player.stat.length - 1].skill[event.skill] == undefined) {
+					player.stat[player.stat.length - 1].skill[event.skill] = 1;
+				} else {
+					player.stat[player.stat.length - 1].skill[event.skill]++;
+				}
+				const sourceSkill = get.info(event.skill).sourceSkill;
+				if (sourceSkill) {
+					if (player.stat[player.stat.length - 1].skill[sourceSkill] == undefined) {
+						player.stat[player.stat.length - 1].skill[sourceSkill] = 1;
+					} else {
+						player.stat[player.stat.length - 1].skill[sourceSkill]++;
+					}
+				}
+			}
+			event.lose_map = {
+				noowner: [],
+			};
+			event.lose_map[player.playerid] = [];
+			const cards_ow = event.cards.slice();
+			while (cards_ow.length) {
+				const owner = get.owner(cards_ow[0]);
+				if (owner) {
+					const id = owner.playerid;
+					const Cards_card = cards.filter(card => get.owner(card) == owner);
+					cards_ow.removeArray(Cards_card);
+					owner.getCards("ej").forEach(card => {
+						const cardsx = card?.[card.cardSymbol]?.cards?.filter(cardx => cards.includes(cardx));
+						if (!cardsx?.length) {
+							return;
+						}
+						event.cards.removeArray(cardsx);
+						event.cards.add(card);
+					});
+					event.lose_map[id] ??= [];
+					event.lose_map[id].addArray(Cards_card);
+				} else {
+					event.lose_map.noowner.add(cards_ow.shift());
+				}
+			}
+			event._playThrowAnimation();
 			if (event.cards.length) {
 				const ownerCards = event.cards.filter(card => get.owner(card));
 				const directDiscard = event.cards.filter(card => !get.owner(card));
@@ -9939,43 +9996,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 		// step 1
 		async (event, trigger, player) => {
 			const { cards, card, targets, num } = event;
-			if (event.animate != false && event.line != false && !event.hideTargets) {
-				if (event.card.name == "wuxie" && event.getParent()._info_map) {
-					let evtmap = event.getParent()._info_map;
-					if (evtmap._source) {
-						evtmap = evtmap._source;
-					}
-					const lining = (evtmap.multitarget ? evtmap.targets : evtmap.target) || event.player;
-					if (Array.isArray(lining) && event.getTrigger().name == "jiedao") {
-						player.line(lining[0], "green");
-					} else {
-						player.line(lining, "green");
-					}
-				} else if (event.card.name == "youdishenru" && event.getParent().source) {
-					let lining = event.getParent().sourcex || event.getParent().source2 || event.getParent().source;
-					if (lining == player && event.getParent().sourcex2) {
-						lining = event.getParent().sourcex2;
-					}
-					if (Array.isArray(lining) && event.getTrigger().name == "jiedao") {
-						player.line(lining[0], "green");
-					} else {
-						player.line(lining, "green");
-					}
-				} else {
-					const config = {};
-					const nature = get.natureList(event.card)[0];
-					if (nature || (event.card.classList && event.card.classList.contains(nature))) {
-						config.color = nature;
-					}
-					if (event.addedTarget) {
-						player.line2(targets.concat(event.addedTargets), config);
-					} else if (get.info(event.card, false).multitarget && targets.length > 1 && !get.info(event.card, false).multiline) {
-						player.line2(targets, config);
-					} else {
-						player.line(targets, config);
-					}
-				}
-			}
+			event._playTargetAnimation();
 			if (targets.length && !event.hideTargets) {
 				const str = targets.length == 1 && targets[0] == player ? "#b自己" : targets.sortBySeat();
 				if (cards.length && !event.card.isCard) {
