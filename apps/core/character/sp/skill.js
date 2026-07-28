@@ -67,6 +67,7 @@ const skills = {
 				},
 			},
 			gain: {
+				audio: "olremaozhu",
 				trigger: { player: "phaseEnd" },
 				filter(event, player) {
 					return player.getStorage("olrejinlan_map").length;
@@ -85,7 +86,17 @@ const skills = {
 					}
 					const result = await player
 						.chooseButton({
-							createDialog: ["茂著：获得一个技能直到你的下回合结束", [skills, "skill"]],
+							createDialog: [
+								"茂著：获得一个技能直到你的下回合结束",
+								[
+									skills,
+									(item, type, position, noclick, node) => {
+										node = ui.create.buttonPresets.skill(item, type, position, noclick);
+										node.setBackground("ol_peixiu", "character");
+										return node;
+									},
+								],
+							],
 							forced: true,
 						})
 						.forResult();
