@@ -2354,14 +2354,14 @@ const skills = {
 			global: ["equipEnd", "addJudgeEnd", "gainEnd", "loseAsyncEnd", "addToExpansionEnd"],
 		},
 		filter(event, player) {
-			return (game.hasPlayer(target => target.countExpansions("hm_zhouyuan_expansion")) && event.name != "die") ^ player.hasSkill("hm_zhaobing_in");
+			return (game.hasPlayer(target => target.countExpansions("hm_zhouyuan_expansion")) && event.name !== "die") !== player.hasSkill("hm_zhaobing_in");
 		},
 		forced: true,
 		firstDo: true,
 		silent: true,
 		forceDie: true,
-		content() {
-			if (game.hasPlayer(target => target.countExpansions("hm_zhouyuan_expansion")) && trigger.name != "die") {
+		async content(event, trigger, player) {
+			if (game.hasPlayer(target => target.countExpansions("hm_zhouyuan_expansion")) && trigger.name !== "die") {
 				const cards = game
 					.filterPlayer()
 					.map(target => target.getExpansions("hm_zhouyuan_expansion"))
@@ -2399,14 +2399,13 @@ const skills = {
 				forced: true,
 				locked: false,
 				silent: true,
-				content() {
-					"step 0";
+				async content(event, trigger, player) {
 					const cards2 = player.getCards("s", card => card.hasGaintag("hm_zhaobing_tag"));
 					if (player.isOnline2()) {
 						player.send(
-							function (cards, player) {
+							(cards, player) => {
 								cards.forEach(i => i.delete());
-								if (player == game.me) {
+								if (player === game.me) {
 									ui.updatehl();
 								}
 							},
@@ -2415,10 +2414,9 @@ const skills = {
 						);
 					}
 					cards2.forEach(i => i.delete());
-					if (player == game.me) {
+					if (player === game.me) {
 						ui.updatehl();
 					}
-					"step 1";
 					const cards = game
 						.filterPlayer()
 						.map(target => target.getExpansions("hm_zhouyuan_expansion"))
@@ -2435,9 +2433,9 @@ const skills = {
 					const cards2 = player.getCards("s", card => card.hasGaintag("hm_zhaobing_tag"));
 					if (player.isOnline2()) {
 						player.send(
-							function (cards, player) {
+							(cards, player) => {
 								cards.forEach(i => i.delete());
-								if (player == game.me) {
+								if (player === game.me) {
 									ui.updatehl();
 								}
 							},
@@ -2446,7 +2444,7 @@ const skills = {
 						);
 					}
 					cards2.forEach(i => i.delete());
-					if (player == game.me) {
+					if (player === game.me) {
 						ui.updatehl();
 					}
 				},
@@ -2459,17 +2457,12 @@ const skills = {
 				},
 				filter(event, player) {
 					const cards = player.getCards("s", card => card.hasGaintag("hm_zhaobing_tag") && card._cardid);
-					return (
-						event.cards &&
-						event.cards.some(card => {
-							return cards.includes(card);
-						})
-					);
+					return event.cards && event.cards.some(card => cards.includes(card));
 				},
 				forced: true,
 				popup: false,
 				firstDo: true,
-				content() {
+				async content(event, trigger, player) {
 					const idList = player.getCards("s", card => card.hasGaintag("hm_zhaobing_tag")).map(i => i._cardid);
 					const cards = game
 						.filterPlayer()
@@ -2477,7 +2470,7 @@ const skills = {
 						.flat();
 					const cards2 = [];
 					for (const card of trigger.cards) {
-						const cardx = cards.find(cardx => cardx.cardid == card._cardid);
+						const cardx = cards.find(cardx => cardx.cardid === card._cardid);
 						if (cardx) {
 							cards2.push(cardx);
 						}
@@ -2487,9 +2480,9 @@ const skills = {
 					trigger.card.cards = cards2;
 					if (player.isOnline2()) {
 						player.send(
-							function (cards, player) {
+							(cards, player) => {
 								cards.forEach(i => i.delete());
-								if (player == game.me) {
+								if (player === game.me) {
 									ui.updatehl();
 								}
 							},
@@ -2498,7 +2491,7 @@ const skills = {
 						);
 					}
 					cards3.forEach(i => i.delete());
-					if (player == game.me) {
+					if (player === game.me) {
 						ui.updatehl();
 					}
 				},
