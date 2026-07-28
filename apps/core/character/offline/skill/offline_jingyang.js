@@ -265,9 +265,9 @@ const skills = {
 		filterCard: () => false,
 		selectCard: -1,
 		log: false,
-		precontent() {
+		async precontent(event, trigger, player) {
 			player.logSkill("jylianhuan");
-			player.loseHp();
+			await player.loseHp();
 		},
 		ai: {
 			order: 10,
@@ -278,7 +278,7 @@ const skills = {
 					}
 					const att = get.attitude(player, target);
 					if (player.hasSkill("jyyuhuo")) {
-						return !target.isLinked() && att > 0 && player != target ? 1 : -1;
+						return !target.isLinked() && att > 0 && player !== target ? 1 : -1;
 					}
 					return lib.card.tiesuo.ai.result.target(player, target);
 				},
