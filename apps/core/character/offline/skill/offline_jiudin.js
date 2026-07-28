@@ -934,20 +934,19 @@ const skills = {
 		filter(event, player) {
 			return event.toShow?.some(i => get.character(i).skills?.includes("jdbaoqie"));
 		},
-		content() {
-			"step 0";
-			var card = get.cardPile(function (card) {
-				return get.subtype(card, false) == "equip2" && !get.cardtag(card, "gifts");
-			});
+		async content(event, trigger, player) {
+			const card = get.cardPile(card => get.subtype(card, false) === "equip2" && !get.cardtag(card, "gifts"));
 			if (!card) {
-				event.finish();
 				return;
 			}
-			event.card = card;
-			player.gain(card, "gain2");
-			"step 1";
-			if (player.getCards("h").includes(card) && get.subtype(card) == "equip2") {
-				player.chooseUseTarget(card).nopopup = true;
+			await player.gain({
+				cards: [card],
+				animate: "gain2",
+			});
+			if (get.subtype(card) === "equip2" && player.hasCards("h", cardx => card === cardx)) {
+				const next = player.chooseUseTarget({ card });
+				next.nopopup = true;
+				await next;
 			}
 		},
 	},
