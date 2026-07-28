@@ -40,6 +40,5 @@ export default {
 	yj_zhanghuan: "正身洁己",
 	yj_zhangyan: "黑山飞燕",
 	v_sunce: "勇冠三江势",
-	yj_y_xunxu: "博律明识",
 	yj_x_xunxu: "博律明识",
 };
