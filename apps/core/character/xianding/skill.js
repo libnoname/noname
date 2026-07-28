@@ -35575,7 +35575,7 @@ const skills = {
 				evt.phaseList = trigger.phaseList;
 				evt.relatedEvent = trigger.relatedEvent || trigger.getParent(2);
 				evt.skill = trigger.skill;
-				evt._noTurnOver = true;
+				evt._noTurnOver = trigger._noTurnOver;
 				evt.set("phaseList", trigger.phaseList);
 				evt.pushHandler("dcwumei_phase", (event, option) => {
 					if (event.step === 0 && option.state === "begin") {
