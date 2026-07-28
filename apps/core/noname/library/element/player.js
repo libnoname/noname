@@ -11509,7 +11509,7 @@ export class Player extends HTMLDivElement {
 		if (this.storage[skill] === undefined || this.storage[skill] === false) {
 			this.storage[skill] = true;
 		}
-		game.log(`契约已成，${get.translation(this)}将【${get.translation(skill)}】改为锁定技。`);
+		game.log("契约已成，", this, "将", `#g${get.translation(skill)}】`, `改为锁定技`);
 		_status.event.clearStepCache();
 		return this;
 	}

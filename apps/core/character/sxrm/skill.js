@@ -1262,12 +1262,6 @@ const skills = {
 	},
 	//嗔贾华
 	sxrmfubei: {
-		init(player, skill) {
-			player.addSkill(skill + "_effect");
-		},
-		onremove(player, skill) {
-			player.removeSkill(skill + "_effect");
-		},
 		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
@@ -1338,6 +1332,9 @@ const skills = {
 				cards = [card2, card1];
 			}
 			player.setStorage("sxrmfubei_effect", player.getStorage("sxrmfubei_effect").concat(cards));
+			game.broadcastAll(function () {
+				lib.skill.sxrmfubei.createObserver();
+			});
 			await player
 				.lose(cards, ui.cardPile)
 				.set("insert_index", (event, card) => {
@@ -1349,139 +1346,129 @@ const skills = {
 				.set("cardsx", [card1, card2]);
 			game.log(player, "将", card1, "与", card2, `分别置于牌堆顶的第${num1}张与第${num2}张`);
 		},
-		group: "sxrmfubei_damage",
-		subSkill: {
-			damage: {
-				audio: "sxrmfubei",
-				trigger: { global: "phaseEnd" },
-				filter(event, player) {
-					return get.itemtype(_status.pileTop) === "card" && get.is.shownCard(_status.pileTop);
-				},
-				forced: true,
-				locked: false,
-				logTarget: "player",
-				async content(event, trigger, player) {
-					await event.targets[0].damage();
-				},
+		mark: true,
+		marktext: "牌",
+		intro: {
+			markcount: () => 10,
+			mark(dialog, storage, player, event, skill) {
+				const intronode = ui.create.div(".menubutton.pointerdiv", "点击观看", function () {
+					if (!this.classList.contains("disabled")) {
+						this.classList.add("disabled");
+						this.style.opacity = 0.5;
+						lib.skill[skill].clickable(player);
+					}
+				});
+				if (!_status.gameStarted) {
+					intronode.classList.add("disabled");
+					intronode.style.opacity = 0.5;
+				}
+				dialog.add(intronode);
 			},
-			effect: {
-				init(player) {
-					const func = playerid => {
-						let dialog = ui[`sxrmfubeiShow_${playerid}`];
-						if (!dialog) {
-							const map = _status.connectMode ? lib.playerOL : game.playerMap;
-							const owner = map[playerid];
-							dialog = ui[`sxrmfubeiShow_${playerid}`] = ui.create.div(ui.window);
-							dialog.owner = owner;
-							dialog.className = "dialog nobutton scroll1 scroll2";
-							dialog.style.position = "absolute";
-							dialog.style.left = "50%";
-							dialog.style.top = "50%";
-							dialog.style.transform = "translate(-50%, -50%)";
-							dialog.style.width = "fit-content";
-							dialog.style.height = "fit-content";
-							dialog.style.display = "flex";
-							dialog.style.flexDirection = "column";
-							dialog.style.background = "rgba(0,0,0,0.72)";
-							dialog.style.gap = "2.5px";
-							Object.setPrototypeOf(dialog, lib.element.dialog);
-							dialog.ontouchstart = ui.click.dragtouchdialog;
-							const title = ui.create.div(dialog);
-							title.style.position = "relative";
-							title.style.textAlign = "center";
-							title.innerHTML = "伏备-牌堆顶";
-							const container = (dialog.container = ui.create.div(".buttons", dialog));
-							container.style.position = "relative";
-							container.classList.add("smallzoom");
-							const cards = get.itemtype(_status.pileTop) === "card" ? [_status.pileTop] : [];
-							const buttons = Array.from(dialog.container.childNodes);
-							for (const card of buttons) {
-								dialog.container.removeChild(card);
-							}
-							dialog.style.width = `${cards.length > 0 ? "125" : "0"}px`;
-							if (get.is.shownCard(cards[0])) {
-								dialog.buttons = ui.create.buttons(cards, "card", dialog.container, true);
+		},
+		// 【知天】看牌
+		clickable(player) {
+			const cards = lib.skill.sxrmfubei.getCards(player);
+			function createDialogWithControl(result) {
+				const dialog = ui.create.dialog("伏备", "peaceDialog");
+				if (result.length > 0) {
+					dialog.addSmall([
+						result,
+						(item, type, position, noclick, node) => {
+							// 处理下可见与否的情况
+							if (get.is.shownCard(item)) {
+								node = ui.create.buttonPresets.card(item, type, position, noclick);
 							} else {
-								dialog.buttons = ui.create.buttons(cards, "blank", dialog.container, true);
+								node = ui.create.buttonPresets.blank(item, type, position, noclick);
 							}
-							dialog.updateDialog = function () {
-								const cards = get.itemtype(_status.pileTop) === "card" ? [_status.pileTop] : [];
-								const buttons = Array.from(dialog.container.childNodes);
-								for (const card of buttons) {
-									dialog.container.removeChild(card);
-									dialog.style.width = `${cards.length > 0 ? "125" : "0"}px`;
-								}
-								if (get.is.shownCard(cards[0])) {
-									dialog.buttons = ui.create.buttons(cards, "card", dialog.container, true);
-								} else {
-									dialog.buttons = ui.create.buttons(cards, "blank", dialog.container, true);
-								}
-							};
-							requestAnimationFrame(() => {
-								const rect = dialog.getBoundingClientRect();
-								const zoom = game.documentZoom || 1;
-								dialog.style.transform = "";
-								dialog.style.left = rect.left / zoom + "px";
-								dialog.style.top = rect.top / zoom + "px";
-							});
-						} else {
-							dialog.style.display = "";
+							return node;
+						},
+					]);
+				} else {
+					dialog.addText("牌堆顶无牌");
+				}
+				const control = ui.create.control("确定", () => dialog.close());
+				dialog._close = dialog.close;
+				dialog.hide = dialog.close = function (...args) {
+					control.close();
+					return dialog._close(...args);
+				};
+				if (_status.sxrmfubei_clickable) {
+					_status.sxrmfubei_clickable.close();
+				}
+				_status.sxrmfubei_clickable = dialog;
+				dialog.open();
+			}
+			if (cards instanceof Promise) {
+				cards.then(([ok, result]) => createDialogWithControl(result));
+			} else {
+				createDialogWithControl(cards);
+			}
+		},
+		getCards(player) {
+			let cards = [];
+			if (game.online) {
+				return game.requestSkillData("sxrmfubei", "getTopCards", 10000);
+			} else {
+				if (ui.cardPile.hasChildNodes !== false) {
+					cards = Array.from(ui.cardPile.childNodes).slice(0, 10);
+				}
+			}
+			return cards;
+		},
+		sync: {
+			getTopCards(client) {
+				if (ui.cardPile.hasChildNodes !== false) {
+					const cards = Array.from(ui.cardPile.childNodes).slice(0, 10);
+					// 重连手动添加刀斧手标记
+					cards.forEach(card => {
+						if (game.hasPlayer(current => current.getStorage("sxrmfubei_effect").includes(card))) {
+							game.broadcastAll(card => {
+								card.addGaintag("visible_sxrmfubei");
+							}, card);
 						}
-						ui[`sxrmfubeiUpdate_${playerid}`] = new MutationObserver(mutationsList => {
-							for (const mutation of mutationsList) {
-								if (mutation.type === "childList") {
-									mutation.addedNodes.forEach(card => {
-										if (dialog.owner?.getStorage("sxrmfubei_effect").includes(card)) {
-											game.broadcastAll(card => {
-												card.addGaintag("visible_sxrmfubei");
-											}, card);
-										}
-									});
-									mutation.removedNodes.forEach(card => {
-										dialog.owner?.unmarkAuto("sxrmfubei_effect", [card]);
-										game.broadcastAll(card => {
-											delete card.storage.sxrmfubei;
-											if (card?.gaintag?.length) {
-												//仅移除非永久标记
-												const tags = card.gaintag.filter(tag => !tag.startsWith("eternal_"));
-												tags.forEach(tag => card.removeGaintag(tag));
-											}
-										}, card);
-									});
-									game.broadcastAll(playerid => ui[`sxrmfubeiShow_${playerid}`]?.updateDialog?.(), playerid);
-								}
+					});
+					return cards;
+				}
+				return [];
+			},
+		},
+		createObserver() {
+			// 重连
+			if (!_status.postReconnect.sxrmfubei) {
+				_status.postReconnect.sxrmfubei = [
+					function (list) {
+						lib.skill.sxrmfubei.createObserver();
+					},
+					[],
+				];
+			}
+			// 监听牌堆
+			ui[`sxrmfubeiUpdate`] = new MutationObserver(mutationsList => {
+				for (const mutation of mutationsList) {
+					if (mutation.type === "childList") {
+						// 新增节点，有场上角色【伏备】插入卡牌至牌堆，添加刀斧手标记
+						mutation.addedNodes.forEach(card => {
+							if (game.hasPlayer(current => current.getStorage("sxrmfubei_effect").includes(card))) {
+								game.broadcastAll(card => {
+									card.addGaintag("visible_sxrmfubei");
+								}, card);
 							}
 						});
-						const config = { childList: true, subtree: false };
-						ui[`sxrmfubeiUpdate_${playerid}`].observe(ui.cardPile, config);
-					};
-					game.broadcastAll(
-						(func, playerid) => {
-							func(playerid);
-						},
-						func,
-						player.playerid
-					);
-				},
-				onremove(player) {
-					const func = playerid => {
-						if (ui[`sxrmfubeiUpdate_${playerid}`]) {
-							ui[`sxrmfubeiUpdate_${playerid}`].disconnect();
-							delete ui[`sxrmfubeiUpdate_${playerid}`];
-						}
-						if (ui[`sxrmfubeiShow_${playerid}`]) {
-							ui[`sxrmfubeiShow_${playerid}`].style.display = "none";
-						}
-					};
-					game.broadcastAll(
-						(func, playerid) => {
-							func(playerid);
-						},
-						func,
-						player.playerid
-					);
-				},
-			},
+						// 移除节点，移除标记和清除记录
+						mutation.removedNodes.forEach(card => {
+							game.filterPlayer(current => current.getStorage("sxrmfubei_effect").includes(card)).forEach(current => current.unmarkAuto("sxrmfubei_effect", [card]));
+							game.broadcastAll(card => {
+								delete card.storage.sxrmfubei;
+								if (card?.gaintag?.length) {
+									card.removeGaintag("visible_sxrmfubei");
+								}
+							}, card);
+						});
+					}
+				}
+			});
+			const config = { childList: true, subtree: false };
+			ui[`sxrmfubeiUpdate`].observe(ui.cardPile, config);
 		},
 		ai: {
 			order: 2,
@@ -1489,6 +1476,22 @@ const skills = {
 				player(player) {
 					if (player.maxHp - player.countCards("h") >= 2) return 1;
 					return -1;
+				},
+			},
+		},
+		group: "sxrmfubei_damage",
+		subSkill: {
+			damage: {
+				audio: "sxrmfubei",
+				trigger: { global: "phaseEnd" },
+				filter(event, player) {
+					return get.is.shownCard(ui.cardPile.childNodes[0]);
+				},
+				forced: true,
+				locked: false,
+				logTarget: "player",
+				async content(event, trigger, player) {
+					await event.targets[0].damage();
 				},
 			},
 		},
@@ -1554,7 +1557,8 @@ const skills = {
 					next.set("prompt", get.prompt(event.skill, target));
 					next.set("prompt2", `弃置两张牌，使${get.translation(target)}受到的伤害值+1`);
 				} else {
-					next.set("prompt", `殚瘁：请弃置两张牌，使${get.translation(target)}受到的伤害值+1`);
+					next.set("prompt", "殚瘁");
+					next.set("prompt2", `请弃置两张牌，使${get.translation(target)}受到的伤害值+1`);
 					next.set("forced", true);
 				}
 				event.result = await next.forResult();
