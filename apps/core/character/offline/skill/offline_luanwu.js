@@ -9,22 +9,17 @@ const skills = {
 		usable: 1,
 		filterCard: { suit: "heart" },
 		filterTarget(card, player, target) {
-			return target != player && target.countCards("h") > player.countCards("h");
+			return target !== player && target.countCards("h") > player.countCards("h");
 		},
 		filter(event, player) {
-			var info = lib.skill.nsyangwu;
-			return (
-				player.hasCards("h", info.filterCard) &&
-				game.hasPlayer(function (target) {
-					return info.filterTarget(null, player, target);
-				})
-			);
+			const info = lib.skill.nsyangwu;
+			return player.hasCards("h", info.filterCard) && game.hasPlayer(target => info.filterTarget(null, player, target));
 		},
 		check(card) {
-			var num = 0;
-			var player = _status.event.player;
+			let num = 0;
+			const player = _status.event.player;
 			for (const current of game.filterPlayer()) {
-				if (current != player && get.attitude(player, current) < 0) {
+				if (current !== player && get.attitude(player, current) < 0) {
 					num = Math.max(num, current.countCards("h") - player.countCards("h"));
 				}
 			}
@@ -56,9 +51,7 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return game.hasPlayer(function (current) {
-				return current.countCards("e") > 0 && current.countCards("e") <= player.countCards("he");
-			});
+			return game.hasPlayer(current => current.countCards("e") > 0 && current.countCards("e") <= player.countCards("he"));
 		},
 		filterCard() {
 			if (ui.selected.targets.length) {
@@ -71,15 +64,11 @@ const skills = {
 		complexSelect: true,
 		complexCard: true,
 		filterTarget(card, player, target) {
-			return target != player && target.countCards("e") > 0 && ui.selected.cards.length == target.countCards("e");
+			return target !== player && target.countCards("e") > 0 && ui.selected.cards.length === target.countCards("e");
 		},
 		check(card) {
-			var player = _status.event.player;
-			if (
-				game.hasPlayer(function (current) {
-					return current != player && current.countCards("e") > 0 && ui.selected.cards.length == current.countCards("e") && get.damageEffect(current, player, player) > 0;
-				})
-			) {
+			const player = _status.event.player;
+			if (game.hasPlayer(current => current !== player && current.countCards("e") > 0 && ui.selected.cards.length === current.countCards("e") && get.damageEffect(current, player, player) > 0)) {
 				return 0;
 			}
 			switch (ui.selected.cards.length) {
@@ -130,7 +119,7 @@ const skills = {
 							return get.damageEffect(target, player, player);
 						}
 						return 0;
-					}
+					},
 				})
 				.forResult();
 		},
