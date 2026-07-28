@@ -67,7 +67,7 @@ const skills = {
 		group: ["sxrmxianger_fail"],
 		subSkill: {
 			fail: {
-				trigger: { player: "sxrmxiangerFail" },
+				trigger: { global: "sxrmxiangerFail" },
 				filter(event, player) {
 					const num = (event.sxrmxiangerMap ?? new Map()).get(player);
 					return typeof num == "number" && num < 2;
@@ -94,8 +94,8 @@ const skills = {
 						}
 					},
 				},
-				onremove: true,
 				charlotte: true,
+				onremove: true,
 			},
 			limit: {
 				charlotte: true,
@@ -104,8 +104,11 @@ const skills = {
 					const targets = game.filterPlayer(target => target.getStorage("sxrmxianger_mark", new Map()).has(player));
 					for (const target of targets) {
 						const map = target.getStorage("sxrmxianger_mark", new Map());
-						map.delele(player);
+						map.delete(player);
 						target.setStorage("sxrmxianger_mark", map, true);
+						if (!map.size) {
+							target.removeSkill("sxrmxianger_mark");
+						}
 					}
 				},
 				intro: { content: "<li>不能使用点数大于6的牌<br><li>下个结束阶段回复#点体力" },
@@ -137,7 +140,7 @@ const skills = {
 						for (const target of game.filterPlayer(target => target.getStorage("sxrmxianger_mark", new Map()).has(player))) {
 							const map = target.getStorage("sxrmxianger_mark", new Map());
 							if (map.has(player)) {
-								map.set(player, map.get(player) + 1);
+								map.set(player, map.get(player) + trigger.num);
 							} else {
 								map.set(player, 0);
 							}
@@ -203,7 +206,7 @@ const skills = {
 			let result = await player
 				.gainPlayerCard({
 					target,
-					prompt: `选择获得${get.translation(target)}至多三张牌`,
+					prompt: `灭虢：请选择获得${get.translation(target)}至多三张牌`,
 					selectButton: [1, 3],
 					position: "he",
 					forced: true,
@@ -233,7 +236,8 @@ const skills = {
 					? { bool: true, targets: game.filterPlayer() }
 					: await target
 							.chooseTarget({
-								prompt: `请选择${get.cnNumber(num)}名角色，${get.translation(player)}的额外回合内无法对这些角色使用牌`,
+								prompt: `${get.translation(player)}对你发动了【灭虢】`,
+								prompt2: `请选择${get.cnNumber(num)}名角色，${get.translation(player)}的额外回合内无法对这些角色使用牌`,
 								selectTarget: num,
 								forced: true,
 								ai(target) {
