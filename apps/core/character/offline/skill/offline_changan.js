@@ -752,7 +752,7 @@ const skills = {
 					},
 					position: "hse",
 					viewAs: { name: links[0][2], nature: links[0][3] },
-					precontent() {
+					async precontent(event, trigger, player) {
 						player.addTempSkill("caqianmu_used");
 						player.markAuto("caqianmu_used", get.type2(event.result.card));
 						player.showCards(event.result.cards);
@@ -1227,7 +1227,7 @@ const skills = {
 				trigger: { player: "recoverBefore" },
 				forced: true,
 				firstDo: true,
-				content() {
+				async content(event, trigger, player) {
 					trigger.cancel();
 				},
 				ai: {
@@ -1407,7 +1407,7 @@ const skills = {
 					filterCard(card) {
 						return card.name == "sha" || get.type(card) == "equip";
 					},
-					precontent() {
+					async precontent(event, trigger, player) {
 						player.addTempSkill("cajingong_benghuai");
 					},
 				};
@@ -1817,7 +1817,7 @@ const skills = {
 				},
 				forced: true,
 				priority: 15,
-				content() {
+				async content(event, trigger, player) {
 					if (trigger.name === "addJudge") {
 						trigger.cancel();
 						game.log(trigger.card, "进入了弃牌堆");
