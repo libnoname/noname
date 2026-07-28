@@ -401,22 +401,23 @@ const cards = {
 			return game.countGroup();
 		},
 		complexTarget: true,
-		contentBefore() {
+		async contentBefore(event, trigger, player) {
+			const { targets } = event;
 			if (!targets.length) {
-				event.finish();
 				return;
 			}
-			var num = game.countPlayer(),
-				cards = get.cards(num);
-			game.cardsGotoOrdering(cards).relatedEvent = event.getParent();
-			var dialog = ui.create.dialog("荆襄盛世", cards, true);
+			const num = game.countPlayer();
+			const cards = get.cards(num);
+			const next = game.cardsGotoOrdering(cards);
+			next.relatedEvent = event.getParent();
+			const dialog = ui.create.dialog("荆襄盛世", cards, true);
 			_status.dieClose.push(dialog);
 			dialog.videoId = lib.status.videoId++;
 			game.addVideo("cardDialog", null, ["荆襄盛世", get.cardsInfo(cards), dialog.videoId]);
 			event.getParent().preResult = dialog.videoId;
 			game.broadcast(
-				function (cards, id) {
-					var dialog = ui.create.dialog("荆襄盛世", cards, true);
+				(cards, id) => {
+					const dialog = ui.create.dialog("荆襄盛世", cards, true);
 					_status.dieClose.push(dialog);
 					dialog.videoId = id;
 				},
@@ -424,82 +425,64 @@ const cards = {
 				dialog.videoId
 			);
 			game.log(event.card, "亮出了", cards);
+			await next;
 		},
-		content() {
-			"step 0";
-			for (var i = 0; i < ui.dialogs.length; i++) {
-				if (ui.dialogs[i].videoId == event.preResult) {
-					event.dialog = ui.dialogs[i];
-					break;
-				}
-			}
-			if (!event.dialog || event.dialog.buttons.length == 0) {
-				event.finish();
+		async content(event, trigger, player) {
+			const { target } = event;
+			const dialog = ui.dialogs.find(dialog => dialog.videoId === event.preResult);
+			if (!dialog || !dialog.buttons.length) {
 				return;
 			}
-			if (event.dialog.buttons.length > 1) {
-				var next = target.chooseButton(true);
-				next.set("ai", button => {
-					let player = _status.event.player,
-						card = button.link,
-						val = get.value(card, player);
-					if (get.tag(card, "recover")) {
-						val += game.countPlayer(target => {
-							return target.hp < 2 && get.attitude(player, target) > 0 && lib.filter.cardSavable(card, player, target);
-						});
-						if (player.hp <= 2 && game.checkMod(card, player, "unchanged", "cardEnabled2", player)) {
-							val *= 2;
+			let card;
+			if (dialog.buttons.length === 1) {
+				card = dialog.buttons[0].link;
+			} else {
+				const result = await target
+					.chooseButton(true)
+					.set("ai", button => {
+						const current = _status.event.player;
+						const card = button.link;
+						let value = get.value(card, current);
+						if (!get.tag(card, "recover")) {
+							return value;
 						}
-					}
-					return val;
-				});
-				next.set("dialog", event.preResult);
-				next.set("closeDialog", false);
-				next.set("dialogdisplay", true);
-			} else {
-				event.directButton = event.dialog.buttons[0];
-			}
-			"step 1";
-			var dialog = event.dialog;
-			var card;
-			if (event.directButton) {
-				card = event.directButton.link;
-			} else {
-				for (var i of dialog.buttons) {
-					if (i.link == result.links[0]) {
-						card = i.link;
-						break;
-					}
-				}
-				if (!card) {
-					card = event.dialog.buttons[0].link;
+						value += game.countPlayer(target => target.hp < 2 && get.attitude(current, target) > 0 && lib.filter.cardSavable(card, current, target));
+						if (current.hp <= 2 && game.checkMod(card, current, "unchanged", "cardEnabled2", current)) {
+							value *= 2;
+						}
+						return value;
+					})
+					.set("dialog", event.preResult)
+					.set("closeDialog", false)
+					.set("dialogdisplay", true)
+					.forResult();
+				const selectedButton = dialog.buttons.find(button => button.link === result.links[0]);
+				if (selectedButton) {
+					card = selectedButton.link;
+				} else {
+					card = dialog.buttons[0].link;
 				}
 			}
-			var button;
-			for (var i = 0; i < dialog.buttons.length; i++) {
-				if (dialog.buttons[i].link == card) {
-					button = dialog.buttons[i];
-					const innerHTML = target.getName(true);
-					game.createButtonCardsetion(innerHTML, button);
-					dialog.buttons.remove(button);
-					break;
-				}
+			const button = dialog.buttons.find(button => button.link === card);
+			if (button) {
+				const innerHTML = target.getName(true);
+				game.createButtonCardsetion(innerHTML, button);
+				dialog.buttons.remove(button);
 			}
-			var capt = get.translation(target) + "选择了" + get.translation(button.link);
+			const capt = `${get.translation(target)}选择了${get.translation(button.link)}`;
+			let gainEvent;
 			if (card) {
-				target.gain(card, "visible");
+				gainEvent = target.gain(card, "visible");
 				target.$gain2(card);
 				game.broadcast(
-					function (card, id, name, capt) {
-						var dialog = get.idDialog(id);
+					(card, id, name, capt) => {
+						const dialog = get.idDialog(id);
 						if (dialog) {
 							dialog.content.firstChild.innerHTML = capt;
-							for (var i = 0; i < dialog.buttons.length; i++) {
-								if (dialog.buttons[i].link == card) {
-									game.createButtonCardsetion(name, dialog.buttons[i]);
-									dialog.buttons.splice(i--, 1);
-									break;
-								}
+							const button = dialog.buttons.find(button => button.link === card);
+							if (button) {
+								game.createButtonCardsetion(name, button);
+								dialog.buttons.remove(button);
 							}
 						}
 					},
@@ -512,35 +495,30 @@ const cards = {
 			dialog.content.firstChild.innerHTML = capt;
 			game.addVideo("dialogCapt", null, [dialog.videoId, dialog.content.firstChild.innerHTML]);
 			game.log(target, "选择了", button.link);
-			game.delay();
-		},
-		contentAfter() {
-			"step 0";
-			event.remained = [];
-			for (var i = 0; i < ui.dialogs.length; i++) {
-				if (ui.dialogs[i].videoId == event.preResult) {
-					var dialog = ui.dialogs[i];
-					dialog.close();
-					_status.dieClose.remove(dialog);
-					if (dialog.buttons.length) {
-						for (var i = 0; i < dialog.buttons.length; i++) {
-							event.remained.push(dialog.buttons[i].link);
-						}
-					}
-					break;
-				}
+			const delayEvent = game.delay();
+			if (gainEvent) {
+				await gainEvent;
 			}
-			game.broadcast(function (id) {
-				var dialog = get.idDialog(id);
+			await delayEvent;
+		},
+		async contentAfter(event, trigger, player) {
+			const remained = [];
+			const dialog = ui.dialogs.find(dialog => dialog.videoId === event.preResult);
+			if (dialog) {
+				dialog.close();
+				_status.dieClose.remove(dialog);
+				remained.push(...dialog.buttons.map(button => button.link));
+			}
+			game.broadcast(id => {
+				const dialog = get.idDialog(id);
 				if (dialog) {
 					dialog.close();
 					_status.dieClose.remove(dialog);
 				}
 			}, event.preResult);
 			game.addVideo("cardDialog", null, event.preResult);
-			"step 1";
-			if (event.remained.length) {
-				player.gain(event.remained, "gain2");
+			if (remained.length) {
+				await player.gain(remained, "gain2");
 			}
 		},
 		//ai简略，待补充
