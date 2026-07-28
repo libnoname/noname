@@ -10494,7 +10494,7 @@ const skills = {
 	},
 	sbliangzhu: {
 		audio: 2,
-		locked: true,
+		forced: true,
 		groupSkill: "shu",
 		trigger: {
 			global: "recoverAfter",
@@ -10510,67 +10510,42 @@ const skills = {
 			}
 			return event.name == "phaseUse" || targets.includes(event.player);
 		},
-		async cost(event, trigger, player) {
-			if (trigger.name == "phaseUse" && !player.isDamaged()) {
-				let cards = [];
-				while (true) {
-					const card = get.cardPile(card => get.type(card) == "equip" && !cards.includes(card));
-					if (card) {
-						cards.push(card);
-					} else {
-						break;
-					}
-				}
-				cards = cards.randomGets(3);
-				if (cards.length) {
-					const result = await player
-						.chooseButtonTarget({
-							createDialog: [`良助：令一名结姻角色获得一张装备牌`, cards],
-							filterTarget(card, player, target) {
-								return target.hasMark("sbjieyin_mark");
-							},
-							forced: true,
-							ai1(button) {
-								return get.value(button.link);
-							},
-							ai2(target) {
-								return get.attitude(get.player(), target);
-							},
-						})
-						.forResult();
-					if (result?.bool && result.links?.length && result.targets?.length) {
-						event.result = {
-							bool: true,
-							cost_data: result.links,
-							targets: result.targets,
-						};
-					}
-				} else {
-					player.chat("没有装备？");
-				}
-			} else {
-				event.result = {
-					bool: true,
-					targets: trigger.name == "phaseUse" ? [player] : trigger.player != player ? [player] : game.filterPlayer(current => current.hasMark("sbjieyin_mark")),
-				};
-			}
-		},
 		async content(event, trigger, player) {
 			if (trigger.name == "phaseUse") {
 				if (!player.isDamaged()) {
-					const {
-						cost_data: [card],
-						targets: [target],
-					} = event;
-					await player.give(card, target);
-					if (target.canEquip(card)) {
-						await target.equip(card);
+					const cards = Array.from(ui.cardPile.childNodes).concat(Array.from(ui.discardPile.childNodes)).filter(card => get.type(card) == "equip").randomGets(3);
+					if (cards.length) {
+						const result = await player
+							.chooseButtonTarget({
+								createDialog: [`良助：令一名结姻角色获得一张装备牌`, cards],
+								filterTarget(card, player, target) {
+									return target.hasMark("sbjieyin_mark");
+								},
+								forced: true,
+								ai1(button) {
+									return get.value(button.link);
+								},
+								ai2(target) {
+									return get.attitude(get.player(), target);
+								},
+							})
+							.forResult();
+						if (result?.bool && result.links?.length && result.targets?.length) {
+							const card = result.links[0],
+								target = result.targets[0];
+							await target.gain({ cards: [card], giver: player, animate: "draw" });
+							if (target.canEquip(card)) {
+								await target.equip(card);
+							}
+						}
+					} else {
+						player.chat("没有装备？");
 					}
 				} else {
 					await player.recover();
 				}
 			} else {
-				const targets = event.targets;
+				const targets = trigger.player != player ? [player] : game.filterPlayer(current => current.hasMark("sbjieyin_mark"));
 				await game.asyncDraw(targets);
 			}
 		},
@@ -10597,15 +10572,14 @@ const skills = {
 					return skill.endsWith("_achieve") && player.awakenedSkills.includes(sourceSkill) && info?.dutySkill;
 				}
 			});
-			const target = bool ? event.player : player;
-			const evt = event.getl(target);
-			if (evt?.player === target) {
-				return evt.es?.length;
-			}
-			return false;
-		},
-		filter(event, player) {
-			return player == event.player || event.player.hasMark("sbjieyin_mark");
+			const cards = [];
+			game.countPlayer(current => {
+				if(bool && current.hasMark("sbjieyin_mark") || current == player) {
+					const evt = event.getl?.(current);
+					cards.addArray(evt?.es);
+				}
+			})
+			return cards.length;
 		},
 		async content(event, trigger, player) {
 			await player.draw({ num: 2 });
@@ -10640,7 +10614,7 @@ const skills = {
 					})
 					.forResult();
 				if (result?.bool && result?.targets?.length) {
-					await player.discardPlayerCard(result.targets[0], "ej", true);
+					await player.discardPlayerCard({ target: result.targets[0], position: "ej", forced: true });
 				}
 			}
 			if (player.storage.sbxiaoji_hujia && player.countRoundHistory("useSkill", evt => evt.skill == "sbxiaoji") == 1) {

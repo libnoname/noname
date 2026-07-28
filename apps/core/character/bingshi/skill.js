@@ -5088,6 +5088,7 @@ const skills = {
 					const target = result.targets[0];
 					player.line(target);
 					target.addSkill(event.name + "_discard");
+					target.addMark(event.name + "_discard", 1, false);
 				}
 			}
 			if (link != "discard" && _status.currentPhase?.isIn()) {
@@ -5104,19 +5105,20 @@ const skills = {
 				trigger: { player: "useCardAfter" },
 				forced: true,
 				charlotte: true,
+				onremove: true,
 				async content(event, trigger, player) {
-					player.removeSkill(event.name);
-					if (player.countDiscardableCards(player, "he")) {
+					if (player.hasDiscardableCards(player, "he")) {
 						await player.chooseToDiscard({
 							position: "he",
 							forced: true,
+							selectCard: player.countMark(event.name),
 						});
 					}
+					player.removeSkill(event.name);
 				},
 				intro: {
-					content: "下次使用牌后弃置一张牌",
+					content: "下次使用牌后弃置#张牌",
 				},
-				mark: true,
 			},
 		},
 	},
