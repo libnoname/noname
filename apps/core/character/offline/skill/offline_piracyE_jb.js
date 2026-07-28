@@ -184,7 +184,7 @@ const skills = {
 				},
 				forced: true,
 				locked: false,
-				content() {
+				async content(event, trigger, player) {
 					game.log(player, "拼点牌点数视为", "#yK");
 					if (player == trigger.player) {
 						trigger.num1 = 13;
