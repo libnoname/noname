@@ -9683,6 +9683,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 		}
 	},
 	useCard: [
+		// step 0
 		async (event, trigger, player) => {
 			const { cards, card, targets, num } = event;
 			if (!event.card) {
@@ -9935,6 +9936,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			}
 			await event.trigger("useCard0");
 		},
+		// step 1
 		async (event, trigger, player) => {
 			const { cards, card, targets, num } = event;
 			if (event.animate != false && event.line != false && !event.hideTargets) {
@@ -10011,14 +10013,17 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			}
 			await event.trigger("useCard1");
 		},
+		// step 2
 		async (event, trigger, player) => {
 			const { cards, card, targets, num } = event;
 			await event.trigger("yingbian");
 		},
+		// step 3
 		async (event, trigger, player) => {
 			const { cards, card, targets, num } = event;
 			await event.trigger("useCard2");
 		},
+		// step 4
 		async (event, trigger, player) => {
 			const { cards, card, targets, num } = event;
 			await event.trigger("useCard");
@@ -10031,6 +10036,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				}, event.id);
 			};
 		},
+		// step 5
 		async (event, trigger, player) => {
 			const { cards, card, targets, num } = event;
 			event.sortTarget = (animate, sort) => {
@@ -10111,12 +10117,15 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				}
 			};
 		},
+		// step 6
 		async (event, trigger, player) => {
 			await event._triggerTo("useCardToPlayer", "triggeredTargets1", "isFirstTarget1");
 		},
+		// step 7
 		async (event, trigger, player) => {
 			await event._triggerTo("useCardToTarget", "triggeredTargets2", "isFirstTarget2");
 		},
+		// step 8
 		async (event, trigger, player) => {
 			const { cards, card, targets, num } = event;
 			const info = get.info(event.card, false);
@@ -10131,12 +10140,15 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				}
 			}
 		},
+		// step 9
 		async (event, trigger, player) => {
 			await event._triggerTo("useCardToPlayered", "triggeredTargets3", "isFirstTarget3");
 		},
+		// step 10
 		async (event, trigger, player) => {
 			await event._triggerTo("useCardToTargeted", "triggeredTargets4", "isFirstTarget4", true);
 		},
+		// step 11
 		async (event, trigger, player) => {
 			const { cards, card, targets, num, target } = event;
 			if (event.all_excluded) {
@@ -10189,6 +10201,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				await next;
 			}
 		},
+		// step 12
 		async (event, trigger, player) => {
 			const { cards, card, targets, num } = event;
 			if (event.all_excluded) {
@@ -10285,6 +10298,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			}
 			event._result = await next.forResult();
 		},
+		// step 13
 		async (event, trigger, player) => {
 			const { cards, card, targets, num } = event;
 			if (event.all_excluded) {
@@ -10295,6 +10309,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				event.goto(12);
 			}
 		},
+		// step 14
 		async (event, trigger, player) => {
 			const { cards, card, targets, num } = event;
 			if (event.all_excluded) {
@@ -10316,6 +10331,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				await next;
 			}
 		},
+		// step 15
 		async (event, trigger, player) => {
 			const { cards, card, targets, num } = event;
 			if (event.all_excluded) {
@@ -10330,6 +10346,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				event.goto(11);
 			}
 		},
+		// step 16
 		async (event, trigger, player) => {
 			const { cards, card, targets, num } = event;
 			if (event.postAi) {
@@ -10347,6 +10364,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				event.finish();
 			}
 		},
+		// step 17
 		async (event, trigger, player) => {
 			const { cards, card, targets, num } = event;
 			event._oncancel();
