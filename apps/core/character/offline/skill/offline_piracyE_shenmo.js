@@ -13,12 +13,12 @@ const skills = {
 		initGroup: "shen",
 		trigger: { player: "phaseBegin" },
 		filter(event, player) {
-			return (player.getHp() % 2 == 1 && player.countMark("smqihua_shen") > player.countMark("smqihua_mo")) || (player.getHp() % 2 == 0 && player.countMark("smqihua_shen") < player.countMark("smqihua_mo"));
+			return (player.getHp() % 2 === 1 && player.countMark("smqihua_shen") > player.countMark("smqihua_mo")) || (player.getHp() % 2 === 0 && player.countMark("smqihua_shen") < player.countMark("smqihua_mo"));
 		},
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			const num = player.getHp();
-			if (player.getHp() % 2 == 1 && player.countMark("smqihua_shen") > player.countMark("smqihua_mo")) {
+			if (player.getHp() % 2 === 1 && player.countMark("smqihua_shen") > player.countMark("smqihua_mo")) {
 				player.changeSkin({ characterName: "sm_shenmo_sunquan" }, "sm_shen_sunquan");
 				await player.changeSkills(["smshenjiang", "smshengshou", "smshifeng"], ["smsibian", "smqihua", "smdue"]);
 				await player.changeGroup("shen");
@@ -46,12 +46,12 @@ const skills = {
 			if (!event.num || !event.player?.isIn()) {
 				return false;
 			}
-			return (event.player != player && !player.getStorage("smqihua_used").includes("other")) || (player == event.player && !player.getStorage("smqihua_used").includes("me"));
+			return (event.player !== player && !player.getStorage("smqihua_used").includes("other")) || (player === event.player && !player.getStorage("smqihua_used").includes("me"));
 		},
 		async cost(event, trigger, player) {
 			const target = trigger.player;
 			const num = trigger.num;
-			if (player != target) {
+			if (player !== target) {
 				event.result = await player
 					.chooseBool({
 						prompt: get.prompt(event.skill, target),
@@ -87,14 +87,14 @@ const skills = {
 		async content(event, trigger, player) {
 			const target = trigger.player;
 			const num = trigger.num;
-			player.addTempSkill(event.name + "_used");
-			player.markAuto(event.name + "_used", [player == target ? "me" : "other"]);
-			if (player != target) {
+			player.addTempSkill(`${event.name}_used`);
+			player.markAuto(`${event.name}_used`, [player === target ? "me" : "other"]);
+			if (player !== target) {
 				await player.loseHp(num);
 				trigger.cancel();
-				player.addMark(event.name + "_shen", num);
+				player.addMark(`${event.name}_shen`, num);
 			} else {
-				player.addMark(event.name + "_mo", num);
+				player.addMark(`${event.name}_mo`, num);
 				await event.targets[0].loseHp(num);
 			}
 		},
@@ -118,8 +118,8 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			const num1 = player.countMark("smqihua_mo"),
-				num2 = player.countMark("smqihua_shen");
+			const num1 = player.countMark("smqihua_mo");
+			const num2 = player.countMark("smqihua_shen");
 			player.clearMark("smqihua_mo");
 			player.clearMark("smqihua_shen");
 			if (num1 > 0) {
@@ -154,7 +154,7 @@ const skills = {
 			return player.countMark("smqihua_shen");
 		},
 		filter(event, player) {
-			if (player != _status.currentPhase) {
+			if (player !== _status.currentPhase) {
 				return false;
 			}
 			return game.hasPlayer(current => get.info("smshengshou").filterTarget(null, player, current));
@@ -244,9 +244,9 @@ const skills = {
 					const history = event.player.getHistory("useCard");
 					let num = 0;
 					let suit = false;
-					for (let i = 0; i < history.length; i++) {
-						var suit2 = get.suit(history[i].card);
-						if (suit && suit != suit2) {
+					for (const evt of history) {
+						const suit2 = get.suit(evt.card);
+						if (suit && suit !== suit2) {
 							return false;
 						}
 						suit = suit2;
@@ -300,7 +300,7 @@ const skills = {
 				.map(evt => get.name(evt.card))
 				.toUniqued(),
 		hiddenCard(player, name) {
-			if (player != _status.currentPhase) {
+			if (player !== _status.currentPhase) {
 				return false;
 			}
 			if (["equip", "delay"].includes(get.type(name))) {
@@ -315,7 +315,7 @@ const skills = {
 			return Math.max(1, player.countMark("smqihua_mo") - player.maxHp);
 		},
 		filter(event, player) {
-			if (player != _status.currentPhase) {
+			if (player !== _status.currentPhase) {
 				return false;
 			}
 			return get.inpileVCardList(info => {
@@ -350,7 +350,7 @@ const skills = {
 				return ui.create.dialog("魇噬", [list, "vcard"]);
 			},
 			check(button) {
-				if (get.event().getParent().type != "phase") {
+				if (get.event().getParent().type !== "phase") {
 					return 1;
 				}
 				return get.event().player.getUseValue({
@@ -375,7 +375,7 @@ const skills = {
 				};
 			},
 			prompt(links, player2) {
-				return "视为使用一张" + get.translation(links[0][3] || "") + "【" + get.translation(links[0][2]) + "】";
+				return `视为使用一张${get.translation(links[0][3] || "")}【${get.translation(links[0][2])}】`;
 			},
 		},
 		ai: {
@@ -397,7 +397,7 @@ const skills = {
 			if (trigger.cards?.length) {
 				await player.modedDiscard(trigger.cards);
 			}
-			const choices = ["baihong", "qingming", "bixie", "zidian", "baili", "liuxing"].removeArray(player.getStorage(event.name + "_effect"));
+			const choices = ["baihong", "qingming", "bixie", "zidian", "baili", "liuxing"].removeArray(player.getStorage(`${event.name}_effect`));
 			if (!choices.length) {
 				return;
 			}
@@ -425,7 +425,7 @@ const skills = {
 								ai(button) {
 									const player = get.player();
 									if (!player.getStorage("smpoyu_effect").includes("baili")) {
-										return button.link == "baili";
+										return button.link === "baili";
 									}
 									return 1 + Math.random();
 								},
@@ -433,8 +433,8 @@ const skills = {
 							.forResult()
 					: { bool: true, links: choices };
 			if (result?.bool && result.links?.length) {
-				player.addSkill(event.name + "_effect");
-				player.markAuto(event.name + "_effect", result.links);
+				player.addSkill(`${event.name}_effect`);
+				player.markAuto(`${event.name}_effect`, result.links);
 			}
 		},
 		subSkill: {
@@ -524,10 +524,10 @@ const skills = {
 						trigger.effectCount++;
 						game.log(trigger.card, "额外结算一次");
 					}
-					if (storage.includes("liuxing") && trigger.addCount != false) {
+					if (storage.includes("liuxing") && trigger.addCount !== false) {
 						trigger.addCount = false;
-						const stat = player.getStat().card,
-							name = trigger.card.name;
+						const stat = player.getStat().card;
+						const name = trigger.card.name;
 						if (typeof stat[name] === "number") {
 							stat[name]--;
 						}
