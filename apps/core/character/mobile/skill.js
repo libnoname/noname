@@ -1106,7 +1106,22 @@ const skills = {
 					});
 			}
 		},
+		group: "rejuzhan_init",
 		subSkill: {
+			init: {
+				audio: "rejuzhan",
+				forced: true,
+				trigger: {
+					player: "enterGame",
+					global: "phaseBefore",
+				},
+				filter(event, player) {
+					return (event.name != "phase" || game.phaseNumber == 0) && player.group == "shu" && !player.storage.rejuzhan;
+				},
+				async content(event, trigger, player) {
+					player.changeZhuanhuanji("rejuzhan");
+				},
+			},
 			sha: {
 				charlotte: true,
 				marktext: "杀",
@@ -32450,6 +32465,7 @@ const skills = {
 	},
 	mbjieyuan: {
 		audio: ["jieyuan_more.mp3", "jieyuan_less.mp3"],
+		logAudio: (event, player, name) => name == "damageBegin1" ? "jieyuan_more.mp3" : "jieyuan_less.mp3",
 		trigger: {
 			source: "damageBegin1",
 			player: "damageBegin3",
@@ -32518,7 +32534,6 @@ const skills = {
 			const colorText = isSource ? "黑" : "红";
 			const discardNum = 1;
 			const effectNum = beishui ? 2 : 1;
-			const canDiscard = player.countDiscardableCards(player, "he", card => get.color(card) === color) >= discardNum;
 			const isOption1 = control.startsWith("弃" + colorText + "牌");
 			const isOption2 = control.startsWith("获得" + colorText + "牌");
 			const isBeishui = control === "背水";
@@ -32531,6 +32546,7 @@ const skills = {
 					await player.gain({ cards: toGain, animate: "draw2" });
 				}
 			}
+			const canDiscard = player.countDiscardableCards(player, "he", card => get.color(card) === color) >= discardNum;
 			if (isOption1 || isBeishui) {
 				if (canDiscard) {
 					const result = await player
