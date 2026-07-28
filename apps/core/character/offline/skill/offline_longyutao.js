@@ -198,7 +198,7 @@ const skills = {
 						.set("ai", target => get.effect(target, _status.event.getTrigger().card, _status.event.player))
 						.forResult();
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.targets.addArray(event.targets);
 				},
 			},
@@ -541,7 +541,7 @@ const skills = {
 			return !game.hasNature(event.card) && game.countPlayer(target => event.player.inRange(target)) >= 3;
 		},
 		forced: true,
-		content() {
+		async content(event, trigger, player) {
 			trigger.cancel();
 		},
 		ai: {
