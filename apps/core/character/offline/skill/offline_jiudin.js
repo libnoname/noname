@@ -960,48 +960,49 @@ const skills = {
 		audio: "sbjianxiong",
 		inherit: "sbjianxiong",
 		filter(event, player) {
-			return (get.itemtype(event.cards) == "cards" && event.cards.some(i => get.position(i, true) == "o")) || 2 - player.countMark("sbjianxiong") > 0;
+			return (get.itemtype(event.cards) === "cards" && event.cards.some(i => get.position(i, true) === "o")) || 2 - player.countMark("sbjianxiong") > 0;
 		},
 		prompt2(event, player) {
-			var gain = get.itemtype(event.cards) == "cards" && event.cards.some(i => get.position(i, true) == "o"),
-				draw = 2 - player.countMark("sbjianxiong");
-			var str = "";
+			const gain = get.itemtype(event.cards) === "cards" && event.cards.some(i => get.position(i, true) === "o");
+			const draw = 2 - player.countMark("sbjianxiong");
+			let str = "";
 			if (gain) {
-				str += "获得" + get.translation(event.cards);
+				str += `获得${get.translation(event.cards)}`;
 			}
 			if (gain && draw > 0) {
 				str += "并";
 			}
 			if (draw > 0) {
-				str += "摸" + get.cnNumber(draw) + "张牌";
+				str += `摸${get.cnNumber(draw)}张牌`;
 			}
-			if (player.countMark("sbjianxiong")) {
+			if (player.hasMark("sbjianxiong")) {
 				str += "，然后可以弃1枚“治世”";
 			}
 			return str;
 		},
-		content() {
-			"step 0";
-			if (get.itemtype(trigger.cards) == "cards" && trigger.cards.some(i => get.position(i, true) == "o")) {
-				player.gain(trigger.cards, "gain2");
+		async content(event, trigger, player) {
+			const nextEvents = [];
+			if (get.itemtype(trigger.cards) === "cards" && trigger.cards.some(i => get.position(i, true) === "o")) {
+				nextEvents.push(player.gain(trigger.cards, "gain2"));
 			}
-			var num = player.countMark("sbjianxiong");
+			const num = player.countMark("sbjianxiong");
 			if (2 - num > 0) {
-				player.draw(2 - num, "nodelay");
+				nextEvents.push(player.draw(2 - num, "nodelay"));
+			}
+			for (const next of nextEvents) {
+				await next;
 			}
 			if (!num) {
-				event.finish();
+				return;
 			}
-			"step 1";
-			player.chooseBool("是否弃1枚“治世”？").set("ai", () => {
-				var player = _status.event.player,
-					current = _status.currentPhase;
-				if (get.distance(current, player, "absolute") > 3 && player.hp <= 2) {
-					return true;
-				}
-				return false;
-			});
-			"step 2";
+			const result = await player
+				.chooseBool("是否弃1枚“治世”？")
+				.set("ai", () => {
+					const player = _status.event.player;
+					const current = _status.currentPhase;
+					return get.distance(current, player, "absolute") > 3 && player.hp <= 2;
+				})
+				.forResult();
 			if (result.bool) {
 				player.removeMark("sbjianxiong", 1);
 			}
@@ -1014,28 +1015,29 @@ const skills = {
 					if (player.hasSkillTag("jueqing", false, target)) {
 						return [1, -1];
 					}
-					if (get.tag(card, "damage") && player != target) {
-						var cards = card.cards,
-							evt = _status.event;
-						if (evt.player == target && card.name == "damage" && evt.getParent().type == "card") {
-							cards = evt.getParent().cards.filterInD();
-						}
-						if (target.hp <= 1) {
-							return;
-						}
-						if (get.itemtype(cards) != "cards") {
-							return;
-						}
-						for (var i of cards) {
-							if (get.name(i, target) == "tao") {
-								return [1, 4.5];
-							}
-						}
-						if (get.value(cards, target) >= 7 + target.getDamagedHp()) {
-							return [1, 2];
-						}
-						return [1, 0.55 + 0.05 * Math.max(0, 2 - target.countMark("sbjianxiong"))];
+					if (!get.tag(card, "damage") || player === target) {
+						return;
 					}
+					let cards = card.cards;
+					const evt = _status.event;
+					if (evt.player === target && card.name === "damage" && evt.getParent().type === "card") {
+						cards = evt.getParent().cards.filterInD();
+					}
+					if (target.hp <= 1) {
+						return;
+					}
+					if (get.itemtype(cards) !== "cards") {
+						return;
+					}
+					for (const current of cards) {
+						if (get.name(current, target) === "tao") {
+							return [1, 4.5];
+						}
+					}
+					if (get.value(cards, target) >= 7 + target.getDamagedHp()) {
+						return [1, 2];
+					}
+					return [1, 0.55 + 0.05 * Math.max(0, 2 - target.countMark("sbjianxiong"))];
 				},
 			},
 		},
