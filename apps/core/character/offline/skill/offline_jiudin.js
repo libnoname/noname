@@ -86,7 +86,7 @@ const skills = {
 		},
 		logTarget: () => _status.currentPhase,
 		hiddenSkill: true,
-		content() {
+		async content(event, trigger, player) {
 			const next = game.createEvent("jdyanxi", false);
 			next.player = player;
 			next.target = _status.currentPhase;
@@ -621,7 +621,7 @@ const skills = {
 					check(card) {
 						return 6 / Math.max(1, get.value(card));
 					},
-					precontent() {
+					async precontent(event, trigger, player) {
 						player.addTempSkill("jdlongdan_draw");
 					},
 				};
@@ -849,7 +849,7 @@ const skills = {
 			return event.card.name == "tiesuo" && !event.target.isLinked() && event.target.countCards("he");
 		},
 		direct: true,
-		content() {
+		async content(event, trigger, player) {
 			const target = trigger.target;
 			player.discardPlayerCard(target, "he", get.prompt("jdlianhuan", target)).logSkill = ["jdlianhuan", target];
 		},
@@ -908,7 +908,7 @@ const skills = {
 				},
 				forced: true,
 				locked: false,
-				content() {
+				async content(event, trigger, player) {
 					player.gain(
 						player
 							.getHistory("lose", evt => {
@@ -1266,9 +1266,9 @@ const skills = {
 				delay: 0,
 				prompt: "将任意张“星”置于牌堆顶",
 				allowChooseAll: true,
-				content() {
-					player.loseToDiscardpile(cards, ui.cardPile, "insert").log = false;
-					game.log(player, "将", cards, "置于了牌堆顶");
+				async content(event, trigger, player) {
+					player.loseToDiscardpile(event.cards, ui.cardPile, "insert").log = false;
+					game.log(player, "将", event.cards, "置于了牌堆顶");
 				},
 			},
 		},
@@ -1304,7 +1304,7 @@ const skills = {
 	jdsbpaoxiao: {
 		audio: "sbpaoxiao",
 		inherit: "sbpaoxiao",
-		content() {
+		async content(event, trigger, player) {
 			if (!trigger.card.storage) {
 				trigger.card.storage = {};
 			}
@@ -1631,7 +1631,7 @@ const skills = {
 			const evt = event.getParent(2);
 			return evt.name == "wanjian" && evt.getParent().player == player && event.player != player && event.player.countCards("h") > player.countCards("h") && player.countCards("h") < player.getHp();
 		},
-		precontent() {
+		async precontent(event, trigger, player) {
 			player.addTempSkill("jdsbluanji_used", "phaseUseAfter");
 		},
 		subSkill: {
@@ -1809,8 +1809,8 @@ const skills = {
 				},
 				forced: true,
 				popup: false,
-				content() {
-					game.countPlayer(current => current.removeSkill("jdsbliuli_dangxian"));
+				async content(event, trigger, player) {
+					game.filterPlayer().forEach(current => current.removeSkill("jdsbliuli_dangxian"));
 					trigger.targets[0].addSkill("jdsbliuli_dangxian");
 				},
 			},
@@ -1821,7 +1821,7 @@ const skills = {
 				mark: true,
 				marktext: "流",
 				intro: { content: "回合开始时，执行一个额外的出牌阶段" },
-				content() {
+				async content(event, trigger, player) {
 					player.removeSkill(event.name);
 					trigger.phaseList.splice(trigger.num, 0, `phaseUse|${event.name}`);
 				},
@@ -2517,7 +2517,7 @@ const skills = {
 				},
 				forced: true,
 				popup: false,
-				content() {
+				async content(event, trigger, player) {
 					const next = player.insertPhase();
 					delete next.skill;
 				},
