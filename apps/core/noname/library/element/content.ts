@@ -10365,7 +10365,26 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 					}
 				}
 				event.goto(11);
+				return;
 			}
+			await event.trigger("useCardEffectEnd");
+			if (event.effectedCount >= event.effectCount) {
+				return;
+			}
+
+			event._playUseCardAnimation();
+			// 等待重复播放的使用牌动画
+			const info = get.info(event.card, false);
+			if (!info.nodelay && event.animate != false && event.delayx !== false) {
+				if (event.waitingForTransition) {
+					_status.waitingForTransition = event.waitingForTransition;
+					game.pause();
+				} else {
+					game.delayx();
+				}
+			}
+
+			event.goto(11);
 		},
 		// step 16
 		async (event, trigger, player) => {
