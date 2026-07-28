@@ -9819,13 +9819,15 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 					);
 				}
 				if (lib.config.sync_speed && throw_cards[0] && throw_cards[0].clone) {
-					const waitingForTransition = get.time();
+					const waitingForTransition = get.id();
 					event.waitingForTransition = waitingForTransition;
 					throw_cards[0].clone.listenTransition(() => {
-						if (_status.waitingForTransition == waitingForTransition && _status.paused) {
+						if (_status.waitingForTransition === waitingForTransition && _status.paused) {
 							game.resume();
 						}
-						delete event.waitingForTransition;
+						if (event.waitingForTransition === waitingForTransition) {
+							delete event.waitingForTransition;
+						}
 					});
 				}
 			};
