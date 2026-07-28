@@ -36,6 +36,7 @@ const characters = {
 		group: "shu",
 		hp: 4,
 		skills: ["rejuzhan"],
+		doubleGroup: ["shu", "qun"],
 	},
 	mb_gaoxiang: {
 		sex: "male",

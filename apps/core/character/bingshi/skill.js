@@ -4710,7 +4710,7 @@ const skills = {
 					if (typeof record === "number") {
 						player.logSkill("mbxiugeng", null, null, null, [player.countCards("h") >= record ? 4 : 3]);
 						if (player.countCards("h") <= record) {
-							await player.draw({ num: 2 });
+							await player.draw({ num: 2, nodelay: true });
 						}
 						if (player.countCards("h") >= record) {
 							player.addSkill("mbxiugeng_handcard");
