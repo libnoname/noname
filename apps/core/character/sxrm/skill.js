@@ -950,83 +950,88 @@ const skills = {
 	sxrmlanjiao: {
 		audio: 2,
 		enable: "phaseUse",
+		filter(event, player) {
+			return game.hasPlayer(current => get.info("sxrmlanjiao").filterTarget(null, player, current));
+		},
 		filterTarget(card, player, target) {
-			return target != player && !player.getStorage("sxrmlanjiao_used")?.targets?.includes(target) && target.countCards("h") >= 2;
+			return target != player && !player.getStorage("sxrmlanjiao_used").includes(target) && target.countCards("h") >= 2;
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			let cards;
-			while (1) {
-				if (!target.isIn() || target.countCards("h") < 2) {
-					break;
-				}
-				cards = await player
+			player.addTempSkill(event.name + "_used", { player: "phaseUseEnd" });
+			player.markAuto(event.name + "_used", [target]);
+			event.showCards ??= [];
+			while (true) {
+				let result = await player
 					.choosePlayerCard({
+						prompt: `揽娇：展示并获得${get.translation(target)}两张手牌`,
+						forced: true,
 						target,
 						position: "h",
 						selectButton: 2,
 					})
-					.forResult("cards");
-				await player.showCards(cards, `${get.translation(player)}对${get.translation(target)}发动了【揽娇】`);
-				let rechoose = await target
-					.chooseBool({
-						prompt: `是否失去一点体力并摸一张牌，令${get.translation(player)}重新选择？`,
-						ai: () => {
-							const player = get.player(),
-								cards = get.event().cards;
-							return player.hp > 3 && !cards.some(i => get.color(i) == "red");
-						},
-					})
-					.set("cards", cards)
-					.forResult("bool");
-				if (rechoose) {
-					await target.draw();
-					await target.loseHp();
+					.forResult();
+				if (result?.bool) {
+					const { cards } = result;
+					event.showCards = cards;
+					await player.showCards(cards, `${get.translation(player)}发动了【揽娇】`);
+					result = await target
+						.chooseBool({
+							ai() {
+								const { player, cards } = get.event();
+								return (player.hp > 3 || get.effect(player, { name: "losehp" }, player, player) > 4) && !cards.some(card => get.color(card) == "red");
+							},
+							cards,
+						})
+						.set("createDialog", [`###${get.translation(player)}对你发动了【揽娇】###你可以失去1点体力并摸一张牌，令${get.translation(player)}重新选择展示的手牌`, cards])
+						.forResult();
+					if (!result?.bool) {
+						break;
+					} else {
+						await target.draw();
+						await target.loseHp();
+					}
 				} else {
 					break;
 				}
 			}
-			if (!cards?.length || !target.isIn()) {
-				return;
+			if (get.itemtype(event.showCards) == "cards") {
+				await player.gain(event.showCards, target, "giveAuto");
+				const suits = event.showCards.map(card => get.suit(card, false)).toUniqued();
+				const skill = event.name + "_mark";
+				player.addTempSkill(skill);
+				player.markAuto(skill, suits);
+				player.addTip(
+					skill,
+					get.translation(skill) +
+						player
+							.getStorage(skill)
+							.sort((a, b) => lib.suit.indexOf(b) - lib.suit.indexOf(a))
+							.reduce((str, suit) => str + get.translation(suit), "")
+				);
 			}
-			player.gain(cards, target, "give");
-			player.addTempSkill("sxrmlanjiao_used");
-			if (!player.storage["sxrmlanjiao_used"]) {
-				player.storage["sxrmlanjiao_used"] = {
-					targets: [],
-					suits: [],
-				};
-			}
-			player.storage["sxrmlanjiao_used"].targets.add(target);
-			cards.forEach(i => {
-				player.storage["sxrmlanjiao_used"].suits.add(get.suit(i));
-			});
-			let suits = player.storage["sxrmlanjiao_used"].suits;
-			if (suits.includes("heart") && suits.includes("diamond")) {
+			const suits = game.getGlobalHistory("everything", evt => evt.name == event.name && evt.player == player && get.itemtype(evt.showCards) == "cards").flatMap(evt => evt.showCards.map(card => get.suit(card, false)));
+			if (["heart", "diamond"].every(suit => suits.includes(suit))) {
 				player.tempBanSkill(event.name);
 			}
 		},
 		ai: {
 			order: 8,
-			result: {
-				target: -1,
-			},
+			result: { target: -1 },
 		},
 		subSkill: {
 			used: {
 				charlotte: true,
-				mark: true,
-				intro: {
-					content(storage, player) {
-						if (!storage) return "";
-						let { targets, suits } = storage;
-						let str1 = targets.map(i => get.translation(i)).join("、"),
-							str2 = suits.map(i => get.translation(i)).join("、");
-						return `本回合已指定过的目标：${str1}<br>本回合获得过的花色：${str2}`;
-					},
+				onremove: true,
+				intro: { content: "本阶段已将$置于铜雀台" },
+			},
+			mark: {
+				charlotte: true,
+				onremove(player, skill) {
+					delete player.storage[skill];
+					player.removeTip(skill);
 				},
-				sub: true,
-				sourceSkill: "sxrmlanjiao",
+				intro: { content: "本回合已因【揽矫】获得花色：$" },
 			},
 		},
 	},

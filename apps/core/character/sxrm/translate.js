@@ -139,7 +139,7 @@ const translates = {
 	sxrm_chen_caocao: "嗔曹操",
 	sxrm_chen_caocao_prefix: "嗔",
 	sxrmlanjiao: "揽娇",
-	sxrmlanjiao_info: "出牌阶段对每名角色限一次，你可以展示一名其他角色两张手牌，然后你获得展示的牌；其可以在你展示这些牌时失去1点体力并摸一张牌，令你重新展示。若你一回合内因此获得过♥和♦牌，此技能本回合失效。",
+	sxrmlanjiao_info: "出牌阶段每名角色限一次，你可以展示一名其他角色两张手牌，然后你获得展示的牌；其可以在你展示这些牌时失去1点体力并摸一张牌，令你重新选择展示的手牌。若你一回合内因此获得过♥和♦牌，此技能本回合失效。",
 	sxrm_zhugeliang: "嗔诸葛亮",
 	sxrm_zhugeliang_prefix: "嗔",
 	sxrmbingqu: "并驱",
