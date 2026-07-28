@@ -1951,7 +1951,7 @@ const skills = {
 			advent: {
 				trigger: { global: "gameDrawBegin" },
 				forced: true,
-				content() {
+				async content(event, trigger, player) {
 					const me = player,
 						numx = trigger.num;
 					trigger.num = function (player) {
