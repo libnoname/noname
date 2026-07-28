@@ -345,7 +345,7 @@ const cards = {
 				target: (player, target, card) => get.equipResult(player, target, card),
 			},
 		},
-		onLose() {
+		async onLose({ player }) {
 			if (player.getStat().skill.chunqiubi_skill) {
 				delete player.getStat().skill.chunqiubi_skill;
 			}
