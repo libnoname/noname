@@ -71,21 +71,23 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filterTarget(card, player, target) {
-			return player != target;
+			return player !== target;
 		},
-		content() {
-			"step 0";
-			target.viewHandcards(player);
-			"step 1";
-			if (!target.countCards("h")) {
-				event.finish();
-			} else {
-				player.chooseCardButton(target, target.getCards("h"));
+		async content(event, trigger, player) {
+			const { target } = event;
+			await target.viewHandcards(player);
+			if (!target.hasCards("h")) {
+				return;
 			}
-			"step 2";
-			if (result.bool) {
-				target.discard(result.links[0]);
+			const result = await player
+				.chooseCardButton({
+					cards: target.getCards("h"),
+				})
+				.forResult();
+			if (!result.bool || !result.links?.length) {
+				return;
 			}
+			await target.discard(result.links[0]);
 		},
 		ai: {
 			order: 11,
