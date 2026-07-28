@@ -1573,73 +1573,65 @@ const skills = {
 		filter(event, player) {
 			return (
 				game.countPlayer(current => {
-					return player != current && current.countGainableCards(player, "he");
+					return player != current && current.hasGainableCards(player, "he");
 				}) >= 2
 			);
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget({
-					prompt: "是否获得两名其他角色各一张牌？",
-					prompt2: get.translation("sxrmzhaduo_info"),
+					prompt: get.prompt2(event.skill),
 					selectTarget: 2,
-					filterTarget: (card, player, target) => {
-						return player != target && target.countGainableCards(player, "he");
+					filterTarget(card, player, target) {
+						return player != target && target.hasGainableCards(player, "he");
 					},
-					ai: target => {
+					ai(target) {
 						const player = get.player();
-						return -get.attitude(player, target);
+						const eff1 = get.effect(target, { name: "guohe_copy2" }, player, player);
+						if (!ui.selected.targets.length) {
+							return (
+								eff1 +
+								get.effect(target, { name: "sha" }, player, player) +
+								target.getSkills(null, false, false).filter(skill => {
+									const info = get.info(skill);
+									return info?.ai && (info.ai.maixie || info.ai.maixie_hp || info.ai.maixie_defend);
+								}).length *
+									3
+							);
+						}
+						const target1 = ui.selected.targets[0];
+						return (
+							eff1 +
+							get.effect(player, { name: "juedou" }, target, player) +
+							target1.getSkills(null, false, false).filter(skill => {
+								const info = get.info(skill);
+								return info?.ai && (info.ai.maixie || info.ai.maixie_hp || info.ai.maixie_defend);
+							}).length *
+								3
+						);
 					},
 				})
+				.set("targetprompt", ["出杀对象", "决斗对象"])
+				.set("multitarget", true)
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			let targets = event.targets;
-			for (let i of targets) {
-				if (!i.isIn()) continue;
-				await player.gainPlayerCard({
-					target: i,
-					forced: true,
-					position: "he",
-				});
+			const [target1, target2] = event.targets;
+			await player.gainMultiple(event.targets, "he");
+			const sha = get.autoViewAs({ name: "sha", isCard: true });
+			const juedou = get.autoViewAs({ name: "juedou", isCard: true });
+			if (player.canUse(sha, target1, false)) {
+				const skills1 = target2.getSkills(null, false, false);
+				player.addAdditionalSkill(event.name, skills1);
+				await player.useCard(sha, target1, false);
+				player.removeAdditionalSkill(event.name);
+				if (target2.canUse(juedou, player, false)) {
+					const skills1 = target1.getSkills(null, false, false);
+					player.addAdditionalSkill(event.name, skills1);
+					await target2.useCard(juedou, player, false);
+					player.removeAdditionalSkill(event.name);
+				}
 			}
-			let targetsx = targets.filter(i => {
-				return i.isIn() && player.canUse({ name: "sha", isCard: true }, i, false);
-			});
-			if (!targetsx.length) {
-				return;
-			}
-			const result = await player
-				.chooseTarget({
-					prompt: "视为对其中一名角色使用一张【杀】",
-					forced: true,
-					filterTarget: (card, player, target) => {
-						return targetsx.includes(target);
-					},
-					ai: target => {
-						const player = get.player();
-						return get.effect(target, { name: "sha" }, player, player);
-					},
-				})
-				.forResult();
-			const target1 = result.targets[0];
-			targets.remove(target1);
-			const target2 = targets[0];
-			const card1 = new lib.element.VCard({ name: "sha", isCard: true });
-			const skills1 = target2.getSkills(null, false, false);
-			await player.removeAdditionalSkill("sxrmzhaduo");
-			await player.addAdditionalSkill("sxrmzhaduo", skills1);
-			await player.useCard(card1, target1);
-			await player.removeAdditionalSkill("sxrmzhaduo");
-			if (!target2.isIn() || !target2.canUse({ name: "juedou", isCard: true }, player)) {
-				return;
-			}
-			const card2 = new lib.element.VCard({ name: "juedou", isCard: true });
-			const skills2 = target1.getSkills(null, false, false);
-			await player.removeAdditionalSkill("sxrmzhaduo");
-			await player.addAdditionalSkill("sxrmzhaduo", skills2);
-			await target2.useCard(card2, player);
-			await player.removeAdditionalSkill("sxrmzhaduo");
 		},
 	},
 	//嗔曹仁
