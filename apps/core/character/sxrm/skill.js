@@ -1547,6 +1547,7 @@ const skills = {
 							}
 							return 5 - get.value(card);
 						},
+						chooseonly: true,
 					})
 					.set("target", target);
 				if (!qiding) {
@@ -1591,7 +1592,7 @@ const skills = {
 					},
 					ai(target) {
 						const player = get.player();
-						const eff1 = get.effect(target, { name: "guohe_copy2" }, player, player);
+						const eff1 = get.effect(target, { name: "shunshou_copy2" }, player, player);
 						if (!ui.selected.targets.length) {
 							return (
 								eff1 +
