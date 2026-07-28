@@ -102,57 +102,43 @@ const skills = {
 	},
 	nsfeixiong: {
 		trigger: { player: "phaseUseBegin" },
-		direct: true,
 		filter(event, player) {
-			return (
-				player.countCards("h") > 0 &&
-				game.hasPlayer(function (current) {
-					return current != player && player.canCompare(current);
-				})
-			);
+			return player.hasCards("h") && game.hasPlayer(current => current !== player && player.canCompare(current));
 		},
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt2("nsfeixiong"), function (card, player, target) {
-					return player != target && player.canCompare(target);
-				})
-				.set("ai", function (target) {
-					var player = _status.event.player;
-					var hs = player.getCards("h").sort(function (a, b) {
-						return b.number - a.number;
-					});
-					var ts = target.getCards("h").sort(function (a, b) {
-						return b.number - a.number;
-					});
-					if (!hs.length || !ts.length) {
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2("nsfeixiong"),
+					filterTarget(card, player, target) {
+						return player !== target && player.canCompare(target);
+					},
+					ai(target) {
+						const player = get.player();
+						const hs = player.getCards("h").sort((a, b) => b.number - a.number);
+						const ts = target.getCards("h").sort((a, b) => b.number - a.number);
+						if (!hs.length || !ts.length) {
+							return 0;
+						}
+						if (hs[0].number > ts[0].number) {
+							return get.damageEffect(target, player, player);
+						}
 						return 0;
 					}
-					if (hs[0].number > ts[0].number) {
-						return get.damageEffect(target, player, player);
-					}
-					return 0;
-				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("nsfeixiong", target);
-				if (get.mode() !== "identity" || player.identity !== "nei") {
-					player.addExpose(0.2);
-				}
-				player.chooseToCompare(target);
-			} else {
-				event.finish();
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			if (get.mode() !== "identity" || player.identity !== "nei") {
+				player.addExpose(0.2);
 			}
-			"step 2";
-			if (!result.tie) {
-				var targets = [player, target];
-				if (result.bool) {
-					targets.reverse();
-				}
-				targets[0].damage(targets[1]);
+			const compareResult = await player.chooseToCompare(target).forResult();
+			if (compareResult.tie) {
+				return;
 			}
+			const damaged = compareResult.bool ? target : player;
+			const source = compareResult.bool ? player : target;
+			await damaged.damage({ source });
 		},
 	},
 	nscesuan: {
