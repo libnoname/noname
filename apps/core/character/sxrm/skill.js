@@ -375,8 +375,16 @@ const skills = {
 			const skill = result.links[0];
 			await target.removeSkills(skill);
 			for (const current of [player, target]) {
-				current.storage.sxrmfusui_skill = skill;
-				await current.addSkills("sxrmbiyi");
+				current.setStorage("sxrmbiyi_skill", [skill], true);
+				await current.changeSkills(["sxrmbiyi"], []).set("$handle", (player, addSkills, removeSkills) => {
+					if (addSkills.length) {
+						player.addSkillLog(addSkills);
+						// 单独处理因【妇随】失去的技能init，（不失去【比翼】情况再次【妇随】，如【中流】刷新，是不会二次触发init的，详见player.addSkill）
+						if (addSkills.includes("sxrmbiyi")) {
+							lib.skill.sxrmbiyi.init(player, "sxrmbiyi");
+						}
+					}
+				});
 				current.addTempSkill(event.name + "_muteki", "roundStart");
 			}
 		},
@@ -391,6 +399,7 @@ const skills = {
 				audio: "sxrmfusui",
 				charlotte: true,
 				mark: true,
+				marktext: "随",
 				intro: { content: "防止本轮受到的伤害" },
 				trigger: { player: "damageBegin4" },
 				forced: true,
@@ -414,61 +423,61 @@ const skills = {
 	},
 	sxrmbiyi: {
 		audio: 2,
-		zhuanhuanji: true,
 		mark: true,
 		marktext: "☯",
-		derivation: "xiaoji",
-		forced: true,
-		locked: false,
 		init(player, skill) {
-			let lostSkill = player.storage.sxrmfusui_skill;
-			if (lostSkill) {
-				player.addAdditionalSkill(skill, [lostSkill]);
+			player.removeAdditionalSkill(skill);
+			const skills = !player.storage[skill] ? player.getStorage("sxrmbiyi_skill") : ["xiaoji"];
+			if (skills.length) {
+				player.addAdditionalSkill(skill, skills);
+			}
+		},
+		onremove(player, skill) {
+			player.removeAdditionalSkill(skill);
+			delete player.storage.sxrmbiyi_skill;
+		},
+		// 由于转换有特殊效果，需要像新杀大谋武将一样采用函数形式
+		zhuanhuanji(player, skill) {
+			player.storage[skill] = !player.storage[skill];
+			player.removeAdditionalSkill(skill);
+			const skills = !player.storage[skill] ? player.getStorage("sxrmbiyi_skill") : ["xiaoji"];
+			if (skills.length) {
+				player.addAdditionalSkill(skill, skills);
 			}
 		},
 		intro: {
 			content(storage, player) {
 				if (!storage) {
-					let lostSkill = player.storage.sxrmfusui_skill;
-					if (lostSkill) {
-						return "当前状态：阳（" + get.translation(lostSkill) + "）";
+					const skills = player.getStorage("sxrmbiyi_skill");
+					if (skills.length) {
+						return `当前状态：阳（${skills.map(skill => get.poptip(skill)).join("、")}）`;
 					}
-					return "当前状态：阳（无技能）";
+					return `当前状态：阳（${skills.length ? `${skills.map(skill => get.poptip(skill)).join("、")}` : "无技能"}）`;
 				} else {
-					return "当前状态：阴（枭姬）";
+					return `当前状态：阴（${get.poptip("xiaoji")}）`;
 				}
 			},
 		},
-		trigger: {
-			player: ["useSkill", "logSkillBegin"],
-		},
+		trigger: { player: ["useSkill", "logSkillBegin"] },
 		filter(event, player) {
 			const skill = get.sourceSkillFor(event);
 			if (!skill) {
 				return false;
 			}
-			let currentSkill = !player.storage["sxrmbiyi"] ? player.storage.sxrmfusui_skill : "xiaoji";
-			if (!currentSkill) {
+			const info = get.info(skill);
+			if (info?.charlotte) {
 				return false;
 			}
-			let info = get.info(skill);
-			if (info && info.charlotte) {
-				return false;
-			}
-			return skill == currentSkill;
+			const skills = !player.storage.sxrmbiyi ? player.getStorage("sxrmbiyi_skill") : ["xiaoji"];
+			return skills.includes(skill);
 		},
+		forced: true,
+		locked: false,
 		async content(event, trigger, player) {
-			player.changeZhuanhuanji("sxrmbiyi");
-			player.removeAdditionalSkill("sxrmbiyi");
-			const skill = !player.storage["sxrmbiyi"] ? player.storage.sxrmfusui_skill : "xiaoji";
-			if (skill) {
-				player.addAdditionalSkill("sxrmbiyi", [skill]);
-			}
+			player.changeZhuanhuanji(event.name);
 		},
-		onremove(player) {
-			player.removeAdditionalSkill("sxrmbiyi");
-			delete player.storage.sxrmfusui_skill;
-		},
+		derivation: "xiaoji",
+		ai: { combo: "sxrmfusui" },
 	},
 	//嗔张昭
 	sxrmxiezhong: {
