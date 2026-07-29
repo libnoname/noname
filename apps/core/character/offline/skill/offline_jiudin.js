@@ -1540,24 +1540,22 @@ const skills = {
 		async content(event, trigger, player) {
 			const target = event.targets[0];
 			const num = Math.min(2, Math.max(1, target.countCards("h")));
-			let bool;
+			let result;
 			if (player == target) {
-				bool = !(target.countCards("h") ? false : await player.chooseBool(get.prompt(event.name), "是否获得1点护甲？").forResult()).bool;
+				result = !target.hasCards("h") ? { bool: false } : await player.chooseBool(`你发动了【结姻】`, "点击“确定”获得1点护甲，或点击“取消”回复1点体力并获得所有“妆”，然后减少1点体力上限，变更势力为吴").forResult();
 			} else {
-				bool = (
-					await target
-						.chooseToGive(player, `交给${get.translation(player)}${get.cnNumber(num)}张手牌，然后获得1点护甲；或令其回复1点体力并获得所有“妆”，然后其减少1点体力上限，变更势力为吴`, num, "h")
-						.set("ai", card => {
-							if (_status.event.goon) {
-								return 100 - get.value(card);
-							}
-							return 0;
-						})
-						.set("goon", get.attitude(target, player) > 1)
-						.forResult()
-				).bool;
+				result = await target
+					.chooseToGive(player, `${get.translation(player)}对你发动了【结姻】`, `你可以交给${get.translation(player)}${get.cnNumber(num)}张手牌，然后获得1点护甲；或点击“取消”，其回复1点体力并获得所有“妆”，然后其减少1点体力上限，变更势力为吴`, num, "h")
+					.set("ai", card => {
+						if (_status.event.goon) {
+							return 100 - get.value(card);
+						}
+						return 0;
+					})
+					.set("goon", get.attitude(target, player) > 1)
+					.forResult();
 			}
-			if (bool) {
+			if (result?.bool) {
 				await target.changeHujia(1, null, true);
 			} else {
 				await player.recover();
@@ -1572,37 +1570,55 @@ const skills = {
 		},
 	},
 	jdsbliangzhu: {
+		groupSkill: "shu",
 		audio: "sbliangzhu",
-		inherit: "sbliangzhu",
+		enable: "phaseUse",
+		usable: 1,
+		filter(event, player) {
+			return player.group == "shu" && game.hasPlayer(current => get.info("jdsbliangzhu").filterTarget(null, player, current));
+		},
+		filterTarget(card, player, target) {
+			return player != target && target.hasCards("e");
+		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			const { cards } = await player.choosePlayerCard(target, "e", true).forResult();
-			if (!cards || !cards.length) {
+			let result = await player.choosePlayerCard(target, "e", true).forResult();
+			if (!result?.cards?.length) {
 				return;
 			}
+			const { cards } = result;
 			const next = player.addToExpansion(cards, target, "give");
 			next.gaintag.add(event.name);
 			await next;
 			const targets = game.filterPlayer(current => current != player && current.isDamaged());
-			if (!targets) {
+			if (!targets.length) {
 				return;
 			}
-			const list =
+			result =
 				targets.length == 1
-					? targets
-					: (
-							await player
-								.chooseTarget(`选择一名其他角色，令其回复1点体力`, (card, player, target) => {
-									return target != player && target.isDamaged();
-								})
-								.set("ai", target => {
-									const player = get.player();
-									return get.recoverEffect(target, player, player);
-								})
-								.forResult()
-						).targets;
-			if (list && list.length) {
-				await list[0].recover();
+					? { bool: true, targets }
+					: await player
+							.chooseTarget(`选择一名其他角色，令其回复1点体力`, (card, player, target) => {
+								return target != player && target.isDamaged();
+							})
+							.set("ai", target => {
+								const player = get.player();
+								return get.recoverEffect(target, player, player);
+							})
+							.forResult();
+			if (result?.targets?.length) {
+				await result.targets[0].recover();
+			}
+		},
+		marktext: "妆",
+		intro: {
+			content: "expansion",
+			markcount: "expansion",
+		},
+		onremove(player, skill) {
+			const cards = player.getExpansions(skill);
+			if (cards.length) {
+				player.loseToDiscardpile(cards);
 			}
 		},
 		ai: {

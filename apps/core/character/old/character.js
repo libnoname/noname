@@ -1,4 +1,12 @@
 const characters = {
+	yj_y_xunxu: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["kanlv", "yjshenwei"],
+		img: "image/character/yj_x_xunxu.jpg",
+		dieAudios: ["yj_x_xunxu"],
+	},
 	cy_lingju: {
 		sex: "female",
 		group: "qun",
