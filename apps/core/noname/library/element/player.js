@@ -8871,7 +8871,7 @@ export class Player extends HTMLDivElement {
 	/**
 	 * 令玩家受到伤害
 	 *
-	 * @param {import("./Player/type.d").EventDamageParams} [params]
+	 * @param { number | import("./Player/type.d").EventDamageParams } [params]
 	 * @returns { GameEvent }
 	 */
 	damage(params) {
@@ -8988,7 +8988,7 @@ export class Player extends HTMLDivElement {
 	/**
 	 * 令玩家回复体力
 	 *
-	 * @param { import("./Player/type.d").EventRecoverParams } [params]
+	 * @param { number | import("./Player/type.d").EventRecoverParams } [params]
 	 * @returns { GameEvent }
 	 */
 	recover(params) {
@@ -9104,7 +9104,7 @@ export class Player extends HTMLDivElement {
 	/**
 	 * 扣减玩家的体力上限
 	 *
-	 * @param { import("./Player/type.d").EventGainMaxHpParams } [params]
+	 * @param { number | import("./Player/type.d").EventGainMaxHpParams } [params]
 	 * @returns { GameEvent }}
 	 */
 	loseMaxHp(params) {
@@ -9130,7 +9130,7 @@ export class Player extends HTMLDivElement {
 	/**
 	 * 令玩家获得体力上限
 	 *
-	 * @param { import("./Player/type.d").EventGainMaxHpParams } [params]
+	 * @param { number | import("./Player/type.d").EventGainMaxHpParams } [params]
 	 * @returns { GameEvent }
 	 */
 	gainMaxHp(params) {
