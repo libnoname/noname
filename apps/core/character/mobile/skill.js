@@ -880,18 +880,21 @@ const skills = {
 						})
 						.set("targeted", targeted)
 						.set("untargeted", untargeted);
-					next.set("targetprompt2", next.targetprompt2.concat(target => {
-						if (!target.classList.contains("selectable")) {
-							return;
-						}
-						const { targeted, untargeted } = get.event();
-						if (targeted.includes(target)) {
-							return "回复体力";
-						}
-						if (untargeted.includes(target)) {
-							return "失去体力";
-						}
-					}));
+					next.set(
+						"targetprompt2",
+						next.targetprompt2.concat(target => {
+							if (!target.classList.contains("selectable")) {
+								return;
+							}
+							const { targeted, untargeted } = get.event();
+							if (targeted.includes(target)) {
+								return "回复体力";
+							}
+							if (untargeted.includes(target)) {
+								return "失去体力";
+							}
+						})
+					);
 					event.result = await next.forResult();
 					if (event.result?.bool && event.result.targets?.length) {
 						event.result.cost_data ??= {};
@@ -1053,23 +1056,50 @@ const skills = {
 				return player.countMark(skill + "_yang") + "/" + player.countMark(skill + "_yin");
 			},
 			content(storage, player) {
-				return "转换技，" + (!storage ? "当你或者此状态下第三次有角色成为【杀】的目标后，你可以与此【杀】的使用者各摸一张牌，然后其本回合不能对你使用牌" : "当你或者此状态下第三次有角色使用【杀】指定目标后，你可以获得此【杀】的目标角色一张牌，然后你本回合不能对其使用牌") + "。乘势：你于出牌阶段内使用【杀】的次数+1，且此【杀】结算完毕后，你获得之。";
+				return "转换技，" + (!storage ? "当你或者此状态下第三次有角色成为【杀】的目标后，你可以与此【杀】的使用者各摸一张牌，然后其本回合不能对你使用牌" : "当你或者此状态下第三次有角色使用【杀】指定目标后，你可以获得此【杀】的目标角色一张牌，然后你本回合不能对其使用牌") + "。乘势：你使用【杀】的次数上限+1，且此【杀】结算完毕后，你获得之。";
 			},
 		},
-		trigger: {
-			global: ["useCardToTargeted", "useCardToPlayered"],
-		},
+		trigger: { global: ["useCardToTargeted", "useCardToPlayered"] },
 		filter(event, player, name) {
 			if (event.card.name !== "sha") {
 				return false;
 			}
 			if (name == "useCardToPlayered") {
-				return player.storage.rejuzhan && (event.player == player || player.countMark("rejuzhan_yin") == 3) && event.target.hasGainableCards(player, "he");
+				return player.storage.rejuzhan && (event.player == player || player.countMark("rejuzhan_yin") == 3) && event.target.hasGainableCards(player, "he") && event.target.isIn();
 			}
-			return !player.storage.rejuzhan && (event.target == player || player.countMark("rejuzhan_yang") == 3);
+			return !player.storage.rejuzhan && (event.target == player || player.countMark("rejuzhan_yang") == 3) && event.player.isIn();
 		},
 		logTarget: (event, player, name) => (name == "useCardToTargeted" ? event.player : event.target),
-		check: () => true,
+		prompt2(event, player, name) {
+			if (name == "useCardToPlayered") {
+				let str = `获得${get.translation(event.target)}一张牌，然后本回合不能对其使用牌`;
+				if (event.player == player && player.countMark("rejuzhan_yin") == 3) {
+					str += `，你使用【杀】的次数上限+1`;
+					if (event.cards.filterInD("od")) {
+						str += `并获得${get.translation(event.cards.filterInD("od"))}`;
+					}
+				}
+				str += "。";
+				return str;
+			} else {
+				let str = `与${get.translation(event.player)}各摸一张牌，然后其本回合不能对你使用牌`;
+				if (event.target == player && player.countMark("rejuzhan_yang") == 3) {
+					str += `，你使用【杀】的次数上限+1`;
+					if (event.cards.filterInD("od")) {
+						str += `并获得${get.translation(event.cards.filterInD("od"))}`;
+					}
+				}
+				str += "。";
+				return str;
+			}
+		},
+		check(event, player, name) {
+			const target = name == "useCardToPlayered" ? event.target : event.player;
+			if (name == "useCardToPlayered") {
+				return get.effect(target, { name: "shunshou_copy2" }, player, player) > 0;
+			}
+			return true;
+		},
 		async content(event, trigger, player) {
 			const {
 				targets: [target],
@@ -1110,7 +1140,6 @@ const skills = {
 		subSkill: {
 			init: {
 				audio: "rejuzhan",
-				forced: true,
 				trigger: {
 					player: "enterGame",
 					global: "phaseBefore",
@@ -1118,17 +1147,17 @@ const skills = {
 				filter(event, player) {
 					return (event.name != "phase" || game.phaseNumber == 0) && player.group == "shu" && !player.storage.rejuzhan;
 				},
+				forced: true,
+				locked: false,
 				async content(event, trigger, player) {
 					player.changeZhuanhuanji("rejuzhan");
 				},
 			},
 			sha: {
 				charlotte: true,
-				marktext: "杀",
+				marktext: "战",
 				onremove: true,
-				intro: {
-					content: "出杀次数+#",
-				},
+				intro: { content: "使用【杀】的次数上限+#" },
 				mod: {
 					cardUsable(card, player, num) {
 						if (get.name(card) == "sha") {
@@ -1140,9 +1169,7 @@ const skills = {
 			debuff: {
 				charlotte: true,
 				onremove: true,
-				intro: {
-					content: "你不能对$使用牌",
-				},
+				intro: { content: "本回合你不能对$使用牌" },
 				mod: {
 					playerEnabled(card, player, target) {
 						if (player.getStorage("rejuzhan_debuff").includes(target)) {
@@ -1153,10 +1180,7 @@ const skills = {
 			},
 			mark: {
 				charlotte: true,
-				silent: true,
-				trigger: {
-					global: ["useCardToTargeted", "useCardToPlayered"],
-				},
+				trigger: { global: ["useCardToTargeted", "useCardToPlayered"] },
 				filter(event, player, name) {
 					if (event.card.name !== "sha") {
 						return false;
@@ -1166,6 +1190,8 @@ const skills = {
 					}
 					return !player.storage.rejuzhan;
 				},
+				silent: true,
+				firstDo: true,
 				async content(event, trigger, player) {
 					if (event.triggername == "useCardToPlayered") {
 						player.addMark("rejuzhan_yin", 1, false);
@@ -7756,7 +7782,7 @@ const skills = {
 			backup: {},
 			effect: {
 				audio: "mbfangxu",
-				logAudio: index => typeof index === "number" ? "mbfangxu" + index + ".mp3" : "",
+				logAudio: index => (typeof index === "number" ? "mbfangxu" + index + ".mp3" : ""),
 				charlotte: true,
 				trigger: { player: ["useCard", "useCardAfter"] },
 				filter(event, player, name) {
@@ -7824,7 +7850,7 @@ const skills = {
 	},
 	mbzhuguan: {
 		audio: 4,
-		logAudio: event => event.name == "phase" ? ["mbzhuguan3.mp3", "mbzhuguan4.mp3"] : 2,
+		logAudio: event => (event.name == "phase" ? ["mbzhuguan3.mp3", "mbzhuguan4.mp3"] : 2),
 		trigger: { player: ["useCard", "phaseBegin"] },
 		filter(event, player) {
 			if (event.name === "phase") {
@@ -32465,7 +32491,7 @@ const skills = {
 	},
 	mbjieyuan: {
 		audio: ["jieyuan_more.mp3", "jieyuan_less.mp3"],
-		logAudio: (event, player, name) => name == "damageBegin1" ? "jieyuan_more.mp3" : "jieyuan_less.mp3",
+		logAudio: (event, player, name) => (name == "damageBegin1" ? "jieyuan_more.mp3" : "jieyuan_less.mp3"),
 		trigger: {
 			source: "damageBegin1",
 			player: "damageBegin3",

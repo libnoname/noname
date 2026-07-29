@@ -277,7 +277,7 @@ const skills = {
 						chooseonly: true,
 						ai(card) {
 							const { player, target, cardx } = get.event();
-							if (get.effect(player, cardx, target)) {
+							if (get.effect(player, cardx, target, player) < 0) {
 								return 8 - get.value(card);
 							}
 							return 0;
