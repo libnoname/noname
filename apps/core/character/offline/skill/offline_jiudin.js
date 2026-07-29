@@ -1572,6 +1572,7 @@ const skills = {
 		},
 	},
 	jdsbliangzhu: {
+		groupSkill: "shu",
 		audio: "sbliangzhu",
 		enable: "phaseUse",
 		usable: 1,
@@ -1583,10 +1584,11 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			const { cards } = await player.choosePlayerCard(target, "e", true).forResult();
-			if (!cards?.length) {
+			let result = await player.choosePlayerCard(target, "e", true).forResult();
+			if (!result?.cards?.length) {
 				return;
 			}
+			const { cards } = result;
 			const next = player.addToExpansion(cards, target, "give");
 			next.gaintag.add(event.name);
 			await next;
@@ -1594,34 +1596,32 @@ const skills = {
 			if (!targets.length) {
 				return;
 			}
-			const list =
+			result =
 				targets.length == 1
-					? targets
-					: (
-							await player
-								.chooseTarget(`选择一名其他角色，令其回复1点体力`, (card, player, target) => {
-									return target != player && target.isDamaged();
-								})
-								.set("ai", target => {
-									const player = get.player();
-									return get.recoverEffect(target, player, player);
-								})
-								.forResult()
-						).targets;
-			if (list && list.length) {
-				await list[0].recover();
+					? { bool: true, targets }
+					: await player
+							.chooseTarget(`选择一名其他角色，令其回复1点体力`, (card, player, target) => {
+								return target != player && target.isDamaged();
+							})
+							.set("ai", target => {
+								const player = get.player();
+								return get.recoverEffect(target, player, player);
+							})
+							.forResult();
+			if (result?.targets?.length) {
+				await result.targets[0].recover();
 			}
 		},
 		intro: {
-        	content: "expansion",
-        	markcount: "expansion",
-    	},
-    	onremove(player, skill) {
-        	var cards = player.getExpansions(skill);
-        	if (cards.length) {
-            	player.loseToDiscardpile(cards);
-        	}
-    	},
+			content: "expansion",
+			markcount: "expansion",
+		},
+		onremove(player, skill) {
+			const cards = player.getExpansions(skill);
+			if (cards.length) {
+				player.loseToDiscardpile(cards);
+			}
+		},
 		ai: {
 			order: 9,
 			result: {
