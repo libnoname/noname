@@ -1540,24 +1540,22 @@ const skills = {
 		async content(event, trigger, player) {
 			const target = event.targets[0];
 			const num = Math.min(2, Math.max(1, target.countCards("h")));
-			let bool;
+			let result;
 			if (player == target) {
-				bool = !(target.countCards("h") ? false : await player.chooseBool(get.prompt(event.name), "是否获得1点护甲？").forResult()).bool;
+				result = !target.hasCards("h") ? { bool: false } : await player.chooseBool(`你发动了【结姻】`, "点击“确定”获得1点护甲，或点击“取消”回复1点体力并获得所有“妆”，然后减少1点体力上限，变更势力为吴").forResult();
 			} else {
-				bool = (
-					await target
-						.chooseToGive(player, `交给${get.translation(player)}${get.cnNumber(num)}张手牌，然后获得1点护甲；或令其回复1点体力并获得所有“妆”，然后其减少1点体力上限，变更势力为吴`, num, "h")
-						.set("ai", card => {
-							if (_status.event.goon) {
-								return 100 - get.value(card);
-							}
-							return 0;
-						})
-						.set("goon", get.attitude(target, player) > 1)
-						.forResult()
-				).bool;
+				result = await target
+					.chooseToGive(player, `${get.translation(player)}对你发动了【结姻】`, `你可以交给${get.translation(player)}${get.cnNumber(num)}张手牌，然后获得1点护甲；或点击“取消”，其回复1点体力并获得所有“妆”，然后其减少1点体力上限，变更势力为吴`, num, "h")
+					.set("ai", card => {
+						if (_status.event.goon) {
+							return 100 - get.value(card);
+						}
+						return 0;
+					})
+					.set("goon", get.attitude(target, player) > 1)
+					.forResult();
 			}
-			if (bool) {
+			if (result?.bool) {
 				await target.changeHujia(1, null, true);
 			} else {
 				await player.recover();
@@ -1612,6 +1610,7 @@ const skills = {
 				await result.targets[0].recover();
 			}
 		},
+		marktext: "妆",
 		intro: {
 			content: "expansion",
 			markcount: "expansion",
