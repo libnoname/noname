@@ -2365,7 +2365,7 @@ const skills = {
 				viewAsFilter(player) {
 					return !player.storage?.yjjiechu;
 				},
-				precontent() {
+				async precontent(event, trigger, player) {
 					player.addTempSkill("yjjiechu_effect");
 					player.changeZhuanhuanji("yjjiechu");
 				},
@@ -3077,7 +3077,7 @@ const skills = {
 		},
 		forced: true,
 		zhuSkill: true,
-		content() {
+		async content(event, trigger, player) {
 			player.draw();
 		},
 	},
@@ -3272,7 +3272,7 @@ const skills = {
 		},
 		frequent: true,
 		usable: 1,
-		content() {
+		async content(event, trigger, player) {
 			player.draw(trigger.targets.length);
 		},
 	},
@@ -3368,7 +3368,7 @@ const skills = {
 		groupSkill: "shu",
 		seatRelated: true,
 		clearTime: true,
-		content() {
+		async content(event, trigger, player) {
 			player
 				.chooseToUse(
 					function (card, player, event) {
@@ -3426,7 +3426,7 @@ const skills = {
 			return "获得" + get.translation(lib.skill.psyanmou.getCards(event, player));
 		},
 		frequent: true,
-		content() {
+		async content(event, trigger, player) {
 			player.gain(lib.skill.psyanmou.getCards(trigger, player), "gain2");
 		},
 		group: "psyanmou_chooseToUse",
@@ -3560,7 +3560,7 @@ const skills = {
 			return event.hasNature("fire");
 		},
 		forced: true,
-		content() {
+		async content(event, trigger, player) {
 			trigger.cancel();
 		},
 		ai: {
@@ -3787,7 +3787,7 @@ const skills = {
 				},
 			},
 			backup: {
-				precontent() {
+				async precontent(event, trigger, player) {
 					var cards = event.result.card.cards;
 					event.result.cards = cards;
 					var owner = get.owner(cards[0]);
@@ -3881,7 +3881,7 @@ const skills = {
 				filter(event, player) {
 					return !player._trueMe && event?.owner?.[1].isIn() && player != event.owner[1];
 				},
-				content() {
+				async content(event, trigger, player) {
 					const owner = trigger.owner[1];
 					player._trueMe = owner;
 					game.addGlobalSkill("autoswap");
