@@ -5825,6 +5825,9 @@ export class Player extends HTMLDivElement {
 		const args = [...arguments];
 		if (args.length === 1 && typeof params === "object" && params !== null && get.itemtype(params) == null) {
 			Object.assign(next, params);
+			if (params.filterCard != null && typeof params.filterCard === "object") {
+				next.filterCard = get.filter(params.filterCard);
+			}
 		} else {
 			for (const arg of args) {
 				if (typeof arg == "number" || get.itemtype(arg) == "select") {
@@ -5892,6 +5895,9 @@ export class Player extends HTMLDivElement {
 				Reflect.deleteProperty(next, "card");
 				next.filterCard = get.filter(params.card);
 				filter = params.card;
+			} else if (params.filterCard != null && typeof params.filterCard === "object") {
+				next.filterCard = get.filter(params.filterCard);
+				filter = params.filterCard;
 			}
 			if (typeof next.selectCard === "number") {
 				next.selectCard = [next.selectCard, next.selectCard];
@@ -5975,6 +5981,9 @@ export class Player extends HTMLDivElement {
 		const args = [...arguments];
 		if (args.length == 1 && params != null && get.is.object(params) && get.itemtype(params) == null) {
 			Object.assign(next, params);
+			if (params.filterCard != null && typeof params.filterCard === "object") {
+				next.filterCard = get.filter(params.filterCard);
+			}
 			if (params.dialog) {
 				next.prompt = false;
 			} else if (params.prompt) {
@@ -6045,6 +6054,9 @@ export class Player extends HTMLDivElement {
 
 		if (args.length == 1 && params != null && get.is.object(params) && get.itemtype(params) == null) {
 			Object.assign(next, params);
+			if (params.filterCard != null && typeof params.filterCard === "object") {
+				next.filterCard = get.filter(params.filterCard);
+			}
 			if (params.dialog) {
 				next.prompt = false;
 			} else if (params.prompt) {
@@ -6544,6 +6556,9 @@ export class Player extends HTMLDivElement {
 		const args = [...arguments];
 		if (args.length == 1 && params != null && get.is.object(params) && get.itemtype(params) == null) {
 			Object.assign(next, params);
+			if (params.filterCard != null && typeof params.filterCard === "object") {
+				next.filterCard = get.filter(params.filterCard);
+			}
 			if (typeof next.selectCard === "number") {
 				next.selectCard = [next.selectCard, next.selectCard];
 			}
@@ -6749,7 +6764,7 @@ export class Player extends HTMLDivElement {
 		return next;
 	}
 	/**
-	 * @param {import("./Player/type.d").EventChooseCardTargetParams} [params]
+	 * @param { import("./Player/type.d").EventChooseCardTargetParams } [params]
 	 * @returns
 	 */
 	chooseCardTarget(params) {
