@@ -11,7 +11,7 @@ const skills = {
 		forced: true,
 		logAudio: () => 1,
 		filter(event, player) {
-			return event.player != player && event.parent.name == "damage" && event.parent.source && event.parent.source.group == player.group;
+			return event.player !== player && event.parent.name === "damage" && event.parent.source && event.parent.source.group === player.group;
 		},
 		async content(event, trigger, player) {
 			player.draw();
@@ -28,7 +28,7 @@ const skills = {
 		sourceSkill: "gzsuishi",
 		logAudio: () => 2,
 		filter(event, player) {
-			return event.player.group == player.group;
+			return event.player.group === player.group;
 		},
 		async content(event, trigger, player) {
 			player.loseHp();
@@ -44,7 +44,7 @@ const skills = {
 			if (!player.hasEmptySlot(2)) {
 				return false;
 			}
-			if (event.card.name != "sha") {
+			if (event.card.name !== "sha") {
 				return false;
 			}
 			return game.hasNature(event.card);
@@ -58,7 +58,7 @@ const skills = {
 					if (card.name === "sha" && game.hasNature(card) && target.hasEmptySlot(2)) {
 						return "zeroplayertarget";
 					}
-					if (get.subtype(card) == "equip2" && target.isEmpty(2)) {
+					if (get.subtype(card) === "equip2" && target.isEmpty(2)) {
 						return [0.6, -0.8];
 					}
 				},
@@ -109,14 +109,14 @@ const skills = {
 		},
 		frequent: true,
 		filter(event, player, name) {
-			if (name == "damageEnd") {
+			if (name === "damageEnd") {
 				return true;
 			}
 			const evt = event.getParent();
-			if (evt.player != player) {
+			if (evt.player !== player) {
 				return false;
 			}
-			return evt.card && evt.type == "card" && evt.targets.length == 1;
+			return evt.card && evt.type === "card" && evt.targets.length === 1;
 		},
 		async content(event, trigger, player) {
 			await player.draw();
@@ -124,7 +124,7 @@ const skills = {
 			if (!hs.length) {
 				return;
 			}
-			const result = hs.length == 1 ? { bool: true, cards: hs } : await player.chooseCard("he", true, "选择一张牌作为“权”").forResult();
+			const result = hs.length === 1 ? { bool: true, cards: hs } : await player.chooseCard("he", true, "选择一张牌作为“权”").forResult();
 			if (result?.bool && result?.cards?.length) {
 				const next = player.addToExpansion(result.cards, player, "give");
 				next.gaintag.add(event.name);
@@ -282,9 +282,7 @@ const skills = {
 					return "没有“戮”";
 				}
 			},
-			// content:function(storage,player){
-			// 	return '共有'+get.cnNumber(storage.length)+'张“戮”';
-			// },
+			// content: (storage, player) => `共有${get.cnNumber(storage.length)}张“戮”`,
 		},
 		group: "zyshilu_zhiheng",
 		subSkill: {
@@ -508,7 +506,7 @@ const skills = {
 			await player.addToExpansion({
 				cards,
 				animate: "gain2",
-				gaintag: ["qiuan"]
+				gaintag: ["qiuan"],
 			});
 			trigger.cancel();
 		},
@@ -668,21 +666,21 @@ const skills = {
 		audio: "wylianji",
 		trigger: { player: "phaseUseEnd" },
 		filter(event, player) {
-			return player.hasHistory("useCard", evt => evt.getParent("phaseUse") == event);
+			return player.hasHistory("useCard", evt => evt.getParent("phaseUse") === event);
 		},
 		direct: true,
 		async content(event, trigger, player) {
 			let logged = false;
 			const num = player
-				.getHistory("useCard", evt => evt.getParent("phaseUse") == trigger)
+				.getHistory("useCard", evt => evt.getParent("phaseUse") === trigger)
 				.map(evt => get.type2(evt.card))
 				.unique().length;
 			if (num > 0) {
 				const result = await player
 					.chooseTarget(get.prompt("zylianji"), "令一名角色摸一张牌")
 					.set("ai", target => {
-						var player = get.player();
-						if (target == player && player.needsToDiscard(1)) {
+						const player = get.player();
+						if (target === player && player.needsToDiscard(1)) {
 							return 1;
 						}
 						return get.effect(target, { name: "draw" }, player, player);
@@ -719,18 +717,18 @@ const skills = {
 				const result = await player
 					.chooseTarget(get.prompt("zylianji"), `跳过本回合的剩余阶段，然后令一名其他角色执行一个只有${get.translation(list)}的回合`, lib.filter.notMe)
 					.set("ai", target => {
-						var att = get.attitude(_status.event.player, target),
-							num = target.needsToDiscard(),
-							numx = player.needsToDiscard();
+						const att = get.attitude(_status.event.player, target);
+						const num = target.needsToDiscard();
+						const numx = player.needsToDiscard();
 						if (att < 0 && num > 0) {
 							return (-att * Math.sqrt(num)) / 3 + numx;
 						}
-						var skills = target.getSkills();
-						var val = 0;
-						for (var skill of skills) {
-							var info = get.info(skill);
-							if (info.trigger && info.trigger.player && (info.trigger.player.indexOf("phaseJieshu") == 0 || (Array.isArray(info.trigger.player) && info.trigger.player.some(i => i.indexOf("phaseJieshu") == 0)))) {
-								var threaten = info.ai && info.ai.threaten ? info.ai.threaten : 1;
+						const skills = target.getSkills();
+						let val = 0;
+						for (const skill of skills) {
+							const info = get.info(skill);
+							if (info.trigger && info.trigger.player && (info.trigger.player.indexOf("phaseJieshu") === 0 || (Array.isArray(info.trigger.player) && info.trigger.player.some(i => i.indexOf("phaseJieshu") === 0)))) {
+								const threaten = info.ai && info.ai.threaten ? info.ai.threaten : 1;
 								if (info.ai && info.ai.neg) {
 									val -= 3 * threaten;
 								} else if (info.ai && info.ai.halfneg) {
@@ -779,14 +777,16 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const { target } = event;
-			const cardResult = await player.choosePlayerCard({
-				target,
-				position: "he",
-				forced: true,
-				ai(button) {
-					return get.buttonValue(button);
-				}
-			}).forResult();
+			const cardResult = await player
+				.choosePlayerCard({
+					target,
+					position: "he",
+					forced: true,
+					ai(button) {
+						return get.buttonValue(button);
+					},
+				})
+				.forResult();
 			if (!cardResult.bool || !cardResult.cards?.length) {
 				return;
 			}
@@ -810,7 +810,7 @@ const skills = {
 							return att + Math.max(0, 5 - target.countCards("h"));
 						}
 						return att;
-					}
+					},
 				})
 				.set("du", card.name === "du")
 				.forResult();
