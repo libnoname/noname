@@ -230,7 +230,7 @@ const skills = {
 				charlotte: true,
 				silent: true,
 				intro: { content: "本轮使用【杀】造成伤害+#" },
-				trigger: { player: "useCard" },
+				trigger: { player: "useCardAfter" },
 				filter(event, player) {
 					return event.card.name === "sha" && Math.floor(player.countRoundHistory("useCard", evt => evt.card.name === "sha") / 2) > 0;
 				},
