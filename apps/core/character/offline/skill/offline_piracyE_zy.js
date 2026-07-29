@@ -13,7 +13,7 @@ const skills = {
 		filter(event, player) {
 			return event.player != player && event.parent.name == "damage" && event.parent.source && event.parent.source.group == player.group;
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.draw();
 		},
 		ai: {
@@ -30,7 +30,7 @@ const skills = {
 		filter(event, player) {
 			return event.player.group == player.group;
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.loseHp();
 		},
 	},
@@ -49,7 +49,7 @@ const skills = {
 			}
 			return game.hasNature(event.card);
 		},
-		content() {
+		async content(event, trigger, player) {
 			trigger.cancel();
 		},
 		ai: {
@@ -503,9 +503,13 @@ const skills = {
 			return true;
 		},
 		preHidden: true,
-		content() {
-			var cards = trigger.cards.filterInD();
-			player.addToExpansion("gain2", cards).gaintag.add("qiuan");
+		async content(event, trigger, player) {
+			const cards = trigger.cards.filterInD();
+			await player.addToExpansion({
+				cards,
+				animate: "gain2",
+				gaintag: ["qiuan"]
+			});
 			trigger.cancel();
 		},
 		ai: {
