@@ -717,76 +717,61 @@ const skills = {
 			return player.canCompare(target);
 		},
 		group: "psquanyi_tianbian",
-		content() {
-			"step 0";
-			player.chooseToCompare(target, function (card) {
-				if (typeof card == "string" && lib.skill[card]) {
-					var ais =
-						lib.skill[card].check ||
-						function () {
-							return 0;
-						};
-					return ais();
-				}
-				var player = get.owner(card);
-				var getn = function (card) {
-					if (player.hasSkill("tianbian") && get.suit(card) == "heart") {
-						return 13;
+		async content(event, trigger, player) {
+			const { target } = event;
+			const result = await player
+				.chooseToCompare(target, card => {
+					if (typeof card === "string" && lib.skill[card]) {
+						const ais = lib.skill[card].check || (() => 0);
+						return ais();
 					}
-					return get.number(card);
-				};
-				var event = _status.event.getParent();
-				var to = player == event.player ? event.target : event.player;
-				var addi = get.value(card) >= 8 && get.type(card) != "equip" ? -6 : 0;
-				if (card.name == "du") {
-					addi -= 5;
-				}
-				if (get.color(card) == "black") {
-					addi -= 6;
-				}
-				if (player == event.player) {
-					if (event.small) {
+					const cardOwner = get.owner(card);
+					const getn = card => {
+						if (cardOwner.hasSkill("tianbian") && get.suit(card) === "heart") {
+							return 13;
+						}
+						return get.number(card);
+					};
+					const compareEvent = _status.event.getParent();
+					const to = cardOwner === compareEvent.player ? compareEvent.target : compareEvent.player;
+					let addi = get.value(card) >= 8 && get.type(card) !== "equip" ? -6 : 0;
+					if (card.name === "du") {
+						addi -= 5;
+					}
+					if (get.color(card) === "black") {
+						addi -= 6;
+					}
+					if (cardOwner === compareEvent.player) {
+						if (compareEvent.small) {
+							return -getn(card) - get.value(card) / 2 + addi;
+						}
+						return getn(card) - get.value(card) / 2 + addi;
+					}
+					if (get.attitude(cardOwner, to) <= 0 === Boolean(compareEvent.small)) {
 						return -getn(card) - get.value(card) / 2 + addi;
 					}
 					return getn(card) - get.value(card) / 2 + addi;
-				} else {
-					if (get.attitude(player, to) <= 0 == Boolean(event.small)) {
-						return -getn(card) - get.value(card) / 2 + addi;
-					}
-					return getn(card) - get.value(card) / 2 + addi;
-				}
-			});
-			"step 1";
+				})
+				.forResult();
 			if (result.tie) {
-				event.finish();
-			} else {
-				var targets = [player, target];
-				if (!result.bool) {
-					targets.reverse();
-				}
-				var suits = [result.player, result.target].map(i => get.suit(i, false));
-				event.targets = targets;
-				event.suits = suits;
+				return;
 			}
-			"step 2";
-			if (event.suits.includes("heart")) {
-				if (targets[1].countGainableCards("hej", targets[0]) > 0) {
-					targets[0].gainPlayerCard(targets[1], "hej", true);
-				}
+			const targets = [player, target];
+			if (!result.bool) {
+				targets.reverse();
 			}
-			"step 3";
-			if (event.suits.includes("diamond")) {
-				targets[1].damage(targets[0]);
+			const suits = [result.player, result.target].map(card => get.suit(card, false));
+			if (suits.includes("heart") && targets[1].countGainableCards("hej", targets[0]) > 0) {
+				await targets[0].gainPlayerCard(targets[1], "hej", true);
 			}
-			"step 4";
-			if (event.suits.includes("spade")) {
-				targets[0].loseHp();
+			if (suits.includes("diamond")) {
+				await targets[1].damage(targets[0]);
 			}
-			"step 5";
-			if (event.suits.includes("club")) {
-				if (targets[0].countDiscardableCards(targets[0], "he")) {
-					targets[0].chooseToDiscard(2, true, "he");
-				}
+			if (suits.includes("spade")) {
+				await targets[0].loseHp();
+			}
+			if (suits.includes("club") && targets[0].countDiscardableCards(targets[0], "he")) {
+				await targets[0].chooseToDiscard(2, true, "he");
 			}
 		},
 		ai: {
@@ -800,22 +785,22 @@ const skills = {
 				audio: "psquanyi",
 				enable: "chooseCard",
 				check(event) {
-					var player = _status.event.player;
+					const player = _status.event.player;
 					if (player.hasSkill("smyyingshi")) {
-						var card = ui.cardPile.childNodes[0];
-						if ((get.color(card) == "black" && get.number(card) <= 4) || (get.color(card) == "red" && get.number(card) >= 11)) {
+						const card = ui.cardPile.childNodes[0];
+						if ((get.color(card) === "black" && get.number(card) <= 4) || (get.color(card) === "red" && get.number(card) >= 11)) {
 							return 20;
 						}
 					}
-					return !player.hasCard(function (card) {
-						var val = get.value(card);
-						return val < 0 || (get.color(card) == "black" && val <= 4) || (get.color(card) == "red" && get.number(card) >= 11);
+					return player.hasCard(card => {
+						const val = get.value(card);
+						return val < 0 || (get.color(card) === "black" && val <= 4) || (get.color(card) === "red" && get.number(card) >= 11);
 					}, "h")
-						? 20
-						: 0;
+						? 0
+						: 20;
 				},
 				filter(event) {
-					return event.type == "compare" && !event.directresult;
+					return event.type === "compare" && !event.directresult;
 				},
 				onCompare(player) {
 					return game.cardsGotoOrdering(get.cards()).cards;
