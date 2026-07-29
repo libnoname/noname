@@ -3912,10 +3912,10 @@ const skills = {
 					player.setStorage("potkuanggu", 1);
 					const num1 = player.countMark("potzhuangshi_limit"),
 						num2 = player.countMark("potzhuangshi_directHit");
-					if (num1 > 0) {
+					if (num2 > 0) {
 						await player.draw();
 					}
-					if (num2 > 0) {
+					if (num1 > 0) {
 						if (!player.isDamaged()) {
 							await player.draw();
 						} else {
