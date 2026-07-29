@@ -89,8 +89,8 @@ const skills = {
 				},
 			},
 			tally: {
-				marktext: "节",
-				intro: { content: "mark" },
+				//marktext: "节",
+				//intro: { content: "mark" },
 				charlotte: true,
 				trigger: { player: "damageBegin4" },
 				filter(event, player) {
@@ -103,7 +103,7 @@ const skills = {
 					game.log(player, "防止了此伤害");
 					if (!player.hasMark("dcmingjie_tally")) player.removeSkill("dcmingjie_tally");
 				},
-				ai: { threaten: 0.8 },
+				//ai: { threaten: 0.8 },
 			},
 			death: {
 				charlotte: true,
@@ -151,7 +151,7 @@ const skills = {
 		usable: 1,
 		async content(event, trigger, player) {
 			player.skip(event.cost_data);
-			game.log(player, "将于下次跳过", get.translation(event.cost_data));
+			//game.log(player, "将于下次跳过", get.translation(event.cost_data));
 			trigger.getParent().excluded.add(player);
 			game.log(trigger.card, "对", player, "无效");
 			const target = player.getStorage("dcmingjie_effect");
@@ -188,7 +188,7 @@ const skills = {
 				target(card, player, target) {
 					if (_status._dcxianfu_check) return;
 					const mingjie = target.getStorage("dcmingjie_effect");
-					if (!mingjie?.isIn() || !Array.isArray(lib.phaseName)) return;
+					if (!Array.isArray(mingjie) || !mingjie?.isIn() || !Array.isArray(lib.phaseName)) return;
 					if (!lib.phaseName.some(item => !["phaseZhunbei", "phaseJieshu"].includes(item) && !target.skipList.includes(item))) return;
 					_status._dcxianfu_check = true;
 					const eff = get.effect(target, card, player, target);
