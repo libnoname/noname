@@ -1232,7 +1232,7 @@ const skills = {
 				},
 				async cost(event, trigger, player) {
 					const target = trigger.player,
-						num = target.countMark("baonu");
+						num = Math.min(5, target.countMark("baonu"));
 					let list = Array.from({ length: num }).map((_, i) => get.cnNumber(i + 1, true));
 					list.push("cancel2");
 					const result = await player
@@ -1458,7 +1458,6 @@ const skills = {
 						mutation.removedNodes.forEach(card => {
 							game.filterPlayer(current => current.getStorage("sxrmfubei_effect").includes(card)).forEach(current => current.unmarkAuto("sxrmfubei_effect", [card]));
 							game.broadcastAll(card => {
-								delete card.storage.sxrmfubei;
 								if (card?.gaintag?.length) {
 									card.removeGaintag("visible_sxrmfubei");
 								}

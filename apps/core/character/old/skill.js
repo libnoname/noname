@@ -469,8 +469,9 @@ const skills = {
 			const target = event.targets[0];
 			let num = get.info(event.name).countIdentity().length;
 			if (!target.hasDiscardableCards(player, "he")) return;
-			const { cards } = await player.discardPlayerCard({ target, position: "he", selectButton: [1, num], forced: true, allowChooseAll: true }).forResult();
-			num = cards.length;
+			const result = await player.discardPlayerCard({ target, position: "he", selectButton: [1, num], forced: true, allowChooseAll: true }).forResult();
+			const { cards } = result;
+			num = cards?.length ?? 0;
 			if (ui["discardPile"].childNodes.length == 0) return;
 			const list = [];
 			for (let i = 0; i < ui["discardPile"].childNodes.length; i++) {

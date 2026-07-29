@@ -5102,23 +5102,28 @@ const skills = {
 		},
 		subSkill: {
 			discard: {
-				trigger: { player: "useCardAfter" },
-				forced: true,
+				trigger: { player: "useCard1" },
 				charlotte: true,
 				onremove: true,
+				forced: true,
+				popup: false,
 				async content(event, trigger, player) {
-					if (player.hasDiscardableCards(player, "he")) {
-						await player.chooseToDiscard({
-							position: "he",
-							forced: true,
-							selectCard: player.countMark(event.name),
-						});
-					}
+					const num = player.countMark(event.name);
 					player.removeSkill(event.name);
+					player
+						.when({ player: "useCardAfter" })
+						.filter(evt => evt == trigger)
+						.step(async () => {
+							if (num > 0 && player.hasDiscardableCards(player, "he")) {
+								await player.chooseToDiscard({
+									position: "he",
+									forced: true,
+									selectCard: num,
+								});
+							}
+						});
 				},
-				intro: {
-					content: "下次使用牌后弃置#张牌",
-				},
+				intro: { content: "下次使用牌后弃置#张牌" },
 			},
 		},
 	},
