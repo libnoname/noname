@@ -524,13 +524,16 @@ const skills = {
 		filter(event, player) {
 			return player.getExpansions("qiuan").length > 0;
 		},
-		content() {
-			"step 0";
-			var cards = player.getExpansions("qiuan");
-			player.gain(cards, "gain2").gaintag.add("liangfan");
+		async content(event, trigger, player) {
+			const cards = player.getExpansions("qiuan");
+			const next = player.gain({
+				cards,
+				animate: "gain2",
+				gaintag: ["liangfan"],
+			});
 			player.addTempSkill("liangfan2");
-			"step 1";
-			player.loseHp();
+			await next;
+			await player.loseHp();
 		},
 		ai: {
 			combo: "qiuan",
@@ -541,7 +544,7 @@ const skills = {
 		mark: true,
 		mod: {
 			aiOrder(player, card, num) {
-				if (get.itemtype(card) == "card" && card.hasGaintag("liangfan")) {
+				if (get.itemtype(card) === "card" && card.hasGaintag("liangfan")) {
 					return num + 0.1;
 				}
 			},
@@ -554,21 +557,21 @@ const skills = {
 		onremove(player) {
 			player.removeGaintag("liangfan");
 		},
-		prompt: event => "量反：是否获得" + get.translation(event.player) + "的一张牌？",
+		prompt: event => `量反：是否获得${get.translation(event.player)}的一张牌？`,
 		filter(event, player) {
-			var evt = event.getParent(2);
-			if (evt.name != "useCard" || evt.card != event.card) {
+			const evt = event.getParent(2);
+			if (evt.name !== "useCard" || evt.card !== event.card) {
 				return false;
 			}
 			if (!event.player.countGainableCards(player, "he")) {
 				return false;
 			}
 			return (
-				player.getHistory("lose", function (evt2) {
-					if (evt2.getParent() != evt) {
+				player.getHistory("lose", evt2 => {
+					if (evt2.getParent() !== evt) {
 						return false;
 					}
-					for (var i in evt2.gaintag_map) {
+					for (const i in evt2.gaintag_map) {
 						if (evt2.gaintag_map[i].includes("liangfan")) {
 							return true;
 						}
@@ -578,8 +581,12 @@ const skills = {
 			);
 		},
 		marktext: "反",
-		content() {
-			player.gainPlayerCard(trigger.player, true, "he");
+		async content(event, trigger, player) {
+			await player.gainPlayerCard({
+				target: trigger.player,
+				position: "he",
+				forced: true,
+			});
 		},
 	},
 	//文钦
