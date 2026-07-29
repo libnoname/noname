@@ -1091,7 +1091,6 @@ const skills = {
 				}
 				str += "。";
 				return str;
-				return;
 			}
 		},
 		check(event, player, name) {
