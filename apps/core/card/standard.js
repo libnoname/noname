@@ -601,8 +601,8 @@ export default {
 							return 2 / (1 + i);
 						}
 						let fs = game.filterPlayer(current => {
-							return get.attitude(player, current) > 0 && current.hp <= 2;
-						}),
+								return get.attitude(player, current) > 0 && current.hp <= 2;
+							}),
 							damaged = 0,
 							needs = 0;
 						fs.forEach(f => {
@@ -634,8 +634,8 @@ export default {
 					},
 					value: (card, player) => {
 						let fs = game.filterPlayer(current => {
-							return get.attitude(_status.event.player, current) > 0;
-						}),
+								return get.attitude(_status.event.player, current) > 0;
+							}),
 							damaged = 0,
 							needs = 0;
 						fs.forEach(f => {
@@ -780,12 +780,12 @@ export default {
 									player.hp <= 1 &&
 									player !== target &&
 									taos + player.countCards("hs", "jiu") <=
-									Math.min(
-										dis,
-										game.countPlayer(current => {
-											return current.identity === "fan";
-										})
-									)
+										Math.min(
+											dis,
+											game.countPlayer(current => {
+												return current.identity === "fan";
+											})
+										)
 								) {
 									return 0;
 								}
@@ -1052,7 +1052,7 @@ export default {
 					}
 				}
 				ui.clear();
-				let cards;
+				let cards = [];
 				const nextEvents = [];
 				if (get.itemtype(card.storage?.fixedShownCards) === "cards") {
 					cards = card.storage.fixedShownCards.slice();
@@ -1101,7 +1101,7 @@ export default {
 					orderingEvent.relatedEvent = event.getParent();
 					nextEvents.push(orderingEvent);
 				}
-				event.getParent().set(get.name(event.card) + "ShownCards", cards);
+				event.getParent().wuguShownCards = cards;
 				const dialog = ui.create.dialog("五谷丰登", cards, true);
 				_status.dieClose.push(dialog);
 				dialog.videoId = lib.status.videoId++;
@@ -1224,8 +1224,9 @@ export default {
 				if (remainedEvent) {
 					await remainedEvent;
 				}
-				const { [get.name(event.card) + "ShownCards"]: cards } = event.getParent();
-				if (cards.someInD()) {
+				const cards = event.remained;
+				if (get.itemtype(cards) == "cards" && cards.someInD()) {
+					game.log(cards.filterInD(), "被置入了弃牌堆");
 					await game.cardsDiscard(cards.filterInD());
 				}
 			},
@@ -3910,7 +3911,7 @@ export default {
 				game.checkMod(card, player, range, "selectTarget", player);
 				return range[1] !== -1 && event.targets.length > range[1];
 			},
-			async content(_) { },
+			async content(_) {},
 			mod: {
 				selectTarget(card, player, range) {
 					if (card.name !== "sha") {
@@ -4566,7 +4567,7 @@ export default {
 						if (current.isOnline()) {
 							withol = true;
 							const onchooseToUse_data = current.chooseToUse();
-							onchooseToUse_data.setContent(async () => { });
+							onchooseToUse_data.setContent(async () => {});
 							event.next.remove(onchooseToUse_data);
 							const skills = current.getSkills("invisible").concat(lib.skill.global);
 							game.expandSkills(skills);
