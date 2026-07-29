@@ -948,7 +948,6 @@ const skills = {
 		trigger: {
 			global: "useCardToPlayer",
 		},
-		usable: 1,
 		filter(event, player) {
 			if (event.player == player || event.targets?.length != 1 || event.player == event.target) {
 				return false;

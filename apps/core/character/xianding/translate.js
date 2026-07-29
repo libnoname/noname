@@ -101,7 +101,7 @@ const translates = {
 	dcsbxunshi: "迅矢",
 	dcsbxunshi_info: "锁定技，你使用的雷【杀】无距离和次数限制，且造成伤害后受伤角色随机弃置一张牌，然后你摸两张牌。",
 	dcsbzhengong: "震弓",
-	dcsbzhengong_info: "限定技，出牌阶段，你可以弃置至少两张同名牌，然后对任意名其他角色造成共计与弃牌数等量的伤害，因此受到伤害的角色本回合非锁定技失效。",
+	dcsbzhengong_info: "限定技，出牌阶段，你可以弃置任意张同名牌，然后对任意名其他角色造成共计与弃牌数等量的伤害，因此受到伤害的角色本回合非锁定技失效。",
 	v_zhangxingcai: "威张星彩",
 	v_zhangxingcai_prefix: "威",
 	dchuangnu: "煌怒",

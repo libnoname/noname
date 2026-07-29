@@ -3807,16 +3807,11 @@ const skills = {
 		position: "he",
 		complexCard: true,
 		filterCard(card, player) {
-			const { cards } = ui.selected;
-			if (cards.length && get.name(card) != get.name(cards[0])) {
-				return false;
-			}
 			return lib.filter.cardDiscardable(card, player, "dcsbzhengong");
 		},
 		check(card) {
 			return 6 - get.value(card);
 		},
-		selectCard: [2, Infinity],
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			const { cards } = event;
@@ -41805,7 +41800,7 @@ const skills = {
 			while (selected.length < num) {
 				const result = await player
 					.chooseButton([
-						"玉陨：是否选择一项执行？",
+						`玉陨：是否选择一项执行（剩余可选择${num - selected.length}项）？`,
 						[
 							list.map((item, i) => {
 								return [i, item];
