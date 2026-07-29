@@ -15,7 +15,7 @@ const skills = {
 			}
 			return player.countMark("pkwuku") < 3;
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.addMark("pkwuku", 1);
 		},
 		marktext: "库",
@@ -37,7 +37,7 @@ const skills = {
 		filter(event, player) {
 			return player.countMark("pkwuku") > 2;
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			player.gainMaxHp();
 			player.recover();
