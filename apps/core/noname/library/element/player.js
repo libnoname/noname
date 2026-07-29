@@ -1285,7 +1285,7 @@ export class Player extends HTMLDivElement {
 		next.cards = [];
 		next.gaintag = [];
 		if (args.length === 1 && typeof params == "object" && params !== null && get.itemtype(params) == null) {
-			Object.assign(next);
+			Object.assign(next, params);
 		} else {
 			for (const arg of args) {
 				const type = get.itemtype(arg);
