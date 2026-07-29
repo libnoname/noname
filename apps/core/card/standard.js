@@ -3762,8 +3762,6 @@ export default {
 						}
 						return lib.filter.filterCard.apply(this, arguments);
 					},
-					filterTarget: get.filter(trigger.target, 2),
-					selectTarget: -1,
 				});
 				next.set("targetRequired", true);
 				next.set("complexTarget", true);
