@@ -187,8 +187,8 @@ const skills = {
 			effect: {
 				target(card, player, target) {
 					if (_status._dcxianfu_check) return;
-					const mingjie = target.getStorage("dcmingjie_effect");
-					if (Array.isArray(mingjie) || !mingjie?.isIn() || !Array.isArray(lib.phaseName)) return;
+					const mingjie = target.storage.dcmingjie_effect;
+					if (!mingjie?.isIn() || !Array.isArray(lib.phaseName)) return;
 					if (!lib.phaseName.some(item => !["phaseZhunbei", "phaseJieshu"].includes(item) && !target.skipList.includes(item))) return;
 					_status._dcxianfu_check = true;
 					const eff = get.effect(target, card, player, target);
