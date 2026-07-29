@@ -1573,18 +1573,25 @@ const skills = {
 	},
 	jdsbliangzhu: {
 		audio: "sbliangzhu",
-		inherit: "sbliangzhu",
+		enable: "phaseUse",
+		usable: 1,
+		filter(event, player) {
+			return player.group == "shu" && game.hasPlayer(current => get.info("jdsbliangzhu").filterTarget(null, player, current));
+		},
+		filterTarget(card, player, target) {
+			return player != target && target.hasCards("e");
+		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
 			const { cards } = await player.choosePlayerCard(target, "e", true).forResult();
-			if (!cards || !cards.length) {
+			if (!cards?.length) {
 				return;
 			}
 			const next = player.addToExpansion(cards, target, "give");
 			next.gaintag.add(event.name);
 			await next;
 			const targets = game.filterPlayer(current => current != player && current.isDamaged());
-			if (!targets) {
+			if (!targets.length) {
 				return;
 			}
 			const list =
@@ -1605,6 +1612,16 @@ const skills = {
 				await list[0].recover();
 			}
 		},
+		intro: {
+        	content: "expansion",
+        	markcount: "expansion",
+    	},
+    	onremove(player, skill) {
+        	var cards = player.getExpansions(skill);
+        	if (cards.length) {
+            	player.loseToDiscardpile(cards);
+        	}
+    	},
 		ai: {
 			order: 9,
 			result: {
