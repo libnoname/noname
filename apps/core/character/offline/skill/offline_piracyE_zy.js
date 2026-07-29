@@ -314,65 +314,54 @@ const skills = {
 		filter(event, player) {
 			return player.getStorage("zyshilu").length > 0;
 		},
-		content() {
-			"step 0";
-			player
-				.chooseButton([get.prompt("zyxiongnve"), [player.storage.zyshilu, "character"]])
-				.set("ai", function (button) {
-					if (!_status.event.goon) {
-						return 0;
-					}
-					return 1;
+		async content(event, trigger, player) {
+			const characterResult = await player
+				.chooseButton({
+					createDialog: [get.prompt("zyxiongnve"), [player.storage.zyshilu, "character"]],
+					ai() {
+						return get.event().goon ? 1 : 0;
+					},
 				})
-				.set(
-					"goon",
-					player.countCards("hs", function (card) {
-						return get.tag(card, "damage") && player.hasValueTarget(card);
-					}) > 1
-				);
-			"step 1";
-			if (result.bool) {
-				player.logSkill("zyxiongnve");
-				lib.skill.zyxiongnve.throwCharacter(player, result.links);
-				game.delayx();
-				player
-					.chooseControl()
-					.set("prompt", "选择获得一项效果")
-					.set("choiceList", ["本回合造成的伤害+1", "本回合造成伤害时，获得其一张牌", "本回合使用牌没有次数限制"])
-					.set("ai", function () {
-						var player = _status.event.player;
-						if (
-							player.countCards("hs", function (card) {
-								return get.name(card) == "sha" && player.hasValueTarget(card);
-							}) > player.getCardUsable("sha")
-						) {
+				.set("goon", player.countCards("hs", card => get.tag(card, "damage") && player.hasValueTarget(card)) > 1)
+				.forResult();
+			if (!characterResult.bool) {
+				return;
+			}
+			player.logSkill("zyxiongnve");
+			lib.skill.zyxiongnve.throwCharacter(player, characterResult.links);
+			await game.delayx();
+			const controlResult = await player
+				.chooseControl({
+					prompt: "选择获得一项效果",
+					choiceList: ["本回合造成的伤害+1", "本回合造成伤害时，获得其一张牌", "本回合使用牌没有次数限制"],
+					ai() {
+						const player = get.player();
+						if (player.countCards("hs", card => get.name(card) === "sha" && player.hasValueTarget(card)) > player.getCardUsable("sha")) {
 							return 0;
 						}
 						return get.rand(1, 2);
-					});
-			} else {
-				event.finish();
-			}
-			"step 2";
-			var skill = "zyxiongnve_effect" + result.index;
+					},
+				})
+				.forResult();
+			const skill = `zyxiongnve_effect${controlResult.index}`;
 			player.addTempSkill(skill);
-			game.log(player, "本回合", "#g" + lib.skill[skill].promptx);
+			game.log(player, "本回合", `#g${lib.skill[skill].promptx}`);
 		},
 		group: "zyxiongnve_end",
 		throwCharacter(player, list) {
 			player.unmarkAuto("zyshilu", list);
 			_status.characterlist.addArray(list);
-			game.log(player, "从", "#y“戮”", "中移去了", "#g" + get.translation(list));
+			game.log(player, "从", "#y“戮”", "中移去了", `#g${get.translation(list)}`);
 			game.broadcastAll(
-				function (player, list) {
-					var cards = [];
-					for (var i = 0; i < list.length; i++) {
-						var cardname = "huashen_card_" + list[i];
+				(player, list) => {
+					const cards = [];
+					for (const name of list) {
+						const cardname = `huashen_card_${name}`;
 						lib.card[cardname] = {
 							fullimage: true,
-							image: "character:" + list[i],
+							image: `character:${name}`,
 						};
-						lib.translate[cardname] = get.rawName2(list[i]);
+						lib.translate[cardname] = get.rawName2(name);
 						cards.push(game.createCard(cardname, "", ""));
 					}
 					player.$throw(cards, 1000, "nobroadcast");
@@ -393,7 +382,7 @@ const skills = {
 				trigger: { source: "damageBegin1" },
 				forced: true,
 				logTarget: "player",
-				content() {
+				async content(event, trigger, player) {
 					trigger.num++;
 				},
 			},
@@ -408,11 +397,15 @@ const skills = {
 				trigger: { source: "damageBegin1" },
 				forced: true,
 				filter(event, player) {
-					return player != event.player && event.player.countGainableCards(player, "he") > 0;
+					return player !== event.player && event.player.countGainableCards(player, "he") > 0;
 				},
 				logTarget: "player",
-				content() {
-					player.gainPlayerCard(trigger.player, true, "he");
+				async content(event, trigger, player) {
+					await player.gainPlayerCard({
+						target: trigger.player,
+						position: "he",
+						forced: true,
+					});
 				},
 			},
 			effect2: {
@@ -436,9 +429,9 @@ const skills = {
 				trigger: { player: "damageBegin4" },
 				forced: true,
 				filter(event, player) {
-					return event.source != player && event.source && event.source.isIn();
+					return event.source && event.source !== player && event.source.isIn();
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.num--;
 				},
 				ai: {
@@ -447,7 +440,7 @@ const skills = {
 							if (player.hasSkillTag("jueqing", false, target)) {
 								return;
 							}
-							var num = get.tag(card, "damage");
+							const num = get.tag(card, "damage");
 							if (num) {
 								if (num > 1) {
 									return 0.5;
@@ -464,25 +457,30 @@ const skills = {
 				filter(event, player) {
 					return player.getStorage("zyshilu").length > 1;
 				},
-				content() {
-					"step 0";
-					player.chooseButton(["凶虐：是否移去两张“戮”获得减伤？", [player.storage.zyshilu, "character"]], 2).set("ai", function (button) {
-						var player = _status.event.player;
-						if (game.countPlayer() * 1.5 + player.storage.zyshilu.length / 2 > 8) {
-							return 1;
-						}
-						if (player.hp <= 2) {
-							return 1;
-						}
-						return 0;
-					});
-					"step 1";
-					if (result.bool) {
-						player.logSkill("zyxiongnve");
-						lib.skill.zyxiongnve.throwCharacter(player, result.links);
-						player.addTempSkill("zyxiongnve_effect3", { player: "phaseBegin" });
-						game.delayx();
+				async content(event, trigger, player) {
+					const result = await player
+						.chooseButton({
+							createDialog: ["凶虐：是否移去两张“戮”获得减伤？", [player.storage.zyshilu, "character"]],
+							selectButton: 2,
+							ai() {
+								const player = get.player();
+								if (game.countPlayer() * 1.5 + player.storage.zyshilu.length / 2 > 8) {
+									return 1;
+								}
+								if (player.hp <= 2) {
+									return 1;
+								}
+								return 0;
+							},
+						})
+						.forResult();
+					if (!result.bool) {
+						return;
 					}
+					player.logSkill("zyxiongnve");
+					lib.skill.zyxiongnve.throwCharacter(player, result.links);
+					player.addTempSkill("zyxiongnve_effect3", { player: "phaseBegin" });
+					await game.delayx();
 				},
 			},
 		},
