@@ -10,7 +10,7 @@ const skills = {
 		forced: true,
 		preHidden: true,
 		filter(event, player) {
-			if (get.type(event.card) != "equip") {
+			if (get.type(event.card) !== "equip") {
 				return false;
 			}
 			return player.countMark("pkwuku") < 3;
@@ -73,7 +73,7 @@ const skills = {
 				return ui.create.dialog("灭吴", [list, "vcard"]);
 			},
 			check(button) {
-				if (_status.event.getParent().type != "phase") {
+				if (_status.event.getParent().type !== "phase") {
 					return 1;
 				}
 				const player = get.player();
@@ -96,7 +96,7 @@ const skills = {
 					async precontent(event, trigger, player) {
 						player
 							.when({ player: ["useCardAfter", "respondAfter"] })
-							.filter(evt => evt.getParent() == event.getParent())
+							.filter(evt => evt.getParent() === event.getParent())
 							.step(async (event, trigger, player) => {
 								player.removeSkill(event.name);
 								await player.draw();
@@ -108,7 +108,7 @@ const skills = {
 				};
 			},
 			prompt(links, player) {
-				return "视为使用" + (get.translation(links[0][3]) || "") + get.translation(links[0][2]) + "并摸一张牌";
+				return `视为使用${get.translation(links[0][3]) || ""}${get.translation(links[0][2])}并摸一张牌`;
 			},
 		},
 		hiddenCard(player, name) {
