@@ -351,7 +351,7 @@ window.noname_character_replace = {
 	zhaoyǎn: ["zhaoyǎn", "dc_zhaoyǎn"],
 	zhaoyun: ["zhaoyun", "re_zhaoyun", "sp_zhaoyun", "ol_sb_zhaoyun", "ol_jsrg_zhaoyun", "old_zhaoyun", "sb_zhaoyun", "huan_zhaoyun", "jsrg_zhaoyun", "jd_sb_zhaoyun", "jsp_zhaoyun", "yy_zhaoyun", "ps2063_zhaoyun", "ps2067_zhaoyun", "natu_zhaoyun", "sxrm_zhaoyun"],
 	zhenji: ["zhenji", "re_zhenji", "sp_zhenji", "sb_zhenji", "mb_sp_zhenji", "tw_zhenji", "jsrg_zhenji", "yj_zhenji", "shinin_zhenji"],
-	zhonghui: ["zhonghui", "clan_zhonghui", "xin_zhonghui", "re_zhonghui", "std_zhonghui", "yj_zhonghui", "pe_zhonghui", "old_zhonghui", "zj_zhonghui", "sp_zhonghui"],
+	zhonghui: ["zhonghui", "clan_zhonghui", "xin_zhonghui", "re_zhonghui", "std_zhonghui", "yj_zhonghui", "pe_zhonghui", "old_zhonghui", "zj_zhonghui", "sp_zhonghui", "dc_sb_zhonghui"],
 	zhongyan: ["zhongyan", "clan_zhongyan"],
 	zhongyao: ["zhongyao", "clan_zhongyao", "re_zhongyao", "mb_zhongyao"],
 	zhoubuyi: ["zhoubuyi", "yj_zhoubuyi"],

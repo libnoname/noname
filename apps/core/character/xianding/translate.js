@@ -1,6 +1,16 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	dc_sb_zhonghui: "新杀谋钟会",
+	dc_sb_zhonghui_prefix: "新杀谋",
+	dcsbjinglian: "精练",
+	dcsbjinglian_info: "每个回合结束时，若你本回合至少失去过两张牌，则你可以摸三张牌。若摸的牌里有装备牌或多目标锦囊牌，则你可弃置之并对等量名其他角色各造成1点伤害。",
+	dcsbxieshu: "挟术",
+	dcsbxieshu_info: "每回合限一次，你使用牌指定其他角色为目标后，你可令此牌对其中一个目标无效并获得其一张牌。",
+	dcsbzongzi: "纵恣",
+	dcsbzongzi_info: `觉醒技，准备阶段，若你本局游戏已造成或受到共计至少3点伤害，则你加1点体力上限，回复1点体力，然后你选择一项：1.再增加1点体力上限，失去${get.poptip("dcsbjinglian")}并获得${get.poptip("dcsbjinhuo")}；2.令${get.poptip("dcsbxieshu")}取消次数限制。`,
+	dcsbjinhuo: "矜祸",
+	dcsbjinhuo_info: "你获得其他角色或其他角色获得你的牌时，你可将手牌摸至体力上限。然后若你的手牌数比该角色多，其本回合非锁定技失效。",
 	lizhaoyi: "李昭仪",
 	dcmingjie: "明节",
 	dcmingjie_info: "游戏开始时，你选择一名其他角色，你与其获得对方因弃牌阶段弃置的牌，你或其的阶段被跳过时，你与其各摸两张牌并可令对方防止下次受到的伤害。其死亡时，你死亡。",
