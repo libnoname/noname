@@ -175,7 +175,7 @@ const skills = {
 						order: 10,
 						result: {
 							target(player, target) {
-								if (target != player) {
+								if (target !== player) {
 									return 0;
 								}
 								if (player.getExpansions("zyquanji").length <= 1 || (player.needsToDiscard() && !player.getEquip("zhuge") && !player.hasSkill("new_paoxiao"))) {
@@ -191,24 +191,22 @@ const skills = {
 				return "请选择【排异】的目标";
 			},
 		},
-		contentx() {
-			"step 0";
-			var card = lib.skill.zypaiyi_backup.card;
-			player.loseToDiscardpile(card);
-			"step 1";
-			var num = player.getExpansions("zyquanji").length;
+		async contentx(event, trigger, player) {
+			const { target } = event;
+			const card = lib.skill.zypaiyi_backup.card;
+			await player.loseToDiscardpile(card);
+			const num = player.getExpansions("zyquanji").length;
 			if (num > 0) {
-				target.draw(Math.min(7, num));
+				await target.draw(Math.min(7, num));
 			}
-			"step 2";
 			if (target.countCards("h") > player.countCards("h")) {
-				target.damage();
+				await target.damage();
 			}
 		},
 		ai: {
 			order(item, player) {
-				var num = player.getExpansions("zyquanji").length;
-				if (num == 1) {
+				const num = player.getExpansions("zyquanji").length;
+				if (num === 1) {
 					return 8;
 				}
 				return 1;
