@@ -2,6 +2,269 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//勘律荀勖
+	kanlv: {
+		audio: 2,
+		trigger: {
+			player: "damageEnd",
+		},
+		frequent: true,
+		check: () => true,
+		async content(event, trigger, player) {
+			const top = get.cards(4, true);
+			let cards = player.getCards("h").concat(top);
+			await game.cardsGotoOrdering(top);
+			await player
+				.showCards(cards, get.translation(player) + "发动了【勘律】", true)
+				.set("clearArena", false)
+				.set("noOrdering", true);
+			cards = player.getCards("h").concat(top);
+			if (game.hasPlayer(target => target != player)) {
+				let result;
+				if (!cards.map(card => get.suit(card)).containsAll(...lib.suit.slice())) {
+					result = { bool: false };
+				} else {
+					const fake = game.createFakeCards(top);
+					player.directgains(fake, null, event.name + "_tag");
+					result = await player
+						.chooseCardTarget({
+							prompt: "勘律：请将四种花色的牌各一张交给一名其他角色",
+							filterCard(card) {
+								if (get.position(card) == "s" && !card.hasGaintag("kanlv_tag")) {
+									return false;
+								}
+								const suit = get.suit(card);
+								return lib.suit.includes(suit) && !ui.selected.cards.some(cardx => get.suit(cardx) == suit);
+							},
+							position: "hs",
+							selectCard: 4,
+							complexCard: true,
+							forced: true,
+							filterTarget: lib.filter.notMe,
+							ai1(card) {
+								return 1 / Math.max(0.1, get.value(card));
+							},
+							ai2(target) {
+								const player = get.player();
+								let att = get.attitude(player, target);
+								if (target.hasSkillTag("nogain")) {
+									att /= 9;
+								}
+								return 4 + att;
+							},
+						})
+						.set("fake", fake)
+						.set("top", top)
+						.set("custom", {
+							replace: {
+								window() {},
+							},
+							add: {
+								confirm(bool) {
+									const event = get.event();
+									const { fake, top } = event;
+									if (bool === true) {
+										const { cards } = event.result;
+										for (let i = 0; i < cards?.length; i++) {
+											const card = cards[i];
+											if (fake.includes(card)) {
+												const rcard = top.find(i => i.cardid == card._cardid);
+												if (rcard) {
+													event.result.cards[i] = rcard;
+												} else {
+													event.result.cards?.splice(i, 1);
+													i = Math.max(0, i - 1);
+												}
+											}
+										}
+									}
+									/*if (typeof bool == "boolean") {
+											game.deleteFakeCards(fake);
+										}*/
+								},
+							},
+						})
+						.forResult();
+					game.deleteFakeCards(fake);
+				}
+				if (result.bool && result?.cards?.length && result.targets?.length) {
+					const {
+						targets: [target],
+						cards,
+					} = result;
+					player.line(target);
+					const noowner = cards.filter(card => top.includes(card));
+					const owner = cards.slice().removeArray(noowner);
+					if (noowner.length) {
+						target.$gain2(noowner, true);
+					}
+					if (owner.length) {
+						player.$give(owner, target);
+					}
+					await target.gain({ cards }).set("giver", player).set("visible", true);
+				}
+			}
+			game.broadcastAll(() => ui.clear());
+			await player.gain({ cards: top.filterInD(), animate: "gain2" });
+		},
+		subSkill: {
+			tag: {
+				name: "牌堆顶",
+			},
+		},
+	},
+	yjshenwei: {
+		audio: 2,
+		onChooseToUse(event) {
+			const { player } = event;
+			if (game.me == player && !event.yjshenwei_custom) {
+				event.custom ??= {
+					replace: {},
+					add: {},
+				};
+				const addCard = event.custom.add.card;
+				event.custom.add.card = function (...args) {
+					const event = get.event();
+					if (event.skill == "yjshenwei") {
+						const selected = ui.selected.cards;
+						if (!event.yjshenwei_selected?.length) {
+							event.yjshenwei_selected ??= [];
+							const card = selected[0];
+							if (card) {
+								const { player } = event;
+								const suit = get.suit(card);
+								const cards = player.getDiscardableCards(player, "h", cardx => cardx != card && get.suit(cardx) == suit);
+								ui.selected.cards.addArray(cards);
+								event.yjshenwei_selected = ui.selected.cards.slice();
+								cards.forEach(card => {
+									card.classList.add("selected");
+									card.updateTransform(true);
+								});
+							}
+						} else if (!event.yjshenwei_selected.every((card, index) => selected[index])) {
+							ui.selected.cards = [];
+							event.yjshenwei_selected = [];
+							selected.forEach(card => {
+								card.classList.remove("selected");
+								card.updateTransform(false);
+							});
+						}
+					}
+					if (typeof addCard == "function") {
+						addCard.apply(this, ...args);
+					}
+				};
+				event.set("yjshenwei_custom", true);
+			}
+		},
+		enable: "chooseToUse",
+		viewAsFilter(player) {
+			return !player.hasCard(card => player.hasUseTarget(card, void 0, true) || (get.info(card).notarget && lib.filter.cardEnabled(card, player)), "hs");
+		},
+		filterCard(card, player) {
+			if (ui.selected.cards?.length) {
+				const suit = get.suit(ui.selected.cards[0]);
+				if (get.suit(card) != suit) {
+					return false;
+				}
+			}
+			return lib.filter.cardDiscardable(card, player, "yjshenwei");
+		},
+		selectCard: [1, Infinity],
+		viewAs: {
+			name: "tao",
+			storage: {
+				yjshenwei: true,
+			},
+			suit: "none",
+			number: void 0,
+			color: "none",
+		},
+		check(card) {
+			return 6 - get.value(card);
+		},
+		ignoreMod: true,
+		log: false,
+		async precontent(event, trigger, player) {
+			player.logSkill("yjshenwei");
+			const cards = event.result.cards?.slice(0);
+			event.result.cards = [];
+			await player.modedDiscard({ cards });
+			player.addTempSkill("yjshenwei_tempBan");
+		},
+		group: ["yjshenwei_useCard"],
+		subSkill: {
+			useCard: {
+				audio: "yjshenwei",
+				forced: true,
+				locked: false,
+				trigger: {
+					player: "useCardAfter",
+				},
+				filter(event, player) {
+					const suit = get.suit(event.card);
+					return lib.suit.includes(suit) && (event.targets?.some(target => target != player) || !player.getStorage("yjshenwei_useCard").includes(suit));
+				},
+				async content(event, trigger, player) {
+					player.addTempSkill("yjshenwei_debuff");
+					player.markAuto("yjshenwei_debuff", get.suit(trigger.card));
+					if (trigger.targets?.some(target => target != player)) {
+						await player.damage();
+					}
+				},
+			},
+			tempBan: {
+				charlotte: true,
+				forced: true,
+				popup: false,
+				trigger: {
+					global: ["recoverBegin", "recoverAfter"],
+				},
+				filter(event, player, name) {
+					if (name == "recoverAfter") {
+						if (event.player.isDying()) {
+							return false;
+						}
+						return event.yjshenwei_tempBan;
+					} else {
+						if (!event.card?.storage?.yjshenwei) {
+							return false;
+						}
+						if (!event.player.isDying()) {
+							return false;
+						}
+						return true;
+					}
+				},
+				async content(event, trigger, player) {
+					if (event.triggername == "recoverBegin") {
+						trigger.set(event.name, true);
+					} else {
+						player.tempBanSkill("yjshenwei", "roundStart");
+					}
+				},
+			},
+			debuff: {
+				charlotte: true,
+				onremove: true,
+				intro: {
+					content: "不能使用$牌",
+				},
+				mod: {
+					cardEnabled(card, player) {
+						if (player.getStorage("yjshenwei_debuff").includes(get.suit(card))) {
+							return false;
+						}
+					},
+					cardSavable(card, player) {
+						if (player.getStorage("yjshenwei_debuff").includes(get.suit(card))) {
+							return false;
+						}
+					},
+				},
+			},
+		},
+	},
 	//仇渊灵雎
 	jiechou: {
 		audio: 4,
@@ -206,8 +469,9 @@ const skills = {
 			const target = event.targets[0];
 			let num = get.info(event.name).countIdentity().length;
 			if (!target.hasDiscardableCards(player, "he")) return;
-			const { cards } = await player.discardPlayerCard({ target, position: "he", selectButton: [1, num], forced: true, allowChooseAll: true}).forResult();
-			num = cards.length;
+			const result = await player.discardPlayerCard({ target, position: "he", selectButton: [1, num], forced: true, allowChooseAll: true }).forResult();
+			const { cards } = result;
+			num = cards?.length ?? 0;
 			if (ui["discardPile"].childNodes.length == 0) return;
 			const list = [];
 			for (let i = 0; i < ui["discardPile"].childNodes.length; i++) {

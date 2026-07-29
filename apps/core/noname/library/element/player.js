@@ -1751,10 +1751,10 @@ export class Player extends HTMLDivElement {
 		return Math.max(
 			0,
 			this.countEnabledSlot(type) -
-			this.getVEquips(type).reduce((num, card) => {
-				let types = get.subtypes(card, false);
-				return num + get.numOf(types, type);
-			}, 0)
+				this.getVEquips(type).reduce((num, card) => {
+					let types = get.subtypes(card, false);
+					return num + get.numOf(types, type);
+				}, 0)
 		);
 	}
 	/**
@@ -1786,13 +1786,13 @@ export class Player extends HTMLDivElement {
 		return Math.max(
 			0,
 			this.countEnabledSlot(type) -
-			this.getVEquips(type).reduce((num, card) => {
-				let types = get.subtypes(card, false);
-				if (!lib.filter.canBeReplaced(card, this)) {
-					num += get.numOf(types, type);
-				}
-				return num;
-			}, 0)
+				this.getVEquips(type).reduce((num, card) => {
+					let types = get.subtypes(card, false);
+					if (!lib.filter.canBeReplaced(card, this)) {
+						num += get.numOf(types, type);
+					}
+					return num;
+				}, 0)
 		);
 	}
 	/**
@@ -3217,10 +3217,10 @@ export class Player extends HTMLDivElement {
 		m = game.checkMod(from, to, m, "attackFrom", from);
 		m = game.checkMod(from, to, m, "attackTo", to);
 		const equips1 = from.getVCards("e", function (card) {
-			return !card.cards?.some(card => {
-				return ui.selected.cards?.includes(card);
-			});
-		}),
+				return !card.cards?.some(card => {
+					return ui.selected.cards?.includes(card);
+				});
+			}),
 			equips2 = to.getVCards("e", function (card) {
 				return !card.cards?.some(card => {
 					return ui.selected.cards?.includes(card);
@@ -6860,7 +6860,7 @@ export class Player extends HTMLDivElement {
 				func = arg;
 			}
 		}
-		const controls = forced ? ["cancel2"] : [];
+		const controls = forced ? [] : ["cancel2"];
 		return this.chooseControl({
 			controls,
 			choiceList: list,
@@ -11502,14 +11502,14 @@ export class Player extends HTMLDivElement {
 		_status.event.clearStepCache();
 		return this;
 	}
-	awakenQidingSkill(skill){
+	awakenQidingSkill(skill) {
 		if (this.storage[skill]) {
 			return;
 		}
 		if (this.storage[skill] === undefined || this.storage[skill] === false) {
 			this.storage[skill] = true;
 		}
-		game.log(`契约已成，${get.translation(this)}将【${get.translation(skill)}】改为锁定技。`);
+		game.log("契约已成，", this, "将", `#g${get.translation(skill)}】`, `改为锁定技`);
 		_status.event.clearStepCache();
 		return this;
 	}
