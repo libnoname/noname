@@ -2,7 +2,7 @@ export default {
 	sxrm_zhouyu: "哀弦万耳惊",
 	sxrm_sunshangxiang: "生死相随",
 	sxrm_zhangzhao: "迂儒",
-	sxrm_lusu: "养虫成蛇",
+	sxrm_lusu: "养虺成蛇",
 	sxrm_chen_caocao: "铜雀囚凰",
 	sxrm_zhugeliang: "人也神也",
 	sxrm_jiahua: "拔剑四顾",
