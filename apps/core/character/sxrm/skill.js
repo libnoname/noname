@@ -1458,7 +1458,6 @@ const skills = {
 						mutation.removedNodes.forEach(card => {
 							game.filterPlayer(current => current.getStorage("sxrmfubei_effect").includes(card)).forEach(current => current.unmarkAuto("sxrmfubei_effect", [card]));
 							game.broadcastAll(card => {
-								delete card.storage.sxrmfubei;
 								if (card?.gaintag?.length) {
 									card.removeGaintag("visible_sxrmfubei");
 								}
