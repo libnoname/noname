@@ -6058,7 +6058,9 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const num = game.countGroup();
-			await player.addToExpansion(get.cards(num)).gaintag.add("shiroha_yuzhao");
+			const next = player.addToExpansion(get.cards(num));
+			next.gaintag.add("shiroha_yuzhao");
+			await next;
 
 			const moveResult = await player
 				.chooseToMove()
