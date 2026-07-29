@@ -2061,106 +2061,97 @@ const skills = {
 			global: ["cardsDiscardAfter", "loseAsyncAfter"],
 		},
 		filter(event, player) {
-			if (event.name != "cardsDiscard") {
-				if (event.type != "discard") {
-					return false;
-				}
-				var evt = event.getl(player);
-				return evt.cards2 && evt.cards2.filterInD("d").length > 0;
-			} else {
-				var evt = event.getParent();
-				if (evt.name != "orderingDiscard" || !evt.relatedEvent || evt.relatedEvent.player != player || !["useCard", "respond"].includes(evt.relatedEvent.name)) {
+			if (event.name === "cardsDiscard") {
+				const evt = event.getParent();
+				if (evt.name !== "orderingDiscard" || !evt.relatedEvent || evt.relatedEvent.player !== player || !["useCard", "respond"].includes(evt.relatedEvent.name)) {
 					return false;
 				}
 				return event.cards.filterInD("d").length > 0;
 			}
+			if (event.type !== "discard") {
+				return false;
+			}
+			const evt = event.getl(player);
+			return evt.cards2 && evt.cards2.filterInD("d").length > 0;
 		},
 		forced: true,
-		content() {
-			"step 0";
-			var evt = trigger.getParent().relatedEvent;
-			if ((trigger.name == "discard" && !trigger.delay) || (evt && evt.name == "respond")) {
-				game.delayx();
+		async content(event, trigger, player) {
+			const relatedEvent = trigger.getParent().relatedEvent;
+			if ((trigger.name === "discard" && !trigger.delay) || (relatedEvent && relatedEvent.name === "respond")) {
+				await game.delayx();
 			}
-			"step 1";
-			var cards;
+			let discardedCards;
 			if (trigger.getl) {
-				cards = trigger.getl(player).cards2.filterInD("d");
+				discardedCards = trigger.getl(player).cards2.filterInD("d");
 			} else {
-				cards = trigger.cards.filterInD("d");
+				discardedCards = trigger.cards.filterInD("d");
 			}
-			if (cards.length == 1) {
-				event._result = { bool: true, links: cards };
+			let result;
+			if (discardedCards.length === 1) {
+				result = { bool: true, links: discardedCards };
 			} else {
-				var dialog = ["遗策：选择要放置的卡牌", '<div class="text center">（从左到右为从旧到新，后选择的后置入）</div>', cards];
-				var cards2 = player.getExpansions("nsyice");
-				cards2.reverse();
-				if (cards2.length) {
+				const dialog = ["遗策：选择要放置的卡牌", '<div class="text center">（从左到右为从旧到新，后选择的后置入）</div>', discardedCards];
+				const expansionCards = player.getExpansions("nsyice");
+				expansionCards.reverse();
+				if (expansionCards.length) {
 					dialog.push('<div class="text center">原有“策”</div>');
-					dialog.push(cards2);
+					dialog.push(expansionCards);
 				}
-				player
-					.chooseButton(dialog, true, cards.length)
-					.set("filterButton", function (button) {
-						return _status.event.cards.includes(button.link);
-					})
-					.set("cards", cards);
+				result = await player
+					.chooseButton(dialog, true, discardedCards.length)
+					.set("filterButton", button => _status.event.cards.includes(button.link))
+					.set("cards", discardedCards)
+					.forResult();
 			}
-			"step 2";
-			player.addToExpansion(result.links, "gain2").gaintag.add("nsyice");
-			"step 3";
-			var storage = player.getExpansions("nsyice");
-			var bool = false;
-			for (var i = 0; i < storage.length; i++) {
-				for (var j = storage.length - 1; j > i; j--) {
-					if (get.number(storage[i]) == get.number(storage[j])) {
-						bool = true;
-						break;
+			const expansionEvent = player.addToExpansion(result.links, "gain2");
+			expansionEvent.gaintag.add("nsyice");
+			await expansionEvent;
+
+			const storage = player.getExpansions("nsyice");
+			let matchedCards;
+			for (const [startIndex, startCard] of storage.entries()) {
+				const followingCards = storage.slice(startIndex + 1).reverse();
+				for (const [reverseIndex, endCard] of followingCards.entries()) {
+					if (get.number(startCard) !== get.number(endCard)) {
+						continue;
 					}
+					const endIndex = storage.length - 1 - reverseIndex;
+					matchedCards = storage.splice(startIndex, endIndex - startIndex + 1);
+					break;
 				}
-				if (bool) {
+				if (matchedCards) {
 					break;
 				}
 			}
-			if (bool) {
-				event.cards = storage.splice(i, j - i + 1);
-			} else {
-				event.finish();
+			if (!matchedCards) {
+				return;
 			}
-			"step 4";
-			var cardsx = [];
-			cardsx.push(cards.shift());
-			cardsx.push(cards.pop());
-			if (cards.length) {
-				player.gain(cards, "gain2");
+
+			const edgeCards = [matchedCards.shift(), matchedCards.pop()];
+			if (matchedCards.length) {
+				await player.gain(matchedCards, "gain2");
 			}
-			event.cards = cardsx;
-			"step 5";
-			player.chooseButton(["将一张牌置于牌堆顶，将另一张牌置于牌堆底", cards], true);
-			"step 6";
-			player.lose(event.cards, ui.cardPile).set("topper", result.links[0]).insert_index = function (event, card) {
-				if (card == event.topper) {
-					return ui.cardPile.firstChild;
-				}
-				return null;
-			};
-			if (_status.dying.length) {
-				event.finish();
+			const arrangeResult = await player.chooseButton(["将一张牌置于牌堆顶，将另一张牌置于牌堆底", edgeCards], true).forResult();
+			const loseEvent = player.lose(edgeCards, ui.cardPile).set("topper", arrangeResult.links[0]);
+			loseEvent.insert_index = (event, card) => (card === event.topper ? ui.cardPile.firstChild : null);
+			const canDamage = !_status.dying.length;
+			await loseEvent;
+			if (!canDamage) {
+				return;
 			}
-			"step 7";
-			player.chooseTarget("对一名角色造成1点伤害", true).set("ai", function (target) {
-				var player = _status.event.player;
-				return get.damageEffect(target, player, player);
-			});
-			"step 8";
-			if (result.bool) {
-				var target = result.targets[0];
+
+			const targetResult = await player
+				.chooseTarget("对一名角色造成1点伤害", true)
+				.set("ai", target => get.damageEffect(target, _status.event.player, _status.event.player))
+				.forResult();
+			if (targetResult.bool) {
+				const target = targetResult.targets[0];
 				player.line(target);
-				target.damage("nocard");
+				await target.damage("nocard");
 			}
 		},
 		onremove(player, skill) {
-			var cards = player.getExpansions(skill);
+			const cards = player.getExpansions(skill);
 			if (cards.length) {
 				player.loseToDiscardpile(cards);
 			}
