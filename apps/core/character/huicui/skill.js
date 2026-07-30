@@ -466,6 +466,9 @@ const skills = {
 		usable: 2,
 		filterCard: true,
 		position: "h",
+		check(card) {
+			return 9 - get.value(card);
+		},
 		filter(event, player) {
 			return player.hasCards("h") && game.hasPlayer(p => p !== player && p.hasCards("he"));
 		},
@@ -580,6 +583,13 @@ const skills = {
 					});
 				}
 			});
+		},
+		ai: {
+			order: 9,
+			result: {
+				player: 1,
+				target: -1,
+			},
 		},
 	},
 	dczhuguo: {
