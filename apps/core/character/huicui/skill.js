@@ -17,66 +17,54 @@ const skills = {
 			},
 		},
 		audio: 2,
-		enable: ["chooseToUse"],
 		hiddenCard(player, name) {
-			const fuCards = player.getCards("hes", card => card.hasGaintag("dcfuyue_tag") && card.storage?.dcfuyue_name);
-			return fuCards.some(card => card.storage.dcfuyue_name === name);
+			return player.hasCards("hs", card => card.hasGaintag("dcfuyue_tag") && card.storage?.dcfuyue_name == name);
 		},
+		enable: ["chooseToUse"],
 		filter(event, player) {
-			const fuCards = player.getCards("hes", card => card.hasGaintag("dcfuyue_tag") && card.storage?.dcfuyue_name);
-			if (fuCards.length === 0) {
-				return false;
-			}
-			for (const card of fuCards) {
-				const cardName = card.storage.dcfuyue_name;
-				const vcard = get.autoViewAs({ name: cardName }, card);
-				if (event.filterCard(vcard, player, event)) {
-					return true;
-				}
-			}
-			return false;
-		},
-		chooseButton: {
-			dialog(event, player) {
-				const fuCards = player.getCards("hes", card => card.hasGaintag("dcfuyue_tag") && card.storage?.dcfuyue_name);
-				const list = get.inpileVCardList(([type, _, name]) => {
-					return fuCards.some(card => card.storage.dcfuyue_name == name);
-				});
-				return ui.create.dialog("赋乐：选择要使用的牌名", [list, "vcard"]);
-			},
-			filter(button, player) {
-				const evt = get.event().getParent();
-				const name = button.link[2];
-				if (!evt?.name) {
+			return player.hasCards("hs", card => {
+				if (!card.hasGaintag("dcfuyue_tag") || !card.storage?.dcfuyue_name) {
 					return false;
 				}
-				return evt.filterCard(get.autoViewAs({ name }, "unsure"), player, evt);
-			},
-			check(button) {
-				const player = get.player(),
-					name = button.link[2];
-				return player.getUseValue(get.autoViewAs({ name }, "unsure")) + 0.1;
-			},
-			backup(links, player) {
-				const cardName = links[0][2];
-				return {
-					audio: "dcfuyue",
-					cardName: cardName,
-					viewAs(cards) {
-						return { name: lib.skill.dcfuyue_backup.cardName };
-					},
-					position: "hs",
-					selectCard: 1,
-					filterCard(card, player) {
-						return card.hasGaintag("dcfuyue_tag") && card.storage?.dcfuyue_name === lib.skill.dcfuyue_backup.cardName;
-					},
-					popname: true,
-				};
-			},
-			prompt(links, player) {
-				const cardName = links[0][2];
-				return `选择${get.translation(cardName)}的目标`;
-			},
+				const name = card.storage?.dcfuyue_name;
+				const vcard = get.autoViewAs({ name }, "unsure");
+				return event.filterCard(vcard, player, event);
+			});
+		},
+		viewAs(cards, player) {
+			if (cards.length) {
+				var name = cards[0].storage?.dcfuyue_name,
+					nature = null;
+				//返回判断结果
+				if (name) {
+					return { name: name, nature: nature };
+				}
+			}
+			return null;
+		},
+		prompt(event, player) {
+			return `将“赋”牌当该牌所拥有的任意一种牌名使用`;
+		},
+		position: "hs",
+		filterCard(card, player, event) {
+			event = event || _status.event;
+			const filter = event._backup.filterCard;
+			if (!card.hasGaintag("dcfuyue_tag")) {
+				return false;
+			}
+			const name = card.storage?.dcfuyue_name;
+			if (!name) {
+				return false;
+			}
+			return filter(get.autoViewAs({ name }, "unsure"), player, event);
+		},
+		check(card) {
+			const player = get.player(),
+				name = card.storage?.dcfuyue_name;
+			if (_status.event.type != "phase") {
+				return 1;
+			}
+			return player.getUseValue({ name }) + 0.1;
 		},
 		fuCardPool: ["sha", "shan", "tao", "jiu", "shunshou", "guohe", "wuxie", "wuzhong", "nanman", "wanjian", "huogong", "juedou", "jiedao", "taoyuan", "wugu", "tiesuo", "lebu", "bingliang", "shandian"],
 		markAsFu: card => {
@@ -128,7 +116,7 @@ const skills = {
 			respondSha: true,
 			respondShan: true,
 			skillTagFilter(player, tag) {
-				const fuCards = player.getCards("hes", card => card.hasGaintag("dcfuyue_tag") && card.storage?.dcfuyue_name);
+				const fuCards = player.getCards("hs", card => card.hasGaintag("dcfuyue_tag") && card.storage?.dcfuyue_name);
 				let name;
 				if (tag === "respondSha") {
 					name = "sha";
