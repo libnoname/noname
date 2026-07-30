@@ -13763,19 +13763,22 @@ export class Player extends HTMLDivElement {
 	 *
 	 * @overload
 	 * @param { string } name
+	 * @param { boolean } hasJudgeSlots 是否考虑牌的占位情况
 	 * @returns { boolean} 返回玩家判定区是否有某(种牌名的)牌
 	 */
-	hasJudge(name) {
+	hasJudge(name, hasJudgeSlots = true) {
 		if (name && typeof name === "object") {
 			name = name.viewAs || name.name;
 		}
-		var judges = this.getVCards("j");
-		for (var i = 0; i < judges.length; i++) {
-			if (judges[i].name === name) {
+		const judges = this.getVCards("j");
+		return judges.some(card => {
+			if (card.name === name) {
 				return true;
 			}
-		}
-		return false;
+			if (hasJudgeSlots && get.judgeSlots(card, this).containsSome(...get.judgeSlots(name, this))) {
+				return true;
+			}
+		});
 	}
 	/**
 	 * 返回玩家是否存在队友
