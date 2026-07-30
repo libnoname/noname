@@ -13151,7 +13151,6 @@ const skills = {
 				return;
 			}
 			choices.push("cancel2");
-
 			const result = await player
 				.chooseControl({
 					prompt: "勤强：你可以选择一项",
@@ -13175,19 +13174,19 @@ const skills = {
 				})
 				.set("numx", num)
 				.forResult();
-
-			event.result = {
-				bool: result.control !== "cancel2",
-				cost_data: result.control,
-			};
+			if (typeof result?.control == "string") {
+				event.result = {
+					bool: result.control !== "cancel2",
+					cost_data: result.control,
+				};
+			}
 		},
+		//博弈
+		popup: false,
 		async content(event, trigger, player) {
 			const control = event.cost_data;
 			player.addTempSkill(event.name + "_used");
 			player.markAuto(event.name + "_used", [control]);
-			const str = control === "选项一" ? "加伤" : "摸牌";
-			player.popup(str);
-			game.log(player, "选择了", "#g【勤强】", "的", "#y" + str + "项");
 			const num = get.info(event.name).getNum(trigger, player);
 			if (control === "选项一") {
 				if (typeof trigger.baseDamage != "number") {
@@ -13195,15 +13194,11 @@ const skills = {
 				}
 				trigger.baseDamage += num;
 			} else if (control == "选项二") {
-				await player.draw(num);
+				player.logSkill(event.name);
+				await player.draw({ num });
 			}
 		},
-		subSkill: {
-			used: {
-				charlotte: true,
-				onremove: true,
-			},
-		},
+		subSkill: { used: { charlotte: true, onremove: true } },
 	},
 	dcsbyizhen: {
 		audio: 2,
