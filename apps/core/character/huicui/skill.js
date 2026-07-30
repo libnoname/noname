@@ -82,7 +82,7 @@ const skills = {
 		markAsFu: card => {
 			const randomName = get
 				.info("dcfuyue")
-				.fuCardPool.filter(name => ![card.name, card.storage?.dcfuyue_name].includes(name))
+				.fuCardPool.filter(name => ![card.name].includes(name))
 				.randomGet();
 			card.removeGaintag("dcfuyue_tag");
 			card.removeGaintag(`赋(${get.translation(card.storage.dcfuyue_name)})`);
@@ -180,7 +180,7 @@ const skills = {
 			return result;
 		},
 		filter(event, player, name, info) {
-			return info?.length > 1;
+			return info?.length > 1 && get.type(event.card) != "delay";
 		},
 		forced: true,
 		async content(event, trigger, player) {
@@ -208,7 +208,7 @@ const skills = {
 					if (obtained.length > 0) {
 						await player.gain({
 							cards: obtained,
-							animate: "gain2",
+							animate: "draw",
 						});
 						obtainedFromPile = true;
 					}
@@ -224,6 +224,7 @@ const skills = {
 						position: "h",
 						selectCard: [1, Infinity],
 						allowChooseAll: true,
+						forced: true,
 					})
 					.set("ai", card => 5 - get.value(card))
 					.forResult();
@@ -247,7 +248,7 @@ const skills = {
 					player: ["useCardAfter", "respondAfter"],
 				},
 				filter(event) {
-					return !event.dcwenlan;
+					return !event.dcwenlan && get.type(event.card) != "delay";
 				},
 				forced: true,
 				popup: false,
