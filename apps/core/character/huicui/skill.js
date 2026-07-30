@@ -5206,8 +5206,8 @@ const skills = {
 		},
 		zixiList: ["lebu", "bingliang", "shandian"],
 		selectAi(player, names) {
-			let max = [null, 0, null, null];
-			for (let name of names) {
+			let max = [];
+			for (const name of names) {
 				let res = [null, null, 0];
 				player.getCards("he", i => {
 					if (!i.hasGaintag("eternal_dcqiqin_tag") || get.value(i) >= 7) {
@@ -5227,17 +5227,27 @@ const skills = {
 								res = [target, i, eff];
 							}
 						}
+						max.push([get.translation(name), res[2], res[1], res[0]]);
 					});
 				});
-				if (res[0] && res[2] > max[1]) {
-					max = [get.translation(name), res[2], res[1], res[0]];
-				}
 			}
+			max.sort((a, b) => b[1] - a[1]);
+			const t = max[0][3];
+			max = max.filter(list => list[3] == t).slice(0, 2);
 			return max;
 		},
-		direct: true,
-		async content(event, trigger, player) {
+		async cost(event, trigger, player) {
 			game.addVideo("skill", player, ["dczixi", []]);
+			const dialog = [];
+			dialog.push(`###${get.prompt("dczixi")}###<div class="text center">将至多两张“琴”以你选择的牌名置于一名角色的判定区</div>`);
+			const hs = player.getCards("h", card => card.hasGaintag("eternal_dcqiqin_tag"));
+			const es = player.getCards("e", card => card.hasGaintag("eternal_dcqiqin_tag"));
+			if (hs.length) {
+				dialog.addArray(['<div class="text center">你的手牌</div>', hs]);
+			}
+			if (es.length) {
+				dialog.addArray(['<div class="text center">你的装备</div>', es]);
+			}
 			const names = lib.skill.dczixi.zixiList.filter(name => {
 				return player.hasCards("he", card => {
 					return card.hasGaintag("eternal_dcqiqin_tag") && game.hasPlayer(target => target.canAddJudge(get.autoViewAs({ name: "dczixi_" + name }, [card])));
@@ -5247,80 +5257,109 @@ const skills = {
 			for (const name of names) {
 				map[get.translation(name)] = name;
 			}
-			let max = lib.skill.dczixi.selectAi(player, Object.values(map));
-			const dialog = [];
-			dialog.push(`###${get.prompt("dczixi")}###<div class="text center">将一张“琴”以你选择的牌名置于一名角色的判定区</div>`);
-			const hs = player.getCards("h", card => card.hasGaintag("eternal_dcqiqin_tag"));
-			const es = player.getCards("e", card => card.hasGaintag("eternal_dcqiqin_tag"));
-			if (hs.length) {
-				dialog.addArray(['<div class="text center">你的手牌</div>', hs]);
-			}
-			if (es.length) {
-				dialog.addArray(['<div class="text center">你的装备</div>', es]);
-			}
+			const max = lib.skill.dczixi.selectAi(player, Object.values(map));
 			dialog.push([Object.keys(map), "tdnodes"]);
-			const { bool, links } = await player
-				.chooseButton(2)
-				.set("createDialog", dialog)
-				.set("filterButton", button => {
-					const type = typeof button.link,
-						card = button.link;
-					if (ui.selected.buttons.length && type == typeof ui.selected.buttons[0].link) {
+			const result = await player
+				.chooseButtonTarget({
+					createDialog: dialog,
+					filterButton(button) {
+						const type = typeof button.link,
+							card = button.link;
+						const { player, map } = get.event();
+						if (type == "string") {
+							if (ui.selected.buttons.filter(button => typeof button.link == "string").length < 2) {
+								const name = map[card];
+								return game.hasPlayer(target => {
+									return player.hasCards("he", cardx => {
+										return cardx.hasGaintag("eternal_dcqiqin_tag") && target.canAddJudge(get.autoViewAs({ name: "dczixi_" + name }, [cardx]));
+									});
+								});
+							}
+						} else {
+							if (ui.selected.buttons.filter(button => typeof button.link != "string").length < 2) {
+								const names = ui.selected.buttons.filter(button => typeof button.link == "string").map(button => map[button.link]);
+								if (names.length) {
+									return game.hasPlayer(target => {
+										return names.some(name => card.hasGaintag("eternal_dcqiqin_tag") && target.canAddJudge(get.autoViewAs({ name: "dczixi_" + name }, [card])));
+									});
+								}
+							}
+						}
 						return false;
-					}
-					if (type == "string") {
+					},
+					selectButton: [1, 4],
+					filterTarget(card, player, target) {
+						const links = ui.selected.buttons.map(button => button.link);
+						const map = get.event().map;
+						const namex = links.filter(link => typeof link == "string"),
+							cards = links.filter(link => !namex.includes(link));
+						for (let i = 0; i < namex.length; i++) {
+							const name = map[namex[i]],
+								card = cards[i];
+							if (!target.canAddJudge(get.autoViewAs({ name: "dczixi_" + name }, [card]))) {
+								return false;
+							}
+						}
 						return true;
-					}
-					return (
-						card.hasGaintag("eternal_dcqiqin_tag") &&
-						lib.skill.dczixi.zixiList.some(name => {
-							return game.hasPlayer(target => target.canAddJudge(get.autoViewAs({ name: "dczixi_" + name }, [card])));
-						})
-					);
-				})
-				.set("ai", button => {
-					if (typeof button.link == "string") {
-						if (button.link == get.event().max[0]) {
+					},
+					filterOk() {
+						if (![2, 4].includes(ui.selected.buttons.length)) {
+							return false;
+						}
+						return ui.selected.buttons.filter(button => typeof button.link == "string").length == ui.selected.buttons.filter(button => typeof button.link != "string").length;
+					},
+					ai(button) {
+						const { max } = get.event();
+						if (typeof button.link == "string") {
+							if (max.map(list => list[0]).includes(button.link)) {
+								return 1;
+							}
+							return 0;
+						}
+						if (max.map(list => list[2]).includes(button.link)) {
 							return 1;
 						}
 						return 0;
-					}
-					if (button.link == get.event().max[2]) {
-						return 1;
-					}
-					return 0;
+					},
+					ai2(target) {
+						return target == get.event().max[0][3];
+					},
+					complexSelect: true,
+					complexTarget: true,
 				})
+				.set("map", map)
 				.set("max", max)
 				.forResult();
-			if (bool) {
-				const name = links.find(i => typeof i == "string"),
-					card = links.find(j => j != name),
-					cardname = map[name];
-				const { bool, targets } = await player
-					.chooseTarget(
-						"请选择【" + name + "（" + get.translation(card) + "）】置入的目标",
-						(cardx, player, target) => {
-							return target.canAddJudge(get.autoViewAs({ name: "dczixi_" + get.event().cardname }, [get.event().card]));
-						},
-						true
-					)
-					.set("ai", target => {
-						if (target == get.event().max[3]) {
-							return 1;
-						}
-						return 0;
-					})
-					.set("card", card)
-					.set("cardname", cardname)
-					.set("max", max)
-					.forResult();
-				if (bool) {
-					const target = targets[0];
-					player.logSkill("dczixi", target);
-					player.$give(card, target, false);
-					await game.delay(0.5);
-					target.addJudge({ name: "dczixi_" + cardname }, [card]);
-				}
+			if (result?.bool && result.links?.length && result.targets?.length) {
+				event.result = {
+					bool: true,
+					cost_data: result.links,
+					targets: result.targets,
+				};
+			}
+		},
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+				cost_data: links,
+			} = event;
+			const namex = links.filter(link => typeof link == "string"),
+				cards = links.filter(link => !namex.includes(link));
+			const names = lib.skill.dczixi.zixiList.filter(name => {
+				return player.hasCards("he", card => {
+					return card.hasGaintag("eternal_dcqiqin_tag") && game.hasPlayer(target => target.canAddJudge(get.autoViewAs({ name: "dczixi_" + name }, [card])));
+				});
+			});
+			let map = {};
+			for (const name of names) {
+				map[get.translation(name)] = name;
+			}
+			player.$give(cards, target, false);
+			await game.delay(0.5);
+			for (let i = 0; i < namex.length; i++) {
+				const name = map[namex[i]],
+					card = cards[i];
+				await target.addJudge({ name: "dczixi_" + name }, [card]);
 			}
 		},
 		ai: { combo: "dcqiqin" },
@@ -5328,6 +5367,7 @@ const skills = {
 		subSkill: {
 			judge: {
 				mod: {
+					//希望来个大佬修一修这个bug
 					targetEnabled(card, player, target) {
 						const list = lib.skill.dczixi.zixiList;
 						const name = typeof card == "string" ? card : card.viewAs ? card.viewAs : card.name;
@@ -5359,7 +5399,7 @@ const skills = {
 				prompt2(event, player) {
 					const target = event.target,
 						str = get.translation(target);
-					return ["令" + get.translation(event.card) + "对" + str + "额外结算一次", "摸两张牌", "弃置" + str + "判定区里的所有牌，对其造成3点伤害"][target.countCards("j") - 1];
+					return ["令" + get.translation(event.card) + "对" + str + "额外结算一次", "摸两张牌", "获得" + str + "判定区和装备区里的所有牌，并对其造成3点伤害"][target.countCards("j") - 1];
 				},
 				check(event, player) {
 					const target = event.target,
@@ -5385,7 +5425,10 @@ const skills = {
 							await player.draw(2);
 							break;
 						case 3:
-							await target.discard(target.getCards("j"), player);
+							const cards = target.getGainableCards(player, "ej");
+							if (cards.length) {
+								await player.gain({ cards, source: target, animate: "giveAuto", bySelf: true });
+							}
 							await target.damage(3);
 							break;
 					}
@@ -7508,7 +7551,7 @@ const skills = {
 	dczuowei: {
 		audio: 2,
 		trigger: { player: "useCard" },
-		frequent: true, 
+		frequent: true,
 		filter(event, player) {
 			if (_status.currentPhase != player) {
 				return false;
