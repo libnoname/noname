@@ -5193,6 +5193,7 @@ const skills = {
 						fullskin: true,
 						noEffect: true,
 						wuxieable: false,
+						judgeSlots: [name],
 					};
 					lib.card[namex].cardimage = name;
 					lib.translate[namex] = lib.translate[name] + "·姊希";
@@ -5203,16 +5204,14 @@ const skills = {
 		audio: 2,
 		trigger: { player: ["phaseUseBegin", "phaseUseEnd"] },
 		filter(event, player) {
-			return (
-				player.hasCards("he", card => {
-					return (
-						card.hasGaintag("eternal_dcqiqin_tag") &&
-						lib.skill.dczixi.zixiList.some(name => {
-							return game.hasPlayer(target => target.canAddJudge(get.autoViewAs({ name: "dczixi_" + name }, [card])));
-						})
-					);
-				}) > 0
-			);
+			return player.hasCards("he", card => {
+				return (
+					card.hasGaintag("eternal_dcqiqin_tag") &&
+					lib.skill.dczixi.zixiList.some(name => {
+						return game.hasPlayer(target => target.canAddJudge(get.autoViewAs({ name: "dczixi_" + name }, [card])));
+					})
+				);
+			});
 		},
 		zixiList: ["lebu", "bingliang", "shandian"],
 		selectAi(player, names) {
@@ -5318,7 +5317,7 @@ const skills = {
 						}
 						return ui.selected.buttons.filter(button => typeof button.link == "string").length == ui.selected.buttons.filter(button => typeof button.link != "string").length;
 					},
-					ai(button) {
+					ai1(button) {
 						const { max } = get.event();
 						if (typeof button.link == "string") {
 							if (max.map(list => list[0]).includes(button.link)) {
@@ -5376,21 +5375,6 @@ const skills = {
 		group: "dczixi_effect",
 		subSkill: {
 			judge: {
-				mod: {
-					//希望来个大佬修一修这个bug
-					targetEnabled(card, player, target) {
-						const list = lib.skill.dczixi.zixiList;
-						const name = typeof card == "string" ? card : card.viewAs ? card.viewAs : card.name;
-						if (name.indexOf("dczixi_") == 0) {
-							const namex = name.slice("dczixi_".length);
-							if (list.includes(namex) && target.hasJudge(namex)) {
-								return false;
-							}
-						} else if (list.includes(name) && target.hasJudge("dczixi_" + name)) {
-							return false;
-						}
-					},
-				},
 				ai: {
 					threaten(player, target) {
 						if (!player.hasSkill("dczixi") || ![1, 2, 3].includes(target.countCards("j"))) {
