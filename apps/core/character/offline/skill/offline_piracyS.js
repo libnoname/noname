@@ -961,121 +961,130 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "water",
 		limited: true,
-		direct: true,
 		filter(event, player) {
 			return player.hp >= 1;
 		},
-		content() {
-			"step 0";
-			player.chooseTarget(get.prompt2("psjianwei"), lib.filter.notMe).set("ai", target => {
-				var player = _status.event.player;
-				if (player.hp == 1 && !player.canSave(player)) {
-					return 0;
-				}
-				var sgn = get.sgnAttitude(player, target);
-				var valMine = [0, 0],
-					valHis = [0, 0];
-				player.getCards("hej", card => {
-					if (get.position(card) == "j") {
-						valMine[0] += get.effect(player, card, player);
-						valMine[1] += get.effect(target, card, player);
-					} else {
-						valMine[0] += get.value(card, player);
-						valMine[1] += get.value(card, target) * sgn;
-					}
-				});
-				target.getCards("hej", card => {
-					if (get.position(card) == "j") {
-						valHis[0] += get.effect(player, card, player);
-						valHis[1] += get.effect(target, card, player);
-					} else {
-						valHis[0] += get.value(card, player);
-						valHis[1] += get.value(card, target) * sgn;
-					}
-				});
-				return valMine[1] - valMine[0] + valHis[0] - valHis[1] >= 60;
-			});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("psjianwei", target);
-				player.awakenSkill(event.name);
-				player.loseHp();
-			} else {
-				event.finish();
-			}
-			"step 2";
-			if (player.isIn() && target.isIn()) {
-				var next = game.createEvent("psjianwei_swap");
-				next.player = player;
-				next.target = target;
-				next.set("cards1", player.getCards("hej"));
-				next.set("cards2", target.getCards("hej"));
-				next.setContent(lib.skill.psjianwei.swapRegioncards);
-			}
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2("psjianwei"),
+					filterTarget: lib.filter.notMe,
+					ai(target) {
+						const player = get.player();
+						if (player.hp === 1 && !player.canSave(player)) {
+							return 0;
+						}
+						const sgn = get.sgnAttitude(player, target);
+						const valMine = [0, 0];
+						const valHis = [0, 0];
+						for (const card of player.iterableGetCards("hej")) {
+							if (get.position(card) === "j") {
+								valMine[0] += get.effect(player, card, player);
+								valMine[1] += get.effect(target, card, player);
+							} else {
+								valMine[0] += get.value(card, player);
+								valMine[1] += get.value(card, target) * sgn;
+							}
+						}
+						for (const card of target.iterableGetCards("hej")) {
+							if (get.position(card) === "j") {
+								valHis[0] += get.effect(player, card, player);
+								valHis[1] += get.effect(target, card, player);
+							} else {
+								valHis[0] += get.value(card, player);
+								valHis[1] += get.value(card, target) * sgn;
+							}
+						}
+						return valMine[1] - valMine[0] + valHis[0] - valHis[1] >= 60 ? 1 : 0;
+					},
+				})
+				.forResult();
 		},
-		swapRegioncards() {
-			"step 0";
-			player.$giveAuto(event.cards1, target);
-			target.$giveAuto(event.cards2, player);
-			"step 1";
-			event.h1 = event.cards1.filter(i => get.position(i) == "h");
-			event.e1 = event.cards1.filter(i => get.position(i) == "e");
-			event.j1 = event.cards1.filter(i => get.position(i) == "j");
-			event.h2 = event.cards2.filter(i => get.position(i) == "h");
-			event.e2 = event.cards2.filter(i => get.position(i) == "e");
-			event.j2 = event.cards2.filter(i => get.position(i) == "j");
-			game.loseAsync({
-				lose_list: [
-					[player, event.cards1],
-					[target, event.cards2],
-				],
-			}).setContent("chooseToCompareLose");
-			"step 2";
-			var todis = [];
-			for (var i = 0; i < event.j1.length; i++) {
-				if (target.isDisabledJudge() || target.hasJudge(event.j1[i].viewAs || event.j1[i].name)) {
-					todis.push(event.j1[i]);
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			player.awakenSkill(event.name);
+			await player.loseHp();
+			if (!player.isIn() || !target.isIn()) {
+				return;
+			}
+			const next = game.createEvent("psjianwei_swap");
+			next.player = player;
+			next.target = target;
+			next.set("cards1", player.getCards("hej"));
+			next.set("cards2", target.getCards("hej"));
+			next.setContent(lib.skill.psjianwei.swapRegioncards);
+			await next;
+		},
+		async swapRegioncards(event, trigger, player) {
+			const { target, cards1, cards2 } = event;
+			player.$giveAuto(cards1, target);
+			target.$giveAuto(cards2, player);
+			const h1 = cards1.filter(card => get.position(card) === "h");
+			const e1 = cards1.filter(card => get.position(card) === "e");
+			const j1 = cards1.filter(card => get.position(card) === "j");
+			const h2 = cards2.filter(card => get.position(card) === "h");
+			const e2 = cards2.filter(card => get.position(card) === "e");
+			const j2 = cards2.filter(card => get.position(card) === "j");
+			await game
+				.loseAsync({
+					lose_list: [
+						[player, cards1],
+						[target, cards2],
+					],
+				})
+				.setContent("chooseToCompareLose");
+			const toDiscard = [];
+			for (const card of j1) {
+				if (target.isDisabledJudge() || target.hasJudge(card.viewAs || card.name)) {
+					toDiscard.push(card);
 				}
 			}
-			for (var i = 0; i < event.j2.length; i++) {
-				if (player.isDisabledJudge() || player.hasJudge(event.j2[i].viewAs || event.j2[i].name)) {
-					todis.push(event.j2[i]);
+			for (const card of j2) {
+				if (player.isDisabledJudge() || player.hasJudge(card.viewAs || card.name)) {
+					toDiscard.push(card);
 				}
 			}
-			if (todis.length) {
-				game.cardsDiscard(todis);
+			if (toDiscard.length) {
+				await game.cardsDiscard(toDiscard);
 			}
-			"step 3";
-			game.loseAsync({
-				gain_list: [
-					[player, event.h2.filter(i => get.position(i, true) == "o")],
-					[target, event.h1.filter(i => get.position(i, true) == "o")],
-				],
-			}).setContent("gaincardMultiple");
-			for (var i = 0; i < event.e2.length; i++) {
-				if (get.position(event.e2[i], true) == "o") {
-					player.equip(event.e2[i]);
+			const nextEvents = [
+				game
+					.loseAsync({
+						gain_list: [
+							[player, h2.filter(card => get.position(card, true) === "o")],
+							[target, h1.filter(card => get.position(card, true) === "o")],
+						],
+					})
+					.setContent("gaincardMultiple"),
+			];
+			for (const card of e2) {
+				if (get.position(card, true) !== "o") {
+					continue;
 				}
+				nextEvents.push(player.equip(card));
 			}
-			for (var i = 0; i < event.e1.length; i++) {
-				if (get.position(event.e1[i], true) == "o") {
-					target.equip(event.e1[i]);
+			for (const card of e1) {
+				if (get.position(card, true) !== "o") {
+					continue;
 				}
+				nextEvents.push(target.equip(card));
 			}
-			for (var i = 0; i < event.j2.length; i++) {
-				if (get.position(event.j2[i], true) == "o") {
-					player.addJudge(event.j2[i]);
+			for (const card of j2) {
+				if (get.position(card, true) !== "o") {
+					continue;
 				}
+				nextEvents.push(player.addJudge(card));
 			}
-			for (var i = 0; i < event.j1.length; i++) {
-				if (get.position(event.j1[i], true) == "o") {
-					target.addJudge(event.j1[i]);
+			for (const card of j1) {
+				if (get.position(card, true) !== "o") {
+					continue;
 				}
+				nextEvents.push(target.addJudge(card));
 			}
-			"step 4";
-			game.delayx();
+			for (const next of nextEvents) {
+				await next;
+			}
+			await game.delayx();
 		},
 	},
 	//官盗S司马懿
