@@ -12070,7 +12070,17 @@ const skills = {
 			if (player.getStorage("dcningzhun_used").length > 2) {
 				return false;
 			}
-			return player.getHistory("useCard").indexOf(event) % 2 == 1;
+			return player.countMark("dcningzhun_mark2") >= 2;
+		},
+		//新杀结算
+		init(player, skill) {
+			player.addSkill(skill + "_mark");
+			player.addTempSkill(skill + "_mark2");
+			player.addMark(skill + "_mark2", player.countHistory("useCard"), false);
+		},
+		onremove(player, skill) {
+			player.removeSkill(skill + "_mark");
+			player.removeSkill(skill + "_mark2");
 		},
 		async cost(event, trigger, player) {
 			const result = await player
@@ -12127,6 +12137,7 @@ const skills = {
 			const name = "dcningzhun_used";
 			player.addTempSkill(name);
 			player.markAuto(name, event.cost_data);
+			player.removeSkill(event.name + "_mark2");
 			switch (event.cost_data) {
 				case "decrease": {
 					const count = player.getStorage(event.name, 0) - 1;
@@ -12164,10 +12175,19 @@ const skills = {
 			},
 		},
 		subSkill: {
-			used: {
+			used: { charlotte: true, onremove: true },
+			mark: {
 				charlotte: true,
-				onremove: true,
+				silent: true,
+				popup: false,
+				firstDo: true,
+				trigger: { player: "useCardAfter" },
+				async content(event, trigger, player) {
+					player.addTempSkill(event.name + "2");
+					player.addMark(event.name + "2", 1, false);
+				},
 			},
+			mark2: { charlotte: true, onremove: true },
 		},
 	},
 	//陶璜
