@@ -10049,7 +10049,7 @@ const skills = {
 				.chooseTarget(get.prompt("dcneifa"), "为" + get.translation(trigger.card) + "额外指定一个目标", (card, currentPlayer, target) => {
 					return !get.event().targets.includes(target) && currentPlayer.canUse(get.event().card, target, false);
 				})
-				.set("sourcex", trigger.targets)
+				.set("targets", trigger.targets)
 				.set("ai", target => get.effect(target, trigger.card, player, player))
 				.set("card", trigger.card)
 				.forResult();
