@@ -184,62 +184,49 @@ const skills = {
 		filter(event, player) {
 			return !event.numFixed;
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			trigger.changeToZero();
-			event.cards = get.cards(7);
-			game.cardsGotoOrdering(event.cards);
-			event.videoId = lib.status.videoId++;
+			const cards = get.cards(7);
+			const orderingEvent = game.cardsGotoOrdering(cards);
+			const videoId = lib.status.videoId++;
 			game.broadcastAll(
-				function (player, id, cards) {
-					var str = "七进";
-					if (player == game.me && !_status.auto) {
-						str += "：获得一种颜色的所有牌";
-					}
-					var dialog = ui.create.dialog(str, cards);
+				(player, id, cards) => {
+					const title = player === game.me && !_status.auto ? "七进：获得一种颜色的所有牌" : "七进";
+					const dialog = ui.create.dialog(title, cards);
 					dialog.videoId = id;
 				},
 				player,
-				event.videoId,
-				event.cards
+				videoId,
+				cards
 			);
-			event.time = get.utc();
-			game.addVideo("showCards", player, ["七进", get.cardsInfo(event.cards)]);
+			const startTime = get.utc();
+			game.addVideo("showCards", player, ["七进", get.cardsInfo(cards)]);
 			game.addVideo("delay", null, 2);
-			"step 1";
-			var list = [];
-			for (var i of cards) {
-				list.add(get.color(i, false));
+			await orderingEvent;
+
+			const list = [];
+			for (const card of cards) {
+				list.add(get.color(card, false));
 			}
 			list.sort();
-			var next = player.chooseControl(list);
-			next.set("ai", function () {
-				return _status.event.choice;
-			}).set(
-				"choice",
-				(function () {
-					if (list.length == 0) {
-						return list[0];
-					}
-					var color = list[0];
-					var cards1 = cards.filter(i => get.color(i) == color),
-						cards2 = cards.filter(i => get.color(i) == list[1]);
-					if (get.value(cards1) * cards1.length > get.value(cards2) * cards2.length) {
-						return list[0];
-					}
-					return list[1];
-				})()
-			);
-			"step 2";
-			event.color = result.control;
-			var time = 1000 - (get.utc() - event.time);
-			if (time > 0) {
-				game.delay(0, time);
+			let choice = list[0];
+			if (list.length > 0) {
+				const cards1 = cards.filter(card => get.color(card) === list[0]);
+				const cards2 = cards.filter(card => get.color(card) === list[1]);
+				choice = get.value(cards1) * cards1.length > get.value(cards2) * cards2.length ? list[0] : list[1];
 			}
-			"step 3";
-			game.broadcastAll("closeDialog", event.videoId);
-			player.gain(
-				cards.filter(i => get.color(i, false) == event.color),
+			const result = await player
+				.chooseControl(list)
+				.set("ai", () => _status.event.choice)
+				.set("choice", choice)
+				.forResult();
+			const remainingTime = 1000 - (get.utc() - startTime);
+			if (remainingTime > 0) {
+				await game.delay(0, remainingTime);
+			}
+			game.broadcastAll("closeDialog", videoId);
+			await player.gain(
+				cards.filter(card => get.color(card, false) === result.control),
 				"gain2"
 			);
 		},
