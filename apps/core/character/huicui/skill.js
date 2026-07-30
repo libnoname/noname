@@ -10050,7 +10050,7 @@ const skills = {
 					return !get.event().targets.includes(target) && currentPlayer.canUse(get.event().card, target, false);
 				})
 				.set("targets", trigger.targets)
-				.set("ai", target => get.effect(target, trigger.card, player, player))
+				.set("ai", target => get.effect(target, get.event().card, get.player(), get.player()))
 				.set("card", trigger.card)
 				.forResult();
 			if (!result.bool) {
