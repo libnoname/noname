@@ -19079,14 +19079,12 @@ const skills = {
 		logTarget: "targets",
 		async content(event, trigger, player) {
 			if (trigger.targets.includes(player)) {
+				await player.draw();
 				if (player.maxHp < 8) {
 					await player.gainMaxHp();
 				}
 			}
 			if (trigger.targets.some(target => target !== player)) {
-				if (player.maxHp > 1) {
-					await player.loseMaxHp();
-				}
 				const targets = trigger.targets.filter(target => target !== player && target.hasGainableCards(player, "he"));
 				if (!targets.length) {
 					return;
@@ -19108,8 +19106,13 @@ const skills = {
 								})
 								.set("targets", targets)
 								.forResult();
-				if (result?.targets?.length) {
-					await player.gainPlayerCard(result.targets[0], "he", true);
+				if (result?.bool && result.targets?.length) {
+					const target = result.targets[0];
+					player.line(target);
+					await player.gainPlayerCard({ target, position: "he", forced: true });
+					if (player.isDamaged() && player.maxHp > 1) {
+						await player.loseMaxHp();
+					}
 				}
 			}
 		},
