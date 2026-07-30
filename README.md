@@ -4,8 +4,8 @@
   <a href="https://github.com/libnoname/noname/actions/workflows/build.yml"><img alt="构建状态" src="https://img.shields.io/github/actions/workflow/status/libnoname/noname/build.yml?branch=main&style=flat-square"></a>
   <a href="https://github.com/libnoname/noname/releases/latest"><img alt="最新版本" src="https://img.shields.io/github/v/release/libnoname/noname?display_name=tag&style=flat-square"></a>
   <a href="https://github.com/libnoname/noname/releases"><img alt="累计下载" src="https://img.shields.io/github/downloads/libnoname/noname/total?style=flat-square"></a>
+  <a href="https://github.com/libnoname/noname/search?l=javascript"><img alt="主要编程语言" src="https://img.shields.io/github/languages/top/libnoname/noname?style=flat-square"></a>
   <a href="./LICENSE"><img alt="许可证" src="https://img.shields.io/github/license/libnoname/noname?style=flat-square"></a>
-  <a href="https://github.com/libnoname/noname/stargazers"><img alt="GitHub Stars" src="https://img.shields.io/github/stars/libnoname/noname?style=flat-square"></a>
 </p>
 
 ## 项目使用约定
