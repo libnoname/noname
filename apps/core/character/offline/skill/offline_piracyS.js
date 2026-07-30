@@ -27,79 +27,58 @@ const skills = {
 	psqizuo: {
 		trigger: { global: ["damageBegin1", "damageBegin3"] },
 		filter(event, player, name) {
-			return (name == "damageBegin1" && event.source && event.source.isIn() && player.inRange(event.source)) || (name == "damageBegin3" && event.player && event.player.isIn() && player.inRange(event.player));
+			return (name === "damageBegin1" && event.source && event.source.isIn() && player.inRange(event.source)) || (name === "damageBegin3" && event.player && event.player.isIn() && player.inRange(event.player));
 		},
 		direct: true,
-		content() {
-			"step 0";
-			var name = event.triggername;
-			var source = get.translation(trigger.source),
-				target = get.translation(trigger.player),
-				num = trigger.num;
-			var targetx = trigger[name == "damageBegin1" ? "source" : "player"];
-			var str = name == "damageBegin1" ? source + "即将对" + target + "造成" + num + "点伤害" : target + "即将受到" + source + "造成的" + num + "点伤害";
-			player
-				.chooseToDiscard(get.prompt("psqizuo", targetx), str + "，是否弃置一张牌并判定，若结果颜色与此牌相同，你可以令此伤害+1或-1？", "he")
+		async content(event, trigger, player) {
+			const name = event.triggername;
+			const source = get.translation(trigger.source);
+			const target = get.translation(trigger.player);
+			const num = trigger.num;
+			const targetx = trigger[name === "damageBegin1" ? "source" : "player"];
+			const description = name === "damageBegin1" ? `${source}即将对${target}造成${num}点伤害` : `${target}即将受到${source}造成的${num}点伤害`;
+			const effect = get.damageEffect(trigger.player, trigger.source, player);
+			const goon =
+				(effect > 5 &&
+					!trigger.player.hasSkillTag("filterDamage", null, {
+						player,
+						card: trigger.card,
+					})) ||
+				effect < -5;
+			const discardResult = await player
+				.chooseToDiscard({
+					prompt: get.prompt("psqizuo", targetx),
+					prompt2: `${description}，是否弃置一张牌并判定，若结果颜色与此牌相同，你可以令此伤害+1或-1？`,
+					position: "he",
+				})
 				.set("ai", card => {
 					if (_status.event.goon) {
-						return 5.25 - get.value(card) + (get.color(card) == get.color(_status.pileTop) ? 0.75 : 0);
+						return 5.25 - get.value(card) + (get.color(card) === get.color(_status.pileTop) ? 0.75 : 0);
 					}
 					return 0;
 				})
-				.set(
-					"goon",
-					(function () {
-						var eff = get.damageEffect(trigger.player, trigger.source, player);
-						if (
-							eff > 5 &&
-							!trigger.player.hasSkillTag("filterDamage", null, {
-								player: player,
-								card: trigger.card,
-							})
-						) {
-							return true;
-						}
-						if (eff < -5) {
-							return true;
-						}
-						return false;
-					})()
-				)
-				.set("logSkill", ["psqizuo", targetx]);
-			"step 1";
-			if (result.bool) {
-				event.color = get.color(result.cards[0], player);
-				player.judge(function (card) {
-					if (get.color(card) == _status.event.getParent("psqizuo").color) {
-						return 1;
-					}
-					return 0;
-				});
-			} else {
-				event.finish();
+				.set("goon", goon)
+				.set("logSkill", ["psqizuo", targetx])
+				.forResult();
+			if (!discardResult.bool) {
+				return;
 			}
-			"step 2";
-			if (result.bool) {
-				player
-					.chooseControl("+1", "-1", "cancel2")
-					.set("prompt", "是否令此伤害+1或-1？")
-					.set("ai", () => {
-						if (_status.event.eff < 0) {
-							return 1;
-						}
-						return 0;
-					})
-					.set("eff", get.damageEffect(trigger.player, trigger.source, player));
-			} else {
-				event.finish();
+			event.color = get.color(discardResult.cards[0], player);
+			const judgeResult = await player.judge(card => (get.color(card) === _status.event.getParent("psqizuo").color ? 1 : 0)).forResult();
+			if (!judgeResult.bool) {
+				return;
 			}
-			"step 3";
-			if (result.index == 0) {
+			const controlResult = await player
+				.chooseControl("+1", "-1", "cancel2")
+				.set("prompt", "是否令此伤害+1或-1？")
+				.set("ai", () => (_status.event.eff < 0 ? 1 : 0))
+				.set("eff", get.damageEffect(trigger.player, trigger.source, player))
+				.forResult();
+			if (controlResult.index === 0) {
 				trigger.num++;
 				player.popup(" +1 ", "fire");
 				game.log(player, "令此伤害+1");
-			}
-			if (result.index == 1) {
+			} else if (controlResult.index === 1) {
 				trigger.num--;
 				player.popup(" -1 ", "water");
 				game.log(player, "令此伤害-1");
