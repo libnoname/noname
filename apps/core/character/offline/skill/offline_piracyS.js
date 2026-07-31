@@ -782,38 +782,37 @@ const skills = {
 			return !event.numFixed;
 		},
 		group: "psliushang_give",
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			trigger.changeToZero();
-			player.draw(1 + Math.max(3, game.countPlayer()));
-			event.targets = game.filterPlayer(i => i != player);
-			"step 1";
-			var current = targets.shift();
-			if (!player.countCards("h")) {
-				event.finish();
-			} else {
-				player.chooseCardTarget({
-					prompt: "流殇：将一张牌置于" + get.translation(current) + "武将牌上",
-					current: current,
-					filterCard: true,
-					forced: true,
-					filterTarget(card, player, target) {
-						return target == _status.event.current;
-					},
-					selectTarget: -1,
-					ai1(card) {
-						var current = _status.event.current;
-						return get.value(card, current) * get.attitude(_status.event.player, current);
-					},
-					ai2: () => 1,
-				});
-			}
-			"step 2";
-			if (result.bool) {
-				result.targets[0].addToExpansion(result.cards, player, "give").gaintag.add("psliushang");
-			}
-			if (targets.length) {
-				event.goto(1);
+			const drawEvent = player.draw(1 + Math.max(3, game.countPlayer()));
+			const targets = game.filterPlayer(current => current !== player);
+			await drawEvent;
+			for (const current of targets) {
+				if (!player.hasCards("h")) {
+					return;
+				}
+				const result = await player
+					.chooseCardTarget({
+						prompt: `流殇：将一张牌置于${get.translation(current)}武将牌上`,
+						current,
+						filterCard: true,
+						forced: true,
+						filterTarget(card, player, target) {
+							return target === _status.event.current;
+						},
+						selectTarget: -1,
+						ai1(card) {
+							const current = _status.event.current;
+							return get.value(card, current) * get.attitude(_status.event.player, current);
+						},
+						ai2: () => 1,
+					})
+					.forResult();
+				if (result.bool) {
+					const next = result.targets[0].addToExpansion(result.cards, player, "give");
+					next.gaintag.add("psliushang");
+					await next;
+				}
 			}
 		},
 		marktext: "殇",
@@ -825,50 +824,32 @@ const skills = {
 			give: {
 				trigger: { global: "phaseZhunbeiBegin" },
 				filter(event, player) {
-					return event.player != player && event.player.getExpansions("psliushang").length;
+					return event.player !== player && event.player.getExpansions("psliushang").length;
 				},
 				forced: true,
 				logTarget: "player",
-				content() {
-					"step 0";
-					var cards = trigger.player.getExpansions("psliushang"),
-						name = get.translation(cards);
-					event.cards = cards;
-					trigger.player
+				async content(event, trigger, player) {
+					const cards = trigger.player.getExpansions("psliushang");
+					const name = get.translation(cards);
+					let choice = 0;
+					if (get.damageEffect(player, trigger.player, trigger.player) > 0 && (get.value(cards, trigger.player) < 0 || trigger.player.hasCard(card => get.tag(card, "damage") && trigger.player.canUse(card, player) && get.effect(player, card, trigger.player, trigger.player) > 0, "hs"))) {
+						choice = 1;
+					}
+					const result = await trigger.player
 						.chooseControl()
-						.set("choiceList", ["获得" + name + "，且于本回合防止对" + get.translation(player) + "的伤害", "将" + name + "置入弃牌堆"])
-						.set("ai", () => {
-							return _status.event.choice;
-						})
-						.set(
-							"choice",
-							(function () {
-								if (get.damageEffect(player, trigger.player, trigger.player) <= 0) {
-									return 0;
-								}
-								if (get.value(cards, trigger.player) < 0) {
-									return 1;
-								}
-								if (
-									trigger.player.hasCard(card => {
-										return get.tag(card, "damage") && trigger.player.canUse(card, player) && get.effect(player, card, trigger.player, trigger.player) > 0;
-									}, "hs")
-								) {
-									return 1;
-								}
-								return 0;
-							})()
-						);
-					"step 1";
-					if (result.index == 0) {
-						trigger.player.gain(cards, "gain2");
+						.set("choiceList", [`获得${name}，且于本回合防止对${get.translation(player)}的伤害`, `将${name}置入弃牌堆`])
+						.set("ai", () => _status.event.choice)
+						.set("choice", choice)
+						.forResult();
+					if (result.index === 0) {
+						const next = trigger.player.gain(cards, "gain2");
 						trigger.player.addTempSkill("psliushang_prevent");
 						trigger.player.markAuto("psliushang_prevent", [player]);
+						await next;
 					} else {
-						trigger.player.loseToDiscardpile(cards);
+						await trigger.player.loseToDiscardpile(cards);
 					}
-					"step 2";
-					game.delayx();
+					await game.delayx();
 				},
 			},
 			prevent: {
@@ -880,7 +861,7 @@ const skills = {
 				onremove: true,
 				charlotte: true,
 				logTarget: "player",
-				content() {
+				async content(event, trigger, player) {
 					trigger.cancel();
 				},
 				ai: {
