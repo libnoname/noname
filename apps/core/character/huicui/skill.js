@@ -4751,7 +4751,9 @@ const skills = {
 		forced: true,
 		async content(event, trigger, player) {
 			await player.draw(3);
-			await player.loseHp();
+			if (!player.isMinHp()) {
+				await player.loseHp();
+			}
 		},
 		ai: {
 			combo: "dckuizhen",
@@ -4762,79 +4764,57 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		filter(event, player) {
-			return game.hasPlayer(current => {
-				return lib.skill.dckuizhen.filterTarget(null, player, current);
-			});
+			return player.hasCards("h", card => game.hasPlayer(current => current != player && lib.filter.canBeGained(card, player, current)));
 		},
 		filterTarget(card, player, target) {
-			if (target == player) {
+			if (target == player || !ui.selected.cards?.length) {
 				return false;
 			}
-			return target.countCards("h") >= player.countCards("h") || target.getHp() >= player.getHp();
+			return ui.selected.cards.every(cardx => lib.filter.canBeGained(cardx, player, target));
 		},
+		filterCard: true,
+		selectCard: [1, Infinity],
+		allowChooseAll: true,
+		position: "h",
+		check(card) {
+			return 8 - get.value(card);
+		},
+		discard: false,
+		lose: false,
+		delay: 0,
 		usable: 1,
 		async content(event, trigger, player) {
-			const { target } = event,
-				juedou = new lib.element.VCard({ name: "juedou", isCard: true });
-			if (target.canUse(juedou, player, false)) {
-				await target.useCard(juedou, player, "noai");
-			}
-			if (
-				player.hasHistory("damage", evt => {
-					return evt.getParent(3) === event;
-				})
-			) {
-				await player.viewHandcards(target);
-				const shas = target.getGainableCards(player, "h").filter(card => get.name(card) === "sha");
-				if (shas.length) {
-					player.addSkill("dckuizhen_effect");
-					const next = player.gain(shas, "give", target);
-					next.gaintag.add("dckuizhen");
-					await next;
-				}
-			} else {
-				await target.loseHp();
-			}
+			const {
+				targets: [target],
+				cards,
+			} = event;
+			const num = cards.length;
+			const next = player.give(cards, target);
+			next.gaintag.add(event.name);
+			await next;
+			await player.randomGain({ num, position: "h", target });
 		},
 		ai: {
-			order() {
-				return get.order({ name: "sha" }) + 1;
-			},
+			order: 1,
 			result: {
-				player(player, target) {
-					let eff = get.effect(player, { name: "juedou" }, target, player),
-						shas = target.mayHaveSha(player, "respond", null, "count") - player.mayHaveSha(player, "respond", null, "count");
-					if (shas > 0) {
-						eff += shas * get.effect(target, { name: "shunshou" }, player, player);
-					}
-					return eff;
-				},
-				target(player, target) {
-					let eff = get.effect(player, { name: "juedou" }, target, target),
-						shas = target.mayHaveSha(player, "respond", null, "count") - player.mayHaveSha(player, "respond", null, "count");
-					if (shas < -1) {
-						eff += get.effect(target, { name: "losehp" }, target, target);
-					} else if (shas > 0) {
-						eff += shas * get.effect(target, { name: "shunshou" }, player, target);
-					}
-					return eff;
-				},
+				player: 1,
+				target: -1,
 			},
 		},
+		group: ["dckuizhen_effect"],
 		subSkill: {
 			effect: {
-				trigger: { player: "useCard1" },
+				audio: "dckuizhen",
 				forced: true,
-				popup: false,
-				firstDo: true,
-				charlotte: true,
+				locked: false,
+				trigger: { global: ["useCard", "phaseEnd"] },
 				filter(event, player) {
-					if (event.addCount === false) {
+					const target = event.player;
+					if (event.name == "phase" && target.hasCards("h", card => card.hasGaintag("dckuizhen"))) {
 						return false;
 					}
-					return player.hasHistory("lose", evt => {
-						const evtx = evt.relatedEvent || evt.getParent();
-						if (evtx != event) {
+					return target.hasHistory("lose", evt => {
+						if (evt.getParent() != event && event.name == "useCard") {
 							return false;
 						}
 						for (const i in evt.gaintag_map) {
@@ -4845,23 +4825,14 @@ const skills = {
 						return false;
 					});
 				},
+				logTarget: "player",
 				async content(event, trigger, player) {
-					trigger.addCount = false;
-					var stat = player.getStat().card,
-						name = trigger.card.name;
-					if (typeof stat[name] == "number") {
-						stat[name]--;
+					const target = event.targets[0];
+					if (trigger.name == "useCard") {
+						await player.draw({ num: 1 });
+					} else {
+						await target.loseHp();
 					}
-				},
-				mod: {
-					cardUsable(card) {
-						if (!card.cards) {
-							return;
-						}
-						if (card.cards.some(card => card.hasGaintag("dckuizhen"))) {
-							return Infinity;
-						}
-					},
 				},
 			},
 		},
