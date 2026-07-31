@@ -3807,11 +3807,16 @@ const skills = {
 		position: "he",
 		complexCard: true,
 		filterCard(card, player) {
+			const { cards } = ui.selected;
+			if (cards.length && get.name(card) != get.name(cards[0])) {
+				return false;
+			}
 			return lib.filter.cardDiscardable(card, player, "dcsbzhengong");
 		},
 		check(card) {
 			return 6 - get.value(card);
 		},
+		selectCard: [1, Infinity],
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			const { cards } = event;
