@@ -1380,44 +1380,38 @@ const skills = {
 		filter(event, player) {
 			return !event.directresult;
 		},
-		content() {
-			"step 0";
-			var cards = get.cards(2, true);
-			event.cards = cards;
-			event.videoId = lib.status.videoId++;
+		async content(event, trigger, player) {
+			const cards = get.cards(2, true);
+			const videoId = lib.status.videoId++;
 			game.broadcastAll(
-				function (player, id, cards) {
-					var str;
-					if (player == game.me && !_status.auto) {
-						str = "威侯：选择一张作为本次判定结果";
-					} else {
-						str = get.translation(player) + "发动了【威侯】";
-					}
-					var dialog = ui.create.dialog(str, cards);
+				(player, id, cards) => {
+					const title = player === game.me && !_status.auto ? "威侯：选择一张作为本次判定结果" : `${get.translation(player)}发动了【威侯】`;
+					const dialog = ui.create.dialog(title, cards);
 					dialog.videoId = id;
 				},
 				player,
-				event.videoId,
-				event.cards
+				videoId,
+				cards
 			);
-			game.addVideo("showCards", player, ["威侯", get.cardsInfo(event.cards)]);
+			game.addVideo("showCards", player, ["威侯", get.cardsInfo(cards)]);
 			if (!event.isMine() && !event.isOnline()) {
-				game.delayx();
+				await game.delayx();
 			}
-			"step 1";
-			player
-				.chooseButton(["威侯：选择一张作为本次判定结果", cards], true)
-				.set("ai", button => {
-					return _status.event.getTrigger().judge(button.link);
+			const result = await player
+				.chooseButton({
+					createDialog: ["威侯：选择一张作为本次判定结果", cards],
+					forced: true,
+					ai(button) {
+						return _status.event.getTrigger().judge(button.link);
+					},
 				})
-				.set("dialog", event.videoId);
-			"step 2";
-			game.broadcastAll("closeDialog", event.videoId);
+				.set("dialog", videoId)
+				.forResult();
+			game.broadcastAll("closeDialog", videoId);
 			if (result.bool) {
 				trigger.directresult = result.links[0];
-				game.cardsDiscard(cards.removeArray(result.links).filter(i => get.position(i) == "c"));
+				await game.cardsDiscard(cards.removeArray(result.links).filter(card => get.position(card) === "c"));
 			}
-			"step 3";
 			game.updateRoundNumber();
 		},
 	},
