@@ -222,7 +222,7 @@ const skills = {
 					await player.gain({ cards: [card], animate: "gain2" });
 				}
 			} else {
-				trigger.num += Math.floor(player.countRoundHistory("useCard", evt => evt.card.name === "sha") / 2) > 0;
+				trigger.num += Math.floor(player.countRoundHistory("useCard", evt => evt.card.name === "sha") / 2);
 			}
 		},
 		subSkill: {
