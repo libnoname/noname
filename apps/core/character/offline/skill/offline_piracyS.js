@@ -149,28 +149,25 @@ const skills = {
 		trigger: { source: "damageSource" },
 		usable: 1,
 		filter(event, player) {
-			return event.card && event.card.name == "sha" && event.getParent(2).player == player && event.notLink() && player.isPhaseUsing();
+			return event.card && event.card.name === "sha" && event.getParent(2).player === player && event.notLink() && player.isPhaseUsing();
 		},
 		direct: true,
 		clearTime: true,
-		content() {
-			"step 0";
-			player
-				.chooseToUse(
-					get.prompt2("pshuntu", trigger.player),
-					function (card, player, event) {
-						if (get.name(card) != "sha") {
-							return false;
-						}
-						return lib.filter.filterCard.apply(this, arguments);
+		async content(event, trigger, player) {
+			const result = await player
+				.chooseToUse({
+					prompt: get.prompt2("pshuntu", trigger.player),
+					filterCard(card, player, event) {
+						return get.name(card) === "sha" && lib.filter.filterCard.apply(this, arguments);
 					},
-					trigger.player,
-					-1
-				)
-				.set("addCount", false).logSkill = "pshuntu";
-			"step 1";
+					filterTarget: trigger.player,
+					selectTarget: -1,
+				})
+				.set("addCount", false)
+				.set("logSkill", "pshuntu")
+				.forResult();
 			if (!result.bool) {
-				player.storage.counttrigger.pshuntu--;
+				player.storage.counttrigger.pshuntu--
 			}
 		},
 	},
