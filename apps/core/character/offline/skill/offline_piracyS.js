@@ -95,29 +95,25 @@ const skills = {
 		},
 		direct: true,
 		filter(event, player) {
-			return get.type2(event.card) == "trick" && event.player != player && event.targets && event.targets.includes(player) && event.cards.filterInD("odj").length && player.countCards("h");
+			return get.type2(event.card) === "trick" && event.player !== player && event.targets?.includes(player) && event.cards.filterInD("odj").length > 0 && player.hasCards("h");
 		},
-		content() {
-			"step 0";
-			player
-				.chooseToDiscard(get.prompt("psquanmou"), "弃置一张" + get.translation(get.color(trigger.card)) + "手牌，获得" + get.translation(trigger.cards), "h", (card, player) => {
-					return get.color(card) == _status.event.color;
-				})
-				.set("ai", card => {
-					return _status.event.value - get.value(card);
-				})
+		async content(event, trigger, player) {
+			const discardResult = await player
+				.chooseToDiscard(get.prompt("psquanmou"), `弃置一张${get.translation(get.color(trigger.card))}手牌，获得${get.translation(trigger.cards)}`, "h", card => get.color(card) === _status.event.color)
+				.set("ai", card => _status.event.value - get.value(card))
 				.set("logSkill", "psquanmou")
 				.set("value", get.value(trigger.cards, player))
-				.set("color", get.color(trigger.card));
-			"step 1";
-			if (result.bool) {
-				var cards = trigger.cards.filterInD("odj");
-				if (cards.filterInD("od").length) {
-					player.gain(cards.filterInD("od"), "gain2");
-				}
-				if (cards.filterInD("j").length) {
-					player.gain(cards.filterInD("j"), get.owner(cards.filterInD("j")[0]), "give");
-				}
+				.set("color", get.color(trigger.card))
+				.forResult();
+			if (!discardResult.bool) {
+				return;
+			}
+			const cards = trigger.cards.filterInD("odj");
+			if (cards.filterInD("od").length) {
+				await player.gain(cards.filterInD("od"), "gain2");
+			}
+			if (cards.filterInD("j").length) {
+				await player.gain(cards.filterInD("j"), get.owner(cards.filterInD("j")[0]), "give");
 			}
 		},
 	},
