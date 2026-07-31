@@ -18,7 +18,7 @@ const skills = {
 			if (!["basic", "trick"].includes(get.type(event.card))) {
 				return false;
 			}
-			const target = name === "useCardToTargeted" ? event.player : event.targets[0];
+			const target = name === "useCardToTarget" ? event.player : event.targets[0];
 			if (!player.canCompare(target) || target == player) {
 				return false;
 			}
@@ -26,7 +26,7 @@ const skills = {
 			return !storage[name];
 		},
 		logTarget(event, player, name) {
-			return name === "useCardToTargeted" ? event?.player : event?.targets[0];
+			return name === "useCardToTarget" ? event?.player : event?.targets[0];
 		},
 		async content(event, trigger, player) {
 			const {
