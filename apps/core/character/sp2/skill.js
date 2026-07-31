@@ -972,6 +972,7 @@ const skills = {
 					await player.gain(evt.cards.filterInD(), "gain2");
 				}
 			} else {
+				player.tempBanSkill(event.name);
 				if (!["basic", "trick"].includes(get.type(evt.card))) {
 					return;
 				}
