@@ -473,7 +473,7 @@ const characters = {
 	v_dongzhuo: {
 		sex: "male",
 		group: "qun",
-		hp: 5,
+		hp: 6,
 		skills: ["dcguangyong", "dcjuchui"],
 	},
 	liujinliupei: {

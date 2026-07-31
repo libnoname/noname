@@ -162,7 +162,7 @@ const characters = {
 	yue_daqiao: {
 		sex: "female",
 		group: "wu",
-		hp: 3,
+		hp: 4,
 		skills: ["dcqiqin", "dczixi"],
 		names: "桥|null",
 	},

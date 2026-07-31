@@ -7971,6 +7971,8 @@ export class Player extends HTMLDivElement {
 		let num = 1;
 		let target = null;
 		let line = false;
+		/** @type { import("./Player/type.d").GainAnimate } */
+		let animate = "giveAuto";
 
 		const args = [...arguments];
 		if (args.length === 1 && get.is.object(params) && params != null && get.itemtype(params) == null) {
@@ -7978,6 +7980,7 @@ export class Player extends HTMLDivElement {
 			position = params.position ?? position;
 			target = params.target ?? target;
 			line = params.line ?? line;
+			animate = params.animate ?? animate;
 		} else {
 			for (const arg of args) {
 				if (typeof arg == "number") {
@@ -7988,6 +7991,9 @@ export class Player extends HTMLDivElement {
 					target = arg;
 				} else if (typeof arg == "boolean") {
 					line = arg;
+				} else if (typeof arg == "string") {
+					// @ts-ignore
+					animate = arg;
 				}
 			}
 		}
@@ -8004,6 +8010,7 @@ export class Player extends HTMLDivElement {
 		const next = this.gain({
 			cards,
 			source: target,
+			animate,
 			log: true,
 			bySelf: true,
 		});
@@ -13763,19 +13770,22 @@ export class Player extends HTMLDivElement {
 	 *
 	 * @overload
 	 * @param { string } name
+	 * @param { boolean } hasJudgeSlots 是否考虑牌的占位情况
 	 * @returns { boolean} 返回玩家判定区是否有某(种牌名的)牌
 	 */
-	hasJudge(name) {
+	hasJudge(name, hasJudgeSlots = true) {
 		if (name && typeof name === "object") {
 			name = name.viewAs || name.name;
 		}
-		var judges = this.getVCards("j");
-		for (var i = 0; i < judges.length; i++) {
-			if (judges[i].name === name) {
+		const judges = this.getVCards("j");
+		return judges.some(card => {
+			if (card.name === name) {
 				return true;
 			}
-		}
-		return false;
+			if (hasJudgeSlots && get.judgeSlots(card, this).containsSome(...get.judgeSlots(name, this))) {
+				return true;
+			}
+		});
 	}
 	/**
 	 * 返回玩家是否存在队友
