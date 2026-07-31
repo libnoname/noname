@@ -54,7 +54,7 @@ const skills = {
 					},
 				},
 				filter(event, player) {
-					const target = player.getStorage("dcmingjie_effect");
+					const target = player.storage.dcmingjie_effect;
 					if (!target?.isIn()) return false;
 					if (event.name.startsWith("lose")) {
 						if (!event.getParent("phaseDiscard", true) || event.type !== "discard" || event.getlx === false) return false;
@@ -65,7 +65,7 @@ const skills = {
 				},
 				forced: true,
 				logTarget(event, player) {
-					return player.getStorage("dcmingjie_effect");
+					return player.storage.dcmingjie_effect;
 				},
 				async content(event, trigger, player) {
 					const target = event.targets[0];
@@ -109,7 +109,7 @@ const skills = {
 				charlotte: true,
 				trigger: { global: "dieAfter" },
 				filter(event, player) {
-					return player.getStorage("dcmingjie_effect") == event.player;
+					return player.storage.dcmingjie_effect == event.player;
 				},
 				forced: true,
 				async content(event, trigger, player) {
@@ -126,12 +126,12 @@ const skills = {
 		audio: 2,
 		trigger: { target: "useCardToTarget" },
 		filter(event, player) {
-			const target = player.getStorage("dcmingjie_effect");
+			const target = player.storage.dcmingjie_effect;
 			if (!target?.isIn() || !Array.isArray(lib.phaseName)) return false;
 			return lib.phaseName.some(item => !["phaseZhunbei", "phaseJieshu"].includes(item) && !player.skipList.includes(item));
 		},
 		async cost(event, trigger, player) {
-			const target = player.getStorage("dcmingjie_effect");
+			const target = player.storage.dcmingjie_effect;
 			const phases = lib.phaseName.filter(item => !["phaseZhunbei", "phaseJieshu"].includes(item) && !player.skipList.includes(item));
 			const result = await player
 				.chooseControl(phases, "cancel2")
@@ -154,7 +154,7 @@ const skills = {
 			//game.log(player, "将于下次跳过", get.translation(event.cost_data));
 			trigger.getParent().excluded.add(player);
 			game.log(trigger.card, "对", player, "无效");
-			const target = player.getStorage("dcmingjie_effect");
+			const target = player.storage.dcmingjie_effect;
 			const playerCards = player.getCards("h");
 			const targetCards = target.getCards("h");
 			const promises = [];
