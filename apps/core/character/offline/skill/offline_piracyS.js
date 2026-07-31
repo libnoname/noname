@@ -74,7 +74,7 @@ const skills = {
 					prompt2: "弃置一张牌令此伤害+1",
 					ai(card) {
 						const { player, target } = get.event();
-						if (get.damageEffect(target, player, player)) {
+						if (get.damageEffect(target, player, player) > 0) {
 							return 8 - get.value(card);
 						}
 						return 0;
