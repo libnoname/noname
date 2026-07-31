@@ -12080,8 +12080,6 @@ const skills = {
 		//新杀结算
 		init(player, skill) {
 			player.addSkill(skill + "_mark");
-			player.addTempSkill(skill + "_mark2");
-			player.addMark(skill + "_mark2", player.countHistory("useCard"), false);
 		},
 		onremove(player, skill) {
 			player.removeSkill(skill + "_mark");

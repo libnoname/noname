@@ -8805,6 +8805,7 @@ const skills = {
 		},
 		onremove(player, skill) {
 			player.removeSkill(skill + "_mark");
+			player.removeSkill(skill + "_mark2");
 		},
 		trigger: { player: "damageBegin4" },
 		filter(event, player) {
