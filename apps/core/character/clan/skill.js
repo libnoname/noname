@@ -654,6 +654,9 @@ const skills = {
 		},
 		enable: "phaseUse",
 		filter(event, player) {
+			if (!player.hasCards("he")) {
+				return false;
+			}
 			const name = "clanfenjian_used";
 			const card = get.autoViewAs({ name: "sha", isCard: true });
 			return game.hasPlayer(target => {
@@ -661,7 +664,7 @@ const skills = {
 			});
 		},
 		filterTarget(card, player, target) {
-			return !player.getStorage("clanfenjian_used").includes(Math.sign(target.getAttackRange() - player.getAttackRange())) && lib.filter.filterTarget(get.autoViewAs(get.info("clanfenjian").viewAs), player, target);
+			return !player.getStorage("clanfenjian_used").includes(Math.sign(target.getAttackRange() - player.getAttackRange())) && lib.filter.targetEnabled2(get.autoViewAs(get.info("clanfenjian").viewAs), player, target);
 		},
 		viewAs: {
 			name: "sha",
@@ -674,13 +677,15 @@ const skills = {
 			},
 		},
 		ignoreMod: true,
-		filterCard(card, player, event) {
-			return lib.filter.cardDiscardable.call(this, card, player, event);
+		filterCard: lib.filter.cardDiscardable,
+		position: "he",
+		check(card) {
+			return 7 - get.value(card);
 		},
 		log: false,
 		async precontent(event, trigger, player) {
 			const name = event.name.slice(4);
-			player.logSkill(name);
+			player.logSkill(name, event.result.targets);
 			const {
 				targets: [target],
 				cards,
@@ -702,16 +707,14 @@ const skills = {
 				if (card.storage?.clanfenjian) {
 					return Infinity;
 				}
-			}
+			},
 		},
 		group: ["clanfenjian_effect"],
 		subSkill: {
 			effect: {
 				forced: true,
 				locked: false,
-				trigger: {
-					source: "damageSource",
-				},
+				trigger: { source: "damageSource" },
 				filter(event, player) {
 					return event.card?.storage?.clanfenjian && player.getAttackRange() > 0;
 				},
