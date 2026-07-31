@@ -2406,10 +2406,6 @@ const skills = {
 		trigger: {
 			player: "phaseJieshuBegin",
 		},
-		filter(event, player) {
-			//return ["h", "e", "j"].some(pos => player.countDiscardableCards(player, pos));
-			return true;
-		},
 		forced: true,
 		async content(event, trigger, player) {
 			const position = ["h", "e", "j"]; //.filter(pos => player.countDiscardableCards(player, pos)),
@@ -2458,6 +2454,7 @@ const skills = {
 							const { pos, player } = get.event();
 							return get.effect(target, { name: "guohe_copy", position: pos }, player, player);
 						},
+						forced: true,
 					})
 					.set("pos", pos)
 					.forResult();
