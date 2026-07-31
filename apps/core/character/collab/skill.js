@@ -89,12 +89,12 @@ const skills = {
 				}
 				const storage = card.storage ?? {};
 				if (!storage.oljuhun_clear) {
-					storage.oljuhun_clear = [suitx, get.number(card), get.name(card)];
+					storage.oljuhun_clear = [suitx, get.number(card), get.name(card), get.nature(card)];
 				}
-				game.broadcastAll(card => {
-					card.init([suit, get.number(card), "hschenzhi_poker"]);
+				game.broadcastAll((card, suit) => {
+					card.init([suit, get.number(card), "hschenzhi_poker", get.nature(card)]);
 					//card.storage = storage;
-				}, card);
+				}, card, suit);
 			}
 			ui.updatehl();
 		},
@@ -102,11 +102,11 @@ const skills = {
 			for (const card of cards) {
 				const cardx = card.storage.oljuhun_clear,
 					storage = card.storage;
-				game.broadcastAll(card => {
+				game.broadcastAll((card, cardx) => {
 					card.init(cardx);
-					delete card.storage.oljuhun_clear;
 					//card.storage = storage;
-				}, card);
+				}, card, cardx);
+				delete card.storage.oljuhun_clear;
 			}
 			ui.updatehl();
 		},
@@ -176,6 +176,7 @@ const skills = {
 					return true;
 				},
 				selectCard: [1, 5],
+				complexCard: true,
 				filterOk() {
 					const cards = ui.selected.cards;
 					if (!cards?.length || cards.length == 1) {

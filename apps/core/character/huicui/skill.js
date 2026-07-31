@@ -4810,11 +4810,23 @@ const skills = {
 				trigger: { global: ["useCard", "phaseEnd"] },
 				filter(event, player) {
 					const target = event.player;
-					if (event.name == "phase" && target.hasCards("h", card => card.hasGaintag("dckuizhen"))) {
-						return false;
+					if (event.name == "phase") {
+						return game.hasPlayer(current => {
+							return (
+								!current.hasCards("h", card => card.hasGaintag("dckuizhen")) &&
+								current.hasHistory("lose", evt => {
+									for (const i in evt.gaintag_map) {
+										if (evt.gaintag_map[i].includes("dckuizhen")) {
+											return true;
+										}
+									}
+									return false;
+								})
+							);
+						});
 					}
 					return target.hasHistory("lose", evt => {
-						if (evt.getParent() != event && event.name == "useCard") {
+						if (evt.getParent() != event) {
 							return false;
 						}
 						for (const i in evt.gaintag_map) {
@@ -4825,13 +4837,32 @@ const skills = {
 						return false;
 					});
 				},
-				logTarget: "player",
+				logTarget(event, player) {
+					if (event.name == "useCard") {
+						return event.player;
+					}
+					return game.filterPlayer(current => {
+						return (
+							!current.hasCards("h", card => card.hasGaintag("dckuizhen")) &&
+							current.hasHistory("lose", evt => {
+								for (const i in evt.gaintag_map) {
+									if (evt.gaintag_map[i].includes("dckuizhen")) {
+										return true;
+									}
+								}
+								return false;
+							})
+						);
+					}).sortBySeat();
+				},
 				async content(event, trigger, player) {
-					const target = event.targets[0];
+					const targets = event.targets;
 					if (trigger.name == "useCard") {
 						await player.draw({ num: 1 });
 					} else {
-						await target.loseHp();
+						await game.doAsyncInOrder(targets, async target => {
+							await target.loseHp();
+						});
 					}
 				},
 			},
