@@ -562,7 +562,7 @@ const skills = {
 							forced: true,
 							ai(target) {
 								const player = get.player();
-								get.attitude(player, target);
+								return get.attitude(player, target);
 							},
 						})
 						.forResult();

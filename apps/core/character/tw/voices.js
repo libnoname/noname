@@ -482,4 +482,10 @@ export default {
 	"#twzhian3": "目无禁法，勿问贵贱依律棒杀！",
 	"#bmcanshi_tw_beimihu1": "此患不足为惧，可蚕食而尽。",
 	"#bmcanshi_tw_beimihu2": "小则蚕食，大则溃坝。",
+	"#tw_sxrm_huatuo:die": "疑患不除，汝无药可医。",
+	"#tw_sxrm_liubei:die": "公早已知备，今又何故再疑。",
+	"#twkuimu1": "孤以一目穷极九州，更何须它哉！",
+	"#twkuimu2": "世人皆曰天意浩渺，于孤不过一目可窥。",
+	"#tw_sxrm_caocao:die": "吾尝疑有生之荣，未尝疑有死之哀……",
+	"#tw_sxrm_fuhuanghou:die": "曹贼疑心甚重…甚重……",
 };

@@ -5535,7 +5535,7 @@ const skills = {
 	},
 	fangzhu: {
 		audio: 2,
-		audioname2: { new_simayi: "fangzhu_new_simayi", sxrm_caocao: "fangzhu_sxrm_caocao" },
+		audioname2: { new_simayi: "fangzhu_new_simayi", sxrm_caocao: "fangzhu_sxrm_caocao", tw_sxrm_caocao: "fangzhu_sxrm_caocao" },
 		trigger: { player: "damageEnd" },
 		preHidden: true,
 		async cost(event, trigger, player) {

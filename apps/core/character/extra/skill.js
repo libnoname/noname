@@ -919,7 +919,7 @@ const skills = {
 	wuhun2: { audio: 2 },
 	new_wuhun: {
 		audio: "wuhun2",
-		audioname2: { sxrm_caocao: "wuhun_sxrm_caocao" },
+		audioname2: { sxrm_caocao: "wuhun_sxrm_caocao", tw_sxrm_caocao: "wuhun_sxrm_caocao" },
 		trigger: { player: "damageEnd" },
 		filter(event, player) {
 			return event.source && event.source.isIn();
@@ -1276,7 +1276,7 @@ const skills = {
 					if (get.effect(player, { name: "losehp" }, player, player) >= 0) {
 						return 1;
 					}
-					if (player.storage.baonu > 6) {
+					if (player.countMark("baonu") > 6) {
 						return 0;
 					}
 					if (player.hp + player.countCards("h", "tao") > 3) {

@@ -1,11 +1,10 @@
 const characters = {
 	lizhaoyi: {
-    sex: "female",
-    group: "shu",
-    hp: 3,
-    skills: ["dcmingjie", "dcxianfu"],
-    names: "李|昭仪",
-    },
+		sex: "female",
+		group: "shu",
+		hp: 3,
+		skills: ["dcmingjie", "dcxianfu"],
+	},
 	dc_sb_guanyu: {
 		sex: "male",
 		group: "shu",
@@ -71,11 +70,12 @@ const characters = {
 		hp: 4,
 		skills: ["dccuxi", "dcduorui", "dczhiti"],
 		groupInGuozhan: "wei",
+		dieAudios: ["shen_zhangliao"],
 	},
 	dc_shen_caopi: {
 		sex: "male",
 		group: "shen",
-		hp: 3,
+		hp: 4,
 		skills: ["dcyinzhi", "dckeming"],
 		groupInGuozhan: "wei",
 	},
@@ -466,7 +466,7 @@ const characters = {
 	v_dongzhuo: {
 		sex: "male",
 		group: "qun",
-		hp: 5,
+		hp: 6,
 		skills: ["dcguangyong", "dcjuchui"],
 	},
 	liujinliupei: {

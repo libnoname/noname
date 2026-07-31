@@ -1,4 +1,20 @@
 const characters = {
+	tw_pot_huanjie: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		hujia: 1,
+		skills: ["twpotgongmou", "potzhengshuo"],
+		dieAudios: ["pot_huanjie"],
+		tempname: ["pot_huanjie"],
+	},
+	tw_lingju: {
+		sex: "female",
+		group: "qun",
+		hp: 3,
+		skills: ["twjieyuan", "twfenxin", "twfucheng"],
+		names: "吕|null",
+	},
 	tw_sb_xiahoudun: {
 		sex: "male",
 		group: "wei",
@@ -1048,6 +1064,31 @@ const characters = {
 		hp: 4,
 		skills: ["zhengfu"],
 		names: "尤利乌斯|盖乌斯",
+	},
+	tw_sxrm_huatuo: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["twmiehai"],
+	},
+	tw_sxrm_liubei: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["twchengbian"],
+	},
+	tw_sxrm_caocao: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["twkuxin", "twsigu", "twkuimu"],
+	},
+	tw_sxrm_fuhuanghou: {
+		sex: "female",
+		group: "qun",
+		hp: 3,
+		maxHp: 4,
+		skills: ["twmitu", "twqianliu"],
 	},
 };
 

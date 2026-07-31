@@ -1751,10 +1751,10 @@ export class Player extends HTMLDivElement {
 		return Math.max(
 			0,
 			this.countEnabledSlot(type) -
-			this.getVEquips(type).reduce((num, card) => {
-				let types = get.subtypes(card, false);
-				return num + get.numOf(types, type);
-			}, 0)
+				this.getVEquips(type).reduce((num, card) => {
+					let types = get.subtypes(card, false);
+					return num + get.numOf(types, type);
+				}, 0)
 		);
 	}
 	/**
@@ -1786,13 +1786,13 @@ export class Player extends HTMLDivElement {
 		return Math.max(
 			0,
 			this.countEnabledSlot(type) -
-			this.getVEquips(type).reduce((num, card) => {
-				let types = get.subtypes(card, false);
-				if (!lib.filter.canBeReplaced(card, this)) {
-					num += get.numOf(types, type);
-				}
-				return num;
-			}, 0)
+				this.getVEquips(type).reduce((num, card) => {
+					let types = get.subtypes(card, false);
+					if (!lib.filter.canBeReplaced(card, this)) {
+						num += get.numOf(types, type);
+					}
+					return num;
+				}, 0)
 		);
 	}
 	/**
@@ -3217,10 +3217,10 @@ export class Player extends HTMLDivElement {
 		m = game.checkMod(from, to, m, "attackFrom", from);
 		m = game.checkMod(from, to, m, "attackTo", to);
 		const equips1 = from.getVCards("e", function (card) {
-			return !card.cards?.some(card => {
-				return ui.selected.cards?.includes(card);
-			});
-		}),
+				return !card.cards?.some(card => {
+					return ui.selected.cards?.includes(card);
+				});
+			}),
 			equips2 = to.getVCards("e", function (card) {
 				return !card.cards?.some(card => {
 					return ui.selected.cards?.includes(card);
@@ -6860,7 +6860,7 @@ export class Player extends HTMLDivElement {
 				func = arg;
 			}
 		}
-		const controls = forced ? ["cancel2"] : [];
+		const controls = forced ? [] : ["cancel2"];
 		return this.chooseControl({
 			controls,
 			choiceList: list,
@@ -7971,6 +7971,8 @@ export class Player extends HTMLDivElement {
 		let num = 1;
 		let target = null;
 		let line = false;
+		/** @type { import("./Player/type.d").GainAnimate } */
+		let animate = "giveAuto";
 
 		const args = [...arguments];
 		if (args.length === 1 && get.is.object(params) && params != null && get.itemtype(params) == null) {
@@ -7978,6 +7980,7 @@ export class Player extends HTMLDivElement {
 			position = params.position ?? position;
 			target = params.target ?? target;
 			line = params.line ?? line;
+			animate = params.animate ?? animate;
 		} else {
 			for (const arg of args) {
 				if (typeof arg == "number") {
@@ -7988,6 +7991,9 @@ export class Player extends HTMLDivElement {
 					target = arg;
 				} else if (typeof arg == "boolean") {
 					line = arg;
+				} else if (typeof arg == "string") {
+					// @ts-ignore
+					animate = arg;
 				}
 			}
 		}
@@ -8004,6 +8010,7 @@ export class Player extends HTMLDivElement {
 		const next = this.gain({
 			cards,
 			source: target,
+			animate,
 			log: true,
 			bySelf: true,
 		});
@@ -8531,11 +8538,13 @@ export class Player extends HTMLDivElement {
 			Object.assign(next, params);
 			if (params?.areaNames != null) {
 				delete next.areaNames;
-				const commonAreas = [...lib.commonArea.values()];
+				const commonAreas = lib.commonArea.entries();
 				for (const areaName of params.areaNames) {
-					if (commonAreas.some(area => area?.fromName === areaName)) {
+					const item = commonAreas.find(([name, area]) => name === areaName || area?.fromName === areaName);
+					if (item != null) {
+						const [_name, area] = item;
 						next.fromStorage = true;
-						next[areaName] = true;
+						next[area.fromName] = true;
 					}
 				}
 			}
@@ -11500,14 +11509,14 @@ export class Player extends HTMLDivElement {
 		_status.event.clearStepCache();
 		return this;
 	}
-	awakenQidingSkill(skill){
+	awakenQidingSkill(skill) {
 		if (this.storage[skill]) {
 			return;
 		}
 		if (this.storage[skill] === undefined || this.storage[skill] === false) {
 			this.storage[skill] = true;
 		}
-		game.log(`契约已成，${get.translation(this)}将【${get.translation(skill)}】改为锁定技。`);
+		game.log("契约已成，", this, "将", `#g${get.translation(skill)}】`, `改为锁定技`);
 		_status.event.clearStepCache();
 		return this;
 	}
@@ -13761,19 +13770,22 @@ export class Player extends HTMLDivElement {
 	 *
 	 * @overload
 	 * @param { string } name
+	 * @param { boolean } hasJudgeSlots 是否考虑牌的占位情况
 	 * @returns { boolean} 返回玩家判定区是否有某(种牌名的)牌
 	 */
-	hasJudge(name) {
+	hasJudge(name, hasJudgeSlots = true) {
 		if (name && typeof name === "object") {
 			name = name.viewAs || name.name;
 		}
-		var judges = this.getVCards("j");
-		for (var i = 0; i < judges.length; i++) {
-			if (judges[i].name === name) {
+		const judges = this.getVCards("j");
+		return judges.some(card => {
+			if (card.name === name) {
 				return true;
 			}
-		}
-		return false;
+			if (hasJudgeSlots && get.judgeSlots(card, this).containsSome(...get.judgeSlots(name, this))) {
+				return true;
+			}
+		});
 	}
 	/**
 	 * 返回玩家是否存在队友

@@ -298,7 +298,7 @@ const characters = {
 		sex: "male",
 		group: "wei",
 		hp: 4,
-		skills: ["olmaozhu", "oljinlan"],
+		skills: ["olremaozhu", "olrejinlan", "olcaifeng"],
 		groupBorder: "jin",
 	},
 	yadan: {
@@ -1355,6 +1355,12 @@ const characters = {
 		group: "qun",
 		hp: 3,
 		skills: ["xinfu_tushe", "xinfu_limu"],
+	},
+	ol_duanwei: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["oltaohuai"],
 	},
 };
 

@@ -1,4 +1,11 @@
 export default {
+	"#olsbluanchao1": "这天下的火，我便再替你们添一把！",
+	"#olsbluanchao2": "诸君……是要束手待毙，还是放手一搏？",
+	"#olsbwance1": "你……看得清这局势吗？",
+	"#olsbwance2": "你越是挣脱，便陷得越深。",
+	"#olsbchenzhi1": "沉得住气，才守得住最后的底牌。",
+	"#olsbchenzhi2": "这桌上留到最后的人，一定是我！",
+	"#ol_sb_jiaxu:die": "愿赌……服输。",
 	"#olshouxi1": "皇天在上，必不佑尔佞臣贼子。",
 	"#olshouxi2": "昔父执鞭以安天下，今兄何功得御九州？",
 	"#olhuimin1": "百姓饥馑，吾岂安心见之？",

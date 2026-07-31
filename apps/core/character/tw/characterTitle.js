@@ -1,4 +1,6 @@
 export default {
+	tw_pot_huanjie: "定计谋国",
+	tw_lingju: "情随梦逝",
 	tw_sb_xiahoudun: "独眼的罗刹",
 	tw_yj_fazheng: "弹铗待试",
 	tw_shen_guanyu: "魂追弗届",
@@ -48,7 +50,7 @@ export default {
 	tw_jianshuo: "西园硕犀",
 	tw_mateng: "驰骋西陲", //这个皮肤在海外和普通称号一样，但是在国内OL改名叫安狄将军
 	tw_baoxin: "坚朴的忠相",
-	tw_liufuren: "酷妒的海棠",//热辣的海藻（）
+	tw_liufuren: "酷妒的海棠", //热辣的海藻（）
 	tw_wangling: "深谋远虑",
 	tw_zhugeguo: "仙池起舞",
 	tw_fanchou: "反攻长安",
@@ -153,4 +155,8 @@ export default {
 	tw_jsrg_hejin: "独意误国谋", //由于没有找到插画，先用起何进的称号代替一下
 	tw_jsrg_caocao: "汉征西将军", //跟上面的何进同理
 	tw_jsrg_huangfusong: "安危定倾",
+	tw_sxrm_huatuo: "上医医国",
+	tw_sxrm_liubei: "潜隐波涛",
+	tw_sxrm_caocao: "一目窥九州",
+	tw_sxrm_fuhuanghou: "白绫蔽月",
 };

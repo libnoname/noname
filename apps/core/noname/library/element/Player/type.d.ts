@@ -517,6 +517,11 @@ export interface EventRandomGainParams {
 	 * 是否在获取时显示指示线
 	 */
 	line?: boolean;
+
+	/**
+	 * 获得牌时的动画表现，默认为 "giveAuto"
+	 */
+	animate?: GainAnimate;
 }
 
 export interface EventDiscardParams {

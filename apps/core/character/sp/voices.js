@@ -1049,4 +1049,8 @@ export default {
 	"#xinfu_zhanji2": "功曹之恩，吾必有展骥之机。",
 	"#mifuren:die": "阿斗被救，妾身再无牵挂……",
 	"#zoushi:die": "年老色衰了吗？",
+	"#oltaohuai1": "让开，刚出炉香喷喷的胡饼来咯！",
+	"#oltaohuai2": "你这恶狼，饶你一命还想吃我肥羊嘞？",
+	"#oltaohuai3": "弟兄们，暗打狐子明打狼！",
+	"#ol_duanwei:die": "去去去，地主家也没余粮了。",
 };

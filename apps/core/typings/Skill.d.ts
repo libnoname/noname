@@ -71,7 +71,7 @@ declare interface Mod {
 	 * 适用范围：player.canUse，lib.filter.cardEnabled，默认lib.filter.filterCard
 	 * 
 	 */
-	cardEnabled?(card: Card | VCard, player: Player, event: GameEvent | "forceEnable" | undefined, result: boolean | "unchanged"): boolean | "unchanged" | void;
+	cardEnabled?(card: Card | VCard | CardBaseUIData, player: Player, event: GameEvent | "forceEnable" | undefined, result: boolean | "unchanged"): boolean | "unchanged" | void;
 	/**
 	 * 卡牌是否可用（适用范围基本可以视为所有情况下）
 	 * 
@@ -79,7 +79,7 @@ declare interface Mod {
 	 * 
 	 * 适用范围：event.backup中技能信息触发（viewAS），cardEnabled（优先于该mod的触发），cardRespondable（优先于该mod的触发），_save（优先于cardSavable的mod触发）中均触发
 	 */
-	cardEnabled2?(card: Card | VCard, player: Player, event: GameEvent | "forceEnable" | undefined, result: boolean | "unchanged"): boolean | "unchanged" | void;
+	cardEnabled2?(card: Card | VCard | CardBaseUIData, player: Player, event: GameEvent | "forceEnable" | undefined, result: boolean | "unchanged"): boolean | "unchanged" | void;
 	/**卡牌能否被赠与 */
 	cardGiftable?(card: Card, player: Player, target: Player, current: boolean | "unchanged"): boolean | "unchanged" | void;
 	/**卡牌能否被重铸 */

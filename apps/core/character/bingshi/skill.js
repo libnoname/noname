@@ -53,7 +53,7 @@ const skills = {
 					},
 					ai2(target) {
 						const player = get.player();
-						if (player.storage.potchiyun1) {
+						if (player.storage.potchiyun1 && game.hasPlayer(current => get.attitude(player, current) > 0 && player != current)) {
 							return get.attitude(player, target);
 						} else {
 							return -get.attitude(player, target);
@@ -4710,7 +4710,7 @@ const skills = {
 					if (typeof record === "number") {
 						player.logSkill("mbxiugeng", null, null, null, [player.countCards("h") >= record ? 4 : 3]);
 						if (player.countCards("h") <= record) {
-							await player.draw({ num: 2 });
+							await player.draw({ num: 2, nodelay: true });
 						}
 						if (player.countCards("h") >= record) {
 							player.addSkill("mbxiugeng_handcard");
@@ -5088,6 +5088,7 @@ const skills = {
 					const target = result.targets[0];
 					player.line(target);
 					target.addSkill(event.name + "_discard");
+					target.addMark(event.name + "_discard", 1, false);
 				}
 			}
 			if (link != "discard" && _status.currentPhase?.isIn()) {
@@ -5101,22 +5102,28 @@ const skills = {
 		},
 		subSkill: {
 			discard: {
-				trigger: { player: "useCardAfter" },
-				forced: true,
+				trigger: { player: "useCard1" },
 				charlotte: true,
+				onremove: true,
+				forced: true,
+				popup: false,
 				async content(event, trigger, player) {
+					const num = player.countMark(event.name);
 					player.removeSkill(event.name);
-					if (player.countDiscardableCards(player, "he")) {
-						await player.chooseToDiscard({
-							position: "he",
-							forced: true,
+					player
+						.when({ player: "useCardAfter" })
+						.filter(evt => evt == trigger)
+						.step(async () => {
+							if (num > 0 && player.hasDiscardableCards(player, "he")) {
+								await player.chooseToDiscard({
+									position: "he",
+									forced: true,
+									selectCard: num,
+								});
+							}
 						});
-					}
 				},
-				intro: {
-					content: "下次使用牌后弃置一张牌",
-				},
-				mark: true,
+				intro: { content: "下次使用牌后弃置#张牌" },
 			},
 		},
 	},
