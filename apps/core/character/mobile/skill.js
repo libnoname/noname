@@ -32545,18 +32545,26 @@ const skills = {
 				choiceList.push("背水！" + beishuiDesc + "，升级技能");
 			}
 			choices.push("cancel2");
-			const { control } = await player
+			const result = await player
 				.chooseControl({
 					controls: choices,
 					choiceList: choiceList,
 					prompt: promptText,
-					choice: canDiscard ? 0 : 1,
+					ai() {
+						const { controls } = get.event();
+						if (controls.includes("背水")) {
+							return "背水";
+						}
+						return controls.slice().randomGet();
+					},
 				})
 				.forResult();
-			event.result = {
-				bool: control !== "cancel2",
-				cost_data: control,
-			};
+			if (typeof result?.control == "string" && result.control != "cancel2") {
+				event.result = {
+					bool: true,
+					cost_data: result.control,
+				};
+			}
 		},
 		async content(event, trigger, player) {
 			const control = event.cost_data;
@@ -32588,6 +32596,9 @@ const skills = {
 							prompt: "竭缘：请选择一张" + get.translation(color) + "牌弃置",
 							filterCard(card) {
 								return get.color(card) === get.event().color;
+							},
+							ai(card) {
+								return 10 - get.value(card);
 							},
 						})
 						.set("color", color)
