@@ -1,4 +1,10 @@
 const characters = {
+	ps_shen_caocao: {
+		sex: "male",
+		group: "shen",
+		hp: 3,
+		skills: ["psguixin", "psshenzun", "psfeiying"],
+	},
 	wxdl_caopi: {
 		sex: "male",
 		group: "wei",

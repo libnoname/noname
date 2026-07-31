@@ -1,5 +1,5 @@
 const characterSort = {
-	extra_offline: ["shen_jiaxu", "shen_diaochan", "boss_zhaoyun", "le_shen_jiaxu", "ps_shen_machao", "mark_shen_machao", "zc26_shen_huangyueying", "sm_shen_machao", "sp_sm_shen_machao", "pe_shen_zhonghui"],
+	extra_offline: ["shen_jiaxu", "shen_diaochan", "boss_zhaoyun", "le_shen_jiaxu", "ps_shen_machao", "mark_shen_machao", "zc26_shen_huangyueying", "sm_shen_machao", "sp_sm_shen_machao", "pe_shen_zhonghui", "ps_shen_caocao"],
 	offline_scl: ["scl_lvbu", "scl_pangdegong", "scl_sunhanhua", "scl_miheng", "scl_peixiu", "scl_caoying", "scl_luotong", "scl_jiaxu"],
 	offline_star: ["jsp_ganfuren", "sp_xiahoushi", "jsp_zhaoyun", "huangjinleishi", "sp_pangtong", "sp_daqiao", "sp_ganning", "sp_xiahoudun", "sp_lvmeng", "sp_zhangfei", "sp_liubei", "old_machao", "zhangliang", "jsp_caoren"],
 	offline_sticker: ["sp_gongsunzan", "sp_simazhao", "sp_wangyuanji", "sp_xinxianying", "sp_liuxie"],
