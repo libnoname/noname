@@ -4,7 +4,7 @@ export default {
 	"#mbzhengbi3": "共掌东曹，为君遴羽，为民择天。",
 	"#mbzhengbi4": "清明颂于山野，天下莫不砥砺！",
 	"#mbfengying1": "夫天道佐义，民望助顺，得者自成霸业。",
-	"#mbfengying2": "如今之势，白是奉顺者冒，奉逆者亡。",
+	"#mbfengying2": "如今之势，自是奉顺者昌，奉逆者亡。",
 	"#mbfengying3": "为君为公，臣等至死不渝！",
 	"#mbfengying4": "公既奉迎天子，则天下莫敌也。",
 	"#mb_cuimao:die": "尽忠言非搏美名，问心无愧而己……",
