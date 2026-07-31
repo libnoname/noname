@@ -8,18 +8,18 @@ const skills = {
 		audio: "zhongyi",
 		trigger: { player: ["useCard", "respond"] },
 		filter(event, player) {
-			return get.color(event.card) == "red";
+			return get.color(event.card) === "red";
 		},
 		frequent: true,
-		content() {
-			"step 0";
-			var card = game.cardsGotoOrdering(get.cards()).cards[0];
-			event.card = card;
+		async content(event, trigger, player) {
+			const card = game.cardsGotoOrdering(get.cards()).cards[0];
 			game.updateRoundNumber();
-			player.showCards(card, get.translation(player) + "发动了【忠魂】");
-			"step 1";
-			if (get.color(card) == "red") {
-				player.gain(card, "gain2");
+			await player.showCards(card, `${get.translation(player)}发动了【忠魂】`);
+			if (get.color(card) === "red") {
+				await player.gain({
+					cards: [card],
+					animate: "gain2",
+				});
 			}
 		},
 	},
