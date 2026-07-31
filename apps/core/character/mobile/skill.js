@@ -1041,7 +1041,8 @@ const skills = {
 	},
 	//界严颜
 	rejuzhan: {
-		audio: 2,
+		audio: 4,
+		logAudio: index => (typeof index == "number" ? "rejuzhan" + index + ".mp3" : 2),
 		init(player, skill) {
 			player.addSkill(skill + "_mark");
 		},
@@ -1123,6 +1124,8 @@ const skills = {
 				}
 			}
 			if (isChengshi) {
+				player.logSkill(event.name, null, null, null, [get.rand(3, 4)]);
+				player.popup("乘势！");
 				player.addSkill(event.name + "_sha");
 				player.addMark(event.name + "_sha", 1, false);
 				player
