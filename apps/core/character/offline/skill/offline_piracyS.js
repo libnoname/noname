@@ -230,121 +230,119 @@ const skills = {
 	psqichu: {
 		enable: ["chooseToUse", "chooseToRespond"],
 		hiddenCard(player, name) {
-			if (player != _status.currentPhase && !player.hasSkill("psqichu_used") && get.type(name) == "basic" && lib.inpile.includes(name)) {
+			if (player !== _status.currentPhase && !player.hasSkill("psqichu_used") && get.type(name) === "basic" && lib.inpile.includes(name)) {
 				return true;
 			}
 		},
 		filter(event, player) {
-			if (event.responded || player == _status.currentPhase || player.hasSkill("psqichu_used")) {
+			if (event.responded || player === _status.currentPhase || player.hasSkill("psqichu_used")) {
 				return false;
 			}
-			for (var i of lib.inpile) {
-				if (get.type(i) == "basic" && event.filterCard({ name: i }, player, event)) {
+			for (const name of lib.inpile) {
+				if (get.type(name) === "basic" && event.filterCard({ name }, player, event)) {
 					return true;
 				}
 			}
 			return false;
 		},
 		delay: false,
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.addTempSkill("psqichu_used");
-			var evt = event.getParent(2);
-			var cards = get.cards(2, true);
-			var aozhan = player.hasSkill("aozhan");
-			player
-				.chooseButton(["七出：选择要" + (evt.name == "chooseToUse" ? "使用" : "打出") + "的牌", cards])
-				.set("filterButton", function (button) {
-					return _status.event.cards.includes(button.link);
-				})
+			const parentEvent = event.getParent(2);
+			const cards = get.cards(2, true);
+			const hasAozhan = player.hasSkill("aozhan");
+			const buttonResult = await player
+				.chooseButton([`七出：选择要${parentEvent.name === "chooseToUse" ? "使用" : "打出"}的牌`, cards])
+				.set("filterButton", button => _status.event.cards.includes(button.link))
 				.set(
 					"cards",
-					cards.filter(function (card) {
-						if (get.type(card) != "basic") {
+					cards.filter(card => {
+						if (get.type(card) !== "basic") {
 							return false;
 						}
-						if (aozhan && card.name == "tao") {
+						if (hasAozhan && card.name === "tao") {
 							return (
-								evt.filterCard(
+								parentEvent.filterCard(
 									{
 										name: "sha",
 										isCard: true,
 										cards: [card],
 									},
-									evt.player,
-									evt
+									parentEvent.player,
+									parentEvent
 								) ||
-								evt.filterCard(
+								parentEvent.filterCard(
 									{
 										name: "shan",
 										isCard: true,
 										cards: [card],
 									},
-									evt.player,
-									evt
+									parentEvent.player,
+									parentEvent
 								)
 							);
 						}
-						return evt.filterCard(card, evt.player, evt);
+						return parentEvent.filterCard(card, parentEvent.player, parentEvent);
 					})
 				)
-				.set("ai", function (button) {
-					var evt = _status.event.getParent(3);
-					if (evt && evt.ai) {
-						var tmp = _status.event;
-						_status.event = evt;
-						var result = (evt.ai || event.ai1)(button.link, _status.event.player, evt);
-						_status.event = tmp;
-						return result;
+				.set("ai", button => {
+					const chooseEvent = _status.event.getParent(3);
+					if (!chooseEvent?.ai) {
+						return 1;
 					}
-					return 1;
-				});
-			"step 1";
-			var evt = event.getParent(2);
-			if (result.bool && result.links && result.links.length) {
-				var name = result.links[0].name,
-					aozhan = player.hasSkill("aozhan") && name == "tao";
-				if (aozhan) {
-					name = evt.filterCard(
-						{
-							name: "sha",
-							isCard: true,
-							cards: [card],
-						},
-						evt.player,
-						evt
-					)
-						? "sha"
-						: "shan";
-				}
-				if (evt.name == "chooseToUse") {
-					game.broadcastAll(
-						function (result, name) {
-							lib.skill.psqichu_backup.viewAs = {
-								name: name,
-								cards: [result],
-								isCard: true,
-							};
-							lib.skill.psqichu_backup.prompt = "选择" + get.translation(result) + "的目标";
-						},
-						result.links[0],
-						name
-					);
-					evt.set("_backupevent", "psqichu_backup");
-					evt.backup("psqichu_backup");
-				} else {
-					delete evt.result.used;
-					delete evt.result.skill;
-					evt.result.card = get.autoViewAs(result.links[0]);
-					if (aozhan) {
-						evt.result.card.name = name;
-					}
-					evt.result.cards = [result.links[0]];
-					evt.redo();
-					return;
-				}
+					const currentEvent = _status.event;
+					_status.event = chooseEvent;
+					const result = (chooseEvent.ai || event.ai1)(button.link, _status.event.player, chooseEvent);
+					_status.event = currentEvent;
+					return result;
+				})
+				.forResult();
+			if (!buttonResult.bool || !buttonResult.links?.length) {
+				parentEvent.goto(0);
+				return;
 			}
-			evt.goto(0);
+			const selectedCard = buttonResult.links[0];
+			let name = selectedCard.name;
+			const aozhan = player.hasSkill("aozhan") && name === "tao";
+			if (aozhan) {
+				name = parentEvent.filterCard(
+					{
+						name: "sha",
+						isCard: true,
+						cards: [event.card],
+					},
+					parentEvent.player,
+					parentEvent
+				)
+					? "sha"
+					: "shan";
+			}
+			if (parentEvent.name !== "chooseToUse") {
+				delete parentEvent.result.used;
+				delete parentEvent.result.skill;
+				parentEvent.result.card = get.autoViewAs(selectedCard);
+				if (aozhan) {
+					parentEvent.result.card.name = name;
+				}
+				parentEvent.result.cards = [selectedCard];
+				parentEvent.redo();
+				return;
+			}
+			game.broadcastAll(
+				(card, name) => {
+					lib.skill.psqichu_backup.viewAs = {
+						name,
+						cards: [card],
+						isCard: true,
+					};
+					lib.skill.psqichu_backup.prompt = `选择${get.translation(card)}的目标`;
+				},
+				selectedCard,
+				name
+			);
+			parentEvent.set("_backupevent", "psqichu_backup");
+			parentEvent.backup("psqichu_backup");
+			parentEvent.goto(0);
 		},
 		ai: {
 			effect: {
@@ -374,8 +372,8 @@ const skills = {
 		},
 		subSkill: {
 			backup: {
-				precontent() {
-					var name = event.result.card.name;
+				async precontent(event) {
+					const name = event.result.card.name;
 					event.result.cards = event.result.card.cards;
 					event.result.card = get.autoViewAs(event.result.cards[0]);
 					event.result.card.name = name;
