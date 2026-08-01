@@ -6559,7 +6559,8 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			tr,
 			td,
 			dialog,
-			hsMap = new Map([]);
+			hsMap = new Map([]),
+			poptipData = new Map([]);
 		for (const target of [...game.players, ...game.dead]) {
 			hsMap.set(target, target.getCards("h"));
 		}
@@ -6589,6 +6590,22 @@ ${e instanceof Error ? e.stack : String(e)}`);
 				dialog.content.firstChild.innerHTML = "战斗胜利";
 			} else if (result2 == false) {
 				dialog.content.firstChild.innerHTML = "战斗失败";
+			}
+			const poptipData = arguments[2];
+			if (poptipData instanceof Map) {
+				const players = game.players.concat(game.dead, game.additionaldead || []);
+				for (const target of players) {
+					const id = poptipData.get(target.playerid);
+					if (!id) continue;
+					lib.poptip.add({
+						id,
+						dialog(dialog) {
+							const hs = target.getCards("h");
+							dialog.add(`${get.translation(target)}的手牌`);
+							dialog[hs.length ? "addSmall" : "addText"](hs.length ? hs : "（没有手牌）");
+						},
+					});
+				}
 			}
 			ui.update();
 			dialog.add(ui.create.div(".placeholder"));
@@ -6854,7 +6871,10 @@ ${e instanceof Error ? e.stack : String(e)}`);
 				tr.appendChild(td);
 				td = document.createElement("td");
 				let target = game.players[i];
+				const poptipId = get.id();
+				poptipData.set(target.playerid, poptipId);
 				td.innerHTML = get.poptip({
+					id: poptipId,
 					name: `<img style="width:15px; vertical-align: middle;" src="${lib.assetURL}image/card/handcard.png">`,
 					dialog(dialog) {
 						let hs = hsMap.get(target) ?? [];
@@ -6947,7 +6967,10 @@ ${e instanceof Error ? e.stack : String(e)}`);
 				tr.appendChild(td);
 				td = document.createElement("td");
 				let target = game.dead[i];
+				const poptipId = get.id();
+				poptipData.set(target.playerid, poptipId);
 				td.innerHTML = get.poptip({
+					id: poptipId,
 					name: `<img style="width:15px; vertical-align: middle;" src="${lib.assetURL}image/card/handcard.png">`,
 					dialog(dialog) {
 						let hs = hsMap.get(target) ?? [];
@@ -7017,7 +7040,10 @@ ${e instanceof Error ? e.stack : String(e)}`);
 				tr.appendChild(td);
 				td = document.createElement("td");
 				let target = game.additionaldead[i];
+				const poptipId = get.id();
+				poptipData.set(target.playerid, poptipId);
 				td.innerHTML = get.poptip({
+					id: poptipId,
 					name: `<img style="width:15px; vertical-align: middle;" src="${lib.assetURL}image/card/handcard.png">`,
 					dialog(dialog) {
 						let hs = hsMap.get(target) ?? [];
