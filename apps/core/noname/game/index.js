@@ -6595,13 +6595,12 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			if (poptipData instanceof Map) {
 				const players = game.players.concat(game.dead, game.additionaldead || []);
 				for (const target of players) {
-					const id = poptipData.get(target.playerid);
-					if (!id) continue;
+					if (!poptipData.has(target.playerid)) continue;
+					const [id, hs] = poptipData.get(target.playerid);
 					lib.poptip.add({
 						id,
 						name: `<img style="width:15px; vertical-align: middle;" src="${lib.assetURL}image/card/handcard.png">`,
 						dialog(dialog) {
-							const hs = target.getCards("h");
 							dialog.add(`${get.translation(target)}的手牌`);
 							dialog[hs.length ? "addSmall" : "addText"](hs.length ? hs : "（没有手牌）");
 						},
@@ -6873,7 +6872,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 				td = document.createElement("td");
 				let target = game.players[i];
 				const poptipId = get.id();
-				poptipData.set(target.playerid, poptipId);
+				poptipData.set(target.playerid, [poptipId, hsMap.get(target) ?? []]);
 				td.innerHTML = get.poptip({
 					id: poptipId,
 					name: `<img style="width:15px; vertical-align: middle;" src="${lib.assetURL}image/card/handcard.png">`,
@@ -6969,7 +6968,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 				td = document.createElement("td");
 				let target = game.dead[i];
 				const poptipId = get.id();
-				poptipData.set(target.playerid, poptipId);
+				poptipData.set(target.playerid, [poptipId, hsMap.get(target) ?? []]);
 				td.innerHTML = get.poptip({
 					id: poptipId,
 					name: `<img style="width:15px; vertical-align: middle;" src="${lib.assetURL}image/card/handcard.png">`,
@@ -7042,7 +7041,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 				td = document.createElement("td");
 				let target = game.additionaldead[i];
 				const poptipId = get.id();
-				poptipData.set(target.playerid, poptipId);
+				poptipData.set(target.playerid, [poptipId, hsMap.get(target) ?? []]);
 				td.innerHTML = get.poptip({
 					id: poptipId,
 					name: `<img style="width:15px; vertical-align: middle;" src="${lib.assetURL}image/card/handcard.png">`,
@@ -7064,7 +7063,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		let clients = game.players.concat(game.dead);
 		for (let i = 0; i < clients.length; i++) {
 			if (clients[i].isOnline2()) {
-				clients[i].send(game.over, dialog.content.innerHTML, game.checkOnlineResult(clients[i]));
+				clients[i].send(game.over, dialog.content.innerHTML, game.checkOnlineResult(clients[i]), poptipData);
 			}
 		}
 
