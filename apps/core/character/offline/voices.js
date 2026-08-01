@@ -1,4 +1,9 @@
 export default {
+	"#hm_shen_huangfusong:die": "天下大乱兮市如墟，忠臣如梦兮复如痴。",
+	"#hm_shice1": "治乱麻合用快刀，斩之无赦！",
+	"#hm_shice2": "飞蓬遇风千里，亦不过草民尔尔。",
+	"#hm_podai1": "铸京观二邑，用彰武功！",
+	"#hm_podai2": "乱民不识天威，宜草薙而禽狝。",
 	"#juejing": "龙战于野，其血玄黄。",
 	"#longhun1": "潜龙于渊，涉灵愈伤。",
 	"#longhun2": "千里一怒，红莲灿世。",
