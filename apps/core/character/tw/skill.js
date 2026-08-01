@@ -49,24 +49,17 @@ const skills = {
 			player: "damageBegin4",
 		},
 		filter(event, player, name) {
-			if ((name == "damageBegin4" ? event.source : event.player) == player) return false;
+			const target = name == "damageBegin4" ? event.source : event.player;
+			if (target == player || !target?.isIn() || target.hp >= player.hp) return false;
 			const position = player.storage.twfenxin_achieve ? "he" : "h";
 			if (event.isOnline() || player.storage.twfenxin_achieve) return player.hasCards(position);
 			if (name == "damageBegin2")
-				return (
-					event.player &&
-					event.player.hp >= player.hp &&
-					player.hasCard(card => {
-						return get.color(card) == "black" && lib.filter.canBeDiscarded(card, player, player);
-					}, position)
-				);
-			return (
-				event.source &&
-				event.source.hp >= player.hp &&
-				player.hasCard(card => {
-					return get.color(card) == "red" && lib.filter.canBeDiscarded(card, player, player);
-				}, position)
-			);
+				return player.hasCard(card => {
+					return get.color(card) == "black" && lib.filter.canBeDiscarded(card, player, player);
+				}, position);
+			return player.hasCard(card => {
+				return get.color(card) == "red" && lib.filter.canBeDiscarded(card, player, player);
+			}, position);
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
