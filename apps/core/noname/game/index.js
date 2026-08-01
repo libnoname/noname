@@ -6873,7 +6873,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 				let target = game.players[i];
 				const poptipId = get.id();
 				poptipData.set(target.playerid, [poptipId, hsMap.get(target) ?? []]);
-				td.innerHTML = get.poptip({
+				game.broadcastAll(item => lib.poptip.add(item), {
 					id: poptipId,
 					name: `<img style="width:15px; vertical-align: middle;" src="${lib.assetURL}image/card/handcard.png">`,
 					dialog(dialog) {
@@ -6883,6 +6883,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 						return dialog;
 					},
 				});
+				td.innerHTML = get.poptip(poptipId);
 				tr.appendChild(td);
 				table.appendChild(tr);
 			}
@@ -6969,7 +6970,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 				let target = game.dead[i];
 				const poptipId = get.id();
 				poptipData.set(target.playerid, [poptipId, hsMap.get(target) ?? []]);
-				td.innerHTML = get.poptip({
+				game.broadcastAll(item => lib.poptip.add(item), {
 					id: poptipId,
 					name: `<img style="width:15px; vertical-align: middle;" src="${lib.assetURL}image/card/handcard.png">`,
 					dialog(dialog) {
@@ -6979,6 +6980,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 						return dialog;
 					},
 				});
+				td.innerHTML = get.poptip(poptipId);
 				tr.appendChild(td);
 				table.appendChild(tr);
 			}
@@ -7042,7 +7044,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 				let target = game.additionaldead[i];
 				const poptipId = get.id();
 				poptipData.set(target.playerid, [poptipId, hsMap.get(target) ?? []]);
-				td.innerHTML = get.poptip({
+				game.broadcastAll(item => lib.poptip.add(item), {
 					id: poptipId,
 					name: `<img style="width:15px; vertical-align: middle;" src="${lib.assetURL}image/card/handcard.png">`,
 					dialog(dialog) {
@@ -7052,6 +7054,8 @@ ${e instanceof Error ? e.stack : String(e)}`);
 						return dialog;
 					},
 				});
+				td.innerHTML = get.poptip(poptipId);
+				tr.appendChild(td);
 				table.appendChild(tr);
 			}
 			dialog.add(ui.create.div(".placeholder"));
@@ -7060,7 +7064,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		// }
 		dialog.add(ui.create.div(".placeholder"));
 
-		let clients = game.players.concat(game.dead);
+		let clients = game.players.concat(game.dead, game.additionaldead || []);
 		for (let i = 0; i < clients.length; i++) {
 			if (clients[i].isOnline2()) {
 				clients[i].send(game.over, dialog.content.innerHTML, game.checkOnlineResult(clients[i]), poptipData);
