@@ -61,6 +61,9 @@ const skills = {
 				return get.color(card) == "red" && lib.filter.canBeDiscarded(card, player, player);
 			}, position);
 		},
+		logTarget(event, player, name) {
+			return name == "damageBegin4" ? event.source : event.player;
+		},
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseCard({
