@@ -5228,6 +5228,9 @@ const skills = {
 					});
 				});
 			}
+			if(!max.length) {
+				max = [[null, 0, null, null]];
+			}
 			max.sort((a, b) => b[1] - a[1]);
 			const t = max[0][3];
 			max = max.filter(list => list[3] == t).slice(0, 2);
