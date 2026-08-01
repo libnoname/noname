@@ -1677,8 +1677,10 @@ const skills = {
 		onremove: true,
 		charlotte: true,
 	},
-	//神贾诩
+	//神贾诩---配音老师酉良
 	jxlianpo: {
+		audio: 4,
+		logAudio: () => 2,
 		init: () => {
 			game.addGlobalSkill("jxlianpo_global");
 		},
@@ -1774,7 +1776,7 @@ const skills = {
 		},
 		subSkill: {
 			show: {
-				audio: "jxlianpo",
+				audio: ["jxlianpo3.mp3", "jxlianpo4.mp3"],
 				trigger: { global: "roundStart" },
 				filter(event, player) {
 					var list = lib.config.mode_config.identity.identity.lastItem.slice();
@@ -1921,6 +1923,8 @@ const skills = {
 		},
 	},
 	jxzhaoluan: {
+		audio: 4,
+		logAudio: () => 2,
 		trigger: { global: "dieBegin" },
 		filter(event, player) {
 			return event.getParent().name == "dying" && event.player.isIn();
@@ -1963,7 +1967,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
-				audio: "jxzhaoluan",
+				audio: ["jxzhaoluan3.mp3", "jxzhaoluan4.mp3"],
 				enable: "phaseUse",
 				filter(event, player) {
 					return player.getStorage("jxzhaoluan_effect").some(i => i.isIn());
