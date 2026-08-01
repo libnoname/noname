@@ -6599,6 +6599,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 					if (!id) continue;
 					lib.poptip.add({
 						id,
+						name: `<img style="width:15px; vertical-align: middle;" src="${lib.assetURL}image/card/handcard.png">`,
 						dialog(dialog) {
 							const hs = target.getCards("h");
 							dialog.add(`${get.translation(target)}的手牌`);
