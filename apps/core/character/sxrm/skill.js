@@ -3852,7 +3852,6 @@ const skills = {
 		filter(event, player) {
 			return player.countCards("hes") >= 2;
 		},
-		audio: true,
 		prompt: "将两张牌当刺【杀】使用或打出",
 		async precontent(event, trigger, player) {
 			player
