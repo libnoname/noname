@@ -10686,13 +10686,13 @@ export class Player extends HTMLDivElement {
 						if (zhuanhuanLimit == 2) {
 							// 阴阳转换
 							if (get.info(name).zhuanhuanji == "number" || typeof storage == "number") {
-								index = this.countMark(name);
+								index = this.countMark(name) % zhuanhuanLimit;
 							} else {
 								index = storage ? 1 : 0;
 							}
 						} else {
 							// 多项转换
-							index = this.countMark(name);
+							index = this.countMark(name) % zhuanhuanLimit;
 						}
 						// 旋转度数
 						const angle = index * (360 / zhuanhuanLimit);
