@@ -3,6 +3,207 @@ import { lib, game, ui, get, ai, _status } from "noname";
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
 	//potential--潜在, 潜力, 可能, 电位, 潜能, 势
+	//势小乔------by 清风
+	potheyun: {
+		audio: 2,
+		enable: "phaseUse",
+		usable: 2,
+		filter(event, player) {
+			const skills = player.getSkills(null, false, false).filter(skill => {
+				const info = get.info(skill);
+				const dizhuSkill = ["飞扬", "跋扈", "恃强", "殷富"];
+				const t = lib.translate[skill];
+				if (dizhuSkill.includes(t)) {
+					return true;
+				}
+				return info && !info.charlotte;
+			});
+			return skills.length && game.hasPlayer(current => get.info("potheyun").filterTarget(null, player, current));
+		},
+		filterTarget(card, player, target) {
+			const skills = player.getSkills(null, false, false).filter(skill => {
+				const info = get.info(skill);
+				const dizhuSkill = ["飞扬", "跋扈", "恃强", "殷富"];
+				const t = lib.translate[skill];
+				if (dizhuSkill.includes(t)) {
+					return true;
+				}
+				return info && !info.charlotte;
+			});
+			return target.getSkills(null, false, false).containsSome(...skills);
+		},
+		async content(event, trigger, player) {
+			const target = event.target;
+			const skills = player.getSkills(null, false, false).filter(skill => {
+				const info = get.info(skill);
+				const dizhuSkill = ["飞扬", "跋扈", "恃强", "殷富"];
+				const t = lib.translate[skill];
+				if (dizhuSkill.includes(t)) {
+					return true;
+				}
+				return info && !info.charlotte;
+			});
+			const list = [];
+			for (const skill of skills) {
+				list.push([skill, `<div class="popup text" style="width:calc(100% - 10px);display:inline-block"><div class="skill">【` + get.translation(skill) + "】</div><div>" + lib.translate[skill + "_info"] + "</div></div>"]);
+			}
+			const result =
+				skills.length > 1
+					? await player
+							.chooseButton({
+								createDialog: ["合韵：请失去一个技能", [list, "textbutton"]],
+								forced: true,
+								ai(button) {
+									const player = get.player(),
+										skill = button.link;
+									const skillx = Array.isArray(player.additionalSkills["potyinhui"]) ? player.additionalSkills["potyinhui"] : [player.additionalSkills["potyinhui"]];
+									if (skillx?.length) {
+										return skill == skillx[0];
+									}
+									return 1 + Math.random();
+								},
+							})
+							.forResult()
+					: { bool: true, links: skills };
+			if (result?.bool && result.links?.length) {
+				const skills = result.links;
+				await player.removeSkills(skills);
+				//村规刷新一下
+				get.info("potyinhui").refreshSkill(player, skills);
+				await target.draw({ num: 2 });
+			}
+		},
+		ai: {
+			order: 1,
+			result: {
+				player(player, target) {
+					const skillx = Array.isArray(player.additionalSkills["potyinhui"]) ? player.additionalSkills["potyinhui"] : [player.additionalSkills["potyinhui"]];
+					if (skillx?.length) {
+						return 1;
+					}
+					return -1;
+				},
+				target: 1,
+			},
+		},
+	},
+	potyinhui: {
+		audio: 12,
+		logAudio: index => typeof index == "number" ? `potyinhui${index}.mp3` : 2,
+		trigger: { global: "roundStart" },
+		filter(event, player) {
+			return game.players.length > 1;
+		},
+		//参考朱佩兰
+		refreshSkill(player, skills) {
+			Object.keys(player.storage)
+				.filter(i => skills.some(skill => i.startsWith(skill)))
+				.forEach(storage => delete player.storage[storage]);
+			const suffixs = ["used", "round", "block", "blocker"];
+			for (const skill of skills) {
+				const info = get.info(skill);
+				if (info.usable !== undefined) {
+					if (typeof player.getStat("triggerSkill")[skill] == "number" && player.getStat("triggerSkill")[skill] >= 1) {
+						delete player.getStat("triggerSkill")[skill];
+					}
+					if (typeof player.getStat("skill")[skill] == "number" && player.getStat("skill")[skill] >= 1) {
+						delete player.getStat("skill")[skill];
+					}
+				}
+				if (info.round && player.storage[skill + "_roundcount"]) {
+					delete player.storage[skill + "_roundcount"];
+				}
+				if (player.storage[`temp_ban_${skill}`]) {
+					delete player.storage[`temp_ban_${skill}`];
+				}
+				if (player.awakenedSkills.includes(skill)) {
+					player.restoreSkill(skill);
+				}
+				for (const suffix of suffixs) {
+					if (player.hasSkill(skill + "_" + suffix)) {
+						player.removeSkill(skill + "_" + suffix);
+					}
+				}
+			}
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt(event.skill),
+					prompt2: "选择一名其他角色获得其一个技能",
+					filterTarget: lib.filter.notMe,
+					ai(target) {
+						return Math.abs(get.attitude(get.player(), target)) + 1;
+					},
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const additionalSkills = player.additionalSkills[event.name];
+			if (additionalSkills) {
+				const skillx = Array.isArray(player.additionalSkills[event.name]) ? player.additionalSkills[event.name] : [player.additionalSkills[event.name]];
+				if (skillx.length) {
+					//村规刷新一下
+					get.info("potyinhui").refreshSkill(player, skillx);
+				}
+			}
+			player.removeAdditionalSkill(event.name);
+			const skills = target
+				.getSkills(null, false, false)
+				.removeArray(player.getSkills(null, false, false))
+				.filter(skill => {
+					const info = get.info(skill);
+					const dizhuSkill = ["飞扬", "跋扈", "恃强", "殷富"];
+					const t = lib.translate[skill];
+					if (dizhuSkill.includes(t)) {
+						return true;
+					}
+					return info && !info.charlotte;
+				});
+			if (skills.length) {
+				const list = [];
+				for (const skill of skills) {
+					list.push([skill, `<div class="popup text" style="width:calc(100% - 10px);display:inline-block"><div class="skill">【` + get.translation(skill) + "】</div><div>" + lib.translate[skill + "_info"] + "</div></div>"]);
+				}
+				const result =
+					skills.length > 1
+						? await player
+								.chooseButton({
+									createDialog: ["音洄：请获得一个技能", [list, "textbutton"]],
+									forced: true,
+									ai(button) {
+										const info = get.info(button.link);
+										if (!info || (info.ai && (info.ai.combo || info.ai.notemp || info.ai.neg))) {
+											return 0;
+										}
+										return 1 + Math.random();
+									},
+								})
+								.forResult()
+						: { bool: true, links: skills };
+				if (result?.bool && result.links?.length) {
+					const skill = result.links[0];
+					player.logSkill(event.name, null, null, null, [get.rand(3, 12)]);
+					player.addAdditionalSkill(event.name, skill);
+					const info = get.info(skill);
+					//获得蓄力技时获得其初始蓄力点
+					if (typeof info?.chargeSkill == "number" && info.chargeSkill > 0) {
+						const groups = Array.isArray(info.group) ? info.group : [info.group];
+						if (groups?.length && groups.includes(skill + "_init")) {
+							try {
+								await get.info(skill + "_init").content(event, trigger, player);
+							} catch (e) {
+								game.print(e);
+							}
+						}
+					}
+				}
+			} else {
+				player.popup("......");
+			}
+		},
+	},
 	//势周瑜------by 清风
 	potchiyun: {
 		audio: 2,

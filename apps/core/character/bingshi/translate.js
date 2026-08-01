@@ -1,6 +1,12 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	pot_xiaoqiao: "势小乔",
+	pot_xiaoqiao_prefix: "势",
+	potheyun: "合韵",
+	potheyun_info: "出牌阶段限两次，你可以选择一名与你有相同技能的角色，然后你失去一个技能并令其摸两张牌。",
+	potyinhui: "音洄",
+	potyinhui_info: "每轮开始时，你可以失去因此获得的技能（若无则跳过），然后获得一名其他角色的一个技能。",
 	pot_zhouyu: "势周瑜",
 	pot_zhouyu_prefix: "势",
 	potchiyun: "炽沄",
