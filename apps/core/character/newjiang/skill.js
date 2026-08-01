@@ -2622,17 +2622,17 @@ const skills = {
 		filter(event, player) {
 			const { card, targets } = event;
 			if (!["basic", "trick"].includes(get.type(card)) || lib.skill.xunshi.isXunshi(card)) {
-        		return false;
-      		}
+				return false;
+			}
 			const info = get.info(card);
 			if (info.allowMultiple == false) {
 				return false;
 			}
-      		if (targets && targets.length == 1) {
-				return game.hasPlayer(current => !targets.includes(current) && lib.filter.targetEnabled2(card, player, current) && (get.distance(player, current) == get.distance(player, targets[0]) || (get.distance(player, current) <= 1 && targets.includes(player)))); 
+			if (targets && targets.length == 1) {
+				return game.hasPlayer(current => !targets.includes(current) && lib.filter.targetEnabled2(card, player, current) && (get.distance(player, current) == get.distance(player, targets[0]) || (get.distance(player, current) <= 1 && targets.includes(player))));
 				//依旧新杀神秘结算：使用牌指定自己为目标时，可以选择与自己距离为1的其他角色为额外目标。
 			}
-      		return false;
+			return false;
 		},
 		async cost(event, trigger, player) {
 			const { card, targets } = trigger;
