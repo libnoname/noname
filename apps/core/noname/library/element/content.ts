@@ -11709,9 +11709,6 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 							card.destroyed = info.destroy;
 							continue;
 						}
-						/*else if ("destroyed" in cardx[j]) {
-							
-						}*/
 						if (event.position) {
 							if (_status.discarded) {
 								if (event.position == ui.discardPile) {
