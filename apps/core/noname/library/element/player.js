@@ -10680,11 +10680,35 @@ export class Player extends HTMLDivElement {
 					img.setBackgroundImage(lib.skill[name].markimage2);
 					img.style["background-size"] = "contain";
 				} else {
-					var str = lib.translate[name + "_bg"];
+					let str = lib.translate[name + "_bg"];
 					if (!str || str[0] == "+" || str[0] == "-") {
 						str = get.translation(name)[0];
 					}
 					ui.create.div(".background.skillmark", node).innerHTML = str;
+					let zhuanhuanji = get.is.zhuanhuanji(name, this);
+					// 仅针对获得/失去显示为☯的转化技显示
+					if (zhuanhuanji && str == "☯") {
+						const zhuanhuanLimit = get.zhuanhuanItemNum(name, this);
+						const storage = this.storage[name];
+						let index;
+						if (zhuanhuanLimit == 2) {
+							// 阴阳转换
+							if (get.info(name).zhuanhuanji == "number" || typeof storage == "number") {
+								index = this.countMark(name) % zhuanhuanLimit;
+							} else {
+								index = storage ? 1 : 0;
+							}
+						} else {
+							// 多项转换
+							index = this.countMark(name) % zhuanhuanLimit;
+						}
+						// 旋转度数
+						const angle = index * (360 / zhuanhuanLimit);
+						// @ts-expect-error ignore
+						node.firstChild.reversed = angle;
+						// @ts-expect-error ignore
+						node.firstChild.style.transform = `rotate(${angle}deg)`;
+					}
 				}
 			}
 			node.name = name;
