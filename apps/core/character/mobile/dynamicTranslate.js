@@ -10,8 +10,8 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技，",
-			end = `。${get.poptip("rule_chengshi")}：你于出牌阶段内使用【杀】的次数+1，且此【杀】结算完毕后，你获得之。`;
+		let start = "转换技，游戏开始时，若你的势力为蜀，此技能的初始状态改为阴；",
+			end = `。${get.poptip("rule_chengshi")}：你使用【杀】的次数上限+1，且此【杀】结算完毕后，你获得之。`;
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
 	mbkubai(player, skill) {

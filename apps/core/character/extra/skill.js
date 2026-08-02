@@ -1276,7 +1276,7 @@ const skills = {
 					if (get.effect(player, { name: "losehp" }, player, player) >= 0) {
 						return 1;
 					}
-					if (player.storage.baonu > 6) {
+					if (player.countMark("baonu") > 6) {
 						return 0;
 					}
 					if (player.hp + player.countCards("h", "tao") > 3) {

@@ -55,13 +55,14 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 						prompt,
 						prompt2: `当前体力：${dying.hp}`,
 						ai1(card) {
+							const player = get.player();
 							if (typeof card == "string") {
 								const info = get.info(card);
 								if (info.ai && info.ai.order) {
 									if (typeof info.ai.order == "number") {
 										return info.ai.order;
 									} else if (typeof info.ai.order == "function") {
-										return info.ai.order();
+										return info.ai.order(null, player);
 									}
 								}
 							}
@@ -11738,60 +11739,62 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 					}
 				}
 				for (const card of cardx) {
-					if (card.gaintag && card.gaintag.length) {
-						event.gaintag_map[card.cardid] = card.gaintag.slice(0);
-						//仅移除非永久标记
-						const tags = card.gaintag.filter(tag => !tag.startsWith("eternal_"));
-						tags.forEach(tag => card.removeGaintag(tag));
-					}
+					if (card.isViewAsCard) {
+						// 删掉转化延时锦囊假牌
+						card.remove();
+					} else {
+						if (card.gaintag && card.gaintag.length) {
+							event.gaintag_map[card.cardid] = card.gaintag.slice(0);
+							//仅移除非永久标记
+							const tags = card.gaintag.filter(tag => !tag.startsWith("eternal_"));
+							tags.forEach(tag => card.removeGaintag(tag));
+						}
 
-					card.style.transform += " scale(0.2)";
-					card.classList.remove("glow");
-					card.classList.remove("glows");
-					card.recheck();
+						card.style.transform += " scale(0.2)";
+						card.classList.remove("glow");
+						card.classList.remove("glows");
+						card.recheck();
 
-					const info = lib.card[card.name];
-					if ("_destroy" in card) {
-						if (card._destroy) {
+						const info = lib.card[card.name];
+						if ("_destroy" in card) {
+							if (card._destroy) {
+								card.delete();
+								card.destroyed = card._destroy;
+								continue;
+							}
+						} else if (event.position && card.willBeDestroyed(event.position.id, null, event)) {
+							card.selfDestroy(event);
+							continue;
+						} else if (info.destroy) {
 							card.delete();
-							card.destroyed = card._destroy;
+							card.destroyed = info.destroy;
 							continue;
 						}
-					} else if (event.position && card.willBeDestroyed(event.position.id, null, event)) {
-						card.selfDestroy(event);
-						continue;
-					} else if (info.destroy) {
-						card.delete();
-						card.destroyed = info.destroy;
-						continue;
-					}
-					/*else if ("destroyed" in cardx[j]) {
-						
-					}*/
-					if (event.position) {
-						if (_status.discarded) {
-							if (event.position == ui.discardPile) {
-								_status.discarded.add(card);
-							} else {
-								_status.discarded.remove(card);
+						if (event.position) {
+							if (_status.discarded) {
+								if (event.position == ui.discardPile) {
+									_status.discarded.add(card);
+								} else {
+									_status.discarded.remove(card);
+								}
 							}
-						}
-						if (event.insert_index) {
-							card.fix();
-							event.position.insertBefore(card, event.insert_index(event, card));
-						} else if (event.insert_card) {
-							card.fix();
-							event.position.insertBefore(card, event.position.firstChild);
-						} else if (event.position == ui.cardPile) {
-							card.fix();
-							event.position.appendChild(card);
+							if (event.insert_index) {
+								card.fix();
+								event.position.insertBefore(card, event.insert_index(event, card));
+							} else if (event.insert_card) {
+								card.fix();
+								event.position.insertBefore(card, event.position.firstChild);
+							} else if (event.position == ui.cardPile) {
+								card.fix();
+								event.position.appendChild(card);
+							} else {
+								card.goto(event.position);
+							}
 						} else {
-							card.goto(event.position);
+							card.remove();
 						}
-					} else {
-						card.remove();
+						//if(ss.includes(cardx[j])) cards.splice(i--,1);
 					}
-					//if(ss.includes(cardx[j])) cards.splice(i--,1);
 				}
 			}
 			if (player == game.me) {
@@ -13318,6 +13321,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				if (ui.confirm) {
 					ui.confirm.close();
 				}
+				game.resume();
 				_status.imchoosing = false;
 				setTimeout(() => {
 					ui.arena.classList.remove("choose-to-move");
@@ -13325,6 +13329,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				resolve(result);
 			};
 			//开搞
+			game.pause();
 			game.countChoose();
 			event.choosing = true;
 			result = await promise;

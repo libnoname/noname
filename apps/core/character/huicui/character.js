@@ -1,4 +1,10 @@
 const characters = {
+	dc_feiyi: {
+		sex: "male",
+		group: "shu",
+		hp: 3,
+		skills: ["dcqiansu", "dcxingbang", "dcfanhuo"],
+	},
 	yue_caozhi: {
 		sex: "male",
 		group: "wei",
@@ -162,7 +168,7 @@ const characters = {
 	yue_daqiao: {
 		sex: "female",
 		group: "wu",
-		hp: 3,
+		hp: 4,
 		skills: ["dcqiqin", "dczixi"],
 		names: "桥|null",
 	},
@@ -738,7 +744,7 @@ const characters = {
 		group: "wei",
 		hp: 5,
 		skills: ["chijian", "shiwu"],
-    	names: "夏侯|恩",
+		names: "夏侯|恩",
 	},
 	re_panfeng: {
 		sex: "male",
