@@ -7572,16 +7572,16 @@ const skills = {
 		trigger: { global: "roundStart" },
 		forced: true,
 		async content(event, trigger, player) {
-			const nums = Array.from({ length: 4 }).map((_, i) => get.cnNumber(i + 1) + "张");
+			const nums = Array.from({ length: 5 }).map((_, i) => get.cnNumber(i + 1) + "张");
 			const result = await player
 				.chooseControl(nums)
 				.set("prompt", "奉蔚：请选择摸牌数")
-				.set("ai", () => 3)
+				.set("ai", () => get.event().controls.at(-1))
 				.forResult();
+			player.addTempSkill("olfengwei_debuff", "roundStart");
 			const next = player.draw(result.index + 1);
 			next.gaintag.add("olfengwei_debuff");
 			await next;
-			player.addTempSkill("olfengwei_debuff", "roundStart");
 		},
 		subSkill: {
 			debuff: {
