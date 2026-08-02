@@ -3,7 +3,7 @@ import { lib, game, ui, get, ai, _status } from "noname";
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
 	//potential--潜在, 潜力, 可能, 电位, 潜能, 势
-	//势周瑜------by 清风
+	//势周瑜
 	potchiyun: {
 		audio: 2,
 		audioname2: {
@@ -462,7 +462,7 @@ const skills = {
 			await player.draw({ num: 2 });
 		},
 	},
-	//势程普------by 清风
+	//势程普
 	potduzuo: {
 		audio: 2,
 		trigger: {
@@ -541,7 +541,7 @@ const skills = {
 			}
 		},
 	},
-	//势夏侯霸------by 清风
+	//势夏侯霸
 	potlibing: {
 		audio: 2,
 		forced: true,
@@ -673,7 +673,7 @@ const skills = {
 			}
 		},
 	},
-	//势陈群------by 清风
+	//势陈群
 	potfaen: {
 		audio: 2,
 		trigger: { global: "useCard" },
@@ -810,7 +810,7 @@ const skills = {
 			trigger.next.push(next);
 		},
 	},
-	//势曹真------by 清风
+	//势曹真
 	potsifeng: {
 		audio: 6,
 		logAudio: () => 2,
@@ -931,7 +931,7 @@ const skills = {
 			},
 		},
 	},
-	//势吕壹------by 清风
+	//势吕壹
 	pothuilv: {
 		audio: 2,
 		trigger: { global: "phaseUseBegin" },
@@ -2170,7 +2170,7 @@ const skills = {
 			}
 		},
 	},
-	//势钟会 by柴油鹿鹿
+	//势钟会
 	mbsizi: {
 		audio: 7,
 		logAudio(event) {
@@ -2183,6 +2183,10 @@ const skills = {
 		usable: 1,
 		beginMarkCount: 4,
 		chargeSkill: 4,
+		init(player, skill) {
+			const num = lib.skill[skill].beginMarkCount;
+			player.addCharge(num, false);
+		},
 		filter(event, player) {
 			return player.countCharge() > 0;
 		},
@@ -2223,30 +2227,8 @@ const skills = {
 				return `###${prompt}###${list.join("<br>")}`;
 			},
 		},
-		group: "mbsizi_init",
 		subSkill: {
 			backup: {},
-			init: {
-				audio: "mbsizi",
-				logAudio: () => "mbsizi3.mp3",
-				trigger: {
-					player: "enterGame",
-					global: "phaseBefore",
-				},
-				filter(event, player) {
-					if (!player.countCharge(true)) {
-						return false;
-					}
-					return event.name != "phase" || game.phaseNumber == 0;
-				},
-				forced: true,
-				locked: false,
-				async content(event, trigger, player) {
-					const num = lib.skill.mbsizi.beginMarkCount;
-					player.addCharge(num);
-					await game.delayx();
-				},
-			},
 			extra: {
 				charlotte: true,
 			},
@@ -2704,6 +2686,10 @@ const skills = {
 		audio: "pottuntian",
 		beginMarkCount: 1,
 		chargeSkill: 3,
+		init(player, skill) {
+			const num = lib.skill[skill].beginMarkCount;
+			player.addCharge(num, false);
+		},
 		getNum(player) {
 			const num = game
 				.getGlobalHistory("everything", evt => {
@@ -2756,27 +2742,8 @@ const skills = {
 				player.loseToDiscardpile(cards);
 			}
 		},
-		group: ["old_pottuntian_init", "old_pottuntian_biyue", "old_pottuntian_addCharge"],
+		group: ["old_pottuntian_biyue", "old_pottuntian_addCharge"],
 		subSkill: {
-			init: {
-				audio: "pottuntian",
-				trigger: {
-					player: "enterGame",
-					global: "phaseBefore",
-				},
-				filter(event, player) {
-					if (!player.countCharge(true)) {
-						return false;
-					}
-					return event.name != "phase" || game.phaseNumber == 0;
-				},
-				forced: true,
-				locked: false,
-				async content(event, trigger, player) {
-					const num = lib.skill.old_pottuntian.beginMarkCount;
-					player.addCharge(num);
-				},
-			},
 			biyue: {
 				audio: "pottuntian",
 				trigger: { player: "phaseEnd" },
@@ -5581,7 +5548,7 @@ const skills = {
 			},
 		},
 	},
-	//手杀杨弘 —— by 刘巴
+	//手杀杨弘
 	//用同一张牌拼点神将
 	mbjianji: {
 		audio: 3,
@@ -5829,7 +5796,7 @@ const skills = {
 			}
 		},
 	},
-	//夏侯尚 —— by 刘巴
+	//夏侯尚
 	mbtanfeng: {
 		audio: "twtanfeng",
 		trigger: { player: "phaseZhunbeiBegin" },
@@ -6895,7 +6862,7 @@ const skills = {
 			},
 		},
 	},
-	//势太史慈 --- by 刘巴
+	//势太史慈 ---
 	potzhanlie: {
 		audio: 3,
 		trigger: { global: "phaseBegin" },

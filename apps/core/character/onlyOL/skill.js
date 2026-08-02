@@ -2,7 +2,7 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
-	//界步练师------by 清风
+	//界步练师
 	olanxu: {
 		audio: 2,
 		enable: "phaseUse",
@@ -156,7 +156,7 @@ const skills = {
 			},
 		},
 	},
-	//界刘封------by 清风
+	//界刘封
 	olxiansi: {
 		audio: 4,
 		logAudio: () => 2,
@@ -4997,7 +4997,7 @@ const skills = {
 			},
 		},
 	},
-	//谋鲁肃 —— by 刘巴
+	//谋鲁肃
 	olsbduduan: {
 		audio: 2,
 		phasename: ["phaseJudge", "phaseDraw", "phaseUse", "phaseDiscard"],
@@ -7218,7 +7218,7 @@ const skills = {
 			},
 		},
 	},
-	//谋小乔 —— by 星の语
+	//谋小乔
 	//洗脚女将，再添一员（？）
 	olmiluo: {
 		audio: 2,
@@ -7497,7 +7497,7 @@ const skills = {
 			},
 		},
 	},
-	//魔司马懿 —— by 星の语
+	//魔司马懿
 	//舍身入魔，佛奈我何！
 	olguifu: {
 		audio: 2,

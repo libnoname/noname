@@ -213,7 +213,7 @@ const translates = {
 	potgongmou: "共谋",
 	potgongmou_info: `准备阶段，你可以与一名其他角色交换手牌，若如此做，你获得技能${get.poptip("qice")}且其获得技能${get.poptip("kanpo")}至本回合结束。`,
 	potzhengshuo: "正朔",
-	potzhengshuo_info: "限定技，出牌阶段，你可以令所有角色弃置所有手牌，然后洗牌。若如此做，所有角色各摸四张牌。", //若没有角色的手牌数为4，
+	potzhengshuo_info: "限定技，出牌阶段，你可以令所有角色弃置所有手牌，然后洗牌。若如此做，所有角色各摸四张牌。",
 	pot_dengai: "势邓艾",
 	pot_dengai_prefix: "势",
 	pottuntian: "屯田",

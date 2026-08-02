@@ -1494,7 +1494,7 @@ const skills = {
 			}
 		},
 	},
-	//新杀向宠 —— by 星の语
+	//新杀向宠
 	dcguying: {
 		getNum(player) {
 			const history = player.getAllHistory("useSkill", evt => evt.skill == "dcguying");
