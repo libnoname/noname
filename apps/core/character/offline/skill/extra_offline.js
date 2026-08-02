@@ -3,7 +3,7 @@ import html from "dedent";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
-	//PE神钟会------by 清风
+	//PE神钟会
 	pelinjie: {
 		audio: "dclinjie",
 		marktext: "凛",
@@ -1677,10 +1677,8 @@ const skills = {
 		onremove: true,
 		charlotte: true,
 	},
-	//神贾诩---配音老师酉良
+	//神贾诩
 	jxlianpo: {
-		audio: 4,
-		logAudio: () => 2,
 		init: () => {
 			game.addGlobalSkill("jxlianpo_global");
 		},
@@ -1776,7 +1774,6 @@ const skills = {
 		},
 		subSkill: {
 			show: {
-				audio: ["jxlianpo3.mp3", "jxlianpo4.mp3"],
 				trigger: { global: "roundStart" },
 				filter(event, player) {
 					var list = lib.config.mode_config.identity.identity.lastItem.slice();

@@ -2,7 +2,7 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
-	//手杀小车------by 清风
+	//手杀小车
 	mbqucheng: {
 		audio: 2,
 		forced: true,
@@ -116,7 +116,7 @@ const skills = {
 			}
 		},
 	},
-	//手杀丁尚涴------by 清风
+	//手杀丁尚涴
 	mbzhaofu: {
 		audio: 2,
 		enable: "chooseToUse",
@@ -377,13 +377,13 @@ const skills = {
 			},
 		},
 	},
-	//界王基------by 清风
+	//界王基
 	reqizhi: {
 		audio: 2,
 		chargeSkill: 3,
 		beginMarkCount: 1,
-		init(player) {
-			const num = lib.skill.reqizhi.beginMarkCount;
+		init(player, skill) {
+			const num = lib.skill[skill].beginMarkCount;
 			player.addCharge(num, false);
 		},
 		enable: "phaseUse",
@@ -411,25 +411,6 @@ const skills = {
 			},
 		},
 		subSkill: {
-			init: {
-				audio: "reqizhi",
-				forced: true,
-				trigger: {
-					player: "enterGame",
-					global: "phaseBefore",
-				},
-				filter(event, player) {
-					if (!player.countCharge(true)) {
-						return false;
-					}
-					return event.name != "phase" || game.phaseNumber == 0;
-				},
-				async content(event, trigger, player) {
-					const num = get.info("reqizhi").beginMarkCount;
-					await player.addCharge(num);
-					await game.delayx();
-				},
-			},
 			effect: {
 				audio: "reqizhi",
 				charlotte: true,
@@ -4785,7 +4766,7 @@ const skills = {
 			combo: "hefeixianjian",
 		},
 	},
-	//数刘徽 by流年
+	//数刘徽
 	mbgeyuan: {
 		audio: 2,
 		init(player, skill) {
@@ -9061,7 +9042,7 @@ const skills = {
 		},
 		derivation: "mbxuehen_rewrite",
 	},
-	//手杀邢道荣 —— by 刘巴
+	//手杀邢道荣
 	mbkuangwu: {
 		audio: 4,
 		trigger: { global: "phaseUseBegin" },
@@ -9149,7 +9130,7 @@ const skills = {
 			}
 		},
 	},
-	//吴珂 —— by 刘巴
+	//吴珂
 	mbzhuguo: {
 		audio: 3,
 		logAudio: index => (typeof index === "number" ? "mbzhuguo" + index + ".mp3" : 2),
@@ -11328,9 +11309,10 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.choosePlayerCard(trigger.player, "h", get.prompt2(event.name.slice(0, -5)))
+				.choosePlayerCard(trigger.player, "h", get.prompt2(event.skill))
 				.set("ai", button => {
 					//小透不算透---by @xizifu
+					//牢骚哥经典发骚
 					const { player, target } = get.event(),
 						att = get.attitude(player, target),
 						type = get.type2(button.link);
@@ -20312,7 +20294,8 @@ const skills = {
 				const index = history.at(-1).index;
 				player.addTip(skill, `${get.translation(skill)} ${index == 0 ? "弃牌" : "摸牌"}`);
 			}
-			player.addCharge(2, false);
+			const num = lib.skill[skill].beginMarkCount;
+			player.addCharge(num, false);
 		},
 		onremove(player, skill) {
 			player.removeTip(skill);
@@ -20337,6 +20320,7 @@ const skills = {
 			return eff;
 		},
 		audio: 2,
+		beginMarkCount: 2,
 		chargeSkill: 4,
 		enable: "phaseUse",
 		filter(event, player) {
@@ -20537,21 +20521,6 @@ const skills = {
 						}, link);
 						await player.useSkill("sbyaoming_backup", result.targets);
 					}
-				},
-			},
-			init: {
-				audio: "sbyaoming",
-				trigger: {
-					global: "phaseBefore",
-					player: "enterGame",
-				},
-				forced: true,
-				locked: false,
-				filter(event, player) {
-					return (event.name != "phase" || game.phaseNumber == 0) && player.countCharge(true);
-				},
-				async content(event, trigger, player) {
-					player.addCharge(2);
 				},
 			},
 		},

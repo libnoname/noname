@@ -2,7 +2,7 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
-	//谋陈泰------by 清风
+	//谋陈泰
 	sbdengxian: {
 		audio: 2,
 		enable: "chooseToUse",

@@ -3227,7 +3227,7 @@ const skills = {
 		},
 	},
 	//疑包
-	//曹操 -by.柴油鹿鹿
+	//曹操
 	sxrmkuxin: {
 		audio: 2,
 		trigger: { player: "damageEnd" },

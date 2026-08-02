@@ -28665,7 +28665,7 @@ const skills = {
 			}
 		},
 	},
-	//tw疑华佗 疑？☁ -by子右
+	//tw疑华佗 疑？☁
 	twmiehai: {
 		audio: "sxrmmiehai",
 		enable: "chooseToUse",
@@ -28741,7 +28741,7 @@ const skills = {
 			},
 		},
 	},
-	//tw疑刘备 哒哒哒哒哒 by子右
+	//tw疑刘备 哒哒哒哒哒
 	twchengbian: {
 		audio: "sxrmchengbian",
 		trigger: {
@@ -28848,7 +28848,7 @@ const skills = {
 			},
 		},
 	},
-	//tw疑曹操 好想玩袁神 ☁袁神 by子右
+	//tw疑曹操 好想玩袁神 ☁袁神
 	twkuxin: {
 		audio: "sxrmkuxin",
 		trigger: { player: "damageEnd" },
@@ -29204,7 +29204,7 @@ const skills = {
 			tag: { rejudge: 1 },
 		},
 	},
-	//tw疑伏皇后 当当当当当 看精彩纷纷 ☁袁神 by子右
+	//tw疑伏皇后 当当当当当 看精彩纷纷 ☁袁神
 	twmitu: {
 		audio: "sxrmmitu",
 		trigger: {

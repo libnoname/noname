@@ -5675,7 +5675,7 @@ const skills = {
 			},
 		},
 	},
-	//OL张曼成 —— by 星の语
+	//OL张曼成
 	olkuangxin: {
 		init(player) {
 			player.addSkill("olkuangxin_record");
@@ -5878,7 +5878,7 @@ const skills = {
 			},
 		},
 	},
-	//OL管亥 —— by 星の语
+	//OL管亥
 	olxiewei: {
 		audio: 2,
 		enable: ["chooseToUse"],
@@ -6049,7 +6049,7 @@ const skills = {
 			},
 		},
 	},
-	//OL杨阜 —— by 刘巴
+	//OL杨阜
 	olpingzhong: {
 		group: "olpingzhong_add",
 		audio: 2,
@@ -11057,7 +11057,7 @@ const skills = {
 			result: { player: 1 },
 		},
 	},
-	//桥玄 —— by 刘巴
+	//桥玄
 	oltingji: {
 		audio: 2,
 		mod: {
@@ -11135,7 +11135,7 @@ const skills = {
 			},
 		},
 	},
-	//孔淑 —— by 刘巴
+	//孔淑
 	leiluan: {
 		audio: 2,
 		onChooseToUse(event) {
@@ -11563,7 +11563,7 @@ const skills = {
 			}
 		},
 	},
-	//OL袁姬 —— by 刘巴
+	//OL袁姬
 	oljieyan: {
 		audio: 2,
 		trigger: {
