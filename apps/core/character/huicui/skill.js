@@ -2,10 +2,10 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
-	//新杀费祎------by 清风
+	//新杀费祎
 	dcqiansu: {
 		audio: 2,
-		trigger: { global: "phaseEnd" },
+		trigger: { global: "phaseJieshuBegin" },
 		filter(event, player) {
 			return player != event.player && event.player.countCards("h") > player.countCards("h");
 		},
@@ -14,21 +14,19 @@ const skills = {
 			const result = await player.draw({ num: 3 }).forResult();
 			const target = trigger.player;
 			if (result?.cards?.length) {
-				const cards = result.cards.filter(card => player.getGainableCards(target, "h").includes(card));
+				const cards = result.cards.filter(card => player.getCards("h").includes(card));
 				if (!cards?.length) {
 					return;
 				}
-				await player
-					.chooseToGive({
-						target,
-						position: "h",
-						forced: true,
-						filterCard(card) {
-							return get.event().cards.includes(card);
-						},
-					})
-					.set("cards", cards)
-					.forResult();
+				await player.chooseToGive({
+					target,
+					position: "h",
+					forced: true,
+					filterCard(card) {
+						return get.event().cards.includes(card);
+					},
+					cards,
+				});
 			}
 		},
 	},
@@ -108,10 +106,9 @@ const skills = {
 			order: 13,
 			result: {
 				player(player) {
-					if (player.hp + player.countCards("hs", card => ["tao", "jiu"].includes(card.name)) > 3) {
-						return 1;
-					}
-					return -1;
+					if (!player.hasSkill("dcxingbang") || (player.getStat().skill?.dcxingbang ?? 0) >= 3) return 0;
+					if (player.hp + player.countCards("hs", card => player.canSaveCard(card, player)) < 3) return 0;
+					return !player.hasUnknown() && game.hasPlayer(target => target !== player && get.effect(target, "dcxingbang", player, player) > 0) ? 1 : -1;
 				},
 			},
 		},

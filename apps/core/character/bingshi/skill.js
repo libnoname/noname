@@ -3,7 +3,7 @@ import { lib, game, ui, get, ai, _status } from "noname";
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
 	//potential--潜在, 潜力, 可能, 电位, 潜能, 势
-	//势小乔------by 清风
+	//势小乔
 	potheyun: {
 		audio: 2,
 		enable: "phaseUse",
@@ -54,12 +54,9 @@ const skills = {
 								createDialog: ["合韵：请失去一个技能", [list, "textbutton"]],
 								forced: true,
 								ai(button) {
-									const player = get.player(),
-										skill = button.link;
-									const skillx = Array.isArray(player.additionalSkills["potyinhui"]) ? player.additionalSkills["potyinhui"] : [player.additionalSkills["potyinhui"]];
-									if (skillx?.length) {
-										return skill == skillx[0];
-									}
+									const player = get.player();
+									if (player.additionalSkills?.potyinhui?.includes(button.link)) return 10 + Math.random();
+									if (get.info(skill).ai?.neg) return 100 + Math.random();
 									return 1 + Math.random();
 								},
 							})
@@ -68,8 +65,6 @@ const skills = {
 			if (result?.bool && result.links?.length) {
 				const skills = result.links;
 				await player.removeSkills(skills);
-				//村规刷新一下
-				get.info("potyinhui").refreshSkill(player, skills);
 				await target.draw({ num: 2 });
 			}
 		},
@@ -77,11 +72,19 @@ const skills = {
 			order: 1,
 			result: {
 				player(player, target) {
-					const skillx = Array.isArray(player.additionalSkills["potyinhui"]) ? player.additionalSkills["potyinhui"] : [player.additionalSkills["potyinhui"]];
-					if (skillx?.length) {
-						return 1;
-					}
-					return -1;
+					const skills = player.getSkills(null, false, false).filter(skill => {
+						const info = get.info(skill);
+						const dizhuSkill = ["飞扬", "跋扈", "恃强", "殷富"];
+						const t = lib.translate[skill];
+						if (dizhuSkill.includes(t)) return true;
+						return info && !info.charlotte;
+					});
+					return skills.some(skill => {
+						if (player.additionalSkills?.potyinhui?.includes(skill)) return true;
+						return get.info(skill).ai?.neg;
+					})
+						? 1
+						: -1;
 				},
 				target: 1,
 			},
@@ -89,13 +92,28 @@ const skills = {
 	},
 	potyinhui: {
 		audio: 12,
-		logAudio: index => typeof index == "number" ? `potyinhui${index}.mp3` : 2,
+		logAudio: index => (typeof index == "number" ? `potyinhui${index}.mp3` : 2),
 		trigger: { global: "roundStart" },
 		filter(event, player) {
-			return game.players.length > 1;
+			return game.hasPlayer(target => {
+				if (target === player) return false;
+				return (
+					target.getSkills(null, false, false).filter(skill => {
+						if (player.hasSkill(skill)) return false;
+						const info = get.info(skill);
+						const dizhuSkill = ["飞扬", "跋扈", "恃强", "殷富"];
+						const t = lib.translate[skill];
+						if (dizhuSkill.includes(t)) {
+							return true;
+						}
+						return info && !info.charlotte;
+					}).length > 0
+				);
+			});
 		},
 		//参考朱佩兰
 		refreshSkill(player, skills) {
+			if (typeof skills === "string") skills = [skills];
 			Object.keys(player.storage)
 				.filter(i => skills.some(skill => i.startsWith(skill)))
 				.forEach(storage => delete player.storage[storage]);
@@ -129,26 +147,50 @@ const skills = {
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget({
-					prompt: get.prompt(event.skill),
-					prompt2: "选择一名其他角色获得其一个技能",
-					filterTarget: lib.filter.notMe,
+					prompt: get.prompt2(event.skill),
+					filterTarget(card, player, target) {
+						if (target === player) return false;
+						return (
+							target.getSkills(null, false, false).filter(skill => {
+								if (player.hasSkill(skill)) return false;
+								const info = get.info(skill);
+								const dizhuSkill = ["飞扬", "跋扈", "恃强", "殷富"];
+								const t = lib.translate[skill];
+								if (dizhuSkill.includes(t)) {
+									return true;
+								}
+								return info && !info.charlotte;
+							}).length > 0
+						);
+					},
 					ai(target) {
-						return Math.abs(get.attitude(get.player(), target)) + 1;
+						const { player, filterTarget } = get.event();
+						const targets = game.filterPlayer(target => filterTarget(null, player, target));
+						return Math.max(
+							...targets.map(target => {
+								const skills = target.getSkills(null, false, false).filter(skill => {
+									if (player.hasSkill(skill)) return false;
+									const info = get.info(skill);
+									const dizhuSkill = ["飞扬", "跋扈", "恃强", "殷富"];
+									const t = lib.translate[skill];
+									if (dizhuSkill.includes(t)) {
+										return true;
+									}
+									return info && !info.charlotte;
+								});
+								return Math.max(...skills.map(skill => get.skillRank(skill)));
+							})
+						);
 					},
 				})
 				.forResult();
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			const additionalSkills = player.additionalSkills[event.name];
-			if (additionalSkills) {
-				const skillx = Array.isArray(player.additionalSkills[event.name]) ? player.additionalSkills[event.name] : [player.additionalSkills[event.name]];
-				if (skillx.length) {
-					//村规刷新一下
-					get.info("potyinhui").refreshSkill(player, skillx);
-				}
+			if (player.additionalSkills?.[event.name]?.length) {
+				get.info("potyinhui").refreshSkill(player, player.additionalSkills[event.name]);
+				await player.removeAdditionalSkills(event.name);
 			}
-			await player.removeAdditionalSkills(event.name);
 			const skills = target
 				.getSkills(null, false, false)
 				.removeArray(player.getSkills(null, false, false))
@@ -185,10 +227,9 @@ const skills = {
 				if (result?.bool && result.links?.length) {
 					const skill = result.links[0];
 					player.logSkill(event.name, null, null, null, [get.rand(3, 12)]);
-					await player.addAdditionalSkills(event.name, skill);
+					get.info("potyinhui").refreshSkill(player, skill);
+					await player.addAdditionalSkills(event.name, skill, true);
 				}
-			} else {
-				player.popup("......");
 			}
 		},
 	},
