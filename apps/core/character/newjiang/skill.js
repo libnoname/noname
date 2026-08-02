@@ -7,8 +7,8 @@ const skills = {
 		audio: 4,
 		logAudio: index => (typeof index === "number" ? "fuyu" + index + ".mp3" : 2),
 		trigger: {
-			player: "useCardToPlayered",
-			target: "useCardToTargeted",
+			player: "useCardToPlayer",
+			target: "useCardToTarget",
 		},
 		usable: 2,
 		filter(event, player, name) {
@@ -18,7 +18,7 @@ const skills = {
 			if (!["basic", "trick"].includes(get.type(event.card))) {
 				return false;
 			}
-			const target = name === "useCardToTargeted" ? event.player : event.targets[0];
+			const target = name === "useCardToTarget" ? event.player : event.targets[0];
 			if (!player.canCompare(target) || target == player) {
 				return false;
 			}
@@ -26,7 +26,7 @@ const skills = {
 			return !storage[name];
 		},
 		logTarget(event, player, name) {
-			return name === "useCardToTargeted" ? event?.player : event?.targets[0];
+			return name === "useCardToTarget" ? event?.player : event?.targets[0];
 		},
 		async content(event, trigger, player) {
 			const {
@@ -2621,28 +2621,28 @@ const skills = {
 		},
 		filter(event, player) {
 			const { card, targets } = event;
+			if (!["basic", "trick"].includes(get.type(card)) || lib.skill.xunshi.isXunshi(card)) {
+				return false;
+			}
 			const info = get.info(card);
 			if (info.allowMultiple == false) {
 				return false;
 			}
-			const infox = lib.card[get.name(card)];
-			if (get.type(card) != "basic" && (!info || info.type != "trick" || info.notarget || (info.selectTarget && info.selectTarget != 1))) {
-				return false;
-			}
-			if (targets && targets.length == 1 && !info.multitarget) {
-				return game.hasPlayer(current => !targets.includes(current) && lib.filter.targetEnabled2(card, player, current) && get.distance(player, current) == get.distance(player, targets[0]));
+			if (targets && targets.length == 1) {
+				return game.hasPlayer(current => !targets.includes(current) && lib.filter.targetEnabled2(card, player, current) && (get.distance(player, current) == get.distance(player, targets[0]) || (get.distance(player, current) <= 1 && targets.includes(player))));
+				//依旧新杀神秘结算：使用牌指定自己为目标时，可以选择与自己距离为1的其他角色为额外目标。
 			}
 			return false;
 		},
 		async cost(event, trigger, player) {
 			const { card, targets } = trigger;
-			const prompt2 = `为${get.translation(card)}增加任意个你与其距离为${get.distance(player, targets[0])}的目标`;
+			const prompt2 = `为${get.translation(card)}增加任意个你与其距离为${!targets.includes(player) ? get.distance(player, targets[0]) : 1}的目标`;
 			event.result = await player
 				.chooseTarget(
 					get.prompt(event.skill),
 					(card, player, target) => {
 						const { card: cardx, targets } = get.event();
-						return !targets.includes(target) && lib.filter.targetEnabled2(cardx, get.player(), target) && get.distance(player, target) == get.distance(player, targets[0]);
+						return !targets.includes(target) && lib.filter.targetEnabled2(cardx, player, target) && (get.distance(player, target) == get.distance(player, targets[0]) || (get.distance(player, target) <= 1 && targets.includes(player)));
 					},
 					[1, Infinity]
 				)
@@ -2665,21 +2665,20 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return player.countCards("h") !== 5;
+			//新杀结算
+			//return player.countCards("h") !== 5;
+			return true;
 		},
 		manualConfirm: true,
 		async content(event, trigger, player) {
 			const num = player.countCards("h") - 5;
-			if (num == 0) {
-				return;
-			}
 			if (num > 0) {
-				await player.chooseToDiscard({ position: "h", num, forced: true, allowChooseAll: true });
-			} else {
+				await player.chooseToDiscard({ position: "h", selectCard: num, forced: true, allowChooseAll: true });
+			} else if (num < 0) {
 				await player.draw({ num: -num });
 			}
 			if (player.canMoveCard()) {
-				await player.moveCard(true);
+				await player.moveCard();
 			}
 			const lose = player.hasHistory("lose", evt => evt.getParent(3) == event);
 			const bool1 = lose && player.hasHistory("gain", evt => evt.getParent(2) == event);

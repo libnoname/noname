@@ -948,7 +948,6 @@ const skills = {
 		trigger: {
 			global: "useCardToPlayer",
 		},
-		usable: 1,
 		filter(event, player) {
 			if (event.player == player || event.targets?.length != 1 || event.player == event.target) {
 				return false;
@@ -973,6 +972,7 @@ const skills = {
 					await player.gain(evt.cards.filterInD(), "gain2");
 				}
 			} else {
+				player.tempBanSkill(event.name);
 				if (!["basic", "trick"].includes(get.type(evt.card))) {
 					return;
 				}
@@ -3225,18 +3225,15 @@ const skills = {
 				})
 				.forResult();
 		},
-		getTargets(card, player) {
+		getTargets(card, player, source) {
 			return game.filterPlayer(current => {
-				if (player === current) {
+				if (player === current || source == current) {
 					return false;
 				}
 				if (!player.inRange(current)) {
 					return false;
 				}
-				if (card.source === current) {
-					return false;
-				}
-				return lib.filter.targetEnabled2(card, player, current);
+				return lib.filter.targetEnabled2(card, source, current);
 			});
 		},
 		isSelf(card, player, evt = get.event()) {
@@ -3256,10 +3253,9 @@ const skills = {
 			} else {
 				choiceList.push(["damage", "对一名角色造成2点伤害"]);
 			}
-			const targets = get.info("starweigu").getTargets(trigger.card, player);
-			if (targets.length) {
-				choiceList.push(["addtarget", `令${get.translation(targets)}成为${get.translation(trigger.card)}的额外目标`]);
-			}
+			const source = trigger.player == player ? player : trigger.player;
+			const targets = get.info("starweigu").getTargets(trigger.card, player, source);
+			choiceList.push(["addtarget", `令攻击范围内的所有角色（${targets.length ? get.translation(targets) : "滚木"}）成为${get.translation(trigger.card)}的额外目标`]);
 			if (choiceList.length) {
 				let choice;
 				if (choiceList.length == 2) {
@@ -3291,7 +3287,7 @@ const skills = {
 						.set("targets", targets)
 						.set("card", trigger.card)
 						.forResult();
-					choice = result.links?.[0];
+					choice = result?.links?.[0];
 				} else {
 					choice = choiceList[0][0];
 				}
