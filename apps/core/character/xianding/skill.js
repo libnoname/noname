@@ -13250,13 +13250,13 @@ const skills = {
 			const cards2 = [];
 			for (const current of targets) {
 				const result = map.get(current);
-				if (result?.cards?.length) {
+				if (result?.links?.length) {
 					if (current == player) {
-						await target.modedDiscard(result.cards).set("discarder", player);
-						cards2.addArray(result.cards);
+						await target.modedDiscard(result.links).set("discarder", player);
+						cards2.addArray(result.links);
 					} else {
-						await player.modedDiscard(result.cards).set("discarder", target);
-						cards1.addArray(result.cards);
+						await player.modedDiscard(result.links).set("discarder", target);
+						cards1.addArray(result.links);
 					}
 				}
 			}
