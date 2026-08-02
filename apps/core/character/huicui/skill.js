@@ -2,6 +2,117 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//新杀费祎
+	dcqiansu: {
+		audio: 2,
+		trigger: { global: "phaseJieshuBegin" },
+		filter(event, player) {
+			return player != event.player && event.player.countCards("h") > player.countCards("h");
+		},
+		logTarget: "player",
+		async content(event, trigger, player) {
+			const result = await player.draw({ num: 3 }).forResult();
+			const target = trigger.player;
+			if (result?.cards?.length) {
+				const cards = result.cards.filter(card => player.getCards("h").includes(card));
+				if (!cards?.length) {
+					return;
+				}
+				await player.chooseToGive({
+					target,
+					position: "h",
+					forced: true,
+					filterCard(card) {
+						return get.event().cards.includes(card);
+					},
+					cards,
+				});
+			}
+		},
+	},
+	dcxingbang: {
+		audio: 2,
+		enable: "phaseUse",
+		usable(skill, player) {
+			return player.hasSkill("dcfanhuo_mark") ? 3 : 1;
+		},
+		filterTarget: lib.filter.notMe,
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			await player.draw();
+			if (!target?.isIn() || !player.hasGainableCards(target, "he")) {
+				return;
+			}
+			let result;
+			result = await player.chooseToGive({ forced: true, position: "he", target }).forResult();
+			if (result?.bool && result.cards?.length) {
+				const card = result.cards[0];
+				for (let i = 0; i < 3; i++) {
+					if (!target?.isIn() || !target.hasGainableCards(player, "h")) {
+						return;
+					}
+					result = await player.gainPlayerCard({ target, forced: true, position: "h" }).forResult();
+					if (result?.bool && result.links?.length) {
+						const cardx = result.links[0];
+						const sha = get.autoViewAs({ name: "sha", isCard: true }, "unsure");
+						if (card == cardx) {
+							if (player.canUse(sha, target, false, false)) {
+								await player.useCard({ card: sha, targets: [target], addCount: false });
+								return;
+							}
+						}
+					}
+				}
+			}
+		},
+		ai: {
+			order: 5,
+			result: {
+				player: 1,
+				target: -1,
+			},
+		},
+	},
+	dcfanhuo: {
+		audio: 2,
+		enable: "phaseUse",
+		manualConfirm: true,
+		limited: true,
+		skillAnimation: true,
+		animationColor: "wood",
+		filter(event, player) {
+			return player.hasSkill("dcxingbang", null, false, false);
+		},
+		async content(event, trigger, player) {
+			player.awakenSkill(event.name);
+			player.addTempSkill(event.name + "_mark");
+		},
+		subSkill: {
+			mark: {
+				mark: true,
+				charlotte: true,
+				intro: {
+					content: "本回合兴邦改为出牌阶段限三次，然后此回合结束时你失去3点体力",
+				},
+				forced: true,
+				trigger: { global: "phaseEnd" },
+				async content(event, trigger, player) {
+					await player.loseHp(3);
+				},
+			},
+		},
+		ai: {
+			combo: "dcxingbang",
+			order: 13,
+			result: {
+				player(player) {
+					if (!player.hasSkill("dcxingbang") || (player.getStat().skill?.dcxingbang ?? 0) >= 3) return 0;
+					if (player.hp + player.countCards("hs", card => player.canSaveCard(card, player)) < 3) return 0;
+					return !player.hasUnknown() && game.hasPlayer(target => target !== player && get.effect(target, "dcxingbang", player, player) > 0) ? 1 : -1;
+				},
+			},
+		},
+	},
 	//乐曹植
 	dcfuyue: {
 		mod: {
@@ -1494,7 +1605,7 @@ const skills = {
 			}
 		},
 	},
-	//新杀向宠 —— by 星の语
+	//新杀向宠
 	dcguying: {
 		getNum(player) {
 			const history = player.getAllHistory("useSkill", evt => evt.skill == "dcguying");

@@ -1,4 +1,11 @@
 export default {
+	"#olremaozhu1": "登东堂综文宣艺，忝作儒林之丈。",
+	"#olremaozhu2": "身负可育之材，当以栋梁处之。",
+	"#olrejinlan1": "绘湖海于一苇，览山河于一叶。",
+	"#olrejinlan2": "堪舆之经纬，国家之方圆。",
+	"#olcaifeng1": "世皆吾师，当道法自然。",
+	"#olcaifeng2": "言天下之事，形四方之风，吾道不穷。",
+	"#ol_peixiu:die": "此酒微寒，不妨入腹……",
 	"#olpingyuan1": "发石为锋，夷平敌军土山！",
 	"#olpingyuan2": "献此奇械，山石壁垒何足惧。",
 	"#olliaoyi1": "君之所谋，吾已了然于胸。",

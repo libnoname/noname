@@ -1029,7 +1029,7 @@ const skills = {
 			if (player.getStorage("olcaifeng_used").includes(map)) {
 				return false;
 			}
-			return player.countDiscardableCards(player, "he") >= 2;
+			return player.countDiscardableCards(player, "he") > 0;
 		},
 		filterCard: lib.filter.cardDiscardable,
 		selectCard: [1, Infinity],
@@ -5675,7 +5675,7 @@ const skills = {
 			},
 		},
 	},
-	//OL张曼成 —— by 星の语
+	//OL张曼成
 	olkuangxin: {
 		init(player) {
 			player.addSkill("olkuangxin_record");
@@ -5878,7 +5878,7 @@ const skills = {
 			},
 		},
 	},
-	//OL管亥 —— by 星の语
+	//OL管亥
 	olxiewei: {
 		audio: 2,
 		enable: ["chooseToUse"],
@@ -6049,7 +6049,7 @@ const skills = {
 			},
 		},
 	},
-	//OL杨阜 —— by 刘巴
+	//OL杨阜
 	olpingzhong: {
 		group: "olpingzhong_add",
 		audio: 2,
@@ -7572,16 +7572,16 @@ const skills = {
 		trigger: { global: "roundStart" },
 		forced: true,
 		async content(event, trigger, player) {
-			const nums = Array.from({ length: 4 }).map((_, i) => get.cnNumber(i + 1) + "张");
+			const nums = Array.from({ length: 5 }).map((_, i) => get.cnNumber(i + 1) + "张");
 			const result = await player
 				.chooseControl(nums)
 				.set("prompt", "奉蔚：请选择摸牌数")
-				.set("ai", () => 3)
+				.set("ai", () => get.event().controls.at(-1))
 				.forResult();
+			player.addTempSkill("olfengwei_debuff", "roundStart");
 			const next = player.draw(result.index + 1);
 			next.gaintag.add("olfengwei_debuff");
 			await next;
-			player.addTempSkill("olfengwei_debuff", "roundStart");
 		},
 		subSkill: {
 			debuff: {
@@ -9833,36 +9833,37 @@ const skills = {
 		async content(event, trigger, player) {
 			let { tianshuTrigger: fromItems, tianshuContent: toItems } = get.info("olhedao");
 			fromItems = fromItems.randomGets(3);
-			const froms = await player
-				.chooseButton(
-					[
-						'###青书：请选择“天书”时机###<div class="text center">时机触发等级将决定后续效果词条的等级</div>',
-						[
-							dialog => {
-								dialog.css({ top: get.is.phoneLayout() ? "20%" : "25%" });
-								dialog.addNewRow(
-									...fromItems.map((item, index) => {
-										return {
-											item: [`${item.name}<br>（触发等级：${item.fromIndex}）`],
-											custom(itemContainer) {
-												itemContainer.link = index;
-												itemContainer.classList.add("button");
-												dialog.buttons.add(itemContainer);
-											},
-											clickItemContainer(itemContainer, 棍, 母, e) {
-												ui.click.button.call(itemContainer, e);
-											},
-										};
-									})
-								);
+			event.videoId = lib.status.videoId++;
+			function addFromItems(fromItems, id) {
+				const dialog = ui.create.dialog('###青书：请选择“天书”时机###<div class="text center">时机触发等级将决定后续效果词条的等级</div>');
+				dialog.css({ top: get.is.phoneLayout() ? "20%" : "25%" });
+				dialog.videoId = id;
+				dialog.addNewRow(
+					...fromItems.map((item, index) => {
+						return {
+							item: [`${item.name}<br>（触发等级：${item.fromIndex}）`],
+							custom(itemContainer) {
+								itemContainer.link = index;
+								itemContainer.classList.add("button");
+								dialog.buttons.add(itemContainer);
 							},
-							"handle",
-						],
-					],
-					true
-				)
+							clickItemContainer(itemContainer, 棍, 母, e) {
+								ui.click.button.call(itemContainer, e);
+							},
+						};
+					})
+				);
+			}
+			if (event.isMine()) {
+				addFromItems(fromItems, event.videoId);
+			} else if (player.isOnline2()) {
+				player.send(addFromItems, fromItems, event.videoId);
+			}
+			const froms = await player
+				.chooseButton(get.idDialog(event.videoId), true)
 				.set("ai", () => 1 + Math.random())
 				.forResult();
+			game.broadcastAll("closeDialog", event.videoId);
 			if (!froms?.links?.length) {
 				return;
 			}
@@ -9875,36 +9876,37 @@ const skills = {
 					toItems[get.rand(0, toItems.length - 1)] = levelItem;
 				}
 			}
-			const tos = await player
-				.chooseButton(
-					[
-						'###青书：请选择“天书”效果###<div class="text center">' + from.name + "</div>",
-						[
-							dialog => {
-								dialog.css({ top: get.is.phoneLayout() ? "20%" : "25%" });
-								dialog.addNewRow(
-									...toItems.map((item, index) => {
-										return {
-											item: [`${["", '<span style="color: #EEC900; text-shadow: 0.5px 0.5px 0.5px white, 0.5px 0.5px 0.5px white, 0.5px 0.5px 0.5px white, 0.5px 0.5px 0.5px white;">'][item.toIndex - from.fromIndex]}${item.name}${["", "</span>"][item.toIndex - from.fromIndex]}`],
-											custom(itemContainer) {
-												itemContainer.link = index;
-												itemContainer.classList.add("button");
-												dialog.buttons.add(itemContainer);
-											},
-											clickItemContainer(itemContainer, 棍, 母, e) {
-												ui.click.button.call(itemContainer, e);
-											},
-										};
-									})
-								);
+			event.videoId = lib.status.videoId++;
+			function addToItems(toItems, from, id) {
+				const dialog = ui.create.dialog('###青书：请选择“天书”效果###<div class="text center">' + from.name + "</div>");
+				dialog.css({ top: get.is.phoneLayout() ? "20%" : "25%" });
+				dialog.videoId = id;
+				dialog.addNewRow(
+					...toItems.map((item, index) => {
+						return {
+							item: [`${["", '<span style="color: #EEC900; text-shadow: 0.5px 0.5px 0.5px white, 0.5px 0.5px 0.5px white, 0.5px 0.5px 0.5px white, 0.5px 0.5px 0.5px white;">'][item.toIndex - from.fromIndex]}${item.name}${["", "</span>"][item.toIndex - from.fromIndex]}`],
+							custom(itemContainer) {
+								itemContainer.link = index;
+								itemContainer.classList.add("button");
+								dialog.buttons.add(itemContainer);
 							},
-							"handle",
-						],
-					],
-					true
-				)
+							clickItemContainer(itemContainer, 棍, 母, e) {
+								ui.click.button.call(itemContainer, e);
+							},
+						};
+					})
+				);
+			}
+			if (event.isMine()) {
+				addToItems(toItems, from, event.videoId);
+			} else if (player.isOnline2()) {
+				player.send(addToItems, toItems, from, event.videoId);
+			}
+			const tos = await player
+				.chooseButton(get.idDialog(event.videoId), true)
 				.set("ai", () => 1 + Math.random())
 				.forResult();
+			game.broadcastAll("closeDialog", event.videoId);
 			if (!tos?.links?.length) {
 				return;
 			}
@@ -9968,40 +9970,41 @@ const skills = {
 			const skills = player.getSkills(null, false, false).filter(skill => get.info(skill)?.olhedao);
 			const num = skills.length - lib.skill.olhedao.getLimit(player);
 			if (num > 0) {
-				const result =
-					num < skills.length
-						? await player
-								.chooseButton(
-									[
-										"青书：选择失去" + get.cnNumber(num) + "册多余的“天书”",
-										[
-											dialog => {
-												dialog.css({ top: get.is.phoneLayout() ? "20%" : "25%" });
-												dialog.addNewRow(
-													...skills.map(item => {
-														return {
-															item: [`${lib.translate[`${item}_info`]}<br>（剩余${player.storage[item][0]}次）`],
-															custom(itemContainer) {
-																itemContainer.link = item;
-																itemContainer.classList.add("button");
-																dialog.buttons.add(itemContainer);
-															},
-															clickItemContainer(itemContainer, 棍, 母, e) {
-																ui.click.button.call(itemContainer, e);
-															},
-														};
-													})
-												);
-											},
-											"handle",
-										],
-									],
-									true,
-									num
-								)
-								.set("ai", () => 1 + Math.random())
-								.forResult()
-						: { bool: true, links: skills };
+				if (num >= skills.length) {
+					player.removeSkill(skills);
+					return;
+				}
+				event.videoId = lib.status.videoId++;
+				function removeTianShu(player, skills, num, id) {
+					const dialog = ui.create.dialog("青书：选择失去" + get.cnNumber(num) + "册多余的“天书”");
+					dialog.css({ top: get.is.phoneLayout() ? "20%" : "25%" });
+					dialog.videoId = id;
+					dialog.addNewRow(
+						...skills.map(item => {
+							return {
+								item: [`${lib.translate[`${item}_info`]}<br>（剩余${player.storage[item][0]}次）`],
+								custom(itemContainer) {
+									itemContainer.link = item;
+									itemContainer.classList.add("button");
+									dialog.buttons.add(itemContainer);
+								},
+								clickItemContainer(itemContainer, 棍, 母, e) {
+									ui.click.button.call(itemContainer, e);
+								},
+							};
+						})
+					);
+				}
+				if (event.isMine()) {
+					removeTianShu(player, skills, num, event.videoId);
+				} else if (player.isOnline2()) {
+					player.send(removeTianShu, player, skills, num, event.videoId);
+				}
+				const result = await player
+					.chooseButton(get.idDialog(event.videoId), num, true)
+					.set("ai", () => 1 + Math.random())
+					.forResult();
+				game.broadcastAll("closeDialog", event.videoId);
 				if (result?.bool && result.links?.length) {
 					player.removeSkill(result.links);
 				}
@@ -10031,36 +10034,40 @@ const skills = {
 			}
 			const result =
 				skills.length > 1
-					? await player
-							.chooseButton(
-								[
-									"授术：请选择你要授予" + get.translation(target) + "的天书",
-									[
-										dialog => {
-											dialog.css({ top: get.is.phoneLayout() ? "20%" : "25%" });
-											dialog.addNewRow(
-												...skills.map(item => {
-													return {
-														item: [lib.translate[`${item}_info`]],
-														custom(itemContainer) {
-															itemContainer.link = item;
-															itemContainer.classList.add("button");
-															dialog.buttons.add(itemContainer);
-														},
-														clickItemContainer(itemContainer, 棍, 母, e) {
-															ui.click.button.call(itemContainer, e);
-														},
-													};
-												})
-											);
-										},
-										"handle",
-									],
-								],
-								true
-							)
-							.set("ai", () => 1 + Math.random())
-							.forResult()
+					? await (async () => {
+							event.videoId = lib.status.videoId++;
+							function removeTianShu(target, skills, id) {
+								const dialog = ui.create.dialog("授术：请选择你要授予" + get.translation(target) + "的天书");
+								dialog.css({ top: get.is.phoneLayout() ? "20%" : "25%" });
+								dialog.videoId = id;
+								dialog.addNewRow(
+									...skills.map(item => {
+										return {
+											item: [lib.translate[`${item}_info`]],
+											custom(itemContainer) {
+												itemContainer.link = item;
+												itemContainer.classList.add("button");
+												dialog.buttons.add(itemContainer);
+											},
+											clickItemContainer(itemContainer, 棍, 母, e) {
+												ui.click.button.call(itemContainer, e);
+											},
+										};
+									})
+								);
+							}
+							if (event.isMine()) {
+								removeTianShu(target, skills, event.videoId);
+							} else if (player.isOnline2()) {
+								player.send(removeTianShu, target, skills, event.videoId);
+							}
+							const result = await player
+								.chooseButton(get.idDialog(event.videoId), true)
+								.set("ai", () => 1 + Math.random())
+								.forResult();
+							game.broadcastAll("closeDialog", event.videoId);
+							return result;
+						})()
 					: { bool: true, links: skills };
 			if (result?.bool && result.links?.length) {
 				const [skill] = result.links;
@@ -11057,7 +11064,7 @@ const skills = {
 			result: { player: 1 },
 		},
 	},
-	//桥玄 —— by 刘巴
+	//桥玄
 	oltingji: {
 		audio: 2,
 		mod: {
@@ -11135,7 +11142,7 @@ const skills = {
 			},
 		},
 	},
-	//孔淑 —— by 刘巴
+	//孔淑
 	leiluan: {
 		audio: 2,
 		onChooseToUse(event) {
@@ -11563,7 +11570,7 @@ const skills = {
 			}
 		},
 	},
-	//OL袁姬 —— by 刘巴
+	//OL袁姬
 	oljieyan: {
 		audio: 2,
 		trigger: {
