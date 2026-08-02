@@ -1029,7 +1029,7 @@ const skills = {
 			if (player.getStorage("olcaifeng_used").includes(map)) {
 				return false;
 			}
-			return player.countDiscardableCards(player, "he") >= 2;
+			return player.countDiscardableCards(player, "he") > 0;
 		},
 		filterCard: lib.filter.cardDiscardable,
 		selectCard: [1, Infinity],
