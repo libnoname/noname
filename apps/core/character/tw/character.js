@@ -304,6 +304,7 @@ const characters = {
 		group: "wu",
 		hp: 3,
 		skills: ["twguose", "twliuli"],
+		names: "桥|null",
 	},
 	huan_simayi: {
 		sex: "male",
