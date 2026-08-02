@@ -4839,6 +4839,9 @@ const skills = {
 		audio: 3,
 		dutySkill: true,
 		derivation: ["sbguanxing", "sbkongcheng"],
+		onremove(player, skill) {
+			player.removeSkill("sbhuoji_count");
+		},
 		group: ["sbhuoji_fire", "sbhuoji_achieve", "sbhuoji_fail", "sbhuoji_mark"],
 		subSkill: {
 			fire: {
@@ -4931,6 +4934,7 @@ const skills = {
 			},
 			count: {
 				charlotte: true,
+				onremove: true,
 				intro: { content: "本局游戏已造成过#点火属性伤害" },
 			},
 		},
