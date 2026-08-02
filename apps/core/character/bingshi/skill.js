@@ -2183,6 +2183,10 @@ const skills = {
 		usable: 1,
 		beginMarkCount: 4,
 		chargeSkill: 4,
+		init(player) {
+			const num = lib.skill.mbsizi.beginMarkCount;
+			player.addCharge(num, false);
+		},
 		filter(event, player) {
 			return player.countCharge() > 0;
 		},
@@ -2223,7 +2227,6 @@ const skills = {
 				return `###${prompt}###${list.join("<br>")}`;
 			},
 		},
-		group: "mbsizi_init",
 		subSkill: {
 			backup: {},
 			init: {
@@ -2704,6 +2707,10 @@ const skills = {
 		audio: "pottuntian",
 		beginMarkCount: 1,
 		chargeSkill: 3,
+		init(player) {
+			const num = lib.skill.old_pottuntian.beginMarkCount;
+			player.addCharge(num, false);
+		},
 		getNum(player) {
 			const num = game
 				.getGlobalHistory("everything", evt => {
@@ -2756,7 +2763,7 @@ const skills = {
 				player.loseToDiscardpile(cards);
 			}
 		},
-		group: ["old_pottuntian_init", "old_pottuntian_biyue", "old_pottuntian_addCharge"],
+		group: ["old_pottuntian_biyue", "old_pottuntian_addCharge"],
 		subSkill: {
 			init: {
 				audio: "pottuntian",

@@ -382,6 +382,10 @@ const skills = {
 		audio: 2,
 		chargeSkill: 3,
 		beginMarkCount: 1,
+		init(player) {
+			const num = lib.skill.reqizhi.beginMarkCount;
+			player.addCharge(num, false);
+		},
 		enable: "phaseUse",
 		filterTarget: true,
 		filter(event, player) {
@@ -406,7 +410,6 @@ const skills = {
 				target: 1,
 			},
 		},
-		group: "reqizhi_init",
 		subSkill: {
 			init: {
 				audio: "reqizhi",
@@ -20309,6 +20312,7 @@ const skills = {
 				const index = history.at(-1).index;
 				player.addTip(skill, `${get.translation(skill)} ${index == 0 ? "弃牌" : "摸牌"}`);
 			}
+			player.addCharge(2, false);
 		},
 		onremove(player, skill) {
 			player.removeTip(skill);
@@ -20393,7 +20397,7 @@ const skills = {
 			},
 			result: { player: 1 },
 		},
-		group: ["sbyaoming_damage", "sbyaoming_init"],
+		group: ["sbyaoming_damage"],
 		subSkill: {
 			backup: {
 				audio: "sbyaoming",
