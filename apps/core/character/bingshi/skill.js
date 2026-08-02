@@ -148,7 +148,7 @@ const skills = {
 					get.info("potyinhui").refreshSkill(player, skillx);
 				}
 			}
-			player.removeAdditionalSkill(event.name);
+			player.removeAdditionalSkills(event.name);
 			const skills = target
 				.getSkills(null, false, false)
 				.removeArray(player.getSkills(null, false, false))
@@ -185,7 +185,7 @@ const skills = {
 				if (result?.bool && result.links?.length) {
 					const skill = result.links[0];
 					player.logSkill(event.name, null, null, null, [get.rand(3, 12)]);
-					player.addAdditionalSkill(event.name, skill);
+					player.addAdditionalSkills(event.name, skill);
 					const info = get.info(skill);
 					//获得蓄力技时获得其初始蓄力点
 					if (typeof info?.chargeSkill == "number" && info.chargeSkill > 0) {
