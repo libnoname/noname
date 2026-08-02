@@ -300,7 +300,7 @@ const skills = {
 		},
 		direct: true,
 		async content(event, trigger, player) {
-			let result = await player.moveCard(get.prompt2(event.name)).set("logSkill", event.name).forResult();
+			let result = await player.moveCard(get.prompt2(event.name)).set("nojudge", true).set("logSkill", event.name).forResult();
 			if (!result?.bool) {
 				return;
 			}
@@ -528,7 +528,7 @@ const skills = {
 				} else {
 					let result = await target
 						.chooseControl({
-							prompt: "乞施：请选择一项",
+							prompt: "挟众：请选择一项",
 							choiceList: ["摸两张牌并失去1点体力", "将两张牌当【杀】使用"],
 							ai() {
 								const player = get.player();
@@ -566,7 +566,7 @@ const skills = {
 					}
 					const next = target.chooseToUse();
 					next.set("_backupevent", "sxrmxiezhong_backup");
-					next.set("openskilldialog", `###乞施###请将两张牌当作【杀】使用`);
+					next.set("openskilldialog", `###挟众###请将两张牌当作【杀】使用`);
 					next.backup("sxrmxiezhong_backup");
 					next.set("norestore", true);
 					next.set("custom", {
@@ -635,7 +635,7 @@ const skills = {
 					}
 					const next = target.chooseToUse();
 					next.set("_backupevent", "sxrmxiezhong_backup");
-					next.set("openskilldialog", `###乞施###请将两张牌当作【杀】使用`);
+					next.set("openskilldialog", `###挟众###请将两张牌当作【杀】使用`);
 					next.backup("sxrmxiezhong_backup");
 					next.set("norestore", true);
 					next.set("custom", {
