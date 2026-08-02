@@ -11389,8 +11389,8 @@ export class Player extends HTMLDivElement {
 			this.additionalSkills[skill] = [];
 		}
 		for (var i = 0; i < skillsToAdd.length; i++) {
-			this.addSkill(skillsToAdd[i], null, null, true);
 			this.additionalSkills[skill].push(skillsToAdd[i]);
+			this.addSkill(skillsToAdd[i], null, null, true);
 		}
 		game.broadcast(
 			(player, map) => {
