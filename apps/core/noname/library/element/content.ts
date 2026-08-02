@@ -55,13 +55,14 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 						prompt,
 						prompt2: `当前体力：${dying.hp}`,
 						ai1(card) {
+							const player = get.player();
 							if (typeof card == "string") {
 								const info = get.info(card);
 								if (info.ai && info.ai.order) {
 									if (typeof info.ai.order == "number") {
 										return info.ai.order;
 									} else if (typeof info.ai.order == "function") {
-										return info.ai.order();
+										return info.ai.order(null, player);
 									}
 								}
 							}
