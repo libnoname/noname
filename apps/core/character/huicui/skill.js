@@ -5257,35 +5257,45 @@ const skills = {
 		},
 		zixiList: ["lebu", "bingliang", "shandian"],
 		selectAi(player, names) {
-			let max = [];
+			const maxMap = new Map();
+			const cards = player.getCards("he", card => {
+				return card.hasGaintag("eternal_dcqiqin_tag") && get.value(card) < 7;
+			});
+			if (!cards.length) {
+				return maxMap;
+			}
+			const targets = game.filterPlayer();
+			const attitudeMap = new Map();
+			targets.forEach(target => {
+				attitudeMap.set(target, get.attitude(player, target));
+			});
 			for (const name of names) {
+				let max = [0, null, null];
 				let res = [null, null, 0];
-				player.getCards("he", i => {
-					if (!i.hasGaintag("eternal_dcqiqin_tag") || get.value(i) >= 7) {
-						return false;
-					}
-					game.countPlayer(target => {
-						if (!target.canAddJudge(get.autoViewAs({ name: "dczixi_" + name }, [i]))) {
-							return;
-						}
-						let eff = get.effect(target, get.autoViewAs({ name }, [i]), player, player);
-						if (get.attitude(player, target) > 0) {
+				for (const card of cards) {
+					const card1 = get.autoViewAs({ name: `dczixi_${name}` }, [card]);
+					const card2 = get.autoViewAs({ name }, [card]);
+					for (const target of targets.filter(current => current.canAddJudge(card1))) {
+						const eff = get.effect(target, card2, player, player);
+						const attitude = attitudeMap.get(target);
+						if (attitude > 0) {
 							if (-eff > res[2]) {
-								res = [target, i, -eff / 16];
-							} //避免人机一直贴队友
+								res = [target, card, -eff / 16];
+							}
+							//避免人机一直贴队友
 						} else {
 							if (eff > res[2]) {
-								res = [target, i, eff];
+								res = [target, card, eff];
 							}
 						}
-						max.push([get.translation(name), res[2], res[1], res[0]]);
-					});
-				});
+						if (res[0] && res[2] > max[0]) {
+							max = [res[2], res[1], res[0]];
+						}
+					}
+				}
+				maxMap.set(get.translation(name), max);
 			}
-			max.sort((a, b) => b[1] - a[1]);
-			const t = max[0][3];
-			max = max.filter(list => list[3] == t).slice(0, 2);
-			return max;
+			return maxMap;
 		},
 		async cost(event, trigger, player) {
 			game.addVideo("skill", player, ["dczixi", []]);
@@ -5308,7 +5318,7 @@ const skills = {
 			for (const name of names) {
 				map[get.translation(name)] = name;
 			}
-			const max = lib.skill.dczixi.selectAi(player, Object.values(map));
+			const maxMap = lib.skill.dczixi.selectAi(player, Object.values(map));
 			dialog.push([Object.keys(map), "tdnodes"]);
 			const result = await player
 				.chooseButtonTarget({
@@ -5360,26 +5370,45 @@ const skills = {
 						return ui.selected.buttons.filter(button => typeof button.link == "string").length == ui.selected.buttons.filter(button => typeof button.link != "string").length;
 					},
 					ai1(button) {
-						const { max } = get.event();
-						if (typeof button.link == "string") {
-							if (max.map(list => list[0]).includes(button.link)) {
+						const { maxMap } = get.event();
+						const size = maxMap.size;
+						if (!size) {
+							return 0;
+						}
+						if (ui.selected.buttons.length > 1) {
+							return 0;
+						}
+						if (!ui.selected.buttons.length) {
+							if (typeof button.link !== "string") {
+								return 0;
+							}
+							const val = maxMap.get(button.link);
+							if (!val) {
+								return 0;
+							}
+							return val[0];
+						} else {
+							if (typeof button.link == "string") {
+								return 0;
+							}
+							if (ui.selected.buttons.some(btn => typeof btn.link == "string" && maxMap.get(btn.link)?.[1] == button.link)) {
 								return 1;
 							}
 							return 0;
 						}
-						if (max.map(list => list[2]).includes(button.link)) {
+					},
+					ai2(target) {
+						const { maxMap } = get.event();
+						if (ui.selected.buttons.some(btn => typeof btn.link == "string" && maxMap.get(btn.link)?.[2] == target)) {
 							return 1;
 						}
 						return 0;
-					},
-					ai2(target) {
-						return target == get.event().max[0][3];
 					},
 					complexSelect: true,
 					complexTarget: true,
 				})
 				.set("map", map)
-				.set("max", max)
+				.set("maxMap", maxMap)
 				.forResult();
 			if (result?.bool && result.links?.length && result.targets?.length) {
 				event.result = {
