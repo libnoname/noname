@@ -2,7 +2,7 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
-	//那兔------by 清风
+	//那兔
 	natulie: {
 		audio: 2,
 		trigger: { player: "useCardAfter" },
@@ -643,7 +643,7 @@ const skills = {
 			},
 		},
 	},
-	//乐曹丕------by 清风
+	//乐曹丕
 	olweidai: {
 		audio: 2,
 		forced: true,

@@ -2,7 +2,7 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
-	//手杀小车------by 清风
+	//手杀小车
 	mbqucheng: {
 		audio: 2,
 		forced: true,
@@ -116,7 +116,7 @@ const skills = {
 			}
 		},
 	},
-	//手杀丁尚涴------by 清风
+	//手杀丁尚涴
 	mbzhaofu: {
 		audio: 2,
 		enable: "chooseToUse",
@@ -377,11 +377,15 @@ const skills = {
 			},
 		},
 	},
-	//界王基------by 清风
+	//界王基
 	reqizhi: {
 		audio: 2,
 		chargeSkill: 3,
 		beginMarkCount: 1,
+		init(player, skill) {
+			const num = lib.skill[skill].beginMarkCount;
+			player.addCharge(num, false);
+		},
 		enable: "phaseUse",
 		filterTarget: true,
 		filter(event, player) {
@@ -406,27 +410,7 @@ const skills = {
 				target: 1,
 			},
 		},
-		group: "reqizhi_init",
 		subSkill: {
-			init: {
-				audio: "reqizhi",
-				forced: true,
-				trigger: {
-					player: "enterGame",
-					global: "phaseBefore",
-				},
-				filter(event, player) {
-					if (!player.countCharge(true)) {
-						return false;
-					}
-					return event.name != "phase" || game.phaseNumber == 0;
-				},
-				async content(event, trigger, player) {
-					const num = get.info("reqizhi").beginMarkCount;
-					await player.addCharge(num);
-					await game.delayx();
-				},
-			},
 			effect: {
 				audio: "reqizhi",
 				charlotte: true,
@@ -4782,7 +4766,7 @@ const skills = {
 			combo: "hefeixianjian",
 		},
 	},
-	//数刘徽 by流年
+	//数刘徽
 	mbgeyuan: {
 		audio: 2,
 		init(player, skill) {
@@ -9058,7 +9042,7 @@ const skills = {
 		},
 		derivation: "mbxuehen_rewrite",
 	},
-	//手杀邢道荣 —— by 刘巴
+	//手杀邢道荣
 	mbkuangwu: {
 		audio: 4,
 		trigger: { global: "phaseUseBegin" },
@@ -9146,7 +9130,7 @@ const skills = {
 			}
 		},
 	},
-	//吴珂 —— by 刘巴
+	//吴珂
 	mbzhuguo: {
 		audio: 3,
 		logAudio: index => (typeof index === "number" ? "mbzhuguo" + index + ".mp3" : 2),
@@ -11325,9 +11309,10 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.choosePlayerCard(trigger.player, "h", get.prompt2(event.name.slice(0, -5)))
+				.choosePlayerCard(trigger.player, "h", get.prompt2(event.skill))
 				.set("ai", button => {
 					//小透不算透---by @xizifu
+					//牢骚哥经典发骚
 					const { player, target } = get.event(),
 						att = get.attitude(player, target),
 						type = get.type2(button.link);
@@ -20309,6 +20294,8 @@ const skills = {
 				const index = history.at(-1).index;
 				player.addTip(skill, `${get.translation(skill)} ${index == 0 ? "弃牌" : "摸牌"}`);
 			}
+			const num = lib.skill[skill].beginMarkCount;
+			player.addCharge(num, false);
 		},
 		onremove(player, skill) {
 			player.removeTip(skill);
@@ -20333,6 +20320,7 @@ const skills = {
 			return eff;
 		},
 		audio: 2,
+		beginMarkCount: 2,
 		chargeSkill: 4,
 		enable: "phaseUse",
 		filter(event, player) {
@@ -20393,7 +20381,7 @@ const skills = {
 			},
 			result: { player: 1 },
 		},
-		group: ["sbyaoming_damage", "sbyaoming_init"],
+		group: ["sbyaoming_damage"],
 		subSkill: {
 			backup: {
 				audio: "sbyaoming",
@@ -20535,21 +20523,6 @@ const skills = {
 					}
 				},
 			},
-			init: {
-				audio: "sbyaoming",
-				trigger: {
-					global: "phaseBefore",
-					player: "enterGame",
-				},
-				forced: true,
-				locked: false,
-				filter(event, player) {
-					return (event.name != "phase" || game.phaseNumber == 0) && player.countCharge(true);
-				},
-				async content(event, trigger, player) {
-					player.addCharge(2);
-				},
-			},
 		},
 	},
 	//手杀界荀彧
@@ -20625,39 +20598,29 @@ const skills = {
 		subfrequent: ["draw"],
 		enable: "phaseUse",
 		usable: 1,
-		locked: false,
-		mod: {
-			cardUsable(card) {
-				if (card?.storage?.xinjianying) {
-					return Infinity;
-				}
-			},
-		},
 		filter(event, player) {
 			if (!player.countCards("he")) {
 				return false;
 			}
-			return get.inpileVCardList(info => {
-				if (info[0] !== "basic") {
-					return false;
+			for (var i of lib.inpile) {
+				if (i != "du" && get.type(i, null, false) == "basic") {
+					if (event.filterCard({ name: i }, player, event)) {
+						return true;
+					}
+					if (i == "sha") {
+						for (var j of lib.inpile_nature) {
+							if (event.filterCard({ name: i, nature: j }, player, event)) {
+								return true;
+							}
+						}
+					}
 				}
-				return event.filterCard(
-					get.autoViewAs(
-						{
-							name: info[2],
-							nature: info[3],
-							storage: { xinjianying: true },
-						},
-						"unsure"
-					),
-					player,
-					event
-				);
-			}).length;
+			}
+			return false;
 		},
 		onChooseToUse(event) {
 			if (event.type == "phase" && !game.online) {
-				const last = event.player.getLastUsed();
+				var last = event.player.getLastUsed();
 				if (last && last.getParent("phaseUse") == event.getParent()) {
 					var suit = get.suit(last.card, false);
 					if (suit != "none") {
@@ -20668,17 +20631,17 @@ const skills = {
 		},
 		chooseButton: {
 			dialog(event, player) {
-				const list = [];
-				const suit = event.xinjianying_suit || "",
+				var list = [];
+				var suit = event.xinjianying_suit || "",
 					str = get.translation(suit);
-				for (const i of lib.inpile) {
+				for (var i of lib.inpile) {
 					if (i != "du" && get.type(i, null, false) == "basic") {
-						if (event.filterCard({ name: i, storage: { xinjianying: true } }, player, event)) {
+						if (event.filterCard({ name: i }, player, event)) {
 							list.push(["基本", str, i]);
 						}
 						if (i == "sha") {
-							for (const j of lib.inpile_nature) {
-								if (event.filterCard({ name: i, nature: j, storage: { xinjianying: true } }, player, event)) {
+							for (var j of lib.inpile_nature) {
+								if (event.filterCard({ name: i, nature: j }, player, event)) {
 									list.push(["基本", str, i, j]);
 								}
 							}
@@ -20694,7 +20657,6 @@ const skills = {
 				return _status.event.player.getUseValue({
 					name: button.link[2],
 					nature: button.link[3],
-					storage: { xinjianying: true },
 				});
 			},
 			backup(links, player) {
@@ -20706,13 +20668,9 @@ const skills = {
 					viewAs: {
 						name: links[0][2],
 						nature: links[0][3],
-						storage: { xinjianying: true },
 					},
 					ai1(card) {
 						return 7 - _status.event.player.getUseValue(card, null, true);
-					},
-					async precontent(event, trigger, player) {
-						event.getParent().addCount = false;
 					},
 				};
 				if (_status.event.xinjianying_suit) {
@@ -20725,36 +20683,47 @@ const skills = {
 			},
 		},
 		ai: {
-			order: 3,
+			order(item, player) {
+				if (_status.event.xinjianying_suit) {
+					return 16;
+				}
+				return 3;
+			},
 			result: { player: 7 },
 		},
-		group: ["xinjianying_draw", "dcjianying_mark"],
+		group: ["xinjianying_draw", "jianying_mark"],
 		init(player) {
-			const history = player.getAllHistory("useCard");
-			if (history.length) {
-				const trigger = history[history.length - 1];
-				if (get.suit(trigger.card, player) == "none" || typeof get.number(trigger.card, player) != "number") {
-					return;
+			if (player.isPhaseUsing()) {
+				var evt = _status.event.getParent("phaseUse");
+				var history = player.getHistory("useCard", function (evt2) {
+					return evt2.getParent("phaseUse") == evt;
+				});
+				if (history.length) {
+					var trigger = history[history.length - 1];
+					player.storage.jianying_mark = trigger.card;
+					player.markSkill("jianying_mark");
+					game.broadcastAll(
+						function (player, suit) {
+							if (player.marks.jianying_mark) {
+								player.marks.jianying_mark.firstChild.innerHTML = get.translation(suit);
+							}
+						},
+						player,
+						get.suit(trigger.card, player)
+					);
+					player.when("phaseUseAfter").step(async () => {
+						player.unmarkSkill("jianying_mark");
+						delete player.storage.jianying_mark;
+					});
 				}
-				player.storage.dcjianying_mark = trigger.card;
-				player.markSkill("dcjianying_mark");
-				game.broadcastAll(
-					function (player2, suit) {
-						if (player2.marks.dcjianying_mark) {
-							player2.marks.dcjianying_mark.firstChild.innerHTML = get.translation(suit);
-						}
-					},
-					player,
-					get.suit(trigger.card, player)
-				);
 			}
 		},
 		onremove(player) {
-			player.unmarkSkill("dcjianying_mark");
-			delete player.storage.dcjianying_mark;
+			player.unmarkSkill("jianying_mark");
+			delete player.storage.jianying_mark;
 		},
 		subSkill: {
-			draw: { inherit: "dcjianying", audio: "xinjianying" },
+			draw: { inherit: "jianying", audio: "xinjianying" },
 		},
 	},
 	//步练师
