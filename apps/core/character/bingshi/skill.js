@@ -3912,10 +3912,10 @@ const skills = {
 					player.setStorage("potkuanggu", 1);
 					const num1 = player.countMark("potzhuangshi_limit"),
 						num2 = player.countMark("potzhuangshi_directHit");
-					if (num1 > 0) {
+					if (num2 > 0) {
 						await player.draw();
 					}
-					if (num2 > 0) {
+					if (num1 > 0) {
 						if (!player.isDamaged()) {
 							await player.draw();
 						} else {
@@ -4709,10 +4709,11 @@ const skills = {
 					const record = player.storage[event.name];
 					if (typeof record === "number") {
 						player.logSkill("mbxiugeng", null, null, null, [player.countCards("h") >= record ? 4 : 3]);
-						if (player.countCards("h") <= record) {
+						const num = player.countCards("h");
+						if (num <= record) {
 							await player.draw({ num: 2, nodelay: true });
 						}
-						if (player.countCards("h") >= record) {
+						if (num >= record) {
 							player.addSkill("mbxiugeng_handcard");
 							player.addMark("mbxiugeng_handcard", 1, false);
 						}
