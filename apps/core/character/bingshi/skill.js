@@ -233,7 +233,7 @@ const skills = {
 			}
 		},
 	},
-	//势周瑜------by 清风
+	//势周瑜
 	potchiyun: {
 		audio: 2,
 		audioname2: {
