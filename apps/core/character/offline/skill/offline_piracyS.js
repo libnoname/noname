@@ -388,32 +388,37 @@ const skills = {
 	},
 	pslongxin: {
 		trigger: { player: "phaseJudgeBegin" },
-		direct: true,
 		filter(event, player) {
-			return player.countCards("j") && player.countCards("h");
+			return player.hasCards("j") && player.hasCards("h");
 		},
-		content() {
-			"step 0";
-			player
-				.chooseToDiscard(get.prompt2("pslongxin"), { type: "equip" }, "he")
-				.set("logSkill", "pslongxin")
-				.set("ai", card => {
-					if (_status.event.goon) {
-						return 15 - get.value(card);
-					}
-					return 0;
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseToDiscard({
+					prompt: get.prompt2("pslongxin"),
+					filterCard: { type: "equip" },
+					position: "he",
+					chooseonly: true,
+					ai: card => (_status.event.goon ? 15 - get.value(card) : 0),
 				})
 				.set(
 					"goon",
 					player.hasCard(card => {
-						var cardj = card.viewAs ? { name: card.viewAs } : card;
+						const cardj = card.viewAs ? { name: card.viewAs } : card;
 						return get.effect(player, cardj, player, player) < 0;
 					}, "j")
-				);
-			"step 1";
-			if (result.bool) {
-				player.discardPlayerCard(player, "j", true);
-			}
+				)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			await player.discard({
+				cards: event.cards,
+				discarder: player,
+			});
+			await player.discardPlayerCard({
+				target: player,
+				position: "j",
+				forced: true,
+			});
 		},
 	},
 	//官盗S周瑜·一版
