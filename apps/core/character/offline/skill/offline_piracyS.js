@@ -429,21 +429,19 @@ const skills = {
 		},
 		frequent: true,
 		filter(event, player) {
-			if (player != _status.currentPhase) {
+			if (player !== _status.currentPhase) {
 				return false;
 			}
-			return event.getg(player).filter(i => get.owner(i) == player).length > 0;
+			return event.getg(player).filter(i => get.owner(i) === player).length > 0;
 		},
-		content() {
-			"step 0";
-			player.showCards(
-				trigger.getg(player).filter(i => get.owner(i) == player),
-				get.translation(player) + "发动了【识音】"
+		async content(event, trigger, player) {
+			await player.showCards(
+				trigger.getg(player).filter(i => get.owner(i) === player),
+				`${get.translation(player)}发动了【识音】`
 			);
-			"step 1";
-			var suits = [],
-				cards = trigger.getg(player).filter(i => get.owner(i) == player);
-			for (var card of cards) {
+			const suits = [];
+			const cards = trigger.getg(player).filter(i => get.owner(i) === player);
+			for (const card of cards) {
 				suits.add(get.suit(card, player));
 			}
 			player.addTempSkill("psoldshiyin_effect");
@@ -461,8 +459,8 @@ const skills = {
 				charlotte: true,
 				forced: true,
 				onremove: ["psoldshiyin_effect", "psoldshiyin_damage"],
-				content() {
-					var num = player.countMark("psoldshiyin_effect");
+				async content(event, trigger, player) {
+					const num = player.countMark("psoldshiyin_effect");
 					if (num >= 1) {
 						trigger.directHit.addArray(game.players);
 					}
@@ -476,7 +474,7 @@ const skills = {
 				},
 				mod: {
 					aiOrder(player, card, num) {
-						var numx = player.countMark("psoldshiyin_effect");
+						const numx = player.countMark("psoldshiyin_effect");
 						if (numx >= 2 && get.tag(card, "damage")) {
 							return num + 10;
 						}
