@@ -6111,7 +6111,7 @@ const skills = {
 			}
 		},
 		async content(event, trigger, player) {
-			player.addSkills("mbweizhuang");
+			await player.addSkills("mbweizhuang");
 		},
 		mark: true,
 		marktext: "裳",
@@ -7734,8 +7734,8 @@ const skills = {
 						return 7 - get.value(card);
 					},
 					viewAs: { name: links[0][2] },
-					precontent() {
-						player.addTempSkill("mbfangxu_effect");
+					async precontent(event, trigger, player) {
+						await player.addTempSkill("mbfangxu_effect");
 					},
 				};
 			},
@@ -8891,7 +8891,7 @@ const skills = {
 						})
 					);
 				},
-				content() {
+				async content(event, trigger, player) {
 					if (trigger.name == "useCard") {
 						const name = event.triggername;
 						if (name == "useCard1") {
@@ -8903,7 +8903,7 @@ const skills = {
 							}
 						}
 						if (name == "useCardAfter") {
-							player.draw();
+							await player.draw();
 						}
 					} else {
 						player.removeGaintag(event.name);
@@ -9467,7 +9467,7 @@ const skills = {
 						.step(async (event, trigger, player) => {
 							const cards = player.getExpansions("mbweisi");
 							if (cards.length) {
-								player.gain(cards, "draw");
+								await player.gain(cards, "draw");
 								game.log(player, "收回了" + get.cnNumber(cards.length) + "张“威肆”牌");
 							}
 						});
@@ -9506,7 +9506,7 @@ const skills = {
 		persevereSkill: true,
 	},
 	//牢又寄双雄
-	//友崔均
+	//友崔均	子右：这玩意真有人玩吗
 	friendshunyi: {
 		audio: 2,
 		trigger: { player: "useCard" },
@@ -9547,13 +9547,15 @@ const skills = {
 			}
 			return get.effect(player, { name: "draw" }, player, player) >= used.reduce((sum, i) => sum + player.getUseValue(i), 0);
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.addTempSkill("friendshunyi_effect");
 			const cards = player.getCards("h", { suit: get.suit(event.indexedData) });
 			if (cards.length) {
-				player.addToExpansion(cards, player, "giveAuto").gaintag.add("friendshunyi_effect");
+				const next = player.addToExpansion(cards, player, "giveAuto");
+				next.gaintag.add("friendshunyi_effect");
+				await next;
 			}
-			player.draw();
+			await player.draw();
 		},
 		subSkill: {
 			effect: {
@@ -10206,8 +10208,7 @@ const skills = {
 				},
 			},
 		},
-		loseToDiscardpileMultiple() {
-			"step 0";
+		async loseToDiscardpileMultiple(event, trigger, player) {
 			event.visible = true;
 			if (!event.position) {
 				event.position = ui.discardPile;
@@ -10273,13 +10274,12 @@ const skills = {
 					}
 				}
 			}
-			"step 1";
 			if (event.delay != false) {
 				if (event.waitingForTransition) {
 					_status.waitingForTransition = event.waitingForTransition;
 					game.pause();
 				} else {
-					game.delayx();
+					await game.delayx();
 				}
 			}
 		},
@@ -12702,11 +12702,10 @@ const skills = {
 					},
 					position: "hse",
 					viewAs: { name: links[0][2], nature: links[0][3] },
-					precontent() {
-						if (!player.storage.mbzujin) {
-							player.storage.mbzujin = [];
+					async precontent(event, trigger, player) {
+						if (!player.getStorage("mbzujin").length) {
 							player.when({ global: "phaseEnd" }).step(async () => {
-								delete player.storage.mbzujin;
+								player.removeStorage("mbzujin", true);
 							});
 						}
 						player.markAuto("mbzujin", [event.result.card.name]);
@@ -13623,7 +13622,6 @@ const skills = {
 		},
 		forced: true,
 		locked: false,
-		content() {},
 		ai: {
 			combo: "mbqianlong",
 		},
