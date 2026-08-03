@@ -620,36 +620,30 @@ const skills = {
 		enable: "phaseUse",
 		locked: false,
 		filter(event, player) {
-			return !player.hasSkill("psliaozou_blocker", null, null, false) && player.getExpansions("psshiyin").length > 0;
+			return !player.hasSkill("psliaozou_blocker", null, null, false) && player.hasExpansions("psshiyin");
 		},
-		content() {
-			"step 0";
-			player.showHandcards(get.translation(player) + "发动了【聊奏】");
-			"step 1";
-			var cards = player.getExpansions("psshiyin"),
-				bool = true;
-			for (var card of cards) {
-				var suit = get.suit(card);
-				if (player.hasCard(cardx => get.suit(cardx) == suit)) {
-					bool = false;
-					break;
-				}
-			}
-			if (bool) {
-				player.draw();
-			} else {
+		async content(event, trigger, player) {
+			await player.showHandcards(`${get.translation(player)}发动了【聊奏】`);
+			const cards = player.getExpansions("psshiyin");
+			const hasMatchingSuit = cards.some(card => {
+				const suit = get.suit(card);
+				return player.hasCard(cardx => get.suit(cardx) === suit);
+			});
+			if (hasMatchingSuit) {
 				player.addTempSkill("psliaozou_blocker", {
 					player: ["useCard1", "useSkillBegin", "phaseUseEnd"],
 				});
+				return;
 			}
+			await player.draw();
 		},
 		subSkill: {
 			blocker: { charlotte: true },
 		},
 		mod: {
 			aiValue(player, card, num) {
-				var suit = get.suit(card);
-				if (player.isPhaseUsing() && player.getExpansions("psshiyin").some(i => get.suit(i) == suit)) {
+				const suit = get.suit(card);
+				if (player.isPhaseUsing() && player.getExpansions("psshiyin").some(i => get.suit(i) === suit)) {
 					return num / 5;
 				}
 			},
@@ -662,11 +656,10 @@ const skills = {
 			order: 9.9,
 			result: {
 				player(player) {
-					var cards = player.getExpansions("psshiyin"),
-						bool = true;
-					for (var card of cards) {
-						var suit = get.suit(card);
-						if (player.hasCard(cardx => get.suit(cardx) == suit)) {
+					const cards = player.getExpansions("psshiyin");
+					for (const card of cards) {
+						const suit = get.suit(card);
+						if (player.hasCard(cardx => get.suit(cardx) === suit)) {
 							return 0;
 						}
 					}
