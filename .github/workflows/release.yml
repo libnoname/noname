@@ -94,6 +94,12 @@ jobs:
           cd ../../../dist
           7z a ../release/noname.full.zip *
 
+          cd ../release
+          7z t noname.core.zip
+          7z t noname.full.zip
+          sha256sum noname.core.zip > noname.core.zip.sha256
+          sha256sum noname.full.zip > noname.full.zip.sha256
+
       - name: Upload packages to release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -102,7 +108,9 @@ jobs:
 
           gh release upload "$TAG" \
           release/noname.core.zip \
+          release/noname.core.zip.sha256 \
           release/noname.full.zip \
+          release/noname.full.zip.sha256 \
           --clobber
 
   build-installer:
@@ -144,6 +152,7 @@ jobs:
           pnpm -F @noname/electron build:win
           EXE="$(find output -maxdepth 1 -name '*.exe' | head -n 1)"
           cp "$EXE" "release/noname.Setup.${VER}.exe"
+          sha256sum "release/noname.Setup.${VER}.exe" > "release/noname.Setup.${VER}.exe.sha256"
 
       - name: Upload installer to release
         shell: bash
@@ -154,6 +163,7 @@ jobs:
 
           gh release upload "$TAG" \
           "release/noname.Setup.${VER}.exe" \
+          "release/noname.Setup.${VER}.exe.sha256" \
           --clobber
 
   release:
