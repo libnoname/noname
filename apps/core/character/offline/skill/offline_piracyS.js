@@ -1275,10 +1275,7 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filterTarget(card, player, target) {
-			if (!ui.selected.targets.length) {
-				return true;
-			}
-			return target.group != ui.selected.targets[0].group;
+			return !ui.selected.targets.length || target.group !== ui.selected.targets[0].group;
 		},
 		selectTarget: 2,
 		complexTarget: true,
@@ -1289,15 +1286,24 @@ const skills = {
 		check(card) {
 			return 6 - get.value(card);
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
+			const { targets } = event;
 			targets.sortBySeat();
 			if (targets[0].canUse("sha", targets[1], false)) {
-				targets[0].useCard({ name: "sha", isCard: true }, targets[1], false, "noai");
+				await targets[0].useCard({
+					card: get.autoViewAs({ name: "sha", isCard: true }),
+					targets: [targets[1]],
+					addCount: false,
+					noai: true,
+				});
 			}
-			"step 1";
 			if (targets[1].canUse("sha", targets[0], false)) {
-				targets[1].useCard({ name: "sha", isCard: true }, targets[0], false, "noai");
+				await targets[1].useCard({
+					card: get.autoViewAs({ name: "sha", isCard: true }),
+					targets: [targets[0]],
+					addCount: false,
+					noai: true,
+				});
 			}
 		},
 		ai: {
@@ -1305,12 +1311,12 @@ const skills = {
 			result: {
 				player: 1,
 				target(player, target) {
-					if (ui.selected.targets.length) {
-						var targetx = ui.selected.targets[0];
-						if (get.effect(targetx, { name: "sha" }, target, player) + get.effect(target, { name: "sha" }, targetx, player) < 0) {
-							return 0;
-						}
+					if (!ui.selected.targets.length) {
 						return -1;
+					}
+					const targetx = ui.selected.targets[0];
+					if (get.effect(targetx, { name: "sha" }, target, player) + get.effect(target, { name: "sha" }, targetx, player) < 0) {
+						return 0;
 					}
 					return -1;
 				},
