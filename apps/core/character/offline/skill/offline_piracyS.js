@@ -489,21 +489,27 @@ const skills = {
 			global: "phaseBefore",
 			player: "enterGame",
 		},
-		forced: true,
 		locked: false,
-		direct: true,
 		group: "psshiyin_change",
 		filter(event, player) {
-			return event.name != "phase" || game.phaseNumber == 0;
+			return event.name !== "phase" || game.phaseNumber === 0;
 		},
-		content() {
-			"step 0";
-			player.chooseCard(get.prompt("psshiyin"), "将一张手牌置于武将牌上，称为“杂音”牌").set("ai", card => 20 - get.value(card));
-			"step 1";
-			if (result.bool) {
-				player.logSkill("psshiyin");
-				player.addToExpansion(result.cards, player, "give").gaintag.add("psshiyin");
-			}
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseCard({
+					prompt: get.prompt("psshiyin"),
+					prompt2: "将一张手牌置于武将牌上，称为“杂音”牌",
+					ai: card => 20 - get.value(card),
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			await player.addToExpansion({
+				cards: event.cards,
+				source: player,
+				animate: "give",
+				gaintag: ["psshiyin"],
+			});
 		},
 		marktext: "音",
 		intro: {
@@ -517,42 +523,42 @@ const skills = {
 				trigger: { player: "phaseUseBegin" },
 				direct: true,
 				filter(event, player) {
-					return player.getExpansions("psshiyin").length && player.countCards("h");
+					return player.hasExpansions("psshiyin") && player.hasCards("h");
 				},
-				content() {
-					"step 0";
-					var card = player.getExpansions("psshiyin")[0];
-					player
-						.chooseCard(get.prompt("psshiyin"), "用一张手牌替换“杂音”牌（" + get.translation(card) + "）")
-						.set("ai", card => {
-							if (_status.event.suit && get.suit(card) == _status.event.suit) {
-								return 8 - get.value(card);
-							}
-							return 0;
+				async content(event, trigger, player) {
+					const card = player.getExpansions("psshiyin")[0];
+					const suits = lib.suit
+						.slice()
+						.map(suit => [suit, (get.suit(card) === suit ? 1 : 0) + player.countCards("h", { suit })])
+						.filter(item => item[1] > 0);
+					suits.sort((a, b) => a[1] - b[1]);
+					const suit = suits.length > 0 ? suits[0][0] : null;
+					const result = await player
+						.chooseCard({
+							prompt: get.prompt("psshiyin"),
+							prompt2: `用一张手牌替换“杂音”牌（${get.translation(card)}）`,
+							ai: card => (_status.event.suit && get.suit(card) === _status.event.suit ? 8 - get.value(card) : 0),
 						})
-						.set(
-							"suit",
-							(function () {
-								var suits = lib.suit
-									.slice()
-									.map(i => [i, (get.suit(card) == i ? 1 : 0) + player.countCards("h", { suit: i })])
-									.filter(i => i[1] > 0);
-								suits.sort((a, b) => a[1] - b[1]);
-								if (suits.length > 0) {
-									return suits[0][0];
-								}
-								return null;
-							})()
-						);
-					"step 1";
-					if (result.bool) {
-						player.logSkill("psshiyin");
-						player.addToExpansion(result.cards[0], "give", player).gaintag.add("psshiyin");
-						var card = player.getExpansions("psshiyin")[0];
-						if (card) {
-							player.gain(card, "gain2");
-						}
+						.set("suit", suit)
+						.forResult();
+					if (!result.bool) {
+						return;
 					}
+					player.logSkill("psshiyin");
+					const cardToGain = player.getExpansions("psshiyin")[0];
+					await player.addToExpansion({
+						cards: [result.cards[0]],
+						source: player,
+						animate: "give",
+						gaintag: ["psshiyin"],
+					});
+					if (!cardToGain) {
+						return;
+					}
+					await player.gain({
+						cards: [cardToGain],
+						animate: "gain2",
+					});
 				},
 			},
 		},
