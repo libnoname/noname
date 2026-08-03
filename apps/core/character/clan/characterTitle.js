@@ -1,5 +1,5 @@
 export default {
-	clan_wujing: "烈泽吴土",
+	clan_lujing: "烈泽吴土",
 	clan_xunyu: "宏汉公衡",
 	clan_luyusheng: "精心坚白",
 	clan_xunshi: "屏后点香谱",
@@ -35,6 +35,5 @@ export default {
 	//clan_xunshuang: "",
 	clan_yangbiao: "负荷履崎岖",
 	clan_luji: "探赜执道",
-	//clan_lujing: ""
 	clan_hanfu: "挈瓶之知",
 };
