@@ -3,7 +3,7 @@ import html from "dedent";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
-	//神魔孙权（魔不如神这一块）------by 清风
+	//神魔孙权（魔不如神这一块）
 	smsibian: {
 		audio: 2,
 		forced: true,

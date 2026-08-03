@@ -3,7 +3,7 @@ import html from "dedent";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
-	//武则天------ by 清风
+	//武则天
 	peersheng: {
 		audio: 2,
 		forced: true,
@@ -178,7 +178,7 @@ const skills = {
 			},
 		},
 	},
-	//PE刘徽------by 清风
+	//PE刘徽
 	pejieshu: {
 		audio: "dcjieshu",
 		locked: false,
@@ -393,7 +393,7 @@ const skills = {
 			},
 		},
 	},
-	//白起------by 清风
+	//白起
 	pewuan: {
 		audio: 2,
 		forced: true,
@@ -478,7 +478,7 @@ const skills = {
 			});
 		},
 	},
-	//花木兰------by 清风
+	//花木兰
 	perongbian: {
 		audio: 2,
 		forced: true,
@@ -780,7 +780,7 @@ const skills = {
 			},
 		},
 	},
-	//杨玉环------by 清风
+	//杨玉环
 	peyichuan: {
 		audio: 2,
 		enable: "phaseUse",
@@ -944,7 +944,7 @@ const skills = {
 			}
 		},
 	},
-	//夏侯岚------by 清风
+	//夏侯岚
 	pexunji: {
 		audio: 2,
 		trigger: {
@@ -1117,7 +1117,7 @@ const skills = {
 			await event.targets[0].recover();
 		},
 	},
-	//天策上将-李世民------by 清风
+	//天策上将-李世民
 	pepozhen: {
 		audio: 2,
 		persevereSkill: true,
@@ -2089,7 +2089,7 @@ const skills = {
 		},
 		ai: { threaten: 1.1 },
 	},
-	// 曹操＆袁绍 by 刘巴
+	// 曹操＆袁绍
 	yjguibei: {
 		trigger: {
 			global: "phaseBefore",

@@ -962,8 +962,9 @@ const skills = {
 			},
 		},
 	},
-	//神皇甫嵩
+	//神皇甫嵩---配音来自b站up主孤独妙妙
 	hm_shice: {
+		audio: 2,
 		zhuanhuanji: true,
 		mark: true,
 		marktext: "☯",
@@ -1037,7 +1038,9 @@ const skills = {
 			}
 		},
 	},
+	//看不懂，破怠了
 	hm_podai: {
+		audio: 2,
 		trigger: { global: ["phaseBegin", "phaseEnd"] },
 		filter(event, player) {
 			const storage = player.getStorage("hm_podai_round");

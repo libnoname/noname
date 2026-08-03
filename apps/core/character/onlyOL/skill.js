@@ -2,7 +2,7 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
-	//界步练师------by 清风
+	//界步练师
 	olanxu: {
 		audio: 2,
 		enable: "phaseUse",
@@ -11,7 +11,7 @@ const skills = {
 			return game.countPlayer(current => get.info("olanxu").filterTarget(null, player, current)) > 1;
 		},
 		filterTarget(card, player, target) {
-			if(player == target) {
+			if (player == target) {
 				return target.hasGainableCards(player, "e");
 			}
 			return target.hasGainableCards(player, "he");
@@ -21,7 +21,7 @@ const skills = {
 		multitarget: true,
 		async content(event, trigger, player) {
 			const { targets } = event;
-			for(const target of targets.sortBySeat()) {
+			for (const target of targets.sortBySeat()) {
 				await player.gainPlayerCard({ target, position: player == target ? "e" : "he", forced: true });
 			}
 			if (targets[0].countCards("h") === targets[1].countCards("h")) {
@@ -156,7 +156,7 @@ const skills = {
 			},
 		},
 	},
-	//界刘封------by 清风
+	//界刘封
 	olxiansi: {
 		audio: 4,
 		logAudio: () => 2,
@@ -4997,7 +4997,7 @@ const skills = {
 			},
 		},
 	},
-	//谋鲁肃 —— by 刘巴
+	//谋鲁肃
 	olsbduduan: {
 		audio: 2,
 		phasename: ["phaseJudge", "phaseDraw", "phaseUse", "phaseDiscard"],
@@ -7218,7 +7218,7 @@ const skills = {
 			},
 		},
 	},
-	//谋小乔 —— by 星の语
+	//谋小乔
 	//洗脚女将，再添一员（？）
 	olmiluo: {
 		audio: 2,
@@ -7497,7 +7497,7 @@ const skills = {
 			},
 		},
 	},
-	//魔司马懿 —— by 星の语
+	//魔司马懿
 	//舍身入魔，佛奈我何！
 	olguifu: {
 		audio: 2,
@@ -8593,6 +8593,10 @@ const skills = {
 				return false;
 			}
 			return lib.inpile.some(name => {
+				//ol不能印借刀
+				if (name == "jiedao") {
+					return false;
+				}
 				const info = get.info({ name: name });
 				return info && info.type === "trick" && !info.notarget && (info.toself || info.singleCard || !info.selectTarget || info.selectTarget === 1);
 			});
@@ -8603,6 +8607,9 @@ const skills = {
 		usable: 1,
 		async content(event, trigger, player) {
 			const names = lib.inpile.filter(name => {
+					if (name == "jiedao") {
+						return false;
+					}
 					const info = get.info({ name: name });
 					return info && info.type === "trick" && !info.notarget && (info.toself || info.singleCard || !info.selectTarget || info.selectTarget === 1);
 				}),
@@ -8792,6 +8799,14 @@ const skills = {
 	},
 	olsbchenzhi: {
 		audio: 2,
+		//加个标记
+		init(player, skill) {
+			player.addSkill(skill + "_mark");
+		},
+		onremove(player, skill) {
+			player.removeSkill(skill + "_mark");
+			player.removeSkill(skill + "_mark2");
+		},
 		trigger: { player: "damageBegin4" },
 		filter(event, player) {
 			return player.getRoundHistory("damage").length >= Math.min(3, game.roundNumber) && player.hasDiscardableCards(player, "he");
@@ -8818,6 +8833,19 @@ const skills = {
 		},
 		group: "olsbchenzhi_effect",
 		subSkill: {
+			mark: {
+				charlotte: true,
+				silent: true,
+				popup: false,
+				trigger: { player: "damageEnd" },
+				filter(event, player) {
+					return player.getRoundHistory("damage").length >= Math.min(3, game.roundNumber) && !player.hasSkill("olsbchenzhi_mark2");
+				},
+				async content(event, trigger, player) {
+					player.addTempSkill(event.name + "2", "roundStart");
+				},
+			},
+			mark2: { charlotte: true, mark: true, intro: { content: "沉智①已激活" } },
 			effect: {
 				audio: "olsbchenzhi",
 				trigger: { global: "roundEnd" },

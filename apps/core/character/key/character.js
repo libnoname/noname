@@ -501,7 +501,7 @@ const characters = {
 		group: "key",
 		hp: 3,
 		skills: ["iriya_yinji", "iriya_haozhi"],
-		names: "罗杰斯特·文斯卡娅|伊莉雅",
+		names: "罗杰斯特|文斯卡娅",
 	},
 	key_fuuko: {
 		sex: "female",
