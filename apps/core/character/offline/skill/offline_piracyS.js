@@ -1801,24 +1801,27 @@ const skills = {
 		lose: false,
 		delay: false,
 		filterTarget(card, player, target) {
-			return player != target;
+			return player !== target;
 		},
 		onremove: true,
 		check(card) {
-			if (ui.selected.cards.length && ui.selected.cards[0].name == "du") {
+			if (ui.selected.cards.length && ui.selected.cards[0].name === "du") {
 				return 0;
 			}
-			if (!ui.selected.cards.length && card.name == "du") {
+			if (!ui.selected.cards.length && card.name === "du") {
 				return 20;
 			}
-			var player = get.owner(card);
+			const player = get.owner(card);
+			if (player == null) {
+				return 0;
+			}
 			if (ui.selected.cards.length >= Math.max(2, player.countCards("h") - player.hp)) {
 				return 0;
 			}
-			if (player.hp == player.maxHp || player.storage.jsprende < 0 || player.countCards("h") <= 1) {
-				var players = game.filterPlayer();
-				for (var i = 0; i < players.length; i++) {
-					if (players[i].hasSkill("haoshi") && !players[i].isTurnedOver() && !players[i].hasJudge("lebu") && get.attitude(player, players[i]) >= 3 && get.attitude(players[i], player) >= 3) {
+			if (player.hp === player.maxHp || player.storage.jsprende < 0 || player.countCards("h") <= 1) {
+				const players = game.filterPlayer();
+				for (const current of players) {
+					if (current.hasSkill("haoshi") && !current.isTurnedOver() && !current.hasJudge("lebu") && get.attitude(player, current) >= 3 && get.attitude(current, player) >= 3) {
 						return 11 - get.value(card);
 					}
 				}
@@ -1832,115 +1835,106 @@ const skills = {
 			}
 			return 10 - get.value(card);
 		},
-		content() {
-			"step 0";
-			var evt = _status.event.getParent("phaseUse");
-			if (evt && evt.name == "phaseUse" && !evt.jsprende) {
-				var next = game.createEvent("jsprende_clear");
-				_status.event.next.remove(next);
-				evt.after.push(next);
-				evt.jsprende = true;
-				next.player = player;
-				next.setContent(function () {
+		async content(event, trigger, player) {
+			const { cards, target } = event;
+			const phaseUseEvent = event.getParent("phaseUse");
+			if (phaseUseEvent?.name === "phaseUse" && !phaseUseEvent.jsprende) {
+				const clearEvent = game.createEvent("jsprende_clear");
+				event.next.remove(clearEvent);
+				phaseUseEvent.after.push(clearEvent);
+				phaseUseEvent.jsprende = true;
+				clearEvent.player = player;
+				clearEvent.setContent(async ({ player }) => {
 					delete player.storage.jsprende;
 				});
 			}
-			player.give(cards, target);
-			if (typeof player.storage.jsprende != "number") {
+			const giveEvent = player.give(cards, target);
+			if (typeof player.storage.jsprende !== "number") {
 				player.storage.jsprende = 0;
 			}
-			if (player.storage.jsprende >= 0) {
-				player.storage.jsprende += cards.length;
-				if (player.storage.jsprende >= 2) {
-					var list = [];
-					if (
-						lib.filter.cardUsable({ name: "sha", isCard: true }, player, event.getParent("chooseToUse")) &&
-						game.hasPlayer(function (current) {
-							return player.canUse("sha", current);
-						})
-					) {
-						list.push(["基本", "", "sha"]);
-					}
-					for (var i of lib.inpile_nature) {
-						if (
-							lib.filter.cardUsable({ name: "sha", nature: i, isCard: true }, player, event.getParent("chooseToUse")) &&
-							game.hasPlayer(function (current) {
-								return player.canUse({ name: "sha", nature: i, isCard: true }, current);
-							})
-						) {
-							list.push(["基本", "", "sha", i]);
-						}
-					}
-					if (
-						lib.filter.cardUsable({ name: "tao", isCard: true }, player, event.getParent("chooseToUse")) &&
-						game.hasPlayer(function (current) {
-							return player.canUse("tao", current);
-						})
-					) {
-						list.push(["基本", "", "tao"]);
-					}
-					if (
-						lib.filter.cardUsable({ name: "jiu", isCard: true }, player, event.getParent("chooseToUse")) &&
-						game.hasPlayer(function (current) {
-							return player.canUse("jiu", current);
-						})
-					) {
-						list.push(["基本", "", "jiu"]);
-					}
-					if (list.length) {
-						player.chooseButton(["是否视为使用一张基本牌？", [list, "vcard"]]).set("ai", function (button) {
-							var player = _status.event.player;
-							var card = {
-								name: button.link[2],
-								nature: button.link[3],
-								isCard: true,
-							};
-							if (card.name == "tao") {
-								if (player.hp == 1 || (player.hp == 2 && !player.hasShan("all")) || player.needsToDiscard()) {
-									return 5;
-								}
-								return 1;
+			if (player.storage.jsprende < 0) {
+				await giveEvent;
+				return;
+			}
+			player.storage.jsprende += cards.length;
+			if (player.storage.jsprende < 2) {
+				await giveEvent;
+				return;
+			}
+
+			const list = [];
+			const chooseToUseEvent = event.getParent("chooseToUse");
+			if (lib.filter.cardUsable({ name: "sha", isCard: true }, player, chooseToUseEvent) && game.hasPlayer(current => player.canUse("sha", current))) {
+				list.push(["基本", "", "sha"]);
+			}
+			for (const nature of lib.inpile_nature) {
+				const sha = { name: "sha", nature, isCard: true };
+				if (lib.filter.cardUsable(sha, player, chooseToUseEvent) && game.hasPlayer(current => player.canUse(sha, current))) {
+					list.push(["基本", "", "sha", nature]);
+				}
+			}
+			if (lib.filter.cardUsable({ name: "tao", isCard: true }, player, chooseToUseEvent) && game.hasPlayer(current => player.canUse("tao", current))) {
+				list.push(["基本", "", "tao"]);
+			}
+			if (lib.filter.cardUsable({ name: "jiu", isCard: true }, player, chooseToUseEvent) && game.hasPlayer(current => player.canUse("jiu", current))) {
+				list.push(["基本", "", "jiu"]);
+			}
+			player.storage.jsprende = -1;
+			await giveEvent;
+			if (!list.length) {
+				return;
+			}
+
+			const result = await player
+				.chooseButton({
+					createDialog: ["是否视为使用一张基本牌？", [list, "vcard"]],
+					ai: button => {
+						const player = _status.event.player;
+						const card = {
+							name: button.link[2],
+							nature: button.link[3],
+							isCard: true,
+						};
+						if (card.name === "tao") {
+							if (player.hp === 1 || (player.hp === 2 && !player.hasShan("all")) || player.needsToDiscard()) {
+								return 5;
 							}
-							if (card.name == "sha") {
-								if (
-									game.hasPlayer(function (current) {
-										return player.canUse(card, current) && get.effect(current, card, player, player) > 0;
-									})
-								) {
-									if (card.nature == "fire") {
-										return 2.95;
-									}
-									if (card.nature == "thunder" || card.nature == "ice") {
-										return 2.92;
-									}
-									return 2.9;
-								}
+							return 1;
+						}
+						if (card.name === "sha") {
+							if (!game.hasPlayer(current => player.canUse(card, current) && get.effect(current, card, player, player) > 0)) {
 								return 0;
 							}
-							if (card.name == "jiu") {
-								return 0.5;
+							if (card.nature === "fire") {
+								return 2.95;
 							}
-							return 0;
-						});
-					} else {
-						event.finish();
-					}
-					player.storage.jsprende = -1;
-				} else {
-					event.finish();
-				}
-			} else {
-				event.finish();
+							if (card.nature === "thunder" || card.nature === "ice") {
+								return 2.92;
+							}
+							return 2.9;
+						}
+						if (card.name === "jiu") {
+							return 0.5;
+						}
+						return 0;
+					},
+				})
+				.forResult();
+			if (!result?.bool || !result.links?.[0]) {
+				return;
 			}
-			"step 1";
-			if (result && result.bool && result.links[0]) {
-				var card = { name: result.links[0][2], nature: result.links[0][3], isCard: true };
-				player.chooseUseTarget(card, true);
-			}
+			const card = get.autoViewAs({ name: result.links[0][2], nature: result.links[0][3], isCard: true });
+			await player.chooseUseTarget({
+				card,
+				forced: true,
+			});
 		},
 		ai: {
 			fireAttack: true,
 			order(skill, player) {
+				if (player == null) {
+					return 0;
+				}
 				if (player.hp < player.maxHp && player.storage.jsprende < 2 && player.countCards("h") > 1) {
 					return 10;
 				}
@@ -1951,7 +1945,7 @@ const skills = {
 					if (target.hasSkillTag("nogain")) {
 						return 0;
 					}
-					if (ui.selected.cards.length && ui.selected.cards[0].name == "du") {
+					if (ui.selected.cards.length && ui.selected.cards[0].name === "du") {
 						if (target.hasSkillTag("nodu")) {
 							return 0;
 						}
@@ -1960,9 +1954,9 @@ const skills = {
 					if (target.hasJudge("lebu")) {
 						return 0;
 					}
-					var nh = target.countCards("h");
-					var np = player.countCards("h");
-					if (player.hp == player.maxHp || player.storage.jsprende < 0 || player.countCards("h") <= 1) {
+					const nh = target.countCards("h");
+					const np = player.countCards("h");
+					if (player.hp === player.maxHp || player.storage.jsprende < 0 || player.countCards("h") <= 1) {
 						if (nh >= np - 1 && np <= player.hp && !target.hasSkill("haoshi")) {
 							return 0;
 						}
@@ -1972,16 +1966,14 @@ const skills = {
 			},
 			effect: {
 				target_use(card, player, target) {
-					if (player == target && get.type(card) == "equip") {
-						if (player.countCards("e", { subtype: get.subtype(card) })) {
-							if (
-								game.hasPlayer(function (current) {
-									return current != player && get.attitude(player, current) > 0;
-								})
-							) {
-								return 0;
-							}
-						}
+					if (player !== target || get.type(card) !== "equip") {
+						return;
+					}
+					if (!player.hasCards("e", { subtype: get.subtype(card) })) {
+						return;
+					}
+					if (game.hasPlayer(current => current !== player && get.attitude(player, current) > 0)) {
+						return 0;
 					}
 				},
 			},
