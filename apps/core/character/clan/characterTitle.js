@@ -1,5 +1,6 @@
 export default {
-	//clan_xunyu: "",
+	clan_wujing: "烈泽吴土",
+	clan_xunyu: "宏汉公衡",
 	clan_luyusheng: "精心坚白",
 	clan_xunshi: "屏后点香谱",
 	clan_chentai: "弘济简至",
