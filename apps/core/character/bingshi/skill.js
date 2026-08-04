@@ -1091,7 +1091,7 @@ const skills = {
 			mark(dialog, content, player) {
 				const cards = player.getExpansions("potsifeng");
 				if (cards.length) {
-					if (player == game.me || player.isUnderControl()) {
+					if (player.isUnderControl(true)) {
 						dialog.addAuto(cards);
 					} else {
 						return "共有" + get.cnNumber(cards.length) + "张“伺锋”";
@@ -1101,7 +1101,7 @@ const skills = {
 			content(content, player) {
 				const cards = player.getExpansions("potsifeng");
 				if (cards.length) {
-					if (player == game.me || player.isUnderControl()) {
+					if (player.isUnderControl(true)) {
 						return get.translation(cards);
 					}
 					return "共有" + get.cnNumber(cards.length) + "张“伺锋”";

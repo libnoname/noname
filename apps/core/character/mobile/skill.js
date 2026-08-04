@@ -1592,13 +1592,17 @@ const skills = {
 		},
 		intro: {
 			content: "cards",
-			mark(dialog, storage, player) {
+			mark(dialog, storage = [], player) {
 				const cards = storage.map(arr => arr[1]);
 				const names = storage.map(arr => arr[0]);
-				dialog.addAuto(cards);
-				if (player.isUnderControl(true)) {
-					const { buttons } = dialog;
-					buttons.forEach((button, index) => ui.create.cardTempName(get.autoViewAs({ name: names[index] }), button));
+				if (cards.length) {
+					if (player.isUnderControl(true)) {
+						dialog.addAuto(cards);
+						const { buttons } = dialog;
+						buttons.forEach((button, index) => ui.create.cardTempName(get.autoViewAs({ name: names[index] }), button));
+					} else {
+						return "共有" + get.cnNumber(cards.length) + "张“伏兵”";
+					}
 				}
 			},
 		},
@@ -1657,6 +1661,9 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const { cost_data: name } = event;
+			if (!player.hasCards("he")) {
+				return;
+			}
 			const result = await player.chooseCard({ position: "he", prompt: "设伏：选择一张牌作为“伏兵”", forced: true }).forResult();
 			const { cards } = result;
 			if (cards?.length) {
@@ -1670,9 +1677,7 @@ const skills = {
 		subSkill: {
 			exclude: {
 				audio: "shefu",
-				trigger: {
-					global: ["useCard"],
-				},
+				trigger: { global: "useCard" },
 				filter(event, player) {
 					if (_status.currentPhase == player || event.player == player || event.all_excluded) {
 						return false;
@@ -1720,8 +1725,6 @@ const skills = {
 					const storage = player.getStorage(skill);
 					const index = storage.findIndex(arr => arr[0] == name);
 					if (index !== -1) {
-						console.log(index);
-						console.log(storage[index]);
 						const list = storage[index].slice();
 						storage.splice(index, 1);
 						player.setStorage(skill, storage, true);
@@ -1754,10 +1757,10 @@ const skills = {
 				event.result = await player
 					.chooseToDiscard({
 						prompt: get.prompt(event.skill, trigger.source),
-						prompt2: "弃置至少" + (num2 + 1) + "张手牌并对其造成一点伤害",
+						prompt2: `你可以弃置至少${get.cnNumber(num2 + 1)}张手牌并对其造成1点伤害`,
 						selectCard: [num2 + 1, Infinity],
 						position: "h",
-						complexCard: true,
+						allowChooseAll: true,
 						chooseonly: true,
 						ai(card) {
 							const trigger = get.event().getTrigger();
@@ -1777,10 +1780,7 @@ const skills = {
 				event.result = await player
 					.chooseBool({
 						prompt: get.prompt(event.skill, trigger.source),
-						prompt2: "摸" + Math.min(5, num2 - num1) + "张牌",
-						ai() {
-							return 1;
-						},
+						prompt2: `你可以摸${get.cnNumber(Math.min(5, num2 - num1))}张牌`,
 					})
 					.forResult();
 			}
@@ -1789,6 +1789,7 @@ const skills = {
 			const num1 = player.countCards("h");
 			const num2 = trigger.source.countCards("h");
 			if (event.cards?.length) {
+				await player.discard(event.cards);
 				await trigger.source.damage();
 			} else {
 				await player.draw(Math.min(5, num2 - num1));
