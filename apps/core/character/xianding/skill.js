@@ -362,7 +362,7 @@ const skills = {
 			},
 		},
 	},
-	//谋关羽（绿裤子）
+	//谋关羽
 	dcsbguanwu: {
 		audio: 2,
 		forced: true,
