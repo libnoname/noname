@@ -2582,10 +2582,10 @@ const skills = {
 					showCards = top;
 				}
 				await target
-					.showCards(showCards, `${get.translation(target)}因“${get.translation(event.name)}”展示`)
-					.set("customButton", button => {
-						if (get.event().top.includes(button.link)) {
-							button.node.gaintag.innerHTML = "牌堆顶";
+					.showCards(showCards, `${get.translation(target)}因【${get.translation(event.name)}】展示`)
+					.set("customButton", (button, event) => {
+						if (event.top?.includes(button.link)) {
+							game.createButtonCardsetion("牌堆顶", button);
 						}
 					})
 					.set("top", top)
