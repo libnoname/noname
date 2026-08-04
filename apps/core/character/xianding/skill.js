@@ -2147,8 +2147,10 @@ const skills = {
 		async content(event, trigger, player) {
 			if (trigger.addCount !== false) {
 				trigger.addCount = false;
-				if (player.stat[player.stat.length - 1].card.sha > 0) {
-					player.stat[player.stat.length - 1].card.sha--;
+				const stat = trigger.player.getStat().card,
+					name = trigger.card.name;
+				if (typeof stat[name] === "number") {
+					stat[name]--;
 				}
 			}
 			trigger.card.storage ??= {};
@@ -2157,9 +2159,8 @@ const skills = {
 		group: "dcwushen_damage",
 		subSkill: {
 			damage: {
-				trigger: {
-					source: "damageSource",
-				},
+				audio: "dcwushen",
+				trigger: { source: "damageSource" },
 				filter(event, player) {
 					if (!event.card || event.card.name != "sha" || get.suit(event.card) != "heart") {
 						return false;
@@ -2167,7 +2168,6 @@ const skills = {
 					return event.card.storage?.dcwushen;
 				},
 				forced: true,
-				silent: true,
 				async content(event, trigger, player) {
 					await player.draw({ num: 1 });
 				},
@@ -2215,9 +2215,7 @@ const skills = {
 		subSkill: {
 			die: {
 				audio: "wuhun2",
-				trigger: {
-					player: "die",
-				},
+				trigger: { player: "die" },
 				filter(event, player) {
 					return game.hasPlayer(function (current) {
 						return current != player && current.hasMark("dcwuhun");
@@ -2264,7 +2262,7 @@ const skills = {
 								jugde2: result => !result.bool,
 							})
 							.forResult();
-						if (!result.bool) {
+						if (!result?.bool) {
 							await target.die();
 						}
 					}
