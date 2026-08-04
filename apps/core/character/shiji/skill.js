@@ -5564,7 +5564,7 @@ const skills = {
 							player: player,
 							card: card,
 						});
-					if (bool1 && bool2 && (target.hp <= 2 || (player.isDamaged() && player.maxHp > 3))) {
+					if (bool1 && bool2 && player.isDamaged() && player.maxHp > 1) {
 						return "背水！";
 					}
 					if (bool1) {
