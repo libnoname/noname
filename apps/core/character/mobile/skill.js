@@ -1326,14 +1326,10 @@ const skills = {
 	},
 	//崔琰毛玠
 	mbzhengbi: {
-		audio: 4,
-		logAudio: index => (typeof index == "number" ? "mbzhengbi" + index + ".mp3" : 2),
-		intro: {
-			content: "可选择的角色+#",
-		},
-		trigger: {
-			player: "phaseZhunbeiBegin",
-		},
+		audio: 2,
+		onremove: ["mbzhengbi", "mbzhengbi_used"],
+		intro: { content: "可选择的角色+#" },
+		trigger: { player: "phaseZhunbeiBegin" },
 		filter(event, player) {
 			return game.hasPlayer(target => target != player);
 		},
