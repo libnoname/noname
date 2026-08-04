@@ -1,11 +1,4 @@
 const characters = {
-	ol_niuma: {
-		sex: "male",
-		group: "shen",
-		hp: 4,
-		skills: ["oldianbu", "oljuhun"],
-		names: "null|null-null|null",
-	},
 	natu_guanyu: {
 		sex: "male",
 		group: "shu",
