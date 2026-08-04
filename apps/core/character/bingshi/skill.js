@@ -55,7 +55,7 @@ const skills = {
 							forced: true,
 							ai(button) {
 								const player = get.player();
-								if (player.getStorage("potyinhui").includes(button.link)) return 10 + Math.random();
+								if (player.additionalSkills?.potyinhui?.includes(button.link)) return 10 + Math.random();
 								if (get.info(button.link).ai?.neg) return 100 + Math.random();
 								return 1 + Math.random();
 							},
@@ -80,7 +80,7 @@ const skills = {
 						return info && !info.charlotte;
 					});
 					return skills.some(skill => {
-						if (player.getStorage("potyinhui").includes(skill)) return true;
+						if (player.additionalSkills?.potyinhui?.includes(skill)) return true;
 						return get.info(skill).ai?.neg;
 					})
 						? 1
@@ -111,7 +111,6 @@ const skills = {
 				);
 			});
 		},
-		onremove: true,
 		//参考朱佩兰
 		refreshSkill(player, skills) {
 			if (typeof skills === "string") skills = [skills];
@@ -188,10 +187,9 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			const skillxs = player.getStorage(event.name);
-			if (skillxs.length) {
-				get.info("potyinhui").refreshSkill(player, skillxs);
-				await player.removeSkills(skillxs);
+			if (player.additionalSkills?.[event.name]?.length) {
+				get.info("potyinhui").refreshSkill(player, player.additionalSkills[event.name]);
+				await player.removeAdditionalSkills(event.name);
 			}
 			const skills = target
 				.getSkills(null, false, false)
@@ -230,8 +228,7 @@ const skills = {
 					const skill = result.links[0];
 					player.logSkill(event.name, null, null, null, [get.rand(3, 12)]);
 					get.info("potyinhui").refreshSkill(player, skill);
-					await player.addSkills(skill);
-					player.markAuto(event.name, [skill]);
+					await player.addAdditionalSkills(event.name, skill, true);
 				}
 			}
 		},
