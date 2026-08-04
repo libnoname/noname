@@ -32457,7 +32457,7 @@ const skills = {
 		logAudio: (event, player, name) => (name == "damageBegin1" ? "jieyuan_more.mp3" : "jieyuan_less.mp3"),
 		trigger: {
 			source: "damageBegin1",
-			player: "damageBegin3",
+			player: "damageBegin4",
 		},
 		filter(event, player, name) {
 			const beishui = player.getStorage("mbjieyuan_beishui", false);
@@ -32531,8 +32531,7 @@ const skills = {
 				const colorCards = pileCards.filter(card => get.color(card) === color);
 				const toGain = colorCards.slice(0, effectNum);
 				if (toGain.length > 0) {
-					game.log(player, "获得了" + effectNum + "张" + get.translation(color) + "牌");
-					await player.gain({ cards: toGain, animate: "draw2" });
+					await player.gain({ cards: toGain, animate: "draw" });
 				}
 			}
 			const canDiscard = player.countDiscardableCards(player, "he", card => get.color(card) === color) >= discardNum;
@@ -32604,7 +32603,7 @@ const skills = {
 					controls: choices,
 					choiceList: choiceList,
 					prompt: get.prompt(event.skill, target),
-					choice: () => {
+					choice: (() => {
 						if (validSkills.length > 0) {
 							return 0;
 						}
@@ -32612,7 +32611,7 @@ const skills = {
 							return 1;
 						}
 						return 2;
-					},
+					})(),
 				})
 				.forResult();
 			event.result = {
