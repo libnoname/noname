@@ -198,7 +198,7 @@ const skills = {
 			},
 		},
 	},
-	//谋关羽
+	//谋关羽（绿裤子）
 	dcsbguanwu: {
 		audio: 2,
 		forced: true,
@@ -8080,7 +8080,6 @@ const skills = {
 			if (!places.length) {
 				return;
 			}
-			//射击部位
 			await Promise.all(event.next);
 			event.videoId = lib.status.videoId++;
 			if (player.isUnderControl()) {
