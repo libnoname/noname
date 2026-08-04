@@ -3227,7 +3227,7 @@ const skills = {
 		},
 	},
 	//疑包
-	//曹操 -by.柴油鹿鹿
+	//曹操
 	sxrmkuxin: {
 		audio: 2,
 		trigger: { player: "damageEnd" },
@@ -3852,7 +3852,6 @@ const skills = {
 		filter(event, player) {
 			return player.countCards("hes") >= 2;
 		},
-		audio: true,
 		prompt: "将两张牌当刺【杀】使用或打出",
 		async precontent(event, trigger, player) {
 			player

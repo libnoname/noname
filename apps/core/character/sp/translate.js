@@ -1445,7 +1445,7 @@ const translates = {
 	ol_liuzhang: "OL刘璋",
 	ol_liuzhang_prefix: "OL",
 	olfengwei: "奉蔚",
-	olfengwei_info: "锁定技，每轮开始时，你摸至多四张牌。若你有本轮获得的“奉蔚”牌，则你跳过摸牌阶段且受到牌造成的伤害+1。",
+	olfengwei_info: "锁定技，每轮开始时，你摸至多五张牌。若你有本轮获得的“奉蔚”牌，则你跳过摸牌阶段且受到牌造成的伤害+1。",
 	olzonghu: "宗护",
 	olzonghu_info: "每回合限一次，当你需要使用【杀】或【闪】时，你可以将X张牌交给一名其他角色，视为使用之（X为游戏轮数且至多为3）。",
 	sp_ol_liubei: "SP刘备",
@@ -1642,7 +1642,7 @@ const translates = {
 		return "<br>" + [...mapSkill].map(([mapName, cities]) => `<li>${get.poptip(mapName)}：${cities.map(get.poptip).join("、")}`).join("<br>");
 	},
 	olrejinlan: "尽览",
-	olrejinlan_info: "当你于回合内使用♠/♥/♣/♦牌时，你可以绘制东/西/南/北方位的所有“地图”。你绘制一处城市后，执行对应城市的效果。",
+	olrejinlan_info: "当你于回合内使用♠/♥/♣/♦牌后，你可以绘制东/西/南/北方位的所有“地图”。你绘制一处城市后，执行对应城市的效果。",
 	olcaifeng: "采风",
 	olcaifeng_info: "出牌阶段每张地图限一次，你可以弃置任意张牌，然后从牌堆或弃牌堆中随机获得等量张其余花色的牌。",
 	// 并州
