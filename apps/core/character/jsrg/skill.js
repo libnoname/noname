@@ -1183,10 +1183,6 @@ const skills = {
 					break;
 				}
 			}
-			if (target.countCards("h") > player.countCards("h")) {
-				player.logSkill("mbsaojian", null, null, null, [3]);
-				await player.loseHp();
-			}
 		},
 		chooseCard(player, eventId, videoId, source) {
 			const dialog = get.idDialog(videoId),
