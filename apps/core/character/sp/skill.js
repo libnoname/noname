@@ -210,8 +210,20 @@ const skills = {
 					{ start: "5,2", suit: "heart" },
 					{ start: "4,2", suit: "diamond" },
 					{ start: "4,3", suit: "heart" },
-					{ start: "2,5", suit: "spade" },
-					{ start: "3,5", suit: "heart" },
+					{
+						start: "2,5",
+						suit: "spade",
+						filter(dialog) {
+							return dialog.querySelector(`[data-city-name='pxjuyan']`);
+						},
+					},
+					{
+						start: "2,5",
+						suit: "heart",
+						filter(dialog) {
+							return !dialog.querySelector(`[data-city-name='pxjuyan']`);
+						},
+					},
 					{ start: "1,5", suit: "club" },
 				],
 			],
