@@ -1,4 +1,9 @@
 export default {
+	"#olfengwei1": "我辈怀璧，恐难虞其罪。",
+	"#olfengwei2": "益州地大物博，必为虎狼所觊。",
+	"#olzonghu1": "国祚不败，作那守户之犬又怎样？",
+	"#olzonghu2": "先父继我以大任，望诸君共保基业。",
+	"#ol_liuzhang:die": "刘备呀刘备，我怎么就信了你！",
 	"#olremaozhu1": "登东堂综文宣艺，忝作儒林之丈。",
 	"#olremaozhu2": "身负可育之材，当以栋梁处之。",
 	"#olrejinlan1": "绘湖海于一苇，览山河于一叶。",
