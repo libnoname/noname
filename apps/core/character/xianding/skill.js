@@ -9443,21 +9443,47 @@ const skills = {
 				return choices;
 			},
 			check() {
-				const num = Math.min(
-						5,
-						game.countPlayer(() => true, true)
-					),
-					player = get.player(),
-					num2 = player.countCards("h");
-				if (
-					!player.hasSkill("dcliexiang_extra") &&
-					game.hasPlayer(current => {
-						return current.countCards("h") > num2 + 1;
-					})
-				) {
-					return `${get.cnNumber(1)}张`;
+				const player = get.player();
+				const hand = player.countCards("h");
+				const hp = player.hp + player.countCards("hs", card => player.canSaveCard(card, player));
+				const max = 5;
+				let best = 5;
+				let bestScore = -Infinity;
+				for (let i = 1; i <= max; i++) {
+					const num1 = hand + i;
+					let score = 0;
+					game.filterPlayer(current => current != player).forEach(target => {
+						const att = get.attitude(player, target);
+						const num2 = target.countCards("h");
+						score += get.damageEffect(target, player, player);
+						if (num1 < num2) {
+							if (player.hasSkill("dcliexiang_extra", null, null, false)) {
+								const diff = num2 - num1;
+								score += i * get.effect(player, { name: "losehp" }, player, player) * 1.1;
+							} else {
+								if (i < hp) {
+									const diff = num2 - num1;
+									if (diff == 1) {
+										score += 100;
+									} else {
+										score += 40 - diff;
+									}
+									score -= i * 5;
+								}
+							}
+						} else if (num1 == num2 && att < 0) {
+							score += 30 + i * 2 + get.effect(target, { name: "shunshou_copy2" }, player, player);
+						} else {
+							score += 50 + i * 2;
+						}
+					});
+					if (score > bestScore) {
+						bestScore = score;
+						best = i;
+					}
 				}
-				return `${get.cnNumber(num)}张`;
+				best = Math.max(1, best);
+				return best - 1;
 			},
 			prompt(result, player) {
 				const num = result.index + 1;
@@ -9473,32 +9499,22 @@ const skills = {
 		},
 		ai: {
 			order(item, player) {
-				if (player.hasSkill("dcliexiang_extra")) {
-					return 1;
+				if (player.hasSkill("dcliexiang_extra", null, null, false)) {
+					return get.order({ name: "sha" }) + 0.1;
 				}
-				return 9;
+				return get.order({ name: "sha" }) - 0.1;
 			},
 			result: {
 				player(player) {
-					const num =
-						player.countCards("h") +
-						Math.min(
-							5,
-							game.countPlayer(() => true, true)
-						);
-					return game.countPlayer(current => {
+					const num = player.countCards("h");
+					const bool = game.hasPlayer(current => {
 						if (current == player) {
 							return false;
 						}
 						const num2 = current.countCards("h");
-						if (num > num2) {
-							return true;
-						}
-						if (get.attitude(player, current) < 0 && num == num2) {
-							return true;
-						}
-						return false;
+						return num + 5 >= num2;
 					});
+					return bool ? 1 : 0;
 				},
 			},
 		},
@@ -9525,19 +9541,40 @@ const skills = {
 						.set("ai", target => {
 							const { player, numx, drawNum } = get.event(),
 								num = target.countCards("h");
-							if (numx > num) {
-								return Math.max(0.1, -get.attitude(player, target));
+							const hp = player.hp + player.countCards("hs", card => player.canSaveCard(card, player));
+							if (!player.hasSkill("dcliexiang_extra", null, null, false) && !ui.selected.targets.length) {
+								let score = 0;
+								const att = get.attitude(player, target);
+								score += get.damageEffect(target, player, player);
+								if (numx < num) {
+									if (drawNum < hp) {
+										const diff = num - numx;
+										if (diff == 1) {
+											score += 100;
+										} else {
+											score += 40 - diff;
+										}
+										score -= drawNum * 5;
+									}
+								} else if (numx == num && att < 0) {
+									score += 30 + drawNum * 2 + get.effect(target, { name: "shunshou_copy2" }, player, player);
+								} else {
+									score += 50 + drawNum * 2;
+								}
+								return score;
+							} else {
+								const eff = get.damageEffect(target, player, player);
+								if (numx > num) {
+									return eff + 10;
+								} else if (numx == num) {
+									return get.effect(target, { name: "shunshou_copy2" }, player, player) + eff;
+								} else {
+									if (player.hasSkill("dcliexiang_extra") || hp <= (1 + ui.selected.targets.filter(current => current.countCards("h") > numx).length) * drawNum) {
+										return 0;
+									}
+									return eff;
+								}
 							}
-							if (numx == num) {
-								return get.effect(target, { name: "guohe_copy2" }, player, player);
-							}
-							if (player.hp <= 2 || player.hasSkill("dcliexiang_extra")) {
-								return 0;
-							}
-							if (numx < num) {
-								return get.damageEffect(target, player, player);
-							}
-							return 15;
 						})
 						.set("drawNum", index + 1)
 						.set("numx", player.countCards("h"))
@@ -9571,6 +9608,7 @@ const skills = {
 											}
 											return att;
 										},
+										allowChooseAll: true,
 									})
 									.forResult();
 								if (result?.cards?.length && result.targets?.length) {
