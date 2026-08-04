@@ -3,7 +3,237 @@ import { lib, game, ui, get, ai, _status } from "noname";
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
 	//potential--潜在, 潜力, 可能, 电位, 潜能, 势
-	//势周瑜------by 清风
+	//势小乔
+	potheyun: {
+		audio: 2,
+		enable: "phaseUse",
+		usable: 2,
+		filter(event, player) {
+			const skills = player.getSkills(null, false, false).filter(skill => {
+				const info = get.info(skill);
+				const dizhuSkill = ["飞扬", "跋扈", "恃强", "殷富"];
+				const t = lib.translate[skill];
+				if (dizhuSkill.includes(t)) {
+					return true;
+				}
+				return info && !info.charlotte;
+			});
+			return skills.length && game.hasPlayer(current => get.info("potheyun").filterTarget(null, player, current));
+		},
+		filterTarget(card, player, target) {
+			const skills = player.getSkills(null, false, false).filter(skill => {
+				const info = get.info(skill);
+				const dizhuSkill = ["飞扬", "跋扈", "恃强", "殷富"];
+				const t = lib.translate[skill];
+				if (dizhuSkill.includes(t)) {
+					return true;
+				}
+				return info && !info.charlotte;
+			});
+			return target.getSkills(null, false, false).containsSome(...skills);
+		},
+		async content(event, trigger, player) {
+			const target = event.target;
+			const skills = player.getSkills(null, false, false).filter(skill => {
+				const info = get.info(skill);
+				const dizhuSkill = ["飞扬", "跋扈", "恃强", "殷富"];
+				const t = lib.translate[skill];
+				if (dizhuSkill.includes(t)) {
+					return true;
+				}
+				return info && !info.charlotte;
+			});
+			const list = [];
+			for (const skill of skills) {
+				list.push([skill, `<div class="popup text" style="width:calc(100% - 10px);display:inline-block"><div class="skill">【` + get.translation(skill) + "】</div><div>" + lib.translate[skill + "_info"] + "</div></div>"]);
+			}
+			const result =
+				skills.length > 1
+					? await player
+						.chooseButton({
+							createDialog: ["合韵：请失去一个技能", [list, "textbutton"]],
+							forced: true,
+							ai(button) {
+								const player = get.player();
+								if (player.additionalSkills?.potyinhui?.includes(button.link)) return 10 + Math.random();
+								if (get.info(skill).ai?.neg) return 100 + Math.random();
+								return 1 + Math.random();
+							},
+						})
+						.forResult()
+					: { bool: true, links: skills };
+			if (result?.bool && result.links?.length) {
+				const skills = result.links;
+				await player.removeSkills(skills);
+				await target.draw({ num: 2 });
+			}
+		},
+		ai: {
+			order: 1,
+			result: {
+				player(player, target) {
+					const skills = player.getSkills(null, false, false).filter(skill => {
+						const info = get.info(skill);
+						const dizhuSkill = ["飞扬", "跋扈", "恃强", "殷富"];
+						const t = lib.translate[skill];
+						if (dizhuSkill.includes(t)) return true;
+						return info && !info.charlotte;
+					});
+					return skills.some(skill => {
+						if (player.additionalSkills?.potyinhui?.includes(skill)) return true;
+						return get.info(skill).ai?.neg;
+					})
+						? 1
+						: -1;
+				},
+				target: 1,
+			},
+		},
+	},
+	potyinhui: {
+		audio: 12,
+		logAudio: index => (typeof index == "number" ? `potyinhui${index}.mp3` : 2),
+		trigger: { global: "roundStart" },
+		filter(event, player) {
+			return game.hasPlayer(target => {
+				if (target === player) return false;
+				return (
+					target.getSkills(null, false, false).filter(skill => {
+						if (player.hasSkill(skill)) return false;
+						const info = get.info(skill);
+						const dizhuSkill = ["飞扬", "跋扈", "恃强", "殷富"];
+						const t = lib.translate[skill];
+						if (dizhuSkill.includes(t)) {
+							return true;
+						}
+						return info && !info.charlotte;
+					}).length > 0
+				);
+			});
+		},
+		//参考朱佩兰
+		refreshSkill(player, skills) {
+			if (typeof skills === "string") skills = [skills];
+			Object.keys(player.storage)
+				.filter(i => skills.some(skill => i.startsWith(skill)))
+				.forEach(storage => delete player.storage[storage]);
+			const suffixs = ["used", "round", "block", "blocker"];
+			for (const skill of skills) {
+				const info = get.info(skill);
+				if (info.usable !== undefined) {
+					if (typeof player.getStat("triggerSkill")[skill] == "number" && player.getStat("triggerSkill")[skill] >= 1) {
+						delete player.getStat("triggerSkill")[skill];
+					}
+					if (typeof player.getStat("skill")[skill] == "number" && player.getStat("skill")[skill] >= 1) {
+						delete player.getStat("skill")[skill];
+					}
+				}
+				if (info.round && player.storage[skill + "_roundcount"]) {
+					delete player.storage[skill + "_roundcount"];
+				}
+				if (player.storage[`temp_ban_${skill}`]) {
+					delete player.storage[`temp_ban_${skill}`];
+				}
+				if (player.awakenedSkills.includes(skill)) {
+					player.restoreSkill(skill);
+				}
+				for (const suffix of suffixs) {
+					if (player.hasSkill(skill + "_" + suffix)) {
+						player.removeSkill(skill + "_" + suffix);
+					}
+				}
+			}
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2(event.skill),
+					filterTarget(card, player, target) {
+						if (target === player) return false;
+						return (
+							target.getSkills(null, false, false).filter(skill => {
+								if (player.hasSkill(skill)) return false;
+								const info = get.info(skill);
+								const dizhuSkill = ["飞扬", "跋扈", "恃强", "殷富"];
+								const t = lib.translate[skill];
+								if (dizhuSkill.includes(t)) {
+									return true;
+								}
+								return info && !info.charlotte;
+							}).length > 0
+						);
+					},
+					ai(target) {
+						const { player, filterTarget } = get.event();
+						const targets = game.filterPlayer(target => filterTarget(null, player, target));
+						return Math.max(
+							...targets.map(target => {
+								const skills = target.getSkills(null, false, false).filter(skill => {
+									if (player.hasSkill(skill)) return false;
+									const info = get.info(skill);
+									const dizhuSkill = ["飞扬", "跋扈", "恃强", "殷富"];
+									const t = lib.translate[skill];
+									if (dizhuSkill.includes(t)) {
+										return true;
+									}
+									return info && !info.charlotte;
+								});
+								return Math.max(...skills.map(skill => get.skillRank(skill)));
+							})
+						);
+					},
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			if (player.additionalSkills?.[event.name]?.length) {
+				get.info("potyinhui").refreshSkill(player, player.additionalSkills[event.name]);
+				await player.removeAdditionalSkills(event.name);
+			}
+			const skills = target
+				.getSkills(null, false, false)
+				.removeArray(player.getSkills(null, false, false))
+				.filter(skill => {
+					const info = get.info(skill);
+					const dizhuSkill = ["飞扬", "跋扈", "恃强", "殷富"];
+					const t = lib.translate[skill];
+					if (dizhuSkill.includes(t)) {
+						return true;
+					}
+					return info && !info.charlotte;
+				});
+			if (skills.length) {
+				const list = [];
+				for (const skill of skills) {
+					list.push([skill, `<div class="popup text" style="width:calc(100% - 10px);display:inline-block"><div class="skill">【` + get.translation(skill) + "】</div><div>" + lib.translate[skill + "_info"] + "</div></div>"]);
+				}
+				const result =
+					skills.length > 1
+						? await player
+							.chooseButton({
+								createDialog: ["音洄：请获得一个技能", [list, "textbutton"]],
+								forced: true,
+								ai(button) {
+									const info = get.info(button.link);
+									if (!info || (info.ai && (info.ai.combo || info.ai.notemp || info.ai.neg))) {
+										return 0;
+									}
+									return 1 + Math.random();
+								},
+							})
+							.forResult()
+						: { bool: true, links: skills };
+				if (result?.bool && result.links?.length) {
+					const skill = result.links[0];
+					player.logSkill(event.name, null, null, null, [get.rand(3, 12)]);
+					get.info("potyinhui").refreshSkill(player, skill);
+					await player.addAdditionalSkills(event.name, skill, true);
+				}
+			}
+		},
+	},
+	//势周瑜
 	potchiyun: {
 		audio: 2,
 		audioname2: {
@@ -462,7 +692,7 @@ const skills = {
 			await player.draw({ num: 2 });
 		},
 	},
-	//势程普------by 清风
+	//势程普
 	potduzuo: {
 		audio: 2,
 		trigger: {
@@ -541,7 +771,7 @@ const skills = {
 			}
 		},
 	},
-	//势夏侯霸------by 清风
+	//势夏侯霸
 	potlibing: {
 		audio: 2,
 		forced: true,
@@ -673,7 +903,7 @@ const skills = {
 			}
 		},
 	},
-	//势陈群------by 清风
+	//势陈群
 	potfaen: {
 		audio: 2,
 		trigger: { global: "useCard" },
@@ -810,7 +1040,7 @@ const skills = {
 			trigger.next.push(next);
 		},
 	},
-	//势曹真------by 清风
+	//势曹真
 	potsifeng: {
 		audio: 6,
 		logAudio: () => 2,
@@ -931,7 +1161,7 @@ const skills = {
 			},
 		},
 	},
-	//势吕壹------by 清风
+	//势吕壹
 	pothuilv: {
 		audio: 2,
 		trigger: { global: "phaseUseBegin" },
@@ -2170,7 +2400,7 @@ const skills = {
 			}
 		},
 	},
-	//势钟会 by柴油鹿鹿
+	//势钟会
 	mbsizi: {
 		audio: 7,
 		logAudio(event) {
@@ -2183,6 +2413,10 @@ const skills = {
 		usable: 1,
 		beginMarkCount: 4,
 		chargeSkill: 4,
+		init(player, skill) {
+			const num = lib.skill[skill].beginMarkCount;
+			player.addCharge(num, false);
+		},
 		filter(event, player) {
 			return player.countCharge() > 0;
 		},
@@ -2223,30 +2457,8 @@ const skills = {
 				return `###${prompt}###${list.join("<br>")}`;
 			},
 		},
-		group: "mbsizi_init",
 		subSkill: {
 			backup: {},
-			init: {
-				audio: "mbsizi",
-				logAudio: () => "mbsizi3.mp3",
-				trigger: {
-					player: "enterGame",
-					global: "phaseBefore",
-				},
-				filter(event, player) {
-					if (!player.countCharge(true)) {
-						return false;
-					}
-					return event.name != "phase" || game.phaseNumber == 0;
-				},
-				forced: true,
-				locked: false,
-				async content(event, trigger, player) {
-					const num = lib.skill.mbsizi.beginMarkCount;
-					player.addCharge(num);
-					await game.delayx();
-				},
-			},
 			extra: {
 				charlotte: true,
 			},
@@ -2704,6 +2916,10 @@ const skills = {
 		audio: "pottuntian",
 		beginMarkCount: 1,
 		chargeSkill: 3,
+		init(player, skill) {
+			const num = lib.skill[skill].beginMarkCount;
+			player.addCharge(num, false);
+		},
 		getNum(player) {
 			const num = game
 				.getGlobalHistory("everything", evt => {
@@ -2756,27 +2972,8 @@ const skills = {
 				player.loseToDiscardpile(cards);
 			}
 		},
-		group: ["old_pottuntian_init", "old_pottuntian_biyue", "old_pottuntian_addCharge"],
+		group: ["old_pottuntian_biyue", "old_pottuntian_addCharge"],
 		subSkill: {
-			init: {
-				audio: "pottuntian",
-				trigger: {
-					player: "enterGame",
-					global: "phaseBefore",
-				},
-				filter(event, player) {
-					if (!player.countCharge(true)) {
-						return false;
-					}
-					return event.name != "phase" || game.phaseNumber == 0;
-				},
-				forced: true,
-				locked: false,
-				async content(event, trigger, player) {
-					const num = lib.skill.old_pottuntian.beginMarkCount;
-					player.addCharge(num);
-				},
-			},
 			biyue: {
 				audio: "pottuntian",
 				trigger: { player: "phaseEnd" },
@@ -3912,10 +4109,10 @@ const skills = {
 					player.setStorage("potkuanggu", 1);
 					const num1 = player.countMark("potzhuangshi_limit"),
 						num2 = player.countMark("potzhuangshi_directHit");
-					if (num1 > 0) {
+					if (num2 > 0) {
 						await player.draw();
 					}
-					if (num2 > 0) {
+					if (num1 > 0) {
 						if (!player.isDamaged()) {
 							await player.draw();
 						} else {
@@ -4709,10 +4906,11 @@ const skills = {
 					const record = player.storage[event.name];
 					if (typeof record === "number") {
 						player.logSkill("mbxiugeng", null, null, null, [player.countCards("h") >= record ? 4 : 3]);
-						if (player.countCards("h") <= record) {
+						const num = player.countCards("h");
+						if (num <= record) {
 							await player.draw({ num: 2, nodelay: true });
 						}
-						if (player.countCards("h") >= record) {
+						if (num >= record) {
 							player.addSkill("mbxiugeng_handcard");
 							player.addMark("mbxiugeng_handcard", 1, false);
 						}
@@ -5580,7 +5778,7 @@ const skills = {
 			},
 		},
 	},
-	//手杀杨弘 —— by 刘巴
+	//手杀杨弘
 	//用同一张牌拼点神将
 	mbjianji: {
 		audio: 3,
@@ -5828,7 +6026,7 @@ const skills = {
 			}
 		},
 	},
-	//夏侯尚 —— by 刘巴
+	//夏侯尚
 	mbtanfeng: {
 		audio: "twtanfeng",
 		trigger: { player: "phaseZhunbeiBegin" },
@@ -6894,7 +7092,7 @@ const skills = {
 			},
 		},
 	},
-	//势太史慈 --- by 刘巴
+	//势太史慈 ---
 	potzhanlie: {
 		audio: 3,
 		trigger: { global: "phaseBegin" },

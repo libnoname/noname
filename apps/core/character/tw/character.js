@@ -304,6 +304,7 @@ const characters = {
 		group: "wu",
 		hp: 3,
 		skills: ["twguose", "twliuli"],
+		names: "桥|null",
 	},
 	huan_simayi: {
 		sex: "male",
@@ -1070,18 +1071,23 @@ const characters = {
 		group: "qun",
 		hp: 4,
 		skills: ["twmiehai"],
+		img: "image/character/sxrm_huatuo.jpg",
+		dieAudios: ["sxrm_huatuo"],
 	},
 	tw_sxrm_liubei: {
 		sex: "male",
 		group: "qun",
 		hp: 4,
 		skills: ["twchengbian"],
+		img: "image/character/sxrm_liubei.jpg",
+		dieAudios: ["sxrm_liubei"],
 	},
 	tw_sxrm_caocao: {
 		sex: "male",
 		group: "wei",
 		hp: 3,
 		skills: ["twkuxin", "twsigu", "twkuimu"],
+		dieAudios: ["sxrm_caocao"],
 	},
 	tw_sxrm_fuhuanghou: {
 		sex: "female",
@@ -1089,6 +1095,8 @@ const characters = {
 		hp: 3,
 		maxHp: 4,
 		skills: ["twmitu", "twqianliu"],
+		img: "image/character/sxrm_fuhuanghou.jpg",
+		dieAudios: ["sxrm_fuhuanghou"],
 	},
 };
 
