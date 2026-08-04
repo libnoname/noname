@@ -1025,10 +1025,11 @@ const skills = {
 	},
 	//界严颜
 	rejuzhan: {
-		audio: 2,
+		audio: 4,
 		addtip(player, skill) {
 			player.addTip(skill, `${get.translation(skill)} ${player.storage[skill] ? `阴${player.countMark("rejuzhan_yin")}` : `阳${player.countMark("rejuzhan_yang")}`}`);
 		},
+		logAudio: index => (typeof index == "number" ? "rejuzhan" + index + ".mp3" : 2),
 		init(player, skill) {
 			player.addSkill(skill + "_mark");
 		},
@@ -1325,8 +1326,9 @@ const skills = {
 	},
 	//崔琰毛玠
 	mbzhengbi: {
-		audio: 2,
+		audio: 4,
 		onremove: ["mbzhengbi", "mbzhengbi_used"],
+		logAudio: index => (typeof index == "number" ? "mbzhengbi" + index + ".mp3" : 2),
 		intro: { content: "可选择的角色+#" },
 		trigger: { player: "phaseZhunbeiBegin" },
 		filter(event, player) {
