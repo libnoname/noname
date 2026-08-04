@@ -2417,7 +2417,7 @@ const skills = {
 			}
 		},
 	},
-	//族杨众 —— by 星の语
+	//族杨众
 	clanjuetu: {
 		audio: 2,
 		trigger: { player: "phaseDiscardBegin" },
@@ -2554,7 +2554,7 @@ const skills = {
 			},
 		},
 	},
-	//族荀爽 —— by 刘巴
+	//族荀爽
 	clanyangji: {
 		audio: 2,
 		trigger: {
@@ -2672,7 +2672,7 @@ const skills = {
 			await player.drawTo(Math.min(player.maxHp, 5));
 		},
 	},
-	//族杨修 —— by 刘巴
+	//族杨修
 	clanjiewu: {
 		audio: 2,
 		trigger: { player: "phaseUseBegin" },

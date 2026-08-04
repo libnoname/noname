@@ -1,5 +1,13 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 const translates = {
+	dc_feiyi: "新杀费祎",
+	dc_feiyi_prefix: "新杀",
+	dcqiansu: "谦素",
+	dcqiansu_info: "其他角色的结束阶段，若其手牌数比你多，你可以摸三张牌，然后交给该角色其中一张。",
+	dcxingbang: "兴邦",
+	dcxingbang_info: "出牌阶段限一次，你可以摸一张牌并交给一名其他角色一张牌。然后你获得其一张手牌，若此牌：是你交给该角色的牌，视为对其使用一张【杀】；不是你交给该角色的牌，重复获得牌的流程（至多获得三张）。",
+	dcfanhuo: "泛祸",
+	dcfanhuo_info: `限定技，出牌阶段，你可令${get.poptip("dcxingbang")}改为“出牌阶段限三次”直到回合结束，然后你于此回合结束时失去3点体力。`,
 	re_panfeng: "潘凤",
 	xinkuangfu: "狂斧",
 	xinkuangfu_info: "出牌阶段限一次，你可选择：1，弃置装备区里的一张牌，你使用无对应实体牌的普【杀】。若此【杀】造成伤害，你摸两张牌。2，弃置一名其他角色装备区里的一张牌，你使用无对应实体牌的普【杀】。若此【杀】未造成伤害，你弃置两张手牌。（均无距离和次数限制）",
