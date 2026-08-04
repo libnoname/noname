@@ -257,13 +257,13 @@ const skills = {
 		},
 		trigger: {
 			player: "phaseBegin",
-			source: "damageBegin2",
+			source: "damageBegin1",
 		},
 		filter(event, player) {
 			if (event.name === "phase") {
 				return get.cardPile("qinglong", "field");
 			}
-			return Math.floor(player.countRoundHistory("useCard", evt => evt.card.name === "sha") / 2) > 0 && event.card?.name === "sha";
+			return player.hasMark("dcsbguanwu_effect") && event.card?.name === "sha";
 		},
 		async content(event, trigger, player) {
 			if (trigger.name === "phase") {
@@ -272,25 +272,27 @@ const skills = {
 					await player.gain({ cards: [card], animate: "gain2" });
 				}
 			} else {
-				trigger.num += Math.floor(player.countRoundHistory("useCard", evt => evt.card.name === "sha") / 2);
+				trigger.num += player.countMark("dcsbguanwu_effect");
 			}
 		},
 		subSkill: {
 			mark: {
 				charlotte: true,
 				silent: true,
-				intro: { content: "本轮使用【杀】造成伤害+#" },
-				trigger: { player: "useCardAfter" },
+
+				trigger: { player: "useCard1" },
 				filter(event, player) {
-					return event.card.name === "sha" && Math.floor(player.countRoundHistory("useCard", evt => evt.card.name === "sha") / 2) > 0;
+					return event.card.name === "sha" && player.getRoundHistory("useCard", evt => evt.card.name === "sha").indexOf(event) % 2 == 1;
 				},
 				async content(event, trigger, player) {
-					player.setStorage(event.name, Math.floor(player.countRoundHistory("useCard", evt => evt.card.name === "sha") / 2), true);
-					player.when("roundStart").step(async (event, trigger, player) => {
-						player.setStorage("dcsbguanwu_mark", Math.floor(player.countRoundHistory("useCard", evt => evt.card.name === "sha") / 2), true);
-						player.unmarkSkill("dcsbguanwu_mark");
-					});
+					player.addTempSkill("dcsbguanwu_effect", "roundStart");
+					player.addMark("dcsbguanwu_effect", 1, false);
 				},
+			},
+			effect: {
+				charlotte: true,
+				onremove: true,
+				intro: { content: "本轮使用【杀】造成伤害+#" },
 			},
 		},
 	},
@@ -310,21 +312,26 @@ const skills = {
 				return !get.is.damageCard(event.card) && player.hasDiscardableCards(player, "h");
 			}
 		},
-		logTarget: "player",
 		async cost(event, trigger, player) {
+			const target = trigger.player;
 			if (trigger.name === "useCard") {
-				event.result = {
-					bool: true,
-				};
+				event.result = await player
+					.chooseBool({
+						prompt: get.prompt(event.skill),
+						prompt2: `你可以摸两张牌，然后你可以对${get.translation(target)}使用一张【杀】`,
+					})
+					.forResult();
 			} else {
 				const num = Math.ceil(player.countCards("h") / 2);
 				event.result = await player
 					.chooseToDiscard({
-						prompt: `威势：弃置${num}张手牌令${get.translation(trigger.card)}对你无效`,
+						prompt: get.prompt(event.skill),
+						prompt2: `你可以弃置${get.cnNumber(num)}张手牌令${get.translation(trigger.card)}对你无效`,
 						filterCard: lib.filter.cardDiscardable,
 						selectCard: num,
 						position: "h",
 						chooseonly: true,
+						allowChooseAll: true,
 						ai(card) {
 							const { player, target, cardx } = get.event();
 							if (get.effect(player, cardx, target, player) < 0) {
@@ -333,7 +340,7 @@ const skills = {
 							return 0;
 						},
 					})
-					.set("target", trigger.player)
+					.set("target", target)
 					.set("cardx", trigger.card)
 					.forResult();
 			}
@@ -368,12 +375,15 @@ const skills = {
 						},
 					})
 					.set("sourcex", trigger.player)
-					.set("complexSelect", true);
+					.set("targetRequired", true)
+					.set("complexTarget", true)
+					.set("complexSelect", true)
+					.set("addCount", false);
 			} else {
 				const { cards } = event;
 				await player.modedDiscard({ cards });
-				trigger.getParent().targets.remove(player);
 				trigger.getParent().excluded.add(player);
+				game.log(trigger.card, "对", player, "无效");
 			}
 		},
 		subSkill: {
@@ -507,7 +517,7 @@ const skills = {
 				};
 			},
 			prompt(links, player) {
-				return "弃置一张牌并视为对攻击范围内任意名其他角色使用" + (get.translation(links[0][3]) || "") + get.translation(links[0][2]);
+				return "###倨傲###你可以弃置一张牌并视为对攻击范围内任意名其他角色使用" + (get.translation(links[0][3]) || "") + "【" + get.translation(links[0][2]) + "】";
 			},
 		},
 		subSkill: {
