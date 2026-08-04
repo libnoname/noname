@@ -32458,6 +32458,11 @@ const skills = {
 			source: "damageBegin1",
 			player: "damageBegin4",
 		},
+		onremove(player, skill) {
+			player.removeTip(skill);
+			delete player.storage[skill + "_beishui"];
+			delete player.storage[skill + "_removed"];
+		},
 		filter(event, player, name) {
 			const beishui = player.getStorage("mbjieyuan_beishui", false);
 			const removed = player.getStorage("mbjieyuan_removed", "");
@@ -32563,6 +32568,7 @@ const skills = {
 				const otherTrigger = isSource ? "damage" : "damageSource";
 				player.setStorage("mbjieyuan_removed", otherTrigger);
 				game.log(player, "发动了【竭缘】背水，删除了" + (isSource ? "受到伤害" : "造成伤害") + "时的效果");
+				player.addTip(event.name, isSource ? "竭缘加伤" : "竭缘减伤");
 			}
 		},
 		ai: {
@@ -32578,7 +32584,7 @@ const skills = {
 			source: "dieBegin",
 		},
 		filter(event, player) {
-			const validIdentities = ["zhong", "fan", "nei", "zhu"];
+			const validIdentities = ["zhong", "fan", "nei", "zhu", "min"];
 			return !event.reverseOut && validIdentities.includes(event.player.identity) && validIdentities.includes(player.identity);
 		},
 		async cost(event, trigger, player) {

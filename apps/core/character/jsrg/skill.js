@@ -1007,7 +1007,9 @@ const skills = {
 			const target = event.target,
 				targets = [player].concat(
 					(() => {
-						return get.mode() === "identity" ? [] : player.getFriends();
+						//return get.mode() === "identity" ? [] : player.getFriends();
+						//终于没有若为了
+						return [];
 					})()
 				);
 			//生成dialog
@@ -1180,6 +1182,7 @@ const skills = {
 					})
 					.forResult();
 				if (!result?.cards?.length || result.cards[0] === card) {
+					player.logSkill("mbsaojian", null, null, null, [3]);
 					break;
 				}
 			}
