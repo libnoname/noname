@@ -7655,7 +7655,7 @@ const skills = {
 			backup: {},
 		},
 	},
-	//神钟会 —— by 刘巴
+	//神钟会
 	dclinjie: {
 		group: "dclinjie_effect",
 		marktext: "凛",
@@ -8244,7 +8244,7 @@ const skills = {
 			if (!places.length) {
 				return;
 			}
-			//射击部位-by 鸽子
+			//射击部位
 			await Promise.all(event.next);
 			event.videoId = lib.status.videoId++;
 			if (player.isUnderControl()) {
@@ -20741,7 +20741,7 @@ const skills = {
 			},
 		},
 	},
-	//牢武陆抗 —— by 刘巴
+	//牢武陆抗
 	old_dckegou: {
 		audio: 2,
 		trigger: { global: "phaseEnd" },
