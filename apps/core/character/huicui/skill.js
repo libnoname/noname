@@ -7418,6 +7418,18 @@ const skills = {
 				);
 			},
 		},
+		mark: true,
+		marktext: "笳",
+		intro: {
+			name: "胡笳",
+			content(storage, player) {
+				const num = player.countCards("h", card => card.hasGaintag("dcshuangjia_tag"));
+				return `当前拥有${get.cnNumber(num)}张“胡笳”手牌`;
+			},
+			markcount(storage, player, skill) {
+				return player.countCards("h", card => card.hasGaintag("dcshuangjia_tag"));
+			},
+		},
 	},
 	dcbeifen: {
 		audio: 2,
@@ -7426,28 +7438,18 @@ const skills = {
 			global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
 		},
 		filter(event, player) {
-			var evt = event.getl(player);
-			if (!evt || !evt.hs || !evt.hs.length) {
+			const evt = event.getl(player);
+			if (!evt?.hs?.length) {
 				return false;
 			}
 			if (event.name == "lose") {
-				for (var i in event.gaintag_map) {
-					if (event.gaintag_map[i].includes("dcshuangjia_tag")) {
-						return true;
-					}
-				}
-				return false;
+				return Object.values(event.gaintag_map).flat().includes("dcshuangjia_tag");
 			}
 			return player.hasHistory("lose", evt => {
 				if (event != evt.getParent()) {
 					return false;
 				}
-				for (var i in evt.gaintag_map) {
-					if (evt.gaintag_map[i].includes("dcshuangjia_tag")) {
-						return true;
-					}
-				}
-				return false;
+				return Object.values(evt.gaintag_map).flat().includes("dcshuangjia_tag");
 			});
 		},
 		forced: true,
