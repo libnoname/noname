@@ -11,6 +11,7 @@ const characters = {
 		group: "shu",
 		hp: 3,
 		skills: ["dcmingjie", "dcxianfu"],
+		names: "李|null",
 	},
 	dc_sb_guanyu: {
 		sex: "male",

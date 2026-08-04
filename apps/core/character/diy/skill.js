@@ -4989,7 +4989,7 @@ const skills = {
 							_status.event.next.remove(next);
 							evt.after.push(next);
 							next.player = player;
-							next.setContent(function () {
+							next.setContent(async (event, trigger, player) => {
 								delete player.storage.junktaoluan2;
 							});
 						}
