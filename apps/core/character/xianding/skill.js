@@ -846,7 +846,7 @@ const skills = {
 		},
 		filter(event, player, name) {
 			const target = name == "damageBegin1" ? event.source : event.player;
-			if (!target?.isIn() || target.isPhaseUsing()) {
+			if (target.isPhaseUsing()) {
 				return false;
 			}
 			let awaken1 = false,
@@ -855,9 +855,6 @@ const skills = {
 				({ awaken1, awaken2 } = player.storage["dcsbzhubo"]);
 			}
 			return (awaken2 && target == player) || (awaken1 && name == "damageBegin3") || name == "damageBegin1";
-		},
-		logTarget(event, player, name) {
-			return name == "damageBegin1" ? event.source : event.player;
 		},
 		async content(event, trigger, player) {
 			let triggername = event.triggername;
@@ -869,11 +866,10 @@ const skills = {
 			if (!awaken2) {
 				await player.loseHp();
 			}
-			const target = event.targets[0];
+			const target = triggername == "damageBegin1" ? trigger.source : trigger.player;
 			const result = await player
 				.chooseControl({
 					controls: ["伤害+1", "各摸2张牌"],
-					prompt: "逐波：请选择一项",
 					controlList: [`令${get.translation(target)}${triggername == "damageBegin1" ? "造成" : "受到"}的伤害+1`, `与${get.translation(target)}各摸2张牌`],
 					ai: () => {
 						const { target, triggername } = get.event,
@@ -890,12 +886,10 @@ const skills = {
 				.set("target", target)
 				.set("triggername", triggername)
 				.forResult();
-			if (typeof result?.index == "number") {
-				if (result.index == 0) {
-					trigger.num++;
-				} else {
-					await game.asyncDraw([player, target], 2);
-				}
+			if (result.index == 0) {
+				trigger.num++;
+			} else {
+				await game.asyncDraw([player, target], 2);
 			}
 		},
 		check(event, player, name) {
@@ -915,18 +909,20 @@ const skills = {
 		limited: true,
 		skillAnimation: true,
 		animationColor: "gray",
+		init(player, skill) {
+			player.storage[skill] = false;
+		},
 		trigger: {
 			global: "dying",
 		},
 		check(event, player) {
 			return get.attitude(player, event.player);
 		},
-		logTarget: "player",
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			const target = event.targets[0];
-			await target.recover(2);
-			await target.draw(2);
+			const target = event.player;
+			await event.player.recover(2);
+			await event.player.draw(2);
 			if (!player.hasSkill("dcsbzhubo")) {
 				return;
 			}
