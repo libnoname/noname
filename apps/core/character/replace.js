@@ -1,6 +1,5 @@
 window.noname_character_replace = {
 	//大致按照OL，新杀，手杀，外服，线下，DIY，怀旧的顺序排列。（同服按标，界，谋，sp）
-	wangping: ["wangping", "dc_sb_wangping"],
 	key_yuri: ["key_yuri", "sp_key_yuri"],
 	sp_key_kanade: ["sp_key_kanade", "kanade"],
 	shen_caocao: ["shen_caocao", "old_caocao", "ca_shen_caocao"],
@@ -107,7 +106,7 @@ window.noname_character_replace = {
 	guanyu: ["guanyu", "re_guanyu", "jsp_guanyu", "ol_sb_guanyu", "dc_sb_guanyu", "dc_jsp_guanyu", "wu_guanyu", "sb_guanyu", "tw_jsp_guanyu", "xia_guanyu", "jsrg_guanyu", "jd_sb_guanyu", "drag_guanyu", "ty_guanyu", "jx_guanyu", "ps_guanyu", "old_guanyu", "junk_guanyu", "sxrm_guanyu", "o_guanyu", "natu_guanyu"],
 	guanzhang: ["guanzhang", "ol_guanzhang", "re_guanzhang", "old_guanzhang"],
 	guohuai: ["guohuai", "re_guohuai", "ol_guohuai", "xin_guohuai", "sb_guohuai", "tw_guohuai"],
-	guohuanghou: ["guohuanghou", "ol_guohuanghou", "re_guohuanghou", "std_guohuanghou", "ol_guohuanghou"],
+	guohuanghou: ["guohuanghou", "ol_guohuanghou", "re_guohuanghou", "std_guohuanghou"],
 	guojia: ["guojia", "re_guojia", "yj_sb_guojia", "sb_guojia", "jsrg_guojia", "ps1059_guojia", "ps2070_guojia", "ol_sb_guojia"],
 	guosi: ["guosi", "ca_guosi"],
 	guotufengji: ["guotufengji", "re_guotufengji"],
@@ -260,6 +259,7 @@ window.noname_character_replace = {
 	wangjun: ["dc_wangjun", "wangjun", "jsrg_wangjun"],
 	wanglang: ["ol_wanglang", "wanglang", "yj_wanglang", "std_wanglang", "old_wanglang"],
 	wangling: ["clan_wangling", "dc_wangling", "wangling", "tw_wangling"],
+	wangping: ["wangping", "dc_sb_wangping"],
 	wangrong: ["ol_wangrong", "wangrong"],
 	wangshuang: ["wangshuang", "sp_wangshuang"],
 	wangyi: ["wangyi", "ol_wangyi", "re_wangyi", "old_wangyi"],
