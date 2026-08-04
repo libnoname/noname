@@ -5545,7 +5545,7 @@ const skills = {
 			}
 			list.push("背水！");
 			list.push("cancel2");
-			const { control } = await player
+			const result = await player
 				.chooseControl(list)
 				.set("choiceList", [`获得${get.translation(target)}的一张手牌`, `弃置一张基本牌并令${get.translation(trigger.card)}伤害+1`, "背水！减1点体力上限并执行所有选项"])
 				.set("prompt", get.prompt(event.skill, target))
@@ -5576,10 +5576,12 @@ const skills = {
 					return "cancel2";
 				})
 				.forResult();
-			event.result = {
-				bool: control !== "cancel2",
-				cost_data: control,
-			};
+			if (typeof result?.control == "string" && result.control != "cancel2") {
+				event.result = {
+					bool: true,
+					cost_data: result.control,
+				};
+			}
 		},
 		logTarget: "target",
 		async content(event, trigger, player) {
