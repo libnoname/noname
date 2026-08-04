@@ -800,15 +800,23 @@ const skills = {
 						return ui.selected.cards.length == ui.selected.targets.length;
 					},
 					ai1(card) {
+						const player = get.player();
+						const num = game.countPlayer(current => current != player && get.attitude(player, current) > 0);
+						if (ui.selected.cards.length > num) {
+							return 0;
+						}
 						return 1 / Math.max(0.1, get.value(card));
 					},
 					ai2(target) {
 						const player = get.player();
+						if (ui.selected.targets.length >= ui.selected.cards.length) {
+							return 0;
+						}
 						let att = get.attitude(player, target);
 						if (target.hasSkillTag("nogain")) {
 							att /= 9;
 						}
-						return 4 + att;
+						return Math.max(4 + att, 1);
 					},
 				})
 				.forResult();
