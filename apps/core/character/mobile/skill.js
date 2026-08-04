@@ -32570,7 +32570,6 @@ const skills = {
 				const colorCards = pileCards.filter(card => get.color(card) === color);
 				const toGain = colorCards.slice(0, effectNum);
 				if (toGain.length > 0) {
-					game.log(player, "获得了" + effectNum + "张" + get.translation(color) + "牌");
 					await player.gain({ cards: toGain, animate: "draw" });
 				}
 			}
