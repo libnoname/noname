@@ -19486,7 +19486,7 @@ const skills = {
 		audio: 2,
 		locked: false,
 		init(player, skill) {
-			player.addExtraEquip(skill, "qinggang", true, player => player.hasEmptySlot(1) && !player.getVEquip(1) && lib.card.qinggang);
+			player.addExtraEquip(skill, "qinggang", true, player => player.hasEmptySlot(1) && lib.card.qinggang);
 		},
 		onremove(player, skill) {
 			player.removeExtraEquip(skill);
@@ -19500,14 +19500,18 @@ const skills = {
 		subSkill: {
 			qinggang: {
 				mod: {
-					attackRange(player, num) {
-						if (player.hasEmptySlot(1) && !player.getVEquip(1)) return num + 1;
+					attackRangeBase(player) {
+						const num = lib.card?.guanshi?.distance?.qinggang;
+						if (typeof num != "number" || !player.hasEmptySlot(1)) {
+							return;
+						}
+						return Math.max(player.getEquipRange(player.getCards("e")), 1 - num);
 					},
 				},
 				audio: "chijian",
 				inherit: "qinggang_skill",
 				filter(event, player) {
-					if (!player.hasEmptySlot(1) || player.getVEquip(1)) return false;
+					if (!player.hasEmptySlot(1)) return false;
 					return event.card.name == "sha";
 				},
 			},
@@ -19526,7 +19530,9 @@ const skills = {
 		},
 		check(event, player) {
 			const juedou = new lib.element.VCard({ name: "juedou", isCard: true });
-			return get.effect(event.player, juedou, player, player) > 0 && get.attitude(player, event.player) <= 0;
+			const target = event.player;
+			const shas = target.mayHaveSha(player, "respond", null, "count") - player.mayHaveSha(player, "respond", null, "count");
+			return get.effect(target, juedou, player, player) > 0 && get.attitude(player, target) <= 0 && shas <= 0;
 		},
 		logTarget: "player",
 		async content(event, trigger, player) {
@@ -19536,23 +19542,20 @@ const skills = {
 				targets: [target],
 			});
 			await next;
-			const damagedEvents = game.getAllGlobalHistory("everything", evt => evt.name === "damage" && evt.card === next.card);
-			if (damagedEvents.some(evt => evt.source === player && evt.player === target)) {
+			if (player.hasHistory("sourceDamage", evt => evt.getParent(2) == next && evt.player === target)) {
 				const card = get.cardPile(card => get.is.damageCard(card), "bottom");
-				if (card) await player.gain(card, "gain2");
+				if (card) await player.gain(card, "draw");
 			}
-			if (damagedEvents.some(evt => evt.source === target && evt.player === player)) {
-				await target.addTempSkills("chijian");
+			if (target.hasHistory("sourceDamage", evt => evt.getParent(2) == next && evt.player === player)) {
+				await target.addTempSkills("chijian", { player: "phaseEnd" });
 				await player.removeSkills("chijian");
-				player
-					.when({ global: "phaseEnd" })
-					.filter(evt => trigger.getParent("phase", true, true) === evt)
-					.step(async (event2, trigger2, player2) => {
-						await player.addSkills("chijian");
-					});
+				target.when({ player: "phaseEnd" }).step(async () => {
+					await player.addSkills("chijian");
+				});
 			}
 		},
 		group: "shiwu_lose",
+		derivation: "chijian",
 		subSkill: {
 			lose: {
 				audio: "shiwu",
