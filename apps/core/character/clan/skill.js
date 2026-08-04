@@ -2,6 +2,383 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	// 族诸葛果
+	clanfuyao: {
+		audio: false,
+		enable: "phaseUse",
+		zhuanhuanji: true,
+		mark: true,
+		marktext: "☯",
+		tag: "clanfuyao_shown",
+		isShownCard(card) {
+			if (card.hasGaintag?.(lib.skill.clanfuyao.tag)) {
+				return true;
+			}
+			return (
+				game.getGlobalHistory("everything", evt => {
+					return evt.name === "showCards" && evt.cards?.includes(card);
+				}).length > 0
+			);
+		},
+		getGroups(player) {
+			const shown = player.getCards("h", card => lib.skill.clanfuyao.isShownCard(card));
+			const unshown = player.getCards("h", card => !lib.skill.clanfuyao.isShownCard(card));
+			return { shown, unshown };
+		},
+		isSingleTargetTrick(name) {
+			const info = lib.card[name];
+			if (!info || info.type !== "trick" || info.notarget) {
+				return false;
+			}
+			if (!info.selectTarget || info.selectTarget === 1) {
+				return true;
+			}
+			return info.toself === true && info.selectTarget === -1;
+		},
+		getCards(player) {
+			const used = player.getStorage("clanfuyao_used");
+			return get.inpileVCardList(info => {
+				const name = info[2],
+					nature = info[3];
+				if (used.includes(name) || !lib.skill.clanfuyao.isSingleTargetTrick(name)) {
+					return false;
+				}
+				const card = new lib.element.VCard({ name, nature, isCard: true, storage: { clanfuyao: true } });
+				return player.hasUseTarget(card);
+			});
+		},
+		canBalance(player) {
+			if (!player.countCards("h")) {
+				return false;
+			}
+			const { shown, unshown } = lib.skill.clanfuyao.getGroups(player);
+			if (!player.storage.clanfuyao) {
+				const diff = unshown.length - shown.length;
+				return diff > 0 && diff % 2 === 0;
+			}
+			const diff = shown.length - unshown.length;
+			if (diff === 0) {
+				return false;
+			}
+			const cards = diff > 0 ? shown : unshown;
+			return cards.filter(card => lib.filter.cardDiscardable(card, player, "clanfuyao")).length >= Math.abs(diff);
+		},
+		intro: {
+			content(storage) {
+				const state = storage ? "阴" : "阳";
+				const effect = storage ? "阴：弃置展示过或未展示过的手牌至两者数量相同。" : "阳：展示未展示过的手牌至展示过与未展示过数量相同。";
+				return [`当前状态：${state}`, effect, "然后：视为使用一张本阶段未以此法使用过的单目标普通锦囊牌。"].join("<br>");
+			},
+		},
+		filter(event, player) {
+			return lib.skill.clanfuyao.canBalance(player) && lib.skill.clanfuyao.getCards(player).length > 0;
+		},
+		async content(event, trigger, player) {
+			if (!player.storage.clanfuyao) {
+				const { shown, unshown } = lib.skill.clanfuyao.getGroups(player);
+				const num = (unshown.length - shown.length) / 2;
+				if (num <= 0) {
+					return;
+				}
+				const result = await player
+					.chooseCard(`扶摇：展示${get.cnNumber(num)}张未展示过的手牌`, "h", num, false, card => {
+						return !lib.skill.clanfuyao.isShownCard(card);
+					})
+					.set("ai", card => {
+						return 6 - get.value(card);
+					})
+					.forResult();
+				if (!result.bool) {
+					return;
+				}
+				await player.showCards(result.cards, `${get.translation(player)}发动了【扶摇】`);
+				player.addGaintag(result.cards, lib.skill.clanfuyao.tag);
+			} else {
+				const { shown, unshown } = lib.skill.clanfuyao.getGroups(player);
+				const diff = shown.length - unshown.length;
+				const num = Math.abs(diff);
+				if (num <= 0) {
+					return;
+				}
+				const needShown = diff > 0;
+				const result = await player
+					.chooseCard(`扶摇：弃置${get.cnNumber(num)}张${needShown ? "展示过" : "未展示过"}的手牌`, "h", num, false, card => {
+						return lib.skill.clanfuyao.isShownCard(card) === needShown && lib.filter.cardDiscardable(card, player, "clanfuyao");
+					})
+					.set("ai", card => {
+						return 7 - get.value(card);
+					})
+					.forResult();
+				if (!result.bool) {
+					return;
+				}
+				await player.discard(result.cards);
+			}
+			const list = lib.skill.clanfuyao.getCards(player);
+			if (list.length) {
+				const result = await player
+					.chooseButton(["扶摇：视为使用一张本阶段未以此法使用过的单目标普通锦囊牌", [list, "vcard"]], true)
+					.set("ai", button => {
+						const link = button.link;
+						return get.player().getUseValue(new lib.element.VCard({ name: link[2], nature: link[3], isCard: true }));
+					})
+					.forResult();
+				if (result.bool) {
+					const link = result.links[0],
+						name = link[2],
+						nature = link[3];
+					const card = new lib.element.VCard({ name, nature, isCard: true, storage: { clanfuyao: true } });
+					if (!player.storage.clanfuyao_used) {
+						player.storage.clanfuyao_used = [];
+					}
+					player.storage.clanfuyao_used.add(name);
+					player.addTempSkill("clanfuyao_used", { player: "phaseUseAfter" });
+					await player.chooseUseTarget(`扶摇：请选择${get.translation(card)}的目标`, card, true, false);
+				}
+			}
+			player.changeZhuanhuanji("clanfuyao");
+		},
+		ai: {
+			order: 7,
+			result: {
+				player: 1,
+			},
+		},
+		subSkill: {
+			used: {
+				charlotte: true,
+				onremove: true,
+			},
+		},
+	},
+	clanfenshi: {
+		audio: false,
+		trigger: { player: "useCard" },
+		clanSkill: true,
+		group: "clanfenshi_count",
+		usable: 1,
+		isZhugeName(name) {
+			if (!name) {
+				return false;
+			}
+			const info = lib.character[name],
+				texts = [name, lib.translate[name]];
+			if (info?.names) {
+				texts.push(info.names);
+			}
+			return texts.filter(Boolean).some(text => /zhuge/i.test(text) || String(text).includes("诸葛"));
+		},
+		isZhugePlayer(player) {
+			const list = typeof get.nameList === "function" ? get.nameList(player) : [player.name, player.name1, player.name2];
+			return list.filter(Boolean).some(name => lib.skill.clanfenshi.isZhugeName(name));
+		},
+		isSameClan(player, target) {
+			if (lib.skill.clanfenshi.isZhugePlayer(player)) {
+				return lib.skill.clanfenshi.isZhugePlayer(target);
+			}
+			const clans = player.getClans(true);
+			return target === player || clans.some(clan => target.hasClan(clan, true));
+		},
+		filter(event, player) {
+			if (get.type(event.card) !== "trick" || !event.targets?.length) {
+				return false;
+			}
+			if (!player.getClans(true).length && !lib.skill.clanfenshi.isZhugePlayer(player)) {
+				return false;
+			}
+			const num = game.countGroup();
+			return game.hasPlayer(current => {
+				return current.isIn() && lib.skill.clanfenshi.isSameClan(player, current) && current.countCards("h") === num;
+			});
+		},
+		prompt2(event) {
+			return `令${get.translation(event.card)}额外结算一次`;
+		},
+		check(event, player) {
+			return (
+				event.targets.reduce((sum, target) => {
+					return sum + get.effect(target, event.card, player, player);
+				}, 0) > 0
+			);
+		},
+		async content(event, trigger) {
+			trigger.effectCount++;
+			game.log(trigger.card, "额外结算一次");
+		},
+	},
+	clanfenshi_count: {
+		charlotte: true,
+		forced: true,
+		silent: true,
+		popup: false,
+		mark: true,
+		marktext: "势",
+		intro: {
+			name: "势力数",
+			markcount() {
+				return game.countGroup();
+			},
+			content() {
+				return `当前场上势力数：${game.countGroup()}`;
+			},
+		},
+		trigger: {
+			global: ["phaseBefore", "dieAfter", "changeGroupAfter", "showCharacterAfter", "reviveAfter"],
+			player: "enterGame",
+		},
+		init(player, skill) {
+			lib.skill.clanfenshi_count.update(player, skill);
+		},
+		update(player, skill) {
+			player.storage[skill] = game.countGroup();
+			player.markSkill(skill);
+		},
+		async content(event, trigger, player) {
+			lib.skill.clanfenshi_count.update(player, event.name);
+		},
+	},
+	// 族荀灌
+	clanxunguan_zhuiji: {
+		audio: false,
+		trigger: { player: "useCardAfter" },
+		forced: true,
+		mark: true,
+		intro: {
+			content(storage) {
+				if (storage && storage.isIn?.()) {
+					return `上次目标：${get.translation(storage)}`;
+				}
+				return "暂无目标";
+			},
+		},
+		isBlackUse(event, player) {
+			if (event.card?.storage?.clanxunguan_yunying) {
+				return false;
+			}
+			const cards = event.cards || [];
+			return get.color(event.card, player) === "black" || cards.some(card => get.color(card, player) === "black");
+		},
+		canExchangeCard(card) {
+			return get.position(card, true) != null;
+		},
+		getBlackCards(event, player) {
+			return (event.cards || []).filter(card => {
+				return get.color(card, player) === "black" && lib.skill.clanxunguan_zhuiji.canExchangeCard(card);
+			});
+		},
+		filter(event, player) {
+			if (event.card?.storage?.clanxunguan_yunying) {
+				return false;
+			}
+			const cards = lib.skill.clanxunguan_zhuiji.getBlackCards(event, player);
+			if (!cards.length) {
+				return false;
+			}
+			const history = player.getHistory("useCard", evt => lib.skill.clanxunguan_zhuiji.isBlackUse(evt, player));
+			return history.indexOf(event) === 0 && game.hasPlayer(current => current.countCards("h") > 0);
+		},
+		async content(event, trigger, player) {
+			const cards = lib.skill.clanxunguan_zhuiji.getBlackCards(trigger, player);
+			if (!cards.length) {
+				return;
+			}
+			const zhuijiCard = cards[0];
+			const result = await player
+				.chooseTarget(`追迹：令一名角色用一张手牌交换${get.translation(zhuijiCard)}`, true, (card, player, target) => {
+					return target.countCards("h") > 0;
+				})
+				.set("ai", target => {
+					const player = get.player();
+					return get.attitude(player, target) * Math.max(1, get.value(get.event().zhuijiCard, target));
+				})
+				.set("zhuijiCard", zhuijiCard)
+				.forResult();
+			if (!result?.bool || !result.targets?.length || !lib.skill.clanxunguan_zhuiji.canExchangeCard(zhuijiCard)) {
+				return;
+			}
+			const target = result.targets[0];
+			player.storage.clanxunguan_zhuiji = target;
+			player.markSkill("clanxunguan_zhuiji");
+			player.line(target, "green");
+			const result2 = await target
+				.chooseCard("h", true, `追迹：用一张手牌交换${get.translation(zhuijiCard)}`)
+				.set("ai", card => 6 - get.value(card))
+				.forResult();
+			if (!result2?.bool || !result2.cards?.length || !lib.skill.clanxunguan_zhuiji.canExchangeCard(zhuijiCard)) {
+				return;
+			}
+			const owner = get.owner(zhuijiCard);
+			if (owner && owner !== target) {
+				await target.give(result2.cards, owner);
+			} else {
+				await target.discard(result2.cards);
+			}
+			if (lib.skill.clanxunguan_zhuiji.canExchangeCard(zhuijiCard)) {
+				await target.gain(zhuijiCard, "gain2");
+			}
+		},
+	},
+	clanxunguan_yunying: {
+		audio: false,
+		trigger: { global: "phaseJieshuBegin" },
+		forced: true,
+		hasHpReducedThisTurn(target) {
+			return (
+				game.getGlobalHistory("changeHp", evt => {
+					return evt.player === target && evt.changedHp < 0;
+				}).length > 0
+			);
+		},
+		hasLostHandcardsThisTurn(target) {
+			return (
+				game.getGlobalHistory("cardMove", evt => {
+					if (evt.name === "lose") {
+						return evt.getl?.(target)?.hs?.length > 0;
+					}
+					if (evt.name === "loseAsync") {
+						return evt.getl?.(target)?.hs?.length > 0;
+					}
+					return false;
+				}).length > 0
+			);
+		},
+		getBlackDiscardCountThisTurn() {
+			const cards = [];
+			game.getGlobalHistory("cardMove", evt => {
+				if (evt.name === "cardsDiscard" || (evt.name === "lose" && evt.position === ui.discardPile)) {
+					cards.addArray((evt.cards || []).filter(card => get.position(card, true) === "d"));
+				}
+				return false;
+			});
+			return Math.min(5, cards.filter(card => get.color(card, false) === "black").length);
+		},
+		filter(event, player) {
+			const target = player.storage.clanxunguan_zhuiji;
+			return target?.isIn?.() && (lib.skill.clanxunguan_yunying.hasHpReducedThisTurn(target) || lib.skill.clanxunguan_yunying.hasLostHandcardsThisTurn(target));
+		},
+		async content(event, trigger, player) {
+			const target = player.storage.clanxunguan_zhuiji;
+			if (!target?.isIn?.()) {
+				return;
+			}
+			if (lib.skill.clanxunguan_yunying.hasHpReducedThisTurn(target)) {
+				const cards = player.getCards("h", card => get.color(card, player) === "black");
+				if (cards.length) {
+					const sha = get.autoViewAs({ name: "sha", isCard: true, storage: { clanxunguan_yunying: true } }, cards);
+					const targets = game.filterPlayer(current => lib.filter.targetEnabled2(sha, player, current));
+					if (targets.length) {
+						await player.chooseUseTarget("云影：将所有黑色手牌当无距离限制的【杀】使用", sha, cards, true, false, "nodistance");
+					}
+				}
+			}
+			if (lib.skill.clanxunguan_yunying.hasLostHandcardsThisTurn(target)) {
+				const num = lib.skill.clanxunguan_yunying.getBlackDiscardCountThisTurn();
+				if (player.countCards("h") < num) {
+					await player.drawTo(num);
+				}
+			}
+		},
+	},
 	// 族陆郁生
 	clanshixi: {
 		init(player, skill) {
