@@ -4846,9 +4846,6 @@ const skills = {
 			player.removeSkill("sbhuoji_count");
 		},
 		derivation: ["sbguanxing", "sbkongcheng"],
-		onremove(player, skill) {
-			player.removeSkill("sbhuoji_count");
-		},
 		group: ["sbhuoji_fire", "sbhuoji_achieve", "sbhuoji_fail", "sbhuoji_mark"],
 		subSkill: {
 			fire: {
