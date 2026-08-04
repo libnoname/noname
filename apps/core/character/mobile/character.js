@@ -57,6 +57,7 @@ const characters = {
 		hp: 3,
 		skills: ["rehuomo", "mbzuoding"],
 		clans: ["颍川钟氏"],
+		dieAudios: ["zhongyao"],
 	},
 	mb_wutugu: {
 		sex: "male",
