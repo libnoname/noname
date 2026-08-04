@@ -789,7 +789,8 @@ const skills = {
 			return 1;
 		},
 		filter(event, player) {
-			return true;
+			const funcName = event.name == "gain" || event.type == "gain" ? "discard" : "draw";
+			return funcName != "discard" || game.hasPlayer(current => current.hasCards("he"));
 		},
 		async cost(event, trigger, player) {
 			const funcName = trigger.name == "gain" || trigger.type == "gain" ? "discard" : "draw";
@@ -827,9 +828,7 @@ const skills = {
 			end: {
 				audio: "reliangyin",
 				logAudio: () => ["reliangyin3.mp3", "reliangyin4.mp3"],
-				trigger: {
-					global: "roundEnd",
-				},
+				trigger: { global: "roundEnd" },
 				filter(event, player) {
 					const targets = player
 						.getRoundHistory("useSkill", evt => evt.skill == "reliangyin")
@@ -897,43 +896,29 @@ const skills = {
 	},
 	rekongsheng: {
 		audio: 2,
-		trigger: {
-			player: ["phaseZhunbeiBegin", "recoverEnd", "loseHpEnd"],
-		},
+		trigger: { player: ["phaseZhunbeiBegin", "recoverEnd", "loseHpEnd"] },
 		filter(event, player) {
-			const current = get.info("rekongsheng").getFakeCurrent();
+			const current = _status.currentPhase;
 			return current?.isIn() && current.hasCards("he");
 		},
-		getFakeCurrent() {
-			let current = _status.currentPhase;
-			if (!current) {
-				const history = _status.globalHistory;
-				for (let i = history.length - 1; i >= 0; i--) {
-					for (const current2 of game.filterPlayer2()) {
-						const action = current2.actionHistory[i];
-						if (action.isMe && !action.isSkipped) {
-							current = current2;
-						}
-					}
-					if (current) break;
-					if (history[i].isRound) {
-						break;
-					}
-				}
-			}
-			return current;
-		},
-		logTarget: () => get.info("rekongsheng").getFakeCurrent(),
+		logTarget: () => _status.currentPhase,
 		async cost(event, trigger, player) {
-			const target = get.info("rekongsheng").getFakeCurrent();
-			if (target == player) {
-				event.result = await player
-					.chooseCard({
-						prompt: get.prompt2(event.skill, target),
-						position: "he",
-						selectCard: [1, Infinity],
-						ai(card) {
-							const player = get.player();
+			const target = _status.currentPhase;
+			event.result = await player
+				.choosePlayerCard({
+					prompt: get.prompt2(event.skill, target),
+					position: "he",
+					selectButton: [1, Infinity],
+					allowChooseAll: true,
+					target,
+					ai(button) {
+						const { player, target } = get.event();
+						const att = get.attitude(get.player(), get.event().target);
+						if (att < 0) {
+							return get.buttonValue(button);
+						}
+						if (player === target) {
+							const card = button.link;
 							if (get.position(card) == "e") {
 								return 1 - get.value(card);
 							}
@@ -941,30 +926,37 @@ const skills = {
 								return 1;
 							}
 							return 4 - get.value(card);
-						},
-					})
-					.forResult();
-			} else {
-				event.result = await player
-					.choosePlayerCard({
-						prompt: get.prompt2(event.skill, target),
-						position: "he",
-						selectButton: [1, Infinity],
-						target,
-						ai(button) {
-							const att = get.attitude(get.player(), get.event().target);
-							if (att < 0) {
-								return get.buttonValue(button);
+						} else {
+							if (ui.selected.buttons.length) {
+								return 0;
 							}
-							return 0;
-						},
-					})
-					.forResult();
-			}
+							return 6 - get.value(button.link);
+						}
+					},
+				})
+				.forResult();
 		},
 		intro: {
-			content: "expansion",
 			markcount: "expansion",
+			mark(dialog, content, player) {
+				const cards = player.getExpansions("rekongsheng");
+				if (cards.length) {
+					if (player.isUnderControl(true)) {
+						dialog.addAuto(cards);
+					} else {
+						return "共有" + get.cnNumber(cards.length) + "张“箜声”";
+					}
+				}
+			},
+			content(content, player) {
+				const cards = player.getExpansions("rekongsheng");
+				if (cards.length) {
+					if (player.isUnderControl(true)) {
+						return get.translation(cards);
+					}
+					return "共有" + get.cnNumber(cards.length) + "张“箜声”";
+				}
+			},
 		},
 		async content(event, trigger, player) {
 			const {
@@ -995,7 +987,7 @@ const skills = {
 							.forResult();
 						if (result?.bool) {
 							const { links } = result;
-							await player.chooseUseTarget({ card: links[0], addCount: false });
+							await player.chooseUseTarget({ card: links[0], addCount: false, forced: true });
 						}
 					}
 					await target.gain({ cards: target.getExpansions("rekongsheng"), animate: "gain2" });
@@ -1008,13 +1000,12 @@ const skills = {
 				direct: true,
 				trigger: { player: "die" },
 				async content(event, trigger, player) {
-					let logged = 0;
 					for (const current of game.filterPlayer()) {
 						const cards = current.getExpansions("rekongsheng");
 						if (cards.length) {
-							if (logged === 0) {
-								player.logSkill("rekongsheng");
-								logged = 1;
+							if (!event.logged) {
+								event.logged = true;
+								player.logSkill(event.name);
 							}
 							await current.gain(cards, "gain2");
 						}
