@@ -237,6 +237,253 @@ const skills = {
 			lib.skill.clanfenshi_count.update(player, event.name);
 		},
 	},
+	// 族诸葛瞻
+	clanzhugezhan_chengwang: {
+		audio: false,
+		enable: "phaseUse",
+		prompt: "承望",
+		group: "clanzhugezhan_chengwang_ask",
+		zhuanhuanji: true,
+		mark: true,
+		marktext: "☯",
+		intro: {
+			content(storage) {
+				if (storage) {
+					return ["当前状态：阴", "阴：弃至与全场最少相同；若你使用了牌，你可令一名角色摸两张牌；若未使用牌，你与当前回合角色各失去1点体力。"].join("<br>");
+				}
+				return ["当前状态：阳", "阳：摸至与全场最多相同；若你使用了牌，你可令一名角色弃两张牌；若未使用牌，你与当前回合角色各失去1点体力。"].join("<br>");
+			},
+		},
+		getMaxHandcardCount() {
+			const players = game.filterPlayer(current => current.isIn());
+			if (!players.length) {
+				return 0;
+			}
+			return Math.max(...players.map(current => current.countCards("h")));
+		},
+		getMinHandcardCount() {
+			const players = game.filterPlayer(current => current.isIn());
+			if (!players.length) {
+				return 0;
+			}
+			return Math.min(...players.map(current => current.countCards("h")));
+		},
+		getState(player) {
+			return player.storage.clanzhugezhan_chengwang ? "yin" : "yang";
+		},
+		canBalance(player, state = lib.skill.clanzhugezhan_chengwang.getState(player)) {
+			const handcards = player.countCards("h");
+			if (state === "yang") {
+				return handcards < lib.skill.clanzhugezhan_chengwang.getMaxHandcardCount();
+			}
+			return handcards > lib.skill.clanzhugezhan_chengwang.getMinHandcardCount();
+		},
+		async applyBalance(player, state) {
+			if (state === "yang") {
+				const num = lib.skill.clanzhugezhan_chengwang.getMaxHandcardCount() - player.countCards("h");
+				if (num > 0) {
+					await player.draw(num);
+				}
+				return;
+			}
+			const num = player.countCards("h") - lib.skill.clanzhugezhan_chengwang.getMinHandcardCount();
+			if (num > 0) {
+				await player.chooseToDiscard("承望：弃置手牌至与全场最少相同", "h", num, true, "allowChooseAll");
+			}
+		},
+		async resolveAfterUse(player, state) {
+			if (state === "yang") {
+				const result = await player
+					.chooseTarget("承望：你可令一名角色弃两张牌", (card, player, target) => {
+						return target.countDiscardableCards(target, "he") > 0;
+					})
+					.set("ai", target => {
+						const player = get.player();
+						if (get.attitude(player, target) >= 0) {
+							return 0;
+						}
+						return Math.min(2, target.countDiscardableCards(target, "he"));
+					})
+					.forResult();
+				if (result.bool && result.targets?.length) {
+					const target = result.targets[0];
+					player.line(target);
+					const num = Math.min(2, target.countDiscardableCards(target, "he"));
+					if (num > 0) {
+						await target.chooseToDiscard("承望：请弃置两张牌", "he", num, true, "allowChooseAll");
+					}
+				}
+				return;
+			}
+			const result = await player
+				.chooseTarget("承望：你可令一名角色摸两张牌", lib.filter.all)
+				.set("ai", target => get.attitude(get.player(), target))
+				.forResult();
+			if (result.bool && result.targets?.length) {
+				const target = result.targets[0];
+				player.line(target);
+				await target.draw(2);
+			}
+		},
+		async loseFailure(player) {
+			await player.loseHp();
+			const current = _status.currentPhase;
+			if (current?.isIn?.()) {
+				await current.loseHp();
+			}
+		},
+		async chooseUseAfter(player, state) {
+			const result = await player
+				.chooseToUse({
+					prompt: false,
+					filterCard(card, player, event) {
+						if (get.name(card, player) === "wuxie") {
+							return false;
+						}
+						return lib.filter.filterCard.apply(this, arguments);
+					},
+				})
+				.forResult();
+			if (result.bool) {
+				await lib.skill.clanzhugezhan_chengwang.resolveAfterUse(player, state);
+			} else {
+				await lib.skill.clanzhugezhan_chengwang.loseFailure(player);
+			}
+		},
+		clearPending(player) {
+			delete player.storage.clanzhugezhan_chengwang_pending;
+			delete player.storage.clanzhugezhan_chengwang_state;
+			player.removeSkill("clanzhugezhan_chengwang_pending");
+		},
+		filter(event, player) {
+			return !player.hasSkill("clanzhugezhan_chengwang_used") && lib.skill.clanzhugezhan_chengwang.canBalance(player);
+		},
+		async content(event, trigger, player) {
+			const skill = lib.skill.clanzhugezhan_chengwang;
+			const state = skill.getState(player);
+			if (!skill.canBalance(player, state)) {
+				return;
+			}
+			player.logSkill("clanzhugezhan_chengwang");
+			player.addTempSkill("clanzhugezhan_chengwang_used", { global: "phaseAfter" });
+			await skill.applyBalance(player, state);
+			player.changeZhuanhuanji("clanzhugezhan_chengwang");
+			await skill.chooseUseAfter(player, state);
+		},
+		ai: {
+			order: 7,
+			save: true,
+			result: {
+				player: 1,
+			},
+		},
+		subSkill: {
+			ask: {
+				audio: false,
+				trigger: { player: "chooseToUseBegin" },
+				direct: true,
+				filter(event, player) {
+					if (event.name !== "chooseToUse" || event.responded || event.type === "phase" || event.type === "wuxie" || player.hasSkill("clanzhugezhan_chengwang_used")) {
+						return false;
+					}
+					return typeof event.filterCard === "function" && lib.skill.clanzhugezhan_chengwang.canBalance(player);
+				},
+				async content(event, trigger, player) {
+					const skill = lib.skill.clanzhugezhan_chengwang;
+					const state = skill.getState(player);
+					if (!skill.canBalance(player, state)) {
+						return;
+					}
+					const stateText = state === "yang" ? "阳：摸至与全场最多相同" : "阴：弃至与全场最少相同";
+					const result = await player
+						.chooseControl("承望", "取消")
+						.set("prompt", get.prompt("clanzhugezhan_chengwang"))
+						.set("prompt2", `${stateText}；然后根据是否使用牌结算后续效果。`)
+						.set("ai", () => "承望")
+						.forResult();
+					if (result.control !== "承望") {
+						return;
+					}
+					player.logSkill("clanzhugezhan_chengwang");
+					player.addTempSkill("clanzhugezhan_chengwang_used", { global: "phaseAfter" });
+					player.storage.clanzhugezhan_chengwang_pending = trigger;
+					player.storage.clanzhugezhan_chengwang_state = state;
+					player.addTempSkill("clanzhugezhan_chengwang_pending");
+					await skill.applyBalance(player, state);
+					player.changeZhuanhuanji("clanzhugezhan_chengwang");
+				},
+			},
+			used: {
+				charlotte: true,
+			},
+			pending: {
+				charlotte: true,
+				forced: true,
+				popup: false,
+				onremove(player) {
+					delete player.storage.clanzhugezhan_chengwang_pending;
+					delete player.storage.clanzhugezhan_chengwang_state;
+				},
+				trigger: {
+					player: ["useCardAfter", "chooseToUseAfter"],
+				},
+				filter(event, player) {
+					const pending = player.storage.clanzhugezhan_chengwang_pending;
+					if (!pending) {
+						return false;
+					}
+					if (event.name === "useCard") {
+						return event.getParent?.("chooseToUse") === pending;
+					}
+					return event === pending;
+				},
+				async content(event, trigger, player) {
+					const skill = lib.skill.clanzhugezhan_chengwang;
+					const state = player.storage.clanzhugezhan_chengwang_state;
+					if (trigger.name === "chooseToUse" && !trigger.result?.bool) {
+						skill.clearPending(player);
+						await skill.loseFailure(player);
+						return;
+					}
+					skill.clearPending(player);
+					await skill.resolveAfterUse(player, state);
+				},
+			},
+		},
+	},
+	clanzhugezhan_fenshi: {
+		audio: false,
+		trigger: { player: "useCard" },
+		clanSkill: true,
+		group: "clanfenshi_count",
+		usable: 1,
+		filter(event, player) {
+			if (get.type(event.card) !== "trick" || !event.targets?.length) {
+				return false;
+			}
+			if (!player.getClans(true).length && !lib.skill.clanfenshi.isZhugePlayer(player)) {
+				return false;
+			}
+			const num = game.countGroup();
+			return game.hasPlayer(current => {
+				return current.isIn() && lib.skill.clanfenshi.isSameClan(player, current) && current.countCards("h") === num;
+			});
+		},
+		prompt2(event) {
+			return `令${get.translation(event.card)}额外结算一次`;
+		},
+		check(event, player) {
+			return (
+				event.targets.reduce((sum, target) => {
+					return sum + get.effect(target, event.card, player, player);
+				}, 0) > 0
+			);
+		},
+		async content(event, trigger) {
+			trigger.effectCount++;
+			game.log(trigger.card, "额外结算一次");
+		},
+	},
 	// 族荀灌
 	clanxunguan_zhuiji: {
 		audio: false,

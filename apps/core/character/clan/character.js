@@ -126,6 +126,13 @@ const characters = {
 		skills: ["clanfuyao", "clanfenshi"],
 		clans: ["琅琊诸葛氏"],
 	},
+	clan_zhugezhan: {
+		sex: "male",
+		group: "shu",
+		hp: 3,
+		skills: ["clanzhugezhan_chengwang", "clanzhugezhan_fenshi"],
+		clans: ["琅琊诸葛氏"],
+	},
 	clan_hanshao: {
 		sex: "male",
 		group: "qun",
