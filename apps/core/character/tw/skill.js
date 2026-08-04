@@ -28436,25 +28436,21 @@ const skills = {
 					return !player.getStorage("cangjia").includes(get.suit(event.card));
 				},
 				async content(event, trigger, player) {
-					const source = trigger.card.player;
-					if (!source || !source.isIn()) {
+					const source = trigger.player;
+					if (!source?.isIn() || !source.hasDiscardableCards(source, "he")) {
 						trigger.getParent()?.excluded.add(player);
 						return;
 					}
-					if (!source.hasCards("he", card => lib.filter.cardDiscardable(card, source, event.skill))) {
-						trigger.getParent()?.excluded.add(player);
-					} else {
-						const result = await source
-							.chooseToDiscard({
-								prompt: `藏铗：弃置一张牌，否则${get.translation(trigger.card)}对${get.translation(player)}无效`,
-								position: "he",
-								ai(card) {
-									return 20 - get.value(card);
-								},
-							})
-							.forResult();
-						if (!result.bool) trigger.getParent()?.excluded.add(player);
-					}
+					const result = await source
+						.chooseToDiscard({
+							prompt: `藏铗：弃置一张牌，否则${get.translation(trigger.card)}对${get.translation(player)}无效`,
+							position: "he",
+							ai(card) {
+								return 10 - get.value(card);
+							},
+						})
+						.forResult();
+					if (!result?.bool || !result.cards?.length) trigger.getParent()?.excluded.add(player);
 				},
 			},
 		},
