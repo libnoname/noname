@@ -19484,7 +19484,6 @@ const skills = {
 	// 夏侯恩
 	chijian: {
 		audio: 2,
-		locked: false,
 		init(player, skill) {
 			player.addExtraEquip(skill, "qinggang", true, player => player.hasEmptySlot(1) && lib.card.qinggang);
 		},

@@ -76,7 +76,7 @@ const skills = {
 					const list = player.getStorage("olrejinlan_map").slice();
 					const mapSkill = get.info("olremaozhu").mapSkill;
 					for (const map of Array.from(mapSkill.keys())) {
-						if (mapSkill.get(map).every(city => list.includes(city))) {
+						if (mapSkill.get(map).some(city => list.includes(city))) {
 							list.add(map);
 						}
 					}
@@ -570,7 +570,7 @@ const skills = {
 			// 荆州
 			["pxjingzhou", "ooo(recover,1,pxnanyang)x;(draw,2,pxshangyong)opox;x(up,1,pxxiangyang)oo(draw,1,pxjiangxia)"],
 			// 凉州
-			["pxliangzhou", "oo(left,2,pxjuyan)xx;(draw,3,pxdunhuang)oxxx;x(up,2,pxyumen)o(draw,2,pxwuwei)x;xoxoo;xoxxp"],
+			["pxliangzhou", "oo(left,1,pxjuyan)xx;(draw,3,pxdunhuang)oxxx;x(up,2,pxyumen)o(draw,2,pxwuwei)x;xoxoo;xoxxp"],
 			// 梁州
 			["pxliangzhoux", "xo(down,3,pxhanzhong)x;o(draw,1,pxbaxi)ox;(recover,1,pxmianzhu)pox;xoo(draw,2,pxfuling);xxox"],
 			// 宁州
@@ -1121,7 +1121,7 @@ const skills = {
 				cards.push(card2);
 			}
 			if (cards.length) {
-				await player.gain({ cards, animate: "gain2" });
+				await player.gain({ cards, animate: "draw" });
 			}
 		},
 	},
@@ -1270,7 +1270,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const card = get.cardPile2("huogong");
 			if (card) {
-				await player.gain({ cards: [card], animate: "gain2" });
+				await player.gain({ cards: [card], animate: "draw" });
 			}
 		},
 	},
@@ -1286,7 +1286,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const card = get.cardPile2("wanjian");
 			if (card) {
-				await player.gain({ cards: [card], animate: "gain2" });
+				await player.gain({ cards: [card], animate: "draw" });
 			}
 		},
 	},
@@ -1342,7 +1342,7 @@ const skills = {
 				}
 			}
 			if (cards.length) {
-				await player.gain({ cards, animate: "gain2" });
+				await player.gain({ cards, animate: "draw" });
 			}
 		},
 	},
@@ -1983,7 +1983,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const card = get.cardPile2(cardx => get.subtypes(cardx).includes("equip3"));
 			if (card) {
-				await player.gain({ cards: [card], animate: "gain2" });
+				await player.gain({ cards: [card], animate: "draw" });
 			}
 		},
 	},
@@ -2102,7 +2102,7 @@ const skills = {
 				cards.push(card2);
 			}
 			if (cards.length) {
-				await player.gain({ cards, animate: "gain2" });
+				await player.gain({ cards, animate: "draw" });
 			}
 		},
 	},
@@ -3009,7 +3009,7 @@ const skills = {
 				}
 			}
 			if (cards.length) {
-				await player.gain({ cards, animate: "gain2" });
+				await player.gain({ cards, animate: "draw" });
 			}
 		},
 	},
