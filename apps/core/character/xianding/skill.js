@@ -8,12 +8,6 @@ const skills = {
 	//李昭仪
 	dcmingjie: {
 		audio: 2,
-		onremove(player, skill) {
-			const target = player.storage[`${skill}_effect`];
-			if (target?.isIn()) target.removeSkill(`${skill}_effect`);
-			player.removeSkill(`${skill}_effect`);
-			player.removeSkill(`${skill}_death`);
-		},
 		trigger: {
 			global: "phaseBefore",
 			player: "enterGame",
@@ -23,7 +17,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget("###明节###选择一名其他角色", true, lib.filter.notMe)
+				.chooseTarget("###明节：请选择一名其他角色###你与其获得对方弃牌阶段弃置的牌。当你/其的阶段被跳过时，你与其各摸两张牌，然后你/其可以令对方防止下次受到的伤害。当其死亡时，你死亡。", true, lib.filter.notMe)
 				.set("ai", target => {
 					return get.attitude(get.player(), target);
 				})
@@ -31,52 +25,70 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			player.line(target, "green");
-			game.log(player, "与", target, "结为明节");
-			let list = [player, target];
-			for (let i = 0; i < list.length; i++) {
-				const [from, to] = [list[i], list[1 - i]];
-				from.addSkill(`${event.name}_effect`);
-				from.setStorage(`${event.name}_effect`, to, true);
-				from.addTip(`${event.name}_effect`, [event.name, to].map(i => get.translation(i)).join(" "));
-			}
+			const effect = event.name + "_effect";
+			player.addSkill(effect);
+			target.addSkill(effect);
+			player.markAuto(effect, [target]);
+			target.markAuto(effect, [player]);
 			player.addSkill(`${event.name}_death`);
 		},
 		subSkill: {
 			effect: {
+				audio: "dcmingjie",
 				charlotte: true,
+				onremove: true,
 				intro: { content: "players" },
 				trigger: {
 					global: ["loseAfter", "loseAsyncAfter"],
 					get player() {
-						if (!Array.isArray(lib.phaseName)) return [];
+						if (!Array.isArray(lib.phaseName)) {
+							return [];
+						}
 						return lib.phaseName.map(i => [`${i}Skipped`, `${i}Cancelled`]).flat();
 					},
 				},
-				filter(event, player) {
-					const target = player.storage.dcmingjie_effect;
-					if (!target?.isIn()) return false;
+				getIndex(event, player) {
+					const targets = player.getStorage("dcmingjie_effect");
+					return game
+						.filterPlayer(current => {
+							if (!targets.includes(current)) {
+								return false;
+							}
+							if (event.name.startsWith("lose")) {
+								if (!event.getParent("phaseDiscard", true) || event.type !== "discard") {
+									return false;
+								}
+								const evt = event.getl?.(current);
+								return evt?.cards2?.someInD("d");
+							}
+							return true;
+						})
+						.sortBySeat();
+				},
+				filter(event, player, name, target) {
+					if (!target?.isIn()) {
+						return false;
+					}
 					if (event.name.startsWith("lose")) {
-						if (!event.getParent("phaseDiscard", true) || event.type !== "discard" || event.getlx === false) return false;
+						if (!event.getParent("phaseDiscard", true) || event.type !== "discard") {
+							return false;
+						}
 						const evt = event.getl?.(target);
-						return evt?.hs?.someInD("od");
+						return evt?.cards2?.someInD("d");
 					}
 					return true;
 				},
 				forced: true,
-				logTarget(event, player) {
-					return player.storage.dcmingjie_effect;
-				},
+				logTarget: (event, player, name, target) => target,
 				async content(event, trigger, player) {
 					const target = event.targets[0];
 					if (trigger.name.startsWith("lose")) {
-						await player.gain(trigger.getl(target).hs.filterInD("od"));
+						await player.gain(trigger.getl(target).cards2.filterInD("d"), "gain2");
 					} else {
 						await game.asyncDraw([player, target], 2);
-						await game.delayx();
-						if (target.isIn() && !target.hasMark("dcmingjie_tally")) {
+						if (target.isIn()) {
 							const result = await player
-								.chooseBool("是否令" + get.translation(target) + "防止下次受到的伤害？")
+								.chooseBool(`明节：是否令${get.translation(target)}防止下次受到的伤害？`)
 								.set("choice", get.attitude(player, target) > 0)
 								.forResult();
 							if (result?.bool) {
@@ -89,29 +101,33 @@ const skills = {
 				},
 			},
 			tally: {
-				//marktext: "节",
-				//intro: { content: "mark" },
 				charlotte: true,
+				onremove: true,
+				marktext: "节",
+				intro: { content: "防止下#次受到的伤害" },
 				trigger: { player: "damageBegin4" },
 				filter(event, player) {
 					return player.hasMark("dcmingjie_tally");
 				},
 				forced: true,
-				content() {
+				async content(event, trigger, player) {
 					trigger.cancel();
-					player.removeMark("dcmingjie_tally", 1, false);
-					game.log(player, "防止了此伤害");
-					if (!player.hasMark("dcmingjie_tally")) player.removeSkill("dcmingjie_tally");
+					player.removeMark(event.name, 1, false);
+					if (!player.hasMark(event.name)) {
+						player.removeSkill(event.name);
+					}
 				},
-				//ai: { threaten: 0.8 },
 			},
 			death: {
+				audio: "dcmingjie",
 				charlotte: true,
-				trigger: { global: "dieAfter" },
+				trigger: { global: "die" },
 				filter(event, player) {
-					return player.storage.dcmingjie_effect == event.player;
+					return player.getStorage("dcmingjie_effect").includes(event.player);
 				},
 				forced: true,
+				skillAnimation: true,
+				animationColor: "water",
 				async content(event, trigger, player) {
 					await player.die();
 				},
@@ -126,21 +142,22 @@ const skills = {
 		audio: 2,
 		trigger: { target: "useCardToTarget" },
 		filter(event, player) {
-			const target = player.storage.dcmingjie_effect;
-			if (!target?.isIn() || !Array.isArray(lib.phaseName)) return false;
-			return lib.phaseName.some(item => !["phaseZhunbei", "phaseJieshu"].includes(item) && !player.skipList.includes(item));
+			return (lib.phaseName || []).some(item => !["phaseZhunbei", "phaseJieshu"].includes(item) && !player.skipList.includes(item));
 		},
 		async cost(event, trigger, player) {
-			const target = player.storage.dcmingjie_effect;
+			const targets = player.getStorage("dcmingjie_effect");
 			const phases = lib.phaseName.filter(item => !["phaseZhunbei", "phaseJieshu"].includes(item) && !player.skipList.includes(item));
 			const result = await player
 				.chooseControl(phases, "cancel2")
-				.set("prompt", "娴辅：选择一个阶段跳过，令此牌对你无效，并与" + get.translation(target) + "互相观看手牌")
+				.set("prompt", get.prompt(event.skill))
+				.set("prompt2", `你可以跳过一个阶段，令${get.translation(trigger.card)}对你无效${targets.length ? `，然后你与${get.translation(targets)}互相观看对方手牌并可获得其中至多三张牌` : ""}`)
 				.set("ai", () => {
 					const { player, controls } = get.event();
 					const trigger = get.event().getTrigger();
-					if (get.effect(player, trigger.card, trigger.player, player) >= 0) return "cancel2";
-					return ["phaseDiscard", "phaseJudge", "phaseUse", "phaseDraw"].find(i => controls.includes(i)) || controls.at(-2);
+					if (get.effect(player, trigger.card, trigger.player, player) >= 0) {
+						return "cancel2";
+					}
+					return ["phaseDiscard", "phaseJudge", "phaseUse", "phaseDraw"].find(phase => controls.includes(phase)) || controls.randomGet();
 				})
 				.forResult();
 			event.result = {
@@ -150,50 +167,83 @@ const skills = {
 		},
 		usable: 1,
 		async content(event, trigger, player) {
-			player.skip(event.cost_data);
-			//game.log(player, "将于下次跳过", get.translation(event.cost_data));
+			const phase = event.cost_data;
+			player.skip(phase);
+			game.log(player, "跳过了", "#y" + get.translation(phase));
 			trigger.getParent().excluded.add(player);
 			game.log(trigger.card, "对", player, "无效");
-			const target = player.storage.dcmingjie_effect;
-			const playerCards = player.getCards("h");
-			const targetCards = target.getCards("h");
-			const promises = [];
-			if (targetCards.length > 0) {
-				promises.push(
-					player
-						.chooseCardButton("娴辅：是否选择获得" + get.translation(target) + "的至多三张手牌？", targetCards, [1, 3])
-						.set("ai", button => get.value(button.link, player))
-						.forResult()
-				);
-			} else promises.push(Promise.resolve({ bool: false }));
-			if (playerCards.length > 0) {
-				promises.push(
-					target
-						.chooseCardButton("娴辅：是否选择获得" + get.translation(player) + "的至多三张手牌？", playerCards, [1, 3])
-						.set("ai", button => get.value(button.link, target))
-						.forResult()
-				);
-			} else promises.push(Promise.resolve({ bool: false }));
-			const [result1, result2] = await Promise.all(promises);
-			const goon1 = result1?.bool && result1.links?.length > 0;
-			const goon2 = result2?.bool && result2.links?.length > 0;
-			if (goon1 && goon2) await player.swapHandcards(target, result2.links, result1.links);
-			else if (goon1) await player.gain(result1.links, target, "give");
-			else if (goon2) await target.gain(result2.links, player, "give");
+			const targets = player.getStorage("dcmingjie_effect");
+			for (const target of targets.filter(target => target.isIn()).sortBySeat()) {
+				player.line(target);
+				await player
+					.gainPlayerCard({
+						prompt: `娴辅：你可以获得${get.translation(target)}的至多三张手牌`,
+						target,
+						position: "h",
+						visible: true,
+						allowChooseAll: true,
+						selectButton: [1, 3],
+					})
+					.set("ai", button => {
+						const { player, target } = get.event();
+						const att = get.attitude(player, target);
+						if (att > 0) {
+							if (player == _status.currentPhase) {
+								return player.getUseValue(button.link);
+							}
+							if (target == _status.currentPhase) {
+								return -get.value(button.link);
+							}
+							return 6 - get.value(button.link);
+						}
+						return 1;
+					});
+				await target
+					.gainPlayerCard({
+						prompt: `娴辅：你可以获得${get.translation(player)}的至多三张手牌`,
+						target: player,
+						position: "h",
+						visible: true,
+						allowChooseAll: true,
+						selectButton: [1, 3],
+					})
+					.set("ai", button => {
+						const { player, target } = get.event();
+						const att = get.attitude(player, target);
+						if (att > 0) {
+							if (player == _status.currentPhase) {
+								return player.getUseValue(button.link);
+							}
+							if (target == _status.currentPhase) {
+								return -get.value(button.link);
+							}
+							return 6 - get.value(button.link);
+						}
+						return 1;
+					});
+			}
 		},
 		ai: {
 			threaten: 0.8,
 			expose: 0.2,
 			effect: {
 				target(card, player, target) {
-					if (_status._dcxianfu_check) return;
-					const mingjie = target.storage.dcmingjie_effect;
-					if (!mingjie?.isIn() || !Array.isArray(lib.phaseName)) return;
-					if (!lib.phaseName.some(item => !["phaseZhunbei", "phaseJieshu"].includes(item) && !target.skipList.includes(item))) return;
+					if (_status._dcxianfu_check || target.getStat().triggerSkill?.dcxianfu) {
+						return;
+					}
+					const targets = target.getStorage("dcmingjie_effect");
+					if (!targets.some(current => current.isIn()) || !Array.isArray(lib.phaseName)) {
+						return;
+					}
+					if (!lib.phaseName.some(item => !["phaseZhunbei", "phaseJieshu"].includes(item) && !target.skipList.includes(item))) {
+						return;
+					}
 					_status._dcxianfu_check = true;
 					const eff = get.effect(target, card, player, target);
 					delete _status._dcxianfu_check;
-					if (eff < 0) return 0.5;
+					if (eff < 0) {
+						return 0.5;
+					}
 				},
 			},
 		},
