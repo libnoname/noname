@@ -2628,6 +2628,50 @@ export class Create {
 		ui.replay = ui.create.system("重来", game.reload, true);
 		ui.replay.id = "restartbutton";
 		ui.config2 = ui.create.system("选项", ui.click.config);
+		ui.refreshExtension = ui.create.system("刷新扩展", async function () {
+			if (_status.reloading) {
+				return;
+			}
+			if (!(typeof game.getFileList == "function" && typeof game.checkFile == "function")) {
+				alert("没有文件系统操作权限，无法刷新扩展列表。");
+				return;
+			}
+
+			const extensions = Array.isArray(lib.config.extensions) ? lib.config.extensions.slice() : [];
+			const allPlays = Array.isArray(lib.config.all?.plays) ? lib.config.all.plays : [];
+			const [extFolders] = await game.promises.getFileList("extension");
+			const added = [];
+
+			const tasks = extFolders.map(async ext => {
+				if (extensions.includes(ext) || allPlays.includes(ext)) {
+					return;
+				}
+
+				const hasJs = await game.promises.checkFile(`extension/${ext}/extension.js`);
+				const hasTs = await game.promises.checkFile(`extension/${ext}/extension.ts`);
+				if (hasJs == 1 || hasTs == 1) {
+					extensions.push(ext);
+					added.push(ext);
+					if (typeof lib.config[`extension_${ext}_enable`] != "boolean") {
+						await game.promises.saveConfig(`extension_${ext}_enable`, false);
+						lib.config[`extension_${ext}_enable`] = false;
+					}
+				}
+			});
+
+			await Promise.allSettled(tasks);
+
+			if (!added.length) {
+				alert("未检测到新增扩展文件。\n若你是修改现有扩展代码，请直接使用重载页面。\n");
+				return;
+			}
+
+			await game.promises.saveConfig("extensions", extensions);
+			lib.config.extensions = extensions;
+			alert(`检测到新增扩展：${added.join("、")}\n即将重载生效。`);
+			game.reload();
+		});
+		ui.refreshExtension.id = "refreshExtensionButton";
 		ui.pause = ui.create.system("暂停", ui.click.pause);
 		ui.pause.id = "pausebutton";
 		if (!_status.video) {

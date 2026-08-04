@@ -1152,14 +1152,8 @@ export class Library {
 				ask_no_tao: {
 					name: "无桃询问",
 					init: true,
-					intro: "开启后濒死结算中始终询问救援（即使当前无桃无酒）；该选项为强制开启",
+					intro: "开启后濒死结算中始终询问救援（即使当前无桃无酒）",
 					unfrequent: true,
-					onclick(bool) {
-						if (!bool) {
-							return false;
-						}
-						game.saveConfig("ask_no_tao", true);
-					},
 				},
 				enable_drag: {
 					name: "启用拖拽",

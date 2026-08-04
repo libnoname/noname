@@ -19,8 +19,22 @@ export const extensionMenu = function (connectMenu) {
 	// @ts-expect-error ignore
 	var start = cacheMenuxpages.shift();
 	var rightPane = start.lastChild;
+	var refreshPage = ui.create.div("");
+	var refreshNode = ui.create.div(".menubutton.large", "刷新扩展", start.firstChild);
+	refreshNode.mode = "refresh_ext";
+	refreshNode.link = refreshPage;
+	refreshNode._initLink = function () {
+		this.link = refreshPage;
+	};
 
 	var clickMode = function () {
+		if (this.mode == "refresh_ext") {
+			if (_status.reloading) {
+				return;
+			}
+			game.reload();
+			return;
+		}
 		if (this.mode == "get") {
 			this.update();
 		}
@@ -40,6 +54,7 @@ export const extensionMenu = function (connectMenu) {
 		}
 		updateNodes();
 	};
+	refreshNode.listen(clickMode);
 	ui.click.extensionTab = function (name) {
 		ui.click.menuTab("扩展");
 		for (var i = 0; i < start.firstChild.childElementCount; i++) {
@@ -52,6 +67,9 @@ export const extensionMenu = function (connectMenu) {
 	var updateNodes = function () {
 		for (var i = 0; i < start.firstChild.childNodes.length; i++) {
 			var node = start.firstChild.childNodes[i];
+			if (node.mode == "refresh_ext") {
+				continue;
+			}
 			if (node.mode == "get") {
 				continue;
 			}
