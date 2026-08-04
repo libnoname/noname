@@ -56,7 +56,7 @@ const skills = {
 							ai(button) {
 								const player = get.player();
 								if (player.additionalSkills?.potyinhui?.includes(button.link)) return 10 + Math.random();
-								if (get.info(button.link).ai?.neg) return 100 + Math.random();
+								if (get.info(skill).ai?.neg) return 100 + Math.random();
 								return 1 + Math.random();
 							},
 						})
