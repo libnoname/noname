@@ -1321,12 +1321,9 @@ const skills = {
 	//崔琰毛玠
 	mbzhengbi: {
 		audio: 2,
-		intro: {
-			content: "可选择的角色+#",
-		},
-		trigger: {
-			player: "phaseZhunbeiBegin",
-		},
+		onremove: ["mbzhengbi", "mbzhengbi_used"],
+		intro: { content: "可选择的角色+#" },
+		trigger: { player: "phaseZhunbeiBegin" },
 		filter(event, player) {
 			return game.hasPlayer(target => target != player);
 		},
@@ -1369,8 +1366,8 @@ const skills = {
 						player.addMark(event.name, 1, false);
 						player.markAuto(event.name + "_used", target);
 					}
-					await player.gainPlayerCard({ target, position: "hej", selectButton: index + 1, forced: true });
-					await player.chooseToGive({ target, position: "he", forced: true, selectCard: index + 1 });
+					await player.gainPlayerCard({ target, position: "hej", selectButton: index + 1, forced: true, allowChooseAll: true });
+					await player.chooseToGive({ target, position: "he", forced: true, selectCard: index + 1, allowChooseAll: true });
 				}
 			});
 		},
@@ -1424,23 +1421,19 @@ const skills = {
 				audio: "mbfengying",
 				charlotte: true,
 				forced: true,
-				trigger: {
-					global: "phaseEnd",
-				},
+				trigger: { global: "phaseEnd" },
 				async content(event, trigger, player) {
 					player.removeSkill(event.name);
 					player.insertPhase();
 				},
 				mark: true,
-				intro: {
-					content: "当前回合结束时获得一个额外回合",
-				},
+				intro: { content: "当前回合结束时获得一个额外回合" },
 			},
 			backup: {
-				viewAs: {
-					name: "wuzhong",
+				viewAs: { name: "wuzhong" },
+				filterCard(card) {
+					return get.itemtype(card) == "card";
 				},
-				filterCard: true,
 				position: "hs",
 				selectCard: 1,
 				check(card) {
