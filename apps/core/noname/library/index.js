@@ -1149,6 +1149,18 @@ export class Library {
 					intro: "双方阵营明确的模式中（如对决），敌方角色濒死时不询问出桃",
 					unfrequent: true,
 				},
+				ask_no_tao: {
+					name: "无桃询问",
+					init: true,
+					intro: "开启后濒死结算中始终询问救援（即使当前无桃无酒）；该选项为强制开启",
+					unfrequent: true,
+					onclick(bool) {
+						if (!bool) {
+							return false;
+						}
+						game.saveConfig("ask_no_tao", true);
+					},
+				},
 				enable_drag: {
 					name: "启用拖拽",
 					init: true,

@@ -25,7 +25,8 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			// @ts-expect-error 部分模式存在Player#side
 			const taoEnemyConfig = lib.config.tao_enemy && dying.side !== player.side && lib.config.mode != "identity" && lib.config.mode != "guozhan" && !dying.hasSkillTag("revertsave");
 			let result: Partial<Result> = { bool: false };
-			if (!taoEnemyConfig && player.canSave(dying) && player.isIn()) {
+			const askNoTao = lib.config.ask_no_tao !== false;
+			if (!taoEnemyConfig && player.isIn() && (askNoTao || player.canSave(dying))) {
 				result = await player
 					.chooseToUse({
 						filterCard(card, player, name) {

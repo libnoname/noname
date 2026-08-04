@@ -161,6 +161,36 @@ enable: "chooseToRespond"                  // 响应打出牌
 enable: ["chooseToUse", "chooseToRespond"] // 多场景
 ```
 
+### 关于“任意时机可点击”
+
+`enable` 也可以写成函数。引擎在当前选择事件执行 `game.check()` 时调用它；返回 `true`，技能按钮就可以在该选择事件中出现：
+
+```js
+skillName: {
+  enable(event) {
+    return true;
+  },
+  filter(event, player) {
+    return player.countCards("h") > 0;
+  },
+  filterCard: true,
+  selectCard: 1,
+  async content(event, trigger, player) {
+    await player.draw();
+  },
+}
+```
+
+但这不等于游戏流程中的“任何时刻”都存在一个可点击按钮。主动技按钮只会在引擎正在等待该玩家操作并执行技能检查时创建；结算牌、技能或其他玩家操作期间，通常没有可供主动技接入的选择事件。无条件返回 `true` 还可能让技能出现在 `chooseCard` 等无关选择中，因此实际代码应明确限制事件：
+
+```js
+enable(event) {
+  return ["chooseToUse", "chooseToRespond", "chooseCard"].includes(event.name);
+}
+```
+
+如果技能要在某个结算时机发动，应改用 `trigger` 声明具体时机，再通过 `direct`、`cost` 或 `check` 询问玩家是否发动。若需求是无论当前正在结算什么事件都常驻一个按钮，则不属于标准主动技能力，需要额外实现 UI 控件、事件插入、联网同步和合法性检查，不建议仅用 `enable` 实现。
+
 主动技选择字段：
 
 - `filter(event, player)`：技能整体是否可用

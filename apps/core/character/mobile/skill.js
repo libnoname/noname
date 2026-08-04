@@ -389,6 +389,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.target;
+			//lib.skill.reqizhi.init(player, "reqizhi");
 			player.removeCharge(1);
 			player.addTempSkill(event.name + "_effect");
 			player.markAuto(event.name + "_effect", [target]);
