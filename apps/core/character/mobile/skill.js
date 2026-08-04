@@ -1017,13 +1017,21 @@ const skills = {
 	//界严颜
 	rejuzhan: {
 		audio: 2,
+		addtip(player, skill) {
+			player.addTip(skill, `${get.translation(skill)} ${player.storage[skill] ? `阴${player.countMark("rejuzhan_yin")}` : `阳${player.countMark("rejuzhan_yang")}`}`);
+		},
 		init(player, skill) {
+			get.info(skill).addtip(player, skill);
 			player.addSkill(skill + "_mark");
 		},
 		onremove(player, skill) {
+			player.removeTip(skill);
 			player.removeSkill(skill + "_mark");
 		},
-		zhuanhuanji: true,
+		zhuanhuanji(player, skill) {
+			player.storage[skill] = !player.storage[skill];
+			get.info(skill).addtip(player, skill);
+		},
 		mark: true,
 		marktext: "☯",
 		intro: {
@@ -1173,7 +1181,7 @@ const skills = {
 					} else {
 						player.addMark("rejuzhan_yang", 1, false);
 					}
-					player.markSkill("rejuzhan");
+					get.info("rejuzhan").addtip(player, "rejuzhan");
 				},
 			},
 		},
