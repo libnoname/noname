@@ -92,6 +92,7 @@ const skills = {
 	},
 	potyinhui: {
 		audio: 12,
+		keepSkill: true,
 		logAudio: index => (typeof index == "number" ? `potyinhui${index}.mp3` : 2),
 		trigger: { global: "roundStart" },
 		filter(event, player) {
