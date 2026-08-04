@@ -9227,7 +9227,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			}
 			event.dialog = get.idDialog(event.videoId);
 
-			const createDialog = (cards2, id, customButton) => {
+			const createDialog = (cards2, id, customButton, event) => {
 				const dialog = get.idDialog(id);
 				dialog.forcebutton = true;
 				//dialog.style.display = "none";
@@ -9242,21 +9242,22 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				}
 				//允许自定义展示牌时对话框里的按钮
 				if (typeof customButton == "function") {
-					dialog.buttons.forEach(button => customButton(button));
+					dialog.buttons.forEach(button => customButton(button, event));
 				}
 				//dialog.style.display = "";
 			};
 			const customButton = event.customButton || (() => {});
 			//创建对话框
-			createDialog(event.hiddencards, event.videoId, customButton);
+			createDialog(event.hiddencards, event.videoId, customButton, event);
 			game.broadcast(
-				(func, cards2, id, customButton) => {
-					func(cards2, id, customButton);
+				(func, cards2, id, customButton, event) => {
+					func(cards2, id, customButton, event);
 				},
 				createDialog,
 				event.hiddencards,
 				event.videoId,
-				customButton
+				customButton,
+				event
 			);
 			//处理历史记录的log
 			game.addVideo("showCards", player, [event.str, get.cardsInfo(cards)]);

@@ -800,15 +800,23 @@ const skills = {
 						return ui.selected.cards.length == ui.selected.targets.length;
 					},
 					ai1(card) {
+						const player = get.player();
+						const num = game.countPlayer(current => current != player && get.attitude(player, current) > 0);
+						if (ui.selected.cards.length > num) {
+							return 0;
+						}
 						return 1 / Math.max(0.1, get.value(card));
 					},
 					ai2(target) {
 						const player = get.player();
+						if (ui.selected.targets.length >= ui.selected.cards.length) {
+							return 0;
+						}
 						let att = get.attitude(player, target);
 						if (target.hasSkillTag("nogain")) {
 							att /= 9;
 						}
-						return 4 + att;
+						return Math.max(4 + att, 1);
 					},
 				})
 				.forResult();
@@ -7410,6 +7418,18 @@ const skills = {
 				);
 			},
 		},
+		mark: true,
+		marktext: "笳",
+		intro: {
+			name: "胡笳",
+			content(storage, player) {
+				const num = player.countCards("h", card => card.hasGaintag("dcshuangjia_tag"));
+				return `当前拥有${get.cnNumber(num)}张“胡笳”手牌`;
+			},
+			markcount(storage, player, skill) {
+				return player.countCards("h", card => card.hasGaintag("dcshuangjia_tag"));
+			},
+		},
 	},
 	dcbeifen: {
 		audio: 2,
@@ -7418,28 +7438,18 @@ const skills = {
 			global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
 		},
 		filter(event, player) {
-			var evt = event.getl(player);
-			if (!evt || !evt.hs || !evt.hs.length) {
+			const evt = event.getl(player);
+			if (!evt?.hs?.length) {
 				return false;
 			}
 			if (event.name == "lose") {
-				for (var i in event.gaintag_map) {
-					if (event.gaintag_map[i].includes("dcshuangjia_tag")) {
-						return true;
-					}
-				}
-				return false;
+				return Object.values(event.gaintag_map).flat().includes("dcshuangjia_tag");
 			}
 			return player.hasHistory("lose", evt => {
 				if (event != evt.getParent()) {
 					return false;
 				}
-				for (var i in evt.gaintag_map) {
-					if (evt.gaintag_map[i].includes("dcshuangjia_tag")) {
-						return true;
-					}
-				}
-				return false;
+				return Object.values(evt.gaintag_map).flat().includes("dcshuangjia_tag");
 			});
 		},
 		forced: true,
@@ -19474,9 +19484,8 @@ const skills = {
 	// 夏侯恩
 	chijian: {
 		audio: 2,
-		locked: false,
 		init(player, skill) {
-			player.addExtraEquip(skill, "qinggang", true, player => player.hasEmptySlot(1) && !player.getVEquip(1) && lib.card.qinggang);
+			player.addExtraEquip(skill, "qinggang", true, player => player.hasEmptySlot(1) && lib.card.qinggang);
 		},
 		onremove(player, skill) {
 			player.removeExtraEquip(skill);
@@ -19490,14 +19499,18 @@ const skills = {
 		subSkill: {
 			qinggang: {
 				mod: {
-					attackRange(player, num) {
-						if (player.hasEmptySlot(1) && !player.getVEquip(1)) return num + 1;
+					attackRangeBase(player) {
+						const num = lib.card?.guanshi?.distance?.qinggang;
+						if (typeof num != "number" || !player.hasEmptySlot(1)) {
+							return;
+						}
+						return Math.max(player.getEquipRange(player.getCards("e")), 1 - num);
 					},
 				},
 				audio: "chijian",
 				inherit: "qinggang_skill",
 				filter(event, player) {
-					if (!player.hasEmptySlot(1) || player.getVEquip(1)) return false;
+					if (!player.hasEmptySlot(1)) return false;
 					return event.card.name == "sha";
 				},
 			},
@@ -19516,7 +19529,9 @@ const skills = {
 		},
 		check(event, player) {
 			const juedou = new lib.element.VCard({ name: "juedou", isCard: true });
-			return get.effect(event.player, juedou, player, player) > 0 && get.attitude(player, event.player) <= 0;
+			const target = event.player;
+			const shas = target.mayHaveSha(player, "respond", null, "count") - player.mayHaveSha(player, "respond", null, "count");
+			return get.effect(target, juedou, player, player) > 0 && get.attitude(player, target) <= 0 && shas <= 0;
 		},
 		logTarget: "player",
 		async content(event, trigger, player) {
@@ -19526,23 +19541,20 @@ const skills = {
 				targets: [target],
 			});
 			await next;
-			const damagedEvents = game.getAllGlobalHistory("everything", evt => evt.name === "damage" && evt.card === next.card);
-			if (damagedEvents.some(evt => evt.source === player && evt.player === target)) {
+			if (player.hasHistory("sourceDamage", evt => evt.getParent(2) == next && evt.player === target)) {
 				const card = get.cardPile(card => get.is.damageCard(card), "bottom");
-				if (card) await player.gain(card, "gain2");
+				if (card) await player.gain(card, "draw");
 			}
-			if (damagedEvents.some(evt => evt.source === target && evt.player === player)) {
-				await target.addTempSkills("chijian");
+			if (target.hasHistory("sourceDamage", evt => evt.getParent(2) == next && evt.player === player)) {
+				await target.addTempSkills("chijian", { player: "phaseEnd" });
 				await player.removeSkills("chijian");
-				player
-					.when({ global: "phaseEnd" })
-					.filter(evt => trigger.getParent("phase", true, true) === evt)
-					.step(async (event2, trigger2, player2) => {
-						await player.addSkills("chijian");
-					});
+				target.when({ player: "phaseEnd" }).step(async () => {
+					await player.addSkills("chijian");
+				});
 			}
 		},
 		group: "shiwu_lose",
+		derivation: "chijian",
 		subSkill: {
 			lose: {
 				audio: "shiwu",
