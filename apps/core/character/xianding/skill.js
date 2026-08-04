@@ -5,7 +5,7 @@ import { CacheContext } from "../../noname/library/cache/cacheContext.js";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
-	//谋钟会------by 清风
+	//谋钟会
 	dcsbjinglian: {
 		audio: 2,
 		trigger: { global: "phaseEnd" },
@@ -169,7 +169,7 @@ const skills = {
 		},
 		subSkill: { fengyin: { charlotte: true, inherit: "fengyin" } },
 	},
-	//李昭仪------by 塔菲大王
+	//李昭仪
 	dcmingjie: {
 		audio: 2,
 		onremove(player, skill) {
@@ -362,7 +362,7 @@ const skills = {
 			},
 		},
 	},
-	//谋关羽（绿裤子）------by 清风
+	//谋关羽
 	dcsbguanwu: {
 		audio: 2,
 		forced: true,
@@ -672,7 +672,7 @@ const skills = {
 			},
 		},
 	},
-	//武废------by 清风
+	//武废
 	dczisheng: {
 		getNumber(card) {
 			if (get.is.convertedCard(card)) {
@@ -1834,7 +1834,7 @@ const skills = {
 			},
 		},
 	},
-	//谋诸葛亮------by 清风
+	//谋诸葛亮
 	dcsbjingmou: {
 		audio: 2,
 		audioname: ["dc_sb_zhugeliang_shadow"],
