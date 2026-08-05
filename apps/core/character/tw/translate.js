@@ -2,7 +2,7 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
 	tw_pot_huanjie: "TW势桓阶",
-	tw_pot_huanjie_prefix: "TW势",
+	tw_pot_huanjie_prefix: "TW|势",
 	twpotgongmou: "共谋",
 	twpotgongmou_info: `准备阶段，你可以与一名其他角色交换手牌，若如此做，你摸一张牌且获得技能${get.poptip("qice")}至本回合结束。`,
 	tw_lingju: "TW灵雎",

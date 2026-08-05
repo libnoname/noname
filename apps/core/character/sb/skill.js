@@ -10710,7 +10710,7 @@ const skills = {
 			const cards = [];
 			const bool = get.info("sbxiaoji").hasAchievedDutySkill(player);
 			const targets = game.filterPlayer(current => {
-				return current == player || player.getStorage("sbjieyin").includes(current);
+				return current == player || (bool && player.getStorage("sbjieyin").includes(current));
 			});
 			return targets.reduce((num, current) => {
 				const evt = event.getl?.(current);
