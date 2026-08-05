@@ -47,6 +47,24 @@ const skills = {
 				return player.hasUseTarget(card);
 			});
 		},
+		getBestUseValue(player) {
+			return Math.max(
+				0,
+				...lib.skill.clanfuyao.getCards(player).map(info => {
+					const card = new lib.element.VCard({ name: info[2], nature: info[3], isCard: true, storage: { clanfuyao: true } });
+					return player.getUseValue(card);
+				})
+			);
+		},
+		getBalanceCost(player) {
+			if (!player.storage.clanfuyao) {
+				return 0;
+			}
+			const { shown, unshown } = lib.skill.clanfuyao.getGroups(player),
+				diff = shown.length - unshown.length,
+				cards = (diff > 0 ? shown : unshown).filter(card => lib.filter.cardDiscardable(card, player, "clanfuyao")).sort((a, b) => get.value(a, player) - get.value(b, player));
+			return cards.slice(0, Math.abs(diff)).reduce((sum, card) => sum + Math.max(0, get.value(card, player)), 0);
+		},
 		canBalance(player) {
 			if (!player.countCards("h")) {
 				return false;
@@ -71,7 +89,7 @@ const skills = {
 			},
 		},
 		filter(event, player) {
-			return lib.skill.clanfuyao.canBalance(player) && lib.skill.clanfuyao.getCards(player).length > 0;
+			return !player.hasSkill("clanfuyao_block") && lib.skill.clanfuyao.canBalance(player) && lib.skill.clanfuyao.getCards(player).length > 0;
 		},
 		async content(event, trigger, player) {
 			if (!player.storage.clanfuyao) {
@@ -115,36 +133,66 @@ const skills = {
 				await player.discard(result.cards);
 			}
 			const list = lib.skill.clanfuyao.getCards(player);
-			if (list.length) {
-				const result = await player
-					.chooseButton(["扶摇：视为使用一张本阶段未以此法使用过的单目标普通锦囊牌", [list, "vcard"]], true)
-					.set("ai", button => {
-						const link = button.link;
-						return get.player().getUseValue(new lib.element.VCard({ name: link[2], nature: link[3], isCard: true }));
-					})
-					.forResult();
-				if (result.bool) {
-					const link = result.links[0],
-						name = link[2],
-						nature = link[3];
-					const card = new lib.element.VCard({ name, nature, isCard: true, storage: { clanfuyao: true } });
-					if (!player.storage.clanfuyao_used) {
-						player.storage.clanfuyao_used = [];
-					}
-					player.storage.clanfuyao_used.add(name);
-					player.addTempSkill("clanfuyao_used", { player: "phaseUseAfter" });
-					await player.chooseUseTarget(`扶摇：请选择${get.translation(card)}的目标`, card, true, false);
-				}
+			if (!list.length) {
+				player.addTempSkill("clanfuyao_block", { player: "phaseUseAfter" });
+				return;
 			}
+			player.addTempSkill("clanfuyao_block", { player: "phaseUseAfter" });
+			const result = await player
+				.chooseButton(["扶摇：选择要视为使用的锦囊牌", [list, "vcard"]], true)
+				.set("ai", button => {
+					const link = button.link;
+					return get.player().getUseValue(new lib.element.VCard({ name: link[2], nature: link[3], isCard: true }));
+				})
+				.forResult();
+			if (!result.bool) {
+				return;
+			}
+			const link = result.links[0],
+				card = new lib.element.VCard({ name: link[2], nature: link[3], isCard: true, storage: { clanfuyao: true } }),
+				legalTargets = game.filterPlayer(target => player.canUse(card, target, false));
+			if (!legalTargets.length) {
+				return;
+			}
+			let targets;
+			const info = get.info(card);
+			if (info.toself === true && info.selectTarget === -1) {
+				targets = [player];
+			} else {
+				const targetResult = await player
+					.chooseTarget(`扶摇：选择${get.translation(card)}的目标`, true, (card, player, target) => {
+						return get.event().legalTargets.includes(target);
+					})
+					.set("legalTargets", legalTargets)
+					.set("card", card)
+					.set("ai", target => get.effect(target, get.event().card, get.player(), get.player()))
+					.forResult();
+				if (!targetResult.bool) {
+					return;
+				}
+				targets = targetResult.targets;
+			}
+			if (!player.storage.clanfuyao_used) {
+				player.storage.clanfuyao_used = [];
+			}
+			player.storage.clanfuyao_used.add(card.name);
+			player.addTempSkill("clanfuyao_used", { player: "phaseUseAfter" });
 			player.changeZhuanhuanji("clanfuyao");
+			await player.useCard({ card, targets, addCount: false });
+			player.removeSkill("clanfuyao_block");
 		},
 		ai: {
 			order: 7,
 			result: {
-				player: 1,
+				player(player) {
+					return lib.skill.clanfuyao.getBestUseValue(player) - lib.skill.clanfuyao.getBalanceCost(player);
+				},
 			},
 		},
 		subSkill: {
+			block: {
+				charlotte: true,
+			},
 			used: {
 				charlotte: true,
 				onremove: true,
