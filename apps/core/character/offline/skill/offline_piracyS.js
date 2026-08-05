@@ -1770,24 +1770,22 @@ const skills = {
 	zhenjue: {
 		trigger: { global: "phaseJieshuBegin" },
 		filter(event, player) {
-			return player.countCards("h") == 0;
+			return !player.hasCards("h");
 		},
 		logTarget: "player",
-		content() {
-			"step 0";
-			trigger.player
-				.chooseToDiscard("he", "弃置一张牌，或令" + get.translation(player) + "摸一张牌")
-				.set("ai", function (card) {
-					if (_status.event.goon) {
-						return 7 - get.value(card);
-					}
-					return -get.value(card);
+		async content(event, trigger, player) {
+			const result = await trigger.player
+				.chooseToDiscard({
+					position: "he",
+					prompt: `弃置一张牌，或令${get.translation(player)}摸一张牌`,
+					ai: card => (_status.event.goon ? 7 - get.value(card) : -get.value(card)),
 				})
-				.set("goon", get.attitude(trigger.player, player) < 0);
-			"step 1";
-			if (!result.bool) {
-				player.draw();
+				.set("goon", get.attitude(trigger.player, player) < 0)
+				.forResult();
+			if (result.bool) {
+				return;
 			}
+			await player.draw();
 		},
 	},
 	//群刘备
