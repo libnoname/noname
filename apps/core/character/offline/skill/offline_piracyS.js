@@ -1071,23 +1071,21 @@ const skills = {
 	pshuxiao: {
 		trigger: { player: "phaseBegin" },
 		frequent: true,
-		content() {
-			"step 0";
-			player.judge(function (card) {
-				if (get.type(card) == "basic" || get.type(card) == "trick") {
-					return 3;
-				}
-				return -1;
-			});
-			"step 1";
-			if (result.bool) {
-				player.addTempSkill("pshuxiao_use");
-				player.storage.pshuxiao_use = {
-					card: { name: result.name, nature: result.card.nature },
-					number: result.number,
-					suit: result.suit,
-				};
+		async content(event, trigger, player) {
+			const result = await player
+				.judge({
+					judge: card => (["basic", "trick"].includes(get.type(card)) ? 3 : -1),
+				})
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
+			player.addTempSkill("pshuxiao_use");
+			player.storage.pshuxiao_use = {
+				card: { name: result.name, nature: result.card.nature },
+				number: result.number,
+				suit: result.suit,
+			};
 		},
 		subSkill: {
 			use: {
@@ -1097,7 +1095,7 @@ const skills = {
 				popname: true,
 				position: "hs",
 				hiddenCard(player, name) {
-					return player.storage.pshuxiao_use.card.name == name;
+					return player.storage.pshuxiao_use.card.name === name;
 				},
 				filter(event, player) {
 					if (!player.storage.pshuxiao_use) {
@@ -1112,11 +1110,12 @@ const skills = {
 					return player.storage.pshuxiao_use.card;
 				},
 				filterCard(card, player) {
-					return get.number(card) == player.storage.pshuxiao_use.number || get.suit(card) == player.storage.pshuxiao_use.suit;
+					return get.number(card) === player.storage.pshuxiao_use.number || get.suit(card) === player.storage.pshuxiao_use.suit;
 				},
 				prompt(event) {
-					var player = _status.event.player;
-					return "将一张" + get.translation(player.storage.pshuxiao_use.suit) + "牌或点数为" + get.strNumber(player.storage.pshuxiao_use.number) + "的牌当作" + get.translation(player.storage.pshuxiao_use.card) + "使用";
+					const player = _status.event.player;
+					const { suit, number, card } = player.storage.pshuxiao_use;
+					return `将一张${get.translation(suit)}牌或点数为${get.strNumber(number)}的牌当作${get.translation(card)}使用`;
 				},
 			},
 		},
