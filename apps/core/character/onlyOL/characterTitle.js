@@ -1,7 +1,7 @@
 export default {
 	//ol_bulianshi: "",
 	//ol_liufeng: "",
-	//ol_quancong: "",
+	ol_quancong: "其时声明",
 	//ol_caoxiu: "",
 	ol_guanping: "威灵显化",
 	dm_zhangfei: "祭命的战神",
@@ -16,7 +16,7 @@ export default {
 	shen_zhenji: "洛水凌波",
 	ol_zhangsong: "跻路踌躇",
 	ol_jsrg_zhanghe: "微子去殷",
-	//ol_caojie: "",
+	ol_caojie: "明殿掷玺",
 	ol_re_xinxianying: "识人读心",
 	ol_sb_dongzhao: "天阶登志",
 	ol_sb_chengyu: "兼智且勇",
