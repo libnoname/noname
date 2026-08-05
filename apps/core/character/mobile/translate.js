@@ -1,6 +1,8 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	mb_shen_caocao: "手杀神曹操",
+	mb_shen_caocao_prefix: "手杀|神",
 	mb_cheliji: "手杀彻里吉",
 	mb_cheliji_prefix: "手杀",
 	mbqucheng: "驱乘",

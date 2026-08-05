@@ -1,4 +1,12 @@
 const characters = {
+	mb_shen_caocao: {
+		sex: "male",
+		group: "shen",
+		hp: 3,
+		skills: ["guixin", "feiying"],
+		groupInGuozhan: "wei",
+		dieAudios: ["shen_caocao"],
+	},
 	zhuji: {
 		sex: "male",
 		group: "wu",
