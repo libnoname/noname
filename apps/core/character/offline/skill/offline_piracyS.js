@@ -877,21 +877,21 @@ const skills = {
 		limited: true,
 		skillAnimation: true,
 		animationColor: "water",
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			var cards = game.cardsGotoOrdering(get.cards(7)).cards;
+			const cards = game.cardsGotoOrdering(get.cards(7)).cards;
 			game.updateRoundNumber();
-			event.cards = cards;
-			player.showCards(cards, get.translation(player) + "发动了【流殇】");
-			"step 1";
-			var num = cards.filter(i => get.suit(i) == "heart").length;
-			var gains = cards.filter(i => get.suit(i) == "club");
+			await player.showCards(cards, `${get.translation(player)}发动了【流殇】`);
+			const num = cards.filter(card => get.suit(card) === "heart").length;
+			const gains = cards.filter(card => get.suit(card) === "club");
 			if (num > 0) {
-				player.recover(num);
+				await player.recover(num);
 			}
 			if (gains.length) {
-				player.gain(gains, "gain2");
+				await player.gain({
+					cards: gains,
+					animate: "gain2",
+				});
 			}
 		},
 	},
