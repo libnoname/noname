@@ -50,17 +50,17 @@ const skills = {
 			const result =
 				skills.length > 1
 					? await player
-						.chooseButton({
-							createDialog: ["合韵：请失去一个技能", [list, "textbutton"]],
-							forced: true,
-							ai(button) {
-								const player = get.player();
-								if (player.additionalSkills?.potyinhui?.includes(button.link)) return 10 + Math.random();
-								if (get.info(skill).ai?.neg) return 100 + Math.random();
-								return 1 + Math.random();
-							},
-						})
-						.forResult()
+							.chooseButton({
+								createDialog: ["合韵：请失去一个技能", [list, "textbutton"]],
+								forced: true,
+								ai(button) {
+									const player = get.player();
+									if (player.additionalSkills?.potyinhui?.includes(button.link)) return 10 + Math.random();
+									if (get.info(skill).ai?.neg) return 100 + Math.random();
+									return 1 + Math.random();
+								},
+							})
+							.forResult()
 					: { bool: true, links: skills };
 			if (result?.bool && result.links?.length) {
 				const skills = result.links;
@@ -92,6 +92,7 @@ const skills = {
 	},
 	potyinhui: {
 		audio: 12,
+		keepSkill: true,
 		logAudio: index => (typeof index == "number" ? `potyinhui${index}.mp3` : 2),
 		trigger: { global: "roundStart" },
 		filter(event, player) {
@@ -211,18 +212,18 @@ const skills = {
 				const result =
 					skills.length > 1
 						? await player
-							.chooseButton({
-								createDialog: ["音洄：请获得一个技能", [list, "textbutton"]],
-								forced: true,
-								ai(button) {
-									const info = get.info(button.link);
-									if (!info || (info.ai && (info.ai.combo || info.ai.notemp || info.ai.neg))) {
-										return 0;
-									}
-									return 1 + Math.random();
-								},
-							})
-							.forResult()
+								.chooseButton({
+									createDialog: ["音洄：请获得一个技能", [list, "textbutton"]],
+									forced: true,
+									ai(button) {
+										const info = get.info(button.link);
+										if (!info || (info.ai && (info.ai.combo || info.ai.notemp || info.ai.neg))) {
+											return 0;
+										}
+										return 1 + Math.random();
+									},
+								})
+								.forResult()
 						: { bool: true, links: skills };
 				if (result?.bool && result.links?.length) {
 					const skill = result.links[0];
@@ -1053,7 +1054,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const cards = get.cards(3, true);
-			if (!cards.length) {
+			if (!cards.length || !game.hasPlayer(current => current != player)) {
 				return;
 			}
 			await game.cardsGotoOrdering(cards);
@@ -1088,28 +1089,49 @@ const skills = {
 		intro: {
 			name: "伺锋",
 			markcount: "expansion",
-			content: "expansion",
+			mark(dialog, content, player) {
+				const cards = player.getExpansions("potsifeng");
+				if (cards.length) {
+					if (player.isUnderControl(true)) {
+						dialog.addAuto(cards);
+					} else {
+						return "共有" + get.cnNumber(cards.length) + "张“伺锋”";
+					}
+				}
+			},
+			content(content, player) {
+				const cards = player.getExpansions("potsifeng");
+				if (cards.length) {
+					if (player.isUnderControl(true)) {
+						return get.translation(cards);
+					}
+					return "共有" + get.cnNumber(cards.length) + "张“伺锋”";
+				}
+			},
 		},
 		group: ["potsifeng_use", "potsifeng_effect"],
 		subSkill: {
 			use: {
 				audio: "potsifeng",
 				logAudio: () => ["potsifeng3.mp3", "potsifeng4.mp3"],
-				forced: true,
 				trigger: { global: "useCardAfter" },
 				filter(event, player) {
 					return event.player.hasExpansions("potsifeng") && event.player == _status.currentPhase;
 				},
+				forced: true,
+				locked: false,
 				logTarget: "player",
 				async content(event, trigger, player) {
-					const color = get.color(trigger.card),
-						{
-							targets: [target],
-						} = event,
-						card = target.getExpansions("potsifeng")[0];
-					await target.loseToDiscardpile({ cards: [card] });
-					if (color != get.color(card) && target.hasDiscardableCards(target, "h")) {
-						await target.chooseToDiscard({ forced: true, position: "h" });
+					const color = get.color(trigger.card);
+					const {
+						targets: [target],
+					} = event;
+					if (target.hasExpansions("potsifeng")) {
+						const card = target.getExpansions("potsifeng")[0];
+						await target.loseToDiscardpile({ cards: [card] });
+						if (color != get.color(card) && target.hasDiscardableCards(target, "h")) {
+							await target.chooseToDiscard({ forced: true, position: "h" });
+						}
 					}
 				},
 			},
@@ -1122,24 +1144,27 @@ const skills = {
 				},
 				logTarget: "player",
 				async cost(event, trigger, player) {
-					const list = ["对其造成一点伤害", "获得其所有“伺锋”牌"];
+					const target = trigger.player;
+					const list = [`对${get.translation(target)}造成1点伤害`, `获得${get.translation(target)}所有“伺锋”牌`];
 					const result = await player
 						.chooseControl({
-							controls: list,
-							prompt: "对" + get.translation(trigger.player) + "发动【伺锋】",
+							choiceList: list,
+							prompt: "伺锋：请选择一项",
 							ai() {
-								const { player, controls, target } = get.event();
+								const { player, target } = get.event();
+								const controls = get.event().controls.slice();
 								const cards = target.getExpansions("potsifeng");
 								if (get.attitude(player, target) > 0) {
-									controls.remove("对其造成一点伤害");
+									return "选项一";
+								} else {
+									if (cards.length >= 3) {
+										controls.remove("选项一");
+									}
+									return controls.randomGet();
 								}
-								if (cards.length >= 3) {
-									controls.remove("对其造成一点伤害");
-								}
-								return controls.slice(0).randomGet();
 							},
 						})
-						.set("target", trigger.player)
+						.set("target", target)
 						.forResult();
 					if (typeof result?.index == "number") {
 						event.result = {
@@ -1152,10 +1177,14 @@ const skills = {
 					const target = event.targets[0],
 						cards = target.getExpansions("potsifeng");
 					if (event.cost_data == 0) {
-						await target.loseToDiscardpile({ cards });
+						if (cards.length) {
+							await target.loseToDiscardpile({ cards });
+						}
 						await target.damage();
 					} else {
-						await player.gain({ cards: cards, animate: "gain2" });
+						if (cards.length) {
+							await player.gain({ cards: cards, animate: "give" });
+						}
 					}
 				},
 			},
