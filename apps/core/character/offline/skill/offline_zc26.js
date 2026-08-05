@@ -280,7 +280,7 @@ const skills = {
 			},
 		},
 	},
-	//SP徐氏 by柴油鹿鹿
+	//SP徐氏
 	zc26_longchen: {
 		audio: "wengua",
 		enable: "phaseUse",

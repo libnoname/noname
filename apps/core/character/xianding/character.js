@@ -4,6 +4,7 @@ const characters = {
 		group: "shu",
 		hp: 3,
 		skills: ["dcmingjie", "dcxianfu"],
+		names: "李|null",
 	},
 	dc_sb_guanyu: {
 		sex: "male",
@@ -466,7 +467,7 @@ const characters = {
 	v_dongzhuo: {
 		sex: "male",
 		group: "qun",
-		hp: 5,
+		hp: 6,
 		skills: ["dcguangyong", "dcjuchui"],
 	},
 	liujinliupei: {

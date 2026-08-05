@@ -14,17 +14,17 @@ const dynamicTranslates = {
 		return `${type}。结束阶段，你${forced}获得本回合其他角色进入弃牌堆的至多五张牌，然后你跳过下个摸牌阶段。`;
 	},
 	sxrmbiyi(player, skill) {
-		const bool = player.getStorage(skill, false);
-		let sk = player.storage.sxrmfusui_skill;
-		let yang = sk ? `【${get.translation(sk)}】` : "无技能",
-			yin = "【枭姬】";
-		if (bool) {
+		const storage = player.storage[skill];
+		const skills = player.getStorage("sxrmbiyi_skill");
+		let yang = skills.length ? `${skills.map(skill => get.poptip(skill)).join("、")}` : "无技能",
+			yin = `${get.poptip("xiaoji")}`;
+		if (storage) {
 			yin = `<span class='bluetext'>${yin}</span>`;
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技，你视为拥有：",
-			end = "。当你发动上述对应技能后，切换本技能状态。";
+		let start = "转换技。你视为拥有：",
+			end = "。当你发动当前分支的对应技能时，切换本技能状态。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
 	sxrmcongfeng(player, skill) {

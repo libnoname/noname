@@ -21,6 +21,34 @@ export class Get {
 	promises = new Promises();
 	Audio = Audio;
 	/**
+	 * 获取一张延时锦囊牌实际占用的延时栏
+	 *
+	 * @param { string | Card | VCard | CardBaseUIData } obj
+	 * @param { false | Player } [player]
+	 * @returns { string[] }
+	 */
+	judgeSlots(obj, player) {
+		if (typeof obj == "string") {
+			obj = { name: obj };
+		}
+		if (typeof obj != "object" || obj === null) {
+			return [];
+		}
+		const name = get.name(obj, player);
+		if (!lib.card[name]) {
+			return [];
+		}
+		const list = [name];
+		if (Array.isArray(obj.judgeSlots)) {
+			return get.copy(obj.judgeSlots).addArray(list);
+		}
+		if (lib.card[name].judgeSlots) {
+			const judgeSlots = get.copy(lib.card[name].judgeSlots);
+			list.addArray(Array.isArray(judgeSlots) ? judgeSlots : [judgeSlots]);
+		}
+		return list;
+	}
+	/**
 	 * 将一组卡牌按花色或颜色分组，生成最终可用于dialog.addNewRow方法的参数列表，用于使用#Player.chooseButton/Player.chooseButtonTarget使用createDialog创建对话框的需要从一组卡牌中选择所有某种颜色/花色的牌的技能，用法可参考手杀曹髦/手杀陆郁生
 	 * @param {Card[]} cards 要分组的卡牌
 	 * @param {'suit'|'color'} type 分组类型 目前仅支持'suit'/'color'

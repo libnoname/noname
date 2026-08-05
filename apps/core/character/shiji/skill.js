@@ -2406,16 +2406,13 @@ const skills = {
 		trigger: {
 			player: "phaseJieshuBegin",
 		},
-		filter(event, player) {
-			//return ["h", "e", "j"].some(pos => player.countDiscardableCards(player, pos));
-			return true;
-		},
 		forced: true,
 		async content(event, trigger, player) {
 			const position = ["h", "e", "j"]; //.filter(pos => player.countDiscardableCards(player, pos)),
 			const map = { h: "手牌区", e: "装备区", j: "判定区" };
 			let list = position.map(i => map[i]);
-			const result = await player
+			let result;
+			result = await player
 				.chooseControl({ controls: list })
 				.set("prompt", `###${get.translation(event.name)}：选择一个区域并弃置其中所有牌###然后选择弃置任意名其他角色对应区域内的各一张牌。`)
 				.set("ai", (event, player) => {
@@ -2441,37 +2438,40 @@ const skills = {
 			}
 			const pos = { 手牌区: "h", 装备区: "e", 判定区: "j" }[result.control];
 			let doneList = new Map();
-			const result2 = await player.modedDiscard(player.getCards(pos)).forResult();
-			if (result2?.cards?.length) {
-				doneList.set(player, result2.cards);
+			result = await player.modedDiscard(player.getCards(pos)).forResult();
+			if (result?.cards?.length) {
+				doneList.set(player, result.cards);
 			}
-			while (true) {
-				if (!game.hasPlayer(current => current !== player && !doneList.has(current) && current.countDiscardableCards(player, pos))) {
-					break;
-				}
-				let result = await player
-					.chooseTarget(`天涛：选择一名其他角色，弃置其${{ h: "手牌区", e: "装备区", j: "判定区" }[pos]}内的一张牌`)
-					.set("filterTarget", (_, player, target) => target !== player && !get.event().doneList.has(target) && target.countDiscardableCards(player, get.event().pos))
-					.set("ai", target => {
-						const { pos, player } = get.event();
-						return get.effect(target, { name: "guohe_copy", position: pos }, player, player);
+			if (game.hasPlayer(current => current != player && current.hasDiscardableCards(player, pos))) {
+				result = await player
+					.chooseTarget({
+						prompt: `天涛：选择任意名其他角色，弃置其${{ h: "手牌区", e: "装备区", j: "判定区" }[pos]}内的一张牌`,
+						filterTarget(card, player, target) {
+							return player != target && target.hasDiscardableCards(player, get.event().pos);
+						},
+						selectTarget: [1, Infinity],
+						ai(target) {
+							const { pos, player } = get.event();
+							return get.effect(target, { name: "guohe_copy", position: pos }, player, player);
+						},
+						forced: true,
 					})
-					.set("doneList", doneList)
 					.set("pos", pos)
 					.forResult();
-				if (!result?.bool || !result.targets?.length) {
-					break;
-				}
-				const target = result.targets[0];
-				player.line(target);
-				result = await player.discardPlayerCard(target, pos, true).forResult();
-				if (result?.bool && result.links?.length) {
-					doneList.set(target, result.links);
+				if (result?.bool && result.targets?.length) {
+					const targets = result.targets;
+					player.line(targets);
+					for (const target of targets) {
+						result = await player.discardPlayerCard({ target, position: pos, forced: true }).forResult();
+						if (result?.bool && result.links?.length) {
+							doneList.set(target, result.links);
+						}
+					}
 				}
 			}
 			if ([...doneList.keys()].length) {
 				const targets = [...doneList.entries()].filter(([_, cards]) => !cards.some(card => get.name(card) === "sha")).map(([target]) => target);
-				await game.doAsyncInOrder(targets, async target => target.loseHp());
+				await game.doAsyncInOrder(targets.sortBySeat(), async target => target.loseHp());
 			}
 		},
 	},
@@ -2582,10 +2582,10 @@ const skills = {
 					showCards = top;
 				}
 				await target
-					.showCards(showCards, `${get.translation(target)}因“${get.translation(event.name)}”展示`)
-					.set("customButton", button => {
-						if (get.event().top.includes(button.link)) {
-							button.node.gaintag.innerHTML = "牌堆顶";
+					.showCards(showCards, `${get.translation(target)}因【${get.translation(event.name)}】展示`)
+					.set("customButton", (button, event) => {
+						if (event.top?.includes(button.link)) {
+							game.createButtonCardsetion("牌堆顶", button);
 						}
 					})
 					.set("top", top)
@@ -5545,7 +5545,7 @@ const skills = {
 			}
 			list.push("背水！");
 			list.push("cancel2");
-			const { control } = await player
+			const result = await player
 				.chooseControl(list)
 				.set("choiceList", [`获得${get.translation(target)}的一张手牌`, `弃置一张基本牌并令${get.translation(trigger.card)}伤害+1`, "背水！减1点体力上限并执行所有选项"])
 				.set("prompt", get.prompt(event.skill, target))
@@ -5564,7 +5564,7 @@ const skills = {
 							player: player,
 							card: card,
 						});
-					if (bool1 && bool2 && (target.hp <= 2 || (player.isDamaged() && player.maxHp > 3))) {
+					if (bool1 && bool2 && player.isDamaged() && player.maxHp > 1) {
 						return "背水！";
 					}
 					if (bool1) {
@@ -5576,10 +5576,12 @@ const skills = {
 					return "cancel2";
 				})
 				.forResult();
-			event.result = {
-				bool: control !== "cancel2",
-				cost_data: control,
-			};
+			if (typeof result?.control == "string" && result.control != "cancel2") {
+				event.result = {
+					bool: true,
+					cost_data: result.control,
+				};
+			}
 		},
 		logTarget: "target",
 		async content(event, trigger, player) {
