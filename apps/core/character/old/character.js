@@ -1,4 +1,10 @@
 const characters = {
+	old_pot_dengai: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["old_pottuntian", "old_potjixi", "old_potzaoxian"],
+	},
 	yj_y_xunxu: {
 		sex: "male",
 		group: "wei",
@@ -520,6 +526,7 @@ const characters = {
 		skills: ["old_zuilun", "old_fuyin"],
 		names: "诸葛|瞻",
 		dieAudios: ["zhugezhan"],
+		clans: ["琅琊诸葛氏"],
 	},
 	old_guanqiujian: {
 		sex: "male",

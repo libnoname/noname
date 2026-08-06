@@ -14788,6 +14788,7 @@ const skills = {
 		subSkill: {
 			damaged: {},
 			ai: {},
+			xin_jushou: { audio: 2 },
 		},
 		ai: {
 			maixie_defend: true,

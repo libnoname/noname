@@ -12,28 +12,32 @@ const cards = {
 			return player.canAddJudge(card);
 		},
 		filterTarget(card, player, target) {
-			return lib.filter.judge(card, player, target) && player == target;
+			return lib.filter.judge(card, player, target) && player === target;
 		},
 		judge(card) {
-			if (get.color(card) == "red") {
+			if (get.color(card) === "red") {
 				return 0;
 			}
 			return -4;
 		},
-		effect() {
-			var source = cards[0].storage.nsfuzhou_source;
+		async effect({ cards, _result: result, player }) {
+			const source = cards[0].storage.nsfuzhou_source;
 			if (!source || !source.isIn()) {
 				return;
 			}
 			source.line(player, "thunder");
 			switch (result.color) {
 				case "black":
-					player.damage(source, source.storage.nsfuzhou_damage ? 2 : 1, "thunder");
-					player.chooseToDiscard("he", true);
+					player.damage({
+						source,
+						num: source.storage.nsfuzhou_damage ? 2 : 1,
+						nature: "thunder",
+					});
+					player.chooseToDiscard({ position: "he", forced: true });
 					break;
 				case "red":
 					source.draw(2);
-					if (typeof player.storage.nsfuzhou_num != "number") {
+					if (typeof player.storage.nsfuzhou_num !== "number") {
 						player.storage.nsfuzhou_num = 0;
 					}
 					if (source.storage.nsfuzhou_draw) {

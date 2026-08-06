@@ -1,6 +1,22 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	huan_sunce: "幻孙策",
+	huan_sunce_prefix: "幻",
+	twliwu: "励伍",
+	twliwu_info: `锁定技，有角色的${get.poptip("twguose_tip")}发生变化后，你摸一张牌，若其中有基本牌，你本轮下一次造成伤害+1。`,
+	twsaoting: "扫庭",
+	twsaoting_info: "转换技，阳：你可将一张伤害牌当【决斗】使用；阴：你可将一张伤害牌当【酒】使用。若你以此法使用牌指定了已受伤角色为目标，你摸一张牌。",
+	twjianyan: "翦魇",
+	twjianyan_info: `${get.poptip("rule_chihengji")}，游戏开始时，你令所有角色获得${get.poptip("twhuju")}。当有角色进入濒死状态时，你可以选择任意角色（数量可为0），你令这些角色失去${get.poptip("twhuju")}，然后你回复等量体力并获得等量的非伤害牌。将其余角色的${get.poptip("twhuju")}转化为“阴”，然后入幻。`,
+	twhuju: "虎踞",
+	twhuju_info: `锁定技，转换技，阳：你令${get.poptip("twjianyan")}拥有者的手牌上限+1；阴：你令${get.poptip("twjizhi")}拥有者的出【杀】次数+1。`,
+	twsuzhen: "肃阵",
+	twsuzhen_info: `锁定技，有角色的${get.poptip("twguose_tip")}发生变化后，你获得其一张牌（若目标为你，则改为展示），若其中有基本牌，你回复1点体力。`,
+	twdangjiang: "荡疆",
+	twdangjiang_info: "转换技，阳：你可将一张非伤害牌当【无中生有】使用；阴：你可以将一张非伤害牌当无距离限制的任意【杀】使用。若你以此法使用牌指定了未受伤角色为目标，你摸一张牌。",
+	twjizhi: "寄志",
+	twjizhi_info: `${get.poptip("rule_chihengji")}，当你进入濒死状态时，你可以选择任意角色，你令这些角色失去${get.poptip("twhuju")}，然后你回复等量体力并摸等量的伤害牌。将其余角色的${get.poptip("twhuju")}转化为“阳”，然后退幻。`,
 	tw_pot_huanjie: "TW势桓阶",
 	tw_pot_huanjie_prefix: "TW|势",
 	twpotgongmou: "共谋",

@@ -2,6 +2,447 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//幻孙策
+	twliwu: {
+		audio: 4,
+		logAudio: () => 2,
+		forced: true,
+		trigger: {
+			global: ["changeHpAfter", "gainMaxHpAfter", "loseMaxHpAfter"],
+		},
+		filter(event, player) {
+			return get.info("twguose").damageStatusChanged(event.player, event);
+		},
+		async content(event, trigger, player) {
+			const result = await player.draw().forResult();
+			if (result?.cards?.length) {
+				if (result.cards.some(card => get.type(card) == "basic")) {
+					player.addTempSkill(event.name + "_dam", "roundStart");
+					player.addMark(event.name + "_dam", 1, false);
+				}
+			}
+		},
+		subSkill: {
+			dam: {
+				audio: "twliwu",
+				logAudio: () => ["twliwu3.mp3", "twliwu4.mp3"],
+				charlotte: true,
+				onremove: true,
+				forced: true,
+				locked: false,
+				intro: { content: "本轮你下次造成伤害+#" },
+				trigger: { source: "damageBegin2" },
+				filter(event, player) {
+					return player.hasMark("twliwu_dam");
+				},
+				async content(event, trigger, player) {
+					trigger.num += player.countMark(event.name);
+					player.removeSkill(event.name);
+				},
+			},
+		},
+	},
+	twsaoting: {
+		audio: 2,
+		zhuanhuanji: true,
+		marktext: "☯",
+		mark: true,
+		intro: {
+			content(storage, player) {
+				if (!storage) {
+					return `转换技，你可将一张伤害牌当【决斗】使用。若你以此法使用牌指定了已受伤角色为目标，你摸一张牌`;
+				}
+				return `转换技，你可将一张伤害牌当【酒】使用。若你以此法使用牌指定了已受伤角色为目标，你摸一张牌`;
+			},
+		},
+		enable: "chooseToUse",
+		filterCard(card) {
+			return get.tag(card, "damage") > 0;
+		},
+		filter(event, player) {
+			const name = player.storage.twsaoting ? "jiu" : "juedou";
+            return player.hasCards("hes", card => get.tag(card, "damage") > 0) && event.filterCard(get.autoViewAs({ name }, "unsure"), player, event);
+		},
+		position: "hes",
+		viewAs(cards, player) {
+			const storage = player.storage.twsaoting;
+			const name = storage ? "jiu" : "juedou";
+			return { name };
+		},
+		prompt(event, player) {
+			return `你可以将一张伤害牌当做${player.storage.twsaoting ? "【酒】" : "【决斗】"}使用`;
+		},
+		check(card) {
+			return 10 - get.value(card);
+		},
+		async precontent(event, trigger, player) {
+			player.changeZhuanhuanji("twsaoting");
+			player
+				.when({ player: "useCard" })
+				.filter(evt => evt.getParent() == event.getParent())
+				.step(async (event, trigger, player) => {
+					if (trigger.targets?.some(target => target.isDamaged())) {
+						await player.draw();
+					}
+				});
+		},
+		ai: {
+			order(item, player) {
+				player ??= get.player();
+				return get.order({ name: player.storage.twsaoting ? "jiu" : "juedou" }, player) + 0.1;
+			},
+			result: { player: 1 },
+		},
+	},
+	twjianyan: {
+		audio: 3,
+		logAudio: () => 1,
+		derivation: "twhuju",
+		persevereSkill: true,
+		forced: true,
+		locked: false,
+		trigger: {
+			player: "enterGame",
+			global: "phaseBefore",
+		},
+		filter(event, player) {
+			return game.hasPlayer(current => !current.hasSkill("twhuju")) && (event.name != "phase" || game.phaseNumber == 0);
+		},
+		logTarget(event, player) {
+			return game.filterPlayer(current => !current.hasSkill("twhuju")).sortBySeat();
+		},
+		async content(event, trigger, player) {
+			const targets = event.targets;
+			await game.doAsyncInOrder(targets, async target => {
+				await target.addSkills("twhuju");
+			});
+		},
+		group: "twjianyan_dying",
+		subSkill: {
+			dying: {
+				audio: "twjianyan",
+				logAudio: () => ["twjianyan2.mp3", "twjianyan3.mp3"],
+				skillAnimation: true,
+				animationColor: "wood",
+				trigger: { global: "dying" },
+				prompt2(event, player) {
+					return "选择任意角色令其失去【虎踞】（可选择0），然后你回复等量体力，获得等量非伤害牌并入幻";
+				},
+				async content(event, trigger, player) {
+					const targetx = game.filterPlayer(current => current.hasSkill("twhuju"));
+					const result = targetx.length
+						? await player
+								.chooseTarget({
+									prompt: "翦魇：选择任意其他角色令其失去【虎踞】，然后你回复等量体力，获得等量非伤害牌并入幻，或点击“取消”直接入幻",
+									filterTarget(card, player, target) {
+										return target.hasSkill("twhuju");
+									},
+									selectTarget: [1, Infinity],
+									ai(target) {
+										const { player, targetx } = get.event();
+										if (game.hasPlayer(current => current.isDying() && current.hasSkill("twhuju"))) {
+											return target.isDying() && target.hasSkill("twhuju");
+										}
+										if (player == targetx && ui.selected.targets.length < 1 - player.hp) {
+											return Math.abs(get.attitude(player, target)) + 1;
+										}
+										return 0;
+									},
+								})
+								.set("targetx", trigger.player)
+								.forResult()
+						: { bool: false };
+					if (result?.bool && result.targets?.length) {
+						const targets = result.targets.sortBySeat();
+						targetx.removeArray(targets);
+						await game.doAsyncInOrder(targets, async target => {
+							await target.removeSkills("twhuju");
+						});
+						await player.recover(targets.length);
+						const cards = [];
+						for (let i = 0; i < targets.length; i++) {
+							const card = get.cardPile(card => !get.tag(card, "damage") && !cards.includes(card));
+							if (card) {
+								cards.push(card);
+							} else {
+								break;
+							}
+						}
+						if (cards.length) {
+							await player.gain({ cards, animate: "gain2" });
+						}
+					}
+					if (targetx.length) {
+						await game.doAsyncInOrder(targetx, async target => {
+							if (!target.storage.twhuju) {
+								target.changeZhuanhuanji("twhuju");
+							}
+						});
+					}
+					player.changeSkin({ characterName: "huan_sunce" }, "huan_sunce_shadow");
+					await player.changeSkills(["twsuzhen", "twdangjiang", "twjizhi"], ["twliwu", "twsaoting", "twjianyan"]);
+				},
+			},
+		},
+	},
+	twhuju: {
+		zhuanhuanji: true,
+		locked: true,
+		marktext: "☯",
+		mark: true,
+		intro: {
+			content(storage, player) {
+				if (!storage) {
+					return `锁定技，转换技，你令${get.poptip("twjianyan")}拥有者的手牌上限+1`;
+				}
+				return `锁定技，转换技，你令${get.poptip("twjizhi")}拥有者的出【杀】次数+1`;
+			},
+		},
+		global: "twhuju_buff",
+		subSkill: {
+			buff: {
+				mod: {
+					maxHandcard(player, num) {
+						if (player.hasSkill("twjianyan")) {
+							return num + game.countPlayer(current => current.hasSkill("twhuju") && !current.storage.twhuju);
+						}
+					},
+					cardUsable(card, player, num) {
+						if (player.hasSkill("twjizhi") && card.name == "sha") {
+							return num + game.countPlayer(current => current.hasSkill("twhuju") && current.storage.twhuju);
+						}
+					},
+				},
+			},
+		},
+	},
+	twsuzhen: {
+		audio: 3,
+		logAudio: index => (typeof index == "number" ? `twsuzhen${index}.mp3` : 2),
+		forced: true,
+		trigger: {
+			global: ["changeHpAfter", "gainMaxHpAfter", "loseMaxHpAfter"],
+		},
+		filter(event, player) {
+			return get.info("twguose").damageStatusChanged(event.player, event) && event.player.hasCards("he");
+		},
+		logTarget: "player",
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const result =
+				target == player
+					? await player
+							.chooseCard({
+								forced: true,
+								prompt: "肃阵：请展示一张牌",
+								position: "he",
+								ai(card) {
+									if (get.type(card) == "basic") {
+										return 1;
+									}
+									return -get.value(card);
+								},
+							})
+							.forResult()
+					: await player.gainPlayerCard({ forced: true, position: "he", target }).forResult();
+			if (result?.bool && (result.cards?.length || result.links?.length)) {
+				const cards = result.cards ?? result.links;
+				if (player == target) {
+					await player.showCards(cards, `${get.translation(player)}发动了【${get.translation(event.name)}】`);
+				}
+				if (cards.some(card => get.type(card) == "basic")) {
+					player.logSkill(event.name, null, null, null, [3]);
+					await player.recover();
+				}
+			}
+		},
+	},
+	twdangjiang: {
+		audio: 2,
+		enable: "chooseToUse",
+		zhuanhuanji: true,
+		marktext: "☯",
+		mark: true,
+		locked: false,
+		mod: {
+			targetInRange(card) {
+				if (card?.storage?.twdangjiang) {
+					return true;
+				}
+			},
+		},
+		intro: {
+			content(storage, player) {
+				if (!storage) {
+					return `转换技，你可将一张非伤害牌当【无中生有】使用。若你以此法使用牌指定了未受伤角色为目标，你摸一张牌`;
+				}
+				return `转换技，你可将一张非伤害牌当无距离限制的任意【杀】使用。若你以此法使用牌指定了未受伤角色为目标，你摸一张牌`;
+			},
+		},
+		filter(event, player) {
+			if (!player.hasCards("hes", card => !get.tag(card, "damage"))) {
+				return false;
+			}
+			return get.inpileVCardList(info => {
+				const name = player.storage.twdangjiang ? "sha" : "wuzhong";
+				if (name != info[2]) {
+					return false;
+				}
+				return event.filterCard(
+					get.autoViewAs(
+						{
+							name: info[2],
+							nature: info[3],
+							storage: { twdangjiang: true },
+						},
+						"unsure"
+					),
+					player,
+					event
+				);
+			}).length;
+		},
+		chooseButton: {
+			dialog(event, player) {
+				const list = get.inpileVCardList(info => {
+					const name = player.storage.twdangjiang ? "sha" : "wuzhong";
+					if (name != info[2]) {
+						return false;
+					}
+					return event.filterCard(
+						get.autoViewAs(
+							{
+								name: info[2],
+								nature: info[3],
+								storage: { twdangjiang: true },
+							},
+							"unsure"
+						),
+						player,
+						event
+					);
+				});
+				return ui.create.dialog("荡疆", [list, "vcard"]);
+			},
+			check(button) {
+				if (_status.event.getParent().type != "phase") {
+					return 1;
+				}
+				const player = get.player();
+				return player.getUseValue({
+					name: button.link[2],
+					nature: button.link[3],
+					storage: { twdangjiang: true },
+				});
+			},
+			backup(links, player) {
+				return {
+					filterCard(card) {
+						return !get.tag(card, "damage");
+					},
+					audio: "twdangjiang",
+					popname: true,
+					check(card) {
+						return 10 - get.value(card);
+					},
+					position: "hse",
+					viewAs: {
+						name: links[0][2],
+						nature: links[0][3],
+						storage: { twdangjiang: true },
+					},
+					log: false,
+					async precontent(event, trigger, player) {
+						player.logSkill("twdangjiang");
+						player.changeZhuanhuanji("twdangjiang");
+						player
+							.when({ player: "useCard" })
+							.filter(evt => evt.getParent() == event.getParent())
+							.step(async (event, trigger, player) => {
+								if (trigger.targets?.some(target => !target.isDamaged())) {
+									await player.draw();
+								}
+							});
+					},
+				};
+			},
+			prompt(links, player) {
+				return "将一张非伤害牌当做" + (get.translation(links[0][3]) || "") + get.translation(links[0][2]) + "使用";
+			},
+		},
+		hiddenCard(player, name) {
+			if (!lib.inpile.includes(name)) {
+				return false;
+			}
+			const namex = player.storage.twdangjiang ? "sha" : "wuzhong";
+			return name == namex && player.hasCards("hes", card => !get.tag(card, "damage"));
+		},
+		ai: {
+			order(item, player) {
+				player ??= get.player();
+				return get.order({ name: player.storage.twdangjiang ? "sha" : "wuzhong" }, player) + 0.1;
+			},
+			result: { player: 1 },
+		},
+	},
+	twjizhi: {
+		audio: 2,
+		persevereSkill: true,
+		trigger: { player: "dying" },
+		skillAnimation: true,
+		animationColor: "wood",
+		filter(event, player) {
+			return game.hasPlayer(current => current != player && current.hasSkill("twhuju"));
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt(event.skill),
+					prompt2: "选择任意角色令其失去【虎踞】，然后你回复等量体力并获得等量伤害牌，然后你退幻",
+					filterTarget(card, player, target) {
+						return target.hasSkill("twhuju");
+					},
+					selectTarget: [1, Infinity],
+					ai(target) {
+						if (ui.selected.targets.length < 1 - player.hp) {
+							return Math.abs(get.attitude(player, target)) + 1;
+						}
+						return 0;
+					},
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const targets = event.targets.sortBySeat();
+			const targetx = game.filterPlayer(current => current != player && current.hasSkill("twhuju") && !targets.includes(current)).sortBySeat();
+			await game.doAsyncInOrder(targets, async target => {
+				await target.removeSkills("twhuju");
+			});
+			await player.recover(targets.length);
+			const cards = [];
+			for (let i = 0; i < targets.length; i++) {
+				const card = get.cardPile(card => get.tag(card, "damage") && !cards.includes(card));
+				if (card) {
+					cards.push(card);
+				} else {
+					break;
+				}
+			}
+			if (cards.length) {
+				await player.gain({ cards, animate: "gain2" });
+			}
+			if (targetx.length) {
+				await game.doAsyncInOrder(targetx, async target => {
+					if (target.storage.twhuju) {
+						target.changeZhuanhuanji("twhuju");
+					}
+				});
+			}
+			player.changeSkin({ characterName: "huan_sunce" }, "huan_sunce");
+			await player.changeSkills(["twliwu", "twsaoting", "twjianyan"], ["twsuzhen", "twdangjiang", "twjizhi"]);
+		},
+	},
+	//势桓阶
 	twpotgongmou: {
 		audio: "potgongmou",
 		trigger: { player: "phaseZhunbeiBegin" },
@@ -932,6 +1373,9 @@ const skills = {
 					return `是否弃置${get.translation(get.info("twshiji_gain").getcard(event, player))}？`;
 				},
 				filter(event, player) {
+					if (!event.card) {
+						return false;
+					}
 					return get.info("twshiji_gain").getcard(event, player)?.length;
 				},
 				check(event, player) {
@@ -4534,7 +4978,7 @@ const skills = {
 					})
 					.forResult();
 				await target
-					.chooseUseTarget({ name: "juedou", isCard: true }, cards)
+					.chooseUseTarget({ name: "juedou", isCard: true }, cards, true)
 					.set("targetx", player)
 					.set("filterTarget", function (card, player, target) {
 						var evt = _status.event;

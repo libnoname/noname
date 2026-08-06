@@ -1,6 +1,8 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	mb_shen_caocao: "手杀神曹操",
+	mb_shen_caocao_prefix: "手杀|神",
 	mb_cheliji: "手杀彻里吉",
 	mb_cheliji_prefix: "手杀",
 	mbqucheng: "驱乘",
@@ -646,7 +648,7 @@ const translates = {
 	xin_jushou: "手杀界沮授",
 	xin_jushou_prefix: "手杀界",
 	xinjianying: "渐营",
-	xinjianying_info: "①当你使用牌时，若此牌与你使用的上一张牌花色或点数相同，则你可以摸一张牌。②出牌阶段限一次，你可以将一张牌当做任意基本牌使用且无次数限制。若你于此阶段内使用的上一张牌有花色，则此牌的花色视为上一张牌的花色。",
+	xinjianying_info: "①当你使用与你使用的上一张牌点数或花色相同的牌时，你可以摸一张牌。②出牌阶段限一次，你可以将一张牌当做任意非装备牌使用且无次数限制。若你于此阶段内使用的上一张牌有花色，则此牌的花色视为上一张牌的花色。",
 	re_xunyu: "手杀界荀彧",
 	re_xunyu_prefix: "手杀界",
 	rejieming: "节命",
