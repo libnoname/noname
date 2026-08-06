@@ -932,6 +932,9 @@ const skills = {
 					return `是否弃置${get.translation(get.info("twshiji_gain").getcard(event, player))}？`;
 				},
 				filter(event, player) {
+					if (!event.card) {
+						return false;
+					}
 					return get.info("twshiji_gain").getcard(event, player)?.length;
 				},
 				check(event, player) {
@@ -4534,7 +4537,7 @@ const skills = {
 					})
 					.forResult();
 				await target
-					.chooseUseTarget({ name: "juedou", isCard: true }, cards)
+					.chooseUseTarget({ name: "juedou", isCard: true }, cards, true)
 					.set("targetx", player)
 					.set("filterTarget", function (card, player, target) {
 						var evt = _status.event;

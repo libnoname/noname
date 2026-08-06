@@ -5,6 +5,170 @@ import { CacheContext } from "../../noname/library/cache/cacheContext.js";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//谋钟会
+	dcsbjinglian: {
+		audio: 2,
+		trigger: { global: "phaseEnd" },
+		filter(event, player) {
+			return player.getHistory("lose").flatMap(evt => evt.cards2).length > 1;
+		},
+		async content(event, trigger, player) {
+			let result = await player.draw({ num: 3 }).forResult();
+			if (!result?.cards?.length) {
+				return;
+			}
+			const cards = result.cards.filter(card => (get.type(card) == "equip" || lib.skill.xunshi.isXunshi(card)) && player.getDiscardableCards(player, "he").includes(card));
+			const num = Math.min(
+				cards.length,
+				game.countPlayer(current => current != player)
+			);
+			if (cards?.length && num > 0) {
+				result = await player
+					.chooseTarget({
+						prompt: `精练：弃置${get.translation(cards)}并对${num}名其他角色各造成一点伤害`,
+						filterTarget: lib.filter.notMe,
+						selectTarget: num,
+						ai(target) {
+							return get.damageEffect(target, get.player(), get.player());
+						},
+					})
+					.forResult();
+				if (result?.bool && result.targets?.length) {
+					await player.modedDiscard({ cards });
+					const targets = result.targets.sortBySeat();
+					player.line(targets);
+					await game.doAsyncInOrder(targets, async target => {
+						await target.damage();
+					});
+				}
+			}
+		},
+	},
+	dcsbxieshu: {
+		audio: 2,
+		trigger: { player: "useCardToPlayered" },
+		usable(skill, player) {
+			return player.storage[skill] ? Infinity : 1;
+		},
+		filter(event, player) {
+			return event.targets?.some(target => target != player && target.hasGainableCards(player, "he")) && event.isFirstTarget;
+		},
+		async cost(event, trigger, player) {
+			const targets = trigger.targets.filter(target => target != player && target.hasGainableCards(player, "he"));
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt(event.skill),
+					prompt2: "令此牌对其中一个目标无效并获得其一张牌",
+					filterTarget(card, player, target) {
+						return get.event().targets.includes(target);
+					},
+					ai(target) {
+						const player = get.player();
+						const trigger = get.event().getTrigger();
+						return -get.effect(target, trigger.card, player, player) + get.effect(target, { name: "shunshou_copy2" }, player, player);
+					},
+				})
+				.set("targets", targets)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			trigger.getParent().excluded.push(target);
+			if (target.hasGainableCards(player, "he")) {
+				await player.gainPlayerCard({ target, position: "he", forced: true });
+			}
+		},
+	},
+	dcsbzongzi: {
+		audio: 2,
+		juexingji: true,
+		forced: true,
+		skillAnimation: true,
+		animationColor: "wood",
+		trigger: { player: "phaseZhunbeiBegin" },
+		filter(event, player) {
+			return player.getAllHistory("damage").reduce((a, evt) => a + evt.num, 0) + player.getAllHistory("sourceDamage").reduce((a, evt) => a + evt.num, 0) >= 3;
+		},
+		async content(event, trigger, player) {
+			player.awakenSkill(event.name);
+			await player.gainMaxHp();
+			await player.recover();
+			const list = ["选项一"],
+				choiceList = [`失去${get.poptip("dcsbjinglian")}并获得${get.poptip("dcsbjinhuo")}`, `令${get.poptip("dcsbxieshu")}取消次数限制`];
+			if (player.hasSkill("dcsbxieshu", null, null, false) && !player.storage.dcsbxieshu) {
+				list.push("选项二");
+			}
+			const result =
+				list.length > 1
+					? await player
+							.chooseControl({
+								controls: list,
+								choiceList,
+								prompt: "纵恣：请选择一项",
+								ai() {
+									return get.event().controls.slice().randomGet();
+								},
+							})
+							.forResult()
+					: { control: list[0] };
+			if (typeof result?.control == "string") {
+				if (result.control == "选项一") {
+					await player.gainMaxHp();
+					await player.changeSkills(["dcsbjinhuo"], ["dcsbjinglian"]);
+				} else {
+					player.setStorage("dcsbxieshu", true, true);
+				}
+			}
+		},
+	},
+	dcsbjinhuo: {
+		audio: 2,
+		trigger: {
+			global: ["gainEnd", "loseAsyncEnd"],
+		},
+		getIndex(event, player) {
+			if (event.name == "loseAsync" && event.type != "gain") {
+				return [];
+			}
+			if (!event.getl || !event.getg) {
+				return [];
+			}
+			let cardsx = event.getl(player)?.cards2,
+				cardsy = event.getg(player);
+			return game
+				.filterPlayer(current => {
+					if (current == player) {
+						return false;
+					}
+					if (cardsx?.length) {
+						let cards = event.getg?.(current);
+						if (cards?.length && cards.some(card => cardsx.includes(card))) {
+							return true;
+						}
+					}
+					if (cardsy?.length) {
+						let evt = event.getl?.(current);
+						if (evt?.cards2?.length && evt.cards2.some(card => cardsy.includes(card))) {
+							return true;
+						}
+					}
+					return false;
+				})
+				.sortBySeat();
+		},
+		filter(event, player) {
+			return player.countCards("h") < player.maxHp;
+		},
+		async content(event, trigger, player) {
+			await player.drawTo(player.maxHp);
+			const target = event.indexedData;
+			if (target?.isIn() && player.countCards("h") > target.countCards("h")) {
+				player.line(target);
+				target.addTempSkill(event.name + "_fengyin");
+			}
+		},
+		subSkill: { fengyin: { charlotte: true, inherit: "fengyin" } },
+	},
 	//李昭仪
 	dcmingjie: {
 		audio: 2,
@@ -248,7 +412,7 @@ const skills = {
 			},
 		},
 	},
-	//谋关羽（绿裤子）
+	//谋关羽
 	dcsbguanwu: {
 		audio: 2,
 		forced: true,

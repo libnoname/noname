@@ -1,4 +1,11 @@
 const characters = {
+	dc_sb_zhonghui: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["dcsbjinglian", "dcsbxieshu", "dcsbzongzi"],
+		clans: ["颍川钟氏"],
+	},
 	lizhaoyi: {
 		sex: "female",
 		group: "shu",

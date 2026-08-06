@@ -1,4 +1,5 @@
 export default {
+	ps_shen_caocao: "晷月皓冕",
 	wxdl_caopi: "秋风萧瑟",
 	pe_wuzetian: "助天承圣皇帝",
 	ym_zhaoxiang: "暗香吟雪",
