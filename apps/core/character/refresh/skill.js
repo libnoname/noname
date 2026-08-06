@@ -3642,9 +3642,9 @@ const skills = {
 	},
 	//十周年沮授
 	dcshibei: {
-		trigger: { player: "damageEnd" },
-		forced: true,
 		audio: 2,
+		audioname2: { xin_jushou: "shibei_xin_jushou" },
+		trigger: { player: "damageEnd" },
 		check(event, player) {
 			return player.getHistory("damage").indexOf(event) == 0;
 		},
@@ -3652,6 +3652,7 @@ const skills = {
 			var index = player.getHistory("damage").indexOf(event);
 			return index == 0 || index == 1;
 		},
+		forced: true,
 		async content(event, trigger, player) {
 			if (player.getHistory("damage").indexOf(trigger) > 0) {
 				await player.loseHp();
