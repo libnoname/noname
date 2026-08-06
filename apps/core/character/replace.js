@@ -469,4 +469,7 @@ window.noname_character_replace = {
 	cheliji: ["cheliji", "mb_cheliji"],
 	ns_huamulan: ["ns_huamulan", "pe_huamulan"],
 	shen_zhonghui: ["shen_zhonghui", "pe_shen_zhonghui"],
+	mb_chitu: ["ol_chitu", "mb_chitu", "sm_liaoyuan"],
+	mb_jueying: ["mb_jueying", "sm_jieying"],
+	mb_dilu: ["mb_dilu", "sm_dailu"],
 };
