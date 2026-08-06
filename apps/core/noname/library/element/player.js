@@ -1285,7 +1285,7 @@ export class Player extends HTMLDivElement {
 		next.cards = [];
 		next.gaintag = [];
 		if (args.length === 1 && typeof params == "object" && params !== null && get.itemtype(params) == null) {
-			Object.assign(next);
+			Object.assign(next, params);
 		} else {
 			for (const arg of args) {
 				const type = get.itemtype(arg);
@@ -5825,6 +5825,9 @@ export class Player extends HTMLDivElement {
 		const args = [...arguments];
 		if (args.length === 1 && typeof params === "object" && params !== null && get.itemtype(params) == null) {
 			Object.assign(next, params);
+			if (params.filterCard != null && typeof params.filterCard === "object") {
+				next.filterCard = get.filter(params.filterCard);
+			}
 		} else {
 			for (const arg of args) {
 				if (typeof arg == "number" || get.itemtype(arg) == "select") {
@@ -5892,6 +5895,9 @@ export class Player extends HTMLDivElement {
 				Reflect.deleteProperty(next, "card");
 				next.filterCard = get.filter(params.card);
 				filter = params.card;
+			} else if (params.filterCard != null && typeof params.filterCard === "object") {
+				next.filterCard = get.filter(params.filterCard);
+				filter = params.filterCard;
 			}
 			if (typeof next.selectCard === "number") {
 				next.selectCard = [next.selectCard, next.selectCard];
@@ -5975,6 +5981,9 @@ export class Player extends HTMLDivElement {
 		const args = [...arguments];
 		if (args.length == 1 && params != null && get.is.object(params) && get.itemtype(params) == null) {
 			Object.assign(next, params);
+			if (params.filterCard != null && typeof params.filterCard === "object") {
+				next.filterCard = get.filter(params.filterCard);
+			}
 			if (params.dialog) {
 				next.prompt = false;
 			} else if (params.prompt) {
@@ -6045,6 +6054,9 @@ export class Player extends HTMLDivElement {
 
 		if (args.length == 1 && params != null && get.is.object(params) && get.itemtype(params) == null) {
 			Object.assign(next, params);
+			if (params.filterCard != null && typeof params.filterCard === "object") {
+				next.filterCard = get.filter(params.filterCard);
+			}
 			if (params.dialog) {
 				next.prompt = false;
 			} else if (params.prompt) {
@@ -6544,6 +6556,9 @@ export class Player extends HTMLDivElement {
 		const args = [...arguments];
 		if (args.length == 1 && params != null && get.is.object(params) && get.itemtype(params) == null) {
 			Object.assign(next, params);
+			if (params.filterCard != null && typeof params.filterCard === "object") {
+				next.filterCard = get.filter(params.filterCard);
+			}
 			if (typeof next.selectCard === "number") {
 				next.selectCard = [next.selectCard, next.selectCard];
 			}
@@ -6749,7 +6764,7 @@ export class Player extends HTMLDivElement {
 		return next;
 	}
 	/**
-	 * @param {import("./Player/type.d").EventChooseCardTargetParams} [params]
+	 * @param { import("./Player/type.d").EventChooseCardTargetParams } [params]
 	 * @returns
 	 */
 	chooseCardTarget(params) {
@@ -8878,7 +8893,7 @@ export class Player extends HTMLDivElement {
 	/**
 	 * 令玩家受到伤害
 	 *
-	 * @param {import("./Player/type.d").EventDamageParams} [params]
+	 * @param { number | import("./Player/type.d").EventDamageParams } [params]
 	 * @returns { GameEvent }
 	 */
 	damage(params) {
@@ -8995,7 +9010,7 @@ export class Player extends HTMLDivElement {
 	/**
 	 * 令玩家回复体力
 	 *
-	 * @param { import("./Player/type.d").EventRecoverParams } [params]
+	 * @param { number | import("./Player/type.d").EventRecoverParams } [params]
 	 * @returns { GameEvent }
 	 */
 	recover(params) {
@@ -9111,7 +9126,7 @@ export class Player extends HTMLDivElement {
 	/**
 	 * 扣减玩家的体力上限
 	 *
-	 * @param { import("./Player/type.d").EventGainMaxHpParams } [params]
+	 * @param { number | import("./Player/type.d").EventGainMaxHpParams } [params]
 	 * @returns { GameEvent }}
 	 */
 	loseMaxHp(params) {
@@ -9137,7 +9152,7 @@ export class Player extends HTMLDivElement {
 	/**
 	 * 令玩家获得体力上限
 	 *
-	 * @param { import("./Player/type.d").EventGainMaxHpParams } [params]
+	 * @param { number | import("./Player/type.d").EventGainMaxHpParams } [params]
 	 * @returns { GameEvent }
 	 */
 	gainMaxHp(params) {
@@ -10672,11 +10687,34 @@ export class Player extends HTMLDivElement {
 					img.setBackgroundImage(lib.skill[name].markimage2);
 					img.style["background-size"] = "contain";
 				} else {
-					var str = lib.translate[name + "_bg"];
+					let str = lib.translate[name + "_bg"];
 					if (!str || str[0] == "+" || str[0] == "-") {
 						str = get.translation(name)[0];
 					}
 					ui.create.div(".background.skillmark", node).innerHTML = str;
+					// 仅针对获得/失去显示为☯的转化技显示
+					if (lib.skill[name] && get.is.zhuanhuanji(name, this) && str == "☯") {
+						const zhuanhuanLimit = get.zhuanhuanItemNum(name, this);
+						const storage = this.storage[name];
+						let index;
+						if (zhuanhuanLimit == 2) {
+							// 阴阳转换
+							if (get.info(name).zhuanhuanji == "number" || typeof storage == "number") {
+								index = this.countMark(name) % zhuanhuanLimit;
+							} else {
+								index = storage ? 1 : 0;
+							}
+						} else {
+							// 多项转换
+							index = this.countMark(name) % zhuanhuanLimit;
+						}
+						// 旋转度数
+						const angle = index * (360 / zhuanhuanLimit);
+						// @ts-expect-error ignore
+						node.firstChild.reversed = angle;
+						// @ts-expect-error ignore
+						node.firstChild.style.transform = `rotate(${angle}deg)`;
+					}
 				}
 			}
 			node.name = name;
@@ -11350,8 +11388,8 @@ export class Player extends HTMLDivElement {
 			this.additionalSkills[skill] = [];
 		}
 		for (var i = 0; i < skillsToAdd.length; i++) {
-			this.addSkill(skillsToAdd[i], null, null, true);
 			this.additionalSkills[skill].push(skillsToAdd[i]);
+			this.addSkill(skillsToAdd[i], null, null, true);
 		}
 		game.broadcast(
 			(player, map) => {

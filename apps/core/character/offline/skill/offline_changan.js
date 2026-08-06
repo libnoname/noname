@@ -46,9 +46,14 @@ const skills = {
 		},
 	},
 	cadingxi: {
+		beginMarkCount: 4,
 		chargeSkill: Infinity,
 		locked: false,
 		enable: "chooseToUse",
+		init(player, skill) {
+			const num = lib.skill[skill].beginMarkCount;
+			player.addCharge(num, false);
+		},
 		getCanUse(event, player) {
 			return lib.inpile.filter(i => event.filterCard(get.autoViewAs({ name: i }, "unsure"), player, event));
 		},
@@ -154,7 +159,6 @@ const skills = {
 				}
 			},
 		},
-		group: "cadingxi_init",
 		subSkill: {
 			backup2: {
 				async precontent(event, trigger, player) {

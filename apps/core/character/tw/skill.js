@@ -49,24 +49,20 @@ const skills = {
 			player: "damageBegin4",
 		},
 		filter(event, player, name) {
-			if ((name == "damageBegin4" ? event.source : event.player) == player) return false;
+			const target = name == "damageBegin4" ? event.source : event.player;
+			if (target == player || !target?.isIn() || target.hp >= player.hp) return false;
 			const position = player.storage.twfenxin_achieve ? "he" : "h";
 			if (event.isOnline() || player.storage.twfenxin_achieve) return player.hasCards(position);
 			if (name == "damageBegin2")
-				return (
-					event.player &&
-					event.player.hp >= player.hp &&
-					player.hasCard(card => {
-						return get.color(card) == "black" && lib.filter.canBeDiscarded(card, player, player);
-					}, position)
-				);
-			return (
-				event.source &&
-				event.source.hp >= player.hp &&
-				player.hasCard(card => {
-					return get.color(card) == "red" && lib.filter.canBeDiscarded(card, player, player);
-				}, position)
-			);
+				return player.hasCard(card => {
+					return get.color(card) == "black" && lib.filter.canBeDiscarded(card, player, player);
+				}, position);
+			return player.hasCard(card => {
+				return get.color(card) == "red" && lib.filter.canBeDiscarded(card, player, player);
+			}, position);
+		},
+		logTarget(event, player, name) {
+			return name == "damageBegin4" ? event.source : event.player;
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
@@ -28440,25 +28436,21 @@ const skills = {
 					return !player.getStorage("cangjia").includes(get.suit(event.card));
 				},
 				async content(event, trigger, player) {
-					const source = trigger.card.player;
-					if (!source || !source.isIn()) {
+					const source = trigger.player;
+					if (!source?.isIn() || !source.hasDiscardableCards(source, "he")) {
 						trigger.getParent()?.excluded.add(player);
 						return;
 					}
-					if (!source.hasCards("he", card => lib.filter.cardDiscardable(card, source, event.skill))) {
-						trigger.getParent()?.excluded.add(player);
-					} else {
-						const result = await source
-							.chooseToDiscard({
-								prompt: `藏铗：弃置一张牌，否则${get.translation(trigger.card)}对${get.translation(player)}无效`,
-								position: "he",
-								ai(card) {
-									return 20 - get.value(card);
-								},
-							})
-							.forResult();
-						if (!result.bool) trigger.getParent()?.excluded.add(player);
-					}
+					const result = await source
+						.chooseToDiscard({
+							prompt: `藏铗：弃置一张牌，否则${get.translation(trigger.card)}对${get.translation(player)}无效`,
+							position: "he",
+							ai(card) {
+								return 10 - get.value(card);
+							},
+						})
+						.forResult();
+					if (!result?.bool || !result.cards?.length) trigger.getParent()?.excluded.add(player);
 				},
 			},
 		},
@@ -28669,7 +28661,7 @@ const skills = {
 			}
 		},
 	},
-	//tw疑华佗 疑？☁ -by子右
+	//tw疑华佗 疑？☁
 	twmiehai: {
 		audio: "sxrmmiehai",
 		enable: "chooseToUse",
@@ -28745,7 +28737,7 @@ const skills = {
 			},
 		},
 	},
-	//tw疑刘备 哒哒哒哒哒 by子右
+	//tw疑刘备 哒哒哒哒哒
 	twchengbian: {
 		audio: "sxrmchengbian",
 		trigger: {
@@ -28852,7 +28844,7 @@ const skills = {
 			},
 		},
 	},
-	//tw疑曹操 好想玩袁神 ☁袁神 by子右
+	//tw疑曹操 好想玩袁神 ☁袁神
 	twkuxin: {
 		audio: "sxrmkuxin",
 		trigger: { player: "damageEnd" },
@@ -29208,7 +29200,7 @@ const skills = {
 			tag: { rejudge: 1 },
 		},
 	},
-	//tw疑伏皇后 当当当当当 看精彩纷纷 ☁袁神 by子右
+	//tw疑伏皇后 当当当当当 看精彩纷纷 ☁袁神
 	twmitu: {
 		audio: "sxrmmitu",
 		trigger: {

@@ -1,5 +1,13 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 const translates = {
+	dc_feiyi: "新杀费祎",
+	dc_feiyi_prefix: "新杀",
+	dcqiansu: "谦素",
+	dcqiansu_info: "其他角色的结束阶段，若其手牌数比你多，你可以摸三张牌，然后交给该角色其中一张。",
+	dcxingbang: "兴邦",
+	dcxingbang_info: "出牌阶段限一次，你可以摸一张牌并交给一名其他角色一张牌。然后你获得其一张手牌，若此牌：是你交给该角色的牌，视为对其使用一张【杀】；不是你交给该角色的牌，重复获得牌的流程（至多获得三张）。",
+	dcfanhuo: "泛祸",
+	dcfanhuo_info: `限定技，出牌阶段，你可令${get.poptip("dcxingbang")}改为“出牌阶段限三次”直到回合结束，然后你于此回合结束时失去3点体力。`,
 	re_panfeng: "潘凤",
 	xinkuangfu: "狂斧",
 	xinkuangfu_info: "出牌阶段限一次，你可选择：1，弃置装备区里的一张牌，你使用无对应实体牌的普【杀】。若此【杀】造成伤害，你摸两张牌。2，弃置一名其他角色装备区里的一张牌，你使用无对应实体牌的普【杀】。若此【杀】未造成伤害，你弃置两张手牌。（均无距离和次数限制）",
@@ -9,9 +17,9 @@ const translates = {
 	dc_xiahouen: "新杀夏侯恩",
 	dc_xiahouen_prefix: "新杀",
 	chijian: "持剑",
-	chijian_info: `出牌阶段，你可以额外使用一张【杀】；若你的武器栏为空，视为你装备着${get.poptip("qinggang")}。`,
+	chijian_info: `锁定技。①你于出牌阶段内使用【杀】的次数上限+1。②若你的武器栏为空，视为你装备着${get.poptip("qinggang")}。`,
 	shiwu: "恃武",
-	shiwu_info: `其他角色的回合开始时，你可以视为对其使用【决斗】，若你对其造成伤害，你从牌堆中随机获得一张伤害牌；若其对你造成伤害，本回合其获得${get.poptip("chijian")}且你失去${get.poptip("chijian")}，其他角色杀死你后获得${get.poptip("chijian")}。`,
+	shiwu_info: `①其他角色的回合开始时，你可以视为对其使用【决斗】，若你以此法对其造成伤害，你从牌堆中获得一张伤害牌；若其以此法对你造成伤害，直到其回合结束，其获得${get.poptip("chijian")}且你失去${get.poptip("chijian")}。②一名角色杀死你后，其获得${get.poptip("chijian")}。`,
 	caoxing: "曹性",
 	cxliushi: "流矢",
 	cxliushi2: "流矢",
@@ -657,10 +665,9 @@ const translates = {
 	yue_caozhi: "乐曹植",
 	yue_caozhi_prefix: "乐",
 	dcfuyue: "赋乐",
-	dcfuyue_tag: "invisible",
-	dcfuyue_info: "锁定技，①你的初始手牌增加“赋”标记（“赋”牌不计入你的手牌上限）；②“赋”牌随机获得另一种非装备牌牌名，你使用“赋”牌时可选择使用该牌所拥有的任意一种牌名。",
+	dcfuyue_info: "锁定技。①游戏开始时，你将手牌标记为“赋”。②你的“赋”牌不计入手牌上限。③当你标记手牌为“赋”时，你令其随机获得另一种非装备牌牌名。④你使用“赋”牌时可选择使用该牌所拥有的任意一种牌名。",
 	dcwenlan: "文澜",
-	dcwenlan_info: "锁定技，你每使用或打出两张牌结算后：若为包含相同牌名的两张“赋”，你从牌堆中获得这两张“赋”所含牌名的牌各一张，并标记为“赋”；否则你选择任意张手牌标记为“赋”或替换“赋”牌名。",
+	dcwenlan_info: "当你每使用或打出两张牌结算结束后，若这两张牌均为“赋”且包含相同牌名，则你从牌堆中获得这两张“赋”包含牌名的牌各一张并标记为“赋”；否则你选择任意张手牌，随机变更其中的“赋”获得的牌名并将其余牌标记为“赋”。",
 };
 
 export default translates;

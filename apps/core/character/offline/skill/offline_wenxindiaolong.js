@@ -3,7 +3,7 @@ import html from "dedent";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
-	//曹丕------by 清风
+	//曹丕
 	wxdlyishi: {
 		audio: 2,
 		derivation: "wxdlfangzhu",
