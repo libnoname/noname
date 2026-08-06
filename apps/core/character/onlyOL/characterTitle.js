@@ -14,7 +14,7 @@ export default {
 	ol_zhangliao: "散敌擒孙",
 	shen_caopi: "诰天仰颂",
 	shen_zhenji: "洛水凌波",
-	//ol_zhangsong: "",
+	ol_zhangsong: "跻路踌躇",
 	ol_jsrg_zhanghe: "微子去殷",
 	//ol_caojie: "",
 	ol_re_xinxianying: "识人读心",

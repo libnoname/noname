@@ -10692,9 +10692,8 @@ export class Player extends HTMLDivElement {
 						str = get.translation(name)[0];
 					}
 					ui.create.div(".background.skillmark", node).innerHTML = str;
-					let zhuanhuanji = get.is.zhuanhuanji(name, this);
 					// 仅针对获得/失去显示为☯的转化技显示
-					if (zhuanhuanji && str == "☯") {
+					if (lib.skill[name] && get.is.zhuanhuanji(name, this) && str == "☯") {
 						const zhuanhuanLimit = get.zhuanhuanItemNum(name, this);
 						const storage = this.storage[name];
 						let index;
