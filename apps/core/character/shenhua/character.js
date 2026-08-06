@@ -70,6 +70,7 @@ const characters = {
 		hp: 3,
 		skills: ["bazhen", "huoji", "kanpo"],
 		names: "诸葛|亮",
+		clans: ["琅琊诸葛氏"],
 	},
 	pangtong: {
 		sex: "male",
@@ -285,6 +286,7 @@ const characters = {
 		hp: 3,
 		skills: ["xinfu_zuilun", "xinfu_fuyin"],
 		names: "诸葛|瞻",
+		clans: ["琅琊诸葛氏"],
 	},
 	lukang: {
 		sex: "male",

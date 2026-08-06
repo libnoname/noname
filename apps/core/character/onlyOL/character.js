@@ -192,6 +192,7 @@ const characters = {
 		hp: 3,
 		skills: ["olsbzhitian", "olsbwujing", "olsbzhijue"],
 		names: "诸葛|亮",
+		clans: ["琅琊诸葛氏"],
 	},
 	ol_sunluban: {
 		sex: "female",

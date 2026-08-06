@@ -35,6 +35,7 @@ const characters = {
 		hp: 3,
 		skills: ["natuxing", "natufu"],
 		names: "诸葛|亮",
+		clans: ["琅琊诸葛氏"],
 	},
 	natu_zhaoyun: {
 		sex: "male",
@@ -67,6 +68,7 @@ const characters = {
 		hp: 3,
 		skills: ["oljiangwu", "olxinghan"],
 		names: "诸葛|亮",
+		clans: ["琅琊诸葛氏"],
 	},
 	meituizhishen: {
 		sex: "male",
