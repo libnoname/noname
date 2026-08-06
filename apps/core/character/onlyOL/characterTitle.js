@@ -1,8 +1,8 @@
 export default {
-	//ol_bulianshi: "",
+	ol_bulianshi: "无冕之后",
 	//ol_liufeng: "",
 	ol_quancong: "其时声明",
-	//ol_caoxiu: "",
+	ol_caoxiu: "千里骐骥",
 	ol_guanping: "威灵显化",
 	dm_zhangfei: "祭命的战神",
 	ol_xiahoushi: "疾冲之恋",
@@ -19,7 +19,7 @@ export default {
 	ol_caojie: "明殿掷玺",
 	ol_re_xinxianying: "识人读心",
 	ol_sb_dongzhao: "天阶登志",
-	ol_sb_chengyu: "兼智且勇",
+	ol_sb_chengyu: "岁聿责谋",
 	ol_sb_yl_luzhi: "人之望",
 	//ol_sunxiu: "弥殇的景君", //暂无称号，先取别的称号顶替一下
 	//ol_sb_zhaoyun: "七进七出", //暂无称号，先取别的称号顶替一下
