@@ -2,6 +2,13 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//OL牛马
+	oldianbu: {
+		audio: 2,
+	},
+	oljuhun: {
+		audio: 5,
+	},
 	//那兔
 	natulie: {
 		audio: 2,

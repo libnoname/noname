@@ -1,4 +1,6 @@
 const translates = {
+	old_pot_dengai: "牢势邓艾",
+	old_pot_dengai_prefix: "牢|势",
 	old_zhangxingcai: "旧张星彩",
 	old_zhangxingcai_prefix: "旧",
 	old_xusheng: "旧徐盛",
