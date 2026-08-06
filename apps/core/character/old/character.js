@@ -526,6 +526,7 @@ const characters = {
 		skills: ["old_zuilun", "old_fuyin"],
 		names: "诸葛|瞻",
 		dieAudios: ["zhugezhan"],
+		clans: ["琅琊诸葛氏"],
 	},
 	old_guanqiujian: {
 		sex: "male",
