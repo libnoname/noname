@@ -1,6 +1,10 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const dynamicTranslates = {
+	dcsbxieshu(player, skill) {
+		const usable = player.storage[skill] ? "" : "每回合限一次，";
+		return`${usable}你使用牌指定其他角色为目标后，你可令此牌对其中一个目标无效并获得其一张牌。`;
+	},
 	dcsbjingmou(player) {
 		const bool = player.storage.dcsbjingmou;
 		let yang = "你可令此牌无效并弃置牌堆顶一张牌，若与此牌花色一致对其造成1点火焰伤害",

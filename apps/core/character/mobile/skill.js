@@ -1016,10 +1016,11 @@ const skills = {
 	},
 	//界严颜
 	rejuzhan: {
-		audio: 2,
+		audio: 4,
 		addtip(player, skill) {
 			player.addTip(skill, `${get.translation(skill)} ${player.storage[skill] ? `阴${player.countMark("rejuzhan_yin")}` : `阳${player.countMark("rejuzhan_yang")}`}`);
 		},
+		logAudio: index => (typeof index == "number" ? "rejuzhan" + index + ".mp3" : 2),
 		init(player, skill) {
 			get.info(skill).addtip(player, skill);
 			player.addSkill(skill + "_mark");
@@ -1106,6 +1107,8 @@ const skills = {
 				}
 			}
 			if (isChengshi) {
+				player.logSkill(event.name, null, null, null, [get.rand(3, 4)]);
+				player.popup("乘势！");
 				player.addSkill(event.name + "_sha");
 				player.addMark(event.name + "_sha", 1, false);
 				player
@@ -1319,8 +1322,9 @@ const skills = {
 	},
 	//崔琰毛玠
 	mbzhengbi: {
-		audio: 2,
+		audio: 4,
 		onremove: ["mbzhengbi", "mbzhengbi_used"],
+		logAudio: index => (typeof index == "number" ? "mbzhengbi" + index + ".mp3" : 2),
 		intro: { content: "可选择的角色+#" },
 		trigger: { player: "phaseZhunbeiBegin" },
 		filter(event, player) {
@@ -1362,6 +1366,7 @@ const skills = {
 				const { index } = result;
 				if (typeof index == "number") {
 					if (index + 1 == 3 && !player.getStorage(event.name + "_used").includes(target)) {
+						player.logSkill(event.name, null, null, null, [get.rand(3, 4)]);
 						player.addMark(event.name, 1, false);
 						player.markAuto(event.name + "_used", target);
 					}
@@ -1372,7 +1377,8 @@ const skills = {
 		},
 	},
 	mbfengying: {
-		audio: 2,
+		audio: 4,
+		logAudio: () => 2,
 		limited: true,
 		skillAnimation: true,
 		animationColor: "thunder",
@@ -1418,6 +1424,7 @@ const skills = {
 		subSkill: {
 			effect: {
 				audio: "mbfengying",
+				logAudio: () => ["mbfengying3.mp3", "mbfengying4.mp3"],
 				charlotte: true,
 				forced: true,
 				trigger: { global: "phaseEnd" },
@@ -32505,18 +32512,26 @@ const skills = {
 				choiceList.push("背水！" + beishuiDesc + "，升级技能");
 			}
 			choices.push("cancel2");
-			const { control } = await player
+			const result = await player
 				.chooseControl({
 					controls: choices,
 					choiceList: choiceList,
 					prompt: promptText,
-					choice: canDiscard ? 0 : 1,
+					ai() {
+						const { controls } = get.event();
+						if (controls.includes("背水")) {
+							return "背水";
+						}
+						return controls.slice().randomGet();
+					},
 				})
 				.forResult();
-			event.result = {
-				bool: control !== "cancel2",
-				cost_data: control,
-			};
+			if (typeof result?.control == "string" && result.control != "cancel2") {
+				event.result = {
+					bool: true,
+					cost_data: result.control,
+				};
+			}
 		},
 		async content(event, trigger, player) {
 			const control = event.cost_data;
@@ -32547,6 +32562,9 @@ const skills = {
 							prompt: "竭缘：请选择一张" + get.translation(color) + "牌弃置",
 							filterCard(card) {
 								return get.color(card) === get.event().color;
+							},
+							ai(card) {
+								return 10 - get.value(card);
 							},
 						})
 						.set("color", color)
