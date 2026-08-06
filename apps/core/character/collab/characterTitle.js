@@ -1,5 +1,6 @@
 export default {
 	//注：此包武将称号多取自于线下制图，可能存在版本差异，线上暂无较统一的版本称号或暂缺）
+	ol_niuma: "天选牛马",
 	natu_guanyu: "义薄云天",
 	natu_zhaoyun: "长坂救主",
 	natu_zhugeliang: "鞠躬尽瘁",

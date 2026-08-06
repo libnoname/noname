@@ -155,7 +155,7 @@ const characters = {
 	gongsunxiu: {
 		sex: "male",
 		group: "qun",
-		hp: 4,
+		hp: 5,
 		skills: ["dcgangu", "dckuizhen"],
 		names: "公孙|修",
 	},
