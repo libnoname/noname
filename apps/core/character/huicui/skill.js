@@ -145,7 +145,7 @@ const skills = {
 		audio: 2,
 		trigger: { player: ["useCardAfter", "respondAfter"] },
 		filter(event, player) {
-			const evts = game.getAllGlobalHistory("everything", evt => ["useCard", "respond"].includes(evt.name) && evt.player == player, event);
+			const evts = game.getAllGlobalHistory("everything", evt => ["useCard", "respond"].includes(evt.name) && evt.player == player && get.type(evt.card) != "delay", event);
 			if (evts.length < 2) {
 				return false;
 			}
@@ -163,7 +163,7 @@ const skills = {
 		forced: true,
 		locked: false,
 		async content(event, trigger, player) {
-			const evts = game.getAllGlobalHistory("everything", evt => ["useCard", "respond"].includes(evt.name) && evt.player == player, trigger);
+			const evts = game.getAllGlobalHistory("everything", evt => ["useCard", "respond"].includes(evt.name) && evt.player == player && get.type(evt.card) != "delay", trigger);
 			const { markAsFu } = get.info("dcfuyue");
 			const { isFuyueCard, getNames } = get.info(event.name);
 			// 本次是否为“赋”
@@ -255,7 +255,7 @@ const skills = {
 			mark: {
 				charlotte: true,
 				init(player, skill) {
-					const evts = game.getAllGlobalHistory("everything", evt => ["useCard", "respond"].includes(evt.name) && evt.player == player);
+					const evts = game.getAllGlobalHistory("everything", evt => ["useCard", "respond"].includes(evt.name) && evt.player == player && get.type(evt.card) != "delay");
 					if (evts.length) {
 						const evt = evts.at(-1);
 						const { isFuyueCard, getNames } = get.info("dcwenlan");
@@ -272,6 +272,9 @@ const skills = {
 				forced: true,
 				popup: false,
 				firstDo: true,
+				filter(event, player) {
+					return get.type(event.card) != "delay";
+				},
 				async content(event, trigger, player) {
 					const { isFuyueCard, getNames } = get.info("dcwenlan");
 					const bool = isFuyueCard(trigger, player);
