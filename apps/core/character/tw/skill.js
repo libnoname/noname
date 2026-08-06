@@ -60,7 +60,8 @@ const skills = {
 			return get.tag(card, "damage") > 0;
 		},
 		filter(event, player) {
-			return player.hasCards("hes", card => get.tag(card, "damage") > 0);
+			const name = player.storage.twsaoting ? "jiu" : "juedou";
+            return player.hasCards("hes", card => get.tag(card, "damage") > 0) && event.filterCard(get.autoViewAs({ name }, "unsure"), player, event);
 		},
 		position: "hes",
 		viewAs(cards, player) {
