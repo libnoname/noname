@@ -105,10 +105,10 @@ const skills = {
 			global: "phaseBefore",
 		},
 		filter(event, player) {
-			return game.hasPlayer(current => current != player && !current.hasSkill("twhuju")) && (event.name != "phase" || game.phaseNumber == 0);
+			return game.hasPlayer(current => !current.hasSkill("twhuju")) && (event.name != "phase" || game.phaseNumber == 0);
 		},
 		logTarget(event, player) {
-			return game.filterPlayer(current => current != player && !current.hasSkill("twhuju")).sortBySeat();
+			return game.filterPlayer(current => !current.hasSkill("twhuju")).sortBySeat();
 		},
 		async content(event, trigger, player) {
 			const targets = event.targets;
@@ -125,16 +125,16 @@ const skills = {
 				animationColor: "wood",
 				trigger: { global: "dying" },
 				prompt2(event, player) {
-					return "选择任意其他角色令其失去【虎踞】（可选择0），然后你回复等量体力，获得等量非伤害牌并入幻";
+					return "选择任意角色令其失去【虎踞】（可选择0），然后你回复等量体力，获得等量非伤害牌并入幻";
 				},
 				async content(event, trigger, player) {
-					const targetx = game.filterPlayer(current => current != player && current.hasSkill("twhuju"));
+					const targetx = game.filterPlayer(current => current.hasSkill("twhuju"));
 					const result = targetx.length
 						? await player
 								.chooseTarget({
 									prompt: "翦魇：选择任意其他角色令其失去【虎踞】，然后你回复等量体力，获得等量非伤害牌并入幻，或点击“取消”直接入幻",
 									filterTarget(card, player, target) {
-										return player != target && target.hasSkill("twhuju");
+										return target.hasSkill("twhuju");
 									},
 									selectTarget: [1, Infinity],
 									ai(target) {
@@ -394,9 +394,9 @@ const skills = {
 			event.result = await player
 				.chooseTarget({
 					prompt: get.prompt(event.skill),
-					prompt2: "选择任意其他角色令其失去【虎踞】，然后你回复等量体力并获得等量伤害牌，然后你退幻",
+					prompt2: "选择任意角色令其失去【虎踞】，然后你回复等量体力并获得等量伤害牌，然后你退幻",
 					filterTarget(card, player, target) {
-						return player != target && target.hasSkill("twhuju");
+						return target.hasSkill("twhuju");
 					},
 					selectTarget: [1, Infinity],
 					ai(target) {
