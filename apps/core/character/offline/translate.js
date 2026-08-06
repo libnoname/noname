@@ -1,6 +1,14 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	ps_shen_caocao: "★神曹操",
+	ps_shen_caocao_prefix: "★|神",
+	psguixin: "归心",
+	psguixin_info: "每轮开始时或当你受到伤害后，你可以获得所有其他角色各一张牌。",
+	psshenzun: "神尊",
+	psshenzun_info: "当你造成伤害时，若受伤角色的势力与你不同，你可以弃置一张牌令此伤害+1且不计入次数。",
+	psfeiying: "飞影",
+	psfeiying_info: "锁定技，你使用牌无距离限制。",
 	wxdl_caopi: "文心雕龙曹丕",
 	wxdl_caopi_prefix: "文心雕龙",
 	wxdlyishi: "遗世",

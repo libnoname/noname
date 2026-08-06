@@ -1,4 +1,28 @@
 const characters = {
+	ol_chitu: {
+		sex: "female",
+		group: "shu",
+		hp: 4,
+		skills: [],
+		names: "null|null",
+		isUnseen: true,
+	},
+	ol_le_menghuo: {
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		skills: [],
+		groupBorder: "qun",
+		isUnseen: true,
+	},
+	ol_niuma: {
+		sex: "male",
+		group: "shen",
+		hp: 4,
+		skills: ["oldianbu", "oljuhun"],
+		names: "null|null-null|null",
+		isUnseen: true,
+	},
 	natu_guanyu: {
 		sex: "male",
 		group: "shu",
