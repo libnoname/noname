@@ -417,7 +417,7 @@ const skills = {
 			await game.doAsyncInOrder(targets, async target => {
 				await target.removeSkills("twhuju");
 			});
-			await player.recover(targetx.length);
+			await player.recover(targets.length);
 			const cards = [];
 			for (let i = 0; i < targets.length; i++) {
 				const card = get.cardPile(card => get.tag(card, "damage") && !cards.includes(card));
