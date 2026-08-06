@@ -20599,24 +20599,14 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			if (!player.countCards("he")) {
-				return false;
-			}
-			for (var i of lib.inpile) {
-				if (i != "du" && get.type(i, null, false) == "basic") {
-					if (event.filterCard({ name: i }, player, event)) {
-						return true;
-					}
-					if (i == "sha") {
-						for (var j of lib.inpile_nature) {
-							if (event.filterCard({ name: i, nature: j }, player, event)) {
-								return true;
-							}
-						}
-					}
-				}
-			}
-			return false;
+			return get
+				.inpileVCardList(info => info[0] !== "equip")
+				.some(info => {
+					return player.hasCard(card => {
+						const vcard = get.autoViewAs({ name: info[2], nature: info[3], cards: [card], storage: { xinjianying: true } }, [card]);
+						return event.filterCard(vcard, player, event);
+					}, "hes");
+				});
 		},
 		onChooseToUse(event) {
 			if (event.type == "phase" && !game.online) {
@@ -20631,99 +20621,107 @@ const skills = {
 		},
 		chooseButton: {
 			dialog(event, player) {
-				var list = [];
-				var suit = event.xinjianying_suit || "",
-					str = get.translation(suit);
-				for (var i of lib.inpile) {
-					if (i != "du" && get.type(i, null, false) == "basic") {
-						if (event.filterCard({ name: i }, player, event)) {
-							list.push(["基本", str, i]);
-						}
-						if (i == "sha") {
-							for (var j of lib.inpile_nature) {
-								if (event.filterCard({ name: i, nature: j }, player, event)) {
-									list.push(["基本", str, i, j]);
-								}
-							}
-						}
-					}
-				}
-				return ui.create.dialog("渐营", [list, "vcard"]);
+				const str = get.translation(event.xinjianying_suit || "");
+				return ui.create.dialog("渐营", [
+					get
+						.inpileVCardList(info => info[0] !== "equip")
+						.filter(info => {
+							return player.hasCard(card => {
+								const vcard = get.autoViewAs({ name: info[2], nature: info[3], cards: [card], storage: { xinjianying: true } }, [card]);
+								return event.filterCard(vcard, player, event);
+							}, "hes");
+						})
+						.map(info => {
+							info[1] = str;
+							return info;
+						}),
+					"vcard",
+				]);
 			},
 			check(button) {
-				if (button.link[2] == "jiu") {
-					return 0;
-				}
-				return _status.event.player.getUseValue({
-					name: button.link[2],
-					nature: button.link[3],
-				});
+				return get.player().getUseValue({ name: button.link[2], nature: button.link[3] });
 			},
 			backup(links, player) {
+				const event = get.event();
 				var next = {
 					audio: "xinjianying",
 					filterCard: true,
 					popname: true,
-					position: "he",
+					position: "hes",
 					viewAs: {
 						name: links[0][2],
 						nature: links[0][3],
+						storage: { xinjianying: true },
 					},
 					ai1(card) {
-						return 7 - _status.event.player.getUseValue(card, null, true);
+						const player = get.player();
+						return 7 - player.getUseValue(card, null, true);
+					},
+					precontent() {
+						event.getParent().addCount = false;
 					},
 				};
-				if (_status.event.xinjianying_suit) {
-					next.viewAs.suit = _status.event.xinjianying_suit;
-				}
+				if (event.xinjianying_suit) next.viewAs.suit = event.xinjianying_suit;
 				return next;
 			},
 			prompt(links) {
-				return "将一张牌当做" + (get.translation(links[0][3]) || "") + get.translation(links[0][2]) + (_status.event.xinjianying_suit ? "(" + get.translation(_status.event.xinjianying_suit) + ")" : "") + "使用";
+				const event = get.event();
+				return "将一张牌当做" + (get.translation(links[0][3]) || "") + "【" + get.translation(links[0][2]) + (event.xinjianying_suit ? "(" + get.translation(event.xinjianying_suit) + ")" : "") + "】使用";
+			},
+		},
+		locked: false,
+		mod: {
+			cardUsable(card, player, num) {
+				if (card.storage?.xinjianying) return Infinity;
 			},
 		},
 		ai: {
 			order(item, player) {
-				if (_status.event.xinjianying_suit) {
-					return 16;
-				}
-				return 3;
+				const event = get.event();
+				player = player || event.player;
+				const list = get
+					.inpileVCardList(info => info[0] !== "equip")
+					.filter(info => {
+						return player.hasCard(card => {
+							const vcard = get.autoViewAs({ name: info[2], nature: info[3], cards: [card], storage: { xinjianying: true } }, [card]);
+							return event.filterCard(vcard, player, event);
+						}, "hes");
+					});
+				if (!list.length) return 0;
+				return Math.max(...list.map(info => get.order({ name: info[2], nature: info[3] }, player))) - 0.1;
 			},
 			result: { player: 7 },
 		},
-		group: ["xinjianying_draw", "jianying_mark"],
+		group: ["xinjianying_draw", "dcjianying_mark"],
 		init(player) {
-			if (player.isPhaseUsing()) {
-				var evt = _status.event.getParent("phaseUse");
-				var history = player.getHistory("useCard", function (evt2) {
-					return evt2.getParent("phaseUse") == evt;
-				});
-				if (history.length) {
-					var trigger = history[history.length - 1];
-					player.storage.jianying_mark = trigger.card;
-					player.markSkill("jianying_mark");
-					game.broadcastAll(
-						function (player, suit) {
-							if (player.marks.jianying_mark) {
-								player.marks.jianying_mark.firstChild.innerHTML = get.translation(suit);
-							}
-						},
-						player,
-						get.suit(trigger.card, player)
-					);
-					player.when("phaseUseAfter").step(async () => {
-						player.unmarkSkill("jianying_mark");
-						delete player.storage.jianying_mark;
-					});
+			var history = player.getAllHistory("useCard");
+			if (history.length) {
+				var trigger = history[history.length - 1];
+				if (get.suit(trigger.card, player) == "none" || typeof get.number(trigger.card, player) != "number") {
+					return;
 				}
+				player.storage.dcjianying_mark = trigger.card;
+				player.markSkill("dcjianying_mark");
+				game.broadcastAll(
+					function (player, suit) {
+						if (player.marks.dcjianying_mark) {
+							player.marks.dcjianying_mark.firstChild.innerHTML = get.translation(suit);
+						}
+					},
+					player,
+					get.suit(trigger.card, player)
+				);
 			}
 		},
 		onremove(player) {
-			player.unmarkSkill("jianying_mark");
-			delete player.storage.jianying_mark;
+			player.unmarkSkill("dcjianying_mark");
+			delete player.storage.dcjianying_mark;
 		},
 		subSkill: {
-			draw: { inherit: "jianying", audio: "xinjianying" },
+			draw: {
+				audio: "xinjianying",
+				inherit: "dcjianying",
+			},
 		},
 	},
 	//步练师

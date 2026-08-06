@@ -1,4 +1,5 @@
 export default {
+	huan_sunce: "问鼎中原",
 	huan_daqiao: "温矜姝华",
 	tw_pot_huanjie: "定计谋国",
 	tw_lingju: "情随梦逝",

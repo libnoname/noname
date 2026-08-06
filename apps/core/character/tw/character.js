@@ -1,4 +1,10 @@
 const characters = {
+	huan_sunce: {
+		sex: "male",
+		group: "wu",
+		hp: 4,
+		skills: ["twliwu", "twsaoting", "twjianyan"],
+	},
 	tw_pot_huanjie: {
 		sex: "male",
 		group: "wei",

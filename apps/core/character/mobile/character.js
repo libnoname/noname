@@ -691,7 +691,7 @@ const characters = {
 		hp: 2,
 		maxHp: 3,
 		hujia: 3,
-		skills: ["xinjianying", "shibei"],
+		skills: ["xinjianying", "dcshibei"],
 	},
 	re_bulianshi: {
 		sex: "female",
