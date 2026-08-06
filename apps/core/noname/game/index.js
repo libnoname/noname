@@ -20,6 +20,14 @@ import { Check } from "./check.js";
 import { security } from "@/util/sandbox.js";
 import { save } from "@/util/config.js";
 import { debounce } from "@/util/utils.js";
+import { getAudioSourceCandidates, isExternalAudioSource, setAudioSourceWithFallback } from "./audioSource.js";
+
+function setAssetAudioSourceWithFallback(audio, source, onError) {
+	const candidates = getAudioSourceCandidates(source).map(current => {
+		return isExternalAudioSource(current) ? current : `${lib.assetURL}${current}`;
+	});
+	setAudioSourceWithFallback(audio, candidates, onError);
+}
 
 export class Game {
 	documentZoom;
@@ -2486,7 +2494,7 @@ export class Game {
 		}
 
 		let parsedPath = "";
-		if (["blob:", "data:"].some(prefix => path.startsWith(prefix))) {
+		if (isExternalAudioSource(path)) {
 			parsedPath = path;
 		} else if (path.startsWith("ext:")) {
 			parsedPath = path.replace(/^ext:/, "extension/");
@@ -2532,27 +2540,23 @@ export class Game {
 			}
 			onEnded(ev);
 		};
-		audio.onerror = ev => {
-			audio.remove();
-			if (_status.video || game.online) {
-				return;
-			}
-			onError(ev);
-		};
-
 		Promise.resolve().then(async () => {
-			let resolvedPath;
+			let resolvedPaths;
 			if (parsedPath.startsWith("db:")) {
-				resolvedPath = get.objectURL(await game.getDB("image", parsedPath.slice(3)));
-			} else if (lib.path.extname(parsedPath)) {
-				resolvedPath = `${lib.assetURL}${parsedPath}`;
-			} else if (URL.canParse(path)) {
-				resolvedPath = path;
+				resolvedPaths = [get.objectURL(await game.getDB("image", parsedPath.slice(3)))];
+			} else if (isExternalAudioSource(path)) {
+				resolvedPaths = [path];
 			} else {
-				resolvedPath = `${lib.assetURL}${parsedPath}.mp3`;
+				resolvedPaths = getAudioSourceCandidates(parsedPath).map(current => `${lib.assetURL}${current}`);
 			}
 
-			audio.src = resolvedPath;
+			setAudioSourceWithFallback(audio, resolvedPaths, ev => {
+				audio.remove();
+				if (_status.video || game.online) {
+					return;
+				}
+				onError(ev);
+			});
 			ui.window.appendChild(audio);
 		});
 
@@ -2723,40 +2727,23 @@ export class Game {
 		var audio = document.createElement("audio");
 		audio.autoplay = true;
 		audio.volume = lib.config.volumn_audio / 8;
-		audio.src = lib.assetURL + str + name + ".mp3";
-		audio.addEventListener("ended", function () {
-			this.remove();
-		});
 		if (typeof index != "number") {
 			index = Math.ceil(Math.random() * 2);
 		}
-		audio._changed = 1;
-		audio.onerror = function () {
-			switch (this._changed) {
-				case 1: {
-					audio.src = lib.assetURL + str + name + ".ogg";
-					this._changed = 2;
-					break;
-				}
-				case 2: {
-					audio.src = lib.assetURL + str + name + index + ".mp3";
-					this._changed = 3;
-					break;
-				}
-				case 3: {
-					audio.src = lib.assetURL + str + name + index + ".ogg";
-					this._changed = 4;
-					break;
-				}
-				default: {
-					this.remove();
-				}
-			}
-		};
+		audio.addEventListener("ended", function () {
+			this.remove();
+		});
 		//Some browsers do not support "autoplay", so "oncanplay" listening has been added
 		audio.oncanplay = function () {
 			Promise.resolve(this.play()).catch(() => void 0);
 		};
+		const candidates = [`${str}${name}`, `${str}${name}${index}`]
+			.flatMap(source => [
+				...getAudioSourceCandidates(source),
+				`${source}.ogg`,
+			])
+			.map(current => `${lib.assetURL}${current}`);
+		setAudioSourceWithFallback(audio, candidates, () => audio.remove());
 		ui.window.appendChild(audio);
 	}
 	/**
@@ -2799,14 +2786,22 @@ export class Game {
 			} else if (audio.startsWith("ext:")) {
 				game.playAudio(`${audioInfo[0]}:${audioInfo[1]}`, `${card.name}_${sex}.${audioInfo[2] || "mp3"}`);
 			} else {
-				game.playAudio("card", sex, `${audioInfo[0]}.${audioInfo[1] || "mp3"}`);
+				const extension = audioInfo[1] ? `.${audioInfo[1]}` : "";
+				game.playAudio("card", sex, `${audioInfo[0]}${extension}`);
 			}
 		} else {
 			game.playAudio("card", sex, card.name);
 		}
 	}
 	playBackgroundMusic() {
+		const setSource = source => {
+			setAssetAudioSourceWithFallback(ui.backgroundMusic, source, () => {
+				ui.backgroundMusic.removeAttribute("src");
+				ui.backgroundMusic.load();
+			});
+		};
 		if (lib.config.background_music == "music_off") {
+			ui.backgroundMusic.onerror = null;
 			ui.backgroundMusic.src = "";
 			return;
 		}
@@ -2824,13 +2819,13 @@ export class Game {
 			}
 			_status.currentAozhan = aozhan;
 			if (["blob:", "data:"].some(prefix => aozhan.startsWith(prefix))) {
-				ui.backgroundMusic.src = aozhan;
+				setSource(aozhan);
 			} else if (aozhan.startsWith("db:")) {
 				game.getDB("image", aozhan.slice(3)).then(result => (ui.backgroundMusic.src = result));
 			} else if (aozhan.startsWith("ext:")) {
-				ui.backgroundMusic.src = `${lib.assetURL}extension/${aozhan.slice(4)}`;
+				setSource(`extension/${aozhan.slice(4)}`);
 			} else {
-				ui.backgroundMusic.src = `${lib.assetURL}audio/background/aozhan_${aozhan}.mp3`;
+				setSource(`audio/background/aozhan_${aozhan}`);
 			}
 			return;
 		}
@@ -2845,18 +2840,18 @@ export class Game {
 		if (music == "music_custom") {
 			const backgroundMusicSourceConfiguration = lib.config.background_music_src;
 			if (backgroundMusicSourceConfiguration) {
-				ui.backgroundMusic.src = backgroundMusicSourceConfiguration;
+				setSource(backgroundMusicSourceConfiguration);
 			}
 			return;
 		}
 		if (["blob:", "data:"].some(prefix => music.startsWith(prefix))) {
-			ui.backgroundMusic.src = music;
+			setSource(music);
 		} else if (music.startsWith("db:")) {
 			game.getDB("image", music.slice(3)).then(result => (ui.backgroundMusic.src = result));
 		} else if (music.startsWith("ext:")) {
-			ui.backgroundMusic.src = `${lib.assetURL}extension/${music.slice(4)}`;
+			setSource(`extension/${music.slice(4)}`);
 		} else {
-			ui.backgroundMusic.src = `${lib.assetURL}audio/background/${music}.mp3`;
+			setSource(`audio/background/${music}`);
 		}
 	}
 	// 某种意义上，改不了，得重写

@@ -13771,7 +13771,7 @@ export class Library {
 	]);
 	natureAudio = {
 		damage: {
-			fire: "default", //默认，即语音放置在audio/effect下，以damage_fire.mp3 damage_fire2.mp3命名。
+			fire: "default", //默认，即语音放置在audio/effect下，以damage_fire.m4a damage_fire2.m4a命名。
 			thunder: "default",
 			ice: "default",
 			stab: "normal", //正常，即与普通伤害音效相同。
@@ -13783,7 +13783,7 @@ export class Library {
 			*/
 		},
 		hujia_damage: {
-			fire: "default", //默认，即语音放置在audio/effect下，以hujia_damage_fire.mp3 hujia_damage_fire2.mp3命名。
+			fire: "default", //默认，即语音放置在audio/effect下，以hujia_damage_fire.m4a hujia_damage_fire2.m4a命名。
 			thunder: "default",
 			ice: "normal", //正常，即与普通伤害音效相同。
 			/*
@@ -13794,7 +13794,7 @@ export class Library {
 			*/
 		},
 		sha: {
-			fire: "default", //默认，即语音放置在audio/card/male与audio/card/female下，命名为sha_fire.mp3
+			fire: "default", //默认，即语音放置在audio/card/male与audio/card/female下，命名为sha_fire.m4a
 			thunder: "default",
 			ice: "default",
 			stab: "default",

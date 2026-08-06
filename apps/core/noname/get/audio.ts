@@ -213,7 +213,7 @@ export class Audio {
 				path = path + "/";
 			}
 			if (ext == void 0) {
-				ext = ".mp3";
+				ext = "";
 			} else {
 				ext = "." + ext;
 			}
@@ -235,7 +235,7 @@ export class Audio {
 			audioInfoString = audioInfoString.slice(pathIndex + 1);
 		}
 
-		let ext = ".mp3";
+		let ext = "";
 		const extIndex = audioInfoString.lastIndexOf(".");
 		if (extIndex !== -1) {
 			ext = audioInfoString.slice(extIndex);
@@ -361,7 +361,7 @@ class SkillAudio implements AudioBase {
 		} else if (this.info.logAudio && args) {
 			const result = this.info.logAudio(...args);
 			if (typeof result === "number" && typeof this.info.audio === "string") {
-				return Array.from({ length: result }, (_, i) => `${this.info.audio}${i + 1}.mp3`);
+				return Array.from({ length: result }, (_, i) => `${this.info.audio}${i + 1}`);
 			}
 			return result;
 		} else if (this.info.audio != void 0) {

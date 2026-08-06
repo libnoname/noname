@@ -11992,9 +11992,9 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			if (player.hujia > 0 && !player.hasSkillTag("nohujia") && !event.nohujia) {
 				let damageAudioInfo = lib.natureAudio.hujia_damage[event.nature];
 				if (!damageAudioInfo || damageAudioInfo == "normal") {
-					damageAudioInfo = `effect/hujia_damage${num > 1 ? "2" : ""}.mp3`;
+					damageAudioInfo = `effect/hujia_damage${num > 1 ? "2" : ""}`;
 				} else if (damageAudioInfo == "default") {
-					damageAudioInfo = `effect/hujia_damage_${event.nature}${num > 1 ? "2" : ""}.mp3`;
+					damageAudioInfo = `effect/hujia_damage_${event.nature}${num > 1 ? "2" : ""}`;
 				} else {
 					damageAudioInfo = damageAudioInfo[num > 1 ? 2 : 1];
 				}
@@ -12006,9 +12006,9 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			} else {
 				let damageAudioInfo = lib.natureAudio.damage[event.nature];
 				if (!damageAudioInfo || damageAudioInfo == "normal") {
-					damageAudioInfo = `effect/damage${num > 1 ? "2" : ""}.mp3`;
+					damageAudioInfo = `effect/damage${num > 1 ? "2" : ""}`;
 				} else if (damageAudioInfo == "default") {
-					damageAudioInfo = `effect/damage_${event.nature}${num > 1 ? "2" : ""}.mp3`;
+					damageAudioInfo = `effect/damage_${event.nature}${num > 1 ? "2" : ""}`;
 				} else {
 					damageAudioInfo = damageAudioInfo[num > 1 ? 2 : 1];
 				}

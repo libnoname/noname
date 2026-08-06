@@ -5,6 +5,7 @@ import android.util.Log
 import android.webkit.MimeTypeMap
 import android.webkit.WebResourceResponse
 import androidx.webkit.WebViewAssetLoader
+import java.util.Locale
 
 
 class JsAwarePathHandler(
@@ -37,9 +38,13 @@ class JsAwarePathHandler(
     }
 
     private fun guessMime(name: String): String {
-        val ext = MimeTypeMap.getFileExtensionFromUrl(name)
+        val ext = MimeTypeMap.getFileExtensionFromUrl(name).lowercase(Locale.ROOT)
         return MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext)
             ?: when (ext) {
+                "m4a" -> "audio/mp4"
+                "mp3" -> "audio/mpeg"
+                "ogg" -> "audio/ogg"
+                "wav" -> "audio/wav"
                 "js" -> "application/javascript"
                 "mjs" -> "application/javascript"
                 "json" -> "application/json"
