@@ -377,7 +377,10 @@ const skills = {
 			return name == namex && player.hasCards("hes", card => !get.tag(card, "damage"));
 		},
 		ai: {
-			order: 9,
+			order(item, player) {
+				player ??= get.player();
+				return get.order({ name: player.storage.twdangjiang ? "sha" : "wuzhong" }, player) + 0.1;
+			},
 			result: { player: 1 },
 		},
 	},
