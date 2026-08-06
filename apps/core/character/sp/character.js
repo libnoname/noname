@@ -796,6 +796,7 @@ const characters = {
 		hp: 4,
 		skills: ["youlong", "luanfeng"],
 		names: "诸葛|亮-庞|统",
+		clans: ["琅琊诸葛氏"],
 	},
 	sp_zhangliao: {
 		sex: "male",
@@ -957,6 +958,7 @@ const characters = {
 		hp: 3,
 		skills: ["huanshi", "olhongyuan", "olmingzhe"],
 		names: "诸葛|瑾",
+		clans: ["琅琊诸葛氏"],
 	},
 	zhugeke: {
 		sex: "male",
@@ -964,6 +966,8 @@ const characters = {
 		hp: 3,
 		skills: ["aocai", "duwu"],
 		names: "诸葛|恪",
+		clans: ["琅琊诸葛氏"],
+		clans: ["琅琊诸葛氏"],
 	},
 	guanyinping: {
 		sex: "female",
@@ -1026,6 +1030,7 @@ const characters = {
 		hp: 4,
 		skills: ["gongao", "juyi"],
 		names: "诸葛|诞",
+		clans: ["琅琊诸葛氏"],
 	},
 	sp_jiangwei: {
 		sex: "male",
@@ -1084,6 +1089,7 @@ const characters = {
 		hp: 3,
 		skills: ["qirang", "yuhua"],
 		names: "诸葛|果",
+		clans: ["琅琊诸葛氏"],
 	},
 
 	lingju: {
