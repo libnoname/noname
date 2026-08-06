@@ -87,6 +87,7 @@ const characters = {
 		skills: ["mbqirang", "mbyuhua"],
 		names: "诸葛|果",
 		dieAudios: ["zhugeguo"],
+		clans: ["琅琊诸葛氏"],
 	},
 	mb_caochun: {
 		sex: "male",
@@ -337,6 +338,7 @@ const characters = {
 		hp: 3,
 		skills: ["friendyance", "friendfangqiu", "friendzhugelianggongli"],
 		names: "诸葛|亮",
+		clans: ["琅琊诸葛氏"],
 	},
 	mb_xuezong: {
 		sex: "male",
@@ -1069,6 +1071,7 @@ const characters = {
 		hp: 3,
 		skills: ["bazhen", "rehuoji", "rekanpo"],
 		names: "诸葛|亮",
+		clans: ["琅琊诸葛氏"],
 	},
 	xin_xiahoudun: {
 		sex: "male",

@@ -116,7 +116,7 @@ const characters = {
 		sex: "female",
 		group: "qun",
 		hp: 4,
-		skills: ["clanxunguan_zhuiji", "clanxunguan_yunying", "clandaojie"],
+		skills: ["clanzhuiji", "clanyunying", "clandaojie"],
 		clans: ["颍川荀氏"],
 	},
 	clan_zhugeguo: {
@@ -124,13 +124,15 @@ const characters = {
 		group: "shu",
 		hp: 3,
 		skills: ["clanfuyao", "clanfenshi"],
+		names: "诸葛|果",
 		clans: ["琅琊诸葛氏"],
 	},
 	clan_zhugezhan: {
 		sex: "male",
 		group: "shu",
 		hp: 3,
-		skills: ["clanzhugezhan_chengwang", "clanzhugezhan_fenshi"],
+		skills: ["clanchengwang", "clanzhugezhan"],
+		names: "诸葛|瞻",
 		clans: ["琅琊诸葛氏"],
 	},
 	clan_hanshao: {
