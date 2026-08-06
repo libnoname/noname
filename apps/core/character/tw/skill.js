@@ -4537,7 +4537,7 @@ const skills = {
 					})
 					.forResult();
 				await target
-					.chooseUseTarget({ name: "juedou", isCard: true }, cards)
+					.chooseUseTarget({ name: "juedou", isCard: true }, cards, true)
 					.set("targetx", player)
 					.set("filterTarget", function (card, player, target) {
 						var evt = _status.event;
