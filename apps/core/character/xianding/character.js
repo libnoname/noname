@@ -1,9 +1,17 @@
 const characters = {
+	dc_sb_zhonghui: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["dcsbjinglian", "dcsbxieshu", "dcsbzongzi"],
+		clans: ["颍川钟氏"],
+	},
 	lizhaoyi: {
 		sex: "female",
 		group: "shu",
 		hp: 3,
 		skills: ["dcmingjie", "dcxianfu"],
+		names: "李|null",
 	},
 	dc_sb_guanyu: {
 		sex: "male",
@@ -47,6 +55,7 @@ const characters = {
 		hp: 3,
 		skills: ["dcsbjingmou", "dcsbguyi"],
 		names: "诸葛|亮",
+		clans: ["琅琊诸葛氏"],
 	},
 	dc_shen_guanyu: {
 		sex: "male",
@@ -617,6 +626,7 @@ const characters = {
 		hp: 4,
 		skills: ["dcyanzuo", "dczuyin", "dcpijian"],
 		names: "诸葛|京",
+		clans: ["琅琊诸葛氏"],
 	},
 	liutan: {
 		sex: "female",
@@ -700,6 +710,7 @@ const characters = {
 		hp: 3,
 		skills: ["dcsbtaozhou", "dcsbhoude"],
 		names: "诸葛|瑾",
+		clans: ["琅琊诸葛氏"],
 	},
 	dc_sb_jiaxu: {
 		sex: "male",
@@ -776,7 +787,8 @@ const characters = {
 		group: "wei",
 		hp: 3,
 		skills: ["dcjichun", "dchanying"],
-		names: "诸葛|梦雪",
+		names: "诸葛|null",
+		clans: ["琅琊诸葛氏"],
 	},
 	bailingyun: {
 		sex: "female",
@@ -820,7 +832,8 @@ const characters = {
 		group: "wei",
 		hp: 3,
 		skills: ["dcqiongying", "dcnuanhui"],
-		names: "诸葛|若雪",
+		names: "诸葛|null",
+		clans: ["琅琊诸葛氏"],
 	},
 	caoyi: {
 		sex: "female",
@@ -988,6 +1001,7 @@ const characters = {
 		maxHp: 7,
 		skills: ["dcjincui", "dcqingshi", "dczhizhe"],
 		names: "诸葛|亮",
+		clans: ["琅琊诸葛氏"],
 	},
 	duanqiaoxiao: {
 		sex: "female",

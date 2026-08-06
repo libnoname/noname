@@ -256,7 +256,7 @@ const skills = {
 		audio: 2,
 		trigger: { player: ["useCardAfter", "respondAfter"] },
 		filter(event, player) {
-			const evts = game.getAllGlobalHistory("everything", evt => ["useCard", "respond"].includes(evt.name) && evt.player == player, event);
+			const evts = game.getAllGlobalHistory("everything", evt => ["useCard", "respond"].includes(evt.name) && evt.player == player && get.type(evt.card) != "delay", event);
 			if (evts.length < 2) {
 				return false;
 			}
@@ -274,7 +274,7 @@ const skills = {
 		forced: true,
 		locked: false,
 		async content(event, trigger, player) {
-			const evts = game.getAllGlobalHistory("everything", evt => ["useCard", "respond"].includes(evt.name) && evt.player == player, trigger);
+			const evts = game.getAllGlobalHistory("everything", evt => ["useCard", "respond"].includes(evt.name) && evt.player == player && get.type(evt.card) != "delay", trigger);
 			const { markAsFu } = get.info("dcfuyue");
 			const { isFuyueCard, getNames } = get.info(event.name);
 			// 本次是否为“赋”
@@ -366,7 +366,7 @@ const skills = {
 			mark: {
 				charlotte: true,
 				init(player, skill) {
-					const evts = game.getAllGlobalHistory("everything", evt => ["useCard", "respond"].includes(evt.name) && evt.player == player);
+					const evts = game.getAllGlobalHistory("everything", evt => ["useCard", "respond"].includes(evt.name) && evt.player == player && get.type(evt.card) != "delay");
 					if (evts.length) {
 						const evt = evts.at(-1);
 						const { isFuyueCard, getNames } = get.info("dcwenlan");
@@ -383,6 +383,9 @@ const skills = {
 				forced: true,
 				popup: false,
 				firstDo: true,
+				filter(event, player) {
+					return get.type(event.card) != "delay";
+				},
 				async content(event, trigger, player) {
 					const { isFuyueCard, getNames } = get.info("dcwenlan");
 					const bool = isFuyueCard(trigger, player);
@@ -800,15 +803,23 @@ const skills = {
 						return ui.selected.cards.length == ui.selected.targets.length;
 					},
 					ai1(card) {
+						const player = get.player();
+						const num = game.countPlayer(current => current != player && get.attitude(player, current) > 0);
+						if (ui.selected.cards.length > num) {
+							return 0;
+						}
 						return 1 / Math.max(0.1, get.value(card));
 					},
 					ai2(target) {
 						const player = get.player();
+						if (ui.selected.targets.length >= ui.selected.cards.length) {
+							return 0;
+						}
 						let att = get.attitude(player, target);
 						if (target.hasSkillTag("nogain")) {
 							att /= 9;
 						}
-						return 4 + att;
+						return Math.max(4 + att, 1);
 					},
 				})
 				.forResult();
@@ -4916,7 +4927,9 @@ const skills = {
 		forced: true,
 		async content(event, trigger, player) {
 			await player.draw(3);
-			await player.loseHp();
+			if (!player.isMinHp()) {
+				await player.loseHp();
+			}
 		},
 		ai: {
 			combo: "dckuizhen",
@@ -4927,79 +4940,69 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		filter(event, player) {
-			return game.hasPlayer(current => {
-				return lib.skill.dckuizhen.filterTarget(null, player, current);
-			});
+			return player.hasCards("h", card => game.hasPlayer(current => current != player && lib.filter.canBeGained(card, player, current)));
 		},
 		filterTarget(card, player, target) {
-			if (target == player) {
+			if (target == player || !ui.selected.cards?.length) {
 				return false;
 			}
-			return target.countCards("h") >= player.countCards("h") || target.getHp() >= player.getHp();
+			return ui.selected.cards.every(cardx => lib.filter.canBeGained(cardx, player, target));
 		},
+		filterCard: true,
+		selectCard: [1, Infinity],
+		allowChooseAll: true,
+		position: "h",
+		check(card) {
+			return 8 - get.value(card);
+		},
+		discard: false,
+		lose: false,
+		delay: 0,
 		usable: 1,
 		async content(event, trigger, player) {
-			const { target } = event,
-				juedou = new lib.element.VCard({ name: "juedou", isCard: true });
-			if (target.canUse(juedou, player, false)) {
-				await target.useCard(juedou, player, "noai");
-			}
-			if (
-				player.hasHistory("damage", evt => {
-					return evt.getParent(3) === event;
-				})
-			) {
-				await player.viewHandcards(target);
-				const shas = target.getGainableCards(player, "h").filter(card => get.name(card) === "sha");
-				if (shas.length) {
-					player.addSkill("dckuizhen_effect");
-					const next = player.gain(shas, "give", target);
-					next.gaintag.add("dckuizhen");
-					await next;
-				}
-			} else {
-				await target.loseHp();
-			}
+			const {
+				targets: [target],
+				cards,
+			} = event;
+			const num = cards.length;
+			const next = player.give(cards, target);
+			next.gaintag.add(event.name);
+			await next;
+			await player.randomGain({ num, position: "h", target });
 		},
 		ai: {
-			order() {
-				return get.order({ name: "sha" }) + 1;
-			},
+			order: 1,
 			result: {
-				player(player, target) {
-					let eff = get.effect(player, { name: "juedou" }, target, player),
-						shas = target.mayHaveSha(player, "respond", null, "count") - player.mayHaveSha(player, "respond", null, "count");
-					if (shas > 0) {
-						eff += shas * get.effect(target, { name: "shunshou" }, player, player);
-					}
-					return eff;
-				},
-				target(player, target) {
-					let eff = get.effect(player, { name: "juedou" }, target, target),
-						shas = target.mayHaveSha(player, "respond", null, "count") - player.mayHaveSha(player, "respond", null, "count");
-					if (shas < -1) {
-						eff += get.effect(target, { name: "losehp" }, target, target);
-					} else if (shas > 0) {
-						eff += shas * get.effect(target, { name: "shunshou" }, player, target);
-					}
-					return eff;
-				},
+				player: 1,
+				target: -1,
 			},
 		},
+		group: ["dckuizhen_effect"],
 		subSkill: {
 			effect: {
-				trigger: { player: "useCard1" },
+				audio: "dckuizhen",
 				forced: true,
-				popup: false,
-				firstDo: true,
-				charlotte: true,
+				locked: false,
+				trigger: { global: ["useCard", "phaseEnd"] },
 				filter(event, player) {
-					if (event.addCount === false) {
-						return false;
+					const target = event.player;
+					if (event.name == "phase") {
+						return game.hasPlayer(current => {
+							return (
+								!current.hasCards("h", card => card.hasGaintag("dckuizhen")) &&
+								current.hasHistory("lose", evt => {
+									for (const i in evt.gaintag_map) {
+										if (evt.gaintag_map[i].includes("dckuizhen")) {
+											return true;
+										}
+									}
+									return false;
+								})
+							);
+						});
 					}
-					return player.hasHistory("lose", evt => {
-						const evtx = evt.relatedEvent || evt.getParent();
-						if (evtx != event) {
+					return target.hasHistory("lose", evt => {
+						if (evt.getParent() != event) {
 							return false;
 						}
 						for (const i in evt.gaintag_map) {
@@ -5010,23 +5013,33 @@ const skills = {
 						return false;
 					});
 				},
-				async content(event, trigger, player) {
-					trigger.addCount = false;
-					var stat = player.getStat().card,
-						name = trigger.card.name;
-					if (typeof stat[name] == "number") {
-						stat[name]--;
+				logTarget(event, player) {
+					if (event.name == "useCard") {
+						return event.player;
 					}
+					return game.filterPlayer(current => {
+						return (
+							!current.hasCards("h", card => card.hasGaintag("dckuizhen")) &&
+							current.hasHistory("lose", evt => {
+								for (const i in evt.gaintag_map) {
+									if (evt.gaintag_map[i].includes("dckuizhen")) {
+										return true;
+									}
+								}
+								return false;
+							})
+						);
+					}).sortBySeat();
 				},
-				mod: {
-					cardUsable(card) {
-						if (!card.cards) {
-							return;
-						}
-						if (card.cards.some(card => card.hasGaintag("dckuizhen"))) {
-							return Infinity;
-						}
-					},
+				async content(event, trigger, player) {
+					const targets = event.targets;
+					if (trigger.name == "useCard") {
+						await player.draw({ num: 1 });
+					} else {
+						await game.doAsyncInOrder(targets, async target => {
+							await target.loseHp();
+						});
+					}
 				},
 			},
 		},
@@ -7410,6 +7423,18 @@ const skills = {
 				);
 			},
 		},
+		mark: true,
+		marktext: "笳",
+		intro: {
+			name: "胡笳",
+			content(storage, player) {
+				const num = player.countCards("h", card => card.hasGaintag("dcshuangjia_tag"));
+				return `当前拥有${get.cnNumber(num)}张“胡笳”手牌`;
+			},
+			markcount(storage, player, skill) {
+				return player.countCards("h", card => card.hasGaintag("dcshuangjia_tag"));
+			},
+		},
 	},
 	dcbeifen: {
 		audio: 2,
@@ -7418,28 +7443,18 @@ const skills = {
 			global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
 		},
 		filter(event, player) {
-			var evt = event.getl(player);
-			if (!evt || !evt.hs || !evt.hs.length) {
+			const evt = event.getl(player);
+			if (!evt?.hs?.length) {
 				return false;
 			}
 			if (event.name == "lose") {
-				for (var i in event.gaintag_map) {
-					if (event.gaintag_map[i].includes("dcshuangjia_tag")) {
-						return true;
-					}
-				}
-				return false;
+				return Object.values(event.gaintag_map).flat().includes("dcshuangjia_tag");
 			}
 			return player.hasHistory("lose", evt => {
 				if (event != evt.getParent()) {
 					return false;
 				}
-				for (var i in evt.gaintag_map) {
-					if (evt.gaintag_map[i].includes("dcshuangjia_tag")) {
-						return true;
-					}
-				}
-				return false;
+				return Object.values(evt.gaintag_map).flat().includes("dcshuangjia_tag");
 			});
 		},
 		forced: true,
@@ -19474,9 +19489,8 @@ const skills = {
 	// 夏侯恩
 	chijian: {
 		audio: 2,
-		locked: false,
 		init(player, skill) {
-			player.addExtraEquip(skill, "qinggang", true, player => player.hasEmptySlot(1) && !player.getVEquip(1) && lib.card.qinggang);
+			player.addExtraEquip(skill, "qinggang", true, player => player.hasEmptySlot(1) && lib.card.qinggang);
 		},
 		onremove(player, skill) {
 			player.removeExtraEquip(skill);
@@ -19490,14 +19504,18 @@ const skills = {
 		subSkill: {
 			qinggang: {
 				mod: {
-					attackRange(player, num) {
-						if (player.hasEmptySlot(1) && !player.getVEquip(1)) return num + 1;
+					attackRangeBase(player) {
+						const num = lib.card?.guanshi?.distance?.qinggang;
+						if (typeof num != "number" || !player.hasEmptySlot(1)) {
+							return;
+						}
+						return Math.max(player.getEquipRange(player.getCards("e")), 1 - num);
 					},
 				},
 				audio: "chijian",
 				inherit: "qinggang_skill",
 				filter(event, player) {
-					if (!player.hasEmptySlot(1) || player.getVEquip(1)) return false;
+					if (!player.hasEmptySlot(1)) return false;
 					return event.card.name == "sha";
 				},
 			},
@@ -19516,7 +19534,9 @@ const skills = {
 		},
 		check(event, player) {
 			const juedou = new lib.element.VCard({ name: "juedou", isCard: true });
-			return get.effect(event.player, juedou, player, player) > 0 && get.attitude(player, event.player) <= 0;
+			const target = event.player;
+			const shas = target.mayHaveSha(player, "respond", null, "count") - player.mayHaveSha(player, "respond", null, "count");
+			return get.effect(target, juedou, player, player) > 0 && get.attitude(player, target) <= 0 && shas <= 0;
 		},
 		logTarget: "player",
 		async content(event, trigger, player) {
@@ -19526,23 +19546,20 @@ const skills = {
 				targets: [target],
 			});
 			await next;
-			const damagedEvents = game.getAllGlobalHistory("everything", evt => evt.name === "damage" && evt.card === next.card);
-			if (damagedEvents.some(evt => evt.source === player && evt.player === target)) {
+			if (player.hasHistory("sourceDamage", evt => evt.getParent(2) == next && evt.player === target)) {
 				const card = get.cardPile(card => get.is.damageCard(card), "bottom");
-				if (card) await player.gain(card, "gain2");
+				if (card) await player.gain(card, "draw");
 			}
-			if (damagedEvents.some(evt => evt.source === target && evt.player === player)) {
-				await target.addTempSkills("chijian");
+			if (target.hasHistory("sourceDamage", evt => evt.getParent(2) == next && evt.player === player)) {
+				await target.addTempSkills("chijian", { player: "phaseEnd" });
 				await player.removeSkills("chijian");
-				player
-					.when({ global: "phaseEnd" })
-					.filter(evt => trigger.getParent("phase", true, true) === evt)
-					.step(async (event2, trigger2, player2) => {
-						await player.addSkills("chijian");
-					});
+				target.when({ player: "phaseEnd" }).step(async () => {
+					await player.addSkills("chijian");
+				});
 			}
 		},
 		group: "shiwu_lose",
+		derivation: "chijian",
 		subSkill: {
 			lose: {
 				audio: "shiwu",

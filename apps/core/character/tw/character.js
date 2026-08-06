@@ -1,4 +1,10 @@
 const characters = {
+	huan_sunce: {
+		sex: "male",
+		group: "wu",
+		hp: 4,
+		skills: ["twliwu", "twsaoting", "twjianyan"],
+	},
 	tw_pot_huanjie: {
 		sex: "male",
 		group: "wei",
@@ -167,6 +173,7 @@ const characters = {
 		skills: ["sbhuoji", "twkanpo"],
 		names: "诸葛|亮",
 		dieAudios: ["sb_sp_zhugeliang"],
+		clans: ["琅琊诸葛氏"],
 	},
 	huan_dingshangwan: {
 		sex: "female",
@@ -273,6 +280,7 @@ const characters = {
 		maxHp: 4,
 		skills: ["twbeiding", "twjielv", "twhunyou"],
 		names: "诸葛|亮",
+		clans: ["琅琊诸葛氏"],
 	},
 	huan_jiangwei: {
 		sex: "male",
@@ -286,6 +294,7 @@ const characters = {
 		hp: 3,
 		skills: ["rexianyuan", "twlingyin"],
 		names: "诸葛|果",
+		clans: ["琅琊诸葛氏"],
 	},
 	huan_zhanghe: {
 		sex: "male",
@@ -326,6 +335,7 @@ const characters = {
 		hp: 3,
 		skills: ["twshouzhu", "twdaigui", "twcairu"],
 		names: "诸葛|均",
+		clans: ["琅琊诸葛氏"],
 	},
 	simafu: {
 		sex: "male",
@@ -634,6 +644,7 @@ const characters = {
 		skills: ["twqirang", "twyuhua"],
 		names: "诸葛|果",
 		dieAudios: ["zhugeguo"],
+		clans: ["琅琊诸葛氏"],
 	},
 	tw_fanchou: {
 		sex: "male",

@@ -1,4 +1,5 @@
 export default {
+	//dc_sb_zhonghui: "",
 	lizhaoyi: "贞骨陨玉",
 	wu_zhangfei: "烈武桓威",
 	dc_sb_guanyu: "单刀赴会",
@@ -12,7 +13,7 @@ export default {
 	dc_shen_zhangliao: "雁门之刑天",
 	dc_shen_caopi: "月晦书轮回",
 	//dc_xia_wangyue: "",
-	//shie: "",
+	shie: "传锋承刃",
 	dc_sb_zhangren: "尖锋致溃",
 	v_zhangxingcai: "帼姿凤舞",
 	liuxuan: "依劝移行",

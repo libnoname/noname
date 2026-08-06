@@ -1,4 +1,10 @@
 const characters = {
+	ps_shen_caocao: {
+		sex: "male",
+		group: "shen",
+		hp: 3,
+		skills: ["psguixin", "psshenzun", "psfeiying"],
+	},
 	wxdl_caopi: {
 		sex: "male",
 		group: "wei",
@@ -42,6 +48,7 @@ const characters = {
 		skills: ["ymfriendyance", "ymfriendfangqiu"],
 		names: "诸葛|亮",
 		dieAudios: ["friend_zhugeliang"],
+		clans: ["琅琊诸葛氏"],
 	},
 	pe_shen_zhonghui: {
 		sex: "male",
@@ -149,6 +156,7 @@ const characters = {
 		groupInGuozhan: "shu",
 		dieAudio: ["shen_zhugeliang"],
 		names: "诸葛|亮",
+		clans: ["琅琊诸葛氏"],
 	},
 	hl_shen_lvmeng: {
 		sex: "male",
@@ -1169,6 +1177,7 @@ const characters = {
 		maxHp: 4,
 		skills: ["jyqibian", "jycailve"],
 		names: "诸葛|亮",
+		clans: ["琅琊诸葛氏"],
 	},
 	jy_pangtong: {
 		sex: "male",
@@ -1789,6 +1798,7 @@ const characters = {
 		skills: ["jdhuoji", "jdkanpo"],
 		dieAudios: ["sb_sp_zhugeliang"],
 		names: "诸葛|亮",
+		clans: ["琅琊诸葛氏"],
 	},
 	jd_jin_simashi: {
 		sex: "male",
@@ -2108,6 +2118,7 @@ const characters = {
 		hp: 3,
 		skills: ["pszhiji", "psjiefeng", "kongcheng"],
 		names: "诸葛|亮",
+		clans: ["琅琊诸葛氏"],
 	},
 	ps_zhugeliang: {
 		sex: "male",
@@ -2115,6 +2126,7 @@ const characters = {
 		hp: 3,
 		skills: ["psguanxing", "pslongyin"],
 		names: "诸葛|亮",
+		clans: ["琅琊诸葛氏"],
 	},
 	ps_simayi: {
 		sex: "male",
