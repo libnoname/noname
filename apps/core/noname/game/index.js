@@ -2122,6 +2122,36 @@ export class Game {
 	 * @param { (result: boolean) => any } callback
 	 */
 	connect(ip, callback) {
+		// PeerJS 房间号分流:非 ws/URL、形如房间号(4-8 位字母数字、无点无冒号)且纯浏览器环境 → 走 P2P
+		if (!game.online && typeof ip === "string" && ip.trim().length) {
+			const _peerTrimmed = ip.trim();
+			const _looksLikeRoomCode = /^[A-Za-z0-9]{4,8}$/.test(_peerTrimmed) && !_peerTrimmed.startsWith("ws") && !_peerTrimmed.includes(".") && !_peerTrimmed.includes(":");
+			if (_looksLikeRoomCode && typeof window.require !== "function") {
+				_status.connectCallback = callback;
+				_status.ip = _peerTrimmed;
+				if (game.ws) {
+					game.ws._nocallback = true;
+					game.ws.close();
+					delete game.ws;
+				}
+				game.sandbox = security.createSandbox(_peerTrimmed);
+				import("../library/element/peerAdapter.js")
+					.then(peerAdapter => peerAdapter.connectToPeerHost(_peerTrimmed))
+					.then(adapter => {
+						game.ws = adapter;
+						game.ws.onopen = lib.element.ws.onopen;
+						game.ws.onmessage = lib.element.ws.onmessage;
+						game.ws.onerror = lib.element.ws.onerror;
+						game.ws.onclose = lib.element.ws.onclose;
+					})
+					.catch(e => {
+						console.error("[peer] 连接房间失败:", e);
+						alert("连接房间失败:房间号可能不存在或对方不在线。\n" + (e && e.message ? e.message : ""));
+						if (callback) callback(false);
+					});
+				return;
+			}
+		}
 		// 如果已经联机了就不需要再连接了
 		if (game.online || typeof ip !== "string" || !ip?.length) {
 			return;
@@ -2420,6 +2450,9 @@ export class Game {
 		return new lib.element.Client(new lib.element.NodeWS(id), true).send(message);
 	}
 	createServer() {
+		// 纯浏览器/PWA 无 Electron 的 lib.node,但联机逻辑大量用 lib.node.clients 等,
+		// 故这里确保它存在(PeerJS 房主也需要 clients/torespond 等作为服务端状态容器)。
+		if (!lib.node) lib.node = {};
 		lib.node.clients = [];
 		lib.node.banned = [];
 		lib.node.observing = [];
@@ -2434,11 +2467,31 @@ export class Game {
 		ui.create.chat();
 		if (game.onlineroom) {
 			void 0;
-		} else {
+		} else if (typeof window.require === "function") {
+			// Electron/Node 环境:原生 WebSocket 服务器
 			const WebSocketServer = require("ws").Server;
 			const wss = new WebSocketServer({ port: 8080 });
 			game.ip = get.ip();
 			wss.on("connection", lib.init.connection);
+		} else {
+			// 纯浏览器/PWA:用 PeerJS 开房,peerId=房间号,替代 Node 开服。
+			// 返回 Promise 供 waitForPlayer await——开房成功(game.ip 已就绪)后才画等待界面。
+			const roomCode = game._peerRoomCode || undefined;
+			return import("../library/element/peerAdapter.js").then(async peerAdapter => {
+				const code = roomCode || peerAdapter.generateRoomCode();
+				try {
+					const host = await peerAdapter.createPeerHost(code, ws => lib.init.connection(ws));
+					game._peerHost = host;
+					game._peerRoomCode = host.roomCode;
+					game.ip = host.roomCode; // 房间号即"地址",供 UI 显示
+					if (typeof game.onPeerHostReady === "function") game.onPeerHostReady(host.roomCode);
+				} catch (e) {
+					console.error("[peer] 开房失败:", e);
+					alert("创建房间失败:" + (e && e.message ? e.message : e) + "\n(可能是房间号已被占用或网络问题,请重试)");
+					if (typeof game.onPeerHostError === "function") game.onPeerHostError(e);
+					throw e;
+				}
+			});
 		}
 	}
 	/**
