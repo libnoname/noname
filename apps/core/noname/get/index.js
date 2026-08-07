@@ -1609,8 +1609,9 @@ export class Get {
 	 * 此方法仅用作将技能/卡牌代码转为字符串，返回值无法直接进行反序列化
 	 * @param { any } obj
 	 * @param { number } [level = 0]
+	 * @param { boolean } [keepMethodSyntax = false] 是否保留对象方法的语法
 	 */
-	stringify(obj, level = 0) {
+	stringify(obj, level = 0, keepMethodSyntax = false) {
 		let indent = "";
 		for (let i = 0; i < level; i++) {
 			indent += "    ";
@@ -1620,8 +1621,9 @@ export class Get {
 				let str = "{\n";
 				for (const key in obj) {
 					let keyString = (/[^a-zA-Z]/.test(key) ? `"${key}"` : key) + ": ";
-					const valueString = get.stringify(obj[key], level + 1);
-					if (get.is.functionMethod(obj, key)) {
+					const isFunctionMethod = get.is.functionMethod(obj, key);
+					const valueString = get.stringify(obj[key], level + 1, isFunctionMethod);
+					if (isFunctionMethod) {
 						keyString = "";
 					}
 					str += indent + "    " + keyString + valueString + ",\n";
@@ -1630,6 +1632,17 @@ export class Get {
 				return str;
 			} else if (typeof obj === "function") {
 				let str = obj.toString().replace(/\t/g, "    ");
+				if (!keepMethodSyntax) {
+					if (obj instanceof AsyncGeneratorFunction) {
+						str = str.replace(/^async\s*\*\s*(?=[\w$]+\s*\()/, "async function* ");
+					} else if (obj instanceof GeneratorFunction) {
+						str = str.replace(/^\*\s*(?=[\w$]+\s*\()/, "function* ");
+					} else if (obj instanceof AsyncFunction) {
+						str = str.replace(/^async\s+(?!function\b)(?=[\w$]+\s*\()/, "async function ");
+					} else if (!/^(?:function|class)\b/.test(str)) {
+						str = str.replace(/^(?:get|set)\s+(?=[\w$]+\s*\()/, "function ").replace(/^(?=[\w$]+\s*\()/, "function ");
+					}
+				}
 				let lastLine = str.slice(str.lastIndexOf("\n"));
 				let originIndent = Math.floor((/\S/.exec(lastLine)?.index ?? lastLine.length) / 4);
 				for (let i = 0; i < Math.abs(originIndent - level); i++) {
