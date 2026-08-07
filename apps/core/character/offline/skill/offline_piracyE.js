@@ -520,7 +520,7 @@ const skills = {
 			_status.characterlist.randomSort();
 			const list = _status.characterlist.filter(character => get.character(character, 0) === "female");
 			if (!list.length) {
-				player.popup("没喽");
+				player.popup("没有符合条件的武将牌");
 				return;
 			}
 			const name = list.randomGet();
@@ -547,7 +547,7 @@ const skills = {
 					.forResult();
 				if (result?.bool && result.links?.length) {
 					const skill = result.links[0];
-					await player.addSkills(skill);
+					await player.addAdditionalSkills(event.name, skill);
 					lib.card["huashen_card_" + name].skills.push(skill);
 				}
 			}
