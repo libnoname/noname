@@ -1,9 +1,9 @@
 import { _status, lib, game, get, ui } from "noname";
-import { userAgentLowerCase, GeneratorFunction, AsyncFunction } from "@/util/index.js";
+import { userAgentLowerCase, GeneratorFunction, AsyncFunction, AsyncGeneratorFunction } from "@/util/index.js";
 
 export class Is {
 	/**
-	 * 检查对象的某个属性是否是content*(){}/async content(){}/content(){}中的特定形式
+	 * 检查对象的某个属性是否是*content(){}/async content(){}/async *content(){}/content(){}中的特定形式
 	 * @param {{[key: string]: any}} obj 目标对象
 	 * @param {string} key 属性名
 	 * @returns {boolean} 如果属性值是上述形式的函数定义，则返回true
@@ -13,19 +13,22 @@ export class Is {
 		if (!(typeof value === "function")) {
 			return false;
 		}
-		key = key.replaceAll("$", "\\$");
+		key = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 		let reg;
-		if (value instanceof GeneratorFunction) {
-			// content*(){}
-			reg = new RegExp(`\\*\\s*${key}[\\s\\S]*?\\(`);
+		if (value instanceof AsyncGeneratorFunction) {
+			// async *content(){}
+			reg = new RegExp(`^async\\s*\\*\\s*${key}\\s*\\(`);
+		} else if (value instanceof GeneratorFunction) {
+			// *content(){}
+			reg = new RegExp(`^\\*\\s*${key}\\s*\\(`);
 		} else if (value instanceof AsyncFunction) {
 			// async content(){}
-			reg = new RegExp(`async\\s*${key}[\\s\\S]*?\\(`);
+			reg = new RegExp(`^async\\s+${key}\\s*\\(`);
 		} else {
 			// content(){}
-			reg = new RegExp(`${key}[\\s\\S]*?\\(`);
+			reg = new RegExp(`^${key}\\s*\\(`);
 		}
-		return reg.exec(value)?.index === 0;
+		return reg.test(value.toString());
 	}
 	/**
 	 * @param { string } str
