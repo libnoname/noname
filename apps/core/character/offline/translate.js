@@ -1265,7 +1265,7 @@ const translates = {
 	jdsbzhiheng: "制衡",
 	jdsbzhiheng_info: "出牌阶段限一次。你可以弃置任意张牌并摸等量的牌，若你以此法弃置的牌包括你装备区的牌，则你多摸一张牌。",
 	jdsbtongye: "统业",
-	jdsbtongye_info: "锁定技，若牌堆未洗过牌，你视为拥有〖英姿〗和〖固政〗。",
+	jdsbtongye_info: `锁定技，若牌堆未洗过牌，你视为拥有${get.poptip("sbyingzi")}和${get.poptip("olguzheng")}。`,
 	jdsbjiuyuan: "救援",
 	jdsbjiuyuan_info: "主公技，出牌阶段限一次，你可以获得一名其他吴势力角色装备区的所有牌，然后你回复1点体力。",
 	jd_sb_xiaoqiao: "九鼎小乔",
