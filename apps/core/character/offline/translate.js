@@ -462,7 +462,7 @@ const translates = {
 	dragchengyuan: "承缘",
 	dragchengyuan_info: "限定技，你或一名女性角色进入濒死时，你可令其回复体力至体力上限。",
 	dragyuxian: "羽现",
-	dragyuxian_info: "使命技，①每轮限一次，一名角色的回合结束时，若本回合你或其回复过体力，你可以执行一个额外回合。②成功：准备阶段，若你已执行过四个回合，你获得〖应龙〗和〖撷芳〗。③失败：一名女性角色令你进入濒死。",
+	dragyuxian_info: `使命技，①每轮限一次，一名角色的回合结束时，若本回合你或其回复过体力，你可以执行一个额外回合。②成功：准备阶段，若你已执行过四个回合，你获得${get.poptip("dragyinglong")}和${get.poptip("dragxiefang")}。③失败：一名女性角色令你进入濒死。`,
 	dragyinglong: "应龙",
 	dragyinglong_info: "每回合限一次，一名角色使用虚拟牌或转化牌时，你可以令其本回合：1.使用同类型牌不可被响应；2.使用同颜色牌无次数限制。",
 	dragxiefang: "撷芳",
