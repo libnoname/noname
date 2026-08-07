@@ -4,7 +4,7 @@ const characters = {
 		group: "qun",
 		hp: 3,
 		skills: ["twsbmingren", "twsbzhenliang"],
-		dieAudios: ["sb_yj_luzhi"],
+		dieAudios: ["sb_yl_luzhi"],
 	},
 	huan_sunce: {
 		sex: "male",
