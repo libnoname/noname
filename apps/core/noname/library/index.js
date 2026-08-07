@@ -1382,6 +1382,15 @@ export class Library {
 					unfrequent: true,
 					intro: "在选择大量的牌时提供全选/反选功能<br><br>对于部分技能可能会因为其主动限制或者存在复杂的选择情况而失效",
 				},
+				download_offline_assets: {
+					name: "下载离线资源",
+					clear: true,
+					unfrequent: true,
+					intro: "把武将立绘、语音等全部素材下载缓存到本地,之后断网也能玩。可随时中断,再次点击从断点续传。建议在 WiFi 下进行(约 1GB)。注意:iOS 对缓存有容量上限且可能自动清理,不保证全部离线。",
+					onclick() {
+						lib.init.downloadOfflineAssets(this);
+					},
+				},
 				clear_FavoriteCharacter: {
 					name: "清除已收藏武将",
 					clear: true,
