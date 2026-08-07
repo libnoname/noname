@@ -2,7 +2,7 @@ import { _status, game, get, lib, ui } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 export default {
-	equipEnable: {
+	_equipEnable: {
 		chalotte: true,
 		mod: {
 			globalFrom(from, to, distance) {
