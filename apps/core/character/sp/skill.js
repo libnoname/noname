@@ -3764,9 +3764,7 @@ const skills = {
 	},
 	olchengen: {
 		audio: 2,
-		trigger: {
-			global: ["phaseEnd"],
-		},
+		trigger: { global: "phaseEnd" },
 		filter(event, player) {
 			const current = _status.currentPhase;
 			return current?.countCards("h") <= player.countCards("h") && game.hasPlayer(target => player.canCompare(target));
@@ -3779,7 +3777,7 @@ const skills = {
 						return player.canCompare(target);
 					},
 					ai(target) {
-						return -get.attitude(_status.event.player, target) / target.countCards("h");
+						return -get.attitude(get.player(), target) / target.countCards("h");
 					},
 				})
 				.forResult();
