@@ -979,7 +979,8 @@ const skills = {
 							.chooseButton({
 								createDialog: [`箜声：请选择要使用的牌`, cards],
 								filterButton(button, player) {
-									return player.hasUseTarget(button.link, true, false);
+									const card = button.link;
+									return player.hasUseTarget(card, void 0, false) || (get.info(card).notarget && lib.filter.cardEnabled(card, player));
 								},
 								ai(button) {
 									return get.player().getUseValue(button.link);
