@@ -24,7 +24,8 @@ export async function boot() {
 
 	await import("./polyfill.js");
 	// 设定游戏加载时间，超过时间未加载就提醒
-	const configLoadTime = parseInt(localStorage.getItem(lib.configprefix + "loadtime") || "10000");
+	// 纯静态部署(如 iOS PWA)首次需从 CDN 拉取全套资源,10 秒常不够会误弹"未正常载入",故放宽到 30 秒
+	const configLoadTime = parseInt(localStorage.getItem(lib.configprefix + "loadtime") || "30000");
 	// 现在不暴露到全局变量里了，直接传给onload
 	const resetGameTimeout = setTimeout(lib.init.reset, configLoadTime);
 
@@ -49,7 +50,13 @@ export async function boot() {
 		await import("./compatible.js");
 	}
 
-	const sandboxEnabled = !config.get("debug") && !get.is.safari();
+	// iOS(含主屏 PWA)与 Safari 浏览器一致跳过沙盒。
+	// 原因:iOS 主屏 PWA 的 UA 常缺 "Safari" 致 is.safari() 漏判 → 启用沙盒 →
+	// initializeSandboxRealms 建 about:blank iframe 加载 sandbox.js,而该 iframe 子请求在
+	// iOS WebKit 上【不走父页 Service Worker】→ 断网时永久 pending → 卡到 30s 弹"未正常载入"白屏。
+	// 且沙盒仅隔离联机远程代码、单机/本体不依赖它,本 fork 更是编译期禁用了沙盒(SANDBOX_ENABLED=false),
+	// 故 iOS 跳过零副作用,只是省掉那个会卡死的无用 iframe 加载。用 lib.device 而非 UA 判断更稳。
+	const sandboxEnabled = !config.get("debug") && !get.is.safari() && lib.device !== "ios";
 
 	// 初始化沙盒的Realms
 	await initializeSandboxRealms(sandboxEnabled);
@@ -497,7 +504,7 @@ export async function boot() {
 		if (!splashInRemoing) {
 			node.remove();
 		}
-		window.resetGameTimeout = setTimeout(lib.init.reset, 10000);
+		window.resetGameTimeout = setTimeout(lib.init.reset, configLoadTime);
 		delete window.inSplash;
 		game.saveConfig("mode", result);
 		await importMode(result);

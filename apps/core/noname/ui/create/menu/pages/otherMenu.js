@@ -104,7 +104,7 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 		var updatepx = ui.create.node("p");
 		updatepx.style.whiteSpace = "nowrap";
 		updatepx.style.marginTop = "8px";
-		var buttonx = ui.create.node("button", "访问项目主页", function () {
+		var buttonx = ui.create.node("button", "官方项目主页", function () {
 			window.open("https://github.com/libnoname/noname");
 		});
 		updatepx.appendChild(buttonx);
@@ -112,6 +112,69 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 		ul.appendChild(li1);
 		ul.appendChild(li3);
 		ul.appendChild(updatepx);
+
+		// PWA 手动检查更新:让 Service Worker 拉取最新版,有则更新并提示刷新。
+		// 纯手动(不自动),仅在支持 SW 的环境(如 PWA)显示。
+		if ("serviceWorker" in navigator) {
+			var updateCheckPx = ui.create.node("p");
+			updateCheckPx.style.whiteSpace = "nowrap";
+			updateCheckPx.style.marginTop = "8px";
+
+			// 版本戳:显示当前构建时间(YYYYMMDDHHmm),便于确认是否已更新到最新
+			var versionSpan = document.createElement("span");
+			versionSpan.style.cssText = "font-size:12px;color:#888;margin-left:8px;font-variant-numeric:tabular-nums;";
+			versionSpan.textContent = "";
+			function loadVersionStamp() {
+				fetch("./pwa-version.json", { cache: "no-cache" })
+					.then(function (r) { return r.ok ? r.json() : null; })
+					.then(function (data) {
+						if (data && data.build) versionSpan.textContent = "v" + data.build;
+					})
+					.catch(function () {});
+			}
+			loadVersionStamp();
+
+			var checkUpdateBtn = ui.create.node("button", "检查更新", async function () {
+				var btn = this;
+				btn.textContent = "检查中…";
+				btn.disabled = true;
+				try {
+					var reg = await navigator.serviceWorker.getRegistration();
+					if (!reg) {
+						alert("当前不是 PWA 安装环境,无法检查更新。");
+						return;
+					}
+					await reg.update();
+					// update() 后若发现新版,reg.installing/waiting 会出现新 SW
+					var incoming = reg.installing || reg.waiting;
+					if (incoming) {
+						alert("发现新版本,正在更新…\n更新完成后将自动刷新页面(离线缓存会保留)。");
+						incoming.addEventListener("statechange", function () {
+							if (incoming.state === "installed" || incoming.state === "activated") {
+								// 新 SW 就绪 → 刷新页面用上新版。缓存桶不变则离线资源保留。
+								location.reload();
+							}
+						});
+						// 若已经是 waiting 状态(装好没接管),催它跳过等待
+						if (reg.waiting) reg.waiting.postMessage({ type: "SKIP_WAITING" });
+					} else {
+						// 已是最新:重新拉版本戳,确认显示的号码是当前真正在跑的
+						loadVersionStamp();
+						alert("已是最新版本。");
+					}
+				} catch (e) {
+					console.error("检查更新失败:", e);
+					alert("检查更新失败:" + (e && e.message ? e.message : e));
+				} finally {
+					btn.textContent = "检查更新";
+					btn.disabled = false;
+				}
+			});
+			updateCheckPx.appendChild(checkUpdateBtn);
+			updateCheckPx.appendChild(versionSpan);
+			ul.appendChild(updateCheckPx);
+		}
+
 		page.appendChild(ul);
 	})();
 	(function () {
