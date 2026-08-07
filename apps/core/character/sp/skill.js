@@ -3797,7 +3797,7 @@ const skills = {
 						.chooseCardButton({
 							cards: cards.filterInD("d"),
 							prompt: "承恩：请选择要使用的拼点牌",
-							filterButton(button) {
+							filter(button) {
 								const card = button.link;
 								const player = get.player();
 								return player.hasUseTarget(card, void 0, false) || (get.info(card).notarget && lib.filter.cardEnabled(card, player));
