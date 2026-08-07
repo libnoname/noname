@@ -7,7 +7,7 @@ window.noname_character_replace = {
 	shen_huatuo: ["dc_shen_huatuo", "shen_huatuo"],
 	shen_jiaxu: ["le_shen_jiaxu", "shen_jiaxu", "zombie_jiaxu"],
 	shen_liubei: ["shen_liubei", "dc_shen_liubei", "ty_shen_liubei"],
-	shen_lvbu: ["shen_lvbu", "hl_shen_lvbu"],
+	shen_lvbu: ["shen_lvbu", "hl_shen_lvbu", "mb_shen_lvbu"],
 	shen_lvmeng: ["shen_lvmeng", "tw_shen_lvmeng", "hl_shen_lvmeng"],
 	shen_machao: ["shen_machao", "ps_shen_machao", "wn_shen_machao", "mark_shen_machao", "sm_shen_machao", "sp_sm_shen_machao", "mb_shen_machao"],
 	shen_simayi: ["shen_simayi", "xin_simayi", "new_simayi"],

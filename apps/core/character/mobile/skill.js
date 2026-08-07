@@ -2,6 +2,192 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//神吕布 子右：孩子们喜欢刘巴的神秘代码吗
+	mbwumou: {
+		audio: "wumou",
+		getfilter: card => card.name !== "sha" || get.number(card) === "unsure" || !card?.cards?.length || card?.cards?.length > 1 || lib.card[card.cards[0].name].type !== "trick",
+		mod: {
+			cardname(card) {
+				if (lib.card[card.name].type === "trick") {
+					return "sha";
+				}
+			},
+			selectTarget(card, player, range) {
+				if (get.info("mbwumou").getfilter(card)) {
+					return;
+				}
+				let cardx = card.cards[0];
+				let select = lib.card[cardx.name]?.selectTarget;
+				let res = [1, 1];
+				if (typeof select === "number") {
+					res = [select, select];
+				} else if (get.itemtype(select) === "select") {
+					res = select;
+				} else if (typeof select === "function") {
+					let num = select(cardx, player);
+					res = typeof num === "number" ? [num, num] : num;
+				}
+				if (res) {
+					[range[0], range[1]] = res;
+				}
+				game.checkMod(cardx, player, range, "selectTarget", player);
+			},
+			cardEnabled(card, player, event) {
+				if (get.info("mbwumou").getfilter(card)) {
+					return;
+				}
+				let cardc = card.cards[0],
+					cardx = get.autoViewAs({ name: cardc?.name, nature: cardc?.nature }, [cardc]);
+				let info = get.info(cardx);
+				let canTargetOthers = game.hasPlayer(target => {
+					if (target === player) return false;
+					if (typeof info?.filterTarget == "boolean") return info.filterTarget;
+					if (typeof info?.filterTarget == "function") return info.filterTarget(cardx, player, target);
+					return false;
+				});
+				if (!canTargetOthers) {
+					return false;
+				}
+			},
+			playerEnabled(card, player, target) {
+				if (get.info("mbwumou").getfilter(card)) {
+					return;
+				}
+				if (target === player) {
+					return false;
+				}
+				let cardc = card.cards[0],
+					cardx = get.autoViewAs({ name: cardc?.name, nature: cardc?.nature }, [cardc]); //提牌出来不受视为杀影响
+				let info = get.info(cardx);
+				if (!lib.filter.targetInRange(cardx, player, target)) {
+					return false;
+				}
+				if ((typeof info?.filterTarget == "boolean" && info?.filterTarget === false) || (typeof info?.filterTarget == "function" && !info.filterTarget(cardx, player, target))) {
+					return false;
+				}
+				if (!lib.filter.targetEnabledx(cardx, player, target)) {
+					return false;
+				}
+				let shaTargetMod = game.checkMod(card, player, target, "unchanged", "targetEnabled", target);
+				if (shaTargetMod !== "unchanged" && !shaTargetMod) {
+					return false;
+				}
+				return true;
+			},
+			targetInRange(card, player, target) {
+				if (get.info("mbwumou").getfilter(card)) {
+					return;
+				}
+				let cardc = card.cards[0],
+					cardx = get.autoViewAs({ name: cardc?.name, nature: cardc?.nature }, [cardc]); //提牌出来不受视为杀影响
+				let info = get.info(cardx);
+				let shaTargetMod = game.checkMod(card, player, target, "unchanged", "targetEnabled", target);
+				return target !== player && lib.filter.targetInRange(cardx, player, target) && ((typeof info?.filterTarget == "boolean" && info?.filterTarget) || (typeof info?.filterTarget == "function" && info.filterTarget(cardx, player, target))) && (shaTargetMod === "unchanged" || Boolean(shaTargetMod));
+			},
+		},
+	},
+	mbwuqian: {
+		audio: "ol_wuqian",
+		enable: "phaseUse",
+		derivation: "wushuang",
+		filter(event, player) {
+			return player.countMark("baonu") >= 2 && game.hasPlayer(target => target !== player && !target.hasSkill("mbwuqian_targeted"));
+		},
+		filterTarget(card, player, target) {
+			return target !== player && !target.hasSkill("mbwuqian_targeted");
+		},
+		async content(event, trigger, player) {
+			const { target } = event;
+			player.removeMark("baonu", 2);
+			player.addSkill("wushuang");
+			player.popup("无双");
+			target.addSkill("mbwuqian_targeted");
+		},
+		ai: {
+			order: 9,
+			result: {
+				target(player, target) {
+					return -1;
+				},
+			},
+			combo: "baonu",
+		},
+		group: ["mbwuqian_preCheck", "mbwuqian_onDamage", "mbwuqian_postCheck", "mbwuqian_phaseEnd", "mbwuqian_count"],
+		subSkill: {
+			targeted: {
+				charlotte: true,
+				mark: true,
+				marktext: "无前",
+				intro: { content: "防具牌失效" },
+				ai: { unequip2: true },
+			},
+			preCheck: {
+				trigger: { player: "useCard1" },
+				forced: true,
+				popup: false,
+				firstDo: true,
+				filter(event, player) {
+					return get.is.damageCard(event.card) && player.hasSkill("wushuang");
+				},
+				async content(event, trigger, player) {
+					player.storage.mbwuqian_nodamage = true;
+				},
+			},
+			onDamage: {
+				trigger: { source: "damageBegin1" },
+				forced: true,
+				popup: false,
+				filter(event, player) {
+					return player.hasSkill("wushuang");
+				},
+				async content(event, trigger, player) {
+					player.storage.mbwuqian_nodamage = false;
+				},
+			},
+			postCheck: {
+				trigger: { player: "useCardAfter" },
+				forced: true,
+				popup: false,
+				filter(event, player) {
+					return get.is.damageCard(event.card) && player.hasSkill("wushuang") && player.storage.mbwuqian_nodamage === true;
+				},
+				async content(event, trigger, player) {
+					player.removeSkill("wushuang");
+					game.filterPlayer(current => {
+						if (current.hasSkill("mbwuqian_targeted")) {
+							current.removeSkill("mbwuqian_targeted");
+						}
+					});
+					player.storage.mbwuqian_nodamage = false;
+				},
+			},
+			count: {
+				mod: {
+					cardUsable(card, player, num) {
+						if (card.name === "sha") {
+							let count = game.countPlayer(target => target.hasSkill("mbwuqian_targeted"));
+							if (count > 0) {
+								return (typeof num === "number" ? num : 1) + count;
+							}
+						}
+					},
+				},
+			},
+			phaseEnd: {
+				trigger: { player: "phaseEnd" },
+				forced: true,
+				filter(event, player) {
+					return !player.hasCard(card => get.is.damageCard(card), "h");
+				},
+				async content(event, trigger, player) {
+					let card = get.cardPile(card => get.is.damageCard(card));
+					if (card) {
+						await player.gain(card, "gain2");
+					}
+				},
+			},
+		},
+	},
 	//手杀小车
 	mbqucheng: {
 		audio: 2,

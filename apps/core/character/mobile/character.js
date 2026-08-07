@@ -1368,6 +1368,13 @@ const characters = {
 		names: "吕|null",
 		dieAudios: ["lingju"],
 	},
+	mb_shen_lvbu: {
+		sex: "male",
+		group: "shen",
+		hp: 5,
+		skills: ["baonu", "mbwumou", "mbwuqian", "ol_shenfen"],
+		groupInGuozhan: "qun",
+	},
 };
 
 export default characters;
