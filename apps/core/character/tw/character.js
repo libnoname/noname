@@ -1,4 +1,11 @@
 const characters = {
+	tw_sb_yl_luzhi: {
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		skills: ["twsbmingren", "twsbzhenliang"],
+		dieAudios: ["sb_yl_luzhi"],
+	},
 	huan_sunce: {
 		sex: "male",
 		group: "wu",
