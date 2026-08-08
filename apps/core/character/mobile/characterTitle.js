@@ -204,4 +204,5 @@ export default {
 	junk_xuyou: "献计投曹",
 	old_bulianshi: "无冕之后",
 	ol_maliang: "多谋善断",
+	mb_shen_lvbu: "修罗之道",
 };

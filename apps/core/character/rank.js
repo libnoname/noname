@@ -340,6 +340,7 @@ window.noname_character_rank = {
 		"bigsb_dengai",
 	],
 	am: [
+		"mb_shen_lvbu",
 		"dc_shen_guanyu",
 		"dc_shen_zhangliao",
 		"dc_shen_caopi",
@@ -2763,6 +2764,7 @@ window.noname_character_rank = {
 			"natu_zhugeliang",
 		],
 		epic: [
+			"mb_shen_lvbu",
 			"sxrm_zhugeliang",
 			"sxrm_chen_caocao",
 			"sxrm_lusu",

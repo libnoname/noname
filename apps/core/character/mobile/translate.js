@@ -1,8 +1,14 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	mb_shen_lvbu: "神吕布",
+	mb_shen_lvbu_prefix: "手杀神",
+	mbwumou: "无谋",
+	mbwumou_info: "锁定技，你的普通锦囊牌只能当普通【杀】使用或打出，此【杀】的目标改为原锦囊牌的目标。",
+	mbwuqian: "无前",
+	mbwuqian_info: "出牌阶段，你可以弃置2枚“暴怒”，令一名角色防具牌失效且你获得" + get.poptip("wushuang") + "，直至你下次使用伤害牌但未造成伤害；<br>你的出【杀】次数+X（X为当前被“无前”的角色数）；<br>结束阶段，若你的手牌中没有伤害牌，你随机获得一张伤害牌。",
 	mb_shen_caocao: "手杀神曹操",
-	mb_shen_caocao_prefix: "手杀|神",
+	mb_shen_caocao_prefix: "手杀神",
 	mb_cheliji: "手杀彻里吉",
 	mb_cheliji_prefix: "手杀",
 	mbqucheng: "驱乘",
