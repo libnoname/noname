@@ -1091,6 +1091,7 @@ const skills = {
 				targets: [target],
 			} = event;
 			const suffix = !player.storage[event.name] ? "yang" : "yin";
+			player.clearMark(`${event.name}_${suffix}`, false);
 			player.changeZhuanhuanji(event.name);
 			let isChengshi = false;
 			if (event.triggername == "useCardToTargeted") {
@@ -1156,6 +1157,7 @@ const skills = {
 			},
 			debuff: {
 				charlotte: true,
+				marktext: "拒",
 				onremove: true,
 				intro: { content: "本回合你不能对$使用牌" },
 				mod: {
