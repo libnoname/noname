@@ -131,7 +131,7 @@ const characters = {
 		sex: "male",
 		group: "shu",
 		hp: 3,
-		skills: ["clanchengwang", "clanzhugezhan"],
+		skills: ["clanchengwang", "clanfenshi"],
 		names: "诸葛|瞻",
 		clans: ["琅琊诸葛氏"],
 	},
