@@ -38,7 +38,7 @@ const skills = {
 					return (
 						player.inRange(current) &&
 						player.countCards("he", card => {
-							return get.color(card)  color;
+							return get.color(card) === color;
 						}) >= Math.max(1, Math.abs(player.getHp() - current.getHp()))
 					);
 				});
