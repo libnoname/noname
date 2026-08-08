@@ -2,6 +2,124 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//谋祝融
+	olsbrenche: {
+		audio: 2,
+		enable: "phaseUse",
+		filter(event, player) {
+			return player.countDiscardableCards(player, "he") >= get.info("olsbrenche").getShaLength() && game.hasPlayer(current => current != player && current.hasCards("he"));
+		},
+		getShaLength() {
+			return Math.max(
+				1,
+				get
+					.discarded()
+					.filter(card => card.name == "sha")
+					.filterInD("d").length
+			);
+		},
+		usable(skill, player) {
+			return get.info(skill).getShaLength();
+		},
+		filterCard: lib.filter.cardDiscardable,
+		discard: false,
+		lose: false,
+		delay: false,
+		selectCard() {
+			return get.info("olsbrenche").getShaLength();
+		},
+		check(card) {
+			if (card.name == "sha") {
+				return 4 - get.value(card);
+			}
+			return 8 - get.value(card);
+		},
+		filterTarget(card, player, target) {
+			return target != player && target.hasCards("he");
+		},
+		selectTarget() {
+			return [1, get.info("olsbrenche").getShaLength()];
+		},
+		multiline: true,
+		multitarget: true,
+		async content(event, trigger, player) {
+			const targets = event.targets.sortBySeat();
+			const { cards } = await player.modedDiscard(event.cards).forResult();
+			if (cards?.some(card => card.name != "sha")) {
+				await player.draw();
+			}
+			await game.doAsyncInOrder(targets, async target => {
+				const result = await target
+					.chooseToDiscard({
+						forced: true,
+						prompt: `${get.translation(player)}对你发动了〖刃掣〗：请弃置一张牌，若不为【杀】，其摸一张牌`,
+						position: "he",
+						ai(card) {
+							return 8 - get.value(card);
+						},
+					})
+					.forResult();
+				if (result?.bool && result.cards?.length) {
+					const cards = result.cards;
+					if (cards?.some(card => card.name != "sha")) {
+						await player.draw();
+					}
+				}
+			});
+		},
+		ai: {
+			order: 13,
+			result: {
+				player: 1,
+				target: -1,
+			},
+		},
+	},
+	olsbyalian: {
+		audio: 2,
+		trigger: { player: "phaseAnyEnd" },
+		filter(event, player) {
+			const card = get.autoViewAs({ name: "sha", nature: "fire", isCard: true }, "unsure");
+			const num = get.info("olsbrenche").getShaLength();
+			const bool = game.hasPlayer(current => current.countCards("h") <= num && player.canUse(card, current, false, false));
+			return (
+				bool &&
+				player.hasHistory("lose", evt => {
+					const evt2 = evt.relatedEvent || evt.getParent();
+					if (evt2.name == "useCard" && evt2.player == player && evt2.card.name == "sha") {
+						return;
+					}
+					return evt.cards2?.length && evt.cards2.some(card => card.name == "sha") && evt.getParent(event.name) == event;
+				})
+			);
+		},
+		async cost(event, trigger, player) {
+			const card = get.autoViewAs({ name: "sha", nature: "fire", isCard: true }, "unsure");
+			const num = get.info("olsbrenche").getShaLength();
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt(event.skill),
+					prompt2: `对任意名手牌数小于等于${num}的角色使用一张火【杀】`,
+					filterTarget(card, player, target) {
+						const { num, cardx } = get.event();
+						return target.countCards("h") <= num && player.canUse(cardx, target, false, false);
+					},
+					selectTarget: [1, Infinity],
+					ai(target) {
+						const { player, cardx } = get.event();
+						return get.effect(target, cardx, player, player);
+					},
+				})
+				.set("num", num)
+				.set("cardx", card)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const targets = event.targets;
+			const card = get.autoViewAs({ name: "sha", nature: "fire", isCard: true }, "unsure");
+			await player.useCard({ card, targets });
+		},
+	},
 	//界步练师
 	olanxu: {
 		audio: 2,

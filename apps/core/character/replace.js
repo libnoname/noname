@@ -371,7 +371,7 @@ window.noname_character_replace = {
 	zhujun: ["ol_zhujun", "ol_jsrg_zhujun", "zhujun", "sp_zhujun", "jsrg_zhujun"],
 	zhuling: ["ol_zhuling", "dc_zhuling", "zhuling", "wn_zhuling"],
 	zhuran: ["zhuran", "re_zhuran", "xin_zhuran", "dc_sb_zhuran", "sb_zhuran", "old_zhuran"],
-	zhurong: ["zhurong", "ol_zhurong", "dc_sp_zhurong", "re_zhurong", "sb_zhurong", "ylyg_zhurong"],
+	zhurong: ["zhurong", "ol_zhurong", "dc_sp_zhurong", "re_zhurong", "sb_zhurong", "ylyg_zhurong", "ol_sb_zhurong"],
 	zhuzhi: ["zhuzhi", "re_zhuzhi", "xin_zhuzhi", "tw_zhuzhi", "old_zhuzhi"],
 	zongyu: ["zongyu", "sp_zongyu", "tw_zongyu"],
 	zoushi: ["zoushi", "re_zoushi", "yue_zoushi", "jsrg_zoushi", "std_zoushi"],
