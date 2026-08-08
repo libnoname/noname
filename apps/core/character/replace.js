@@ -84,7 +84,7 @@ window.noname_character_replace = {
 	fanjiangzhangda: ["fanjiangzhangda", "jsrg_fanjiangzhangda"],
 	fanyufeng: ["fanyufeng", "std_fanyufeng"],
 	fazheng: ["xin_fazheng", "ol_fazheng", "re_fazheng", "star_fazheng", "dc_sb_fazheng", "sb_fazheng", "yj_fazheng", "tw_re_fazheng", "tw_yj_fazheng", "fazheng", "jd_sb_fazheng"],
-	feiyi: ["ol_feiyi", "feiyi", "tw_feiyi", "std_feiyi", "dc_feiyi", "dc_feiyi"],
+	feiyi: ["ol_feiyi", "feiyi", "tw_feiyi", "std_feiyi", "dc_feiyi"],
 	fengfangnv: ["fengfangnv", "re_fengfangnv"],
 	fuhuanghou: ["fuhuanghou", "ol_fuhuanghou", "re_fuhuanghou", "xin_fuhuanghou", "tw_fuhuanghou", "tw_sxrm_fuhuanghou", "std_fuhuanghou", "sp_fuhuanghou", "old_fuhuanghou", "sxrm_fuhuanghou"],
 	furong: ["ol_furong", "furong", "tw_furong"],

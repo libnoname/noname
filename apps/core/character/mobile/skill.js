@@ -973,19 +973,21 @@ const skills = {
 					if (!target.hasExpansions("rekongsheng")) {
 						return;
 					}
-					const cards = target.getExpansions("rekongsheng").filter(card => {
-						return player.hasUseTarget(card, void 0, false) || (get.info(card).notarget && lib.filter.cardEnabled(card, player));
-					});
+					const cards = target.getExpansions("rekongsheng");
 					if (cards.length) {
 						const result = await player
 							.chooseButton({
 								createDialog: [`箜声：请选择要使用的牌`, cards],
+								filterButton(button, player) {
+									const card = button.link;
+									return player.hasUseTarget(card, void 0, false) || (get.info(card).notarget && lib.filter.cardEnabled(card, player));
+								},
 								ai(button) {
 									return get.player().getUseValue(button.link);
 								},
 							})
 							.forResult();
-						if (result?.bool) {
+						if (result?.bool && result.links?.length) {
 							const { links } = result;
 							await player.chooseUseTarget({ card: links[0], addCount: false, forced: true });
 						}
@@ -1089,6 +1091,7 @@ const skills = {
 				targets: [target],
 			} = event;
 			const suffix = !player.storage[event.name] ? "yang" : "yin";
+			player.clearMark(`${event.name}_${suffix}`, false);
 			player.changeZhuanhuanji(event.name);
 			let isChengshi = false;
 			if (event.triggername == "useCardToTargeted") {
@@ -1154,6 +1157,7 @@ const skills = {
 			},
 			debuff: {
 				charlotte: true,
+				marktext: "拒",
 				onremove: true,
 				intro: { content: "本回合你不能对$使用牌" },
 				mod: {
@@ -32472,14 +32476,14 @@ const skills = {
 			const beishui = player.getStorage("mbjieyuan_beishui", false);
 			const removed = player.getStorage("mbjieyuan_removed", "");
 			if (beishui) {
-				if ((name === "damageBegin1" && removed === "damageSource") || (name === "damageBegin3" && removed === "damage")) {
+				if ((name === "damageBegin1" && removed === "damageSource") || (name === "damageBegin4" && removed === "damage")) {
 					return false;
 				}
 			}
 			if (name === "damageBegin1") {
 				return event.num > 0;
 			}
-			if (name === "damageBegin3") {
+			if (name === "damageBegin4") {
 				return event.num > 0;
 			}
 			return false;

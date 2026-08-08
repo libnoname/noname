@@ -52,7 +52,7 @@ const dynamicTranslates = {
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
 	twjieyuan(player, skill) {
-		if (player.storage.twfenxin_achieve) {
+		if (!player.storage.twfenxin_achieve) {
 			return lib.translate[skill + "_info"];
 		}
 		return lib.translate[skill + "2_info"];
