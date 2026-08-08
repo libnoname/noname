@@ -26,34 +26,34 @@ const skills = {
 			if (!cards.length) {
 				return false;
 			}
-			if (event.name == "chooseToUse") {
+			if (event.name === "chooseToUse") {
 				if (player.storage.twsbzhenliang || player.hasSkill("twsbzhenliang_used", null, null, false)) {
 					return false;
 				}
 				const color = get.color(cards[0]);
-				if (!player.countCards("he", card => get.color(card) == color)) {
+				if (!player.countCards("he", card => get.color(card) === color)) {
 					return false;
 				}
 				return game.hasPlayer(current => {
 					return (
 						player.inRange(current) &&
 						player.countCards("he", card => {
-							return get.color(card) == color;
+							return get.color(card)  color;
 						}) >= Math.max(1, Math.abs(player.getHp() - current.getHp()))
 					);
 				});
 			} else {
-				if (_status.currentPhase == player || !player.storage.twsbzhenliang) {
+				if (_status.currentPhase === player || !player.storage.twsbzhenliang) {
 					return false;
 				}
-				return get.type2(event.card) == get.type2(cards[0]);
+				return get.type2(event.card) === get.type2(cards[0]);
 			}
 		},
 		selectCard: [1, Infinity],
 		complexSelect: true,
 		complexCard: true,
 		filterTarget(card, player, target) {
-			return player.inRange(target) && ui.selected.cards.length == Math.max(1, Math.abs(player.getHp() - target.getHp()));
+			return player.inRange(target) && ui.selected.cards.length === Math.max(1, Math.abs(player.getHp() - target.getHp()));
 		},
 		prompt: "弃置与攻击范围内的一名角色体力值之差张与“任”颜色相同的牌（至少一张），对其造成1点伤害",
 		subSkill: { used: { charlotte: true } },
