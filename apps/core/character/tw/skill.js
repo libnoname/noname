@@ -491,7 +491,6 @@ const skills = {
 		},
 		filter(event, player, name) {
 			const target = name == "damageBegin4" ? event.source : event.player;
-			
 			if (target == player || !target?.isIn() || target.hp < player.hp) return false;
 			const position = player.storage.twfenxin_achieve ? "he" : "h";
 			if (event.isOnline() || player.storage.twfenxin_achieve) return player.hasCards(position);
