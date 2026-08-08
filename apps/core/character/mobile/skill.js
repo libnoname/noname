@@ -32476,14 +32476,14 @@ const skills = {
 			const beishui = player.getStorage("mbjieyuan_beishui", false);
 			const removed = player.getStorage("mbjieyuan_removed", "");
 			if (beishui) {
-				if ((name === "damageBegin1" && removed === "damageSource") || (name === "damageBegin3" && removed === "damage")) {
+				if ((name === "damageBegin1" && removed === "damageSource") || (name === "damageBegin4" && removed === "damage")) {
 					return false;
 				}
 			}
 			if (name === "damageBegin1") {
 				return event.num > 0;
 			}
-			if (name === "damageBegin3") {
+			if (name === "damageBegin4") {
 				return event.num > 0;
 			}
 			return false;
