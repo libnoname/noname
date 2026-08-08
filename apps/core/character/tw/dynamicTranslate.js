@@ -2,7 +2,7 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 const dynamicTranslates = {
 	twjieyuan(player, skill) {
-		if (player.storage.twfenxin_achieve) {
+		if (!player.storage.twfenxin_achieve) {
 			return lib.translate[skill + "_info"];
 		}
 		return lib.translate[skill + "2_info"];
