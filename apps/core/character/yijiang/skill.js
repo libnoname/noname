@@ -10140,7 +10140,7 @@ const skills = {
 					},
 				})
 				.forResult();
-			if (!result.bool || !result.cards?.length) {
+			if (!result.bool || !result.cards?.length || !game.hasPlayer(current => current != player && get.distance(player, current) <= 1)) {
 				return;
 			}
 			const color = get.color(result.cards[0], result.cards[0].original === "h" ? player : false);
