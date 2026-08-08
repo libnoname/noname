@@ -1,4 +1,5 @@
 export default {
+	zh_shen_zhangjiao: "神临天劫",
 	ps_shen_caocao: "晷月皓冕",
 	wxdl_caopi: "秋风萧瑟",
 	pe_wuzetian: "助天承圣皇帝",

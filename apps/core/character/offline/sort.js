@@ -39,6 +39,7 @@ const characterSort = {
 	offline_wenxindiaolong: ["wxdl_caozhi", "wxdl_caocao", "wxdl_caopi"],
 	offline_shiningGrils: ["shinin_zhenji", "shinin_wuguotai", "shinin_ruiji", "shinin_lvlingqi", "shinin_dongwan", "goblin", "lord_goblin"],
 	offline_yanling: ["ylyg_xiaoqiao", "ylyg_yuji", "ylyg_pangtong", "ylyg_dianwei", "ylyg_xuhuang", "ylyg_zhurong"],
+	offline_zongheng: ["zh_shen_zhangjiao"],
 	//offline_others: [],
 };
 
@@ -86,6 +87,7 @@ const characterSortTranslate = {
 	offline_shiningGrils: "闪耀战姬",
 	offline_yanling: "雁翎耀光",
 	extra_offline: "神话再临·线下",
+	offline_zongheng: "纵横九州",
 };
 
 export { characterSort, characterSortTranslate };
