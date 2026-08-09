@@ -2,20 +2,20 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
-	//神吕布 子右：孩子们喜欢刘巴的神秘代码吗
+	//神吕布
 	mbwumou: {
 		audio: "wumou",
 		getfilter: card => card.name !== "sha" || get.number(card) === "unsure" || !card?.cards?.length || card?.cards?.length > 1 || lib.card[card.cards[0].name].type !== "trick",
 		mod: {
 			cardname(card) {
-				if (lib.card[card.name].type === "trick") {
-					return "sha";
-				}
+				const event = get.event();
+				if (!["chooseToUse", "chooseToRespond"].includes(event.name)) return;
+				if (lib.card[card.name].type === "trick" && !_status._mbwumou_check) return "sha";
 			},
 			selectTarget(card, player, range) {
-				if (get.info("mbwumou").getfilter(card)) {
-					return;
-				}
+				const event = get.event();
+				if (!["chooseToUse", "chooseToRespond"].includes(event.name)) return;
+				if (get.info("mbwumou").getfilter(card)) return;
 				let cardx = card.cards[0];
 				let select = lib.card[cardx.name]?.selectTarget;
 				let res = [1, 1];
@@ -33,157 +33,115 @@ const skills = {
 				game.checkMod(cardx, player, range, "selectTarget", player);
 			},
 			cardEnabled(card, player, event) {
-				if (get.info("mbwumou").getfilter(card)) {
-					return;
-				}
-				let cardc = card.cards[0],
-					cardx = get.autoViewAs({ name: cardc?.name, nature: cardc?.nature }, [cardc]);
-				let info = get.info(cardx);
-				let canTargetOthers = game.hasPlayer(target => {
-					if (target === player) return false;
-					if (typeof info?.filterTarget == "boolean") return info.filterTarget;
-					if (typeof info?.filterTarget == "function") return info.filterTarget(cardx, player, target);
-					return false;
-				});
-				if (!canTargetOthers) {
-					return false;
-				}
+				event = event || get.event();
+				if (!["chooseToUse", "chooseToRespond"].includes(event?.name)) return;
+				if (get.info("mbwumou").getfilter(card) || _status._mbwumou_check) return;
+				_status._mbwumou_check = true;
+				const sha = get.autoViewAs({ name: "sha", cards: card.cards }, card.cards);
+				const bool = game.hasPlayer(target => lib.filter.filterTarget(card.cards[0], player, target) && lib.filter.targetEnabledx(sha, player, target));
+				delete _status._mbwumou_check;
+				return bool;
 			},
 			playerEnabled(card, player, target) {
-				if (get.info("mbwumou").getfilter(card)) {
-					return;
-				}
-				if (target === player) {
-					return false;
-				}
-				let cardc = card.cards[0],
-					cardx = get.autoViewAs({ name: cardc?.name, nature: cardc?.nature }, [cardc]); //提牌出来不受视为杀影响
-				let info = get.info(cardx);
-				if (!lib.filter.targetInRange(cardx, player, target)) {
-					return false;
-				}
-				if ((typeof info?.filterTarget == "boolean" && info?.filterTarget === false) || (typeof info?.filterTarget == "function" && !info.filterTarget(cardx, player, target))) {
-					return false;
-				}
-				if (!lib.filter.targetEnabledx(cardx, player, target)) {
-					return false;
-				}
-				let shaTargetMod = game.checkMod(card, player, target, "unchanged", "targetEnabled", target);
-				if (shaTargetMod !== "unchanged" && !shaTargetMod) {
-					return false;
-				}
-				return true;
+				const event = get.event();
+				if (!["chooseToUse", "chooseToRespond"].includes(event.name)) return;
+				if (get.info("mbwumou").getfilter(card) || _status._mbwumou_check) return;
+				_status._mbwumou_check = true;
+				const sha = get.autoViewAs({ name: "sha", cards: card.cards }, card.cards);
+				const bool = lib.filter.filterTarget(card.cards[0], player, target) && lib.filter.targetEnabledx(sha, player, target);
+				delete _status._mbwumou_check;
+				return bool;
 			},
 			targetInRange(card, player, target) {
-				if (get.info("mbwumou").getfilter(card)) {
-					return;
-				}
-				let cardc = card.cards[0],
-					cardx = get.autoViewAs({ name: cardc?.name, nature: cardc?.nature }, [cardc]); //提牌出来不受视为杀影响
-				let info = get.info(cardx);
-				let shaTargetMod = game.checkMod(card, player, target, "unchanged", "targetEnabled", target);
-				return target !== player && lib.filter.targetInRange(cardx, player, target) && ((typeof info?.filterTarget == "boolean" && info?.filterTarget) || (typeof info?.filterTarget == "function" && info.filterTarget(cardx, player, target))) && (shaTargetMod === "unchanged" || Boolean(shaTargetMod));
+				const event = get.event();
+				if (!["chooseToUse", "chooseToRespond"].includes(event.name)) return;
+				if (get.info("mbwumou").getfilter(card) || _status._mbwumou_check) return;
+				_status._mbwumou_check = true;
+				const bool = lib.filter.filterTarget(card.cards[0], player, target);
+				delete _status._mbwumou_check;
+				return bool;
 			},
 		},
+		trigger: { player: "useCard1" },
+		filter(event, player) {
+			return !get.info("mbwumou").getfilter(event.card);
+		},
+		forced: true,
+		async content(event, trigger, player) {},
+		ai: { halfneg: true },
 	},
 	mbwuqian: {
 		audio: "ol_wuqian",
 		enable: "phaseUse",
-		derivation: "wushuang",
 		filter(event, player) {
-			return player.countMark("baonu") >= 2 && game.hasPlayer(target => target !== player && !target.hasSkill("mbwuqian_targeted"));
+			return player.countMark("baonu") >= 2 && game.hasPlayer(target => lib.skill.mbwuqian.filterTarget(null, player, target));
 		},
 		filterTarget(card, player, target) {
-			return target !== player && !target.hasSkill("mbwuqian_targeted");
+			return !target.getStorage("mbwuqian_targeted").includes(player);
 		},
 		async content(event, trigger, player) {
 			const { target } = event;
 			player.removeMark("baonu", 2);
-			player.addSkill("wushuang");
-			player.popup("无双");
 			target.addSkill("mbwuqian_targeted");
+			target.markAuto("mbwuqian_targeted", [player]);
+			player.addSkill("mbwuqian_wushuang");
+			await player.addAdditionalSkills("mbwuqian_wushuang", "wushuang");
 		},
 		ai: {
-			order: 9,
-			result: {
-				target(player, target) {
-					return -1;
-				},
+			order(item, player) {
+				return get.order({ name: "sha" }, player) + 0.1;
 			},
+			result: { target: -1 },
 			combo: "baonu",
 		},
-		group: ["mbwuqian_preCheck", "mbwuqian_onDamage", "mbwuqian_postCheck", "mbwuqian_phaseEnd", "mbwuqian_count"],
+		locked: false,
+		mod: {
+			cardUsable(card, player, num) {
+				if (card.name === "sha") return num + game.countPlayer(target => target.getStorage("mbwuqian_targeted").includes(player));
+			},
+		},
+		derivation: "wushuang",
+		group: "mbwuqian_phaseEnd",
 		subSkill: {
 			targeted: {
 				charlotte: true,
-				mark: true,
-				marktext: "无前",
-				intro: { content: "防具牌失效" },
+				init(player, skill) {
+					player.addTip(skill, `${get.translation(skill)} 防具失效`);
+				},
+				intro: {
+					nocount: true,
+					onunmark(storage, player, skill) {
+						player.removeTip(skill);
+						player.removeSkill(skill);
+					},
+					content: "防具牌失效",
+				},
 				ai: { unequip2: true },
 			},
-			preCheck: {
-				trigger: { player: "useCard1" },
-				forced: true,
-				popup: false,
-				firstDo: true,
+			wushuang: {
+				charlotte: true,
+				trigger: { player: ["useCardAfter", "die"] },
 				filter(event, player) {
-					return get.is.damageCard(event.card) && player.hasSkill("wushuang");
+					if (event.name === "die") return true;
+					return get.is.damageCard(event.card) && !player.hasHistory("sourceDamage", evt => evt.card === event.card);
 				},
+				silent: true,
+				forceDie: true,
 				async content(event, trigger, player) {
-					player.storage.mbwuqian_nodamage = true;
-				},
-			},
-			onDamage: {
-				trigger: { source: "damageBegin1" },
-				forced: true,
-				popup: false,
-				filter(event, player) {
-					return player.hasSkill("wushuang");
-				},
-				async content(event, trigger, player) {
-					player.storage.mbwuqian_nodamage = false;
-				},
-			},
-			postCheck: {
-				trigger: { player: "useCardAfter" },
-				forced: true,
-				popup: false,
-				filter(event, player) {
-					return get.is.damageCard(event.card) && player.hasSkill("wushuang") && player.storage.mbwuqian_nodamage === true;
-				},
-				async content(event, trigger, player) {
-					player.removeSkill("wushuang");
-					game.filterPlayer(current => {
-						if (current.hasSkill("mbwuqian_targeted")) {
-							current.removeSkill("mbwuqian_targeted");
-						}
-					});
-					player.storage.mbwuqian_nodamage = false;
-				},
-			},
-			count: {
-				mod: {
-					cardUsable(card, player, num) {
-						if (card.name === "sha") {
-							let count = game.countPlayer(target => target.hasSkill("mbwuqian_targeted"));
-							if (count > 0) {
-								return (typeof num === "number" ? num : 1) + count;
-							}
-						}
-					},
+					for (const target of game.filterPlayer()) target.unmarkAuto("mbwuqian_targeted", [player]);
+					player.removeSkill(event.name);
 				},
 			},
 			phaseEnd: {
+				audio: "ol_wuqian",
 				trigger: { player: "phaseEnd" },
-				forced: true,
 				filter(event, player) {
 					return !player.hasCard(card => get.is.damageCard(card), "h");
 				},
+				forced: true,
 				async content(event, trigger, player) {
 					let card = get.cardPile(card => get.is.damageCard(card));
-					if (card) {
-						await player.gain(card, "gain2");
-					}
+					if (card) await player.gain(card, "draw");
 				},
 			},
 		},
