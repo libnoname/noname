@@ -7,6 +7,7 @@ import { optionsMenu } from "./menu/pages/optionsMenu.js";
 import { otherMenu } from "./menu/pages/otherMenu.js";
 import { startMenu } from "./menu/pages/startMenu.js";
 import { Pagination } from "@/util/pagination.js";
+import { scheduleAutoUpdateCheck } from "./auto-check-update.js";
 
 export class Create {
 	/**
@@ -3134,13 +3135,8 @@ export class Create {
 			lib.arenaReady?.shift()();
 		}
 		delete lib.arenaReady;
-		/*if (lib.config.auto_check_update && !sessionStorage.getItem("auto_check_update")) {
-			setTimeout(() => {
-				sessionStorage.setItem("auto_check_update", "1");
-				game.checkForUpdate(false);
-			}, 3000);
-		}
-		if (!lib.config.asset_version) {
+		scheduleAutoUpdateCheck(lib.config, game, sessionStorage, setTimeout);
+		/*if (!lib.config.asset_version) {
 			lib.onfree.push(function () {
 				setTimeout(function () {
 					if (!game.download) {
