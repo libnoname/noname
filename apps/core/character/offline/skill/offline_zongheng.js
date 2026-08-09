@@ -28,12 +28,22 @@ const skills = {
 		async content(event, trigger, player) {
 			const targets = event.targets;
 			if (trigger.name == "damage") {
-				await player.chooseDrawRecover({ forced: true});
+				await player.chooseDrawRecover({ forced: true });
 			} else {
 				await game.doAsyncInOrder(targets, async target => {
 					await target.executeDelayCardEffect("shandian");
 				});
 			}
+		},
+		ai: {
+			nothunder: true,
+			effect: {
+				target(card, player, target, current) {
+					if (get.tag(card, "thunderDamage")) {
+						return "zeroplayertarget";
+					}
+				},
+			},
 		},
 	},
 	zhkuanglei: {
@@ -114,7 +124,7 @@ const skills = {
 				.set("numberx", numberx)
 				.set("suitx", suitx)
 				.forResult();
-			if(result?.bool && result.links?.length) {
+			if (result?.bool && result.links?.length) {
 				const suit = suits[result.links.map(link => suitx.indexOf(link)).filter(i => i != -1)[0]];
 				const number = numbers[result.links.map(link => numberx.indexOf(link)).filter(i => i != -1)[0]];
 				game.log(player, "将判定结果修改为了", "#g" + get.translation(suit + 2) + get.strNumber(number));
