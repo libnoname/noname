@@ -3564,7 +3564,7 @@ const skills = {
 			} else {
 				const card = player.storage.twjinglve3;
 				player.removeSkill("twjinglve2");
-				if ([...ui.cardPile.childNodes, ...ui.discardPile.childNodes].includes(card) || game.hasPlayer(target => target.getCards("h").includes(card))) {
+				if ([...ui.cardPile.childNodes, ...ui.discardPile.childNodes].includes(card) || game.hasPlayer(target => target.getCards("hej").includes(card))) {
 					await player.gain(card, ...(get.owner(card) ? [get.owner(card), "give"] : ["gain2"]));
 				}
 			}
