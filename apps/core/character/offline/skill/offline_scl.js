@@ -805,7 +805,7 @@ const skills = {
 				charlotte: true,
 				trigger: { player: "useCard1" },
 				silent: true,
-				content() {
+				async content(event, trigger, player) {
 					player.addMark(event.name, 1, false);
 				},
 			},
