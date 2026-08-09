@@ -3,6 +3,108 @@ import html from "dedent";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//神曹操------by 清风
+	psguixin: {
+		audio: "guixin",
+		trigger: {
+			global: "roundStart",
+			player: "damageEnd",
+		},
+		filter(event, player) {
+			return game.hasPlayer(current => current != player && current.hasGainableCards(player, "he"));
+		},
+		logTarget(event, player) {
+			return game.filterPlayer(current => current != player && current.hasGainableCards(player, "he")).sortBySeat();
+		},
+		async content(event, trigger, player) {
+			const targets = event.targets;
+			await player.gainMultiple(targets, "he");
+		},
+		ai: {
+			maixie: true,
+			maixie_hp: true,
+			threaten(player2, target) {
+				if (target.hp == 1) {
+					return 2.5;
+				}
+				return 0.5;
+			},
+			effect: {
+				target(card, player2, target) {
+					if (!target._psguixin_eff && get.tag(card, "damage") && target.hp > (player2.hasSkillTag("damageBonus", true, { card, target }) ? 2 : 1)) {
+						if (player2.hasSkillTag("jueqing", false, target)) {
+							return [1, -2];
+						}
+						target._psguixin_eff = true;
+						let gain = game.countPlayer(current => {
+							if (target == current) {
+								return 0;
+							}
+							if (get.attitude(target, current) > 0) {
+								if (current.hasCard(cardx => lib.filter.canBeGained(cardx, target, current, "psguixin") && get.effect(current, cardx, current, current) < 0, "e")) {
+									return 1.3;
+								}
+								return 0;
+							}
+							if (current.hasCard(cardx => lib.filter.canBeGained(cardx, target, current, "psguixin") && get.effect(current, cardx, current, current) > 0, "e")) {
+								return 1.1;
+							}
+							if (current.hasCard(cardx => lib.filter.canBeGained(cardx, target, current, "psguixin"), "h")) {
+								return 0.9;
+							}
+							return 0;
+						});
+						delete target._psguixin_eff;
+						return [1, Math.max(0, gain)];
+					}
+				},
+			},
+		},
+	},
+	psshenzun: {
+		audio: 2,
+		trigger: { source: "damageBegin2" },
+		filter(event, player) {
+			return event.player?.isIn() && player.group != event.player.group && player.hasDiscardableCards(player, "he");
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseToDiscard({
+					prompt: get.prompt(event.skill),
+					prompt2: "弃置一张牌令此伤害+1",
+					ai(card) {
+						const { player, target } = get.event();
+						if (get.damageEffect(target, player, player) > 0) {
+							return 8 - get.value(card);
+						}
+						return 0;
+					},
+					chooseonly: true,
+				})
+				.set("target", trigger.player)
+				.forResult();
+		},
+		logTarget: "player",
+		async content(event, trigger, player) {
+			const cards = event.cards;
+			await player.modedDiscard(cards);
+			trigger.num++;
+			if (trigger.card && trigger.getParent(2).addCount != false) {
+				trigger.getParent(2).addCount = false;
+				const stat = player.getStat("card"),
+					name = trigger.card.name;
+				if (typeof stat[name] == "number" && stat[name] > 0) {
+					stat[name]--;
+				}
+			}
+		},
+	},
+	psfeiying: {
+		locked: true,
+		mod: {
+			targetInRange: () => true,
+		},
+	},
 	//官盗S系列关羽
 	pszhonghun: {
 		audio: "zhongyi",
@@ -1336,7 +1438,7 @@ const skills = {
 			var cards = game.cardsGotoOrdering(get.cards(5)).cards;
 			event.cards = cards;
 			player.showCards(cards, get.translation(player) + "发动了【借风】");
-			"step 1";
+			("step 1");
 			if (cards.filter(i => get.color(i) == "red").length >= 2) {
 				player.chooseUseTarget("wanjian", true);
 			}
@@ -1544,7 +1646,7 @@ const skills = {
 					return 0;
 				})
 				.set("goon", get.damageEffect(player, trigger.source, player) < -5);
-			"step 1";
+			("step 1");
 			if (result.bool) {
 				trigger.cancel();
 			}

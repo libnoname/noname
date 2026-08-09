@@ -366,7 +366,7 @@ const skills = {
 						return -get.attitude(get.player(), target);
 					},
 				})
-				.set("targets", trigger.targets)
+				.set("targets", trigger.targets.filter(target => target.hasCards("h")))
 				.forResult();
 		},
 		async content(event, trigger, player) {

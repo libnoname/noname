@@ -8,11 +8,12 @@ const cards = {
 		ai: {
 			equipValue(card, player) {
 				const lose = player.maxHp - player.getHp();
-				if (_status.currentPhase != player) {
+				if (_status.currentPhase !== player) {
 					return 4 - lose * 2;
-				} else if (_status.currentPhase) {
+				}
+				if (_status.currentPhase) {
 					const phase = get.event().getParent("phase");
-					const nexts = phase.phaseList.slice(phase.num);
+					const nexts = phase?.phaseList.slice(phase.num);
 					if (nexts.includes("phaseUse") && !player.isDamaged()) {
 						return 2;
 					}
@@ -26,7 +27,7 @@ const cards = {
 		fullskin: true,
 		type: "equip",
 		subtype: "equip2",
-		onLose(card, player) {
+		async onLose({ player }) {
 			player.unmarkAuto("bazhing", player.getStorage("bazhijing"));
 		},
 		ai: {
@@ -66,12 +67,8 @@ const cards = {
 					return 1;
 				}
 				player._zhuge_temp = true;
-				var result = (function () {
-					if (
-						!game.hasPlayer(function (current) {
-							return get.distance(player, current) <= 1 && player.canUse("sha", current) && get.effect(current, { name: "sha" }, player, player) > 0;
-						})
-					) {
+				const result = (() => {
+					if (!game.hasPlayer(current => get.distance(player, current) <= 1 && player.canUse("sha", current) && get.effect(current, { name: "sha" }, player, player) > 0)) {
 						return 1;
 					}
 					if (player.hasSha() && _status.currentPhase === player) {
@@ -79,7 +76,7 @@ const cards = {
 							return 10;
 						}
 					}
-					var num = player.countCards("h", "sha");
+					const num = player.countCards("h", "sha");
 					if (num > 1) {
 						return 6 + num;
 					}
@@ -115,21 +112,20 @@ const cards = {
 		equipDelay: false,
 		distance: {
 			attackFrom: -2,
-			attackRange: (card, player) => {
-				return player.storage.ruyijingubang_skill || 3;
-			},
+			attackRange: (card, player) => player.storage.ruyijingubang_skill || 3,
 		},
-		onEquip() {
+		async onEquip({ card, player }) {
 			if (!card.storage.ruyijingubang_skill) {
 				card.storage.ruyijingubang_skill = 3;
 			}
 			player.storage.ruyijingubang_skill = card.storage.ruyijingubang_skill;
 			player.markSkill("ruyijingubang_skill");
 		},
-		onLose() {
-			if (player.getStat().skill.ruyijingubang_skill) {
-				delete player.getStat().skill.ruyijingubang_skill;
+		async onLose({ player }) {
+			if (!player.getStat().skill.ruyijingubang_skill) {
+				return;
 			}
+			delete player.getStat().skill.ruyijingubang_skill;
 		},
 	},
 };

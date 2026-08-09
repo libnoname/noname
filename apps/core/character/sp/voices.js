@@ -1,4 +1,11 @@
 export default {
+	"#olchunhui1": "翩翩蝶儿舞流连，缓缓上云间。",
+	"#olchunhui2": "渺渺涟漪一圈点，摇漾春如线。",
+	"#olxiasheng1": "小池消长夏，撷莲一朵劝何郎。",
+	"#olxiasheng2": "茉莉逢初夏，架上荼蘼未了春。",
+	"#olqiumu1": "断井残垣，良辰美景奈何天。",
+	"#olqiumu2": "朝飞暮卷，顾盼只道韶光贱。",
+	"#ol_caojinyu:die": "伤春怯夏悲秋意，何郎却不怜人。",
 	"#olfengwei1": "我辈怀璧，恐难虞其罪。",
 	"#olfengwei2": "益州地大物博，必为虎狼所觊。",
 	"#olzonghu1": "国祚不败，作那守户之犬又怎样？",

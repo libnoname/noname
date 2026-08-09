@@ -27,6 +27,7 @@ game.import("character", function () {
 		characterSubstitute: {
 			huan_zhugeliang: [["huan_zhugeliang_shadow", []]],
 			huan_caoang: [["huan_caoang_shadow", []]],
+			huan_sunce: [["huan_sunce_shadow", []]],
 			tw_sb_sp_zhugeliang: [["sb_zhugeliang", []]],
 		},
 		card: { ...cards },

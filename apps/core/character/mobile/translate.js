@@ -1,6 +1,14 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	mb_shen_lvbu: "手杀神吕布",
+	mb_shen_lvbu_prefix: "手杀神",
+	mbwumou: "无谋",
+	mbwumou_info: "锁定技，你的普通锦囊牌只能当普通【杀】使用或打出，此【杀】的目标改为原锦囊牌的目标。",
+	mbwuqian: "无前",
+	mbwuqian_info: "出牌阶段，你可以弃置2枚“暴怒”，令一名角色防具牌失效且你获得" + get.poptip("wushuang") + "，直至你下次使用伤害牌但未造成伤害；你的出【杀】次数+X（X为当前被“无前”的角色数）；结束阶段，若你的手牌中没有伤害牌，你随机获得一张伤害牌。",
+	mb_shen_caocao: "手杀神曹操",
+	mb_shen_caocao_prefix: "手杀神",
 	mb_cheliji: "手杀彻里吉",
 	mb_cheliji_prefix: "手杀",
 	mbqucheng: "驱乘",
@@ -646,7 +654,7 @@ const translates = {
 	xin_jushou: "手杀界沮授",
 	xin_jushou_prefix: "手杀界",
 	xinjianying: "渐营",
-	xinjianying_info: "①当你使用牌时，若此牌与你使用的上一张牌花色或点数相同，则你可以摸一张牌。②出牌阶段限一次，你可以将一张牌当做任意基本牌使用且无次数限制。若你于此阶段内使用的上一张牌有花色，则此牌的花色视为上一张牌的花色。",
+	xinjianying_info: "①当你使用与你使用的上一张牌点数或花色相同的牌时，你可以摸一张牌。②出牌阶段限一次，你可以将一张牌当做任意非装备牌使用且无次数限制。若你于此阶段内使用的上一张牌有花色，则此牌的花色视为上一张牌的花色。",
 	re_xunyu: "手杀界荀彧",
 	re_xunyu_prefix: "手杀界",
 	rejieming: "节命",

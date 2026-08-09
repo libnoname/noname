@@ -493,7 +493,7 @@ const skills = {
 			_status.characterlist.randomSort();
 			const list = _status.characterlist.filter(character => get.character(character, 0) === "female");
 			if (!list.length) {
-				player.popup("没喽");
+				player.popup("没有符合条件的武将牌");
 				return;
 			}
 			const name = list.randomGet();
@@ -520,8 +520,8 @@ const skills = {
 					.forResult();
 				if (result?.bool && result.links?.length) {
 					const skill = result.links[0];
-					await player.addSkills(skill);
-					lib.card[`huashen_card_${name}`].skills.push(skill);
+					await player.addAdditionalSkills(event.name, skill);
+					lib.card["huashen_card_" + name].skills.push(skill);
 				}
 			}
 		},
@@ -1132,7 +1132,7 @@ const skills = {
 			if (!target.getStorage("pepozhen_used").includes("选项一") && !player.getStorage("pepozhen_use").includes(target)) {
 				return true;
 			}
-			if (!target.getStorage("pepozhen_used").includes("选项二") && target.countGainableCards(player, "hej")) {
+			if (!target.getStorage("pepozhen_used").includes("选项二") && target.hasGainableCards(player, "hej")) {
 				return true;
 			}
 			if (!target.getStorage("pepozhen_used").includes("选项三")) {
@@ -1150,7 +1150,7 @@ const skills = {
 			} else {
 				choiceList[0] = `<span style="opacity:0.5">${choiceList[0]}</span>`;
 			}
-			if (!target.getStorage("pepozhen_used").includes("选项二") && target.countGainableCards(player, "hej")) {
+			if (!target.getStorage("pepozhen_used").includes("选项二") && target.hasGainableCards(player, "hej")) {
 				list.push("选项二");
 			} else {
 				choiceList[1] = `<span style="opacity:0.5">${choiceList[1]}</span>`;
@@ -1390,7 +1390,10 @@ const skills = {
 				},
 			},
 		},
-		subSkill: { backup: {} },
+		subSkill: { 
+			backup: {},
+			used: { charlotte: true, onremove: true },
+		},
 	},
 	pezhenguan: {
 		audio: 2,
