@@ -672,9 +672,9 @@ const skills = {
 		forced: true,
 		trigger: { target: "useCardToBefore" },
 		filter(event, player) {
-			return player.getExpansions("psshiyin").length && get.suit(player.getExpansions("psshiyin")[0]) == get.suit(event.card);
+			return player.hasExpansions("psshiyin") && get.suit(player.getExpansions("psshiyin")[0]) == get.suit(event.card);
 		},
-		content() {
+		async content(event, trigger, player) {
 			trigger.cancel();
 		},
 		ai: {
@@ -1333,7 +1333,7 @@ const skills = {
 					},
 					position: "hes",
 					viewAs: { name: links[0][2], nature: links[0][3] },
-					precontent() {
+					async precontent(event, trigger, player) {
 						player.addTempSkill("pslongyin_used");
 					},
 				};
@@ -1612,7 +1612,7 @@ const skills = {
 					}
 					return !player.getStorage("psqupo_black").includes(event.target);
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.loseHp();
 				},
 				intro: { content: "本回合使用【杀】指定不为$的目标时失去1点体力" },
@@ -1623,7 +1623,7 @@ const skills = {
 				onremove: true,
 				forced: true,
 				popup: false,
-				content() {
+				async content(event, trigger, player) {
 					player.loseHp(player.countMark(event.name));
 					player.removeSkill(event.name);
 				},
@@ -1664,13 +1664,12 @@ const skills = {
 			if (player.hasSkill("pssheji_used")) {
 				return false;
 			}
-			var hs = player.getCards("h");
+			const hs = player.getCards("h");
 			if (!hs.length) {
 				return false;
 			}
-			for (var card of hs) {
-				var mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
-				if (mod2 === false) {
+			for (const card of hs) {
+				if (game.checkMod(card, player, "unchanged", "cardEnabled2", player) === false) {
 					return false;
 				}
 			}
@@ -1706,24 +1705,21 @@ const skills = {
 					return (
 						event.card.storage &&
 						event.card.storage.pssheji &&
-						event.player.hasCard(card => {
-							if (!lib.filter.canBeGained(card, player, event.player)) {
-								return false;
-							}
-							return ["equip1", "equip3", "equip4", "equip6"].includes(get.subtype(card));
-						}, "e")
+						event.player.hasCard(
+							card => lib.filter.canBeGained(card, player, event.player) && ["equip1", "equip3", "equip4", "equip6"].includes(get.subtype(card)),
+							"e"
+						)
 					);
 				},
-				content() {
-					var cards = trigger.player.getCards("e", card => {
-						if (!lib.filter.canBeGained(card, player, trigger.player)) {
-							return false;
-						}
-						return ["equip1", "equip3", "equip4", "equip6"].includes(get.subtype(card));
-					});
-					if (cards.length) {
-						player.gain(cards, "giveAuto", trigger.player);
+				async content(event, trigger, player) {
+					const cards = trigger.player.getCards(
+						"e",
+						card => lib.filter.canBeGained(card, player, trigger.player) && ["equip1", "equip3", "equip4", "equip6"].includes(get.subtype(card))
+					);
+					if (!cards.length) {
+						return;
 					}
+					await player.gain({ cards, source: trigger.player, animate: "giveAuto" });
 				},
 			},
 		},
@@ -1853,7 +1849,7 @@ const skills = {
 					}
 					return false;
 				},
-				content() {
+				async content(event, trigger, player) {
 					var map = {};
 					for (var i of trigger.cards) {
 						map[get.type2(i, player)] = true;
