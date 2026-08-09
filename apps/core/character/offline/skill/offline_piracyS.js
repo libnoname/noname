@@ -225,26 +225,26 @@ const skills = {
 		direct: true,
 		clearTime: true,
 		filter(event, player) {
-			if (!event.card || event.card.name != "sha") {
+			if (!event.card || event.card.name !== "sha") {
 				return false;
 			}
-			return event.target.isIn() && player.canUse("sha", event.target, false) && (player.hasSha() || (_status.connectMode && player.countCards("h")));
+			return event.target.isIn() && player.canUse("sha", event.target, false) && (player.hasSha() || (_status.connectMode && player.hasCards("h")));
 		},
-		content() {
-			"step 0";
-			player
-				.chooseToUse(
-					get.prompt2("pshuiqiang", trigger.target),
-					function (card, player, event) {
-						if (get.name(card) != "sha") {
+		async content(event, trigger, player) {
+			await player
+				.chooseToUse({
+					prompt: get.prompt2("pshuiqiang", trigger.target),
+					filterCard(card, player, event) {
+						if (get.name(card) !== "sha") {
 							return false;
 						}
 						return lib.filter.filterCard.apply(this, arguments);
 					},
-					trigger.target,
-					-1
-				)
-				.set("addCount", false).logSkill = "pshuiqiang";
+					filterTarget: trigger.target,
+					selectTarget: -1,
+				})
+				.set("addCount", false)
+				.set("logSkill", "pshuiqiang");
 		},
 	},
 	pshuntu: {
