@@ -12886,8 +12886,9 @@ const skills = {
 				player.setStorage(name, map, true);
 				player.addSkill(name);
 			}
-			tops.reverse();
-			await game.cardsGotoPile(tops.concat(bottoms), ["top_cards", tops], (event, card) => {
+			const remains = tops.concat(bottoms);
+			remains.reverse();
+			await game.cardsGotoPile(remains, ["top_cards", remains], (event, card) => {
 				if (event.top_cards.includes(card)) {
 					return ui.cardPile.firstChild;
 				}
