@@ -1142,7 +1142,7 @@ const skills = {
 			global: "dying",
 		},
 		check(event, player) {
-			return get.attitude(player, event.player);
+			return get.attitude(player, event.player) > 0;
 		},
 		logTarget: "player",
 		async content(event, trigger, player) {
