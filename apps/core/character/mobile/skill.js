@@ -9677,7 +9677,7 @@ const skills = {
 			if (!["heart"].concat(player.getStorage("friendgongli_cuijun_shunyi")).includes(suit)) {
 				return false;
 			}
-			if (typeof number !== "number" || number <= (player.storage.counttrigger?.friendshunyi ?? 0)) {
+			if (typeof number !== "number" || number <= player.countHistory("useSkill", evt => evt.skill == "friendshunyi")) {
 				return false;
 			}
 			//if (!player.hasCard({ suit: suit }, "h")) return false;
