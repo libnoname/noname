@@ -1433,15 +1433,19 @@ const skills = {
 		check(card) {
 			return 6 - get.value(card);
 		},
-		content() {
-			"step 0";
-			var cards = game.cardsGotoOrdering(get.cards(5)).cards;
+		async content(event, trigger, player) {
+			const orderingEvent = game.cardsGotoOrdering(get.cards(5));
+			const { cards } = orderingEvent;
 			event.cards = cards;
-			player.showCards(cards, get.translation(player) + "发动了【借风】");
-			("step 1");
-			if (cards.filter(i => get.color(i) == "red").length >= 2) {
-				player.chooseUseTarget("wanjian", true);
+			await orderingEvent;
+			await player.showCards(cards, `${get.translation(player)}发动了【借风】`);
+			if (cards.filter(card => get.color(card) === "red").length < 2) {
+				return;
 			}
+			await player.chooseUseTarget({
+				card: get.autoViewAs({ name: "wanjian", isCard: true }),
+				forced: true,
+			});
 		},
 		ai: {
 			order: 9,
