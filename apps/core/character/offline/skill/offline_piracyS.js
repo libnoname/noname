@@ -1635,25 +1635,23 @@ const skills = {
 	psbaoquan: {
 		trigger: { player: "damageBegin4" },
 		filter(event, player) {
-			return player.countCards("h", { type: ["trick", "delay"] }) || _status.connectMode;
+			return _status.connectMode || player.hasCards("h", { type: ["trick", "delay"] });
 		},
 		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseToDiscard(get.prompt2("psbaoquan"), { type: ["trick", "delay"] })
-				.set("logSkill", "psbaoquan")
-				.set("ai", card => {
-					if (_status.event.goon) {
-						return 7 - get.value(card);
-					}
-					return 0;
+		async content(event, trigger, player) {
+			const result = await player
+				.chooseToDiscard({
+					prompt: get.prompt2("psbaoquan"),
+					filterCard: { type: ["trick", "delay"] },
+					ai: card => (_status.event.goon ? 7 - get.value(card) : 0),
 				})
-				.set("goon", get.damageEffect(player, trigger.source, player) < -5);
-			("step 1");
-			if (result.bool) {
-				trigger.cancel();
+				.set("logSkill", "psbaoquan")
+				.set("goon", get.damageEffect(player, trigger.source, player) < -5)
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
+			trigger.cancel();
 		},
 	},
 	//官盗S吕布
