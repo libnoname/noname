@@ -3485,7 +3485,7 @@ const skills = {
 			return game.hasPlayer(target => lib.skill.twjinglve.filterTarget(null, player, target));
 		},
 		filterTarget(card, player, target) {
-			return target.countCards("h") > 0;
+			return target.hasCards("h");
 		},
 		async content(event, trigger, player) {
 			const target = event.target;
@@ -3498,7 +3498,7 @@ const skills = {
 					return Math.max(val, get.value(card));
 				})
 				.forResult();
-			if (result.bool) {
+			if (result?.bool && result.links?.length) {
 				player.storage.twjinglve2 = target;
 				player.storage.twjinglve3 = result.links[0];
 				player.addSkill("twjinglve2");
@@ -3534,7 +3534,7 @@ const skills = {
 		},
 		silent: true,
 		lastDo: true,
-		content() {
+		async content(event, trigger, player) {
 			player.removeSkill("twjinglve2");
 		},
 		group: "twjinglve3",
@@ -3552,7 +3552,7 @@ const skills = {
 			if (event.name == "useCard") {
 				return event.cards?.includes(card);
 			}
-			return get.cardPile(card, "filed") || game.hasPlayer(target => target.getCards("h").includes(card));
+			return true;
 		},
 		forced: true,
 		logTarget: "player",
@@ -3563,9 +3563,11 @@ const skills = {
 				game.log(trigger.card, "被无效了");
 			} else {
 				const card = player.storage.twjinglve3;
-				await player.gain(card, ...(get.owner(card) ? [get.owner(card), "give"] : ["gain2"]));
+				player.removeSkill("twjinglve2");
+				if ([...ui.cardPile.childNodes, ...ui.discardPile.childNodes].includes(card) || game.hasPlayer(target => target.getCards("h").includes(card))) {
+					await player.gain(card, ...(get.owner(card) ? [get.owner(card), "give"] : ["gain2"]));
+				}
 			}
-			player.removeSkill("twjinglve2");
 		},
 	},
 	//外服谋曹丕
