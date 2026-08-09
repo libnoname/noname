@@ -8,12 +8,14 @@ const skills = {
 		getfilter: card => card.name !== "sha" || get.number(card) === "unsure" || !card?.cards?.length || card?.cards?.length > 1 || lib.card[card.cards[0].name].type !== "trick",
 		mod: {
 			cardname(card) {
+				const event = get.event();
+				if (!["chooseToUse", "chooseToRespond"].includes(event.name)) return;
 				if (lib.card[card.name].type === "trick" && !_status._mbwumou_check) return "sha";
 			},
 			selectTarget(card, player, range) {
-				if (get.info("mbwumou").getfilter(card)) {
-					return;
-				}
+				const event = get.event();
+				if (!["chooseToUse", "chooseToRespond"].includes(event.name)) return;
+				if (get.info("mbwumou").getfilter(card)) return;
 				let cardx = card.cards[0];
 				let select = lib.card[cardx.name]?.selectTarget;
 				let res = [1, 1];
@@ -31,6 +33,8 @@ const skills = {
 				game.checkMod(cardx, player, range, "selectTarget", player);
 			},
 			cardEnabled(card, player, event) {
+				event = event || get.event();
+				if (!["chooseToUse", "chooseToRespond"].includes(event?.name)) return;
 				if (get.info("mbwumou").getfilter(card) || _status._mbwumou_check) return;
 				_status._mbwumou_check = true;
 				const sha = get.autoViewAs({ name: "sha", cards: card.cards }, card.cards);
@@ -39,6 +43,8 @@ const skills = {
 				return bool;
 			},
 			playerEnabled(card, player, target) {
+				const event = get.event();
+				if (!["chooseToUse", "chooseToRespond"].includes(event.name)) return;
 				if (get.info("mbwumou").getfilter(card) || _status._mbwumou_check) return;
 				_status._mbwumou_check = true;
 				const sha = get.autoViewAs({ name: "sha", cards: card.cards }, card.cards);
@@ -47,6 +53,8 @@ const skills = {
 				return bool;
 			},
 			targetInRange(card, player, target) {
+				const event = get.event();
+				if (!["chooseToUse", "chooseToRespond"].includes(event.name)) return;
 				if (get.info("mbwumou").getfilter(card) || _status._mbwumou_check) return;
 				_status._mbwumou_check = true;
 				const bool = lib.filter.filterTarget(card.cards[0], player, target);
@@ -125,11 +133,12 @@ const skills = {
 				},
 			},
 			phaseEnd: {
+				audio: "ol_wuqian",
 				trigger: { player: "phaseEnd" },
-				forced: true,
 				filter(event, player) {
 					return !player.hasCard(card => get.is.damageCard(card), "h");
 				},
+				forced: true,
 				async content(event, trigger, player) {
 					let card = get.cardPile(card => get.is.damageCard(card));
 					if (card) await player.gain(card, "draw");
