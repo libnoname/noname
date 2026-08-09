@@ -17371,6 +17371,7 @@ const skills = {
 					return Math.max(
 						...game.filterPlayer().map(target => {
 							const sgn = get.sgnAttitude(player, target);
+							if (sgn > 0 && target.hp <= 1) return -666;
 							return get.damageEffect(target, player, player) + sgn * 2;
 						})
 					);
