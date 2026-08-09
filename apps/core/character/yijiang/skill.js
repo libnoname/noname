@@ -10400,6 +10400,7 @@ const skills = {
 			dc_guansuo: "zhiman_guansuo",
 			guansuo: "zhiman_guansuo",
 			re_baosanniang: "zhiman_re_baosanniang",
+			tw_baosanniang: "zhiman_re_baosanniang",
 		},
 		trigger: { source: "damageBegin2" },
 		filter(event, player) {

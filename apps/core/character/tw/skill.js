@@ -942,6 +942,9 @@ const skills = {
 			},
 		},
 		audio: "wushen",
+		audioname2: {
+			tw_baosanniang: "wusheng_re_baosanniang",
+		},
 		trigger: { player: "useCard2" },
 		forced: true,
 		filter(event, player) {

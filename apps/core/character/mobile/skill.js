@@ -26838,7 +26838,11 @@ const skills = {
 		forced: true,
 		audio: "dangxian",
 		audioname: ["xin_liaohua"],
-		audioname2: { guansuo: "dangxian_guansuo", re_baosanniang: "dangxian_re_baosanniang" },
+		audioname2: {
+			guansuo: "dangxian_guansuo",
+			re_baosanniang: "dangxian_re_baosanniang",
+			tw_baosanniang: "dangxian_re_baosanniang",
+		},
 		async content(event, trigger, player) {
 			const card = get.discardPile(card => card.name == "sha");
 			if (card) {
