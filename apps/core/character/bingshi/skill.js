@@ -452,7 +452,7 @@ const skills = {
 							ai1(button) {
 								const player = get.player();
 								if (button.link == "draw") {
-									if (player.isPhaseUsing()) {
+									if (player.isPhaseUsing() && player.needsToDiscard()) {
 										return 0;
 									}
 									return get.event().num * get.effect(player, { name: "draw" }, player, player);
