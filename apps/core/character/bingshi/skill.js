@@ -7260,8 +7260,7 @@ const skills = {
 									}, 0);
 								case "弃牌响应":
 									return (trigger.targets || []).reduce((sum, target) => {
-										const card = get.copy(trigger.card);
-										game.setNature(card, "stab");
+										const card = get.autoViewAs({ name: "sha", nature: "stab" }, "unsure");
 										return sum + get.effect(target, card, player, player);
 									}, 0);
 								case "摸牌":
@@ -7334,7 +7333,7 @@ const skills = {
 				async content(event, trigger, player) {
 					const { target } = trigger;
 					const result = await target
-						.chooseToDiscard("战烈：弃置一张牌，否则不可响应" + get.translation(trigger.card))
+						.chooseToDiscard("战烈：弃置一张牌，否则不可响应" + get.translation(trigger.card), "he")
 						.set("ai", card => {
 							const player = get.player(),
 								trigger = get.event().getTrigger();
