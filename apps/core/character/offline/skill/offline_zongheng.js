@@ -104,6 +104,7 @@ const skills = {
 						}
 						return true;
 					},
+					forced: true,
 					selectButton: 2,
 					ai(button) {
 						//插眼

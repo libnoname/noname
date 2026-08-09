@@ -22,6 +22,7 @@ const skills = {
 			return get.info(skill).getShaLength();
 		},
 		filterCard: lib.filter.cardDiscardable,
+		position: "he",
 		discard: false,
 		lose: false,
 		delay: false,

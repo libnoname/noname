@@ -14239,12 +14239,12 @@ export class Library {
 			},
 		],
 		[
-      		"纵横",
-      		{
-        		color: "#ffff5e",
-        		nature: "shenmm"
-      		}
-    	],
+			"纵横",
+			{
+				color: "#ffff5e",
+				nature: "shenmm",
+			},
+		],
 		[
 			"长安",
 			{
