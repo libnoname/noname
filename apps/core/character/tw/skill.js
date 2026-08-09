@@ -153,7 +153,7 @@ const skills = {
 	twjianyan: {
 		audio: 3,
 		logAudio: () => 1,
-		derivation: "twhuju",
+		derivation: ["twhuju", "twsuzhen", "twdangjiang", "twjizhi"],
 		persevereSkill: true,
 		forced: true,
 		locked: false,
@@ -447,6 +447,7 @@ const skills = {
 		trigger: { player: "dying" },
 		skillAnimation: true,
 		animationColor: "wood",
+		derivation: ["twhuju", "twliwu", "twsaoting", "twjianyan"],
 		filter(event, player) {
 			return game.hasPlayer(current => current != player && current.hasSkill("twhuju"));
 		},
