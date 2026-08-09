@@ -6463,6 +6463,7 @@ const skills = {
 			draw: {
 				trigger: { player: "useCard" },
 				silent: true,
+				popup: false,
 				filter(event) {
 					return event.skill == "nshunji";
 				},
@@ -6471,29 +6472,26 @@ const skills = {
 				},
 			},
 			damage: {
-				trigger: { global: "damageAfter" },
-				silent: true,
+				trigger: { source: "damageBegin1" },
 				filter(event) {
-					return event.getParent(2).skill == "nshunji";
+					return event.getParent(2).skill == "nshunji" && event.player?.isIn();
 				},
+				logTarget: "player",
 				async content(event, trigger, player) {
 					let result;
-
-					// step 0
-					if (player.countCards("he")) {
-						result = await trigger.player
+					const target = event.targets[0];
+					if (player.hasCards("he")) {
+						result = await target
 							.discardPlayerCard(player, "混击", "he")
 							.set("boolline", true)
 							.set("prompt2", "弃置" + get.translation(player) + "的一张牌，或取消并摸一张牌")
 							.forResult();
 					} else {
-						await trigger.player.draw();
+						await target.draw();
 						return;
 					}
-
-					// step 1
-					if (!result.bool) {
-						await trigger.player.draw();
+					if (!result?.bool) {
+						await target.draw();
 					}
 				},
 			},
