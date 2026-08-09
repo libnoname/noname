@@ -29180,8 +29180,9 @@ const skills = {
 		filter(event, player) {
 			return player.countCards("hes") >= 2;
 		},
-		prompt: "将两张牌当刺【杀】使用或打出",
+		prompt: "将两张牌当刺【杀】使用",
 		async precontent(event, trigger, player) {
+			event.getParent().addCount = false;
 			player
 				.when("useCardAfter")
 				.filter(evt => evt.getParent() === event.getParent())
@@ -29201,15 +29202,16 @@ const skills = {
 					}
 					const drawTargets = await player2
 						.chooseTarget({
-							selectTarget: [0, targets.length],
+							selectTarget: [1, targets.length],
 							prompt: "【灭害】选择令任意名角色摸两张牌",
 							filterTarget(card, player, target) {
-								return targets.includes(target);
+								return get.event().targets.includes(target);
 							},
 							multitarget: true,
 						})
+						.set("targets", targets)
 						.forResult();
-					if (drawTargets?.targets?.length) {
+					if (drawTargets?.bool && drawTargets.targets?.length) {
 						await game.asyncDraw(drawTargets.targets, 2);
 					}
 				});
