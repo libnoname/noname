@@ -1134,12 +1134,11 @@ const skills = {
 		trigger: { global: "dieAfter" },
 		global: "pszhonghu_skip",
 		filter(event, player) {
-			return player != _status.currentPhase;
+			return player !== _status.currentPhase;
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			const evt = trigger.getParent("phaseUse");
-			if (evt && evt.name == "phaseUse") {
+			if (evt && evt.name === "phaseUse") {
 				evt.skipped = true;
 			}
 			const evtx = trigger.getParent("phase");
@@ -1158,12 +1157,12 @@ const skills = {
 				popup: false,
 				firstDo: true,
 				filter(event, player) {
-					if ((_status._pszhonghu && !_status._pszhonghu.isIn()) || event.player == _status._pszhonghu) {
+					if ((_status._pszhonghu && !_status._pszhonghu.isIn()) || event.player === _status._pszhonghu) {
 						delete _status._pszhonghu;
 					}
-					return _status._pszhonghu && event.player != _status._pszhonghu;
+					return _status._pszhonghu && event.player !== _status._pszhonghu;
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.cancel(null, null, "notrigger");
 				},
 			},
