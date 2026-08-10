@@ -92,7 +92,7 @@ const characters = {
 		sex: "male",
 		group: "qun",
 		hp: 4,
-		skills: ["wudou", "jiandao"],
+		skills: ["shifeng", "jiandao"],
 	},
 	shie: {
 		sex: "male",

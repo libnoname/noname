@@ -1,6 +1,12 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	tw_sb_yl_luzhi: "TW谋卢植",
+	tw_sb_yl_luzhi_prefix: "TW|谋",
+	twsbmingren: "明任",
+	twsbmingren_info: "①游戏开始时，你摸三张牌，然后将一张手牌置于你的武将牌上，称为“任”。②结束阶段，你可以用一张手牌替换“任”。",
+	twsbzhenliang: "贞良",
+	twsbzhenliang_info: "转换技。阳：出牌阶段限一次，你可以弃置X张与“任”颜色相同的牌并对攻击范围内的一名角色造成1点伤害（X为你与其体力值值差且X至少为1）。阴：你的回合外，一名角色使用或打出牌结算完成后，若此牌与“任”类别相同，则你可以令至多两名角色各摸两张牌。",
 	huan_sunce: "幻孙策",
 	huan_sunce_prefix: "幻",
 	twliwu: "励伍",
@@ -382,7 +388,7 @@ const translates = {
 	twjiekuang: "竭匡",
 	twjiekuang_info: "每回合限一次。当一名体力值小于你的角色成为其他角色使用基本牌或普通锦囊牌的唯一目标后，若没有角色处于濒死状态，你可以失去1点体力或减1点体力上限，将此牌的目标转移给你。然后此牌结算结束后，若此牌未造成伤害且此牌的使用者是你使用此牌名的牌的合法目标，你视为对此牌的使用者使用一张同名牌。",
 	twneirao: "内扰",
-	twneirao_info: "觉醒技。准备阶段，若你的体力值与体力上限之和不大于9，你失去〖竭匡〗，弃置所有牌并从牌堆或弃牌堆中获得等量的【杀】，然后获得〖乱掠〗。",
+	twneirao_info: `觉醒技。准备阶段，若你的体力值与体力上限之和不大于9，你失去${get.poptip("twjiekuang")}，弃置所有牌并从牌堆或弃牌堆中获得等量的【杀】，然后获得${get.poptip("twluanlve")}。`,
 	twluanlve: "乱掠",
 	twluanlve_info: "①出牌阶段，你可以将X张【杀】当做【顺手牵羊】对一名本阶段未成为过【顺手牵羊】的目标的角色使用（X为你以此法使用【顺手牵羊】的次数）。②当你使用牌时，若此牌为【顺手牵羊】，你令此牌不能被响应。",
 	tw_fengxí: "冯习",

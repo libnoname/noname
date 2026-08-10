@@ -3458,12 +3458,12 @@ const skills = {
 		},
 	},
 	//王越
-	wudou: {
+	shifeng: {
 		audio: 2,
-		group: ["wudou_use", "wudou_target"],
+		group: ["shifeng_use", "shifeng_target"],
 		subSkill: {
 			use: {
-				audio: "wudou",
+				audio: "shifeng",
 				usable: 1,
 				trigger: {
 					global: "useCardAfter",
@@ -3488,7 +3488,7 @@ const skills = {
 				},
 			},
 			target: {
-				audio: "wudou",
+				audio: "shifeng",
 				usable: 1,
 				trigger: {
 					global: "useCardToPlayered",
@@ -3529,13 +3529,13 @@ const skills = {
 			},
 		},
 		trigger: {
-			global: ["useCardAfter"],
+			global: "useCardAfter",
 			source: "damageSource",
 		},
 		forced: true,
 		filter(event, player) {
 			if (event.name == "useCard") {
-				return get.is.damageCard(event.card) && event.targets.includes(player);
+				return (get.is.damageCard(event.card) && event.targets.includes(player)) || (event.player == player && event.card.name == "juedou");
 			}
 			return event.card?.name == "juedou" || (player.getAllHistory("sourceDamage").indexOf(event) + 1) % 2 == 0;
 		},
@@ -3546,7 +3546,7 @@ const skills = {
 					player.addSkill(`${event.name}_nocount`);
 					await player.gain({
 						cards: [card],
-						animate: "gain2",
+						animate: "draw",
 						gaintag: [`${event.name}_nocount`],
 					});
 				}
@@ -3557,21 +3557,23 @@ const skills = {
 				if ((player.getAllHistory("sourceDamage").indexOf(trigger) + 1) % 2 == 0) {
 					player.addSkill(`${event.name}_effect`);
 					player.addMark(`${event.name}_effect`, 1, false);
-					if (!player.hasDiscardableCards(player, "h")) {
+					if (!player.hasDiscardableCards(player, "h", card => !get.is.damageCard(card))) {
 						return;
 					}
 					const result = await player
 						.chooseToDiscard({
-							prompt: "剑道：请选择要替换为伤害牌的手牌",
+							prompt: "剑道：你可以将一张非伤害手牌替换为伤害牌",
+							filterCard(card) {
+								return !get.is.damageCard(card);
+							},
 							position: "h",
-							selectCard: [1, Infinity],
 							ai(card) {
 								return 2 - get.player().getUseValue(card);
 							},
 						})
 						.forResult();
-					const { cards } = result;
-					if (cards?.length) {
+					if (result?.bool && result?.cards?.length) {
+						const cards = result.cards;
 						const gain = [];
 						while (gain.length < cards.length) {
 							const card = get.cardPile(card => get.is.damageCard(card) && !gain.includes(card) && !cards.includes(card));
@@ -3613,18 +3615,32 @@ const skills = {
 				mark: true,
 				priority: 9,
 				intro: {
-					content: "下次使用【杀】不可响应",
+					content: "下次使用【杀】指定目标时，其需弃置一张基本牌否则此【杀】不可被响应",
 				},
 				trigger: {
-					player: "useCard",
+					player: "useCardToPlayer",
 				},
 				filter(event, player) {
 					return event.card.name == "sha";
 				},
+				logTarget: "target",
 				async content(event, trigger, player) {
 					player.removeSkill(event.name);
-					trigger.directHit.addArray(game.players);
-					game.log(trigger.card, "不可响应");
+					const target = event.targets[0];
+					const result = await target.chooseToDiscard({
+						prompt: "弃置一张基本牌否则不可响应此【杀】",
+						filterCard(card) {
+							return get.type(card) == "basic";
+						},
+						ai(card) {
+							return 6 - get.value(card);
+						},
+					})
+					.forResult();
+					if (!result?.bool && !result.cards?.length) {
+						trigger.getParent().directHit.add(target);
+						game.log(trigger.card, `不可被${get.translation(target)}响应`);
+					}
 				},
 			},
 			effect: {
@@ -13049,8 +13065,9 @@ const skills = {
 				player.setStorage(name, map, true);
 				player.addSkill(name);
 			}
-			tops.reverse();
-			await game.cardsGotoPile(tops.concat(bottoms), ["top_cards", tops], (event, card) => {
+			const remains = tops.concat(bottoms);
+			remains.reverse();
+			await game.cardsGotoPile(remains, ["top_cards", remains], (event, card) => {
 				if (event.top_cards.includes(card)) {
 					return ui.cardPile.firstChild;
 				}
@@ -27558,6 +27575,7 @@ const skills = {
 	},
 	// 傅干
 	qiaojian: {
+		audio: 2,
 		enable: "phaseUse",
 		locked: false,
 		filter(event, player) {
@@ -27791,6 +27809,7 @@ const skills = {
 		},
 	},
 	xicha: {
+		audio: 2,
 		trigger: { player: "damageEnd" },
 		filter(event, player) {
 			return event.source?.hasCards("h");
@@ -33835,7 +33854,7 @@ const skills = {
 			return Math.ceil(_status.event.player.countCards("h") / 2);
 		},
 		check(card) {
-			return 6.5 - get.value(card);
+			return 8 - get.value(card);
 		},
 		discard: false,
 		lose: false,

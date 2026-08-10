@@ -1,6 +1,19 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const dynamicTranslates = {
+	twsbzhenliang(player, skill) {
+		const bool = player.storage[skill];
+		let yang = "出牌阶段限一次，你可以弃置X张与“任”颜色相同的牌并对攻击范围内的一名角色造成1点伤害（X为你与其体力值值差且X至少为1）",
+			yin = "你的回合外，一名角色使用或打出牌结算完成后，若此牌与“任”类别相同，则你可以令至多两名角色各摸两张牌";
+		if (bool) {
+			yin = `<span class='bluetext'>${yin}</span>`;
+		} else {
+			yang = `<span class='firetext'>${yang}</span>`;
+		}
+		let start = "转换技。",
+			end = "。";
+		return `${start}阳：${yang}；阴：${yin}${end}`;
+	},
 	twsaoting(player, skill) {
 		const bool = player.storage[skill];
 		let yang = "你可将一张伤害牌当【决斗】使用",
@@ -39,7 +52,7 @@ const dynamicTranslates = {
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
 	twjieyuan(player, skill) {
-		if (player.storage.twfenxin_achieve) {
+		if (!player.storage.twfenxin_achieve) {
 			return lib.translate[skill + "_info"];
 		}
 		return lib.translate[skill + "2_info"];

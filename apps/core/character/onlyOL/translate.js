@@ -1,6 +1,12 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	ol_sb_zhurong: "OL谋祝融",
+	ol_sb_zhurong_prefix: "OL谋",
+	olsbrenche: "刃掣",
+	olsbrenche_info: "出牌阶段限X次，你可弃置X张牌并令至多X名其他角色各弃置一张牌（X为本回合弃牌堆中【杀】的数量且至少为1）。每有角色因此弃置牌不为【杀】，你便摸一张牌。",
+	olsbyalian: "牙镰",
+	olsbyalian_info: "每阶段结束时，若你此阶段不因使用失去过【杀】，你可以视为对任意名手牌数小于等于X的角色使用一张火【杀】（X为本回合弃牌堆中【杀】的数量且至少为1）。",
 	ol_liufeng: "OL界刘封",
 	ol_liufeng_prefix: "OL界",
 	olxiansi: "陷嗣",

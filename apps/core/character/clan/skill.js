@@ -1024,6 +1024,7 @@ const skills = {
 		check(card) {
 			return 7 - get.value(card);
 		},
+		position: "he",
 		log: false,
 		async precontent(event, trigger, player) {
 			const name = event.name.slice(4);
@@ -1050,6 +1051,11 @@ const skills = {
 					return Infinity;
 				}
 			},
+			targetInRange(card, player, target) {
+				if (card.storage?.clanfenjian) {
+					return true;
+				}
+			}
 		},
 		group: ["clanfenjian_effect"],
 		subSkill: {

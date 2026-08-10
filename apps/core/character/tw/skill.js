@@ -2,6 +2,62 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//谋卢植
+	twsbmingren: {
+		inherit: "nzry_mingren",
+		drawNum: 3,
+		audio: "sbmingren",
+	},
+	twsbzhenliang: {
+		inherit: "nzry_zhenliang",
+		audio: "sbzhenliang",
+		drawNum: 2,
+		intro: {
+			content(storage, player) {
+				if (storage) {
+					return "你的回合外，一名角色使用或打出牌结算完成后，若此牌与“任”类别相同，则你可以令至多两名角色各摸两张牌。";
+				}
+				return "出牌阶段限一次，你可以弃置与攻击范围内的一名角色体力值之差张与“任”颜色相同的牌（至少一张），对其造成1点伤害。";
+			},
+		},
+		trigger: { global: ["useCardAfter", "respondAfter"] },
+		filter(event, player) {
+			const cards = player.getExpansions("nzry_mingren");
+			if (!cards.length) {
+				return false;
+			}
+			if (event.name === "chooseToUse") {
+				if (player.storage.twsbzhenliang || player.hasSkill("twsbzhenliang_used", null, null, false)) {
+					return false;
+				}
+				const color = get.color(cards[0]);
+				if (!player.countCards("he", card => get.color(card) === color)) {
+					return false;
+				}
+				return game.hasPlayer(current => {
+					return (
+						player.inRange(current) &&
+						player.countCards("he", card => {
+							return get.color(card) === color;
+						}) >= Math.max(1, Math.abs(player.getHp() - current.getHp()))
+					);
+				});
+			} else {
+				if (_status.currentPhase === player || !player.storage.twsbzhenliang) {
+					return false;
+				}
+				return get.type2(event.card) === get.type2(cards[0]);
+			}
+		},
+		selectCard: [1, Infinity],
+		complexSelect: true,
+		complexCard: true,
+		filterTarget(card, player, target) {
+			return player.inRange(target) && ui.selected.cards.length === Math.max(1, Math.abs(player.getHp() - target.getHp()));
+		},
+		prompt: "弃置与攻击范围内的一名角色体力值之差张与“任”颜色相同的牌（至少一张），对其造成1点伤害",
+		subSkill: { used: { charlotte: true } },
+	},
 	//幻孙策
 	twliwu: {
 		audio: 4,
@@ -491,7 +547,7 @@ const skills = {
 		},
 		filter(event, player, name) {
 			const target = name == "damageBegin4" ? event.source : event.player;
-			if (target == player || !target?.isIn() || target.hp >= player.hp) return false;
+			if (target == player || !target?.isIn() || target.hp < player.hp) return false;
 			const position = player.storage.twfenxin_achieve ? "he" : "h";
 			if (event.isOnline() || player.storage.twfenxin_achieve) return player.hasCards(position);
 			if (name == "damageBegin2")
