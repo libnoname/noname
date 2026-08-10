@@ -11267,7 +11267,7 @@ const skills = {
 				if (target.identityShown === false) {
 					return false;
 				}
-				return get.nameList(player).some((namex) => namex.endsWith(name));
+				return get.nameList(target).some((namex) => namex.endsWith(name));
 			});
 		},
 	},
