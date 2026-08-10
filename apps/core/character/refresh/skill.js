@@ -3643,7 +3643,7 @@ const skills = {
 	//十周年沮授
 	dcshibei: {
 		audio: 2,
-		audioname2: { xin_jushou: "shibei_xin_jushou" },
+		audioname2: { tw_jushou: "shibei_xin_jushou" },
 		trigger: { player: "damageEnd" },
 		check(event, player) {
 			return player.getHistory("damage").indexOf(event) == 0;
