@@ -412,7 +412,15 @@ const skills = {
 	//幻孙策
 	twliwu: {
 		audio: 4,
-		logAudio: () => 2,
+		logAudio(event, player) {
+			if(player == event.player) {
+				if(player.isDamaged()) {
+					return ["twliwu2.mp3"];
+				}
+				return ["twliwu3.mp3"];
+			}
+			return ["twliwu1.mp3"];
+		},
 		forced: true,
 		trigger: {
 			global: ["changeHpAfter", "gainMaxHpAfter", "loseMaxHpAfter"],
@@ -432,7 +440,7 @@ const skills = {
 		subSkill: {
 			dam: {
 				audio: "twliwu",
-				logAudio: () => ["twliwu3.mp3", "twliwu4.mp3"],
+				logAudio: () => ["twliwu4.mp3"],
 				charlotte: true,
 				onremove: true,
 				forced: true,
@@ -451,6 +459,7 @@ const skills = {
 	},
 	twsaoting: {
 		audio: 2,
+		logAudio: index => (typeof index == "number" ? `twsaoting${index}.mp3` : 2),
 		zhuanhuanji: true,
 		marktext: "☯",
 		mark: true,
@@ -463,6 +472,7 @@ const skills = {
 			},
 		},
 		enable: "chooseToUse",
+		popup: false,
 		filterCard(card) {
 			return get.tag(card, "damage") > 0;
 		},
@@ -483,6 +493,7 @@ const skills = {
 			return 10 - get.value(card);
 		},
 		async precontent(event, trigger, player) {
+			player.logSkill("twsaotao", null, null, null, [event.result.card.name == "jiu" ? 2 : 1]);
 			player.changeZhuanhuanji("twsaoting");
 			player
 				.when({ player: "useCard" })
@@ -633,9 +644,11 @@ const skills = {
 		filter(event, player) {
 			return get.info("twguose").damageStatusChanged(event.player, event) && event.player.hasCards("he");
 		},
+		popup: false,
 		logTarget: "player",
 		async content(event, trigger, player) {
 			const target = event.targets[0];
+			player.logSkill(event.name, null, null, null, [player == target ? 2 : 1]);
 			const result =
 				target == player
 					? await player
@@ -760,7 +773,7 @@ const skills = {
 					},
 					log: false,
 					async precontent(event, trigger, player) {
-						player.logSkill("twdangjiang");
+						player.logSkill("twdangjiang", null, null, null, [event.result.card.name == "wuzhong" ? 1 : 2]);
 						player.changeZhuanhuanji("twdangjiang");
 						player
 							.when({ player: "useCard" })
