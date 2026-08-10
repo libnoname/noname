@@ -17360,31 +17360,29 @@ const skills = {
 			},
 			check(button) {
 				const player = get.player();
-				if (button.link == "recover") {
-					return Math.max(
-						...game.filterPlayer().map(target => {
-							const sgn = get.sgnAttitude(player, target);
-							return get.recoverEffect(target, player, player) - sgn * Math.min(2, target.countCards("he"));
-						})
-					);
-				} else {
-					return Math.max(
-						...game.filterPlayer().map(target => {
-							const sgn = get.sgnAttitude(player, target);
-							if (sgn > 0 && target.hp <= 1) return -666;
-							return get.damageEffect(target, player, player) + sgn * 2;
-						})
-					);
-				}
+				const maxDamage = Math.max(...game.filterPlayer().map(target => get.damageEffect(target, player, player)));
+				const maxRecover = Math.max(...game.filterPlayer().map(target => get.recoverEffect(target, player, player)));
+				if (button.link === "recover") return maxRecover;
+				return maxDamage;
 			},
 			backup(links, player) {
 				return {
 					audio: "dcweiti",
 					choice: links[0],
+					filterCard: () => false,
+					selectCard: -1,
 					filterTarget: true,
-					ai1: () => 1,
-					ai2(target) {
-						const { choice } = get.info("dcweiti_backup");
+					ai: {
+						result: {
+							player(player, target) {
+								const { choice } = get.info("dcweiti_backup");
+								if (choice == "damage") {
+									return get.damageEffect(target, player, player);
+								} else {
+									return get.recoverEffect(target, player, player);
+								}
+							},
+						},
 					},
 					async content(event, trigger, player) {
 						const {
@@ -17492,7 +17490,7 @@ const skills = {
 			backup: {},
 		},
 		ai: {
-			order: 1,
+			order: 5,
 			result: {
 				player: 1,
 			},
