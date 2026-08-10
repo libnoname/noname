@@ -2,6 +2,114 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//沮授
+	twjianying: {
+		audio: "xinjianying",
+		subfrequent: ["draw"],
+		enable: "chooseToUse",
+		usable: 1,
+		filter(event, player) {
+			const evt = lib.skill.dcjianying.getLastUsed(player);
+			if (!evt?.card || get.type(evt.card) == "equip") {
+				return false;
+			}
+			const card = evt.card;
+			return player.hasCard(cardx => {
+				const vcard = get.autoViewAs({ name: card.name, nature: card.nature, cards: [cardx], storage: { twjianying: true } }, [card]);
+				return event.filterCard(vcard, player, event);
+			}, "hes");
+		},
+		viewAs(cards, player) {
+			const event = get.event();
+			const evt = lib.skill.dcjianying.getLastUsed(player);
+			if (!evt?.card || get.type(evt.card) == "equip") {
+				return null;
+			}
+			const card = evt.card;
+			const suit = event.twjianying_suit || null;
+			return { name: card.name, nature: card.nature, suit, storage: { twjianying: true } };
+		},
+		filterCard: true,
+		position: "hes",
+		check(card) {
+			const player = get.player();
+			return 7 - player.getUseValue(card, null, true);
+		},
+		async precontent(event, trigger, player) {
+			event.getParent().addCount = false;
+		},
+		prompt(event, player) {
+			const evt = lib.skill.dcjianying.getLastUsed(player);
+			const card = evt.card;
+			return "将一张牌当做【" + get.translation(get.autoViewAs({ name: card.name, nature: card.nature }, "unsure")) + (event.twjianying_suit ? "(" + get.translation(event.twjianying_suit) + ")" : "") + "】使用";
+		},
+		onChooseToUse(event) {
+			if (!game.online) {
+				const last = get.player().getLastUsed();
+				if (last && lib.phaseName.some(phase => last.getParent(phase) === event.getParent(phase))) {
+					const suit = get.suit(last.card, false);
+					if (suit != "none") {
+						event.set("twjianying_suit", suit);
+					}
+				}
+			}
+		},
+		hiddenCard(player, name) {
+			if (!lib.inpile.includes(name) || !player.hasCards("hes")) {
+				return false;
+			}
+			const evt = lib.skill.dcjianying.getLastUsed(player);
+			if (!evt?.card) return false;
+			return name === evt.card.name;
+		},
+		locked: false,
+		mod: {
+			cardUsable(card, player, num) {
+				if (card?.storage?.twjianying) return Infinity;
+			},
+		},
+		ai: {
+			order(item, player) {
+				const event = get.event();
+				player = player || event.player;
+				const evt = lib.skill.dcjianying.getLastUsed(player);
+				if (!evt?.card || get.type(evt.card) == "equip") {
+					return 0;
+				}
+				const card = evt.card;
+				return get.order(card, player) - 0.1;
+			},
+			result: { player: 7 },
+		},
+		group: ["twjianying_draw", "dcjianying_mark"],
+		init(player) {
+			var history = player.getAllHistory("useCard");
+			if (history.length) {
+				var trigger = history[history.length - 1];
+				if (get.suit(trigger.card, player) == "none" || typeof get.number(trigger.card, player) != "number") {
+					return;
+				}
+				player.storage.dcjianying_mark = trigger.card;
+				player.markSkill("dcjianying_mark");
+				game.broadcastAll(
+					function (player, suit) {
+						if (player.marks.dcjianying_mark) {
+							player.marks.dcjianying_mark.firstChild.innerHTML = get.translation(suit);
+						}
+					},
+					player,
+					get.suit(trigger.card, player)
+				);
+			}
+		},
+		onremove(player) {
+			player.unmarkSkill("dcjianying_mark");
+			delete player.storage.dcjianying_mark;
+		},
+		subSkill: {
+			draw: { audio: "twjianying", inherit: "dcjianying" },
+		},
+	},
 	//鲍三娘
 	twshuyong: {
 		audio: "xinfu_wuniang",

@@ -407,7 +407,7 @@ window.noname_character_replace = {
 	tw_zhangnan: ["tw_zhangnan", "ty_zhangnan"],
 	tw_zhangzhao: ["star_zhangzhao", "tw_zhangzhao", "jy_zhangzhao", "sxrm_zhangzhao"],
 	xf_huangquan: ["xf_huangquan", "dc_huangquan", "dc_sb_huangquan"],
-	yj_jushou: ["yj_jushou", "ol_sb_jushou", "re_jushou", "dc_sb_jushou", "xin_jushou", "std_jushou"],
+	yj_jushou: ["yj_jushou", "ol_sb_jushou", "re_jushou", "dc_sb_jushou", "xin_jushou", "std_jushou", "tw_jushou"],
 	yj_sufei: ["xf_sufei", "yj_sufei", "sp_sufei"],
 	yl_luzhi: ["yl_luzhi", "ol_sb_yl_luzhi", "sb_yl_luzhi", "tw_yl_luzhi", "jsrg_yl_luzhi", "tw_sb_yl_luzhi"],
 	jin_yanghu: ["jin_yanghu", "dc_yanghu", "sp_yanghu", "std_dc_yanghu", "ns_yanghu"],

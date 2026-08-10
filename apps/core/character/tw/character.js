@@ -1,4 +1,13 @@
 const characters = {
+	tw_jushou: {
+		sex: "male",
+		group: "qun",
+		hp: 2,
+		maxHp: 3,
+		hujia: 3,
+		skills: ["twjianying", "dcshibei"],
+		dieAudios: ["xin_jushou"],
+	},
 	tw_baosanniang: {
 		sex: "female",
 		group: "shu",

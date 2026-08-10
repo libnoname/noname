@@ -20,7 +20,7 @@ const characterSort = {
 	tw_yijiang1: ["tw_re_fazheng"],
 	tw_yijiang2: ["tw_chengpu", "tw_madai", "tw_handang"],
 	tw_yijiang3: ["tw_fuhuanghou", "tw_guohuai"],
-	tw_yijiang4: ["tw_sunluban", "tw_guyong"],
+	tw_yijiang4: ["tw_sunluban", "tw_guyong", "tw_jushou"],
 	tw_yijiang5: ["tw_zhuzhi", "tw_caoxiu", "old_quancong"],
 	tw_yijiang7: ["tw_xuezong"],
 	tw_yijiang: ["tw_caoang", "tw_caohong", "tw_zumao", "tw_dingfeng", "tw_maliang", "tw_xiahouba"],
