@@ -1,4 +1,11 @@
 const characters = {
+	ol_sb_zhurong: {
+		sex: "female",
+		group: "shu",
+		hp: 4,
+		skills: ["olsbrenche", "olsbyalian"],
+		names: "null|null",
+	},
 	ol_liufeng: {
 		sex: "male",
 		group: "shu",

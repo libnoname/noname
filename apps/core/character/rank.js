@@ -1,5 +1,5 @@
 window.noname_character_rank = {
-	s: ["yue_caozhi", "v_sunshangxiang", "two_yj_puyuan", "x_yao_yuanshu", "lord_goblin", "pe_guozhao", "xia_caopi", "pe_jun_caopi", "wn_shen_machao", "pe_que", "hm_shen_huangfusong", "tw_jsrg_huangfusong", "key_shiki", "sp_xiahoushi", "ns_zhangwei", "key_mio", "key_midori", "key_yuri", "key_yui", "key_lucia", "db_key_hina", "sp_key_kanade", "key_shizuru", "key_sakuya", "boss_zhaoyun", "noname", "ns_shijian", "key_iriya", "ol_nanhualaoxian", "huzun", "dc_xujing", "ty_shen_zhangfei", "vtb_xiaole", "yj_zhonghui", "duosidawang", "re_sp_zhugeliang", "re_pangtong", "tw_wujing", "dengzhi", "xin_chengpu", "tw_dongzhao", "sunwukong", "ps_shen_machao", "pk_sp_duyu", "std_pengyang", "diy_liaohua", "drag_xusheng"],
+	s: ["yue_caozhi", "v_sunshangxiang", "two_yj_puyuan", "x_yao_yuanshu", "lord_goblin", "pe_guozhao", "xia_caopi", "pe_jun_caopi", "wn_shen_machao", "pe_que", "hm_shen_huangfusong", "tw_jsrg_huangfusong", "key_shiki", "sp_xiahoushi", "ns_zhangwei", "key_mio", "key_midori", "key_yuri", "key_yui", "key_lucia", "db_key_hina", "sp_key_kanade", "key_shizuru", "key_sakuya", "boss_zhaoyun", "noname", "ns_shijian", "key_iriya", "ol_nanhualaoxian", "huzun", "dc_xujing", "ty_shen_zhangfei", "vtb_xiaole", "yj_zhonghui", "duosidawang", "re_sp_zhugeliang", "re_pangtong", "tw_wujing", "dengzhi", "xin_chengpu", "tw_dongzhao", "sunwukong", "ps_shen_machao", "pk_sp_duyu", "std_pengyang", "diy_liaohua", "drag_xusheng", "zh_shen_zhangjiao"],
 	ap: [
 		"sxrm_caoren",
 		"sxrm_zhaoyun",
@@ -834,6 +834,7 @@ window.noname_character_rank = {
 		"drag_pangde",
 		"ol_sb_zhangfei",
 		"ol_sb_huangyueying",
+		"ol_sb_zhurong",
 		"hm_bairao",
 		"scl_sunhanhua",
 		"ty_wuque",
@@ -2726,6 +2727,7 @@ window.noname_character_rank = {
 			"hm_shen_zhangbao",
 			"hm_shen_zhangliang",
 			"hm_shen_huangfusong",
+			"zh_shen_zhangjiao",
 			"hm_shen_yl_luzhi",
 			"hm_shen_zhujun",
 			"tw_jsrg_huangfusong",
@@ -4328,6 +4330,7 @@ window.noname_character_rank = {
 			"kebineng",
 			"ol_sunxiu",
 			"ol_sb_huangyueying",
+			"ol_sb_zhurong",
 			"ol_gaoshun",
 			"weiguan",
 			"simazhou",
