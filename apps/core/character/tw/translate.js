@@ -1,6 +1,14 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	tw_baosanniang: "TW鲍三娘",
+	tw_baosanniang_prefix: "TW",
+	twshuyong: "姝勇",
+	twshuyong_info: "当你使用或打出【杀】时，你可以获得一名其他角色区域里的一张牌，若本轮你以此法获得其区域里的牌数大于2，其摸一张牌。",
+	twxushen: "许身",
+	twxushen_info: `限定技，每轮开始时或出牌阶段，你可以摸至多四张牌并失去等量体力；若你因此进入了濒死状态，你脱离濒死状态后，可以将${get.poptip("twwushen")}、${get.poptip("redangxian")}、${get.poptip("rezhiman")}中的任意个分配给本次濒死结算中令你回复过体力的角色（若其已有对应技能则摸三张牌）。`,
+	twzhennan: "镇南",
+	twzhennan_info: "一名角色使用普通锦囊牌指定第一个目标后，若目标数量大于X且包含你（X为使用者的体力值，至少为1），你可以对一名角色造成1点伤害。",
 	tw_sb_yl_luzhi: "TW谋卢植",
 	tw_sb_yl_luzhi_prefix: "TW|谋",
 	twsbmingren: "明任",

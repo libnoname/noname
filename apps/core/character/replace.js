@@ -19,7 +19,7 @@ window.noname_character_replace = {
 	shen_zhaoyun: ["shen_zhaoyun", "dc_zhaoyun", "boss_zhaoyun", "old_shen_zhaoyun"],
 	shen_zhouyu: ["shen_zhouyu", "hl_shen_zhouyu"],
 	shen_zhugeliang: ["shen_zhugeliang", "hl_shen_zhugeliang"],
-	baosanniang: ["baosanniang", "xin_baosanniang", "re_baosanniang", "std_baosanniang", "sy_baosanniang", "fx_baosanniang"],
+	baosanniang: ["baosanniang", "xin_baosanniang", "re_baosanniang", "std_baosanniang", "sy_baosanniang", "fx_baosanniang", "tw_baosanniang"],
 	baoxin: ["baoxin", "tw_baoxin", "std_baoxin"],
 	beimihu: ["beimihu", "tw_beimihu"],
 	bulianshi: ["bulianshi", "ol_bulianshi", "dc_bulianshi", "re_bulianshi", "old_bulianshi"],
