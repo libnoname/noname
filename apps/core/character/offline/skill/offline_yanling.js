@@ -320,6 +320,7 @@ const skills = {
 		viewAs: {
 			name: "tiesuo",
 		},
+		position: "hes",
 		onuse(result, player) {
 			player.addTempSkill(result.skill + "_effect");
 		},
