@@ -5819,7 +5819,7 @@ const skills = {
 			if (ui.selected.targets.length) {
 				return ui.selected.targets[0].canCompare(target) && !ui.selected.targets[0].hasSkillTag("noCompareSource") && !target.hasSkillTag("noCompareTarget");
 			}
-			return target.hasCards("h");
+			return game.hasPlayer(current => target.canCompare(current));
 		},
 		targetprompt: ["发起者", "拼点目标"],
 		filterCard: true,
