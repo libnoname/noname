@@ -8,8 +8,25 @@ const skills = {
 		subfrequent: ["draw"],
 		enable: "chooseToUse",
 		usable: 1,
+		getLastUsed(player) {
+			const history = player.getAllHistory("useCard");
+			if (!history?.length) {
+				return false;
+			}
+			let index;
+			for(let i = history.length - 1; i >=0; i--) {
+				if(history[i] && get.type(history[i].card) != "equip") {
+					index = i;
+					break;
+				}
+			}
+			if (typeof index == "number" && index >= 0) {
+        		return history[index];
+      		}
+      		return false;
+		},
 		filter(event, player) {
-			const evt = lib.skill.dcjianying.getLastUsed(player);
+			const evt = lib.skill.twjianying.getLastUsed(player);
 			if (!evt?.card || get.type(evt.card) == "equip") {
 				return false;
 			}
@@ -21,7 +38,7 @@ const skills = {
 		},
 		viewAs(cards, player) {
 			const event = get.event();
-			const evt = lib.skill.dcjianying.getLastUsed(player);
+			const evt = lib.skill.twjianying.getLastUsed(player);
 			if (!evt?.card || get.type(evt.card) == "equip") {
 				return null;
 			}
@@ -39,7 +56,7 @@ const skills = {
 			event.getParent().addCount = false;
 		},
 		prompt(event, player) {
-			const evt = lib.skill.dcjianying.getLastUsed(player);
+			const evt = lib.skill.twjianying.getLastUsed(player);
 			const card = evt.card;
 			return "将一张牌当做【" + get.translation(get.autoViewAs({ name: card.name, nature: card.nature }, "unsure")) + (event.twjianying_suit ? "(" + get.translation(event.twjianying_suit) + ")" : "") + "】使用";
 		},
@@ -58,7 +75,7 @@ const skills = {
 			if (!lib.inpile.includes(name) || !player.hasCards("hes")) {
 				return false;
 			}
-			const evt = lib.skill.dcjianying.getLastUsed(player);
+			const evt = lib.skill.twjianying.getLastUsed(player);
 			if (!evt?.card) return false;
 			return name === evt.card.name;
 		},
@@ -72,7 +89,7 @@ const skills = {
 			order(item, player) {
 				const event = get.event();
 				player = player || event.player;
-				const evt = lib.skill.dcjianying.getLastUsed(player);
+				const evt = lib.skill.twjianying.getLastUsed(player);
 				if (!evt?.card || get.type(evt.card) == "equip") {
 					return 0;
 				}
@@ -413,8 +430,8 @@ const skills = {
 	twliwu: {
 		audio: 4,
 		logAudio(event, player) {
-			if(player == event.player) {
-				if(player.isDamaged()) {
+			if (player == event.player) {
+				if (player.isDamaged()) {
 					return ["twliwu2.mp3"];
 				}
 				return ["twliwu3.mp3"];
