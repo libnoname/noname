@@ -1,6 +1,16 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	zh_shen_zhangjiao: "纵横神张角",
+	zh_shen_zhangjiao_prefix: "纵横|神",
+	zhyuanlin: "渊临",
+	zhyuanlin_info: "锁定技，每轮开始时/其他角色的判定阶段，令所有其他角色依次/其判定【闪电】；每有一名角色受到雷电伤害，你摸一张牌或回复1点体力。",
+	zhkuanglei: "狂雷",
+	zhkuanglei_info: `锁定技，你成为其他角色使用伤害牌的目标时，除非其交给你一张牌，否则其判定一次${get.poptip("zhkuanglei_leiji")}。`,
+	zhkuanglei_leiji: "雷击",
+	zhkuanglei_leiji_info: "当你使用或打出一张【闪】时，你可令一名角色进行一次判定。若结果为：梅花，你回复1点体力，其受到1点雷电伤害；黑桃，其受到2点雷电伤害。",
+	zhqiongshan: "穹闪",
+	zhqiongshan_info: "每轮限一次，其他角色的判定牌生效前，你可获得此判定牌并声明此判定牌的花色，点数。",
 	ps_shen_caocao: "★神曹操",
 	ps_shen_caocao_prefix: "★|神",
 	psguixin: "归心",

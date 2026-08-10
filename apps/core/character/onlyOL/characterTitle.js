@@ -1,4 +1,5 @@
 export default {
+	ol_sb_zhurong: "见放崇山",
 	ol_bulianshi: "无冕之后",
 	//ol_liufeng: "",
 	ol_quancong: "其时声明",
