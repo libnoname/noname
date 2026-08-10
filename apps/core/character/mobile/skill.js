@@ -4201,11 +4201,8 @@ const skills = {
 				targets: [target],
 				name,
 			} = event;
-			const getNum = (player, target) => {
-				let num = Math.max(
-					1,
-					game.players.reduce((sum, target) => sum + target.countMark(`hefeidangshi_count`), 0)
-				);
+			const getNum = (player) => {
+				let num = Math.max(1, player.countMark(`hefeidangshi_count`));
 				if (player.hasSkill("hefeiheyuzhangliao") && get.info("friendgongli").isFriendOf(player, "hefei_lidian")) {
 					num = 3;
 				}
@@ -4213,7 +4210,7 @@ const skills = {
 			};
 			const list = [
 				["useCard", `对${get.translation(player)}使用一张非转化且非虚拟的【${get.translation(trigger.card.name)}】`],
-				["discard", `弃置${get.cnNumber(getNum(player, target))}张牌`],
+				["discard", `弃置${get.cnNumber(getNum(player))}张牌`],
 				["damage", `${get.translation(player)}对你造成1点伤害`],
 			];
 			const canChoose = list
@@ -4231,7 +4228,7 @@ const skills = {
 							);
 						}
 						case "discard": {
-							const num = getNum(player, target);
+							const num = getNum(player);
 							return target.countDiscardableCards(target, "he") >= num;
 						}
 						default: {
@@ -4267,7 +4264,7 @@ const skills = {
 									return get.damageEffect(player, trigger.player, player);
 								},
 							})
-							.set("getNum", getNum(player, target))
+							.set("getNum", getNum(player))
 							.set("canChoose", canChoose)
 							.forResult()
 					: {
@@ -4307,9 +4304,9 @@ const skills = {
 					break;
 				}
 				case "discard": {
-					const num = Math.min(target.countDiscardableCards(target, "he"), getNum(player, target));
-					target.addMark(`${name}_count`, 1, false);
-					target.addTempSkill(`${name}_count`, "roundStart");
+					const num = Math.min(target.countDiscardableCards(target, "he"), getNum(player));
+					player.addMark(`${name}_count`, 1, false);
+					player.addTempSkill(`${name}_count`, "roundStart");
 					if (num > 0) {
 						await target.chooseToDiscard({ position: "he", forced: true, selectCard: num, allowChooseAll: true });
 					}
@@ -4336,10 +4333,7 @@ const skills = {
 			}
 		},
 		subSkill: {
-			count: {
-				charlotte: true,
-				onremove: true,
-			},
+			count: { charlotte: true, onremove: true },
 			effect: {
 				charlotte: true,
 				onremove: true,
