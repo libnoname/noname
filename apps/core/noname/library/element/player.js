@@ -699,41 +699,35 @@ export class Player extends HTMLDivElement {
 	 * @param {string} message 设置提示标记的内容,标记中的\n代表换行符
 	 * @param { SkillTrigger | SAAType<Signal> | boolean } isTemp 是否是临时的tip。默认为false,表示一直存在；若为true,则回合结束自动失去。也可以填一个具体的自定义时机。
 	 * @param { object } [css] 自定义的样式
+	 * @param { boolean } [nobroadcast] 是否不全局展示
 	 * @returns { void }
 	 * @author Curpond
 	 */
-	addTip(index, message, isTemp = false, css = {}) {
+	addTip(index, message, isTemp = false, css = {}, nobroadcast) {
 		const player = this;
 		if (player.getHiddenSkills(true, true).includes(index)) {
 			return;
 		}
-		game.broadcastAll(
-			(player, index, message, css) => {
-				player.node.tipContainer ??= ui.create.div(".tipContainer", player);
-				player.tips ??= new Map();
-				if (!player.tips.has(index)) {
-					player.tips.set(index, ui.create.div(".tip", player.node.tipContainer));
-				}
-				player.tips.get(index).innerHTML = message
-					.replace(/ /g, "&nbsp;")
-					.replace(/(?:♥︎|♦︎)/g, '<span style="color: red; ">$&</span>')
-					.replace(/\n/g, "<br>");
-				player.tips.get(index).css(css);
-
-				let double = player.classList.contains("fullskin2") && lib.config.layout !== "long2";
-
-				const width = player.node.avatar.clientWidth;
-				let w = width * (double ? 2 : 1);
-				player.style.setProperty("--w", `${w}px`);
-
-				//检查tip的高度，使其不覆盖装备
-				game.callHook("checkTipBottom", [player]);
-			},
-			player,
-			index,
-			message,
-			css
-		);
+		const func = (player, index, message, css) => {
+			player.node.tipContainer ??= ui.create.div(".tipContainer", player);
+			player.tips ??= new Map();
+			if (!player.tips.has(index)) {
+				player.tips.set(index, ui.create.div(".tip", player.node.tipContainer));
+			}
+			player.tips.get(index).innerHTML = message
+				.replace(/ /g, "&nbsp;")
+				.replace(/(?:♥︎|♦︎)/g, '<span style="color: red; ">$&</span>')
+				.replace(/\n/g, "<br>");
+			player.tips.get(index).css(css);
+			let double = player.classList.contains("fullskin2") && lib.config.layout !== "long2";
+			const width = player.node.avatar.clientWidth;
+			let w = width * (double ? 2 : 1);
+			player.style.setProperty("--w", `${w}px`);
+			//检查tip的高度，使其不覆盖装备
+			game.callHook("checkTipBottom", [player]);
+		};
+		func(player, index, message, css);
+		if (!nobroadcast) game.broadcast(func, player, index, message, css);
 		if (isTemp && !player.storage[`temp_tip_${index}`]) {
 			player.storage[`temp_tip_${index}`] = true;
 			let expire;

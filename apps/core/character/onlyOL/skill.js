@@ -968,7 +968,7 @@ const skills = {
 				forced: true,
 				trigger: {
 					player: ["useCard2"],
-					global: ["useCard"],
+					global: ["useCard0"],
 				},
 				filter(event, player, name) {
 					const { card, targets } = event;
@@ -3963,6 +3963,7 @@ const skills = {
 					player.storage.olquanyu ??= new Map([]);
 					const choosed = (player.storage.olquanyu.get(target) ?? [[], undefined])[0];
 					player.storage.olquanyu.set(target, [[...choosed, choice2], choice2]);
+					game.broadcast((player, storage) => (player.storage.olquanyu = storage), player, player.storage.olquanyu);
 					const func = (player, target) => {
 						const [choices, choice] = player.storage.olquanyu.get(target),
 							rumo = player.hasSkill("olqiangang_effect") && target !== player;
@@ -3972,22 +3973,43 @@ const skills = {
 							}
 						}
 						for (const i of rumo ? choices : [choice]) {
-							target.addTip(i, lib.skill[i].description, false, { width: "fit-content" });
+							target.addTip(i, lib.skill[i].description, false, { width: "fit-content" }, true);
+							game.broadcast(
+								(target, i) => {
+									if (target === game.me) target.addTip(i, lib.skill[i].description, false, { width: "fit-content" }, true);
+								},
+								target,
+								i
+							);
 						}
 						for (const i of ["baihong", "qingming", "bixie", "zidian", "baili", "liuxing"].map(i => `olquanyu_${i}`)) {
 							target.unmarkSkill(i);
 						}
-						target.markSkill(choice);
+						target.markSkill(choice, null, null, true);
 						if (target.marks[choice]?.firstChild.innerHTML) {
 							target.marks[choice].firstChild.innerHTML = lib.skill[choice].intro.name.slice(0, target.marks[choice].firstChild.innerHTML.length);
 						}
+						game.broadcast(
+							(target, choice) => {
+								if (target === game.me) {
+									target.markSkill(choice, null, null, true);
+									if (target.marks[choice]?.firstChild.innerHTML) {
+										target.marks[choice].firstChild.innerHTML = lib.skill[choice].intro.name.slice(0, target.marks[choice].firstChild.innerHTML.length);
+									}
+								}
+							},
+							target,
+							choice
+						);
 					};
-					if (player.isMine() || target.isMine()) {
+					if (player === game.me || target === game.me) {
 						func(player, target);
-					} else if (player.isOnline2() || target.isOnline2()) {
+					} else if (player.isOnline2()) {
 						player.send(func, player, target);
+					} else if (target.isOnline2()) {
+						target.send(func, player, target);
 					}
-					if (choice && choice2 === choice && num < 3) {
+					if (choice2 === (choice || player.getStorage("olquanyu", new Map([])).get(player)?.[1]) && num < 3) {
 						num++;
 					}
 				}
@@ -4028,6 +4050,7 @@ const skills = {
 						}
 						target.unmarkSkill(choice);
 						player.storage.olquanyu.set(target, [choices, undefined]);
+						game.broadcast((player, storage) => (player.storage.olquanyu = storage), player, player.storage.olquanyu);
 					}
 				},
 			},
