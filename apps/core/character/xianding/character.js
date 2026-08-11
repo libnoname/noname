@@ -57,14 +57,6 @@ const characters = {
 		groupInGuozhan: "shu",
 		dieAudios: ["shen_guanyu"],
 	},
-	dc_shen_liubei: {
-		sex: "male",
-		group: "shen",
-		hp: 6,
-		skills: ["dclongnu", "dcjieying"],
-		groupInGuozhan: "shu",
-		dieAudios: ["shen_liubei"],
-	},
 	dc_shen_zhangliao: {
 		sex: "male",
 		group: "shen",
