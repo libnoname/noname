@@ -3541,8 +3541,13 @@ const skills = {
 				.chooseToUse(get.prompt2(event.name, target).replace("更大", `大于${get.number(card)}`))
 				.set("num", get.number(card))
 				.set("targetx", target)
-				.set("filterCard", card => get.number(card) > get.event().num && get.name(card) == "sha")
-				.set("filterTarget", (card, player, target) => {
+				.set("filterCard", (card, player, event) => {
+					if (get.name(card) !== "sha") {
+						return false;
+					}
+					return get.number(card) > get.event().num && get.name(card) == "sha" && lib.filter.filterCard(card, player, event);
+				})
+				.set("filterTarget", function (card, player, target) {
 					const { targetx } = get.event();
 					if (!ui.selected.targets?.includes(targetx) && target != targetx) {
 						return false;
@@ -11267,7 +11272,7 @@ const skills = {
 				if (target.identityShown === false) {
 					return false;
 				}
-				return get.nameList(target).some((namex) => namex.endsWith(name));
+				return get.nameList(target).some(namex => namex.endsWith(name));
 			});
 		},
 	},
