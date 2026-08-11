@@ -73,6 +73,7 @@ const skills = {
 	},
 	pejianghuo: {
 		audio: "dcjianghuo",
+		derivation: "pelishi",
 		juexingji: true,
 		forced: true,
 		skillAnimation: true,
