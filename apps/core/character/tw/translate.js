@@ -1,8 +1,8 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
-	tw_jushou: "TW沮授",
-	tw_jushou_prefix: "TW",
+	tw_jushou: "TW界沮授",
+	tw_jushou_prefix: "TW|界",
 	twjianying: "渐营",
 	twjianying_info: "①当你使用与你使用的上一张牌点数或花色相同的牌时，你可以摸一张牌。②出牌阶段限一次，你可以将一张牌当做你使用的上一张非装备牌使用且无次数限制。若你于此阶段内使用的上一张牌有花色，则此牌的花色视为上一张牌的花色。",
 	tw_baosanniang: "TW鲍三娘",
