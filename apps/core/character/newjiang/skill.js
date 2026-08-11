@@ -1213,7 +1213,7 @@ const skills = {
 					mark(dialog, storage, player) {
 						const str = get.translation(storage).split("、"),
 							sources = get.translation(player.getStorage("yj_yanyu_source")).split("、");
-						dialog.addText(`${str}花色的手牌遵循:基本牌:火杀,锦囊牌:火攻,装备牌:铁索连环且使用后${sources}摸一张牌`);
+						dialog.addText(`${str}花色的手牌遵循:基本牌:火【杀】,锦囊牌:火攻,装备牌:铁索连环且使用后${sources}摸一张牌`);
 					},
 				},
 				mod: {
