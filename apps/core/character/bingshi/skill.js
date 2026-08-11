@@ -452,7 +452,9 @@ const skills = {
 							ai1(button) {
 								const player = get.player();
 								if (button.link == "draw") {
-									if (player.isPhaseUsing()) return 0;
+									if (player.isPhaseUsing() && player.needsToDiscard()) {
+										return 0;
+									}
 									return num * get.effect(player, { name: "draw" }, player, player);
 								}
 								return Math.max(
