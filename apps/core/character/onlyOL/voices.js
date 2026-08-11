@@ -1,4 +1,6 @@
 export default {
+	"#puji1": "悬壶济世，普渡众生。",
+	"#puji2": "祛病除魔，妙手回春。",
 	"#olsbrenche1": "风驰电掣，例无虚发！",
 	"#olsbrenche2": "害怕了吗？我南中的战刃飞刀！",
 	"#olsbyalian1": "我这圣火巨镰，你吃得消吗！",

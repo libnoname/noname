@@ -435,10 +435,11 @@ const skills = {
 							complexSelect: true,
 							forced: true,
 							filterButton(button) {
+								const { player, targets, num } = get.event();
 								if (button.link == "damage") {
-									return get.event().targets?.length && !player.storage.potyanhui1;
+									return targets.length > 0 && !player.storage.potyanhui1;
 								}
-								return get.event().num && !player.storage.potyanhui2;
+								return num > 0 && !player.storage.potyanhui2;
 							},
 							filterTarget(card, player, target) {
 								return get.event().targets?.includes(target);
@@ -450,13 +451,13 @@ const skills = {
 								return -1;
 							},
 							ai1(button) {
-								const player = get.player();
+								const { player, targets, num } = get.event();
 								if (button.link == "draw") {
 									if (player.isPhaseUsing()) return 0;
 									return num * get.effect(player, { name: "draw" }, player, player);
 								}
 								return Math.max(
-									...game.filterPlayer().map(current => {
+									...targets.map(current => {
 										return get.damageEffect(current, player, player, "fire");
 									})
 								);
