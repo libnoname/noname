@@ -43,6 +43,7 @@ const characters = {
 		hp: 3,
 		skills: ["twjieyuan", "twfenxin", "twfucheng"],
 		names: "吕|null",
+		dieAudios: ["lingju"],
 	},
 	tw_sb_xiahoudun: {
 		sex: "male",
