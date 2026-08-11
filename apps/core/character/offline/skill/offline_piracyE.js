@@ -1157,7 +1157,7 @@ const skills = {
 		trigger: { source: "damageSource" },
 		filter(event, player) {
 			const target = event.player;
-			if (player == target) {
+			if (player == target || !target?.isIn()) {
 				return false;
 			}
 			if (!target.getStorage("pepozhen_used").includes("选项一") && !player.getStorage("pepozhen_use").includes(target)) {
