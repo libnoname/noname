@@ -11259,7 +11259,7 @@ const skills = {
 				if (target.identityShown === false) {
 					return false;
 				}
-				return get.nameList(target).some((namex) => namex.endsWith(name));
+				return get.nameList(target).some(namex => namex.endsWith(name));
 			});
 		},
 	},
