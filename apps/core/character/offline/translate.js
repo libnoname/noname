@@ -68,6 +68,8 @@ const translates = {
 	ymfriendyance_info: "每轮开始时，你可以摸五张牌并将等量张手牌以任意顺序置于武将牌上直到本轮结束。当一张牌被使用时，你移去武将牌上首张牌，每满足一项你便摸一张牌：1.两张牌花色相同；2.两张牌类型相同。",
 	ymfriendfangqiu: "方遒",
 	ymfriendfangqiu_info: `限定技，当你因${get.poptip("ymfriendyance")}放置牌后，你可以展示武将牌上的所有“演策”牌，直到本轮结束你因${get.poptip("ymfriendyance")}获得的牌翻倍。`,
+	ymfriendzhugelianggongli: "共励",
+	ymfriendzhugelianggongli_info: `锁定技，若友庞统/友徐庶在场且与你阵营相同，${get.poptip("ymfriendyance")}摸五张牌改为摸六张牌/${get.poptip("ymfriendyance")}每轮首张牌视为满足任意一项条件。`,
 	pe_shen_zhonghui: "PE神钟会",
 	pe_shen_zhonghui_prefix: "PE|神",
 	pelinjie: "凛界",

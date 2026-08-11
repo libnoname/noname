@@ -52,7 +52,7 @@ const characters = {
 		sex: "male",
 		group: "qun",
 		hp: 3,
-		skills: ["ymfriendyance", "ymfriendfangqiu"],
+		skills: ["ymfriendyance", "ymfriendfangqiu", "ymfriendzhugelianggongli"],
 		names: "诸葛|亮",
 		dieAudios: ["friend_zhugeliang"],
 		clans: ["琅琊诸葛氏"],
