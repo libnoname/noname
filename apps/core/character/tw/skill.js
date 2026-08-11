@@ -565,7 +565,7 @@ const skills = {
 	twjianyan: {
 		audio: 3,
 		logAudio: () => 1,
-		derivation: "twhuju",
+		derivation: ["twhuju", "twsuzhen", "twdangjiang", "twjizhi"],
 		persevereSkill: true,
 		forced: true,
 		locked: false,
@@ -861,6 +861,7 @@ const skills = {
 		trigger: { player: "dying" },
 		skillAnimation: true,
 		animationColor: "wood",
+		derivation: ["twhuju", "twliwu", "twsaoting", "twjianyan"],
 		filter(event, player) {
 			return game.hasPlayer(current => current != player && current.hasSkill("twhuju"));
 		},
@@ -3902,7 +3903,7 @@ const skills = {
 			return game.hasPlayer(target => lib.skill.twjinglve.filterTarget(null, player, target));
 		},
 		filterTarget(card, player, target) {
-			return target.countCards("h") > 0;
+			return target.hasCards("h");
 		},
 		async content(event, trigger, player) {
 			const target = event.target;
@@ -3915,7 +3916,7 @@ const skills = {
 					return Math.max(val, get.value(card));
 				})
 				.forResult();
-			if (result.bool) {
+			if (result?.bool && result.links?.length) {
 				player.storage.twjinglve2 = target;
 				player.storage.twjinglve3 = result.links[0];
 				player.addSkill("twjinglve2");
@@ -3951,7 +3952,7 @@ const skills = {
 		},
 		silent: true,
 		lastDo: true,
-		content() {
+		async content(event, trigger, player) {
 			player.removeSkill("twjinglve2");
 		},
 		group: "twjinglve3",
@@ -3969,7 +3970,7 @@ const skills = {
 			if (event.name == "useCard") {
 				return event.cards?.includes(card);
 			}
-			return get.cardPile(card, "filed") || game.hasPlayer(target => target.getCards("h").includes(card));
+			return true;
 		},
 		forced: true,
 		logTarget: "player",
@@ -3980,9 +3981,11 @@ const skills = {
 				game.log(trigger.card, "被无效了");
 			} else {
 				const card = player.storage.twjinglve3;
-				await player.gain(card, ...(get.owner(card) ? [get.owner(card), "give"] : ["gain2"]));
+				player.removeSkill("twjinglve2");
+				if ([...ui.cardPile.childNodes, ...ui.discardPile.childNodes].includes(card) || game.hasPlayer(target => target.getCards("hej").includes(card))) {
+					await player.gain(card, ...(get.owner(card) ? [get.owner(card), "give"] : ["gain2"]));
+				}
 			}
-			player.removeSkill("twjinglve2");
 		},
 	},
 	//外服谋曹丕
@@ -29597,8 +29600,9 @@ const skills = {
 		filter(event, player) {
 			return player.countCards("hes") >= 2;
 		},
-		prompt: "将两张牌当刺【杀】使用或打出",
+		prompt: "将两张牌当刺【杀】使用",
 		async precontent(event, trigger, player) {
+			event.getParent().addCount = false;
 			player
 				.when("useCardAfter")
 				.filter(evt => evt.getParent() === event.getParent())
@@ -29618,15 +29622,16 @@ const skills = {
 					}
 					const drawTargets = await player2
 						.chooseTarget({
-							selectTarget: [0, targets.length],
+							selectTarget: [1, targets.length],
 							prompt: "【灭害】选择令任意名角色摸两张牌",
 							filterTarget(card, player, target) {
-								return targets.includes(target);
+								return get.event().targets.includes(target);
 							},
 							multitarget: true,
 						})
+						.set("targets", targets)
 						.forResult();
-					if (drawTargets?.targets?.length) {
+					if (drawTargets?.bool && drawTargets.targets?.length) {
 						await game.asyncDraw(drawTargets.targets, 2);
 					}
 				});
