@@ -5047,8 +5047,6 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			let result;
-
-			// step 0
 			result = await player
 				.chooseTarget(
 					true,
@@ -5068,37 +5066,34 @@ const skills = {
 					return 0;
 				})
 				.forResult();
-
-			const target = result.targets[0];
-			player.line(target, "green");
-			const type = get.type(trigger.card, "trick");
-
-			// step 1
-			result = await target
-				.chooseCard("###滔乱###交给" + get.translation(player) + "一张不为" + get.translation(type) + "牌的牌，或令其失去1点体力且滔乱无效直到回合结束", "he", (card, player, target) => {
-					return get.type(card, "trick") != _status.event.cardType;
-				})
-				.set("cardType", type)
-				.set("ai", card => {
-					if (_status.event.att) {
-						return 11 - get.value(card);
-					}
-					return 0;
-				})
-				.set("att", get.attitude(target, player) > 0)
-				.forResult();
-
-			// step 2
-			if (result.bool) {
-				await target.give(result.cards, player, "visible");
-			} else {
-				player.addTempSkill("junktaoluan3");
+			if (result?.bool && result.targets?.length) {
+				const target = result.targets[0];
+				player.line(target, "green");
+				const type = get.type(trigger.card, "trick");
+				result = await target
+					.chooseCard("###滔乱###交给" + get.translation(player) + "一张不为" + get.translation(type) + "牌的牌，或令其失去1点体力且滔乱无效直到回合结束", "he", (card, player, target) => {
+						return get.type(card, "trick") != _status.event.cardType;
+					})
+					.set("cardType", type)
+					.set("ai", card => {
+						if (_status.event.att) {
+							return 11 - get.value(card);
+						}
+						return 0;
+					})
+					.set("att", get.attitude(target, player) > 0)
+					.forResult();
+				if (result?.bool && result.cards?.length) {
+					await target.give(result.cards, player, "visible");
+				} else {
+					player.addTempSkill("junktaoluan3");
+				}
 			}
 		},
 	},
 	junktaoluan3: {
 		charlotte: true,
-		trigger: { player: "phaseEnd" },
+		trigger: { global: "phaseEnd" },
 		forced: true,
 		popup: false,
 		sourceSkill: "junktaoluan",
@@ -6463,6 +6458,7 @@ const skills = {
 			draw: {
 				trigger: { player: "useCard" },
 				silent: true,
+				popup: false,
 				filter(event) {
 					return event.skill == "nshunji";
 				},
@@ -6471,29 +6467,26 @@ const skills = {
 				},
 			},
 			damage: {
-				trigger: { global: "damageAfter" },
-				silent: true,
+				trigger: { source: "damageBegin1" },
 				filter(event) {
-					return event.getParent(2).skill == "nshunji";
+					return event.getParent(2).skill == "nshunji" && event.player?.isIn();
 				},
+				logTarget: "player",
 				async content(event, trigger, player) {
 					let result;
-
-					// step 0
-					if (player.countCards("he")) {
-						result = await trigger.player
+					const target = event.targets[0];
+					if (player.hasCards("he")) {
+						result = await target
 							.discardPlayerCard(player, "混击", "he")
 							.set("boolline", true)
 							.set("prompt2", "弃置" + get.translation(player) + "的一张牌，或取消并摸一张牌")
 							.forResult();
 					} else {
-						await trigger.player.draw();
+						await target.draw();
 						return;
 					}
-
-					// step 1
-					if (!result.bool) {
-						await trigger.player.draw();
+					if (!result?.bool) {
+						await target.draw();
 					}
 				},
 			},

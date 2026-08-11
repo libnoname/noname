@@ -426,6 +426,9 @@ const skills = {
 		forced: true,
 		trigger: { source: "damageSource" },
 		logTarget: "player",
+		filter(event, player) {
+			return event.num > 0;
+		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
 			player.addSkill(event.name + "_dam");
@@ -500,7 +503,7 @@ const skills = {
 			player.when({ global: ["phaseAfter", "phaseBefore"] }).step(async (event, trigger, player) => {
 				player.removeSkill(event.name);
 				if (event.triggername == "phaseAfter") {
-					player.insertPhase();
+					player.insertPhase("peshashen");
 				}
 			});
 		},
@@ -1154,7 +1157,7 @@ const skills = {
 		trigger: { source: "damageSource" },
 		filter(event, player) {
 			const target = event.player;
-			if (player == target) {
+			if (player == target || !target?.isIn()) {
 				return false;
 			}
 			if (!target.getStorage("pepozhen_used").includes("选项一") && !player.getStorage("pepozhen_use").includes(target)) {
