@@ -1374,6 +1374,7 @@ const characters = {
 		hp: 5,
 		skills: ["baonu", "mbwumou", "mbwuqian", "ol_shenfen"],
 		groupInGuozhan: "qun",
+		dieAudios: ["shen_lvbu"],
 	},
 };
 

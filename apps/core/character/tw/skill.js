@@ -565,7 +565,7 @@ const skills = {
 	twjianyan: {
 		audio: 3,
 		logAudio: () => 1,
-		derivation: "twhuju",
+		derivation: ["twhuju", "twsuzhen", "twdangjiang", "twjizhi"],
 		persevereSkill: true,
 		forced: true,
 		locked: false,
@@ -954,7 +954,8 @@ const skills = {
 	},
 	//灵雎
 	twjieyuan: {
-		audio: 2,
+		audio: ["jieyuan_more.mp3", "jieyuan_less.mp3"],
+		logAudio: (event, player, name) => (name == "damageBegin2" ? "jieyuan_more.mp3" : "jieyuan_less.mp3"),
 		trigger: {
 			source: "damageBegin2",
 			player: "damageBegin4",
@@ -1007,7 +1008,7 @@ const skills = {
 		},
 	},
 	twfenxin: {
-		audio: 2,
+		audio: "fenxin",
 		derivation: "twjieyuan2",
 		dutySkill: true,
 		locked: false,
@@ -1029,6 +1030,7 @@ const skills = {
 		group: ["twfenxin_achieve", "twfenxin_fail", "twfenxin_init"],
 		subSkill: {
 			fail: {
+				audio: "fenxin",
 				forced: true,
 				trigger: {
 					player: "dying",
@@ -1041,6 +1043,7 @@ const skills = {
 				},
 			},
 			achieve: {
+				audio: "fenxin",
 				forced: true,
 				trigger: {
 					global: ["damageAfter", "dieAfter"],
@@ -1081,7 +1084,7 @@ const skills = {
 				},
 			},
 			init: {
-				audio: "twfenxin",
+				audio: "fenxin",
 				trigger: {
 					global: "phaseBefore",
 					player: "enterGame",
@@ -1113,7 +1116,6 @@ const skills = {
 		},
 	},
 	twfucheng: {
-		audio: 2,
 		trigger: {
 			player: "phaseZhunbeiBegin",
 		},
