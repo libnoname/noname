@@ -1235,7 +1235,6 @@ const skills = {
 				targets: [target],
 			} = event;
 			const suffix = !player.storage[event.name] ? "yang" : "yin";
-			player.clearMark(`${event.name}_${suffix}`, false);
 			player.changeZhuanhuanji(event.name);
 			let isChengshi = false;
 			if (event.triggername == "useCardToTargeted") {
@@ -1253,6 +1252,7 @@ const skills = {
 					isChengshi = true;
 				}
 			}
+			player.clearMark(`${event.name}_${suffix}`, false);
 			if (isChengshi) {
 				player.logSkill(event.name, null, null, null, [get.rand(3, 4)]);
 				player.popup("乘势！");
