@@ -98,6 +98,7 @@ const characters = {
 		hp: 3,
 		skills: ["guanxing", "kongcheng"],
 		names: "诸葛|亮",
+		clans: ["琅琊诸葛氏"],
 	},
 	zhaoyun: {
 		sex: "male",

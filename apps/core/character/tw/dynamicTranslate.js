@@ -1,8 +1,58 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const dynamicTranslates = {
+	twsbzhenliang(player, skill) {
+		const bool = player.storage[skill];
+		let yang = "出牌阶段限一次，你可以弃置X张与“任”颜色相同的牌并对攻击范围内的一名角色造成1点伤害（X为你与其体力值值差且X至少为1）",
+			yin = "你的回合外，一名角色使用或打出牌结算完成后，若此牌与“任”类别相同，则你可以令至多两名角色各摸两张牌";
+		if (bool) {
+			yin = `<span class='bluetext'>${yin}</span>`;
+		} else {
+			yang = `<span class='firetext'>${yang}</span>`;
+		}
+		let start = "转换技。",
+			end = "。";
+		return `${start}阳：${yang}；阴：${yin}${end}`;
+	},
+	twsaoting(player, skill) {
+		const bool = player.storage[skill];
+		let yang = "你可将一张伤害牌当【决斗】使用",
+			yin = "你可将一张伤害牌当【酒】使用";
+		if (bool) {
+			yin = `<span class='bluetext'>${yin}</span>`;
+		} else {
+			yang = `<span class='firetext'>${yang}</span>`;
+		}
+		let start = "转换技，",
+			end = "。若你以此法使用牌指定了已受伤角色为目标，你摸一张牌。";
+		return `${start}阳：${yang}；阴：${yin}${end}`;
+	},
+	twhuju(player, skill) {
+		const bool = player.storage[skill];
+		let yang = `你令${get.poptip("twjianyan")}拥有者的手牌上限+1`,
+			yin = `你令${get.poptip("twjizhi")}拥有者的出【杀】次数+1`;
+		if (bool) {
+			yin = `<span class='bluetext'>${yin}</span>`;
+		} else {
+			yang = `<span class='firetext'>${yang}</span>`;
+		}
+		return `锁定技，转换技，阳：${yang}；阴：${yin}。`;
+	},
+	twdangjiang(player, skill) {
+		const bool = player.storage[skill];
+		let yang = "你可将一张非伤害牌当【无中生有】使用",
+			yin = "你可将一张伤害牌当无距离限制的任意【杀】使用";
+		if (bool) {
+			yin = `<span class='bluetext'>${yin}</span>`;
+		} else {
+			yang = `<span class='firetext'>${yang}</span>`;
+		}
+		let start = "转换技，",
+			end = "。若你以此法使用牌指定了未受伤角色为目标，你摸一张牌。";
+		return `${start}阳：${yang}；阴：${yin}${end}`;
+	},
 	twjieyuan(player, skill) {
-		if (player.storage.twfenxin_achieve) {
+		if (!player.storage.twfenxin_achieve) {
 			return lib.translate[skill + "_info"];
 		}
 		return lib.translate[skill + "2_info"];

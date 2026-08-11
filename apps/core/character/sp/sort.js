@@ -1,6 +1,6 @@
 const characterSort = {
 	sp_tianji: ["ol_dongguiren", "ol_caojinyu", "huanshujun", "liuyan", "caoteng", "sunhao", "liuxie", "caoang", "hetaihou", "sunluyu", "ol_wangrong", "zuofen", "ol_bianfuren", "qinghegongzhu", "tengfanglan", "ruiji", "caoxiancaohua", "caoyu", "ol_qinlang", "ol_liuzhang", "ol_yuanji"],
-	sp_sibi: ["pangji", "ol_liuye", "ol_cuiyan", "ol_qiaogong", "ol_yangfu", "ol_qiaoxuan", "ol_lifeng", "ol_yuanhuan", "liuyan", "yanjun", "panjun", "lvqian", "wangcan", "ol_lukai", "yangxiu", "guotu", "chenlin", "chengyu", "shixie", "fuwan", "wangyun", "zhugejin", "simalang", "maliang", "buzhi", "dongyun", "kanze", "sunqian", "xizhicai", "sunshao", "duxi", "jianggan", "ol_dengzhi", "ol_yangyi", "ol_dongzhao", "ol_chendeng", "jin_yanghu", "wangyan", "xiahouxuan", "quhuang", "zhanghua", "wangguan", "sunhong", "caoxi", "tianchou", "ol_peixiu", "ol_hanfu", "ol_taoqian"],
+	sp_sibi: ["pangji", "ol_liuye", "ol_cuiyan", "ol_qiaogong", "ol_yangfu", "ol_qiaoxuan", "ol_lifeng", "ol_yuanhuan", "liuyan", "yanjun", "panjun", "lvqian", "wangcan", "ol_lukai", "yangxiu", "guotu", "chenlin", "chengyu", "shixie", "fuwan", "wangyun", "zhugejin", "simalang", "maliang", "buzhi", "dongyun", "kanze", "sunqian", "xizhicai", "sunshao", "duxi", "jianggan", "ol_dengzhi", "ol_yangyi", "ol_dongzhao", "ol_chendeng", "jin_yanghu", "wangyan", "xiahouxuan", "quhuang", "zhanghua", "wangguan", "sunhong", "caoxi", "tianchou", "ol_hanfu", "ol_taoqian"],
 	sp_tianzhu: ["ol_yangfeng", "ol_liupi", "budugen", "ol_kebineng", "yadan", "liyi", "zhangyan", "niujin", "hejin", "hansui", "wutugu", "yanbaihu", "shamoke", "zhugedan", "huangzu", "gaogan", "tadun", "fanjiangzhangda", "ahuinan", "dongtuna", "ol_wenqin", "mawan", "ol_niufu", "ol_wujing", "ol_peiyuanshao", "ol_guanhai", "ol_duanwei"],
 	sp_nvshi: ["sunyuan", "ol_fanyufeng", "ol_caizhenji", "ol_sunru", "ol_dingshangwan", "lingju", "guanyinping", "zhangxingcai", "mayunlu", "dongbai", "zhaoxiang", "ol_zhangchangpu", "daxiaoqiao", "jin_guohuai", "ol_hujinding", "ol_luyusheng", "ol_liwan", "ol_dongxie", "kongshu"],
 	sp_shaowei: ["ol_zhangmancheng", "ol_pengyang", "simahui", "zhangbao", "zhanglu", "zhugeguo", "xujing", "zhangling", "huangchengyan", "zhangzhi", "lushi"],
@@ -8,7 +8,7 @@ const characterSort = {
 	sp_liesi: ["lvboshe", "mizhu", "weizi", "ol_liuba", "zhangshiping", "ol_zhaozhong"],
 	sp_default: ["sp_ol_liubei", "sp_ol_caocao", "re_jsp_pangtong", "sp_diaochan", "sp_zhaoyun", "sp_sunshangxiang", "sp_caoren", "sp_jiangwei", "sp_machao", "sp_caiwenji", "jsp_guanyu", "jsp_huangyueying", "sp_pangde", "sp_jiaxu", "yuanshu", "sp_zhangliao", "sp_ol_zhanghe", "sp_menghuo", "sp_sunce"],
 	sp_qifu: ["ol_lvlingqi", "zhangqiying", "ol_guozhao", "ol_xuelingyun", "ol_jiangwan", "ol_feiyi", "caoying", "panshu", "caochun", "yuantanyuanshang", "caoshuang", "wolongfengchu", "guansuo", "baosanniang", "fengfangnv", "jin_zhouchu"],
-	sp_wanglang: ["ol_miheng", "ol_nanhualaoxian", "ol_wanglang", "ol_puyuan", "ol_zhouqun"],
+	sp_wanglang: ["ol_peixiu", "ol_miheng", "ol_nanhualaoxian", "ol_wanglang", "ol_puyuan", "ol_zhouqun"],
 	sp_zhongdan: ["cuiyan", "huangfusong"],
 	sp_guozhan2: ["sp_dongzhuo"],
 	sp_others: ["hanba", "caiyang"],

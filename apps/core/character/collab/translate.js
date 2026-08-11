@@ -1,6 +1,16 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	ol_chitu: "OL赤兔",
+	ol_chitu_prefix: "OL",
+	ol_le_menghuo: "OL乐孟获",
+	ol_le_menghuo_prefix: "OL乐",
+	ol_niuma: "OL牛头马面",
+	ol_niuma_prefix: "OL",
+	oldianbu: "点簿",
+	oldianbu_info: "锁定技，你的首个回合开始时，你获得十三张牌。当你每个回合内首次打出一种“拘魂”组合后，你视为使用一张【无中生有】，且因此获得的牌不计入手牌上限。若为炸弹，刷新此技能。",
+	oljuhun: "拘魂",
+	oljuhun_info: "出牌阶段开始时，将你的手牌变为扑克牌（仅点数可见，随机赋予花色），直到此回合结束。你可根据以下组合打出扑克牌并执行效果：对子：视为使用一张基本牌（不计入次数）；三条：获得相邻角色各一张牌；炸弹：造成2点伤害；顺子：你将一名角色随机两张牌变为扑克牌。",
 	natu_guanyu: "那兔关羽",
 	natu_guanyu_prefix: "那兔",
 	natu_zhugeliang: "那兔诸葛亮",

@@ -1,5 +1,5 @@
 const characterSort = {
-	extra_offline: ["shen_jiaxu", "shen_diaochan", "boss_zhaoyun", "le_shen_jiaxu", "ps_shen_machao", "mark_shen_machao", "zc26_shen_huangyueying", "sm_shen_machao", "sp_sm_shen_machao", "pe_shen_zhonghui"],
+	extra_offline: ["shen_jiaxu", "shen_diaochan", "boss_zhaoyun", "le_shen_jiaxu", "ps_shen_machao", "mark_shen_machao", "zc26_shen_huangyueying", "sm_shen_machao", "sp_sm_shen_machao", "pe_shen_zhonghui", "ps_shen_caocao"],
 	offline_scl: ["scl_lvbu", "scl_pangdegong", "scl_sunhanhua", "scl_miheng", "scl_peixiu", "scl_caoying", "scl_luotong", "scl_jiaxu"],
 	offline_star: ["jsp_ganfuren", "sp_xiahoushi", "jsp_zhaoyun", "huangjinleishi", "sp_pangtong", "sp_daqiao", "sp_ganning", "sp_xiahoudun", "sp_lvmeng", "sp_zhangfei", "sp_liubei", "old_machao", "zhangliang", "jsp_caoren"],
 	offline_sticker: ["sp_gongsunzan", "sp_simazhao", "sp_wangyuanji", "sp_xinxianying", "sp_liuxie"],
@@ -39,6 +39,7 @@ const characterSort = {
 	offline_wenxindiaolong: ["wxdl_caozhi", "wxdl_caocao", "wxdl_caopi"],
 	offline_shiningGrils: ["shinin_zhenji", "shinin_wuguotai", "shinin_ruiji", "shinin_lvlingqi", "shinin_dongwan", "goblin", "lord_goblin"],
 	offline_yanling: ["ylyg_xiaoqiao", "ylyg_yuji", "ylyg_pangtong", "ylyg_dianwei", "ylyg_xuhuang", "ylyg_zhurong"],
+	offline_zongheng: ["zh_shen_zhangjiao"],
 	//offline_others: [],
 };
 
@@ -86,6 +87,7 @@ const characterSortTranslate = {
 	offline_shiningGrils: "闪耀战姬",
 	offline_yanling: "雁翎耀光",
 	extra_offline: "神话再临·线下",
+	offline_zongheng: "纵横九州",
 };
 
 export { characterSort, characterSortTranslate };

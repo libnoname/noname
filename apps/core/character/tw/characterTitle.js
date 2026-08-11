@@ -1,4 +1,8 @@
 export default {
+	tw_jushou: "监军谋国",
+	tw_baosanniang: "南中武娘",
+	tw_sb_yl_luzhi: "国之桢干",
+	huan_sunce: "问鼎中原",
 	huan_daqiao: "温矜姝华",
 	tw_pot_huanjie: "定计谋国",
 	tw_lingju: "情随梦逝",
