@@ -1,4 +1,9 @@
 export default {
+	"#olsbrenche1": "风驰电掣，例无虚发！",
+	"#olsbrenche2": "害怕了吗？我南中的战刃飞刀！",
+	"#olsbyalian1": "我这圣火巨镰，你吃得消吗！",
+	"#olsbyalian2": "喜欢吗，这招很痛吧？",
+	"#ol_sb_zhurong:die": "圣火……熄灭了……",
 	"#olqingxi1": "策马倾出，奔袭破敌。",
 	"#olqingxi2": "尽遣骁锐，倾袭敌军。",
 	"#ol_caoxiu:die": "贾梁道，汝何迟也！",
