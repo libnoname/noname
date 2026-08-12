@@ -7271,9 +7271,9 @@ const skills = {
 						.forResult();
 					if (result.bool) {
 						const choices = result.links;
-						game.log(player, "选择了", "#g【战烈】", "的", "#y" + choices);
+						//game.log(player, "选择了", "#g【战烈】", "的", "#y" + choices);
 						for (const choice of choices) {
-							player.popup(choice);
+							//player.popup(choice);
 							switch (choice) {
 								case "目标+1":
 									player
