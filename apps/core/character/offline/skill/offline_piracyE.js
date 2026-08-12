@@ -13,9 +13,12 @@ const skills = {
 		},
 		filter(event, player) {
 			const target = game.findPlayer(current => current.getSeatNum() == 1);
-			if (_status.currentPhase !== target) {
+			if (!target?.isIn()) {
 				return false;
 			}
+			//if (_status.currentPhase !== target) {
+				//return false;
+			//}
 			if (event.name == "phase") {
 				const cards = event.player
 					.getHistory("useCard")
