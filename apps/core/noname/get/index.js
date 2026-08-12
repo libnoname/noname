@@ -3785,7 +3785,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 * @overload
 	 * @param { Card | VCard | CardBaseUIData } item
 	 * @param { Player | false } [player]
-	 * @returns { any }
+	 * @returns { CardInfo | void }
 	 */
 	info(item, player) {
 		if (typeof item == "string" || typeof item == "symbol") {

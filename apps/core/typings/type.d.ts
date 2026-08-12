@@ -146,7 +146,7 @@ declare interface importCharacterConfig {
      * 设置该武将包独有的卡牌（或者是特殊卡牌） 
      * 
      * */
-    card?: Record<string, any>;
+    card?: Record<string, CardInfo>;
     /** 
      * 设置自定义卡牌类型的排序用的优先级
      * */
@@ -232,15 +232,15 @@ declare interface importCardConfig {
     /** 
      * 设置卡牌
      * */
-    card: Record<string, Card>;
+    card: Record<string, CardInfo>;
     /** 
      * 设置卡牌技能 
      * */
     skill: Record<string, Skill>;
     /** 
-     * 设置从牌堆添加指定卡牌
+     * 设置从牌堆添加指定卡牌（造牌列表：每个元素为 [花色, 点数, 牌名] 或 [花色, 点数, 牌名, 属性]）
      * */
-    list: CardBaseUIData[];
+    list: CardInitListItem[];
     /** 卡牌翻译 */
     translate: Record<string, string> | string;
     /**
@@ -283,7 +283,7 @@ declare interface importModeConfig {
      */
     characterSort?: Record<string, Record<string, string[]>>;
     /** 卡牌（主要是放些该模式下特有的卡牌） */
-    card?: Record<string, Card>;
+    card?: Record<string, CardInfo>;
     /** 
      * 卡包
      */
@@ -552,7 +552,7 @@ declare interface importPlayConfig {
      * 设置该武将包独有的卡牌（或者是特殊卡牌） 
      * 
      * */
-    card?: Record<string, any>;
+    card?: Record<string, CardInfo>;
     translate?: Record<string, string>;
     /**
      * 对应lib.element
