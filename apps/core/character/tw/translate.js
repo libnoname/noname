@@ -1,8 +1,8 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
-	tw_jushou: "TW沮授",
-	tw_jushou_prefix: "TW",
+	tw_jushou: "TW界沮授",
+	tw_jushou_prefix: "TW|界",
 	twjianying: "渐营",
 	twjianying_info: "①当你使用与你使用的上一张牌点数或花色相同的牌时，你可以摸一张牌。②出牌阶段限一次，你可以将一张牌当做你使用的上一张非装备牌使用且无次数限制。若你于此阶段内使用的上一张牌有花色，则此牌的花色视为上一张牌的花色。",
 	tw_baosanniang: "TW鲍三娘",
@@ -1021,7 +1021,7 @@ const translates = {
 	tw_sxrm_huatuo: "TW疑华佗",
 	tw_sxrm_huatuo_prefix: "TW|疑",
 	twmiehai: "灭害",
-	twmiehai_info: "每回合限三次，你可以将两张牌当作无距离次数限制的刺【杀】使用。此【杀】结算完成后，此过程中正面失去♠牌且已受伤的角色摸两张牌并回复1点体力。",
+	twmiehai_info: "每回合限三次，你可以将两张牌当作无距离次数限制的刺【杀】使用。此【杀】结算完成后，此过程中正面失去♠牌的角色各回复一点体力，你可以令其中任意名角色摸两张牌。",
 	tw_sxrm_liubei: "TW疑刘备",
 	tw_sxrm_liubei_prefix: "TW|疑",
 	twchengbian: "乘变",

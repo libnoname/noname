@@ -1,4 +1,6 @@
 export default {
+	"#wushuang_mb_shen_lvbu1": "盖世无双，何人能挡？",
+	"#wushuang_mb_shen_lvbu2": "承受天神的怒火吧！",
 	"#mbzhengbi1": "用人使天下白治，正身率一世之杰。",
 	"#mbzhengbi2": "正时风谓之清雅，秉忠直四海归心。",
 	"#mbzhengbi3": "共掌东曹，为君遴羽，为民择天。",

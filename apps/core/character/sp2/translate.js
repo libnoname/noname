@@ -387,7 +387,7 @@ const translates = {
 	chaofeng: "朝凤",
 	chaofeng_info: "出牌阶段限一次。当你造成伤害时，你可以弃置一张手牌，然后摸一张牌。若此伤害的渠道为牌且你弃置的牌：与此牌颜色相同，则你改为摸两张牌；与此牌类型相同，则此伤害+1。",
 	chuanshu: "传术",
-	chuanshu_info: "限定技。准备阶段，若你已受伤；或当你死亡时，你可令一名其他角色获得〖朝凤〗。然后你获得〖龙胆〗、〖从谏〗和〖穿云〗。",
+	chuanshu_info: `限定技。准备阶段，若你已受伤；或当你死亡时，你可令一名其他角色获得${get.poptip("chaofeng")}。然后你获得${get.poptip("ollongdan")}、${get.poptip("drlt_congjian")}和${get.poptip("chuanyun")}。`,
 	chuanyun: "穿云",
 	chuanyun_info: "当你使用【杀】指定目标后，你可令目标角色随机弃置其装备区内的一张牌。",
 	zhangning: "张宁",

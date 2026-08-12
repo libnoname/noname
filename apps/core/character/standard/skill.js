@@ -2122,7 +2122,7 @@ const skills = {
 	jijiu_re_huatuo: { audio: 2 },
 	wushuang: {
 		audio: 2,
-		audioname: ["re_lvbu", "shen_lvbu", "lvlingqi"],
+		audioname: ["re_lvbu", "shen_lvbu", "lvlingqi", "mb_shen_lvbu"],
 		audioname2: { sb_lvbu: "sbliyu_effect" },
 		forced: true,
 		locked: true,
@@ -2131,7 +2131,7 @@ const skills = {
 	},
 	wushuang1: {
 		audio: "wushuang",
-		audioname: ["re_lvbu", "shen_lvbu", "lvlingqi"],
+		audioname: ["re_lvbu", "shen_lvbu", "lvlingqi", "mb_shen_lvbu"],
 		audioname2: {
 			sb_lvbu: "sbliyu_effect",
 			gz_lvlingqi: "wushuang_lvlingqi",
@@ -2169,7 +2169,7 @@ const skills = {
 	},
 	wushuang2: {
 		audio: "wushuang",
-		audioname: ["re_lvbu", "shen_lvbu", "lvlingqi"],
+		audioname: ["re_lvbu", "shen_lvbu", "lvlingqi", "mb_shen_lvbu"],
 		audioname2: {
 			sb_lvbu: "sbliyu_effect",
 			gz_lvlingqi: "wushuang_lvlingqi",
