@@ -5697,6 +5697,22 @@ export class Library {
 			},
 		},
 	};
+	setDoudizhuConfigIntro(node, link, _value, config) {
+		let info = "";
+		if (config.name === "加强地主") {
+			info = link !== "disabled" && Object.hasOwn(config.item, link) ? get.translation(link + "_info") : "";
+		} else if (config.name === "〖飞扬〗版本") {
+			const skill = { online: "feiyang", mobile: "mbfeiyang", decade: "dcfeiyang" }[link];
+			info = skill ? get.translation(skill + "_info") : "";
+		} else if (config.name === "农民遗产") {
+			info = { online: "一名农民死亡后，另一名农民摸一张牌。", mobile: "一名农民死亡后，另一名农民选择摸两张牌或回复1点体力。", decade: "一名农民死亡后，另一名农民不获得额外效果。" }[link] || "";
+		}
+		if (info) {
+			lib.setIntro(node, uiintro => {
+				uiintro._place_text = uiintro.add(`<div class="text" style="display:inline">${info}</div>`);
+			});
+		}
+	}
 	mode = {
 		identity: {
 			name: "身份",
@@ -7753,6 +7769,7 @@ export class Library {
 					name: "加强地主",
 					init: "disabled",
 					restart: true,
+					textMenu: this.setDoudizhuConfigIntro,
 					item: {
 						disabled: "禁用",
 						yinfu: "获得〖殷富〗",
@@ -7766,6 +7783,7 @@ export class Library {
 					name: "农民遗产",
 					init: "mobile",
 					restart: true,
+					textMenu: this.setDoudizhuConfigIntro,
 					item: {
 						online: "OL版本",
 						mobile: "手杀版本",
@@ -7776,6 +7794,7 @@ export class Library {
 					name: "〖飞扬〗版本",
 					init: "online",
 					restart: true,
+					textMenu: this.setDoudizhuConfigIntro,
 					item: {
 						online: "OL版本",
 						mobile: "手杀版本",
@@ -8013,6 +8032,7 @@ export class Library {
 					name: "加强地主",
 					init: "disabled",
 					restart: true,
+					textMenu: this.setDoudizhuConfigIntro,
 					item: {
 						disabled: "禁用",
 						yinfu: "获得〖殷富〗",
@@ -8026,6 +8046,7 @@ export class Library {
 					name: "农民遗产",
 					init: "mobile",
 					restart: true,
+					textMenu: this.setDoudizhuConfigIntro,
 					item: {
 						online: "OL版本",
 						mobile: "手杀版本",
@@ -8036,6 +8057,7 @@ export class Library {
 					name: "〖飞扬〗版本",
 					init: "online",
 					restart: true,
+					textMenu: this.setDoudizhuConfigIntro,
 					item: {
 						online: "OL版本",
 						mobile: "手杀版本",
