@@ -27504,23 +27504,17 @@ const skills = {
 				},
 				trigger: { player: "useCard" },
 				prompt2(event, player) {
-					return `令${get.translation(event.card)}额外结算一次？`;
+					return `令${get.translation(event.card)}额外结算一次`;
 				},
 				filter(event, player) {
 					const card = event.card;
-					if (get.type(card) !== "trick" && get.name(card) !== "sha") {
-						return false;
-					}
 					let filter;
-					const storage = player.getStorage("qiaojian_used");
-					if (get.name(card) !== "sha") {
-						if (storage.includes("sha")) return;
+					if (get.name(card) === "sha") {
 						filter = function (card) {
 							return get.name(card) === "sha";
 						};
 					}
-					if (get.type(card) !== "trick") {
-						if (storage.includes("trick")) return;
+					if (get.type(card) === "trick") {
 						filter = function (card) {
 							return get.type(card) === "trick";
 						};
@@ -27529,20 +27523,18 @@ const skills = {
 						return false;
 					}
 					if (
-						player.hasHistory(
+						player.getHistory(
 							"useCard",
 							evt => {
-								return evt !== event && filter(card);
+								return filter(evt.card);
 							},
 							event
-						)
+						).indexOf(event) === 0
 					) {
-						return false;
+						return true;
 					}
-					return true;
 				},
 				async content(event, trigger, player) {
-					player.markAuto("qiaojian_extra", get.type(trigger.card));
 					game.log(get.translation(trigger.card), "额外结算一次");
 					trigger.effectCount++;
 				},
