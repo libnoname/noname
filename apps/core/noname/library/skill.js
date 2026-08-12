@@ -52,7 +52,7 @@ export default {
 				return distance + num;
 			},
 			attackRangeBase(player) {
-				let num = player
+				const vcards = player
 					.getVCards("j", vcard => {
 						if (get.type(vcard) != "delay") {
 							false;
@@ -60,18 +60,22 @@ export default {
 							return false;
 						}
 						return vcard.cards.some(card => get.type(card) == "equip");
-					})
-					.map(vcard => {
-						const num = vcard.cards?.reduce((sum, card) => {
-							if (get.type(card) != "equip") {
-								return sum;
-							}
-							let attackFrom = get.info(card)?.distance?.attackFrom || 0;
-							return sum + attackFrom;
-						}, 0);
-						return num || 0;
-					})
-					.reduce((a, b) => a + b, 0);
+					});
+				if (!vcards.length) {
+					return;
+				}
+				let num = vcards.reduce((total, vcard) => {
+					if (!vcard.cards) {
+						return total;
+					}
+					return total + vcards.reduce((sum, card) => {
+						if (get.type(card) != "equip") {
+							return sum;
+						}
+						let attackFrom = get.info(card)?.distance?.attackFrom || 0;
+						return sum + attackFrom;
+					}, 0);
+				}, 0);
 				return Math.max(player.getEquipRange(player.getCards("e")), 1 - num);
 			},
 		},
