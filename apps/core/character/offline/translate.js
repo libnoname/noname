@@ -1,6 +1,12 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	scl_zhangxiu: "SCL张绣",
+	scl_zhangxiu_prefix: "SCL",
+	sclfudi: "附敌",
+	sclfudi_info: "当你受到伤害后，你可以交给伤害来源一张手牌。若如此做，你对其势力中体力值最大且不小于你的一名角色造成1点伤害。",
+	sclcongjian: "从谏",
+	sclcongjian_info: "锁定技，当你于回合外造成伤害，或于回合内收到伤害时，此伤害+1。",
 	zh_shen_zhangjiao: "纵横神张角",
 	zh_shen_zhangjiao_prefix: "纵横|神",
 	zhyuanlin: "渊临",

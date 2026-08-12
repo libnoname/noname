@@ -341,7 +341,7 @@ window.noname_character_replace = {
 	zhangsong: ["zhangsong", "ol_zhangsong", "re_zhangsong", "star_zhangsong"],
 	zhangwen: ["zhangwen", "sp_zhangwen"],
 	zhangxingcai: ["zhangxingcai", "v_zhangxingcai", "old_zhangxingcai", "ym_zhangxingcai"],
-	zhangxiu: ["zhangxiu", "ol_sb_zhangxiu", "dc_sb_zhangxiu", "ns_zhangxiu"],
+	zhangxiu: ["zhangxiu", "ol_sb_zhangxiu", "dc_sb_zhangxiu", "ns_zhangxiu", "scl_zhangxiu"],
 	zhangxuan: ["zhangxuan", "jsrg_zhangxuan", "std_zhangxuan"],
 	zhangyi: ["zhangyi", "re_zhangyi", "xin_zhangyi"],
 	zhangyì: ["ol_zhangyì", "dc_zhangyì", "zhangyì", "std_zhangyì"],
