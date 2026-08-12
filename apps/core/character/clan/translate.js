@@ -261,6 +261,12 @@ const translates = {
 	clanqingjue_info: "锁定技。①你手牌中每个花色仅一张的牌不计入手牌上限。②当你每回合体力值首次变化后，你弃置手牌中任意张花色数量不为一的牌，并执行以下等量项：1.将这些牌交给一名其他角色；2.从牌堆中获得手牌中未拥有花色的牌各一张。",
 	clanxsyingxiang: "萦香",
 	clanxsyingxiang_info: `锁定技，当其他角色获得你的牌后，将此牌称为“萦香”牌。“萦香”牌被使用后，你和手牌中有“萦香”牌的角色各摸一张牌。若“萦香”牌不因使用而失去，你发动一次${get.poptip("clanqingjue")}（每轮限一次）。`,
+	clan_lutan: "族陆昙",
+	clan_lutan_prefix: "族",
+	clankuanqu: "款曲",
+	clankuanqu_info: "出牌阶段限一次，你可将两张牌当【杀】或【桃】对一名角色使用。然后若你或其手牌数等于体力值，你获得其一张牌。",
+	clananliu: "暗流",
+	clananliu_info: "你受到伤害后，你可令至多X名角色各弃置一张牌，然后你摸X张牌（X为与你手牌数相同的角色数且至多为5）。",
 };
 
 export default translates;
