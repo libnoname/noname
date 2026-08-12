@@ -2048,7 +2048,7 @@ const skills = {
 								["fengyin", "非锁定技失效至下个回合结束"],
 								["equip", `交给${get.translation(player)}一张装备牌`],
 								["damage", `${get.translation(trigger.card)}对你造成伤害+1`],
-								["discard", "随机弃一张牌"],
+								["discard", "随机弃两张牌"],
 							],
 							"textbutton",
 						],
@@ -2145,13 +2145,13 @@ const skills = {
 							costs[2] = -damageEff;
 						}
 
-						// 选项4：随机弃一张牌
+						// 选项4：随机弃两张牌
 						const cards = target.getDiscardableCards(target, "he");
 						if (cards.length) {
 							const values = cards.reduce((sum, card) => sum + get.value(card, target), 0) / cards.length;
 							costs[3] = Math.min(4, 1 + 4 / values);
-							if (cards.length <= 2) {
-								costs[3] += 1;
+							if (cards.length <= 3) {
+								costs[3] += 2;
 							}
 						} else {
 							costs[3] = Infinity;
@@ -2240,16 +2240,17 @@ const skills = {
 							const mark = player.countMark("tingwei");
 
 							let value = 1;
+							/*孩子   喜欢我4个标记就开大吗
 							// 能立刻开限定技，1枚霆价值极高
-							if (mark >= 8) {
+							if (mark >= 4) {
 								value += 7;
 							}
 							// 下一次触发就够，1枚霆价值也很高，但由于可以留到下一轮选择，价值依次递减
-							else if (mark === 7) {
+							else if (mark === 3) {
 								value += 4;
-							} else if (mark === 6) {
+							} else if (mark === 2) {
 								value += 2.5;
-							} else if (mark === 5) {
+							} else if (mark === 1) {
 								value += 1.5;
 							}
 
@@ -2257,7 +2258,7 @@ const skills = {
 							if (_status.currentPhase === player) {
 								value += 2;
 							}
-
+							*/
 							value += Math.min(5, getTingThreat(player, target));
 
 							return value;
@@ -2344,7 +2345,7 @@ const skills = {
 						break;
 					}
 					case "discard": {
-						await target.randomDiscard("he");
+						await target.randomDiscard({ position: "he", num: 2 });
 						break;
 					}
 				}
@@ -2352,11 +2353,10 @@ const skills = {
 
 			return;
 		},
-		mark: true,
 		marktext: "霆",
 		intro: {
 			name: "霆",
-			content: "当前拥有#个“霆”标记",
+			content: "mark",
 		},
 		subSkill: {
 			fengyin: {
@@ -2370,7 +2370,7 @@ const skills = {
 		limited: true,
 		skillAnimation: true,
 		filter(_event, player) {
-			return player.countMark("tingwei") >= 8;
+			return player.countMark("tingwei") >= 4;
 		},
 		logAudio(event) {
 			if (typeof event === "number") {
@@ -2382,7 +2382,7 @@ const skills = {
 			event.result = await player
 				.chooseTarget({
 					prompt: get.prompt(event.skill),
-					prompt2: "弃8枚“霆”标记，对一名角色造成等于其体力上限的伤害",
+					prompt2: "弃置4枚“霆”标记，对一名角色造成等于其体力上限的伤害",
 					ai(target) {
 						const player = get.player();
 						return get.damageEffect(target, player, player);
@@ -2392,11 +2392,9 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			player.awakenSkill("jimie");
-			player.removeMark("tingwei", 8);
+			player.removeMark("tingwei", 4);
 			const target = event.targets[0];
-			await target.damage({
-				num: target.maxHp,
-			});
+			await target.damage({ num: target.maxHp });
 			player.setStorage("yuli", [], true);
 		},
 	},
