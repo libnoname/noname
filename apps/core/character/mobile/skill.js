@@ -3542,9 +3542,6 @@ const skills = {
 				.set("num", get.number(card))
 				.set("targetx", target)
 				.set("filterCard", (card, player, event) => {
-					if (get.name(card) !== "sha") {
-						return false;
-					}
 					return get.number(card) > get.event().num && get.name(card) == "sha" && lib.filter.filterCard(card, player, event);
 				})
 				.set("filterTarget", function (card, player, target) {
