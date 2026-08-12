@@ -435,10 +435,11 @@ const skills = {
 							complexSelect: true,
 							forced: true,
 							filterButton(button) {
+								const { player, targets, num } = get.event();
 								if (button.link == "damage") {
-									return get.event().targets?.length && !player.storage.potyanhui1;
+									return targets.length > 0 && !player.storage.potyanhui1;
 								}
-								return get.event().num && !player.storage.potyanhui2;
+								return num > 0 && !player.storage.potyanhui2;
 							},
 							filterTarget(card, player, target) {
 								return get.event().targets?.includes(target);
@@ -450,15 +451,15 @@ const skills = {
 								return -1;
 							},
 							ai1(button) {
-								const player = get.player();
+								const { player, targets, num } = get.event();
 								if (button.link == "draw") {
-									if (player.isPhaseUsing()) {
+									if (player.isPhaseUsing() && player.needsToDiscard()) {
 										return 0;
 									}
-									return get.event().num * get.effect(player, { name: "draw" }, player, player);
+									return num * get.effect(player, { name: "draw" }, player, player);
 								}
 								return Math.max(
-									...game.filterPlayer().map(current => {
+									...targets.map(current => {
 										return get.damageEffect(current, player, player, "fire");
 									})
 								);
@@ -5817,9 +5818,9 @@ const skills = {
 		filter: (event, player) => player.hasCard(true, "h"),
 		filterTarget(card, player, target) {
 			if (ui.selected.targets.length) {
-				return ui.selected.targets[0].canCompare(target, true, true) && !ui.selected.targets[0].hasSkillTag("noCompareSource") && !target.hasSkillTag("noCompareTarget");
+				return ui.selected.targets[0].canCompare(target) && !ui.selected.targets[0].hasSkillTag("noCompareSource") && !target.hasSkillTag("noCompareTarget");
 			}
-			return true;
+			return game.hasPlayer(current => target.canCompare(current));
 		},
 		targetprompt: ["发起者", "拼点目标"],
 		filterCard: true,
@@ -7260,8 +7261,7 @@ const skills = {
 									}, 0);
 								case "弃牌响应":
 									return (trigger.targets || []).reduce((sum, target) => {
-										const card = get.copy(trigger.card);
-										game.setNature(card, "stab");
+										const card = get.autoViewAs({ name: "sha", nature: "stab" }, "unsure");
 										return sum + get.effect(target, card, player, player);
 									}, 0);
 								case "摸牌":
@@ -7334,7 +7334,7 @@ const skills = {
 				async content(event, trigger, player) {
 					const { target } = trigger;
 					const result = await target
-						.chooseToDiscard("战烈：弃置一张牌，否则不可响应" + get.translation(trigger.card))
+						.chooseToDiscard("战烈：弃置一张牌，否则不可响应" + get.translation(trigger.card), "he")
 						.set("ai", card => {
 							const player = get.player(),
 								trigger = get.event().getTrigger();

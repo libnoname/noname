@@ -2691,7 +2691,7 @@ const skills = {
 		enable: ["chooseToUse", "chooseToRespond"],
 		sourceSkill: "longhun",
 		prompt() {
-			return "将" + get.cnNumber(Math.max(1, _status.event.player.hp)) + "张方片当作火杀使用或打出";
+			return "将" + get.cnNumber(Math.max(1, _status.event.player.hp)) + "张方片当作火【杀】使用或打出";
 		},
 		position: "hes",
 		check(card, event) {
@@ -2840,7 +2840,7 @@ const skills = {
 			if (cards.length) {
 				var name = false,
 					nature = null;
-				//根据选择的卡牌的花色 判断要转化出的卡牌是闪还是火杀还是无懈还是桃
+				//根据选择的卡牌的花色 判断要转化出的卡牌是闪还是火【杀】还是无懈还是桃
 				switch (get.suit(cards[0], player)) {
 					case "club":
 						name = "shan";
@@ -2917,7 +2917,7 @@ const skills = {
 			if (name == "club" && filter(get.autoViewAs({ name: "shan" }, "unsure"), player, event)) {
 				return true;
 			}
-			//如果这张牌是方片并且当前时机能够使用/打出火杀 那么这张牌可以选择
+			//如果这张牌是方片并且当前时机能够使用/打出火【杀】 那么这张牌可以选择
 			if (name == "diamond" && filter(get.autoViewAs({ name: "sha", nature: "fire" }, "unsure"), player, event)) {
 				return true;
 			}
@@ -2936,7 +2936,7 @@ const skills = {
 		filter(event, player) {
 			//获取当前时机的卡牌选择限制
 			var filter = event.filterCard;
-			//如果当前时机能够使用/打出火杀并且角色有方片 那么可以发动技能
+			//如果当前时机能够使用/打出火【杀】并且角色有方片 那么可以发动技能
 			if (filter(get.autoViewAs({ name: "sha", nature: "fire" }, "unsure"), player, event) && player.countCards("hes", { suit: "diamond" })) {
 				return true;
 			}
@@ -3190,34 +3190,39 @@ const skills = {
 			expose: 0.4,
 		},
 	},
+	//神刘备
 	nzry_longnu: {
-		mark: true,
-		locked: true,
+		audio: 2,
 		zhuanhuanji: true,
+		mark: true,
 		marktext: "☯",
 		intro: {
 			content(storage, player, skill) {
-				if (player.storage.nzry_longnu == true) {
-					return "锁定技，出牌阶段开始时，你减1点体力上限并摸一张牌，然后本阶段内你的锦囊牌均视为雷杀且无使用次数限制";
+				if (storage) {
+					return "锁定技，出牌阶段开始时，你减1点体力上限并摸体力值张牌，然后本阶段内你的锦囊牌均视为雷【杀】（无次数限制且不计入次数限制）";
 				}
-				return "锁定技，出牌阶段开始时，你失去1点体力并摸一张牌，然后本阶段内你的红色手牌均视为火杀且无距离限制";
+				return "锁定技，出牌阶段开始时，你失去1点体力并摸已损失体力值张牌，然后本阶段内你的红色手牌均视为火【杀】（无距离限制）";
 			},
 		},
-		audio: 2,
 		trigger: {
 			player: "phaseUseBegin",
 		},
 		forced: true,
 		async content(event, trigger, player) {
-			player.changeZhuanhuanji("nzry_longnu");
-			if (player.storage.nzry_longnu != true) {
+			const storage = player.getStorage(event.name, false);
+			player.changeZhuanhuanji(event.name);
+			let num;
+			if (storage) {
 				await player.loseMaxHp();
+				num = player.getHp();
 			} else {
 				await player.loseHp();
+				num = player.getDamagedHp();
 			}
-			await player.draw();
-
-			if (player.storage.nzry_longnu != true) {
+			if (num > 0) {
+				await player.draw({ num });
+			}
+			if (storage) {
 				player.addTempSkill("nzry_longnu_2", "phaseUseAfter");
 			} else {
 				player.addTempSkill("nzry_longnu_1", "phaseUseAfter");
@@ -3225,19 +3230,20 @@ const skills = {
 		},
 		subSkill: {
 			1: {
+				charlotte: true,
 				mod: {
 					cardname(card, player) {
-						if (get.color(card) == "red") {
+						if (get.color(card) === "red") {
 							return "sha";
 						}
 					},
 					cardnature(card, player) {
-						if (get.color(card) == "red") {
+						if (get.color(card) === "red") {
 							return "fire";
 						}
 					},
 					targetInRange(card) {
-						if (get.color(card) == "red") {
+						if (get.color(card) === "red") {
 							return true;
 						}
 					},
@@ -3254,6 +3260,7 @@ const skills = {
 				},
 			},
 			2: {
+				charlotte: true,
 				mod: {
 					cardname(card, player) {
 						if (["trick", "delay"].includes(lib.card[card.name].type)) {
@@ -3270,6 +3277,20 @@ const skills = {
 							return Infinity;
 						}
 					},
+				},
+				trigger: {
+					player: "useCard",
+				},
+				filter(event, player) {
+					return event.card.name === "sha" && game.hasNature(event.card, "thunder") && event.addCount !== false;
+				},
+				forced: true,
+				silent: true,
+				async content(event, trigger, player) {
+					trigger.addCount = false;
+					if (player.stat[player.stat.length - 1].card.sha > 0) {
+						player.stat[player.stat.length - 1].card.sha--;
+					}
 				},
 				ai: {
 					effect: {
@@ -3291,44 +3312,28 @@ const skills = {
 	},
 	nzry_jieying: {
 		audio: 2,
-		locked: true,
-		global: "g_nzry_jieying",
-		ai: {
-			effect: {
-				target(card) {
-					if (card.name == "tiesuo") {
-						return "zeroplayertarget";
-					}
-				},
-			},
+		trigger: {
+			player: ["linkBefore", "enterGame"],
+			global: "phaseBefore",
 		},
-		group: ["nzry_jieying_1", "nzry_jieying_2"],
+		forced: true,
+		filter(event, player) {
+			if (event.name === "link") {
+				return player.isLinked();
+			}
+			return (event.name != "phase" || game.phaseNumber === 0) && !player.isLinked();
+		},
+		async content(event, trigger, player) {
+			if (trigger.name != "link") {
+				await player.link(true);
+			} else {
+				trigger.cancel();
+			}
+		},
+		group: "nzry_jieying_phaseJieshu",
+		global: "nzry_jieying_global",
 		subSkill: {
-			1: {
-				audio: "nzry_jieying",
-				trigger: {
-					player: ["linkBefore", "enterGame"],
-					global: "phaseBefore",
-				},
-				forced: true,
-				filter(event, player) {
-					if (event.name == "link") {
-						return player.isLinked();
-					}
-					return (event.name != "phase" || game.phaseNumber == 0) && !player.isLinked();
-				},
-				async content(event, trigger, player) {
-					if (trigger.name != "link") {
-						await player.link(true);
-					} else {
-						trigger.cancel();
-					}
-				},
-				ai: {
-					noLink: true,
-				},
-			},
-			2: {
+			phaseJieshu: {
 				audio: "nzry_jieying",
 				trigger: {
 					player: "phaseJieshuBegin",
@@ -3339,31 +3344,67 @@ const skills = {
 					});
 				},
 				async cost(event, trigger, player) {
-					const next = player.chooseTarget("请选择【结营】的目标");
-					next.set("forced", true);
-					next.set("filterTarget", (card, player, target) => target != player && !target.isLinked());
-					next.set("ai", () => 1 + Math.random());
-
-					event.result = await next.forResult();
+					event.result = await player
+						.chooseTarget({
+							prompt: "结营：请选择横置的目标",
+							forced: true,
+							filterTarget(card, player, target) {
+								return target != player && !target.isLinked();
+							},
+							ai(target) {
+								return get.effect(target, { name: "tiesuo" }, player, player);
+							},
+						})
+						.forResult();
 				},
 				async content(event, trigger, player) {
 					const { targets } = event;
 					await targets[0].link(true);
+					const result = await player
+						.chooseTarget({
+							prompt: "结营：请选择摸牌的目标",
+							forced: true,
+							selectTarget: [1, Infinity],
+							filterTarget(card, player, target) {
+								return target.isLinked();
+							},
+							ai(target) {
+								return get.effect(target, { name: "draw" }, player, player);
+							},
+						})
+						.forResult();
+					if (result?.bool && result.targets?.length) {
+						result.targets.sortBySeat(player);
+						player.logSkill(event.name, result.targets);
+						player.line(result.targets);
+						await game.asyncDraw(result.targets);
+					}
+				},
+			},
+			global: {
+				charlotte: true,
+				mod: {
+					maxHandcard(player, num) {
+						if (
+							game.hasPlayer(function (current) {
+								return current.hasSkill("nzry_jieying");
+							}) &&
+							player.isLinked()
+						) {
+							return num + 2;
+						}
+					},
 				},
 			},
 		},
-	},
-	g_nzry_jieying: {
-		mod: {
-			maxHandcard(player, num) {
-				if (
-					game.countPlayer(function (current) {
-						return current.hasSkill("nzry_jieying");
-					}) > 0 &&
-					player.isLinked()
-				) {
-					return num + 2;
-				}
+		ai: {
+			noLink: true,
+			effect: {
+				target(card) {
+					if (card.name === "tiesuo") {
+						return "zeroplayertarget";
+					}
+				},
 			},
 		},
 	},

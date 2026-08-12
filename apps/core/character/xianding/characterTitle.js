@@ -9,7 +9,6 @@ export default {
 	//dc_sb_masu: "",
 	//dc_sb_zhugeliang: "",
 	dc_shen_guanyu: "鬼神再临",
-	dc_shen_liubei: "誓守桃园义",
 	dc_shen_zhangliao: "雁门之刑天",
 	dc_shen_caopi: "月晦书轮回",
 	//dc_xia_wangyue: "",
