@@ -169,68 +169,55 @@ const skills = {
 		},
 	},
 	xinfu_xiaode: {
+		trigger: { global: "dieAfter" },
+		filter(event, player) {
+			return !player.hasSkill("xinfu_xiaode_remove");
+		},
+		async cost(event, trigger, player) {
+			const mainSkills = lib.character[trigger.player.name1 ?? trigger.player.name][3];
+			const viceSkills = trigger.player.name2 != null ? lib.character[trigger.player.name2][3] : [];
+			const skills = mainSkills.concat(viceSkills);
+			const isSkillAvailable = skill => {
+				const info = get.info(skill);
+				return !(info.charlotte || info.zhuSkill || (info.unique && !info.limited) || info.juexingji || info.dutySkill || info.hiddenSkill);
+			};
+			const list = skills.filter(isSkillAvailable);
+			if (!list.length) {
+				return;
+			}
+			const result = await player
+				.chooseControl({
+					controls: [...list, "cancel2"],
+					prompt: get.prompt2("xinfu_xiaode"),
+					ai: () => list.randomGet(),
+				})
+				.forResult();
+			if (result.control) {
+				event.result = {
+					bool: result.control !== "cancel2",
+					cost_data: {
+						control: result.control,
+					},
+				};
+			}
+		},
+		async content(event, trigger, player) {
+			const { control } = event.cost_data;
+			player.popup(control, "thunder");
+			game.log(player, "获得了技能", `#g【${get.translation(control)}】`);
+			player.addAdditionalSkill("xinfu_xiaode", [control]);
+			player.addSkill("xinfu_xiaode_remove");
+		},
 		subSkill: {
 			remove: {
-				charlotte: true,
 				trigger: { player: "phaseAfter" },
-				forced: true,
-				popup: false,
-				content() {
+				charlotte: true,
+				silent: true,
+				async content(event, trigger, player) {
 					player.removeAdditionalSkill("xinfu_xiaode");
 					player.removeSkill("xinfu_xiaode_remove");
 				},
 			},
-		},
-		trigger: { global: "dieAfter" },
-		direct: true,
-		filter(skill, event) {
-			return !event.hasSkill("xinfu_xiaode_remove");
-		},
-		content() {
-			"step 0";
-			var list = [];
-			var listm = [];
-			var listv = [];
-			if (trigger.player.name1 != undefined) {
-				listm = lib.character[trigger.player.name1][3];
-			} else {
-				listm = lib.character[trigger.player.name][3];
-			}
-			if (trigger.player.name2 != undefined) {
-				listv = lib.character[trigger.player.name2][3];
-			}
-			listm = listm.concat(listv);
-			var func = function (skill) {
-				var info = get.info(skill);
-				if (info.charlotte || info.zhuSkill || (info.unique && !info.limited) || info.juexingji || info.dutySkill || info.hiddenSkill) {
-					return false;
-				}
-				return true;
-			};
-			for (var i = 0; i < listm.length; i++) {
-				if (func(listm[i])) {
-					list.add(listm[i]);
-				}
-			}
-			if (list.length) {
-				player
-					.chooseControl(list, "cancel2")
-					.set("prompt", get.prompt("xinfu_xiaode"))
-					.set("prompt2", get.translation("xinfu_xiaode_info"))
-					.set("ai", function () {
-						return list.randomGet();
-					});
-			} else {
-				event.finish();
-			}
-			"step 1";
-			if (result.control && result.control != "cancel2") {
-				player.logSkill("xinfu_xiaode");
-				player.popup(result.control, "thunder");
-				game.log(player, "获得了技能", "#g【" + get.translation(result.control) + "】");
-				player.addAdditionalSkill("xinfu_xiaode", [result.control]);
-				player.addSkill("xinfu_xiaode_remove");
-			}
 		},
 	},
 	chixin: {
