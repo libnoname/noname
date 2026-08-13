@@ -282,28 +282,24 @@ const skills = {
 		},
 		direct: true,
 		limited: true,
-		content() {
-			"step 0";
-			var check = player.hp == 1 || (player.hp == 2 && player.countCards("h") <= 1);
-			player
-				.chooseTarget(get.prompt2("suiren"))
-				.set("ai", function (target) {
-					if (!_status.event.check) {
-						return 0;
-					}
-					return get.attitude(_status.event.player, target);
+		async content(event, trigger, player) {
+			const check = player.hp === 1 || (player.hp === 2 && player.countCards("h") <= 1);
+			const result = await player
+				.chooseTarget({
+					prompt: get.prompt2("suiren"),
+					ai: target => (check ? get.attitude(player, target) : 0),
 				})
-				.set("check", check);
-			"step 1";
-			if (result.bool) {
-				player.storage.suiren = true;
-				player.awakenSkill(event.name);
-				player.logSkill("suiren", result.targets);
-				player.removeSkills("reyicong");
-				player.gainMaxHp();
-				player.recover();
-				result.targets[0].draw(3);
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
+			player.storage.suiren = true;
+			player.awakenSkill(event.name);
+			player.logSkill("suiren", result.targets);
+			await player.removeSkills("reyicong");
+			await player.gainMaxHp();
+			await player.recover();
+			await result.targets[0].draw(3);
 		},
 	},
 	xinmanjuan: {
