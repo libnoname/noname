@@ -3,7 +3,7 @@ import { lib, game, ui, get, ai, _status } from "noname";
 const dynamicTranslates = {
 	dcsbxieshu(player, skill) {
 		const usable = player.storage[skill] ? "" : "每回合限一次，";
-		return`${usable}你使用牌指定其他角色为目标后，你可令此牌对其中一个目标无效并获得其一张牌。`;
+		return `${usable}你使用牌指定其他角色为目标后，你可令此牌对其中一个目标无效并获得其一张牌。`;
 	},
 	dcsbjingmou(player) {
 		const bool = player.storage.dcsbjingmou;
@@ -22,18 +22,6 @@ const dynamicTranslates = {
 		let awaken1 = false, awaken2 = false;
 		if (player.storage["dcsbzhubo"]) {
 			({ awaken1, awaken2 } = player.storage["dcsbzhubo"]);
-		}
-		let str = "有角色于其出牌阶段外造成伤害时";
-		if (awaken2) str = "你于出牌阶段外造成或受到伤害时";
-		else if (awaken1) str = "有角色于其出牌阶段外受到伤害时";
-		let str2 = awaken2 ? "" : "失去一点体力并";
-		let str3 = awaken2 ? "自己" : "其";
-		return `每回合限一次，${str}，你可以${str2}选择一项：1.你与${str3}各摸2张牌；2.此伤害+1。`
-	},
-	dcsbzhubo(player, skill) {
-		let awaken1 = false, awaken2 = false;
-		if (player.storage["dcsbzhubo"]) {
-			{ awaken1, awaken2 } = player.storage["dcsbzhubo"];
 		}
 		let str = "有角色于其出牌阶段外造成伤害时";
 		if (awaken2) str = "你于出牌阶段外造成或受到伤害时";
