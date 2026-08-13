@@ -9,90 +9,91 @@ const skills = {
 		},
 		direct: true,
 		filter(event, player) {
-			return player.countCards("he") > 0;
+			return player.hasCards("he");
 		},
-		content() {
-			"step 0";
-			var next = player.chooseToDiscard(get.prompt("xinfu_yanyu"), get.translation("xinfu_yanyu_info"), "he").set("logSkill", "xinfu_yanyu");
-			if (player == trigger.player) {
-				next.set(
-					"goon",
-					(function () {
-						var map = {
-							basic: 0,
-							trick: 0.1,
-						};
-						var hs = trigger.player.getCards("h");
-						var sha = false;
-						var jiu = false;
-						for (var i = 0; i < hs.length; i++) {
-							if (trigger.player.hasValueTarget(hs[i])) {
-								if (hs[i].name == "sha" && !sha) {
-									sha = true;
-									map.basic += 2;
-								}
-								if (hs[i].name == "tao") {
-									map.basic += 6;
-								}
-								if (hs[i].name == "jiu") {
-									jiu = true;
-									map.basic += 2.5;
-								}
-								if (get.type(hs[i]) == "trick") {
-									map.trick += get.value(hs[i], player, "raw");
-								}
-							}
-						}
-						return map;
-					})()
-				);
-				next.set("ai", function (card) {
-					var map = _status.event.goon;
-					var type = get.type(card, "trick");
+		async content(event, trigger, player) {
+			const next = player
+				.chooseToDiscard({
+					prompt: get.prompt2("xinfu_yanyu"),
+					position: "he",
+				})
+				.set("logSkill", "xinfu_yanyu");
+			if (player === trigger.player) {
+				const map = {
+					basic: 0,
+					trick: 0.1,
+				};
+				const hs = trigger.player.getCards("h");
+				let sha = false;
+				let jiu = false;
+				for (const card of hs) {
+					if (!trigger.player.hasValueTarget(card)) {
+						continue;
+					}
+					if (card.name === "sha" && !sha) {
+						sha = true;
+						map.basic += 2;
+					}
+					if (card.name === "tao") {
+						map.basic += 6;
+					}
+					if (card.name === "jiu") {
+						jiu = true;
+						map.basic += 2.5;
+					}
+					if (get.type(card) === "trick") {
+						map.trick += get.value(card, player, "raw");
+					}
+				}
+				next.set("goon", map).set("ai", card => {
+					const map = _status.event.goon;
+					const type = get.type(card, "trick");
 					if (!map[type]) {
 						return -1;
 					}
 					return map[type] - get.value(card);
 				});
 			} else {
-				next.set("ai", function (cardx) {
-					var map = {
+				next.set("ai", cardx => {
+					const map = {
 						basic: 0,
 						trick: 0,
 					};
-					var hs = trigger.player.getCards("h");
-					var sha = false;
-					var jiu = false;
-					for (var i = 0; i < hs.length; i++) {
-						if (hs[i] != cardx && trigger.player.hasValueTarget(hs[i])) {
-							if (hs[i].name == "sha" && !sha) {
-								sha = true;
-								map.basic += 2;
-							}
-							if (hs[i].name == "tao") {
-								map.basic += 6;
-							}
-							if (hs[i].name == "jiu") {
-								jiu = true;
-								map.basic += 3;
-							}
-							if (get.type(hs[i]) == "trick") {
-								map.trick += player.getUseValue(hs[i]);
-							}
+					const hs = trigger.player.getCards("h");
+					let sha = false;
+					let jiu = false;
+					for (const card of hs) {
+						if (card === cardx || !trigger.player.hasValueTarget(card)) {
+							continue;
+						}
+						if (card.name === "sha" && !sha) {
+							sha = true;
+							map.basic += 2;
+						}
+						if (card.name === "tao") {
+							map.basic += 6;
+						}
+						if (card.name === "jiu") {
+							jiu = true;
+							map.basic += 3;
+						}
+						if (get.type(card) === "trick") {
+							map.trick += player.getUseValue(card);
 						}
 					}
-					var type = get.type(cardx, "trick");
+					const type = get.type(cardx, "trick");
 					if (!map[type]) {
 						return -get.value(cardx);
 					}
 					return map[type] - get.value(cardx);
 				});
 			}
-			"step 1";
-			if (result.bool) {
-				player.storage.xinfu_yanyu = get.type(result.cards[0], "trick");
-				player.addTempSkill("xinfu_yanyu2", "phaseUseAfter");
+			const result = await next.forResult();
+			if (!result.bool || !result.cards?.length) {
+				return;
 			}
+			player.storage.xinfu_yanyu = get.type(result.cards[0], "trick");
+			player.addTempSkill("xinfu_yanyu2", "phaseUseAfter");
 		},
 	},
 	xinfu_yanyu2: {
@@ -112,73 +113,58 @@ const skills = {
 			if (player.storage.xinfu_yanyu2 >= 3) {
 				return false;
 			}
-			var type = player.storage.xinfu_yanyu,
-				cards = event.getd();
-			for (var i = 0; i < cards.length; i++) {
-				if (get.type(cards[i], "trick") == type && get.position(cards[i], true) == "d") {
-					return true;
-				}
-			}
-			return false;
+			const type = player.storage.xinfu_yanyu;
+			const cards = event.getd();
+			return cards.some(card => get.type(card, "trick") === type && get.position(card, true) === "d");
 		},
-		content() {
-			"step 0";
-			event.logged = false;
-			event.cards = [];
-			var type = player.storage.xinfu_yanyu;
-			var cards = trigger.getd();
-			for (var i = 0; i < cards.length; i++) {
-				if (get.type(cards[i], "trick") == type && get.position(cards[i], true) == "d") {
-					event.cards.push(cards[i]);
+		async content(event, trigger, player) {
+			const type = player.storage.xinfu_yanyu;
+			const cards = trigger.getd().filter(card => get.type(card, "trick") === type && get.position(card, true) === "d");
+			let logged = false;
+			for (; cards.length && player.storage.xinfu_yanyu2 < 3; ) {
+				const cardResult = await player
+					.chooseCardButton({
+						cards,
+						prompt: "【燕语】：是否将其中的一张牌交给一名角色？",
+						ai: button => (button.link.name === "du" ? 10 : get.value(button.link)),
+					})
+					.forResult();
+				if (!cardResult.bool) {
+					break;
 				}
-			}
-			"step 1";
-			if (player.storage.xinfu_yanyu2 >= 3) {
-				event.finish();
-			} else {
-				player.chooseCardButton(event.cards, "【燕语】：是否将其中的一张牌交给一名角色？").ai = function (card) {
-					if (card.name == "du") {
-						return 10;
-					}
-					return get.value(card);
-				};
-			}
-			"step 2";
-			if (result.bool) {
 				player.storage.xinfu_yanyu2++;
-				if (!event.logged) {
+				if (!logged) {
 					player.logSkill("xinfu_yanyu");
 					player.addExpose(0.25);
-					event.logged = true;
+					logged = true;
 				}
-				event.togain = result.links[0];
-				event.cards.remove(event.togain);
-				player
-					.chooseTarget(true, "请选择要获得" + get.translation(event.togain) + "的角色")
-					.set("ai", function (target) {
-						var att = get.attitude(_status.event.player, target);
-						var card = _status.event.card;
-						var val = get.value(card);
-						if (player.storage.xinfu_yanyu2 < 3 && target == _status.currentPhase && target.hasValueTarget(card, null, true)) {
-							att = att * 5;
-						} else if (target == player && !player.hasJudge("lebu") && get.type(card) == "trick") {
-							att = att * 3;
-						}
-						if (target.hasSkillTag("nogain")) {
-							att /= 10;
-						}
-						return att * val;
+				const card = cardResult.links[0];
+				cards.remove(card);
+				const targetResult = await player
+					.chooseTarget({
+						forced: true,
+						prompt: `请选择要获得${get.translation(card)}的角色`,
+						ai: target => {
+							const player = _status.event.player;
+							const card = _status.event.card;
+							const value = get.value(card);
+							let attitude = get.attitude(player, target);
+							if (player.storage.xinfu_yanyu2 < 3 && target === _status.currentPhase && target.hasValueTarget(card, null, true)) {
+								attitude *= 5;
+							} else if (target === player && !player.hasJudge("lebu") && get.type(card) === "trick") {
+								attitude *= 3;
+							}
+							if (target.hasSkillTag("nogain")) {
+								attitude /= 10;
+							}
+							return attitude * value;
+						},
 					})
-					.set("card", event.togain);
-			} else {
-				event.finish();
-			}
-			"step 3";
-			var target = result.targets[0];
-			player.line(target, "green");
-			target.gain(event.togain, "gain2");
-			if (event.cards.length) {
-				event.goto(1);
+					.set("card", card)
+					.forResult();
+				const target = targetResult.targets[0];
+				player.line(target, "green");
+				await target.gain({ cards: [card], animate: "gain2" });
 			}
 		},
 	},
