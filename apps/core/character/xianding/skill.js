@@ -684,8 +684,22 @@ const skills = {
 				return "###倨傲###你可以弃置一张牌并视为对攻击范围内任意名其他角色使用" + (get.translation(links[0][3]) || "") + "【" + get.translation(links[0][2]) + "】";
 			},
 		},
+		group: "dcsbjuao_clear",
 		subSkill: {
 			backup: {},
+			clear: {
+				silent: true,
+				trigger: { player: "dieEnd" },
+				forceDie: true,
+				async content(event, trigger, player) {
+					game.countPlayer(current => {
+						current.unmarkAuto("dcsbjuao_effect", [player]);
+						if (!current.getStorage("dcsbjuao_effect").length) {
+							current.removeSkill("dcsbjuao_effect");
+						}
+					});
+				},
+			},
 			effect: {
 				charlotte: true,
 				onremove: true,
