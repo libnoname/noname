@@ -1,4 +1,70 @@
 const characters = {
+	zh_shen_zhangjiao: {
+		sex: "male",
+		group: "shen",
+		hp: 3,
+		skills: ["zhyuanlin", "zhkuanglei", "zhqiongshan"],
+		groupInGuozhan: "qun",
+	},
+	ps_shen_caocao: {
+		sex: "male",
+		group: "shen",
+		hp: 3,
+		skills: ["psguixin", "psshenzun", "psfeiying"],
+	},
+	wxdl_caopi: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["wxdlyishi", "wxdlnianjun", "wxdlqianqian"],
+	},
+	pe_wuzetian: {
+		sex: "female",
+		group: "qun",
+		hp: 3,
+		skills: ["peersheng", "pelinchao"],
+	},
+	ym_zhaoxiang: {
+		sex: "female",
+		group: "shu",
+		hp: 4,
+		skills: ["ymqianling", "ymqueying"],
+	},
+	ym_guanyinping: {
+		sex: "female",
+		group: "shu",
+		hp: 4,
+		skills: ["ymsaxue", "ymxianfeng"],
+	},
+	ym_zhangxingcai: {
+		sex: "female",
+		group: "shu",
+		hp: 4,
+		skills: ["ymhengren", "ymdanjue"],
+	},
+	ym_jsrg_diaochan: {
+		sex: "female",
+		group: "shu",
+		hp: 3,
+		skills: ["ymdiyu", "ymfuyi", "ymjiuji"],
+	},
+	ym_friend_zhugeliang: {
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		skills: ["ymfriendyance", "ymfriendfangqiu", "ymfriendzhugelianggongli"],
+		names: "诸葛|亮",
+		dieAudios: ["friend_zhugeliang"],
+		clans: ["琅琊诸葛氏"],
+	},
+	pe_shen_zhonghui: {
+		sex: "male",
+		group: "shen",
+		hp: 4,
+		skills: ["pelinjie", "peduzhang", "pejianghuo"],
+		groupInGuozhan: "wei",
+		dieAudios: ["shen_zhonghui"],
+	},
 	ps_shen_weiyan: {
 		sex: "male",
 		group: "shen",
@@ -97,6 +163,7 @@ const characters = {
 		groupInGuozhan: "shu",
 		dieAudio: ["shen_zhugeliang"],
 		names: "诸葛|亮",
+		clans: ["琅琊诸葛氏"],
 	},
 	hl_shen_lvmeng: {
 		sex: "male",
@@ -1117,6 +1184,7 @@ const characters = {
 		maxHp: 4,
 		skills: ["jyqibian", "jycailve"],
 		names: "诸葛|亮",
+		clans: ["琅琊诸葛氏"],
 	},
 	jy_pangtong: {
 		sex: "male",
@@ -1737,6 +1805,7 @@ const characters = {
 		skills: ["jdhuoji", "jdkanpo"],
 		dieAudios: ["sb_sp_zhugeliang"],
 		names: "诸葛|亮",
+		clans: ["琅琊诸葛氏"],
 	},
 	jd_jin_simashi: {
 		sex: "male",
@@ -2056,6 +2125,7 @@ const characters = {
 		hp: 3,
 		skills: ["pszhiji", "psjiefeng", "kongcheng"],
 		names: "诸葛|亮",
+		clans: ["琅琊诸葛氏"],
 	},
 	ps_zhugeliang: {
 		sex: "male",
@@ -2063,6 +2133,7 @@ const characters = {
 		hp: 3,
 		skills: ["psguanxing", "pslongyin"],
 		names: "诸葛|亮",
+		clans: ["琅琊诸葛氏"],
 	},
 	ps_simayi: {
 		sex: "male",

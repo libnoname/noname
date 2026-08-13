@@ -1,4 +1,55 @@
 const characters = {
+	ol_chitu: {
+		sex: "female",
+		group: "shu",
+		hp: 4,
+		skills: [],
+		names: "null|null",
+		isUnseen: true,
+	},
+	ol_le_menghuo: {
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		skills: [],
+		groupBorder: "qun",
+		isUnseen: true,
+	},
+	ol_niuma: {
+		sex: "male",
+		group: "shen",
+		hp: 4,
+		skills: ["oldianbu", "oljuhun"],
+		names: "null|null-null|null",
+		isUnseen: true,
+	},
+	natu_guanyu: {
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		skills: ["natuyi"],
+	},
+	natu_zhugeliang: {
+		sex: "male",
+		group: "shu",
+		hp: 3,
+		skills: ["natuxing", "natufu"],
+		names: "诸葛|亮",
+		clans: ["琅琊诸葛氏"],
+	},
+	natu_zhaoyun: {
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		skills: ["natulie", "natuheng"],
+	},
+	ol_le_caopi: {
+		sex: "male",
+		group: "wei",
+		hp: 2,
+		maxHp: 4,
+		skills: ["olweidai", "olliangzi"],
+	},
 	tw_dm_zhouyu: {
 		sex: "male",
 		group: "qun",
@@ -17,6 +68,7 @@ const characters = {
 		hp: 3,
 		skills: ["oljiangwu", "olxinghan"],
 		names: "诸葛|亮",
+		clans: ["琅琊诸葛氏"],
 	},
 	meituizhishen: {
 		sex: "male",

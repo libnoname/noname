@@ -2,7 +2,7 @@ import { lib, game, ui, get, ai, _status } from "noname";
 import characters from "./character.js";
 import cards from "./card.js";
 import pinyins from "./pinyin.js";
-import skills from "./skill.js";
+import skills from "./skill/index.js";
 import translates from "./translate.js";
 import characterIntros from "./intro.js";
 import characterFilters from "./characterFilter.js";

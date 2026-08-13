@@ -1007,7 +1007,9 @@ const skills = {
 			const target = event.target,
 				targets = [player].concat(
 					(() => {
-						return get.mode() === "identity" ? [] : player.getFriends();
+						//return get.mode() === "identity" ? [] : player.getFriends();
+						//终于没有若为了
+						return [];
 					})()
 				);
 			//生成dialog
@@ -1180,12 +1182,9 @@ const skills = {
 					})
 					.forResult();
 				if (!result?.cards?.length || result.cards[0] === card) {
+					player.logSkill("mbsaojian", null, null, null, [3]);
 					break;
 				}
-			}
-			if (target.countCards("h") > player.countCards("h")) {
-				player.logSkill("mbsaojian", null, null, null, [3]);
-				await player.loseHp();
 			}
 		},
 		chooseCard(player, eventId, videoId, source) {
@@ -1702,27 +1701,20 @@ const skills = {
 			showCardEvent._args.remove("glow_result");
 			const result = await showCardEvent.forResult();
 			//选完了 展示牌
-			const videoId = lib.status.videoId++;
 			const cardsToShown = [];
 			for (let i = 0; i < targets.length; i++) {
 				cardsToShown.push(result[i].cards[0]);
-				game.log(targets[i], "展示了", result[i].cards[0]);
 			}
-			game.broadcastAll(
-				(targets, cards, id, player) => {
-					const dialog = ui.create.dialog(get.translation(player) + "发动了【执盟】", cards);
-					dialog.videoId = id;
-					for (let i = 0; i < targets.length; i++) {
-						game.createButtonCardsetion(targets[i].getName(true) + get.translation(get.suit(cards[i], targets[i])), dialog.buttons[i]);
+			await player
+				.showCards(cardsToShown, get.translation(player) + "发动了【执盟】")
+				.set("customButton", button => {
+					const target = get.owner(button.link);
+					if (target) {
+						game.createButtonCardsetion(`${target.getName(true)}`, button);
 					}
-				},
-				targets,
-				cardsToShown,
-				videoId,
-				player
-			);
-			await game.delay(4);
-			game.broadcastAll("closeDialog", videoId);
+				})
+				.set("delay_time", 4)
+				.set("multipleShow", true);
 			//展示完了 开始拿牌
 			const suitsMap = {};
 			for (let i = 0; i < targets.length; i++) {
@@ -3923,26 +3915,19 @@ const skills = {
 			next._args.remove("glow_result");
 			let result = await next.forResult();
 			const cards = [];
-			const videoId = lib.status.videoId++;
 			for (let i = 0; i < targets.length; i++) {
 				cards.push(result[i].cards[0]);
-				game.log(targets[i], "展示了", result[i].cards[0]);
 			}
-			game.broadcastAll(
-				(targets, cards, id, player) => {
-					let dialog = ui.create.dialog(get.translation(player) + "发动了【浮海】", cards);
-					dialog.videoId = id;
-					for (let i = 0; i < targets.length; i++) {
-						game.createButtonCardsetion(`${targets[i].getName(true)}${get.translation(get.strNumber(cards[i].number))}`, dialog.buttons[i]);
+			await player
+				.showCards(cards, get.translation(player) + "发动了【浮海】")
+				.set("customButton", button => {
+					const target = get.owner(button.link);
+					if (target) {
+						game.createButtonCardsetion(`${target.getName(true)}`, button);
 					}
-				},
-				targets,
-				cards,
-				videoId,
-				player
-			);
-			await game.delay(4);
-			game.broadcastAll("closeDialog", videoId);
+				})
+				.set("delay_time", 4)
+				.set("multipleShow", true);
 			let clock = -1,
 				anticlock = -1;
 			for (let j = 0; j < 2; j++) {
@@ -5353,10 +5338,12 @@ const skills = {
 						list.push([target, yings]);
 						game.log(target, "获得了", yings);
 					}
-					await game.loseAsync({
-						gain_list: list,
-						animate: "gain2",
-					}).setContent("gaincardMultiple");
+					await game
+						.loseAsync({
+							gain_list: list,
+							animate: "gain2",
+						})
+						.setContent("gaincardMultiple");
 				}
 			}
 		},

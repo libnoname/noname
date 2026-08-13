@@ -1,6 +1,12 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	ol_sb_zhurong: "OL谋祝融",
+	ol_sb_zhurong_prefix: "OL谋",
+	olsbrenche: "刃掣",
+	olsbrenche_info: "出牌阶段限X次，你可弃置X张牌并令至多X名其他角色各弃置一张牌（X为本回合弃牌堆中【杀】的数量且至少为1）。每有角色因此弃置牌不为【杀】，你便摸一张牌。",
+	olsbyalian: "牙镰",
+	olsbyalian_info: "每阶段结束时，若你此阶段不因使用失去过【杀】，你可以视为对任意名手牌数小于等于X的角色使用一张火【杀】（X为本回合弃牌堆中【杀】的数量且至少为1）。",
 	ol_liufeng: "OL界刘封",
 	ol_liufeng_prefix: "OL界",
 	olxiansi: "陷嗣",
@@ -16,7 +22,7 @@ const translates = {
 	ol_quancong: "OL界全琮",
 	ol_quancong_prefix: "OL界",
 	olyaoming: "邀名",
-	olyaoming_info: `每回合限一次，当你造成或受到伤害后，你可以选择一名角色，若其手牌数: 大于等于你，你弃置其一张牌； 小于等于你，其摸一张牌。 然后其回合内，你视为拥有技能${get.poptip("olzhenshan")}。`,
+	olyaoming_info: `每回合限一次，当你造成或受到伤害后，你可以选择一名角色，若其手牌数: 大于等于你，你弃置其一张牌； 小于等于你，其摸一张牌。然后其回合内，你视为拥有技能${get.poptip("olzhenshan")}。`,
 	olzhenshan: "赈赡",
 	olzhenshan_info: `每回合限一次，当你需要使用或打出基本牌时，你可以与手数小于你的一名角色交换手牌，视为使用或打出之，然后${get.poptip("olyaoming")}视为未发动过。`,
 	ol_caoxiu: "OL界曹休",

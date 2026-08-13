@@ -37,7 +37,16 @@ export default {
 				const { target } = event;
 				await target.recover();
 				if (target.hasCard(card => _status.connectMode || get.name(card, target) === "du", "h")) {
-					await target.chooseToDiscard("h", { name: "du" }, "是否弃置一张【毒】？（不失去体力）").set("ai", () => 1);
+					await target.chooseToDiscard({
+						prompt: "是否弃置一张【毒】？（不失去体力）",
+						filterCard(card) {
+							return get.name(card) === "du";
+						},
+						position: "h",
+						ai() {
+							return 1;
+						},
+					});
 				}
 			},
 			ai: {

@@ -1,5 +1,5 @@
 const characterSort = {
-	extra_offline: ["shen_jiaxu", "shen_diaochan", "boss_zhaoyun", "le_shen_jiaxu", "ps_shen_machao", "mark_shen_machao", "zc26_shen_huangyueying", "sm_shen_machao", "sp_sm_shen_machao"],
+	extra_offline: ["shen_jiaxu", "shen_diaochan", "boss_zhaoyun", "le_shen_jiaxu", "ps_shen_machao", "mark_shen_machao", "zc26_shen_huangyueying", "sm_shen_machao", "sp_sm_shen_machao", "pe_shen_zhonghui", "ps_shen_caocao"],
 	offline_scl: ["scl_lvbu", "scl_pangdegong", "scl_sunhanhua", "scl_miheng", "scl_peixiu", "scl_caoying", "scl_luotong", "scl_jiaxu"],
 	offline_star: ["jsp_ganfuren", "sp_xiahoushi", "jsp_zhaoyun", "huangjinleishi", "sp_pangtong", "sp_daqiao", "sp_ganning", "sp_xiahoudun", "sp_lvmeng", "sp_zhangfei", "sp_liubei", "old_machao", "zhangliang", "jsp_caoren"],
 	offline_sticker: ["sp_gongsunzan", "sp_simazhao", "sp_wangyuanji", "sp_xinxianying", "sp_liuxie"],
@@ -10,7 +10,7 @@ const characterSort = {
 	offline_piracyE_xk: ["xk_luoli", "xk_cuilian", "xk_penghu", "xk_shanfu", "xk_pengqi", "xk_zulang"],
 	offline_piracyE_jb: ["pe_jun_caopi", "pe_jun_liushan", "pe_jun_sunquan", "pe_jun_liuxie", "pe_jun_liuhong", "pe_jun_liubei", "pe_jun_caocao", "pe_jun_sunce", "pe_jun_yuanshao", "pe_jun_zhangjiao"],
 	offline_piracyE_hl: ["hl_shen_lvbu", "hl_shen_zhouyu", "hl_shen_lvmeng", "hl_shen_zhugeliang", "hl_shen_guanyu"],
-	offline_piracyE: ["xia_caopi", "pe_xiahouxuan", "pe_guozhao", "pe_que", "yj_zhouji", "yj_ehuan", "yj_tianchuan", "yj_zhonghui", "yj_jiling", "yj_yongkai", "yj_chezhou", "yj_caocaoyuanshao", "pe_lishimin", "pe_xiahoulan", "pe_yangyuhuan", "pe_huamulan", "pe_liuhui", "pe_baiqi"],
+	offline_piracyE: ["xia_caopi", "pe_xiahouxuan", "pe_guozhao", "pe_que", "yj_zhouji", "yj_ehuan", "yj_tianchuan", "yj_zhonghui", "yj_jiling", "yj_yongkai", "yj_chezhou", "yj_caocaoyuanshao", "pe_lishimin", "pe_xiahoulan", "pe_yangyuhuan", "pe_huamulan", "pe_liuhui", "pe_baiqi", "pe_wuzetian"],
 	offline_piracyE_shenmo: ["sm_shenmo_sunquan"],
 	offline_piracyS: ["ns_jiaxu", "longyufei", "ps_guanyu", "ps1059_guojia", "ps2070_guojia", "ps2063_zhaoyun", "ps2067_zhaoyun", "ps1062_zhouyu", "ps2080_zhouyu", "ps_caozhi", "ps_jin_simayi", "ps_caopi", "ps_simayi", "ps2068_simayi", "ps_machao", "ps_zhugeliang", "ps2066_zhugeliang", "ps_jiaxu", "ps_lvbu", "jsp_liubei"],
 	offline_piracyS_shenmo: ["ps_shen_weiyan", "ps_devil_weiyan"],
@@ -32,12 +32,14 @@ const characterSort = {
 	offline_shichangshi: ["ps_zhangrang", "ps_zhaozhong", "ps_sunzhang", "ps_bilan", "ps_xiayun", "ps_hankui", "ps_lisong", "ps_duangui", "ps_guosheng", "ps_gaowang"],
 	offline_prettyDerby: ["sm_chixia", "sm_qiulin", "sm_zhuahuang", "sm_zijian", "sm_jieying", "sm_liaoyuan", "sm_dailu"],
 	offline_qingshi: ["chenshou", "hs_liuxuan", "hs_caohuan", "hs_liuxie", "hs_sunhao"],
+	offline_chunqiu: ["ym_friend_zhugeliang", "ym_jsrg_diaochan", "ym_zhangxingcai", "ym_guanyinping", "ym_zhaoxiang"],
 	offline_fengyun: ["ps_caocao", "ps_liubei", "ps_sunquan"],
 	offline_xy: ["xy_caocao", "xy_chengyu", "xy_xunyu", "xy_chengong", "xy_zhangkai", "xy_lvbu", "xy_zhangmiao", "xy_caosong"],
 	offline_zc26: ["zc26_sp_xushi", "zc26_lusu", "zc26_jiaxu", "zc26_zhanghe", "zc26_taishici"],
-	offline_wenxindiaolong: ["wxdl_caozhi", "wxdl_caocao"],
+	offline_wenxindiaolong: ["wxdl_caozhi", "wxdl_caocao", "wxdl_caopi"],
 	offline_shiningGrils: ["shinin_zhenji", "shinin_wuguotai", "shinin_ruiji", "shinin_lvlingqi", "shinin_dongwan", "goblin", "lord_goblin"],
 	offline_yanling: ["ylyg_xiaoqiao", "ylyg_yuji", "ylyg_pangtong", "ylyg_dianwei", "ylyg_xuhuang", "ylyg_zhurong"],
+	offline_zongheng: ["zh_shen_zhangjiao"],
 	//offline_others: [],
 };
 
@@ -74,6 +76,7 @@ const characterSortTranslate = {
 	offline_yanyou: "燕幽烽火",
 	offline_jingyang: "荆扬对垒",
 	offline_qingshi: "特典·青史翰墨",
+	offline_chunqiu: "春秋演墨",
 	offline_shichangshi: "蛇年限定·十常侍",
 	offline_prettyDerby: "马年限定·赛马娘",
 	offline_fengyun: "风云际会",
@@ -84,6 +87,7 @@ const characterSortTranslate = {
 	offline_shiningGrils: "闪耀战姬",
 	offline_yanling: "雁翎耀光",
 	extra_offline: "神话再临·线下",
+	offline_zongheng: "纵横九州",
 };
 
 export { characterSort, characterSortTranslate };

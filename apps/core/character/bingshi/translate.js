@@ -1,6 +1,12 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	pot_xiaoqiao: "势小乔",
+	pot_xiaoqiao_prefix: "势",
+	potheyun: "合韵",
+	potheyun_info: "出牌阶段限两次，你可以选择一名与你有相同技能的角色，然后你失去一个技能并令其摸两张牌。",
+	potyinhui: "音洄",
+	potyinhui_info: "每轮开始时，你可以失去因此获得的技能（若无则跳过），然后获得一名其他角色的一个技能。",
 	pot_zhouyu: "势周瑜",
 	pot_zhouyu_prefix: "势",
 	potchiyun: "炽沄",
@@ -150,7 +156,7 @@ const translates = {
 	mbganggeng: "刚鲠",
 	mbganggeng_info: "出牌阶段限一次，你可以将至少两张手牌交给一名其他角色。回合结束时，若其手牌数：为全场最多，你摸一张牌；不为全场最多，你弃置其区域里的一张牌。",
 	mbsijian: "死谏",
-	mbsijian_info: `每回合限两次，当你失去最后的手牌后，或当你进入濒死状态时，你可以选择一项：1.选择一名其他角色，其使用下一张牌后需弃置一张牌。2.令当前回合角色摸两张牌。若此时没有角色处于濒死状态，你可以${get.poptip("rule_beishui")}：失去X点体力（X为你此前发动过背水的次数）。`,
+	mbsijian_info: `每回合限两次，当你失去最后的手牌后，或当你进入濒死状态时，你可以选择一项：1.选择一名其他角色，其使用下一张牌后须弃置一张牌。2.令当前回合角色摸两张牌。若此时没有角色处于濒死状态，你可以${get.poptip("rule_beishui")}：失去X点体力（X为你此前发动过背水的次数）。`,
 	mb_huangzu: "势黄祖",
 	mb_huangzu_prefix: "势",
 	mbchizhang: "鸱张",
@@ -213,7 +219,7 @@ const translates = {
 	potgongmou: "共谋",
 	potgongmou_info: `准备阶段，你可以与一名其他角色交换手牌，若如此做，你获得技能${get.poptip("qice")}且其获得技能${get.poptip("kanpo")}至本回合结束。`,
 	potzhengshuo: "正朔",
-	potzhengshuo_info: "限定技，出牌阶段，你可以令所有角色弃置所有手牌，然后洗牌。若如此做，所有角色各摸四张牌。", //若没有角色的手牌数为4，
+	potzhengshuo_info: "限定技，出牌阶段，你可以令所有角色弃置所有手牌，然后洗牌。若如此做，所有角色各摸四张牌。",
 	pot_dengai: "势邓艾",
 	pot_dengai_prefix: "势",
 	pottuntian: "屯田",

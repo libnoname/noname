@@ -3,8 +3,24 @@ name: Lint Check
 on:
   pull_request:
     branches: [main]
+    types: [opened, synchronize, reopened, edited]
 
 jobs:
+  pr-title:
+    name: PR Title Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install commit-check
+        run: python -m pip install commit-check==2.11.1
+
+      - name: Check PR title
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: printf '%s\n' "$PR_TITLE" | commit-check --message --no-banner
+
   eslint:
     name: ESLint Check
     runs-on: ubuntu-latest

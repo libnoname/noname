@@ -21,6 +21,34 @@ export class Get {
 	promises = new Promises();
 	Audio = Audio;
 	/**
+	 * 获取一张延时锦囊牌实际占用的延时栏
+	 *
+	 * @param { string | Card | VCard | CardBaseUIData } obj
+	 * @param { false | Player } [player]
+	 * @returns { string[] }
+	 */
+	judgeSlots(obj, player) {
+		if (typeof obj == "string") {
+			obj = { name: obj };
+		}
+		if (typeof obj != "object" || obj === null) {
+			return [];
+		}
+		const name = get.name(obj, player);
+		if (!lib.card[name]) {
+			return [];
+		}
+		const list = [name];
+		if (Array.isArray(obj.judgeSlots)) {
+			return get.copy(obj.judgeSlots).addArray(list);
+		}
+		if (lib.card[name].judgeSlots) {
+			const judgeSlots = get.copy(lib.card[name].judgeSlots);
+			list.addArray(Array.isArray(judgeSlots) ? judgeSlots : [judgeSlots]);
+		}
+		return list;
+	}
+	/**
 	 * 将一组卡牌按花色或颜色分组，生成最终可用于dialog.addNewRow方法的参数列表，用于使用#Player.chooseButton/Player.chooseButtonTarget使用createDialog创建对话框的需要从一组卡牌中选择所有某种颜色/花色的牌的技能，用法可参考手杀曹髦/手杀陆郁生
 	 * @param {Card[]} cards 要分组的卡牌
 	 * @param {'suit'|'color'} type 分组类型 目前仅支持'suit'/'color'
@@ -1581,8 +1609,9 @@ export class Get {
 	 * 此方法仅用作将技能/卡牌代码转为字符串，返回值无法直接进行反序列化
 	 * @param { any } obj
 	 * @param { number } [level = 0]
+	 * @param { boolean } [keepMethodSyntax = false] 是否保留对象方法的语法
 	 */
-	stringify(obj, level = 0) {
+	stringify(obj, level = 0, keepMethodSyntax = false) {
 		let indent = "";
 		for (let i = 0; i < level; i++) {
 			indent += "    ";
@@ -1592,8 +1621,9 @@ export class Get {
 				let str = "{\n";
 				for (const key in obj) {
 					let keyString = (/[^a-zA-Z]/.test(key) ? `"${key}"` : key) + ": ";
-					const valueString = get.stringify(obj[key], level + 1);
-					if (get.is.functionMethod(obj, key)) {
+					const isFunctionMethod = get.is.functionMethod(obj, key);
+					const valueString = get.stringify(obj[key], level + 1, isFunctionMethod);
+					if (isFunctionMethod) {
 						keyString = "";
 					}
 					str += indent + "    " + keyString + valueString + ",\n";
@@ -1602,6 +1632,17 @@ export class Get {
 				return str;
 			} else if (typeof obj === "function") {
 				let str = obj.toString().replace(/\t/g, "    ");
+				if (!keepMethodSyntax) {
+					if (obj instanceof AsyncGeneratorFunction) {
+						str = str.replace(/^async\s*\*\s*(?=[\w$]+\s*\()/, "async function* ");
+					} else if (obj instanceof GeneratorFunction) {
+						str = str.replace(/^\*\s*(?=[\w$]+\s*\()/, "function* ");
+					} else if (obj instanceof AsyncFunction) {
+						str = str.replace(/^async\s+(?!function\b)(?=[\w$]+\s*\()/, "async function ");
+					} else if (!/^(?:function|class)\b/.test(str)) {
+						str = str.replace(/^(?:get|set)\s+(?=[\w$]+\s*\()/, "function ").replace(/^(?=[\w$]+\s*\()/, "function ");
+					}
+				}
 				let lastLine = str.slice(str.lastIndexOf("\n"));
 				let originIndent = Math.floor((/\S/.exec(lastLine)?.index ?? lastLine.length) / 4);
 				for (let i = 0; i < Math.abs(originIndent - level); i++) {
@@ -3744,7 +3785,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 * @overload
 	 * @param { Card | VCard | CardBaseUIData } item
 	 * @param { Player | false } [player]
-	 * @returns { any }
+	 * @returns { CardInfo | void }
 	 */
 	info(item, player) {
 		if (typeof item == "string" || typeof item == "symbol") {
