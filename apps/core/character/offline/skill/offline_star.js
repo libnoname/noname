@@ -690,111 +690,99 @@ const skills = {
 	},
 	junwei: {
 		trigger: { player: "phaseJieshuBegin" },
-		direct: true,
 		filter(event, player) {
-			return player.getExpansions("yinling").length >= 3;
+			return player.countExpansions("yinling") >= 3;
 		},
-		content() {
-			"step 0";
-			var cards = player.getExpansions("yinling");
+		async cost(event, trigger, player) {
+			const cards = player.getExpansions("yinling");
 			if (cards.length > 3) {
-				player.chooseButton(3, [get.prompt("junwei"), "hidden", cards]).set("ai", function (button) {
-					return 1;
-				});
+				event.result = await player
+					.chooseButton({
+						selectButton: 3,
+						createDialog: [get.prompt("junwei"), "hidden", cards],
+						ai: () => 1,
+					})
+					.forResult();
+				event.result.cards = event.result.links;
 			} else {
-				player
-					.chooseBool()
+				event.result = await await player
+					.chooseBool({ choice: true })
 					.set("createDialog", [get.prompt("junwei"), "hidden", cards])
 					.set("dialogselectx", true)
-					.set("choice", true);
-				event.cards = cards.slice(0);
+					.forResult();
+				event.result.cards = cards;
 			}
-			"step 1";
-			if (result.bool) {
-				player.logSkill("junwei");
-				var cards = event.cards || result.links;
-				player.loseToDiscardpile(cards);
-				player
-					.chooseTarget(true, function (card, player, target) {
-						return player != target;
+		},
+		async content(event, trigger, player) {
+			const cards = event.cards;
+			await player.loseToDiscardpile({ cards });
+			const result = await player
+				.chooseTarget({
+					forced: true,
+					filterTarget: (_card, player, target) => player !== target,
+					ai: target => -get.attitude(_status.event.player, target) / Math.sqrt(1 + target.hp),
+				})
+				.forResult();
+			if (!result.bool || !result.targets?.length) {
+				return;
+			}
+			const target = result.targets[0];
+			player.line(result.targets);
+			const shan = _status.connectMode || target.hasCards("h", card => card.name === "shan");
+			let result2 = { bool: false };
+			if (shan) {
+				result2 = await target
+					.chooseCard({
+						prompt: `交给${get.translation(player)}一张【闪】，或失去1点体力`,
+						filterCard: card => card.name === "shan",
+						ai: () => (get.event().target.hp < 3 ? 1 : 0),
 					})
-					.set("ai", function (target) {
-						return -get.attitude(_status.event.player, target) / Math.sqrt(1 + target.hp);
-					});
-			} else {
-				event.finish();
+					.set("target", target)
+					.forResult();
 			}
-			"step 2";
-			if (result.bool && result.targets && result.targets.length) {
-				var target = result.targets[0];
-				player.line(result.targets);
-				event.target = target;
-				var nshan = target.countCards("h", function (card) {
-					if (_status.connectMode) {
-						return true;
-					}
-					return card.name == "shan";
-				});
-				if (nshan == 0) {
-					event.directfalse = true;
-				} else {
-					target
-						.chooseCard("交给" + get.translation(player) + "一张【闪】，或失去1点体力", function (card) {
-							return card.name == "shan";
-						})
-						.set("ai", function (card) {
-							if (_status.event.nshan > 1) {
-								return 1;
-							}
-							if (_status.event.player.hp >= 3) {
-								return 0;
-							}
-							return 1;
-						})
-						.set("nshan", nshan);
-				}
-			} else {
-				event.finish();
-			}
-			"step 3";
-			if (!event.directfalse && result.bool) {
-				game.delay();
+			if (result2.bool) {
+				await game.delay();
 			}
 			ui.clear();
-			"step 4";
-			if (!event.directfalse && result.bool) {
-				event.cards = result.cards;
-				event.target.$throw(result.cards);
-				player
-					.chooseTarget("将" + get.translation(event.cards) + "交给一名角色", true, function (card, player, target) {
-						return target != _status.event.getParent().target;
+			if (result2.bool) {
+				const shanCards = result2.cards;
+				target.$throw(shanCards);
+				const recipientResult = await player
+					.chooseTarget({
+						prompt: `将${get.translation(shanCards)}交给一名角色`,
+						forced: true,
+						filterTarget: (_card, _player, current) => current !== target,
+						ai: current => get.attitude(_status.event.player, current) / (current.countCards("h", "shan") + 1),
 					})
-					.set("ai", function (target) {
-						return get.attitude(_status.event.player, target) / (target.countCards("h", "shan") + 1);
-					});
-			} else {
-				event.target.loseHp();
-				delete event.cards;
+					.forResult();
+				player.line(recipientResult.targets, "green");
+				await recipientResult.targets?.[0].gain({ cards: shanCards, animate: "gain2" }).set("giver", player);
+				game.log(player, "将", shanCards, "交给", recipientResult.targets?.[0]);
+				return;
 			}
-			"step 5";
-			if (event.cards) {
-				player.line(result.targets, "green");
-				result.targets[0].gain(event.cards, "gain2").giver = player;
-				game.log(player, "将", event.cards, "交给", result.targets[0]);
-				event.finish();
-			} else {
-				if (event.target.countCards("e")) {
-					player.choosePlayerCard("e", "将" + get.translation(event.target) + "的一张装备牌移出游戏", true, event.target);
-				} else {
-					event.finish();
-				}
+			await target.loseHp();
+			if (!target.hasCards("e")) {
+				return;
 			}
-			"step 6";
-			if (result.bool) {
-				var card = result.links[0];
-				target.addToExpansion(card, target, "give").gaintag.add("junwei2");
-				target.addSkill("junwei2");
+			const equipmentResult = await player
+				.choosePlayerCard({
+					position: "e",
+					prompt: `将${get.translation(target)}的一张装备牌移出游戏`,
+					forced: true,
+					target,
+				})
+				.forResult();
+			if (!equipmentResult.bool) {
+				return;
 			}
+			const expansionEvent = target.addToExpansion({
+				cards: [equipmentResult.links?.[0]],
+				source: target,
+				animate: "give",
+				gaintag: ["junwei2"],
+			});
+			target.addSkill("junwei2");
+			await expansionEvent;
 		},
 		ai: {
 			combo: "yinling",
@@ -807,27 +795,22 @@ const skills = {
 			markcount: "expansion",
 		},
 		onremove(player, skill) {
-			var cards = player.getExpansions(skill);
+			const cards = player.getExpansions(skill);
 			if (cards.length) {
-				player.loseToDiscardpile(cards);
+				player.loseToDiscardpile({ cards });
 			}
 		},
 		trigger: { player: "phaseJieshuBegin" },
 		forced: true,
 		charlotte: true,
 		sourceSkill: "junwei",
-		content() {
-			"step 0";
-			var cards = player.getExpansions("junwei2").filter(function (card) {
-				return player.canEquip(card, true);
-			});
-			if (cards.length) {
-				player.$give(cards[0], player, false);
-				game.delay(0.5);
-				player.equip(cards[0]);
-				event.redo();
+		async content(event, trigger, player) {
+			const getEquippableCard = () => player.getExpansions("junwei2").find(card => player.canEquip(card, true));
+			for (let card = getEquippableCard(); card != null; card = getEquippableCard()) {
+				player.$give(card, player, false);
+				await game.delay(0.5);
+				await player.equip(card);
 			}
-			"step 1";
 			player.removeSkill("junwei2");
 		},
 	},
