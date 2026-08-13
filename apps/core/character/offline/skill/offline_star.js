@@ -341,57 +341,45 @@ const skills = {
 			global: "loseAsyncAfter",
 		},
 		filter(event, player) {
-			var hs = player.getCards("h");
-			return (
-				event.type != "xinmanjuan" &&
-				event.getg(player).filter(function (card) {
-					return hs.includes(card);
-				}).length > 0
-			);
+			const hs = player.getCards("h");
+			return event.type !== "xinmanjuan" && event.getg(player).some(card => hs.includes(card));
 		},
-		content() {
-			"step 0";
-			var hs = player.getCards("h"),
-				cards = trigger.getg(player).filter(function (card) {
-					return hs.includes(card);
-				});
-			event.cards = cards;
-			event.rawCards = cards.slice(0);
-			player.loseToDiscardpile(cards);
-			if (_status.currentPhase != player) {
-				event.finish();
+		async content(event, trigger, player) {
+			const hs = player.getCards("h");
+			const cards = trigger.getg(player).filter(card => hs.includes(card));
+			const rawCards = cards.slice();
+			await player.loseToDiscardpile({ cards });
+			if (_status.currentPhase !== player) {
+				return;
 			}
-			"step 1";
-			event.card = event.cards.shift();
-			event.togain = [];
-			var number = get.number(event.card);
-			for (var i = 0; i < ui.discardPile.childNodes.length; i++) {
-				var current = ui.discardPile.childNodes[i];
-				if (!event.rawCards.includes(current) && get.number(current) == number) {
-					event.togain.push(current);
+			for (const card of cards) {
+				const cardsToGain = [];
+				const number = get.number(card);
+				for (const current of ui.discardPile.childNodes) {
+					if (!rawCards.includes(current) && get.number(current) === number) {
+						cardsToGain.push(current);
+					}
 				}
-			}
-			if (!event.togain.length) {
-				event.goto(4);
-			}
-			"step 2";
-			player.chooseButton(["是否获得其中的一张牌？", event.togain]).ai = function (button) {
-				return get.value(button.link);
-			};
-			"step 3";
-			if (result.bool) {
-				player.gain(result.links[0], "gain2").type = "xinmanjuan";
-			}
-			"step 4";
-			if (event.cards.length) {
-				event.goto(1);
+				if (!cardsToGain.length) {
+					continue;
+				}
+				const result = await player
+					.chooseButton({
+						createDialog: ["是否获得其中的一张牌？", cardsToGain],
+						ai: button => get.value(button.link),
+					})
+					.forResult();
+				if (!result.bool) {
+					continue;
+				}
+				await player.gain({ cards: [result.links[0]], animate: "gain2" }).set("type", "xinmanjuan");
 			}
 		},
 		ai: {
 			threaten: 4.2,
 			nogain: 1,
 			skillTagFilter(player) {
-				return player != _status.currentPhase;
+				return player !== _status.currentPhase;
 			},
 		},
 	},
@@ -399,60 +387,53 @@ const skills = {
 		audio: true,
 		trigger: { global: "loseAfter" },
 		filter(event, player) {
-			if (event.type != "discard") {
+			if (event.type !== "discard") {
 				return false;
 			}
-			if (event.player == player) {
+			if (event.player === player) {
 				return false;
 			}
 			if (!player.countCards("he")) {
 				return false;
 			}
-			for (var i = 0; i < event.cards2.length; i++) {
-				if (get.position(event.cards2[i], true) == "d") {
-					return true;
-				}
-			}
-			return false;
+			return event.cards2.some(card => get.position(card, true) === "d");
 		},
 		direct: true,
 		gainable: true,
-		content() {
-			"step 0";
-			if (trigger.delay == false) {
-				game.delay();
+		async content(event, trigger, player) {
+			if (trigger.delay === false) {
+				await game.delay();
 			}
-			"step 1";
-			var cards = [];
-			var suits = ["club", "spade", "heart", "diamond"];
-			for (var i = 0; i < trigger.cards2.length; i++) {
-				if (get.position(trigger.cards2[i], true) == "d") {
-					cards.push(trigger.cards2[i]);
-					suits.remove(get.suit(trigger.cards2[i]));
+			const cards = [];
+			const suits = ["club", "spade", "heart", "diamond"];
+			for (const card of trigger.cards2) {
+				if (get.position(card, true) === "d") {
+					cards.push(card);
+					suits.remove(get.suit(card));
 				}
 			}
-			if (cards.length) {
-				var maxval = 0;
-				for (var i = 0; i < cards.length; i++) {
-					var tempval = get.value(cards[i]);
-					if (tempval > maxval) {
-						maxval = tempval;
-					}
-				}
-				maxval += cards.length - 1;
-				var next = player.chooseToDiscard("he", { suit: suits });
-				next.set("ai", function (card) {
-					return _status.event.maxval - get.value(card);
-				});
-				next.set("maxval", maxval);
-				next.set("dialog", [get.prompt(event.name), "hidden", cards]);
-				next.logSkill = event.name;
-				event.cards = cards;
+			if (!cards.length) {
+				return;
 			}
-			"step 2";
-			if (result.bool) {
-				player.gain(event.cards, "gain2", "log");
+			let maxValue = 0;
+			for (const card of cards) {
+				maxValue = Math.max(maxValue, get.value(card));
 			}
+			maxValue += cards.length - 1;
+			const result = await player
+				.chooseToDiscard({
+					position: "he",
+					filterCard: { suit: suits },
+					ai: card => _status.event.maxval - get.value(card),
+				})
+				.set("maxval", maxValue)
+				.set("dialog", [get.prompt(event.name), "hidden", cards])
+				.set("logSkill", event.name)
+				.forResult();
+			if (!result.bool) {
+				return;
+			}
+			await player.gain({ cards, animate: "gain2", log: true });
 		},
 		ai: {
 			threaten: 1.3,
