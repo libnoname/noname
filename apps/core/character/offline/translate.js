@@ -1,6 +1,11 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	shangguanwaner: "上官婉儿",
+	pecaishi: "才诗",
+	pecaishi_info: "每回合每种字数限一次，你可以将一张牌当做任意字数相同的基本牌或普通锦囊牌使用。",
+	peculv: "促律",
+	peculv_info: "锁定技，每名角色于其回合内使用牌时，若与上一张被使用的牌名字数或类型相同，你摸一张牌；其回合结束时，若此技能发动过至少三次，其回复一点体力并摸两张牌。",
 	zh_shen_zhangjiao: "纵横神张角",
 	zh_shen_zhangjiao_prefix: "纵横|神",
 	zhyuanlin: "渊临",
