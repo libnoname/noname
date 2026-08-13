@@ -3409,16 +3409,17 @@ const skills = {
 				async content(event, trigger, player) {
 					player.removeSkill(event.name);
 					const target = event.targets[0];
-					const result = await target.chooseToDiscard({
-						prompt: "弃置一张基本牌否则不可响应此【杀】",
-						filterCard(card) {
-							return get.type(card) == "basic";
-						},
-						ai(card) {
-							return 6 - get.value(card);
-						},
-					})
-					.forResult();
+					const result = await target
+						.chooseToDiscard({
+							prompt: "弃置一张基本牌否则不可响应此【杀】",
+							filterCard(card) {
+								return get.type(card) == "basic";
+							},
+							ai(card) {
+								return 6 - get.value(card);
+							},
+						})
+						.forResult();
 					if (!result?.bool && !result.cards?.length) {
 						trigger.getParent().directHit.add(target);
 						game.log(trigger.card, `不可被${get.translation(target)}响应`);
@@ -27503,46 +27504,20 @@ const skills = {
 					content: "本回合首次使用【杀】与锦囊牌可各额外结算一次",
 				},
 				trigger: { player: "useCard" },
-				prompt2(event, player) {
-					return `令${get.translation(event.card)}额外结算一次？`;
-				},
 				filter(event, player) {
 					const card = event.card;
-					if (get.type(card) !== "trick" && get.name(card) !== "sha") {
-						return false;
-					}
-					let filter;
-					const storage = player.getStorage("qiaojian_used");
-					if (get.name(card) !== "sha") {
-						if (storage.includes("sha")) return;
-						filter = function (card) {
-							return get.name(card) === "sha";
-						};
-					}
-					if (get.type(card) !== "trick") {
-						if (storage.includes("trick")) return;
-						filter = function (card) {
-							return get.type(card) === "trick";
-						};
-					}
-					if (!filter) {
-						return false;
-					}
-					if (
-						player.hasHistory(
-							"useCard",
-							evt => {
-								return evt !== event && filter(card);
-							},
-							event
-						)
-					) {
-						return false;
-					}
-					return true;
+					if (get.type(card) !== "trick" && card.name !== "sha") return false;
+					if (card.name === "sha") return player.getHistory("useCard", evt => evt.card.name === "sha", event).indexOf(event) === 0;
+					return player.getHistory("useCard", evt => get.type(evt.card) === "trick", event).indexOf(event) === 0;
+				},
+				prompt2(event, player) {
+					return `令${get.translation(event.card)}额外结算一次`;
+				},
+				check(event, player) {
+					if (get.tag(event.card, "norepeat")) return false;
+					return !event.targets || event.targets.reduce((sum, target) => sum + get.effect(target, event.card, player, player), 0) > 0;
 				},
 				async content(event, trigger, player) {
-					player.markAuto("qiaojian_extra", get.type(trigger.card));
 					game.log(get.translation(trigger.card), "额外结算一次");
 					trigger.effectCount++;
 				},
