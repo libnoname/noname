@@ -75,6 +75,13 @@ const skills = {
 						if (!target.countCards("h")) {
 							return [1, -1];
 						}
+						if (
+							game.countPlayer(current => {
+								return current.group == player.group && current.hp >= target.hp - 1 && get.attitude(player, current) > 0 && current.hp <= 2;
+							})
+						) {
+							return [1, 0, 0, -2];
+						}
 					}
 				},
 			},
