@@ -5105,7 +5105,7 @@ const skills = {
 					get.prompt(event.skill),
 					[
 						[
-							["draw", `令一名角色摸一张牌，然后其获得${get.poptip("qinyin")}（已有则改为摸一张牌）`],
+							["draw", `摸一张牌，令一名角色获得${get.poptip("qinyin")}（已有则改为摸一张牌）`],
 							["reset", "令一名角色复原武将牌"],
 						],
 						"textbutton",
@@ -5176,7 +5176,7 @@ const skills = {
 				cost_data: link,
 			} = event;
 			if (link == "draw") {
-				await target.draw();
+				await player.draw();
 				if (target.hasSkill("qinyin", null, null, false)) {
 					await target.draw();
 				} else {
