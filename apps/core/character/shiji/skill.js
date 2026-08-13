@@ -2455,7 +2455,7 @@ const skills = {
 		limited: true,
 		skillAnimation: true,
 		filter(_event, player) {
-			return player.countMark("tingwei") >= 4;
+			return player.countMark("tingwei") >= 6;
 		},
 		logAudio(event) {
 			if (typeof event === "number") {
@@ -2467,7 +2467,7 @@ const skills = {
 			event.result = await player
 				.chooseTarget({
 					prompt: get.prompt(event.skill),
-					prompt2: "弃置4枚“霆”标记，对一名角色造成等于其体力上限的伤害",
+					prompt2: "弃置6枚“霆”标记，对一名角色造成等于其体力上限的伤害",
 					ai(target) {
 						const player = get.player();
 						return get.damageEffect(target, player, player);
@@ -2477,7 +2477,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			player.awakenSkill("jimie");
-			player.removeMark("tingwei", 4);
+			player.removeMark("tingwei", 6);
 			const target = event.targets[0];
 			await target.damage({ num: target.maxHp });
 			player.setStorage("yuli", [], true);
