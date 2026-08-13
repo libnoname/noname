@@ -445,28 +445,27 @@ const skills = {
 		audio: true,
 		limited: true,
 		trigger: { player: "phaseZhunbeiBegin" },
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			event.cards = player.showCards(get.cards(3)).cards;
-			player.addToExpansion(event.cards, "gain2").gaintag.add("zuixiang2");
-			"step 1";
+			const cards = get.cards(3);
+			const showEvent = player.showCards(cards);
+			const expansionEvent = player.addToExpansion({
+				cards,
+				animate: "gain2",
+				gaintag: ["zuixiang2"],
+			});
+			await showEvent;
+			await expansionEvent;
 			if (lib.skill.zuixiang.filterSame(cards)) {
-				player.gain(cards, "gain2").type = "xinmanjuan";
-			} else {
-				trigger._zuixiang = true;
-				player.addSkill("zuixiang2");
+				await player.gain({ cards, animate: "gain2" }).set("type", "xinmanjuan");
+				return;
 			}
+			trigger._zuixiang = true;
+			player.addSkill("zuixiang2");
 		},
 		filterSame(c) {
-			for (var i = 0; i < c.length; i++) {
-				for (var j = i + 1; j < c.length; j++) {
-					if (get.number(c[i]) == get.number(c[j])) {
-						return true;
-					}
-				}
-			}
-			return false;
+			const numbers = c.map(card => get.number(card));
+			return new Set(numbers).size !== numbers.length;
 		},
 	},
 	zuixiang2: {
@@ -476,19 +475,22 @@ const skills = {
 		},
 		mod: {
 			cardEnabled(card, player) {
-				var type = get.type2(card);
-				var list = player.getExpansions("zuixiang2");
-				for (var i of list) {
-					if (get.type2(i, false) == type) {
-						return false;
-					}
+				const type = get.type2(card);
+				if (player.getExpansions("zuixiang2").some(card => get.type2(card, false) === type)) {
+					return false;
 				}
 			},
-			cardRespondable() {
-				return lib.skill.zuixiang2.mod.cardEnabled.apply(this, arguments);
+			cardRespondable(card, player) {
+				const type = get.type2(card);
+				if (player.getExpansions("zuixiang2").some(card => get.type2(card, false) === type)) {
+					return false;
+				}
 			},
-			cardSavable() {
-				return lib.skill.zuixiang2.mod.cardEnabled.apply(this, arguments);
+			cardSavable(card, player) {
+				const type = get.type2(card);
+				if (player.getExpansions("zuixiang2").some(card => get.type2(card, false) === type)) {
+					return false;
+				}
 			},
 		},
 		trigger: {
@@ -499,44 +501,40 @@ const skills = {
 		charlotte: true,
 		sourceSkill: "zuixiang",
 		filter(event, player) {
-			if (event.name == "phaseZhunbei") {
+			if (event.name === "phaseZhunbei") {
 				return !event._zuixiang;
 			}
-			var type = get.type2(event.card);
-			var list = player.getExpansions("zuixiang2");
-			for (var i of list) {
-				if (get.type2(i) == type) {
-					return true;
-				}
-			}
-			return false;
+			const type = get.type2(event.card);
+			return player.getExpansions("zuixiang2").some(card => get.type2(card) === type);
 		},
-		content() {
-			"step 0";
-			if (event.triggername == "useCardToBefore") {
+		async content(event, trigger, player) {
+			if (event.triggername === "useCardToBefore") {
 				trigger.cancel();
-				event.finish();
 				return;
 			}
-			var cards = get.cards(3);
-			player.addToExpansion("gain2", cards).gaintag.add("zuixiang2");
-			"step 1";
-			var cards = player.getExpansions("zuixiang2");
-			player.showCards(cards);
-			if (lib.skill.zuixiang.filterSame(cards)) {
-				player.gain(cards, "gain2", "log").type = "xinmanjuan";
-				player.removeSkill("zuixiang2");
+			const newCards = get.cards(3);
+			await player.addToExpansion({
+				cards: newCards,
+				animate: "gain2",
+				gaintag: ["zuixiang2"],
+			});
+			const cards = player.getExpansions("zuixiang2");
+			const showEvent = player.showCards(cards);
+			if (!lib.skill.zuixiang.filterSame(cards)) {
+				await showEvent;
+				return;
 			}
+			const gainEvent = player.gain({ cards, animate: "gain2", log: true }).set("type", "xinmanjuan");
+			player.removeSkill("zuixiang2");
+			await showEvent;
+			await gainEvent;
 		},
 		ai: {
 			effect: {
 				target(card, player, target) {
-					var type = get.type2(card);
-					var list = target.getExpansions("zuixiang2");
-					for (var i of list) {
-						if (get.type2(i) == type) {
-							return "zeroplayertarget";
-						}
+					const type = get.type2(card);
+					if (target.getExpansions("zuixiang2").some(card => get.type2(card) === type)) {
+						return "zeroplayertarget";
 					}
 				},
 			},
