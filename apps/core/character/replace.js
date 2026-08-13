@@ -462,7 +462,7 @@ window.noname_character_replace = {
 	tadun: ["tadun", "o_tadun"],
 	shen_caopi: ["shen_caopi", "dc_shen_caopi"],
 	xiahoumao: ["xiahoumao", "mb_xiahoumao"],
-	sunchen: ["sunchen", "pot_sunchen", "pe_sunchen"],
+	dc_sunchen: ["dc_sunchen", "pot_sunchen", "pe_sunchen"],
 	wutugu: ["wutugu", "mb_wutugu"],
 	cuimao: ["cuimao", "mb_cuimao"],
 	yanyan: ["yanyan", "re_yanyan"],
