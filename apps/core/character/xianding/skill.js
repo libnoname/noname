@@ -1159,7 +1159,7 @@ const skills = {
 					awaken2: false,
 				};
 			}
-			player.storage["dcsbzhubo"][player == event.player ? "awaken2" : "awaken1"] = true;
+			player.storage["dcsbzhubo"][player == target ? "awaken2" : "awaken1"] = true;
 		},
 	},
 	//威关银屏
