@@ -5803,7 +5803,7 @@ const skills = {
 				forced: true,
 				async content(event, trigger, player) {
 					const num = get.info("pothongyi").maxMark() - player.countMark("pothongyi");
-					player.addMark("pothongyi", Math.min(trigger.name === "damage" ? 1 : 4, num));
+					player.addMark("pothongyi", Math.min(trigger.name === "damage" ? trigger.num : 3, num));
 				},
 			},
 		},
