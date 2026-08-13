@@ -6471,6 +6471,8 @@ const skills = {
 				filter(event) {
 					return event.getParent(2).skill == "nshunji" && event.player?.isIn();
 				},
+				forced: true,
+				locked: false,
 				logTarget: "player",
 				async content(event, trigger, player) {
 					let result;
