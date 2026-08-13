@@ -2919,7 +2919,7 @@ const skills = {
 				prompt2(event, player) {
 					const target = event.target,
 						card = event.card;
-					return `若你赢，${get.translation(card)}无视防具且不计入次数，且若你本回合未以此法造成过伤害，你对其造成1点伤害；<br>若其拼点牌为【杀】，则你获得之；<br>若其拼点牌为其最后的手牌，则${get.translation(card)}对其造成伤害时，此伤害+1。`;
+					return `若你赢，${get.translation(card)}无视防具且不计入次数，且若你本回合以此法对其造成的伤害小于2，你对其造成1点伤害；<br>若其拼点牌为【杀】，则你获得之；<br>若其拼点牌为其最后的手牌，则${get.translation(card)}对其造成伤害时，此伤害+1。`;
 				},
 				group: "sbxianzhen_record",
 				async content(event, trigger, player) {
@@ -2943,6 +2943,8 @@ const skills = {
 							player.when("phaseAfter").step(async () => {
 								delete player.storage.sbxianzhen_damaged;
 							});
+						} else {
+							player.storage.sbxianzhen_damaged++;
 						}
 						if (player.storage.sbxianzhen_damaged <= 2) {
 							await target.damage();

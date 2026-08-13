@@ -6274,7 +6274,6 @@ const skills = {
 			gain: {
 				audio: "splirang",
 				trigger: { global: "phaseDiscardEnd" },
-				direct: true,
 				filter(event, player) {
 					return event.player.hasHistory("lose", evt => evt.type === "discard" && evt.cards2.filterInD("d").length > 0 && evt.getParent("phaseDiscard") === event);
 				},
@@ -7182,7 +7181,7 @@ const skills = {
 			const gainEvent = target.gain({
 				cards,
 				animate: "gain2",
-				areaNames: ["renku"],
+				areaNames: ["fromRenku"],
 			});
 			target.addTempSkill("spsongshu_block");
 			await gainEvent;

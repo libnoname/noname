@@ -1843,9 +1843,9 @@ const skills = {
 		intro: {
 			content(storage) {
 				if (storage) {
-					return "出牌阶段开始时，你可以减少1点体力上限并摸一张牌，然后本阶段内你可以将锦囊牌当作无次数限制雷杀使用或打出";
+					return "出牌阶段开始时，你可以减少1点体力上限并摸一张牌，然后本阶段内你可以将锦囊牌当作无次数限制雷【杀】使用或打出";
 				}
-				return "锁定技，出牌阶段开始时，你可以失去1点体力并摸一张牌，然后本阶段内你可以将红色手牌当作无距离限制的火杀使用或打出";
+				return "锁定技，出牌阶段开始时，你可以失去1点体力并摸一张牌，然后本阶段内你可以将红色手牌当作无距离限制的火【杀】使用或打出";
 			},
 		},
 		audio: "nzry_longnu",
@@ -1910,7 +1910,7 @@ const skills = {
 						return false;
 					}
 				},
-				prompt: "将一张锦囊牌当雷杀使用或打出",
+				prompt: "将一张锦囊牌当雷【杀】使用或打出",
 				check(card) {
 					var val = get.value(card);
 					return 5 - val;
@@ -1954,7 +1954,7 @@ const skills = {
 						return false;
 					}
 				},
-				prompt: "将一张红色手牌当火杀使用或打出",
+				prompt: "将一张红色手牌当火【杀】使用或打出",
 				check(card) {
 					var val = get.value(card);
 					return 5 - val;

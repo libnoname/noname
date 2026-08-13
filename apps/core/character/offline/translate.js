@@ -1,6 +1,16 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	zh_shen_zhangjiao: "纵横神张角",
+	zh_shen_zhangjiao_prefix: "纵横|神",
+	zhyuanlin: "渊临",
+	zhyuanlin_info: "锁定技，每轮开始时/其他角色的判定阶段，令所有其他角色依次/其判定【闪电】；每有一名角色受到雷电伤害，你摸一张牌或回复1点体力。",
+	zhkuanglei: "狂雷",
+	zhkuanglei_info: `锁定技，你成为其他角色使用伤害牌的目标时，除非其交给你一张牌，否则其判定一次${get.poptip("zhkuanglei_leiji")}。`,
+	zhkuanglei_leiji: "雷击",
+	zhkuanglei_leiji_info: "当你使用或打出一张【闪】时，你可令一名角色进行一次判定。若结果为：梅花，你回复1点体力，其受到1点雷电伤害；黑桃，其受到2点雷电伤害。",
+	zhqiongshan: "穹闪",
+	zhqiongshan_info: "每轮限一次，其他角色的判定牌生效前，你可获得此判定牌并声明此判定牌的花色，点数。",
 	ps_shen_caocao: "★神曹操",
 	ps_shen_caocao_prefix: "★|神",
 	psguixin: "归心",
@@ -58,6 +68,8 @@ const translates = {
 	ymfriendyance_info: "每轮开始时，你可以摸五张牌并将等量张手牌以任意顺序置于武将牌上直到本轮结束。当一张牌被使用时，你移去武将牌上首张牌，每满足一项你便摸一张牌：1.两张牌花色相同；2.两张牌类型相同。",
 	ymfriendfangqiu: "方遒",
 	ymfriendfangqiu_info: `限定技，当你因${get.poptip("ymfriendyance")}放置牌后，你可以展示武将牌上的所有“演策”牌，直到本轮结束你因${get.poptip("ymfriendyance")}获得的牌翻倍。`,
+	ymfriendzhugelianggongli: "共励",
+	ymfriendzhugelianggongli_info: `锁定技，若友庞统/友徐庶在场且与你阵营相同，${get.poptip("ymfriendyance")}摸五张牌改为摸六张牌/${get.poptip("ymfriendyance")}每轮首张牌视为满足任意一项条件。`,
 	pe_shen_zhonghui: "PE神钟会",
 	pe_shen_zhonghui_prefix: "PE|神",
 	pelinjie: "凛界",

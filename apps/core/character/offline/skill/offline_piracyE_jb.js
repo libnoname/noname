@@ -908,14 +908,7 @@ const skills = {
 					if (target.hasSkillTag("nogain")) {
 						return 0;
 					}
-					if (player.countCards("h") > 1) {
-						return 1;
-					}
-					const hasEnemy = game.filterPlayer().some(current => current.countCards("h") && current !== target && current !== player && get.attitude(player, current) < 0);
-					if (!hasEnemy) {
-						return 1;
-					}
-					return -2 / (target.countCards("h") + 1);
+					return 1;
 				},
 			},
 		},

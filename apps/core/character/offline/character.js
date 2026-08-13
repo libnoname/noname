@@ -1,4 +1,11 @@
 const characters = {
+	zh_shen_zhangjiao: {
+		sex: "male",
+		group: "shen",
+		hp: 3,
+		skills: ["zhyuanlin", "zhkuanglei", "zhqiongshan"],
+		groupInGuozhan: "qun",
+	},
 	ps_shen_caocao: {
 		sex: "male",
 		group: "shen",
@@ -45,7 +52,7 @@ const characters = {
 		sex: "male",
 		group: "qun",
 		hp: 3,
-		skills: ["ymfriendyance", "ymfriendfangqiu"],
+		skills: ["ymfriendyance", "ymfriendfangqiu", "ymfriendzhugelianggongli"],
 		names: "诸葛|亮",
 		dieAudios: ["friend_zhugeliang"],
 		clans: ["琅琊诸葛氏"],

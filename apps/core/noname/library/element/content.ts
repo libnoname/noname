@@ -11763,9 +11763,11 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 								card.destroyed = card._destroy;
 								continue;
 							}
-						} else if (event.position && card.willBeDestroyed(event.position.id, null, event)) {
-							card.selfDestroy(event);
-							continue;
+						} else if ("destroyed" in card) {
+							if (event.position && card.willBeDestroyed(event.position.id, null, event)) {
+								card.selfDestroy(event);
+								continue;
+							}
 						} else if (info.destroy) {
 							card.delete();
 							card.destroyed = info.destroy;

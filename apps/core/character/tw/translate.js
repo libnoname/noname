@@ -1,6 +1,18 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	tw_jushou: "TW界沮授",
+	tw_jushou_prefix: "TW|界",
+	twjianying: "渐营",
+	twjianying_info: "①当你使用与你使用的上一张牌点数或花色相同的牌时，你可以摸一张牌。②出牌阶段限一次，你可以将一张牌当做你使用的上一张非装备牌使用且无次数限制。若你于此阶段内使用的上一张牌有花色，则此牌的花色视为上一张牌的花色。",
+	tw_baosanniang: "TW鲍三娘",
+	tw_baosanniang_prefix: "TW",
+	twshuyong: "姝勇",
+	twshuyong_info: "当你使用或打出【杀】时，你可以获得一名其他角色区域里的一张牌，若本轮你以此法获得其区域里的牌数大于2，其摸一张牌。",
+	twxushen: "许身",
+	twxushen_info: `限定技，每轮开始时或出牌阶段，你可以摸至多四张牌并失去等量体力；若你因此进入了濒死状态，你脱离濒死状态后，可以将${get.poptip("twwushen")}、${get.poptip("redangxian")}、${get.poptip("rezhiman")}中的任意个分配给本次濒死结算中令你回复过体力的角色（若其已有对应技能则摸三张牌）。`,
+	twzhennan: "镇南",
+	twzhennan_info: "一名角色使用普通锦囊牌指定第一个目标后，若目标数量大于X且包含你（X为使用者的体力值，至少为1），你可以对一名角色造成1点伤害。",
 	tw_sb_yl_luzhi: "TW谋卢植",
 	tw_sb_yl_luzhi_prefix: "TW|谋",
 	twsbmingren: "明任",
@@ -1009,7 +1021,7 @@ const translates = {
 	tw_sxrm_huatuo: "TW疑华佗",
 	tw_sxrm_huatuo_prefix: "TW|疑",
 	twmiehai: "灭害",
-	twmiehai_info: "每回合限三次，你可以将两张牌当作无距离次数限制的刺【杀】使用。此【杀】结算完成后，此过程中正面失去♠牌且已受伤的角色摸两张牌并回复1点体力。",
+	twmiehai_info: "每回合限三次，你可以将两张牌当作无距离次数限制的刺【杀】使用。此【杀】结算完成后，此过程中正面失去♠牌的角色各回复一点体力，你可以令其中任意名角色摸两张牌。",
 	tw_sxrm_liubei: "TW疑刘备",
 	tw_sxrm_liubei_prefix: "TW|疑",
 	twchengbian: "乘变",

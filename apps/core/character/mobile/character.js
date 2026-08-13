@@ -691,7 +691,7 @@ const characters = {
 		hp: 2,
 		maxHp: 3,
 		hujia: 3,
-		skills: ["xinjianying", "dcshibei"],
+		skills: ["xinjianying", "shibei"],
 	},
 	re_bulianshi: {
 		sex: "female",
@@ -1374,6 +1374,7 @@ const characters = {
 		hp: 5,
 		skills: ["baonu", "mbwumou", "mbwuqian", "ol_shenfen"],
 		groupInGuozhan: "qun",
+		dieAudios: ["shen_lvbu"],
 	},
 };
 

@@ -72,6 +72,7 @@ const skills = {
 				.chooseToDiscard({
 					prompt: get.prompt(event.skill),
 					prompt2: "弃置一张牌令此伤害+1",
+					position: "he",
 					ai(card) {
 						const { player, target } = get.event();
 						if (get.damageEffect(target, player, player) > 0) {
