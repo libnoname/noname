@@ -6945,7 +6945,13 @@ const skills = {
 			},
 		},
 		ai: {
-			order: 1,
+			order(item, player) {
+				player ??= get.player();
+				if (player?.countCards("h") == 1) {
+					return 114514;
+				}
+				return 1;
+			},
 			threaten: 1.14514,
 			unequip_ai: true,
 			skillTagFilter(player, tag, arg) {
@@ -6962,7 +6968,13 @@ const skills = {
 				charlotte: true,
 				prompt2: "将手牌摸至体力上限，然后若此牌未造成过伤害，你失去1点体力",
 				check(event, player) {
-					var num = player.maxHp - player.countCards("h");
+					const bool = game.hasPlayer2(current => {
+						return current.hasHistory("damage", evt => evt.card == event.card);
+					}, true)
+					if (bool) {
+						return true;
+					}
+					const num = player.maxHp - player.countCards("h");
 					return (num >= 3 && player.hp >= 2) || (num >= 2 && player.hp >= 3);
 				},
 				filter(event, player) {

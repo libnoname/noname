@@ -3038,7 +3038,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const num = 4 - player.countCards("h");
 			if (num > 0) {
-				await player.draw(num);
+				await player.draw({ num, nodelay: true });
 			} else {
 				await player.chooseToDiscard("h", true, -num, "allowChooseAll");
 			}
