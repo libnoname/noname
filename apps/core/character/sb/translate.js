@@ -363,9 +363,9 @@ const translates = {
 	sb_zhuran: "谋朱然",
 	sb_zhuran_prefix: "谋",
 	sbzhenwei: "镇围",
-	sbzhenwei_info: "出牌阶段限一次，你可以选择一名其他角色，与其同时选择是否弃置任意张牌。然后你可以选择至多X项执行（X为你弃置牌对比其弃置牌不小于的条件数：1.牌数；2.花色数）：1.对其造成1点伤害；2.摸三张牌。",
+	sbzhenwei_info: "出牌阶段限一次，你可以选择一名其他角色，与其同时选择是否弃置任意张牌。然后你可以选择至多X项执行（X为你弃置牌对比其弃置牌不小于的条件数：1.牌数；2.花色数；3.类别数）：1.获得1点护甲；2.摸四张牌；3.对其造成1点伤害。",
 	sbheyuan: "合援",
-	sbheyuan_info: `结束阶段，你可以选择一名此技能未选择过且已受伤的角色并弃置X张牌（X为你上次发动${get.poptip("sbzhenwei")}时弃置的牌数），令其执行${get.poptip("sbzhenwei")}最后执行的一项，且此后你对除其以外的角色发动${get.poptip("sbzhenwei")}时，该角色可以同时弃置牌（这些牌在“镇围”比较条件时算作你弃置的牌）。`,
+	sbheyuan_info: `结束阶段，你可以选择一名角色并弃置X张牌（X为你上次发动${get.poptip("sbzhenwei")}时弃置的牌数），令其执行${get.poptip("sbzhenwei")}最后执行的一项，且此后你对除其以外的角色发动${get.poptip("sbzhenwei")}时，该角色可以同时弃置牌（这些牌在“镇围”比较条件时算作你弃置的牌）。`,
 };
 
 export default translates;
