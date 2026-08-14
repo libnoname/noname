@@ -91,29 +91,24 @@ const skills = {
 				intro: {
 					name: "平定",
 					content(storage, player) {
-						return `<li>当前拥有${storage}个平定标记且每回合使用的前${storage}张牌不能指定拥有〖英霸〗的角色<li>本回合已使用${player.countMark("yingba_mark2")}张牌`;
+						const num = player.countHistory("useCard");
+						return `<li>当前拥有${storage}个平定标记且每回合使用的前${storage}张牌不能指定拥有〖英霸〗的角色<li>本回合已使用${num}张牌`;
 					},
 					onunmark: true,
 				},
 				charlotte: true,
-				silent: true,
-				trigger: { player: "useCard" },
-				async content(event, trigger, player) {
-					player.addTempSkill("yingba_mark2");
-					player.addMark("yingba_mark2", 1, false);
-				},
 				mod: {
 					playerEnabled(card, player, target) {
 						if (!target.hasSkill("yingba", null, false, false) || !player.hasMark("yingba_mark")) {
 							return;
 						}
-						if (player.countMark("yingba_mark2") < player.countMark("yingba_mark")) {
+						const num = player.countHistory("useCard");
+						if (num < player.countMark("yingba_mark")) {
 							return false;
 						}
 					},
 				},
 			},
-			mark2: { charlotte: true, onremove: true },
 		},
 	},
 	scfuhai: {
