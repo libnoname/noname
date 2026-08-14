@@ -523,8 +523,22 @@ const skills = {
 				return "###倨傲###你可以弃置一张牌并视为对攻击范围内任意名其他角色使用" + (get.translation(links[0][3]) || "") + "【" + get.translation(links[0][2]) + "】";
 			},
 		},
+		group: "dcsbjuao_clear",
 		subSkill: {
 			backup: {},
+			clear: {
+				silent: true,
+				trigger: { player: "dieEnd" },
+				forceDie: true,
+				async content(event, trigger, player) {
+					game.countPlayer(current => {
+						current.unmarkAuto("dcsbjuao_effect", [player]);
+						if (!current.getStorage("dcsbjuao_effect").length) {
+							current.removeSkill("dcsbjuao_effect");
+						}
+					});
+				},
+			},
 			effect: {
 				charlotte: true,
 				onremove: true,
@@ -934,9 +948,9 @@ const skills = {
 			const target = event.targets[0];
 			const result = await player
 				.chooseControl({
-					controls: ["伤害+1", "各摸2张牌"],
+					controls: ["伤害+1", "各摸两张牌"],
 					prompt: "逐波：请选择一项",
-					controlList: [`令${get.translation(target)}${triggername == "damageBegin1" ? "造成" : "受到"}的伤害+1`, `与${get.translation(target)}各摸2张牌`],
+					controlList: [`令${get.translation(target)}${triggername == "damageBegin1" ? "造成" : "受到"}的伤害+1`, `与${get.translation(target)}各摸两张牌`],
 					ai: () => {
 						const { target, triggername } = get.event,
 							player = get.player();
@@ -998,7 +1012,7 @@ const skills = {
 					awaken2: false,
 				};
 			}
-			player.storage["dcsbzhubo"][player == event.player ? "awaken2" : "awaken1"] = true;
+			player.storage["dcsbzhubo"][player == target ? "awaken2" : "awaken1"] = true;
 		},
 	},
 	//威关银屏
@@ -1182,7 +1196,7 @@ const skills = {
 				async content(event, trigger, player) {
 					const result = await player
 						.chooseTarget({
-							prompt: "对任意名有“仇”的角色各造成一点火焰伤害并移除其“仇”",
+							prompt: "对任意名有“仇”的角色各造成1点火焰伤害并移除其“仇”",
 							selectTarget: [1, Infinity],
 							forced: true,
 							filterTarget: (card, player, target) => {
@@ -1577,7 +1591,7 @@ const skills = {
 			}
 			await game.cardsGotoOrdering(cards);
 			let list = [["牌堆顶的牌", cards]],
-				prompt = "观看牌堆顶的2张牌";
+				prompt = "观看牌堆顶的两张牌";
 			let hs = player.getCards("h");
 			if (hs.length) {
 				list.push(["你的手牌", hs]);
@@ -1620,7 +1634,7 @@ const skills = {
 			if (player.isIn()) {
 				const result1 = await player
 					.chooseTarget({
-						prompt: "令一名其他角色观看牌堆顶2张牌并获得其中1张",
+						prompt: "令一名其他角色观看牌堆顶两张牌并获得其中一张",
 						forced: true,
 						filterTarget: (card, player, target) => {
 							return target != player;
@@ -1878,7 +1892,7 @@ const skills = {
 						const result = await player
 							.chooseBool({
 								prompt: get.prompt(event.name, target),
-								prompt2: `令${get.translation(trigger.card)}无效并弃置牌堆顶的一张牌。若与此牌花色相同则对其造成一点火焰伤害`,
+								prompt2: `令${get.translation(trigger.card)}无效并弃置牌堆顶的一张牌。若与此牌花色相同则对其造成1点火焰伤害`,
 								ai() {
 									const { player, target, card, targets } = get.event();
 									let effect = 0;
@@ -1988,7 +2002,7 @@ const skills = {
 							}
 							return lib.filter.cardRespondable(card, player, event);
 						},
-						prompt: `定南：打出一张【杀】，否则受到${get.translation(player)}的一点伤害`,
+						prompt: `定南：打出一张【杀】，否则受到${get.translation(player)}的1点伤害`,
 						ai(card) {
 							return 1 + Math.random();
 						},
@@ -2340,7 +2354,7 @@ const skills = {
 			event.result = await player
 				.chooseToDiscard({
 					prompt: `是否弃置两张牌对${get.translation(trigger.player)}发动“${get.translation(event.skill)}”？`,
-					prompt2: "令其选择让你执行该摸牌阶段，或受到你造成的一点伤害",
+					prompt2: "令其选择让你执行该摸牌阶段，或受到你造成的1点伤害",
 					position: "he",
 					selectCard: [2, 2],
 					ai(card) {
@@ -2355,7 +2369,7 @@ const skills = {
 			await player.discard({ cards: event.cards, discarder: player });
 			const result = await trigger.player
 				.chooseControl({
-					choiceList: [`让${get.translation(player)}执行你本回合摸牌阶段`, `受到${get.translation(player)}造成的一点伤害`],
+					choiceList: [`让${get.translation(player)}执行你本回合摸牌阶段`, `受到${get.translation(player)}造成的1点伤害`],
 					ai(event, player) {
 						if (get.damageEffect(player, event.player, player) >= 0 || player.getHp() > 3) {
 							return 1;
@@ -17948,7 +17962,7 @@ const skills = {
 				return target.getHistory(key, evt => evt.num > 0).indexOf(event) == 0;
 			}
 		},
-		prompt2: "摸2张牌，然后可以将这些牌交给一名角色",
+		prompt2: "摸两张牌，然后可以将这些牌交给一名角色",
 		check: () => true,
 		//frequent:true,
 		async content(event, trigger, player) {

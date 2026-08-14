@@ -237,7 +237,7 @@ const skills = {
 							target = trigger.target,
 							one = game.findPlayer(current => current.getSeatNum() == 1);
 						const list = [],
-							choiceList = ["对" + get.translation(target) + "造成一点伤害", "令" + get.translation(one) + "摸两张牌"];
+							choiceList = ["对" + get.translation(target) + "造成1点伤害", "令" + get.translation(one) + "摸两张牌"];
 						if (target?.isIn()) {
 							list.push("选项一");
 						} else {
@@ -3116,7 +3116,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			const target = trigger.source;
 			const list = [],
-				choiceList = ["弃置你或" + get.translation(target) + "的一张牌", "对" + get.translation(target) + "造成一点伤害"];
+				choiceList = ["弃置你或" + get.translation(target) + "的一张牌", "对" + get.translation(target) + "造成1点伤害"];
 			if (player.countDiscardableCards(player, "he") + target.countDiscardableCards(player, "he")) {
 				list.push("选项一");
 			} else {
@@ -5416,7 +5416,7 @@ const skills = {
 			const card = target.getExpansions("sbmingren")[0];
 			const color = get.color(card);
 			const num = player.getAllHistory("useSkill", evt => evt.skill == event.skill).length + 1;
-			const choiceList = [`弃置${get.cnNumber(num)}张${get.translation(color)}牌对一名角色造成一点伤害`, `从牌堆获得${get.cnNumber(num)}张${get.translation(color)}牌`];
+			const choiceList = [`弃置${get.cnNumber(num)}张${get.translation(color)}牌对一名角色造成1点伤害`, `从牌堆获得${get.cnNumber(num)}张${get.translation(color)}牌`];
 			const choices = ["gain", "damage"].removeArray(player.getStorage("sbweiliu_used"));
 			if (!choices.includes("damage")) {
 				controls.remove("选项一");
@@ -5458,7 +5458,7 @@ const skills = {
 				const hs = player.getDiscardableCards(player, "he", { color });
 				const result = await player
 					.chooseCardTarget({
-						prompt: `卫旒：弃置${get.cnNumber(num)}张${get.translation(color)}牌对一名角色造成一点伤害`,
+						prompt: `卫旒：弃置${get.cnNumber(num)}张${get.translation(color)}牌对一名角色造成1点伤害`,
 						filterCard(card, player) {
 							return get.color(card) == get.event().color && lib.filter.cardDiscardable(card, player, "sbweiliu");
 						},

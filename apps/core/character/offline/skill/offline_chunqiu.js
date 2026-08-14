@@ -184,7 +184,7 @@ const skills = {
 					const num = 2;
 					result = await target
 						.chooseTarget({
-							prompt: `${get.translation(player)}对你发动了洒血：请分配两点火焰伤害`,
+							prompt: `${get.translation(player)}对你发动了洒血：请分配2点火焰伤害`,
 							filterTarget(card, player, target) {
 								return target === player || target === get.event().targetx;
 							},
