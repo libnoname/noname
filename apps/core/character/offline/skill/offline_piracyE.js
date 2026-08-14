@@ -1424,7 +1424,7 @@ const skills = {
 				},
 			},
 		},
-		subSkill: { 
+		subSkill: {
 			backup: {},
 			used: { charlotte: true, onremove: true },
 		},
