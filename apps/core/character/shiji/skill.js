@@ -37,8 +37,6 @@ const skills = {
 			await target.loseHp();
 			if (target?.isIn()) {
 				await target.loseMaxHp();
-			}
-			if (target.isIn()) {
 				target.addSkill("yingba_mark");
 				target.addMark("yingba_mark", 1);
 			}
