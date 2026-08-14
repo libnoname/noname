@@ -567,7 +567,7 @@ const skills = {
 				if (player.countCards("h") >= game.players.length - 1 || player.needsToDiscard() >= 3) {
 					return 4;
 				}
-				return 2.5;
+				return 3.5;
 			},
 		},
 		audio: 2,
@@ -691,7 +691,7 @@ const skills = {
 				forced: true,
 				locked: false,
 				async content(event, trigger, player) {
-					const next = player.draw();
+					const next = player.draw(3);
 					next.gaintag.add("sbqiaobian");
 					await next;
 					player.addTempSkill("sbqiaobian_phaseJieshu");
