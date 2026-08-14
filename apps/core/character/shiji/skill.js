@@ -2323,28 +2323,7 @@ const skills = {
 								return -1;
 							}
 
-							const mark = player.countMark("tingwei");
-
 							let value = 1;
-							/*孩子   喜欢我4个标记就开大吗
-							// 能立刻开限定技，1枚霆价值极高
-							if (mark >= 4) {
-								value += 7;
-							}
-							// 下一次触发就够，1枚霆价值也很高，但由于可以留到下一轮选择，价值依次递减
-							else if (mark === 3) {
-								value += 4;
-							} else if (mark === 2) {
-								value += 2.5;
-							} else if (mark === 1) {
-								value += 1.5;
-							}
-
-							// 当前回合时，很容易触发，威胁提升
-							if (_status.currentPhase === player) {
-								value += 2;
-							}
-							*/
 							value += Math.min(5, getTingThreat(player, target));
 
 							return value;
