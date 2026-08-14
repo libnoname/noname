@@ -270,7 +270,7 @@ const skills = {
 		},
 		selectCard: 2,
 		position: "hes",
-		prompt: "将一张两张颜色相同的牌当无懈可击使用",
+		prompt: "将两张颜色相同的牌当无懈可击使用",
 		check(card) {
 			return 8 - get.value(card);
 		},
