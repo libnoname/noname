@@ -160,7 +160,7 @@ const skills = {
 				mod: {
 					aiOrder(player, card, num) {
 						const history = game.getAllGlobalHistory("useCard"),
-							index = history.indexOf(event);
+							index = history.length;
 						if (index < 1) {
 							return;
 						}
