@@ -127,7 +127,7 @@ const skills = {
 				},
 				forced: true,
 				skillAnimation: true,
-				animationColor: "water",
+				animationColor: "fire",
 				async content(event, trigger, player) {
 					await player.die();
 				},
@@ -173,55 +173,58 @@ const skills = {
 			trigger.getParent().excluded.add(player);
 			game.log(trigger.card, "对", player, "无效");
 			const targets = player.getStorage("dcmingjie_effect");
-			for (const target of targets.filter(target => target.isIn()).sortBySeat()) {
-				player.line(target);
-				await player
-					.gainPlayerCard({
-						prompt: `娴辅：你可以获得${get.translation(target)}的至多三张手牌`,
-						target,
-						position: "h",
-						visible: true,
-						allowChooseAll: true,
-						selectButton: [1, 3],
-					})
-					.set("ai", button => {
-						const { player, target } = get.event();
-						const att = get.attitude(player, target);
-						if (att > 0) {
-							if (player == _status.currentPhase) {
-								return player.getUseValue(button.link);
-							}
-							if (target == _status.currentPhase) {
-								return -get.value(button.link);
-							}
-							return 6 - get.value(button.link);
+			for (const target of targets.sortBySeat()) {
+				if (!target.isIn()) {
+					continue;
+				}
+				const list = [player, target];
+				const map = await game.chooseAnyOL(list, get.info(event.name).choosePlayerCard, [list]).forResult();
+				const cards1 = [],
+					cards2 = [];
+				for (const current of list) {
+					const result = map.get(current);
+					if (result?.links?.length) {
+						if (player == current) {
+							cards2.addArray(result.links);
+						} else {
+							cards1.addArray(result.links);
 						}
-						return 1;
-					});
-				await target
-					.gainPlayerCard({
-						prompt: `娴辅：你可以获得${get.translation(player)}的至多三张手牌`,
-						target: player,
-						position: "h",
-						visible: true,
-						allowChooseAll: true,
-						selectButton: [1, 3],
-					})
-					.set("ai", button => {
-						const { player, target } = get.event();
-						const att = get.attitude(player, target);
-						if (att > 0) {
-							if (player == _status.currentPhase) {
-								return player.getUseValue(button.link);
-							}
-							if (target == _status.currentPhase) {
-								return -get.value(button.link);
-							}
-							return 6 - get.value(button.link);
-						}
-						return 1;
-					});
+					}
+				}
+				if (cards1.length || cards2.length) {
+					await player.swapHandcards(target, cards1, cards2);
+				}
 			}
+		},
+		choosePlayerCard(player, targets, eventId) {
+			const target = targets[0] == player ? targets[1] : targets[0];
+			const str = get.translation(target);
+			return player
+				.choosePlayerCard({
+					prompt: `娴辅：你可以获得${str}的至多三张手牌`,
+					target,
+					position: "h",
+					visible: true,
+					allowChooseAll: true,
+					selectButton: [1, 3],
+					chooseonly: true,
+				})
+				.set("ai", button => {
+					const { player, target } = get.event();
+					const att = get.attitude(player, target);
+					if (att > 0) {
+						if (player == _status.currentPhase) {
+							return player.getUseValue(button.link);
+						}
+						if (target == _status.currentPhase) {
+							return -get.value(button.link);
+						}
+						return 6 - get.value(button.link);
+					}
+					return 1;
+				})
+				.set("id", eventId)
+				.set("_global_waiting", true);
 		},
 		ai: {
 			threaten: 0.8,
