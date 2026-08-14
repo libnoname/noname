@@ -2322,8 +2322,26 @@ const skills = {
 							if (get.attitude(target, player) > 0) {
 								return -1;
 							}
-
+							//改成6个标记开大那ai还是有点用的
+							const mark = player.countMark("tingwei");
 							let value = 1;
+							// 能立刻开限定技，1枚霆价值极高
+							if (mark >= 5) {
+								value += 7;
+							}
+							// 下一次触发就够，1枚霆价值也很高，但由于可以留到下一轮选择，价值依次递减
+							else if (mark === 4) {
+								value += 4;
+							} else if (mark === 3) {
+								value += 2.5;
+							} else if (mark === 2) {
+								value += 1.5;
+							}
+
+							// 当前回合时，很容易触发，威胁提升
+							if (_status.currentPhase === player) {
+								value += 2;
+							}
 							value += Math.min(5, getTingThreat(player, target));
 
 							return value;
