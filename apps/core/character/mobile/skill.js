@@ -632,7 +632,7 @@ const skills = {
 						targets.length > 1
 							? await player
 									.chooseTarget({
-										prompt: "进趋：令一名有蓄力技的角色获得一点蓄力点",
+										prompt: "进趋：令一名有蓄力技的角色获得1点蓄力点",
 										forced: true,
 										filterTarget(card, player, target) {
 											return get.event().targets.includes(target);
@@ -3541,8 +3541,10 @@ const skills = {
 				.chooseToUse(get.prompt2(event.name, target).replace("更大", `大于${get.number(card)}`))
 				.set("num", get.number(card))
 				.set("targetx", target)
-				.set("filterCard", card => get.number(card) > get.event().num && get.name(card) == "sha")
-				.set("filterTarget", (card, player, target) => {
+				.set("filterCard", (card, player, event) => {
+					return get.number(card) > get.event().num && get.name(card) == "sha" && lib.filter.filterCard(card, player, event);
+				})
+				.set("filterTarget", function (card, player, target) {
 					const { targetx } = get.event();
 					if (!ui.selected.targets?.includes(targetx) && target != targetx) {
 						return false;
@@ -5103,7 +5105,7 @@ const skills = {
 					get.prompt(event.skill),
 					[
 						[
-							["draw", `令一名角色摸一张牌，然后其获得${get.poptip("qinyin")}（已有则改为摸一张牌）`],
+							["draw", `摸一张牌，令一名角色获得${get.poptip("qinyin")}（已有则改为摸一张牌）`],
 							["reset", "令一名角色复原武将牌"],
 						],
 						"textbutton",
@@ -5174,7 +5176,7 @@ const skills = {
 				cost_data: link,
 			} = event;
 			if (link == "draw") {
-				await target.draw();
+				await player.draw();
 				if (target.hasSkill("qinyin", null, null, false)) {
 					await target.draw();
 				} else {
