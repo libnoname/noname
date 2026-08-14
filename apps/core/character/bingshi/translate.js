@@ -180,7 +180,7 @@ const translates = {
 	pot_weiyan: "势魏延",
 	pot_weiyan_prefix: "势",
 	potzhongao: "忠傲",
-	potzhongao_info: `使命技，①游戏开始时，你获得${get.poptip("potkuanggu")}。②成功：你杀死一名角色后，升级〖狂骨〗，然后若你本阶段使用的牌数：小于因〖壮誓〗弃置的牌数，摸一张牌；小于因〖壮誓〗失去的体力值，回复1点体力（体力值已满则改为摸一张牌）。③失败：你进入濒死，或你未于出牌阶段开始时执行〖壮誓〗，失去〖壮誓〗并获得${get.poptip("kunfen")}。`,
+	potzhongao_info: `使命技，①游戏开始时，你获得${get.poptip("potkuanggu")}。②成功：你杀死一名角色后，升级${get.poptip("potkuanggu")}为${get.poptip("potkuanggu_pot_weiyan_achieve")}，然后若你本阶段使用的牌数：小于因${get.poptip("potzhuangshi")}弃置的牌数，摸一张牌；小于因${get.poptip("potzhuangshi")}失去的体力值，回复1点体力（体力值已满则改为摸一张牌）。③失败：你进入濒死，或你未于出牌阶段开始时执行${get.poptip("potzhuangshi")}，失去${get.poptip("potzhuangshi")}并获得${get.poptip("kunfen")}。`,
 	potzhuangshi: "壮誓",
 	potzhuangshi_info: "出牌阶段开始时，你可以执行任意项：1.弃置任意张手牌，令你此阶段使用的前等量张牌无距离限制且不可被响应；2.失去任意点体力，令你此阶段使用的前等量张牌不计入次数限制。",
 	potzhuangshi_tag: "已选择弃置",
