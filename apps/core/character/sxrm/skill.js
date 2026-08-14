@@ -2835,16 +2835,21 @@ const skills = {
 			if (result?.winner) {
 				const winner = result.winner,
 					loser = [player, target].find(current => current != winner);
-				const dialog = ui.create.dialog("谄谀：是否交换其中一种颜色或类别的所有手牌？", "你的手牌", winner.getCards("h"), `${get.translation(loser)}的手牌`, loser.getCards("h"));
+				const dialog = [`###谄谀###<div class='text center'>你可以交换你与${get.translation(loser)}其中一种颜色或类别的所有手牌</div>`, `你的手牌`, winner.getCards("h"), `${get.translation(loser)}的手牌`, loser.getCards("h")];
+				const list1 = Object.keys(lib.color).filter(color => [winner, loser].some(current => current.hasCards("h", card => get.color(card) == color)));
+				const list2 = lib.inpile
+					.map(name => get.type2(name))
+					.toUniqued()
+					.filter(type => [winner, loser].some(current => current.hasCards("h", card => get.type2(card) == type)));
 				const result2 = await winner
-					.chooseControl("red", "black", "basic", "equip", "trick", "cancel2")
+					.chooseControl(list1.concat(list2), "cancel2")
 					.set("dialog", dialog)
 					.set("ai", () => get.event().resultx)
 					.set(
 						"resultx",
 						(() => {
 							const getFilter = (card, key) => {
-								if (["red", "black"].includes(key)) {
+								if (list1.includes(key)) {
 									return get.color(card) == key;
 								}
 								return get.type2(card) == key;
@@ -2868,7 +2873,7 @@ const skills = {
 								}
 								return sum2 - sum1;
 							};
-							return ["red", "black", "basic", "equip", "trick", "cancel2"].maxBy(getV);
+							return list1.addArray([list2, "cancel2"]).maxBy(getV);
 						})()
 					)
 					.forResult();
@@ -2876,7 +2881,7 @@ const skills = {
 					const control = result2.control,
 						getC = current => {
 							return current.getCards("h", card => {
-								if (["red", "black"].includes(control)) {
+								if (list1.includes(control)) {
 									return get.color(card) == control;
 								}
 								return get.type2(card) == control;
