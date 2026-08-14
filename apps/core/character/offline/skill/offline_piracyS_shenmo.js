@@ -274,7 +274,7 @@ const skills = {
 				check(event, player) {
 					return -get.attitude(player, event.player);
 				},
-				prompt2: "汲取其一点体力上限",
+				prompt2: "汲取其1点体力上限",
 				async content(event, trigger, player) {
 					const target = event.targets[0];
 					await player.gainMaxHp();
@@ -617,7 +617,7 @@ const skills = {
 				check(event, player) {
 					return -get.attitude(player, event.player);
 				},
-				prompt2: "汲取其一点体力上限",
+				prompt2: "汲取其1点体力上限",
 				async content(event, trigger, player) {
 					const target = event.targets[0];
 					await player.gainMaxHp();
@@ -636,7 +636,7 @@ const skills = {
 				return false;
 			}
 			const target = event.target;
-			const bool1 = target.getHp() > game.players.length && game.hasPlayer(current => current !== target && lib.filter.targetEnabled2(event.card, player, current)),
+			const bool1 = target.hp > game.players.length && game.hasPlayer(current => current !== target && lib.filter.targetEnabled2(event.card, player, current)),
 				bool2 = player.maxHp < target.maxHp;
 			if (!bool1 && !bool2) {
 				return false;
@@ -648,7 +648,7 @@ const skills = {
 			const beishui = player.countMark(event.skill);
 			const list = [],
 				choiceList = [`令${get.translation(trigger.card)}可额外指定一个目标`, `令此牌额外结算一次`, `背水：失去${beishui}点体力`];
-			if (target.getHp() > game.players.length && game.hasPlayer(current => current !== target && lib.filter.targetEnabled2(trigger.card, player, current))) {
+			if (target.hp > game.players.length && game.hasPlayer(current => current !== target && lib.filter.targetEnabled2(trigger.card, player, current))) {
 				list.push("选项一");
 			} else {
 				choiceList[0] = `<span style="opacity:0.5">` + choiceList[0] + "</span>";
@@ -670,7 +670,7 @@ const skills = {
 					choiceList,
 					ai() {
 						const { player, controls, num } = get.event();
-						if (num < 2 && controls.length > 3 && player.getHp() > num) {
+						if (num < 2 && controls.length > 3 && player.hp > num) {
 							return "背水！";
 						}
 						return controls.slice().removeArray(["cancel2", "背水！"]).randomGet();
@@ -704,7 +704,7 @@ const skills = {
 							return target != get.event().targetx && lib.filter.targetEnabled2(get.event().cardx, player, target);
 						},
 						ai(target) {
-							return get.effect(target, get.event().card, get.player(), get.player());
+							return get.effect(target, get.event().cardx, get.player(), get.player());
 						},
 					})
 					.set("targetx", target)
@@ -719,7 +719,7 @@ const skills = {
 			if (["背水！", "选项二"].includes(link)) {
 				trigger.getParent().effectCount++;
 			}
-			if (player.maxHp < target.maxHp && target.getHp() > game.players.length) {
+			if (player.maxHp < target.maxHp && target.hp > game.players.length) {
 				player.popup("乘势！");
 				const list = [];
 				if (player.isDamaged()) {

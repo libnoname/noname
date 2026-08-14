@@ -2465,7 +2465,7 @@ const skills = {
 			if (!get.info("clanmuyin").isMax(player) && game.hasPlayer(target => target.isDamaged())) {
 				const result = await player
 					.chooseTarget({
-						prompt: "才识：你可以令一名角色回复一点体力，然后此技能本回合失效",
+						prompt: "才识：你可以令一名角色回复1点体力，然后此技能本回合失效",
 						filterTarget(card, player, target) {
 							return target.isDamaged();
 						},
