@@ -6783,7 +6783,7 @@ const skills = {
 	potfuji: {
 		audio: 5,
 		enable: "phaseUse",
-		logAudio: () => 2,
+		logAudio: index => (typeof index == "number" ? `potfuji${index}.mp3` : 2),
 		filter(event, player) {
 			return player.countCards("he") > 0 && game.hasPlayer(target => target !== player);
 		},
