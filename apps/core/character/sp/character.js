@@ -967,7 +967,6 @@ const characters = {
 		skills: ["aocai", "duwu"],
 		names: "诸葛|恪",
 		clans: ["琅琊诸葛氏"],
-		clans: ["琅琊诸葛氏"],
 	},
 	guanyinping: {
 		sex: "female",
