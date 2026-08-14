@@ -1024,7 +1024,6 @@ const skills = {
 		check(card) {
 			return 7 - get.value(card);
 		},
-		position: "he",
 		log: false,
 		async precontent(event, trigger, player) {
 			const name = event.name.slice(4);
