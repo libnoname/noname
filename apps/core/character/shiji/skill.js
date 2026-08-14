@@ -6030,6 +6030,7 @@ const skills = {
 		subSkill: {
 			limit: {
 				charlotte: true,
+				onremove: true,
 				markimage: "image/card/handcard.png",
 				intro: {
 					content(storage, player) {

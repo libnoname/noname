@@ -13,9 +13,12 @@ const skills = {
 		},
 		filter(event, player) {
 			const target = game.findPlayer(current => current.getSeatNum() == 1);
-			if (_status.currentPhase !== target) {
+			if (!target?.isIn()) {
 				return false;
 			}
+			//if (_status.currentPhase !== target) {
+				//return false;
+			//}
 			if (event.name == "phase") {
 				const cards = event.player
 					.getHistory("useCard")
@@ -1133,7 +1136,7 @@ const skills = {
 			event.result = await player
 				.chooseTarget({
 					prompt: get.prompt(event.skill),
-					prompt2: "选择一名其他角色令其回复一点体力",
+					prompt2: "选择一名其他角色令其回复1点体力",
 					filterTarget(card, player, target) {
 						return target !== player && target.isDamaged();
 					},
@@ -1421,7 +1424,7 @@ const skills = {
 				},
 			},
 		},
-		subSkill: { 
+		subSkill: {
 			backup: {},
 			used: { charlotte: true, onremove: true },
 		},
