@@ -378,7 +378,7 @@ const skills = {
 			const { source } = trigger;
 			let result = await source
 				.chooseToGive({
-					prompt: `交给${get.translation(target)}一张牌否则其回复一点体力`,
+					prompt: `交给${get.translation(target)}一张牌否则其回复1点体力`,
 					target,
 					position: "he",
 					ai(card) {
@@ -667,7 +667,7 @@ const skills = {
 			return get.is.damageCard(event.card);
 		},
 		async cost(event, trigger, player) {
-			const list = [`摸两张牌`, `失去一点体力，令${get.translation(trigger.card)}伤害+1`];
+			const list = [`摸两张牌`, `失去1点体力，令${get.translation(trigger.card)}伤害+1`];
 			const eff1 = get.effect(player, { name: "wuzhong" }, player, player);
 			const eff2 =
 				get.effect(player, { name: "losehp" }, player, player) +

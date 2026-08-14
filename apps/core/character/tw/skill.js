@@ -391,7 +391,7 @@ const skills = {
 			event.result = await player
 				.chooseTarget({
 					prompt: get.prompt(event.skill),
-					prompt2: "对一名角色造成一点伤害",
+					prompt2: "对一名角色造成1点伤害",
 					ai(target) {
 						return get.damageEffect(target, get.player(), get.player());
 					},
