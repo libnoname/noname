@@ -35,7 +35,9 @@ const skills = {
 		async content(event, trigger, player) {
 			const { target } = event;
 			await target.loseHp();
-			await target.loseMaxHp();
+			if (target?.isIn()) {
+				await target.loseMaxHp();
+			}
 			if (target.isIn()) {
 				target.addSkill("yingba_mark");
 				target.addMark("yingba_mark", 1);
