@@ -274,7 +274,7 @@ const skills = {
 				check(event, player) {
 					return -get.attitude(player, event.player);
 				},
-				prompt2: "汲取其一点体力上限",
+				prompt2: "汲取其1点体力上限",
 				async content(event, trigger, player) {
 					const target = event.targets[0];
 					await player.gainMaxHp();
@@ -617,7 +617,7 @@ const skills = {
 				check(event, player) {
 					return -get.attitude(player, event.player);
 				},
-				prompt2: "汲取其一点体力上限",
+				prompt2: "汲取其1点体力上限",
 				async content(event, trigger, player) {
 					const target = event.targets[0];
 					await player.gainMaxHp();

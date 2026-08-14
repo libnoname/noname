@@ -25,7 +25,7 @@ const skills = {
 			if (cards?.length && num > 0) {
 				result = await player
 					.chooseTarget({
-						prompt: `精练：弃置${get.translation(cards)}并对${num}名其他角色各造成一点伤害`,
+						prompt: `精练：弃置${get.translation(cards)}并对${num}名其他角色各造成1点伤害`,
 						filterTarget: lib.filter.notMe,
 						selectTarget: num,
 						ai(target) {
@@ -1357,7 +1357,7 @@ const skills = {
 				async content(event, trigger, player) {
 					const result = await player
 						.chooseTarget({
-							prompt: "对任意名有“仇”的角色各造成一点火焰伤害并移除其“仇”",
+							prompt: "对任意名有“仇”的角色各造成1点火焰伤害并移除其“仇”",
 							selectTarget: [1, Infinity],
 							forced: true,
 							filterTarget: (card, player, target) => {
@@ -2053,7 +2053,7 @@ const skills = {
 						const result = await player
 							.chooseBool({
 								prompt: get.prompt(event.name, target),
-								prompt2: `令${get.translation(trigger.card)}无效并弃置牌堆顶的一张牌。若与此牌花色相同则对其造成一点火焰伤害`,
+								prompt2: `令${get.translation(trigger.card)}无效并弃置牌堆顶的一张牌。若与此牌花色相同则对其造成1点火焰伤害`,
 								ai() {
 									const { player, target, card, targets } = get.event();
 									let effect = 0;
@@ -2163,7 +2163,7 @@ const skills = {
 							}
 							return lib.filter.cardRespondable(card, player, event);
 						},
-						prompt: `定南：打出一张【杀】，否则受到${get.translation(player)}的一点伤害`,
+						prompt: `定南：打出一张【杀】，否则受到${get.translation(player)}的1点伤害`,
 						ai(card) {
 							return 1 + Math.random();
 						},
@@ -2515,7 +2515,7 @@ const skills = {
 			event.result = await player
 				.chooseToDiscard({
 					prompt: `是否弃置两张牌对${get.translation(trigger.player)}发动“${get.translation(event.skill)}”？`,
-					prompt2: "令其选择让你执行该摸牌阶段，或受到你造成的一点伤害",
+					prompt2: "令其选择让你执行该摸牌阶段，或受到你造成的1点伤害",
 					position: "he",
 					selectCard: [2, 2],
 					ai(card) {
@@ -2530,7 +2530,7 @@ const skills = {
 			await player.discard({ cards: event.cards, discarder: player });
 			const result = await trigger.player
 				.chooseControl({
-					choiceList: [`让${get.translation(player)}执行你本回合摸牌阶段`, `受到${get.translation(player)}造成的一点伤害`],
+					choiceList: [`让${get.translation(player)}执行你本回合摸牌阶段`, `受到${get.translation(player)}造成的1点伤害`],
 					ai(event, player) {
 						if (get.damageEffect(player, event.player, player) >= 0 || player.getHp() > 3) {
 							return 1;

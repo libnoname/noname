@@ -35,7 +35,7 @@ const translates = {
 	dc_sb_yangfeng: "新杀谋杨奉",
 	dc_sb_yangfeng_prefix: "新杀谋",
 	dcsbzhubo: "逐波",
-	dcsbzhubo_info: "每回合限一次，有角色于其出牌阶段外造成伤害时，你可以失去一点体力并选择一项：1.你与其各摸2张牌；2.此伤害+1。",
+	dcsbzhubo_info: "每回合限一次，有角色于其出牌阶段外造成伤害时，你可以失去1点体力并选择一项：1.你与其各摸2张牌；2.此伤害+1。",
 	dcsbxieshi: "挟势",
 	dcsbxieshi_info: "其他角色的回合开始时，记录你的手牌数；该回合的结束阶段，若你的手牌数与本回合开始时的记录值不同，你可以视为使用一张本回合进入弃牌堆的基本牌或普通锦囊牌。",
 	dcsbqijue: "歧抉",

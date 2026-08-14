@@ -301,7 +301,7 @@ const skills = {
 			const colors = cards.map(card => get.color(card)).unique();
 			await player.give(cards, target);
 			const list = [],
-				choiceList = ["展示所有" + get.translation(colors) + "手牌并受到来自" + get.translation(player) + "的一点火焰伤害", "令" + get.translation(player) + "摸两张牌，然后你进入连环状态"];
+				choiceList = ["展示所有" + get.translation(colors) + "手牌并受到来自" + get.translation(player) + "的1点火焰伤害", "令" + get.translation(player) + "摸两张牌，然后你进入连环状态"];
 			if (target.hasCards("h", card => colors.includes(get.color(card))) && !player.storage[event.name + "1"]) {
 				list.push("选项一");
 			} else {
@@ -2480,7 +2480,7 @@ const skills = {
 			},
 			prompt(result, player) {
 				let prompt = `直到你的回合开始，接下来${get.cnNumber(result.control)}个回合：`;
-				let list = ["所有角色使用【杀】造成的伤害+1", "每个回合结束时，本回合内使用过【杀】的角色失去一点体力，你摸两张牌", "每个回合结束时，若本回合未有角色使用过【杀】，你与当前回合角色各失去1点体力"];
+				let list = ["所有角色使用【杀】造成的伤害+1", "每个回合结束时，本回合内使用过【杀】的角色失去1点体力，你摸两张牌", "每个回合结束时，若本回合未有角色使用过【杀】，你与当前回合角色各失去1点体力"];
 				if (result.control <= player.hp) {
 					list = list.slice(0, 2);
 				}
@@ -2503,7 +2503,7 @@ const skills = {
 						if (!storage) {
 							return "已无效果";
 						}
-						let list = ["所有角色使用【杀】造成的伤害+1", "每个回合结束时，你摸两张牌且本回合内使用过【杀】的角色失去一点体力", "每个回合结束时，若本回合未有角色使用过【杀】，当前回合角色失去1点体力"];
+						let list = ["所有角色使用【杀】造成的伤害+1", "每个回合结束时，你摸两张牌且本回合内使用过【杀】的角色失去1点体力", "每个回合结束时，若本回合未有角色使用过【杀】，当前回合角色失去1点体力"];
 						if (!player.hasSkill("mbsizi_extra")) {
 							list = list.slice(0, 2);
 						}

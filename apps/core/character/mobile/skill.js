@@ -632,7 +632,7 @@ const skills = {
 						targets.length > 1
 							? await player
 									.chooseTarget({
-										prompt: "进趋：令一名有蓄力技的角色获得一点蓄力点",
+										prompt: "进趋：令一名有蓄力技的角色获得1点蓄力点",
 										forced: true,
 										filterTarget(card, player, target) {
 											return get.event().targets.includes(target);

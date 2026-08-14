@@ -24,7 +24,7 @@ const skills = {
 		},
 		prompt2(event, player) {
 			const num = Math.min(5, player.countHistory("useSkill", evt => evt.skill == "natulie") + 1);
-			return `将手牌调整至${num}，若你因此弃置了牌，你可对一名角色造成一点伤害`;
+			return `将手牌调整至${num}，若你因此弃置了牌，你可对一名角色造成1点伤害`;
 		},
 		check(event, player) {
 			const num = Math.min(5, player.countHistory("useSkill", evt => evt.skill == "natulie") + 1);
@@ -42,7 +42,7 @@ const skills = {
 				if (result?.bool && result.cards?.length) {
 					const result = await player
 						.chooseTarget({
-							prompt: "烈：你可对一名角色造成一点伤害",
+							prompt: "烈：你可对一名角色造成1点伤害",
 							ai(target) {
 								return get.damageEffect(target, get.player(), get.player());
 							},
@@ -2735,7 +2735,7 @@ const skills = {
 					},
 				],
 				[
-					"造成一点属性伤害",
+					"造成1点属性伤害",
 					{ source: ["damageSource"] },
 					(evt, player) => {
 						return evt.hasNature();
