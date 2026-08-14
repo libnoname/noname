@@ -940,19 +940,7 @@ const skills = {
 					if (target.hasSkillTag("nogain")) {
 						return 0;
 					}
-					if (player.countCards("h") > 1) {
-						return 1;
-					}
-					var players = game.filterPlayer();
-					for (var i = 0; i < players.length; i++) {
-						if (players[i].countCards("h") && players[i] != target && players[i] != player && get.attitude(player, players[i]) < 0) {
-							break;
-						}
-					}
-					if (i == players.length) {
-						return 1;
-					}
-					return -2 / (target.countCards("h") + 1);
+					return 1;
 				},
 			},
 		},

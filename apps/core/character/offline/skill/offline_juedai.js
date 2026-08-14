@@ -2738,6 +2738,7 @@ const skills = {
 				})
 				.forResult();
 			if (!result?.links?.length) {
+				player.addSkill("zj_jianxi_effect");
 				player.addMark("zj_jianxi_effect", 1, false);
 				return;
 			} else {
@@ -2826,11 +2827,12 @@ const skills = {
 				},
 			},
 		},
-		onremove: ["zj_jianxi_effect"],
-		group: "zj_jianxi_effect",
+		//onremove: ["zj_jianxi_effect"],
+		//group: "zj_jianxi_effect",
 		subSkill: {
 			effect: {
-				intro: { content: "使用基本牌的数值+$" },
+				charlotte: true,
+				intro: { content: "使用基本牌的数值+#" },
 				trigger: { player: ["useCard", "respond"] },
 				locked: false,
 				forced: true,

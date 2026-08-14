@@ -30,8 +30,9 @@ export default () => {
 						qinglong: "zhungangshuo",
 						bagua: "lanyinjia",
 					};
-					lib.card.list = lib.card.list.filter(cardInfo => list.includes(cardInfo[2]));
+					//lib.card.list = lib.card.list.filter(cardInfo => list.includes(cardInfo[2]));
 					for (const cardInfo of lib.card.list) {
+						const name = cardInfo[2];
 						if (map[name]) {
 							cardInfo[2] = map[name];
 							cardInfo._replaced = true;
