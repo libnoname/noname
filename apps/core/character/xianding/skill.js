@@ -1112,9 +1112,9 @@ const skills = {
 			const target = event.targets[0];
 			const result = await player
 				.chooseControl({
-					controls: ["伤害+1", "各摸2张牌"],
+					controls: ["伤害+1", "各摸两张牌"],
 					prompt: "逐波：请选择一项",
-					controlList: [`令${get.translation(target)}${triggername == "damageBegin1" ? "造成" : "受到"}的伤害+1`, `与${get.translation(target)}各摸2张牌`],
+					controlList: [`令${get.translation(target)}${triggername == "damageBegin1" ? "造成" : "受到"}的伤害+1`, `与${get.translation(target)}各摸两张牌`],
 					ai: () => {
 						const { target, triggername } = get.event,
 							player = get.player();
@@ -1755,7 +1755,7 @@ const skills = {
 			}
 			await game.cardsGotoOrdering(cards);
 			let list = [["牌堆顶的牌", cards]],
-				prompt = "观看牌堆顶的2张牌";
+				prompt = "观看牌堆顶的两张牌";
 			let hs = player.getCards("h");
 			if (hs.length) {
 				list.push(["你的手牌", hs]);
@@ -1798,7 +1798,7 @@ const skills = {
 			if (player.isIn()) {
 				const result1 = await player
 					.chooseTarget({
-						prompt: "令一名其他角色观看牌堆顶2张牌并获得其中1张",
+						prompt: "令一名其他角色观看牌堆顶两张牌并获得其中一张",
 						forced: true,
 						filterTarget: (card, player, target) => {
 							return target != player;
@@ -18128,7 +18128,7 @@ const skills = {
 				return target.getHistory(key, evt => evt.num > 0).indexOf(event) == 0;
 			}
 		},
-		prompt2: "摸2张牌，然后可以将这些牌交给一名角色",
+		prompt2: "摸两张牌，然后可以将这些牌交给一名角色",
 		check: () => true,
 		//frequent:true,
 		async content(event, trigger, player) {
