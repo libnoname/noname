@@ -922,6 +922,7 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		frequent: true,
+		manualConfirm: true,
 		filter(event, player) {
 			return player.maxHp < 10;
 		},
