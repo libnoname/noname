@@ -39,26 +39,26 @@ const skills = {
 			const num = lib.suit.slice().removeArray(player.getCards("h").map(card => get.suit(card))).length;
 			if (num > 0) {
 				await target.draw({ num });
-				if (target.isMaxHandcard(true) && target != player) {
-					await target.chooseToGive({ target: player, selectCard: [1, 2], position: "h", prompt: `尊谏：你可以交给${get.translation(player)}至多两张手牌` });
-				}
-				if (target.isMinHp(true) && target.isDamaged()) {
-					const result = await player
-						.chooseBool({
-							prompt: `尊谏：是否令${get.translation(target)}回复一点体力`,
-							ai() {
-								const { player, target } = get.event();
-								if (get.attitude(player, target) > 0) {
-									return 1;
-								}
-								return 0;
-							},
-						})
-						.set("target", target)
-						.forResult();
-					if (result?.bool) {
-						await target.recover();
-					}
+			}
+			if (target.isMaxHandcard(true) && target != player) {
+				await target.chooseToGive({ target: player, selectCard: [1, 2], position: "h", prompt: `尊谏：你可以交给${get.translation(player)}至多两张手牌` });
+			}
+			if (target.isMinHp(true) && target.isDamaged()) {
+				const result = await player
+					.chooseBool({
+						prompt: `尊谏：是否令${get.translation(target)}回复一点体力`,
+						ai() {
+							const { player, target } = get.event();
+							if (get.attitude(player, target) > 0) {
+								return 1;
+							}
+							return 0;
+						},
+					})
+					.set("target", target)
+					.forResult();
+				if (result?.bool) {
+					await target.recover();
 				}
 			}
 		},
@@ -113,11 +113,11 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const { cards } = event;
-			await player.recast(cards);
 			trigger.getParent().excluded.add(player);
 			const num = lib.suit.slice().removeArray(player.getCards("h").map(card => get.suit(card))).length;
 			const num1 = get.number(cards[0]),
 				num2 = Math.max(0, ...player.getCards("h").map(card => get.number(card)));
+			await player.recast(cards);
 			if (num1 >= num2 && num > 0) {
 				await player.draw({ num });
 			}

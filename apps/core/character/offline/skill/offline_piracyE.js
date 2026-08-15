@@ -96,7 +96,6 @@ const skills = {
 			return ["basic", "trick"].includes(type) && player.hasCards("hes", card => get.cardNameLength(card) == get.cardNameLength(name)) && !player.getStorage("pecaishi_used").includes(get.cardNameLength(name));
 		},
 		ai: {
-			fireAttack: true,
 			respondSha: true,
 			respondShan: true,
 			skillTagFilter(player, tag, arg) {
