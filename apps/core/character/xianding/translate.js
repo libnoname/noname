@@ -124,7 +124,7 @@ const translates = {
 	mogui: "漠规",
 	mogui_info: "你的回合内，你可以于对应阶段开始时执行并移除对应项：1.判定阶段，选择一名角色，其回复1点体力并弃置判定区里的所有牌；2.摸牌阶段，令一名角色摸牌阶段摸牌数和使用【杀】的次数上限+1；3.弃牌阶段，弃置至多五张牌，令一名角色手牌上限+1并摸等量张牌。",
 	zunjian: "遵谏",
-	zunjian_info: `觉醒技，回合开始时，若你已移除${get.poptip("mogui")}的所有选项，你回复1点体力并选择一项：1.摸两张牌并重置${get.poptip("mogui")}；2.回复1点体力，然后失去${get.poptip("mogui")}并修改${get.poptip("rencheng")}。`,
+	zunjian_info: `觉醒技，回合开始时，若你已移除${get.poptip("mogui")}的所有选项，你回复1点体力并选择一项：1.摸两张牌并重置${get.poptip("mogui")}；2.回复1点体力，然后失去${get.poptip("mogui")}并修改${get.poptip("rencheng")}为${get.poptip("rencheng_rewrite")}。`,
 	rencheng: "仁诚",
 	rencheng_info: "出牌阶段限一次，你可以摸两张牌，然后可以交给一名其他角色至多两张牌。",
 	rencheng_rewrite: "仁诚·改",

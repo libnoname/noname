@@ -30256,8 +30256,8 @@ const skills = {
 		limited: true,
 		skillAnimation: true,
 		animationColor: "wood",
-		content() {
-			"step 0";
+		manualConfirm: true,
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			player.addTempSkill("dczhangcai_all", { player: "phaseBegin" });
 		},
