@@ -350,8 +350,7 @@ const skills = {
 				}
 			}
 			let num = 0;
-			["suit", "length"].forEach(method => {
-				//"type2",
+			["suit", "length", "type2"].forEach(method => {
 				let num1, num2;
 				if (method == "length") {
 					num1 = cards1.length;
@@ -371,9 +370,9 @@ const skills = {
 							`镇围：执行至多${num}项`,
 							[
 								[
+									["hujia", "获得1点护甲"],
+									["draw", "摸四张牌"],
 									["damage", `对${get.translation(target)}造成1点伤害`],
-									["draw", "摸三张牌"],
-									//["hujia", "获得1点护甲"],
 								],
 								"textbutton",
 							],
@@ -387,16 +386,16 @@ const skills = {
 							case "damage":
 								return get.damageEffect(targetx, player, player);
 							case "draw":
-								return get.effect(player, { name: "draw" }, player, player) * 3;
-							/*case "hujia":
-								return player.hujia < 5 ? get.recoverEffect(player, player, player) : 0;*/
+								return get.effect(player, { name: "draw" }, player, player) * 4;
+							case "hujia":
+								return player.hujia < 5 ? get.recoverEffect(player, player, player) : 0;
 						}
 					})
 					.forResult();
 				if (result?.bool && result.links?.length) {
 					const { links } = result;
 					const storage = player.getStorage(`${event.name}_last`, []);
-					const list = ["damage", "draw", "hujia"];
+					const list = ["hujia", "draw", "damage"];
 					links.sort((a, b) => list.indexOf(a) - list.indexOf(b));
 					const map = get.info(event.name).map;
 					for (const link of links) {
@@ -414,8 +413,8 @@ const skills = {
 		},
 		map: {
 			damage: ["对其造成1点伤害", (player, target) => get.damageEffect(target, player, player), player => player.damage()],
-			draw: ["摸三张牌", (player, target) => get.effect(target, { name: "draw" }, player, player), player => player.draw(3)],
-			//hujia: ["获得1点护甲", (player, target) => get.recoverEffect(target, player, player), player => player.changeHujia(1, void 0, true)],
+			draw: ["摸四张牌", (player, target) => get.effect(target, { name: "draw" }, player, player), player => player.draw(4)],
+			hujia: ["获得1点护甲", (player, target) => get.recoverEffect(target, player, player), player => player.changeHujia(1, void 0, true)],
 		},
 		ai: {
 			order: 6,
@@ -433,7 +432,7 @@ const skills = {
 		filter(event, player) {
 			const storage = player.getStorage("sbzhenwei_last", []);
 			const num = storage[0] || 0;
-			return game.hasPlayer(target => !player.getStorage("sbheyuan").includes(target) && target.isDamaged()) && player.countCards("he") > num;
+			return player.countCards("he") > num;
 		},
 		async cost(event, trigger, player) {
 			const storage = player.getStorage("sbzhenwei_last", []);
@@ -442,7 +441,7 @@ const skills = {
 				.chooseCardTarget({
 					prompt: get.prompt2(event.skill) + `<br><span class=bluetext>上次弃牌数：${storage[0] || 0}<br>最后执行选项：${map[storage[1]]?.[0] || "无"}</span>`,
 					filterTarget: (card, player, target) => {
-						return !player.getStorage("sbheyuan").includes(target) && target.isDamaged();
+						return true;
 					},
 					filterCard: lib.filter.cardDiscardable,
 					selectCard: storage[0] || 0,
@@ -567,7 +566,7 @@ const skills = {
 				if (player.countCards("h") >= game.players.length - 1 || player.needsToDiscard() >= 3) {
 					return 4;
 				}
-				return 2.5;
+				return 3.5;
 			},
 		},
 		audio: 2,
@@ -691,7 +690,7 @@ const skills = {
 				forced: true,
 				locked: false,
 				async content(event, trigger, player) {
-					const next = player.draw();
+					const next = player.draw(3);
 					next.gaintag.add("sbqiaobian");
 					await next;
 					player.addTempSkill("sbqiaobian_phaseJieshu");
