@@ -5223,7 +5223,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseButton({
-					createDialog: [`###${get.prompt(event.name)}###<div class="text center">将一张“刺”置入弃牌堆，并将${get.translation(trigger.cards.filterInD("d"))}置入“刺”</div>`, player.getExpansions("duwang")],
+					createDialog: [`###${get.prompt(event.skill)}###<div class="text center">将一张“刺”置入弃牌堆，并将${get.translation(trigger.cards.filterInD("d"))}置入“刺”</div>`, player.getExpansions("duwang")],
 					filterButton(button) {
 						return button.link.name !== "sha";
 					},
