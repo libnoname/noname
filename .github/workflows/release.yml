@@ -62,6 +62,9 @@ jobs:
     name: Build Packages
     needs: create-release
     runs-on: ubuntu-latest
+    env:
+      VITE_BUILD_CHANNEL: release
+      VITE_BUILD_COMMIT: ${{ github.sha }}
 
     steps:
       - name: Checkout repository
@@ -117,6 +120,9 @@ jobs:
     name: Build Installer
     needs: create-release
     runs-on: windows-latest
+    env:
+      VITE_BUILD_CHANNEL: release
+      VITE_BUILD_COMMIT: ${{ github.sha }}
 
     steps:
       - name: Checkout repository
