@@ -109,6 +109,8 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 			case "nightly":
 				buildLabel = `nightly ${builtAt?.slice(0, 10) || "unknown"}`;
 				break;
+			case "release":
+				break;
 		}
 		li1.textContent = `游戏版本：${lib.version}${buildLabel ? ` (${buildLabel})` : ""}`;
 		li3.innerHTML = '由于无名杀正在重构项目结构，在线更新暂时无法使用，请访问github主页获取最新版本。';
