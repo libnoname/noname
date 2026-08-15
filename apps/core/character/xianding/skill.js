@@ -3722,7 +3722,7 @@ const skills = {
 					selectTarget: [num, num],
 					forced: true,
 					filterTarget(card, player, target) {
-						return target != player;
+						return target !== player;
 					},
 					complexTarget: true,
 					ai(target) {
@@ -3798,7 +3798,10 @@ const skills = {
 							if (!event.isMine() || !event.filterTarget(void 0, event.player, target)) {
 								return;
 							}
-							if (target.classList.contains("selectable") == false) {
+							if (!target.classList.contains("selectable")) {
+								return;
+							}
+							if (ui.selected.targets.length >= event.selectTarget[1]) {
 								return;
 							}
 							target.unprompt();
