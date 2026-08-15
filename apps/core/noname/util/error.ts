@@ -125,10 +125,8 @@ export function setOnError({ lib, game, get, _status }) {
 		log.push(`${match ? "游戏" : "无名杀"}版本: ${version || "未知版本"}`);
 		const { channel, commit, builtAt } = lib.buildInfo;
 		log.push(`构建通道: ${channel}`);
-		if (commit) {
-			log.push(`构建提交: ${commit}`);
-		}
-		if (channel === "nightly" && builtAt) {
+		log.push(`构建提交: ${commit}`);
+		if (channel === "nightly") {
 			log.push(`构建时间: ${builtAt}`);
 		}
 		if (match) {
