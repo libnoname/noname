@@ -97,7 +97,20 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 		var ul = document.createElement("ul");
 		var li1 = document.createElement("li");
 		var li3 = document.createElement("li");
-		li1.innerHTML = "游戏版本：" + lib.version + '';
+		const { channel, commit, builtAt } = lib.buildInfo;
+		let buildLabel = "";
+		switch (channel) {
+			case "dev":
+				buildLabel = "dev";
+				break;
+			case "test":
+				buildLabel = `test @ ${commit?.slice(0, 8) || "local"}`;
+				break;
+			case "nightly":
+				buildLabel = `nightly ${builtAt?.slice(0, 10) || "unknown"}`;
+				break;
+		}
+		li1.innerHTML = `游戏版本：${lib.version}${buildLabel ? ` (${buildLabel})` : ""}`;
 		li3.innerHTML = '由于无名杀正在重构项目结构，在线更新暂时无法使用，请访问github主页获取最新版本。';
 
 		/** @type { HTMLParagraphElement } */

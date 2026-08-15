@@ -1,5 +1,14 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
+import { execFileSync } from "node:child_process";
+
+if (!process.env.VITE_BUILD_COMMIT) {
+	try {
+		process.env.VITE_BUILD_COMMIT = execFileSync("git", ["-C", import.meta.dirname, "rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+	} catch {
+		process.env.VITE_BUILD_COMMIT = "local";
+	}
+}
 
 const port = {
 	client: 8081,
