@@ -19392,7 +19392,7 @@ const skills = {
 			qinggang: {
 				mod: {
 					attackRangeBase(player) {
-						const num = lib.card?.guanshi?.distance?.qinggang;
+						const num = lib.card.qinggang.distance.attackFrom;
 						if (typeof num != "number" || !player.hasEmptySlot(1)) {
 							return;
 						}
