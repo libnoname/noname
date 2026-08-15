@@ -205,7 +205,7 @@ const skills = {
 				logTarget: "player",
 				async content(event, trigger, player) {
 					const target = event.targets[0];
-					await target.recover(2);
+					await target.recover();
 					await target.draw(2);
 				},
 			},
