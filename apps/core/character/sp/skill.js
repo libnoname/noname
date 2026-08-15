@@ -47589,7 +47589,26 @@ const skills = {
 					.forResult();
 			}
 		},
-		locked: true,
+		locked: false,
+		mod: {
+			aiOrder(player, card, num) {
+				if (typeof card == "object") {
+					const storage = player.storage.oltaohuai;
+					let nums = player.getCards("h").map(card => get.number(card));
+					if (storage) {
+						nums.sort((a, b) => a - b);
+						if (get.number(card) <= nums[0]) {
+							return num + 4;
+						}
+					} else {
+						nums.sort((a, b) => b - a);
+						if (get.number(card) >= nums[0]) {
+							return num + 4;
+						}
+					}
+				}
+			},
+		},
 		async content(event, trigger, player) {
 			if (event.cards?.length) await player.discard(event.cards);
 			else {
