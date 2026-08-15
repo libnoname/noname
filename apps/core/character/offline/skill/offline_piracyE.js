@@ -99,10 +99,12 @@ const skills = {
 			fireAttack: true,
 			respondSha: true,
 			respondShan: true,
-			skillTagFilter(player) {
-				if (!player.hasCards("hes")) {
+			skillTagFilter(player, tag, arg) {
+				if (arg == "respond") {
 					return false;
 				}
+				const name = tag == "respondSha" ? "sha" : "shan";
+				return lib.skill["pecaishi"].hiddenCard(player, name);
 			},
 			order: 9,
 			result: {
@@ -264,7 +266,7 @@ const skills = {
 				return false;
 			}
 			//if (_status.currentPhase !== target) {
-				//return false;
+			//return false;
 			//}
 			if (event.name == "phase") {
 				const cards = event.player
