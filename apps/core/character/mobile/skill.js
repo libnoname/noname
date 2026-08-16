@@ -6166,10 +6166,7 @@ const skills = {
 				.chooseButton(["裁裘：是否获得其中任意张牌？", cards], [1, Infinity], "allowChooseAll")
 				.set("ai", button => {
 					const player = get.player();
-					//只要贪不死就往死里贪
-					if (player.hp <= 1 && ["sha", "shan"].includes(button.link.name)) {
-						return 0;
-					}
+					//只要贪不死就往死里贪   孩子你还是不够贪
 					return 1;
 				})
 				.forResult();
