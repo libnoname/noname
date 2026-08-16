@@ -1,10 +1,10 @@
 const characters = {
-	scl_zhangxiu: {
-		sex: "male",
+	shangguanwaner: {
+		sex: "female",
 		group: "qun",
-		hp: 4,
-		skills: ["sclfudi", "sclcongjian"],
-		dieAudios: ["zhangxiu"],
+		hp: 3,
+		skills: ["pecaishi", "peculv"],
+		names: "上官|婉儿",
 	},
 	zh_shen_zhangjiao: {
 		sex: "male",
