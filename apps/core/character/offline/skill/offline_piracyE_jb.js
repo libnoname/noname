@@ -826,7 +826,7 @@ const skills = {
 			return true;
 		},
 		filter(event, player) {
-			return event.card.name == "sha";
+			return event.card.name == "sha" && player.countCards("he") > 1;
 		},
 		async cost(event, trigger, player) {
 			const num = Math.min(2, player.countCards("he"));
