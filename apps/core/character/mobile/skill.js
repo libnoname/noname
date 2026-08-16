@@ -4203,7 +4203,7 @@ const skills = {
 				targets: [target],
 				name,
 			} = event;
-			const getNum = (player) => {
+			const getNum = player => {
 				let num = Math.max(1, player.countMark(`hefeidangshi_count`));
 				if (player.hasSkill("hefeiheyuzhangliao") && get.info("friendgongli").isFriendOf(player, "hefei_lidian")) {
 					num = 3;
@@ -10330,16 +10330,18 @@ const skills = {
 				forced: true,
 				async content(event, trigger, player) {
 					await player.loseHp();
-					player.storage[event.name][trigger.card.name]--;
-					if (get.info(event.name).intro.markcount(player.storage[event.name]) === 0) {
-						player.removeSkill(event.name);
-						return;
+					if (typeof player.storage[event.name][trigger.card.name] == "number" && player.storage[event.name][trigger.card.name] > 0) {
+						player.storage[event.name][trigger.card.name]--;
+						if (get.info(event.name).intro.markcount(player.storage[event.name]) === 0) {
+							player.removeSkill(event.name);
+							return;
+						}
+						if (player.storage[event.name][trigger.card.name] === 0) {
+							delete player.storage[event.name][trigger.card.name];
+						}
+						player.syncStorage(event.name);
+						player.addTip(event.name, `谮构 ${get.translation(Object.keys(player.storage[event.name]))}`);
 					}
-					if (player.storage[event.name][trigger.card.name] === 0) {
-						delete player.storage[event.name][trigger.card.name];
-					}
-					player.syncStorage(event.name);
-					player.addTip(event.name, `谮构 ${get.translation(Object.keys(player.storage[event.name]))}`);
 				},
 				mod: {
 					aiOrder(player, card, num) {
