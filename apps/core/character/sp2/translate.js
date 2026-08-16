@@ -1,6 +1,12 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	star_zhugejin: "星诸葛瑾",
+	star_zhugejin_prefix: "星",
+	starzunjian: "尊谏",
+	starzunjian_info: "出牌阶段每种花色限一次，你可以弃置一种花色的所有手牌并令一名角色摸X张牌（X为你手牌中缺少的花色数），然后若其手牌数为全场唯一最多，其可以交给你至多两张手牌；若其体力值全场唯一最少，你可令其回复一点体力。",
+	starhongya: "弘雅",
+	starhongya_info: "每回合限两次，当你成为其他角色使用牌的目标时，你可以重铸一张比其使用的牌点数更大的手牌令其使用的牌对你无效；若你重铸的牌点数为你手牌中点数最大的牌，则你额外摸X张牌（X为你手牌中缺少的花色数）。",
 	lijue: "李傕",
 	zhangji: "张济",
 	fanchou: "樊稠",
