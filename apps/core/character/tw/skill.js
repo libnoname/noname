@@ -22135,10 +22135,10 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filterTarget: true,
-		/*limited: true,
+		//limited: true,
 		skillAnimation: true,
 		animationColor: "qun",
-		async cost(event, trigger, player) {
+		/*async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget(get.prompt2(event.skill))
 				.set("ai", target => {
