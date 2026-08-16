@@ -3,6 +3,110 @@ import html from "dedent";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//王战张绣
+	sclfudi: {
+		audio: 2,
+		trigger: { player: "damageEnd" },
+		filter(event, player) {
+			return event.source?.isIn() && event.source != player && player.hasCards("h");
+		},
+		async cost(event, trigger, player) {
+			const source = trigger.source;
+			let targets = game.filterPlayer(current => current.group == source.group).sort((a, b) => b.hp - a.hp);
+			targets = targets.filter(current => current.hp >= player.hp && current.hp == targets[0].hp);
+			event.result = await player
+				.chooseToGive({
+					prompt: `附敌：交给${get.translation(source)}一张手牌然后对${targets.length ? get.translation(targets) : "滚木"}${targets.length > 1 ? "中的一名角色" : ""}造成1点伤害`,
+					position: "h",
+					target: source,
+					ai(card) {
+						const { player, targets, source } = get.event();
+						if (!targets.length && get.attitude(player, source) > 0) {
+							return 7 - get.value(card);
+						}
+						if (targets.some(target => get.damageEffect(target, player, player) > 0)) {
+							return 10 - get.value(card);
+						}
+						return -get.value(card);
+					},
+				})
+				.set("targets", targets)
+				.set("source", source)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const source = trigger.source;
+			let targets = game.filterPlayer(current => current.group == source.group).sort((a, b) => b.hp - a.hp);
+			targets = targets.filter(current => current.hp >= player.hp && current.hp == targets[0].hp);
+			if (!targets.length) {
+				return;
+			}
+			const result =
+				targets.length > 1
+					? player
+							.chooseTarget({
+								prompt: `附敌：对${get.translation(targets)}中的一名角色造成一点伤害`,
+								filterTarget(card, player, target) {
+									return get.event().targets.includes(target);
+								},
+								forced: true,
+								ai(target) {
+									return get.damageEffect(target, get.player(), get.player());
+								},
+							})
+							.set("targets", targets)
+							.forResult()
+					: { bool: true, targets };
+			if (result?.bool && result.targets?.length) {
+				const target = result.targets[0];
+				player.line(target);
+				await target.damage();
+			}
+		},
+		ai: {
+			maixie: true,
+			maixie_defend: true,
+			effect: {
+				target(card, player, target) {
+					if (get.tag(card, "damage") && target.hp > 1) {
+						if (player.hasSkillTag("jueqing", false, target)) {
+							return [1, -2];
+						}
+						if (!target.countCards("h")) {
+							return [1, -1];
+						}
+						if (
+							game.countPlayer(current => {
+								return current.group == player.group && current.hp >= target.hp - 1 && get.attitude(player, current) > 0 && current.hp <= 2;
+							})
+						) {
+							return [1, 0, 0, -2];
+						}
+					}
+				},
+			},
+		},
+	},
+	sclcongjian: {
+		audio: "drlt_congjian",
+		trigger: {
+			player: "damageBegin3",
+			source: "damageBegin1",
+		},
+		forced: true,
+		filter(event, player, name) {
+			if (name == "damageBegin1" && _status.currentPhase != player) {
+				return true;
+			}
+			if (name == "damageBegin3" && _status.currentPhase == player) {
+				return true;
+			}
+			return false;
+		},
+		async content(event, trigger, player) {
+			trigger.num++;
+		},
+	},
 	//王战贾诩
 	sclwansha: {
 		audio: "rewansha",

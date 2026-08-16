@@ -648,7 +648,7 @@ const skills = {
 				popup: false,
 				mark: true,
 				intro: {
-					content: "回合结束时失去一点体力",
+					content: "回合结束时失去1点体力",
 				},
 				trigger: { global: "phaseEnd" },
 				async content(event, trigger, player) {

@@ -391,7 +391,7 @@ const skills = {
 			event.result = await player
 				.chooseTarget({
 					prompt: get.prompt(event.skill),
-					prompt2: "对一名角色造成一点伤害",
+					prompt2: "对一名角色造成1点伤害",
 					ai(target) {
 						return get.damageEffect(target, get.player(), get.player());
 					},
@@ -6584,7 +6584,7 @@ const skills = {
 				})
 				.set(
 					"cards",
-					(function () {
+					(() => {
 						let cards = player
 							.getCards("h")
 							.slice(0)
@@ -6592,7 +6592,7 @@ const skills = {
 						let result = [];
 						while (result.length < target.countCards("h")) {
 							let card = cards.shift();
-							if (get.value(card) <= 5) {
+							if (card != null && get.value(card) <= 5) {
 								result.push(card);
 							} else {
 								break;
@@ -28038,6 +28038,14 @@ const skills = {
 	twyingjia: {
 		audio: 2,
 		trigger: { global: "phaseEnd" },
+		skillAnimation: true,
+		animationColor: "wood",
+		init(player, skill) {
+			player.addSkill(skill + "_mark");
+		},
+		onremove(player, skill) {
+			player.removeSkill(skill + "_mark");
+		},
 		filter(event, player) {
 			if (
 				!player.countCards("h", card => {
@@ -28092,8 +28100,64 @@ const skills = {
 				targets: [target],
 				cards,
 			} = event;
-			await player.discard(cards);
+			await player.discard({ cards });
 			target.insertPhase();
+		},
+		subSkill: {
+			mark: {
+				charlotte: true,
+				init(player, skill) {
+					const history = player.getHistory("useCard"),
+						map = {};
+					if (!history.length) {
+						return;
+					}
+					let num = 0;
+					for (const i of history) {
+						if (get.type2(i.card) == "trick") {
+							if (!map[i.card.name]) {
+								if (num == 0) {
+									num = 1;
+								}
+								map[i.card.name] = true;
+							} else {
+								num = 2;
+							}
+						}
+					}
+					if (num > 0) {
+						player.addTip(skill, `${get.translation(skill)} ${num}`, "phaseAfter");
+					}
+				},
+				onremove(player, skill) {
+					player.removeTip(skill);
+				},
+				silent: true,
+				popup: false,
+				firstDo: true,
+				trigger: { player: "useCard" },
+				filter(event, player) {
+					return get.type2(event.card) == "trick";
+				},
+				async content(event, trigger, player) {
+					const history = player.getHistory("useCard"),
+						map = {};
+					let num = 0;
+					for (const i of history) {
+						if (get.type2(i.card) == "trick") {
+							if (!map[i.card.name]) {
+								map[i.card.name] = true;
+								if (num == 0) {
+									num = 1;
+								}
+							} else {
+								num = 2;
+							}
+						}
+					}
+					player.addTip(event.name, `${get.translation(event.name)} ${num}`, "phaseAfter");
+				},
+			},
 		},
 	},
 	//tw葛玄

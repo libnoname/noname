@@ -26,9 +26,9 @@ const dynamicTranslates = {
 		let str = "有角色于其出牌阶段外造成伤害时";
 		if (awaken2) str = "你于出牌阶段外造成或受到伤害时";
 		else if (awaken1) str = "有角色于其出牌阶段外受到伤害时";
-		let str2 = awaken2 ? "" : "失去一点体力并";
+		let str2 = awaken2 ? "" : "失去1点体力并";
 		let str3 = awaken2 ? "自己" : "其";
-		return `每回合限一次，${str}，你可以${str2}选择一项：1.你与${str3}各摸2张牌；2.此伤害+1。`
+		return `每回合限一次，${str}，你可以${str2}选择一项：1.你与${str3}各摸两张牌；2.此伤害+1。`
 	},
 	fengliao(player) {
 		const bool = player.storage.fengliao;

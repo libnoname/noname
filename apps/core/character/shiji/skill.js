@@ -18,6 +18,11 @@ const skills = {
 					return true;
 				}
 			},
+			cardUsableTarget(card, player, target) {
+				if (target.hasMark("yingba_mark")) {
+					return Infinity;
+				}
+			},
 		},
 		enable: "phaseUse",
 		usable: 1,
@@ -29,14 +34,16 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const { target } = event;
-			await target.loseMaxHp();
-			if (target.isIn()) {
+			await target.loseHp();
+			if (target?.isIn()) {
+				await target.loseMaxHp();
+				target.addSkill("yingba_mark");
 				target.addMark("yingba_mark", 1);
 			}
 			await player.loseMaxHp();
 		},
 		locked: false,
-		//global:'yingba_mark',
+		group: ["yingba_limit"],
 		ai: {
 			threaten(player, target) {
 				if (player === target || player.isDamaged() || get.attitude(player, target) > 0) {
@@ -64,18 +71,40 @@ const skills = {
 			},
 		},
 		subSkill: {
+			limit: {
+				silent: true,
+				trigger: { player: "useCard1" },
+				filter(event, player) {
+					return event.targets?.some(target => target.hasMark("yingba_mark")) && event.addCount != false;
+				},
+				async content(event, trigger, player) {
+					trigger.addCount = false;
+					const stat = player.getStat().card,
+						name = trigger.card.name;
+					if (typeof stat[name] === "number") {
+						stat[name]--;
+					}
+				},
+			},
 			mark: {
 				marktext: "定",
 				intro: {
 					name: "平定",
-					content: "mark",
+					content(storage, player) {
+						const num = player.countHistory("useCard");
+						return `<li>当前拥有${storage}个平定标记且每回合使用的前${storage}张牌不能指定拥有〖英霸〗的角色<li>本回合已使用${num}张牌`;
+					},
 					onunmark: true,
 				},
+				charlotte: true,
 				mod: {
-					maxHandcard(player, numx) {
-						const num = player.countMark("yingba_mark");
-						if (num) {
-							return numx + num * game.countPlayer(current => current.hasSkill("yingba"));
+					playerEnabled(card, player, target) {
+						if (!target.hasSkill("yingba", null, false, false) || !player.hasMark("yingba_mark")) {
+							return;
+						}
+						const num = player.countHistory("useCard");
+						if (num < player.countMark("yingba_mark")) {
+							return false;
 						}
 					},
 				},
@@ -149,47 +178,98 @@ const skills = {
 		audio: 2,
 		mod: {
 			maxHandcardBase(player) {
-				return player.getDamagedHp();
+				return player.maxHp;
 			},
 		},
 		trigger: { player: "damageBegin4" },
 		forced: true,
 		filter(event, player) {
-			return event.source && event.source !== player && player.maxHp > 1 && player.hasCards("h");
+			return event.source && event.source !== player && player.maxHp > 1 && player.hasCards("he");
 		},
 		async content(event, trigger, player) {
 			trigger.cancel();
 			await player.loseMaxHp();
-			if (game.hasPlayer(current => current !== player) && player.hasCards("h")) {
-				const result = await player
-					.chooseCardTarget({
-						prompt: "请选择【冯河】的牌和目标",
-						prompt2: `将一张手牌交给一名其他角色并防止伤害${player.hasSkill("yingba") ? `，然后令${get.translation(trigger.source)}获得1枚“平定”标记` : ""}`,
-						filterCard: true,
-						forced: true,
-						filterTarget: lib.filter.notMe,
-						ai1(card) {
-							const player = get.player();
-							if (get.tag(card, "recover") && !game.hasPlayer(current => get.attitude(current, player) > 0 && !current.hasSkillTag("nogain"))) {
-								return 0;
-							}
-							return 1 / Math.max(0.1, get.value(card));
-						},
-						ai2(target) {
-							const player = get.player();
-							let att = get.attitude(player, target);
-							if (target.hasSkillTag("nogain")) {
-								att /= 9;
-							}
-							return 4 + att;
-						},
-					})
-					.forResult();
-				if (result?.bool) {
-					const target = result.targets[0];
-					player.line(target, "green");
-					await player.give(result.cards, target);
-					if (player.hasSkill("yingba")) {
+			if (!player.hasCards("he")) {
+				return;
+			}
+			const controls = [],
+				choiceList = ["交给其他角色一张牌", "重铸一张牌"];
+			if (game.hasPlayer(current => current != player)) {
+				controls.push("给牌");
+			} else {
+				choiceList[0] = `<span style="opacity:0.5">` + choiceList[0] + "</span>";
+			}
+			controls.push("重铸牌");
+			let result;
+			result =
+				controls.length > 1
+					? await player
+							.chooseControl({
+								prompt: "冯河：请选择一项",
+								controls,
+								choiceList,
+								ai() {
+									const player = get.player();
+									if (game.hasPlayer(current => get.attitude(player, current) > 0)) {
+										return "给牌";
+									}
+									return "重铸牌";
+								},
+							})
+							.forResult()
+					: { control: controls[0] };
+			if (typeof result?.control == "string") {
+				const control = result.control;
+				if (control == "给牌") {
+					result = await player
+						.chooseCardTarget({
+							prompt: "冯河：将一张牌交给一名其他角色",
+							filterCard: true,
+							forced: true,
+							filterTarget: lib.filter.notMe,
+							position: "he",
+							ai1(card) {
+								const player = get.player();
+								if (get.tag(card, "recover") && !game.hasPlayer(current => get.attitude(current, player) > 0 && !current.hasSkillTag("nogain"))) {
+									return 0;
+								}
+								return 1 / Math.max(0.1, get.value(card));
+							},
+							ai2(target) {
+								const player = get.player();
+								let att = get.attitude(player, target);
+								if (target.hasSkillTag("nogain")) {
+									att /= 9;
+								}
+								return 4 + att;
+							},
+						})
+						.forResult();
+				} else {
+					result = await player
+						.chooseCard({
+							prompt: "冯河：请重铸一张牌",
+							filterCard(card, player) {
+								return lib.filter.cardRecastable(card, player);
+							},
+							forced: true,
+							position: "he",
+							ai(card) {
+								return 5 - get.value(card);
+							},
+						})
+						.forResult();
+				}
+				if (result?.bool && result.cards?.length) {
+					const { targets, cards } = result;
+					if (targets?.length) {
+						player.line(targets, "green");
+						await player.give(cards, targets[0]);
+					} else {
+						await player.recast(cards);
+					}
+					if (trigger.source?.isIn() && player.hasSkill("yingba")) {
+						trigger.source.addSkill("yingba_mark");
 						trigger.source.addMark("yingba_mark", 1);
 					}
 				}
@@ -837,6 +917,7 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		frequent: true,
+		manualConfirm: true,
 		filter(event, player) {
 			return player.maxHp < 10;
 		},
@@ -2048,7 +2129,7 @@ const skills = {
 								["fengyin", "非锁定技失效至下个回合结束"],
 								["equip", `交给${get.translation(player)}一张装备牌`],
 								["damage", `${get.translation(trigger.card)}对你造成伤害+1`],
-								["discard", "随机弃一张牌"],
+								["discard", "随机弃两张牌"],
 							],
 							"textbutton",
 						],
@@ -2145,13 +2226,13 @@ const skills = {
 							costs[2] = -damageEff;
 						}
 
-						// 选项4：随机弃一张牌
+						// 选项4：随机弃两张牌
 						const cards = target.getDiscardableCards(target, "he");
 						if (cards.length) {
 							const values = cards.reduce((sum, card) => sum + get.value(card, target), 0) / cards.length;
 							costs[3] = Math.min(4, 1 + 4 / values);
-							if (cards.length <= 2) {
-								costs[3] += 1;
+							if (cards.length <= 3) {
+								costs[3] += 2;
 							}
 						} else {
 							costs[3] = Infinity;
@@ -2236,20 +2317,19 @@ const skills = {
 							if (get.attitude(target, player) > 0) {
 								return -1;
 							}
-
+							//改成6个标记开大那ai还是有点用的
 							const mark = player.countMark("tingwei");
-
 							let value = 1;
 							// 能立刻开限定技，1枚霆价值极高
-							if (mark >= 8) {
+							if (mark >= 5) {
 								value += 7;
 							}
 							// 下一次触发就够，1枚霆价值也很高，但由于可以留到下一轮选择，价值依次递减
-							else if (mark === 7) {
+							else if (mark === 4) {
 								value += 4;
-							} else if (mark === 6) {
+							} else if (mark === 3) {
 								value += 2.5;
-							} else if (mark === 5) {
+							} else if (mark === 2) {
 								value += 1.5;
 							}
 
@@ -2257,7 +2337,6 @@ const skills = {
 							if (_status.currentPhase === player) {
 								value += 2;
 							}
-
 							value += Math.min(5, getTingThreat(player, target));
 
 							return value;
@@ -2344,7 +2423,7 @@ const skills = {
 						break;
 					}
 					case "discard": {
-						await target.randomDiscard("he");
+						await target.randomDiscard({ position: "he", num: 2 });
 						break;
 					}
 				}
@@ -2352,11 +2431,10 @@ const skills = {
 
 			return;
 		},
-		mark: true,
 		marktext: "霆",
 		intro: {
 			name: "霆",
-			content: "当前拥有#个“霆”标记",
+			content: "mark",
 		},
 		subSkill: {
 			fengyin: {
@@ -2370,7 +2448,7 @@ const skills = {
 		limited: true,
 		skillAnimation: true,
 		filter(_event, player) {
-			return player.countMark("tingwei") >= 8;
+			return player.countMark("tingwei") >= 6;
 		},
 		logAudio(event) {
 			if (typeof event === "number") {
@@ -2382,7 +2460,7 @@ const skills = {
 			event.result = await player
 				.chooseTarget({
 					prompt: get.prompt(event.skill),
-					prompt2: "弃8枚“霆”标记，对一名角色造成等于其体力上限的伤害",
+					prompt2: "弃置6枚“霆”标记，对一名角色造成等于其体力上限的伤害",
 					ai(target) {
 						const player = get.player();
 						return get.damageEffect(target, player, player);
@@ -2392,11 +2470,9 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			player.awakenSkill("jimie");
-			player.removeMark("tingwei", 8);
+			player.removeMark("tingwei", 6);
 			const target = event.targets[0];
-			await target.damage({
-				num: target.maxHp,
-			});
+			await target.damage({ num: target.maxHp });
 			player.setStorage("yuli", [], true);
 		},
 	},
@@ -5946,6 +6022,7 @@ const skills = {
 		subSkill: {
 			limit: {
 				charlotte: true,
+				onremove: true,
 				markimage: "image/card/handcard.png",
 				intro: {
 					content(storage, player) {
