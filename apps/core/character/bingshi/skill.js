@@ -227,11 +227,35 @@ const skills = {
 						: { bool: true, links: skills };
 				if (result?.bool && result.links?.length) {
 					const skill = result.links[0];
-					player.logSkill(event.name, null, null, null, [get.rand(3, 12)]);
 					get.info("potyinhui").refreshSkill(player, skill);
 					await player.addAdditionalSkills(event.name, skill, true);
+					game.broadcastAll(skill => {
+						const skills = [skill];
+						game.expandSkills(skills);
+						for (const i of skills) {
+							const info = get.info(i);
+							if (!info) {
+								continue;
+							}
+							if (!info.audioname2) {
+								info.audioname2 = {};
+							}
+							info.audioname2.pot_xiaoqiao = "potyinhui_audio";
+						}
+					}, skill);
 				}
 			}
+		},
+		subSkill: {
+			audio: {
+				get audio() {
+					const list = [];
+					for (let i = 3; i <= 12; i++) {
+						list.push(`potyinhui${i}.mp3`);
+					}
+					return list;
+				},
+			},
 		},
 	},
 	//势周瑜

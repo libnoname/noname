@@ -5,6 +5,271 @@ import { CacheContext } from "../../noname/library/cache/cacheContext.js";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//威马腾
+	dcheqi: {
+		audio: 2,
+		forced: true,
+		locked: false,
+		trigger: {
+			player: "enterGame",
+			global: "phaseBefore",
+		},
+		filter(event, player) {
+			return event.name != "phase" || game.phaseNumber == 0;
+		},
+		async content(event, trigger, player) {
+			player.addMark("dchuirui", 3);
+		},
+		mod: {
+			targetInRange(card, player, target) {
+				if (target.hasMark("dchuirui")) {
+					return true;
+				}
+			},
+		},
+		group: "dcheqi_sha",
+		subSkill: {
+			sha: {
+				audio: "dcheqi",
+				trigger: { player: "useCardAfter" },
+				filter(event, player) {
+					return event.card.name == "sha" && event.getParent().name != "dcheqi_sha" && get.info("dcheqi_sha").logTarget(event, player).length;
+				},
+				logTarget(event, player) {
+					const card = get.autoViewAs({ name: "sha", isCard: true }, "unsure");
+					return game.filterPlayer(current => current != player && current.hasMark("dchuirui") && player.canUse(card, current, false, false)).sortBySeat();
+				},
+				prompt2(event, player) {
+					const targets = get.info("dcheqi_sha").logTarget(event, player);
+					return `视为对${get.translation(targets)}使用其“骑”数量张【杀】`;
+				},
+				async content(event, trigger, player) {
+					const targets = event.targets;
+					const card = get.autoViewAs({ name: "sha", isCard: true }, "unsure");
+					await game.doAsyncInOrder(targets, async target => {
+						const num = target.countMark("dchuirui");
+						if (num > 0) {
+							for (let i = 0; i < num; i++) {
+								if (player.canUse(card, target, false, false)) {
+									await player.useCard({ card, targets: [target], addCount: false }).set("oncard", () => {
+										get.event().customArgs.default.customSource = {
+											isDead: () => true,
+										};
+									});
+								}
+							}
+						}
+					});
+				},
+			},
+		},
+		ai: { combo: "dchuirui" },
+	},
+	dchuirui: {
+		audio: 2,
+		marktext: "骑",
+		intro: { name: "骑", content: "mark" },
+		trigger: {
+			player: ["phaseUseBegin", "damageEnd"],
+		},
+		async cost(event, trigger, player) {
+			const controls = ["获得“骑”"],
+				choiceList = ["获得两个“骑”", "移动场上任意一个“骑”至任意其他角色处", "视为使用一张【杀】"];
+			if (game.hasPlayer(current => current.hasMark("dchuirui") && game.hasPlayer(currentx => current != currentx && currentx != player))) {
+				controls.push("移动“骑”");
+			} else {
+				choiceList[1] = `<span style="opacity:0.5">` + choiceList[1] + "</span>";
+			}
+			const card = get.autoViewAs({ name: "sha", isCard: true }, "unsure");
+			if (player.hasUseTarget(card, false, false)) {
+				controls.push("使用【杀】");
+			} else {
+				choiceList[2] = `<span style="opacity:0.5">` + choiceList[2] + "</span>";
+			}
+			controls.push("cancel2");
+			const result = await player
+				.chooseControl({
+					controls,
+					choiceList,
+					prompt: get.prompt(event.skill),
+					ai() {
+						return get.event().controls.slice().remove("cancel2").randomGet();
+					},
+				})
+				.forResult();
+			if (typeof result?.control == "string" && result.control != "cancel2") {
+				event.result = {
+					bool: true,
+					cost_data: result.control,
+				};
+			}
+		},
+		async content(event, trigger, player) {
+			const control = event.cost_data;
+			if (control == "获得“骑”") {
+				player.addMark(event.name, 2);
+			} else if (control == "移动“骑”") {
+				const result = await player
+					.chooseTarget({
+						prompt: "挥锐：移动场上一个“骑”至任意其他角色处",
+						filterTarget(card, player, target) {
+							if (!ui.selected.targets?.length) {
+								return target.hasMark("dchuirui");
+							}
+							return target != ui.selected.targets[0] && target != player;
+						},
+						selectTarget: 2,
+						complexTarget: true,
+						forced: true,
+						ai(target) {
+							const player = get.player();
+							if (!ui.selected.targets?.length) {
+								return get.attitude(player, target);
+							}
+							return -get.attitude(player, target) * Math.max(1, target.countMark("dchuirui"));
+						},
+						targetprompt: ["失去“骑”", "获得“骑”"],
+					})
+					.forResult();
+				if (result?.bool && result.targets?.length) {
+					const targets = result.targets;
+					player.line(targets);
+					targets[0].removeMark(event.name);
+					targets[1].addMark(event.name);
+				}
+			} else {
+				const card = get.autoViewAs({ name: "sha", isCard: true }, "unsure");
+				await player.chooseUseTarget({ card, forced: true, addCount: false });
+			}
+		},
+	},
+	dcxiaoben: {
+		audio: 2,
+		comboSkill: true,
+		locked: false,
+		mod: {
+			aiOrder(player, card, num) {
+				if (typeof card == "object") {
+					const evt = lib.skill.dcjianying.getLastUsed(player);
+					if (evt?.card && get.tag(evt.card, "damage") > 0.5 && !evt.dcxiaoben && get.type(card, player) != "basic" && game.hasPlayer(current => current.hasMark("dchuirui"))) {
+						return num + 10;
+					}
+				}
+			},
+		},
+		trigger: { player: "useCard" },
+		init(player, skill) {
+			player.addSkill(skill + "_mark");
+		},
+		onremove(player, skill) {
+			player.removeSkill(skill + "_mark");
+		},
+		filter(event, player) {
+			if (get.type(event.card) == "basic") {
+				return false;
+			}
+			const evt = lib.skill.dcjianying.getLastUsed(player, event);
+			if (!evt || !evt.card || evt.dcxiaoben) {
+				return false;
+			}
+			return game.hasPlayer(current => current.hasMark("dchuirui")) && get.is.damageCard(evt.card);
+		},
+		async content(event, trigger, player) {
+			const { name } = event;
+			trigger.set(name, true);
+			let result;
+			result = await player
+				.chooseTarget({
+					prompt: "骁贲：移动场上一个“骑”",
+					filterTarget(card, player, target) {
+						if (!ui.selected.targets?.length) {
+							return target.hasMark("dchuirui");
+						}
+						return target != ui.selected.targets[0];
+					},
+					selectTarget: 2,
+					complexTarget: true,
+					forced: true,
+					ai(target) {
+						const player = get.player();
+						if (!ui.selected.targets?.length) {
+							return get.attitude(player, target);
+						}
+						return -get.attitude(player, target) * Math.max(1, target.countMark("dchuirui"));
+					},
+					targetprompt: ["失去“骑”", "获得“骑”"],
+				})
+				.forResult();
+			if (result?.bool && result.targets?.length) {
+				const targets = result.targets;
+				player.line(targets);
+				targets[0].removeMark("dchuirui");
+				targets[1].addMark("dchuirui");
+			}
+			if (!game.hasPlayer(current => current != player && current.hasMark("dchuirui"))) {
+				return;
+			}
+			result = await player
+				.chooseBool({
+					prompt: "骁贲：移去所有其他角色的“骑”并分别对其造成等量点伤害",
+					ai() {
+						const player = get.player();
+						if (game.hasPlayer(current => (current.countMark("dchuirui") > 3 || current.hp <= current.countMark("dchuirui")) && get.attitude(player, current) < 0)) {
+							return 1;
+						}
+						return 0;
+					},
+				})
+				.forResult();
+			if (result?.bool) {
+				const targets = game.filterPlayer(current => current != player && current.hasMark("dchuirui"));
+				if (targets?.length) {
+					player.line(targets);
+					await game.doAsyncInOrder(targets, async target => {
+						if (target?.isIn()) {
+							const num = target.countMark("dchuirui");
+							if (num > 0) {
+								target.clearMark("dchuirui");
+								await target.damage({ num, source: player });
+							}
+						}
+					});
+				}
+			}
+		},
+		ai: { combo: "dchuirui" },
+		subSkill: {
+			mark: {
+				charlotte: true,
+				init(player, skill) {
+					const evt = lib.skill.dcjianying.getLastUsed(player);
+					if (evt?.card && get.is.damageCard(evt.card) && !evt.dcxiaoben) {
+						player.addTip(skill, "骁贲 可连击");
+					}
+				},
+				onremove(player, skill) {
+					player.removeTip(skill);
+				},
+				trigger: {
+					player: ["useCard1", "useCardAfter"],
+				},
+				forced: true,
+				popup: false,
+				firstDo: true,
+				async content(event, trigger, player) {
+					if (event.triggername == "useCard1") {
+						if (get.is.damageCard(trigger.card)) {
+							player.addTip(event.name, "骁贲 可连击");
+						} else {
+							player.removeTip(event.name);
+						}
+					} else if (trigger.dcxiaoben) {
+						player.removeTip(event.name);
+					}
+				},
+			},
+		},
+	},
 	//谋钟会
 	dcsbjinglian: {
 		audio: 2,

@@ -1,6 +1,14 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	v_mateng: "威马腾",
+	v_mateng_prefix: "威",
+	dcheqi: "合骑",
+	dcheqi_info: "游戏开始时，你获得3个“骑”，你不以此法使用【杀】结算后，可视为对拥有“骑”的其他角色使用X张【杀】（X为该角色“骑”数且此【杀】造成的伤害无伤害来源），你对拥有“骑”标记的角色使用牌无距离限制。",
+	dchuirui: "挥锐",
+	dchuirui_info: "出牌阶段开始或受到伤害后，你可选择一项发动：1、获得两个“骑”；2、移动场上任意一个“骑”至任意其他角色处；3、你视为使用一张【杀】。",
+	dcxiaoben: "骁贲",
+	dcxiaoben_info: "连招技（伤害牌+非基本牌），你可移动一个“骑”并可移除所有其他角色的“骑”，其他角色每因此失去一个“骑”便受到一点伤害。",
 	dc_sb_zhonghui: "新杀谋钟会",
 	dc_sb_zhonghui_prefix: "新杀谋",
 	dcsbjinglian: "精练",
