@@ -4544,7 +4544,7 @@ const skills = {
 			game.addCardKnower(puts, player);
 			const allCards = [puts, gains].flat(),
 				suits = allCards.map(card => get.suit(card)).toUniqued();
-			if (suits.length < 3) {
+			if (suits.length < 2) {
 				return;
 			}
 			result = await player
