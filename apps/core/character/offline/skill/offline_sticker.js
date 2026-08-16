@@ -45,57 +45,56 @@ const skills = {
 	},
 	spmingjian: {
 		trigger: { global: "phaseBegin" },
-		direct: true,
 		filter(event, player) {
-			return player.countCards("he") > 0;
+			return player.hasCards("he");
 		},
-		content() {
-			"step 0";
-			var next = player.chooseCard(get.prompt2("spmingjian", trigger.player), "he");
-			next.set("ai", function (card) {
-				var target = _status.event.getTrigger().player;
-				var player = _status.event.player;
-				if (get.attitude(player, target) > 0 && target.countCards("j") > 0) {
-					return 5 - get.value(card);
-				}
-				return -1;
-			});
-			next.set("filterCard", function (card, player) {
-				if (get.position(card) == "e") {
-					return lib.filter.cardDiscardable.apply(this, arguments);
-				}
-				return true;
-			});
-			//next.set('logSkill',['spmingjian',trigger.player]);
-			"step 1";
-			if (result.bool) {
-				player.logSkill("spmingjian", trigger.player);
-				var card = result.cards[0];
-				event.card = card;
-				if (get.position(card) == "e") {
-					event._result = { index: 0 };
-				} else if (!lib.filter.cardDiscardable(card, player, event)) {
-					event._result = { index: 1 };
-				} else {
-					var name = get.translation(trigger.player);
-					player
-						.chooseControl()
-						.set("choiceList", ["令" + name + "跳过本回合的判定阶段", "令" + name + "于本回合的判定中不触发「判定结果生效前」的时机"])
-						.set("ai", function () {
-							return 0;
-						});
-				}
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseCard({
+					prompt: get.prompt2("spmingjian", trigger.player),
+					position: "he",
+					ai: card => {
+						if (get.attitude(player, trigger.player) > 0 && trigger.player.countCards("j") > 0) {
+							return 5 - get.value(card);
+						}
+						return -1;
+					},
+					filterCard: (card, cardPlayer, chooseEvent) => get.position(card) !== "e" || lib.filter.cardDiscardable(card, cardPlayer, chooseEvent),
+				})
+				.forResult();
+		},
+		logTarget: "player",
+		async content(event, trigger, player) {
+			const card = event.cards[0];
+			let index;
+			if (get.position(card) === "e") {
+				index = 0;
+			} else if (!lib.filter.cardDiscardable(card, player, event)) {
+				index = 1;
 			} else {
-				event.finish();
+				const name = get.translation(trigger.player);
+				const controlResult = await player
+					.chooseControl({
+						choiceList: [`令${name}跳过本回合的判定阶段`, `令${name}于本回合的判定中不触发「判定结果生效前」的时机`],
+						ai: () => 0,
+					})
+					.forResult();
+				index = controlResult.index;
 			}
-			"step 2";
-			if (result.index == 0) {
-				player.discard(card);
+			if (index === 0) {
+				const discardEvent = player.discard({ cards: [card] });
 				trigger.player.skip("phaseJudge");
-			} else {
-				trigger.player.addToExpansion(card, player, "giveAuto").gaintag.add("spmingjian_charlotte");
-				trigger.player.addSkill("spmingjian_charlotte");
+				await discardEvent;
+				return;
 			}
+			const expansionEvent = trigger.player.addToExpansion({
+				cards: [card],
+				source: player,
+				animate: "giveAuto",
+				gaintag: ["spmingjian_charlotte"],
+			});
+			trigger.player.addSkill("spmingjian_charlotte");
+			await expansionEvent;
 		},
 		ai: {
 			expose: 0.25,
@@ -109,17 +108,17 @@ const skills = {
 		popup: false,
 		charlotte: true,
 		sourceSkill: "spmingjian",
-		content() {
-			if (trigger.name == "phase") {
+		async content(event, trigger, player) {
+			if (trigger.name === "phase") {
 				player.removeSkill(event.name);
 			} else {
 				trigger.noJudgeTrigger = true;
 			}
 		},
 		onremove(player, skill) {
-			var cards = player.getExpansions(skill);
+			const cards = player.getExpansions(skill);
 			if (cards.length) {
-				player.loseToDiscardpile(cards);
+				player.loseToDiscardpile({ cards });
 			}
 		},
 		marktext: "鉴",
