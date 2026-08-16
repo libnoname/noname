@@ -5,6 +5,171 @@ import { CacheContext } from "../../noname/library/cache/cacheContext.js";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//刘盼兮
+	dcxunxiang: {
+		audio: 2,
+		trigger: { player: "useCardAfter" },
+		frequent: true,
+		filter(event, player) {
+			return !player.getStorage("dcxunxiang_used").includes(get.suit(event.card));
+		},
+		async content(event, trigger, player) {
+			const suit = get.suit(trigger.card);
+			player.addTempSkill(event.name + "_used");
+			player.markAuto(event.name + "_used", [suit]);
+			const num = 4 + player.countMark(event.name);
+			let cards = get.cards(num, true);
+			const result = player.chooseControl("ok").set("dialog", ["寻香", cards]);
+			cards = cards.filter(card => get.suit(card) == suit);
+			if (cards.length) {
+				await player.gain({ cards, animate: "draw" });
+			} else {
+				player.popup("杯具");
+			}
+			const suits = player
+				.getAllHistory("useCard")
+				.slice()
+				.flatMap(evt => get.suit(evt.card))
+				.unique();
+			let mark = 0;
+			if (suits.length >= 2 && num < 5) {
+				mark++;
+			}
+			if (suits.length >= 4 && num < 6) {
+				mark++;
+			}
+			if (mark > 0) {
+				player.addMark(event.name, mark, false);
+			}
+		},
+		intro: { content: "此技能观看牌数+#" },
+		subSkill: {
+			used: {
+				charlotte: true,
+				onremove: true,
+				intro: {
+					name: "香",
+					content: "本回合已使用过$牌",
+				},
+				marktext: "香",
+			},
+		},
+	},
+	dczhiyao: {
+		audio: 2,
+		enable: "phaseUse",
+		filter(event, player) {
+			return player.hasCards("he", card => get.info("dczhiyao").filterCard(card, player)) && game.hasPlayer(current => get.info("dczhiyao").filterTarget(null, player, current));
+		},
+		filterCard(card, player) {
+			if (!["tao", "jiu", "shunshou", "wugu"].includes(card.name) && !["equip4", "equip5", "equip3"].includes(get.subtype(card))) {
+				return false;
+			}
+			return lib.filter.cardDiscardable(card, player, "dczhiyao");
+		},
+		selectCard: [1, Infinity],
+		position: "he",
+		filterTarget(card, player, target) {
+			return !player.getStorage("dczhiyao_used").includes(target);
+		},
+		lose: false,
+		discard: false,
+		delay: 0,
+		async content(event, trigger, player) {
+			const { cards, target } = event;
+			await player.modedDiscard({ cards });
+			player.addTempSkill(event.name + "_used");
+			player.markAuto(event.name + "_used", [target]);
+			const num = cards.length * 2;
+			for (let i = 0; i < num; i++) {
+				if (!target?.isIn()) {
+					return;
+				}
+				const result = await target
+					.judge(card => {
+						const player = get.player();
+						switch (get.suit(card)) {
+							case "heart":
+							case "club":
+								return 1;
+								break;
+							case "spade":
+								if (player.hasCards("he")) {
+									return -1;
+								}
+								return 0;
+								break;
+							case "diamond":
+								return -1;
+								break;
+							default:
+								return 0;
+								break;
+						}
+					})
+					.set("judge2", result => (result.bool ? true : false))
+					.forResult();
+				switch (result.suit) {
+					case "diamond":
+						await target.damage({ num: 1, source: player, nature: "fire" });
+						break;
+					case "spade":
+						if (target.hasDiscardableCards(target, "he")) {
+							await target.randomDiscard({ num: 2, discarder: player, random: false, position: "he" });
+						}
+						break;
+					case "heart":
+						await target.gain({ cards: [result.card], animate: "gain2" });
+						await target.recover();
+						break;
+					case "club":
+						await target.gain({ cards: [result.card], animate: "gain2", gaintag: ["dczhiyao_tag"] });
+						target.addSkill("dczhiyao_tag");
+						break;
+					default:
+						break;
+				}
+			}
+		},
+		ai: {
+			//插眼
+		},
+		subSkill: {
+			used: { charlotte: true, onremove: true },
+			tag: {
+				charlotte: true,
+				onremove(player, skill) {
+					player.removeGaintag(skill);
+				},
+				silent: true,
+				popup: false,
+				firstDo: true,
+				mod: {
+					cardUsable(card) {
+						if (get.number(card) === "unsure" || card.cards?.some(card => card.hasGaintag("dczhiyao_tag"))) {
+							return Infinity;
+						}
+					},
+				},
+				trigger: { player: "useCard1" },
+				filter(event, player) {
+					return (
+						event.addCount !== false &&
+						player.hasHistory("lose", evt => {
+							if (evt.getParent() !== event) return false;
+							return Object.values(evt.gaintag_map).flat().includes("dczhiyao_tag");
+						})
+					);
+				},
+				async content(event, trigger, player) {
+					trigger.addCount = false;
+					const stat = player.getStat().card,
+						name = trigger.card.name;
+					if (typeof stat[name] === "number") stat[name]--;
+				},
+			},
+		},
+	},
 	//谋钟会
 	dcsbjinglian: {
 		audio: 2,
