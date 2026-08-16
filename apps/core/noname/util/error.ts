@@ -123,6 +123,16 @@ export function setOnError({ lib, game, get, _status }) {
 		const version = typeof lib.version != "undefined" ? lib.version : "";
 		const match = version.match(/[^\d.]/) != null;
 		log.push(`${match ? "游戏" : "无名杀"}版本: ${version || "未知版本"}`);
+		if (lib.buildInfo == null) {
+			log.push("构建信息: unknown");
+		} else {
+			const { channel, commit, builtAt } = lib.buildInfo;
+			log.push(`构建通道: ${channel}`);
+			log.push(`构建提交: ${commit}`);
+			if (channel === "nightly") {
+				log.push(`构建时间: ${builtAt}`);
+			}
+		}
 		if (match) {
 			log.push("⚠️您使用的游戏代码不是源于libnoname/noname无名杀官方仓库，请自行寻找您所使用的游戏版本开发者反馈！");
 		}
