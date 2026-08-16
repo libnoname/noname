@@ -582,22 +582,18 @@ const skills = {
 				audio: "anxian",
 				trigger: { source: "damageBegin2" },
 				filter(event, player) {
-					return event.card && event.card.name == "sha";
+					return event.card && event.card.name === "sha";
 				},
 				check(event, player) {
-					if (get.damageEffect(event.player, player, player) <= 0) {
-						return true;
-					}
-					return false;
+					return get.damageEffect(event.player, player, player) <= 0;
 				},
-				content() {
-					"step 0";
-					if (trigger.player.countCards("h")) {
-						trigger.player.chooseToDiscard(true);
+				async content(event, trigger, player) {
+					if (trigger.player.hasCards("h")) {
+						await trigger.player.chooseToDiscard({ forced: true });
 					}
-					"step 1";
-					player.draw();
+					const drawEvent = player.draw();
 					trigger.cancel();
+					await drawEvent;
 				},
 			},
 			target: {
@@ -605,28 +601,30 @@ const skills = {
 				trigger: { target: "useCardToTargeted" },
 				direct: true,
 				filter(event, player) {
-					return event.card.name == "sha" && player.countCards("h");
+					return event.card.name === "sha" && player.hasCards("h");
 				},
-				content() {
-					"step 0";
-					var next = player.chooseToDiscard(get.prompt2("anxian"));
-					next.set("ai", function (card) {
-						var player = _status.event.player;
-						var trigger = _status.event.getTrigger();
-						if (get.attitude(player, trigger.player) > 0) {
-							return 9 - get.value(card);
-						}
-						if (player.countCards("h", { name: "shan" })) {
-							return -1;
-						}
-						return 7 - get.value(card);
-					});
-					next.logSkill = "anxian";
-					"step 1";
-					if (result.bool) {
-						trigger.player.draw();
-						trigger.getParent().excluded.push(player);
+				async content(event, trigger, player) {
+					const result = await player
+						.chooseToDiscard({
+							prompt: get.prompt2("anxian"),
+							ai: card => {
+								if (get.attitude(player, trigger.player) > 0) {
+									return 9 - get.value(card);
+								}
+								if (player.hasCards("h", { name: "shan" })) {
+									return -1;
+								}
+								return 7 - get.value(card);
+							},
+						})
+						.set("logSkill", "anxian")
+						.forResult();
+					if (!result.bool) {
+						return;
 					}
+					const drawEvent = trigger.player.draw();
+					trigger.getParent()?.excluded.push(player);
+					await drawEvent;
 				},
 			},
 		},
