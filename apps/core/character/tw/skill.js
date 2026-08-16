@@ -4217,6 +4217,7 @@ const skills = {
 		group: "twsbfangzhu_liufang",
 		subSkill: {
 			liufang: {
+				audio: "twsbfangzhu",
 				trigger: {
 					global: "phaseBegin",
 				},
