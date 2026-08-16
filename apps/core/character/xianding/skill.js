@@ -9,7 +9,6 @@ const skills = {
 	dcxunxiang: {
 		audio: 2,
 		trigger: { player: "useCardAfter" },
-		frequent: true,
 		filter(event, player) {
 			return !player.getStorage("dcxunxiang_used").includes(get.suit(event.card));
 		},
@@ -20,6 +19,11 @@ const skills = {
 			const num = 4 + player.countMark(event.name);
 			let cards = get.cards(num, true);
 			const result = player.chooseControl("ok").set("dialog", ["寻香", cards]);
+			player.setStorage(
+				event.name + "_used2",
+				cards.filter(card => get.suit(card) != suit),
+				true
+			);
 			cards = cards.filter(card => get.suit(card) == suit);
 			if (cards.length) {
 				await player.gain({ cards, animate: "draw" });
@@ -46,10 +50,20 @@ const skills = {
 		subSkill: {
 			used: {
 				charlotte: true,
-				onremove: true,
+				onremove(player, skill) {
+					delete player.storage[skill];
+					delete player.storage[skill + "2"];
+				},
 				intro: {
-					name: "香",
-					content: "本回合已使用过$牌",
+					name: "寻香",
+					mark(dialog, storage, player) {
+						dialog.addText(`本回合已使用${get.translation(storage)}牌`);
+						const cards = player.storage.dcxunxiang_used2;
+						if (cards?.length) {
+							dialog.addText("上次发动此技能亮出的牌");
+							dialog.addAuto(cards);
+						}
+					},
 				},
 				marktext: "香",
 			},
@@ -69,6 +83,9 @@ const skills = {
 		},
 		selectCard: [1, Infinity],
 		position: "he",
+		check(card) {
+			return 114514 - get.value(card);
+		},
 		filterTarget(card, player, target) {
 			return !player.getStorage("dczhiyao_used").includes(target);
 		},
@@ -80,6 +97,8 @@ const skills = {
 			await player.modedDiscard({ cards });
 			player.addTempSkill(event.name + "_used");
 			player.markAuto(event.name + "_used", [target]);
+			//用过一次就清楚记录
+			player.setStorage("dcxunxiang_used2", [], true);
 			const num = cards.length * 2;
 			for (let i = 0; i < num; i++) {
 				if (!target?.isIn()) {
@@ -132,7 +151,47 @@ const skills = {
 			}
 		},
 		ai: {
-			//插眼
+			order: 5,
+			result: {
+				//等人优化了
+				player(player, target) {
+					const cards = player.storage.dcxunxiang_used;
+					if (!cards?.length) {
+						return -1;
+					}
+					return 1;
+				},
+				target(player, target) {
+					const suits = (player.storage.dcxunxiang_used ?? []).slice().map(card => get.suit(card));
+					const list = [];
+					if (suits?.length) {
+						let num = 0;
+						for (const suit of suits) {
+							switch (suit) {
+								case "diamond":
+									num += get.damageEffect(target, player, player, "fire");
+									break;
+								case "heart":
+									num += get.recoverEffect(target, player, player) + get.effect(target, { name: "draw" }, player, player);
+									break;
+								case "spade":
+									num += get.effect(target, { name: "guohe_copy", position: "he" }, player, player) * 2;
+									break;
+								case "club":
+									num += get.effect(target, { name: "draw" }, player, player) * 1.5;
+									break;
+							}
+						}
+						list.push([target, num]);
+					}
+					if (list.length) {
+						list.sort((a, b) => b[1] - a[1]);
+						if (list[0][1] > 0) {
+							return target == list[0][0];
+						}
+					}
+				},
+			},
 		},
 		subSkill: {
 			used: { charlotte: true, onremove: true },
