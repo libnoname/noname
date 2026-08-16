@@ -233,7 +233,7 @@ const skills = {
 		silent: true,
 		firstDo: true,
 		locked: false,
-		content() {
+		async content(event, trigger, player) {
 			trigger.target.addTempSkill("chixin3");
 		},
 	},
@@ -1077,7 +1077,7 @@ const skills = {
 			return event.card?.name === "sha" && get.color(event.card) == "red";
 		},
 		forced: true,
-		content() {
+		async content(event, trigger, player) {
 			trigger.num++;
 		},
 	},
@@ -1462,14 +1462,14 @@ const skills = {
 			}
 			return eff >= 0;
 		},
-		content() {
+		async content(event, trigger, player) {
 			game.setNature(trigger.card, "thunder");
 			if (get.itemtype(trigger.card) == "card") {
 				var next = game.createEvent("fulu_clear");
 				next.card = trigger.card;
 				event.next.remove(next);
 				trigger.after.push(next);
-				next.setContent(function () {
+				next.setContent(async ({ card }) => {
 					game.setNature(card, []);
 				});
 			}
@@ -1487,7 +1487,7 @@ const skills = {
 			return get.translation(event.source) + "即将对" + get.translation(event.player) + "造成伤害，" + get.prompt("fuji");
 		},
 		logTarget: "source",
-		content() {
+		async content(event, trigger, player) {
 			trigger.source.judge().callback = lib.skill.fuji.callback;
 		},
 		callback() {
