@@ -371,7 +371,7 @@ const skills = {
 				targets: [target],
 			} = event;
 			const { name } = trigger.card;
-			const { bool } = await target
+			const result = await target
 				.chooseToDiscard({
 					prompt: "弃置一张【" + get.translation(name) + "】或受到1点伤害",
 					filterCard(card, player) {
@@ -383,11 +383,11 @@ const skills = {
 						if (take || (get.name(card) == "tao" && !player.hasJudge("lebu"))) return 0;
 						return 8 - get.value(card);
 					},
-					namex: name,
-					take: get.damageEffect(target, player, target) >= 0,
 				})
+				.set("namex", name)
+				.set("take", get.damageEffect(target, player, target) >= 0)
 				.forResult();
-			if (!bool) await target.damage();
+			if (!result?.bool || !result.cards?.length) await target.damage();
 		},
 	},
 	yidu: {
