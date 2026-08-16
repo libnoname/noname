@@ -765,27 +765,38 @@ const skills = {
 			markcount: "expansion",
 		},
 		onremove(player, skill) {
-			var cards = player.getExpansions(skill);
+			const cards = player.getExpansions(skill);
 			if (cards.length) {
-				player.loseToDiscardpile(cards);
+				player.loseToDiscardpile({ cards });
 			}
 		},
 		filter(event, player) {
-			return player.countCards("he", { color: "black" }) > 0 && player.getExpansions("yinling").length < 4;
+			return player.hasCards("he", { color: "black" }) && player.countExpansions("yinling") < 4;
 		},
 		filterTarget(card, player, target) {
-			return target.countCards("he") > 0 && target != player;
+			return target.hasCards("he") && target !== player;
 		},
 		check(card) {
 			return 6 - get.value(card);
 		},
-		content() {
-			"step 0";
-			player.choosePlayerCard("hej", target, true);
-			"step 1";
-			if (result.bool && result.links && result.links.length) {
-				player.addToExpansion(result.links, target, "give").gaintag.add("yinling");
+		async content(event, trigger, player) {
+			const { target } = event;
+			const result = await player
+				.choosePlayerCard({
+					target,
+					position: "hej",
+					forced: true,
+				})
+				.forResult();
+			if (!result.bool || !result.links?.length) {
+				return;
 			}
+			await player.addToExpansion({
+				cards: result.links,
+				source: target,
+				animate: "give",
+				gaintag: ["yinling"],
+			});
 		},
 		ai: {
 			order: 10.1,
@@ -795,11 +806,11 @@ const skills = {
 					if (target.hasSkill("tuntian")) {
 						return 0;
 					}
-					var es = target.getCards("e");
-					var nh = target.countCards("h");
-					var noe = es.length == 0 || target.hasSkillTag("noe");
-					var noe2 = es.length == 1 && es[0].name == "baiyin" && target.hp < target.maxHp;
-					var noh = nh == 0 || target.hasSkillTag("noh");
+					const es = target.getCards("e");
+					const nh = target.countCards("h");
+					const noe = es.length === 0 || target.hasSkillTag("noe");
+					const noe2 = es.length === 1 && es[0].name === "baiyin" && target.hp < target.maxHp;
+					const noh = nh === 0 || target.hasSkillTag("noh");
 					if (noh && noe) {
 						return 0;
 					}
@@ -809,13 +820,13 @@ const skills = {
 					if (get.attitude(player, target) <= 0) {
 						return target.countCards("he") ? -1.5 : 1.5;
 					}
-					var js = target.getCards("j");
+					const js = target.getCards("j");
 					if (js.length) {
-						var jj = js[0].viewAs ? { name: js[0].viewAs } : js[0];
-						if (jj.name == "guohe") {
+						const jj = js[0].viewAs ? { name: js[0].viewAs } : js[0];
+						if (jj.name === "guohe") {
 							return 3;
 						}
-						if (js.length == 1 && get.effect(target, jj, target, player) >= 0) {
+						if (js.length === 1 && get.effect(target, jj, target, player) >= 0) {
 							return -1.5;
 						}
 						return 2;
