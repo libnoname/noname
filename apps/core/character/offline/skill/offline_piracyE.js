@@ -264,9 +264,6 @@ const skills = {
 			if (!target?.isIn()) {
 				return false;
 			}
-			//if (_status.currentPhase !== target) {
-			//return false;
-			//}
 			if (event.name == "phase") {
 				const cards = event.player
 					.getHistory("useCard")
@@ -276,14 +273,13 @@ const skills = {
 					.unique();
 				return cards.some(card => player.hasUseTarget(card));
 			}
-			if (!event.getg?.(_status.currentPhase)?.length) {
-				return false;
-			}
-			return event.getParent(2)?.name !== "peersheng";
+			const cards = event.getg?.(target);
+			return event.getParent(2)?.name !== "peersheng" && cards?.length > 0;
 		},
 		async content(event, trigger, player) {
+			const target = game.findPlayer(current => current.getSeatNum() == 1);
 			if (trigger.name == "phase") {
-				const cards = trigger.player
+				const cards = target
 					.getHistory("useCard")
 					.filter(evt => ["basic", "trick"].includes(get.type(evt.card)))
 					.map(evt => get.autoViewAs({ name: evt.card.name, nature: evt.card.nature, isCard: true }, "unsure"))
@@ -317,7 +313,7 @@ const skills = {
 					}
 				}
 			} else {
-				await player.draw({ num: trigger.getg(_status.currentPhase).length });
+				await player.draw({ num: trigger.getg(target).length });
 			}
 		},
 	},
