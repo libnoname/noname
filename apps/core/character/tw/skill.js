@@ -12895,7 +12895,7 @@ const skills = {
 					if (!hs.length || !ts.length) {
 						return 0;
 					}
-					if (get.number(hs[0]) > get.number(ts[0]) || get.number(hs[0]) - ts.length >= 9 + Math.min(2, player.hp / 2)) {
+					if ((get.attitude(player, target) < 0) && (get.number(hs[0]) > get.number(ts[0]) || get.number(hs[0]) - ts.length >= 9 + Math.min(2, player.hp / 2))) {
 						return get.sgnAttitude(player, target) * get.effect(target, { name: "shunshou_copy2" }, player, player);
 					}
 					return 0;
