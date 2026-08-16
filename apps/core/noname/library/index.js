@@ -394,6 +394,10 @@ export class Library {
 	 */
 	version;
 	/**
+	 * @type { Readonly<import("@/util/meta.js").BuildInfo> | null }
+	 */
+	buildInfo = null;
+	/**
 	 * @type { Videos[] }
 	 */
 	videos;
