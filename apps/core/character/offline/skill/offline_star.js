@@ -947,7 +947,7 @@ const skills = {
 	mouduan: {
 		audio: 1,
 		init2(player) {
-			game.broadcastAll(function (player) {
+			game.broadcastAll(player => {
 				player._mouduan_mark = player.mark("武", {
 					content: "拥有技能【激昂】、【谦逊】",
 				});
@@ -956,11 +956,12 @@ const skills = {
 		},
 		derivation: ["jiang", "qianxun", "yingzi", "keji"],
 		onremove(player) {
-			game.broadcastAll(function (player) {
-				if (player._mouduan_mark) {
-					player._mouduan_mark.delete();
-					delete player._mouduan_mark;
+			game.broadcastAll(player => {
+				if (!player._mouduan_mark) {
+					return;
 				}
+				player._mouduan_mark.delete();
+				delete player._mouduan_mark;
 			}, player);
 			player.removeAdditionalSkills("mouduan");
 		},
@@ -968,10 +969,10 @@ const skills = {
 		forced: true,
 		locked: false,
 		filter(event, player) {
-			return player._mouduan_mark && player._mouduan_mark.name == "武" && player.countCards("h") <= 2;
+			return player._mouduan_mark && player._mouduan_mark.name === "武" && player.countCards("h") <= 2;
 		},
-		content() {
-			game.broadcastAll(function (player) {
+		async content(event, trigger, player) {
+			game.broadcastAll(player => {
 				if (!player._mouduan_mark) {
 					return;
 				}
@@ -990,27 +991,30 @@ const skills = {
 		sourceSkill: "mouduan",
 		//priority:5,
 		filter(event, player) {
-			return player._mouduan_mark && player._mouduan_mark.name == "文" && player.countCards("h") > 2;
+			return player._mouduan_mark && player._mouduan_mark.name === "文" && player.countCards("h") > 2;
 		},
 		direct: true,
-		content() {
-			"step 0";
-			player.chooseToDiscard("he", "谋断：是否弃置一张牌将标记变为“武”？").ai = function () {
-				return -1;
-			};
-			"step 1";
-			if (result.bool && player.countCards("h") > 2) {
-				game.broadcastAll(function (player) {
-					if (!player._mouduan_mark) {
-						return;
-					}
-					player._mouduan_mark.name = "武";
-					player._mouduan_mark.skill = "武";
-					player._mouduan_mark.firstChild.innerHTML = "武";
-					player._mouduan_mark.info.content = "拥有技能【激昂】、【谦逊】";
-				}, player);
-				player.addAdditionalSkills("mouduan", ["jiang", "qianxun"]);
+		async content(event, trigger, player) {
+			const result = await player
+				.chooseToDiscard({
+					position: "he",
+					prompt: "谋断：是否弃置一张牌将标记变为“武”？",
+					ai: () => -1,
+				})
+				.forResult();
+			if (!result.bool || player.countCards("h") <= 2) {
+				return;
 			}
+			game.broadcastAll(player => {
+				if (!player._mouduan_mark) {
+					return;
+				}
+				player._mouduan_mark.name = "武";
+				player._mouduan_mark.skill = "武";
+				player._mouduan_mark.firstChild.innerHTML = "武";
+				player._mouduan_mark.info.content = "拥有技能【激昂】、【谦逊】";
+			}, player);
+			player.addAdditionalSkills("mouduan", ["jiang", "qianxun"]);
 		},
 	},
 	tanhu: {
