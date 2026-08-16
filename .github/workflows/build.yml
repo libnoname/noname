@@ -32,6 +32,9 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run Build
+        env:
+          NONAME_BUILD_CHANNEL: test
+          NONAME_BUILD_COMMIT: ${{ github.sha }}
         run: pnpm build
 
       - name: Deploy dist to branch
