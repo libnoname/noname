@@ -1,5 +1,6 @@
 export default {
 	shangguanwaner: "天性韶警",
+	scl_zhangxiu: "星汉灿烂",
 	zh_shen_zhangjiao: "神临天劫",
 	ps_shen_caocao: "晷月皓冕",
 	wxdl_caopi: "秋风萧瑟",
