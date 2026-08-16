@@ -521,41 +521,36 @@ const skills = {
 		},
 		position: "he",
 		filter(event, player) {
-			return player.countCards("he", { suit: "diamond" }) > 0;
+			return player.hasCards("he", { suit: "diamond" });
 		},
 		discard: false,
 		lose: false,
 		delay: false,
 		prepare: "give",
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
+			const { target, cards } = event;
 			game.addGlobalSkill("yanxiao_global");
-			target.addJudge({ name: "yanxiao_card" }, cards);
-			"step 1";
-			game.delay();
+			await target.addJudge({ name: "yanxiao_card" }, cards);
+			await game.delay();
 		},
 		ai: {
 			order: 8,
 			result: {
 				target(player, target) {
-					if (
-						target.countCards("j", function (card) {
-							return (
-								get.effect(
-									target,
-									{
-										name: card.viewAs || card.name,
-										cards: [card],
-									},
-									target,
-									target
-								) < 0
-							);
-						})
-					) {
-						return 1;
-					}
-					return 0;
+					const harmfulJudge = target.hasCards(
+						"j",
+						card =>
+							get.effect(
+								target,
+								{
+									name: card.viewAs || card.name,
+									cards: [card],
+								},
+								target,
+								target
+							) < 0
+					);
+					return harmfulJudge ? 1 : 0;
 				},
 			},
 		},
@@ -564,15 +559,15 @@ const skills = {
 		trigger: { player: "phaseJudgeBegin" },
 		forced: true,
 		filter(event, player) {
-			return player.countCards("j") > 0 && player.hasJudge("yanxiao_card");
+			return player.hasCards("j") && player.hasJudge("yanxiao_card");
 		},
-		content() {
-			player.gain(player.getCards("j"), "gain2");
+		async content(event, trigger, player) {
+			await player.gain({ cards: player.getCards("j"), animate: "gain2" });
 		},
 		ai: {
 			effect: {
 				target_use(card, player, target) {
-					if (get.type(card) == "delay" && target.hasJudge("yanxiao_card")) {
+					if (get.type(card) === "delay" && target.hasJudge("yanxiao_card")) {
 						return [0, 0.1];
 					}
 				},
