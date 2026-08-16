@@ -1027,32 +1027,23 @@ const skills = {
 		filter(event, player) {
 			return player.countCards("h") > 0;
 		},
-		content() {
-			"step 0";
-			player.chooseToCompare(target);
-			"step 1";
-			if (result.bool) {
-				target.addTempSkill("tanhu2");
+		async content(event, trigger, player) {
+			const { target } = event;
+			const result = await player.chooseToCompare(target).forResult();
+			if (!result.bool) {
+				return;
 			}
+			target.addTempSkill("tanhu2");
 		},
 		ai: {
 			result: {
 				target(player, target) {
-					var hs = player.getCards("h");
+					const hs = player.getCards("h");
 					if (hs.length < 3) {
 						return 0;
 					}
-					var bool = false;
-					for (var i = 0; i < hs.length; i++) {
-						if (hs[i].number >= 9 && get.value(hs[i]) < 7) {
-							bool = true;
-							break;
-						}
-					}
-					if (!bool) {
-						return 0;
-					}
-					return -1;
+					const hasGoodCompareCard = hs.some(card => card.number >= 9 && get.value(card) < 7);
+					return hasGoodCompareCard ? -1 : 0;
 				},
 			},
 			order: 9,
