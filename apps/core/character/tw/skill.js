@@ -3067,7 +3067,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
-					return target.countCards("h") > 0 && target != player;
+					return target.hasCards("h") && target != player;
 				})
 				.set("ai", target => {
 					const player = get.player();
@@ -3091,7 +3091,7 @@ const skills = {
 					.set("filterOk", () => {
 						const player = get.player();
 						const selected = ui.selected.cards;
-						if (!selected.length) {
+						if (!selected?.length) {
 							return false;
 						}
 						return (
@@ -3110,7 +3110,7 @@ const skills = {
 							if (att > 0) {
 								return 8 - get.value(card);
 							}
-							return Math.ceil(get.number(card, player) / 4) * (6 - get.value(card));
+							return Math.ceil(get.number(card, player) / 4) * Math.max(1, (6 - get.value(card)));
 						}
 						return 0;
 					})
