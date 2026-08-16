@@ -38,9 +38,9 @@ jobs:
         run: |
           BUILD_TIME="$(TZ=Asia/Shanghai date --iso-8601=seconds)"
           BUILD_DATE="${BUILD_TIME%%T*}"
-          echo "VITE_BUILD_CHANNEL=nightly" >> "$GITHUB_ENV"
-          echo "VITE_BUILD_COMMIT=$GITHUB_SHA" >> "$GITHUB_ENV"
-          echo "VITE_BUILD_TIME=$BUILD_TIME" >> "$GITHUB_ENV"
+          echo "NONAME_BUILD_CHANNEL=nightly" >> "$GITHUB_ENV"
+          echo "NONAME_BUILD_COMMIT=$GITHUB_SHA" >> "$GITHUB_ENV"
+          echo "NONAME_BUILD_TIME=$BUILD_TIME" >> "$GITHUB_ENV"
           echo "date=${BUILD_DATE//-/}" >> "$GITHUB_OUTPUT"
 
       - name: Build and Generate test pack

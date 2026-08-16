@@ -33,8 +33,8 @@ jobs:
 
       - name: Run Build
         env:
-          VITE_BUILD_CHANNEL: test
-          VITE_BUILD_COMMIT: ${{ github.sha }}
+          NONAME_BUILD_CHANNEL: test
+          NONAME_BUILD_COMMIT: ${{ github.sha }}
         run: pnpm build
 
       - name: Deploy dist to branch
