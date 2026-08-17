@@ -146,63 +146,47 @@ const skills = {
 		},
 		filter(event, player) {
 			return (
-				event.card.name == "sha" &&
-				event.target != player &&
+				event.card.name === "sha" &&
+				event.target !== player &&
 				event.isFirstTarget &&
-				player.hasCard(card => {
-					return get.name(card) == "shan" || _status.connectMode;
-				})
+				player.hasCard(card => get.name(card) === "shan" || _status.connectMode)
 			);
 		},
 		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseToDiscard(get.prompt("vtbshanwu"), "弃置一张【闪】，取消此【杀】对" + get.translation(trigger.targets) + "的目标", {
-					name: "shan",
+		async content(event, trigger, player) {
+			let effect = 0;
+			for (const target of trigger.targets) {
+				let eff = get.effect(target, trigger.card, trigger.player, player);
+				if (!target.mayHaveShan(player, "use") || trigger.player.hasSkillTag("directHit_ai", true, { target, card: trigger.card }, true)) {
+					eff *= 1.25;
+				}
+				if (target.hp <= 2) {
+					eff *= 1.1;
+				}
+				effect += eff;
+			}
+			const result = await player
+				.chooseToDiscard({
+					prompt: get.prompt("vtbshanwu"),
+					prompt2: `弃置一张【闪】，取消此【杀】对${get.translation(trigger.targets)}的目标`,
+					filterCard: { name: "shan" },
+					ai: card => {
+						if (get.event().goon) {
+							return 6 - get.value(card);
+						}
+						return 0;
+					},
 				})
 				.set("logSkill", "vtbshanwu")
-				.set("ai", card => {
-					if (_status.event.goon) {
-						return 6 - get.value(card);
-					}
-					return 0;
-				})
-				.set(
-					"goon",
-					(function () {
-						var effect = 0;
-						for (var target of trigger.targets) {
-							var eff = get.effect(target, trigger.card, trigger.player, player);
-							if (
-								!target.mayHaveShan(player, "use") ||
-								trigger.player.hasSkillTag(
-									"directHit_ai",
-									true,
-									{
-										target: target,
-										card: trigger.card,
-									},
-									true
-								)
-							) {
-								eff *= 1.25;
-							}
-							if (target.hp <= 2) {
-								eff *= 1.1;
-							}
-							effect += eff;
-						}
-						return effect < 0;
-					})()
-				);
-			"step 1";
-			if (result.bool) {
-				game.log(player, "取消了", trigger.card, "的所有目标");
-				trigger.targets.length = 0;
-				trigger.getParent().triggeredTargets2.length = 0;
-				trigger.untrigger();
+				.set("goon", effect < 0)
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
+			game.log(player, "取消了", trigger.card, "的所有目标");
+			trigger.targets.length = 0;
+			trigger.getParent().triggeredTargets2.length = 0;
+			trigger.untrigger();
 		},
 		ai: {
 			expose: 0.2,
