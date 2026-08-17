@@ -345,7 +345,14 @@ const skills = {
 							.chooseControl(list)
 							.set("choiceList", choiceList)
 							.set("prompt", "请选择一项")
-							.set("ai", () => get.event().controls.randomGet())
+							.set("ai", () => {
+								const { player, target } = get.event();
+								if (get.damageEffect(player, target, target, "fire") > 0) {
+									return "选项一";
+								}
+								return "选项二";
+							})
+							.set("target", player)
 							.forResult()
 					: { control: list[0] };
 			if (typeof result?.control == "string") {
