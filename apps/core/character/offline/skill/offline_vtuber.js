@@ -413,15 +413,18 @@ const skills = {
 	vtbyuanli: {
 		audio: 1,
 		trigger: { global: ["phaseUseSkipped", "phaseUseCancelled"] },
-		direct: true,
-		content() {
-			"step 0";
-			player.chooseTarget(get.prompt2("vtbyuanli"), lib.filter.notMe).set("ai", target => get.attitude(_status.event.player, target) + 1);
-			"step 1";
-			if (result.bool) {
-				player.logSkill("vtbyuanli", result.targets[0]);
-				game.asyncDraw([player, result.targets[0]].sortBySeat(_status.currentPhase));
-			}
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2("vtbyuanli"),
+					filterTarget: lib.filter.notMe,
+					ai: target => get.attitude(player, target) + 1,
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			await game.asyncDraw([player, target].sortBySeat(_status.currentPhase));
 		},
 		ai: {
 			expose: 0.1,
