@@ -1005,38 +1005,33 @@ const skills = {
 	nsjianglie: {
 		trigger: { player: "useCardToPlayered" },
 		filter(event, player) {
-			return event.card.name == "sha" && event.target.countCards("h") > 0;
+			return event.card.name === "sha" && event.target.hasCards("h");
 		},
 		check(event, player) {
 			return get.attitude(player, event.target) < 0;
 		},
 		logTarget: "target",
-		content() {
-			"step 0";
-			trigger.target.showHandcards();
-			"step 1";
-			var cards = trigger.target.getCards("h");
-			var list = [];
-			for (var i = 0; i < cards.length; i++) {
-				list.add(get.color(cards[i]));
-			}
-			if (list.length == 1) {
-				event._result = { control: list[0] };
+		async content(event, trigger, player) {
+			const target = trigger.target;
+			await target.showHandcards();
+			const cards = target.getCards("h");
+			const colors = [...new Set(cards.map(card => get.color(card)))];
+			let color;
+			if (colors.length === 1) {
+				color = colors[0];
 			} else {
-				list.sort();
-				trigger.target
-					.chooseControl(list)
-					.set("prompt", "选择弃置一种颜色的所有手牌")
-					.set("ai", function () {
-						var player = _status.event.player;
-						if (get.value(player.getCards("h", { color: "red" })) >= get.value(player.getCards("h", { color: "black" }))) {
-							return "black";
-						}
-						return "red";
-					});
+				colors.sort();
+				const result = await target
+					.chooseControl({
+						controls: colors,
+						prompt: "选择弃置一种颜色的所有手牌",
+						ai: (event, player) =>
+							get.value(player.getCards("h", { color: "red" })) >= get.value(player.getCards("h", { color: "black" })) ? "black" : "red",
+					})
+					.forResult();
+				color = result.control;
 			}
-			"step 2";
-			trigger.target.discard(trigger.target.getCards("h", { color: result.control }));
+			await target.discard({ cards: target.getCards("h", { color }) });
 		},
 	},
 };
