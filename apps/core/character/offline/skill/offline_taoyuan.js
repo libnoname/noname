@@ -105,7 +105,7 @@ const skills = {
 				trigger: { player: "damageBefore" },
 				forced: true,
 				charlotte: true,
-				content() {
+				async content(event, trigger, player) {
 					trigger.cancel();
 					trigger.player.loseHp(trigger.num);
 				},
@@ -345,7 +345,7 @@ const skills = {
 				},
 				firstDo: true,
 				silent: true,
-				content() {
+				async content(event, trigger, player) {
 					player.addTempSkill("tyansha_effect", "roundStart");
 					player.markAuto(
 						"tyansha_effect",
@@ -602,7 +602,7 @@ const skills = {
 				filter(event, player) {
 					return event.card?.storage?.tywushen;
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.directHit.addArray(game.players);
 					if (trigger.addCount !== false) {
 						trigger.addCount = false;
@@ -733,10 +733,10 @@ const skills = {
 		filterTarget: lib.filter.notMe,
 		onremove: true,
 		prompt: "选择一名其他角色进行地狱审判",
-		content() {
+		async content(event, trigger, player) {
 			player.addMark("tyshencai", 1, false);
 			player.addTempSkill("tyshencai_used", "phaseChange");
-			var next = target.judge();
+			const next = event.target.judge();
 			next.callback = lib.skill.shencai.contentx;
 		},
 		ai: {
@@ -1013,7 +1013,7 @@ const skills = {
 					let card = _status.event.tybianta;
 					return `是否使用${get.translation(card)}？`;
 				},
-				precontent() {
+				async precontent(event) {
 					event.result.card = event.result.cards[0];
 				},
 				hiddenCard(player, name) {
@@ -1785,7 +1785,7 @@ const skills = {
 					}
 					return false;
 				},
-				content() {
+				async content(event, trigger) {
 					trigger.notFromCardpile = true;
 				},
 			},
@@ -1847,7 +1847,7 @@ const skills = {
 					return "切换【龙怒】为状态" + (player.storage.tylongnu ? "阴" : "阳");
 				},
 				check: () => Math.random() > 0.5,
-				content() {
+				async content(event, trigger, player) {
 					player.changeZhuanhuanji("tylongnu");
 				},
 			},
@@ -2717,8 +2717,8 @@ const skills = {
 				},
 				frequent: true,
 				prompt2: "摸一张牌",
-				content() {
-					player.draw("nodelay");
+				async content(event, trigger, player) {
+					await player.draw({ nodelay: true });
 				},
 			},
 		},
@@ -3172,9 +3172,9 @@ const skills = {
 				return false;
 			}
 		},
-		precontent() {
-			var targets = event.result.targets;
-			for (var target of targets) {
+		async precontent(event, trigger, player) {
+			const targets = event.result.targets;
+			for (const target of targets) {
 				target.addTempSkill("tywusheng_guanjue");
 			}
 		},
