@@ -378,7 +378,7 @@ const skills = {
 			if (!event.isFirstTarget) {
 				return false;
 			}
-			if (get.type(event.card) != "trick") {
+			if (get.type(event.card) !== "trick") {
 				return false;
 			}
 			if (get.info(event.card).multitarget) {
@@ -389,23 +389,20 @@ const skills = {
 			}
 			return player.hp > 0;
 		},
-		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt("sphuangen"), [1, Math.min(player.hp, trigger.targets.length)], function (card, player, target) {
-					return _status.event.targets.includes(target);
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt("sphuangen"),
+					selectTarget: [1, Math.min(player.hp, trigger.targets.length)],
+					filterTarget: (_card, _player, target) => get.event().targets.includes(target),
+					ai: target => -get.effect(target, trigger.card, trigger.player, player),
 				})
-				.set("ai", function (target) {
-					return -get.effect(target, trigger.card, trigger.player, _status.event.player);
-				})
-				.set("targets", trigger.targets);
-			"step 1";
-			if (result.bool) {
-				player.logSkill("sphuangen", result.targets);
-				trigger.excluded.addArray(result.targets);
-				player.draw();
-			}
+				.set("targets", trigger.targets)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			trigger.excluded.addArray(event.targets);
+			await player.draw();
 		},
 		ai: { threaten: 3.5 },
 		global: "sphuangen_ai",
@@ -415,35 +412,31 @@ const skills = {
 					effect: {
 						player_use(card, player) {
 							if (
-								typeof card != "object" ||
-								!game.hasPlayer(target => {
-									return target.hasSkill("sphuangen") && (get.attitude(player, target) < 0 || get.attitude(target, player) < 0);
-								}) ||
-								game.countPlayer(target => {
-									return player.canUse(card, target);
-								}) < 2
+								typeof card !== "object" ||
+								!game.hasPlayer(target => target.hasSkill("sphuangen") && (get.attitude(player, target) < 0 || get.attitude(target, player) < 0)) ||
+								game.countPlayer(target => player.canUse(card, target)) < 2
 							) {
 								return;
 							}
-							if (get.info(card)?.type != "trick") {
+							if (get.info(card)?.type !== "trick") {
 								return;
 							}
 							const select = get.info(card).selectTarget;
 							let range;
-							if (select == undefined) {
+							if (select === undefined) {
 								range = [1, 1];
-							} else if (typeof select == "number") {
+							} else if (typeof select === "number") {
 								range = [select, select];
-							} else if (get.itemtype(select) == "select") {
+							} else if (get.itemtype(select) === "select") {
 								range = select;
-							} else if (typeof select == "function") {
+							} else if (typeof select === "function") {
 								range = select(card, player);
-								if (typeof range == "number") {
+								if (typeof range === "number") {
 									range = [range, range];
 								}
 							}
 							game.checkMod(card, player, range, "selectTarget", player);
-							if (range[1] == -1 || (range[1] > 1 && ui.selected.targets && ui.selected.targets.length)) {
+							if (range[1] === -1 || (range[1] > 1 && ui.selected.targets && ui.selected.targets.length)) {
 								return "zeroplayertarget";
 							}
 						},
