@@ -364,76 +364,71 @@ const skills = {
 		trigger: {
 			player: "phaseUseEnd",
 		},
-		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt("yjyaoling"), "减1点体力上限，选择一名其他角色A和一名角色B，令A选择对B使用杀或被你弃牌", 2, (card, player, target) => {
-					if (!ui.selected.targets.length) {
-						return target != player;
-					}
-					return ui.selected.targets[0].canUse("sha", target, false);
+		async cost(event, trigger, player) {
+			const check =
+				player.maxHp >= 2 &&
+				((player.hasSkill("yjshicha") && !player.hasHistory("useSkill", evt => evt.skill === "yjtuicheng")) || (player.maxHp > 2 && player.getDamagedHp() > 1));
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt("yjyaoling"),
+					prompt2: "减1点体力上限，选择一名其他角色A和一名角色B，令A选择对B使用杀或被你弃牌",
+					selectTarget: 2,
+					filterTarget: (card, player, target) => {
+						if (!ui.selected.targets.length) {
+							return target !== player;
+						}
+						return ui.selected.targets[0].canUse("sha", target, false);
+					},
+					ai: target => {
+						if (!get.event().check) {
+							return -1;
+						}
+						const currentPlayer = _status.event.player;
+						if (!ui.selected.targets.length) {
+							return get.effect(target, { name: "guohe_copy2" }, currentPlayer, currentPlayer);
+						}
+						const firstTarget = ui.selected.targets[0];
+						return get.effect(target, { name: "sha" }, firstTarget, currentPlayer) + 5;
+					},
 				})
 				.set("targetprompt", ["打人", "被打"])
 				.set("complexSelect", true)
-				.set("ai", target => {
-					if (!get.event().check) {
-						return -1;
-					}
-					var player = _status.event.player;
-					if (!ui.selected.targets.length) {
-						return get.effect(target, { name: "guohe_copy2" }, player, player);
-					}
-					var targetx = ui.selected.targets[0];
-					return get.effect(target, { name: "sha" }, targetx, player) + 5;
+				.set("check", check)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const targets = event.targets;
+			const firstTarget = targets[0];
+			const secondTarget = targets[1];
+			player.line2(targets);
+			await player.loseMaxHp();
+			const useResult = await firstTarget
+				.chooseToUse({
+					prompt: `耀令：对${get.translation(secondTarget)}使用一张杀，或令${get.translation(player)}弃置你的一张牌`,
+					filterCard: (card, player, event) => {
+						if (get.name(card) !== "sha") {
+							return false;
+						}
+						return lib.filter.filterCard(card, player, event);
+					},
+					complexTarget: true,
+					filterTarget: (card, player, target) => {
+						const source = _status.event.sourcex;
+						if (target !== source && !ui.selected.targets.includes(source)) {
+							return false;
+						}
+						return lib.filter.filterTarget(card, player, target);
+					},
 				})
-				.set(
-					"check",
-					(function () {
-						if (player.maxHp < 2) {
-							return false;
-						}
-						if (player.hasSkill("yjshicha") && !player.hasHistory("useSkill", evt => evt.skill == "yjtuicheng")) {
-							return true;
-						}
-						if (player.maxHp > 2 && player.getDamagedHp() > 1) {
-							return true;
-						}
-						return false;
-					})()
-				);
-			"step 1";
-			if (result.bool) {
-				var targets = result.targets;
-				event.targets = targets;
-				player.logSkill("yjyaoling", targets, false);
-				player.line2(targets);
-				player.loseMaxHp();
-				targets[0]
-					.chooseToUse(
-						function (card, player, event) {
-							if (get.name(card) != "sha") {
-								return false;
-							}
-							return lib.filter.filterCard.apply(this, arguments);
-						},
-						"耀令：对" + get.translation(targets[1]) + "使用一张杀，或令" + get.translation(player) + "弃置你的一张牌"
-					)
-					.set("targetRequired", true)
-					.set("complexTarget", true)
-					.set("filterTarget", function (card, player, target) {
-						if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
-							return false;
-						}
-						return lib.filter.filterTarget.apply(this, arguments);
-					})
-					.set("sourcex", targets[1]);
-			} else {
-				event.finish();
-			}
-			"step 2";
-			if (!result.bool && targets[0].countDiscardableCards(player, "he")) {
-				player.discardPlayerCard(targets[0], "he", true);
+				.set("targetRequired", true)
+				.set("sourcex", secondTarget)
+				.forResult();
+			if (!useResult.bool && firstTarget.countDiscardableCards(player, "he")) {
+				await player.discardPlayerCard({
+					target: firstTarget,
+					position: "he",
+					forced: true,
+				});
 			}
 		},
 	},
