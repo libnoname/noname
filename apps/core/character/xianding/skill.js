@@ -4261,7 +4261,7 @@ const skills = {
 							if (evt.name == "phase") {
 								return true;
 							}
-							return evt.getParent() == event || evt.getTrigger().getParent() == event;
+							 return evt.getParent() == event || (trigger && trigger.getParent() == event);
 						})
 						.then(async (event, trigger, player) => {
 							if (trigger.name == "phase") {

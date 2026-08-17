@@ -12772,7 +12772,7 @@ const skills = {
 			},
 		},
 	},
-	mbwangzhuang: {
+	mbwangzhuan: {
 		audio: 2,
 		trigger: { global: "damageEnd" },
 		filter(event, player) {
