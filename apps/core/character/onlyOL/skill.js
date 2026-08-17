@@ -13195,24 +13195,8 @@ const skills = {
 		subSkill: {
 			add: {
 				inherit: "lihuo2",
-				async content(event, trigger, player) {
-					const { bool, targets } = await player
-						.chooseTarget(get.prompt("dclihuo"), "为" + get.translation(trigger.card) + "增加一个目标", (card, player, target) => {
-							const trigger = get.event().getTrigger();
-							return !trigger.targets.includes(target) && player.canUse(trigger.card, target);
-						})
-						.set("card", trigger.card)
-						.set("ai", target => {
-							const player = get.event().player,
-								trigger = get.event().getTrigger();
-							return get.effect(target, trigger.card, player, player);
-						})
-						.forResult();
-					if (bool) {
-						player.logSkill("dclihuo", targets);
-						trigger.targets.addArray(targets);
-					}
-				},
+				sourceSkill: "dclihuo",
+				audio: "dclihuo",
 			},
 		},
 	},

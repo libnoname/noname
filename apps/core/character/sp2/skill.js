@@ -11527,7 +11527,7 @@ const skills = {
 			if (result.bool) {
 				var target = result.targets[0];
 				player.logSkill("hfjieying", target);
-				target.addTempSkill("hfjieying2", { player: "phaseJieshuBegin" });
+				target.addTempSkill("hfjieying2", { player: "phaseEnd" });
 			}
 		},
 		ai: {

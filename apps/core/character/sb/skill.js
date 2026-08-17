@@ -3252,8 +3252,11 @@ const skills = {
 				})
 				.sortBySeat();
 		},
-		logTarget(event, player, name, index) {
-			return index;
+		logTarget(event, player, name, target) {
+			return target;
+		},
+		check(event, player, name, target) {
+			return get.attitude(player, target) > 0;
 		},
 		async content(event, trigger, player) {
 			const target = event.indexedData;
