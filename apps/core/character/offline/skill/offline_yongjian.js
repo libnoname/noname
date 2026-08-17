@@ -834,35 +834,33 @@ const skills = {
 		usable: 1,
 		forced: true,
 		locked: false,
-		filter: (event, player) => event.target != player && event.target.isIn(),
+		filter: (event, player) => event.target !== player && event.target.isIn(),
 		logTarget: "target",
-		content() {
-			"step 0";
-			event.target = trigger.target;
-			event.card = trigger.card;
-			event.target.markAuto("yjxiandao_block", [get.suit(event.card, false)]);
-			event.target.addTempSkill("yjxiandao_block");
-			"step 1";
-			var type = get.type(card);
-			if (type == "trick") {
-				player.draw(2);
+		async content(event, trigger, player) {
+			const target = trigger.target;
+			const card = trigger.card;
+			target.markAuto("yjxiandao_block", [get.suit(card, false)]);
+			target.addTempSkill("yjxiandao_block");
+			const type = get.type(card);
+			if (type === "trick") {
+				await player.draw(2);
+				return;
 			}
-			if (type == "equip") {
-				if (
-					target.countGainableCards(player, "he", function (cardx) {
-						return cardx != card;
-					}) > 0
-				) {
-					player
-						.gainPlayerCard(target, "he", true)
-						.set("card", card)
-						.set("filterButton", function (button) {
-							return button.link != _status.event.card;
-						});
-				}
-				if (get.subtype(card, false) == "equip1") {
-					target.damage();
-				}
+			if (type !== "equip") {
+				return;
+			}
+			if (target.hasGainableCards(player, "he", cardx => cardx !== card)) {
+				await player
+					.gainPlayerCard({
+						target,
+						position: "he",
+						forced: true,
+						filterButton: button => button.link !== _status.event.card,
+					})
+					.set("card", card);
+			}
+			if (get.subtype(card, false) === "equip1") {
+				await target.damage();
 			}
 		},
 		subSkill: {
