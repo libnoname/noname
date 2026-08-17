@@ -699,71 +699,80 @@ const skills = {
 		filterTarget: true,
 		limited: true,
 		selectTarget: () => [1, game.roundNumber],
-		contentBefore() {
-			"step 0";
+		async contentBefore(event, trigger, player) {
+			const targets = event.targets;
 			player.awakenSkill("yjweiquan");
-			player.chooseTarget("威权：选择获得牌的角色", true).set("ai", target => {
-				var att = get.attitude(_status.event.player, target),
-					num = target.needsToDiscard(targets.filter(i => i != target && i.countCards("h")).length);
-				if (att > 0 && num <= 2) {
-					return 0;
-				}
-				if (att < 0 && target.needsToDiscard(-5)) {
-					return -att - Math.sqrt(num);
-				}
-				return att - Math.sqrt(num);
-			});
-			"step 1";
+			const result = await player
+				.chooseTarget({
+					prompt: "威权：选择获得牌的角色",
+					forced: true,
+					ai: target => {
+						const attitude = get.attitude(_status.event.player, target);
+						const num = target.needsToDiscard(targets.filter(current => current !== target && current.countCards("h")).length);
+						if (attitude > 0 && num <= 2) {
+							return 0;
+						}
+						if (attitude < 0 && target.needsToDiscard(-5)) {
+							return -attitude - Math.sqrt(num);
+						}
+						return attitude - Math.sqrt(num);
+					},
+				})
+				.forResult();
 			event.getParent()._yjweiquan = result.targets[0];
 		},
-		content() {
-			"step 0";
-			var targetx = event.getParent()._yjweiquan;
-			if (target == targetx || !target.countCards("h")) {
-				event.finish();
-			} else {
-				target.chooseCard("威权：将一张手牌交给" + get.translation(targetx), true);
+		async content(event, trigger, player) {
+			const target = event.target;
+			const recipient = event.getParent()._yjweiquan;
+			if (target === recipient || !target.countCards("h")) {
+				return;
 			}
-			"step 1";
-			if (result.bool) {
-				var targetx = event.getParent()._yjweiquan;
-				target.give(result.cards, targetx);
+			const result = await target
+				.chooseCard({
+					prompt: `威权：将一张手牌交给${get.translation(recipient)}`,
+					forced: true,
+				})
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
+			await target.give(result.cards, recipient);
 		},
-		contentAfter() {
-			var targetx = event.getParent()._yjweiquan;
-			if (targetx.countCards("h") > targetx.hp) {
-				var next = targetx.phase();
-				event.next.remove(next);
-				event.getParent().after.push(next);
-				next.player = targetx;
-				next._noTurnOver = true;
-				next._triggered = null;
-				next.setContent(function () {
-					game.broadcastAll(function () {
-						if (ui.tempnowuxie) {
-							ui.tempnowuxie.close();
-							delete ui.tempnowuxie;
-						}
-					});
-					player.phaseDiscard();
-					if (!player.noPhaseDelay) {
-						game.delayx();
-					}
-					delete player._noSkill;
-				});
+		async contentAfter(event, trigger, player) {
+			const recipient = event.getParent()._yjweiquan;
+			if (recipient.countCards("h") <= recipient.hp) {
+				return;
 			}
+			const next = recipient.phase();
+			event.next.remove(next);
+			event.getParent().after.push(next);
+			next.player = recipient;
+			next._noTurnOver = true;
+			next._triggered = null;
+			next.setContent(async (event, trigger, player) => {
+				game.broadcastAll(() => {
+					if (ui.tempnowuxie) {
+						ui.tempnowuxie.close();
+						delete ui.tempnowuxie;
+					}
+				});
+				player.phaseDiscard();
+				if (!player.noPhaseDelay) {
+					game.delayx();
+				}
+				delete player._noSkill;
+			});
 		},
 		ai: {
 			order: 6,
 			result: {
 				player(player) {
-					var num = game.countPlayer(current => get.attitude(player, current) < 0 && current.countCards("h"));
+					const num = game.countPlayer(current => get.attitude(player, current) < 0 && current.countCards("h"));
 					if (
 						(game.roundNumber < num && player.hp > 2) ||
-						!game.hasPlayer(current => {
-							return (get.attitude(player, current) > 0 && current.needsToDiscard(num) < 2) || (get.attitude(player, current) < 0 && current.needsToDiscard(-5));
-						})
+						!game.hasPlayer(
+							current => (get.attitude(player, current) > 0 && current.needsToDiscard(num) < 2) || (get.attitude(player, current) < 0 && current.needsToDiscard(-5))
+						)
 					) {
 						return -10;
 					}
