@@ -599,29 +599,37 @@ const skills = {
 		usable: 1,
 		locked: false,
 		filter(event, player) {
-			for (var card of ui.discardPile.childNodes) {
-				if (get.type(card) == "equip") {
+			for (const card of ui.discardPile.childNodes) {
+				if (get.type(card) === "equip") {
 					return true;
 				}
 			}
 			return false;
 		},
-		content() {
-			"step 0";
-			var cards = Array.from(ui.discardPile.childNodes).filter(i => get.type(i) == "equip");
-			player.chooseButton(["厉锋：获得一张装备牌", cards], cards.length > 0).set("ai", get.buttonValue);
-			"step 1";
-			if (result.bool) {
-				var card = result.links[0];
-				player.gain(card, "gain2");
+		async content(event, trigger, player) {
+			const cards = Array.from(ui.discardPile.childNodes).filter(card => get.type(card) === "equip");
+			const result = await player
+				.chooseButton({
+					createDialog: ["厉锋：获得一张装备牌", cards],
+					forced: cards.length > 0,
+					ai: get.buttonValue,
+				})
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
+			const card = result.links[0];
+			await player.gain({
+				cards: [card],
+				animate: "gain2",
+			});
 		},
 		ai: {
 			order: 10,
 			result: { player: 1 },
 			effect: {
 				target(card, player, target) {
-					if (card && get.type(card) == "equip" && _status.event.skill == "_gifting") {
+					if (card && get.type(card) === "equip" && _status.event.skill === "_gifting") {
 						return 0;
 					}
 				},
@@ -629,7 +637,7 @@ const skills = {
 		},
 		mod: {
 			cardGiftable(card, player) {
-				return get.type(card) == "equip";
+				return get.type(card) === "equip";
 			},
 		},
 	},
