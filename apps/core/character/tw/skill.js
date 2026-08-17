@@ -3110,7 +3110,7 @@ const skills = {
 							if (att > 0) {
 								return 8 - get.value(card);
 							}
-							return Math.ceil(get.number(card, player) / 4) * Math.max(1, (6 - get.value(card)));
+							return Math.ceil(get.number(card, player) / 4) * Math.max(1, 6 - get.value(card));
 						}
 						return 0;
 					})
