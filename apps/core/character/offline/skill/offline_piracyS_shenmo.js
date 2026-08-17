@@ -3,6 +3,430 @@ import html from "dedent";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//神姜维
+	psfenzhi: {
+		audio: 2,
+		forced: true,
+		trigger: {
+			source: "damageBegin1",
+			global: "damageEnd",
+		},
+		filter(event, player, name) {
+			if (name == "damageBegin1") {
+				return !event.hasNature("fire");
+			}
+			return event.hasNature("fire");
+		},
+		async content(event, trigger, player) {
+			if (event.triggername == "damageBegin1") {
+				game.setNature(trigger, "fire");
+			} else {
+				const zhu = game.findPlayer(current => current.getSeatNum() == 1);
+				const result =
+					zhu?.isIn() && zhu.isDamaged()
+						? await player
+								.chooseBool({
+									prompt: `焚志：令${get.translation(zhu)}回复1点体力或点击“取消”摸一张牌`,
+									ai() {
+										const { player, zhu } = get.event();
+										if (get.attitude(player, zhu) > 0) {
+											return 1;
+										}
+										return 0;
+									},
+								})
+								.set("zhu", zhu)
+								.forResult()
+						: { bool: false };
+				if (result?.bool) {
+					await zhu.recover();
+				} else {
+					await player.draw();
+				}
+			}
+		},
+	},
+	psjiucheng: {
+		audio: 2,
+		enable: "chooseToUse",
+		locked: false,
+		mod: {
+			cardUsable(card) {
+				if (card?.storage?.psjiucheng) {
+					return Infinity;
+				}
+			},
+			targetInRange(card) {
+				if (card?.storage?.psjiucheng) {
+					return true;
+				}
+			},
+		},
+		filter(event, player) {
+			if (player.hasSkill("psjiucheng_blocker")) return false;
+			return get.inpileVCardList(info => {
+				if (!["basic", "trick"].includes(info[0])) {
+					return false;
+				}
+				return event.filterCard(
+					get.autoViewAs(
+						{
+							name: info[2],
+							nature: info[3],
+							storage: { psjiucheng: true },
+						},
+						"unsure"
+					),
+					player,
+					event
+				);
+			}).length;
+		},
+		chooseButton: {
+			dialog(event, player) {
+				const list = get.inpileVCardList(info => {
+					if (!["basic", "trick"].includes(info[0])) {
+						return false;
+					}
+					return event.filterCard(
+						get.autoViewAs(
+							{
+								name: info[2],
+								nature: info[3],
+								storage: { psjiucheng: true },
+							},
+							"unsure"
+						),
+						player,
+						event
+					);
+				});
+				return ui.create.dialog("九乘", [list, "vcard"]);
+			},
+			filter(button, player) {
+				return _status.event.getParent().filterCard(
+					{
+						name: button.link[2],
+						nature: button.link[3],
+						storage: { psjiucheng: true },
+					},
+					player,
+					_status.event.getParent()
+				);
+			},
+			check(button) {
+				if (_status.event.getParent().type != "phase") {
+					return 1;
+				}
+				const player = get.player();
+				if (["wugu", "zhulu_card", "yiyi", "lulitongxin", "lianjunshengyan", "diaohulishan"].includes(button.link[2])) {
+					return 0;
+				}
+				return player.getUseValue({
+					name: button.link[2],
+					nature: button.link[3],
+				});
+			},
+			backup(links, player) {
+				return {
+					filterCard: () => false,
+					selectCard: -1,
+					viewAs: {
+						name: links[0][2],
+						nature: links[0][3],
+						storage: { psjiucheng: true },
+					},
+					log: false,
+					async precontent(event, trigger, player) {
+						event.getParent().addCount = false;
+						await player.draw(3);
+						player.addSkill("psjiucheng_blocker");
+						player
+							.when({
+								player: ["useCardAfter"],
+							})
+							.filter(evt => evt.getParent() == event.getParent())
+							.step(async (event, trigger, player) => {
+								player.addMark("psjiucheng_blocker", 9, false);
+							})
+							.assign({
+								lastDo: true,
+							});
+						player.logSkill("psjiucheng");
+					},
+				};
+			},
+			prompt(links, player) {
+				return "视为使用一张" + (get.translation(links[0][3]) || "") + get.translation(links[0][2]);
+			},
+		},
+		hiddenCard(player, name) {
+			if (!lib.inpile.includes(name)) {
+				return false;
+			}
+			const type = get.type(name);
+			return ["basic", "trick"].includes(type) && !player.hasSkill("psjiucheng_blocker");
+		},
+		ai: {
+			fireAttack: true,
+			skillTagFilter(player) {
+				if (player.hasSkill("psjiucheng_blocker")) {
+					return false;
+				}
+			},
+			order: 13,
+			result: {
+				player(player) {
+					if (_status.event.dying) {
+						return get.attitude(player, _status.event.dying);
+					}
+					return 1;
+				},
+			},
+		},
+		subSkill: {
+			backup: {},
+			blocker: {
+				charlotte: true,
+				onremove: true,
+				silent: true,
+				trigger: { player: "useCardAfter" },
+				firstDo: true,
+				intro: { content: (storage, player) => `当前进度：${9 - storage}/9` },
+				filter(event, player) {
+					return player.hasMark("psjiucheng_blocker");
+				},
+				async content(event, trigger, player) {
+					player.removeMark(event.name, 1, false);
+					if (!player.hasMark(event.name)) {
+						player.removeSkill(event.name);
+					}
+				},
+			},
+		},
+	},
+	psranjin: {
+		audio: 2,
+		limited: true,
+		skillAnimation: true,
+		animationColor: "fire",
+		trigger: { player: "phaseEnd" },
+		check(event, player) {
+			if (!game.hasPlayer(current => get.attitude(player, current) < 0)) {
+				return false;
+			}
+			return player.countCards("hs", card => card.name == "sha") > 2 || player.hp <= 2;
+		},
+		async content(event, trigger, player) {
+			player.awakenSkill(event.name);
+			player
+				.when({ player: "phaseBefore" })
+				.filter(evt => evt.skill == event.name)
+				.step(async (event, trigger, player) => {
+					player.addTempSkill("psranjin_effect", "phaseAfter");
+				});
+			player.insertPhase();
+		},
+		subSkill: {
+			effect: {
+				charlotte: true,
+				mark: true,
+				forced: true,
+				intro: { content: `本回合使用牌无次数限制，若此回合结束时你杀死过其他角色，你重新发动一次${get.poptip("psranjin")}，否则你死亡` },
+				trigger: { player: "phaseEnd" },
+				async content(event, trigger, player) {
+					if (player.getStat("kill") > 0) {
+						await player.useSkill({ skill: "psranjin", targets: [player] });
+					} else {
+						await player.die();
+					}
+				},
+				mod: {
+					cardUsable: () => Infinity,
+				},
+			},
+		},
+	},
+	//魔姜维
+	psmoyan: {
+		audio: 2,
+		forced: true,
+		trigger: {
+			global: ["loseHpAfter", "damageBefore"],
+		},
+		filter(event, player) {
+			return (event.num > 0 && [event.source, event.player].includes(player)) || event.name == "loseHp";
+		},
+		async content(event, trigger, player) {
+			if (trigger.name == "loseHp") {
+				await player.draw();
+			} else {
+				trigger.cancel();
+				const target = trigger.source == player ? trigger.player : player;
+				await target.loseHp(trigger.num);
+			}
+		},
+		ai: {
+			jueqing: true,
+		},
+	},
+	psjiusheng: {
+		audio: 2,
+		enable: "phaseUse",
+		filter(event, player) {
+			if (player.hasSkill("psjiusheng_blocker")) return false;
+			return game.hasPlayer(current => get.info("psjiusheng").filterTarget(null, player, current));
+		},
+		filterTarget(card, player, target) {
+			const cardx = get.autoViewAs({ name: "sha", isCard: true }, "unsure");
+			return target != player && target.canUse(cardx, player, false, false);
+		},
+		selectTarget: [1, Infinity],
+		multiline: true,
+		multitarget: true,
+		async content(event, trigger, player) {
+			const targets = event.targets.sortBySeat(),
+				cardx = get.autoViewAs({ name: "sha", isCard: true }, "unsure");
+			await player.draw({ num: targets.length });
+			await game.doAsyncInOrder(targets, async target => {
+				if (target.canUse(cardx, player, false, false) && target.isIn()) {
+					await target.useCard({ card: cardx, targets: [player] });
+				}
+			});
+			if (targets.some(target => target.isIn() && target.hasCards("he"))) {
+				const result = await player
+					.chooseTarget({
+						prompt: "九牲：弃置任意名角色各一张牌",
+						filterTarget(card, player, target) {
+							return get.event().targets.includes(target) && target.hasCards("he");
+						},
+						selectTarget: [1, Infinity],
+						forced: true,
+						ai(target) {
+							const player = get.player();
+							return get.effect(target, { name: "guohe_copy", position: "he" }, player, player);
+						},
+					})
+					.set("targets", targets)
+					.forResult();
+				if (result?.bool && result.targets?.length) {
+					const targetx = result.targets.sortBySeat();
+					await game.doAsyncInOrder(targetx, async target => {
+						await player.discardPlayerCard({ forced: true, position: "he", target });
+					});
+				}
+			}
+			player.addSkill(event.name + "_blocker");
+			player.addMark(event.name + "_blocker", 9, false);
+		},
+		subSkill: {
+			blocker: {
+				charlotte: true,
+				onremove: true,
+				silent: true,
+				trigger: { global: "loseHpAfter" },
+				firstDo: true,
+				intro: { content: (storage, player) => `当前进度：${9 - storage}/9` },
+				async content(event, trigger, player) {
+					player.removeMark(event.name, 1, false);
+					if (!player.hasMark(event.name)) {
+						player.removeSkill(event.name);
+					}
+				},
+			},
+		},
+		ai: {
+			order: 8,
+			result: {
+				player(player) {
+					if (player.hp <= 1) {
+						return -1;
+					}
+					return 1;
+				},
+				target: -1,
+			},
+		},
+	},
+	pshunjin: {
+		audio: 2,
+		limited: true,
+		skillAnimation: true,
+		animationColor: "thunder",
+		trigger: { player: "phaseEnd" },
+		filter(event, player) {
+			return player.maxHp > 1;
+		},
+		async cost(event, trigger, player) {
+			let num = player.maxHp - 1;
+			if (!game.hasPlayer(current => get.attitude(player, current) < 0)) {
+				num = 0;
+			}
+			const result = await player
+				.chooseNumbers("魂蛊", [
+					{
+						prompt: "你可以失去任意点体力上限并进行等量个额外回合，这些额外回合结束后，你死亡",
+						min: 1,
+						max: player.maxHp - 1,
+					},
+				])
+				.set("processAI", () => {
+					const num = get.event().num;
+					if (num == 0) {
+						return false;
+					}
+					//直接打一波  梭哈
+					return [num];
+				})
+				.set("num", num)
+				.forResult();
+			if (result?.bool && result.numbers?.length) {
+				event.result = {
+					bool: true,
+					cost_data: result.numbers[0],
+				};
+			}
+		},
+		async content(event, trigger, player) {
+			player.awakenSkill(event.name);
+			const num = event.cost_data;
+			await player.loseMaxHp(num);
+			player.addSkill(event.name + "_effect");
+			player.addMark(event.name + "_effect", num, false);
+			for (let i = 0; i < num; i++) {
+				player.insertPhase();
+			}
+		},
+		subSkill: {
+			effect: {
+				charlotte: true,
+				forced: true,
+				trigger: { player: "phaseBefore" },
+				intro: { content: "#个额外回合后，你就会死亡且额外回合中你使用牌无次数限制" },
+				filter(event, player) {
+					return event.skill == "pshunjin";
+				},
+				async content(event, trigger, player) {
+					player.removeMark(event.name, 1, false);
+					player.addTempSkill("pshunjin_effect2", "phaseAfter");
+					if (!player.hasMark(event.name)) {
+						player
+							.when({ player: "phaseAfter" })
+							.filter(evt => evt.skill == "pshunjin")
+							.step(async (event, trigger, player) => {
+								await player.die();
+							});
+					}
+				},
+			},
+			effect2: {
+				charlotte: true,
+				mod: {
+					cardUsable: () => Infinity,
+				},
+			},
+		},
+	},
 	//神魏延
 	psjimou: {
 		audio: 2,
