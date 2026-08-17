@@ -126,16 +126,15 @@ const skills = {
 		},
 		usable: 2,
 		filter(event, player) {
-			return event.source && event.source != player && event.card && event.card.name == "sha" && event.source.isIn();
+			return event.source && event.source !== player && event.card && event.card.name === "sha" && event.source.isIn();
 		},
 		logTarget: "source",
 		check(event, player) {
 			return get.attitude(player, event.source) >= 0 || (get.attitude(player, event.source) >= -4 && get.distance(_status.currentPhase, player, "absolute") > get.distance(_status.currentPhase, event.source, "absolute"));
 		},
-		content() {
-			"step 0";
-			var drawers = [trigger.source, player].sortBySeat(_status.currentPhase);
-			game.asyncDraw(drawers);
+		async content(event, trigger, player) {
+			const drawers = [trigger.source, player].sortBySeat(_status.currentPhase);
+			await game.asyncDraw(drawers);
 		},
 	},
 	//小闪
@@ -203,25 +202,22 @@ const skills = {
 			if (!_status.currentPhase || !_status.currentPhase.isIn() || !_status.currentPhase.countGainableCards(player, "he")) {
 				return false;
 			}
-			var evt = event.getl(player);
-			return (
-				evt &&
-				evt.cards2 &&
-				evt.cards2.some(card => {
-					return get.name(card, false) == "shan";
-				})
-			);
+			const evt = event.getl(player);
+			return evt && evt.cards2 && evt.cards2.some(card => get.name(card, false) === "shan");
 		},
 		check(event, player) {
 			return get.effect(_status.currentPhase, { name: "shunshou_copy2" }, player, player) > 0;
 		},
 		prompt2(event, player) {
-			return "获得" + get.translation(_status.currentPhase) + "的一张牌";
+			return `获得${get.translation(_status.currentPhase)}的一张牌`;
 		},
 		logTarget: () => _status.currentPhase,
-		content() {
-			"step 0";
-			player.gainPlayerCard(_status.currentPhase, "he", true);
+		async content(event, trigger, player) {
+			await player.gainPlayerCard({
+				target: _status.currentPhase,
+				position: "he",
+				forced: true,
+			});
 		},
 		ai: {
 			expose: 0.15,
@@ -327,7 +323,7 @@ const skills = {
 			if (player.hasSkill("vtbyanli_used")) {
 				return false;
 			}
-			if (_status.currentPhase == player) {
+			if (_status.currentPhase === player) {
 				return false;
 			}
 			return event.player.hp <= 0;
@@ -336,11 +332,12 @@ const skills = {
 			return get.recoverEffect(event.player, player, player) > 0;
 		},
 		logTarget: "player",
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.addTempSkill("vtbyanli_used", "roundStart");
-			trigger.player.recover(1 - trigger.player.hp);
-			trigger.player.draw();
+			const recoverEvent = trigger.player.recover(1 - trigger.player.hp);
+			const drawEvent = trigger.player.draw();
+			await recoverEvent;
+			await drawEvent;
 		},
 		subSkill: {
 			used: {
@@ -419,29 +416,33 @@ const skills = {
 		audio: 1,
 		trigger: { global: "phaseUseBegin" },
 		filter(event, player) {
-			return event.player != player;
+			return event.player !== player;
 		},
 		check(event, player) {
 			return get.attitude(player, event.player) > 0 && event.player.getUseValue("jiu") >= 0;
 		},
 		logTarget: "player",
-		content() {
-			trigger.player.chooseUseTarget("jiu", true, false);
+		async content(event, trigger, player) {
+			await trigger.player.chooseUseTarget({
+				card: { name: "jiu", isCard: true },
+				forced: true,
+				addCount: false,
+			});
 		},
 	},
 	vtbyaoli: {
 		audio: 1,
 		trigger: { global: "useCardAfter" },
 		filter(event, player) {
-			return event.card.name == "jiu" && event.player != player && event.player.isPhaseUsing();
+			return event.card.name === "jiu" && event.player !== player && event.player.isPhaseUsing();
 		},
 		logTarget: "player",
 		check(event, player) {
 			return get.attitude(player, event.player) > 0;
 		},
 		async content(event, trigger, player) {
-			trigger.player.addTempSkill(event.name + "_effect");
-			trigger.player.addMark(event.name + "_effect", 1, false);
+			trigger.player.addTempSkill(`${event.name}_effect`);
+			trigger.player.addMark(`${event.name}_effect`, 1, false);
 		},
 		ai: { expose: 0.15 },
 		subSkill: {
@@ -453,7 +454,7 @@ const skills = {
 				onremove: true,
 				direct: true,
 				filter(event, player) {
-					return event.card.name == "sha" && player.countMark("vtbyaoli_effect") > 0;
+					return event.card.name === "sha" && player.countMark("vtbyaoli_effect") > 0;
 				},
 				async content(event, trigger, player) {
 					trigger.directHit.addArray(game.filterPlayer());
@@ -464,14 +465,16 @@ const skills = {
 						return;
 					}
 					const result = await player
-						.chooseTarget("媱丽：是否为" + get.translation(trigger.card) + "额外指定" + (num > 1 ? "至多" : "") + get.cnNumber(num) + "个目标？", num == 1 ? 1 : [1, num], (card, player, target) => {
-							return !get.event().sourcex.includes(target) && player.canUse(get.event().card, target);
+						.chooseTarget({
+							prompt: `媱丽：是否为${get.translation(trigger.card)}额外指定${num > 1 ? "至多" : ""}${get.cnNumber(num)}个目标？`,
+							selectTarget: num === 1 ? 1 : [1, num],
+							filterTarget: (_card, player, target) => !get.event().sourcex.includes(target) && player.canUse(get.event().card, target),
+							ai: target => {
+								const { player, card } = get.event();
+								return get.effect(target, card, player, player);
+							},
 						})
 						.set("sourcex", trigger.targets)
-						.set("ai", target => {
-							const { player, card } = get.event();
-							return get.effect(target, card, player, player);
-						})
 						.set("card", trigger.card)
 						.forResult();
 					if (!result.targets?.length) {
