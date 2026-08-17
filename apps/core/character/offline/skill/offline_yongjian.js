@@ -473,40 +473,33 @@ const skills = {
 		filter(event, player) {
 			return (
 				player.hasZhuSkill("yjyongquan") &&
-				game.hasPlayer(current => {
-					return current != player && player.hasZhuSkill(current) && current.group == "qun";
-				})
+				game.hasPlayer(current => current !== player && player.hasZhuSkill(current) && current.group === "qun")
 			);
 		},
 		logTarget(event, player) {
-			return game.filterPlayer(current => {
-				return current != player && player.hasZhuSkill(current) && current.group == "qun";
-			});
+			return game.filterPlayer(current => current !== player && player.hasZhuSkill(current) && current.group === "qun");
 		},
-		content() {
-			"step 0";
-			var targets = lib.skill.yjyongquan.logTarget(trigger, player);
-			event.targets = targets;
-			"step 1";
-			var target = targets.shift();
-			event.target = target;
-			target
-				.chooseCard("拥权：是否交给" + get.translation(player) + "一张牌？", "he")
-				.set("ai", card => {
-					if (_status.event.goon) {
-						return 4.5 - get.value(card);
-					}
-					return 0;
-				})
-				.set("goon", get.attitude(target, player) > 3);
-			"step 2";
-			if (result.bool) {
+		async content(event, trigger, player) {
+			const targets = lib.skill.yjyongquan.logTarget(trigger, player);
+			for (const target of targets) {
+				const result = await target
+					.chooseCard({
+						prompt: `拥权：是否交给${get.translation(player)}一张牌？`,
+						position: "he",
+						ai: card => {
+							if (_status.event.goon) {
+								return 4.5 - get.value(card);
+							}
+							return 0;
+						},
+					})
+					.set("goon", get.attitude(target, player) > 3)
+					.forResult();
+				if (!result.bool) {
+					continue;
+				}
 				target.line(player);
-				target.give(result.cards, player);
-			}
-			"step 3";
-			if (targets.length) {
-				event.goto(1);
+				await target.give(result.cards, player);
 			}
 		},
 	},
