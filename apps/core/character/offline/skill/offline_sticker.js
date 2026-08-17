@@ -281,13 +281,13 @@ const skills = {
 		},
 		frequent: true,
 		filter(event, player) {
-			return event.type == "discard" && event.getParent(3).name == "phaseDiscard" && event.cards.filterInD("d").length > 0;
+			return event.type === "discard" && event.getParent(3)?.name === "phaseDiscard" && event.cards.filterInD("d").length > 0;
 		},
-		content() {
+		async content(event, trigger, player) {
 			if (!player.storage.sphantong) {
 				player.storage.sphantong = [];
 			}
-			var cards = trigger.cards.filterInD("d");
+			const cards = trigger.cards.filterInD("d");
 			player.storage.sphantong.addArray(cards);
 			player.$gain2(cards);
 			game.log(player, "将", cards, "置于武将牌上");
@@ -308,111 +308,67 @@ const skills = {
 		filter(event, player) {
 			return player.storage.sphantong && player.storage.sphantong.length > 0;
 		},
-		content() {
-			"step 0";
-			player.chooseButton([get.prompt("sphantong"), player.storage.sphantong], function (button) {
-				var player = _status.event.player;
-				if (_status.currentPhase == player) {
-					//血裔
-					if (
-						(player.hasJudge("lebu") || player.skipList.includes("phaseUse")) &&
-						game.hasPlayer(function (current) {
-							return current != player && current.group == "qun";
-						})
-					) {
-						return 1;
-					}
-					//激将
-					if (
-						!player.hasJudge("lebu") &&
-						!player.skipList.includes("phaseUse") &&
-						game.hasPlayer(function (current) {
-							return current != player && current.group == "shu" && current.hasSha() && get.attitude(player, current) > 0 && get.attitude(current, player) > 0;
-						}) &&
-						game.hasPlayer(function (target) {
-							return player.canUse({ name: "sha" }, target) && get.effect(target, { name: "sha" }, player, player) > 0;
-						})
-					) {
-						return 1;
-					}
-				}
-				//护驾
-				else if (
-					!player.hasShan("all") &&
-					game.hasPlayer(function (current) {
-						return current != player && current.group == "wei" && current.mayHaveShan(player, "respond") && get.attitude(player, current) > 0 && get.attitude(current, player) > 0;
-					})
-				) {
-					return 1;
-				}
-				return -1;
-			});
-			"step 1";
-			if (result.bool) {
-				player.logSkill("sphantong");
-				var card = result.links[0];
-				player.$throw(card);
-				game.log(player, "将", card, "置入了弃牌堆");
-				player.storage.sphantong.remove(card);
-				player[player.storage.sphantong.length > 0 ? "markSkill" : "unmarkSkill"]("sphantong");
-				game.cardsDiscard(card);
-				var list = ["hujia", "jijiang", "jiuyuan", "xueyi"];
-				for (var i = 0; i < list.length; i++) {
-					if (player.hasSkill(list[i])) {
-						list.splice(i--, 1);
-					}
-				}
-				if (list.length) {
-					player
-						.chooseControl(list)
-						.set("prompt", "选择获得以下技能中的一个")
-						.set("ai", function () {
-							var player = _status.event.player;
-							if (_status.currentPhase == player) {
-								//血裔
-								if (
-									(player.hasJudge("lebu") || player.skipList.includes("phaseUse")) &&
-									game.hasPlayer(function (current) {
-										return current != player && current.group == "qun";
-									})
-								) {
-									return "xueyi";
-								}
-								//激将
-								if (
-									!player.hasJudge("lebu") &&
-									!player.skipList.includes("phaseUse") &&
-									game.hasPlayer(function (current) {
-										return current != player && current.group == "shu" && current.hasSha() && get.attitude(player, current) > 0 && get.attitude(current, player) > 0;
-									}) &&
-									game.hasPlayer(function (target) {
-										return player.canUse({ name: "sha" }, target) && get.effect(target, { name: "sha" }, player, player) > 0;
-									})
-								) {
-									return "jijiang";
-								}
+		async content(event, trigger, player) {
+			const cardResult = await player
+				.chooseButton({
+					createDialog: [get.prompt("sphantong"), player.storage.sphantong],
+					ai: () => {
+						const player = get.event().player;
+						if (_status.currentPhase === player) {
+							//血裔
+							if ((player.hasJudge("lebu") || player.skipList.includes("phaseUse")) && game.hasPlayer(current => current !== player && current.group === "qun")) {
+								return 1;
 							}
+							//激将
+							if (!player.hasJudge("lebu") && !player.skipList.includes("phaseUse") && game.hasPlayer(current => current !== player && current.group === "shu" && current.hasSha() && get.attitude(player, current) > 0 && get.attitude(current, player) > 0) && game.hasPlayer(target => player.canUse({ name: "sha" }, target) && get.effect(target, { name: "sha" }, player, player) > 0)) {
+								return 1;
+							}
+						} else if (!player.hasShan("all") && game.hasPlayer(current => current !== player && current.group === "wei" && current.mayHaveShan(player, "respond") && get.attitude(player, current) > 0 && get.attitude(current, player) > 0)) {
 							//护驾
-							else if (
-								!player.hasShan("all") &&
-								game.hasPlayer(function (current) {
-									return current != player && current.group == "wei" && current.mayHaveShan(player, "respond") && get.attitude(player, current) > 0 && get.attitude(current, player) > 0;
-								})
-							) {
-								return "hujia";
-							}
-						});
-				} else {
-					event.finish();
-				}
-			} else {
-				event.finish();
+							return 1;
+						}
+						return -1;
+					},
+				})
+				.forResult();
+			if (!cardResult.bool) {
+				return;
 			}
-			"step 2";
-			var skill = result.control;
-			player.addTempSkills(skill);
-			// player.popup(skill,'wood');
-			// game.log(player,'获得了技能','#g【'+get.translation(skill)+'】');
+			player.logSkill("sphantong");
+			const card = cardResult.links[0];
+			player.$throw(card);
+			game.log(player, "将", card, "置入了弃牌堆");
+			player.storage.sphantong.remove(card);
+			player[player.storage.sphantong.length > 0 ? "markSkill" : "unmarkSkill"]("sphantong");
+			const discardEvent = game.cardsDiscard(card);
+			const list = ["hujia", "jijiang", "jiuyuan", "xueyi"].filter(skill => !player.hasSkill(skill));
+			await discardEvent;
+			if (!list.length) {
+				return;
+			}
+			const controlResult = await player
+				.chooseControl({
+					controls: list,
+					prompt: "选择获得以下技能中的一个",
+					ai: () => {
+						const player = get.event().player;
+						if (_status.currentPhase === player) {
+							//血裔
+							if ((player.hasJudge("lebu") || player.skipList.includes("phaseUse")) && game.hasPlayer(current => current !== player && current.group === "qun")) {
+								return "xueyi";
+							}
+							//激将
+							if (!player.hasJudge("lebu") && !player.skipList.includes("phaseUse") && game.hasPlayer(current => current !== player && current.group === "shu" && current.hasSha() && get.attitude(player, current) > 0 && get.attitude(current, player) > 0) && game.hasPlayer(target => player.canUse({ name: "sha" }, target) && get.effect(target, { name: "sha" }, player, player) > 0)) {
+								return "jijiang";
+							}
+						} else if (!player.hasShan("all") && game.hasPlayer(current => current !== player && current.group === "wei" && current.mayHaveShan(player, "respond") && get.attitude(player, current) > 0 && get.attitude(current, player) > 0)) {
+							//护驾
+							return "hujia";
+						}
+					},
+				})
+				.forResult();
+			player.addTempSkills(controlResult.control);
 		},
 	},
 	sphuangen: {
