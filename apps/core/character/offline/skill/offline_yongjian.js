@@ -76,23 +76,21 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return player.countCards("h") > 0;
+			return player.hasCards("h");
 		},
 		filterTarget(card, player, target) {
-			if (target == player) {
-				return false;
+			if (!ui.selected.targets.length) {
+				return target !== player;
 			}
-			if (ui.selected.targets.length) {
-				return ui.selected.targets[0] != target && !ui.selected.targets[0].hasSkillTag("noCompareSource") && target.countCards("h") && !target.hasSkillTag("noCompareTarget");
-			}
-			return true;
+			const firstTarget = ui.selected.targets[0];
+			return target !== player && firstTarget !== target && !firstTarget.hasSkillTag("noCompareSource") && target.hasCards("h") && !target.hasSkillTag("noCompareTarget");
 		},
 		filterCard: true,
 		discard: false,
 		lose: false,
 		delay: false,
 		check(card) {
-			if (_status.event.player.hp == 1) {
+			if (_status.event.player.hp === 1) {
 				return 8 - get.value(card);
 			}
 			return 6 - get.value(card);
@@ -100,24 +98,22 @@ const skills = {
 		selectTarget: 2,
 		targetprompt: ["发起者", "拼点对象"],
 		multitarget: true,
-		content() {
-			"step 0";
-			player.give(cards, targets[0], "give");
-			"step 1";
-			if (targets[0].canCompare(targets[1])) {
-				targets[0].chooseToCompare(targets[1]);
-			} else {
-				event.finish();
+		async content(event, trigger, player) {
+			const cards = event.cards;
+			const firstTarget = event.targets[0];
+			const secondTarget = event.targets[1];
+			await player.give(cards, firstTarget, true);
+			if (!firstTarget.canCompare(secondTarget)) {
+				return;
 			}
-			"step 2";
-			if (result.bool) {
-				targets[1].loseHp();
-			} else if (result.tie) {
-				targets[0].loseHp();
-				targets[1].loseHp();
-			} else {
-				targets[0].loseHp();
+			const result = await firstTarget.chooseToCompare(secondTarget).forResult();
+			if (result.tie) {
+				await firstTarget.loseHp();
+				await secondTarget.loseHp();
+				return;
 			}
+			const loser = result.bool ? secondTarget : firstTarget;
+			await loser.loseHp();
 		},
 		ai: {
 			expose: 0.4,
