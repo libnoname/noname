@@ -622,7 +622,7 @@ const skills = {
 		},
 		forced: true,
 		logTarget: "source",
-		content() {
+		async content(event, trigger, player) {
 			trigger.source.addMark("tywuhun", trigger.num);
 		},
 		group: "tywuhun_die",
@@ -633,37 +633,32 @@ const skills = {
 					if (!target.hasFriend()) {
 						return;
 					}
-					let rec = get.tag(card, "recover"),
-						damage = get.tag(card, "damage");
+					const rec = get.tag(card, "recover");
+					const damage = get.tag(card, "damage");
 					if (!rec && !damage) {
 						return;
 					}
 					if (damage && player.hasSkillTag("jueqing", false, target)) {
 						return 1.7;
 					}
-					let die = [null, 1],
-						temp;
-					game.filterPlayer(i => {
-						temp = i.countMark("new_wuhun");
-						if (i === player && target.hp + target.hujia > 1) {
-							temp++;
+					const die = [null, 1];
+					for (const current of game.filterPlayer()) {
+						let count = current.countMark("new_wuhun");
+						if (current === player && target.hp + target.hujia > 1) {
+							count++;
 						}
-						if (temp > die[1]) {
-							die = [i, temp];
-						} else if (temp === die[1]) {
-							if (!die[0]) {
-								die = [i, temp];
-							} else if (get.attitude(target, i) < get.attitude(target, die[0])) {
-								die = [i, temp];
-							}
+						if (count > die[1] || (count === die[1] && (!die[0] || get.attitude(target, current) < get.attitude(target, die[0])))) {
+							die[0] = current;
+							die[1] = count;
 						}
-					});
-					if (die[0]) {
-						if (damage) {
-							return [1, 0, 1, (-6 * get.sgnAttitude(player, die[0])) / Math.max(1, target.hp)];
-						}
-						return [1, (6 * get.sgnAttitude(player, die[0])) / Math.max(1, target.hp)];
 					}
+					if (!die[0]) {
+						return;
+					}
+					if (damage) {
+						return [1, 0, 1, (-6 * get.sgnAttitude(player, die[0])) / Math.max(1, target.hp)];
+					}
+					return [1, (6 * get.sgnAttitude(player, die[0])) / Math.max(1, target.hp)];
 				},
 			},
 		},
@@ -678,56 +673,48 @@ const skills = {
 				audio: "wuhun2",
 				trigger: { player: "die" },
 				filter(event, player) {
-					return (
-						event.source ||
-						game.hasPlayer(function (current) {
-							return current != player && current.hasMark("tywuhun");
-						})
-					);
+					return event.source || game.hasPlayer(current => current !== player && current.hasMark("tywuhun"));
 				},
 				forced: true,
 				direct: true,
 				forceDie: true,
 				skillAnimation: true,
 				animationColor: "soil",
-				content() {
-					"step 0";
-					var num = 0;
-					for (var i = 0; i < game.players.length; i++) {
-						var current = game.players[i];
-						if (current != player && current.countMark("tywuhun") > num) {
+				async content(event, trigger, player) {
+					let num = 0;
+					for (const current of game.players) {
+						if (current !== player && current.countMark("tywuhun") > num) {
 							num = current.countMark("tywuhun");
 						}
 					}
-					player
-						.chooseTarget(true, "请选择【武魂】的目标", "令其进行判定，若判定结果不为【桃】，则其死亡", function (card, player, target) {
-							return target != player && (target == _status.event.getTrigger().source || target.countMark("tywuhun") == _status.event.num);
-						})
-						.set("ai", function (target) {
-							return -get.attitude(_status.event.player, target);
+					const result = await player
+						.chooseTarget({
+							forced: true,
+							prompt: "请选择【武魂】的目标",
+							prompt2: "令其进行判定，若判定结果不为【桃】，则其死亡",
+							filterTarget: (card, player, target) =>
+								target !== player && (target === trigger.source || target.countMark("tywuhun") === num),
+							ai: target => -get.attitude(player, target),
 						})
 						.set("forceDie", true)
-						.set("num", num);
-					"step 1";
-					if (result.bool) {
-						var target = result.targets[0];
-						event.target = target;
-						player.logSkill("tywuhun_die", target);
-						player.line(target, { color: [255, 255, 0] });
-						game.delay(2);
-					}
-					"step 2";
-					target.judge(function (card) {
-						if (["tao"].includes(card.name)) {
-							return 10;
-						}
-						return -10;
-					}).judge2 = function (result) {
-						return result.bool == false ? true : false;
-					};
-					"step 3";
+						.set("num", num)
+						.forResult();
 					if (!result.bool) {
-						target.die();
+						return;
+					}
+					const target = result.targets[0];
+					event.target = target;
+					player.logSkill("tywuhun_die", target);
+					player.line(target, { color: [255, 255, 0] });
+					await game.delay(2);
+					const judgeResult = await target
+						.judge({
+							judge: card => (["tao"].includes(card.name) ? 10 : -10),
+							judge2: result => result.bool === false,
+						})
+						.forResult();
+					if (!judgeResult.bool) {
+						await target.die();
 					}
 				},
 			},
