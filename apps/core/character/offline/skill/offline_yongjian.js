@@ -950,27 +950,39 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filterTarget(event, player, target) {
-			return player.inRange(target) && target.countDiscardableCards(player, "he") > 0;
+			return player.inRange(target) && target.hasDiscardableCards(player, "he");
 		},
-		content() {
-			"step 0";
-			player.loseHp();
-			"step 1";
-			if (target.countDiscardableCards(player, "he") > 0) {
-				player.discardPlayerCard(target, 2, "he", true);
-			} else {
-				event.finish();
+		async content(event, trigger, player) {
+			const target = event.target;
+			await player.loseHp();
+			if (!target.hasDiscardableCards(player, "he")) {
+				return;
 			}
-			"step 2";
-			if (result.bool && result.cards.length == 2 && get.type2(result.cards[0], result.cards[0].original == "h" ? target : false) == get.type2(result.cards[1], result.cards[1].original == "h" ? target : false)) {
-				player.recover();
+			const result = await player
+				.discardPlayerCard({
+					target,
+					selectButton: 2,
+					position: "he",
+					forced: true,
+				})
+				.forResult();
+			if (!result.bool || result.cards?.length !== 2) {
+				return;
 			}
+			const firstCard = result.cards[0];
+			const secondCard = result.cards[1];
+			const firstType = get.type2(firstCard, firstCard.original === "h" ? target : false);
+			const secondType = get.type2(secondCard, secondCard.original === "h" ? target : false);
+			if (firstType !== secondType) {
+				return;
+			}
+			await player.recover();
 		},
 		ai: {
 			order: 4,
 			result: {
 				player(player, target) {
-					if (player.hp == 1) {
+					if (player.hp === 1) {
 						return -8;
 					}
 					if (target.countCards("e") > 1) {
