@@ -19731,6 +19731,7 @@ const skills = {
 			target.addAdditionalSkill("yijin_" + player.playerid, kane);
 			game.delayx();
 		},
+		ai: { neg: true },
 		subSkill: {
 			mark: {
 				mark: true,
