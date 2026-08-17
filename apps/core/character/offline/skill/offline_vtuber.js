@@ -369,33 +369,39 @@ const skills = {
 		trigger: {
 			global: "phaseBegin",
 		},
-		direct: true,
 		filter(event, player) {
 			return player.countCards("he") >= 3;
 		},
-		content() {
-			"step 0";
-			player
-				.chooseToDiscard(get.prompt2("vtbleyu", trigger.player), 3, "he")
-				.set("ai", card => {
-					if (ui.selected.cards.length == 2) {
-						return 10 - get.value(card);
-					}
-					if (_status.event.effect > 0) {
-						return 6 - get.value(card);
-					}
-					return 0;
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseToDiscard({
+					prompt: get.prompt2("vtbleyu", trigger.player),
+					selectCard: 3,
+					position: "he",
+					chooseonly: true,
+					ai: card => {
+						if (ui.selected.cards.length === 2) {
+							return 10 - get.value(card);
+						}
+						if (get.event().effect > 0) {
+							return 6 - get.value(card);
+						}
+						return 0;
+					},
 				})
 				.set("effect", trigger.player.hasJudge("lebu") ? 0 : get.effect(trigger.player, { name: "lebu" }, player, player))
-				.set("logSkill", ["vtbleyu", trigger.player]);
-			"step 1";
-			if (result.bool) {
-				trigger.player.judge(lib.card.lebu.judge).judge2 = lib.card.lebu.judge2;
-			} else {
-				event.finish();
-			}
-			"step 2";
-			if (!result.bool) {
+				.forResult();
+		},
+		logTarget: "player",
+		async content(event, trigger, player) {
+			await player.discard({ cards: event.cards });
+			const judgeResult = await trigger.player
+				.judge({
+					judge: lib.card.lebu.judge,
+					judge2: lib.card.lebu.judge2,
+				})
+				.forResult();
+			if (!judgeResult.bool) {
 				trigger.player.skip("phaseUse");
 			}
 		},
