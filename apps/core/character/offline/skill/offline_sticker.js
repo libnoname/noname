@@ -16,12 +16,12 @@ const skills = {
 			await game.cardsGotoOrdering(cards);
 			await player.showCards(cards);
 			const { source } = trigger;
-			let count = cards.filter(card => get.suit(card) == "spade").length;
-			while (count-- && source?.isIn() && game.hasPlayer(current => current != source && source.countGainableCards(current, "h"))) {
+			let count = cards.filter(card => get.suit(card) === "spade").length;
+			while (count-- && source?.isIn() && game.hasPlayer(current => current !== source && source.countGainableCards(current, "h"))) {
 				const result = await player
 					.chooseTarget(`令一名角色获得${get.translation(source)}的一张手牌`, (card, player, target) => {
 						const source = get.event().source;
-						return target != source && source.countGainableCards(target, "h");
+						return target !== source && source.countGainableCards(target, "h");
 					})
 					.set("source", source)
 					.set("ai", target => {
@@ -29,15 +29,16 @@ const skills = {
 						return get.effect(target, { name: "shunshou_copy", position: "h" }, source, player);
 					})
 					.forResult();
-				if (result?.targets?.length) {
-					const [target] = result.targets;
-					player.line([source, target], "green");
-					if (source.countGainableCards(target, "h")) {
-						await target.gainPlayerCard(source, "h", true);
-					}
+				if (!result?.targets?.length) {
+					continue;
+				}
+				const [target] = result.targets;
+				player.line([source, target], "green");
+				if (source.countGainableCards(target, "h")) {
+					await target.gainPlayerCard(source, "h", true);
 				}
 			}
-			cards = cards.filter(card => get.suit(card) != "spade");
+			cards = cards.filter(card => get.suit(card) !== "spade");
 			if (cards.length) {
 				await player.gain(cards, "gain2", "log");
 			}
@@ -154,7 +155,7 @@ const skills = {
 			if (!ui.selected.cards.length) {
 				return player.countCards("he", { suit: get.suit(card) }) > 2;
 			}
-			return get.suit(card) == get.suit(ui.selected.cards[0]);
+			return get.suit(card) === get.suit(ui.selected.cards[0]);
 		},
 		content() {
 			target.turnOver();
@@ -175,7 +176,7 @@ const skills = {
 	spfuluan2: {
 		mod: {
 			cardEnabled(card) {
-				if (card.name == "sha") {
+				if (card.name === "sha") {
 					return false;
 				}
 			},
@@ -447,27 +448,36 @@ const skills = {
 	},
 	spyicong: {
 		trigger: { player: "phaseDiscardEnd" },
-		direct: true,
 		locked: false,
 		filter(event, player) {
-			return player.countCards("he") > 0;
+			return player.hasCards("he");
 		},
-		content() {
-			"step 0";
-			player.chooseCard("he", [1, player.countCards("he")], get.prompt2("spyicong"), "allowChooseAll").set("ai", function (card) {
-				if (card.name == "du") {
-					return 10;
-				}
-				if (ui.selected.cards.length) {
-					return -1;
-				}
-				return 4 - get.value(card);
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseCard({
+					position: "he",
+					selectCard: [1, player.countCards("he")],
+					prompt: get.prompt2("spyicong"),
+					allowChooseAll: true,
+					ai: card => {
+						if (card.name === "du") {
+							return 10;
+						}
+						if (ui.selected.cards.length) {
+							return -1;
+						}
+						return 4 - get.value(card);
+					},
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			await player.addToExpansion({
+				cards: event.cards,
+				source: player,
+				animate: "give",
+				gaintag: ["spyicong"],
 			});
-			"step 1";
-			if (result.bool) {
-				player.logSkill("spyicong");
-				player.addToExpansion(result.cards, player, "give").gaintag.add("spyicong");
-			}
 		},
 		mod: {
 			globalTo(from, to, num) {
@@ -476,15 +486,15 @@ const skills = {
 		},
 		marktext: "扈",
 		onremove(player, skill) {
-			var cards = player.getExpansions(skill);
+			const cards = player.getExpansions(skill);
 			if (cards.length) {
-				player.loseToDiscardpile(cards);
+				player.loseToDiscardpile({ cards });
 			}
 		},
 		intro: {
 			name: "义从",
 			content(storage, player) {
-				return "共有" + get.cnNumber(player.getExpansions("spyicong").length) + "张“扈”";
+				return `共有${get.cnNumber(player.getExpansions("spyicong").length)}张“扈”`;
 			},
 			markcount: "expansion",
 		},
@@ -494,16 +504,16 @@ const skills = {
 		forced: true,
 		locked: false,
 		filter(event, player) {
-			return player.getExpansions("spyicong").length > 0;
+			return player.hasExpansions("spyicong");
 		},
-		content() {
-			var cards = player.getExpansions("spyicong");
-			var num = cards.length;
+		async content(event, trigger, player) {
+			const cards = player.getExpansions("spyicong");
+			const num = cards.length;
 			player.addMark("sptuji2", num, false);
 			player.addTempSkill("sptuji2");
-			player.loseToDiscardpile(cards);
+			player.loseToDiscardpile({ cards });
 			if (num <= 1) {
-				player.draw();
+				await player.draw();
 			}
 		},
 		ai: {
