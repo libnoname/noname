@@ -199,21 +199,24 @@ const skills = {
 	splanggu: {
 		trigger: { player: "damageEnd" },
 		filter(event, player) {
-			return get.itemtype(event.source) == "player";
+			return get.itemtype(event.source) === "player";
 		},
 		logTarget: "source",
-		content() {
-			"step 0";
-			player.judge();
-			"step 1";
-			if (trigger.source.countCards("h") > 0) {
-				var next = player.discardPlayerCard(trigger.source, "h", [1, Infinity], "allowChooseAll");
-				next.set("suit", result.suit);
-				next.set("filterButton", function (button) {
-					return get.suit(button.link) == _status.event.suit;
-				});
-				next.set("visible", true);
+		async content(event, trigger, player) {
+			const result = await player.judge().forResult();
+			if (!trigger.source.hasCards("h")) {
+				return;
 			}
+			await player
+				.discardPlayerCard({
+					target: trigger.source,
+					position: "h",
+					selectButton: [1, Infinity],
+					allowChooseAll: true,
+					filterButton: button => get.suit(button.link) === get.event().suit,
+					visible: true,
+				})
+				.set("suit", result.suit);
 		},
 		group: "splanggu_rewrite",
 	},
@@ -221,50 +224,55 @@ const skills = {
 		trigger: { player: "judge" },
 		sourceSkill: "splanggu",
 		filter(event, player) {
-			return player.countCards("hs") > 0 && event.getParent().name == "splanggu";
+			return player.hasCards("hs") && event.getParent()?.name === "splanggu";
 		},
 		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseCard("狼顾的判定结果为" + get.translation(trigger.player.judging[0]) + "，是否打出一张手牌进行代替？", "hs", function (card) {
-					var player = _status.event.player;
-					var mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
-					if (mod2 != "unchanged") {
-						return mod2;
-					}
-					var mod = game.checkMod(card, player, "unchanged", "cardRespondable", player);
-					if (mod != "unchanged") {
-						return mod;
-					}
-					return true;
-				})
-				.set("ai", function (card) {
-					return -1;
-				});
-			"step 1";
-			if (result.bool) {
-				player.respond(result.cards, "highlight", "splanggu", "noOrdering");
-			} else {
-				event.finish();
-			}
-			"step 2";
-			if (result.bool) {
-				if (trigger.player.judging[0].clone) {
-					trigger.player.judging[0].clone.classList.remove("thrownhighlight");
-					game.broadcast(function (card) {
-						if (card.clone) {
-							card.clone.classList.remove("thrownhighlight");
+		async content(event, trigger, player) {
+			const cardResult = await player
+				.chooseCard({
+					prompt: `狼顾的判定结果为${get.translation(trigger.player.judging[0])}，是否打出一张手牌进行代替？`,
+					position: "hs",
+					filterCard(card, player) {
+						const event = get.event();
+						const mod2 = game.checkMod(card, player, event, "unchanged", "cardEnabled2", player);
+						if (mod2 !== "unchanged") {
+							return Boolean(mod2);
 						}
-					}, trigger.player.judging[0]);
-					game.addVideo("deletenode", player, get.cardsInfo([trigger.player.judging[0].clone]));
-				}
-				game.cardsDiscard(trigger.player.judging[0]);
-				trigger.player.judging[0] = result.cards[0];
-				trigger.orderingCards.addArray(result.cards);
-				game.log(trigger.player, "的判定牌改为", result.cards[0]);
-				game.delay(2);
+						const mod = game.checkMod(card, player, "unchanged", "cardRespondable", player);
+						if (mod !== "unchanged") {
+							return Boolean(mod);
+						}
+						return true;
+					},
+					ai: () => -1,
+				})
+				.forResult();
+			if (!cardResult.bool || !cardResult.cards?.length) {
+				return;
 			}
+			await player.respond({
+				cards: cardResult.cards,
+				highlight: true,
+				skill: "splanggu",
+				noOrdering: true,
+			});
+			const judgedCard = trigger.player.judging[0];
+			if (judgedCard.clone) {
+				judgedCard.clone.classList.remove("thrownhighlight");
+				game.broadcast(card => {
+					if (card.clone) {
+						card.clone.classList.remove("thrownhighlight");
+					}
+				}, judgedCard);
+				game.addVideo("deletenode", player, get.cardsInfo([judgedCard.clone]));
+			}
+			const discardEvent = game.cardsDiscard(judgedCard);
+			trigger.player.judging[0] = cardResult.cards[0];
+			trigger.orderingCards.addArray(cardResult.cards);
+			game.log(trigger.player, "的判定牌改为", cardResult.cards[0]);
+			const delayEvent = game.delay(2);
+			await discardEvent;
+			await delayEvent;
 		},
 	},
 	sphantong: {
