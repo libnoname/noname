@@ -1,5 +1,4 @@
 export default {
-	//liupanxi: "",
 	//dc_sb_zhonghui: "",
 	lizhaoyi: "贞骨陨玉",
 	wu_zhangfei: "烈武桓威",
