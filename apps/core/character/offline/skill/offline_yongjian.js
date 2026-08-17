@@ -769,31 +769,42 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			for (var card of ui.discardPile.childNodes) {
-				if (get.color(card) == "black" && get.type(card) == "basic") {
+			for (const card of ui.discardPile.childNodes) {
+				if (get.color(card) === "black" && get.type(card) === "basic") {
 					return true;
 				}
 			}
 			return false;
 		},
-		content() {
-			"step 0";
-			var cards = Array.from(ui.discardPile.childNodes).filter(i => get.color(i) == "black" && get.type(i) == "basic");
-			player.chooseButton(["人望：选择一张黑色基本牌", cards], cards.length > 0).set("ai", get.buttonValue);
-			"step 1";
-			if (result.bool) {
-				var card = result.links[0];
-				event.card = card;
-				player.chooseTarget("选择一名角色获得" + get.translation(card), true).set("ai", target => get.attitude(_status.event.player, target));
-			} else {
-				event.finish();
+		async content(event, trigger, player) {
+			const cards = Array.from(ui.discardPile.childNodes).filter(card => get.color(card) === "black" && get.type(card) === "basic");
+			const cardResult = await player
+				.chooseButton({
+					createDialog: ["人望：选择一张黑色基本牌", cards],
+					forced: cards.length > 0,
+					ai: get.buttonValue,
+				})
+				.forResult();
+			if (!cardResult.bool) {
+				return;
 			}
-			"step 2";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.line(target);
-				target.gain(card, "gain2");
+			const card = cardResult.links[0];
+			const targetResult = await player
+				.chooseTarget({
+					prompt: `选择一名角色获得${get.translation(card)}`,
+					forced: true,
+					ai: target => get.attitude(_status.event.player, target),
+				})
+				.forResult();
+			if (!targetResult.bool) {
+				return;
 			}
+			const target = targetResult.targets[0];
+			player.line(target);
+			await target.gain({
+				cards: [card],
+				animate: "gain2",
+			});
 		},
 		ai: {
 			order: 10,
