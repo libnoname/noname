@@ -1,4 +1,7 @@
 export default {
+	//cuizhi: "",
+	luwenyi: "卷中避世",
+	//dc_sb_chengpu: "",
 	//dc_sb_zhonghui: "",
 	lizhaoyi: "贞骨陨玉",
 	wu_zhangfei: "烈武桓威",

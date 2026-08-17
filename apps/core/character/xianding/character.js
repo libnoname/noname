@@ -1,4 +1,26 @@
+import skills from "./skill";
+
 const characters = {
+	cuizhi: {
+		sex: "female",
+		group: "shu",
+		hp: 4,
+		skills: ["dcranlv", "dcjuexun"],
+		names: "崔|null",
+	},
+	luwenyi: {
+		sex: "female",
+		group: "wu",
+		hp: 3,
+		skills: ["dccaiyun", "dcqieyan"],
+		names: "陆|null",
+	},
+	dc_sb_chengpu: {
+		sex: "male",
+		group: "wu",
+		hp: 5,
+		skills: ["dcsbjianwei", "dcsbjuzhan"],
+	},
 	dc_sb_zhonghui: {
 		sex: "male",
 		group: "wei",
