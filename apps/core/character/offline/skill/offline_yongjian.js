@@ -8,58 +8,57 @@ const skills = {
 		audio: "luoshen",
 		trigger: { player: "phaseZhunbeiBegin" },
 		frequent: true,
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			event.cards = [];
-			"step 1";
-			var next = player.judge(function (card) {
-				var color = get.color(card);
-				var evt = _status.event.getParent("yjluoshen");
-				if (evt) {
-					if (!evt.color) {
-						evt.color = color;
-					} else if (evt.color != color) {
-						return -1;
-					}
-				}
-				return 1;
-			});
-			next.judge2 = function (result) {
-				return result.bool;
-			};
-			if (get.mode() != "guozhan" && !player.hasSkillTag("rejudge")) {
-				next.set("callback", function () {
-					if (get.position(card, true) == "o") {
-						player.gain(card, "gain2");
-					}
+			while (true) {
+				const judgeEvent = player.judge({
+					judge(card) {
+						const color = get.color(card);
+						const parentEvent = get.event().getParent("yjluoshen");
+						if (!parentEvent) {
+							return 1;
+						}
+						if (!parentEvent.color) {
+							parentEvent.color = color;
+						} else if (parentEvent.color !== color) {
+							return -1;
+						}
+						return 1;
+					},
+					judge2: result => result.bool,
 				});
-			} else {
-				next.set("callback", function () {
-					event.getParent().orderingCards.remove(card);
-				});
-			}
-			"step 2";
-			if (result.judge > 0) {
-				event.cards.push(result.card);
-				player.chooseBool("是否再次发动【洛神】？").set("frequentSkill", "yjluoshen");
-			} else {
-				for (var i = 0; i < event.cards.length; i++) {
-					if (get.position(event.cards[i], true) != "o") {
-						event.cards.splice(i, 1);
-						i--;
+				if (get.mode() !== "guozhan" && !player.hasSkillTag("rejudge")) {
+					judgeEvent.set("callback", async (event, trigger, player) => {
+						if (get.position(event.card, true) === "o") {
+							await player.gain({
+								cards: [event.card],
+								animate: "gain2",
+							});
+						}
+					});
+				} else {
+					judgeEvent.set("callback", async event => {
+						event.getParent().orderingCards.remove(event.card);
+					});
+				}
+				const judgeResult = await judgeEvent.forResult();
+				if (judgeResult.judge <= 0) {
+					event.cards = event.cards.filter(card => get.position(card, true) === "o");
+					if (event.cards.length) {
+						await player.gain({ cards: event.cards, animate: "gain2" });
 					}
+					return;
 				}
-				if (event.cards.length) {
-					player.gain(event.cards, "gain2");
-				}
-				event.finish();
-			}
-			"step 3";
-			if (result.bool) {
-				event.goto(1);
-			} else {
-				if (event.cards.length) {
-					player.gain(event.cards, "gain2");
+				event.cards.push(judgeResult.card);
+				const continueResult = await player
+					.chooseBool({ prompt: "是否再次发动【洛神】？" })
+					.set("frequentSkill", "yjluoshen")
+					.forResult();
+				if (!continueResult.bool) {
+					if (event.cards.length) {
+						await player.gain({ cards: event.cards, animate: "gain2" });
+					}
+					return;
 				}
 			}
 		},
