@@ -1,4 +1,11 @@
 const characters = {
+	scl_zhangxiu: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["sclfudi", "sclcongjian"],
+		dieAudios: ["zhangxiu"],
+	},
 	shangguanwaner: {
 		sex: "female",
 		group: "qun",

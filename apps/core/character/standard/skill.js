@@ -1688,6 +1688,7 @@ const skills = {
 		enable: "phaseUse",
 		prompt: "失去1点体力并摸两张牌",
 		delay: false,
+		manualConfirm: true,
 		async content(event, trigger, player) {
 			player.loseHp(1);
 			player.draw(2, "nodelay");
