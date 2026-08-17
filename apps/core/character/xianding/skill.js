@@ -83,8 +83,12 @@ const skills = {
 		},
 		selectCard: [1, Infinity],
 		position: "he",
+		complexCard: true,
 		check(card) {
-			return 114514 - get.value(card);
+			if (!ui.selected.cards?.length) {
+				return 114514 - get.value(card);
+			}
+			return 0;
 		},
 		filterTarget(card, player, target) {
 			return !player.getStorage("dczhiyao_used").includes(target);
@@ -97,7 +101,7 @@ const skills = {
 			await player.modedDiscard({ cards });
 			player.addTempSkill(event.name + "_used");
 			player.markAuto(event.name + "_used", [target]);
-			//用过一次就清楚记录
+			//用过一次就清除记录
 			player.setStorage("dcxunxiang_used2", [], true);
 			const num = cards.length * 2;
 			for (let i = 0; i < num; i++) {
@@ -109,6 +113,10 @@ const skills = {
 						const player = get.player();
 						switch (get.suit(card)) {
 							case "heart":
+								if (player.isDamaged()) {
+									return 2;
+								}
+								return 0.5;
 							case "club":
 								return 1;
 								break;
@@ -119,7 +127,7 @@ const skills = {
 								return 0;
 								break;
 							case "diamond":
-								return -1;
+								return -2;
 								break;
 							default:
 								return 0;
@@ -151,38 +159,64 @@ const skills = {
 			}
 		},
 		ai: {
-			order: 5,
+			order(item, player) {
+				player ??= get.player();
+				//演一下只有用了寻香后再开始
+				let suits = (player.storage.dcxunxiang_used2 ?? []).map(card => get.suit(card)).slice(0, 2);
+				if (!suits.length) {
+					return 1;
+				}
+				//不演了直接透视牌堆顶前两张牌（防止被无中生有等牌干扰）
+				const cards = Array.from(ui.cardPile.childNodes).slice(0, 2);
+				if (cards.length) {
+					suits = cards.map(card => get.suit(card));
+				}
+				if (suits.every(suit => ["diamond", "spade"].includes(suit)) && game.hasPlayer(current => get.attitude(player, current) < 0)) {
+					return 114514;
+				}
+				if (suits.every(suit => ["heart", "club"].includes(suit)) && game.hasPlayer(current => get.attitude(player, current) > 0)) {
+					return 114514;
+				}
+				return 5;
+			},
 			result: {
-				//等人优化了
 				player(player, target) {
-					const cards = player.storage.dcxunxiang_used;
+					const cards = player.storage.dcxunxiang_used2;
 					if (!cards?.length) {
 						return -1;
 					}
 					return 1;
 				},
 				target(player, target) {
-					const suits = (player.storage.dcxunxiang_used ?? []).slice().map(card => get.suit(card));
+					//演一下
+					let suits = (player.storage.dcxunxiang_used2 ?? []).slice().map(card => get.suit(card));
 					const list = [];
 					if (suits?.length) {
 						let num = 0;
-						for (const suit of suits) {
-							switch (suit) {
-								case "diamond":
-									num += get.damageEffect(target, player, player, "fire");
-									break;
-								case "heart":
-									num += get.recoverEffect(target, player, player) + get.effect(target, { name: "draw" }, player, player);
-									break;
-								case "spade":
-									num += get.effect(target, { name: "guohe_copy", position: "he" }, player, player) * 2;
-									break;
-								case "club":
-									num += get.effect(target, { name: "draw" }, player, player) * 1.5;
-									break;
-							}
+						//不演了直接透视
+						const cards = Array.from(ui.cardPile.childNodes).slice(0, 2);
+						if (cards?.length) {
+							suits = cards.map(card => get.suit(card));
 						}
-						list.push([target, num]);
+						game.countPlayer(current => {
+							for (const suit of suits) {
+								switch (suit) {
+									case "diamond":
+										num += get.damageEffect(current, player, player, "fire");
+										break;
+									case "heart":
+										num += get.recoverEffect(current, player, player) + get.effect(current, { name: "draw" }, player, player);
+										break;
+									case "spade":
+										num += get.effect(current, { name: "guohe_copy", position: "he" }, player, player) * 2;
+										break;
+									case "club":
+										num += get.effect(current, { name: "draw" }, player, player) * 1.5;
+										break;
+								}
+							}
+							list.push([current, num]);
+						});
 					}
 					if (list.length) {
 						list.sort((a, b) => b[1] - a[1]);
