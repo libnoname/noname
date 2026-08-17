@@ -878,33 +878,32 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return player.countCards("h") > 0;
+			return player.hasCards("h");
 		},
-		content() {
-			"step 0";
-			player.showHandcards();
-			var hs = player.getCards("h");
+		async content(event, trigger, player) {
+			await player.showHandcards();
+			const hs = player.getCards("h");
 			if (hs.length > 1) {
-				var type = get.type2(hs[0], player);
-				for (var i = 1; i < hs.length; i++) {
-					if (get.type(hs[i]) != type) {
-						event.finish();
+				const type = get.type2(hs[0], player);
+				for (const card of hs.slice(1)) {
+					if (get.type(card) !== type) {
 						return;
 					}
 				}
 			}
-			"step 1";
-			player.chooseCardTarget({
-				prompt: "是否赠予一张手牌？",
-				filterCard: true,
-				filterTarget: lib.filter.notMe,
-			});
-			"step 2";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.line(target, "green");
-				player.gift(result.cards, target);
+			const result = await player
+				.chooseCardTarget({
+					prompt: "是否赠予一张手牌？",
+					filterCard: true,
+					filterTarget: lib.filter.notMe,
+				})
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
+			const target = result.targets[0];
+			player.line(target, "green");
+			await player.gift(result.cards, target);
 		},
 		ai: {
 			combo: "yixiandao",
