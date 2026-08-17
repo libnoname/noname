@@ -234,39 +234,46 @@ const skills = {
 			player: "phaseBegin",
 		},
 		direct: true,
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			if (!_status.vtbtaoyan_count) {
 				_status.vtbtaoyan_count = 6;
 			}
-			player.chooseTarget(get.prompt("vtbtaoyan"), "令一或两名其他角色摸一张牌并从游戏外获得一张【桃】指示物", lib.filter.notMe, [1, 2]).set("ai", target => {
-				var player = _status.event.player;
-				return get.recoverEffect(target, player, player) / 2 + get.attitude(player, target);
-			});
-			"step 1";
-			if (result.bool) {
-				var targets = result.targets.slice();
-				targets.sortBySeat();
-				player.logSkill("vtbtaoyan", targets);
-				game.broadcastAll(function () {
-					if (!lib.inpile.includes("tao")) {
-						lib.inpile.add("tao");
-					}
-				});
-				player.addSkill("vtbtaoyan_remove");
-				for (var target of targets) {
-					target.draw();
-					if (!_status.vtbtaoyan_count) {
-						continue;
-					}
-					if (!_status.vtbtaoyan_cards) {
-						_status.vtbtaoyan_cards = [];
-					}
-					_status.vtbtaoyan_count--;
-					var card = game.createCard("tao");
-					_status.vtbtaoyan_cards.push(card.cardid);
-					target.gain(card, "gain2");
+			const result = await player
+				.chooseTarget({
+					prompt: get.prompt("vtbtaoyan"),
+					prompt2: "令一或两名其他角色摸一张牌并从游戏外获得一张【桃】指示物",
+					filterTarget: lib.filter.notMe,
+					selectTarget: [1, 2],
+					ai: target => get.recoverEffect(target, player, player) / 2 + get.attitude(player, target),
+				})
+				.forResult();
+			if (!result.bool) {
+				return;
+			}
+			const targets = result.targets.slice().sortBySeat();
+			player.logSkill("vtbtaoyan", targets);
+			game.broadcastAll(() => {
+				if (!lib.inpile.includes("tao")) {
+					lib.inpile.add("tao");
 				}
+			});
+			player.addSkill("vtbtaoyan_remove");
+			const nextEvents = [];
+			for (const target of targets) {
+				nextEvents.push(target.draw());
+				if (!_status.vtbtaoyan_count) {
+					continue;
+				}
+				if (!_status.vtbtaoyan_cards) {
+					_status.vtbtaoyan_cards = [];
+				}
+				_status.vtbtaoyan_count--;
+				const card = game.createCard("tao");
+				_status.vtbtaoyan_cards.push(card.cardid);
+				nextEvents.push(target.gain({ cards: [card], animate: "gain2" }));
+			}
+			for (const nextEvent of nextEvents) {
+				await nextEvent;
 			}
 		},
 		ai: {
@@ -284,30 +291,29 @@ const skills = {
 				firstDo: true,
 				forceDie: true,
 				filter(event, player) {
-					if (typeof _status.vtbtaoyan_count != "number") {
+					if (typeof _status.vtbtaoyan_count !== "number") {
 						return false;
 					}
-					var cards = event.getd();
-					return cards.some(card => {
-						return _status.vtbtaoyan_cards.includes(card.cardid);
-					});
+					const cards = event.getd();
+					return cards.some(card => _status.vtbtaoyan_cards.includes(card.cardid));
 				},
-				content() {
-					var cards = trigger.getd(),
-						remove = [];
-					for (var card of cards) {
+				async content(event, trigger, player) {
+					const cards = trigger.getd();
+					const remove = [];
+					for (const card of cards) {
 						if (_status.vtbtaoyan_cards.includes(card.cardid)) {
 							_status.vtbtaoyan_cards.remove(card.cardid);
 							remove.push(card);
 						}
 					}
-					if (remove.length) {
-						remove.forEach(i => {
-							i.remove();
-							_status.vtbtaoyan_count++;
-						});
-						game.log(remove, "被移出了游戏");
+					if (!remove.length) {
+						return;
 					}
+					for (const card of remove) {
+						card.remove();
+						_status.vtbtaoyan_count++;
+					}
+					game.log(remove, "被移出了游戏");
 				},
 			},
 		},
