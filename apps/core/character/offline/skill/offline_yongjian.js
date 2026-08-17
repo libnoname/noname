@@ -297,28 +297,35 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			var zhu = get.zhu(player);
+			const zhu = get.zhu(player);
 			if (!zhu) {
 				return false;
 			}
-			return zhu.countGainableCards(player, zhu == player ? "ej" : "hej");
+			return zhu.hasGainableCards(player, zhu === player ? "ej" : "hej");
 		},
 		filterTarget(card, player, target) {
-			var zhu = get.zhu(player);
-			return target == zhu;
+			const zhu = get.zhu(player);
+			return target === zhu;
 		},
 		selectTarget: 1,
-		content() {
-			"step 0";
-			player.gainPlayerCard(target, player == target ? "ej" : "hej", true);
-			"step 1";
-			if (!player.countCards("he") || player == target) {
-				event.finish();
-			} else {
-				player.chooseCard("择主：交给" + get.translation(target) + "一张牌", "he", true);
+		async content(event, trigger, player) {
+			const target = event.target;
+			await player.gainPlayerCard({
+				target,
+				position: player === target ? "ej" : "hej",
+				forced: true,
+			});
+			if (!player.hasCards("he") || player === target) {
+				return;
 			}
-			"step 2";
-			player.give(result.cards, target);
+			const result = await player
+				.chooseCard({
+					prompt: `择主：交给${get.translation(target)}一张牌`,
+					position: "he",
+					forced: true,
+				})
+				.forResult();
+			await player.give(result.cards, target);
 		},
 		ai: {
 			order: 2.9,
