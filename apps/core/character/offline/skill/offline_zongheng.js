@@ -118,7 +118,7 @@ const skills = {
 					selectButton: 2,
 					ai(button) {
 						//插眼
-						return 1 + Math.randomGet();
+						return 1 + Math.random();
 					},
 				})
 				.set("numberx", numberx)
