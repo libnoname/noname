@@ -805,13 +805,13 @@ const skills = {
 			},
 			targetInRange(card) {
 				const suit = get.color(card);
-				if (suit == "none" || suit == "unsure") {
+				if (suit === "none" || suit === "unsure") {
 					return true;
 				}
 			},
 			cardUsable(card) {
 				const suit = get.color(card);
-				if (suit == "none" || suit == "unsure") {
+				if (suit === "none" || suit === "unsure") {
 					return Infinity;
 				}
 			},
@@ -825,68 +825,50 @@ const skills = {
 		trigger: { player: "useCard2" },
 		forced: true,
 		filter(event, player) {
-			return get.color(event.card) == "none";
+			return get.color(event.card) === "none";
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			if (player.countMark("shencai") < 4 && player.hasSkill("tyshencai", null, null, false)) {
 				player.addMark("shencai", 1, false);
 			}
 			if (trigger.addCount !== false) {
 				trigger.addCount = false;
-				var stat = player.getStat().card,
-					name = trigger.card.name;
-				if (typeof stat[name] == "number") {
+				const stat = player.getStat().card;
+				const name = trigger.card.name;
+				if (typeof stat[name] === "number") {
 					stat[name]--;
 				}
 			}
-			var info = get.info(trigger.card);
-			if (info.allowMultiple == false) {
-				event.finish();
-			} else if (trigger.targets && !info.multitarget) {
-				if (
-					!game.hasPlayer(function (current) {
-						return !trigger.targets.includes(current) && lib.filter.targetEnabled2(trigger.card, player, current);
-					})
-				) {
-					event.finish();
-				}
-			} else {
-				event.finish();
+			const info = get.info(trigger.card);
+			if (info.allowMultiple === false || !trigger.targets || info.multitarget) {
+				return;
 			}
-			"step 1";
-			var prompt2 = "为" + get.translation(trigger.card) + "增加任意个目标";
-			player
-				.chooseTarget(
-					get.prompt("xunshi"),
-					function (card, player, target) {
-						var player = _status.event.player;
-						return !_status.event.targets.includes(target) && lib.filter.targetEnabled2(_status.event.card, player, target);
+			if (!game.hasPlayer(current => !trigger.targets.includes(current) && lib.filter.targetEnabled2(trigger.card, player, current))) {
+				return;
+			}
+			const prompt2 = `为${get.translation(trigger.card)}增加任意个目标`;
+			const result = await player
+				.chooseTarget({
+					prompt: get.prompt("xunshi"),
+					prompt2,
+					filterTarget(_card, player, target) {
+						const event = get.event();
+						return !event.targets.includes(target) && lib.filter.targetEnabled2(event.card, event.player, target);
 					},
-					[1, Infinity]
-				)
-				.set("prompt2", prompt2)
-				.set("ai", function (target) {
-					var trigger = _status.event.getTrigger();
-					var player = _status.event.player;
-					return get.effect(target, trigger.card, player, player);
+					selectTarget: [1, Infinity],
+					ai: target => get.effect(target, trigger.card, player, player),
 				})
 				.set("card", trigger.card)
-				.set("targets", trigger.targets);
-			"step 2";
-			if (result.bool) {
-				if (!event.isMine() && !event.isOnline()) {
-					game.delayx();
-				}
-				event.targets = result.targets;
-			} else {
-				event.finish();
+				.set("targets", trigger.targets)
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
-			"step 3";
-			if (event.targets) {
-				player.line(event.targets, "fire");
-				trigger.targets.addArray(event.targets);
+			if (!event.isMine() && !event.isOnline()) {
+				await game.delayx();
 			}
+			player.line(result.targets, "fire");
+			trigger.targets.addArray(result.targets);
 		},
 		subSkill: {
 			mark: {
@@ -900,12 +882,12 @@ const skills = {
 				},
 				direct: true,
 				firstDo: true,
-				content() {
-					let cards1 = [],
-						cards2 = [];
+				async content(event, trigger, player) {
+					let cards1 = [];
+					let cards2 = [];
 					player.getCards("h").forEach(card => {
-						let bool1 = lib.skill.xunshi.isXunshi(card),
-							bool2 = card.hasGaintag("tyxunshi_tag");
+						const bool1 = lib.skill.xunshi.isXunshi(card);
+						const bool2 = card.hasGaintag("tyxunshi_tag");
 						if (bool1 && !bool2) {
 							cards1.add(card);
 						}
