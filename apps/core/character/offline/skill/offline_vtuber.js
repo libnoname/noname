@@ -10,99 +10,94 @@ const skills = {
 		trigger: { global: "useCard" },
 		direct: true,
 		filter(event, player) {
-			return event.player != player && event.card.name == "sha" && player.countCards("he") > 0 && event.player.isPhaseUsing();
+			return event.player !== player && event.card.name === "sha" && player.countCards("he") > 0 && event.player.isPhaseUsing();
 		},
-		content() {
-			"step 0";
-			var go = false,
-				d1 = false;
+		async content(event, trigger, player) {
+			let go = false;
+			let d1 = false;
 			if (get.attitude(player, trigger.player) > 0) {
-				for (var target of trigger.targets) {
-					if (
-						!target.mayHaveShan(player, "use") ||
-						trigger.player.hasSkillTag(
-							"directHit_ai",
-							true,
-							{
-								target: target,
-								card: trigger.card,
-							},
-							true
-						)
-					) {
-						if (
-							get.attitude(player, target) < 0 &&
-							!trigger.player.hasSkillTag("jueqing", false, target) &&
-							!target.hasSkillTag("filterDamage", null, {
-								player: trigger.player,
-								card: trigger.card,
-							})
-						) {
-							d1 = true;
-							break;
-						}
+				for (const target of trigger.targets) {
+					const isDirectHit = !target.mayHaveShan(player, "use") || trigger.player.hasSkillTag("directHit_ai", true, { target, card: trigger.card }, true);
+					if (!isDirectHit) {
+						continue;
 					}
+					if (
+						get.attitude(player, target) >= 0 ||
+						trigger.player.hasSkillTag("jueqing", false, target) ||
+						target.hasSkillTag("filterDamage", null, {
+							player: trigger.player,
+							card: trigger.card,
+						})
+					) {
+						continue;
+					}
+					d1 = true;
+					break;
 				}
 				if (trigger.addCount === false || !trigger.player.isPhaseUsing()) {
 					go = false;
 				} else if (!trigger.player.hasSkill("paoxiao") && !trigger.player.hasSkill("tanlin3") && !trigger.player.hasSkill("zhaxiang2") && !trigger.player.hasSkill("fengnu") && !trigger.player.getEquip("zhuge")) {
-					var nh = trigger.player.countCards("h");
-					if (player == trigger.player) {
+					const nh = trigger.player.countCards("h");
+					if (player === trigger.player) {
 						go = player.countCards("h", "sha") > 0;
 					} else if (nh >= 4) {
 						go = true;
 					} else if (player.countCards("h", "sha")) {
-						if (nh == 3) {
+						if (nh === 3) {
 							go = Math.random() < 0.8;
-						} else if (nh == 2) {
+						} else if (nh === 2) {
 							go = Math.random() < 0.5;
 						}
 					} else if (nh >= 3) {
-						if (nh == 3) {
+						if (nh === 3) {
 							go = Math.random() < 0.5;
-						} else if (nh == 2) {
+						} else if (nh === 2) {
 							go = Math.random() < 0.2;
 						}
 					}
 				}
 			}
-			go = go * Math.random() + d1 * Math.random() > 0.4;
+			go = Number(go) * Math.random() + Number(d1) * Math.random() > 0.4;
 			//AI停顿
 			if (
 				go &&
 				!event.isMine() &&
 				!event.isOnline() &&
-				player.hasCard(function (card) {
-					return get.value(card) < 6 && lib.filter.cardDiscardable(card, player, event.name);
-				}, "he")
+				player.hasCard(card => get.value(card) < 6 && lib.filter.cardDiscardable(card, player, event.name), "he")
 			) {
-				game.delayx();
+				await game.delayx();
 			}
-			var next = player.chooseToDiscard(get.prompt("vtbguisha"), "弃置一张牌，令" + get.translation(trigger.player) + "本次使用的【杀】不计入使用次数，且对" + get.translation(trigger.targets) + "造成的伤害+1", "he");
-			next.logSkill = ["vtbguisha", trigger.player];
-			next.set("ai", function (card) {
-				if (_status.event.go) {
-					return 6 - get.value(card);
-				}
-				return 0;
-			});
-			next.set("go", go);
-			"step 1";
-			if (result.bool) {
-				if (trigger.addCount !== false) {
-					trigger.addCount = false;
-					const stat = trigger.player.getStat().card,
-						name = trigger.card.name;
-					if (typeof stat[name] === "number") {
-						stat[name]--;
-					}
-				}
-				trigger.player.addTempSkill("vtbguisha_bonus");
-				if (!trigger.card.storage) {
-					trigger.card.storage = {};
-				}
-				trigger.card.storage.vtbguisha_targets = trigger.targets;
+			const result = await player
+				.chooseToDiscard({
+					prompt: get.prompt("vtbguisha"),
+					prompt2: `弃置一张牌，令${get.translation(trigger.player)}本次使用的【杀】不计入使用次数，且对${get.translation(trigger.targets)}造成的伤害+1`,
+					position: "he",
+					ai: card => {
+						if (get.event().go) {
+							return 6 - get.value(card);
+						}
+						return 0;
+					},
+				})
+				.set("logSkill", ["vtbguisha", trigger.player])
+				.set("go", go)
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
+			if (trigger.addCount !== false) {
+				trigger.addCount = false;
+				const stat = trigger.player.getStat().card;
+				const name = trigger.card.name;
+				if (typeof stat[name] === "number") {
+					stat[name]--;
+				}
+			}
+			trigger.player.addTempSkill("vtbguisha_bonus");
+			if (!trigger.card.storage) {
+				trigger.card.storage = {};
+			}
+			trigger.card.storage.vtbguisha_targets = trigger.targets;
 		},
 		ai: {
 			expose: 0.2,
@@ -116,9 +111,9 @@ const skills = {
 				charlotte: true,
 				onremove: true,
 				filter(event, player) {
-					return event.card && event.card.name == "sha" && event.card.storage && event.card.storage.vtbguisha_targets && event.card.storage.vtbguisha_targets.includes(event.player);
+					return event.card && event.card.name === "sha" && event.card.storage && event.card.storage.vtbguisha_targets && event.card.storage.vtbguisha_targets.includes(event.player);
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.num++;
 				},
 			},
