@@ -718,7 +718,7 @@ const skills = {
 		},
 		check(event, player) {
 			const type = get.type2(event.card);
-			if (get.tag(event.card, "damage") && player.hp <= type === "trick" ? 2 : 1) {
+			if (get.tag(event.card, "damage") && player.hp <= (type === "trick" ? 2 : 1)) {
 				return false;
 			}
 			if (type === "trick" && player.hp <= 1) {

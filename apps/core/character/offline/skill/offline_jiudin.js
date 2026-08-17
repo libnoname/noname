@@ -1031,9 +1031,8 @@ const skills = {
 					const targets = game.filterPlayer(current => current !== player && current !== target && current.group === target.group);
 					if (targets.length) {
 						player.line(targets, "fire");
-						const next = game.doAsyncInOrder(targets, current => current.damage({ nature: "fire" }));
 						await game.delayx();
-						await next;
+						await game.doAsyncInOrder(targets, current => current.damage({ nature: "fire" }));
 					}
 				},
 				ai: {

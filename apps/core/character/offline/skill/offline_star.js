@@ -646,7 +646,7 @@ const skills = {
 					.forResult();
 				event.result.cards = event.result.links;
 			} else {
-				event.result = await await player
+				event.result = await player
 					.chooseBool({ choice: true })
 					.set("createDialog", [get.prompt("junwei"), "hidden", cards])
 					.set("dialogselectx", true)
