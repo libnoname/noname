@@ -41,7 +41,7 @@ const dynamicTranslates = {
 	twdangjiang(player, skill) {
 		const bool = player.storage[skill];
 		let yang = "你可将一张非伤害牌当【无中生有】使用",
-			yin = "你可将一张伤害牌当无距离限制的任意【杀】使用";
+			yin = "你可将一张非伤害牌当无距离限制的任意【杀】使用";
 		if (bool) {
 			yin = `<span class='bluetext'>${yin}</span>`;
 		} else {
