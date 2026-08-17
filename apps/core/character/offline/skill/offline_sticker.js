@@ -135,8 +135,8 @@ const skills = {
 		filter(event, player) {
 			return player.countCards("h") < player.maxHp;
 		},
-		content() {
-			player.drawTo(player.maxHp);
+		async content(event, trigger, player) {
+			await player.drawTo(player.maxHp);
 		},
 	},
 	spfuluan: {
@@ -157,9 +157,9 @@ const skills = {
 			}
 			return get.suit(card) === get.suit(ui.selected.cards[0]);
 		},
-		content() {
-			target.turnOver();
-			player.addTempSkill("spfuluan2");
+		async content(event, trigger, player) {
+			await event.target.turnOver();
+			await player.addTempSkill("spfuluan2");
 		},
 		ai: {
 			order: 1,
