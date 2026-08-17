@@ -905,7 +905,7 @@ const skills = {
 							dragqianfu: true,
 						},
 					},
-					precontent() {
+					async precontent(event, trigger, player) {
 						player.logSkill("dragqianfu");
 						player.addTempSkill("dragqianfu_effect");
 					},
@@ -1039,7 +1039,7 @@ const skills = {
 					return event.source?.hasSex("female");
 				},
 				locked: false,
-				content() {
+				async content(event, trigger, player) {
 					player.awakenSkill("dragyuxian");
 					game.log(player, "使命失败");
 				},
