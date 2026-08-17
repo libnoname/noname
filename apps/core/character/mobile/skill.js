@@ -4203,7 +4203,7 @@ const skills = {
 				targets: [target],
 				name,
 			} = event;
-			const getNum = (player) => {
+			const getNum = player => {
 				let num = Math.max(1, player.countMark(`hefeidangshi_count`));
 				if (player.hasSkill("hefeiheyuzhangliao") && get.info("friendgongli").isFriendOf(player, "hefei_lidian")) {
 					num = 3;
@@ -6166,10 +6166,7 @@ const skills = {
 				.chooseButton(["裁裘：是否获得其中任意张牌？", cards], [1, Infinity], "allowChooseAll")
 				.set("ai", button => {
 					const player = get.player();
-					//只要贪不死就往死里贪
-					if (player.hp <= 1 && ["sha", "shan"].includes(button.link.name)) {
-						return 0;
-					}
+					//只要贪不死就往死里贪   孩子你还是不够贪
 					return 1;
 				})
 				.forResult();
@@ -10333,16 +10330,18 @@ const skills = {
 				forced: true,
 				async content(event, trigger, player) {
 					await player.loseHp();
-					player.storage[event.name][trigger.card.name]--;
-					if (get.info(event.name).intro.markcount(player.storage[event.name]) === 0) {
-						player.removeSkill(event.name);
-						return;
+					if (typeof player.storage[event.name][trigger.card.name] == "number" && player.storage[event.name][trigger.card.name] > 0) {
+						player.storage[event.name][trigger.card.name]--;
+						if (get.info(event.name).intro.markcount(player.storage[event.name]) === 0) {
+							player.removeSkill(event.name);
+							return;
+						}
+						if (player.storage[event.name][trigger.card.name] === 0) {
+							delete player.storage[event.name][trigger.card.name];
+						}
+						player.syncStorage(event.name);
+						player.addTip(event.name, `谮构 ${get.translation(Object.keys(player.storage[event.name]))}`);
 					}
-					if (player.storage[event.name][trigger.card.name] === 0) {
-						delete player.storage[event.name][trigger.card.name];
-					}
-					player.syncStorage(event.name);
-					player.addTip(event.name, `谮构 ${get.translation(Object.keys(player.storage[event.name]))}`);
 				},
 				mod: {
 					aiOrder(player, card, num) {

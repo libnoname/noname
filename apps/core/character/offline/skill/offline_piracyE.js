@@ -265,39 +265,39 @@ const skills = {
 				return false;
 			}
 			if (event.name == "phase") {
-				const cards = event.player
+				const cards = target
 					.getHistory("useCard")
 					.filter(evt => ["basic", "trick"].includes(get.type(evt.card)))
-					.map(evt => get.autoViewAs({ name: evt.card.name, nature: evt.card.nature, isCard: true }, "unsure"))
-					.flat()
+					.flatMap(evt => get.autoViewAs({ name: evt.card.name, nature: evt.card.nature, isCard: true }, "unsure"))
 					.unique();
 				return cards.some(card => player.hasUseTarget(card));
 			}
-			if (!event.getg?.(_status.currentPhase)?.length) {
-				return false;
-			}
-			return event.getParent(2)?.name !== "peersheng";
+			const cards = event.getg?.(target);
+			return event.getParent(2)?.name !== "peersheng" && cards?.length > 0;
 		},
 		async content(event, trigger, player) {
-			if (trigger.name === "phase") {
-				const cards = trigger.player
+			const target = game.findPlayer(current => current.getSeatNum() == 1);
+			if (trigger.name == "phase") {
+				const cards = target
 					.getHistory("useCard")
 					.filter(evt => ["basic", "trick"].includes(get.type(evt.card)))
-					.map(evt => get.autoViewAs({ name: evt.card.name, nature: evt.card.nature, isCard: true }, "unsure"))
-					.flat();
+					.flatMap(evt => get.autoViewAs({ name: evt.card.name, nature: evt.card.nature, isCard: true }, "unsure"));
 				while (true) {
 					if (cards.some(card => player.hasUseTarget(card))) {
 						const result = await player
 							.chooseButton({
 								createDialog: ["二圣：你可以视为使用一张牌", [cards, "vcard"]],
-								filterButton(button) {
-									const player = get.player();
+								filterButton(button, player) {
 									const card = button.link;
 									return player.hasUseTarget(card);
 								},
 								ai(button) {
 									const player = get.player();
 									const card = button.link;
+									//防止ai只杀不酒
+									if (card.name == "jiu") {
+										return 114514;
+									}
 									return player.getUseValue(card);
 								},
 							})
@@ -314,7 +314,7 @@ const skills = {
 					}
 				}
 			} else {
-				await player.draw({ num: trigger.getg(_status.currentPhase).length });
+				await player.draw({ num: trigger.getg(target).length });
 			}
 		},
 	},
