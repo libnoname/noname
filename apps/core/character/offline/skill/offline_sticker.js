@@ -187,13 +187,14 @@ const skills = {
 			return player.getUseValue({ name: "sha", isCard: true }) > 0;
 		},
 		filter(event, player) {
-			return player.countCards("h") > 0;
+			return player.hasCards("h");
 		},
-		content() {
-			"step 0";
-			player.showHandcards();
-			"step 1";
-			player.chooseUseTarget("sha", false);
+		async content(event, trigger, player) {
+			await player.showHandcards();
+			await player.chooseUseTarget({
+				card: get.autoViewAs({ name: "sha" }),
+				addCount: false,
+			});
 		},
 	},
 	splanggu: {
