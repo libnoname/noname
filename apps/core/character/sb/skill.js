@@ -8314,40 +8314,50 @@ const skills = {
 		usable: 1,
 		logAudio: () => 1,
 		filterTarget: lib.filter.notMe,
-		content() {
-			"step 0";
-			player
+		async content(event, trigger, player) {
+			const { target } = event;
+			const result = await player
 				.chooseToDuiben(target)
 				.set("title", "谋弈")
 				.set("namelist", ["固守城池", "突出重围", "围城断粮", "擂鼓进军"])
 				.set("translationList", [`以防止${get.translation(player)}通过此技能对你使用【决斗】`, `以防止${get.translation(player)}通过此技能对你使用【兵粮寸断】`, `若成功，将牌堆顶的牌当做【兵粮寸断】对${get.translation(target)}使用`, `若成功，视为对${get.translation(target)}使用【决斗】`])
 				.set("ai", button => {
-					var source = _status.event.getParent().player,
-						target = _status.event.getParent().target;
-					if (get.effect(target, { name: "juedou" }, source, source) >= 10 && button.link[2] == "db_def2" && Math.random() < 0.5) {
+					const source = _status.event.getParent().player;
+					const target = _status.event.getParent().target;
+					if (get.effect(target, { name: "juedou" }, source, source) >= 10 && button.link[2] === "db_def2" && Math.random() < 0.5) {
 						return 10;
 					}
 					return 1 + Math.random();
-				});
-			"step 1";
-			if (result.bool) {
-				if (result.player == "db_def1") {
-					if (target.hasJudge("bingliang")) {
-						player.gainPlayerCard(target, "he", true);
-					} else {
-						if (ui.cardPile.childNodes.length > 0) {
-							if (player.canUse(get.autoViewAs({ name: "bingliang" }, [ui.cardPile.firstChild]), target, false)) {
-								player.useCard({ name: "bingliang" }, target, get.cards());
-							}
-						}
-					}
-				} else {
-					var card = { name: "juedou", isCard: true };
-					if (player.canUse(card, target)) {
-						player.useCard(card, target);
-					}
-				}
+				})
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
+			if (result.player !== "db_def1") {
+				const card = get.autoViewAs({ name: "juedou", isCard: true });
+				if (player.canUse(card, target)) {
+					await player.useCard({ card, targets: [target] });
+				}
+				return;
+			}
+			if (target.hasJudge("bingliang")) {
+				await player.gainPlayerCard({ target, position: "he", forced: true });
+				return;
+			}
+			if (!ui.cardPile.childNodes.length) {
+				return;
+			}
+			const card = get.autoViewAs({ name: "bingliang" }, [ui.cardPile.firstChild]);
+			if (!player.canUse(card, target, false)) {
+				return;
+			}
+			await player.useCard({
+				card: get.autoViewAs({
+					name: "bingliang",
+				}),
+				cards: get.cards(),
+				targets: [target],
+			});
 		},
 		ai: {
 			threaten: 1.2,
