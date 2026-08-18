@@ -8150,12 +8150,12 @@ const skills = {
 		audio: 2,
 		mod: {
 			cardUsable(card) {
-				if (card.name == "sha") {
+				if (card.name === "sha") {
 					return Infinity;
 				}
 			},
 			targetInRange(card, player, target) {
-				if (card.name == "sha" && player.getEquips(1).length > 0) {
+				if (card.name === "sha" && player.getEquips(1).length > 0) {
 					return true;
 				}
 			},
@@ -8163,22 +8163,16 @@ const skills = {
 		trigger: { player: "useCard" },
 		forced: true,
 		filter(event, player) {
-			if (event.card.name != "sha") {
+			if (event.card.name !== "sha") {
 				return false;
 			}
-			var evt = event.getParent("phaseUse");
-			if (!evt || evt.player != player) {
+			const evt = event.getParent("phaseUse");
+			if (!evt || evt.player !== player) {
 				return false;
 			}
-			return player.hasHistory(
-				"useCard",
-				function (evtx) {
-					return evtx != event && evtx.card.name == "sha" && evtx.getParent("phaseUse") == evt;
-				},
-				event
-			);
+			return player.hasHistory("useCard", evtx => evtx !== event && evtx.card.name === "sha" && evtx.getParent("phaseUse") === evt, event);
 		},
-		content() {
+		async content(event, trigger, player) {
 			if (!trigger.card.storage) {
 				trigger.card.storage = {};
 			}
@@ -8196,7 +8190,7 @@ const skills = {
 				filter(event, player) {
 					return event.card.storage && event.card.storage.sbpaoxiao && event.target.isIn();
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.target.addTempSkill("fengyin");
 				},
 				group: "sbpaoxiao_recoil",
@@ -8209,16 +8203,13 @@ const skills = {
 				filter(event, player) {
 					return event.card && event.card.storage && event.card.storage.sbpaoxiao && event.player.isIn();
 				},
-				content() {
-					"step 0";
-					player.loseHp();
-					"step 1";
-					var hs = player.getCards("h", function (card) {
-						return lib.filter.cardDiscardable(card, player, "sbpaoxiao_recoil");
-					});
-					if (hs.length > 0) {
-						player.discard(hs.randomGet());
+				async content(event, trigger, player) {
+					await player.loseHp();
+					const hs = player.getCards("h", card => lib.filter.cardDiscardable(card, player, "sbpaoxiao_recoil"));
+					if (!hs.length) {
+						return;
 					}
+					await player.discard({ cards: [hs.randomGet()] });
 				},
 			},
 		},
