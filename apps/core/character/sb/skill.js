@@ -10591,30 +10591,29 @@ const skills = {
 	sbxiayuan: {
 		audio: 2,
 		trigger: { global: "damageEnd" },
-		direct: true,
 		filter(event, player) {
 			return event.hujia && !event.player.hujia && event.player.isIn() && player.countCards("h") > 1 && !player.hasSkill("sbxiayuan_round", null, false, false);
 		},
-		content() {
-			"step 0";
-			player.addTempSkill("sbxiayuan_round", "roundStart");
-			player
-				.chooseToDiscard(2, "h", get.prompt("sbxiayuan", trigger.player), "弃置两张手牌，令其获得" + get.cnNumber(trigger.hujia) + "点护甲")
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseToDiscard({
+					selectCard: 2,
+					position: "h",
+					prompt: get.prompt("sbxiayuan", trigger.player),
+					prompt2: `弃置两张手牌，令其获得${get.cnNumber(trigger.hujia)}点护甲`,
+					chooseonly: true,
+					ai: card => (_status.event.goon ? 5 - get.value(card) : 0),
+				})
 				.set("goon", get.attitude(player, trigger.player) > 0)
-				.set("ai", function (card) {
-					if (!_status.event.goon) {
-						return 0;
-					}
-					return 5 - get.value(card);
-				}).logSkill = ["sbxiayuan", trigger.player];
-			"step 1";
-			if (result.bool) {
-				var target = trigger.player;
-				target.changeHujia(trigger.hujia, null, true);
-				game.delayx();
-			} else {
-				player.removeSkill("sbxiayuan_round");
-			}
+				.forResult();
+		},
+		logTarget: "player",
+		async content(event, trigger, player) {
+			player.addTempSkill("sbxiayuan_round", "roundStart");
+			player.discard({ cards: event.cards });
+			const target = trigger.player;
+			await target.changeHujia(trigger.hujia, null, true);
+			await game.delayx();
 		},
 		subSkill: { round: { charlotte: true } },
 		ai: {
