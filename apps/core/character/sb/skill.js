@@ -7767,7 +7767,7 @@ const skills = {
 			return true;
 		},
 		filterTarget(card, player, target) {
-			if (target == player) {
+			if (target === player) {
 				return false;
 			}
 			return player.getStorage("sbrende_givenx").includes(target);
@@ -7775,42 +7775,46 @@ const skills = {
 		manualConfirm: true,
 		selectTarget: -1,
 		multiline: true,
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
+			const { target } = event;
 			player.awakenSkill(event.name);
-			var num = Math.min(game.roundNumber - 1, 3);
-			var cards = target.getCards("he"),
-				count = cards.length;
-			if (count == 0) {
-				event.finish();
-			} else if (count <= num) {
-				event._result = { bool: true, cards: cards };
-			} else {
-				target.chooseCard("章武：交给" + get.translation(player) + get.cnNumber(num) + "张牌", true, "he", num);
+			const num = Math.min(game.roundNumber - 1, 3);
+			const cards = target.getCards("he");
+			if (!cards.length) {
+				return;
 			}
-			"step 1";
-			if (result.bool) {
-				target.give(result.cards, player);
+			let result = { bool: true, cards };
+			if (cards.length > num) {
+				result = await target
+					.chooseCard({
+						prompt: `章武：交给${get.translation(player)}${get.cnNumber(num)}张牌`,
+						forced: true,
+						position: "he",
+						selectCard: num,
+					})
+					.forResult();
 			}
+			if (!result.bool) {
+				return;
+			}
+			await target.give(result.cards, player);
 		},
-		contentAfter() {
-			"step 0";
-			player.recover(3);
-			"step 1";
+		async contentAfter(event, trigger, player) {
+			await player.recover(3);
 			player.removeSkills("sbrende");
-			game.delayx();
+			await game.delayx();
 		},
 		ai: {
 			order: 7,
 			combo: "sbrende",
 			result: {
 				player(player, target) {
-					var targets = game.filterPlayer(current => lib.skill.sbzhangwu.filterTarget(null, player, current));
+					const targets = game.filterPlayer(current => lib.skill.sbzhangwu.filterTarget(null, player, current));
 					if (!targets.length) {
 						return 0;
 					}
-					var eff = 0;
-					for (var target of targets) {
+					let eff = 0;
+					for (const target of targets) {
 						eff += get.effect(target, { name: "shunshou_copy2" }, player, player);
 					}
 					eff += 15 - 5 * Math.max(0, 3 - player.getDamagedHp());
