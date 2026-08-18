@@ -56,7 +56,7 @@ const skills = {
 								ai(button) {
 									const player = get.player();
 									if (player.additionalSkills?.potyinhui?.includes(button.link)) return 10 + Math.random();
-									if (get.info(skill).ai?.neg) return 100 + Math.random();
+									if (get.info(button.link).ai?.neg) return 100 + Math.random();
 									return 1 + Math.random();
 								},
 							})
@@ -227,11 +227,35 @@ const skills = {
 						: { bool: true, links: skills };
 				if (result?.bool && result.links?.length) {
 					const skill = result.links[0];
-					player.logSkill(event.name, null, null, null, [get.rand(3, 12)]);
 					get.info("potyinhui").refreshSkill(player, skill);
 					await player.addAdditionalSkills(event.name, skill, true);
+					game.broadcastAll(skill => {
+						const skills = [skill];
+						game.expandSkills(skills);
+						for (const i of skills) {
+							const info = get.info(i);
+							if (!info) {
+								continue;
+							}
+							if (!info.audioname2) {
+								info.audioname2 = {};
+							}
+							info.audioname2.pot_xiaoqiao = "potyinhui_audio";
+						}
+					}, skill);
 				}
 			}
+		},
+		subSkill: {
+			audio: {
+				get audio() {
+					const list = [];
+					for (let i = 3; i <= 12; i++) {
+						list.push(`potyinhui${i}.mp3`);
+					}
+					return list;
+				},
+			},
 		},
 	},
 	//势周瑜
@@ -321,7 +345,14 @@ const skills = {
 							.chooseControl(list)
 							.set("choiceList", choiceList)
 							.set("prompt", "请选择一项")
-							.set("ai", () => get.event().controls.randomGet())
+							.set("ai", () => {
+								const { player, target } = get.event();
+								if (get.damageEffect(player, target, target, "fire") > 0) {
+									return "选项一";
+								}
+								return "选项二";
+							})
+							.set("target", player)
 							.forResult()
 					: { control: list[0] };
 			if (typeof result?.control == "string") {
@@ -366,7 +397,10 @@ const skills = {
 						return -get.attitude(get.player(), target);
 					},
 				})
-				.set("targets", trigger.targets.filter(target => target.hasCards("h")))
+				.set(
+					"targets",
+					trigger.targets.filter(target => target.hasCards("h"))
+				)
 				.forResult();
 		},
 		async content(event, trigger, player) {
@@ -7102,11 +7136,65 @@ const skills = {
 				cards,
 			} = event;
 			player.awakenSkill(event.name);
-			await player.discard(cards);
+			await player.discard({ cards });
 			target.insertPhase(event.name);
 			target.addSkill(event.name + "_draw");
 		},
 		subSkill: {
+			mark: {
+				charlotte: true,
+				init(player, skill) {
+					const history = player.getHistory("useCard"),
+						map = {};
+					if (!history.length) {
+						return;
+					}
+					let num = 0;
+					for (const i of history) {
+						if (get.type2(i.card) == "trick") {
+							if (!map[i.card.name]) {
+								if (num == 0) {
+									num = 1;
+								}
+								map[i.card.name] = true;
+							} else {
+								num = 2;
+							}
+						}
+					}
+					if (num > 0) {
+						player.addTip(skill, `${get.translation(skill)} ${num}`, "phaseAfter");
+					}
+				},
+				onremove(player, skill) {
+					player.removeTip(skill);
+				},
+				silent: true,
+				popup: false,
+				firstDo: true,
+				trigger: { player: "useCard" },
+				filter(event, player) {
+					return get.type2(event.card) == "trick";
+				},
+				async content(event, trigger, player) {
+					const history = player.getHistory("useCard"),
+						map = {};
+					let num = 0;
+					for (const i of history) {
+						if (get.type2(i.card) == "trick") {
+							if (!map[i.card.name]) {
+								map[i.card.name] = true;
+								if (num == 0) {
+									num = 1;
+								}
+							} else {
+								num = 2;
+							}
+						}
+					}
+					player.addTip(event.name, `${get.translation(event.name)} ${num}`, "phaseAfter");
+				},
+			},
 			draw: {
 				charlotte: true,
 				trigger: { player: "phaseBegin" },

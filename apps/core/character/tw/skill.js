@@ -3067,7 +3067,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
-					return target.countCards("h") > 0 && target != player;
+					return target.hasCards("h") && target != player;
 				})
 				.set("ai", target => {
 					const player = get.player();
@@ -3091,7 +3091,7 @@ const skills = {
 					.set("filterOk", () => {
 						const player = get.player();
 						const selected = ui.selected.cards;
-						if (!selected.length) {
+						if (!selected?.length) {
 							return false;
 						}
 						return (
@@ -3110,7 +3110,7 @@ const skills = {
 							if (att > 0) {
 								return 8 - get.value(card);
 							}
-							return Math.ceil(get.number(card, player) / 4) * (6 - get.value(card));
+							return Math.ceil(get.number(card, player) / 4) * Math.max(1, 6 - get.value(card));
 						}
 						return 0;
 					})
@@ -4217,6 +4217,7 @@ const skills = {
 		group: "twsbfangzhu_liufang",
 		subSkill: {
 			liufang: {
+				audio: "twsbfangzhu",
 				trigger: {
 					global: "phaseBegin",
 				},
@@ -12895,7 +12896,7 @@ const skills = {
 					if (!hs.length || !ts.length) {
 						return 0;
 					}
-					if (get.number(hs[0]) > get.number(ts[0]) || get.number(hs[0]) - ts.length >= 9 + Math.min(2, player.hp / 2)) {
+					if ((get.attitude(player, target) < 0) && (get.number(hs[0]) > get.number(ts[0]) || get.number(hs[0]) - ts.length >= 9 + Math.min(2, player.hp / 2))) {
 						return get.sgnAttitude(player, target) * get.effect(target, { name: "shunshou_copy2" }, player, player);
 					}
 					return 0;
@@ -22135,10 +22136,10 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filterTarget: true,
-		/*limited: true,
+		//limited: true,
 		skillAnimation: true,
 		animationColor: "qun",
-		async cost(event, trigger, player) {
+		/*async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget(get.prompt2(event.skill))
 				.set("ai", target => {
@@ -28040,6 +28041,12 @@ const skills = {
 		trigger: { global: "phaseEnd" },
 		skillAnimation: true,
 		animationColor: "wood",
+		init(player, skill) {
+			player.addSkill(skill + "_mark");
+		},
+		onremove(player, skill) {
+			player.removeSkill(skill + "_mark");
+		},
 		filter(event, player) {
 			if (
 				!player.countCards("h", card => {
@@ -28094,8 +28101,64 @@ const skills = {
 				targets: [target],
 				cards,
 			} = event;
-			await player.discard(cards);
+			await player.discard({ cards });
 			target.insertPhase();
+		},
+		subSkill: {
+			mark: {
+				charlotte: true,
+				init(player, skill) {
+					const history = player.getHistory("useCard"),
+						map = {};
+					if (!history.length) {
+						return;
+					}
+					let num = 0;
+					for (const i of history) {
+						if (get.type2(i.card) == "trick") {
+							if (!map[i.card.name]) {
+								if (num == 0) {
+									num = 1;
+								}
+								map[i.card.name] = true;
+							} else {
+								num = 2;
+							}
+						}
+					}
+					if (num > 0) {
+						player.addTip(skill, `${get.translation(skill)} ${num}`, "phaseAfter");
+					}
+				},
+				onremove(player, skill) {
+					player.removeTip(skill);
+				},
+				silent: true,
+				popup: false,
+				firstDo: true,
+				trigger: { player: "useCard" },
+				filter(event, player) {
+					return get.type2(event.card) == "trick";
+				},
+				async content(event, trigger, player) {
+					const history = player.getHistory("useCard"),
+						map = {};
+					let num = 0;
+					for (const i of history) {
+						if (get.type2(i.card) == "trick") {
+							if (!map[i.card.name]) {
+								map[i.card.name] = true;
+								if (num == 0) {
+									num = 1;
+								}
+							} else {
+								num = 2;
+							}
+						}
+					}
+					player.addTip(event.name, `${get.translation(event.name)} ${num}`, "phaseAfter");
+				},
+			},
 		},
 	},
 	//tw葛玄

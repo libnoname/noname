@@ -2,6 +2,143 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//族陆昙
+	clankuanqu: {
+		audio: 2,
+		enable: "phaseUse",
+		usable: 1,
+		locked: false,
+		mod: {
+			cardEnabled(card, player) {
+				if (card?.storage?.clankuanqu) {
+					return true;
+				}
+			},
+		},
+		filter(event, player) {
+			return player.countCards("hes") > 1;
+		},
+		chooseButton: {
+			dialog(event, player) {
+				return ui.create.dialog("款曲", [["sha", "tao"], "vcard"], "hidden");
+			},
+			filter(button, player) {
+				return lib.filter.cardEnabled(
+					get.autoViewAs(
+						{
+							name: button.link[2],
+							storage: { clankuanqu: true },
+						},
+						"unsure"
+					),
+					player,
+					"forceEnable"
+				);
+			},
+			check(button) {
+				const card = get.autoViewAs(
+						{
+							name: button.link[2],
+							storage: { clankuanqu: true },
+						},
+						"unsure"
+					),
+					player = get.player();
+				return Math.max.apply(
+					Math,
+					game
+						.filterPlayer(target => {
+							return lib.filter.targetEnabled2(card, player, target) && lib.filter.targetInRange(card, player, target);
+						})
+						.map(target => {
+							return get.effect(target, card, player, player);
+						})
+				);
+			},
+			backup(links, player) {
+				return {
+					viewAs: {
+						name: links[0][2],
+						storage: { clankuanqu: true },
+					},
+					filterCard: true,
+					selectCard: 2,
+					position: "hes",
+					popname: true,
+					filterTarget(card, player, target) {
+						if (!card) {
+							card = get.card();
+						}
+						return lib.filter.targetEnabled2(card, player, target) && lib.filter.targetInRange(card, player, target);
+					},
+					selectTarget: 1,
+					ignoreMod: true,
+					filterOk: () => true,
+					log: false,
+					async precontent(event, trigger, player) {
+						player.logSkill("clankuanqu");
+						const target = event.result.targets[0];
+						player
+							.when({ global: "useCardAfter" })
+							.filter(evt => evt.getParent() == event.getParent())
+							.step(async (event, trigger, player) => {
+								const pos = player == target ? "e" : "he";
+								if (target?.isIn() && [player, target].some(current => current.hp == current.countCards("h")) && target.hasCards(pos)) {
+									await player.gainPlayerCard({ forced: true, target, position: "he" });
+								}
+							});
+					},
+				};
+			},
+			prompt(links, player) {
+				return "将两张牌当做【" + get.translation(links[0][2]) + "】使用";
+			},
+		},
+		ai: {
+			order: 5,
+			result: {
+				player: 1,
+			},
+		},
+	},
+	clananliu: {
+		audio: 2,
+		trigger: { player: "damageEnd" },
+		filter(event, player) {
+			return game.hasPlayer(current => current.hasCards("h"));
+		},
+		async cost(event, trigger, player) {
+			const num = Math.min(
+				5,
+				game.countPlayer(current => current.countCards("h") == player.countCards("h"))
+			);
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt(event.skill),
+					prompt2: `令至多${num}名角色各弃置一张牌`,
+					filterTarget(card, player, target) {
+						return target.hasCards("he");
+					},
+					selectTarget: [1, num],
+					ai(target) {
+						const player = get.player();
+						return get.effect(target, { name: "guohe_copy", position: "he" }, target, player);
+					},
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const targets = event.targets.sortBySeat();
+			await game.doAsyncInOrder(targets, async target => {
+				await target.chooseToDiscard({ forced: true, position: "he" });
+			});
+			const num = Math.min(
+				5,
+				game.countPlayer(current => current.countCards("h") == player.countCards("h"))
+			);
+			await player.draw({ num });
+		},
+	},
 	//族诸葛果
 	clanfuyao: {
 		audio: 2,
@@ -1054,7 +1191,7 @@ const skills = {
 				if (card.storage?.clanfenjian) {
 					return true;
 				}
-			}
+			},
 		},
 		group: ["clanfenjian_effect"],
 		subSkill: {
@@ -2252,7 +2389,7 @@ const skills = {
 	},
 	clanzelie: {
 		audio: 2,
-		audioname: ["clan_lujing", "clan_luyusheng"],
+		audioname: ["clan_lujing", "clan_luyusheng", "clan_lutan"],
 		trigger: { global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"] },
 		getIndex(event, player) {
 			return game

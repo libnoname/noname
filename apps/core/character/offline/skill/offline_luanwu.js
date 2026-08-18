@@ -9,31 +9,33 @@ const skills = {
 		usable: 1,
 		filterCard: { suit: "heart" },
 		filterTarget(card, player, target) {
-			return target != player && target.countCards("h") > player.countCards("h");
+			return target !== player && target.countCards("h") > player.countCards("h");
 		},
 		filter(event, player) {
-			var info = lib.skill.nsyangwu;
-			return (
-				player.countCards("h", info.filterCard) &&
-				game.hasPlayer(function (target) {
-					return info.filterTarget(null, player, target);
-				})
-			);
+			const info = lib.skill.nsyangwu;
+			return player.hasCards("h", info.filterCard) && game.hasPlayer(target => info.filterTarget(null, player, target));
 		},
 		check(card) {
-			var num = 0;
-			var player = _status.event.player;
-			game.countPlayer(function (current) {
-				if (current != player && get.attitude(player, current) < 0) {
+			let num = 0;
+			const player = _status.event.player;
+			for (const current of game.filterPlayer()) {
+				if (current !== player && get.attitude(player, current) < 0) {
 					num = Math.max(num, current.countCards("h") - player.countCards("h"));
 				}
-			});
+			}
 			return Math.ceil((num + 1) / 2) * 2 + 4 - get.value(card);
 		},
-		content() {
-			var num = Math.ceil((target.countCards("h") - player.countCards("h")) / 2);
+		async content(event, trigger, player) {
+			const target = event.target;
+			const num = Math.ceil((target.countCards("h") - player.countCards("h")) / 2);
 			if (num) {
-				player.gainPlayerCard(target, true, "h", num, "visible");
+				await player.gainPlayerCard({
+					target,
+					selectButton: num,
+					position: "h",
+					forced: true,
+					visible: true,
+				});
 			}
 		},
 		ai: {
@@ -49,9 +51,7 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return game.hasPlayer(function (current) {
-				return current.countCards("e") > 0 && current.countCards("e") <= player.countCards("he");
-			});
+			return game.hasPlayer(current => current.countCards("e") > 0 && current.countCards("e") <= player.countCards("he"));
 		},
 		filterCard() {
 			if (ui.selected.targets.length) {
@@ -64,15 +64,11 @@ const skills = {
 		complexSelect: true,
 		complexCard: true,
 		filterTarget(card, player, target) {
-			return target != player && target.countCards("e") > 0 && ui.selected.cards.length == target.countCards("e");
+			return target !== player && target.countCards("e") > 0 && ui.selected.cards.length === target.countCards("e");
 		},
 		check(card) {
-			var player = _status.event.player;
-			if (
-				game.hasPlayer(function (current) {
-					return current != player && current.countCards("e") > 0 && ui.selected.cards.length == current.countCards("e") && get.damageEffect(current, player, player) > 0;
-				})
-			) {
+			const player = _status.event.player;
+			if (game.hasPlayer(current => current !== player && current.countCards("e") > 0 && ui.selected.cards.length === current.countCards("e") && get.damageEffect(current, player, player) > 0)) {
 				return 0;
 			}
 			switch (ui.selected.cards.length) {
@@ -86,8 +82,8 @@ const skills = {
 					return 0;
 			}
 		},
-		content() {
-			target.damage("nocard");
+		async content(event, trigger, player) {
+			event.target.damage({ nocard: true });
 		},
 		ai: {
 			damage: true,
@@ -102,79 +98,65 @@ const skills = {
 	},
 	nsfeixiong: {
 		trigger: { player: "phaseUseBegin" },
-		direct: true,
 		filter(event, player) {
-			return (
-				player.countCards("h") > 0 &&
-				game.hasPlayer(function (current) {
-					return current != player && player.canCompare(current);
-				})
-			);
+			return player.hasCards("h") && game.hasPlayer(current => current !== player && player.canCompare(current));
 		},
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt2("nsfeixiong"), function (card, player, target) {
-					return player != target && player.canCompare(target);
-				})
-				.set("ai", function (target) {
-					var player = _status.event.player;
-					var hs = player.getCards("h").sort(function (a, b) {
-						return b.number - a.number;
-					});
-					var ts = target.getCards("h").sort(function (a, b) {
-						return b.number - a.number;
-					});
-					if (!hs.length || !ts.length) {
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2("nsfeixiong"),
+					filterTarget(card, player, target) {
+						return player !== target && player.canCompare(target);
+					},
+					ai(target) {
+						const player = get.player();
+						const hs = player.getCards("h").sort((a, b) => b.number - a.number);
+						const ts = target.getCards("h").sort((a, b) => b.number - a.number);
+						if (!hs.length || !ts.length) {
+							return 0;
+						}
+						if (hs[0].number > ts[0].number) {
+							return get.damageEffect(target, player, player);
+						}
 						return 0;
-					}
-					if (hs[0].number > ts[0].number) {
-						return get.damageEffect(target, player, player);
-					}
-					return 0;
-				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("nsfeixiong", target);
-				if (get.mode() !== "identity" || player.identity !== "nei") {
-					player.addExpose(0.2);
-				}
-				player.chooseToCompare(target);
-			} else {
-				event.finish();
+					},
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			if (get.mode() !== "identity" || player.identity !== "nei") {
+				player.addExpose(0.2);
 			}
-			"step 2";
-			if (!result.tie) {
-				var targets = [player, target];
-				if (result.bool) {
-					targets.reverse();
-				}
-				targets[0].damage(targets[1]);
+			const compareResult = await player.chooseToCompare(target).forResult();
+			if (compareResult.tie) {
+				return;
 			}
+			const damaged = compareResult.bool ? target : player;
+			const source = compareResult.bool ? player : target;
+			await damaged.damage({ source });
 		},
 	},
 	nscesuan: {
 		trigger: { player: "damageBegin3" },
 		forced: true,
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			trigger.cancel();
-			event.lose = player.loseMaxHp();
-			"step 1";
-			if (event.lose && event.lose.loseHp) {
-				player.draw();
+			const loseEvent = player.loseMaxHp();
+			await loseEvent;
+			if (loseEvent.loseHp) {
+				await player.draw();
 			}
 		},
 		ai: {
 			neg: true,
 			filterDamage: true,
 			skillTagFilter(player, tag, arg) {
-				if (tag === "filterDamage" && arg && arg.player) {
-					if (arg.player.hasSkillTag("jueqing", false, player)) {
-						return false;
-					}
+				if (tag !== "filterDamage" || !arg?.player) {
+					return;
+				}
+				if (arg.player.hasSkillTag("jueqing", false, player)) {
+					return false;
 				}
 			},
 		},
