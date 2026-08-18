@@ -18,7 +18,7 @@ const skills = {
 			player.markAuto(event.name + "_used", [suit]);
 			const num = 4 + player.countMark(event.name);
 			let cards = get.cards(num, true);
-			const result = player.chooseControl("ok").set("dialog", ["寻香", cards]);
+			await player.viewCards("寻香：牌堆顶的牌", cards);
 			player.setStorage(
 				event.name + "_used2",
 				cards.filter(card => get.suit(card) != suit),
