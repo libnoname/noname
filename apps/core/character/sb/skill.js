@@ -6892,11 +6892,11 @@ const skills = {
 						.set("sourcex", trigger.targets)
 						.set("card", trigger.card)
 						.forResult();
+				},
+				async content(event, trigger, player) {
 					if (!event.isMine() && !event.isOnline()) {
 						await game.delayx();
 					}
-				},
-				async content(event, trigger, player) {
 					trigger.targets.addArray(event.targets);
 				},
 			},
@@ -8505,7 +8505,7 @@ const skills = {
 							prompt: "选择一名体力少于你的角色",
 							filterTarget: (card, player, target) => target.hp < player.hp,
 							forced: true,
-							ai: target => -get.attitude(player, target) / Math.sqrt(Math.max(0.1, 2 * target.hp + target.countCards("h"))),
+							ai: target => -get.attitude(get.player(), target) / Math.sqrt(Math.max(0.1, 2 * target.hp + target.countCards("h"))),
 						})
 						.forResult();
 					break;
@@ -8608,6 +8608,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = trigger.target;
+			event.target = target;
 			target.addTempSkill("fengyin");
 			trigger.directHit.add(target);
 			const result = await player
@@ -8694,8 +8695,8 @@ const skills = {
 				map.set(suit, num);
 			}
 			const suits = [];
-			for (const suit in map) {
-				if (map[suit] === max) {
+			for (const [suit, count] of map) {
+				if (count === max) {
 					suits.push(suit);
 				}
 			}
@@ -11348,7 +11349,12 @@ const skills = {
 					})
 					.forResult();
 				if (result.bool) {
-					player.addToExpansion({ cards: result.cards, source: player, animate: "giveAuto" }).gaintag.add("sbqianxun_gain");
+					player.addToExpansion({
+						cards: result.cards,
+						source: player,
+						animate: "giveAuto",
+						gaintag: ["sbqianxun_gain"]
+					});
 					player.addSkill("sbqianxun_gain");
 				}
 			}
