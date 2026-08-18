@@ -6212,30 +6212,29 @@ const skills = {
 		audio: 2,
 		trigger: { global: "phaseJieshuBegin" },
 		filter(event, player) {
-			if (player == event.player) {
+			if (player === event.player) {
 				return false;
 			}
-			if (!event.player.countCards("he")) {
+			if (!event.player.hasCards("he")) {
 				return false;
 			}
-			return (
-				!event.player.hasAllHistory("sourceDamage", evt => {
-					return evt.player == player;
-				}) &&
-				!event.player.hasAllHistory("damage", evt => {
-					return evt.source == player;
-				})
-			);
+			return !event.player.hasAllHistory("sourceDamage", evt => evt.player === player) && !event.player.hasAllHistory("damage", evt => evt.source === player);
 		},
 		forced: true,
 		logTarget: "player",
-		content() {
-			"step 0";
-			trigger.player.chooseCard(true, get.translation(player) + "对你发动了【自守】", "交给其一张牌", "he");
-			"step 1";
-			if (result.bool) {
-				trigger.player.give(result.cards, player);
+		async content(event, trigger, player) {
+			const result = await trigger.player
+				.chooseCard({
+					forced: true,
+					prompt: `${get.translation(player)}对你发动了【自守】`,
+					prompt2: "交给其一张牌",
+					position: "he",
+				})
+				.forResult();
+			if (!result.bool || !result.cards?.length) {
+				return;
 			}
+			await trigger.player.give(result.cards, player);
 		},
 		ai: {
 			threaten: 3,
