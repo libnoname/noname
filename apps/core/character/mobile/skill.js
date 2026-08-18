@@ -16582,6 +16582,7 @@ const skills = {
 	luanqun: {
 		audio: 2,
 		enable: "phaseUse",
+		manualConfirm: true,
 		filter(event, player) {
 			return player.countCards("h");
 		},
@@ -19730,6 +19731,7 @@ const skills = {
 			target.addAdditionalSkill("yijin_" + player.playerid, kane);
 			game.delayx();
 		},
+		ai: { neg: true },
 		subSkill: {
 			mark: {
 				mark: true,
