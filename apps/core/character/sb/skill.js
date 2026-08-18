@@ -8531,49 +8531,48 @@ const skills = {
 		logTarget: "target",
 		logAudio: () => 1,
 		filter(event, player) {
-			return player != event.target && event.card.name == "sha" && event.target.isIn();
+			return player !== event.target && event.card.name === "sha" && event.target.isIn();
 		},
 		check(event, player) {
 			return get.attitude(player, event.target) < 0;
 		},
-		content() {
-			"step 0";
-			var target = trigger.target;
-			event.target = target;
+		async content(event, trigger, player) {
+			const target = trigger.target;
 			target.addTempSkill("fengyin");
 			trigger.directHit.add(target);
-			player
+			const result = await player
 				.chooseToDuiben(target)
 				.set("title", "谋弈")
 				.set("namelist", ["出阵迎战", "拱卫中军", "直取敌营", "扰阵疲敌"])
 				.set("translationList", [`以防止${get.translation(player)}摸两张牌`, `以防止${get.translation(player)}获得你一张牌`, `若成功，你获得${get.translation(target)}一张牌`, `若成功，你摸两张牌`])
 				.set("ai", button => {
-					var source = get.event().getParent().player,
-						target = get.event().getParent().target;
-					if (!target.countCards("he") && button.link[2] == "db_def2") {
+					const source = get.event().getParent().player;
+					const target = get.event().getParent().target;
+					if (!target.countCards("he") && button.link[2] === "db_def2") {
 						return 10;
 					}
-					if (!target.countCards("he") && get.attitude(target, source) <= 0 && button.link[2] == "db_atk1") {
+					if (!target.countCards("he") && get.attitude(target, source) <= 0 && button.link[2] === "db_atk1") {
 						return 10;
 					}
 					return 1 + Math.random();
-				});
-			"step 1";
-			if (result.bool) {
-				if (result.player == "db_def1") {
-					player.gainPlayerCard(target, "he", true);
-				} else {
-					player.draw(2);
-				}
+				})
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
+			if (result.player === "db_def1") {
+				await player.gainPlayerCard({ target, position: "he", forced: true });
+				return;
+			}
+			await player.draw(2);
 		},
 		ai: {
 			ignoreSkill: true,
 			skillTagFilter(player, tag, arg) {
-				if (tag == "directHit_ai") {
+				if (tag === "directHit_ai") {
 					return arg?.target && get.attitude(player, arg.target) <= 0;
 				}
-				if (!arg || arg.isLink || !arg.card || arg.card.name != "sha") {
+				if (!arg || arg.isLink || !arg.card || arg.card.name !== "sha") {
 					return false;
 				}
 				if (!arg.target || get.attitude(player, arg.target) >= 0) {
