@@ -3115,7 +3115,7 @@ export default () => {
 								if (this.identity.slice(0, 1) !== source.identity.slice(0, 1)) {
 									source.draw(2);
 								} else if (source.identity.indexOf("Zhu") === 1) {
-									source.discard(source.getCards("h"));
+									source.modedDiscard(source.getCards("h"));
 								}
 							} else if (this.identity === "rNei" || this.identity === "bNei") {
 								if (this.identity.slice(0, 1) === source.identity.slice(0, 1)) {
@@ -3147,7 +3147,7 @@ export default () => {
 							source.draw(3);
 						}
 					} else if (this.identity === "zhong" && source && source.identity === "zhu" && source.isZhu) {
-						source.discard(source.getCards("he"));
+						source.modedDiscard(source.getCards("he"));
 					}
 				},
 				/**
