@@ -5802,43 +5802,51 @@ const skills = {
 		forced: true,
 		direct: true,
 		filter(event, player) {
-			return !player.hasHistory("useCard", evt => evt.card.name == "nanman") && (!_status.sbjuxiang_nanman || _status.sbjuxiang_nanman.length);
+			return !player.hasHistory("useCard", evt => evt.card.name === "nanman") && (!_status.sbjuxiang_nanman || _status.sbjuxiang_nanman.length);
 		},
 		group: ["sbjuxiang_cancel", "sbjuxiang_gain"],
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			if (!_status.sbjuxiang_nanman) {
 				_status.sbjuxiang_nanman = [
 					{ name: "nanman", number: 7, suit: "spade" },
 					{ name: "nanman", number: 7, suit: "club" },
 				];
-				game.broadcastAll(function () {
+				game.broadcastAll(() => {
 					if (!lib.inpile.includes("nanman")) {
 						lib.inpile.add("nanman");
 					}
 				});
 			}
-			player.chooseTarget("请选择【巨象】的目标", "将游戏外的随机一张【南蛮入侵】交给一名角色（剩余" + get.cnNumber(_status.sbjuxiang_nanman.length) + "张）", true).set("ai", target => {
-				var player = _status.event.player;
-				return Math.max(0, target.getUseValue({ name: "nanman" })) * get.attitude(player, target) * (target == player ? 0.5 : 1);
-			});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("sbjuxiang", target);
-				if (!_status.sbjuxiang_nanman.length) {
-					return;
-				}
-				var info = _status.sbjuxiang_nanman.randomRemove();
-				var card = game.createCard2(info);
-				target.gain(card, "gain2").giver = player;
+			const result = await player
+				.chooseTarget({
+					prompt: "请选择【巨象】的目标",
+					prompt2: `将游戏外的随机一张【南蛮入侵】交给一名角色（剩余${get.cnNumber(_status.sbjuxiang_nanman.length)}张）`,
+					forced: true,
+					ai: target => {
+						const player = _status.event.player;
+						return Math.max(0, target.getUseValue({ name: "nanman" })) * get.attitude(player, target) * (target === player ? 0.5 : 1);
+					},
+				})
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
+			const target = result.targets[0];
+			player.logSkill("sbjuxiang", target);
+			if (!_status.sbjuxiang_nanman.length) {
+				return;
+			}
+			const info = _status.sbjuxiang_nanman.randomRemove();
+			const card = game.createCard2(info);
+			const gainEvent = target.gain({ cards: [card], animate: "gain2" });
+			gainEvent.giver = player;
+			await gainEvent;
 		},
 		ai: {
 			expose: 0.05,
 			effect: {
 				target(card) {
-					if (card.name == "nanman") {
+					if (card.name === "nanman") {
 						return [0, 1, 0, 0];
 					}
 				},
@@ -5851,9 +5859,9 @@ const skills = {
 				forced: true,
 				priority: 15,
 				filter(event, player) {
-					return event.card.name == "nanman";
+					return event.card.name === "nanman";
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.cancel();
 				},
 			},
@@ -5862,10 +5870,10 @@ const skills = {
 				trigger: { global: "useCardAfter" },
 				forced: true,
 				filter(event, player) {
-					return event.card.name == "nanman" && event.player != player && event.cards.filterInD().length;
+					return event.card.name === "nanman" && event.player !== player && event.cards.filterInD().length > 0;
 				},
-				content() {
-					player.gain(trigger.cards.filterInD(), "gain2");
+				async content(event, trigger, player) {
+					await player.gain({ cards: trigger.cards.filterInD(), animate: "gain2" });
 				},
 			},
 		},
