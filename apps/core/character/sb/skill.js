@@ -4673,33 +4673,33 @@ const skills = {
 		},
 	},
 	sbkanpo: {
+		audio: 2,
+		trigger: { global: "roundStart" },
+		filter(event, player) {
+			const storage = player.storage.sbkanpo;
+			return storage[0] || storage[1].length;
+		},
+		forced: true,
+		locked: false,
 		init(player) {
 			if (!player.storage.sbkanpo) {
 				player.storage.sbkanpo = [get.mode() !== "identity" ? 2 : 4, [], []];
 				player.markSkill("sbkanpo");
 			}
 		},
-		audio: 2,
-		trigger: { global: "roundStart" },
-		filter(event, player) {
-			var storage = player.storage.sbkanpo;
-			return storage[0] || storage[1].length;
-		},
-		forced: true,
-		locked: false,
 		async content(event, trigger, player) {
-			var storage = player.storage.sbkanpo;
-			var sum = storage[0];
+			const storage = player.storage.sbkanpo;
+			const sum = storage[0];
 			storage[1] = [];
 			player.markSkill("sbkanpo");
 			if (!sum) {
 				return;
 			}
 			const list = get.inpileVCardList(info => {
-				if (info[2] == "sha" && info[3]) {
+				if (info[2] === "sha" && info[3]) {
 					return false;
 				}
-				return info[0] != "equip";
+				return info[0] !== "equip";
 			});
 			const func = () => {
 				const event = get.event();
@@ -4707,8 +4707,7 @@ const skills = {
 					link => {
 						const evt = get.event();
 						if (evt.dialog && evt.dialog.buttons) {
-							for (let i = 0; i < evt.dialog.buttons.length; i++) {
-								const button = evt.dialog.buttons[i];
+							for (const button of evt.dialog.buttons) {
 								button.classList.remove("selectable");
 								button.classList.remove("selected");
 								const counterNode = button.querySelector(".caption");
@@ -4719,66 +4718,70 @@ const skills = {
 							ui.selected.buttons.length = 0;
 							game.check();
 						}
-						return;
 					},
 				];
 				event.controls = [ui.create.control(controls.concat(["清除选择", "stayleft"]))];
 			};
 			const closeFunc = () => {
 				const event = get.event();
-				if (event?.controls) {
-					event.controls[0].close();
+				if (!event?.controls) {
+					return;
 				}
+				event.controls[0].close();
 			};
 			if (event.isMine()) {
 				func();
 			} else if (event.isOnline()) {
 				event.player.send(func);
 			}
-			var result = await player
-				.chooseButton(["看破：是否记录至多" + get.cnNumber(sum) + "个牌名？", [list, "vcard"]], [1, sum], false)
-				.set("ai", function (button) {
-					if (ui.selected.buttons.length >= Math.max(3, game.countPlayer() / 2)) {
-						return 0;
-					}
-					switch (button.link[2]) {
-						case "wuxie":
-							return 5 + Math.random();
-						case "sha":
-							return 5 + Math.random();
-						case "tao":
-							return 4 + Math.random();
-						case "jiu":
-							return 3 + Math.random();
-						case "lebu":
-							return 3 + Math.random();
-						case "shan":
-							return 4.5 + Math.random();
-						case "wuzhong":
-							return 4 + Math.random();
-						case "shunshou":
-							return 2.7 + Math.random();
-						case "nanman":
-							return 2 + Math.random();
-						case "wanjian":
-							return 1.6 + Math.random();
-						default:
-							return 1.5 + Math.random();
-					}
-				})
-				.set("filterButton", button => {
-					return !_status.event.names.includes(button.link[2]);
+			const result = await player
+				.chooseButton({
+					createDialog: [`看破：是否记录至多${get.cnNumber(sum)}个牌名？`, [list, "vcard"]],
+					selectButton: [1, sum],
+					forced: false,
+					ai: button => {
+						if (ui.selected.buttons.length >= Math.max(3, game.countPlayer() / 2)) {
+							return 0;
+						}
+						switch (button.link[2]) {
+							case "wuxie":
+								return 5 + Math.random();
+							case "sha":
+								return 5 + Math.random();
+							case "tao":
+								return 4 + Math.random();
+							case "jiu":
+								return 3 + Math.random();
+							case "lebu":
+								return 3 + Math.random();
+							case "shan":
+								return 4.5 + Math.random();
+							case "wuzhong":
+								return 4 + Math.random();
+							case "shunshou":
+								return 2.7 + Math.random();
+							case "nanman":
+								return 2 + Math.random();
+							case "wanjian":
+								return 1.6 + Math.random();
+							default:
+								return 1.5 + Math.random();
+						}
+					},
+					filterButton: button => !_status.event.names.includes(button.link[2]),
 				})
 				.set("names", storage[2])
 				.set("custom", {
 					add: {
 						confirm(bool) {
-							if (bool != true) {
+							if (bool !== true) {
 								return;
 							}
 							const event = get.event().parent;
 							if (event.controls) {
-								event.controls.forEach(i => i.close());
+								for (const control of event.controls) {
+									control.close();
+								}
 							}
 							if (ui.confirm) {
 								ui.confirm.close();
@@ -4791,30 +4794,27 @@ const skills = {
 							}
 							const event = get.event();
 							if (event.dialog && event.dialog.buttons) {
-								for (let i = 0; i < event.dialog.buttons.length; i++) {
-									const button = event.dialog.buttons[i];
+								for (const button of event.dialog.buttons) {
 									const counterNode = button.querySelector(".caption");
 									if (counterNode) {
 										counterNode.childNodes[0].innerHTML = ``;
 									}
 								}
 							}
-							if (!ui.selected.buttons.length) {
-								const evt = event.parent;
-								if (evt.controls) {
-									evt.controls[0].classList.add("disabled");
-								}
+							const evt = event.parent;
+							if (evt.controls) {
+								evt.controls[0].classList.add("disabled");
 							}
 						},
 					},
 					replace: {
 						button(button) {
-							const event = get.event(),
-								sum = event.sum;
+							const event = get.event();
+							const sum = event.sum;
 							if (!event.isMine()) {
 								return;
 							}
-							if (button.classList.contains("selectable") == false) {
+							if (!button.classList.contains("selectable")) {
 								return;
 							}
 							if (ui.selected.buttons.length >= sum) {
@@ -4823,7 +4823,7 @@ const skills = {
 							button.classList.add("selected");
 							ui.selected.buttons.push(button);
 							let counterNode = button.querySelector(".caption");
-							const count = ui.selected.buttons.filter(i => i == button).length;
+							const count = ui.selected.buttons.filter(current => current === button).length;
 							if (counterNode) {
 								counterNode = counterNode.childNodes[0];
 								counterNode.innerHTML = `×${count}`;
@@ -4843,7 +4843,7 @@ const skills = {
 				.set("sum", sum)
 				.forResult();
 			if (result.bool) {
-				var names = result.links.map(link => link[2]);
+				const names = result.links.map(link => link[2]);
 				storage[0] -= names.length;
 				storage[1] = names;
 				storage[2] = names;
@@ -4866,7 +4866,7 @@ const skills = {
 				const storage = player.getStorage("sbkanpo");
 				const sum = storage[0];
 				const names = storage[1];
-				dialog.addText("剩余可记录" + sum + "次牌名");
+				dialog.addText(`剩余可记录${sum}次牌名`);
 				if (player.isUnderControl(true) && names.length) {
 					dialog.addText("当前记录牌名：");
 					dialog.addSmall([names, "vcard"]);
@@ -4879,43 +4879,41 @@ const skills = {
 				audio: "sbkanpo",
 				trigger: { global: "useCard" },
 				filter(event, player) {
-					return event.player != player && player.storage.sbkanpo[1].includes(event.card.name);
+					return event.player !== player && player.storage.sbkanpo[1].includes(event.card.name);
 				},
 				prompt2(event, player) {
-					return "移除" + get.translation(event.card.name) + "的记录，令" + get.translation(event.card) + "无效";
+					return `移除${get.translation(event.card.name)}的记录，令${get.translation(event.card)}无效`;
 				},
 				check(event, player) {
-					var effect = 0;
-					if (event.card.name == "wuxie" || event.card.name == "shan") {
+					let effect = 0;
+					if (["wuxie", "shan"].includes(event.card.name)) {
 						if (get.attitude(player, event.player) < -1) {
 							effect = -1;
 						}
 					} else if (event.targets && event.targets.length) {
-						for (var i = 0; i < event.targets.length; i++) {
-							effect += get.effect(event.targets[i], event.card, event.player, player);
+						for (const target of event.targets) {
+							effect += get.effect(target, event.card, event.player, player);
 						}
 					}
-					if (effect < 0) {
-						if (event.card.name == "sha") {
-							var target = event.targets[0];
-							if (target == player) {
-								return !player.countCards("h", "shan");
-							} else {
-								return target.hp == 1 || (target.countCards("h") <= 2 && target.hp <= 2);
-							}
-						} else {
-							return true;
-						}
+					if (effect >= 0) {
+						return false;
 					}
-					return false;
+					if (event.card.name !== "sha") {
+						return true;
+					}
+					const target = event.targets[0];
+					if (target === player) {
+						return !player.countCards("h", "shan");
+					}
+					return target.hp === 1 || (target.countCards("h") <= 2 && target.hp <= 2);
 				},
 				logTarget: "player",
-				content() {
+				async content(event, trigger, player) {
 					player.storage.sbkanpo[1].remove(trigger.card.name);
 					player.markSkill("sbkanpo");
 					trigger.targets.length = 0;
 					trigger.all_excluded = true;
-					player.draw();
+					await player.draw();
 				},
 			},
 		},
