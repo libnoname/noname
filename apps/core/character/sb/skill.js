@@ -6057,20 +6057,16 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "wood",
 		derivation: ["sbyingzi", "gzyinghun"],
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			player.loseMaxHp();
-			"step 1";
-			player.changeHujia(1, null, true);
-			"step 2";
-			player.draw(3);
-			"step 3";
-			player.addSkills(["sbyingzi", "gzyinghun"]);
+			await player.loseMaxHp();
+			await player.changeHujia(1, null, true);
+			await player.draw(3);
+			await player.addSkills(["sbyingzi", "gzyinghun"]);
 		},
 		ai: {
 			threaten(player, target) {
-				if (target.hp == 1) {
+				if (target.hp === 1) {
 					return 2;
 				}
 				return 0.5;
@@ -6081,7 +6077,7 @@ const skills = {
 					if (!target.hasFriend() || target.hp > 1) {
 						return;
 					}
-					if (get.tag(card, "damage") == 1 && ((target.hasZhuSkill("sbzhiba") && game.countPlayer(current => current != target && current.group == "wu")) || player.countCards("hs", card => player.canSaveCard(card, target)) + target.countCards("hs", card => target.canSaveCard(card, target)) > 0) && !target.isTurnedOver() && _status.currentPhase != target && get.distance(_status.currentPhase, target, "absolute") <= 3) {
+					if (get.tag(card, "damage") === 1 && ((target.hasZhuSkill("sbzhiba") && game.countPlayer(current => current !== target && current.group === "wu")) || player.countCards("hs", card => player.canSaveCard(card, target)) + target.countCards("hs", card => target.canSaveCard(card, target)) > 0) && !target.isTurnedOver() && _status.currentPhase !== target && get.distance(_status.currentPhase, target, "absolute") <= 3) {
 						return [0.5, 1];
 					}
 				},
