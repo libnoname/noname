@@ -105,7 +105,7 @@ const skills = {
 		audio: 2,
 		trigger: { player: "damageEnd" },
 		filter(event, player) {
-			return game.hasPlayer(current => current.countCards("h") == player.countCards("h") && current.hasCards("h"));
+			return game.hasPlayer(current => current.hasCards("h"));
 		},
 		async cost(event, trigger, player) {
 			const num = Math.min(

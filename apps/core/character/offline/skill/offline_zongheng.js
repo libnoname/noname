@@ -10,24 +10,24 @@ const skills = {
 			global: ["roundStart", "phaseJudgeBegin", "damageEnd"],
 		},
 		filter(event, player) {
-			if (event.name == "phaseJudge") {
-				return player != event.player;
-			} else if (event.name == "damage") {
+			if (event.name === "phaseJudge") {
+				return player !== event.player;
+			} else if (event.name === "damage") {
 				return event.hasNature("thunder");
 			}
 			return game.players.length > 1;
 		},
 		logTarget(event, player) {
-			if (event.name == "phaseJudge") {
+			if (event.name === "phaseJudge") {
 				return event.player;
-			} else if (event.name == "damage") {
+			} else if (event.name === "damage") {
 				return player;
 			}
-			return game.filterPlayer(current => current != player).sortBySeat();
+			return game.filterPlayer(current => current !== player).sortBySeat();
 		},
 		async content(event, trigger, player) {
 			const targets = event.targets;
-			if (trigger.name == "damage") {
+			if (trigger.name === "damage") {
 				await player.chooseDrawRecover({ forced: true });
 			} else {
 				await game.doAsyncInOrder(targets, async target => {
@@ -50,7 +50,7 @@ const skills = {
 		forced: true,
 		trigger: { target: "useCardToTarget" },
 		filter(event, player) {
-			return player != event.player && get.is.damageCard(event.card);
+			return player !== event.player && get.is.damageCard(event.card);
 		},
 		logTarget: "player",
 		derivation: "zhkuanglei_leiji",
@@ -85,7 +85,7 @@ const skills = {
 		round: 1,
 		trigger: { global: "judge" },
 		filter(event, player) {
-			return player != event.player;
+			return player !== event.player;
 		},
 		logTarget: "player",
 		async content(event, trigger, player) {
@@ -94,7 +94,7 @@ const skills = {
 			if ([card].filterInD("od").length) {
 				await player.gain({ cards: [card], animate: "gain2" });
 			}
-			const str = `穹闪：${get.translation(target)}的` + (trigger.judgestr || "") + "判定为" + get.translation(target.judging[0]) + "，请修改判定结果";
+			const str = `穹闪：${get.translation(target)}的${trigger.judgestr || ""}判定为${get.translation(target.judging[0])}，请修改判定结果`;
 			const suits = ["spade", "club", "diamond", "heart"];
 			const suitx = suits.map(suit => get.translation(suit));
 			const numbers = Array.from({ length: 13 }).map((val, idx) => idx + 1);
@@ -118,23 +118,24 @@ const skills = {
 					selectButton: 2,
 					ai(button) {
 						//插眼
-						return 1 + Math.randomGet();
+						return 1 + Math.random();
 					},
 				})
 				.set("numberx", numberx)
 				.set("suitx", suitx)
 				.forResult();
-			if (result?.bool && result.links?.length) {
-				const suit = suits[result.links.map(link => suitx.indexOf(link)).filter(i => i != -1)[0]];
-				const number = numbers[result.links.map(link => numberx.indexOf(link)).filter(i => i != -1)[0]];
-				game.log(player, "将判定结果修改为了", "#g" + get.translation(suit + 2) + get.strNumber(number));
-				trigger.fixedResult = {
-					suit: suit,
-					color: get.color({ suit: suit }),
-					number: number,
-				};
-				player.popup(get.translation(suit + 2) + get.strNumber(number), "thunder");
+			if (!result?.bool || !result.links?.length) {
+				return;
 			}
+			const suit = suits[result.links.map(link => suitx.indexOf(link)).filter(i => i !== -1)[0]];
+			const number = numbers[result.links.map(link => numberx.indexOf(link)).filter(i => i !== -1)[0]];
+			game.log(player, "将判定结果修改为了", `#g${get.translation(suit + 2)}${get.strNumber(number)}`);
+			trigger.fixedResult = {
+				suit: suit,
+				color: get.color({ suit: suit }),
+				number: number,
+			};
+			player.popup(`${get.translation(suit + 2)}${get.strNumber(number)}`, "thunder");
 		},
 	},
 };

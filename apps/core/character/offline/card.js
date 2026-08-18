@@ -13,14 +13,14 @@ const cards = {
 		selectTarget: -1,
 		filterTarget(card, player, target) {
 			if (player !== target) {
-				return false
+				return false;
 			}
 			const ranges = Array.from(Array(5)).map((value, index) => `equip${index + 1}`);
 			if (get.is.mountCombined()) {
 				ranges.removeArray(["equip3", "equip4"]);
 				ranges.add("equip3_4");
 			}
-			if (get.itemtype(card) == "card") {
+			if (get.itemtype(card) === "card") {
 				const owner = get.owner(card, "judge");
 				if (owner && !lib.filter.canBeGained(card, player, owner)) {
 					return false;
@@ -61,13 +61,13 @@ const cards = {
 		type: "equip",
 		subtype: "equip5",
 		async onEquip(event, trigger, player) {
-			const { card } = event,
-				skill = "sm_mabian_skill";
-			if (event.getParent().name != "equip") {
+			const { card } = event;
+			const skill = "sm_mabian_skill";
+			if (event.getParent().name !== "equip") {
 				return;
 			}
-			const evt = event.getParent(2),
-				target = evt.player;
+			const evt = event.getParent(2);
+			const target = evt.player;
 			if (!get.info(evt.name)?.transformSkill) {
 				return;
 			}
@@ -77,7 +77,7 @@ const cards = {
 				if (!list?.length || !list.includes(evt.name)) {
 					continue;
 				}
-				if (get.characterTitle(name) != "赛马娘") {
+				if (get.characterTitle(name) !== "赛马娘") {
 					continue;
 				}
 				skills.add(list[0]);
@@ -90,8 +90,8 @@ const cards = {
 		},
 		forceDie: true,
 		async onLose(event, trigger, player) {
-			const { card } = event,
-				skill = "sm_mabian_skill";
+			const { card } = event;
+			const skill = "sm_mabian_skill";
 			const map = player.getStorage(skill, new Map());
 			map.delete(card);
 			player.setStorage(skill, map);
@@ -104,9 +104,9 @@ const cards = {
 			if (!card || !player) {
 				return lib.translate["sm_mabian_info"];
 			}
-			const skill = "sm_mabian_skill",
-				map = player.getStorage(skill, new Map()),
-				vcard = card[card.cardSymbol];
+			const skill = "sm_mabian_skill";
+			const map = player.getStorage(skill, new Map());
+			const vcard = card[card.cardSymbol];
 			if (!vcard || !map.has(vcard) || !map.get(vcard).length) {
 				return lib.translate["sm_mabian_info"];
 			}
@@ -135,12 +135,8 @@ const cards = {
 					return 1;
 				}
 				player._zhuge_temp = true;
-				var result = (function () {
-					if (
-						!game.hasPlayer(function (current) {
-							return get.distance(player, current) <= 1 && player.canUse("sha", current) && get.effect(current, { name: "sha" }, player, player) > 0;
-						})
-					) {
+				const result = (() => {
+					if (!game.hasPlayer(current => get.distance(player, current) <= 1 && player.canUse("sha", current) && get.effect(current, { name: "sha" }, player, player) > 0)) {
 						return 1.5;
 					}
 					if (player.hasSha() && _status.currentPhase === player) {
@@ -148,7 +144,7 @@ const cards = {
 							return 10.5;
 						}
 					}
-					var num = player.countCards("h", "sha");
+					const num = player.countCards("h", "sha");
 					if (num > 1) {
 						return 6.5 + num;
 					}
@@ -187,21 +183,13 @@ const cards = {
 		distance: { globalFrom: -2 },
 		ai: {
 			value(card, player) {
-				if (
-					!game.hasPlayer(function (current) {
-						return get.damageEffect(current, player, player, "thunder") > 0;
-					})
-				) {
+				if (!game.hasPlayer(current => get.damageEffect(current, player, player, "thunder") > 0)) {
 					return 0;
 				}
 				return 8;
 			},
 			equipValue(card, player) {
-				if (
-					!game.hasPlayer(function (current) {
-						return get.damageEffect(current, player, player, "thunder") > 0;
-					})
-				) {
+				if (!game.hasPlayer(current => get.damageEffect(current, player, player, "thunder") > 0)) {
 					return 0;
 				}
 				return 8;
@@ -256,7 +244,7 @@ const cards = {
 				useful: 4.5,
 				value(card, player) {
 					const cards = player.getCards("hs", card => {
-						if (get.name(card) != "sha") {
+						if (get.name(card) !== "sha") {
 							return false;
 						}
 						return player.hasValueTarget(card, false);
@@ -292,9 +280,7 @@ const cards = {
 		type: "poker",
 		fullskin: true,
 		noname: true,
-		image: (card) => {
-			return `image/card/lukai_${card.suit}.png`;
-		}
+		image: card => `image/card/lukai_${card.suit}.png`,
 	},
 	chunqiubi: {
 		derivation: "chenshou",
@@ -316,26 +302,26 @@ const cards = {
 					if (!player.getCards("e").includes(card) && !player.canEquip(card, true)) {
 						return 0.01;
 					}
-					const info = get.info(card),
-						current = player.getEquip(info.subtype),
-						value = current && card != current && get.value(current, player);
+					const info = get.info(card);
+					const current = player.getEquip(info.subtype);
+					const value = current && card !== current && get.value(current, player);
 					let equipValue = info.ai.equipValue || info.ai.basic.equipValue;
-					if (typeof equipValue == "function") {
-						if (method == "raw") {
+					if (typeof equipValue === "function") {
+						if (method === "raw") {
 							return equipValue(card, player);
 						}
-						if (method == "raw2") {
+						if (method === "raw2") {
 							return equipValue(card, player) - value;
 						}
 						return Math.max(0.1, equipValue(card, player) - value);
 					}
-					if (typeof equipValue != "number") {
+					if (typeof equipValue !== "number") {
 						equipValue = 0;
 					}
-					if (method == "raw") {
+					if (method === "raw") {
 						return equipValue;
 					}
-					if (method == "raw2") {
+					if (method === "raw2") {
 						return equipValue - value;
 					}
 					return Math.max(0.1, equipValue - value);
@@ -345,7 +331,7 @@ const cards = {
 				target: (player, target, card) => get.equipResult(player, target, card),
 			},
 		},
-		onLose() {
+		async onLose({ player }) {
 			if (player.getStat().skill.chunqiubi_skill) {
 				delete player.getStat().skill.chunqiubi_skill;
 			}
@@ -401,22 +387,23 @@ const cards = {
 			return game.countGroup();
 		},
 		complexTarget: true,
-		contentBefore() {
+		async contentBefore(event, trigger, player) {
+			const { targets } = event;
 			if (!targets.length) {
-				event.finish();
 				return;
 			}
-			var num = game.countPlayer(),
-				cards = get.cards(num);
-			game.cardsGotoOrdering(cards).relatedEvent = event.getParent();
-			var dialog = ui.create.dialog("荆襄盛世", cards, true);
+			const num = game.countPlayer();
+			const cards = get.cards(num);
+			const next = game.cardsGotoOrdering(cards);
+			next.relatedEvent = event.getParent();
+			const dialog = ui.create.dialog("荆襄盛世", cards, true);
 			_status.dieClose.push(dialog);
 			dialog.videoId = lib.status.videoId++;
 			game.addVideo("cardDialog", null, ["荆襄盛世", get.cardsInfo(cards), dialog.videoId]);
 			event.getParent().preResult = dialog.videoId;
 			game.broadcast(
-				function (cards, id) {
-					var dialog = ui.create.dialog("荆襄盛世", cards, true);
+				(cards, id) => {
+					const dialog = ui.create.dialog("荆襄盛世", cards, true);
 					_status.dieClose.push(dialog);
 					dialog.videoId = id;
 				},
@@ -424,82 +411,64 @@ const cards = {
 				dialog.videoId
 			);
 			game.log(event.card, "亮出了", cards);
+			await next;
 		},
-		content() {
-			"step 0";
-			for (var i = 0; i < ui.dialogs.length; i++) {
-				if (ui.dialogs[i].videoId == event.preResult) {
-					event.dialog = ui.dialogs[i];
-					break;
-				}
-			}
-			if (!event.dialog || event.dialog.buttons.length == 0) {
-				event.finish();
+		async content(event, trigger, player) {
+			const { target } = event;
+			const dialog = ui.dialogs.find(dialog => dialog.videoId === event.preResult);
+			if (!dialog || !dialog.buttons.length) {
 				return;
 			}
-			if (event.dialog.buttons.length > 1) {
-				var next = target.chooseButton(true);
-				next.set("ai", button => {
-					let player = _status.event.player,
-						card = button.link,
-						val = get.value(card, player);
-					if (get.tag(card, "recover")) {
-						val += game.countPlayer(target => {
-							return target.hp < 2 && get.attitude(player, target) > 0 && lib.filter.cardSavable(card, player, target);
-						});
-						if (player.hp <= 2 && game.checkMod(card, player, "unchanged", "cardEnabled2", player)) {
-							val *= 2;
+			let card;
+			if (dialog.buttons.length === 1) {
+				card = dialog.buttons[0].link;
+			} else {
+				const result = await target
+					.chooseButton(true)
+					.set("ai", button => {
+						const current = _status.event.player;
+						const card = button.link;
+						let value = get.value(card, current);
+						if (!get.tag(card, "recover")) {
+							return value;
 						}
-					}
-					return val;
-				});
-				next.set("dialog", event.preResult);
-				next.set("closeDialog", false);
-				next.set("dialogdisplay", true);
-			} else {
-				event.directButton = event.dialog.buttons[0];
-			}
-			"step 1";
-			var dialog = event.dialog;
-			var card;
-			if (event.directButton) {
-				card = event.directButton.link;
-			} else {
-				for (var i of dialog.buttons) {
-					if (i.link == result.links[0]) {
-						card = i.link;
-						break;
-					}
-				}
-				if (!card) {
-					card = event.dialog.buttons[0].link;
+						value += game.countPlayer(target => target.hp < 2 && get.attitude(current, target) > 0 && lib.filter.cardSavable(card, current, target));
+						if (current.hp <= 2 && game.checkMod(card, current, "unchanged", "cardEnabled2", current)) {
+							value *= 2;
+						}
+						return value;
+					})
+					.set("dialog", event.preResult)
+					.set("closeDialog", false)
+					.set("dialogdisplay", true)
+					.forResult();
+				const selectedButton = dialog.buttons.find(button => button.link === result.links[0]);
+				if (selectedButton) {
+					card = selectedButton.link;
+				} else {
+					card = dialog.buttons[0].link;
 				}
 			}
-			var button;
-			for (var i = 0; i < dialog.buttons.length; i++) {
-				if (dialog.buttons[i].link == card) {
-					button = dialog.buttons[i];
-					const innerHTML = target.getName(true);
-					game.createButtonCardsetion(innerHTML, button);
-					dialog.buttons.remove(button);
-					break;
-				}
+			const button = dialog.buttons.find(button => button.link === card);
+			if (button) {
+				const innerHTML = target.getName(true);
+				game.createButtonCardsetion(innerHTML, button);
+				dialog.buttons.remove(button);
 			}
-			var capt = get.translation(target) + "选择了" + get.translation(button.link);
+			const capt = `${get.translation(target)}选择了${get.translation(button.link)}`;
+			let gainEvent;
 			if (card) {
-				target.gain(card, "visible");
+				gainEvent = target.gain(card, "visible");
 				target.$gain2(card);
 				game.broadcast(
-					function (card, id, name, capt) {
-						var dialog = get.idDialog(id);
+					(card, id, name, capt) => {
+						const dialog = get.idDialog(id);
 						if (dialog) {
 							dialog.content.firstChild.innerHTML = capt;
-							for (var i = 0; i < dialog.buttons.length; i++) {
-								if (dialog.buttons[i].link == card) {
-									game.createButtonCardsetion(name, dialog.buttons[i]);
-									dialog.buttons.splice(i--, 1);
-									break;
-								}
+							const button = dialog.buttons.find(button => button.link === card);
+							if (button) {
+								game.createButtonCardsetion(name, button);
+								dialog.buttons.remove(button);
 							}
 						}
 					},
@@ -512,35 +481,30 @@ const cards = {
 			dialog.content.firstChild.innerHTML = capt;
 			game.addVideo("dialogCapt", null, [dialog.videoId, dialog.content.firstChild.innerHTML]);
 			game.log(target, "选择了", button.link);
-			game.delay();
-		},
-		contentAfter() {
-			"step 0";
-			event.remained = [];
-			for (var i = 0; i < ui.dialogs.length; i++) {
-				if (ui.dialogs[i].videoId == event.preResult) {
-					var dialog = ui.dialogs[i];
-					dialog.close();
-					_status.dieClose.remove(dialog);
-					if (dialog.buttons.length) {
-						for (var i = 0; i < dialog.buttons.length; i++) {
-							event.remained.push(dialog.buttons[i].link);
-						}
-					}
-					break;
-				}
+			const delayEvent = game.delay();
+			if (gainEvent) {
+				await gainEvent;
 			}
-			game.broadcast(function (id) {
-				var dialog = get.idDialog(id);
+			await delayEvent;
+		},
+		async contentAfter(event, trigger, player) {
+			const remained = [];
+			const dialog = ui.dialogs.find(dialog => dialog.videoId === event.preResult);
+			if (dialog) {
+				dialog.close();
+				_status.dieClose.remove(dialog);
+				remained.push(...dialog.buttons.map(button => button.link));
+			}
+			game.broadcast(id => {
+				const dialog = get.idDialog(id);
 				if (dialog) {
 					dialog.close();
 					_status.dieClose.remove(dialog);
 				}
 			}, event.preResult);
 			game.addVideo("cardDialog", null, event.preResult);
-			"step 1";
-			if (event.remained.length) {
-				player.gain(event.remained, "gain2");
+			if (remained.length) {
+				await player.gain(remained, "gain2");
 			}
 		},
 		//ai简略，待补充
@@ -577,14 +541,14 @@ const cards = {
 		selectTarget: -1,
 		filterTarget(card, player, target) {
 			if (player !== target) {
-				return false
+				return false;
 			}
 			const ranges = Array.from(Array(5)).map((value, index) => `equip${index + 1}`);
 			if (get.is.mountCombined()) {
 				ranges.removeArray(["equip3", "equip4"]);
 				ranges.add("equip3_4");
 			}
-			if (get.itemtype(card) == "card") {
+			if (get.itemtype(card) === "card") {
 				const owner = get.owner(card, "judge");
 				if (owner && !lib.filter.canBeGained(card, player, owner)) {
 					return false;
@@ -655,14 +619,14 @@ const cards = {
 		selectTarget: -1,
 		filterTarget(card, player, target) {
 			if (player !== target) {
-				return false
+				return false;
 			}
 			const ranges = Array.from(Array(5)).map((value, index) => `equip${index + 1}`);
 			if (get.is.mountCombined()) {
 				ranges.removeArray(["equip3", "equip4"]);
 				ranges.add("equip3_4");
 			}
-			if (get.itemtype(card) == "card") {
+			if (get.itemtype(card) === "card") {
 				const owner = get.owner(card, "judge");
 				if (owner && !lib.filter.canBeGained(card, player, owner)) {
 					return false;
@@ -704,26 +668,26 @@ const cards = {
 					if (!player.getCards("e").includes(card) && !player.canEquip(card, true)) {
 						return 0.01;
 					}
-					const info = get.info(card),
-						current = player.getEquip(info.subtype),
-						value = current && card != current && get.value(current, player);
+					const info = get.info(card);
+					const current = player.getEquip(info.subtype);
+					const value = current && card !== current && get.value(current, player);
 					let equipValue = info.ai.equipValue || info.ai.basic.equipValue;
-					if (typeof equipValue == "function") {
-						if (method == "raw") {
+					if (typeof equipValue === "function") {
+						if (method === "raw") {
 							return equipValue(card, player);
 						}
-						if (method == "raw2") {
+						if (method === "raw2") {
 							return equipValue(card, player) - value;
 						}
 						return Math.max(0.1, equipValue(card, player) - value);
 					}
-					if (typeof equipValue != "number") {
+					if (typeof equipValue !== "number") {
 						equipValue = 0;
 					}
-					if (method == "raw") {
+					if (method === "raw") {
 						return equipValue;
 					}
-					if (method == "raw2") {
+					if (method === "raw2") {
 						return equipValue - value;
 					}
 					return Math.max(0.1, equipValue - value);
@@ -748,14 +712,14 @@ const cards = {
 		selectTarget: -1,
 		filterTarget(card, player, target) {
 			if (player !== target) {
-				return false
+				return false;
 			}
 			const ranges = Array.from(Array(5)).map((value, index) => `equip${index + 1}`);
 			if (get.is.mountCombined()) {
 				ranges.removeArray(["equip3", "equip4"]);
 				ranges.add("equip3_4");
 			}
-			if (get.itemtype(card) == "card") {
+			if (get.itemtype(card) === "card") {
 				const owner = get.owner(card, "judge");
 				if (owner && !lib.filter.canBeGained(card, player, owner)) {
 					return false;
@@ -797,26 +761,26 @@ const cards = {
 					if (!player.getCards("e").includes(card) && !player.canEquip(card, true)) {
 						return 0.01;
 					}
-					const info = get.info(card),
-						current = player.getEquip(info.subtype),
-						value = current && card != current && get.value(current, player);
+					const info = get.info(card);
+					const current = player.getEquip(info.subtype);
+					const value = current && card !== current && get.value(current, player);
 					let equipValue = info.ai.equipValue || info.ai.basic.equipValue;
-					if (typeof equipValue == "function") {
-						if (method == "raw") {
+					if (typeof equipValue === "function") {
+						if (method === "raw") {
 							return equipValue(card, player);
 						}
-						if (method == "raw2") {
+						if (method === "raw2") {
 							return equipValue(card, player) - value;
 						}
 						return Math.max(0.1, equipValue(card, player) - value);
 					}
-					if (typeof equipValue != "number") {
+					if (typeof equipValue !== "number") {
 						equipValue = 0;
 					}
-					if (method == "raw") {
+					if (method === "raw") {
 						return equipValue;
 					}
-					if (method == "raw2") {
+					if (method === "raw2") {
 						return equipValue - value;
 					}
 					return Math.max(0.1, equipValue - value);
@@ -841,14 +805,14 @@ const cards = {
 		selectTarget: -1,
 		filterTarget(card, player, target) {
 			if (player !== target) {
-				return false
+				return false;
 			}
 			const ranges = Array.from(Array(5)).map((value, index) => `equip${index + 1}`);
 			if (get.is.mountCombined()) {
 				ranges.removeArray(["equip3", "equip4"]);
 				ranges.add("equip3_4");
 			}
-			if (get.itemtype(card) == "card") {
+			if (get.itemtype(card) === "card") {
 				const owner = get.owner(card, "judge");
 				if (owner && !lib.filter.canBeGained(card, player, owner)) {
 					return false;
@@ -890,26 +854,26 @@ const cards = {
 					if (!player.getCards("e").includes(card) && !player.canEquip(card, true)) {
 						return 0.01;
 					}
-					const info = get.info(card),
-						current = player.getEquip(info.subtype),
-						value = current && card != current && get.value(current, player);
+					const info = get.info(card);
+					const current = player.getEquip(info.subtype);
+					const value = current && card !== current && get.value(current, player);
 					let equipValue = info.ai.equipValue || info.ai.basic.equipValue;
-					if (typeof equipValue == "function") {
-						if (method == "raw") {
+					if (typeof equipValue === "function") {
+						if (method === "raw") {
 							return equipValue(card, player);
 						}
-						if (method == "raw2") {
+						if (method === "raw2") {
 							return equipValue(card, player) - value;
 						}
 						return Math.max(0.1, equipValue(card, player) - value);
 					}
-					if (typeof equipValue != "number") {
+					if (typeof equipValue !== "number") {
 						equipValue = 0;
 					}
-					if (method == "raw") {
+					if (method === "raw") {
 						return equipValue;
 					}
-					if (method == "raw2") {
+					if (method === "raw2") {
 						return equipValue - value;
 					}
 					return Math.max(0.1, equipValue - value);
@@ -934,14 +898,14 @@ const cards = {
 		selectTarget: -1,
 		filterTarget(card, player, target) {
 			if (player !== target) {
-				return false
+				return false;
 			}
 			const ranges = Array.from(Array(5)).map((value, index) => `equip${index + 1}`);
 			if (get.is.mountCombined()) {
 				ranges.removeArray(["equip3", "equip4"]);
 				ranges.add("equip3_4");
 			}
-			if (get.itemtype(card) == "card") {
+			if (get.itemtype(card) === "card") {
 				const owner = get.owner(card, "judge");
 				if (owner && !lib.filter.canBeGained(card, player, owner)) {
 					return false;
@@ -983,26 +947,26 @@ const cards = {
 					if (!player.getCards("e").includes(card) && !player.canEquip(card, true)) {
 						return 0.01;
 					}
-					const info = get.info(card),
-						current = player.getEquip(info.subtype),
-						value = current && card != current && get.value(current, player);
+					const info = get.info(card);
+					const current = player.getEquip(info.subtype);
+					const value = current && card !== current && get.value(current, player);
 					let equipValue = info.ai.equipValue || info.ai.basic.equipValue;
-					if (typeof equipValue == "function") {
-						if (method == "raw") {
+					if (typeof equipValue === "function") {
+						if (method === "raw") {
 							return equipValue(card, player);
 						}
-						if (method == "raw2") {
+						if (method === "raw2") {
 							return equipValue(card, player) - value;
 						}
 						return Math.max(0.1, equipValue(card, player) - value);
 					}
-					if (typeof equipValue != "number") {
+					if (typeof equipValue !== "number") {
 						equipValue = 0;
 					}
-					if (method == "raw") {
+					if (method === "raw") {
 						return equipValue;
 					}
-					if (method == "raw2") {
+					if (method === "raw2") {
 						return equipValue - value;
 					}
 					return Math.max(0.1, equipValue - value);
