@@ -3248,7 +3248,7 @@ const skills = {
 					dialog.push(target.getDiscardableCards(player, "e"));
 				}
 				const result = await player
-					.chooseButton({ dialog })
+					.chooseButton({ createDialog: dialog })
 					.set("ai", button => {
 						const card = button.link;
 						const { player, source } = get.event();
