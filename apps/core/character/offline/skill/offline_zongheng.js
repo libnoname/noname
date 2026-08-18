@@ -134,6 +134,7 @@ const skills = {
 					forced: true,
 					selectButton: 2,
 					ai(button) {
+						//插眼
 						return 1 + Math.randomGet();
 					},
 				})
