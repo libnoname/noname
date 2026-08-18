@@ -9290,70 +9290,54 @@ const skills = {
 		selectCard: 1,
 		group: "sbyanyu_draw",
 		check: () => 1,
-		content() {
-			player.draw();
+		async content(event, trigger, player) {
+			await player.draw();
 		},
 		subSkill: {
 			draw: {
 				trigger: { player: "phaseUseEnd" },
 				filter(event, player) {
+					const phaseUse = _status.event.getParent("phaseUse");
 					return player.getHistory("useSkill", evt => {
-						if (evt.skill != "sbyanyu") {
-							return false;
-						}
-						var evtx = evt.event.getParent("phaseUse");
-						if (!evtx || evtx != _status.event.getParent("phaseUse")) {
-							return;
-						}
-						return true;
-					}).length;
+						const evtPhaseUse = evt.event.getParent("phaseUse");
+						return evt.skill === "sbyanyu" && Boolean(evtPhaseUse) && evtPhaseUse === phaseUse;
+					}).length > 0;
 				},
 				direct: true,
-				content() {
-					"step 0";
-					event.num =
+				async content(event, trigger, player) {
+					const phaseUse = _status.event.getParent("phaseUse");
+					const num =
 						3 *
 						player.getHistory("useSkill", evt => {
-							if (evt.skill != "sbyanyu") {
-								return false;
-							}
-							var evtx = evt.event.getParent("phaseUse");
-							if (!evtx || evtx != _status.event.getParent("phaseUse")) {
-								return;
-							}
-							return true;
+							const evtPhaseUse = evt.event.getParent("phaseUse");
+							return evt.skill === "sbyanyu" && Boolean(evtPhaseUse) && evtPhaseUse === phaseUse;
 						}).length;
-					player.chooseTarget(get.prompt("sbyanyu"), "令一名其他角色摸" + get.cnNumber(event.num) + "张牌", lib.filter.notMe).set("ai", target => {
-						var player = _status.event.player;
-						return get.effect(target, { name: "draw" }, player, player);
-					});
-					"step 1";
-					if (result.bool) {
-						var target = result.targets[0];
-						player.logSkill("sbyanyu_draw", target);
-						target.draw(num);
+					const result = await player
+						.chooseTarget({
+							prompt: get.prompt("sbyanyu"),
+							prompt2: `令一名其他角色摸${get.cnNumber(num)}张牌`,
+							filterTarget: lib.filter.notMe,
+							ai: target => get.effect(target, { name: "draw" }, player, player),
+						})
+						.forResult();
+					if (!result.bool) {
+						return;
 					}
+					const target = result.targets[0];
+					player.logSkill("sbyanyu_draw", target);
+					await target.draw(num);
 				},
 			},
 		},
 		ai: {
 			order(obj, player) {
-				if (
-					game.hasPlayer(current => current != player && get.attitude(player, current) > 0) &&
-					player.getHistory("useSkill", evt => {
-						if (evt.skill != "sbyanyu") {
-							return false;
-						}
-						var evtx = evt.event.getParent("phaseUse");
-						if (!evtx || evtx != _status.event.getParent("phaseUse")) {
-							return;
-						}
-						return true;
-					}).length < 2
-				) {
-					return 9;
-				}
-				return 2;
+				const hasFriendlyTarget = game.hasPlayer(current => current !== player && get.attitude(player, current) > 0);
+				const phaseUse = _status.event.getParent("phaseUse");
+				const useCount = player.getHistory("useSkill", evt => {
+					const evtPhaseUse = evt.event.getParent("phaseUse");
+					return evt.skill === "sbyanyu" && Boolean(evtPhaseUse) && evtPhaseUse === phaseUse;
+				}).length;
+				return hasFriendlyTarget && useCount < 2 ? 9 : 2;
 			},
 			result: {
 				player: 1,
