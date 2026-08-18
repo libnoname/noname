@@ -9187,9 +9187,7 @@ const skills = {
 				return false;
 			}
 			return (
-				!game.hasPlayer(function (current) {
-					return current.countCards("hej", "taipingyaoshu");
-				}) &&
+				!game.hasPlayer(current => current.hasCards("hej", "taipingyaoshu")) &&
 				!Array.from(ui.cardPile.childNodes)
 					.concat(Array.from(ui.discardPile.childNodes))
 					.concat(Array.from(ui.ordering.childNodes))
@@ -9197,16 +9195,15 @@ const skills = {
 					.includes("taipingyaoshu")
 			);
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			if (!lib.inpile.includes("taipingyaoshu")) {
 				lib.inpile.push("taipingyaoshu");
 			}
-			event.card = game.createCard2("taipingyaoshu", "heart", 3);
-			"step 1";
-			if (card) {
-				player.equip(card);
+			const card = game.createCard2("taipingyaoshu", "heart", 3);
+			if (!card) {
+				return;
 			}
+			await player.equip(card);
 		},
 		subSkill: {
 			mark: {
@@ -9218,7 +9215,7 @@ const skills = {
 					if (!player.hasZhuSkill("sbhuangtian") || !player.hasSkill("sbguidao", null, false, false)) {
 						return false;
 					}
-					if (!event.source || player == event.source || event.source.group != "qun") {
+					if (!event.source || player === event.source || event.source.group !== "qun") {
 						return false;
 					}
 					if (player.hasSkill("sbguidao") && player.countMark("sbguidao") >= 8) {
@@ -9229,8 +9226,8 @@ const skills = {
 					}
 					return true;
 				},
-				content() {
-					var num = Math.min(8 - player.countMark("sbhuangtian_count"), 2);
+				async content(event, trigger, player) {
+					const num = Math.min(8 - player.countMark("sbhuangtian_count"), 2);
 					player.addMark("sbguidao", num);
 					player.addTempSkill("sbhuangtian_count", "roundStart");
 					player.addMark("sbhuangtian_count", num, false);
