@@ -7184,30 +7184,24 @@ const skills = {
 		limited: true,
 		animationColor: "orange",
 		filter(event, player) {
-			return event.type == "dying" && player == event.dying;
+			return event.type === "dying" && player === event.dying;
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			player.discard(player.getCards("hej"));
-			"step 1";
-			player.draw(2);
-			"step 2";
+			await player.discard({ cards: player.getCards("hej") });
+			await player.draw(2);
 			if (player.hp < 2) {
-				player.recover(2 - player.hp);
+				await player.recover(2 - player.hp);
 			}
-			"step 3";
-			player.turnOver(false);
-			"step 4";
-			player.link(false);
-			"step 5";
+			await player.turnOver(false);
+			await player.link(false);
 			player.storage.sblianhuan = true;
 			game.log(player, "修改了", "#g【连环】");
 		},
 		ai: {
 			order: 1,
 			skillTagFilter(player, arg, target) {
-				if (player != target || player.storage.sbniepan) {
+				if (player !== target || player.storage.sbniepan) {
 					return false;
 				}
 			},
