@@ -9363,9 +9363,10 @@ const skills = {
 		position: "he",
 		logAudio: () => 1,
 		group: ["sbjushou_damage", "sbjushou_draw"],
-		content() {
-			player.turnOver();
-			player.changeHujia(cards.length, null, true);
+		async content(event, trigger, player) {
+			const { cards } = event;
+			await player.turnOver();
+			await player.changeHujia(cards.length, null, true);
 		},
 		ai: {
 			order: 5,
@@ -9383,28 +9384,23 @@ const skills = {
 					return player.isTurnedOver();
 				},
 				direct: true,
-				content() {
-					"step 0";
-					player
-						.chooseControl("翻面", "获得1点护甲", "cancel2")
-						.set("ai", () => {
-							if (_status.event.player.hujia >= 3) {
-								return 0;
-							}
-							return 1;
+				async content(event, trigger, player) {
+					const { control } = await player
+						.chooseControl({
+							controls: ["翻面", "获得1点护甲", "cancel2"],
+							prompt: get.prompt("sbjushou"),
+							prompt2: "选择一项",
+							ai: () => (player.hujia >= 3 ? 0 : 1),
 						})
-						.set("prompt", get.prompt("sbjushou"))
-						.set("prompt2", "选择一项");
-					"step 1";
-					if (result.control == "cancel2") {
-						event.finish();
+						.forResult();
+					if (control === "cancel2") {
 						return;
 					}
 					player.logSkill("sbjushou_damage");
-					if (result.control == "翻面") {
-						player.turnOver();
+					if (control === "翻面") {
+						await player.turnOver();
 					} else {
-						player.changeHujia(1, null, true);
+						await player.changeHujia(1, null, true);
 					}
 				},
 				ai: {
@@ -9413,19 +9409,20 @@ const skills = {
 							if (!target.isTurnedOver()) {
 								return;
 							}
-							if (get.tag(card, "damage")) {
-								if (player.hasSkillTag("jueqing", false, target)) {
-									return [1, -2];
-								}
-								if (
-									(card.name == "sha" && !player.hasSkill("jiu")) ||
-									target.hasSkillTag("filterDamage", null, {
-										player: player,
-										card: card,
-									})
-								) {
-									return 0.1;
-								}
+							if (!get.tag(card, "damage")) {
+								return;
+							}
+							if (player.hasSkillTag("jueqing", false, target)) {
+								return [1, -2];
+							}
+							if (
+								(card.name === "sha" && !player.hasSkill("jiu")) ||
+								target.hasSkillTag("filterDamage", null, {
+									player,
+									card,
+								})
+							) {
+								return 0.1;
 							}
 						},
 					},
@@ -9439,8 +9436,8 @@ const skills = {
 				filter(event, player) {
 					return !player.isTurnedOver() && player.hujia > 0;
 				},
-				content() {
-					player.draw(player.hujia);
+				async content(event, trigger, player) {
+					await player.draw(player.hujia);
 				},
 			},
 		},
