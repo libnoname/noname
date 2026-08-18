@@ -8700,7 +8700,7 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		filter(event, player) {
-			return player.countCards("he") > 0;
+			return player.hasCards("he");
 		},
 		skillAnimation: true,
 		animationColor: "wood",
@@ -8717,22 +8717,26 @@ const skills = {
 		lose: false,
 		complexSelect: true,
 		filterOk() {
-			return ui.selected.targets.length == ui.selected.cards.length;
+			return ui.selected.targets.length === ui.selected.cards.length;
 		},
 		multitarget: true,
 		multiline: true,
 		check(card) {
 			return 7 - get.value(card);
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
+			const { cards, targets } = event;
 			player.awakenSkill(event.name);
-			for (var i = 0; i < cards.length; i++) {
-				targets[i].addToExpansion(cards[i], player, "give").gaintag.add("sbfenwei_effect");
+			for (const [index, card] of cards.entries()) {
+				await targets[index].addToExpansion({
+					cards: [card],
+					source: player,
+					animate: "give",
+					gaintag: ["sbfenwei_effect"],
+				});
 			}
-			"step 1";
 			player.addSkill("sbfenwei_effect");
-			player.draw(cards.length);
+			await player.draw(cards.length);
 		},
 		intro: {
 			content: "limited",
@@ -8742,12 +8746,8 @@ const skills = {
 			result: {
 				target(player, target) {
 					if (
-						game.hasPlayer(current => {
-							return (!get.rawAttitude || get.rawAttitude(player, current) > 0) && current != player && get.attitude(player, current) <= 0;
-						}) &&
-						game.countPlayer(current => {
-							return get.attitude(player, current) > 0;
-						}) <= 2
+						game.hasPlayer(current => (!get.rawAttitude || get.rawAttitude(player, current) > 0) && current !== player && get.attitude(player, current) <= 0) &&
+						game.countPlayer(current => get.attitude(player, current) > 0) <= 2
 					) {
 						return 0;
 					}
@@ -8764,33 +8764,34 @@ const skills = {
 				charlotte: true,
 				forced: true,
 				filter(event, player) {
-					return event.target.getExpansions("sbfenwei_effect").length > 0 && get.type2(event.card) == "trick";
+					return event.target.getExpansions("sbfenwei_effect").length > 0 && get.type2(event.card) === "trick";
 				},
-				content() {
-					"step 0";
-					var choiceList = ["令" + get.translation(trigger.target) + "获得其“威”", "移去" + get.translation(trigger.target) + "的“威”，取消" + get.translation(trigger.card) + "对其的目标"];
-					player
-						.chooseControl()
-						.set("choiceList", choiceList)
-						.set("prompt", "奋威：请选择一项")
-						.set("ai", () => {
-							var player = _status.event.player,
-								evt = _status.event.getTrigger();
-							if (get.effect(evt.target, evt.card, evt.player, player) < -10) {
-								return 1;
-							}
-							return 0;
-						});
-					"step 1";
-					var cards = trigger.target.getExpansions("sbfenwei_effect");
-					if (result.index == 0) {
-						trigger.target.gain(cards, "gain2", "fromStorage");
-					} else {
-						trigger.target.loseToDiscardpile(cards);
-						trigger.targets.remove(trigger.target);
-						trigger.getParent().triggeredTargets2.remove(trigger.target);
-						trigger.untrigger();
+				async content(event, trigger, player) {
+					const choiceList = [`令${get.translation(trigger.target)}获得其“威”`, `移去${get.translation(trigger.target)}的“威”，取消${get.translation(trigger.card)}对其的目标`];
+					const { index } = await player
+						.chooseControl({
+							choiceList,
+							prompt: "奋威：请选择一项",
+							ai: () => {
+								const player = _status.event.player;
+								const evt = _status.event.getTrigger();
+								if (get.effect(evt.target, evt.card, evt.player, player) < -10) {
+									return 1;
+								}
+								return 0;
+							},
+						})
+						.forResult();
+					const cards = trigger.target.getExpansions("sbfenwei_effect");
+					if (index === 0) {
+						await trigger.target.gain({ cards, animate: "gain2", fromStorage: true });
+						return;
 					}
+					const loseEvent = trigger.target.loseToDiscardpile({ cards });
+					trigger.targets.remove(trigger.target);
+					trigger.getParent().triggeredTargets2.remove(trigger.target);
+					trigger.untrigger();
+					await loseEvent;
 				},
 				marktext: "威",
 				intro: {
