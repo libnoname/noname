@@ -8220,9 +8220,11 @@ const skills = {
 		logAudio: () => 2,
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(lib.filter.notMe, get.prompt(event.skill), "和一名其他角色进行“协力”")
-				.set("ai", function (target) {
-					return get.threaten(target) * Math.sqrt(1 + target.countCards("h")) * (target.isTurnedOver() || target.hasJudge("lebu") ? 0.1 : 1);
+				.chooseTarget({
+					filterTarget: lib.filter.notMe,
+					prompt: get.prompt(event.skill),
+					prompt2: "和一名其他角色进行“协力”",
+					ai: target => get.threaten(target) * Math.sqrt(1 + target.countCards("h")) * (target.isTurnedOver() || target.hasJudge("lebu") ? 0.1 : 1),
 				})
 				.forResult();
 		},
@@ -8231,8 +8233,8 @@ const skills = {
 			//保证技能cooperation被移除之后 失去该技能
 			player.addAdditionalSkill("cooperation", "sbxieji_effect");
 			//选择对方的协击条件
-			await player.chooseCooperationFor(target, "sbxieji").set("ai", function (button) {
-				var base = 0;
+			await player.chooseCooperationFor({ target, reason: "sbxieji" }).set("ai", button => {
+				let base = 0;
 				switch (button.link) {
 					case "cooperation_damage":
 						base = 0.8;
@@ -8261,30 +8263,34 @@ const skills = {
 					//判断自己是否有目标为该角色 且已经完成的协力记录
 					return player.checkCooperationStatus(event.player, "sbxieji");
 				},
-				content() {
-					"step 0";
+				async content(event, trigger, player) {
 					game.log(player, "和", trigger.player, "的协力成功");
-					player
-						.chooseTarget("协击：请选择【杀】的目标", "你和" + get.translation(trigger.player) + "协力成功，可以视为对至多三名其他角色使用一张【杀】，且此【杀】造成伤害时，你摸等同于伤害值的牌", [1, 3], true, function (card, player, target) {
-							return player.canUse("sha", target, false);
-						})
-						.set("ai", function (target) {
-							var player = _status.event.player;
-							return get.effect(target, { name: "sha" }, player, player);
-						});
-					"step 1";
-					if (result.bool) {
-						player.addTempSkill("sbxieji_reward", "sbxieji_effectAfter");
-						player.useCard(
-							{
-								name: "sha",
-								isCard: true,
-								storage: { sbxieji: true },
+					const result = await player
+						.chooseTarget({
+							prompt: "协击：请选择【杀】的目标",
+							prompt2: `你和${get.translation(trigger.player)}协力成功，可以视为对至多三名其他角色使用一张【杀】，且此【杀】造成伤害时，你摸等同于伤害值的牌`,
+							selectTarget: [1, 3],
+							forced: true,
+							filterTarget: (card, player, target) => player.canUse("sha", target, false),
+							ai: target => {
+								const player = _status.event.player;
+								return get.effect(target, { name: "sha" }, player, player);
 							},
-							"sbxieji_effect",
-							result.targets
-						);
+						})
+						.forResult();
+					if (!result.bool || !result.targets?.length) {
+						return;
 					}
+					player.addTempSkill("sbxieji_reward", "sbxieji_effectAfter");
+					await player.useCard({
+						card: get.autoViewAs({
+							name: "sha",
+							isCard: true,
+							storage: { sbxieji: true },
+						}),
+						skill: "sbxieji_effect",
+						targets: result.targets,
+					});
 				},
 			},
 			reward: {
@@ -8293,10 +8299,10 @@ const skills = {
 				forced: true,
 				popup: false,
 				filter(event, player) {
-					return event.card && event.card.storage && event.card.storage.sbxieji && event.getParent().type == "card";
+					return event.card && event.card.storage && event.card.storage.sbxieji && event.getParent().type === "card";
 				},
-				content() {
-					player.draw(trigger.num);
+				async content(event, trigger, player) {
+					await player.draw(trigger.num);
 				},
 			},
 		},
