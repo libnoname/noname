@@ -9115,64 +9115,68 @@ const skills = {
 	sbluoshen: {
 		audio: 2,
 		trigger: { player: "phaseZhunbeiBegin" },
-		direct: true,
-		content() {
-			"step 0";
-			player.chooseTarget(get.prompt2("sbluoshen")).set("ai", target => {
-				var eff = 0;
-				var num = Math.ceil(game.countPlayer() / 2),
-					players = game
-						.filterPlayer(current => current != player)
-						.sortBySeat(target)
-						.slice(0, num);
-				for (var targetx of players) {
-					eff += get.attitude(player, targetx) * Math.sqrt(targetx.countCards("h"));
-				}
-				return 1 - eff;
-			});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("sbluoshen", target);
-				player.addTempSkill("sbluoshen_add");
-				event.targets = game
-					.filterPlayer(current => current != player)
-					.sortBySeat(target)
-					.slice(0, Math.ceil(game.countPlayer() / 2));
-			} else {
-				event.finish();
-			}
-			"step 2";
-			var target = event.targets.shift();
-			event.target = target;
-			player.line(target);
-			if (!target.countCards("h")) {
-				event._result = { bool: false };
-			} else {
-				target
-					.chooseCard("展示一张手牌", true)
-					.set("ai", card => {
-						var val = _status.event.goon ? 15 : 5;
-						if (get.color(card) == "black") {
-							return val - get.value(card);
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2("sbluoshen"),
+					ai: target => {
+						let eff = 0;
+						const num = Math.ceil(game.countPlayer() / 2);
+						const players = game
+							.filterPlayer(current => current !== player)
+							.sortBySeat(target)
+							.slice(0, num);
+						for (const targetx of players) {
+							eff += get.attitude(player, targetx) * Math.sqrt(targetx.countCards("h"));
 						}
-						return 7 - get.value(card);
-					})
-					.set("goon", get.attitude(target, player) > 0);
-			}
-			"step 3";
-			if (result.bool) {
-				var card = result.cards[0];
-				target.showCards(card, get.translation(target) + "【洛神】展示");
-				if (get.color(card) == "black") {
-					player.gain(card, target, "give", "bySelf").gaintag.add("sbluoshen");
-				} else if (get.color(card) == "red") {
-					target.discard(card);
+						return 1 - eff;
+					},
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const firstTarget = event.targets[0];
+			player.addTempSkill("sbluoshen_add");
+			const targets = game
+				.filterPlayer(current => current !== player)
+				.sortBySeat(firstTarget)
+				.slice(0, Math.ceil(game.countPlayer() / 2));
+			for (const target of targets) {
+				player.line(target);
+				if (!target.hasCards("h")) {
+					continue;
 				}
-			}
-			"step 4";
-			if (targets.length) {
-				event.goto(2);
+				const result = await target
+					.chooseCard({
+						prompt: "展示一张手牌",
+						forced: true,
+						ai: card => {
+							const val = _status.event.goon ? 15 : 5;
+							if (get.color(card) === "black") {
+								return val - get.value(card);
+							}
+							return 7 - get.value(card);
+						},
+					})
+					.set("goon", get.attitude(target, player) > 0)
+					.forResult();
+				if (!result.bool) {
+					continue;
+				}
+				const card = result.cards[0];
+				await target.showCards(card, `${get.translation(target)}【洛神】展示`);
+				const color = get.color(card);
+				if (color === "black") {
+					await player.gain({
+						cards: [card],
+						source: target,
+						animate: "give",
+						bySelf: true,
+						gaintag: ["sbluoshen"],
+					});
+				} else if (color === "red") {
+					await target.discard({ cards: [card] });
+				}
 			}
 		},
 		subSkill: {
@@ -9184,7 +9188,7 @@ const skills = {
 						}
 					},
 					cardDiscardable(card, player, name) {
-						if (name == "phaseDiscard" && card.hasGaintag("sbluoshen")) {
+						if (name === "phaseDiscard" && card.hasGaintag("sbluoshen")) {
 							return false;
 						}
 					},
