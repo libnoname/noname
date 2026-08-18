@@ -15443,9 +15443,9 @@ const skills = {
 						if (result3.bool) {
 							var targetx = result3.targets[0];
 							player.line(targetx);
-							targetx.gain(cards, target, "give");
+							await targetx.gain(cards, target, "give");
 						} else {
-							target.modedDiscard(cards, player);
+							await target.modedDiscard(cards, player);
 						}
 					}
 				}
@@ -15489,13 +15489,14 @@ const skills = {
 				trigger: { global: "useCard1" },
 				forced: true,
 				popup: false,
-				content() {
-					var storage = player.storage["guimou_0"];
+				async content(event, trigger, player) {
+					const storage = player.getStorage("guimou_0", [[], []]);
 					if (!storage[0].includes(trigger.player)) {
 						storage[0].push(trigger.player);
 						storage[1].push(0);
 					}
 					storage[1][storage[0].indexOf(trigger.player)]++;
+					player.markSkill("guimou_0");
 				},
 			},
 			1: {
@@ -15538,9 +15539,9 @@ const skills = {
 				},
 				forced: true,
 				popup: false,
-				content() {
-					var storage = player.storage["guimou_1"];
-					var targets = game.filterPlayer(target => trigger.getl(target).cards2.length);
+				async content(event, trigger, player) {
+					const storage = player.getStorage("guimou_1", [[], []]);
+					const targets = game.filterPlayer(target => trigger.getl(target).cards2.length);
 					targets.forEach(target => {
 						if (!storage[0].includes(target)) {
 							storage[0].push(target);
@@ -15548,6 +15549,7 @@ const skills = {
 						}
 						storage[1][storage[0].indexOf(target)] += trigger.getl(target).cards2.length;
 					});
+					player.markSkill("guimou_1");
 				},
 			},
 			2: {
@@ -15587,9 +15589,9 @@ const skills = {
 				trigger: { global: ["gainAfter", "loseAsyncAfter"] },
 				forced: true,
 				popup: false,
-				content() {
-					var storage = player.storage["guimou_2"];
-					var targets = game.filterPlayer(target => trigger.getg(target).length);
+				async content(event, trigger, player) {
+					const storage = player.getStorage("guimou_2", [[], []]);
+					const targets = game.filterPlayer(target => trigger.getg(target).length);
 					targets.forEach(target => {
 						if (!storage[0].includes(target)) {
 							storage[0].push(target);
@@ -15597,6 +15599,7 @@ const skills = {
 						}
 						storage[1][storage[0].indexOf(target)] += trigger.getg(target).length;
 					});
+					player.markSkill("guimou_2");
 				},
 			},
 		},
@@ -15723,9 +15726,9 @@ const skills = {
 		logTarget(event, player) {
 			return player.storage.mbyilie2;
 		},
-		content() {
+		async content(event, trigger, player) {
 			if (event.triggername == "damageSource") {
-				player.recover();
+				await player.recover();
 			} else {
 				event.targets[0].markSkillCharacter("mbyilie2", player, "义烈", `${get.translation(player)}决定追随于你`);
 				player.addMark("mbyilie", trigger.num);
@@ -15741,13 +15744,11 @@ const skills = {
 			return player.hasMark("mbyilie");
 		},
 		forced: true,
-		content() {
-			"step 0";
-			player.draw();
-			("step 1");
-			var num = player.countMark("mbyilie");
+		async content(event, trigger, player) {
+			await player.draw();
+			const num = player.countMark("mbyilie");
 			if (num) {
-				player.loseHp(num);
+				await player.loseHp(num);
 				player.removeMark("mbyilie", num);
 			}
 		},
