@@ -4324,7 +4324,7 @@ const skills = {
 	sbqicai: {
 		mod: {
 			targetInRange(card, player, target) {
-				if (get.type2(card) == "trick") {
+				if (get.type2(card) === "trick") {
 					return true;
 				}
 			},
@@ -4341,20 +4341,20 @@ const skills = {
 			}
 		},
 		filter(event, player) {
-			return player.countCards("h", card => lib.skill.sbqicai.filterCardx(card, player)) || (event.sbqicai && event.sbqicai.length);
+			return player.hasCards("h", card => lib.skill.sbqicai.filterCardx(card, player)) || (event.sbqicai && event.sbqicai.length);
 		},
 		filterCardx(card, player) {
 			if (player.getStorage("sbqicai").includes(card.name)) {
 				return false;
 			}
-			return get.type(card) == "equip" && game.hasPlayer(target => target != player && target.hasEmptySlot(get.subtype(card)));
+			return get.type(card) === "equip" && game.hasPlayer(target => target !== player && target.hasEmptySlot(get.subtype(card)));
 		},
 		usable: 1,
 		chooseButton: {
 			dialog(event, player) {
 				const list1 = player.getCards("h", card => lib.skill.sbqicai.filterCardx(card, player));
 				const list2 = event.sbqicai;
-				var dialog = ui.create.dialog('###奇才###<div class="text center">请选择一张装备牌置入一名其他角色的装备区</div>');
+				const dialog = ui.create.dialog('###奇才###<div class="text center">请选择一张装备牌置入一名其他角色的装备区</div>');
 				if (list1.length) {
 					dialog.add('<div class="text center">手牌区</div>');
 					dialog.add(list1);
@@ -4369,9 +4369,9 @@ const skills = {
 				return dialog;
 			},
 			check(button) {
-				var player = _status.event.player;
-				var num = get.value(button.link);
-				if (!game.hasPlayer(target => target != player && target.hasEmptySlot(get.subtype(button.link)) && get.attitude(player, target) > 0)) {
+				const player = _status.event.player;
+				let num = get.value(button.link);
+				if (!game.hasPlayer(target => target !== player && target.hasEmptySlot(get.subtype(button.link)) && get.attitude(player, target) > 0)) {
 					num = 1 / (get.value(button.link) || 0.5);
 				}
 				if (get.owner(button.link)) {
@@ -4384,15 +4384,15 @@ const skills = {
 					audio: "sbqicai",
 					card: links[0],
 					filterCard(card, player) {
-						var cardx = lib.skill.sbqicai_backup.card;
+						const cardx = lib.skill.sbqicai_backup.card;
 						if (get.owner(cardx)) {
-							return card == cardx;
+							return card === cardx;
 						}
 						return false;
 					},
 					selectCard: -1,
 					filterTarget(card, player, target) {
-						return target != player && target.canEquip(lib.skill.sbqicai_backup.card);
+						return target !== player && target.canEquip(lib.skill.sbqicai_backup.card);
 					},
 					check: () => 1,
 					discard: false,
@@ -4402,20 +4402,27 @@ const skills = {
 							player.$give(cards, targets[0], false);
 						}
 					},
-					content() {
+					async content(event, trigger, player) {
+						const { target } = event;
+						let { cards } = event;
+						let delayEvent;
 						if (!cards || !cards.length) {
 							cards = [lib.skill.sbqicai_backup.card];
 							target.$gain2(cards);
-							game.delayx();
+							delayEvent = game.delayx();
 						}
-						target.equip(cards[0]);
+						const equipEvent = target.equip(cards[0]);
 						player.addSkill("sbqicai_gain");
 						lib.skill.sbqicai.updateCounter(player, target, 0);
+						if (delayEvent) {
+							await delayEvent;
+						}
+						await equipEvent;
 					},
 					ai: {
 						result: {
 							target(player, target) {
-								var att = get.attitude(player, target);
+								const att = get.attitude(player, target);
 								if (att > 0) {
 									return 1;
 								}
@@ -4429,7 +4436,7 @@ const skills = {
 				};
 			},
 			prompt(links, player) {
-				return "请选择置入" + get.translation(links) + "的角色";
+				return `请选择置入${get.translation(links)}的角色`;
 			},
 		},
 		updateCounter(player, target, num) {
@@ -4438,7 +4445,7 @@ const skills = {
 			if (!target.hasSkill(skill)) {
 				target.addSkill(skill);
 			}
-			if (num == 0) {
+			if (num === 0) {
 				target.clearMark(skill, false);
 			} else if (num > 0) {
 				target.addMark(skill, num, false);
@@ -4462,19 +4469,19 @@ const skills = {
 							return (storage || 0).toString();
 						},
 						content(storage) {
-							return "已被掠夺" + get.cnNumber(storage || 0) + "张普通锦囊牌";
+							return `已被掠夺${get.cnNumber(storage || 0)}张普通锦囊牌`;
 						},
 					},
 				};
 				lib.translate[skill] = "奇才";
-				lib.translate[skill + "_bg"] = "奇";
+				lib.translate[`${skill}_bg`] = "奇";
 			}
 		},
 		ai: {
 			order: 7,
 			result: {
 				player(player) {
-					if (!game.hasPlayer(target => target != player && target.hasEmptySlot(2) && get.attitude(player, target) != 0)) {
+					if (!game.hasPlayer(target => target !== player && target.hasEmptySlot(2) && get.attitude(player, target) !== 0)) {
 						return 0;
 					}
 					return 1;
@@ -4488,62 +4495,61 @@ const skills = {
 				audio: "sbqicai",
 				trigger: { global: ["gainAfter", "loseAsyncAfter"] },
 				filter(event, player) {
-					return game.hasPlayer(function (current) {
-						if (!event.getg(current).length || !current.hasSkill("sbqicai_" + player.playerid)) {
+					return game.hasPlayer(current => {
+						const skill = `sbqicai_${player.playerid}`;
+						if (!event.getg(current).length || !current.hasSkill(skill)) {
 							return false;
 						}
-						if (current.countMark("sbqicai_" + player.playerid) >= lib.skill.sbqicai.getLimit) {
+						if (current.countMark(skill) >= lib.skill.sbqicai.getLimit) {
 							return false;
 						}
-						return event.getg(current).some(card => get.type(card) == "trick" && lib.filter.canBeGained(card, current, player));
+						return event.getg(current).some(card => get.type(card) === "trick" && lib.filter.canBeGained(card, current, player));
 					});
 				},
 				forced: true,
 				direct: true,
 				charlotte: true,
-				content() {
-					"step 0";
-					if (!event.checkedTargets) {
-						event.checkedTargets = [];
-					}
-					var target = game.findPlayer(function (current) {
-						if (!trigger.getg(current).length || !current.hasSkill("sbqicai_" + player.playerid)) {
-							return false;
+				async content(event, trigger, player) {
+					const skill = `sbqicai_${player.playerid}`;
+					const checkedTargets = [];
+					while (true) {
+						const target = game.findPlayer(current => {
+							if (!trigger.getg(current).length || !current.hasSkill(skill)) {
+								return false;
+							}
+							if (checkedTargets.includes(current) || current.countMark(skill) >= lib.skill.sbqicai.getLimit) {
+								return false;
+							}
+							return trigger.getg(current).some(card => get.type(card) === "trick" && lib.filter.canBeGained(card, current, player));
+						});
+						if (!target) {
+							break;
 						}
-						if (event.checkedTargets.includes(current)) {
-							return false;
+						checkedTargets.push(target);
+						player.logSkill("sbqicai_gain", target);
+						const cards = trigger.getg(target).filter(card => get.type(card) === "trick" && lib.filter.canBeGained(card, target, player));
+						const num = lib.skill.sbqicai.getLimit - target.countMark(skill);
+						let result = { bool: true, links: cards };
+						if (cards.length > num) {
+							result = await target
+								.chooseButton({
+									createDialog: [`奇才：将其中${get.cnNumber(num)}张牌交给${get.translation(player)}`, cards],
+									selectButton: num,
+									forced: true,
+									ai: button => get.value(button.link) * get.sgn(_status.event.att),
+								})
+								.set("att", get.attitude(target, player))
+								.forResult();
 						}
-						if (current.countMark("sbqicai_" + player.playerid) >= lib.skill.sbqicai.getLimit) {
-							return false;
+						if (!result.bool) {
+							continue;
 						}
-						return trigger.getg(current).some(card => get.type(card) == "trick" && lib.filter.canBeGained(card, current, player));
-					});
-					if (!target) {
-						event.finish();
-						return;
-					}
-					event.target = target;
-					player.logSkill("sbqicai_gain", target);
-					event.checkedTargets.add(target);
-					var cards = trigger.getg(target).filter(card => get.type(card) == "trick" && lib.filter.canBeGained(card, target, player));
-					if (cards.length <= lib.skill.sbqicai.getLimit - target.countMark("sbqicai_" + player.playerid)) {
-						event._result = { bool: true, links: cards };
-					} else {
-						var num = lib.skill.sbqicai.getLimit - target.countMark("sbqicai_" + player.playerid);
-						target
-							.chooseButton(["奇才：将其中" + get.cnNumber(num) + "张牌交给" + get.translation(player), cards], num, true)
-							.set("ai", function (button) {
-								return get.value(button.link) * get.sgn(_status.event.att);
-							})
-							.set("att", get.attitude(target, player));
-					}
-					"step 1";
-					if (result.bool) {
-						game.delaye(0.5);
-						target.give(result.links, player);
+						const delayEvent = game.delaye(0.5);
+						const giveEvent = target.give(result.links, player);
 						lib.skill.sbqicai.updateCounter(player, target, result.links.length);
+						await delayEvent;
+						await giveEvent;
 					}
-					event.goto(0);
 				},
 			},
 		},
