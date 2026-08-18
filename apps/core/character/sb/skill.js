@@ -10423,8 +10423,8 @@ const skills = {
 		enable: "phaseUse",
 		filterCard: true,
 		selectCard() {
-			let player = _status.event.player,
-				list = player.getStorage("sbkeji_used");
+			const player = _status.event.player;
+			const list = player.getStorage("sbkeji_used");
 			if (list.includes("discard")) {
 				return [0, 0];
 			}
@@ -10436,53 +10436,53 @@ const skills = {
 		locked: false,
 		usable: 2,
 		prompt(event) {
-			let player = _status.event.player,
-				str = "出牌阶段" + (player.storage.sbkeji ? "" : "各") + "限一次。你可以";
-			let discard = player.getStorage("sbkeji_used").includes("discard"),
-				losehp = player.getStorage("sbkeji_used").includes("losehp");
+			const player = _status.event.player;
+			const discard = player.getStorage("sbkeji_used").includes("discard");
+			const losehp = player.getStorage("sbkeji_used").includes("losehp");
+			const options = [];
 			if (!discard) {
-				str += "弃置一张手牌并获得1点护甲";
+				options.push("弃置一张手牌并获得1点护甲");
 			}
 			if (!losehp) {
-				str += (!discard ? "，或" : "") + "点击“确定”失去1点体力并获得2点护甲";
+				options.push("点击“确定”失去1点体力并获得2点护甲");
 			}
-			return str;
+			return `出牌阶段${player.storage.sbkeji ? "" : "各"}限一次。你可以${options.join("，或")}`;
 		},
 		filter(event, player) {
 			return (player.getStat("skill").sbkeji || 0) < (player.storage.sbkeji ? 1 : 2);
 		},
 		check(card) {
-			var player = _status.event.player;
-			if (_status.event.player.hp == 1 && player.canSave(player) && player.hujia <= 3) {
+			const player = _status.event.player;
+			if (player.hp === 1 && player.canSave(player) && player.hujia <= 3) {
 				return 0;
 			}
 			return 6 - get.value(card);
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
+			const { cards } = event;
 			player.addTempSkill("sbkeji_used", "phaseUseAfter");
 			if (cards.length) {
-				player.changeHujia(1, null, true);
+				const changeHujiaEvent = player.changeHujia(1, null, true);
 				player.markAuto("sbkeji_used", "discard");
-				event.finish();
-			} else {
-				player.loseHp();
+				await changeHujiaEvent;
+				return;
 			}
-			"step 1";
-			player.changeHujia(2, null, true);
+			await player.loseHp();
+			const changeHujiaEvent = player.changeHujia(2, null, true);
 			player.markAuto("sbkeji_used", "losehp");
+			await changeHujiaEvent;
 		},
 		mod: {
 			maxHandcard(player, num) {
 				return num + player.hujia;
 			},
 			cardEnabled(card, player) {
-				if (player != _status.event.dying && card.name == "tao") {
+				if (player !== _status.event.dying && card.name === "tao") {
 					return false;
 				}
 			},
 			cardSavable(card, player) {
-				if (player != _status.event.dying && card.name == "tao") {
+				if (player !== _status.event.dying && card.name === "tao") {
 					return false;
 				}
 			},
@@ -10495,11 +10495,9 @@ const skills = {
 						return 0;
 					}
 					if (
-						player.hp == 1 &&
+						player.hp === 1 &&
 						!player.canSave(player) &&
-						!player.hasCard(card => {
-							return lib.filter.cardDiscardable(card, player, "sbkeji") && get.value(card) < 6;
-						}, "h")
+						!player.hasCard(card => lib.filter.cardDiscardable(card, player, "sbkeji") && get.value(card) < 6, "h")
 					) {
 						return 0;
 					}
