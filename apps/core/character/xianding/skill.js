@@ -4036,6 +4036,7 @@ const skills = {
 		},
 	},
 	sejianchu: {
+		audio: 2,
 		derivation: ["jige", "liren"],
 		juexingji: true,
 		skillAnimation: true,
