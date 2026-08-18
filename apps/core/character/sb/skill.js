@@ -6681,7 +6681,13 @@ const skills = {
 	sblianhuan: {
 		audio: 2,
 		enable: "phaseUse",
-		filter: (event, player) => player.hasCard(card => lib.skill.sblianhuan.filterCard(card, player), lib.skill.sblianhuan.position),
+		filter(event, player) {
+			let filterCard = lib.skill.sblianhuan.filterCard;
+			if (typeof filterCard !== "function") {
+				return false;
+			}
+			return player.hasCards(lib.skill.sblianhuan.position, card => filterCard(card, player));
+		},
 		filterTarget(card, player, target) {
 			if (player.hasSkill("sblianhuan_blocker")) {
 				return false;
@@ -6689,32 +6695,33 @@ const skills = {
 			if (!ui.selected.cards.length) {
 				return false;
 			}
-			card = get.autoViewAs({ name: "tiesuo" }, [ui.selected.cards[0]]);
-			return player.canUse(card, target);
+			const vcard = get.autoViewAs({ name: "tiesuo" }, [ui.selected.cards[0]]);
+			return player.canUse(vcard, target);
 		},
-		filterCard: (card, player) => get.suit(card) == "club" && (!player.hasSkill("sblianhuan_blocker") || player.canRecast(card)),
+		filterCard: (card, player) => get.suit(card) === "club" && (!player.hasSkill("sblianhuan_blocker") || player.canRecast(card)),
 		selectCard: 1,
 		position: "hs",
 		derivation: "sblianhuan_lv2",
 		selectTarget() {
-			var card = get.card(),
-				player = get.player();
+			const card = get.card();
+			const player = get.player();
 			if (player.hasSkill("sblianhuan_blocker")) {
 				return 0;
 			}
-			if (card == undefined) {
-				return;
+			if (card === undefined) {
+				return 0;
 			}
-			var range = [0, 2];
+			/** @type { Select } */
+			const range = [0, 2];
 			game.checkMod(card, player, range, "selectTarget", player);
 			return range;
 		},
 		filterOk() {
-			var card = ui.selected.cards[0];
+			const card = ui.selected.cards[0];
 			if (!card) {
 				return false;
 			}
-			if (get.position(card) == "s" && !ui.selected.targets.length) {
+			if (get.position(card) === "s" && !ui.selected.targets.length) {
 				return false;
 			}
 			return true;
@@ -6723,9 +6730,9 @@ const skills = {
 			return 6 - get.value(card);
 		},
 		prompt() {
-			var player = _status.event.player,
-				use = !player.hasSkill("sblianhuan_blocker");
-			return "重铸一张♣手牌" + (use ? "；或将一张♣手牌当【铁索连环】使用" : "");
+			const player = _status.event.player;
+			const use = !player.hasSkill("sblianhuan_blocker");
+			return `重铸一张♣手牌${use ? "；或将一张♣手牌当【铁索连环】使用" : ""}`;
 		},
 		group: ["sblianhuan_use", "sblianhuan_add", "sblianhuan_discard2"],
 		multitarget: true,
@@ -6736,14 +6743,14 @@ const skills = {
 		viewAs: {
 			name: "tiesuo",
 		},
-		prepare: () => true,
+		prepare: () => void 0,
 		async precontent(event, trigger, player) {
 			const result = event.result;
 			if (!result?.targets?.length) {
 				delete result.card;
-			} else {
-				player.addTempSkill("sblianhuan_blocker", "phaseUseAfter");
+				return;
 			}
+			player.addTempSkill("sblianhuan_blocker", "phaseUseAfter");
 		},
 		async content(event, trigger, player) {
 			await player.recast(event.cards);
@@ -6766,21 +6773,19 @@ const skills = {
 				audio: "sblianhuan",
 				trigger: { player: "useCard" },
 				filter(event, player) {
-					return event.card.name == "tiesuo" && !player.storage.sblianhuan;
+					return event.card.name === "tiesuo" && !player.storage.sblianhuan;
 				},
 				check(event, player) {
-					var eff = 0,
-						targets = event.targets.filter(i => !i.isLinked());
-					for (var target of targets) {
+					let eff = 0;
+					const targets = event.targets.filter(target => !target.isLinked());
+					for (const target of targets) {
 						eff += get.attitude(player, target);
 					}
 					return eff < -1;
 				},
 				prompt2: "失去1点体力，然后当此牌指定第一个目标后，你随机弃置所有不处于连环状态的目标角色各一张手牌",
-				content() {
-					"step 0";
-					player.loseHp();
-					"step 1";
+				async content(event, trigger, player) {
+					await player.loseHp();
 					if (!trigger.card.storage) {
 						trigger.card.storage = {};
 					}
@@ -6798,63 +6803,44 @@ const skills = {
 				filter(event, player) {
 					return event.isFirstTarget && event.card.storage && event.card.storage.sblianhuan;
 				},
-				content() {
-					"step 0";
-					event.targets = trigger.targets.filter(i => !i.isLinked());
-					if (!event.targets.length) {
-						event.finish();
-					} else {
-						player.logSkill("sblianhuan_discard", event.targets);
+				async content(event, trigger, player) {
+					const targets = trigger.targets.filter(target => !target.isLinked());
+					if (!targets.length) {
+						return;
 					}
-					"step 1";
-					var target = targets.shift();
-					var cards = target.getCards("h", card => {
-						return lib.filter.cardDiscardable(card, player, "sblianhuan");
-					});
-					if (cards.length > 0) {
+					player.logSkill("sblianhuan_discard", targets);
+					for (const target of targets) {
+						const cards = target.getCards("h", card => lib.filter.cardDiscardable(card, player, "sblianhuan"));
+						if (!cards.length) {
+							continue;
+						}
 						player.line(target);
-						target.discard(cards.randomGet());
-					}
-					if (targets.length) {
-						event.redo();
+						await target.discard({ cards: [cards.randomGet()] });
 					}
 				},
 			},
 			add: {
 				trigger: { player: "useCard2" },
 				filter(event, player) {
-					return (
-						event.card.name == "tiesuo" &&
-						player.storage.sblianhuan &&
-						game.hasPlayer(current => {
-							return !event.targets.includes(current) && player.canUse(event.card, current);
-						})
-					);
+					return event.card.name === "tiesuo" && player.storage.sblianhuan && game.hasPlayer(current => !event.targets.includes(current) && player.canUse(event.card, current));
 				},
-				direct: true,
-				content() {
-					"step 0";
-					player
-						.chooseTarget(get.prompt("sblianhuan_add"), "为" + get.translation(trigger.card) + "额外指定任意个目标", [1, Infinity], function (card, player, target) {
-							return !_status.event.sourcex.includes(target) && player.canUse(_status.event.card, target);
+				async cost(event, trigger, player) {
+					event.result = await player
+						.chooseTarget({
+							prompt: get.prompt("sblianhuan_add"),
+							prompt2: `为${get.translation(trigger.card)}额外指定任意个目标`,
+							selectTarget: [1, Infinity],
+							filterTarget: (card, player, target) => !_status.event.sourcex.includes(target) && player.canUse(_status.event.card, target),
+							ai: target => get.effect(target, _status.event.card, _status.event.player, _status.event.player),
 						})
 						.set("sourcex", trigger.targets)
-						.set("ai", function (target) {
-							var player = _status.event.player;
-							return get.effect(target, _status.event.card, player, player);
-						})
-						.set("card", trigger.card);
-					"step 1";
-					if (result.bool) {
-						if (!event.isMine() && !event.isOnline()) {
-							game.delayx();
-						}
-						event.targets = result.targets;
-					} else {
-						event.finish();
+						.set("card", trigger.card)
+						.forResult();
+					if (!event.isMine() && !event.isOnline()) {
+						await game.delayx();
 					}
-					"step 2";
-					player.logSkill("sblianhuan_add", event.targets);
+				},
+				async content(event, trigger, player) {
 					trigger.targets.addArray(event.targets);
 				},
 			},
@@ -6864,27 +6850,21 @@ const skills = {
 				locked: false,
 				popup: false,
 				filter(event, player) {
-					return event.isFirstTarget && event.card.name == "tiesuo" && player.storage.sblianhuan && !event.getParent()._sblianhuan;
+					return event.isFirstTarget && event.card.name === "tiesuo" && player.storage.sblianhuan && !event.getParent()._sblianhuan;
 				},
-				content() {
-					"step 0";
-					event.targets = trigger.targets.filter(i => !i.isLinked());
-					if (!event.targets.length) {
-						event.finish();
-					} else {
-						player.logSkill("sblianhuan_discard2", event.targets);
+				async content(event, trigger, player) {
+					const targets = trigger.targets.filter(target => !target.isLinked());
+					if (!targets.length) {
+						return;
 					}
-					"step 1";
-					var target = targets.shift();
-					var cards = target.getCards("h", card => {
-						return lib.filter.cardDiscardable(card, player, "sblianhuan");
-					});
-					if (cards.length > 0) {
+					player.logSkill("sblianhuan_discard2", targets);
+					for (const target of targets) {
+						const cards = target.getCards("h", card => lib.filter.cardDiscardable(card, player, "sblianhuan"));
+						if (!cards.length) {
+							continue;
+						}
 						player.line(target);
-						target.discard(cards.randomGet());
-					}
-					if (targets.length) {
-						event.redo();
+						await target.discard({ cards: [cards.randomGet()] });
 					}
 				},
 			},
@@ -8468,6 +8448,7 @@ const skills = {
 						bool: true,
 						targets: game.filterPlayer(current => current.hasJudge("bingliang")),
 					};
+					break;
 				case "cancel2":
 					break;
 			}
