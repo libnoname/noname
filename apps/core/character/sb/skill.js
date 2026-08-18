@@ -5676,80 +5676,77 @@ const skills = {
 		},
 		chargeSkill: 7,
 		filter(event, player) {
-			return player.countCharge();
+			return player.countCharge() > 0;
 		},
 		group: "sbzaiqi_backflow",
-		direct: true,
-		content() {
-			"step 0";
-			player.chooseTarget(get.prompt("sbzaiqi"), "选择任意名角色并消耗等量蓄力值，令这些角色选择一项：1.令你摸一张牌；2.弃置一张牌，然后你回复1点体力", [1, player.countMark("charge")]).set("ai", function (target) {
-				var player = _status.event.player;
-				var att = get.attitude(player, target);
-				return 3 - get.sgn(att) + Math.abs(att / 1000);
-			});
-			"step 1";
-			if (result.bool) {
-				var targets = result.targets;
-				targets.sortBySeat();
-				event.targets = targets;
-				player.logSkill("sbzaiqi", targets);
-				player.removeCharge(targets.length);
-			} else {
-				event.finish();
-			}
-			"step 2";
-			var target = targets.shift();
-			event.target = target;
-			if (!target.countCards("he")) {
-				event._result = { bool: false };
-			} else {
-				target
-					.chooseToDiscard(get.translation(player) + "对你发动了【再起】", "是否弃置一张牌令其回复1点体力？或者点击“取消”，令该角色摸一张牌。", "he")
-					.set("ai", card => {
-						var eff = _status.event.eff,
-							att = _status.event.att;
-						if ((eff > 0 && att > 0) || (eff <= 0 && att < 0)) {
-							return 5.5 - get.value(card);
-						}
-						return 0;
-					})
-					.set("eff", get.recoverEffect(player, player, target))
-					.set("att", get.attitude(target, player));
-			}
-			"step 3";
-			target.line(player);
-			if (result.bool) {
-				player.recover(target);
-			} else {
-				player.draw();
-			}
-			game.delayex();
-			if (targets.length) {
-				event.goto(2);
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt("sbzaiqi"),
+					prompt2: "选择任意名角色并消耗等量蓄力值，令这些角色选择一项：1.令你摸一张牌；2.弃置一张牌，然后你回复1点体力",
+					selectTarget: [1, player.countMark("charge")],
+					ai: target => {
+						const player = _status.event.player;
+						const att = get.attitude(player, target);
+						return 3 - get.sgn(att) + Math.abs(att / 1000);
+					},
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const targets = event.targets.sortBySeat();
+			player.removeCharge(targets.length);
+			for (const target of targets) {
+				let discarded = false;
+				if (target.hasCards("he")) {
+					const result = await target
+						.chooseToDiscard({
+							prompt: `${get.translation(player)}对你发动了【再起】`,
+							prompt2: "是否弃置一张牌令其回复1点体力？或者点击“取消”，令该角色摸一张牌。",
+							position: "he",
+							ai: card => {
+								const eff = _status.event.eff;
+								const att = _status.event.att;
+								if ((eff > 0 && att > 0) || (eff <= 0 && att < 0)) {
+									return 5.5 - get.value(card);
+								}
+								return 0;
+							},
+						})
+						.set("eff", get.recoverEffect(player, player, target))
+						.set("att", get.attitude(target, player))
+						.forResult();
+					discarded = result.bool;
+				}
+				target.line(player);
+				if (discarded) {
+					await player.recover({ source: target });
+				} else {
+					await player.draw();
+				}
+				await game.delayex();
 			}
 		},
 		subSkill: {
 			backflow: {
 				audio: "sbzaiqi",
 				trigger: {
-					//player:'enterGame',
 					source: "damageSource",
-					//global:'phaseBefore',
 				},
 				usable: 1,
 				filter(event, player) {
 					if (!player.countCharge(true)) {
 						return false;
 					}
-					if (event.name == "damage") {
+					if (event.name === "damage") {
 						return true;
 					}
-					return event.name != "phase" || game.phaseNumber == 0;
+					return event.name !== "phase" || game.phaseNumber === 0;
 				},
 				forced: true,
 				locked: false,
-				content() {
-					player.addCharge(trigger.name == "damage" ? 1 : 3);
+				async content(event, trigger, player) {
+					player.addCharge(trigger.name === "damage" ? 1 : 3);
 				},
 			},
 		},
