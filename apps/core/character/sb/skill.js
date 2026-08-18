@@ -9025,35 +9025,47 @@ const skills = {
 		filter(event, player) {
 			return (
 				!player.hasSkill("sbhujia_used") &&
-				game.hasPlayer(current => {
-					return current != player && current.group == "wei" && player.hasZhuSkill("sbhujia", current);
-				})
+				game.hasPlayer(current => current !== player && current.group === "wei" && player.hasZhuSkill("sbhujia", current))
 			);
 		},
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt("sbhujia"), "将" + get.translation(trigger.source) + "即将对你造成的" + trigger.num + "点伤害转移给一名其他魏势力角色", (card, player, target) => {
-					return target != player && target.group == "wei" && player.hasZhuSkill("sbhujia", target);
+		async content(event, trigger, player) {
+			const result = await player
+				.chooseTarget({
+					prompt: get.prompt("sbhujia"),
+					prompt2: `将${get.translation(trigger.source)}即将对你造成的${trigger.num}点伤害转移给一名其他魏势力角色`,
+					filterTarget: (card, player, target) => target !== player && target.group === "wei" && player.hasZhuSkill("sbhujia", target),
+					ai: target => {
+						const player = _status.event.player;
+						const evt = _status.event.getTrigger();
+						return get.damageEffect(target, evt.source, player, evt.nature) - _status.event.eff;
+					},
 				})
-				.set("ai", target => {
-					var player = _status.event.player,
-						evt = _status.event.getTrigger();
-					return get.damageEffect(target, evt.source, player, evt.nature) - _status.event.eff;
-				})
-				.set("eff", get.damageEffect(player, trigger.source, player, trigger.nature));
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("sbhujia", target);
-				player.addTempSkill("sbhujia_used", "roundStart");
-				trigger.cancel();
-				if (trigger.source) {
-					target.damage(trigger.source, trigger.nature, trigger.num).set("card", trigger.card).set("cards", trigger.cards);
-				} else {
-					target.damage("nosource", trigger.nature, trigger.num).set("card", trigger.card).set("cards", trigger.cards);
-				}
+				.set("eff", get.damageEffect(player, trigger.source, player, trigger.nature))
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
+			const target = result.targets[0];
+			player.logSkill("sbhujia", target);
+			player.addTempSkill("sbhujia_used", "roundStart");
+			trigger.cancel();
+			if (trigger.source) {
+				await target.damage({
+					source: trigger.source,
+					nature: trigger.nature,
+					num: trigger.num,
+					card: trigger.card,
+					cards: trigger.cards,
+				});
+				return;
+			}
+			await target.damage({
+				nosource: true,
+				nature: trigger.nature,
+				num: trigger.num,
+				card: trigger.card,
+				cards: trigger.cards,
+			});
 		},
 		ai: {
 			maixie_defend: true,
@@ -9065,16 +9077,14 @@ const skills = {
 					if (
 						get.tag(card, "damage") &&
 						!target.hasSkill("sbhujia_used") &&
-						game.hasPlayer(current => {
-							return current != target && current.group == "wei" && target.hasZhuSkill("sbhujia", current);
-						})
+						game.hasPlayer(current => current !== target && current.group === "wei" && target.hasZhuSkill("sbhujia", current))
 					) {
 						return 0.8;
 					}
 				},
 			},
 			threaten(player, target) {
-				if (target.countCards("h") == 0) {
+				if (target.countCards("h") === 0) {
 					return 2;
 				}
 			},
