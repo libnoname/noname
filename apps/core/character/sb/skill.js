@@ -4599,39 +4599,24 @@ const skills = {
 				prompt: "选择一名其他角色，对其与其势力相同的所有其他角色各造成1点火属性伤害",
 				usable: 1,
 				line: "fire",
-				content() {
-					"step 0";
-					target.damage("fire");
-					"step 1";
-					var targets = game.filterPlayer(current => {
-						if (current == player || current == target) {
-							return false;
-						}
-						return current.group == target.group;
-					});
-					if (targets.length) {
-						game.delayx();
-						player.line(targets, "fire");
-						targets.forEach(i => i.damage("fire"));
+				async content(event, trigger, player) {
+					const { target } = event;
+					await target.damage({ nature: "fire" });
+					const targets = game.filterPlayer(current => current !== player && current !== target && current.group === target.group);
+					if (!targets.length) {
+						return;
 					}
+					player.line(targets, "fire");
+					await game.delayx();
+					await game.doAsyncInOrder(targets, current => current.damage({ nature: "fire" }));
 				},
 				ai: {
 					order: 7,
 					fireAttack: true,
 					result: {
 						target(player, target) {
-							var att = get.attitude(player, target);
-							return (
-								get.sgn(att) *
-								game
-									.filterPlayer(current => {
-										if (current == player) {
-											return false;
-										}
-										return current.group == target.group;
-									})
-									.reduce((num, current) => num + get.damageEffect(current, player, player, "fire"), 0)
-							);
+							const att = get.attitude(player, target);
+							return get.sgn(att) * game.filterPlayer(current => current !== player && current.group === target.group).reduce((num, current) => num + get.damageEffect(current, player, player, "fire"), 0);
 						},
 					},
 				},
@@ -4640,7 +4625,7 @@ const skills = {
 				audio: "sbhuoji2.mp3",
 				trigger: { player: "phaseZhunbeiBegin" },
 				filter(event, player) {
-					return player.getAllHistory("sourceDamage", evt => evt.hasNature("fire") && evt.player != player).reduce((num, evt) => num + evt.num, 0) >= game.players.length + game.dead.length;
+					return player.getAllHistory("sourceDamage", evt => evt.hasNature("fire") && evt.player !== player).reduce((num, evt) => num + evt.num, 0) >= game.players.length + game.dead.length;
 				},
 				forced: true,
 				locked: false,
@@ -4658,7 +4643,7 @@ const skills = {
 				trigger: { player: "dying" },
 				forced: true,
 				locked: false,
-				content() {
+				async content(event, trigger, player) {
 					player.awakenSkill("sbhuoji");
 					game.log(player, "使命失败");
 				},
@@ -4672,11 +4657,11 @@ const skills = {
 				firstDo: true,
 				forced: true,
 				popup: false,
-				content() {
+				async content(event, trigger, player) {
 					player.addTempSkill("sbhuoji_count", {
 						player: ["sbhuoji_achieveBegin", "sbhuoji_failBegin"],
 					});
-					player.storage.sbhuoji_count = player.getAllHistory("sourceDamage", evt => evt.hasNature("fire") && evt.player != player).reduce((num, evt) => num + evt.num, 0);
+					player.storage.sbhuoji_count = player.getAllHistory("sourceDamage", evt => evt.hasNature("fire") && evt.player !== player).reduce((num, evt) => num + evt.num, 0);
 					player.markSkill("sbhuoji_count");
 				},
 			},
@@ -10653,7 +10638,7 @@ const skills = {
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			const target = event.target;
+			const target = event.targets[0];
 			await target.changeHujia(1, null, true);
 			const result = await target
 				.chooseCard({
