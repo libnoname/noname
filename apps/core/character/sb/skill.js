@@ -6063,40 +6063,35 @@ const skills = {
 		limited: true,
 		skillAnimation: true,
 		animationColor: "wood",
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			event.targets = game
-				.filterPlayer(current => {
-					return current.group == "wu" && current != player;
-				})
+			const targets = game
+				.filterPlayer(current => current.group === "wu" && current !== player)
 				.sortBySeat(_status.currentPhase);
-			var num = event.targets.length;
+			const num = targets.length;
+			let recoverEvent;
 			if (num > 0) {
-				player.recover(num);
+				recoverEvent = player.recover(num);
 			}
 			player.addMark("sbjiang", 1, false);
 			player.addTempSkill("sbzhiba_draw");
-			if (!event.targets.length) {
-				event.finish();
+			if (recoverEvent) {
+				await recoverEvent;
 			}
-			"step 1";
-			var target = targets.shift();
-			target.damage("nosource");
-			if (targets.length) {
-				event.redo();
+			for (const target of targets) {
+				await target.damage({ nosource: true });
 			}
 		},
 		subSkill: {
 			draw: {
 				trigger: { global: "dieAfter" },
 				filter(event, player) {
-					return event.getParent(3).name == "sbzhiba";
+					return event.getParent(3).name === "sbzhiba";
 				},
 				forced: true,
 				charlotte: true,
-				content() {
-					player.draw(3);
+				async content(event, trigger, player) {
+					await player.draw(3);
 				},
 			},
 		},
