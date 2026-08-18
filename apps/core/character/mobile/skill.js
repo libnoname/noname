@@ -16582,6 +16582,7 @@ const skills = {
 	luanqun: {
 		audio: 2,
 		enable: "phaseUse",
+		manualConfirm: true,
 		filter(event, player) {
 			return player.countCards("h");
 		},
