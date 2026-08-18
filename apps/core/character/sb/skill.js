@@ -5746,12 +5746,6 @@ const skills = {
 		},
 		logTarget: "target",
 		async content(event, trigger, player) {
-			/*await player.draw();
-			if (player.canCompare(trigger.target)) {
-				
-			} else {
-				return;
-			}*/
 			const result = await player.chooseToCompare(trigger.target).forResult();
 			if (result?.bool) {
 				player.addTempSkill("sblieren_damage");
