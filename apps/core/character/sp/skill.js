@@ -44327,8 +44327,9 @@ const skills = {
 	xinfu_lingren: {
 		audio: 2,
 		trigger: { player: "useCardToPlayered" },
+		usable: 1,
 		filter(event, player) {
-			if (!player.isPhaseUsing() || player.hasSkill("xinfu_lingren_used") || !event.isFirstTarget) {
+			if (!player.isPhaseUsing() || !event.isFirstTarget) {
 				return false;
 			}
 			return event.card.name === "sha" && (get.type(event.card) === "trick" || get.tag(event.card, "damage"));
@@ -44346,7 +44347,6 @@ const skills = {
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			player.addTempSkill("xinfu_lingren_used", { player: "phaseUseAfter" });
 			const {
 				targets: [target],
 			} = event;
@@ -44436,7 +44436,6 @@ const skills = {
 			}
 		},
 		ai: { threaten: 2.4 },
-		subSkill: { used: { charlotte: true } },
 	},
 	lingren_jianxiong: { audio: 1 },
 	lingren_xingshang: { audio: 1 },
@@ -47590,7 +47589,26 @@ const skills = {
 					.forResult();
 			}
 		},
-		locked: true,
+		locked: false,
+		mod: {
+			aiOrder(player, card, num) {
+				if (typeof card == "object") {
+					const storage = player.storage.oltaohuai;
+					let nums = player.getCards("h").map(card => get.number(card));
+					if (storage) {
+						nums.sort((a, b) => a - b);
+						if (get.number(card) <= nums[0]) {
+							return num + 4;
+						}
+					} else {
+						nums.sort((a, b) => b - a);
+						if (get.number(card) >= nums[0]) {
+							return num + 4;
+						}
+					}
+				}
+			},
+		},
 		async content(event, trigger, player) {
 			if (event.cards?.length) await player.discard(event.cards);
 			else {

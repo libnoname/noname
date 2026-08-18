@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { lib, game, ui, get, ai, _status } from "noname";
 
 export const type = "card";
@@ -3137,12 +3138,6 @@ export default {
 						triggerEvent.getParent().excluded.addArray(game.filterPlayer(current => current.isFriendOf(triggerEvent.target)));
 					}
 				}
-				/*
-					event.result={
-						wuxied:true,
-						directHit:evt.directHit||[],
-						nowuxie:evt.nowuxie,
-					};*/
 				if (player.isOnline()) {
 					player.send(player => {
 						if (ui.tempnowuxie && !player.hasWuxie()) {

@@ -3,6 +3,254 @@ import html from "dedent";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//上官婉儿
+	pecaishi: {
+		audio: 2,
+		enable: "chooseToUse",
+		filter(event, player) {
+			return player.hasCards("hes", card => {
+				if (player.getStorage("pecaishi_used").includes(get.cardNameLength(card))) {
+					return false;
+				}
+				return get.inpileVCardList(info => {
+					if (!["basic", "trick"].includes(info[0])) {
+						return false;
+					}
+					const cardx = get.autoViewAs({ name: info[2], nature: info[3] }, [card]);
+					return get.cardNameLength(cardx) == get.cardNameLength(card) && event.filterCard(cardx, player, event);
+				}).length;
+			});
+		},
+		chooseButton: {
+			dialog(event, player) {
+				const list = get.inpileVCardList(info => {
+					if (!["basic", "trick"].includes(info[0])) {
+						return false;
+					}
+					return player.hasCards("hes", card => {
+						if (player.getStorage("pecaishi_used").includes(get.cardNameLength(card))) {
+							return false;
+						}
+						const cardx = get.autoViewAs({ name: info[2], nature: info[3] }, [card]);
+						return get.cardNameLength(cardx) == get.cardNameLength(card) && event.filterCard(cardx, player, event);
+					});
+				});
+				return ui.create.dialog("才诗", [list, "vcard"]);
+			},
+			filter(button, player) {
+				return _status.event.getParent().filterCard(
+					{
+						name: button.link[2],
+						nature: button.link[3],
+					},
+					player,
+					_status.event.getParent()
+				);
+			},
+			check(button) {
+				if (_status.event.getParent().type != "phase") {
+					return 1;
+				}
+				const player = get.player();
+				if (["wugu", "zhulu_card", "yiyi", "lulitongxin", "lianjunshengyan", "diaohulishan"].includes(button.link[2])) {
+					return 0;
+				}
+				return player.getUseValue({
+					name: button.link[2],
+					nature: button.link[3],
+				});
+			},
+			backup(links, player) {
+				return {
+					filterCard(card, player) {
+						return get.cardNameLength(card) == get.cardNameLength(lib.skill.pecaishi_backup.name);
+					},
+					name: links[0][2],
+					audio: "pecaishi",
+					popname: true,
+					check(card) {
+						return 10 - get.value(card);
+					},
+					position: "hse",
+					viewAs: {
+						name: links[0][2],
+						nature: links[0][3],
+					},
+					log: false,
+					async precontent(event, trigger, player) {
+						player.logSkill("pecaishi");
+						player.addTempSkill("pecaishi_used");
+						player.markAuto("pecaishi_used", [get.cardNameLength(event.result.card)]);
+					},
+				};
+			},
+			prompt(links, player) {
+				return "将一张字数相同的牌当做" + (get.translation(links[0][3]) || "") + get.translation(links[0][2]) + "使用";
+			},
+		},
+		hiddenCard(player, name) {
+			if (!lib.inpile.includes(name)) {
+				return false;
+			}
+			const type = get.type(name);
+			return ["basic", "trick"].includes(type) && player.hasCards("hes", card => get.cardNameLength(card) == get.cardNameLength(name)) && !player.getStorage("pecaishi_used").includes(get.cardNameLength(name));
+		},
+		ai: {
+			respondSha: true,
+			respondShan: true,
+			skillTagFilter(player, tag, arg) {
+				if (arg == "respond") {
+					return false;
+				}
+				const name = tag == "respondSha" ? "sha" : "shan";
+				return lib.skill["pecaishi"].hiddenCard(player, name);
+			},
+			order: 9,
+			result: {
+				player(player) {
+					if (_status.event.dying) {
+						return get.attitude(player, _status.event.dying);
+					}
+					return 1;
+				},
+			},
+		},
+		subSkill: {
+			backup: {},
+			used: { charlotte: true, onremove: true, intro: { content: "本回合已使用过$点的牌" } },
+		},
+	},
+	peculv: {
+		audio: 2,
+		forced: true,
+		init(player, skill) {
+			player.addSkill(skill + "_mark");
+			game.addGlobalSkill(skill + "_ai");
+		},
+		onremove(player, skill) {
+			player.removeSkill(skill + "_mark");
+			game.countPlayer(current => {
+				current.removeSkill(skill + "_mark2");
+			});
+			if (!game.hasPlayer(i => i.hasSkill(skill, null, null, false), true)) {
+				game.removeGlobalSkill(skill + "_ai");
+			}
+		},
+		trigger: { global: "useCard" },
+		filter(event, player) {
+			if (event.player != _status.currentPhase) {
+				return false;
+			}
+			const history = game.getAllGlobalHistory("useCard"),
+				index = history.indexOf(event);
+			if (index < 1) {
+				return false;
+			}
+			const evt = history[index - 1];
+			return get.cardNameLength(evt.card) == get.cardNameLength(event.card) || get.type2(evt.card) == get.type2(event.card);
+		},
+		async content(event, trigger, player) {
+			await player.draw();
+			trigger.player.addTempSkill(event.name + "_mark2");
+			trigger.player.addMark(event.name + "_mark2", 1, false);
+		},
+		group: "peculv_effect",
+		subSkill: {
+			mark2: { charlotte: true, onremove: true, intro: { content: "本回合已触发过#次促律" } },
+			ai: {
+				mod: {
+					aiOrder(player, card, num) {
+						const history = game.getAllGlobalHistory("useCard"),
+							index = history.length;
+						if (index < 1) {
+							return;
+						}
+						const evt = history[index - 1];
+						if (
+							get.itemtype(card) == "card" &&
+							(get.type2(card) == get.type2(evt.card) || get.cardNameLength(card) == get.cardNameLength(evt.card)) &&
+							game.hasPlayer(current => {
+								return current.hasSkill("peculv") && get.attitude(player, current) > 0;
+							})
+						) {
+							return num + 114514;
+						}
+					},
+				},
+				trigger: {
+					player: "dieAfter",
+				},
+				filter: () => {
+					return !game.hasPlayer(i => i.hasSkill("peculv", null, null, false), true);
+				},
+				silent: true,
+				forceDie: true,
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					game.removeGlobalSkill(event.name);
+				},
+			},
+			effect: {
+				forced: true,
+				trigger: { global: "phaseEnd" },
+				filter(event, player) {
+					let num = 0;
+					game.countPlayer(current => {
+						num += current.countHistory("useSkill", evt => evt.skill == "peculv");
+					});
+					return num >= 3;
+				},
+				logTarget: "player",
+				async content(event, trigger, player) {
+					const target = event.targets[0];
+					await target.recover();
+					await target.draw(2);
+				},
+			},
+			mark: {
+				charlotte: true,
+				silent: true,
+				init(player, skill) {
+					const history = game.getAllGlobalHistory("useCard"),
+						length = history.length;
+					if (!length) {
+						return;
+					}
+					const card = history[length - 1].card;
+					player.storage[skill] = card;
+					player.markSkill(skill);
+					game.broadcastAll(
+						function (player, type) {
+							if (player.marks.peculv_mark) {
+								player.marks.peculv_mark.firstChild.innerHTML = get.translation(type).slice(0, 1);
+							}
+						},
+						player,
+						get.type2(card)
+					);
+				},
+				onremove(player, skill) {
+					delete player.storage[skill];
+				},
+				intro: {
+					markcount(storage, player) {
+						return get.cardNameLength(storage);
+					},
+					content(storage, player) {
+						let str = "";
+						str += `<li>类型：${get.translation(get.type2(storage))}`;
+						str += `<br><li>牌名字数：${get.cardNameLength(storage)}`;
+						return str;
+					},
+				},
+				trigger: { global: "useCard1" },
+				async content(event, trigger, player) {
+					lib.skill[event.name].init(player, event.name);
+				},
+			},
+		},
+	},
 	//武则天
 	peersheng: {
 		audio: 2,
@@ -13,9 +261,12 @@ const skills = {
 		},
 		filter(event, player) {
 			const target = game.findPlayer(current => current.getSeatNum() == 1);
-			if (_status.currentPhase !== target) {
+			if (!target?.isIn()) {
 				return false;
 			}
+			//if (_status.currentPhase !== target) {
+			//return false;
+			//}
 			if (event.name == "phase") {
 				const cards = event.player
 					.getHistory("useCard")
@@ -426,6 +677,9 @@ const skills = {
 		forced: true,
 		trigger: { source: "damageSource" },
 		logTarget: "player",
+		filter(event, player) {
+			return event.num > 0;
+		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
 			player.addSkill(event.name + "_dam");
@@ -500,7 +754,7 @@ const skills = {
 			player.when({ global: ["phaseAfter", "phaseBefore"] }).step(async (event, trigger, player) => {
 				player.removeSkill(event.name);
 				if (event.triggername == "phaseAfter") {
-					player.insertPhase();
+					player.insertPhase("peshashen");
 				}
 			});
 		},
@@ -1130,7 +1384,7 @@ const skills = {
 			event.result = await player
 				.chooseTarget({
 					prompt: get.prompt(event.skill),
-					prompt2: "选择一名其他角色令其回复一点体力",
+					prompt2: "选择一名其他角色令其回复1点体力",
 					filterTarget(card, player, target) {
 						return target !== player && target.isDamaged();
 					},
@@ -1154,7 +1408,7 @@ const skills = {
 		trigger: { source: "damageSource" },
 		filter(event, player) {
 			const target = event.player;
-			if (player == target) {
+			if (player == target || !target?.isIn()) {
 				return false;
 			}
 			if (!target.getStorage("pepozhen_used").includes("选项一") && !player.getStorage("pepozhen_use").includes(target)) {
@@ -1418,7 +1672,7 @@ const skills = {
 				},
 			},
 		},
-		subSkill: { 
+		subSkill: {
 			backup: {},
 			used: { charlotte: true, onremove: true },
 		},

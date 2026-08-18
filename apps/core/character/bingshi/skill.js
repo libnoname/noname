@@ -301,7 +301,7 @@ const skills = {
 			const colors = cards.map(card => get.color(card)).unique();
 			await player.give(cards, target);
 			const list = [],
-				choiceList = ["展示所有" + get.translation(colors) + "手牌并受到来自" + get.translation(player) + "的一点火焰伤害", "令" + get.translation(player) + "摸两张牌，然后你进入连环状态"];
+				choiceList = ["展示所有" + get.translation(colors) + "手牌并受到来自" + get.translation(player) + "的1点火焰伤害", "令" + get.translation(player) + "摸两张牌，然后你进入连环状态"];
 			if (target.hasCards("h", card => colors.includes(get.color(card))) && !player.storage[event.name + "1"]) {
 				list.push("选项一");
 			} else {
@@ -435,10 +435,11 @@ const skills = {
 							complexSelect: true,
 							forced: true,
 							filterButton(button) {
+								const { player, targets, num } = get.event();
 								if (button.link == "damage") {
-									return get.event().targets?.length && !player.storage.potyanhui1;
+									return targets.length > 0 && !player.storage.potyanhui1;
 								}
-								return get.event().num && !player.storage.potyanhui2;
+								return num > 0 && !player.storage.potyanhui2;
 							},
 							filterTarget(card, player, target) {
 								return get.event().targets?.includes(target);
@@ -450,15 +451,15 @@ const skills = {
 								return -1;
 							},
 							ai1(button) {
-								const player = get.player();
+								const { player, targets, num } = get.event();
 								if (button.link == "draw") {
-									if (player.isPhaseUsing()) {
+									if (player.isPhaseUsing() && player.needsToDiscard()) {
 										return 0;
 									}
-									return get.event().num * get.effect(player, { name: "draw" }, player, player);
+									return num * get.effect(player, { name: "draw" }, player, player);
 								}
 								return Math.max(
-									...game.filterPlayer().map(current => {
+									...targets.map(current => {
 										return get.damageEffect(current, player, player, "fire");
 									})
 								);
@@ -2479,7 +2480,7 @@ const skills = {
 			},
 			prompt(result, player) {
 				let prompt = `直到你的回合开始，接下来${get.cnNumber(result.control)}个回合：`;
-				let list = ["所有角色使用【杀】造成的伤害+1", "每个回合结束时，本回合内使用过【杀】的角色失去一点体力，你摸两张牌", "每个回合结束时，若本回合未有角色使用过【杀】，你与当前回合角色各失去1点体力"];
+				let list = ["所有角色使用【杀】造成的伤害+1", "每个回合结束时，本回合内使用过【杀】的角色失去1点体力，你摸两张牌", "每个回合结束时，若本回合未有角色使用过【杀】，你与当前回合角色各失去1点体力"];
 				if (result.control <= player.hp) {
 					list = list.slice(0, 2);
 				}
@@ -2502,7 +2503,7 @@ const skills = {
 						if (!storage) {
 							return "已无效果";
 						}
-						let list = ["所有角色使用【杀】造成的伤害+1", "每个回合结束时，你摸两张牌且本回合内使用过【杀】的角色失去一点体力", "每个回合结束时，若本回合未有角色使用过【杀】，当前回合角色失去1点体力"];
+						let list = ["所有角色使用【杀】造成的伤害+1", "每个回合结束时，你摸两张牌且本回合内使用过【杀】的角色失去1点体力", "每个回合结束时，若本回合未有角色使用过【杀】，当前回合角色失去1点体力"];
 						if (!player.hasSkill("mbsizi_extra")) {
 							list = list.slice(0, 2);
 						}
@@ -5802,7 +5803,7 @@ const skills = {
 				forced: true,
 				async content(event, trigger, player) {
 					const num = get.info("pothongyi").maxMark() - player.countMark("pothongyi");
-					player.addMark("pothongyi", Math.min(trigger.name === "damage" ? 1 : 4, num));
+					player.addMark("pothongyi", Math.min(trigger.name === "damage" ? trigger.num : 3, num));
 				},
 			},
 		},
@@ -5817,9 +5818,9 @@ const skills = {
 		filter: (event, player) => player.hasCard(true, "h"),
 		filterTarget(card, player, target) {
 			if (ui.selected.targets.length) {
-				return ui.selected.targets[0].canCompare(target, true, true) && !ui.selected.targets[0].hasSkillTag("noCompareSource") && !target.hasSkillTag("noCompareTarget");
+				return ui.selected.targets[0].canCompare(target) && !ui.selected.targets[0].hasSkillTag("noCompareSource") && !target.hasSkillTag("noCompareTarget");
 			}
-			return true;
+			return game.hasPlayer(current => target.canCompare(current));
 		},
 		targetprompt: ["发起者", "拼点目标"],
 		filterCard: true,
@@ -6782,7 +6783,7 @@ const skills = {
 	potfuji: {
 		audio: 5,
 		enable: "phaseUse",
-		logAudio: () => 2,
+		logAudio: index => (typeof index == "number" ? `potfuji${index}.mp3` : 2),
 		filter(event, player) {
 			return player.countCards("he") > 0 && game.hasPlayer(target => target !== player);
 		},
@@ -7260,8 +7261,7 @@ const skills = {
 									}, 0);
 								case "弃牌响应":
 									return (trigger.targets || []).reduce((sum, target) => {
-										const card = get.copy(trigger.card);
-										game.setNature(card, "stab");
+										const card = get.autoViewAs({ name: "sha", nature: "stab" }, "unsure");
 										return sum + get.effect(target, card, player, player);
 									}, 0);
 								case "摸牌":
@@ -7271,9 +7271,9 @@ const skills = {
 						.forResult();
 					if (result.bool) {
 						const choices = result.links;
-						game.log(player, "选择了", "#g【战烈】", "的", "#y" + choices);
+						//game.log(player, "选择了", "#g【战烈】", "的", "#y" + choices);
 						for (const choice of choices) {
-							player.popup(choice);
+							//player.popup(choice);
 							switch (choice) {
 								case "目标+1":
 									player
@@ -7334,7 +7334,7 @@ const skills = {
 				async content(event, trigger, player) {
 					const { target } = trigger;
 					const result = await target
-						.chooseToDiscard("战烈：弃置一张牌，否则不可响应" + get.translation(trigger.card))
+						.chooseToDiscard("战烈：弃置一张牌，否则不可响应" + get.translation(trigger.card), "he")
 						.set("ai", card => {
 							const player = get.player(),
 								trigger = get.event().getTrigger();
