@@ -1195,7 +1195,7 @@ const skills = {
 					break;
 				}
 				const dialog = ["请选择一张牌预测（按取消重置预测）", [cards, "card"]];
-				const next = player.chooseButton({ dialog }).set("filterButton", button => {
+				const next = player.chooseButton({ createDialog: dialog }).set("filterButton", button => {
 					return !get.event().gainMap.has(button.link);
 				});
 				const { links, bool } = await next.forResult();
