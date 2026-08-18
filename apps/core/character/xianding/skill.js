@@ -3702,9 +3702,9 @@ const skills = {
 							},
 						})
 						.forResult();
-					if (!result?.bool && !result.cards?.length) {
+					if (!result?.bool || !result.cards?.length) {
 						trigger.getParent().directHit.add(target);
-						game.log(trigger.card, `不可被${get.translation(target)}响应`);
+						game.log(target, "不可响应", trigger.card);
 					}
 				},
 			},
