@@ -4939,77 +4939,83 @@ const skills = {
 		audio: 2,
 		trigger: { player: ["phaseZhunbeiBegin", "phaseJieshuBegin"] },
 		filter(event, player) {
-			var bool = player.hasCard(card => card.hasGaintag("sbguanxing"), "s");
-			if (event.name == "phaseZhunbei") {
-				return bool || 7 - lib.skill.sbguanxing.getNum * player.countMark("sbguanxingx") > 0;
+			const hasStars = player.hasCard(card => card.hasGaintag("sbguanxing"), "s");
+			if (event.name === "phaseZhunbei") {
+				return hasStars || 7 - lib.skill.sbguanxing.getNum * player.countMark("sbguanxingx") > 0;
 			}
-			return bool && player.hasSkill("sbguanxing_on");
+			return hasStars && player.hasSkill("sbguanxing_on");
 		},
 		forced: true,
 		locked: false,
-		content() {
-			"step 0";
-			if (trigger.name == "phaseJieshu") {
-				event.goto(2);
+		async content(event, trigger, player) {
+			if (trigger.name === "phaseZhunbei") {
+				player.addMark("sbguanxingx", 1, false);
+				const oldCards = player.getCards("s", card => card.hasGaintag("sbguanxing"));
+				const markCount = player.countMark("sbguanxingx") - 1;
+				const num = Math.max(0, 7 - lib.skill.sbguanxing.getNum * markCount);
+				if (oldCards.length) {
+					await player.loseToDiscardpile({ cards: oldCards });
+				}
+				if (num) {
+					const newCards = get.cards(num);
+					player.$gain2(newCards, false);
+					game.log(player, "将", newCards, "置于了武将牌上");
+					const loseEvent = player.loseToSpecial(newCards, "sbguanxing");
+					loseEvent.visible = true;
+					player.markSkill("sbguanxing");
+					await loseEvent;
+				}
+			}
+			const cards = player.getCards("s", card => card.hasGaintag("sbguanxing"));
+			if (!cards.length) {
+				if (trigger.name === "phaseZhunbei") {
+					player.addTempSkill("sbguanxing_on");
+				}
 				return;
 			}
-			player.addMark("sbguanxingx", 1, false);
-			var cards = player.getCards("s", card => card.hasGaintag("sbguanxing"));
-			if (cards.length) {
-				player.loseToDiscardpile(cards);
-			}
-			var num = player.countMark("sbguanxingx") - 1;
-			event.num = Math.max(0, 7 - lib.skill.sbguanxing.getNum * num);
-			"step 1";
-			if (num) {
-				var cards2 = get.cards(num);
-				player.$gain2(cards2, false);
-				game.log(player, "将", cards2, "置于了武将牌上");
-				player.loseToSpecial(cards2, "sbguanxing").visible = true;
-				player.markSkill("sbguanxing");
-			}
-			"step 2";
-			var cards = player.getCards("s", card => card.hasGaintag("sbguanxing"));
-			if (cards.length) {
-				player
-					.chooseToMove("allowChooseAll")
-					.set("list", [["你的“星”", cards], ["牌堆顶"]])
-					.set("prompt", "观星：点击或拖动将牌移动到牌堆顶")
-					.set("processAI", function (list) {
-						var cards = list[0][1].slice(),
-							player = _status.event.player;
-						var name = _status.event.getTrigger().name;
-						var target = name == "phaseZhunbei" ? player : player.getNext();
-						var judges = target.getCards("j");
-						var top = [],
-							att = get.sgn(get.attitude(player, target));
-						if (judges.length && att != 0 && (target != player || !player.hasWuxie())) {
-							for (var i = 0; i < judges.length; i++) {
-								var judge = (card, num) => get.judge(card) * num;
+			const result = await player
+				.chooseToMove({
+					allowChooseAll: true,
+					list: [["你的“星”", cards], ["牌堆顶"]],
+					prompt: "观星：点击或拖动将牌移动到牌堆顶",
+					processAI: list => {
+						const cards = list[0][1].slice();
+						const player = _status.event.player;
+						const name = _status.event.getTrigger().name;
+						const target = name === "phaseZhunbei" ? player : player.getNext();
+						const judges = target.getCards("j");
+						const top = [];
+						const att = get.sgn(get.attitude(player, target));
+						if (judges.length && att !== 0 && (target !== player || !player.hasWuxie())) {
+							for (const _judgeCard of judges) {
+								const judge = (card, num) => get.judge(card) * num;
 								cards.sort((a, b) => judge(b, att) - judge(a, att));
 								if (judge(cards[0], att) < 0) {
 									break;
-								} else {
-									top.unshift(cards.shift());
 								}
+								top.unshift(cards.shift());
 							}
 						}
 						return [cards, top];
-					})
-					.set("filterOk", function (moved) {
-						return moved[1].length;
-					});
-			} else {
-				event._result = { bool: false };
+					},
+				})
+				.set("filterOk", moved => moved[1].length)
+				.forResult();
+			if (!result.bool) {
+				if (trigger.name === "phaseZhunbei") {
+					player.addTempSkill("sbguanxing_on");
+				}
+				return;
 			}
-			"step 3";
-			if (result.bool) {
-				var cards = result.moved[1];
-				player.loseToDiscardpile(cards, ui.cardPile, "insert").log = false;
-				game.log(player, "将", cards, "置于了牌堆顶");
-			} else if (trigger.name == "phaseZhunbei") {
-				player.addTempSkill("sbguanxing_on");
-			}
+			const topCards = result.moved[1];
+			const loseEvent = player.loseToDiscardpile({
+				cards: topCards,
+				position: ui.cardPile,
+				insert_card: true,
+			});
+			loseEvent.log = false;
+			game.log(player, "将", topCards, "置于了牌堆顶");
+			await loseEvent;
 		},
 		getNum: 3,
 		group: "sbguanxing_unmark",
@@ -5026,7 +5032,7 @@ const skills = {
 				charlotte: true,
 				forced: true,
 				silent: true,
-				content() {
+				async content(event, trigger, player) {
 					player.unmarkSkill("sbguanxing");
 				},
 			},
@@ -5034,8 +5040,8 @@ const skills = {
 		marktext: "星",
 		intro: {
 			mark(dialog, storage, player) {
-				var cards = player.getCards("s", card => card.hasGaintag("sbguanxing"));
-				if (!cards || !cards.length) {
+				const cards = player.getCards("s", card => card.hasGaintag("sbguanxing"));
+				if (!cards.length) {
 					return;
 				}
 				dialog.addAuto(cards);
@@ -5044,16 +5050,16 @@ const skills = {
 				return player.countCards("s", card => card.hasGaintag("sbguanxing"));
 			},
 			onunmark(storage, player) {
-				var cards = player.getCards("s", card => card.hasGaintag("sbguanxing"));
+				const cards = player.getCards("s", card => card.hasGaintag("sbguanxing"));
 				if (cards.length) {
-					player.loseToDiscardpile(cards);
+					player.loseToDiscardpile({ cards });
 				}
 			},
 		},
 		mod: {
 			aiOrder(player, card, num) {
-				var cards = player.getCards("s", card => card.hasGaintag("sbguanxing"));
-				if (get.itemtype(card) == "card" && card.hasGaintag("sbguanxing")) {
+				const cards = player.getCards("s", card => card.hasGaintag("sbguanxing"));
+				if (get.itemtype(card) === "card" && card.hasGaintag("sbguanxing")) {
 					return num + (cards.length > 1 ? 0.5 : -0.0001);
 				}
 			},
