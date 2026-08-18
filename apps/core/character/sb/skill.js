@@ -8918,73 +8918,88 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return player.countCards("h") > 0;
+			return player.hasCards("h");
 		},
 		filterTarget: lib.filter.notMe,
-		content() {
-			"step 0";
-			event.list = lib.suit.slice();
-			event.suits = [];
-			event.num = 0;
-			var cards = player.getCards("h"),
-				map = {},
-				max = -Infinity;
-			for (var card of cards) {
-				var suit = get.suit(card, player);
-				if (!map[suit]) {
-					map[suit] = 0;
+		async content(event, trigger, player) {
+			const target = event.target;
+			const allSuits = lib.suit.slice();
+			const cards = player.iterableGetCards("h");
+			const map = new Map();
+			let max = -Infinity;
+			for (const card of cards) {
+				const suit = get.suit(card, player);
+				if (!map.has(suit)) {
+					map.set(suit, 0);
 				}
-				map[suit]++;
-				if (map[suit] > max) {
-					max = map[suit];
+				let num = map.get(suit);
+				++num;
+				if (num > max) {
+					max = num;
+				}
+				map.set(suit, num);
+			}
+			const suits = [];
+			for (const suit in map) {
+				if (map[suit] === max) {
+					suits.push(suit);
 				}
 			}
-			for (var i in map) {
-				if (map[i] == max) {
-					event.suits.push(i);
+			let num = 0;
+			while (allSuits.length) {
+				const { control } = await target
+					.chooseControl({
+						controls: [...allSuits],
+						prompt: `奇袭：猜测${get.translation(player)}手牌中最多的花色`,
+						ai() {
+							const event = get.event();
+							const controls = event.controls;
+
+							const parent = event.getParent();
+							if (parent != null) {
+								const player = parent.player;
+								if (player.countCards("h") <= 3 && controls.includes("diamond") && Math.random() < 0.3) {
+									return "diamond";
+								}
+							}
+							return controls.randomGet();
+						},
+					})
+					.forResult();
+				target.chat(`我猜是${get.translation(control)}！`);
+				game.log(target, "猜测为", `#y${control}`);
+				if (!event.isMine() && !event.isOnline()) {
+					await game.delayx();
 				}
-			}
-			"step 1";
-			target
-				.chooseControl(event.list)
-				.set("prompt", "奇袭：猜测" + get.translation(player) + "手牌中最多的花色")
-				.set("ai", () => {
-					var player = _status.event.getParent().player,
-						controls = _status.event.controls;
-					if (player.countCards("h") <= 3 && controls.includes("diamond") && Math.random() < 0.3) {
-						return "diamond";
-					}
-					return controls.randomGet();
-				});
-			"step 2";
-			var control = result.control;
-			target.chat("我猜是" + get.translation(control) + "！");
-			game.log(target, "猜测为", "#y" + control);
-			if (!event.isMine() && !event.isOnline()) {
-				game.delayx();
-			}
-			"step 3";
-			var control = result.control;
-			if (!event.suits.includes(control)) {
+				if (suits.includes(control)) {
+					player.chat(num === 0 ? "这么准？" : "猜对了！");
+					game.log(target, "猜测", "#g正确");
+					await player.showHandcards();
+					break;
+				}
 				player.chat("猜错了！");
 				game.log(target, "猜测", "#y错误");
-				event.num++;
-				event.list.remove(control);
-				player.chooseBool("是否令其重新选择一个花色继续猜测？").set("ai", () => 1);
-			} else {
-				player.chat(event.num == 0 ? "这么准？" : "猜对了！");
-				game.log(target, "猜测", "#g正确");
-				player.showHandcards();
-				event.goto(4);
+				num++;
+				allSuits.remove(control);
+				const { bool } = await player
+					.chooseBool({
+						prompt: "是否令其重新选择一个花色继续猜测？",
+						ai: () => true,
+					})
+					.forResult();
+				if (!bool) {
+					break;
+				}
 			}
-			"step 4";
-			if (result.bool) {
-				event.goto(1);
-			}
-			"step 5";
-			if (event.num > 0 && target.countDiscardableCards(player, "hej")) {
+			if (num > 0 && target.hasDiscardableCards(player, "hej")) {
+				const max = Math.min(num, target.countDiscardableCards(player, "hej"));
 				player.line(target);
-				player.discardPlayerCard(target, event.num, true, "hej");
+				await player.discardPlayerCard({
+					target,
+					selectButton: max,
+					forced: true,
+					position: "hej",
+				});
 			}
 		},
 		ai: {
