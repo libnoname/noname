@@ -8698,180 +8698,145 @@ const skills = {
 	sbshipo: {
 		audio: 2,
 		trigger: { player: "phaseJieshuBegin" },
-		direct: true,
 		filter(event, player) {
-			return game.hasPlayer(current => {
-				return current.hp < player.hp || current.hasJudge("bingliang");
-			});
+			return game.hasPlayer(current => current.hp < player.hp || current.hasJudge("bingliang"));
 		},
-		content() {
-			"step 0";
-			var list = [];
-			var choiceList = ["选择一名体力少于你的角色", "选择所有判定区有兵粮寸断的其他角色"];
-			var bool = false,
-				bool2 = false;
-			game.filterPlayer(current => {
-				if (current.hp < player.hp) {
-					bool = true;
-				}
-				if (current.hasJudge("bingliang")) {
-					bool2 = true;
-				}
-			});
+		async cost(event, trigger, player) {
+			const controls = [];
+			const choiceList = ["选择一名体力少于你的角色", "选择所有判定区有兵粮寸断的其他角色"];
+			const bool = game.hasPlayer(current => current.hp < player.hp);
+			const bool2 = game.hasPlayer(current => current.hasJudge("bingliang"));
 			if (bool) {
-				list.push("选项一");
+				controls.push("选项一");
 			} else {
-				choiceList[0] = '<span style="opacity:0.5">' + choiceList[0] + "</span>";
+				choiceList[0] = `<span style="opacity:0.5">${choiceList[0]}</span>`;
 			}
 			if (bool2) {
-				list.push("选项二");
+				controls.push("选项二");
 			} else {
-				choiceList[1] = '<span style="opacity:0.5">' + choiceList[1] + "</span>";
+				choiceList[1] = `<span style="opacity:0.5">${choiceList[1]}</span>`;
 			}
 			if (_status.connectMode) {
-				game.broadcastAll(function () {
+				game.broadcastAll(() => {
 					_status.noclearcountdown = true;
 				});
 			}
-			player
-				.chooseControl(list, "cancel2")
-				.set("prompt", get.prompt2("sbshipo"))
-				.set("choiceList", choiceList)
-				.set("ai", () => {
-					return _status.event.choice;
+			let eff = controls.includes("选项一") ? 0 : Infinity;
+			let eff2 = controls.includes("选项二") ? 0 : Infinity;
+			for (const current of game.filterPlayer()) {
+				if (current.hp < player.hp) {
+					const effx = get.attitude(player, current) / Math.sqrt(Math.max(0.1, 2 * current.hp + current.countCards("h")));
+					if (effx < eff) {
+						eff = effx;
+					}
+				}
+				if (current.hasJudge("bingliang")) {
+					eff2 += get.attitude(player, current) / Math.sqrt(Math.max(0.1, 2 * current.hp + current.countCards("h")));
+				}
+			};
+			const choice = eff >= 0 && eff2 >= 0 ? "cancel2" : eff < eff2 ? "选项一" : "选项二";
+			const { control } = await player
+				.chooseControl({
+					controls: [...controls, "cancel2"],
+					prompt: get.prompt2("sbshipo"),
+					choiceList,
+					ai: () => _status.event.choice,
+					choice,
 				})
-				.set(
-					"choice",
-					(function () {
-						var eff = 0,
-							eff2 = 0;
-						if (!list.includes("选项一")) {
-							eff = Infinity;
-						}
-						if (!list.includes("选项二")) {
-							eff2 = Infinity;
-						}
-						game.countPlayer(current => {
-							if (current.hp < player.hp) {
-								var effx = get.attitude(player, current) / Math.sqrt(Math.max(0.1, 2 * current.hp + current.countCards("h")));
-								if (effx < eff) {
-									eff = effx;
-								}
-							}
-							if (current.hasJudge("bingliang")) {
-								eff2 += get.attitude(player, current) / Math.sqrt(Math.max(0.1, 2 * current.hp + current.countCards("h")));
-							}
-						});
-						if (eff >= 0 && eff2 >= 0) {
-							return "cancel2";
-						}
-						return eff < eff2 ? "选项一" : "选项二";
-					})()
-				);
-			"step 1";
-			if (result.control == "cancel2") {
-				game.broadcastAll(function () {
-					delete _status.noclearcountdown;
-					game.stopCountChoose();
-				});
-				event.finish();
-				return;
+				.forResult();
+			switch (control) {
+				case "选项一":
+					event.result = await player
+						.chooseTarget({
+							prompt: "选择一名体力少于你的角色",
+							filterTarget: (card, player, target) => target.hp < player.hp,
+							forced: true,
+							ai: target => -get.attitude(player, target) / Math.sqrt(Math.max(0.1, 2 * target.hp + target.countCards("h"))),
+						})
+						.forResult();
+					break;
+				case "选项二":
+					event.result = {
+						bool: true,
+						targets: game.filterPlayer(current => current.hasJudge("bingliang")),
+					};
+				case "cancel2":
+					break;
 			}
-			if (result.control == "选项一") {
-				player.chooseTarget("选择一名体力少于你的角色", (card, player, target) => target.hp < player.hp, true).set("ai", target => -get.attitude(player, target) / Math.sqrt(Math.max(0.1, 2 * target.hp + target.countCards("h"))));
-			} else {
-				event._result = {
-					bool: true,
-					targets: game.filterPlayer(current => current.hasJudge("bingliang")),
-				};
-			}
-			"step 2";
-			game.broadcastAll(function () {
+			game.broadcastAll(() => {
 				delete _status.noclearcountdown;
 				game.stopCountChoose();
 			});
-			if (result.bool) {
-				var targets = result.targets;
-				player.logSkill("sbshipo", targets);
-				event.targets = targets.sortBySeat();
-				event.cards = [];
-			} else {
-				event.finish();
-			}
-			"step 3";
-			var target = event.targets.shift();
-			event.target = target;
-			target.chooseCard("交给" + get.translation(player) + "一张手牌，或受到1点伤害").set("ai", card => {
-				var player = _status.event.player,
-					source = _status.event.getParent().player;
-				if (get.damageEffect(player, source, player) > 0) {
-					return 0;
+		},
+		async content(event, trigger, player) {
+			const targets = event.targets.sortBySeat();
+			const gainedCards = [];
+			for (const target of targets) {
+				const result = await target
+					.chooseCard({
+						prompt: `交给${get.translation(player)}一张手牌，或受到1点伤害`,
+						ai: card => {
+							const target = _status.event.player;
+							const source = _status.event.getParent().player;
+							if (get.damageEffect(target, source, target) > 0) {
+								return 0;
+							}
+							if (get.attitude(target, source) > 0) {
+								return 1;
+							}
+							if (get.tag(card, "recover") > 0) {
+								return 0;
+							}
+							return (target.hp < 2 ? 7 : 5.5) - get.value(card);
+						},
+					})
+					.forResult();
+				if (!result.bool) {
+					await target.damage();
+					continue;
 				}
-				if (get.attitude(player, source) > 0) {
-					return 1;
-				}
-				if (get.tag(card, "recover") > 0) {
-					return 0;
-				}
-				return (player.hp < 2 ? 7 : 5.5) - get.value(card);
-			});
-			"step 4";
-			if (result.bool) {
-				event.cards.addArray(result.cards);
-				target.give(result.cards, player);
-			} else {
-				target.damage();
+				gainedCards.addArray(result.cards);
+				await target.give(result.cards, player);
 			}
-			"step 5";
-			if (event.targets.length) {
-				event.goto(3);
-			} else {
-				var cards = event.cards.filter(card => get.owner(card) == player && get.position(card) == "h");
-				if (!cards.length) {
-					event.finish();
-				} else {
-					event.cards = cards;
-				}
+			const cards = gainedCards.filter(card => get.owner(card) === player && get.position(card) === "h");
+			if (!cards.length) {
+				return;
 			}
-			"step 6";
-			player.chooseCardTarget({
-				filterCard(card, player, target) {
-					return _status.event.getParent().cards.includes(card);
-				},
-				filterTarget: lib.filter.notMe,
-				selectCard: [1, event.cards.length],
-				prompt: "是否将任意张得到的牌交给一名其他角色？",
-				ai1(card) {
-					var player = _status.event.player;
-					var val = player.getUseValue(card);
-					if (val > 0) {
-						return 2;
-					}
-					if (player.hp <= 2 && val == 0 && get.value(card) > 5) {
-						return 0;
-					}
-					return Math.random() > 0.5 ? 1 : 0;
-				},
-				ai2(target) {
-					var player = _status.event.player,
-						cards = ui.selected.cards;
-					var val = 0;
-					for (var card of cards) {
-						val += target.getUseValue(card);
-					}
-					if (val > 0) {
-						return val * get.attitude(player, target) * 2;
-					}
-					return get.value(card, target) * get.attitude(player, target);
-				},
-				allowChooseAll: true,
-			});
-			"step 7";
-			if (result.bool) {
-				var cards = result.cards,
-					target = result.targets[0];
-				player.give(cards, target);
+			const result = await player
+				.chooseCardTarget({
+					filterCard: card => _status.event.cards.includes(card),
+					filterTarget: lib.filter.notMe,
+					selectCard: [1, cards.length],
+					prompt: "是否将任意张得到的牌交给一名其他角色？",
+					cards,
+					ai1(card) {
+						const player = _status.event.player;
+						const val = player.getUseValue(card);
+						if (val > 0) {
+							return 2;
+						}
+						if (player.hp <= 2 && val === 0 && get.value(card) > 5) {
+							return 0;
+						}
+						return Math.random() > 0.5 ? 1 : 0;
+					},
+					ai2(target) {
+						const player = _status.event.player;
+						const cards = ui.selected.cards;
+						const val = cards.reduce((sum, card) => sum + target.getUseValue(card), 0);
+						if (val > 0) {
+							return val * get.attitude(player, target) * 2;
+						}
+						const lastCard = cards[cards.length - 1];
+						return get.value(lastCard, target) * get.attitude(player, target);
+					},
+					allowChooseAll: true,
+				})
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
+			await player.give(result.cards, result.targets[0]);
 		},
 	},
 	//马超
