@@ -10338,8 +10338,6 @@ const skills = {
 						if (player.storage[event.name][trigger.card.name] === 0) {
 							delete player.storage[event.name][trigger.card.name];
 						}
-						player.syncStorage(event.name);
-						player.addTip(event.name, `谮构 ${get.translation(Object.keys(player.storage[event.name]))}`);
 					}
 					player.markSkill(event.name);
 					player.addTip(event.name, `谮构 ${get.translation(Object.keys(player.storage[event.name]))}`);
