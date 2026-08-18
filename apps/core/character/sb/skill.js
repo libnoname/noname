@@ -6695,7 +6695,7 @@ const skills = {
 		async content(event, trigger, player) {
 			await player.draw();
 		},
-		precontent() {
+		async precontent(event, trigger, player) {
 			player.addTempSkill("sbluanji_used", "phaseUseAfter");
 		},
 		ai: {
@@ -7712,7 +7712,7 @@ const skills = {
 				selectCard: -1,
 				popname: true,
 				log: false,
-				precontent() {
+				async precontent(event, trigger, player) {
 					player.logSkill("sbrende");
 					player.removeMark("sbrende", 2);
 					player.addTempSkill("sbrende_used");
@@ -8064,7 +8064,7 @@ const skills = {
 					check(card) {
 						return 6 / Math.max(1, get.value(card));
 					},
-					precontent() {
+					async precontent(event, trigger, player) {
 						player.removeCharge();
 						player.addTempSkill("sblongdan_draw");
 					},
