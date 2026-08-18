@@ -9570,16 +9570,13 @@ const skills = {
 		usable: 5,
 		chooseButton: {
 			dialog() {
-				return ui.create.dialog("###反间###" + get.translation("sbfanjian_info"));
+				return ui.create.dialog(`###反间###${get.translation("sbfanjian_info")}`);
 			},
 			chooseControl(event, player) {
-				var suits = lib.suit.slice();
-				suits.push("cancel2");
-				return suits;
+				return [...lib.suit, "cancel2"];
 			},
 			check(event, player) {
-				var suits = lib.suit.slice();
-				suits = suits.filter(suit => !player.getStorage("sbfanjian_guessed").includes(suit));
+				const suits = lib.suit.filter(suit => !player.getStorage("sbfanjian_guessed").includes(suit));
 				return suits.randomGet();
 			},
 			backup(result, player) {
@@ -9597,69 +9594,75 @@ const skills = {
 					discard: false,
 					lose: false,
 					delay: false,
-					content() {
-						"step 0";
-						var suit = get.suit(cards, player);
-						event.claimSuit = lib.skill.sbfanjian_backup.suit;
-						event.cardSuit = suit;
+					async content(event, trigger, player) {
+						const cards = event.cards;
+						const target = event.targets[0];
+						const claimSuit = lib.skill.sbfanjian_backup.suit;
+						const cardSuit = get.suit(cards, player);
+						event.claimSuit = claimSuit;
+						event.cardSuit = cardSuit;
 						player.addTempSkill("sbfanjian_guessed");
-						var claim = get.translation(event.claimSuit + "2");
-						player.chat("我声明" + claim);
-						game.log(player, "声明了", "#y" + claim);
-						var choiceList = ["猜测此牌花色为" + claim, "猜测此牌花色不为" + claim, "不猜测，你翻面并令其〖反间〗失效"];
-						target
-							.chooseControl()
-							.set("choiceList", choiceList)
-							.set("prompt", get.translation(player) + "对你发动了【反间】并选择了一张牌，请选择一项")
-							.set("ai", () => {
-								var player = _status.event.player,
-									user = _status.event.getParent().player,
-									claim = _status.event.getParent().claimSuit,
-									suit = _status.event.getParent().cardSuit;
-								if (player.isTurnedOver()) {
-									return 2;
-								}
-								var lose = get.effect(player, { name: "losehp" }, user, player);
-								if (user.getStorage("sbfanjian_guessed").includes(claim) && claim == suit) {
-									return lose <= 0 ? 0 : 1;
-								}
-								if (get.attitude(player, user) > 0) {
-									return 0;
-								}
-								var list = [0, 1];
-								if (player.hp <= 1 && player.getFriends().length > 0) {
-									list.push(2);
-								}
-								return list.randomGet();
-							});
-						"step 1";
+						const claim = get.translation(`${claimSuit}2`);
+						player.chat(`我声明${claim}`);
+						game.log(player, "声明了", `#y${claim}`);
+						const choiceList = [`猜测此牌花色为${claim}`, `猜测此牌花色不为${claim}`, "不猜测，你翻面并令其〖反间〗失效"];
+						const { index } = await target
+							.chooseControl({
+								choiceList,
+								prompt: `${get.translation(player)}对你发动了【反间】并选择了一张牌，请选择一项`,
+								ai: () => {
+									const player = _status.event.player;
+									const user = _status.event.getParent().player;
+									const claim = _status.event.getParent().claimSuit;
+									const suit = _status.event.getParent().cardSuit;
+									if (player.isTurnedOver()) {
+										return 2;
+									}
+									const lose = get.effect(player, { name: "losehp" }, user, player);
+									if (user.getStorage("sbfanjian_guessed").includes(claim) && claim === suit) {
+										return lose <= 0 ? 0 : 1;
+									}
+									if (get.attitude(player, user) > 0) {
+										return 0;
+									}
+									const list = [0, 1];
+									if (player.hp <= 1 && player.getFriends().length > 0) {
+										list.push(2);
+									}
+									return list.randomGet();
+								},
+							})
+							.forResult();
 						const skill = "sbfanjian_guessed";
-						player.markAuto(skill, [event.cardSuit]);
-						player.addTip(skill, get.translation(skill) + player.getStorage(skill).reduce((str, i) => str + get.translation(i), " "));
-						if (result.index == 2) {
+						player.markAuto(skill, [cardSuit]);
+						const suits = player.getStorage(skill).map(suit => get.translation(suit)).join("");
+						player.addTip(skill, `${get.translation(skill)} ${suits}`);
+						if (index === 2) {
 							game.log(target, "选择", "#y不猜测");
 							target.chat("不猜！");
-							target.turnOver();
+							await target.turnOver();
 						} else {
-							var claim = get.translation(event.claimSuit + "2");
-							target.chat("我猜花色" + (result.index == 1 ? "不" : "") + "为" + claim);
-							game.log(target, "猜测花色", "#g" + (result.index == 1 ? "不" : "") + "为" + claim);
+							target.chat(`我猜花色${index === 1 ? "不" : ""}为${claim}`);
+							game.log(target, "猜测花色", `#g${index === 1 ? "不" : ""}为${claim}`);
 						}
 						if (event.isMine() && !event.isOnline()) {
-							game.delayx();
+							await game.delayx();
 						}
-						"step 2";
-						target.gain(cards, player, "giveAuto", "bySelf");
-						"step 3";
-						if ((result.index == 0 && event.claimSuit != event.cardSuit) || (result.index == 1 && event.claimSuit == event.cardSuit)) {
+						await target.gain({
+							cards,
+							source: player,
+							animate: "giveAuto",
+							bySelf: true,
+						});
+						if ((index === 0 && claimSuit !== cardSuit) || (index === 1 && claimSuit === cardSuit)) {
 							game.log(target, "猜测", "#y错误");
-							target.loseHp();
-						} else {
-							if (result.index != 2) {
-								game.log(target, "猜测", "#g正确");
-							}
-							player.tempBanSkill("sbfanjian");
+							await target.loseHp();
+							return;
 						}
+						if (index !== 2) {
+							game.log(target, "猜测", "#g正确");
+						}
+						player.tempBanSkill("sbfanjian");
 					},
 					ai: {
 						result: {
@@ -9667,7 +9670,7 @@ const skills = {
 								if (!ui.selected.cards.length) {
 									return 0;
 								}
-								var val = get.value(ui.selected.cards, target);
+								const val = get.value(ui.selected.cards, target);
 								if (val < 0) {
 									return val + get.effect(target, { name: "losehp" }, player, target);
 								}
@@ -9684,7 +9687,7 @@ const skills = {
 				};
 			},
 			prompt(result) {
-				return "你选择了" + get.translation(result.control) + "，请选择一张手牌和【反间】的目标";
+				return `你选择了${get.translation(result.control)}，请选择一张手牌和【反间】的目标`;
 			},
 		},
 		subSkill: {
