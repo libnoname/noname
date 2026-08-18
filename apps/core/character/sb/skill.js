@@ -5895,26 +5895,23 @@ const skills = {
 			target: "useCardToTargeted",
 		},
 		filter(event, player) {
-			if (!(event.card.name == "juedou" || (event.card.name == "sha" && get.color(event.card) == "red"))) {
-				return false;
-			}
-			return true;
+			return event.card.name === "juedou" || (event.card.name === "sha" && get.color(event.card) === "red");
 		},
 		frequent: true,
 		onremove: true,
 		group: ["sbjiang_add", "sbjiang_qiben"],
-		content() {
-			player.draw();
+		async content(event, trigger, player) {
+			await player.draw();
 		},
 		ai: {
 			effect: {
 				target_use(card, player, target) {
-					if (card.name == "sha" && get.color(card) == "red") {
+					if (card.name === "sha" && get.color(card) === "red") {
 						return [1, 0.6];
 					}
 				},
 				player_use(card, player, target) {
-					if (card.name == "sha" && get.color(card) == "red") {
+					if (card.name === "sha" && get.color(card) === "red") {
 						return [1, 1];
 					}
 				},
@@ -5926,97 +5923,78 @@ const skills = {
 				trigger: { player: "useCard2" },
 				direct: true,
 				filter(event, player) {
-					if (event.card.name != "juedou") {
+					if (event.card.name !== "juedou") {
 						return false;
 					}
-					var info = get.info(event.card);
-					if (info.allowMultiple == false) {
+					const info = get.info(event.card);
+					if (info.allowMultiple === false) {
 						return false;
 					}
-					if (event.targets && !info.multitarget) {
-						if (
-							game.hasPlayer(function (current) {
-								return !event.targets.includes(current) && lib.filter.targetEnabled2(event.card, player, current) && lib.filter.targetInRange(event.card, player, current);
-							})
-						) {
-							return true;
-						}
+					if (!event.targets || info.multitarget) {
+						return false;
 					}
-					return false;
+					return game.hasPlayer(current => !event.targets.includes(current) && lib.filter.targetEnabled2(event.card, player, current) && lib.filter.targetInRange(event.card, player, current));
 				},
-				content() {
-					"step 0";
-					var prompt2 = "为" + get.translation(trigger.card) + "额外指定一个目标，然后失去1点体力";
-					player
-						.chooseTarget(get.prompt("sbjiang_add"), function (card, player, target) {
-							var player = _status.event.player;
-							if (_status.event.targets.includes(target)) {
-								return false;
-							}
-							return lib.filter.targetEnabled2(_status.event.card, player, target);
-						})
-						.set("prompt2", prompt2)
-						.set("ai", function (target) {
-							var trigger = _status.event.getTrigger();
-							var player = _status.event.player;
-							var eff = get.effect(target, trigger.card, player, player);
-							if (player.hasZhuSkill("sbzhiba") && !player.hasMark("sbjiang")) {
-								return eff;
-							}
-							if (eff + get.effect(player, { name: "losehp" }, player) / 8 > 0) {
-								return eff;
-							}
-							return 0;
+				async content(event, trigger, player) {
+					const result = await player
+						.chooseTarget({
+							prompt: get.prompt("sbjiang_add"),
+							prompt2: `为${get.translation(trigger.card)}额外指定一个目标，然后失去1点体力`,
+							filterTarget: (_card, player, target) => {
+								if (_status.event.targets.includes(target)) {
+									return false;
+								}
+								return lib.filter.targetEnabled2(_status.event.card, player, target);
+							},
+							ai: target => {
+								const trigger = _status.event.getTrigger();
+								const player = _status.event.player;
+								const eff = get.effect(target, trigger.card, player, player);
+								if (player.hasZhuSkill("sbzhiba") && !player.hasMark("sbjiang")) {
+									return eff;
+								}
+								if (eff + get.effect(player, { name: "losehp" }, player) / 8 > 0) {
+									return eff;
+								}
+								return 0;
+							},
 						})
 						.set("targets", trigger.targets)
-						.set("card", trigger.card);
-					"step 1";
-					if (result.bool) {
-						if (!event.isMine() && !event.isOnline()) {
-							game.delayx();
-						}
-						event.targets = result.targets;
-					} else {
-						event.finish();
+						.set("card", trigger.card)
+						.forResult();
+					if (!result.bool) {
+						return;
 					}
-					"step 2";
-					if (event.targets) {
-						player.logSkill("sbjiang_add", event.targets);
-						trigger.targets.addArray(event.targets);
-						player.loseHp();
+					if (!event.isMine() && !event.isOnline()) {
+						await game.delayx();
 					}
+					player.logSkill("sbjiang_add", result.targets);
+					trigger.targets.addArray(result.targets);
+					await player.loseHp();
 				},
 			},
 			qiben: {
 				audio: "sbjiang",
 				enable: "phaseUse",
 				usable(skill, player) {
-					return player.hasMark("sbjiang")
-						? game.countPlayer(current => {
-								return current.group == "wu" && current != player;
-							}) + 1
-						: 1;
+					return player.hasMark("sbjiang") ? game.countPlayer(current => current.group === "wu" && current !== player) + 1 : 1;
 				},
 				viewAs: { name: "juedou" },
 				filterCard: true,
 				position: "h",
 				selectCard: -1,
 				prompt() {
-					var player = _status.event.player;
-					var limit = player.hasMark("sbjiang")
-						? game.countPlayer(current => {
-								return current.group == "wu" && current != player;
-							}) + 1
-						: 1;
-					return "出牌阶段限" + get.cnNumber(limit) + "次。你可以将所有手牌当【决斗】使用";
+					const player = _status.event.player;
+					const limit = player.hasMark("sbjiang") ? game.countPlayer(current => current.group === "wu" && current !== player) + 1 : 1;
+					return `出牌阶段限${get.cnNumber(limit)}次。你可以将所有手牌当【决斗】使用`;
 				},
 				filter(event, player) {
-					var hs = player.getCards("h");
+					const hs = player.getCards("h");
 					if (!hs.length) {
 						return false;
 					}
-					for (var i = 0; i < hs.length; i++) {
-						var mod2 = game.checkMod(hs[i], player, "unchanged", "cardEnabled2", player);
+					for (const card of hs) {
+						const mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
 						if (mod2 === false) {
 							return false;
 						}
@@ -6027,23 +6005,20 @@ const skills = {
 					order: 0.001,
 					result: {
 						player(player, target) {
-							let cards = player.getCards("h");
+							const cards = player.getCards("h");
 							return get.value(cards, player) * Math.sqrt(cards.length) <= 12;
 						},
 					},
 					nokeep: true,
 					skillTagFilter(player, tag, arg) {
-						if (tag === "nokeep") {
-							if (arg && (!arg.card || get.name(arg.card) !== "tao")) {
-								return false;
-							}
-							let limit = player.hasMark("sbjiang")
-								? game.countPlayer(current => {
-										return current.group == "wu" && current != player;
-									}) + 1
-								: 1;
-							return player.isPhaseUsing() && (player.getStat("skill").sbjiang_qiben || 0) < limit && player.hasCard(card => get.name(card) != "tao", "h");
+						if (tag !== "nokeep") {
+							return;
 						}
+						if (arg && (!arg.card || get.name(arg.card) !== "tao")) {
+							return false;
+						}
+						const limit = player.hasMark("sbjiang") ? game.countPlayer(current => current.group === "wu" && current !== player) + 1 : 1;
+						return player.isPhaseUsing() && (player.getStat("skill").sbjiang_qiben || 0) < limit && player.hasCard(card => get.name(card) !== "tao", "h");
 					},
 				},
 			},
