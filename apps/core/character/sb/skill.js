@@ -10659,24 +10659,31 @@ const skills = {
 	sbjieyue: {
 		audio: 4,
 		trigger: { player: "phaseJieshuBegin" },
-		direct: true,
-		content() {
-			"step 0";
-			player.chooseTarget(lib.filter.notMe, get.prompt("sbjieyue"), "令一名其他角色获得1点护甲，然后该角色可以交给你一张牌。").set("ai", function (target) {
-				return get.attitude(_status.event.player, target) / Math.sqrt(Math.min(1, target.hp + target.hujia));
-			});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("sbjieyue", target);
-				target.changeHujia(1, null, true);
-				target.chooseCard("he", "是否交给" + get.translation(player) + "一张牌？").set("ai", card => 0.1 - get.value(card));
-			} else {
-				event.finish();
-			}
-			"step 2";
-			if (result.bool) {
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt("sbjieyue"),
+					prompt2: "令一名其他角色获得1点护甲，然后该角色可以交给你一张牌。",
+					filterTarget: lib.filter.notMe,
+					ai(target) {
+						return get.attitude(_status.event.player, target) / Math.sqrt(Math.min(1, target.hp + target.hujia));
+					},
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.target;
+			await target.changeHujia(1, null, true);
+			const result = await target
+				.chooseCard({
+					prompt: `是否交给${get.translation(player)}一张牌？`,
+					position: "he",
+					ai(card) {
+						return 0.1 - get.value(card);
+					},
+				})
+				.forResult();
+			if (result.bool && result.cards?.length) {
 				target.give(result.cards, player);
 			}
 		},
