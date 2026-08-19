@@ -4381,18 +4381,18 @@ const skills = {
 				return false;
 			}
 			return game.hasPlayer(current => {
-				if (current == player || !current.hasHistory("useCard")) {
+				if (current == player) {
 					return false;
 				}
-				return current.countDiscardableCards(player, "he") > 0;
+				return current.hasDiscardableCards(player, "he");
 			});
 		},
 		async cost(event, trigger, player) {
 			const targets = game.filterPlayer(current => {
-				if (current == player || !current.hasHistory("useCard")) {
+				if (current == player) {
 					return false;
 				}
-				return current.countDiscardableCards(player, "he") > 0;
+				return current.hasDiscardableCards(player, "he");
 			});
 			if (!targets.length) {
 				return;
@@ -4565,11 +4565,11 @@ const skills = {
 					],
 				])
 				.set("filterButton", button => {
-					return get.player().hasUseTarget(button.link);
+					return get.player().hasUseTarget(button.link, false, false);
 				})
 				.set("ai", button => {
 					const card = button.link;
-					let eff = get.player().getUseValue(button.link);
+					let eff = get.player().getUseValue(button.link, false, false);
 					if (get.owner(card)) {
 						const att = get.sgnAttitude(player, get.owner(card));
 						eff += -1.5 * att;
@@ -4585,7 +4585,7 @@ const skills = {
 				if (puts.includes(card)) {
 					game.clearCardKnowers(card);
 				}
-				await player.chooseUseTarget(card, true, false);
+				await player.chooseUseTarget(card, false, false);
 			}
 		},
 	},
