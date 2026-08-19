@@ -8,119 +8,128 @@ export const type = "mode";
 export default () => {
 	return {
 		name: "doudizhu",
-		start() {
-			"step 0";
-			var playback = localStorage.getItem(lib.configprefix + "playback");
-			if (playback) {
-				ui.create.me();
-				ui.arena.style.display = "none";
-				ui.system.style.display = "none";
-				_status.playback = playback;
-				localStorage.removeItem(lib.configprefix + "playback");
-				var store = lib.db.transaction(["video"], "readwrite").objectStore("video");
-				store.get(parseInt(playback)).onsuccess = function (e) {
-					if (e.target.result) {
-						game.playVideoContent(e.target.result.video);
-					} else {
-						alert("播放失败：找不到录像");
-						game.reload();
-					}
-				};
-				event.finish();
-			} else if (!_status.connectMode) {
-				game.prepareArena(3);
-			}
-			"step 1";
-			event.replacePile = function () {
-				var map = {
-					shuiyanqijunx: "shuiyanqijuny",
-					bingliang: "binglinchengxia",
-					fangtian: "toushiche",
-					wutiesuolian: "toushiche",
-				};
-				for (var i = 0; i < lib.card.list.length; i++) {
-					var name = lib.card.list[i][2];
-					if (map[name]) {
-						lib.card.list[i][2] = map[name];
-						lib.card.list[i][4] = null;
-						lib.card.list[i]._replaced = true;
-					} else if (name == "lebu") {
-						switch (lib.card.list[i][0]) {
-							case "spade":
-								lib.card.list[i][2] = "shuiyanqijuny";
-								break;
-							case "club":
-								lib.card.list[i][2] = "luojingxiashi";
-								break;
-							default:
-								lib.card.list[i][2] = "baiyidujiang";
-								break;
+		start: [
+			// step 0
+			async (event, trigger, player) => {
+				const playback = localStorage.getItem(`${lib.configprefix}playback`);
+				if (playback) {
+					ui.create.me();
+					ui.arena.style.display = "none";
+					ui.system.style.display = "none";
+					_status.playback = playback;
+					localStorage.removeItem(`${lib.configprefix}playback`);
+					const store = lib.db.transaction(["video"], "readwrite").objectStore("video");
+					store.get(parseInt(playback)).onsuccess = e => {
+						if (e.target?.result) {
+							game.playVideoContent(e.target.result.video);
+						} else {
+							alert("播放失败：找不到录像");
+							game.reload();
 						}
-						lib.card.list[i]._replaced = true;
-					}
+					};
+					event.finish();
+				} else if (!_status.connectMode) {
+					game.prepareArena(3);
 				}
-			};
-			_status.mode = get.config("doudizhu_mode");
-			if (_status.connectMode) {
-				_status.mode = lib.configOL.doudizhu_mode;
-				game.waitForPlayer(function () {
-					lib.configOL.number = 3;
-				});
-			} else if (_status.mode == "binglin") {
-				event.replacePile();
-			} else if (_status.mode == "online") {
-				lib.card.list = lib.online_cardPile.slice(0);
-				lib.inpile.addArray(["nanman", "wanjian", "taoyuan", "wugu"]);
-				game.fixedPile = true;
-			}
-			"step 2";
-			if (_status.connectMode) {
-				if (_status.mode == "online") {
+			},
+			// step 1
+			async (event, trigger, player) => {
+				event.replacePile = () => {
+					const map = {
+						shuiyanqijunx: "shuiyanqijuny",
+						bingliang: "binglinchengxia",
+						fangtian: "toushiche",
+						wutiesuolian: "toushiche",
+					};
+					for (let i = 0; i < lib.card.list.length; i++) {
+						const name = lib.card.list[i][2];
+						if (map[name]) {
+							lib.card.list[i][2] = map[name];
+							lib.card.list[i][4] = null;
+							lib.card.list[i]._replaced = true;
+						} else if (name == "lebu") {
+							switch (lib.card.list[i][0]) {
+								case "spade":
+									lib.card.list[i][2] = "shuiyanqijuny";
+									break;
+								case "club":
+									lib.card.list[i][2] = "luojingxiashi";
+									break;
+								default:
+									lib.card.list[i][2] = "baiyidujiang";
+									break;
+							}
+							lib.card.list[i]._replaced = true;
+						}
+					}
+				};
+				_status.mode = get.config("doudizhu_mode");
+				if (_status.connectMode) {
+					_status.mode = lib.configOL.doudizhu_mode;
+					game.waitForPlayer(function () {
+						lib.configOL.number = 3;
+					});
+				} else if (_status.mode === "binglin") {
+					event.replacePile();
+				} else if (_status.mode === "online") {
 					lib.card.list = lib.online_cardPile.slice(0);
 					lib.inpile.addArray(["nanman", "wanjian", "taoyuan", "wugu"]);
 					game.fixedPile = true;
-				} else if (_status.mode == "binglin") {
-					event.replacePile();
 				}
-				if (lib.configOL.number < 3) {
-					lib.configOL.number = 3;
+			},
+			// step 2
+			async (event, trigger, player) => {
+				if (_status.connectMode) {
+					if (_status.mode === "online") {
+						lib.card.list = lib.online_cardPile.slice(0);
+						lib.inpile.addArray(["nanman", "wanjian", "taoyuan", "wugu"]);
+						game.fixedPile = true;
+					} else if (_status.mode === "binglin") {
+						event.replacePile();
+					}
+					if (lib.configOL.number < 3) {
+						lib.configOL.number = 3;
+					}
+					game.randomMapOL();
+				} else {
+					for (let i = 0; i < game.players.length; i++) {
+						game.players[i].getId();
+					}
+					game.chooseCharacter();
 				}
-				game.randomMapOL();
-			} else {
-				for (var i = 0; i < game.players.length; i++) {
-					game.players[i].getId();
+			},
+			// step 3
+			async (event, trigger, player) => {
+				if (ui.coin) {
+					_status.coinCoeff = get.coinCoeff([game.me.name]);
 				}
-				game.chooseCharacter();
-			}
-			"step 3";
-			if (ui.coin) {
-				_status.coinCoeff = get.coinCoeff([game.me.name]);
-			}
-			game.showIdentity(true);
-			var map = {};
-			for (var i in lib.playerOL) {
-				map[i] = lib.playerOL[i].identity;
-			}
-			game.broadcast(function (map) {
-				for (var i in map) {
-					lib.playerOL[i].identity = map[i];
-					lib.playerOL[i].setIdentity();
-					lib.playerOL[i].ai.shown = 1;
+				game.showIdentity(true);
+				const map = {};
+				for (const i in lib.playerOL) {
+					map[i] = lib.playerOL[i].identity;
 				}
-			}, map);
-			switch (_status.mode) {
-				case "online":
-					game.addGlobalSkill("online_juzhong");
-					game.addGlobalSkill("online_zhadan_button");
-					game.addGlobalSkill("online_zhadan");
-					game.addGlobalSkill("online_aozhan");
-					game.addGlobalSkill("online_gongshoujintui");
-					break;
-				case "binglin":
-					game.addGlobalSkill("binglin_bingjin");
-					break;
-				default:
-					if (!game.zhu.isInitFilter("noZhuSkill")) {
+				game.broadcast(map => {
+					for (const i in map) {
+						lib.playerOL[i].identity = map[i];
+						lib.playerOL[i].setIdentity();
+						lib.playerOL[i].ai.shown = 1;
+					}
+				}, map);
+				switch (_status.mode) {
+					case "online":
+						game.addGlobalSkill("online_juzhong");
+						game.addGlobalSkill("online_zhadan_button");
+						game.addGlobalSkill("online_zhadan");
+						game.addGlobalSkill("online_aozhan");
+						game.addGlobalSkill("online_gongshoujintui");
+						break;
+					case "binglin":
+						game.addGlobalSkill("binglin_bingjin");
+						break;
+					default: {
+						if (game.zhu.isInitFilter("noZhuSkill")) {
+							break;
+						}
 						const list = [];
 						const version = _status.connectMode ? lib.configOL.feiyang_version : get.config("feiyang_version");
 						if (version === "online") {
@@ -136,55 +145,56 @@ export default () => {
 							list.push(enhance);
 						}
 						game.zhu.addSkill(list);
+						break;
 					}
-			}
-			game.addGlobalSkill("doudizhu_viewHandcard");
-			game.syncState();
-			event.trigger("gameStart");
+				}
+				game.addGlobalSkill("doudizhu_viewHandcard");
+				game.syncState();
+				event.trigger("gameStart");
 
-			var players = get.players(lib.sort.position);
-			var info = [];
-			for (var i = 0; i < players.length; i++) {
-				info.push({
-					name: players[i].name1,
-					name2: players[i].name2,
-					identity: players[i].identity,
-					nickname: players[i].node.nameol.innerHTML,
-				});
-			}
-			_status.videoInited = true;
-			game.addVideo("init", null, info);
-			if (_status.mode == "kaihei") {
-				game.addGlobalSkill("kaihei");
-			}
+				const players = get.players(lib.sort.position);
+				const info = [];
+				for (const current of players) {
+					info.push({
+						name: current.name1,
+						name2: current.name2,
+						identity: current.identity,
+						nickname: current.node.nameol.innerHTML,
+					});
+				}
+				_status.videoInited = true;
+				game.addVideo("init", null, info);
+				if (_status.mode === "kaihei") {
+					game.addGlobalSkill("kaihei");
+				}
 
-			var next = game.gameDraw(game.zhu || _status.firstAct || game.me);
-			if (_status.mode == "online") {
-				const card = game.createCard("diqi", "club", 13);
-				game.zhu.addVirtualEquip(get.autoViewAs(card, void 0, false), [card]);
-				next.num = function (player) {
-					var num = 4;
-					if (player == game.zhu) {
+				const next = game.gameDraw(game.zhu || _status.firstAct || game.me);
+				if (_status.mode === "online") {
+					const card = game.createCard("diqi", "club", 13);
+					game.zhu.addVirtualEquip(get.autoViewAs(card, void 0, false), [card]);
+					next.num = player => {
+						let num = 4;
+						if (player !== game.zhu) {
+							return num;
+						}
 						if (lib.character[player.name1] && get.infoHp(lib.character[player.name1][2]) > 3) {
 							num++;
 						}
 						if (lib.character[player.name2] && get.infoHp(lib.character[player.name2][2]) > 3) {
 							num++;
 						}
-					}
-					return num;
-				};
-			} else if (_status.mode == "binglin") {
-				next.num = function (player) {
-					return player == game.zhu ? 5 : 4;
-				};
-			}
-			if (_status.mode != "online" && _status.connectMode && lib.configOL.change_card) {
-				game.replaceHandcards(game.players.slice(0));
-			}
-			game.phaseLoop(game.zhu || _status.firstAct || game.me);
-			game.zhu.showGiveup();
-		},
+						return num;
+					};
+				} else if (_status.mode === "binglin") {
+					next.num = player => (player === game.zhu ? 5 : 4);
+				}
+				if (_status.mode !== "online" && _status.connectMode && lib.configOL.change_card) {
+					game.replaceHandcards(game.players.slice(0));
+				}
+				game.phaseLoop(game.zhu || _status.firstAct || game.me);
+				game.zhu.showGiveup();
+			},
+		],
 		game: {
 			canReplaceViewpoint: () => true,
 			recommendDizhu: ["re_guojia", "re_huanggai", "re_lvbu", "re_guanyu", "re_sunquan", "re_xusheng", "re_wuyi", "re_sunben", "xuyou", "zhangchunhua", "caochong", "zhangsong", "zhongyao", "wangyi", "caochun", "maliang", "sp_diaochan", "quyi", "sp_zhaoyun", "shamoke", "lijue", "liuzan", "wenyang", "shen_lvmeng", "shen_ganning", "jiakui", "wangyuanji", "lingcao", "miheng", "sp_key_yuri", "key_hinata", "key_rin", "key_kyousuke", "ns_chendao", "jiakui", "haozhao"],
@@ -2189,7 +2199,7 @@ export default () => {
 						}
 					}
 				},
-				logAi(targets, card) { },
+				logAi(targets, card) {},
 				showIdentity() {
 					game.broadcastAll(
 						function (player, identity) {
