@@ -6842,7 +6842,7 @@ const skills = {
 			) {
 				return 0;
 			}
-			return 6 - get.value(card);
+			return 8 - get.value(card);
 		},
 		multiline: true,
 		multitarget: true,
