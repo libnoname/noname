@@ -206,7 +206,9 @@ const skills = {
 				});
 			if (skills.length) {
 				const list = [];
-				for (const skill of skills) {
+				for (let skill of skills) {
+					if (skill == "bahu") skill = "jsrgbahu";
+					if (skill == "feiyang") skill = "jsrgfeiyang";
 					list.push([skill, `<div class="popup text" style="width:calc(100% - 10px);display:inline-block"><div class="skill">【` + get.translation(skill) + "】</div><div>" + lib.translate[skill + "_info"] + "</div></div>"]);
 				}
 				const result =
