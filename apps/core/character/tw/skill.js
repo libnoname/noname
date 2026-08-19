@@ -208,8 +208,10 @@ const skills = {
 				event.result = {
 					bool: true,
 					cost_data: result.links[0],
-					targets: result.targets ?? [],
 				};
+				if (result.targets?.length) {
+					event.result.targets = result.targets;
+				}
 			}
 		},
 		async content(event, trigger, player) {
