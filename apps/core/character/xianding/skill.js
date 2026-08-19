@@ -5756,7 +5756,7 @@ const skills = {
 					.map(evt => evt.zhengqing_count)
 					.sort((a, b) => b - a)[0] || 0) <= num;
 			target.addMark("zhengqing", num);
-			if (target === player && isMax) {
+			if (target === player) {
 				player.draw(Math.min(5, num));
 				player.getHistory("custom").push({ zhengqing_count: num });
 			} else {
@@ -5890,6 +5890,7 @@ const skills = {
 				charlotte: true,
 				forced: true,
 				async content(event, trigger) {
+					await player.draw();
 					trigger.num++;
 				},
 			},
