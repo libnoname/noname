@@ -7635,10 +7635,10 @@ const skills = {
 			threaten: 2,
 			result: {
 				player(player) {
-					if ([player.getHp(), player.getDamagedHp(), game.countPlayer()].some(c => c > player.getAttackRange())) {
-						return 10;
+					if (player.isDamaged()) {
+						return 1;
 					}
-					return get.recoverEffect(player, player, player);
+					return -1;
 				},
 			},
 		},
