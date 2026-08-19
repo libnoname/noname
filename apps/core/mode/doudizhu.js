@@ -2239,44 +2239,50 @@ export default () => {
 				forced: true,
 				ruleSkill: true,
 				filter(event, player) {
-					return _status.mode == "binglin" && game.roundNumber > 14;
+					return _status.mode === "binglin" && game.roundNumber > 14;
 				},
-				content() {
-					player.loseHp();
+				async content(event, trigger, player) {
+					awaitplayer.loseHp();
 				},
 			},
 			zhuSkill_xiangyang: {
 				trigger: { player: "phaseEnd" },
 				charlotte: true,
 				direct: true,
-				content() {
-					"step 0";
-					player.chooseControl("摸牌阶段", "出牌阶段", "cancel2").set("prompt", "襄阳：是否执行一个额外的阶段？");
-					"step 1";
-					if (result.control != "cancel2") {
-						player.logSkill(event.name);
-						var next = player[result.index ? "phaseUse" : "phaseDraw"]();
-						event.next.remove(next);
-						trigger.next.push(next);
+				async content(event, trigger, player) {
+					const result = await player
+						.chooseControl({
+							controls: ["摸牌阶段", "出牌阶段", "cancel2"],
+							prompt: "襄阳：是否执行一个额外的阶段？",
+						})
+						.forResult();
+					if (result.control === "cancel2") {
+						return;
 					}
+					player.logSkill(event.name);
+					const next = player[result.index ? "phaseUse" : "phaseDraw"]();
+					event.next.remove(next);
+					trigger.next.push(next);
 				},
 			},
 			zhuSkill_jiangling: {
 				trigger: { player: "phaseUseBegin" },
 				direct: true,
 				charlotte: true,
-				content() {
-					"step 0";
-					player
-						.chooseControl("加目标", "多刀", "取消")
-						.set("prompt", get.prompt2("zhuSkill_jiangling"))
-						.set("ai", () => 3 - game.countPlayer());
-					"step 1";
-					if (result.index < 2) {
-						player.logSkill("zhuSkill_jiangling");
-						player.addTempSkill("zhuSkill_jiangling" + result.index, "phaseUseAfter");
-						game.log(player, "选择了", "#y" + result.control, "的效果");
+				async content(event, trigger, player) {
+					const result = await player
+						.chooseControl({
+							controls: ["加目标", "多刀", "取消"],
+							prompt: get.prompt2("zhuSkill_jiangling"),
+							ai: () => 3 - game.countPlayer(),
+						})
+						.forResult();
+					if (result.index >= 2) {
+						return;
 					}
+					player.logSkill("zhuSkill_jiangling");
+					player.addTempSkill(`zhuSkill_jiangling${result.index}`, "phaseUseAfter");
+					game.log(player, "选择了", `#y${result.control}`, "的效果");
 				},
 			},
 			zhuSkill_jiangling0: {
@@ -2284,64 +2290,50 @@ export default () => {
 				direct: true,
 				charlotte: true,
 				filter(event, player) {
-					if (event.card.name != "sha" && get.type(event.card) != "trick") {
+					if (event.card.name !== "sha" && get.type(event.card) !== "trick") {
 						return false;
 					}
-					if (!event.targets || event.targets.length != 1) {
+					if (!event.targets || event.targets.length !== 1) {
 						return false;
 					}
-					var info = get.info(event.card);
-					if (info.allowMultiple == false) {
+					const info = get.info(event.card);
+					if (info.allowMultiple === false || info.multitarget) {
 						return false;
 					}
-					if (event.targets && !info.multitarget) {
-						if (
-							game.hasPlayer(function (current) {
-								return !event.targets.includes(current) && lib.filter.targetEnabled2(event.card, player, current) && lib.filter.targetInRange(event.card, player, current);
-							})
-						) {
-							return true;
-						}
-					}
-					return false;
+					return game.hasPlayer(current => !event.targets.includes(current) && lib.filter.targetEnabled2(event.card, player, current) && lib.filter.targetInRange(event.card, player, current));
 				},
-				content() {
-					"step 0";
-					var prompt2 = "为" + get.translation(trigger.card) + "增加一个目标";
-					player
-						.chooseTarget(get.prompt("zhuSkill_jiangling"), function (card, player, target) {
-							var player = _status.event.player;
-							if (_status.event.targets.includes(target)) {
-								return false;
-							}
-							return lib.filter.targetEnabled2(_status.event.card, player, target) && lib.filter.targetInRange(_status.event.card, player, target);
-						})
-						.set("prompt2", prompt2)
-						.set("ai", function (target) {
-							var trigger = _status.event.getTrigger();
-							var player = _status.event.player;
-							return get.effect(target, trigger.card, player, player) * (_status.event.targets.includes(target) ? -1 : 1);
+				async content(event, trigger, player) {
+					const prompt2 = `为${get.translation(trigger.card)}增加一个目标`;
+					const result = await player
+						.chooseTarget({
+							prompt: get.prompt("zhuSkill_jiangling"),
+							prompt2,
+							filterTarget: (_card, player, target) =>
+								!_status.event.targets.includes(target) &&
+								lib.filter.targetEnabled2(_status.event.card, player, target) &&
+								lib.filter.targetInRange(_status.event.card, player, target),
+							ai: target => {
+								const trigger = _status.event.getTrigger();
+								const player = _status.event.player;
+								return get.effect(target, trigger.card, player, player) * (_status.event.targets.includes(target) ? -1 : 1);
+							},
 						})
 						.set("targets", trigger.targets)
-						.set("card", trigger.card);
-					"step 1";
-					if (result.bool) {
-						if (!event.isMine() && !event.isOnline()) {
-							game.delayx();
-						}
-						event.targets = result.targets;
-					} else {
-						event.finish();
+						.set("card", trigger.card)
+						.forResult();
+					if (!result.bool) {
+						return;
 					}
-					"step 2";
-					if (event.targets) {
-						player.logSkill("zhuSkill_jiangling", event.targets);
-						if (trigger.targets.includes(event.targets[0])) {
-							trigger.targets.removeArray(event.targets);
-						} else {
-							//trigger.directHit.addArray(event.targets);
-							trigger.targets.addArray(event.targets);
-						}
+					if (!event.isMine() && !event.isOnline()) {
+						await game.delayx();
+					}
+					const { targets } = result;
+					player.logSkill("zhuSkill_jiangling", targets);
+					if (trigger.targets.includes(targets[0])) {
+						trigger.targets.removeArray(targets);
+					} else {
+						//trigger.directHit.addArray(targets);
+						trigger.targets.addArray(targets);
 					}
 				},
 			},
@@ -2349,7 +2341,7 @@ export default () => {
 				charlotte: true,
 				mod: {
 					cardUsable(card, player) {
-						if (card.name == "sha" || get.type(card) == "trick") {
+						if (card.name === "sha" || get.type(card) === "trick") {
 							return Infinity;
 						}
 					},
@@ -2361,15 +2353,16 @@ export default () => {
 				charlotte: true,
 				skillAnimation: true,
 				animationColor: "gray",
-				content() {
-					"step 0";
+				async content(event, trigger, player) {
 					player.awakenSkill(event.name);
-					player
-						.chooseControl("杀", "其他")
-						.set("prompt", "选择要强化的伤害")
-						.set("ai", () => get.rand(0, 1));
-					"step 1";
-					player.addSkill("zhuSkill_fancheng" + result.index);
+					const result = await player
+						.chooseControl({
+							controls: ["杀", "其他"],
+							prompt: "选择要强化的伤害",
+							ai: () => get.rand(0, 1),
+						})
+						.forResult();
+					player.addSkill(`zhuSkill_fancheng${result.index}`);
 					game.log(player, "本局游戏内", result.index ? "#g杀以外" : "#y杀", "的伤害+1");
 				},
 				ai: {
@@ -2382,10 +2375,10 @@ export default () => {
 				forced: true,
 				charlotte: true,
 				filter(event, player) {
-					return event.player != player && event.card && event.card.name == "sha" && event.getParent().name == "sha";
+					return event.player !== player && event.card && event.card.name === "sha" && event.getParent().name === "sha";
 				},
 				logTarget: "player",
-				content() {
+				async content(event, trigger, player) {
 					trigger.num++;
 				},
 				mark: true,
@@ -2397,10 +2390,10 @@ export default () => {
 				forced: true,
 				charlotte: true,
 				filter(event, player) {
-					return event.player != player && (!event.card || event.card.name != "sha");
+					return event.player !== player && (!event.card || event.card.name !== "sha");
 				},
 				logTarget: "player",
-				content() {
+				async content(event, trigger, player) {
 					trigger.num++;
 				},
 				mark: true,
@@ -2415,9 +2408,9 @@ export default () => {
 				forced: true,
 				charlotte: true,
 				filter(event, player) {
-					return event.source && player != event.source && player.identity == event.source.identity && player.countMark("binglin_shaxue") > 0;
+					return event.source && player !== event.source && player.identity === event.source.identity && player.hasMark("binglin_shaxue");
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.cancel();
 					player.removeMark("binglin_shaxue", 1, false);
 					trigger.source.removeMark("binglin_shaxue", 1, false);
