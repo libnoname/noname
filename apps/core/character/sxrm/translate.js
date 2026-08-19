@@ -123,7 +123,7 @@ const translates = {
 	sxrmfusui: "妇随",
 	sxrmfusui_info: `限定技，出牌阶段，你可以选择一名其他男性角色的一个非标签技能，你令其失去此技能，然后你与其获得${get.poptip("sxrmbiyi")}并防止你们本轮受到的伤害。`,
 	sxrmbiyi: "比翼",
-	sxrmbiyi_info: `转换技。你视为拥有：阳：因${get.poptip("sxrmbiyi")}失去的技能；阴：${get.poptip("xiaoji")}。当你发动当前分支的对应技能时，切换本技能状态。`,
+	sxrmbiyi_info: `转换技。你视为拥有：阳：因${get.poptip("sxrmfusui")}失去的技能；阴：${get.poptip("xiaoji")}。当你发动当前分支的对应技能时，切换本技能状态。`,
 	sxrm_zhangzhao: "嗔张昭",
 	sxrm_zhangzhao_prefix: "嗔",
 	sxrmxiezhong: "挟众",
