@@ -2784,12 +2784,12 @@ export default () => {
 					return _status.mode != "online" && _status.mode != "binglin" && player == game.zhu;
 				},
 				forced: true,
-				content() {
-					player.draw();
+				async content(event, trigger, player) {
+					await player.draw();
 				},
 				mod: {
 					cardUsable(card, player, num) {
-						if (_status.mode != "online" && _status.mode != "binglin" && player == game.zhu && card.name == "sha") {
+						if (_status.mode !== "online" && _status.mode !== "binglin" && player === game.zhu && card.name === "sha") {
 							return num + 1;
 						}
 					},
@@ -2825,7 +2825,7 @@ export default () => {
 					storage: { shiqiang: true },
 				},
 				locked: false,
-				precontent() {
+				async precontent(event, trigger, player) {
 					player.addTempSkill("shiqiang_effect");
 				},
 				mod: {
@@ -3012,26 +3012,24 @@ export default () => {
 			diqi_skill: {
 				trigger: { player: "damageBegin2" },
 				filter(event, player) {
-					var card = player.getEquip("diqi");
-					return get.itemtype(card) == "card" && lib.filter.cardDiscardable(card, player, "diqi_skill");
+					const card = player.getEquip("diqi");
+					return get.itemtype(card) === "card" && lib.filter.cardDiscardable(card, player, "diqi_skill");
 				},
 				check(event, player) {
 					return event.num >= Math.min(player.hp, 2);
 				},
 				prompt2(event, player) {
-					return "弃置" + get.translation(player.getEquip("diqi")) + "并防止即将受到的" + get.cnNumber(event.num) + "点伤害";
+					return `弃置${get.translation(player.getEquip("diqi"))}并防止即将受到的${get.cnNumber(event.num)}点伤害`;
 				},
-				content() {
-					player.discard(player.getEquip("diqi"));
+				async content(event, trigger, player) {
+					await player.discard({ cards: [player.getEquip("diqi")] });
 					trigger.cancel();
 				},
 				ai: {
 					filterDamage: true,
 					skillTagFilter(player, tag, arg) {
-						if (arg && arg.player) {
-							if (arg.player.hasSkillTag("jueqing", false, player)) {
-								return false;
-							}
+						if (arg?.player?.hasSkillTag("jueqing", false, player)) {
+							return false;
 						}
 					},
 				},
@@ -3044,13 +3042,13 @@ export default () => {
 				filter(event, player) {
 					return !_status._aozhan && game.roundNumber > 10;
 				},
-				content() {
-					var color = get.groupnature(player.group, "raw");
+				async content(event, trigger, player) {
+					let color = get.groupnature(player.group, "raw");
 					if (player.isUnseen()) {
 						color = "fire";
 					}
 					player.$fullscreenpop("鏖战模式", color);
-					game.broadcastAll(function () {
+					game.broadcastAll(() => {
 						_status._aozhan = true;
 						ui.aozhan = ui.create.div(".touchinfo.left", ui.window);
 						ui.aozhan.innerHTML = "鏖战模式";
@@ -3060,17 +3058,13 @@ export default () => {
 						ui.aozhanInfo = ui.create.system("鏖战模式", null, true);
 						lib.setPopped(
 							ui.aozhanInfo,
-							function () {
-								var uiintro = ui.create.dialog("hidden");
+							() => {
+								const uiintro = ui.create.dialog("hidden");
 								uiintro.add("鏖战模式");
-								var list = ["从第11轮开始，游戏将进入〔鏖战模式〕。", "在鏖战模式下，任何角色均不是非转化的【桃】的合法目标。【桃】可以被当做【杀】或【闪】使用或打出。"];
-								var intro = '<ul style="text-align:left;margin-top:0;width:450px">';
-								for (var i = 0; i < list.length; i++) {
-									intro += "<li>" + list[i];
-								}
-								intro += "</ul>";
-								uiintro.add('<div class="text center">' + intro + "</div>");
-								var ul = uiintro.querySelector("ul");
+								const list = ["从第11轮开始，游戏将进入〔鏖战模式〕。", "在鏖战模式下，任何角色均不是非转化的【桃】的合法目标。【桃】可以被当做【杀】或【闪】使用或打出。"];
+								const intro = `<ul style="text-align:left;margin-top:0;width:450px">${list.map(item => `<li>${item}`).join("")}</ul>`;
+								uiintro.add(`<div class="text center">${intro}</div>`);
+								const ul = uiintro.querySelector("ul");
 								if (ul) {
 									ul.style.width = "180px";
 								}
@@ -3082,9 +3076,9 @@ export default () => {
 						game.playBackgroundMusic();
 					});
 					game.removeGlobalSkill("online_aozhan");
-					game.countPlayer(function (current) {
+					for (const current of game.filterPlayer()) {
 						current.addSkill("aozhan");
-					});
+					}
 				},
 			},
 			online_juzhong: {
@@ -3093,63 +3087,65 @@ export default () => {
 				ruleSkill: true,
 				filter(event, player) {
 					return (
-						_status.mode == "online" &&
+						_status.mode === "online" &&
 						!event.all_excluded &&
 						event.player.isFriendOf(player) &&
-						event.player != player &&
+						event.player !== player &&
 						lib.skill.online_juzhong.infos[event.card.name] &&
-						player.hasCard(function (card) {
+						player.hasCard(card => {
 							if (_status.connectMode) {
 								return true;
 							}
-							return get.name(card, player) == event.card.name;
+							return get.name(card, player) === event.card.name;
 						}, "h")
 					);
 				},
-				content() {
-					"step 0";
-					player
-						.chooseToDiscard("是否响应【聚众】？", get.translation(trigger.player) + "使用了" + get.translation(trigger.card) + "。你可弃置一张名称相同的牌，令" + lib.skill.online_juzhong.infos[trigger.card.name][0], function (card, player) {
-							return get.name(card, player) == _status.event.getTrigger().card.name;
+				async content(event, trigger, player) {
+					const result = await player
+						.chooseToDiscard({
+							prompt: "是否响应【聚众】？",
+							prompt2: `${get.translation(trigger.player)}使用了${get.translation(trigger.card)}。你可弃置一张名称相同的牌，令${lib.skill.online_juzhong.infos[trigger.card.name][0]}`,
+							filterCard: (card, player) => get.name(card, player) === _status.event.getTrigger().card.name,
+							ai: lib.skill.online_juzhong.infos[trigger.card.name][2],
 						})
-						.set("ai", lib.skill.online_juzhong.infos[trigger.card.name][2]).logSkill = ["_juzhong", trigger.player];
-					"step 1";
-					if (result.bool) {
-						lib.skill.online_juzhong.infos[trigger.card.name][1]();
-						if (!event.goon) {
-							event.finish();
-						}
-					} else {
-						event.finish();
+						.set("logSkill", ["_juzhong", trigger.player])
+						.forResult();
+					if (!result.bool) {
+						return;
 					}
-					"step 2";
-					trigger.player
-						.chooseTarget("你可选择一名角色，弃置其的一张牌", function (card, player, target) {
-							return target.countDiscardableCards(player, "he") > 0;
+					lib.skill.online_juzhong.infos[trigger.card.name][1]();
+					if (!event.goon) {
+						return;
+					}
+					const targetResult = await trigger.player
+						.chooseTarget({
+							prompt: "你可选择一名角色，弃置其的一张牌",
+							filterTarget: (_card, player, target) => target.countDiscardableCards(player, "he") > 0,
+							ai: target => {
+								const player = _status.event.player;
+								return get.effect(target, { name: "guohe_copy2" }, player, player);
+							},
 						})
-						.set("ai", function (target) {
-							var player = _status.event.player;
-							return get.effect(target, { name: "guohe_copy2" }, player, player);
-						});
-					"step 3";
-					if (result.bool) {
-						var target = result.targets[0];
-						trigger.player.line(target, "green");
-						trigger.player.discardPlayerCard(target, true, "he");
+						.forResult();
+					if (!targetResult.bool) {
+						return;
 					}
+					const target = targetResult.targets[0];
+					trigger.player.line(target, "green");
+					await trigger.player.discardPlayerCard({ target, forced: true, position: "he" });
 				},
 				infos: {
 					sha: [
 						"此【杀】的伤害值基数+1。",
-						function () {
-							var evt = _status.event._trigger;
+						() => {
+							const evt = _status.event._trigger;
 							if (!evt.baseDamage) {
 								evt.baseDamage = 1;
 							}
 							evt.baseDamage++;
 						},
-						function (card) {
-							var evt = _status.event.getTrigger();
+						card => {
+							const evt = _status.event.getTrigger();
 							if (!evt.targets.length) {
 								return 0;
 							}
@@ -3167,21 +3163,17 @@ export default () => {
 					],
 					shan: [
 						"其可弃置一名角色的一张牌。",
-						function () {
+						() => {
 							_status.event.goon = true;
 						},
-						function (card) {
+						card => {
 							if (
-								game.zhu.countCards("he", function (card) {
-									return get.value(card, game.zhu) >= 6;
-								})
+								game.zhu.countCards("he", card => get.value(card, game.zhu) >= 6)
 							) {
 								return 7 - get.value(card);
 							}
 							if (
-								game.zhu.countCards("he", function (card) {
-									return get.value(card, game.zhu) > 0;
-								})
+								game.zhu.countCards("he", card => get.value(card, game.zhu) > 0)
 							) {
 								return 5 - get.value(card);
 							}
@@ -3190,29 +3182,25 @@ export default () => {
 					],
 					tao: [
 						"其摸两张牌。",
-						function () {
+						() => {
 							_status.event._trigger.player.draw(2);
 						},
-						function (card) {
-							return 6 - get.value(card);
-						},
+						card => 6 - get.value(card),
 					],
 					jiu: [
 						"其本回合的伤害值或回复值+1。",
-						function () {
-							var player = _status.event._trigger.player;
+						() => {
+							const player = _status.event._trigger.player;
 							player.addTempSkill("juzhong_jiu");
 							player.addMark("juzhong_jiu", 1, false);
 						},
-						function (card) {
-							return 6 - get.value(card);
-						},
+						card => 6 - get.value(card),
 					],
 				},
 				ai: {
 					viewHandcard: true,
 					skillTagFilter(player, tag, target) {
-						if (_status.mode != "online" || player == target || player.identity != target.identity) {
+						if (_status.mode !== "online" || player === target || player.identity !== target.identity) {
 							return false;
 						}
 					},
@@ -3225,7 +3213,7 @@ export default () => {
 				},
 				forced: true,
 				popup: false,
-				content() {
+				async content(event, trigger, player) {
 					trigger.num += player.countMark("juzhong_jiu");
 				},
 				onremove: true,
@@ -3242,42 +3230,43 @@ export default () => {
 				popup: false,
 				silent: true,
 				filter(event, player) {
-					if (_status.mode != "online" || (player != game.me && !player.isOnline())) {
-						return;
+					if (_status.mode !== "online" || (player !== game.me && !player.isOnline())) {
+						return false;
 					}
-					if (event.name != "lose") {
+					if (event.name !== "lose") {
 						return !player.hasZhadan && player.countCards("hs", "zhadan") > 0;
 					}
 					return player.hasZhadan && !player.countCards("hs", "zhadan");
 				},
-				content() {
+				async content(event, trigger, player) {
 					if (!player.hasZhadan) {
 						player.hasZhadan = true;
-						if (player == game.me) {
+						if (player === game.me) {
 							lib.skill.online_zhadan_button.initZhadan();
 						} else {
-							player.send(function () {
+							player.send(() => {
 								lib.skill.online_zhadan_button.initZhadan();
 							});
 						}
+						return;
+					}
+					delete player.hasZhadan;
+					if (player === game.me) {
+						lib.skill.online_zhadan_button.removeZhadan();
 					} else {
-						delete player.hasZhadan;
-						if (player == game.me) {
+						player.send(() => {
 							lib.skill.online_zhadan_button.removeZhadan();
-						} else {
-							player.send(function () {
-								lib.skill.online_zhadan_button.removeZhadan();
-							});
-						}
+						});
 					}
 				},
 				initZhadan() {
-					ui.zhadan_button = ui.create.control("激活炸弹", "stayleft", function () {
-						if (this.classList.contains("hidden")) {
+					ui.zhadan_button = ui.create.control("激活炸弹", "stayleft", () => {
+						const button = ui.zhadan_button;
+						if (button.classList.contains("hidden")) {
 							return;
 						}
-						this.classList.toggle("glow");
-						if (this.classList.contains("glow") && _status.event.type == "zhadan" && _status.event.isMine() && ui.confirm && _status.imchoosing) {
+						button.classList.toggle("glow");
+						if (button.classList.contains("glow") && _status.event.type === "zhadan" && _status.event.isMine() && ui.confirm && _status.imchoosing) {
 							ui.click.cancel(ui.confirm.lastChild);
 						}
 					});
@@ -3295,79 +3284,59 @@ export default () => {
 				popup: false,
 				forced: true,
 				filter(event, player) {
-					return game.hasPlayer(function (current) {
-						return current.hasCard(function (card) {
-							if (get.name(card) != "zhadan") {
-								return false;
-							}
-							return lib.filter.cardEnabled(card, player, "forceEnable");
-						}, "hs");
-					});
+					return game.hasPlayer(current => current.hasCard(card => get.name(card) === "zhadan" && lib.filter.cardEnabled(card, player, "forceEnable"), "hs"));
 				},
 				forceLoad: true,
-				content() {
-					"step 0";
+				async content(event, trigger, player) {
 					event.source = trigger.player;
 					event.card = trigger.card;
 					event.targets = trigger.targets;
 					event._global_waiting = true;
-					event.filterCard = function (card, player) {
-						if (get.name(card) != "zhadan" || get.itemtype(card) != "card") {
-							return false;
-						}
-						return lib.filter.cardEnabled(card, player, "forceEnable");
-					};
-					event.send = function (player, card, source, targets, id, id2, skillState) {
+					event.filterCard = (card, player) => get.name(card) === "zhadan" && get.itemtype(card) === "card" && lib.filter.cardEnabled(card, player, "forceEnable");
+					event.send = (player, card, source, targets, id, id2, skillState) => {
 						if (skillState) {
 							player.applySkills(skillState);
 						}
-						if (player == game.me && ui.zhadan_button && !ui.zhadan_button.classList.contains("glow")) {
-							_status.event._result = { bool: false };
+						if (player === game.me && ui.zhadan_button && !ui.zhadan_button.classList.contains("glow")) {
+							const result = { bool: false };
+							_status.event._result = result;
 							if (game.online) {
 								_status.event._resultid = id;
 								game.resume();
 							}
-							return;
+							return result;
 						}
-						var str = get.translation(source);
-						if (targets && targets.length) {
-							str += "对" + get.translation(targets);
-						}
-						str += "使用了";
-						str += get.translation(card);
-						str += "，是否对其使用【炸弹】？";
+						const targetPrompt = targets?.length ? `对${get.translation(targets)}` : "";
+						const prompt = `${get.translation(source)}${targetPrompt}使用了${get.translation(card)}，是否对其使用【炸弹】？`;
 
-						var next = player.chooseToUse({
+						const next = player.chooseToUse({
 							filterCard(card, player) {
-								if (get.name(card) != "zhadan" || get.itemtype(card) != "card") {
-									return false;
-								}
-								return lib.filter.cardEnabled(card, player, "forceEnable");
+								return get.name(card) === "zhadan" && get.itemtype(card) === "card" && lib.filter.cardEnabled(card, player, "forceEnable");
 							},
-							prompt: str,
+							prompt,
 							_global_waiting: true,
 							ai1(card) {
-								var evt = _status.event.getParent("_zhadan")._trigger,
-									player = _status.event.player;
+								const evt = _status.event.getParent("_zhadan")._trigger;
+								const player = _status.event.player;
 								if (!evt) {
 									return 0;
 								}
 								if (get.attitude(player, evt.player) > 0) {
 									return 0;
 								}
-								var eff = 0;
 								if (!targets.length) {
 									return Math.random() - 0.5;
 								}
-								for (var i of targets) {
-									eff -= get.effect(i, evt.card, evt.player, player);
+								let eff = 0;
+								for (const target of targets) {
+									eff -= get.effect(target, evt.card, evt.player, player);
 								}
 								return eff - 8;
 							},
-							source: source,
+							source,
 							source2: targets,
-							id: id,
-							id2: id2,
+							id,
+							id2,
 							type: "zhadan",
 						});
 						next.set("respondTo", [source, card]);
@@ -3378,114 +3347,96 @@ export default () => {
 						} else {
 							next.nouse = true;
 						}
+						return next;
 					};
-					"step 1";
-					var list = game.filterPlayer(function (current) {
-						return current.hasCard(function (card) {
-							if (get.name(card) != "zhadan") {
-								return false;
-							}
-							return lib.filter.cardEnabled(card, player, "forceEnable");
-						}, "hs");
-					});
-					event.list = list;
+					event.list = game.filterPlayer(current => current.hasCard(card => get.name(card) === "zhadan" && lib.filter.cardEnabled(card, player, "forceEnable"), "hs"));
 					event.id = get.id();
-					list.sort(function (a, b) {
-						return get.distance(event.source, a, "absolute") - get.distance(event.source, b, "absolute");
-					});
-					"step 2";
-					if (event.list.length == 0) {
-						event.finish();
-					} else if (_status.connectMode && (event.list[0].isOnline() || event.list[0] == game.me)) {
-						event.goto(4);
-					} else {
-						event.current = event.list.shift();
-						event.send(event.current, event.card, event.source, event.targets, event.id, trigger.parent.id);
-					}
-					"step 3";
-					if (result.bool) {
-						event.zhadanresult = event.current;
-						event.zhadanresult2 = result;
-						if (event.current != game.me && !event.current.isOnline()) {
-							game.delayx();
-						}
-						event.goto(8);
-					} else {
-						event.goto(2);
-					}
-					"step 4";
-					var id = event.id;
-					var sendback = function (result, player) {
-						if (result && result.id == id && !event.zhadanresult && result.bool) {
-							event.zhadanresult = player;
-							event.zhadanresult2 = result;
-							game.broadcast("cancel", id);
-							if (_status.event.id == id && _status.event.name == "chooseToUse" && _status.paused) {
-								return function () {
-									event.resultOL = _status.event.resultOL;
-									ui.click.cancel();
-									if (ui.confirm) {
-										ui.confirm.close();
-									}
-								};
-							}
-						} else {
-							if (_status.event.id == id && _status.event.name == "chooseToUse" && _status.paused) {
-								return function () {
-									event.resultOL = _status.event.resultOL;
-								};
-							}
-						}
-					};
+					event.list.sort((a, b) => get.distance(event.source, a, "absolute") - get.distance(event.source, b, "absolute"));
 
-					var withme = false;
-					var withol = false;
-					var list = event.list;
-					for (var i = 0; i < list.length; i++) {
-						if (list[i].isOnline()) {
-							withol = true;
-							list[i].wait(sendback);
-							list[i].send(event.send, list[i], event.card, event.source, event.targets, event.id, trigger.parent.id, get.skillState(list[i]));
-							list.splice(i--, 1);
-						} else if (list[i] == game.me) {
-							withme = true;
-							event.send(list[i], event.card, event.source, event.targets, event.id, trigger.parent.id);
-							list.splice(i--, 1);
+					while (event.list.length && !(_status.connectMode && (event.list[0].isOnline() || event.list[0] === game.me))) {
+						const current = event.list.shift();
+						const response = event.send(current, event.card, event.source, event.targets, event.id, trigger.parent.id);
+						const result = response?.forResult ? await response.forResult() : response;
+						if (!result?.bool) {
+							continue;
 						}
+						event.zhadanresult = current;
+						event.zhadanresult2 = result;
+						if (current !== game.me && !current.isOnline()) {
+							await game.delayx();
+						}
+						break;
 					}
-					if (!withme) {
-						event.goto(6);
-					}
-					if (_status.connectMode) {
-						if (withme || withol) {
-							for (var i = 0; i < game.players.length; i++) {
-								game.players[i].showTimer();
+
+					if (!event.zhadanresult && event.list.length) {
+						const id = event.id;
+						const sendback = (result, player) => {
+							if (result && result.id === id && !event.zhadanresult && result.bool) {
+								event.zhadanresult = player;
+								event.zhadanresult2 = result;
+								game.broadcast("cancel", id);
+								if (_status.event.id === id && _status.event.name === "chooseToUse" && _status.paused) {
+									return () => {
+										event.resultOL = _status.event.resultOL;
+										ui.click.cancel();
+										if (ui.confirm) {
+											ui.confirm.close();
+										}
+									};
+								}
+								return;
+							}
+							if (_status.event.id === id && _status.event.name === "chooseToUse" && _status.paused) {
+								return () => {
+									event.resultOL = _status.event.resultOL;
+								};
+							}
+						};
+
+						let withme = false;
+						let withol = false;
+						let mineResponse;
+						for (const current of [...event.list]) {
+							if (current.isOnline()) {
+								withol = true;
+								current.wait(sendback);
+								current.send(event.send, current, event.card, event.source, event.targets, event.id, trigger.parent.id, get.skillState(current));
+								event.list.remove(current);
+							} else if (current === game.me) {
+								withme = true;
+								mineResponse = event.send(current, event.card, event.source, event.targets, event.id, trigger.parent.id);
+								event.list.remove(current);
 							}
 						}
+						if (_status.connectMode && (withme || withol)) {
+							for (const current of game.players) {
+								current.showTimer();
+							}
+						}
+						if (withme) {
+							const result = mineResponse?.forResult ? await mineResponse.forResult() : mineResponse;
+							if (result?.bool && !event.zhadanresult) {
+								game.broadcast("cancel", event.id);
+								event.zhadanresult = game.me;
+								event.zhadanresult2 = result;
+							}
+						}
+						if (withol && !event.resultOL) {
+							await game.pause();
+						}
+						for (const current of game.players) {
+							current.hideTimer();
+						}
 					}
-					event.withol = withol;
-					"step 5";
-					if (result && result.bool && !event.zhadanresult) {
-						game.broadcast("cancel", event.id);
-						event.zhadanresult = game.me;
-						event.zhadanresult2 = result;
+					if (!event.zhadanresult) {
+						return;
 					}
-					"step 6";
-					if (event.withol && !event.resultOL) {
-						game.pause();
-					}
-					"step 7";
-					for (var i = 0; i < game.players.length; i++) {
-						game.players[i].hideTimer();
-					}
-					"step 8";
-					if (event.zhadanresult) {
-						event.zhadanresult.$fullscreenpop("炸弹", get.groupnature(event.zhadanresult));
-						var next = event.zhadanresult.useResult(event.zhadanresult2);
-						next.respondTo = [trigger.player, trigger.card];
-						game.bonusNum *= 2;
-						game.updateRoundNumber();
-					}
+					event.zhadanresult.$fullscreenpop("炸弹", get.groupnature(event.zhadanresult));
+					const next = event.zhadanresult.useResult(event.zhadanresult2);
+					next.respondTo = [trigger.player, trigger.card];
+					game.bonusNum *= 2;
+					game.updateRoundNumber();
+					await next;
 				},
 			},
 		},
