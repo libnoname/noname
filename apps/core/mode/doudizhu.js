@@ -2123,12 +2123,19 @@ export default () => {
 		},
 		element: {
 			player: {
+				/**
+				 * 从地主牌堆顶获取指定数量的牌，不足时从公共牌堆补齐。
+				 *
+				 * @this { Player }
+				 * @param { number } [num=1] - 要获取的牌数。
+				 * @returns { Card[] } 获取到的牌。
+				 */
 				getTopCards(num) {
-					if (typeof num != "number") {
+					if (typeof num !== "number") {
 						num = 1;
 					}
-					var cards;
-					var player = this;
+					let cards;
+					const player = this;
 					if (num <= 0) {
 						cards = [];
 					} else if (player.storage.doudizhu_cardPile?.length) {
@@ -2148,22 +2155,28 @@ export default () => {
 					}
 					return cards;
 				},
+				/**
+				 * 在角色死亡后创建死亡身份标记，并使其方向与角色一致。
+				 *
+				 * @this { Player }
+				 * @returns { void }
+				 */
 				$dieAfter() {
 					if (_status.video) {
 						return;
 					}
 					if (!this.node.dieidentity) {
-						var str = { zhu: "地主", fan: "农民" }[this.identity];
-						var node = ui.create.div(".damage.dieidentity", str, this);
+						const str = { zhu: "地主", fan: "农民" }[this.identity];
+						const node = ui.create.div(".damage.dieidentity", str, this);
 						ui.refresh(node);
 						node.style.opacity = 1;
 						this.node.dieidentity = node;
 					}
-					var trans = this.style.transform;
+					const trans = this.style.transform;
 					if (trans) {
-						if (trans.indexOf("rotateY") != -1) {
+						if (trans.indexOf("rotateY") !== -1) {
 							this.node.dieidentity.style.transform = "rotateY(180deg)";
-						} else if (trans.indexOf("rotateX") != -1) {
+						} else if (trans.indexOf("rotateX") !== -1) {
 							this.node.dieidentity.style.transform = "rotateX(180deg)";
 						} else {
 							this.node.dieidentity.style.transform = "";
@@ -2172,52 +2185,75 @@ export default () => {
 						this.node.dieidentity.style.transform = "";
 					}
 				},
+				/**
+				 * 处理角色死亡后的胜负结算。
+				 *
+				 * @this { Player }
+				 * @param { Player } [source] - 击杀来源角色。
+				 * @returns { void }
+				 */
 				dieAfter(source) {
-					if (_status.mode == "binglin" && source && this != source && this.identity == source.identity && source.hasSkill("binglin_neihong")) {
-						if (game.me == game.zhu) {
-							game.over(true);
-						} else {
-							game.over(false);
-						}
-					} else {
-						game.checkResult();
-					}
-				},
-				dieAfter2() {
-					if (_status.mode == "binglin" || _status.mode == "online" || this.identity != "fan") {
+					if (_status.mode === "binglin" && source && this !== source && this.identity === source.identity && source.hasSkill("binglin_neihong")) {
+						game.over(game.me === game.zhu);
 						return;
 					}
-					var player = this,
-						target = game.findPlayer(function (current) {
-							return current != player && current.identity == "fan";
-						}, true);
-					if (target) {
-						target.showGiveup();
-						const version = _status.connectMode ? lib.configOL.enhance_nongmin : get.config("enhance_nongmin");
-						if (version !== "decade") {
-							target[version === "mobile" ? "chooseDrawRecover" : "draw"](version === "mobile" ? 2 : 1);
-						}
+					game.checkResult();
+				},
+				/**
+				 * 处理农民死亡后的队友强化和认输提示。
+				 *
+				 * @this { Player }
+				 * @returns { void }
+				 */
+				dieAfter2() {
+					if (_status.mode === "binglin" || _status.mode === "online" || this.identity !== "fan") {
+						return;
+					}
+					const player = this;
+					const target = game.findPlayer(current => current !== player && current.identity === "fan", true);
+					if (!target) {
+						return;
+					}
+					target.showGiveup();
+					const version = _status.connectMode ? lib.configOL.enhance_nongmin : get.config("enhance_nongmin");
+					if (version !== "decade") {
+						target[version === "mobile" ? "chooseDrawRecover" : "draw"](version === "mobile" ? 2 : 1);
 					}
 				},
+				/**
+				 * 斗地主模式不根据行动更新 AI 身份暴露度。
+				 *
+				 * @this { Player }
+				 * @param { Player[] | number } targets - 行动目标，或暴露度变化值。
+				 * @param { Card | VCard | string } card - 使用的牌或技能。
+				 * @returns { void }
+				 */
 				logAi(targets, card) {},
+				/**
+				 * 公开并同步当前角色的身份。
+				 *
+				 * @this { Player }
+				 * @returns { void }
+				 */
 				showIdentity() {
 					game.broadcastAll(
-						function (player, identity) {
+						(player, identity) => {
 							player.identity = identity;
 							player.node.identity.classList.remove("guessing");
 							player.identityShown = true;
 							player.ai.shown = 1;
 							player.setIdentity();
-							if (player.identity == "zhu") {
+							if (player.identity === "zhu") {
 								player.isZhu = true;
 							}
-							if (_status.clickingidentity) {
-								for (var i = 0; i < _status.clickingidentity[1].length; i++) {
-									_status.clickingidentity[1][i].delete();
-									_status.clickingidentity[1][i].style.transform = "";
-								}
-								delete _status.clickingidentity;
+							if (!_status.clickingidentity) {
+								return;
 							}
+							for (const node of _status.clickingidentity[1]) {
+								node.delete();
+								node.style.transform = "";
+							}
+							delete _status.clickingidentity;
 						},
 						this,
 						this.identity
