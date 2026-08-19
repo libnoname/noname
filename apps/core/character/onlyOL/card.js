@@ -31,10 +31,7 @@ const cards = {
 		fullskin: true,
 		type: "equip",
 		subtype: "equip1",
-		/*get destroy() {
-			return !lib.card.sizhaojian.inShanShanFestival();
-		},*/
-		onLose() {
+		async onLose(event, trigger, player) {
 			if (!lib.card.sizhaojian.inShanShanFestival() && (!event.getParent(2) || event.getParent(2).name != "swapEquip") && (event.getParent().type != "equip" || event.getParent().swapEquip)) {
 				cards.forEach(card => {
 					card.fix();
