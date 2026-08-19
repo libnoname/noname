@@ -2432,84 +2432,78 @@ export default () => {
 					return lib.skill.toushiche_skill.logTarget(null, player).length > 0;
 				},
 				logTarget(event, player) {
-					var hs = player.countCards("h");
-					return game.filterPlayer(function (current) {
-						return current != player && current.countCards("h") > hs;
-					});
+					const hs = player.countCards("h");
+					return game.filterPlayer(current => current !== player && current.countCards("h") > hs);
 				},
-				content() {
-					"step 0";
-					event.targets = lib.skill.toushiche_skill.logTarget(null, player).sortBySeat();
-					"step 1";
-					var target = targets.shift();
-					if (target.countCards("h") > 0) {
-						target.chooseToDiscard("h", true);
-					}
-					if (targets.length) {
-						event.redo();
+				async content(event, trigger, player) {
+					const targets = lib.skill.toushiche_skill.logTarget(null, player).sortBySeat();
+					for (const target of targets) {
+						if (target.hasCards("h")) {
+							await target.chooseToDiscard({ position: "h", forced: true });
+						}
 					}
 				},
 			},
 			online_gongshoujintui: {
 				enable: "chooseToUse",
 				filter(event, player) {
-					var cards = player.getCards("hs");
-					for (var i of cards) {
-						var name = get.name(i, player);
-						if (name == "gongshoujianbei") {
-							if (
-								event.filterCard(
-									{
-										name: "wanjian",
-										isCard: true,
-										cards: [i],
-									},
-									player,
-									event
+					const cards = player.getCards("hs");
+					for (const card of cards) {
+						const name = get.name(card, player);
+						if (
+							name === "gongshoujianbei" &&
+							(event.filterCard(
+								{
+									name: "wanjian",
+									isCard: true,
+									cards: [card],
+								},
+								player,
+								event
 								) ||
 								event.filterCard(
 									{
 										name: "taoyuan",
 										isCard: true,
-										cards: [i],
+										cards: [card],
 									},
 									player,
 									event
 								)
-							) {
-								return true;
-							}
+							)
+						) {
+							return true;
 						}
-						if (name == "jintuiziru") {
-							if (
-								event.filterCard(
-									{
-										name: "nanman",
-										isCard: true,
-										cards: [i],
-									},
-									player,
-									event
+						if (
+							name === "jintuiziru" &&
+							(event.filterCard(
+								{
+									name: "nanman",
+									isCard: true,
+									cards: [card],
+								},
+								player,
+								event
 								) ||
 								event.filterCard(
 									{
 										name: "wugu",
 										isCard: true,
-										cards: [i],
+										cards: [card],
 									},
 									player,
 									event
 								)
-							) {
-								return true;
-							}
+							)
+						) {
+							return true;
 						}
 					}
 					return false;
 				},
 				chooseButton: {
 					dialog(event, player) {
-						var list = [];
+						const list = [];
 						if (player.countCards("hs", "gongshoujianbei")) {
 							list.push(["锦囊", "", "wanjian"]);
 							list.push(["锦囊", "", "taoyuan"]);
@@ -2521,18 +2515,18 @@ export default () => {
 						return ui.create.dialog("攻守兼备/进退自如", [list, "vcard"], "hidden");
 					},
 					filter(button, player) {
-						var name = button.link[2];
-						var rawname = name == "wanjian" || name == "taoyuan" ? "gongshoujianbei" : "jintuiziru";
-						var cards = player.getCards("hs");
-						var evt = _status.event.getParent();
-						for (var i of cards) {
+						const name = button.link[2];
+						const rawname = name === "wanjian" || name === "taoyuan" ? "gongshoujianbei" : "jintuiziru";
+						const cards = player.getCards("hs");
+						const evt = _status.event.getParent();
+						for (const card of cards) {
 							if (
-								get.name(i, player) == rawname &&
+								get.name(card, player) === rawname &&
 								evt.filterCard(
 									{
-										name: name,
+										name,
 										isCard: true,
-										cards: [i],
+										cards: [card],
 									},
 									player,
 									evt
@@ -2547,19 +2541,19 @@ export default () => {
 						return _status.event.player.getUseValue({ name: button.link[2], isCard: true });
 					},
 					backup(links) {
-						var name = links[0][2];
-						var rawname = name == "wanjian" || name == "taoyuan" ? "gongshoujianbei" : "jintuiziru";
+						const name = links[0][2];
+						const rawname = name === "wanjian" || name === "taoyuan" ? "gongshoujianbei" : "jintuiziru";
 						return {
 							popname: true,
-							viewAs: { name: name, isCard: true },
+							viewAs: { name, isCard: true },
 							filterCard: { name: rawname },
 							ai1: () => 1,
 						};
 					},
 					prompt(links) {
-						var name = links[0][2];
-						var rawname = name == "wanjian" || name == "taoyuan" ? "gongshoujianbei" : "jintuiziru";
-						return "将一张" + get.translation(rawname) + "当做" + get.translation(name) + "使用";
+						const name = links[0][2];
+						const rawname = name === "wanjian" || name === "taoyuan" ? "gongshoujianbei" : "jintuiziru";
+						return `将一张${get.translation(rawname)}当做${get.translation(name)}使用`;
 					},
 				},
 				ai: {
@@ -2578,36 +2572,47 @@ export default () => {
 				charlotte: true,
 				enable: "phaseUse",
 				filter(event, player) {
-					return (
-						player == game.zhu &&
-						game.hasPlayer(function (current) {
-							return lib.skill.kaihei.filterTarget(null, player, current);
-						})
-					);
+					return player === game.zhu && game.hasPlayer(current => lib.skill.kaihei.filterTarget(null, player, current));
 				},
 				filterTarget(card, player, target) {
-					return player != target && !player.getStorage("kaihei_used").includes(target) && target.countGainableCards(player, "he") > 0;
+					return player !== target && !player.getStorage("kaihei_used").includes(target) && target.countGainableCards(player, "he") > 0;
 				},
 				async content(event, trigger, player) {
 					const { target } = event;
 					player.markAuto(`${event.name}_used`, target);
-					const result = await player.gainPlayerCard(target, [1, 2], "he", true).forResult();
+					const result = await player
+						.gainPlayerCard({
+							target,
+							selectButton: [1, 2],
+							position: "he",
+							forced: true,
+						})
+						.forResult();
 					if (!result?.bool || !result.cards?.length) {
 						return;
 					}
-					let num = result.cards.length,
-						hs = player.getCards("he"),
-						resultx;
-					if (hs.length && target?.isIn()) {
-						if (hs.length <= num) {
-							resultx = { bool: true, cards: hs };
-						} else {
-							resultx = await player.chooseCard("he", true, num, `选择交给${get.translation(target)}${get.cnNumber(num)}张牌`).forResult();
-						}
-						if (resultx?.bool && resultx?.cards?.length) {
-							await player.give(resultx.cards, target);
-						}
+					const num = result.cards.length;
+					const hs = player.getCards("he");
+					if (!hs.length || !target?.isIn()) {
+						return;
 					}
+					let resultx;
+					if (hs.length <= num) {
+						resultx = { bool: true, cards: hs };
+					} else {
+						resultx = await player
+							.chooseCard({
+								position: "he",
+								forced: true,
+								selectCard: num,
+								prompt: `选择交给${get.translation(target)}${get.cnNumber(num)}张牌`,
+							})
+							.forResult();
+					}
+					if (!resultx?.bool || !resultx.cards?.length) {
+						return;
+					}
+					await player.give(resultx.cards, target);
 				},
 				ai: {
 					order: 5,
@@ -2621,7 +2626,7 @@ export default () => {
 				ai: {
 					viewHandcard: true,
 					skillTagFilter(player, tag, target) {
-						if (player == target || player.identity != "fan" || target.identity != "fan") {
+						if (player === target || player.identity !== "fan" || target.identity !== "fan") {
 							return false;
 						}
 					},
