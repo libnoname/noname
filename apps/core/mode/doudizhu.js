@@ -196,58 +196,89 @@ export default () => {
 			},
 		],
 		game: {
+			/**
+			 * 判断当前模式是否允许在菜单中切换角色。
+			 *
+			 * @returns { boolean }
+			 */
 			canReplaceViewpoint: () => true,
 			recommendDizhu: ["re_guojia", "re_huanggai", "re_lvbu", "re_guanyu", "re_sunquan", "re_xusheng", "re_wuyi", "re_sunben", "xuyou", "zhangchunhua", "caochong", "zhangsong", "zhongyao", "wangyi", "caochun", "maliang", "sp_diaochan", "quyi", "sp_zhaoyun", "shamoke", "lijue", "liuzan", "wenyang", "shen_lvmeng", "shen_ganning", "jiakui", "wangyuanji", "lingcao", "miheng", "sp_key_yuri", "key_hinata", "key_rin", "key_kyousuke", "ns_chendao", "jiakui", "haozhao"],
+			/**
+			 * 记录当前玩家的一场斗地主胜负。
+			 *
+			 * @param { boolean } bool - 当前玩家是否获胜。
+			 * @returns { void }
+			 */
 			addRecord(bool) {
-				if (typeof bool == "boolean") {
-					var data = lib.config.gameRecord.doudizhu.data;
-					var identity = game.me.identity;
-					if (!data[identity]) {
-						data[identity] = [0, 0];
-					}
-					if (bool) {
-						data[identity][0]++;
-					} else {
-						data[identity][1]++;
-					}
-					var list = ["zhu", "fan"];
-					var str = "";
-					for (var i = 0; i < list.length; i++) {
-						if (data[list[i]]) {
-							str += lib.translate[list[i] + "2"] + "：" + data[list[i]][0] + "胜" + " " + data[list[i]][1] + "负<br>";
-						}
-					}
-					lib.config.gameRecord.doudizhu.str = str;
-					game.saveConfig("gameRecord", lib.config.gameRecord);
+				if (typeof bool !== "boolean") {
+					return;
 				}
+				const data = lib.config.gameRecord.doudizhu.data;
+				const identity = game.me.identity;
+				if (!data[identity]) {
+					data[identity] = [0, 0];
+				}
+				if (bool) {
+					data[identity][0]++;
+				} else {
+					data[identity][1]++;
+				}
+				const identities = ["zhu", "fan"];
+				let str = "";
+				for (const currentIdentity of identities) {
+					if (!data[currentIdentity]) {
+						continue;
+					}
+					const translatedIdentity = lib.translate[`${currentIdentity}2`];
+					str += `${translatedIdentity}：${data[currentIdentity][0]}胜 ${data[currentIdentity][1]}负<br>`;
+				}
+				lib.config.gameRecord.doudizhu.str = str;
+				game.saveConfig("gameRecord", lib.config.gameRecord);
 			},
+			/**
+			 * 获取联机对局中所有玩家的身份状态。
+			 *
+			 * @returns { Record<string, { identity: string }> }
+			 */
 			getState() {
-				var state = {};
-				for (var i in lib.playerOL) {
-					var player = lib.playerOL[i];
-					state[i] = { identity: player.identity };
+				const state = {};
+				for (const id in lib.playerOL) {
+					const player = lib.playerOL[id];
+					state[id] = { identity: player.identity };
 				}
 				return state;
 			},
+			/**
+			 * 使用联机状态同步场上玩家的身份。
+			 *
+			 * @param { Record<string, { identity: string }> } state - 以玩家 ID 为键的身份状态。
+			 * @returns { void }
+			 */
 			updateState(state) {
-				for (var i in state) {
-					var player = lib.playerOL[i];
-					if (player) {
-						player.identity = state[i].identity;
+				for (const id in state) {
+					const player = lib.playerOL[id];
+					if (!player) {
+						continue;
 					}
+					player.identity = state[id].identity;
 				}
 			},
+			/**
+			 * 向所有客户端同步轮数、牌堆数量及牌堆顶部节点。
+			 *
+			 * @returns { void }
+			 */
 			updateRoundNumber() {
-				if (_status.mode == "online") {
+				if (_status.mode === "online") {
 					game.broadcastAll(
-						function (num1, num2, top, bonusNum) {
+						(num1, num2, top, bonusNum) => {
 							if (ui.cardPileNumber) {
-								var str = num1 + "轮 公共牌堆: " + num2;
+								let str = `${num1}轮 公共牌堆: ${num2}`;
 								if (game.me && game.me.storage.doudizhu_cardPile && game.me.storage.doudizhu_cardPile.length) {
-									str += " 个人牌堆: " + game.me.storage.doudizhu_cardPile.length;
+									str += ` 个人牌堆: ${game.me.storage.doudizhu_cardPile.length}`;
 								}
 								if (bonusNum) {
-									str += "<br>本场叫价: " + bonusNum * 100;
+									str += `<br>本场叫价: ${bonusNum * 100}`;
 								}
 								ui.cardPileNumber.innerHTML = str;
 							}
@@ -261,9 +292,9 @@ export default () => {
 					return;
 				}
 				game.broadcastAll(
-					function (num1, num2, top) {
+					(num1, num2, top) => {
 						if (ui.cardPileNumber) {
-							ui.cardPileNumber.innerHTML = num1 + "轮 剩余牌: " + num2;
+							ui.cardPileNumber.innerHTML = `${num1}轮 剩余牌: ${num2}`;
 						}
 						_status.pileTop = top;
 					},
@@ -272,22 +303,33 @@ export default () => {
 					ui.cardPile.firstChild
 				);
 			},
+			/**
+			 * 将斗地主联机配置添加到房间信息面板。
+			 *
+			 * @param { Dialog } uiintro - 房间信息面板。
+			 * @returns { void }
+			 */
 			getRoomInfo(uiintro) {
-				uiintro.add('<div class="text chat">双将模式：' + (lib.configOL.double_character ? "开启" : "关闭"));
+				uiintro.add(`<div class="text chat">双将模式：${lib.configOL.double_character ? "开启" : "关闭"}`);
 				if (lib.configOL.banned.length) {
-					uiintro.add('<div class="text chat">禁用武将：' + get.translation(lib.configOL.banned));
+					uiintro.add(`<div class="text chat">禁用武将：${get.translation(lib.configOL.banned)}`);
 				}
 				if (lib.configOL.bannedcards.length) {
-					uiintro.add('<div class="text chat">禁用卡牌：' + get.translation(lib.configOL.bannedcards));
+					uiintro.add(`<div class="text chat">禁用卡牌：${get.translation(lib.configOL.bannedcards)}`);
 				}
 				uiintro.style.paddingBottom = "8px";
 			},
+			/**
+			 * 获取当前对局的录像名称。
+			 *
+			 * @returns { [playerName: string, gameName: string] }
+			 */
 			getVideoName() {
-				var str = get.translation(game.me.name);
+				let str = get.translation(game.me.name);
 				if (game.me.name2) {
-					str += "/" + get.translation(game.me.name2);
+					str += `/${get.translation(game.me.name2)}`;
 				}
-				var namex;
+				let namex;
 				switch (_status.mode) {
 					case "normal":
 						namex = "休闲斗地主";
@@ -305,53 +347,59 @@ export default () => {
 						namex = "智斗三国";
 						break;
 				}
-				var name = [str, namex + " - " + lib.translate[game.me.identity + "2"]];
+				const name = [str, `${namex} - ${lib.translate[`${game.me.identity}2`]}`];
 				return name;
 			},
+			/**
+			 * 公开所有玩家的身份，并清理猜测身份的临时节点。
+			 *
+			 * @param { boolean } [me] - 兼容旧逻辑的保留参数，目前不会影响显示范围。
+			 * @returns { void }
+			 */
 			showIdentity(me) {
-				for (var i = 0; i < game.players.length; i++) {
-					// if(me===false&&game.players[i]==game.me) continue;
-					game.players[i].node.identity.classList.remove("guessing");
-					game.players[i].identityShown = true;
-					game.players[i].ai.shown = 1;
-					game.players[i].setIdentity(game.players[i].identity);
-					if (game.players[i].identity == "zhu") {
-						game.players[i].isZhu = true;
+				for (const player of game.players) {
+					// if (me === false && player === game.me) continue;
+					player.node.identity.classList.remove("guessing");
+					player.identityShown = true;
+					player.ai.shown = 1;
+					player.setIdentity(player.identity);
+					if (player.identity === "zhu") {
+						player.isZhu = true;
 					}
 				}
-				if (_status.clickingidentity) {
-					for (var i = 0; i < _status.clickingidentity[1].length; i++) {
-						_status.clickingidentity[1][i].delete();
-						_status.clickingidentity[1][i].style.transform = "";
-					}
-					delete _status.clickingidentity;
+				if (!_status.clickingidentity) {
+					return;
 				}
+				for (const identityNode of _status.clickingidentity[1]) {
+					identityNode.delete();
+					identityNode.style.transform = "";
+				}
+				delete _status.clickingidentity;
 			},
+			/**
+			 * 根据地主存活状态和当前模式结算本机视角的胜负。
+			 *
+			 * @returns { void }
+			 */
 			checkResult() {
-				var me = game.me._trueMe || game.me;
+				const me = game.me._trueMe || game.me;
 				if (game.zhu.isAlive()) {
-					if (_status.mode != "online" && (_status.mode != "binglin" || game.roundNumber < 3) && game.players.length > 1) {
+					if (_status.mode !== "online" && (_status.mode !== "binglin" || game.roundNumber < 3) && game.players.length > 1) {
 						return;
 					}
-					if (me == game.zhu) {
-						game.over(true);
-					} else {
-						game.over(false);
-					}
-				} else {
-					if (me == game.zhu) {
-						game.over(false);
-					} else {
-						game.over(true);
-					}
+					game.over(me === game.zhu);
+					return;
 				}
+				game.over(me !== game.zhu);
 			},
+			/**
+			 * 判断指定玩家是否满足联机对局的获胜条件。
+			 *
+			 * @param { Player } player - 要判断的玩家。
+			 * @returns { boolean }
+			 */
 			checkOnlineResult(player) {
-				if (game.zhu.isAlive()) {
-					return player.identity == "zhu";
-				} else {
-					return player.identity == "fan";
-				}
+				return player.identity === (game.zhu.isAlive() ? "zhu" : "fan");
 			},
 			chooseCharacterZhidou() {
 				var next = game.createEvent("chooseCharacter");
