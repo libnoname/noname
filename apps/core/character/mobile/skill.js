@@ -6532,7 +6532,10 @@ const skills = {
 			},
 			dongjiao: {
 				audio: 6,
-				trigger: { player: ["useCard", "useCardToPlayered", "useCardAfter"] },
+				trigger: {
+					player: ["useCard", "useCardToPlayered", "useCardAfter"],
+					source: "damageBegin2",
+				},
 				logAudio(event, player, name) {
 					if (name == "useCardAfter") {
 						return ["mbweizhuang_dongjiao3.mp3", "mbweizhuang_dongjiao6.mp3"];
@@ -6560,8 +6563,11 @@ const skills = {
 					if (list.includes(type)) {
 						return false;
 					}
-					if (name == "useCard") {
-						return num >= 1 && type == "basic";
+					if (name == "useCard" || event.name == "damage") {
+						if (num < 1 || type !== "basic") {
+							return false;
+						}
+						return event.card?.name != "sha" || event.name == "damage";
 					}
 					if (name == "useCardAfter") {
 						return (
@@ -6585,6 +6591,7 @@ const skills = {
 				},
 				async cost(event, trigger, player) {
 					switch (event.triggername) {
+						case "damageBegin2":
 						case "useCard": {
 							event.result = {
 								bool: true,
@@ -6637,6 +6644,10 @@ const skills = {
 					player.addTempSkill("mbweizhuang_block");
 					player.markAuto("mbweizhuang_block", get.type2(trigger.card));
 					switch (name) {
+						case "damageBegin2": {
+							trigger.num++;
+							break;
+						}
 						case "useCard": {
 							trigger.baseDamage ??= 1;
 							trigger.baseDamage++;
