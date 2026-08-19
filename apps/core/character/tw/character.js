@@ -15,6 +15,12 @@ const characters = {
 		skills: ["twshuyin", "twfangyan"],
 		names: "桥|null",
 	},
+	huan_fazheng: {
+		sex: "male",
+		group: "wu",
+		hp: 3,
+		skills: ["twanshu", "twtongce"],
+	},
 	tw_baosanniang: {
 		sex: "female",
 		group: "shu",
