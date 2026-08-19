@@ -2310,11 +2310,15 @@ export default () => {
 			},
 		},
 		get: {
+			/**
+			 * 根据双方身份计算显式态度值。
+			 *
+			 * @param { Player } from - 态度来源角色。
+			 * @param { Player } to - 态度目标角色。
+			 * @returns { number } 身份相同时为 10，否则为 -10。
+			 */
 			rawAttitude(from, to) {
-				if (from.identity == to.identity) {
-					return 10;
-				}
-				return -10;
+				return from.identity === to.identity ? 10 : -10;
 			},
 		},
 		skill: {
