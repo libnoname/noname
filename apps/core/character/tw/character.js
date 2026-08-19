@@ -8,6 +8,13 @@ const characters = {
 		skills: ["twjianying", "dcshibei"],
 		dieAudios: ["xin_jushou"],
 	},
+	huan_xiaoqiao: {
+		sex: "female",
+		group: "wu",
+		hp: 3,
+		skills: ["twshuyin", "twfangyan"],
+		names: "桥|null",
+	},
 	tw_baosanniang: {
 		sex: "female",
 		group: "shu",

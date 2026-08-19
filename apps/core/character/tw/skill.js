@@ -160,6 +160,155 @@ const skills = {
 			},
 		},
 	},
+	//幻小乔
+	twshuyin: {
+		audio: 2,
+		trigger: { player: "useCardAfter" },
+		filter(event, player) {
+			return !player.getStorage("twshuyin_round").includes(get.suit(event.card));
+		},
+		async cost(event, trigger, player) {
+			const result = await player
+				.chooseButtonTarget({
+					createDialog: [
+						"姝音：你可选择一项",
+						[
+							[
+								["effect", "你下次使用的♥️牌（装备牌与延时锦囊牌除外）额外结算一次"],
+								["gain", "令一名角色将一张♥️牌作为“芳妍”牌置于你的武将牌上，否则失去1点体力。"],
+							],
+							"textbutton",
+						],
+					],
+					filterTarget(card, player, target) {
+						if (!ui.selected.buttons?.length || ui.selected.buttons[0].link == "effect") {
+							return false;
+						}
+						return true;
+					},
+					selectTarget() {
+						if (!ui.selected.buttons?.length || ui.selected.buttons[0].link == "effect") {
+							return -1;
+						}
+						return 1;
+					},
+					complexSelect: true,
+					ai1(button) {
+						return 1 + Math.random();
+					},
+					ai2(target) {
+						if (!ui.selected.buttons?.length || ui.selected.buttons[0].link == "effect") {
+							return 0;
+						}
+						return -get.attitude(get.player(), target);
+					},
+				})
+				.forResult();
+			if (result?.bool && result.links?.length) {
+				event.result = {
+					bool: true,
+					cost_data: result.links[0],
+					targets: result.targets ?? [],
+				};
+			}
+		},
+		async content(event, trigger, player) {
+			const { targets, cost_data: link } = event;
+			player.addTempSkill(event.name + "_round", "roundStart");
+			player.markAuto(event.name + "_round", [get.suit(trigger.card)]);
+			if (targets?.length) {
+				const target = targets[0];
+				const result = target.hasCards("he")
+					? await target
+							.chooseCard({
+								prompt: `将一张红桃牌作为“芳妍”牌置于${get.translation(player)}的武将牌上或失去1点体力`,
+								filterCard(card) {
+									return get.suit(card) == "heart";
+								},
+								ai(card) {
+									const { player, target } = get.event();
+									if (get.attitude(target, player) > 0) {
+										return 114514 - get.value(card);
+									} else if (["tao", "jiu"].includes(card.name)) {
+										return 0;
+									}
+									return 6 - get.value(card);
+								},
+							})
+							.set("target", player)
+							.forResult()
+					: { bool: false };
+				if (result?.bool && result.cards?.length) {
+					await player.addToExpansion({ cards: result.cards, source: target, animate: "give", gaintag: ["twfangyan"] });
+				} else {
+					await target.loseHp();
+				}
+			} else {
+				player.addSkill(event.name + "_effect");
+				//player.addMark(event.name + "_effect", 1, false);
+			}
+		},
+		subSkill: {
+			effect: {
+				charlotte: true,
+				mark: true,
+				intro: { content: "下次使用红桃牌额外结算一次" },
+				forced: true,
+				locked: false,
+				trigger: { player: "useCard" },
+				filter(event, player) {
+					return get.suit(event.card) == "heart" && !["equip", "delay"].includes(get.type(event.card));
+				},
+				async content(event, trigger, player) {
+					trigger.effectCount++;
+					player.removeSkill(event.name);
+				},
+			},
+			round: { charlotte: true, onremove: true, intro: { content: "本轮已使用：$" } },
+		},
+	},
+	twfangyan: {
+		audio: 2,
+		forced: true,
+		trigger: { player: ["changeHpAfter", "phaseZhunbeiBegin"] },
+		filter(event, player) {
+			return (event.name == "phaseZhunbei" || event.changedHp < 0) && player.hasExpansions("twfangyan");
+		},
+		async content(event, trigger, player) {
+			const cards = player.getExpansions(event.name);
+			if (cards?.length) {
+				await player.gain({ cards, animate: "gain2" });
+				await player.draw({ num: cards.length });
+			}
+		},
+		mod: {
+			suit(card, suit) {
+				const player = get.owner(card) || get.player();
+				if (!player) {
+					return;
+				}
+				let suits = player
+					.getExpansions("twfangyan")
+					.map(cardx => cardx.suit)
+					.unique();
+				suits = lib.suit.slice().removeArray(suits);
+				if (suits.includes(suit)) {
+					return "heart";
+				}
+			},
+		},
+		intro: {
+			content: "expansion",
+			markcount: "expansion",
+		},
+		onremove(player, skill) {
+			var cards = player.getExpansions(skill);
+			if (cards.length) {
+				player.loseToDiscardpile(cards);
+			}
+		},
+		ai: { combo: "twshuyin" },
+	},
 	//鲍三娘
 	twshuyong: {
 		audio: "xinfu_wuniang",
@@ -12896,7 +13045,7 @@ const skills = {
 					if (!hs.length || !ts.length) {
 						return 0;
 					}
-					if ((get.attitude(player, target) < 0) && (get.number(hs[0]) > get.number(ts[0]) || get.number(hs[0]) - ts.length >= 9 + Math.min(2, player.hp / 2))) {
+					if (get.attitude(player, target) < 0 && (get.number(hs[0]) > get.number(ts[0]) || get.number(hs[0]) - ts.length >= 9 + Math.min(2, player.hp / 2))) {
 						return get.sgnAttitude(player, target) * get.effect(target, { name: "shunshou_copy2" }, player, player);
 					}
 					return 0;
