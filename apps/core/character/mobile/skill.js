@@ -32745,7 +32745,7 @@ const skills = {
 		},
 	},
 	mbfenxin: {
-		mode: ["identity", "doudizhu"],
+		//mode: ["identity", "doudizhu"],
 		audio: "fenxin",
 		skillAnimation: true,
 		animationColor: "wood",
@@ -32753,6 +32753,7 @@ const skills = {
 			source: "dieBegin",
 		},
 		filter(event, player) {
+			if (!["identity", "doudizhu"].includes(get.mode())) return true;
 			const validIdentities = ["zhong", "fan", "nei", "zhu", "min"];
 			return !event.reverseOut && validIdentities.includes(event.player.identity) && validIdentities.includes(player.identity);
 		},
@@ -32766,12 +32767,15 @@ const skills = {
 			const canSwap = isIdentityMode && !player.identityShown && !target.identityShown;
 			const choices = [];
 			const choiceList = [];
-			choices.push("获得技能");
-			choiceList.push("获得" + get.translation(target) + "的所有技能（限定技、觉醒技、使命技、主公技、持恒技除外）");
+			if (validSkills.length) {
+				choices.push("获得技能");
+				choiceList.push("获得" + get.translation(target) + "的所有技能（限定技、觉醒技、使命技、主公技、持恒技除外）");
+			}
 			if (canSwap) {
 				choices.push("交换身份牌");
 				choiceList.push("与其交换身份牌");
 			}
+			if (!choices.length) return;
 			choices.push("cancel2");
 			const result = await player
 				.chooseControl({
