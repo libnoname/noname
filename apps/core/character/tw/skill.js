@@ -375,7 +375,7 @@ const skills = {
 		audio: 2,
 		trigger: { player: "useCardAfter" },
 		filter(event, player) {
-			return !player.getStorage("twshuyin_round").includes(get.suit(event.card));
+			return !player.getStorage("twshuyin_used").includes(get.suit(event.card));
 		},
 		async cost(event, trigger, player) {
 			const result = await player
@@ -426,8 +426,8 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const { targets, cost_data: link } = event;
-			player.addTempSkill(event.name + "_round", "roundStart");
-			player.markAuto(event.name + "_round", [get.suit(trigger.card)]);
+			player.addTempSkill(event.name + "_used");
+			player.markAuto(event.name + "_used", [get.suit(trigger.card)]);
 			if (targets?.length) {
 				const target = targets[0];
 				const result = target.hasCards("he")
@@ -476,7 +476,7 @@ const skills = {
 					player.removeSkill(event.name);
 				},
 			},
-			round: { charlotte: true, onremove: true, intro: { content: "本轮已使用：$" } },
+			used: { charlotte: true, onremove: true, intro: { content: "本回合已使用：$" } },
 		},
 	},
 	twfangyan: {
