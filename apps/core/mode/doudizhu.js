@@ -402,218 +402,224 @@ export default () => {
 				return player.identity === (game.zhu.isAlive() ? "zhu" : "fan");
 			},
 			chooseCharacterZhidou() {
-				var next = game.createEvent("chooseCharacter");
-				next.setContent(function () {
-					"step 0";
+				const next = game.createEvent("chooseCharacter");
+				next.setContent(async (event, trigger, player) => {
 					game.no_continue_game = true;
 					lib.init.onfree();
-					"step 1";
 					ui.arena.classList.add("choose-character");
-					var i;
-					var groups = [];
-					event.list = [];
-					event.map = {};
-					var chara = get.config("character_online") || lib.characterOnline;
-					for (i in chara) {
-						var list = chara[i];
-						for (var j = 0; j < list.length; j++) {
-							if (!lib.character[list[j]] || (i == "key" && lib.filter.characterDisabled(list[j]))) {
-								list.splice(j--, 1);
+					const groups = [];
+					const characterList = [];
+					const characterMap = {};
+					const charactersByGroup = get.config("character_online") || lib.characterOnline;
+					for (const group in charactersByGroup) {
+						const groupCharacters = charactersByGroup[group];
+						for (const character of [...groupCharacters]) {
+							if (!lib.character[character] || (group === "key" && lib.filter.characterDisabled(character))) {
+								groupCharacters.remove(character);
 							}
 						}
-						if (list.length >= 3) {
-							groups.push(i);
-							event.list.addArray(list);
+						if (groupCharacters.length >= 3) {
+							groups.push(group);
+							characterList.addArray(groupCharacters);
 						}
 					}
-					event.list.randomSort();
-					_status.characterlist = event.list.slice(0);
-					event.controls = ["不叫地主", "一倍", "两倍", "三倍"];
-					for (var player of game.players) {
-						var id = player.playerid;
-						player._group = groups.randomRemove(1)[0];
-						event.map[id] = chara[player._group].randomGets(4);
-						player.storage.doudizhu_cardPile = get.cards(20).sort(function (a, b) {
-							if (a.name != b.name) {
+					characterList.randomSort();
+					_status.characterlist = characterList.slice();
+					const controls = ["不叫地主", "一倍", "两倍", "三倍"];
+					for (const current of game.players) {
+						const id = current.playerid;
+						current._group = groups.randomRemove(1)[0];
+						characterMap[id] = charactersByGroup[current._group].randomGets(4);
+						current.storage.doudizhu_cardPile = get.cards(20).sort((a, b) => {
+							if (a.name !== b.name) {
 								return lib.sort.card(a.name, b.name);
-							} else if (a.suit != b.suit) {
-								return lib.suit.indexOf(a) - lib.suit.indexOf(b);
-							} else {
-								return a.number - b.number;
 							}
+							if (a.suit !== b.suit) {
+								return lib.suit.indexOf(a) - lib.suit.indexOf(b);
+							}
+							return a.number - b.number;
 						});
 					}
-					event.dialog = ui.create.dialog("你的选将框与底牌", [event.map[game.me.playerid], "character"], game.me.storage.doudizhu_cardPile);
-					event.start = game.players.randomGet();
-					event.current = event.start;
-					game.delay(7);
-					"step 2";
-					event.current.classList.add("glow_phase");
-					if (event.current == game.me) {
-						event.dialog.content.firstChild.innerHTML = "是否叫地主？";
-					} else {
-						event.dialog.content.firstChild.innerHTML = "请等待其他玩家叫地主";
-						game.delay(2);
-					}
-					event.current.chooseControl(event.controls).set("ai", function () {
-						return _status.event.getParent().controls.randomGet();
-					});
-					"step 3";
-					event.current.classList.remove("glow_phase");
-					event.current._control = result.control;
-					event.current.chat(result.control);
-					if (result.control == "三倍") {
-						game.bonusNum = 3;
-						game.zhu = event.current;
-						return;
-					} else if (result.control != "不叫地主") {
-						event.controls.splice(1, event.controls.indexOf(result.control));
-						event.tempDizhu = event.current;
-						if (result.control == "二倍") {
-							game.bonusNum = 2;
+					const dialog = ui.create.dialog("你的选将框与底牌", [characterMap[game.me.playerid], "character"], game.me.storage.doudizhu_cardPile);
+					const start = game.players.randomGet();
+					let current = start;
+					let tempDizhu;
+					let biddingFinished = false;
+					await game.delay(7);
+					while (!biddingFinished) {
+						current.classList.add("glow_phase");
+						if (current === game.me) {
+							dialog.content.firstChild.innerHTML = "是否叫地主？";
+						} else {
+							dialog.content.firstChild.innerHTML = "请等待其他玩家叫地主";
+							await game.delay(2);
 						}
-					}
-					event.current = event.current.next;
-					if (event.current == event.start && (event.start == event.tempDizhu || event.start._control == "不叫地主")) {
-						game.zhu = event.tempDizhu || event.start.previous;
-					} else if (event.current == event.start.next && event.current._control) {
-						game.zhu = event.tempDizhu;
-					} else {
-						event.goto(2);
-					}
-					if (event.current == event.start.previous && !event.tempDizhu) {
-						event.controls.remove("不叫地主");
-					}
-					"step 4";
-					game.updateRoundNumber();
-					for (var player of game.players) {
-						player.identity = player == game.zhu ? "zhu" : "fan";
-						player.showIdentity();
-					}
-					event.dialog.content.firstChild.innerHTML = "请选择" + get.cnNumber(game.me == game.zhu ? 2 : 1) + "张武将牌";
-					game.me.chooseButton(event.dialog, true, game.me == game.zhu ? 2 : 1).set("filterButton", function (button) {
-						return typeof button.link == "string";
-					});
-					"step 5";
-					game.me.init(result.links[0], result.links[1]);
-					for (var player of game.players) {
-						if (player != game.me) {
-							if (player == game.zhu) {
-								var list = event.map[player.playerid].randomGets(2);
-								player.init(list[0], list[1]);
-							} else {
-								player.init(event.map[player.playerid].randomGet());
+						const result = await current
+							.chooseControl({
+								controls: [...controls],
+								ai: () => controls.randomGet(),
+							})
+							.forResult();
+						current.classList.remove("glow_phase");
+						current._control = result.control;
+						current.chat(result.control);
+						if (result.control === "三倍") {
+							game.bonusNum = 3;
+							game.zhu = current;
+							break;
+						}
+						if (result.control !== "不叫地主") {
+							controls.splice(1, controls.indexOf(result.control));
+							tempDizhu = current;
+							if (result.control === "二倍") {
+								game.bonusNum = 2;
 							}
 						}
-						player.markSkill("doudizhu_cardPile");
+						current = current.next;
+						if (current === start && (start === tempDizhu || start._control === "不叫地主")) {
+							game.zhu = tempDizhu || start.previous;
+							biddingFinished = true;
+						} else if (current === start.next && current._control) {
+							game.zhu = tempDizhu;
+							biddingFinished = true;
+						}
+						if (current === start.previous && !tempDizhu) {
+							controls.remove("不叫地主");
+						}
+					}
+					game.updateRoundNumber();
+					for (const current of game.players) {
+						current.identity = current === game.zhu ? "zhu" : "fan";
+						current.showIdentity();
+					}
+					const selectButton = game.me === game.zhu ? 2 : 1;
+					dialog.content.firstChild.innerHTML = `请选择${get.cnNumber(selectButton)}张武将牌`;
+					const result = await game.me
+						.chooseButton({
+							dialog,
+							forced: true,
+							selectButton,
+							filterButton: button => typeof button.link === "string",
+						})
+						.forResult();
+					game.me.init(result.links[0], result.links[1]);
+					for (const current of game.players) {
+						if (current !== game.me) {
+							if (current === game.zhu) {
+								const characters = characterMap[current.playerid].randomGets(2);
+								current.init(characters[0], characters[1]);
+							} else {
+								current.init(characterMap[current.playerid].randomGet());
+							}
+						}
+						current.markSkill("doudizhu_cardPile");
 					}
 					game.zhu.hp = 4;
 					game.zhu.maxHp = 4;
 					game.zhu.update();
-					for (var i = 0; i < game.players.length; i++) {
-						_status.characterlist.remove(game.players[i].name1);
-						_status.characterlist.remove(game.players[i].name2);
+					for (const current of game.players) {
+						_status.characterlist.remove(current.name1);
+						_status.characterlist.remove(current.name2);
 					}
-					setTimeout(function () {
+					setTimeout(() => {
 						ui.arena.classList.remove("choose-character");
 					}, 500);
 				});
 			},
 			chooseCharacterBinglin() {
-				var next = game.createEvent("chooseCharacter");
-				next.setContent(function () {
-					"step 0";
+				const next = game.createEvent("chooseCharacter");
+				next.setContent(async (event, trigger, player) => {
 					game.no_continue_game = true;
 					lib.init.onfree();
-					"step 1";
 					ui.arena.classList.add("choose-character");
-					game.zhuSkill = "zhuSkill_" + ["xiangyang", "jiangling", "fancheng"].randomGet();
-					var i;
-					event.list = [];
-					event.map = {};
-					for (i in lib.character) {
-						if (lib.filter.characterDisabled(i)) {
+					game.zhuSkill = `zhuSkill_${["xiangyang", "jiangling", "fancheng"].randomGet()}`;
+					const characterList = [];
+					const characterMap = {};
+					for (const name in lib.character) {
+						if (lib.filter.characterDisabled(name)) {
 							continue;
 						}
-						event.list.push(i);
+						characterList.push(name);
 					}
-					event.list.randomSort();
-					_status.characterlist = event.list.slice(0);
-					for (var player of game.players) {
-						event.map[player.playerid] = event.list.randomRemove(4);
+					characterList.randomSort();
+					_status.characterlist = characterList.slice();
+					for (const current of game.players) {
+						characterMap[current.playerid] = characterList.randomRemove(4);
 					}
-					event.controls = ["不叫地主", "一倍", "两倍", "三倍"];
-					event.dialog = ui.create.dialog("本局城池：" + get.translation(game.zhuSkill), [event.map[game.me.playerid], "character"]);
-					event.start = game.players.randomGet();
-					event.current = event.start;
-					game.delay(8);
-					"step 2";
-					event.current.classList.add("glow_phase");
-					if (event.current == game.me) {
-						event.dialog.content.firstChild.innerHTML = "是否叫地主？";
-					} else {
-						event.dialog.content.firstChild.innerHTML = "请等待其他玩家叫地主";
-						game.delay(2);
-					}
-					event.current.chooseControl(event.controls).set("ai", function () {
-						return _status.event.getParent().controls.randomGet();
-					});
-					"step 3";
-					event.current.classList.remove("glow_phase");
-					event.current._control = result.control;
-					event.current.chat(result.control);
-					if (result.control == "三倍") {
-						game.bonusNum = 3;
-						game.zhu = event.current;
-						return;
-					} else if (result.control != "不叫地主") {
-						event.controls.splice(1, event.controls.indexOf(result.control));
-						event.tempDizhu = event.current;
-						if (result.control == "二倍") {
-							game.bonusNum = 2;
-						}
-					}
-					event.current = event.current.next;
-					if (event.current == event.start) {
-						game.zhu = event.tempDizhu || event.start.previous;
-					} else {
-						event.goto(2);
-					}
-					if (event.current == event.start.previous && !event.tempDizhu) {
-						event.controls.remove("不叫地主");
-					}
-					"step 4";
-					for (var player of game.players) {
-						player.identity = player == game.zhu ? "zhu" : "fan";
-						player.showIdentity();
-					}
-					event.dialog.close();
-					event.map[game.zhu.playerid].addArray(event.list.randomRemove(3));
-					"step 5";
-					var list = ["请选择你的武将", [event.map[game.me.playerid], "character"]];
-					if (game.me.identity == "fan") {
-						var friend = game.findPlayer(function (current) {
-							return current != game.me && current.identity == "fan";
-						});
-						list.push('<div class="text center">队友的选将框</div>');
-						list.push([event.map[friend.playerid], "character"]);
-					}
-					game.me
-						.chooseButton(list, true)
-						.set("list", event.map[game.me.playerid])
-						.set("filterButton", function (button) {
-							return _status.event.list.includes(button.link);
-						});
-					"step 6";
-					game.me.init(result.links[0]);
-					for (var player of game.players) {
-						if (player != game.me) {
-							player.init(event.map[player.playerid].randomGet());
-						}
-						if (player == game.zhu) {
-							player.addSkill(game.zhuSkill);
+					const controls = ["不叫地主", "一倍", "两倍", "三倍"];
+					const dialog = ui.create.dialog(`本局城池：${get.translation(game.zhuSkill)}`, [characterMap[game.me.playerid], "character"]);
+					const start = game.players.randomGet();
+					let current = start;
+					let tempDizhu;
+					let biddingFinished = false;
+					await game.delay(8);
+					while (!biddingFinished) {
+						current.classList.add("glow_phase");
+						if (current === game.me) {
+							dialog.content.firstChild.innerHTML = "是否叫地主？";
 						} else {
-							player.addSkill("binglin_neihong");
+							dialog.content.firstChild.innerHTML = "请等待其他玩家叫地主";
+							await game.delay(2);
+						}
+						const result = await current
+							.chooseControl({
+								controls: [...controls],
+								ai: () => controls.randomGet(),
+							})
+							.forResult();
+						current.classList.remove("glow_phase");
+						current._control = result.control;
+						current.chat(result.control);
+						if (result.control === "三倍") {
+							game.bonusNum = 3;
+							game.zhu = current;
+							break;
+						}
+						if (result.control !== "不叫地主") {
+							controls.splice(1, controls.indexOf(result.control));
+							tempDizhu = current;
+							if (result.control === "二倍") {
+								game.bonusNum = 2;
+							}
+						}
+						current = current.next;
+						if (current === start) {
+							game.zhu = tempDizhu || start.previous;
+							biddingFinished = true;
+						}
+						if (current === start.previous && !tempDizhu) {
+							controls.remove("不叫地主");
+						}
+					}
+					for (const current of game.players) {
+						current.identity = current === game.zhu ? "zhu" : "fan";
+						current.showIdentity();
+					}
+					dialog.close();
+					characterMap[game.zhu.playerid].addArray(characterList.randomRemove(3));
+					const createDialog = ["请选择你的武将", [characterMap[game.me.playerid], "character"]];
+					if (game.me.identity === "fan") {
+						const friend = game.findPlayer(current => current !== game.me && current.identity === "fan");
+						createDialog.push('<div class="text center">队友的选将框</div>');
+						createDialog.push([characterMap[friend.playerid], "character"]);
+					}
+					const result = await game.me
+						.chooseButton({
+							createDialog,
+							forced: true,
+							filterButton: button => _status.event.list.includes(button.link),
+						})
+						.set("list", characterMap[game.me.playerid])
+						.forResult();
+					game.me.init(result.links[0]);
+					for (const current of game.players) {
+						if (current !== game.me) {
+							current.init(characterMap[current.playerid].randomGet());
+						}
+						if (current === game.zhu) {
+							current.addSkill(game.zhuSkill);
+						} else {
+							current.addSkill("binglin_neihong");
 						}
 					}
 					if (!game.zhu.isInitFilter("noZhuHp")) {
@@ -621,100 +627,105 @@ export default () => {
 						game.zhu.hp++;
 						game.zhu.update();
 					}
-					for (var i = 0; i < game.players.length; i++) {
-						_status.characterlist.remove(game.players[i].name1);
-						_status.characterlist.remove(game.players[i].name2);
+					for (const current of game.players) {
+						_status.characterlist.remove(current.name1);
+						_status.characterlist.remove(current.name2);
 					}
-					setTimeout(function () {
+					setTimeout(() => {
 						ui.arena.classList.remove("choose-character");
 					}, 500);
 				});
 			},
 			chooseCharacterHuanle() {
-				var next = game.createEvent("chooseCharacter");
-				next.setContent(function () {
-					"step 0";
+				const next = game.createEvent("chooseCharacter");
+				next.setContent(async (event, trigger, player) => {
 					ui.arena.classList.add("choose-character");
 					game.no_continue_game = true;
-					var i;
-					event.list = [];
-					event.list2 = [];
-					var list4 = [];
+					const characterList = [];
+					const recommendedCharacters = [];
+					const replacedCharacters = [];
 					if (!event.map) {
 						event.map = {};
 					}
-					for (i in lib.characterReplace) {
-						var ix = lib.characterReplace[i];
-						for (var j = 0; j < ix.length; j++) {
-							if (lib.filter.characterDisabled(ix[j])) {
-								ix.splice(j--, 1);
+					const characterMap = event.map;
+					for (const group in lib.characterReplace) {
+						const replacements = lib.characterReplace[group];
+						for (const character of [...replacements]) {
+							if (lib.filter.characterDisabled(character)) {
+								replacements.remove(character);
 							}
 						}
-						if (ix.length) {
-							var name = ix.randomGet();
-							event.list.push(name);
+						if (replacements.length) {
+							const name = replacements.randomGet();
+							characterList.push(name);
 							if (game.recommendDizhu.includes(name)) {
-								event.list2.push(name);
+								recommendedCharacters.push(name);
 							}
-							list4.addArray(ix);
+							replacedCharacters.addArray(replacements);
 						}
 					}
-					for (i in lib.character) {
-						if (list4.includes(i) || lib.filter.characterDisabled(i)) {
+					for (const name in lib.character) {
+						if (replacedCharacters.includes(name) || lib.filter.characterDisabled(name)) {
 							continue;
 						}
-						event.list.push(i);
-						if (game.recommendDizhu.includes(i)) {
-							event.list2.push(i);
+						characterList.push(name);
+						if (game.recommendDizhu.includes(name)) {
+							recommendedCharacters.push(name);
 						}
 					}
-					event.list.randomSort();
-					_status.characterlist = event.list.slice(0);
-					event.controls = ["不叫", "叫地主"];
-					for (var player of game.players) {
-						var id = player.playerid;
-						if (!event.map[id]) {
-							event.map[id] = [];
+					characterList.randomSort();
+					_status.characterlist = characterList.slice();
+					const controls = ["不叫", "叫地主"];
+					for (const current of game.players) {
+						const id = current.playerid;
+						if (!characterMap[id]) {
+							characterMap[id] = [];
 						}
-						event.map[id].addArray(event.list2.randomRemove(1));
-						event.list.removeArray(event.map[id]);
-						event.map[id].addArray(event.list.randomRemove(4 - event.map[id].length));
-						event.list2.removeArray(event.map[id]);
+						characterMap[id].addArray(recommendedCharacters.randomRemove(1));
+						characterList.removeArray(characterMap[id]);
+						characterMap[id].addArray(characterList.randomRemove(4 - characterMap[id].length));
+						recommendedCharacters.removeArray(characterMap[id]);
 					}
-					event.dialog = ui.create.dialog("你的选将框", [event.map[game.me.playerid], "character"]);
-					event.start = game.players.randomGet();
-					event.current = event.start;
+					const dialog = ui.create.dialog("你的选将框", [characterMap[game.me.playerid], "character"]);
+					const start = game.players.randomGet();
+					let current = start;
+					let biddingFinished = false;
 					lib.init.onfree();
-					game.delay(2.5);
-					"step 1";
-					event.current.chooseControl(event.controls).set("ai", function () {
-						return Math.random() > 0.5 ? "不叫" : "叫地主";
-					});
-					if (event.current == game.me) {
-						event.dialog.content.childNodes[0].innerHTML = "是否抢地主？";
-					}
-					"step 2";
-					event.current.chat(result.control);
-					if (result.control == "叫地主" || event.current == event.start.next) {
-						game.zhu = result.control == "叫地主" ? event.current : event.current.next;
-						for (var player of game.players) {
-							player.identity = player == game.zhu ? "zhu" : "fan";
-							player.showIdentity();
+					await game.delay(2.5);
+					while (!biddingFinished) {
+						const choiceEvent = current.chooseControl({
+							controls: [...controls],
+							ai: () => (Math.random() > 0.5 ? "不叫" : "叫地主"),
+						});
+						if (current === game.me) {
+							dialog.content.childNodes[0].innerHTML = "是否抢地主？";
 						}
-						event.dialog.close();
-						event.map[game.zhu.playerid].addArray(event.list.randomRemove(3));
-					} else {
-						event.current = event.current.next;
-						event.goto(1);
-						game.delay(1.5);
+						const result = await choiceEvent.forResult();
+						current.chat(result.control);
+						if (result.control === "叫地主" || current === start.next) {
+							game.zhu = result.control === "叫地主" ? current : current.next;
+							biddingFinished = true;
+						} else {
+							current = current.next;
+							await game.delay(1.5);
+						}
 					}
-					"step 3";
-					game.me.chooseButton(["请选择你的武将", [event.map[game.me.playerid], "character"]], true);
-					"step 4";
+					for (const current of game.players) {
+						current.identity = current === game.zhu ? "zhu" : "fan";
+						current.showIdentity();
+					}
+					dialog.close();
+					characterMap[game.zhu.playerid].addArray(characterList.randomRemove(3));
+					const result = await game.me
+						.chooseButton({
+							createDialog: ["请选择你的武将", [characterMap[game.me.playerid], "character"]],
+							forced: true,
+						})
+						.forResult();
 					game.me.init(result.links[0]);
-					for (var player of game.players) {
-						if (player != game.me) {
-							player.init(event.map[player.playerid].randomGet());
+					for (const current of game.players) {
+						if (current !== game.me) {
+							current.init(characterMap[current.playerid].randomGet());
 						}
 					}
 					if (!game.zhu.isInitFilter("noZhuHp")) {
@@ -722,11 +733,11 @@ export default () => {
 						game.zhu.hp++;
 						game.zhu.update();
 					}
-					for (var i = 0; i < game.players.length; i++) {
-						_status.characterlist.remove(game.players[i].name1);
-						_status.characterlist.remove(game.players[i].name2);
+					for (const current of game.players) {
+						_status.characterlist.remove(current.name1);
+						_status.characterlist.remove(current.name2);
 					}
-					setTimeout(function () {
+					setTimeout(() => {
 						ui.arena.classList.remove("choose-character");
 					}, 500);
 				});
@@ -1432,123 +1443,133 @@ export default () => {
 				});
 			},
 			chooseCharacterHuanleOL() {
-				var next = game.createEvent("chooseCharacter");
-				next.setContent(function () {
-					"step 0";
+				const next = game.createEvent("chooseCharacter");
+				next.setContent(async (event, trigger, player) => {
 					ui.arena.classList.add("choose-character");
-					var i;
-					event.list = [];
-					event.list2 = [];
-					var list4 = [];
-					event.controls = ["不叫", "叫地主"];
+					const characterList = [];
+					const recommendedCharacters = [];
+					const replacedCharacters = [];
+					const controls = ["不叫", "叫地主"];
 					if (!event.map) {
 						event.map = {};
 					}
-					var libCharacter = {};
-					for (var i = 0; i < lib.configOL.characterPack.length; i++) {
-						var pack = lib.characterPack[lib.configOL.characterPack[i]];
-						for (var j in pack) {
-							// if(j=='zuoci') continue;
-							if (lib.character[j]) {
-								libCharacter[j] = pack[j];
+					const characterMap = event.map;
+					const libCharacter = {};
+					for (const packName of lib.configOL.characterPack) {
+						const pack = lib.characterPack[packName];
+						for (const name in pack) {
+							// if (name === "zuoci") {
+							// 	continue;
+							// }
+							if (lib.character[name]) {
+								libCharacter[name] = pack[name];
 							}
 						}
 					}
-					for (i in lib.characterReplace) {
-						var ix = lib.characterReplace[i];
-						for (var j = 0; j < ix.length; j++) {
-							if (!libCharacter[ix[j]] || lib.filter.characterDisabled(ix[j], libCharacter)) {
-								ix.splice(j--, 1);
+					for (const group in lib.characterReplace) {
+						const replacements = lib.characterReplace[group];
+						for (const character of [...replacements]) {
+							if (!libCharacter[character] || lib.filter.characterDisabled(character, libCharacter)) {
+								replacements.remove(character);
 							}
 						}
-						if (ix.length) {
-							var name = ix.randomGet();
-							event.list.push(name);
+						if (replacements.length) {
+							const name = replacements.randomGet();
+							characterList.push(name);
 							if (game.recommendDizhu.includes(name)) {
-								event.list2.push(name);
+								recommendedCharacters.push(name);
 							}
-							list4.addArray(ix);
+							replacedCharacters.addArray(replacements);
 						}
 					}
-					for (i in libCharacter) {
-						if (list4.includes(i) || lib.filter.characterDisabled(i, libCharacter)) {
+					for (const name in libCharacter) {
+						if (replacedCharacters.includes(name) || lib.filter.characterDisabled(name, libCharacter)) {
 							continue;
 						}
-						event.list.push(i);
-						if (game.recommendDizhu.includes(i)) {
-							event.list2.push(i);
+						characterList.push(name);
+						if (game.recommendDizhu.includes(name)) {
+							recommendedCharacters.push(name);
 						}
 					}
-					for (var player of game.players) {
-						var id = player.playerid;
-						if (!event.map[id]) {
-							event.map[id] = [];
+					for (const current of game.players) {
+						const id = current.playerid;
+						if (!characterMap[id]) {
+							characterMap[id] = [];
 						}
-						event.map[id].addArray(event.list2.randomRemove(1));
-						event.list.removeArray(event.map[id]);
-						event.map[id].addArray(event.list.randomRemove(4 - event.map[id].length));
-						event.list2.removeArray(event.map[id]);
+						characterMap[id].addArray(recommendedCharacters.randomRemove(1));
+						characterList.removeArray(characterMap[id]);
+						characterMap[id].addArray(characterList.randomRemove(4 - characterMap[id].length));
+						recommendedCharacters.removeArray(characterMap[id]);
 					}
-					_status.characterlist = event.list.slice(0);
-					event.videoId = lib.status.videoId++;
+					_status.characterlist = characterList.slice();
+					const videoId = lib.status.videoId++;
 					game.broadcastAll(
-						function (map, id) {
+						(map, id) => {
 							ui.create.dialog("你的选将框", [map[game.me.playerid], "character"]).videoId = id;
 						},
-						event.map,
-						event.videoId
+						characterMap,
+						videoId
 					);
-					event.start = game.players.randomGet();
-					event.current = event.start;
-					if (event.current != game.me || !event.current.isOnline()) {
-						game.delay(3);
+					const start = game.players.randomGet();
+					let current = start;
+					let biddingFinished = false;
+					if (current !== game.me || !current.isOnline()) {
+						await game.delay(3);
 					}
-					"step 1";
-					event.current.chooseControl(event.controls).set("ai", function () {
-						return Math.random() > 0.5 ? "不叫" : "叫地主";
-					});
-					"step 2";
-					event.current.chat(result.control);
-					if (result.control == "叫地主" || event.current == event.start.next) {
-						game.zhu = result.control == "叫地主" ? event.current : event.current.next;
-						for (var player of game.players) {
-							player.identity = player == game.zhu ? "zhu" : "fan";
-							player.showIdentity();
-							player.identityShown = true;
+					while (!biddingFinished) {
+						const result = await current
+							.chooseControl({
+								controls: [...controls],
+								ai: () => (Math.random() > 0.5 ? "不叫" : "叫地主"),
+							})
+							.forResult();
+						current.chat(result.control);
+						if (result.control === "叫地主" || current === start.next) {
+							game.zhu = result.control === "叫地主" ? current : current.next;
+							biddingFinished = true;
+						} else {
+							current = current.next;
 						}
-						game.broadcastAll("closeDialog", event.videoId);
-						event.map[game.zhu.playerid].addArray(event.list.randomRemove(3));
-					} else {
-						event.current = event.current.next;
-						event.goto(1);
 					}
-					"step 3";
-					var list = [];
-					var str = "选择角色";
-					for (var i = 0; i < game.players.length; i++) {
-						list.push([game.players[i], [str, [event.map[game.players[i].playerid], "character"]], true]);
+					for (const current of game.players) {
+						current.identity = current === game.zhu ? "zhu" : "fan";
+						current.showIdentity();
+						current.identityShown = true;
 					}
-					game.me.chooseButtonOL(list, function (player, result) {
-						if (game.online || player == game.me) {
-							player.init(result.links[0], result.links[1]);
-						}
-					});
-					"step 4";
-					for (var i in result) {
-						if (result[i] && result[i].links) {
-							for (var j = 0; j < result[i].links.length; j++) {
-								event.list2.remove(result[i].links[j]);
+					game.broadcastAll("closeDialog", videoId);
+					characterMap[game.zhu.playerid].addArray(characterList.randomRemove(3));
+					const choices = [];
+					for (const current of game.players) {
+						choices.push([
+							current,
+							{
+								createDialog: ["选择角色", [characterMap[current.playerid], "character"]],
+								forced: true,
+							},
+						]);
+					}
+					const result = await game.me
+						.chooseButtonOL(choices, (current, choiceResult) => {
+							if (game.online || current === game.me) {
+								current.init(choiceResult.links[0], choiceResult.links[1]);
+							}
+						})
+						.forResult();
+					for (const id in result) {
+						if (result[id]?.links) {
+							for (const character of result[id].links) {
+								recommendedCharacters.remove(character);
 							}
 						}
 					}
-					for (var i in result) {
-						if (result[i] == "ai") {
-							result[i] = event.list2.randomRemove(lib.configOL.double_character ? 2 : 1);
+					for (const id in result) {
+						if (result[id] === "ai") {
+							result[id] = recommendedCharacters.randomRemove(lib.configOL.double_character ? 2 : 1);
 						} else {
-							result[i] = result[i].links;
+							result[id] = result[id].links;
 						}
-						if (!lib.playerOL[i].name) {
-							lib.playerOL[i].init(result[i][0], result[i][1]);
+						if (!lib.playerOL[id].name) {
+							lib.playerOL[id].init(result[id][0], result[id][1]);
 						}
 					}
 
@@ -1559,10 +1580,10 @@ export default () => {
 					}
 
 					game.broadcast(
-						function (result, zhu) {
-							for (var i in result) {
-								if (!lib.playerOL[i].name) {
-									lib.playerOL[i].init(result[i][0], result[i][1]);
+						(result, zhu) => {
+							for (const id in result) {
+								if (!lib.playerOL[id].name) {
+									lib.playerOL[id].init(result[id][0], result[id][1]);
 								}
 							}
 							game.zhu = zhu;
@@ -1572,18 +1593,18 @@ export default () => {
 								game.zhu.update();
 							}
 
-							setTimeout(function () {
+							setTimeout(() => {
 								ui.arena.classList.remove("choose-character");
 							}, 500);
 						},
 						result,
 						game.zhu
 					);
-					for (var i = 0; i < game.players.length; i++) {
-						_status.characterlist.remove(game.players[i].name1);
-						_status.characterlist.remove(game.players[i].name2);
+					for (const current of game.players) {
+						_status.characterlist.remove(current.name1);
+						_status.characterlist.remove(current.name2);
 					}
-					setTimeout(function () {
+					setTimeout(() => {
 						ui.arena.classList.remove("choose-character");
 					}, 500);
 				});
