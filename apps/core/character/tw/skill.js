@@ -19748,6 +19748,7 @@ const skills = {
 		},
 	},
 	twruilian2: {
+		audio: "twruilian",
 		trigger: { global: "phaseEnd" },
 		direct: true,
 		charlotte: true,
