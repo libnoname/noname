@@ -5750,15 +5750,9 @@ const skills = {
 				target = players.randomGet();
 			}
 			player.line(target, "thunder");
-			const isMax =
-				(player
-					.getAllHistory("custom", evt => evt && evt.zhengqing_count)
-					.map(evt => evt.zhengqing_count)
-					.sort((a, b) => b - a)[0] || 0) <= num;
 			target.addMark("zhengqing", num);
 			if (target === player) {
 				player.draw(Math.min(5, num));
-				player.getHistory("custom").push({ zhengqing_count: num });
 			} else {
 				await game.asyncDraw([player, target].sortBySeat(trigger.player));
 			}
