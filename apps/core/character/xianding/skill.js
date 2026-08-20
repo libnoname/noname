@@ -5,6 +5,78 @@ import { CacheContext } from "../../noname/library/cache/cacheContext.js";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//新杀的传奇耐改王邓晚棠
+	dcdaijia: {
+		audio: 2,
+		frequent: true,
+		trigger: { global: "roundStart" },
+		filter(event, player) {
+			return player.maxHp > 0 || player.isDamaged();
+		},
+		async content(event, trigger, player) {
+			await player.recover();
+			const num = player.maxHp;
+			const cards = Array.from(ui.cardPile.childNodes)
+				.filter(card => get.color(card) == "red")
+				.randomGets(num);
+			if (cards.length) {
+				await player.addToExpansion({ cards, animate: "gain2", gaintag: ["dcdaijia"] });
+			}
+		},
+		marktext: "黛",
+		intro: {
+			name: "黛（黛颊）",
+			markcount: "expansion",
+			content: "expansion",
+		},
+		onremove(player, skill) {
+			const cards = player.getExpansions(skill);
+			if (cards.length) {
+				player.loseToDiscardpile(cards);
+			}
+		},
+		group: "dcdaijia_effect",
+		subSkill: {
+			effect: {
+				audio: "dcdaijia",
+				forced: true,
+				locked: false,
+				trigger: {
+					global: ["useCardAfter", "roundEnd"],
+				},
+				filter(event, player) {
+					if (!player.hasExpansions("dcdaijia")) {
+						return false;
+					}
+					if (event.name == "useCard") {
+						return event.targets?.length && event.targets.includes(player) && get.type(event.card) != "delay";
+					}
+					return true;
+				},
+				async content(event, trigger, player) {
+					const cards = player.getExpansions("dcdaijia").randomGets(trigger.name == "useCard" ? 1 : Infinity);
+					await player.gain({ cards, animate: "gain2" });
+				},
+			},
+		},
+	},
+	dcchengchong: {
+		audio: 2,
+		forced: true,
+		trigger: {
+			player: "gainEnd",
+			global: "loseAsyncEnd",
+		},
+		filter(event, player) {
+			if (!event.getg?.(player)?.length) {
+				return false;
+			}
+			return player.countCards("h", card => get.color(card) == "red") > player.countCards("h", card => get.color(card) == "black") && event.getParent(2).name != "dcchengchong";
+		},
+		async content(event, trigger, player) {
+			await player.draw();
+		},
+	},
 	//威马腾
 	dcheqi: {
 		audio: 2,
