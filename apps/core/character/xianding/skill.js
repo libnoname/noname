@@ -5,6 +5,78 @@ import { CacheContext } from "../../noname/library/cache/cacheContext.js";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//新杀的传奇耐改王邓晚棠
+	dcdaijia: {
+		audio: 2,
+		frequent: true,
+		trigger: { global: "roundStart" },
+		filter(event, player) {
+			return player.maxHp > 0 || player.isDamaged();
+		},
+		async content(event, trigger, player) {
+			await player.recover();
+			const num = player.maxHp;
+			const cards = Array.from(ui.cardPile.childNodes)
+				.filter(card => get.color(card) == "red")
+				.randomGets(num);
+			if (cards.length) {
+				await player.addToExpansion({ cards, animate: "gain2", gaintag: ["dcdaijia"] });
+			}
+		},
+		marktext: "黛",
+		intro: {
+			name: "黛（黛颊）",
+			markcount: "expansion",
+			content: "expansion",
+		},
+		onremove(player, skill) {
+			const cards = player.getExpansions(skill);
+			if (cards.length) {
+				player.loseToDiscardpile(cards);
+			}
+		},
+		group: "dcdaijia_effect",
+		subSkill: {
+			effect: {
+				audio: "dcdaijia",
+				forced: true,
+				locked: false,
+				trigger: {
+					global: ["useCardAfter", "roundEnd"],
+				},
+				filter(event, player) {
+					if (!player.hasExpansions("dcdaijia")) {
+						return false;
+					}
+					if (event.name == "useCard") {
+						return event.targets?.length && event.targets.includes(player) && get.type(event.card) != "delay";
+					}
+					return true;
+				},
+				async content(event, trigger, player) {
+					const cards = player.getExpansions("dcdaijia").randomGets(trigger.name == "useCard" ? 1 : Infinity);
+					await player.gain({ cards, animate: "gain2" });
+				},
+			},
+		},
+	},
+	dcchengchong: {
+		audio: 2,
+		forced: true,
+		trigger: {
+			player: "gainEnd",
+			global: "loseAsyncEnd",
+		},
+		filter(event, player) {
+			if (!event.getg?.(player)?.length) {
+				return false;
+			}
+			return player.countCards("h", card => get.color(card) == "red") > player.countCards("h", card => get.color(card) == "black") && event.getParent(2).name != "dcchengchong";
+		},
+		async content(event, trigger, player) {
+			await player.draw();
+		},
+	},
 	//威马腾
 	dcheqi: {
 		audio: 2,
@@ -5751,15 +5823,9 @@ const skills = {
 				target = players.randomGet();
 			}
 			player.line(target, "thunder");
-			const isMax =
-				(player
-					.getAllHistory("custom", evt => evt && evt.zhengqing_count)
-					.map(evt => evt.zhengqing_count)
-					.sort((a, b) => b - a)[0] || 0) <= num;
 			target.addMark("zhengqing", num);
-			if (target === player && isMax) {
+			if (target === player) {
 				player.draw(Math.min(5, num));
-				player.getHistory("custom").push({ zhengqing_count: num });
 			} else {
 				await game.asyncDraw([player, target].sortBySeat(trigger.player));
 			}
@@ -5891,6 +5957,7 @@ const skills = {
 				charlotte: true,
 				forced: true,
 				async content(event, trigger) {
+					await player.draw();
 					trigger.num++;
 				},
 			},
@@ -18775,6 +18842,7 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
+		manualConfirm: true,
 		filter(event, player) {
 			return game.hasPlayer(target => target != player && target.inRangeOf(player) && target.countGainableCards(player, "he"));
 		},
@@ -27650,7 +27718,7 @@ const skills = {
 			return game.hasPlayer(current => current !== player && !player.getStorage("qiaojian_used").includes(current));
 		},
 		selectTarget: 1,
-		prompt2: "选择一名其他角色，双方同时弃置任意张牌并触发后续效果",
+		prompt2: "选择一名其他角色，双方同时弃置至少一张牌并触发后续效果",
 		filterTarget(card, player, target) {
 			if (target === player) {
 				return false;
@@ -27667,6 +27735,14 @@ const skills = {
 			const resultMap = await game.chooseAnyOL([...targets, player], get.info(event.name).chooseToDiscard, [player, targets]).forResult();
 			const resultp = resultMap.get(player);
 			let discardedCards = resultp?.cards?.length ? [...resultp.cards] : [];
+			const lose_list = [];
+			for (const current of [player, ...targets]) {
+				const result = resultMap.get(current);
+				if (result?.cards?.length) {
+					lose_list.push([current, result.cards]);
+				}
+			}
+			await game.loseAsync({ lose_list }).setContent("discardMultiple");
 			for (const target of targets) {
 				const resultt = resultMap.get(target);
 				let numt = 0;
@@ -27726,10 +27802,12 @@ const skills = {
 			const next = player.chooseToDiscard({
 				position: "he",
 				selectCard: [1, Infinity],
-				prompt: "巧谏：弃置任意张牌，根据弃牌点数和触发后续效果",
+				prompt: "巧谏：弃置至少一张牌，根据弃牌点数和触发后续效果",
+				chooseonly: true,
+				forced: true,
 				ai(card) {
 					// 敌人之间：如果是自己就弃到其手牌-1或2张停下(牌少只弃一张)，否则看心情决定数量
-					// 队友之间：一张/不弃牌
+					// 队友之间：一张
 					const player = get.player();
 					const sourcex = get.event().sourcex;
 					const target = get.event().targets[0];
@@ -27754,7 +27832,7 @@ const skills = {
 								return 6 - get.value(card);
 							}
 						} else {
-							return 0;
+							return 6 - get.value(card);
 						}
 					}
 					return 0;
@@ -27829,6 +27907,7 @@ const skills = {
 				charlotte: true,
 				intro: {
 					name: "巧谏",
+					markcount: () => 0,
 					content(storage, player) {
 						if (player.getStorage("qiaojian_mark").includes("qiaojian_extra")) {
 							return "下个回合首次使用【杀】与锦囊牌可各额外结算一次";
@@ -27836,6 +27915,7 @@ const skills = {
 						if (player.getStorage("qiaojian_mark").includes("qiaojian_nouse")) {
 							return "下个回合不可使用伤害牌";
 						}
+						return "";
 					},
 				},
 			},

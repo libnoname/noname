@@ -14928,7 +14928,7 @@ export class Player extends HTMLDivElement {
 			let node = arguments[0];
 			let eventInfo = arguments[2],
 				player = this;
-			if (eventInfo !== false) {
+			if (eventInfo == null) {
 				eventInfo = get.cardsetion(player);
 			}
 			if (eventInfo?.length) {

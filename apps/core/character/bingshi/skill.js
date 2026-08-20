@@ -206,7 +206,9 @@ const skills = {
 				});
 			if (skills.length) {
 				const list = [];
-				for (const skill of skills) {
+				for (let skill of skills) {
+					if (skill == "bahu") skill = "jsrgbahu";
+					if (skill == "feiyang") skill = "jsrgfeiyang";
 					list.push([skill, `<div class="popup text" style="width:calc(100% - 10px);display:inline-block"><div class="skill">【` + get.translation(skill) + "】</div><div>" + lib.translate[skill + "_info"] + "</div></div>"]);
 				}
 				const result =
@@ -6840,7 +6842,7 @@ const skills = {
 			) {
 				return 0;
 			}
-			return 6 - get.value(card);
+			return 8 - get.value(card);
 		},
 		multiline: true,
 		multitarget: true,
@@ -7633,10 +7635,10 @@ const skills = {
 			threaten: 2,
 			result: {
 				player(player) {
-					if ([player.getHp(), player.getDamagedHp(), game.countPlayer()].some(c => c > player.getAttackRange())) {
-						return 10;
+					if (player.isDamaged()) {
+						return 1;
 					}
-					return get.recoverEffect(player, player, player);
+					return -1;
 				},
 			},
 		},
