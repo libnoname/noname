@@ -76,7 +76,7 @@ const skills = {
 			return player.hasCards("he", card => get.info("dczhiyao").filterCard(card, player)) && game.hasPlayer(current => get.info("dczhiyao").filterTarget(null, player, current));
 		},
 		filterCard(card, player) {
-			if (!["tao", "jiu", "shunshou", "wugu"].includes(card.name) && !["equip4", "equip5", "equip3"].includes(get.subtype(card))) {
+			if (!["tao", "jiu", "shunshou", "wugu"].includes(card.name) && !["equip4", "equip3"].includes(get.subtype(card))) {
 				return false;
 			}
 			return lib.filter.cardDiscardable(card, player, "dczhiyao");
