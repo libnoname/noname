@@ -1,4 +1,6 @@
 export default {
+	ps_shen_jiangwei: "残阳泣血",
+	ps_devil_jiangwei: "残魂噬血",
 	shangguanwaner: "天性韶警",
 	scl_zhangxiu: "星汉灿烂",
 	zh_shen_zhangjiao: "神临天劫",
