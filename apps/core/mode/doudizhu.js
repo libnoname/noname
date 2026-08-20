@@ -2356,7 +2356,7 @@ export default () => {
 					return _status.mode === "binglin" && game.roundNumber > 14;
 				},
 				async content(event, trigger, player) {
-					awaitplayer.loseHp();
+					await player.loseHp();
 				},
 			},
 			zhuSkill_xiangyang: {
