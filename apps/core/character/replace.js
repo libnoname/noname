@@ -446,7 +446,7 @@ window.noname_character_replace = {
 	yuechen: ["zj_yuechen", "yuechen"],
 	wenyuan: ["wenyuan", "std_wenyuan"],
 	chentai: ["clan_chentai", "chentai", "sb_chentai", "ns_chentai"],
-	shen_jiangwei: ["shen_jiangwei", "mb_shen_jiangwei"],
+	shen_jiangwei: ["shen_jiangwei", "mb_shen_jiangwei", "ps_shen_jiangwei"],
 	caojinyu: ["ol_caojinyu", "caojinyu", "std_caojinyu"],
 	zhangshiping: ["zhangshiping", "dc_zhangshiping"],
 	dc_chenzhi: ["dc_chenzhi", "mb_chenzhi"],
