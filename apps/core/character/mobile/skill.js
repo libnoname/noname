@@ -4504,7 +4504,7 @@ const skills = {
 							return 6 - get.value(card);
 						} else {
 							const card1 = ui.selected.buttons[0].link;
-							if (get.suit(card) !== get.suit(card1) && [card1, card].some(cardx => player.hasValueTarget(cardx, null, false))) {
+							if (get.suit(card) !== get.suit(card1) && [card1, card].some(cardx => player.hasValueTarget(cardx, false))) {
 								return 10;
 							}
 							return -get.value(card);
@@ -4515,13 +4515,13 @@ const skills = {
 								if (target.hasCards("h", cardx => get.suit(card) !== get.suit(cardx))) {
 									return att > 0 ? 6.5 - get.value(card) : get.value(card);
 								}
-								if (get.is.shownCard(card) && player.hasValueTarget(link, null, false)) {
+								if (get.is.shownCard(card) && player.hasValueTarget(link, false)) {
 									return 10;
 								}
 								return att > 0 ? 6 - get.value(card) : get.value(card);
 							} else {
 								const card1 = ui.selected.buttons[0].link;
-								if (get.suit(card) !== get.suit(card1) && [card1, card].some(cardx => player.hasValueTarget(cardx, null, false))) {
+								if (get.suit(card) !== get.suit(card1) && [card1, card].some(cardx => player.hasValueTarget(cardx, false))) {
 									return 10;
 								}
 								return att > 0 ? 6 - get.value(card) : get.value(card);
@@ -4565,11 +4565,11 @@ const skills = {
 					],
 				])
 				.set("filterButton", button => {
-					return get.player().hasUseTarget(button.link, false, false);
+					return get.player().hasUseTarget(button.link, false);
 				})
 				.set("ai", button => {
 					const card = button.link;
-					let eff = get.player().getUseValue(button.link, false, false);
+					let eff = get.player().getUseValue(button.link, false);
 					if (get.owner(card)) {
 						const att = get.sgnAttitude(player, get.owner(card));
 						eff += -1.5 * att;
@@ -4585,7 +4585,7 @@ const skills = {
 				if (puts.includes(card)) {
 					game.clearCardKnowers(card);
 				}
-				await player.chooseUseTarget(card, false, false);
+				await player.chooseUseTarget(card, true, false, "nodistance");
 			}
 		},
 	},
