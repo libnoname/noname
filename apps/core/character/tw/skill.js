@@ -30195,14 +30195,9 @@ const skills = {
 		trigger: {
 			player: "phaseZhunbeiBegin",
 		},
-		filter(event, player) {
-			return game.hasPlayer(current => current.isDamaged());
-		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt2(event.skill), [1, 3], (card, player, target) => {
-					return target.isDamaged();
-				})
+				.chooseTarget(get.prompt2(event.skill), [1, 3])
 				.set("ai", target => {
 					return get.attitude(get.player(), target);
 				})
@@ -30211,7 +30206,7 @@ const skills = {
 		async content(event, trigger, player) {
 			event.targets.sortBySeat();
 			for (const target of event.targets) {
-				const next = target.draw();
+				const next = target.draw(2);
 				next.gaintag.add("twmitu");
 				const result = (await next.forResult()).cards;
 				if (result?.length) {
