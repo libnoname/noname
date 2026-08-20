@@ -3533,59 +3533,63 @@ export default () => {
 				fullskin: true,
 				enable: true,
 				filterTarget(card, player, target) {
-					return target == game.zhu;
+					return target === game.zhu;
 				},
 				selectTarget: -1,
 				type: "trick",
-				content() {
-					"step 0";
+				async content(event, trigger, player) {
+					const { target } = event;
 					if (!player.isIn() || !target.isIn()) {
-						event.finish();
 						return;
 					}
-					var num1 = 0,
-						num2 = Infinity,
-						str = get.translation(target);
-					game.countPlayer(function (current) {
-						var num = current.countCards("h");
+					let num1 = 0;
+					let num2 = Infinity;
+					const str = get.translation(target);
+					for (const current of game.filterPlayer()) {
+						const num = current.countCards("h");
 						if (num > num1) {
 							num1 = num;
 						}
 						if (num < num2) {
 							num2 = num;
 						}
-					});
-					var num = target.countCards("h"),
-						choices = [];
-					event.addIndex = 0;
+					}
+					const num = target.countCards("h");
+					const choices = [];
+					let addIndex = 0;
 					if (num < num1) {
-						choices.push("令" + str + "将手牌摸至" + get.cnNumber(num1) + "张");
-						event.num1 = num1;
+						choices.push(`令${str}将手牌摸至${get.cnNumber(num1)}张`);
 					} else {
-						event.addIndex++;
+						addIndex++;
 					}
 					if (num > num2) {
-						choices.push("令" + str + "将手牌弃置至" + get.cnNumber(num2) + "张");
-						event.num2 = num2;
+						choices.push(`令${str}将手牌弃置至${get.cnNumber(num2)}张`);
 					}
 					if (!choices.length) {
-						event.finish();
-					} else if (choices.length == 1) {
-						event._result = { index: 0 };
-					} else {
-						player
-							.chooseControl()
-							.set("choiceList", choices)
-							.set("ai", function () {
-								var evt = _status.event.getParent();
-								return get.attitude(evt.player, evt.target) > 0 ? 0 : 1;
-							});
+						return;
 					}
-					"step 1";
-					if (result.index + event.addIndex == 0) {
-						target.drawTo(event.num1);
+					let index = 0;
+					if (choices.length > 1) {
+						const result = await player
+							.chooseControl({
+								choiceList: choices,
+								ai: () => {
+									const evt = _status.event.getParent();
+									return get.attitude(evt.player, evt.target) > 0 ? 0 : 1;
+								},
+							})
+							.forResult();
+						index = result.index;
+					}
+					if (index + addIndex === 0) {
+						await target.drawTo(num1);
 					} else {
-						target.chooseToDiscard(true, "h", target.countCards("h") - event.num2, "allowChooseAll");
+						await target.chooseToDiscard({
+							forced: true,
+							position: "h",
+							selectCard: target.countCards("h") - num2,
+							allowChooseAll: true,
+						});
 					}
 				},
 				ai: {
@@ -3598,44 +3602,24 @@ export default () => {
 					},
 					result: {
 						target(player, target, card, isLink) {
-							var num1 = 0,
-								num2 = Infinity,
-								str = get.translation(target);
-							game.countPlayer(function (current) {
-								var num = current.countCards("h", function (cardx) {
-									if (ui.selected.cards.includes(cardx)) {
-										return false;
-									}
-									if (card.cards && card.cards.includes(cardx)) {
-										return false;
-									}
-									return true;
-								});
+							let num1 = 0;
+							let num2 = Infinity;
+							const filterCard = cardx => !ui.selected.cards.includes(cardx) && (!card.cards || !card.cards.includes(cardx));
+							for (const current of game.filterPlayer()) {
+								const num = current.countCards("h", filterCard);
 								if (num > num1) {
 									num1 = num;
 								}
 								if (num < num2) {
 									num2 = num;
 								}
-							});
-							var num = target.countCards("h", function (cardx) {
-								if (ui.selected.cards.includes(cardx)) {
-									return false;
-								}
-								if (card.cards && card.cards.includes(cardx)) {
-									return false;
-								}
-								return true;
-							});
-							if (num1 > num) {
-								if (get.attitude(player, target) > 0) {
-									return (num1 - num) / 1.2;
-								}
 							}
-							if (num2 < num) {
-								if (get.attitude(player, target) > 0) {
-									return (num2 - num) / 1.2;
-								}
+							const num = target.countCards("h", filterCard);
+							if (num1 > num && get.attitude(player, target) > 0) {
+								return (num1 - num) / 1.2;
+							}
+							if (num2 < num && get.attitude(player, target) > 0) {
+								return (num2 - num) / 1.2;
 							}
 							return 0;
 						},
@@ -3648,10 +3632,10 @@ export default () => {
 				type: "trick",
 				selectTarget: -1,
 				filterTarget(card, player, target) {
-					return target != player && target.isDamaged();
+					return target !== player && target.isDamaged();
 				},
-				content() {
-					target.damage();
+				async content(event, trigger, player) {
+					await event.target.damage();
 				},
 				ai: {
 					order: 3,
@@ -3669,27 +3653,27 @@ export default () => {
 				fullskin: true,
 				type: "delay",
 				filterTarget(card, player, target) {
-					return lib.filter.judge(card, player, target) && player != target;
+					return lib.filter.judge(card, player, target) && player !== target;
 				},
 				judge(card) {
-					if (get.suit(card) == "diamond") {
+					if (get.suit(card) === "diamond") {
 						return 0;
 					}
 					return -3;
 				},
-				effect() {
-					"step 0";
-					if (result.bool == false) {
-						if (
-							!player.countCards("e", function (card) {
-								return lib.filter.cardDiscardable(card, player, "shuiyanqijuny");
-							})
-						) {
-							player.damage("nosource");
-							event.finish();
-							return;
-						} else {
-							player.chooseControl("discard_card", "take_damage", function (event, player) {
+				async effect(event, trigger, player, result) {
+					if (result.bool !== false) {
+						return;
+					}
+					const cards = player.getCards("e", card => lib.filter.cardDiscardable(card, player, "shuiyanqijuny"));
+					if (!cards.length) {
+						await player.damage({ nosource: true });
+						return;
+					}
+					const controlResult = await player
+						.chooseControl({
+							controls: ["discard_card", "take_damage"],
+							ai: (event, player) => {
 								if (get.damageEffect(player, event.player, player) >= 0) {
 									return "take_damage";
 								}
@@ -3697,20 +3681,13 @@ export default () => {
 									return "take_damage";
 								}
 								return "discard_card";
-							});
-						}
+							},
+						})
+						.forResult();
+					if (controlResult.control === "discard_card") {
+						await player.discard({ cards });
 					} else {
-						event.finish();
-					}
-					"step 1";
-					if (result.control == "discard_card") {
-						player.discard(
-							player.getCards("e", function (card) {
-								return lib.filter.cardDiscardable(card, player, "shuiyanqijuny");
-							})
-						);
-					} else {
-						player.damage("nosource");
+						await player.damage({ nosource: true });
 					}
 				},
 				ai: {
@@ -3723,13 +3700,13 @@ export default () => {
 					},
 					result: {
 						target(player, target, card, isLink) {
-							var es = target.getCards("e");
+							const es = target.getCards("e");
 							if (!es.length) {
 								return -1.5;
 							}
-							var val = 0;
-							for (var i of es) {
-								val += get.value(i, target);
+							let val = 0;
+							for (const card of es) {
+								val += get.value(card, target);
 							}
 							return -Math.min(1.5, val / 5);
 						},
@@ -3781,8 +3758,8 @@ export default () => {
 					result: { player: 1 },
 				},
 				notarget: true,
-				content() {
-					var evt = event.getParent(2)._trigger;
+				async content(event, trigger, player) {
+					const evt = event.getParent(2)._trigger;
 					evt.targets.length = 0;
 					evt.all_excluded = true;
 					game.log(evt.card, "的效果被炸弹抵消了");
@@ -3793,19 +3770,17 @@ export default () => {
 				fullskin: true,
 				type: "trick",
 				enable(card, player) {
-					var hs = player.getCards("h", function (cardx) {
-						return cardx != card && (!card.cards || !card.cards.includes(cardx));
-					});
+					const hs = player.getCards("h", cardx => cardx !== card && (!card.cards || !card.cards.includes(cardx)));
 					if (!hs.length) {
 						return false;
 					}
-					var use = true,
-						discard = true;
-					for (var i of hs) {
-						if (use && !game.checkMod(i, player, "unchanged", "cardEnabled2", player)) {
+					let use = true;
+					let discard = true;
+					for (const handCard of hs) {
+						if (use && !game.checkMod(handCard, player, "unchanged", "cardEnabled2", player)) {
 							use = false;
 						}
-						if (discard && !lib.filter.cardDiscardable(i, player, "jiwangkailai")) {
+						if (discard && !lib.filter.cardDiscardable(handCard, player, "jiwangkailai")) {
 							discard = false;
 						}
 						if (!use && !discard) {
@@ -3817,76 +3792,75 @@ export default () => {
 				selectTarget: -1,
 				toself: true,
 				filterTarget(card, player, target) {
-					return target == player;
+					return target === player;
 				},
 				modTarget: true,
-				content() {
-					"step 0";
-					var hs = player.getCards("h");
-					if (hs.length) {
-						var use = true,
-							discard = true;
-						for (var i of hs) {
-							if (use && !game.checkMod(i, player, "unchanged", "cardEnabled2", player)) {
-								use = false;
-							}
-							if (discard && !lib.filter.cardDiscardable(i, player, "jiwangkailai")) {
-								discard = false;
-							}
-							if (!use && !discard) {
-								break;
-							}
-						}
-						if (use && discard) {
-							player
-								.chooseControl()
-								.set("prompt", "继往开来：请选择一项")
-								.set("choiceList", ["弃置所有手牌，然后摸等量的牌", "将所有手牌当做一张普通锦囊牌使用"])
-								.set("ai", function () {
-									if (_status.event.player.countCards("h") > 2) {
-										return 0;
-									}
-									return 1;
-								});
-						} else if (use) {
-							event._result = { index: 1 };
-						} else if (discard) {
-							event._result = { index: 0 };
-						} else {
-							event.finish();
-						}
-					} else {
-						event.finish();
+				async content(event, trigger, player) {
+					const hs = player.getCards("h");
+					if (!hs.length) {
+						return;
 					}
-					"step 1";
-					var cards = player.getCards("h");
-					if (result.index == 0) {
-						player.discard(cards);
-						player.draw(cards.length);
-						event.finish();
-					} else {
-						var list = [];
-						for (var i of lib.inpile) {
-							if (i != "jiwangkailai" && get.type(i) == "trick" && lib.filter.filterCard({ name: i, cards: cards }, player)) {
-								list.push(["锦囊", "", i]);
-							}
+					let use = true;
+					let discard = true;
+					for (const handCard of hs) {
+						if (use && !game.checkMod(handCard, player, "unchanged", "cardEnabled2", player)) {
+							use = false;
 						}
-						if (list.length) {
-							player.chooseButton(["继往开来：选择要使用的牌", [list, "vcard"]], true).set("ai", function (button) {
-								var player = _status.event.player;
+						if (discard && !lib.filter.cardDiscardable(handCard, player, "jiwangkailai")) {
+							discard = false;
+						}
+						if (!use && !discard) {
+							return;
+						}
+					}
+					let index = use ? 1 : 0;
+					if (use && discard) {
+						const result = await player
+							.chooseControl({
+								prompt: "继往开来：请选择一项",
+								choiceList: ["弃置所有手牌，然后摸等量的牌", "将所有手牌当做一张普通锦囊牌使用"],
+								ai: () => (_status.event.player.countCards("h") > 2 ? 0 : 1),
+							})
+							.forResult();
+						index = result.index;
+					}
+					const cards = player.getCards("h");
+					if (index === 0) {
+						const num = cards.length;
+						await player.discard({ cards });
+						await player.draw(num);
+						return;
+					}
+					const list = [];
+					for (const name of lib.inpile) {
+						if (name !== "jiwangkailai" && get.type(name) === "trick" && lib.filter.filterCard({ name, cards }, player)) {
+							list.push(["锦囊", "", name]);
+						}
+					}
+					if (!list.length) {
+						return;
+					}
+					const result = await player
+						.chooseButton({
+							createDialog: ["继往开来：选择要使用的牌", [list, "vcard"]],
+							forced: true,
+							ai: button => {
+								const player = _status.event.player;
 								return player.getUseValue({
 									name: button.link[2],
 									cards: player.getCards("h"),
 								});
-							});
-						} else {
-							event.finish();
-						}
+							},
+						})
+						.forResult();
+					if (!result.bool) {
+						return;
 					}
-					"step 2";
-					if (result.bool) {
-						player.chooseUseTarget({ name: result.links[0][2] }, player.getCards("h"), true);
-					}
+					await player.chooseUseTarget({
+						card: { name: result.links[0][2] },
+						cards: player.getCards("h"),
+						forced: true,
+					});
 				},
 				ai: {
 					basic: {
@@ -3896,12 +3870,7 @@ export default () => {
 					},
 					result: {
 						target(player, target) {
-							if (
-								target.needsToDiscard(1) ||
-								!target.countCards("h", function (card) {
-									return get.value(card, player) >= 5.5;
-								})
-							) {
+							if (target.needsToDiscard(1) || !target.countCards("h", card => get.value(card, player) >= 5.5)) {
 								return 1;
 							}
 							return 0;
