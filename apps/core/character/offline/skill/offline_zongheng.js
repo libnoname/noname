@@ -90,7 +90,7 @@ const skills = {
 		check(event, player) {
 			const target = event.player;
 			const card = target.judging[0];
-			const trigger = get.event().getTrigger();
+			const trigger = event.getTrigger();
 			const suits = ["spade", "club", "diamond", "heart"];
 			const numbers = Array.from({ length: 13 }).map((val, idx) => idx + 1);
 			const list = [];
