@@ -16560,7 +16560,7 @@ const skills = {
 			return player.countCards("h");
 		},
 		usable: 1,
-		contentBefore() {
+		async contentBefore(event, trigger, player) {
 			player.line(game.filterPlayer(current => current.countCards("h")));
 		},
 		async content(event, trigger, player) {
@@ -25922,7 +25922,7 @@ const skills = {
 		multitarget: true,
 		multiline: true,
 		seatRelated: "changeSeat",
-		contentBefore() {
+		async contentBefore(event, trigger, player) {
 			player.$fullscreenpop("败移", "thunder");
 		},
 		async content(event, trigger, player) {
