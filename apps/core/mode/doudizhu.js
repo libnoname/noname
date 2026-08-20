@@ -733,23 +733,23 @@ export default () => {
 			},
 
 			chooseCharacterKaihei() {
-				var next = game.createEvent("chooseCharacter");
-				next.setContent(function () {
-					"step 0";
+				const next = game.createEvent("chooseCharacter");
+				next.setContent(async (event, trigger, player) => {
 					ui.arena.classList.add("choose-character");
 					game.no_continue_game = true;
-					var i;
-					var identityList = ["zhu", "fan", "fan"];
+					const identityList = ["zhu", "fan", "fan"];
 					game.saveConfig("continue_name");
-					event.list = [];
-					var list4 = [];
+					const list = [];
+					const list4 = [];
 					identityList.randomSort();
-					for (i = 0; i < game.players.length; i++) {
-						game.players[i].identity = identityList[i];
-						game.players[i].showIdentity();
-						if (identityList[i] == "zhu") {
-							game.zhu = game.players[i];
+					let index = 0;
+					for (const current of game.players) {
+						current.identity = identityList[index];
+						current.showIdentity();
+						if (identityList[index] === "zhu") {
+							game.zhu = current;
 						}
+						index++;
 					}
 
 					if (!game.zhu) {
@@ -757,67 +757,66 @@ export default () => {
 					} else {
 						game.zhu.setIdentity();
 						game.zhu.identityShown = true;
-						game.zhu.isZhu = game.zhu.identity == "zhu";
+						game.zhu.isZhu = game.zhu.identity === "zhu";
 						game.zhu.node.identity.classList.remove("guessing");
 						game.me.setIdentity();
 						game.me.node.identity.classList.remove("guessing");
 					}
 
-					for (i in lib.characterReplace) {
-						var ix = lib.characterReplace[i];
-						for (var j = 0; j < ix.length; j++) {
-							if (lib.filter.characterDisabled(ix[j])) {
-								ix.splice(j--, 1);
+					for (const name in lib.characterReplace) {
+						const replacements = lib.characterReplace[name];
+						for (const character of [...replacements]) {
+							if (lib.filter.characterDisabled(character)) {
+								replacements.remove(character);
 							}
 						}
-						if (ix.length) {
-							event.list.push(ix.randomGet());
-							list4.addArray(ix);
+						if (replacements.length) {
+							list.push(replacements.randomGet());
+							list4.addArray(replacements);
 						}
 					}
-					for (i in lib.character) {
-						if (list4.includes(i) || lib.filter.characterDisabled(i)) {
+					for (const name in lib.character) {
+						if (list4.includes(name) || lib.filter.characterDisabled(name)) {
 							continue;
 						}
-						event.list.push(i);
+						list.push(name);
 					}
-					event.list.randomSort();
-					_status.characterlist = event.list.slice(0);
-					for (var player of game.players) {
-						player._characterChoice = event.list.randomRemove(get.config("choice_" + player.identity));
-						if (player.identity == "fan") {
-							player._friend = player.next.identity == "fan" ? player.next : player.previous;
+					list.randomSort();
+					_status.characterlist = list.slice();
+					for (const current of game.players) {
+						current._characterChoice = list.randomRemove(get.config(`choice_${current.identity}`));
+						if (current.identity === "fan") {
+							current._friend = current.next.identity === "fan" ? current.next : current.previous;
 						}
 					}
-					var createDialog = ["选择武将"];
+					const createDialog = ["选择武将"];
 					createDialog.push([game.me._characterChoice, "character"]);
 					if (game.me._friend) {
 						createDialog.push("队友的武将");
 						createDialog.push([game.me._friend._characterChoice, "character"]);
 					}
-					game.me
-						.chooseButton(createDialog, true)
+					const result = await game.me
+						.chooseButton({
+							createDialog,
+							forced: true,
+							filterButton: button => _status.event.player._characterChoice.includes(button.link),
+						})
 						.set("onfree", true)
-						.set("filterButton", function (button) {
-							return _status.event.player._characterChoice.includes(button.link);
-						});
-					"step 1";
+						.forResult();
 					game.me.init(result.links[0]);
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i] != game.me) {
-							game.players[i].init(game.players[i]._characterChoice.randomGet());
+					for (const current of game.players) {
+						if (current !== game.me) {
+							current.init(current._characterChoice.randomGet());
 						}
-						_status.characterlist.remove(game.players[i].name1);
-						_status.characterlist.remove(game.players[i].name2);
-						if (game.players[i] == game.zhu) {
-							if (!game.zhu.isInitFilter("noZhuHp")) {
-								game.zhu.maxHp++;
-								game.zhu.hp++;
-								game.zhu.update();
-							}
+						_status.characterlist.remove(current.name1);
+						_status.characterlist.remove(current.name2);
+						if (current === game.zhu && !game.zhu.isInitFilter("noZhuHp")) {
+							game.zhu.maxHp++;
+							game.zhu.hp++;
+							game.zhu.update();
 						}
 					}
-					setTimeout(function () {
+					setTimeout(() => {
 						ui.arena.classList.remove("choose-character");
 					}, 500);
 				});
@@ -1294,109 +1293,105 @@ export default () => {
 			},
 
 			chooseCharacterKaiheiOL() {
-				var next = game.createEvent("chooseCharacter");
-				next.setContent(function () {
-					"step 0";
+				const next = game.createEvent("chooseCharacter");
+				next.setContent(async (event, trigger, player) => {
 					ui.arena.classList.add("choose-character");
-					var i;
-					var identityList = ["fan", "fan", "fan"];
-					var aiList = game.filterPlayer(function (current) {
-						return current != game.me && !current.isOnline();
-					});
-					if (aiList.length == 1) {
+					const identityList = ["fan", "fan", "fan"];
+					const aiList = game.filterPlayer(current => current !== game.me && !current.isOnline());
+					if (aiList.length === 1) {
 						identityList[game.players.indexOf(aiList[0])] = "zhu";
 					} else {
 						identityList[0] = "zhu";
 						identityList.randomSort();
 					}
-					for (i = 0; i < game.players.length; i++) {
-						game.players[i].identity = identityList[i];
-						game.players[i].showIdentity();
-						game.players[i].identityShown = true;
-						if (identityList[i] == "zhu") {
-							game.zhu = game.players[i];
+					for (const [index, current] of game.players.entries()) {
+						current.identity = identityList[index];
+						current.showIdentity();
+						current.identityShown = true;
+						if (identityList[index] === "zhu") {
+							game.zhu = current;
 						}
 					}
-					event.list = [];
-					var list4 = [];
+					const characterList = [];
+					const replacedCharacters = [];
 
-					var libCharacter = {};
-					for (var i = 0; i < lib.configOL.characterPack.length; i++) {
-						var pack = lib.characterPack[lib.configOL.characterPack[i]];
-						for (var j in pack) {
-							// if(j=='zuoci') continue;
-							if (lib.character[j]) {
-								libCharacter[j] = pack[j];
+					const libCharacter = {};
+					for (const packName of lib.configOL.characterPack) {
+						const pack = lib.characterPack[packName];
+						for (const name in pack) {
+							// if (name === "zuoci") {
+							// 	continue;
+							// }
+							if (lib.character[name]) {
+								libCharacter[name] = pack[name];
 							}
 						}
 					}
-					for (i in lib.characterReplace) {
-						var ix = lib.characterReplace[i];
-						for (var j = 0; j < ix.length; j++) {
-							if (!libCharacter[ix[j]] || lib.filter.characterDisabled(ix[j], libCharacter)) {
-								ix.splice(j--, 1);
+					for (const name in lib.characterReplace) {
+						const replacements = lib.characterReplace[name];
+						for (const character of [...replacements]) {
+							if (!libCharacter[character] || lib.filter.characterDisabled(character, libCharacter)) {
+								replacements.remove(character);
 							}
 						}
-						if (ix.length) {
-							event.list.push(ix.randomGet());
-							list4.addArray(ix);
+						if (replacements.length) {
+							characterList.push(replacements.randomGet());
+							replacedCharacters.addArray(replacements);
 						}
 					}
-					for (i in libCharacter) {
-						if (list4.includes(i) || lib.filter.characterDisabled(i, libCharacter)) {
+					for (const name in libCharacter) {
+						if (replacedCharacters.includes(name) || lib.filter.characterDisabled(name, libCharacter)) {
 							continue;
 						}
-						event.list.push(i);
+						characterList.push(name);
 					}
-					_status.characterlist = event.list.slice(0);
+					_status.characterlist = characterList.slice();
 
-					var map = {};
-					for (var player of game.players) {
-						player._characterChoice = event.list.randomRemove(lib.configOL["choice_" + player.identity]);
-						if (player.identity == "fan") {
-							player._friend = player.next.identity == "fan" ? player.next : player.previous;
+					const map = {};
+					for (const current of game.players) {
+						current._characterChoice = characterList.randomRemove(lib.configOL[`choice_${current.identity}`]);
+						if (current.identity === "fan") {
+							current._friend = current.next.identity === "fan" ? current.next : current.previous;
 						}
-						map[player.playerid] = player._characterChoice;
+						map[current.playerid] = current._characterChoice;
 					}
-					game.broadcastAll(function (map) {
-						for (var i in map) {
-							lib.playerOL[i]._characterChoice = map[i];
+					game.broadcastAll(map => {
+						for (const id in map) {
+							lib.playerOL[id]._characterChoice = map[id];
 						}
 					}, map);
-					"step 1";
-					var list = [];
-					for (var i = 0; i < game.players.length; i++) {
-						var dialog = ["请选择武将", [game.players[i]._characterChoice, "character"]];
-						if (game.players[i]._friend) {
-							dialog.push("队友的武将");
-							dialog.push([game.players[i]._friend._characterChoice, "character"]);
+					const choices = [];
+					for (const current of game.players) {
+						const createDialog = ["请选择武将", [current._characterChoice, "character"]];
+						if (current._friend) {
+							createDialog.push("队友的武将");
+							createDialog.push([current._friend._characterChoice, "character"]);
 						}
-						list.push([
-							game.players[i],
-							dialog,
-							true,
-							function () {
-								return Math.random();
-							},
-							function (button) {
-								return _status.event.player._characterChoice.includes(button.link);
+						choices.push([
+							current,
+							{
+								createDialog,
+								forced: true,
+								ai: () => Math.random(),
+								filterButton: button => _status.event.player._characterChoice.includes(button.link),
 							},
 						]);
 					}
-					game.me.chooseButtonOL(list, function (player, result) {
-						if (game.online || player == game.me) {
-							player.init(result.links[0]);
-						}
-					});
-					"step 2";
-					for (var i in lib.playerOL) {
-						if (!result[i] || result[i] == "ai" || !result[i].links || !result[i].links.length) {
-							result[i] = lib.playerOL[i]._characterChoice.randomGet();
+					const result = await game.me
+						.chooseButtonOL(choices, (current, choiceResult) => {
+							if (game.online || current === game.me) {
+								current.init(choiceResult.links[0]);
+							}
+						})
+						.forResult();
+					for (const id in lib.playerOL) {
+						if (!result[id] || result[id] === "ai" || !result[id].links || !result[id].links.length) {
+							result[id] = lib.playerOL[id]._characterChoice.randomGet();
 						} else {
-							result[i] = result[i].links[0];
+							result[id] = result[id].links[0];
 						}
-						if (!lib.playerOL[i].name) {
-							lib.playerOL[i].init(result[i]);
+						if (!lib.playerOL[id].name) {
+							lib.playerOL[id].init(result[id]);
 						}
 					}
 
@@ -1407,10 +1402,10 @@ export default () => {
 					}
 
 					game.broadcast(
-						function (result, zhu) {
-							for (var i in result) {
-								if (!lib.playerOL[i].name) {
-									lib.playerOL[i].init(result[i]);
+						(result, zhu) => {
+							for (const id in result) {
+								if (!lib.playerOL[id].name) {
+									lib.playerOL[id].init(result[id]);
 								}
 							}
 							game.zhu = zhu;
@@ -1420,18 +1415,18 @@ export default () => {
 								game.zhu.update();
 							}
 
-							setTimeout(function () {
+							setTimeout(() => {
 								ui.arena.classList.remove("choose-character");
 							}, 500);
 						},
 						result,
 						game.zhu
 					);
-					for (var i = 0; i < game.players.length; i++) {
-						_status.characterlist.remove(game.players[i].name1);
-						_status.characterlist.remove(game.players[i].name2);
+					for (const current of game.players) {
+						_status.characterlist.remove(current.name1);
+						_status.characterlist.remove(current.name2);
 					}
-					setTimeout(function () {
+					setTimeout(() => {
 						ui.arena.classList.remove("choose-character");
 					}, 500);
 				});
@@ -1952,118 +1947,122 @@ export default () => {
 				});
 			},
 			chooseCharacterOL() {
-				if (_status.mode == "kaihei") {
+				if (_status.mode === "kaihei") {
 					game.chooseCharacterKaiheiOL();
 					return;
-				} else if (_status.mode == "huanle") {
+				}
+				if (_status.mode === "huanle") {
 					game.chooseCharacterHuanleOL();
 					return;
-				} else if (_status.mode == "online") {
+				}
+				if (_status.mode === "online") {
 					game.chooseCharacterZhidouOL();
 					return;
-				} else if (_status.mode == "binglin") {
+				}
+				if (_status.mode === "binglin") {
 					game.chooseCharacterBinglinOL();
 					return;
 				}
-				var next = game.createEvent("chooseCharacter");
-				next.setContent(function () {
-					"step 0";
+				const next = game.createEvent("chooseCharacter");
+				next.setContent(async (event, trigger, player) => {
 					ui.arena.classList.add("choose-character");
-					var i;
-					var identityList = ["zhu", "fan", "fan"];
+					const identityList = ["zhu", "fan", "fan"];
 					identityList.randomSort();
-					for (i = 0; i < game.players.length; i++) {
-						game.players[i].identity = identityList[i];
-						game.players[i].showIdentity();
-						game.players[i].identityShown = true;
-						if (identityList[i] == "zhu") {
-							game.zhu = game.players[i];
+					for (const [index, current] of game.players.entries()) {
+						current.identity = identityList[index];
+						current.showIdentity();
+						current.identityShown = true;
+						if (identityList[index] === "zhu") {
+							game.zhu = current;
 						}
 					}
 
-					var list;
-					var list4 = [];
-					event.list = [];
+					const characterList = [];
+					const availableCharacters = [];
 
-					var libCharacter = {};
-					for (var i = 0; i < lib.configOL.characterPack.length; i++) {
-						var pack = lib.characterPack[lib.configOL.characterPack[i]];
-						for (var j in pack) {
-							// if(j=='zuoci') continue;
-							if (lib.character[j]) {
-								libCharacter[j] = pack[j];
+					const libCharacter = {};
+					for (const packName of lib.configOL.characterPack) {
+						const pack = lib.characterPack[packName];
+						for (const name in pack) {
+							// if (name === "zuoci") {
+							// 	continue;
+							// }
+							if (lib.character[name]) {
+								libCharacter[name] = pack[name];
 							}
 						}
 					}
-					for (i in lib.characterReplace) {
-						var ix = lib.characterReplace[i];
-						for (var j = 0; j < ix.length; j++) {
-							if (!libCharacter[ix[j]] || lib.filter.characterDisabled(ix[j], libCharacter)) {
-								ix.splice(j--, 1);
+					for (const name in lib.characterReplace) {
+						const replacements = lib.characterReplace[name];
+						for (const character of [...replacements]) {
+							if (!libCharacter[character] || lib.filter.characterDisabled(character, libCharacter)) {
+								replacements.remove(character);
 							}
 						}
-						if (ix.length) {
-							event.list.push(i);
-							list4.addArray(ix);
+						if (replacements.length) {
+							characterList.push(name);
+							availableCharacters.addArray(replacements);
 						}
 					}
-					game.broadcast(function (list) {
-						for (var i in lib.characterReplace) {
-							var ix = lib.characterReplace[i];
-							for (var j = 0; j < ix.length; j++) {
-								if (!list.includes(ix[j])) {
-									ix.splice(j--, 1);
+					game.broadcast(availableCharacters => {
+						for (const name in lib.characterReplace) {
+							const replacements = lib.characterReplace[name];
+							for (const character of [...replacements]) {
+								if (!availableCharacters.includes(character)) {
+									replacements.remove(character);
 								}
 							}
 						}
-					}, list4);
-					for (i in libCharacter) {
-						if (list4.includes(i) || lib.filter.characterDisabled(i, libCharacter)) {
+					}, availableCharacters);
+					for (const name in libCharacter) {
+						if (availableCharacters.includes(name) || lib.filter.characterDisabled(name, libCharacter)) {
 							continue;
 						}
-						event.list.push(i);
-						list4.push(i);
+						characterList.push(name);
+						availableCharacters.push(name);
 					}
-					_status.characterlist = list4;
-					"step 1";
-					var list = [];
-					var selectButton = lib.configOL.double_character ? 2 : 1;
+					_status.characterlist = availableCharacters;
+					const choices = [];
+					const selectButton = lib.configOL.double_character ? 2 : 1;
 
-					var num = Math.floor(event.list.length / game.players.length);
+					const num = Math.floor(characterList.length / game.players.length);
 
-					for (var i = 0; i < game.players.length; i++) {
-						var num3 = Math.min(num, lib.configOL["choice_" + game.players[i].identity]);
-						var str = "选择角色";
-						list.push([game.players[i], [str, [event.list.randomRemove(num3), "characterx"]], selectButton, true]);
+					for (const current of game.players) {
+						const choiceCount = Math.min(num, lib.configOL[`choice_${current.identity}`]);
+						choices.push([
+							current,
+							{
+								createDialog: ["选择角色", [characterList.randomRemove(choiceCount), "characterx"]],
+								selectButton,
+								forced: true,
+							},
+						]);
 					}
-					game.me.chooseButtonOL(list, function (player, result) {
-						if (game.online || player == game.me) {
-							player.init(result.links[0], result.links[1]);
-						}
-					});
-					"step 2";
-					for (var i in result) {
-						if (result[i] && result[i].links) {
-							for (var j = 0; j < result[i].links.length; j++) {
-								event.list.remove(get.sourceCharacter(result[i].links[j]));
+					const result = await game.me
+						.chooseButtonOL(choices, (current, choiceResult) => {
+							if (game.online || current === game.me) {
+								current.init(choiceResult.links[0], choiceResult.links[1]);
+							}
+						})
+						.forResult();
+					for (const id in result) {
+						if (result[id]?.links) {
+							for (const character of result[id].links) {
+								characterList.remove(get.sourceCharacter(character));
 							}
 						}
 					}
-					for (var i in result) {
-						if (result[i] == "ai") {
-							var listc = event.list.randomRemove(lib.configOL.double_character ? 2 : 1);
-							for (var i = 0; i < listc.length; i++) {
-								var listx = lib.characterReplace[listc[i]];
-								if (listx && listx.length) {
-									listc[i] = listx.randomGet();
-								}
-							}
-							result[i] = listc;
+					for (const id in result) {
+						if (result[id] === "ai") {
+							result[id] = characterList.randomRemove(lib.configOL.double_character ? 2 : 1).map(character => {
+								const replacements = lib.characterReplace[character];
+								return replacements?.length ? replacements.randomGet() : character;
+							});
 						} else {
-							result[i] = result[i].links;
+							result[id] = result[id].links;
 						}
-						if (!lib.playerOL[i].name) {
-							lib.playerOL[i].init(result[i][0], result[i][1]);
+						if (!lib.playerOL[id].name) {
+							lib.playerOL[id].init(result[id][0], result[id][1]);
 						}
 					}
 
@@ -2074,10 +2073,10 @@ export default () => {
 					}
 
 					game.broadcast(
-						function (result, zhu) {
-							for (var i in result) {
-								if (!lib.playerOL[i].name) {
-									lib.playerOL[i].init(result[i][0], result[i][1]);
+						(result, zhu) => {
+							for (const id in result) {
+								if (!lib.playerOL[id].name) {
+									lib.playerOL[id].init(result[id][0], result[id][1]);
 								}
 							}
 							game.zhu = zhu;
@@ -2087,18 +2086,18 @@ export default () => {
 								game.zhu.update();
 							}
 
-							setTimeout(function () {
+							setTimeout(() => {
 								ui.arena.classList.remove("choose-character");
 							}, 500);
 						},
 						result,
 						game.zhu
 					);
-					for (var i = 0; i < game.players.length; i++) {
-						_status.characterlist.remove(game.players[i].name1);
-						_status.characterlist.remove(game.players[i].name2);
+					for (const current of game.players) {
+						_status.characterlist.remove(current.name1);
+						_status.characterlist.remove(current.name2);
 					}
-					setTimeout(function () {
+					setTimeout(() => {
 						ui.arena.classList.remove("choose-character");
 					}, 500);
 				});
