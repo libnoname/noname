@@ -1254,7 +1254,7 @@ const translates = {
 	yj_zhonghui: "PE钟会",
 	yj_zhonghui_prefix: "PE",
 	psmouchuan: "谋川",
-	psmouchuan_info: "每轮开始时，你可以摸两张牌并交给一名其他角色一张牌，然后你与其依次展示一张手牌，若这两张牌颜色相同/不同，你获得〖道合〗/〖志异〗直到本轮结束。",
+	psmouchuan_info: `每轮开始时，你可以摸两张牌并交给一名其他角色一张牌，然后你与其依次展示一张手牌，若这两张牌颜色相同/不同，你获得${get.poptip("psdaohe")}/${get.poptip("pszhiyi")}直到本轮结束。`,
 	pszizhong: "自重",
 	pszizhong_info: "锁定技，当你使用或打出一张你本轮未使用过的非装备牌时，你摸X-2张牌；你的手牌上限+X（X为你的技能数）。",
 	psjizun: "极尊",
