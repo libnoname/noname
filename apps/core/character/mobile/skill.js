@@ -26666,7 +26666,8 @@ const skills = {
 			}
 			return [event.player, event.target].some(current => current == player);
 		},
-		frequent: true,
+		forced: true,
+		locked: false,
 		async content(event, trigger, player) {
 			let str = '<div class="text center">牌堆顶';
 			const cards = get.cards(1, true);

@@ -408,7 +408,7 @@ const translates = {
 	xinqiaoshui: "巧说",
 	xinqiaoshui_info: "出牌阶段限一次，你可以和一名其他角色拼点。若你赢，则你本阶段内使用下一张基本牌或普通锦囊牌时，可以为此牌增加或减少一个目标。若你没赢，你本阶段内不能使用锦囊牌。",
 	xinjyzongshi: "纵适",
-	xinjyzongshi_info: "当你拼点后，你可以观看牌堆顶的一张牌，然后选择一项：获得此牌，或获得两张拼点牌中点数较小的一张。",
+	xinjyzongshi_info: "当你拼点后，你观看牌堆顶的一张牌，然后可以选择一项：获得此牌，或获得两张拼点牌中点数较小的一张。",
 	dingyuan: "手杀丁原",
 	dingyuan_prefix: "手杀",
 	beizhu: "备诛",
