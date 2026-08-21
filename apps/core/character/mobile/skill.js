@@ -4512,7 +4512,7 @@ const skills = {
 								if (target.hasCards("h", cardx => get.suit(card) !== get.suit(cardx))) {
 									return att > 0 ? 6.5 - get.value(card) : get.value(card);
 								}
-								if (get.is.shownCard(card) && player.hasValueTarget(link, false)) {
+								if (get.is.shownCard(card) && player.hasValueTarget(card, false)) {
 									return 10;
 								}
 								return att > 0 ? 6 - get.value(card) : get.value(card);
@@ -14729,9 +14729,6 @@ const skills = {
 						if (index == 0 && !game.hasPlayer(current => current.isDamaged())) {
 							return false;
 						}
-						if (player.countMark("mbxuetu_status") == 2 && current == player) {
-							return false;
-						}
 						return !player.getStorage("mbxuetu_used").includes(index);
 					});
 				}
@@ -18149,7 +18146,7 @@ const skills = {
 					if (!storage.length) {
 						player.removeSkill("scschihe_block");
 					} else {
-						lib.skill.scschihe.updateBlocker(target);
+						lib.skill.scschihe.updateBlocker(event.target);
 					}
 				},
 			},
