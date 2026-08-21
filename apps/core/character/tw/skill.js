@@ -385,7 +385,7 @@ const skills = {
 						[
 							[
 								["effect", "你下次使用的♥️牌（装备牌与延时锦囊牌除外）额外结算一次"],
-								["gain", "令一名角色将一张♥️牌作为“芳妍”牌置于你的武将牌上，否则失去1点体力。"],
+								["gain", "令一名角色将一张牌作为“芳妍”牌置于你的武将牌上，否则失去1点体力。"],
 							],
 							"textbutton",
 						],
@@ -433,10 +433,7 @@ const skills = {
 				const result = target.hasCards("he")
 					? await target
 							.chooseCard({
-								prompt: `将一张红桃牌作为“芳妍”牌置于${get.translation(player)}的武将牌上或失去1点体力`,
-								filterCard(card) {
-									return get.suit(card) == "heart";
-								},
+								prompt: `将一张牌作为“芳妍”牌置于${get.translation(player)}的武将牌上或失去1点体力`,
 								ai(card) {
 									const { player, target } = get.event();
 									if (get.attitude(target, player) > 0) {
