@@ -401,6 +401,11 @@ export default () => {
 			checkOnlineResult(player) {
 				return player.identity === (game.zhu.isAlive() ? "zhu" : "fan");
 			},
+			/**
+			 * 创建智斗三国模式的本地叫地主与选将事件。
+			 *
+			 * @returns { void }
+			 */
 			chooseCharacterZhidou() {
 				const next = game.createEvent("chooseCharacter");
 				next.setContent(async (event, trigger, player) => {
@@ -521,11 +526,14 @@ export default () => {
 						_status.characterlist.remove(current.name1);
 						_status.characterlist.remove(current.name2);
 					}
-					setTimeout(() => {
-						ui.arena.classList.remove("choose-character");
-					}, 500);
+					setTimeout(() => ui.arena.classList.remove("choose-character"), 500);
 				});
 			},
+			/**
+			 * 创建兵临城下模式的本地叫地主与选将事件。
+			 *
+			 * @returns { void }
+			 */
 			chooseCharacterBinglin() {
 				const next = game.createEvent("chooseCharacter");
 				next.setContent(async (event, trigger, player) => {
@@ -631,11 +639,14 @@ export default () => {
 						_status.characterlist.remove(current.name1);
 						_status.characterlist.remove(current.name2);
 					}
-					setTimeout(() => {
-						ui.arena.classList.remove("choose-character");
-					}, 500);
+					setTimeout(() => ui.arena.classList.remove("choose-character"), 500);
 				});
 			},
+			/**
+			 * 创建欢乐斗地主模式的本地叫地主与选将事件。
+			 *
+			 * @returns { void }
+			 */
 			chooseCharacterHuanle() {
 				const next = game.createEvent("chooseCharacter");
 				next.setContent(async (event, trigger, player) => {
@@ -737,12 +748,15 @@ export default () => {
 						_status.characterlist.remove(current.name1);
 						_status.characterlist.remove(current.name2);
 					}
-					setTimeout(() => {
-						ui.arena.classList.remove("choose-character");
-					}, 500);
+					setTimeout(() => ui.arena.classList.remove("choose-character"), 500);
 				});
 			},
 
+			/**
+			 * 创建开黑斗地主模式的本地身份分配与选将事件。
+			 *
+			 * @returns { void }
+			 */
 			chooseCharacterKaihei() {
 				const next = game.createEvent("chooseCharacter");
 				next.setContent(async (event, trigger, player) => {
@@ -827,11 +841,14 @@ export default () => {
 							game.zhu.update();
 						}
 					}
-					setTimeout(() => {
-						ui.arena.classList.remove("choose-character");
-					}, 500);
+					setTimeout(() => ui.arena.classList.remove("choose-character"), 500);
 				});
 			},
+			/**
+			 * 根据当前子模式创建本地选将事件。
+			 *
+			 * @returns { void }
+			 */
 			chooseCharacter() {
 				if (_status.mode === "kaihei") {
 					game.chooseCharacterKaihei();
@@ -931,9 +948,7 @@ export default () => {
 										return;
 									}
 									_status.tempNoButton = true;
-									setTimeout(() => {
-										_status.tempNoButton = false;
-									}, 500);
+									setTimeout(() => (_status.tempNoButton = false), 500);
 									let link = target.link;
 									if (game.zhu.name) {
 										if (link !== "random") {
@@ -1299,13 +1314,16 @@ export default () => {
 							_status.characterlist.remove(current.name1);
 							_status.characterlist.remove(current.name2);
 						}
-						setTimeout(() => {
-							ui.arena.classList.remove("choose-character");
-						}, 500);
+						setTimeout(() => ui.arena.classList.remove("choose-character"), 500);
 					},
 				]);
 			},
 
+			/**
+			 * 创建开黑斗地主模式的联机身份分配与选将事件。
+			 *
+			 * @returns { void }
+			 */
 			chooseCharacterKaiheiOL() {
 				const next = game.createEvent("chooseCharacter");
 				next.setContent(async (event, trigger, player) => {
@@ -1429,9 +1447,7 @@ export default () => {
 								game.zhu.update();
 							}
 
-							setTimeout(() => {
-								ui.arena.classList.remove("choose-character");
-							}, 500);
+							setTimeout(() => ui.arena.classList.remove("choose-character"), 500);
 						},
 						result,
 						game.zhu
@@ -1440,11 +1456,14 @@ export default () => {
 						_status.characterlist.remove(current.name1);
 						_status.characterlist.remove(current.name2);
 					}
-					setTimeout(() => {
-						ui.arena.classList.remove("choose-character");
-					}, 500);
+					setTimeout(() => ui.arena.classList.remove("choose-character"), 500);
 				});
 			},
+			/**
+			 * 创建欢乐斗地主模式的联机叫地主与选将事件。
+			 *
+			 * @returns { void }
+			 */
 			chooseCharacterHuanleOL() {
 				const next = game.createEvent("chooseCharacter");
 				next.setContent(async (event, trigger, player) => {
@@ -1596,9 +1615,7 @@ export default () => {
 								game.zhu.update();
 							}
 
-							setTimeout(() => {
-								ui.arena.classList.remove("choose-character");
-							}, 500);
+							setTimeout(() => ui.arena.classList.remove("choose-character"), 500);
 						},
 						result,
 						game.zhu
@@ -1607,11 +1624,14 @@ export default () => {
 						_status.characterlist.remove(current.name1);
 						_status.characterlist.remove(current.name2);
 					}
-					setTimeout(() => {
-						ui.arena.classList.remove("choose-character");
-					}, 500);
+					setTimeout(() => ui.arena.classList.remove("choose-character"), 500);
 				});
 			},
+			/**
+			 * 创建兵临城下模式的联机叫地主与选将事件。
+			 *
+			 * @returns { void }
+			 */
 			chooseCharacterBinglinOL() {
 				const next = game.createEvent("chooseCharacter");
 				next.setContent(async (event, trigger, player) => {
@@ -1776,9 +1796,7 @@ export default () => {
 								game.zhu.update();
 							}
 
-							setTimeout(() => {
-								ui.arena.classList.remove("choose-character");
-							}, 500);
+							setTimeout(() => ui.arena.classList.remove("choose-character"), 500);
 						},
 						result,
 						game.zhu
@@ -1794,11 +1812,14 @@ export default () => {
 						_status.characterlist.remove(current.name1);
 						_status.characterlist.remove(current.name2);
 					}
-					setTimeout(() => {
-						ui.arena.classList.remove("choose-character");
-					}, 500);
+					setTimeout(() => ui.arena.classList.remove("choose-character"), 500);
 				});
 			},
+			/**
+			 * 创建智斗三国模式的联机叫地主与选将事件。
+			 *
+			 * @returns { void }
+			 */
 			chooseCharacterZhidouOL() {
 				const next = game.createEvent("chooseCharacter");
 				next.setContent(async (event, trigger, player) => {
@@ -1960,9 +1981,7 @@ export default () => {
 							game.zhu.maxHp = 4;
 							game.zhu.update();
 
-							setTimeout(() => {
-								ui.arena.classList.remove("choose-character");
-							}, 500);
+							setTimeout(() => ui.arena.classList.remove("choose-character"), 500);
 						},
 						result,
 						game.zhu
@@ -1971,11 +1990,14 @@ export default () => {
 						_status.characterlist.remove(current.name1);
 						_status.characterlist.remove(current.name2);
 					}
-					setTimeout(() => {
-						ui.arena.classList.remove("choose-character");
-					}, 500);
+					setTimeout(() => ui.arena.classList.remove("choose-character"), 500);
 				});
 			},
+			/**
+			 * 根据当前子模式创建联机选将事件。
+			 *
+			 * @returns { void }
+			 */
 			chooseCharacterOL() {
 				if (_status.mode === "kaihei") {
 					game.chooseCharacterKaiheiOL();
@@ -2116,9 +2138,7 @@ export default () => {
 								game.zhu.update();
 							}
 
-							setTimeout(() => {
-								ui.arena.classList.remove("choose-character");
-							}, 500);
+							setTimeout(() => ui.arena.classList.remove("choose-character"), 500);
 						},
 						result,
 						game.zhu
@@ -2127,9 +2147,7 @@ export default () => {
 						_status.characterlist.remove(current.name1);
 						_status.characterlist.remove(current.name2);
 					}
-					setTimeout(() => {
-						ui.arena.classList.remove("choose-character");
-					}, 500);
+					setTimeout(() => ui.arena.classList.remove("choose-character"), 500);
 				});
 			},
 		},
