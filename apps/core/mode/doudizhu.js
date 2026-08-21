@@ -3484,59 +3484,43 @@ export default {
 
 				if (!event.zhadanresult && event.list.length) {
 					const id = event.id;
-					const sendback = (result, player) => {
-						if (result && result.id === id && !event.zhadanresult && result.bool) {
-							event.zhadanresult = player;
-							event.zhadanresult2 = result;
-							game.broadcast("cancel", id);
-							if (_status.event.id === id && _status.event.name === "chooseToUse" && _status.paused) {
-								return () => {
-									event.resultOL = _status.event.resultOL;
-									ui.click.cancel();
-									if (ui.confirm) {
-										ui.confirm.close();
-									}
-								};
-							}
-							return;
-						}
-						if (_status.event.id === id && _status.event.name === "chooseToUse" && _status.paused) {
-							return () => {
-								event.resultOL = _status.event.resultOL;
+					const choose = current => {
+						return new Promise((resolve, reject) => {
+							const settle = (result, current) => {
+								if (result?.bool && (current === game.me || result.id === id)) {
+									resolve([current, result]);
+								} else {
+									reject();
+								}
 							};
-						}
+							if (current.isOnline()) {
+								current.wait(settle);
+								current.send(event.send, current, event.card, event.source, event.targets, id, trigger.parent.id, get.skillState(current));
+								return;
+							}
+
+							const response = event.send(current, event.card, event.source, event.targets, id, trigger.parent.id);
+							game.me.wait(settle);
+							if (response?.forResult) {
+								response
+									.forResult()
+									.then(result => game.me.unwait(result))
+									.catch(reject);
+							} else {
+								game.me.unwait(response);
+							}
+						});
 					};
 
-					let withme = false;
-					let withol = false;
-					let mineResponse;
-					for (const current of [...event.list]) {
-						if (current.isOnline()) {
-							withol = true;
-							current.wait(sendback);
-							current.send(event.send, current, event.card, event.source, event.targets, event.id, trigger.parent.id, get.skillState(current));
-							event.list.remove(current);
-						} else if (current === game.me) {
-							withme = true;
-							mineResponse = event.send(current, event.card, event.source, event.targets, event.id, trigger.parent.id);
-							event.list.remove(current);
-						}
+					const players = event.list.filter(current => current.isOnline() || current === game.me);
+					event.list.removeArray(players);
+					for (const current of game.players) {
+						current.showTimer();
 					}
-					if (_status.connectMode && (withme || withol)) {
-						for (const current of game.players) {
-							current.showTimer();
-						}
-					}
-					if (withme) {
-						const result = mineResponse?.forResult ? await mineResponse.forResult() : mineResponse;
-						if (result?.bool && !event.zhadanresult) {
-							game.broadcast("cancel", event.id);
-							event.zhadanresult = game.me;
-							event.zhadanresult2 = result;
-						}
-					}
-					if (withol && !event.resultOL) {
-						await game.pause();
+					const winner = await Promise.any(players.map(choose)).catch(() => null);
+					if (winner) {
+						[event.zhadanresult, event.zhadanresult2] = winner;
+						game.broadcastAll("cancel", id);
 					}
 					for (const current of game.players) {
 						current.hideTimer();
