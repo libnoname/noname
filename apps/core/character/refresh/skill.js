@@ -7057,7 +7057,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const { name } = event;
 			player.awakenSkill(name);
-			await player.draw(Math.min(5, player.maxHp - player.countCards("h")));
+			await player.drawTo(player.maxHp);
 		},
 	},
 	//新郭淮
