@@ -87,10 +87,24 @@ const skills = {
 		filter(event, player) {
 			return player !== event.player;
 		},
+		check(event, player) {
+			const target = event.player;
+			const card = target.judging[0];
+			const suits = ["spade", "club", "diamond", "heart"];
+			const numbers = Array.from({ length: 13 }).map((val, idx) => idx + 1);
+			for (const suit of suits) {
+				for (const number of numbers) {
+					const cardx = get.autoViewAs({ name: card.name, nature: card.nature, suit, number }, [card]);
+					const num = get.sgnAttitude(player, target) * (event.judge(cardx) - event.judge(card));
+					if (num > 0) return true;
+				}
+			}
+			return false;
+		},
 		logTarget: "player",
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			const card = trigger.player.judging[0];
+			const card = target.judging[0];
 			if ([card].filterInD("od").length) {
 				await player.gain({ cards: [card], animate: "gain2" });
 			}
@@ -117,12 +131,28 @@ const skills = {
 					forced: true,
 					selectButton: 2,
 					ai(button) {
-						//插眼
+						const { card, suitx, numberx, suits, numbers, player } = get.event();
+						const list = [];
+						const trigger = get.event().getTrigger();
+						for (const suit of suits) {
+							for (const number of numbers) {
+								const cardx = get.autoViewAs({ name: card.name, nature: card.nature, suit, number }, [card]);
+								const num = get.sgnAttitude(player, trigger.player) * (trigger.judge(cardx) - trigger.judge(card));
+								list.push([suit, number, num]);
+							}
+						}
+						if (list.length) {
+							list.sort((a, b) => b[2] - a[2]);
+							return [suitx[suits.indexOf(list[0][0])], numberx[numbers.indexOf(list[0][1])]].includes(button.link);
+						}
 						return 1 + Math.random();
 					},
 				})
+				.set("card", card)
 				.set("numberx", numberx)
 				.set("suitx", suitx)
+				.set("numbers", numbers)
+				.set("suits", suits)
 				.forResult();
 			if (!result?.bool || !result.links?.length) {
 				return;
