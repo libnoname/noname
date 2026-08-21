@@ -2315,8 +2315,11 @@ const skills = {
 			if (!event.getl?.(player)?.cards2.some(card => !get.is.damageCard(card)) || !player.countCharge(true)) {
 				return false;
 			}
-			const cards = event.getl(player).cards2;
-			return event.getParent()?.name != "useCard" || cards.some(card => get.type(card) != "equip");
+			const evt2 = event.relatedEvent || event.getParent();
+			if (evt2.name === "useCard" && evt2.player === player && get.type(evt2.card, null, false) === "equip") {
+				return;
+			}
+			return true;
 		},
 		async content(event, trigger, player) {
 			if (trigger.name == "phase") {
@@ -5537,8 +5540,11 @@ const skills = {
 					if (!event.getl?.(player)?.cards2?.length || !player.hasMark("mbrunwei_twice")) {
 						return false;
 					}
-					const cards = event.getl(player).cards2;
-					return event.getParent()?.name != "useCard" || cards.some(card => get.type(card) != "equip");
+					const evt2 = event.relatedEvent || event.getParent();
+					if (evt2.name === "useCard" && evt2.player === player && get.type(evt2.card, null, false) === "equip") {
+						return;
+					};
+					return true;
 				},
 				silent: true,
 				async content(event, trigger, player) {
