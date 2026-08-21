@@ -1,4 +1,16 @@
 const characters = {
+	ps_shen_jiangwei: {
+		sex: "male",
+		group: "shen",
+		hp: 4,
+		skills: ["psfenzhi", "psjiucheng", "psranjin"],
+	},
+	ps_devil_jiangwei: {
+		sex: "male",
+		group: "devil",
+		hp: 4,
+		skills: ["psmoyan", "psjiusheng", "pshunjin"],
+	},
 	scl_zhangxiu: {
 		sex: "male",
 		group: "qun",

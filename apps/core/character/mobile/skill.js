@@ -4381,18 +4381,18 @@ const skills = {
 				return false;
 			}
 			return game.hasPlayer(current => {
-				if (current == player || !current.hasHistory("useCard")) {
+				if (current == player) {
 					return false;
 				}
-				return current.countDiscardableCards(player, "he") > 0;
+				return current.hasDiscardableCards(player, "he");
 			});
 		},
 		async cost(event, trigger, player) {
 			const targets = game.filterPlayer(current => {
-				if (current == player || !current.hasHistory("useCard")) {
+				if (current == player) {
 					return false;
 				}
-				return current.countDiscardableCards(player, "he") > 0;
+				return current.hasDiscardableCards(player, "he");
 			});
 			if (!targets.length) {
 				return;
@@ -4504,7 +4504,7 @@ const skills = {
 							return 6 - get.value(card);
 						} else {
 							const card1 = ui.selected.buttons[0].link;
-							if (get.suit(card) !== get.suit(card1) && [card1, card].some(cardx => player.hasValueTarget(cardx, null, false))) {
+							if (get.suit(card) !== get.suit(card1) && [card1, card].some(cardx => player.hasValueTarget(cardx, false))) {
 								return 10;
 							}
 							return -get.value(card);
@@ -4515,13 +4515,13 @@ const skills = {
 								if (target.hasCards("h", cardx => get.suit(card) !== get.suit(cardx))) {
 									return att > 0 ? 6.5 - get.value(card) : get.value(card);
 								}
-								if (get.is.shownCard(card) && player.hasValueTarget(link, null, false)) {
+								if (get.is.shownCard(card) && player.hasValueTarget(link, false)) {
 									return 10;
 								}
 								return att > 0 ? 6 - get.value(card) : get.value(card);
 							} else {
 								const card1 = ui.selected.buttons[0].link;
-								if (get.suit(card) !== get.suit(card1) && [card1, card].some(cardx => player.hasValueTarget(cardx, null, false))) {
+								if (get.suit(card) !== get.suit(card1) && [card1, card].some(cardx => player.hasValueTarget(cardx, false))) {
 									return 10;
 								}
 								return att > 0 ? 6 - get.value(card) : get.value(card);
@@ -4565,11 +4565,11 @@ const skills = {
 					],
 				])
 				.set("filterButton", button => {
-					return get.player().hasUseTarget(button.link);
+					return get.player().hasUseTarget(button.link, false);
 				})
 				.set("ai", button => {
 					const card = button.link;
-					let eff = get.player().getUseValue(button.link);
+					let eff = get.player().getUseValue(button.link, false);
 					if (get.owner(card)) {
 						const att = get.sgnAttitude(player, get.owner(card));
 						eff += -1.5 * att;
@@ -4585,7 +4585,7 @@ const skills = {
 				if (puts.includes(card)) {
 					game.clearCardKnowers(card);
 				}
-				await player.chooseUseTarget(card, true, false);
+				await player.chooseUseTarget(card, true, false, "nodistance");
 			}
 		},
 	},
@@ -6532,7 +6532,10 @@ const skills = {
 			},
 			dongjiao: {
 				audio: 6,
-				trigger: { player: ["useCard", "useCardToPlayered", "useCardAfter"] },
+				trigger: {
+					player: ["useCard", "useCardToPlayered", "useCardAfter"],
+					source: "damageBegin2",
+				},
 				logAudio(event, player, name) {
 					if (name == "useCardAfter") {
 						return ["mbweizhuang_dongjiao3.mp3", "mbweizhuang_dongjiao6.mp3"];
@@ -6560,8 +6563,11 @@ const skills = {
 					if (list.includes(type)) {
 						return false;
 					}
-					if (name == "useCard") {
-						return num >= 1 && type == "basic";
+					if (name == "useCard" || event.name == "damage") {
+						if (num < 1 || type !== "basic") {
+							return false;
+						}
+						return event.card?.name != "sha" || event.name == "damage";
 					}
 					if (name == "useCardAfter") {
 						return (
@@ -6585,6 +6591,7 @@ const skills = {
 				},
 				async cost(event, trigger, player) {
 					switch (event.triggername) {
+						case "damageBegin2":
 						case "useCard": {
 							event.result = {
 								bool: true,
@@ -6637,6 +6644,10 @@ const skills = {
 					player.addTempSkill("mbweizhuang_block");
 					player.markAuto("mbweizhuang_block", get.type2(trigger.card));
 					switch (name) {
+						case "damageBegin2": {
+							trigger.num++;
+							break;
+						}
 						case "useCard": {
 							trigger.baseDamage ??= 1;
 							trigger.baseDamage++;
@@ -32734,7 +32745,7 @@ const skills = {
 		},
 	},
 	mbfenxin: {
-		mode: ["identity", "doudizhu"],
+		//mode: ["identity", "doudizhu"],
 		audio: "fenxin",
 		skillAnimation: true,
 		animationColor: "wood",
@@ -32742,6 +32753,7 @@ const skills = {
 			source: "dieBegin",
 		},
 		filter(event, player) {
+			if (!["identity", "doudizhu"].includes(get.mode())) return true;
 			const validIdentities = ["zhong", "fan", "nei", "zhu", "min"];
 			return !event.reverseOut && validIdentities.includes(event.player.identity) && validIdentities.includes(player.identity);
 		},
@@ -32755,12 +32767,15 @@ const skills = {
 			const canSwap = isIdentityMode && !player.identityShown && !target.identityShown;
 			const choices = [];
 			const choiceList = [];
-			choices.push("获得技能");
-			choiceList.push("获得" + get.translation(target) + "的所有技能（限定技、觉醒技、使命技、主公技、持恒技除外）");
+			if (validSkills.length) {
+				choices.push("获得技能");
+				choiceList.push("获得" + get.translation(target) + "的所有技能（限定技、觉醒技、使命技、主公技、持恒技除外）");
+			}
 			if (canSwap) {
 				choices.push("交换身份牌");
 				choiceList.push("与其交换身份牌");
 			}
+			if (!choices.length) return;
 			choices.push("cancel2");
 			const result = await player
 				.chooseControl({
