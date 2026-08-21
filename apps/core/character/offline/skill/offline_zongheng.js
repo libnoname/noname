@@ -90,19 +90,16 @@ const skills = {
 		check(event, player) {
 			const target = event.player;
 			const card = target.judging[0];
-			const trigger = event.getTrigger();
 			const suits = ["spade", "club", "diamond", "heart"];
 			const numbers = Array.from({ length: 13 }).map((val, idx) => idx + 1);
-			const list = [];
 			for (const suit of suits) {
 				for (const number of numbers) {
 					const cardx = get.autoViewAs({ name: card.name, nature: card.nature, suit, number }, [card]);
-					const num = get.sgnAttitude(player, trigger.player) * (trigger.judge(cardx) - trigger.judge(card));
-					list.push(num);
+					const num = get.sgnAttitude(player, target) * (event.judge(cardx) - event.judge(card));
+					if (num > 0) return true;
 				}
 			}
-			list.sort((a, b) => b - a);
-			return list[0] > 0;
+			return false;
 		},
 		logTarget: "player",
 		async content(event, trigger, player) {
