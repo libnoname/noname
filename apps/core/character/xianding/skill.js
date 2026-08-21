@@ -18311,7 +18311,7 @@ const skills = {
 					}
 					var evt = history[history.length - 1];
 					if (evt?.card && get.cardNameLength(evt.card) == get.cardNameLength(card) && get.type(evt.card) == get.type2(card)) {
-						return num + 4;
+						return num + 114514;
 					}
 				}
 			},
@@ -18391,6 +18391,15 @@ const skills = {
 			check(event, player) {
 				const sortlist = [4, 1, 2, 3, 5];
 				const list = event.dcjiesi.slice();
+				const history = game.getAllGlobalHistory("useCard"),
+					index = history.length - 1;
+				if (index > 0) {
+					const num = get.cardNameLength(history[index].card);
+					game.log(num);
+					if (list.includes(num)) {
+						return num - 1;
+					}
+				}
 				return (
 					list.sort((a, b) => {
 						return sortlist.indexOf(a) - sortlist.indexOf(b);
@@ -18417,7 +18426,7 @@ const skills = {
 							const result = await player
 								.chooseToDiscard(`捷思：是否弃置${len}张牌，然后重置此技能？`, len, "he")
 								.set("ai", card => (get.event().goon ? 6.5 - get.value(card) : 0))
-								.set("goon", player.countCards("he", card => 6 - get.value(card)) >= len)
+								.set("goon", player.countCards("he", card => 6 - get.value(card)) >= Math.min(2, len))
 								.forResult();
 							if (result?.bool) {
 								delete player.getStat().skill.dcjiesi;
