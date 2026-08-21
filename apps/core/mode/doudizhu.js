@@ -833,42 +833,40 @@ export default () => {
 				});
 			},
 			chooseCharacter() {
-				if (_status.mode == "kaihei") {
+				if (_status.mode === "kaihei") {
 					game.chooseCharacterKaihei();
 					return;
 				}
-				if (_status.mode == "huanle") {
+				if (_status.mode === "huanle") {
 					game.chooseCharacterHuanle();
 					return;
 				}
-				if (_status.mode == "online") {
+				if (_status.mode === "online") {
 					game.chooseCharacterZhidou();
 					return;
 				}
-				if (_status.mode == "binglin") {
+				if (_status.mode === "binglin") {
 					game.chooseCharacterBinglin();
 					return;
 				}
-				var next = game.createEvent("chooseCharacter");
+				const next = game.createEvent("chooseCharacter");
 				next.showConfig = true;
-				next.addPlayer = function (player) {
-					var list = get.identityList(game.players.length - 1);
-					var list2 = get.identityList(game.players.length);
-					for (var i = 0; i < list.length; i++) {
-						list2.remove(list[i]);
+				next.addPlayer = player => {
+					const list = get.identityList(game.players.length - 1);
+					const list2 = get.identityList(game.players.length);
+					for (const identity of list) {
+						list2.remove(identity);
 					}
 					player.identity = list2[0];
 					player.setIdentity("cai");
 				};
-				next.removePlayer = function () {
-					return game.players.randomGet(game.me, game.zhu);
-				};
-				next.ai = function (player, list, list2, back) {
-					var listc = list.slice(0, 2);
-					for (var i = 0; i < listc.length; i++) {
-						var listx = lib.characterReplace[listc[i]];
+				next.removePlayer = () => game.players.randomGet(game.me, game.zhu);
+				next.ai = (player, list, list2, back) => {
+					const listc = list.slice(0, 2);
+					for (const [index, character] of listc.entries()) {
+						const listx = lib.characterReplace[character];
 						if (listx && listx.length) {
-							listc[i] = listx.randomGet();
+							listc[index] = listx.randomGet();
 						}
 					}
 					if (get.config("double_character")) {
@@ -876,431 +874,436 @@ export default () => {
 					} else {
 						player.init(listc[0]);
 					}
-					if (player == game.zhu) {
-						if (!game.zhu.isInitFilter("noZhuHp")) {
-							game.zhu.maxHp++;
-							game.zhu.hp++;
-							game.zhu.update();
-						}
+					if (player === game.zhu && !game.zhu.isInitFilter("noZhuHp")) {
+						game.zhu.maxHp++;
+						game.zhu.hp++;
+						game.zhu.update();
 					}
 					if (back) {
 						list.remove(get.sourceCharacter(player.name1));
 						list.remove(get.sourceCharacter(player.name2));
-						for (var i = 0; i < list.length; i++) {
-							back.push(list[i]);
+						for (const character of list) {
+							back.push(character);
 						}
 					}
-					if (typeof lib.config.test_game == "string" && player == game.me.next) {
-						if (lib.config.test_game != "_") {
+					if (typeof lib.config.test_game === "string" && player === game.me.next) {
+						if (lib.config.test_game !== "_") {
 							player.init(lib.config.test_game);
 						}
 					}
 					player.node.name.dataset.nature = get.groupnature(player.group);
 				};
-				next.setContent(function () {
-					"step 0";
-					ui.arena.classList.add("choose-character");
-					var i;
-					var list;
-					var list4 = [];
-					var identityList = ["zhu", "fan", "fan"];
-					var chosen = lib.config.continue_name || [];
-					game.saveConfig("continue_name");
-					event.chosen = chosen;
+				next.setContent([
+					// step 0
+					async (event, trigger, player) => {
+						ui.arena.classList.add("choose-character");
+						let list;
+						const list4 = [];
+						const identityList = ["zhu", "fan", "fan"];
+						const chosen = lib.config.continue_name || [];
+						let num;
+						game.saveConfig("continue_name");
+						event.chosen = chosen;
 
-					var addSetting = function (dialog) {
-						dialog.add("选择身份").classList.add("add-setting");
-						var table = document.createElement("div");
-						table.classList.add("add-setting");
-						table.style.margin = "0";
-						table.style.width = "100%";
-						table.style.position = "relative";
+						const addSetting = dialog => {
+							dialog.add("选择身份").classList.add("add-setting");
+							const table = document.createElement("div");
+							table.classList.add("add-setting");
+							table.style.margin = "0";
+							table.style.width = "100%";
+							table.style.position = "relative";
 
-						var listi = ["random", "zhu", "fan"];
-						for (var i = 0; i < listi.length; i++) {
-							var td = ui.create.div(".shadowed.reduce_radius.pointerdiv.tdnode");
-							td.link = listi[i];
-							if (td.link === game.me.identity) {
-								td.classList.add("bluebg");
-							}
-							table.appendChild(td);
-							td.innerHTML = "<span>" + get.translation(listi[i] + "2") + "</span>";
-							td.addEventListener(lib.config.touchscreen ? "touchend" : "click", function () {
-								if (_status.dragged) {
-									return;
+							const identityList = ["random", "zhu", "fan"];
+							for (const identity of identityList) {
+								const td = ui.create.div(".shadowed.reduce_radius.pointerdiv.tdnode");
+								td.link = identity;
+								if (td.link === game.me.identity) {
+									td.classList.add("bluebg");
 								}
-								if (_status.justdragged) {
-									return;
-								}
-								_status.tempNoButton = true;
-								setTimeout(function () {
-									_status.tempNoButton = false;
-								}, 500);
-								var link = this.link;
-								if (game.zhu.name) {
-									if (link != "random") {
-										_status.event.parent.fixedseat = get.distance(game.me, game.zhu, "absolute");
-									}
-									game.zhu.uninit();
-									delete game.zhu.isZhu;
-									delete game.zhu.identityShown;
-								}
-								var current = this.parentNode.querySelector(".bluebg");
-								if (current) {
-									current.classList.remove("bluebg");
-								}
-								current = seats.querySelector(".bluebg");
-								if (current) {
-									current.classList.remove("bluebg");
-								}
-								if (link == "random") {
-									link = ["zhu", "fan"].randomGet();
-									for (var i = 0; i < this.parentNode.childElementCount; i++) {
-										if (this.parentNode.childNodes[i].link == link) {
-											this.parentNode.childNodes[i].classList.add("bluebg");
-										}
-									}
-								} else {
-									this.classList.add("bluebg");
-								}
-								num = get.config("choice_" + link);
-								_status.event.parent.swapnodialog = function (dialog, list) {
-									var buttons = ui.create.div(".buttons");
-									var node = dialog.buttons[0].parentNode;
-									dialog.buttons = ui.create.buttons(list, "characterx", buttons);
-									dialog.content.insertBefore(buttons, node);
-									buttons.addTempClass("start");
-									node.remove();
-									game.uncheck();
-									game.check();
-									for (var i = 0; i < seats.childElementCount; i++) {
-										if (get.distance(game.zhu, game.me, "absolute") === seats.childNodes[i].link) {
-											seats.childNodes[i].classList.add("bluebg");
-										}
-									}
-								};
-								_status.event = _status.event.parent;
-								_status.event.step = 0;
-								_status.event.identity = link;
-								if (ui.selected.buttons.length > 0) {
-									ui.selected.buttons.forEach(function (button) {
-										if (button && button.parentNode) {
-											button.classList.remove("selected");
-										}
-									});
-									ui.selected.buttons.length = 0;
-								}
-								if (link != (event.zhongmode ? "mingzhong" : "zhu")) {
-									seats.previousSibling.style.display = "";
-									seats.style.display = "";
-								} else {
-									seats.previousSibling.style.display = "none";
-									seats.style.display = "none";
-								}
-								game.resume();
-							});
-						}
-						dialog.content.appendChild(table);
-
-						dialog.add("选择座位").classList.add("add-setting");
-						var seats = document.createElement("div");
-						seats.classList.add("add-setting");
-						seats.style.margin = "0";
-						seats.style.width = "100%";
-						seats.style.position = "relative";
-						for (var i = 2; i <= game.players.length; i++) {
-							var td = ui.create.div(".shadowed.reduce_radius.pointerdiv.tdnode");
-							td.innerHTML = get.cnNumber(i, true);
-							td.link = i - 1;
-							seats.appendChild(td);
-							if (get.distance(game.zhu, game.me, "absolute") === i - 1) {
-								td.classList.add("bluebg");
-							}
-							td.addEventListener(lib.config.touchscreen ? "touchend" : "click", function () {
-								if (_status.dragged) {
-									return;
-								}
-								if (_status.justdragged) {
-									return;
-								}
-								if (get.distance(game.zhu, game.me, "absolute") == this.link) {
-									return;
-								}
-								var current = this.parentNode.querySelector(".bluebg");
-								if (current) {
-									current.classList.remove("bluebg");
-								}
-								this.classList.add("bluebg");
-								for (var i = 0; i < game.players.length; i++) {
-									if (get.distance(game.players[i], game.me, "absolute") == this.link) {
-										game.swapSeat(game.zhu, game.players[i], false);
+								table.appendChild(td);
+								td.innerHTML = `<span>${get.translation(`${identity}2`)}</span>`;
+								td.addEventListener(lib.config.touchscreen ? "touchend" : "click", e => {
+									const target = e.currentTarget;
+									if (_status.dragged) {
 										return;
 									}
-								}
-							});
-						}
-						dialog.content.appendChild(seats);
-						if (game.me == game.zhu) {
-							seats.previousSibling.style.display = "none";
-							seats.style.display = "none";
-						}
+									if (_status.justdragged) {
+										return;
+									}
+									_status.tempNoButton = true;
+									setTimeout(() => {
+										_status.tempNoButton = false;
+									}, 500);
+									let link = target.link;
+									if (game.zhu.name) {
+										if (link !== "random") {
+											_status.event.parent.fixedseat = get.distance(game.me, game.zhu, "absolute");
+										}
+										game.zhu.uninit();
+										delete game.zhu.isZhu;
+										delete game.zhu.identityShown;
+									}
+									let current = target.parentNode.querySelector(".bluebg");
+									if (current) {
+										current.classList.remove("bluebg");
+									}
+									current = seats.querySelector(".bluebg");
+									if (current) {
+										current.classList.remove("bluebg");
+									}
+									if (link === "random") {
+										link = ["zhu", "fan"].randomGet();
+										for (const child of target.parentNode.childNodes) {
+											if (child.link === link) {
+												child.classList.add("bluebg");
+											}
+										}
+									} else {
+										target.classList.add("bluebg");
+									}
+									num = get.config(`choice_${link}`);
+									_status.event.parent.swapnodialog = (dialog, list) => {
+										const buttons = ui.create.div(".buttons");
+										const node = dialog.buttons[0].parentNode;
+										dialog.buttons = ui.create.buttons(list, "characterx", buttons);
+										dialog.content.insertBefore(buttons, node);
+										buttons.addTempClass("start");
+										node.remove();
+										game.uncheck();
+										game.check();
+										for (const seat of seats.childNodes) {
+											if (get.distance(game.zhu, game.me, "absolute") === seat.link) {
+												seat.classList.add("bluebg");
+											}
+										}
+									};
+									_status.event = _status.event.parent;
+									_status.event.step = 0;
+									_status.event.identity = link;
+									if (ui.selected.buttons.length > 0) {
+										ui.selected.buttons.forEach(button => {
+											if (button && button.parentNode) {
+												button.classList.remove("selected");
+											}
+										});
+										ui.selected.buttons.length = 0;
+									}
+									if (link !== (event.zhongmode ? "mingzhong" : "zhu")) {
+										seats.previousSibling.style.display = "";
+										seats.style.display = "";
+									} else {
+										seats.previousSibling.style.display = "none";
+										seats.style.display = "none";
+									}
+									game.resume();
+								});
+							}
+							dialog.content.appendChild(table);
 
-						dialog.add(ui.create.div(".placeholder.add-setting"));
-						dialog.add(ui.create.div(".placeholder.add-setting"));
-						if (get.is.phoneLayout()) {
+							dialog.add("选择座位").classList.add("add-setting");
+							const seats = document.createElement("div");
+							seats.classList.add("add-setting");
+							seats.style.margin = "0";
+							seats.style.width = "100%";
+							seats.style.position = "relative";
+							for (let seat = 2; seat <= game.players.length; seat++) {
+								const td = ui.create.div(".shadowed.reduce_radius.pointerdiv.tdnode");
+								td.innerHTML = get.cnNumber(seat, true);
+								td.link = seat - 1;
+								seats.appendChild(td);
+								if (get.distance(game.zhu, game.me, "absolute") === seat - 1) {
+									td.classList.add("bluebg");
+								}
+								td.addEventListener(lib.config.touchscreen ? "touchend" : "click", e => {
+									const target = e.currentTarget;
+									if (_status.dragged) {
+										return;
+									}
+									if (_status.justdragged) {
+										return;
+									}
+									if (get.distance(game.zhu, game.me, "absolute") === target.link) {
+										return;
+									}
+									const current = target.parentNode.querySelector(".bluebg");
+									if (current) {
+										current.classList.remove("bluebg");
+									}
+									target.classList.add("bluebg");
+									for (const current of game.players) {
+										if (get.distance(current, game.me, "absolute") === target.link) {
+											game.swapSeat(game.zhu, current, false);
+											return;
+										}
+									}
+								});
+							}
+							dialog.content.appendChild(seats);
+							if (game.me === game.zhu) {
+								seats.previousSibling.style.display = "none";
+								seats.style.display = "none";
+							}
+
 							dialog.add(ui.create.div(".placeholder.add-setting"));
-						}
-					};
-					var removeSetting = function () {
-						var dialog = _status.event.dialog;
-						if (dialog) {
+							dialog.add(ui.create.div(".placeholder.add-setting"));
+							if (get.is.phoneLayout()) {
+								dialog.add(ui.create.div(".placeholder.add-setting"));
+							}
+						};
+						const removeSetting = () => {
+							const dialog = _status.event.dialog;
+							if (!dialog) {
+								return;
+							}
 							dialog.style.height = "";
 							delete dialog._scrollset;
-							var list = Array.from(dialog.querySelectorAll(".add-setting"));
+							const list = Array.from(dialog.querySelectorAll(".add-setting"));
 							while (list.length) {
 								list.shift().remove();
 							}
 							ui.update();
-						}
-					};
-					event.addSetting = addSetting;
-					event.removeSetting = removeSetting;
-					event.list = [];
-					identityList.randomSort();
-					if (event.identity) {
-						identityList.remove(event.identity);
-						identityList.unshift(event.identity);
-						if (event.fixedseat) {
-							var zhuIdentity = "zhu";
-							if (zhuIdentity != event.identity) {
-								identityList.remove(zhuIdentity);
-								identityList.splice(event.fixedseat, 0, zhuIdentity);
+						};
+						event.addSetting = addSetting;
+						event.removeSetting = removeSetting;
+						event.list = [];
+						identityList.randomSort();
+						if (event.identity) {
+							identityList.remove(event.identity);
+							identityList.unshift(event.identity);
+							if (event.fixedseat) {
+								const zhuIdentity = "zhu";
+								if (zhuIdentity !== event.identity) {
+									identityList.remove(zhuIdentity);
+									identityList.splice(event.fixedseat, 0, zhuIdentity);
+								}
+								delete event.fixedseat;
 							}
-							delete event.fixedseat;
+							delete event.identity;
 						}
-						delete event.identity;
-					}
-					for (i = 0; i < game.players.length; i++) {
-						game.players[i].identity = identityList[i];
-						game.players[i].showIdentity();
-						if (identityList[i] == "zhu") {
-							game.zhu = game.players[i];
+						for (const [index, current] of game.players.entries()) {
+							current.identity = identityList[index];
+							current.showIdentity();
+							if (identityList[index] === "zhu") {
+								game.zhu = current;
+							}
 						}
-					}
 
-					if (!game.zhu) {
-						game.zhu = game.me;
-					} else {
-						game.zhu.setIdentity();
-						game.zhu.identityShown = true;
-						game.zhu.isZhu = game.zhu.identity == "zhu";
-						game.zhu.node.identity.classList.remove("guessing");
-						game.me.setIdentity();
-						game.me.node.identity.classList.remove("guessing");
-					}
-					//选将框分配
-					for (i in lib.characterReplace) {
-						var ix = lib.characterReplace[i];
-						for (var j = 0; j < ix.length; j++) {
-							if (chosen.includes(ix[j]) || lib.filter.characterDisabled(ix[j])) {
-								ix.splice(j--, 1);
+						if (!game.zhu) {
+							game.zhu = game.me;
+						} else {
+							game.zhu.setIdentity();
+							game.zhu.identityShown = true;
+							game.zhu.isZhu = game.zhu.identity === "zhu";
+							game.zhu.node.identity.classList.remove("guessing");
+							game.me.setIdentity();
+							game.me.node.identity.classList.remove("guessing");
+						}
+						//选将框分配
+						for (const character in lib.characterReplace) {
+							const replacements = lib.characterReplace[character];
+							for (let index = replacements.length - 1; index >= 0; index--) {
+								if (chosen.includes(replacements[index]) || lib.filter.characterDisabled(replacements[index])) {
+									replacements.splice(index, 1);
+								}
+							}
+							if (replacements.length) {
+								event.list.push(character);
+								list4.addArray(replacements);
 							}
 						}
-						if (ix.length) {
-							event.list.push(i);
-							list4.addArray(ix);
+						for (const character in lib.character) {
+							if (chosen.includes(character) || list4.includes(character)) {
+								continue;
+							}
+							if (lib.filter.characterDisabled(character)) {
+								continue;
+							}
+							event.list.push(character);
+							list4.push(character);
 						}
-					}
-					for (i in lib.character) {
-						if (chosen.includes(i) || list4.includes(i)) {
-							continue;
-						}
-						if (lib.filter.characterDisabled(i)) {
-							continue;
-						}
-						event.list.push(i);
-						list4.push(i);
-					}
-					event.list.randomSort();
-					_status.characterlist = list4.slice(0);
-					var num = get.config("choice_" + game.me.identity);
-					list = event.list.slice(0, num);
-					delete event.swapnochoose;
-					var dialog;
-					if (event.swapnodialog) {
-						dialog = ui.dialog;
-						event.swapnodialog(dialog, list);
-						delete event.swapnodialog;
-					} else {
-						var str = "选择角色";
-						if (_status.brawl && _status.brawl.chooseCharacterStr) {
-							str = _status.brawl.chooseCharacterStr;
-						}
-						dialog = ui.create.dialog(str, "hidden", [list, "characterx"]);
-						if (!_status.brawl || !_status.brawl.noAddSetting) {
-							if (get.config("change_identity")) {
+						event.list.randomSort();
+						_status.characterlist = list4.slice(0);
+						num = get.config(`choice_${game.me.identity}`);
+						list = event.list.slice(0, num);
+						delete event.swapnochoose;
+						let dialog;
+						if (event.swapnodialog) {
+							dialog = ui.dialog;
+							event.swapnodialog(dialog, list);
+							delete event.swapnodialog;
+						} else {
+							let str = "选择角色";
+							if (_status.brawl && _status.brawl.chooseCharacterStr) {
+								str = _status.brawl.chooseCharacterStr;
+							}
+							dialog = ui.create.dialog(str, "hidden", [list, "characterx"]);
+							if ((!_status.brawl || !_status.brawl.noAddSetting) && get.config("change_identity")) {
 								addSetting(dialog);
 							}
 						}
-					}
-					dialog.setCaption("选择角色");
-					game.me.setIdentity();
+						dialog.setCaption("选择角色");
+						game.me.setIdentity();
 
-					if (!event.chosen.length) {
-						game.me.chooseButton(dialog, true).set("onfree", true).selectButton = function () {
-							return get.config("double_character") ? 2 : 1;
-						};
-					} else {
-						lib.init.onfree();
-					}
-					ui.create.cheat = function () {
-						_status.createControl = ui.cheat2;
-						ui.cheat = ui.create.control("更换", function () {
-							if (ui.cheat2 && ui.cheat2.dialog == _status.event.dialog) {
-								return;
-							}
-							if (game.changeCoin) {
-								game.changeCoin(-3);
-							}
-
-							event.list.randomSort();
-							list = event.list.slice(0, num);
-
-							var buttons = ui.create.div(".buttons");
-							var node = _status.event.dialog.buttons[0].parentNode;
-							_status.event.dialog.buttons = ui.create.buttons(list, "characterx", buttons);
-							_status.event.dialog.content.insertBefore(buttons, node);
-							buttons.addTempClass("start");
-							node.remove();
-							game.uncheck();
-							game.check();
-						});
-						delete _status.createControl;
-					};
-					if (lib.onfree) {
-						lib.onfree.push(function () {
-							event.dialogxx = ui.create.characterDialog("heightset");
-							if (ui.cheat2) {
-								ui.cheat2.addTempClass("controlpressdownx", 500);
-								ui.cheat2.classList.remove("disabled");
-							}
-						});
-					} else {
-						event.dialogxx = ui.create.characterDialog("heightset");
-					}
-
-					ui.create.cheat2 = function () {
-						ui.cheat2 = ui.create.control("自由选将", function () {
-							if (this.dialog == _status.event.dialog) {
-								if (game.changeCoin) {
-									game.changeCoin(10);
-								}
-								this.dialog.close();
-								_status.event.dialog = this.backup;
-								this.backup.open();
-								delete this.backup;
-								game.uncheck();
-								game.check();
-								if (ui.cheat) {
-									ui.cheat.addTempClass("controlpressdownx", 500);
-									ui.cheat.classList.remove("disabled");
-								}
-							} else {
-								if (game.changeCoin) {
-									game.changeCoin(-10);
-								}
-								this.backup = _status.event.dialog;
-								_status.event.dialog.close();
-								_status.event.dialog = _status.event.parent.dialogxx;
-								this.dialog = _status.event.dialog;
-								this.dialog.open();
-								game.uncheck();
-								game.check();
-								if (ui.cheat) {
-									ui.cheat.classList.add("disabled");
-								}
-							}
-						});
-						if (lib.onfree) {
-							ui.cheat2.classList.add("disabled");
-						}
-					};
-					if (!_status.brawl || !_status.brawl.chooseCharacterFixed) {
-						if (!ui.cheat && get.config("change_choice")) {
-							ui.create.cheat();
-						}
-						if (!ui.cheat2 && get.config("free_choose")) {
-							ui.create.cheat2();
-						}
-					}
-					"step 1";
-					if (ui.cheat) {
-						ui.cheat.close();
-						delete ui.cheat;
-					}
-					if (ui.cheat2) {
-						ui.cheat2.close();
-						delete ui.cheat2;
-					}
-					var chooseGroup = false;
-					if (event.chosen.length) {
-						if (lib.selectGroup.includes(lib.character[event.chosen[0]][1])) {
-							chooseGroup = true;
-						}
-					} else if (event.modchosen) {
-						if (event.modchosen[0] == "random") {
-							event.modchosen[0] = result.buttons[0].link;
+						if (!event.chosen.length) {
+							game.me.chooseButton(dialog, true).set("onfree", true).selectButton = () => (get.config("double_character") ? 2 : 1);
 						} else {
-							event.modchosen[1] = result.buttons[0].link;
+							lib.init.onfree();
 						}
-					} else if (result.buttons.length == 2) {
-						event.choosed = [result.buttons[0].link, result.buttons[1].link];
-						game.addRecentCharacter(result.buttons[0].link, result.buttons[1].link);
-						if (lib.selectGroup.includes(lib.character[event.choosed[0]][1])) {
-							chooseGroup = true;
+						ui.create.cheat = () => {
+							_status.createControl = ui.cheat2;
+							ui.cheat = ui.create.control("更换", () => {
+								if (ui.cheat2 && ui.cheat2.dialog === _status.event.dialog) {
+									return;
+								}
+								if (game.changeCoin) {
+									game.changeCoin(-3);
+								}
+
+								event.list.randomSort();
+								list = event.list.slice(0, num);
+
+								const buttons = ui.create.div(".buttons");
+								const node = _status.event.dialog.buttons[0].parentNode;
+								_status.event.dialog.buttons = ui.create.buttons(list, "characterx", buttons);
+								_status.event.dialog.content.insertBefore(buttons, node);
+								buttons.addTempClass("start");
+								node.remove();
+								game.uncheck();
+								game.check();
+							});
+							delete _status.createControl;
+						};
+						if (lib.onfree) {
+							lib.onfree.push(() => {
+								event.dialogxx = ui.create.characterDialog("heightset");
+								if (ui.cheat2) {
+									ui.cheat2.addTempClass("controlpressdownx", 500);
+									ui.cheat2.classList.remove("disabled");
+								}
+							});
+						} else {
+							event.dialogxx = ui.create.characterDialog("heightset");
 						}
-					} else {
-						event.choosed = [result.buttons[0].link];
-						if (lib.selectGroup.includes(lib.character[event.choosed[0]][1])) {
-							chooseGroup = true;
+
+						ui.create.cheat2 = () => {
+							ui.cheat2 = ui.create.control("自由选将", () => {
+								const control = ui.cheat2;
+								if (control.dialog === _status.event.dialog) {
+									if (game.changeCoin) {
+										game.changeCoin(10);
+									}
+									control.dialog.close();
+									_status.event.dialog = control.backup;
+									control.backup.open();
+									delete control.backup;
+									game.uncheck();
+									game.check();
+									if (ui.cheat) {
+										ui.cheat.addTempClass("controlpressdownx", 500);
+										ui.cheat.classList.remove("disabled");
+									}
+								} else {
+									if (game.changeCoin) {
+										game.changeCoin(-10);
+									}
+									control.backup = _status.event.dialog;
+									_status.event.dialog.close();
+									_status.event.dialog = _status.event.parent.dialogxx;
+									control.dialog = _status.event.dialog;
+									control.dialog.open();
+									game.uncheck();
+									game.check();
+									if (ui.cheat) {
+										ui.cheat.classList.add("disabled");
+									}
+								}
+							});
+							if (lib.onfree) {
+								ui.cheat2.classList.add("disabled");
+							}
+						};
+						if (!_status.brawl || !_status.brawl.chooseCharacterFixed) {
+							if (!ui.cheat && get.config("change_choice")) {
+								ui.create.cheat();
+							}
+							if (!ui.cheat2 && get.config("free_choose")) {
+								ui.create.cheat2();
+							}
 						}
-						game.addRecentCharacter(result.buttons[0].link);
-					}
-					"step 2";
-					if (event.chosen.length) {
-						game.me.init(event.chosen[0], event.chosen[1]);
-					} else if (event.modchosen) {
-						game.me.init(event.modchosen[0], event.modchosen[1]);
-					} else if (event.choosed.length == 2) {
-						game.me.init(event.choosed[0], event.choosed[1]);
-					} else {
-						game.me.init(event.choosed[0]);
-					}
-					event.list.remove(get.sourceCharacter(game.me.name1));
-					event.list.remove(get.sourceCharacter(game.me.name2));
-					if (game.me == game.zhu) {
-						if (!game.me.isInitFilter("noZhuHp")) {
+					},
+					// step 1
+					async (event, trigger, player, result) => {
+						if (ui.cheat) {
+							ui.cheat.close();
+							delete ui.cheat;
+						}
+						if (ui.cheat2) {
+							ui.cheat2.close();
+							delete ui.cheat2;
+						}
+						let chooseGroup = false;
+						if (event.chosen.length) {
+							if (lib.selectGroup.includes(lib.character[event.chosen[0]][1])) {
+								chooseGroup = true;
+							}
+						} else if (event.modchosen) {
+							if (event.modchosen[0] === "random") {
+								event.modchosen[0] = result.buttons[0].link;
+							} else {
+								event.modchosen[1] = result.buttons[0].link;
+							}
+						} else if (result.buttons.length === 2) {
+							event.choosed = [result.buttons[0].link, result.buttons[1].link];
+							game.addRecentCharacter(result.buttons[0].link, result.buttons[1].link);
+							if (lib.selectGroup.includes(lib.character[event.choosed[0]][1])) {
+								chooseGroup = true;
+							}
+						} else {
+							event.choosed = [result.buttons[0].link];
+							if (lib.selectGroup.includes(lib.character[event.choosed[0]][1])) {
+								chooseGroup = true;
+							}
+							game.addRecentCharacter(result.buttons[0].link);
+						}
+					},
+					// step 2
+					async (event, trigger, player) => {
+						if (event.chosen.length) {
+							game.me.init(event.chosen[0], event.chosen[1]);
+						} else if (event.modchosen) {
+							game.me.init(event.modchosen[0], event.modchosen[1]);
+						} else if (event.choosed.length === 2) {
+							game.me.init(event.choosed[0], event.choosed[1]);
+						} else {
+							game.me.init(event.choosed[0]);
+						}
+						event.list.remove(get.sourceCharacter(game.me.name1));
+						event.list.remove(get.sourceCharacter(game.me.name2));
+						if (game.me === game.zhu && !game.me.isInitFilter("noZhuHp")) {
 							game.me.hp++;
 							game.me.maxHp++;
 							game.me.update();
 						}
-					}
 
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i] != game.me) {
+						for (const current of game.players) {
+							if (current === game.me) {
+								continue;
+							}
 							event.list.randomSort();
-							event.ai(game.players[i], event.list.splice(0, get.config("choice_" + game.players[i].identity)), null, event.list);
+							event.ai(current, event.list.splice(0, get.config(`choice_${current.identity}`)), null, event.list);
 						}
-					}
-					"step 3";
-					for (var i = 0; i < game.players.length; i++) {
-						_status.characterlist.remove(game.players[i].name1);
-						_status.characterlist.remove(game.players[i].name2);
-					}
-					setTimeout(function () {
-						ui.arena.classList.remove("choose-character");
-					}, 500);
-				});
+					},
+					// step 3
+					async (event, trigger, player) => {
+						for (const current of game.players) {
+							_status.characterlist.remove(current.name1);
+							_status.characterlist.remove(current.name2);
+						}
+						setTimeout(() => {
+							ui.arena.classList.remove("choose-character");
+						}, 500);
+					},
+				]);
 			},
 
 			chooseCharacterKaiheiOL() {
@@ -2422,10 +2425,7 @@ export default () => {
 						.chooseTarget({
 							prompt: get.prompt("zhuSkill_jiangling"),
 							prompt2,
-							filterTarget: (_card, player, target) =>
-								!_status.event.targets.includes(target) &&
-								lib.filter.targetEnabled2(_status.event.card, player, target) &&
-								lib.filter.targetInRange(_status.event.card, player, target),
+							filterTarget: (_card, player, target) => !_status.event.targets.includes(target) && lib.filter.targetEnabled2(_status.event.card, player, target) && lib.filter.targetInRange(_status.event.card, player, target),
 							ai: target => {
 								const trigger = _status.event.getTrigger();
 								const player = _status.event.player;
@@ -2574,7 +2574,7 @@ export default () => {
 								},
 								player,
 								event
-								) ||
+							) ||
 								event.filterCard(
 									{
 										name: "taoyuan",
@@ -2583,8 +2583,7 @@ export default () => {
 									},
 									player,
 									event
-								)
-							)
+								))
 						) {
 							return true;
 						}
@@ -2598,7 +2597,7 @@ export default () => {
 								},
 								player,
 								event
-								) ||
+							) ||
 								event.filterCard(
 									{
 										name: "wugu",
@@ -2607,8 +2606,7 @@ export default () => {
 									},
 									player,
 									event
-								)
-							)
+								))
 						) {
 							return true;
 						}
@@ -3281,14 +3279,10 @@ export default () => {
 							_status.event.goon = true;
 						},
 						card => {
-							if (
-								game.zhu.countCards("he", card => get.value(card, game.zhu) >= 6)
-							) {
+							if (game.zhu.countCards("he", card => get.value(card, game.zhu) >= 6)) {
 								return 7 - get.value(card);
 							}
-							if (
-								game.zhu.countCards("he", card => get.value(card, game.zhu) > 0)
-							) {
+							if (game.zhu.countCards("he", card => get.value(card, game.zhu) > 0)) {
 								return 5 - get.value(card);
 							}
 							return 0;
