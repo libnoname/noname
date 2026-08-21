@@ -21605,6 +21605,7 @@ const skills = {
 			} else {
 				await target.chooseToDiscard(num, true, "he");
 			}
+			player.markSkill("dcwoheng");
 			if (useCnt > 3 || player.countCards("h") !== target.countCards("h")) {
 				await player.draw(2);
 				if (player.hasSkill("dcwoheng", null, null, false)) {
