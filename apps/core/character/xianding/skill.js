@@ -15119,7 +15119,7 @@ const skills = {
 			if (result?.links?.length) {
 				event.result = {
 					bool: true,
-					targets: result.targets ?? [],
+					targets: result.links[0] == "discard" ? [] : (result.targets ?? []),
 					cost_data: result.links[0],
 				};
 			}
