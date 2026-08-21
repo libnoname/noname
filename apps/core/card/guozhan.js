@@ -1137,7 +1137,17 @@ export default {
 						if (target.hasSkill("undist") || target.hasSkill("diaohulishan")) {
 							return 0;
 						}
-						return player.countCards("hs", card => {
+						// 下面的 getUseValue 会对手牌里的每张牌求值，其中可能又是一张调虎离山，
+						// 于是重新进入本函数。开头那道守卫看的是 target，而嵌套那层评估的是别的
+						// target，拦不住；addSkill("undist") 也只覆盖算 eff2 的那半边。
+						// 加一道重入守卫：一次 AI 求值里只算最外层那一次。
+						// 标记用 _status.event 而不是布尔值，是为了万一中途抛异常没清掉时能自愈
+						// —— 下一个事件里它自然失效，不会让这张牌的 AI 从此永远返回 0。
+						if (_status._diaohulishanAI && _status._diaohulishanAI === _status.event) {
+							return 0;
+						}
+						_status._diaohulishanAI = _status.event;
+						const result = player.countCards("hs", card => {
 							if (ui.selected.cards.includes(card)) {
 								return false;
 							}
@@ -1158,6 +1168,8 @@ export default {
 							target.removeSkill("undist");
 							return eff2 > eff1;
 						});
+						_status._diaohulishanAI = null;
+						return result;
 					},
 				},
 			},
