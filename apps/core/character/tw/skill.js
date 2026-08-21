@@ -8310,29 +8310,23 @@ const skills = {
 		},
 		frequent: true,
 		filter(event, player) {
-			const isLose =
-				event.getl(player).cards.length &&
+			return (
+				(event.getl(player).cards2.length || event.getg(player).length) &&
 				lib.phaseName.some(phase => {
-					return (
-						player
-							.getHistory("lose", evt => evt.getParent(phase) === event.getParent(phase))
-							.map(evt => (event.name == "lose" ? evt : evt.getParent()))
-							.indexOf(event) === 0
-					);
-				});
-			const isGain =
-				event.getg(player).length &&
-				lib.phaseName.some(phase => {
-					return (
-						player
-							.getHistory("gain", evt => evt.getParent(phase) === event.getParent(phase))
-							.map(evt => (event.name == "gain" ? evt : evt.getParent()))
-							.indexOf(event) === 0
-					);
-				});
-			if (isGain) event.twdumou = "gain";
-			if (isLose) event.twdumou = "lose";
-			return isGain || isLose;
+					const loses = player
+						.getHistory("lose", evt => {
+							if (evt.getParent(phase) !== event.getParent(phase)) return;
+							const evt2 = evt.relatedEvent || evt.getParent();
+							if (evt2.name === "useCard" && evt2.player === player && get.type(evt2.card, null, false) === "equip") {
+								return;
+							}
+							return true;
+						})
+						.map(evt => (event.name == "lose" ? evt : evt.getParent()));
+					const gains = player.getHistory("gain", evt => evt.getParent(phase) === event.getParent(phase)).map(evt => (event.name == "gain" ? evt : evt.getParent()));
+					return [...loses, ...gains].indexOf(event) === 0;
+				})
+			);
 		},
 		async cost(event, trigger, player) {
 			const state = trigger.twdumou;
@@ -8346,29 +8340,11 @@ const skills = {
 					createDialog: [`###${get.prompt(event.skill)}###<div class='text center'>你可以选择一项…</div>`, [dialog, "textbutton"]],
 					ai(button) {
 						const player = get.player();
-						const event2 = get.event().event2;
-						if (
-							!lib.phaseName.some(phase => {
-								return player.hasHistory("useSkill", evt => {
-									return evt.skill === "twdumou" && evt.event.getParent(phase) === get.event().getParent(phase);
-								});
-							})
-						) {
-							const state = get.event().state;
-							if (state === "lose" && button.link === "give") {
-								return 1;
-							} else if (state === "gain" && button.link === "recast") {
-								event2.aiTarget = player;
-								return 1;
-							}
-							return 0;
-						} else {
-							if (_status.currentPhase !== player && button.link === "recast") {
-								return 1;
-							} else return button.link === "recast" ? 1 : 0;
+						if (button.link === "give") {
+							return Math.random();
 						}
+						return 0.9;
 					},
-					state,
 					event2: event,
 				})
 				.forResult();
@@ -8377,12 +8353,11 @@ const skills = {
 				bool: result.bool,
 				cost_data: {
 					link: result.links[0],
-					target: event.aiTarget,
 				},
 			};
 		},
 		async content(event, trigger, player) {
-			const { link, target } = event.cost_data;
+			const { link } = event.cost_data;
 			const targetPrompt = "督鍪：" + (link === "give" ? "展示牌堆顶的一张牌并令一名角色获得之" : "重铸一名角色的三张牌");
 			if (link === "recast") {
 				const targetResult = await player
@@ -8392,16 +8367,14 @@ const skills = {
 						},
 						prompt: targetPrompt,
 						ai(target) {
-							const target2 = get.event().target2;
 							const player = get.player();
-							if (target2) return target === target2;
+							// 回合内瞅准一个人打
 							if (player.getStorage("twdumou")[1] == get.event().getParent("phase")) {
 								return 666 * (target === player.getStorage("twdumou")[0]);
 							}
 							return get.damageEffect(target, player, player, "fire");
 						},
 						forced: true,
-						target2: target,
 					})
 					.forResult();
 				const thisTarget = targetResult.targets[0];
@@ -8489,7 +8462,7 @@ const skills = {
 		},
 	},
 	twhantian: {
-		enable: "chooseToUse",
+		enable: "phaseUse",
 		locked: false,
 		usable: 1,
 		selectCard: -1,
