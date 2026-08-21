@@ -8578,7 +8578,7 @@ const skills = {
 					const target = trigger.player;
 					if (!target) return;
 					const num = target.getHistory("gain").length;
-					game.log("熯天：", target, "受到火焰伤害增加", num, "点");
+					game.log("撼天：", target, "受到火焰伤害增加", num, "点");
 					trigger.num += num;
 				},
 			},
