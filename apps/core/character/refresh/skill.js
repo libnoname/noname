@@ -12536,7 +12536,7 @@ const skills = {
 			const cmpResult = await comp.forResult();
 
 			// step 2: 根据拼点结果处理
-			if ((player === source && cmpResult.bool) || (target === source && !cmpResult.bool)) {
+			if ((player === source && (cmpResult.bool || cmpResult.tie)) || (target === source && !cmpResult.bool)) {
 				event.cards = [cmpResult.player, cmpResult.target].filterInD("d");
 				if (!event.cards.length) return;
 
