@@ -23159,7 +23159,7 @@ const skills = {
 				event.card = result.cards[0];
 				player
 					.chooseTarget("是否将" + get.translation(event.card) + "交给一名其他角色？", function (card, player, current) {
-						return current != player && current != _status.event.target1 && lib.skill.xindiaodu.isFriendOf(current, player);
+						return current != player && current != _status.event.target1;
 					})
 					.set("target1", event.target1);
 			} else {
