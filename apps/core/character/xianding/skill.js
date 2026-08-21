@@ -15062,23 +15062,23 @@ const skills = {
 					filterButton(button) {
 						const player = get.player();
 						if (button.link == "discard") {
-							return game.hasPlayer(target => target.countDiscardableCards(player, "he"));
+							return game.hasPlayer(target => target.countDiscardableCards(player, "he") && player != target);
 						}
 						return true;
 					},
 					filterTarget(card, player, target) {
 						const selected = ui.selected.buttons;
-						if (!selected.length || target == player) {
+						if (!selected?.length || target == player) {
 							return false;
 						}
 						if (selected[0].link == "discard") {
-							return false;
+							return target.hasDiscardableCards(player, "he");
 						}
 						return true;
 					},
 					selectTarget() {
 						const selected = ui.selected.buttons;
-						if (!selected.length) {
+						if (!selected?.length) {
 							return false;
 						}
 						if (selected[0].link == "discard") {
@@ -15087,6 +15087,7 @@ const skills = {
 						return 1;
 					},
 					num: num,
+					complexSelect: true,
 					ai1(button) {
 						const player = get.player();
 						if (button.link == "discard") {
@@ -15098,6 +15099,10 @@ const skills = {
 								})
 								.sort((a, b) => b - a);
 							return list.slice(0, Math.min(get.event().num, list.length)).reduce((eff, num) => eff + num, 0);
+						}
+						//如果手上还有可以继续极斩的牌就还是不打伤害
+						if (player.hasCards("h", card => player.hasUseTarget(card) && get.type(card) == "equip" && player.hasCards("he", cardx => player.hasUseTarget(cardx) && get.color(cardx) == "black" && card != cardx))) {
+							return 1;
 						}
 						return Math.max(...game.filterPlayer().map(target => get.damageEffect(target, player, player) * get.event().num));
 					},
