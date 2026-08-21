@@ -28443,7 +28443,8 @@ const skills = {
 					filterCard: lib.filter.cardDiscardable,
 					filterTarget: true,
 					ai1(card) {
-						return 8 - get.value(card);
+						if (card.name == "dz_mantianguohai") return 0.1;
+						return 10 - get.value(card);
 					},
 					ai2(target) {
 						if (target.hasJudge("lebu")) {
@@ -28465,6 +28466,32 @@ const skills = {
 			} = event;
 			await player.discard({ cards });
 			target.insertPhase();
+		},
+		ai: {
+			effect: {
+				player(card, player, target) {
+					let bool = false;
+					const history = player.getHistory("useCard"),
+						map = {};
+					if (history.length) {
+						for (const evt of history) {
+							if (get.type2(evt.card) == "trick") {
+								if (!map[evt.card.name]) {
+									map[evt.card.name] = true;
+								} else {
+									bool = true;
+									break;
+								}
+							}
+						}
+						if (bool && get.type(card) == "trick") {
+							if (!player.needsToDiscard() || card.name == "dz_mantianguohai") {
+								return "zeroplayertarget";
+							}
+						}
+					}
+				},
+			},
 		},
 		subSkill: {
 			mark: {
