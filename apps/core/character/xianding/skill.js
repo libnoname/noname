@@ -6129,6 +6129,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
+				audio: "zhuangpo",
 				trigger: { player: "useCardToPlayered" },
 				filter(event, player) {
 					const card = event.card;
