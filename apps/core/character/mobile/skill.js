@@ -32808,7 +32808,7 @@ const skills = {
 			const { choice, skills } = event.cost_data;
 			const target = trigger.player;
 			if (choice === "获得技能") {
-				if (player.identity !== target.identity) {
+				if (player.identity !== target.identity || player.side != target.side) {
 					if (skills.length > 0) {
 						await player.addSkills(skills);
 					}
