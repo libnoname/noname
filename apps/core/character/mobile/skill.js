@@ -523,7 +523,8 @@ const skills = {
 	},
 	//界王基
 	reqizhi: {
-		audio: 2,
+		audio: 4,
+		logAudio: () => 2,
 		chargeSkill: 3,
 		beginMarkCount: 1,
 		init(player, skill) {
@@ -556,7 +557,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
-				audio: "reqizhi",
+				audio: ["reqizhi3.mp3", "reqizhi4.mp3"],
 				charlotte: true,
 				onremove: true,
 				forced: true,
@@ -583,7 +584,8 @@ const skills = {
 		},
 	},
 	rejinqu: {
-		audio: 2,
+		audio: 4,
+		logAudio: event => event.name == "useCard" ? 2 : ["rejinqu3.mp3", "rejinqu4.mp3"], 
 		forced: true,
 		trigger: {
 			player: ["useCardAfter", "phaseJieshuBegin"],
