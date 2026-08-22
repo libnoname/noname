@@ -279,7 +279,7 @@ const translates = {
 	std_simazhao: "标司马昭",
 	std_simazhao_prefix: "标",
 	stdzhaoxin: "昭心",
-	stdzhaoxin_info: "锁定技。准备阶段，你展示所有手牌，若这些牌颜色均相同，你对一名角色造成1点伤害。",
+	stdzhaoxin_info: "锁定技。准备阶段，你展示所有手牌，若两种颜色的牌数相同，你对一名角色造成1点伤害。",
 	std_guozhao: "标郭照",
 	std_guozhao_prefix: "标",
 	stdwufei: "诬诽",
