@@ -28344,8 +28344,7 @@ const skills = {
 						const player = get.player();
 						if (button.link[2] == "dz_mantianguohai" && player.countCards("hs", "dz_mantianguohai") < 2) {
 							return 10;
-						}
-						if (player.countCards("hs", card => card.name == button.link) == 1) {
+						} else if (player.countCards("hs", button.link[2]) == 1) {
 							return 4 + get.value({ name: button.link[2] });
 						}
 						return get.value({ name: button.link[2] });
@@ -28484,7 +28483,7 @@ const skills = {
 								}
 							}
 						}
-						if (bool && get.type(card) == "trick") {
+						if (bool && get.type(card) == "trick" && player == _status.currentPhase) {
 							if (!player.needsToDiscard() || card.name == "dz_mantianguohai") {
 								return "zeroplayertarget";
 							}
