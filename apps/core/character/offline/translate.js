@@ -1,6 +1,13 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	pe_xiangyu: "项羽",
+	pegaishi: "盖世",
+	pegaishi_info: "锁定技，座位数小于/大于你的角色不能响应你的牌/受到你造成的伤害+1。当你的体力为1时，此技能不受座位数限制。",
+	pefuqin: "覆秦",
+	pefuqin_info: `使命技，出牌阶段开始时，你可以摸X张牌并令此阶段前X张牌无次数限制（X为场上和弃牌堆中点数为K的牌数+1）。成功：有角色死亡后，你获得${get.poptip("dcfencheng")}和${get.poptip("jsrgyansha")}。若伤害来源不为你，此技能不会失效。`,
+	peyinghao: "英豪",
+	peyinghao_info: "主公技，场上每有一名与你势力相同的角色，你的攻击范围便+1。",
 	ps_shen_jiangwei: "★神姜维",
 	ps_shen_jiangwei_prefix: "★|神",
 	psfenzhi: "焚志",

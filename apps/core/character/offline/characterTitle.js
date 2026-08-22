@@ -1,4 +1,5 @@
 export default {
+	pe_xiangyu: "西楚霸王",
 	ps_shen_jiangwei: "残阳泣血",
 	ps_devil_jiangwei: "残魂噬血",
 	shangguanwaner: "天性韶警",
