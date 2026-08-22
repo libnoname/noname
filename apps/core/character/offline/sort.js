@@ -40,6 +40,7 @@ const characterSort = {
 	offline_shiningGrils: ["shinin_zhenji", "shinin_wuguotai", "shinin_ruiji", "shinin_lvlingqi", "shinin_dongwan", "goblin", "lord_goblin"],
 	offline_yanling: ["ylyg_xiaoqiao", "ylyg_yuji", "ylyg_pangtong", "ylyg_dianwei", "ylyg_xuhuang", "ylyg_zhurong"],
 	offline_zongheng: ["zh_shen_zhangjiao"],
+	offline_longxuexuanhuang: ["lx_simazhao", "lx_caomao", "lx_mb_shen_machao", "lx_simafu", "lx_simazhou", "lx_guanqiujian", "lx_wenqin", "lx_lizhaojiaobo", "lx_chengji", "lx_jiachong"],
 	//offline_others: [],
 };
 
@@ -88,6 +89,7 @@ const characterSortTranslate = {
 	offline_yanling: "雁翎耀光",
 	extra_offline: "神话再临·线下",
 	offline_zongheng: "纵横九州",
+	offline_longxuexuanhuang: "龙血玄黄·线下",
 };
 
 export { characterSort, characterSortTranslate };
