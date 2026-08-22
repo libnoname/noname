@@ -28345,6 +28345,9 @@ const skills = {
 						if (button.link[2] == "dz_mantianguohai" && player.countCards("hs", "dz_mantianguohai") < 2) {
 							return 10;
 						}
+						if (player.countCards("hs", card => card.name == button.link) == 1) {
+							return 4 + get.value({ name: button.link[2] });
+						}
 						return get.value({ name: button.link[2] });
 					})
 					.forResult();
