@@ -5357,13 +5357,14 @@ const skills = {
 			await player.gainPlayerCard(target, target === player ? "e" : "he", true);
 		},
 		ai: {
-			order: 7,
+			order: 10,
 			result: {
-				player(player, target) {
+				player: 1,
+				target(player, target) {
 					if (!target.isLinked()) {
-						return get.effect(target, { name: "tiesuo" }, player, player);
+						return get.sgnAttitude(player, target) * get.effect(target, { name: "tiesuo" }, player, player);
 					}
-					return get.effect(target, { name: "shunshou_copy2" }, player, player);
+					return get.sgnAttitude(player, target) * get.effect(target, { name: "shunshou_copy2" }, player, player);
 				},
 			},
 		},

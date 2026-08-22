@@ -21,6 +21,18 @@ const characters = {
 		hp: 5,
 		skills: ["dcsbjianwei", "dcsbjuzhan"],
 	},
+	liupanxi: {
+		sex: "female",
+		group: "shu",
+		hp: 4,
+		skills: ["dcxunxiang", "dczhiyao"],
+	},
+	dengwantang: {
+		sex: "female",
+		group: "wu",
+		hp: 4,
+		skills: ["dcdaijia", "dcchengchong"],
+	},
 	v_mateng: {
 		sex: "male",
 		group: "qun",

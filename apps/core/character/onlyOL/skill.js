@@ -5186,7 +5186,7 @@ const skills = {
 					}
 					return !event._extraPhaseReason;
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.cancel();
 				},
 			},
@@ -5853,12 +5853,12 @@ const skills = {
 				charlotte: true,
 				popup: false,
 				firstDo: true,
-				content() {
+				async content(event, trigger, player) {
 					player.removeSkill(event.name);
 					if (trigger.addCount !== false) {
 						trigger.addCount = false;
-						const stat = player.getStat().card,
-							name = trigger.card.name;
+						const stat = player.getStat().card;
+						const name = trigger.card.name;
 						if (typeof stat[name] === "number") {
 							stat[name]--;
 						}
@@ -7645,9 +7645,9 @@ const skills = {
 								return 8 - get.value(card);
 							},
 							log: false,
-							precontent() {
-								const skill = "olguifu",
-									card = event.result.card;
+							async precontent(event, trigger, player) {
+								const skill = "olguifu";
+								const card = event.result.card;
 								player.logSkill(skill);
 								player.addTempSkill(skill + "_used");
 								player.markAuto(skill + "_used", card.name);
@@ -7689,7 +7689,7 @@ const skills = {
 				},
 				forced: true,
 				locked: false,
-				content() {
+				async content(event, trigger, player) {
 					let storage = player.storage[event.name];
 					const skill = game.findSkill(trigger);
 					if (trigger.card) {
@@ -7866,8 +7866,8 @@ const skills = {
 		},
 		forced: true,
 		popup: false,
-		content() {
-			player.loseHp();
+		async content(event, trigger, player) {
+			await player.loseHp();
 		},
 		nopop: true,
 		mark: true,
@@ -7965,7 +7965,7 @@ const skills = {
 						})
 					);
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.num++;
 				},
 				mod: {
@@ -8111,7 +8111,7 @@ const skills = {
 				forceDie: true,
 				onremove: true,
 				trigger: { global: "damageBegin1" },
-				content() {
+				async content(event, trigger, player) {
 					trigger.num += player.countMark(event.name);
 					player.removeSkill(event.name);
 				},
@@ -8145,7 +8145,7 @@ const skills = {
 					}
 					return player.isPhaseUsing() && event.card?.name == "sha";
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.addTempSkills(["new_rewusheng", "olpaoxiao"]);
 				},
 			},
@@ -8187,45 +8187,50 @@ const skills = {
 		logAudio: index => (typeof index === "number" ? "jsrgchaozheng" + index + ".mp3" : ["jsrgchaozheng1.mp3", "jsrgchaozheng2.mp3"]),
 		inherit: "jsrgchaozheng",
 		filter(event, player) {
-			if (!player.countCards("h")) {
+			if (!player.hasCards("h")) {
 				return false;
 			}
-			return game.hasPlayer(i => i != player && i.countCards("h"));
+			return game.hasPlayer(current => current !== player && current.hasCards("h"));
 		},
 		logTarget(event, player) {
-			return game.filterPlayer(i => i != player && i.countCards("h"));
+			return game.filterPlayer(current => current !== player && current.hasCards("h"));
 		},
 		prompt2() {
 			return lib.translate["olchaozheng_info"].split("②")[0].slice(1);
 		},
-		content() {
-			player.chooseToDebate(game.filterPlayer(current => current.countCards("h"))).set("callback", async (event, trigger, player) => {
-				const { debateResult: result } = event;
-				const { bool, opinion, targets, opinions } = result;
-				if (bool && opinion) {
-					if (opinion && ["red", "black"].includes(opinion)) {
-						player.logSkill("olchaozheng", targets, null, null, [opinion == "red" ? 3 : 4]);
-						for (const target of result.red
-							.map(i => i[0])
-							.unique()
-							.sortBySeat()) {
-							if (target === player && opinion !== "red") {
-								continue;
+		async content(event, trigger, player) {
+			await player
+				.chooseToDebate({
+					list: game.filterPlayer(current => current.hasCards("h")),
+					args: [],
+				})
+				.set("callback", async (event, trigger, player) => {
+					const { debateResult: result } = event;
+					const { bool, opinion, targets, opinions } = result;
+					if (bool && opinion) {
+						if (opinion && ["red", "black"].includes(opinion)) {
+							player.logSkill("olchaozheng", targets, null, null, [opinion == "red" ? 3 : 4]);
+							for (const target of result.red
+								.map(i => i[0])
+								.unique()
+								.sortBySeat()) {
+								if (target === player && opinion !== "red") {
+									continue;
+								}
+								await target[opinion == "red" ? "recover" : "loseHp"]();
 							}
-							await target[opinion == "red" ? "recover" : "loseHp"]();
 						}
 					}
-				}
-				const ops = opinions.filter(i => result[i].flat().includes(player));
-				if (ops) {
-					await player.draw(
-						Math.min(
-							2,
-							ops.reduce((sum, op) => sum + result[op].map(i => i[0]).unique().length, 0)
-						)
-					);
-				}
-			});
+					const ops = opinions.filter(i => result[i].flat().includes(player));
+					if (ops) {
+						await player.draw(
+							Math.min(
+								2,
+								ops.reduce((sum, op) => sum + result[op].map(i => i[0]).unique().length, 0)
+							)
+						);
+					}
+				});
 		},
 		group: "olchaozheng_debate",
 		subSkill: {
@@ -8237,7 +8242,7 @@ const skills = {
 				},
 				forced: true,
 				locked: false,
-				content() {
+				async content(event, trigger, player) {
 					const ops = trigger.opinions.filter(i => trigger[i].flat().includes(player));
 					for (const op of ops) {
 						for (const list of trigger[op]) {
@@ -9071,7 +9076,7 @@ const skills = {
 				trigger: { source: "damageBegin1" },
 				forced: true,
 				logTarget: "player",
-				content() {
+				async content(event, trigger, player) {
 					const num = player.countMark(event.name);
 					player.removeSkill(event.name);
 					trigger.num += num;
@@ -9110,7 +9115,7 @@ const skills = {
 		filterOk: () => !get.player().getStorage("olsblunzhan_used").includes(ui.selected.cards.length),
 		viewAs: { name: "juedou", storage: { olsblunzhan: true } },
 		allowChooseAll: true,
-		precontent() {
+		async precontent(event, trigger, player) {
 			player.addTempSkill("olsblunzhan_used");
 			player.markAuto("olsblunzhan_used", event.result.cards.length);
 			player.addTempSkill("olsblunzhan_effect");
@@ -9184,7 +9189,7 @@ const skills = {
 		},
 		forced: true,
 		logTarget: "target",
-		content() {
+		async content(event, trigger, player) {
 			const { target } = trigger;
 			target.chooseToDiscard("he", true, player.getHistory("useCard", evt => evt.targets?.includes(target)).length);
 		},
@@ -9214,7 +9219,7 @@ const skills = {
 				forced: true,
 				popup: false,
 				firstDo: true,
-				content() {
+				async content(event, trigger, player) {
 					trigger.getParent().set("olsbjuejue", true);
 				},
 			},
@@ -9728,7 +9733,7 @@ const skills = {
 				},
 				forced: true,
 				popup: false,
-				content() {
+				async content(event, trigger, player) {
 					player.chooseToDiscard("he", true);
 				},
 			},
@@ -10723,7 +10728,7 @@ const skills = {
 				},
 				forced: true,
 				popup: false,
-				content() {
+				async content(event, trigger, player) {
 					const target = trigger.player;
 					delete player.storage[event.name][target.playerid];
 					player[Object.keys(player.storage[event.name]).length ? "markSkill" : "removeSkill"](event.name);
@@ -11326,7 +11331,7 @@ const skills = {
 		},
 		forced: true,
 		usable: 1,
-		content() {
+		async content(event, trigger, player) {
 			player.addSkill("olsbyangwei_attack");
 			player.addMark("olsbyangwei_attack", 1, false);
 		},
@@ -11369,7 +11374,7 @@ const skills = {
 				},
 				forced: true,
 				usable: 1,
-				content() {
+				async content(event, trigger, player) {
 					player.addSkill("olsbyangwei_defend");
 					player.addMark("olsbyangwei_defend", 1, false);
 				},
@@ -11380,7 +11385,7 @@ const skills = {
 				onremove: true,
 				trigger: { source: "damageBegin1" },
 				forced: true,
-				content() {
+				async content(event, trigger, player) {
 					trigger.num += player.countMark(event.name);
 					player.removeSkill(event.name);
 				},
@@ -11406,7 +11411,7 @@ const skills = {
 				onremove: true,
 				trigger: { player: "damageBegin2" },
 				forced: true,
-				content() {
+				async content(event, trigger, player) {
 					trigger.num += player.countMark(event.name);
 					player.removeSkill(event.name);
 				},
@@ -11638,7 +11643,7 @@ const skills = {
 					}
 					return false;
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.turnOver();
 				},
 			},
@@ -13269,7 +13274,7 @@ const skills = {
 			}, 0);
 			return eff2 > eff1;
 		},
-		content() {
+		async content(event, trigger, player) {
 			game.log(player, "将", trigger.card, "改为了火属性");
 			game.setNature(trigger.card, "fire");
 			player
@@ -13314,24 +13319,8 @@ const skills = {
 		subSkill: {
 			add: {
 				inherit: "lihuo2",
-				async content(event, trigger, player) {
-					const { bool, targets } = await player
-						.chooseTarget(get.prompt("dclihuo"), "为" + get.translation(trigger.card) + "增加一个目标", (card, player, target) => {
-							const trigger = get.event().getTrigger();
-							return !trigger.targets.includes(target) && player.canUse(trigger.card, target);
-						})
-						.set("card", trigger.card)
-						.set("ai", target => {
-							const player = get.event().player,
-								trigger = get.event().getTrigger();
-							return get.effect(target, trigger.card, player, player);
-						})
-						.forResult();
-					if (bool) {
-						player.logSkill("dclihuo", targets);
-						trigger.targets.addArray(targets);
-					}
-				},
+				sourceSkill: "dclihuo",
+				audio: "dclihuo",
 			},
 		},
 	},
@@ -13850,7 +13839,7 @@ const skills = {
 				forced: true,
 				popup: false,
 				firstDo: true,
-				content() {
+				async content(event, trigger, player) {
 					player.unmarkAuto(event.name, [trigger.card]);
 					if (!player.getStorage(event.name).length) {
 						player.removeSkill(event.name);
@@ -14009,7 +13998,7 @@ const skills = {
 							.forResult();
 					}
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.targets.addArray(event.targets);
 					game.log(event.targets, "成为了", trigger.card, "的额外目标");
 				},
@@ -14124,7 +14113,7 @@ const skills = {
 					},
 					position: "hse",
 					viewAs: { name: links[0][2], nature: links[0][3] },
-					precontent() {
+					async precontent(event, trigger, player) {
 						player.addTempSkill("olsbweilin_effect");
 					},
 					ai: {
@@ -14213,7 +14202,7 @@ const skills = {
 				},
 				forced: true,
 				popup: false,
-				content() {
+				async content(event, trigger, player) {
 					const target = trigger.target;
 					target.addTempSkill("olsbweilin_wusheng");
 					target.markAuto("olsbweilin_wusheng", [get.color(trigger.card)]);
@@ -14746,7 +14735,7 @@ const skills = {
 				trigger: { player: "recoverBefore" },
 				forced: true,
 				firstDo: true,
-				content() {
+				async content(event, trigger, player) {
 					trigger.cancel();
 				},
 				ai: {
