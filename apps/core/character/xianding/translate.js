@@ -1,6 +1,16 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	liupanxi: "刘盼兮",
+	dcxunxiang: "寻香",
+	dcxunxiang_info: "每回合每种花色限一次，你使用牌结算后，你可观看牌堆顶四张牌，并获得与使用牌花色相同的牌，本局游戏你使用过的牌花色首次达到2与4时，此技能观看牌数+1。",
+	dczhiyao: "制肴",
+	dczhiyao_info: "出牌阶段每名角色限一次，你可弃置任意张【桃】、【酒】、【顺手牵羊】、【五谷丰登】、坐骑牌并选择一名角色，每弃置一张牌令其进行两次判定，判定结果为：方块：受到1点火焰伤害；黑桃：随机弃置两张牌；梅花：获得此牌且使用无次数限制；红桃：获得此牌并回复1点体力。",
+	dengwantang: "邓晚棠",
+	dcdaijia: "黛颊",
+	dcdaijia_info: "每轮开始时，你可回复1点体力并随机从牌堆中将体力上限张红色牌置于武将牌上，称为“黛”；目标包含你的非延时牌结算后，你随机获得一张“黛”；每轮结束时，你获得所有“黛”。",
+	dcchengchong: "承宠",
+	dcchengchong_info: "锁定技，当你不以此法获得牌时，若你手牌中红色牌数大于黑色牌数，你摸一张牌。",
 	v_mateng: "威马腾",
 	v_mateng_prefix: "威",
 	dcheqi: "合骑",

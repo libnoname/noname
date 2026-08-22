@@ -6529,7 +6529,10 @@ const skills = {
 			},
 			dongjiao: {
 				audio: 6,
-				trigger: { player: ["useCard", "useCardToPlayered", "useCardAfter"] },
+				trigger: {
+					player: ["useCard", "useCardToPlayered", "useCardAfter"],
+					source: "damageBegin2",
+				},
 				logAudio(event, player, name) {
 					if (name == "useCardAfter") {
 						return ["mbweizhuang_dongjiao3.mp3", "mbweizhuang_dongjiao6.mp3"];
@@ -6557,8 +6560,11 @@ const skills = {
 					if (list.includes(type)) {
 						return false;
 					}
-					if (name == "useCard") {
-						return num >= 1 && type == "basic";
+					if (name == "useCard" || event.name == "damage") {
+						if (num < 1 || type !== "basic") {
+							return false;
+						}
+						return event.card?.name != "sha" || event.name == "damage";
 					}
 					if (name == "useCardAfter") {
 						return (
@@ -6582,6 +6588,7 @@ const skills = {
 				},
 				async cost(event, trigger, player) {
 					switch (event.triggername) {
+						case "damageBegin2":
 						case "useCard": {
 							event.result = {
 								bool: true,
@@ -6634,6 +6641,10 @@ const skills = {
 					player.addTempSkill("mbweizhuang_block");
 					player.markAuto("mbweizhuang_block", get.type2(trigger.card));
 					switch (name) {
+						case "damageBegin2": {
+							trigger.num++;
+							break;
+						}
 						case "useCard": {
 							trigger.baseDamage ??= 1;
 							trigger.baseDamage++;
@@ -32653,7 +32664,7 @@ const skills = {
 		},
 	},
 	mbfenxin: {
-		mode: ["identity", "doudizhu"],
+		//mode: ["identity", "doudizhu"],
 		audio: "fenxin",
 		skillAnimation: true,
 		animationColor: "wood",
@@ -32661,6 +32672,7 @@ const skills = {
 			source: "dieBegin",
 		},
 		filter(event, player) {
+			if (!["identity", "doudizhu"].includes(get.mode())) return true;
 			const validIdentities = ["zhong", "fan", "nei", "zhu", "min"];
 			return !event.reverseOut && validIdentities.includes(event.player.identity) && validIdentities.includes(player.identity);
 		},
@@ -32674,12 +32686,15 @@ const skills = {
 			const canSwap = isIdentityMode && !player.identityShown && !target.identityShown;
 			const choices = [];
 			const choiceList = [];
-			choices.push("获得技能");
-			choiceList.push("获得" + get.translation(target) + "的所有技能（限定技、觉醒技、使命技、主公技、持恒技除外）");
+			if (validSkills.length) {
+				choices.push("获得技能");
+				choiceList.push("获得" + get.translation(target) + "的所有技能（限定技、觉醒技、使命技、主公技、持恒技除外）");
+			}
 			if (canSwap) {
 				choices.push("交换身份牌");
 				choiceList.push("与其交换身份牌");
 			}
+			if (!choices.length) return;
 			choices.push("cancel2");
 			const result = await player
 				.chooseControl({
