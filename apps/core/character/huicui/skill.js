@@ -519,7 +519,7 @@ const skills = {
 							choiceList: [`获得其中的坐骑牌、锦囊牌、【杀】和【酒】，然后你体力上限+1（不能超过初始上限）`, `获得所有展示牌，然后直到你的下回合开始，你获得“驭象”且每次受到火焰伤害后，体力上限-1`],
 							ai(event, player) {
 								const { list } = get.event();
-								if (list.length <= 2 && player.maxHp < 4) {
+								if (player.maxHp < 4) {
 									return 0;
 								}
 								return 1;
