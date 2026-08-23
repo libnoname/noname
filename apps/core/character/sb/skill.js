@@ -9979,7 +9979,7 @@ const skills = {
 			return 6 - get.value(card);
 		},
 		async content(event, trigger, player) {
-			const discard = player.modedDiscard(event.cards);
+			const discard = player.modedDiscard({ cards: event.cards });
 			await discard;
 			const { cards } = discard;
 			let num = cards.length;
@@ -9988,11 +9988,14 @@ const skills = {
 			for (const i of nums) {
 				count[i] = (count[i] || 0) + 1;
 			}
-			num += Math.max(...Object.values(count));
-			await player.draw({ num: num });
+			if (Math.max(...Object.values(count)) > 1) {
+				num += Math.max(...Object.values(count));
+			}
+			await player.draw({ num });
 		},
 		ai: {
 			order(item, player) {
+				player ??= get.player();
 				if (player.hasCard(i => get.value(i) > Math.max(6, 9 - player.hp), "he")) {
 					return 1;
 				}
@@ -11358,7 +11361,7 @@ const skills = {
 						cards: result.cards,
 						source: player,
 						animate: "giveAuto",
-						gaintag: ["sbqianxun_gain"]
+						gaintag: ["sbqianxun_gain"],
 					});
 					player.addSkill("sbqianxun_gain");
 				}
