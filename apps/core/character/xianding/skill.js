@@ -3833,9 +3833,9 @@ const skills = {
 						}
 					}
 					const gain = [];
-					const names = cards.map(card => get.name(card, false)).unique();
+					const names = cards.map(card => get.name(card, false));
 					for (let i = 0; i < Math.min(5, cards.length); i++) {
-						const card = get.cardPile2(card => {
+						const card = get.cardPile(card => {
 							return names.includes(get.name(card)) && !gain.includes(card);
 						});
 						if (card) {
