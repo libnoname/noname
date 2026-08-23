@@ -4165,7 +4165,7 @@ const skills = {
 						!info.multitarget &&
 						targets?.length &&
 						game.hasPlayer(function (target) {
-							return !targets.includes(target) && lib.filter.targetEnabled2(card, player, target) && lib.filter.targetInRange(card, player, target);
+							return !targets.includes(target) && lib.filter.targetEnabled2(card, player, target);
 						});
 			if (player.storage.olxiasheng_rewrite) {
 				return black > red && color == "black" && bool;
@@ -4200,7 +4200,7 @@ const skills = {
 					.set(
 						"targets",
 						game.filterPlayer(target => {
-							return !targets.includes(target) && lib.filter.targetEnabled2(card, player, target) && lib.filter.targetInRange(card, player, target);
+							return !targets.includes(target) && lib.filter.targetEnabled2(card, player, target);
 						})
 					)
 					.forResult();

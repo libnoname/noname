@@ -1584,7 +1584,7 @@ const translates = {
 	olchunhui: "春晖",
 	olchunhui_info: "准备阶段或当你受到伤害后，令一名其他角色交给你一张牌。若此牌为黑色，本轮你与其下一次使用红色牌时，可为此牌增加或减少一个目标（至多减至1）。",
 	olxiasheng: "夏晟",
-	olxiasheng_info: "锁定技，若你手牌中：红色牌较多，你使用黑色牌时摸一张牌；黑色牌较多，你使用红色牌可多指定一个目标。",
+	olxiasheng_info: "锁定技，若你手牌中：红色牌较多，你使用黑色牌时摸一张牌；黑色牌较多，你使用红色牌可多指定一个目标（无距离限制）。",
 	olqiumu: "秋暮",
 	olqiumu_info: `锁定技，本回合成为过红色牌目标的角色进入濒死状态时，你获得其所有黑色牌，并将${get.poptip("olchunhui")}、${get.poptip("olxiasheng")}或〖秋暮〗描述中的“红色”均改为“黑色”。`,
 	ol_liuye: "OL刘晔",
