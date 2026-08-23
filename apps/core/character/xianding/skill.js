@@ -680,6 +680,7 @@ const skills = {
 		forced: true,
 		skillAnimation: true,
 		animationColor: "wood",
+		derivation: "dcsbjinhuo",
 		trigger: { player: "phaseZhunbeiBegin" },
 		filter(event, player) {
 			return player.getAllHistory("damage").reduce((a, evt) => a + evt.num, 0) + player.getAllHistory("sourceDamage").reduce((a, evt) => a + evt.num, 0) >= 3;
