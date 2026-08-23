@@ -1,4 +1,3 @@
-import { backup } from "node:sqlite";
 import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
