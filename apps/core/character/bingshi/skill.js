@@ -4900,7 +4900,7 @@ const skills = {
 			if (link == "sha" || link == "shan") {
 				const card = get.cardPile(card => card.name == link);
 				if (card) {
-					await player.gain(card, "gain2");
+					await player.gain({ cards: [card], animate: "draw" });
 				} else {
 					player.chat(`孩子们，一张${get.translation(link)}都没有力`);
 				}
