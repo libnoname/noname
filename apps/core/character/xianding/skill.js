@@ -46438,7 +46438,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const list = ["basic", "trick", "equip"].map(type => ["", "", "caoying_" + type]);
 			const result = await player
-				.chooseButton(["冠宠：选择一个类别", [list, "vcard"]], 1, true)
+				.chooseButton(["冠宠：选择一个类别", [list, "vcard"]], true)
 				.set("ai", _ => Math.random())
 				.forResult();
 			if (!result?.bool) {
@@ -46454,7 +46454,7 @@ const skills = {
 					forced: true,
 				});
 			} else {
-				const card = get.cardPile(card => get.type2(card) === type, void 0, "random");
+				const card = get.cardPile(card => get.type2(card) === type);
 				if (!card) {
 					return;
 				}
@@ -46464,7 +46464,9 @@ const skills = {
 		},
 		mod: {
 			cardnumber(card, player, num) {
-				return Math.min(13, num + player.countMark("guanchong"));
+				if (get.position(card) === 'h') {
+					return Math.min(13, num + player.countMark("guanchong"))
+				}
 			},
 		},
 		intro: {
@@ -46485,8 +46487,13 @@ const skills = {
 				.set("ai", get.unuseful)
 				.forResult();
 			const lose_list = [];
+			const map = new Map();
 			for (let i = 0; i < result.length; i++) {
 				const current = targets[i];
+				const card = result[i].cards[0]
+				if (card) {
+					map.set(current, get.number(card));
+				}
 				lose_list.push([current, result[i].cards]);
 			}
 			await game.loseAsync({ lose_list }).setContent("discardMultiple");
@@ -46507,9 +46514,9 @@ const skills = {
 					.forResult();
 				target_group[result2.index].push(target);
 				if (result2.index === 0) {
-					count += get.number(card, target);
+					count += map.get(target);
 				} else {
-					count -= get.number(card, target);
+					count -= map.get(target);
 				}
 			}
 			if (target_group[0].length) {
