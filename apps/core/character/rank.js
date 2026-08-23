@@ -115,6 +115,7 @@ window.noname_character_rank = {
 		"eu_yujin",
 		"eu_zhangliao",
 		"eu_yuejin",
+		"sunhe",
 	],
 	a: [
 		"sxrm_chen_caocao",
@@ -3358,6 +3359,7 @@ window.noname_character_rank = {
 			"guotiying",
 			"dc_sb_jianggan",
 			"dc_sb_chunyuqiong",
+			"sunhe",
 		],
 		rare: [
 			"ol_quancong",
