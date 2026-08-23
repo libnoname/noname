@@ -3273,16 +3273,16 @@ const skills = {
 		forced: true,
 		async content(event, trigger, player) {
 			const cards = player.getCards("h");
-			player.addGaintag(cards, "eternal_dcyunzheng_tag");
+			player.addGaintag(cards, "dcyunzheng_tag");
 		},
 		mod: {
 			ignoredHandcard(card) {
-				if (card.hasGaintag("eternal_dcyunzheng_tag")) {
+				if (card.hasGaintag("dcyunzheng_tag")) {
 					return true;
 				}
 			},
 			cardDiscardable(card, _, name) {
-				if (name == "phaseDiscard" && card.hasGaintag("eternal_dcyunzheng_tag")) {
+				if (name == "phaseDiscard" && card.hasGaintag("dcyunzheng_tag")) {
 					return false;
 				}
 			},
@@ -3309,7 +3309,7 @@ const skills = {
 						if (player === target) {
 							return false;
 						}
-						return target.hasCard(card => card.hasGaintag("eternal_dcyunzheng_tag"), "h") == !target.hasSkill("dcyunzheng_block");
+						return target.hasCard(card => card.hasGaintag("dcyunzheng_tag"), "h") == !target.hasSkill("dcyunzheng_block");
 					});
 				},
 				logTarget(event, player) {
@@ -3318,7 +3318,7 @@ const skills = {
 							if (player === target) {
 								return false;
 							}
-							return target.hasCard(card => card.hasGaintag("eternal_dcyunzheng_tag"), "h") == !target.hasSkill("dcyunzheng_block");
+							return target.hasCard(card => card.hasGaintag("dcyunzheng_tag"), "h") == !target.hasSkill("dcyunzheng_block");
 						})
 						.sortBySeat();
 				},
@@ -3329,7 +3329,7 @@ const skills = {
 							if (player === target) {
 								return false;
 							}
-							return target.hasCard(card => card.hasGaintag("eternal_dcyunzheng_tag"), "h") == !target.hasSkill("dcyunzheng_block");
+							return target.hasCard(card => card.hasGaintag("dcyunzheng_tag"), "h") == !target.hasSkill("dcyunzheng_block");
 						})
 						.sortBySeat();
 					for (const target of targets) {
@@ -3340,7 +3340,7 @@ const skills = {
 			global: {
 				mod: {
 					aiValue(player, card, num) {
-						if (num <= 0 || get.itemtype(card) !== "card" || !card.hasGaintag("eternal_dcyunzheng_tag")) {
+						if (num <= 0 || get.itemtype(card) !== "card" || !card.hasGaintag("dcyunzheng_tag")) {
 							return;
 						}
 						if (player.hasSkill("dcyunzheng")) {
@@ -3349,7 +3349,7 @@ const skills = {
 						return num / 10;
 					},
 					aiUseful(player, card, num) {
-						if (num <= 0 || get.itemtype(card) !== "card" || !card.hasGaintag("eternal_dcyunzheng_tag")) {
+						if (num <= 0 || get.itemtype(card) !== "card" || !card.hasGaintag("dcyunzheng_tag")) {
 							return;
 						}
 						if (player.hasSkill("dcyunzheng")) {
@@ -3358,7 +3358,7 @@ const skills = {
 						return num / 10;
 					},
 					aiOrder(player, card, num) {
-						if (num <= 0 || get.itemtype(card) !== "card" || !card.hasGaintag("eternal_dcyunzheng_tag")) {
+						if (num <= 0 || get.itemtype(card) !== "card" || !card.hasGaintag("dcyunzheng_tag")) {
 							return;
 						}
 						if (player.hasSkill("dcyunzheng")) {
@@ -3429,7 +3429,7 @@ const skills = {
 					forced: true,
 				})
 				.forResult();
-			const tag = "eternal_dcyunzheng_tag";
+			const tag = "dcyunzheng_tag";
 			if (result.bool) {
 				let cards = result.cards.slice();
 				await player.showCards(cards, get.translation(player) + "发动了【惑心】");
@@ -3437,7 +3437,7 @@ const skills = {
 				if (cards.some(card => !card.hasGaintag(tag))) {
 					target.addGaintag(
 						cards.filter(card => !card.hasGaintag(tag)),
-						"eternal_dcyunzheng_tag"
+						"dcyunzheng_tag"
 					);
 					await event.trigger("dchuoxin_update");
 				}
@@ -3454,8 +3454,8 @@ const skills = {
 							source: target,
 							animate: "give",
 						});
-						/*if (cardx[0].hasGaintag("eternal_dcyunzheng_tag")) {
-							next.gaintag.add("eternal_dcyunzheng_tag");
+						/*if (cardx[0].hasGaintag("dcyunzheng_tag")) {
+							next.gaintag.add("dcyunzheng_tag");
 						}*/
 						//await event.trigger("dchuoxin_update");
 					}
