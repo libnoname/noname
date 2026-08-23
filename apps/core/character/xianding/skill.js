@@ -13259,6 +13259,12 @@ const skills = {
 				}
 				return evt.getParent(4) == event;
 			});
+			if (restore) {
+				if (player.getStat("skill")[event.name]) {
+					delete player.getStat("skill")[event.name];
+				}
+				await player.recover(1);
+			}
 			const cards = get.cards(3, true);
 			await player.showCards(cards, `${get.translation(player)}发动了【淑任】`, true).set("clearArena", false);
 			const { links } = await player
@@ -13308,12 +13314,6 @@ const skills = {
 				})
 			 */
 			game.broadcastAll(ui.clear);
-			if (restore) {
-				if (player.getStat("skill")[event.name]) {
-					delete player.getStat("skill")[event.name];
-				}
-				await player.recover(1);
-			}
 		},
 		ai: {
 			order: 1,
