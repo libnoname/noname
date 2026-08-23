@@ -7057,7 +7057,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const { name } = event;
 			player.awakenSkill(name);
-			await player.draw(Math.min(5, player.maxHp - player.countCards("h")));
+			await player.drawTo(player.maxHp);
 		},
 	},
 	//新郭淮
@@ -12536,7 +12536,7 @@ const skills = {
 			const cmpResult = await comp.forResult();
 
 			// step 2: 根据拼点结果处理
-			if ((player === source && cmpResult.bool) || (target === source && !cmpResult.bool)) {
+			if ((player === source && (cmpResult.bool || cmpResult.tie)) || (target === source && !cmpResult.bool)) {
 				event.cards = [cmpResult.player, cmpResult.target].filterInD("d");
 				if (!event.cards.length) return;
 
