@@ -459,6 +459,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
+				audio: "twshuyin",
 				charlotte: true,
 				mark: true,
 				intro: { content: "下次使用红桃牌额外结算一次" },
@@ -28344,6 +28345,8 @@ const skills = {
 						const player = get.player();
 						if (button.link[2] == "dz_mantianguohai" && player.countCards("hs", "dz_mantianguohai") < 2) {
 							return 10;
+						} else if (player.countCards("hs", button.link[2]) == 1) {
+							return 4 + get.value({ name: button.link[2] });
 						}
 						return get.value({ name: button.link[2] });
 					})
@@ -28440,7 +28443,8 @@ const skills = {
 					filterCard: lib.filter.cardDiscardable,
 					filterTarget: true,
 					ai1(card) {
-						return 8 - get.value(card);
+						if (card.name == "dz_mantianguohai") return 0.1;
+						return 10 - get.value(card);
 					},
 					ai2(target) {
 						if (target.hasJudge("lebu")) {
@@ -28462,6 +28466,32 @@ const skills = {
 			} = event;
 			await player.discard({ cards });
 			target.insertPhase();
+		},
+		ai: {
+			effect: {
+				player(card, player, target) {
+					let bool = false;
+					const history = player.getHistory("useCard"),
+						map = {};
+					if (history.length) {
+						for (const evt of history) {
+							if (get.type2(evt.card) == "trick") {
+								if (!map[evt.card.name]) {
+									map[evt.card.name] = true;
+								} else {
+									bool = true;
+									break;
+								}
+							}
+						}
+						if (bool && get.type(card) == "trick" && player == _status.currentPhase) {
+							if (!player.needsToDiscard() || card.name == "dz_mantianguohai") {
+								return "zeroplayertarget";
+							}
+						}
+					}
+				},
+			},
 		},
 		subSkill: {
 			mark: {
