@@ -26612,7 +26612,8 @@ const skills = {
 			}
 			return [event.player, event.target].some(current => current == player);
 		},
-		frequent: true,
+		forced: true,
+		locked: false,
 		async content(event, trigger, player) {
 			let str = '<div class="text center">牌堆顶';
 			const cards = get.cards(1, true);
@@ -32728,7 +32729,7 @@ const skills = {
 			const { choice, skills } = event.cost_data;
 			const target = trigger.player;
 			if (choice === "获得技能") {
-				if (player.identity !== target.identity) {
+				if (player.identity !== target.identity || player.side != target.side) {
 					if (skills.length > 0) {
 						await player.addSkills(skills);
 					}
