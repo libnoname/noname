@@ -1,4 +1,13 @@
 export default {
+	"#reqizhi1": "今非缓成之功，当先夺争城之利也。",
+	"#reqizhi2": "先发有夺民之望，此用兵之势也！",
+	"#reqizhi3": "将有专擅之权，方能临机制胜。",
+	"#reqizhi4": "兵谋欲以奇胜，贵在临阵之判！",
+	"#rejinqu1": "伐吴当有经年之备，岂争朝夕之间。",
+	"#rejinqu2": "积蓄水陆之实，用时必有所为！",
+	"#rejinqu3": "夫民逸则易虑，民苦则思难。",
+	"#rejinqu4": "和远先和己身，定众当在己心。",
+	"#re_wangji:die": "此生学行坚白，已无愧己身… ",
 	"#wushuang_mb_shen_lvbu1": "盖世无双，何人能挡？",
 	"#wushuang_mb_shen_lvbu2": "承受天神的怒火吧！",
 	"#mbzhengbi1": "用人使天下白治，正身率一世之杰。",
