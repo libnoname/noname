@@ -1546,9 +1546,7 @@ const skills = {
 				async content(event, trigger, player) {
 					player.addMark(event.name, 3, false);
 				},
-				marktext: "略",
 				onremove: true,
-				intro: { content: "本次清除〖显略①〗需要的记录数-#" },
 			},
 		},
 	},
