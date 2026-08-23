@@ -14557,6 +14557,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
+				audio: "dcjunhe",
 				charlotte: true,
 				intro: {
 					content(storage, player) {
