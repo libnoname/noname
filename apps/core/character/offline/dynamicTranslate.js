@@ -1,6 +1,18 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const dynamicTranslates = {
+	lxzuoyou(player, skill) {
+		const storage = player.storage[skill];
+		let yang = "你可受到1点无来源伤害，令一名角色获得1点护甲",
+			yin = "你可失去1点护甲，对一名角色造成1点伤害";
+		if (storage) {
+			yin = `<span class="bluetext">${yin}</span>`;
+		} else {
+			yang = `<span class="firetext">${yang}</span>`;
+		}
+		const start = "转换技，出牌阶段限一次，";
+		return `${start}阳：${yang}；阴：${yin}。`;
+	},
 	ymhengren(player, skill) {
 		const storage = player.storage[skill];
 		let yang = "开始时",
