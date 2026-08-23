@@ -459,6 +459,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
+				audio: "twshuyin",
 				charlotte: true,
 				mark: true,
 				intro: { content: "下次使用红桃牌额外结算一次" },

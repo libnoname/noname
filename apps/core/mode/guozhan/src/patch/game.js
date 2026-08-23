@@ -362,6 +362,10 @@ export class GameGuozhan extends Game {
 				sides.push(i.playerid);
 			}
 		}
+		if (!game.players.length) {
+			game.checkResult();
+			return;
+		}
 		if (!sides.length) {
 			return;
 		} else if (sides.length > 1) {
