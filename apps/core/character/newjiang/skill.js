@@ -1449,7 +1449,6 @@ const skills = {
 				return;
 			}
 			if (result.links[0] == "damage") {
-				game.log(player, "令", card, "对", target, "的伤害+1");
 				const id = target.playerid;
 				const map = trigger.customArgs;
 				map[id] ??= {};
