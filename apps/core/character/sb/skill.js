@@ -10091,7 +10091,7 @@ const skills = {
 			const target = trigger.player;
 			const num = Math.min(3, game.roundNumber);
 			const list = [];
-			const choiceList = [`令${get.translation(target)}获得1点护甲`, `将势力变更为吴，然后获得${get.translation(target)}至多${get.cnNumber(num)}张牌`];
+			const choiceList = [`令${get.translation(target)}获得1点护甲`, `获得${get.translation(target)}至多${get.cnNumber(num)}张牌，然后将势力变更为吴`];
 			if (target.hujia < 5) {
 				list.push("选项一");
 			} else {
