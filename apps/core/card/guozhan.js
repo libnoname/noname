@@ -1137,41 +1137,27 @@ export default {
 						if (target.hasSkill("undist") || target.hasSkill("diaohulishan")) {
 							return 0;
 						}
-						// 下面的 getUseValue 会对手牌里的每张牌求值，其中可能又是一张调虎离山，
-						// 于是重新进入本函数。开头那道守卫看的是 target，而嵌套那层评估的是别的
-						// target，拦不住；addSkill("undist") 也只覆盖算 eff2 的那半边。
-						// 加一道重入守卫：一次 AI 求值里只算最外层那一次。
-						// 标记存的是 _status.event 而不是布尔值：守卫只在同一次 AI 求值内生效，
-						// 跨事件天然失效；清理交给 finally，异常路径上也不会残留。
-						if (_status._diaohulishanAI && _status._diaohulishanAI === _status.event) {
-							return 0;
-						}
-						_status._diaohulishanAI = _status.event;
-						try {
-							return player.countCards("hs", card => {
-								if (ui.selected.cards.includes(card)) {
-									return false;
+						return player.countCards("hs", card => {
+							if (ui.selected.cards.includes(card) || get.name(card) === "diaohulishan") {
+								return false;
+							}
+							const cardx = get.autoViewAs({ name: get.name(card), nature: get.nature(card), cards: [card] }, [card]);
+							if (!player.hasUseTarget(cardx, null, true)) {
+								return false;
+							}
+							const select = get.select(cardx);
+							if (select[1] === -1) {
+								if (player.canUse(cardx, target, null, true)) {
+									return get.effect(target, cardx, player, player) < 0;
 								}
-								const cardx = get.autoViewAs({ name: get.name(card), nature: get.nature(card), cards: [card] }, [card]);
-								if (!player.hasUseTarget(cardx, null, true)) {
-									return false;
-								}
-								const select = get.select(cardx);
-								if (select[1] === -1) {
-									if (player.canUse(cardx, target, null, true)) {
-										return get.effect(target, cardx, player, player) < 0;
-									}
-									return false;
-								}
-								let eff1 = player.getUseValue(cardx, null, true);
-								target.addSkill("undist");
-								let eff2 = player.getUseValue(cardx, null, true);
-								target.removeSkill("undist");
-								return eff2 > eff1;
-							});
-						} finally {
-							_status._diaohulishanAI = null;
-						}
+								return false;
+							}
+							let eff1 = player.getUseValue(cardx, null, true);
+							target.addSkill("undist");
+							let eff2 = player.getUseValue(cardx, null, true);
+							target.removeSkill("undist");
+							return eff2 > eff1;
+						});
 					},
 				},
 			},
