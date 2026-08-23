@@ -417,13 +417,6 @@ const skills = {
 	//木鹿大王
 	dczhoufa: {
 		audio: 2,
-		mod: {
-			cardUsable(card, player, num) {
-				if (card?.storage?.dczhoufa) {
-					return Infinity;
-				}
-			},
-		},
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
@@ -432,14 +425,14 @@ const skills = {
 			}
 			const list = get.inpileVCardList(([type, _, name, nature]) => get.is.damageCard(get.autoViewAs({ name, nature }, "unsure")));
 			return list.some(([type, _, name, nature]) => {
-				const vcard = get.autoViewAs({ name, nature, storage: { dczhoufa: true } }, "unsure");
+				const vcard = get.autoViewAs({ name, nature }, "unsure");
 				return event.filterCard(vcard, player, event);
 			});
 		},
 		chooseButton: {
 			dialog(event, player) {
 				const list = get.inpileVCardList(([type, _, name, nature]) => {
-					let vcard = get.autoViewAs({ name, nature, storage: { dczhoufa: true } }, "unsure");
+					let vcard = get.autoViewAs({ name, nature }, "unsure");
 					if (!get.is.damageCard(vcard)) {
 						return false;
 					}
@@ -448,7 +441,7 @@ const skills = {
 				return ui.create.dialog("咒法", [list, "vcard"]);
 			},
 			check({ link: [type, _, name, nature] }) {
-				return get.player().getUseValue(get.autoViewAs({ name, nature, storage: { dczhoufa: true } }, "unsure"));
+				return get.player().getUseValue(get.autoViewAs({ name, nature }, "unsure"));
 			},
 			backup(links, player) {
 				return {
@@ -459,15 +452,6 @@ const skills = {
 						return 8 - get.value(card);
 					},
 					viewAs: { name: links[0][2], nature: links[0][3], storage: { dczhoufa: true } },
-					async precontent(event, _, player) {
-						const evt = event.getParent();
-						if (evt == null) {
-							return;
-						}
-						if (evt.addCount !== false) {
-							evt.addCount = false;
-						}
-					},
 					popname: true,
 				};
 			},
@@ -532,10 +516,10 @@ const skills = {
 					});
 					const result = await player
 						.chooseControl({
-							choiceList: [`获得其中的坐骑牌、锦囊牌、【杀】和【酒】，然后若你因此获得的牌数不超过2，你体力上限+1（不能超过初始上限）`, `获得所有展示牌，然后直到你的下回合开始，你获得“驭象”且每次受到火焰伤害后，体力上限-1`],
+							choiceList: [`获得其中的坐骑牌、锦囊牌、【杀】和【酒】，然后你体力上限+1（不能超过初始上限）`, `获得所有展示牌，然后直到你的下回合开始，你获得“驭象”且每次受到火焰伤害后，体力上限-1`],
 							ai(event, player) {
 								const { list } = get.event();
-								if (list.length <= 2 && player.maxHp < 4) {
+								if (player.maxHp < 4) {
 									return 0;
 								}
 								return 1;
@@ -548,7 +532,7 @@ const skills = {
 							const next = player.gain(list, "gain2");
 							await next;
 							const { cards } = next;
-							if (cards.length <= 2 && player.maxHp < player.getStorage("dcshouqun", 6)) {
+							if (player.maxHp < player.getStorage("dcshouqun", 6)) {
 								await player.gainMaxHp();
 							}
 						} else {
@@ -563,7 +547,7 @@ const skills = {
 		subSkill: {
 			debuff: {
 				charlotte: true,
-				audio: 2,
+				audio: "dcshouqun",
 				trigger: {
 					player: "damageEnd",
 				},
