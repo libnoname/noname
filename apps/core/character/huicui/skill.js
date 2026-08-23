@@ -1,3 +1,4 @@
+import { backup } from "node:sqlite";
 import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
@@ -475,6 +476,7 @@ const skills = {
 					game.setNature(trigger, "thunder");
 				},
 			},
+			backup: {},
 		},
 		ai: {
 			order: 1,
@@ -577,7 +579,6 @@ const skills = {
 				return distance - 2;
 			},
 		},
-		audio: 2,
 		trigger: {
 			player: "useCardToPlayered",
 		},

@@ -1,6 +1,6 @@
 const characterSort = {
 	extra_tw: ["tw_shen_guanyu", "tw_shen_lvmeng"],
-	tw_sp: ["tw_zhenji", "tw_zhangyun", "tw_simashi", "tw_beimihu", "tw_qiaozhou", "old_jiakui", "tw_jsp_guanyu", "tw_mazhong", "simafu", "tw_fuwan", "tw_yujin", "tw_zhaoxiang", "tw_hucheer", "tw_mayunlu", "tw_re_caohong", "tw_furong", "tw_yangyi", "tw_daxiaoqiao", "tw_dengzhi", "tw_fanchou", "tw_haomeng", "tw_qiaorui", "tw_weixu", "tw_dengzhi", "tw_yangyi", "tw_lingju", "tw_baosanniang"],
+	tw_sp: ["tw_zhenji", "tw_yj_fazheng", "tw_zhangyun", "tw_simashi", "tw_qiaozhou", "old_jiakui", "tw_jsp_guanyu", "tw_mazhong", "simafu", "tw_fuwan", "tw_yujin", "tw_zhaoxiang", "tw_hucheer", "tw_mayunlu", "tw_re_caohong", "tw_furong", "tw_yangyi", "tw_daxiaoqiao", "tw_dengzhi", "tw_fanchou", "tw_haomeng", "tw_qiaorui", "tw_weixu", "tw_dengzhi", "tw_yangyi", "tw_baosanniang"],
 	tw_canghai_gui: ["tw_liuhong", "tw_hejin", "tw_caozhao", "tw_yuantan", "tw_wangchang"],
 	tw_canghai_zun: ["tw_zhanghong", "tw_zhangzhao", "tw_zhangji", "tw_tianyu", "tw_jiangji"],
 	tw_canghai_ye: ["tw_gexuan", "tw_zhugejun", "tw_bingyuan"],
@@ -23,7 +23,7 @@ const characterSort = {
 	tw_weiang: ["huan_liufeng", "huan_caoang", "huan_huanggai", "huan_dingshangwan", "huan_dianwei", "huan_caopi", "huan_caozhi", "huan_caochong"],
 	tw_bawang: ["huan_sunce", "huan_daqiao", "huan_zhouyu", "huan_xiaoqiao", "huan_fazheng"],
 	tw_jsrg: ["tw_jsrg_wangyun", "tw_jsrg_hejin", "tw_jsrg_caocao", "tw_jsrg_huangfusong", "tw_jsrg_sunjian", "tw_jsrg_liubei"],
-	tw_mobile: ["nashime", "tw_zhugeguo", "tw_yj_zhanghe", "tw_yj_fazheng"],
+	tw_mobile: ["nashime", "tw_lingju", "tw_beimihu", "tw_zhugeguo", "tw_yj_zhanghe"],
 	tw_standard: ["tw_zhangfei"],
 	tw_shenhua_yin: ["tw_yl_luzhi"],
 	tw_shenhua_lei: ["tw_guanqiujian"],
