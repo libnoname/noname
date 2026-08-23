@@ -10091,7 +10091,7 @@ const skills = {
 			const target = trigger.player;
 			const num = Math.min(3, game.roundNumber);
 			const list = [];
-			const choiceList = [`令${get.translation(target)}获得1点护甲`, `将势力变更为吴，然后获得${get.translation(target)}${get.cnNumber(num)}张牌`];
+			const choiceList = [`令${get.translation(target)}获得1点护甲`, `将势力变更为吴，然后获得${get.translation(target)}至多${get.cnNumber(num)}张牌`];
 			if (target.hujia < 5) {
 				list.push("选项一");
 			} else {
@@ -10133,11 +10133,11 @@ const skills = {
 			if (link === "选项一") {
 				await target.changeHujia(1, null, true);
 			} else {
-				await player.changeGroup("wu");
 				const num = Math.min(3, game.roundNumber);
 				if (target.countGainableCards(player, "he")) {
-					await player.gainPlayerCard({ target, forced: true, position: "he", selectButton: num, allowChooseAll: true });
+					await player.gainPlayerCard({ target, forced: true, position: "he", selectButton: [1, num], allowChooseAll: true });
 				}
+				await player.changeGroup("wu");
 			}
 		},
 		onremove: true,
