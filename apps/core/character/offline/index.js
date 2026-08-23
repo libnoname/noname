@@ -34,6 +34,8 @@ game.import("character", function () {
 				["sm_shen_sunquan", []],
 				["sm_mo_sunquan", []],
 			],
+			lx_simazhao: [["lx_simazhao_shadow", ["die:jin_jsrg_simazhao"]]],
+			lx_caomao: [["lx_caomao_shadow", []]],
 		},
 		dynamicTranslate: { ...dynamicTranslates },
 		characterIntro: { ...characterIntros },

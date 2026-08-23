@@ -1,5 +1,4 @@
 import { lib, game, ui, get, ai, _status } from "noname";
-import html from "dedent";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {

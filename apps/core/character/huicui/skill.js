@@ -475,6 +475,7 @@ const skills = {
 					game.setNature(trigger, "thunder");
 				},
 			},
+			backup: {},
 		},
 		ai: {
 			order: 1,
@@ -577,7 +578,6 @@ const skills = {
 				return distance - 2;
 			},
 		},
-		audio: 2,
 		trigger: {
 			player: "useCardToPlayered",
 		},
