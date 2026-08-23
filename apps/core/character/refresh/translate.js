@@ -534,7 +534,7 @@ const translates = {
 	relongyin: "龙吟",
 	relongyin_info: "当一名角色于其出牌阶段内使用【杀】时，你可弃置一张牌令此【杀】不计入出牌阶段使用次数。若此【杀】为红色，则你摸一张牌；若你以此法弃置的牌与此【杀】点数相同，则你重置“竭忠”。",
 	jiezhong: "竭忠",
-	jiezhong_info: "限定技，出牌阶段开始时，你可以将手牌补至体力上限（至多摸五张）。",
+	jiezhong_info: "限定技，出牌阶段开始时，你可以将手牌补至体力上限。",
 	re_caifuren: "界蔡夫人",
 	re_caifuren_prefix: "界",
 	reqieting: "窃听",

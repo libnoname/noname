@@ -15323,23 +15323,23 @@ const skills = {
 					filterButton(button) {
 						const player = get.player();
 						if (button.link == "discard") {
-							return game.hasPlayer(target => target.countDiscardableCards(player, "he"));
+							return game.hasPlayer(target => target.countDiscardableCards(player, "he") && player != target);
 						}
 						return true;
 					},
 					filterTarget(card, player, target) {
 						const selected = ui.selected.buttons;
-						if (!selected.length || target == player) {
+						if (!selected?.length || target == player) {
 							return false;
 						}
 						if (selected[0].link == "discard") {
-							return false;
+							return target.hasDiscardableCards(player, "he");
 						}
 						return true;
 					},
 					selectTarget() {
 						const selected = ui.selected.buttons;
-						if (!selected.length) {
+						if (!selected?.length) {
 							return false;
 						}
 						if (selected[0].link == "discard") {
@@ -15348,6 +15348,7 @@ const skills = {
 						return 1;
 					},
 					num: num,
+					complexSelect: true,
 					ai1(button) {
 						const player = get.player();
 						if (button.link == "discard") {
@@ -15359,6 +15360,10 @@ const skills = {
 								})
 								.sort((a, b) => b - a);
 							return list.slice(0, Math.min(get.event().num, list.length)).reduce((eff, num) => eff + num, 0);
+						}
+						//如果手上还有可以继续极斩的牌就还是不打伤害
+						if (player.hasCards("h", card => player.hasUseTarget(card) && get.type(card) == "equip" && player.hasCards("he", cardx => player.hasUseTarget(cardx) && get.color(cardx) == "black" && card != cardx))) {
+							return 1;
 						}
 						return Math.max(...game.filterPlayer().map(target => get.damageEffect(target, player, player) * get.event().num));
 					},
@@ -15375,7 +15380,7 @@ const skills = {
 			if (result?.links?.length) {
 				event.result = {
 					bool: true,
-					targets: result.targets ?? [],
+					targets: result.links[0] == "discard" ? [] : (result.targets ?? []),
 					cost_data: result.links[0],
 				};
 			}
@@ -18567,7 +18572,7 @@ const skills = {
 					}
 					var evt = history[history.length - 1];
 					if (evt?.card && get.cardNameLength(evt.card) == get.cardNameLength(card) && get.type(evt.card) == get.type2(card)) {
-						return num + 4;
+						return num + 114514;
 					}
 				}
 			},
@@ -18647,6 +18652,15 @@ const skills = {
 			check(event, player) {
 				const sortlist = [4, 1, 2, 3, 5];
 				const list = event.dcjiesi.slice();
+				const history = game.getAllGlobalHistory("useCard"),
+					index = history.length - 1;
+				if (index > 0) {
+					const num = get.cardNameLength(history[index].card);
+					game.log(num);
+					if (list.includes(num)) {
+						return num - 1;
+					}
+				}
 				return (
 					list.sort((a, b) => {
 						return sortlist.indexOf(a) - sortlist.indexOf(b);
@@ -18673,7 +18687,7 @@ const skills = {
 							const result = await player
 								.chooseToDiscard(`捷思：是否弃置${len}张牌，然后重置此技能？`, len, "he")
 								.set("ai", card => (get.event().goon ? 6.5 - get.value(card) : 0))
-								.set("goon", player.countCards("he", card => 6 - get.value(card)) >= len)
+								.set("goon", player.countCards("he", card => 6 - get.value(card)) >= Math.min(2, len))
 								.forResult();
 							if (result?.bool) {
 								delete player.getStat().skill.dcjiesi;
@@ -21861,6 +21875,7 @@ const skills = {
 			} else {
 				await target.chooseToDiscard(num, true, "he");
 			}
+			player.markSkill("dcwoheng");
 			if (useCnt > 3 || player.countCards("h") !== target.countCards("h")) {
 				await player.draw(2);
 				if (player.hasSkill("dcwoheng", null, null, false)) {
