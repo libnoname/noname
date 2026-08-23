@@ -7974,7 +7974,7 @@ const skills = {
 						prompt: "思泣：请选择要使用的牌",
 						filter(button) {
 							const card = button.link;
-							if (!lib.filter.cardEnabled(card, player)) {
+							if (!lib.filter.cardEnabled(card, get.player())) {
 								return false;
 							}
 							if (["tao", "wuzhong"].includes(card.name) || get.type(card) == "equip") {
@@ -23159,7 +23159,7 @@ const skills = {
 				event.card = result.cards[0];
 				player
 					.chooseTarget("是否将" + get.translation(event.card) + "交给一名其他角色？", function (card, player, current) {
-						return current != player && current != _status.event.target1 && lib.skill.xindiaodu.isFriendOf(current, player);
+						return current != player && current != _status.event.target1;
 					})
 					.set("target1", event.target1);
 			} else {
@@ -29205,7 +29205,8 @@ const skills = {
 					});
 				});
 			}
-			return "从牌堆中获得" + get.translation(origins.map(i => i.name)) + "；若没有则改为摸一张牌";
+			origins = origins.map(card => card.name).unique();
+			return "从牌堆中获得" + get.translation(origins) + (origins.length > 1 ? "中的一张牌" : "") + "；若没有则改为摸一张牌";
 		},
 		usable: 1,
 		async content(event, trigger, player) {
@@ -29221,21 +29222,32 @@ const skills = {
 					});
 				});
 			}
-			let cards = [],
-				num = 0;
-			for (const card of origins) {
-				const card2 = get.cardPile2(card2 => card2.name === card.name);
+			origins = origins.map(card => card.name).unique();
+			let cards = [];
+			for (const name of origins) {
+				const card2 = get.cardPile2(card2 => card2.name === name);
 				if (card2) {
 					cards.push(card2);
-				} else {
-					num++;
 				}
 			}
 			if (cards.length) {
-				await player.gain(cards, "gain2");
-			}
-			if (num) {
-				await player.draw(num);
+				const result =
+					cards.length > 1
+						? await player
+								.chooseButton({
+									createDialog: ["扶危：选择获得一张牌", [cards, "vcard"]],
+									forced: true,
+									ai(button) {
+										return get.value(button.link);
+									},
+								})
+								.forResult()
+						: { bool: true, links: cards };
+				if (result?.bool && result.links?.length) {
+					await player.gain({ cards: result.links, animate: "draw" });
+				}
+			} else {
+				await player.draw();
 			}
 		},
 	},
@@ -29244,55 +29256,39 @@ const skills = {
 		usable: 2,
 		trigger: { global: "useCardAfter" },
 		filter(event, player) {
-			return player != event.player && event.targets && event.targets.includes(player) && player.countCards("h") > 0;
+			return player != event.player && event.targets?.includes(player) && player.hasCards("h");
 		},
 		prompt2(event, player) {
-			var suit = get.suit(event.card),
-				hs = player.getCards("h"),
-				cards = event.cards.filterInD();
-			if (!lib.suit.includes(suit) || !cards.length) {
+			const hssuits = player.getCards("h").map(card => get.suit(card)),
+				cards = event.cards.filterInD(),
+				suits = cards.map(card => get.suit(card));
+			if (!cards.length) {
 				return "展示所有手牌，然后无事发生";
 			}
-			for (var i of hs) {
-				if (get.suit(i) == suit) {
-					return "展示所有手牌，然后无事发生";
-				}
+			if (!suits.some(suit => !hssuits.includes(suit))) {
+				return "展示所有手牌，然后无事发生";
 			}
 			return '展示所有手牌，然后<span class="yellowtext">获得' + get.translation(cards) + "</span>";
 		},
 		check(event, player) {
-			var suit = get.suit(event.card),
-				hs = player.getCards("h"),
-				cards = event.cards.filterInD();
-			if (!lib.suit.includes(suit) || !cards.length) {
+			const hssuits = player.getCards("h").map(card => get.suit(card)),
+				cards = event.cards.filterInD(),
+				suits = cards.map(card => get.suit(card));
+			if (!cards.length) {
 				return false;
 			}
-			for (var i of hs) {
-				if (get.suit(i) == suit) {
-					return false;
-				}
+			if (!suits.some(suit => !hssuits.includes(suit))) {
+				return false;
 			}
 			return true;
 		},
-		content() {
-			"step 0";
-			player.showHandcards(get.translation(player) + "发动了【约俭】");
-			var suit = get.suit(trigger.card),
-				hs = player.getCards("h");
-			if (!lib.suit.includes(suit)) {
-				event.finish();
-				return;
-			}
-			for (var i of hs) {
-				if (get.suit(i) == suit) {
-					event.finish();
-					return;
-				}
-			}
-			"step 1";
-			var cards = trigger.cards.filterInD();
-			if (cards.length) {
-				player.gain(cards, "gain2");
+		async content(event, trigger, player) {
+			await player.showHandcards(get.translation(player) + "发动了【约俭】");
+			const hssuits = player.getCards("h").map(card => get.suit(card)),
+				cards = trigger.cards.filterInD(),
+				suits = cards.map(card => get.suit(card));
+			if (cards.length && suits.some(suit => !hssuits.includes(suit))) {
+				await player.gain({ cards, animate: "gain2" });
 			}
 		},
 	},
@@ -47589,7 +47585,26 @@ const skills = {
 					.forResult();
 			}
 		},
-		locked: true,
+		locked: false,
+		mod: {
+			aiOrder(player, card, num) {
+				if (typeof card == "object") {
+					const storage = player.storage.oltaohuai;
+					let nums = player.getCards("h").map(card => get.number(card));
+					if (storage) {
+						nums.sort((a, b) => a - b);
+						if (get.number(card) <= nums[0]) {
+							return num + 4;
+						}
+					} else {
+						nums.sort((a, b) => b - a);
+						if (get.number(card) >= nums[0]) {
+							return num + 4;
+						}
+					}
+				}
+			},
+		},
 		async content(event, trigger, player) {
 			if (event.cards?.length) await player.discard(event.cards);
 			else {

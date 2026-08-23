@@ -2,6 +2,7 @@ import { menuContainer, menuxpages, menuUpdates, openMenu, clickToggle, clickSwi
 import { ui, game, get, ai, lib, _status } from "noname";
 import { createApp } from "vue";
 import { security } from "@/util/sandbox.js"
+import { formatBuildLabel } from "@/util/meta"
 import dedent from "dedent";
 
 export const otherMenu = function (/** @type { boolean | undefined } */ connectMenu) {
@@ -97,7 +98,8 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 		var ul = document.createElement("ul");
 		var li1 = document.createElement("li");
 		var li3 = document.createElement("li");
-		li1.innerHTML = "游戏版本：" + lib.version + '';
+		const buildLabel = formatBuildLabel(lib.buildInfo);
+		li1.textContent = `游戏版本：${lib.version}${buildLabel ? ` (${buildLabel})` : ""}`;
 		li3.innerHTML = '由于无名杀正在重构项目结构，在线更新暂时无法使用，请访问github主页获取最新版本。';
 
 		/** @type { HTMLParagraphElement } */

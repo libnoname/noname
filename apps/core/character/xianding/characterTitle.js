@@ -1,4 +1,7 @@
 export default {
+	//liupanxi: "",
+	//dengwantang: ""，
+	v_mateng: "千骑卷黄沙",
 	//dc_sb_zhonghui: "",
 	lizhaoyi: "贞骨陨玉",
 	wu_zhangfei: "烈武桓威",
@@ -11,7 +14,7 @@ export default {
 	dc_shen_guanyu: "鬼神再临",
 	dc_shen_zhangliao: "雁门之刑天",
 	dc_shen_caopi: "月晦书轮回",
-	//dc_xia_wangyue: "",
+	dc_xia_wangyue: "锐通玄极",
 	shie: "传锋承刃",
 	dc_sb_zhangren: "尖锋致溃",
 	v_zhangxingcai: "帼姿凤舞",

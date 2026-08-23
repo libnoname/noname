@@ -2,6 +2,127 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//星诸葛瑾
+	starzunjian: {
+		audio: 2,
+		enable: "phaseUse",
+		filter(event, player) {
+			return player.hasDiscardableCards(player, "h", card => !player.getStorage("starzunjian_used").includes(get.suit(card)));
+		},
+		filterCard(card, player) {
+			if (player.getStorage("starzunjian_used").includes(get.suit(card))) {
+				return false;
+			}
+			if (!lib.filter.cardDiscardable(card, player, "starzunjian")) {
+				return false;
+			}
+			if (ui.selected.cards.length) {
+				return get.suit(card) === get.suit(ui.selected.cards[0]);
+			}
+			return true;
+		},
+		selectCard() {
+			if (ui.selected.cards?.length) {
+				return -1;
+			}
+			return 1;
+		},
+		position: "h",
+		filterTarget: true,
+		check(card) {
+			return 8 - get.value(card);
+		},
+		async content(event, trigger, player) {
+			const { cards, target } = event;
+			player.addTempSkill(event.name + "_used");
+			player.markAuto(event.name + "_used", [get.suit(cards[0])]);
+			const num = lib.suit.slice().removeArray(player.getCards("h").map(card => get.suit(card))).length;
+			if (num > 0) {
+				await target.draw({ num });
+			}
+			if (target.isMaxHandcard(true) && target != player) {
+				await target.chooseToGive({ target: player, selectCard: [1, 2], position: "h", prompt: `尊谏：你可以交给${get.translation(player)}至多两张手牌` });
+			}
+			if (target.isMinHp(true) && target.isDamaged()) {
+				const result = await player
+					.chooseBool({
+						prompt: `尊谏：是否令${get.translation(target)}回复一点体力`,
+						ai() {
+							const { player, target } = get.event();
+							if (get.attitude(player, target) > 0) {
+								return 1;
+							}
+							return 0;
+						},
+					})
+					.set("target", target)
+					.forResult();
+				if (result?.bool) {
+					await target.recover();
+				}
+			}
+		},
+		ai: {
+			order: 0.01,
+			result: {
+				player: 1,
+				target(player, target) {
+					if (target.hasSkillTag("nogain")) {
+						return 0;
+					}
+					if (get.attitude(player, target) < 0) {
+						return 0;
+					}
+					return target.countCards("h") * Math.max(1, target.getDamagedHp());
+				},
+			},
+		},
+		subSkill: { used: { charlotte: true, onremove: true, intro: { content: "本回合已弃置花色：$" } } },
+	},
+	starhongya: {
+		audio: 2,
+		trigger: { target: "useCardToTarget" },
+		filter(event, player) {
+			return player.hasCards("h") && player != event.player && typeof get.number(event.card) == "number";
+		},
+		usable: 2,
+		async cost(event, trigger, player) {
+			const num = get.number(trigger.card);
+			event.result = await player
+				.chooseCard({
+					prompt: get.prompt(event.skill),
+					prompt2: `重铸一张点数比${num}更大的手牌令${get.translation(trigger.card)}对你无效`,
+					filterCard(card, player) {
+						if (!lib.filter.cardRecastable(card, player)) {
+							return false;
+						}
+						return get.number(card) > get.event().num;
+					},
+					ai(card) {
+						const { player, target, cardx } = get.event();
+						if (get.effect(player, cardx, target, player) <= 0) {
+							return 114514 - get.value(card);
+						}
+						return 0;
+					},
+				})
+				.set("num", num)
+				.set("target", trigger.player)
+				.set("cardx", trigger.card)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const { cards } = event;
+			trigger.getParent().excluded.add(player);
+			const num = lib.suit.slice().removeArray(player.getCards("h").map(card => get.suit(card))).length;
+			const num1 = get.number(cards[0]),
+				num2 = Math.max(0, ...player.getCards("h").map(card => get.number(card)));
+			await player.recast(cards);
+			if (num1 >= num2 && num > 0) {
+				await player.draw({ num });
+			}
+		},
+	},
 	//曹豹
 	yanjiu: {
 		audio: 2,
@@ -356,7 +477,7 @@ const skills = {
 					const keys = ["type2", "suit", "number"];
 					keys.forEach((key, idx) => {
 						const card = get.discardPile(card => {
-							return !gain.includes(card) &&get[key](card)==get[key](cards[0]);
+							return !gain.includes(card) && get[key](card) == get[key](cards[0]);
 						});
 						if (card) {
 							gain.push(card);
@@ -11527,7 +11648,7 @@ const skills = {
 			if (result.bool) {
 				var target = result.targets[0];
 				player.logSkill("hfjieying", target);
-				target.addTempSkill("hfjieying2", { player: "phaseJieshuBegin" });
+				target.addTempSkill("hfjieying2", { player: "phaseEnd" });
 			}
 		},
 		ai: {
