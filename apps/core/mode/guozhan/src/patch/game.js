@@ -362,11 +362,6 @@ export class GameGuozhan extends Game {
 				sides.push(i.playerid);
 			}
 		}
-		// 一个活人都没有时上面的 for 一次都没跑，sides 自然是空的。
-		// 这时不能和「还有活人但全部未明置」一样直接 return —— 后者 return 是对的
-		//（确实判不出胜负，游戏该继续），而全灭时再没有任何人会调 game.over：
-		// die 事件自己不收尾，收尾全靠 dieAfter → tryResult。
-		// 一旦漏掉，phaseLoop 的 while(true) 会在零活人时变成纯微任务空转。
 		if (!game.players.length) {
 			game.checkResult();
 			return;
