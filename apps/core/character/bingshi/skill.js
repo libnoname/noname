@@ -2317,7 +2317,7 @@ const skills = {
 			}
 			const evt2 = event.relatedEvent || event.getParent();
 			if (evt2.name === "useCard" && evt2.player === player && get.type(evt2.card, null, false) === "equip") {
-				return;
+				return false;
 			}
 			return true;
 		},
@@ -5542,7 +5542,7 @@ const skills = {
 					}
 					const evt2 = event.relatedEvent || event.getParent();
 					if (evt2.name === "useCard" && evt2.player === player && get.type(evt2.card, null, false) === "equip") {
-						return;
+						return false;
 					};
 					return true;
 				},
