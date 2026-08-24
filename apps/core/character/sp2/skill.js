@@ -13069,171 +13069,133 @@ const skills = {
 		//direct:true,
 		frequent: true,
 		filter(event, player) {
-			return player.countCards("he") > 0;
+			return player.hasCards("he");
 		},
-		content() {
-			"step 0";
-			var num = player.storage.mubing2 ? 4 : 3;
-			event.num = num;
-			event.cards = game.cardsGotoOrdering(get.cards(num)).cards;
-			game.log(player, "展示了", event.cards);
-			event.videoId = lib.status.videoId++;
+		async content(event, trigger, player) {
+			const num = player.storage.mubing2 ? 4 : 3;
+			const cards = get.cards(num);
+			const orderingEvent = game.cardsGotoOrdering(cards);
+			game.log(player, "展示了", cards);
+			const videoId = lib.status.videoId++;
 			game.broadcastAll(
-				function (player, id, cards) {
-					var str = get.translation(player) + "发动了【募兵】";
-					var dialog = ui.create.dialog(str, cards);
+				(player, id, cards) => {
+					const prompt = `${get.translation(player)}发动了【募兵】`;
+					const dialog = ui.create.dialog(prompt, cards);
 					dialog.videoId = id;
 				},
 				player,
-				event.videoId,
-				event.cards
+				videoId,
+				cards
 			);
-			game.addVideo("showCards", player, [get.translation(player) + "发动了【募兵】", get.cardsInfo(event.cards)]);
-			game.delay(2);
-			"step 1";
-			var numa = 0;
-			cards.sort(function (a, b) {
-				return a.number - b.number;
-			});
-			for (var i of cards) {
-				if (get.value(i, player) > 0) {
-					numa += get.number(i);
+			game.addVideo("showCards", player, [`${get.translation(player)}发动了【募兵】`, get.cardsInfo(cards)]);
+			await orderingEvent;
+			await game.delay(2);
+			cards.sort((a, b) => a.number - b.number);
+			const numa = cards.reduce((sum, card) => (get.value(card, player) > 0 ? sum + get.number(card) : sum), 0);
+			const updateDialogPrompt = (id, prompt) => {
+				const dialog = get.idDialog(id);
+				if (dialog) {
+					dialog.content.firstChild.innerHTML = prompt;
 				}
-			}
-			player
-				.chooseToDiscard([1, Infinity], "h")
-				.set("ai", function (card) {
-					var player = _status.event.player;
-					var numa = _status.event.numa;
-					//if(card.name!='tengjia'&&get.position(card)=='e'&&get.equipValue(card,player)<=0) return 14;
-					var num = 0;
-					for (var i of ui.selected.cards) {
-						num += i.number;
-					}
-					if (num >= numa) {
-						return 0;
-					}
-					if (card.number + num >= numa) {
-						return 15 - get.value(card);
-					}
-					if (!ui.selected.cards.length) {
-						var min = _status.event.min;
-						if (
-							card.number < min &&
-							!player.countCards("h", function (xcard) {
-								return xcard != card && card.number + xcard.number > min;
-							})
-						) {
+			};
+			const discardEvent = player
+				.chooseToDiscard({
+					selectCard: [1, Infinity],
+					position: "h",
+					ai: card => {
+						const player = _status.event.player;
+						const numa = _status.event.numa;
+						//if(card.name!='tengjia'&&get.position(card)=='e'&&get.equipValue(card,player)<=0) return 14;
+						const selectedNumber = ui.selected.cards.reduce((sum, selectedCard) => sum + selectedCard.number, 0);
+						if (selectedNumber >= numa) {
 							return 0;
 						}
-						return card.number;
-					}
-					return Math.max(5 - get.value(card), card.number);
+						if (card.number + selectedNumber >= numa) {
+							return 15 - get.value(card);
+						}
+						if (!ui.selected.cards.length) {
+							const min = _status.event.min;
+							if (
+								card.number < min &&
+								!player.countCards("h", xcard => xcard !== card && card.number + xcard.number > min)
+							) {
+								return 0;
+							}
+							return card.number;
+						}
+						return Math.max(5 - get.value(card), card.number);
+					},
 				})
 				.set("prompt", false)
 				.set("numa", numa)
 				.set("min", cards[0].number);
-			var func = function (id) {
-				var dialog = get.idDialog(id);
-				if (dialog) {
-					dialog.content.firstChild.innerHTML = "请选择要弃置的牌";
-				}
-			};
-			if (player == game.me) {
-				func(event.videoId);
+			if (player === game.me) {
+				updateDialogPrompt(videoId, "请选择要弃置的牌");
 			} else if (player.isOnline()) {
-				player.send(func, event.videoId);
+				player.send(updateDialogPrompt, videoId, "请选择要弃置的牌");
 			}
-			"step 2";
-			if (!result.bool) {
+			const discardResult = await discardEvent.forResult();
+			let selectedCards = [];
+			if (discardResult.bool) {
+				const maxNum = discardResult.cards.reduce((sum, card) => sum + get.number(card), 0);
+				const buttonEvent = player
+					.chooseButton({
+						selectButton: [0, num],
+						filterButton: button => {
+							const selectedNumber = ui.selected.buttons.reduce((sum, selectedButton) => sum + get.number(selectedButton.link), 0);
+							return selectedNumber + get.number(button.link) <= _status.event.maxNum;
+						},
+						ai: button => get.value(button.link, _status.event.player),
+					})
+					.set("dialog", videoId)
+					.set("maxNum", maxNum);
+				if (player === game.me) {
+					updateDialogPrompt(videoId, "请选择要获得的牌");
+				} else if (player.isOnline()) {
+					player.send(updateDialogPrompt, videoId, "请选择要获得的牌");
+				}
+				const buttonResult = await buttonEvent.forResult();
+				if (buttonResult.bool) {
+					selectedCards = buttonResult.links;
+				}
+			}
+			game.broadcastAll("closeDialog", videoId);
+			game.addVideo("cardDialog", null, videoId);
+			if (!selectedCards.length) {
 				return;
 			}
-			var numx = 0;
-			for (var i of result.cards) {
-				numx += get.number(i);
-			}
-			event.numx = numx;
-			var next = player.chooseButton([0, num]);
-			next.set("dialog", event.videoId);
-			next.set("filterButton", function (button) {
-				var num = 0;
-				for (var i = 0; i < ui.selected.buttons.length; i++) {
-					num += get.number(ui.selected.buttons[i].link);
-				}
-				return num + get.number(button.link) <= _status.event.maxNum;
-			});
-			next.set("maxNum", event.numx);
-			next.set("ai", function (button) {
-				return get.value(button.link, _status.event.player);
-			});
-			var func = function (id) {
-				var dialog = get.idDialog(id);
-				if (dialog) {
-					dialog.content.firstChild.innerHTML = "请选择要获得的牌";
-				}
-			};
-			if (player == game.me) {
-				func(event.videoId);
-			} else if (player.isOnline()) {
-				player.send(func, event.videoId);
-			}
-			"step 3";
-			if (!result.bool) {
-				event.cards = [];
-			} else {
-				event.cards = result.links;
-			}
-			"step 4";
-			game.broadcastAll("closeDialog", event.videoId);
-			game.addVideo("cardDialog", null, event.videoId);
-			if (!cards.length) {
-				event.finish();
-				return;
-			}
-			player.gain(cards, "log", "gain2");
+			await player.gain({ cards: selectedCards, log: true, animate: "gain2" });
 			if (!player.storage.mubing2) {
-				event.finish();
 				return;
 			}
-			event.given = [];
-			"step 5";
-			var hs = player.getCards("h");
-			cards = cards.filter(function (card) {
-				return hs.includes(card);
-			});
-			if (
-				cards.length &&
-				game.hasPlayer(function (current) {
-					return current != player && !event.given.includes(current);
-				})
-			) {
-				player.chooseCardTarget({
-					prompt: "是否将得到的牌中的任意张交给其他角色？",
-					selectCard: [1, cards.length],
-					filterCard(card) {
-						return _status.event.cards.includes(card);
-					},
-					filterTarget(card, player, target) {
-						return target != player && !_status.event.given.includes(target);
-					},
-					cards: cards,
-					given: event.given,
-					ai1(card) {
-						return -1;
-					},
-				});
-			} else {
-				event.finish();
-			}
-			"step 6";
-			if (result.bool) {
-				var target = result.targets[0];
-				var cards = result.cards;
-				event.given.push(target);
-				event.cards.removeArray(cards);
+			const given = [];
+			let remainingCards = [...selectedCards];
+			for (let i = 1; i < game.countPlayer(); i++) {
+				const handCards = player.getCards("h");
+				remainingCards = remainingCards.filter(card => handCards.includes(card));
+				if (!remainingCards.length || !game.hasPlayer(current => current !== player && !given.includes(current))) {
+					break;
+				}
+				const giveResult = await player
+					.chooseCardTarget({
+						prompt: "是否将得到的牌中的任意张交给其他角色？",
+						selectCard: [1, remainingCards.length],
+						filterCard: card => _status.event.cards.includes(card),
+						filterTarget: (_card, player, target) => target !== player && !_status.event.given.includes(target),
+						cards: remainingCards,
+						given,
+						ai1: () => -1,
+					})
+					.forResult();
+				if (!giveResult.bool) {
+					break;
+				}
+				const target = giveResult.targets[0];
+				const cardsToGive = giveResult.cards;
+				given.push(target);
+				remainingCards.removeArray(cardsToGive);
 				player.line(target, "green");
-				player.give(cards, target);
-				event.goto(5);
+				await player.give(cardsToGive, target);
 			}
 		},
 	},
