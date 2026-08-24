@@ -12044,6 +12044,7 @@ const skills = {
 		popup: false,
 		charlotte: true,
 		sourceSkill: "repojun",
+		lastDo: true,
 		filter(event, player) {
 			return player.getExpansions("repojun2").length > 0;
 		},
