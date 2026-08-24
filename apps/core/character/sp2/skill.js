@@ -9658,171 +9658,161 @@ const skills = {
 			return player.isPhaseUsing();
 		},
 		async cost(event, trigger, player) {
-			const choiceList = ["观看牌堆中两张点数为6的牌并获得其中一张", "令一名其他角色弃置一张点数为6的牌或交给你一张牌", "获得场上一张点数为6的牌"],
-				choices = ["选项一"];
-			if (game.hasPlayer(current => current != player && current.countCards("he") > 0)) {
+			const choiceList = ["观看牌堆中两张点数为6的牌并获得其中一张", "令一名其他角色弃置一张点数为6的牌或交给你一张牌", "获得场上一张点数为6的牌"];
+			const choices = ["选项一"];
+			if (game.hasPlayer(current => current !== player && current.countCards("he") > 0)) {
 				choices.push("选项二");
 			} else {
 				choiceList[1] = `<span style="opacity:0.5">${choiceList[1]}</span>`;
 			}
-			if (
-				game.hasPlayer(current => {
-					return current.hasCard(function (card) {
-						return get.number(card) == 6 && lib.filter.canBeGained(card, current, player);
-					}, "ej");
-				})
-			) {
+			if (game.hasPlayer(current => current.hasCard(card => get.number(card) === 6 && lib.filter.canBeGained(card, current, player), "ej"))) {
 				choices.push("选项三");
 			} else {
 				choiceList[2] = `<span style="opacity:0.5">${choiceList[2]}</span>`;
 			}
 			const result = await player
-				.chooseControl(choices, "cancel2")
-				.set("choiceList", choiceList)
-				.set("prompt", get.prompt(event.skill))
-				.set("ai", function () {
-					var player = _status.event.player;
-					if (
-						game.hasPlayer(function (current) {
-							if (current == player) {
-								return false;
-							}
-							var att = -get.sgn(get.attitude(player, current) - 0.1);
-							return current.hasCard(function (card) {
-								return get.number(card) == 6 && lib.filter.canBeGained(card, current, player) && get.sgn(get.useful(card, current)) == att;
-							}, "ej");
-						})
-					) {
-						return "选项三";
-					}
-					if (
-						game.hasPlayer(function (target) {
-							if (target == player) {
-								return false;
-							}
-							var att = get.attitude(player, target);
-							return (
-								att < 0 &&
-								target.countCards("he") > 0 &&
-								!target.hasCard(function (card) {
-									return get.value(card, target) <= 0;
-								}, "he")
-							);
-						})
-					) {
-						return "选项二";
-					}
-					return "选项一";
+				.chooseControl({
+					controls: [...choices, "cancel2"],
+					choiceList,
+					prompt: get.prompt(event.skill),
+					ai: () => {
+						if (
+							game.hasPlayer(current => {
+								if (current === player) {
+									return false;
+								}
+								const att = -get.sgn(get.attitude(player, current) - 0.1);
+								return current.hasCard(card => get.number(card) === 6 && lib.filter.canBeGained(card, current, player) && get.sgn(get.useful(card, current)) === att, "ej");
+							})
+						) {
+							return "选项三";
+						}
+						if (
+							game.hasPlayer(target => {
+								if (target === player) {
+									return false;
+								}
+								const att = get.attitude(player, target);
+								return att < 0 && target.countCards("he") > 0 && !target.hasCard(card => get.value(card, target) <= 0, "he");
+							})
+						) {
+							return "选项二";
+						}
+						return "选项一";
+					},
 				})
 				.forResult();
-			if (result.control !== "cancel2") {
-				const results = { bool: true, cost_data: { index: choices.indexOf(result.control) } };
-				if (results.cost_data.index === 1) {
-					const { targets } = await player
-						.chooseTarget("令一名其他角色弃置一张点数为6的牌，否则交给你一张牌", true, function (card, player, current) {
-							return current != player && current.countCards("he") > 0;
-						})
-						.set("ai", function (target) {
-							var player = _status.event.player,
-								att = get.attitude(player, target);
+			if (result.control === "cancel2") {
+				return;
+			}
+			const results = { bool: true, cost_data: { index: choices.indexOf(result.control) } };
+			if (results.cost_data.index === 1) {
+				const { targets } = await player
+					.chooseTarget({
+						prompt: "令一名其他角色弃置一张点数为6的牌，否则交给你一张牌",
+						forced: true,
+						filterTarget: (_card, player, current) => current !== player && current.countCards("he") > 0,
+						ai: target => {
+							const att = get.attitude(player, target);
 							if (att >= 0) {
 								return 0;
 							}
-							if (
-								!target.hasCard(function (card) {
-									return get.value(card, target) <= 0;
-								}, "he")
-							) {
+							if (!target.hasCard(card => get.value(card, target) <= 0, "he")) {
 								return -att / Math.sqrt(target.countCards("he"));
 							}
 							return 0;
-						})
-						.forResult();
-					results.targets = targets;
-				} else if (results.cost_data.index === 2) {
-					const { targets } = await player
-						.chooseTarget("获得一名角色装备区或判定区内点数为6的牌", true, function (card, player, current) {
-							return current.hasCard(function (card) {
-								return get.number(card) == 6 && lib.filter.canBeGained(card, current, player);
-							}, "ej");
-						})
-						.set("ai", function (target) {
-							var player = _status.event.player,
-								att = -get.sgn(get.attitude(player, target) - 0.1),
-								max = 0,
-								ej = target.getCards("ej", function (card) {
-									return get.number(card) == 6 && lib.filter.canBeGained(card, target, player);
-								});
-							for (var i of ej) {
-								var num = get.useful(i, target) * att;
+						},
+					})
+					.forResult();
+				results.targets = targets;
+			} else if (results.cost_data.index === 2) {
+				const { targets } = await player
+					.chooseTarget({
+						prompt: "获得一名角色装备区或判定区内点数为6的牌",
+						forced: true,
+						filterTarget: (_card, player, current) => current.hasCard(card => get.number(card) === 6 && lib.filter.canBeGained(card, current, player), "ej"),
+						ai: target => {
+							const att = -get.sgn(get.attitude(player, target) - 0.1);
+							const cards = target.getCards("ej", card => get.number(card) === 6 && lib.filter.canBeGained(card, target, player));
+							let max = 0;
+							for (const card of cards) {
+								const num = get.useful(card, target) * att;
 								if (num > max) {
 									max = num;
 								}
 								return max;
 							}
-						})
-						.forResult();
-					results.targets = targets;
-				}
-				event.result = results;
+						},
+					})
+					.forResult();
+				results.targets = targets;
 			}
+			event.result = results;
 		},
-		content() {
-			"step 0";
-			var result = event.cost_data;
-			if (result.index === 1) {
-				event.goto(4);
-			} else if (result.index === 2) {
-				event.goto(3);
-			}
-			"step 1";
-			var cards = [];
-			while (cards.length < 2) {
-				var card = get.cardPile2(function (card) {
-					return !cards.includes(card) && get.number(card) == 6;
+		async content(event, trigger, player) {
+			const { index } = event.cost_data;
+			if (index === 2) {
+				const target = event.targets[0];
+				await player.gainPlayerCard({
+					target,
+					position: "ej",
+					forced: true,
+					filterButton: button => get.number(button.link) === 6,
 				});
+				return;
+			}
+			if (index === 1) {
+				const target = event.targets[0];
+				const discardResult = await target
+					.chooseToDiscard({
+						position: "he",
+						prompt: `弃置一张点数为6的牌，否则交给${get.translation(player)}一张牌`,
+						filterCard: card => get.number(card) === 6,
+						ai: card => 8 - get.value(card),
+					})
+					.forResult();
+				if (discardResult.bool) {
+					return;
+				}
+				const giveResult = await target
+					.chooseCard({
+						position: "he",
+						forced: true,
+						prompt: `交给${get.translation(player)}一张牌`,
+					})
+					.forResult();
+				if (giveResult.bool) {
+					await target.give(giveResult.cards, player, "giveAuto");
+				}
+				return;
+			}
+			const cards = [];
+			for (let i = 0; i < 2; i++) {
+				const card = get.cardPile2(card => !cards.includes(card) && get.number(card) === 6);
 				if (!card) {
 					break;
 				}
 				cards.push(card);
 			}
 			if (!cards.length) {
-				player.draw(6);
-				event.finish();
-			} else if (cards.length == 1) {
-				event._result = { bool: true, links: cards };
-			} else {
-				player.chooseButton(["兴乱：选择获得其中一张", cards], true).set("ai", function (button) {
-					return get.value(button.link, _status.event.player);
-				});
+				await player.draw(6);
+				return;
 			}
-			"step 2";
-			if (result.bool) {
-				player.gain(result.links, "gain2");
+			let gainCards = cards;
+			if (cards.length > 1) {
+				const buttonResult = await player
+					.chooseButton({
+						createDialog: ["兴乱：选择获得其中一张", cards],
+						forced: true,
+						ai: button => get.value(button.link, player),
+					})
+					.forResult();
+				if (!buttonResult.bool) {
+					return;
+				}
+				gainCards = buttonResult.links;
 			}
-			event.finish();
-			"step 3";
-			var target = targets[0];
-			player.gainPlayerCard(target, "ej", true).set("filterButton", function (button) {
-				return get.number(button.link) == 6;
-			});
-			event.finish();
-			"step 4";
-			var target = targets[0];
-			event.target = target;
-			target.chooseToDiscard("he", "弃置一张点数为6的牌，否则交给" + get.translation(player) + "一张牌", function (card) {
-				return get.number(card) == 6;
-			}).ai = card => 8 - get.value(card);
-			"step 5";
-			if (!result.bool) {
-				target.chooseCard("he", true, "交给" + get.translation(player) + "一张牌");
-			} else {
-				event.finish();
-			}
-			"step 6";
-			if (result.bool) {
-				target.give(result.cards, player, "giveAuto");
-			}
+			await player.gain({ cards: gainCards, animate: "gain2" });
 		},
 	},
 	rexingluan: {
