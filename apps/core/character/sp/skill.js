@@ -15251,7 +15251,7 @@ const skills = {
 							return;
 						}
 						const result = await player
-							.chooseButton(["联句：请选择获得的牌", cards], [1, 2], true)
+							.chooseButton(["联句：请选择获得的牌", cards], [1, 2])
 							.set("filterButton", button => {
 								return !ui.selected.buttons.some(but => get.color(but.link) != get.color(button.link));
 							})
