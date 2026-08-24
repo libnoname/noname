@@ -36,6 +36,8 @@ const skills = {
 			event.maozhu_map = map;
 			lib.skill.olremaozhu.updateReconnect(player.playerid, get.translation(map), city);
 			game.broadcastAll(lib.skill.olremaozhu.createDialog, player.playerid, get.translation(map), city);
+			player.addTempSkill("olrejinlan_map");
+			player.markAuto("olrejinlan_map", [map]);
 		},
 		ai: { combo: "olrejinlan" },
 		derivation: "olremaozhu_faq",
