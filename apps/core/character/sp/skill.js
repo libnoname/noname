@@ -23306,68 +23306,72 @@ const skills = {
 		usable: 1,
 		filter(event, player) {
 			return (
-				player.hasCard(function (card) {
+				player.hasCard(card => {
 					return lib.filter.cardDiscardable(card, player, "olqingyi");
 				}, "he") && game.hasPlayer(current => lib.skill.olqingyi.filterTarget(null, player, current))
 			);
 		},
 		selectTarget: [1, 2],
 		filterTarget(card, player, target) {
-			return target != player && target.countCards("he") > 0;
+			return target != player && target.hasCards("he");
 		},
 		multitarget: true,
 		multiline: true,
-		content() {
-			"step 0";
-			var list = [player];
+		async content(event, trigger, player) {
+			const targets = event.targets;
+			const list = [player];
 			list.addArray(targets);
 			list.sortBySeat();
-			event.list = list;
-			for (var target of event.list) {
+			for (const target of list) {
 				if (
-					!target.hasCard(function (card) {
+					!target.hasCard(card => {
 						return lib.filter.cardDiscardable(card, target, "olqingyi");
 					}, "he")
 				) {
-					event.finish();
-					break;
+					return;
 				}
 			}
-			"step 1";
-			player
-				.chooseCardOL(event.list, "he", true, "清议：选择弃置一张牌", function (card, player) {
-					return lib.filter.cardDiscardable(card, player, "olqingyi");
-				})
-				.set("ai", get.unuseful);
-			"step 2";
-			var lose_list = [],
-				cards = [];
-			for (var i = 0; i < result.length; i++) {
-				var current = event.list[i],
-					card = result[i].cards[0];
-				lose_list.push([current, result[i].cards]);
-				cards.push(card);
-			}
-			game.loseAsync({
-				lose_list: lose_list,
-			}).setContent("discardMultiple");
-			var type = get.type2(cards[0]);
-			for (var i = 1; i < cards.length; i++) {
-				if (get.type2(cards[i]) != type) {
-					event.finish();
+			let result;
+			while (true) {
+				const next = player
+					.chooseCardOL(list, "he", true, "清议：选择弃置一张牌", (card, player) => {
+						return lib.filter.cardDiscardable(card, player, "olqingyi");
+					})
+					.set("ai", get.unuseful);
+				result = await next.forResult();
+				const lose_list = [],
+					cards = [];
+				for (let i = 0; i < result.length; i++) {
+					const current = list[i],
+						card = result[i].cards[0];
+					lose_list.push([current, result[i].cards]);
+					cards.push(card);
 				}
-			}
-			"step 3";
-			event.goto(1);
-			for (var target of event.list) {
-				if (
-					!target.hasCard(function (card) {
-						return lib.filter.cardDiscardable(card, target, "olqingyi");
-					}, "he")
-				) {
-					event.finish();
-					break;
+				await game.loseAsync({
+					lose_list: lose_list,
+				}).setContent("discardMultiple");
+				const type = get.type2(cards[0]);
+				for (let i = 1; i < cards.length; i++) {
+					if (get.type2(cards[i]) != type) {
+						return;
+					}
 				}
+				for (const target of list) {
+					if (
+						!target.hasCard(card => {
+							return lib.filter.cardDiscardable(card, target, "olqingyi");
+						}, "he")
+					) {
+						return;
+					}
+				}
+				result = await player
+					.chooseBool({
+						prompt: "是否继续发动【清议】？",
+						ai: () => true,
+					})
+					.forResult();
+				if (!result?.bool) return;
 			}
 		},
 		ai: {
