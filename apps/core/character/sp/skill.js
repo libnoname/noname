@@ -10603,7 +10603,14 @@ const skills = {
 				await owner.modedDiscard(event.cards);
 				trigger.num++;
 			} else {
-				await player.recover();
+				let num = 0;
+				game.countPlayer2(current => {
+					const cards = trigger.getl?.(current)?.es?.filter(card => get.suit(card) == "spade");
+					if (cards?.length) {
+						num += cards.length;
+					}
+				});
+				await player.recover(num);
 			}
 		},
 	},
