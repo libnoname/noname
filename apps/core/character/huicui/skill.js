@@ -3368,16 +3368,30 @@ const skills = {
 					},
 				},
 				trigger: {
-					player: "dieAfter",
+					player: ["dieAfter", "loseAfter"],
+					global: ["loseAsyncAfter", "cardsDiscardAfter", "equipAfter", "addJudgeAfter", "addToExpansionAfter"],
 				},
 				filter(event, player) {
-					return !game.hasPlayer(cur => cur.hasSkill("dcyunzheng", null, null, false), true);
+					if (event.name == "die") {
+						return !game.hasPlayer(cur => cur.hasSkill("dcyunzheng", null, null, false), true);
+					}
+					return event.getd?.(player, "cards2")?.some(card => card.hasGaintag("eternal_dcyunzheng_tag"));
 				},
 				silent: true,
 				forceDie: true,
 				async content(event, trigger, player) {
-					game.removeGlobalSkill("dcyunzheng_gloabl");
-					game.countPlayer(cur => cur.removeSkill("dcyunzheng_block"));
+					if (trigger.name == "die") {
+						game.removeGlobalSkill("dcyunzheng_gloabl");
+						game.countPlayer(cur => cur.removeSkill("dcyunzheng_block"));
+					} else {
+						for (const card of trigger.getd(player, "cards2")) {
+							if (card.hasGaintag("eternal_dcyunzheng_tag")) {
+								game.broadcastAll(card => {
+									card.removeGaintag("eternal_dcyunzheng_tag");
+								}, card);
+							}
+						}
+					}
 				},
 			},
 			block: {
@@ -5001,19 +5015,21 @@ const skills = {
 					if (event.name == "useCard") {
 						return event.player;
 					}
-					return game.filterPlayer(current => {
-						return (
-							!current.hasCards("h", card => card.hasGaintag("dckuizhen")) &&
-							current.hasHistory("lose", evt => {
-								for (const i in evt.gaintag_map) {
-									if (evt.gaintag_map[i].includes("dckuizhen")) {
-										return true;
+					return game
+						.filterPlayer(current => {
+							return (
+								!current.hasCards("h", card => card.hasGaintag("dckuizhen")) &&
+								current.hasHistory("lose", evt => {
+									for (const i in evt.gaintag_map) {
+										if (evt.gaintag_map[i].includes("dckuizhen")) {
+											return true;
+										}
 									}
-								}
-								return false;
-							})
-						);
-					}).sortBySeat();
+									return false;
+								})
+							);
+						})
+						.sortBySeat();
 				},
 				async content(event, trigger, player) {
 					const targets = event.targets;
