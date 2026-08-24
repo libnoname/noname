@@ -10197,70 +10197,60 @@ const skills = {
 	rehuoshui: {
 		audio: 2,
 		trigger: { player: "phaseZhunbeiBegin" },
-		direct: true,
-		content() {
-			"step 0";
-			var num = Math.min(game.countPlayer() - 1, Math.max(1, player.getDamagedHp()));
-			var str;
+		async cost(event, trigger, player) {
+			const num = Math.min(game.countPlayer() - 1, Math.max(1, player.getDamagedHp()));
+			let prompt2;
 			if (num > 1) {
-				str = "选择至多" + get.cnNumber(num) + "名其他角色。";
-				var list = ["第一名角色的非锁定技失效直到回合结束", "；第二名角色交给你一张手牌", "；第三名及之后角色弃置装备区内的所有牌"];
-				for (var i = 0; i < Math.min(3, num); i++) {
-					str += list[i];
-				}
-				str += "。";
+				const descriptions = ["第一名角色的非锁定技失效直到回合结束", "；第二名角色交给你一张手牌", "；第三名及之后角色弃置装备区内的所有牌"];
+				prompt2 = `选择至多${get.cnNumber(num)}名其他角色。${descriptions.slice(0, Math.min(3, num)).join("")}。`;
 			} else {
-				str = "令一名其他角色的非锁定技本回合内失效";
+				prompt2 = "令一名其他角色的非锁定技本回合内失效";
 			}
-			player.chooseTarget([1, num], get.prompt("rehuoshui"), str, lib.filter.notMe).set("ai", function (target) {
-				var att = -get.attitude(_status.event.player, target);
-				if (att <= 0) {
-					return 0;
+			event.result = await player
+				.chooseTarget({
+					selectTarget: [1, num],
+					prompt: get.prompt("rehuoshui"),
+					prompt2,
+					filterTarget: lib.filter.notMe,
+					ai: target => {
+						let attitude = -get.attitude(player, target);
+						if (attitude <= 0) {
+							return 0;
+						}
+						if (target.hasSkillTag("maixie") || target.hasSkill("maixie_hp") || target.hasSkill("maixie_defed")) {
+							attitude *= 3;
+						}
+						return attitude / get.threaten(target);
+					},
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const targets = event.targets;
+			targets[0].addTempSkill("fengyin");
+			if (targets[1]?.hasCards("h")) {
+				const result = await targets[1]
+					.chooseCard({
+						position: "h",
+						forced: true,
+						prompt: `交给${get.translation(player)}一张手牌`,
+					})
+					.forResult();
+				if (result.bool && result.cards?.length) {
+					await targets[1].give(result.cards, player);
 				}
-				if (target.hasSkillTag("maixie") || target.hasSkill("maixie_hp") || target.hasSkill("maixie_defed")) {
-					att *= 3;
+			}
+			for (const target of targets.slice(2)) {
+				const equipCount = target.countCards("e");
+				if (equipCount > 0) {
+					await target.chooseToDiscard({
+						position: "e",
+						forced: true,
+						selectCard: equipCount,
+					});
 				}
-				return att / get.threaten(target);
-			});
-			"step 1";
-			if (result.bool) {
-				var targets = result.targets;
-				player.logSkill("rehuoshui", targets);
-				event.targets = targets;
-				targets[0].addTempSkill("fengyin");
-				if (targets.length < 2) {
-					event.goto(6);
-				}
-			} else {
-				event.finish();
 			}
-			"step 2";
-			if (targets[1].countCards("h") == 0) {
-				event.goto(targets.length > 2 ? 4 : 6);
-			} else {
-				targets[1].chooseCard("h", true, "交给" + get.translation(player) + "一张手牌");
-			}
-			"step 3";
-			if (result.bool) {
-				targets[1].give(result.cards, player);
-			}
-			"step 4";
-			if (targets.length < 3) {
-				event.goto(6);
-			} else {
-				targets.splice(0, 2);
-			}
-			"step 5";
-			var target = targets.shift();
-			var num = target.countCards("e");
-			if (num > 0) {
-				target.chooseToDiscard("e", true, num);
-			}
-			if (targets.length > 0) {
-				event.redo();
-			}
-			"step 6";
-			game.delayx();
+			await game.delayx();
 		},
 	},
 	reqingcheng: {
