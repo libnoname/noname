@@ -305,9 +305,10 @@ const skills = {
 		},
 		usable: 2,
 		delay: false,
-		content() {
-			player.showHandcards(get.translation(player) + "对" + get.translation(target) + "发动了【旋势】");
-			player.gainPlayerCard(target, "hej", true);
+		async content(event, trigger, player) {
+			const target = event.target;
+			await player.showHandcards(get.translation(player) + "对" + get.translation(target) + "发动了【旋势】");
+			await player.gainPlayerCard({ target, position: "hej", forced: true });
 		},
 		ai: {
 			order: 20,
