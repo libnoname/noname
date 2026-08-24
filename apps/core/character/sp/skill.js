@@ -15020,7 +15020,7 @@ const skills = {
 							);
 						}, "j")
 					) {
-						return 6 - get.value(card);
+						return 9 - get.value(card);
 					}
 					return 0;
 				})

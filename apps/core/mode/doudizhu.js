@@ -2772,7 +2772,7 @@ export default {
 					.set("logSkill", event.skill)
 					.set("ai", card => {
 						if (_status.event.goon) {
-							return 7 - get.value(card);
+							return 9 - get.value(card);
 						}
 						return 0;
 					})
@@ -2823,7 +2823,7 @@ export default {
 					.set("logSkill", event.skill)
 					.set("ai", card => {
 						if (_status.event.goon) {
-							return 7 - get.value(card);
+							return 9 - get.value(card);
 						}
 						return 0;
 					})
@@ -2874,7 +2874,7 @@ export default {
 					.set("logSkill", event.skill)
 					.set("ai", card => {
 						if (_status.event.goon) {
-							return 7 - get.value(card);
+							return 9 - get.value(card);
 						}
 						return 0;
 					})
