@@ -3389,7 +3389,7 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseUseBegin" },
 		filter(event, player) {
-			return player.countMark("xinrenjie");
+			return player.hasMark("xinrenjie");
 		},
 		async cost(event, trigger, player) {
 			const limit = Math.min(3, player.countMark("xinrenjie"));
@@ -3419,23 +3419,23 @@ const skills = {
 				});
 				next.set("ai", button => {
 					const link = button.link,
-						num = get.event().num,
-						skills = get.event().skills;
+						{ num, skills, player } = get.event();
 					if (!ui.selected.buttons.length) {
-						if (num > 2 && link == "摸牌") {
-							return 10;
+						if (num >= 2 && link == "摸牌") {
+							return 2;
 						}
-						if (link == "rezhiheng" && player.countCards("h") > 0) {
+						if (link == "rezhiheng" && player.hasCards("h")) {
 							return 10;
 						}
 						if (link == "rejizhi" && (!skills.includes("rezhiheng") || player.countCards("hs", { type: "trick" }))) {
 							return 8;
 						}
-						if (player.countMark("xinrenjie") <= 2) {
-							return 0;
-						}
+						if (link == "rewansha") {
+              				return 6;
+            			}
+						return 0;
 					}
-					return ui.selected.buttons.length && ui.selected.buttons[0].link == "摸牌" ? num - 1 : 1;
+					return link == (ui.selected.buttons.length && ui.selected.buttons[0].link != "摸牌" ? num - 1 : 1);
 				});
 				next.set("num", num);
 				next.set("skills", skills);
@@ -3461,7 +3461,7 @@ const skills = {
 							if (!player.hasSkill("rejizhi", null, null, false)) {
 								return "cancel2";
 							}
-							return choices.length - 1;
+							return draw[draw.length - 1];
 						})()
 					)
 					.forResult();
