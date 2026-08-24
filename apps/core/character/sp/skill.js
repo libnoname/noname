@@ -8235,6 +8235,7 @@ const skills = {
 			if (!color.length) {
 				return;
 			}
+			color.addArray(["red", "black"]);
 			const dialog = ["椒遇：选择获得一种颜色的牌"];
 			for (let i = 0; i < color.length; i++) {
 				const colorx = color[i];
