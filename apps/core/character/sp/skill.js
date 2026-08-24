@@ -10556,6 +10556,7 @@ const skills = {
 		},
 		filter(event, player) {
 			if (event.name === "damage") {
+				if (player == event.player) return false;
 				return [player, event.player].some(target =>
 					target.hasVCard(card => {
 						return get.suit(card) === "spade" && lib.filter.cardDiscardable(card, player);
