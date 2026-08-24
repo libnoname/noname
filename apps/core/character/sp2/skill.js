@@ -15290,82 +15290,84 @@ const skills = {
 	lskuizhu: {
 		audio: 2,
 		trigger: { player: "phaseUseEnd" },
-		direct: true,
 		filter(event, player) {
-			return player.isMaxHp(true) == false;
+			return !player.isMaxHp(true);
 		},
-		content() {
-			"step 0";
-			player.chooseTarget(get.prompt2("lskuizhu"), function (card, player, target) {
-				return target != player && target.isMaxHp();
-			}).ai = function (target) {
-				var player = _status.event.player;
-				var ts = Math.min(5, target.countCards("h"));
-				var delta = ts - player.countCards("h");
-				if (delta <= 0) {
-					return 0;
-				}
-				if (get.attitude(player, target) < 1) {
-					return false;
-				}
-				return target.countCards("he", function (card) {
-					return lib.skill.zhiheng.check(card) > 0;
-				}) > 1
-					? delta
-					: 0;
-			};
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("lskuizhu", target);
-				player.drawTo(Math.min(5, target.countCards("h")));
-			} else {
-				event.finish();
-			}
-			"step 2";
-			if (!player.countCards("h")) {
-				event.finish();
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2("lskuizhu"),
+					filterTarget: (_card, player, target) => target !== player && target.isMaxHp(),
+					ai: target => {
+						const targetHandCount = Math.min(5, target.countCards("h"));
+						const delta = targetHandCount - player.countCards("h");
+						if (delta <= 0) {
+							return 0;
+						}
+						if (get.attitude(player, target) < 1) {
+							return false;
+						}
+						return target.countCards("he", card => lib.skill.zhiheng.check(card) > 0) > 1 ? delta : 0;
+					},
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			await player.drawTo(Math.min(5, target.countCards("h")));
+			if (!player.hasCards("h")) {
 				return;
 			}
-			target.viewHandcards(player);
-			"step 3";
-			if (!target.countCards("h")) {
-				event.finish();
+			await target.viewHandcards(player);
+			if (!target.hasCards("h")) {
 				return;
 			}
-			target.chooseToDiscard(true, "h", [0, player.countCards("h")], "弃置至多" + get.cnNumber(player.countCards("h")) + "张手牌，并获得" + get.translation(player) + "等量的手牌", "allowChooseAll").ai = function (card) {
-				if (ui.selected.cards.length > 1) {
-					return -1;
-				}
-				return lib.skill.zhiheng.check.apply(this, arguments);
-			};
-			"step 4";
-			if (result.bool && result.cards && result.cards.length && player.countGainableCards(target, "h") > 0) {
-				target.gainPlayerCard(player, "h", true, result.cards.length).visible = true;
-			}
-			"step 5";
-			if (result.bool && result.cards && result.cards.length > 1) {
-				var bool = player.storage.lslixun > 0 !== true;
-				player
-					.chooseTarget(bool, "令" + get.translation(target) + "对其攻击范围内的一名角色造成1点伤害" + (bool ? "" : "，或点「取消」移去一个“珠”"), function (card, player, target) {
-						var source = _status.event.source;
-						return target != source && source.inRange(target);
+			const result = await target
+				.chooseToDiscard({
+					forced: true,
+					position: "h",
+					selectCard: [0, player.countCards("h")],
+					prompt: `弃置至多${get.cnNumber(player.countCards("h"))}张手牌，并获得${get.translation(player)}等量的手牌`,
+					allowChooseAll: true,
+					ai: card => {
+						if (ui.selected.cards.length > 1) {
+							return -1;
+						}
+						return lib.skill.zhiheng.check(card);
+					},
+				})
+				.forResult();
+			let result2 = result;
+			if (result.bool && result.cards?.length && player.hasGainableCards(target, "h")) {
+				result2 = await target
+					.gainPlayerCard({
+						target: player,
+						position: "h",
+						forced: true,
+						selectButton: result.cards.length,
+						visible: true,
 					})
-					.set("source", target)
-					.set("ai", function (target) {
-						return get.damageEffect(target, _status.event.source, _status.event.player);
-					});
-			} else {
-				event.finish();
+					.forResult();
 			}
-			"step 6";
-			if (result.bool && result.targets && result.targets.length) {
-				player.line(result.targets[0]);
-				result.targets[0].damage(target);
-			} else {
+			if (!result2.bool || !result2.cards || result2.cards.length <= 1) {
+				return;
+			}
+			const forced = !(player.storage.lslixun > 0);
+			const result3 = await player
+				.chooseTarget({
+					forced,
+					prompt: `令${get.translation(target)}对其攻击范围内的一名角色造成1点伤害${forced ? "" : "，或点「取消」移去一个“珠”"}`,
+					filterTarget: (_card, _player, damageTarget) => damageTarget !== target && target.inRange(damageTarget),
+					ai: damageTarget => get.damageEffect(damageTarget, target, player),
+				})
+				.forResult();
+			if (!result3.bool || !result3.targets?.length) {
 				player.removeMark("lslixun", 1);
+				return;
 			}
+			const target2 = result3.targets[0];
+			player.line(target2);
+			await target2.damage({ source: target });
 		},
 		ai: {
 			expose: 0.25,
