@@ -3580,6 +3580,7 @@ const skills = {
 				if (cardx.length) {
 					await player.showCards(cardx, `${get.translation(player)}发动了【应势】`);
 				}
+				await game.delayx(2);
 				const next = targets[0].chooseToUse(
 					function (card, player, event) {
 						if (get.name(card) != "sha") {
