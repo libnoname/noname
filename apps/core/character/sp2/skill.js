@@ -14639,11 +14639,11 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filterTarget(card, player, target) {
-			return target != player;
+			return target !== player;
 		},
-		content() {
-			"step 0";
-			var num = 4;
+		async content(event, trigger, player) {
+			const { target } = event;
+			let num = 4;
 			if (player.storage.xingshen) {
 				num += player.storage.xingshen;
 				player.storage.xingshen = 0;
@@ -14655,162 +14655,106 @@ const skills = {
 				player.unmarkSkill("olxingshen");
 			}
 			num = Math.min(10, num);
-			event.cards = get.cards(num);
-			game.cardsGotoOrdering(event.cards);
-			player.showCards(event.cards);
-			"step 1";
-			event.getedResult = lib.skill.yanjiao.getResult(cards);
-			if (!event.getedResult.length) {
+			const cards = get.cards(num);
+			await game.cardsGotoOrdering(cards);
+			await player.showCards(cards);
+			let getedResult = lib.skill.yanjiao.getResult(cards);
+			if (!getedResult.length) {
 				player.addTempSkill("yanjiao2");
-				event.finish();
+				return;
 			}
-			"step 2";
-			target.chooseControl("自动分配", "手动分配").set("prompt", "【严教】：是否让系统自动分配方案？").ai = function () {
-				return 0;
-			};
-			"step 3";
-			if (result.control == "手动分配") {
-				event.goto(8);
+			const { control } = await target
+				.chooseControl({
+					controls: ["自动分配", "手动分配"],
+					prompt: "【严教】：是否让系统自动分配方案？",
+					ai: () => 0,
+				})
+				.forResult();
+			if (control === "手动分配") {
+				const moveResult = await target
+					.chooseToMove({
+						prompt: "严教：分出点数相等的两组牌",
+						list: [
+							["未分配", cards, list => `未分配（点数和${list.reduce((sum, card) => sum + card.number, 0)}）`],
+							["第一组", [], list => `第一组（点数和${list.reduce((sum, card) => sum + card.number, 0)}）`],
+							["第二组", [], list => `第二组（点数和${list.reduce((sum, card) => sum + card.number, 0)}）`],
+						],
+						processAI: () => false,
+					})
+					.set("chooseTime", `${cards.length * 4}`)
+					.set("filterOk", moved => {
+						const num1 = moved[1].reduce((sum, card) => sum + card.number, 0);
+						if (num1 === 0) {
+							return false;
+						}
+						const num2 = moved[2].reduce((sum, card) => sum + card.number, 0);
+						return num1 === num2;
+					})
+					.forResult();
+				if (!moveResult.bool) {
+					player.addTempSkill("yanjiao2");
+					return;
+				}
+				const moved = moveResult.moved;
+				getedResult = [[moved[1], moved[2], moved[0]]];
 			}
-			"step 4";
-			event.index = 0;
-			event.togain = event.getedResult[event.index];
-			target.showCards(event.togain[0], get.translation(target) + "分出的第一份牌");
-			"step 5";
-			target.showCards(event.togain[1], get.translation(target) + "分出的第二份牌");
-			"step 6";
-			target.chooseControl().set("choiceList", ["获得" + get.translation(event.togain[0]), "获得" + get.translation(event.togain[1])]).ai = function () {
-				return Math.random() < 0.5 ? 1 : 0;
-			};
-			"step 7";
-			var list = [
-				[target, event.togain[result.index]],
-				[player, event.togain[1 - result.index]],
+			const togain = getedResult[0];
+			await target.showCards(togain[0], `${get.translation(target)}分出的第一份牌`);
+			await target.showCards(togain[1], `${get.translation(target)}分出的第二份牌`);
+			const { index } = await target
+				.chooseControl({
+					choiceList: [`获得${get.translation(togain[0])}`, `获得${get.translation(togain[1])}`],
+					ai: () => (Math.random() < 0.5 ? 1 : 0),
+				})
+				.forResult();
+			const list = [
+				[target, togain[index]],
+				[player, togain[1 - index]],
 			];
-			game.loseAsync({
+			await game.loseAsync({
 				gain_list: list,
 				giver: target,
 				animate: "gain2",
 			}).setContent("gaincardMultiple");
-			if (event.togain[2].length > 1) {
-				player.addTempSkill("yanjiao2");
-			}
-			event.finish();
-			"step 8";
-			var next = target.chooseToMove("严教：分出点数相等的两组牌");
-			next.set("chooseTime", (cards.length * 4).toString());
-			next.set("list", [
-				[
-					"未分配",
-					cards,
-					function (list) {
-						var num = 0;
-						for (var i of list) {
-							num += i.number;
-						}
-						return "未分配（点数和" + num + "）";
-					},
-				],
-				[
-					"第一组",
-					[],
-					function (list) {
-						var num = 0;
-						for (var i of list) {
-							num += i.number;
-						}
-						return "第一组（点数和" + num + "）";
-					},
-				],
-				[
-					"第二组",
-					[],
-					function (list) {
-						var num = 0;
-						for (var i of list) {
-							num += i.number;
-						}
-						return "第二组（点数和" + num + "）";
-					},
-				],
-			]);
-			next.set("filterOk", function (moved) {
-				var num1 = 0;
-				for (var i of moved[1]) {
-					num1 += i.number;
-				}
-				if (num1 == 0) {
-					return false;
-				}
-				var num2 = 0;
-				for (var i of moved[2]) {
-					num2 += i.number;
-				}
-				return num1 == num2;
-			});
-			next.set("processAI", () => false);
-			"step 9";
-			if (result.bool) {
-				var moved = result.moved;
-				event.getedResult = [[moved[1], moved[2], moved[0]]];
-				event.goto(4);
-			} else {
+			if (togain[2].length > 1) {
 				player.addTempSkill("yanjiao2");
 			}
 		},
 		getResult(cards) {
-			var cl = cards.length;
-			var maxmium = Math.pow(3, cl);
-			var filter = function (list) {
+			const cl = cards.length;
+			const maxmium = Math.pow(3, cl);
+			const filter = list => {
 				if (!list[1].length || !list[0].length) {
 					return false;
 				}
-				var num1 = 0;
-				for (var i = 0; i < list[1].length; i++) {
-					num1 += list[1][i].number;
-				}
-				var num2 = 0;
-				for (var j = 0; j < list[0].length; j++) {
-					num2 += list[0][j].number;
-				}
-				return num1 == num2;
+				const num1 = list[1].reduce((sum, card) => sum + card.number, 0);
+				const num2 = list[0].reduce((sum, card) => sum + card.number, 0);
+				return num1 === num2;
 			};
-			var results = [];
-			for (var i = 0; i < maxmium; i++) {
-				var result = [[], [], []];
-				for (var j = 0; j < cl; j++) {
+			const results = [];
+			for (let i = 0; i < maxmium; i++) {
+				const result = [[], [], []];
+				for (let j = 0; j < cl; j++) {
 					result[Math.floor((i % Math.pow(3, j + 1)) / Math.pow(3, j))].push(cards[j]);
 				}
 				if (filter(result)) {
 					results.push(result);
 				}
 			}
-			var filterSame = function (list1, list2) {
-				if (list1[1].length == list2[0].length && list1[0].length == list2[1].length) {
-					for (var i = 0; i < list1[0].length; i++) {
-						if (!list2[1].includes(list1[0][i])) {
-							return false;
-						}
-					}
-					for (var i = 0; i < list1[1].length; i++) {
-						if (!list2[0].includes(list1[1][i])) {
-							return false;
-						}
-					}
-					return true;
+			const filterSame = (list1, list2) => {
+				if (list1[1].length !== list2[0].length || list1[0].length !== list2[1].length) {
+					return false;
 				}
-				return false;
+				return list1[0].every(card => list2[1].includes(card)) && list1[1].every(card => list2[0].includes(card));
 			};
-			for (var i = 0; i < results.length; i++) {
-				for (var j = i + 1; j < results.length; j++) {
+			for (let i = 0; i < results.length; i++) {
+				for (let j = i + 1; j < results.length; j++) {
 					if (filterSame(results[i], results[j])) {
 						results.splice(j--, 1);
 					}
 				}
 			}
-			results.sort(function (a, b) {
-				return a[2].length - b[2].length;
-			});
+			results.sort((a, b) => a[2].length - b[2].length);
 			return results.slice(0, 50);
 		},
 	},
