@@ -8053,14 +8053,15 @@ const skills = {
 					global: ["loseAsyncAfter", "cardsDiscardAfter", "equipAfter", "addJudgeAfter", "addToExpansionAfter"],
 				},
 				filter(event, player) {
-					return event.getd(player, "cards2").some(i => get.color(i, player) === "red");
+					return event.getd?.(player, "cards2").some(i => get.color(i, player) === "red");
 				},
 				forced: true,
 				locked: true,
 				async content(event, trigger, player) {
 					const list = trigger.getd(player).filter(i => get.color(i, player) === "red");
-					await game.cardsGotoPile(list);
-					game.log(player, "将", list, "置入了牌堆底");
+					const cards = list.slice().randomSort();
+					await game.cardsGotoPile(cards);
+					game.log(player, "将", cards, "置入了牌堆底");
 				},
 			},
 			target: {
