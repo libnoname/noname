@@ -337,6 +337,7 @@ const skills = {
 			const map = await game.chooseAnyOL([player, target, ...others], get.info(event.name).chooseToDiscard, [player, target]).forResult();
 			const cards1 = [];
 			const cards2 = [];
+			let n = 0;
 			for (const targetx of Array.from(map.keys()).sortBySeat()) {
 				const result = map.get(targetx);
 				if (result?.bool && result.cards?.length) {
@@ -347,13 +348,16 @@ const skills = {
 					} else {
 						if (targetx === player) {
 							const storage = player.getStorage(`${event.name}_last`, []);
-							storage[0] = cards.length;
+							n = cards.length;
 							player.setStorage(`${event.name}_last`, storage);
 						}
 						cards1.push(...cards);
 					}
 				}
 			}
+			const storage = player.getStorage(`${event.name}_last`, []);
+			storage[0] = n;
+			player.setStorage(`${event.name}_last`, storage);
 			let num = 0;
 			["suit", "length", "type2"].forEach(method => {
 				let num1;
