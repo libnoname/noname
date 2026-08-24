@@ -398,7 +398,7 @@ const skills = {
 							case "draw":
 								return get.effect(player, { name: "draw" }, player, player) * 4;
 							case "hujia":
-								return player.hujia < 5 ? get.recoverEffect(player, player, player) : 0;
+								return 1;
 						}
 					})
 					.forResult();
