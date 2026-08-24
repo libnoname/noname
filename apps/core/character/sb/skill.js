@@ -315,10 +315,16 @@ const skills = {
 			});
 			next.set("ai", card => {
 				const { sourcex, targetx, player } = get.event();
-				if (player === sourcex || player === targetx) {
-					return ui.selected.cards.length < 3 ? 6 - get.value(card) : 0;
+				if (!targetx.hasCards("he") || (get.attitude(player, sourcex) < 0 && player != targetx)) {
+					return 0;
 				}
-				return get.attitude(player, sourcex) > 0 ? 5.5 - get.value(card) : 0;
+				if (get.attitude(sourcex, targetx) > 0 || ui.selected.cards?.length >= Math.min(3, targetx.countCards("he"))) {
+					return 0;
+				}
+				if (player == targetx && player.countCards("he") < 3) {
+					return 0;
+				}
+				return 5.5 - get.value(card);
 			});
 			next.set("sourcex", source);
 			next.set("targetx", target);
