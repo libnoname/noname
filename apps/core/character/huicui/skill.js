@@ -489,6 +489,8 @@ const skills = {
 			player.setStorage(skill, player.maxHp, true);
 		},
 		onremove: true,
+		derivation: "dcyuxiang",
+		frequent: true,
 		audio: 2,
 		trigger: {
 			player: "phaseDrawBegin1",
