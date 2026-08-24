@@ -9162,6 +9162,9 @@ const skills = {
 						if (player.hasSkillTag("rejudge") && player.countCards("j") < 2) {
 							return false;
 						}
+						if (player.hasSkill("dckanyu", null, false, false) && player.hasCards("j", card => card.name == "shandian") && !player.hasCards("j", card => card.name == "lebu")) {
+							return false;
+						}
 						return player.hasCard(function (card) {
 							if (get.tag(card, "damage") && get.damageEffect(player, player, _status.event.player, get.natureList(card)) >= 0) {
 								return false;
