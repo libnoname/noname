@@ -9410,11 +9410,11 @@ const skills = {
 			},
 			{
 				toIndex: 2,
-				name: "若你不是体力上限最高的角色，则你可以增加1点体力上限",
+				name: "若你不是体力上限唯一最高的角色，则你可以增加1点体力上限",
 				filter: item => item.includes("判定牌生效后"),
 				effect: {
 					filter(event, player) {
-						return game.hasPlayer(t => t.maxHp > player.maxHp);
+						return !player.isMaxMaxHp(true);
 					},
 					async content(event, trigger, player) {
 						lib.skill.olhedao.tianshuClear(event.name, player);
