@@ -28317,7 +28317,7 @@ const skills = {
 			} = event;
 			player.$gain2(card, false);
 			await game.delayx();
-			await player.chooseUseTarget(true, card, false);
+			await player.chooseUseTarget(true, card);
 		},
 	},
 	zhuangshu_basic: {
