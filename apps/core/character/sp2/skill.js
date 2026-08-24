@@ -7346,129 +7346,124 @@ const skills = {
 		filter(event, player) {
 			return player.maxHp > 1;
 		},
-		content() {
-			"step 0";
-			if (player.maxHp <= 2) {
-				event._result = { index: 0 };
-			} else {
-				player
-					.chooseControl("1点", "2点")
-					.set("prompt", "宵袭：减少1或2点体力上限")
-					.set("ai", function () {
-						var player = _status.event.player;
-						if (
-							!game.hasPlayer(function (current) {
-								if (!player.inRange(current) || get.attitude(player, current) >= 0) {
-									return false;
-								}
-								if (
-									get.effect(current, { name: "shunshou_copy2" }, player, player) > 0 &&
-									current.countCards("h") +
-										current.countCards("e", function (card) {
-											return get.value(card, current) > 0;
-										}) >
-										1
-								) {
-									return true;
-								}
-								if (get.effect(current, { name: "sha" }, player, player) > 0 && current.countCards("hs", "shan") + current.hp > 1) {
-									return true;
-								}
-							})
-						) {
-							return 0;
-						}
-						return 1;
-					});
-			}
-			"step 1";
-			player.loseMaxHp(1 + result.index);
-			event.num = 1 + result.index;
-			"step 2";
-			if (!game.hasPlayer(current => player.inRange(current))) {
-				event.finish();
-			} else {
-				player
-					.chooseTarget(
-						"请选择【宵袭】的目标",
-						"然后你选择一项：⒈获得该角色的" + get.cnNumber(num) + "张牌。⒉视为对其使用" + get.cnNumber(num) + "张【杀】。",
-						function (card, player, target) {
-							return player.inRange(target);
+		async content(event, trigger, player) {
+			let index = 0;
+			if (player.maxHp > 2) {
+				const controlResult = await player
+					.chooseControl({
+						controls: ["1点", "2点"],
+						prompt: "宵袭：减少1或2点体力上限",
+						ai: () => {
+							if (
+								!game.hasPlayer(current => {
+									if (!player.inRange(current) || get.attitude(player, current) >= 0) {
+										return false;
+									}
+									if (
+										get.effect(current, { name: "shunshou_copy2" }, player, player) > 0 &&
+										current.countCards("h") +
+											current.countCards("e", card => get.value(card, current) > 0) >
+											1
+									) {
+										return true;
+									}
+									if (get.effect(current, { name: "sha" }, player, player) > 0 && current.countCards("hs", "shan") + current.hp > 1) {
+										return true;
+									}
+								})
+							) {
+								return 0;
+							}
+							return 1;
 						},
-						true
-					)
-					.set("ai", function (target) {
-						var player = _status.event.player;
+					})
+					.forResult();
+				index = controlResult.index;
+			}
+			const num = 1 + index;
+			await player.loseMaxHp(num);
+			if (!game.hasPlayer(current => player.inRange(current))) {
+				return;
+			}
+			const targetResult = await player
+				.chooseTarget({
+					prompt: "请选择【宵袭】的目标",
+					prompt2: `然后你选择一项：⒈获得该角色的${get.cnNumber(num)}张牌。⒉视为对其使用${get.cnNumber(num)}张【杀】。`,
+					filterTarget: (_card, player, target) => player.inRange(target),
+					forced: true,
+					ai: target => {
 						if (get.attitude(player, target) >= 0) {
 							return 0;
 						}
-						var eff1 = get.effect(target, { name: "shunshou_copy2" }, player, player);
+						let gainEffect = get.effect(target, { name: "shunshou_copy2" }, player, player);
 						if (
-							eff1 > 0 &&
+							gainEffect > 0 &&
 							target.countCards("h") +
-								target.countCards("e", function (card) {
-									return get.value(card, target) > 0;
-								}) >
+								target.countCards("e", card => get.value(card, target) > 0) >
 								1
 						) {
-							eff1 *= 1.6;
+							gainEffect *= 1.6;
 						}
-						var eff2 = player.canUse("sha", target) ? get.effect(target, { name: "sha" }, player, player) : 0;
-						if (eff2 > 0 && target.countCards("hs", "shan") + target.hp > 1) {
-							eff2 *= 2;
+						let damageEffect = player.canUse("sha", target) ? get.effect(target, { name: "sha" }, player, player) : 0;
+						if (damageEffect > 0 && target.countCards("hs", "shan") + target.hp > 1) {
+							damageEffect *= 2;
 						}
-						return Math.max(eff1, eff2);
-					});
-			}
-			"step 3";
-			var target = result.targets[0];
+						return Math.max(gainEffect, damageEffect);
+					},
+				})
+				.forResult();
+			const target = targetResult.targets[0];
 			player.line(target, "green");
-			event.target = target;
-			var bool1 = target.countGainableCards(player, "he") > 0;
-			var bool2 = player.canUse("sha", target);
-			if (!bool1 && !bool2) {
-				event.finish();
-			} else if (bool1 && bool2) {
-				var str = get.translation(target),
-					numx = get.cnNumber(num);
-				player
-					.chooseControl()
-					.set("choiceList", ["获得" + str + "的" + numx + "张牌", "视为对" + str + "使用" + numx + "张【杀】"])
-					.set("ai", function () {
-						var player = _status.event.player,
-							target = _status.event.getParent().target;
-						var eff1 = get.effect(target, { name: "shunshou_copy2" }, player, player);
-						if (
-							eff1 > 0 &&
-							target.countCards("h") +
-								target.countCards("e", function (card) {
-									return get.value(card, target) > 0;
-								}) >
-								1
-						) {
-							eff1 *= 1.6;
-						}
-						var eff2 = player.canUse("sha", target) ? get.effect(target, { name: "sha" }, player, player) : 0;
-						if (eff2 > 0 && target.countCards("hs", "shan") + target.hp > 1) {
-							eff2 *= 2;
-						}
-						return eff1 > eff2 ? 0 : 1;
-					});
-			} else {
-				event._result = { index: bool1 ? 0 : 1 };
+			const canGain = target.countGainableCards(player, "he") > 0;
+			const canUseSha = player.canUse("sha", target);
+			if (!canGain && !canUseSha) {
+				return;
 			}
-			"step 4";
-			if (result.index == 0) {
-				player.gainPlayerCard(target, true, num, "he");
-				event.finish();
+			let choiceIndex = canGain ? 0 : 1;
+			if (canGain && canUseSha) {
+				const targetName = get.translation(target);
+				const countText = get.cnNumber(num);
+				const choiceResult = await player
+					.chooseControl({
+						choiceList: [`获得${targetName}的${countText}张牌`, `视为对${targetName}使用${countText}张【杀】`],
+						ai: () => {
+							let gainEffect = get.effect(target, { name: "shunshou_copy2" }, player, player);
+							if (
+								gainEffect > 0 &&
+								target.countCards("h") +
+									target.countCards("e", card => get.value(card, target) > 0) >
+									1
+							) {
+								gainEffect *= 1.6;
+							}
+							let damageEffect = player.canUse("sha", target) ? get.effect(target, { name: "sha" }, player, player) : 0;
+							if (damageEffect > 0 && target.countCards("hs", "shan") + target.hp > 1) {
+								damageEffect *= 2;
+							}
+							return gainEffect > damageEffect ? 0 : 1;
+						},
+					})
+					.forResult();
+				choiceIndex = choiceResult.index;
 			}
-			"step 5";
-			event.num--;
-			if (player.canUse("sha", target, false)) {
-				player.useCard({ name: "sha", isCard: true }, target, false);
-				if (event.num > 0) {
-					event.redo();
+			if (choiceIndex === 0) {
+				await player.gainPlayerCard({
+					target,
+					forced: true,
+					selectButton: num,
+					position: "he",
+				});
+				return;
+			}
+			for (let i = 0; i < num; i++) {
+				if (!player.canUse("sha", target, false)) {
+					break;
 				}
+				await player.useCard({
+					card: { name: "sha", isCard: true },
+					targets: [target],
+					addCount: false,
+				});
 			}
 		},
 		ai: {
