@@ -33613,16 +33613,16 @@ const skills = {
 		locked: true,
 		subSkill: {
 			discard: {
-				trigger: { global: "phaseEnd" },
+				trigger: { global: "phaseJieshuEnd" },
 				audio: "zishu",
 				forced: true,
 				filter(event, player) {
 					if (_status.currentPhase != player) {
-						var he = player.getCards("h");
-						var bool = false;
-						player.getHistory("gain", function (evt) {
+						const he = player.getCards("h");
+						let bool = false;
+						player.getHistory("gain", evt => {
 							if (!bool && evt && evt.cards) {
-								for (var i = 0; i < evt.cards.length; i++) {
+								for (let i = 0; i < evt.cards.length; i++) {
 									if (he.includes(evt.cards[i])) {
 										bool = true;
 									}
@@ -33634,12 +33634,12 @@ const skills = {
 					}
 					return false;
 				},
-				content() {
-					var he = player.getCards("h");
-					var list = [];
-					player.getHistory("gain", function (evt) {
+				async content(event, trigger, player) {
+					const he = player.getCards("h");
+					const list = [];
+					player.getHistory("gain", evt => {
 						if (evt && evt.cards) {
-							for (var i = 0; i < evt.cards.length; i++) {
+							for (let i = 0; i < evt.cards.length; i++) {
 								if (he.includes(evt.cards[i])) {
 									list.add(evt.cards[i]);
 								}
@@ -33647,7 +33647,7 @@ const skills = {
 						}
 					});
 					player.$throw(list, 1000);
-					player.lose(list, ui.discardPile, "visible");
+					await player.lose(list, ui.discardPile, "visible");
 					game.log(player, "将", list, "置入弃牌堆");
 				},
 			},
