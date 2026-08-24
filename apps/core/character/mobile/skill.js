@@ -3421,7 +3421,7 @@ const skills = {
 					const link = button.link,
 						{ num, skills, player } = get.event();
 					if (!ui.selected.buttons.length) {
-						if (num >= 2 && link == "摸牌") {
+						if (num > 0 && link == "摸牌") {
 							return 2;
 						}
 						if (link == "rezhiheng" && player.hasCards("h")) {
