@@ -23347,9 +23347,11 @@ const skills = {
 					lose_list.push([current, result[i].cards]);
 					cards.push(card);
 				}
-				await game.loseAsync({
-					lose_list: lose_list,
-				}).setContent("discardMultiple");
+				await game
+					.loseAsync({
+						lose_list: lose_list,
+					})
+					.setContent("discardMultiple");
 				const type = get.type2(cards[0]);
 				for (let i = 1; i < cards.length; i++) {
 					if (get.type2(cards[i]) != type) {
@@ -23644,17 +23646,31 @@ const skills = {
 		audio: 2,
 		trigger: { source: "damageSource" },
 		filter(event, player) {
-			return event.getParent().type == "card" && event.card && event.card.name == "sha" && event.player.countCards("he") > 0;
+			return event.getParent()?.type == "card" && event.card?.name == "sha" && event.player?.hasCards("he");
 		},
 		logTarget: "player",
-		content() {
-			var suit = get.suit(trigger.card);
-			var next = player.gainPlayerCard(trigger.player, "h", "visible");
-			next.set("suit", suit);
-			next.set("filterButton", function (button) {
-				var evt = _status.event;
-				return get.suit(button.link, evt.target) == evt.suit;
-			});
+		async content(event, trigger, player) {
+			const suit = get.suit(trigger.card),
+				target = event.targets[0];
+			game.log(player, "观看了", target, "的手牌");
+			if (target.hasCards("h", card => card.suit == suit)) {
+				await player
+					.gainPlayerCard({
+						target,
+						position: "h",
+						visible: true,
+						forced: true,
+						filterButton(button) {
+							const { target, suit } = get.event();
+							return get.suit(button.link, target) == suit;
+						},
+					})
+					.set("suit", suit)
+					.set("target", target)
+					.forResult();
+			} else {
+				await player.viewHandcards(target);
+			}
 		},
 		group: "dzkanpo_sha",
 		subSkill: {
@@ -23707,17 +23723,12 @@ const skills = {
 					bool: true,
 				};
 			} else {
-				const cards = trigger.cards.filter(card => get.position(card, true) == "d" && get.name(card, trigger.hs?.includes(card) ? trigger.player : false) == "sha");
-				const { bool, links } = await player
-					.chooseButton(["是否发动【更战】获得一张杀？", cards])
-					.set("ai", button => {
-						return get.value(button.link, get.player());
+				event.result = await player
+					.chooseBool({
+						prompt: `更战：随机获得其中一张【杀】`,
+						ai: () => true,
 					})
 					.forResult();
-				event.result = {
-					bool: bool,
-					cost_data: links,
-				};
 			}
 		},
 		async content(event, trigger, player) {
@@ -23727,7 +23738,10 @@ const skills = {
 				await game.delayx();
 			} else {
 				player.addTempSkill(event.name + "_used");
-				await player.gain(event.cost_data, "gain2");
+				const cards = trigger.cards.filter(card => get.position(card, true) == "d" && get.name(card, trigger.hs?.includes(card) ? trigger.player : false) == "sha").randomGets(1);
+				if (cards.length) {
+					await player.gain({ cards, animate: "gain2" });
+				}
 			}
 		},
 		subSkill: {
@@ -27259,17 +27273,17 @@ const skills = {
 		filterCard: () => false,
 		selectCard: -1,
 		targetprompt2: target => {
-        	const player = get.player(),
-            	card = get.card(),
+			const player = get.player(),
+				card = get.card(),
 				event = get.event();
 			const num = Math.max(target.getAllHistory("useCard", evt => evt.card.name == "sha").length, 1);
-        	if (card.name == "juedou" && target != player && event.skill == "juesheng") {
-                return `决生 ${num}`;
-        	}
-    	},
-    	onChooseToUse(event) {
-        	event.targetprompt2.add(lib.skill.juesheng.targetprompt2);
-    	},
+			if (card.name == "juedou" && target != player && event.skill == "juesheng") {
+				return `决生 ${num}`;
+			}
+		},
+		onChooseToUse(event) {
+			event.targetprompt2.add(lib.skill.juesheng.targetprompt2);
+		},
 		async precontent(event, trigger, player) {
 			player.awakenSkill("juesheng");
 			player.addTempSkill("juesheng_counter");
