@@ -26615,8 +26615,10 @@ const skills = {
 		audio: 2,
 		trigger: { global: "phaseZhunbeiBegin" },
 		logTarget: "player",
+		round: 1,
+		subfrequent: ["effect"],
 		filter(event, player) {
-			return player != event.player && event.player.isIn() && player.countCards("h") > 0 && !player.hasSkill("yuanzi_round", null, null, false);
+			return player != event.player && event.player.isIn() && player.hasCards("h")
 		},
 		check(event, player) {
 			if (event.player.hasJudge("lebu") || get.attitude(player, event.player) < 2) {
@@ -26626,27 +26628,26 @@ const skills = {
 				return current !== player && current !== event.player && event.player.inRange(current) && get.attitude(event.player, current) < 0;
 			});
 		},
-		content() {
-			var cards = player.getCards("h");
-			player.give(cards, trigger.player);
+		async content(event, trigger, player) {
+			const cards = player.getCards("h"),
+				target = event.targets[0];
+			await player.give(cards, target);
 			player.addTempSkill("yuanzi_effect");
-			player.addTempSkill("yuanzi_round", "roundStart");
 		},
 		subSkill: {
 			effect: {
 				charlotte: true,
 				audio: "yuanzi",
+				frequent: true,
 				trigger: { global: "damageSource" },
-				forced: true,
 				filter(event, player) {
-					var source = event.source;
+					const source = event.source;
 					return source && source == _status.currentPhase && player.countCards("h") <= source.countCards("h");
 				},
-				content() {
-					player.draw(2);
+				async content(event, trigger, player) {
+					await player.draw(2);
 				},
 			},
-			round: { charlotte: true },
 		},
 	},
 	liejie: {
