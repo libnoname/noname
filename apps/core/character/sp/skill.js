@@ -27258,7 +27258,19 @@ const skills = {
 		viewAs: { name: "juedou", isCard: true },
 		filterCard: () => false,
 		selectCard: -1,
-		precontent() {
+		targetprompt2: target => {
+        	const player = get.player(),
+            	card = get.card(),
+				event = get.event();
+			const num = Math.max(target.getAllHistory("useCard", evt => evt.card.name == "sha").length, 1);
+        	if (card.name == "juedou" && target != player && event.skill == "juesheng") {
+                return `决生 ${num}`;
+        	}
+    	},
+    	onChooseToUse(event) {
+        	event.targetprompt2.add(lib.skill.juesheng.targetprompt2);
+    	},
+		async precontent(event, trigger, player) {
 			player.awakenSkill("juesheng");
 			player.addTempSkill("juesheng_counter");
 		},
