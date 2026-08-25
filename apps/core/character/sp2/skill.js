@@ -2474,7 +2474,7 @@ const skills = {
 			if (card) {
 				await player.gain(card, "gain2");
 			}
-			const next = player.chooseTarget(true, "驱险：选择一名角色，攻击范围内包含其的角色可以对其使用【杀】").set("ai", target => {
+			const next = player.chooseTarget(true, "驱险：选择一名其他角色，攻击范围内包含其的角色可以对其使用【杀】", lib.filter.notMe).set("ai", target => {
 				const player = get.player();
 				return -get.attitude(player, target);
 			});
@@ -2493,11 +2493,11 @@ const skills = {
 			if (result?.targets?.length) {
 				const target = result.targets[0];
 				player.line(target);
-				const targets = game.filterPlayer(current => current.inRange(target)).sortBySeat(); //current != player &&
+				const targets = game.filterPlayer(current => current.inRange(target)).sortBySeat();
 				if (!targets.length) {
 					return;
 				}
-				player.addTempSkill(event.name + "_draw");
+				let num = 0;
 				const sha = [],
 					nosha = [];
 				while (targets.length) {
@@ -2526,36 +2526,19 @@ const skills = {
 						.forResult();
 					if (bool) {
 						sha.push(current);
-					} else if (current != player) {
+						num++;
+					} else {
 						nosha.push(current);
 					}
 				}
-				player.removeSkill(event.name + "_draw");
+				if (num > 0) {
+					await player.draw({ num });
+				}
 				if (!target.hasHistory("damage", evt => evt.getParent().type == "card" && evt.getParent(4) == event) && sha.length && nosha.length) {
 					player.line(nosha, "green");
 					await game.doAsyncInOrder(nosha, async (targetx, i) => targetx.loseHp(sha.length));
 				}
 			}
-		},
-		ai: {
-			order: 5,
-			result: {
-				player: 1,
-			},
-		},
-		subSkill: {
-			draw: {
-				charlotte: true,
-				forced: true,
-				popup: false,
-				trigger: { global: "useCard" },
-				filter(event, player) {
-					return event.getParent(2).name == "dcquxian" && event.getParent(2).player == player && event.card.name == "sha";
-				},
-				async content(event, trigger, player) {
-					await player.draw();
-				},
-			},
 		},
 	},
 	//韩嵩
