@@ -789,7 +789,7 @@ const skills = {
 					ai1(card) {
 						const player = get.player();
 						const num = game.countPlayer(current => current != player && get.attitude(player, current) > 0);
-						if (ui.selected.cards.length > num) {
+						if (ui.selected.cards.length >= num) {
 							return 0;
 						}
 						return 1 / Math.max(0.1, get.value(card));
