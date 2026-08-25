@@ -17764,24 +17764,26 @@ const skills = {
 		audio: 1,
 		enable: "phaseUse",
 		usable: 1,
+		manualConfirm: true,
 		frequent: true,
 		async content(event, trigger, player) {
 			event.cards = [];
 			event.suits = [];
-			const judge = player
-				.judge(function (result) {
-					var evt = _status.event.getParent("scspicai");
-					if (evt && evt.suits && evt.suits.includes(get.suit(result))) {
-						return 0;
-					}
-					return 1;
-				})
-				.set("callback", lib.skill.scspicai.callback)
-				.set("judge2", function (result) {
-					return result.bool ? true : false;
-				});
-			await judge.forResult();
-			var cards = event.cards.filterInD();
+			event.again = true;
+			while (event.again) {
+				event.again = false;
+				await player
+					.judge(result => {
+						let evt = _status.event.getParent("scspicai");
+						if (evt?.suits?.includes(get.suit(result))) {
+							return 0;
+						}
+						return 1;
+					})
+					.set("callback", lib.skill.scspicai.callback)
+					.set("judge2", result => result.bool);
+			}
+			const cards = event.cards.filterInD();
 			if (!cards.length) {
 				return;
 			}
@@ -17799,24 +17801,24 @@ const skills = {
 			if (!result.bool) {
 				return;
 			}
-			var target = result.targets[0];
+			const target = result.targets[0];
 			player.line(target, "green");
 			const next = target.gain(cards, "gain2");
 			next.giver = player;
 			await next;
 		},
 		async callback(event, trigger, player) {
-			var evt = event.getParent(2);
+			const evt = event.getParent(2);
 			event.getParent().orderingCards.remove(event.judgeResult.card);
 			evt.cards.push(event.judgeResult.card);
 			if (event.getParent().result.bool) {
 				evt.suits.push(event.getParent().result.suit);
 				const result = await player.chooseBool("是否继续发动【庀材】？").set("frequentSkill", "scspicai").forResult();
 				if (result.bool) {
-					event.getParent(2).redo();
+					event.getParent(2).again = true;
 				}
 			} else {
-				event._result = { bool: false };
+				return;
 			}
 		},
 		ai: {
