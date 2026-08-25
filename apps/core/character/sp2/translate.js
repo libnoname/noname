@@ -25,7 +25,7 @@ const translates = {
 	xinfu_langxi: "狼袭",
 	xinfu_langxi_info: "准备阶段，你可以对一名体力小于或等于你的其他角色造成0～2点随机伤害。",
 	xinfu_yisuan: "亦算",
-	xinfu_yisuan_info: "每回合限一次。当你于出牌阶段内使用的锦囊牌结算结束后，你可以减1点体力上限并获得此牌对应的所有实体牌。",
+	xinfu_yisuan_info: "出牌阶段限一次。当你于出牌阶段内使用的锦囊牌结算结束后，你可以减1点体力上限并获得此牌对应的所有实体牌。",
 	xinfu_xingluan: "兴乱",
 	xinfu_xingluan_info: "每回合限一次。当你于出牌阶段内使用的仅指定一个目标的牌结算完成后，你可以从牌堆中随机获得一张点数为6的牌。",
 	xinfu_lveming: "掠命",
