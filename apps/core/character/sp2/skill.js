@@ -16064,10 +16064,6 @@ const skills = {
 		},
 	},
 	xinfu_lveming: {
-		init(player) {
-			player.storage.xinfu_lveming = 0;
-		},
-		mark: true,
 		intro: {
 			content: "已发动过#次",
 		},
@@ -16096,7 +16092,7 @@ const skills = {
 				event.num = 13;
 			}
 			game.log(target, "选择的点数是", "#y" + get.strNumber(event.num));
-			player.storage.xinfu_lveming++;
+			player.addMark(event.name, 1, false);
 			player.judge(function (card) {
 				if (card.number == _status.event.getParent("xinfu_lveming").num) {
 					return 4;
@@ -16139,50 +16135,31 @@ const skills = {
 		enable: "phaseUse",
 		audio: 2,
 		filter(event, player) {
-			return player.countMark("xinfu_lveming") > 0;
+			return player.hasMark("xinfu_lveming");
 		},
 		filterTarget: true,
 		selectTarget: 1,
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
+			const { target } = event;
 			player.awakenSkill(event.name);
-			event.num = player.storage.xinfu_lveming;
-			event.toequip = [];
-			"step 1";
-			var equip = get.cardPile2(
-				function (card) {
-					var bool1 = true;
-					for (var i = 0; i < event.toequip.length; i++) {
-						if (get.type(card) == "equip" && get.subtype(card) == get.subtype(event.toequip[i])) {
-							bool1 = false;
-						}
-					}
-					return get.type(card) == "equip" && !event.toequip.includes(card) && target.hasEmptySlot(get.subtype(card)) && bool1;
-				},
-				false,
-				"random"
-			);
-			if (equip) {
-				event.toequip.push(equip);
-			} else {
-				event.num = 0;
-			}
-			event.num--;
-			"step 2";
-			if (event.num > 0) {
-				event.goto(1);
-			}
-			"step 3";
-			for (var i = 0; i < event.toequip.length; i++) {
-				target.chooseUseTarget(event.toequip[i], true).set("animate", false).set("nopopup", true);
+			let num = player.countMark("xinfu_lveming");
+			while(num > 0) {
+				num--;
+				const card = get.cardPile2(card => get.type(card) == "equip" && target.canEquip(card));
+				if (card) {
+					target.$gain(card);
+					await target.chooseUseTarget({ forced: true, card, animate: false, nopopup: true });
+				} else {
+					break;
+				}
 			}
 		},
 		ai: {
 			combo: "xinfu_lveming",
-			order() {
-				var player = _status.event.player,
-					num = 0;
-				for (var i = 1; i < 6; i++) {
+			order(item, player) {
+				player ??= get.player();
+				let num = 0;
+				for (let i = 1; i < 6; i++) {
 					num += player.countEquipableSlot(i);
 				}
 				if (num <= 2) {
@@ -16203,8 +16180,8 @@ const skills = {
 			},
 			result: {
 				target(player, target) {
-					var num = 0;
-					for (var i = 1; i < 6; i++) {
+					let num = 0;
+					for (let i = 1; i < 6; i++) {
 						num += target.countEquipableSlot(i);
 					}
 					return num;
