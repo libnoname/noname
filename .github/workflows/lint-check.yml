@@ -21,8 +21,36 @@ jobs:
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: printf '%s\n' "$PR_TITLE" | commit-check --message --no-banner
 
+  check-base:
+    name: Check Base Branch
+    if: github.event.action != 'edited'
+    runs-on: ubuntu-latest
+    outputs:
+      up-to-date: ${{ steps.check.outputs.up-to-date }}
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Check whether PR contains latest main
+        id: check
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if git merge-base --is-ancestor "$BASE_SHA" "$HEAD_SHA"; then
+            echo "up-to-date=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "up-to-date=false" >> "$GITHUB_OUTPUT"
+            echo "PR branch does not contain the latest main commit; skipping lint."
+          fi
+
   eslint:
     name: ESLint Check
+    needs: check-base
+    if: needs.check-base.outputs.up-to-date == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
