@@ -1,5 +1,3 @@
-import skills from "./skill";
-
 const characters = {
 	cuizhi: {
 		sex: "female",
