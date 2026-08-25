@@ -31775,7 +31775,7 @@ const skills = {
 					viewAs: { name: links[0][2], nature: links[0][3] },
 					position: "hes",
 					popname: true,
-					precontent(event, trigger, player) {
+					async precontent(event, trigger, player) {
 						player.addMark("yizan_use", 1, false);
 					},
 				};
@@ -31815,6 +31815,9 @@ const skills = {
 			respondSha: true,
 			respondShan: true,
 			fireAttack: true,
+		},
+		subSkill: {
+			backup: {},
 		},
 	},
 	yizan_respond_shan: {
