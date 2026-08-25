@@ -15002,7 +15002,7 @@ const skills = {
 				.chooseToDiscard(get.prompt2("olfeiyang"), lib.skill.olfeiyang.getNum)
 				.set("ai", function (card) {
 					var player = _status.event.player;
-					if (player.hasSkill("dckanyu", null, false, false) && player.hasCards("j", card => card.name == "shandian") && !player.hasCards("j", card => card.name == "lebu")) {
+					if (player.hasSkill("dckanyu", null, false, false) && !player.hasCards("j", card => card.name == "lebu")) {
 						return false;
 					}
 					if (

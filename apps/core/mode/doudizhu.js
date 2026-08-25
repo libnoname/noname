@@ -2782,7 +2782,7 @@ export default {
 							if (player.hasSkillTag("rejudge") && player.countCards("j") < 2) {
 								return false;
 							}
-							if (player.hasSkill("dckanyu", null, false, false) && player.hasCards("j", card => card.name == "shandian") && !player.hasCards("j", card => card.name == "lebu")) {
+							if (player.hasSkill("dckanyu", null, false, false) && !player.hasCards("j", card => card.name == "lebu")) {
 								return false;
 							}
 							return player.hasCard(card => {
@@ -2833,7 +2833,7 @@ export default {
 							if (player.hasSkillTag("rejudge") && player.countCards("j") < 2) {
 								return false;
 							}
-							if (player.hasSkill("dckanyu", null, false, false) && player.hasCards("j", card => card.name == "shandian") && !player.hasCards("j", card => card.name == "lebu")) {
+							if (player.hasSkill("dckanyu", null, false, false) && !player.hasCards("j", card => card.name == "lebu")) {
 								return false;
 							}
 							return player.hasCard(card => {
@@ -2884,7 +2884,7 @@ export default {
 							if (player.hasSkillTag("rejudge")) {
 								return false;
 							}
-							if (player.hasSkill("dckanyu", null, false, false) && player.hasCards("j", card => card.name == "shandian") && !player.hasCards("j", card => card.name == "lebu")) {
+							if (player.hasSkill("dckanyu", null, false, false) && !player.hasCards("j", card => card.name == "lebu")) {
 								return false;
 							}
 							return player.hasCard(card => {

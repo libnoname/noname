@@ -9162,7 +9162,7 @@ const skills = {
 						if (player.hasSkillTag("rejudge") && player.countCards("j") < 2) {
 							return false;
 						}
-						if (player.hasSkill("dckanyu", null, false, false) && player.hasCards("j", card => card.name == "shandian") && !player.hasCards("j", card => card.name == "lebu")) {
+						if (player.hasSkill("dckanyu", null, false, false) && !player.hasCards("j", card => card.name == "lebu")) {
 							return false;
 						}
 						return player.hasCard(function (card) {
