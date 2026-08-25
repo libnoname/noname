@@ -325,7 +325,7 @@ const skills = {
 		filter(event, player) {
 			const storage = player.storage.twyishi,
 				num = player.getDamagedHp();
-			return storage || player.countDiscardableCards(player, "he") >= num;
+			return storage || (player.countDiscardableCards(player, "he") >= num && num > 0);
 		},
 		async cost(event, trigger, player) {
 			const storage = player.storage.twyishi,
