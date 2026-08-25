@@ -21429,6 +21429,7 @@ const skills = {
 		multitarget: true,
 		multiline: true,
 		async content(event, trigger, player) {
+			const { targets } = event;
 			targets[0].swapEquip(targets[1]);
 		},
 		ai: {
