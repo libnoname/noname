@@ -16143,7 +16143,7 @@ const skills = {
 			const { target } = event;
 			player.awakenSkill(event.name);
 			let num = player.countMark("xinfu_lveming");
-			while(num > 0) {
+			while (num > 0) {
 				num--;
 				const card = get.cardPile2(card => get.type(card) == "equip" && target.canEquip(card));
 				if (card) {
@@ -16634,108 +16634,86 @@ const skills = {
 		},
 	},
 	xinfu_fuhai: {
-		subSkill: {
-			next: {},
-			previous: {},
-		},
 		audio: 2,
-		group: ["fuhai_clear"],
-		intro: {
-			content: "已指定过#个目标",
-		},
 		enable: "phaseUse",
 		filter(event, player) {
-			if (player.hasSkill("xinfu_fuhai_next") && player.hasSkill("xinfu_fuhai_previous")) {
-				return false;
-			}
-			return player.countCards("h") > 0;
+			return player.hasCards("h") && game.hasPlayer(target => get.info("xinfu_fuhai").filterTarget(null, player, target));
 		},
 		filterTarget(card, player, target) {
-			if (![player.next, player.previous].includes(target) || target.countCards("h") == 0) {
-				return false;
-			}
-			if (player.hasSkill("xinfu_fuhai_next")) {
-				return target == player.previous;
-			}
-			if (player.hasSkill("xinfu_fuhai_previous")) {
-				return target == player.next;
-			}
-			return true;
+			return [player.next, player.previous].includes(target) && !player.getStorage("xinfu_fuhai_used").includes(target);
 		},
 		line: false,
-		content() {
-			"step 0";
-			event.side = target == player.next ? "next" : "previous";
-			event.current = target;
-			if (!player.storage.xinfu_fuhai) {
-				player.storage.xinfu_fuhai = 1;
-			}
-			player.addTempSkill("xinfu_fuhai_" + event.side, "phaseUseAfter");
-			"step 1";
-			if (player.countCards("h") == 0 || event.current.countCards("h") == 0 || event.current == player) {
-				event.finish();
-				return;
-			}
-			var next = event.current[event.side];
-			if (get.attitude(event.current, player) > 0) {
-				if (get.attitude(next, target) <= 0 || next.countCards("h") == 0 || player.countCards("h") == 1) {
-					event.stopm = true;
-					event.stopt = true;
-				} else {
-					event.stopm = false;
-					event.stopt = false;
+		async content(event, trigger, player) {
+			const { target } = event;
+			let current, result;
+			const side = target == player.next ? "next" : "previous";
+			player.addTempSkill(event.name + "_used", "phaseAnyAfter");
+			player.addTempSkill(event.name + "_mark");
+			while (true) {
+				current = !current ? target : current[side];
+				if (!player.hasCards("h") || !current.hasCards("h") || player == current || player.getStorage(event.name + "_used").includes(current)) {
+					return;
 				}
-			} else {
-				if (get.attitude(next, target) >= 0) {
-					event.stopt = true;
-					event.stopm = false;
+				player.line(current, "green");
+				player.markAuto(event.name + "_used", [current]);
+				player.markAuto(event.name + "_mark", [current]);
+				const next = current[side];
+				let stopm = false,
+					stopt = false;
+				if (get.attitude(current, player) > 0) {
+					if (get.attitude(next, target) <= 0 || !next.hasCards("h") || player.countCards("h") == 1) {
+						stopm = true;
+						stopt = true;
+					}
 				} else {
-					event.stopt = false;
-					event.stopm = false;
+					if (get.attitude(next, target) >= 0) {
+						stopt = true;
+						stopm = false;
+					}
 				}
-			}
-			player.markSkill("xinfu_fuhai");
-			player.line(event.current, "green");
-			player
-				.chooseCard("请选择要展示的牌", true)
-				.set("ai", function (card) {
-					if (_status.event.stop) {
-						return 14 - get.number(card);
+				result = await player
+					.chooseCard({
+						prompt: "浮海：请展示一张牌",
+						forced: true,
+						ai(card) {
+							if (get.event().stopm) {
+								return 14 - get.number(card);
+							}
+							return get.number(card);
+						},
+					})
+					.set("stopm", stopm)
+					.forResult();
+				if (result?.bool && result.cards?.length) {
+					const cards = result.cards;
+					await player.showCards(cards);
+					result = await current
+						.chooseCard({
+							prompt: "浮海：请展示一张牌",
+							forced: true,
+							ai(card) {
+								if (get.event().stopt) {
+									return 14 - get.number(card);
+								}
+								return get.number(card);
+							},
+						})
+						.set("stopt", stopt)
+						.forResult();
+					if (result?.bool && result.cards?.length) {
+						const cardx = result.cards;
+						await current.showCards(cardx);
+						const num1 = get.number(cards[0]);
+						const num2 = get.number(cardx[0]);
+						if (num1 < num2) {
+							await current.modedDiscard({ cards: cardx });
+							await game.asyncDraw([player, current], player.getStorage(event.name + "_mark").length);
+							player.tempBanSkill(event.name, "phaseAnyAfter");
+							break;
+						} else {
+							await player.modedDiscard({ cards });
+						}
 					}
-					return get.number(card);
-				})
-				.set("stop", event.stopm);
-			"step 2";
-			event.mes = result.cards[0];
-			player.showCards(event.mes);
-			"step 3";
-			event.current
-				.chooseCard("请选择要展示的牌", true)
-				.set("ai", function (card) {
-					if (_status.event.stop) {
-						return get.number(card);
-					}
-					return 14 - get.number(card);
-				})
-				.set("stop", event.stopt);
-			"step 4";
-			event.tes = result.cards[0];
-			event.current.showCards(event.tes);
-			"step 5";
-			var num1 = get.number(event.mes);
-			var num2 = get.number(event.tes);
-			if (num1 < num2) {
-				event.current.discard(event.tes);
-				game.asyncDraw([player, event.current], player.storage.xinfu_fuhai);
-				player.addTempSkill("xinfu_fuhai_next", "phaseUseAfter");
-				player.addTempSkill("xinfu_fuhai_previous", "phaseUseAfter");
-				player.unmarkSkill("xinfu_fuhai");
-			} else {
-				player.discard(event.mes);
-				player.storage.xinfu_fuhai++;
-				event.current = event.current[event.side];
-				if (player.countCards("h") > 0 && event.current.countCards("h") > 0 && event.current != player) {
-					event.goto(1);
 				}
 			}
 		},
@@ -16743,10 +16721,10 @@ const skills = {
 			order: 1,
 			result: {
 				player(player, target) {
-					var hs = player.countCards("h");
-					var side = target == player.next ? "next" : "previous";
-					var current = player;
-					for (var i = 0; i < hs; i++) {
+					const hs = player.countCards("h");
+					const side = target == player.next ? "next" : "previous";
+					let current = player;
+					for (let i = 0; i < hs; i++) {
 						current = current[side];
 						if (current == player || !current.countCards("h")) {
 							return 0;
@@ -16759,21 +16737,9 @@ const skills = {
 				},
 			},
 		},
-	},
-	fuhai_clear: {
-		trigger: {
-			player: "phaseAfter",
-		},
-		forced: true,
-		silent: true,
-		popup: false,
-		sourceSkill: "xinfu_fuhai",
-		filter(event, player) {
-			return player.storage.xinfu_fuhai != undefined;
-		},
-		content() {
-			player.unmarkSkill("xinfu_fuhai");
-			delete player.storage.xinfu_fuhai;
+		subSkill: {
+			used: { charlotte: true, onremove: true, intro: { content: "本阶段$已成为过浮海的目标" } },
+			mark: { charlotte: true, onremove: true },
 		},
 	},
 	xz_xunxun: {
