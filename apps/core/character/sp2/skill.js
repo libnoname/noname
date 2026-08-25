@@ -14333,8 +14333,9 @@ const skills = {
 		audio: 2,
 		filter(event, player) {
 			return (
-				event.target.isIn() &&
-				game.hasPlayer(function (current) {
+				event.targets?.length == 1 &&
+				event.target?.isIn() &&
+				game.hasPlayer(current => {
 					return current != event.target && current.canUse("sha", event.target, false);
 				})
 			);
