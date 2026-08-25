@@ -23312,6 +23312,7 @@ const skills = {
 		},
 		filterCard: lib.filter.cardDiscardable,
 		async content(event, trigger, player) {
+			const { cards } = event;
 			player.draw(get.color(cards) == "none" ? 2 : 1);
 		},
 		ai: {
