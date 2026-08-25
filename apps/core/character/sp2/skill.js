@@ -17053,15 +17053,15 @@ const skills = {
 						filterTarget(card, player, target) {
 							return get.event().ablers.includes(target) && target != player;
 						},
-						ai: (target) => 0,
+						ai: target => 0,
 					})
 					.set("ablers", ablers)
 					.forResult();
 				if (result?.bool && result.targets?.length) {
 					const target = result.targets[0];
 					player.line(target);
-				await player.give(card, target, true);
-			}
+					await player.give(card, target, true);
+				}
 			}
 		},
 		locked: false,
@@ -17102,13 +17102,7 @@ const skills = {
 				return false;
 			}
 			return event.targets.some(target => {
-				return (
-					player.countCards("h") > target.countCards("h") &&
-					target.countCards("he") > 0 &&
-					player.hasCard(card => {
-						return lib.filter.cardDiscardable(card, player, "fengshi");
-					}, "he")
-				);
+				return player.countCards("h") > target.countCards("h") && (target.hasCards("he") || player.hasDiscardableCards(player, "he"));
 			});
 		},
 		direct: true,
@@ -17119,13 +17113,7 @@ const skills = {
 					if (!targets.includes(target)) {
 						return false;
 					}
-					return (
-						player.countCards("h") > target.countCards("h") &&
-						target.countCards("he") > 0 &&
-						player.hasCard(card => {
-							return lib.filter.cardDiscardable(card, player, "fengshi");
-						}, "he")
-					);
+					return player.countCards("h") > target.countCards("h") && target.hasCards("he");
 				})
 				.set("ai", target => {
 					let trigger = get.event().getTrigger(),
@@ -17143,8 +17131,12 @@ const skills = {
 			if (bool) {
 				const target = targets[0];
 				player.logSkill("fengshi", target);
-				await player.chooseToDiscard("he", true);
-				await player.discardPlayerCard(target, "he", true);
+				if (player.hasDiscardableCards(player, "he")) {
+					await player.chooseToDiscard("he", true);
+				}
+				if (target.hasCards("he")) {
+					await player.discardPlayerCard(target, "he", true);
+				}
 				if (get.tag(trigger.card, "damage")) {
 					var id = target.playerid;
 					var map = trigger.getParent().customArgs;
@@ -17166,13 +17158,7 @@ const skills = {
 					if (event.player == event.target) {
 						return false;
 					}
-					return (
-						event.player.countCards("h") > player.countCards("h") &&
-						event.player.countCards("he") > 0 &&
-						player.hasCard(card => {
-							return lib.filter.cardDiscardable(card, player, "fengshi");
-						}, "he")
-					);
+					return event.player.countCards("h") > player.countCards("h") && (event.player.hasCards("he") || player.hasDiscardableCards(player, "he"));
 				},
 				audio: "mffengshi",
 				audioname: ["sp_mifangfushiren"],
@@ -17198,8 +17184,12 @@ const skills = {
 				},
 				async content(event, trigger, player) {
 					const target = trigger.player;
-					await player.chooseToDiscard("he", true);
-					await player.discardPlayerCard(target, "he", true);
+					if (player.hasDiscardableCards(player, "he")) {
+						await player.chooseToDiscard("he", true);
+					}
+					if (target.hasCards("he")) {
+						await player.discardPlayerCard(target, "he", true);
+					}
 					if (get.tag(trigger.card, "damage")) {
 						var id = player.playerid;
 						var map = trigger.getParent().customArgs;
