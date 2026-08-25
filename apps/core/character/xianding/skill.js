@@ -40801,9 +40801,12 @@ const skills = {
 			event.result = await player
 				.chooseTarget({
 					prompt: get.prompt("dccili"),
-					prompt2: "记录一名角色的体力值，根据其用牌数你获得收益",
-					ai() {
-						return Math.random();
+					prompt2: "记录一名角色的体力值，根据其用牌数对其执行不同效果",
+					ai(target) {
+						if (target.hasJudge("lebu")) {
+							return -get.attitude(player, target) / 2;
+						}
+						return get.attitude(player, target);
 					},
 				})
 				.forResult();
@@ -40825,37 +40828,26 @@ const skills = {
 					}
 					const num = record[2];
 					if (record[1] > 0) {
+						const att = get.attitude(player, target);
 						if (num < record[1]) {
 							const result = await player
-								.chooseTarget({
-									prompt: `令一名角色弃置${record[1]}张牌`,
-									filterTarget(card, player, target) {
-										return target.hasCards("he");
-									},
-									ai(target) {
-										return -get.attitude(player, target) * (0.7 + (target.countCards("he") >= 5));
-									},
+								.chooseBool({
+									prompt: `慈厉：是否令${get.translation(target)}随机弃置${get.cnNumber(record[1])}张牌？`,
+									choice: -att,
 								})
 								.forResult();
-							if (result.bool) {
-								await result.targets[0].chooseToDiscard({
-									forced: true,
-									selectCard: record[1],
-									position: "he",
-								});
-							}
+							if (!result.bool) return;
+							const cards = target.getCards("he", card => lib.filter.cardDiscardable(card, player, "dccili")).randomGets(Math.min(record[1], 5));
+							await target.discard(cards);
 						} else {
 							const result = await player
-								.chooseTarget({
-									prompt: `令一名角色摸${record[1]}张牌`,
-									ai(target) {
-										return get.attitude(player, target);
-									},
+								.chooseBool({
+									prompt: `慈厉：是否令${get.translation(target)}摸${get.cnNumber(record[1])}张牌？`,
+									choice: att,
 								})
 								.forResult();
-							if (result.bool) {
-								await result.targets[0].draw(record[1]);
-							}
+							if (!result.bool) return;
+							await target.draw(Math.min(record[1], 5));
 						}
 					}
 					player.unmarkAuto("dccili_mark");
@@ -40877,7 +40869,7 @@ const skills = {
 						const name = storage[0];
 						const num = storage[1];
 						const times = storage[2];
-						return `${get.translation(name)}啊，你当时是${num}点体力值<br>你已经用了${times}张牌<br>到下回合结束用不到${num}张牌，有人要被打皮鼓哟`;
+						return `${get.translation(name)}啊，下回合结束前用不到${num}张牌，要打皮鼓的哟<br>你已经用了${times}张牌`;
 					},
 				},
 				direct: true,
