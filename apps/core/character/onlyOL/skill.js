@@ -8343,12 +8343,15 @@ const skills = {
 				.chooseToDiscard("he", 2, get.prompt(event.skill), "弃置两张牌，然后弃置判定区里的所有牌")
 				.set("logSkill", event.skill)
 				.set("ai", card => {
-					return _status.event.goon ? 7 - get.value(card) : 0;
+					return _status.event.goon ? 9 - get.value(card) : 0;
 				})
 				.set(
 					"goon",
 					(() => {
 						if (player.hasSkillTag("rejudge") && player.countCards("j") < 2) {
+							return false;
+						}
+						if (player.hasSkill("dckanyu", null, false, false) && !player.hasCards("j", card => card.name == "lebu")) {
 							return false;
 						}
 						return player.hasCard(function (card) {

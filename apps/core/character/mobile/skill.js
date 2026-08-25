@@ -585,7 +585,7 @@ const skills = {
 	},
 	rejinqu: {
 		audio: 4,
-		logAudio: event => event.name == "useCard" ? 2 : ["rejinqu3.mp3", "rejinqu4.mp3"], 
+		logAudio: event => (event.name == "useCard" ? 2 : ["rejinqu3.mp3", "rejinqu4.mp3"]),
 		forced: true,
 		trigger: {
 			player: ["useCardAfter", "phaseJieshuBegin"],
@@ -3389,7 +3389,7 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseUseBegin" },
 		filter(event, player) {
-			return player.countMark("xinrenjie");
+			return player.hasMark("xinrenjie");
 		},
 		async cost(event, trigger, player) {
 			const limit = Math.min(3, player.countMark("xinrenjie"));
@@ -3419,23 +3419,23 @@ const skills = {
 				});
 				next.set("ai", button => {
 					const link = button.link,
-						num = get.event().num,
-						skills = get.event().skills;
+						{ num, skills, player } = get.event();
 					if (!ui.selected.buttons.length) {
-						if (num > 2 && link == "摸牌") {
-							return 10;
+						if (num > 0 && link == "摸牌") {
+							return 2;
 						}
-						if (link == "rezhiheng" && player.countCards("h") > 0) {
+						if (link == "rezhiheng" && player.hasCards("h")) {
 							return 10;
 						}
 						if (link == "rejizhi" && (!skills.includes("rezhiheng") || player.countCards("hs", { type: "trick" }))) {
 							return 8;
 						}
-						if (player.countMark("xinrenjie") <= 2) {
-							return 0;
+						if (link == "rewansha") {
+							return 6;
 						}
+						return 0;
 					}
-					return ui.selected.buttons.length && ui.selected.buttons[0].link == "摸牌" ? num - 1 : 1;
+					return link == (ui.selected.buttons.length && ui.selected.buttons[0].link != "摸牌" ? num - 1 : 1);
 				});
 				next.set("num", num);
 				next.set("skills", skills);
@@ -3461,7 +3461,7 @@ const skills = {
 							if (!player.hasSkill("rejizhi", null, null, false)) {
 								return "cancel2";
 							}
-							return choices.length - 1;
+							return draw[draw.length - 1];
 						})()
 					)
 					.forResult();
@@ -10342,7 +10342,7 @@ const skills = {
 				forced: true,
 				async content(event, trigger, player) {
 					await player.loseHp();
-					if (typeof player.storage[event.name][trigger.card.name] == "number" && player.storage[event.name][trigger.card.name] > 0) {
+					if (typeof player.storage?.[event.name]?.[trigger.card.name] == "number" && player.storage[event.name][trigger.card.name] > 0) {
 						player.storage[event.name][trigger.card.name]--;
 						if (get.info(event.name).intro.markcount(player.storage[event.name]) === 0) {
 							player.removeSkill(event.name);
@@ -10352,8 +10352,10 @@ const skills = {
 							delete player.storage[event.name][trigger.card.name];
 						}
 					}
-					player.markSkill(event.name);
-					player.addTip(event.name, `谮构 ${get.translation(Object.keys(player.storage[event.name]))}`);
+					if (player.storage[event.name]) {
+						player.markSkill(event.name);
+						player.addTip(event.name, `谮构 ${get.translation(Object.keys(player.storage[event.name]))}`);
+					}
 				},
 				mod: {
 					aiOrder(player, card, num) {
@@ -13786,6 +13788,7 @@ const skills = {
 		},
 		forced: true,
 		locked: false,
+		async content(event, trigger, player) {},
 		ai: {
 			combo: "mbqianlong",
 		},
@@ -17764,24 +17767,26 @@ const skills = {
 		audio: 1,
 		enable: "phaseUse",
 		usable: 1,
+		manualConfirm: true,
 		frequent: true,
 		async content(event, trigger, player) {
 			event.cards = [];
 			event.suits = [];
-			const judge = player
-				.judge(function (result) {
-					var evt = _status.event.getParent("scspicai");
-					if (evt && evt.suits && evt.suits.includes(get.suit(result))) {
-						return 0;
-					}
-					return 1;
-				})
-				.set("callback", lib.skill.scspicai.callback)
-				.set("judge2", function (result) {
-					return result.bool ? true : false;
-				});
-			await judge.forResult();
-			var cards = event.cards.filterInD();
+			event.again = true;
+			while (event.again) {
+				event.again = false;
+				await player
+					.judge(result => {
+						let evt = _status.event.getParent("scspicai");
+						if (evt?.suits?.includes(get.suit(result))) {
+							return 0;
+						}
+						return 1;
+					})
+					.set("callback", lib.skill.scspicai.callback)
+					.set("judge2", result => result.bool);
+			}
+			const cards = event.cards.filterInD();
 			if (!cards.length) {
 				return;
 			}
@@ -17799,24 +17804,24 @@ const skills = {
 			if (!result.bool) {
 				return;
 			}
-			var target = result.targets[0];
+			const target = result.targets[0];
 			player.line(target, "green");
 			const next = target.gain(cards, "gain2");
 			next.giver = player;
 			await next;
 		},
 		async callback(event, trigger, player) {
-			var evt = event.getParent(2);
+			const evt = event.getParent(2);
 			event.getParent().orderingCards.remove(event.judgeResult.card);
 			evt.cards.push(event.judgeResult.card);
 			if (event.getParent().result.bool) {
 				evt.suits.push(event.getParent().result.suit);
 				const result = await player.chooseBool("是否继续发动【庀材】？").set("frequentSkill", "scspicai").forResult();
 				if (result.bool) {
-					event.getParent(2).redo();
+					event.getParent(2).again = true;
 				}
 			} else {
-				event._result = { bool: false };
+				return;
 			}
 		},
 		ai: {
@@ -21427,6 +21432,7 @@ const skills = {
 		multitarget: true,
 		multiline: true,
 		async content(event, trigger, player) {
+			const { targets } = event;
 			targets[0].swapEquip(targets[1]);
 		},
 		ai: {
@@ -23312,6 +23318,7 @@ const skills = {
 		},
 		filterCard: lib.filter.cardDiscardable,
 		async content(event, trigger, player) {
+			const { cards } = event;
 			player.draw(get.color(cards) == "none" ? 2 : 1);
 		},
 		ai: {
@@ -31768,7 +31775,7 @@ const skills = {
 					viewAs: { name: links[0][2], nature: links[0][3] },
 					position: "hes",
 					popname: true,
-					precontent(event, trigger, player) {
+					async precontent(event, trigger, player) {
 						player.addMark("yizan_use", 1, false);
 					},
 				};
@@ -31808,6 +31815,9 @@ const skills = {
 			respondSha: true,
 			respondShan: true,
 			fireAttack: true,
+		},
+		subSkill: {
+			backup: {},
 		},
 	},
 	yizan_respond_shan: {
