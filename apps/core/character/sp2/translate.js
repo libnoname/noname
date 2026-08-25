@@ -74,7 +74,7 @@ const translates = {
 	xinfu_jianji: "谏计",
 	xinfu_jianji_info: "出牌阶段限一次，你可以令一名其他角色摸一张牌。然后该角色可以使用此牌。",
 	xinfu_lianpian: "联翩",
-	xinfu_lianpian_info: "出牌阶段限三次。当你对一名角色连续使用牌时，你可以摸一张牌，然后可以将一张牌交给该角色。",
+	xinfu_lianpian_info: "每回合限三次。当你于出牌阶段对一名角色连续使用牌时，你可以摸一张牌，然后可以将此牌交给该角色。",
 	spwenji: "问计",
 	spwenji_info: "出牌阶段开始时，你可以令一名其他角色交给你一张牌。你于本回合内使用与该牌名称相同的牌时不能被其他角色响应。",
 	rewenji: "问计",

@@ -17019,58 +17019,59 @@ const skills = {
 		},
 		frequent: true,
 		filter(event, player) {
-			if (!event.targets || !event.targets.length || event.getParent().triggeredTargets3.length > 1 || !event.isPhaseUsing(player)) {
+			if (!event.targets?.length || event.getParent()?.triggeredTargets3.length > 1 || !event.isPhaseUsing(player)) {
 				return false;
 			}
-			var evt = player.getLastUsed(1);
-			if (!evt || !evt.targets || !evt.targets.length || !evt.isPhaseUsing(player)) {
+			const evt = player.getLastUsed(1);
+			if (!evt?.targets?.length || !evt.isPhaseUsing(player)) {
 				return false;
 			}
-			for (var i = 0; i < event.targets.length; i++) {
+			for (let i = 0; i < event.targets.length; i++) {
 				if (evt.targets.includes(event.targets[i])) {
 					return true;
 				}
 			}
 			return false;
 		},
-		content() {
-			"step 0";
-			player.draw();
-			"step 1";
-			event.card = result?.cards?.[0];
-			var ablers = player.getLastUsed(1).targets.slice(0);
-			for (var i = 0; i < ablers.length; i++) {
+		async content(event, trigger, player) {
+			const { cards } = await player.draw().forResult();
+			if (!cards?.length) {
+				return;
+			}
+			const card = cards[0];
+			const ablers = player.getLastUsed(1)?.targets.slice(0) ?? [];
+			for (let i = 0; i < ablers.length; i++) {
 				if (ablers[i] == player || !trigger.targets.includes(ablers[i])) {
 					ablers.splice(i--, 1);
 				}
 			}
-			if (event.card && get.owner(event.card) == player && ablers.length) {
-				player
-					.chooseTarget("是否将" + get.translation(event.card) + "交给其他角色？", function (card, player, target) {
-						return _status.event.ablers.includes(target) && target != player;
+			if (get.owner(card) == player && ablers.length) {
+				const result = await player
+					.chooseTarget({
+						prompt: `联翩：是否将${get.translation(card)}交给其他角色`,
+						filterTarget(card, player, target) {
+							return get.event().ablers.includes(target) && target != player;
+						},
+						ai: (target) => 0,
 					})
-					.set("ablers", ablers).ai = function () {
-					return false;
-				};
-			} else {
-				event.finish();
+					.set("ablers", ablers)
+					.forResult();
+				if (result?.bool && result.targets?.length) {
+					const target = result.targets[0];
+					player.line(target);
+				await player.give(card, target, true);
 			}
-			"step 2";
-			if (result.bool) {
-				player.give(event.card, result.targets[0], true);
 			}
 		},
 		locked: false,
 		mod: {
 			aiOrder(player, card, num) {
-				if (player.isPhaseUsing() && (!player.storage.counttrigger || !player.storage.counttrigger.xinfu_lianpian || !player.storage.counttrigger.xinfu_lianpian < 3)) {
-					var evt = player.getLastUsed();
+				if (player.isPhaseUsing() && (!player.storage.counttrigger || !player.storage.counttrigger.xinfu_lianpian || player.storage.counttrigger.xinfu_lianpian < 3)) {
+					const evt = player.getLastUsed();
 					if (
-						evt &&
-						evt.targets &&
-						evt.targets.length &&
+						evt?.targets?.length &&
 						evt.isPhaseUsing(player) &&
-						game.hasPlayer(function (current) {
+						game.hasPlayer(current => {
 							return evt.targets.includes(current) && player.canUse(card, current) && get.effect(current, card, player, player) > 0;
 						})
 					) {
@@ -17083,7 +17084,7 @@ const skills = {
 			effect: {
 				player_use(card, player, target) {
 					var evt = player.getLastUsed();
-					if (evt && evt.targets.includes(target) && (!player.storage.counttrigger || !player.storage.counttrigger.xinfu_lianpian || !player.storage.counttrigger.xinfu_lianpian < 3) && player.isPhaseUsing(player)) {
+					if (evt && evt.targets.includes(target) && (!player.storage.counttrigger || !player.storage.counttrigger.xinfu_lianpian || player.storage.counttrigger.xinfu_lianpian < 3) && player.isPhaseUsing(player)) {
 						return [1.5, 0];
 					}
 				},
