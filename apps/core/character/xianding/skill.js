@@ -3944,7 +3944,7 @@ const skills = {
 					});
 				}
 			} else {
-				if (get.name(trigger.card) == "juedou") {
+				if (trigger.card && get.name(trigger.card) == "juedou") {
 					player.addTempSkill(`${event.name}_directHit`, { player: "dieAfter" });
 				}
 				if ((player.getAllHistory("sourceDamage").indexOf(trigger) + 1) % 2 == 0) {
