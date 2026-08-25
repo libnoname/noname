@@ -2645,8 +2645,13 @@ const skills = {
 	dcshefu: {
 		audio: 2,
 		trigger: {
-			player: "damageBegin2",
-			source: "damageBegin1",
+			global: "damageBefore",
+		},
+		init(player, skill) {
+			player.addSkill(skill + "_mark");
+		},
+		onremove(player, skill) {
+			player.removeSkill(skill + "_mark");
 		},
 		filter(event, player) {
 			if (!event.source || event.source == event.player) {
@@ -2659,7 +2664,7 @@ const skills = {
 		logTarget(event, player) {
 			return event.source == player ? event.player : event.source;
 		},
-		content() {
+		async content(event, trigger, player) {
 			if (!trigger.cards?.length) {
 				trigger.cancel();
 				return;
@@ -2673,24 +2678,26 @@ const skills = {
 					return evt.cards.includes(card);
 				}).length;
 			});
-			trigger.num =
+			trigger.num = Math.min(
+				5,
 				cards.length +
-				cards.reduce((sum, card) => {
-					let num = 0,
-						history = trigger.source.actionHistory;
-					for (let i = history.length - 1; i >= 0; i--) {
-						if (history[i].gain.some(evtx => evtx.cards.includes(card))) {
-							break;
+					cards.reduce((sum, card) => {
+						let num = 0,
+							history = trigger.source.actionHistory;
+						for (let i = history.length - 1; i >= 0; i--) {
+							if (history[i].gain.some(evtx => evtx.cards.includes(card))) {
+								break;
+							}
+							if (history[i].isRound) {
+								num++;
+							}
+							if (i == 0 && trigger.source._start_cards?.includes(card)) {
+								num--;
+							}
 						}
-						if (history[i].isRound) {
-							num++;
-						}
-						if (i == 0 && trigger.source._start_cards?.includes(card)) {
-							num--;
-						}
-					}
-					return sum + num;
-				}, 0);
+						return sum + num;
+					}, 0)
+			);
 		},
 		ai: {
 			effect: {
@@ -2711,6 +2718,54 @@ const skills = {
 				},
 				player() {
 					return lib.skill.dcshefu.ai.effect.target.apply(this, arguments);
+				},
+			},
+		},
+		subSkill: {
+			mark: {
+				charlotte: true,
+				silent: true,
+				popup: false,
+				firstDo: true,
+				init(player, skill) {
+					const cards = player.getCards("h");
+					get.info(skill).onremove(player, skill);
+					if (cards.length) {
+						for (const card of cards) {
+							let num = 1,
+								history = player.actionHistory;
+							for (let i = history.length - 1; i >= 0; i--) {
+								if (history[i].gain.some(evtx => evtx.cards.includes(card))) {
+									break;
+								}
+								if (history[i].isRound) {
+									num++;
+								}
+								if (i == 0 && player._start_cards?.includes(card)) {
+									num--;
+								}
+							}
+							num = Math.min(5, num);
+							game.broadcastAll(card => {
+								card.addGaintag(skill + num);
+							}, card);
+						}
+					}
+				},
+				onremove(player, skill) {
+					for (let i = 1; i < 6; i++) {
+						player.removeGaintag(skill + i);
+					}
+				},
+				trigger: {
+					player: "gainAfter",
+					global: ["loseAsyncAfter", "roundStart"],
+				},
+				filter(event, player, name) {
+					return name == "roundStart" || event.getg?.(player)?.length;
+				},
+				async content(event, trigger, player) {
+					get.info(event.name).init(player, event.name);
 				},
 			},
 		},
