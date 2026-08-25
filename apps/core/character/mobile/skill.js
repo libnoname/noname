@@ -974,11 +974,8 @@ const skills = {
 			end: {
 				audio: "reliangyin",
 				logAudio: () => ["reliangyin3.mp3", "reliangyin4.mp3"],
-				trigger: { global: "phaseAfter" },
+				trigger: { global: "roundEnd" },
 				filter(event, player) {
-					if (game.hasPlayer(current => current.getSeatNum() > event.player.getSeatNum())) {
-           	 			return false;
-          			}
 					const targets = player
 						.getRoundHistory("useSkill", evt => evt.skill == "reliangyin")
 						.flatMap(evt => evt.targets)
@@ -1118,7 +1115,7 @@ const skills = {
 				.filter(evt => {
 					return evt.player == target;
 				})
-				.step(async (event, trigger, player) => {
+				.then(async (event, trigger, player) => {
 					if (!target.hasExpansions("rekongsheng")) {
 						return;
 					}
@@ -1158,7 +1155,7 @@ const skills = {
 								event.logged = true;
 								player.logSkill(event.name);
 							}
-							await current.gain({ cards, animate: "gain2" });
+							await current.gain(cards, "gain2");
 						}
 					}
 				},
