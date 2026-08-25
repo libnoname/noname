@@ -585,7 +585,7 @@ const skills = {
 	},
 	rejinqu: {
 		audio: 4,
-		logAudio: event => event.name == "useCard" ? 2 : ["rejinqu3.mp3", "rejinqu4.mp3"], 
+		logAudio: event => (event.name == "useCard" ? 2 : ["rejinqu3.mp3", "rejinqu4.mp3"]),
 		forced: true,
 		trigger: {
 			player: ["useCardAfter", "phaseJieshuBegin"],
@@ -3431,8 +3431,8 @@ const skills = {
 							return 8;
 						}
 						if (link == "rewansha") {
-              				return 6;
-            			}
+							return 6;
+						}
 						return 0;
 					}
 					return link == (ui.selected.buttons.length && ui.selected.buttons[0].link != "摸牌" ? num - 1 : 1);
@@ -13786,6 +13786,7 @@ const skills = {
 		},
 		forced: true,
 		locked: false,
+		async content(event, trigger, player) {},
 		ai: {
 			combo: "mbqianlong",
 		},
