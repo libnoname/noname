@@ -720,10 +720,14 @@ const skills = {
 	dcyuzheng: {
 		audio: 2,
 		enable: "phaseUse",
-		usable: 2,
-		filterTarget: true,
+		filterTarget(card, player, target) {
+			if (!player.getStorage("dcyuzheng_used").includes(1)) {
+				return target.maxHp > 0;
+			}
+			return !target.isMinHandcard();
+		},
 		filter(event, player) {
-			return player.getStorage("dcyuzheng_used").length < 2;
+			return player.getStorage("dcyuzheng_used").length < 2 && game.hasPlayer(current => get.info("dcyuzheng").filterTarget(null, player, current));
 		},
 		async content(event, trigger, player) {
 			const { target } = event;
@@ -732,6 +736,8 @@ const skills = {
 			let result;
 			if (storage.length == 1) {
 				result = { index: storage[0] == 0 ? 1 : 0 };
+			} else if (target.isMinHandcard()) {
+				result = { index: 1 };
 			} else {
 				result = await target.chooseControl({ choiceList: list, choice: 1 }).forResult();
 			}
