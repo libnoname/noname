@@ -5791,22 +5791,6 @@ const skills = {
 	longsong: {
 		audio: "dclongsong",
 		trigger: { player: "phaseUseBegin" },
-		filter(event, player) {
-			return game.hasPlayer(target => {
-				return target.hasCard(card => {
-					if (get.position(card) == "h") {
-						return true;
-					}
-					if (get.color(card) != "red") {
-						return false;
-					}
-					if (player == target) {
-						return true;
-					}
-					return lib.filter.canBeGained(card, player, target);
-				}, "he");
-			});
-		},
 		getSkills(skills, len) {
 			skills = skills.filter(skill => {
 				let str = get.skillInfoTranslation(skill, get.event().player);
@@ -5867,16 +5851,10 @@ const skills = {
 						if (skills.length) {
 							target.prompt(skills.join("<br>"));
 						}
-						return (
-							ui.selected.cards.length ||
-							target.hasCard(card => {
-								return get.color(card) == "red" && lib.filter.canBeGained(card, player, target);
-							}, "he")
-						);
+						return true;
 					},
 					filterCard: { color: "red" },
 					selectCard: [0, 1],
-					multitarget: true,
 					ai1(card) {
 						const ai2 = get.event().ai2;
 						if (
@@ -5891,7 +5869,7 @@ const skills = {
 					ai2(target) {
 						const player = get.event().player,
 							att = get.attitude(player, target);
-						if (att > 0 && !target.getGainableCards(player, "he").some(card => get.color(card) == "red")) {
+						if (att > 0 && !target.hasGainableCards(player, "he")) {
 							return 0;
 						}
 						return lib.skill.longsong.getSkills(target.getSkills(null, false)).length + (att > 0 ? 0 : Math.max(0, get.effect(target, { name: "shunshou_copy2" }, player, player)));
@@ -5907,33 +5885,7 @@ const skills = {
 				await player.give(cards, target);
 			} else {
 				if (gainableCards.length) {
-					let dialog = ["龙诵：获得" + get.translation(target) + "的一张红色牌"];
-					let cards1 = gainableCards.filter(i => get.position(i) == "h"),
-						cards2 = gainableCards.filter(i => get.position(i) == "e");
-					if (cards1.length) {
-						dialog.push('<div class="text center">手牌区</div>');
-						if (player.hasSkillTag("viewHandcard", null, target, true)) {
-							dialog.push(cards1);
-						} else {
-							dialog.push([cards1.randomSort(), "blank"]);
-						}
-					}
-					if (cards2.length) {
-						dialog.push('<div class="text center">装备区</div>');
-						dialog.push(cards2);
-					}
-					const { bool, links } = await player
-						.chooseButton(dialog, true)
-						.set("ai", button => {
-							const player = get.event().player,
-								target = get.event().getParent().targets[0];
-							return get.value(button.link, player) * get.value(button.link, target) * (1 + Math.random());
-						})
-						.forResult();
-					if (!bool) {
-						return;
-					}
-					await player.gain(links, target, "giveAuto", "bySelf");
+					await player.gain(gainableCards.randomGet(), target, "giveAuto", "bySelf");
 				} else {
 					player.popup("杯具");
 					player.chat("无牌可得？！");
