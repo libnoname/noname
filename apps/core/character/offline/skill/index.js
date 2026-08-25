@@ -37,6 +37,7 @@ import offline_wenxindiaolong from "./offline_wenxindiaolong.js";
 import offline_shiningGrils from "./offline_shiningGrils.js";
 import offline_yanling from "./offline_yanling.js";
 import offline_zongheng from "./offline_zongheng.js";
+import offline_longxuexuanhuang from "./offline_longxuexuanhuang.js";
 
 const skills = {
 	...extra_offline,
@@ -78,6 +79,7 @@ const skills = {
 	...offline_shiningGrils,
 	...offline_yanling,
 	...offline_zongheng,
+	...offline_longxuexuanhuang,
 };
 
 export default skills;
