@@ -13525,7 +13525,7 @@ const skills = {
 		},
 	},
 	beizhan: {
-		trigger: { player: "phaseJieshuBegin" },
+		trigger: { player: "phaseEnd" },
 		direct: true,
 		audio: 2,
 		content() {
