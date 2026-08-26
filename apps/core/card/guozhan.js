@@ -1536,7 +1536,7 @@ export default {
 					const card = list.randomGet();
 					lib.inpile.add(card[2]);
 					await player.gain({
-						cards: game.createCard2(card[2], card[0], card[1], void 0),
+						cards: [game.createCard2(card[2], card[0], card[1], void 0)],
 						animate: "gain2",
 					});
 				}
