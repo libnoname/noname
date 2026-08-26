@@ -315,10 +315,16 @@ const skills = {
 			});
 			next.set("ai", card => {
 				const { sourcex, targetx, player } = get.event();
-				if (player === sourcex || player === targetx) {
-					return ui.selected.cards.length < 3 ? 6 - get.value(card) : 0;
+				if (!targetx.hasCards("he") || (get.attitude(player, sourcex) < 0 && player != targetx)) {
+					return 0;
 				}
-				return get.attitude(player, sourcex) > 0 ? 5.5 - get.value(card) : 0;
+				if (get.attitude(sourcex, targetx) > 0 || ui.selected.cards?.length >= Math.min(3, targetx.countCards("he"))) {
+					return 0;
+				}
+				if (player == targetx && player.countCards("he") < 3) {
+					return 0;
+				}
+				return 5.5 - get.value(card);
 			});
 			next.set("sourcex", source);
 			next.set("targetx", target);
@@ -337,6 +343,7 @@ const skills = {
 			const map = await game.chooseAnyOL([player, target, ...others], get.info(event.name).chooseToDiscard, [player, target]).forResult();
 			const cards1 = [];
 			const cards2 = [];
+			let n = 0;
 			for (const targetx of Array.from(map.keys()).sortBySeat()) {
 				const result = map.get(targetx);
 				if (result?.bool && result.cards?.length) {
@@ -347,13 +354,16 @@ const skills = {
 					} else {
 						if (targetx === player) {
 							const storage = player.getStorage(`${event.name}_last`, []);
-							storage[0] = cards.length;
+							n = cards.length;
 							player.setStorage(`${event.name}_last`, storage);
 						}
 						cards1.push(...cards);
 					}
 				}
 			}
+			const storage = player.getStorage(`${event.name}_last`, []);
+			storage[0] = n;
+			player.setStorage(`${event.name}_last`, storage);
 			let num = 0;
 			["suit", "length", "type2"].forEach(method => {
 				let num1;
@@ -394,7 +404,7 @@ const skills = {
 							case "draw":
 								return get.effect(player, { name: "draw" }, player, player) * 4;
 							case "hujia":
-								return player.hujia < 5 ? get.recoverEffect(player, player, player) : 0;
+								return 1;
 						}
 					})
 					.forResult();
@@ -9979,7 +9989,7 @@ const skills = {
 			return 6 - get.value(card);
 		},
 		async content(event, trigger, player) {
-			const discard = player.modedDiscard(event.cards);
+			const discard = player.modedDiscard({ cards: event.cards });
 			await discard;
 			const { cards } = discard;
 			let num = cards.length;
@@ -9988,11 +9998,14 @@ const skills = {
 			for (const i of nums) {
 				count[i] = (count[i] || 0) + 1;
 			}
-			num += Math.max(...Object.values(count));
-			await player.draw({ num: num });
+			if (Math.max(...Object.values(count)) > 1) {
+				num += Math.max(...Object.values(count));
+			}
+			await player.draw({ num });
 		},
 		ai: {
 			order(item, player) {
+				player ??= get.player();
 				if (player.hasCard(i => get.value(i) > Math.max(6, 9 - player.hp), "he")) {
 					return 1;
 				}
@@ -10088,7 +10101,7 @@ const skills = {
 			const target = trigger.player;
 			const num = Math.min(3, game.roundNumber);
 			const list = [];
-			const choiceList = [`令${get.translation(target)}获得1点护甲`, `将势力变更为吴，然后获得${get.translation(target)}${get.cnNumber(num)}张牌`];
+			const choiceList = [`令${get.translation(target)}获得1点护甲`, `获得${get.translation(target)}至多${get.cnNumber(num)}张牌，然后将势力变更为吴`];
 			if (target.hujia < 5) {
 				list.push("选项一");
 			} else {
@@ -10130,11 +10143,11 @@ const skills = {
 			if (link === "选项一") {
 				await target.changeHujia(1, null, true);
 			} else {
-				await player.changeGroup("wu");
 				const num = Math.min(3, game.roundNumber);
 				if (target.countGainableCards(player, "he")) {
-					await player.gainPlayerCard({ target, forced: true, position: "he", selectButton: num, allowChooseAll: true });
+					await player.gainPlayerCard({ target, forced: true, position: "he", selectButton: [1, num], allowChooseAll: true });
 				}
+				await player.changeGroup("wu");
 			}
 		},
 		onremove: true,
@@ -11358,7 +11371,7 @@ const skills = {
 						cards: result.cards,
 						source: player,
 						animate: "giveAuto",
-						gaintag: ["sbqianxun_gain"]
+						gaintag: ["sbqianxun_gain"],
 					});
 					player.addSkill("sbqianxun_gain");
 				}

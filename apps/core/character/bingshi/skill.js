@@ -2315,8 +2315,11 @@ const skills = {
 			if (!event.getl?.(player)?.cards2.some(card => !get.is.damageCard(card)) || !player.countCharge(true)) {
 				return false;
 			}
-			const cards = event.getl(player).cards2;
-			return event.getParent()?.name != "useCard" || cards.some(card => get.type(card) != "equip");
+			const evt2 = event.relatedEvent || event.getParent();
+			if (evt2.name === "useCard" && evt2.player === player && get.type(evt2.card, null, false) === "equip") {
+				return false;
+			}
+			return true;
 		},
 		async content(event, trigger, player) {
 			if (trigger.name == "phase") {
@@ -2347,7 +2350,7 @@ const skills = {
 						.chooseNumbers(`###${get.translation(skill)}###出牌阶段限一次，你可以消耗任意点蓄力值，令至多等量名角色从牌堆或弃牌堆中各获得一张红桃牌`, [{ prompt: "请选择要移去的蓄力值", min: 1, max: player.countCharge() }])
 						.set("processAI", () => {
 							const player = get.player();
-							const num = Math.min(player.countCharge(), 3);
+							const num = Math.min(player.countCharge(), 7);
 							return [num];
 						})
 						.forResult();
@@ -3962,13 +3965,16 @@ const skills = {
 			return player.hasSkill(skill + "_double") ? 2 : 1;
 		},
 		filter(event, player) {
-			return game.hasPlayer(target => target.countCards("h") && target != player);
+			return game.hasPlayer(target => target.hasCards("h") && target != player);
 		},
 		filterTarget(card, player, target) {
-			return target.countCards("h") && target != player;
+			return target.hasCards("h") && target != player;
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
+			if (!target.hasCards("h")) {
+				return;
+			}
 			const result = await player.choosePlayerCard(`凶图：请展示${get.translation(target)}的一张手牌`, target, "h", true).forResult();
 			if (result?.cards?.length) {
 				const card = result.cards[0];
@@ -3979,20 +3985,33 @@ const skills = {
 						.map(card => get.suit(card))
 						.unique()
 				).length;
-				const resultx = await player
-					.chooseToDiscard({
-						prompt: `凶图：取消并弃置${get.translation(card)}或弃置${num}张牌对${get.translation(target)}造成1点伤害`,
-						position: "he",
-						selectCard: num,
-						ai(card) {
-							if (get.event().num > 2) {
-								return 0;
-							}
-							return 6 - get.value(card);
-						},
-					})
-					.set("num", num)
-					.forResult();
+				const resultx =
+					num > 0
+						? await player
+								.chooseToDiscard({
+									prompt: `凶图：弃置${num}张牌对${get.translation(target)}造成1点伤害或取消并弃置${get.translation(card)}`,
+									position: "he",
+									selectCard: num,
+									ai(card) {
+										if (get.event().num > 2) {
+											return 0;
+										}
+										return 6 - get.value(card);
+									},
+								})
+								.set("num", num)
+								.forResult()
+						: await player
+								.chooseBool({
+									prompt: `凶图：对${get.translation(target)}造成1点伤害或取消并弃置${get.translation(card)}`,
+									ai() {
+										const { player, target } = get.event();
+										if (get.damageEffect(target, player, player) > 0) return true;
+										return false;
+									},
+								})
+								.set("target", target)
+								.forResult();
 				if (resultx?.bool) {
 					player.logSkill("mbxiongtu", [target], null, null, [get.rand(3, 4)]);
 					await target.damage();
@@ -4900,7 +4919,7 @@ const skills = {
 			if (link == "sha" || link == "shan") {
 				const card = get.cardPile(card => card.name == link);
 				if (card) {
-					await player.gain(card, "gain2");
+					await player.gain({ cards: [card], animate: "draw" });
 				} else {
 					player.chat(`孩子们，一张${get.translation(link)}都没有力`);
 				}
@@ -5537,8 +5556,11 @@ const skills = {
 					if (!event.getl?.(player)?.cards2?.length || !player.hasMark("mbrunwei_twice")) {
 						return false;
 					}
-					const cards = event.getl(player).cards2;
-					return event.getParent()?.name != "useCard" || cards.some(card => get.type(card) != "equip");
+					const evt2 = event.relatedEvent || event.getParent();
+					if (evt2.name === "useCard" && evt2.player === player && get.type(evt2.card, null, false) === "equip") {
+						return false;
+					};
+					return true;
 				},
 				silent: true,
 				async content(event, trigger, player) {
