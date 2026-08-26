@@ -4523,16 +4523,6 @@ const skills = {
 					cards.addArray(evt.cards.filter(card => get.position(card, true) == "d"));
 				});
 				event.set("clanshengmo_cards", cards);
-				/*
-				const numbers = cards.map(card => get.number(card, false)).unique();
-				const [min, max] = [Math.min(...numbers), Math.max(...numbers)];
-				event.set(
-					"clanshengmo_cards",
-					cards.filter(card => {
-						const num = get.number(card, false);
-						return num > min && num < max;
-					})
-				);*/
 			}
 		},
 		async content(event, trigger, player) {
@@ -4552,6 +4542,7 @@ const skills = {
 				.forResult();
 			if (links?.length) {
 				await player.gain(links, "gain2");
+				player.addSkill("clanshengmo_num");
 				player.markAuto("clanshengmo_num", links.map(card => get.number(card, false)).toUniqued());
 				const numbers = cards.map(card => get.number(card, false)).unique();
 				const [min, max] = [Math.min(...numbers), Math.max(...numbers)],
@@ -4611,6 +4602,24 @@ const skills = {
 			content: "已以此法使用过$",
 		},
 		subSkill: {
+			num: {
+				charlotte: true,
+				onremove: true,
+				intro: {
+					markcount(storage, player) {
+						const numbers = Array.from({ length: 13 }, (_, i) => i + 1).removeArray(storage);
+						return numbers.length;
+					},
+					content(storage, player) {
+						const numbers = Array.from({ length: 13 }, (_, i) => i + 1).removeArray(storage);
+						if (numbers.length) {
+							return `剩余点数：${numbers.join("、")}`;
+						} else {
+							return "无剩余点数";
+						}
+					},
+				},
+			},
 			backup: {
 				async precontent(event, trigger, player) {
 					event.result.card.storage.clanshengmo = true;
