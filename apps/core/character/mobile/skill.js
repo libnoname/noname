@@ -3315,7 +3315,7 @@ const skills = {
 			await player.loseMaxHp();
 			await player.addSkills("xinjilve");
 		},
-		derivation: ["xinjilve", "reguicai", "fangzhu", "rejizhi", "rezhiheng", "rewansha"],
+		derivation: ["xinjilve", "guicai", "fangzhu", "jizhi", "zhiheng", "wansha"],
 		ai: { combo: "xinrenjie" },
 	},
 	xinlianpo: {
@@ -3323,12 +3323,12 @@ const skills = {
 		audioname: ["new_simayi"],
 		trigger: { source: "dieAfter" },
 		filter(event, player) {
-			return !player.hasSkill("xinlianpo_mark") || get.info("xinbaiyin").derivation.some(skill => !["xinjilve", "reguicai"].includes(skill) && !player.hasSkill(skill, null, null, false));
+			return !player.hasSkill("xinlianpo_mark") || get.info("xinbaiyin").derivation.some(skill => !["xinjilve", "guicai"].includes(skill) && !player.hasSkill(skill, null, null, false));
 		},
 		async cost(event, trigger, player) {
 			const skills = get
 				.info("xinbaiyin")
-				.derivation.removeArray(["xinjilve", "reguicai"])
+				.derivation.removeArray(["xinjilve", "guicai"])
 				.filter(skill => !player.hasSkill(skill, null, null, false));
 			if (skills.length && player.hasSkill("xinjilve", null, null, false)) {
 				const next = player.chooseButton(["连破：请选择一项", [skills.map(i => [i, `获得【${get.translation(i)}】`]).concat(["于此回合结束后获得一个额外回合"]), "textbutton"]]);
@@ -3339,13 +3339,13 @@ const skills = {
 					if ((skills.length <= 2 || game.countPlayer() <= 2) && !player.hasSkill("xinlianpo_mark", null, null, false) && link == "于此回合结束后获得一个额外回合") {
 						return 6;
 					}
-					if (link == "rezhiheng" && player.countCards("h") > 0) {
+					if (link == "zhiheng" && player.countCards("h") > 0) {
 						return 5;
 					}
-					if (link == "rejizhi" && (!skills.includes("rezhiheng") || player.countCards("hs", { type: "trick" }))) {
+					if (link == "jizhi" && (!skills.includes("zhiheng") || player.countCards("hs", { type: "trick" }))) {
 						return 3;
 					}
-					if (link == "rewansha" && game.hasPlayer(current => get.attitude(player, current) < 0 && current.getHp() < 2 && (player == _status.currentPhase || player.hasSkill("xinlianpo_mark", null, null, false)))) {
+					if (link == "wansha" && game.hasPlayer(current => get.attitude(player, current) < 0 && current.getHp() < 2 && (player == _status.currentPhase || player.hasSkill("xinlianpo_mark", null, null, false)))) {
 						return 2;
 					}
 					return 1;
@@ -3400,7 +3400,7 @@ const skills = {
 			const num = Math.max(2, history.length + 1);
 			const skills = get
 				.info("xinbaiyin")
-				.derivation.removeArray(["xinjilve", "reguicai"])
+				.derivation.removeArray(["xinjilve", "guicai"])
 				.filter(skill => !player.hasSkill(skill, null, null, false));
 			if (skills.length && limit >= num) {
 				const next = player.chooseButton(2, ["极略：请选择你要移去的“忍”标记数和相应操作", '<div class="text center">移去“忍”标记数</div>', [choices, "tdnodes"], '<div class="text center">执行的操作</div>', [skills.map(i => [i, `获得【${get.translation(i)}】`]).concat(["摸牌"]), "tdnodes"]]);
@@ -3424,13 +3424,13 @@ const skills = {
 						if (num > 0 && link == "摸牌") {
 							return 2;
 						}
-						if (link == "rezhiheng" && player.hasCards("h")) {
+						if (link == "zhiheng" && player.hasCards("h")) {
 							return 10;
 						}
-						if (link == "rejizhi" && (!skills.includes("rezhiheng") || player.countCards("hs", { type: "trick" }))) {
+						if (link == "jizhi" && (!skills.includes("zhiheng") || player.countCards("hs", { type: "trick" }))) {
 							return 8;
 						}
-						if (link == "rewansha") {
+						if (link == "fangzhu") {
 							return 6;
 						}
 						return 0;
@@ -3458,7 +3458,7 @@ const skills = {
 					.set(
 						"choice",
 						(function () {
-							if (!player.hasSkill("rejizhi", null, null, false)) {
+							if (!player.hasSkill("jizhi", null, null, false)) {
 								return "cancel2";
 							}
 							return draw[draw.length - 1];
@@ -3498,12 +3498,12 @@ const skills = {
 				},
 				forced: true,
 				async content(event, trigger, player) {
-					let skills = ["reguicai"];
+					let skills = ["guicai"];
 					const groupList = new Map([
 						["wei", "fangzhu"],
-						["shu", "rejizhi"],
-						["wu", "rezhiheng"],
-						["qun", "rewansha"],
+						["shu", "jizhi"],
+						["wu", "zhiheng"],
+						["qun", "wansha"],
 						["key", "hiroto_zonglve"],
 					]);
 					if (Array.from(groupList.keys()).includes(player.group)) {
