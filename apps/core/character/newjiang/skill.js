@@ -4113,9 +4113,6 @@ const skills = {
 	beiyu: {
 		audio: 2,
 		enable: "phaseUse",
-		filter(event, player) {
-			return player.countCards("h") < player.maxHp;
-		},
 		usable: 1,
 		manualConfirm: true,
 		async content(event, trigger, player) {
@@ -4153,7 +4150,7 @@ const skills = {
 				.forResult();
 			if (result?.links?.length) {
 				const [suit] = result.links,
-					cards = player.getCards("h", card => get.suit(card, player) == suit);
+					cards = player.getCards("h", card => get.suit(card, player) == suit).randomSort();
 				if (cards.length) {
 					game.log(player, "将", cards, "置于牌堆底");
 					await player.lose(cards, ui.cardPile);
