@@ -373,7 +373,7 @@ const translates = {
 	ol_wuguotai: "OL界吴国太",
 	ol_wuguotai_prefix: "OL界",
 	olganlu: "甘露",
-	olganlu_info: "出牌阶段限一次，你可以交换两名角色装备区内的牌，然后若你的已损失体力值小于X，你弃置X张牌（X为交换前两者装备区牌数之差）。",
+	olganlu_info: "出牌阶段限一次，你可以交换两名角色装备区内的牌，然后若你的已损失体力值小于X，你弃置X张手牌（X为交换前两者装备区牌数之差）。",
 	olbuyi: "补益",
 	olbuyi_info: "一名角色进入濒死状态时，你可展示其一张牌。若此牌不为基本牌，则其弃置此牌并回复1点体力。",
 	ol_sb_kongrong: "OL谋孔融",
