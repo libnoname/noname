@@ -5027,22 +5027,26 @@ const skills = {
 			return event.player != player && lib.skill.mbchenshe.logTarget(event, player).length;
 		},
 		logTarget(event, player) {
-			return [player, event.player, event.source].filter(target => target?.isIn() && target?.countDiscardableCards(player, "he"));
+			return [player, event.player, event.source].filter(target => target?.isIn() && target?.hasDiscardableCards(player, "he"));
 		},
 		check(event, player) {
-			const targets = lib.skill.mbchenshe.logTarget(event, player);
-			return (
-				targets.reduce((sum, target) => {
-					return sum + get.effect(target, { name: "guohe_copy2" }, player, player);
-				}, 0) > 0
-			);
+			const targets = lib.skill.mbchenshe.logTarget(event, player),
+				target = event.player;
+			if (get.attitude(player, target) > 0 || targets.length < 3) {
+				return (
+					targets.reduce((sum, target) => {
+						return sum + get.effect(target, { name: "guohe_copy2" }, player, player);
+					}, 0) > 0
+				);
+			}
+			return false;
 		},
 		async content(event, trigger, player) {
 			const targets = lib.skill.mbchenshe.logTarget(trigger, player),
 				cards = [];
 			for (const target of targets) {
 				let result;
-				if (!target.countDiscardableCards(player, "he")) {
+				if (!target.hasDiscardableCards(player, "he")) {
 					continue;
 				}
 				if (target == player) {
@@ -5559,7 +5563,7 @@ const skills = {
 					const evt2 = event.relatedEvent || event.getParent();
 					if (evt2.name === "useCard" && evt2.player === player && get.type(evt2.card, null, false) === "equip") {
 						return false;
-					};
+					}
 					return true;
 				},
 				silent: true,
