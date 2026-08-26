@@ -4527,10 +4527,9 @@ const skills = {
 			player: "damageEnd",
 			source: "damageSource",
 		},
-		forced: true,
-		locked: false,
+		frequent: true,
 		async content(event, trigger, player) {
-			player.draw(2).gaintag = ["kangli"];
+			await player.draw({ num: 2, gaintag: ["kangli"] });
 			player.when({ source: "damageBegin1" }).step(async (event, trigger, player) => {
 				const cards = player.getCards("h", card => card.hasGaintag("kangli") && lib.filter.cardDiscardable(card, player, "kangli"));
 				if (cards.length) {
