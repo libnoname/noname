@@ -13250,7 +13250,7 @@ const skills = {
 											return source.canUse(card, target, true) && get.effect(target, card, source, player) > 0;
 										})
 									) {
-										return Math.random() < 0.7 ? ADD : "cancel2";
+										return Math.random() < 0.7 && list.includes(ADD) ? ADD : "cancel2";
 									}
 								} else {
 									if (attSource >= 0) {
