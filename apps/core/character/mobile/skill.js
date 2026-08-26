@@ -26176,27 +26176,10 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
-		//filter:function(event,player){
-		//	return player.countCards('he')>=Math.min(2,game.dead.length);
-		//},
-		//selectCard:function(){
-		//	return Math.min(2,game.dead.length);
-		//},
-		//filterCard:true,
 		filterTarget: lib.filter.notMe,
-		check(card) {
-			var num = Math.min(2, game.dead.length);
-			if (!num) {
-				return 1;
-			}
-			if (num == 1) {
-				return 7 - get.value(card);
-			}
-			return 5 - get.value(card);
-		},
-		position: "he",
 		async content(event, trigger, player) {
-			const skill = event.name + "_effect";
+			const skill = event.name + "_effect",
+				target = event.target;
 			player.addTempSkill(skill, { player: "phaseBeginStart" });
 			player.markAuto(skill, target);
 		},
@@ -26219,7 +26202,7 @@ const skills = {
 				forced: true,
 				logTarget: "source",
 				filter(event, player) {
-					return player.getStorage("hongyi_effect").includes(event.source);
+					return event.source && player.getStorage("hongyi_effect").includes(event.source);
 				},
 				async content(event, trigger, player) {
 					const result = await trigger.source.judge().forResult();

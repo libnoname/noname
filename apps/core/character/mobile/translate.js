@@ -420,7 +420,6 @@ const translates = {
 	mobiledanshou_info: "一名其他角色的结束阶段开始时，若X：为0，你摸一张牌；不等于0，你可弃置X张牌并对其造成1点伤害（X为其本回合内使用的目标包含你的牌的数量）。",
 	yanghuiyu: "羊徽瑜",
 	hongyi: "弘仪",
-	hongyi2: "弘仪",
 	hongyi_info: "出牌阶段限一次，你可以选择一名其他角色。你的下回合开始前，该角色造成伤害时进行判定，若结果为：黑色，此伤害-1。红色，受到伤害的角色摸一张牌。",
 	requanfeng: "劝封",
 	requanfeng_gain: "劝封",
