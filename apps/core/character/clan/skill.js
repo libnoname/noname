@@ -5059,7 +5059,7 @@ const skills = {
 			const str = get.translation(player);
 			const result = await target
 				.chooseControl()
-				.set("choiceList", [str + "下次对你使用【杀】后，其视为对你使用任意普通锦囊牌", str + "下次对你使用任意普通锦囊牌后，其视为对你使用【杀】"])
+				.set("choiceList", [str + "下次对你使用【杀】后，其可以视为对你使用任意普通锦囊牌", str + "下次对你使用任意普通锦囊牌后，其可以视为对你使用【杀】"])
 				.set("ai", function () {
 					const target = _status.event.player;
 					const player = _status.event.target;
@@ -5086,7 +5086,9 @@ const skills = {
 				.forResult();
 
 			player.addSkill("clanqiuxin_effect");
-			player.markAuto("clanqiuxin_effect", [[target, result.index]]);
+			if (!player.getStorage("clanqiuxin_effect").some(list => list[0] == target && list[1] == result.index)) {
+				player.markAuto("clanqiuxin_effect", [[target, result.index]]);
+			}
 		},
 		ai: {
 			order: 9,
@@ -5133,7 +5135,7 @@ const skills = {
 							if (list[1]) {
 								strx.reverse();
 							}
-							infos.add("对" + get.translation(list[0]) + "使用" + strx[0] + "后，视为对其使用" + strx[1]);
+							infos.add("<li>对" + get.translation(list[0]) + "使用" + strx[0] + "后，可以视为对其使用" + strx[1]);
 						}
 						return infos.join("<br>");
 					},
@@ -5167,7 +5169,6 @@ const skills = {
 					}
 					player.unmarkAuto("clanqiuxin_effect", matchedList);
 					const targets = matchedList.map(item => item[0]);
-
 					for (const target of targets) {
 						event.target = target;
 						const options = [];
@@ -5189,8 +5190,7 @@ const skills = {
 						}
 						const result = await player
 							.chooseButton({
-								forced: true,
-								createDialog: ["求心：视为对" + get.translation(target) + "使用一张牌", [options, "vcard"]],
+								createDialog: ["求心：你可以视为对" + get.translation(target) + "使用一张牌", [options, "vcard"]],
 							})
 							.set("ai", function (button) {
 								const player = _status.event.player;
@@ -5219,7 +5219,6 @@ const skills = {
 							});
 						}
 					}
-
 					if (!player.getStorage("clanqiuxin_effect").length) {
 						player.removeSkill("clanqiuxin_effect");
 					}
