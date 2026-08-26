@@ -2161,45 +2161,41 @@ const skills = {
 		filter(event, player) {
 			return get.discardPile(card => get.type(card) == "basic");
 		},
-		async cost(event, trigger, player) {
-			const cards = Array.from(ui.discardPile.childNodes).filter(card => get.type(card) == "basic");
-			const result = await player
-				.chooseButton([get.prompt2(event.skill), cards], [1, Infinity])
-				.set("filterButton", button => {
-					if (ui.selected.buttons?.some(buttonx => buttonx.link.name == button.link.name)) {
-						return false;
-					}
-					return true;
-				})
-				.set("ai", () => 1 + Math.random())
-				.forResult();
-			event.result = {
-				bool: result?.bool,
-				cards: result?.links ?? [],
-			};
-		},
+		prompt2: "将弃牌堆中不同牌名的基本牌各一张置于牌堆顶，然后视为使用一张【五谷丰登】（从你或一名已受伤角色开始结算）",
 		async content(event, trigger, player) {
 			game.players.forEach(current => current.addTempSkill("staranshu_remove", "roundEnd"));
-			await game.cardsGotoPile(event.cards, "insert");
+			const cardx = Array.from(ui.discardPile.childNodes)
+				.filter(card => get.type(card) == "basic")
+				.randomSort();
+			const cards = [];
+			for (const card of cardx) {
+				if (!cards.some(c => c.name == card.name)) {
+					cards.push(card);
+				}
+			}
+			if (!cards.length) return;
+			await game.cardsGotoPile(cards, "insert");
+			const targets = game.filterPlayer(current => current == player || current.isDamaged());
+			let target = player;
+			if (targets.length > 1) {
+				const result = await player
+					.chooseTarget("请选择【五谷丰登】的起点", true, function (card, player, target) {
+						return get.event().targets.includes(target);
+					})
+					.set("targets", targets)
+					.set("ai", target => {
+						return get.attitude(get.player(), target);
+					})
+					.forResult();
+				if (result?.bool && result.targets?.length) {
+					target = result.targets[0];
+				}
+			}
 			player
 				.when({ global: "useCardToTargeted" })
 				.filter(evt => evt.card?.anshu && evt?.targets?.length == evt.getParent()?.triggeredTargets4?.length)
 				.step(async (event, trigger, player) => {
 					delete trigger.card.anshu;
-					const targets = game.filterPlayer(current => current == player || current.isDamaged());
-					let target = player;
-					if (targets.length > 1) {
-						const result = await player
-							.chooseTarget("请选择【五谷丰登】的起点", true, function (card, player, target) {
-								return get.event().targets.includes(target);
-							})
-							.set("targets", targets)
-							.set("ai", target => {
-								return get.attitude(get.player(), target);
-							})
-							.forResult();
-						target = result.targets[0];
-					}
 					trigger.getParent().targets = trigger.getParent().targets.sortBySeat(target);
 					trigger.getParent().triggeredTargets4 = trigger.getParent().triggeredTargets4.sortBySeat(target);
 				});
