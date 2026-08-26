@@ -2410,6 +2410,7 @@ const skills = {
 				i.popup(result.control);
 				list.push(result.control);
 			}
+			list.sort((a, b) => (a === "摸牌" ? -1 : 1));
 			const bool = list[0] != list[1];
 			for (const i of list) {
 				for (const current of targets) {
