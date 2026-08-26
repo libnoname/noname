@@ -8186,6 +8186,7 @@ const skills = {
 		audio: "jsrgchaozheng",
 		logAudio: index => (typeof index === "number" ? "jsrgchaozheng" + index + ".mp3" : ["jsrgchaozheng1.mp3", "jsrgchaozheng2.mp3"]),
 		inherit: "jsrgchaozheng",
+		trigger: { player: "phaseUseBegin" },
 		filter(event, player) {
 			if (!player.hasCards("h")) {
 				return false;
@@ -8401,17 +8402,17 @@ const skills = {
 					return lib.skill["oljulian_gain"].logTarget(null, player).length;
 				},
 				prompt: "是否发动【聚敛】？",
-				prompt2: "获得其他所有群势力角色的各一张牌",
+				prompt2: "获得其他所有群势力角色的各一张手牌",
 				logTarget(event, player) {
 					return game
 						.filterPlayer(current => {
-							return current.group == "qun" && current.countGainableCards(player, "he") > 0 && current != player;
+							return current.group == "qun" && current.hasGainableCards(player, "h") && current != player;
 						})
 						.sortBySeat();
 				},
 				async content(event, trigger, player) {
 					for (const target of event.targets) {
-						await player.gainPlayerCard(target, "he", true);
+						await player.gainPlayerCard({ target, position: "h", forced: true });
 					}
 				},
 			},
