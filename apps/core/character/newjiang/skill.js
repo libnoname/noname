@@ -850,7 +850,7 @@ const skills = {
 			player.removeExtraEquip(skill);
 		},
 		filter(event, player) {
-			if (!event.reason) {
+			if (!event.reason || player.maxHp < 2) {
 				return false;
 			}
 			const reason = event.reason;
