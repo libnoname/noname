@@ -1629,15 +1629,32 @@ const skills = {
 			const names = cards.map(card => get.name(card)).unique();
 			player.addTempSkill(`${event.name}_used`, "roundStart");
 			player.markAuto(`${event.name}_used`, names);
+			//通过重铸额外获得的基本牌牌名是根据你重铸时的手牌决定的
+			const hs = player.getCards("h");
+			//重铸前基本牌牌名
+			const hsnames = hs
+				.filter(card => get.type(card) == "basic")
+				.map(card => card.name)
+				.unique();
+			//如果重铸时手牌中没有桃，那么额外摸的基本牌一定是桃。
+			const bool = hs.some(card => card.name == "tao");
 			await player.recast(cards);
+			//重铸后的基本牌名
+			const namex = player
+				.getCards("h")
+				.filter(card => get.type(card) == "basic")
+				.map(card => card.name)
+				.unique();
+			//那么额外摸的基本牌就是你重铸的牌名
+			const cardx = get.cardPile(card => get.type(card) == "basic" && names.includes(get.name(card)), void 0, "random");
 			if (player.hasHistory("useCard", evt => names.includes(get.name(evt.card)))) {
-				const list = player
-					.getCards("h")
-					.map(card => get.name(card))
-					.unique();
-				const card = get.cardPile(card => get.type(card) == "basic" && !list.includes(get.name(card)), void 0, "random");
+				const list = hs.map(card => get.name(card)).unique();
+				const card = get.cardPile(card => (bool ? get.type(card) == "basic" && !list.includes(get.name(card)) : card.name == "tao"), void 0, "random");
 				if (card) {
-					await player.gain(card, "gain2");
+					await player.gain({ cards: [card], animate: "gain2" });
+				} else if (hsnames.length > 3 && namex.length < 4 && cardx) {
+					//重铸时手牌中有所有基本牌牌名且重铸后手牌中有缺少的基本牌牌名
+					await player.gain({ cards: [cardx], animate: "gain2" });
 				} else {
 					player.chat("碰！");
 				}
