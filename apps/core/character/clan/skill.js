@@ -5569,22 +5569,22 @@ const skills = {
 					return 0;
 				})
 				.set("num", num)
-				//.set("logSkill", "clanxieshu")
 				.forResult();
 		},
-		//popup: false,
 		async content(event, trigger, player) {
-			await player.discard(event.cards);
+			const { cards } = event;
+			await player.discard({ cards });
 			await player.link(true);
-			if (player.getDamagedHp() > 0) {
-				await player.draw(player.getDamagedHp());
-			}
-			if (
-				game.getGlobalHistory("everything", evt => {
-					return evt.name == "dying";
-				}).length
-			) {
-				player.tempBanSkill("clanxieshu");
+			if (player.isDamaged()) {
+				const { cards } = await player.draw(player.getDamagedHp()).forResult();
+				if (
+					cards?.length &&
+					game.getGlobalHistory("everything", evt => {
+						return evt.name == "dying";
+					}).length
+				) {
+					player.tempBanSkill(event.name);
+				}
 			}
 		},
 		ai: { threaten: 3 },
