@@ -617,7 +617,7 @@ const translates = {
 	dcboxuan_rewrite: "博玄·改",
 	dcboxuan_rewrite_info: "你使用手牌结算完毕后，若此牌有目标，你可展示牌堆底的三张牌，若其中有牌与你使用的牌：1.牌名字数相同，你摸一张牌；2.花色相同，你可弃置一名其他角色一张牌；3.类型相同，你可使用一张展示牌。",
 	dcyizheng: "议政",
-	dcyizheng_info: "你的回合开始时，你可与至多体力上限名其他角色各展示一张手牌，若展示的牌类型均相同，你可将这些牌交给一名角色，否则，你弃置这些牌。",
+	dcyizheng_info: "你的回合开始时，你可与任意名其他角色各展示一张手牌，若展示的牌类型均相同，你可将这些牌交给一名角色，否则，你弃置这些牌。",
 	dcguilin: "归林",
 	dcguilin_info: `限定技，出牌阶段或你进入濒死状态时，你可以将体力回复至体力上限，然后失去${get.poptip("dcyizheng")}并修改${get.poptip("dcboxuan")}。`,
 	dc_xiangchong: "新杀向宠",

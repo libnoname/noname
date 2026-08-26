@@ -1860,19 +1860,19 @@ const skills = {
 	},
 	dcyizheng: {
 		audio: 2,
-		trigger: { player: ["phaseBegin"] }, //, "phaseEnd"
+		trigger: { player: ["phaseBegin"] },
 		filter(event, player) {
 			return (
-				player.countCards("h") &&
+				player.hasCards("h") &&
 				game.hasPlayer(target => {
-					return target != player && target.countCards("h");
+					return target != player && target.hasCards("h");
 				})
 			);
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt2(event.skill), [1, player.maxHp], (card, player, target) => {
-					return target != player && target.countCards("h");
+				.chooseTarget(get.prompt2(event.skill), [1, Infinity], (card, player, target) => {
+					return target != player && target.hasCards("h");
 				})
 				.set("ai", target => {
 					if (player.hp == 1) {
