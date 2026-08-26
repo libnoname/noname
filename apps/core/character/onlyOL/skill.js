@@ -3810,11 +3810,11 @@ const skills = {
 			const att = get.attitude(target, player);
 			const card = new lib.element.VCard({ name: "sha", isCard: true });
 			const bool = player.canUse(card, target, false, true);
-			if (!bool && !target.countCards("he")) {
+			if (!bool && !target.hasCards("he")) {
 				return;
 			}
 			const result = await target
-				.chooseToGive(player, `${get.translation(player)}对你发动了【平讨】`, `交给其一张牌并令其本回合使用的下一张【杀】可额外选择一个目标${bool ? "；或点击“取消”令其视为对你使用一张【杀】" : ""}`, "he")
+				.chooseToGive(player, `${get.translation(player)}对你发动了【平讨】`, `交给其一张牌并令其本回合获得一个“讨”标记${bool ? "；或点击“取消”令其视为对你使用一张【杀】" : ""}`, "he")
 				.set("ai", card => {
 					const { give, att } = get.event();
 					if (give) {
@@ -3834,7 +3834,7 @@ const skills = {
 				.forResult();
 			if (result?.bool && result.cards?.length) {
 				player.addTempSkill(event.name + "_sha");
-				player.addMark(event.name + "_sha", 1, false);
+				player.addMark(event.name + "_sha", 1);
 			} else if (player.canUse(card, target, false, true)) {
 				await player.useCard(card, target);
 			}
@@ -3856,27 +3856,27 @@ const skills = {
 		},
 		subSkill: {
 			sha: {
+				audio: "olpingtao",
 				charlotte: true,
 				onremove: true,
 				marktext: "讨",
-				intro: { content: "本回合使用的下一张【杀】可以额外指定#个目标" },
+				intro: { content: "本回合使用的【杀】可弃置一枚“讨”并额外指定一个目标" },
 				trigger: {
 					player: "useCard1",
 				},
 				filter(event, player) {
-					return event.card?.name == "sha" && player.countMark("olpingtao_sha");
+					return event.card?.name == "sha" && player.hasMark("olpingtao_sha");
 				},
 				async cost(event, trigger, player) {
 					const targets = game.filterPlayer(current => {
 							return !trigger.targets?.includes(current) && lib.filter.targetEnabled2(trigger.card, trigger.player, current) && lib.filter.targetInRange(trigger.card, trigger.player, current);
 						}),
 						num = Math.min(player.countMark(event.skill), targets.length);
-					player.clearMark(event.skill, false);
 					if (num <= 0) {
 						return;
 					}
 					event.result = await player
-						.chooseTarget(`平讨：为此杀额外指定至多${get.cnNumber(num, true)}个目标`, [1, num], (card, player, target) => {
+						.chooseTarget(`平讨：弃置一枚“讨”并为此杀额外指定一个目标`, (card, player, target) => {
 							return get.event().targetx.includes(target);
 						})
 						.set("targetx", targets)
@@ -3887,6 +3887,7 @@ const skills = {
 						.forResult();
 				},
 				async content(event, trigger, player) {
+					player.removeMark(event.name, 1);
 					trigger.targets.addArray(event.targets);
 				},
 			},
