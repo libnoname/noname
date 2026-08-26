@@ -21887,6 +21887,7 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
+		manualConfirm: true,
 		async content(event, trigger, player) {
 			const result = await player.chooseToPlayBeatmap(lib.skill.chongxu.beatmaps.randomGet()).forResult();
 			var score = Math.floor(Math.min(5, result.accuracy / 17));
@@ -23952,6 +23953,7 @@ const skills = {
 	tiansuan: {
 		audio: 2,
 		enable: "phaseUse",
+		manualConfirm: true,
 		filter(event, player) {
 			return !player.storage.tiansuan2;
 		},
@@ -24348,6 +24350,7 @@ const skills = {
 	//南华老仙
 	yufeng: {
 		inherit: "yufeng_old",
+		manualConfirm: true,
 		async content(event, trigger, player) {
 			if (_status.connectMode) {
 				event.time = lib.configOL.choose_timeout;
@@ -27386,6 +27389,7 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
+		manualConfirm: true,
 		filter(event, player) {
 			return !player.hasSkill("zhengjing3");
 		},
@@ -29425,6 +29429,7 @@ const skills = {
 		derivation: "qiaosi_map",
 		enable: "phaseUse",
 		usable: 1,
+		manualConfirm: true,
 		async content(event, trigger, player) {
 			event.videoId = lib.status.videoId++;
 			if (player.isUnderControl()) {
