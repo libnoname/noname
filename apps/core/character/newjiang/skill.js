@@ -468,16 +468,7 @@ const skills = {
 				},
 				async content(event, trigger, player) {
 					const skill = "diyin";
-					let num = 0;
-					if (trigger.getl(player)?.es?.length) {
-						num++;
-					}
-					if (trigger.getl(player)?.hs?.length) {
-						num++;
-					}
-					if (num > 0) {
-						player.addMark(skill, num, false);
-					}
+					player.addMark(skill, 1, false);
 				},
 			},
 			damage: {
