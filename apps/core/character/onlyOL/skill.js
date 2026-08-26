@@ -13150,9 +13150,9 @@ const skills = {
 				}
 				return lib.filter.canBeGained(card, player, target);
 			}, "he");
-			if (goon || player.isDamaged()) {
+			if (goon || !player.hasSkill("olzhenlie_effect")) {
 				let result;
-				if (goon && player.isDamaged()) {
+				if (goon && !player.hasSkill("olzhenlie_effect")) {
 					result = await player
 						.chooseControl()
 						.set("choiceList", ["获得" + get.translation(target) + "的一张牌", "于本回合的结束阶段发动一次〖秘计〗"])
@@ -13166,7 +13166,7 @@ const skills = {
 					result = { index: goon ? 0 : 1 };
 				}
 				if (result.index == 0) {
-					await player.gainPlayerCard(target, "he", true);
+					await player.gainPlayerCard({ target, position: "he", forced: true });
 				} else {
 					player.addTempSkill("olzhenlie_effect");
 					player.addMark("olzhenlie_effect", 1, false);
@@ -13178,16 +13178,13 @@ const skills = {
 				audio: "olzhenlie",
 				charlotte: true,
 				onremove: true,
-				intro: { content: "本回合的结束阶段额外发动#次〖秘计〗" },
+				intro: { content: "本回合的结束阶段额外发动一次〖秘计〗" },
 				trigger: { global: "phaseJieshuBegin" },
 				filter(event, player) {
 					if (player.isHealthy()) {
 						return false;
 					}
 					return player.hasMark("olzhenlie_effect");
-				},
-				getIndex(event, player) {
-					return player.countMark("olzhenlie_effect");
 				},
 				forced: true,
 				inherit: "olmiji",
@@ -13202,6 +13199,7 @@ const skills = {
 			return player.isDamaged();
 		},
 		async content(event, trigger, player) {
+			if (!player.isDamaged()) return;
 			let num = player.getDamagedHp();
 			await player.draw(num);
 			if (player.countCards("he") && game.hasPlayer(target => target != player)) {

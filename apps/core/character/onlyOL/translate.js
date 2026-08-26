@@ -336,7 +336,7 @@ const translates = {
 	ol_wangyi: "OL界王异",
 	ol_wangyi_prefix: "OL界",
 	olzhenlie: "贞烈",
-	olzhenlie_info: `当你成为其他角色使用【杀】或普通锦囊牌的目标后，你可以失去1点体力并令此牌对你无效，然后你选择一项：①获得使用者的一张牌；②于本回合的结束阶段发动一次${get.poptip("olmiji")}。`,
+	olzhenlie_info: `当你成为其他角色使用【杀】或普通锦囊牌的目标后，你可以失去1点体力并令此牌对你无效，然后你选择一项：①获得使用者的一张牌；②于本回合的结束阶段发动一次${get.poptip("olmiji")}（每回合限一次）。`,
 	olzhenlie_effect: "秘计",
 	olmiji: "秘计",
 	olmiji_info: "结束阶段，若你已受伤，则你可以摸X张牌，然后你可以将至多X张牌任意分配给其他角色（X为你已损失的体力值）。",
