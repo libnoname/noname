@@ -11489,19 +11489,22 @@ const skills = {
 			gain: {
 				audio: "oljiushi",
 				trigger: {
-					player: ["gainAfter", "phaseEnd"],
+					player: ["gainAfter", "turnOverAfter"],
 				},
 				onremove: true,
+				content(storage, player) {
+					return `已获得了${storage.length}张牌`;
+				},
 				filter(event, player) {
-					if (event.name == "phase") {
-						return true;
+					if (event.name == "turnOver") {
+						return !player.isTurnedOver();
 					}
 					return event.getParent().name.indexOf("reluoying") != -1;
 				},
 				charlotte: true,
 				async cost(event, trigger, player) {
 					event.result = { bool: false };
-					if (trigger.name != "phase") {
+					if (trigger.name != "turnOver") {
 						player.addGaintag(trigger.cards, "reluoying");
 						let bool = player.isTurnedOver() && player != _status.currentPhase && player.hasSkill("oljiushi", null, false);
 						player.markAuto("oljiushi_gain", trigger.cards);
@@ -11510,7 +11513,7 @@ const skills = {
 							event.result = result;
 						}
 					} else {
-						player.unmarkAuto("oljiushi_gain", player.getStorage("oljiushi_gain"));
+						player.setStorage("oljiushi_gain", [], true);
 					}
 				},
 				async content(event, trigger, player) {
