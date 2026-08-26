@@ -3706,14 +3706,14 @@ const skills = {
 						});
 					})
 					?.countCards("h");
-				if (!maxNum) {
+				if (!maxNum || !player.hasDiscardableCards(player, "h")) {
 					return;
 				}
 				const leastDiscardNum = num - maxNum + 1;
 				const prompt = logged ? `是否将手牌弃置至不为最多？` : get.prompt("starminghui");
 				const next = player
-					.chooseToDiscard(prompt, `弃置至少${get.cnNumber(leastDiscardNum)}张手牌，然后你令一名角色回复1点体力`, "allowChooseAll")
-					.set("selectCard", [leastDiscardNum, Infinity])
+					.chooseToDiscard(prompt, `弃置${get.cnNumber(leastDiscardNum)}张手牌，然后你令一名角色回复1点体力`, "allowChooseAll")
+					.set("selectCard", leastDiscardNum)
 					.set(
 						"goon",
 						game.hasPlayer(current => get.recoverEffect(current, get.player(), get.player()))
@@ -3734,7 +3734,7 @@ const skills = {
 					next.set("logSkill", "starminghui");
 				}
 				const result = await next.forResult();
-				if (!result?.bool) {
+				if (!result?.bool || !result.cards?.length) {
 					return;
 				}
 				if (!player.isUnderControl(true) && !player.isOnline()) {
