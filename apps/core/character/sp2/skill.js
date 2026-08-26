@@ -1904,7 +1904,7 @@ const skills = {
 				const num = result.cards.length;
 				const next = player.chooseToDiscard("he", num);
 				next.set("prompt", "荡尘：是否弃置" + get.cnNumber(num) + "张牌并获得后续效果？");
-				next.set("prompt2", "当你于本回合使用基本牌或普通锦囊牌时，可以进行一次判定，若判定的点数为" + num + "的倍数，则此牌额外结算一次");
+				next.set("prompt2", `当你于本回合使用【杀】或普通锦囊牌指定${get.translation(target)}为目标后，可以进行一次判定，若判定的点数为` + num + "的倍数，则此牌额外结算一次");
 				next.set("ai", card => {
 					const { isDiscard } = get.event();
 					if (isDiscard) {
@@ -1929,11 +1929,11 @@ const skills = {
 					})()
 				);
 				result = await next.forResult();
-				if (!result?.bool) {
+				if (!result?.bool || !result.cards?.length) {
 					return;
 				}
 				player.addTempSkill("stardangchen_buff", { player: "phaseUseEnd" });
-				player.addMark("stardangchen_buff", num, false);
+				player.setStorage("stardangchen_buff", [num, target], true);
 			}
 		},
 		subSkill: {
@@ -1941,34 +1941,45 @@ const skills = {
 				charlotte: true,
 				onremove: true,
 				audio: "stardangchen",
-				trigger: { player: "useCard" },
+				trigger: { player: "useCardToPlayered" },
 				filter(event, player) {
-					if (!lib.skill.dcshixian.filterx(event) || !player.hasMark("stardangchen_buff")) {
+					const [num, target] = player.getStorage("stardangchen_buff");
+					if (event.card.name != "sha" && get.type(event.card) != "trick") {
+						return false;
+					}
+					if (typeof num != "number" || !target?.isIn() || event.target != target) {
 						return false;
 					}
 					return true;
 				},
 				check(event, player) {
-					return !get.tag(event.card, "norepeat") ^ (event.targets?.reduce((sum, i) => sum + get.effect(i, event.card, player, player), 0) < 0);
+					return get.effect(event.target, event.card, player, player) > 0;
 				},
 				prompt2(event, player) {
-					return "进行一次判定，若判定结果为" + player.countMark("stardangchen_buff") + "的倍数，则" + get.translation(event.card) + "额外结算一次";
+					const [num, target] = player.getStorage("stardangchen_buff");
+					return "进行一次判定，若判定结果为" + num + "的倍数，则" + get.translation(event.card) + "额外结算一次";
 				},
 				async content(event, trigger, player) {
+					const [num, target] = player.getStorage("stardangchen_buff");
 					const result = await player
 						.judge(card => {
 							const number = get.number(card);
-							return 10 * (0.5 - (number % get.player().countMark("stardangchen_buff") !== 0));
+							return 10 * (0.5 - (number % get.event().num !== 0));
 						})
 						.set("judge2", result => Boolean(result.bool))
+						.set("num", num)
 						.forResult();
 					const { number } = result;
-					if (number % player.countMark("stardangchen_buff") === 0) {
-						trigger.effectCount++;
+					if (number % num === 0) {
+						trigger.getParent().effectCount++;
 						game.log(trigger.card, "额外结算一次");
 					}
 				},
-				intro: { content: "使用基本牌或普通锦囊牌时可以进行一次判定，若判定的点数为#的倍数，则此牌额外结算一次" },
+				intro: {
+					content([num, target], player) {
+						return `使用【杀】或普通锦囊牌指定${get.translation(target)}可以进行一次判定，若判定的点数为${num}的倍数，则此牌额外结算一次`;
+					},
+				},
 			},
 		},
 	},
