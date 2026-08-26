@@ -7244,9 +7244,8 @@ const skills = {
 			let winner;
 			let cards = [];
 			let card;
-
 			result = await player
-				.chooseTarget(get.prompt("clanhuanjia"), "与一名其他角色拼点，赢的角色可以使用一张拼点牌。若此牌未造成过伤害，你获得另一张拼点牌，否则你失去一个技能", (card, player, target) => {
+				.chooseTarget(get.prompt("clanhuanjia"), "与一名其他角色拼点，赢的角色可以使用一张拼点牌。然后若此牌未造成过伤害，你获得另一张拼点牌，否则你失去一个技能", (card, player, target) => {
 					return player.canCompare(target);
 				})
 				.set("ai", target => {
@@ -7265,23 +7264,18 @@ const skills = {
 					return 0;
 				})
 				.forResult();
-
-			if (!result.bool) {
+			if (!result.bool || !result.targets?.length) {
 				return;
 			}
-
 			[target] = result.targets;
 			event.target = target;
 			player.logSkill("clanhuanjia", target);
-
 			result = await player.chooseToCompare(target).forResult();
 			if (result.tie) {
 				return;
 			}
-
 			winner = result.bool ? player : target;
 			event.winner = winner;
-
 			game.getGlobalHistory("cardMove", evt => {
 				if (evt.getParent(3) == event) {
 					cards.addArray(evt.cards.filterInD("d"));
@@ -7291,7 +7285,6 @@ const skills = {
 				return;
 			}
 			event.cards = cards;
-
 			const cardsx = cards.filter(i => get.position(i, true) == "d" && winner.hasUseTarget(i));
 			if (cardsx.length) {
 				result = await winner
@@ -7316,9 +7309,10 @@ const skills = {
 					winner.$gain2(card, false);
 					await game.delayx();
 					await winner.chooseUseTarget(true, card, false);
+				} else {
+					return;
 				}
 			}
-
 			if (
 				game.hasPlayer2(current => {
 					return current.hasHistory("sourceDamage", evt => evt.cards && evt.cards[0] == card);
