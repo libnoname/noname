@@ -4280,7 +4280,7 @@ const skills = {
 		},
 		mod: {
 			playerEnabled(card, player, target) {
-				if (player === _status.currentPhase && get.tag(card, "damage") > 0 && !player.isTempBanned("spfangzong") && player.inRange(target)) {
+				if (player.isPhaseUsing() && get.tag(card, "damage") > 0 && !player.isTempBanned("spfangzong") && player.inRange(target)) {
 					return false;
 				}
 			},
@@ -4526,7 +4526,7 @@ const skills = {
 		},
 		mod: {
 			cardEnabled2(card, player) {
-				if (player === _status.currentPhase && get.itemtype(card) === "card" && card.hasGaintag("zaoli")) {
+				if (player.isPhaseUsing() && get.itemtype(card) === "card" && card.hasGaintag("zaoli")) {
 					return false;
 				}
 			},
