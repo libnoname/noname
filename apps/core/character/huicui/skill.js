@@ -12923,6 +12923,7 @@ const skills = {
 			const cards = event.cards;
 			const target = event.target;
 			player.awakenSkill(event.name);
+			await player.showCards(cards, `${get.translation(player)}发动了〖${get.translation(event.name)}〗`);
 			if (player.hasSkill("dcyingyu", null, null, false)) {
 				player.storage.dcyingyu = true;
 			}
