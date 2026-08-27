@@ -5435,7 +5435,7 @@ const skills = {
 			return get.suit(event.card) === "club";
 		},
 		async content(event, trigger, player) {
-			trigger.directHit.addArray(game.filterPlayer(current => current !== player));
+			trigger.directHit.addArray(game.filterPlayer());
 		},
 		group: "zhangming_damage",
 		subSkill: {
