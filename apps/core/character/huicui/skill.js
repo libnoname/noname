@@ -18433,7 +18433,7 @@ const skills = {
 			} = event;
 			let result;
 			if (player == target) {
-				result = { index: 1 };
+				result = { index: 0 };
 			} else {
 				const str = get.translation(target);
 				result = await player
