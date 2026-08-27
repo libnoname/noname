@@ -18008,7 +18008,7 @@ const skills = {
 	zhiwei: {
 		audio: 2,
 		trigger: {
-			player: ["enterGame", "showCharacterAfter", "phaseBegin"],
+			player: ["enterGame", "showCharacterAfter", "phaseZhunbeiBegin"],
 			global: ["phaseBefore"],
 		},
 		direct: true,
