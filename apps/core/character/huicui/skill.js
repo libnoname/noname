@@ -9644,75 +9644,43 @@ const skills = {
 			return lib.skill.dcyinlu.derivation.some(i => target.hasMark(i));
 		},
 		async content(event, trigger, player) {
-			event.marks = lib.skill.dcyinlu.derivation.slice(0, 3);
-			if (game.countPlayer() > 2) {
-				const result = await player
-					.chooseTarget("引路：令三名角色分别获得〖引路〗标记", true, 3)
-					.set("targetprompt", () => {
+			const marks = lib.skill.dcyinlu.derivation.slice(0, 3);
+			const num = Math.min(3, game.countPlayer());
+			const result = await player
+				.chooseTarget({
+					prompt: `引路：令${get.cnNumber(num)}名角色分别获得〖引路〗标记`,
+					forced: true,
+					selectTarget: num,
+					complexTarget: true,
+					targetprompt: () => {
 						return get.translation(lib.skill.dcyinlu.derivation[ui.selected.targets.length - 1]);
-					})
-					.set("complexSelect", true)
-					.set("ai", target => {
-						const player = _status.event.player;
-						if (ui.selected.targets.length == 2) {
+					},
+					ai(target) {
+						const player = get.player();
+						if (ui.selected.targets?.length == 2) {
 							return get.effect(target, { name: "losehp" }, player, player);
 						}
 						return get.attitude(player, target);
-					})
-					.forResult();
-				if (result.bool) {
-					const targets = result.targets;
-					player.line(targets);
-					for (let i = 0; i < targets.length; i++) {
-						targets[i].addMark(event.marks[i]);
-						if (player != targets[i] && targets[i].identityShown) {
-							if (get.mode() != "identity" || player.identity != "nei") {
-								player.addExpose(0.3);
-							}
-						}
-					}
-				}
-			} else {
-				player.logSkill("dcyinlu", game.players);
-				const list = [];
-				for (const mark of event.marks) {
-					list.push([mark, '<div class="popup text" style="width:calc(100% - 10px);display:inline-block"><div class="skill">【' + get.translation(mark) + "】</div><div>" + lib.translate[mark + "_info"] + "</div></div>"]);
-				}
-				let target = game.filterPlayer(i => i != player)[0];
-				if (!game.hasPlayer(current => current != player)) {
-					target = player;
-				}
-				event.target = target;
-				const result = await player
-					.chooseButton(["引路：令" + get.translation(target) + "获得2枚〖引路〗标记", [list, "textbutton"]])
-					.set("ai", button => {
-						const mark = button.link;
-						if (mark == "dcyinlu_lequan") {
-							return 9;
-						}
-						if (mark == "dcyinlu_zhangqi") {
-							return 10;
-						}
-						return 8;
-					})
-					.set("forced", true)
-					.set("selectButton", 2)
-					.set("forcebutton", true)
-					.forResult();
-				if (result.bool) {
-					const marks = result.links;
-					for (const mark of marks) {
-						target.addMark(mark, 1);
-					}
-					if (player != target && target.identityShown) {
+					},
+				})
+				.forResult();
+			if (result?.bool && result.targets?.length) {
+				const targets = result.targets;
+				player.line(targets);
+				for (let i = 0; i < targets.length; i++) {
+					targets[i].addMark(marks[i]);
+					if (player != targets[i] && targets[i].identityShown) {
 						if (get.mode() != "identity" || player.identity != "nei") {
 							player.addExpose(0.3);
 						}
 					}
-					event.marks.removeArray(marks);
-					for (const mark of event.marks) {
-						player.addMark(mark, 1);
-					}
+				}
+				const target = targets.randomGet();
+				if (num < 3) {
+					target.addMark(marks[2]);
+				}
+				if (num < 2) {
+					target.addMark(marks[1]);
 				}
 			}
 			player.addMark("dcyinlu_yunxiang", 1);
@@ -9812,7 +9780,7 @@ const skills = {
 								})
 								.set("complexTarget", true)
 								.forResult();
-							if (!targetResult.bool) {
+							if (!targetResult?.bool || !targetResult.targets?.length) {
 								return;
 							}
 							const marks = lib.skill.dcyinlu.derivation;
@@ -9870,8 +9838,11 @@ const skills = {
 							const count = targets[0].countMark(mark);
 							player.logSkill("dcyinlu_move", targets, false);
 							player.line2(targets, mark == "dcyinlu_zhangqi" ? "fire" : "green");
-							targets[0].removeMark(mark, count);
 							targets[1].addMark(mark, count);
+							if (mark == "dcyinlu_yunxiang") {
+								targets[1].addMark("dcyinlu_xiang", targets[0].countMark("dcyinlu_xiang"));
+							}
+							targets[0].removeMark(mark, count);
 							if (player != targets[1] && targets[1].identityShown) {
 								if (get.mode() != "identity" || player.identity != "nei") {
 									player.addExpose(0.3);
@@ -9910,8 +9881,11 @@ const skills = {
 							const target = result.targets[0];
 							player.logSkill("dcyinlu_move", target);
 							const count = trigger.player.countMark(mark);
-							trigger.player.removeMark(mark, count, false);
 							target.addMark(mark, count);
+							if (mark == "dcyinlu_yunxiang") {
+								target.addMark("dcyinlu_xiang", trigger.player.countMark("dcyinlu_xiang"));
+							}
+							trigger.player.removeMark(mark, count, false);
 							if (player != target && target.identityShown) {
 								if (get.mode() != "identity" || player.identity != "nei") {
 									player.addExpose(0.3);
