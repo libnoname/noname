@@ -17469,7 +17469,7 @@ const skills = {
 					return evtx.card == evt.card && evtx.getParent(2) == event;
 				})
 			) {
-				player.addTempSkill(event.name + "_rewrite", "phaseUseEnd");
+				player.addTempSkill(event.name + "_rewrite", "phaseAnyAfter");
 			}
 		},
 		subSkill: { rewrite: { charlotte: true } },
