@@ -1649,7 +1649,8 @@ const skills = {
 			const cardx = get.cardPile(card => get.type(card) == "basic" && names.includes(get.name(card)), void 0, "random");
 			if (player.hasHistory("useCard", evt => names.includes(get.name(evt.card)))) {
 				const list = hs.map(card => get.name(card)).unique();
-				const card = get.cardPile(card => (bool ? get.type(card) == "basic" && !list.includes(get.name(card)) : card.name == "tao"), void 0, "random");
+				const tao = get.cardPile(card => card.name == "tao", void 0, "random");
+				const card = !bool && tao ? tao : get.cardPile(card => get.type(card) == "basic" && !list.includes(get.name(card)), void 0, "random");
 				if (card) {
 					await player.gain({ cards: [card], animate: "gain2" });
 				} else if (hsnames.length > 3 && namex.length < 4 && cardx) {
