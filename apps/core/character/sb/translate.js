@@ -144,7 +144,7 @@ const translates = {
 	sblongdan: "龙胆",
 	sblongdan_info: "蓄力技（1/3）。①你可以消耗1点蓄力值，将【杀】当做【闪】或将【闪】当做【杀】使用或打出，然后你摸一张牌。②一名角色的回合结束时，你获得1点蓄力值。",
 	sbjizhu: "积著",
-	sbjizhu_info: `准备阶段开始时，你可以和一名其他角色进行${get.poptip("rule_xieli")}。其的下个结束阶段开始时，若你与其协力成功，则你修改〖龙胆〗直到你的下个回合结束后。`,
+	sbjizhu_info: `准备阶段开始时，你可以和一名其他角色进行${get.poptip("rule_xieli")}。其的下个结束阶段开始时，若你与其协力成功，则你修改${get.poptip("sblongdan")}为${get.poptip("sblongdan_shabi")}直到你的下个回合结束后。`,
 	sblongdan_shabi: "龙胆·改",
 	sblongdan_shabi_info: "蓄力技（1/3）。①你可以消耗1点蓄力值，将一张基本牌当做任意基本牌使用或打出，然后摸一张牌。②一名角色的回合结束时，你获得1点蓄力值。",
 	sb_liubei: "谋刘备",
