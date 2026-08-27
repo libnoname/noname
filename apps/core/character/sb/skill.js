@@ -3660,20 +3660,20 @@ const skills = {
 			},
 			{
 				cost: 4,
-				prompt: () => "获得一名已阵亡角色的武将牌上的所有技能，然后失去〖行殇〗〖放逐〗〖颂威〗",
-				filter: () => game.dead.some(target => target.getStockSkills(true, true).some(i => get.info(i) && !get.info(i).charlotte)),
+				prompt: () => "获得一名已阵亡角色的武将牌上除主公技外的所有技能，然后失去〖行殇〗〖放逐〗〖颂威〗",
+				filter: () => game.dead.some(target => target.getStockSkills(true, true).some(i => get.info(i) && !get.info(i).charlotte && !get.info(i).zhuSkill)),
 				filterTarget: {
 					filterTarget(card, player, target) {
 						if (!target.isDead()) {
 							return false;
 						}
-						return target.getStockSkills(true, true).some(i => get.info(i) && !get.info(i).charlotte);
+						return target.getStockSkills(true, true).some(i => get.info(i) && !get.info(i).charlotte && !get.info(i).zhuSkill);
 					},
 					deadTarget: true,
 				},
 				async content(player, target) {
 					await player.changeSkills(
-						target.getStockSkills(true, true).filter(skill => get.info(skill) && !get.info(skill).charlotte),
+						target.getStockSkills(true, true).filter(skill => get.info(skill) && !get.info(skill).charlotte && !get.info(i).zhuSkill),
 						["sbxingshang", "sbfangzhu", "sbsongwei"]
 					);
 				},
