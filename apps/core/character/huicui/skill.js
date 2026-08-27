@@ -1032,7 +1032,7 @@ const skills = {
 			}
 			if (num < 0) {
 				const target = _status.currentPhase;
-				if (target?.isIn() && target.countGainableCards(player, "he")) {
+				if (target?.isIn() && target.hasGainableCards(player, "he") && player != target) {
 					await player.gainPlayerCard(target, "he", true);
 				}
 			}
