@@ -5774,7 +5774,7 @@ const skills = {
 		locked: false,
 		mod: {
 			targetInRange(card) {
-				if (card.storage && card.storage.dbchongjian) {
+				if (card?.storage?.dbchongjian) {
 					return true;
 				}
 			},
@@ -5827,7 +5827,6 @@ const skills = {
 					viewAs: {
 						name: links[0][2],
 						nature: links[0][3],
-						//isCard:true,
 						storage: { dbchongjian: true },
 					},
 					filterCard: { type: "equip" },
@@ -5857,11 +5856,15 @@ const skills = {
 		},
 		ai: {
 			respondSha: true,
+			unequip_ai: true,
 			skillTagFilter(player, tag, arg) {
-				if (arg === "respond") {
+				if (arg === "respond" || player.group !== "wu") {
 					return false;
 				}
-				return player.group === "wu" && player.hasCard({ type: "equip" }, "hes");
+				if (tag == "unequip_ai") {
+					return arg?.card?.storage?.dbchongjian;
+				}
+				return player.hasCard({ type: "equip" }, "hes");
 			},
 			order(item, player) {
 				if (_status.event.type !== "phase") {
@@ -5892,30 +5895,34 @@ const skills = {
 				charlotte: true,
 				mod: {
 					targetInRange(card) {
-						if (card.storage && card.storage.dbchongjian) {
+						if (card?.storage?.dbchongjian) {
 							return true;
 						}
 					},
 				},
-				trigger: { source: "damageSource" },
+				trigger: {
+					source: "damageSource",
+					player: "useCardToPlayer",
+				},
 				forced: true,
-				logTarget: "player",
-				filter(event, player) {
-					return event.parent.skill === "dbchongjian_backup" && event.card.name === "sha" && event.getParent().name === "sha" && event.player.countGainableCards(player, "e") > 0;
+				logTarget(event, player) {
+					return event.name == "damage" ? event.player : event.target;
+				},
+				filter(event, player, name) {
+					if (!event.card?.name === "sha" || !event.card.storage?.dbchongjian) {
+						return false;
+					}
+					return event.player.hasGainableCards(player, "e") || name == "useCardToPlayer";
 				},
 				async content(event, trigger, player) {
-					await player.gainPlayerCard(trigger.player, "e", true, trigger.num);
-				},
-				ai: {
-					unequip: true,
-					skillTagFilter(player, tag, arg) {
-						if (tag === "unequip") {
-							if (player.group !== "wu" || !arg || !arg.card || !arg.card.storage || !arg.card.storage.dbchongjian) {
-								return false;
-							}
-							return true;
-						}
-					},
+					const target = event.targets[0];
+					if (trigger.name == "damage") {
+						await player.gainPlayerCard({ target, position: "e", forced: true, selectButton: trigger.num });
+					} else {
+						target.addTempSkill("qinggang2");
+						target.storage.qinggang2.add(trigger.card);
+						target.markSkill("qinggang2");
+					}
 				},
 			},
 		},
