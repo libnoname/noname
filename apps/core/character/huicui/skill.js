@@ -13122,7 +13122,7 @@ const skills = {
 			return !event.numFixed;
 		},
 		async content(event, trigger, player) {
-			var num = Math.min(5, 1 + player.countMark("dcliehou"));
+			var num = Math.min(6, 1 + player.countMark("dcliehou"));
 			trigger.num += num;
 			trigger._dcliehou = num;
 		},
