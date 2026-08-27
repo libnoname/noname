@@ -6908,13 +6908,13 @@ const skills = {
 				}
 			},
 		},
-		group: "yizhu_use",
+		group: ["yizhu_use", "yizhu_clear"],
 		subSkill: {
 			use: {
 				audio: "yizhu",
 				trigger: { global: "useCardToPlayer" },
 				filter(event, player) {
-					return player.storage.yizhu && player.storage.yizhu.length && event.player !== player && event.targets.length === 1 && event.cards.filter(card => player.storage.yizhu.includes(card)).length > 0;
+					return player.storage.yizhu?.length && event.player !== player && event.targets.length === 1 && event.cards?.some(card => player.storage.yizhu.includes(card));
 				},
 				logTarget: "player",
 				check(event, player) {
@@ -6930,6 +6930,39 @@ const skills = {
 					const list = trigger.cards.filter(card => player.storage.yizhu.includes(card));
 					player.unmarkAuto("yizhu", list);
 					await game.delayx();
+				},
+			},
+			clear: {
+				forced: true,
+				locked: false,
+				audio: "yizhu",
+				trigger: {
+					global: ["loseAfter", "cardsDiscardAfter", "loseAsyncAfter", "equipAfter"],
+				},
+				filter(event, player) {
+					if (event.name !== "cardsDiscard") {
+						if (event.position !== ui.discardPile) {
+							return false;
+						}
+						if (
+							!game.hasPlayer(current => {
+								const evt = event.getl?.(current);
+								return evt?.cards?.filterInD("od").some(card => (player.storage.yizhu ?? []).includes(card));
+							})
+						) {
+							return false;
+						}
+					} else {
+						const evt = event.getParent();
+						if (evt?.relatedEvent?.name === "useCard") {
+							return false;
+						}
+					}
+					return true;
+				},
+				async content(event, trigger, player) {
+					const cards = trigger.cards.filterInD("od").slice();
+					player.unmarkAuto("yizhu", cards);
 				},
 			},
 		},
@@ -8631,7 +8664,7 @@ const skills = {
 			if (!evt?.cards2 || evt.cards2?.length !== 1 || !target || target === player || !target.isIn()) {
 				return false;
 			}
-			return (get.position(evt.cards2[0]) === "d" || target.getCards("h").includes(evt.cards2[0])) || target.hasCards("he");
+			return get.position(evt.cards2[0]) === "d" || target.getCards("h").includes(evt.cards2[0]) || target.hasCards("he");
 		},
 		logTarget() {
 			return _status.currentPhase;
