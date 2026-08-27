@@ -8112,10 +8112,11 @@ const skills = {
 				if (player.hasMark("dcgonghu_damage")) {
 					return false;
 				}
-				var num = 0;
-				player.getHistory("damage", evt => (num += evt.num));
-				player.getHistory("sourceDamage", evt => (num += evt.num));
-				return num > 1;
+				let num1 = 0,
+					num2 = 0;
+				player.getHistory("damage", evt => (num1 += evt.num));
+				player.getHistory("sourceDamage", evt => (num2 += evt.num));
+				return num1 > 1 || num2 > 1;
 			}
 			if (!_status.currentPhase || _status.currentPhase == player) {
 				return false;
