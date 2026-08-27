@@ -1992,7 +1992,7 @@ const skills = {
 			if (player.getStorage("dcxianniang_used").includes(event.name === "damage" ? "damage" : "lose")) {
 				return false;
 			}
-			if (!game.hasPlayer(current => player !== current && player.countCards("h") <= current.countCards("h") && current.countCards("he") > 0)) {
+			if (!game.hasPlayer(current => player.countCards("h") <= current.countCards("h") && current.hasCards(current == player ? "e" : "he"))) {
 				return false;
 			}
 			if (event.name === "damage") {
@@ -2006,7 +2006,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
-					return player !== target && player.countCards("h") <= target.countCards("h") && target.countCards("he") > 0;
+					return player.countCards("h") <= target.countCards("h") && target.hasCards(target == player ? "e" : "he");
 				})
 				.set("ai", target => {
 					let att = get.attitude(get.player(), target) * -1;
@@ -2024,8 +2024,8 @@ const skills = {
 				targets: [target],
 			} = event;
 			const tag = event.name + "_tag";
-			const position = target != player ? "he" : "h";
-			if (!target.countGainableCards(player, position)) {
+			const position = target != player ? "he" : "e";
+			if (!target.hasGainableCards(player, position)) {
 				return;
 			}
 			const next = player.gainPlayerCard(target, [1, 2], position, true);
@@ -2081,7 +2081,7 @@ const skills = {
 					await next;
 				}
 			}
-			if (player.getRoundHistory("gain", evt => evt.getParent(2).name == event.name).reduce((num, evt) => num + evt.cards.length, 0) > 2) {
+			if (player.getRoundHistory("gain", evt => evt.getParent(2).name == event.name && evt.source != player).reduce((num, evt) => num + evt.cards.length, 0) > 2) {
 				await player.loseHp();
 			}
 		},
