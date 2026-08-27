@@ -3673,7 +3673,7 @@ const skills = {
 				},
 				async content(player, target) {
 					await player.changeSkills(
-						target.getStockSkills(true, true).filter(skill => get.info(skill) && !get.info(skill).charlotte && !get.info(i).zhuSkill),
+						target.getStockSkills(true, true).filter(i => get.info(i) && !get.info(i).charlotte && !get.info(i).zhuSkill),
 						["sbxingshang", "sbfangzhu", "sbsongwei"]
 					);
 				},
