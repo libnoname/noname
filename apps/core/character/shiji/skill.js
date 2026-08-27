@@ -6570,7 +6570,7 @@ const skills = {
 	qingyu: {
 		audio: 3,
 		dutySkill: true,
-		forced: true,
+		locked: true,
 		group: ["qingyu_achieve", "qingyu_fail", "qingyu_defend"],
 		subSkill: {
 			defend: {
