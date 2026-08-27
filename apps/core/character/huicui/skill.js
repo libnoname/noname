@@ -11529,7 +11529,7 @@ const skills = {
 					if (!player.getStorage("dcsilve").includes(event.source)) {
 						return false;
 					}
-					if (!event.player.isIn() || event.player == player) {
+					if (!event.player.isIn() || event.player == player || event.source == event.player) {
 						return false;
 					}
 					if (player.getStorage("dcsilve_robbed").includes(event.player)) {
