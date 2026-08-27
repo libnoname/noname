@@ -2068,9 +2068,9 @@ const skills = {
 			const prompt = `选择其中〇至${get.cnNumber(num)}张牌`;
 			let result;
 			result = await player.choosePlayerCard({ target, position, selectButton: [0, num], forced: true, prompt, visible: true }).forResult();
-			if (!result?.cards?.length) {
-				return;
-			}
+			//if (!result?.cards?.length) {
+				//return;
+			//}
 			const { cards } = result;
 			if (game.hasPlayer(current => current !== target)) {
 				result = await target
