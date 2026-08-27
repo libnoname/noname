@@ -8621,23 +8621,17 @@ const skills = {
 		audio: 2,
 		trigger: {
 			player: "loseAfter",
-			global: "loseAsyncAfter",
+			global: ["loseAsyncAfter", "gainAfter"],
 		},
 		forced: true,
 		usable: 1,
 		filter(event, player) {
-			/* if (event.type !== "discard") {
-				const evt = event.getParent();
-				if (evt.name !== "useCard" && evt.name !== "respond") {
-					return false;
-				}
-			} */
 			const target = _status.currentPhase;
-			const evt = event.getl(player);
+			const evt = event.getl?.(player);
 			if (!evt?.cards2 || evt.cards2?.length !== 1 || !target || target === player || !target.isIn()) {
 				return false;
 			}
-			return get.position(evt.cards2[0]) === "d" || target.countCards("he") < 0;
+			return (get.position(evt.cards2[0]) === "d" || target.getCards("h").includes(evt.cards2[0])) || target.hasCards("he");
 		},
 		logTarget() {
 			return _status.currentPhase;
@@ -8652,12 +8646,12 @@ const skills = {
 			const choiceList = [];
 			const str = get.translation(player);
 			let addIndex = 0;
-			if (target.countGainableCards(player, "he") > 0) {
+			if (target.hasGainableCards(player, "he")) {
 				choiceList.push(`随机交给${str}一张牌`);
 			} else {
 				addIndex++;
 			}
-			if (get.position(card) === "d") {
+			if (get.position(card) === "d" || target.getCards("h").includes(card)) {
 				choiceList.push(`令${str}收回${get.translation(card)}`);
 			}
 			let result;
@@ -8685,7 +8679,11 @@ const skills = {
 			if (result.index + addIndex === 0) {
 				await target.give(target.getGainableCards(player, "he").randomGet(), player);
 			} else {
-				await player.gain(card, "gain2");
+				if (get.position(card) === "d") {
+					await player.gain({ cards: [card], animate: "gain2" });
+				} else {
+					await player.gain({ cards: [card], animate: "giveAuto", source: player, bySelf: true });
+				}
 				if (player.isIn() && player.getCards("h").includes(card) && get.type(card, null, player) === "equip") {
 					await player.chooseUseTarget(card, true, "nopopup");
 				}
@@ -8717,10 +8715,10 @@ const skills = {
 		enable: "phaseUse",
 		filter(event, player) {
 			const list = player.getStorage("muzhen_used");
-			if (!list.includes("gain") && player.hasCard(i => get.type(i) === "equip", "he") && game.hasPlayer(current => current !== player && current.countCards("h") > 0)) {
+			if (!list.includes("gain") && player.hasCard(i => get.type(i) === "equip", "he") && game.hasPlayer(current => current !== player)) {
 				return true;
 			}
-			if (!list.includes("give") && player.countCards("he") > 0 && game.hasPlayer(current => current !== player && current.countCards("e") > 0)) {
+			if (!list.includes("give") && player.hasCards("he") && game.hasPlayer(current => current !== player && current.hasCards("e"))) {
 				return true;
 			}
 			return !list.includes("draw") && game.hasPlayer(current => current !== player);
@@ -8740,10 +8738,10 @@ const skills = {
 					return false;
 				}
 				if (button.link === "gain") {
-					return player.hasCard(i => get.type(i) === "equip", "he") && game.hasPlayer(current => current !== player && current.countCards("h") > 0);
+					return player.hasCard(i => get.type(i) === "equip", "he") && game.hasPlayer(current => current !== player && current.hasCards("h"));
 				}
 				if (button.link === "give") {
-					return player.countCards("he") > 0 && game.hasPlayer(current => current !== player && current.countCards("e") > 0);
+					return player.hasCards("he") && game.hasPlayer(current => current !== player && current.hasCards("e"));
 				}
 				return game.hasPlayer(current => current !== player);
 			},
@@ -8756,13 +8754,13 @@ const skills = {
 							if (target === player) {
 								return false;
 							}
-							return target.countCards("h") > 0 && target.canEquip(ui.selected.cards[0]);
+							return target.canEquip(ui.selected.cards[0]);
 						},
 						(card, player, target) => {
 							if (target === player) {
 								return false;
 							}
-							return target.countCards("e") > 0;
+							return target.hasCards("e");
 						},
 						lib.filter.notMe,
 					][index],
@@ -8775,7 +8773,7 @@ const skills = {
 							if (ui.selected.targets.length) {
 								return ui.selected.targets[0].canEquip(card);
 							}
-							return game.hasPlayer(current => current.countCards("h") > 0 && current.canEquip(card));
+							return game.hasPlayer(current => current.canEquip(card));
 						},
 						true,
 						() => false,
@@ -8843,14 +8841,14 @@ const skills = {
 								player.$giveAuto(cards[0], target);
 								await game.delayx();
 								await target.equip(cards[0]);
-								if (target.countGainableCards(player, "h")) {
+								if (target.hasGainableCards(player, "h")) {
 									await player.gainPlayerCard(target, "h", true);
 								}
 								break;
 							}
 							case "give": {
 								await player.give(cards, target);
-								if (target.countGainableCards(player, "e")) {
+								if (target.hasGainableCards(player, "e")) {
 									await player.gainPlayerCard(target, "e", true);
 								}
 								break;
