@@ -1776,7 +1776,7 @@ const skills = {
 								case "鹤":
 									return true;
 								case "猿":
-									return game.hasPlayer(target => target !== player && target.countGainableCards(player, "e") > 0);
+									return game.hasPlayer(target => target !== player && target.hasGainableCards(player, "e"));
 								default:
 									return false;
 							}
@@ -1811,7 +1811,7 @@ const skills = {
 									break;
 								case "猿": {
 									const { targets } = await player
-										.chooseTarget("五禽戏：获得一名其他角色装备区里的一张装备牌", (card, player, target) => target !== player && target.countGainableCards(player, "e"))
+										.chooseTarget("五禽戏：获得一名其他角色装备区里的一张装备牌", (card, player, target) => target !== player && target.hasGainableCards(player, "e"), true)
 										.set("ai", target => {
 											let player = _status.event.player;
 											let att = get.attitude(player, target);
