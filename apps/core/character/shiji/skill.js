@@ -3742,7 +3742,7 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return player.countCards("he") > 0 && game.hasPlayer(current => lib.skill.spshangyi.filterTarget(null, player, current));
+			return player.hasCards("he") && game.hasPlayer(current => lib.skill.spshangyi.filterTarget(null, player, current));
 		},
 		filterCard: true,
 		position: "he",
@@ -3750,12 +3750,12 @@ const skills = {
 			return 6 - get.value(card);
 		},
 		filterTarget(card, player, target) {
-			return target !== player && target.countCards("h") > 0;
+			return target !== player && target.hasCards("h");
 		},
 		async content(event, trigger, player) {
 			const target = event.target;
 			await target.viewHandcards(player);
-			await player.gainPlayerCard(target, "h", true, "visible");
+			await player.gainPlayerCard({ target, position: "h", forced: true, visible: true });
 		},
 		ai: {
 			order: 6,

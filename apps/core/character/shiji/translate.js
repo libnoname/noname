@@ -294,7 +294,7 @@ const translates = {
 	spjianyi: "俭衣",
 	spjianyi_info: "锁定技。其他角色的回合结束时，若弃牌堆中有于本回合内因弃置而进入弃牌堆的防具牌，则你获得其中一张。",
 	spshangyi: "尚义",
-	spshangyi_info: "出牌阶段限一次。你可以弃置一张牌并选择一名其他角色。其观看你的手牌，然后你观看其手牌并获得其中的一张。",
+	spshangyi_info: "出牌阶段限一次。你可以弃置一张牌并选择一名有手牌的其他角色。其观看你的手牌，然后你观看其手牌并获得其中的一张。",
 	sp_lvfan: "手杀吕范",
 	sp_lvfan_prefix: "手杀",
 	spdiaodu: "调度",
