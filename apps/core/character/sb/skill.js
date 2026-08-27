@@ -2369,7 +2369,7 @@ const skills = {
 			event.result = await player
 				.chooseToDiscard({
 					prompt: get.prompt(event.skill),
-					prompt2: "你可以弃置一张牌，令你本阶段使用牌时，其他角色不能使用或打出与你弃置的牌颜色不同的手牌进行响应。",
+					prompt2: "你可以弃置一张牌，令你本阶段使用牌时，其他角色只能使用或打出与你弃置的牌颜色相同的手牌进行响应。",
 					position: "he",
 					chooseonly: true,
 				})
@@ -2466,7 +2466,7 @@ const skills = {
 					});
 				},
 				intro: {
-					content: "所有其他角色不能使用或打出不为$的手牌响应你使用的牌",
+					content: "所有其他角色只能使用或打出$的手牌响应你使用的牌",
 				},
 			},
 			block: {
