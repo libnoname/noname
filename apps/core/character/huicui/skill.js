@@ -16225,7 +16225,8 @@ const skills = {
 		trigger: { global: "phaseJieshuBegin" },
 		direct: true,
 		filter(event, player) {
-			return player != event.player && event.player.isIn() && player.hasSkill("mingluan_mark") && player.countCards("he") > 0;
+			const bool = game.getGlobalHistory("changeHp", evt => evt.getParent().name == "recover" && evt.changedHp > 0).length;
+			return player != event.player && event.player.isIn() && bool && player.hasCards("he");
 		},
 		async content(event, trigger, player) {
 			let he = player.getCards("he"),
@@ -16282,26 +16283,6 @@ const skills = {
 					await player.draw(Math.min(num, num2));
 				}
 			}
-		},
-		group: "mingluan_count",
-		subSkill: {
-			count: {
-				charlotte: true,
-				trigger: { global: "recoverEnd" },
-				silent: true,
-				popup: false,
-				firstDo: true,
-				filter(event, player) {
-					var current = _status.currentPhase;
-					return current && current != player && !player.hasSkill("mingluan_mark");
-				},
-				async content(event, trigger, player) {
-					player.addTempSkill("mingluan_mark");
-				},
-			},
-			mark: {
-				charlotte: true,
-			},
 		},
 	},
 	//赵嫣
