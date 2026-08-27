@@ -46454,7 +46454,7 @@ const skills = {
 					forced: true,
 				});
 			} else {
-				const card = get.cardPile(card => get.type2(card) === type);
+				const card = get.cardPile(card => get.type2(card) === type, void 0, "random");
 				if (!card) {
 					return;
 				}
