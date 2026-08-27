@@ -8221,7 +8221,7 @@ const skills = {
 				},
 				async content(event, trigger, player) {
 					game.log(player, "和", trigger.player, "的协力成功");
-					player.addTempSkill("sblongdan_mark", player.hasSkill("jdlongdan", null, null, false) ? { player: "phaseAfter" } : { player: "phaseJieshuBegin" });
+					player.addTempSkill("sblongdan_mark", { player: "phaseAfter" });
 					await game.delayx();
 				},
 			},
