@@ -3456,7 +3456,7 @@ const skills = {
 							player.addTempSkill(skill);
 							await player.modedDiscard(player.getCards("h", card => get.suit(card, player) != choice));
 						} else {
-							const card = get.cardPile2(card => {
+							const card = get.cardPile(card => {
 								return get.suit(card) == choice;
 							});
 							if (card) {
