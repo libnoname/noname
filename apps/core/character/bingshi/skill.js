@@ -7684,7 +7684,7 @@ const skills = {
 			threaten: 2,
 			result: {
 				player(player) {
-					if (player.getHp() <= 2) {
+					if (player.getDamagedHp() >= 2) {
 						return 1;
 					}
 					return -1;
