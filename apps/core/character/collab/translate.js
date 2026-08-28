@@ -152,7 +152,7 @@ const translates = {
 	dc_sunce: "经典孙策",
 	dc_sunce_prefix: "经典",
 	dcshuangbi: "双璧",
-	dcshuangbi_info: "出牌阶段限一次，你可以选择一项：①摸X张牌，本回合手牌上限+X；②弃置至多X张牌，随机对其他角色造成等量火焰伤害；③视为使用X张火【杀】或【火攻】。（X为场上存活角色数）",
+	dcshuangbi_info: "出牌阶段限一次，你可以选择一项：①摸X张牌，本回合手牌上限+X；②弃置至多X张牌，随机对其他角色造成等量火焰伤害；③视为使用至多X张火【杀】或【火攻】（X为场上存活角色数）。",
 	dc_zhaoyun: "经典神赵云",
 	dc_zhaoyun_prefix: "经典神",
 	dclonghun: "龙魂",

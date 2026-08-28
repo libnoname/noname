@@ -8041,7 +8041,7 @@ const skills = {
 			var num = game.countPlayer();
 			var result = await player
 				.chooseControl()
-				.set("choiceList", ["摸" + get.cnNumber(num) + "张牌，本回合手牌上限+" + parseFloat(num), "弃置至多" + get.cnNumber(num) + "张牌，随机对其他角色造成等量火焰伤害", "视为使用" + get.cnNumber(num) + "张火【杀】或【火攻】"])
+				.set("choiceList", ["摸" + get.cnNumber(num) + "张牌，本回合手牌上限+" + parseFloat(num), "弃置至多" + get.cnNumber(num) + "张牌，随机对其他角色造成等量火焰伤害", "视为使用至多" + get.cnNumber(num) + "张火【杀】或【火攻】"])
 				.set("ai", () => {
 					var player = _status.event.player,
 						card = { name: "sha", nature: "fire" };
@@ -8089,10 +8089,10 @@ const skills = {
 							list.push(["锦囊", "", "huogong"]);
 						}
 						var result2 = await player
-							.chooseButton(["双壁：请选择你要使用的牌", [list, "vcard"]], true)
+							.chooseButton(["双壁：请选择你要使用的牌", [list, "vcard"]])
 							.set("ai", button => (button.link[2] == "sha" ? 1 : 0))
 							.forResult();
-						if (result2.bool) {
+						if (result2?.bool && result2.links?.length) {
 							var card = {
 								name: result2.links[0][2],
 								nature: result2.links[0][3],
