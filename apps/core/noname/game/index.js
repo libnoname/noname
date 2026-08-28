@@ -27,6 +27,15 @@ export class Game {
 	onlineID = null;
 	onlineKey = null;
 	/**
+	 * 音效池
+	 * @type { HTMLAudioElement[] | null } 
+	 */
+	audioPool = null;
+	/** 
+	 * 音效池大小
+	 */
+	audioPoolSize = 32;
+	/**
 	 * @type {Player[]}
 	 */
 	players = [];
@@ -2501,7 +2510,7 @@ export class Game {
 			return;
 		}
 
-		const audio = document.createElement("audio");
+		const audio = this.acquireAudio();
 		audio.volume = lib.config.volumn_audio / 8;
 		audio.autoplay = true;
 
@@ -2526,14 +2535,14 @@ export class Game {
 			onPlay(ev);
 		};
 		audio.onended = ev => {
-			audio.remove();
+			audio._busy = false;
 			if (_status.video || game.online) {
 				return;
 			}
 			onEnded(ev);
 		};
 		audio.onerror = ev => {
-			audio.remove();
+			audio._busy = false;
 			if (_status.video || game.online) {
 				return;
 			}
@@ -2553,10 +2562,54 @@ export class Game {
 			}
 
 			audio.src = resolvedPath;
-			ui.window.appendChild(audio);
 		});
 
 		return audio;
+	}
+	/**
+	 * 初始化音效池
+	 */
+	initAudioPool() {
+		if (this.audioPool) {
+			return this.audioPool;
+		}
+		this.audioPool = [];
+		for (let i = 0; i < this.audioPoolSize; i++) {
+			const audio = document.createElement("audio");
+			audio.preload = "auto";
+			audio.setAttribute("playsinline", "");
+			audio.setAttribute("webkit-playsinline", "");
+			if (typeof ui !== "undefined" && ui.window) {
+				ui.window.appendChild(audio);
+			} else {
+				document.body.appendChild(audio);
+			}
+			this.audioPool.push(audio);
+		}
+		return this.audioPool;
+	}
+	/**
+	 * 取一个空闲 audio
+	 * @returns { HTMLAudioElement }
+	 */
+	acquireAudio() {
+		const pool = this.initAudioPool();
+		let free = pool.find(a => !a._busy);
+		if (!free) {
+			free = pool.shift();
+			if (!free) return new HTMLAudioElement();
+			pool.push(free);
+		}
+		free.oncanplay = null;
+		free.onplay = null;
+		free.onended = null;
+		free.onerror = null;
+		try {
+            free.pause();
+            free.currentTime = 0;
+        } catch (e) { }
+		free._busy = true;
+		return free;
 	}
 	/**
 	 * @param { object } options
