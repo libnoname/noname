@@ -6203,12 +6203,12 @@ const skills = {
 	//卫青
 	dcbeijin: {
 		enable: "phaseUse",
+		manualConfirm: true,
 		async content(event, trigger, player) {
 			player.addSkill("dcbeijin_effect");
+			player.addSkill("dcbeijin_effect2");
 			player.addTempSkill("dcbeijin_buff");
-			await player.draw({
-				gaintag: ["dcbeijin_effect"],
-			});
+			await player.draw({ gaintag: ["dcbeijin_effect"] });
 		},
 		ai: {
 			order: 20,
@@ -6273,9 +6273,22 @@ const skills = {
 					}
 				},
 			},
+			//这是一个永久效果
+			effect2: {
+				forced: true,
+				popup: false,
+				charlotte: true,
+				trigger: { player: "dcbeijinBegin" },
+				filter(event, player) {
+					return player.hasCard(card => card.hasGaintag("dcbeijin_effect"));
+				},
+				async content(event, trigger, player) {
+					await player.loseHp();
+				},
+			},
 			buff: {
 				charlotte: true,
-				trigger: { player: ["useCard", "dcbeijinBegin"] },
+				trigger: { player: ["useCard"] },
 				forced: true,
 				popup: false,
 				async content(event, trigger, player) {
@@ -6285,7 +6298,7 @@ const skills = {
 					}
 				},
 				mark: true,
-				intro: { content: "本回合下次使用牌时或发动【北进】时，若手牌中有因【北进】得到的牌，你失去1点体力" },
+				intro: { content: "本回合下次使用牌时，若手牌中有因【北进】得到的牌，你失去1点体力" },
 			},
 		},
 	},
