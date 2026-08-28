@@ -3012,7 +3012,7 @@ const skills = {
 						} else {
 							player.storage.sbxianzhen_damaged++;
 						}
-						if (player.storage.sbxianzhen_damaged <= 2) {
+						if (player.storage.sbxianzhen_damaged <= 1) {
 							await target.damage();
 							await game.delayx();
 						}
