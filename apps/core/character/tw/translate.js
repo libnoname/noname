@@ -155,7 +155,7 @@ const translates = {
 	twyingjia: "迎驾",
 	twyingjia_info: "一名角色的回合结束时，若你本回合内使用过两张或更多的同名锦囊牌，则你可弃置一张手牌并令一名角色进行一个额外回合。",
 	dz_mantianguohai: "瞒天过海",
-	dz_mantianguohai_info: "此牌不计入拥有者的手牌上限。出牌阶段，对一至两名区域内有牌的其他角色使用。你获得目标角色一张牌，然后依次交给每名目标角色各一张牌。",
+	dz_mantianguohai_info: "此牌不计入拥有者的手牌上限。出牌阶段，对一至两名区域内有牌的其他角色使用。你获得目标角色区域内的一张牌，然后依次交给每名目标角色各一张牌。",
 	jiachong: "TW贾充",
 	jiachong_prefix: "TW",
 	beini: "悖逆",
