@@ -8252,7 +8252,7 @@ const skills = {
 			});
 			if (list.length) {
 				var result = await player
-					.chooseButton(["法器：视为使用一张普通锦囊牌", [list, "vcard"]], true)
+					.chooseButton(["法器：视为使用一张普通锦囊牌", [list, "vcard"]])
 					.set("ai", button => {
 						return get.player().getUseValue({ name: button.link[2] });
 					})
