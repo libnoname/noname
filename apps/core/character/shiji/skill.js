@@ -1776,7 +1776,7 @@ const skills = {
 								case "鹤":
 									return true;
 								case "猿":
-									return game.hasPlayer(target => target !== player && target.countGainableCards(player, "e") > 0);
+									return game.hasPlayer(target => target !== player && target.hasGainableCards(player, "e"));
 								default:
 									return false;
 							}
@@ -1811,7 +1811,7 @@ const skills = {
 									break;
 								case "猿": {
 									const { targets } = await player
-										.chooseTarget("五禽戏：获得一名其他角色装备区里的一张装备牌", (card, player, target) => target !== player && target.countGainableCards(player, "e"))
+										.chooseTarget("五禽戏：获得一名其他角色装备区里的一张装备牌", (card, player, target) => target !== player && target.hasGainableCards(player, "e"), true)
 										.set("ai", target => {
 											let player = _status.event.player;
 											let att = get.attitude(player, target);
@@ -3742,7 +3742,7 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return player.countCards("he") > 0 && game.hasPlayer(current => lib.skill.spshangyi.filterTarget(null, player, current));
+			return player.hasCards("he") && game.hasPlayer(current => lib.skill.spshangyi.filterTarget(null, player, current));
 		},
 		filterCard: true,
 		position: "he",
@@ -3750,12 +3750,12 @@ const skills = {
 			return 6 - get.value(card);
 		},
 		filterTarget(card, player, target) {
-			return target !== player && target.countCards("h") > 0;
+			return target !== player && target.hasCards("h");
 		},
 		async content(event, trigger, player) {
 			const target = event.target;
 			await target.viewHandcards(player);
-			await player.gainPlayerCard(target, "h", true, "visible");
+			await player.gainPlayerCard({ target, position: "h", forced: true, visible: true });
 		},
 		ai: {
 			order: 6,
@@ -4280,7 +4280,7 @@ const skills = {
 		},
 		mod: {
 			playerEnabled(card, player, target) {
-				if (player === _status.currentPhase && get.tag(card, "damage") > 0 && !player.isTempBanned("spfangzong") && player.inRange(target)) {
+				if (player.isPhaseUsing() && get.tag(card, "damage") > 0 && !player.isTempBanned("spfangzong") && player.inRange(target)) {
 					return false;
 				}
 			},
@@ -4526,7 +4526,7 @@ const skills = {
 		},
 		mod: {
 			cardEnabled2(card, player) {
-				if (player === _status.currentPhase && get.itemtype(card) === "card" && card.hasGaintag("zaoli")) {
+				if (player.isPhaseUsing() && get.itemtype(card) === "card" && card.hasGaintag("zaoli")) {
 					return false;
 				}
 			},
@@ -5435,7 +5435,7 @@ const skills = {
 			return get.suit(event.card) === "club";
 		},
 		async content(event, trigger, player) {
-			trigger.directHit.addArray(game.filterPlayer(current => current !== player));
+			trigger.directHit.addArray(game.filterPlayer());
 		},
 		group: "zhangming_damage",
 		subSkill: {
@@ -5774,7 +5774,7 @@ const skills = {
 		locked: false,
 		mod: {
 			targetInRange(card) {
-				if (card.storage && card.storage.dbchongjian) {
+				if (card?.storage?.dbchongjian) {
 					return true;
 				}
 			},
@@ -5827,7 +5827,6 @@ const skills = {
 					viewAs: {
 						name: links[0][2],
 						nature: links[0][3],
-						//isCard:true,
 						storage: { dbchongjian: true },
 					},
 					filterCard: { type: "equip" },
@@ -5857,11 +5856,15 @@ const skills = {
 		},
 		ai: {
 			respondSha: true,
+			unequip_ai: true,
 			skillTagFilter(player, tag, arg) {
-				if (arg === "respond") {
+				if (arg === "respond" || player.group !== "wu") {
 					return false;
 				}
-				return player.group === "wu" && player.hasCard({ type: "equip" }, "hes");
+				if (tag == "unequip_ai") {
+					return arg?.card?.storage?.dbchongjian;
+				}
+				return player.hasCard({ type: "equip" }, "hes");
 			},
 			order(item, player) {
 				if (_status.event.type !== "phase") {
@@ -5892,30 +5895,34 @@ const skills = {
 				charlotte: true,
 				mod: {
 					targetInRange(card) {
-						if (card.storage && card.storage.dbchongjian) {
+						if (card?.storage?.dbchongjian) {
 							return true;
 						}
 					},
 				},
-				trigger: { source: "damageSource" },
+				trigger: {
+					source: "damageSource",
+					player: "useCardToPlayer",
+				},
 				forced: true,
-				logTarget: "player",
-				filter(event, player) {
-					return event.parent.skill === "dbchongjian_backup" && event.card.name === "sha" && event.getParent().name === "sha" && event.player.countGainableCards(player, "e") > 0;
+				logTarget(event, player) {
+					return event.name == "damage" ? event.player : event.target;
+				},
+				filter(event, player, name) {
+					if (!event.card?.name === "sha" || !event.card.storage?.dbchongjian) {
+						return false;
+					}
+					return event.player.hasGainableCards(player, "e") || name == "useCardToPlayer";
 				},
 				async content(event, trigger, player) {
-					await player.gainPlayerCard(trigger.player, "e", true, trigger.num);
-				},
-				ai: {
-					unequip: true,
-					skillTagFilter(player, tag, arg) {
-						if (tag === "unequip") {
-							if (player.group !== "wu" || !arg || !arg.card || !arg.card.storage || !arg.card.storage.dbchongjian) {
-								return false;
-							}
-							return true;
-						}
-					},
+					const target = event.targets[0];
+					if (trigger.name == "damage") {
+						await player.gainPlayerCard({ target, position: "e", forced: true, selectButton: trigger.num });
+					} else {
+						target.addTempSkill("qinggang2");
+						target.storage.qinggang2.add(trigger.card);
+						target.markSkill("qinggang2");
+					}
 				},
 			},
 		},
@@ -6570,7 +6577,7 @@ const skills = {
 	qingyu: {
 		audio: 3,
 		dutySkill: true,
-		locked: false,
+		locked: true,
 		group: ["qingyu_achieve", "qingyu_fail", "qingyu_defend"],
 		subSkill: {
 			defend: {
@@ -6908,13 +6915,13 @@ const skills = {
 				}
 			},
 		},
-		group: "yizhu_use",
+		group: ["yizhu_use", "yizhu_clear"],
 		subSkill: {
 			use: {
 				audio: "yizhu",
 				trigger: { global: "useCardToPlayer" },
 				filter(event, player) {
-					return player.storage.yizhu && player.storage.yizhu.length && event.player !== player && event.targets.length === 1 && event.cards.filter(card => player.storage.yizhu.includes(card)).length > 0;
+					return player.storage.yizhu?.length && event.player !== player && event.targets.length === 1 && event.cards?.some(card => player.storage.yizhu.includes(card));
 				},
 				logTarget: "player",
 				check(event, player) {
@@ -6930,6 +6937,39 @@ const skills = {
 					const list = trigger.cards.filter(card => player.storage.yizhu.includes(card));
 					player.unmarkAuto("yizhu", list);
 					await game.delayx();
+				},
+			},
+			clear: {
+				forced: true,
+				locked: false,
+				audio: "yizhu",
+				trigger: {
+					global: ["loseAfter", "cardsDiscardAfter", "loseAsyncAfter", "equipAfter"],
+				},
+				filter(event, player) {
+					if (event.name !== "cardsDiscard") {
+						if (event.position !== ui.discardPile) {
+							return false;
+						}
+						if (
+							!game.hasPlayer(current => {
+								const evt = event.getl?.(current);
+								return evt?.cards?.filterInD("od").some(card => (player.storage.yizhu ?? []).includes(card));
+							})
+						) {
+							return false;
+						}
+					} else {
+						const evt = event.getParent();
+						if (evt?.relatedEvent?.name === "useCard") {
+							return false;
+						}
+					}
+					return true;
+				},
+				async content(event, trigger, player) {
+					const cards = trigger.cards.filterInD("od").slice();
+					player.unmarkAuto("yizhu", cards);
 				},
 			},
 		},
@@ -8621,23 +8661,17 @@ const skills = {
 		audio: 2,
 		trigger: {
 			player: "loseAfter",
-			global: "loseAsyncAfter",
+			global: ["loseAsyncAfter", "gainAfter"],
 		},
 		forced: true,
 		usable: 1,
 		filter(event, player) {
-			/* if (event.type !== "discard") {
-				const evt = event.getParent();
-				if (evt.name !== "useCard" && evt.name !== "respond") {
-					return false;
-				}
-			} */
 			const target = _status.currentPhase;
-			const evt = event.getl(player);
+			const evt = event.getl?.(player);
 			if (!evt?.cards2 || evt.cards2?.length !== 1 || !target || target === player || !target.isIn()) {
 				return false;
 			}
-			return get.position(evt.cards2[0]) === "d" || target.countCards("he") < 0;
+			return get.position(evt.cards2[0]) === "d" || target.getCards("h").includes(evt.cards2[0]) || target.hasCards("he");
 		},
 		logTarget() {
 			return _status.currentPhase;
@@ -8652,12 +8686,12 @@ const skills = {
 			const choiceList = [];
 			const str = get.translation(player);
 			let addIndex = 0;
-			if (target.countGainableCards(player, "he") > 0) {
+			if (target.hasGainableCards(player, "he")) {
 				choiceList.push(`随机交给${str}一张牌`);
 			} else {
 				addIndex++;
 			}
-			if (get.position(card) === "d") {
+			if (get.position(card) === "d" || target.getCards("h").includes(card)) {
 				choiceList.push(`令${str}收回${get.translation(card)}`);
 			}
 			let result;
@@ -8685,7 +8719,11 @@ const skills = {
 			if (result.index + addIndex === 0) {
 				await target.give(target.getGainableCards(player, "he").randomGet(), player);
 			} else {
-				await player.gain(card, "gain2");
+				if (get.position(card) === "d") {
+					await player.gain({ cards: [card], animate: "gain2" });
+				} else {
+					await player.gain({ cards: [card], animate: "giveAuto", source: player, bySelf: true });
+				}
 				if (player.isIn() && player.getCards("h").includes(card) && get.type(card, null, player) === "equip") {
 					await player.chooseUseTarget(card, true, "nopopup");
 				}
@@ -8717,10 +8755,10 @@ const skills = {
 		enable: "phaseUse",
 		filter(event, player) {
 			const list = player.getStorage("muzhen_used");
-			if (!list.includes("gain") && player.hasCard(i => get.type(i) === "equip", "he") && game.hasPlayer(current => current !== player && current.countCards("h") > 0)) {
+			if (!list.includes("gain") && player.hasCard(i => get.type(i) === "equip", "he") && game.hasPlayer(current => current !== player)) {
 				return true;
 			}
-			if (!list.includes("give") && player.countCards("he") > 0 && game.hasPlayer(current => current !== player && current.countCards("e") > 0)) {
+			if (!list.includes("give") && player.hasCards("he") && game.hasPlayer(current => current !== player && current.hasCards("e"))) {
 				return true;
 			}
 			return !list.includes("draw") && game.hasPlayer(current => current !== player);
@@ -8740,10 +8778,10 @@ const skills = {
 					return false;
 				}
 				if (button.link === "gain") {
-					return player.hasCard(i => get.type(i) === "equip", "he") && game.hasPlayer(current => current !== player && current.countCards("h") > 0);
+					return player.hasCard(i => get.type(i) === "equip", "he") && game.hasPlayer(current => current !== player && current.hasCards("h"));
 				}
 				if (button.link === "give") {
-					return player.countCards("he") > 0 && game.hasPlayer(current => current !== player && current.countCards("e") > 0);
+					return player.hasCards("he") && game.hasPlayer(current => current !== player && current.hasCards("e"));
 				}
 				return game.hasPlayer(current => current !== player);
 			},
@@ -8756,13 +8794,13 @@ const skills = {
 							if (target === player) {
 								return false;
 							}
-							return target.countCards("h") > 0 && target.canEquip(ui.selected.cards[0]);
+							return target.canEquip(ui.selected.cards[0]);
 						},
 						(card, player, target) => {
 							if (target === player) {
 								return false;
 							}
-							return target.countCards("e") > 0;
+							return target.hasCards("e");
 						},
 						lib.filter.notMe,
 					][index],
@@ -8775,7 +8813,7 @@ const skills = {
 							if (ui.selected.targets.length) {
 								return ui.selected.targets[0].canEquip(card);
 							}
-							return game.hasPlayer(current => current.countCards("h") > 0 && current.canEquip(card));
+							return game.hasPlayer(current => current.canEquip(card));
 						},
 						true,
 						() => false,
@@ -8843,14 +8881,14 @@ const skills = {
 								player.$giveAuto(cards[0], target);
 								await game.delayx();
 								await target.equip(cards[0]);
-								if (target.countGainableCards(player, "h")) {
+								if (target.hasGainableCards(player, "h")) {
 									await player.gainPlayerCard(target, "h", true);
 								}
 								break;
 							}
 							case "give": {
 								await player.give(cards, target);
-								if (target.countGainableCards(player, "e")) {
+								if (target.hasGainableCards(player, "e")) {
 									await player.gainPlayerCard(target, "e", true);
 								}
 								break;

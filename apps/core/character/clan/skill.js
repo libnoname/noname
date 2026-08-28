@@ -1629,15 +1629,33 @@ const skills = {
 			const names = cards.map(card => get.name(card)).unique();
 			player.addTempSkill(`${event.name}_used`, "roundStart");
 			player.markAuto(`${event.name}_used`, names);
+			//通过重铸额外获得的基本牌牌名是根据你重铸时的手牌决定的
+			const hs = player.getCards("h");
+			//重铸前基本牌牌名
+			const hsnames = hs
+				.filter(card => get.type(card) == "basic")
+				.map(card => card.name)
+				.unique();
+			//如果重铸时手牌中没有桃，那么额外摸的基本牌一定是桃。
+			const bool = hs.some(card => card.name == "tao");
 			await player.recast(cards);
+			//重铸后的基本牌名
+			const namex = player
+				.getCards("h")
+				.filter(card => get.type(card) == "basic")
+				.map(card => card.name)
+				.unique();
+			//那么额外摸的基本牌就是你重铸的牌名
+			const cardx = get.cardPile(card => get.type(card) == "basic" && names.includes(get.name(card)), void 0, "random");
 			if (player.hasHistory("useCard", evt => names.includes(get.name(evt.card)))) {
-				const list = player
-					.getCards("h")
-					.map(card => get.name(card))
-					.unique();
-				const card = get.cardPile(card => get.type(card) == "basic" && !list.includes(get.name(card)), void 0, "random");
+				const list = hs.map(card => get.name(card)).unique();
+				const tao = get.cardPile(card => card.name == "tao", void 0, "random");
+				const card = !bool && tao ? tao : get.cardPile(card => get.type(card) == "basic" && !list.includes(get.name(card)), void 0, "random");
 				if (card) {
-					await player.gain(card, "gain2");
+					await player.gain({ cards: [card], animate: "gain2" });
+				} else if (hsnames.length > 3 && namex.length < 4 && cardx) {
+					//重铸时手牌中有所有基本牌牌名且重铸后手牌中有缺少的基本牌牌名
+					await player.gain({ cards: [cardx], animate: "gain2" });
 				} else {
 					player.chat("碰！");
 				}
@@ -4523,16 +4541,6 @@ const skills = {
 					cards.addArray(evt.cards.filter(card => get.position(card, true) == "d"));
 				});
 				event.set("clanshengmo_cards", cards);
-				/*
-				const numbers = cards.map(card => get.number(card, false)).unique();
-				const [min, max] = [Math.min(...numbers), Math.max(...numbers)];
-				event.set(
-					"clanshengmo_cards",
-					cards.filter(card => {
-						const num = get.number(card, false);
-						return num > min && num < max;
-					})
-				);*/
 			}
 		},
 		async content(event, trigger, player) {
@@ -4552,6 +4560,7 @@ const skills = {
 				.forResult();
 			if (links?.length) {
 				await player.gain(links, "gain2");
+				player.addSkill("clanshengmo_num");
 				player.markAuto("clanshengmo_num", links.map(card => get.number(card, false)).toUniqued());
 				const numbers = cards.map(card => get.number(card, false)).unique();
 				const [min, max] = [Math.min(...numbers), Math.max(...numbers)],
@@ -4611,6 +4620,24 @@ const skills = {
 			content: "已以此法使用过$",
 		},
 		subSkill: {
+			num: {
+				charlotte: true,
+				onremove: true,
+				intro: {
+					markcount(storage, player) {
+						const numbers = Array.from({ length: 13 }, (_, i) => i + 1).removeArray(storage);
+						return numbers.length;
+					},
+					content(storage, player) {
+						const numbers = Array.from({ length: 13 }, (_, i) => i + 1).removeArray(storage);
+						if (numbers.length) {
+							return `剩余点数：${numbers.join("、")}`;
+						} else {
+							return "无剩余点数";
+						}
+					},
+				},
+			},
 			backup: {
 				async precontent(event, trigger, player) {
 					event.result.card.storage.clanshengmo = true;
@@ -5059,7 +5086,7 @@ const skills = {
 			const str = get.translation(player);
 			const result = await target
 				.chooseControl()
-				.set("choiceList", [str + "下次对你使用【杀】后，其视为对你使用任意普通锦囊牌", str + "下次对你使用任意普通锦囊牌后，其视为对你使用【杀】"])
+				.set("choiceList", [str + "下次对你使用【杀】后，其可以视为对你使用任意普通锦囊牌", str + "下次对你使用任意普通锦囊牌后，其可以视为对你使用【杀】"])
 				.set("ai", function () {
 					const target = _status.event.player;
 					const player = _status.event.target;
@@ -5086,7 +5113,9 @@ const skills = {
 				.forResult();
 
 			player.addSkill("clanqiuxin_effect");
-			player.markAuto("clanqiuxin_effect", [[target, result.index]]);
+			if (!player.getStorage("clanqiuxin_effect").some(list => list[0] == target && list[1] == result.index)) {
+				player.markAuto("clanqiuxin_effect", [[target, result.index]]);
+			}
 		},
 		ai: {
 			order: 9,
@@ -5133,7 +5162,7 @@ const skills = {
 							if (list[1]) {
 								strx.reverse();
 							}
-							infos.add("对" + get.translation(list[0]) + "使用" + strx[0] + "后，视为对其使用" + strx[1]);
+							infos.add("<li>对" + get.translation(list[0]) + "使用" + strx[0] + "后，可以视为对其使用" + strx[1]);
 						}
 						return infos.join("<br>");
 					},
@@ -5167,7 +5196,6 @@ const skills = {
 					}
 					player.unmarkAuto("clanqiuxin_effect", matchedList);
 					const targets = matchedList.map(item => item[0]);
-
 					for (const target of targets) {
 						event.target = target;
 						const options = [];
@@ -5189,8 +5217,7 @@ const skills = {
 						}
 						const result = await player
 							.chooseButton({
-								forced: true,
-								createDialog: ["求心：视为对" + get.translation(target) + "使用一张牌", [options, "vcard"]],
+								createDialog: ["求心：你可以视为对" + get.translation(target) + "使用一张牌", [options, "vcard"]],
 							})
 							.set("ai", function (button) {
 								const player = _status.event.player;
@@ -5219,7 +5246,6 @@ const skills = {
 							});
 						}
 					}
-
 					if (!player.getStorage("clanqiuxin_effect").length) {
 						player.removeSkill("clanqiuxin_effect");
 					}
@@ -5561,22 +5587,22 @@ const skills = {
 					return 0;
 				})
 				.set("num", num)
-				//.set("logSkill", "clanxieshu")
 				.forResult();
 		},
-		//popup: false,
 		async content(event, trigger, player) {
-			await player.discard(event.cards);
+			const { cards } = event;
+			await player.discard({ cards });
 			await player.link(true);
-			if (player.getDamagedHp() > 0) {
-				await player.draw(player.getDamagedHp());
-			}
-			if (
-				game.getGlobalHistory("everything", evt => {
-					return evt.name == "dying";
-				}).length
-			) {
-				player.tempBanSkill("clanxieshu");
+			if (player.isDamaged()) {
+				const { cards } = await player.draw(player.getDamagedHp()).forResult();
+				if (
+					cards?.length &&
+					game.getGlobalHistory("everything", evt => {
+						return evt.name == "dying";
+					}).length
+				) {
+					player.tempBanSkill(event.name);
+				}
 			}
 		},
 		ai: { threaten: 3 },
@@ -7244,9 +7270,8 @@ const skills = {
 			let winner;
 			let cards = [];
 			let card;
-
 			result = await player
-				.chooseTarget(get.prompt("clanhuanjia"), "与一名其他角色拼点，赢的角色可以使用一张拼点牌。若此牌未造成过伤害，你获得另一张拼点牌，否则你失去一个技能", (card, player, target) => {
+				.chooseTarget(get.prompt("clanhuanjia"), "与一名其他角色拼点，赢的角色可以使用一张拼点牌。然后若此牌未造成过伤害，你获得另一张拼点牌，否则你失去一个技能", (card, player, target) => {
 					return player.canCompare(target);
 				})
 				.set("ai", target => {
@@ -7265,23 +7290,18 @@ const skills = {
 					return 0;
 				})
 				.forResult();
-
-			if (!result.bool) {
+			if (!result.bool || !result.targets?.length) {
 				return;
 			}
-
 			[target] = result.targets;
 			event.target = target;
 			player.logSkill("clanhuanjia", target);
-
 			result = await player.chooseToCompare(target).forResult();
 			if (result.tie) {
 				return;
 			}
-
 			winner = result.bool ? player : target;
 			event.winner = winner;
-
 			game.getGlobalHistory("cardMove", evt => {
 				if (evt.getParent(3) == event) {
 					cards.addArray(evt.cards.filterInD("d"));
@@ -7291,7 +7311,6 @@ const skills = {
 				return;
 			}
 			event.cards = cards;
-
 			const cardsx = cards.filter(i => get.position(i, true) == "d" && winner.hasUseTarget(i));
 			if (cardsx.length) {
 				result = await winner
@@ -7316,9 +7335,10 @@ const skills = {
 					winner.$gain2(card, false);
 					await game.delayx();
 					await winner.chooseUseTarget(true, card, false);
+				} else {
+					return;
 				}
 			}
-
 			if (
 				game.hasPlayer2(current => {
 					return current.hasHistory("sourceDamage", evt => evt.cards && evt.cards[0] == card);

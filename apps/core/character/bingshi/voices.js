@@ -23,7 +23,7 @@ export default {
 	"#pot_xiaoqiao:die": "何其壮哉，何其哀哉……",
 	"#potchiyun1": "孙郎既有凌霄壮魄，瑜当馈以展志青天。",
 	"#potchiyun2": "但凭瑜之能器，成江东壁才之愿。",
-	"#potchiyun_pot_zhouyu_shadow1": "以此剑锋，送雄兵随江去！",
+	"#potchiyun_pot_zhouyu_shadow1": "以此剑锋，送雄兵随江而去！",
 	"#potchiyun_pot_zhouyu_shadow2": "掌中星火，成燎原焚天之势。",
 	"#potchiyun_pot_zhouyu_shadow3": "诸位雄心壮志，看我驱策领图。",
 	"#potchiyun_pot_zhouyu_shadow4": "身后吴土灯火，当由吾来守护！",

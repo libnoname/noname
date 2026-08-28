@@ -2068,9 +2068,9 @@ const skills = {
 			const prompt = `选择其中〇至${get.cnNumber(num)}张牌`;
 			let result;
 			result = await player.choosePlayerCard({ target, position, selectButton: [0, num], forced: true, prompt, visible: true }).forResult();
-			if (!result?.cards?.length) {
-				return;
-			}
+			//if (!result?.cards?.length) {
+				//return;
+			//}
 			const { cards } = result;
 			if (game.hasPlayer(current => current !== target)) {
 				result = await target
@@ -2369,7 +2369,7 @@ const skills = {
 			event.result = await player
 				.chooseToDiscard({
 					prompt: get.prompt(event.skill),
-					prompt2: "你可以弃置一张牌，令你本阶段使用牌时，其他角色不能使用或打出与你弃置的牌颜色不同的手牌进行响应。",
+					prompt2: "你可以弃置一张牌，令你本阶段使用牌时，其他角色只能使用或打出与你弃置的牌颜色相同的手牌进行响应。",
 					position: "he",
 					chooseonly: true,
 				})
@@ -2466,7 +2466,7 @@ const skills = {
 					});
 				},
 				intro: {
-					content: "所有其他角色不能使用或打出不为$的手牌响应你使用的牌",
+					content: "所有其他角色只能使用或打出$的手牌响应你使用的牌",
 				},
 			},
 			block: {
@@ -2987,7 +2987,7 @@ const skills = {
 					const card = event.card;
 					return `若你赢，${get.translation(card)}无视防具且不计入次数，且若你本回合以此法对其造成的伤害小于2，你对其造成1点伤害；<br>若其拼点牌为【杀】，则你获得之；<br>若其拼点牌为其最后的手牌，则${get.translation(card)}对其造成伤害时，此伤害+1。`;
 				},
-				group: "sbxianzhen_record",
+				//group: "sbxianzhen_record",
 				async content(event, trigger, player) {
 					const target = trigger.target;
 					const card = trigger.card;
@@ -3012,7 +3012,7 @@ const skills = {
 						} else {
 							player.storage.sbxianzhen_damaged++;
 						}
-						if (player.storage.sbxianzhen_damaged <= 2) {
+						if (player.storage.sbxianzhen_damaged <= 1) {
 							await target.damage();
 							await game.delayx();
 						}
@@ -3660,20 +3660,20 @@ const skills = {
 			},
 			{
 				cost: 4,
-				prompt: () => "获得一名已阵亡角色的武将牌上的所有技能，然后失去〖行殇〗〖放逐〗〖颂威〗",
-				filter: () => game.dead.some(target => target.getStockSkills(true, true).some(i => get.info(i) && !get.info(i).charlotte)),
+				prompt: () => "获得一名已阵亡角色的武将牌上除主公技外的所有技能，然后失去〖行殇〗〖放逐〗〖颂威〗",
+				filter: () => game.dead.some(target => target.getStockSkills(true, true).some(i => get.info(i) && !get.info(i).charlotte && !get.info(i).zhuSkill)),
 				filterTarget: {
 					filterTarget(card, player, target) {
 						if (!target.isDead()) {
 							return false;
 						}
-						return target.getStockSkills(true, true).some(i => get.info(i) && !get.info(i).charlotte);
+						return target.getStockSkills(true, true).some(i => get.info(i) && !get.info(i).charlotte && !get.info(i).zhuSkill);
 					},
 					deadTarget: true,
 				},
 				async content(player, target) {
 					await player.changeSkills(
-						target.getStockSkills(true, true).filter(skill => get.info(skill) && !get.info(skill).charlotte),
+						target.getStockSkills(true, true).filter(i => get.info(i) && !get.info(i).charlotte && !get.info(i).zhuSkill),
 						["sbxingshang", "sbfangzhu", "sbsongwei"]
 					);
 				},
@@ -4608,26 +4608,12 @@ const skills = {
 						}
 						checkedTargets.push(target);
 						player.logSkill("sbqicai_gain", target);
-						const cards = trigger.getg(target).filter(card => get.type(card) === "trick" && lib.filter.canBeGained(card, target, player));
+						let cards = trigger.getg(target).filter(card => get.type(card) === "trick" && lib.filter.canBeGained(card, target, player));
 						const num = lib.skill.sbqicai.getLimit - target.countMark(skill);
-						let result = { bool: true, links: cards };
-						if (cards.length > num) {
-							result = await target
-								.chooseButton({
-									createDialog: [`奇才：将其中${get.cnNumber(num)}张牌交给${get.translation(player)}`, cards],
-									selectButton: num,
-									forced: true,
-									ai: button => get.value(button.link) * get.sgn(_status.event.att),
-								})
-								.set("att", get.attitude(target, player))
-								.forResult();
-						}
-						if (!result.bool) {
-							continue;
-						}
+						cards = cards.randomGets(num);
 						const delayEvent = game.delaye(0.5);
-						const giveEvent = target.give(result.links, player);
-						lib.skill.sbqicai.updateCounter(player, target, result.links.length);
+						const giveEvent = target.give(cards, player);
+						lib.skill.sbqicai.updateCounter(player, target, cards.length);
 						await delayEvent;
 						await giveEvent;
 					}
@@ -8221,7 +8207,7 @@ const skills = {
 				},
 				async content(event, trigger, player) {
 					game.log(player, "和", trigger.player, "的协力成功");
-					player.addTempSkill("sblongdan_mark", player.hasSkill("jdlongdan", null, null, false) ? { player: "phaseAfter" } : { player: "phaseJieshuBegin" });
+					player.addTempSkill("sblongdan_mark", { player: "phaseAfter" });
 					await game.delayx();
 				},
 			},
@@ -8355,8 +8341,7 @@ const skills = {
 							prompt: "协击：请选择【杀】的目标",
 							prompt2: `你和${get.translation(trigger.player)}协力成功，可以视为对至多三名其他角色使用一张【杀】，且此【杀】造成伤害时，你摸等同于伤害值的牌`,
 							selectTarget: [1, 3],
-							forced: true,
-							filterTarget: (card, player, target) => player.canUse("sha", target, false),
+							filterTarget: (card, player, target) => player.canUse("sha", target),
 							ai: target => {
 								const player = _status.event.player;
 								return get.effect(target, { name: "sha" }, player, player);
@@ -9796,7 +9781,7 @@ const skills = {
 				player.addExpose(0.15);
 			}
 			await player.give(cards, target);
-			await player.loseHp(["tao", "jiu"].includes(get.name(cards[0], target)) ? 2 : 1);
+			await player.loseHp(["tao", "jiu"].includes(get.name(cards[0], false)) ? 2 : 1);
 		},
 		group: "sbkurou_gain",
 		ai: {
@@ -11022,6 +11007,7 @@ const skills = {
 		audio: 2,
 		trigger: { player: "useCardAfter" },
 		forced: true,
+		locked: false,
 		filter(event, player) {
 			return event.card.name === "sha" && player.countMark("splveying") > 1;
 		},
@@ -11042,8 +11028,9 @@ const skills = {
 				audio: "splveying",
 				trigger: { player: "useCardToPlayered" },
 				forced: true,
+				locked: false,
 				filter(event, player) {
-					return event.card.name === "sha" && player.isPhaseUsing() && player.countMark("splveying_used") < 2;
+					return event.card.name === "sha" && player.isPhaseUsing() && player.countMark("splveying_used") < 2 && player != event.target;
 				},
 				async content(event, trigger, player) {
 					player.addMark("splveying", 1);
