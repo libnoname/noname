@@ -2987,7 +2987,7 @@ const skills = {
 					const card = event.card;
 					return `若你赢，${get.translation(card)}无视防具且不计入次数，且若你本回合以此法对其造成的伤害小于2，你对其造成1点伤害；<br>若其拼点牌为【杀】，则你获得之；<br>若其拼点牌为其最后的手牌，则${get.translation(card)}对其造成伤害时，此伤害+1。`;
 				},
-				group: "sbxianzhen_record",
+				//group: "sbxianzhen_record",
 				async content(event, trigger, player) {
 					const target = trigger.target;
 					const card = trigger.card;
