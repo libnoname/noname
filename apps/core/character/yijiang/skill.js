@@ -11530,13 +11530,13 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			await player.loseMaxHp();
 			await player.chooseDrawRecover(2, true, (event, player) => {
 				if (player.hp == 1 && player.isDamaged()) {
 					return "recover_hp";
 				}
 				return "draw_card";
 			});
+			await player.loseMaxHp();
 			await player.addSkills("paiyi");
 		},
 		ai: { combo: "quanji" },
