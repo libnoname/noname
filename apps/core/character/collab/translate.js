@@ -359,7 +359,7 @@ const translates = {
 	})}”牌结算后，随机获得一名其他角色手牌中的“${get.poptip("andu_yinping")}”牌。`,
 	olandu_mark: "阴平",
 	olqiqi: "期期",
-	olqiqi_info: "每轮限一次，你使用牌指定目标时，若牌名字数不小于你的体力值，你可以摸两张牌并令此牌额外结算一次，然后进行判定：若结果为♥，你减少1点体力上限。",
+	olqiqi_info: "每轮限一次，你使用牌指定目标时，若牌名字数不小于你的体力值，你可以摸两张牌并令此牌额外结算一次，然后此牌结算后进行判定：若结果为♥，你减少1点体力上限。",
 	you_zhugeliang: "有诸葛亮",
 	you_zhugeliang_prefix: "有",
 	dcyingyou: "应有",

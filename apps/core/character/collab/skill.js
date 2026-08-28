@@ -3667,14 +3667,22 @@ const skills = {
 		async content(event, trigger, player) {
 			await player.draw(2);
 			trigger.getParent().effectCount++;
-			const result = await player
-				.judge(card => {
-					return get.suit(card) == "heart" ? -2 : 2;
-				})
-				.forResult();
-			if (result.suit == "heart") {
-				await player.loseMaxHp();
-			}
+			player
+				.when({ player: "useCardAfter" })
+				.filter(evt => evt.card == trigger.card)
+				.step(async (event2, trigger, player) => {
+					game.broadcastAll((skill1, skill2) => {
+						lib.translate[skill1] = lib.translate[skill2];
+					}, event2.name, event.name);
+					const result = await player
+						.judge(card => {
+							return get.suit(card) == "heart" ? -2 : 2;
+						})
+						.forResult();
+					if (result.suit == "heart") {
+						await player.loseMaxHp();
+					}
+				});
 		},
 	},
 	//狂李儒
