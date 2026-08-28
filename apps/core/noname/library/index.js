@@ -7162,6 +7162,20 @@ export class Library {
 						map.siguo_character.hide();
 					}
 				},
+				continue_game: {
+					name: "显示再战",
+					init: true,
+					onclick(bool) {
+						game.saveConfig("continue_game", bool, this._link.config.mode);
+						if (get.config("continue_game") && get.mode() == "versus") {
+							game.createVersusContinueControl();
+						} else if (ui.continue_game) {
+							ui.continue_game.close();
+							delete ui.continue_game;
+						}
+					},
+					intro: "游戏结束后可选择用相同的武将再进行一局游戏",
+				},
 				versus_mode: {
 					name: "游戏模式",
 					init: "two",

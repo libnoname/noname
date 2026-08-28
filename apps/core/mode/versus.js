@@ -585,6 +585,32 @@ export default () => {
 			game.phaseLoop(_status.firstAct);
 		},
 		game: {
+			createVersusContinueControl() {
+				if (
+					_status.connectMode ||
+					!get.config("continue_game") ||
+					ui.continue_game ||
+					!_status.over ||
+					_status.brawl ||
+					game.no_continue_game
+				) {
+					return;
+				}
+				if (_status.mode == "standard" || _status.mode == "three") {
+					ui.continue_game = ui.create.control("再战", function () {
+						game.saveConfig("continue_name_versus" + (_status.mode == "three" ? "_three" : ""), {
+							friend: _status.friendBackup,
+							enemy: _status.enemyBackup,
+							color: _status.color,
+						});
+						game.saveConfig("mode", lib.config.mode);
+						localStorage.setItem(lib.configprefix + "directstart", true);
+						game.reload();
+					});
+				} else if (_status.mode == "two") {
+					ui.continue_game = ui.create.control("再战", game.reloadCurrent);
+				}
+			},
 			getLadderName: function (score) {
 				if (score < 900) {
 					return "平民";
@@ -1260,6 +1286,9 @@ export default () => {
 				next.setContent(function () {
 					"step 0";
 					ui.arena.classList.add("choose-character");
+					var chosen = Array.isArray(lib.config.continue_name) ? lib.config.continue_name : [];
+					game.saveConfig("continue_name");
+					event.chosen = chosen.filter(name => typeof name == "string" && lib.character[name]);
 					var bool = Math.random() < 0.5;
 					var bool2 = Math.random() < 0.5;
 					var ref = game.players[0];
@@ -1399,7 +1428,7 @@ export default () => {
 					}
 					var basenum = 1;
 					var basestr = "选择角色";
-					if (get.config("two_assign")) {
+					if (get.config("two_assign") && !event.chosen.length) {
 						basenum = 2;
 						basestr = "选择你和队友的角色";
 						event.two_assign = true;
@@ -1410,11 +1439,15 @@ export default () => {
 						game.additionaldead = [];
 						basenum *= 2;
 					}
-					var dialog = ui.create.dialog(basestr, [characterChoice, "characterx"]);
-					game.me.chooseButton(true, dialog, basenum).set("onfree", true);
-					if (!_status.brawl || !_status.brawl.noAddSetting) {
-						if (get.config("change_identity")) {
-							addSetting(dialog);
+					if (event.chosen.length) {
+						lib.init.onfree();
+					} else {
+						var dialog = ui.create.dialog(basestr, [characterChoice, "characterx"]);
+						game.me.chooseButton(true, dialog, basenum).set("onfree", true);
+						if (!_status.brawl || !_status.brawl.noAddSetting) {
+							if (get.config("change_identity")) {
+								addSetting(dialog);
+							}
 						}
 					}
 
@@ -1483,7 +1516,7 @@ export default () => {
 						});
 						ui.cheat2.classList.add("disabled");
 					};
-					if (!_status.brawl || !_status.brawl.chooseCharacterFixed) {
+					if (!event.chosen.length && (!_status.brawl || !_status.brawl.chooseCharacterFixed)) {
 						if (!ui.cheat && get.config("change_choice")) {
 							ui.create.cheat();
 						}
@@ -1500,14 +1533,22 @@ export default () => {
 						ui.cheat2.close();
 						delete ui.cheat2;
 					}
-					for (var i = 0; i < result.links.length; i++) {
-						game.addRecentCharacter(result.links[i]);
+					var links = event.chosen.length ? event.chosen : result.links;
+					for (var i = 0; i < links.length; i++) {
+						game.addRecentCharacter(links[i]);
 					}
-					game.me.init(result.links[0]);
-					if (_status.replacetwo) {
-						game.me.replacetwo = result.links[1];
-					}
+					game.me.init(links[0]);
 					event.list.remove(game.me.name1);
+					if (_status.replacetwo) {
+						if (event.chosen.length) {
+							game.me.replacetwo = event.list.randomRemove();
+							if (lib.characterReplace[game.me.replacetwo] && lib.characterReplace[game.me.replacetwo].length) {
+								game.me.replacetwo = lib.characterReplace[game.me.replacetwo].randomGet();
+							}
+						} else {
+							game.me.replacetwo = links[1];
+						}
+					}
 					for (var i = 0; i < game.players.length; i++) {
 						if (game.players[i] != game.me) {
 							if (_status.brawl && _status.brawl.chooseCharacter) {
@@ -1521,10 +1562,10 @@ export default () => {
 							} else {
 								if (event.two_assign && game.players[i].side == game.me.side) {
 									if (_status.replacetwo) {
-										game.players[i].init(result.links[2]);
-										game.players[i].replacetwo = result.links[3];
+										game.players[i].init(links[2]);
+										game.players[i].replacetwo = links[3];
 									} else {
-										game.players[i].init(result.links[1]);
+										game.players[i].init(links[1]);
 									}
 								} else {
 									var name = event.list.randomRemove();
