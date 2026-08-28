@@ -11022,6 +11022,7 @@ const skills = {
 		audio: 2,
 		trigger: { player: "useCardAfter" },
 		forced: true,
+		locked: false,
 		filter(event, player) {
 			return event.card.name === "sha" && player.countMark("splveying") > 1;
 		},
@@ -11042,8 +11043,9 @@ const skills = {
 				audio: "splveying",
 				trigger: { player: "useCardToPlayered" },
 				forced: true,
+				locked: false,
 				filter(event, player) {
-					return event.card.name === "sha" && player.isPhaseUsing() && player.countMark("splveying_used") < 2;
+					return event.card.name === "sha" && player.isPhaseUsing() && player.countMark("splveying_used") < 2 && player != event.target;
 				},
 				async content(event, trigger, player) {
 					player.addMark("splveying", 1);
