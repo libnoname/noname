@@ -3671,9 +3671,13 @@ const skills = {
 				.when({ player: "useCardAfter" })
 				.filter(evt => evt.card == trigger.card)
 				.step(async (event2, trigger, player) => {
-					game.broadcastAll((skill1, skill2) => {
-						lib.translate[skill1] = lib.translate[skill2];
-					}, event2.name, event.name);
+					game.broadcastAll(
+						(skill1, skill2) => {
+							lib.translate[skill1] = lib.translate[skill2];
+						},
+						event2.name,
+						event.name
+					);
 					const result = await player
 						.judge(card => {
 							return get.suit(card) == "heart" ? -2 : 2;
@@ -5064,7 +5068,9 @@ const skills = {
 			return player.getAllHistory("useCard", evt => get.name(evt.card) === get.name(event.card)).indexOf(event) == 0;
 		},
 		async content(event, trigger, player) {
-			trigger.baseDamage++;
+			if (trigger.card.name != "jiu") {
+				trigger.baseDamage++;
+			}
 			trigger.addCount = false;
 			const stat = player.getStat().card;
 			const name = trigger.card.name;
