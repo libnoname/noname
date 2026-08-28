@@ -7320,7 +7320,7 @@ const skills = {
 			},
 			lie: {
 				trigger: { player: "phaseUseEnd" },
-				filter: (event, player) => player.hasUseTarget(new lib.element.VCard({ name: "sha", isCard: true }), false),
+				filter: (event, player) => player.hasUseTarget(new lib.element.VCard({ name: "sha", isCard: true }), false) && player.hasMark("potzhanlie_lie"),
 				direct: true,
 				async content(event, trigger, player) {
 					const str = player.hasMark("potzhanlie_lie") ? "移去所有“烈”，" : "";
