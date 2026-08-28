@@ -1946,7 +1946,7 @@ const skills = {
 				.map(evt => get.color(evt.card))
 				.reverse();
 			const firstIndex = arr.indexOf("red");
-			if (firstIndex == -1) {
+			if (firstIndex == -1 || arr[0] != "red") {
 				return 0;
 			}
 			const restArr = arr.slice(firstIndex);
@@ -2004,6 +2004,9 @@ const skills = {
 				audio: "mbchiyuan",
 				enable: "phaseUse",
 				usable: 1,
+				filter(event, player) {
+					return get.info("mbchiyuan").getnum() ?? 0 > 0;
+				},
 				prompt() {
 					return `你可摸${get.cnNumber(get.info("mbchiyuan").getnum())}张牌`;
 				},
