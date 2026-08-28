@@ -5238,6 +5238,21 @@ const skills = {
 			return (cost ? "消耗" + Math.max(10, game.countPlayer() + 1) + "金币" : "") + "发起拼手气红包，手气最好的角色从三个生肖兽技能中选择一个令你获得";
 		},
 		logTarget: () => game.filterPlayer(),
+		async cost(event, trigger, player) {
+			const cost = !_status.connectMode && game.changeCoin;
+			if (trigger.name == "phaseZhunbei") {
+				event.result = await player
+					.chooseBool({
+						prompt: "岁祟：" + (cost ? "消耗" + Math.max(10, game.countPlayer() + 1) + "金币" : "") + "发起拼手气红包，手气最好的角色从三个生肖兽技能中选择一个令你获得",
+						ai: () => true,
+					})
+					.forResult();
+			} else {
+				event.result = {
+					bool: true,
+				};
+			}
+		},
 		async content(event, trigger, player) {
 			const targets = game.filterPlayer().sortBySeat(player);
 			let coin = Math.max(10, game.countPlayer() + 1);
