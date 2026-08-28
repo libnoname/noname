@@ -5168,7 +5168,7 @@ const skills = {
 			if (event.getParent().name == "useCard") {
 				return false;
 			}
-			return event.getl(player)?.hs?.some(card => get.name(card, false) == "sha" && !get.owner(card));
+			return event.getl?.(player)?.hs?.some(card => get.name(card, false) == "sha" && !get.owner(card));
 		},
 		async content(event, trigger, player) {
 			const card = trigger

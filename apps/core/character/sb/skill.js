@@ -9781,7 +9781,7 @@ const skills = {
 				player.addExpose(0.15);
 			}
 			await player.give(cards, target);
-			await player.loseHp(["tao", "jiu"].includes(get.name(cards[0])) ? 2 : 1);
+			await player.loseHp(["tao", "jiu"].includes(get.name(cards[0], false)) ? 2 : 1);
 		},
 		group: "sbkurou_gain",
 		ai: {
