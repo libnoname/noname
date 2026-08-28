@@ -7135,6 +7135,7 @@ export class Library {
 				update: function (config, map) {
 					if (config.versus_mode == "four") {
 						map.change_choice.hide();
+						map.change_card.hide();
 						map.ladder.show();
 						if (config.ladder) {
 							map.ladder_monthly.show();
@@ -7153,6 +7154,7 @@ export class Library {
 						map.reset_character_four.show();
 					} else {
 						map.change_choice.show();
+						map.change_card.show();
 						map.ladder.hide();
 						map.ladder_monthly.hide();
 						map.ladder_reset.hide();
@@ -7380,6 +7382,16 @@ export class Library {
 						}
 					},
 					frequent: true,
+				},
+				change_card: {
+					name: "开启手气卡",
+					init: "disabled",
+					item: {
+						disabled: "禁用",
+						once: "一次",
+						twice: "两次",
+						unlimited: "无限",
+					},
 				},
 				double_character_jiange: {
 					name: "双将模式",
