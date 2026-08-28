@@ -7024,7 +7024,7 @@ const skills = {
 							}
 						}
 						if (gains.length) {
-							await player.gain(gains, "gain2");
+							await player.gain({ cards: gains, animate: "draw" });
 						}
 					}
 				},
@@ -7047,11 +7047,9 @@ const skills = {
 				async content(event, trigger, player) {
 					const gain = get.cardPile2(gain => get.suit(gain) === get.suit(trigger.card, false));
 					if (gain) {
-						await player.gain({
-							cards: [gain],
-							animate: "gain2",
-						});
+						await player.gain({ cards: [gain], animate: "draw" });
 					}
+					trigger.baseDamage ??= 1;
 					trigger.baseDamage++;
 					player
 						.when({
@@ -7060,6 +7058,17 @@ const skills = {
 						.filter(evt => evt === trigger)
 						.step(async () => {
 							player.removeSkill("potfuji_sha");
+							if (!player.hasSkill("potfuji_shan")) {
+								player.changeSkin({ characterName: "pot_yuji" }, "pot_yuji");
+								game.broadcastAll(function (player) {
+									if (player.node.potfuji_dynamic) {
+										player.node.potfuji_dynamic.delete();
+										player.node.potfuji_dynamic2.delete();
+										delete player.node.potfuji_dynamic;
+										delete player.node.potfuji_dynamic2;
+									}
+								}, player);
+							}
 						});
 				},
 			},
@@ -7080,10 +7089,7 @@ const skills = {
 				async content(event, trigger, player) {
 					const gain = get.cardPile2(gain => get.suit(gain) === get.suit(trigger.card, false));
 					if (gain) {
-						player.gain({
-							cards: [gain],
-							animate: "gain2",
-						});
+						await player.gain({ cards: [gain], animate: "draw" });
 					}
 					player
 						.when("useCardAfter")
@@ -7091,6 +7097,17 @@ const skills = {
 						.step(async () => {
 							player.removeSkill("potfuji_shan");
 							await player.draw();
+							if (!player.hasSkill("potfuji_sha")) {
+								player.changeSkin({ characterName: "pot_yuji" }, "pot_yuji");
+								game.broadcastAll(function (player) {
+									if (player.node.potfuji_dynamic) {
+										player.node.potfuji_dynamic.delete();
+										player.node.potfuji_dynamic2.delete();
+										delete player.node.potfuji_dynamic;
+										delete player.node.potfuji_dynamic2;
+									}
+								}, player);
+							}
 						});
 				},
 			},
