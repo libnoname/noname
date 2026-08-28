@@ -6338,7 +6338,7 @@ const skills = {
 		trigger: { global: "phaseDrawBegin2" },
 		logTarget: "player",
 		filter(event, player) {
-			return !event.numFixed && event.player !== player && player.countMark("xinlirang") === 0;
+			return !event.numFixed && event.player !== player && !player.hasMark("xinlirang");
 		},
 		prompt2: "获得一枚“谦”并令其多摸两张牌",
 		check(event, player) {
@@ -6371,19 +6371,21 @@ const skills = {
 						.chooseButton({
 							createDialog: ["礼让：是否获得其中至多两张牌？", cards],
 							selectButton: [1, 2],
+							ai(button) {
+								return get.value(button.link);
+							},
 						})
 						.forResult();
+					if (result?.bool && result.links?.length) {
 					event.result = {
 						bool: result.bool,
-						cards: result.cards,
+						cards: result.links,
 					};
+				}
 				},
 				logTarget: "player",
 				async content(event, trigger, player) {
-					await player.gain({
-						cards: event.cards,
-						animate: "gain2",
-					});
+					await player.gain({ cards: event.cards, animate: "gain2" });
 				},
 			},
 			skip: {
@@ -6395,7 +6397,7 @@ const skills = {
 				},
 				async content(event, trigger, player) {
 					player.skip("phaseDraw");
-					player.removeMark("xinlirang", player.countMark("xinlirang"));
+					player.clearMark("xinlirang");
 				},
 			},
 		},
