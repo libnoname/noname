@@ -4665,14 +4665,19 @@ const skills = {
 			});
 			if (gaintag.length == 1 && gaintag[0] != lib.skill.dclieti.getName(player)) {
 				const name = gaintag[0];
-				player.logSkill(event.name);
-				player.changeSkin({ characterName: "yuanshaoyuanshu" }, name);
-				if (name == "yuanshaoyuanshu_shao") {
-					await player.chooseUseTarget({ name: "wanjian", isCard: true }, true);
-				}
-				if (name == "yuanshaoyuanshu_shu") {
-					await player.draw(2);
-				}
+				player
+					.when({ player: "useCardAfter" })
+					.filter(evt => evt.card == trigger.card)
+					.step(async (event, trigger, player) => {
+						player.logSkill(event.name);
+						player.changeSkin({ characterName: "yuanshaoyuanshu" }, name);
+						if (name == "yuanshaoyuanshu_shao") {
+							await player.chooseUseTarget({ name: "wanjian", isCard: true }, true);
+						}
+						if (name == "yuanshaoyuanshu_shu") {
+							await player.draw(2);
+						}
+					});
 			}
 		},
 		ai: {
