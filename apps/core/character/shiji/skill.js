@@ -210,7 +210,7 @@ const skills = {
 								choiceList,
 								ai() {
 									const player = get.player();
-									if (game.hasPlayer(current => get.attitude(player, current) > 0)) {
+									if (game.hasPlayer(current => current != player && get.attitude(player, current) > 0) && player.countCards("h") > 3) {
 										return "给牌";
 									}
 									return "重铸牌";
