@@ -6510,7 +6510,7 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseUseEnd" },
 		filter(event, player) {
-			return player.countCards("he");
+			return player.hasCards("he");
 		},
 		check(event, player) {
 			return player.getCards("he").reduce((sum, card) => sum + get.info("zhiheng").check(card), 0) > 0;
@@ -6518,7 +6518,7 @@ const skills = {
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			const cards = player.getCards("he");
-			await player.loseToDiscardpile(cards);
+			await player.loseToDiscardpile({ cards });
 			let gains = [];
 			while (gains.length < cards.length) {
 				const card = get.cardPile2(card => get.type(card) === "basic" && !gains.includes(card));
@@ -6529,9 +6529,9 @@ const skills = {
 				}
 			}
 			if (gains.length) {
-				await player.gain(gains, "gain2");
+				await player.gain({ cards: gains, animate: "gain2" });
 				player.addTempSkill("potguansha_hand");
-				player.addMark("potguansha_hand", gains.length, false);
+				player.addMark("potguansha_hand", gains.map(card => card.name).unique().length, false);
 			}
 		},
 		subSkill: {
