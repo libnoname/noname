@@ -33,6 +33,8 @@ export default {
 	pe_yangyuhuan: "贵妃醉酒",
 	pe_xiahoulan: "不驯巾帼",
 	pe_lishimin: "天策上将",
+	ylyg_sunce: "江东小霸王",
+	ylyg_caiwenji: "胡笳余音",
 	ylyg_xuhuang: "公明大义",
 	ylyg_zhurong: "刺美人",
 	wxdl_caozhi: "白马饰金羁",
