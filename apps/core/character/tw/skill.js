@@ -27650,7 +27650,7 @@ const skills = {
 		},
 		direct: true,
 		filter(event, player) {
-			return player.countCards("he") > 0;
+			return player.hasCards("he");
 		},
 		content() {
 			"step 0";
