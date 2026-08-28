@@ -4608,26 +4608,12 @@ const skills = {
 						}
 						checkedTargets.push(target);
 						player.logSkill("sbqicai_gain", target);
-						const cards = trigger.getg(target).filter(card => get.type(card) === "trick" && lib.filter.canBeGained(card, target, player));
+						let cards = trigger.getg(target).filter(card => get.type(card) === "trick" && lib.filter.canBeGained(card, target, player));
 						const num = lib.skill.sbqicai.getLimit - target.countMark(skill);
-						let result = { bool: true, links: cards };
-						if (cards.length > num) {
-							result = await target
-								.chooseButton({
-									createDialog: [`奇才：将其中${get.cnNumber(num)}张牌交给${get.translation(player)}`, cards],
-									selectButton: num,
-									forced: true,
-									ai: button => get.value(button.link) * get.sgn(_status.event.att),
-								})
-								.set("att", get.attitude(target, player))
-								.forResult();
-						}
-						if (!result.bool) {
-							continue;
-						}
+						cards = cards.randomGets(num);
 						const delayEvent = game.delaye(0.5);
-						const giveEvent = target.give(result.links, player);
-						lib.skill.sbqicai.updateCounter(player, target, result.links.length);
+						const giveEvent = target.give(cards, player);
+						lib.skill.sbqicai.updateCounter(player, target, cards.length);
 						await delayEvent;
 						await giveEvent;
 					}
