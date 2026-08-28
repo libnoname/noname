@@ -5319,7 +5319,7 @@ const skills = {
 					get.prompt(event.skill),
 					[
 						[
-							["discard", `令一名其他角色使用下一张牌后需弃置一张牌`],
+							["discard", `令一名其他角色使用下一张牌时需弃置一张牌`],
 							["draw", `令当前回合角色摸两张牌`],
 							["both", `背水！执行以上所有选项，然后失去${count}点体力`],
 						],
@@ -5365,7 +5365,7 @@ const skills = {
 			const link = event.cost_data;
 			if (link != "draw" && game.hasPlayer(target => target != player)) {
 				const result = await player
-					.chooseTarget(`死谏：令一名其他角色使用下一张牌后需弃置一张牌`, true, lib.filter.notMe)
+					.chooseTarget(`死谏：令一名其他角色使用下一张牌时需弃置一张牌`, true, lib.filter.notMe)
 					.set("ai", target => {
 						const has = target.hasSkill("mbsijian_handcard") ? 0 : 2;
 						return -get.attitude(get.player(), target) * target.countCards("he") + has;
@@ -5387,7 +5387,17 @@ const skills = {
 				event.getParent().set("mbsijian_both", true);
 			}
 		},
+		group: "mbsijian_die",
 		subSkill: {
+			die: {
+				silent: true,
+				popup: false,
+				forceDie: true,
+				trigger: { player: "die" },
+				async content(event, trigger, player) {
+					game.countPlayer(current => current.removeSkill("mbsijian_discard"));
+				},
+			},
 			discard: {
 				trigger: { player: "useCard1" },
 				charlotte: true,
@@ -5397,20 +5407,16 @@ const skills = {
 				async content(event, trigger, player) {
 					const num = player.countMark(event.name);
 					player.removeSkill(event.name);
-					player
-						.when({ player: "useCardAfter" })
-						.filter(evt => evt == trigger)
-						.step(async () => {
-							if (num > 0 && player.hasDiscardableCards(player, "he")) {
-								await player.chooseToDiscard({
-									position: "he",
-									forced: true,
-									selectCard: num,
-								});
-							}
+					if (num > 0 && player.hasDiscardableCards(player, "he")) {
+						await player.chooseToDiscard({
+							prompt: `死谏：请弃置${get.cnNumber(num)}张牌`,
+							position: "he",
+							forced: true,
+							selectCard: num,
 						});
+					}
 				},
-				intro: { content: "下次使用牌后弃置#张牌" },
+				intro: { content: "下次使用牌时弃置#张牌" },
 			},
 		},
 	},
