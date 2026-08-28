@@ -151,7 +151,7 @@ const translates = {
 	tw_dongzhao: "TW董昭",
 	tw_dongzhao_prefix: "TW",
 	twmiaolve: "妙略",
-	twmiaolve_info: "游戏开始时，你获得两张【瞒天过海】。当你受到1点伤害后，你可选择：①获得一张【瞒天过海】并摸一张牌。②获得一张智囊。",
+	twmiaolve_info: `游戏开始时，你获得两张${get.poptip("dz_mantianguohai")}。当你受到1点伤害后，你可选择：①获得一张${get.poptip("dz_mantianguohai")}并摸一张牌。②获得一张智囊。`,
 	twyingjia: "迎驾",
 	twyingjia_info: "一名角色的回合结束时，若你本回合内使用过两张或更多的同名锦囊牌，则你可弃置一张手牌并令一名角色进行一个额外回合。",
 	dz_mantianguohai: "瞒天过海",
