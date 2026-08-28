@@ -8355,8 +8355,7 @@ const skills = {
 							prompt: "协击：请选择【杀】的目标",
 							prompt2: `你和${get.translation(trigger.player)}协力成功，可以视为对至多三名其他角色使用一张【杀】，且此【杀】造成伤害时，你摸等同于伤害值的牌`,
 							selectTarget: [1, 3],
-							forced: true,
-							filterTarget: (card, player, target) => player.canUse("sha", target, false),
+							filterTarget: (card, player, target) => player.canUse("sha", target),
 							ai: target => {
 								const player = _status.event.player;
 								return get.effect(target, { name: "sha" }, player, player);
