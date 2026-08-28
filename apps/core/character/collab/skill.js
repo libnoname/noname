@@ -7302,7 +7302,7 @@ const skills = {
 				}
 			}
 			if (list.length) {
-				await player.gain(list, "gain2");
+				await player.gain({ cards: list, animate: "draw" });
 			} else {
 				player.chat("无牌可得？！");
 			}

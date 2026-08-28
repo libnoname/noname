@@ -172,7 +172,7 @@ const translates = {
 	xin_sunquan: "会玩孙权",
 	xin_sunquan_ab: "孙权",
 	dchuiwan: "会玩",
-	dchuiwan_info: "每回合每种牌名限一次，当你摸牌时，你可以选择至多等同于摸牌数的基本牌或锦囊牌的牌名并从牌堆中获得，然后你少摸等量张牌。",
+	dchuiwan_info: "每回合每种牌名限一次，当你摸牌时，你可以选择至多等同于摸牌数的基本牌或普通锦囊牌的牌名并从牌堆中获得，然后你少摸等量张牌。",
 	dchuanli: "唤理",
 	dchuanli_info: `结束阶段，若你本回合：使用牌至少指定三次自己为目标，则你可以令一名其他角色的所有技能失效，然后其获得${get.poptip("zhijian")}和${get.poptip("guzheng")}，直到其下回合结束；使用牌至少指定三次一名其他角色为目标，则你可以令其所有技能失效，然后其获得${get.poptip("reyingzi")}和${get.poptip("refanjian")}，直到其下回合结束。然后若你两项均执行，你获得${get.poptip("rezhiheng")}直到你的下个回合结束。`,
 	dc_noname: "无名",
