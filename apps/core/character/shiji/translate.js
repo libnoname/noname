@@ -1,8 +1,8 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
-	mbddingyi: "定仪",
-	mbddingyi_info: "锁定技，游戏开始时，你选择一项并令任意名角色获得对应效果：1.摸牌阶段摸牌数+1；2.手牌上限+2；3.攻击范围+1；4.脱离濒死状态时回复1点体力。",
+	mbdingyi: "定仪",
+	mbdingyi_info: "锁定技，游戏开始时，你选择一项并令任意名角色获得对应效果：1.摸牌阶段摸牌数+1；2.手牌上限+2；3.攻击范围+1；4.脱离濒死状态时回复1点体力。",
 	mbzuici: "罪辞",
 	mbzuici_info: `每回合限一次，你受到伤害后，可令一名有“定仪”效果的角色从牌堆获得一个你指定的${get.poptip("rule_zhinang")}，然后移去其所有“定仪”效果。`,
 	mbfubi: "辅弼",
