@@ -7257,15 +7257,22 @@ const skills = {
 						})
 						.set("target", target)
 						.forResult();
+					if (typeof result?.index !== "number") {
+						return;
+					}
 					const gainner = result.index === 0 ? target : player;
-					const result2 = await gainner
-						.chooseButton({
-							createDialog: ["选择获得一张“生”", player.storage.xiusheng],
-							forced: true,
-						})
-						.forResult();
-					player.unmarkAuto("xiusheng", result2.links);
-					await gainner.gain(result2.links, "gain2");
+					if (player.getStorage("xiusheng").length) {
+						const result2 = await gainner
+							.chooseButton({
+								createDialog: ["选择获得一张“生”", player.storage.xiusheng],
+								forced: true,
+							})
+							.forResult();
+						if (result2?.links?.length) {
+							player.unmarkAuto("xiusheng", result2.links);
+							await gainner.gain(result2.links, "gain2");
+						}
+					}
 					if (result.index === 0) {
 						target.markAuto("yinlang_block", [player]);
 						target.addTempSkill("yinlang_block", "phaseUseAfter");
