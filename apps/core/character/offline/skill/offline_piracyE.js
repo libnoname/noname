@@ -876,7 +876,8 @@ const skills = {
 					.forResult();
 				if (result?.bool && result.links?.length) {
 					const skill = result.links[0];
-					await player.addAdditionalSkills(event.name, skill);
+					const skills = player.additionalSkills?.[event.name] ?? [];
+          			await player.addAdditionalSkills(event.name, skills.concat([skill]));
 					lib.card[`huashen_card_${name}`].skills.push(skill);
 				}
 			}
