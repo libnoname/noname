@@ -1,6 +1,12 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	mbddingyi: "定仪",
+	mbddingyi_info: "锁定技，游戏开始时，你选择一项并令任意名角色获得对应效果：1.摸牌阶段摸牌数+1；2.手牌上限+2；3.攻击范围+1；4.脱离濒死状态时回复1点体力。",
+	mbzuici: "罪辞",
+	mbzuici_info: `每回合限一次，你受到伤害后，可令一名有“定仪”效果的角色从牌堆获得一个你指定的${get.poptip("rule_zhinang")}，然后移去其所有“定仪”效果。`,
+	mbfubi: "辅弼",
+	mbfubi_info: "出牌阶段限一次，你可选择一名角色并选择一项：1.令其获得一个其未拥有的“定仪”效果；2.令其全部“定仪”效果翻倍至你的下个出牌阶段开始。",
 	sp_dongzhao_prefix: "手杀",
 	liuba_prefix: "手杀",
 	sp_zhujun_prefix: "手杀",
@@ -27,7 +33,6 @@ const translates = {
 	sp_sunshao_prefix: "手杀",
 	sp_xunchen_prefix: "手杀",
 	sp_kongrong_prefix: "手杀",
-
 	sp_wangcan: "手杀王粲",
 	spqiai: "七哀",
 	spqiai_info: "出牌阶段限一次，你可以将一张非基本牌交给一名其他角色。然后其选择一项：①你回复1点体力。②你摸两张牌。",
@@ -377,7 +382,7 @@ const translates = {
 	tamo_faq_info: "<br><li>Q：在一号位不为主公的情况下，〖榻谟〗如何结算？</li><li>A：该角色可以正常进行座次交换。若受此技能影响导致一号位角色发生了变化，则以排列后的一号位角色为起始角色开始本局游戏。</li>",
 	zhimeng: "智盟",
 	zhimeng_info: "回合结束后，你可以选择一名其他角色。若如此做，你与其将各自所有手牌置于处理区，然后你随机获得这些牌中的一半（向上取整），其获得剩余的牌。",
-	mb_shen_machao_prefix: "手杀神",//子右：再这样写"手杀|神"的通通吃我m87光线，炸死你
+	mb_shen_machao_prefix: "手杀神", //子右：再这样写"手杀|神"的通通吃我m87光线，炸死你
 	mb_shen_machao: "手杀神马超",
 	yuli: "驭雳",
 	yuli_info: "锁定技。①你造成的伤害改为雷电伤害，已是雷电伤害则伤害+1；②你受到雷电伤害时，防止之并摸等量牌。",
