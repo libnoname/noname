@@ -2650,7 +2650,7 @@ const skills = {
 			player.removeSkill(skill + "_mark");
 		},
 		filter(event, player) {
-			if (!event.source || event.source == event.player) {
+			if (!event.source || event.source == event.player || ![event.source, event.player].includes(player)) {
 				return false;
 			}
 			const evt = event.getParent(2);
