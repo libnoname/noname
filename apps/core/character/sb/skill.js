@@ -448,7 +448,7 @@ const skills = {
 		filter(event, player) {
 			const storage = player.getStorage("sbzhenwei_last", []);
 			const num = storage[0] || 0;
-			return player.countCards("he") > num;
+			return player.countCards("he") > num && storage?.[1];
 		},
 		async cost(event, trigger, player) {
 			const storage = player.getStorage("sbzhenwei_last", []);
@@ -498,6 +498,7 @@ const skills = {
 				await map[choice][2](target);
 			}
 		},
+		ai: { combo: "sbzhenwei" },
 	},
 	//谋张郃·重做
 	sbqiaobian: {
