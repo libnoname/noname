@@ -4901,6 +4901,23 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			var dialog = ui.create.dialog("hidden");
 			dialog.noforcebutton = true;
 			dialog.content.innerHTML = str;
+			const targets = game.players.concat(game.dead, game.additionaldead || []);
+			const handcardPoptips = dialog.content.querySelectorAll("table td:last-child > noname-poptip");
+			for (let i = 0; i < Math.min(handcardPoptips.length, targets.length); i++) {
+				const id = handcardPoptips[i].getAttribute("poptip");
+				if (!id) continue;
+				const target = targets[i];
+				const hs = target.getCards("h");
+				lib.poptip.add({
+					id,
+					name: `<img style="width:15px; vertical-align: middle;" src="${lib.assetURL}image/card/handcard.png">`,
+					dialog(dialog) {
+						dialog.add(`${get.translation(target)}的手牌`);
+						dialog[hs.length ? "addSmall" : "addText"](hs.length ? hs : "（没有手牌）");
+						return dialog;
+					},
+				});
+			}
 			dialog.forcebutton = true;
 			dialog.open();
 			if (game.chess) {
