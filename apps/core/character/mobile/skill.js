@@ -4599,7 +4599,7 @@ const skills = {
 				return;
 			}
 			const card = result.links[0];
-			if (player.hasUseTarget(card)) {
+			if (player.hasUseTarget(card, false)) {
 				if (puts.includes(card)) {
 					game.clearCardKnowers(card);
 				}
