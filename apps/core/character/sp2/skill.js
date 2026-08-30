@@ -12311,12 +12311,13 @@ const skills = {
 		filter(event, player) {
 			return player.hp < 1;
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			player.addSkills("decadezhennan");
+			const addSkillsEvent = player.addSkills("decadezhennan");
 			player.addTempSkill("decadexushen2");
 			trigger.decadexushen = true;
-			player.recover();
+			await addSkillsEvent;
+			await player.recover();
 		},
 	},
 	decadexushen2: {
@@ -12326,41 +12327,39 @@ const skills = {
 		charlotte: true,
 		sourceSkill: "decadexushen",
 		filter(event, player) {
-			return (
-				event.decadexushen == true &&
-				!game.hasPlayer(function (current) {
-					return current.name == "dc_guansuo" || current.name2 == "dc_guansuo";
-				})
-			);
+			return event.decadexushen === true && !game.hasPlayer(current => current.name === "dc_guansuo" || current.name2 === "dc_guansuo");
 		},
-		content() {
-			"step 0";
-			player.chooseTarget(lib.filter.notMe, "许身：是否令一名其他角色选择是否将其武将牌替换为“关索”并令其摸三张牌？").set("ai", function (target) {
-				return get.attitude(_status.event.player, target);
-			});
-			"step 1";
+		async content(event, trigger, player) {
+			const result = await player
+				.chooseTarget({
+					filterTarget: lib.filter.notMe,
+					prompt: "许身：是否令一名其他角色选择是否将其武将牌替换为“关索”并令其摸三张牌？",
+					ai: target => get.attitude(_status.event.player, target),
+				})
+				.forResult();
 			if (!result.bool) {
-				event.finish();
 				return;
 			}
-			var target = result.targets[0];
+			const target = result.targets[0];
 			event.target = target;
 			player.line(target, "fire");
-			target.chooseBool("许身：是否将自己的一张武将牌替换为“关索”并令" + get.translation(player) + "摸三张牌？");
-			"step 2";
-			if (result.bool) {
-				if (target.name2 != undefined) {
-					target.chooseControl(target.name1, target.name2).set("prompt", "请选择要更换的武将牌");
-				} else {
-					event._result = { control: target.name1 };
+			const chooseResult = await target
+				.chooseBool({ prompt: `许身：是否将自己的一张武将牌替换为“关索”并令${get.translation(player)}摸三张牌？` })
+				.forResult();
+			if (chooseResult.bool) {
+				let control = target.name1;
+				if (target.name2 !== undefined) {
+					const controlResult = await target
+						.chooseControl({
+							controls: [target.name1, target.name2],
+							prompt: "请选择要更换的武将牌",
+						})
+						.forResult();
+					control = controlResult.control;
 				}
-			} else {
-				event.goto(4);
+				target.reinitCharacter(control, "dc_guansuo");
 			}
-			"step 3";
-			target.reinitCharacter(result.control, "dc_guansuo");
-			"step 4";
-			target.draw(3);
+			await target.draw(3);
 		},
 	},
 	decadezhennan: {
