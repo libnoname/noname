@@ -1,9 +1,22 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const dynamicTranslates = {
+	twyishi(player, skill) {
+		const bool = player.storage[skill];
+		let yang = "你可弃置X张牌并回复1点体力",
+			yin = "你可对自己造成1点伤害并摸X+1张牌";
+		if (bool) {
+			yin = `<span class="bluetext">${yin}</span>`;
+		} else {
+			yang = `<span class="firetext">${yang}</span>`;
+		}
+		const start = "转换技，每回合限一次，当你的体力值变化后，",
+			end = "（X为你已损失体力值）。";
+		return `${start}阳：${yang}；阴：${yin}${end}`;
+	},
 	twsbzhenliang(player, skill) {
 		const bool = player.storage[skill];
-		let yang = "出牌阶段限一次，你可以弃置X张与“任”颜色相同的牌并对攻击范围内的一名角色造成1点伤害（X为你与其体力值值差且X至少为1）",
+		let yang = "出牌阶段限一次，你可以弃置X张与“任”颜色相同的牌并对攻击范围内的一名角色造成1点伤害（X为你与其体力值之差且X至少为1）",
 			yin = "你的回合外，一名角色使用或打出牌结算完成后，若此牌与“任”类别相同，则你可以令至多两名角色各摸两张牌";
 		if (bool) {
 			yin = `<span class='bluetext'>${yin}</span>`;
@@ -41,7 +54,7 @@ const dynamicTranslates = {
 	twdangjiang(player, skill) {
 		const bool = player.storage[skill];
 		let yang = "你可将一张非伤害牌当【无中生有】使用",
-			yin = "你可将一张伤害牌当无距离限制的任意【杀】使用";
+			yin = "你可将一张非伤害牌当无距离限制的任意【杀】使用";
 		if (bool) {
 			yin = `<span class='bluetext'>${yin}</span>`;
 		} else {

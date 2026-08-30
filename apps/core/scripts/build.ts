@@ -1,9 +1,11 @@
 import { build } from "vite";
+import { execFileSync } from "node:child_process";
 import { join, dirname } from "path";
-import { existsSync, readdirSync } from "fs";
+import { existsSync, readdirSync, writeFileSync } from "fs";
 import { Target, viteStaticCopy } from "vite-plugin-static-copy";
 import generateImportMap from "./vite-plugin-importmap";
 import jit from "@noname/jit";
+import type { BuildChannel, BuildInfo } from "../noname/util/meta";
 
 import { moderned_characters } from "../game/config.json";
 const root = join(import.meta.dirname, "..");
@@ -56,7 +58,10 @@ async function main() {
 	 */
 	const individuals: Record<IndividualType, IndividualContent[]> = {
 		character: [],
-		mode: [{ name: "identity", index: "mode/identity.js", moderned: false }],
+		mode: [
+			{ name: "identity", index: "mode/identity.js", moderned: false },
+			{ name: "doudizhu", index: "mode/doudizhu.js", moderned: false },
+		],
 		card: [],
 	};
 
@@ -114,6 +119,8 @@ async function main() {
 
 		await buildIndividual(type, target, input, importMap, copies);
 	}
+
+	writeBuildInfo();
 }
 
 /**
@@ -207,6 +214,29 @@ async function buildIndividual(type: string, target: string | string[], input: R
  */
 function getEntryName(file: string): string {
 	return file.replace(/\.(js|ts)$/, "");
+}
+
+const buildChannels = ["test", "nightly", "release"] as const satisfies readonly BuildChannel[];
+type ArtifactBuildChannel = (typeof buildChannels)[number];
+
+function writeBuildInfo() {
+	const channelValue = process.env.NONAME_BUILD_CHANNEL;
+	const channel: ArtifactBuildChannel = buildChannels.includes(channelValue as ArtifactBuildChannel) ? (channelValue as ArtifactBuildChannel) : "test";
+	let commit = process.env.NONAME_BUILD_COMMIT;
+	if (!commit) {
+		try {
+			commit = execFileSync("git", ["-C", root, "rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+		} catch {
+			commit = "local";
+		}
+	}
+
+	const buildInfo: BuildInfo = {
+		channel,
+		commit,
+		builtAt: process.env.NONAME_BUILD_TIME || "unknown",
+	};
+	writeFileSync(join(root, "dist/game/build-info.json"), `${JSON.stringify(buildInfo, null, "\t")}\n`, "utf8");
 }
 
 /** 支持按包体维度处理的目录类型。 */

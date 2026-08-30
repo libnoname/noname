@@ -1,4 +1,5 @@
 export default {
+	//clan_lutan: "",
 	clan_lujing: "烈泽吴土",
 	clan_xunyu: "宏汉公衡",
 	clan_luyusheng: "精心坚白",

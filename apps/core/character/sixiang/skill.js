@@ -378,7 +378,7 @@ const skills = {
 			const { source } = trigger;
 			let result = await source
 				.chooseToGive({
-					prompt: `交给${get.translation(target)}一张牌否则其回复一点体力`,
+					prompt: `交给${get.translation(target)}一张牌否则其回复1点体力`,
 					target,
 					position: "he",
 					ai(card) {
@@ -667,7 +667,7 @@ const skills = {
 			return get.is.damageCard(event.card);
 		},
 		async cost(event, trigger, player) {
-			const list = [`摸两张牌`, `失去一点体力，令${get.translation(trigger.card)}伤害+1`];
+			const list = [`摸两张牌`, `失去1点体力，令${get.translation(trigger.card)}伤害+1`];
 			const eff1 = get.effect(player, { name: "wuzhong" }, player, player);
 			const eff2 =
 				get.effect(player, { name: "losehp" }, player, player) +
@@ -2606,15 +2606,19 @@ const skills = {
 				return;
 			}
 			await player.showCards(hs, `${get.translation(player)}发动了【${get.translation(event.name)}】`);
-			const colors = hs.map(card => get.color(card)).toUniqued();
-			if (colors.length !== 1) {
+			const blacks = hs.filter(card => get.color(card) === "black").length;
+			const reds = hs.filter(card => get.color(card) === "red").length;
+			if (blacks !== reds) {
 				return;
 			}
 			const result = await player
-				.chooseTarget(true, get.prompt2(event.name))
-				.set("ai", target => {
-					const player = get.player();
-					return get.damageEffect(target, player, player);
+				.chooseTarget({
+					forced: true,
+					prompt: "昭心：是否对一名角色造成1点伤害？",
+					ai(target) {
+						const player = get.player();
+						return get.damageEffect(target, player, player);
+					},
 				})
 				.forResult();
 			if (result?.bool && result?.targets?.length) {
