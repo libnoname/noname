@@ -7068,10 +7068,10 @@ const skills = {
 				);
 			},
 			check(button) {
-				return button.link == "recover" ? 1 : 0;
+				return button.link === "recover" ? 1 : 0;
 			},
 			backup(links, player) {
-				return get.copy(lib.skill["dcshilie_" + links[0]]);
+				return get.copy(lib.skill[`dcshilie_${links[0]}`]);
 			},
 			prompt: () => "点击“确定”以执行选项",
 		},
@@ -7080,9 +7080,9 @@ const skills = {
 			content: "expansion",
 		},
 		onremove(player, skill) {
-			var cards = player.getExpansions(skill);
+			const cards = player.getExpansions(skill);
 			if (cards.length) {
-				player.loseToDiscardpile(cards);
+				player.loseToDiscardpile({ cards });
 			}
 		},
 		group: "dcshilie_die",
@@ -7106,28 +7106,37 @@ const skills = {
 				filterCard: () => false,
 				filterTarget: () => false,
 				multitarget: true,
-				content() {
-					"step 0";
-					player.recover();
-					"step 1";
-					var hs = player.getCards("he");
+				async content(event, trigger, player) {
+					await player.recover();
+					const hs = player.getCards("he");
 					if (!hs.length) {
-						event.finish();
-					} else if (hs.length <= 2) {
-						event._result = { bool: true, cards: hs };
-					} else {
-						player.chooseCard("he", 2, true, "选择两张牌作为“示烈”牌");
+						return;
 					}
-					"step 2";
-					if (result.bool) {
-						player.addToExpansion(result.cards, player, "give").gaintag.add("dcshilie");
-					} else {
-						event.finish();
+					let cards = hs;
+					if (hs.length > 2) {
+						const result = await player
+							.chooseCard({
+								position: "he",
+								selectCard: 2,
+								forced: true,
+								prompt: "选择两张牌作为“示烈”牌",
+							})
+							.forResult();
+						if (!result.bool) {
+							return;
+						}
+						cards = result.cards;
 					}
-					"step 3";
-					var cards = player.getExpansions("dcshilie");
-					if (cards.length > game.countPlayer()) {
-						player.loseToDiscardpile(cards.slice(game.countPlayer()));
+					await player.addToExpansion({
+						cards,
+						source: player,
+						animate: "give",
+						gaintag: ["dcshilie"],
+					});
+					const expansions = player.getExpansions("dcshilie");
+					const count = game.countPlayer();
+					if (expansions.length > count) {
+						await player.loseToDiscardpile({ cards: expansions.slice(count) });
 					}
 				},
 			},
@@ -7138,22 +7147,27 @@ const skills = {
 				filterCard: () => false,
 				filterTarget: () => false,
 				multitarget: true,
-				content() {
-					"step 0";
-					player.loseHp();
-					"step 1";
-					var hs = player.getExpansions("dcshilie");
+				async content(event, trigger, player) {
+					await player.loseHp();
+					const hs = player.getExpansions("dcshilie");
 					if (!hs.length) {
-						event.finish();
-					} else if (hs.length <= 2) {
-						event._result = { bool: true, links: hs };
-					} else {
-						player.chooseButton(["选择获得两张“示烈”牌", hs], 2, true);
+						return;
 					}
-					"step 2";
-					if (result.bool) {
-						player.gain(result.links, "gain2");
+					let cards = hs;
+					if (hs.length > 2) {
+						const result = await player
+							.chooseButton({
+								createDialog: ["选择获得两张“示烈”牌", hs],
+								selectButton: 2,
+								forced: true,
+							})
+							.forResult();
+						if (!result.bool) {
+							return;
+						}
+						cards = result.links;
 					}
+					await player.gain({ cards, animate: "gain2" });
 				},
 			},
 			die: {
@@ -7166,17 +7180,20 @@ const skills = {
 				direct: true,
 				skillAnimation: true,
 				animationColor: "metal",
-				content() {
-					"step 0";
-					player.chooseTarget(get.prompt("dcshilie"), "令一名角色获得你的“示烈”牌", function (card, player, target) {
-						return target != player && target != _status.event.getTrigger().source;
-					});
-					"step 1";
-					if (result.bool) {
-						var target = result.targets[0];
-						player.logSkill("dcshilie_die", target);
-						player.give(player.getExpansions("dcshilie"), target, "give");
+				async content(event, trigger, player) {
+					const result = await player
+						.chooseTarget({
+							prompt: get.prompt("dcshilie"),
+							prompt2: "令一名角色获得你的“示烈”牌",
+							filterTarget: (card, player, target) => target !== player && target !== _status.event.getTrigger().source,
+						})
+						.forResult();
+					if (!result.bool) {
+						return;
 					}
+					const target = result.targets[0];
+					player.logSkill("dcshilie_die", target);
+					await player.give(player.getExpansions("dcshilie"), target, "give");
 				},
 			},
 		},
