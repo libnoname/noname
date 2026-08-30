@@ -1,5 +1,4 @@
 import { lib, game, ui, get, ai, _status } from "noname";
-import card from "../../mode/guozhan/src/card";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
