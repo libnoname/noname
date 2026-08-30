@@ -5075,10 +5075,11 @@ const skills = {
 			if (he.length >= num) {
 				const result = await player
 					.chooseCard({
-						prompt: `选择${get.cnNumber(num)}张牌作为生`,
+						prompt: `选择${get.cnNumber(num)}张牌作为“生”`,
 						selectCard: num,
 						position: "he",
 						forced: true,
+						allowChooseAll: true,
 					})
 					.forResult();
 				if (result.bool && result.cards?.length) {
@@ -5177,16 +5178,21 @@ const skills = {
 			gain: {
 				audio: "yinlang",
 				trigger: { global: "phaseUseBegin" },
-				locked: false,
 				filter(event, player) {
 					return event.player !== player && event.player.group === player.storage.yaohu && event.player.isIn() && player.hasExpansions("jutu");
 				},
+				forced: true,
+				locked: false,
 				logTarget: "player",
 				async content(event, trigger, player) {
 					const target = trigger.player;
+					if (!player.hasExpansions("jutu")) {
+						return;
+					}
 					const result = await target
 						.chooseButton({
 							createDialog: ["选择获得一张“生”", player.getExpansions("jutu")],
+							direct: true,
 							forced: true,
 							ai(button) {
 								const player = get.player();
@@ -5202,70 +5208,111 @@ const skills = {
 							bySelf: true,
 						});
 					}
+					let useSha = true;
 
-					if (!game.hasPlayer(current => current !== player && current !== target)) {
-						return;
+					if (game.hasPlayer(current => current !== player && current !== target)) {
+						let result = await player
+							.chooseTarget({
+								prompt: `选择${get.translation(target)}使用【杀】的目标`,
+								filterTarget(card, player, target) {
+									return target !== player && target !== _status.event.source;
+								},
+								forced: true,
+								ai(target) {
+									const evt = get.event();
+									return get.effect(target, { name: "sha" }, evt.source, evt.player);
+								},
+							})
+							.set("source", target)
+							.forResult();
+						if (!result?.bool || !result.targets?.length) {
+							useSha = false;
+						} else {
+							const target2 = result.targets[0];
+							result = await target
+								.chooseToUse({
+									prompt: `你可以对${get.translation(target2)}使用一张杀，否则本阶段你对${get.translation(player)}使用牌时，须交给其两张牌`,
+									filterCard(card, player, event) {
+										if (get.name(card) !== "sha") {
+											return false;
+										}
+										return lib.filter.filterCard(card, player, event);
+									},
+									filterTarget(card, player, target) {
+										if (target !== _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
+											return false;
+										}
+										return lib.filter.targetEnabled(card, player, target);
+									},
+									complexTarget: true,
+								})
+								.set("targetRequired", true)
+								.set("complexSelect", true)
+								.set("sourcex", target2)
+								.set("addCount", false)
+								.forResult();
+							if (!result?.bool) {
+								useSha = false;
+							}
+						}
+					} else {
+						useSha = false;
 					}
-					const result2 = await player
-						.chooseTarget({
-							prompt: `选择${get.translation(target)}使用【杀】的目标`,
-							filterTarget(card, player, target) {
-								return target !== player && target !== _status.event.source;
-							},
-							forced: true,
-							ai(target) {
-								const evt = get.event();
-								return get.effect(target, { name: "sha" }, evt.source, evt.player);
-							},
-						})
-						.set("source", target)
-						.forResult();
-					if (!result2?.bool || !result2.targets?.length) {
-						return;
+					if (!useSha) {
+						player.addTempSkill("yaohu_give", "phaseUseAfter");
+						player.markAuto("yaohu_give", [target]);
 					}
-					const result3 = await target
-						.chooseToUse({
-							prompt: `对${get.translation(result2.targets[0])}使用一张杀，否则交给其两张牌`,
-							filterCard(card, player, event) {
-								if (get.name(card) !== "sha") {
-									return false;
-								}
-								return lib.filter.filterCard(card, player, event);
-							},
-							filterTarget(card, player, target) {
-								if (target !== _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
-									return false;
-								}
-								return lib.filter.targetEnabled(card, player, target);
-							},
-							complexTarget: true,
-						})
-						.set("targetRequired", true)
-						.set("complexSelect", true)
-						.set("sourcex", result2.targets[0])
-						.set("addCount", false)
-						.forResult();
-					if (result3.bool) {
-						return;
-					}
-					const hs = target.getCards("he");
-					if (!hs.length) {
-						return;
-					}
-					const result4 =
-						hs.length <= 2
-							? { bool: true, cards: hs }
+				},
+			},
+			give: {
+				charlotte: true,
+				onremove: true,
+				audio: "yinlang",
+				trigger: { target: "useCardToPlayer" },
+				filter(event, player) {
+					return player.getStorage("yaohu_give").includes(event.player) && get.is.damageCard(event.card);
+				},
+				forced: true,
+				logTarget: "player",
+				async content(event, trigger, player) {
+					const target = event.targets[0];
+					const result =
+						target.countCards("he") < 2
+							? { bool: false }
 							: await target
-									.chooseCard({
-										prompt: `交给${get.translation(player)}两张牌`,
+									.chooseToGive({
+										prompt: `交给${get.translation(player)}两张牌，或点击“取消”取消其为${get.translation(trigger.card)}的目标`,
 										selectCard: 2,
 										position: "he",
-										forced: true,
+										target: player,
+										ai(card) {
+											const { player, target } = get.event();
+											const att = get.attitude(player, target);
+											if (att > 0) {
+												return 7 - get.value(card);
+											}
+											if (player.countCards("he") <= 4) {
+												return 0;
+											}
+											return 6 - get.value(card);
+										},
 									})
 									.forResult();
-					if (result4.bool) {
-						await target.give(result4.cards, player);
+					if (!result?.bool) {
+						trigger.targets.remove(player);
+						trigger.getParent().triggeredTargets1.remove(player);
+						trigger.untrigger();
 					}
+				},
+				intro: { content: "本阶段$使用伤害牌指定你为目标时，除非交给你两张牌，否则取消之" },
+				ai: {
+					effect: {
+						target(card, player, target) {
+							if (target.getStorage("yaohu_give").includes(player) && player.countCards("he") < 3 && get.tag(card, "damage")) {
+								return "zerotarget";
+							}
+						},
+					},
 				},
 			},
 		},
@@ -7389,10 +7436,11 @@ const skills = {
 			if (he.length >= num) {
 				const result = await player
 					.chooseCard({
-						prompt: `选择${get.cnNumber(num)}张牌作为生`,
+						prompt: `选择${get.cnNumber(num)}张牌作为“生”`,
 						selectCard: num,
 						position: "he",
 						forced: true,
+						allowChooseAll: true,
 					})
 					.forResult();
 				if (!result?.bool || !result.cards?.length) {
@@ -7494,11 +7542,7 @@ const skills = {
 						.chooseControl({
 							choiceList: [`获得${str}的一张“生”，然后本阶段使用牌时只能指定其为目标`, `令${str}获得一张“生”`],
 							ai() {
-								const evt = _status.event.getParent();
-								if (evt == null) {
-									return 0;
-								}
-								const { player, target } = evt;
+								const { player, target } = get.event();
 								if (get.attitude(player, target) > 0) {
 									return 1;
 								}
@@ -7508,16 +7552,24 @@ const skills = {
 								return 1;
 							},
 						})
+						.set("target", target)
 						.forResult();
+					if (typeof result?.index !== "number") {
+						return;
+					}
 					const gainner = result.index === 0 ? target : player;
-					const result2 = await gainner
-						.chooseButton({
-							createDialog: ["选择获得一张“生”", player.storage.xiusheng],
-							forced: true,
-						})
-						.forResult();
-					player.unmarkAuto("xiusheng", result2.links);
-					await gainner.gain(result2.links, "gain2");
+					if (player.getStorage("xiusheng").length) {
+						const result2 = await gainner
+							.chooseButton({
+								createDialog: ["选择获得一张“生”", player.storage.xiusheng],
+								forced: true,
+							})
+							.forResult();
+						if (result2?.links?.length) {
+							player.unmarkAuto("xiusheng", result2.links);
+							await gainner.gain(result2.links, "gain2");
+						}
+					}
 					if (result.index === 0) {
 						target.markAuto("yinlang_block", [player]);
 						target.addTempSkill("yinlang_block", "phaseUseAfter");
