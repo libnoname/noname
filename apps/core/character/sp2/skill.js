@@ -10286,40 +10286,49 @@ const skills = {
 			return event.player.isDamaged() && event.player.countCards("h") > 0 && player.isPhaseUsing();
 		},
 		check(event, player) {
-			if (player.hp == 1 && player.isHealthy()) {
+			if (player.hp === 1 && player.isHealthy()) {
 				return false;
 			}
 			return get.attitude(player, event.player) <= 0;
 		},
-		content() {
-			"step 0";
-			player.choosePlayerCard(trigger.player, "h", true, trigger.player.getDamagedHp());
-			"step 1";
-			var card = result.cards;
-			event.cards = card;
-			player.showCards(card, get.translation(player) + "发动了【宼略】");
-			"step 2";
-			var gains = [],
-				red = false;
-			var target = trigger.player;
-			for (var card of cards) {
-				var type = get.type2(card, target);
-				if ((type == "basic" || type == "trick") && get.tag(card, "damage") > 0) {
+		async content(event, trigger, player) {
+			const target = trigger.player;
+			const result = await player
+				.choosePlayerCard({
+					target,
+					position: "h",
+					forced: true,
+					selectButton: target.getDamagedHp(),
+				})
+				.forResult();
+			if (!result.bool || !result.cards?.length) {
+				return;
+			}
+			const cards = result.cards;
+			await player.showCards(cards, `${get.translation(player)}发动了【宼略】`);
+			const gains = [];
+			let red = false;
+			for (const card of cards) {
+				const type = get.type2(card, target);
+				if ((type === "basic" || type === "trick") && get.tag(card, "damage") > 0) {
 					gains.push(card);
 				}
-				if (!red && get.color(card, target) == "red") {
+				if (!red && get.color(card, target) === "red") {
 					red = true;
 				}
 			}
 			if (gains.length) {
-				player.gain(gains, "give");
+				await player.gain({ cards: gains, animate: "give" });
 			}
 			if (!red) {
-				event.finish();
+				return;
 			}
-			"step 3";
-			player[player.isDamaged() ? "loseMaxHp" : "loseHp"]();
-			player.draw(2);
+			if (player.isDamaged()) {
+				await player.loseMaxHp();
+			} else {
+				await player.loseHp();
+			}
+			await player.draw(2);
 		},
 	},
 	qljsuiren: {
