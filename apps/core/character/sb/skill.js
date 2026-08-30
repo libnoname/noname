@@ -7874,7 +7874,7 @@ const skills = {
 					return player.getStorage("sbrende_givenx").includes(event.player) && player.getMaxCharge() > 0;
 				},
 				async content(event, trigger, player) {
-					const num = Math.ceil(player.getMaxCharge() / 2);
+					const num = Math.floor(player.getMaxCharge() / 2);
 					player.addMark(event.name, num, false);
 					if (player.countCharge() > player.getMaxCharge()) {
 						player.removeCharge(player.countCharge() - player.getMaxCharge(), false);

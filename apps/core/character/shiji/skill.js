@@ -237,7 +237,7 @@ const skills = {
 				.forResult();
 			if (result?.bool && result.links?.length) {
 				const link = result.links[0];
-				target.addSkill(event.name + "_buff");
+				target.addSkill("mbdingyi_buff");
 				switch (link) {
 					case "draw":
 						storage[0]++;
