@@ -6737,41 +6737,33 @@ const skills = {
 		forced: true,
 		locked: false,
 		filter(event, player, name) {
-			return name == "damageSource" || (event.source && event.source != player && event.source.isIn());
+			return name === "damageSource" || (event.source && event.source !== player && event.source.isIn());
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.addMark("dcjinjian", 1);
-			game.delayx();
-			"step 1";
-			var source = trigger.source;
-			if (source && source != player && source.isIn() && player.canCompare(source)) {
-				player
-					.chooseBool("是否和" + get.translation(source) + "拼点？", "若你赢，则你恢复1点体力")
-					.set(
-						"goon",
-						(player.countCards("h") == 1 ||
-							player.hasCard(function (card) {
-								return get.value(card) <= 5 || get.number(card) > 10;
-							})) &&
-							(get.attitude(player, source) <= 0 || source.countCards("h") >= 4)
-					)
-					.set("ai", function () {
-						return _status.event.goon;
-					});
-			} else {
-				event.finish();
+			await game.delayx();
+			const source = trigger.source;
+			if (!source || source === player || !source.isIn() || !player.canCompare(source)) {
+				return;
 			}
-			"step 2";
-			if (result.bool) {
-				player.line(trigger.source, "green");
-				player.chooseToCompare(trigger.source);
-			} else {
-				event.finish();
+			const goon =
+				(player.countCards("h") === 1 || player.hasCard(card => get.value(card) <= 5 || get.number(card) > 10)) &&
+				(get.attitude(player, source) <= 0 || source.countCards("h") >= 4);
+			const result = await player
+				.chooseBool({
+					prompt: `是否和${get.translation(source)}拼点？`,
+					prompt2: "若你赢，则你恢复1点体力",
+					ai: () => _status.event.goon,
+				})
+				.set("goon", goon)
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
-			"step 3";
-			if (result.bool) {
-				player.recover();
+			player.line(source, "green");
+			const result2 = await player.chooseToCompare(source).forResult();
+			if (result2.bool) {
+				await player.recover();
 			}
 		},
 		intro: {
