@@ -5905,6 +5905,9 @@ const skills = {
 		audio: 2,
 		trigger: { player: "useCard" },
 		filter(event, player) {
+			if (player !== _status.currentPhase) {
+				return false;
+			}
 			const len = get.cardNameLength(event.card);
 			if (player.hasHistory("useCard", evt => evt != event && get.cardNameLength(evt.card) == len, event)) {
 				return false;
@@ -5970,6 +5973,9 @@ const skills = {
 		subSkill: {
 			mark: {
 				init(player, skill) {
+					if (player !== _status.currentPhase) {
+						return;
+					}
 					const list = player
 						.getHistory("useCard")
 						.map(evt => get.cardNameLength(evt.card))
@@ -5993,6 +5999,9 @@ const skills = {
 				},
 				trigger: { player: ["useCard1", "phaseAfter"] },
 				filter(event, player) {
+					if (player !== _status.currentPhase) {
+						return false;
+					}
 					if (event.name == "phase") {
 						return true;
 					}

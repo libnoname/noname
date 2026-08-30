@@ -2279,6 +2279,7 @@ const skills = {
 		},
 	},
 	nzry_huaiju: {
+		onremove: true,
 		marktext: "橘",
 		intro: {
 			name: "怀橘",
