@@ -255,7 +255,7 @@ const skills = {
 				},
 				filter(event, player) {
 					const card = _status.shenyu;
-					if (card._selfDestroyed || card.destoryed || get.position(card) !== "e" || get.owner(card) == player) {
+					if (!card || card._selfDestroyed || card.destoryed || get.position(card) !== "e" || get.owner(card) == player || !get.owner(card)?.isIn()) {
 						return false;
 					}
 					return (player.hasHistory("sourceDamage") || player.getHistory("useCard", evt => get.is.damageCard(evt.card)).length >= 2) && player.canEquip(card, true);
@@ -265,7 +265,7 @@ const skills = {
 					const choices = [];
 					const { skill } = event;
 					const target = get.owner(card);
-					if (!target) {
+					if (!target?.isIn()) {
 						return;
 					}
 					const [left, right, left2, right2] = get.info("saodi").getTargets(player, target);
@@ -451,8 +451,7 @@ const skills = {
 		},
 		filter(event, player) {
 			const target = event.player;
-			const distance = get.distance(player, target);
-			return event.card?.name == "sha" && !game.hasPlayer(current => current != target && player.inRange(current) && get.distance(player, current) > distance) && game.getGlobalHistory("everything", evt => evt.name == "damage" && evt.player == target && evt.source == player && evt.card?.name == "sha").indexOf(event) == 0;
+			return event.card?.name == "sha" && event.checkChixueren && game.getGlobalHistory("everything", evt => evt.name == "damage" && evt.source == player && evt.card?.name == "sha" && evt.checkChixueren).indexOf(event) == 0;
 		},
 		async content(event, trigger, player) {
 			trigger.num++;
