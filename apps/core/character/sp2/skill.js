@@ -9599,57 +9599,52 @@ const skills = {
 		trigger: { player: "phaseZhunbeiBegin" },
 		direct: true,
 		filter(event, player) {
-			return player.countCards("h") > 0;
+			return player.hasCards("h");
 		},
-		content() {
-			"step 0";
-			player
-				.chooseCard("h", get.prompt("nhyanzheng"))
-				.set(
-					"goon",
-					(function () {
-						var num = player.countCards("h") - 1;
-						return (
-							game.countPlayer(function (current) {
-								return get.damageEffect(current, player, player) > 0;
-							}) >= Math.min(3, num)
-						);
-					})()
-				)
-				.set("ai", function (card) {
-					if (_status.event.goon) {
-						return Math.max(1, get.value(card));
-					}
-					return 0;
-				});
-			"step 1";
-			if (result.bool) {
-				player.logSkill("nhyanzheng");
-				var cards = player.getCards("h", function (card) {
-					return card != result.cards[0] && lib.filter.cardDiscardable(card, player, "nhyanzheng");
-				});
-				if (cards.length) {
-					player.discard(cards);
-					event.num = cards.length;
-				} else {
-					event.finish();
-				}
-			} else {
-				event.finish();
+		async content(event, trigger, player) {
+			const num = player.countCards("h") - 1;
+			const goon = game.countPlayer(current => get.damageEffect(current, player, player) > 0) >= Math.min(3, num);
+			const cardResult = await player
+				.chooseCard({
+					position: "h",
+					prompt: get.prompt("nhyanzheng"),
+					ai: card => {
+						if (_status.event.goon) {
+							return Math.max(1, get.value(card));
+						}
+						return 0;
+					},
+				})
+				.set("goon", goon)
+				.forResult();
+			if (!cardResult.bool) {
+				return;
 			}
-			"step 2";
-			num = Math.min(num, game.countPlayer());
-			player.chooseTarget([1, num], true, "对" + (num > 1 ? "至多" : "") + get.cnNumber(num) + "名角色造成1点伤害").set("ai", function (target) {
-				var player = _status.event.player;
-				return get.damageEffect(target, player, player);
-			});
-			"step 3";
-			if (result.bool) {
-				var targets = result.targets.sortBySeat();
-				player.line(targets, "green");
-				for (var i of targets) {
-					i.damage();
-				}
+			player.logSkill("nhyanzheng");
+			const cards = player.getCards("h", card => card !== cardResult.cards[0] && lib.filter.cardDiscardable(card, player, "nhyanzheng"));
+			if (!cards.length) {
+				return;
+			}
+			await player.discard({ cards });
+			const targetNum = Math.min(cards.length, game.countPlayer());
+			const targetResult = await player
+				.chooseTarget({
+					selectTarget: [1, targetNum],
+					forced: true,
+					prompt: `对${targetNum > 1 ? "至多" : ""}${get.cnNumber(targetNum)}名角色造成1点伤害`,
+					ai: target => {
+						const player = _status.event.player;
+						return get.damageEffect(target, player, player);
+					},
+				})
+				.forResult();
+			if (!targetResult.bool) {
+				return;
+			}
+			const targets = targetResult.targets.sortBySeat();
+			player.line(targets, "green");
+			for (const target of targets) {
+				await target.damage();
 			}
 		},
 	},
