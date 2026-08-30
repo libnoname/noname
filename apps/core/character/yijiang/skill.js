@@ -11532,7 +11532,7 @@ const skills = {
 			player.awakenSkill(event.name);
 			await player.loseMaxHp();
 			await player.chooseDrawRecover(2, true, (event, player) => {
-				if (player.hp == 1 && player.isDamaged()) {
+				if (player.hp == 1 && player.getDamagedHp() > 1) {
 					return "recover_hp";
 				}
 				return "draw_card";
