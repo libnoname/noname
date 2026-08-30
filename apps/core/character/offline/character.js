@@ -244,14 +244,14 @@ const characters = {
 		sex: "male",
 		group: "wu",
 		hp: 4,
-		skills: ["ylyg_sunce_jiang", "ylyg_sunce_hunzi", "ylyg_sunce_zhiba"],
+		skills: ["ylyg_jiang", "ylyg_hunzi", "ylyg_zhiba"],
 		isZhugong: true,
 	},
 	ylyg_caiwenji: {
 		sex: "female",
 		group: "qun",
 		hp: 3,
-		skills: ["ylyg_caiwenji_duanchang", "ylyg_caiwenji_beige"],
+		skills: ["ylyg_duanchang", "ylyg_beige"],
 	},
 	ylyg_xuhuang: {
 		sex: "male",

@@ -4,9 +4,10 @@ import html from "dedent";
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
 	//雁翎孙策
-	ylyg_sunce_jiang: {
+	ylyg_jiang: {
 		trigger: { global: "useCardToPlayered" },
 		frequent: true,
+		locked: false,
 		filter(event, player) {
 			if (!(event.card?.name === "juedou" || (event.card?.name === "sha" && get.color(event.card) === "red"))) {
 				return false;
@@ -34,7 +35,7 @@ const skills = {
 			},
 		},
 	},
-	ylyg_sunce_hunzi: {
+	ylyg_hunzi: {
 		juexingji: true,
 		skillAnimation: true,
 		animationColor: "wood",
@@ -42,7 +43,7 @@ const skills = {
 		trigger: { player: "changeHp" },
 		forced: true,
 		filter(event, player) {
-			return player.hp === 1 && !player.storage.ylyg_sunce_hunzi;
+			return player.hp === 1;
 		},
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
@@ -56,13 +57,13 @@ const skills = {
 			},
 		},
 	},
-	ylyg_sunce_zhiba: {
+	ylyg_zhiba: {
 		zhuSkill: true,
 		trigger: { global: "phaseZhunbeiBegin" },
 		direct: true,
 		filter(event, player) {
 			const current = event.player;
-			return player.hasZhuSkill("ylyg_sunce_zhiba") && current.group === "wu" && current.countCards("h") > 0 && game.hasPlayer(target => target !== current && current.canCompare(target));
+			return player.hasZhuSkill("ylyg_zhiba") && current.group === "wu" && current.countCards("h") > 0 && game.hasPlayer(target => target !== current && current.canCompare(target));
 		},
 		async content(event, trigger, player) {
 			const current = trigger.player;
@@ -99,7 +100,7 @@ const skills = {
 		},
 	},
 	//雁翎蔡文姬
-	ylyg_caiwenji_duanchang: {
+	ylyg_duanchang: {
 		locked: true,
 		trigger: { player: "die" },
 		forced: true,
@@ -134,7 +135,7 @@ const skills = {
 			},
 		},
 	},
-	ylyg_caiwenji_beige: {
+	ylyg_beige: {
 		trigger: { global: "damageEnd" },
 		filter(event, player) {
 			return event.card?.name === "sha" && event.source?.isIn() && event.player?.isIn() && player.countCards("he") > 0;
@@ -145,7 +146,7 @@ const skills = {
 					position: "he",
 					prompt: get.prompt2(event.skill, trigger.player),
 					ai(card) {
-						const victim = trigger.card?.storage?.ylyg_caiwenji_quzhong ? trigger.source : trigger.player;
+						const victim = trigger.card?.storage?.ylyg_quzhong ? trigger.source : trigger.player;
 						return get.attitude(player, victim) > 0 ? 8 - get.value(card) : 0;
 					},
 				})
@@ -153,10 +154,10 @@ const skills = {
 			event.result = result;
 		},
 		async content(event, trigger, player) {
-			const result = await trigger.player.judge().forResult();
-			const swapped = trigger.card?.storage?.ylyg_caiwenji_quzhong === true;
+			const swapped = trigger.card?.storage?.ylyg_quzhong === true;
 			const victim = swapped ? trigger.source : trigger.player;
 			const source = swapped ? trigger.player : trigger.source;
+			const result = await victim.judge().forResult();
 			switch (result.suit) {
 				case "heart":
 					await victim.recover(trigger.num);
@@ -174,7 +175,7 @@ const skills = {
 			player.markAuto(event.name, [result.suit]);
 			const suits = player.getStorage(event.name);
 			if (["heart", "diamond", "club", "spade"].every(suit => suits.includes(suit))) {
-				await player.addSkills("ylyg_caiwenji_quzhong");
+				await player.addSkills("ylyg_quzhong");
 			}
 		},
 		mark: true,
@@ -202,30 +203,30 @@ const skills = {
 		},
 		ai: { expose: 0.3 },
 	},
-	ylyg_caiwenji_quzhong: {
+	ylyg_quzhong: {
 		trigger: { global: "phaseJieshuBegin" },
 		direct: true,
 		getDiscardedCards(player) {
 			return player
 				.getHistory("lose", evt => evt.type === "discard")
-				.flatMap(evt => (evt.cards2 || evt.cards || []).filterInD("d"))
+				.flatMap(evt => (evt.cards2 || []).filterInD("d"))
 				.toUniqued();
 		},
 		filter(event, player) {
-			const cards = lib.skill.ylyg_caiwenji_quzhong.getDiscardedCards(player);
+			const cards = lib.skill.ylyg_quzhong.getDiscardedCards(player);
 			return cards.some(card => {
-				const sha = get.autoViewAs({ name: "sha", isCard: true, storage: { ylyg_caiwenji_quzhong: true } }, [card]);
+				const sha = get.autoViewAs({ name: "sha", isCard: true, storage: { ylyg_quzhong: true } }, [card]);
 				return player.hasUseTarget(sha);
 			});
 		},
 		async content(event, trigger, player) {
-			const cards = lib.skill.ylyg_caiwenji_quzhong.getDiscardedCards(player);
+			const cards = lib.skill.ylyg_quzhong.getDiscardedCards(player);
 			const result = await player
 				.chooseButton({
 					createDialog: ["曲终：你可以将本回合弃置的一张牌当【杀】使用", cards],
 					filterButton(button) {
 						const card = button.link;
-						const sha = get.autoViewAs({ name: "sha", isCard: true, storage: { ylyg_caiwenji_quzhong: true } }, [card]);
+						const sha = get.autoViewAs({ name: "sha", isCard: true, storage: { ylyg_quzhong: true } }, [card]);
 						return get.player().hasUseTarget(sha);
 					},
 					ai(button) {
@@ -237,7 +238,7 @@ const skills = {
 				return;
 			}
 			const card = result.links[0];
-			const sha = get.autoViewAs({ name: "sha", isCard: true, storage: { ylyg_caiwenji_quzhong: true } }, [card]);
+			const sha = get.autoViewAs({ name: "sha", isCard: true, storage: { ylyg_quzhong: true } }, [card]);
 			await player.chooseUseTarget({
 				prompt: "曲终：请选择【杀】的目标",
 				card: sha,
