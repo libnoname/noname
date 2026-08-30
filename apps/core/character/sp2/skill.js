@@ -599,10 +599,14 @@ const skills = {
 	dcyuzheng: {
 		audio: 2,
 		enable: "phaseUse",
-		usable: 2,
-		filterTarget: true,
+		filterTarget(card, player, target) {
+			if (!player.getStorage("dcyuzheng_used").includes(1)) {
+				return target.maxHp > 0;
+			}
+			return !target.isMinHandcard();
+		},
 		filter(event, player) {
-			return player.getStorage("dcyuzheng_used").length < 2;
+			return player.getStorage("dcyuzheng_used").length < 2 && game.hasPlayer(current => get.info("dcyuzheng").filterTarget(null, player, current));
 		},
 		async content(event, trigger, player) {
 			const { target } = event;
@@ -611,6 +615,8 @@ const skills = {
 			let result;
 			if (storage.length == 1) {
 				result = { index: storage[0] == 0 ? 1 : 0 };
+			} else if (target.isMinHandcard()) {
+				result = { index: 1 };
 			} else {
 				result = await target.chooseControl({ choiceList: list, choice: 1 }).forResult();
 			}
@@ -1777,7 +1783,7 @@ const skills = {
 				const num = result.cards.length;
 				const next = player.chooseToDiscard("he", num);
 				next.set("prompt", "荡尘：是否弃置" + get.cnNumber(num) + "张牌并获得后续效果？");
-				next.set("prompt2", "当你于本回合使用基本牌或普通锦囊牌时，可以进行一次判定，若判定的点数为" + num + "的倍数，则此牌额外结算一次");
+				next.set("prompt2", `当你于本回合使用【杀】或普通锦囊牌指定${get.translation(target)}为目标后，可以进行一次判定，若判定的点数为` + num + "的倍数，则此牌额外结算一次");
 				next.set("ai", card => {
 					const { isDiscard } = get.event();
 					if (isDiscard) {
@@ -1802,11 +1808,11 @@ const skills = {
 					})()
 				);
 				result = await next.forResult();
-				if (!result?.bool) {
+				if (!result?.bool || !result.cards?.length) {
 					return;
 				}
 				player.addTempSkill("stardangchen_buff", { player: "phaseUseEnd" });
-				player.addMark("stardangchen_buff", num, false);
+				player.setStorage("stardangchen_buff", [num, target], true);
 			}
 		},
 		subSkill: {
@@ -1814,34 +1820,45 @@ const skills = {
 				charlotte: true,
 				onremove: true,
 				audio: "stardangchen",
-				trigger: { player: "useCard" },
+				trigger: { player: "useCardToPlayered" },
 				filter(event, player) {
-					if (!lib.skill.dcshixian.filterx(event) || !player.hasMark("stardangchen_buff")) {
+					const [num, target] = player.getStorage("stardangchen_buff");
+					if (event.card.name != "sha" && get.type(event.card) != "trick") {
+						return false;
+					}
+					if (typeof num != "number" || !target?.isIn() || event.target != target) {
 						return false;
 					}
 					return true;
 				},
 				check(event, player) {
-					return !get.tag(event.card, "norepeat") ^ (event.targets?.reduce((sum, i) => sum + get.effect(i, event.card, player, player), 0) < 0);
+					return get.effect(event.target, event.card, player, player) > 0;
 				},
 				prompt2(event, player) {
-					return "进行一次判定，若判定结果为" + player.countMark("stardangchen_buff") + "的倍数，则" + get.translation(event.card) + "额外结算一次";
+					const [num, target] = player.getStorage("stardangchen_buff");
+					return "进行一次判定，若判定结果为" + num + "的倍数，则" + get.translation(event.card) + "额外结算一次";
 				},
 				async content(event, trigger, player) {
+					const [num, target] = player.getStorage("stardangchen_buff");
 					const result = await player
 						.judge(card => {
 							const number = get.number(card);
-							return 10 * (0.5 - (number % get.player().countMark("stardangchen_buff") !== 0));
+							return 10 * (0.5 - (number % get.event().num !== 0));
 						})
 						.set("judge2", result => Boolean(result.bool))
+						.set("num", num)
 						.forResult();
 					const { number } = result;
-					if (number % player.countMark("stardangchen_buff") === 0) {
-						trigger.effectCount++;
+					if (number % num === 0) {
+						trigger.getParent().effectCount++;
 						game.log(trigger.card, "额外结算一次");
 					}
 				},
-				intro: { content: "使用基本牌或普通锦囊牌时可以进行一次判定，若判定的点数为#的倍数，则此牌额外结算一次" },
+				intro: {
+					content([num, target], player) {
+						return `使用【杀】或普通锦囊牌指定${get.translation(target)}可以进行一次判定，若判定的点数为${num}的倍数，则此牌额外结算一次`;
+					},
+				},
 			},
 		},
 	},
@@ -2023,45 +2040,41 @@ const skills = {
 		filter(event, player) {
 			return get.discardPile(card => get.type(card) == "basic");
 		},
-		async cost(event, trigger, player) {
-			const cards = Array.from(ui.discardPile.childNodes).filter(card => get.type(card) == "basic");
-			const result = await player
-				.chooseButton([get.prompt2(event.skill), cards], [1, Infinity])
-				.set("filterButton", button => {
-					if (ui.selected.buttons?.some(buttonx => buttonx.link.name == button.link.name)) {
-						return false;
-					}
-					return true;
-				})
-				.set("ai", () => 1 + Math.random())
-				.forResult();
-			event.result = {
-				bool: result?.bool,
-				cards: result?.links ?? [],
-			};
-		},
+		prompt2: "将弃牌堆中不同牌名的基本牌各一张置于牌堆顶，然后视为使用一张【五谷丰登】（从你或一名已受伤角色开始结算）",
 		async content(event, trigger, player) {
 			game.players.forEach(current => current.addTempSkill("staranshu_remove", "roundEnd"));
-			await game.cardsGotoPile(event.cards, "insert");
+			const cardx = Array.from(ui.discardPile.childNodes)
+				.filter(card => get.type(card) == "basic")
+				.randomSort();
+			const cards = [];
+			for (const card of cardx) {
+				if (!cards.some(c => c.name == card.name)) {
+					cards.push(card);
+				}
+			}
+			if (!cards.length) return;
+			await game.cardsGotoPile(cards, "insert");
+			const targets = game.filterPlayer(current => current == player || current.isDamaged());
+			let target = player;
+			if (targets.length > 1) {
+				const result = await player
+					.chooseTarget("请选择【五谷丰登】的起点", true, function (card, player, target) {
+						return get.event().targets.includes(target);
+					})
+					.set("targets", targets)
+					.set("ai", target => {
+						return get.attitude(get.player(), target);
+					})
+					.forResult();
+				if (result?.bool && result.targets?.length) {
+					target = result.targets[0];
+				}
+			}
 			player
 				.when({ global: "useCardToTargeted" })
 				.filter(evt => evt.card?.anshu && evt?.targets?.length == evt.getParent()?.triggeredTargets4?.length)
 				.step(async (event, trigger, player) => {
 					delete trigger.card.anshu;
-					const targets = game.filterPlayer(current => current == player || current.isDamaged());
-					let target = player;
-					if (targets.length > 1) {
-						const result = await player
-							.chooseTarget("请选择【五谷丰登】的起点", true, function (card, player, target) {
-								return get.event().targets.includes(target);
-							})
-							.set("targets", targets)
-							.set("ai", target => {
-								return get.attitude(get.player(), target);
-							})
-							.forResult();
-						target = result.targets[0];
-					}
 					trigger.getParent().targets = trigger.getParent().targets.sortBySeat(target);
 					trigger.getParent().triggeredTargets4 = trigger.getParent().triggeredTargets4.sortBySeat(target);
 				});
@@ -2353,7 +2366,7 @@ const skills = {
 			if (card) {
 				await player.gain(card, "gain2");
 			}
-			const next = player.chooseTarget(true, "驱险：选择一名角色，攻击范围内包含其的角色可以对其使用【杀】").set("ai", target => {
+			const next = player.chooseTarget(true, "驱险：选择一名其他角色，攻击范围内包含其的角色可以对其使用【杀】", lib.filter.notMe).set("ai", target => {
 				const player = get.player();
 				return -get.attitude(player, target);
 			});
@@ -2372,11 +2385,11 @@ const skills = {
 			if (result?.targets?.length) {
 				const target = result.targets[0];
 				player.line(target);
-				const targets = game.filterPlayer(current => current.inRange(target)).sortBySeat(); //current != player &&
+				const targets = game.filterPlayer(current => current.inRange(target)).sortBySeat();
 				if (!targets.length) {
 					return;
 				}
-				player.addTempSkill(event.name + "_draw");
+				let num = 0;
 				const sha = [],
 					nosha = [];
 				while (targets.length) {
@@ -2405,36 +2418,19 @@ const skills = {
 						.forResult();
 					if (bool) {
 						sha.push(current);
-					} else if (current != player) {
+						num++;
+					} else {
 						nosha.push(current);
 					}
 				}
-				player.removeSkill(event.name + "_draw");
+				if (num > 0) {
+					await player.draw({ num });
+				}
 				if (!target.hasHistory("damage", evt => evt.getParent().type == "card" && evt.getParent(4) == event) && sha.length && nosha.length) {
 					player.line(nosha, "green");
 					await game.doAsyncInOrder(nosha, async (targetx, i) => targetx.loseHp(sha.length));
 				}
 			}
-		},
-		ai: {
-			order: 5,
-			result: {
-				player: 1,
-			},
-		},
-		subSkill: {
-			draw: {
-				charlotte: true,
-				forced: true,
-				popup: false,
-				trigger: { global: "useCard" },
-				filter(event, player) {
-					return event.getParent(2).name == "dcquxian" && event.getParent(2).player == player && event.card.name == "sha";
-				},
-				async content(event, trigger, player) {
-					await player.draw();
-				},
-			},
 		},
 	},
 	//韩嵩
@@ -2524,8 +2520,13 @@ const skills = {
 	dcshefu: {
 		audio: 2,
 		trigger: {
-			player: "damageBegin2",
-			source: "damageBegin1",
+			global: "damageBefore",
+		},
+		init(player, skill) {
+			player.addSkill(skill + "_mark");
+		},
+		onremove(player, skill) {
+			player.removeSkill(skill + "_mark");
 		},
 		filter(event, player) {
 			if (!event.source || event.source == event.player) {
@@ -2538,7 +2539,7 @@ const skills = {
 		logTarget(event, player) {
 			return event.source == player ? event.player : event.source;
 		},
-		content() {
+		async content(event, trigger, player) {
 			if (!trigger.cards?.length) {
 				trigger.cancel();
 				return;
@@ -2552,24 +2553,26 @@ const skills = {
 					return evt.cards.includes(card);
 				}).length;
 			});
-			trigger.num =
+			trigger.num = Math.min(
+				5,
 				cards.length +
-				cards.reduce((sum, card) => {
-					let num = 0,
-						history = trigger.source.actionHistory;
-					for (let i = history.length - 1; i >= 0; i--) {
-						if (history[i].gain.some(evtx => evtx.cards.includes(card))) {
-							break;
+					cards.reduce((sum, card) => {
+						let num = 0,
+							history = trigger.source.actionHistory;
+						for (let i = history.length - 1; i >= 0; i--) {
+							if (history[i].gain.some(evtx => evtx.cards.includes(card))) {
+								break;
+							}
+							if (history[i].isRound) {
+								num++;
+							}
+							if (i == 0 && trigger.source._start_cards?.includes(card)) {
+								num--;
+							}
 						}
-						if (history[i].isRound) {
-							num++;
-						}
-						if (i == 0 && trigger.source._start_cards?.includes(card)) {
-							num--;
-						}
-					}
-					return sum + num;
-				}, 0);
+						return sum + num;
+					}, 0)
+			);
 		},
 		ai: {
 			effect: {
@@ -2590,6 +2593,54 @@ const skills = {
 				},
 				player() {
 					return lib.skill.dcshefu.ai.effect.target.apply(this, arguments);
+				},
+			},
+		},
+		subSkill: {
+			mark: {
+				charlotte: true,
+				silent: true,
+				popup: false,
+				firstDo: true,
+				init(player, skill) {
+					const cards = player.getCards("h");
+					get.info(skill).onremove(player, skill);
+					if (cards.length) {
+						for (const card of cards) {
+							let num = 1,
+								history = player.actionHistory;
+							for (let i = history.length - 1; i >= 0; i--) {
+								if (history[i].gain.some(evtx => evtx.cards.includes(card))) {
+									break;
+								}
+								if (history[i].isRound) {
+									num++;
+								}
+								if (i == 0 && player._start_cards?.includes(card)) {
+									num--;
+								}
+							}
+							num = Math.min(5, num);
+							game.broadcastAll(card => {
+								card.addGaintag(skill + num);
+							}, card);
+						}
+					}
+				},
+				onremove(player, skill) {
+					for (let i = 1; i < 6; i++) {
+						player.removeGaintag(skill + i);
+					}
+				},
+				trigger: {
+					player: "gainAfter",
+					global: ["loseAsyncAfter", "roundStart"],
+				},
+				filter(event, player, name) {
+					return name == "roundStart" || event.getg?.(player)?.length;
+				},
+				async content(event, trigger, player) {
+					get.info(event.name).init(player, event.name);
 				},
 			},
 		},
@@ -3541,14 +3592,14 @@ const skills = {
 						});
 					})
 					?.countCards("h");
-				if (!maxNum) {
+				if (!maxNum || !player.hasDiscardableCards(player, "h")) {
 					return;
 				}
 				const leastDiscardNum = num - maxNum + 1;
 				const prompt = logged ? `是否将手牌弃置至不为最多？` : get.prompt("starminghui");
 				const next = player
-					.chooseToDiscard(prompt, `弃置至少${get.cnNumber(leastDiscardNum)}张手牌，然后你令一名角色回复1点体力`, "allowChooseAll")
-					.set("selectCard", [leastDiscardNum, Infinity])
+					.chooseToDiscard(prompt, `弃置${get.cnNumber(leastDiscardNum)}张手牌，然后你令一名角色回复1点体力`, "allowChooseAll")
+					.set("selectCard", leastDiscardNum)
 					.set(
 						"goon",
 						game.hasPlayer(current => get.recoverEffect(current, get.player(), get.player()))
@@ -3569,7 +3620,7 @@ const skills = {
 					next.set("logSkill", "starminghui");
 				}
 				const result = await next.forResult();
-				if (!result?.bool) {
+				if (!result?.bool || !result.cards?.length) {
 					return;
 				}
 				if (!player.isUnderControl(true) && !player.isOnline()) {
@@ -3869,7 +3920,7 @@ const skills = {
 		},
 		forced: true,
 		logTarget: "player",
-		content() {
+		async content(event, trigger, player) {
 			trigger.num++;
 		},
 	},

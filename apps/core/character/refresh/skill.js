@@ -15746,7 +15746,7 @@ const skills = {
 	},
 	reguicai: {
 		audio: 2,
-		audioname: ["new_simayi"],
+		audioname2: { new_simayi: "reguicai_new_simayi" },
 		trigger: { global: "judge" },
 		filter(event, player) {
 			return player.countCards("hes") > 0;
@@ -15815,6 +15815,7 @@ const skills = {
 			rejudge: true,
 			tag: { rejudge: 1 },
 		},
+		subSkill: { new_simayi: { audio: 2 } },
 	},
 	refankui: {
 		audio: 2,

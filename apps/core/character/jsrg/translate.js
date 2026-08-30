@@ -396,7 +396,7 @@ const translates = {
 	jsrgxiangru: "相濡",
 	jsrgxiangru_info: "当一名已受伤的其他角色／你受到致命伤害时，你／已受伤的其他角色可以交给伤害来源两张牌，然后防止此伤害。",
 	jsrgwudao: "悟道",
-	jsrgwudao_info: "觉醒技。一名角色进入濒死状态时，若你没有手牌，则你加１点体力上限并回复１点体力，然后获得〖惊雷〗。",
+	jsrgwudao_info: `觉醒技。一名角色进入濒死状态时，若你没有手牌，则你加１点体力上限并回复１点体力，然后获得${get.poptip("jsrgjinglei")}。`,
 	jsrgjinglei: "惊雷",
 	jsrgjinglei_info: "准备阶段，你可以选择一名其他角色Ａ，然后选择任意名手牌数之和小于Ａ的角色，令这些角色依次对Ａ造成１点雷属性伤害。",
 	jsrg_yangqiu: "衰阳球",

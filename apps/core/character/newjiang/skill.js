@@ -850,7 +850,7 @@ const skills = {
 			player.removeExtraEquip(skill);
 		},
 		filter(event, player) {
-			if (!event.reason) {
+			if (!event.reason || player.maxHp < 2) {
 				return false;
 			}
 			const reason = event.reason;
@@ -2410,6 +2410,7 @@ const skills = {
 				i.popup(result.control);
 				list.push(result.control);
 			}
+			list.sort((a, b) => (a === "摸牌" ? -1 : 1));
 			const bool = list[0] != list[1];
 			for (const i of list) {
 				for (const current of targets) {
@@ -4113,9 +4114,6 @@ const skills = {
 	beiyu: {
 		audio: 2,
 		enable: "phaseUse",
-		filter(event, player) {
-			return player.countCards("h") < player.maxHp;
-		},
 		usable: 1,
 		manualConfirm: true,
 		async content(event, trigger, player) {
@@ -4153,7 +4151,7 @@ const skills = {
 				.forResult();
 			if (result?.links?.length) {
 				const [suit] = result.links,
-					cards = player.getCards("h", card => get.suit(card, player) == suit);
+					cards = player.getCards("h", card => get.suit(card, player) == suit).randomSort();
 				if (cards.length) {
 					game.log(player, "将", cards, "置于牌堆底");
 					await player.lose(cards, ui.cardPile);
@@ -4527,10 +4525,9 @@ const skills = {
 			player: "damageEnd",
 			source: "damageSource",
 		},
-		forced: true,
-		locked: false,
+		frequent: true,
 		async content(event, trigger, player) {
-			player.draw(2).gaintag = ["kangli"];
+			await player.draw({ num: 2, gaintag: ["kangli"] });
 			player.when({ source: "damageBegin1" }).step(async (event, trigger, player) => {
 				const cards = player.getCards("h", card => card.hasGaintag("kangli") && lib.filter.cardDiscardable(card, player, "kangli"));
 				if (cards.length) {
