@@ -786,9 +786,7 @@ const skills = {
 				async content(event, trigger, player) {
 					player.addMark(event.name, 3, false);
 				},
-				marktext: "略",
 				onremove: true,
-				intro: { content: "本次清除〖显略①〗需要的记录数-#" },
 			},
 		},
 	},
@@ -3074,9 +3072,9 @@ const skills = {
 						}
 					}
 					const gain = [];
-					const names = cards.map(card => get.name(card, false)).unique();
+					const names = cards.map(card => get.name(card, false));
 					for (let i = 0; i < Math.min(5, cards.length); i++) {
-						const card = get.cardPile2(card => {
+						const card = get.cardPile(card => {
 							return names.includes(get.name(card)) && !gain.includes(card);
 						});
 						if (card) {
@@ -3186,7 +3184,7 @@ const skills = {
 					});
 				}
 			} else {
-				if (get.name(trigger.card) == "juedou") {
+				if (trigger.card && get.name(trigger.card) == "juedou") {
 					player.addTempSkill(`${event.name}_directHit`, { player: "dieAfter" });
 				}
 				if ((player.getAllHistory("sourceDamage").indexOf(trigger) + 1) % 2 == 0) {
@@ -12501,6 +12499,12 @@ const skills = {
 				}
 				return evt.getParent(4) == event;
 			});
+			if (restore) {
+				if (player.getStat("skill")[event.name]) {
+					delete player.getStat("skill")[event.name];
+				}
+				await player.recover(1);
+			}
 			const cards = get.cards(3, true);
 			await player.showCards(cards, `${get.translation(player)}发动了【淑任】`, true).set("clearArena", false);
 			const { links } = await player
@@ -12548,14 +12552,8 @@ const skills = {
 						return get.value(card, target) * get.attitude(player, target);
 					},
 				})
-			 */
+				 */
 			game.broadcastAll(ui.clear);
-			if (restore) {
-				if (player.getStat("skill")[event.name]) {
-					delete player.getStat("skill")[event.name];
-				}
-				await player.recover(1);
-			}
 		},
 		ai: {
 			order: 1,

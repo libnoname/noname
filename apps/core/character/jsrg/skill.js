@@ -9153,7 +9153,7 @@ const skills = {
 				.set("logSkill", "jsrgfeiyang")
 				.set("ai", function (card) {
 					if (_status.event.goon) {
-						return 6 - get.value(card);
+						return 9 - get.value(card);
 					}
 					return 0;
 				})
@@ -9161,6 +9161,9 @@ const skills = {
 					"goon",
 					(() => {
 						if (player.hasSkillTag("rejudge") && player.countCards("j") < 2) {
+							return false;
+						}
+						if (player.hasSkill("dckanyu", null, false, false) && !player.hasCards("j", card => card.name == "lebu")) {
 							return false;
 						}
 						return player.hasCard(function (card) {

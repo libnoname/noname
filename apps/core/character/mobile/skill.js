@@ -3255,7 +3255,7 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseUseBegin" },
 		filter(event, player) {
-			return player.countMark("xinrenjie");
+			return player.hasMark("xinrenjie");
 		},
 		async cost(event, trigger, player) {
 			const limit = Math.min(3, player.countMark("xinrenjie"));
@@ -3285,23 +3285,23 @@ const skills = {
 				});
 				next.set("ai", button => {
 					const link = button.link,
-						num = get.event().num,
-						skills = get.event().skills;
+						{ num, skills, player } = get.event();
 					if (!ui.selected.buttons.length) {
-						if (num > 2 && link == "摸牌") {
-							return 10;
+						if (num > 0 && link == "摸牌") {
+							return 2;
 						}
-						if (link == "rezhiheng" && player.countCards("h") > 0) {
+						if (link == "rezhiheng" && player.hasCards("h")) {
 							return 10;
 						}
 						if (link == "rejizhi" && (!skills.includes("rezhiheng") || player.countCards("hs", { type: "trick" }))) {
 							return 8;
 						}
-						if (player.countMark("xinrenjie") <= 2) {
-							return 0;
+						if (link == "rewansha") {
+							return 6;
 						}
+						return 0;
 					}
-					return ui.selected.buttons.length && ui.selected.buttons[0].link == "摸牌" ? num - 1 : 1;
+					return link == (ui.selected.buttons.length && ui.selected.buttons[0].link != "摸牌" ? num - 1 : 1);
 				});
 				next.set("num", num);
 				next.set("skills", skills);
@@ -3327,7 +3327,7 @@ const skills = {
 							if (!player.hasSkill("rejizhi", null, null, false)) {
 								return "cancel2";
 							}
-							return choices.length - 1;
+							return draw[draw.length - 1];
 						})()
 					)
 					.forResult();
@@ -10206,7 +10206,7 @@ const skills = {
 				forced: true,
 				async content(event, trigger, player) {
 					await player.loseHp();
-					if (typeof player.storage[event.name][trigger.card.name] == "number" && player.storage[event.name][trigger.card.name] > 0) {
+					if (typeof player.storage?.[event.name]?.[trigger.card.name] == "number" && player.storage[event.name][trigger.card.name] > 0) {
 						player.storage[event.name][trigger.card.name]--;
 						if (get.info(event.name).intro.markcount(player.storage[event.name]) === 0) {
 							player.removeSkill(event.name);
@@ -10215,9 +10215,10 @@ const skills = {
 						if (player.storage[event.name][trigger.card.name] === 0) {
 							delete player.storage[event.name][trigger.card.name];
 						}
-						player.syncStorage(event.name);
-						player.addTip(event.name, `谮构 ${get.translation(Object.keys(player.storage[event.name]))}`);
-					}
+					player.syncStorage(event.name);
+					player.markSkill(event.name);
+					player.addTip(event.name, `谮构 ${get.translation(Object.keys(player.storage[event.name]))}`);
+				}
 				},
 				mod: {
 					aiOrder(player, card, num) {
@@ -17709,7 +17710,7 @@ const skills = {
 				evt.suits.push(event.getParent().result.suit);
 				player.chooseBool("是否继续发动【庀材】？").set("frequentSkill", "scspicai");
 			} else {
-				event._result = { bool: false };
+				return;
 			}
 			"step 1";
 			if (result.bool) {
@@ -31763,6 +31764,9 @@ const skills = {
 			respondSha: true,
 			respondShan: true,
 			fireAttack: true,
+		},
+		subSkill: {
+			backup: {},
 		},
 	},
 	yizan_respond_shan: {
