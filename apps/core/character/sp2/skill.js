@@ -5337,58 +5337,65 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filterTarget(card, player, target) {
-			return target.countCards("h") && target != player;
+			return target.hasCards("h") && target !== player;
 		},
-		content() {
-			"step 0";
-			player.choosePlayerCard(target, true, "h");
-			"step 1";
-			if (result.bool) {
-				var card = result.cards[0];
-				event.card = card;
-				player.showCards(card, get.translation(player) + "对" + get.translation(target) + "发动了【怒嗔】");
-			} else {
-				event.finish();
-			}
-			"step 2";
-			var suit = get.suit(card);
-			var str = get.translation(suit);
-			player
-				.chooseToDiscard("怒嗔：是否弃置至少一张" + str + "牌？", "若如此做，你对其造成等量伤害；或点击“取消”，获得其所有" + str + "手牌", "he", { suit: suit }, [1, Infinity], "allowChooseAll")
-				.set("ai", card => {
-					if (ui.selected.cards.length >= _status.event.num) {
-						return 0;
-					}
-					return 6 - get.value(card);
+		async content(event, trigger, player) {
+			const { target } = event;
+			const result = await player
+				.choosePlayerCard({
+					target,
+					forced: true,
+					position: "h",
 				})
-				.set(
-					"num",
-					(function () {
-						var eff = get.damageEffect(target, player, player);
-						if (eff > 0) {
-							if (get.attitude(player, target) > 0) {
-								return 1;
-							}
-							var cards = target.getCards("h", { suit: suit });
-							if (cards.length > 2 || get.value(cards) >= 6) {
-								return 0;
-							}
-							if (!player.hasSkillTag("jueqing", false, target) && target.hasSkillTag("filterDamage", null, { player: player })) {
-								return 1;
-							}
-							return Infinity;
-						}
-						return 0;
-					})()
-				);
-			"step 3";
-			if (result.bool) {
-				target.damage(result.cards.length, "nocard");
-			} else {
-				var cards = target.getCards("h", { suit: get.suit(card) });
-				if (cards.length) {
-					player.gain(cards, target, "giveAuto", "bySelf");
+				.forResult();
+			if (!result.bool || !result.cards?.length) {
+				return;
+			}
+			const card = result.cards[0];
+			await player.showCards(card, `${get.translation(player)}对${get.translation(target)}发动了【怒嗔】`);
+			const suit = get.suit(card);
+			const str = get.translation(suit);
+			const num = (() => {
+				const eff = get.damageEffect(target, player, player);
+				if (eff <= 0) {
+					return 0;
 				}
+				if (get.attitude(player, target) > 0) {
+					return 1;
+				}
+				const cards = target.getCards("h", { suit });
+				if (cards.length > 2 || get.value(cards) >= 6) {
+					return 0;
+				}
+				if (!player.hasSkillTag("jueqing", false, target) && target.hasSkillTag("filterDamage", null, { player })) {
+					return 1;
+				}
+				return Infinity;
+			})();
+			const result2 = await player
+				.chooseToDiscard({
+					prompt: `怒嗔：是否弃置至少一张${str}牌？`,
+					prompt2: `若如此做，你对其造成等量伤害；或点击“取消”，获得其所有${str}手牌`,
+					position: "he",
+					filterCard: { suit },
+					selectCard: [1, Infinity],
+					allowChooseAll: true,
+					ai: card => {
+						if (ui.selected.cards.length >= _status.event.num) {
+							return 0;
+						}
+						return 6 - get.value(card);
+					},
+				})
+				.set("num", num)
+				.forResult();
+			if (result2.bool && result2.cards?.length) {
+				await target.damage({ num: result2.cards.length, nocard: true });
+				return;
+			}
+			const cards = target.getCards("h", { suit });
+			if (cards.length) {
+				await player.gain({ cards, source: target, animate: "giveAuto", bySelf: true });
 			}
 		},
 		ai: {
