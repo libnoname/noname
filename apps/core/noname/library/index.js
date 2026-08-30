@@ -10724,16 +10724,15 @@ export class Library {
 					ui.create.connecting();
 				}
 				_status.reconnectTimer = setTimeout(function () {
-					game.connect(_status.ip, function (success) {
-						if (success) {
-							_status.reconnectAttempts = 0;
-							_status.reconnecting = false;
-							if (typeof ui.create.connecting === "function") {
-								ui.create.connecting(true);
-							}
-							// 服务端通过 roomlist 触发，客户端携带 reconnect_info 自动重新加入房间
-						}
-						// 失败时不在此处理：新建连接的 onclose 因 _status.reconnecting
+					// 空回调不可省略：game.connect 依赖 _status.connectCallback 存在，
+					// 否则重试失败时 onerror 会走 else 分支弹出“连接失败”
+					game.connect(_status.ip, function () {
+						// 成功不在此处理：WebSocket open 只代表传输层连通，game.online 要等
+						// 服务端的 roomlist 才恢复。若在此清除 reconnecting/reconnectAttempts，
+						// 则窗口期内再次断线时 onclose 会同时看到 wasOnline=false 与
+						// reconnecting=false 而放弃剩余重试，且退避与重试上限一并失效。
+						// 重连状态改由 roomlist（握手完成）/ denied（服务端拒绝）负责清理。
+						// 失败也不在此处理：新建连接的 onclose 因 _status.reconnecting
 						// 仍为 true 而继续进入重试链，依据 reconnectAttempts 退避或回退刷新
 					});
 				}, decision.delay);
@@ -12613,6 +12612,11 @@ export class Library {
 				game.send("server", "key", [game.onlineKey, lib.version]);
 				game.online = true;
 				game.onlinehall = true;
+				// 协议握手完成、联机态已恢复，此时才算重连成功（传输层 open 尚不足够）。
+				// 下方自动回房流程如需等待，会再自行创建遮罩。
+				_status.reconnectAttempts = 0;
+				_status.reconnecting = false;
+				ui.create.connecting(true);
 				lib.config.recentIP.remove(_status.ip);
 				lib.config.recentIP.unshift(_status.ip);
 				lib.config.recentIP.splice(5);
@@ -13451,6 +13455,12 @@ export class Library {
 					default:
 						alert(reason); //其它原因直接弹窗显示
 				}
+				// 服务端明确拒绝：roomlist 不会再到达，需就地终止重连链，
+				// 否则随后的 onclose 会因 reconnecting 仍为 true 而反复重试；
+				// 同时收起重连遮罩，避免 onclose 判定为无需重连后遮罩滞留
+				_status.reconnecting = false;
+				_status.reconnectAttempts = 0;
+				ui.create.connecting(true);
 				game.ws.close();
 				if (_status.connectDenied) {
 					_status.connectDenied();
