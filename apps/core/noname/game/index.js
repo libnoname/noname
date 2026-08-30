@@ -6,7 +6,7 @@
  * 	changeHp: GameEvent[],
  * 	everything: GameEvent[]
  * }} GameHistory
- * @typedef { { name?: string, type: string, player?: string, content?: string | any[], delay: number } } Video
+ * @typedef { { name?: string, type: string, player?: string, content?: string | any[] | object, delay: number } } Video
  * @typedef { { mode: string, name: string[], name1: string, name2?: string, time: number, video: Video, win: boolean } } Videos
  */
 
@@ -16,6 +16,7 @@ import { isClass, userAgentLowerCase, GeneratorFunction, AsyncFunction, delay } 
 import { DynamicStyle } from "./dynamic-style/index.js";
 import { GamePromises } from "./promises.js";
 import { Check } from "./check.js";
+import { unpackVideoOverContent } from "./video-over.js";
 
 import { security } from "@/util/sandbox.js";
 import { save } from "@/util/config.js";
@@ -4897,26 +4898,42 @@ ${e instanceof Error ? e.stack : String(e)}`);
 				console.log(player);
 			}
 		},
-		over: function (str) {
+		over: function (content) {
+			const { html, handcardPoptips: recordedHandcardPoptips } = unpackVideoOverContent(content);
 			var dialog = ui.create.dialog("hidden");
 			dialog.noforcebutton = true;
-			dialog.content.innerHTML = str;
-			const targets = game.players.concat(game.dead, game.additionaldead || []);
-			const handcardPoptips = dialog.content.querySelectorAll("table td:last-child > noname-poptip");
-			for (let i = 0; i < Math.min(handcardPoptips.length, targets.length); i++) {
-				const id = handcardPoptips[i].getAttribute("poptip");
-				if (!id) continue;
-				const target = targets[i];
-				const hs = target.getCards("h");
-				lib.poptip.add({
-					id,
-					name: `<img style="width:15px; vertical-align: middle;" src="${lib.assetURL}image/card/handcard.png">`,
-					dialog(dialog) {
-						dialog.add(`${get.translation(target)}的手牌`);
-						dialog[hs.length ? "addSmall" : "addText"](hs.length ? hs : "（没有手牌）");
-						return dialog;
-					},
-				});
+			dialog.content.innerHTML = html;
+			if (recordedHandcardPoptips) {
+				for (const [id, targetName, cardInfos] of recordedHandcardPoptips) {
+					const hs = get.infoCards(cardInfos);
+					lib.poptip.add({
+						id,
+						name: `<img style="width:15px; vertical-align: middle;" src="${lib.assetURL}image/card/handcard.png">`,
+						dialog(dialog) {
+							dialog.add(`${targetName}的手牌`);
+							dialog[hs.length ? "addSmall" : "addText"](hs.length ? hs : "（没有手牌）");
+							return dialog;
+						},
+					});
+				}
+			} else {
+				const targets = game.players.concat(game.dead, game.additionaldead || []);
+				const handcardPoptips = dialog.content.querySelectorAll("table td:last-child > noname-poptip");
+				for (let i = 0; i < Math.min(handcardPoptips.length, targets.length); i++) {
+					const id = handcardPoptips[i].getAttribute("poptip");
+					if (!id) continue;
+					const target = targets[i];
+					const hs = target.getCards("h");
+					lib.poptip.add({
+						id,
+						name: `<img style="width:15px; vertical-align: middle;" src="${lib.assetURL}image/card/handcard.png">`,
+						dialog(dialog) {
+							dialog.add(`${get.translation(target)}的手牌`);
+							dialog[hs.length ? "addSmall" : "addText"](hs.length ? hs : "（没有手牌）");
+							return dialog;
+						},
+					});
+				}
 			}
 			dialog.forcebutton = true;
 			dialog.open();
@@ -6578,8 +6595,10 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			dialog,
 			hsMap = new Map([]),
 			poptipData = new Map([]);
-		for (const target of [...game.players, ...game.dead]) {
-			hsMap.set(target, target.getCards("h"));
+		for (const target of [...game.players, ...game.dead, ...(game.additionaldead || [])]) {
+			if (target.getCards) {
+				hsMap.set(target, target.getCards("h"));
+			}
 		}
 		_status.over = true;
 		ui.control.show();
@@ -7090,7 +7109,16 @@ ${e instanceof Error ? e.stack : String(e)}`);
 
 		dialog.add(ui.create.div(".placeholder"));
 		dialog.add(ui.create.div(".placeholder.slim"));
-		game.addVideo("over", null, dialog.content.innerHTML);
+		const handcardPoptips = Array.from(dialog.content.querySelectorAll("table td:last-child > noname-poptip")).map(
+			(poptip, index) => {
+				const target = clients[index];
+				return [poptip.getAttribute("poptip"), get.translation(target), get.cardsInfo(hsMap.get(target) ?? [])];
+			}
+		);
+		game.addVideo("over", null, {
+			html: dialog.content.innerHTML,
+			handcardPoptips,
+		});
 		let vinum = parseInt(lib.config.video);
 		if (!_status.video && vinum && game.getVideoName && window.indexedDB && _status.videoInited) {
 			let store = lib.db.transaction(["video"], "readwrite").objectStore("video");
