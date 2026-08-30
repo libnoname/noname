@@ -5409,107 +5409,97 @@ const skills = {
 		filterCard: true,
 		position: "he",
 		filter(event, player) {
-			return (
-				player.hasCard(function (card) {
-					return lib.filter.cardDiscardable(card, player, "dclibang");
-				}, "he") && game.countPlayer(current => current != player) >= 2
-			);
+			return player.hasCard(card => lib.filter.cardDiscardable(card, player, "dclibang"), "he") && game.countPlayer(current => current !== player) >= 2;
 		},
 		filterTarget(card, player, target) {
-			return target != player;
+			return target !== player;
 		},
 		selectTarget: 2,
 		multiline: true,
 		multitarget: true,
-		content() {
-			"step 0";
-			event.num = 0;
+		async content(event, trigger, player) {
+			const { targets } = event;
 			event.cardsx = [];
-			event.targets.sortBySeat();
-			"step 1";
-			var current = targets[event.num];
-			if (current.countCards("he")) {
-				player.gainPlayerCard(current, "he", true, "visibleMove");
-			}
-			event.num++;
-			"step 2";
-			if (result.bool) {
-				var card = result.cards[0];
-				event.cardsx.push(card);
-			}
-			if (event.num < targets.length) {
-				event.goto(1);
-			}
-			"step 3";
-			player.judge().set("callback", lib.skill.dclibang.contentx);
-		},
-		contentx() {
-			"step 0";
-			var card = event.judgeResult.card;
-			var color = event.judgeResult.color;
-			var player = event.getParent(2).player;
-			var cards = event.getParent(2).cardsx;
-			for (var cardx of cards) {
-				if (get.color(cardx) == color) {
-					if (get.position(card, true) == "o") {
-						player.gain(card, "gain2");
-					}
-					return;
+			targets.sortBySeat();
+			for (const current of targets) {
+				if (!current.hasCards("he")) {
+					continue;
+				}
+				const result = await player
+					.gainPlayerCard({
+						target: current,
+						position: "he",
+						forced: true,
+						visibleMove: true,
+					})
+					.forResult();
+				if (result.bool && result.cards?.length) {
+					event.cardsx.push(result.cards[0]);
 				}
 			}
-			event.goto(3);
-			"step 1";
-			var targets = event.getParent(2).targets.filter(target => {
-				return player.canUse("sha", target);
-			});
-			if (!targets.length) {
-				event.finish();
-			} else {
-				player
-					.chooseTarget("利傍：视为对其中一名角色使用一张【杀】", true, (card, player, target) => {
-						return _status.event.targets.includes(target);
+			await player.judge().set("callback", lib.skill.dclibang.contentx);
+		},
+		async contentx(event, trigger, player) {
+			const { card, color } = event.judgeResult;
+			const parent = event.getParent(2);
+			if (parent.cardsx.some(cardx => get.color(cardx) === color)) {
+				if (get.position(card, true) === "o") {
+					await player.gain({
+						cards: [card],
+						animate: "gain2",
+					});
+				}
+				const targets = parent.targets.filter(target => player.canUse("sha", target));
+				if (!targets.length) {
+					return;
+				}
+				const result = await player
+					.chooseTarget({
+						prompt: "利傍：视为对其中一名角色使用一张【杀】",
+						forced: true,
+						filterTarget: (card, player, target) => _status.event.targets.includes(target),
+						ai: target => get.effect(target, { name: "sha" }, player, player),
 					})
 					.set("targets", targets)
-					.set("ai", target => {
-						return get.effect(target, { name: "sha" }, player, player);
+					.forResult();
+				if (result.bool) {
+					await player.useCard({
+						card: { name: "sha", isCard: true },
+						targets: [result.targets[0]],
+						addCount: false,
 					});
+				}
+				return;
 			}
-			"step 2";
-			if (result.bool) {
-				player.useCard({ name: "sha", isCard: true }, result.targets[0], false);
-			}
-			event.finish();
-			"step 3";
-			player.chooseCardTarget({
+			const result = await player.chooseCardTarget({
 				filterCard(card) {
-					return get.itemtype(card) == "card";
+					return get.itemtype(card) === "card";
 				},
 				filterTarget(card, player, target) {
 					return _status.event.targets.includes(target);
 				},
 				selectCard: 2,
-				targets: event.getParent(2).targets,
+				targets: parent.targets,
 				position: "he",
 				prompt: "交给其中一名角色两张牌，或失去1点体力",
 				ai1(card) {
 					return 1;
 				},
 				ai2(target) {
-					var player = _status.event.player,
-						card = ui.selected.cards[0];
-					var val = get.value(card, target);
+					const player = _status.event.player;
+					const card = ui.selected.cards[0];
+					const val = get.value(card, target);
 					if (val > 0) {
 						return get.attitude(player, target) * 2;
 					}
 					return (val - 2) * get.attitude(player, target);
 				},
-			});
-			"step 4";
+			}).forResult();
 			if (result.bool) {
-				player.give(result.cards, result.targets[0]);
-			} else {
-				player.loseHp();
+				await player.give(result.cards, result.targets[0]);
+				return;
 			}
+			await player.loseHp();
 		},
 		ai: {
 			order: 8,
