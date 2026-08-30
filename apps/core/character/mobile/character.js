@@ -80,6 +80,7 @@ const characters = {
 		group: "wei",
 		hp: 3,
 		skills: ["mbshefu", "mbbenyu"],
+		dieAudios: ["chengyu"],
 	},
 	mb_dongbai: {
 		sex: "female",

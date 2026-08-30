@@ -850,7 +850,7 @@ const skills = {
 			player.removeExtraEquip(skill);
 		},
 		filter(event, player) {
-			if (!event.reason) {
+			if (!event.reason || player.maxHp < 2) {
 				return false;
 			}
 			const reason = event.reason;
@@ -1449,7 +1449,6 @@ const skills = {
 				return;
 			}
 			if (result.links[0] == "damage") {
-				game.log(player, "令", card, "对", target, "的伤害+1");
 				const id = target.playerid;
 				const map = trigger.customArgs;
 				map[id] ??= {};
@@ -2411,6 +2410,7 @@ const skills = {
 				i.popup(result.control);
 				list.push(result.control);
 			}
+			list.sort((a, b) => (a === "摸牌" ? -1 : 1));
 			const bool = list[0] != list[1];
 			for (const i of list) {
 				for (const current of targets) {
@@ -4114,9 +4114,6 @@ const skills = {
 	beiyu: {
 		audio: 2,
 		enable: "phaseUse",
-		filter(event, player) {
-			return player.countCards("h") < player.maxHp;
-		},
 		usable: 1,
 		manualConfirm: true,
 		async content(event, trigger, player) {
@@ -4154,7 +4151,7 @@ const skills = {
 				.forResult();
 			if (result?.links?.length) {
 				const [suit] = result.links,
-					cards = player.getCards("h", card => get.suit(card, player) == suit);
+					cards = player.getCards("h", card => get.suit(card, player) == suit).randomSort();
 				if (cards.length) {
 					game.log(player, "将", cards, "置于牌堆底");
 					await player.lose(cards, ui.cardPile);
@@ -4528,10 +4525,9 @@ const skills = {
 			player: "damageEnd",
 			source: "damageSource",
 		},
-		forced: true,
-		locked: false,
+		frequent: true,
 		async content(event, trigger, player) {
-			player.draw(2).gaintag = ["kangli"];
+			await player.draw({ num: 2, gaintag: ["kangli"] });
 			player.when({ source: "damageBegin1" }).step(async (event, trigger, player) => {
 				const cards = player.getCards("h", card => card.hasGaintag("kangli") && lib.filter.cardDiscardable(card, player, "kangli"));
 				if (cards.length) {
@@ -6112,7 +6108,7 @@ const skills = {
 							[list, "vcard"],
 							list => {
 								const list2 = list.map(i => get.translation(i[2].slice(6)));
-								return `你使用${list2[0]}牌时无次数限制；使用或打出${list2[1]}时，摸一张牌；<br>成为${list2[2]}牌目标后可弃一张牌无效；结束阶段获得一张${list2[3]}牌`;
+								return `你使用${list2[0]}牌时无次数限制；使用或打出${list2[1]}时，摸一张牌；<br>成为${list2[2]}牌目标后可弃一张牌无效；结束阶段从牌堆获得一张${list2[3]}牌`;
 							},
 						],
 					],
@@ -6158,7 +6154,7 @@ const skills = {
 		intro: {
 			content(storage, player) {
 				const list = lib.skill.lkbushi.getBushi(player).map(i => get.translation(i));
-				return `①你使用${list[0]}牌无次数限制。②当你使用或打出${list[1]}牌后，你摸一张牌。③当你成为${list[2]}牌的目标后，你可以弃置一张牌，令此牌对你无效。④结束阶段开始时，你从牌堆或弃牌堆获得一张${list[3]}牌。⑤准备阶段开始时，你可调整此技能中四种花色的对应顺序。`;
+				return `①你使用${list[0]}牌无次数限制。②当你使用或打出${list[1]}牌后，你摸一张牌。③当你成为${list[2]}牌的目标后，你可以弃置一张牌，令此牌对你无效。④结束阶段开始时，你从牌堆获得一张${list[3]}牌。⑤准备阶段开始时，你可调整此技能中四种花色的对应顺序。`;
 			},
 		},
 		group: ["lkbushi_unlimit", "lkbushi_draw", "lkbushi_defend", "lkbushi_gain"],

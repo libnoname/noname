@@ -3564,13 +3564,23 @@ const skills = {
 					},
 				})
 				.forResult();
-			if (result?.bool) {
+			if (result?.bool && result.cards?.length && result.targets?.length) {
 				const targets = result.targets;
 				player.logSkill("reyingshi", targets[1]);
 				const card = result.cards[0];
 				player.showCards(card, get.translation(player) + "对" + get.translation(targets[1]) + "发动了【应势】");
 				player.line(targets[0], "fire");
-
+				const suit = get.suit(card),
+					number = get.number(card);
+				const cardx = Array.from(ui.cardPile.childNodes).filter(card => {
+					if (card.suit == suit && card.number == number) {
+						return true;
+					}
+				});
+				if (cardx.length) {
+					await player.showCards(cardx, `${get.translation(player)}发动了【应势】`);
+				}
+				await game.delayx(2);
 				const next = targets[0].chooseToUse(
 					function (card, player, event) {
 						if (get.name(card) != "sha") {
@@ -3609,8 +3619,6 @@ const skills = {
 							});
 						})
 					) {
-						const suit = get.suit(card),
-							number = get.number(card);
 						cards.addArray(
 							Array.from(ui.cardPile.childNodes).filter(cardx => {
 								if (cardx.suit == suit && cardx.number == number) {
@@ -15739,7 +15747,7 @@ const skills = {
 	},
 	reguicai: {
 		audio: 2,
-		audioname: ["new_simayi"],
+		audioname2: { new_simayi: "reguicai_new_simayi" },
 		trigger: { global: "judge" },
 		filter(event, player) {
 			return player.countCards("hes") > 0;
@@ -15808,6 +15816,7 @@ const skills = {
 			rejudge: true,
 			tag: { rejudge: 1 },
 		},
+		subSkill: { new_simayi: { audio: 2 } },
 	},
 	refankui: {
 		audio: 2,
