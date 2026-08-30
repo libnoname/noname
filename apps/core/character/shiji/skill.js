@@ -2,6 +2,303 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//孙邵重置
+	mbdingyi: {
+		audio: "mjdingyi",
+		forced: true,
+		trigger: {
+			player: "enterGame",
+			global: "phaseBefore",
+		},
+		filter(event, player) {
+			return event.name != "phase" || game.phaseNumber == 0;
+		},
+		async content(event, trigger, player) {
+			const result = await player
+				.chooseButtonTarget({
+					createDialog: [
+						"定仪：选择一项效果令任意名角色获得",
+						[
+							[
+								["draw", "摸牌阶段摸牌数+1"],
+								["maxhand", "手牌上限+2"],
+								["attack", "攻击范围+1"],
+								["dying", "脱离濒死状态时回复1点体力"],
+							],
+							"textbutton",
+						],
+					],
+					forced: true,
+					selectTarget: [1, Infinity],
+					ai1(button) {
+						return button.link == ["draw", "dying"].randomGet();
+					},
+					ai2(target) {
+						return get.attitude(get.player(), target);
+					},
+				})
+				.forResult();
+			if (result?.bool && result.targets?.length && result.links?.length) {
+				const targets = result.targets.sortBySeat();
+				player.line(targets);
+				const link = result.links[0];
+				for(const target of targets) {
+					target.addSkill(event.name + "_buff");
+					if (!target.storage.mbdingyi_buff) {
+						target.storage.mbdingyi_buff = [0, 0, 0, 0];
+					}
+					const storage = target.storage.mbdingyi_buff;
+					switch (link) {
+						case "draw":
+							storage[0]++;
+							break;
+						case "maxhand":
+							storage[1] += 2;
+							break;
+						case "attack":
+							storage[2]++;
+							break;
+						case "dying":
+							storage[3]++;
+							break;
+						default:
+							break;
+					}
+					target.setStorage(event.name + "_buff", storage, true);
+				}
+			}
+		},
+		subSkill: {
+			buff: {
+				charlotte: true,
+				forced: true,
+				init(player, skill) {
+					if (!player.storage[skill]) {
+						player.storage[skill] = [0, 0, 0, 0];
+					}
+				},
+				onremove: true,
+				intro: {
+					markcount: () => 0,
+					content(storage, player) {
+						storage ??= [0, 0, 0, 0];
+						let str = "定仪已获得效果：";
+						if (!storage.some(i => i > 0)) {
+							return "当前无定仪效果";
+						}
+						if (storage[0] > 0) {
+							str += `<li>摸牌阶段摸牌数+${storage[0]}`;
+						}
+						if (storage[1] > 0) {
+							str += `<li>手牌上限+${storage[1]}`;
+						}
+						if (storage[2] > 0) {
+							str += `<li>攻击范围+${storage[2]}`;
+						}
+						if (storage[3] > 0) {
+							str += `<li>脱离濒死状态时回复+${storage[3]}点体力`;
+						}
+						return str;
+					},
+				},
+				mod: {
+					maxHandcard(player, num) {
+						player.storage.mbdingyi_buff ??= [0, 0, 0, 0];
+						return num + player.storage.mbdingyi_buff[1];
+					},
+					attackRange(player, num) {
+						player.storage.mbdingyi_buff ??= [0, 0, 0, 0];
+						return num + player.storage.mbdingyi_buff[2];
+					},
+				},
+				trigger: { player: ["phaseDrawBegin2", "dyingAfter"] },
+				filter(event, player) {
+					player.storage.mbdingyi_buff ??= [0, 0, 0, 0];
+					if (event.name == "phaseDraw") {
+						return !event.numFixed && player.storage.mbdingyi_buff[0] > 0;
+					}
+					return player.storage.mbdingyi_buff[3] > 0 && player.isDamaged();
+				},
+				async content(event, trigger, player) {
+					player.storage.mbdingyi ??= [0, 0, 0, 0];
+					if (trigger.name == "phaseDraw") {
+						trigger.num += player.storage.mbdingyi_buff[0];
+					} else {
+						await player.recover(player.storage.mbdingyi_buff[3]);
+					}
+				},
+			},
+		},
+	},
+	mbzuici: {
+		audio: "zuici",
+		usable: 1,
+		trigger: { player: "damageEnd" },
+		filter(event, player) {
+			return game.hasPlayer(current => current.storage?.mbdingyi_buff?.some(i => i > 0));
+		},
+		async cost(event, trigger, player) {
+			const list = get.zhinangs();
+			const result = await player
+				.chooseButtonTarget({
+					createDialog: ["令一名有“定仪”效果的角色获得一张“智囊”牌然后移去其“定仪”效果", [list, "vcard"]],
+					filterTarget(card, player, target) {
+						return target.storage?.mbdingyi_buff?.some(i => i > 0);
+					},
+					ai1(button) {
+						//先无脑不发动
+						return 0;
+					},
+					ai2(target) {
+						return get.attitude(get.player(), target);
+					},
+				})
+				.forResult();
+			if (result?.bool && result.targets?.length && result.links?.length) {
+				event.result = {
+					bool: true,
+					targets: result.targets,
+					cost_data: result.links,
+				};
+			}
+		},
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+				cost_data: links,
+			} = event;
+			const card = get.cardPile(card => card.name == links[0][2]);
+			if (card) {
+				await target.gain({ cards: [card], animate: "gain2" });
+			}
+			target.removeSkill("mbdingyi_buff");
+			//删标记也要顺便删三技能的记录
+			player.unmarkAuto(event.name + "_clear", [target]);
+		},
+		ai: { combo: ["mbdingyi", "mbfubi"] },
+	},
+	mbfubi: {
+		audio: "fubi",
+		enable: "phaseUse",
+		usable: 1,
+		filterTarget: true,
+		async content(event, trigger, player) {
+			const { target } = event;
+			const storage = target.storage.mbdingyi_buff ?? [0, 0, 0, 0];
+			const result = await player
+				.chooseButton({
+					createDialog: [
+						`辅弼：令${get.translation(target)}获得一个“定仪”效果或令其所有“定仪”效果翻倍`,
+						[
+							[
+								["draw", "摸牌阶段摸牌数+1"],
+								["maxhand", "手牌上限+2"],
+								["attack", "攻击范围+1"],
+								["dying", "脱离濒死状态时回复1点体力"],
+								["double", `令${get.translation(target)}所有“定仪”效果翻倍`],
+							],
+							"textbutton",
+						],
+					],
+					filterButton(button) {
+						const { storage } = get.event();
+						const link = button.link;
+						switch (link) {
+							case "draw":
+								return storage[0] == 0;
+							case "maxhand":
+								return storage[1] == 0;
+							case "attack":
+								return storage[2] == 0;
+							case "dying":
+								return storage[3] == 0;
+							default:
+								return storage.some(i => i > 0);
+						}
+					},
+					forced: true,
+					ai(button) {
+						const link = button.link;
+						switch (link) {
+							case "draw":
+								return 10;
+							case "maxhand":
+								return 8;
+							case "attack":
+								return 3;
+							case "dying":
+								return 5;
+							default:
+								return 2;
+						}
+					},
+				})
+				.set("storage", storage)
+				.forResult();
+			if (result?.bool && result.links?.length) {
+				const link = result.links[0];
+				target.addSkill("mbdingyi_buff");
+				switch (link) {
+					case "draw":
+						storage[0]++;
+						break;
+					case "maxhand":
+						storage[1] += 2;
+						break;
+					case "attack":
+						storage[2]++;
+						break;
+					case "dying":
+						storage[3]++;
+						break;
+					default:
+						storage[0] *= 2;
+						storage[1] *= 2;
+						storage[2] *= 2;
+						storage[3] *= 2;
+				}
+				target.setStorage("mbdingyi_buff", storage, true);
+				if (link == "double") {
+					game.log(player, "令", target, "的“定仪”效果翻倍");
+					player.addSkill(event.name + "_clear");
+					player.markAuto(event.name + "_clear", [target]);
+				}
+			}
+		},
+		ai: {
+			order: 5,
+			result: {
+				player: 1,
+				target: 1,
+			},
+		},
+		subSkill: {
+			clear: {
+				charlotte: true,
+				silent: true,
+				popup: false,
+				trigger: { player: "phaseUseBegin" },
+				onremove: true,
+				async content(event, trigger, player) {
+					const targets = player.getStorage(event.name);
+					for (const target of targets) {
+						const storage = target.storage.mbdingyi_buff ?? [0, 0, 0, 0];
+						if (storage.some(i => i > 1)) {
+							for (let i = 0; i < 4; i++) {
+								if (storage[i] > 1) {
+									const num = Math.ceil(storage[i] / 2);
+									storage[i] -= num;
+								}
+							}
+							target.setStorage("mbdingyi_buff", storage, true);
+						}
+					}
+					player.removeSkill(event.name);
+				},
+			},
+		},
+	},
+	//神孙策
 	yingba: {
 		audio: 2,
 		mod: {
