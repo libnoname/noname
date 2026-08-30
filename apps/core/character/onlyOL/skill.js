@@ -1,5 +1,4 @@
 import { lib, game, ui, get, ai, _status } from "noname";
-import { getTextOfJSDocComment } from "typescript";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
