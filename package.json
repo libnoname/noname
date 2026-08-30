@@ -31,7 +31,7 @@
   },
   "pnpm": {
     "overrides": {
-      "nanoid": "3.3.17"
+      "nanoid": "3.3.18"
     }
   }
 }
