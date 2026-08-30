@@ -3,7 +3,7 @@ import html from "dedent";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
-	//雁翎孙策
+	//雁翎孙策 by WeiqiaoCode
 	ylyg_jiang: {
 		trigger: { global: "useCardToPlayered" },
 		frequent: true,
@@ -99,7 +99,7 @@ const skills = {
 			}
 		},
 	},
-	//雁翎蔡文姬
+	//雁翎蔡文姬 by WeiqiaoCode
 	ylyg_duanchang: {
 		locked: true,
 		trigger: { player: "die" },
