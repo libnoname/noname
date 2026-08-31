@@ -6517,7 +6517,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 	 * @param { Card | string } name
 	 * @param { string } suit
 	 * @param { number } number
-	 * @param { string } nature
+	 * @param { string } [nature]
 	 */
 	createCard2() {
 		let card = game.createCard.apply(this, arguments);

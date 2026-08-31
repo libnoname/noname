@@ -7764,6 +7764,7 @@ const skills = {
 			if (sign > 0) {
 				result = await player
 					.chooseBool(get.prompt("dczuowei"), "令" + get.translation(trigger.card) + "不可被响应")
+					.set("frequentSkill", event.name)
 					.set("ai", () => 1)
 					.forResult();
 			} else if (sign == 0) {

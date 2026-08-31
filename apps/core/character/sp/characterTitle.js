@@ -1,4 +1,5 @@
 export default {
+	//wangai: "",
 	//ol_huangfusong: "",
 	ol_caojinyu: "春秋盈昃",
 	//pangji: "",

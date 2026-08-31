@@ -2,6 +2,67 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//王皑（春丽来咯）
+	qinmian: {
+		audio: 2,
+		trigger: {
+			player: ["phaseZhunbeiBegin", "damageEnd"],
+		},
+		getIndex: event => (event.name == "damage" ? event.num : 1),
+		check: () => true,
+		frequent: true,
+		async content(event, trigger, player) {
+			await player.draw({
+				num: 1,
+				gaintag: [event.name],
+			});
+		},
+		group: "qinmian_damage",
+		subSkill: {
+			damage: {
+				audio: "qinmian",
+				trigger: {
+					global: "phaseJieshuBegin",
+				},
+				filter(event, player) {
+					return player.hasCards("h", card => card.hasGaintag("qinmian"));
+				},
+				logTarget: () => _status.currentPhase,
+				isAllQinmian(player) {
+					return !player.hasCards("h", card => !card.hasGaintag("qinmian"));
+				},
+				prompt2(event, player) {
+					const target = _status.currentPhase;
+					const num = get.info("qinmian_damage").isAllQinmian(player) ? player.countCards("h") : 1;
+					return `将所有“勤勉”牌置入弃牌堆，然后对${get.translation(target)}造成${num}点伤害`;
+				},
+				check(event, player) {
+					const target = _status.currentPhase;
+					const cards = player.getCards("h", card => card.hasGaintag("qinmian"));
+					const bool = get.info("qinmian_damage").isAllQinmian(player);
+					const eff = get.damageEffect(target, player, player);
+					if (eff > 0) {
+						if (bool) {
+							return true;
+						}
+						if (get.value(cards) < 7) {
+							return true;
+						}
+					}
+					return false;
+				},
+				async content(event, trigger, player) {
+					const {
+						targets: [target],
+					} = event;
+					const cards = player.getCards("h", card => card.hasGaintag("qinmian"));
+					const bool = get.info("qinmian_damage").isAllQinmian(player);
+					await player.loseToDiscardpile({ cards });
+					await target.damage({ num: bool ? cards.length : 1 });
+				},
+			},
+		},
+	},
 	// 推箱子裴秀
 	olremaozhu: {
 		audio: 2,
@@ -26625,7 +26686,7 @@ const skills = {
 		round: 1,
 		subfrequent: ["effect"],
 		filter(event, player) {
-			return player != event.player && event.player.isIn() && player.hasCards("h")
+			return player != event.player && event.player.isIn() && player.hasCards("h");
 		},
 		check(event, player) {
 			if (event.player.hasJudge("lebu") || get.attitude(player, event.player) < 2) {
