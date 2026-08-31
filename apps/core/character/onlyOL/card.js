@@ -47,7 +47,12 @@ const cards = {
 						(card, skills) => {
 							card.storage ??= {};
 							card.storage.chixueren = skills;
-							card.skills = [...get.info(card).skills, ...skills];
+							if (!Array.isArray(card.skills)) {
+								card.skills = [...get.info(card).skills, ...skills];
+							} else {
+								card.skills.addArray(skills);
+							}
+							
 						},
 						card,
 						skills
