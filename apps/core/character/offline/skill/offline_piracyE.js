@@ -375,7 +375,7 @@ const skills = {
 					.filter(evt => ["basic", "trick"].includes(get.type(evt.card)))
 					.flatMap(evt => get.autoViewAs({ name: evt.card.name, nature: evt.card.nature, isCard: true }, "unsure"))
 					.unique();
-				return cards.some(card => player.hasUseTarget(card));
+				return cards.some(card => player.hasUseTarget(card)) && event.player == target;
 			}
 			const cards = event.getg?.(target);
 			return event.getParent(2)?.name !== "peersheng" && cards?.length > 0;
@@ -876,7 +876,8 @@ const skills = {
 					.forResult();
 				if (result?.bool && result.links?.length) {
 					const skill = result.links[0];
-					await player.addAdditionalSkills(event.name, skill);
+					const skills = player.additionalSkills?.[event.name] ?? [];
+          			await player.addAdditionalSkills(event.name, skills.concat([skill]));
 					lib.card[`huashen_card_${name}`].skills.push(skill);
 				}
 			}
@@ -1799,6 +1800,7 @@ const skills = {
 	},
 	//e郭照
 	pepianchong: {
+		audio: "pianchong",
 		trigger: { player: "phaseDrawBegin1" },
 		check(event, player) {
 			return true;
@@ -1817,6 +1819,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
+				audio: "pepianchong",
 				trigger: {
 					player: ["loseAfter"],
 					global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
@@ -1844,6 +1847,7 @@ const skills = {
 		},
 	},
 	pezunwei: {
+		audio: "zunwei",
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
