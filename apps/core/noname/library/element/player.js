@@ -1912,6 +1912,8 @@ export class Player extends HTMLDivElement {
 			for (const arg of args) {
 				if (get.itemtype(arg) == "player") {
 					next.source = arg;
+				} else if (typeof arg == "object" && !Array.isArray(arg) && arg !== null && get.itemtype(arg) == null) {
+					Object.assign(next, arg);
 				} else if (Array.isArray(arg)) {
 					for (const slot of arg) {
 						if (typeof slot == "string") {
@@ -1930,6 +1932,23 @@ export class Player extends HTMLDivElement {
 					next.slots.push("equip" + arg);
 				}
 			}
+		}
+		if (next.all) {
+			const expanded = [];
+			const seen = new Set();
+			for (const raw of next.slots) {
+				const slot = typeof raw == "number" ? "equip" + raw : raw;
+				if (seen.has(slot)) {
+					continue;
+				}
+				seen.add(slot);
+				const num = this.countEnabledSlot(slot);
+				for (let i = 0; i < num; i++) {
+					expanded.push(slot);
+				}
+			}
+			next.slots = expanded;
+			delete next.all;
 		}
 		if (!next.source) {
 			next.source = _status.event.player;
@@ -1979,6 +1998,23 @@ export class Player extends HTMLDivElement {
 					next.slots.push("equip" + arg);
 				}
 			}
+		}
+		if (next.all) {
+			const expanded = [];
+			const seen = new Set();
+			for (const raw of next.slots) {
+				const slot = typeof raw == "number" ? "equip" + raw : raw;
+				if (seen.has(slot)) {
+					continue;
+				}
+				seen.add(slot);
+				const num = this.countDisabledSlot(slot);
+				for (let i = 0; i < num; i++) {
+					expanded.push(slot);
+				}
+			}
+			next.slots = expanded;
+			delete next.all;
 		}
 		if (!next.source) {
 			next.source = _status.event.player;

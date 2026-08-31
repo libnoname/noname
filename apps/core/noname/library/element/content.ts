@@ -712,6 +712,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 	async disableEquip(event, trigger, player) {
 		const cards = [];
 		event.cards = cards;
+		event.disabledCount = {};
 		const slots = [];
 		if (get.is.mountCombined()) {
 			for (const slot of event.slots) {
@@ -747,6 +748,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				player.disabledSlots ??= {};
 				player.disabledSlots[slot_key] ??= 0;
 				player.disabledSlots[slot_key] += lose;
+				event.disabledCount[slot_key] = (event.disabledCount[slot_key] ?? 0) + lose;
 
 				const discardingCards = player.getCards("e", card => {
 					if (event.cards.includes(card)) {
@@ -763,14 +765,17 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 
 				let result: Partial<Result>;
 				if (lose < left) {
-					let source = event.source;
-					const num = cards.length - (left - lose);
-					if (!source || !source.isIn()) {
-						source = player;
-					}
+					const num = Math.max(0, discardingCards.length - (left - lose));
+					if (num === 0) {
+						result = { bool: true, links: [] };
+					} else {
+						let source = event.source;
+						if (!source || !source.isIn()) {
+							source = player;
+						}
 
 					result = await source
-						.chooseButton([`选择${player == source ? "你" : get.translation(player)}的${get.cnNumber(num)}张${get.translation(slot)}牌置入弃牌堆`, cards], true, [1, num])
+						.chooseButton([`选择${player == source ? "你" : get.translation(player)}的${get.cnNumber(num)}张${get.translation(slot)}牌置入弃牌堆`, discardingCards], true, [1, num])
 						.set("filterOk", () => {
 							const evt = get.event();
 
