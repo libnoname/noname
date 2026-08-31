@@ -13271,70 +13271,52 @@ const skills = {
 	xiying: {
 		trigger: { player: "phaseUseBegin" },
 		audio: 2,
-		direct: true,
 		filter(event, player) {
-			return (
-				player.countCards("h", function (card) {
-					return _status.connectMode || get.type(card) != "basic";
-				}) > 0
-			);
+			return player.hasCards("h", card => _status.connectMode || get.type(card) !== "basic");
 		},
-		content() {
-			"step 0";
-			var list = game.filterPlayer(function (current) {
-				return current != player;
-			});
-			list.sortBySeat();
-			event.targets = list;
-			player
-				.chooseToDiscard(get.prompt2("xiying"), "h", function (card) {
-					return get.type(card) != "basic";
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseToDiscard({
+					prompt: get.prompt2("xiying"),
+					position: "h",
+					filterCard: card => get.type(card) !== "basic",
+					chooseonly: true,
+					ai: card => _status.event.val - get.value(card),
 				})
-				.set("logSkill", ["xiying", list])
-				.set("ai", function (card) {
-					return _status.event.val - get.value(card);
-				})
-				.set(
-					"val",
-					(function () {
-						return (
-							4 *
-							Math.sqrt(
-								game.countPlayer(function (current) {
-									return get.attitude(player, current) < 0 && current.countCards("he") > 0;
-								})
-							)
-						);
-					})()
-				);
-			"step 1";
-			if (!result.bool) {
-				event.finish();
-			} else {
-				player.addTempSkill("xiying_gain");
+				.set("val", 4 * Math.sqrt(game.countPlayer(current => get.attitude(player, current) < 0 && current.hasCards("he"))))
+				.forResult();
+			if (event.result.bool) {
+				event.result.targets = game.filterPlayer(current => current !== player);
+				event.result.targets.sortBySeat();
 			}
-			"step 2";
-			var target = targets.shift();
-			event.target = target;
-			if (target.isIn()) {
-				target.chooseToDiscard("he", "弃置一张牌，或本回合内不能使用或打出牌").set("ai", function (card) {
-					var player = _status.event.player;
-					var source = _status.event.getTrigger().player;
-					if (get.attitude(source, player) > 0) {
-						return -1;
-					}
-					if (_status.event.getRand() > 0.5) {
-						return 5 - get.value(card);
-					}
-					return -1;
-				});
-			}
-			"step 3";
-			if (target.isIn() && !result.bool) {
-				target.addTempSkill("xiying2");
-			}
-			if (targets.length) {
-				event.goto(2);
+		},
+		async content(event, trigger, player) {
+			await player.discard({ cards: event.cards, discarder: player });
+			player.addTempSkill("xiying_gain");
+			for (const target of list) {
+				if (!target.isIn()) {
+					continue;
+				}
+				const result = await target
+					.chooseToDiscard({
+						position: "he",
+						prompt: "弃置一张牌，或本回合内不能使用或打出牌",
+						ai: card => {
+							const current = _status.event.player;
+							const source = _status.event.getTrigger().player;
+							if (get.attitude(source, current) > 0) {
+								return -1;
+							}
+							if (_status.event.getRand() > 0.5) {
+								return 5 - get.value(card);
+							}
+							return -1;
+						},
+					})
+					.forResult();
+				if (!result.bool) {
+					target.addTempSkill("xiying2");
+				}
 			}
 		},
 		ai: {
@@ -13350,23 +13332,20 @@ const skills = {
 				forced: true,
 				charlotte: true,
 				filter(event, player) {
-					return (
-						player.getHistory("sourceDamage", function (evt) {
-							return evt.isPhaseUsing(player);
-						}).length > 0
-					);
+					return player.getHistory("sourceDamage", evt => evt.isPhaseUsing(player)).length > 0;
 				},
-				content() {
-					var card = get.cardPile2(function (card) {
-						var type = get.type(card, null, false);
-						if (type != "basic" && type != "trick") {
+				async content(event, trigger, player) {
+					const card = get.cardPile2(card => {
+						const type = get.type(card, null, false);
+						if (type !== "basic" && type !== "trick") {
 							return false;
 						}
 						return get.tag(card, "damage") > 0;
 					});
-					if (card) {
-						player.gain(card, "gain2");
+					if (!card) {
+						return;
 					}
+					await player.gain({ cards: [card], animate: "gain2" });
 				},
 			},
 		},
