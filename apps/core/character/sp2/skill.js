@@ -11896,46 +11896,36 @@ const skills = {
 			player: ["useCard", "respond"],
 		},
 		audio: "xinfu_wuniang",
-		direct: true,
 		filter(event, player) {
-			return event.card.name == "sha";
+			return event.card.name === "sha";
 		},
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt2("decadewuniang"), function (card, player, target) {
-					if (player == target) {
-						return false;
-					}
-					return target.countGainableCards(player, "he") > 0;
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2("decadewuniang"),
+					filterTarget: (card, player, target) => player !== target && target.countGainableCards(player, "he") > 0,
+					ai: target => 10 - get.attitude(_status.event.player, target),
 				})
-				.set("ai", function (target) {
-					return 10 - get.attitude(_status.event.player, target);
-				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("decadewuniang", target);
-				player.line(target, "fire");
-				player.gainPlayerCard(target, "he", true);
-				target.draw();
-				if (!player.storage.decadexushen) {
-					event.finish();
-				}
-			} else {
-				event.finish();
-			}
-			"step 2";
-			var list = game.filterPlayer(function (current) {
-				return current.name == "dc_guansuo" || current.name2 == "dc_guansuo";
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			player.line(target, "fire");
+			await player.gainPlayerCard({
+				target,
+				position: "he",
+				forced: true,
 			});
-			if (list.length) {
-				game.asyncDraw(list);
-			} else {
-				event.finish();
+			await target.draw();
+			if (!player.storage.decadexushen) {
+				return;
 			}
-			"step 3";
-			game.delayx();
+			const list = game.filterPlayer(current => current.name === "dc_guansuo" || current.name2 === "dc_guansuo");
+			if (!list.length) {
+				return;
+			}
+			await game.asyncDraw(list);
+			await game.delayx();
 		},
 	},
 	minsi: {
