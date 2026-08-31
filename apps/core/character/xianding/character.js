@@ -1402,6 +1402,12 @@ const characters = {
 		hp: 4,
 		skills: ["dczhengyue"],
 	},
+	sunhe: {
+		sex: "male",
+		group: "wu",
+		hp: 4,
+		skills: ["guanchong", "chanchu"],
+	},
 };
 
 export default characters;

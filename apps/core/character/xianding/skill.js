@@ -46816,6 +46816,172 @@ const skills = {
 			}
 		},
 	},
+	guanchong: {
+		trigger: {
+			global: ["gainEnd", "loseAsyncEnd"],
+		},
+		usable: 1,
+		filter(event, player) {
+			const evt = event.getParent("phaseDraw");
+			return game.hasPlayer(current => {
+				if ((evt && current == evt.player) || current === player) {
+					return false;
+				}
+				return event.getg?.(current).length > 1;
+			});
+		},
+		async cost(event, trigger, player) {
+			const evt = event.getParent("phaseDraw");
+			const targets = game.filterPlayer(current => {
+				if ((evt && current == evt.player) || current === player) {
+					return false;
+				}
+				return trigger.getg?.(current).length > 1;
+			});
+			if (targets.length > 1) {
+				event.result = await player
+					.chooseTarget({
+						prompt: get.prompt2("guanchong"),
+						filterTarget: (card, player, target) => {
+							return get.event().targets.includes(target);
+						},
+						ai(target) {
+							return -get.attitude2(target);
+						},
+					})
+					.set("targets", targets)
+					.forResult();
+			} else {
+				const result = await player
+					.chooseBool({
+						prompt: get.prompt2("guanchong"),
+						choice: get.attitude2(targets[0]) <= 0,
+					})
+					.forResult();
+				event.result = {
+					bool: result.bool,
+					targets,
+				};
+			}
+		},
+		async content(event, trigger, player) {
+			const list = ["basic", "trick", "equip"].map(type => ["", "", "caoying_" + type]);
+			const result = await player
+				.chooseButton(["冠宠：选择一个类别", [list, "vcard"]], true)
+				.set("ai", _ => Math.random())
+				.forResult();
+			if (!result?.bool) {
+				return;
+			}
+			const target = event.targets[0];
+			const type = result.links[0][2].slice(8);
+			if (target.hasCard(card => get.type2(card) === type)) {
+				await target.chooseToGive({
+					prompt: `交给${get.translation(player)}一张${get.translation(type)}牌`,
+					filterCard: card => get.type2(card) === type,
+					target: player,
+					forced: true,
+				});
+			} else {
+				const card = get.cardPile(card => get.type2(card) === type, void 0, "random");
+				if (!card) {
+					return;
+				}
+				await player.gain([card], "gain2");
+			}
+			player.addMark("guanchong", 1, false);
+		},
+		mod: {
+			cardnumber(card, player, num) {
+				if (get.position(card) === 'h') {
+					return Math.min(13, num + player.countMark("guanchong"))
+				}
+			},
+		},
+		intro: {
+			content: "手牌点数+#",
+		},
+	},
+	chanchu: {
+		trigger: {
+			player: "phaseBegin",
+		},
+		forced: true,
+		async content(event, trigger, player) {
+			const targets = game.filterPlayer().sortBySeat();
+			const result = await player
+				.chooseCardOL(targets, "he", true, "谗黜：选择弃置一张牌", function (card, player) {
+					return lib.filter.cardDiscardable(card, player, "chanchu");
+				})
+				.set("ai", get.unuseful)
+				.forResult();
+			const lose_list = [];
+			const map = new Map();
+			for (let i = 0; i < result.length; i++) {
+				const current = targets[i];
+				const card = result[i].cards[0]
+				if (card) {
+					map.set(current, get.number(card));
+				}
+				lose_list.push([current, result[i].cards]);
+			}
+			await game.loseAsync({ lose_list }).setContent("discardMultiple");
+			let count = 0;
+			const target_group = [[], []];
+			const cards = [];
+			for (const [target, [card]] of lose_list) {
+				if (!card) {
+					continue;
+				}
+				cards.push(card);
+				const result2 = await target
+					.chooseControl({
+						controls: ["支持", "反对"],
+						prompt: `是否支持${get.translation(player)}`,
+						choice: get.attitude(target, player) > 0 ? 0 : 1,
+					})
+					.forResult();
+				target_group[result2.index].push(target);
+				if (result2.index === 0) {
+					count += map.get(target);
+				} else {
+					count -= map.get(target);
+				}
+			}
+			if (target_group[0].length) {
+				game.log(target_group[0], "选择支持");
+			}
+			if (target_group[1].length) {
+				game.log(target_group[1], "选择反对");
+			}
+			await game.delayx(1);
+			if (count < 0) {
+				await player.loseHp();
+				await player.gain(cards.filterInD("d"), "gain2");
+			} else {
+				const result3 = await player
+					.chooseTarget({
+						prompt: "请选择任意名其他角色",
+						prompt2: "令任意名其他角色失去1点体力并随机获得这些角色各1张牌",
+						selectTarget: [0, game.countPlayer(current => current !== player)],
+						filterTarget: (_, player, target) => player !== target,
+						ai: target => -get.attitude2(target),
+						forced: true,
+					})
+					.forResult();
+				for (const target of result3.targets.sortBySeat()) {
+					await target.loseHp();
+					const hes = target.getGainableCards(player, "he");
+					if (hes.length) {
+						const cards = hes.randomGets(1);
+						await player.gain(cards, target, "bySelf");
+						target.$giveAuto(cards, player);
+						await game.delayx(1)
+					}
+				}
+			}
+		},
+	},
 };
 
 export default skills;
