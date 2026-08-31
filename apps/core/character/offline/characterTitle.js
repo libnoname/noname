@@ -368,5 +368,6 @@ export default {
 	zc26_shen_huangyueying: "卧龙的点睛人",
 	shen_jiaxu: "文和乱武",
 	le_shen_jiaxu: "倒悬云衢",
+	ps_shen_jiaxu: "逆乱天下",
 	ps_shen_machao: "迅骛惊雷",
 };
