@@ -710,10 +710,10 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 	},
 	//装备栏相关
 	async disableEquip(event, trigger, player) {
-		const cards = [];
+		const cards: Card[] = [];
 		event.cards = cards;
 		event.disabledCount = {};
-		const slots = [];
+		const slots: string[] = [];
 		if (get.is.mountCombined()) {
 			for (const slot of event.slots) {
 				if (slot == "equip3" || slot == "equip4") {
@@ -774,25 +774,29 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 							source = player;
 						}
 
-					result = await source
-						.chooseButton([`选择${player == source ? "你" : get.translation(player)}的${get.cnNumber(num)}张${get.translation(slot)}牌置入弃牌堆`, discardingCards], true, [1, num])
-						.set("filterOk", () => {
-							const evt = get.event();
+						result = await source
+							.chooseButton({
+								createDialog: [`选择${player == source ? "你" : get.translation(player)}的${get.cnNumber(num)}张${get.translation(slot)}牌置入弃牌堆`, discardingCards],
+								selectButton: [1, num],
+								forced: true,
+							})
+							.set("filterOk", () => {
+								const evt = get.event();
 
-							let result = 0;
-							for (const button of ui.selected.buttons) {
-								if (evt.slot == "equip3_4") {
-									result += Math.max(get.numOf(get.subtypes(button.link, false), "equip3"), get.numOf(get.subtypes(button.link, false), "equip4"));
-								} else {
-									result += get.numOf(get.subtypes(button.link, false), evt.slot);
+								let result = 0;
+								for (const button of ui.selected.buttons) {
+									if (evt.slot == "equip3_4") {
+										result += Math.max(get.numOf(get.subtypes(button.link, false), "equip3"), get.numOf(get.subtypes(button.link, false), "equip4"));
+									} else {
+										result += get.numOf(get.subtypes(button.link, false), evt.slot);
+									}
 								}
-							}
 
-							return result === evt.required;
-						})
-						.set("required", num)
-						.set("slot", slot)
-						.forResult();
+								return result === evt.required;
+							})
+							.set("required", num)
+							.set("slot", slot)
+							.forResult();
 					}
 				} else {
 					result = { bool: true, links: discardingCards };
@@ -806,7 +810,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 
 		player.$syncDisable();
 		if (cards.length > 0) {
-			await player.loseToDiscardpile(cards);
+			await player.loseToDiscardpile({ cards });
 		}
 	},
 	async enableEquip(event, trigger, player) {
