@@ -11206,47 +11206,51 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseUseBegin" },
 		filter(event, player) {
-			var hs = player.countCards("h");
+			const hs = player.countCards("h");
 			return (
 				hs > 1 &&
-				game.hasPlayer(function (target) {
-					var ts = target.countCards("h");
-					return target != player && ts > 0 && hs > ts;
+				game.hasPlayer(target => {
+					const ts = target.countCards("h");
+					return target !== player && ts > 0 && hs > ts;
 				})
 			);
 		},
 		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt2("lulve"), function (card, player, target) {
-					var hs = player.countCards("h"),
-						ts = target.countCards("h");
-					return target != player && ts > 0 && hs > ts;
+		async content(event, trigger, player) {
+			const result = await player
+				.chooseTarget({
+					prompt: get.prompt2("lulve"),
+					filterTarget: (card, player, target) => {
+						const hs = player.countCards("h");
+						const ts = target.countCards("h");
+						return target !== player && ts > 0 && hs > ts;
+					},
+					ai: target => {
+						const player = _status.event.player;
+						const att = get.attitude(player, target);
+						if (target.isTurnedOver()) {
+							return att / 10;
+						}
+						if (!player.hasShan() && target.canUse({ name: "sha", isCard: true }, player, false) && get.effect(player, { name: "sha", isCard: true }, target, player) < 0 && player.hp < 4) {
+							return 0;
+						}
+						return -att * Math.sqrt(target.countCards("h"));
+					},
 				})
-				.set("ai", function (target) {
-					var player = _status.event.player,
-						att = get.attitude(player, target);
-					if (target.isTurnedOver()) {
-						return att / 10;
-					}
-					if (!player.hasShan() && target.canUse({ name: "sha", isCard: true }, player, false) && get.effect(player, { name: "sha", isCard: true }, target, player) < 0 && player.hp < 4) {
-						return 0;
-					}
-					return -att * Math.sqrt(target.countCards("h"));
-				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("lulve", target);
-				var str = get.translation(player);
-				target
-					.chooseControl()
-					.set("choiceList", ["将所有手牌交给" + str + "，然后其将武将牌翻面", "将武将牌翻面，然后视为对" + str + "使用【杀】"])
-					.set("ai", function () {
-						var player = _status.event.player,
-							target = _status.event.getParent().player;
+				.forResult();
+			if (!result.bool) {
+				return;
+			}
+
+			const target = result.targets[0];
+			player.logSkill("lulve", target);
+			const str = get.translation(player);
+			const controlResult = await target
+				.chooseControl({
+					choiceList: [`将所有手牌交给${str}，然后其将武将牌翻面`, `将武将牌翻面，然后视为对${str}使用【杀】`],
+					ai: () => {
+						const player = _status.event.player;
+						const target = _status.event.getParent().player;
 						if (player.isTurnedOver()) {
 							return 1;
 						}
@@ -11254,21 +11258,22 @@ const skills = {
 							return 0;
 						}
 						return Math.random() < 0.5 ? 0 : 1;
-					});
-			} else {
-				event.finish();
+					},
+				})
+				.forResult();
+			if (controlResult.index === 0) {
+				await target.give(target.getCards("h"), player);
+				await player.turnOver();
+				return;
 			}
-			"step 2";
-			if (result.index == 0) {
-				target.give(target.getCards("h"), player);
-				player.turnOver();
-				event.finish();
-			} else {
-				target.turnOver();
-			}
-			"step 3";
+
+			await target.turnOver();
 			if (target.canUse({ name: "sha", isCard: true }, player, false)) {
-				target.useCard({ name: "sha", isCard: true }, player, false);
+				await target.useCard({
+					card: { name: "sha", isCard: true },
+					targets: [player],
+					addCount: false,
+				});
 			}
 		},
 	},
