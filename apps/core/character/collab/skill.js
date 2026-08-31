@@ -120,9 +120,13 @@ const skills = {
 			if (player.hasSkill("boxue_round")) {
 				return false;
 			}
+			const infox = get.info({ name });
+			if (!infox || infox.notarget || !infox.filterTarget) {
+				return false;
+			}
 			const type = get.type(name);
 			const discards = Array.from(ui.discardPile.childNodes);
-			return ["basic", "trick"].includes(type) && player.hasCards("h", card => discards.some(cardx => cardx.name == card.name)) && !discards.includes(cardx => cardx.name == name);
+			return ["basic", "trick"].includes(type) && player.hasCards("h", card => discards.some(cardx => cardx.name == card.name)) && !discards.some(cardx => cardx.name == name);
 		},
 		ai: {
 			fireAttack: true,
@@ -386,7 +390,7 @@ const skills = {
 				nums.push(player.countMark("xiangxue"));
 			}
 			const card = get.autoViewAs({ name: "sha", isCard: true }, "unsure");
-			return player.countCards("h") >= Math.min(...nums) && event.filterCard(card, player, event);
+			return player.countCards("he") >= Math.min(...nums) && event.filterCard(card, player, event);
 		},
 		filterCard: lib.filter.cardDiscardable,
 		position: "he",
@@ -497,7 +501,7 @@ const skills = {
 			if (!player.getStorage("zhiyong").includes("wang")) {
 				nums.push(player.countMark("xiangxue"));
 			}
-			return name == "sha" && player.countCards("h") >= Math.min(...nums);
+			return name == "sha" && player.countCards("he") >= Math.min(...nums);
 		},
 		ai: {
 			order: 5,
