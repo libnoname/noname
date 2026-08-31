@@ -375,7 +375,7 @@ const skills = {
 					.filter(evt => ["basic", "trick"].includes(get.type(evt.card)))
 					.flatMap(evt => get.autoViewAs({ name: evt.card.name, nature: evt.card.nature, isCard: true }, "unsure"))
 					.unique();
-				return cards.some(card => player.hasUseTarget(card));
+				return cards.some(card => player.hasUseTarget(card)) && event.player == target;
 			}
 			const cards = event.getg?.(target);
 			return event.getParent(2)?.name !== "peersheng" && cards?.length > 0;

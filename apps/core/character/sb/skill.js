@@ -7578,7 +7578,7 @@ const skills = {
 	},
 	//刘备
 	sbrende: {
-		audio: 3,
+		audio: 2,
 		enable: ["chooseToUse", "chooseToRespond"],
 		chargeSkill: 8,
 		init(player, skill) {

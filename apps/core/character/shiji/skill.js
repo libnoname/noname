@@ -394,12 +394,15 @@ const skills = {
 					onunmark: true,
 				},
 				charlotte: true,
+				countUseCard(player) {
+					return player.countHistory("useCard");
+				},
 				mod: {
 					playerEnabled(card, player, target) {
 						if (!target.hasSkill("yingba", null, false, false) || !player.hasMark("yingba_mark")) {
 							return;
 						}
-						const num = player.countHistory("useCard");
+						const num = get.info("yingba_mark").countUseCard(player);
 						if (num < player.countMark("yingba_mark")) {
 							return false;
 						}
