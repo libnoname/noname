@@ -11002,76 +11002,77 @@ const skills = {
 		trigger: { player: "phaseZhunbeiBegin" },
 		direct: true,
 		filter(event, player) {
-			return player.countCards("h", "sha") > 0;
+			return player.hasCards("h", "sha");
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.addSkill("mouni2");
-			player.chooseTarget(get.prompt2("mouni"), lib.filter.notMe).set("ai", function (target) {
-				var player = _status.event.player,
-					cards = player.getCards("h", "sha");
-				if (
-					get.attitude(player, target) >= 0 ||
-					!player.canUse(cards[0], target, false) ||
-					(!player.hasJudge("lebu") &&
-						target.mayHaveShan(player, "use") &&
-						!player.hasSkillTag(
-							"directHit_ai",
-							true,
-							{
-								target: target,
-								card: cards[0],
-							},
-							true
-						))
-				) {
-					return 0;
-				}
-				return get.effect(target, cards[0], player, player);
-			});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("mouni", target);
-				event.cards = player.getCards("h", "sha");
-			} else {
-				event.finish();
-			}
-			"step 2";
-			if (event.mouni_dying) {
+			const result = await player
+				.chooseTarget({
+					prompt: get.prompt2("mouni"),
+					filterTarget: lib.filter.notMe,
+					ai: target => {
+						const player = _status.event.player;
+						const cards = player.getCards("h", "sha");
+						if (
+							get.attitude(player, target) >= 0 ||
+							!player.canUse(cards[0], target, false) ||
+							(!player.hasJudge("lebu") &&
+								target.mayHaveShan(player, "use") &&
+								!player.hasSkillTag(
+									"directHit_ai",
+									true,
+									{
+										target,
+										card: cards[0],
+									},
+									true
+								))
+						) {
+							return 0;
+						}
+						return get.effect(target, cards[0], player, player);
+					},
+				})
+				.forResult();
+			if (!result.bool) {
 				return;
 			}
-			var hs = player.getCards("h");
-			cards = cards.filter(function (card) {
-				return (
-					hs.includes(card) &&
-					get.name(card, player) == "sha" &&
-					player.canUse(
-						{
-							name: "sha",
-							nature: get.nature(card, player),
-							isCard: true,
-							cards: [card],
-						},
-						target,
-						false
-					)
+			const target = result.targets[0];
+			event.target = target;
+			player.logSkill("mouni", target);
+			let cards = player.getCards("h", "sha");
+			while (!event.mouni_dying) {
+				const hs = player.getCards("h");
+				cards = cards.filter(
+					card =>
+						hs.includes(card) &&
+						get.name(card, player) === "sha" &&
+						player.canUse(
+							{
+								name: "sha",
+								nature: get.nature(card, player),
+								isCard: true,
+								cards: [card],
+							},
+							target,
+							false
+						)
 				);
-			});
-			if (cards.length) {
-				var card = cards.randomRemove(1)[0];
-				player.useCard(target, false, card);
-				event.redo();
+				if (!cards.length) {
+					break;
+				}
+				const card = cards.randomRemove(1)[0];
+				await player.useCard({
+					card,
+					targets: [target],
+					addCount: false,
+				});
 			}
-			"step 3";
 			if (
-				player.getHistory("useCard", function (evt) {
+				player.getHistory("useCard", evt => {
 					return (
-						evt.getParent() == event &&
-						!player.getHistory("sourceDamage", function (evt2) {
-							return evt.card == evt2.card;
-						}).length
+						evt.getParent() === event &&
+						!player.getHistory("sourceDamage", evt2 => evt.card === evt2.card).length
 					);
 				}).length
 			) {
@@ -11089,10 +11090,10 @@ const skills = {
 		popup: false,
 		sourceSkill: "mouni",
 		filter(event, player) {
-			var evt = event.getParent("mouni");
-			return evt && evt.player == player && evt.target == event.player;
+			const evt = event.getParent("mouni");
+			return evt && evt.player === player && evt.target === event.player;
 		},
-		content() {
+		async content(event, trigger, player) {
 			trigger.getParent("mouni").mouni_dying = true;
 		},
 	},
