@@ -53,7 +53,7 @@ window.noname_character_replace = {
 	chendeng: ["chendeng", "ol_chendeng", "re_chendeng", "jsrg_chendeng"],
 	chendong: ["chendong", "sp_chendong", "tw_chendong"],
 	chengong: ["chengong", "re_chengong", "sb_chengong", "xy_chengong"],
-	chengpu: ["chengpu", "ol_chengpu", "xin_chengpu", "re_chengpu", "pot_chengpu", "tw_chengpu", "std_chengpu", "ns_chengpu"],
+	chengpu: ["chengpu", "ol_chengpu", "xin_chengpu", "re_chengpu", "pot_chengpu", "tw_chengpu", "std_chengpu", "ns_chengpu", "dc_sb_chengpu"],
 	chengui: ["chengui", "mb_chengui"],
 	chengyu: ["chengyu", "ol_sb_chengyu", "dc_sb_chengyu", "mb_chengyu", "std_chengyu", "xy_chengyu"],
 	chenjiao: ["chenjiao", "pot_chenjiao"],
@@ -352,7 +352,7 @@ window.noname_character_replace = {
 	zhaoyǎn: ["zhaoyǎn", "dc_zhaoyǎn"],
 	zhaoyun: ["zhaoyun", "re_zhaoyun", "sp_zhaoyun", "ol_sb_zhaoyun", "ol_jsrg_zhaoyun", "old_zhaoyun", "sb_zhaoyun", "huan_zhaoyun", "jsrg_zhaoyun", "jd_sb_zhaoyun", "jsp_zhaoyun", "yy_zhaoyun", "ps2063_zhaoyun", "ps2067_zhaoyun", "natu_zhaoyun", "sxrm_zhaoyun"],
 	zhenji: ["zhenji", "re_zhenji", "sp_zhenji", "sb_zhenji", "mb_sp_zhenji", "tw_zhenji", "jsrg_zhenji", "yj_zhenji", "shinin_zhenji"],
-	zhonghui: ["zhonghui", "clan_zhonghui", "xin_zhonghui", "re_zhonghui", "std_zhonghui", "yj_zhonghui", "pe_zhonghui", "old_zhonghui", "zj_zhonghui", "sp_zhonghui", "dc_sb_zhonghui"],
+	zhonghui: ["zhonghui", "clan_zhonghui", "ol_zhonghui", "xin_zhonghui", "re_zhonghui", "std_zhonghui", "yj_zhonghui", "pe_zhonghui", "old_zhonghui", "zj_zhonghui", "sp_zhonghui", "dc_sb_zhonghui"],
 	zhongyan: ["zhongyan", "clan_zhongyan"],
 	zhongyao: ["zhongyao", "clan_zhongyao", "re_zhongyao", "mb_zhongyao"],
 	zhoubuyi: ["zhoubuyi", "yj_zhoubuyi"],
@@ -475,4 +475,5 @@ window.noname_character_replace = {
 	mb_dilu: ["mb_dilu", "sm_dailu"],
 	lizhaojiaobo: ["lizhaojiaobo", "lx_lizhaojiaobo"],
 	chengji: ["chengji", "lx_chengji"],
+	shen_huangzhong: ["ol_shen_huangzhong", "shen_huangzhong"],
 };

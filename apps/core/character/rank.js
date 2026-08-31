@@ -1,6 +1,9 @@
 window.noname_character_rank = {
 	s: ["yue_caozhi", "v_sunshangxiang", "two_yj_puyuan", "x_yao_yuanshu", "lord_goblin", "pe_guozhao", "xia_caopi", "pe_jun_caopi", "wn_shen_machao", "pe_que", "hm_shen_huangfusong", "tw_jsrg_huangfusong", "key_shiki", "sp_xiahoushi", "ns_zhangwei", "key_mio", "key_midori", "key_yuri", "key_yui", "key_lucia", "db_key_hina", "sp_key_kanade", "key_shizuru", "key_sakuya", "boss_zhaoyun", "noname", "ns_shijian", "key_iriya", "ol_nanhualaoxian", "huzun", "dc_xujing", "ty_shen_zhangfei", "vtb_xiaole", "yj_zhonghui", "duosidawang", "re_sp_zhugeliang", "re_pangtong", "tw_wujing", "dengzhi", "xin_chengpu", "tw_dongzhao", "sunwukong", "ps_shen_machao", "pk_sp_duyu", "std_pengyang", "diy_liaohua", "drag_xusheng", "zh_shen_zhangjiao"],
 	ap: [
+		"luwenyi",
+		"cuizhi",
+		"dc_sb_chengpu",
 		"sxrm_caoren",
 		"sxrm_zhaoyun",
 		"sxrm_zhugeliang",
@@ -115,6 +118,7 @@ window.noname_character_rank = {
 		"eu_yujin",
 		"eu_zhangliao",
 		"eu_yuejin",
+		"sunhe",
 	],
 	a: [
 		"sxrm_chen_caocao",
@@ -346,6 +350,8 @@ window.noname_character_rank = {
 		"bigsb_dengai",
 	],
 	am: [
+		"ol_zhonghui",
+		"ol_shen_huangzhong",
 		"mb_shen_lvbu",
 		"dc_shen_guanyu",
 		"dc_shen_zhangliao",
@@ -1207,6 +1213,7 @@ window.noname_character_rank = {
 		"pot_zanghong",
 	],
 	b: [
+		"wangai",
 		"re_zhoufei",
 		"re_yanyan",
 		"mb_gaoxiang",
@@ -2793,6 +2800,8 @@ window.noname_character_rank = {
 			"natu_zhugeliang",
 		],
 		epic: [
+			"ol_zhonghui",
+			"ol_shen_huangzhong",
 			"mb_shen_lvbu",
 			"sxrm_zhugeliang",
 			"sxrm_chen_caocao",
@@ -3369,8 +3378,10 @@ window.noname_character_rank = {
 			"guotiying",
 			"dc_sb_jianggan",
 			"dc_sb_chunyuqiong",
+			"sunhe",
 		],
 		rare: [
+			"wangai",
 			"ol_quancong",
 			"re_zhoufei",
 			"re_yanyan",
