@@ -793,6 +793,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 						.set("required", num)
 						.set("slot", slot)
 						.forResult();
+					}
 				} else {
 					result = { bool: true, links: discardingCards };
 				}
