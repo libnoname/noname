@@ -1827,6 +1827,9 @@ const translates = {
 	ol_duanwei_prefix: "OL",
 	oltaohuai: "讨怀",
 	oltaohuai_info: "转换技，你使用手牌中点数<br>阳：最大的牌<br>阴：最小的牌<br>时摸一张牌，否则你可以弃置一张牌。",
+	wangai: "王皑",
+	qinmian: "勤勉",
+	qinmian_info: "准备阶段或当你受到1点伤害后，你摸一张牌。每回合结束时，你可将所有“勤励”牌置入弃牌堆，对当前回合角色造成1点伤害；若你因此失去所有手牌，改为对其造成等量伤害。",
 };
 
 export default translates;
