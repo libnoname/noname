@@ -2872,10 +2872,10 @@ const skills = {
 					var card1 = cards1.slice().sort((a, b) => get.value(b) - get.value(a))[0];
 					var card2 = cards2.slice().sort((a, b) => get.value(a) - get.value(b))[0];
 					if (card1 && card2) {
-						cards1.remove(card1);
-						cards2.remove(card2);
-						cards1.push(card2);
-						cards2.push(card1);
+						var index1 = cards1.indexOf(card1),
+							index2 = cards2.indexOf(card2);
+						cards1[index1] = card2;
+						cards2[index2] = card1;
 					}
 					return [cards1, cards2];
 				})
