@@ -11345,81 +11345,72 @@ const skills = {
 			return !event.numFixed;
 		},
 		check(event, player) {
-			return (
-				Math.min(player.maxHp, 5) - player.countCards("h") > 3 ||
-				game.hasPlayer(function (current) {
-					return current != player && get.attitude(player, current) > 0;
-				})
-			);
+			return Math.min(player.maxHp, 5) - player.countCards("h") > 3 || game.hasPlayer(current => current !== player && get.attitude(player, current) > 0);
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			trigger.changeToZero();
-			"step 1";
-			player.drawTo(Math.min(player.maxHp, 5));
-			"step 2";
-			if (player.countCards("h") > 0) {
-				var str = "将至少一张手牌交给一名其他角色";
-				var num = player.countMark("cslilu");
-				if (num < player.countCards("h")) {
-					if (num > 0) {
-						str += "。若给出的牌数大于" + get.cnNumber(num) + "张，则你";
-					} else {
-						str += "，并";
-					}
-					str += "加1点体力上限并回复1点体力";
+			await player.drawTo(Math.min(player.maxHp, 5));
+			const handCount = player.countCards("h");
+			if (!handCount) {
+				return;
+			}
+			let prompt = "将至少一张手牌交给一名其他角色";
+			const markCount = player.countMark("cslilu");
+			if (markCount < handCount) {
+				if (markCount > 0) {
+					prompt += `。若给出的牌数大于${get.cnNumber(markCount)}张，则你`;
+				} else {
+					prompt += "，并";
 				}
-				player.chooseCardTarget({
-					prompt: str,
+				prompt += "加1点体力上限并回复1点体力";
+			}
+			const hasBeneficiary = game.hasPlayer(
+				current => current !== player && get.attitude(player, current) > 0 && !current.hasSkillTag("nogain") && !current.hasJudge("lebu")
+			);
+			const goon = hasBeneficiary && markCount < handCount ? markCount + 1 : 1;
+			const result = await player
+				.chooseCardTarget({
+					prompt,
 					filterCard: true,
 					filterTarget: lib.filter.notMe,
 					selectCard: [1, Infinity],
 					forced: true,
-					ai1(card) {
-						if (ui.selected.cards.length < _status.event.goon) {
-							if (
-								get.tag(card, "damage") &&
-								game.hasPlayer(function (current) {
-									current != player && get.attitude(player, current) > 0 && !current.hasSkillTag("nogain") && !current.hasJudge("lebu") && current.hasValueTarget(card);
-								})
-							) {
-								return 1;
-							}
-							return 1 / Math.max(0.1, get.value(card));
+					ai1: card => {
+						if (ui.selected.cards.length >= _status.event.goon) {
+							return 0;
 						}
-						return 0;
-					},
-					ai2(target) {
-						return Math.sqrt(5 - Math.min(4, target.countCards("h"))) * get.attitude(_status.event.player, target);
-					},
-					goon: (function () {
 						if (
-							!game.hasPlayer(function (current) {
-								return current != player && get.attitude(player, current) > 0 && !current.hasSkillTag("nogain") && !current.hasJudge("lebu");
-							})
+							get.tag(card, "damage") &&
+							game.hasPlayer(
+								current => current !== player && get.attitude(player, current) > 0 && !current.hasSkillTag("nogain") && !current.hasJudge("lebu") && current.hasValueTarget(card)
+							)
 						) {
 							return 1;
 						}
-						if (num < player.countCards("h")) {
-							return num + 1;
-						}
-						return 1;
-					})(),
+						return 1 / Math.max(0.1, get.value(card));
+					},
+					ai2: target => Math.sqrt(5 - Math.min(4, target.countCards("h"))) * get.attitude(_status.event.player, target),
 					allowChooseAll: true,
-				});
-			} else {
-				event.finish();
+				})
+				.set("goon", goon)
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
-			"step 3";
-			if (result.bool) {
-				var num = player.countMark("cslilu");
-				player.give(result.cards, result.targets[0]);
-				if (result.cards.length > num) {
-					player.gainMaxHp();
-					player.recover();
-				}
-				player.storage.cslilu = result.cards.length;
-				player.markSkill("cslilu");
+			const currentMarkCount = player.countMark("cslilu");
+			const giveEvent = player.give(result.cards, result.targets[0]);
+			let gainMaxHpEvent;
+			let recoverEvent;
+			if (result.cards.length > currentMarkCount) {
+				gainMaxHpEvent = player.gainMaxHp();
+				recoverEvent = player.recover();
+			}
+			player.storage.cslilu = result.cards.length;
+			player.markSkill("cslilu");
+			await giveEvent;
+			if (gainMaxHpEvent) {
+				await gainMaxHpEvent;
+				await recoverEvent;
 			}
 		},
 	},
