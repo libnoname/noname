@@ -46,6 +46,7 @@ export default {
 	"#oljieyong1": "杀！杀！杀！",
 	"#oljieyong2": "退！退！退！",
 	"#ol_guanping:die": "父亲……",
+	"#ol_jie_zhuran:die": "义封一生不负国家！",
 	"#olzhuohun1": "炼狱灼魂虽痛，不及丧兄之痛！",
 	"#olzhuohun2": "前方游魂，可曾见过红面长髯之人！",
 	"#olzhuohun3": "既已身堕在此，再无退路！",
