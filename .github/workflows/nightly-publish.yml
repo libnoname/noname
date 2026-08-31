@@ -1,8 +1,8 @@
 name: Nightly Publish
 
 on:
-  schedule:
-    - cron: '11 13 * * *' # 每天的 21:11 运行
+  # schedule:
+  #   - cron: '11 13 * * *' # 每天的 21:11 运行
   workflow_dispatch: # 允许手动点击按钮触发编译
 
 permissions:

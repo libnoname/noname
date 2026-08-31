@@ -15,7 +15,7 @@
 	};
 
 	if (!("serviceWorker" in navigator)) {
-		alert(globalText.SERVICE_WORKER_NOT_SUPPORT);
+		// alert(globalText.SERVICE_WORKER_NOT_SUPPORT);
 		return;
 	}
 

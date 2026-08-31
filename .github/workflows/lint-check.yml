@@ -1,10 +1,10 @@
 name: Lint Check
 
 on:
-  pull_request:
-    branches: [main]
-    types: [opened, synchronize, reopened, edited]
-
+  # pull_request:
+  #   branches: [main]
+  #   types: [opened, synchronize, reopened, edited]
+  workflow_dispatch:
 jobs:
   pr-title:
     name: PR Title Check

@@ -1,9 +1,10 @@
 name: Build and Deploy
 
 on:
-  push:
-    branches: [main]
-
+  # push:
+  #   branches: [main]
+  workflow_dispatch:
+    
 permissions:
   contents: write  # 允许 Actions 推送代码到仓库
 

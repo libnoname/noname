@@ -199,8 +199,8 @@ export default function createApp(config: Partial<typeof defaultConfig> = {}) {
 	});
 
 	const callback = () => {
-		console.log(`Server listening on port ${cfg.port}`);
-		if (!cfg.server && !cfg.debug) exec(`start http://localhost:${cfg.port}/`);
+		console.log(`Server listening on 0.0.0.0 port ${cfg.port}`);
+		if (!cfg.server && !cfg.debug) exec(`start http://0.0.0.0:${cfg.port}/`);
 	};
 
 	// if (config.https) {
@@ -216,7 +216,7 @@ export default function createApp(config: Partial<typeof defaultConfig> = {}) {
 	// } else {
 	// 	app.listen(config.port, callback);
 	// }
-	app.listen({ port: cfg.port }, callback);
+	app.listen({ port: cfg.port, host: "0.0.0.0" }, callback);
 
 	return app;
 }
