@@ -7590,7 +7590,7 @@ const skills = {
 			const storage = player.getStorage("sbrende_used");
 			if (
 				event.type === "phase" &&
-				player.countCards("h") &&
+				player.hasCards("he") &&
 				game.hasPlayer(current => {
 					return !storage.includes(current) && current !== player;
 				})
@@ -7600,24 +7600,12 @@ const skills = {
 			if (player.countCharge() < 2 || storage.includes("card")) {
 				return false;
 			}
-			for (const name of lib.inpile) {
-				if (get.type(name) !== "basic") {
-					continue;
+			return get.inpileVCardList(info => {
+				if (!["basic", "trick"].includes(info[0])) {
+					return false;
 				}
-				const card = { name, isCard: true };
-				if (event.filterCard(card, player, event)) {
-					return true;
-				}
-				if (name === "sha") {
-					for (const nature of lib.inpile_nature) {
-						card.nature = nature;
-						if (event.filterCard(card, player, event)) {
-							return true;
-						}
-					}
-				}
-			}
-			return false;
+				return event.filterCard(get.autoViewAs({ name: info[2], nature: info[3] }, "unsure"), player, event);
+			}).length;
 		},
 		group: ["sbrende_gain"],
 		chooseButton: {
@@ -7626,7 +7614,7 @@ const skills = {
 				const storage = player.getStorage("sbrende_used");
 				const cards = [];
 				dialog.direct = true;
-				if (event.type === "phase" && player.hasCard(() => true, "he") && game.hasPlayer(current => !storage.includes(current) && current !== player)) {
+				if (event.type === "phase" && player.hasCards("he") && game.hasPlayer(current => !storage.includes(current) && current !== player)) {
 					dialog.add([[["give", "交给其他角色牌"]], "tdnodes"]);
 				}
 				if (player.countCharge() > 1 && !storage.includes("card")) {
@@ -7704,12 +7692,9 @@ const skills = {
 			},
 		},
 		subSkill: {
-			mark: { mark: true, intro: { content: "因仁德获得过牌" } },
+			mark: { mark: true, intro: { content: "因仁德获得过牌" }, charlotte: true },
 			backup: {},
-			used: {
-				charlotte: true,
-				onremove: true,
-			},
+			used: { charlotte: true, onremove: true },
 			use: {
 				audio: "sbrende",
 				filterCard: () => false,
