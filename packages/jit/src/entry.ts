@@ -1,5 +1,11 @@
 /// <reference types="vite/client" />
 (async function () {
+	// JIT TypeScript 编译仅在本地开发时有效(SW fetch handler 只拦截 localhost)。
+	// 部署到线上后注册 JIT SW 反而会抢占 pwa-sw.js 的 scope、触发多次 reload、
+	// 导致离线缓存失效白屏。故：非本地环境直接跳过。
+	const LOCAL_HOSTS = ["localhost", "127.0.0.1", "10.0.2.2"];
+	if (!LOCAL_HOSTS.includes(location.hostname)) return;
+
 	const scope = new URL("./", location.href).toString();
 	// if (import.meta.env.DEV) {
 	// 	if ("serviceWorker" in navigator) {

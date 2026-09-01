@@ -26,9 +26,22 @@ export default () => {
 					game.switchMode(directstartmode);
 					return;
 				}
+				// Electron/Node:原生开服;纯浏览器/PWA:PeerJS 开房(房间号)。
+				// 两者都进 connectMenu 选模式点"启",后续 waitForPlayer→createServer 已按环境分流。
 				if (lib.node && window.require) {
 					ui.startServer = ui.create.system(
 						"启动服务器",
+						function (e) {
+							ui.click.shortcut(false);
+							e.stopPropagation();
+							ui.click.connectMenu();
+						},
+						true
+					);
+				} else if (typeof RTCPeerConnection === "function") {
+					// 浏览器支持 WebRTC → 允许当房主(PeerJS)
+					ui.startServer = ui.create.system(
+						"创建房间",
 						function (e) {
 							ui.click.shortcut(false);
 							e.stopPropagation();
@@ -191,14 +204,10 @@ export default () => {
 						ui.window.removeChild(input);
 						if (result || input.value.length > 0) {
 							read(input.value);
-						} else if (confirm("是否输入邀请链接以进入联机地址和房间？")) {
-							ced = true;
-							game.prompt("请输入邀请链接", text => {
-								if (typeof text === "string" && text.length > 0) {
-									read(text);
-								}
-							});
 						}
+						// 纯浏览器/PWA 下不再主动弹"是否输入邀请链接"confirm——
+						// PWA 用户走"创建房间/输房间号"流程,这个每次进联机都弹的弹窗是干扰。
+						// (Electron 端有 navigator.clipboard 会走上面的自动读取分支,不到这里)
 					}
 				}
 				lib.init.onfree();

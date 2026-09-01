@@ -4408,7 +4408,9 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 		ui.auto.hide();
 		ui.pause.hide();
 
-		game.createServer();
+		// PeerJS 开房是异步的(返回 Promise);Node 开服返回 undefined,await undefined 无副作用。
+		// await 保证 game.ip(房间号)就绪后再画等待界面。
+		await game.createServer();
 		if (!lib.translate.zhu) {
 			lib.translate.zhu = "主";
 		}

@@ -13,6 +13,122 @@ export class LibInit {
 		return this.#promises;
 	}
 
+	/**
+	 * 一键下载离线资源:把 pwa-all-assets.json 列出的全部大素材(立绘/语音/扩展/花体字)
+	 * 批量缓存到 Service Worker 的 Cache Storage,之后断网也能玩。
+	 * - 跳过已缓存文件,支持中断后续传(再次点击从未缓存处继续)
+	 * - 实时在按钮上显示进度;再次点击可暂停
+	 * - 捕获配额超限(iOS 有上限),优雅停止并告知已缓存量
+	 * @param {HTMLElement} button 触发的按钮元素(用于显示进度)
+	 */
+	async downloadOfflineAssets(button) {
+		const setText = text => {
+			if (button) button.innerHTML = `<span>${text}</span>`;
+		};
+
+		// 已在下载 → 再次点击视为暂停
+		if (lib.init._offlineDownloading) {
+			lib.init._offlineDownloadAbort = true;
+			return;
+		}
+		// 不再用"完成标记"永久锁定:核对已改用 cache.keys() 批量比对(高效,不会白屏),
+		// 每次点击都重新核对→只补缺失的文件(增量续传)。这样清单更新后(如新增 jit-test.ts)
+		// 能"补课"下新文件,而已缓存的 1GB 素材不会重下。全在则秒提示"已完成"。
+		if (!("caches" in window)) {
+			alert("当前环境不支持离线缓存(Cache Storage 不可用)。");
+			return;
+		}
+
+		lib.init._offlineDownloading = true;
+		lib.init._offlineDownloadAbort = false;
+		setText("准备中…");
+
+		try {
+			// 合并核心清单 + 全量清单一起核对,确保核心里的启动必需文件(jit-test.ts 等)
+			// 若缺失也能被"补课"下载,而不只是下大素材。
+			const [coreResp, allResp] = await Promise.all([fetch("./pwa-core-assets.json", { cache: "no-cache" }), fetch("./pwa-all-assets.json", { cache: "no-cache" })]);
+			if (!allResp.ok) throw new Error("资源清单获取失败 " + allResp.status);
+			const coreList = coreResp.ok ? await coreResp.json() : [];
+			const allList = await allResp.json();
+			/** @type {string[]} */
+			const all = [...new Set([...coreList, ...allList])];
+			// 缓存桶名须与 pwa-sw.js 的 CACHE 一致,否则下载的内容 SW 读不到
+			const cache = await caches.open("noname-pwa-v2");
+
+			// 计算待下载(跳过已缓存)以支持续传。
+			// 用 cache.keys() 一次性取全部已缓存 URL 做成 Set 再比对——
+			// 避免逐个 await cache.match(1.4万次)的密集查询把 iOS 主线程搞崩(下载完再点会白屏)。
+			const cachedKeys = await cache.keys();
+			const cachedSet = new Set(cachedKeys.map(r => new URL(r.url).pathname));
+			const pending = all.filter(url => {
+				// 清单里是 "./image/x.png",缓存 key 是完整 URL,统一用 pathname 比对
+				const path = new URL(url, location.href).pathname;
+				return !cachedSet.has(path);
+			});
+			const total = all.length;
+			let done = total - pending.length; // 已缓存的算作已完成
+			let quotaExceeded = false;
+
+			// 核对后已全部缓存 → 秒提示,不走下载循环
+			if (pending.length === 0) {
+				setText("已下载离线资源");
+				alert(`离线资源已全部缓存(${total}/${total}),断网也能玩。`);
+				lib.init._offlineDownloading = false;
+				return;
+			}
+
+			setText(`下载中 ${done}/${total}`);
+
+			// 并发受控地逐批下载(CF 走 HTTP/2 多路复用,12 并发可用且更快)
+			const CONCURRENCY = 12;
+			for (let i = 0; i < pending.length; i += CONCURRENCY) {
+				if (lib.init._offlineDownloadAbort) break;
+				const batch = pending.slice(i, i + CONCURRENCY);
+				const results = await Promise.allSettled(
+					batch.map(async url => {
+						const r = await fetch(url, { cache: "no-cache" });
+						if (r && r.status === 200) {
+							// iOS 不接受 redirected 响应:重定向的先用响应体重建干净副本再缓存
+							let toCache = r.clone();
+							if (r.redirected) {
+								const body = await r.clone().blob();
+								toCache = new Response(body, { status: r.status, statusText: r.statusText, headers: r.headers });
+							}
+							await cache.put(url, toCache);
+						}
+					})
+				);
+				for (const res of results) {
+					if (res.status === "fulfilled") {
+						done++;
+					} else if (res.reason && (res.reason.name === "QuotaExceededError" || String(res.reason).includes("quota"))) {
+						quotaExceeded = true;
+					}
+				}
+				setText(`下载中 ${done}/${total}`);
+				if (quotaExceeded) break;
+			}
+
+			if (quotaExceeded) {
+				alert(`已达设备缓存容量上限,离线资源部分缓存(${done}/${total})。\niOS 对网页缓存有容量限制,已缓存内容可离线使用。`);
+				setText("下载离线资源");
+			} else if (lib.init._offlineDownloadAbort) {
+				alert(`已暂停。当前已缓存 ${done}/${total},再次点击可继续。`);
+				setText("下载离线资源");
+			} else {
+				alert(`离线资源下载完成(${done}/${total})!断网也能玩了。`);
+				setText("已下载离线资源");
+			}
+		} catch (e) {
+			console.error("下载离线资源失败:", e);
+			alert("下载离线资源失败:" + (e instanceof Error ? e.message : String(e)));
+			setText("下载离线资源");
+		} finally {
+			lib.init._offlineDownloading = false;
+			lib.init._offlineDownloadAbort = false;
+		}
+	}
+
 	reset() {
 		if (window.inSplash) {
 			return;

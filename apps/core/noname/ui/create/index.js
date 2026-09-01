@@ -3706,7 +3706,16 @@ export class Create {
 		});
 
 		var shareButton = ui.create.div(".menubutton.large.highlight.connectbutton.connectbutton2.pointerdiv", "分享房间", ui.window, function () {
-			var text = `无名杀-联机-${lib.translate[get.mode()]}-${game.connectPlayers.filter(p => p.avatar).length}/${game.connectPlayers.filter(p => !p.classList.contains("unselectable2")).length}\n${get.connectNickname()}邀请你加入${game.roomId}房间\n联机地址:${game.ip}\n请先通过游戏内菜单-开始-联机中启用“读取邀请链接”选项`;
+			// 纯浏览器/PWA 走 PeerJS 房间号(game.ip 即房间号),给直白的加入引导;
+			// Electron 端仍是 IP 地址,沿用原提示。
+			var _modeName = lib.translate[get.mode()] || get.mode();
+			var _seats = `${game.connectPlayers.filter(p => p.avatar).length}/${game.connectPlayers.filter(p => !p.classList.contains("unselectable2")).length}`;
+			var text;
+			if (typeof window.require !== "function") {
+				text = `无名杀-联机-${_modeName}-${_seats}\n${get.connectNickname()}邀请你加入房间\n房间号:${game.ip}\n打开游戏 → 联机 → 在地址栏输入房间号 → 连接`;
+			} else {
+				text = `无名杀-联机-${_modeName}-${_seats}\n${get.connectNickname()}邀请你加入房间\n联机地址:${game.ip}\n请先通过游戏内菜单-开始-联机中启用“读取邀请链接”选项`;
+			}
 			window.focus();
 			const fallbackCopyTextToClipboard = function (text) {
 				const textArea = document.createElement("textarea");
