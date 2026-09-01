@@ -6708,7 +6708,7 @@ const skills = {
 					player.loseToDiscardpile(card);
 
 					// step 1
-					await target.draw(Math.max(1, player.getExpansions("xinquanji").length)).forResult();
+					await target.draw(Math.max(1, player.getExpansions("xinquanji").length - 1)).forResult();
 				},
 				ai: {
 					result: {
