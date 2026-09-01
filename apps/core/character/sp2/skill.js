@@ -4251,35 +4251,33 @@ const skills = {
 			player: "enterGame",
 		},
 		filter(event, player, name) {
-			if (name == "roundStart") {
-				return player.getSkills().some(skill => skill.indexOf("starcanxi_") == 0);
+			if (name === "roundStart") {
+				return player.getSkills().some(skill => skill.indexOf("starcanxi_") === 0);
 			}
-			return event.name != "phase" || game.phaseNumber == 0;
+			return event.name !== "phase" || game.phaseNumber === 0;
 		},
 		forced: true,
-		content() {
-			"step 0";
-			if (event.triggername != "roundStart") {
-				var list = game.filterPlayer().reduce((list, target) => list.add(target.group), []);
+		async content(event, trigger, player) {
+			if (event.triggername !== "roundStart") {
+				const list = game.filterPlayer().reduce((list, target) => list.add(target.group), []);
 				list.sort((a, b) => lib.group.indexOf(a) - lib.group.indexOf(b));
-				let lacks = lib.group.filter(group => group != "shen" && !list.includes(group));
+				const lacks = lib.group.filter(group => group !== "shen" && !list.includes(group));
 				list.forEach(group => lib.skill.starcanxi.create(group, player));
 				if (lacks.length) {
-					player.gainMaxHp(lacks.length);
+					await player.gainMaxHp(lacks.length);
 				}
-				event.finish();
 				return;
 			}
-			"step 1";
-			var groups = player.getSkills().filter(skill => skill.indexOf("starcanxi_") == 0);
-			groups = groups.map(group => group.slice(10));
+			const groups = player
+				.getSkills()
+				.filter(skill => skill.indexOf("starcanxi_") === 0)
+				.map(group => group.slice(10));
 			groups.sort((a, b) => lib.group.indexOf(a) - lib.group.indexOf(b));
-			event.map = groups;
-			player
-				.chooseButton(
-					[
+			const result = await player
+				.chooseButton({
+					createDialog: [
 						'###残玺###<div class="text center">请选择势力和效果</div>',
-						[groups.map(group => [group, lib.translate[group + "2"] || lib.translate[group]]), "tdnodes"],
+						[groups.map(group => [group, lib.translate[`${group}2`] || lib.translate[group]]), "tdnodes"],
 						[
 							[
 								["wangsheng", '<div class="popup text" style="width:calc(100% - 10px);display:inline-block"><div class="skill">【妄生】</div><div>被选择势力角色每回合首次造成的伤害+1且计算与其他角色间的距离-1</div></div>'],
@@ -4288,55 +4286,58 @@ const skills = {
 							"textbutton",
 						],
 					],
-					2,
-					true
-				)
-				.set("filterButton", function (button) {
-					var list = ["wangsheng", "xiangsi"];
-					if (!ui.selected.buttons.length) {
-						return true;
-					}
-					return list.includes(ui.selected.buttons[0].link) != list.includes(button.link);
-				})
-				.set("ai", function (button) {
-					var player = _status.event.player;
-					var map = _status.event.map,
-						list = ["wangsheng", "xiangsi"];
-					var getNum = function (group, effect) {
-						var num = 0,
-							sgn = effect == "wangsheng" ? 1.05 : -1;
-						game.countPlayer(function (current) {
-							if (!(current == player && sgn == -1) && current.group == group) {
-								num += get.sgn(get.attitude(player, current)) * sgn;
+					selectButton: 2,
+					forced: true,
+					filterButton: button => {
+						const effects = ["wangsheng", "xiangsi"];
+						if (!ui.selected.buttons.length) {
+							return true;
+						}
+						return effects.includes(ui.selected.buttons[0].link) !== effects.includes(button.link);
+					},
+					ai: button => {
+						const currentPlayer = _status.event.player;
+						const map = _status.event.map;
+						const effects = ["wangsheng", "xiangsi"];
+						const getNum = (group, effect) => {
+							let num = 0;
+							const sgn = effect === "wangsheng" ? 1.05 : -1;
+							game.countPlayer(current => {
+								if (!(current === currentPlayer && sgn === -1) && current.group === group) {
+									num += get.sgn(get.attitude(currentPlayer, current)) * sgn;
+								}
+							});
+							return num;
+						};
+						const list = [];
+						for (const group of map) {
+							for (const effect of effects) {
+								list.push([group, effect]);
 							}
-						});
-						return num;
-					};
-					var listx = [];
-					map.forEach(group => list.forEach(effect => listx.add([group, effect])));
-					listx.sort((a, b) => getNum(b[0], b[1]) - getNum(a[0], a[1]));
-					if (button.link == listx[0][0] || button.link == listx[0][1]) {
-						return 1;
-					}
-					return 0;
+						}
+						list.sort((a, b) => getNum(b[0], b[1]) - getNum(a[0], a[1]));
+						return button.link === list[0][0] || button.link === list[0][1] ? 1 : 0;
+					},
 				})
-				.set("map", groups);
-			"step 2";
-			if (result.bool) {
-				if (!event.map.includes(result.links[0])) {
-					result.links.reverse();
-				}
-				var group = result.links[0];
-				var skill = "starcanxi_" + result.links[1];
-				var str = lib.translate[group + "2"] || lib.translate[group];
-				player.popup([str, skill]);
-				game.log(player, "选择了", "#g" + str, "、", "#y" + get.translation(skill));
-				player.addTempSkill(skill, "roundStart");
-				player.markAuto(skill, [group]);
+				.set("map", groups)
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
+			const links = result.links.slice();
+			if (!groups.includes(links[0])) {
+				links.reverse();
+			}
+			const group = links[0];
+			const skill = `starcanxi_${links[1]}`;
+			const str = lib.translate[`${group}2`] || lib.translate[group];
+			player.popup([str, skill]);
+			game.log(player, "选择了", `#g${str}`, "、", `#y${get.translation(skill)}`);
+			player.addTempSkill(skill, "roundStart");
+			player.markAuto(skill, [group]);
 		},
 		create(group, player) {
-			const skill = "starcanxi_" + group;
+			const skill = `starcanxi_${group}`;
 			get.info("starcanxi").createSkill(skill);
 			if (!_status.postReconnect.starcanxi) {
 				_status.postReconnect.starcanxi = [get.info("starcanxi").createSkill, []];
@@ -4356,9 +4357,9 @@ const skills = {
 						},
 						intro: { content: "玉玺的一角" },
 					};
-					lib.translate[skill] = "残玺·" + get.translation(group + "2");
+					lib.translate[skill] = `残玺·${get.translation(`${group}2`)}`;
 					lib.skill[skill].marktext = get.translation(group);
-					lib.translate[skill + "_bg"] = get.translation(group);
+					lib.translate[`${skill}_bg`] = get.translation(group);
 				}, skill);
 			}
 		},
@@ -4375,7 +4376,7 @@ const skills = {
 				},
 				forced: true,
 				logTarget: "source",
-				content() {
+				async content(event, trigger, player) {
 					trigger.num++;
 				},
 				group: "starcanxi_remove",
@@ -4387,22 +4388,20 @@ const skills = {
 				onremove: true,
 				trigger: { global: "recoverEnd" },
 				filter(event, player) {
-					if (!player.getStorage("starcanxi_xiangsi").includes(event.player.group) || event.player == player) {
+					if (!player.getStorage("starcanxi_xiangsi").includes(event.player.group) || event.player === player) {
 						return false;
 					}
 					return (
 						game
-							.getGlobalHistory("changeHp", function (evt) {
-								return evt.getParent().name == "recover" && evt.player == event.player;
-							})
+							.getGlobalHistory("changeHp", evt => evt.getParent().name === "recover" && evt.player === event.player)
 							.map(evt => evt.getParent())
 							.indexOf(event) === 0
 					);
 				},
 				forced: true,
 				logTarget: "player",
-				content() {
-					trigger.player.loseHp();
+				async content(event, trigger, player) {
+					await trigger.player.loseHp();
 				},
 				group: ["starcanxi_remove", "starcanxi_cancel"],
 				global: "starcanxi_effect",
@@ -4412,14 +4411,14 @@ const skills = {
 				charlotte: true,
 				trigger: { global: "useCard" },
 				filter(event, player) {
-					if (!event.targets || !event.targets.includes(player) || !player.getStorage("starcanxi_xiangsi").includes(event.player.group) || event.player == player) {
+					if (!event.targets || !event.targets.includes(player) || !player.getStorage("starcanxi_xiangsi").includes(event.player.group) || event.player === player) {
 						return false;
 					}
-					return event.player.getHistory("useCard", evt => evt.targets && evt.targets.includes(player)).indexOf(event) == 0;
+					return event.player.getHistory("useCard", evt => evt.targets && evt.targets.includes(player)).indexOf(event) === 0;
 				},
 				forced: true,
 				logTarget: "player",
-				content() {
+				async content(event, trigger, player) {
 					trigger.excluded.add(player);
 				},
 			},
@@ -4437,11 +4436,11 @@ const skills = {
 							if (get.itemtype(card) !== "card" || !player || !target) {
 								return;
 							}
-							var targets = game.filterPlayer(targetx => targetx != player && targetx.getStorage("starcanxi_xiangsi").includes(player.group));
+							const targets = game.filterPlayer(targetx => targetx !== player && targetx.getStorage("starcanxi_xiangsi").includes(player.group));
 							if (!targets.length) {
 								return;
 							}
-							if (get.tag(card, "recover") && target == player && target.hp > 2) {
+							if (get.tag(card, "recover") && target === player && target.hp > 2) {
 								return 0;
 							}
 							if (get.tag(card, "damage") && targets.includes(target)) {
@@ -4458,7 +4457,7 @@ const skills = {
 				popup: false,
 				firstDo: true,
 				forceDie: true,
-				content() {
+				async content(event, trigger, player) {
 					player.removeSkill("starcanxi_wangsheng");
 					player.removeSkill("starcanxi_xiangsi");
 				},
