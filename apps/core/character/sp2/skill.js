@@ -4468,31 +4468,30 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseEnd", global: "die" },
 		filter(event, player) {
-			if (event.name == "phase") {
+			if (event.name === "phase") {
 				return player.hasMark("starpizhi");
 			}
-			if (!game.hasPlayer(current => current != event.player && current.group == event.player.group)) {
+			if (!game.hasPlayer(current => current !== event.player && current.group === event.player.group)) {
 				return true;
 			}
 			if (!player.getStorage("starcanxi_wangsheng").includes(event.player.group) && !player.getStorage("starcanxi_xiangsi").includes(event.player.group)) {
 				return false;
 			}
-			var groups = player.getSkills().filter(skill => skill.indexOf("starcanxi_") == 0);
-			groups = groups.map(group => group.slice(10));
+			const groups = player
+				.getSkills()
+				.filter(skill => skill.indexOf("starcanxi_") === 0)
+				.map(group => group.slice(10));
 			return groups.includes(event.player.group);
 		},
 		forced: true,
-		content() {
-			"step 0";
-			if (trigger.name == "die") {
-				var skills = player.getSkills().filter(skill => skill.indexOf("starcanxi_") == 0 && skill.slice(10) == trigger.player.group);
+		async content(event, trigger, player) {
+			if (trigger.name === "die") {
+				const skills = player.getSkills().filter(skill => skill.indexOf("starcanxi_") === 0 && skill.slice(10) === trigger.player.group);
 				player.removeSkill(skills);
 			}
-			"step 1";
-			player.draw(player.countMark("starpizhi"));
-			"step 2";
-			if (player.isDamaged() && trigger.name == "die") {
-				player.recover();
+			await player.draw(player.countMark("starpizhi"));
+			if (player.isDamaged() && trigger.name === "die") {
+				await player.recover();
 			}
 		},
 		intro: { content: "已失去#个“玺角”" },
