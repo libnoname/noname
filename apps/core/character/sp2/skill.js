@@ -14311,9 +14311,9 @@ const skills = {
 			markcount: "expansion",
 		},
 		onremove(player, skill) {
-			var cards = player.getExpansions(skill);
+			const cards = player.getExpansions(skill);
 			if (cards.length) {
-				player.loseToDiscardpile(cards);
+				player.loseToDiscardpile({ cards });
 			}
 		},
 		trigger: {
@@ -14323,16 +14323,25 @@ const skills = {
 		filter(event, player) {
 			return player.countCards("he") > 0 && !player.getExpansions("biaozhao").length;
 		},
-		content() {
-			"step 0";
-			player.chooseCard("he", get.prompt("biaozhao"), "将一张牌置于武将牌上作为“表”").ai = function (card) {
-				return 6 - get.value(card);
-			};
-			"step 1";
-			if (result.bool) {
-				player.logSkill("biaozhao");
-				player.addToExpansion(result.cards, player, "give").gaintag.add("biaozhao");
+		async content(event, trigger, player) {
+			const result = await player
+				.chooseCard({
+					position: "he",
+					prompt: get.prompt("biaozhao"),
+					prompt2: "将一张牌置于武将牌上作为“表”",
+					ai: card => 6 - get.value(card),
+				})
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
+			player.logSkill("biaozhao");
+			await player.addToExpansion({
+				cards: result.cards,
+				source: player,
+				animate: "give",
+				gaintag: ["biaozhao"],
+			});
 		},
 		ai: {
 			notemp: true,
@@ -14347,36 +14356,39 @@ const skills = {
 		audio: "biaozhao",
 		sourceSkill: "biaozhao",
 		filter(event, player) {
-			if (event.name == "loseAsyncAfter" && event.type != "discard") {
+			if (event.name === "loseAsyncAfter" && event.type !== "discard") {
 				return false;
 			}
-			if (event.name == "lose" && (event.getlx === false || event.position != ui.discardPile)) {
+			if (event.name === "lose" && (event.getlx === false || event.position !== ui.discardPile)) {
 				return false;
 			}
-			var cards = player.getExpansions("biaozhao");
-			if (!cards.length) {
+			const expansionCards = player.getExpansions("biaozhao");
+			if (!expansionCards.length) {
 				return false;
 			}
-			var suit = get.suit(cards[0]);
-			var num = get.number(cards[0]);
-			var cards = event.getd();
-			for (var card of cards) {
-				if (get.suit(card) == suit && get.number(card) == num) {
+			const suit = get.suit(expansionCards[0]);
+			const num = get.number(expansionCards[0]);
+			const discardedCards = event.getd();
+			for (const card of discardedCards) {
+				if (get.suit(card) === suit && get.number(card) === num) {
 					return true;
 				}
 			}
 			return false;
 		},
-		content() {
-			"step 0";
-			var card = player.getExpansions("biaozhao")[0];
-			if (trigger.getParent().name == "discard") {
-				trigger.player.gain(card, player, "give", "bySelf");
+		async content(event, trigger, player) {
+			const card = player.getExpansions("biaozhao")[0];
+			if (trigger.getParent().name === "discard") {
+				await trigger.player.gain({
+					cards: [card],
+					source: player,
+					animate: "give",
+					bySelf: true,
+				});
 			} else {
-				player.loseToDiscardpile(card);
+				await player.loseToDiscardpile({ cards: [card] });
 			}
-			"step 1";
-			player.loseHp();
+			await player.loseHp();
 		},
 	},
 	biaozhao3: {
@@ -14390,34 +14402,38 @@ const skills = {
 		filter(event, player) {
 			return player.getExpansions("biaozhao").length > 0;
 		},
-		content() {
-			"step 0";
-			var card = player.getExpansions("biaozhao")[0];
-			player.loseToDiscardpile(card);
-			"step 1";
-			event.num = 0;
-			game.countPlayer(function (current) {
-				if (current.countCards("h") > event.num) {
-					event.num = current.countCards("h");
+		async content(event, trigger, player) {
+			const card = player.getExpansions("biaozhao")[0];
+			await player.loseToDiscardpile({ cards: [card] });
+			let num = 0;
+			game.countPlayer(current => {
+				if (current.countCards("h") > num) {
+					num = current.countCards("h");
 				}
 			});
-			player.chooseTarget("是否令一名角色将手牌摸至" + event.num + "张并回复1点体力？").ai = function (target) {
-				var num = Math.min(event.num - target.countCards("h"), 5);
-				if (target.isDamaged()) {
-					num++;
-				}
-				return num * get.attitude(_status.event.player, target);
-			};
-			"step 2";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.line(target, "green");
-				var draw = Math.min(num - target.countCards("h"), 5);
-				if (draw) {
-					target.draw(draw);
-				}
-				target.recover();
+			const result = await player
+				.chooseTarget({
+					prompt: `是否令一名角色将手牌摸至${num}张并回复1点体力？`,
+					ai: target => {
+						let value = Math.min(_status.event.num - target.countCards("h"), 5);
+						if (target.isDamaged()) {
+							value++;
+						}
+						return value * get.attitude(_status.event.player, target);
+					},
+				})
+				.set("num", num)
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
+			const target = result.targets[0];
+			player.line(target, "green");
+			const draw = Math.min(num - target.countCards("h"), 5);
+			if (draw > 0) {
+				await target.draw(draw);
+			}
+			await target.recover();
 		},
 	},
 	yechou: {
