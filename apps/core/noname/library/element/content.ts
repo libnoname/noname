@@ -713,6 +713,27 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 		const cards: Card[] = [];
 		event.cards = cards;
 		event.disabledCount = {};
+		if (event.all) {
+			delete event.all;
+			const expanded: string[] = [];
+			const seen = new Set();
+			for (const raw of event.slots) {
+				const slot = typeof raw == "number" ? "equip" + raw : raw;
+				if (seen.has(slot)) {
+					continue;
+				}
+				seen.add(slot);
+				let countSlot = slot;
+				if (get.is.mountCombined() && (slot == "equip3" || slot == "equip4")) {
+					countSlot = "equip3_4";
+				}
+				const num = player.countEnabledSlot(countSlot);
+				for (let i = 0; i < num; i++) {
+					expanded.push(slot);
+				}
+			}
+			event.slots = expanded;
+		}
 		const slots: string[] = [];
 		if (get.is.mountCombined()) {
 			for (const slot of event.slots) {
@@ -815,22 +836,62 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 	},
 	async enableEquip(event, trigger, player) {
 		const { slots } = event;
-		if (!slots.length) {
+		if (event.all) {
+			delete event.all;
+			const expanded: string[] = [];
+			const seen = new Set();
+			for (const raw of slots) {
+				const slot = typeof raw == "number" ? "equip" + raw : raw;
+				if (seen.has(slot)) {
+					continue;
+				}
+				seen.add(slot);
+				let countSlot = slot;
+				if (get.is.mountCombined() && (slot == "equip3" || slot == "equip4")) {
+					countSlot = "equip3";
+				}
+				const num = player.countDisabledSlot(countSlot);
+				for (let i = 0; i < num; i++) {
+					expanded.push(slot);
+				}
+			}
+			event.slots = expanded;
+		}
+		if (!event.slots.length) {
 			return;
 		}
 
-		const slotsx = [...new Set(slots)].sort();
+		const slotsx: string[] = [];
+		if (get.is.mountCombined()) {
+			for (const slot of event.slots) {
+				if (slot == "equip3" || slot == "equip4") {
+					slotsx.add("equip3_4");
+				} else {
+					slotsx.add(slot);
+				}
+			}
+		} else {
+			slotsx.addArray(event.slots);
+		}
+		slotsx.sort();
+
 		for (const slot of slotsx) {
-			const lost = player.countDisabledSlot(slot);
-			const gain = Math.min(lost, get.numOf(slots, slot));
+			const countKey = slot == "equip3_4" ? "equip3" : slot;
+			const lost = player.countDisabledSlot(countKey);
+			let gain: number;
+			if (slot == "equip3_4") {
+				gain = Math.min(lost, Math.max(get.numOf(event.slots, "equip3"), get.numOf(event.slots, "equip4")));
+			} else {
+				gain = Math.min(lost, get.numOf(event.slots, slot));
+			}
 			if (lost <= 0) {
 				continue;
 			}
 
 			game.log(player, `恢复了${get.cnNumber(gain)}个`, `#g${get.translation(slot)}栏`);
 			player.disabledSlots ??= {};
-			player.disabledSlots[slot] ??= 0;
-			player.disabledSlots[slot] -= gain;
+			player.disabledSlots[countKey] ??= 0;
+			player.disabledSlots[countKey] -= gain;
 		}
 
 		player.$syncDisable();

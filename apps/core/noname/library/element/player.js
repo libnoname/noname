@@ -1933,27 +1933,10 @@ export class Player extends HTMLDivElement {
 				}
 			}
 		}
-		if (next.all) {
-			const expanded = [];
-			const seen = new Set();
-			for (const raw of next.slots) {
-				const slot = typeof raw == "number" ? "equip" + raw : raw;
-				if (seen.has(slot)) {
-					continue;
-				}
-				seen.add(slot);
-				const num = this.countEnabledSlot(slot);
-				for (let i = 0; i < num; i++) {
-					expanded.push(slot);
-				}
-			}
-			next.slots = expanded;
-			delete next.all;
-		}
 		if (!next.source) {
 			next.source = _status.event.player;
 		}
-		if (!next.slots.length) {
+		if (!next.all && !next.slots.length) {
 			_status.event.next.remove(next);
 			next.resolve();
 		}
@@ -1999,27 +1982,10 @@ export class Player extends HTMLDivElement {
 				}
 			}
 		}
-		if (next.all) {
-			const expanded = [];
-			const seen = new Set();
-			for (const raw of next.slots) {
-				const slot = typeof raw == "number" ? "equip" + raw : raw;
-				if (seen.has(slot)) {
-					continue;
-				}
-				seen.add(slot);
-				const num = this.countDisabledSlot(slot);
-				for (let i = 0; i < num; i++) {
-					expanded.push(slot);
-				}
-			}
-			next.slots = expanded;
-			delete next.all;
-		}
 		if (!next.source) {
 			next.source = _status.event.player;
 		}
-		if (!next.slots.length) {
+		if (!next.all && !next.slots.length) {
 			_status.event.next.remove(next);
 			next.resolve();
 		}
