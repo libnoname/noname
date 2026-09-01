@@ -7822,7 +7822,7 @@ const skills = {
 				forced: true,
 				trigger: { global: "dieAfter" },
 				intro: {
-					markcount: () => 0,
+					markcount: (storage, player) => player.countMark("sbzhangwu_longnu2"),
 					content(storage, player) {
 						return `使用【杀】的次数/攻击范围+${player.countMark("sbzhangwu_longnu2")}`;
 					},
@@ -7867,7 +7867,7 @@ const skills = {
 					player.markSkill("charge");
 					game.log(player, "的蓄力值上限减半");
 					player.addMark(event.name + "2", 1, false);
-					player.markSkill(event.name + "2");
+					player.markSkill(event.name);
 					//手杀结算可重复选择
 					const list = ["red", "black"];
 					const result = await player
