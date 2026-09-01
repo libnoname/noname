@@ -712,7 +712,6 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 	async disableEquip(event, trigger, player) {
 		const cards: Card[] = [];
 		event.cards = cards;
-		event.disabledCount = {};
 		if (event.all) {
 			delete event.all;
 			const expanded: string[] = [];
@@ -769,7 +768,6 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				player.disabledSlots ??= {};
 				player.disabledSlots[slot_key] ??= 0;
 				player.disabledSlots[slot_key] += lose;
-				event.disabledCount[slot_key] = (event.disabledCount[slot_key] ?? 0) + lose;
 
 				const discardingCards = player.getCards("e", card => {
 					if (event.cards.includes(card)) {
