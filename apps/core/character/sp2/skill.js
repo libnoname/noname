@@ -13846,60 +13846,58 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			var enemy = 0;
-			var friend = 0;
-			var zhu = 0;
-			for (var i of game.players) {
-				if (i.isEnemyOf(player)) {
+			let enemy = 0;
+			let friend = 0;
+			let zhu = 0;
+			for (const current of game.players) {
+				if (current.isEnemyOf(player)) {
 					enemy++;
 				} else {
 					friend++;
 				}
-				if (i != player && i.isZhu) {
+				if (current !== player && current.isZhu) {
 					zhu++;
 				}
 			}
 			return zhu > 0 && enemy < friend;
 		},
 		filterTarget(card, player, target) {
-			return target != player && target.isZhu;
+			return target !== player && target.isZhu;
 		},
 		selectTarget: -1,
 		multiline: true,
 		multitarget: true,
-		content() {
-			"step 0";
-			event.targets.sortBySeat();
-			event.targets2 = event.targets.slice(0);
-			"step 1";
-			var target = event.targets2.shift();
-			if (target.countGainableCards(player, "he") > 0) {
-				player.gainPlayerCard(target, "he", true);
-			} else {
-				player.draw();
+		async content(event, trigger, player) {
+			const { targets } = event;
+			targets.sortBySeat();
+			for (const target of targets) {
+				if (target.hasGainableCards(player, "he")) {
+					await player.gainPlayerCard({ target, position: "he", forced: true });
+				} else {
+					await player.draw();
+				}
 			}
-			if (event.targets2.length) {
-				event.redo();
+			if (player.countCards("he") < targets.length) {
+				return;
 			}
-			"step 2";
-			if (player.countCards("he") >= targets.length) {
-				player.chooseCard("he", true, "依次选择" + get.cnNumber(targets.length) + "张牌，分别交给" + get.translation(targets), targets.length).set("ai", function (card) {
-					var target = _status.event.getParent().targets[ui.selected.cards.length];
-					var player = _status.event.player;
-					return get.attitude(player, target) * get.value(card, target);
-				});
-			} else {
-				event.finish();
-			}
-			"step 3";
-			var list = [];
-			for (var i = 0; i < targets.length; i++) {
-				list.push([targets[i], result.cards[i]]);
-			}
-			game.loseAsync({
+			const result = await player
+				.chooseCard({
+					position: "he",
+					forced: true,
+					prompt: `依次选择${get.cnNumber(targets.length)}张牌，分别交给${get.translation(targets)}`,
+					selectCard: targets.length,
+					ai: card => {
+						const target = _status.event.getParent().targets[ui.selected.cards.length];
+						const current = _status.event.player;
+						return get.attitude(current, target) * get.value(card, target);
+					},
+				})
+				.forResult();
+			const list = targets.map((target, index) => [target, result.cards[index]]);
+			await game.loseAsync({
 				gain_list: list,
 				giver: player,
-				player: player,
+				player,
 				cards: result.cards,
 				animate: "giveAuto",
 			}).setContent("gaincardMultiple");
