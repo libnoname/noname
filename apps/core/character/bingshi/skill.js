@@ -691,7 +691,7 @@ const skills = {
 	potxiongzi: {
 		audio: 4,
 		logAudio(event, player, triggername, _, costResult) {
-			if (costResult.cost_data == "保留选项一") {
+			if (costResult.cost_data == "保留选项二") {
 				return ["potxiongzi3.mp3", "potxiongzi4.mp3"];
 			}
 			return 2;
