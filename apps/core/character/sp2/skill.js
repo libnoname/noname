@@ -13474,13 +13474,12 @@ const skills = {
 			player: "phaseUseBegin",
 		},
 		direct: true,
-		content() {
-			"step 0";
-			var goon = player.hasCard(function (card) {
-				if (get.position(card) != "h") {
+		async content(event, trigger, player) {
+			const goon = player.hasCard(card => {
+				if (get.position(card) !== "h") {
 					return false;
 				}
-				var val = get.value(card);
+				const val = get.value(card);
 				if (val < 0) {
 					return true;
 				}
@@ -13492,66 +13491,61 @@ const skills = {
 				}
 				return false;
 			});
-			player
-				.chooseTarget(get.prompt2("fenglve"), function (card, player, target) {
-					return player.canCompare(target);
+			const targetResult = await player
+				.chooseTarget({
+					prompt: get.prompt2("fenglve"),
+					filterTarget: (card, player, target) => player.canCompare(target),
+					ai: target => {
+						if (!_status.event.goon) {
+							return 0;
+						}
+						return (-get.attitude(player, target) * (1 + target.countCards("e"))) / (1 + target.countCards("j"));
+					},
 				})
-				.set("ai", function (target) {
-					if (!_status.event.goon) {
-						return 0;
-					}
-					return (-get.attitude(player, target) * (1 + target.countCards("e"))) / (1 + target.countCards("j"));
-				})
-				.set("goon", goon);
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("fenglve", target);
-				player.chooseToCompare(target);
-			} else {
-				event.finish();
+				.set("goon", goon)
+				.forResult();
+			if (!targetResult.bool) {
+				return;
 			}
-			"step 2";
-			if (result.bool) {
-				var num = 0;
-				if (target.countCards("h")) {
-					num++;
+			const target = targetResult.targets[0];
+			player.logSkill("fenglve", target);
+			const compareResult = await player.chooseToCompare(target).forResult();
+			let gainner;
+			let giver;
+			let cardResult;
+			if (compareResult.bool) {
+				const num = ["h", "e", "j"].filter(position => target.hasCards(position)).length;
+				if (!num) {
+					return;
 				}
-				if (target.countCards("e")) {
-					num++;
-				}
-				if (target.countCards("j")) {
-					num++;
-				}
-				if (num) {
-					event.gainner = player;
-					event.giver = target;
-					target
-						.choosePlayerCard(target, num, "hej", true)
-						.set("filterButton", function (button) {
-							for (var i = 0; i < ui.selected.buttons.length; i++) {
-								if (get.position(button.link) == get.position(ui.selected.buttons[i].link)) {
-									return false;
-								}
-							}
-							return true;
-						})
-						.set("prompt", "选择交给" + get.translation(event.gainner) + "的牌");
-				} else {
-					event.finish();
-				}
+				gainner = player;
+				giver = target;
+				cardResult = await target
+					.choosePlayerCard({
+						target,
+						selectButton: num,
+						position: "hej",
+						forced: true,
+						filterButton: button => ui.selected.buttons.every(selected => get.position(button.link) !== get.position(selected.link)),
+						prompt: `选择交给${get.translation(gainner)}的牌`,
+					})
+					.forResult();
 			} else {
-				if (player.countCards("he")) {
-					event.gainner = target;
-					event.giver = player;
-					player.choosePlayerCard(player, true, "he").set("prompt", "选择交给" + get.translation(event.gainner) + "的牌");
-				} else {
-					event.finish();
+				if (!player.countCards("he")) {
+					return;
 				}
+				gainner = target;
+				giver = player;
+				cardResult = await player
+					.choosePlayerCard({
+						target: player,
+						forced: true,
+						position: "he",
+						prompt: `选择交给${get.translation(gainner)}的牌`,
+					})
+					.forResult();
 			}
-			"step 3";
-			event.giver.give(result.links, event.gainner);
+			await giver.give(cardResult.links, gainner);
 		},
 		group: "fenglve2",
 		ai: {
@@ -13565,60 +13559,29 @@ const skills = {
 		},
 		sourceSkill: "fenglve",
 		check(event, player) {
-			var card, target;
-			if (player == event.player) {
-				card = event.card1;
-				target = event.target;
-			} else {
-				card = event.card2;
-				target = event.player;
-			}
+			const card = player === event.player ? event.card1 : event.card2;
+			const target = player === event.player ? event.target : event.player;
 			return get.attitude(player, target) * get.value(card, target, "raw") > 0;
 		},
 		filter(event, player) {
 			if (event.targets) {
 				return false;
 			}
-			var card, target;
-			if (player == event.player) {
-				card = event.card1;
-				target = event.target;
-			} else {
-				card = event.card2;
-				target = event.player;
-			}
-			return get.position(card, true) == "o";
+			const card = player === event.player ? event.card1 : event.card2;
+			return get.position(card, true) === "o";
 		},
 		prompt(event, player) {
-			var card, target;
-			if (player == event.player) {
-				card = event.card1;
-				target = event.target;
-			} else {
-				card = event.card2;
-				target = event.player;
-			}
-			return "是否发动【锋略】，令" + get.translation(target) + "获得" + get.translation(card) + "？";
+			const card = player === event.player ? event.card1 : event.card2;
+			const target = player === event.player ? event.target : event.player;
+			return `是否发动【锋略】，令${get.translation(target)}获得${get.translation(card)}？`;
 		},
 		logTarget(event, player) {
-			var target;
-			if (player == event.player) {
-				target = event.target;
-			} else {
-				target = event.player;
-			}
-			return target;
+			return player === event.player ? event.target : event.player;
 		},
-		content() {
-			var card, target;
-			if (player == trigger.player) {
-				card = trigger.card1;
-				target = trigger.target;
-			} else {
-				card = trigger.card2;
-				target = trigger.player;
-			}
-			target.gain(card, "gain2", "log");
+		async content(event, trigger, player) {
+			const card = player === trigger.player ? trigger.card1 : trigger.card2;
+			const target = player === trigger.player ? trigger.target : trigger.player;
+			await target.gain({ cards: [card], animate: "gain2", log: true });
 		},
 	},
 	mouzhi: {
