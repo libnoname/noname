@@ -16,7 +16,7 @@ const skills = {
 		canUseCards(event, player) {
 			const discards = Array.from(ui.discardPile.childNodes);
 			return get.inpileVCardList(info => {
-				if (discards.some(card => card.name == info[2] && card.nature == info[3])) {
+				if (discards.some(card => card.name == info[2])) {
 					return false;
 				}
 				if (!["basic", "trick"].includes(info[0])) {
