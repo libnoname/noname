@@ -16,7 +16,6 @@ import { isClass, userAgentLowerCase, GeneratorFunction, AsyncFunction, delay } 
 import { DynamicStyle } from "./dynamic-style/index.js";
 import { GamePromises } from "./promises.js";
 import { Check } from "./check.js";
-import { unpackVideoOverContent } from "./video-over.js";
 
 import { security } from "@/util/sandbox.js";
 import { save } from "@/util/config.js";
@@ -4899,7 +4898,8 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			}
 		},
 		over: function (content) {
-			const { html, handcardPoptips: recordedHandcardPoptips } = unpackVideoOverContent(content);
+			const { html, handcardPoptips: recordedHandcardPoptips } =
+				typeof content === "string" ? { html: content, handcardPoptips: null } : content;
 			var dialog = ui.create.dialog("hidden");
 			dialog.noforcebutton = true;
 			dialog.content.innerHTML = html;
