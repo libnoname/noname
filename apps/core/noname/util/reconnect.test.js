@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { decideReconnect } from "./reconnect.js";
+import { clearReconnectState, decideReconnect } from "./reconnect.js";
 
 /**
  * decideReconnect 是从 lib.element.ws.onclose 中抽出的纯决策函数，
@@ -78,5 +78,50 @@ describe("decideReconnect", () => {
 
 	it("noReconnect 优先于重试（即便有 ip、次数未满）", () => {
 		expect(decideReconnect({ ...base, noReconnect: true, attempts: 0 }).action).toBe("reload");
+	});
+});
+
+/**
+ * clearReconnectState 由「协议层确认联机态已恢复」的两个入口共用：
+ * 大厅走 roomlist，直连房主走 reinit。
+ */
+describe("clearReconnectState", () => {
+	it("清零重试计数并结束重试链", () => {
+		const status = { reconnectAttempts: 3, reconnecting: true };
+		clearReconnectState(status);
+		expect(status.reconnectAttempts).toBe(0);
+		expect(status.reconnecting).toBe(false);
+	});
+
+	it("对未开始重连的状态是幂等的", () => {
+		const status = {};
+		clearReconnectState(status);
+		clearReconnectState(status);
+		expect(status.reconnectAttempts).toBe(0);
+		expect(status.reconnecting).toBe(false);
+	});
+
+	it("清理后再断线，decideReconnect 从第一次退避重新开始", () => {
+		const status = { reconnectAttempts: 4, reconnecting: true };
+		clearReconnectState(status);
+		const d = decideReconnect({
+			wasOnline: true,
+			wasGameOver: false,
+			noReconnect: false,
+			reconnecting: status.reconnecting,
+			hasIp: true,
+			attempts: status.reconnectAttempts,
+			maxAttempts: 5,
+		});
+		// 未清理时 attempts=4 会退避 15s，再断一次即耗尽转 reload
+		expect(d.action).toBe("retry");
+		expect(d.delay).toBe(1000);
+	});
+
+	it("不触碰其它 _status 字段", () => {
+		const status = { reconnectAttempts: 2, reconnecting: true, ip: "1.2.3.4", noReconnect: true };
+		clearReconnectState(status);
+		expect(status.ip).toBe("1.2.3.4");
+		expect(status.noReconnect).toBe(true);
 	});
 });

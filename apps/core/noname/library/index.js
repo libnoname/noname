@@ -17,7 +17,7 @@ import { updateURLs } from "./update-urls.js";
 import { defaultHooks } from "./hooks/index.js";
 import { security, ErrorManager } from "@/util/sandbox.js";
 import { assetURL, userAgentLowerCase, GeneratorFunction, AsyncFunction, characterDefaultPicturePath } from "@/util/index.js";
-import { decideReconnect } from "@/util/reconnect.js";
+import { clearReconnectState, decideReconnect } from "@/util/reconnect.js";
 
 import { defaultSplashs } from "@/init/onload/index.js";
 import dedent from "dedent";
@@ -12614,8 +12614,7 @@ export class Library {
 				game.onlinehall = true;
 				// 协议握手完成、联机态已恢复，此时才算重连成功（传输层 open 尚不足够）。
 				// 下方自动回房流程如需等待，会再自行创建遮罩。
-				_status.reconnectAttempts = 0;
-				_status.reconnecting = false;
+				clearReconnectState(_status);
 				ui.create.connecting(true);
 				lib.config.recentIP.remove(_status.ip);
 				lib.config.recentIP.unshift(_status.ip);
@@ -12994,6 +12993,10 @@ export class Library {
 				game.clearConnect();
 				clearTimeout(_status.createNodeTimeout);
 				game.online = true;
+				// 直连房主时不经过大厅，收不到 roomlist，reinit 才是联机态恢复的信号；
+				// 此处不清理的话，直连模式下重连成功后计数不归零、遮罩也不会收起
+				clearReconnectState(_status);
+				ui.create.connecting(true);
 				game.ip = ip;
 				game.servermode = state.servermode;
 				game.roomId = state.roomId;
@@ -13458,8 +13461,7 @@ export class Library {
 				// 服务端明确拒绝：roomlist 不会再到达，需就地终止重连链，
 				// 否则随后的 onclose 会因 reconnecting 仍为 true 而反复重试；
 				// 同时收起重连遮罩，避免 onclose 判定为无需重连后遮罩滞留
-				_status.reconnecting = false;
-				_status.reconnectAttempts = 0;
+				clearReconnectState(_status);
 				ui.create.connecting(true);
 				game.ws.close();
 				if (_status.connectDenied) {

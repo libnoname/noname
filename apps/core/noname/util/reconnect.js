@@ -43,3 +43,18 @@ export function decideReconnect(state) {
 	const delay = Math.min(1000 * Math.pow(2, attempts), 15000);
 	return { action: "retry", delay, nextAttempts: attempts + 1 };
 }
+
+/**
+ * 清除重连链的进行中状态。
+ *
+ * 必须在「协议层确认联机态已恢复」时调用，而不是 WebSocket open 时——传输层
+ * 连通不代表已重新联机。恢复入口有两个：大厅连接走 `roomlist`，直连房主
+ * （game.createServer 自起的 8080 服务端，不经大厅）走 `reinit`，二者都要调用，
+ * 否则直连模式下重连成功后计数不清零、重连遮罩也不会收起。
+ *
+ * @param {{reconnectAttempts?: number, reconnecting?: boolean}} status 通常为 `_status`
+ */
+export function clearReconnectState(status) {
+	status.reconnectAttempts = 0;
+	status.reconnecting = false;
+}
