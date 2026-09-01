@@ -14098,82 +14098,71 @@ const skills = {
 		filterTarget(card, player, target) {
 			return player.inRange(target) && target.countCards("h");
 		},
-		content() {
-			"step 0";
-			target.chooseCard("h", true, "交给" + get.translation(player) + "一张牌");
-			"step 1";
-			if (result.bool) {
-				target.give(result.cards, player);
-			} else {
-				event.finish();
-			}
-			"step 2";
-			if (
-				player.countCards("h") &&
-				game.hasPlayer(function (current) {
-					return current != target && player.inRange(current);
+		async content(event, trigger, player) {
+			const { target } = event;
+			const giveResult = await target
+				.chooseCard({
+					position: "h",
+					forced: true,
+					prompt: `交给${get.translation(player)}一张牌`,
 				})
-			) {
-				player.chooseCardTarget({
+				.forResult();
+			if (!giveResult.bool) {
+				return;
+			}
+			await target.give(giveResult.cards, player);
+			if (!player.countCards("h") || !game.hasPlayer(current => current !== target && player.inRange(current))) {
+				return;
+			}
+			const result = await player
+				.chooseCardTarget({
 					position: "h",
 					filterCard: true,
-					filterTarget(card, player, target) {
-						return target != _status.event.getParent().target && player.inRange(target);
-					},
+					filterTarget: (card, player, target) => target !== _status.event.getParent().target && player.inRange(target),
 					forced: true,
 					prompt: "将一张手牌交给一名攻击范围内的其他角色",
-					ai1(card) {
-						var player = _status.event.player;
-						if (get.name(card) == "du") {
+					ai1: card => {
+						const current = _status.event.player;
+						if (get.name(card) === "du") {
 							return 20;
 						}
-						if (
-							game.hasPlayer(function (current) {
-								return current != _status.event.getParent().target && player.inRange(current) && get.attitude(player, current) > 0 && current.getUseValue(card) > player.getUseValue(card) && current.getUseValue(card) > player.getUseValue(card);
-							})
-						) {
+						if (game.hasPlayer(target => target !== _status.event.getParent().target && current.inRange(target) && get.attitude(current, target) > 0 && target.getUseValue(card) > current.getUseValue(card))) {
 							return 12;
 						}
-						if (
-							game.hasPlayer(function (current) {
-								return current != player && get.attitude(player, current) > 0;
-							})
-						) {
-							if (card.name == "wuxie") {
+						if (game.hasPlayer(target => target !== current && get.attitude(current, target) > 0)) {
+							if (card.name === "wuxie") {
 								return 11;
 							}
-							if (card.name == "shan" && player.countCards("h", "shan") > 1) {
+							if (card.name === "shan" && current.countCards("h", "shan") > 1) {
 								return 9;
 							}
 						}
 						return 6 / Math.max(1, get.value(card));
 					},
-					ai2(target) {
-						var player = _status.event.player;
-						var card = ui.selected.cards[0];
-						var att = get.attitude(player, target);
-						if (card.name == "du") {
-							return -6 * att;
+					ai2: target => {
+						const current = _status.event.player;
+						const card = ui.selected.cards[0];
+						const attitude = get.attitude(current, target);
+						if (card.name === "du") {
+							return -6 * attitude;
 						}
-						if (att > 0) {
-							if (get.position(card) == "h" && target.getUseValue(card) > player.getUseValue(card)) {
-								return 4 * att;
+						if (attitude > 0) {
+							if (get.position(card) === "h" && target.getUseValue(card) > current.getUseValue(card)) {
+								return 4 * attitude;
 							}
-							if (get.value(card, target) > get.value(card, player)) {
-								return 2 * att;
+							if (get.value(card, target) > get.value(card, current)) {
+								return 2 * attitude;
 							}
-							return 1.2 * att;
+							return 1.2 * attitude;
 						}
-						return (-att * Math.min(4, target.countCards("he"))) / 6;
+						return (-attitude * Math.min(4, target.countCards("he"))) / 6;
 					},
-				});
-			} else {
-				event.finish();
+				})
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
-			"step 3";
-			if (result.bool) {
-				player.give(result.cards, result.targets[0]);
-			}
+			await player.give(result.cards, result.targets[0]);
 		},
 		ai: {
 			order: 6,
