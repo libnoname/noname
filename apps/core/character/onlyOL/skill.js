@@ -438,8 +438,19 @@ const skills = {
 			const num = target.getEquipRange([card]);
 			card.destroyed = true;
 			await target.lose({ cards: [card], position: ui.special }).set("notrigger", true);
+			player.markAuto(event.name + "_mark", skills);
 			player.addAdditionalSkill(event.name, skills, true);
 			await player.draw({ num });
+		},
+		subSkill: {
+			mark: {
+				charlotte: true,
+				intro: {
+					content(storage, player, skill) {
+						return `已视为拥有技能：${get.translation(storage)}`;
+					},
+				},
+			},
 		},
 	},
 	chixueren_skill: {
