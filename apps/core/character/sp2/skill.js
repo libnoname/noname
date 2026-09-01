@@ -4902,25 +4902,25 @@ const skills = {
 		forceDie: true,
 		skillAnimation: true,
 		animationColor: "water",
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			if (trigger.source && trigger.source.isIn()) {
-				trigger.source.discard(trigger.source.getCards("e"));
-				trigger.source.loseHp();
+				await trigger.source.discard({ cards: trigger.source.getCards("e") });
+				await trigger.source.loseHp();
 			}
-			"step 1";
-			player
-				.chooseTarget("绝响：是否令一名其他角色获得技能〖残韵〗？", lib.filter.notMe)
-				.set("ai", function (target) {
-					return get.attitude(_status.event.player, target);
+			const result = await player
+				.chooseTarget({
+					prompt: "绝响：是否令一名其他角色获得技能〖残韵〗？",
+					filterTarget: lib.filter.notMe,
+					ai: target => get.attitude(_status.event.player, target),
 				})
-				.set("forceDie", true);
-			"step 2";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.line(target, "thunder");
-				target.addSkills("dccanyun");
+				.set("forceDie", true)
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
+			const target = result.targets[0];
+			player.line(target, "thunder");
+			await target.addSkills("dccanyun");
 		},
 	},
 	dccanyun: {
