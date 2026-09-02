@@ -1,6 +1,51 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const cards = {
+	// 彩莲
+	ol_cailian: {
+		fullskin: true,
+		derivation: "ol_sunhanhua",
+		type: "equip",
+		distance: {
+			attackRange(card) {
+				return get.subtypes(card, false).includes("equip1") ? 1 : false;
+			},
+		},
+		skills: ["ol_cailian_skill"],
+		selectTarget: -1,
+		filterTarget(card, player, target) {
+			if (player !== target) return false;
+			return lib.skill.olhuaguang.getSlots(player, card).length > 0;
+		},
+		async prepareEquip(event, trigger, player) {
+			if (event.card.subtypes?.length) return;
+			const slots = lib.skill.olhuaguang.getSlots(player);
+			if (!slots.length) return;
+			const result = await player
+				.chooseControl(slots)
+				.set("prompt", "请选择置入【彩莲】的装备栏")
+				.set("ai", () => _status.event.controls.randomGet())
+				.forResult();
+			event.card.subtypes = [result.control];
+		},
+		async onLose(event, trigger, player) {
+			if (event.cards.some(card => card._ol_cailian_moving)) return;
+			const loseEvent = event.getParent();
+			const equipEvent = event.getParent(2);
+			const movingInside = loseEvent?.type === "equip" && equipEvent?.name === "equip" && equipEvent.player === player && get.nameList(player).includes("ol_sunhanhua");
+			if (movingInside) return;
+			for (const card of event.cards) {
+				card.fix();
+				card.remove();
+				card.destroyed = true;
+				game.log(card, "被销毁了");
+			}
+		},
+		ai: {
+			basic: { equipValue: 7 },
+			equipValue: 7,
+		},
+	},
 	// 螭纹玉佩
 	chiwenyupei: {
 		fullskin: true,
