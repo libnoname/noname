@@ -3,6 +3,250 @@ import html from "dedent";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//雁翎孙策 by WeiqiaoCode
+	ylyg_jiang: {
+		trigger: { global: "useCardToPlayered" },
+		frequent: true,
+		locked: false,
+		filter(event, player) {
+			if (!(event.card?.name === "juedou" || (event.card?.name === "sha" && get.color(event.card) === "red"))) {
+				return false;
+			}
+			if (!event.isFirstTarget) {
+				return false;
+			}
+			return event.player?.isIn();
+		},
+		prompt2(event, player) {
+			return event.player === player ? "你摸两张牌" : `你与${get.translation(event.player)}各摸一张牌`;
+		},
+		async content(event, trigger, player) {
+			if (trigger.player === player) {
+				await player.draw(2);
+			} else {
+				await game.asyncDraw([trigger.player, player]);
+			}
+		},
+		mod: {
+			cardname(card, player, name) {
+				if (get.number(card, player) === 13) {
+					return "sha";
+				}
+			},
+		},
+	},
+	ylyg_hunzi: {
+		juexingji: true,
+		skillAnimation: true,
+		animationColor: "wood",
+		derivation: ["reyingzi", "yinghun"],
+		trigger: { player: "changeHp" },
+		forced: true,
+		filter(event, player) {
+			return player.hp === 1;
+		},
+		async content(event, trigger, player) {
+			player.awakenSkill(event.name);
+			await player.gainMaxHp();
+			await player.addSkills(["reyingzi", "yinghun"]);
+		},
+		ai: {
+			maixie: true,
+			threaten(player, target) {
+				return target.hp === 1 ? 2 : 0.5;
+			},
+		},
+	},
+	ylyg_zhiba: {
+		zhuSkill: true,
+		trigger: { global: "phaseZhunbeiBegin" },
+		direct: true,
+		filter(event, player) {
+			const current = event.player;
+			return player.hasZhuSkill("ylyg_zhiba") && current.group === "wu" && current.countCards("h") > 0 && game.hasPlayer(target => target !== current && current.canCompare(target));
+		},
+		async content(event, trigger, player) {
+			const current = trigger.player;
+			const currentName = current === player ? "你" : get.translation(current);
+			const choose = await player
+				.chooseTarget({
+					prompt: `制霸：你可以令${currentName}与另一名角色拼点`,
+					filterTarget(card, player, target) {
+						const current = get.event().current;
+						return target !== current && current.canCompare(target);
+					},
+					ai(target) {
+						const current = get.event().current;
+						return get.attitude(get.player(), current) * get.effect(target, { name: "juedou" }, current, get.player());
+					},
+					current,
+				})
+				.forResult();
+			if (!choose.bool || !choose.targets?.length) {
+				return;
+			}
+			const target = choose.targets[0];
+			if (!current.isIn() || !target.isIn() || !current.canCompare(target)) {
+				return;
+			}
+			player.logSkill(event.name, [current, target]);
+			const result = await current.chooseToCompare(target).forResult();
+			if (result.bool && current.isIn() && target.isIn()) {
+				const duel = { name: "juedou", isCard: true };
+				if (current.canUse(duel, target)) {
+					await current.useCard(duel, target);
+				}
+			}
+		},
+	},
+	//雁翎蔡文姬 by WeiqiaoCode
+	ylyg_duanchang: {
+		locked: true,
+		trigger: { player: "die" },
+		forced: true,
+		forceDie: true,
+		skillAnimation: true,
+		animationColor: "gray",
+		filter(event) {
+			return event.source?.isIn();
+		},
+		logTarget: "source",
+		async content(event, trigger, player) {
+			const source = trigger.source;
+			const result = await player
+				.chooseControl("失去所有技能", "弃置所有牌")
+				.set("prompt", `断肠：令${get.translation(source)}执行一项`)
+				.set("forceDie", true)
+				.set("ai", () => (source.countCards("hej") > 3 ? "弃置所有牌" : "失去所有技能"))
+				.forResult();
+			if (result.control === "弃置所有牌") {
+				const cards = source.getCards("hej");
+				if (cards.length) {
+					await source.discard(cards);
+				}
+			} else {
+				source.clearSkills();
+			}
+		},
+		ai: {
+			maixie_defend: true,
+			threaten(player, target) {
+				return target.hp === 1 ? 0.2 : 1.5;
+			},
+		},
+	},
+	ylyg_beige: {
+		trigger: { global: "damageEnd" },
+		filter(event, player) {
+			return event.card?.name === "sha" && event.source?.isIn() && event.player?.isIn() && player.countCards("he") > 0;
+		},
+		async cost(event, trigger, player) {
+			const result = await player
+				.chooseToDiscard({
+					position: "he",
+					prompt: get.prompt2(event.skill, trigger.player),
+					ai(card) {
+						const victim = trigger.card?.storage?.ylyg_quzhong ? trigger.source : trigger.player;
+						return get.attitude(player, victim) > 0 ? 8 - get.value(card) : 0;
+					},
+				})
+				.forResult();
+			event.result = result;
+		},
+		async content(event, trigger, player) {
+			const swapped = trigger.card?.storage?.ylyg_quzhong === true;
+			const victim = swapped ? trigger.source : trigger.player;
+			const source = swapped ? trigger.player : trigger.source;
+			const result = await victim.judge().forResult();
+			switch (result.suit) {
+				case "heart":
+					await victim.recover(trigger.num);
+					break;
+				case "diamond":
+					await victim.draw(3);
+					break;
+				case "club":
+					await source.chooseToDiscard({ position: "he", selectCard: 2, forced: true });
+					break;
+				case "spade":
+					await source.turnOver();
+					break;
+			}
+			player.markAuto(event.name, [result.suit]);
+			const suits = player.getStorage(event.name);
+			if (["heart", "diamond", "club", "spade"].every(suit => suits.includes(suit))) {
+				await player.addSkills("ylyg_quzhong");
+			}
+		},
+		mark: true,
+		marktext: "歌",
+		intro: {
+			markcount(storage) {
+				const suits = [
+					["heart", "♥", "♡"],
+					["diamond", "♦", "♢"],
+					["club", "♣", "♧"],
+					["spade", "♠", "♤"],
+				];
+				return suits.map(([suit, recorded, missing]) => (storage?.includes(suit) ? recorded : missing)).join("");
+			},
+			content(storage) {
+				const names = {
+					heart: '<span class="firetext">♥ 红桃</span>',
+					diamond: '<span class="firetext">♦ 方片</span>',
+					club: "♣ 梅花",
+					spade: "♠ 黑桃",
+				};
+				const suits = ["heart", "diamond", "club", "spade"];
+				return suits.map(suit => `${storage?.includes(suit) ? "已记录" : "未记录"}：${names[suit]}`).join("<br>");
+			},
+		},
+		ai: { expose: 0.3 },
+	},
+	ylyg_quzhong: {
+		trigger: { global: "phaseJieshuBegin" },
+		direct: true,
+		getDiscardedCards(player) {
+			return player
+				.getHistory("lose", evt => evt.type === "discard")
+				.flatMap(evt => (evt.cards2 || []).filterInD("d"))
+				.toUniqued();
+		},
+		filter(event, player) {
+			const cards = lib.skill.ylyg_quzhong.getDiscardedCards(player);
+			return cards.some(card => {
+				const sha = get.autoViewAs({ name: "sha", isCard: true, storage: { ylyg_quzhong: true } }, [card]);
+				return player.hasUseTarget(sha);
+			});
+		},
+		async content(event, trigger, player) {
+			const cards = lib.skill.ylyg_quzhong.getDiscardedCards(player);
+			const result = await player
+				.chooseButton({
+					createDialog: ["曲终：你可以将本回合弃置的一张牌当【杀】使用", cards],
+					filterButton(button) {
+						const card = button.link;
+						const sha = get.autoViewAs({ name: "sha", isCard: true, storage: { ylyg_quzhong: true } }, [card]);
+						return get.player().hasUseTarget(sha);
+					},
+					ai(button) {
+						return 6 - get.value(button.link);
+					},
+				})
+				.forResult();
+			if (!result.bool || !result.links?.length) {
+				return;
+			}
+			const card = result.links[0];
+			const sha = get.autoViewAs({ name: "sha", isCard: true, storage: { ylyg_quzhong: true } }, [card]);
+			await player.chooseUseTarget({
+				prompt: "曲终：请选择【杀】的目标",
+				card: sha,
+				cards: [card],
+				forced: true,
+			});
+		},
+	},
 	//雁翎徐晃
 	ylyg_duanliang: {
 		audio: "duanliang",

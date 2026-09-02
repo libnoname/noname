@@ -38,7 +38,7 @@ const characterSort = {
 	offline_zc26: ["zc26_sp_xushi", "zc26_lusu", "zc26_jiaxu", "zc26_zhanghe", "zc26_taishici"],
 	offline_wenxindiaolong: ["wxdl_caozhi", "wxdl_caocao", "wxdl_caopi"],
 	offline_shiningGrils: ["shinin_zhenji", "shinin_wuguotai", "shinin_ruiji", "shinin_lvlingqi", "shinin_dongwan", "goblin", "lord_goblin"],
-	offline_yanling: ["ylyg_xiaoqiao", "ylyg_yuji", "ylyg_pangtong", "ylyg_dianwei", "ylyg_xuhuang", "ylyg_zhurong"],
+	offline_yanling: ["ylyg_xiaoqiao", "ylyg_yuji", "ylyg_pangtong", "ylyg_dianwei", "ylyg_xuhuang", "ylyg_zhurong", "ylyg_caiwenji", "ylyg_sunce"],
 	offline_zongheng: ["zh_shen_zhangjiao"],
 	offline_longxuexuanhuang: ["lx_simazhao", "lx_caomao", "lx_mb_shen_machao", "lx_simafu", "lx_simazhou", "lx_guanqiujian", "lx_wenqin", "lx_lizhaojiaobo", "lx_chengji", "lx_jiachong"],
 	//offline_others: [],
