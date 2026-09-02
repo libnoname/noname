@@ -15108,7 +15108,14 @@ const skills = {
 						max: player.countMark("dcjunhe_effect"),
 					},
 				])
-				.set("processAI", () => [1])
+				.set("processAI", () => {
+					const { player, target } = get.event();
+					if (get.attitude(player, target) > 0 && !target.hasMark("dcjunhe_effect")) {
+						return [1];
+					}
+					return false;
+				})
+				.set("target", target)
 				.forResult();
 			if (result?.bool && result?.numbers) {
 				const number = result.numbers[0];
@@ -46893,8 +46900,8 @@ const skills = {
 		},
 		mod: {
 			cardnumber(card, player, num) {
-				if (get.position(card) === 'h') {
-					return Math.min(13, num + player.countMark("guanchong"))
+				if (get.position(card) === "h") {
+					return Math.min(13, num + player.countMark("guanchong"));
 				}
 			},
 		},
@@ -46919,7 +46926,7 @@ const skills = {
 			const map = new Map();
 			for (let i = 0; i < result.length; i++) {
 				const current = targets[i];
-				const card = result[i].cards[0]
+				const card = result[i].cards[0];
 				if (card) {
 					map.set(current, get.number(card));
 				}
@@ -46976,7 +46983,7 @@ const skills = {
 						const cards = hes.randomGets(1);
 						await player.gain(cards, target, "bySelf");
 						target.$giveAuto(cards, player);
-						await game.delayx(1)
+						await game.delayx(1);
 					}
 				}
 			}
