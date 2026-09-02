@@ -7650,13 +7650,8 @@ const skills = {
 				return;
 			}
 			const cards = result.links;
-			const gainEvent = target.gain({
-				cards,
-				animate: "gain2",
-				areaNames: ["fromRenku"],
-			});
 			target.addTempSkill("spsongshu_block");
-			await gainEvent;
+			await target.gain(cards, "gain2", "fromRenku");
 		},
 		init(player) {
 			player.storage.renku = true;
