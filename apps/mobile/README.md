@@ -24,6 +24,30 @@ pnpm -F @noname/mobile build:android -- --aab
 
 The default command builds `android/app/build/outputs/apk/release/app-release.apk`. Use `--variant=debug` for a debug APK, or `--skip-web-build` when `dist` has already been built and you only need to run the Android build. CI machines need Node.js, pnpm, JDK 21, and an Android SDK with the required SDK/build-tools packages; Android Studio itself is not needed.
 
+### Release Signing
+
+Release signing reads values from environment variables first, then from the local `android/keystore.properties` file. If no signing values are provided, the build falls back to the debug keystore for development.
+
+For local builds, create `android/keystore.properties` (this file is ignored by Git):
+
+```properties
+storeFile=C:/path/to/noname-release.jks
+storePassword=your-store-password
+keyAlias=noname
+keyPassword=your-key-password
+```
+
+For CI, set these environment variables instead:
+
+```text
+ANDROID_KEYSTORE_PATH=/secure/path/noname-release.jks
+ANDROID_KEYSTORE_PASSWORD=...
+ANDROID_KEY_ALIAS=noname
+ANDROID_KEY_PASSWORD=...
+```
+
+The release APK/AAB is then signed automatically by `build:android`. Keep the keystore and passwords outside the repository; losing the keystore prevents updates to an already-published app.
+
 Use JDK 21 for Gradle builds. JDK 25 currently fails during Android project configuration.
 
 ## File System Model
