@@ -2455,7 +2455,7 @@ const skills = {
 				.map(evt => get.color(evt.card))
 				.reverse();
 			const firstIndex = arr.indexOf("red");
-			if (firstIndex == -1) {
+			if (firstIndex == -1 || arr[0] != "red") {
 				return 0;
 			}
 			const restArr = arr.slice(firstIndex);
@@ -2513,6 +2513,9 @@ const skills = {
 				audio: "mbchiyuan",
 				enable: "phaseUse",
 				usable: 1,
+				filter(event, player) {
+					return get.info("mbchiyuan").getnum() ?? 0 > 0;
+				},
 				prompt() {
 					return `你可摸${get.cnNumber(get.info("mbchiyuan").getnum())}张牌`;
 				},
@@ -4176,14 +4179,26 @@ const skills = {
 		async content(event, trigger, player) {
 			await player.draw(2);
 			trigger.getParent().effectCount++;
-			const result = await player
-				.judge(card => {
-					return get.suit(card) == "heart" ? -2 : 2;
-				})
-				.forResult();
-			if (result.suit == "heart") {
-				await player.loseMaxHp();
-			}
+			player
+				.when({ player: "useCardAfter" })
+				.filter(evt => evt.card == trigger.card)
+				.step(async (event2, trigger, player) => {
+					game.broadcastAll(
+						(skill1, skill2) => {
+							lib.translate[skill1] = lib.translate[skill2];
+						},
+						event2.name,
+						event.name
+					);
+					const result = await player
+						.judge(card => {
+							return get.suit(card) == "heart" ? -2 : 2;
+						})
+						.forResult();
+					if (result.suit == "heart") {
+						await player.loseMaxHp();
+					}
+				});
 		},
 	},
 	//狂李儒
@@ -5174,14 +5189,19 @@ const skills = {
 			});
 			if (gaintag.length == 1 && gaintag[0] != lib.skill.dclieti.getName(player)) {
 				const name = gaintag[0];
-				player.logSkill(event.name);
-				player.changeSkin({ characterName: "yuanshaoyuanshu" }, name);
-				if (name == "yuanshaoyuanshu_shao") {
-					await player.chooseUseTarget({ name: "wanjian", isCard: true }, true);
-				}
-				if (name == "yuanshaoyuanshu_shu") {
-					await player.draw(2);
-				}
+				player
+					.when({ player: "useCardAfter" })
+					.filter(evt => evt.card == trigger.card)
+					.step(async (event, trigger, player) => {
+						player.logSkill(event.name);
+						player.changeSkin({ characterName: "yuanshaoyuanshu" }, name);
+						if (name == "yuanshaoyuanshu_shao") {
+							await player.chooseUseTarget({ name: "wanjian", isCard: true }, true);
+						}
+						if (name == "yuanshaoyuanshu_shu") {
+							await player.draw(2);
+						}
+					});
 			}
 		},
 		ai: {
@@ -5560,7 +5580,9 @@ const skills = {
 			return player.getAllHistory("useCard", evt => get.name(evt.card) === get.name(event.card)).indexOf(event) == 0;
 		},
 		async content(event, trigger, player) {
-			trigger.baseDamage++;
+			if (trigger.card.name != "jiu") {
+				trigger.baseDamage++;
+			}
 			trigger.addCount = false;
 			const stat = player.getStat().card;
 			const name = trigger.card.name;
@@ -5742,6 +5764,21 @@ const skills = {
 			return (cost ? "消耗" + Math.max(10, game.countPlayer() + 1) + "金币" : "") + "发起拼手气红包，手气最好的角色从三个生肖兽技能中选择一个令你获得";
 		},
 		logTarget: () => game.filterPlayer(),
+		async cost(event, trigger, player) {
+			const cost = !_status.connectMode && game.changeCoin;
+			if (trigger.name == "phaseZhunbei") {
+				event.result = await player
+					.chooseBool({
+						prompt: "岁祟：" + (cost ? "消耗" + Math.max(10, game.countPlayer() + 1) + "金币" : "") + "发起拼手气红包，手气最好的角色从三个生肖兽技能中选择一个令你获得",
+						ai: () => true,
+					})
+					.forResult();
+			} else {
+				event.result = {
+					bool: true,
+				};
+			}
+		},
 		async content(event, trigger, player) {
 			const targets = game.filterPlayer().sortBySeat(player);
 			let coin = Math.max(10, game.countPlayer() + 1);
@@ -6712,12 +6749,12 @@ const skills = {
 	//卫青
 	dcbeijin: {
 		enable: "phaseUse",
+		manualConfirm: true,
 		async content(event, trigger, player) {
 			player.addSkill("dcbeijin_effect");
+			player.addSkill("dcbeijin_effect2");
 			player.addTempSkill("dcbeijin_buff");
-			await player.draw({
-				gaintag: ["dcbeijin_effect"],
-			});
+			await player.draw({ gaintag: ["dcbeijin_effect"] });
 		},
 		ai: {
 			order: 20,
@@ -6782,9 +6819,22 @@ const skills = {
 					}
 				},
 			},
+			//这是一个永久效果
+			effect2: {
+				forced: true,
+				popup: false,
+				charlotte: true,
+				trigger: { player: "dcbeijinBegin" },
+				filter(event, player) {
+					return player.hasCard(card => card.hasGaintag("dcbeijin_effect"));
+				},
+				async content(event, trigger, player) {
+					await player.loseHp();
+				},
+			},
 			buff: {
 				charlotte: true,
-				trigger: { player: ["useCard", "dcbeijinBegin"] },
+				trigger: { player: ["useCard"] },
 				forced: true,
 				popup: false,
 				async content(event, trigger, player) {
@@ -6794,7 +6844,7 @@ const skills = {
 					}
 				},
 				mark: true,
-				intro: { content: "本回合下次使用牌时或发动【北进】时，若手牌中有因【北进】得到的牌，你失去1点体力" },
+				intro: { content: "本回合下次使用牌时，若手牌中有因【北进】得到的牌，你失去1点体力" },
 			},
 		},
 	},
@@ -7811,7 +7861,7 @@ const skills = {
 				}
 			}
 			if (list.length) {
-				await player.gain(list, "gain2");
+				await player.gain({ cards: list, animate: "draw" });
 			} else {
 				player.chat("无牌可得？！");
 			}
@@ -8550,7 +8600,7 @@ const skills = {
 			var num = game.countPlayer();
 			var result = await player
 				.chooseControl()
-				.set("choiceList", ["摸" + get.cnNumber(num) + "张牌，本回合手牌上限+" + parseFloat(num), "弃置至多" + get.cnNumber(num) + "张牌，随机对其他角色造成等量火焰伤害", "视为使用" + get.cnNumber(num) + "张火【杀】或【火攻】"])
+				.set("choiceList", ["摸" + get.cnNumber(num) + "张牌，本回合手牌上限+" + parseFloat(num), "弃置至多" + get.cnNumber(num) + "张牌，随机对其他角色造成等量火焰伤害", "视为使用至多" + get.cnNumber(num) + "张火【杀】或【火攻】"])
 				.set("ai", () => {
 					var player = _status.event.player,
 						card = { name: "sha", nature: "fire" };
@@ -8598,10 +8648,10 @@ const skills = {
 							list.push(["锦囊", "", "huogong"]);
 						}
 						var result2 = await player
-							.chooseButton(["双壁：请选择你要使用的牌", [list, "vcard"]], true)
+							.chooseButton(["双壁：请选择你要使用的牌", [list, "vcard"]])
 							.set("ai", button => (button.link[2] == "sha" ? 1 : 0))
 							.forResult();
-						if (result2.bool) {
+						if (result2?.bool && result2.links?.length) {
 							var card = {
 								name: result2.links[0][2],
 								nature: result2.links[0][3],
@@ -8761,7 +8811,7 @@ const skills = {
 			});
 			if (list.length) {
 				var result = await player
-					.chooseButton(["法器：视为使用一张普通锦囊牌", [list, "vcard"]], true)
+					.chooseButton(["法器：视为使用一张普通锦囊牌", [list, "vcard"]])
 					.set("ai", button => {
 						return get.player().getUseValue({ name: button.link[2] });
 					})

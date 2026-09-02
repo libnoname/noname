@@ -7589,7 +7589,7 @@ const skills = {
 			check(button) {
 				const player = get.player();
 				if (button.link == "recover") {
-					return player.getHp() + player.countCards("h", { name: "tao" }) < 2;
+					return player.getHp() <= 2;
 				}
 				if (button.link == "cover") {
 					let numbers = [player.getHp(), player.getDamagedHp(), game.countPlayer()];
@@ -7684,7 +7684,7 @@ const skills = {
 			threaten: 2,
 			result: {
 				player(player) {
-					if (player.isDamaged()) {
+					if (player.getDamagedHp() >= 2) {
 						return 1;
 					}
 					return -1;
