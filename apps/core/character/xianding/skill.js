@@ -6637,7 +6637,7 @@ const skills = {
 				},
 				charlotte: true,
 				forced: true,
-				async content(event, trigger) {
+				async content(event, trigger, player) {
 					await player.draw();
 					trigger.num++;
 				},
