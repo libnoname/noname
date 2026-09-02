@@ -22,7 +22,27 @@ pnpm -F @noname/mobile build:android
 pnpm -F @noname/mobile build:android -- --aab
 ```
 
-The default command builds `android/app/build/outputs/apk/release/app-release.apk`. Use `--variant=debug` for a debug APK, or `--skip-web-build` when `dist` has already been built and you only need to run the Android build. CI machines need Node.js, pnpm, JDK 21, and an Android SDK with the required SDK/build-tools packages; Android Studio itself is not needed.
+The default command builds `android/app/build/outputs/apk/release/app-release.apk`. Use `--variant=debug` for a debug APK, or `--skip-web-build` when `dist` has already been built and you only need to run the Android build. Build machines need Node.js, pnpm, JDK 21, and an Android SDK with the required SDK/build-tools packages; Android Studio itself is not needed.
+
+Gradle builds require JDK 21. If another Java version is active, set `JAVA_HOME` and prepend its `bin` directory for the current shell before building. This is temporary and does not change the system-wide Java configuration.
+
+Windows PowerShell:
+
+```powershell
+$env:JAVA_HOME = "C:\Program Files\Java\jdk-21"
+$env:Path = "$env:JAVA_HOME\bin;$env:Path"
+pnpm -F @noname/mobile build:android
+```
+
+Linux/macOS or CI Bash:
+
+```bash
+export JAVA_HOME="/path/to/jdk-21"
+export PATH="$JAVA_HOME/bin:$PATH"
+pnpm -F @noname/mobile build:android
+```
+
+The script checks the active Java version before building and stops with a clear error if it is not JDK 21. JDK 25 currently fails during Android project configuration.
 
 ### Release Signing
 
@@ -49,8 +69,6 @@ ANDROID_KEY_PASSWORD=...
 The GitHub Actions release workflow stores the keystore as the `ANDROID_KEYSTORE_BASE64` secret and restores it during the job. Add that secret together with `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, and `ANDROID_KEY_PASSWORD` in the repository settings.
 
 The release APK/AAB is then signed automatically by `build:android`. Keep the keystore and passwords outside the repository; losing the keystore prevents updates to an already-published app.
-
-Use JDK 21 for Gradle builds. JDK 25 currently fails during Android project configuration.
 
 ## File System Model
 
