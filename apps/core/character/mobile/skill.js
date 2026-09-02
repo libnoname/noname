@@ -565,23 +565,23 @@ const skills = {
 				onremove: true,
 				forced: true,
 				intro: {
-					content: "本阶段使用基本牌或普通锦囊牌指定目标后，依次观看$的手牌并弃置其中一张",
+					content: "本阶段使用基本牌或普通锦囊牌指定目标后，依次观看$的手牌并弃置其一张牌",
 				},
 				trigger: {
 					player: "useCardToPlayered",
 				},
 				filter(event, player) {
-					return event.isFirstTarget && event.targets?.length && ["basic", "trick"].includes(get.type(event.card)) && player.getStorage("reqizhi_effect").some(target => target.hasCards("h"));
+					return event.isFirstTarget && event.targets?.length && ["basic", "trick"].includes(get.type(event.card)) && player.getStorage("reqizhi_effect").some(target => target.hasCards("he"));
 				},
 				logTarget(event, player) {
 					return player
 						.getStorage("reqizhi_effect")
-						.filter(target => target.hasCards("h"))
+						.filter(target => target.hasCards("he"))
 						.sortBySeat();
 				},
 				async content(event, trigger, player) {
 					const targets = event.targets;
-					await game.doAsyncInOrder(targets, async target => player.discardPlayerCard({ target, forced: true, position: "h", visible: true }));
+					await game.doAsyncInOrder(targets, async target => player.discardPlayerCard({ target, forced: true, position: "he", visible: true }));
 				},
 			},
 		},
