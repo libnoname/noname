@@ -13,6 +13,17 @@ pnpm -F @noname/mobile sync
 
 `sync` first bundles `src/preload.ts` into `../../dist/preload.js`, then runs `cap sync`, and finally renames packaged `.pnpm` assets to `_pnpm` for Android assets compatibility. After syncing, open `apps/mobile/android` in Android Studio or build with Gradle.
 
+## CI Build
+
+Android Studio is not required. The Gradle Wrapper and the build script can build the APK or AAB directly:
+
+```bash
+pnpm -F @noname/mobile build:android
+pnpm -F @noname/mobile build:android -- --aab
+```
+
+The default command builds `android/app/build/outputs/apk/release/app-release.apk`. Use `--variant=debug` for a debug APK, or `--skip-web-build` when `dist` has already been built and you only need to run the Android build. CI machines need Node.js, pnpm, JDK 21, and an Android SDK with the required SDK/build-tools packages; Android Studio itself is not needed.
+
 Use JDK 21 for Gradle builds. JDK 25 currently fails during Android project configuration.
 
 ## File System Model
