@@ -18640,6 +18640,7 @@ const skills = {
 	dcjiwei: {
 		audio: 2,
 		global: ["dcjiwei_global"],
+		derivation: "dcdianlun",
 		subSkill: {
 			global: {
 				enable: "phaseUse",
