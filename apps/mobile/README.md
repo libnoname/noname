@@ -46,6 +46,8 @@ ANDROID_KEY_ALIAS=noname
 ANDROID_KEY_PASSWORD=...
 ```
 
+The GitHub Actions release workflow stores the keystore as the `ANDROID_KEYSTORE_BASE64` secret and restores it during the job. Add that secret together with `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, and `ANDROID_KEY_PASSWORD` in the repository settings.
+
 The release APK/AAB is then signed automatically by `build:android`. Keep the keystore and passwords outside the repository; losing the keystore prevents updates to an already-published app.
 
 Use JDK 21 for Gradle builds. JDK 25 currently fails during Android project configuration.
