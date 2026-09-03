@@ -1,5 +1,5 @@
 import type { FileSystemAdapter } from "./adapter";
-import type { OpenOptions } from "./types";
+import type { CreateDirOptions, OpenOptions, RemoveOptions } from "./types";
 
 export class FileSystem {
 	constructor(private readonly adapter: FileSystemAdapter) {}
@@ -26,12 +26,34 @@ export class FileSystem {
 	}
 
 	async exists(path: string) {
-		return (await this.adapter.stat(path)) !== null;
+		return (await this.stat(path)) !== null;
 	}
 
-	// ...
+	stat(path: string) {
+		return this.adapter.stat(path);
+	}
+
+	async isFile(path: string) {
+		return (await this.stat(path))?.type === "file";
+	}
+
+	async isDirectory(path: string) {
+		return (await this.stat(path))?.type === "directory";
+	}
+
+	list(path: string) {
+		return this.adapter.list(path);
+	}
+
+	createDir(path: string, options?: CreateDirOptions) {
+		return this.adapter.createDir(path, options);
+	}
+
+	remove(path: string, options?: RemoveOptions) {
+		return this.adapter.remove(path, options);
+	}
 }
 
 export type { FileHandle } from "./handle";
-export type { DirEntry, FileInfo, OpenOptions, RemoveOptions, CreateDirOptions } from "./types";
+export type { CreateDirOptions, DirEntry, FileInfo, FileType, OpenOptions, RemoveOptions } from "./types";
 export { FileSystemError, FileSystemErrorCode } from "./errors";

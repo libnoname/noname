@@ -2,6 +2,7 @@ export interface OpenOptions {
 	read?: boolean;
 	write?: boolean;
 	create?: boolean;
+	createNew?: boolean;
 	truncate?: boolean;
 	append?: boolean;
 }
@@ -19,7 +20,9 @@ export type FileType = "file" | "directory" | "other";
 export interface FileInfo {
 	type: FileType;
 	size?: number;
-	mtime?: number;
+	createdAt?: Date;
+	modifiedAt?: Date;
+	accessedAt?: Date;
 }
 
 export interface DirEntry {

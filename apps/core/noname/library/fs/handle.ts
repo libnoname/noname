@@ -7,5 +7,7 @@ export interface FileHandle {
 
 	stat(): Promise<FileInfo>;
 
+	truncate(size?: number): Promise<void>;
+
 	close(): Promise<void>;
 }
