@@ -5141,14 +5141,12 @@ const skills = {
 		},
 		onChooseToUse(event) {
 			if (!game.online && !event.dchumei_num) {
-				var player = event.player;
-				var evtx = event.getParent("phaseUse");
+				const player = event.player;
+				const evtx = event.getParent("phaseUse");
 				event.set(
 					"dchumei_num",
 					player
-						.getHistory("sourceDamage", evt => {
-							return evt.getParent("phaseUse") == evtx;
-						})
+						.getHistory("sourceDamage", evt => evt.getParent("phaseUse") === evtx)
 						.reduce((sum, evt) => sum + evt.num, 0)
 				);
 			}
@@ -5156,7 +5154,7 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		filter(event, player) {
-			if (typeof event.dchumei_num != "number") {
+			if (typeof event.dchumei_num !== "number") {
 				return false;
 			}
 			return game.hasPlayer(target => lib.skill.dchumei.filterTarget(null, player, target));
@@ -5177,26 +5175,26 @@ const skills = {
 			}
 			return false;
 		},
-		content() {
-			"step 0";
-			var str = get.translation(target);
-			player
-				.chooseButton(
-					[
+		async content(event, trigger, player) {
+			const { target } = event;
+			const str = get.translation(target);
+			const result = await player
+				.chooseButton({
+					createDialog: [
 						"狐魅：请选择一项",
 						[
 							[
-								["draw", "令" + str + "摸一张牌"],
-								["give", "令" + str + "交给你一张牌"],
-								["recover", "令" + str + "回复1点体力"],
+								["draw", `令${str}摸一张牌`],
+								["give", `令${str}交给你一张牌`],
+								["recover", `令${str}回复1点体力`],
 							].filter(list => {
 								if (player.getStorage("dchumei_used").includes(list[0])) {
 									return false;
 								}
-								if (list[0] == "give" && !target.countCards("he")) {
+								if (list[0] === "give" && !target.countCards("he")) {
 									return false;
 								}
-								if (list[0] == "recover" && target.isHealthy()) {
+								if (list[0] === "recover" && target.isHealthy()) {
 									return false;
 								}
 								return true;
@@ -5204,62 +5202,65 @@ const skills = {
 							"textbutton",
 						],
 					],
-					true
-				)
-				.set("filterButton", button => {
-					const { player, target } = get.event();
-					if (player.getStorage("dchumei_used").includes(button.link)) {
-						return false;
-					}
-					if (button.link == "give" && !target.countCards("he")) {
-						return false;
-					}
-					if (button.link == "recover" && target.isHealthy()) {
-						return false;
-					}
-					return true;
+					forced: true,
+					filterButton: button => {
+						const { player, target } = get.event();
+						if (player.getStorage("dchumei_used").includes(button.link)) {
+							return false;
+						}
+						if (button.link === "give" && !target.countCards("he")) {
+							return false;
+						}
+						if (button.link === "recover" && target.isHealthy()) {
+							return false;
+						}
+						return true;
+					},
+					ai: button => {
+						const current = _status.event.player;
+						const target = _status.event.target;
+						switch (button.link) {
+							case "draw": {
+								return get.effect(target, { name: "draw" }, current, current);
+							}
+							case "give": {
+								return get.effect(target, { name: "shunshou_copy2" }, current, current);
+							}
+							case "recover": {
+								return get.recoverEffect(target, current, current);
+							}
+						}
+						return 0;
+					},
 				})
-				.set("ai", function (button) {
-					let target = _status.event.target;
-					switch (button.link) {
-						case "draw": {
-							return get.effect(target, { name: "draw" }, player, player);
-						}
-						case "give": {
-							return get.effect(target, { name: "shunshou_copy2" }, player, player);
-						}
-						case "recover": {
-							return get.recoverEffect(target, player, player);
-						}
-					}
-					return 0;
+				.set("target", target)
+				.forResult();
+			if (!result.bool) {
+				return;
+			}
+			player.addTempSkill("dchumei_used", "phaseUseAfter");
+			player.markAuto("dchumei_used", result.links);
+			switch (result.links[0]) {
+				case "draw": {
+					await target.draw();
+					return;
+				}
+				case "recover": {
+					await target.recover();
+					return;
+				}
+			}
+			const giveResult = await target
+				.chooseCard({
+					prompt: `狐魅：交给${get.translation(player)}一张牌`,
+					position: "he",
+					forced: true,
 				})
-				.set("target", target);
-			"step 1";
-			if (result.bool) {
-				player.addTempSkill("dchumei_used", "phaseUseAfter");
-				player.markAuto("dchumei_used", result.links);
-				switch (result.links[0]) {
-					case "draw":
-						target.draw();
-						break;
-					case "give":
-						target.chooseCard("狐魅：交给" + get.translation(player) + "一张牌", "he", true);
-						break;
-					case "recover":
-						target.recover();
-						break;
-				}
-				if (result.links[0] != "give") {
-					event.finish();
-				}
-			} else {
-				event.finish();
+				.forResult();
+			if (!giveResult.bool) {
+				return;
 			}
-			"step 2";
-			if (result.bool) {
-				player.gain(result.cards, target, "giveAuto");
-			}
+			await player.gain({ cards: giveResult.cards, source: target, animate: "giveAuto" });
 		},
 		ai: {
 			order: 1,
