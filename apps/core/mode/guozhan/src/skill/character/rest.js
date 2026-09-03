@@ -19875,6 +19875,7 @@ export default {
 	},
 	gz_ol_zongpei: {
 		preHidden: true,
+		usable: 1,
 		trigger: {
 			global: ["loseAfter", "cardsDiscardAfter", "loseAsyncAfter"],
 		},

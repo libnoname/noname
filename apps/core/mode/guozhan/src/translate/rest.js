@@ -620,7 +620,7 @@ export default {
 	gz_ol_jiushi: "酒诗",
 	gz_ol_jiushi_info: "你明置一张武将牌后，若当前回合角色能使用【酒】，你可令其视为使用之。当你受到伤害后，若你的武将牌均明置，你可以重铸任意张梅花牌并暗置此武将牌。",
 	gz_ol_zongpei: "纵辔",
-	gz_ol_zongpei_info: "当其他角色的牌不因使用而置入弃牌堆后，你可以获得其中的锦囊牌和坐骑牌。",
+	gz_ol_zongpei_info: "每回合限一次，当其他角色的牌不因使用而置入弃牌堆后，你可以获得其中的锦囊牌和坐骑牌。",
 	gz_ol_sunjun: "OL国战孙峻",
 	gz_ol_sunjun_prefix: "OL国战",
 	gz_ol_suchao: "肃朝",
