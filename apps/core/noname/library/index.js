@@ -23,6 +23,7 @@ import dedent from "dedent";
 import { PoptipManager, HTMLPoptipElement } from "./poptip.js";
 import { ZhanfaManager } from "./zhanfa.js";
 import skills from "./skill.js";
+import { DefaultFileSystemAdapter, FileSystem } from "./fs/index.js";
 
 const html = dedent;
 
@@ -8833,6 +8834,16 @@ export class Library {
 			);
 		},
 	};
+	/**
+	 * 文件系统操作入口（新）
+	 * 
+	 * 整合之前`game.readFile/writeFile/...`用于读写文件的函数，为多平台支持提供统一适配器
+	 *
+	 * 在运行环境提供具体适配器前，所有文件系统操作都会抛出错误。
+	 *
+	 * @type {FileSystem}
+	 */
+	fs = new FileSystem(new DefaultFileSystemAdapter());
 	/**
 	 * @type {import('path-browserify-esm')}
 	 */
