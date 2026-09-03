@@ -19,51 +19,13 @@ const cards = {
 		cardPrompt(card, player) {
 			let str = lib.translate[card.name + "_info"];
 			const vcard = card[card.cardSymbol];
-			const storage = vcard.storage?.chixueren;
-			if (storage?.length) {
-				str += `<br><span class="yellowtext"><li>已吞噬技能：${storage.map(i => get.poptip(i)).join("、")}</span>`;
+			if (vcard) {
+				const storage = vcard.storage?.chixueren?.filter(i => get.translation(i) != i);
+				if (storage?.length) {
+					str += `<br><span class="yellowtext"><li>已吞噬技能：${storage.map(i => get.poptip(i)).join("、")}</span>`;
+				}
 			}
 			return str;
-		},
-		async onEquip(event, trigger, player) {
-			const { card } = event;
-			const cards = card.cards;
-			if (get.is.ordinaryCard(card) && cards[0].storage?.chixueren?.length) {
-				return;
-			}
-			const lose = player.getHistory("lose", evt => {
-				return evt.getlx == false && evt.type == "equip" && evt.getParent() == event.getParent() && evt.es?.length > 0;
-			})[0];
-			const allLose = game.getAllGlobalHistory("cardMove", evt => {
-				return evt.name == "lose" && evt.getlx == false && evt.type == "equip" && evt.getParent().card.name == "chixueren" && evt.es?.length > 0;
-			});
-			if (lose && allLose.indexOf(lose) == 0) {
-				const skills = get.skillsFromEquips(lose.es.filter(card => get.subtype(card) == "equip1"))
-				if (!skills?.length) {
-					return;
-				}
-				const addSkill = card => {
-					game.broadcastAll(
-						(card, skills) => {
-							card.storage ??= {};
-							card.storage.chixueren = skills;
-							if (!Array.isArray(card.skills)) {
-								card.skills = [...get.info(card).skills, ...skills];
-							} else {
-								card.skills.addArray(skills);
-							}
-							
-						},
-						card,
-						skills
-					);
-				};
-				addSkill(card);
-				if (get.is.ordinaryCard(card)) {
-					addSkill(cards[0]);
-				}
-				player.addEquipTrigger(card);
-			}
 		},
 		async onLose(event, trigger, player) {
 			const { cards } = event;
