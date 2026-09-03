@@ -12,9 +12,9 @@ const skills = {
 		},
 		filter(event, player) {
 			if (event.name === "damage") {
-				return game.getGlobalHistory("everything", evt => evt.name === "damage" && evt.source === player)[0] === event;
+				return game.getRoundHistory("everything", evt => evt.name === "damage" && evt.source === player)[0] === event;
 			}
-			return event.source === player && game.getGlobalHistory("everything", evt => evt.name === "recover" && evt.source === player)[0] === event;
+			return event.source === player && game.getRoundHistory("everything", evt => evt.name === "recover" && evt.source === player)[0] === event;
 		},
 		content() {
 			trigger.num++;
@@ -219,6 +219,9 @@ const skills = {
 		charlotte: true,
 		forced: true,
 		trigger: { global: "recoverAfter" },
+		filter(event) {
+			return game.getGlobalHistory("everything", evt => evt.name === "recover")[0] === event;
+		},
 		async content(event, trigger, player) {
 			await player.draw();
 		},
@@ -248,12 +251,13 @@ const skills = {
 		forced: true,
 		trigger: {
 			player: "loseAfter",
-			global: "loseAsyncAfter",
+			global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
 		},
 		filter(event, player) {
 			const lose = event.getl(player);
 			if (!lose?.cards2?.length) return false;
-			return player.getHistory("lose", evt => evt.cards2?.length)[0] === lose;
+			const firstLose = player.getHistory("lose", evt => evt.cards2?.length)[0];
+			return firstLose === event || firstLose?.getParent() === event;
 		},
 		async content(event, trigger, player) {
 			const owned = player
