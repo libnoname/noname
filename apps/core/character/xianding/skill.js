@@ -845,7 +845,12 @@ const skills = {
 					choiceList,
 					prompt: get.prompt(event.skill),
 					ai() {
-						return get.event().controls.slice().remove("cancel2").randomGet();
+						const card = get.autoViewAs({ name: "sha", isCard: true }, "unsure");
+						const { controls } = get.event();
+						if (!game.hasPlayer(current => player.canUse(card, current, void 0, false) && get.effect(current, card, player, player) > 0)) {
+							controls.remove("使用【杀】");
+						}
+						return controls.slice().remove("cancel2").randomGet();
 					},
 				})
 				.forResult();
