@@ -1644,6 +1644,7 @@ const skills = {
 					link: links[0],
 					filterCard: lib.filter.cardDiscardable,
 					position: "he",
+					ignoreMod: true,
 					filterTarget(card, player, target) {
 						const link = get.info("dcsbjuao_backup").link,
 							cardx = get.autoViewAs(

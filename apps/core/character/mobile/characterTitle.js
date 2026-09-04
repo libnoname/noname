@@ -1,6 +1,6 @@
 export default {
 	//mb_dingshangwan: "",
-	//re_wangji: "",
+	re_wangji: "学行坚白",
 	mb_shen_caocao: "天下归心",
 	re_zhoufei: "舫玉游鸾",
 	re_yanyan: "皎日震邦",
