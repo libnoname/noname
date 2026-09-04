@@ -1,5 +1,5 @@
 //@ts-nocheck
-import { FileSystem, FileSystemError, FileSystemErrorCode } from "@/library/fs";
+import { FileSystem, FileSystemError, FileSystemErrorCode, installLegacyFileSystemAPI } from "@/library/fs";
 
 /**
  * @typedef { import("@/library/fs").FileSystemAdapter } FileSystemAdapter
@@ -21,6 +21,7 @@ export default async function browserReady({ lib, game }) {
 		return;
 	}
 	lib.fs = fs;
+	installLegacyFileSystemAPI(game, fs);
 
 	game.export = function (data, name) {
 		if (typeof data === "string") {
@@ -44,169 +45,6 @@ export default async function browserReady({ lib, game }) {
 	game.open = function (url) {
 		window.open(url);
 	};
-
-	/**
-	 * 检查指定的路径是否是一个文件
-	 *
-	 * @param {string} fileName - 需要查询的路径
-	 * @param {(result: -1 | 0 | 1) => void} [callback] - 回调函数；接受的参数意义如下:
-	 *  - `-1`: 路径不存在或无法访问
-	 *  - `0`: 路径的内容不是文件
-	 *  - `1`: 路径的内容是文件
-	 * @param {(err: Error) => void} [onerror] - 接收错误的回调函数
-	 * @return {void} - 由于三端的异步需求和历史原因，文件管理必须为回调异步函数
-	 */
-	game.checkFile = function checkFile(fileName, callback, onerror) {
-		checkPathType(lib.fs, fileName, "file", callback, onerror);
-	};
-
-	/**
-	 * 检查指定的路径是否是一个目录
-	 *
-	 * @param {string} dir - 需要查询的路径
-	 * @param {(result: -1 | 0 | 1) => void} [callback] - 回调函数；接受的参数意义如下:
-	 *  - `-1`: 路径不存在或无法访问
-	 *  - `0`: 路径的内容不是目录
-	 *  - `1`: 路径的内容是目录
-	 * @param {(err: Error) => void} [onerror] - 接收错误的回调函数
-	 * @return {void} - 由于三端的异步需求和历史原因，文件管理必须为回调异步函数
-	 */
-	game.checkDir = function checkDir(dir, callback, onerror) {
-		checkPathType(lib.fs, dir, "directory", callback, onerror);
-	};
-
-	game.readFile = function readFile(fileName, callback = () => {}, error = () => {}) {
-		lib.fs.read(fileName).then(data => {
-			const buffer = data.byteOffset === 0 && data.byteLength === data.buffer.byteLength && data.buffer instanceof ArrayBuffer ? data.buffer : new Uint8Array(data).buffer;
-			callback(buffer);
-		}, error);
-	};
-
-	game.readFileAsText = function readFileAsText(fileName, callback = () => {}, error = () => {}) {
-		lib.fs.readText(fileName).then(callback, error);
-	};
-
-	game.writeFile = function writeFile(data, path, name, callback = () => {}) {
-		const filePath = path === "" || path.endsWith("/") ? path + name : `${path}/${name}`;
-		lib.fs
-			.createDir(path, { recursive: true })
-			.then(() => toUint8Array(data, filePath))
-			.then(bytes => lib.fs.write(filePath, bytes))
-			.then(() => callback(), callback);
-	};
-
-	game.removeFile = function removeFile(fileName, callback, error = () => {}) {
-		const operation = lib.fs.stat(fileName).then(info => {
-			if (info === null) {
-				throw createFileSystemError(FileSystemErrorCode.NotFound, fileName, "File does not exist");
-			}
-			if (info.type !== "file") {
-				throw createFileSystemError(FileSystemErrorCode.NotFile, fileName, "Path is not a file");
-			}
-			return lib.fs.remove(fileName);
-		});
-		if (typeof callback === "function") {
-			operation.then(() => callback(), callback);
-		} else {
-			operation.then(undefined, error);
-		}
-	};
-
-	game.getFileList = function getFileList(dir, callback = () => {}, onerror) {
-		lib.fs.list(dir).then(
-			entries => {
-				const folders = [];
-				const files = [];
-				for (const entry of entries) {
-					if (entry.type === "directory") {
-						folders.push(entry.name);
-					} else if (entry.type === "file") {
-						files.push(entry.name);
-					}
-				}
-				callback(folders, files);
-			},
-			error => handleLegacyError(error, onerror)
-		);
-	};
-
-	game.ensureDirectory = function ensureDirectory(list, callback = () => {}, file = false) {
-		let pathArray = typeof list == "string" ? list.split("/") : list;
-		if (file) {
-			pathArray = pathArray.slice(0, -1);
-		}
-		lib.fs.createDir(pathArray.join("/"), { recursive: true }).then(callback, console.error);
-	};
-
-	game.createDir = function createDir(
-		directory,
-		successCallback = () => {},
-		errorCallback = () => {}
-	) {
-		lib.fs.createDir(directory, { recursive: true }).then(successCallback, errorCallback);
-	};
-	game.removeDir = function removeDir(
-		directory,
-		successCallback = () => {},
-		errorCallback = () => {}
-	) {
-		lib.fs
-			.stat(directory)
-			.then(info => {
-				if (info === null) {
-					throw createFileSystemError(FileSystemErrorCode.NotFound, directory, "Directory does not exist");
-				}
-				if (info.type !== "directory") {
-					throw createFileSystemError(FileSystemErrorCode.NotDirectory, directory, "Path is not a directory");
-				}
-				return lib.fs.remove(directory, { recursive: true });
-			})
-			.then(successCallback, errorCallback);
-	};
-}
-
-function checkPathType(fs, path, expectedType, callback, onerror) {
-	fs.stat(path).then(
-		info => {
-			if (info === null) {
-				callback?.(-1);
-			} else {
-				callback?.(info.type === expectedType ? 1 : 0);
-			}
-		},
-		error => handleLegacyError(error, onerror)
-	);
-}
-
-async function toUint8Array(data, path) {
-	try {
-		if (typeof data === "string") {
-			return new TextEncoder().encode(data);
-		}
-		const typeTag = Object.prototype.toString.call(data);
-		if (typeTag === "[object Blob]" || typeTag === "[object File]") {
-			return new Uint8Array(await data.arrayBuffer());
-		}
-		if (data instanceof Uint8Array) {
-			return data;
-		}
-		if (data instanceof ArrayBuffer) {
-			return new Uint8Array(data);
-		}
-		if (ArrayBuffer.isView(data)) {
-			return new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
-		}
-	} catch (error) {
-		throw toFileSystemError(error, path);
-	}
-
-	throw createFileSystemError(FileSystemErrorCode.IoError, path, "Unsupported write data type");
-}
-
-function handleLegacyError(error, callback) {
-	if (typeof callback === "function") {
-		callback(error);
-	}
 }
 
 /**
