@@ -1,4 +1,5 @@
 export default {
+	ym_luoguanzhong: "湖海散人",
 	lx_jiachong: "凶凶踽行",
 	lx_chengji: "劣犬良弓",
 	lx_lizhaojiaobo: "竭诚尽节",
