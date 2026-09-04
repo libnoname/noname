@@ -8,12 +8,16 @@ export enum FileSystemErrorCode {
 	IoError = "IO_ERROR",
 }
 
+export interface FileSystemErrorOptions extends ErrorOptions {
+	detail?: string;
+}
+
 export class FileSystemError extends Error {
 	constructor(
 		public readonly code: FileSystemErrorCode,
 		public readonly path: string,
-		options?: ErrorOptions
+		options?: FileSystemErrorOptions
 	) {
-		super(`${code}: ${path}`, options);
+		super(options?.detail ? `${code}: ${path}: ${options.detail}` : `${code}: ${path}`, options);
 	}
 }

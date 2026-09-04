@@ -59,3 +59,4 @@ export { DefaultFileSystemAdapter } from "./adapter";
 export type { FileSystemAdapter } from "./adapter";
 export type { CreateDirOptions, DirEntry, FileInfo, FileType, OpenOptions, RemoveOptions } from "./types";
 export { FileSystemError, FileSystemErrorCode } from "./errors";
+export type { FileSystemErrorOptions } from "./errors";

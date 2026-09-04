@@ -1,4 +1,4 @@
-import { FileInfo } from "./types";
+import type { FileInfo } from "./types";
 
 export interface FileHandle {
 	readAll(): Promise<Uint8Array>;

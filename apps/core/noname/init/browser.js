@@ -10,14 +10,17 @@ import { FileSystem, FileSystemError, FileSystemErrorCode } from "@/library/fs";
 
 export default async function browserReady({ lib, game }) {
 	lib.path = (await import("path-browserify-esm")).default;
-	lib.fs = new FileSystem(new BrowserAdapter());
+	const adpt = new BrowserAdapter();
+	const fs = new FileSystem(adpt);
 
 	try {
-		await lib.fs.stat("noname.js");
+		// 这里只探测 dev server 的连通性和响应格式；文件不存在会返回 null。
+		await fs.stat("noname.js");
 	} catch (e) {
 		console.error("文件读写函数初始化失败:", e);
 		return;
 	}
+	lib.fs = fs;
 
 	game.export = function (data, name) {
 		if (typeof data === "string") {
@@ -54,10 +57,7 @@ export default async function browserReady({ lib, game }) {
 	 * @return {void} - 由于三端的异步需求和历史原因，文件管理必须为回调异步函数
 	 */
 	game.checkFile = function checkFile(fileName, callback, onerror) {
-		lib.fs.stat(fileName).then(
-			info => callback?.(info === null ? -1 : info.type === "file" ? 1 : 0),
-			error => handleLegacyError(error, onerror)
-		);
+		checkPathType(lib.fs, fileName, "file", callback, onerror);
 	};
 
 	/**
@@ -72,14 +72,14 @@ export default async function browserReady({ lib, game }) {
 	 * @return {void} - 由于三端的异步需求和历史原因，文件管理必须为回调异步函数
 	 */
 	game.checkDir = function checkDir(dir, callback, onerror) {
-		lib.fs.stat(dir).then(
-			info => callback?.(info === null ? -1 : info.type === "directory" ? 1 : 0),
-			error => handleLegacyError(error, onerror)
-		);
+		checkPathType(lib.fs, dir, "directory", callback, onerror);
 	};
 
 	game.readFile = function readFile(fileName, callback = () => {}, error = () => {}) {
-		lib.fs.read(fileName).then(data => callback(data.slice().buffer), error);
+		lib.fs.read(fileName).then(data => {
+			const buffer = data.byteOffset === 0 && data.byteLength === data.buffer.byteLength && data.buffer instanceof ArrayBuffer ? data.buffer : new Uint8Array(data).buffer;
+			callback(buffer);
+		}, error);
 	};
 
 	game.readFileAsText = function readFileAsText(fileName, callback = () => {}, error = () => {}) {
@@ -96,19 +96,20 @@ export default async function browserReady({ lib, game }) {
 	};
 
 	game.removeFile = function removeFile(fileName, callback, error = () => {}) {
-		const complete = typeof callback === "function" ? callback : error;
-		lib.fs
-			.stat(fileName)
-			.then(info => {
-				if (info === null) {
-					throw createFileSystemError(FileSystemErrorCode.NotFound, fileName, "File does not exist");
-				}
-				if (info.type !== "file") {
-					throw createFileSystemError(FileSystemErrorCode.NotFile, fileName, "Path is not a file");
-				}
-				return lib.fs.remove(fileName);
-			})
-			.then(() => complete(), reason => complete(reason));
+		const operation = lib.fs.stat(fileName).then(info => {
+			if (info === null) {
+				throw createFileSystemError(FileSystemErrorCode.NotFound, fileName, "File does not exist");
+			}
+			if (info.type !== "file") {
+				throw createFileSystemError(FileSystemErrorCode.NotFile, fileName, "Path is not a file");
+			}
+			return lib.fs.remove(fileName);
+		});
+		if (typeof callback === "function") {
+			operation.then(() => callback(), callback);
+		} else {
+			operation.then(undefined, error);
+		}
 	};
 
 	game.getFileList = function getFileList(dir, callback = () => {}, onerror) {
@@ -117,7 +118,11 @@ export default async function browserReady({ lib, game }) {
 				const folders = [];
 				const files = [];
 				for (const entry of entries) {
-					(entry.type === "directory" ? folders : files).push(entry.name);
+					if (entry.type === "directory") {
+						folders.push(entry.name);
+					} else if (entry.type === "file") {
+						files.push(entry.name);
+					}
 				}
 				callback(folders, files);
 			},
@@ -160,12 +165,26 @@ export default async function browserReady({ lib, game }) {
 	};
 }
 
+function checkPathType(fs, path, expectedType, callback, onerror) {
+	fs.stat(path).then(
+		info => {
+			if (info === null) {
+				callback?.(-1);
+			} else {
+				callback?.(info.type === expectedType ? 1 : 0);
+			}
+		},
+		error => handleLegacyError(error, onerror)
+	);
+}
+
 async function toUint8Array(data, path) {
 	try {
 		if (typeof data === "string") {
 			return new TextEncoder().encode(data);
 		}
-		if (Object.prototype.toString.call(data) === "[object File]") {
+		const typeTag = Object.prototype.toString.call(data);
+		if (typeTag === "[object Blob]" || typeTag === "[object File]") {
 			return new Uint8Array(await data.arrayBuffer());
 		}
 		if (data instanceof Uint8Array) {
@@ -187,8 +206,6 @@ async function toUint8Array(data, path) {
 function handleLegacyError(error, callback) {
 	if (typeof callback === "function") {
 		callback(error);
-	} else {
-		console.error(error);
 	}
 }
 
@@ -449,8 +466,9 @@ async function requestBackend(route, path, query, init) {
 	let result;
 	try {
 		result = await response.json();
-	} catch (error) {
-		throw createFileSystemError(FileSystemErrorCode.IoError, path, "Backend returned invalid JSON", error);
+	} catch {
+		const detail = describeBackendResponse(response);
+		throw createFileSystemError(FileSystemErrorCode.IoError, path, `Backend returned invalid JSON (${detail})`);
 	}
 
 	if (!result || typeof result !== "object" || typeof result.success !== "boolean") {
@@ -462,6 +480,15 @@ async function requestBackend(route, path, query, init) {
 	}
 
 	return result.data;
+}
+
+function describeBackendResponse(response) {
+	const status = Number.isInteger(response.status) ? response.status : 0;
+	const rawContentType = response.headers?.get?.("content-type") ?? "";
+	const mediaType = rawContentType.split(";", 1)[0].trim().toLowerCase();
+	return /^[a-z0-9!#$&^_.+-]+\/[a-z0-9!#$&^_.+-]+$/.test(mediaType)
+		? `HTTP ${status}, Content-Type: ${mediaType}`
+		: `HTTP ${status}`;
 }
 
 function assertValidPath(path) {
@@ -493,6 +520,7 @@ function assertUint8Array(data, path) {
 function createFileSystemError(code, path, message, cause) {
 	return new FileSystemError(code, path, {
 		cause: cause ?? new Error(message),
+		detail: message,
 	});
 }
 
@@ -507,7 +535,7 @@ function toFileSystemError(error, path) {
 		code = FileSystemErrorCode.AlreadyExists;
 	} else if (/\bENOTDIR\b|not a directory|不是文件夹|不是目录/i.test(message)) {
 		code = FileSystemErrorCode.NotDirectory;
-	} else if (/\bEISDIR\b|not a file|不是文件/i.test(message)) {
+	} else if (/\bEISDIR\b|not a file|不是文件|不能删除文件夹/i.test(message)) {
 		code = FileSystemErrorCode.NotFile;
 	} else if (/\b(?:EACCES|EPERM|EROFS)\b|permission denied|无权限|拒绝访问/i.test(message)) {
 		code = FileSystemErrorCode.PermissionDenied;
