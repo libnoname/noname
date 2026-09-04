@@ -10,9 +10,106 @@
 	<meta name="viewport" content="user-scalable=no, viewport-fit=cover" />
 	<title>无名杀</title>
 	<script>
+		// iOS PWA / 隐私模式下 localStorage、sessionStorage 可能为 null 或访问抛异常,
+		// 而无名杀有上百处直接使用 localStorage(启动时 util/index.js 首行即调用)。
+		// 此处在任何模块加载前做兜底:不可用则替换为内存实现,保证游戏不因存储缺失而崩溃。
+		// 注意:内存版数据不跨会话持久化(刷新即失),但至少能正常游玩,不再报错白屏。
+		(function () {
+			"use strict";
+			function makeMemoryStorage() {
+				var store = Object.create(null);
+				return {
+					getItem: function (k) {
+						k = String(k);
+						return Object.prototype.hasOwnProperty.call(store, k) ? store[k] : null;
+					},
+					setItem: function (k, v) {
+						store[String(k)] = String(v);
+					},
+					removeItem: function (k) {
+						delete store[String(k)];
+					},
+					clear: function () {
+						store = Object.create(null);
+					},
+					key: function (i) {
+						return Object.keys(store)[i] ?? null;
+					},
+					get length() {
+						return Object.keys(store).length;
+					},
+				};
+			}
+			function usable(name) {
+				try {
+					var s = window[name];
+					if (!s) return false;
+					var probe = "__noname_probe__";
+					s.setItem(probe, "1");
+					s.removeItem(probe);
+					return true;
+				} catch (e) {
+					return false;
+				}
+			}
+			["localStorage", "sessionStorage"].forEach(function (name) {
+				if (!usable(name)) {
+					try {
+						Object.defineProperty(window, name, { value: makeMemoryStorage(), configurable: true });
+					} catch (e) {
+						// defineProperty 失败(极少数环境)时直接赋值兜底
+						try {
+							window[name] = makeMemoryStorage();
+						} catch (e2) {}
+					}
+				}
+			});
+		})();
+	</script>
+	<!-- PWA:可安装 / 独立窗口 / 离线 -->
+	<link rel="manifest" href="./manifest.webmanifest" />
+	<meta name="theme-color" content="#000000" />
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+	<meta name="apple-mobile-web-app-title" content="无名杀" />
+	<link rel="apple-touch-icon" href="./image/pwa/apple-touch-icon.png" />
+	<link rel="icon" type="image/png" href="./image/pwa/icon-192.png" />
+	<script>
+		// 注册 PWA Service Worker(离线缓存)。失败不影响游戏运行。
+		if ("serviceWorker" in navigator) {
+			window.addEventListener("load", async () => {
+				// 一次性清理：旧版误注册的 JIT service-worker.js 会抢占 scope 导致白屏，
+				// 找到它并注销掉，让 pwa-sw.js 重新接管。
+				try {
+					const regs = await navigator.serviceWorker.getRegistrations();
+					for (const reg of regs) {
+						if (reg.active && reg.active.scriptURL.endsWith('/service-worker.js')) {
+							await reg.unregister();
+							console.log('[PWA] 已注销残留的 JIT service-worker.js');
+						}
+					}
+				} catch (e) { /* ignore */ }
+				navigator.serviceWorker.register("./pwa-sw.js").catch(err => console.warn("PWA SW 注册失败:", err));
+			});
+			// 【不要再加 controllerchange → location.reload()】曾加过(57e310a),纯亏本已回退:
+			//  - 它想解决"首次打开时页面未受控、请求绕过 SW",但离线那次打开时 SW 早已 active,
+			//    页面天然受控 —— 对离线白屏毫无用处(TROUBLESHOOTING 早记过这条教训)。
+			//  - 代价是每次新版 SW 接管就整页重载一次 → 部署后首次打开耗时翻倍(实测明显变慢)。
+			//  - 且 sessionStorage 若退化成内存实现(见本文件顶部兜底),getItem 恒为 null → 无限 reload。
+		}
+	</script>
+	<script>
 		"use strict";
 		(() => {
 			window.onerror = function (msg, src, line, column, err) {
+				// 忽略"音频/视频自动播放被浏览器拦截"这类无害错误(NotAllowedError):
+				// 浏览器/iOS 安全策略不允许无交互自动播放,用户点一下即恢复,不该弹窗打扰。
+				const errName = (err && err.name) || "";
+				const msgStr = String(msg || "");
+				if (errName === "NotAllowedError" || msgStr.includes("NotAllowedError") || msgStr.includes("not allowed by the user agent")) {
+					console.warn("[忽略无害错误] 媒体自动播放被拦截:", msgStr);
+					return;
+				}
 				let str = `错误文件: ${typeof src == "string" && src.length > 0 ? decodeURI(src) : "未知文件"}`;
 				str += `\n错误信息: ${msg}`;
 				str += `\n行号: ${line}`;
