@@ -607,6 +607,7 @@ async function initSecurity({ lib, game, ui, get, ai, _status }) {
 		.action(AccessAction.READ)
 		.action(AccessAction.WRITE)
 		.action(AccessAction.DEFINE)
+		.action(AccessAction.DELETE)
 		.require("target", lib)
 		.require("property", "fs")
 		.then(() => {
