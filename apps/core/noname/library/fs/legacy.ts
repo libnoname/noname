@@ -100,6 +100,7 @@ export function installLegacyFileSystemAPI(game: LegacyFileSystemGame, fileSyste
 				const folders: string[] = [];
 				const files: string[] = [];
 				for (const entry of entries) {
+					if (entry.name.startsWith(".") || entry.name.startsWith("_")) continue;
 					if (entry.type === "directory") {
 						folders.push(entry.name);
 					} else if (entry.type === "file") {
@@ -149,7 +150,13 @@ function checkPathType(
 ) {
 	fileSystem.stat(path).then(
 		info => callback?.(info === null ? -1 : info.type === expectedType ? 1 : 0),
-		error => handleLegacyError(error, onerror)
+		error => {
+			if (error instanceof FileSystemError && error.code === FileSystemErrorCode.PermissionDenied) {
+				callback?.(-1);
+				return;
+			}
+			handleLegacyError(error, onerror);
+		}
 	);
 }
 
