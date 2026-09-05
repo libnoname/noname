@@ -8054,7 +8054,7 @@ const skills = {
 			});
 			const result = await player
 				.chooseControl({
-					controls: [...list2, "cancel2"],
+					controls: [...types, "cancel2"],
 					prompt: get.prompt("dczhanyi"),
 					prompt2: "弃置一种类型的所有牌",
 					ai: () => {
@@ -8166,7 +8166,7 @@ const skills = {
 			const cards = event.cards;
 			const { type } = event.cost_data;
 			await player.discard({ cards });
-			for (const currentType of list) {
+			for (const currentType of ["basic", "trick", "equip"]) {
 				if (currentType !== type) {
 					player.addTempSkill(`dczhanyi_${currentType}`, { player: "phaseBegin" });
 				}
@@ -8193,7 +8193,7 @@ const skills = {
 				},
 				mod: {
 					targetInRange(card) {
-						if (get.type(card) == "basic") {
+						if (get.type(card) === "basic") {
 							return true;
 						}
 					},
@@ -8375,8 +8375,8 @@ const skills = {
 		selectCard: [1, Infinity],
 		allowChooseAll: true,
 		check(card) {
-			let player = _status.event.player,
-				num = player.hasSkill("nifu") ? 15 : 8;
+			const player = _status.event.player;
+			const num = player.hasSkill("nifu") ? 15 : 8;
 			if (ui.selected.cards.length <= Math.max(1, player.needsToDiscard(), player.countCards("h") - 4)) {
 				return num - get.value(card);
 			}
@@ -8386,67 +8386,72 @@ const skills = {
 		discard: false,
 		lose: false,
 		delay: false,
-		content() {
-			"step 0";
-			player.give(cards, target);
+		async content(event, trigger, player) {
+			const { cards, target } = event;
+			const giveEvent = player.give(cards, target);
 			player.addTempSkill("channi_effect");
-			"step 1";
+			await giveEvent;
 			if (target.countCards("h") > 0) {
-				game.broadcastAll(function (num) {
+				game.broadcastAll(num => {
 					lib.skill.channi_backup.selectCard = [1, num];
 				}, cards.length);
-				var next = target.chooseToUse();
-				next.set("openskilldialog", "将至多" + get.cnNumber(cards.length) + "张手牌当做【决斗】使用");
-				next.set("norestore", true);
-				next.set("addCount", false);
-				next.set("_backupevent", "channi_backup");
-				next.set("custom", {
-					add: {},
-					replace: { window() {} },
+				const next = target.chooseToUse({
+					openskilldialog: `将至多${get.cnNumber(cards.length)}张手牌当做【决斗】使用`,
+					norestore: true,
+					addCount: false,
+					_backupevent: "channi_backup",
+					custom: {
+						add: {},
+						replace: { window() {} },
+					},
 				});
 				next.backup("channi_backup");
+				await next;
 			}
-			"step 2";
 			player.removeSkill("channi_effect");
 		},
 		subSkill: {
 			effect: {
 				trigger: { global: ["damageSource", "damageEnd"] },
 				filter(event, player, name) {
-					if (!event.card || event.card.name != "juedou") {
+					if (!event.card || event.card.name !== "juedou") {
 						return false;
 					}
-					let evt = event.getParent(2);
-					if (!evt || evt.name != "useCard" || evt.card.name != "juedou") {
+					const evt = event.getParent(2);
+					if (!evt || evt.name !== "useCard" || evt.card.name !== "juedou") {
 						return false;
 					}
-					let user = evt.player;
-					let evtx = event.getParent("channi", true);
-					if (!evtx || evtx.player != player) {
+					const user = evt.player;
+					const evtx = event.getParent("channi", true);
+					if (!evtx || evtx.player !== player) {
 						return false;
 					}
-					if (name == "damageSource") {
-						return event.source == user && evt.cards.length;
+					if (name === "damageSource") {
+						return event.source === user && evt.cards.length;
 					}
-					return event.player == user && player.countCards("h");
+					return event.player === user && player.countCards("h");
 				},
 				forced: true,
 				charlotte: true,
 				logTarget(event, player, name) {
-					return event[name == "damageSource" ? "source" : "player"];
+					return event[name === "damageSource" ? "source" : "player"];
 				},
-				content() {
-					let evt = trigger.getParent(2);
-					if (event.triggername == "damageSource") {
-						evt.player.draw(evt.cards.length);
+				async content(event, trigger, player) {
+					const evt = trigger.getParent(2);
+					if (event.triggername === "damageSource") {
+						await evt.player.draw(evt.cards.length);
 					} else {
-						player.chooseToDiscard("h", true, player.countCards("h"));
+						await player.chooseToDiscard({
+							position: "h",
+							forced: true,
+							selectCard: player.countCards("h"),
+						});
 					}
 				},
 			},
 			backup: {
 				filterCard(card) {
-					return get.itemtype(card) == "card";
+					return get.itemtype(card) === "card";
 				},
 				viewAs: { name: "juedou" },
 				position: "h",
@@ -8465,7 +8470,7 @@ const skills = {
 			order: 0.3,
 			result: {
 				target(player, target) {
-					if (target == game.me || target.isOnline() || target.hasValueTarget({ name: "juedou" })) {
+					if (target === game.me || target.isOnline() || target.hasValueTarget({ name: "juedou" })) {
 						return 2;
 					}
 					if (player.needsToDiscard()) {
