@@ -443,7 +443,7 @@ const skills = {
 		filter(event, player) {
 			const storage = player.getStorage("sbzhenwei_last", []);
 			const num = storage[0] || 0;
-			return game.hasPlayer(target => !player.getStorage("sbheyuan").includes(target) && target.isDamaged()) && player.countCards("he") > num;
+			return game.hasPlayer(target => !player.getStorage("sbheyuan").includes(target) && target.isDamaged()) && player.countCards("he") > num && storage?.[1];
 		},
 		async cost(event, trigger, player) {
 			const storage = player.getStorage("sbzhenwei_last", []);

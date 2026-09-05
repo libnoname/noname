@@ -6342,12 +6342,17 @@ const skills = {
 						.chooseButton({
 							createDialog: ["礼让：是否获得其中至多两张牌？", cards],
 							selectButton: [1, 2],
+							ai(button) {
+								return get.value(button.link);
+							},
 						})
 						.forResult();
-					event.result = {
-						bool: result.bool,
-						cards: result.cards,
-					};
+					if (result?.bool && result.links?.length) {
+						event.result = {
+							bool: result.bool,
+							cards: result.links,
+						};
+					}
 				},
 				logTarget: "player",
 				async content(event, trigger, player) {
