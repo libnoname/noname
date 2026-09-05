@@ -6932,82 +6932,72 @@ const skills = {
 		audio: 2,
 		trigger: { global: "phaseZhunbeiBegin" },
 		filter(event, player) {
-			return player != event.player && event.player.countCards("h") >= Math.max(1, event.player.hp) && player.canCompare(event.player);
+			return player !== event.player && event.player.countCards("h") >= Math.max(1, event.player.hp) && player.canCompare(event.player);
 		},
 		logTarget: "player",
 		check(event, player) {
-			var goon = player.hasCard(function (card) {
-				return card.name == "sha" || get.value(card) <= 5;
-			});
-			var target = event.player;
+			const goon = player.hasCard(card => card.name === "sha" || get.value(card) <= 5);
+			const target = event.player;
 			if (goon && get.attitude(player, target) < 0) {
 				return get.effect(target, { name: "sha" }, player, player) > 0;
 			}
 			return 0;
 		},
-		content() {
-			"step 0";
-			event.target = trigger.player;
-			player.chooseToCompare(event.target).set("ai", function (card) {
-				if (typeof card == "string" && lib.skill[card]) {
-					var ais =
-						lib.skill[card].check ||
-						function () {
-							return 0;
-						};
-					return ais();
-				}
-				var player = get.owner(card);
-				var getn = function (card) {
-					if (player.hasSkill("tianbian") && get.suit(card) == "heart") {
-						return 13;
+		async content(event, trigger, player) {
+			const target = trigger.player;
+			const result = await player
+				.chooseToCompare(target, card => {
+					if (typeof card === "string" && lib.skill[card]) {
+						const ais = lib.skill[card].check || (() => 0);
+						return ais();
 					}
-					return get.number(card);
-				};
-				var event = _status.event.getParent();
-				var to = player == event.player ? event.target : event.player;
-				var addi = get.value(card) >= 8 && get.type(card) != "equip" ? -6 : 0;
-				if (card.name == "du") {
-					addi -= 5;
-				}
-				if (player == event.player) {
-					if (get.name(card, player) == "sha") {
-						return 10 + getn(card);
+					const owner = get.owner(card);
+					const getn = card => {
+						if (owner.hasSkill("tianbian") && get.suit(card) === "heart") {
+							return 13;
+						}
+						return get.number(card);
+					};
+					const compareEvent = _status.event.getParent();
+					let addi = get.value(card) >= 8 && get.type(card) !== "equip" ? -6 : 0;
+					if (card.name === "du") {
+						addi -= 5;
 					}
-					return getn(card) - get.value(card) / 2 + addi;
-				} else {
-					if (get.name(card, player) == "sha") {
+					if (owner === compareEvent.player) {
+						if (get.name(card, owner) === "sha") {
+							return 10 + getn(card);
+						}
+						return getn(card) - get.value(card) / 2 + addi;
+					}
+					if (get.name(card, owner) === "sha") {
 						return -10 - getn(card) - get.value(card) / 2 + addi;
 					}
 					return getn(card) - get.value(card) / 2 + addi;
-				}
-			});
-			"step 1";
-			var bool1 = result.bool;
-			var bool2 = get.name(result.player, player) == "sha" || get.name(result.target, target) == "sha";
-			if (bool1 || bool2) {
-				if (player.canUse("sha", target, false)) {
-					player.useCard({ name: "sha", isCard: true }, target, false);
-					if (!bool1 || !bool2) {
-						event.finish();
-					}
-				} else {
-					event.finish();
-				}
-			} else {
-				event.finish();
-			}
-			"step 2";
-			if (
-				target.hasCard(function (card) {
-					return lib.filter.canBeGained(card, player, target);
-				}, "he") &&
-				player.hasHistory("sourceDamage", function (evt) {
-					var evtx = evt.getParent("useCard");
-					return evtx && evtx.card == evt.card && evtx.getParent() == event;
 				})
-			) {
-				player.gainPlayerCard(target, true, "he");
+				.forResult();
+			const compareWon = result.bool;
+			const revealedSha = get.name(result.player, player) === "sha" || get.name(result.target, target) === "sha";
+			if ((!compareWon && !revealedSha) || !player.canUse("sha", target, false)) {
+				return;
+			}
+			await player.useCard({
+				card: { name: "sha", isCard: true },
+				targets: [target],
+				addCount: false,
+			});
+			if (!compareWon || !revealedSha || !target.hasCard(card => lib.filter.canBeGained(card, player, target), "he")) {
+				return;
+			}
+			const dealtDamage = player.hasHistory("sourceDamage", evt => {
+				const useEvent = evt.getParent("useCard");
+				return useEvent && useEvent.card === evt.card && useEvent.getParent() === event;
+			});
+			if (dealtDamage) {
+				await player.gainPlayerCard({
+					target,
+					forced: true,
+					position: "he",
+				});
 			}
 		},
 	},
