@@ -52,15 +52,18 @@ export default {
 				return distance + num;
 			},
 			attackRangeBase(player) {
-				let num = player
-					.getVCards("j", vcard => {
-						if (get.type(vcard) != "delay") {
-							false;
-						} else if (!vcard.storage?.equipEnable) {
-							return false;
-						}
-						return vcard.cards.some(card => get.type(card) == "equip");
-					})
+				const vcards = player.getVCards("j", vcard => {
+					if (get.type(vcard) != "delay") {
+						false;
+					} else if (!vcard.storage?.equipEnable) {
+						return false;
+					}
+					return vcard.cards.some(card => get.type(card) == "equip");
+				});
+				if (!vcards.length) {
+					return;
+				}
+				let num = vcards
 					.map(vcard => {
 						const num = vcard.cards?.reduce((sum, card) => {
 							if (get.type(card) != "equip") {
