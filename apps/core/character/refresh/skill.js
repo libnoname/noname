@@ -6705,7 +6705,7 @@ const skills = {
 					player.addTempSkill("xinpaiyi_used", "phaseUseEnd");
 					player.markAuto("xinpaiyi_used", [0]);
 					var card = lib.skill.xinpaiyi_backup.card;
-					player.loseToDiscardpile(card);
+					await player.loseToDiscardpile(card);
 
 					// step 1
 					await target.draw(Math.max(1, player.getExpansions("xinquanji").length)).forResult();
