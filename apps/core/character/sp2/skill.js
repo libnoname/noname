@@ -10016,81 +10016,73 @@ const skills = {
 		filter(event, player) {
 			return player.hasEnabledSlot();
 		},
-		content() {
-			"step 0";
-			player.chooseToDisable().ai = function (event, player, list) {
-				var getVal = function (num) {
-					var card = player.getEquip(num);
-					if (card) {
-						var val = get.value(card);
-						if (val > 0) {
+		async content(event, trigger, player) {
+			const disableResult = await player
+				.chooseToDisable({
+					ai: (event, player, list) => {
+						const getVal = num => {
+							const card = player.getEquip(num);
+							if (card) {
+								const val = get.value(card);
+								if (val > 0) {
+									return 0;
+								}
+								return 5 - val;
+							}
+							switch (num) {
+								case "equip3":
+									return 4.5;
+								case "equip4":
+									return 4.4;
+								case "equip5":
+									return 4.3;
+								case "equip2":
+									return (3 - player.hp) * 1.5;
+								case "equip1": {
+									if (game.hasPlayer(current => (get.realAttitude || get.attitude)(player, current) < 0 && get.distance(player, current) > 1)) {
+										return 0;
+									}
+									return 3.2;
+								}
+							}
+						};
+						list.sort((a, b) => getVal(b) - getVal(a));
+						return list[0];
+					},
+				})
+				.forResult();
+			const cardType = disableResult.control;
+			const num = player.countDisabledSlot();
+			if (num < 5) {
+				await player.draw(5 - num);
+			}
+			if (!game.hasPlayer(current => current !== player)) {
+				return;
+			}
+			const targetResult = await player
+				.chooseTarget({
+					filterTarget: lib.filter.notMe,
+					forced: true,
+					prompt: `令一名其他角色从牌堆中使用一张${get.translation(cardType)}牌`,
+					ai: target => {
+						const card = get.cardPile2(card => get.subtype(card) === cardType && target.canUse(card, target));
+						if (!card) {
 							return 0;
 						}
-						return 5 - val;
-					}
-					switch (num) {
-						case "equip3":
-							return 4.5;
-						case "equip4":
-							return 4.4;
-						case "equip5":
-							return 4.3;
-						case "equip2":
-							return (3 - player.hp) * 1.5;
-						case "equip1": {
-							if (
-								game.hasPlayer(function (current) {
-									return (get.realAttitude || get.attitude)(player, current) < 0 && get.distance(player, current) > 1;
-								})
-							) {
-								return 0;
-							}
-							return 3.2;
-						}
-					}
-				};
-				list.sort(function (a, b) {
-					return getVal(b) - getVal(a);
-				});
-				return list[0];
-			};
-			"step 1";
-			var cardType = result.control;
-			event.cardType = cardType;
-			var num = player.countDisabledSlot();
-			if (num < 5) {
-				player.draw(5 - num);
-			}
-			if (!game.hasPlayer(current => current != player)) {
-				return;
-			}
-			player
-				.chooseTarget(lib.filter.notMe, true, "令一名其他角色从牌堆中使用一张" + get.translation(cardType) + "牌")
-				.set("ai", function (target) {
-					var player = _status.event.player,
-						type = _status.event.cardType;
-					var card = get.cardPile2(function (card) {
-						return get.subtype(card) == type && target.canUse(card, target);
-					});
-					if (!card) {
-						return 0;
-					}
-					return get.effect(target, card, target, player);
+						return get.effect(target, card, target, player);
+					},
 				})
-				.set("cardType", event.cardType);
-			"step 2";
-			if (!result.bool) {
+				.forResult();
+			if (!targetResult.bool) {
 				return;
 			}
-			var target = result.targets[0];
+			const target = targetResult.targets[0];
 			player.line(target, "green");
-			var card = get.cardPile2(function (card) {
-				return get.subtype(card) == event.cardType && target.canUse(card, target);
-			});
+			const card = get.cardPile2(card => get.subtype(card) === cardType && target.canUse(card, target));
 			if (card) {
-				target.chooseUseTarget(card, "nopopup", true);
+				await target.chooseUseTarget({ card, nopopup: true, forced: true });
 			} else {
-				target.draw();
+				await target.draw();
 			}
 		},
 		group: "xianwei_all",
@@ -10102,8 +10094,8 @@ const skills = {
 				filter(event, player) {
 					return !player.hasEnabledSlot();
 				},
-				content() {
-					player.gainMaxHp(2);
+				async content(event, trigger, player) {
+					await player.gainMaxHp(2);
 					player.addSkill("xianwei_effect");
 				},
 			},
