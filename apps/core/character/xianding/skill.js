@@ -13926,7 +13926,14 @@ const skills = {
 						max: player.countMark("dcjunhe_effect"),
 					},
 				])
-				.set("processAI", () => [1])
+				.set("processAI", () => {
+					const { player, target } = get.event();
+					if (get.attitude(player, target) > 0 && !target.hasMark("dcjunhe_effect")) {
+						return [1];
+					}
+					return false;
+				})
+				.set("target", target)
 				.forResult();
 			if (result?.bool && result?.numbers) {
 				const number = result.numbers[0];
