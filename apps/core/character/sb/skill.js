@@ -448,7 +448,7 @@ const skills = {
 		filter(event, player) {
 			const storage = player.getStorage("sbzhenwei_last", []);
 			const num = storage[0] || 0;
-			return player.countCards("he") > num;
+			return player.countCards("he") > num && storage?.[1];
 		},
 		async cost(event, trigger, player) {
 			const storage = player.getStorage("sbzhenwei_last", []);
@@ -498,6 +498,7 @@ const skills = {
 				await map[choice][2](target);
 			}
 		},
+		ai: { combo: "sbzhenwei" },
 	},
 	//谋张郃·重做
 	sbqiaobian: {
@@ -7577,7 +7578,7 @@ const skills = {
 	},
 	//刘备
 	sbrende: {
-		audio: 3,
+		audio: 2,
 		enable: ["chooseToUse", "chooseToRespond"],
 		chargeSkill: 8,
 		init(player, skill) {
@@ -7590,7 +7591,7 @@ const skills = {
 			const storage = player.getStorage("sbrende_used");
 			if (
 				event.type === "phase" &&
-				player.countCards("h") &&
+				player.hasCards("he") &&
 				game.hasPlayer(current => {
 					return !storage.includes(current) && current !== player;
 				})
@@ -7600,24 +7601,12 @@ const skills = {
 			if (player.countCharge() < 2 || storage.includes("card")) {
 				return false;
 			}
-			for (const name of lib.inpile) {
-				if (get.type(name) !== "basic") {
-					continue;
+			return get.inpileVCardList(info => {
+				if (!["basic", "trick"].includes(info[0])) {
+					return false;
 				}
-				const card = { name, isCard: true };
-				if (event.filterCard(card, player, event)) {
-					return true;
-				}
-				if (name === "sha") {
-					for (const nature of lib.inpile_nature) {
-						card.nature = nature;
-						if (event.filterCard(card, player, event)) {
-							return true;
-						}
-					}
-				}
-			}
-			return false;
+				return event.filterCard(get.autoViewAs({ name: info[2], nature: info[3] }, "unsure"), player, event);
+			}).length;
 		},
 		group: ["sbrende_gain"],
 		chooseButton: {
@@ -7626,7 +7615,7 @@ const skills = {
 				const storage = player.getStorage("sbrende_used");
 				const cards = [];
 				dialog.direct = true;
-				if (event.type === "phase" && player.hasCard(() => true, "he") && game.hasPlayer(current => !storage.includes(current) && current !== player)) {
+				if (event.type === "phase" && player.hasCards("he") && game.hasPlayer(current => !storage.includes(current) && current !== player)) {
 					dialog.add([[["give", "交给其他角色牌"]], "tdnodes"]);
 				}
 				if (player.countCharge() > 1 && !storage.includes("card")) {
@@ -7704,12 +7693,9 @@ const skills = {
 			},
 		},
 		subSkill: {
-			mark: { mark: true, intro: { content: "因仁德获得过牌" } },
+			mark: { mark: true, intro: { content: "因仁德获得过牌" }, charlotte: true },
 			backup: {},
-			used: {
-				charlotte: true,
-				onremove: true,
-			},
+			used: { charlotte: true, onremove: true },
 			use: {
 				audio: "sbrende",
 				filterCard: () => false,
@@ -7837,7 +7823,7 @@ const skills = {
 				forced: true,
 				trigger: { global: "dieAfter" },
 				intro: {
-					markcount: () => 0,
+					markcount: (storage, player) => player.countMark("sbzhangwu_longnu2"),
 					content(storage, player) {
 						return `使用【杀】的次数/攻击范围+${player.countMark("sbzhangwu_longnu2")}`;
 					},
@@ -7882,7 +7868,7 @@ const skills = {
 					player.markSkill("charge");
 					game.log(player, "的蓄力值上限减半");
 					player.addMark(event.name + "2", 1, false);
-					player.markSkill(event.name + "2");
+					player.markSkill(event.name);
 					//手杀结算可重复选择
 					const list = ["red", "black"];
 					const result = await player

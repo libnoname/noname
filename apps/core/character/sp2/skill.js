@@ -2650,7 +2650,7 @@ const skills = {
 			player.removeSkill(skill + "_mark");
 		},
 		filter(event, player) {
-			if (!event.source || event.source == event.player) {
+			if (!event.source || event.source == event.player || ![event.source, event.player].includes(player)) {
 				return false;
 			}
 			const evt = event.getParent(2);
@@ -2827,7 +2827,7 @@ const skills = {
 				return;
 			}
 			const result = await target
-				.chooseToMove("忠言：交换其中一张牌")
+				.chooseToMove("忠言：交换其中一张牌", true)
 				.set("list", [
 					["牌堆顶", topCards],
 					["你的手牌", target.getCards("h")],
@@ -2844,12 +2844,12 @@ const skills = {
 					var changed2 = moved[1].filter(function (card) {
 						return !hs.includes(card);
 					});
-					if (changed.length < 1) {
-						return true;
-					}
 					var pos1 = moved[0].includes(from.link) ? 0 : 1,
 						pos2 = moved[0].includes(to.link) ? 0 : 1;
 					if (pos1 == pos2) {
+						return false;
+					}
+					if (changed.length < 1) {
 						return true;
 					}
 					if (pos1 == 0) {
@@ -2869,13 +2869,13 @@ const skills = {
 				.set("processAI", function (list) {
 					var cards1 = list[0][1].slice(),
 						cards2 = list[1][1].slice();
-					var card1 = cards1.sort((a, b) => get.value(b) - get.value(a))[0];
-					var card2 = cards2.sort((a, b) => get.value(a) - get.value(b))[0];
-					if (card1 && card2 && get.value(card1) > get.value(card2)) {
-						cards1.remove(card1);
-						cards2.remove(card2);
-						cards1.push(card2);
-						cards2.push(card1);
+					var card1 = cards1.slice().sort((a, b) => get.value(b) - get.value(a))[0];
+					var card2 = cards2.slice().sort((a, b) => get.value(a) - get.value(b))[0];
+					if (card1 && card2) {
+						var index1 = cards1.indexOf(card1),
+							index2 = cards2.indexOf(card2);
+						cards1[index1] = card2;
+						cards2[index2] = card1;
 					}
 					return [cards1, cards2];
 				})

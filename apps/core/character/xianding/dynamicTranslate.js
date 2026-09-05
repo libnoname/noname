@@ -1,9 +1,25 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const dynamicTranslates = {
+	dcranlv(player, skill) {
+		if (!player.storage[skill].length) {
+			return lib.translate[skill + "_info"];
+		}
+		let list = [
+			"横置或重置至多两名角色",
+			"摸两张牌",
+			"弃置一名角色两张牌",
+		];
+		for (let i in list) {
+			if (player.storage[skill][i] === false) {
+				list[i] = `<span style="text-decoration: line-through;">${list[i]}</span>`
+			}
+		}
+		return `有角色受到非属性伤害后，你可选择一项执行后移除：1.${list[0]}；2.${list[1]}；3.${list[2]}。`
+	},
 	dcsbxieshu(player, skill) {
 		const usable = player.storage[skill] ? "" : "每回合限一次，";
-		return`${usable}你使用牌指定其他角色为目标后，你可令此牌对其中一个目标无效并获得其一张牌。`;
+		return `${usable}你使用牌指定其他角色为目标后，你可令此牌对其中一个目标无效并获得其一张牌。`;
 	},
 	dcsbjingmou(player) {
 		const bool = player.storage.dcsbjingmou;

@@ -691,7 +691,7 @@ const skills = {
 	potxiongzi: {
 		audio: 4,
 		logAudio(event, player, triggername, _, costResult) {
-			if (costResult.cost_data == "保留选项一") {
+			if (costResult.cost_data == "保留选项二") {
 				return ["potxiongzi3.mp3", "potxiongzi4.mp3"];
 			}
 			return 2;
@@ -7589,7 +7589,7 @@ const skills = {
 			check(button) {
 				const player = get.player();
 				if (button.link == "recover") {
-					return player.getHp() + player.countCards("h", { name: "tao" }) < 2;
+					return player.getHp() <= 2;
 				}
 				if (button.link == "cover") {
 					let numbers = [player.getHp(), player.getDamagedHp(), game.countPlayer()];
@@ -7684,7 +7684,7 @@ const skills = {
 			threaten: 2,
 			result: {
 				player(player) {
-					if (player.isDamaged()) {
+					if (player.getDamagedHp() >= 2) {
 						return 1;
 					}
 					return -1;

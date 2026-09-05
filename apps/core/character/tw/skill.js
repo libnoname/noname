@@ -4573,6 +4573,17 @@ const skills = {
 				target.addGaintag(target.getCards("h"), "twsbfangzhu");
 			}
 		},
+		ai: {
+			maixie_defend: true,
+			effect: {
+				target(card, player, target) {
+					if (player.hasSkillTag("jueqing", false, target)) {
+						return [1, -1];
+					}
+					return 0.8;
+				},
+			},
+		},
 		group: "twsbfangzhu_liufang",
 		subSkill: {
 			liufang: {
@@ -27650,7 +27661,7 @@ const skills = {
 		},
 		direct: true,
 		filter(event, player) {
-			return player.countCards("he") > 0;
+			return player.hasCards("he");
 		},
 		content() {
 			"step 0";
