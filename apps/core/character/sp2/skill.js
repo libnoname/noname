@@ -6165,58 +6165,26 @@ const skills = {
 		trigger: { player: "useCardToPlayered" },
 		usable: 1,
 		filter(event, player) {
-			return event.card.name == "sha" && event.getParent().triggeredTargets3.length == event.targets.length;
+			return event.card.name === "sha" && event.getParent()?.triggeredTargets3.length === event.targets.length;
 		},
-		/*
-		check(event, player) {
-			return event.targets.some(target => get.effect(target, event.card, player, player) <= 0);
-		},
-		*/
-		content() {
-			"step 0";
-			var num = player.countCards("e") + 1;
-			event.num = num;
-			player.draw(num);
-			"step 1";
-			var num = Math.min(trigger.targets.length, num);
-			player
-				.chooseTarget("铤险：是否令此杀对其中至多" + get.cnNumber(num) + "个目标无效？", [1, num], (card, player, target) => {
-					return _status.event.getTrigger().targets.includes(target);
+		async content(event, trigger, player) {
+			const num = player.countCards("e") + 1;
+			await player.draw(num);
+			const maxTargets = Math.min(trigger.targets.length, num);
+			const result = await player
+				.chooseTarget({
+					prompt: `铤险：是否令此杀对其中至多${get.cnNumber(maxTargets)}个目标无效？`,
+					selectTarget: [1, maxTargets],
+					filterTarget: (card, player, target) => _status.event.getTrigger().targets.includes(target),
+					ai: target => 1 - get.effect(target, _status.event.getTrigger().card, _status.event.player, _status.event.player),
 				})
-				.set("ai", target => {
-					return 1 - get.effect(target, _status.event.getTrigger().card, _status.event.player, _status.event.player);
-				});
-			"step 2";
-			if (result.bool) {
-				player.line(result.targets);
-				trigger.getParent().excluded.addArray(result.targets);
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
+			player.line(result.targets);
+			trigger.getParent()?.excluded.addArray(result.targets);
 		},
-		/*
-		ai: {
-			effect: {
-				player_use(card, player, target) {
-					if (_status.event.name == "chooseToUse" && get.name(card) == "sha" && (!player.storage.counttrigger || !player.storage.counttrigger.dctingxian) && !_status._dctingxian_aiChecking) {
-						_status._dctingxian_aiChecking = true;
-						var eff = get.effect(target, { name: "sha" }, player, player);
-						delete _status._dctingxian_aiChecking;
-						if (
-							eff < 0 &&
-							ui.selected.targets.filter(targetx => {
-								if (targetx == target) return false;
-								_status._dctingxian_aiChecking = true;
-								var eff = get.effect(targetx, { name: "sha" }, player, player);
-								delete _status._dctingxian_aiChecking;
-								if (eff < 0) return true;
-							}).length <
-								player.countCards("e") + 1
-						)
-							return [0, 0, 0, 0.5];
-					}
-				},
-			},
-		},
-		*/
 	},
 	dcbenshi: {
 		audio: 2,
