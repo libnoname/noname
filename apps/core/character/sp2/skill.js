@@ -9261,9 +9261,9 @@ const skills = {
 		filterTarget: true,
 		filterCard(card) {
 			if (ui.selected.cards.length) {
-				var name = get.name(card);
-				for (var i of ui.selected.cards) {
-					if (get.name(i) == name) {
+				const name = get.name(card);
+				for (const selectedCard of ui.selected.cards) {
+					if (get.name(selectedCard) === name) {
 						return false;
 					}
 				}
@@ -9271,12 +9271,8 @@ const skills = {
 			return true;
 		},
 		check(card) {
-			var player = _status.event.player;
-			if (
-				game.countPlayer(function (current) {
-					return get.attitude(player, current) > 0;
-				}) > ui.selected.cards.length
-			) {
+			const player = _status.event.player;
+			if (game.countPlayer(current => get.attitude(player, current) > 0) > ui.selected.cards.length) {
 				return 1;
 			}
 			return 0;
@@ -9288,37 +9284,33 @@ const skills = {
 		delay: false,
 		multitarget: true,
 		multiline: true,
-		content() {
-			"step 0";
-			player.showCards(cards, get.translation(player) + "发动了【经合】");
-			event.skills = lib.skill.jinghe.derivation.randomGets(4);
+		async content(event, trigger, player) {
+			const { cards, targets } = event;
+			const showEvent = player.showCards(cards, `${get.translation(player)}发动了【经合】`);
+			const skills = lib.skill.jinghe.derivation.randomGets(4);
 			player.addTempSkill("jinghe_clear", { player: "phaseBegin" });
-			event.targets.sortBySeat();
-			event.num = 0;
-			"step 1";
-			event.target = targets[num];
-			event.num++;
-			event.target
-				.chooseControl(event.skills, "cancel2")
-				.set(
-					"choiceList",
-					event.skills.map(function (i) {
-						return '<div class="skill">【' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "】</div><div>" + get.skillInfoTranslation(i, player, false) + "</div>";
+			targets.sortBySeat();
+			await showEvent;
+			for (const target of targets) {
+				const result = await target
+					.chooseControl({
+						controls: [...skills, "cancel2"],
+						choiceList: skills.map(
+							skill =>
+								`<div class="skill">【${get.translation(lib.translate[`${skill}_ab`] || get.translation(skill).slice(0, 2))}】</div><div>${get.skillInfoTranslation(skill, player, false)}</div>`
+						),
+						displayIndex: false,
+						prompt: "选择获得一个技能",
 					})
-				)
-				.set("displayIndex", false)
-				.set("prompt", "选择获得一个技能");
-			"step 2";
-			var skill = result.control;
-			if (skill != "cancel2") {
-				event.skills.remove(skill);
-				target.addAdditionalSkills("jinghe_" + player.playerid, skill, true);
-			}
-			if (event.num < event.targets.length) {
-				event.goto(1);
-			}
-			if (target != game.me && !target.isOnline2()) {
-				game.delayx();
+					.forResult();
+				const skill = result.control;
+				if (skill !== "cancel2") {
+					skills.remove(skill);
+					await target.addAdditionalSkills(`jinghe_${player.playerid}`, skill, true);
+				}
+				if (target !== game.me && !target.isOnline2()) {
+					await game.delayx();
+				}
 			}
 		},
 		ai: {
@@ -9329,13 +9321,11 @@ const skills = {
 			},
 		},
 		derivation: ["releiji", "rebiyue", "new_retuxi", "remingce", "xinzhiyan", "nhyinbing", "nhhuoqi", "nhguizhu", "nhxianshou", "nhlundao", "nhguanyue", "nhyanzheng"],
-		subSkill: {
-			clear: {
-				onremove(player) {
-					game.countPlayer(function (current) {
-						current.removeAdditionalSkills("jinghe_" + player.playerid);
-					});
-				},
+			subSkill: {
+				clear: {
+					onremove(player) {
+						game.countPlayer(current => current.removeAdditionalSkills(`jinghe_${player.playerid}`));
+					},
 			},
 		},
 	},
