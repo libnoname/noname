@@ -6254,43 +6254,38 @@ const skills = {
 		filterCard: true,
 		derivation: "dczuojian",
 		filter(event, player) {
-			return player.countCards("h") > 0;
+			return player.hasCards("h");
 		},
-		content() {
-			"step 0";
-			event.num = target.countCards("e");
-			var subtypes = [];
-			for (var i = 1; i < 7; i++) {
+		async content(event, trigger, player) {
+			const { target } = event;
+			const num = target.countCards("e");
+			const subtypes = [];
+			for (let i = 1; i < 7; i++) {
 				if (target.hasEmptySlot(i)) {
-					subtypes.push("equip" + i);
+					subtypes.push(`equip${i}`);
 				}
 			}
-			if (subtypes.length) {
-				subtypes.randomSort();
-				for (var subtype of subtypes) {
-					var card = get.cardPile2(card => get.subtype(card) == subtype, "random");
-					if (card && target.canUse(card, target)) {
-						target.chooseUseTarget(card, true, "nopopup");
-						break;
-					}
+			subtypes.randomSort();
+			for (const subtype of subtypes) {
+				const card = get.cardPile2(card => get.subtype(card) === subtype, "random");
+				if (!card || !target.canUse(card, target)) {
+					continue;
 				}
+				await target.chooseUseTarget({ card, forced: true, nopopup: true });
+				break;
 			}
-			"step 1";
-			var numx = target.countCards("e");
+			const numx = target.countCards("e");
 			if (numx > 0) {
-				player.draw(numx);
+				await player.draw(numx);
 			}
-			game.delayx();
-			"step 2";
-			event.num2 = target.countCards("e");
-			if (event.num2 == 4 && num != 4) {
-				player.trySkillAnimate("dccuichuan_animate", "dccuichuan_animate", player.checkShow("dccuichuan"));
-				//player.removeSkill('dccuichuan');
-				//game.log(player,'失去了技能','#g【榱椽】');
-				player.changeSkills(["dczuojian"], ["dccuichuan"]);
-				target.insertPhase();
-				game.delayx();
+			await game.delayx();
+			if (target.countCards("e") !== 4 || num === 4) {
+				return;
 			}
+			player.trySkillAnimate("dccuichuan_animate", "dccuichuan_animate", player.checkShow("dccuichuan"));
+			await player.changeSkills(["dczuojian"], ["dccuichuan"]);
+			target.insertPhase();
+			await game.delayx();
 		},
 		subSkill: {
 			animate: {
@@ -6303,13 +6298,13 @@ const skills = {
 			order: 7,
 			result: {
 				target(player, target) {
-					if (target.countCards("e") == 3) {
+					if (target.countCards("e") === 3) {
 						return 2;
 					}
 					return 1;
 				},
 				player(player, target) {
-					if (target.countCards("e") == 3) {
+					if (target.countCards("e") === 3) {
 						return 0.5;
 					}
 					return target.countCards("e") + 1;
