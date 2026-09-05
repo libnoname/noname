@@ -365,7 +365,7 @@ const translates = {
 	xinxingluan_info: "每回合限一次。当你于出牌阶段内使用牌结算结束后，你可选择一项：①观看牌堆中的两张点数为6的牌并获得其中一张（没有则改为摸六张牌）；②令一名其他角色弃置一张点数为6的牌或交给你一张牌；③获得场上的一张点数为6的牌。",
 	re_nanhualaoxian: "南华老仙",
 	gongxiu: "共修",
-	gongxiu_info: "结束阶段，若你本回合内发动过〖经合〗，则你选择一项：①令所有本回合内成为过〖经合〗目标的角色各摸一张牌；②令所有本回合内未成为过〖经合〗目标的角色各弃置一张手牌。",
+	gongxiu_info: `结束阶段，若你本回合内发动过${get.poptip("jinghe")}，则你选择一项：①令所有本回合内成为过${get.poptip("jinghe")}目标的角色各摸一张牌；②令所有本回合内未成为过${get.poptip("jinghe")}目标的角色各弃置一张手牌。`,
 	jinghe: "经合",
 	jinghe_info: `每回合限一次，出牌阶段，你可以展示至多四张牌名各不相同的手牌并选择等量的角色。系统从“写满技能的天书”（${["releiji", "rebiyue", "new_retuxi", "remingce", "xinzhiyan", "nhyinbing", "nhhuoqi", "nhguizhu", "nhxianshou", "nhlundao", "nhguanyue", "nhyanzheng"].map(skill => get.poptip(skill)).join("、")} ）中随机选择四个技能，然后这些角色依次选择获得其中的一个直到你的下回合开始。`,
 	nhyinbing: "阴兵",

@@ -9321,78 +9321,75 @@ const skills = {
 			},
 		},
 		derivation: ["releiji", "rebiyue", "new_retuxi", "remingce", "xinzhiyan", "nhyinbing", "nhhuoqi", "nhguizhu", "nhxianshou", "nhlundao", "nhguanyue", "nhyanzheng"],
-			subSkill: {
-				clear: {
-					onremove(player) {
-						game.countPlayer(current => current.removeAdditionalSkills(`jinghe_${player.playerid}`));
-					},
+		subSkill: {
+			clear: {
+				onremove(player) {
+					game.countPlayer(current => current.removeAdditionalSkills(`jinghe_${player.playerid}`));
+				},
 			},
 		},
 	},
 	gongxiu: {
 		audio: 2,
 		trigger: { player: "phaseJieshuBegin" },
-		direct: true,
 		filter(event, player) {
 			return player.hasSkill("jinghe_clear");
 		},
-		content() {
-			"step 0";
-			event.list1 = [];
-			event.list2 = [];
-			event.addIndex = 0;
-			var choices = [];
-			game.countPlayer(function (current) {
-				if (current.additionalSkills["jinghe_" + player.playerid]) {
-					event.list1.push(current);
+		async cost(event, trigger, player) {
+
+		},
+		async content(event, trigger, player) {
+			const list1 = [];
+			const list2 = [];
+			let addIndex = 0;
+			const choices = [];
+			game.countPlayer(current => {
+				if (current.additionalSkills[`jinghe_${player.playerid}`]) {
+					list1.push(current);
 				} else {
-					event.list2.push(current);
+					list2.push(current);
 				}
 			});
-			event.list1.sortBySeat();
-			if (event.list1.length) {
-				choices.push("令" + get.translation(event.list1) + (event.list1.length > 1 ? "各" : "") + "摸一张牌");
+			list1.sortBySeat();
+			if (list1.length) {
+				choices.push(`令${get.translation(list1)}${list1.length > 1 ? "各" : ""}摸一张牌`);
 			} else {
-				event.addIndex++;
+				addIndex++;
 			}
-			event.list2.sortBySeat();
-			if (event.list2.length) {
-				choices.push("令" + get.translation(event.list2) + (event.list2.length > 1 ? "各" : "") + "弃置一张手牌");
+			list2.sortBySeat();
+			if (list2.length) {
+				choices.push(`令${get.translation(list2)}${list2.length > 1 ? "各" : ""}弃置一张手牌`);
 			}
-			player
-				.chooseControl("cancel2")
-				.set("choiceList", choices)
-				.set("prompt", get.prompt("gongxiu"))
-				.set("", function () {
-					var evt = _status.event.getParent();
-					if (
-						evt.list2.filter(function (current) {
-							return get.attitude(player, current) <= 0 && !current.hasSkillTag("noh");
-						}).length -
-							evt.list1.length >
-						1
-					) {
-						return 1 - evt.addIndex;
-					}
-					return 0;
-				});
-			"step 1";
-			if (result.control != "cancel2") {
-				if (result.index + event.addIndex == 0) {
-					player.logSkill("gongxiu", event.list1);
-					game.asyncDraw(event.list1);
-				} else {
-					player.logSkill("gongxiu", event.list2);
-					for (var i of event.list2) {
-						i.chooseToDiscard("h", true);
-					}
-					event.finish();
-				}
-			} else {
-				event.finish();
+			const result = await player
+				.chooseControl({
+					controls: ["cancel2"],
+					choiceList: choices,
+					prompt: get.prompt("gongxiu"),
+					ai: () => {
+						if (list2.filter(current => get.attitude(player, current) <= 0 && !current.hasSkillTag("noh")).length - list1.length > 1) {
+							return 1 - addIndex;
+						}
+						return 0;
+					},
+				})
+				.forResult();
+			if (result.control === "cancel2") {
+				return;
 			}
-			"step 2";
-			game.delayx();
+			if (result.index + addIndex !== 0) {
+				player.logSkill("gongxiu", list2);
+				const discardEvents = list2.map(current =>
+					current.chooseToDiscard({
+						position: "h",
+						forced: true,
+					})
+				);
+				await Promise.all(discardEvents);
+				return;
+			}
+			player.logSkill("gongxiu", list1);
+			await game.asyncDraw(list1);
+			await game.delayx();
 		},
 		ai: {
 			combo: "jinghe",
