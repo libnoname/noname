@@ -8037,155 +8037,138 @@ const skills = {
 	dczhanyi: {
 		audio: 2,
 		trigger: { player: "phaseUseBegin" },
-		direct: true,
 		filter(event, player) {
-			var list = ["basic", "trick", "equip"];
-			var list2 = [];
-			var hs = player.getCards("he");
-			for (var card of hs) {
-				var type = get.type2(card, player);
-				if (list.includes(type)) {
-					var bool = lib.filter.cardDiscardable(card, player, "dczhanyi");
-					if (bool) {
-						list2.add(type);
-					} else {
-						list.remove(type);
-						list2.remove(type);
-					}
-				}
-			}
-			return list2.length > 0;
+			const types = ["basic", "trick", "equip"];
+			const cards = player.getCards("he");
+			return types.some(type => {
+				const ofType = cards.filter(card => get.type2(card, player) === type);
+				return ofType.length > 0 && ofType.every(card => lib.filter.cardDiscardable(card, player, "dczhanyi"));
+			});
 		},
-		content() {
-			"step 0";
-			var list = ["basic", "trick", "equip"];
-			var list2 = [];
-			var hs = player.getCards("he");
-			for (var card of hs) {
-				var type = get.type2(card, player);
-				if (list.includes(type)) {
-					var bool = lib.filter.cardDiscardable(card, player, "dczhanyi");
-					if (bool) {
-						list2.add(type);
-					} else {
-						list.remove(type);
-						list2.remove(type);
-					}
-				}
-			}
-			player
-				.chooseControl(list2, "cancel2")
-				.set("prompt", get.prompt("dczhanyi"))
-				.set("prompt2", "弃置一种类型的所有牌")
-				.set("ai", function () {
-					var player = _status.event.player;
-					var getval = function (control) {
-						if (control == "cancel2") {
-							return 0;
-						}
-						var hs = player.getCards("h"),
-							eff = 0;
-						var es = player.getCards("e");
-						var ss = player.getCards("s");
-						var sha = player.getCardUsable({ name: "sha" });
-						for (var i of hs) {
-							var type = get.type2(i);
-							if (type == control) {
-								eff -= get.value(i, player);
+		async cost(event, trigger, player) {
+			const allTypes = ["basic", "trick", "equip"];
+			const cards = player.getCards("he");
+			const types = allTypes.filter(type => {
+				const ofType = cards.filter(card => get.type2(card, player) === type);
+				return ofType.length > 0 && ofType.every(card => lib.filter.cardDiscardable(card, player, "dczhanyi"));
+			});
+			const result = await player
+				.chooseControl({
+					controls: [...list2, "cancel2"],
+					prompt: get.prompt("dczhanyi"),
+					prompt2: "弃置一种类型的所有牌",
+					ai: () => {
+						const player = _status.event.player;
+						const getval = control => {
+							if (control === "cancel2") {
+								return 0;
+							}
+							const hs = player.getCards("h");
+							let eff = 0;
+							const es = player.getCards("e");
+							const ss = player.getCards("s");
+							let sha = player.getCardUsable({ name: "sha" });
+							for (const card of hs) {
+								const type = get.type2(card);
+								if (type === control) {
+									eff -= get.value(card, player);
+								} else {
+									switch (type) {
+										case "basic":
+											if (sha > 0 && get.name(card) === "sha") {
+												sha--;
+												let add = 3;
+												if (!player.hasValueTarget(card) && player.hasValueTarget(card, false)) {
+													add += player.getUseValue(card, false);
+												}
+												eff += add;
+											}
+											break;
+										case "trick":
+											if (player.hasValueTarget(card)) {
+												eff += 6;
+											}
+											break;
+										case "equip":
+											if (player.hasValueTarget({ name: "guohe_copy2" })) {
+												eff += player.getUseValue({ name: "guohe_copy2" });
+											}
+											break;
+									}
+								}
+							}
+							if (control === "equip") {
+								for (const card of es) {
+									eff -= get.value(card, player);
+								}
 							} else {
-								switch (type) {
-									case "basic":
-										if (sha > 0 && get.name(i) == "sha") {
-											sha--;
-											var add = 3;
-											if (!player.hasValueTarget(i) && player.hasValueTarget(i, false)) {
-												add += player.getUseValue(i, false);
+								for (const card of ss) {
+									const type = get.type2(card);
+									if (type === control) {
+										continue;
+									}
+									switch (type) {
+										case "basic":
+											if (sha > 0 && get.name(card) === "sha") {
+												sha--;
+												let add = 3;
+												if (!player.hasValueTarget(card) && player.hasValueTarget(card, false)) {
+													add += player.getUseValue(card, false);
+												}
+												eff += add;
 											}
-											eff += add;
-										}
-										break;
-									case "trick":
-										if (player.hasValueTarget(i)) {
-											eff += 6;
-										}
-										break;
-									case "equip":
-										if (player.hasValueTarget({ name: "guohe_copy2" })) {
-											eff += player.getUseValue({ name: "guohe_copy2" });
-										}
-										break;
-								}
-							}
-						}
-						if (control == "equip") {
-							for (var i of es) {
-								eff -= get.value(i, player);
-							}
-						} else {
-							for (var i of ss) {
-								var type = get.type2(i);
-								if (type == control) {
-									continue;
-								}
-								switch (type) {
-									case "basic":
-										if (sha > 0 && get.name(i) == "sha") {
-											sha--;
-											var add = 3;
-											if (!player.hasValueTarget(i) && player.hasValueTarget(i, false)) {
-												add += player.getUseValue(i, false);
+											break;
+										case "trick":
+											if (player.hasValueTarget(card)) {
+												eff += 6;
 											}
-											eff += add;
-										}
-										break;
-									case "trick":
-										if (player.hasValueTarget(i)) {
-											eff += 6;
-										}
-										break;
-									case "equip":
-										if (player.hasValueTarget({ name: "guohe_copy2" })) {
-											eff += player.getUseValue({ name: "guohe_copy2" });
-										}
-										break;
+											break;
+										case "equip":
+											if (player.hasValueTarget({ name: "guohe_copy2" })) {
+												eff += player.getUseValue({ name: "guohe_copy2" });
+											}
+											break;
+									}
 								}
 							}
+							return eff;
+						};
+						const controls = _status.event.controls.slice(0);
+						let eff = 0;
+						let current = "cancel2";
+						for (const control of controls) {
+							const effx = getval(control);
+							if (effx > eff) {
+								eff = effx;
+								current = control;
+							}
 						}
-						return eff;
-					};
-					var controls = _status.event.controls.slice(0);
-					var eff = 0,
-						current = "cancel2";
-					for (var i of controls) {
-						var effx = getval(i);
-						if (effx > eff) {
-							eff = effx;
-							current = i;
-						}
-					}
-					return current;
-				});
-			"step 1";
-			var type = result.control;
-			if (type != "cancel2") {
-				event.type = type;
-				var cards = player.getCards("he", function (card) {
-					return get.type2(card, player) == type;
-				});
-				if (cards.length) {
-					player.logSkill("dczhanyi");
-					player.discard(cards);
-				} else {
-					event.finish();
-				}
-			} else {
-				event.finish();
+						return current;
+					},
+				})
+				.forResult();
+			if (result.control === "cancel2") {
+				return;
 			}
-			"step 2";
-			var list = ["basic", "trick", "equip"];
-			for (var i of list) {
-				if (i != event.type) {
-					player.addTempSkill("dczhanyi_" + i, { player: "phaseBegin" });
+			const cards = player.getCards("he", card => get.type2(card, player) === result.control);
+			if (!cards.length) {
+				return;
+			}
+			event.result = {
+				bool: true,
+				cards,
+				cost_data: {
+					type: result.control,
+				},
+			};
+		},
+		async content(event, trigger, player) {
+			const cards = event.cards;
+			const { type } = event.cost_data;
+			await player.discard({ cards });
+			for (const currentType of list) {
+				if (currentType !== type) {
+					player.addTempSkill(`dczhanyi_${currentType}`, { player: "phaseBegin" });
 				}
 			}
 		},
@@ -8200,13 +8183,13 @@ const skills = {
 				},
 				trigger: { source: ["damageBegin1", "recoverBegin"] },
 				filter(event, player) {
-					var evt = event.getParent();
-					return evt.type == "card" && get.type(evt.card, null, false) == "basic";
+					const evt = event.getParent();
+					return evt != null && evt.type === "card" && get.type(evt.card, null, false) === "basic";
 				},
 				forced: true,
 				logTarget: "player",
-				content() {
-					trigger.num++;
+				async content(event, trigger, player) {
+					++trigger.num;
 				},
 				mod: {
 					targetInRange(card) {
@@ -8229,20 +8212,20 @@ const skills = {
 				},
 				trigger: { player: "useCard" },
 				filter(event, player) {
-					return get.type2(event.card) == "trick";
+					return get.type2(event.card) === "trick";
 				},
 				forced: true,
-				content() {
-					player.draw();
+				async content(event, trigger, player) {
+					await player.draw();
 				},
 				mod: {
 					ignoredHandcard(card, player) {
-						if (get.type2(card, player) == "trick") {
+					if (get.type2(card, player) === "trick") {
 							return true;
 						}
 					},
 					cardDiscardable(card, player, name) {
-						if (name == "phaseDiscard" && get.type2(card, player) == "trick") {
+					if (name === "phaseDiscard" && get.type2(card, player) === "trick") {
 							return false;
 						}
 					},
@@ -8258,25 +8241,23 @@ const skills = {
 				},
 				trigger: { player: "equipAfter" },
 				filter(event, player) {
-					return game.hasPlayer(target => target != player && target.countDiscardableCards(player, "he") > 0);
+					return game.hasPlayer(target => target !== player && target.hasDiscardableCards(player, "he"));
 				},
-				direct: true,
-				content() {
-					"step 0";
-					player
-						.chooseTarget("战意：是否弃置一名其他角色的一张牌？", function (card, player, target) {
-							return target != player && target.countDiscardableCards(player, "he") > 0;
+				async cost(event, trigger, player) {
+					event.result = await player
+						.chooseTarget({
+							prompt: "战意：是否弃置一名其他角色的一张牌？",
+							filterTarget: (_card, player, target) => target !== player && target.hasDiscardableCards(player, "he"),
+							ai: target => {
+								const player = _status.event.player;
+								return get.effect(target, { name: "guohe_copy2" }, player, player);
+							},
 						})
-						.set("ai", function (target) {
-							var player = _status.event.player;
-							return get.effect(target, { name: "guohe_copy2" }, player, player);
-						});
-					"step 1";
-					if (result.bool) {
-						var target = result.targets[0];
-						player.logSkill("dczhanyi_equip", target);
-						player.discardPlayerCard(target, "he", true);
-					}
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					const target = event.targets[0];
+					await player.discardPlayerCard({ target, position: "he", forced: true });
 				},
 			},
 		},
