@@ -41074,9 +41074,7 @@ const skills = {
 	},
 	// 环怀瑾
 	dclianyou: {
-		trigger: {
-			player: ["damageEnd", "phaseBegin"],
-		},
+		trigger: { player: ["damageEnd", "phaseBegin"] },
 		filter(event, player) {
 			return !(player.getStorage("dclianyou").includes("recover") && player.getStorage("dclianyou").includes("equip") && player.getStorage("dclianyou").includes("draw"));
 		},
@@ -41085,7 +41083,7 @@ const skills = {
 			const name = "dclianyou";
 			if (!player.getStorage(name).includes("recover")) {
 				if (game.hasPlayer(current => current.isDamaged())) {
-					choiceList.push(["recover", "令一名角色回复2点体力"]);
+					choiceList.push(["recover", "令一名角色回复1点体力"]);
 				}
 			}
 			if (!player.getStorage(name).includes("equip")) {
@@ -41103,7 +41101,7 @@ const skills = {
 							if (button.link === "recover") {
 								let max = 0;
 								for (const current of game.filterPlayer()) {
-									const num = Math.min(current.getDamagedHp(), 2) * get.recoverEffect(current, player, player);
+									const num = current.getDamagedHp() * get.recoverEffect(current, player, player);
 									if (num > max) {
 										max = num;
 									}
@@ -41132,23 +41130,23 @@ const skills = {
 			if (choice === "recover") {
 				const result = await player
 					.chooseTarget({
-						prompt: "令一名角色回复2点体力",
+						prompt: "怜幼：令一名角色回复1点体力",
 						filterTarget(card, player, target) {
 							return target.isDamaged();
 						},
 						forced: true,
 						ai(target) {
-							return Math.min(target.getDamagedHp(), 2) * get.recoverEffect(target, player, player);
+							return target.getDamagedHp() * get.recoverEffect(target, player, player);
 						},
 					})
 					.forResult();
 				if (result.bool) {
-					await result.targets[0].recover({ num: 2 });
+					await result.targets[0].recover();
 				}
 			} else if (choice === "equip") {
 				const result = await player
 					.chooseTarget({
-						prompt: "选择一名角色，随机使用两张装备牌",
+						prompt: "怜幼：选择一名角色，随机使用两张装备牌",
 						forced: true,
 						ai(target) {
 							return get.attitude(get.player(), target);
@@ -41174,7 +41172,7 @@ const skills = {
 						filterTarget(card, player, target) {
 							return lib.filter.notMe;
 						},
-						prompt: "是否交给一名其他角色三张牌？",
+						prompt: "怜幼：是否交给一名其他角色三张牌？",
 						selectCard: 3,
 						position: "he",
 						ai1(card) {
@@ -41213,13 +41211,11 @@ const skills = {
 		},
 	},
 	dccili: {
-		trigger: {
-			global: "roundStart",
-		},
+		trigger: { global: "roundStart" },
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget({
-					prompt: get.prompt("dccili"),
+					prompt: get.prompt(event.skill),
 					prompt2: "记录一名角色的体力值，根据其用牌数对其执行不同效果",
 					ai(target) {
 						if (target.hasJudge("lebu")) {
