@@ -41074,6 +41074,7 @@ const skills = {
 	},
 	// 环怀瑾
 	dclianyou: {
+		audio: 2,
 		trigger: { player: ["damageEnd", "phaseBegin"] },
 		filter(event, player) {
 			return !(player.getStorage("dclianyou").includes("recover") && player.getStorage("dclianyou").includes("equip") && player.getStorage("dclianyou").includes("draw"));
@@ -41211,6 +41212,7 @@ const skills = {
 		},
 	},
 	dccili: {
+		audio: 2,
 		trigger: { global: "roundStart" },
 		async cost(event, trigger, player) {
 			event.result = await player
