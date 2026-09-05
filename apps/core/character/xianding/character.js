@@ -78,7 +78,7 @@ const characters = {
 	dc_sb_wangping: {
 		sex: "male",
 		group: "shu",
-		hp: 4,
+		hp: 5,
 		skills: ["dcsbyouyi", "dcsbfangong"],
 	},
 	dc_sb_masu: {

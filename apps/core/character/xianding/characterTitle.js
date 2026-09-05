@@ -11,7 +11,7 @@ export default {
 	dc_sb_guanyu: "单刀赴会",
 	//dc_sb_yangfeng: "",
 	//v_guanyinping: "",
-	//dc_sb_wangping: "",
+	dc_sb_wangping: "佯败溯战",
 	//dc_sb_masu: "",
 	dc_sb_zhugeliang: "威谋定疆",
 	dc_shen_guanyu: "鬼神再临",

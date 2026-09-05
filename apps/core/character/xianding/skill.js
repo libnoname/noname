@@ -2413,10 +2413,7 @@ const skills = {
 			target: "useCardToTarget",
 		},
 		filter(event, player) {
-			if (!event.player.isIn()) {
-				return false;
-			}
-			if (!get.tag(event.card, "damage") || event.player == player) {
+			if (!event.player.isIn() || player == event.player) {
 				return false;
 			}
 			if (!player.getStorage("dcsbyouyi_used")?.length) {
@@ -2424,7 +2421,7 @@ const skills = {
 			}
 			let storage = player.getStorage("dcsbyouyi_used");
 			if (!storage.includes("discard")) {
-				return player.countDiscardableCards("he");
+				return player.hasDiscardableCards("he");
 			}
 			if (!storage.includes("loseHp")) {
 				return true;
@@ -2432,12 +2429,12 @@ const skills = {
 			return false;
 		},
 		async cost(event, trigger, player) {
-			let choiceList = ["弃置任意张牌，本回合结束时摸等量牌。", "失去至多3点体力，令一名角色摸等量牌，本回合结束时回复等量体力。"];
+			let choiceList = ["弃置任意张牌并摸一张牌，本回合结束时摸等量牌。", "失去至多4点体力，令一名角色摸等量牌，本回合结束时回复等量体力。"];
 			let controlList = ["弃置牌", "失去体力", "cancel2"];
 			for (let i of [0, 1]) {
 				let list = ["discard", "loseHp"];
 				let bool1 = player.getStorage("dcsbyouyi_used")?.includes(list[i]);
-				let bool2 = i == 0 ? Boolean(!player.countDiscardableCards("he")) : false;
+				let bool2 = i == 0 ? Boolean(!player.hasDiscardableCards("he")) : false;
 				if (bool1 || bool2) {
 					if (bool1) choiceList[i] += "（已发动）";
 					else choiceList[i] += "（无法执行）";
@@ -2448,14 +2445,14 @@ const skills = {
 			controlList = controlList.filter(i => i != "");
 			const result = await player
 				.chooseControl({
-					prompt: get.prompt("dcsbyouyi"),
+					prompt: get.prompt(event.skill),
 					controls: controlList,
-					choiceList: choiceList,
+					choiceList,
 					ai: () => {
 						const { player, list } = get.event();
 						if (
 							list.includes("弃置牌") &&
-							player.countCards("he", i => {
+							player.hasCards("he", i => {
 								if (["wuxie", "shan", "tao"].includes(get.name(i, player))) {
 									return false;
 								}
@@ -2468,7 +2465,7 @@ const skills = {
 						) {
 							return "弃置牌";
 						}
-						if (list.includes("失去体力") && player.hp >= 3) {
+						if (list.includes("失去体力") && player.hp >= 4) {
 							return "失去体力";
 						}
 						return "cancel2";
@@ -2510,6 +2507,8 @@ const skills = {
 						},
 					})
 					.forResult();
+				if (!result?.cards?.length) return;
+				await player.draw();
 				player.addTempSkill("dcsbyouyi_used");
 				player.markAuto("dcsbyouyi_used", ["discard"]);
 				if (!player.storage["dcsbyouyi_eff"]) {
@@ -2524,11 +2523,11 @@ const skills = {
 			} else {
 				const result = await player
 					.chooseControl({
-						controls: ["1", "2", "3"],
+						controls: ["1", "2", "3", "4"],
 						prompt: "选择失去的体力值",
 						ai: () => {
 							const player = get.player();
-							return String(Math.min(3, Math.max(1, player.hp - 2)));
+							return String(Math.min(4, Math.max(1, player.hp - 2)));
 						},
 					})
 					.forResult();
@@ -2583,8 +2582,6 @@ const skills = {
 					},
 				},
 				onremove: true,
-				sub: true,
-				sourceSkill: "dcsbyouyi",
 			},
 			used: {
 				charlotte: true,
@@ -2604,15 +2601,12 @@ const skills = {
 					},
 				},
 				onremove: true,
-				sourceSkill: "dcsbyouyi",
 			},
 			eff: {
 				charlotte: true,
 				forced: true,
 				popup: false,
-				trigger: {
-					global: ["phaseEnd", "phaseBeginStart"],
-				},
+				trigger: { global: ["phaseEnd", "phaseBeginStart"] },
 				filter(event, player) {
 					if (!player.storage["dcsbyouyi_eff"]) return false;
 					const { draw, recover } = player.storage["dcsbyouyi_eff"];
@@ -2629,12 +2623,11 @@ const skills = {
 						player.storage["dcsbyouyi_eff"].recover = 0;
 					}
 				},
-				sub: true,
-				sourceSkill: "dcsbyouyi",
 			},
 		},
 	},
 	dcsbfangong: {
+		audio: 2,
 		enable: "phaseUse",
 		limited: true,
 		skillAnimation: true,
@@ -2642,7 +2635,7 @@ const skills = {
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name, true);
 			await player.recoverTo(player.maxHp);
-			await player.draw(Math.min(5, player.countCards("h")));
+			await player.draw(5);
 		},
 		mark: true,
 		intro: {
@@ -2658,7 +2651,6 @@ const skills = {
 				return str;
 			},
 		},
-		init: (player, skill) => (player.storage[skill] = false),
 		ai: {
 			order: 7,
 			result: {
