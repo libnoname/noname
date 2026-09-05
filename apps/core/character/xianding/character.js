@@ -90,7 +90,7 @@ const characters = {
 	dc_sb_zhugeliang: {
 		sex: "male",
 		group: "shu",
-		hp: 3,
+		hp: 4,
 		skills: ["dcsbjingmou", "dcsbguyi"],
 		names: "诸葛|亮",
 		clans: ["琅琊诸葛氏"],

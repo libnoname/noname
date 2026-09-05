@@ -2949,7 +2949,7 @@ const skills = {
 		},
 		trigger: { global: "phaseUseBegin" },
 		filter(event, player) {
-			return player.countDiscardableCards(player, "he") && !player.getStorage("dcsbjingmou_mark").length;
+			return player.hasDiscardableCards(player, "he") && !player.getStorage("dcsbjingmou_mark").length;
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
@@ -2976,7 +2976,7 @@ const skills = {
 			const { cards } = event,
 				types = cards.map(card => get.type2(card)).unique(),
 				suits = cards.map(card => get.suit(card)).unique();
-			await player.discard({ cards: cards, discarder: player });
+			await player.discard({ cards, discarder: player });
 			const typeMap = {};
 			types.forEach(type => {
 				typeMap[get.translation(type)] = type;
@@ -3134,11 +3134,7 @@ const skills = {
 									const target = result.targets[0];
 									player.changeZhuanhuanji("dcsbjingmou");
 									player.line(target);
-									await target.gain({
-										cards: cards,
-										animate: "gain2",
-										giver: player,
-									});
+									await target.gain({ cards, animate: "gain2", giver: player });
 								}
 							});
 					}
@@ -3166,6 +3162,7 @@ const skills = {
 	},
 	dcsbdingnan: {
 		audio: 2,
+		audioname: ["dc_sb_zhugeliang_shadow"],
 		enable: "phaseUse",
 		usable: 1,
 		filterTarget: true,
@@ -3204,33 +3201,31 @@ const skills = {
 	},
 	dcsbguyi: {
 		audio: 2,
+		audioname: ["dc_sb_zhugeliang_shadow"],
 		forced: true,
 		trigger: {
 			player: "loseAfter",
-			global: ["gameDrawAfter", "phaseEnd", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
+			global: ["phaseBegin", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
 		},
 		onremove(player, skill) {
 			player.removeGaintag(skill + "_tag");
 		},
 		filter(event, player) {
 			if (event.name == "phase") {
-				return !player.hasCard(card => card.hasGaintag("dcsbguyi_tag"), "h");
-			}
-			if (event.name == "gameDraw") {
-				return player.hasCard(card => !card.hasGaintag("dcsbguyi_tag"), "h");
+				return !player.hasCards("h", card => card.hasGaintag("dcsbguyi_tag"));
 			}
 			if (player.countMark("dcsbguyi_used") > 2) {
 				return false;
 			}
-			const evt = event.getl(player);
+			const evt = event.getl?.(player);
 			return evt?.cards2?.length;
 		},
 		getIndex(event, player) {
-			if (["phase", "gameDraw"].includes(event.name)) {
+			if (event.name == "phase") {
 				return 1;
 			}
 			let num = 0;
-			const evt = event.getl(player);
+			const evt = event.getl?.(player);
 			for (const i in evt.gaintag_map) {
 				if (evt.gaintag_map[i].includes("dcsbguyi_tag")) {
 					num++;
@@ -3240,19 +3235,21 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			if (trigger.name == "phase") {
-				await player.draw({ num: 1, gaintag: ["dcsbguyi_tag"] });
-			} else if (trigger.name == "gameDraw") {
+				await player.draw(1);
+				if (!player.hasCards("h")) return;
 				const result = await player
 					.chooseCard({
 						prompt: "孤熠：选择一张手牌标记为“熠”",
 						forced: true,
 						position: "h",
 						ai(card) {
-							return get.value(card);
+							return get.player().getUseValue(card);
 						},
 					})
 					.forResult();
-				player.addGaintag(result.cards, event.name + "_tag");
+				if (result?.bool && result.cards?.length) {
+					player.addGaintag(result.cards, event.name + "_tag");
+				}
 			} else {
 				const num = Math.min(7, player.countMark("dcsbguyi_round") + 1);
 				const cards = get.cards(num, true);

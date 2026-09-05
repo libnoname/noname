@@ -13,7 +13,7 @@ export default {
 	//v_guanyinping: "",
 	//dc_sb_wangping: "",
 	//dc_sb_masu: "",
-	//dc_sb_zhugeliang: "",
+	dc_sb_zhugeliang: "威谋定疆",
 	dc_shen_guanyu: "鬼神再临",
 	dc_shen_zhangliao: "雁门之刑天",
 	dc_shen_caopi: "月晦书轮回",
