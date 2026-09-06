@@ -1,0 +1,83 @@
+import { lib, game, ui, get, ai, _status } from "noname";
+
+const dynamicTranslates = {
+	clanfuyao(player, skill) {
+		const bool = player.storage[skill];
+		let yang = "展示未展示过的手牌至两者数量相同",
+			yin = "弃置任意手牌至两者数量相同";
+		if (bool) {
+			yin = `<span class='bluetext'>${yin}</span>`;
+		} else {
+			yang = `<span class='firetext'>${yang}</span>`;
+		}
+		let start = "转换技。出牌阶段，你可以将手牌中展示过和未展示过的牌：",
+			end = "。然后你视为使用一张本阶段未以此法使用过的单目标普通锦囊牌。";
+		return `${start}阳，${yang}；阴，${yin}${end}`;
+	},
+	clanchengwang(player, skill) {
+		const bool = player.storage[skill];
+		let yang = "摸至全场最多，然后若你使用了牌，你可令一名角色弃置两张牌",
+			yin = "弃至全场最少，然后若你使用了牌，你可令一名角色摸两张牌";
+		if (bool) {
+			yin = `<span class='bluetext'>${yin}</span>`;
+		} else {
+			yang = `<span class='firetext'>${yang}</span>`;
+		}
+		let start = "转换技，每回合限一次。当你需要使用牌时（无懈可击除外），你可将手牌：",
+			end = "。若你未使用牌，你与当前回合角色各失去1点体力。";
+		return `${start}阳，${yang}；阴，${yin}${end}`;
+	},
+	clandongxu(player, skill) {
+		const bool = player.storage[skill];
+		let yang = "你可以将一张装备牌置于其他角色装备区（替换原装备）",
+			yin = "你可以将手牌摸至X（X为你的攻击范围且至多为5）";
+		if (bool) {
+			yin = `<span class='bluetext'>${yin}</span>`;
+		} else {
+			yang = `<span class='firetext'>${yang}</span>`;
+		}
+		let start = "转换技,",
+			end = "。然后视为使用一张【闪】或令你被抵消的【杀】依然造成伤害。";
+		return `${start}阳：${yang}；阴：${yin}${end}`;
+	},
+	clanlianzhu(player) {
+		const bool = player.storage.clanlianzhu;
+		let yang = "Ａ可以重铸一张牌，然后你可以重铸一张牌。若这两张牌颜色相同，则你的手牌上限+1",
+			yin = "Ａ可以令你选择另一名其他角色Ｂ，然后Ａ和你可依次选择是否对Ｂ使用一张无距离限制的【杀】。若这两张【杀】颜色不同，则你的手牌上限-1";
+		if (bool) {
+			yin = `<span class='bluetext'>${yin}</span>`;
+		} else {
+			yang = `<span class='firetext'>${yang}</span>`;
+		}
+		let start = "转换技。每名角色Ａ的出牌阶段限一次，",
+			end = "。";
+		return `${start}阳：${yang}；阴：${yin}${end}`;
+	},
+	clanguangu(player) {
+		const bool = player.storage.clanguangu;
+		let yang = "你可以观看牌堆顶的至多四张牌",
+			yin = "你可以观看一名角色的至多四张手牌";
+		if (bool) {
+			yin = `<span class='bluetext'>${yin}</span>`;
+		} else {
+			yang = `<span class='firetext'>${yang}</span>`;
+		}
+		let start = "转换技。出牌阶段限一次，",
+			end = "，然后你可以使用其中的一张牌。";
+		return `${start}阳：${yang}；阴：${yin}${end}`;
+	},
+	clanjiexuan(player) {
+		const bool = (player.storage?.clanjiexuan || 0) % 2;
+		let yang = "你可以将一张红色牌当【顺手牵羊】使用",
+			yin = "你可以将一张黑色牌当【过河拆桥】使用";
+		if (bool) {
+			yin = `<span class='bluetext'>${yin}</span>`;
+		} else {
+			yang = `<span class='firetext'>${yang}</span>`;
+		}
+		let start = "限定技，转换技。",
+			end = "。";
+		return `${start}阳：${yang}；阴：${yin}${end}`;
+	},
+};
+export default dynamicTranslates;
