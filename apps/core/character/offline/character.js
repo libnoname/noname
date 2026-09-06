@@ -332,6 +332,12 @@ const characters = {
 		skills: ["jxlianpo", "jxzhaoluan"],
 		groupInGuozhan: "qun",
 	},
+	ps_shen_jiaxu: {
+		sex: "male",
+		group: "shen",
+		hp: 3,
+		skills: ["psxiebing", "pszhongshi", "pszhaoluan"],
+	},
 	boss_zhaoyun: {
 		sex: "male",
 		group: "shen",

@@ -2172,6 +2172,286 @@ const skills = {
 			markcount: "expansion",
 		},
 	},
+	psxiebing: {
+		trigger: {
+			global: "roundStart",
+			player: ["damageEnd", "damageBegin4"],
+		},
+		filter(event, player, name) {
+			if (name === "damageBegin4") {
+				return !player.hasSkill("psxiebing_used") && event.source && !event.source.hasCards("e");
+			}
+			return game.hasPlayer(current => current !== player && current.hasEnabledSlot());
+		},
+		async cost(event, trigger, player) {
+			if (event.triggername === "damageBegin4") {
+				event.result = {
+					bool: true,
+				};
+			} else {
+				const result = await player
+					.chooseButtonTarget({
+						createDialog: [
+							"卸兵：废除一名其他角色的所有装备栏或废除所有其他角色的同一种装备栏直到本轮结束",
+							[
+								[
+									["all", "废除一名其他角色的所有装备栏"],
+									["equip1", "武器栏"],
+									["equip2", "防具栏"],
+									["equip3", "防御马"],
+									["equip4", "进攻马"],
+									["equip5", "宝物栏"],
+								],
+								"tdnodes",
+							],
+						],
+						filterButton(button) {
+							if (button.link === "all") {
+								return true;
+							}
+							return game.hasPlayer(current => current !== player && current.hasEnabledSlot(button.link));
+						},
+						complexSelect: true,
+						filterTarget(card, player, target) {
+							if (!ui.selected.buttons?.length || target === player) {
+								return false;
+							}
+							const link = ui.selected.buttons[0].link;
+							return target.hasEnabledSlot(link === "all" ? void 0 : link);
+						},
+						selectTarget() {
+							if (!ui.selected.buttons?.length) {
+								return 0;
+							}
+							const link = ui.selected.buttons[0].link;
+							return link === "all" ? 1 : -1;
+						},
+						ai1(button) {
+							if (!game.hasPlayer(current => get.attitude(get.player(), current) < 0)) {
+								return 0;
+							}
+							return 1 + Math.random();
+						},
+						ai2(target) {
+							return -get.attitude(get.player(), target);
+						},
+					})
+					.forResult();
+				if (result?.bool && result.targets?.length && result.links?.length) {
+					event.result = {
+						bool: true,
+						cost_data: result.links,
+						targets: result.targets.sortBySeat(),
+					};
+				}
+			}
+		},
+		async content(event, trigger, player) {
+			if (event.triggername === "damageBegin4") {
+				player.addTempSkill(event.name + "_used");
+				trigger.cancel();
+			} else {
+				const {
+					targets,
+					cost_data: [link],
+				} = event;
+				const type = link === "all" ? [1, 2, 3, 4, 5] : [link];
+				const disabledCounts = {};
+				await game.doAsyncInOrder(targets, async target => {
+					const before = { ...(target.disabledSlots || {}) };
+					const ev = target.disableEquip({ all: true, slots: type });
+					await ev;
+					const count = {};
+					for (const slot in target.disabledSlots || {}) {
+						const diff = target.disabledSlots[slot] - (before[slot] || 0);
+						if (diff > 0) {
+							count[slot] = diff;
+						}
+					}
+					disabledCounts[target.playerid] = count;
+				});
+				for (const target of targets) {
+					target.when({ global: "roundEnd" }).step(async (event, trigger, player) => {
+						const count = disabledCounts[player.playerid] || {};
+						const restore = [];
+						for (const slot in count) {
+							for (let i = 0; i < count[slot]; i++) {
+								restore.push(slot);
+							}
+						}
+						if (restore.length) {
+							await player.enableEquip(restore);
+						}
+					});
+				}
+			}
+		},
+		subSkill: {
+			used: { charlotte: true },
+		},
+	},
+	pszhongshi: {
+		enable: "phaseUse",
+		limited: true,
+		skillAnimation: true,
+		animationColor: "wood",
+		filterTarget: lib.filter.notMe,
+		async content(event, trigger, player) {
+			player.awakenSkill(event.name);
+			const { target } = event;
+			const targets = [player].concat(game.filterPlayer(current => current.getHp(true) < target.getHp(true))).sortBySeat();
+			player.addTempSkill(event.name + "_effect", "phaseAnyAfter");
+			for (const current of targets) {
+				if (!target?.isIn()) {
+					return;
+				}
+				const result = await current
+					.chooseBool({
+						prompt: `众矢：对${get.translation(target)}造成一点伤害或点“取消”失去一点体力`,
+						ai() {
+							const { player, target } = get.event();
+							return get.attitude(player, target) > 0 ? 0 : 1;
+						},
+					})
+					.set("target", target)
+					.forResult();
+				if (result?.bool) {
+					await target.damage({ source: current, num: 1 });
+				} else {
+					await current.loseHp();
+				}
+			}
+		},
+		ai: {
+			order: 1,
+			result: {
+				player: 1,
+				target: -1,
+			},
+		},
+		subSkill: {
+			effect: {
+				charlotte: true,
+				mark: true,
+				intro: { content: `本阶段结束时若于此阶段内死亡的角色数大于1，则${get.poptip("pszhongshi")}视为未发动` },
+				forced: true,
+				trigger: { global: "phaseAnyEnd" },
+				filter(event, player) {
+					return (
+						game.getGlobalHistory("everything", evt => {
+							return evt.name === "die" && evt.getParent(4).name === event.name;
+						}).length > 1
+					);
+				},
+				async content(event, trigger, player) {
+					player.restoreSkill("pszhongshi");
+					game.log(player, "重置了技能", "#g【众矢】");
+				},
+			},
+		},
+	},
+	pszhaoluan: {
+		group: ["pszhaoluan_die", "pszhaoluan_show", "pszhaoluan_check"],
+		subSkill: {
+			die: {
+				mode: ["identity"],
+				trigger: { global: "dieBefore" },
+				forced: true,
+				forceDie: true,
+				priority: Infinity,
+				filter(event) {
+					return (
+						get.mode() === "identity" &&
+						!event.reserveOut &&
+						game.hasPlayer(current => {
+							return current !== event.player && current.isIn() && current.hasSkill("pszhaoluan");
+						})
+					);
+				},
+				async content(event, trigger) {
+					trigger.reserveOut = true;
+					trigger.pszhaoluan = true;
+					trigger.player.storage.pszhaoluan_pending = true;
+				},
+			},
+			show: {
+				mode: ["identity"],
+				trigger: { global: "phaseAfter" },
+				prompt: "是否发动【兆乱】？",
+				filter(event, player) {
+					if (get.mode() !== "identity" || !player.isIn() || !player.hasSkill("pszhaoluan")) {
+						return false;
+					}
+					return !player.identityShown || game.dead.some(current => current.storage.pszhaoluan_pending);
+				},
+				async content(event, trigger, player) {
+					const list = game.dead.filter(current => current.storage.pszhaoluan_pending);
+					if (!player.identityShown) {
+						list.unshift(player);
+					}
+					if (!list.length) {
+						return;
+					}
+					const result = await player.chooseButton(["兆乱：选择要亮出的身份牌", [list.map(current => [current, get.translation(current)]), "textbutton"]], true).forResult();
+					if (!result.bool || !result.links.length) {
+						return;
+					}
+					const identityPlayer = result.links[0];
+					const targetResult = await player.chooseTarget({ prompt: "选择一名角色", forced: true, filterTarget: (card, player2, target) => target.isIn() }).forResult();
+					if (!targetResult.bool || !targetResult.targets.length) {
+						return;
+					}
+					const target = targetResult.targets[0];
+					const identity = identityPlayer.identity;
+					game.broadcastAll(target2 => {
+						target2.showIdentity();
+						delete target2.storage.pszhaoluan_pending;
+					}, identityPlayer);
+					const shownIdentity = identityPlayer.special_identity || identity;
+					const shownName = identityPlayer.special_identity ? get.translation(shownIdentity) : get.translation(`${shownIdentity}2`);
+					game.log(identityPlayer, "展示了", `#g${shownName}`, "的身份牌");
+					if (identity === "zhong") {
+						const cards = target.getCards("hej");
+						if (cards.length) {
+							await target.discard(cards);
+						}
+					} else if (identity === "fan") {
+						await target.draw(3);
+					}
+					if (!_status.over) {
+						game.checkResult();
+					}
+				},
+			},
+			check: {
+				mode: ["identity"],
+				trigger: { global: "dieAfter" },
+				forced: true,
+				forceDie: true,
+				filter(event, player) {
+					if (get.mode() !== "identity" || _status.over || !player.hasSkill("pszhaoluan")) {
+						return false;
+					}
+					const lord = game.zhu;
+					if (lord && lord.identity === "zhu" && lord.isDead()) {
+						return true;
+					}
+					return player.isIn() && player.identity === "zhu" && player.isAlive() && game.players.length === 1;
+				},
+				async content(event, trigger, player) {
+					if (_status.over) {
+						return;
+					}
+					const lord = game.zhu;
+					if (lord && lord.identity === "zhu" && lord.isDead()) {
+						game.checkResult();
+					} else if (player.isIn() && player.identity === "zhu" && player.isAlive() && game.players.length === 1) {
+						game.checkResult();
+					}
+				},
+			},
+		},
+	},
 };
 
 export default skills;
