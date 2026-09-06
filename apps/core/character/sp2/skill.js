@@ -11923,75 +11923,67 @@ const skills = {
 		audio: 2,
 		trigger: { player: "damageEnd" },
 		frequent: true,
-		content() {
-			"step 0";
-			player.judge();
-			"step 1";
-			var num = result.number;
-			var next = player.chooseToDiscard(
-				"是否弃置任意张点数之和为" + get.cnNumber(num) + "的牌并回复1点体力？",
-				function (card) {
-					var num = 0;
-					for (var i = 0; i < ui.selected.cards.length; i++) {
-						num += get.number(ui.selected.cards[i]);
+		async content(event, trigger, player) {
+			const judgeResult = await player.judge().forResult();
+			const num = judgeResult.number;
+			const cards = player.getCards("he");
+			const length = cards.length;
+			const all = Math.pow(length, 2);
+			const list = [];
+			for (let index = 1; index < all; index++) {
+				const combination = [];
+				for (let cardIndex = 0; cardIndex < length; cardIndex++) {
+					if (Math.floor((index % Math.pow(2, cardIndex + 1)) / Math.pow(2, cardIndex)) > 0) {
+						combination.push(cards[cardIndex]);
 					}
-					return get.number(card) + num <= _status.event.num;
-				},
-				"he"
-			);
-			next.set("num", num);
-			next.set("complexCard", true);
-			next.set("selectCard", function () {
-				var num = 0;
-				for (var i = 0; i < ui.selected.cards.length; i++) {
-					num += get.number(ui.selected.cards[i]);
 				}
-				if (num == _status.event.num) {
-					return ui.selected.cards.length;
+				let sum = 0;
+				for (const card of combination) {
+					sum += get.number(card);
 				}
-				return ui.selected.cards.length + 2;
-			});
-			next.set(
-				"cardResult",
-				(function () {
-					var cards = player.getCards("he");
-					var l = cards.length;
-					var all = Math.pow(l, 2);
-					var list = [];
-					for (var i = 1; i < all; i++) {
-						var array = [];
-						for (var j = 0; j < l; j++) {
-							if (Math.floor((i % Math.pow(2, j + 1)) / Math.pow(2, j)) > 0) {
-								array.push(cards[j]);
-							}
-						}
-						var numx = 0;
-						for (var k of array) {
-							numx += get.number(k);
-						}
-						if (numx == num) {
-							list.push(array);
-						}
-					}
-					if (list.length) {
-						list.sort(function (a, b) {
-							return get.value(a) - get.value(b);
-						});
-						return list[0];
-					}
-					return list;
-				})()
-			);
-			next.set("ai", function (card) {
-				if (!_status.event.cardResult.includes(card)) {
-					return 0;
+				if (sum === num) {
+					list.push(combination);
 				}
-				return 6 - get.value(card);
-			});
-			"step 2";
-			if (result.bool) {
-				player.recover();
 			}
+			if (list.length) {
+				list.sort((a, b) => get.value(a) - get.value(b));
+			}
+			const cardResult = list.length ? list[0] : list;
+			const next = player.chooseToDiscard({
+				prompt: `是否弃置任意张点数之和为${get.cnNumber(num)}的牌并回复1点体力？`,
+				filterCard: card => {
+					let sum = 0;
+					for (const selectedCard of ui.selected.cards) {
+						sum += get.number(selectedCard);
+					}
+					return get.number(card) + sum <= _status.event.num;
+				},
+				position: "he",
+				complexCard: true,
+				selectCard: () => {
+					let sum = 0;
+					for (const card of ui.selected.cards) {
+						sum += get.number(card);
+					}
+					if (sum === _status.event.num) {
+						return ui.selected.cards.length;
+					}
+					return ui.selected.cards.length + 2;
+				},
+				ai: card => {
+					if (!_status.event.cardResult.includes(card)) {
+						return 0;
+					}
+					return 6 - get.value(card);
+				},
+			});
+			next.set("num", num);
+			next.set("cardResult", cardResult);
+			const result = await next.forResult();
+			if (!result.bool) {
+				return;
+			}
+			await player.recover();
 		},
 	},
 	cixiao: {
