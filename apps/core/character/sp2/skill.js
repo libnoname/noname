@@ -5599,44 +5599,45 @@ const skills = {
 	oldlongsong: {
 		audio: "dclongsong",
 		trigger: { player: "phaseUseBegin" },
-		direct: true,
 		filter(event, player) {
-			return player.countCards("h") > 0;
+			return player.hasCards("h");
 		},
 		getSkills(target, player, trigger) {
 			return target.getSkills(null, false).filter(skill => {
-				var skills = game.expandSkills([skill]);
-				if (
-					skills.filter(skillx => {
-						var info = get.info(skillx);
+				const skills = game.expandSkills([skill]);
+				return skills.some(skillx => {
+						const info = get.info(skillx);
 						if (!info || !info.enable || (info.usable && !(info.usable >= 1))) {
 							return false;
 						}
-						if (info.enable != "phaseUse" && (!Array.isArray(info.enable) || !info.enable.includes("phaseUse"))) {
+						if (info.enable !== "phaseUse" && (!Array.isArray(info.enable) || !info.enable.includes("phaseUse"))) {
 							return false;
 						}
-						if (info.viewAs && info.usable && info.usable != 1) {
+						if (info.viewAs && info.usable && info.usable !== 1) {
 							return false;
 						}
 						if (info.juexingji || info.hiddenSkill || info.charlotte || info.limited || info.dutySkill) {
 							return false;
 						}
 						if ((!info.usable || info.usable > 1) && info.filter) {
+							let bool1;
+							let bool2;
+							let bool3;
 							try {
-								var bool1 = info.filter(trigger, player);
-								var num = player.getStat().skill[skillx];
+								bool1 = info.filter(trigger, player);
+								const num = player.getStat().skill[skillx];
 								player.getStat().skill[skillx] = 1;
-								var bool2 = info.filter(trigger, player);
+								bool2 = info.filter(trigger, player);
 								if (!num) {
 									delete player.getStat().skill[skillx];
 								} else {
 									player.getStat().skill[skillx] = num;
 								}
-								var bool3 = !(bool1 && !bool2);
+								bool3 = !(bool1 && !bool2);
 							} catch (e) {
 								console.trace(e);
 							}
-							if (!bool1 && !bool2 && get.skillInfoTranslation(skill, player).indexOf("出牌阶段限一次") == -1) {
+							if (!bool1 && !bool2 && get.skillInfoTranslation(skill, player).indexOf("出牌阶段限一次") === -1) {
 								return false;
 							}
 							if ((bool1 || bool2) && bool3) {
@@ -5644,70 +5645,57 @@ const skills = {
 							}
 						}
 						return true;
-					}).length
-				) {
-					return true;
-				}
-				return false;
+					});
 			});
 		},
-		content() {
-			"step 0";
-			player.chooseCardTarget({
+		async cost(event, trigger, player) {
+			event.result = await player.chooseCardTarget({
 				filterCard: true,
 				selectCard: 1,
 				filterTarget(card, player, target) {
-					return player != target;
+					return player !== target;
 				},
 				ai1(card) {
 					return 6 - get.value(card);
 				},
 				ai2(target) {
-					var att = get.attitude(_status.event.player, target),
-						trigger = _status.event.getTrigger(),
-						player = _status.event.player;
+					const att = get.attitude(_status.event.player, target);
+					const trigger = _status.event.getTrigger();
+					const player = _status.event.player;
 					return lib.skill.oldlongsong.getSkills(target, player, trigger).length * 3 + att / 3;
 				},
-				prompt: get.prompt2("oldlongsong"),
-			});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("oldlongsong", target);
-				event.target = target;
-				player.line(target, "green");
-				player.give(result.cards, target);
-				var skills = lib.skill.oldlongsong.getSkills(target, player, trigger);
-				if (skills.length) {
-					if (!event.isMine() && !event.isOnline()) {
-						game.delayx();
-					}
-					target.disableSkill("oldlongsong_back", skills);
-					target.markAuto("oldlongsong_back", skills);
-					target.addTempSkill("oldlongsong_back", ["phaseUseAfter", "phaseAfter"]);
-					var str = "";
-					for (var i = 0; i < skills.length; i++) {
-						str += "【" + get.translation(skills[i]) + "】";
-						if (i != skills.length - 1) {
-							str += "、";
-						}
-					}
-					game.log(target, "的技能", "#g" + str, "失效了");
-					// game.log(player,'获得了技能','#g'+str);
-					for (var skill of skills) {
-						player.addTempSkills(skill, ["phaseUseAfter", "phaseAfter"]);
-					}
-				}
+				prompt: get.prompt2(event.skill),
+			}).forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			player.line(target, "green");
+			await player.give(event.cards, target);
+			const skills = lib.skill.oldlongsong.getSkills(target, player, trigger);
+			if (!skills.length) {
+				return;
 			}
+			if (!event.isMine() && !event.isOnline()) {
+				await game.delayx();
+			}
+			target.disableSkill("oldlongsong_back", skills);
+			target.markAuto("oldlongsong_back", skills);
+			target.addTempSkill("oldlongsong_back", ["phaseUseAfter", "phaseAfter"]);
+			const skillNames = skills.map(skill => `【${get.translation(skill)}】`).join("、");
+			game.log(target, "的技能", `#g${skillNames}`, "失效了");
+			// game.log(player,'获得了技能','#g'+str);
+			for (const skill of skills) {
+				player.addTempSkills(skill, ["phaseUseAfter", "phaseAfter"]);
+				}
 		},
 		ai: { expose: 0.2 },
 		subSkill: {
 			back: {
 				charlotte: true,
 				onremove(player, skill) {
-					var skills = player.getStorage("oldlongsong_back");
-					for (var key of skills) {
-						game.log(player, "恢复了技能", "#g【" + get.translation(key) + "】");
+					const skills = player.getStorage("oldlongsong_back");
+					for (const key of skills) {
+						game.log(player, "恢复了技能", `#g【${get.translation(key)}】`);
 						delete player.storage[key];
 					}
 					player.enableSkill(skill);
