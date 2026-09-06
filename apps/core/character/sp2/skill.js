@@ -11029,19 +11029,13 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "gray",
 		filter(event, player) {
-			return (
-				!player.getHistory("skipped").includes("phaseUse") &&
-				player.getHistory("useCard", function (evt) {
-					return evt.getParent().name == "mouni";
-				}).length > 0
-			);
+			return !player.getHistory("skipped").includes("phaseUse") && player.countHistory("useCard", evt => evt.getParent().name === "mouni") > 0;
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			var num = player.countCards("he");
+			const num = player.countCards("he");
 			if (num > 0) {
-				player.chooseCardTarget({
+				const result = await player.chooseCardTarget({
 					prompt: "是否将任意张牌交给一名其他角色？",
 					selectCard: [1, num],
 					filterCard: true,
@@ -11049,26 +11043,23 @@ const skills = {
 					position: "he",
 					allowChooseAll: true,
 					ai1(card) {
-						if (card.name == "du") {
+						if (card.name === "du") {
 							return 10;
-						} else if (ui.selected.cards.length && ui.selected.cards[0].name == "du") {
+						}
+						if (ui.selected.cards.length && ui.selected.cards[0].name === "du") {
 							return 0;
 						}
-						var player = _status.event.player;
 						if (
 							ui.selected.cards.length > 4 ||
-							!game.hasPlayer(function (current) {
-								return get.attitude(player, current) > 0 && !current.hasSkillTag("nogain");
-							})
+							!game.hasPlayer(current => get.attitude(player, current) > 0 && !current.hasSkillTag("nogain"))
 						) {
 							return 0;
 						}
 						return 1 / Math.max(0.1, get.value(card));
 					},
 					ai2(target) {
-						var player = _status.event.player,
-							att = get.attitude(player, target);
-						if (ui.selected.cards[0].name == "du") {
+						let att = get.attitude(player, target);
+						if (ui.selected.cards[0].name === "du") {
 							return -att;
 						}
 						if (target.hasSkillTag("nogain")) {
@@ -11076,22 +11067,17 @@ const skills = {
 						}
 						return att;
 					},
-				});
-			} else {
-				event.goto(2);
+				}).forResult();
+				if (result.bool) {
+					const cards = result.cards;
+					const target = result.targets[0];
+					const gainNum = Math.min(5, cards.length);
+					await player.give(cards, target);
+					await player.gainMaxHp(gainNum);
+					await player.recover(gainNum);
+				}
 			}
-			"step 1";
-			if (result.bool) {
-				var cards = result.cards,
-					target = result.targets[0],
-					num = Math.min(5, cards.length);
-				player.give(cards, target);
-				player.gainMaxHp(num);
-				player.recover(num);
-			}
-			"step 2";
-			//player.removeSkill('mouni');
-			player.changeSkills(["zhangu"], ["mouni"]);
+			await player.changeSkills(["zhangu"], ["mouni"]);
 		},
 		ai: {
 			combo: "mouni",
