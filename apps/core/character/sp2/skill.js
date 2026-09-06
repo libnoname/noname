@@ -14973,7 +14973,7 @@ const skills = {
 			name2: "珠",
 			content: "共有#个“珠”",
 		},
-		content() {
+		async content(event, trigger, player) {
 			trigger.cancel();
 			player.addMark("lslixun", trigger.num);
 		},
@@ -14987,32 +14987,38 @@ const skills = {
 		filter(event, player) {
 			return player.countMark("lslixun") > 0;
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			event.forceDie = true;
 			_status.lslixun = player.countMark("lslixun");
-			player.judge(function (card) {
-				if (get.number(card) < _status.lslixun) {
-					return -_status.lslixun;
-				}
-				return 1;
-			}).judge2 = function (result) {
-				return result.bool ? true : false;
-			};
-			"step 1";
+			const judgeResult = await player
+				.judge({
+					judge: card => {
+						if (get.number(card) < _status.lslixun) {
+							return -_status.lslixun;
+						}
+						return 1;
+					},
+					judge2: result => result.bool,
+				})
+				.forResult();
 			delete _status.lslixun;
-			if (!result.bool) {
-				player.chooseToDiscard([1, player.countMark("lslixun")], "h").ai = lib.skill.qiangxi.check;
-			} else {
-				event.finish();
+			if (judgeResult.bool) {
+				return;
 			}
-			"step 2";
-			var num = player.countMark("lslixun");
-			if (result.cards && result.cards.length) {
-				num -= result.cards.length;
+
+			const discardResult = await player
+				.chooseToDiscard({
+					selectCard: [1, player.countMark("lslixun")],
+					position: "h",
+					ai: lib.skill.qiangxi.check,
+				})
+				.forResult();
+			let num = player.countMark("lslixun");
+			if (discardResult.cards?.length) {
+				num -= discardResult.cards.length;
 			}
 			if (num) {
-				player.loseHp(num);
+				await player.loseHp(num);
 			}
 		},
 	},
