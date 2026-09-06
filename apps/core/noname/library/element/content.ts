@@ -3675,7 +3675,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 		} while (player != end);
 
 		event.changeCard = get.config("change_card");
-		if (_status.connectMode || (lib.config.mode == "single" && _status.mode != "wuxianhuoli") || (lib.config.mode == "doudizhu" && _status.mode == "online") || (lib.config.mode != "identity" && lib.config.mode != "guozhan" && lib.config.mode != "doudizhu" && lib.config.mode != "single")) {
+		if (_status.connectMode || (lib.config.mode == "single" && _status.mode != "wuxianhuoli") || (lib.config.mode == "doudizhu" && _status.mode == "online") || (lib.config.mode == "versus" && _status.mode == "four") || (lib.config.mode != "identity" && lib.config.mode != "guozhan" && lib.config.mode != "doudizhu" && lib.config.mode != "single" && lib.config.mode != "versus")) {
 			event.changeCard = "disabled";
 		}
 
