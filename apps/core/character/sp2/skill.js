@@ -10664,38 +10664,41 @@ const skills = {
 	jielie: {
 		audio: 2,
 		trigger: { player: "damageBegin4" },
-		direct: true,
 		filter(event, player) {
-			return (!event.source || (event.source != player && event.source != player.storage.kangge)) && player.storage.kangge && player.storage.kangge.isIn();
+			return (!event.source || (event.source !== player && event.source !== player.storage.kangge)) && player.storage.kangge && player.storage.kangge.isIn();
 		},
-		content() {
-			"step 0";
-			player
-				.chooseControl(lib.suit.slice(0), "cancel2")
-				.set("prompt", get.prompt("jielie"))
-				.set("prompt2", "防止伤害并改为失去等量体力，且令" + get.translation(player.storage.kangge) + "从弃牌堆中随机获得等量的花色牌")
-				.set("ai", function () {
-					var player = _status.event.player;
-					if (get.attitude(player, player.storage.kangge) <= 0) {
-						return "cancel2";
-					}
-					return lib.suit.randomGet();
-				});
-			"step 1";
-			if (result.control != "cancel2") {
-				event.suit = result.control;
-				player.logSkill("jielie", player.storage.kangge);
-				trigger.cancel();
-				player.loseHp(trigger.num);
-			} else {
-				event.finish();
-			}
-			"step 2";
-			var cards = [];
+		async cost(event, trigger, player) {
+			const result = await player
+				.chooseControl({
+					controls: [...lib.suit, "cancel2"],
+					prompt: get.prompt("jielie"),
+					prompt2: `防止伤害并改为失去等量体力，且令${get.translation(player.storage.kangge)}从弃牌堆中随机获得等量的花色牌`,
+					ai: () => {
+						if (get.attitude(player, player.storage.kangge) <= 0) {
+							return "cancel2";
+						}
+						return lib.suit.randomGet();
+					},
+				})
+				.forResult();
+			event.result = {
+				bool: result.control !== "cancel2",
+				cost_data: {
+					suit: result.control,
+				},
+			};
+		},
+		logTarget(_event, player) {
+			return player?.storage.kangge;
+		},
+		async content(event, trigger, player) {
+			const { suit } = event.cost_data;
+			trigger.cancel();
+			await player.loseHp(trigger.num);
+
+			const cards = [];
 			while (cards.length < trigger.num) {
-				var card = get.discardPile(function (card) {
-					return get.suit(card, false) == event.suit && !cards.includes(card);
-				}, "random");
+				const card = get.discardPile(card => get.suit(card, false) === suit && !cards.includes(card), "random");
 				if (card) {
 					cards.push(card);
 				} else {
@@ -10703,7 +10706,10 @@ const skills = {
 				}
 			}
 			if (cards.length) {
-				player.storage.kangge.gain(cards, "gain2");
+				await player.storage.kangge.gain({
+					cards,
+					animate: "gain2",
+				});
 			}
 		},
 	},
