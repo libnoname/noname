@@ -7,6 +7,8 @@ export default {
 	ol_quancong: "其时声明",
 	ol_caoxiu: "千里骐骥",
 	ol_guanping: "威灵显化",
+	ol_jie_zhuran: "不动之督",
+	ol_zhuhuan: "中洲拒天人",
 	dm_zhangfei: "祭命的战神",
 	ol_xiahoushi: "疾冲之恋",
 	shen_sunquan: "坐断东南",
