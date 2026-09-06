@@ -33,7 +33,12 @@ export const defaultConfig = {
 
 function createFsHandler(dirname: string) {
 	const join = (url: string) => path.join(dirname, url);
-	const isInProject = (url: string) => path.normalize(join(url)).startsWith(dirname);
+	// 比较前给 dirname 补上路径分隔符，否则同级的 `${dirname}-backup` 之类目录会被当成项目内路径
+	const prefix = dirname.endsWith(path.sep) ? dirname : dirname + path.sep;
+	const isInProject = (url: string) => {
+		const full = path.resolve(join(url));
+		return full === dirname || full.startsWith(prefix);
+	};
 
 	const ensureSafe = (url: string) => {
 		if (!isInProject(url)) throw new Error(`只能访问 ${dirname} 下的资源`);
