@@ -12440,61 +12440,43 @@ const skills = {
 		trigger: { global: "useCardToPlayered" },
 		usable: 1,
 		logTarget(event) {
-			return event.parent.gongjian_targets.filter(function (target) {
-				return event.targets.includes(target) && target.countCards("he") > 0;
-			});
+			return event.parent.gongjian_targets.filter(target => event.targets.includes(target) && target.hasCards("he"));
 		},
 		filter(event, player) {
-			if (event.card.name != "sha" || !event.isFirstTarget) {
+			if (event.card.name !== "sha" || !event.isFirstTarget) {
 				return false;
 			}
-			if (
-				event.parent.gongjian_targets &&
-				event.parent.gongjian_targets.filter(function (target) {
-					return event.targets.includes(target) && target.countCards("he") > 0;
-				}).length > 0
-			) {
-				return true;
-			}
-			return false;
+			return event.parent.gongjian_targets?.some(target => event.targets.includes(target) && target.hasCards("he")) === true;
 		},
 		check(event, player) {
-			var targets = event.parent.gongjian_targets.filter(function (target) {
-					return event.targets.includes(target) && target.countCards("he") > 0;
-				}),
-				att = 0;
-			for (var i of targets) {
-				att += get.attitude(player, i);
+			const targets = event.parent.gongjian_targets.filter(target => event.targets.includes(target) && target.hasCards("he"));
+			let attitude = 0;
+			for (const target of targets) {
+				attitude += get.attitude(player, target);
 			}
-			return att < 0;
+			return attitude < 0;
 		},
-		content() {
-			"step 0";
-			event.targets = trigger.parent.gongjian_targets.filter(function (target) {
-				return trigger.targets.includes(target);
-			});
-			event.num = 0;
-			"step 1";
-			var target = targets[num];
-			player.discardPlayerCard(target, true, "he", [1, 2]).set("forceAuto", true);
-			"step 2";
-			event.num++;
-			if (event.num < targets.length) {
-				event.goto(1);
-			} else {
-				var cards = [];
-				game.getGlobalHistory("cardMove", function (evt) {
-					if (evt.player && evt.hs && evt.type == "discard" && evt.getParent(3) == event) {
-						for (var i of evt.hs) {
-							if (get.name(i, evt.player) == "sha" && get.position(i, true) == "d") {
-								cards.add(i);
-							}
-						}
-					}
+		async content(event, trigger, player) {
+			const targets = trigger.parent.gongjian_targets.filter(target => trigger.targets.includes(target));
+			for (const target of targets) {
+				await player
+					.discardPlayerCard({
+						target,
+						forced: true,
+						position: "he",
+						selectButton: [1, 2],
+					})
+					.set("forceAuto", true);
+			}
+			const cards = game
+				.getGlobalHistory("cardMove", evt => evt.player && evt.hs && evt.type === "discard" && evt.getParent(3) === event)
+				.flatMap(evt => evt.hs)
+				.filter(card => get.name(card, evt.player) === "sha" && get.position(card, true) === "d");
+			if (cards.length) {
+				await player.gain({
+					cards,
+					animate: "gain2",
 				});
-				if (cards.length) {
-					player.gain(cards, "gain2");
-				}
 			}
 		},
 		group: "gongjian_count",
@@ -12504,9 +12486,9 @@ const skills = {
 				silent: true,
 				firstDo: true,
 				filter(event, player) {
-					return event.card && event.card.name == "sha";
+					return event.card && event.card.name === "sha";
 				},
-				content() {
+				async content(event, trigger, player) {
 					if (player.storage.gongjian) {
 						trigger.gongjian_targets = player.storage.gongjian;
 					}
