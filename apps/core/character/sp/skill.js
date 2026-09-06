@@ -2,6 +2,211 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	// 唐棠：择行 by weiqiaocode
+	zexing: {
+		enable: "phaseUse",
+		usable: 1,
+		position: "he",
+		selectCard: 1,
+		filterCard: true,
+		discard: false,
+		lose: false,
+		delay: false,
+		filter(event, player) {
+			return player.countCards("he") > 0 && game.hasPlayer(target => lib.skill.zexing.filterTarget(null, player, target));
+		},
+		filterTarget(card, player, target) {
+			return target !== player && target.isIn() && !player.getStorage("zexing_refused").includes(target);
+		},
+		gainable(player, target, suit) {
+			return target.getCards("h", card => get.suit(card, target) !== suit && lib.filter.canBeGained(card, player, target));
+		},
+		attitudeWeight(viewer, target) {
+			return viewer === target ? 1 : Math.max(-1, Math.min(1, get.attitude(viewer, target) / 5));
+		},
+		pickValue(source, target, card) {
+			const relation = lib.skill.zexing.attitudeWeight(source, target);
+			return get.value(card, source) - relation * get.value(card, target) * 0.6;
+		},
+		zhiyiValue(viewer, source, shown, received) {
+			if (!source.hasSkill("tt_zhiyi") || (source.getStat("triggerSkill").tt_zhiyi || 0) >= 1) return 0;
+			const colors = [...new Set(received.map(card => get.color(card, false)).filter(color => ["red", "black"].includes(color)))];
+			const shownColor = get.color(shown, source);
+			const shownInHand = get.position(shown) === "h";
+			// 获得牌时展示牌仍在手中；其余未公开手牌只按数量估计颜色匹配率。
+			const unknown = Math.max(0, source.countCards("h") - (shownInHand ? 1 : 0));
+			const first = shownInHand && colors.includes(shownColor) ? 1 : colors.length === 2 ? (unknown > 0 ? 1 : 0) : colors.length === 1 ? 1 - Math.pow(0.5, unknown) : 0;
+			const second = ["red", "black"].includes(shownColor) ? (colors.includes(shownColor) ? 1 : 1 - Math.pow(0.5, unknown)) : 0;
+			const probability = first + (1 - first) * second;
+			let best = null,
+				bestEffect = 0;
+			for (const current of game.filterPlayer()) {
+				const effect = get.effect(current, { name: "draw" }, source, source);
+				if (effect > bestEffect) {
+					bestEffect = effect;
+					best = current;
+				}
+			}
+			return best ? probability * 4 * lib.skill.zexing.attitudeWeight(viewer, best) : 0;
+		},
+		continuationValue(viewer, source, refused) {
+			const skill = lib.skill.zexing;
+			const options = game
+				.filterPlayer()
+				.filter(current => current !== refused && skill.filterTarget(null, source, current))
+				.map(current => {
+					// 后续角色只用公开体力、手牌数量估计，不读取其手牌内容。
+					const hpRisk = current.hp <= 1 ? 18 : current.hp === 2 ? 10 : 6;
+					const harm = current.countCards("h") < 2 ? hpRisk : Math.min(hpRisk, 6);
+					return {
+						sourceValue: -skill.attitudeWeight(source, current) * harm,
+						viewerValue: -skill.attitudeWeight(viewer, current) * harm,
+					};
+				})
+				.filter(option => option.sourceValue > 0)
+				.sort((a, b) => b.sourceValue - a.sourceValue);
+			// 下一名目标权重较高，再下一名较低；交换或主动停止都会中断后续。
+			return Math.max(-12, Math.min(12, (options[0]?.viewerValue || 0) * 0.65 + (options[1]?.viewerValue || 0) * 0.2));
+		},
+		choiceScore(target, source, shown, suit, option) {
+			const skill = lib.skill.zexing;
+			const cards = skill.gainable(source, target, suit);
+			let value;
+			if (option === "exchange") {
+				if (cards.length < 2) return 0;
+				const picked = cards
+					.slice()
+					.sort((a, b) => skill.pickValue(source, target, b) - skill.pickValue(source, target, a))
+					.slice(0, 2);
+				const loss = picked.reduce((sum, card) => sum + get.value(card, target), 0);
+				const sourceGain = picked.reduce((sum, card) => sum + get.value(card, source), 0) - get.value(shown, source);
+				value = get.value(shown, target) - loss + 0.6 * skill.attitudeWeight(target, source) * sourceGain + skill.zhiyiValue(target, source, shown, picked);
+			} else {
+				const hpCost = target.hp <= 1 ? 100 : target.hp === 2 ? 16 : target.hp === 3 ? 9 : 6;
+				const effect = get.effect(target, { name: "losehp" }, target, target);
+				// 仅使用失去体力的评估，不把受伤触发的卖血技能当作收益。
+				value = effect === 0 ? 0 : effect > 0 ? Math.min(8, effect) : -hpCost;
+				if (target.hp <= 1) value = Math.min(value, -hpCost);
+				if (source.countCards("he") > 0) value += skill.continuationValue(target, source, target);
+			}
+			return 1 / (1 + Math.exp(-Math.max(-100, Math.min(100, value)) / 8));
+		},
+		async content(event, trigger, player) {
+			let shown = event.cards[0],
+				target = event.target;
+			while (player.isIn() && target?.isIn()) {
+				if (get.owner(shown) !== player || !["h", "e"].includes(get.position(shown))) break;
+				const suit = get.suit(shown, player);
+				await player.showCards([shown], "择行");
+				if (!player.isIn() || !target.isIn()) break;
+				const canExchange = lib.skill.zexing.gainable(player, target, suit).length >= 2;
+				const choice = await target
+					.chooseButton(
+						[
+							"择行：请选择一项",
+							[
+								[
+									["exchange", "其观看你的手牌并获得两张与展示牌花色不同的牌，然后你获得展示牌"],
+									["loseHp", "失去1点体力，其可重新展示牌并选择其他角色"],
+								],
+								"textbutton",
+							],
+						],
+						true
+					)
+					.set("canExchange", canExchange)
+					.set("zexingSource", player)
+					.set("zexingShown", shown)
+					.set("zexingSuit", suit)
+					.set("filterButton", button => button.link !== "exchange" || get.event().canExchange)
+					.set("ai", button => {
+						const evt = get.event();
+						return lib.skill.zexing.choiceScore(get.player(), evt.zexingSource, evt.zexingShown, evt.zexingSuit, button.link);
+					})
+					.forResult();
+				if (!choice.bool) break;
+				if (choice.links[0] === "exchange") {
+					const allowed = lib.skill.zexing.gainable(player, target, suit);
+					const result = await player
+						.chooseButton(["择行：观看其手牌，选择两张牌获得", target.getCards("h")], 2, true)
+						.set("allowed", allowed)
+						.set("zexingSource", player)
+						.set("zexingTarget", target)
+						.set("filterButton", button => get.event().allowed.includes(button.link))
+						.set("ai", button => {
+							const evt = get.event();
+							return 30 + lib.skill.zexing.pickValue(evt.zexingSource, evt.zexingTarget, button.link);
+						})
+						.forResult();
+					if (result.bool) {
+						// 等待获得牌及知意结算完毕，再交出展示牌。
+						await player.gain(result.links, target, "giveAuto");
+						if (player.isIn() && target.isIn() && get.owner(shown) === player && ["h", "e"].includes(get.position(shown))) {
+							await player.give(shown, target);
+						}
+					}
+					break;
+				}
+				player.addTempSkill("zexing_refused", "phaseAfter");
+				player.markAuto("zexing_refused", [target]);
+				await target.loseHp();
+				if (!player.isIn() || !lib.skill.zexing.filter(event, player)) break;
+				const next = await player
+					.chooseCardTarget({
+						prompt: "择行：可重新展示一张牌并选择一名其他角色",
+						position: "he",
+						selectCard: 1,
+						selectTarget: 1,
+						filterCard: true,
+						filterTarget: lib.skill.zexing.filterTarget,
+						ai1: card => 6 - get.value(card),
+						ai2: target => -get.attitude(get.player(), target),
+					})
+					.forResult();
+				if (!next.bool) break;
+				shown = next.cards[0];
+				target = next.targets[0];
+			}
+		},
+		check: card => 6 - get.value(card),
+		ai: { order: 7, result: { target: -1 } },
+		subSkill: {
+			refused: { charlotte: true, onremove: true },
+		},
+	},
+	// 唐棠：知意 by weiqiaocode
+	tt_zhiyi: {
+		trigger: { global: ["gainAfter", "loseAsyncAfter"] },
+		usable: 1,
+		getRelated(event, player) {
+			// 多人获得由 loseAsync 汇总，避免子 gain 事件重复触发。
+			if (event.name === "gain" && event.getParent().name === "loseAsync") return [];
+			const own = event.getg(player) || [];
+			const lost = event.getl(player)?.cards2 || [];
+			const cards = own.slice();
+			for (const target of game.filterPlayer()) {
+				if (target === player) continue;
+				for (const card of event.getg(target) || []) {
+					if (lost.includes(card) && !cards.includes(card)) cards.push(card);
+				}
+			}
+			return cards;
+		},
+		filter(event, player) {
+			const cards = lib.skill.tt_zhiyi.getRelated(event, player);
+			const colors = cards.map(card => get.color(card, false)).filter(color => color === "red" || color === "black");
+			return colors.length > 0 && player.hasCard(card => !cards.includes(card) && colors.includes(get.color(card, player)), "h");
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt("tt_zhiyi"), "令一名角色摸一张牌", (card, player, target) => target.isIn())
+				.set("ai", target => get.effect(target, { name: "draw" }, get.player(), get.player()))
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			if (event.targets[0].isIn()) await event.targets[0].draw();
+		},
+	},
 	//王皑（春丽来咯）
 	qinmian: {
 		audio: 2,

@@ -1,4 +1,5 @@
 export default {
+	tangtang: "伊侍佐佑",
 	//wangai: "",
 	//ol_huangfusong: "",
 	ol_caojinyu: "春秋盈昃",
