@@ -5877,7 +5877,8 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 								var dist = lib.card[name].distance;
 								if (dist.attackFrom) {
 									added = true;
-									uiintro.add('<div class="text center">攻击范围：' + get.owner(node)?.getEquipRange([node[node.cardSymbol]]) + "</div>"); //(-dist.attackFrom + 1)
+									const range = get.owner(node) ? get.owner(node).getEquipRange([node[node.cardSymbol]]) : -dist.attackFrom + 1;
+									uiintro.add('<div class="text center">攻击范围：' + range + "</div>"); //
 								}
 							}
 							if (!added) {

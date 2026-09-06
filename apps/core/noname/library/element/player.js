@@ -5177,7 +5177,7 @@ export class Player extends HTMLDivElement {
 	/**
 	 * @param { string } [arg1='h']
 	 * @param { string | Record<string, any> | ((card: Card) => boolean) } [arg2]
-	 * @returns { Iterable<Card> }
+	 * @returns { Iterable<VCard> }
 	 */
 	*iterableGetVCards(arg1, arg2) {
 		if (typeof arg1 != "string") {
@@ -5238,7 +5238,7 @@ export class Player extends HTMLDivElement {
 	/**
 	 * @param { string } [arg1='h']
 	 * @param { string | Record<string, any> | ((card: Card) => boolean) } [arg2]
-	 * @returns { Card[] }
+	 * @returns { VCard[] }
 	 */
 	getVCards(arg1, arg2) {
 		return Array.from(this.iterableGetVCards(arg1, arg2));
