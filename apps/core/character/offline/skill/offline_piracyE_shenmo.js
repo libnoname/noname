@@ -129,6 +129,7 @@ const skills = {
 				player.addMark("smqihua_mo", num2);
 			}
 		},
+		ai: { combo: "smqihua" },
 	},
 	smshenjiang: {
 		audio: 2,

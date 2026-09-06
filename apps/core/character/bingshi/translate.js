@@ -1,6 +1,18 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	pot_heqi: "势贺齐",
+	pot_heqi_prefix: "势",
+	potshanxi: "闪袭",
+	potshanxi_tag: "invisible",
+	potshanxi_info: `出牌阶段每名角色限一次，你可将一张${get.poptip({
+		id: "potshanxi_yingji",
+		name: "应机牌",
+		info: "每回合结束时，所有角色手牌中的应机牌会被置入弃牌堆。",
+		type: "character",
+	})}当【决斗】使用。`,
+	potqizhou: "绮胄",
+	potqizhou_info: `当有牌进入你的场上后，你可将一名角色的一张手牌标记为${get.poptip("potshanxi_yingji")}，若此牌为【杀】，你下次发动此技能后摸两张${get.poptip("potshanxi_yingji")}。摸牌阶段，你额外摸两张${get.poptip("potshanxi_yingji")}。`,
 	pot_xiaoqiao: "势小乔",
 	pot_xiaoqiao_prefix: "势",
 	potheyun: "合韵",
