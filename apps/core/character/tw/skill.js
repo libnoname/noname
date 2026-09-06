@@ -8673,6 +8673,288 @@ const skills = {
 			}
 		},
 	},
+	// 幻周瑜
+	twdumou: {
+		trigger: {
+			player: ["loseAfter", "gainAfter"],
+			global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
+		},
+		frequent: true,
+		filter(event, player) {
+			return (
+				(event.getl(player).cards2.length || event.getg(player).length) &&
+				lib.phaseName.some(phase => {
+					const evts = game.getAllGlobalHistory("everything", evt => {
+						if (evt.getParent("phase") != event.getParent("phase") || evt.getParent(phase) != event.getParent(phase)) {
+							return false;
+						}
+						if (evt.name === "lose" && evt.getl(player)?.cards2?.length) {
+							const evt2 = evt.relatedEvent || evt.getParent();
+							if (evt2.name === "useCard" && evt2.player === player && get.type(evt2.card, null, false) === "equip") {
+								return false;
+							}
+							return true;
+						}
+						return evt.name === "gain" && evt.getg(player)?.length;
+					});
+					return evts.indexOf(event) === 0;
+				})
+			);
+		},
+		async cost(event, trigger, player) {
+			const dialog = [["give", "展示牌堆顶的一张牌并令一名角色获得之"]];
+			if (game.hasPlayer(current => current.countCards("he", card => lib.filter.cardRecastable(card, player)) >= 3)) {
+				dialog.push(["recast", "重铸一名角色的三张牌"]);
+			}
+			const result = await player
+				.chooseButton({
+					createDialog: [`###${get.prompt(event.skill)}###<div class='text center'>你可以选择一项…</div>`, [dialog, "textbutton"]],
+					ai(button) {
+						const player = get.player();
+						if (button.link === "give") {
+							return Math.random();
+						}
+						return 0.9;
+					},
+					event2: event,
+				})
+				.forResult();
+			if (!result.bool) return;
+			event.result = {
+				bool: result.bool,
+				cost_data: {
+					link: result.links[0],
+				},
+			};
+		},
+		async content(event, trigger, player) {
+			const { link } = event.cost_data;
+			const targetPrompt = "督鍪：" + (link === "give" ? "展示牌堆顶的一张牌并令一名角色获得之" : "重铸一名角色的三张牌");
+			if (link === "recast") {
+				const targetResult = await player
+					.chooseTarget({
+						filterTarget(card, player, target) {
+							return target.countCards("he", lib.filter.cardRecastable(card, player)) >= 3;
+						},
+						prompt: targetPrompt,
+						ai(target) {
+							const player = get.player();
+							// 回合内瞅准一个人打
+							if (player.getStorage("twdumou")[1] == get.event().getParent("phase")) {
+								return 666 * (target === player.getStorage("twdumou")[0]);
+							}
+							return get.damageEffect(target, player, player, "fire");
+						},
+						forced: true,
+					})
+					.forResult();
+				const thisTarget = targetResult.targets[0];
+				const phase = get.copy(event.getParent("phase"));
+				if (thisTarget !== player) player.setStorage("twdumou", [thisTarget, phase]);
+				if (!targetResult || thisTarget.countCards("he", card => lib.filter.cardRecastable(card, player)) < 3) {
+					return;
+				}
+				const cardResult = await player
+					.choosePlayerCard({
+						forced: true,
+						prompt: "督鍪：重铸该角色的三张牌",
+						target: targetResult.targets[0],
+						selectButton: 3,
+						allowChooseAll: true,
+						filterButton(button) {
+							return lib.filter.cardRecastable(button.link, get.player());
+						},
+						ai(button) {
+							if (get.event().target === get.player()) {
+								return _status.currentPhase === player ? -player.getUseValue(button.link) : -get.value(button.link);
+							}
+							return Math.random();
+						},
+					})
+					.forResult();
+				if (cardResult?.cards?.length) {
+					await thisTarget.recast(cardResult.cards, void 0, player => (player.draw(3).set("log", false).gaintag = ["twdumou_tag"]));
+				}
+			} else if (link === "give") {
+				const card = get.cards(1);
+				if (!card) return;
+				await player.showCards(card);
+				const targetResult = await player
+					.chooseTarget({
+						filterTarget: () => true,
+						prompt: `督鍪：令一名角色获得${get.translation(card)}`,
+						forced: true,
+						ai(target) {
+							return target === get.player();
+						},
+					})
+					.forResult();
+				if (targetResult?.targets.length) {
+					const next = targetResult.targets[0].gain(card, "gain2");
+					next.gaintag = ["twdumou_tag"];
+					await next;
+				}
+			}
+		},
+		group: "twdumou_losehp",
+		subSkill: {
+			losehp: {
+				trigger: { global: "phaseEnd" },
+				direct: true,
+				async content(event, trigger, player) {
+					const gainMap = {};
+					for (const current of game.filterPlayer()) {
+						let num = 0;
+						current.getHistory("gain").forEach(evt => {
+							if (evt.gaintag?.includes("twdumou_tag")) {
+								num += evt.cards.length;
+							}
+						});
+						gainMap[current.name] = [current, num];
+					}
+					let maxNum = 0;
+					let maxCurrent;
+					for (const currentName in gainMap) {
+						if (gainMap[currentName][1] === maxNum) {
+							maxCurrent = false;
+						}
+						if (gainMap[currentName][1] > maxNum) {
+							maxNum = gainMap[currentName][1];
+							maxCurrent = gainMap[currentName][0];
+						}
+						gainMap[currentName][0].removeGaintag("twdumou_tag");
+					}
+					if (maxCurrent) {
+						player.logSkill("twdumou");
+						await maxCurrent.loseHp();
+					}
+				},
+			},
+		},
+	},
+	twhantian: {
+		enable: "phaseUse",
+		locked: false,
+		usable: 1,
+		selectCard: -1,
+		filterCard: () => false,
+		viewAs: {
+			name: "huogong",
+			isCard: true,
+			storage: {
+				twhantian: true,
+			},
+		},
+		ai: {
+			fireAttack: true,
+			order(item, player) {
+				if (!player.hasSkill("twdumou")) return get.order({ name: "huogong" });
+				if (
+					!player.getHistory("useSkill", evt => {
+						return evt.event.getParent("phaseUse").name && evt.event.getParent("phaseUse") === get.event().getParent("phaseUse") && evt.skill === "twdumou";
+					}).length
+				) {
+					return 0;
+				}
+				return get.order({ name: "huogong" });
+			},
+			effect: {
+				player(card, player, target, current) {
+					if (!get.tag(card, "fireDamage") || target === player) {
+						return 1;
+					}
+					const num = target.getHistory("gain").length + 1;
+					return [1, 0, num, 0];
+				},
+			},
+		},
+		mod: {
+			aiOrder(player, card, num) {
+				if (get.suit(card) !== "none" && player.getCards("h", card2 => get.suit(card2) === get.suit(card)).length < 2) {
+					return num - 2;
+				}
+				if (get.tag(card, "fireDamage")) return num;
+				// 鼓励屯牌算法，照搬手杀界钟会的少牌情况，考虑火伤牌
+				if (player.countCards("h") === player.hp + 1) {
+					if (get.type(card) == "equip" && !["equip2", "equip3"].includes(get.subtype(card))) {
+						return 0;
+					}
+					let eff = 6 + player.hp;
+					if (!get.tag(card, "gain") && !get.tag(card, "draw")) {
+						eff += 3;
+					}
+					if (player.getUseValue(card) < eff) {
+						return 0;
+					}
+				} else {
+					return num;
+				}
+			},
+			aiUseful(player, card, num) {
+				if (get.tag(card, "fireDamage") || card.name === "tiesuo") {
+					return num + 5;
+				} else return num;
+			},
+		},
+		group: ["twhantian_effect", "twhantian_fire"],
+		subSkill: {
+			effect: {
+				trigger: { player: "huogongBegin" },
+				direct: true,
+				filter(event, player) {
+					return event.card.storage?.twhantian;
+				},
+				async content(event, trigger, player) {
+					trigger.set("chooseToShow", async (event2, player2, target2) => {
+						const showPosition2 = event2.showPosition === void 0 ? "h" : event2.showPosition;
+						const filterShow = card => {
+							const cardFilter = function (card3, player3) {
+								return (
+									player3.getHistory("gain", evt => {
+										return evt.cards.includes(card3);
+									}).length > 0
+								);
+							};
+							if (target2.countCards("h", card2 => cardFilter(card2, target2))) {
+								return cardFilter(card, target2);
+							} else {
+								return true;
+							}
+						};
+						let result3;
+						if (target2.countCards(showPosition2) === 1) {
+							result3 = { bool: true, cards: target2.getCards(showPosition2) };
+						} else {
+							result3 = await target2
+								.chooseCard(true, showPosition2, "请选择【火攻】要展示的牌", filterShow)
+								.set("ai", card => {
+									if (_status.event.getRand() < 0.5) {
+										return Math.random();
+									}
+									return get.value(card);
+								})
+								.forResult();
+						}
+						return result3;
+					});
+				},
+			},
+			fire: {
+				forced: true,
+				trigger: { source: "damageBegin1" },
+				filter(event, player) {
+					return event.hasNature("fire");
+				},
+				async content(event, trigger, player) {
+					const target = trigger.player;
+					if (!target) return;
+					const num = target.getHistory("gain").length;
+					game.log("撼天：", target, "受到火焰伤害增加", num, "点");
+					trigger.num += num;
+				},
+			},
+		},
+	},
 	//幻司马懿
 	twzongquan: {
 		audio: 2,
