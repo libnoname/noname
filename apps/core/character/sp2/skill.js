@@ -6494,18 +6494,13 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return player.countCards("h", "sha") > 0;
+			return player.hasCards("h", "sha");
 		},
 		filterCard: { name: "sha" },
 		filterTarget: lib.filter.notMe,
 		check(card) {
-			var player = _status.event.player;
-			if (
-				get.color(card) == "red" &&
-				game.hasPlayer(function (current) {
-					return current != player && current.isDamaged() && get.attitude(player, current) > 2;
-				})
-			) {
+			const player = _status.event.player;
+			if (get.color(card) === "red" && game.hasPlayer(current => current !== player && current.isDamaged() && get.attitude(player, current) > 2)) {
 				return 2;
 			}
 			if (get.natureList(card).length) {
@@ -6516,46 +6511,42 @@ const skills = {
 		discard: false,
 		lose: false,
 		delay: false,
-		content() {
-			"step 0";
-			player.give(cards, target, "give");
-			player.recover();
-			"step 1";
-			var num = 1;
+		async content(event, trigger, player) {
+			const cards = event.cards;
+			const target = event.target;
+			await player.give(cards, target, true);
+			await player.recover();
+			let num = 1;
 			if (get.natureList(cards[0]).length) {
 				num++;
 			}
-			player.draw("nodelay");
-			target.draw(num);
-			if (get.color(cards[0]) == "red") {
-				target.recover();
+			await player.draw({ nodelay: true });
+			await target.draw(num);
+			if (get.color(cards[0]) === "red") {
+				await target.recover();
 			}
 		},
 		ai: {
 			order: 1,
 			result: {
 				player(player, target) {
-					if (player.isDamaged()) {
-						return 1;
-					}
-					return 0;
+					return player.isDamaged() ? 1 : 0;
 				},
 				target(player, target) {
-					if (ui.selected.cards.length) {
-						var num = 1;
-						if (get.natureList(ui.selected.cards[0]).length) {
-							num++;
-						}
-						if (target.hasSkillTag("nogain")) {
-							num = 0;
-						}
-						if (get.color(ui.selected.cards[0]) == "red") {
-							return num + 2;
-						} else {
-							return num + 1;
-						}
+					if (!ui.selected.cards.length) {
+						return 1;
 					}
-					return 1;
+					let num = 1;
+					if (get.natureList(ui.selected.cards[0]).length) {
+						num++;
+					}
+					if (target.hasSkillTag("nogain")) {
+						num = 0;
+					}
+					if (get.color(ui.selected.cards[0]) === "red") {
+						return num + 2;
+					}
+					return num + 1;
 				},
 			},
 		},
