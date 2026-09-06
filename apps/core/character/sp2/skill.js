@@ -16925,61 +16925,60 @@ const skills = {
 		direct: true,
 		preHidden: true,
 		filter(event, player) {
-			if (event.player == event.target || event.targets.length != 1) {
+			if (event.player === event.target || event.targets.length !== 1) {
 				return false;
 			}
-			if (player != event.player && !player.hasSkill("mffengshi")) {
+			if (player !== event.player && !player.hasSkill("mffengshi")) {
 				return false;
 			}
 			return event.player.countCards("h") > event.target.countCards("h") && event.target.countCards("he") > 0;
 		},
-		content() {
-			"step 0";
-			event.source = trigger.player;
-			event.target = player == trigger.target ? trigger.player : trigger.target;
-			var str;
-			if (player == trigger.player) {
-				str = "弃置自己的和该角色";
-			} else {
-				str = "令其弃置其与你的";
+		async content(event, trigger, player) {
+			const source = trigger.player;
+			const target = player === trigger.target ? trigger.player : trigger.target;
+			const action = player === trigger.player ? "弃置自己的和该角色" : "令其弃置其与你的";
+			let bool = 0;
+			if (get.attitude(trigger.player, player) <= 0) {
+				let effect = get.effect(trigger.player, { name: "guohe" }, player, trigger.player) + get.effect(trigger.target, { name: "guohe" }, player, trigger.player);
+				if (get.tag(trigger.card, "damage")) {
+					effect += get.effect(trigger.target, trigger.card, trigger.player, trigger.player);
+				}
+				bool = effect > 0;
 			}
-			var next = trigger.player
-				.chooseBool("是否对" + get.translation(trigger.target) + "发动【锋势】？", str + "的各一张牌，然后令" + get.translation(trigger.card) + "的伤害+1")
-				.set("ai", () => get.event().bool)
-				.set(
-					"bool",
-					(function () {
-						if (get.attitude(trigger.player, player) > 0) {
-							return 0;
-						}
-						let eff = get.effect(trigger.player, { name: "guohe" }, player, trigger.player) + get.effect(trigger.target, { name: "guohe" }, player, trigger.player);
-						if (get.tag(trigger.card, "damage")) {
-							eff += get.effect(trigger.target, trigger.card, trigger.player, trigger.player);
-						}
-						return eff > 0;
-					})()
-				);
-			if (player == next.player) {
+			const next = trigger.player
+				.chooseBool({
+					prompt: `是否对${get.translation(trigger.target)}发动【锋势】？`,
+					prompt2: `${action}的各一张牌，然后令${get.translation(trigger.card)}的伤害+1`,
+					ai: () => get.event().bool,
+				})
+				.set("bool", bool);
+			if (player === next.player) {
 				next.setHiddenSkill("mffengshi");
 			}
-			"step 1";
-			if (result.bool) {
-				if (player == source) {
-					player.logSkill("mffengshi", target);
-				} else {
-					player.logSkill("mffengshi");
-					source.line(player, "green");
-				}
-				if (get.tag(trigger.card, "damage")) {
-					trigger.getParent().baseDamage++;
-				}
-				player.chooseToDiscard("he", true);
-			} else {
-				event.finish();
+			const result = await next.forResult();
+			if (!result.bool) {
+				return;
 			}
-			"step 2";
+
+			if (player === source) {
+				player.logSkill("mffengshi", target);
+			} else {
+				player.logSkill("mffengshi");
+				source.line(player, "green");
+			}
+			if (get.tag(trigger.card, "damage")) {
+				trigger.getParent().baseDamage++;
+			}
+			await player.chooseToDiscard({
+				position: "he",
+				forced: true,
+			});
 			if (target.countDiscardableCards(player, "he") > 0) {
-				player.discardPlayerCard(target, "he", true);
+				await player.discardPlayerCard({
+					target,
+					position: "he",
+					forced: true,
+				});
 			}
 		},
 	},
