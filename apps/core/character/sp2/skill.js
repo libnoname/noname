@@ -6382,73 +6382,79 @@ const skills = {
 		filter(event, player) {
 			return (
 				player.getHistory("useCard", evt => {
-					var evtx = evt.getParent("phaseUse");
-					if (evtx && evtx == event) {
-						return true;
-					}
-					return false;
+					const phaseUseEvent = evt.getParent("phaseUse");
+					return phaseUseEvent === event;
 				}).length >= player.hp
 			);
 		},
-		direct: true,
-		content() {
-			"step 0";
-			var choices = [];
-			var choiceList = ["令装备区牌数多于你的角色各摸一张牌", "令装备区牌数少于你的角色各弃置一张手牌"];
-			var num = player.countCards("e");
-			var targets = [],
-				targets2 = [];
-			var eff = 0,
-				eff2 = 0;
-			for (var target of game.filterPlayer()) {
+		async cost(event, trigger, player) {
+			const choices = [];
+			const choiceList = ["令装备区牌数多于你的角色各摸一张牌", "令装备区牌数少于你的角色各弃置一张手牌"];
+			const num = player.countCards("e");
+			const drawTargets = [];
+			const discardTargets = [];
+			let drawEffect = 0;
+			let discardEffect = 0;
+			for (const target of game.filterPlayer()) {
 				if (target.countCards("e") > num) {
-					targets.push(target);
-					eff += get.attitude(player, target);
+					drawTargets.push(target);
+					drawEffect += get.attitude(player, target);
 				}
 				if (target.countCards("e") < num) {
-					targets2.push(target);
-					eff2 -= get.attitude(player, target);
+					discardTargets.push(target);
+					discardEffect -= get.attitude(player, target);
 				}
 			}
-			event.targets = targets;
-			event.targets2 = targets2;
-			if (targets.length) {
+			if (drawTargets.length) {
 				choices.push("选项一");
-				choiceList[0] += "（" + get.translation(targets) + "）";
+				choiceList[0] += `（${get.translation(drawTargets)}）`;
 			} else {
-				choiceList[0] = '<span style="opacity:0.5; ">' + choiceList[0] + "</span>";
+				choiceList[0] = `<span style="opacity:0.5; ">${choiceList[0]}</span>`;
 			}
-			if (targets2.length) {
+			if (discardTargets.length) {
 				choices.push("选项二");
-				choiceList[1] += "（" + get.translation(targets2) + "）";
+				choiceList[1] += `（${get.translation(discardTargets)}）`;
 			} else {
-				choiceList[1] = '<span style="opacity:0.5; ">' + choiceList[1] + "</span>";
+				choiceList[1] = `<span style="opacity:0.5; ">${choiceList[1]}</span>`;
 			}
 			if (!choices.length) {
-				event.finish();
-			} else {
-				player
-					.chooseControl(choices, "cancel2")
-					.set("prompt", get.prompt("dczuojian"))
-					.set("choiceList", choiceList)
-					.set("ai", () => {
-						var controls = _status.event.controls,
-							choice = _status.event.choice;
-						if (!controls.includes("选项一") || (controls.includes("选项二") && choice == 1)) {
+				event.result = { bool: false };
+				return;
+			}
+
+			const result = await player
+				.chooseControl({
+					controls: [...choices, "cancel2"],
+					prompt: get.prompt("dczuojian"),
+					choiceList,
+					ai: () => {
+						const controls = _status.event.controls;
+						const choice = _status.event.choice;
+						if (!controls.includes("选项一") || (controls.includes("选项二") && choice === 1)) {
 							return "选项二";
 						}
 						return "选项一";
-					})
-					.set("choice", eff <= 0 && eff2 <= 0 ? "cancel2" : eff > -eff2 ? 0 : 1);
-			}
-			"step 1";
-			if (result.control == "选项一") {
-				player.logSkill("dczuojian", targets);
-				game.asyncDraw(targets, 1);
-			} else if (result.control == "选项二") {
-				player.logSkill("dczuojian", event.targets2);
-				for (var target of event.targets2) {
-					player.discardPlayerCard("h", target, true);
+					},
+				})
+				.set("choice", drawEffect <= 0 && discardEffect <= 0 ? "cancel2" : drawEffect > -discardEffect ? 0 : 1)
+				.forResult();
+			const targets = result.control === "选项一" ? drawTargets : result.control === "选项二" ? discardTargets : [];
+			event.result = {
+				bool: targets.length > 0,
+				targets,
+				cost_data: result.control,
+			};
+		},
+		async content(event, trigger, player) {
+			if (event.cost_data === "选项一") {
+				await game.asyncDraw(event.targets, 1);
+			} else {
+				for (const target of event.targets) {
+					await player.discardPlayerCard({
+						target,
+						position: "h",
+						forced: true,
+					});
 				}
 			}
 		},
