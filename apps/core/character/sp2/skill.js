@@ -15329,40 +15329,40 @@ const skills = {
 	spwenji: {
 		audio: 2,
 		trigger: { player: "phaseUseBegin" },
-		direct: true,
 		filter(event, player) {
-			return game.hasPlayer(function (current) {
-				return current != player && current.countCards("he");
-			});
+			return game.hasPlayer(current => current !== player && current.countCards("he"));
 		},
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt2("spwenji"), function (card, player, target) {
-					return target != player && target.countCards("he") > 0;
-				})
-				.set("ai", function (target) {
-					var att = get.attitude(_status.event.player, target);
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2(event.skill),
+					filterTarget: (_card, player, target) => target !== player && target.countCards("he") > 0,
+					ai: target => {
+						const att = get.attitude(_status.event.player, target);
 					if (att > 0) {
 						return Math.sqrt(att) / 10;
 					}
 					return 5 - att;
-				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("spwenji", target);
-				target.chooseCard("he", true, "问计：将一张牌交给" + get.translation(player));
-			} else {
-				event.finish();
+					},
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const cardResult = await target
+				.chooseCard({
+					position: "he",
+					forced: true,
+					prompt: `问计：将一张牌交给${get.translation(player)}`,
+				})
+				.forResult();
+			if (!cardResult.bool) {
+				return;
 			}
-			"step 2";
-			if (result.bool) {
-				player.addTempSkill("spwenji_respond");
-				player.storage.spwenji_respond = result.cards[0].name;
-				event.target.give(result.cards, player, true);
-			}
+
+			player.addTempSkill("spwenji_respond");
+			player.storage.spwenji_respond = cardResult.cards[0].name;
+			await target.give(cardResult.cards, player, true);
 		},
 		subSkill: {
 			respond: {
@@ -15370,22 +15370,18 @@ const skills = {
 				trigger: { player: "useCard" },
 				forced: true,
 				charlotte: true,
-				audio: "spwenji",
-				filter(event, player) {
-					return event.card.name == player.storage.spwenji_respond;
-				},
-				content() {
-					trigger.directHit.addArray(
-						game.filterPlayer(function (current) {
-							return current != player;
-						})
-					);
-				},
-				ai: {
-					directHit_ai: true,
-					skillTagFilter(player, tag, arg) {
-						return arg.card.name == player.storage.spwenji_respond;
+					audio: "spwenji",
+					filter(event, player) {
+						return event.card.name === player.storage.spwenji_respond;
 					},
+					async content(event, trigger, player) {
+						trigger.directHit.addArray(game.filterPlayer(current => current !== player));
+					},
+				ai: {
+						directHit_ai: true,
+						skillTagFilter(player, tag, arg) {
+							return arg.card.name === player.storage.spwenji_respond;
+						},
 				},
 			},
 		},
