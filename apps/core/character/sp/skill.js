@@ -2,6 +2,298 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	// OL孙寒华 by WeiqiaoCode
+	ol_cailian_skill: {
+		charlotte: true,
+		forced: true,
+		trigger: {
+			source: "damageBegin1",
+			global: "recoverBegin",
+		},
+		filter(event, player) {
+			if (event.name === "damage") {
+				return game.getRoundHistory("everything", evt => evt.name === "damage" && evt.source === player)[0] === event;
+			}
+			return event.source === player && game.getRoundHistory("everything", evt => evt.name === "recover" && evt.source === player)[0] === event;
+		},
+		content() {
+			trigger.num++;
+		},
+		mod: {
+			ignoredHandcard(card, player) {
+				const cailian = player.getCards("e", cardx => cardx.name === "ol_cailian")[0];
+				if (!cailian) return;
+				const suit = get.suit(cailian, player);
+				if (lib.suit.includes(suit) && get.suit(card, player) === suit) return true;
+			},
+			cardDiscardable(card, player, name) {
+				if (name !== "phaseDiscard") return;
+				const cailian = player.getCards("e", cardx => cardx.name === "ol_cailian")[0];
+				if (!cailian) return;
+				const suit = get.suit(cailian, player);
+				if (lib.suit.includes(suit) && get.suit(card, player) === suit) return false;
+			},
+		},
+	},
+	olhuaguang: {
+		trigger: {
+			global: "roundStart",
+			player: "phaseZhunbeiBegin",
+		},
+		direct: true,
+		group: "olhuaguang_destroy",
+		filter(event, player) {
+			return player.hasCard(card => card.name === "ol_cailian", "he") || lib.skill.olhuaguang.getSlots(player).length > 0;
+		},
+		getSlots(player, card) {
+			const slots = get.is.mountCombined() ? ["equip1", "equip2", "equip3_4", "equip5"] : ["equip1", "equip2", "equip3", "equip4", "equip5"];
+			const current = card ? get.subtypes(card, false)[0] : null;
+			return slots.filter(slot => slot !== current && player.hasEquipableSlot(slot));
+		},
+		async content(event, trigger, player) {
+			let cailian = player.getCards("he", card => card.name === "ol_cailian")[0];
+			const slots = lib.skill.olhuaguang.getSlots(player, cailian);
+			const choices = [
+				["equip", "将【彩莲】置入一个装备栏"],
+				["suit", "修改【彩莲】的花色"],
+			];
+			const result = await player
+				.chooseButton([get.prompt(event.name), [choices, "textbutton"]])
+				.set("filterButton", button => {
+					if (button.link === "equip") return get.event().slots.length > 0;
+					return !!get.event().cailian;
+				})
+				.set("slots", slots)
+				.set("cailian", cailian)
+				.set("ai", button => (button.link === "equip" ? 2 : 1))
+				.forResult();
+			if (!result.bool) return;
+			player.logSkill(event.name);
+			if (result.links[0] === "suit") {
+				const suits = lib.suit.filter(suit => suit !== get.suit(cailian, false));
+				const suitResult = await player
+					.chooseControl(suits)
+					.set("prompt", "华光：修改【彩莲】的花色")
+					.set("ai", () => _status.event.controls.randomGet())
+					.forResult();
+				game.broadcastAll(
+					(card, suit) => {
+						card.suit = suit;
+						card.$init([suit, card.number, card.name, card.nature]);
+					},
+					cailian,
+					suitResult.control
+				);
+				player.popup(get.translation(suitResult.control));
+				game.log(player, "将", cailian, "的花色修改为", `#y${get.translation(suitResult.control)}`);
+				return;
+			}
+			if (!cailian) {
+				cailian = game.createCard2("ol_cailian", "none", null);
+				player.$gain2(cailian, false);
+				await game.delayx();
+			}
+			const availableSlots = lib.skill.olhuaguang.getSlots(player, cailian);
+			const slotResult = await player
+				.chooseControl(availableSlots)
+				.set("prompt", "华光：选择置入【彩莲】的装备栏")
+				.set("ai", () => _status.event.controls.randomGet())
+				.forResult();
+			const moving = get.position(cailian) === "e";
+			if (moving) {
+				cailian._ol_cailian_moving = true;
+				await player.lose(cailian, ui.special).set("type", "equip").set("getlx", false);
+			}
+			const vcard = get.autoViewAs(cailian);
+			vcard.subtypes = [slotResult.control];
+			await player.equip(vcard);
+			delete cailian._ol_cailian_moving;
+			if (get.owner(cailian) !== player || get.position(cailian) !== "e") {
+				cailian.fix();
+				cailian.remove();
+				cailian.destroyed = true;
+				game.log(cailian, "被销毁了");
+			}
+		},
+		subSkill: {
+			destroy: {
+				charlotte: true,
+				forced: true,
+				silent: true,
+				popup: false,
+				trigger: {
+					player: "loseAfter",
+					global: "loseAsyncAfter",
+				},
+				filter(event, player) {
+					const lose = event.getl(player);
+					if (!lose?.cards2?.some(card => card.name === "ol_cailian" && !card.destroyed && !card._ol_cailian_moving)) return false;
+					const parent = lose.getParent();
+					return !(parent?.name === "equip" && parent.player === player);
+				},
+				content() {
+					const lose = trigger.getl(player);
+					for (const card of lose.cards2.filter(card => card.name === "ol_cailian" && !card.destroyed)) {
+						card.fix();
+						card.remove();
+						card.destroyed = true;
+						game.log(card, "被销毁了");
+					}
+				},
+			},
+		},
+	},
+	olxuanbai: {
+		forced: true,
+		popup: false,
+		derivation: ["oldangmo", "oljihui", "olxiaju"],
+		trigger: {
+			player: ["enterGame", "equipAfter", "loseAfter"],
+			global: ["phaseBefore", "loseAsyncAfter"],
+		},
+		getForm(player) {
+			const cailian = player.getCards("e", card => card.name === "ol_cailian")[0];
+			if (!cailian) return null;
+			const subtype = get.subtypes(cailian, false)[0];
+			return {
+				equip1: "oldangmo",
+				equip2: "oljihui",
+				equip5: "olxiaju",
+			}[subtype];
+		},
+		filter(event, player) {
+			if (event.name === "phase" && game.phaseNumber !== 0) return false;
+			if (event.name === "loseAsync" && !event.getl(player)) return false;
+			const form = lib.skill.olxuanbai.getForm(player);
+			const forms = ["oldangmo", "oljihui", "olxiaju"];
+			return forms.some(skill => player.hasSkill(skill, null, null, false) !== (skill === form));
+		},
+		async content(event, trigger, player) {
+			const form = lib.skill.olxuanbai.getForm(player);
+			const forms = ["oldangmo", "oljihui", "olxiaju"];
+			const remove = forms.filter(skill => skill !== form && player.hasSkill(skill, null, null, false));
+			const add = form && !player.hasSkill(form, null, null, false) ? [form] : [];
+			if (add.length || remove.length) await player.changeSkills(add, remove);
+			if (form === "olxiaju" && player.storage.olxiaju) player.markSkill("olxiaju");
+		},
+	},
+	oldangmo: {
+		charlotte: true,
+		forced: true,
+		trigger: { player: "useCard2" },
+		filter(event, player) {
+			return event.targets?.length === 1 && get.tag(event.card, "damage");
+		},
+		async content(event, trigger, player) {
+			const canAdd = game.hasPlayer(target => !trigger.targets.includes(target) && lib.filter.targetEnabled2(trigger.card, player, target) && lib.filter.targetInRange(trigger.card, player, target));
+			const choices = [
+				["double", "此牌额外结算一次"],
+				["add", "此牌的目标数+1"],
+			];
+			const result = await player
+				.chooseButton(["荡魔：请选择一项", [choices, "textbutton"]], true)
+				.set("filterButton", button => button.link !== "add" || get.event().canAdd)
+				.set("canAdd", canAdd)
+				.set("ai", button => (button.link === "double" ? 2 : 1))
+				.forResult();
+			if (result.links[0] === "double") {
+				trigger.effectCount++;
+				game.log(trigger.card, "额外结算一次");
+				return;
+			}
+			const targetResult = await player
+				.chooseTarget("荡魔：为此牌增加一个目标", true, (card, player, target) => {
+					const evt = get.event().getTrigger();
+					return !evt.targets.includes(target) && lib.filter.targetEnabled2(evt.card, player, target) && lib.filter.targetInRange(evt.card, player, target);
+				})
+				.set("ai", target => get.effect(target, get.event().getTrigger().card, get.player(), get.player()))
+				.forResult();
+			if (targetResult.bool) {
+				trigger.targets.add(targetResult.targets[0]);
+				player.line(targetResult.targets[0]);
+				game.log(targetResult.targets[0], "成为了", trigger.card, "的额外目标");
+			}
+		},
+	},
+	oljihui: {
+		charlotte: true,
+		forced: true,
+		trigger: { global: "recoverAfter" },
+		filter(event) {
+			return game.getGlobalHistory("everything", evt => evt.name === "recover")[0] === event;
+		},
+		async content(event, trigger, player) {
+			await player.draw();
+		},
+		group: "oljihui_tao",
+		subSkill: {
+			tao: {
+				charlotte: true,
+				forced: true,
+				round: 1,
+				trigger: {
+					player: "loseAfter",
+					global: "loseAsyncAfter",
+				},
+				filter(event, player) {
+					const lose = event.getl(player);
+					return lose?.cards2?.length > player.getHp();
+				},
+				async content(event, trigger, player) {
+					const tao = get.cardPile2(card => card.name === "tao");
+					if (tao) await player.gain(tao, "gain2");
+				},
+			},
+		},
+	},
+	olxiaju: {
+		charlotte: true,
+		forced: true,
+		trigger: {
+			player: "loseAfter",
+			global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
+		},
+		filter(event, player) {
+			const lose = event.getl(player);
+			if (!lose?.cards2?.length) return false;
+			const firstLose = player.getHistory("lose", evt => evt.cards2?.length)[0];
+			return firstLose === event || firstLose?.getParent() === event;
+		},
+		async content(event, trigger, player) {
+			const owned = player
+				.getCards("he")
+				.map(card => get.suit(card, player))
+				.filter(suit => lib.suit.includes(suit))
+				.toUniqued();
+			const missing = lib.suit.filter(suit => !owned.includes(suit));
+			const charged = !!player.storage.olxiaju;
+			const count = charged ? 2 : 1;
+			const cards = [];
+			for (let i = 0; i < count; i++) {
+				const card = get.cardPile2(cardx => missing.includes(get.suit(cardx, false)) && !cards.includes(cardx));
+				if (card) cards.push(card);
+			}
+			if (cards.length) {
+				if (charged) {
+					delete player.storage.olxiaju;
+					player.unmarkSkill("olxiaju");
+				}
+				await player.gain(cards, "gain2");
+			}
+			const suits = player
+				.getCards("he")
+				.map(card => get.suit(card, player))
+				.filter(suit => lib.suit.includes(suit))
+				.toUniqued();
+			if (cards.length && missing.length && lib.suit.every(suit => suits.includes(suit))) {
+				player.storage.olxiaju = true;
+				player.markSkill("olxiaju");
+			}
+		},
+		intro: {
+			content: "下次发动〖霞举〗时获得两张牌",
+		},
+	},
 	//王皑（春丽来咯）
 	qinmian: {
 		audio: 2,

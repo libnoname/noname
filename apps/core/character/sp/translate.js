@@ -1,6 +1,22 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	ol_sunhanhua: "OL孙寒华",
+	ol_sunhanhua_prefix: "OL",
+	ol_cailian: "彩莲",
+	ol_cailian_info: "锁定技，你每轮首次造成的伤害与回复+1，且你与此牌花色相同的手牌不计入手牌上限。",
+	ol_cailian_skill: "彩莲",
+	ol_cailian_skill_info: "锁定技，你每轮首次造成的伤害与回复+1，且你与此牌花色相同的手牌不计入手牌上限。",
+	olhuaguang: "华光",
+	olhuaguang_info: "每轮开始时、准备阶段，你可选择一项：1.将【彩莲】置入一个装备栏；2.修改【彩莲】花色。",
+	olxuanbai: "玄白",
+	olxuanbai_info: "锁定技，当【彩莲】进入你的一个装备栏后，你切换为不同的形态：武器栏－荡魔，防具栏－济惠，宝物栏－霞举。",
+	oldangmo: "荡魔",
+	oldangmo_info: "锁定技，当你使用单目标伤害牌时，你选择一项：1.此牌额外结算一次；2.此牌的目标数+1。",
+	oljihui: "济惠",
+	oljihui_info: "锁定技，每回合首次有角色回复体力后，你摸一张牌。你本轮首次失去牌数大于体力值后，你获得一张【桃】。",
+	olxiaju: "霞举",
+	olxiaju_info: "锁定技，每回合第一次失去牌后，你获得一张你区域内没有的花色的牌。若你以此法集齐四种花色的牌，你下次以此法改为获得两张牌。",
 	caoying_basic: "基本",
 	caoying_trick: "锦囊",
 	caoying_equip: "装备",
