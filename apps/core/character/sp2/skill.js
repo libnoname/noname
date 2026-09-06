@@ -14920,42 +14920,48 @@ const skills = {
 		filter(event, player) {
 			return !event.numFixed;
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			trigger.changeToZero();
-			event.cards = get.cards(4);
-			game.cardsGotoOrdering(event.cards);
-			player.showCards(event.cards);
-			"step 1";
-			cards.sort(function (a, b) {
-				return b.number - a.number;
-			});
-			var gains = [];
-			var mx = [cards[0].number, cards[3].number];
-			for (var i = 0; i < cards.length; i++) {
-				if (mx.includes(cards[i].number)) {
-					gains.addArray(cards.splice(i--, 1));
+			const cards = get.cards(4);
+			await game.cardsGotoOrdering(cards);
+			await player.showCards(cards);
+			cards.sort((a, b) => b.number - a.number);
+			const gains = [];
+			const remainingCards = [];
+			const extremeNumbers = [cards[0].number, cards[3].number];
+			for (const card of cards) {
+				if (extremeNumbers.includes(card.number)) {
+					gains.push(card);
+				} else {
+					remainingCards.push(card);
 				}
 			}
-			player.gain(gains, "gain2");
-			if (cards.length > 0) {
-				player
-					.chooseTarget("是否令一名手牌数最少的角色获得" + get.translation(cards), function (card, player, target) {
-						return target.isMinHandcard();
-					})
-					.set("ai", function (target) {
-						return get.attitude(_status.event.player, target);
-					});
-			} else {
-				event.finish();
+			await player.gain({
+				cards: gains,
+				animate: "gain2",
+			});
+			if (!remainingCards.length) {
+				return;
 			}
-			"step 2";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.line(target);
-				player.addExpose(0.2);
-				target.gain(cards, "gain2");
+
+			const result = await player
+				.chooseTarget({
+					prompt: `是否令一名手牌数最少的角色获得${get.translation(remainingCards)}`,
+					filterTarget: (_card, _player, target) => target.isMinHandcard(),
+					ai: target => get.attitude(_status.event.player, target),
+				})
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
+
+			const target = result.targets[0];
+			player.line(target);
+			player.addExpose(0.2);
+			await target.gain({
+				cards: remainingCards,
+				animate: "gain2",
+			});
 		},
 	},
 	lslixun: {
