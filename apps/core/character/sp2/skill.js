@@ -6465,29 +6465,27 @@ const skills = {
 		trigger: { player: "damageBegin4" },
 		forced: true,
 		filter(event, player) {
-			return player.isDamaged() && event.card && event.card.name == "sha";
+			return player.isDamaged() && event.card && event.card.name === "sha";
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			trigger.cancel();
-			for (var func of ["discardPile", "cardPile2"]) {
-				var card = get[func](card => card.name == "sha");
+			for (const func of ["discardPile", "cardPile2"]) {
+				const card = get[func](card => card.name === "sha");
 				if (card) {
-					player.gain(card, "gain2");
+					await player.gain({
+						cards: [card],
+						animate: "gain2",
+					});
 					break;
 				}
 			}
-			"step 1";
-			player.loseMaxHp();
+			await player.loseMaxHp();
 		},
 		ai: {
 			halfneg: true,
 			filterDamage: true,
 			skillTagFilter(player, tag, arg) {
-				if (arg && arg.card && arg.card.name == "sha") {
-					return true;
-				}
-				return false;
+				return arg?.card?.name === "sha";
 			},
 		},
 	},
