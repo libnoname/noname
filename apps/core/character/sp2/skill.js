@@ -15744,40 +15744,46 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filterTarget(card, player, target) {
-			return player != target && target.countCards("e") < player.countCards("e");
+			return player !== target && target.countCards("e") < player.countCards("e");
 		},
-		content() {
-			"step 0";
-			var list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].map(i => get.strNumber(i));
-			target
-				.chooseControl(list)
-				.set("ai", function () {
-					return get.rand(0, 12);
+		async content(event, trigger, player) {
+			const target = event.target;
+			const list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].map(index => get.strNumber(index));
+			const controlResult = await target
+				.chooseControl({
+					controls: list,
+					prompt: "请选择一个点数",
+					ai: () => get.rand(0, 12),
 				})
-				.set("prompt", "请选择一个点数");
-			"step 1";
-			if (result.control) {
-				target.$damagepop(result.control, "thunder");
-				var num = result.index + 1;
-				event.num = num;
-			} else {
-				target.$damagepop("K", "thunder");
-				event.num = 13;
-			}
-			game.log(target, "选择的点数是", "#y" + get.strNumber(event.num));
+				.forResult();
+			const num = controlResult.control ? controlResult.index + 1 : 13;
+			target.$damagepop(controlResult.control || "K", "thunder");
+			event.num = num;
+			game.log(target, "选择的点数是", `#y${get.strNumber(num)}`);
 			player.addMark(event.name, 1, false);
-			player.judge(function (card) {
-				if (card.number == _status.event.getParent("xinfu_lveming").num) {
-					return 4;
-				}
-				return 0;
-			});
-			"step 2";
-			if (result.bool == true) {
-				target.damage(2);
-			} else {
-				var card = target.getCards("hej").randomGet();
-				player.gain(card, target, "giveAuto", "bySelf");
+			const judgeResult = await player
+				.judge({
+					judge: card => {
+						if (card.number === _status.event.getParent("xinfu_lveming").num) {
+							return 4;
+						}
+						return 0;
+					},
+				})
+				.forResult();
+			if (judgeResult.bool) {
+				await target.damage(2);
+				return;
+			}
+
+			const card = target.getCards("hej").randomGet();
+			if (card) {
+				await player.gain({
+					cards: [card],
+					source: target,
+					animate: "giveAuto",
+					bySelf: true,
+				});
 			}
 		},
 		ai: {
@@ -15790,8 +15796,8 @@ const skills = {
 					return 0;
 				},
 				target(player, target) {
-					var numj = target.countCards("j");
-					var numhe = target.countCards("he");
+					const numj = target.countCards("j");
+					const numhe = target.countCards("he");
 					if (numhe + numj > 0) {
 						return (1.6 * numj - numhe) / (numj + numhe) - 0.3;
 					}
