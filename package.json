@@ -28,5 +28,10 @@
         "typescript": "^5.9.3",
         "typescript-eslint": "^8.55.0",
         "vue-eslint-parser": "^10.3.0"
+    },
+    "pnpm": {
+        "overrides": {
+            "nanoid": "5.1.16"
+        }
     }
 }
