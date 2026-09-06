@@ -11524,26 +11524,18 @@ const skills = {
 	hfjieying: {
 		audio: 2,
 		trigger: { player: "phaseJieshuBegin" },
-		direct: true,
-		content() {
-			"step 0";
-			player.chooseTarget(get.prompt2("hfjieying"), lib.filter.notMe).set("ai", function (target) {
-				var player = _status.event.player;
-				return (
-					(get.attitude(player, target) *
-						(1 +
-							target.countCards("h", function (card) {
-								return !get.tag(card, "damage") && target.hasValueTarget(card);
-							}))) /
-					(1 + target.countCards("h"))
-				);
-			});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("hfjieying", target);
-				target.addTempSkill("hfjieying2", { player: "phaseEnd" });
-			}
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2(event.skill),
+					filterTarget: lib.filter.notMe,
+					ai: target => (get.attitude(player, target) * (1 + target.countCards("h", card => !get.tag(card, "damage") && target.hasValueTarget(card)))) / (1 + target.countCards("h")),
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			target.addTempSkill("hfjieying2", { player: "phaseEnd" });
 		},
 		ai: {
 			expose: 0.05,
@@ -11552,22 +11544,18 @@ const skills = {
 	hfjieying2: {
 		mod: {
 			cardEnabled(card, player) {
-				if (player.storage.hfjieying2) {
-					return false;
-				}
+				return player.storage.hfjieying2 ? false : undefined;
 			},
 			cardSavable(card, player) {
-				if (player.storage.hfjieying2) {
-					return false;
-				}
+				return player.storage.hfjieying2 ? false : undefined;
 			},
 			targetInRange(card, player) {
-				if (player == _status.currentPhase && (card.name == "sha" || get.type(card) == "trick")) {
+				if (player === _status.currentPhase && (card.name === "sha" || get.type(card) === "trick")) {
 					return true;
 				}
 			},
 			aiOrder(player, card, num) {
-				var info = get.info(card);
+				const info = get.info(card);
 				if (!get.tag(card, "damage") && (!info || !info.toself)) {
 					return num + 8;
 				}
@@ -11579,58 +11567,47 @@ const skills = {
 		charlotte: true,
 		sourceSkill: "hfjieying",
 		filter(event, player) {
-			if (player != _status.currentPhase || event.targets.length != 1) {
+			if (player !== _status.currentPhase || event.targets.length !== 1) {
 				return false;
 			}
-			var card = event.card;
-			if (card.name != "sha" && get.type(card) != "trick") {
+			const card = event.card;
+			if (card.name !== "sha" && get.type(card) !== "trick") {
 				return false;
 			}
-			var info = get.info(card);
-			if (info.allowMultiple == false) {
+			const info = get.info(card);
+			if (info.allowMultiple === false) {
 				return false;
 			}
-			if (event.targets && !info.multitarget) {
-				if (
-					game.hasPlayer(function (current) {
-						return !event.targets.includes(current) && lib.filter.targetEnabled2(card, player, current);
-					})
-				) {
-					return true;
-				}
+			if (!event.targets || info.multitarget) {
+				return false;
 			}
-			return false;
+			return game.hasPlayer(current => !event.targets.includes(current) && lib.filter.targetEnabled2(card, player, current));
 		},
-		content() {
-			"step 0";
-			var prompt2 = "为" + get.translation(trigger.card) + "增加一个目标";
-			player
-				.chooseTarget(get.prompt("hfjieying2"), function (card, player, target) {
-					var player = _status.event.player;
-					return !_status.event.targets.includes(target) && lib.filter.targetEnabled2(_status.event.card, player, target);
-				})
-				.set("prompt2", prompt2)
-				.set("ai", function (target) {
-					var trigger = _status.event.getTrigger();
-					var player = _status.event.player;
-					return get.effect(target, trigger.card, player, player);
+		async content(event, trigger, player) {
+			const result = await player
+				.chooseTarget({
+					prompt: get.prompt("hfjieying2"),
+					prompt2: `为${get.translation(trigger.card)}增加一个目标`,
+					filterTarget: (card, player, target) => !_status.event.targets.includes(target) && lib.filter.targetEnabled2(_status.event.card, player, target),
+					ai: target => {
+						const trigger = _status.event.getTrigger();
+						const player = _status.event.player;
+						return get.effect(target, trigger.card, player, player);
+					},
 				})
 				.set("card", trigger.card)
-				.set("targets", trigger.targets);
-			"step 1";
-			if (result.bool) {
-				if (!event.isMine() && !event.isOnline()) {
-					game.delayx();
-				}
-				event.targets = result.targets;
-			} else {
-				event.finish();
+				.set("targets", trigger.targets)
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
-			"step 2";
-			if (event.targets) {
-				player.logSkill("hfjieying2", event.targets);
-				trigger.targets.addArray(event.targets);
+			if (!event.isMine() && !event.isOnline()) {
+				await game.delayx();
 			}
+
+			const targets = result.targets;
+			player.logSkill("hfjieying2", targets);
+			trigger.targets.addArray(targets);
 		},
 		group: "hfjieying3",
 		mark: true,
@@ -11649,9 +11626,9 @@ const skills = {
 		popup: false,
 		sourceSkill: "hfjieying",
 		filter(event, player) {
-			return !player.storage.hfjieying2 && player == _status.currentPhase;
+			return !player.storage.hfjieying2 && player === _status.currentPhase;
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.storage.hfjieying2 = true;
 		},
 	},
