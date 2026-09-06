@@ -33,7 +33,8 @@ const skills = {
 			return 8 - get.value(card);
 		},
 		async content(event, trigger, player) {
-			const { cards, target } = event;
+			const cards = event.cards;
+			const target = event.target;
 			player.addTempSkill(event.name + "_used");
 			player.markAuto(event.name + "_used", [get.suit(cards[0])]);
 			const num = lib.suit.slice().removeArray(player.getCards("h").map(card => get.suit(card))).length;
@@ -13556,36 +13557,34 @@ const skills = {
 		usable: 1,
 		audio: 2,
 		filter(event, player) {
-			return player.countCards("h", function (card) {
-				return get.type(card) != "equip";
-			});
+			return player.hasCards("h", card => get.type(card) !== "equip");
 		},
 		filterCard(card) {
-			return get.type(card) != "equip";
+			return get.type(card) !== "equip";
 		},
 		filterTarget: lib.filter.notMe,
 		delay: false,
 		discard: false,
 		lose: false,
 		check(card) {
-			if (card.name == "du") {
+			if (card.name === "du") {
 				return 20;
 			}
-			var player = _status.event.player;
-			var useval = player.getUseValue(card);
-			var maxval = 0;
-			game.countPlayer(function (current) {
-				if (current != player && !current.hasSkillTag("nogain") && get.attitude(player, current) > 0) {
-					var temp = current.getUseValue(card);
-					if (temp > maxval) {
-						maxval = temp;
+			const player = _status.event.player;
+			const useValue = player.getUseValue(card);
+			let maxValue = 0;
+			game.countPlayer(current => {
+				if (current !== player && !current.hasSkillTag("nogain") && get.attitude(player, current) > 0) {
+					const currentValue = current.getUseValue(card);
+					if (currentValue > maxValue) {
+						maxValue = currentValue;
 					}
 				}
 			});
-			if (maxval > useval) {
+			if (maxValue > useValue) {
 				return 15;
 			}
-			if (maxval > 0) {
+			if (maxValue > 0) {
 				return 10;
 			}
 			if (player.needsToDiscard()) {
@@ -13593,37 +13592,40 @@ const skills = {
 			}
 			return -1;
 		},
-		content() {
-			"step 0";
-			player.give(cards, target);
-			"step 1";
-			target.chooseUseTarget(cards[0]);
-			"step 2";
-			if (result.bool) {
-				player.draw();
+		async content(event, trigger, player) {
+			const { cards, target } = event;
+			await player.give(cards, target);
+			const result = await target
+				.chooseUseTarget({
+					card: cards[0],
+				})
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
+			await player.draw();
 		},
 		ai: {
 			order: 10,
 			result: {
 				target(player, target) {
-					if (ui.selected.cards.length) {
-						var card = ui.selected.cards[0];
-						if (card.name == "du") {
-							return target.hasSkill("lucia_duqu") ? 1 : -1;
-						}
-						var t = target.getUseValue(card);
-						var p = player.getUseValue(card);
-						if (t > p) {
-							return 2;
-						}
-						if (t > 0) {
-							return 1.5;
-						}
-						if (player.needsToDiscard()) {
-							return 1;
-						}
+					if (!ui.selected.cards.length) {
 						return 0;
+					}
+					const card = ui.selected.cards[0];
+					if (card.name === "du") {
+						return target.hasSkill("lucia_duqu") ? 1 : -1;
+					}
+					const targetValue = target.getUseValue(card);
+					const playerValue = player.getUseValue(card);
+					if (targetValue > playerValue) {
+						return 2;
+					}
+					if (targetValue > 0) {
+						return 1.5;
+					}
+					if (player.needsToDiscard()) {
+						return 1;
 					}
 					return 0;
 				},
