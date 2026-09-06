@@ -802,9 +802,11 @@ export class Create {
 			}
 		} else {
 			ui.window.classList.add("connecting");
-			ui.connecting = ui.create.div(".fullsize.connectlayer");
-			document.body.appendChild(ui.connecting);
-			ui.create.div("", "正在重连...", ui.connecting);
+			if (!ui.connecting) {
+				ui.connecting = ui.create.div(".fullsize.connectlayer");
+				document.body.appendChild(ui.connecting);
+				ui.create.div("", "正在重连...", ui.connecting);
+			}
 			ui.connecting.splashtimeout = setTimeout(function () {
 				if (ui.connecting) {
 					delete ui.connecting.splashtimeout;
