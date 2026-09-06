@@ -19809,6 +19809,365 @@ export default {
 			},
 		},
 	},
+	// OL国战曹植 by WeiqiaoCode
+	gz_ol_jiushi: {
+		preHidden: true,
+		group: ["gz_ol_jiushi_use", "gz_ol_jiushi_recast"],
+		subSkill: {
+			use: {
+				trigger: {
+					player: "showCharacterEnd",
+				},
+				filter(event, player) {
+					const current = _status.currentPhase;
+					if (!current?.isIn()) {
+						return false;
+					}
+					const card = new lib.element.VCard({ name: "jiu", isCard: true });
+					return current.hasUseTarget(card);
+				},
+				async cost(event, trigger, player) {
+					const current = _status.currentPhase;
+					const result = await player
+						.chooseBool(`酒诗：是否令${get.translation(current)}视为使用一张【酒】？`)
+						.set("ai", () => true)
+						.forResult();
+					event.result = {
+						bool: result.bool,
+					};
+				},
+				async content(event, trigger, player) {
+					const current = _status.currentPhase;
+					if (current?.isIn()) {
+						await current.chooseUseTarget(new lib.element.VCard({ name: "jiu", isCard: true }), true);
+					}
+				},
+			},
+			recast: {
+				trigger: {
+					player: "damageEnd",
+				},
+				filter(event, player) {
+					return !player.isUnseen(0) && !player.isUnseen(1) && player.countCards("he", card => get.suit(card) == "club" && player.canRecast(card)) > 0;
+				},
+				async cost(event, trigger, player) {
+					const result = await player
+						.chooseCard("he", [1, Infinity], "酒诗：是否重铸任意张梅花牌并暗置曹植？", (card, player) => {
+							return get.suit(card) == "club" && player.canRecast(card);
+						})
+						.set("ai", card => 6 - get.value(card))
+						.forResult();
+					event.result = {
+						bool: result.bool,
+						cards: result.cards,
+					};
+				},
+				async content(event, trigger, player) {
+					await player.recast(event.cards);
+					if (player.name1 == "gz_ol_caozhi" && !player.isUnseen(0)) {
+						await player.hideCharacter(0);
+					} else if (player.name2 == "gz_ol_caozhi" && !player.isUnseen(1)) {
+						await player.hideCharacter(1);
+					}
+				},
+			},
+		},
+	},
+	gz_ol_zongpei: {
+		preHidden: true,
+		usable: 1,
+		trigger: {
+			global: ["loseAfter", "cardsDiscardAfter", "loseAsyncAfter"],
+		},
+		filter(event, player) {
+			return lib.skill.gz_ol_zongpei.getCards(event, player).length > 0;
+		},
+		async cost(event, trigger, player) {
+			const cards = lib.skill.gz_ol_zongpei.getCards(trigger, player);
+			const result = await player
+				.chooseBool(`纵辔：是否获得${get.translation(cards)}？`)
+				.set("ai", () => true)
+				.forResult();
+			event.result = {
+				bool: result.bool,
+			};
+		},
+		async content(event, trigger, player) {
+			const cards = lib.skill.gz_ol_zongpei.getCards(trigger, player);
+			if (cards.length) {
+				await player.gain({
+					cards,
+					animate: "gain2",
+				});
+			}
+		},
+		isZongpeiCard(card) {
+			if (get.type(card, "trick") == "trick") {
+				return true;
+			}
+			return ["equip3", "equip4"].includes(get.subtype(card, false));
+		},
+		getCards(event, player) {
+			if (event.getParent().name == "useCard") {
+				return [];
+			}
+			let cards = [];
+			if (event.name == "lose") {
+				if (event.player == player || event.type == "use" || event.position != ui.discardPile) {
+					return [];
+				}
+				cards = event.cards2 || event.cards || [];
+			} else if (event.name == "loseAsync") {
+				for (const current of game.players.concat(game.dead)) {
+					if (current == player) {
+						continue;
+					}
+					const evt = event.getl(current);
+					if (evt?.cards2?.length) {
+						cards.addArray(evt.cards2);
+					}
+				}
+			} else if (event.name == "cardsDiscard") {
+				const source = event.getParent().player || event.discarder;
+				if (!source || source == player || event.type == "use") {
+					return [];
+				}
+				cards = event.cards || [];
+			}
+			return cards.filter(card => get.position(card, true) == "d" && lib.skill.gz_ol_zongpei.isZongpeiCard(card)).toUniqued();
+		},
+	},
+
+	// OL国战孙峻 by WeiqiaoCode
+	gz_ol_suchao: {
+		enable: "phaseUse",
+		usable: 1,
+		selectTarget: [1, 3],
+		multitarget: true,
+		filter(event, player) {
+			return game.hasPlayer(current => current != player && current.countCards("h") > player.countCards("h"));
+		},
+		filterTarget(card, player, target) {
+			return target != player && target.countCards("h") > player.countCards("h");
+		},
+		async content(event, trigger, player) {
+			const targets = event.targets.slice(0).filter(target => target.isIn());
+			if (!targets.length) {
+				return;
+			}
+			player.addTempSkill("gz_ol_suchao_after", "phaseUseAfter");
+			player.markAuto("gz_ol_suchao_after", targets);
+			await game.doAsyncInOrder(targets, async target => {
+				await target.damage({ source: player });
+			});
+		},
+		ai: {
+			order: 7,
+			result: {
+				target(player, target) {
+					return get.damageEffect(target, player, player);
+				},
+			},
+		},
+		subSkill: {
+			after: {
+				charlotte: true,
+				trigger: {
+					player: "phaseUseEnd",
+				},
+				forced: true,
+				popup: false,
+				filter(event, player) {
+					return player.getStorage("gz_ol_suchao_after").some(target => target?.isIn());
+				},
+				async content(event, trigger, player) {
+					const targets = player.getStorage("gz_ol_suchao_after").filter(target => target?.isIn()).toUniqued();
+					player.unmarkAuto("gz_ol_suchao_after", targets);
+					await game.doAsyncInOrder(targets, async target => {
+						if (!target.isIn()) {
+							return;
+						}
+						await target.recover();
+						if (!target.isIn() || !player.isIn()) {
+							return;
+						}
+						const next = target.chooseToUse(
+							function (card, player, event) {
+								return get.name(card) == "sha" && lib.filter.filterCard.apply(this, arguments);
+							},
+							`肃朝：是否对${get.translation(player)}使用一张【杀】？`
+						);
+						next.set("targetRequired", true);
+						next.set("complexSelect", true);
+						next.set("complexTarget", true);
+						next.set("filterTarget", function (card, player, target) {
+							if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
+								return false;
+							}
+							return lib.filter.targetEnabled.apply(this, arguments);
+						});
+						next.set("sourcex", player);
+						next.set("addCount", false);
+						await next;
+					});
+				},
+			},
+		},
+	},
+	gz_ol_zhulian: {
+		forced: true,
+		trigger: {
+			global: "damageBegin1",
+		},
+		filter(event, player) {
+			if (_status.currentPhase != player || !event.player?.isIn()) {
+				return false;
+			}
+			return lib.skill.gz_ol_zhulian.hasTaoRecord(event.player);
+		},
+		async content(event, trigger, player) {
+			trigger.num++;
+		},
+		hasTaoRecord(target) {
+			if (
+				target.hasHistory("useCard", evt => evt.card?.name == "tao") ||
+				game.getGlobalHistory("useCard", evt => evt.card?.name == "tao" && evt.targets?.includes(target)).length
+			) {
+				return true;
+			}
+			return false;
+		},
+	},
+
+	// OL国战蹇硕 by WeiqiaoCode
+	gz_ol_shantong: {
+		preHidden: true,
+		trigger: {
+			global: "phaseZhunbeiBegin",
+		},
+		filter(event, player) {
+			const target = event.player;
+			return target?.isIn() && target.isFriendOf(player) && !target.isUnseen(0) && !target.isUnseen(1);
+		},
+		async cost(event, trigger, player) {
+			const target = trigger.player;
+			const next = target.chooseControl("主将", "副将", "cancel2");
+			next.set("prompt", "擅统：是否暗置一张武将牌，令此回合使用的下一张牌无距离和次数限制？");
+			next.set("ai", () => "副将");
+			const result = await next.forResult();
+			if (result.control != "cancel2") {
+				event.result = {
+					bool: true,
+					cost_data: result.control == "主将" ? 0 : 1,
+				};
+			}
+		},
+		async content(event, trigger, player) {
+			const target = trigger.player;
+			const index = event.cost_data;
+			const name = index == 0 ? target.name1 : target.name2;
+			await target.hideCharacter(index);
+			target.storage.gz_ol_shantong_effect = {
+				source: player,
+				name,
+			};
+			target.addTempSkill("gz_ol_shantong_effect", "phaseAfter");
+			target.addTempSkill("gz_ol_shantong_watch", "phaseAfter");
+		},
+		subSkill: {
+			effect: {
+				charlotte: true,
+				trigger: {
+					player: "useCardAfter",
+				},
+				forced: true,
+				popup: false,
+				filter(event, player) {
+					return !!player.storage.gz_ol_shantong_effect;
+				},
+				async content(event, trigger, player) {
+					player.removeSkill("gz_ol_shantong_effect");
+				},
+				mod: {
+					cardUsable(card, player) {
+						if (player.storage.gz_ol_shantong_effect) {
+							return Infinity;
+						}
+					},
+					targetInRange(card, player) {
+						if (player.storage.gz_ol_shantong_effect) {
+							return true;
+						}
+					},
+				},
+			},
+			watch: {
+				charlotte: true,
+				onremove(player) {
+					delete player.storage.gz_ol_shantong_effect;
+				},
+				trigger: {
+					player: "showCharacterEnd",
+				},
+				forced: true,
+				popup: false,
+				filter(event, player) {
+					const info = player.storage.gz_ol_shantong_effect;
+					return !!info && event.toShow?.includes(info.name);
+				},
+				async content(event, trigger, player) {
+					const info = player.storage.gz_ol_shantong_effect;
+					const source = info?.source;
+					player.removeSkill("gz_ol_shantong_watch");
+					player.removeSkill("gz_ol_shantong_effect");
+					if (!source?.isIn() || !player.isIn()) {
+						return;
+					}
+					await player.damage({ source });
+					const cards = player.getCards("h");
+					if (cards.length && source.isIn() && player.isIn()) {
+						await source.gain({
+							cards,
+							source: player,
+							animate: "giveAuto",
+						});
+					}
+				},
+			},
+		},
+	},
+	gz_ol_qiuchou: {
+		forced: true,
+		forceDie: true,
+		preHidden: true,
+		trigger: {
+			player: "dieAfter",
+			source: "dieAfter",
+		},
+		filter(event, player) {
+			if (event.player == player) {
+				return event.source && event.source.isFriendOf(player);
+			}
+			return event.source == player;
+		},
+		async content(event, trigger, player) {
+			const target = trigger.player == player ? trigger.source : player;
+			if (target?.isIn()) {
+				await target.changeVice(true);
+			}
+		},
+		ai: {
+			noDieAfter: true,
+			noDieAfter2: true,
+			skillTagFilter(player, tag, target) {
+				if (tag == "noDieAfter") {
+					return target?.isFriendOf(player);
+				}
+				return true;
+			},
+		},
+	},
+
 	ushio_huanxin: {
 		trigger: {
 			player: ["damageEnd", "useCardAfter"],
