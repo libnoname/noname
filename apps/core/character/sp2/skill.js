@@ -6072,14 +6072,14 @@ const skills = {
 		audio: 2,
 		trigger: { target: "useCardToTargeted" },
 		filter(event, player) {
-			return get.type(event.card) != "equip";
+			return get.type(event.card) !== "equip";
 		},
 		frequent: true,
 		group: "dcniji_discard",
 		async content(event, trigger, player) {
 			const next = player.draw();
 			const evt = trigger.getParent("dcniji_discard");
-			if (!evt || evt.player != player) {
+			if (!evt || evt.player !== player) {
 				next.gaintag = ["dcniji"];
 			}
 			player.addTempSkill("dcniji_clear");
@@ -6100,33 +6100,31 @@ const skills = {
 				},
 				forced: true,
 				locked: false,
-				content() {
-					"step 0";
-					var cards = player.getCards("h", card => card.hasGaintag("dcniji") && lib.filter.cardDiscardable(card, player, "dcniji"));
-					event.cards = cards;
-					// if(cards.length>=player.hp){
+				async content(event, trigger, player) {
+					const cards = player.getCards("h", card => card.hasGaintag("dcniji") && lib.filter.cardDiscardable(card, player, "dcniji"));
 					if (cards.some(card => player.hasUseTarget(card))) {
-						player.chooseToUse({
-							prompt: "是否使用一张“逆击”牌？",
-							filterCard(card, player) {
-								if (![card].concat(card.cards || []).some(c => get.itemtype(c) == "card" && c.hasGaintag("dcniji"))) {
-									return false;
-								}
-								return lib.filter.filterCard.apply(this, arguments);
-							},
-							ai1(card) {
-								return get.player().getUseValue(card);
-							},
-						});
+						const result = await player
+							.chooseToUse({
+								prompt: "是否使用一张“逆击”牌？",
+								filterCard(card, player) {
+									if (![card].concat(card.cards || []).some(current => get.itemtype(current) === "card" && current.hasGaintag("dcniji"))) {
+										return false;
+									}
+									return lib.filter.filterCard.apply(this, arguments);
+								},
+								ai1(card) {
+									return get.player().getUseValue(card);
+								},
+							})
+							.forResult();
+						if (result.bool) {
+							await game.delayex();
+						}
 					}
 					// }
-					"step 1";
-					if (result.bool) {
-						game.delayex();
-					}
-					var cards = cards.filter(card => get.owner(card) == player && get.position(card) == "h" && lib.filter.cardDiscardable(card, player, "dcniji"));
-					if (cards.length) {
-						player.discard(cards);
+					const remainingCards = cards.filter(card => get.owner(card) === player && get.position(card) === "h" && lib.filter.cardDiscardable(card, player, "dcniji"));
+					if (remainingCards.length) {
+						await player.discard({ cards: remainingCards });
 					}
 				},
 			},
