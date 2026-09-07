@@ -11,7 +11,7 @@ const skills = {
 	},
 	//博学曹冲
 	boxue: {
-		audio: 3,
+		audio: 2,
 		enable: "chooseToUse",
 		canUseCards(event, player) {
 			const discards = Array.from(ui.discardPile.childNodes);
