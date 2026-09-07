@@ -15828,30 +15828,30 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filterTarget(card, player, target) {
-			return player != target;
+			return player !== target;
 		},
-		content() {
-			"step 0";
-			if (target.countCards("hej") == 0) {
-				event._result = { index: 1 };
-			} else {
-				target
-					.chooseControl()
-					.set("choiceList", ["令" + get.translation(player) + "随机获得你区域内的一张牌，然后其本回合内不能再对你使用牌。", "令" + get.translation(player) + "本回合内对你使用牌没有次数与距离限制。"])
-					.set("ai", function () {
-						var list = [0, 1];
-						return list.randomGet();
-					});
+		async content(event, trigger, player) {
+			const { target } = event;
+			let result = { index: 1 };
+			if (target.hasCards("hej")) {
+				result = await target
+					.chooseControl({
+						choiceList: [
+							`令${get.translation(player)}随机获得你区域内的一张牌，然后其本回合内不能再对你使用牌。`,
+							`令${get.translation(player)}本回合内对你使用牌没有次数与距离限制。`,
+						],
+						ai: () => [0, 1].randomGet(),
+					})
+					.forResult();
 			}
-			"step 1";
 			player.addTempSkill("tanbei_effect3");
-			if (result.index == 0) {
-				var card = target.getCards("hej").randomGet();
-				player.gain(card, target, "giveAuto", "bySelf");
-				target.addTempSkill("tanbei_effect2");
-			} else {
+			if (result.index !== 0) {
 				target.addTempSkill("tanbei_effect1");
+				return;
 			}
+			const card = target.getCards("hej").randomGet();
+			await player.gain({ cards: [card], source: target, animate: "giveAuto", bySelf: true });
+			target.addTempSkill("tanbei_effect2");
 		},
 		ai: {
 			order() {
