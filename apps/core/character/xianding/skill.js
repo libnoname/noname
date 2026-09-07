@@ -3098,7 +3098,6 @@ const skills = {
 							.set("card", trigger.card)
 							.forResult();
 						if (result?.bool) {
-							player.changeZhuanhuanji("dcsbjingmou");
 							trigger.targets.length = 0;
 							trigger.all_excluded = true;
 							const cards = get.cards(1);
@@ -3124,12 +3123,12 @@ const skills = {
 									.forResult();
 								if (result?.bool && result.targets?.length) {
 									const target = result.targets[0];
-									player.changeZhuanhuanji("dcsbjingmou");
 									player.line(target);
 									await target.gain({ cards, animate: "gain2", giver: player });
 								}
 							});
 					}
+					player.changeZhuanhuanji("dcsbjingmou");
 				},
 			},
 			change: {
