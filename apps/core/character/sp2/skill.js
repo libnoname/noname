@@ -11605,14 +11605,12 @@ const skills = {
 		trigger: { target: "useCardToTargeted" },
 		forced: true,
 		filter(event, player) {
-			return player != event.player && player.countCards("h") < Math.min(5, player.maxHp) && (event.card.name == "sha" || get.type(event.card) == "trick");
+			return player !== event.player && player.countCards("h") < Math.min(5, player.maxHp) && (event.card.name === "sha" || get.type(event.card) === "trick");
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.addTempSkill("weipo2");
-			player.drawTo(Math.min(5, player.maxHp));
-			"step 1";
-			var evt = trigger.getParent();
+			await player.drawTo(Math.min(5, player.maxHp));
+			const evt = trigger.getParent();
 			if (!evt.weipo) {
 				evt.weipo = {};
 			}
@@ -11626,19 +11624,22 @@ const skills = {
 		popup: false,
 		sourceSkill: "weipo",
 		filter(event, player) {
-			return event.weipo && event.weipo[player.playerid] != undefined && event.weipo[player.playerid] > player.countCards("h");
+			return event.weipo && event.weipo[player.playerid] !== undefined && event.weipo[player.playerid] > player.countCards("h");
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.tempBanSkill("weipo", { player: "phaseBegin" });
-			if (player.countCards("h") && trigger.player.isIn()) {
-				player.chooseCard("h", true, "将一张手牌交给" + get.translation(trigger.player));
-			} else {
-				event.finish();
+			if (!player.hasCards("h") || !trigger.player.isIn()) {
+				return;
 			}
-			"step 1";
+			const result = await player
+				.chooseCard({
+					position: "h",
+					forced: true,
+					prompt: `将一张手牌交给${get.translation(trigger.player)}`,
+				})
+				.forResult();
 			if (result.bool) {
-				player.give(result.cards, trigger.player);
+				await player.give(result.cards, trigger.player);
 			}
 		},
 	},
