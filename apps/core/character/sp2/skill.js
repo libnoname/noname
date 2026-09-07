@@ -11444,9 +11444,9 @@ const skills = {
 		},
 		direct: true,
 		filter(event, player) {
-			var target = event.player,
-				source = event.source;
-			if (player != source && !player.hasSkill("yangzhong")) {
+			const target = event.player;
+			const source = event.source;
+			if (player !== source && !player.hasSkill("yangzhong")) {
 				return false;
 			}
 			if (!target || !source || !target.isIn() || !source.isIn()) {
@@ -11454,18 +11454,24 @@ const skills = {
 			}
 			return source.countCards("he") > 1;
 		},
-		content() {
-			"step 0";
-			trigger.source.chooseToDiscard("是否对" + get.translation(trigger.player) + "发动【殃众】？", "弃置两张牌，并令其失去1点体力", "he", 2).set("ai", function (card) {
-				var evt = _status.event;
-				if (get.attitude(evt.player, evt.getTrigger().player) >= 0) {
-					return 0;
-				}
-				return 7 - get.value(card);
-			}).logSkill = ["yangzhong", trigger.player];
-			"step 1";
+		async content(event, trigger, player) {
+			const next = trigger.source.chooseToDiscard({
+				prompt: `是否对${get.translation(trigger.player)}发动【殃众】？`,
+				prompt2: "弃置两张牌，并令其失去1点体力",
+				position: "he",
+				selectCard: 2,
+				ai: card => {
+					const evt = _status.event;
+					if (get.attitude(evt.player, evt.getTrigger().player) >= 0) {
+						return 0;
+					}
+					return 7 - get.value(card);
+				},
+			});
+			next.logSkill = ["yangzhong", trigger.player];
+			const result = await next.forResult();
 			if (result.bool) {
-				trigger.player.loseHp();
+				await trigger.player.loseHp();
 			}
 		},
 	},
