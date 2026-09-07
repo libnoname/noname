@@ -10265,61 +10265,64 @@ const skills = {
 	redaoji: {
 		audio: 2,
 		trigger: { global: "useCard" },
-		direct: true,
 		filter(event, player) {
-			if (player == event.player || get.subtype(event.card, false) != "equip1" || (event.player.isDead() && !event.cards.filterInD().length)) {
+			if (player === event.player || get.subtype(event.card, false) !== "equip1" || (event.player.isDead() && !event.cards.filterInD().length)) {
 				return false;
 			}
-			var all = event.player.getAllHistory("useCard");
-			for (var i of all) {
-				if (get.subtype(i.card, false) == "equip1") {
-					return i == event;
+			const all = event.player.getAllHistory("useCard");
+			for (const evt of all) {
+				if (get.subtype(evt.card, false) === "equip1") {
+					return evt === event;
 				}
 			}
 			return false;
 		},
-		content() {
-			"step 0";
-			var list = [];
-			event.addIndex = 0;
-			if (trigger.cards.filterInD().length > 0) {
-				list.push("获得" + get.translation(trigger.cards.filterInD()));
-			} else {
-				event.addIndex++;
+		async cost(event, trigger, player) {
+			const cards = trigger.cards.filterInD();
+			const list = [];
+			const addIndex = cards.length ? 0 : 1;
+			if (cards.length) {
+				list.push(`获得${get.translation(cards)}`);
 			}
 			if (trigger.player.isIn()) {
-				list.push("令" + get.translation(trigger.player) + "本回合不能使用或打出【杀】");
+				list.push(`令${get.translation(trigger.player)}本回合不能使用或打出【杀】`);
 			}
-			player
-				.chooseControl("cancel2")
-				.set("choiceList", list)
-				.set("prompt", get.prompt("redaoji", trigger.player))
-				.set("ai", function () {
-					var evt = _status.event.getParent(),
-						player = evt.player,
-						evt2 = evt._trigger;
-					if (evt.addIndex == 0) {
-						var noob = get.attitude(player, evt2.player) < 0 ? 1 : "cancel2";
-						if (player.countMark("fuzhong") == 3) {
-							return noob;
+			const result = await player
+				.chooseControl({
+					controls: ["cancel2"],
+					choiceList: list,
+					prompt: get.prompt(event.skill, trigger.player),
+					ai: () => {
+						if (addIndex === 0) {
+							const choice = get.attitude(player, trigger.player) < 0 ? 1 : "cancel2";
+							if (player.countMark("fuzhong") === 3) {
+								return choice;
+							}
+							if (get.effect(trigger.targets[0], trigger.card, trigger.player, player) <= 0) {
+								return 0;
+							}
+							return choice;
 						}
-						if (get.effect(evt2.targets[0], evt2.card, evt2.player, player) <= 0) {
-							return 0;
-						}
-						return noob;
-					}
-					return get.attitude(player, evt2.player) < 0 ? 0 : "cancel2";
-				});
-			"step 1";
-			if (result.control != "cancel2") {
-				player.logSkill("redaoji", trigger.player);
-				game.delayx();
-				if (result.index + event.addIndex == 0) {
-					player.gain(trigger.cards.filterInD(), "gain2");
-				} else {
-					trigger.player.addTempSkill("redaoji2");
-				}
+						return get.attitude(player, trigger.player) < 0 ? 0 : "cancel2";
+					},
+				})
+				.forResult();
+			event.result = {
+				bool: result.control !== "cancel2",
+				targets: [trigger.player],
+				cost_data: {
+					index: result.index + addIndex,
+					cards,
+				},
+			};
+		},
+		async content(event, trigger, player) {
+			await game.delayx();
+			if (event.cost_data.index === 0) {
+				await player.gain({ cards: event.cost_data.cards, animate: "gain2" });
+				return;
 			}
+			trigger.player.addTempSkill("redaoji2");
 		},
 	},
 	redaoji2: {
@@ -10327,12 +10330,12 @@ const skills = {
 		mark: true,
 		mod: {
 			cardEnabled(card) {
-				if (card.name == "sha") {
+				if (card.name === "sha") {
 					return false;
 				}
 			},
 			cardRespondable(card) {
-				if (card.name == "sha") {
+				if (card.name === "sha") {
 					return false;
 				}
 			},
