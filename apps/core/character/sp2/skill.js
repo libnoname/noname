@@ -14245,32 +14245,30 @@ const skills = {
 		trigger: {
 			player: "die",
 		},
-		direct: true,
 		forceDie: true,
 		skillAnimation: true,
 		animationColor: "wood",
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt2("yechou"), function (card, player, target) {
-					return player != target && target.getDamagedHp() > 1;
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2(event.skill),
+					filterTarget: (card, player, target) => player !== target && target.getDamagedHp() > 1,
+					ai: target => {
+						const attitude = get.attitude(_status.event.player, target);
+						if (attitude > 0) {
+							return 0;
+						}
+						const adjustedAttitude = Math.sqrt(0.01 - attitude);
+						return adjustedAttitude * (get.distance(_status.currentPhase, target, "absolute") || game.players.length);
+					},
 				})
 				.set("forceDie", true)
-				.set("ai", function (target) {
-					let att = get.attitude(_status.event.player, target);
-					if (att > 0) {
-						return 0;
-					}
-					att = Math.sqrt(0.01 - att);
-					return att * (get.distance(_status.currentPhase, target, "absolute") || game.players.length);
-				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("yechou", target);
-				player.line(target, "green");
-				target.addTempSkill("yechou2", { player: "phaseZhunbeiBegin" });
-			}
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			player.line(target, "green");
+			target.addTempSkill("yechou2", { player: "phaseZhunbeiBegin" });
 		},
 		ai: {
 			expose: 0.5,
@@ -14288,8 +14286,8 @@ const skills = {
 		},
 		forced: true,
 		sourceSkill: "yechou",
-		content() {
-			player.loseHp();
+		async content(event, trigger, player) {
+			await player.loseHp();
 		},
 	},
 	yanjiao: {
