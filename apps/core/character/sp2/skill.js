@@ -10214,57 +10214,51 @@ const skills = {
 	qljsuiren: {
 		audio: 2,
 		trigger: { player: "die" },
-		direct: true,
 		forceDie: true,
 		skillAnimation: true,
 		animationColor: "gray",
 		filter(event, player) {
-			return player.countCards("h", function (card) {
-				var type = get.type(card, null, player);
-				return (type == "basic" || type == "trick") && get.tag(card, "damage") > 0;
+			return player.hasCards("h", card => {
+				const type = get.type(card, null, player);
+				return (type === "basic" || type === "trick") && get.tag(card, "damage") > 0;
 			});
 		},
-		content() {
-			"step 0";
-			player
-				.chooseTarget(lib.filter.notMe, get.prompt("qljsuiren"), "将所有伤害性基本牌和锦囊牌交给一名其他角色")
-				.set("forceDie", true)
-				.set("ai", function (target) {
-					var player = _status.event.player,
-						cards = _status.event.aiCards;
-					var att = get.attitude(player, target);
-					if (att <= 0) {
-						return 0;
-					}
-					if (target.hasSkillTag("nogain")) {
-						att /= 100;
-					}
-					var num = 0.1;
-					for (var i of cards) {
-						num += Math.max(0, target.getUseValue(card));
-					}
-					return num * att;
+		async cost(event, trigger, player) {
+			const filterCard = card => {
+				const type = get.type(card, null, player);
+				return (type === "basic" || type === "trick") && get.tag(card, "damage") > 0;
+			};
+			const cards = player.getCards("h", filterCard);
+			event.result = await player
+				.chooseTarget({
+					filterTarget: lib.filter.notMe,
+					prompt: get.prompt(event.skill),
+					prompt2: "将所有伤害性基本牌和锦囊牌交给一名其他角色",
+					ai: target => {
+						let att = get.attitude(player, target);
+						if (att <= 0) {
+							return 0;
+						}
+						if (target.hasSkillTag("nogain")) {
+							att /= 100;
+						}
+						let num = 0.1;
+						for (const card of cards) {
+							num += Math.max(0, target.getUseValue(card));
+						}
+						return num * att;
+					},
 				})
-				.set(
-					"aiCards",
-					player.getCards("h", function (card) {
-						var type = get.type(card, null, player);
-						return (type == "basic" || type == "trick") && get.tag(card, "damage") > 0;
-					})
-				);
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("qljsuiren", target);
-				player.give(
-					player.getCards("h", function (card) {
-						var type = get.type(card, null, player);
-						return (type == "basic" || type == "trick") && get.tag(card, "damage") > 0;
-					}),
-					target,
-					"give"
-				);
-			}
+				.set("forceDie", true)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const filterCard = card => {
+				const type = get.type(card, null, player);
+				return (type === "basic" || type === "trick") && get.tag(card, "damage") > 0;
+			};
+			await player.give(player.getCards("h", filterCard), target, "give");
 		},
 	},
 	//胡车儿
