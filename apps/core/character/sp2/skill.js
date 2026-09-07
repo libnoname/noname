@@ -6563,41 +6563,42 @@ const skills = {
 		marktext: "☯",
 		intro: {
 			content(storage, player) {
-				var str = "<li>已转换过" + get.cnNumber(storage || 0) + "次。<li>你的回合内，";
+				let str = `<li>已转换过${get.cnNumber(storage || 0)}次。<li>你的回合内，`;
 				str += player.countMark("dcdouzhen") % 2 ? "你的红色基本牌均视为普【杀】且无次数限制。" : "你的黑色基本牌均视为【决斗】且使用时获得目标的一张牌。";
 				return str;
 			},
 		},
 		filter(event, player) {
-			if (player != _status.currentPhase || !event.card.isCard || !event.cards || event.cards.length != 1 || get.type(event.cards[0]) != "basic") {
+			if (player !== _status.currentPhase || !event.card.isCard || !event.cards || event.cards.length !== 1 || get.type(event.cards[0]) !== "basic") {
 				return false;
 			}
 			if (player.countMark("dcdouzhen") % 2) {
-				return get.color(event.cards[0]) == "red" && event.card.name == "sha";
+				return get.color(event.cards[0]) === "red" && event.card.name === "sha";
 			}
-			return event.name != "respond" && get.color(event.cards[0]) == "black" && event.card.name == "juedou";
+			return event.name !== "respond" && get.color(event.cards[0]) === "black" && event.card.name === "juedou";
 		},
-		content() {
+		async content(event, trigger, player) {
 			if (player.countMark("dcdouzhen") % 2) {
 				if (trigger.addCount !== false) {
 					trigger.addCount = false;
-					const stat = player.getStat().card,
-						name = trigger.card.name;
+					const stat = player.getStat().card;
+					const name = trigger.card.name;
 					if (stat[name] > 0) {
 						stat[name]--;
 					}
 				}
-			} else {
-				if (trigger.targets.length && trigger.targets.filter(i => i.countGainableCards(player, "he") > 0).length) {
-					player.gainMultiple(trigger.targets.sortBySeat(), "he");
-				}
+				player.changeZhuanhuanji("dcdouzhen");
+				return;
+			}
+			if (trigger.targets.some(target => target.hasGainableCards(player, "he"))) {
+				await player.gainMultiple(trigger.targets.sortBySeat(), "he");
 			}
 			player.changeZhuanhuanji("dcdouzhen");
 		},
 		ai: {
 			effect: {
 				player_use(card, player, target) {
-					if (card.name != "juedou") {
+					if (card.name !== "juedou") {
 						return;
 					}
 					if (
@@ -6605,19 +6606,19 @@ const skills = {
 							"directHit_ai",
 							true,
 							{
-								target: target,
-								card: card,
+								target,
+								card,
 							},
 							true
 						)
 					) {
-						return [1, 1];
-					}
-					var hs1 = target.getCards("h", "sha");
-					var hs2 = player.getCards("h", card => (get.color(card) == "red" && get.type(card) == "basic") || get.name(card) == "sha");
-					var hsx = target.getCards("h");
-					if (hs1.length > hs2.length + 1 || (hsx.length > 2 && hs2.length == 0 && hsx[0].number < 6) || (hsx.length > 3 && hs2.length == 0) || (hs1.length > hs2.length && (!hs2.length || hs1[0].number > hs2[0].number))) {
-						return [1, -2];
+							return [1, 1];
+						}
+						const hs1 = target.getCards("h", "sha");
+						const hs2 = player.getCards("h", card => (get.color(card) === "red" && get.type(card) === "basic") || get.name(card) === "sha");
+						const hsx = target.getCards("h");
+						if (hs1.length > hs2.length + 1 || (hsx.length > 2 && hs2.length === 0 && hsx[0].number < 6) || (hsx.length > 3 && hs2.length === 0) || (hs1.length > hs2.length && (!hs2.length || hs1[0].number > hs2[0].number))) {
+							return [1, -2];
 					}
 					return [1, -0.5];
 				},
@@ -6625,31 +6626,29 @@ const skills = {
 		},
 		mod: {
 			cardname(card, player) {
-				if (get.type(card, null, false) != "basic" || player != _status.currentPhase) {
+				if (get.type(card, null, false) !== "basic" || player !== _status.currentPhase) {
 					return;
 				}
 				if (player.countMark("dcdouzhen") % 2) {
-					if (get.color(card) == "red") {
+					if (get.color(card) === "red") {
 						return "sha";
 					}
-				} else {
-					if (get.color(card) == "black") {
-						return "juedou";
-					}
+					return;
+				}
+				if (get.color(card) === "black") {
+					return "juedou";
 				}
 			},
 			cardnature(card, player) {
-				if (get.type(card, null, false) != "basic" || player != _status.currentPhase) {
+				if (get.type(card, null, false) !== "basic" || player !== _status.currentPhase) {
 					return;
 				}
-				if (player.countMark("dcdouzhen") % 2) {
-					if (get.color(card) == "red") {
-						return false;
-					}
+				if (player.countMark("dcdouzhen") % 2 && get.color(card) === "red") {
+					return false;
 				}
 			},
 			cardUsable(card, player) {
-				if (_status.currentPhase == player && card.name == "sha" && player.countMark("dcdouzhen") % 2 && get.color(card) == "red" && card.isCard) {
+				if (_status.currentPhase === player && card.name === "sha" && player.countMark("dcdouzhen") % 2 && get.color(card) === "red" && card.isCard) {
 					return Infinity;
 				}
 			},
