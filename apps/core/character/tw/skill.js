@@ -8681,6 +8681,7 @@ const skills = {
 		},
 		frequent: true,
 		filter(event, player) {
+			console.log(event, event.getl(player));
 			return (
 				(event.getl(player).cards2.length || event.getg(player).length) &&
 				lib.phaseName.some(phase => {
@@ -8688,14 +8689,14 @@ const skills = {
 						if (evt.getParent("phase") != event.getParent("phase") || evt.getParent(phase) != event.getParent(phase)) {
 							return false;
 						}
-						if (evt.name === "lose" && evt.getl(player)?.cards2?.length) {
+						if (["lose", "gain"].includes(evt.name) && (evt.getl(player)?.cards2?.length || evt.getg(player)?.length)) {
 							const evt2 = evt.relatedEvent || evt.getParent();
 							if (evt2.name === "useCard" && evt2.player === player && get.type(evt2.card, null, false) === "equip") {
 								return false;
 							}
 							return true;
 						}
-						return evt.name === "gain" && evt.getg(player)?.length;
+						return false;
 					});
 					return evts.indexOf(event) === 0;
 				})
