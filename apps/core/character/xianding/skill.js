@@ -3051,6 +3051,7 @@ const skills = {
 					return [get.type2(event.card), get.suit(event.card)].some(link => player.getStorage("dcsbjingmou_mark").includes(link));
 				},
 				async content(event, trigger, player) {
+					player.changeZhuanhuanji("dcsbjingmou");
 					const links = [get.type2(trigger.card), get.suit(trigger.card)].filter(link => player.getStorage(event.name).includes(link));
 					player.unmarkAuto(event.name, links);
 					player.addSkill("dcsbjingmou_mark2");
@@ -3061,7 +3062,7 @@ const skills = {
 					const {
 						targets: [target],
 					} = event;
-					if (!player.storage.dcsbjingmou) {
+					if (player.storage.dcsbjingmou) {
 						const result = await player
 							.chooseBool({
 								prompt: get.prompt(event.name, target),
@@ -3098,7 +3099,6 @@ const skills = {
 							.set("card", trigger.card)
 							.forResult();
 						if (result?.bool) {
-							player.changeZhuanhuanji("dcsbjingmou");
 							trigger.targets.length = 0;
 							trigger.all_excluded = true;
 							const cards = get.cards(1);
@@ -3124,7 +3124,6 @@ const skills = {
 									.forResult();
 								if (result?.bool && result.targets?.length) {
 									const target = result.targets[0];
-									player.changeZhuanhuanji("dcsbjingmou");
 									player.line(target);
 									await target.gain({ cards, animate: "gain2", giver: player });
 								}
