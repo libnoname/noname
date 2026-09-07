@@ -12547,40 +12547,36 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return game.hasPlayer(function (current) {
-				return lib.skill.heli.filterTarget(null, player, current);
-			});
+			return game.hasPlayer(current => lib.skill.heli.filterTarget(null, player, current));
 		},
 		filterTarget(card, player, target) {
 			return target.countCards("h") < player.countCards("h");
 		},
-		content() {
-			"step 0";
-			if (target.countCards("h")) {
-				target.showHandcards();
+		async content(event, trigger, player) {
+			const target = event.target;
+			if (target.hasCards("h")) {
+				await target.showHandcards();
 			}
-			"step 1";
-			var list = [];
-			var cards = [];
-			for (var i of lib.inpile) {
-				list.add(get.type2(i));
+			const list = [];
+			const cards = [];
+			for (const name of lib.inpile) {
+				list.add(get.type2(name));
 			}
-			for (var i of list) {
-				if (
-					!target.countCards("h", function (card) {
-						return get.type2(card, target) == i;
-					})
-				) {
-					var card = get.cardPile2(function (card) {
-						return get.type2(card, false) == i;
-					}, "random");
-					if (card) {
-						cards.push(card);
-					}
+			for (const type of list) {
+				if (target.hasCards("h", card => get.type2(card, target) === type)) {
+					continue;
+				}
+				const card = get.cardPile2(card => get.type2(card, false) === type, "random");
+				if (card) {
+					cards.push(card);
 				}
 			}
 			if (cards.length) {
-				target.gain(cards, "gain2", "log");
+				await target.gain({
+					cards,
+					animate: "gain2",
+					log: true,
+				});
 			}
 		},
 		ai: {
