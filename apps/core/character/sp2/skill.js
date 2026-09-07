@@ -14800,22 +14800,26 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		filter(event, player) {
-			return player.countCards("h") > 0;
+			return player.hasCards("h");
 		},
 		filterTarget(card, player, target) {
-			return target != player && player.canCompare(target);
+			return target !== player && player.canCompare(target);
 		},
-		content() {
-			"step 0";
-			player.chooseToCompare(target).set("small", get.attitude(player, target) > 0);
-			"step 1";
-			if (!result.bool) {
-				player.draw(2, "nodelay");
-				target.draw(2);
-				player.tempBanSkill("songshu", "phaseUseAfter");
-			} else {
+		async content(event, trigger, player) {
+			const target = event.target;
+			const result = await player.chooseToCompare(target).set("small", get.attitude(player, target) > 0).forResult();
+			if (result.bool) {
 				target.addTempSkill("songshu_ai");
+				return;
 			}
+			const playerDrawEvent = player.draw({
+				num: 2,
+				nodelay: true,
+			});
+			const targetDrawEvent = target.draw(2);
+			player.tempBanSkill("songshu", "phaseUseAfter");
+			await playerDrawEvent;
+			await targetDrawEvent;
 		},
 		ai: {
 			basic: {
@@ -14827,22 +14831,22 @@ const skills = {
 					if (target.hasSkill("songshu_ai", null, null, false)) {
 						return 0;
 					}
-					var maxnum = 0;
-					var cards2 = target.getCards("h");
-					for (var i = 0; i < cards2.length; i++) {
-						if (get.number(cards2[i]) > maxnum) {
-							maxnum = get.number(cards2[i]);
+					let maxNumber = 0;
+					const targetCards = target.getCards("h");
+					for (const card of targetCards) {
+						if (get.number(card) > maxNumber) {
+							maxNumber = get.number(card);
 						}
 					}
-					if (maxnum > 10) {
-						maxnum = 10;
+					if (maxNumber > 10) {
+						maxNumber = 10;
 					}
-					if (maxnum < 5 && cards2.length > 1) {
-						maxnum = 5;
+					if (maxNumber < 5 && targetCards.length > 1) {
+						maxNumber = 5;
 					}
-					var cards = player.getCards("h");
-					for (var i = 0; i < cards.length; i++) {
-						if (get.number(cards[i]) < maxnum) {
+					const cards = player.getCards("h");
+					for (const card of cards) {
+						if (get.number(card) < maxNumber) {
 							return 1;
 						}
 					}
