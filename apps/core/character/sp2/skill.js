@@ -8334,7 +8334,7 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return player.countCards("h") > 0;
+			return player.hasCards("h");
 		},
 		filterTarget: lib.filter.notMe,
 		filterCard: true,
@@ -13397,37 +13397,37 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return player.countCards("h") > 0;
+			return player.hasCards("h");
 		},
 		filterCard: true,
 		filterTarget(card, player, target) {
 			if (target.storage.mouzhi2 && target.storage.mouzhi2.includes(player)) {
 				return false;
 			}
-			return target != player;
+			return target !== player;
 		},
 		delay: 0,
 		lose: false,
 		discard: false,
 		check(card) {
-			if (card.name == "du") {
+			if (card.name === "du") {
 				return 20;
 			}
-			var player = _status.event.player;
-			var useval = player.getUseValue(card);
-			var maxval = 0;
-			game.countPlayer(function (current) {
-				if (current != player && !current.hasSkillTag("nogain") && get.attitude(player, current) > 0) {
-					var temp = current.getUseValue(card);
-					if (temp > maxval) {
-						maxval = temp;
+			const player = _status.event.player;
+			const useValue = player.getUseValue(card);
+			let maxValue = 0;
+			game.countPlayer(current => {
+				if (current !== player && !current.hasSkillTag("nogain") && get.attitude(player, current) > 0) {
+					const currentValue = current.getUseValue(card);
+					if (currentValue > maxValue) {
+						maxValue = currentValue;
 					}
 				}
 			});
-			if (maxval > 0 && get.tag(card, "damage")) {
+			if (maxValue > 0 && get.tag(card, "damage")) {
 				return 15;
 			}
-			if (maxval > useval) {
+			if (maxValue > useValue) {
 				return 10;
 			}
 			if (player.needsToDiscard()) {
@@ -13435,34 +13435,37 @@ const skills = {
 			}
 			return -1;
 		},
-		content() {
-			player.give(cards, target);
+		async content(event, trigger, player) {
+			const cards = event.cards;
+			const target = event.target;
+			const giveEvent = player.give(cards, target);
 			target.addTempSkill("mouzhi2", { player: "phaseEnd" });
 			target.storage.mouzhi2.add(player);
 			target.storage.mouzhi2.sortBySeat(target);
 			target.markSkill("mouzhi2");
+			await giveEvent;
 		},
 		ai: {
 			order: 10,
 			result: {
 				target(player, target) {
-					if (ui.selected.cards.length) {
-						var card = ui.selected.cards[0];
-						if (card.name == "du") {
-							return target.hasSkill("lucia_duqu") ? 1 : -1;
-						}
-						var t = target.getUseValue(card);
-						var p = player.getUseValue(card);
-						if (t > p) {
-							return 2;
-						}
-						if (t > 0) {
-							return 1.5;
-						}
-						if (player.needsToDiscard()) {
-							return 1;
-						}
+					if (!ui.selected.cards.length) {
 						return 0;
+					}
+					const card = ui.selected.cards[0];
+					if (card.name === "du") {
+						return target.hasSkill("lucia_duqu") ? 1 : -1;
+					}
+					const targetValue = target.getUseValue(card);
+					const playerValue = player.getUseValue(card);
+					if (targetValue > playerValue) {
+						return 2;
+					}
+					if (targetValue > 0) {
+						return 1.5;
+					}
+					if (player.needsToDiscard()) {
+						return 1;
 					}
 					return 0;
 				},
@@ -13483,20 +13486,16 @@ const skills = {
 		},
 		sourceSkill: "mouzhi",
 		filter(event, player) {
-			var evt2 = event.getParent("phaseUse");
-			if (!evt2 || evt2.player != player) {
+			const phaseUseEvent = event.getParent("phaseUse");
+			if (!phaseUseEvent || phaseUseEvent.player !== player) {
 				return false;
 			}
-			var history = event.player.getHistory("damage", function (evt) {
-				return evt.source == player && evt.getParent("phaseUse") == evt2;
-			});
-			return history[0] == event;
+			const history = event.player.getHistory("damage", evt => evt.source === player && evt.getParent("phaseUse") === phaseUseEvent);
+			return history[0] === event;
 		},
-		content() {
-			"step 0";
-			game.asyncDraw(player.storage.mouzhi2);
-			"step 1";
-			game.delay();
+		async content(event, trigger, player) {
+			await game.asyncDraw(player.storage.mouzhi2);
+			await game.delay();
 		},
 	},
 	yuanlve: {
