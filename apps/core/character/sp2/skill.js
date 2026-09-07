@@ -8768,32 +8768,37 @@ const skills = {
 	jieliang: {
 		audio: 2,
 		trigger: { global: "phaseDrawBegin2" },
-		direct: true,
 		filter(event, player) {
-			return event.player != player && !event.numFixed && event.num > 1 && player.countCards("he") > 0;
+			return event.player !== player && !event.numFixed && event.num > 1 && player.countCards("he") > 0;
 		},
-		content() {
-			"step 0";
-			event.target = trigger.player;
-			player
-				.chooseToDiscard(get.prompt2("jieliang", event.target), "he")
-				.set("goon", get.attitude(player, trigger.player) < -2)
-				.set("ai", function (card) {
-					if (!_status.event.goon) {
-						return 0;
-					}
-					return 7 - get.value(card);
-				}).logSkill = ["jieliang", event.target];
-			"step 1";
-			if (result.bool) {
-				trigger.num--;
-				if (get.mode() != "identity" || player.identity != "nei") {
-					player.addExpose(0.15);
-				}
-				target.addMark("jieliang_less", 1, false);
-				target.addTempSkill("jieliang_less");
-				player.addTempSkill("jieliang_gain");
+		async cost(event, trigger, player) {
+			const target = trigger.player;
+			event.result = await player
+				.chooseToDiscard({
+					prompt: get.prompt2(event.skill, target),
+					position: "he",
+					chooseonly: true,
+					ai: card => {
+						if (!_status.event.goon) {
+							return 0;
+						}
+						return 7 - get.value(card);
+					},
+				})
+				.set("goon", get.attitude(player, target) < -2)
+				.forResult();
+			event.result.targets = [target];
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			await player.discard(event.cards);
+			trigger.num--;
+			if (get.mode() !== "identity" || player.identity !== "nei") {
+				player.addExpose(0.15);
 			}
+			target.addMark("jieliang_less", 1, false);
+			target.addTempSkill("jieliang_less");
+			player.addTempSkill("jieliang_gain");
 		},
 		subSkill: {
 			less: {
@@ -8811,18 +8816,20 @@ const skills = {
 				charlotte: true,
 				direct: true,
 				filter(event, player) {
-					return event.type == "discard" && event.player == _status.currentPhase && event.getParent(3).name == "phaseDiscard" && event.cards2.filterInD("d").length > 0;
+					return event.type === "discard" && event.player === _status.currentPhase && event.getParent(3).name === "phaseDiscard" && event.cards2.filterInD("d").length > 0;
 				},
-				content() {
-					"step 0";
-					player.chooseButton(["截粮：是否获得一张牌?", trigger.cards2.filterInD("d")]).set("ai", function (button) {
-						return get.value(button.link, _status.event.player);
-					});
-					"step 1";
-					if (result.bool) {
-						player.logSkill("jieliang", trigger.player);
-						player.gain(result.links, "gain2");
+				async content(event, trigger, player) {
+					const result = await player
+						.chooseButton({
+							createDialog: ["截粮：是否获得一张牌?", trigger.cards2.filterInD("d")],
+							ai: button => get.value(button.link, _status.event.player),
+						})
+						.forResult();
+					if (!result.bool) {
+						return;
 					}
+					player.logSkill("jieliang", trigger.player);
+					await player.gain({ cards: result.links, animate: "gain2" });
 				},
 			},
 		},
