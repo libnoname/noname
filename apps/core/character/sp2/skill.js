@@ -8243,27 +8243,27 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return game.hasPlayer(function (current) {
-				return current != player && !current.hasMark("yijiao");
-			});
+			return game.hasPlayer(current => current !== player && !current.hasMark("yijiao"));
 		},
 		filterTarget(card, player, target) {
-			return target != player && !target.hasMark("yijiao");
+			return target !== player && !target.hasMark("yijiao");
 		},
-		content() {
-			"step 0";
-			player
-				.chooseControl("10个", "20个", "30个", "40个")
-				.set("prompt", "要令" + get.translation(target) + "获得多少标记？")
-				.set("ai", function () {
-					let player = _status.event.player,
-						target = _status.event.getParent().target;
-					if (get.attitude(player, target) < 0) {
-						return 3;
-					}
-					return 0;
-				});
-			"step 1";
+		async content(event, trigger, player) {
+			const { target } = event;
+			const result = await player
+				.chooseControl({
+					controls: ["10个", "20个", "30个", "40个"],
+					prompt: `要令${get.translation(target)}获得多少标记？`,
+					ai: () => {
+						const player = _status.event.player;
+						const target = _status.event.getParent().target;
+						if (get.attitude(player, target) < 0) {
+							return 3;
+						}
+						return 0;
+					},
+				})
+				.forResult();
 			target.addMark("yijiao", 10 * (1 + result.index));
 		},
 		ai: {
@@ -8280,31 +8280,29 @@ const skills = {
 				trigger: { global: "phaseJieshuBegin" },
 				forced: true,
 				filter(event, player) {
-					return event.player.isIn() && event.player != player && event.player.hasMark("yijiao");
+					return event.player.isIn() && event.player !== player && event.player.hasMark("yijiao");
 				},
 				logTarget: "player",
-				content() {
-					var target = trigger.player,
-						num = target.countMark("yijiao");
-					var num2 = 0;
-					target.getHistory("useCard", function (evt) {
-						var numz = get.number(evt.card);
-						if (typeof numz == "number") {
+				async content(event, trigger, player) {
+					const target = trigger.player;
+					const num = target.countMark("yijiao");
+					let num2 = 0;
+					target.getHistory("useCard", evt => {
+						const numz = get.number(evt.card);
+						if (typeof numz === "number") {
 							num2 += numz;
 						}
 					});
 					if (num > num2) {
-						var hs = target.getCards("h", function (card) {
-							return lib.filter.cardDiscardable(card, target, "yijiao_effect");
-						});
+						const hs = target.getCards("h", card => lib.filter.cardDiscardable(card, target, "yijiao_effect"));
 						if (hs.length) {
-							target.discard(hs.randomGets(get.rand(1, 3)));
+							await target.discard({ cards: hs.randomGets(get.rand(1, 3)) });
 						}
-					} else if (num == num2) {
-						target.insertPhase();
-						player.draw(2);
+					} else if (num === num2) {
+						await target.insertPhase();
+						await player.draw(2);
 					} else {
-						player.draw(3);
+						await player.draw(3);
 					}
 					target.removeMark("yijiao", num);
 				},
