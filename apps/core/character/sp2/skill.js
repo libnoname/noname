@@ -12987,11 +12987,11 @@ const skills = {
 		audioname: ["sp_key_yuri"],
 		trigger: { source: "damageBegin2" },
 		filter(event, player) {
-			return event.player != player && !player.getStorage("ziqu").includes(event.player);
+			return event.player !== player && !player.getStorage("ziqu").includes(event.player);
 		},
 		check(event, player) {
-			var target = event.player;
-			var eff = get.damageEffect(target, player, player);
+			const target = event.player;
+			const eff = get.damageEffect(target, player, player);
 			if (get.attitude(player, target) > 0) {
 				if (eff >= 0) {
 					return false;
@@ -13001,38 +13001,39 @@ const skills = {
 			if (eff <= 0) {
 				return true;
 			}
-			if (target.hp == 1) {
+			if (target.hp === 1) {
 				return false;
 			}
 			if (event.num > 1) {
 				return false;
 			}
-			var cards = target.getCards("he");
-			for (var i = 0; i < cards.length; i++) {
-				if (get.number(cards[i]) > 10) {
+			const cards = target.getCards("he");
+			for (const card of cards) {
+				if (get.number(card) > 10) {
 					return true;
 				}
 			}
 			return false;
 		},
 		logTarget: "player",
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			trigger.cancel();
 			if (!player.storage.ziqu) {
 				player.storage.ziqu = [];
 			}
 			player.storage.ziqu.push(trigger.player);
 			player.markSkill("ziqu");
-			trigger.player.chooseCard(true, "he", function (card, player) {
-				return !player.countCards("he", function (cardx) {
-					return cardx.number > card.number;
-				});
-			});
-			"step 1";
-			if (result.bool && result.cards && result.cards.length) {
-				trigger.player.give(result.cards, player);
+			const result = await trigger.player
+				.chooseCard({
+					forced: true,
+					position: "he",
+					filterCard: (card, player) => !player.hasCards("he", cardx => cardx.number > card.number),
+				})
+				.forResult();
+			if (!result.bool || !result.cards?.length) {
+				return;
 			}
+			await trigger.player.give(result.cards, player);
 		},
 		intro: { content: "已对$发动过" },
 	},
