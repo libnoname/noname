@@ -6026,6 +6026,13 @@ const skills = {
 			content: "expansion",
 		},
 		ai: {
+			respondSha: true,
+			respondShan: true,
+			skillTagFilter(player, tag, arg) {
+				if (arg == "respond") return false;
+				const name = tag == "respondSha" ? "sha" : "shan";
+				return get.info("olxiewei").hiddenCard(player, name);
+			},
 			order(item, player) {
 				player ??= get.player();
 				return get.order({ name: "sha" }, player) - 0.1;

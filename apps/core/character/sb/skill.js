@@ -5056,7 +5056,6 @@ const skills = {
 						return [cards, top];
 					},
 				})
-				.set("filterOk", moved => moved[1].length)
 				.forResult();
 			if (!result.bool) {
 				if (trigger.name === "phaseZhunbei") {

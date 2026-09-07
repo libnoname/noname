@@ -7303,7 +7303,7 @@ const skills = {
 						if (
 							!game.hasPlayer(current => {
 								const evt = event.getl?.(current);
-								return evt?.cards?.filterInD("od").some(card => (player.storage.yizhu ?? []).includes(card));
+								return evt?.cards?.filterInD("od")?.length;
 							})
 						) {
 							return false;
@@ -7314,7 +7314,7 @@ const skills = {
 							return false;
 						}
 					}
-					return true;
+					return event.cards.filterInD("od").some(card => (player.storage.yizhu ?? []).includes(card));
 				},
 				async content(event, trigger, player) {
 					const cards = trigger.cards.filterInD("od").slice();
