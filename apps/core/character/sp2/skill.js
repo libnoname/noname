@@ -13865,35 +13865,30 @@ const skills = {
 		forced: true,
 		audio: false,
 		logTarget(event, player) {
-			if (event.name == "phaseDraw") {
+			if (event.name === "phaseDraw") {
 				return event.player;
 			}
-			return game.filterPlayer(function (current) {
-				return current.isEnemyOf(player);
-			});
+			return game.filterPlayer(current => current.isEnemyOf(player));
 		},
 		filter(event, player) {
-			if (event.name == "cangchu") {
+			if (event.name === "cangchu") {
 				return true;
 			}
 			return player.hasMark("cangchu") && !event.numFixed && event.player.isFriendOf(player);
 		},
-		content() {
-			"step 0";
-			if (trigger.name == "cangchu") {
-				player.loseMaxHp();
-				var list = game.filterPlayer(function (current) {
-					return current.isEnemyOf(player);
-				});
-				if (list.length) {
-					game.asyncDraw(list, 2);
-				}
-			} else {
+		async content(event, trigger, player) {
+			if (trigger.name !== "cangchu") {
 				trigger.num++;
-				event.finish();
+				return;
 			}
-			"step 1";
-			game.delay();
+			const loseMaxHpEvent = player.loseMaxHp();
+			const list = game.filterPlayer(current => current.isEnemyOf(player));
+			const drawPromise = list.length ? game.asyncDraw(list, 2) : null;
+			await loseMaxHpEvent;
+			if (drawPromise) {
+				await drawPromise;
+			}
+			await game.delay();
 		},
 		ai: {
 			combo: "cangchu",
