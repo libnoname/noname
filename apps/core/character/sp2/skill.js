@@ -10844,22 +10844,24 @@ const skills = {
 		filter(event, player) {
 			return (
 				player.hp > 0 &&
-				game.hasPlayer(function (current) {
-					return current != player && current.countGainableCards(player, "h") > 0;
-				})
+				game.hasPlayer(current => current !== player && current.hasGainableCards(player, "h"))
 			);
 		},
 		filterTarget(card, player, target) {
-			return target != player && target.countGainableCards(player, "h") > 0;
+			return target !== player && target.hasGainableCards(player, "h");
 		},
 		selectTarget() {
 			return [1, _status.event.player.hp];
 		},
-		content() {
-			if (num == 0) {
+		async content(event, trigger, player) {
+			if (event.num === 0) {
 				player.awakenSkill(event.name);
 			}
-			player.gainPlayerCard(target, true, "h");
+			await player.gainPlayerCard({
+				target: event.target,
+				forced: true,
+				position: "h",
+			});
 		},
 		ai: {
 			order: 10,
