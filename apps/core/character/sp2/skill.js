@@ -11678,32 +11678,32 @@ const skills = {
 		forceDie: true,
 		skillAnimation: true,
 		animationColor: "thunder",
-		direct: true,
-		content() {
-			"step 0";
-			player.chooseTarget(get.prompt2("zhuide"), lib.filter.notMe).set("ai", function (target) {
-				return get.attitude(_status.event.player, target);
-			});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("zhuide", target);
-				var names = [];
-				var cards = [];
-				while (cards.length < 4) {
-					var card = get.cardPile2(function (card) {
-						return !cards.includes(card) && !names.includes(card.name) && get.type(card) == "basic";
-					});
-					if (card) {
-						cards.push(card);
-						names.push(card.name);
-					} else {
-						break;
-					}
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2(event.skill),
+					filterTarget: lib.filter.notMe,
+					ai: target => get.attitude(_status.event.player, target),
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const names = [];
+			const cards = [];
+			for (let i = 0; i < 4; i++) {
+				const card = get.cardPile2(card => !cards.includes(card) && !names.includes(card.name) && get.type(card) === "basic");
+				if (!card) {
+					break;
 				}
-				if (cards.length) {
-					target.gain(cards, "gain2");
-				}
+				cards.push(card);
+				names.push(card.name);
+			}
+			if (cards.length) {
+				await target.gain({
+					cards,
+					animate: "gain2",
+				});
 			}
 		},
 	},
