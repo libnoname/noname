@@ -10526,27 +10526,30 @@ const skills = {
 		trigger: { player: "phaseBegin" },
 		direct: true,
 		filter(event, player) {
-			return player.phaseNumber == 1 && !player.storage.kangge && game.hasPlayer(current => current != player);
+			return player.phaseNumber === 1 && !player.storage.kangge && game.hasPlayer(current => current !== player);
 		},
-		content() {
-			"step 0";
-			player.chooseTarget("请选择【抗歌】的目标", "其于回合外摸牌后，你摸等量的牌；其进入濒死状态时，你可令其回复体力至1点；其死亡后，你弃置所有牌并失去1点体力", lib.filter.notMe, true).set("ai", function (target) {
-				return get.attitude(_status.event.player, target);
-			});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("kangge", target);
-				if (get.mode() != "identity" || player.identity != "nei") {
-					if (target.identityShown || (typeof target.ai.expose == "number" && target.ai.expose > 0.5)) {
-						player.addExpose(0.4);
-					}
-				}
-				player.addSkill("kangge_clear");
-				player.storage.kangge = target;
-				player.markSkill("kangge");
-				game.delayx();
+		async content(event, trigger, player) {
+			const result = await player
+				.chooseTarget({
+					prompt: "请选择【抗歌】的目标",
+					prompt2: "其于回合外摸牌后，你摸等量的牌；其进入濒死状态时，你可令其回复体力至1点；其死亡后，你弃置所有牌并失去1点体力",
+					filterTarget: lib.filter.notMe,
+					forced: true,
+					ai: target => get.attitude(_status.event.player, target),
+				})
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
+			const target = result.targets[0];
+			player.logSkill("kangge", target);
+			if ((get.mode() !== "identity" || player.identity !== "nei") && (target.identityShown || (typeof target.ai.expose === "number" && target.ai.expose > 0.5))) {
+				player.addExpose(0.4);
+			}
+			player.addSkill("kangge_clear");
+			player.storage.kangge = target;
+			player.markSkill("kangge");
+			await game.delayx();
 		},
 		intro: { content: "已指定$为目标" },
 		group: ["kangge_draw", "kangge_dying", "kangge_die"],
@@ -10561,14 +10564,14 @@ const skills = {
 					if (player.countMark("kangge_draw") >= 3) {
 						return false;
 					}
-					var target = player.storage.kangge;
-					return target && target != _status.currentPhase && event.getg(target).length > 0;
+					const target = player.storage.kangge;
+					return target && target !== _status.currentPhase && event.getg(target).length > 0;
 				},
 				logTarget: "player",
-				content() {
-					var num = Math.min(3 - player.countMark("kangge_draw"), trigger.getg(player.storage.kangge).length);
+				async content(event, trigger, player) {
+					const num = Math.min(3 - player.countMark("kangge_draw"), trigger.getg(player.storage.kangge).length);
 					player.addMark("kangge_draw", num, false);
-					player.draw(num);
+					await player.draw(num);
 				},
 			},
 			clear: {
@@ -10580,7 +10583,7 @@ const skills = {
 				filter(event, player) {
 					return player.countMark("kangge_draw") > 0;
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.removeMark("kangge_draw", player.countMark("kangge_draw"), false);
 				},
 			},
@@ -10589,14 +10592,14 @@ const skills = {
 				trigger: { global: "dying" },
 				logTarget: "player",
 				filter(event, player) {
-					return event.player == player.storage.kangge && event.player.hp < 1 && !player.hasSkill("kangge_temp");
+					return event.player === player.storage.kangge && event.player.hp < 1 && !player.hasSkill("kangge_temp");
 				},
 				check(event, player) {
 					return get.attitude(player, event.player) > 0;
 				},
 				prompt2: "令其将体力值回复至1点",
-				content() {
-					trigger.player.recover(1 - trigger.player.hp);
+				async content(event, trigger, player) {
+					await trigger.player.recover(1 - trigger.player.hp);
 					player.addTempSkill("kangge_temp", "roundStart");
 				},
 			},
@@ -10605,15 +10608,15 @@ const skills = {
 				audio: "kangge",
 				trigger: { global: "dieAfter" },
 				filter(event, player) {
-					return event.player == player.storage.kangge;
+					return event.player === player.storage.kangge;
 				},
 				forced: true,
-				content() {
-					var cards = player.getCards("he");
+				async content(event, trigger, player) {
+					const cards = player.getCards("he");
 					if (cards.length) {
-						player.discard(cards);
+						await player.discard({ cards });
 					}
-					player.loseHp();
+					await player.loseHp();
 				},
 			},
 		},
