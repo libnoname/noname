@@ -12477,25 +12477,25 @@ const skills = {
 	rexiemu: {
 		audio: 2,
 		trigger: { player: "phaseJieshuBegin" },
-		direct: true,
 		filter(event, player) {
-			return !game.hasPlayer(function (current) {
-				return current.hasMark("rexiemu");
-			});
+			return !game.hasPlayer(current => current.hasMark("rexiemu"));
 		},
-		content() {
-			"step 0";
-			player.chooseTarget(get.prompt2("rexiemu"), lib.filter.notMe).set("ai", function (target) {
-				var player = _status.event.player;
-				return get.attitude(player, target) * Math.sqrt(Math.max(1 + player.countCards("h"), 1 + target.countCards("h")));
-			});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("rexiemu", target);
-				target.addMark("rexiemu", 1);
-				player.addSkill("rexiemu2");
-			}
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2(event.skill),
+					filterTarget: lib.filter.notMe,
+					ai: target => {
+						const player = _status.event.player;
+						return get.attitude(player, target) * Math.sqrt(Math.max(1 + player.countCards("h"), 1 + target.countCards("h")));
+					},
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			target.addMark("rexiemu", 1);
+			player.addSkill("rexiemu2");
 		},
 		intro: { content: "mark" },
 		ai: {
@@ -12511,25 +12511,17 @@ const skills = {
 		sourceSkill: "rexiemu",
 		filter(event, player) {
 			return (
-				(event.player == player || event.player.hasMark("rexiemu")) &&
+				(event.player === player || event.player.hasMark("rexiemu")) &&
 				["useCard", "respond"].includes(event.getParent().name) &&
 				event.hs &&
 				event.hs.length &&
-				event.player != _status.currentPhase &&
-				game.hasPlayer(function (current) {
-					return current.hasMark("rexiemu");
-				})
+				event.player !== _status.currentPhase &&
+				game.hasPlayer(current => current.hasMark("rexiemu"))
 			);
 		},
-		content() {
-			"step 0";
-			game.asyncDraw(
-				game.filterPlayer(function (current) {
-					return current == player || current == trigger.player || current.hasMark("rexiemu");
-				})
-			);
-			"step 1";
-			game.delayx();
+		async content(event, trigger, player) {
+			await game.asyncDraw(game.filterPlayer(current => current === player || current === trigger.player || current.hasMark("rexiemu")));
+			await game.delayx();
 		},
 		group: "rexiemu3",
 	},
@@ -12540,14 +12532,14 @@ const skills = {
 		silent: true,
 		firstDo: true,
 		sourceSkill: "rexiemu",
-		content() {
+		async content(event, trigger, player) {
 			player.removeSkill("rexiemu2");
-			game.countPlayer(function (current) {
-				var num = current.countMark("rexiemu");
+			for (const current of game.filterPlayer()) {
+				const num = current.countMark("rexiemu");
 				if (num) {
 					current.removeMark("rexiemu", num);
 				}
-			});
+			}
 		},
 	},
 	heli: {
