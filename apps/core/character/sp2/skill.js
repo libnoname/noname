@@ -10357,17 +10357,22 @@ const skills = {
 		filter(event, player) {
 			return player.countMark("fuzhong") > 3;
 		},
-		content() {
-			"step 0";
-			player.chooseTarget(lib.filter.notMe, "对一名其他角色造成1点伤害", true).set("ai", function (target) {
-				var player = _status.event.player;
-				return get.damageEffect(target, player, player);
-			});
-			"step 1";
+		async content(event, trigger, player) {
+			const result = await player
+				.chooseTarget({
+					filterTarget: lib.filter.notMe,
+					prompt: "对一名其他角色造成1点伤害",
+					forced: true,
+					ai: target => {
+						const player = _status.event.player;
+						return get.damageEffect(target, player, player);
+					},
+				})
+				.forResult();
 			if (result.bool) {
-				var target = result.targets[0];
+				const target = result.targets[0];
 				player.line(target);
-				target.damage("nocard");
+				await target.damage({ nocard: true });
 			}
 			player.removeMark("fuzhong", 4);
 		},
@@ -10395,9 +10400,9 @@ const skills = {
 				},
 				forced: true,
 				filter(event, player) {
-					return player != _status.currentPhase && event.getg(player).length > 0;
+					return player !== _status.currentPhase && event.getg(player).length > 0;
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.addMark("fuzhong", 1);
 				},
 			},
@@ -10408,7 +10413,7 @@ const skills = {
 				filter(event, player) {
 					return !event.numFixed && player.countMark("fuzhong") > 0;
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.num++;
 				},
 			},
