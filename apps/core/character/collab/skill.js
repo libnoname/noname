@@ -1635,6 +1635,7 @@ const skills = {
 			player: ["damageEnd", "phaseBegin"],
 		},
 		forced: true,
+		locked: false,
 		skillList: ["dcshentui", "dcxurui", "dchaoshi", "dcniyun", "dcfanzhuan", "dckeshui", "dchuibian", "dcweiqu", "dcmaimeng", "dczuandai", "dcgunyuan", "quanjia", "xuyuan", "xiaomian"],
 		filter(event, player) {
 			return get.info("dcbaibian").skillList.some(skill => !player.hasSkill(skill, null, false, false));
