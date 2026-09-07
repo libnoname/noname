@@ -7884,83 +7884,82 @@ const skills = {
 			target: "useCardToTargeted",
 		},
 		filter(event, player) {
-			if (event.card.name != "sha" || !event.player.isIn()) {
+			if (event.card.name !== "sha" || !event.player.isIn()) {
 				return false;
 			}
-			if (player == event.player) {
-				return player.hasCard(function (card) {
-					return lib.filter.cardDiscardable(card, player, "choutao");
-				}, "he");
+			if (player === event.player) {
+				return player.hasCard(card => lib.filter.cardDiscardable(card, player, "choutao"), "he");
 			}
-			return event.player.hasCard(function (card) {
-				return lib.filter.canBeDiscarded(card, player, event.player);
-			}, "he");
+			return event.player.hasCard(card => lib.filter.canBeDiscarded(card, player, event.player), "he");
 		},
 		check(event, player) {
-			if (player == event.player) {
+			if (player === event.player) {
 				if (
-					!player.hasCard(function (card) {
-						return get.value(card) <= 5;
-					}, "he")
+					!player.hasCard(card => get.value(card) <= 5, "he")
 				) {
 					return false;
 				}
-				for (var i of event.targets) {
-					var eff1 = get.damageEffect(i, player, player);
-					if (eff1 < 0) {
+				for (const target of event.targets) {
+					const effect = get.damageEffect(target, player, player);
+					if (effect < 0) {
 						return false;
 					}
-					if (i.hasShan() && eff1 > 0) {
+					if (target.hasShan() && effect > 0) {
 						return true;
 					}
 				}
-				var sha = false;
+				let hasSha = false;
 				return (
 					player.getCardUsable({ name: "sha" }) <= 0 &&
-					player.hasCard(function (card) {
-						if (!sha && get.name(card) == "sha" && player.getUseValue(card) > 0) {
-							sha = true;
+					player.hasCard(card => {
+						if (!hasSha && get.name(card) === "sha" && player.getUseValue(card) > 0) {
+							hasSha = true;
 							return false;
 						}
-						return sha && get.value(card) <= 5;
+						return hasSha && get.value(card) <= 5;
 					}, "hs")
 				);
-			} else {
-				var eff1 = get.effect(event.player, { name: "guohe_copy2" }, player, player);
-				var eff2 = get.damageEffect(player, event.player, player);
-				if (!player.hasShan()) {
-					return eff1 > 0;
-				}
-				if (eff2 > 0) {
-					return eff1 > 0;
-				}
-				return player.hp > 2 && eff2 < eff1;
 			}
+			const discardEffect = get.effect(event.player, { name: "guohe_copy2" }, player, player);
+			const damageEffect = get.damageEffect(player, event.player, player);
+			if (!player.hasShan()) {
+				return discardEffect > 0;
+			}
+			if (damageEffect > 0) {
+				return discardEffect > 0;
+			}
+			return player.hp > 2 && damageEffect < discardEffect;
 		},
 		logTarget: "player",
-		content() {
-			"step 0";
-			if (player != game.me && !player.isOnline() && !player.isUnderControl()) {
-				game.delayx();
+		async content(event, trigger, player) {
+			if (player !== game.me && !player.isOnline() && !player.isUnderControl()) {
+				await game.delayx();
 			}
-			if (player == trigger.player) {
-				player.chooseToDiscard("he", true).set("ai", function (card) {
-					var player = _status.event.player;
-					var val = player.getUseValue(card);
-					if (get.name(card) == "sha" && player.getUseValue(card) > 0) {
-						val += 5;
-					}
-					return 20 - val;
+			if (player === trigger.player) {
+				await player.chooseToDiscard({
+					position: "he",
+					forced: true,
+					ai: card => {
+						const player = _status.event.player;
+						let value = player.getUseValue(card);
+						if (get.name(card) === "sha" && player.getUseValue(card) > 0) {
+							value += 5;
+						}
+						return 20 - value;
+					},
 				});
 			} else {
-				player.discardPlayerCard(trigger.player, true, "he");
+				await player.discardPlayerCard({
+					target: trigger.player,
+					forced: true,
+					position: "he",
+				});
 			}
-			"step 1";
 			trigger.directHit.addArray(game.players);
-			if (player == trigger.player && trigger.addCount !== false) {
+			if (player === trigger.player && trigger.addCount !== false) {
 				trigger.addCount = false;
-				const stat = player.getStat().card,
-					name = trigger.card.name;
+				const stat = player.getStat().card;
+				const name = trigger.card.name;
 				if (typeof stat[name] === "number") {
 					stat[name]--;
 				}
