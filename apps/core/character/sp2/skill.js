@@ -8890,24 +8890,23 @@ const skills = {
 	zhongjie: {
 		audio: 2,
 		trigger: { player: "die" },
-		direct: true,
 		forceDie: true,
 		skillAnimation: true,
 		animationColor: "gray",
-		content() {
-			"step 0";
-			player.chooseTarget(get.prompt2("zhongjie"), lib.filter.notMe).set("ai", function (target) {
-				return get.attitude(_status.event.player, target);
-			});
-			"step 1";
-			if (result.bool) {
-				//player.awakenSkill('zhongjie');
-				var target = result.targets[0];
-				player.logSkill("zhongjie", target);
-				target.gainMaxHp();
-				target.recover();
-				target.draw();
-			}
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2(event.skill),
+					filterTarget: lib.filter.notMe,
+					ai: target => get.attitude(_status.event.player, target),
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			await target.gainMaxHp();
+			await target.recover();
+			await target.draw();
 		},
 	},
 	//张宁
