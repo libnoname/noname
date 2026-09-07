@@ -7961,39 +7961,42 @@ const skills = {
 	xiangshu: {
 		audio: 2,
 		trigger: { player: "phaseJieshuBegin" },
-		direct: true,
 		limited: true,
 		skillAnimation: true,
 		animationColor: "gray",
 		filter(event, player) {
-			return (player.getStat("damage") || 0) > 0 && game.hasPlayer(current => current.isDamaged());
+			return (player.getStat("damage") ?? 0) > 0 && game.hasPlayer(current => current.isDamaged());
 		},
-		content() {
-			"step 0";
-			event.num = Math.min(5, player.getStat("damage"));
-			player
-				.chooseTarget("是否发动限定技【襄戍】？", "令一名角色回复" + event.num + "点体力并摸" + get.cnNumber(event.num) + "张牌", function (card, player, target) {
-					return target.isDamaged();
+		async cost(event, trigger, player) {
+			const num = Math.min(5, player.getStat("damage") ?? 0);
+			const result = await player
+				.chooseTarget({
+					prompt: "是否发动限定技【襄戍】？",
+					prompt2: `令一名角色回复${num}点体力并摸${get.cnNumber(num)}张牌`,
+					filterTarget: (card, player, target) => target.isDamaged(),
+					ai: target => {
+						const att = get.attitude(player, target);
+						if (att > 0 && num >= Math.min(player.hp, 2)) {
+							return att * Math.sqrt(target.getDamagedHp());
+						}
+						return 0;
+					},
 				})
-				.set("ai", function (target) {
-					var num = _status.event.getParent().num,
-						player = _status.event.player;
-					var att = get.attitude(player, target);
-					if (att > 0 && num >= Math.min(player.hp, 2)) {
-						return att * Math.sqrt(target.getDamagedHp());
-					}
-					return 0;
-				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.awakenSkill(event.name);
-				player.logSkill("xiangshu", target);
-				target.recover(num);
-				target.draw(num);
-				if (player != target) {
-					player.addExpose(0.2);
-				}
+				.forResult();
+			event.result = {
+				bool: result.bool,
+				targets: result.targets,
+				cost_data: num,
+			};
+		},
+		async content(event, trigger, player) {
+			const num = event.cost_data;
+			const target = event.targets[0];
+			player.awakenSkill(event.name);
+			await target.recover(num);
+			await target.draw(num);
+			if (player !== target) {
+				player.addExpose(0.2);
 			}
 		},
 	},
