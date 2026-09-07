@@ -13231,35 +13231,32 @@ const skills = {
 	},
 	beizhan: {
 		trigger: { player: "phaseEnd" },
-		direct: true,
 		audio: 2,
-		content() {
-			"step 0";
-			player.chooseTarget(get.prompt2("beizhan")).set("ai", function (target) {
-				var player = _status.event.player;
-				var att = get.attitude(player, target);
-				var hs = target.countCards("h");
-				var ht = target.maxHp;
-				if (hs >= ht && target.isMaxHandcard()) {
-					return -att * hs;
-				}
-				if (
-					hs < ht &&
-					game.hasPlayer(function (current) {
-						return current.countCards("h") > ht;
-					})
-				) {
-					return att * 2 * (ht - hs);
-				}
-				return 0;
-			});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("beizhan", target);
-				target.drawTo(Math.min(5, target.maxHp));
-				target.addSkill("beizhan2");
-			}
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2(event.skill),
+					ai: target => {
+						const player = _status.event.player;
+						const attitude = get.attitude(player, target);
+						const handcardCount = target.countCards("h");
+						const maxHp = target.maxHp;
+						if (handcardCount >= maxHp && target.isMaxHandcard()) {
+							return -attitude * handcardCount;
+						}
+						if (handcardCount < maxHp && game.hasPlayer(current => current.countCards("h") > maxHp)) {
+							return attitude * 2 * (maxHp - handcardCount);
+						}
+						return 0;
+					},
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const drawEvent = target.drawTo(Math.min(5, target.maxHp));
+			target.addSkill("beizhan2");
+			await drawEvent;
 		},
 		ai: {
 			expose: 0.25,
@@ -13270,7 +13267,7 @@ const skills = {
 		silent: true,
 		firstDo: true,
 		sourceSkill: "beizhan",
-		content() {
+		async content(event, trigger, player) {
 			player.removeSkill("beizhan2");
 			if (player.isMaxHandcard()) {
 				player.addTempSkill("zishou2");
