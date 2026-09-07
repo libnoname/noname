@@ -14467,8 +14467,7 @@ const skills = {
 		audio: 2,
 		trigger: { player: ["damageEnd", "phaseJieshuBegin"] },
 		frequent: true,
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			if (Object.keys(player.storage.pingjian_check)?.length) {
 				Object.keys(player.storage.pingjian_check).forEach(skill => {
 					player.removeSkill(skill);
@@ -14488,56 +14487,55 @@ const skills = {
 			if (!_status.characterlist) {
 				game.initCharacterList();
 			}
-			var allList = _status.characterlist.slice(0);
-			game.countPlayer(function (current) {
-				if (current.name && lib.character[current.name] && current.name.indexOf("gz_shibing") != 0 && current.name.indexOf("gz_jun_") != 0) {
+			const allList = _status.characterlist.slice(0);
+			game.countPlayer(current => {
+				if (current.name && lib.character[current.name] && current.name.indexOf("gz_shibing") !== 0 && current.name.indexOf("gz_jun_") !== 0) {
 					allList.add(current.name);
 				}
-				if (current.name1 && lib.character[current.name1] && current.name1.indexOf("gz_shibing") != 0 && current.name1.indexOf("gz_jun_") != 0) {
+				if (current.name1 && lib.character[current.name1] && current.name1.indexOf("gz_shibing") !== 0 && current.name1.indexOf("gz_jun_") !== 0) {
 					allList.add(current.name1);
 				}
-				if (current.name2 && lib.character[current.name2] && current.name2.indexOf("gz_shibing") != 0 && current.name2.indexOf("gz_jun_") != 0) {
+				if (current.name2 && lib.character[current.name2] && current.name2.indexOf("gz_shibing") !== 0 && current.name2.indexOf("gz_jun_") !== 0) {
 					allList.add(current.name2);
 				}
 			});
-			var list = [];
-			var skills = [];
-			var map = [];
+			const list = [];
+			const skills = [];
+			const map = [];
 			allList.randomSort();
-			var name2 = event.triggername;
-			for (var i = 0; i < allList.length; i++) {
-				var name = allList[i];
-				if (name.indexOf("zuoci") != -1 || name.indexOf("xushao") != -1) {
+			const triggerName = event.triggername;
+			for (const name of allList) {
+				if (name.indexOf("zuoci") !== -1 || name.indexOf("xushao") !== -1) {
 					continue;
 				}
-				var skills2 = lib.character[name][3];
-				for (var j = 0; j < skills2.length; j++) {
-					if (player.getStorage("pingjian").includes(skills2[j])) {
+				const characterSkills = lib.character[name][3];
+				for (const skill of characterSkills) {
+					if (player.getStorage("pingjian").includes(skill)) {
 						continue;
 					}
-					if (player.hasSkill(skills2[j], null, null, false)) {
+					if (player.hasSkill(skill, null, null, false)) {
 						continue;
 					}
-					if (skills.includes(skills2[j])) {
+					if (skills.includes(skill)) {
 						list.add(name);
 						if (!map[name]) {
 							map[name] = [];
 						}
-						map[name].push(skills2[j]);
-						skills.add(skills2[j]);
+						map[name].push(skill);
+						skills.add(skill);
 						continue;
 					}
-					var list2 = [skills2[j]];
-					game.expandSkills(list2);
-					for (var k = 0; k < list2.length; k++) {
-						var info = lib.skill[list2[k]];
-						if (get.is.zhuanhuanji(list2[k], player)) {
+					const expandedSkills = [skill];
+					game.expandSkills(expandedSkills);
+					for (const expandedSkill of expandedSkills) {
+						const info = lib.skill[expandedSkill];
+						if (get.is.zhuanhuanji(expandedSkill, player)) {
 							continue;
 						}
 						if (!info || !info.trigger || !info.trigger.player || info.silent || info.limited || info.juexingji || info.hiddenSkill || info.dutySkill || (info.zhuSkill && !player.isZhu2())) {
 							continue;
 						}
-						if (info.trigger.player == name2 || (Array.isArray(info.trigger.player) && info.trigger.player.includes(name2))) {
+						if (info.trigger.player === triggerName || (Array.isArray(info.trigger.player) && info.trigger.player.includes(triggerName))) {
 							if (info.ai && (info.ai.combo || info.ai.notemp || info.ai.neg)) {
 								continue;
 							}
@@ -14546,7 +14544,7 @@ const skills = {
 							}
 							if (info.filter) {
 								try {
-									var bool = info.filter(trigger, player, name2);
+									const bool = info.filter(trigger, player, triggerName);
 									if (!bool) {
 										continue;
 									}
@@ -14558,8 +14556,8 @@ const skills = {
 							if (!map[name]) {
 								map[name] = [];
 							}
-							map[name].push(skills2[j]);
-							skills.add(skills2[j]);
+							map[name].push(skill);
+							skills.add(skill);
 							break;
 						}
 					}
@@ -14568,17 +14566,18 @@ const skills = {
 					break;
 				}
 			}
-			if (skills.length) {
-				event.list = list;
-				player.chooseControl(skills).set("dialog", ["评鉴：请选择尝试发动的技能", [list, "character"]]);
-			} else {
-				event.finish();
+			if (!skills.length) {
+				return;
 			}
-			"step 1";
+			event.list = list;
+			const result = await player
+				.chooseControl({ controls: skills })
+				.set("dialog", ["评鉴：请选择尝试发动的技能", [list, "character"]])
+				.forResult();
 			player.markAuto("pingjian", [result.control]);
 			player.addTempSkill(result.control);
-			player.storage.pingjian_check[result.control] = trigger.name == "damage" ? trigger : "phaseJieshu";
-			var name = event.list.find(name => lib.character[name][3].includes(result.control));
+			player.storage.pingjian_check[result.control] = trigger.name === "damage" ? trigger : "phaseJieshu";
+			const name = event.list.find(name => lib.character[name][3].includes(result.control));
 			// if(name) lib.skill.rehuashen.createAudio(name,result.control,'xushao');
 			if (name) {
 				game.broadcastAll((player, name) => player.tempname.add(name), player, name);
@@ -14594,8 +14593,7 @@ const skills = {
 		usable: 1,
 		sourceSkill: "pingjian",
 		prompt: () => lib.translate.pingjian_info,
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			if (Object.keys(player.storage.pingjian_check)?.length) {
 				Object.keys(player.storage.pingjian_check).forEach(skill => {
 					player.removeSkill(skill);
@@ -14612,82 +14610,81 @@ const skills = {
 					delete player.storage.pingjian_check[skill];
 				});
 			}
-			var list = [];
-			var skills = [];
-			var map = [];
-			var evt = event.getParent(2);
+			const list = [];
+			const skills = [];
+			const map = [];
+			const phaseUseEvent = event.getParent(2);
 			if (!_status.characterlist) {
 				game.initCharacterList();
 			}
-			var allList = _status.characterlist.slice(0);
-			game.countPlayer(function (current) {
-				if (current.name && lib.character[current.name] && current.name.indexOf("gz_shibing") != 0 && current.name.indexOf("gz_jun_") != 0) {
+			const allList = _status.characterlist.slice(0);
+			game.countPlayer(current => {
+				if (current.name && lib.character[current.name] && current.name.indexOf("gz_shibing") !== 0 && current.name.indexOf("gz_jun_") !== 0) {
 					allList.add(current.name);
 				}
-				if (current.name1 && lib.character[current.name1] && current.name1.indexOf("gz_shibing") != 0 && current.name1.indexOf("gz_jun_") != 0) {
+				if (current.name1 && lib.character[current.name1] && current.name1.indexOf("gz_shibing") !== 0 && current.name1.indexOf("gz_jun_") !== 0) {
 					allList.add(current.name1);
 				}
-				if (current.name2 && lib.character[current.name2] && current.name2.indexOf("gz_shibing") != 0 && current.name2.indexOf("gz_jun_") != 0) {
+				if (current.name2 && lib.character[current.name2] && current.name2.indexOf("gz_shibing") !== 0 && current.name2.indexOf("gz_jun_") !== 0) {
 					allList.add(current.name2);
 				}
 			});
 			allList.randomSort();
-			for (var i = 0; i < allList.length; i++) {
-				var name = allList[i];
-				if (name.indexOf("zuoci") != -1 || name.indexOf("xushao") != -1) {
+			for (const name of allList) {
+				if (name.indexOf("zuoci") !== -1 || name.indexOf("xushao") !== -1) {
 					continue;
 				}
-				var skills2 = lib.character[name][3];
-				for (var j = 0; j < skills2.length; j++) {
-					if (player.getStorage("pingjian").includes(skills2[j])) {
+				const characterSkills = lib.character[name][3];
+				for (const skill of characterSkills) {
+					if (player.getStorage("pingjian").includes(skill)) {
 						continue;
 					}
-					if (player.hasSkill(skills2[j], null, null, false)) {
+					if (player.hasSkill(skill, null, null, false)) {
 						continue;
 					}
-					if (get.is.locked(skills2[j], player)) {
+					if (get.is.locked(skill, player)) {
 						continue;
 					}
-					var info = get.plainText(lib.translate[skills2[j] + "_info"] || "");
-					if (skills.includes(skills2[j]) || (info.includes("当你于出牌阶段") && !info.includes("当你于出牌阶段外"))) {
+					const skillInfoText = get.plainText(lib.translate[`${skill}_info`] || "");
+					if (skills.includes(skill) || (skillInfoText.includes("当你于出牌阶段") && !skillInfoText.includes("当你于出牌阶段外"))) {
 						list.add(name);
 						map[name] ??= [];
-						map[name].push(skills2[j]);
-						skills.add(skills2[j]);
+						map[name].push(skill);
+						skills.add(skill);
 						continue;
 					}
-					var list2 = [skills2[j]];
-					game.expandSkills(list2);
-					for (var k = 0; k < list2.length; k++) {
-						var info = lib.skill[list2[k]];
-						if (get.is.zhuanhuanji(list2[k], player)) {
+					const expandedSkills = [skill];
+					game.expandSkills(expandedSkills);
+					for (const expandedSkill of expandedSkills) {
+						const skillInfo = lib.skill[expandedSkill];
+						if (get.is.zhuanhuanji(expandedSkill, player)) {
 							continue;
 						}
-						if (!info || !info.enable || info.charlotte || info.limited || info.juexingji || info.hiddenSkill || info.dutySkill || (info.zhuSkill && !player.isZhu2())) {
+						if (!skillInfo || !skillInfo.enable || skillInfo.charlotte || skillInfo.limited || skillInfo.juexingji || skillInfo.hiddenSkill || skillInfo.dutySkill || (skillInfo.zhuSkill && !player.isZhu2())) {
 							continue;
 						}
-						if (info.enable == "phaseUse" || (Array.isArray(info.enable) && info.enable.includes("phaseUse")) || info.enable == "chooseToUse" || (Array.isArray(info.enable) && info.enable.includes("chooseToUse"))) {
-							if (info.ai && (info.ai.combo || info.ai.notemp || info.ai.neg)) {
+						if (skillInfo.enable === "phaseUse" || (Array.isArray(skillInfo.enable) && skillInfo.enable.includes("phaseUse")) || skillInfo.enable === "chooseToUse" || (Array.isArray(skillInfo.enable) && skillInfo.enable.includes("chooseToUse"))) {
+							if (skillInfo.ai && (skillInfo.ai.combo || skillInfo.ai.notemp || skillInfo.ai.neg)) {
 								continue;
 							}
-							if (info.init || info.onChooseToUse) {
+							if (skillInfo.init || skillInfo.onChooseToUse) {
 								continue;
 							}
-							if (info.filter) {
+							if (skillInfo.filter) {
 								try {
-									var bool = info.filter(evt, player);
+									const bool = skillInfo.filter(phaseUseEvent, player);
 									if (!bool) {
 										continue;
 									}
 								} catch (e) {
 									continue;
 								}
-							} else if (info.viewAs && typeof info.viewAs != "function") {
+							} else if (skillInfo.viewAs && typeof skillInfo.viewAs !== "function") {
 								try {
-									if (evt.filterCard && !evt.filterCard(info.viewAs, player, evt)) {
+									if (phaseUseEvent.filterCard && !phaseUseEvent.filterCard(skillInfo.viewAs, player, phaseUseEvent)) {
 										continue;
 									}
-									if (info.viewAsFilter && info.viewAsFilter(player) == false) {
+									if (skillInfo.viewAsFilter && skillInfo.viewAsFilter(player) === false) {
 										continue;
 									}
 								} catch (e) {
@@ -14698,8 +14695,8 @@ const skills = {
 							if (!map[name]) {
 								map[name] = [];
 							}
-							map[name].push(skills2[j]);
-							skills.add(skills2[j]);
+							map[name].push(skill);
+							skills.add(skill);
 							break;
 						}
 					}
@@ -14708,17 +14705,18 @@ const skills = {
 					break;
 				}
 			}
-			if (skills.length) {
-				event.list = list;
-				player.chooseControl(skills).set("dialog", ["评鉴：请选择尝试发动的技能", [list, "character"]]);
-			} else {
-				event.finish();
+			if (!skills.length) {
+				return;
 			}
-			"step 1";
+			event.list = list;
+			const result = await player
+				.chooseControl({ controls: skills })
+				.set("dialog", ["评鉴：请选择尝试发动的技能", [list, "character"]])
+				.forResult();
 			player.markAuto("pingjian", [result.control]);
 			player.addTempSkill(result.control);
 			player.storage.pingjian_check[result.control] = "phaseUse";
-			var name = event.list.find(name => lib.character[name][3].includes(result.control));
+			const name = event.list.find(name => lib.character[name][3].includes(result.control));
 			// if(name) lib.skill.rehuashen.createAudio(name,result.control,'xushao');
 			if (name) {
 				game.broadcastAll((player, name) => player.tempname.add(name), player, name);
@@ -14731,18 +14729,18 @@ const skills = {
 		trigger: { player: ["useSkill", "logSkillBegin"] },
 		sourceSkill: "pingjian",
 		filter(event, player) {
-			var info = get.info(event.skill);
+			const info = get.info(event.skill);
 			if (info && info.charlotte) {
 				return false;
 			}
-			var skill = get.sourceSkillFor(event);
+			const skill = get.sourceSkillFor(event);
 			return player.storage.pingjian_check[skill];
 		},
 		direct: true,
 		firstDo: true,
 		priority: Infinity,
-		content() {
-			var skill = get.sourceSkillFor(trigger);
+		async content(event, trigger, player) {
+			const skill = get.sourceSkillFor(trigger);
 			player.removeSkill(skill);
 			const names = player.tempname && player.tempname.filter(i => get.character(i, 3)?.includes(skill));
 			if (names) {
@@ -14763,22 +14761,22 @@ const skills = {
 		trigger: { player: ["phaseUseEnd", "damageEnd", "phaseJieshuBegin"] },
 		sourceSkill: "pingjian",
 		filter(event, player) {
-			return Object.keys(player.storage.pingjian_check).find(function (skill) {
-				if (event.name != "damage") {
-					return player.storage.pingjian_check[skill] == event.name;
+			return Object.keys(player.storage.pingjian_check).find(skill => {
+				if (event.name !== "damage") {
+					return player.storage.pingjian_check[skill] === event.name;
 				}
-				return player.storage.pingjian_check[skill] == event;
+				return player.storage.pingjian_check[skill] === event;
 			});
 		},
 		direct: true,
 		lastDo: true,
 		priority: -Infinity,
-		content() {
-			var skills = Object.keys(player.storage.pingjian_check).filter(function (skill) {
-				if (trigger.name != "damage") {
-					return player.storage.pingjian_check[skill] == trigger.name;
+		async content(event, trigger, player) {
+			const skills = Object.keys(player.storage.pingjian_check).filter(skill => {
+				if (trigger.name !== "damage") {
+					return player.storage.pingjian_check[skill] === trigger.name;
 				}
-				return player.storage.pingjian_check[skill] == trigger;
+				return player.storage.pingjian_check[skill] === trigger;
 			});
 			player.removeSkill(skills);
 			const names = player.tempname && player.tempname.filter(i => skills.some(skill => get.character(i, 3)?.includes(skill)));
@@ -14791,7 +14789,7 @@ const skills = {
 				});
 				game.broadcastAll((player, names) => player.tempname.removeArray(names), player, names);
 			}
-			for (var skill of skills) {
+			for (const skill of skills) {
 				delete player.storage.pingjian_check[skill];
 			}
 		},
