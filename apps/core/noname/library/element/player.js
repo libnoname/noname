@@ -6508,6 +6508,7 @@ export class Player extends HTMLDivElement {
 	 */
 	chooseCardOL(params) {
 		const next = game.createEvent("chooseCardOL");
+		next.player = this;
 		next._args = [];
 
 		const args = [...arguments];

@@ -7064,7 +7064,7 @@ const skills = {
 					},
 				})
 				.forResult();
-			if (!result?.bool | !result.targets?.length) {
+			if (!result?.bool || !result.targets?.length) {
 				player.removeGaintag("mingfa");
 				return;
 			}
