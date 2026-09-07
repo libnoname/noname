@@ -11285,22 +11285,24 @@ const skills = {
 	csyizheng: {
 		audio: 2,
 		trigger: { player: "phaseJieshuBegin" },
-		direct: true,
-		content() {
-			"step 0";
-			player.chooseTarget(get.prompt2("csyizheng"), lib.filter.notMe).set("ai", function (target) {
-				if (target.isTurnedOver() || target.hasJudge("lebu")) {
-					return 0;
-				}
-				return get.attitude(_status.event.player, target) * Math.max(0, target.countCards("h") - 2);
-			});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("csyizheng", target);
-				player.storage.csyizheng2 = target;
-				player.addTempSkill("csyizheng2", { player: "phaseBegin" });
-			}
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2(event.skill),
+					filterTarget: lib.filter.notMe,
+					ai: target => {
+						if (target.isTurnedOver() || target.hasJudge("lebu")) {
+							return 0;
+						}
+						return get.attitude(_status.event.player, target) * Math.max(0, target.countCards("h") - 2);
+					},
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			player.storage.csyizheng2 = target;
+			player.addTempSkill("csyizheng2", { player: "phaseBegin" });
 		},
 		ai: {
 			combo: "cslilu",
@@ -11315,17 +11317,17 @@ const skills = {
 		charlotte: true,
 		sourceSkill: "csyizheng",
 		logTarget(event) {
-			return event.name == "damage" ? event.source : event.player;
+			return event.name === "damage" ? event.source : event.player;
 		},
 		filter(event, player) {
-			var target = lib.skill.csyizheng2.logTarget(event);
-			if (target != player.storage.csyizheng2) {
+			const target = lib.skill.csyizheng2.logTarget(event);
+			if (target !== player.storage.csyizheng2) {
 				return false;
 			}
 			return player.maxHp > target.maxHp;
 		},
-		content() {
-			player.loseMaxHp();
+		async content(event, trigger, player) {
+			await player.loseMaxHp();
 			trigger.num++;
 		},
 		mark: "character",
