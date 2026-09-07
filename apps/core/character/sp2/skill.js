@@ -7551,11 +7551,11 @@ const skills = {
 		trigger: { global: "phaseUseBegin" },
 		logTarget: "player",
 		filter(event, player) {
-			return player.hp > 0 && event.player.countCards("h") > 0 && event.player.inRange(player);
+			return player.hp > 0 && event.player.hasCards("h") && event.player.inRange(player);
 		},
-		prompt2: (event, player) => "观看其" + get.cnNumber(Math.min(player.hp, event.player.countCards("h"))) + "张手牌并选择其中一张",
+		prompt2: (event, player) => `观看其${get.cnNumber(Math.min(player.hp, event.player.countCards("h")))}张手牌并选择其中一张`,
 		check(event, player) {
-			var target = event.player;
+			const target = event.player;
 			if (get.attitude(player, target) > 0) {
 				return true;
 			}
@@ -7564,34 +7564,39 @@ const skills = {
 			}
 			return false;
 		},
-		content() {
-			"step 0";
-			var target = trigger.player;
-			var cards = target.getCards("h");
-			var num = Math.min(cards.length, player.hp),
-				cards2 = cards.randomGets(num);
-			player.chooseButton([get.translation(target) + "的手牌（" + num + "/" + cards.length + "）", cards2], true).set("ai", function (button) {
-				var player = _status.event.player,
-					target = _status.event.getTrigger().player,
-					card = button.link;
-				var att = get.attitude(player, target);
-				var val = target.getUseValue(card, null, true);
-				if (val <= 0) {
-					return (-get.value(card, target) / 2) * get.sgn(att - 0.05);
-				}
-				if (target.canUse(card, player) && get.effect(player, card, target, target) > 0) {
-					var eff = get.effect(player, card, target, player);
-					if (eff < 0) {
-						val -= eff;
-					}
-				}
-				return val;
-			});
-			"step 1";
-			if (result.bool) {
-				player.addTempSkill("dcditing_effect", "phaseUseAfter");
-				player.storage.dcditing_effect = [trigger.player, result.links[0]];
+		async content(event, trigger, player) {
+			const target = trigger.player;
+			const cards = target.getCards("h");
+			const num = Math.min(cards.length, player.hp);
+			const shownCards = cards.randomGets(num);
+			const result = await player
+				.chooseButton({
+					createDialog: [`${get.translation(target)}的手牌（${num}/${cards.length}）`, shownCards],
+					forced: true,
+					ai: button => {
+						const player = _status.event.player;
+						const target = _status.event.getTrigger().player;
+						const card = button.link;
+						const attitude = get.attitude(player, target);
+						let value = target.getUseValue(card, null, true);
+						if (value <= 0) {
+							return (-get.value(card, target) / 2) * get.sgn(attitude - 0.05);
+						}
+						if (target.canUse(card, player) && get.effect(player, card, target, target) > 0) {
+							const effect = get.effect(player, card, target, player);
+							if (effect < 0) {
+								value -= effect;
+							}
+						}
+						return value;
+					},
+				})
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
+			player.addTempSkill("dcditing_effect", "phaseUseAfter");
+			player.storage.dcditing_effect = [trigger.player, result.links[0]];
 		},
 		subSkill: {
 			effect: {
@@ -7600,12 +7605,12 @@ const skills = {
 				trigger: { target: "useCardToTargeted" },
 				forced: true,
 				filter(event, player) {
-					var list = player.storage.dcditing_effect;
-					return list && event.player == list[0] && event.cards.includes(list[1]);
+					const list = player.storage.dcditing_effect;
+					return list && event.player === list[0] && event.cards.includes(list[1]);
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.excluded.add(player);
-					game.delayx();
+					await game.delayx();
 				},
 				group: ["dcditing_draw", "dcditing_gain"],
 			},
@@ -7615,11 +7620,11 @@ const skills = {
 				trigger: { global: "useCardAfter" },
 				forced: true,
 				filter(event, player) {
-					var list = player.storage.dcditing_effect;
-					return list && event.player == list[0] && event.cards.includes(list[1]) && !event.targets.includes(player);
+					const list = player.storage.dcditing_effect;
+					return list && event.player === list[0] && event.cards.includes(list[1]) && !event.targets.includes(player);
 				},
-				content() {
-					player.draw(2);
+				async content(event, trigger, player) {
+					await player.draw(2);
 				},
 			},
 			gain: {
@@ -7628,12 +7633,17 @@ const skills = {
 				trigger: { global: "phaseUseEnd" },
 				forced: true,
 				filter(event, player) {
-					var list = player.storage.dcditing_effect;
-					return list && event.player == list[0] && event.player.getCards("h").includes(list[1]);
+					const list = player.storage.dcditing_effect;
+					return list && event.player === list[0] && event.player.getCards("h").includes(list[1]);
 				},
-				content() {
-					var list = player.storage.dcditing_effect;
-					player.gain(list[0], list[1], "giveAuto", "bySelf");
+				async content(event, trigger, player) {
+					const list = player.storage.dcditing_effect;
+					await player.gain({
+						cards: [list[1]],
+						source: list[0],
+						animate: "giveAuto",
+						bySelf: true,
+					});
 				},
 			},
 		},
