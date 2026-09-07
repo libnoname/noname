@@ -13976,65 +13976,60 @@ const skills = {
 	},
 	qigong: {
 		trigger: { player: "shaMiss" },
-		direct: true,
 		audio: 2,
 		filter(event, player) {
 			return (
-				event.targets?.length == 1 &&
+				event.targets?.length === 1 &&
 				event.target?.isIn() &&
-				game.hasPlayer(current => {
-					return current != event.target && current.canUse("sha", event.target, false);
-				})
+				game.hasPlayer(current => current !== event.target && current.canUse("sha", event.target, false))
 			);
 		},
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt("qigong"), "令一名角色可再对" + get.translation(trigger.target) + "使用一张【杀】", function (card, player, target) {
-					var source = _status.event.getTrigger().target;
-					return target != source && target.canUse("sha", source, false);
-				})
-				.set("ai", function (target) {
-					var player = _status.event.player,
-						card = { name: "sha" },
-						source = _status.event.getTrigger().target;
-					if (target.hasSha()) {
-						var eff1 = get.effect(source, card, target, target);
-						if (eff1 > 0) {
-							return get.effect(source, card, target, player);
-						}
-					}
-					return target != player ? Math.random() * get.attitude(player, target) : 0;
-				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("qigong", target);
-				target.addTempSkill("qigong_ai", "chooseToUseEnd");
-				target
-					.chooseToUse(
-						"是否再对" + get.translation(trigger.target) + "使用一张【杀】？",
-						function (card, player, event) {
-							if (get.name(card) != "sha") {
-								return false;
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt(event.skill),
+					prompt2: `令一名角色可再对${get.translation(trigger.target)}使用一张【杀】`,
+					filterTarget: (card, player, target) => {
+						const source = _status.event.getTrigger().target;
+						return target !== source && target.canUse("sha", source, false);
+					},
+					ai: target => {
+						const player = _status.event.player;
+						const card = { name: "sha" };
+						const source = _status.event.getTrigger().target;
+						if (target.hasSha()) {
+							const effect = get.effect(source, card, target, target);
+							if (effect > 0) {
+								return get.effect(source, card, target, player);
 							}
-							return lib.filter.filterCard.apply(this, arguments);
-						},
-						trigger.target,
-						-1
-					)
-					.set("addCount", false)
-					.set("oncard", function () {
-						_status.event.directHit.addArray(game.players);
-					});
-			}
+						}
+						return target !== player ? Math.random() * get.attitude(player, target) : 0;
+					},
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			target.addTempSkill("qigong_ai", "chooseToUseEnd");
+			const next = target
+				.chooseToUse({
+					prompt: `是否再对${get.translation(trigger.target)}使用一张【杀】？`,
+					filterCard: (card, player, event) => get.name(card) === "sha" && lib.filter.filterCard(card, player, event),
+					filterTarget: (card, player, target) => target === trigger.target,
+					selectTarget: -1,
+				})
+				.set("addCount", false)
+				.set("oncard", () => {
+					_status.event.directHit.addArray(game.players);
+				});
+			await next;
 		},
 		subSkill: {
 			ai: {
 				ai: {
 					directHit_ai: true,
 					skillTagFilter(player, tag, arg) {
-						return arg.card && arg.card.name == "sha";
+						return arg.card && arg.card.name === "sha";
 					},
 				},
 			},
