@@ -16595,18 +16595,19 @@ const skills = {
 		charlotte: true,
 		sourceSkill: "xinfu_dianhu",
 		filter(event, player) {
-			if (player.storage.xinfu_dianhu2 && player.storage.xinfu_dianhu2.isIn()) {
-				if (event.name == "damage") {
-					return event.source == player.storage.xinfu_dianhu2;
-				}
+			const target = player.storage.xinfu_dianhu2;
+			if (!target?.isIn()) {
+				return false;
+			}
+			if (event.name !== "damage") {
 				return true;
 			}
+			return event.source === target;
 		},
-		content() {
-			"step 0";
-			var target = player.storage.xinfu_dianhu2;
+		async content(event, trigger, player) {
+			const target = player.storage.xinfu_dianhu2;
 			target.logSkill("xinfu_dianhu");
-			target.draw();
+			await target.draw();
 		},
 		onremove: true,
 	},
