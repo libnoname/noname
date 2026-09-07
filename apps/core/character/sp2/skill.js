@@ -11177,41 +11177,33 @@ const skills = {
 		audio: "yirang",
 		audioname: ["re_taoqian"],
 		trigger: { player: "phaseUseBegin" },
-		direct: true,
 		filter(event, player) {
-			if (
-				!player.countCards("he", function (card) {
-					return get.type(card) != "basic";
-				})
-			) {
+			if (!player.hasCards("he", card => get.type(card) !== "basic")) {
 				return false;
 			}
-			return game.hasPlayer(function (current) {
-				return current != player;
-			});
+			return game.hasPlayer(current => current !== player);
 		},
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt2("reyirang"), function (card, player, target) {
-					return target != player;
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2(event.skill),
+					filterTarget: (_card, player, target) => target !== player,
+					ai: target => (get.attitude(_status.event.player, target) - 2) * target.maxHp,
 				})
-				.set("ai", function (target) {
-					return (get.attitude(_status.event.player, target) - 2) * target.maxHp;
-				});
-			"step 1";
-			if (result.bool) {
-				var cards = player.getCards("he", function (card) {
-					return get.type(card) != "basic";
-				});
-				var target = result.targets[0];
-				player.logSkill("reyirang", target);
-				player.give(cards, target, "give");
-				if (target.maxHp > player.maxHp) {
-					player.gainMaxHp(target.maxHp - player.maxHp, true);
-					player.recover(cards.length);
-				}
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const cards = player.getCards("he", card => get.type(card) !== "basic");
+			const target = event.targets[0];
+			await player.give(cards, target, "give");
+			if (target.maxHp <= player.maxHp) {
+				return;
 			}
+			await player.gainMaxHp({
+				num: target.maxHp - player.maxHp,
+				forced: true,
+			});
+			await player.recover(cards.length);
 		},
 	},
 	cslilu: {
