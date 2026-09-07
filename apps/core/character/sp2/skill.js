@@ -12216,24 +12216,23 @@ const skills = {
 			global: "useCardToPlayered",
 		},
 		filter(event, player) {
-			return event.isFirstTarget && event.targets && event.targets.length > 1 && get.type2(event.card) == "trick";
+			return event.isFirstTarget && event.targets && event.targets.length > 1 && get.type2(event.card) === "trick";
 		},
-		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt("decadezhennan"), "对一名其他角色造成1点伤害", function (card, player, target) {
-					return target != player;
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt(event.skill),
+					prompt2: "对一名其他角色造成1点伤害",
+					filterTarget: (card, player, target) => target !== player,
+					ai: target => {
+						const player = _status.event.player;
+						return get.damageEffect(target, player, player);
+					},
 				})
-				.set("ai", function (target) {
-					var player = _status.event.player;
-					return get.damageEffect(target, player, player);
-				});
-			"step 1";
-			if (result.bool && result.targets && result.targets.length) {
-				player.logSkill("decadezhennan", result.targets);
-				result.targets[0].damage();
-			}
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			await event.targets[0].damage();
 		},
 		ai: {
 			expose: 0.25,
