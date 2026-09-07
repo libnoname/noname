@@ -12033,48 +12033,47 @@ const skills = {
 		trigger: { player: "phaseZhunbeiBegin" },
 		forced: true,
 		filter(event, player) {
-			return (
-				player.countCards("h") > 0 &&
-				game.hasPlayer(function (current) {
-					return current != player && current.hasSkill("cixiao");
-				})
-			);
+			return player.hasCards("h") && game.hasPlayer(current => current !== player && current.hasSkill("cixiao"));
 		},
-		content() {
-			"step 0";
-			var targets = game.filterPlayer(function (current) {
-				return current != player && current.hasSkill("cixiao");
-			});
-			if (targets.length == 1) {
+		async content(event, trigger, player) {
+			const targets = game.filterPlayer(current => current !== player && current.hasSkill("cixiao"));
+			let target;
+			let result;
+			if (targets.length === 1) {
 				event.target = targets[0];
-				player.chooseCard("h", true, "叛弑：将一张手牌交给" + get.translation(targets));
+				target = event.target;
+				result = await player
+					.chooseCard({
+						position: "h",
+						forced: true,
+						prompt: `叛弑：将一张手牌交给${get.translation(targets)}`,
+					})
+					.forResult();
 			} else {
-				player.chooseCardTarget({
-					prompt: "叛弑：将一张手牌交给" + get.translation(targets) + "中的一名角色",
-					filterCard: true,
-					position: "h",
-					targets: targets,
-					forced: true,
-					filterTarget(card, player, target) {
-						return _status.event.targets.includes(target);
-					},
-				});
+				result = await player
+					.chooseCardTarget({
+						prompt: `叛弑：将一张手牌交给${get.translation(targets)}中的一名角色`,
+						filterCard: true,
+						position: "h",
+						targets,
+						forced: true,
+						filterTarget(card, player, target) {
+							return _status.event.targets.includes(target);
+						},
+					})
+					.forResult();
+				target = result.targets?.[0];
 			}
-			"step 1";
-			if (result.bool) {
-				if (!target) {
-					target = result.targets[0];
-				}
-				player.line(target);
-				player.give(result.cards, target);
+			if (!result.bool) {
+				return;
 			}
+			player.line(target);
+			await player.give(result.cards, target);
 		},
 		mark: true,
 		marktext: "子",
 		intro: {
 			name: "义子",
-			//content:'我是儿子',
-			//R·I·P——永远怀念：被棘手砍掉的“我是儿子”
 			content(_, player) {
 				const targets = game.filterPlayer2(target => target.hasSkill("cixiao", null, null, false)).sortBySeat(player);
 				if (!targets.length) {
@@ -12082,7 +12081,7 @@ const skills = {
 				}
 				if (
 					["name", "name1", "name2"].some(name => {
-						if (!player[name] || !get.character(player[name]) || typeof get.translation(player[name]) != "string") {
+						if (!player[name] || !get.character(player[name]) || typeof get.translation(player[name]) !== "string") {
 							return false;
 						}
 						return player[name].includes("lvbu") && get.translation(player[name]).includes("吕布");
@@ -12090,21 +12089,16 @@ const skills = {
 				) {
 					return "公若不弃，布愿拜为义父";
 				}
-				return (
-					"我是" +
-					get.translation(targets) +
-					"的" +
-					(player => {
-						switch (player.sex) {
-							case "female":
-								return "义女";
-							case "double":
-								return "义子义女";
-							default:
-								return "义子";
-						}
-					})(player)
-				);
+				return `我是${get.translation(targets)}的${(player => {
+					switch (player.sex) {
+						case "female":
+							return "义女";
+						case "double":
+							return "义子义女";
+						default:
+							return "义子";
+					}
+				})(player)}`;
 			},
 		},
 		group: "panshi_damage",
@@ -12118,13 +12112,13 @@ const skills = {
 		logTarget: "player",
 		sourceSkill: "panshi",
 		filter(event, player) {
-			return player.isPhaseUsing() && event.card && event.card.name == "sha" && event.player.hasSkill("cixiao");
+			return player.isPhaseUsing() && event.card && event.card.name === "sha" && event.player.hasSkill("cixiao");
 		},
-		content() {
+		async content(event, trigger, player) {
 			trigger.num++;
 			if (
 				["name", "name1", "name2"].some(name => {
-					if (!player[name] || !get.character(player[name]) || typeof get.translation(player[name]) != "string") {
+					if (!player[name] || !get.character(player[name]) || typeof get.translation(player[name]) !== "string") {
 						return false;
 					}
 					return player[name].includes("lvbu") && get.translation(player[name]).includes("吕布");
@@ -12132,8 +12126,8 @@ const skills = {
 			) {
 				player.chat("吾堂堂丈夫，安肯为汝子乎！");
 			}
-			var evt = event.getParent("phaseUse");
-			if (evt && evt.player == player) {
+			const evt = event.getParent("phaseUse");
+			if (evt && evt.player === player) {
 				evt.skipped = true;
 			}
 		},
