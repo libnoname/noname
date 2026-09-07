@@ -7459,44 +7459,49 @@ const skills = {
 	dunxi: {
 		audio: 2,
 		trigger: { player: "useCard" },
-		direct: true,
 		filter(event, player) {
 			if (!get.tag(event.card, "damage")) {
 				return false;
 			}
-			return event.targets.some(target => target != player && target.isIn());
+			return event.targets.some(target => target !== player && target.isIn());
 		},
-		content() {
-			"step 0";
-			var targets = trigger.targets.filter(function (current) {
-				return current != player && current.isIn();
-			});
-			if (targets.length == 1) {
-				event.target = targets[0];
-				player
-					.chooseBool(get.prompt("dunxi", event.target), "令" + get.translation(event.target) + "获得一枚“钝”标记")
-					.set("goon", get.attitude(player, event.target) < 0)
-					.set("ai", () => _status.event.goon);
-			} else {
-				player
-					.chooseTarget(get.prompt("dunxi"), "选择一名目标角色获得一枚“钝”标记", function (card, player, target) {
-						return target != player && _status.event.getTrigger().targets.includes(target);
+		async cost(event, trigger, player) {
+			const targets = trigger.targets.filter(current => current !== player && current.isIn());
+			if (targets.length === 1) {
+				const target = targets[0];
+				const result = await player
+					.chooseBool({
+						prompt: get.prompt(event.skill, target),
+						prompt2: `令${get.translation(target)}获得一枚“钝”标记`,
+						ai: () => _status.event.goon,
 					})
-					.set("ai", function (target) {
-						var att = get.attitude(_status.event.player, target);
-						if (att >= 0) {
-							return 0;
-						}
-						return -att / (1 + target.hasMark("dunxi"));
-					});
+					.set("goon", get.attitude(player, target) < 0)
+					.forResult();
+				event.result = {
+					bool: result.bool,
+					targets: [target],
+				};
+			} else {
+				event.result = await player
+					.chooseTarget({
+						prompt: get.prompt(event.skill),
+						prompt2: "选择一名目标角色获得一枚“钝”标记",
+						filterTarget: (card, player, target) => target !== player && _status.event.getTrigger().targets.includes(target),
+						ai: target => {
+							const att = get.attitude(_status.event.player, target);
+							if (att >= 0) {
+								return 0;
+							}
+							return -att / (1 + target.hasMark("dunxi"));
+						},
+					})
+					.forResult();
 			}
-			"step 1";
-			if (result.bool) {
-				var target = event.target || result.targets[0];
-				player.logSkill("dunxi", target);
-				target.addMark("dunxi", 1);
-				game.delayx();
-			}
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			target.addMark("dunxi", 1);
+			await game.delayx();
 		},
 		intro: { content: "mark", name2: "钝" },
 		group: "dunxi_random",
@@ -7507,11 +7512,11 @@ const skills = {
 				forced: true,
 				locked: false,
 				filter(event, player) {
-					if (!event.player.hasMark("dunxi") || event.targets.length != 1 || event._dunxi || _status.dying.length) {
+					if (!event.player.hasMark("dunxi") || event.targets.length !== 1 || event._dunxi || _status.dying.length) {
 						return false;
 					}
-					var type = get.type2(event.card, false);
-					return type == "basic" || type == "trick";
+					const type = get.type2(event.card, false);
+					return type === "basic" || type === "trick";
 				},
 				logTarget: "player",
 				line: "fire",
@@ -7521,27 +7526,20 @@ const skills = {
 					const target = trigger.targets[0];
 					trigger.targets.remove(target);
 					await game.delayx();
-					let list;
-					if (get.type(trigger.card) != "delay") {
-						list = game.filterPlayer(function (current) {
-							return lib.filter.targetEnabled2(trigger.card, trigger.player, current);
-						});
-					} else {
-						list = game.filterPlayer(function (current) {
-							return lib.filter.judge(trigger.card, trigger.player, current);
-						});
+					const filter = get.type(trigger.card) !== "delay" ? current => lib.filter.targetEnabled2(trigger.card, trigger.player, current) : current => lib.filter.judge(trigger.card, trigger.player, current);
+					const list = game.filterPlayer(filter);
+					if (!list.length) {
+						return;
 					}
-					if (list.length) {
-						const targetx = list.randomGet();
-						trigger.targets.push(targetx);
-						trigger.player.line(targetx, "fire");
-						game.log(trigger.card, "的目标被改为", targetx);
-						if (targetx == target) {
-							await trigger.player.loseHp();
-							const evt = trigger.getParent("phaseUse");
-							if (evt && evt.player == trigger.player) {
-								evt.skipped = true;
-							}
+					const targetx = list.randomGet();
+					trigger.targets.push(targetx);
+					trigger.player.line(targetx, "fire");
+					game.log(trigger.card, "的目标被改为", targetx);
+					if (targetx === target) {
+						await trigger.player.loseHp();
+						const evt = trigger.getParent("phaseUse");
+						if (evt && evt.player === trigger.player) {
+							evt.skipped = true;
 						}
 					}
 				},
