@@ -16615,28 +16615,20 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filterTarget(card, player, target) {
-			return target != player;
+			return target !== player;
 		},
-		content() {
-			"step 0";
-			target.draw();
-			"step 1";
-			var card = result?.cards?.[0];
-			if (
-				card &&
-				game.hasPlayer(function (current) {
-					return target.canUse(card, current);
-				}) &&
-				get.owner(card) == target
-			) {
-				target.chooseToUse({
-					prompt: "是否使用" + get.translation(card) + "？",
-					filterCard(cardx, player, target) {
-						return cardx == _status.event.cardx;
-					},
-					cardx: card,
-				});
+		async content(event, trigger, player) {
+			const { target } = event;
+			const { cards } = await target.draw().forResult();
+			const card = cards?.[0];
+			if (!card || !game.hasPlayer(current => target.canUse(card, current)) || get.owner(card) !== target) {
+				return;
 			}
+			await target.chooseToUse({
+				prompt: `是否使用${get.translation(card)}？`,
+				filterCard: cardx => cardx === _status.event.cardx,
+				cardx: card,
+			});
 		},
 		ai: {
 			order: 7.5,
