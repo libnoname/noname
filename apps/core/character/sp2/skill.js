@@ -16024,23 +16024,23 @@ const skills = {
 				audio: "xinfu_bijing",
 				charlotte: true,
 				filter(event, player) {
-					if (event.player == player) {
+					if (event.player === player) {
 						return false;
 					}
 					return (
-						player.getHistory("lose", function (evt) {
-							for (var i in evt.gaintag_map) {
+						player.getHistory("lose", evt => {
+							for (const i in evt.gaintag_map) {
 								if (evt.gaintag_map[i].includes("xinfu_bijing")) {
 									return true;
 								}
 							}
-						}).length > 0 && event.player.countCards("he") > 0
+						}).length > 0 && event.player.hasCards("he")
 					);
 				},
 				forced: true,
 				logTarget: "player",
-				content() {
-					trigger.player.chooseToDiscard(2, true, "he");
+				async content(event, trigger, player) {
+					await trigger.player.chooseToDiscard({ selectCard: 2, forced: true, position: "he" });
 				},
 				sub: true,
 			},
@@ -16054,8 +16054,8 @@ const skills = {
 				filter(event, player) {
 					return player.hasCard(card => card.hasGaintag("xinfu_bijing") && player.canRecast(card), "h");
 				},
-				content() {
-					player.recast(player.getCards("h", card => card.hasGaintag("xinfu_bijing") && player.canRecast(card)));
+				async content(event, trigger, player) {
+					await player.recast(player.getCards("h", card => card.hasGaintag("xinfu_bijing") && player.canRecast(card)));
 				},
 				sub: true,
 			},
@@ -16063,25 +16063,28 @@ const skills = {
 		trigger: {
 			player: "phaseJieshuBegin",
 		},
-		direct: true,
-		filter(player, event) {
-			return event.countCards("h") > 0;
+		filter(event, player) {
+			return player.hasCards("h");
 		},
-		content() {
-			"step 0";
-			player.chooseCard(get.prompt2("xinfu_bijing"), "h", [1, 2]).set("ai", function (card) {
-				if (card.name == "shan") {
-					return 6;
-				}
-				return 6 - get.value(card);
-			});
-			"step 1";
-			if (result.bool) {
-				player.logSkill("xinfu_bijing");
-				player.addGaintag(result.cards, "xinfu_bijing");
-				player.addSkill("xinfu_bijing_lose");
-				player.addSkill("xinfu_bijing_discard");
-			}
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseCard({
+					prompt: get.prompt2(event.skill),
+					position: "h",
+					selectCard: [1, 2],
+					ai: card => {
+						if (card.name === "shan") {
+							return 6;
+						}
+						return 6 - get.value(card);
+					},
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			player.addGaintag(event.cards, "xinfu_bijing");
+			player.addSkill("xinfu_bijing_lose");
+			player.addSkill("xinfu_bijing_discard");
 		},
 	},
 	xinfu_zhenxing: {
