@@ -10780,54 +10780,58 @@ const skills = {
 	langmie: {
 		audio: 2,
 		trigger: { global: "phaseUseEnd" },
-		//forced:true,
 		filter(event, player) {
-			if (player == event.player || !player.countCards("he")) {
+			if (player === event.player || !player.hasCards("he")) {
 				return false;
 			}
-			var map = {};
-			var list = event.player.getHistory("useCard", function (evt) {
-				var evt2 = evt.getParent("phaseUse");
-				return evt2 == event;
+			const map = {};
+			const list = event.player.getHistory("useCard", evt => {
+				const phaseUseEvent = evt.getParent("phaseUse");
+				return phaseUseEvent === event;
 			});
-			for (var i of list) {
-				var name = get.type2(i.card, false);
+			for (const evt of list) {
+				const name = get.type2(evt.card, false);
 				if (!map[name]) {
 					map[name] = true;
-				} else {
-					return true;
+					continue;
 				}
+				return true;
 			}
 		},
 		frequent: true,
-		content() {
-			player.draw();
+		async content(event, trigger, player) {
+			await player.draw();
 		},
 		group: "langmie_damage",
 	},
 	langmie_damage: {
 		audio: "langmie",
 		trigger: { global: "phaseEnd" },
-		direct: true,
 		sourceSkill: "langmie",
 		filter(event, player) {
-			return event.player != player && (event.player.getStat("damage") || 0) > 1 && player.countCards("he") > 0;
+			return event.player !== player && (event.player.getStat("damage") || 0) > 1 && player.hasCards("he");
 		},
-		content() {
-			"step 0";
-			player
-				.chooseToDiscard("he", get.prompt("langmie", trigger.player), "弃置一张牌并对其造成1点伤害")
-				.set("goon", get.damageEffect(trigger.player, player, player) > 0)
-				.set("ai", function (card) {
-					if (!_status.event.goon) {
-						return 0;
-					}
-					return 7 - get.value(card);
-				}).logSkill = ["langmie_damage", trigger.player];
-			"step 1";
-			if (result.bool) {
-				trigger.player.damage();
-			}
+		async cost(event, trigger, player) {
+			const next = player
+				.chooseToDiscard({
+					position: "he",
+					chooseonly: true,
+					prompt: get.prompt("langmie", trigger.player),
+					prompt2: "弃置一张牌并对其造成1点伤害",
+					ai: card => {
+						if (!_status.event.goon) {
+							return 0;
+						}
+						return 7 - get.value(card);
+					},
+				})
+				.set("goon", get.damageEffect(trigger.player, player, player) > 0);
+			event.result = await next.forResult();
+			event.result.targets = [trigger.player];
+		},
+		async content(event, trigger, player) {
+			await player.discard(event.cards);
+			await trigger.player.damage();
 		},
 		ai: { expose: 0.2 },
 	},
