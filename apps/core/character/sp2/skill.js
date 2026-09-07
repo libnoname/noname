@@ -16381,9 +16381,7 @@ const skills = {
 	},
 	xz_xunxun: {
 		filter(event, player) {
-			var num = game.countPlayer(function (current) {
-				return current.isDamaged();
-			});
+			const num = game.countPlayer(current => current.isDamaged());
 			return num >= 1 && !player.hasSkill("xunxun");
 		},
 		audio: 2,
@@ -16391,39 +16389,38 @@ const skills = {
 			player: "phaseDrawBegin1",
 		},
 		//priority:10,
-		content() {
-			"step 0";
-			var cards = get.cards(4);
-			game.cardsGotoOrdering(cards);
-			var next = player.chooseToMove("恂恂：将两张牌置于牌堆顶", true);
-			next.set("list", [["牌堆顶", cards], ["牌堆底"]]);
-			next.set("filterMove", function (from, to, moved) {
-				if (to == 1 && moved[1].length >= 2) {
-					return false;
-				}
-				return true;
-			});
-			next.set("filterOk", function (moved) {
-				return moved[1].length == 2;
-			});
-			next.set("processAI", function (list) {
-				var cards = list[0][1].slice(0).sort(function (a, b) {
-					return get.value(b) - get.value(a);
-				});
-				return [cards, cards.splice(2)];
-			});
-			"step 1";
-			var top = result.moved[0];
-			var bottom = result.moved[1];
+		async content(event, trigger, player) {
+			const cards = get.cards(4);
+			await game.cardsGotoOrdering(cards);
+			const result = await player
+				.chooseToMove({
+					prompt: "恂恂：将两张牌置于牌堆顶",
+					forced: true,
+					list: [["牌堆顶", cards], ["牌堆底"]],
+					processAI: list => {
+						const cards = list[0][1].slice().sort((a, b) => get.value(b) - get.value(a));
+						return [cards, cards.splice(2)];
+					},
+				})
+				.set("filterMove", (from, to, moved) => {
+					if (to === 1 && moved[1].length >= 2) {
+						return false;
+					}
+					return true;
+				})
+				.set("filterOk", moved => moved[1].length === 2)
+				.forResult();
+			const top = result.moved[0];
+			const bottom = result.moved[1];
 			top.reverse();
-			for (var i = 0; i < top.length; i++) {
-				ui.cardPile.insertBefore(top[i], ui.cardPile.firstChild);
+			for (const card of top) {
+				ui.cardPile.insertBefore(card, ui.cardPile.firstChild);
 			}
-			for (i = 0; i < bottom.length; i++) {
-				ui.cardPile.appendChild(bottom[i]);
+			for (const card of bottom) {
+				ui.cardPile.appendChild(card);
 			}
 			game.updateRoundNumber();
-			game.delayx();
+			await game.delayx();
 		},
 	},
 	xinfu_xingzhao: {
