@@ -14045,17 +14045,14 @@ const skills = {
 				game
 					.getGlobalHistory(
 						"everything",
-						evt => {
-							return evt.name == "damage" && evt.source == player;
-						},
+						evt => evt.name === "damage" && evt.source === player,
 						event
 					)
-					.indexOf(event) == 0 &&
+					.indexOf(event) === 0 &&
 				event.player.isIn()
 			);
 		},
 		logTarget: "player",
-		direct: true,
 		check(trigger, player) {
 			if (get.attitude(player, trigger.player) >= -1) {
 				return false;
@@ -14065,40 +14062,49 @@ const skills = {
 				card: trigger.card,
 			});
 		},
-		content() {
-			"step 0";
-			var num = player.getDamagedHp();
-			var map = {};
-			var list = [];
-			for (var i = 1; i <= num; i++) {
-				var cn = get.cnNumber(i, true);
+		async cost(event, trigger, player) {
+			const num = player.getDamagedHp();
+			const map = {};
+			const controls = [];
+			for (let i = 1; i <= num; i++) {
+				const cn = get.cnNumber(i, true);
 				map[cn] = i;
-				list.push(cn);
+				controls.push(cn);
 			}
-			event.map = map;
-			player
-				.chooseControl(list, "cancel2", function () {
-					if (!lib.skill.spjiedao.check(_status.event.getTrigger(), player)) {
-						return "cancel2";
-					}
-					return get.cnNumber(_status.event.goon, true);
+			controls.push("cancel2");
+			const result = await player
+				.chooseControl({
+					controls,
+					prompt: get.prompt2(event.skill, trigger.player),
+					ai: () => {
+						if (!lib.skill.spjiedao.check(_status.event.getTrigger(), player)) {
+							return "cancel2";
+						}
+						return get.cnNumber(_status.event.goon, true);
+					},
 				})
-				.set("prompt", get.prompt2("spjiedao", trigger.player))
-				.set("goon", num);
-			"step 1";
-			if (result.control == "cancel2") {
-				return;
-			}
-			player.logSkill("spjiedao", trigger.player);
-			var num = event.map[result.control] || 1;
-			trigger.num += num;
+				.set("goon", num)
+				.forResult();
+			event.result = {
+				bool: result.control !== "cancel2",
+				cost_data: map[result.control] || 1,
+			};
+		},
+		async content(event, trigger, player) {
+			const selectedNum = event.cost_data;
+			trigger.num += selectedNum;
 			player
 				.when({ global: "damageEnd" })
-				.filter(evt => evt == trigger)
+				.filter(evt => evt === trigger)
 				.step(async (event, trigger, player) => {
-					if (trigger.player.isIn()) {
-						await player.chooseToDiscard(num, true, "he");
+					if (!trigger.player.isIn()) {
+						return;
 					}
+					await player.chooseToDiscard({
+						selectCard: selectedNum,
+						forced: true,
+						position: "he",
+					});
 				});
 		},
 	},
