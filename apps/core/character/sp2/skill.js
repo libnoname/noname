@@ -9717,74 +9717,64 @@ const skills = {
 		usable: 1,
 		trigger: { player: "useCardAfter" },
 		filter(event, player) {
-			return event.targets && event.targets.length == 1 && typeof get.number(event.card, false) == "number" && player.isPhaseUsing();
+			return event.targets && event.targets.length === 1 && typeof get.number(event.card, false) === "number" && player.isPhaseUsing();
 		},
-		direct: true,
-		content() {
-			"step 0";
-			var str = "",
-				num = get.number(trigger.card, false),
-				nums = get.strNumber(num);
-			var list = game.filterPlayer(function (current) {
-				return current.hasCard(function (card) {
-					return get.number(card) == num && lib.filter.canBeGained(card, current, player);
-				}, "ej");
-			});
+		async cost(event, trigger, player) {
+			const num = get.number(trigger.card, false);
+			const nums = get.strNumber(num);
+			const list = game.filterPlayer(current => current.hasCard(card => get.number(card) === num && lib.filter.canBeGained(card, current, player), "ej"));
+			let result;
 			if (list.length) {
-				str += "获得一名角色装备区或判定区内的一张点数为" + nums + "的牌，或直接从牌堆中获得一张点数为" + nums + "的牌";
-				player
-					.chooseTarget(get.prompt("rexingluan"), str, [0, 1], function (card, player, target) {
-						return _status.event.targets.includes(target);
+				result = await player
+					.chooseTarget({
+						prompt: get.prompt(event.skill),
+						prompt2: `获得一名角色装备区或判定区内的一张点数为${nums}的牌，或直接从牌堆中获得一张点数为${nums}的牌`,
+						selectTarget: [0, 1],
+						filterTarget: (_card, _player, target) => list.includes(target),
+						ai: target => {
+							if (!target) {
+								return 1;
+							}
+							const att = -get.sgn(get.attitude(player, target));
+							if (target.hasCard(card => get.number(card) === num && get.effect(target, card, target, player) < 0, "j")) {
+								return 1.2 * Math.abs(get.attitude(player, target));
+							}
+							if (target.hasCard(card => get.number(card) === num && get.sgn(get.value(card, target) + 0.1) === att, "e")) {
+								return Math.abs(get.attitude(player, target));
+							}
+							return 0;
+						},
 					})
-					.set("targets", list)
-					.set("ai", function (target) {
-						if (!target) {
-							return 1;
-						}
-						var player = _status.event.player,
-							num = get.number(_status.event.getTrigger().card, false),
-							att = -get.sgn(get.attitude(player, target));
-						if (
-							target.hasCard(function (card) {
-								return get.number(card) == num && get.effect(target, card, target, player) < 0;
-							}, "j")
-						) {
-							return 1.2 * Math.abs(get.attitude(player, target));
-						}
-						if (
-							target.hasCard(function (card) {
-								return get.number(card) == num && get.sgn(get.value(card, target) + 0.1) == att;
-							}, "e")
-						) {
-							return Math.abs(get.attitude(player, target));
-						}
-						return 0;
-					});
+					.forResult();
 			} else {
-				player.chooseBool(get.prompt("rexingluan"), "从牌堆中获得一张点数为" + nums + "的牌").ai = () => true;
+				result = await player
+					.chooseBool({
+						prompt: get.prompt(event.skill),
+						prompt2: `从牌堆中获得一张点数为${nums}的牌`,
+						ai: () => true,
+					})
+					.forResult();
 			}
-			"step 1";
-			if (result.bool) {
-				if (result.targets && result.targets.length) {
-					var target = result.targets[0];
-					player.logSkill("rexingluan", target);
-					player
-						.gainPlayerCard(target, "ej", true)
-						.set("num", get.number(trigger.card, false))
-						.set("filterButton", function (button) {
-							return get.number(button.link) == _status.event.num;
-						});
-				} else {
-					player.logSkill("rexingluan");
-					var num = get.number(trigger.card, false),
-						card = get.cardPile2(function (i) {
-							return get.number(i, false) == num;
-						}, "random");
-					if (card) {
-						player.gain(card, "gain2");
-					}
-				}
+			result.cost_data = num;
+			event.result = result;
+		},
+		async content(event, trigger, player) {
+			const num = event.cost_data;
+			if (event.targets?.length) {
+				const target = event.targets[0];
+				await player.gainPlayerCard({
+					target,
+					position: "ej",
+					forced: true,
+					filterButton: button => get.number(button.link) === num,
+				});
+				return;
 			}
+			const card = get.cardPile2(i => get.number(i, false) === num, "random");
+			if (!card) {
+				return;
+			}
+			await player.gain({ cards: [card], animate: "gain2" });
 		},
 	},
 	//杜夫人
