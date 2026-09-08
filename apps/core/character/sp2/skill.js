@@ -9208,20 +9208,17 @@ const skills = {
 			return player.hasSkill("jinghe_clear");
 		},
 		async cost(event, trigger, player) {
-
-		},
-		async content(event, trigger, player) {
 			const list1 = [];
 			const list2 = [];
 			let addIndex = 0;
 			const choices = [];
-			game.countPlayer(current => {
+			for (const current of game.filterPlayer()) {
 				if (current.additionalSkills[`jinghe_${player.playerid}`]) {
 					list1.push(current);
 				} else {
 					list2.push(current);
 				}
-			});
+			};
 			list1.sortBySeat();
 			if (list1.length) {
 				choices.push(`令${get.translation(list1)}${list1.length > 1 ? "各" : ""}摸一张牌`);
@@ -9246,11 +9243,19 @@ const skills = {
 				})
 				.forResult();
 			if (result.control === "cancel2") {
+				event.result = { bool: false };
 				return;
 			}
-			if (result.index + addIndex !== 0) {
-				player.logSkill("gongxiu", list2);
-				const discardEvents = list2.map(current =>
+			const discard = result.index + addIndex !== 0;
+			event.result = {
+				bool: true,
+				targets: discard ? list2 : list1,
+				cost_data: discard,
+			};
+		},
+		async content(event, trigger, player) {
+			if (event.cost_data) {
+				const discardEvents = event.targets.map(current =>
 					current.chooseToDiscard({
 						position: "h",
 						forced: true,
@@ -9259,8 +9264,7 @@ const skills = {
 				await Promise.all(discardEvents);
 				return;
 			}
-			player.logSkill("gongxiu", list1);
-			await game.asyncDraw(list1);
+			await game.asyncDraw(event.targets);
 			await game.delayx();
 		},
 		ai: {
