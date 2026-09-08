@@ -476,4 +476,5 @@ window.noname_character_replace = {
 	lizhaojiaobo: ["lizhaojiaobo", "lx_lizhaojiaobo"],
 	chengji: ["chengji", "lx_chengji"],
 	shen_huangzhong: ["ol_shen_huangzhong", "shen_huangzhong"],
+	huanshujun: ["huanshujun", "huanhuaijin"],
 };

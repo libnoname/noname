@@ -4089,20 +4089,20 @@ const skills = {
 			player: ["damageEnd", "phaseZhunbeiBegin"],
 		},
 		filter(event, player) {
-			return game.hasPlayer(target => target != player && target.countCards("he"));
+			return game.hasPlayer(target => target != player && target.countCards("h"));
 		},
 		async content(event, trigger, player) {
 			const bool = player.storage[`${event.name}_rewrite`];
 			const color = bool ? "black" : "red";
 			const result = await player
 				.chooseTarget({
-					prompt: `###${get.translation(event.name)}###令一名角色交给你一张牌`,
+					prompt: `###${get.translation(event.name)}###令一名其他角色交给你一手张牌`,
 					forced: true,
 					filterTarget(card, player, target) {
-						return target != player && target.countCards("he");
+						return target != player && target.countCards("h");
 					},
 					ai(target) {
-						return -get.attitude(get.player(), target) * (114514 - target.countCards("he"));
+						return -get.attitude(get.player(), target) * (114514 - target.countCards("h"));
 					},
 				})
 				.forResult();
@@ -4112,9 +4112,9 @@ const skills = {
 			player.line(target);
 			const result2 = await target
 				.chooseToGive({
-					prompt: `夏晟：交给${get.translation(player)}一张牌`,
+					prompt: `春晖：交给${get.translation(player)}一张手牌`,
 					forced: true,
-					position: "he",
+					position: "h",
 					target: player,
 					ai(card) {
 						if (get.color(card, false) == "black") {
@@ -4128,84 +4128,32 @@ const skills = {
 				cards: [card],
 			} = result2;
 			if (get.color(card, false) == "black") {
-				[player, target].forEach(current => {
-					current.addTempSkill(`${event.name}_effect`, "roundStart");
-					current.setStorage(`${event.name}_effect`, color, true);
-				});
+				player.setStorage(`${event.name}_effect`, [color, target], true);
+				player.addTempSkill(`${event.name}_effect`);
 			}
 		},
 		subSkill: {
 			effect: {
 				charlotte: true,
 				onremove: true,
-				trigger: {
-					player: "useCard2",
-				},
+				trigger: { global: "useCardToTarget" },
 				forced: true,
-				popup: false,
 				filter(event, player) {
-					return get.color(event.card) == player.storage.olchunhui_effect;
+					return player.storage.olchunhui_effect?.length && get.color(event.card) == player.storage.olchunhui_effect[0] && [player, player.storage.olchunhui_effect[1]].includes(event.target);
 				},
 				async content(event, trigger, player) {
-					player.removeSkill(event.name);
-					const { card, targets } = trigger;
-					let bool1 = true;
-					const bool2 = targets?.length > 1;
-					//判断能不能多指，有好几个方面（allowMultiple为true、没有multiTarget、是否有能够增加的目标，缺一不可）
-					const info = get.info(card);
-					const addTargets = game.filterPlayer(function (target) {
-						return !targets.includes(target) && lib.filter.targetEnabled2(card, player, target) && lib.filter.targetInRange(card, player, target);
-					});
-					if (info.allowMultiple == false || !targets.length || info.multitarget || !addTargets.length) {
-						bool1 = false;
-					}
-					//能否增加和能否减少分开判断
-					if (bool1 || bool2) {
-						const next = player
-							.chooseTarget({
-								prompt: `###${get.translation(event.name)}###为${get.translation(card)}增加或减少一个目标（至多减至一）`,
-								filterTarget(card, player, target) {
-									const { bool1, bool2, targetsx, targetsy } = get.event();
-									return (bool1 && targetsx.includes(target)) || (bool2 && targetsy.includes(target));
-								},
-								ai(target) {
-									const targets = get.event().targetsy;
-									const card = get.event().getTrigger().card;
-									const player = get.player();
-									return get.effect(target, card, player, player) * (targets.includes(target) ? -1 : 1);
-								},
-							})
-							.set("bool1", bool1)
-							.set("bool2", bool2)
-							.set("targetsx", addTargets)
-							.set("targetsy", targets);
-						//加个宝宝提示（）
-						next.targetprompt2.push(target => {
-							if (!target.classList.contains("selectable")) {
-								return false;
-							}
-							if (get.event().targetsy.includes(target)) {
-								return `可减少目标`;
-							}
-						});
-						const result = await next.forResult();
-						if (result?.bool && result.targets?.length) {
-							const {
-								targets: [target],
-							} = result;
-							player.line(target);
-							if (targets.includes(target)) {
-								trigger.targets.remove(target);
-								game.log(target, "从", card, "的目标中移除");
-							} else {
-								trigger.targets.add(target);
-								game.log(target, "成为", card, "的额外目标");
-							}
+					const targets = [player, player.storage.olchunhui_effect[1]].sortBySeat(_status.currentPhase);
+					await game.doAsyncInOrder(targets, async target => {
+						if (target.hasDiscardableCards(target, "h")) {
+							await target.chooseToDiscard({ forced: true, position: "h" });
 						}
-					}
+					});
+					player.removeSkill(event.name);
 				},
 				intro: {
-					content: "下次使用$牌可以增加或减少一个目标（至多减至1）",
+					content([color, target], player) {
+						return `你或${get.translation(target)}本回合下次成为${get.translation(color)}牌的目标时，你与其各弃一张手牌`;
+					},
 				},
 			},
 		},
@@ -4227,7 +4175,7 @@ const skills = {
 					: info.allowMultiple !== false &&
 						!info.multitarget &&
 						targets?.length &&
-						game.hasPlayer(function (target) {
+						game.hasPlayer(target => {
 							return !targets.includes(target) && lib.filter.targetEnabled2(card, player, target);
 						});
 			if (player.storage.olxiasheng_rewrite) {
@@ -4284,21 +4232,13 @@ const skills = {
 		trigger: { global: "dying" },
 		filter(event, player) {
 			const color = player.storage.olqiumu_rewrite ? "black" : "red";
-			return game.hasGlobalHistory("useCard", evt => evt.targets.includes(event.player) && get.color(evt.card) == color);
+			return player.hasHistory("useCard", evt => evt.targets?.includes(event.player) && get.color(evt.card) == color);
 		},
 		logTarget: "player",
 		async content(event, trigger, player) {
 			const {
 				targets: [target],
 			} = event;
-			const cards = target.getGainableCards(player, "he", card => get.color(card) == "black");
-			if (cards.length) {
-				await player.gain({
-					cards,
-					source: target,
-					animate: "giveAuto",
-				});
-			}
 			if (!player.storage[`${event.name}_rewrite`]) {
 				const list = ["olchunhui", "olxiasheng", "olqiumu"].filter(i => !player.storage[`${i}_rewrite`]);
 				const result = await player
@@ -4311,6 +4251,14 @@ const skills = {
 				const { control } = result;
 				game.log(player, "修改了", `#g【${get.translation(control)}】`);
 				player.setStorage(`${control}_rewrite`, true);
+				const cards = target.getGainableCards(player, "h", card => get.color(card) == "black");
+				if (cards.length) {
+					await player.gain({
+						cards,
+						source: target,
+						animate: "giveAuto",
+					});
+				}
 			}
 		},
 	},
