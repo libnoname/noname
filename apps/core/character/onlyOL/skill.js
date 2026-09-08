@@ -1475,10 +1475,11 @@ const skills = {
 				if (!target.isIn()) {
 					continue;
 				}
-				const count = target.countHistory("damage");
-				await target.damage(player);
-				if (target.countHistory("damage") > count && !drawnTargets.has(target)) {
-					drawnTargets.add(target);
+				const damage = target.damage(player);
+				await damage;
+				const damaged = damage.player;
+				if (damaged?.hasHistory("damage", evt => evt === damage) && !drawnTargets.has(damaged)) {
+					drawnTargets.add(damaged);
 					await player.draw();
 				}
 			}
