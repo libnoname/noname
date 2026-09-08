@@ -19928,8 +19928,10 @@ export default {
 					}
 				}
 			} else if (event.name == "cardsDiscard") {
-				const source = event.getParent().player || event.discarder;
-				if (!source || source == player || event.type == "use") {
+				const parent = event.getParent();
+				const related = parent.name == "orderingDiscard" ? parent.relatedEvent : parent;
+				const source = related?.player || event.discarder;
+				if (!source || source == player || related?.name == "useCard" || event.type == "use") {
 					return [];
 				}
 				cards = event.cards || [];
@@ -20067,7 +20069,8 @@ export default {
 			const index = event.cost_data;
 			const name = index == 0 ? target.name1 : target.name2;
 			await target.hideCharacter(index);
-			target.storage.gz_ol_shantong_effect = {
+			target.storage.gz_ol_shantong_effect = true;
+			target.storage.gz_ol_shantong_watch = {
 				source: player,
 				name,
 			};
@@ -20077,6 +20080,7 @@ export default {
 		subSkill: {
 			effect: {
 				charlotte: true,
+				onremove: true,
 				trigger: {
 					player: "useCardAfter",
 				},
@@ -20103,23 +20107,20 @@ export default {
 			},
 			watch: {
 				charlotte: true,
-				onremove(player) {
-					delete player.storage.gz_ol_shantong_effect;
-				},
+				onremove: true,
 				trigger: {
 					player: "showCharacterEnd",
 				},
 				forced: true,
 				popup: false,
 				filter(event, player) {
-					const info = player.storage.gz_ol_shantong_effect;
+					const info = player.storage.gz_ol_shantong_watch;
 					return !!info && event.toShow?.includes(info.name);
 				},
 				async content(event, trigger, player) {
-					const info = player.storage.gz_ol_shantong_effect;
+					const info = player.storage.gz_ol_shantong_watch;
 					const source = info?.source;
 					player.removeSkill("gz_ol_shantong_watch");
-					player.removeSkill("gz_ol_shantong_effect");
 					if (!source?.isIn() || !player.isIn()) {
 						return;
 					}
