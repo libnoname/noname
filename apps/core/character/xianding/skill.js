@@ -41242,12 +41242,12 @@ const skills = {
 					}
 					const num = record[2];
 					if (record[1] > 0) {
-						const att = get.attitude(player, target);
+						const bool = get.attitude(player, target) > 0 ? true : false;
 						if (num < record[1]) {
 							const result = await player
 								.chooseBool({
 									prompt: `慈厉：是否令${get.translation(target)}随机弃置${get.cnNumber(record[1])}张牌？`,
-									choice: -att,
+									choice: !bool,
 								})
 								.forResult();
 							if (!result.bool) return;
@@ -41257,7 +41257,7 @@ const skills = {
 							const result = await player
 								.chooseBool({
 									prompt: `慈厉：是否令${get.translation(target)}摸${get.cnNumber(record[1])}张牌？`,
-									choice: att,
+									choice: bool,
 								})
 								.forResult();
 							if (!result.bool) return;
