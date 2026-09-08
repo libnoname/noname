@@ -407,16 +407,8 @@ const skills = {
 								],
 							],
 						],
-						processAI(list) {
-							const { player, storage, choices } = get.event();
-							const group = player.group;
-							if (storage.includes(group)) {
-								const choicex = [player.group, ...storage.slice().remove(player.group)].map((group, index) => [index + 1, "", group]);
-								return choicex;
-							} else {
-								return choices;
-							}
-						},
+						//插眼等
+						//processAI(list) {},
 					})
 					.set("choices", choices)
 					.set("storage", storage)
