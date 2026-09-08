@@ -4152,7 +4152,7 @@ const skills = {
 				},
 				intro: {
 					content([color, target], player) {
-						return `你或${get.translation(target)}本回合下次成为${get.translation(color)}牌的目标时，你与其各弃一张手牌`
+						return `你或${get.translation(target)}本回合下次成为${get.translation(color)}牌的目标时，你与其各弃一张手牌`;
 					},
 				},
 			},
@@ -4252,13 +4252,13 @@ const skills = {
 				game.log(player, "修改了", `#g【${get.translation(control)}】`);
 				player.setStorage(`${control}_rewrite`, true);
 				const cards = target.getGainableCards(player, "h", card => get.color(card) == "black");
-			if (cards.length) {
-				await player.gain({
-					cards,
-					source: target,
-					animate: "giveAuto",
-				});
-			}
+				if (cards.length) {
+					await player.gain({
+						cards,
+						source: target,
+						animate: "giveAuto",
+					});
+				}
 			}
 		},
 	},
