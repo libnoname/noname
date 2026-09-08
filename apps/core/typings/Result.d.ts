@@ -40,7 +40,7 @@ declare interface Result {
 	card: Card | CardBaseUIData;
 
 	
-	cost_data: Record<string, any>;
+	cost_data: any;
 
 	[key: string]: any;
 }
