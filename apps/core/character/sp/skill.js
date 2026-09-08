@@ -125,6 +125,9 @@ const skills = {
 					})
 					.forResult();
 				if (!choice.bool) break;
+				// 记录本回合已选择的目标，两个选项均计入。
+				player.addTempSkill("zexing_refused", "phaseAfter");
+				player.markAuto("zexing_refused", [target]);
 				if (choice.links[0] === "exchange") {
 					const allowed = lib.skill.zexing.gainable(player, target, suit);
 					const result = await player
@@ -147,8 +150,6 @@ const skills = {
 					}
 					break;
 				}
-				player.addTempSkill("zexing_refused", "phaseAfter");
-				player.markAuto("zexing_refused", [target]);
 				await target.loseHp();
 				if (!player.isIn() || !lib.skill.zexing.filter(event, player)) break;
 				const next = await player
