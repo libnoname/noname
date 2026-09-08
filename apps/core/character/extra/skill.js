@@ -2349,9 +2349,13 @@ const skills = {
 					selectButton: 1,
 					filterTarget: true,
 					ai1(button) {
+						const player = get.player();
 						if (
 							game.hasPlayer(target => {
-								return get.attitude(get.player(), target) < 0;
+								return get.attitude(player, target) < 0;
+							}) &&
+							game.hasPlayer(target => {
+								return player != target && get.attitude(player, target) > 0;
 							})
 						) {
 							return 1;

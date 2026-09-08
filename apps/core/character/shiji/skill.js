@@ -6309,7 +6309,7 @@ const skills = {
 		trigger: { global: "phaseDrawBegin2" },
 		logTarget: "player",
 		filter(event, player) {
-			return !event.numFixed && event.player !== player && player.countMark("xinlirang") === 0;
+			return !event.numFixed && event.player !== player && !player.hasMark("xinlirang");
 		},
 		prompt2: "获得一枚“谦”并令其多摸两张牌",
 		check(event, player) {
@@ -6356,10 +6356,7 @@ const skills = {
 				},
 				logTarget: "player",
 				async content(event, trigger, player) {
-					await player.gain({
-						cards: event.cards,
-						animate: "gain2",
-					});
+					await player.gain({ cards: event.cards, animate: "gain2" });
 				},
 			},
 			skip: {
@@ -6371,7 +6368,7 @@ const skills = {
 				},
 				async content(event, trigger, player) {
 					player.skip("phaseDraw");
-					player.removeMark("xinlirang", player.countMark("xinlirang"));
+					player.clearMark("xinlirang");
 				},
 			},
 		},

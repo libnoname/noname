@@ -1475,6 +1475,7 @@ const skills = {
 	},
 	//e郭照
 	pepianchong: {
+		audio: "pianchong",
 		trigger: { player: "phaseDrawBegin1" },
 		check(event, player) {
 			return true;
@@ -1493,6 +1494,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
+				audio: "pepianchong",
 				trigger: {
 					player: ["loseAfter"],
 					global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
@@ -1520,6 +1522,7 @@ const skills = {
 		},
 	},
 	pezunwei: {
+		audio: "zunwei",
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {

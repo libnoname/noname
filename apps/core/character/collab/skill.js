@@ -6234,12 +6234,12 @@ const skills = {
 	//卫青
 	dcbeijin: {
 		enable: "phaseUse",
+		manualConfirm: true,
 		async content(event, trigger, player) {
 			player.addSkill("dcbeijin_effect");
+			player.addSkill("dcbeijin_effect2");
 			player.addTempSkill("dcbeijin_buff");
-			await player.draw({
-				gaintag: ["dcbeijin_effect"],
-			});
+			await player.draw({ gaintag: ["dcbeijin_effect"] });
 		},
 		ai: {
 			order: 20,
@@ -6304,9 +6304,22 @@ const skills = {
 					}
 				},
 			},
+			//这是一个永久效果
+			effect2: {
+				forced: true,
+				popup: false,
+				charlotte: true,
+				trigger: { player: "dcbeijinBegin" },
+				filter(event, player) {
+					return player.hasCard(card => card.hasGaintag("dcbeijin_effect"));
+				},
+				async content(event, trigger, player) {
+					await player.loseHp();
+				},
+			},
 			buff: {
 				charlotte: true,
-				trigger: { player: ["useCard", "dcbeijinBegin"] },
+				trigger: { player: ["useCard"] },
 				forced: true,
 				popup: false,
 				async content(event, trigger, player) {
@@ -6316,7 +6329,7 @@ const skills = {
 					}
 				},
 				mark: true,
-				intro: { content: "本回合下次使用牌时或发动【北进】时，若手牌中有因【北进】得到的牌，你失去1点体力" },
+				intro: { content: "本回合下次使用牌时，若手牌中有因【北进】得到的牌，你失去1点体力" },
 			},
 		},
 	},
@@ -7333,7 +7346,7 @@ const skills = {
 				}
 			}
 			if (list.length) {
-				await player.gain(list, "gain2");
+				await player.gain({ cards: list, animate: "draw" });
 			} else {
 				player.chat("无牌可得？！");
 			}
@@ -8072,7 +8085,7 @@ const skills = {
 			var num = game.countPlayer();
 			var result = await player
 				.chooseControl()
-				.set("choiceList", ["摸" + get.cnNumber(num) + "张牌，本回合手牌上限+" + parseFloat(num), "弃置至多" + get.cnNumber(num) + "张牌，随机对其他角色造成等量火焰伤害", "视为使用" + get.cnNumber(num) + "张火【杀】或【火攻】"])
+				.set("choiceList", ["摸" + get.cnNumber(num) + "张牌，本回合手牌上限+" + parseFloat(num), "弃置至多" + get.cnNumber(num) + "张牌，随机对其他角色造成等量火焰伤害", "视为使用至多" + get.cnNumber(num) + "张火【杀】或【火攻】"])
 				.set("ai", () => {
 					var player = _status.event.player,
 						card = { name: "sha", nature: "fire" };
@@ -8120,10 +8133,10 @@ const skills = {
 							list.push(["锦囊", "", "huogong"]);
 						}
 						var result2 = await player
-							.chooseButton(["双壁：请选择你要使用的牌", [list, "vcard"]], true)
+							.chooseButton(["双壁：请选择你要使用的牌", [list, "vcard"]])
 							.set("ai", button => (button.link[2] == "sha" ? 1 : 0))
 							.forResult();
-						if (result2.bool) {
+						if (result2?.bool && result2.links?.length) {
 							var card = {
 								name: result2.links[0][2],
 								nature: result2.links[0][3],
@@ -8283,7 +8296,7 @@ const skills = {
 			});
 			if (list.length) {
 				var result = await player
-					.chooseButton(["法器：视为使用一张普通锦囊牌", [list, "vcard"]], true)
+					.chooseButton(["法器：视为使用一张普通锦囊牌", [list, "vcard"]])
 					.set("ai", button => {
 						return get.player().getUseValue({ name: button.link[2] });
 					})

@@ -493,6 +493,7 @@ const skills = {
 				await map[choice][2](target);
 			}
 		},
+		ai: { combo: "sbzhenwei" },
 	},
 	//谋张郃·重做
 	sbqiaobian: {
@@ -7824,7 +7825,7 @@ const skills = {
 	},
 	//刘备
 	sbrende: {
-		audio: 3,
+		audio: 2,
 		enable: ["chooseToUse", "chooseToRespond"],
 		maxNum: 8,
 		filter(event, player) {

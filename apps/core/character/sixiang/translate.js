@@ -271,7 +271,7 @@ const translates = {
 	std_liuxie: "标刘协",
 	std_liuxie_prefix: "标",
 	stdtianming: "天命",
-	stdtianming_info: "当你成为【杀】的目标后，你可以弃置所有牌并摸两张牌，然后体力值唯一最大的其他角色也可以如此做。",
+	stdtianming_info: "当你成为【杀】的目标后，你可以弃置所有牌并摸两张牌（无牌则不弃），然后体力值唯一最大的其他角色也可以如此做。",
 	stdmizhao: "密诏",
 	stdmizhao_info: "结束阶段，你可以将所有牌交给一名其他角色并选择另一名角色，然后前者可与后者各失去1点体力。",
 	stdzhongyan: "终焉",

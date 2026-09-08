@@ -4637,7 +4637,11 @@ const skills = {
 						})
 						.join("\n");
 					if (lib.skill.jsrgzhenfeng.getInclusion(str, card)) {
-						eff += get.damageEffect(player, player, player);
+						let num = 1;
+						if (player.getHp() + player.hujia <= 1) {
+							num++;
+						}
+						eff += get.damageEffect(player, player, player) * num;
 					}
 				}
 				return eff;
