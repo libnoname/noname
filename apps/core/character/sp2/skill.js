@@ -5577,8 +5577,8 @@ const skills = {
 		},
 		frequent: true,
 		async content(event, trigger, player) {
-			player.draw();
 			player.markAuto("dcxiuwen", [trigger.card.name]);
+			await player.draw();
 		},
 		intro: { content: "已使用：$" },
 	},
@@ -10508,8 +10508,8 @@ const skills = {
 				},
 				prompt2: "令其将体力值回复至1点",
 				async content(event, trigger, player) {
-					await trigger.player.recover(1 - trigger.player.hp);
 					player.addTempSkill("kangge_temp", "roundStart");
+					await trigger.player.recover(1 - trigger.player.hp);
 				},
 			},
 			temp: {},
@@ -12244,7 +12244,7 @@ const skills = {
 			return player != event.player;
 		},
 		async content(event, trigger, player) {
-			player.draw(2);
+			await player.draw(2);
 		},
 	},
 	tuxing: {
@@ -12522,7 +12522,7 @@ const skills = {
 				}
 			}
 			if (cards.length) {
-				player.gain(cards, "gain2");
+				await player.gain(cards, "gain2");
 			}
 		},
 	},
@@ -14967,7 +14967,7 @@ const skills = {
 			return `获得${get.translation(event.cards.filterInD())}。`;
 		},
 		async content(event, trigger, player) {
-			player.gain({
+			await player.gain({
 				cards: trigger.cards.filterInD(),
 				log: true,
 				animate: "gain2",
@@ -15964,7 +15964,7 @@ const skills = {
 				.set("cards", cards)
 				.forResult();
 			if (result.bool) {
-				player.gain(result.links, "gain2");
+				await player.gain(result.links, "gain2");
 			}
 		},
 	},
