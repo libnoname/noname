@@ -1,5 +1,5 @@
 const characterSort = {
-	bingshi_qi: ["pot_zhangren", "pot_lougui", "pot_yuji", "mb_xiahoushang", "sunsháo", "mb_yanghong", "pot_dengai", "pot_lvyi", "pot_xiahouba"],
+	bingshi_qi: ["pot_zhangren", "pot_lougui", "pot_yuji", "mb_xiahoushang", "sunsháo", "mb_yanghong", "pot_dengai", "pot_lvyi", "pot_xiahouba", "pot_heqi"],
 	bingshi_zheng: ["pot_chenjiao", "guoyuan", "pot_taishici", "pot_chendao", "mb_tianfeng", "pot_chenqun", "pot_chengpu"],
 	bingshi_shi: ["pot_weiyan", "mb_huangzu", "pot_dongzhao", "pangxi", "mb_zhangyan", "mb_chenzhi", "sp_zhonghui", "pot_zhouyu", "pot_xiaoqiao", "pot_sunchen", "mb_sunjun"],
 	bingshi_jie: ["pot_xinxianying", "pot_lusu", "mb_luyusheng", "pot_huanjie", "pot_zanghong", "pot_caozhen"],

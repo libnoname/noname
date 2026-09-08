@@ -3113,7 +3113,7 @@ const skills = {
 				filter(event, player) {
 					return event.getParent(evt => evt.name === "useCard" && evt.card === event.card).jiu;
 				},
-				async content(event, trigger) {
+				async content(event, trigger, player) {
 					trigger.num = 1;
 				},
 				ai: {

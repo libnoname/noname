@@ -1451,7 +1451,7 @@ const translates = {
 	sp_ol_liubei: "SP刘备",
 	sp_ol_liubei_prefix: "SP",
 	spolxudai: "虚待",
-	spolxudai_info: "限定技，当你响应牌或受到伤害后，你可以令一名其他角色获得〖煮酒〗。",
+	spolxudai_info: `限定技，当你响应牌或受到伤害后，你可以令一名其他角色获得${get.poptip("spolzhujiu")}。`,
 	spolzhujiu: "煮酒",
 	spolzhujiu_info: "你可以将至少X+1张牌当【酒】使用（X为你本回合已使用过【酒】的次数），然后若这些牌存在非梅花牌，此技能失效直到回合结束。",
 	spoljinglei: "惊雷",

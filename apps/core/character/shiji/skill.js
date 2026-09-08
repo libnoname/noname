@@ -2775,6 +2775,7 @@ const skills = {
 			await target.damage({ num: target.maxHp });
 			player.setStorage("yuli", [], true);
 		},
+		ai: { combo: "tingwei" },
 	},
 	//手杀神姜维
 	mbtiantao: {
