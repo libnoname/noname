@@ -8033,13 +8033,13 @@ const skills = {
 			if (result.control === "cancel2") {
 				return;
 			}
-			const cards = player.getCards("he", card => get.type2(card, player) === result.control);
-			if (!cards.length) {
+			const cards2 = player.getCards("he", card => get.type2(card, player) === result.control);
+			if (!cards2.length) {
 				return;
 			}
 			event.result = {
 				bool: true,
-				cards,
+				cards: cards2,
 				cost_data: {
 					type: result.control,
 				},
