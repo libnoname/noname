@@ -10,6 +10,10 @@ extension/**
 !extension/欢乐卡牌/**
 !extension/玩点论杀/**
 !extension/英雄杀/**
+!extension/活动武将/
+!extension/活动武将/**
+!extension/名将杀/
+!extension/名将杀/**
 
 dist
 dist-types

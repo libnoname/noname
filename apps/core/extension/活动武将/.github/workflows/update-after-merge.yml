@@ -1,0 +1,37 @@
+name: 合并后自动更新file.json和info.json
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run update script
+        run: node js/update.js
+
+      - name: Commit updated metadata
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: update extension metadata"
+          file_pattern: 'info.json js/file.json'
+          commit_options: '--no-verify'
+          commit_user_name: github-actions[bot]
+          commit_user_email: 41898282+github-actions[bot]@users.noreply.github.com
+          branch: main

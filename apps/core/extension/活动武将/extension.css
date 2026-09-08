@@ -1,0 +1,550 @@
+.zhengsubeijing1 {
+	position: absolute;
+	background-color: none;
+	background-repeat: no-repeat;
+	background-image: url("image/default/zhengsu_bg.png") !important;
+	background-size: 100% 100%;
+	width: 205px;
+	height: 69px;
+	left: 0px;
+	bottom: 422px;
+	padding: 10px 2px 2px 2px;
+	/*内边距*/
+	/*字体*/
+	text-align: center;
+	color: #ac9a82;
+	text-shadow:
+		-1.3px 0px 2.2px #000,
+		0px -1.3px 2.2px #000,
+		1.3px 0px 2.2px #000,
+		0px 1.3px 2.2px #000;
+	font-family: "shousha";
+	font-size: 18px;
+	font-weight: 700;
+	z-index: 8 !important;
+}
+
+.zhengsubeijing2 {
+	position: absolute;
+	background-color: none;
+	background-repeat: no-repeat;
+	background-image: url("image/default/zhengsu_bg.png") !important;
+	background-size: 100% 100%;
+	width: 205px;
+	height: 69px;
+	left: 0px;
+	bottom: 344px !important;
+	padding: 10px 2px 2px 2px;
+	/*内边距*/
+	/*字体*/
+	text-align: center;
+	color: #ac9a82;
+	text-shadow:
+		-1.3px 0px 2.2px #000,
+		0px -1.3px 2.2px #000,
+		1.3px 0px 2.2px #000,
+		0px 1.3px 2.2px #000;
+	font-family: "shousha";
+	font-size: 17px;
+	font-weight: 500;
+	z-index: 8 !important;
+}
+
+.zhengsubeijing3 {
+	position: absolute;
+	background-color: none;
+	background-repeat: no-repeat;
+	background-image: url("image/default/zhengsu_bg.png") !important;
+	background-size: 100% 100%;
+	width: 205px;
+	height: 68px;
+	left: 0px;
+	bottom: 266px !important;
+	padding: 10px 2px 2px 2px;
+	/*内边距*/
+	/*字体*/
+	text-align: center;
+	color: #ac9a82;
+	text-shadow:
+		-1.3px 0px 2.2px #000,
+		0px -1.3px 2.2px #000,
+		1.3px 0px 2.2px #000,
+		0px 1.3px 2.2px #000;
+	font-family: "shousha";
+	font-size: 17px;
+	font-weight: 500;
+	z-index: 8 !important;
+}
+
+/*仁库*/
+.renkubeijinggua {
+	/*position:relative;*/
+	--l: 15px;
+	--t: 100px;
+	background-repeat: no-repeat;
+	background-image: url("image/default/renku_bg.png") !important;
+	background-size: 100% 100%;
+	width: 70.5px;
+	height: 42.5px;
+	left: calc(var(--l));
+	top: calc(var(--t));
+	letter-spacing: 3.2px;
+	position: absolute;
+	transition: none;
+	padding: 28.5px 2px 2px 2px;
+	/*内边距*/
+	/*字体*/
+	text-align: center;
+	color: #e2e0dc;
+	text-shadow:
+		-1.3px 0px 2.2px #000,
+		0px -1.3px 2.2px #000,
+		1.3px 0px 2.2px #000,
+		0px 1.3px 2.2px #000;
+	font-family: "shousha";
+	font-size: 17px;
+	font-weight: 900;
+	z-index: 8 !important;
+}
+
+/*感谢 雷 的技术支持
+.bol-dibeijing {
+	height: 100%;
+	width: 100%;
+	position: absolute;
+	left: 0;
+	top: 0;
+	z-index: 8;
+}
+
+.bol-skilltip {
+	width: 20%;
+	min-height: 5%;
+	left: 50%;
+	top: 50%;
+	font-size: 16px;
+	color: #ccad76;
+	font-family: "shousha";
+	background-color: rgba(36, 29, 19, 0.85);
+	border: #523a24 3px solid;
+	border-radius: 10px;
+	position: absolute;
+	display: block;
+	padding: 8px;
+	transform: translate(-50%, -50%);
+	transition: none;
+}
+*/
+
+/*曹丕登阶*/
+.dialog.dengjie-game:not(.player) {
+	width: fit-content;
+	height: fit-content;
+}
+
+.dialog.dengjie-game > .content-container {
+	position: relative;
+}
+
+.dialog.dengjie-game > .content-container > .content {
+	position: relative;
+}
+
+.dialog.dengjie-game .dengjie-game-container {
+	position: relative;
+}
+
+table.dengjie-game {
+	--cell-spacing: 10px;
+	border-spacing: var(--cell-spacing);
+}
+
+td.dengjie-game {
+	--block-size: 40px;
+	--border-radius: calc(var(--block-size) / 8);
+	width: var(--block-size);
+	height: var(--block-size);
+	background: rgba(0, 0, 0, 0.4);
+	border-radius: var(--border-radius);
+	display: block;
+	position: relative;
+	padding: 0px;
+	margin: 0px;
+	margin-left: var(--cell-spacing);
+	float: left;
+}
+
+td.dengjie-game > .arrow-container {
+	position: absolute;
+	font-size: 100%;
+	left: 0px;
+	top: 0px;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: var(--border-radius);
+}
+
+td.dengjie-game > .arrow-container > .arrow {
+	border-radius: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 50%;
+	height: 50%;
+	z-index: 3;
+	box-shadow:
+		rgba(0, 0, 0, 0.2) 0 0 0 1px,
+		rgba(0, 0, 0, 0.45) 0 3px 10px;
+}
+
+td.dengjie-game > .arrow-container.new-gain > .arrow {
+	background-color: #007dbd;
+}
+
+td.dengjie-game > .arrow-container.new-lose > .arrow {
+	background-color: #c50000;
+}
+
+td.dengjie-game > .arrow-container.old > .arrow {
+	background-color: #494949;
+}
+
+td.dengjie-game > .arrow-container.new-gain {
+	background-color: #007dbd;
+	box-shadow:
+		rgba(0, 0, 0, 0.3) 0 0 0 1px,
+		rgba(0, 125, 189, 1) 0 0 5px,
+		rgba(0, 125, 189, 1) 0 0 5px,
+		rgba(0, 125, 189, 1) 0 0 10px,
+		rgba(0, 125, 189, 1) 0 0 10px !important;
+}
+
+td.dengjie-game > .arrow-container.new-lose {
+	background-color: #c50000;
+	box-shadow:
+		rgba(0, 0, 0, 0.3) 0 0 0 1px,
+		rgba(197, 0, 0, 1) 0 0 5px,
+		rgba(197, 0, 0, 1) 0 0 5px,
+		rgba(197, 0, 0, 1) 0 0 10px,
+		rgba(197, 0, 0, 1) 0 0 10px !important;
+}
+
+td.dengjie-game > .arrow-container.old {
+	background-color: #494949;
+	box-shadow:
+		rgba(0, 0, 0, 0.3) 0 0 0 1px,
+		rgba(73, 73, 73, 1) 0 0 5px,
+		rgba(73, 73, 73, 1) 0 0 5px,
+		rgba(73, 73, 73, 1) 0 0 10px,
+		rgba(73, 73, 73, 1) 0 0 10px !important;
+}
+
+td.dengjie-game.selectable {
+	cursor: pointer;
+}
+
+td.dengjie-game:first-child {
+	margin: 0px;
+}
+
+.dialog.dengjie-game > .content-container > .content > div:last-child {
+	padding-bottom: 0px;
+}
+
+td.dengjie-game > .button.character {
+	--expand-size: calc(var(--cell-spacing) - 4px);
+	width: var(--block-size);
+	height: var(--block-size);
+	border-radius: var(--border-radius);
+	margin: 0px;
+	pointer-events: none;
+	z-index: 2;
+	display: flex;
+	align-items: flex-end;
+	justify-content: flex-end;
+}
+
+td.dengjie-game > .button.character > .score {
+	border-radius: var(--border-radius);
+	font-size: 12px;
+	width: 35%;
+	height: 35%;
+}
+
+td.dengjie-game > .button.character > .score.gain {
+	background-color: #007dbd;
+}
+
+td.dengjie-game > .button.character > .score.lose {
+	background-color: #c50000;
+}
+
+/*吕布踏阵*/
+.button.character.tazhen {
+	width: 108px !important;
+	height: 150px !important;
+}
+
+.button.card.tazhen {
+	width: 108px !important;
+	height: 150px !important;
+}
+
+/*诸葛亮定乱*/
+.dingluan-tube-container {
+	display: grid;
+	justify-content: center;
+	align-items: end;
+	gap: 15px;
+	padding: 20px;
+	box-sizing: border-box;
+	width: 100%;
+}
+
+.dingluan-tube {
+	width: 60px;
+	height: 200px;
+	background: #221a0f;
+	border: 2px solid #8b6f45;
+	border-radius: 10px;
+	position: relative;
+	display: block;
+	padding: 0 5px;
+	box-sizing: border-box;
+	cursor: pointer;
+	transition: border-color 0.2s;
+	overflow: visible;
+	justify-self: center;
+}
+
+.dingluan-tube.selected {
+	border-color: #ffdf66;
+	box-shadow: 0 0 10px #ffdf66;
+}
+
+.dingluan-piece {
+	display: block;
+	width: 48px;
+	height: 24px;
+	background: #ccb183;
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
+	margin: 0;
+	text-align: center;
+	line-height: 24px;
+	font-size: 14px;
+	font-family: "shousha";
+	color: #000;
+	border-radius: 6px;
+	box-shadow: inset 0 0 3px #000;
+	pointer-events: none;
+	box-sizing: border-box;
+	/*transition: bottom 0.3s ease;移除动画，懒得加*/
+}
+
+/*神左慈幻术卡牌颜色*/
+.card.minihuanshu-glow:before {
+	opacity: 0.2;
+	box-shadow:
+		rgba(0, 0, 0, 0.2) 0 0 0 1px,
+		rgb(255, 109, 12) 0 0 5px,
+		rgb(255, 0, 0) 0 0 10px;
+	background-color: #0000ff;
+	-webkit-filter: blur(5px);
+	filter: blur(5px);
+}
+
+/*神左慈幻化卡牌颜色*/
+.card.minihuanhua-glow:before {
+	opacity: 0.2;
+	box-shadow:
+		rgba(0, 0, 0, 0.2) 0 0 0 1px,
+		rgb(255, 109, 12) 0 0 5px,
+		rgb(255, 0, 0) 0 0 10px;
+	background-color: yellow;
+	-webkit-filter: blur(5px);
+	filter: blur(5px);
+}
+
+.player .hp2 > div {
+	width: 10px;
+	height: 10px;
+	margin-left: 0;
+}
+
+/*单独武将包页面*/
+#overlay-container {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: #1a1a1a;
+	z-index: 8;
+	display: flex;
+	overflow: hidden;
+}
+
+#overlay-dialog-header {
+	position: sticky;
+	top: 0;
+	height: 64px;
+	min-height: 64px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0 20px;
+	background: #1f1f1f;
+	z-index: 20;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+	box-sizing: border-box;
+}
+
+#overlay-dialog-title {
+	font-size: 22px;
+	font-weight: bold;
+	color: white;
+	display: flex;
+	align-items: center;
+}
+
+#overlay-back-btn {
+	position: fixed;
+	right: 20px;
+	padding: 10px 20px;
+	background: #007bff;
+	color: white;
+	border: none;
+	border-radius: 6px;
+	cursor: pointer;
+	font-size: 14px;
+	font-weight: 500;
+	z-index: 10000;
+	transition: all 0.3s ease;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+	align-items: center;
+}
+
+#overlay-back-btn:hover {
+	background: #0056b3;
+	transform: translateY(-1px);
+}
+
+#overlay-back-btn:hover {
+	background: #0056b3;
+	transform: translateY(-1px);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+#overlay-left-nav {
+	width: 170px;
+	min-width: 170px;
+	background: #2d2d2d;
+	box-sizing: border-box;
+	position: relative;
+	z-index: 9999;
+	border-radius: 0 10px 10px 0;
+	box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+	display: flex;
+	flex-direction: column;
+}
+
+#left-nav-scroll-container {
+	width: 100%;
+	flex: 1 1 auto;
+	height: 100%;
+	overflow-y: auto;
+	overflow-x: hidden;
+	padding: 10px 10px 10px 10px;
+	box-sizing: border-box;
+}
+
+#overlay-dialog {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	background: #1a1a1a;
+	color: white;
+	box-sizing: border-box;
+	position: relative;
+	z-index: 9999;
+}
+
+.dialog-content {
+	width: 100%;
+	height: 100%;
+	flex: 1 1 0;
+	overflow-y: auto;
+	padding: 60px 20px 20px;
+	box-sizing: border-box;
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+}
+
+.nav-item {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	width: 100%;
+	margin: 4px 0;
+	padding: 8px 5px;
+	background: #404040;
+	border: none;
+	cursor: pointer;
+	font-size: 13px;
+	color: white;
+	transition: all 0.2s ease;
+	border-radius: 4px;
+	box-sizing: border-box;
+	font-weight: 500;
+	white-space: normal;
+	word-wrap: break-word;
+	word-break: break-word;
+	min-height: 36px;
+	line-height: 1.3;
+	flex-shrink: 0;
+}
+
+.nav-item:first-child {
+	margin-top: 0;
+}
+
+.nav-item:last-child {
+	margin-bottom: 0;
+}
+
+.nav-item:hover {
+	background: #505050;
+	transform: translateX(3px);
+}
+
+.nav-item.active {
+	background: #007bff !important;
+	color: white !important;
+	box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+}
+
+.dialog-content .grid-layout {
+	display: flex;
+	flex-wrap: wrap;
+	width: 100%;
+	max-width: 100%;
+	min-width: 0;
+	gap: 15px;
+	padding: 10px 0 10px;
+	box-sizing: border-box;
+	overflow-x: hidden;
+}
+
+.dialog-content .grid-layout > * {
+	flex-shrink: 0;
+	min-width: 0;
+	max-width: 100%;
+	box-sizing: border-box;
+}

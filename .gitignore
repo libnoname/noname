@@ -1,11 +1,48 @@
-dist
-output
-node_modules
+# Dependencies and package-manager noise
+node_modules/
 package-lock.json
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build, test, and type-generation outputs
+dist/
+dist-types/
+output/
+coverage/
+.nyc_output/
+*.tsbuildinfo
+
+# Tool caches
+.cache/
+.vite/
+.turbo/
+.eslintcache
+
+# Local runtime data
+apps/electron/Home/
+
+# Original extension archives are local installation sources. The installed,
+# versioned copies live under apps/core/extension/.
+扩展包/
+
+# Local environment and temporary files
+.env
+.env.local
+.env.*.local
+!.env.example
+*.log
+*.tmp
+*.bak
+*.orig
+*.rej
+*~
 
 # IDE
 .idea/
 .vscode/
+*.swp
 
 # macOS
 ._*

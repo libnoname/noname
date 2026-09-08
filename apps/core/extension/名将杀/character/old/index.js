@@ -1,0 +1,38 @@
+import { lib, game, ui, get, ai, _status } from "noname";
+import characters from "./character.js";
+import pinyins from "./pinyin.js";
+import skills from "./skill.js";
+import translates from "./translate.js";
+import characterIntros from "./intro.js";
+import characterFilters from "./characterFilter.js";
+import characterTitles from "./characterTitle.js";
+import perfectPairs from "./perfectPairs.js";
+import dynamicTranslates from "./dynamicTranslate.js";
+import voices from "./voices.js";
+import { characterSort, characterSortTranslate } from "./sort.js";
+
+game.import("character", function () {
+	const mjs = {
+		name: "mjsold",
+		connect: true,
+		connectBanned: [],
+		character: { ...characters },
+		characterSort: {
+			mjsold: characterSort,
+		},
+		characterFilter: { ...characterFilters },
+		characterTitle: {...characterTitles},
+		characterIntro: { ...characterIntros },
+		skill: { ...skills },
+		perfectPair: { ...perfectPairs },
+		dynamicTranslate: { ...dynamicTranslates },
+		translate: { ...translates, ...voices, ...characterSortTranslate },
+		pinyins: { ...pinyins },
+	};
+	if (!lib.config[`extension_名将杀_characterPack_mjsold_enable`]) {
+		game.saveExtensionConfig("名将杀", "characterPack_mjsold_enable", true);
+		lib.config.characters.add("mjsold");
+		game.saveConfig("characters", lib.config.characters);
+	}
+	return mjs;
+});

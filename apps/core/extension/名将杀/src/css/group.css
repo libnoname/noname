@@ -1,0 +1,208 @@
+.player>.group {
+  display: flex;
+  align-items: center;
+  width: 20px;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  transition: none;
+  border-radius: 3px 0 0 3px;
+  border: 0.5px solid black;
+  background: rgb(154, 148, 122);
+  background-size: 100% 100%;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0px;
+  text-align: center;
+  text-shadow: none;
+  position: absolute;
+  pointer-events: none;
+  white-space: nowrap;
+  -webkit-writing-mode: vertical-rl;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.player>.group span {
+  font-family: "shousha";
+}
+
+.player>.group .group2 {
+  font-size: 15px;
+  font-family: "shousha";
+	text-shadow: 0.5px 0.5px 1px #4c3728, 0.5px -0.5px 1px #4c3728, -0.5px -0.5px 1px #4c3728, -0.5px 0.5px 1px #4c3728, 0.5px 0.5px 1px #4c3728, 0.5px -0.5px 1px #4c3728, -0.5px -0.5px 1px #4c3728, -0.5px 0.5px 1px #4c3728, 0.5px 0.5px 1px #4c3728, 0.5px -0.5px 1px #4c3728, -0.5px -0.5px 1px #4c3728, -0.5px 0.5px 1px #4c3728, 0.5px 0.5px 1px #4c3728, 0.5px -0.5px 1px #4c3728, -0.5px -0.5px 1px #4c3728, -0.5px 0.5px 1px #4c3728, 0.5px 0.5px 1px #4c3728, 0.5px -0.5px 1px #4c3728, -0.5px -0.5px 1px #4c3728, -0.5px 0.5px 1px #4c3728, 0.5px 0.5px 1px #4c3728, 0.5px -0.5px 1px #4c3728, -0.5px -0.5px 1px #4c3728, -0.5px 0.5px 1px #4c3728, 0.5px 0.5px 1px #4c3728, 0.5px -0.5px 1px #4c3728, -0.5px -0.5px 1px #4c3728, -0.5px 0.5px 1px #4c3728, 0.5px 0.5px 1px #4c3728, 0.5px -0.5px 1px #4c3728, -0.5px -0.5px 1px #4c3728, -0.5px 0.5px 1px #4c3728, 0.5px 0.5px 1px #4c3728, 0.5px -0.5px 1px #4c3728, -0.5px -0.5px 1px #4c3728, -0.5px 0.5px 1px #4c3728, 0.5px 0.5px 1px #4c3728, 0.5px -0.5px 1px #4c3728, -0.5px -0.5px 1px #4C3726, -0.5px 0.5px 1px #4c3728, 0.5px 0.5px 1px #4c3728, 0.5px -0.5px 1px #4c3728, -0.5px -0.5px 1px #4c3728, -0.5px 0.5px 1px #4c3728, 0.5px 0.5px 1px #4c3728, 0.5px -0.5px 1px #4c3728, -0.5px -0.5px 1px #4c3728, -0.5px 0.5px 1px #4c3728, 0.5px 0.5px 1px #4c3728, 0.5px -0.5px 1px #4c3728, -0.5px -0.5px 1px #4c3728, -0.5px 0.5px 1px #4c3728, 0.5px 0.5px 1px #4c3728, 0.5px -0.5px 1px #4c3728, -0.5px -0.5px 1px #4c3728, -0.5px 0.5px 1px #4c3728, 0.5px 0.5px 1px #4c3728, 0.5px -0.5px 1px #4c3728, -0.5px -0.5px 1px #4c3728, -0.5px 0.5px 1px #4c3728, 0.5px 0.5px 1px #4c3728, 0.5px -0.5px 1px #4c3728, -0.5px -0.5px 1px #4c3728, -0.5px 0.5px 1px #4c3728;
+}
+
+.player:has(> .group)>.name,
+#arena.slim_player .player:has(> .group)>.name {
+  left: 2px;
+  top: 35px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #f3f2ee;
+  text-shadow: none;
+  filter: drop-shadow(1px 1px 0.5px #403227) drop-shadow(-1px -1px 0.5px #403227) drop-shadow(1px -1px 0.5px #403227) drop-shadow(-1px 1px 0.5px #403227);
+  z-index: 9;
+}
+
+.player:has(> .group)>.name span,
+#arena.slim_player .player:has(> .group)>.name span {
+  left: 1px;
+}
+
+.player:has(> .group)>.equips,
+#arena>.player:has(> .group):not(.minskin)>.equips {
+  left: 22px;
+}
+
+/* 各阵营颜色 */
+.player>.group[data-nature="wei"] {
+  background: #484d60;
+}
+
+.player>.group[data-nature="shu"] {
+  background: #754c50;
+}
+
+.player>.group[data-nature="wu"] {
+  background: #515b42;
+}
+
+.player>.group[data-nature="qun"] {
+  background: #685a37;
+}
+
+.player>.group[data-nature="shen"] {
+  background: #685f40;
+}
+
+.player>.group[data-nature="shen2"] {
+  background: rgb(112, 52, 126);
+}
+
+.player>.group[data-nature="ye"]>.camp-back,
+.player>.group[data-nature="jin"] {
+  background: #574259;
+}
+
+.player>.group[data-nature="key"] {
+  background: rgb(147, 132, 183);
+}
+
+.player>.group[data-nature="western"] {
+  background: rgb(93, 44, 105);
+}
+
+.player>.group[data-nature="devil"] {
+  background: rgb(77, 24, 28);
+}
+
+.player>.group[data-nature="daqin"] {
+  background: rgb(100, 100, 100);
+}
+
+
+.player .tipContainer {
+    z-index: 3;
+}
+/*座次*/
+.player>.seatNumber {
+    width: 100%;
+    bottom: -10px;
+    text-align: center;
+    font-family: shousha;
+	  text-shadow: 1px 1px 2px #4c3728, 1px -1px 2px #4c3728, -1px -1px 2px #4c3728, -1px 1px 2px #4c3728, 1px 1px 2px #4c3728, 1px -1px 2px #4c3728, -1px -1px 2px #4c3728, -1px 1px 2px #4c3728, 1px 1px 2px #4c3728, 1px -1px 2px #4c3728, -1px -1px 2px #4c3728, -1px 1px 2px #4c3728, 1px 1px 2px #4c3728, 1px -1px 2px #4c3728, -1px -1px 2px #4c3728, -1px 1px 2px #4c3728, 1px 1px 2px #4c3728, 1px -1px 2px #4c3728, -1px -1px 2px #4c3728, -1px 1px 2px #4c3728, 1px 1px 2px #4c3728, 1px -1px 2px #4c3728, -1px -1px 2px #4c3728, -1px 1px 2px #4c3728, 1px 1px 2px #4c3728, 1px -1px 2px #4c3728, -1px -1px 2px #4c3728, -1px 1px 2px #4c3728, 1px 1px 2px #4c3728, 1px -1px 2px #4c3728, -1px -1px 2px #4c3728, -1px 1px 2px #4c3728, 1px 1px 2px #4c3728, 1px -1px 2px #4c3728, -1px -1px 2px #4c3728, -1px 1px 2px #4c3728, 1px 1px 2px #4c3728, 1px -1px 2px #4c3728, -1px -1px 2px #4C3726, -1px 1px 2px #4c3728, 1px 1px 2px #4c3728, 1px -1px 2px #4c3728, -1px -1px 2px #4c3728, -1px 1px 2px #4c3728, 1px 1px 2px #4c3728, 1px -1px 2px #4c3728, -1px -1px 2px #4c3728, -1px 1px 2px #4c3728, 1px 1px 2px #4c3728, 1px -1px 2px #4c3728, -1px -1px 2px #4c3728, -1px 1px 2px #4c3728, 1px 1px 2px #4c3728, 1px -1px 2px #4c3728, -1px -1px 2px #4c3728, -1px 1px 2px #4c3728, 1px 1px 2px #4c3728, 1px -1px 2px #4c3728, -1px -1px 2px #4c3728, -1px 1px 2px #4c3728, 1px 1px 2px #4c3728, 1px -1px 2px #4c3728, -1px -1px 2px #4c3728, -1px 1px 2px #4c3728;
+}
+
+/*.player[data-position="0"]>.seatNumber {
+    bottom: 0px;
+}*/
+/*手牌可视*/
+.player>.viewHandcard {
+    background-color: rgba(0,0,0,.3);
+    width: 35px;
+    height: 110px;
+    left: -45px;
+    bottom: 0;
+    border-radius: 5px;
+	  overflow: auto;
+	  opacity: 1;
+}
+#arena > .player[data-position="0"]>.viewHandcard {
+    display: none;
+}
+
+.player>.viewHandcard.viewHandcard-rigth {
+    left: auto;
+    right: -45px;
+}
+.player>.viewHandcard>.viewHandcard-card {
+    position: relative;
+    text-align: center;
+    width: 100%;
+    overflow: auto;
+	  font-family: "shousha";
+}
+
+#arena.slim_player .player .count {
+    position: absolute;
+    left: -3px;
+    bottom: -3px;
+    width: 25px;
+    height: 25px;
+    line-height: 25px;
+    font-size: 18px;
+    text-align: center;
+    text-shadow: 1px 1px 2px #4c3728, 1px -1px 2px #4c3728, -1px -1px 2px #4c3728, -1px 1px 2px #4c3728, 1px 1px 2px #4c3728, 1px -1px 2px #4c3728, -1px -1px 2px #4c3728, -1px 1px 2px #4c3728, 1px 1px 2px #4c3728, 1px -1px 2px #4c3728, -1px -1px 2px #4c3728, -1px 1px 2px #4c3728, 1px 1px 2px #4c3728, 1px -1px 2px #4c3728;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    background: url(../../../../image/card/handcard.png) no-repeat;
+    background-size: 100% 100%;
+    z-index: 9;
+}
+
+
+/*出杀次数*/
+.player .getShaUsable {
+  position: absolute;
+  left: -2px;
+  bottom: 30px;
+  width: 25px;
+  height: 25px;
+  line-height: 24px;
+  font-size: 22px;
+  text-align: center;
+  text-shadow: 1px 1px 2px #4c3728, 1px -1px 2px #4c3728, -1px -1px 2px #4c3728, -1px 1px 2px #4c3728, 1px 1px 2px #4c3728, 1px -1px 2px #4c3728, -1px -1px 2px #4c3728, -1px 1px 2px #4c3728, 1px 1px 2px #4c3728, 1px -1px 2px #4c3728, -1px -1px 2px #4c3728, -1px 1px 2px #4c3728, 1px 1px 2px #4c3728, 1px -1px 2px #4c3728, -1px -1px 2px #4c3728, -1px 1px 2px #4c3728, 1px 1px 2px #4c3728, 1px -1px 2px #4c3728, -1px -1px 2px #4c3728, -1px 1px 2px #4c3728, 1px 1px 2px #4c3728, 1px -1px 2px #4c3728, -1px -1px 2px #4c3728, -1px 1px 2px #4c3728, 1px 1px 2px #4c3728, 1px -1px 2px #4c3728, -1px -1px 2px #4c3728, -1px 1px 2px #4c3728, 1px 1px 2px #4c3728, 1px -1px 2px #4c3728, -1px -1px 2px #4c3728, -1px 1px 2px #4c3728, 1px 1px 2px #4c3728, 1px -1px 2px #4c3728, -1px -1px 2px #4c3728, -1px 1px 2px #4c3728, 1px 1px 2px #4c3728, 1px -1px 2px #4c3728, -1px -1px 2px #4C3726, -1px 1px 2px #4c3728, 1px 1px 2px #4c3728, 1px -1px 2px #4c3728, -1px -1px 2px #4c3728, -1px 1px 2px #4c3728, 1px 1px 2px #4c3728, 1px -1px 2px #4c3728, -1px -1px 2px #4c3728, -1px 1px 2px #4c3728, 1px 1px 2px #4c3728, 1px -1px 2px #4c3728, -1px -1px 2px #4c3728, -1px 1px 2px #4c3728, 1px 1px 2px #4c3728, 1px -1px 2px #4c3728, -1px -1px 2px #4c3728, -1px 1px 2px #4c3728, 1px 1px 2px #4c3728, 1px -1px 2px #4c3728, -1px -1px 2px #4c3728, -1px 1px 2px #4c3728, 1px 1px 2px #4c3728, 1px -1px 2px #4c3728, -1px -1px 2px #4c3728, -1px 1px 2px #4c3728;
+  background: url(../../../../image/card/attackRange.png) no-repeat;
+  background-size: 100% 100%;
+  z-index: 9;
+}
+
+#arena > .player:not(.minskin) > .damage.dieidentity {
+    color: #e72323;
+    font-size: 25px;
+    font-weight: bold;
+    font-family: 'shousha';
+    filter: brightness(0.5);
+    transform: translate(-50%, -50%);
+    left: 50%;
+    top: 50%;
+    width: 50px;
+    height: 50px;
+    background: #000;
+    border: 5px solid #d92121;
+    text-shadow: 0 0 3px #ffffff, 0 0 2px #ffffff;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#arena > .player:not(.minskin) > .damage.dieidentity::after {
+    content: attr(data-role) "\A阵亡";
+    text-align: center;
+    line-height: 1.2;
+}
