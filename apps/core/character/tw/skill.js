@@ -883,11 +883,11 @@ const skills = {
 		enable: "chooseToUse",
 		popup: false,
 		filterCard(card) {
-			return get.tag(card, "damage") > 0;
+			return get.is.damageCard(card);
 		},
 		filter(event, player) {
 			const name = player.storage.twsaoting ? "jiu" : "juedou";
-			return player.hasCards("hes", card => get.tag(card, "damage") > 0) && event.filterCard(get.autoViewAs({ name }, "unsure"), player, event);
+			return player.hasCards("hes", card => get.is.damageCard(card)) && event.filterCard(get.autoViewAs({ name }, "unsure"), player, event);
 		},
 		position: "hes",
 		viewAs(cards, player) {
@@ -912,6 +912,11 @@ const skills = {
 						await player.draw();
 					}
 				});
+		},
+		hiddenCard(player, name) {
+			const storage = player.storage.twsaoting;
+			const namex = storage ? "jiu" : "juedou";
+			return name == namex && player.hasCards("hes", card => get.is.damageCard(card));
 		},
 		ai: {
 			order(item, player) {
