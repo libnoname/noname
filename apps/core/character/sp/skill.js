@@ -12,7 +12,7 @@ const skills = {
 		},
 		filter(event, player) {
 			if (event.name === "damage") {
-				return game.getRoundHistory("everything", evt => evt.name === "damage" && evt.source === player)[0] === event;
+				return !player.getRoundHistory("sourceDamage", evt => evt.num > 0).length;
 			}
 			return event.source === player && game.getRoundHistory("everything", evt => evt.name === "recover" && evt.source === player)[0] === event;
 		},
@@ -233,7 +233,7 @@ const skills = {
 				round: 1,
 				trigger: {
 					player: "loseAfter",
-					global: "loseAsyncAfter",
+					global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
 				},
 				filter(event, player) {
 					const lose = event.getl(player);
@@ -261,7 +261,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const owned = player
-				.getCards("he")
+				.getCards("hej")
 				.map(card => get.suit(card, player))
 				.filter(suit => lib.suit.includes(suit))
 				.toUniqued();
@@ -281,7 +281,7 @@ const skills = {
 				await player.gain(cards, "gain2");
 			}
 			const suits = player
-				.getCards("he")
+				.getCards("hej")
 				.map(card => get.suit(card, player))
 				.filter(suit => lib.suit.includes(suit))
 				.toUniqued();
