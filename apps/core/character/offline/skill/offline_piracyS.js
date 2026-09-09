@@ -2440,23 +2440,15 @@ const skills = {
 				forced: true,
 				forceDie: true,
 				filter(event, player) {
-					if (get.mode() !== "identity" || _status.over || !player.hasSkill("pszhaoluan")) {
-						return false;
-					}
-					const lord = game.zhu;
-					if (lord && lord.identity === "zhu" && lord.isDead()) {
-						return true;
-					}
-					return player.isIn() && player.identity === "zhu" && player.isAlive() && game.players.length === 1;
+					return (
+						get.mode() === "identity" &&
+						!_status.over &&
+						player.hasSkill("pszhaoluan") &&
+						event.pszhaoluan === true
+					);
 				},
 				async content(event, trigger, player) {
-					if (_status.over) {
-						return;
-					}
-					const lord = game.zhu;
-					if (lord && lord.identity === "zhu" && lord.isDead()) {
-						game.checkResult();
-					} else if (player.isIn() && player.identity === "zhu" && player.isAlive() && game.players.length === 1) {
+					if (!_status.over) {
 						game.checkResult();
 					}
 				},
