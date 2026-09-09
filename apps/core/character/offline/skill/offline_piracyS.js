@@ -2255,7 +2255,7 @@ const skills = {
 					targets,
 					cost_data: [link],
 				} = event;
-				const type = link === "all" ? [1, 2, 3, 4, 5] : [link];
+				const type = link === "all" ? ["equip1", "equip2", "equip3", "equip4", "equip5"] : [link];
 				const disabledCounts = {};
 				await game.doAsyncInOrder(targets, async target => {
 					const before = { ...(target.disabledSlots || {}) };
@@ -2299,7 +2299,7 @@ const skills = {
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			const { target } = event;
-			const targets = [player].concat(game.filterPlayer(current => current.getHp(true) < target.getHp(true))).sortBySeat();
+			const targets = [player].concat(game.filterPlayer(current => current !== player && current.getHp(true) < target.getHp(true))).sortBySeat();
 			player.addTempSkill(event.name + "_effect", "phaseAnyAfter");
 			for (const current of targets) {
 				if (!target?.isIn()) {
@@ -2339,7 +2339,7 @@ const skills = {
 				filter(event, player) {
 					return (
 						game.getGlobalHistory("everything", evt => {
-							return evt.name === "die" && evt.getParent(4).name === event.name;
+							return evt.name === "die" && evt.getParent(event.name) === event;
 						}).length > 1
 					);
 				},
@@ -2369,6 +2369,7 @@ const skills = {
 					);
 				},
 				async content(event, trigger) {
+					game.addVideo("diex", trigger.player);
 					trigger.reserveOut = true;
 					trigger.pszhaoluan = true;
 					trigger.player.storage.pszhaoluan_pending = true;
@@ -2407,6 +2408,16 @@ const skills = {
 						target2.showIdentity();
 						delete target2.storage.pszhaoluan_pending;
 					}, identityPlayer);
+					game.addVideo("showIdentity", identityPlayer, identityPlayer.identity);
+					if (identityPlayer.special_identity) {
+						game.broadcastAll(
+							(zhu, identity) => {
+								zhu.removeSkill(identity);
+							},
+							game.zhu,
+							identityPlayer.special_identity
+						);
+					}
 					const shownIdentity = identityPlayer.special_identity || identity;
 					const shownName = identityPlayer.special_identity ? get.translation(shownIdentity) : get.translation(`${shownIdentity}2`);
 					game.log(identityPlayer, "展示了", `#g${shownName}`, "的身份牌");
