@@ -1,0 +1,11 @@
+extension["极限觉醒"]={
+	intro:"萌新制作，可能有bug(ฅ>ω<*ฅ)",
+	author:"(ಡωಡ)",
+	netdisk:"",
+	forum:"",
+	version:"1.0",
+	files:["极●孙坚.jpg","甘宁.jpg","extension.js","极●诸葛亮.jpg","极●关平张飞.jpg","极●张飞.jpg","极●赵云.jpg",
+		"极●许褚.jpg","极●张角.jpg","极●关羽.jpg","极●许褚_1545281864854.jpg","极●夏侯恩.jpg","极●关平张苞.jpg",
+		"极●曹操.jpg","孙坚.jpg"],
+	size:"114KB"
+};

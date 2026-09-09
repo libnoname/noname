@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "sourceHash": "90108b271fad445905559fc95d70df2627fd54a1edf516e8d194760704fe37a9",
+  "extension": "nba",
+  "removed": [],
+  "warnings": [
+    "通过静态结构检查；第三方扩展的实际对局兼容性仍需游戏内验证",
+    "保留技能和资源，以免破坏动态引用"
+  ]
+}

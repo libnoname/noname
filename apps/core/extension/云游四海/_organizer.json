@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "sourceHash": "4e4ae94c38ac7979406312d70688e7b1fdf4b4bf00a193bcb3d4dbaf9f9694ae",
+  "extension": "云游四海",
+  "removed": [],
+  "warnings": [
+    "通过静态结构检查；第三方扩展的实际对局兼容性仍需游戏内验证",
+    "保留技能和资源，以免破坏动态引用"
+  ]
+}

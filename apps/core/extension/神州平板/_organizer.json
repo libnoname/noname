@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "sourceHash": "a13c3caca43456ebdf7afa01f9ec26d9188ac553d8a1fa5fbf9660fe46c28591",
+  "extension": "神州平板",
+  "removed": [],
+  "warnings": [
+    "通过静态结构检查；第三方扩展的实际对局兼容性仍需游戏内验证",
+    "保留技能和资源，以免破坏动态引用"
+  ]
+}

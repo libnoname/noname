@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "sourceHash": "d5dce7de69df3d4f9ca298e1112fb2cc97e4803f4b305e04a5b91abf18f244ef",
+  "extension": "乱世英杰",
+  "removed": [],
+  "warnings": [
+    "通过静态结构检查；第三方扩展的实际对局兼容性仍需游戏内验证",
+    "保留技能和资源，以免破坏动态引用"
+  ]
+}

@@ -1,0 +1,10 @@
+extension["乱世英杰"]={
+	intro:"",
+	author:"都有",
+	netdisk:"",
+	forum:"",
+	version:"1.0",
+	files:["zugeliangz.jpg","huatuoz.jpg","extension.js","白板武将.jpg","乱武毒士.jpg","绝情皇后.jpg",
+		"江东霸王.jpg","luxunz.jpg","zhangchunfuaz.jpg","jiaxuz.jpg","sunzez.jpg","lvbuz.jpg"],
+	size:"154KB"
+};

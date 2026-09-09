@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "sourceHash": "55ecef4be08bb9a50516f3bf2357d2d1ca7fbb91670f5e84c046b26635afbbbe",
+  "extension": "士兵扩展包",
+  "removed": [],
+  "warnings": [
+    "通过静态结构检查；第三方扩展的实际对局兼容性仍需游戏内验证",
+    "保留技能和资源，以免破坏动态引用"
+  ]
+}

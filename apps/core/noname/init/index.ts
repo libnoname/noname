@@ -7,6 +7,8 @@ import { security, initializeSandboxRealms } from "@/util/sandbox.js";
 import { CacheContext } from "@/library/cache/cacheContext.js";
 import { importCardPack, importCharacterPack, importExtension, importMode } from "./import.js";
 import { loadCard, loadCardPile, loadCharacter, loadExtension, loadMode, loadPlay } from "./loading.js";
+import { registerOrganizedExtensions } from "./organizedExtensions.js";
+import { registerOrganizedCompatibility } from "./organizedCompatibility.js";
 
 // 无名杀，启动！
 export async function boot() {
@@ -586,6 +588,7 @@ export async function boot() {
 	}
 
 	if (Array.isArray(lib.extensions)) {
+		registerOrganizedCompatibility();
 		await Promise.allSettled(lib.extensions.map(loadExtension));
 	}
 
@@ -609,10 +612,15 @@ export async function boot() {
 	}
 
 	game.loop();
+	if (import.meta.env.DEV && new URLSearchParams(location.search).get("extensionCheck") === "1") {
+		const { showOrganizedCheck } = await import("./organizedCheck.js");
+		showOrganizedCheck();
+	}
 }
 
 async function getExtensionList() {
 	if (localStorage.getItem(lib.configprefix + "disable_extension")) return [];
+	await registerOrganizedExtensions(config, (key, value) => game.promises.saveConfig(key, value));
 
 	const autoImport = (() => {
 		if (!config.get("extension_auto_import")) {

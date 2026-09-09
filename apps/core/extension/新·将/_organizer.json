@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "sourceHash": "a7908cc6bcff92051594ad10aab92ef04c8cbae0de84902b00f42158cd93de55",
+  "extension": "新·将",
+  "removed": [],
+  "warnings": [
+    "通过静态结构检查；第三方扩展的实际对局兼容性仍需游戏内验证",
+    "保留技能和资源，以免破坏动态引用"
+  ]
+}

@@ -1,0 +1,17 @@
+extension["阴曹地府"]={
+	intro:"",
+	author:"高田悠学姐",
+	netdisk:"",
+	forum:"",
+	version:"1.0",
+	files:["yin_lvbu.jpg","yin_liuzan.jpg","yin_xushao.jpg","yin_zhangjiao.jpg","yin_guozhao.jpg",
+		"yin_caopi.jpg","yin_ganning.jpg","yin_caoying.jpg","yin_zhaoxiang.jpg","yin_lingtong.jpg",
+		"yin_zhangqiying.jpg","yin_guansuo.jpg","yin_machao.jpg","yin_xusheng.jpg","yin_simahui.jpg",
+		"yin_puyuan.jpg","yin_huanggai.jpg","yin_xurong.jpg","yin_zhaoyun.jpg","yin_wenyang.jpg",
+		"yin_caocao.jpg","yin_liubei.jpg","yin_zhugeliang.jpg","yin_simayi.jpg","yin_zhouyu.jpg",
+		"yin_caochun.jpg","yin_guanyu.jpg","yin_lvmeng.jpg","赤焰镇魂琴.png","赤血青锋.png","鬼龙斩月刀.png",
+		"国风玉袍.png","红棉百花袍.png","金乌落日弓.png","绝尘金戈.png","玲珑狮蛮带.png","灵蛇簪.png","鸾凤和鸣剑.png",
+		"七彩神鹿.png","奇门八卦.png","禅让诏书.png","束发紫金冠.png","无双方天戟.png","刑天破军斧.png","修罗炼狱戟.png",
+		"虚妄之冕.png","extension.js","package.js"],
+	size:"14.8MB"
+};

@@ -1,0 +1,19 @@
+extension["PY武将"]={
+	intro:"群友的设计。bug修复，部分调整和优化。",
+	author:"鸽子",
+	netdisk:"",
+	forum:"",
+	version:"1.1",
+	files:["gezi_simazhao.jpg","gezi_sunce.jpg","gezi_zhaotong.jpg","gezi_zhugeliang.jpg",
+		"gezi_jiakui.jpg","gezi_jiayu.jpg","extension.js","gezi_aodaili.jpg","gezi_aodailisp.jpg",
+		"gezi_danizi.jpg","gezi_daodiaoren.jpg","gezi_fengkuangmaoxianjia.jpg","gezi_guifashi.jpg",
+		"gezi_hiaynaggezhe.jpg","gezi_huanyumonv.jpg","gezi_jibingzhongjiang.jpg","gezi_juewangnvshi.jpg",
+		"gezi_kelaien.jpg","gezi_lunnade.jpg","gezi_mingyunzhishe.jpg","gezi_mioudashi.jpg",
+		"gezi_moshushi.jpg","gezi_qiangweishaonvwu.jpg","gezi_qiangweizhujiao.jpg","gezi_shalun.jpg",
+		"gezi_sharenkuang.jpg","gezi_shijie.jpg","gezi_shijiedexinmo.jpg","gezi_silingdaoshi.jpg",
+		"gezi_suxi.jpg","gezi_taluoshijie.jpg","gezi_taluoyuzhe.jpg","gezi_taluozhengyi.jpg",
+		"gezi_tianciakexuejia.jpg","gezi_wuqinggezi.jpg","gezi_xiadaoheihuangdi.jpg","gezi_xinshixiaojie.jpg",
+		"gezi_yilian.jpg","gezi_yinzhe.jpg","gezi_yuzhe.jpg","gezi_zhenshizhaowuzhu.jpg",
+		"gezi_zhiyezhe.jpg","gezi_zhoumingrui.jpg","gezi_zongzuimonv.jpg","package.js"],
+	size:"1MB"
+};

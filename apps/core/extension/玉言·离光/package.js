@@ -1,0 +1,17 @@
+extension["玉言·离光"]={
+	intro:"",
+	author:"轮回战君",
+	netdisk:"",
+	forum:"",
+	version:"",
+	files:["yuyanliguangzhuyuan.jpg","yuyanliguanglinlang.jpg","yuyanliguangwuxia.jpg","yuyanliguangyuehua.jpg",
+		"yuyanliguanglinlangxinwuzb.png","yuyanliguangzhuyuanxinwuzb.png","yuyanliguangwuxiaxinwuzb.png",
+		"yuyanliguangyuehuaxinwuzb.png","1yuyanliguanglinglang.jpg","1yuyanliguanglinlangxinwuzb.png",
+		"1yuyanliguangwuxai.jpg","1yuyanliguangwuxaixinwuzb.png","1yuyanliguangyuehua.jpg",
+		"1yuyanliguangyuehuaxinwuzb.png","1yuyanliguangzhuyuan.jpg","1yuyanliguangzhuyuanxinwuzb.png",
+		"2yuyanliguangwuxaixinwuzb.png","extension.js","yuyanliguang.jpg","yuyanliguanglinglang.jpg",
+		"yuyanliguanglinglanxinwu.png","yuyanliguanglinglanxinwuzb.png","yuyanliguangwuxai.jpg",
+		"yuyanliguangwuxaixinwu.png","yuyanliguangwuxaixinwuzb.png","yuyanliguangyuehuaxinwu.png",
+		"yuyanliguangzhuyuanxinwu.png"],
+	size:"2.4MB"
+};

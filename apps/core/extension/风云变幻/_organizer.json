@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "sourceHash": "de5e6695797b9e7fd0603a457fa770da5742de68c725b6e84ff147ee9a090f1c",
+  "extension": "风云变幻",
+  "removed": [],
+  "warnings": [
+    "通过静态结构检查；第三方扩展的实际对局兼容性仍需游戏内验证",
+    "保留技能和资源，以免破坏动态引用"
+  ]
+}

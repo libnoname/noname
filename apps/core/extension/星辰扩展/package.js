@@ -1,0 +1,9 @@
+extension["星辰扩展"]={
+	intro:"",
+	author:"东方曜",
+	netdisk:"",
+	forum:"",
+	version:"1.0",
+	files:["zhuran_ys.jpg","extension.js"],
+	size:"108KB"
+};

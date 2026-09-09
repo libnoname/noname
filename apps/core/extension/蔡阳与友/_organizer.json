@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "sourceHash": "f77a0165525d22b6bc3add37a30af0e1b4ce8a66bae738505912ebe6b7e87b91",
+  "extension": "蔡阳与友",
+  "removed": [],
+  "warnings": [
+    "通过静态结构检查；第三方扩展的实际对局兼容性仍需游戏内验证",
+    "保留技能和资源，以免破坏动态引用"
+  ]
+}

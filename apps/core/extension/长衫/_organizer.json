@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "sourceHash": "789f912fc75acc540dd2350aecfc8f196bc91b13fdad7c0e4e4f52a4a69db887",
+  "extension": "长衫",
+  "removed": [],
+  "warnings": [
+    "通过静态结构检查；第三方扩展的实际对局兼容性仍需游戏内验证",
+    "保留技能和资源，以免破坏动态引用"
+  ]
+}

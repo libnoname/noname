@@ -1,0 +1,62 @@
+import { lib, game, ui, get, ai, _status } from "noname";
+export const type = "extension";
+export default function(lib,game,ui,get,ai,_status){return {name:"新·将",content:function (config,pack){
+    
+},precontent:function (){
+    
+},help:{},config:{},package:{
+    character:{
+        character:{
+            "新陆逊":["male","wu",3,["gaijunlve","摧克","diy_reqianxun","diy_relianying","xlianying","绽火"],["forbidai","des:君子生当如鹿"]],
+            "sp新陆逊":["male","wu",3,["nzry_junlve","xcuike","nzry_dinghuo","diy_reqianxun","mou_lianying","diy_relianying"],["forbidai","des:临强示弱傲其心"]],
+            "新曹丕":["male","wei",5,["diy_refangzhu","diy_rexingshang","exjuejue","chuyuan","dengji","exweiwei","resongwei"],["zhu","forbidai","des:天威浩荡，赞颂吾名"]],
+            "新荀彧":["male","wei",3,["mou_quhu","xtunlang","xwangzuo","xfuhan"],["forbidai","des:生食汉禄，死为汉臣"]],
+            "新鲁肃":["male","wu",3,["mou_haoshi","dimeng","宽释","reganlu","xinanguo"],["forbidai","des:曹军不可惧，我军断不能降"]],
+            "sp郭嘉戏志才":["male","wei",3,["天妒","yunguimou","yunyice","rechouce","xianfu","sgk_huiqu"],["forbidai","des:宇宙兄弟"]],
+            "新张辽":["male","wei",3,["yunduorui","yunzhiti","diy_retuxi","lyzduorui","ly_junshenbao_zhenSanGuo_zhangliao_tuxi"],["forbidai","des:娃闻鸣止啼，孙损十万休"]],
+            "新吕布":["male","qun",4,["ly_junshenbao_zhenSanGuo_lvbu_juelu","yunwushuang","利驭","ly_junshenbao_zhenSanGuo_lvbu_sheji","exshenji"],["forbidai","des:斩你何须需费力，区区小卒弹指可灭"]],
+            "新贾诩":["male","qun",3,["mou_wansha","mou_luanwu","ly_junshenbao_spjiaxu_mijian","ly_junshenbao_spjiaxu_qianlv","yunjimou","lin_xiance"],["forbidai","des:只有完杀自己才是强者"]],
+            "新秦宓":["male","shu",3,["xzhuandui1","xjianzheng","shzx_tianbian","shzx_jianzheng"],["forbidai","des:你已无话可说了吧"]],
+            "新姜维":["male","shu",5,["exfuqing","shzx_yizhi","ly_junshenbao_jiangwei_chengzhi","ly_junshenbao_jiangwei_yaozhan","lin_fengliang","kunfen"],["forbidai","des:臣等正欲死战，陛下何故先降"]],
+            "新曹植":["male","wei",3,["xluoying","supernatural_shijiu","supernatural_qishi","ly_junshenbao_caozhi_qijue"],["forbidai","des:借君一壶酒"]],
+            "新董允":["male","shu",3,["bingzheng","sheyan","ly_junshenbao_dongyun_fubi","XSyunchou","XSshensuan","XSdushan"],["forbidai","des:还是改日吧"]],
+            "新刘协":["male","qun",3,["exanzhao","ly_junshenbao_liuxie_tianming","ly_junshenbao_liuxie_mizhao","ly_junshenbao_liuxie_xiedi","mizhao","shiyuan","yuwei"],["zhu","forbidai","des:延汉的国运，请再帮我一把"]],
+            "新吕蒙":["male","wu",4,["exshelie","exkeji","ly_junshenbao_lvmeng_qinxue","botu","sgk_guoshi"],["forbidai","des:吴下阿蒙，今非昔比"]],
+        },
+        translate:{
+            "新陆逊":"新陆逊",
+            "sp新陆逊":"sp新陆逊",
+            "新曹丕":"新曹丕",
+            "新荀彧":"新荀彧",
+            "新鲁肃":"新鲁肃",
+            "sp郭嘉戏志才":"sp郭嘉戏志才",
+            "新张辽":"新张辽",
+            "新吕布":"新吕布",
+            "新贾诩":"新贾诩",
+            "新秦宓":"新秦宓",
+            "新姜维":"新姜维",
+            "新曹植":"新曹植",
+            "新董允":"新董允",
+            "新刘协":"新刘协",
+            "新吕蒙":"新吕蒙",
+        },
+    },
+    card:{
+        card:{
+        },
+        translate:{
+        },
+        list:[],
+    },
+    skill:{
+        skill:{
+        },
+        translate:{
+        },
+    },
+    intro:"",
+    author:"巨鲸兮",
+    diskURL:"",
+    forumURL:"",
+    version:"1.0",
+},files:{"character":["新吕蒙.jpg"],"card":[],"skill":[]}}};

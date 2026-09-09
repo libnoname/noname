@@ -1,0 +1,9 @@
+extension["FY"]={
+	intro:"",
+	author:"⁹",
+	netdisk:"",
+	forum:"",
+	version:"1.0",
+	files:["the.jpg","extension.js","万能网友.jpg","复读机.jpg","2332.jpg"],
+	size:"374KB"
+};

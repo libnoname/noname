@@ -1,0 +1,19 @@
+{
+	"version": 2,
+	"checkedMode": "identity",
+	"disabled": [
+		{ "name": "星辰扩展", "reason": "jieyue8 引用缺失的子技能 jieyue1", "missingReferences": 1 },
+		{ "name": "死神", "reason": "ss逆扶、ss遁舜六花的子技能引用拼写与定义不一致，包含动态授予技能引用", "missingReferences": 4 },
+		{ "name": "风云变幻", "reason": "结营仍引用旧版 nzry_jieying_1、nzry_jieying_2", "missingReferences": 2 },
+		{ "name": "群雄并起", "reason": "qx_luoshen1 依赖缺失的 xinluoshen_clear", "missingReferences": 1 },
+		{ "name": "乱世英杰", "reason": "白板武将缺少 zqianxun", "missingReferences": 1 },
+		{ "name": "新·将", "reason": "多名武将依赖其他 DIY 扩展的技能，原包未提供", "missingReferences": 66 },
+		{ "name": "暴雪DIY", "reason": "缺少 qingliu、jianren、moxie、hongxi、qianghua 等技能", "missingReferences": 6 },
+		{ "name": "渐意新生", "reason": "缺少 xxy_guima、xxy_shenpan", "missingReferences": 2 },
+		{ "name": "阴曹地府", "reason": "依赖 minigongxin、minikuangfeng、xinfu_jingxie1，当前配置不完整", "missingReferences": 4 },
+		{ "name": "德莱厄斯", "reason": "缺少 xwj_xhuoying 系列技能", "missingReferences": 7 },
+		{ "name": "戏志才", "reason": "缺少 zyile_xuwu、wsqq_雷鸣、ly_junshenbao 系列等技能", "missingReferences": 7 },
+		{ "name": "美女如云", "reason": "mnry_caizhaoji 缺少 guihan；不能擅自替换为同名新技能", "missingReferences": 1 },
+		{ "name": "诸神之战", "reason": "大量跨扩展技能依赖未提供，包含冷雨、zyile、kiva、AM 等系列", "missingReferences": 315 }
+	]
+}

@@ -1,0 +1,22 @@
+extension["絶伦逸羣"]={
+	intro:"“相逢依旧此山河”，何其有幸，纵然时光流逝不曾回首，山河大地仍一如往常，把故人们那些波澜壮阔亦或是风流宛转的往事娓娓道来。他们的故事，我们记得，那日月星辰、山川河流，哪一处不记得？荆襄雨，长江水，秦岭月，成都花，汉中夜，哪一处曾忘记？他们的名字是我们的信仰，永远铭刻在岁月之中，星河之上。<br>○强度为中等，建议与其他中等强度扩展一起玩耍<br>●本人QQ为3510248284，常在892852274此群活动<br>更新报告：<br> ①更改了扩展的扩展介绍，缩短了主题介绍。 <br>②削弱4/4黄盖。（诈降现在只能摸3了）<br> ③增加了[江东之铁壁]。",
+	author:"叫什么（刘玄德）",
+	netdisk:"",
+	forum:"",
+	version:"1.0",
+	files:["jvelun_疑城破魏_徐盛.jpg","extension.js","jvelun_huanggai_kurou1.mp3","jvelun_苦肉计_黄盖.jpg",
+		"jvelun_如饮醇醪_程普.jpg","jvelun_倾吴解忧_韩当.jpg","jvelun_轻赐尚义_蒋钦.jpg","jvelun_死战不屈_周泰.jpg",
+		"jvelun_huanggai_kurou2.mp3","jvelun_勇战仁厚_陈武.jpg","jvelun_huanggai_zhaxiang1.mp3",
+		"jvelun_chengpu_chunlao2.mp3","jvelun_huanggai_zhaxiang2.mp3","jvelun_chengpu_lihuo1.mp3",
+		"jvelun_chengpu_lihuo2.mp3","jvelun_chengpu_chunlao1.mp3","jvelun_jiangqing_shangyi2.mp3",
+		"jvelun_handang_gongqi1.mp3","jvelun_handang_jiefan1.mp3","jvelun_handang_gongqi2.mp3",
+		"jvelun_奋命断缆_董袭.mp3","jvelun_jiangqing_shangyi1.mp3","jvelun_jiangqing_niaoxiang1.mp3",
+		"jvelun_jiangqing_niaoxiang2.mp3","jvelun_chenwu_yongzhan1.mp3","jvelunhuzhu11.mp3",
+		"jvelunhuzhu12.mp3","jvelun_zhoutai_buqu1.mp3","jvelun_zhoutai_buqu2.mp3","jvelun_chenwu_yongzhan2.mp3",
+		"jvelun_chenwu_renhou1.mp3","jvelun_chenwu_renhou2.mp3","jvelun_勇战仁厚_陈武.mp3","jvelun_苦肉计_黄盖.mp3",
+		"jvelun_死战不屈_周泰.mp3","jvelun_轻赐尚义_蒋钦.mp3","jvelun_如饮醇醪_程普.mp3","jvelun_倾吴解忧_韩当.mp3",
+		"jvelun_奋命断缆_董袭.jpg","jvelun_dongxi_duanlan1.mp3","jvelun_dongxi_duanlan2.mp3","jvelun_百骑劫营_甘宁.jpg",
+		"jvelun_handang_jiefan2.mp3","jvelun_ganning_qixi1.mp3","jvelun_ganning_qixi2.mp3",
+		"jvelun_ganning_fenwei1.mp3","jvelun_ganning_fenwei2.mp3","jvelun_百骑劫营_甘宁.mp3","jvelun_旋略勇进_凌统.jpg"],
+	size:"218KB"
+};

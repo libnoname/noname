@@ -1,0 +1,10 @@
+extension["诸神之战"]={
+	intro:"",
+	author:"无名玩家",
+	netdisk:"",
+	forum:"",
+	version:"1.0",
+	files:["宇宙恐龙杰顿.jpg","黑暗支配者加坦杰厄.jpg","超级古兰特王.jpg","迪莫杰厄.jpg","古兰特王.jpg","。超级古兰特王.jpg","玛伽古兰特王.jpg",
+		"超古代邪神加坦杰厄.jpg","超级亡灵古兰特王.jpg","玛伽加坦杰厄.jpg","EX泰拉特.jpg","extension.js","暴君泰兰特.jpg"],
+	size:"106KB"
+};

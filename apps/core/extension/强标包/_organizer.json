@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "sourceHash": "b710d71ca2e984d2c706f0d0c4e10c5627e4fbb8710b158690e8ddd1e666e15d",
+  "extension": "强标包",
+  "removed": [],
+  "warnings": [
+    "通过静态结构检查；第三方扩展的实际对局兼容性仍需游戏内验证",
+    "保留技能和资源，以免破坏动态引用"
+  ]
+}

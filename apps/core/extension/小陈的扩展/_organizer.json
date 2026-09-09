@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "sourceHash": "60787e8a31bab1aa19d719a677f3ad6da948d948540b4c63c49271a6f5de2fd7",
+  "extension": "小陈的扩展",
+  "removed": [],
+  "warnings": [
+    "通过静态结构检查；第三方扩展的实际对局兼容性仍需游戏内验证",
+    "保留技能和资源，以免破坏动态引用"
+  ]
+}

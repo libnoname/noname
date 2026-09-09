@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "sourceHash": "39a2181cbb05bf57757ff7caef1b4babc6e2011cb201a675603cef25c0de947f",
+  "extension": "张三丰",
+  "removed": [],
+  "warnings": [
+    "通过静态结构检查；第三方扩展的实际对局兼容性仍需游戏内验证",
+    "保留技能和资源，以免破坏动态引用"
+  ]
+}

@@ -1,0 +1,9 @@
+extension["戏志才"]={
+	intro:"",
+	author:"淰沁",
+	netdisk:"",
+	forum:"",
+	version:"1.0",
+	files:["戏子.jpg","extension.js","戏志才.jpg","package.js"],
+	size:"1.4MB"
+};

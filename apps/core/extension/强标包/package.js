@@ -1,0 +1,22 @@
+extension["强标包"]={
+	intro:"\"<b><span class=\\\"yellowtext\\\" style=\\\"color:#FFFF00\\\">拓展作者:</span></b><li>贴吧昵称： </br>是我dio哒--<li>Q群昵称：</br> 叫什么(哒啦啦啦啦)</br></br><b><span class=\\\"yellowtext\\\" style=\\\"color:#FFFF00\\\">更新日志:</span></b></br>2020年2月11日更新列表</br></br><b><span class=\\\"yellowtext\\\" style=\\\"color:#FFFF00\\\">新增武将:</span></b><li>【强标包】</br>张燕<li><b><span class=\\\"yellowtext\\\" style=\\\"color:#FFFF00\\\">武将优化:</span></b></br>无</br>无</br></br></br><li>有bug，可以来联机二群找我\",",
+	author:"叫什么",
+	netdisk:"",
+	forum:"",
+	version:"1.0",
+	files:["张燕.jpg","extension.js","xinshen_zhangliao.jpg","package.js","xin_gongsunzan.jpg",
+		"jiexin_gongsunzan.jpg","jiexin_zhoutai.jpg","xin_zhoutai.jpg","xin_sunjian.jpg",
+		"jiexin_sunjian.jpg","jiexin_liefu_panfeng1.mp3","jiexin_yaowu_huaxiong1.mp3","jiexin_yaowu_huaxiong2.mp3",
+		"xin_buqv_zhoutai1.mp3","xin_buqv_zhoutai2.mp3","xin_cangxi_sunjian1.mp3","xin_cangxi_sunjian2.mp3",
+		"xin_cangxi_sunjian21.mp3","xin_cangxi_sunjian22.mp3","xin_fenji_zhoutai1.mp3","xin_fenji_zhoutai2.mp3",
+		"xin_fenji_zhoutai21.mp3","xin_fenji_zhoutai22.mp3","xin_liefu_panfeng1.mp3","xin_shenyong_huaxiong1.mp3",
+		"xin_yaowu_huaxiong1.mp3","xin_yaowu_huaxiong2.mp3","xin_yinghun_sunjian1.mp3","xin_yinghun_sunjian2.mp3",
+		"xin_yinghun_sunjian21.mp3","xin_yinghun_sunjian22.mp3","于吉.jpg","于吉jj.jpg","xin_baima_gongsunzan1.mp3",
+		"xin_baima_gongsunzan2.mp3","xin_yicong_gongsunzan1.mp3","xin_yicong_gongsunzan2.mp3",
+		"xin_yizhi_gongsunzan1.mp3","xin_yizhi_gongsunzan2.mp3","xin_xiying_shenzhangliao1.mp3",
+		"xxyy_duorui1.mp3","xxyy_duorui2.mp3","高览.jpg","陈到.jpg","xin_xiying_gaolan1.mp3",
+		"xin_xiying_gaolan2.mp3","xin_xiying_gaolan21.mp3","xin_xiying_gaolan22.mp3","gaolan_zhenwang1.mp3",
+		"xin_chendao.jpg","xin_wanglie4_chendao2.mp3","xin_wanglie3_chendao1.mp3","xin_wanglie3_chendao2.mp3",
+		"xin_wanglie4_chendao1.mp3","xin_feiyan_zhangyan1.mp3","xin_feiyan_zhangyan2.mp3"],
+	size:"643KB"
+};

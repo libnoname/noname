@@ -1,0 +1,9 @@
+extension["超神赵云"]={
+	intro:"",
+	author:"火枪",
+	netdisk:"",
+	forum:"",
+	version:"1.114514",
+	files:["Eason.jpg","extension.js","杂鱼.jpg","超神赵云.jpg","package.js"],
+	size:"214KB"
+};

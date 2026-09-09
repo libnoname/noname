@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "sourceHash": "39a789f7c0fb21c8dd35a061880c614e860716f3096a1a7d46dfe650b83ad812",
+  "extension": "FY",
+  "removed": [],
+  "warnings": [
+    "通过静态结构检查；第三方扩展的实际对局兼容性仍需游戏内验证",
+    "保留技能和资源，以免破坏动态引用"
+  ]
+}

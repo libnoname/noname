@@ -1,0 +1,16 @@
+extension["纪元突破【谋】"]={
+	intro:"",
+	author:"CXC",
+	netdisk:"",
+	forum:"",
+	version:"1.0",
+	files:["m_simahui.jpg","m_bz1.mp3","extension.js","mou_guojia.jpg","m_madai.jpg","m_td1.mp3",
+		"m_td2.mp3","m_yj1.mp3","m_yj2.mp3","m_fj1.mp3","m_fj2.mp3","m_jiaxu.jpg","m_ws1.mp3",
+		"m_ws11.mp3","m_ws12.mp3","m_lw1.mp3","m_lw2.mp3","m_lw11.mp3","m_wm1.mp3","m_wm2.mp3",
+		"m_ws2.mp3","m_guojia.jpg","m_wolong.jpg","m_wolongzhuge.jpg","m_wolongzhugeliang.jpg",
+		"m_zhugeliang.jpg","m_zn21.mp3","wm_huangzhong.jpg","m_bz2.mp3","m_hj1.mp3","m_hj2.mp3",
+		"m_kp1.mp3","m_kp2.mp3","m_sunquan.jpg","m_zn11.mp3","m_pl1.mp3","m_jy1.mp3","m_jy2.mp3",
+		"m_zh1.mp3","m_zh2.mp3","m_nh1.mp3","m_nh11.mp3","m_mjA1.mp3","m_jx1.mp3","m_qy1.mp3",
+		"m_qy11.mp3","m_qy21.mp3","m_qy22.mp3","m_f11.mp3","m_jx2.mp3","m_l11.mp3","m_mjA2.mp3"],
+	size:"2.1MB"
+};

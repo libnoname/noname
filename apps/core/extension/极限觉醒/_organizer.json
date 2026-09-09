@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "sourceHash": "66527026880f94a64cd1d9137d21ae5a9b5fbe40b2e533a6ae49f87b36dbed08",
+  "extension": "极限觉醒",
+  "removed": [],
+  "warnings": [
+    "通过静态结构检查；第三方扩展的实际对局兼容性仍需游戏内验证",
+    "保留技能和资源，以免破坏动态引用"
+  ]
+}

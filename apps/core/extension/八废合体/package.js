@@ -1,0 +1,9 @@
+extension["八废合体"]={
+	intro:"",
+	author:"小凳子",
+	netdisk:"",
+	forum:"",
+	version:"1.0",
+	files:["八废合体.jpg","extension.js","测试武将2.jpg"],
+	size:"71KB"
+};

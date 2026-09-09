@@ -1,0 +1,13 @@
+extension["征战虎牢"]={
+	intro:"本扩展的第二阶段其实是可以调的，你在应战中选的形态在下局挑战时人机会选择相同的形态，实验证明！！！",
+	author:"烟雨墨染",
+	netdisk:"",
+	forum:"",
+	version:"1.0",
+	files:["hulaoguan_tanlangjun.jpg","boss_lvbu4.jpg","boss_lvbu5.jpg","extension.js","hulaoguan_baoluejun.jpg",
+		"hulaoguan_caoxing.jpg","hulaoguan_chengong.jpg","hulaoguan_dongxie.jpg","hulaoguan_fanchou.jpg",
+		"hulaoguan_feixiongjun.jpg","hulaoguan_fengyaojun.jpg","hulaoguan_gaoshun.jpg","hulaoguan_guosi.jpg",
+		"hulaoguan_huaxiong.jpg","hulaoguan_hubenjun.jpg","hulaoguan_lijue.jpg","hulaoguan_zhangji.jpg",
+		"longxiangjun.jpg"],
+	size:"295KB"
+};

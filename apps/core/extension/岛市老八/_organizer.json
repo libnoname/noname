@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "sourceHash": "e4606439b8f6487fb9255b819396de5f7f1de25fea87ce6a032bac4a16ecf2d1",
+  "extension": "岛市老八",
+  "removed": [],
+  "warnings": [
+    "通过静态结构检查；第三方扩展的实际对局兼容性仍需游戏内验证",
+    "保留技能和资源，以免破坏动态引用"
+  ]
+}

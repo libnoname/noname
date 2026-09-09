@@ -1,0 +1,13 @@
+extension["岛市老八"]={
+	intro:"",
+	author:"太元",
+	netdisk:"",
+	forum:"",
+	version:"1.0",
+	files:["kuaishoudaoshilaoba.jpg","extension.js","laobachibaba1.mp3","laobachibaba2.mp3",
+		"laobachibaba3.mp3","laobachongsheng1.mp3","laobachongsheng2.mp3","laobachongsheng3.mp3",
+		"laobahuojimian1.mp3","laobahuojimian2.mp3","laobamichang1.mp3","laobamichang2.mp3",
+		"laobapayapigu1.mp3","laobapayapigu2.mp3","laobaxiaohanbao1.mp3","laobaxiaohanbao2.mp3",
+		"package.js"],
+	size:"24KB"
+};

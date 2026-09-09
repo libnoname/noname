@@ -1,0 +1,9 @@
+extension["小陈的扩展"]={
+	intro:"",
+	author:"小陈哥哥",
+	netdisk:"",
+	forum:"",
+	version:"1.5.6",
+	files:["陈鱼.jpg","extension.js","陈鱼，现实.jpg","package.js","小鱼.jpg"],
+	size:"779KB"
+};

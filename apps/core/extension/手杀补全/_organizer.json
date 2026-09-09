@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "sourceHash": "701f7219ba573a6af6fcf8cce78ac87e171aae66ea44d2134abd030d5c7db920",
+  "extension": "手杀补全",
+  "removed": [],
+  "warnings": [
+    "通过静态结构检查；第三方扩展的实际对局兼容性仍需游戏内验证",
+    "保留技能和资源，以免破坏动态引用"
+  ]
+}

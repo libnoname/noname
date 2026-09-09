@@ -1,0 +1,9 @@
+extension["山海异志将包"]={
+	intro:"山海异志第3关boss，小兵懒做，如果吕布魔道失效可以尝试打开诸神降临",
+	author:"往事如风",
+	netdisk:"",
+	forum:"",
+	version:"1.0",
+	files:["挑战者2号.jpg","extension.js"],
+	size:"199KB"
+};
