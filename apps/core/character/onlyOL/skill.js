@@ -458,13 +458,63 @@ const skills = {
 		forced: true,
 		trigger: {
 			source: "damageBegin1",
+			player: "equipAfter",
 		},
 		filter(event, player) {
-			const target = event.player;
-			return event.card?.name == "sha" && event.checkChixueren && game.getGlobalHistory("everything", evt => evt.name == "damage" && evt.source == player && evt.card?.name == "sha" && evt.checkChixueren).indexOf(event) == 0;
+			if (event.name == "equip") {
+				return get.skillsFromEquips([event.card]).includes("chixueren_skill") && player.hasHistory("lose", evt => evt.getlx == false && evt.type == "equip" && evt.getParent() == event && evt.es?.length > 0);
+			} else {
+				const target = event.player;
+				return event.card?.name == "sha" && event.checkChixueren && game.getGlobalHistory("everything", evt => evt.name == "damage" && evt.source == player && evt.card?.name == "sha" && evt.checkChixueren).indexOf(event) == 0;
+			}
 		},
 		async content(event, trigger, player) {
-			trigger.num++;
+			if (trigger.name == "equip") {
+				const { card } = trigger;
+				const { cards } = card;
+				if (card?.storage?.chixueren) {
+					return;
+				}
+				const loseCards = player.getHistory("lose", evt => evt.getlx == false && evt.type == "equip" && evt.getParent() == trigger && evt.es?.length > 0)?.[0]?.es;
+				if (loseCards.some(card => get.subtype(card) == "equip1")) {
+					const skills = get.skillsFromEquips(loseCards.filter(card => get.subtype(card) == "equip1"));
+					const addSkill = card => {
+						game.broadcastAll(
+							(card, skills) => {
+								card.storage ??= {};
+								card.storage.chixueren = skills;
+								if (!Array.isArray(card.skills)) {
+									card.skills = [...get.info(card).skills, ...skills];
+								} else {
+									card.skills.addArray(skills);
+								}
+							},
+							card,
+							skills
+						);
+					};
+					if (!skills?.length) {
+						game.log(card, "吃了个寂寞");
+					} else {
+						game.log(
+							card,
+							"吞噬了技能",
+							`#g${skills
+								.map(i => `〖${get.translation(i)}〗`)
+								.join("、")}`
+						);
+					}
+					addSkill(card);
+					if (get.is.ordinaryCard(card)) {
+						addSkill(cards[0]);
+					}
+					if (player.getVCards("e").includes(card)) {
+						player.addEquipTrigger(card);
+					}
+				}
+			} else {
+				trigger.num++;
+			}
 		},
 	},
 	//谋祝融
