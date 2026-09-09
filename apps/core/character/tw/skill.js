@@ -8681,23 +8681,28 @@ const skills = {
 		},
 		frequent: true,
 		filter(event, player) {
-			console.log(event, event.getl(player));
 			return (
 				(event.getl(player).cards2.length || event.getg(player).length) &&
 				lib.phaseName.some(phase => {
-					const evts = game.getAllGlobalHistory("everything", evt => {
-						if (evt.getParent("phase") != event.getParent("phase") || evt.getParent(phase) != event.getParent(phase)) {
-							return false;
+					const rawEvts = game.getAllGlobalHistory("everything", evt => {
+						return ["lose", "gain", "loseAsync", "equip", "addJudge", "addToExpansion"].includes(evt.name);
+					});
+					const evts = [];
+					for (const evt of rawEvts) {
+						if (evts.some(evt2 => evt2 == evt.getl(player) || evt2 == evt.getg(player))) {
+							continue;
 						}
-						if (["lose", "gain"].includes(evt.name) && (evt.getl(player)?.cards2?.length || evt.getg(player)?.length)) {
+						if (evt.getParent("phase") != event.getParent("phase") || evt.getParent(phase) != event.getParent(phase)) {
+							continue;
+						}
+						if (evt.getl(player)?.cards2?.length || evt.getg(player)?.length) {
 							const evt2 = evt.relatedEvent || evt.getParent();
 							if (evt2.name === "useCard" && evt2.player === player && get.type(evt2.card, null, false) === "equip") {
-								return false;
+								continue;
 							}
-							return true;
+							evts.push(evt);
 						}
-						return false;
-					});
+					}
 					return evts.indexOf(event) === 0;
 				})
 			);
