@@ -16819,7 +16819,7 @@ const skills = {
 				player.logSkill("oldongdao");
 				event.target2.line(target);
 				player.changeZhuanhuanji("oldongdao");
-				await target.insertPhase();
+				target.insertPhase();
 			}
 		},
 	},
@@ -19613,7 +19613,7 @@ const skills = {
 			trigger.cancel();
 			const next = game.cardsGotoOrdering(get.cards(4));
 			const cards = next.cards;
-			event.cards = cards.slice();
+			event.cards = cards;
 			await next;
 			while (true) {
 				const result = await player
@@ -44226,11 +44226,10 @@ const skills = {
 			});
 			if (players[0].hp > players[1].hp && players[0] != player) {
 				const boolNext = players[0].chooseBool(get.prompt2("tianming"));
-				event.player = players[0];
 				const result = await boolNext.forResult();
 				if (result.bool) {
-					await player.chooseToDiscard(2, true, "he");
-					await player.draw(2);
+					await players[0].chooseToDiscard(2, true, "he");
+					await players[0].draw(2);
 				}
 			} else {
 				event.finish();
