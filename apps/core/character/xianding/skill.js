@@ -2982,43 +2982,40 @@ const skills = {
 			suits.forEach(suit => {
 				suitMap[get.translation(suit)] = suit;
 			});
-			const result =
-				types.length > 1 || suits.length > 1
-					? await player
-							.chooseButton({
-								createDialog: [
-									"靖谋：记录至多三种花色与类型",
-									[
-										[types.slice(0).map(type => get.translation(type)), "tdnodes"],
-										[suits.slice(0).map(suit => get.translation(suit)), "tdnodes"],
-									],
-								],
-								selectButton: [1, 6],
-								complexButton: true,
-								filterButton(button) {
-									let { types, suits } = get.event();
-									types = types.slice(0).map(type => get.translation(type));
-									suits = suits.slice(0).map(suit => get.translation(suit));
-									if (!ui.selected.buttons?.length) {
-										return true;
-									}
-									const selectedTypes = ui.selected.buttons.filter(b => types.includes(b.link)).length;
-									const selectedSuits = ui.selected.buttons.filter(b => suits.includes(b.link)).length;
-									if (types.includes(button.link)) {
-										return selectedTypes < Math.min(3, types.length);
-									} else if (suits.includes(button.link)) {
-										return selectedSuits < Math.min(3, suits.length);
-									}
-									return true;
-								},
-								ai(button) {
-									return 1 + Math.random();
-								},
-							})
-							.set("types", types)
-							.set("suits", suits)
-							.forResult()
-					: { bool: true, links: types.concat(suits).map(i => get.translation(i)) };
+			const result = await player
+				.chooseButton({
+					createDialog: [
+						"靖谋：记录至多三种花色与类型",
+						[
+							[types.slice(0).map(type => get.translation(type)), "tdnodes"],
+							[suits.slice(0).map(suit => get.translation(suit)), "tdnodes"],
+						],
+					],
+					selectButton: [1, 6],
+					complexButton: true,
+					filterButton(button) {
+						let { types, suits } = get.event();
+						types = types.slice(0).map(type => get.translation(type));
+						suits = suits.slice(0).map(suit => get.translation(suit));
+						if (!ui.selected.buttons?.length) {
+							return true;
+						}
+						const selectedTypes = ui.selected.buttons.filter(b => types.includes(b.link)).length;
+						const selectedSuits = ui.selected.buttons.filter(b => suits.includes(b.link)).length;
+						if (types.includes(button.link)) {
+							return selectedTypes < Math.min(3, types.length);
+						} else if (suits.includes(button.link)) {
+							return selectedSuits < Math.min(3, suits.length);
+						}
+						return true;
+					},
+					ai(button) {
+						return 1 + Math.random();
+					},
+				})
+				.set("types", types)
+				.set("suits", suits)
+				.forResult();
 			if (result?.bool && result.links?.length) {
 				const { links } = result;
 				const list = [];
