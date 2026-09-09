@@ -12009,9 +12009,6 @@ const skills = {
 					player: ["gainAfter", "turnOverAfter"],
 				},
 				onremove: true,
-				content(storage, player) {
-					return `已获得了${storage.length}张牌`;
-				},
 				filter(event, player) {
 					if (event.name == "turnOver") {
 						return !player.isTurnedOver();
@@ -12035,6 +12032,11 @@ const skills = {
 				},
 				async content(event, trigger, player) {
 					await player.turnOver();
+				},
+				intro: {
+					content(storage, player) {
+						return `已获得了${storage.length}张牌`;
+					},
 				},
 			},
 			use: {
