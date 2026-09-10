@@ -40009,133 +40009,114 @@ const skills = {
 		},
 		forced: true,
 		filter(event, player) {
-			var cards = event.getd();
-			for (var i of cards) {
-				if (lib.skill.dcgeyuan.filterNumber(player, get.number(i, false))) {
-					return true;
-				}
-			}
-			return false;
+			const cards = event.getd();
+			return cards.some(card => lib.skill.dcgeyuan.filterNumber(player, get.number(card, false)));
 		},
-		content() {
-			"step 0";
-			event.cards = trigger.getd();
-			"step 1";
-			var card = false;
-			for (var i of cards) {
-				if (lib.skill.dcgeyuan.filterNumber(player, get.number(i, false))) {
-					card = i;
-					cards.remove(card);
+		async content(event, trigger, player) {
+			const discardedCards = trigger.getd();
+			let completed = false;
+			while (discardedCards.length) {
+				const card = discardedCards.find(card => lib.skill.dcgeyuan.filterNumber(player, get.number(card, false)));
+				if (!card) {
+					break;
+				}
+				discardedCards.remove(card);
+				const number = get.number(card, false);
+				game.log(player, "将", `#y${get.strNumber(number)}`, "记录为", "#g“圆环之弧”");
+				player.markAuto("dcgeyuan_homura", [number]);
+				player.markSkill("dcgeyuan");
+				if (player.getStorage("dcgeyuan").length <= player.getStorage("dcgeyuan_homura").length) {
+					completed = true;
 					break;
 				}
 			}
-			if (card) {
-				var number = get.number(card, false);
-				game.log(player, "将", "#y" + get.strNumber(number), "记录为", "#g“圆环之弧”");
-				player.markAuto("dcgeyuan_homura", [number]);
-				player.markSkill("dcgeyuan");
-				if (player.getStorage("dcgeyuan").length > player.getStorage("dcgeyuan_homura").length) {
-					if (cards.length > 0) {
-						event.redo();
-					} else {
-						event.finish();
+			if (!completed) {
+				return;
+			}
+
+			if (player.storage.dcgusuan) {
+				const result = await player
+					.chooseTarget({
+						prompt: "割圆：你可以选择至多三名角色",
+						prompt2: "第一名角色摸三张牌，第二名角色弃置四张牌，第三名角色将所有手牌与牌堆底的牌交换",
+						selectTarget: [1, 3],
+					})
+					.forResult();
+				if (result.bool) {
+					const targets = result.targets;
+					player.line(targets);
+					await targets[0].draw(3);
+					if (targets[1]?.hasCards("he")) {
+						await targets[1].chooseToDiscard({
+							position: "he",
+							forced: true,
+							selectCard: 4,
+						});
 					}
-				} else if (player.storage.dcgusuan) {
-					event.goto(5);
+					if (targets[2]) {
+						const target = targets[2];
+						const cards = get.bottomCards(5);
+						await game.cardsGotoOrdering(cards);
+						const handCards = target.getCards("h");
+						if (handCards.length) {
+							await target.lose({
+								cards: handCards,
+								position: ui.cardPile,
+							});
+						}
+						await target.gain({ cards, animate: "draw" });
+					}
 				}
 			} else {
-				event.finish();
-			}
-			"step 2";
-			var list = player.getStorage("dcgeyuan_homura");
-			var num1 = list[0],
-				num2 = list[list.length - 1];
-			event.cards2 = [];
-			var lose_list = [],
-				players = game.filterPlayer();
-			for (var current of players) {
-				var cards = current.getCards("ej", function (card) {
-					var num = get.number(card);
-					return num == num1 || num == num2;
-				});
-				if (cards.length > 0) {
-					current.$throw(cards);
-					lose_list.push([current, cards]);
-					event.cards2.addArray(cards);
+				const arc = player.getStorage("dcgeyuan_homura");
+				const firstNumber = arc[0];
+				const lastNumber = arc[arc.length - 1];
+				const cards = [];
+				const loseList = [];
+				for (const current of game.filterPlayer()) {
+					const currentCards = current.getCards("ej", card => {
+						const number = get.number(card);
+						return number === firstNumber || number === lastNumber;
+					});
+					if (!currentCards.length) {
+						continue;
+					}
+					current.$throw(currentCards);
+					loseList.push([current, currentCards]);
+					cards.addArray(currentCards);
+				}
+				if (loseList.length) {
+					await game.loseAsync({ lose_list: loseList }).setContent("chooseToCompareLose");
+				}
+				for (const card of ui.cardPile.childNodes) {
+					const number = get.number(card, false);
+					if (number === firstNumber || number === lastNumber) {
+						cards.push(card);
+					}
+				}
+				if (cards.length) {
+					if (loseList.length) {
+						await game.delayx();
+					}
+					await player.gain({ cards, animate: "gain2" });
 				}
 			}
-			if (lose_list.length) {
-				event.lose_list = lose_list;
-				game.loseAsync({
-					lose_list: lose_list,
-				}).setContent("chooseToCompareLose");
-			}
-			"step 3";
-			var list = player.getStorage("dcgeyuan_homura");
-			var num1 = list[0],
-				num2 = list[list.length - 1];
-			var cards = event.cards2;
-			for (var i = 0; i < ui.cardPile.childNodes.length; i++) {
-				var card = ui.cardPile.childNodes[i];
-				var number = get.number(card, false);
-				if (number == num1 || number == num2) {
-					cards.push(card);
-				}
-			}
-			if (cards.length > 0) {
-				if (event.lose_list) {
-					game.delayx();
-				}
-				player.gain(cards, "gain2");
-			}
-			"step 4";
-			var list = player.getStorage("dcgeyuan_homura");
-			var num1 = list[0],
-				num2 = list[list.length - 1];
+
+			const arc = player.getStorage("dcgeyuan_homura");
+			const firstNumber = arc[0];
+			const lastNumber = arc[arc.length - 1];
 			player.storage.dcgeyuan_homura = [];
 			game.log(player, "清空了", "#g“圆环之弧”");
 			player.markSkill("dcgeyuan");
 			if (player.getStorage("dcgeyuan").length > 3) {
-				player.unmarkAuto("dcgeyuan", [num1, num2]);
-				game.log(player, "从", "#g“圆环之理”", "中移除了", "#y" + get.strNumber(num1), "和", "#y" + get.strNumber(num2));
+				player.unmarkAuto("dcgeyuan", [firstNumber, lastNumber]);
+				game.log(player, "从", "#g“圆环之理”", "中移除了", `#y${get.strNumber(firstNumber)}`, "和", `#y${get.strNumber(lastNumber)}`);
 			}
-			event.finish();
-			"step 5";
-			player.chooseTarget("割圆：你可以选择至多三名角色", "第一名角色摸三张牌，第二名角色弃置四张牌，第三名角色将所有手牌与牌堆底的牌交换", [1, 3]);
-			"step 6";
-			if (result.bool) {
-				var targets = result.targets;
-				event.targets = targets;
-				player.line(targets);
-				targets[0].draw(3);
-				if (targets.length < 2) {
-					event.goto(4);
-				}
-			} else {
-				event.goto(4);
-			}
-			"step 7";
-			if (targets[1].countCards("he") > 0) {
-				targets[1].chooseToDiscard("he", true, 4);
-			}
-			if (targets.length < 3) {
-				event.goto(4);
-			}
-			"step 8";
-			var target = targets[2];
-			var cards = get.bottomCards(5);
-			game.cardsGotoOrdering(cards);
-			var hs = target.getCards("h");
-			if (hs.length > 0) {
-				target.lose(hs, ui.cardPile);
-			}
-			target.gain(cards, "draw");
-			event.goto(4);
 		},
 		group: "dcgeyuan_kyubey",
 		filterNumber(player, num) {
-			var list1 = player.getStorage("dcgeyuan");
-			var list2 = player.getStorage("dcgeyuan_homura");
+			const list1 = player.getStorage("dcgeyuan");
+			const list2 = player.getStorage("dcgeyuan_homura");
 			if (!list1.includes(num)) {
 				return false;
 			}
@@ -40145,11 +40126,11 @@ const skills = {
 			if (list2.includes(num)) {
 				return false;
 			}
-			var madoka = list1.indexOf(num);
-			for (var i of list2) {
-				var homura = list1.indexOf(i);
-				var dist = Math.abs(madoka - homura);
-				if (dist == 1 || dist == list1.length - 1) {
+			const madoka = list1.indexOf(num);
+			for (const number of list2) {
+				const homura = list1.indexOf(number);
+				const distance = Math.abs(madoka - homura);
+				if (distance === 1 || distance === list1.length - 1) {
 					return true;
 				}
 			}
@@ -40164,23 +40145,17 @@ const skills = {
 				},
 				forced: true,
 				filter(event, player) {
-					return (event.name != "phase" || game.phaseNumber == 0) && !player.storage.dcgusuan;
+					return (event.name !== "phase" || game.phaseNumber === 0) && !player.storage.dcgusuan;
 				},
-				content() {
-					var list = [];
-					for (var i = 1; i <= 13; i++) {
-						list.push(i);
+				async content(event, trigger, player) {
+					const list = [];
+					for (let number = 1; number <= 13; number++) {
+						list.push(number);
 					}
 					list.randomSort();
 					player.storage.dcgeyuan = list;
 					player.markSkill("dcgeyuan");
-					var str = "#y";
-					for (var i = 0; i < 13; i++) {
-						str += get.strNumber(list[i]);
-						if (i != 12) {
-							str += ",";
-						}
-					}
+					const str = `#y${list.map(number => get.strNumber(number)).join(",")}`;
 					game.log(player, "将", "#y“圆环之理”", "赋值为", str);
 				},
 			},
@@ -40191,47 +40166,40 @@ const skills = {
 				if (!player.storage.dcgeyuan || !player.getStorage("dcgeyuan_homura").length) {
 					return 0;
 				}
-				var list = player.storage.dcgeyuan.filter(i => lib.skill.dcgeyuan.filterNumber(player, i));
+				let list = player.storage.dcgeyuan.filter(number => lib.skill.dcgeyuan.filterNumber(player, number));
 				if (!list.length) {
 					return 0;
 				}
-				list = list.map(num => {
-					if (num == 10) {
-						return "X";
-					}
-					return get.strNumber(num);
-				});
-				return list.reduce((str, num) => {
-					return str + num;
-				}, "");
+				list = list.map(number => (number === 10 ? "X" : get.strNumber(number)));
+				return list.join("");
 			},
 			mark(dialog, storage, player) {
 				dialog.content.style["overflow-x"] = "visible";
-				var list = storage;
 				if (!storage || !storage.length) {
 					return "（圆环之理尚不存在）";
 				}
-				var list2 = player.getStorage("dcgeyuan_homura");
-				var core = document.createElement("div");
+				const list = storage;
+				const list2 = player.getStorage("dcgeyuan_homura");
+				const core = document.createElement("div");
 				core.style.width = "0";
-				var centerX = -15,
-					centerY = 80,
-					radius = 80;
-				var radian = (Math.PI * 2) / list.length;
-				var fulllist = ["Ａ", "２", "３", "４", "５", "６", "７", "８", "９", "10", "Ｊ", "Ｑ", "Ｋ"];
-				for (var i = 0; i < list.length; i++) {
-					var td = document.createElement("div");
-					var color = "";
-					if (list2[0] == list[i]) {
+				const centerX = -15;
+				const centerY = 80;
+				const radius = 80;
+				const radian = (Math.PI * 2) / list.length;
+				const fullList = ["Ａ", "２", "３", "４", "５", "６", "７", "８", "９", "10", "Ｊ", "Ｑ", "Ｋ"];
+				for (const [index, number] of list.entries()) {
+					const td = document.createElement("div");
+					let color = "";
+					if (list2[0] === number) {
 						color = ' class="yellowtext"';
-					} else if (list2.includes(list[i])) {
+					} else if (list2.includes(number)) {
 						color = ' class="greentext"';
 					}
-					td.innerHTML = "<span" + color + ">[" + fulllist[list[i] - 1] + "]</span>";
+					td.innerHTML = `<span${color}>[${fullList[number - 1]}]</span>`;
 					td.style.position = "absolute";
 					core.appendChild(td);
-					td.style.left = centerX + radius * Math.sin(radian * i) + "px";
-					td.style.top = centerY - radius * Math.cos(radian * i) + "px";
+					td.style.left = `${centerX + radius * Math.sin(radian * index)}px`;
+					td.style.top = `${centerY - radius * Math.cos(radian * index)}px`;
 				}
 				dialog.content.appendChild(core);
 			},
