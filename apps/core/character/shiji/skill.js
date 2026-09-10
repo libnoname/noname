@@ -2665,7 +2665,7 @@ const skills = {
 				.forResult();
 
 			if (!result?.bool || !result.links?.length) {
-				player.logSkill("tingwei", null, null, null, [get.rand(3, 4)]);
+				player.logSkill("tingwei", [target], null, null, [get.rand(3, 4)]);
 				await target.link(true);
 				return;
 			}
