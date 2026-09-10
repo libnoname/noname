@@ -31550,9 +31550,7 @@ const skills = {
 		},
 		usable: 1,
 		check: (event, player) => {
-			let rev = game.countPlayer(i => {
-				return i.isDamaged() && get.attitude(_status.event.player, i) > 0;
-			});
+			const rev = game.countPlayer(i => i.isDamaged() && get.attitude(_status.event.player, i) > 0);
 			if (!event.player.isIn() || game.countPlayer() < 2) {
 				return rev;
 			}
@@ -31561,87 +31559,81 @@ const skills = {
 			}
 			return get.damageEffect(event.player.getNext(), player, _status.event.player) > -rev;
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.addTempSkill("dcxiaoren_dying");
-			event.target = trigger.player;
-			"step 1";
-			player.judge();
-			"step 2";
-			if (result.color == "red") {
-				player.chooseTarget("绡刃：是否令一名角色回复1点体力（若回满则额外摸一张牌）？").set("ai", target => {
-					let rec = get.recoverEffect(target, _status.event.player, _status.event.player);
-					if (target.getDamagedHp() <= 1) {
-						return rec + get.effect(target, { name: "draw" }, target, _status.event.player);
+			let currentTarget = trigger.player;
+			let frequent = false;
+			while (true) {
+				const judgeResult = await player.judge().forResult();
+				if (judgeResult.color === "red") {
+					const result = await player
+						.chooseTarget({
+							prompt: "绡刃：是否令一名角色回复1点体力（若回满则额外摸一张牌）？",
+							ai: target => {
+								const recoverEffect = get.recoverEffect(target, player, player);
+								if (target.getDamagedHp() <= 1) {
+									return recoverEffect + get.effect(target, { name: "draw" }, target, player);
+								}
+								return recoverEffect;
+							},
+						})
+						.forResult();
+					if (!result.bool) {
+						break;
 					}
-					return rec;
-				});
-			} else if (result.color != "black" || game.countPlayer() < 2) {
-				event.goto(9);
-			} else {
-				event.goto(5);
-			}
-			"step 3";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.line(target);
-				target.recover();
-			} else {
-				event.goto(9);
-			}
-			"step 4";
-			if (event.target.isHealthy()) {
-				event.target.draw();
-			}
-			event.goto(9);
-			"step 5";
-			var targets = [].addArray([target.getPrevious(), target.getNext()]);
-			if (targets.length > 1) {
-				player
-					.chooseTarget(
-						"绡刃：对其中一名角色造成1点伤害",
-						(card, player, target) => {
-							return _status.event.targets.includes(target);
-						},
-						true
-					)
-					.set("ai", target => {
-						let player = _status.event.player;
-						return get.damageEffect(target, player, player);
+					const recoverTarget = result.targets[0];
+					player.line(recoverTarget);
+					await recoverTarget.recover();
+					if (recoverTarget.isHealthy()) {
+						await recoverTarget.draw();
+					}
+					break;
+				}
+				if (judgeResult.color !== "black" || game.countPlayer() < 2) {
+					break;
+				}
+
+				const targets = [...new Set([currentTarget.getPrevious(), currentTarget.getNext()])];
+				let damageTarget = targets[0];
+				if (targets.length > 1) {
+					const result = await player
+						.chooseTarget({
+							prompt: "绡刃：对其中一名角色造成1点伤害",
+							filterTarget: (_card, _player, target) => targets.includes(target),
+							forced: true,
+							ai: target => get.damageEffect(target, player, player),
+						})
+						.forResult();
+					if (!result.bool) {
+						break;
+					}
+					damageTarget = result.targets[0];
+				}
+				if (!damageTarget) {
+					break;
+				}
+				currentTarget = damageTarget;
+				player.line(damageTarget);
+				await damageTarget.damage({ nocard: true });
+				if (player.storage.dcxiaoren_dying || get.is.blocked(event.name, player)) {
+					break;
+				}
+				if (frequent) {
+					continue;
+				}
+
+				const shouldContinue = lib.skill.dcxiaoren.check({ player: damageTarget }, player);
+				const result = await player
+					.chooseBool({
+						prompt: "绡刃：是否再次进行判定并执行对应效果直到未能执行此项或有角色进入濒死状态？",
+						ai: () => shouldContinue,
 					})
-					.set("targets", targets);
-			} else if (targets.length) {
-				event._result = { bool: true, targets: targets };
+					.forResult();
+				if (!result.bool) {
+					break;
+				}
+				frequent = true;
 			}
-			"step 6";
-			if (result.bool) {
-				let target = result.targets[0];
-				event.target = target;
-				player.line(target);
-				target.damage("nocard");
-			} else {
-				event.goto(9);
-			}
-			"step 7";
-			if (player.storage.dcxiaoren_dying || get.is.blocked(event.name, player)) {
-				event._result = { bool: false };
-			} else if (event.frequent) {
-				event._result = { bool: true };
-			} else {
-				player
-					.chooseBool("绡刃：是否再次进行判定并执行对应效果直到未能执行此项或有角色进入濒死状态？")
-					.set("ai", function () {
-						return _status.event.bool;
-					})
-					.set("bool", lib.skill.dcxiaoren.check({ player: event.target }, player));
-			}
-			"step 8";
-			if (result.bool) {
-				event.frequent = true;
-				event.goto(1);
-			}
-			"step 9";
 			player.removeSkill("dcxiaoren_dying");
 		},
 		subSkill: {
@@ -31656,7 +31648,7 @@ const skills = {
 				forced: true,
 				popup: false,
 				charlotte: true,
-				content() {
+				async content(event, trigger, player) {
 					player.storage.dcxiaoren_dying = true;
 				},
 			},
