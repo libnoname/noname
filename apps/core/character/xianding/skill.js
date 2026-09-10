@@ -35538,58 +35538,58 @@ const skills = {
 			return player.countCards("h") > 7;
 		},
 		forced: true,
-		direct: true,
 		intro: {
 			markcount: "expansion",
 			content: "expansion",
 		},
-		content() {
-			"step 0";
-			var num = player.countCards("h") - 7;
-			player.chooseCard("佛宗：将" + get.cnNumber(num) + "张手牌置于武将上", true, num);
-			"step 1";
+		async content(event, trigger, player) {
+			const num = player.countCards("h") - 7;
+			const result = await player
+				.chooseCard({
+					prompt: `佛宗：将${get.cnNumber(num)}张手牌置于武将上`,
+					forced: true,
+					selectCard: num,
+				})
+				.forResult();
 			if (result.bool) {
-				var cards = result.cards;
 				player.logSkill("dcfozong");
-				player.addToExpansion(cards, player, "give").gaintag.add("dcfozong");
+				await player.addToExpansion({
+					cards: result.cards,
+					source: player,
+					animate: "give",
+					gaintag: ["dcfozong"],
+				});
 			}
-			"step 2";
-			var cards = player.getExpansions("dcfozong");
-			if (cards.length < 7) {
-				event.finish();
-			} else {
-				event.targets = game.filterPlayer(i => i != player).sortBySeat(player);
-				game.delayx();
+			if (player.getExpansions("dcfozong").length < 7) {
+				return;
 			}
-			"step 3";
-			var target = targets.shift();
-			event.target = target;
-			player.line(target);
-			var cards = player.getExpansions("dcfozong");
-			if (!cards.length) {
-				event._result = { bool: false };
-			} else {
-				target
-					.chooseButton(['###佛宗###<div class="text center">获得一张牌并令' + get.translation(player) + "回复1点体力，或点击“取消”令其失去1点体力</div>", cards])
-					.set("ai", button => {
-						if (_status.event.refuse) {
-							return get.value(button.link) - 7.5;
-						}
-						return get.value(button.link);
-					})
-					.set("refuse", get.attitude(target, player) < 1 && get.effect(player, { name: "losehp" }, player, target) > 0);
-			}
-			"step 4";
-			if (result.bool) {
-				var card = result.links[0];
-				target.gain(card, "give", player);
-				player.recover(target);
-			} else {
-				player.loseHp();
-			}
-			"step 5";
-			if (targets.length) {
-				event.goto(3);
+
+			const targets = game.filterPlayer(target => target !== player).sortBySeat(player);
+			await game.delayx();
+			for (const target of targets) {
+				player.line(target);
+				const cards = player.getExpansions("dcfozong");
+				let choiceResult = { bool: false };
+				if (cards.length) {
+					const refuse = get.attitude(target, player) < 1 && get.effect(player, { name: "losehp" }, player, target) > 0;
+					choiceResult = await target
+						.chooseButton({
+							createDialog: [`###佛宗###<div class="text center">获得一张牌并令${get.translation(player)}回复1点体力，或点击“取消”令其失去1点体力</div>`, cards],
+							ai: button => get.value(button.link) - (refuse ? 7.5 : 0),
+						})
+						.forResult();
+				}
+				if (!choiceResult.bool) {
+					await player.loseHp();
+					continue;
+				}
+				const card = choiceResult.links[0];
+				await target.gain({
+					cards: [card],
+					source: player,
+					animate: "give",
+				});
+				await player.recover({ source: target });
 			}
 		},
 		ai: { halfneg: true },
