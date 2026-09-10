@@ -42965,121 +42965,96 @@ const skills = {
 		audio: 2,
 		trigger: { player: "useCard" },
 		filter(event, player) {
-			if (!(player == _status.currentPhase || player.hasSkill("yaner_zhiren"))) {
+			if (player !== _status.currentPhase && !player.hasSkill("yaner_zhiren")) {
 				return false;
 			}
-			return (
-				player
-					.getHistory("useCard", evt => {
-						return !evt.cards?.length || evt.card.isCard;
-					})
-					.indexOf(event) == 0
-			);
+			return player.getHistory("useCard", evt => !evt.cards?.length || evt.card.isCard).indexOf(event) === 0;
 		},
 		frequent: true,
 		locked: false,
-		content() {
-			"step 0";
-			event.num = get.translation(trigger.card.name).length;
-			player.chooseToGuanxing(event.num);
-			if (event.num < 2) {
-				event.finish();
+		async content(event, trigger, player) {
+			const nameLength = get.translation(trigger.card.name).length;
+			await player.chooseToGuanxing(nameLength);
+			if (nameLength < 2) {
+				return;
 			}
-			"step 1";
-			if (
-				!game.hasPlayer(function (current) {
-					return current.countDiscardableCards(player, "e") > 0;
-				})
-			) {
-				event.goto(3);
-			} else {
-				player
-					.chooseTarget("织纴：是否弃置一名角色装备区内的一张牌？", function (card, player, target) {
-						return target.countDiscardableCards(player, "e") > 0;
-					})
-					.set("ai", function (target) {
-						var player = _status.event.player,
-							att = get.attitude(player, target),
-							es = target.getCards("e"),
-							val = 0;
-						for (var i of es) {
-							var eff = -(get.value(i, target) - 0.1) * att;
-							if (eff > val) {
-								val = eff;
+
+			let shouldChooseJudge = true;
+			if (game.hasPlayer(current => current.hasDiscardableCards(player, "e"))) {
+				const result = await player
+					.chooseTarget({
+						prompt: "织纴：是否弃置一名角色装备区内的一张牌？",
+						filterTarget: (_card, player, target) => target.hasDiscardableCards(player, "e"),
+						ai: target => {
+							const attitude = get.attitude(player, target);
+							const cards = target.getCards("e");
+							let effect = 0;
+							for (const card of cards) {
+								effect = -(get.value(card, target) - 0.1) * attitude;
 							}
-						}
-						return eff;
+							return effect;
+						},
+					})
+					.forResult();
+				if (result.bool) {
+					const target = result.targets[0];
+					player.addExpose(0.15);
+					player.line(target, "green");
+					await player.discardPlayerCard({
+						target,
+						position: "e",
+						forced: true,
 					});
-			}
-			"step 2";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.addExpose(0.15);
-				player.line(target, "green");
-				player.discardPlayerCard(target, "e", true);
-			} else {
-				event.goto(5);
-			}
-			if (event.num < 3) {
-				event.finish();
-			} else if (get.mode() == "guozhan") {
-				event.goto(5);
-			}
-			"step 3";
-			if (
-				!game.hasPlayer(function (current) {
-					return current.countDiscardableCards(player, "j") > 0;
-				})
-			) {
-				if (event.num < 3) {
-					event.finish();
-				} else {
-					event.goto(5);
 				}
-			} else {
-				player
-					.chooseTarget("织纴：是否弃置一名角色判定区内的一张牌？", function (card, player, target) {
-						return target.countDiscardableCards(player, "j") > 0;
-					})
-					.set("ai", function (target) {
-						var player = _status.event.player,
-							att = get.attitude(player, target),
-							es = target.getCards("j"),
-							val = 0;
-						for (var i of es) {
-							var eff = -get.effect(target, i, target, player);
-							if (eff > val) {
-								val = eff;
+				if (nameLength < 3) {
+					return;
+				}
+				if (!result.bool || get.mode() === "guozhan") {
+					shouldChooseJudge = false;
+				}
+			}
+
+			if (shouldChooseJudge && game.hasPlayer(current => current.hasDiscardableCards(player, "j"))) {
+				const result = await player
+					.chooseTarget({
+						prompt: "织纴：是否弃置一名角色判定区内的一张牌？",
+						filterTarget: (_card, player, target) => target.hasDiscardableCards(player, "j"),
+						ai: target => {
+							const cards = target.getCards("j");
+							let effect = 0;
+							for (const card of cards) {
+								effect = -get.effect(target, card, target, player);
 							}
-						}
-						return eff;
+							return effect;
+						},
+					})
+					.forResult();
+				if (result.bool) {
+					const target = result.targets[0];
+					player.addExpose(0.15);
+					player.line(target, "green");
+					await player.discardPlayerCard({
+						target,
+						position: "j",
+						forced: true,
 					});
+				}
 			}
-			"step 4";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.addExpose(0.15);
-				player.line(target, "green");
-				player.discardPlayerCard(target, "j", true);
+			if (nameLength < 3) {
+				return;
 			}
-			if (event.num < 3) {
-				event.finish();
+
+			await player.recover();
+			if (nameLength < 4) {
+				return;
 			}
-			"step 5";
-			player.recover();
-			if (event.num < 4) {
-				event.finish();
-			}
-			"step 6";
-			player.draw(get.mode() == "guozhan" ? 2 : 3);
+			await player.draw(get.mode() === "guozhan" ? 2 : 3);
 		},
 		mod: {
 			aiOrder(player, card, num) {
 				if (
-					player == _status.currentPhase &&
-					!player.getHistory("useCard", function (evt) {
-						return evt.card.isCard;
-					}).length
+					player === _status.currentPhase &&
+					!player.getHistory("useCard", evt => evt.card.isCard).length
 				) {
 					return num + Math.pow(get.translation(card.name).length, 2);
 				}
