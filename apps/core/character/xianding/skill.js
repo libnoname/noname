@@ -32513,140 +32513,123 @@ const skills = {
 			player: ["phaseZhunbeiBegin", "damageEnd"],
 		},
 		frequent: true,
-		content() {
-			"step 0";
-			player.draw(4);
-			event.count = 0;
-			event.equipCount = {};
-			game.countPlayer(current => {
-				event.equipCount[current.playerid] = current.countCards("e");
-			}, true);
-			"step 1";
-			if (!player.countCards("he")) {
-				event.finish();
-			} else {
-				player.chooseCard("四论：选择一张牌（" + (event.count + 1) + "/" + "4）", "然后选择将此牌置于场上或牌堆的两端", true, "he").set("ai", card => {
-					var player = _status.event.player;
-					if (["equip", "delay"].includes(get.type(card)) && player.hasValueTarget(card)) {
-						return 50;
-					}
-					return 50 - get.value(card);
-				});
+		async content(event, trigger, player) {
+			await player.draw(4);
+			const equipCount = {};
+			for (const current of game.players) {
+				equipCount[current.playerid] = current.countCards("e");
 			}
-			"step 2";
-			if (result.bool) {
-				var card = result.cards[0];
-				event.card = card;
-				event.count++;
-				var choices = ["牌堆顶", "牌堆底"];
-				var type = get.type(card);
-				if (
-					(type == "equip" &&
-						game.hasPlayer(current => {
-							return current.canEquip(card);
-						})) ||
-					(type == "delay" &&
-						game.hasPlayer(current => {
-							return current.canAddJudge(card);
-						}))
-				) {
+			for (let count = 0; count < 4; count++) {
+				if (!player.hasCards("he")) {
+					break;
+				}
+				const cardResult = await player
+					.chooseCard({
+						prompt: `四论：选择一张牌（${count + 1}/4）`,
+						prompt2: "然后选择将此牌置于场上或牌堆的两端",
+						forced: true,
+						position: "he",
+						ai: card => {
+							if (["equip", "delay"].includes(get.type(card)) && player.hasValueTarget(card)) {
+								return 50;
+							}
+							return 50 - get.value(card);
+						},
+					})
+					.forResult();
+				if (!cardResult.bool) {
+					break;
+				}
+				const card = cardResult.cards[0];
+				const type = get.type(card);
+				const choices = ["牌堆顶", "牌堆底"];
+				if ((type === "equip" && game.hasPlayer(current => current.canEquip(card))) || (type === "delay" && game.hasPlayer(current => current.canAddJudge(card)))) {
 					choices.unshift("场上");
 				}
-				player
-					.chooseControl(choices)
-					.set("prompt", "请选择要将" + get.translation(card) + "置于的位置")
-					.set("ai", () => {
-						return _status.event.choice;
-					})
-					.set(
-						"choice",
-						(function () {
-							if (["equip", "delay"].includes(get.type(card)) && player.hasValueTarget(card) && choices.includes("场上")) {
-								return "场上";
-							}
-							var val = get.value(card);
-							var next = _status.currentPhase;
-							if (next) {
-								if (trigger.name == "damage") {
-									next = next.getNext();
-								}
-								if ((get.attitude(player, next) > 0 && val >= 6) || (get.attitude(player, next) < 0 && val <= 4.5)) {
-									return "牌堆顶";
-								}
-							}
-							return "牌堆底";
-						})()
-					);
-			}
-			"step 3";
-			if (result.control == "场上") {
-				var type = get.type(card);
-				player
-					.chooseTarget("将" + get.translation(card) + "置于一名角色的场上", true, (card, player, target) => {
-						return _status.event.targets.includes(target);
-					})
-					.set(
-						"targets",
-						game.filterPlayer(current => {
-							if (type == "equip") {
-								return current.canEquip(card);
-							}
-							if (type == "delay") {
-								return current.canAddJudge(card);
-							}
-							return false;
-						})
-					)
-					.set("ai", target => {
-						var player = _status.event.player;
-						var card = _status.event.card;
-						return (
-							get.attitude(player, target) *
-							(get.type(card) == "equip"
-								? get.value(card, target)
-								: get.effect(
-										target,
-										{
-											name: card.viewAs || card.name,
-											cards: [card],
-										},
-										target,
-										target
-									))
-						);
-					})
-					.set("card", card);
-			} else {
-				player.$throw(card, 1000);
-				var next = player.lose(card, ui.cardPile, "visible");
-				if (result.control == "牌堆顶") {
-					next.insert_card = true;
-				}
-				game.log(player, "将", card, "置于了", "#y" + result.control);
-			}
-			"step 4";
-			if (result.bool && result.targets && result.targets.length) {
-				var target = result.targets[0];
-				player.line(target);
-				player.$give(card, target, false);
-				if (get.type(card) == "equip") {
-					target.equip(card);
+
+				let preferredChoice = "牌堆底";
+				if (["equip", "delay"].includes(type) && player.hasValueTarget(card) && choices.includes("场上")) {
+					preferredChoice = "场上";
 				} else {
-					target.addJudge(card);
+					const value = get.value(card);
+					let nextPlayer = _status.currentPhase;
+					if (nextPlayer) {
+						if (trigger.name === "damage") {
+							nextPlayer = nextPlayer.getNext();
+						}
+						if ((get.attitude(player, nextPlayer) > 0 && value >= 6) || (get.attitude(player, nextPlayer) < 0 && value <= 4.5)) {
+							preferredChoice = "牌堆顶";
+						}
+					}
 				}
-			}
-			"step 5";
-			game.countPlayer(current => {
-				var count = current.countCards("e");
-				var prevCount = event.equipCount[current.playerid] || 0;
-				if (count != prevCount) {
-					current.link(false);
-					current.turnOver(false);
+				const { control } = await player
+					.chooseControl({
+						controls: choices,
+						prompt: `请选择要将${get.translation(card)}置于的位置`,
+						ai: () => preferredChoice,
+					})
+					.forResult();
+
+				if (control === "场上") {
+					const validTargets = game.filterPlayer(current => {
+						if (type === "equip") {
+							return current.canEquip(card);
+						}
+						if (type === "delay") {
+							return current.canAddJudge(card);
+						}
+						return false;
+					});
+					const targetResult = await player
+						.chooseTarget({
+							prompt: `将${get.translation(card)}置于一名角色的场上`,
+							forced: true,
+							filterTarget: (_card, _player, target) => validTargets.includes(target),
+							ai: target =>
+								get.attitude(player, target) *
+								(type === "equip"
+									? get.value(card, target)
+									: get.effect(
+											target,
+											{
+												name: card.viewAs || card.name,
+												cards: [card],
+											},
+											target,
+											target
+										)),
+						})
+						.forResult();
+					if (targetResult.bool && targetResult.targets?.length) {
+						const target = targetResult.targets[0];
+						player.line(target);
+						player.$give(card, target, false);
+						if (type === "equip") {
+							await target.equip(card);
+						} else {
+							await target.addJudge(card);
+						}
+					}
+				} else {
+					player.$throw(card, 1000);
+					await player.lose({
+						cards: [card],
+						position: ui.cardPile,
+						visible: true,
+						insert_card: control === "牌堆顶",
+					});
+					game.log(player, "将", card, "置于了", `#y${control}`);
 				}
-				event.equipCount[current.playerid] = count;
-			});
-			if (event.count < 4) {
-				event.goto(1);
+
+				for (const current of game.filterPlayer()) {
+					const currentEquipCount = current.countCards("e");
+					const previousEquipCount = equipCount[current.playerid] || 0;
+					if (currentEquipCount !== previousEquipCount) {
+						await current.link(false);
+						await current.turnOver(false);
+					}
+					equipCount[current.playerid] = currentEquipCount;
+				}
 			}
 		},
 	},
