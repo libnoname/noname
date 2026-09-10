@@ -29216,9 +29216,9 @@ const skills = {
 			markcount: "expansion",
 		},
 		onremove(player, skill) {
-			var cards = player.getExpansions(skill);
+			const cards = player.getExpansions(skill);
 			if (cards.length) {
-				player.loseToDiscardpile(cards);
+				player.loseToDiscardpile({ cards });
 			}
 		},
 		group: "dclingxi_effect",
@@ -31320,97 +31320,89 @@ const skills = {
 			},
 		},
 		onremove(player, skill) {
-			var cards = player.getExpansions(skill);
+			const cards = player.getExpansions(skill);
 			if (cards.length) {
-				player.loseToDiscardpile(cards);
+				player.loseToDiscardpile({ cards });
 			}
 		},
 		audio: "xingwu",
 		trigger: { player: "phaseDiscardBegin" },
 		filter(event, player) {
-			return player.countCards("h");
+			return player.hasCards("h");
 		},
 		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseCard("h", get.prompt("dcxingwu"), "将一张手牌作为“舞”置于武将牌上")
-				.set("ai", function (card) {
-					var att = 1,
-						list = [];
-					for (var i of player.getExpansions("dcxingwu")) {
-						if (!list.includes(get.suit(i))) {
-							list.push(get.suit(i));
-						}
-					}
-					if (!list.includes(get.suit(card))) {
-						att = 2;
-					}
-					if (_status.event.goon) {
-						return (20 - get.value(card)) * att;
-					}
-					return (7 - get.value(card)) * att;
+		async content(event, trigger, player) {
+			const goon = player.needsToDiscard() || player.getExpansions("dcxingwu").length === 2;
+			const cardResult = await player
+				.chooseCard({
+					position: "h",
+					prompt: get.prompt("dcxingwu"),
+					prompt2: "将一张手牌作为“舞”置于武将牌上",
+					ai: card => {
+						const suits = player.getExpansions("dcxingwu").map(card => get.suit(card));
+						const multiplier = suits.includes(get.suit(card)) ? 1 : 2;
+						return ((goon ? 20 : 7) - get.value(card)) * multiplier;
+					},
 				})
-				.set("goon", player.needsToDiscard() || player.getExpansions("dcxingwu").length == 2);
-			"step 1";
-			if (result.bool) {
+				.forResult();
+			if (cardResult.bool) {
 				player.logSkill("dcxingwu");
-				var cards = result.cards;
-				player.addToExpansion(cards, player, "give").gaintag.add("dcxingwu");
+				await player.addToExpansion({
+					cards: cardResult.cards,
+					source: player,
+					animate: "give",
+					gaintag: ["dcxingwu"],
+				});
 			}
-			"step 2";
-			game.delayx();
-			if (player.getExpansions("dcxingwu").length > 2) {
-				player.chooseButton(["是否移去三张“舞”并发射核弹？", player.getExpansions("dcxingwu")], 3).ai = button => {
-					if (
-						game.hasPlayer(function (current) {
-							return get.attitude(player, current) < 0;
-						})
-					) {
-						return 1;
-					}
-					return 0;
-				};
-			} else {
-				event.finish();
+			await game.delayx();
+			const expansionCards = player.getExpansions("dcxingwu");
+			if (expansionCards.length <= 2) {
+				return;
 			}
-			"step 3";
-			if (result.bool) {
-				event.cards = result.links;
-				var list = [],
-					str = ["<span class='texiaotext' style='color:#66FF00'>小型</span>", "<span class='texiaotext' style='color:#6666FF'>中型</span>", "<span class='texiaotext' style='color:#FF0000'>巨型</span>"];
-				for (var i of event.cards) {
-					if (!list.includes(get.suit(i))) {
-						list.push(get.suit(i));
-					}
-				}
-				player.chooseTarget("请选择" + str[list.length - 1] + "核弹的投射的目标（伤害：" + list.length + "点）", lib.filter.notMe, true).ai = target => {
-					var att = 1;
-					if (target.sex == "male") {
-						att = 1.5;
-					}
-					if ((target.hp == target.sex) == "male" ? 2 : 1) {
-						att *= 1.2;
-					}
-					if (get.mode() == "identity" && player.identity == "fan" && target.isZhu) {
-						att *= 3;
-					}
-					return -get.attitude(player, target) * att * Math.max(1, target.countCards("e"));
-				};
+
+			const buttonResult = await player
+				.chooseButton({
+					createDialog: ["是否移去三张“舞”并发射核弹？", expansionCards],
+					selectButton: 3,
+					ai: () => (game.hasPlayer(current => get.attitude(player, current) < 0) ? 1 : 0),
+				})
+				.forResult();
+			if (!buttonResult.bool) {
+				return;
 			}
-			"step 4";
-			if (result.bool) {
-				var list = [];
-				for (var i of event.cards) {
-					if (!list.includes(get.suit(i))) {
-						list.push(get.suit(i));
-					}
-				}
-				player.loseToDiscardpile(event.cards);
-				player.logSkill("dcxingwu", result.targets[0]);
-				player.discardPlayerCard(result.targets[0], "e", result.targets[0].countCards("e"), true);
-				result.targets[0].damage(result.targets[0].sex == "female" ? 1 : list.length);
+
+			const cards = buttonResult.links;
+			const suits = cards.map(card => get.suit(card)).unique();
+			const sizes = ["<span class='texiaotext' style='color:#66FF00'>小型</span>", "<span class='texiaotext' style='color:#6666FF'>中型</span>", "<span class='texiaotext' style='color:#FF0000'>巨型</span>"];
+			const targetResult = await player
+				.chooseTarget({
+					prompt: `请选择${sizes[suits.length - 1]}核弹的投射的目标（伤害：${suits.length}点）`,
+					filterTarget: lib.filter.notMe,
+					forced: true,
+					ai: target => {
+						let multiplier = target.sex === "male" ? 1.5 : 1;
+						multiplier *= 1.2;
+						if (get.mode() === "identity" && player.identity === "fan" && target.isZhu) {
+							multiplier *= 3;
+						}
+						return -get.attitude(player, target) * multiplier * Math.max(1, target.countCards("e"));
+					},
+				})
+				.forResult();
+			if (!targetResult.bool) {
+				return;
 			}
+
+			const target = targetResult.targets[0];
+			await player.loseToDiscardpile({ cards });
+			player.logSkill("dcxingwu", target);
+			await player.discardPlayerCard({
+				target,
+				position: "e",
+				selectButton: target.countCards("e"),
+				forced: true,
+			});
+			await target.damage(target.sex === "female" ? 1 : suits.length);
 		},
 	},
 	dcluoyan: {
