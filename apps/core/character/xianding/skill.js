@@ -7220,12 +7220,17 @@ const skills = {
 	yizhao: {
 		audio: 2,
 		trigger: {
-			player: ["useCard", "respond"],
+			player: ["useCard", "respond", "loseEnd"],
+			global: "loseAsyncEnd"
 		},
 		forced: true,
 		filter(event, player) {
-			const number = get.number(event.card);
-			return typeof number == "number" && number > 0;
+			if (["useCard", "respond"].includes(event.name)) {
+				const number = get.number(event.card);
+				return typeof number == "number" && number > 0;
+			}
+			if (event.type != "discard") return false;
+			return event.getl?.(player)?.cards2?.some(card => typeof get.number(card) == "number" && get.number(card) > 0);
 		},
 		marktext: "黄",
 		intro: {
@@ -7238,7 +7243,12 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			event.num = player.countMark("yizhao");
-			player.addMark("yizhao", get.number(trigger.card));
+			if (["useCard", "respond"].includes(trigger.name)) {
+				player.addMark("yizhao", get.number(trigger.card));
+			} else {
+				const cards = trigger.getl(player).cards2;
+				player.addMark("yizhao", cards.reduce((sum, card) => sum + (typeof get.number(card) == "number" ? get.number(card) : 0 ), 0));
+			}
 			const num = Math.floor(event.num / 10) % 10;
 			const num2 = Math.floor(player.countMark("yizhao") / 10) % 10;
 			if (num != num2) {
