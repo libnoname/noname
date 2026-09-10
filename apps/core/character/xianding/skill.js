@@ -38252,52 +38252,35 @@ const skills = {
 		direct: true,
 		locked: false,
 		filter(event, player) {
-			var target = event.player;
-			if (
-				(target.hasSkill("dctongguan_gangying") &&
-					(target.countCards("h") > target.hp ||
-						game.getGlobalHistory("changeHp", function (evt) {
-							return evt.player == target && (evt.getParent().name == "recover" || target.countCards("h") > target.hp);
-						}).length > 0)) ||
-				(target.hasSkill("dctongguan_wuyong") && target.getHistory("sourceDamage").length) ||
-				(target.hasSkill("dctongguan_duomou") && target.getHistory("gain", evt => evt.getParent().name == "draw" && evt.getParent("phaseDraw").name != "phaseDraw").length)
-			) {
+			const target = event.player;
+			if ((target.hasSkill("dctongguan_gangying") && (target.countCards("h") > target.hp || game.getGlobalHistory("changeHp", evt => evt.player === target && evt.getParent().name === "recover").length > 0)) || (target.hasSkill("dctongguan_wuyong") && target.getHistory("sourceDamage").length) || (target.hasSkill("dctongguan_duomou") && target.getHistory("gain", evt => evt.getParent().name === "draw" && evt.getParent("phaseDraw").name !== "phaseDraw").length)) {
 				return true;
 			}
-			var guojue = false,
-				renzhi = false;
-			game.countPlayer2(current => {
-				if (current == target) {
-					return false;
+			const { guojue, renzhi } = lib.skill.dcmengjie.getSpecialProperties(target);
+			return (target.hasSkill("dctongguan_guojue") && guojue) || (target.hasSkill("dctongguan_renzhi") && renzhi);
+		},
+		getSpecialProperties(target) {
+			let guojue = false;
+			let renzhi = false;
+			for (const current of game.filterPlayer2()) {
+				if (current === target) {
+					continue;
 				}
 				if (
 					!guojue &&
 					current.hasHistory("lose", evt => {
-						if (evt.type == "discard") {
-							if ((evt.discarder || evt.getParent(2).player) != target) {
-								return false;
-							}
-							if (!evt.getl(current).cards2.length) {
-								return false;
-							}
-							return true;
-						} else if (evt.type == "gain") {
-							var evtx = evt.getParent();
-							if (evtx.giver || evtx.getParent().name == "gift") {
-								return false;
-							}
-							var cards = evtx.getg(target);
-							if (!cards.length) {
-								return false;
-							}
-							var cards2 = evtx.getl(current).cards2;
-							for (var card of cards2) {
-								if (cards.includes(card)) {
-									return true;
-								}
-							}
+						if (evt.type === "discard") {
+							return (evt.discarder || evt.getParent(2).player) === target && Boolean(evt.getl(current).cards2.length);
 						}
-						return false;
+						if (evt.type !== "gain") {
+							return false;
+						}
+						const gainEvent = evt.getParent();
+						if (gainEvent.giver || gainEvent.getParent().name === "gift") {
+							return false;
+						}
+						const cards = gainEvent.getg(target);
+						return cards.length > 0 && gainEvent.getl(current).cards2.some(card => cards.includes(card));
 					})
 				) {
 					guojue = true;
@@ -38305,178 +38288,137 @@ const skills = {
 				if (
 					!renzhi &&
 					current.hasHistory("gain", evt => {
-						if (evt.giver != target || evt.getParent().name == "gift") {
+						if (evt.giver !== target || evt.getParent().name === "gift") {
 							return false;
 						}
-						return evt.cards.length;
+						return Boolean(evt.cards.length);
 					})
 				) {
 					renzhi = true;
 				}
-			});
-			return (target.hasSkill("dctongguan_guojue") && guojue) || (target.hasSkill("dctongguan_renzhi") && renzhi);
+			}
+			return { guojue, renzhi };
 		},
 		rules: [
 			target => target.getHistory("sourceDamage").length,
 			target =>
 				target.countCards("h") > target.hp ||
-				game.getGlobalHistory("changeHp", function (evt) {
-					return evt.player == target && evt.getParent().name == "recover";
-				}).length > 0 ||
-				target.countCards("h") > target.hp,
-			target => target.getHistory("gain", evt => evt.getParent().name == "draw" && evt.getParent("phaseDraw").name != "phaseDraw").length,
+				game.getGlobalHistory("changeHp", evt => evt.player === target && evt.getParent().name === "recover").length > 0,
+			target => target.getHistory("gain", evt => evt.getParent().name === "draw" && evt.getParent("phaseDraw").name !== "phaseDraw").length,
 			(target, bool) => bool,
 			(target, bool) => bool,
 		],
-		content() {
-			"step 0";
-			event.nowProperty = 0;
-			var target = trigger.player;
-			var guojue = false,
-				renzhi = false;
-			game.countPlayer2(current => {
-				if (current == target) {
-					return false;
+		async content(event, trigger, player) {
+			const target = trigger.player;
+			const skills = lib.skill.dctongguan.derivation;
+			const { guojue, renzhi } = lib.skill.dcmengjie.getSpecialProperties(target);
+			const specialProperties = [guojue, renzhi];
+			for (let index = 0; index < skills.length; index++) {
+				if (!target.hasSkill(skills[index]) || !lib.skill.dcmengjie.rules[index](target, specialProperties[index - 3])) {
+					continue;
 				}
-				if (
-					!guojue &&
-					current.hasHistory("lose", evt => {
-						if (evt.type == "discard") {
-							if ((evt.discarder || evt.getParent(2).player) != target) {
-								return false;
-							}
-							if (!evt.getl(current).cards2.length) {
-								return false;
-							}
-							return true;
-						} else if (evt.type == "gain") {
-							var evtx = evt.getParent();
-							if (evtx.giver || evtx.getParent().name == "gift") {
-								return false;
-							}
-							var cards = evtx.getg(target);
-							if (!cards.length) {
-								return false;
-							}
-							var cards2 = evtx.getl(current).cards2;
-							for (var card of cards2) {
-								if (cards.includes(card)) {
-									return true;
-								}
-							}
+				switch (index) {
+					case 0: {
+						if (!game.hasPlayer(current => current !== player)) {
+							break;
 						}
-						return false;
-					})
-				) {
-					guojue = true;
+						const result = await player
+							.chooseTarget({
+								prompt: "梦解：对一名其他角色造成1点伤害",
+								forced: true,
+								filterTarget: lib.filter.notMe,
+								ai: target => get.damageEffect(target, player, player),
+							})
+							.forResult();
+						if (!result.bool) {
+							break;
+						}
+						const damageTarget = result.targets[0];
+						player.logSkill("dcmengjie", damageTarget);
+						await damageTarget.damage();
+						break;
+					}
+					case 1: {
+						if (!game.hasPlayer(target => target.isDamaged())) {
+							break;
+						}
+						const result = await player
+							.chooseTarget({
+								prompt: "梦解：令一名角色回复1点体力",
+								filterTarget: (_card, _player, target) => target.isDamaged(),
+								ai: target => get.recoverEffect(target, player, player),
+							})
+							.forResult();
+						if (!result.bool) {
+							break;
+						}
+						const recoverTarget = result.targets[0];
+						player.logSkill("dcmengjie", recoverTarget);
+						await recoverTarget.recover();
+						break;
+					}
+					case 2:
+						player.logSkill("dcmengjie");
+						await player.draw(2);
+						break;
+					case 3: {
+						if (!game.hasPlayer(target => target.hasDiscardableCards(player, "hej"))) {
+							break;
+						}
+						const result = await player
+							.chooseTarget({
+								prompt: "梦解：弃置一名角色区域内至多两张牌",
+								forced: true,
+								filterTarget: (_card, player, target) => target.hasDiscardableCards(player, "hej"),
+								ai: target => get.effect(target, { name: "guohe" }, player, player),
+							})
+							.forResult();
+						if (!result.bool) {
+							break;
+						}
+						const discardTarget = result.targets[0];
+						player.logSkill("dcmengjie", discardTarget);
+						await player.discardPlayerCard({
+							target: discardTarget,
+							forced: true,
+							position: "hej",
+							selectButton: [1, 2],
+						});
+						break;
+					}
+					case 4: {
+						if (!game.hasPlayer(current => current !== player)) {
+							break;
+						}
+						const result = await player
+							.chooseTarget({
+								prompt: "梦解：令一名其他角色将手牌补至上限",
+								forced: true,
+								filterTarget: (_card, player, target) => target !== player,
+								ai: target => {
+									let attitude = get.attitude(_status.event.player, target);
+									if (target.hasSkillTag("nogain")) {
+										attitude /= 6;
+									}
+									if (attitude > 2) {
+										return Math.min(5, target.maxHp) - target.countCards("h");
+									}
+									return attitude / 3;
+								},
+							})
+							.forResult();
+						if (!result.bool) {
+							break;
+						}
+						const drawTarget = result.targets[0];
+						player.logSkill("dcmengjie", drawTarget);
+						const num = Math.min(5, drawTarget.maxHp - drawTarget.countCards("h"));
+						await drawTarget.draw(num);
+						break;
+					}
 				}
-				if (
-					!renzhi &&
-					current.hasHistory("gain", evt => {
-						if (evt.giver != target || evt.getParent().name == "gift") {
-							return false;
-						}
-						return evt.cards.length;
-					})
-				) {
-					renzhi = true;
-				}
-			});
-			event.guojue = guojue;
-			event.renzhi = renzhi;
-			"step 1";
-			if (event.nowProperty >= 5) {
-				event.finish();
-				return;
+				await game.delayx();
 			}
-			var skills = lib.skill.dctongguan.derivation;
-			if (trigger.player.hasSkill(skills[event.nowProperty]) && lib.skill.dcmengjie.rules[event.nowProperty](trigger.player, event[event.nowProperty == 3 ? "guojue" : "renzhi"])) {
-				event.goto(2 + event.nowProperty * 2);
-			} else {
-				event.redo();
-			}
-			event.nowProperty++;
-			"step 2";
-			if (!game.hasPlayer(current => current != player)) {
-				event._result = { bool: false };
-			} else {
-				player.chooseTarget("梦解：对一名其他角色造成1点伤害", true, lib.filter.notMe).set("ai", target => get.damageEffect(target, player, player));
-			}
-			"step 3";
-			if (result.bool) {
-				player.logSkill("dcmengjie", result.targets[0]);
-				result.targets[0].damage();
-			}
-			game.delayx();
-			event.goto(1);
-			"step 4";
-			if (game.hasPlayer(target => target != player && target.isDamaged())) {
-				player
-					.chooseTarget("梦解：令一名角色回复1点体力", function (card, player, target) {
-						return target.isDamaged();
-					})
-					.set("ai", target => get.recoverEffect(target, player, player));
-			} else {
-				event._result = { bool: false };
-			}
-			"step 5";
-			if (result.bool) {
-				player.logSkill("dcmengjie", result.targets[0]);
-				result.targets[0].recover();
-			}
-			game.delayx();
-			event.goto(1);
-			"step 6";
-			player.logSkill("dcmengjie");
-			player.draw(2);
-			"step 7";
-			game.delayx();
-			event.goto(1);
-			"step 8";
-			if (game.hasPlayer(target => target.countDiscardableCards(player, "hej"))) {
-				player
-					.chooseTarget("梦解：弃置一名角色区域内至多两张牌", true, (card, player, target) => {
-						return target.countDiscardableCards(player, "hej");
-					})
-					.set("ai", target => get.effect(target, { name: "guohe" }, player, player));
-			} else {
-				event._result = { bool: false };
-			}
-			"step 9";
-			if (result.bool) {
-				player.logSkill("dcmengjie", result.targets[0]);
-				player.discardPlayerCard(result.targets[0], true, "hej", [1, 2]);
-			}
-			game.delayx();
-			event.goto(1);
-			"step 10";
-			if (!game.hasPlayer(current => current != player)) {
-				event._result = { bool: false };
-			} else {
-				player
-					.chooseTarget("梦解：令一名其他角色将手牌补至上限", true, (card, player, target) => {
-						return target != player;
-					})
-					.set("ai", target => {
-						var att = get.attitude(_status.event.player, target);
-						if (target.hasSkillTag("nogain")) {
-							att /= 6;
-						}
-						if (att > 2) {
-							return Math.min(5, target.maxHp) - target.countCards("h");
-						}
-						return att / 3;
-					});
-			}
-			"step 11";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("dcmengjie", target);
-				var num = Math.min(5, target.maxHp - target.countCards("h"));
-				target.draw(num);
-			}
-			game.delayx();
-			event.goto(1);
 		},
 		ai: {
 			combo: "dctongguan",
