@@ -120,7 +120,7 @@ window.noname_character_replace = {
 	hansui: ["hansui", "re_hansui", "xin_hansui", "jsrg_hansui", "wn_hansui"],
 	haomeng: ["haomeng", "tw_haomeng"],
 	hejin: ["hejin", "re_hejin", "tw_hejin", "tw_jsrg_hejin", "jsrg_hejin"],
-	heqi: ["re_heqi", "heqi"],
+	heqi: ["re_heqi", "heqi", "pot_heqi"],
 	huaman: ["huaman", "sp_huaman"],
 	huangchengyan: ["huangchengyan", "dc_huangchengyan", "ns_huangchengyan"],
 	std_huangchong: ["std_huangchong", "zj_huangchong"],

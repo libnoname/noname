@@ -2775,6 +2775,7 @@ const skills = {
 			await target.damage({ num: target.maxHp });
 			player.setStorage("yuli", [], true);
 		},
+		ai: { combo: "tingwei" },
 	},
 	//手杀神姜维
 	mbtiantao: {
@@ -6256,7 +6257,7 @@ const skills = {
 					return event.name == "damage" ? event.player : event.target;
 				},
 				filter(event, player, name) {
-					if (!event.card?.name === "sha" || !event.card.storage?.dbchongjian) {
+					if (!event.card || event.card.name !== "sha" || !event.card.storage?.dbchongjian) {
 						return false;
 					}
 					return event.player.hasGainableCards(player, "e") || name == "useCardToPlayer";

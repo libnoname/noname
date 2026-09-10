@@ -285,7 +285,7 @@ const skills = {
 			return event.targets.reduce((sum, target) => sum + get.effect(target, event.card, player, player), 0) > 0;
 		},
 		usable: 1,
-		async content(event, trigger) {
+		async content(event, trigger, player) {
 			trigger.effectCount++;
 			game.log(trigger.card, "额外结算一次");
 		},

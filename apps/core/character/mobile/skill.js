@@ -25973,6 +25973,7 @@ const skills = {
 			player.$fullscreenpop("败移", "thunder");
 		},
 		async content(event, trigger, player) {
+			const { targets } = event;
 			player.awakenSkill(event.name);
 			game.broadcastAll(
 				function (target1, target2) {

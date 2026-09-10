@@ -3,6 +3,148 @@ import { lib, game, ui, get, ai, _status } from "noname";
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
 	//potential--潜在, 潜力, 可能, 电位, 潜能, 势
+	//势贺齐
+	potshanxi: {
+		audio: 4,
+		enable: "phaseUse",
+		filter(event, player) {
+			return player.hasCards("h", card => card.hasGaintag("potshanxi_tag"));
+		},
+		filterTarget(card, player, target) {
+			return !player.getStorage("potshanxi_used").includes(target) && player.canUse(card, target);
+		},
+		filterCard(card) {
+			return card.hasGaintag("potshanxi_tag");
+		},
+		position: "h",
+		check(card) {
+			return 114514 - get.value(card);
+		},
+		viewAs: {
+			name: "juedou",
+		},
+		async precontent(event, trigger, player) {
+			const target = event.result.targets[0];
+			player.addTempSkill("potshanxi_used", "phaseAnyAfter");
+			player.markAuto("potshanxi_used", [target]);
+		},
+		ai: {
+			combo: "potqizhou",
+			order: 6,
+			result: {
+				player: 1,
+				target: -1,
+			},
+		},
+		subSkill: {
+			used: { charlotte: true, onremove: true },
+			tag: {
+				charlotte: true,
+				silent: true,
+				popup: false,
+				trigger: { global: "phaseEnd" },
+				filter(event, player) {
+					return player.hasCards("h", card => card.hasGaintag("potshanxi_tag"));
+				},
+				async content(event, trigger, player) {
+					const cards = player.getCards("h", card => card.hasGaintag("potshanxi_tag"));
+					if (cards.length) {
+						await player.loseToDiscardpile({ cards });
+					}
+				},
+			},
+		},
+	},
+	potqizhou: {
+		audio: 2,
+		init(player, skill) {
+			game.addGlobalSkill("potshanxi_tag");
+		},
+		trigger: {
+			player: ["addJudgeAfter", "equipAfter"],
+		},
+		filter(event, player) {
+			return game.hasPlayer(current => current.hasCards("h"));
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt(event.skill),
+					prompt2: `将一名角色的一张手牌标记为应机牌`,
+					filterTarget(card, player, target) {
+						return target.hasCards("h");
+					},
+					ai(target) {
+						const player = get.player();
+						return get.effect(target, { name: "guohe_copy", position: "h" }, player, player) * (target.countCards("h") - target.countCards("h", card => card.hasGaintag("potshanxi_tag")));
+					},
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const result = await player
+				.choosePlayerCard({
+					prompt: `将${get.translation(target)}的一张手牌标记为应机牌`,
+					target,
+					forced: true,
+					position: "h",
+					ai(button) {
+						const { player, target } = get.event();
+						if (player == target && button.link.name == "sha") {
+							return 1;
+						}
+						return 1 + Math.random();
+					},
+				})
+				.set("target", target)
+				.forResult();
+			if (result?.bool && result.links?.length) {
+				const cards = result.links;
+				target.addGaintag(cards, "potshanxi_tag");
+				if (get.name(cards[0]) == "sha") {
+					player
+						.when({ player: "potqizhouAfter" })
+						.filter(evt => evt != event)
+						.step(async (event, trigger, player) => {
+							await player.draw({ num: 2, gaintag: ["potshanxi_tag"] });
+						});
+				}
+			}
+		},
+		locked: false,
+		//应机牌仅对自己可见所以只给自己加个ai
+		mod: {
+			aiOrder(player, card, num) {
+				if (get.itemtype(card) == "card" && card.hasGaintag("potshanxi_tag")) {
+					return num + 0.1;
+				}
+			},
+			aiValue(player, card, num) {
+				if (get.itemtype(card) == "card" && card.hasGaintag("potshanxi_tag")) {
+					return num / 114514;
+				}
+			},
+			aiUseful() {
+				return lib.skill.potqizhou.mod.aiValue.apply(this, arguments);
+			},
+		},
+		group: "potqizhou_draw",
+		subSkill: {
+			draw: {
+				audio: "potqizhou",
+				forced: true,
+				locked: false,
+				trigger: { player: "phaseDrawBegin2" },
+				filter(event, player) {
+					return !event.numFixed;
+				},
+				async content(event, trigger, player) {
+					await player.draw({ num: 2, gaintag: ["potshanxi_tag"] });
+				},
+			},
+		},
+	},
 	//势小乔
 	potheyun: {
 		audio: 2,

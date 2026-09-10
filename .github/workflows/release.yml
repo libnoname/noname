@@ -184,6 +184,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
+      - name: Make Gradle wrapper executable
+        run: chmod +x apps/mobile/android/gradlew
+
       - name: Install pnpm
         uses: pnpm/action-setup@v5
         with:

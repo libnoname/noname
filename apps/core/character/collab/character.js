@@ -543,7 +543,6 @@ const characters = {
 		group: "qun",
 		hp: 4,
 		skills: ["oldingxi", "olnengchen", "olhuojie"],
-		img: "image/character/jsrg_caocao.jpg",
 	},
 	jiangziya: {
 		sex: "male",
