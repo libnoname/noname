@@ -36529,70 +36529,68 @@ const skills = {
 			return 5 - get.value(card);
 		},
 		filterTarget(card, player, target) {
-			return target != player;
+			return target !== player;
 		},
 		filterCard: true,
-		content() {
-			"step 0";
-			var card = get.cardPile2(function (card) {
-				return get.subtype(card) == "equip1" && targets[0].hasUseTarget(card);
-			}, "random");
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			let card = get.cardPile2(card => get.subtype(card) === "equip1" && target.hasUseTarget(card), "random");
 			if (card) {
-				if (card.name == "qinggang" && !lib.inpile.includes("qibaodao")) {
+				if (card.name === "qinggang" && !lib.inpile.includes("qibaodao")) {
 					card.remove();
 					card = game.createCard("qibaodao", card.suit, card.number);
 				}
-				targets[0].chooseUseTarget(card, true, "nopopup", "nothrow");
+				await target.chooseUseTarget({
+					card,
+					forced: true,
+					nopopup: true,
+					throw: false,
+				});
 			} else {
 				player.chat("没有装备牌了吗");
 				game.log("但是牌堆里已经没有装备牌了！");
 			}
-			"step 1";
 			game.updateRoundNumber();
-			targets[0]
-				.chooseToUse(get.translation(player) + "对你发动了【连计】", { name: "sha" })
-				.set("targetRequired", true)
-				.set("complexSelect", true)
-				.set("filterTarget", function (card, player, target) {
-					if (target == _status.event.source) {
-						return false;
-					}
-					return lib.filter.filterTarget.apply(this, arguments);
+			const result = await target
+				.chooseToUse({
+					prompt: `${get.translation(player)}对你发动了【连计】`,
+					filterCard: { name: "sha" },
+					targetRequired: true,
+					complexSelect: true,
+					filterTarget: (card, current, target) => target !== player && lib.filter.filterTarget(card, current, target),
+					addCount: false,
+					source: player,
+					prompt2: `对除${get.translation(player)}外的一名角色使用一张【杀】，并将装备区内的武器牌交给其中一名目标角色；或点击“取消”，令${get.translation(player)}视为对你使用一张【杀】，并获得你装备区内的武器牌`,
 				})
-				.set("addCount", false)
-				.set("source", player)
-				.set("prompt2", "对除" + get.translation(player) + "外的一名角色使用一张【杀】，并将装备区内的武器牌交给其中一名目标角色；或点击“取消”，令" + get.translation(player) + "视为对你使用一张【杀】，并获得你装备区内的武器牌");
-			"step 2";
-			var card = targets[0].getEquips(1);
+				.forResult();
+			const weaponCards = target.getEquips(1);
 			if (result.bool) {
 				player.addSkill("dclianji_1");
-				if (card.length && result.targets.filter(target => target.isIn()).length > 0) {
-					event.card = card;
-					targets[0]
-						.chooseTarget(true, "将" + get.translation(card) + "交给一名目标角色", (card, player, target) => {
-							return _status.event.targets.includes(target);
-						})
-						.set("ai", function (target) {
-							var card = _status.event.getParent().card[0];
-							return (target.hasSkillTag("nogain") ? 0 : get.attitude(_status.event.player, target)) * Math.max(0.1, target.getUseValue(card));
-						})
-						.set("targets", result.targets);
-				} else {
-					event.finish();
+				const cardTargets = result.targets.filter(target => target.isIn());
+				if (!weaponCards.length || !cardTargets.length) {
+					return;
 				}
-			} else {
-				player.addSkill("dclianji_2");
-				event.goto(4);
+				const giveResult = await target
+					.chooseTarget({
+						prompt: `将${get.translation(weaponCards)}交给一名目标角色`,
+						forced: true,
+						filterTarget: (_card, _player, candidate) => cardTargets.includes(candidate),
+						ai: candidate => (candidate.hasSkillTag("nogain") ? 0 : get.attitude(target, candidate)) * Math.max(0.1, candidate.getUseValue(weaponCards[0])),
+					})
+					.forResult();
+				await target.give(weaponCards, giveResult.targets[0], true);
+				return;
 			}
-			"step 3";
-			targets[0].give(card, result.targets[0], "give");
-			event.finish();
-			"step 4";
-			player.useCard({ name: "sha", isCard: true }, targets[0], false);
-			"step 5";
-			var card = targets[0].getEquips(1);
-			if (card.length) {
-				targets[0].give(card, player, "give");
+
+			player.addSkill("dclianji_2");
+			await player.useCard({
+				card: { name: "sha", isCard: true },
+				targets: [target],
+				addCount: false,
+			});
+			const remainingWeapons = target.getEquips(1);
+			if (remainingWeapons.length) {
+				await target.give(remainingWeapons, player, true);
 			}
 		},
 		ai: {
@@ -36603,13 +36601,13 @@ const skills = {
 						return -3;
 					}
 					let val = 0;
-					let ev = target
+					const equipValues = target
 						.getEquips(1)
 						.map(card => get.value(card, target))
 						.sort((a, b) => a - b);
 					if (target.hasEquipableSlot(1) && !target.hasEmptySlot(1)) {
 						// 要顶掉原来的武器
-						val -= ev[0] || 0;
+						val -= equipValues[0] || 0;
 					}
 					let nouse = get.effect(target, { name: "sha", isCard: true }, player, target);
 					if (!player.hasSkillTag("nogain")) {
