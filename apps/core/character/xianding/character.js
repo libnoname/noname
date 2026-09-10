@@ -106,7 +106,7 @@ const characters = {
 	dc_shen_zhangliao: {
 		sex: "male",
 		group: "shen",
-		hp: 4,
+		hp: 5,
 		skills: ["dccuxi", "dcduorui", "dczhiti"],
 		groupInGuozhan: "wei",
 		dieAudios: ["shen_zhangliao"],
@@ -208,7 +208,7 @@ const characters = {
 	shen_zhangjiao: {
 		sex: "male",
 		group: "shen",
-		hp: 3,
+		hp: 4,
 		skills: ["yizhao", "sijun", "sanshou", "tianjie"],
 		groupInGuozhan: "qun",
 	},
