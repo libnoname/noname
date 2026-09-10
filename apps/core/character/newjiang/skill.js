@@ -3670,7 +3670,7 @@ const skills = {
 			return !player.getStorage("jingyi_used").some(i => subtypes.includes(i));
 		},
 		getIndex(event, player) {
-			return event.cards ?? [];
+			return event.vcards?.length ? event.vcards : (event.cards ?? []);
 		},
 		async content(event, trigger, player) {
 			const card = event.indexedData,
@@ -3694,6 +3694,9 @@ const skills = {
 			used: {
 				charlotte: true,
 				onremove: true,
+				mark: true,
+				marktext: "益",
+				intro: { content: "本回合已触发装备副类别：$" },
 			},
 		},
 	},
@@ -6966,7 +6969,7 @@ const skills = {
 				check(event, player) {
 					const bool = game.hasPlayer2(current => {
 						return current.hasHistory("damage", evt => evt.card == event.card);
-					}, true)
+					}, true);
 					if (bool) {
 						return true;
 					}
