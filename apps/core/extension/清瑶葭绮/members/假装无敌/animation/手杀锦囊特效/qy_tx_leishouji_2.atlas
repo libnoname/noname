@@ -1,0 +1,153 @@
+
+qy_tx_leishouji_2.png
+size: 1051,1051
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1_00
+  rotate: false
+  xy: 2, 736
+  size: 292, 313
+  orig: 300, 350
+  offset: 5, 34
+  index: -1
+1_01
+  rotate: false
+  xy: 2, 421
+  size: 292, 313
+  orig: 300, 350
+  offset: 5, 34
+  index: -1
+1_02
+  rotate: false
+  xy: 296, 736
+  size: 292, 313
+  orig: 300, 350
+  offset: 5, 34
+  index: -1
+1_03
+  rotate: false
+  xy: 2, 106
+  size: 292, 313
+  orig: 300, 350
+  offset: 5, 34
+  index: -1
+1_04
+  rotate: false
+  xy: 296, 443
+  size: 281, 291
+  orig: 300, 350
+  offset: 14, 43
+  index: -1
+1_05
+  rotate: false
+  xy: 590, 773
+  size: 270, 276
+  orig: 300, 350
+  offset: 17, 44
+  index: -1
+1_06
+  rotate: false
+  xy: 296, 189
+  size: 252, 252
+  orig: 300, 350
+  offset: 27, 56
+  index: -1
+1_07
+  rotate: false
+  xy: 771, 127
+  size: 216, 215
+  orig: 300, 350
+  offset: 55, 77
+  index: -1
+1_08
+  rotate: false
+  xy: 550, 138
+  size: 219, 204
+  orig: 300, 350
+  offset: 57, 70
+  index: -1
+1_09
+  rotate: true
+  xy: 579, 344
+  size: 212, 235
+  orig: 300, 350
+  offset: 59, 73
+  index: -1
+1_10
+  rotate: true
+  xy: 816, 344
+  size: 212, 233
+  orig: 300, 350
+  offset: 59, 73
+  index: -1
+1_11
+  rotate: true
+  xy: 590, 558
+  size: 213, 236
+  orig: 300, 350
+  offset: 59, 73
+  index: -1
+1_12
+  rotate: true
+  xy: 828, 560
+  size: 211, 210
+  orig: 300, 350
+  offset: 60, 91
+  index: -1
+1_13
+  rotate: true
+  xy: 296, 9
+  size: 178, 198
+  orig: 300, 350
+  offset: 90, 92
+  index: -1
+1_14
+  rotate: false
+  xy: 862, 823
+  size: 171, 226
+  orig: 300, 350
+  offset: 90, 93
+  index: -1
+1_15
+  rotate: true
+  xy: 2, 5
+  size: 99, 166
+  orig: 300, 350
+  offset: 144, 93
+  index: -1
+1_16
+  rotate: false
+  xy: 496, 137
+  size: 40, 50
+  orig: 300, 350
+  offset: 174, 96
+  index: -1
+1_17
+  rotate: false
+  xy: 862, 791
+  size: 35, 30
+  orig: 300, 350
+  offset: 176, 114
+  index: -1
+1_18
+  rotate: false
+  xy: 989, 298
+  size: 60, 44
+  orig: 300, 350
+  offset: 176, 99
+  index: -1
+1_19
+  rotate: false
+  xy: 170, 62
+  size: 36, 42
+  orig: 300, 350
+  offset: 199, 99
+  index: -1
+1_20
+  rotate: false
+  xy: 550, 419
+  size: 18, 22
+  orig: 300, 350
+  offset: 217, 99
+  index: -1

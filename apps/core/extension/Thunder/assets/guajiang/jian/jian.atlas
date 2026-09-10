@@ -1,0 +1,76 @@
+
+jian.png
+size: 632,632
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+jian_00000
+  rotate: true
+  xy: 382, 13
+  size: 100, 218
+  orig: 172, 338
+  offset: 36, 60
+  index: -1
+jian_00001
+  rotate: false
+  xy: 277, 6
+  size: 103, 225
+  orig: 172, 338
+  offset: 34, 55
+  index: -1
+jian_00002
+  rotate: false
+  xy: 168, 2
+  size: 107, 229
+  orig: 172, 338
+  offset: 31, 52
+  index: -1
+jian_00003
+  rotate: true
+  xy: 308, 365
+  size: 111, 249
+  orig: 172, 338
+  offset: 28, 45
+  index: -1
+jian_00004
+  rotate: true
+  xy: 382, 115
+  size: 116, 248
+  orig: 172, 338
+  offset: 24, 41
+  index: -1
+jian_00005
+  rotate: true
+  xy: 308, 233
+  size: 130, 248
+  orig: 172, 338
+  offset: 19, 35
+  index: -1
+jian_00006
+  rotate: true
+  xy: 308, 478
+  size: 152, 258
+  orig: 172, 338
+  offset: 0, 27
+  index: -1
+jian_00007
+  rotate: false
+  xy: 2, 64
+  size: 164, 278
+  orig: 172, 338
+  offset: 6, 19
+  index: -1
+jian_00008
+  rotate: false
+  xy: 2, 344
+  size: 145, 286
+  orig: 172, 338
+  offset: 11, 11
+  index: -1
+jian_00009
+  rotate: false
+  xy: 149, 354
+  size: 157, 276
+  orig: 172, 338
+  offset: 9, 3
+  index: -1

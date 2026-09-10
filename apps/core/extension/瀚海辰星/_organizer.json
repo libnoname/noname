@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "sourceHash": "f46d9b9b1be6c13d2e6e671e02cf35b71fa3994cf5f58aa9e86ea3051ad04ecd",
+  "extension": "瀚海辰星",
+  "removed": [],
+  "warnings": [
+    "通过静态结构检查；第三方扩展的实际对局兼容性仍需游戏内验证",
+    "保留技能和资源，以免破坏动态引用"
+  ]
+}

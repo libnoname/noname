@@ -1,0 +1,368 @@
+
+SS_SWY_yinzhan.png
+size: 1963,1981
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+gyjn/gyjn_001
+  rotate: true
+  xy: 1721, 1628
+  size: 351, 178
+  orig: 934, 245
+  offset: 583, 30
+  index: -1
+gyjn/gyjn_003
+  rotate: true
+  xy: 1707, 2
+  size: 495, 180
+  orig: 934, 245
+  offset: 439, 29
+  index: -1
+gyjn/gyjn_011
+  rotate: false
+  xy: 2, 8
+  size: 853, 242
+  orig: 934, 245
+  offset: 81, 0
+  index: -1
+gyjn/gyjn_013
+  rotate: false
+  xy: 860, 1240
+  size: 854, 245
+  orig: 934, 245
+  offset: 80, 0
+  index: -1
+gyjn/gyjn_014
+  rotate: false
+  xy: 2, 1240
+  size: 856, 245
+  orig: 934, 245
+  offset: 78, 0
+  index: -1
+gyjn/gyjn_015
+  rotate: false
+  xy: 2, 746
+  size: 854, 245
+  orig: 934, 245
+  offset: 80, 0
+  index: -1
+gyjn/gyjn_016
+  rotate: false
+  xy: 862, 1487
+  size: 856, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_017
+  rotate: false
+  xy: 857, 252
+  size: 848, 245
+  orig: 934, 245
+  offset: 79, 0
+  index: -1
+gyjn/gyjn_031
+  rotate: false
+  xy: 858, 499
+  size: 851, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_032
+  rotate: false
+  xy: 860, 993
+  size: 854, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_033
+  rotate: false
+  xy: 2, 1734
+  size: 858, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_034
+  rotate: false
+  xy: 862, 1734
+  size: 857, 245
+  orig: 934, 245
+  offset: 77, 0
+  index: -1
+gyjn/gyjn_035
+  rotate: false
+  xy: 2, 1487
+  size: 858, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_036
+  rotate: false
+  xy: 2, 993
+  size: 856, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_037
+  rotate: false
+  xy: 2, 499
+  size: 854, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_038
+  rotate: false
+  xy: 858, 746
+  size: 854, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_039
+  rotate: false
+  xy: 2, 252
+  size: 853, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_040
+  rotate: false
+  xy: 857, 5
+  size: 848, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_064
+  rotate: true
+  xy: 1716, 643
+  size: 842, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+
+SS_SWY_yinzhan2.png
+size: 1937,1985
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+gyjn/gyjn_005
+  rotate: true
+  xy: 1690, 2
+  size: 643, 180
+  orig: 934, 245
+  offset: 291, 29
+  index: -1
+gyjn/gyjn_018
+  rotate: false
+  xy: 2, 1244
+  size: 842, 245
+  orig: 934, 245
+  offset: 77, 0
+  index: -1
+gyjn/gyjn_019
+  rotate: false
+  xy: 850, 1738
+  size: 843, 245
+  orig: 934, 245
+  offset: 75, 0
+  index: -1
+gyjn/gyjn_020
+  rotate: false
+  xy: 2, 1491
+  size: 844, 245
+  orig: 934, 245
+  offset: 74, 0
+  index: -1
+gyjn/gyjn_021
+  rotate: false
+  xy: 848, 1491
+  size: 842, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_022
+  rotate: false
+  xy: 2, 997
+  size: 842, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_026
+  rotate: false
+  xy: 846, 1244
+  size: 842, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_027
+  rotate: false
+  xy: 2, 750
+  size: 842, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_028
+  rotate: false
+  xy: 846, 997
+  size: 842, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_030
+  rotate: false
+  xy: 2, 503
+  size: 842, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_041
+  rotate: false
+  xy: 2, 1738
+  size: 846, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_042
+  rotate: false
+  xy: 846, 750
+  size: 842, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_043
+  rotate: false
+  xy: 2, 256
+  size: 842, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_044
+  rotate: false
+  xy: 846, 503
+  size: 842, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_045
+  rotate: false
+  xy: 2, 9
+  size: 842, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_048
+  rotate: false
+  xy: 846, 256
+  size: 842, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_050
+  rotate: false
+  xy: 846, 9
+  size: 842, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_054
+  rotate: true
+  xy: 1690, 647
+  size: 842, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+
+SS_SWY_yinzhan3.png
+size: 1976,1340
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+gyjn/gyjn_006
+  rotate: true
+  xy: 1794, 630
+  size: 708, 180
+  orig: 934, 245
+  offset: 226, 29
+  index: -1
+gyjn/gyjn_007
+  rotate: true
+  xy: 1612, 560
+  size: 778, 180
+  orig: 934, 245
+  offset: 156, 29
+  index: -1
+gyjn/gyjn_009
+  rotate: true
+  xy: 1427, 526
+  size: 812, 183
+  orig: 934, 245
+  offset: 122, 29
+  index: -1
+gyjn/gyjn_010
+  rotate: true
+  xy: 1235, 521
+  size: 817, 190
+  orig: 934, 245
+  offset: 117, 29
+  index: -1
+gyjn/gyjn_012
+  rotate: true
+  xy: 990, 518
+  size: 820, 243
+  orig: 934, 245
+  offset: 114, 0
+  index: -1
+gyjn/gyjn_024
+  rotate: true
+  xy: 249, 497
+  size: 841, 245
+  orig: 934, 245
+  offset: 77, 0
+  index: -1
+gyjn/gyjn_029
+  rotate: true
+  xy: 496, 497
+  size: 841, 245
+  orig: 934, 245
+  offset: 77, 0
+  index: -1
+gyjn/gyjn_046
+  rotate: true
+  xy: 743, 497
+  size: 841, 245
+  orig: 934, 245
+  offset: 77, 0
+  index: -1
+gyjn/gyjn_052
+  rotate: false
+  xy: 2, 2
+  size: 841, 245
+  orig: 934, 245
+  offset: 77, 0
+  index: -1
+gyjn/gyjn_056
+  rotate: false
+  xy: 845, 2
+  size: 841, 245
+  orig: 934, 245
+  offset: 77, 0
+  index: -1
+gyjn/gyjn_058
+  rotate: true
+  xy: 2, 496
+  size: 842, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_060
+  rotate: false
+  xy: 2, 249
+  size: 842, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_062
+  rotate: false
+  xy: 846, 250
+  size: 841, 245
+  orig: 934, 245
+  offset: 77, 0
+  index: -1

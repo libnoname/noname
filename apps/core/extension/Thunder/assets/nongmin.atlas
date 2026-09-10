@@ -1,0 +1,104 @@
+
+nongmin.png
+size: 461,149
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+chutou
+  rotate: false
+  xy: 2, 12
+  size: 181, 135
+  orig: 183, 137
+  offset: 1, 1
+  index: -1
+kuzi1
+  rotate: false
+  xy: 413, 73
+  size: 46, 74
+  orig: 48, 76
+  offset: 1, 1
+  index: -1
+kuzi2
+  rotate: false
+  xy: 345, 72
+  size: 66, 75
+  orig: 68, 77
+  offset: 1, 1
+  index: -1
+shangyi
+  rotate: false
+  xy: 185, 39
+  size: 84, 108
+  orig: 86, 110
+  offset: 1, 1
+  index: -1
+shuihu
+  rotate: true
+  xy: 228, 2
+  size: 35, 39
+  orig: 37, 41
+  offset: 1, 1
+  index: -1
+tou
+  rotate: false
+  xy: 271, 64
+  size: 72, 83
+  orig: 74, 85
+  offset: 1, 1
+  index: -1
+youjiao
+  rotate: false
+  xy: 367, 29
+  size: 37, 41
+  orig: 39, 43
+  offset: 1, 1
+  index: -1
+youshangbi
+  rotate: true
+  xy: 271, 20
+  size: 42, 53
+  orig: 44, 55
+  offset: 1, 1
+  index: -1
+youshou
+  rotate: false
+  xy: 430, 47
+  size: 22, 24
+  orig: 24, 26
+  offset: 1, 1
+  index: -1
+youxiaobi
+  rotate: false
+  xy: 406, 37
+  size: 22, 33
+  orig: 24, 35
+  offset: 1, 1
+  index: -1
+zuojiao
+  rotate: true
+  xy: 185, 2
+  size: 35, 41
+  orig: 37, 43
+  offset: 1, 1
+  index: -1
+zuoshangbi
+  rotate: false
+  xy: 326, 12
+  size: 39, 50
+  orig: 41, 52
+  offset: 1, 1
+  index: -1
+zuoshou
+  rotate: true
+  xy: 430, 25
+  size: 20, 22
+  orig: 22, 24
+  offset: 1, 1
+  index: -1
+zuoxiaobi
+  rotate: true
+  xy: 367, 4
+  size: 23, 36
+  orig: 25, 38
+  offset: 1, 1
+  index: -1

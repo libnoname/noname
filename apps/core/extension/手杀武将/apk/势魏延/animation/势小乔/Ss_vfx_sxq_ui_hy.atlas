@@ -1,0 +1,20 @@
+
+Ss_vfx_sxq_ui_hy.png
+size: 345,88
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+jnmb_sxq_biaoti
+  rotate: false
+  xy: 173, 3
+  size: 172, 85
+  orig: 172, 85
+  offset: 0, 0
+  index: -1
+jnmb_sxq_biaoti2
+  rotate: false
+  xy: 0, 0
+  size: 171, 88
+  orig: 172, 88
+  offset: 0, 0
+  index: -1

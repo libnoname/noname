@@ -7,7 +7,7 @@ import { security, initializeSandboxRealms } from "@/util/sandbox.js";
 import { CacheContext } from "@/library/cache/cacheContext.js";
 import { importCardPack, importCharacterPack, importExtension, importMode } from "./import.js";
 import { loadCard, loadCardPile, loadCharacter, loadExtension, loadMode, loadPlay } from "./loading.js";
-import { registerOrganizedExtensions } from "./organizedExtensions.js";
+import { registerOrganizedExtensions, isRetiredApkExtension } from "./organizedExtensions.js";
 import { registerOrganizedCompatibility } from "./organizedCompatibility.js";
 
 // 无名杀，启动！
@@ -619,6 +619,8 @@ export async function boot() {
 }
 
 async function getExtensionList() {
+	const { showExtensionRecovery } = await import("./extensionRecovery.js");
+	showExtensionRecovery(lib, config, (key, value) => game.promises.saveConfig(key, value));
 	if (localStorage.getItem(lib.configprefix + "disable_extension")) return [];
 	await registerOrganizedExtensions(config, (key, value) => game.promises.saveConfig(key, value));
 
@@ -633,9 +635,11 @@ async function getExtensionList() {
 	})();
 	const searchParamsImportExtension = new URLSearchParams(location.search).get("importExtensionName");
 
-	window.resetExtension = () => {
+	window.resetExtension = async () => {
+		// Preserve only extension switches, not the entire save, before emergency disabling.
+		localStorage.setItem(lib.configprefix + "extension_emergency_enabled", JSON.stringify(config.get("extensions").filter(ext => config.get(`extension_${ext}_enable`) === true)));
 		for (let ext of config.get("extensions")) {
-			game.promises.saveConfig(`extension_${ext}_enable`, false);
+			await game.promises.saveConfig(`extension_${ext}_enable`, false);
 		}
 		localStorage.setItem(lib.configprefix + "disable_extension", String(true));
 	};
@@ -649,7 +653,7 @@ async function getExtensionList() {
 		const extensionPath = new URL("./extension/", rootURL);
 		const [extFolders] = await game.promises.getFileList(get.relativePath(extensionPath));
 
-		const unimportedExtensions = extFolders.filter(folder => !extensions.includes(folder) && !config.get("all").plays.includes(folder));
+		const unimportedExtensions = extFolders.filter(folder => !isRetiredApkExtension(folder) && !extensions.includes(folder) && !config.get("all").plays.includes(folder));
 
 		const promises = unimportedExtensions.map(async ext => {
 			const path = new URL(`./${ext}/`, extensionPath);
@@ -667,7 +671,7 @@ async function getExtensionList() {
 		await Promise.allSettled(promises);
 
 		await game.promises.saveConfig("extensions", extensions);
-	} else if (searchParamsImportExtension) {
+	} else if (searchParamsImportExtension && !isRetiredApkExtension(searchParamsImportExtension)) {
 		extensions.push(searchParamsImportExtension);
 		toLoad.push(searchParamsImportExtension);
 		if (!config.has(`extension_${searchParamsImportExtension}_enable`)) {

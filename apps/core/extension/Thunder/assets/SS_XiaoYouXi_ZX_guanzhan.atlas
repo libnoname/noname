@@ -1,0 +1,160 @@
+
+SS_XiaoYouXi_ZX_guanzhan.png
+size: 887,300
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+di
+  rotate: false
+  xy: 2, 117
+  size: 181, 181
+  orig: 229, 181
+  offset: 21, 0
+  index: -1
+glow_000
+  rotate: false
+  xy: 730, 6
+  size: 94, 94
+  orig: 128, 128
+  offset: 17, 17
+  index: -1
+yuan
+  rotate: true
+  xy: 275, 3
+  size: 146, 145
+  orig: 229, 181
+  offset: 41, 16
+  index: -1
+yuan_13
+  rotate: true
+  xy: 329, 172
+  size: 126, 104
+  orig: 128, 128
+  offset: 1, 12
+  index: -1
+yuanhuan_saoguang/saoguang_000
+  rotate: true
+  xy: 435, 178
+  size: 120, 92
+  orig: 128, 128
+  offset: 4, 18
+  index: -1
+yuanhuan_saoguang/saoguang_001
+  rotate: true
+  xy: 2, 3
+  size: 112, 84
+  orig: 128, 128
+  offset: 8, 21
+  index: -1
+yuanhuan_saoguang/saoguang_002
+  rotate: true
+  xy: 88, 5
+  size: 110, 89
+  orig: 128, 128
+  offset: 9, 19
+  index: -1
+yuanhuan_saoguang/saoguang_003
+  rotate: true
+  xy: 179, 8
+  size: 107, 94
+  orig: 128, 128
+  offset: 11, 16
+  index: -1
+yuanhuan_saoguang/saoguang_004
+  rotate: true
+  xy: 529, 196
+  size: 102, 101
+  orig: 128, 128
+  offset: 13, 13
+  index: -1
+yuanhuan_saoguang/saoguang_005
+  rotate: false
+  xy: 555, 92
+  size: 96, 102
+  orig: 128, 128
+  offset: 17, 13
+  index: -1
+yuanhuan_saoguang/saoguang_006
+  rotate: false
+  xy: 632, 196
+  size: 86, 102
+  orig: 128, 128
+  offset: 22, 13
+  index: -1
+yuanhuan_saoguang/saoguang_007
+  rotate: false
+  xy: 480, 73
+  size: 73, 103
+  orig: 128, 128
+  offset: 29, 12
+  index: -1
+yuanhuan_saoguang/saoguang_008
+  rotate: true
+  xy: 480, 6
+  size: 65, 102
+  orig: 128, 128
+  offset: 32, 13
+  index: -1
+yuanhuan_saoguang/saoguang_009
+  rotate: false
+  xy: 653, 92
+  size: 75, 102
+  orig: 128, 128
+  offset: 27, 13
+  index: -1
+yuanhuan_saoguang/saoguang_010
+  rotate: false
+  xy: 720, 198
+  size: 85, 100
+  orig: 128, 128
+  offset: 22, 13
+  index: -1
+yuanhuan_saoguang/saoguang_011
+  rotate: false
+  xy: 584, 2
+  size: 90, 88
+  orig: 128, 128
+  offset: 19, 20
+  index: -1
+yuanhuan_saoguang/saoguang_012
+  rotate: true
+  xy: 807, 204
+  size: 94, 78
+  orig: 128, 128
+  offset: 17, 25
+  index: -1
+yuanhuan_saoguang/saoguang_013
+  rotate: true
+  xy: 730, 102
+  size: 94, 63
+  orig: 128, 128
+  offset: 17, 32
+  index: -1
+yuanhuan_saoguang/saoguang_014
+  rotate: true
+  xy: 676, 2
+  size: 88, 51
+  orig: 128, 128
+  offset: 20, 38
+  index: -1
+zi
+  rotate: true
+  xy: 185, 151
+  size: 147, 142
+  orig: 229, 181
+  offset: 41, 17
+  index: -1
+zuo
+  rotate: false
+  xy: 422, 45
+  size: 56, 125
+  orig: 229, 181
+  offset: 0, 26
+  index: -1
+zuo_037
+  rotate: false
+  xy: 807, 102
+  size: 72, 100
+  orig: 256, 128
+  offset: 49, 13
+  index: -1

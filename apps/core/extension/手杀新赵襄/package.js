@@ -1,0 +1,9 @@
+extension["手杀新赵襄"]={
+	intro:"",
+	author:"",
+	netdisk:"",
+	forum:"",
+	version:"",
+	files:["xin_zhaoxiang.jpg","extension.js"],
+	size:"106KB"
+};

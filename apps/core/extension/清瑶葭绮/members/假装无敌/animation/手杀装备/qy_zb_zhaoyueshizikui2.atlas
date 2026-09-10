@@ -1,0 +1,132 @@
+
+qy_zb_zhaoyueshizikui2.png
+size: 1382,1382
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+02-shizi_00
+  rotate: false
+  xy: 2, 1030
+  size: 318, 350
+  orig: 350, 350
+  offset: 15, 0
+  index: -1
+03-yun_00
+  rotate: false
+  xy: 2, 445
+  size: 286, 275
+  orig: 350, 350
+  offset: 34, 39
+  index: -1
+03-yun_01
+  rotate: false
+  xy: 322, 1105
+  size: 287, 275
+  orig: 350, 350
+  offset: 34, 39
+  index: -1
+03-yun_02
+  rotate: false
+  xy: 611, 1105
+  size: 286, 275
+  orig: 350, 350
+  offset: 35, 39
+  index: -1
+03-yun_03
+  rotate: false
+  xy: 2, 168
+  size: 285, 275
+  orig: 350, 350
+  offset: 35, 39
+  index: -1
+03-yun_04
+  rotate: false
+  xy: 610, 829
+  size: 285, 274
+  orig: 350, 350
+  offset: 35, 40
+  index: -1
+03-yun_05
+  rotate: false
+  xy: 312, 554
+  size: 285, 273
+  orig: 350, 350
+  offset: 35, 41
+  index: -1
+03-yun_06
+  rotate: false
+  xy: 599, 554
+  size: 285, 273
+  orig: 350, 350
+  offset: 35, 41
+  index: -1
+03-yun_07
+  rotate: false
+  xy: 289, 2
+  size: 284, 274
+  orig: 350, 350
+  offset: 35, 39
+  index: -1
+03-yun_08
+  rotate: true
+  xy: 864, 269
+  size: 283, 272
+  orig: 350, 350
+  offset: 35, 41
+  index: -1
+03-yun_09
+  rotate: false
+  xy: 575, 2
+  size: 282, 274
+  orig: 350, 350
+  offset: 35, 39
+  index: -1
+03-yun_10
+  rotate: false
+  xy: 886, 554
+  size: 283, 273
+  orig: 350, 350
+  offset: 35, 40
+  index: -1
+03-yun_11
+  rotate: false
+  xy: 290, 278
+  size: 285, 274
+  orig: 350, 350
+  offset: 35, 39
+  index: -1
+03-yun_12
+  rotate: false
+  xy: 577, 278
+  size: 285, 274
+  orig: 350, 350
+  offset: 35, 39
+  index: -1
+03-yun_13
+  rotate: false
+  xy: 899, 1106
+  size: 286, 274
+  orig: 350, 350
+  offset: 35, 39
+  index: -1
+03-yun_14
+  rotate: false
+  xy: 322, 829
+  size: 286, 274
+  orig: 350, 350
+  offset: 35, 39
+  index: -1
+04-zhao_00
+  rotate: false
+  xy: 2, 722
+  size: 308, 306
+  orig: 350, 350
+  offset: 27, 24
+  index: -1
+tou_00
+  rotate: false
+  xy: 859, 67
+  size: 202, 200
+  orig: 300, 300
+  offset: 51, 51
+  index: -1

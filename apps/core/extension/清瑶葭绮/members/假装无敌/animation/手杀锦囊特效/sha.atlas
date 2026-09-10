@@ -1,0 +1,13 @@
+
+sha.png
+size: 128,128
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+b
+  rotate: false
+  xy: 2, 2
+  size: 102, 106
+  orig: 102, 106
+  offset: 0, 0
+  index: -1

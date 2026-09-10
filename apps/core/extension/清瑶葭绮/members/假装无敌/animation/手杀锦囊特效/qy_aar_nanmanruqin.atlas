@@ -1,0 +1,244 @@
+
+qy_aar_nanmanruqin.png
+size: 1692,1692
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+01_00
+  rotate: true
+  xy: 1278, 602
+  size: 161, 180
+  orig: 180, 180
+  offset: 6, 0
+  index: -1
+01_02
+  rotate: true
+  xy: 1498, 631
+  size: 167, 180
+  orig: 180, 180
+  offset: 0, 0
+  index: -1
+01_04
+  rotate: true
+  xy: 1513, 975
+  size: 170, 177
+  orig: 180, 180
+  offset: 0, 0
+  index: -1
+01_06
+  rotate: true
+  xy: 1498, 800
+  size: 173, 180
+  orig: 180, 180
+  offset: 0, 0
+  index: -1
+01_08
+  rotate: true
+  xy: 1460, 295
+  size: 172, 179
+  orig: 180, 180
+  offset: 0, 0
+  index: -1
+01_10
+  rotate: true
+  xy: 1278, 273
+  size: 167, 179
+  orig: 180, 180
+  offset: 7, 0
+  index: -1
+01_12
+  rotate: true
+  xy: 1459, 130
+  size: 163, 177
+  orig: 180, 180
+  offset: 9, 0
+  index: -1
+01_14
+  rotate: true
+  xy: 1278, 111
+  size: 160, 176
+  orig: 180, 180
+  offset: 10, 0
+  index: -1
+01_16
+  rotate: true
+  xy: 1278, 442
+  size: 158, 180
+  orig: 180, 180
+  offset: 10, 0
+  index: -1
+01_18
+  rotate: true
+  xy: 1460, 469
+  size: 160, 180
+  orig: 180, 180
+  offset: 7, 0
+  index: -1
+02_00
+  rotate: true
+  xy: 605, 1190
+  size: 500, 188
+  orig: 500, 200
+  offset: 0, 10
+  index: -1
+02_02
+  rotate: false
+  xy: 605, 1002
+  size: 500, 186
+  orig: 500, 200
+  offset: 0, 8
+  index: -1
+02_04
+  rotate: false
+  xy: 1171, 1147
+  size: 500, 178
+  orig: 500, 200
+  offset: 0, 9
+  index: -1
+02_06
+  rotate: true
+  xy: 656, 500
+  size: 500, 183
+  orig: 500, 200
+  offset: 0, 9
+  index: -1
+02_08
+  rotate: false
+  xy: 1171, 1509
+  size: 500, 181
+  orig: 500, 200
+  offset: 0, 8
+  index: -1
+02_10
+  rotate: true
+  xy: 795, 1190
+  size: 500, 186
+  orig: 500, 200
+  offset: 0, 5
+  index: -1
+02_12
+  rotate: true
+  xy: 841, 500
+  size: 500, 172
+  orig: 500, 200
+  offset: 0, 6
+  index: -1
+02_14
+  rotate: true
+  xy: 461, 492
+  size: 500, 193
+  orig: 500, 200
+  offset: 0, 7
+  index: -1
+02_16
+  rotate: false
+  xy: 1171, 1327
+  size: 500, 180
+  orig: 500, 200
+  offset: 0, 7
+  index: -1
+02_18
+  rotate: true
+  xy: 983, 1190
+  size: 500, 186
+  orig: 500, 200
+  offset: 0, 9
+  index: -1
+a1
+  rotate: true
+  xy: 893, 28
+  size: 470, 383
+  orig: 472, 385
+  offset: 1, 1
+  index: -1
+a2
+  rotate: false
+  xy: 613, 95
+  size: 201, 265
+  orig: 203, 267
+  offset: 1, 1
+  index: -1
+a3
+  rotate: true
+  xy: 613, 11
+  size: 82, 144
+  orig: 84, 146
+  offset: 1, 1
+  index: -1
+a4
+  rotate: true
+  xy: 1107, 1004
+  size: 141, 146
+  orig: 143, 148
+  offset: 1, 1
+  index: -1
+b1
+  rotate: true
+  xy: 1278, 982
+  size: 163, 233
+  orig: 165, 235
+  offset: 1, 1
+  index: -1
+b2
+  rotate: false
+  xy: 2, 994
+  size: 601, 696
+  orig: 603, 698
+  offset: 1, 1
+  index: -1
+b3
+  rotate: true
+  xy: 461, 362
+  size: 128, 267
+  orig: 130, 269
+  offset: 1, 1
+  index: -1
+b4
+  rotate: false
+  xy: 2, 26
+  size: 169, 323
+  orig: 171, 325
+  offset: 1, 1
+  index: -1
+b5
+  rotate: false
+  xy: 348, 48
+  size: 263, 301
+  orig: 265, 303
+  offset: 1, 1
+  index: -1
+c1
+  rotate: false
+  xy: 2, 351
+  size: 457, 641
+  orig: 459, 643
+  offset: 1, 1
+  index: -1
+c2
+  rotate: false
+  xy: 173, 45
+  size: 173, 304
+  orig: 175, 306
+  offset: 1, 1
+  index: -1
+c3
+  rotate: true
+  xy: 730, 386
+  size: 112, 161
+  orig: 114, 163
+  offset: 1, 1
+  index: -1
+c4
+  rotate: true
+  xy: 1278, 765
+  size: 215, 218
+  orig: 217, 220
+  offset: 1, 1
+  index: -1
+yanwu
+  rotate: true
+  xy: 1015, 572
+  size: 428, 244
+  orig: 430, 247
+  offset: 2, 1
+  index: -1

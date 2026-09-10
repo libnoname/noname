@@ -1,0 +1,112 @@
+{
+  "version": 1,
+  "sources": [
+    {
+      "name": "8月武将补充",
+      "key": "apk_august",
+      "characters": [
+        "ol_re_zhonghui",
+        "ol_wangai",
+        "xiangxue_liushan",
+        "haoxue_lvmeng",
+        "boxue_caozhi",
+        "clan_zhugedan",
+        "clan_zhugeguo",
+        "shen_huangzhong"
+      ]
+    },
+    {
+      "name": "崔芙",
+      "key": "apk_cuifu",
+      "characters": [
+        "hy_xinxianying",
+        "hy_cuifu",
+        "hy_cuifu1",
+        "hy_cuifu2",
+        "hy_cuifu3"
+      ]
+    },
+    {
+      "name": "还原武将",
+      "key": "apk_restored",
+      "characters": [
+        "hy_caopi",
+        "pot_dengai",
+        "hymachao",
+        "huan_caopi",
+        "huan_dianwei",
+        "twhuan_liufeng",
+        "mo_diaochan",
+        "eu_kaisa",
+        "dcquyuan",
+        "mou_xusheng",
+        "hywei_dongzhuo",
+        "dc_noname",
+        "twqi_huangpusong",
+        "oldwu_huangpusong",
+        "sxrm_huatuo",
+        "xia_caopi",
+        "tw_potdengai",
+        "dcchendi",
+        "huan_caochong",
+        "huan_caozhi",
+        "hyhuan_zhouyu",
+        "newsb_liubei"
+      ]
+    },
+    {
+      "name": "势魏延",
+      "key": "apk_shiweiyan",
+      "blocked": "依赖旧版 UI、骨骼及玩家方法，资源已收纳；为避免影响本体，暂不执行其全局补丁。",
+      "characters": [
+        "s_weiyan",
+        "s_weiyan2",
+        "s_weiyan3",
+        "hy_zhouyu",
+        "hy_zhouyu2",
+        "hy_zhouyu3",
+        "hy_xiaoqiao"
+      ]
+    },
+    {
+      "name": "新武将",
+      "key": "apk_new",
+      "characters": [
+        "dc_zhongyu",
+        "dc_renwan",
+        "mdtx_jiangwei",
+        "yin_mdtx_jiangwei",
+        "dc_dongxu",
+        "sxrm_guanyu",
+        "wei_machao",
+        "mdtx_luxun",
+        "yin_mdtx_luxun",
+        "sbfm_xizhicai",
+        "liuyi_zhangzhi",
+        "dc_shen_sunquan",
+        "boss_hanbingjian",
+        "wei_sunshangxiang",
+        "wei_wu_sunshangxiang",
+        "ol_sunyuan",
+        "sb_zhuran"
+      ]
+    },
+    {
+      "name": "诸葛兔",
+      "key": "apk_rabbit",
+      "characters": [
+        "zgt_zhugetu",
+        "zgt_guanyutu",
+        "zgt_zhaoyuntu"
+      ]
+    },
+    {
+      "name": "手杀补全",
+      "key": "merged_completion",
+      "characters": [
+        "simahui",
+        "pangdegong"
+      ]
+    }
+  ]
+}

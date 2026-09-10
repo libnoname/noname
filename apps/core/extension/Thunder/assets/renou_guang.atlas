@@ -1,0 +1,90 @@
+
+renou_guang.png
+size: 1366,144
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+guang_00000
+  rotate: false
+  xy: 910, 12
+  size: 112, 130
+  orig: 128, 160
+  offset: 6, 0
+  index: -1
+guang_00001
+  rotate: false
+  xy: 1024, 12
+  size: 112, 130
+  orig: 128, 160
+  offset: 6, 0
+  index: -1
+guang_00002
+  rotate: false
+  xy: 1138, 12
+  size: 112, 130
+  orig: 128, 160
+  offset: 6, 0
+  index: -1
+guang_00003
+  rotate: false
+  xy: 1252, 12
+  size: 112, 130
+  orig: 128, 160
+  offset: 6, 0
+  index: -1
+guang_00004
+  rotate: false
+  xy: 116, 3
+  size: 112, 139
+  orig: 128, 160
+  offset: 6, 0
+  index: -1
+guang_00005
+  rotate: false
+  xy: 682, 6
+  size: 112, 136
+  orig: 128, 160
+  offset: 6, 0
+  index: -1
+guang_00006
+  rotate: false
+  xy: 230, 3
+  size: 112, 139
+  orig: 128, 160
+  offset: 6, 0
+  index: -1
+guang_00007
+  rotate: false
+  xy: 796, 6
+  size: 112, 136
+  orig: 128, 160
+  offset: 6, 0
+  index: -1
+guang_00008
+  rotate: false
+  xy: 2, 2
+  size: 112, 140
+  orig: 128, 160
+  offset: 6, 0
+  index: -1
+guang_00009
+  rotate: false
+  xy: 344, 5
+  size: 112, 137
+  orig: 128, 160
+  offset: 6, 0
+  index: -1
+guang_00010
+  rotate: false
+  xy: 570, 3
+  size: 110, 139
+  orig: 128, 160
+  offset: 7, 0
+  index: -1
+guang_00011
+  rotate: false
+  xy: 458, 3
+  size: 110, 139
+  orig: 128, 160
+  offset: 7, 0
+  index: -1

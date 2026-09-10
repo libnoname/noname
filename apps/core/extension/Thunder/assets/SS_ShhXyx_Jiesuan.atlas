@@ -1,0 +1,181 @@
+
+SS_ShhXyx_Jiesuan.png
+size: 1986,344
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+di
+  rotate: true
+  xy: 93, 8
+  size: 110, 64
+  orig: 110, 64
+  offset: 0, 0
+  index: -1
+lianhua/bailianhua
+  rotate: true
+  xy: 2, 6
+  size: 112, 89
+  orig: 112, 89
+  offset: 0, 0
+  index: -1
+lianhua/baodian_000
+  rotate: false
+  xy: 159, 4
+  size: 172, 120
+  orig: 300, 300
+  offset: 64, 89
+  index: -1
+lianhua/baodian_001
+  rotate: true
+  xy: 756, 162
+  size: 180, 123
+  orig: 300, 300
+  offset: 60, 88
+  index: -1
+lianhua/baodian_002
+  rotate: false
+  xy: 333, 3
+  size: 186, 127
+  orig: 300, 300
+  offset: 57, 85
+  index: -1
+lianhua/baodian_003
+  rotate: false
+  xy: 521, 6
+  size: 196, 132
+  orig: 300, 300
+  offset: 52, 82
+  index: -1
+lianhua/baodian_004
+  rotate: true
+  xy: 432, 140
+  size: 202, 135
+  orig: 300, 300
+  offset: 49, 80
+  index: -1
+lianhua/baodian_005
+  rotate: true
+  xy: 292, 132
+  size: 210, 138
+  orig: 300, 300
+  offset: 45, 79
+  index: -1
+lianhua/baodian_006
+  rotate: true
+  xy: 148, 126
+  size: 216, 142
+  orig: 300, 300
+  offset: 42, 76
+  index: -1
+lianhua/baodian_007
+  rotate: true
+  xy: 2, 120
+  size: 222, 144
+  orig: 300, 300
+  offset: 39, 76
+  index: -1
+lianhua/baodian_008
+  rotate: true
+  xy: 1843, 57
+  size: 138, 141
+  orig: 300, 300
+  offset: 80, 80
+  index: -1
+lianhua/baodian_009
+  rotate: false
+  xy: 1843, 197
+  size: 141, 145
+  orig: 300, 300
+  offset: 79, 79
+  index: -1
+lianhua/baodian_010
+  rotate: false
+  xy: 1698, 39
+  size: 143, 149
+  orig: 300, 300
+  offset: 78, 77
+  index: -1
+lianhua/baodian_011
+  rotate: false
+  xy: 1564, 190
+  size: 146, 152
+  orig: 300, 300
+  offset: 77, 76
+  index: -1
+lianhua/baodian_012
+  rotate: true
+  xy: 719, 3
+  size: 149, 155
+  orig: 300, 300
+  offset: 75, 74
+  index: -1
+lianhua/baodian_013
+  rotate: false
+  xy: 1372, 6
+  size: 152, 160
+  orig: 300, 300
+  offset: 74, 71
+  index: -1
+lianhua/baodian_014
+  rotate: false
+  xy: 1044, 3
+  size: 156, 163
+  orig: 300, 300
+  offset: 72, 69
+  index: -1
+lianhua/baodian_015
+  rotate: true
+  xy: 876, 2
+  size: 158, 166
+  orig: 300, 300
+  offset: 71, 68
+  index: -1
+lianhua/baodian_016
+  rotate: true
+  xy: 1202, 4
+  size: 162, 168
+  orig: 300, 300
+  offset: 69, 66
+  index: -1
+lianhua/baodian_017
+  rotate: true
+  xy: 1526, 2
+  size: 166, 170
+  orig: 300, 300
+  offset: 68, 65
+  index: -1
+lianhua/baodian_018
+  rotate: false
+  xy: 881, 168
+  size: 169, 174
+  orig: 300, 300
+  offset: 66, 63
+  index: -1
+lianhua/baodian_019
+  rotate: false
+  xy: 1052, 168
+  size: 169, 174
+  orig: 300, 300
+  offset: 66, 63
+  index: -1
+lianhua/baodian_020
+  rotate: false
+  xy: 1223, 168
+  size: 169, 174
+  orig: 300, 300
+  offset: 66, 63
+  index: -1
+lianhua/baodian_021
+  rotate: false
+  xy: 1394, 170
+  size: 168, 172
+  orig: 300, 300
+  offset: 66, 63
+  index: -1
+xuanzhong
+  rotate: false
+  xy: 569, 154
+  size: 185, 188
+  orig: 185, 188
+  offset: 0, 0
+  index: -1

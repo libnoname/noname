@@ -3,6 +3,7 @@ import { ui, game, get, ai, lib, _status } from "noname";
 import { delay } from "@/util/index.js";
 import { security } from "@/util/sandbox.js"
 import { Character } from "@/library/element/index.js";
+import { groupExtensionMenus, mergedMenuSections, createPackSubmenu } from "../extensionGroups.js";
 
 export const extensionMenu = function (connectMenu) {
 	if (connectMenu) {
@@ -19,6 +20,9 @@ export const extensionMenu = function (connectMenu) {
 	// @ts-expect-error ignore
 	var start = cacheMenuxpages.shift();
 	var rightPane = start.lastChild;
+	const groupedNodes = [];
+	const groupedTabs = new Map();
+	const groupSummaries = [];
 
 	var clickMode = function () {
 		if (this.mode == "get") {
@@ -28,8 +32,8 @@ export const extensionMenu = function (connectMenu) {
 		if (active === this) {
 			return;
 		}
-		active.classList.remove("active");
-		active.link.remove();
+		active?.classList.remove("active");
+		active?.link?.remove();
 		active = this;
 		this.classList.add("active");
 		if (this.link) {
@@ -42,6 +46,15 @@ export const extensionMenu = function (connectMenu) {
 	};
 	ui.click.extensionTab = function (name) {
 		ui.click.menuTab("扩展");
+		const grouped = groupedTabs.get(name);
+		if (grouped) {
+			clickMode.call(grouped.node);
+			grouped.search.value = "";
+			grouped.search.dispatchEvent(new Event("input"));
+			grouped.details.open = true;
+			grouped.details.scrollIntoView({ block: "nearest" });
+			return;
+		}
 		for (var i = 0; i < start.firstChild.childElementCount; i++) {
 			if (start.firstChild.childNodes[i].innerHTML == name) {
 				clickMode.call(start.firstChild.childNodes[i]);
@@ -50,8 +63,8 @@ export const extensionMenu = function (connectMenu) {
 		}
 	};
 	var updateNodes = function () {
-		for (var i = 0; i < start.firstChild.childNodes.length; i++) {
-			var node = start.firstChild.childNodes[i];
+		for (const node of [...start.firstChild.childNodes, ...groupedNodes]) {
+			if (node.extensionGroup) continue;
 			if (node.mode == "get") {
 				continue;
 			}
@@ -83,6 +96,15 @@ export const extensionMenu = function (connectMenu) {
 					}
 				}
 			}
+		}
+		for (const { name: groupName, header, members } of groupSummaries) {
+			let enabled = 0;
+			for (const { mode, summary, name } of members) {
+				const on = !!lib.config[`${mode}_enable`];
+				if (on) enabled++;
+				summary.textContent = `${name} · ${on ? "已启用" : "已关闭"}`;
+			}
+			header.textContent = `${groupName} · 作者：PXLNGU · 成员扩展（已启用 ${enabled}/${members.length}）`;
 		}
 	};
 	var togglePack = function (bool) {
@@ -118,6 +140,7 @@ export const extensionMenu = function (connectMenu) {
 		node.mode = mode;
 		// node._initLink=function(){
 		node.link = page;
+		const sections = mergedMenuSections(mode.slice(10)).map(section => ({ ...section, controls: [] }));
 		for (var i in lib.extensionMenu[mode]) {
 			if (i == "game") {
 				continue;
@@ -148,11 +171,67 @@ export const extensionMenu = function (connectMenu) {
 			if (cfg.onswitch) {
 				cfgnode.onswitch = cfg.onswitch;
 			}
-			page.appendChild(cfgnode);
+			const section = sections.find(section => section.keys.includes(i) || i.startsWith(section.prefix));
+			if (section) section.controls.push(cfgnode);
+			else page.appendChild(cfgnode);
+		}
+		for (const section of sections) {
+			const details = createPackSubmenu(page, section.name, `settings:${mode}:${section.name}`);
+			if (section.controls.length) details.append(...section.controls);
+			else {
+				const help = document.createElement("p");
+				help.textContent = lib.config[`${mode}_enable`] ? "随主包加载；该成员无独立设置。武将资料请在“武将”页展开对应分组。" : "当前主包未开启；成员资源仍在，启用主包并重启后显示设置。";
+				details.append(help);
+			}
 		}
 		// };
 		// if(!get.config('menu_loadondemand')) node._initLink();
 		return node;
+	};
+	const createGroup = function (group) {
+		const page = ui.create.div("");
+		page.style.cssText = "padding:10px;box-sizing:border-box;width:100%";
+		const node = ui.create.div(".menubutton.large", group.name, start.firstChild, clickMode);
+		node.extensionGroup = true;
+		node.dataset.extensionGroup = group.name;
+		node.link = page;
+		const header = document.createElement("div");
+		header.style.cssText = "position:relative;font-size:18px;line-height:1.6;margin-bottom:8px";
+		page.appendChild(header);
+		const help = document.createElement("div");
+		help.textContent = "展开武将可调整原有开关及设置，修改后重启生效。此处只统一管理，不改变原技能、素材或已保存的选项。";
+		help.style.cssText = "position:relative;font-size:13px;line-height:1.6;opacity:.8;margin-bottom:10px";
+		page.appendChild(help);
+		const search = document.createElement("input");
+		search.type = "search";
+		search.placeholder = "搜索武将扩展";
+		search.setAttribute("aria-label", `搜索 ${group.name} 武将扩展`);
+		search.style.cssText = "position:relative;box-sizing:border-box;width:100%;margin-bottom:10px;padding:6px";
+		page.appendChild(search);
+		const members = [];
+		for (const mode of group.members) {
+			// Reuse the exact original controls and config keys, including custom
+			// onclick/onswitch callbacks. Never import disabled extension code here.
+			const member = createModeConfig(mode, document.createElement("div"));
+			groupedNodes.push(member);
+			const name = member.textContent;
+			const details = createPackSubmenu(page, name, `settings:${group.name}:${mode}`);
+			details.dataset.extension = mode.slice(10);
+			details.style.cssText = "position:relative;border-bottom:1px solid #8886;padding:7px 0";
+			const summary = details.querySelector("summary");
+			summary.style.cssText = "position:relative;cursor:pointer;line-height:1.7;font-size:16px";
+			details.append(summary, member.link);
+			page.appendChild(details);
+			members.push({ mode, name, details, summary });
+			const target = { node, details, search };
+			groupedTabs.set(mode.slice(10), target);
+			groupedTabs.set(name, target);
+		}
+		search.addEventListener("input", () => {
+			const query = search.value.trim().toLocaleLowerCase();
+			for (const { name, details } of members) details.hidden = !name.toLocaleLowerCase().includes(query);
+		});
+		groupSummaries.push({ name: group.name, header, members });
 	};
 	let extensionsInMenu = Object.keys(lib.extensionMenu);
 	if (lib.config.extensionSort && Array.isArray(lib.config.extensionSort)) {
@@ -160,14 +239,12 @@ export const extensionMenu = function (connectMenu) {
 			return lib.config.extensionSort.indexOf(a) - lib.config.extensionSort.indexOf(b);
 		});
 	}
-	for (let i of extensionsInMenu) {
-		if (lib.config.all.stockextension.includes(i) && !lib.config.all.plays.includes(i)) {
-			continue;
-		}
-		if (lib.config.hiddenPlayPack.includes(i)) {
-			continue;
-		}
-		createModeConfig(i, start.firstChild);
+	const visibleExtensions = extensionsInMenu.filter(i =>
+		!(lib.config.all.stockextension.includes(i) && !lib.config.all.plays.includes(i)) && !lib.config.hiddenPlayPack.includes(i)
+	);
+	for (const entry of groupExtensionMenus(visibleExtensions)) {
+		if (typeof entry === "string") createModeConfig(entry, start.firstChild);
+		else createGroup(entry);
 	}
 	(function () {
 		if (!lib.device && !lib.db) {

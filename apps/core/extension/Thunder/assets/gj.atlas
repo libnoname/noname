@@ -1,0 +1,48 @@
+
+gj.png
+size: 1190,245
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+-1111
+  rotate: true
+  xy: 1074, 93
+  size: 150, 114
+  orig: 160, 160
+  offset: 0, 23
+  index: -1
+za_00000
+  rotate: false
+  xy: 2, 2
+  size: 240, 241
+  orig: 240, 241
+  offset: 0, 0
+  index: -1
+za_00001
+  rotate: false
+  xy: 244, 2
+  size: 240, 241
+  orig: 240, 241
+  offset: 0, 0
+  index: -1
+za_00002
+  rotate: true
+  xy: 709, 3
+  size: 240, 208
+  orig: 240, 241
+  offset: 0, 19
+  index: -1
+za_00003
+  rotate: true
+  xy: 486, 12
+  size: 231, 221
+  orig: 240, 241
+  offset: 6, 8
+  index: -1
+za_00004
+  rotate: true
+  xy: 919, 72
+  size: 171, 153
+  orig: 240, 241
+  offset: 22, 46
+  index: -1

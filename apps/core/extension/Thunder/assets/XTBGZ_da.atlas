@@ -1,0 +1,20 @@
+
+XTBGZ_da.png
+size: 982,667
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+XTBGZ1
+  rotate: true
+  xy: 673, 314
+  size: 351, 307
+  orig: 351, 307
+  offset: 0, 0
+  index: -1
+guangbaguang
+  rotate: false
+  xy: 2, 2
+  size: 669, 663
+  orig: 750, 750
+  offset: 34, 35
+  index: -1

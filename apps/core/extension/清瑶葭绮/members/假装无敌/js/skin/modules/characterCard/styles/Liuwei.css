@@ -1,0 +1,744 @@
+/* 六维编辑器样式 - UI/UX Pro Max */
+.qy_liuwei_editor_overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 3000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(5px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.qy_liuwei_editor_overlay.active {
+    opacity: 1;
+}
+
+.qy_liuwei_editor_overlay div {
+    position: relative;
+}
+
+.qy_liuwei_editor_container {
+    width: 860px;
+    height: 580px;
+    background-image: url('../../../../../images/mobile/charactercard/TaiciBg.png');
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    padding: 45px 50px 40px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transform: scale(0.9);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-sizing: border-box;
+    position: relative;
+    font-family: 'shousha', 'xinwei', 'serif';
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.qy_liuwei_editor_overlay.active .qy_liuwei_editor_container {
+    transform: scale(1);
+}
+
+/* 标题栏 */
+.qy_liuwei_editor_header {
+    padding: 0 10px 10px;
+    border-bottom: 2px solid rgba(88, 66, 45, 0.3);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+    margin-bottom: 20px;
+}
+
+.qy_liuwei_editor_title {
+    font-size: 28px;
+    color: #b69b7d;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+.qy_liuwei_editor_close {
+    cursor: pointer;
+    color: #5c4023;
+    font-size: 32px;
+    line-height: 1;
+    transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                color 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    width: 32px;
+    height: 32px;
+    text-align: center;
+    will-change: transform;
+}
+
+.qy_liuwei_editor_close:hover {
+    transform: rotate(90deg);
+    color: #d93a3a;
+}
+
+/* 内容区域 */
+.qy_liuwei_editor_body {
+    flex: 0.97;
+    display: flex;
+    flex-direction: row;
+    gap: 40px;
+    overflow: hidden;
+    padding: 0 10px;
+    align-items: center;
+}
+
+/* 左侧控制区 */
+.qy_liuwei_controls {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    overflow-y: auto;
+    padding-right: 10px;
+    justify-content: center;
+}
+
+/* 右侧预览区 */
+.qy_liuwei_preview {
+    flex: 1.3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.55); /* 加深背景，适配金色雷达图 */
+    border-radius: 12px;
+    border: 1px solid rgba(139, 105, 20, 0.4);
+    padding: 20px;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.6);
+    position: relative;
+}
+
+/* 滑块项 */
+.qy_liuwei_slider_item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 5px 0;
+    transition: background-color 0.2s;
+}
+
+.qy_liuwei_slider_item:hover {
+    background-color: rgba(0, 0, 0, 0.08);
+    border-radius: 4px;
+}
+
+/* 标签容器 */
+.qy_liuwei_slider_label_container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 55px;
+}
+
+.qy_liuwei_slider_label {
+    width: 100%;
+    color: #5c4023;
+    font-weight: bold;
+    font-size: 20px;
+    text-align: center;
+    font-family: 'shousha', 'xinwei', 'serif';
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.3);
+}
+
+/* 可编辑标签样式 */
+input.qy_liuwei_slider_label {
+    background: rgba(255,255,255, 0.15);
+    border: none;
+    border-bottom: 2px solid #8b6914;
+    outline: none;
+    padding: 3px 6px;
+    margin: 0;
+    font-family: inherit;
+    cursor: text;
+    transition: background 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                border-bottom-color 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    color: #3a2a18;
+}
+
+input.qy_liuwei_slider_label:hover {
+    border-bottom-color: #5c4023;
+    background: rgba(255, 255, 255, 0.3);
+}
+
+input.qy_liuwei_slider_label:focus {
+    border-bottom-color: #2c1f10;
+    background: rgba(255, 255, 255, 0.45);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 标签编辑提示图标 */
+.qy_liuwei_label_edit_hint {
+    position: absolute;
+    right: -14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 11px;
+    color: #5c4023;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+}
+
+.qy_liuwei_slider_label_container:hover .qy_liuwei_label_edit_hint {
+    opacity: 0.8;
+}
+
+/* 自定义滑块样式 */
+.qy_liuwei_slider_input {
+    flex: 1;
+    -webkit-appearance: none;
+    width: 100%;
+    height: 8px;
+    background: linear-gradient(to right, #8b6914, #a08060, #8b6914);
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.qy_liuwei_slider_input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #ffd700, #b8860b);
+    cursor: pointer;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.4), inset 0 -2px 4px rgba(0,0,0,0.2);
+    border: 2px solid #5c4023;
+    transition: transform 0.15s;
+}
+
+.qy_liuwei_slider_input::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+}
+
+/* 数字输入框 */
+.qy_liuwei_number_input {
+    width: 55px;
+    background: rgba(0, 0, 0, 0.12);
+    border: 2px solid rgba(92, 64, 35, 0.4);
+    border-radius: 4px;
+    color: #2c1f10;
+    padding: 4px 2px;
+    text-align: center;
+    font-family: 'shousha', sans-serif;
+    font-size: 20px;
+    font-weight: bold;
+    transition: all 0.2s;
+}
+
+.qy_liuwei_number_input:focus {
+    outline: none;
+    border-color: #5c4023;
+    background: rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 6px rgba(92, 64, 35, 0.2);
+}
+
+/* 底部按钮 */
+.qy_liuwei_editor_footer {
+    padding-top: 20px;
+    border-top: 1px solid rgba(88, 66, 45, 0.15);
+    display: flex;
+    justify-content: flex-end;
+    gap: 20px;
+    flex-shrink: 0;
+    margin-top: 10px;
+}
+
+.qy_liuwei_btn {
+    padding: 8px 35px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 20px;
+    font-family: 'shousha', serif;
+    transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                filter 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    border: none;
+    position: relative;
+    overflow: hidden;
+    will-change: transform, filter;
+}
+
+.qy_liuwei_btn_cancel {
+    background: transparent;
+    color: #5c4023;
+    border: 1px solid rgba(92, 64, 35, 0.4);
+}
+
+.qy_liuwei_btn_cancel:hover {
+    background: rgba(92, 64, 35, 0.08);
+    border-color: rgba(92, 64, 35, 0.8);
+}
+
+.qy_liuwei_btn_reset {
+    background: transparent;
+    color: #8b7355;
+    border: 1px solid rgba(139, 115, 85, 0.4);
+    margin-right: auto;
+}
+
+.qy_liuwei_btn_reset:hover {
+    background: rgba(139, 115, 85, 0.1);
+    border-color: rgba(139, 115, 85, 0.8);
+    color: #a08060;
+}
+
+.qy_liuwei_btn_save {
+    background: linear-gradient(to bottom, #e6c568, #b69032);
+    color: #3e2723;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    border: 1px solid #8b6914;
+}
+
+.qy_liuwei_btn_save:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.qy_liuwei_btn_save:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+/* 评价信息优化 */
+.qy_liuwei_evaluation_info {
+    margin-top: 15px;
+    text-align: center;
+    width: 100%;
+    padding-top: 10px;
+    border-top: 1px dashed rgba(255, 215, 0, 0.3); /* 金色虚线 */
+}
+
+/* 移动端适配 (横屏游戏宽度较大，且需考虑高度限制) */
+@media (max-width: 1200px), (max-height: 650px) {
+    .qy_liuwei_editor_container {
+        width: 95%;
+        height: 95%;
+        padding: 15px;
+    }
+
+    .qy_liuwei_editor_header {
+        margin-bottom: 10px;
+        padding-bottom: 5px;
+    }
+
+    .qy_liuwei_editor_title {
+        font-size: 20px;
+    }
+
+    .qy_liuwei_editor_body {
+        flex-direction: row; /* 强制左右布局，利用横屏宽度 */
+        gap: 15px;
+        overflow: hidden;
+    }
+
+    /* 左侧滑块区域 - 允许滚动 */
+    .qy_liuwei_controls {
+        flex: 1;
+        overflow-y: auto;
+        padding-right: 5px;
+        gap: 8px;
+    }
+
+    .qy_liuwei_slider_item {
+        gap: 8px;
+        padding: 2px 0;
+    }
+
+    .qy_liuwei_slider_label {
+        font-size: 14px;
+        width: 35px;
+    }
+
+    .qy_liuwei_slider_label_container {
+        width: 35px;
+    }
+
+    .qy_liuwei_label_edit_hint {
+        display: none; /* 移动端隐藏提示图标 */
+    }
+
+    /* 右侧预览区域 - 固定宽度 */
+    .qy_liuwei_preview {
+        flex: 0.6;
+        height: 80%;
+        padding: 10px;
+        justify-content: center;
+    }
+
+    /* 强制缩小 Canvas */
+    .qy_liuwei_preview canvas {
+        width: 200px !important;
+        height: 200px !important;
+    }
+
+    .qy_liuwei_btn {
+        padding: 4px 20px;
+        font-size: 16px;
+    }
+
+    .qy_liuwei_btn_reset {
+        margin-right: auto;
+    }
+
+    .qy_liuwei_editor_footer {
+        padding-top: 10px;
+        padding-right: 20px;
+    }
+}
+
+/* 六维雷达图样式 */
+.qy_liuwei_radar_container {
+    padding: 12px;
+    border: 1px solid #8b6914;
+    border-radius: 8px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.4);
+    position: relative;
+    overflow: visible;
+    width: 95%;
+    margin: 10px 2.5%;
+    box-sizing: border-box;
+    height: auto;       /* 自动高度适应内容 */
+    display: block;     /* 确保块级布局 */
+}
+
+/* 左右布局主容器 */
+.qy_liuwei_radar_main_container {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 100%;
+    gap: 10px;
+    align-items: center;
+}
+
+/* 左侧Canvas容器 - 占70% */
+.qy_liuwei_left_container {
+    flex: 6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 右侧内容容器 - 占30% */
+.qy_liuwei_right_container {
+    flex: 3;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 15px;
+}
+
+/* 标签容器样式 - 用于包装多个标签 */
+.qy_liuwei_tags_container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: center;
+    align-items: center;
+    margin: 4px 0;
+}
+
+/* 防止雷达图内部元素使用absolute定位造成重叠 */
+.qy_liuwei_radar_container * {
+    position: relative !important;  /* 强制所有子元素使用静态定位 */
+}
+
+/* 允许伪元素使用absolute定位（相对于其relative父元素） */
+.qy_liuwei_radar_container .qy_liuwei_evaluation_badge::before {
+    position: absolute !important;  /* 伪元素需要absolute定位来创建效果 */
+}
+
+/* 确保雷达图内部元素的正确间距 */
+.qy_liuwei_radar_container > * {
+    margin-bottom: 8px;    /* 添加底部间距 */
+}
+
+.qy_liuwei_radar_container > *:last-child {
+    margin-bottom: 0;      /* 最后一个元素不需要底部间距 */
+}
+
+.qy_liuwei_canvas_container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;  /* 移除margin，由父容器控制间距 */
+    width: 100%;
+}
+
+.qy_liuwei_canvas {
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    width: 200px;
+    height: 200px;
+    max-width: 100%;
+}
+
+.qy_liuwei_stars {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+    align-items: center;
+    font-family: 'shousha', 'xinwei', 'serif';
+    padding: 10px;
+    background: linear-gradient(135deg, rgba(139, 105, 20, 0.12), rgba(80, 55, 35, 0.18));
+    border-radius: 6px;
+    border: 2px solid rgba(212, 175, 55, 0.3);
+    box-shadow:
+            0 2px 10px rgba(0, 0, 0, 0.25),
+            inset 0 1px 0 rgba(212, 175, 55, 0.15);
+    transition: background-color 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                box-shadow 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* 星级容器 - 在右侧布局时的样式 */
+.qy_liuwei_right_container .qy_liuwei_stars {
+    flex-direction: column;
+}
+
+/* 星级行容器 */
+.qy_liuwei_stars_row {
+    display: flex;
+    gap: 3px;
+    justify-content: center;
+}
+
+/* 推荐指数标题样式 */
+.qy_liuwei_stars_title {
+    text-align: center;
+    font-size: 14px;
+    color: #d4af37;
+    font-weight: bold;
+    margin-bottom: 5px;
+    font-family: 'shousha', 'xinwei', 'serif';
+}
+
+.qy_liuwei_star {
+    width: 18px;
+    height: 18px;
+    background: #8b6914;
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    transition: background 0.3s ease;
+}
+
+.qy_liuwei_star.active {
+    background: #d4af37;
+    box-shadow: 0 0 8px rgba(212, 175, 55, 0.6);
+}
+
+.qy_liuwei_summary {
+    padding: 8px;
+    background: linear-gradient(135deg, rgba(139, 105, 20, 0.15), rgba(80, 55, 35, 0.25));
+    border-radius: 6px;
+    border: 2px solid rgba(212, 175, 55, 0.3);
+    text-align: center;
+    box-shadow:
+            0 3px 15px rgba(0, 0, 0, 0.3),
+            inset 0 1px 0 rgba(212, 175, 55, 0.2);
+
+    /* 确保正常文档流布局 */
+    display: block;      /* 确保块级布局 */
+}
+
+.qy_liuwei_summary_title {
+    font-weight: bold;
+    margin-bottom: 0;
+    color: #d4af37;
+    font-size: 14px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    display: block;      /* 确保块级显示 */
+    width: 100%;         /* 占满宽度 */
+    font-family: 'shousha', 'xinwei', 'serif';
+}
+
+.qy_liuwei_stars_title::after,
+.qy_liuwei_summary_title::after {
+    content: '';
+    display: block;
+    width: 50px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #d4af37, transparent);
+    margin: 6px auto 0;
+    border-radius: 1px;
+}
+
+.qy_liuwei_evaluation_badge {
+    font-size: 14px;
+    font-weight: bold;
+    padding: 4px 10px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.3), rgba(212, 175, 55, 0.1));
+    border: 1px solid #d4af37;
+    margin: 4px 2px;
+    display: inline-block;
+    color: #f0e6d2;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    box-shadow:
+            0 2px 5px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(212, 175, 55, 0.2),
+            inset 0 0 10px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+    letter-spacing: 1px;
+    position: relative;
+    font-family: 'shousha', 'xinwei', 'serif';
+    cursor: default; /* 恢复默认光标 */
+    min-width: 60px;
+    text-align: center;
+}
+
+/* 移除悬停效果 */
+.qy_liuwei_evaluation_badge:hover {
+    filter: none;
+    transform: none;
+}
+
+/* 移除点击效果 */
+.qy_liuwei_evaluation_badge:active {
+    transform: none;
+    filter: none;
+}
+
+/* 移除之前的伪元素发光效果，改用更自然的木质质感 */
+.qy_liuwei_evaluation_badge::before {
+    display: none;
+}
+
+/* 编辑图标样式 */
+.qy_liuwei_edit_icon {
+    font-size: 0.9em;
+    color: #d4af37;
+    opacity: 0.7;
+    margin-left: 4px;
+    vertical-align: middle;
+    transition: opacity 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                color 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: transform;
+}
+
+/* 推荐指数容器交互 */
+.qy_liuwei_stars {
+    transition: all 0.2s ease;
+    border-radius: 8px;
+}
+
+.qy_liuwei_stars[style*="cursor: pointer"]:hover {
+    background-color: rgba(212, 175, 55, 0.1);
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+}
+
+.qy_liuwei_stars:hover .qy_liuwei_edit_icon {
+    opacity: 1;
+    text-shadow: 0 0 5px #d4af37;
+    transform: scale(1.2);
+}
+
+/* 移动端适配 (横屏游戏宽度较大，且需考虑高度限制) */
+@media (max-width: 1200px), (max-height: 650px) {
+    .qy_liuwei_canvas {
+        width: 140px;
+        height: 140px;
+    }
+
+    .qy_liuwei_radar_container {
+        padding: 8px;
+    }
+
+    .qy_liuwei_radar_main_container {
+        gap: 0;  /* 移动端减少间距 */
+    }
+
+    .qy_liuwei_right_container {
+        gap: 10px;
+        padding: 8px;
+    }
+
+    .qy_liuwei_tags_container {
+        gap: 2px;
+        margin: 2px 0;
+    }
+
+    .qy_liuwei_summary {
+        padding: 6px;
+    }
+
+    .qy_liuwei_stars {
+        padding: 8px;
+    }
+
+    .qy_liuwei_evaluation_badge {
+        font-size: 10px;
+        padding: 3px 8px;
+    }
+
+    .qy_liuwei_stars_title {
+        font-size: 11px !important;
+    }
+
+    .qy_liuwei_star {
+        width: 16px;
+        height: 16px;
+    }
+
+    /* 移动端也强制正确的布局 */
+    .qy_liuwei_radar_container * {
+        position: static !important;
+    }
+
+    .qy_liuwei_radar_container .qy_liuwei_evaluation_badge,
+    .qy_liuwei_radar_container .qy_liuwei_summary_title {
+        position: relative !important;
+    }
+
+        .qy_liuwei_radar_container .qy_liuwei_evaluation_badge::before {
+        position: absolute !important;
+    }
+}
+
+/* ============================================================
+   尊重用户系统偏好：减少动画
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    /* 禁用所有编辑器组件动画 */
+    .qy_liuwei_editor_overlay,
+    .qy_liuwei_editor_container,
+    .qy_liuwei_editor_close,
+    .qy_liuwei_slider_item,
+    .qy_liuwei_slider_input,
+    .qy_liuwei_number_input,
+    .qy_liuwei_btn,
+    .qy_liuwei_stars,
+    .qy_liuwei_evaluation_badge,
+    .qy_liuwei_edit_icon,
+    .qy_liuwei_canvas,
+    .qy_liuwei_slider_label {
+        animation: none !important;
+        transition: none !important;
+        transform: none !important;
+    }
+}
+

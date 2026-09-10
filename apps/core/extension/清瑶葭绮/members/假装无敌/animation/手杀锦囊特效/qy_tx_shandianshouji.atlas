@@ -1,0 +1,292 @@
+
+qy_tx_shandianshouji.png
+size: 2040,2048
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1_01
+  rotate: false
+  xy: 1823, 1094
+  size: 136, 573
+  orig: 560, 600
+  offset: 205, 0
+  index: -1
+1_02
+  rotate: false
+  xy: 800, 122
+  size: 133, 569
+  orig: 560, 600
+  offset: 207, 0
+  index: -1
+1_03
+  rotate: false
+  xy: 836, 693
+  size: 118, 564
+  orig: 560, 600
+  offset: 224, 0
+  index: -1
+1_06
+  rotate: true
+  xy: 2, 2
+  size: 118, 489
+  orig: 560, 600
+  offset: 238, 0
+  index: -1
+1_07
+  rotate: false
+  xy: 2, 1529
+  size: 521, 517
+  orig: 560, 600
+  offset: 22, 41
+  index: -1
+1_08
+  rotate: false
+  xy: 2, 365
+  size: 333, 413
+  orig: 560, 600
+  offset: 118, 84
+  index: -1
+1_09
+  rotate: true
+  xy: 424, 882
+  size: 375, 410
+  orig: 560, 600
+  offset: 89, 82
+  index: -1
+1_10
+  rotate: false
+  xy: 956, 808
+  size: 385, 396
+  orig: 560, 600
+  offset: 79, 92
+  index: -1
+1_11
+  rotate: true
+  xy: 1391, 1246
+  size: 400, 425
+  orig: 560, 600
+  offset: 74, 70
+  index: -1
+1_12
+  rotate: true
+  xy: 959, 1646
+  size: 400, 430
+  orig: 560, 600
+  offset: 74, 70
+  index: -1
+1_13
+  rotate: true
+  xy: 525, 1646
+  size: 400, 432
+  orig: 560, 600
+  offset: 74, 70
+  index: -1
+1_14
+  rotate: false
+  xy: 965, 1206
+  size: 383, 438
+  orig: 560, 600
+  offset: 91, 70
+  index: -1
+1_15
+  rotate: true
+  xy: 525, 1259
+  size: 385, 438
+  orig: 560, 600
+  offset: 89, 70
+  index: -1
+1_16
+  rotate: true
+  xy: 1350, 862
+  size: 382, 414
+  orig: 560, 600
+  offset: 92, 70
+  index: -1
+1_17
+  rotate: true
+  xy: 402, 510
+  size: 370, 396
+  orig: 560, 600
+  offset: 104, 90
+  index: -1
+1_18
+  rotate: true
+  xy: 2, 780
+  size: 370, 398
+  orig: 560, 600
+  offset: 104, 90
+  index: -1
+1_19
+  rotate: false
+  xy: 956, 406
+  size: 373, 400
+  orig: 560, 600
+  offset: 101, 90
+  index: -1
+1_20
+  rotate: true
+  xy: 1343, 487
+  size: 373, 401
+  orig: 560, 600
+  offset: 101, 90
+  index: -1
+1_22
+  rotate: true
+  xy: 337, 164
+  size: 344, 388
+  orig: 560, 600
+  offset: 112, 90
+  index: -1
+2_10
+  rotate: false
+  xy: 1727, 10
+  size: 169, 155
+  orig: 560, 600
+  offset: 188, 224
+  index: -1
+2_11
+  rotate: true
+  xy: 1331, 110
+  size: 375, 394
+  orig: 560, 600
+  offset: 78, 123
+  index: -1
+2_12
+  rotate: false
+  xy: 1391, 1648
+  size: 430, 398
+  orig: 560, 600
+  offset: 78, 121
+  index: -1
+2_13
+  rotate: false
+  xy: 2, 1152
+  size: 420, 375
+  orig: 560, 600
+  offset: 88, 135
+  index: -1
+2_14
+  rotate: false
+  xy: 935, 48
+  size: 393, 356
+  orig: 560, 600
+  offset: 104, 123
+  index: -1
+2_17
+  rotate: true
+  xy: 1746, 343
+  size: 372, 263
+  orig: 560, 600
+  offset: 111, 165
+  index: -1
+2_18
+  rotate: true
+  xy: 1766, 717
+  size: 375, 272
+  orig: 560, 600
+  offset: 108, 172
+  index: -1
+2_19
+  rotate: true
+  xy: 1823, 1669
+  size: 377, 212
+  orig: 560, 600
+  offset: 108, 184
+  index: -1
+2_20
+  rotate: false
+  xy: 1727, 167
+  size: 267, 174
+  orig: 560, 600
+  offset: 120, 221
+  index: -1
+
+qy_tx_shandianshouji2.png
+size: 2001,747
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1_00
+  rotate: true
+  xy: 1106, 136
+  size: 135, 552
+  orig: 560, 600
+  offset: 208, 0
+  index: -1
+1_04
+  rotate: true
+  xy: 1106, 2
+  size: 132, 553
+  orig: 560, 600
+  offset: 212, 0
+  index: -1
+1_05
+  rotate: true
+  xy: 1106, 273
+  size: 133, 567
+  orig: 560, 600
+  offset: 209, 0
+  index: -1
+1_21
+  rotate: false
+  xy: 344, 358
+  size: 343, 387
+  orig: 560, 600
+  offset: 113, 90
+  index: -1
+1_23
+  rotate: true
+  xy: 1081, 408
+  size: 337, 390
+  orig: 560, 600
+  offset: 112, 90
+  index: -1
+1_24
+  rotate: true
+  xy: 1473, 408
+  size: 337, 390
+  orig: 560, 600
+  offset: 112, 90
+  index: -1
+1_25
+  rotate: true
+  xy: 2, 15
+  size: 337, 390
+  orig: 560, 600
+  offset: 112, 90
+  index: -1
+1_26
+  rotate: true
+  xy: 394, 19
+  size: 337, 390
+  orig: 560, 600
+  offset: 112, 90
+  index: -1
+1_27
+  rotate: true
+  xy: 689, 406
+  size: 339, 390
+  orig: 560, 600
+  offset: 111, 90
+  index: -1
+1_28
+  rotate: false
+  xy: 2, 354
+  size: 340, 391
+  orig: 560, 600
+  offset: 110, 90
+  index: -1
+2_15
+  rotate: true
+  xy: 1675, 32
+  size: 374, 324
+  orig: 560, 600
+  offset: 109, 137
+  index: -1
+2_16
+  rotate: true
+  xy: 786, 16
+  size: 388, 318
+  orig: 560, 600
+  offset: 104, 140
+  index: -1

@@ -1,0 +1,125 @@
+
+YinYangjinengzhuanhuan.png
+size: 777,520
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+kongbaitu
+  rotate: false
+  xy: 2, 34
+  size: 1, 1
+  orig: 1, 1
+  offset: 0, 0
+  index: -1
+quan_00000
+  rotate: true
+  xy: 320, 2
+  size: 89, 126
+  orig: 159, 159
+  offset: 0, 19
+  index: -1
+quan_00001
+  rotate: true
+  xy: 320, 256
+  size: 103, 135
+  orig: 159, 159
+  offset: 0, 8
+  index: -1
+quan_00002
+  rotate: true
+  xy: 642, 254
+  size: 125, 133
+  orig: 159, 159
+  offset: 0, 3
+  index: -1
+quan_00003
+  rotate: false
+  xy: 642, 381
+  size: 133, 137
+  orig: 159, 159
+  offset: 0, 0
+  index: -1
+quan_00004
+  rotate: false
+  xy: 619, 71
+  size: 149, 141
+  orig: 159, 159
+  offset: 0, 0
+  index: -1
+quan_00005
+  rotate: true
+  xy: 474, 53
+  size: 159, 143
+  orig: 159, 159
+  offset: 0, 0
+  index: -1
+quan_00006
+  rotate: false
+  xy: 474, 214
+  size: 159, 145
+  orig: 159, 159
+  offset: 0, 0
+  index: -1
+quan_00007
+  rotate: true
+  xy: 320, 93
+  size: 159, 152
+  orig: 159, 159
+  offset: 0, 0
+  index: -1
+quan_00008
+  rotate: true
+  xy: 2, 359
+  size: 159, 157
+  orig: 159, 159
+  offset: 0, 0
+  index: -1
+quan_00009
+  rotate: true
+  xy: 2, 198
+  size: 159, 157
+  orig: 159, 159
+  offset: 0, 0
+  index: -1
+quan_00010
+  rotate: true
+  xy: 2, 37
+  size: 159, 157
+  orig: 159, 159
+  offset: 0, 0
+  index: -1
+quan_00011
+  rotate: true
+  xy: 161, 359
+  size: 159, 157
+  orig: 159, 159
+  offset: 0, 0
+  index: -1
+quan_00012
+  rotate: true
+  xy: 161, 198
+  size: 159, 157
+  orig: 159, 159
+  offset: 0, 0
+  index: -1
+quan_00013
+  rotate: true
+  xy: 161, 37
+  size: 159, 157
+  orig: 159, 159
+  offset: 0, 0
+  index: -1
+quan_00014
+  rotate: false
+  xy: 320, 361
+  size: 159, 157
+  orig: 159, 159
+  offset: 0, 0
+  index: -1
+quan_00015
+  rotate: false
+  xy: 481, 361
+  size: 159, 157
+  orig: 159, 159
+  offset: 0, 0
+  index: -1

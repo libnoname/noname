@@ -1,0 +1,41 @@
+
+effect_jiu.png
+size: 1024,256
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+jiu-a
+  rotate: false
+  xy: 2, 2
+  size: 172, 172
+  orig: 172, 172
+  offset: 0, 0
+  index: -1
+jiu-b
+  rotate: false
+  xy: 698, 65
+  size: 91, 109
+  orig: 91, 109
+  offset: 0, 0
+  index: -1
+jiu-c
+  rotate: false
+  xy: 524, 13
+  size: 172, 161
+  orig: 172, 161
+  offset: 0, 0
+  index: -1
+jiu-d
+  rotate: false
+  xy: 350, 3
+  size: 172, 171
+  orig: 172, 171
+  offset: 0, 0
+  index: -1
+jiu-e
+  rotate: false
+  xy: 176, 2
+  size: 172, 172
+  orig: 172, 172
+  offset: 0, 0
+  index: -1

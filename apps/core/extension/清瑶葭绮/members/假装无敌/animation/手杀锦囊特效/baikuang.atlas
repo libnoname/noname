@@ -1,0 +1,13 @@
+
+baikuang.png
+size: 128,256
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+a
+  rotate: false
+  xy: 2, 2
+  size: 76, 175
+  orig: 76, 175
+  offset: 0, 0
+  index: -1

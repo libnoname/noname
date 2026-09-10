@@ -1,0 +1,272 @@
+
+qy_zb_renwangjingangdun.png
+size: 1196,1196
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+di_00
+  rotate: false
+  xy: 2, 633
+  size: 276, 271
+  orig: 350, 350
+  offset: 43, 37
+  index: -1
+di_01
+  rotate: true
+  xy: 304, 23
+  size: 168, 155
+  orig: 350, 350
+  offset: 96, 95
+  index: -1
+dun1_00
+  rotate: false
+  xy: 2, 906
+  size: 292, 288
+  orig: 700, 700
+  offset: 226, 183
+  index: -1
+dun1_01
+  rotate: false
+  xy: 296, 928
+  size: 277, 266
+  orig: 700, 700
+  offset: 233, 196
+  index: -1
+dun1_03
+  rotate: true
+  xy: 296, 714
+  size: 212, 218
+  orig: 700, 700
+  offset: 265, 223
+  index: -1
+dun1_05
+  rotate: false
+  xy: 808, 961
+  size: 233, 233
+  orig: 700, 700
+  offset: 254, 213
+  index: -1
+dun1_07
+  rotate: false
+  xy: 575, 958
+  size: 231, 236
+  orig: 700, 700
+  offset: 255, 213
+  index: -1
+dun1_09
+  rotate: false
+  xy: 2, 394
+  size: 231, 237
+  orig: 700, 700
+  offset: 255, 213
+  index: -1
+dun1_11
+  rotate: false
+  xy: 2, 156
+  size: 229, 236
+  orig: 700, 700
+  offset: 256, 214
+  index: -1
+dun1_13
+  rotate: true
+  xy: 808, 732
+  size: 227, 233
+  orig: 700, 700
+  offset: 257, 215
+  index: -1
+dun1_15
+  rotate: false
+  xy: 235, 402
+  size: 226, 229
+  orig: 700, 700
+  offset: 258, 216
+  index: -1
+dun1_17
+  rotate: false
+  xy: 575, 736
+  size: 228, 220
+  orig: 700, 700
+  offset: 257, 215
+  index: -1
+dun1_19
+  rotate: false
+  xy: 235, 193
+  size: 211, 207
+  orig: 700, 700
+  offset: 265, 223
+  index: -1
+dun1_21
+  rotate: true
+  xy: 1043, 1037
+  size: 157, 151
+  orig: 700, 700
+  offset: 293, 256
+  index: -1
+dun1_23
+  rotate: false
+  xy: 919, 575
+  size: 155, 153
+  orig: 700, 700
+  offset: 294, 255
+  index: -1
+dun1_25
+  rotate: true
+  xy: 760, 577
+  size: 153, 157
+  orig: 700, 700
+  offset: 295, 253
+  index: -1
+dun1_27
+  rotate: true
+  xy: 2, 4
+  size: 150, 159
+  orig: 700, 700
+  offset: 297, 252
+  index: -1
+dun1_29
+  rotate: false
+  xy: 1043, 730
+  size: 149, 159
+  orig: 700, 700
+  offset: 297, 252
+  index: -1
+dun1_31
+  rotate: false
+  xy: 448, 241
+  size: 149, 159
+  orig: 700, 700
+  offset: 297, 252
+  index: -1
+dun1_33
+  rotate: false
+  xy: 461, 80
+  size: 148, 159
+  orig: 700, 700
+  offset: 298, 252
+  index: -1
+dun1_35
+  rotate: true
+  xy: 599, 587
+  size: 147, 159
+  orig: 700, 700
+  offset: 298, 252
+  index: -1
+dun1_37
+  rotate: false
+  xy: 1065, 438
+  size: 129, 135
+  orig: 700, 700
+  offset: 307, 264
+  index: -1
+dun2c_06
+  rotate: false
+  xy: 1043, 289
+  size: 144, 138
+  orig: 700, 700
+  offset: 293, 282
+  index: -1
+dun2c_08
+  rotate: false
+  xy: 759, 149
+  size: 144, 138
+  orig: 700, 700
+  offset: 293, 282
+  index: -1
+dun2c_10
+  rotate: false
+  xy: 759, 9
+  size: 144, 138
+  orig: 700, 700
+  offset: 293, 282
+  index: -1
+dun2c_12
+  rotate: false
+  xy: 611, 9
+  size: 146, 138
+  orig: 700, 700
+  offset: 291, 282
+  index: -1
+dun2c_14
+  rotate: false
+  xy: 745, 292
+  size: 147, 140
+  orig: 700, 700
+  offset: 290, 282
+  index: -1
+dun2c_16
+  rotate: false
+  xy: 611, 149
+  size: 146, 141
+  orig: 700, 700
+  offset: 291, 282
+  index: -1
+dun2c_18
+  rotate: false
+  xy: 894, 289
+  size: 147, 138
+  orig: 700, 700
+  offset: 290, 282
+  index: -1
+dun2c_20
+  rotate: true
+  xy: 619, 438
+  size: 147, 139
+  orig: 700, 700
+  offset: 290, 282
+  index: -1
+dun2c_22
+  rotate: true
+  xy: 163, 4
+  size: 150, 139
+  orig: 700, 700
+  offset: 287, 282
+  index: -1
+dun2c_24
+  rotate: false
+  xy: 760, 434
+  size: 153, 141
+  orig: 700, 700
+  offset: 285, 282
+  index: -1
+dun2c_26
+  rotate: false
+  xy: 463, 440
+  size: 154, 145
+  orig: 700, 700
+  offset: 284, 282
+  index: -1
+dun2c_28
+  rotate: true
+  xy: 915, 429
+  size: 144, 148
+  orig: 700, 700
+  offset: 293, 282
+  index: -1
+dun2c_30
+  rotate: true
+  xy: 1043, 891
+  size: 144, 151
+  orig: 700, 700
+  offset: 293, 282
+  index: -1
+dun2c_32
+  rotate: false
+  xy: 599, 292
+  size: 144, 144
+  orig: 700, 700
+  offset: 293, 282
+  index: -1
+dun2c_34
+  rotate: false
+  xy: 905, 149
+  size: 144, 138
+  orig: 700, 700
+  offset: 293, 282
+  index: -1
+dun2c_36
+  rotate: false
+  xy: 905, 9
+  size: 144, 138
+  orig: 700, 700
+  offset: 293, 282
+  index: -1

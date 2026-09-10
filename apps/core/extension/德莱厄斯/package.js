@@ -1,9 +1,0 @@
-extension["德莱厄斯"]={
-	intro:"本人诺手迷所以制作了不同皮肤的诺手。特性各不相同。需搭配火影包玩",
-	author:"程咬金",
-	netdisk:"",
-	forum:"",
-	version:"1.0",
-	files:["神王.jpg","extension.js"],
-	size:"236KB"
-};

@@ -1,0 +1,34 @@
+
+wujiangshengxing.png
+size: 235,235
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+bai
+  rotate: false
+  xy: 132, 173
+  size: 30, 29
+  orig: 31, 32
+  offset: 0, 1
+  index: -1
+guangbo_00000
+  rotate: false
+  xy: 2, 105
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: -1
+shengxing_glow2
+  rotate: false
+  xy: 2, 2
+  size: 107, 101
+  orig: 107, 101
+  offset: 0, 0
+  index: -1
+xingxing
+  rotate: false
+  xy: 132, 204
+  size: 30, 29
+  orig: 31, 32
+  offset: 0, 1
+  index: -1

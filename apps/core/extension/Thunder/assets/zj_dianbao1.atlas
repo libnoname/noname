@@ -1,0 +1,83 @@
+
+zj_dianbao1.png
+size: 512,512
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+AA_0000_A_00089.png
+  rotate: false
+  xy: 252, 39
+  size: 128, 72
+  orig: 167, 146
+  offset: 12, 47
+  index: -1
+AA_0002_A_00091.png
+  rotate: true
+  xy: 388, 107
+  size: 140, 95
+  orig: 167, 146
+  offset: 6, 31
+  index: -1
+AA_0004_A_00093.png
+  rotate: true
+  xy: 134, 60
+  size: 144, 117
+  orig: 167, 146
+  offset: 4, 20
+  index: -1
+AA_0006_A_00095.png
+  rotate: false
+  xy: 291, 367
+  size: 151, 128
+  orig: 167, 146
+  offset: 2, 12
+  index: -1
+AA_0008_A_00097.png
+  rotate: false
+  xy: 252, 112
+  size: 135, 135
+  orig: 167, 146
+  offset: 22, 8
+  index: -1
+AA_0010_A_00099.png
+  rotate: false
+  xy: 149, 354
+  size: 141, 141
+  orig: 167, 146
+  offset: 20, 4
+  index: -1
+AA_0012_A_00101.png
+  rotate: false
+  xy: 1, 205
+  size: 145, 144
+  orig: 167, 146
+  offset: 19, 1
+  index: -1
+AA_0014_A_00103.png
+  rotate: false
+  xy: 1, 350
+  size: 147, 145
+  orig: 167, 146
+  offset: 18, 0
+  index: -1
+AA_0016_A_00105.png
+  rotate: true
+  xy: 1, 56
+  size: 148, 132
+  orig: 167, 146
+  offset: 19, 0
+  index: -1
+AA_0018_A_00107.png
+  rotate: false
+  xy: 291, 248
+  size: 149, 118
+  orig: 167, 146
+  offset: 18, 0
+  index: -1
+AA_0020_A_00109.png
+  rotate: false
+  xy: 381, 1
+  size: 120, 105
+  orig: 167, 146
+  offset: 23, 8
+  index: -1

@@ -1,0 +1,520 @@
+@charset "UTF-8";
+/*特殊按钮*/
+.qy_btn_btn_bg {
+    display: flex;
+    flex-wrap: wrap;
+    width: 80px;
+    height: auto;
+    cursor: pointer;
+    position: relative;
+    border-width: 20px 20px;
+    border-style: solid;
+    border-color: transparent;
+    border-image-slice: 19 fill !important;
+}
+
+.qy_btn_btn_bg_unsel {
+    border-image-source: url(./手杀武将详细框/pbtn_btn_bg_unsel.png);
+}
+
+.qy_btn_btn_bg_sel {
+    border-image-source: url(./手杀武将详细框/pbtn_btn_bg_sel.png);
+}
+
+/* 武将包(栏)按钮 */
+.qy_pbtn_btn_bg2 {
+    width: 110px;
+    height: auto;
+    cursor: pointer;
+    line-height: 40px;
+    display: flex;
+    align-items: center;
+    align-content: center;
+    position: relative;
+    border-width: 10px;
+    border-style: solid;
+    border-color: transparent;
+    border-image-slice: 20 fill !important;
+}
+
+.qy_btn_btn_bg2_unsel {
+    border-image-source: url(./手杀武将详细框/pbtn_btn_bg_unsel2.png);
+}
+
+.qy_btn_btn_bg2_sel {
+    border-image-source: url(./手杀武将详细框/pbtn_btn_bg_sel2.png);
+}
+
+/* 包容器 */
+.qy_chess_container {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    z-index: 9;
+    background-image: url("./手杀武将详细框/background.jpg");
+    background-size: 100% 100%;
+}
+
+/*========================= 武将露头 ===================================*/
+.qy_chess_container[data-qingyao-hand-killing-outcrop='true'] .qy_primary-avatar {
+    top: -10%;
+    height: 108.7%;
+    clip-path: url(#solo-clip);
+    -webkit-clip-path: url(#solo-clip);
+}
+
+/*========================= 左边包容器 ===================================*/
+.qy_btn_btn_left_container {
+    position: absolute !important;
+    height: 100%;
+    z-index: 5;
+    overflow: hidden;
+    display: flex;
+    width: 9rem;
+    flex-wrap: wrap;
+    animation: 0.3s ease qy_btn_btn_left_container_move_right;
+}
+
+.qy_pbtn_btn_bg2_container,
+.qy_btn_btn_bg_container {
+    display: flex !important;
+    position: relative;
+    flex-wrap: wrap;
+}
+
+.qy_btn_btn_bg_container {
+    margin-left: 5px;
+    height: 14%;
+    min-height: 140px;
+}
+
+.qy_btn_btn_bg_container .qy_btn_btn_bg {
+    width: 100%;
+    border-width: 19px 16px;
+}
+
+/* 武将包(栏)按钮包容器 */
+.qy_pbtn_btn_bg2_container {
+    overflow-x: hidden;
+    overflow-y: scroll;
+    height: 100%;
+    position: relative;
+    max-height: calc(100% - 150px);
+}
+
+.qy_pbtn_btn_bg2_container > .qy_pbtn_btn_bg2 {
+    margin: -6px 0;
+    width: 100%;
+}
+
+.qy_pbtn_btn_bg2_off {
+    filter: brightness(0.8);
+    -webkit-filter: brightness(0.8);
+}
+
+/* 头部按钮 */
+.qy_pub_background_s1 {
+    width: 92px;
+    height: 20px;
+    position: relative;
+    display: inline-table;
+    border: 15px solid transparent;
+    border-image-repeat: stretch;
+    border-image-slice: 20 fill;
+    box-sizing: content-box;
+    border-image-source: url(./手杀武将详细框/pub_background_s1.png);
+}
+
+/* 搜索框 */
+.qy_pub_background_s1_search:hover,
+.qy_pub_background_s1_search:active,
+.qy_pub_background_s1_search:focus {
+    width: 120px;
+}
+
+.qy_pub_background_s1_search > input {
+    position: relative;
+    width: 100%;
+    outline: none;
+    border: none;
+    box-sizing: border-box;
+    display: table-cell;
+    white-space: nowrap;
+    -webkit-appearance: none;
+    background-color: transparent;
+    background-image: none;
+    color: #6a695e;
+    text-align: center;
+    font-family: 'shousha', 'xinwei', serif;
+    font-size: 18px;
+}
+
+/* 右边势力按钮 */
+.qy_chess_right_container {
+    max-height: 60vh;
+    overflow-y: auto;
+    height: auto;
+    width: 130px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    right: 0;
+    top: 50%;
+    position: absolute !important;
+    transform: translateY(-50%);
+    animation: 0.3s ease qy_pbtn_btn_bg2_container_move_left;
+}
+
+/* 武将势力按钮 */
+.qy_publicui_tab1_bg {
+    display: flex;
+    width: 55px;
+    height: auto;
+    padding: 0 10px;
+    cursor: pointer;
+    flex-wrap: wrap;
+    position: relative;
+    border: 15px solid transparent;
+    border-image-repeat: stretch;
+    border-image-slice: 20 fill;
+    border-image-source: url(./手杀武将详细框/publicui_tab1_bg.png);
+}
+
+.qy_publicui_tab1_bg_sel {
+    border-image-source: url(./手杀武将详细框/publicui_tab1_bg_sel.png);
+}
+
+/* 字体 */
+.qy_chess_skin_title,
+.qy_btn_btn_bg > div,
+.qy_pbtn_btn_bg2 > div,
+.qy_publicui_tab1_bg > div {
+    width: 100%;
+    height: auto;
+    color: #b5a375d9;
+    font-family: 'shousha', 'xinwei', serif;
+    position: relative;
+    text-align: center;
+    /* 文字裁剪为... */
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+/* 搜索按钮 */
+.qy_warr_search_btn {
+    width: 60px;
+    height: 42px;
+    left: 5px;
+    zoom: 0.5;
+    cursor: pointer;
+    border-radius: 11%;
+    background-position: 90px;
+    background-image: url(./手杀武将详细框/warr_search_btn.png);
+}
+
+.qy_pub_background_s1_search > .qy_warr_search_btn {
+    position: relative;
+    display: table-cell;
+}
+
+/* 头部文字 */
+.qy_pub_background_s1_option_container {
+    overflow: hidden;
+}
+
+.qy_pub_background_s1_text_container, .qy_pub_background_s1_option_container {
+    display: block;
+    height: auto;
+    width: auto;
+    font-size: 18px;
+    position: relative;
+}
+
+.qy_pub_background_s1.qy_pub_background_s1_activ > .qy_pub_background_s1_option_container {
+    height: 0 !important;
+}
+
+.qy_pub_background_s1_option, .qy_pub_background_s1_text {
+    position: relative;
+    width: 100%;
+    text-align: center;
+    display: table-cell;
+    color: #b5a375d9;
+    cursor: pointer;
+    font-family: 'shousha', 'xinwei', serif;
+    text-shadow: 0 0 10px #ffb700d9, 0 0 10px #ffb700d9;
+}
+
+.qy_pub_background_s1_option {
+    text-shadow: none;
+    padding: 2px;
+    font-size: 18px;
+    display: block;
+}
+
+/* 三角 */
+.qy_pub_background_s1 > div > .qy_pub_background_s1_triangle {
+    position: relative;
+    width: 0;
+    height: 0;
+    cursor: pointer;
+    border: 10px solid transparent;
+    border-image-slice: 11 fill;
+    transform: rotate(180deg) translateY(3px);
+    display: table-cell;
+    border-image-source: url("手杀武将详细框/union_dropdown_arrow.png");
+}
+
+/* 武将包容器 */
+.qy_pub_character_container {
+    position: absolute !important;
+    left: 9rem;
+    transform: translateX(6%);
+    width: calc(100% - 130px - 9rem);
+    height: calc(100% - 72px);
+    bottom: 10px;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-content: flex-start;
+}
+
+/* 武将 */
+.qy_pub_character_container > .qy_character,
+.qy_pub_character_item {
+    position: relative !important;
+    width: 140px !important;
+    height: 200px !important;
+    margin: 15px !important;
+}
+
+/* 皮肤栏 */
+.qy_chess_skin_container {
+    width: 100%;
+    height: auto;
+    position: relative;
+    overflow-x: auto;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-content: center;
+    align-items: center;
+    justify-content: flex-start;
+    background-image: linear-gradient(to right, transparent 0%, rgb(0 0 0 / 50%) 10%, rgb(0 0 0 / 50%) 90%, transparent 100%);
+}
+
+.qy_chess_skin_title {
+    border-image-source: url('./手杀武将详细框/chr_mode_on.png');
+    width: 4.5%;
+    height: 66%;
+    border-width: 0;
+    border-style: solid;
+    border-image-slice: 0 fill;
+    background-size: 100% 100%;
+    display: inline-flex;
+    flex-wrap: nowrap;
+    align-content: center;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-right: 16px;
+    font-size: 3vh;
+}
+
+.qy_chess_skin_character {
+    width: 23vh;
+    height: 90%;
+}
+
+
+.qy_pub_background_s1.qy_pub_background_s1_activ > div > .qy_pub_background_s1_triangle {
+    transform: rotate(0deg);
+}
+
+
+.qy_btn_btn_bg > div:last-child {
+    font-size: 10px;
+}
+
+.qy_btn_btn_bg > div:first-child {
+    font-size: 20px;
+}
+
+.qy_publicui_tab1_bg > div:last-child {
+    font-size: 12px;
+}
+
+.qy_publicui_tab1_bg > div:first-child {
+    font-size: 20px;
+}
+
+/*头部那堆按钮*/
+.qy_chess_top_right_container, .qy_chess_top_left_container {
+    width: auto;
+    height: 70px;
+    top: 0;
+    display: flex;
+    flex-direction: row-reverse;
+    z-index: 10;
+}
+
+.qy_chess_top_right_container {
+    right: 0;
+}
+
+.qy_chess_top_left_container {
+    left: 10rem;
+}
+
+.qy_chess_pack_switch {
+    text-align: center;
+    padding: 10px 40px;
+    position: relative;
+    align-self: center;
+    cursor: pointer;
+    background: #969696;
+    color: #000000;
+    border-radius: 8%;
+}
+
+.qy_chess_pack_switch_on {
+    background: #ffffff;
+    color: #ffffff;
+}
+
+
+/* 右上角关闭按钮 */
+.qy_btn_btn_back_button {
+    z-index: 999;
+    width: 100px;
+    height: 80px;
+    right: 0;
+    top: 0;
+    position: relative;
+    cursor: pointer;
+    background-size: 100% 100%;
+    background-image: url("./手杀武将详细框/back_button.png");
+}
+
+.qy_btn_btn_back_button:hover {
+    filter: contrast(0.6);
+}
+
+.qy_btn_btn_back_button:active {
+    filter: contrast(0.4);
+}
+
+.qy_character > .qy_rank_label {
+    width: 40px;
+    height: 40px;
+}
+
+/* 菜单下的美化 */
+.menu-content > .qy_chess_container {
+    zoom: 0.6;
+}
+
+.menu-content .qy_chess_top_left_container,
+.menu-content .qy_chess_top_right_container {
+    position: absolute;
+}
+
+.menu-content .qy_chess_top_left_container {
+    z-index: 11;
+}
+
+.menu-content .qy_btn_btn_left_container {
+    width: 11rem;
+}
+
+.menu-content .qy_pbtn_btn_bg2 {
+    line-height: 60px;
+    font-size: x-large;
+}
+
+.menu-content .qy_chess_right_container {
+    max-height: 60%;
+    right: 30px;
+}
+
+.menu-content .qy_publicui_tab1_bg {
+    width: 75px;
+}
+
+.menu-content .qy_publicui_tab1_bg > div:first-child {
+    font-size: 30px;
+}
+
+.menu-content .qy_publicui_tab1_bg > div:last-child {
+    font-size: 22px;
+}
+
+.menu-content .qy_pub_background_s1 {
+    width: 6em;
+    font-size: 28px;
+}
+
+.menu-content .qy_pub_background_s1.qy_pub_background_s1_search{
+    width: 4.5em;
+}
+
+.menu-content .qy_pub_background_s1:not(.qy_pub_background_s1_activ) > .qy_pub_background_s1_option_container {
+    height: 7em !important;
+    font-size: 28px;
+}
+
+.menu-content .qy_pub_background_s1_text_container, .menu-content .qy_pub_background_s1_option {
+    font-size: 28px;
+}
+
+.menu-content .qy_pub_background_s1 > div > .qy_pub_background_s1_triangle {
+    border: 15px solid transparent;
+    border-image-slice: 11 fill;
+    border-image-source: url("手杀武将详细框/union_dropdown_arrow.png");
+}
+
+/* 手机极端布局 */
+@media screen and (max-width: 980px) {
+    .qy_pub_character_container {
+        transform: none;
+        display: flex;
+        flex-wrap: wrap;
+        flex-direction: row;
+        justify-content: center;
+        align-content: flex-start;
+    }
+}
+
+
+
+/* 过渡动画 */
+@keyframes qy_btn_btn_left_container_move_right {
+    0% {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+
+/* 过渡动画 */
+@keyframes qy_pbtn_btn_bg2_container_move_left {
+    0% {
+        transform: translateX(100%) translateY(-50%);
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0) translateY(-50%);
+    }
+}
+
+

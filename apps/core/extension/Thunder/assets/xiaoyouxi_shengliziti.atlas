@@ -1,0 +1,139 @@
+
+xiaoyouxi_shengliziti.png
+size: 774,1038
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+images/shengli/shengli_00014
+  rotate: false
+  xy: 2, 377
+  size: 398, 98
+  orig: 418, 117
+  offset: 20, 0
+  index: -1
+images/shengli/shengli_00015
+  rotate: false
+  xy: 2, 477
+  size: 405, 106
+  orig: 418, 117
+  offset: 13, 0
+  index: -1
+images/shengli/shengli_00016
+  rotate: false
+  xy: 2, 585
+  size: 408, 110
+  orig: 418, 117
+  offset: 10, 0
+  index: -1
+images/shengli/shengli_00017
+  rotate: false
+  xy: 2, 697
+  size: 412, 112
+  orig: 418, 117
+  offset: 6, 0
+  index: -1
+images/shengli/shengli_00018
+  rotate: false
+  xy: 2, 811
+  size: 415, 110
+  orig: 418, 117
+  offset: 3, 0
+  index: -1
+images/shengli/shengli_00019
+  rotate: false
+  xy: 2, 923
+  size: 418, 113
+  orig: 418, 117
+  offset: 0, 0
+  index: -1
+images/shengli/shengli_00020
+  rotate: true
+  xy: 419, 424
+  size: 408, 117
+  orig: 418, 117
+  offset: 0, 0
+  index: -1
+images/shengli/shengli_00021
+  rotate: true
+  xy: 538, 451
+  size: 381, 117
+  orig: 418, 117
+  offset: 1, 0
+  index: -1
+images/shengli/shengli_00022
+  rotate: true
+  xy: 538, 68
+  size: 381, 116
+  orig: 418, 117
+  offset: 3, 0
+  index: -1
+images/shengli/shengli_00023
+  rotate: true
+  xy: 658, 563
+  size: 383, 114
+  orig: 418, 117
+  offset: 6, 1
+  index: -1
+images/shengli/shengli_00024
+  rotate: true
+  xy: 657, 158
+  size: 403, 113
+  orig: 418, 117
+  offset: 0, 2
+  index: -1
+images/shengli/shengli_00025
+  rotate: true
+  xy: 420, 38
+  size: 384, 109
+  orig: 418, 117
+  offset: 12, 4
+  index: -1
+images/shengli/shengli_00026
+  rotate: true
+  xy: 2, 2
+  size: 373, 107
+  orig: 418, 117
+  offset: 14, 5
+  index: -1
+images/shengli/shengli_00027
+  rotate: true
+  xy: 111, 5
+  size: 370, 104
+  orig: 418, 117
+  offset: 17, 6
+  index: -1
+images/shengli/shengli_00028
+  rotate: true
+  xy: 217, 7
+  size: 368, 102
+  orig: 418, 117
+  offset: 20, 8
+  index: -1
+images/shengli/shengli_00029
+  rotate: true
+  xy: 321, 12
+  size: 363, 97
+  orig: 418, 117
+  offset: 24, 10
+  index: -1
+images/shengli/shengli_00030
+  rotate: false
+  xy: 422, 948
+  size: 345, 88
+  orig: 418, 117
+  offset: 43, 14
+  index: -1
+images/shengli/shengli_00031
+  rotate: false
+  xy: 422, 878
+  size: 234, 68
+  orig: 418, 117
+  offset: 154, 27
+  index: -1
+images/shengli/shengli_00032
+  rotate: false
+  xy: 419, 834
+  size: 216, 42
+  orig: 418, 117
+  offset: 172, 47
+  index: -1

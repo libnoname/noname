@@ -1,0 +1,286 @@
+
+qy_zb_yitianjian.png
+size: 1085,1085
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+tx_00
+  rotate: false
+  xy: 2, 941
+  size: 181, 142
+  orig: 188, 150
+  offset: 6, 8
+  index: -1
+tx_01
+  rotate: false
+  xy: 185, 941
+  size: 181, 142
+  orig: 188, 150
+  offset: 6, 8
+  index: -1
+tx_02
+  rotate: false
+  xy: 368, 941
+  size: 181, 142
+  orig: 188, 150
+  offset: 6, 8
+  index: -1
+tx_03
+  rotate: false
+  xy: 551, 941
+  size: 181, 142
+  orig: 188, 150
+  offset: 6, 8
+  index: -1
+tx_04
+  rotate: false
+  xy: 734, 941
+  size: 181, 142
+  orig: 188, 150
+  offset: 6, 8
+  index: -1
+tx_05
+  rotate: true
+  xy: 917, 902
+  size: 181, 150
+  orig: 188, 150
+  offset: 6, 0
+  index: -1
+tx_06
+  rotate: true
+  xy: 738, 758
+  size: 181, 150
+  orig: 188, 150
+  offset: 6, 0
+  index: -1
+tx_07
+  rotate: true
+  xy: 559, 614
+  size: 181, 150
+  orig: 188, 150
+  offset: 6, 0
+  index: -1
+tx_08
+  rotate: true
+  xy: 375, 322
+  size: 183, 150
+  orig: 188, 150
+  offset: 4, 0
+  index: -1
+tx_09
+  rotate: false
+  xy: 2, 63
+  size: 184, 150
+  orig: 188, 150
+  offset: 3, 0
+  index: -1
+tx_10
+  rotate: false
+  xy: 188, 62
+  size: 184, 150
+  orig: 188, 150
+  offset: 3, 0
+  index: -1
+tx_11
+  rotate: true
+  xy: 747, 136
+  size: 183, 150
+  orig: 188, 150
+  offset: 4, 0
+  index: -1
+tx_12
+  rotate: false
+  xy: 374, 20
+  size: 183, 150
+  orig: 188, 150
+  offset: 4, 0
+  index: -1
+tx_13
+  rotate: false
+  xy: 2, 652
+  size: 182, 143
+  orig: 188, 150
+  offset: 5, 7
+  index: -1
+tx_14
+  rotate: false
+  xy: 2, 797
+  size: 181, 142
+  orig: 188, 150
+  offset: 6, 8
+  index: -1
+tx_15
+  rotate: true
+  xy: 932, 429
+  size: 182, 147
+  orig: 188, 150
+  offset: 5, 3
+  index: -1
+tx_16
+  rotate: false
+  xy: 559, 18
+  size: 183, 150
+  orig: 188, 150
+  offset: 4, 0
+  index: -1
+tx_17
+  rotate: false
+  xy: 900, 278
+  size: 183, 149
+  orig: 188, 150
+  offset: 4, 1
+  index: -1
+tx_18
+  rotate: false
+  xy: 562, 170
+  size: 183, 149
+  orig: 188, 150
+  offset: 4, 1
+  index: -1
+tx_19
+  rotate: false
+  xy: 899, 127
+  size: 183, 149
+  orig: 188, 150
+  offset: 4, 1
+  index: -1
+tx_20
+  rotate: false
+  xy: 375, 172
+  size: 185, 148
+  orig: 188, 150
+  offset: 2, 2
+  index: -1
+tx_21
+  rotate: false
+  xy: 188, 214
+  size: 185, 145
+  orig: 188, 150
+  offset: 2, 5
+  index: -1
+tx_22
+  rotate: false
+  xy: 186, 652
+  size: 185, 143
+  orig: 188, 150
+  offset: 2, 7
+  index: -1
+tx_23
+  rotate: false
+  xy: 745, 467
+  size: 185, 144
+  orig: 188, 150
+  offset: 2, 6
+  index: -1
+tx_24
+  rotate: false
+  xy: 2, 361
+  size: 185, 144
+  orig: 188, 150
+  offset: 2, 6
+  index: -1
+tx_25
+  rotate: false
+  xy: 189, 361
+  size: 184, 144
+  orig: 188, 150
+  offset: 3, 6
+  index: -1
+tx_26
+  rotate: false
+  xy: 373, 652
+  size: 184, 143
+  orig: 188, 150
+  offset: 3, 7
+  index: -1
+tx_27
+  rotate: false
+  xy: 711, 613
+  size: 184, 143
+  orig: 188, 150
+  offset: 3, 7
+  index: -1
+tx_28
+  rotate: false
+  xy: 897, 613
+  size: 184, 143
+  orig: 188, 150
+  offset: 3, 7
+  index: -1
+tx_29
+  rotate: false
+  xy: 2, 507
+  size: 184, 143
+  orig: 188, 150
+  offset: 3, 7
+  index: -1
+tx_30
+  rotate: false
+  xy: 188, 507
+  size: 184, 143
+  orig: 188, 150
+  offset: 3, 7
+  index: -1
+tx_31
+  rotate: false
+  xy: 527, 322
+  size: 185, 144
+  orig: 188, 150
+  offset: 2, 6
+  index: -1
+tx_32
+  rotate: false
+  xy: 714, 321
+  size: 184, 144
+  orig: 188, 150
+  offset: 3, 6
+  index: -1
+tx_33
+  rotate: false
+  xy: 2, 215
+  size: 184, 144
+  orig: 188, 150
+  offset: 3, 6
+  index: -1
+tx_34
+  rotate: false
+  xy: 559, 468
+  size: 184, 143
+  orig: 188, 150
+  offset: 3, 7
+  index: -1
+tx_35
+  rotate: false
+  xy: 374, 507
+  size: 183, 143
+  orig: 188, 150
+  offset: 4, 7
+  index: -1
+tx_36
+  rotate: false
+  xy: 185, 797
+  size: 182, 142
+  orig: 188, 150
+  offset: 5, 8
+  index: -1
+tx_37
+  rotate: false
+  xy: 369, 797
+  size: 182, 142
+  orig: 188, 150
+  offset: 5, 8
+  index: -1
+tx_38
+  rotate: false
+  xy: 553, 797
+  size: 183, 142
+  orig: 188, 150
+  offset: 4, 8
+  index: -1
+tx_39
+  rotate: false
+  xy: 890, 758
+  size: 182, 142
+  orig: 188, 150
+  offset: 5, 8
+  index: -1

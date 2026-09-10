@@ -1,0 +1,76 @@
+
+jingzi.png
+size: 816,816
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+jingzhi_00000
+  rotate: false
+  xy: 242, 2
+  size: 199, 165
+  orig: 255, 255
+  offset: 28, 45
+  index: -1
+jingzhi_00001
+  rotate: false
+  xy: 489, 178
+  size: 214, 193
+  orig: 255, 255
+  offset: 22, 42
+  index: -1
+jingzhi_00002
+  rotate: false
+  xy: 249, 169
+  size: 238, 202
+  orig: 255, 255
+  offset: 0, 38
+  index: -1
+jingzhi_00003
+  rotate: false
+  xy: 509, 373
+  size: 237, 213
+  orig: 255, 255
+  offset: 0, 34
+  index: -1
+jingzhi_00004
+  rotate: false
+  xy: 509, 588
+  size: 238, 226
+  orig: 255, 255
+  offset: 1, 29
+  index: -1
+jingzhi_00005
+  rotate: false
+  xy: 256, 373
+  size: 246, 205
+  orig: 255, 255
+  offset: 0, 23
+  index: -1
+jingzhi_00006
+  rotate: true
+  xy: 2, 62
+  size: 246, 238
+  orig: 255, 255
+  offset: 3, 17
+  index: -1
+jingzhi_00007
+  rotate: true
+  xy: 2, 310
+  size: 254, 245
+  orig: 255, 255
+  offset: 0, 10
+  index: -1
+jingzhi_00008
+  rotate: false
+  xy: 2, 566
+  size: 252, 248
+  orig: 255, 255
+  offset: 3, 3
+  index: -1
+jingzhi_00009
+  rotate: false
+  xy: 256, 580
+  size: 251, 234
+  orig: 255, 255
+  offset: 4, 4
+  index: -1

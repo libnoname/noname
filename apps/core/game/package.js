@@ -33,8 +33,8 @@ window.noname_package = {
 		sxrm: "蚀心入魔",
 		sixiang: "四象封印",
 		//DIY系列
-		diy: "DIY",
-		key: "Key",
+		diy: "设计比赛20",
+		key: "二次元",
 	},
 	card: {
 		standard: "标准",

@@ -1,0 +1,20 @@
+
+Ss_vfx_sxq_effect_glow.png
+size: 1135,744
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+vfx_effect_1
+  rotate: false
+  xy: 0, 217
+  size: 1046, 527
+  orig: 1046, 527
+  offset: 0, 0
+  index: -1
+vfx_effect_2
+  rotate: false
+  xy: 0, 0
+  size: 1135, 215
+  orig: 1135, 215
+  offset: 0, 0
+  index: -1

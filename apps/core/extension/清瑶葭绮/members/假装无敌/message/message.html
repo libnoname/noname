@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <!-- 这个css是我引用阿里的一些字体图标，请戳： https://www.iconfont.cn/ -->
+    <link rel="stylesheet" href="./iconfont.css">
+    <link rel="stylesheet" href="./message.css">
+    <script src="./message.js"></script>
+</head>
+<body>
+    <!-- 消息外层容器，因为消息提醒基本上是全局的，所以这里用id，所有的弹出消息都是需要插入到这个容器里边的 -->
+    <div id="message-container">
+    </div>
+    <button style="margin-top: 400px" class="btn" onclick="f()">弹窗消息提醒</button>
+    <button class="btn2" onclick="f()">弹窗消息提醒</button>
+    <button class="btn3" onclick="f()">弹窗消息提醒</button>
+</body>
+<script>
+    // 代码: https://learnku.com/f2e/t/29779
+    // message可以定义为全局对象，项目中可以直接调用。
+    var message = new qyMessage();
+    let f = function (){
+        console.log('点击')
+        message.queueMessage({
+            type: 'success',
+            text: '点我旁边的叉叉试试',
+            duration: 1000,    // 不会自动消失
+            closeable: true, // 可手动关闭
+        });
+        message.queueMessage({
+            type: 'warning',
+            text: '点我旁边的叉叉试试',
+            duration: 2000,    // 不会自动消失
+            closeable: true, // 可手动关闭
+        });
+        message.queueMessage({
+            type: 'error',
+            text: '点我旁边的叉叉试试',
+            duration: 3000,    // 不会自动消失
+            closeable: true, // 可手动关闭
+        });
+        message.queueMessage({
+            type: 'loading',
+            text: '点我旁边的叉叉试试',
+            duration: 4000,    // 不会自动消失
+            closeable: true, // 可手动关闭
+        });
+        message.queueMessage({
+            type: 'info',
+            text: '点我旁边的叉叉试试',
+            duration: 5000,    // 不会自动消失
+            closeable: true, // 可手动关闭
+        });
+    }
+</script>
+</html>
+
+
+
+
+

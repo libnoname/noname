@@ -1,0 +1,118 @@
+
+shangzhuang.png
+size: 459,459
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+shangzhuang1/shangzhuang1_00000
+  rotate: false
+  xy: 298, 229
+  size: 159, 54
+  orig: 161, 56
+  offset: 1, 1
+  index: -1
+shangzhuang1/shangzhuang1_00001
+  rotate: false
+  xy: 298, 401
+  size: 159, 56
+  orig: 161, 56
+  offset: 1, 0
+  index: -1
+shangzhuang1/shangzhuang1_00002
+  rotate: false
+  xy: 298, 343
+  size: 159, 56
+  orig: 161, 56
+  offset: 1, 0
+  index: -1
+shangzhuang1/shangzhuang1_00003
+  rotate: false
+  xy: 298, 285
+  size: 159, 56
+  orig: 161, 56
+  offset: 1, 0
+  index: -1
+shangzhuang1/shangzhuang1_00004
+  rotate: false
+  xy: 296, 173
+  size: 159, 54
+  orig: 161, 56
+  offset: 1, 1
+  index: -1
+shangzhuang1/shangzhuang1_00005
+  rotate: false
+  xy: 296, 119
+  size: 157, 52
+  orig: 161, 56
+  offset: 2, 2
+  index: -1
+shangzhuang1/shangzhuang1_00006
+  rotate: false
+  xy: 296, 65
+  size: 155, 52
+  orig: 161, 56
+  offset: 3, 2
+  index: -1
+shangzhuang1/shangzhuang1_00007
+  rotate: false
+  xy: 296, 27
+  size: 143, 36
+  orig: 161, 56
+  offset: 9, 10
+  index: -1
+shangzhuang2/shangzhuang2_00000
+  rotate: false
+  xy: 2, 181
+  size: 292, 52
+  orig: 300, 56
+  offset: 4, 2
+  index: -1
+shangzhuang2/shangzhuang2_00001
+  rotate: false
+  xy: 2, 403
+  size: 294, 54
+  orig: 300, 56
+  offset: 3, 1
+  index: -1
+shangzhuang2/shangzhuang2_00002
+  rotate: false
+  xy: 2, 347
+  size: 294, 54
+  orig: 300, 56
+  offset: 3, 1
+  index: -1
+shangzhuang2/shangzhuang2_00003
+  rotate: false
+  xy: 2, 291
+  size: 294, 54
+  orig: 300, 56
+  offset: 3, 1
+  index: -1
+shangzhuang2/shangzhuang2_00004
+  rotate: false
+  xy: 2, 235
+  size: 294, 54
+  orig: 300, 56
+  offset: 3, 1
+  index: -1
+shangzhuang2/shangzhuang2_00005
+  rotate: false
+  xy: 2, 127
+  size: 292, 52
+  orig: 300, 56
+  offset: 4, 2
+  index: -1
+shangzhuang2/shangzhuang2_00006
+  rotate: false
+  xy: 2, 73
+  size: 292, 52
+  orig: 300, 56
+  offset: 4, 2
+  index: -1
+shangzhuang2/shangzhuang2_00007
+  rotate: false
+  xy: 2, 23
+  size: 292, 48
+  orig: 300, 56
+  offset: 4, 4
+  index: -1

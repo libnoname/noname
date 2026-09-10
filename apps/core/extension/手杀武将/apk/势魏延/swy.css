@@ -1,0 +1,76 @@
+.shiweiyanPowerContainer {
+    position: absolute;
+    bottom:24px;
+    right: 195px; 
+    width: 47px;
+    height: 230px;
+    background-image: url('assets/power/paiju_shiweiyan_bar_01.png');
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: bottom;
+    z-index:4;
+    zoom: 0.75;
+    pointer-events: auto;
+}
+.shiweiyanPowerFill {
+    position: absolute;
+    bottom: 33px;
+    width: 6px;
+    height: 155px;
+    left: 19px; 
+    right: auto; 
+    background-image: url('assets/power/paiju_shiweiyan_bar_02.png');
+    background-repeat: no-repeat;
+    background-size: 100% auto;
+    background-position: bottom;
+    overflow: hidden;
+    transition: height .5s linear;
+    zoom: 1;
+}
+.shiweiyanPowerContainer .shiweiyanPowerFill:nth-child(2) {
+    left: 26px; 
+}
+
+/*******西瓜标记补充美化*******/
+.tethys-digit-bg{
+    width:150px;
+    height:50px;
+    bottom:calc(20% + 52px);
+    left:20%;
+    position:absolute;
+    background-size:100% 100%;
+    background-image:url('assets/image/shuzibg.png');
+}
+.tethys-digit-num{
+    width:35px;
+    height:33.5px;
+    left:92px;
+    top:5.5px;
+    text-align:center;
+    font-size:23.5px;
+    line-height:34px;
+    background-size:100% 100%;
+    background-image:url('assets/image/game_choose_label_bg.png');
+    font-family:'shousha';
+    color:#fcfcbf;
+}
+.tethys-digit-minus{
+    width:40px;
+    height:40px;
+    left:2px;
+    top:2px;
+    background-position:center;
+    background-repeat:no-repeat;
+    background-size:80% 80%;
+    background-image:url('assets/image/jianhao.png');
+}
+.tethys-digit-plus{
+    width:40px;
+    height:40px;
+    left:42px;
+    top:2px;
+    background-position:center;
+    background-repeat:no-repeat;
+    background-size:80% 80%;
+    background-image:url('assets/image/jiahao.png');
+}

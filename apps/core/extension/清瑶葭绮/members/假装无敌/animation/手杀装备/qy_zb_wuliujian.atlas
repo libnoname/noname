@@ -1,0 +1,97 @@
+
+qy_zb_wuliujian.png
+size: 1024,1024
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+wuliujian/daoguang1_00020
+  rotate: false
+  xy: 2, 740
+  size: 452, 282
+  orig: 800, 800
+  offset: 174, 344
+  index: -1
+wuliujian/daoguang2_00027
+  rotate: false
+  xy: 584, 183
+  size: 310, 224
+  orig: 800, 800
+  offset: 185, 357
+  index: -1
+wuliujian/daoguang2_00028
+  rotate: true
+  xy: 584, 409
+  size: 388, 232
+  orig: 800, 800
+  offset: 188, 343
+  index: -1
+wuliujian/daoguang2_00029
+  rotate: false
+  xy: 456, 799
+  size: 475, 223
+  orig: 800, 800
+  offset: 194, 340
+  index: -1
+wuliujian/daoguang2_00030
+  rotate: true
+  xy: 2, 248
+  size: 490, 219
+  orig: 800, 800
+  offset: 211, 332
+  index: -1
+wuliujian/daoguang2_00031
+  rotate: true
+  xy: 223, 242
+  size: 496, 190
+  orig: 800, 800
+  offset: 215, 346
+  index: -1
+wuliujian/daoguang2_00032
+  rotate: true
+  xy: 415, 240
+  size: 498, 167
+  orig: 800, 800
+  offset: 217, 350
+  index: -1
+wuliujian/daoguang2_00033
+  rotate: true
+  xy: 456, 756
+  size: 41, 66
+  orig: 800, 800
+  offset: 225, 429
+  index: -1
+wuliujian/glow1
+  rotate: true
+  xy: 189, 2
+  size: 179, 228
+  orig: 800, 800
+  offset: 310, 294
+  index: -1
+wuliujian/glow2
+  rotate: false
+  xy: 419, 5
+  size: 46, 233
+  orig: 46, 233
+  offset: 0, 0
+  index: -1
+wuliujian/shanguang_00018
+  rotate: true
+  xy: 818, 556
+  size: 241, 158
+  orig: 800, 800
+  offset: 316, 378
+  index: -1
+wuliujian/wuliujian1
+  rotate: false
+  xy: 2, 5
+  size: 185, 241
+  orig: 187, 243
+  offset: 1, 1
+  index: -1
+wuliujian/wuliujian2
+  rotate: true
+  xy: 467, 128
+  size: 53, 241
+  orig: 105, 267
+  offset: 27, 6
+  index: -1

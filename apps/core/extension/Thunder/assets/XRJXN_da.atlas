@@ -1,0 +1,83 @@
+
+XRJXN_da.png
+size: 842,535
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1
+  rotate: true
+  xy: 774, 275
+  size: 118, 46
+  orig: 200, 100
+  offset: 40, 25
+  index: -1
+10
+  rotate: true
+  xy: 716, 19
+  size: 121, 52
+  orig: 200, 100
+  offset: 34, 23
+  index: -1
+2
+  rotate: true
+  xy: 717, 275
+  size: 118, 55
+  orig: 200, 100
+  offset: 39, 24
+  index: -1
+3
+  rotate: true
+  xy: 656, 20
+  size: 120, 58
+  orig: 200, 100
+  offset: 39, 23
+  index: -1
+4
+  rotate: true
+  xy: 722, 150
+  size: 123, 49
+  orig: 200, 100
+  offset: 34, 25
+  index: -1
+5
+  rotate: true
+  xy: 782, 405
+  size: 128, 58
+  orig: 200, 100
+  offset: 30, 20
+  index: -1
+6
+  rotate: true
+  xy: 656, 266
+  size: 127, 59
+  orig: 200, 100
+  offset: 30, 16
+  index: -1
+7
+  rotate: false
+  xy: 656, 465
+  size: 124, 68
+  orig: 200, 100
+  offset: 34, 9
+  index: -1
+8
+  rotate: true
+  xy: 656, 142
+  size: 122, 64
+  orig: 200, 100
+  offset: 35, 17
+  index: -1
+9
+  rotate: false
+  xy: 656, 395
+  size: 120, 68
+  orig: 200, 100
+  offset: 37, 9
+  index: -1
+XRJXN
+  rotate: false
+  xy: 2, 2
+  size: 652, 531
+  orig: 652, 531
+  offset: 0, 0
+  index: -1

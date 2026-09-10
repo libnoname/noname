@@ -1,0 +1,76 @@
+
+qy_zb_sanjianliangren.png
+size: 2048,2048
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+images/sanchaliangrendao/daoguang_00035
+  rotate: false
+  xy: 2, 1221
+  size: 637, 403
+  orig: 800, 800
+  offset: 46, 156
+  index: -1
+images/sanchaliangrendao/daoguang_00036
+  rotate: false
+  xy: 1290, 1626
+  size: 630, 400
+  orig: 800, 800
+  offset: 40, 158
+  index: -1
+images/sanchaliangrendao/daoguang_00037
+  rotate: true
+  xy: 2, 580
+  size: 639, 401
+  orig: 800, 800
+  offset: 32, 157
+  index: -1
+images/sanchaliangrendao/daoguang_00038
+  rotate: false
+  xy: 2, 1626
+  size: 652, 400
+  orig: 800, 800
+  offset: 30, 158
+  index: -1
+images/sanchaliangrendao/daoguang_00039
+  rotate: false
+  xy: 656, 1625
+  size: 632, 401
+  orig: 800, 800
+  offset: 45, 157
+  index: -1
+images/sanchaliangrendao/daoguang_00040
+  rotate: false
+  xy: 641, 1234
+  size: 625, 389
+  orig: 800, 800
+  offset: 53, 167
+  index: -1
+images/sanchaliangrendao/daoguang_00041
+  rotate: true
+  xy: 2, 2
+  size: 576, 387
+  orig: 800, 800
+  offset: 91, 166
+  index: -1
+images/sanchaliangrendao/glow_00004
+  rotate: false
+  xy: 898, 1028
+  size: 211, 204
+  orig: 800, 800
+  offset: 296, 297
+  index: -1
+images/sanchaliangrendao/sanjianliangrendao
+  rotate: false
+  xy: 898, 829
+  size: 203, 197
+  orig: 800, 800
+  offset: 300, 300
+  index: -1
+images/sanchaliangrendao/xuanzhuandaoguang_00000
+  rotate: false
+  xy: 405, 695
+  size: 491, 524
+  orig: 800, 800
+  offset: 151, 131
+  index: -1

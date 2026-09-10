@@ -1,0 +1,43 @@
+@font-face {
+  font-family: "qy-iconfont"; /* Project id 4145888 */
+  /* Color fonts */
+  src: 
+       url('iconfont.ttf?t=1688114509550') format('truetype');
+}
+
+.qy-iconfont {
+  font-family: "qy-iconfont" !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.qy-icon-close:before {
+  content: "\e620";
+}
+
+.qy-icon-loading:before {
+  content: "\eb74";
+}
+
+.qy-icon-warning:before {
+  content: "\e652";
+}
+
+.qy-icon-info:before {
+  content: "\e653";
+}
+
+.qy-icon-error:before {
+  content: "\e654";
+}
+
+.qy-icon-success:before {
+  content: "\e656";
+}
+
+.qy-icon-help:before {
+  content: "\e657";
+}
+

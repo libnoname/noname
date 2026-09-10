@@ -1,0 +1,83 @@
+
+qy_sf_jiesuan_quanchangzuijia.png
+size: 974,974
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+quanchangzuijia2ok_13
+  rotate: false
+  xy: 2, 2
+  size: 256, 256
+  orig: 256, 256
+  offset: 0, 0
+  index: -1
+quanchangzuijiaok_00
+  rotate: false
+  xy: 2, 617
+  size: 255, 355
+  orig: 256, 360
+  offset: 1, 0
+  index: -1
+quanchangzuijiaok_01
+  rotate: false
+  xy: 259, 618
+  size: 255, 354
+  orig: 256, 360
+  offset: 1, 0
+  index: -1
+quanchangzuijiaok_02
+  rotate: false
+  xy: 259, 263
+  size: 254, 353
+  orig: 256, 360
+  offset: 2, 0
+  index: -1
+quanchangzuijiaok_03
+  rotate: true
+  xy: 260, 6
+  size: 255, 349
+  orig: 256, 360
+  offset: 1, 0
+  index: -1
+quanchangzuijiaok_04
+  rotate: true
+  xy: 611, 8
+  size: 255, 350
+  orig: 256, 360
+  offset: 1, 0
+  index: -1
+quanchangzuijiaok_05
+  rotate: false
+  xy: 515, 265
+  size: 254, 351
+  orig: 256, 360
+  offset: 2, 0
+  index: -1
+quanchangzuijiaok_06
+  rotate: false
+  xy: 516, 619
+  size: 254, 353
+  orig: 256, 360
+  offset: 2, 1
+  index: -1
+quanchangzuijiaok_07
+  rotate: false
+  xy: 2, 260
+  size: 255, 355
+  orig: 256, 360
+  offset: 1, 0
+  index: -1
+quanchangzuijiaok_08
+  rotate: false
+  xy: 772, 714
+  size: 189, 258
+  orig: 256, 360
+  offset: 32, 0
+  index: -1
+quanchangzuijiaok_08_00
+  rotate: true
+  xy: 772, 584
+  size: 128, 177
+  orig: 128, 177
+  offset: 0, 0
+  index: -1

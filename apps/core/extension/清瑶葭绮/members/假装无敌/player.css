@@ -1,0 +1,1997 @@
+@charset "UTF-8";
+/* 角色边框 */
+.qy_character {
+    width: 140px;
+    height: 180px;
+    background-size: 100% 100%;
+    position: relative;
+    background-image: url("手杀武将详细框/武将势力边框/chara_face_frame_qun.png");
+}
+
+.qy_character_qun {
+    background-image: url("手杀武将详细框/武将势力边框/chara_face_frame_qun.png");
+}
+
+.qy_character_wei {
+    background-image: url("手杀武将详细框/武将势力边框/chara_face_frame_wei.png");
+}
+
+.qy_character_shu {
+    background-image: url("手杀武将详细框/武将势力边框/chara_face_frame_shu.png");
+}
+
+.qy_character_wu {
+    background-image: url("手杀武将详细框/武将势力边框/chara_face_frame_wu.png");
+}
+
+.qy_character_shen {
+    background-image: url("手杀武将详细框/武将势力边框/chara_face_frame_shen.png");
+}
+
+.qy_character_qingyao_xian {
+    background-image: url("手杀武将详细框/武将势力边框/chara_face_frame_qingyao_xian.png");
+}
+
+.qy_character_border {
+    width: 98%;
+    height: 98%;
+    z-index: -1;
+    left: 1%;
+    top: 1.3%;
+    position: absolute !important;
+    border-radius: 7%;
+}
+
+.qy_character_border_common {
+    background: #9530C4;
+}
+
+.qy_character_border_epic {
+    background: #EDDFA6;
+}
+
+.qy_character_border_junk {
+    background: #2753C7;
+}
+
+.qy_character_border_legend {
+    background: #D36136;
+}
+
+.qy_character_border_rare {
+    background: #9530C5;
+}
+
+
+/* 武将图 */
+.qy_primary-avatar {
+    background-size: cover;
+    width: 78%;
+    height: 94%;
+    border-radius: 8%;
+    left: 18%;
+    top: 3%;
+    position: absolute !important;
+    background-position-x: 50%;
+    background-repeat: no-repeat;
+}
+
+/* 武将名称 */
+.qy_name {
+    width: 1em;
+    left: 4.5%;
+    top: 14%;
+    color: #f8efd8b8;
+    font-size: 16px;
+    line-height: 0.95;
+    text-align: center;
+    white-space: pre-wrap;
+    position: absolute !important;
+    font-family: 'shousha', 'xinwei', 'serif';
+}
+
+.qy_xing_container {
+    width: 20%;
+    height: 60%;
+    bottom: -5%;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+    align-content: center;
+    justify-content: center;
+    align-items: center;
+    position: absolute !important;
+}
+
+.qy_xing {
+    width: 85%;
+    height: 20%;
+    background-size: 100% 100%;
+    position: relative;
+}
+
+/*亮的星星*/
+.qy_xing_light {
+    background-image: url("./手杀武将详细框/武将势力边框/dj_star_light.png");
+}
+
+/*不亮的星星*/
+.qy_xing_gray {
+    background-image: url("./手杀武将详细框/武将势力边框/dj_star_gray.png");
+}
+
+.qy_xing:nth-child(2) {
+    bottom: 7px;
+}
+
+.qy_xing:nth-child(3) {
+    bottom: 14px;
+}
+
+.qy_xing:nth-child(4) {
+    bottom: 21px;
+}
+
+.qy_xing:nth-child(5) {
+    bottom: 28px;
+}
+
+/* 标签 */
+.qy_rank_label {
+    width: 21%;
+    height: 15%;
+    right: 2.7%;
+    top: 2.5%;
+    z-index: 1;
+    background-size: 100% 100%;
+    position: absolute !important;
+}
+
+/* 稀有 */
+.qy_rank_label_common {
+    background-image: url("./手杀武将详细框/武将标签/rarity_common.png");
+}
+
+/* 史诗 */
+.qy_rank_label_epic {
+    background-image: url("./手杀武将详细框/武将标签/rarity_epic.png");
+}
+
+/* 精良 */
+.qy_rank_label_junk {
+    background-image: url("./手杀武将详细框/武将标签/rarity_junk.png");
+}
+
+/* 传说 */
+.qy_rank_label_legend {
+    background-image: url("./手杀武将详细框/武将标签/rarity_legend.png");
+}
+
+/* 精品 */
+.qy_rank_label_rare {
+    background-image: url("./手杀武将详细框/武将标签/rarity_rare.png");
+}
+
+/* 稀有 */
+.qy_rank_label_boutique {
+    background-image: url("./手杀武将详细框/武将标签/rarity_common.png");
+}
+
+
+/* 武将详细资料卡 */
+/*武将图*/
+.qy_chess_container.qy_chr_detail_container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+}
+
+.qy_chr_detail_container > .qy_btn_btn_back_button {
+    position: absolute;
+}
+
+.chr_detail_prop_cnt_bg {
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    background-image: url("./images/mobile/charactercard/chr_detail_prop_cnt_bg.png");
+    bottom: 0;
+    right: -3%;
+    width: 34%;
+    height: 6.9%;
+    display: flex;
+}
+
+.chr_detail_prop_cnt_content {
+    width: 63%;
+    left: 26%;
+    top: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.chr_detail_prop_cnt_bg > .chr_detail_prop_cnt_content > div {
+    width: 40%;
+    height: 100%;
+    position: relative;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+.chr_detail_prop_cnt_bg > .chr_detail_prop_cnt_content > div > span {
+    position: absolute;
+    left: 30%;
+    top: 30%;
+    font-size: 1.5vw;
+    line-height: 1.5;
+}
+
+.chr_detail_prop_jianghun {
+    background-image: url("./images/mobile/charactercard/jianghun.png");
+}
+
+.chr_detail_prop_lingyu {
+    background-image: url("./images/mobile/charactercard/lingyu.png");
+    background-size: 30% 80% !important;
+    background-position-y: 99%;
+}
+
+span.chr_detail_prop_jianghun_text {
+    left: 49% !important;
+}
+
+
+.qy_chr_detail_btn_container {
+    --qy_chr_detail_btn_width: 7vmax;
+    --qy_chr_detail_btn_height: 5.8vmax;
+    width: 8.5%;
+    z-index: 3;
+    display: flex;
+    flex-direction: column-reverse;
+    flex-wrap: wrap;
+    position: relative;
+    height: 63%;
+    align-content: center;
+    align-items: center;
+    left: 3.2%;
+    top: 33%;
+}
+
+/** 武将包 */
+.qy_chr_detail_pack {
+    position: absolute;
+    z-index: 999999;
+    left: 5.3%;
+    top: 13%;
+    width: 4%;
+    height: 30%;
+    pointer-events: none;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.qy_chr_detail_pack_dragon {
+    background-image: url("./images/mobile/charactercard/title/dragon.png");
+}
+
+.qy_chr_detail_pack_extra {
+    background-image: url("./images/mobile/charactercard/title/extra.png");
+}
+
+.qy_chr_detail_pack_mobile {
+    background-image: url("./images/mobile/charactercard/title/mobile.png");
+}
+
+.qy_chr_detail_pack_refresh {
+    background-image: url("./images/mobile/charactercard/title/refresh.png");
+}
+
+.qy_chr_detail_pack_sb {
+    background-image: url("./images/mobile/charactercard/title/sb.png");
+}
+
+.qy_chr_detail_pack_shiji {
+    background-image: url("./images/mobile/charactercard/title/shiji.png");
+}
+
+.qy_chr_detail_pack_sp {
+    background-image: url("./images/mobile/charactercard/title/sp.png");
+}
+
+.qy_chr_detail_pack_xinghuoliaoyuan {
+    background-image: url("./images/mobile/charactercard/title/xinghuoliaoyuan.png");
+}
+
+.qy_chr_detail_pack_yijiang {
+    background-image: url("./images/mobile/charactercard/title/yijiang.png");
+}
+
+.qy_chr_detail_btn {
+    position: relative;
+    width: var(--qy_chr_detail_btn_width);
+    height: var(--qy_chr_detail_btn_height);
+    background-size: 100% 100%;
+    margin-top: 5px;
+    transition: transform 0.1s ease, filter 0.1s ease;
+    cursor: pointer;
+    will-change: transform, filter;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+.qy_chr_detail_btn:hover {
+    filter: brightness(1.2);
+}
+
+.qy_chr_detail_btn:active {
+    transform: scale(0.9);
+    filter: contrast(0.4) brightness(2);
+}
+
+.qy_chr_detail_btn_hide {
+    visibility: hidden;
+}
+
+.qy_chr_detail_btn[data-property='myimage'] {
+    background-image: url("./images/mobile/charactercard/chr_detail_btn_set_my_image.png");
+}
+
+.qy_chr_detail_btn[data-property='shared'] {
+    background-image: url("./images/mobile/charactercard/chr_detail_btn_share.png");
+}
+
+.qy_chr_detail_btn[data-property='trial'] {
+    width: calc(var(--qy_chr_detail_btn_width) - 1vmax);
+    height: calc(var(--qy_chr_detail_btn_height) - 1vmax);
+    background-image: url("./images/mobile/charactercard/chr_detail_btn_trial.png");
+}
+
+.qy_chr_detail_btn[data-property='first-in-china'] {
+    width: calc(var(--qy_chr_detail_btn_width) - 1vmax);
+    height: calc(var(--qy_chr_detail_btn_height) - 1vmax);
+    background: url('./images/mobile/charactercard/adv_ranklist_icon1.png') no-repeat center / cover,
+    url('./images/mobile/charactercard/adv_icon_bg1.png') no-repeat center / contain
+}
+
+.qy_chr_detail_btn[data-property='voice'] {
+    background-image: url("./images/mobile/charactercard/skin_voice_btn.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: 50%;
+}
+
+.qy_info_avatar {
+    background-image: url('qy_qyqingyaoxuying.jpg');
+    width: 81.2%;
+    height: 90.4%;
+    top: 3.6%;
+    left: 13%;
+    position: relative;
+    background-position-x: 50%;
+    /*transition: none;*/
+    background-size: cover;
+}
+
+.qy_info_avatar.qy_info_avatar_origin {
+    transition: none;
+}
+
+.qy_info_avatar.d-skin {
+    opacity: 0;
+}
+
+.qyCharacterMainView {
+    display: flex;
+    top: 50%;
+    width: 100vw;
+    aspect-ratio: 15.8 / 7.1;
+    position: fixed;
+    left: calc(58% - 3vmax);
+    max-width: 100vw;
+    transition: none;
+    transform: translate3d(-50%, -50%, 0);
+}
+
+.qy_info_avatar_main_view {
+    position: relative;
+    top: 1.8%;
+    width: 31.9%;
+    height: 99%;
+}
+
+/* 武将边框 */
+.qy_info_avatar_border, .qy_info_avatar_border_top {
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    display: block;
+    position: absolute;
+    background-size: 100% 100%;
+    pointer-events: none;
+    transition: none;
+}
+
+.qy_info_avatar_border {
+    background-image: url("./images/mobile/charactercard/detail_cong.png");
+}
+
+.qy_info_avatar_border_top {
+    background-image: url("./images/mobile/charactercard/detail_cong_top.png");
+}
+
+.qy_info_avatar_border_qun {
+    background-image: url('./images/mobile/charactercard/qun.png');
+}
+
+.qy_info_avatar_border_qun_top {
+    background-image: url('./images/mobile/charactercard/qun_top.png');
+}
+
+.qy_info_avatar_border_shu {
+    background-image: url('./images/mobile/charactercard/shu.png');
+}
+
+.qy_info_avatar_border_shu_top {
+    background-image: url('./images/mobile/charactercard/shu_top.png');
+}
+
+
+.qy_info_avatar_border_wei {
+    background-image: url('./images/mobile/charactercard/wei.png');
+}
+
+.qy_info_avatar_border_wei_top {
+    background-image: url('./images/mobile/charactercard/wei_top.png');
+}
+
+.qy_info_avatar_border_wu {
+    background-image: url('./images/mobile/charactercard/wu.png');
+}
+
+.qy_info_avatar_border_wu_top {
+    background-image: url('./images/mobile/charactercard/wu_top.png');
+}
+
+.qy_info_avatar_border_jin {
+    background-image: url('./images/mobile/charactercard/jin.png');
+}
+
+.qy_info_avatar_border_jin_top {
+    background-image: url('./images/mobile/charactercard/jin_top.png');
+}
+
+.qy_info_avatar_border_shen {
+    background-image: url('./images/mobile/charactercard/shen.png');
+}
+
+.qy_info_avatar_border_shen_top {
+    background-image: url('./images/mobile/charactercard/shen_top.png');
+}
+
+.qy_info_avatar_border_qingyao_xian {
+    border-image-source: url('./images/mobile/charactercard/chr_detail_frame_qingyao_xian.png');
+    background-image: url("./images/mobile/charactercard/chr_detail_frame_qingyao_xian.png");
+    background-size: 100% 98%;
+    background-repeat: no-repeat;
+    background-position-y: 10%;
+}
+
+.qy_info_avatar_border_qingyao_xian_top {
+    background-image: none;
+}
+
+/* 名称 */
+.qy_detail_avatar_name {
+    --qy-detail-avatar-name-font-size: 2.4vw;
+    left: 5%;
+    top: 20%;
+    width: 9%;
+    text-align: center;
+    z-index: 2;
+    color: white;
+    font-size: var(--qy-detail-avatar-name-font-size);
+    max-height: 30%;
+    overflow-y: auto;
+    word-break: break-word;
+    font-family: '方正隶变GBK', 'shousha', system-ui;
+    filter: drop-shadow(1px 0px 0px rgb(36, 35, 35)) drop-shadow(-1px 0px 0px rgb(36, 35, 35)) drop-shadow(0px 1px 0px rgb(36, 35, 35)) drop-shadow(0px -1px 0px rgb(36, 35, 35));
+}
+
+/* hp容器 */
+.qy_detail_avatar_hp_container {
+    width: 8.6%;
+    height: 43%;
+    bottom: 6%;
+    left: 4.6%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    flex-direction: row;
+    justify-content: center;
+    align-content: flex-end;
+    z-index: 9;
+}
+
+/* hp */
+.qy_detail_avatar_hp_item {
+    background-image: url('./images/mobile/charactercard/chrfrm_qun_hp.png');
+    width: 100%;
+    height: 25%;
+    background-size: 100% 100%;
+    position: relative;
+    box-sizing: border-box;
+    margin-top: -16px;
+}
+
+.qy_detail_avatar_hp_container[data-group='qun'] > .qy_detail_avatar_hp_item {
+    background-image: url('./images/mobile/charactercard/chrfrm_qun_hp.png');
+}
+
+.qy_detail_avatar_hp_container[data-group='shu'] > .qy_detail_avatar_hp_item {
+    background-image: url('./images/mobile/charactercard/chrfrm_shu_hp.png');
+}
+
+.qy_detail_avatar_hp_container[data-group='wei'] > .qy_detail_avatar_hp_item {
+    background-image: url('./images/mobile/charactercard/chrfrm_wei_hp.png');
+}
+
+.qy_detail_avatar_hp_container[data-group='wu'] > .qy_detail_avatar_hp_item {
+    background-image: url('./images/mobile/charactercard/chrfrm_wu_hp.png');
+}
+
+.qy_detail_avatar_hp_container[data-group='jin'] > .qy_detail_avatar_hp_item {
+    background-image: url('./images/mobile/charactercard/chr_detail_hp_6.png');
+}
+
+.qy_detail_avatar_hp_container[data-group='shen'] > .qy_detail_avatar_hp_item {
+    background-image: url('./images/mobile/charactercard/chrfrm_shen_hp.png');
+}
+
+.qy_detail_avatar_hp_item_none {
+    background-image: url('./images/mobile/charactercard/chr_detail_hp_0_none.png');
+    width: 100%;
+    height: 15%;
+    background-size: 100% 100%;
+    position: relative;
+    box-sizing: border-box;
+}
+
+.qy_detail_avatar_hp_container[data-group='qun'] > .qy_detail_avatar_hp_item_none {
+    background-image: url('./images/mobile/charactercard/chr_detail_hp_4_none.png');
+}
+
+.qy_detail_avatar_hp_container[data-group='shu'] > .qy_detail_avatar_hp_item_none {
+    background-image: url('./images/mobile/charactercard/chr_detail_hp_red_none.png');
+}
+
+.qy_detail_avatar_hp_container[data-group='wei'] > .qy_detail_avatar_hp_item_none {
+    background-image: url('./images/mobile/charactercard/chr_detail_hp_blue_none.png');
+}
+
+.qy_detail_avatar_hp_container[data-group='wu'] > .qy_detail_avatar_hp_item_none {
+    background-image: url('./images/mobile/charactercard/chr_detail_hp_green_none.png');
+}
+
+.qy_detail_avatar_hp_container[data-group='jin'] > .qy_detail_avatar_hp_item_none {
+    background-image: url('./images/mobile/charactercard/chr_detail_hp_purple_none.png');
+}
+
+.qy_detail_avatar_hp_item_hujia {
+    background-image: url('./images/mobile/charactercard/shield.png');
+}
+
+/* 皮肤名称 */
+.qy_detail_avatar_skin_name {
+    min-width: 7.2em;
+    margin: auto;
+    color: #8a8884;
+    text-shadow: 0 0 5px rgb(0, 0, 0), 0 0 10px rgb(0, 0, 0), 0 0 15px rgb(0, 0, 0);
+    font-size: 1.3em;
+    text-align: center;
+    height: 1.4em;
+    border: #8a8884 1px solid;
+    border-radius: 5px;
+    z-index: 5;
+    transition: none;
+    background-color: rgb(1 1 1 / 70%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    right: 30px;
+    bottom: 57px;
+    font-family: 'shousha', system-ui;
+}
+
+.qy_detail_avatar_skin_time {
+    font-size: 70%;
+    min-width: 10.2em;
+    bottom: 6.6%;
+    left: 14.6%;
+    color: #afa187;
+    text-shadow: 0 0 5px rgb(0, 0, 0), 0 0 10px rgb(0, 0, 0), 0 0 15px rgb(0, 0, 0);
+    font-family: 'shousha', system-ui;
+}
+
+.qy_info_avatar_ranked_first {
+    color: #d2c2a4;
+    font-size: 0.83em;
+    min-width: 100%;
+    bottom: 11px;
+    text-align: center;
+    left: 0;
+    font-family: 'shousha', system-ui;
+    text-shadow: 0 0 2px black, 0 0 2px black, 0 0 2px black, 0 0 2px black, 0 0 2px black, 0 0 2px black, 0 0 2px black;
+}
+
+/* 动皮表示 */
+.qy_chr_detail_dynamic_toggle {
+    top: 18%;
+    right: 4%;
+    width: 15%;
+    height: 10%;
+    background-size: cover;
+    z-index: 999;
+    cursor: pointer;
+    translate: none;
+    background-image: url("images/mobile/charactercard/chr_detail_skin_dynamic.png");
+}
+
+.qy_chr_detail_dynamic_toggle.jing {
+    background-image: url("images/mobile/charactercard/chr_detail_skin_normal.png");
+}
+
+.qy_detail_skin_item_dynamic {
+    width: 31%;
+    height: 22%;
+    right: 0;
+    top: 20%;
+    background-image: url(images/mobile/charactercard/dynamic.png);
+    background-size: contain;
+    z-index: 11;
+    transform: translate3d(40%, 0, 0);
+    pointer-events: none;
+}
+
+/* 动皮框 */
+.qy_info_avatar_main_view > canvas.pfqh-animation-photo {
+    left: 13% !important;
+    width: 81.2% !important;
+    height: 90% !important;
+    top: 4% !important;
+    z-index: 0 !important;
+    pointer-events: none !important;
+}
+
+/* 动皮露头 */
+.qy_chess_container[data-qingyao-detail-outcrop='true'] canvas.pfqh-animation-photo {
+    height: 101.7% !important;
+    top: -7.6% !important;
+}
+
+/* 文字 */
+.qy_detail_avatar_hp_text {
+    position: relative;
+    font-size: 2em;
+    word-break: break-all;
+    word-wrap: break-word;
+    width: 80%;
+    text-align: center;
+}
+
+/* 标签 */
+.qy_info_avatar_border > .qy_rank_label {
+    top: 1vh;
+    right: 12px;
+    width: 23%;
+    height: 16%;
+}
+
+/* 武将模式切换 */
+.qy_character_lable_container {
+    width: auto;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    right: 4%;
+    z-index: 9;
+    top: 0;
+    flex-wrap: nowrap;
+    align-items: flex-end;
+    transform: translate3d(0, 100%, 0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+.qy_character_label_transform {
+    background-image: url('./images/mobile/charactercard/chr_detail_mode_base.png') !important;
+    transform: translate3d(-30%, -20%, 0) scale(1.2) !important;
+    cursor: pointer;
+    transition: transform 0.1s;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+.qy_character_label_transform:active {
+    transform: translate3d(-30%, -20%, 0) scale(1.1) !important;
+}
+
+.qy_character_transform_btn {
+    order: -1;
+    width: 4.2vmax !important;
+    height: 3vmax !important;
+    margin-bottom: 8px !important;
+}
+
+.qy_character_transform_btn > .qy_character_lable {
+    width: 4.2vmax !important;
+    height: 4.2vmax !important;
+}
+
+.qy_transform_label {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate3d(-50%, -50%, 0);
+    color: #f0e6d2;
+    font-size: 0.75vmax;
+    text-shadow: 0 0 3px #000, 0 0 5px #000;
+    font-weight: bold;
+    text-align: center;
+    line-height: 1.1;
+    width: 100%;
+    pointer-events: none;
+    z-index: 2;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+.qy_character_lable_background {
+    background-image: url('./images/mobile/charactercard/chr_detail_mode_bg.png');
+    width: 3.5vmax;
+    height: 2.5vmax;
+    background-size: 100% 100%;
+    position: relative;
+    margin-top: 5px;
+    background-position-x: 35px;
+    background-repeat: no-repeat;
+    transition: transform 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transition-delay: 0.2s;
+    will-change: transform;
+}
+
+/* 形态切换闪烁动画 */
+@keyframes qy-transform-flash {
+    0% { filter: brightness(1) contrast(1); transform: scale3d(1, 1, 1); }
+    25% { filter: brightness(2) contrast(1.2); transform: scale3d(1.03, 1.03, 1); }
+    50% { filter: brightness(1.5) contrast(1.1); transform: scale3d(0.98, 0.98, 1); }
+    100% { filter: brightness(1) contrast(1); transform: scale3d(1, 1, 1); }
+}
+
+.qy-transform-anim {
+    animation: qy-transform-flash 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+    will-change: transform, filter;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+.qy_character_lable {
+    width: 3.5vmax;
+    height: 3.5vmax;
+    background-image: url('./images/mobile/charactercard/chr_detail_mode_biaozhun.png');
+    background-size: 100% 100%;
+    transform: translate3d(0%, -20%, 0) scale3d(0.8, 0.8, 1);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+.qy_character_lable_background_active {
+    /* width: 3.5vmax; */
+    background-position-x: 0;
+    transition: transform 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.qy_character_lable_background_active > .qy_character_lable {
+    transform: translate3d(-40%, -20%, 0);
+}
+
+/* 身份 */
+.qy_character_label_biaozhun {
+    background-image: url('./images/mobile/charactercard/chr_detail_mode_biaozhun.png');
+}
+
+/* 国战 */
+.qy_character_label_guozhan {
+    background-image: url('./images/mobile/charactercard/chr_detail_mode_guozhan.png');
+}
+
+/* 竞技 1v1 */
+.qy_character_label_jingji {
+    background-image: url('./images/mobile/charactercard/chr_detail_mode_jingji.png');
+}
+
+/* 进度条和🌟的包容器 */
+.qy_chr_bar_xing_container {
+    bottom: 3.2%;
+    right: -8%;
+    width: 42%;
+    height: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: flex-end;
+    z-index: 1;
+}
+
+/* 星的包容器 */
+.qy_chr_xing_container {
+    width: 30%;
+    position: relative;
+    height: 39%;
+    margin-right: 14px;
+    display: flex;
+    flex-direction: column-reverse;
+    flex-wrap: wrap;
+    justify-content: center;
+    transform: translate(4px, 52px);
+}
+
+/* 星 */
+.qy_chr_start_xing {
+    position: relative;
+    width: 100%;
+    height: 19%;
+    background-size: 100% 100%;
+}
+
+.qy_chr_start_xing_on {
+    background-image: url('././images/mobile/charactercard/chr_star_on.png');
+    background-size: 90% 100%;
+    background-repeat: no-repeat;
+    background-position: 3px 7px;
+}
+
+.qy_chr_start_xing_off {
+    background-image: url('././images/mobile/charactercard/chr_star_off.png');
+    background-size: 100% 117%;
+}
+
+.qy_chr_start_xing:nth-child(2) {
+    bottom: -3%;
+}
+
+.qy_chr_start_xing:nth-child(3) {
+    bottom: -6%;
+}
+
+.qy_chr_start_xing:nth-child(4) {
+    bottom: -9%;
+}
+
+.qy_chr_start_xing:nth-child(5) {
+    bottom: -13%;
+}
+
+/* 进度条包容器 */
+.qy_chr_bar_container {
+    z-index: 63;
+    left: 67%;
+    top: 41.6%;
+    width: 41.3%;
+    height: 58%;
+    position: absolute;
+    background-image: url('images/mobile/charactercard/chrfrm_flower1.png');
+    background-size: 100% 100%;
+    transform: scale3d(0.9, 0.9, 1);
+}
+
+/* 进度条分割 */
+.qy_char_advance_jinjiefenge {
+    z-index: 2;
+    left: 73.4%;
+    bottom: 35.5%;
+    width: 14.4%;
+    height: 64%;
+    background-size: 100% 100%;
+    background-position: center;
+    background-image: url('./images/mobile/charactercard/jinjiefenge.png');
+    transition: none;
+}
+
+/* 进度条分割 */
+.qy_char_advance_jindutiao {
+    z-index: 1;
+    left: 75%;
+    bottom: 36.5%;
+    width: 12%;
+    height: 61%;
+    background-size: 100% 100%;
+    background-position: center;
+    background-image: url('./images/mobile/charactercard/jindutiao.png');
+    transition: none;
+}
+
+
+/* 进阶 */
+.qy_chr_advance_btn_text {
+    width: 110%;
+    height: 46.2%;
+    left: 13%;
+    top: 58%;
+    z-index: 2;
+    pointer-events: none;
+    animation: qy_chr_advance_btn_text_roll 3s infinite linear;
+    background-size: 100% 100%;
+    background-image: url("./images/mobile/charactercard/chr_advance_btn_text.png");
+}
+
+
+@keyframes qy_chr_advance_btn_text_roll {
+    0%, 57.5%, 100% {
+        background-image: url('./images/mobile/charactercard/jinjie6.png');
+    }
+
+    42.5% {
+        background-image: url('./images/mobile/charactercard/jinjie0.png');
+    }
+
+    45% {
+        background-image: url('./images/mobile/charactercard/jinjie1.png');
+    }
+
+    47.5% {
+        background-image: url('./images/mobile/charactercard/jinjie2.png');
+    }
+
+    50% {
+        background-image: url('./images/mobile/charactercard/jinjie3.png');
+    }
+
+    52.5% {
+        background-image: url('./images/mobile/charactercard/jinjie4.png');
+    }
+
+    55% {
+        background-image: url('./images/mobile/charactercard/jinjie5.png');
+    }
+}
+
+
+/* 按钮 */
+.qy_chr_advance_btn {
+    height: 30%;
+    width: 60%;
+    right: 3.6%;
+    bottom: 3.8%;
+    cursor: pointer;
+    background-size: 100% 100%;
+    background-image: url(./images/mobile/charactercard/chr_advance_btn1.png);
+}
+
+.qy_chr_advance_btn:active,
+.qy_chr_advance_btn:active + .qy_chr_advance_btn_text {
+    filter: contrast(0.4) brightness(2);
+}
+
+.qy_chr_advance_btn_within_dynamic,
+.qy_chr_advance_btn_outside_dynamic {
+    pointer-events: none;
+    z-index: 1;
+    left: 17%;
+    top: 60%;
+    width: 100%;
+    height: 42%;
+    background-size: 100% 100%;
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+.qy_chr_advance_btn_within_dynamic {
+    animation: qy_advance_btn_within_dynamic 5s infinite linear;
+    background-image: url(./images/mobile/charactercard/guangmang0.png);
+}
+
+.qy_chr_advance_btn_outside_dynamic {
+    animation: qy_advance_btn_outside_dynamic 5s infinite linear;
+    background-image: url(./images/mobile/charactercard/guangmang1.png);
+}
+
+@keyframes qy_advance_btn_within_dynamic {
+    from {
+        transform: rotate3d(0, 0, 1, 0deg);
+    }
+
+    to {
+        transform: rotate3d(0, 0, 1, -360deg);
+    }
+}
+
+@keyframes qy_advance_btn_outside_dynamic {
+    from {
+        transform: rotate3d(0, 0, 1, 0deg);
+    }
+
+    to {
+        transform: rotate3d(0, 0, 1, 360deg);
+    }
+}
+
+
+/* 进度条 */
+.qy_chr_bar {
+    top: 2%;
+    width: 12%;
+    height: 62%;
+    right: 13.4%;
+    background-size: 100% 100%;
+    background-image: url('./images/mobile/charactercard/chr_bar.png');
+}
+
+/* 进度文字 */
+.qy_chr_prg_total {
+    display: flex;
+    width: 3em;
+    height: 1.4em;
+    top: -1%;
+    left: 90%;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    background-size: cover;
+    background-image: url('./images/mobile/charactercard/chr_prg_total.png');
+}
+
+.qy_chr_prg_cur {
+    display: flex;
+    width: 3em;
+    height: 1.4em;
+    top: -1%;
+    left: 90%;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    background-size: cover;
+    background-image: url('./images/mobile/charactercard/chr_prg_cur.png');
+}
+
+.qy_chr_detail_info_container {
+    position: relative;
+    width: 36.4%;
+    height: 83.5%;
+    top: 8%;
+    left: 4.2%;
+    overflow: hidden;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+}
+
+.qy_chr_detail_des_bg {
+    width: 100%;
+    height: 55%;
+    left: 0;
+    position: relative;
+    box-sizing: border-box;
+    animation: 0.3s linear;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.qy_chr_detail_checkbox {
+    width: 2em;
+    height: 2em;
+    position: relative;
+    margin-left: 10px;
+    cursor: pointer;
+    background-size: cover;
+    background-image: url("./images/checkbox.png");
+}
+
+.qy_chr_detail_checked {
+    width: 1.8em;
+    height: 1.8em;
+    top: -0.2em;
+    left: 0.1em;
+    background-size: cover;
+    background-image: url("./images/checked.png");
+}
+
+.qy_chr_detail_des_bg.qy_chr_detail_des_bg_active {
+    height: 75%;
+}
+
+/* 皮肤选项 */
+.qy_chr_detail_skin_container {
+    width: 100%;
+    display: flex;
+    position: relative;
+    overflow-y: auto;
+    flex-wrap: wrap;
+    flex-direction: column;
+    justify-content: center;
+    align-content: flex-start;
+    height: calc(100% - 55%);
+    -webkit-overflow-scrolling: touch;
+    background: linear-gradient(to right, transparent 0%, rgb(0 0 0 / 50%) 10%, rgb(0 0 0 / 50%) 90%, transparent 100%);
+}
+
+.qy_char_detail_skin_arrow {
+    display: none;
+    position: absolute;
+    width: 5%;
+    height: 12%;
+    bottom: 18%;
+    left: -7%;
+    background-image: url("./images/mobile/charactercard/skin_arrow.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    z-index: 11;
+    cursor: pointer;
+}
+
+.qy_char_detail_skin_arrow.right {
+    transform: rotate(180deg);
+    left: unset;
+    right: -7%;
+}
+
+.qy_char_detail_skin_arrow[data-visiable=true] {
+    display: block;
+}
+
+.qy_detail_audio_btn {
+    right: 3%;
+    height: 2em;
+    width: 2em;
+    cursor: pointer;
+    position: absolute;
+    background-size: 100% 100%;
+    background-image: url('./images/mobile/charactercard/chr_spell_list_btn.png');
+    top: 10%;
+}
+
+.qy_dateil_skin_item {
+    position: relative;
+    width: 22%;
+    height: 67%;
+    margin-left: 8.8%;
+    cursor: pointer;
+    border-radius: 8%;
+    background-image: url("./images/mobile/charactercard/chr_skin_background.jpg");
+    background-size: 100% 100%;
+}
+
+.qy_dateil_skin_item.qy_dateil_skin_item_active {
+    transform: scale3d(1.1, 1.1, 1.1);
+}
+
+.qy_camp-rate-back {
+    left: -9%;
+    top: -5.6%;
+    height: 110%;
+    width: 118%;
+    background-image: url(./images/decoration/skinFrm1.png);
+    background-size: 100.2% 101.5%;
+    transition: none;
+    pointer-events: none;
+    z-index: 9;
+}
+
+/* 普通 */
+.qy_camp-rate-back[data-rate ='common'],
+    /* 精良 */
+.qy_camp-rate-back[data-rate ='junk'] {
+    background-image: url(./images/decoration/skinFrm2.png);
+}
+
+/* 稀有 */
+.qy_camp-rate-back[data-rate = 'boutique'] {
+    background-image: url(./images/decoration/skinFrm3.png);
+}
+
+/* 精品 */
+.qy_camp-rate-back[data-rate ='rare'] {
+    background-image: url(./images/decoration/skinFrm3.png);
+}
+
+/* 史诗 */
+.qy_camp-rate-back[data-rate ='epic'] {
+    background-image: url(./images/decoration/skinFrm4.png);
+}
+
+/* 传说 */
+.qy_camp-rate-back[data-rate ='legend'] {
+    background-image: url(./images/decoration/skinFrm5.png);
+}
+
+.qy_camp-rate-rank {
+    width: 41%;
+    height: 31%;
+    right: -3%;
+    top: -3%;
+    z-index: 20;
+}
+
+
+.qy_dateil_skin_item_add {
+    display: flex;
+    flex-wrap: wrap;
+    color: #fffbc8a8;
+    border-radius: 0;
+    align-content: center;
+    justify-content: center;
+    align-items: center;
+    font-family: 'shousha', 'xinwei', serif;
+}
+
+.qy_dateil_skin_item_add > div {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    width: 1em;
+    font-size: 2vmax;
+}
+
+.qy_dateil_skin_item > .qydateil_skin_item_menu {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    align-content: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 40%);
+    z-index: 22;
+}
+
+.qy_dateil_skin_item > .qydateil_skin_item_menu > div {
+    width: 100%;
+    font-size: 2vmax;
+    color: #fffbc8a8;
+    position: relative;
+    margin: 4px 0;
+    padding: 4px;
+    display: flex;
+    background: rgb(255 45 45);
+    border-radius: 8%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    align-content: center;
+    text-align: center;
+    font-family: 'shousha', 'xinwei', system-ui;
+}
+
+
+.qy_dateil_skin_item_character {
+    width: 100%;
+    height: 100%;
+    border-radius: 6%;
+    background-size: cover;
+    background-position-x: center;
+    z-index: 11;
+}
+
+.qy_dateil_skin_item_name {
+    background-color: rgba(0, 0, 0, 0.7);
+    bottom: 0;
+    color: #fdf2d3bd;
+    right: 0;
+    width: 3vmax;
+    font-size: 1.5vmax;
+    word-break: break-all;
+    text-align: center;
+    font-family: 'shousha', 'xinwei', system-ui;
+    border-radius: 14%;
+    padding: 0.3vmax;
+    line-height: 1;
+    border: 1px solid;
+    z-index: 12;
+    pointer-events: none;
+}
+
+.qy_dateil_skin_item_audio {
+    background-color: rgba(0, 0, 0, 0.7);
+    top: 0;
+    color: #fdf2d3bd;
+    left: 0;
+    width: 6vmax;
+    min-height: 3vmax;
+    font-size: 1.5vmax;
+    word-break: break-all;
+    text-align: center;
+    font-family: 'shousha', 'xinwei', system-ui;
+    border-radius: 14%;
+    padding: 0.3vmax;
+    line-height: 1;
+    z-index: 2;
+    display: flex;
+    border: 1px solid;
+    align-items: flex-start;
+    flex-wrap: nowrap;
+    flex-direction: row;
+}
+
+.qy_dateil_skin_item_audio_text {
+    position: relative;
+    flex: 1;
+}
+
+/* 头部标签 */
+.qy_dateil_des_title_lable_container {
+    width: 100%;
+    max-height: 40px;
+    min-height: 40px;
+    height: 16%;
+    top: 0.6px;
+    /* left: 1px; */
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    /* background-image: url(images/mobile/charactercard/chr_detail_des_bghead.png); */
+    /* background-size: 101% 98%; */
+    /* background-position-x: -4px; */
+    /* background-position-y: 1px; */
+    /* background-repeat: no-repeat; */
+    z-index: 9;
+    /* padding: 0 6px; */
+    border-color: transparent;
+    border-style: dashed;
+    border-width: 0 0;
+    border-image-repeat: stretch;
+    border-image-slice: 0 3 fill;
+    border-image-source: url(images/mobile/charactercard/chr_detail_des_bghead.png);
+}
+
+.qy_dateil_des_title_lable {
+    width: 33%;
+    height: 100%;
+    cursor: pointer;
+    display: flex;
+    position: relative;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.qy_dateil_des_title_lable_container > .qy_dateil_des_title_lable:first-child.qy_dateil_des_title_lable_active {
+    background-position-x: 4px;
+    transition: none;
+}
+
+.qy_dateil_des_title_lable_container > .qy_dateil_des_title_lable:last-child.qy_dateil_des_title_lable_active {
+    background-position-x: -3px;
+    transition: none;
+}
+
+.qy_dateil_des_title_lable > span {
+    font-size: 130%;
+    font-family: 'shousha', 'xinwei', serif;
+    color: #8F8681;
+    letter-spacing: 13px;
+    transform: translateX(5px);
+    margin-top: 5px;
+    margin-left: -10px;
+    filter: drop-shadow(1px 0px 0px rgb(36, 35, 35)) drop-shadow(-1px 0px 0px rgb(36, 35, 35));
+}
+
+.qy_dateil_des_title_lable.qy_dateil_des_title_lable_active > span {
+    color: rgb(231 176 160);
+    filter: none;
+}
+
+
+.qy_dateil_des_title_lable.qy_dateil_des_title_lable_active {
+    background: url('././images/mobile/charactercard/chr_detail_des_tab.png');
+    background-size: 100% 100%;
+    /*background-position-x: 4px;*/
+}
+
+.qy_dateil_des_title_lable:first-child > span {
+    margin-left: 8px;
+    letter-spacing: 12px;
+}
+
+.qy_chr_detail_content_container {
+    left: 0.3%;
+    width: 99%;
+    height: calc(100% - 40px - 24px);
+    display: flex;
+    flex-direction: column;
+    background-image: url(images/mobile/charactercard/chr_detail_des_bgbody.png);
+    background-size: 103.3% 100%;
+    background-position-x: -3.1px;
+    background-repeat: no-repeat;
+    position: relative;
+}
+
+/* 简介容器使用block布局 */
+.qy_chr_detail_content_container.synopsis {
+    display: block;
+    overflow-y: auto;
+    padding: 0;
+}
+
+/* 配置详情页 */
+.qy_chr_detail_content_container_config {
+    width: 85%;
+    left: 50%;
+    height: calc(100% - 5px);
+    color: #e3c857;
+    transform: translate3d(-50%, 0, 0);
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.qy_chr_detail_content_container_config > div {
+    position: relative;
+    font-size: 16px;
+    display: block;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+    margin-inline-start: 0;
+    margin-inline-end: 0;
+}
+
+.qy_chr_detail_content_container_config * {
+    font-family: 'shousha', system-ui;
+    text-shadow: none;
+}
+
+.qy_chr_detail_content_container_config img {
+    width: 52px;
+    margin-bottom: -4px;
+}
+
+
+.qy_chr_detail_desc_bgtail {
+    position: relative;
+    width: 100%;
+    height: 25px;
+    background-image: url(images/mobile/charactercard/chr_detail_des_bgtail.png);
+    background-size: 103% 22px;
+    background-position-x: -3px;
+    background-repeat: no-repeat;
+    top: -2px;
+}
+
+.qy_skill_audio_container {
+    --qy_detail_skill_item_font_size: 2.1vw;
+    width: 97%;
+    height: calc(var(--qy_detail_skill_item_font_size) + 0.87em);
+    position: relative;
+    display: inline-block;
+    overflow: visible;
+    top: 0.4em;
+    left: 3%;
+}
+
+.qy_detail_skill_container {
+    position: absolute;
+    width: 85%;
+    height: 100%;
+    display: inline-flex;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    max-width: 86%;
+    color: #4f3c1e;
+    justify-content: flex-start;
+    align-items: center;
+    white-space: nowrap;
+}
+
+/* 技能图标 */
+.qy_detail_audio_skill {
+    background-image: url(./images/mobile/charactercard/chr_spell_list_btn.png);
+    width: 12%;
+    height: 100%;
+    position: relative;
+    background-size: 100% 100%;
+    margin-left: 3%;
+}
+
+.qy_detail_skill_item {
+    position: relative;
+    width: auto;
+    height: auto;
+    text-align: center;
+    padding: 1.5% 3%;
+    border-color: transparent;
+    background-size: 106% 111%;
+    background-image: url(./images/mobile/charactercard/chr_detail_skill_button_normal.png);
+    cursor: pointer;
+    box-sizing: content-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-right: 1.1em;
+}
+
+.qy_detail_skill_item_active {
+    background-image: url("./images/mobile/charactercard/chr_detail_skill_button_selected.png");
+}
+
+.qy_detail_skill_item > div {
+    margin-top: 2px;
+    left: 8%;
+    font-family: 'hanyizhongli', 'system-ui';
+    font-weight: 600;
+    -webkit-text-fill-color: transparent;
+    background: linear-gradient(180deg, #f7d78e 0%, #af8e31 50%);
+    -webkit-background-clip: text;
+    font-size: var(--qy_detail_skill_item_font_size);
+    text-shadow: none;
+    position: relative;
+    line-height: 1.1em;
+    filter: drop-shadow(2px 0 0 #453325) drop-shadow(-2px 0 0 #453325) drop-shadow(0 2px 0 #453325) drop-shadow(0 -2px 0 #453325);
+    -webkit-filter: drop-shadow(2px 0 0 #453325) drop-shadow(-2px 0 0 #453325) drop-shadow(0 2px 0 #453325) drop-shadow(0 -2px 0 #453325);
+}
+
+.qy_chr_detail_desc_skill_lable_content_container {
+    height: calc(100% - 4vmax);
+    margin-top: 3%;
+}
+
+.qy_chr_detail_desc_skill_lable_content_item, .qy_chr_detail_desc_skill_lable_content_container {
+    position: relative;
+    overflow: hidden;
+}
+
+.qy_detail_desc_skill_lable_container {
+    --height: 2.7vw;
+    position: relative;
+    width: 80%;
+    height: var(--height);
+    margin-left: 4.6%;
+    display: flex;
+    top: 1.7%;
+}
+
+.qy_detail_desc_skill_lable_background {
+    height: 100%;
+    width: 8.2%;
+    background-size: 123% 102%;
+    background-position: center;
+    position: relative;
+    z-index: 1;
+    margin-left: 2.5%;
+}
+
+.qy_detail_desc_skill_lable_zhudong {
+    background-image: url('./images/mobile/charactercard/zhudong.png');
+}
+
+.qy_detail_desc_skill_lable_beidong {
+    background-image: url('./images/mobile/charactercard/beidong.png');
+}
+
+
+.chr_detail_skill_name_bg {
+    position: relative;
+    background-image: url('./images/mobile/charactercard/chr_detail_skill_name_bg.png');
+    width: calc(60% - 3.5vw);
+    background-size: 100% 100%;
+    height: 60%;
+    display: flex;
+    align-content: center;
+    flex-direction: row;
+    align-items: center;
+    font-size: 1.4em;
+    font-family: 'shousha', system-ui, serif;
+    color: #ffffbdd1;
+    /* left: -7px; */
+    top: 22%;
+    text-shadow: 0 0 4px #ffffbda6;
+}
+
+.chr_detail_skill_name_bg > div:first-child {
+    left: 4%;
+    word-break: keep-all;
+}
+
+.qy_chr_detail_skill_content_info {
+    position: relative;
+    font-family: 'shousha', system-ui, serif;
+    color: #ffffbdd1;
+    font-size: 1.06em;
+    line-height: 1.2;
+    margin: 2% 5% 2% 4%;
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: flex-start;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    height: calc(100% - 2.7vw - 25px + 4%);
+    -webkit-overflow-scrolling: touch;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding-bottom: 4px;
+    box-sizing: border-box;
+}
+
+/* _append */
+.qy_chr_detail_skill_content_info > div {
+    width: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: flex-end;
+    justify-content: flex-end;
+}
+
+.qy_char_detail_content_container_text {
+    height: calc(100% - 2% - 3% - 6px);
+    overflow: auto;
+    font-family: 'shousha', system-ui;
+    color: #ffffbdd1;
+    font-size: 1.1em;
+    margin: 2% 3% 3% 3.5%;
+    line-height: 1;
+}
+
+/* 简介页面的文本样式调整 */
+.qy_chr_detail_content_container.synopsis .qy_char_detail_content_container_text {
+    height: auto;      /* 自动高度 */
+    margin-bottom: 0;  /* 减少下边距，为雷达图留空间 */
+    line-height: 1.3;  /* 增加行高提升可读性 */
+    position: relative;
+}
+
+/* 简介页面中的雷达图容器样式 */
+.qy_chr_detail_content_container.synopsis .qy_liuwei_radar_container {
+    margin-bottom: 15px;  /* 底部边距 */
+    flex-shrink: 0;       /* 防止被压缩 */
+}
+
+/* 语音资料页 */
+.qy_chr_detail_voice_container {
+    z-index: 40;
+    display: block;
+    left: 50%;
+    top: 50%;
+    width: 100%;
+    height: 100%;
+    transform: translate3d(-50%, -50%, 0);
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+/* 语音页 */
+.qy_chr_detail_voice_page {
+    z-index: 45;
+    left: 50%;
+    top: 50%;
+    width: 700px;
+    height: 280px;
+    background-size: 100% 100%;
+    background-image: url('./images/mobile/charactercard/TaiciBg.png');
+    padding: 30px;
+    transform: translate3d(-50%, -50%, 0);
+}
+
+.qy_chr_detail_voice_page_content {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+.qy_chr_detail_voice_page_content::-webkit-scrollbar {
+    display: block;
+}
+
+/* 定义滚动条的宽度 */
+.qy_chr_detail_voice_page_content::-webkit-scrollbar {
+    width: 8px;
+    border-radius: 4px;
+}
+
+/* 定义滚动条轨道的样式 */
+.qy_chr_detail_voice_page_content::-webkit-scrollbar-track {
+    border-radius: 4px;
+    background-size: 100% 100%;
+    background-image: url(./images/mobile/charactercard/pub_scrollbar_bg.png);
+}
+
+/* 定义滚动条的样式 */
+.qy_chr_detail_voice_page_content::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    border-style: solid;
+    border-color: transparent;
+    border-image-slice: 5 4 5 4 fill;
+    border-image-source: url(./images/mobile/charactercard/pub_scrollbar_src.png);
+}
+
+/* 定义滚动条在鼠标悬停时的样式 */
+.qy_chr_detail_voice_page_content::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* 定义滚动条按钮的样式 */
+.qy_chr_detail_voice_page_content::-webkit-scrollbar-button {
+    display: none;
+}
+
+.qy_chr_detail_voice_skill_item_container {
+    width: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+
+.qy_chr_detail_voice_skill_item_title {
+    font-family: 'shousha', system-ui;
+    font-size: 1.2em;
+    width: 100%;
+    color: #F6EFD5;
+    position: relative;
+    white-space: nowrap;
+    letter-spacing: 3px;
+    text-shadow: 0 0 2px #46351C, 0 0 2px #46351C, 0 0 2px #46351C, 0 0 2px #46351C, 0 0 2px #46351C, 0 0 2px #46351C, 0 0 2px #46351C, 0 0 2px #46351C;
+}
+
+
+.qy_chr_detail_voice_skill_item {
+    display: flex;
+    width: 48%;
+    height: 55px;
+    background-image: url('./images/mobile/charactercard/upgrade_item_long_bg.png');
+    position: relative;
+    background-size: 100% 100%;
+    align-items: center;
+    margin-top: 3px;
+    margin-bottom: 19px;
+}
+
+.qy_chr_detail_voice_skill_item_container_inline {
+    width: 50%;
+    display: inline-flex;
+}
+
+.qy_chr_detail_voice_skill_item_container_inline > .qy_chr_detail_voice_skill_item {
+    width: 96%;
+}
+
+.qy_chr_detail_voice_skill_item:nth-child(odd) {
+    margin-left: 8px;
+}
+
+.qy_chr_detail_voice_skill_item_icon {
+    width: 40px;
+    height: 40px;
+    background-image: url('./images/mobile/charactercard/chr_spell_voice_2.png');
+    position: relative;
+    margin-left: 6px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    cursor: pointer;
+}
+
+.qy_detail_desc_skill_lable_container > .qy_chr_detail_voice_skill_item_icon {
+    background-image: url('./images/mobile/charactercard/chr_spell_voice.png');
+    height: 80%;
+    top: 10%;
+    margin-left: -11%;
+}
+
+.qy_chr_detail_voice_skill_item_icon:hover:active {
+    background-image: url('./images/mobile/charactercard/chr_spell_voice_2.png');
+}
+
+.qy_chr_detail_voice_skill_item_text {
+    width: calc(100% - 40px - 15px);
+    height: 30px;
+    color: #e4e0d5;
+    position: relative;
+    font-size: 16px;
+    font-weight: bold;
+    vertical-align: middle;
+    margin-left: 5px;
+    font-family: 'shousha', system-ui;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    flex-direction: row;
+}
+
+.qy_chr_detail_voice_skill_item_text[contenteditable="true"] {
+    border: 1px solid red;
+}
+
+/* 一个技能的包容器 */
+.qy_chr_detail_voice_skill_container {
+    width: 100%;
+    position: relative;
+    overflow: visible;
+}
+
+
+/* 露头 */
+.qy_info_avatar_main_view.qy-outcrop .qy_info_avatar:not(.d-skin),
+.qy_chess_container[data-qingyao-detail-outcrop='true'] .qy_info_avatar:not(.qy_info_avatar_origin) {
+    height: 103%;
+    top: -9%;
+}
+
+.qy_chess_container[data-qingyao-detail-outcrop='true'] .qy_dateil_skin_item_character,
+.qy-outcrop.qy_dateil_skin_item_character {
+    height: 116%;
+    top: -16%;
+}
+
+.qy_info_avatar_main_view.qy-outcrop .qy_info_avatar_border_top,
+.qy_chess_container[data-qingyao-detail-outcrop='true'] .qy_info_avatar_border_top:not(.qy_info_avatar_origin) {
+    z-index: -1;
+}
+
+.d-skin.qy_info_avatar_border_top {
+    z-index: -1;
+}
+
+/*@font-face {
+    font-family: 'qy_hanti';
+    src: local('汉体'), url('fonts/wenq.ttf');
+}*/
+
+/* 响应式布局 */
+@media (max-width: 1200px), (max-height: 650px) {
+    .qyCharacterMainView {
+        width: 100%;
+        max-width: none;
+        max-height: none;
+    }
+
+    .qy_chr_detail_btn_container {
+        --qy_chr_detail_btn_width: 4em;
+        --qy_chr_detail_btn_height: 3.5em;
+    }
+
+    .qy_detail_avatar_name {
+        --qy-detail-avatar-name-font-size: 1.9em;
+    }
+
+    .qy_skill_audio_container {
+        --qy_detail_skill_item_font_size: 1.3em;
+    }
+
+    .qy_detail_desc_skill_lable_container {
+        --height: 3.6vw;
+    }
+
+    .qy_chr_detail_voice_page.qy_voice_page_editing {
+        top: 0 !important;
+        transform: translate3d(-50%, 0, 0) !important;
+    }
+
+    .qy_chr_detail_pack {
+        top: 9%;
+        height: 33%;
+    }
+
+    .qy_chr_bar_xing_container {
+        bottom: 7.2%;
+    }
+}
+
+@font-face {
+    font-family: 'hanyizhongli';
+    src: local('汉仪中隶书简'), url('fonts/汉仪中隶书简.ttf');
+}
+
+@font-face {
+    font-family: '方正隶变GBK';
+    src: local('方正隶变GBK'), url('fonts/方正隶变GBK.ttf');
+}
+
+@font-face {
+    font-family: '汉仪中圆简';
+    src: local('汉仪中圆简'), url('fonts/汉仪中圆简.ttf');
+}
+
+/** 十人身份场 */
+[data-number='10'] > .player[data-position='1'] {
+    top: calc(200% / 3 - 145px);
+    left: calc(95% - 75px);
+}
+
+[data-number='10'] > .player[data-position='2'] {
+    top: calc(100% / 3 - 120px);
+    left: calc(95% - 75px);
+}
+
+[data-number='10'] > .player[data-position='3'] {
+    top: 30px;
+    left: calc(80% - 75px);
+}
+
+[data-number='10'] > .player[data-position='4'] {
+    top: 5px;
+    left: calc(65% - 75px);
+}
+
+[data-number='10'] > .player[data-position='5'] {
+    top: 0;
+    left: calc(50% - 75px);
+}
+
+[data-number='10'] > .player[data-position='6'] {
+    top: 5px;
+    left: calc(35% - 75px);
+}
+
+[data-number='10'] > .player[data-position='7'] {
+    top: 30px;
+    left: calc(20% - 75px);
+}
+
+[data-number='10'] > .player[data-position='8'] {
+    top: calc(100% / 3 - 120px);
+    left: calc(5% - 75px);
+}
+
+[data-number='10'] > .player[data-position='9'] {
+    top: calc(200% / 3 - 145px);
+    left: calc(5% - 75px);
+}
+
+/** 九人身份场 **/
+[data-number='9'] > .player[data-position='1'] {
+    top: calc(15% - 20px);
+    left: calc(96% - 75px);
+}
+
+[data-number='9'] > .player[data-position='2'] {
+    top: calc(9% - 20px);
+    left: calc(83% - 75px);
+}
+
+[data-number='9'] > .player[data-position='3'] {
+    top: calc(6% - 20px);
+    left: calc(70% - 75px);
+}
+
+[data-number='9'] > .player[data-position='4'] {
+    top: 0;
+    left: calc(57% - 75px);
+}
+
+[data-number='9'] > .player[data-position='5'] {
+    top: 0;
+    left: calc(44% - 75px);
+}
+
+[data-number='9'] > .player[data-position='6'] {
+    top: calc(6% - 20px);
+    left: calc(31% - 75px);
+}
+
+[data-number='9'] > .player[data-position='7'] {
+    top: calc(9% - 20px);
+    left: calc(18% - 75px);
+}
+
+[data-number='9'] > .player[data-position='8'] {
+    top: calc(15% - 20px);
+    left: calc(6% - 75px);
+}
+
+[data-number='9'] > .player[data-position='9'] {
+    top: calc(200% / 3 - 145px);
+    left: calc(5% - 75px);
+}

@@ -1,0 +1,13 @@
+
+shengong_ying.png
+size: 512,512
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+ying
+  rotate: false
+  xy: 2, 2
+  size: 320, 374
+  orig: 320, 374
+  offset: 0, 0
+  index: -1

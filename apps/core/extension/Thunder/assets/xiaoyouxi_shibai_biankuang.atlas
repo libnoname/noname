@@ -1,0 +1,62 @@
+
+xiaoyouxi_shibai_biankuang.png
+size: 740,42
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+images/guangxian2/gx2_00009
+  rotate: false
+  xy: 517, 32
+  size: 203, 8
+  orig: 513, 8
+  offset: 310, 0
+  index: -1
+images/guangxian2/gx2_00010
+  rotate: false
+  xy: 411, 12
+  size: 259, 8
+  orig: 513, 8
+  offset: 254, 0
+  index: -1
+images/guangxian2/gx2_00011
+  rotate: false
+  xy: 2, 2
+  size: 375, 8
+  orig: 513, 8
+  offset: 138, 0
+  index: -1
+images/guangxian2/gx2_00012
+  rotate: false
+  xy: 2, 32
+  size: 513, 8
+  orig: 513, 8
+  offset: 0, 0
+  index: -1
+images/guangxian2/gx2_00013
+  rotate: false
+  xy: 2, 22
+  size: 513, 8
+  orig: 513, 8
+  offset: 0, 0
+  index: -1
+images/guangxian2/gx2_00014
+  rotate: false
+  xy: 2, 12
+  size: 407, 8
+  orig: 513, 8
+  offset: 0, 0
+  index: -1
+images/guangxian2/gx2_00015
+  rotate: false
+  xy: 379, 2
+  size: 359, 8
+  orig: 513, 8
+  offset: 0, 0
+  index: -1
+images/guangxian2/gx2_00016
+  rotate: false
+  xy: 517, 22
+  size: 192, 8
+  orig: 513, 8
+  offset: 0, 0
+  index: -1

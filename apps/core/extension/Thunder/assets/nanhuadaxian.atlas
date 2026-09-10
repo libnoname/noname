@@ -1,0 +1,202 @@
+
+nanhuadaxian.png
+size: 332,142
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1
+  rotate: false
+  xy: 294, 39
+  size: 20, 25
+  orig: 20, 25
+  offset: 0, 0
+  index: -1
+10
+  rotate: false
+  xy: 192, 113
+  size: 68, 28
+  orig: 68, 28
+  offset: 0, 0
+  index: -1
+11
+  rotate: false
+  xy: 163, 2
+  size: 8, 5
+  orig: 8, 5
+  offset: 0, 0
+  index: -1
+12
+  rotate: false
+  xy: 163, 8
+  size: 89, 27
+  orig: 89, 27
+  offset: 0, 0
+  index: -1
+13
+  rotate: true
+  xy: 224, 39
+  size: 45, 42
+  orig: 45, 42
+  offset: 0, 0
+  index: -1
+15
+  rotate: false
+  xy: 161, 75
+  size: 9, 4
+  orig: 9, 5
+  offset: 0, 1
+  index: -1
+16
+  rotate: false
+  xy: 146, 75
+  size: 14, 4
+  orig: 14, 4
+  offset: 0, 0
+  index: -1
+17
+  rotate: true
+  xy: 192, 75
+  size: 9, 21
+  orig: 9, 21
+  offset: 0, 0
+  index: -1
+2
+  rotate: false
+  xy: 192, 97
+  size: 88, 15
+  orig: 88, 15
+  offset: 0, 0
+  index: -1
+20
+  rotate: false
+  xy: 1, 74
+  size: 144, 67
+  orig: 144, 67
+  offset: 0, 0
+  index: -1
+21
+  rotate: true
+  xy: 281, 99
+  size: 20, 35
+  orig: 20, 35
+  offset: 0, 0
+  index: -1
+22
+  rotate: false
+  xy: 1, 1
+  size: 54, 72
+  orig: 54, 72
+  offset: 0, 0
+  index: -1
+23
+  rotate: true
+  xy: 309, 65
+  size: 29, 22
+  orig: 29, 22
+  offset: 0, 0
+  index: -1
+24
+  rotate: false
+  xy: 146, 80
+  size: 45, 61
+  orig: 45, 61
+  offset: 0, 0
+  index: -1
+25
+  rotate: false
+  xy: 267, 39
+  size: 26, 25
+  orig: 26, 25
+  offset: 0, 0
+  index: -1
+26
+  rotate: false
+  xy: 56, 3
+  size: 106, 30
+  orig: 106, 30
+  offset: 0, 0
+  index: -1
+27
+  rotate: true
+  xy: 317, 95
+  size: 25, 14
+  orig: 25, 14
+  offset: 0, 0
+  index: -1
+28
+  rotate: true
+  xy: 308, 20
+  size: 18, 20
+  orig: 18, 20
+  offset: 0, 0
+  index: -1
+29
+  rotate: false
+  xy: 267, 67
+  size: 29, 17
+  orig: 29, 17
+  offset: 0, 0
+  index: -1
+3
+  rotate: false
+  xy: 300, 121
+  size: 27, 20
+  orig: 27, 20
+  offset: 0, 0
+  index: -1
+30
+  rotate: false
+  xy: 153, 36
+  size: 70, 38
+  orig: 70, 38
+  offset: 0, 0
+  index: -1
+31
+  rotate: true
+  xy: 192, 85
+  size: 11, 72
+  orig: 11, 72
+  offset: 0, 0
+  index: -1
+4
+  rotate: true
+  xy: 253, 7
+  size: 31, 29
+  orig: 31, 29
+  offset: 0, 0
+  index: -1
+5
+  rotate: false
+  xy: 56, 34
+  size: 96, 39
+  orig: 96, 39
+  offset: 0, 0
+  index: -1
+6
+  rotate: false
+  xy: 265, 85
+  size: 43, 11
+  orig: 43, 11
+  offset: 0, 0
+  index: -1
+7
+  rotate: true
+  xy: 283, 13
+  size: 25, 24
+  orig: 25, 24
+  offset: 0, 0
+  index: -1
+8
+  rotate: true
+  xy: 261, 120
+  size: 21, 38
+  orig: 21, 38
+  offset: 0, 0
+  index: -1
+9
+  rotate: false
+  xy: 315, 43
+  size: 15, 21
+  orig: 15, 21
+  offset: 0, 0
+  index: -1

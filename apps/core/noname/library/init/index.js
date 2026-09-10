@@ -19,8 +19,9 @@ export class LibInit {
 		}
 		if (window.resetExtension) {
 			if (confirm("游戏似乎未正常载入，有可能因为部分扩展未正常载入，或者因为部分扩展未载入完毕。\n是否禁用扩展并重新打开？")) {
-				window.resetExtension();
-				window.location.reload();
+				Promise.resolve(window.resetExtension()).then(() => window.location.reload()).catch(error => {
+					console.error("扩展紧急禁用未完成", error);
+				});
 			}
 		} else {
 			if (lib.device) {

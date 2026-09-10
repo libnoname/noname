@@ -1,0 +1,146 @@
+
+qy_tx_huoshouji_1.png
+size: 1650,1650
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1_00
+  rotate: false
+  xy: 2, 1251
+  size: 396, 397
+  orig: 460, 460
+  offset: 27, 53
+  index: -1
+1_01
+  rotate: false
+  xy: 2, 894
+  size: 375, 355
+  orig: 460, 460
+  offset: 43, 85
+  index: -1
+1_02
+  rotate: false
+  xy: 2, 185
+  size: 356, 355
+  orig: 460, 460
+  offset: 54, 75
+  index: -1
+1_03
+  rotate: false
+  xy: 776, 950
+  size: 357, 353
+  orig: 460, 460
+  offset: 59, 68
+  index: -1
+1_04
+  rotate: false
+  xy: 2, 542
+  size: 367, 350
+  orig: 460, 460
+  offset: 53, 66
+  index: -1
+1_05
+  rotate: false
+  xy: 726, 334
+  size: 352, 311
+  orig: 460, 460
+  offset: 68, 70
+  index: -1
+1_06
+  rotate: false
+  xy: 1135, 649
+  size: 350, 309
+  orig: 460, 460
+  offset: 70, 72
+  index: -1
+1_07
+  rotate: false
+  xy: 1135, 960
+  size: 347, 339
+  orig: 460, 460
+  offset: 74, 76
+  index: -1
+1_08
+  rotate: false
+  xy: 775, 1305
+  size: 369, 343
+  orig: 460, 460
+  offset: 53, 73
+  index: -1
+1_09
+  rotate: true
+  xy: 1080, 298
+  size: 347, 302
+  orig: 460, 460
+  offset: 75, 77
+  index: -1
+1_10
+  rotate: false
+  xy: 379, 669
+  size: 360, 314
+  orig: 460, 460
+  offset: 64, 66
+  index: -1
+1_11
+  rotate: false
+  xy: 1146, 1301
+  size: 364, 347
+  orig: 460, 460
+  offset: 61, 66
+  index: -1
+1_12
+  rotate: false
+  xy: 400, 1303
+  size: 373, 345
+  orig: 460, 460
+  offset: 53, 66
+  index: -1
+1_13
+  rotate: false
+  xy: 400, 985
+  size: 374, 316
+  orig: 460, 460
+  offset: 53, 66
+  index: -1
+1_14
+  rotate: false
+  xy: 714, 30
+  size: 351, 302
+  orig: 460, 460
+  offset: 77, 81
+  index: -1
+1_15
+  rotate: false
+  xy: 360, 64
+  size: 352, 301
+  orig: 460, 460
+  offset: 77, 82
+  index: -1
+1_16
+  rotate: false
+  xy: 741, 647
+  size: 353, 301
+  orig: 460, 460
+  offset: 77, 83
+  index: -1
+1_17
+  rotate: false
+  xy: 371, 367
+  size: 353, 300
+  orig: 460, 460
+  offset: 77, 84
+  index: -1
+1_18
+  rotate: false
+  xy: 1067, 6
+  size: 351, 290
+  orig: 460, 460
+  offset: 79, 93
+  index: -1
+1_19
+  rotate: false
+  xy: 1484, 1134
+  size: 164, 165
+  orig: 460, 460
+  offset: 146, 139
+  index: -1

@@ -1,0 +1,62 @@
+
+SSXF_PJN_qiuqian.png
+size: 664,664
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+effect/tihuan
+  rotate: false
+  xy: 223, 274
+  size: 1, 1
+  orig: 1, 1
+  offset: 0, 0
+  index: -1
+qian1
+  rotate: false
+  xy: 409, 265
+  size: 138, 397
+  orig: 138, 397
+  offset: 0, 0
+  index: -1
+qian2
+  rotate: true
+  xy: 264, 189
+  size: 57, 398
+  orig: 57, 398
+  offset: 0, 0
+  index: -1
+qian3
+  rotate: false
+  xy: 223, 277
+  size: 184, 385
+  orig: 184, 385
+  offset: 0, 0
+  index: -1
+qian4
+  rotate: false
+  xy: 549, 248
+  size: 60, 414
+  orig: 60, 414
+  offset: 0, 0
+  index: -1
+qian5
+  rotate: true
+  xy: 2, 18
+  size: 60, 408
+  orig: 60, 408
+  offset: 0, 0
+  index: -1
+qiantonghou
+  rotate: true
+  xy: 2, 80
+  size: 177, 260
+  orig: 177, 260
+  offset: 0, 0
+  index: -1
+qiantongzheng
+  rotate: false
+  xy: 2, 259
+  size: 219, 403
+  orig: 219, 403
+  offset: 0, 0
+  index: -1

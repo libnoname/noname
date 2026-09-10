@@ -1,5 +1,6 @@
 import { menuContainer, popupContainer, updateActive, setUpdateActive, updateActiveCard, setUpdateActiveCard, menux, menuxpages, menuUpdates, openMenu, clickToggle, clickSwitcher, clickContainer, clickMenuItem, createMenu, createConfig } from "../index.js";
 import { ui, game, get, ai, lib, _status } from "noname";
+import { characterMenuOwner, createPackSubmenu, mergedMenuSections } from "../extensionGroups.js";
 
 export const characterPackMenu = function (connectMenu) {
 	/**
@@ -14,6 +15,8 @@ export const characterPackMenu = function (connectMenu) {
 	var start = cacheMenuxpages.shift();
 	// 用于切换显示对应武将包所有武将的界面
 	var rightPane = start.lastChild;
+	const packNodes = new Map();
+	const groupNodes = new Map();
 
 	var clickMode = function () {
 		var active = this.parentNode.querySelector(".active");
@@ -43,15 +46,10 @@ export const characterPackMenu = function (connectMenu) {
 		if (!node.link) {
 			node._initLink();
 		}
-		for (var i = 0; i < node.link.childElementCount; i++) {
-			if (node.link.childNodes[i].updateBanned) {
-				node.link.childNodes[i].updateBanned();
-			}
-		}
+		for (const child of node.link.querySelectorAll("*")) child.updateBanned?.();
 	});
 	var updateNodes = function () {
-		for (var i = 0; i < start.firstChild.childNodes.length; i++) {
-			var node = start.firstChild.childNodes[i];
+		for (const node of new Set([...start.firstChild.childNodes, ...packNodes.values()])) {
 			if (node.mode) {
 				if (node.mode.startsWith("mode_")) {
 					// 扩展武将包开启逻辑
@@ -147,6 +145,7 @@ export const characterPackMenu = function (connectMenu) {
 			position.insertBefore(node, position2);
 		}
 		node.mode = mode;
+		packNodes.set(mode, node);
 		node._initLink = function () {
 			node.link = page;
 			page.node = node;
@@ -323,8 +322,9 @@ export const characterPackMenu = function (connectMenu) {
 							delete cfgnodeY.onclick;
 						}
 						var cfgnodeX = createConfig(cfgnodeY);
-						page.appendChild(cfgnodeX);
-						var buttons = ui.create.buttons(listx, "character", page);
+						const memberPage = mergedMenuSections(mode.replace(/^mode_extension_/, "")).length ? createPackSubmenu(page, `${lib.translate[pak] || pak}（${listx.length}）`, `characters:${mode}:${pak}`) : page;
+						memberPage.appendChild(cfgnodeX);
+						var buttons = ui.create.buttons(listx, "character", memberPage);
 						for (var i = 0; i < buttons.length; i++) {
 							buttons[i].classList.add("noclick");
 							buttons[i].listen(banCharacter);
@@ -399,6 +399,35 @@ export const characterPackMenu = function (connectMenu) {
 		}
 		return node;
 	};
+	const ensureGroup = function (name, before) {
+		if (groupNodes.has(name)) return groupNodes.get(name);
+		const node = ui.create.div(".menubutton.large", name, start.firstChild, clickMode);
+		node.dataset.extensionGroup = name;
+		node.link = ui.create.div("");
+		node.link.style.cssText = "padding:10px;box-sizing:border-box;width:100%";
+		const hint = document.createElement("p");
+		hint.textContent = "作者：PXLNGU。展开子包查看武将和原有开关；扩展成员需先在“扩展”页开启。";
+		node.link.append(hint);
+		if (before) start.firstChild.insertBefore(node, before);
+		groupNodes.set(name, node);
+		return node;
+	};
+	const addCharacterMode = function (mode, before) {
+		if (packNodes.has(mode) || mode === "假装无敌Pack" || mode === "EpicFX" || mode === "mode_extension_EpicFX") return;
+		const owner = characterMenuOwner(mode);
+		if (!owner) return createModeConfig(mode, start.firstChild, before);
+		const group = ensureGroup(owner, before);
+		const member = createModeConfig(mode, document.createElement("div"));
+		const title = mode === owner ? "本包武将" : (lib.translate[`${mode}_character_config`] || mode);
+		const details = createPackSubmenu(group.link, title, `characters:${owner}:${mode}`);
+		const load = () => {
+			if (!member.link) member._initLink();
+			if (!details.contains(member.link)) details.append(member.link);
+			updateNodes();
+		};
+		details.addEventListener("toggle", () => { if (details.open) load(); });
+		if (details.open) load();
+	};
 	if (lib.config.show_favourite_menu && !connectMenu && Array.isArray(lib.config.favouriteCharacter)) {
 		lib.characterPack.mode_favourite = {};
 		for (var i = 0; i < lib.config.favouriteCharacter.length; i++) {
@@ -437,18 +466,20 @@ export const characterPackMenu = function (connectMenu) {
 	}
 	var characterlist = connectMenu ? lib.connectCharacterPack : lib.config.all.characters;
 	for (var i = 0; i < characterlist.length; i++) {
-		createModeConfig(characterlist[i], start.firstChild);
+		addCharacterMode(characterlist[i]);
 	}
 	if (!connectMenu) {
 		Object.keys(lib.characterPack).forEach(key => {
 			// 单机模式下显示不在lib.config.all.characters里的武将包
 			if (!characterlist.includes(key)) {
-				createModeConfig(key, start.firstChild);
+				addCharacterMode(key);
 			}
 			if (connectMenu) {
 				lib.connectCharacterPack.add(key);
 			}
 		});
+		// Keep the management entry stable even when every member is disabled.
+		ensureGroup("PXLNGU");
 	}
 	var active = start.firstChild.querySelector(".active");
 	if (!active) {
@@ -500,12 +531,12 @@ export const characterPackMenu = function (connectMenu) {
 	 */
 	return function (packName) {
 		// 判断菜单栏有没有加载过这个武将包
-		if ([...start.firstChild.children].map(node => node.mode).includes(packName)) {
+		if (packNodes.has(packName)) {
 			return;
 		}
 		// 显示不是无名杀自带的武将包
 		if (!lib.connectCharacterPack.includes(packName) && !lib.config.all.characters.includes(packName)) {
-			createModeConfig(packName, start.firstChild, node1);
+			addCharacterMode(packName, node1);
 			if (connectMenu) {
 				lib.connectCharacterPack.add(packName);
 			}

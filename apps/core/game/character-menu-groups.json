@@ -1,0 +1,23 @@
+{
+  "author": "PXLNGU",
+  "groups": [
+    {
+      "name": "进阶",
+      "members": ["offline", "jsrg", "sxrm", "sixiang", "tw", "xianding", "huicui", "clan", "yingbian", "collab", "diy"]
+    },
+    {
+      "name": "普通",
+      "members": ["shenhua", "extra", "yijiang", "refresh", "sp", "sp2", "newjiang", "onlyOL", "手杀武将"]
+    },
+    {
+      "name": "基础",
+      "members": ["standard", "old"]
+    },
+    {
+      "name": "新篇",
+      "members": ["shiji", "sb", "bingshi"]
+    }
+  ],
+  "labels": { "diy": "设计比赛20", "key": "二次元" },
+  "removed": ["gwent", "gujian", "swd", "hearth", "ow", "xianjian", "mtg"]
+}

@@ -1,0 +1,9 @@
+extension["假装无敌"]={
+	intro:"能击杀绝大多数武将，但可能会被极少数武将反弹致死(别想了，会防的作者懒得下)",
+	author:"不做人了",
+	netdisk:"",
+	forum:"",
+	version:"1.0",
+	files:["陆地神仙.jpg","extension.js"],
+	size:"5KB"
+};

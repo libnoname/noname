@@ -493,3 +493,9 @@ git check-ignore -v "扩展包/活动武将20260823(1).zip"
 详细规则、预览与完整核验命令见 [武将扩展包增量整理说明](extension-organizer.md)。
 
 本次整理出的 49 个扩展已全部安装并支持启动时自动登记；其中 36 个默认启用，13 个因缺失技能或子技能依赖默认关闭，文件仍完整保留。具体名单、使用方式与验证边界见 [整理后扩展的工程安装与启用](organized-extension-installation.md)。
+
+从清瑶版 APK 分支提取的独有扩展采用“只新增、不覆盖”方式另行合入，并全部默认关闭；处理范围和同名文件差异见 [清瑶版 APK 扩展资源增量合并](apk-extension-incremental-merge.md)。
+
+原有“名将杀”等扩展入口的补登记、旧开关保留和排查结果见 [原有扩展入口恢复](extension-registration-recovery.md)。
+
+当前扩展菜单分组、PXLNGU 成员以及磁盘来源树见 [当前扩展树状结构](current-extension-tree.md)。

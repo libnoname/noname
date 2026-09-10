@@ -1,0 +1,181 @@
+
+xiaoyouxi_shibaiziti.png
+size: 210,1030
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+images/luoye/luoye_00019
+  rotate: true
+  xy: 125, 127
+  size: 90, 78
+  orig: 350, 142
+  offset: 260, 64
+  index: -1
+images/luoye/luoye_00020
+  rotate: false
+  xy: 124, 47
+  size: 84, 78
+  orig: 350, 142
+  offset: 260, 64
+  index: -1
+images/luoye/luoye_00021
+  rotate: true
+  xy: 140, 402
+  size: 102, 68
+  orig: 350, 142
+  offset: 228, 55
+  index: -1
+images/luoye/luoye_00022
+  rotate: true
+  xy: 132, 219
+  size: 90, 68
+  orig: 350, 142
+  offset: 228, 55
+  index: -1
+images/luoye/luoye_00023
+  rotate: true
+  xy: 170, 506
+  size: 102, 35
+  orig: 350, 142
+  offset: 192, 48
+  index: -1
+images/luoye/luoye_00024
+  rotate: true
+  xy: 176, 610
+  size: 90, 30
+  orig: 350, 142
+  offset: 192, 48
+  index: -1
+images/luoye/luoye_00025
+  rotate: false
+  xy: 2, 340
+  size: 130, 50
+  orig: 350, 142
+  offset: 171, 45
+  index: -1
+images/luoye/luoye_00026
+  rotate: false
+  xy: 2, 392
+  size: 130, 52
+  orig: 350, 142
+  offset: 171, 43
+  index: -1
+images/luoye/luoye_00027
+  rotate: false
+  xy: 2, 280
+  size: 128, 58
+  orig: 350, 142
+  offset: 181, 48
+  index: -1
+images/luoye/luoye_00028
+  rotate: false
+  xy: 2, 446
+  size: 136, 58
+  orig: 350, 142
+  offset: 173, 48
+  index: -1
+images/luoye/luoye_00029
+  rotate: true
+  xy: 2, 2
+  size: 77, 88
+  orig: 350, 142
+  offset: 163, 42
+  index: -1
+images/luoye/luoye_00030
+  rotate: false
+  xy: 134, 311
+  size: 69, 89
+  orig: 350, 142
+  offset: 171, 42
+  index: -1
+images/luoye/luoye_00031
+  rotate: false
+  xy: 2, 81
+  size: 120, 104
+  orig: 350, 142
+  offset: 114, 22
+  index: -1
+images/luoye/luoye_00032
+  rotate: false
+  xy: 2, 187
+  size: 121, 91
+  orig: 350, 142
+  offset: 114, 22
+  index: -1
+images/luoye/luoye_00033
+  rotate: false
+  xy: 2, 630
+  size: 172, 70
+  orig: 350, 142
+  offset: 61, 7
+  index: -1
+images/luoye/luoye_00034
+  rotate: false
+  xy: 2, 562
+  size: 166, 66
+  orig: 350, 142
+  offset: 61, 7
+  index: -1
+images/luoye/luoye_00035
+  rotate: false
+  xy: 2, 927
+  size: 187, 101
+  orig: 350, 142
+  offset: 90, 12
+  index: -1
+images/luoye/luoye_00036
+  rotate: false
+  xy: 2, 824
+  size: 187, 101
+  orig: 350, 142
+  offset: 90, 12
+  index: -1
+images/luoye/luoye_00037
+  rotate: false
+  xy: 2, 763
+  size: 187, 59
+  orig: 350, 142
+  offset: 36, 0
+  index: -1
+images/luoye/luoye_00038
+  rotate: false
+  xy: 2, 702
+  size: 187, 59
+  orig: 350, 142
+  offset: 36, 0
+  index: -1
+images/luoye/luoye_00039
+  rotate: false
+  xy: 2, 534
+  size: 151, 26
+  orig: 350, 142
+  offset: 0, 10
+  index: -1
+images/luoye/luoye_00040
+  rotate: false
+  xy: 2, 506
+  size: 151, 26
+  orig: 350, 142
+  offset: 0, 10
+  index: -1
+images/luoye/luoye_00041
+  rotate: true
+  xy: 191, 930
+  size: 98, 17
+  orig: 350, 142
+  offset: 7, 11
+  index: -1
+images/luoye/luoye_00042
+  rotate: true
+  xy: 191, 830
+  size: 98, 17
+  orig: 350, 142
+  offset: 7, 13
+  index: -1
+images/luoye/luoye_00043
+  rotate: true
+  xy: 191, 791
+  size: 37, 16
+  orig: 350, 142
+  offset: 1, 19
+  index: -1

@@ -1,0 +1,368 @@
+
+SS_SWY_tongchang.png
+size: 2016,2041
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+gyjn/gyjn_001
+  rotate: true
+  xy: 1709, 2
+  size: 350, 178
+  orig: 934, 245
+  offset: 584, 30
+  index: -1
+gyjn/gyjn_012
+  rotate: false
+  xy: 858, 312
+  size: 849, 245
+  orig: 934, 245
+  offset: 85, 0
+  index: -1
+gyjn/gyjn_013
+  rotate: false
+  xy: 862, 806
+  size: 855, 245
+  orig: 934, 245
+  offset: 79, 0
+  index: -1
+gyjn/gyjn_014
+  rotate: false
+  xy: 2, 560
+  size: 857, 244
+  orig: 934, 245
+  offset: 77, 0
+  index: -1
+gyjn/gyjn_015
+  rotate: false
+  xy: 2, 806
+  size: 858, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_016
+  rotate: false
+  xy: 869, 1053
+  size: 857, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_017
+  rotate: false
+  xy: 861, 559
+  size: 850, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_018
+  rotate: true
+  xy: 1728, 354
+  size: 842, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_031
+  rotate: false
+  xy: 2, 66
+  size: 852, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_032
+  rotate: false
+  xy: 2, 313
+  size: 854, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_033
+  rotate: false
+  xy: 886, 1547
+  size: 870, 245
+  orig: 934, 245
+  offset: 64, 0
+  index: -1
+gyjn/gyjn_034
+  rotate: false
+  xy: 2, 1300
+  size: 879, 245
+  orig: 934, 245
+  offset: 53, 0
+  index: -1
+gyjn/gyjn_035
+  rotate: false
+  xy: 2, 1794
+  size: 883, 245
+  orig: 934, 245
+  offset: 51, 0
+  index: -1
+gyjn/gyjn_036
+  rotate: false
+  xy: 887, 1794
+  size: 880, 245
+  orig: 934, 245
+  offset: 53, 0
+  index: -1
+gyjn/gyjn_037
+  rotate: false
+  xy: 2, 1547
+  size: 882, 245
+  orig: 934, 245
+  offset: 49, 0
+  index: -1
+gyjn/gyjn_038
+  rotate: false
+  xy: 2, 1053
+  size: 865, 245
+  orig: 934, 245
+  offset: 62, 0
+  index: -1
+gyjn/gyjn_039
+  rotate: false
+  xy: 883, 1300
+  size: 863, 245
+  orig: 934, 245
+  offset: 65, 0
+  index: -1
+gyjn/gyjn_040
+  rotate: false
+  xy: 856, 65
+  size: 849, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_064
+  rotate: true
+  xy: 1769, 1198
+  size: 841, 245
+  orig: 934, 245
+  offset: 77, 0
+  index: -1
+
+SS_SWY_tongchang2.png
+size: 1937,1978
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+gyjn/gyjn_003
+  rotate: true
+  xy: 1696, 1481
+  size: 495, 180
+  orig: 934, 245
+  offset: 439, 29
+  index: -1
+gyjn/gyjn_011
+  rotate: false
+  xy: 2, 1238
+  size: 843, 244
+  orig: 934, 245
+  offset: 91, 0
+  index: -1
+gyjn/gyjn_019
+  rotate: false
+  xy: 2, 1484
+  size: 845, 245
+  orig: 934, 245
+  offset: 73, 0
+  index: -1
+gyjn/gyjn_020
+  rotate: false
+  xy: 851, 1731
+  size: 843, 245
+  orig: 934, 245
+  offset: 75, 0
+  index: -1
+gyjn/gyjn_021
+  rotate: false
+  xy: 849, 1484
+  size: 842, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_022
+  rotate: false
+  xy: 2, 991
+  size: 842, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_024
+  rotate: false
+  xy: 2, 744
+  size: 842, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_026
+  rotate: false
+  xy: 2, 497
+  size: 842, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_028
+  rotate: false
+  xy: 2, 250
+  size: 842, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_030
+  rotate: false
+  xy: 2, 3
+  size: 842, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_041
+  rotate: false
+  xy: 2, 1731
+  size: 847, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_042
+  rotate: false
+  xy: 847, 1237
+  size: 842, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_043
+  rotate: false
+  xy: 846, 990
+  size: 842, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_045
+  rotate: false
+  xy: 846, 743
+  size: 842, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_046
+  rotate: false
+  xy: 846, 496
+  size: 842, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_048
+  rotate: false
+  xy: 846, 249
+  size: 842, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_050
+  rotate: false
+  xy: 846, 2
+  size: 842, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_052
+  rotate: true
+  xy: 1690, 393
+  size: 842, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+
+SS_SWY_tongchang3.png
+size: 1689,1457
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+gyjn/gyjn_005
+  rotate: false
+  xy: 816, 184
+  size: 643, 180
+  orig: 934, 245
+  offset: 291, 29
+  index: -1
+gyjn/gyjn_006
+  rotate: false
+  xy: 781, 2
+  size: 708, 180
+  orig: 934, 245
+  offset: 226, 29
+  index: -1
+gyjn/gyjn_007
+  rotate: false
+  xy: 2, 2
+  size: 777, 180
+  orig: 934, 245
+  offset: 157, 29
+  index: -1
+gyjn/gyjn_009
+  rotate: false
+  xy: 2, 184
+  size: 812, 180
+  orig: 934, 245
+  offset: 122, 29
+  index: -1
+gyjn/gyjn_010
+  rotate: true
+  xy: 1484, 638
+  size: 817, 180
+  orig: 934, 245
+  offset: 117, 29
+  index: -1
+gyjn/gyjn_027
+  rotate: false
+  xy: 846, 366
+  size: 841, 245
+  orig: 934, 245
+  offset: 77, 0
+  index: -1
+gyjn/gyjn_029
+  rotate: true
+  xy: 990, 614
+  size: 841, 245
+  orig: 934, 245
+  offset: 77, 0
+  index: -1
+gyjn/gyjn_044
+  rotate: true
+  xy: 1237, 614
+  size: 841, 245
+  orig: 934, 245
+  offset: 77, 0
+  index: -1
+gyjn/gyjn_054
+  rotate: true
+  xy: 2, 613
+  size: 842, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_056
+  rotate: false
+  xy: 2, 366
+  size: 842, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_058
+  rotate: true
+  xy: 249, 613
+  size: 842, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_060
+  rotate: true
+  xy: 496, 613
+  size: 842, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_062
+  rotate: true
+  xy: 743, 613
+  size: 842, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1

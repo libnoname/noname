@@ -1,0 +1,628 @@
+
+Ss_vfx_sxq_ui_jm.png
+size: 2046,2042
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+bg
+  rotate: false
+  xy: 0, 1521
+  size: 1519, 521
+  orig: 1519, 743
+  offset: 0, 140
+  index: -1
+ui_he_1
+  rotate: false
+  xy: 309, 110
+  size: 200, 149
+  orig: 200, 149
+  offset: 0, 0
+  index: -1
+ui_he_2
+  rotate: false
+  xy: 1521, 1562
+  size: 308, 480
+  orig: 308, 480
+  offset: 0, 0
+  index: -1
+ui_hehua_bg
+  rotate: false
+  xy: 0, 88
+  size: 307, 171
+  orig: 307, 171
+  offset: 0, 0
+  index: -1
+vx_bolang_lv_glow_00002
+  rotate: false
+  xy: 1844, 475
+  size: 152, 177
+  orig: 175, 188
+  offset: 5, 8
+  index: -1
+vx_bolang_lv_glow_00004
+  rotate: false
+  xy: 1884, 296
+  size: 152, 177
+  orig: 175, 188
+  offset: 6, 8
+  index: -1
+vx_bolang_lv_glow_00010
+  rotate: false
+  xy: 1691, 451
+  size: 151, 179
+  orig: 175, 188
+  offset: 8, 7
+  index: -1
+vx_bolang_lv_glow_00012
+  rotate: true
+  xy: 511, 107
+  size: 152, 180
+  orig: 175, 188
+  offset: 7, 6
+  index: -1
+vx_bolang_lv_glow_00014
+  rotate: true
+  xy: 693, 106
+  size: 153, 179
+  orig: 175, 188
+  offset: 6, 7
+  index: -1
+vx_bolang_lv_glow_00016
+  rotate: false
+  xy: 1729, 159
+  size: 153, 179
+  orig: 175, 188
+  offset: 6, 7
+  index: -1
+vx_bolang_lv_glow_00026
+  rotate: true
+  xy: 1729, 2
+  size: 155, 167
+  orig: 175, 188
+  offset: 4, 21
+  index: -1
+vx_bolang_lv_glow_00038
+  rotate: false
+  xy: 1884, 1459
+  size: 162, 169
+  orig: 175, 188
+  offset: 1, 18
+  index: -1
+vx_bolang_lv_glow_00040
+  rotate: false
+  xy: 1834, 654
+  size: 163, 170
+  orig: 175, 188
+  offset: 0, 17
+  index: -1
+vx_bolang_lv_glow_00060
+  rotate: false
+  xy: 1898, 130
+  size: 147, 164
+  orig: 175, 188
+  offset: 20, 15
+  index: -1
+vx_bolang_lv_glow_00062
+  rotate: false
+  xy: 1898, 826
+  size: 148, 155
+  orig: 175, 188
+  offset: 19, 15
+  index: -1
+vx_bolang_lv_glow_00072
+  rotate: false
+  xy: 1898, 983
+  size: 148, 159
+  orig: 175, 188
+  offset: 20, 13
+  index: -1
+vx_bolang_lv_glow_00074
+  rotate: false
+  xy: 1898, 1144
+  size: 148, 160
+  orig: 175, 188
+  offset: 20, 13
+  index: -1
+vx_bolang_lv_glow_00120
+  rotate: true
+  xy: 1884, 1306
+  size: 151, 162
+  orig: 175, 188
+  offset: 16, 14
+  index: -1
+vx_hehua_glow_fen
+  rotate: false
+  xy: 1831, 1630
+  size: 202, 207
+  orig: 202, 207
+  offset: 0, 0
+  index: -1
+vx_hehua_glow_fen_1
+  rotate: true
+  xy: 1691, 340
+  size: 109, 151
+  orig: 109, 151
+  offset: 0, 0
+  index: -1
+vx_hehua_glow_fen_2
+  rotate: false
+  xy: 84, 18
+  size: 68, 68
+  orig: 68, 68
+  offset: 0, 0
+  index: -1
+vx_in_ui_vfx_00003
+  rotate: false
+  xy: 1831, 1839
+  size: 209, 203
+  orig: 887, 313
+  offset: 264, 36
+  index: -1
+vx_in_ui_vfx_00009
+  rotate: false
+  xy: 889, 317
+  size: 800, 313
+  orig: 887, 313
+  offset: 52, 0
+  index: -1
+vx_in_ui_vfx_00010
+  rotate: false
+  xy: 889, 2
+  size: 838, 313
+  orig: 887, 313
+  offset: 36, 0
+  index: -1
+vx_in_ui_vfx_00014
+  rotate: false
+  xy: 0, 1206
+  size: 887, 313
+  orig: 887, 313
+  offset: 0, 0
+  index: -1
+vx_in_ui_vfx_00015
+  rotate: false
+  xy: 0, 891
+  size: 887, 313
+  orig: 887, 313
+  offset: 0, 0
+  index: -1
+vx_in_ui_vfx_00016
+  rotate: false
+  xy: 0, 576
+  size: 887, 313
+  orig: 887, 313
+  offset: 0, 0
+  index: -1
+vx_in_ui_vfx_00017
+  rotate: true
+  xy: 889, 632
+  size: 887, 313
+  orig: 887, 313
+  offset: 0, 0
+  index: -1
+vx_in_ui_vfx_00018
+  rotate: false
+  xy: 0, 261
+  size: 887, 313
+  orig: 887, 313
+  offset: 0, 0
+  index: -1
+vx_in_ui_vfx_00019
+  rotate: true
+  xy: 1204, 632
+  size: 887, 313
+  orig: 887, 313
+  offset: 0, 0
+  index: -1
+vx_in_ui_vfx_00020
+  rotate: true
+  xy: 1519, 632
+  size: 887, 313
+  orig: 887, 313
+  offset: 0, 0
+  index: -1
+vx_lizi_lv
+  rotate: false
+  xy: 0, 0
+  size: 82, 86
+  orig: 82, 86
+  offset: 0, 0
+  index: -1
+
+Ss_vfx_sxq_ui_jm2.png
+size: 1972,1810
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+vx_bolang_lv_glow_00000
+  rotate: false
+  xy: 1009, 695
+  size: 152, 176
+  orig: 175, 188
+  offset: 5, 9
+  index: -1
+vx_bolang_lv_glow_00006
+  rotate: false
+  xy: 1009, 337
+  size: 150, 177
+  orig: 175, 188
+  offset: 8, 8
+  index: -1
+vx_bolang_lv_glow_00008
+  rotate: false
+  xy: 1009, 516
+  size: 151, 177
+  orig: 175, 188
+  offset: 8, 8
+  index: -1
+vx_bolang_lv_glow_00018
+  rotate: true
+  xy: 1766, 1485
+  size: 154, 169
+  orig: 175, 188
+  offset: 6, 17
+  index: -1
+vx_bolang_lv_glow_00020
+  rotate: true
+  xy: 1354, 857
+  size: 154, 172
+  orig: 175, 188
+  offset: 5, 14
+  index: -1
+vx_bolang_lv_glow_00022
+  rotate: false
+  xy: 675, 0
+  size: 154, 166
+  orig: 175, 188
+  offset: 5, 21
+  index: -1
+vx_bolang_lv_glow_00024
+  rotate: false
+  xy: 831, 0
+  size: 154, 166
+  orig: 175, 188
+  offset: 5, 21
+  index: -1
+vx_bolang_lv_glow_00028
+  rotate: false
+  xy: 1521, 1013
+  size: 157, 168
+  orig: 175, 188
+  offset: 3, 20
+  index: -1
+vx_bolang_lv_glow_00030
+  rotate: false
+  xy: 1528, 843
+  size: 158, 168
+  orig: 175, 188
+  offset: 2, 20
+  index: -1
+vx_bolang_lv_glow_00032
+  rotate: false
+  xy: 1163, 702
+  size: 159, 169
+  orig: 175, 188
+  offset: 2, 19
+  index: -1
+vx_bolang_lv_glow_00034
+  rotate: true
+  xy: 504, 85
+  size: 160, 169
+  orig: 175, 188
+  offset: 1, 19
+  index: -1
+vx_bolang_lv_glow_00036
+  rotate: true
+  xy: 332, 85
+  size: 160, 170
+  orig: 175, 188
+  offset: 2, 18
+  index: -1
+vx_bolang_lv_glow_00042
+  rotate: false
+  xy: 1766, 1641
+  size: 164, 169
+  orig: 175, 188
+  offset: 0, 17
+  index: -1
+vx_bolang_lv_glow_00044
+  rotate: false
+  xy: 0, 76
+  size: 164, 169
+  orig: 175, 188
+  offset: 0, 17
+  index: -1
+vx_bolang_lv_glow_00046
+  rotate: false
+  xy: 1354, 1013
+  size: 165, 168
+  orig: 175, 188
+  offset: 0, 17
+  index: -1
+vx_bolang_lv_glow_00048
+  rotate: false
+  xy: 166, 77
+  size: 164, 168
+  orig: 175, 188
+  offset: 1, 17
+  index: -1
+vx_bolang_lv_glow_00050
+  rotate: true
+  xy: 1324, 706
+  size: 149, 168
+  orig: 175, 188
+  offset: 16, 17
+  index: -1
+vx_bolang_lv_glow_00052
+  rotate: false
+  xy: 1009, 168
+  size: 150, 167
+  orig: 175, 188
+  offset: 16, 17
+  index: -1
+vx_bolang_lv_glow_00054
+  rotate: false
+  xy: 987, 0
+  size: 150, 166
+  orig: 175, 188
+  offset: 16, 17
+  index: -1
+vx_bolang_lv_glow_00056
+  rotate: false
+  xy: 1139, 0
+  size: 149, 166
+  orig: 175, 188
+  offset: 17, 17
+  index: -1
+vx_bolang_lv_glow_00058
+  rotate: true
+  xy: 1494, 692
+  size: 149, 165
+  orig: 175, 188
+  offset: 17, 16
+  index: -1
+vx_bolang_lv_glow_00064
+  rotate: false
+  xy: 1661, 685
+  size: 144, 156
+  orig: 175, 188
+  offset: 22, 15
+  index: -1
+vx_bolang_lv_glow_00066
+  rotate: true
+  xy: 1637, 229
+  size: 145, 158
+  orig: 175, 188
+  offset: 22, 14
+  index: -1
+vx_bolang_lv_glow_00068
+  rotate: true
+  xy: 1477, 235
+  size: 146, 158
+  orig: 175, 188
+  offset: 21, 14
+  index: -1
+vx_bolang_lv_glow_00070
+  rotate: true
+  xy: 1318, 87
+  size: 146, 158
+  orig: 175, 188
+  offset: 21, 14
+  index: -1
+vx_bolang_lv_glow_00076
+  rotate: true
+  xy: 1163, 551
+  size: 149, 160
+  orig: 175, 188
+  offset: 19, 13
+  index: -1
+vx_bolang_lv_glow_00078
+  rotate: true
+  xy: 1649, 533
+  size: 150, 158
+  orig: 175, 188
+  offset: 18, 15
+  index: -1
+vx_bolang_lv_glow_00080
+  rotate: true
+  xy: 1478, 81
+  size: 152, 157
+  orig: 175, 188
+  offset: 17, 17
+  index: -1
+vx_bolang_lv_glow_00082
+  rotate: true
+  xy: 1797, 61
+  size: 153, 156
+  orig: 175, 188
+  offset: 16, 18
+  index: -1
+vx_bolang_lv_glow_00084
+  rotate: true
+  xy: 1809, 1167
+  size: 154, 157
+  orig: 175, 188
+  offset: 16, 17
+  index: -1
+vx_bolang_lv_glow_00086
+  rotate: true
+  xy: 1806, 376
+  size: 155, 157
+  orig: 175, 188
+  offset: 15, 17
+  index: -1
+vx_bolang_lv_glow_00088
+  rotate: false
+  xy: 1688, 854
+  size: 155, 157
+  orig: 175, 188
+  offset: 15, 17
+  index: -1
+vx_bolang_lv_glow_00090
+  rotate: false
+  xy: 1318, 235
+  size: 157, 156
+  orig: 175, 188
+  offset: 14, 16
+  index: -1
+vx_bolang_lv_glow_00092
+  rotate: true
+  xy: 1807, 695
+  size: 157, 156
+  orig: 175, 188
+  offset: 14, 16
+  index: -1
+vx_bolang_lv_glow_00094
+  rotate: false
+  xy: 1646, 376
+  size: 158, 155
+  orig: 175, 188
+  offset: 14, 16
+  index: -1
+vx_bolang_lv_glow_00096
+  rotate: false
+  xy: 1637, 72
+  size: 158, 155
+  orig: 175, 188
+  offset: 14, 16
+  index: -1
+vx_bolang_lv_glow_00098
+  rotate: false
+  xy: 1325, 549
+  size: 160, 155
+  orig: 175, 188
+  offset: 13, 16
+  index: -1
+vx_bolang_lv_glow_00100
+  rotate: false
+  xy: 1657, 1327
+  size: 160, 156
+  orig: 175, 188
+  offset: 13, 15
+  index: -1
+vx_bolang_lv_glow_00102
+  rotate: false
+  xy: 1809, 537
+  size: 153, 156
+  orig: 175, 188
+  offset: 12, 15
+  index: -1
+vx_bolang_lv_glow_00104
+  rotate: true
+  xy: 1680, 1013
+  size: 152, 157
+  orig: 175, 188
+  offset: 13, 15
+  index: -1
+vx_bolang_lv_glow_00106
+  rotate: true
+  xy: 1324, 393
+  size: 154, 159
+  orig: 175, 188
+  offset: 12, 14
+  index: -1
+vx_bolang_lv_glow_00108
+  rotate: false
+  xy: 1161, 233
+  size: 155, 159
+  orig: 175, 188
+  offset: 11, 14
+  index: -1
+vx_bolang_lv_glow_00110
+  rotate: false
+  xy: 1797, 216
+  size: 154, 158
+  orig: 175, 188
+  offset: 12, 15
+  index: -1
+vx_bolang_lv_glow_00112
+  rotate: true
+  xy: 1487, 535
+  size: 155, 160
+  orig: 175, 188
+  offset: 11, 14
+  index: -1
+vx_bolang_lv_glow_00114
+  rotate: true
+  xy: 1162, 394
+  size: 155, 160
+  orig: 175, 188
+  offset: 11, 15
+  index: -1
+vx_bolang_lv_glow_00116
+  rotate: false
+  xy: 1819, 1323
+  size: 153, 160
+  orig: 175, 188
+  offset: 14, 15
+  index: -1
+vx_bolang_lv_glow_00118
+  rotate: true
+  xy: 1485, 383
+  size: 150, 159
+  orig: 175, 188
+  offset: 17, 16
+  index: -1
+vx_in_ui_vfx_00004
+  rotate: false
+  xy: 877, 873
+  size: 475, 308
+  orig: 887, 313
+  offset: 166, 5
+  index: -1
+vx_in_ui_vfx_00005
+  rotate: false
+  xy: 0, 557
+  size: 697, 308
+  orig: 887, 313
+  offset: 94, 5
+  index: -1
+vx_in_ui_vfx_00006
+  rotate: false
+  xy: 0, 247
+  size: 697, 308
+  orig: 887, 313
+  offset: 94, 5
+  index: -1
+vx_in_ui_vfx_00007
+  rotate: true
+  xy: 699, 168
+  size: 697, 308
+  orig: 887, 313
+  offset: 94, 5
+  index: -1
+vx_in_ui_vfx_00008
+  rotate: false
+  xy: 877, 1183
+  size: 778, 312
+  orig: 887, 313
+  offset: 73, 1
+  index: -1
+vx_in_ui_vfx_00011
+  rotate: false
+  xy: 0, 867
+  size: 862, 313
+  orig: 887, 313
+  offset: 23, 0
+  index: -1
+vx_in_ui_vfx_00012
+  rotate: false
+  xy: 0, 1182
+  size: 875, 313
+  orig: 887, 313
+  offset: 11, 0
+  index: -1
+vx_in_ui_vfx_00013
+  rotate: false
+  xy: 889, 1497
+  size: 875, 313
+  orig: 887, 313
+  offset: 11, 0
+  index: -1
+vx_in_ui_vfx_00021
+  rotate: false
+  xy: 0, 1497
+  size: 887, 313
+  orig: 887, 313
+  offset: 0, 0
+  index: -1

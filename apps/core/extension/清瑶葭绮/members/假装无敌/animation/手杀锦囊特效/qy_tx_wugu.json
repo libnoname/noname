@@ -1,0 +1,403 @@
+{
+"skeleton": {
+	"hash": "YLRbAgCzFMbWicfRG5T8Q36NYX4",
+	"spine": "3.8.75",
+	"x": -21.52,
+	"y": 49.47,
+	"width": 145.24,
+	"height": 120.76,
+	"images": "C:/Users/Administrator/Desktop/123",
+	"audio": "C:\\Users\\Administrator\\Desktop\\123"
+},
+"bones": [
+	{ "name": "root" },
+	{ "name": "03", "parent": "root", "scaleX": 0.7, "scaleY": 0.7 },
+	{ "name": "03-baise", "parent": "03", "x": 63.21, "y": 164.64, "scaleX": 2, "scaleY": 2 },
+	{ "name": "03-dise", "parent": "03", "x": 61.74, "y": 160.96, "scaleX": 2, "scaleY": 2 },
+	{ "name": "03-laingdai", "parent": "03", "x": 70.56, "y": 150.67 },
+	{ "name": "03-liangdaimi", "parent": "03", "x": 20.58, "y": 13.96 },
+	{ "name": "03-liangdaimi2", "parent": "03", "x": 20.58, "y": 13.96 },
+	{ "name": "bone2", "parent": "03-laingdai", "x": -51.87, "y": -62.32 },
+	{ "name": "bone3", "parent": "bone2", "x": -45.4, "y": 49.59 },
+	{ "name": "bone4", "parent": "bone3", "x": 6.12, "y": 42.5 },
+	{ "name": "bone5", "parent": "bone4", "x": 106.9, "y": -64.4 },
+	{ "name": "bone6", "parent": "bone5", "x": 68.26, "y": 28.66 },
+	{ "name": "bone7", "parent": "bone6", "x": -22.22, "y": 59.89 },
+	{ "name": "bone8", "parent": "bone7", "x": -50.23, "y": 22.22 },
+	{ "name": "bone", "parent": "bone8", "x": -47.02, "y": -64.88 },
+	{ "name": "bone9", "parent": "bone", "x": 4.65, "y": 37.22 }
+],
+"slots": [
+	{ "name": "liangdai", "bone": "03-laingdai" },
+	{ "name": "03-daimi_00", "bone": "03-baise", "attachment": "03-daimi_00", "blend": "additive" },
+	{ "name": "03-daimi_01", "bone": "03-dise", "blend": "additive" },
+	{ "name": "03-laingdaimi_02", "bone": "03-liangdaimi" },
+	{ "name": "03-laingdaimi_2", "bone": "03-liangdaimi2" }
+],
+"skins": [
+	{
+		"name": "default",
+		"attachments": {
+			"03-daimi_00": {
+				"03-daimi_00": {
+					"type": "mesh",
+					"uvs": [ 0.81214, 0.42918, 0.8594, 0.57156, 0.40116, 0.78218, 0.21358, 0.64952, 0.21101, 0.43697, 0.62395, 0.24307 ],
+					"triangles": [ 2, 3, 4, 5, 2, 4, 2, 5, 0, 2, 0, 1 ],
+					"vertices": [ 49.21, 9.49, 56.77, -13.29, -16.55, -46.99, -46.56, -25.76, -46.97, 8.25, 19.1, 39.27 ],
+					"hull": 6,
+					"edges": [ 0, 10, 0, 2, 2, 4, 4, 6, 6, 8, 8, 10 ],
+					"width": 160,
+					"height": 160
+				}
+			},
+			"03-daimi_01": {
+				"03-daimi_01": {
+					"type": "mesh",
+					"uvs": [ 0.87713, 0.33483, 0.9451, 0.60355, 0.42612, 0.86595, 0.17942, 0.76661, 0.07826, 0.4045, 0.62058, 0.16333 ],
+					"triangles": [ 2, 3, 4, 5, 2, 4, 2, 5, 0, 2, 0, 1 ],
+					"vertices": [ 61.08, 28.27, 71.96, -14.73, -11.08, -56.71, -50.55, -40.82, -66.74, 17.12, 20.03, 55.71 ],
+					"hull": 6,
+					"edges": [ 0, 10, 0, 2, 2, 4, 4, 6, 6, 8, 8, 10 ],
+					"width": 160,
+					"height": 160
+				}
+			},
+			"liangdai": {
+				"liangdai": {
+					"type": "mesh",
+					"uvs": [ 0.18531, 0.23284, 0.02476, 0.2797, 0, 0.3734, 0, 0.61618, 0.076, 0.79081, 0.28437, 0.96544, 0.37318, 0.96544, 0.57813, 0.78229, 0.71818, 0.67581, 0.91288, 0.6034, 1, 0.61192, 1, 0.46284, 0.90946, 0.26692, 0.84115, 0.13062, 0.74892, 0.0497, 0.66352, 0, 0.52006, 0, 0.47907, 0.05396, 0.32877, 0.1647, 0.23574, 0.6765, 0.47601, 0.50169, 0.71249, 0.35089 ],
+					"triangles": [ 14, 21, 17, 14, 17, 15, 17, 16, 15, 21, 14, 13, 21, 13, 12, 11, 21, 12, 9, 21, 11, 9, 11, 10, 8, 21, 9, 20, 21, 8, 7, 20, 8, 19, 20, 7, 6, 5, 19, 4, 19, 5, 7, 6, 19, 21, 18, 17, 21, 20, 18, 0, 18, 20, 19, 0, 20, 0, 3, 2, 0, 2, 1, 4, 3, 19, 19, 3, 0 ],
+					"vertices": [ 4, 8, 33.71, 56.02, 5.8E-4, 9, 27.59, 13.51, 0.43029, 14, -28.11, 32.03, 0.23092, 15, -32.77, -5.2, 0.33822, 3, 8, 1.28, 48.43, 3.0E-5, 9, -4.84, 5.92, 0.99955, 15, -65.2, -12.79, 4.2E-4, 3, 8, -3.73, 33.25, 0.17858, 9, -9.84, -9.26, 0.81917, 14, -65.55, 9.26, 0.00225, 3, 8, -3.73, -6.08, 0.97064, 14, -65.55, -30.07, 0.0026, 7, -49.13, 43.5, 0.02675, 3, 8, 11.63, -34.37, 0.5154, 14, -50.19, -58.36, 0.04961, 7, -33.78, 15.21, 0.43499, 3, 14, -8.1, -86.65, 7.9E-4, 7, 8.31, -13.08, 0.93948, 10, -59.31, -40.77, 0.05973, 3, 14, 9.84, -86.65, 0.01753, 7, 26.25, -13.08, 0.78841, 10, -41.37, -40.77, 0.19406, 3, 14, 51.24, -56.98, 0.00656, 7, 67.65, 16.59, 0.0548, 10, 0.03, -11.1, 0.93864, 6, 14, 79.53, -39.73, 0.00472, 15, 74.87, -76.96, 0.00306, 10, 28.32, 6.15, 0.63886, 11, -39.94, -22.51, 0.31015, 12, -17.72, -82.4, 0.04025, 13, 32.51, -104.62, 0.00296, 2, 10, 67.65, 17.88, 0.0265, 11, -0.61, -10.78, 0.9735, 1, 11, 16.99, -12.16, 1, 2, 11, 16.99, 11.99, 0.93395, 12, 39.21, -47.9, 0.06605, 5, 14, 118.17, 26.51, 1.7E-4, 15, 113.51, -10.72, 5.0E-5, 10, 66.96, 72.39, 0.00681, 11, -1.3, 43.73, 0.35635, 12, 20.92, -16.16, 0.63662, 3, 11, -15.1, 65.81, 0.00855, 12, 7.12, 5.92, 0.98035, 13, 57.35, -16.3, 0.0111, 4, 14, 85.74, 61.7, 2.0E-5, 10, 34.53, 107.58, 4.0E-5, 12, -11.51, 19.03, 0.67941, 13, 38.72, -3.19, 0.32052, 2, 12, -28.76, 27.08, 0.31373, 13, 21.47, 4.86, 0.68627, 3, 15, 34.85, 32.52, 0.03957, 12, -57.74, 27.08, 1.0E-5, 13, -7.51, 4.86, 0.96042, 4, 14, 31.23, 61.01, 6.4E-4, 15, 26.57, 23.78, 0.2568, 10, -19.98, 106.89, 0.00321, 13, -15.79, -3.88, 0.73935, 4, 9, 56.57, 24.55, 0.01002, 14, 0.87, 43.07, 0.00348, 15, -3.79, 5.84, 0.9796, 13, -46.15, -21.82, 0.0069, 5, 8, 43.89, -15.86, 0.23514, 9, 37.78, -58.36, 0.00679, 14, -17.93, -39.85, 0.30898, 7, -1.51, 33.73, 0.39613, 10, -69.13, 6.04, 0.05296, 8, 8, 92.43, 12.46, 3.3E-4, 14, 30.61, -11.53, 0.48127, 15, 25.96, -48.75, 0.05696, 7, 47.03, 62.05, 0.02489, 10, -20.59, 34.36, 0.34827, 11, -88.86, 5.7, 0.01861, 12, -66.64, -54.19, 0.03699, 13, -16.41, -76.41, 0.03267, 6, 14, 78.38, 12.9, 0.06039, 15, 73.73, -24.32, 0.04033, 10, 27.18, 58.79, 0.17115, 11, -41.09, 30.13, 0.21205, 12, -18.87, -29.76, 0.42626, 13, 31.36, -51.98, 0.08983 ],
+					"hull": 19,
+					"edges": [ 0, 36, 0, 2, 2, 4, 4, 6, 6, 8, 8, 10, 10, 12, 12, 14, 14, 16, 16, 18, 18, 20, 20, 22, 22, 24, 24, 26, 26, 28, 28, 30, 30, 32, 32, 34, 34, 36 ],
+					"width": 202,
+					"height": 162
+				}
+			},
+			"03-laingdaimi_2": {
+				"03-laingdaimi_02": { "width": 180, "height": 280 },
+				"03-laingdaimi_03": { "width": 180, "height": 280 },
+				"03-laingdaimi_04": { "width": 180, "height": 280 },
+				"03-laingdaimi_05": { "width": 180, "height": 280 },
+				"03-laingdaimi_06": { "width": 180, "height": 280 },
+				"03-laingdaimi_07": { "width": 180, "height": 280 },
+				"03-laingdaimi_08": { "width": 180, "height": 280 },
+				"03-laingdaimi_09": { "width": 180, "height": 280 },
+				"03-laingdaimi_10": { "width": 180, "height": 280 },
+				"03-laingdaimi_11": { "width": 180, "height": 280 },
+				"03-laingdaimi_12": { "width": 180, "height": 280 },
+				"03-laingdaimi_13": { "width": 180, "height": 280 },
+				"03-laingdaimi_14": { "width": 180, "height": 280 },
+				"03-laingdaimi_15": { "width": 180, "height": 280 },
+				"03-laingdaimi_16": { "width": 180, "height": 280 },
+				"03-laingdaimi_17": { "width": 180, "height": 280 },
+				"03-laingdaimi_18": { "width": 180, "height": 280 },
+				"03-laingdaimi_19": { "width": 180, "height": 280 },
+				"03-laingdaimi_20": { "width": 180, "height": 280 },
+				"03-laingdaimi_21": { "width": 180, "height": 280 },
+				"03-laingdaimi_22": { "width": 180, "height": 280 },
+				"03-laingdaimi_23": { "width": 180, "height": 280 },
+				"03-laingdaimi_24": { "width": 180, "height": 280 },
+				"03-laingdaimi_25": { "width": 180, "height": 280 },
+				"03-laingdaimi_26": { "width": 180, "height": 280 },
+				"03-laingdaimi_27": { "width": 180, "height": 280 },
+				"03-laingdaimi_28": { "width": 180, "height": 280 },
+				"03-laingdaimi_29": { "width": 180, "height": 280 },
+				"03-laingdaimi_30": { "width": 180, "height": 280 },
+				"03-laingdaimi_31": { "width": 180, "height": 280 },
+				"03-laingdaimi_32": { "width": 180, "height": 280 },
+				"03-laingdaimi_33": { "width": 180, "height": 280 },
+				"03-laingdaimi_34": { "width": 180, "height": 280 },
+				"03-laingdaimi_35": { "width": 180, "height": 280 },
+				"03-laingdaimi_36": { "width": 180, "height": 280 },
+				"03-laingdaimi_37": { "width": 1, "height": 1 },
+				"03-laingdaimi_38": { "width": 1, "height": 1 },
+				"03-laingdaimi_39": { "width": 1, "height": 1 }
+			},
+			"03-laingdaimi_02": {
+				"03-laingdaimi_02": { "width": 180, "height": 280 },
+				"03-laingdaimi_03": { "width": 180, "height": 280 },
+				"03-laingdaimi_04": { "width": 180, "height": 280 },
+				"03-laingdaimi_05": { "width": 180, "height": 280 },
+				"03-laingdaimi_06": { "width": 180, "height": 280 },
+				"03-laingdaimi_07": { "width": 180, "height": 280 },
+				"03-laingdaimi_08": { "width": 180, "height": 280 },
+				"03-laingdaimi_09": { "width": 180, "height": 280 },
+				"03-laingdaimi_10": { "width": 180, "height": 280 },
+				"03-laingdaimi_11": { "width": 180, "height": 280 },
+				"03-laingdaimi_12": { "width": 180, "height": 280 },
+				"03-laingdaimi_13": { "width": 180, "height": 280 },
+				"03-laingdaimi_14": { "width": 180, "height": 280 },
+				"03-laingdaimi_15": { "width": 180, "height": 280 },
+				"03-laingdaimi_16": { "width": 180, "height": 280 },
+				"03-laingdaimi_17": { "width": 180, "height": 280 },
+				"03-laingdaimi_18": { "width": 180, "height": 280 },
+				"03-laingdaimi_19": { "width": 180, "height": 280 },
+				"03-laingdaimi_20": { "width": 180, "height": 280 },
+				"03-laingdaimi_21": { "width": 180, "height": 280 },
+				"03-laingdaimi_22": { "width": 180, "height": 280 },
+				"03-laingdaimi_23": { "width": 180, "height": 280 },
+				"03-laingdaimi_24": { "width": 180, "height": 280 },
+				"03-laingdaimi_25": { "width": 180, "height": 280 },
+				"03-laingdaimi_26": { "width": 180, "height": 280 },
+				"03-laingdaimi_27": { "width": 180, "height": 280 },
+				"03-laingdaimi_28": { "width": 180, "height": 280 },
+				"03-laingdaimi_29": { "width": 180, "height": 280 },
+				"03-laingdaimi_30": { "width": 180, "height": 280 },
+				"03-laingdaimi_31": { "width": 180, "height": 280 },
+				"03-laingdaimi_32": { "width": 180, "height": 280 },
+				"03-laingdaimi_33": { "width": 180, "height": 280 },
+				"03-laingdaimi_34": { "width": 180, "height": 280 },
+				"03-laingdaimi_35": { "width": 180, "height": 280 },
+				"03-laingdaimi_36": { "width": 180, "height": 280 },
+				"03-laingdaimi_37": { "width": 1, "height": 1 },
+				"03-laingdaimi_38": { "width": 1, "height": 1 },
+				"03-laingdaimi_39": { "width": 1, "height": 1 }
+			}
+		}
+	}
+],
+"events": {
+	"PlayAudio": {}
+},
+"animations": {
+	"play": {
+		"slots": {
+			"03-laingdaimi_2": {
+				"attachment": [
+					{ "time": 0.6667, "name": "03-laingdaimi_02" },
+					{ "time": 0.7, "name": "03-laingdaimi_03" },
+					{ "time": 0.7333, "name": "03-laingdaimi_04" },
+					{ "time": 0.7667, "name": "03-laingdaimi_05" },
+					{ "time": 0.8, "name": "03-laingdaimi_06" },
+					{ "time": 0.8333, "name": "03-laingdaimi_07" },
+					{ "time": 0.8667, "name": "03-laingdaimi_08" },
+					{ "time": 0.9, "name": "03-laingdaimi_09" },
+					{ "time": 0.9333, "name": "03-laingdaimi_10" },
+					{ "time": 0.9667, "name": "03-laingdaimi_11" },
+					{ "time": 1, "name": "03-laingdaimi_12" },
+					{ "time": 1.0333, "name": "03-laingdaimi_13" },
+					{ "time": 1.0667, "name": "03-laingdaimi_14" },
+					{ "time": 1.1, "name": "03-laingdaimi_15" },
+					{ "time": 1.1333, "name": "03-laingdaimi_16" },
+					{ "time": 1.1667, "name": "03-laingdaimi_17" },
+					{ "time": 1.2, "name": "03-laingdaimi_18" },
+					{ "time": 1.2333, "name": "03-laingdaimi_19" },
+					{ "time": 1.2667, "name": "03-laingdaimi_20" },
+					{ "time": 1.3, "name": "03-laingdaimi_21" },
+					{ "time": 1.3333, "name": "03-laingdaimi_22" },
+					{ "time": 1.3667, "name": "03-laingdaimi_23" },
+					{ "time": 1.4, "name": "03-laingdaimi_24" },
+					{ "time": 1.4333, "name": "03-laingdaimi_25" },
+					{ "time": 1.4667, "name": "03-laingdaimi_26" },
+					{ "time": 1.5, "name": "03-laingdaimi_27" },
+					{ "time": 1.5333, "name": "03-laingdaimi_28" },
+					{ "time": 1.5667, "name": "03-laingdaimi_29" },
+					{ "time": 1.6, "name": "03-laingdaimi_30" },
+					{ "time": 1.6333, "name": "03-laingdaimi_31" },
+					{ "time": 1.6667, "name": "03-laingdaimi_32" },
+					{ "time": 1.7, "name": "03-laingdaimi_33" },
+					{ "time": 1.7333, "name": "03-laingdaimi_34" },
+					{ "time": 1.7667, "name": "03-laingdaimi_35" },
+					{ "time": 1.8, "name": "03-laingdaimi_36" },
+					{ "time": 1.8333, "name": "03-laingdaimi_37" },
+					{ "time": 1.8667, "name": "03-laingdaimi_38" },
+					{ "time": 1.9, "name": "03-laingdaimi_39" },
+					{ "time": 1.9333, "name": null }
+				]
+			},
+			"03-laingdaimi_02": {
+				"attachment": [
+					{ "time": 0.6667, "name": "03-laingdaimi_02" },
+					{ "time": 0.7, "name": "03-laingdaimi_03" },
+					{ "time": 0.7333, "name": "03-laingdaimi_04" },
+					{ "time": 0.7667, "name": "03-laingdaimi_05" },
+					{ "time": 0.8, "name": "03-laingdaimi_06" },
+					{ "time": 0.8333, "name": "03-laingdaimi_07" },
+					{ "time": 0.8667, "name": "03-laingdaimi_08" },
+					{ "time": 0.9, "name": "03-laingdaimi_09" },
+					{ "time": 0.9333, "name": "03-laingdaimi_10" },
+					{ "time": 0.9667, "name": "03-laingdaimi_11" },
+					{ "time": 1, "name": "03-laingdaimi_12" },
+					{ "time": 1.0333, "name": "03-laingdaimi_13" },
+					{ "time": 1.0667, "name": "03-laingdaimi_14" },
+					{ "time": 1.1, "name": "03-laingdaimi_15" },
+					{ "time": 1.1333, "name": "03-laingdaimi_16" },
+					{ "time": 1.1667, "name": "03-laingdaimi_17" },
+					{ "time": 1.2, "name": "03-laingdaimi_18" },
+					{ "time": 1.2333, "name": "03-laingdaimi_19" },
+					{ "time": 1.2667, "name": "03-laingdaimi_20" },
+					{ "time": 1.3, "name": "03-laingdaimi_21" },
+					{ "time": 1.3333, "name": "03-laingdaimi_22" },
+					{ "time": 1.3667, "name": "03-laingdaimi_23" },
+					{ "time": 1.4, "name": "03-laingdaimi_24" },
+					{ "time": 1.4333, "name": "03-laingdaimi_25" },
+					{ "time": 1.4667, "name": "03-laingdaimi_26" },
+					{ "time": 1.5, "name": "03-laingdaimi_27" },
+					{ "time": 1.5333, "name": "03-laingdaimi_28" },
+					{ "time": 1.5667, "name": "03-laingdaimi_29" },
+					{ "time": 1.6, "name": "03-laingdaimi_30" },
+					{ "time": 1.6333, "name": "03-laingdaimi_31" },
+					{ "time": 1.6667, "name": "03-laingdaimi_32" },
+					{ "time": 1.7, "name": "03-laingdaimi_33" },
+					{ "time": 1.7333, "name": "03-laingdaimi_34" },
+					{ "time": 1.7667, "name": "03-laingdaimi_35" },
+					{ "time": 1.8, "name": "03-laingdaimi_36" },
+					{ "time": 1.8333, "name": "03-laingdaimi_37" },
+					{ "time": 1.8667, "name": "03-laingdaimi_38" },
+					{ "time": 1.9, "name": "03-laingdaimi_39" },
+					{ "time": 1.9333, "name": null }
+				]
+			},
+			"03-daimi_01": {
+				"color": [
+					{ "time": 0.4, "color": "fffffffe" },
+					{ "time": 0.6667, "color": "ffffff00" }
+				],
+				"attachment": [
+					{ "name": "03-daimi_01" }
+				]
+			},
+			"03-daimi_00": {
+				"color": [
+					{ "color": "fffffffe" },
+					{ "time": 0.3, "color": "ffffff00" }
+				]
+			},
+			"liangdai": {
+				"color": [
+					{ "time": 1.6333, "color": "fffffffe" },
+					{ "time": 1.9333, "color": "ffffff00" }
+				],
+				"attachment": [
+					{ "name": "liangdai" }
+				]
+			}
+		},
+		"bones": {
+			"03-baise": {
+				"scale": [
+					{ "x": 1.05, "y": 1.05 }
+				]
+			},
+			"03-dise": {
+				"rotate": [
+					{ "time": 0.3333 },
+					{ "time": 0.6667, "angle": 14.58 }
+				],
+				"translate": [
+					{ "time": 0.3333 },
+					{ "time": 0.6667, "x": -6.61, "y": -4.41 }
+				],
+				"scale": [
+					{ "time": 0.4 },
+					{ "time": 0.6667, "x": 0.962 }
+				]
+			},
+			"03-liangdaimi": {
+				"translate": [
+					{ "time": 0.6667, "x": -28.04, "y": -14.59 }
+				],
+				"scale": [
+					{ "time": 0.6667, "x": 0.922, "y": 0.922 }
+				]
+			},
+			"03-liangdaimi2": {
+				"rotate": [
+					{ "time": 0.6667, "angle": -7.43 },
+					{ "time": 0.9333, "angle": -13.1 }
+				],
+				"translate": [
+					{ "time": 0.6667, "x": -50.42, "y": 18.41 },
+					{ "time": 0.9333, "x": -68.99, "y": 18.48 },
+					{ "time": 1.4333, "x": -67.31, "y": 16.06 }
+				],
+				"scale": [
+					{ "time": 0.6667, "x": 0.871, "y": 0.922 },
+					{ "time": 0.9333, "x": 0.783, "y": 0.922 },
+					{ "time": 1.4333, "x": 0.754, "y": 0.922 }
+				]
+			},
+			"03-laingdai": {
+				"rotate": [
+					{ "time": 0.3333 },
+					{ "time": 0.6667, "angle": 7.76 }
+				],
+				"translate": [
+					{ "time": 0.3333 },
+					{ "time": 0.6667, "x": -10.29 }
+				]
+			},
+			"bone3": {
+				"translate": [
+					{ "time": 0.4667 },
+					{ "time": 1.5333, "x": 1.81, "y": -5.97 }
+				]
+			},
+			"bone4": {
+				"translate": [
+					{ "time": 0.5 },
+					{ "time": 1.5333, "x": -1.7, "y": -8.43 }
+				]
+			},
+			"bone6": {
+				"translate": [
+					{ "time": 0.5667 },
+					{ "time": 1.5333, "x": -9.5, "y": 16.06 }
+				]
+			},
+			"bone7": {
+				"translate": [
+					{ "time": 0.3333 },
+					{ "time": 1.5333, "x": -11.21, "y": 2.58 }
+				]
+			},
+			"bone8": {
+				"translate": [
+					{ "time": 0.3333 },
+					{ "time": 1.5333, "x": 2.49, "y": 9.1 }
+				]
+			},
+			"bone5": {
+				"translate": [
+					{ "time": 0.3667 },
+					{ "time": 1.5333, "x": -8.24, "y": 5.73 }
+				]
+			},
+			"bone2": {
+				"translate": [
+					{ "time": 0.3333 },
+					{ "time": 2, "x": -4.83, "y": -1.08 }
+				]
+			},
+			"bone": {
+				"translate": [
+					{ "time": 0.3333 },
+					{ "time": 1.5333, "x": 10.33, "y": -50.65 }
+				]
+			},
+			"bone9": {
+				"translate": [
+					{ "time": 0.3333 },
+					{ "time": 1.5333, "x": -4.94, "y": 17.14 }
+				]
+			},
+			"03": {
+				"translate": [
+					{ "x": 8.56, "y": -53.5 }
+				]
+			}
+		},
+		"drawOrder": [
+			{
+				"offsets": [
+					{ "slot": "03-daimi_01", "offset": -2 }
+				]
+			}
+		],
+		"events": [
+			{ "name": "PlayAudio", "string": "effect_chess_15104_XiaoBuJi" }
+		]
+	}
+}
+}

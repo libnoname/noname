@@ -1,0 +1,390 @@
+
+qy_zb_tongyoubairenjia.png
+size: 2048,2048
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+03_00
+  rotate: false
+  xy: 126, 8
+  size: 171, 14
+  orig: 240, 100
+  offset: 25, 40
+  index: -1
+04_00
+  rotate: true
+  xy: 1895, 489
+  size: 100, 126
+  orig: 160, 160
+  offset: 28, 22
+  index: -1
+huoshaotong_00
+  rotate: true
+  xy: 126, 24
+  size: 156, 211
+  orig: 450, 450
+  offset: 136, 125
+  index: -1
+huoshaotong_02
+  rotate: true
+  xy: 1370, 15
+  size: 156, 202
+  orig: 450, 450
+  offset: 136, 134
+  index: -1
+huoshaotong_04
+  rotate: false
+  xy: 1574, 24
+  size: 156, 175
+  orig: 450, 450
+  offset: 136, 161
+  index: -1
+huoshaotong_06
+  rotate: false
+  xy: 1867, 55
+  size: 156, 148
+  orig: 450, 450
+  offset: 136, 188
+  index: -1
+huoshaotong_08
+  rotate: true
+  xy: 1895, 591
+  size: 156, 137
+  orig: 450, 450
+  offset: 136, 199
+  index: -1
+huoshaotong_12
+  rotate: true
+  xy: 1927, 868
+  size: 156, 113
+  orig: 450, 450
+  offset: 136, 223
+  index: -1
+huoshaotong_14
+  rotate: true
+  xy: 1942, 1183
+  size: 156, 102
+  orig: 450, 450
+  offset: 136, 234
+  index: -1
+huoshaotong_20
+  rotate: false
+  xy: 773, 4
+  size: 156, 76
+  orig: 450, 450
+  offset: 136, 260
+  index: -1
+huoshaotong_22
+  rotate: true
+  xy: 1975, 1890
+  size: 156, 67
+  orig: 450, 450
+  offset: 136, 269
+  index: -1
+huoshaotong_24
+  rotate: false
+  xy: 931, 21
+  size: 155, 59
+  orig: 450, 450
+  offset: 137, 277
+  index: -1
+huoshaotong_26
+  rotate: false
+  xy: 1867, 2
+  size: 141, 51
+  orig: 450, 450
+  offset: 140, 285
+  index: -1
+huoshaotong_28
+  rotate: true
+  xy: 1975, 1747
+  size: 141, 51
+  orig: 450, 450
+  offset: 140, 285
+  index: -1
+tongshao_01
+  rotate: true
+  xy: 404, 953
+  size: 344, 394
+  orig: 450, 450
+  offset: 49, 44
+  index: -1
+tongshao_02
+  rotate: true
+  xy: 1166, 173
+  size: 315, 327
+  orig: 450, 450
+  offset: 73, 77
+  index: -1
+tongshao_03
+  rotate: false
+  xy: 404, 1672
+  size: 400, 374
+  orig: 450, 450
+  offset: 36, 0
+  index: -1
+tongshao_04
+  rotate: false
+  xy: 2, 1669
+  size: 400, 377
+  orig: 450, 450
+  offset: 36, 0
+  index: -1
+tongshao_05
+  rotate: false
+  xy: 2, 1292
+  size: 400, 375
+  orig: 450, 450
+  offset: 36, 0
+  index: -1
+tongshao_06
+  rotate: false
+  xy: 404, 1299
+  size: 398, 371
+  orig: 450, 450
+  offset: 36, 0
+  index: -1
+tongshao_07
+  rotate: false
+  xy: 2, 915
+  size: 396, 375
+  orig: 450, 450
+  offset: 36, 0
+  index: -1
+tongshao_08
+  rotate: false
+  xy: 806, 1677
+  size: 392, 369
+  orig: 450, 450
+  offset: 36, 11
+  index: -1
+tongshao_09
+  rotate: false
+  xy: 2, 545
+  size: 388, 368
+  orig: 450, 450
+  offset: 36, 24
+  index: -1
+tongshao_10
+  rotate: false
+  xy: 1200, 1678
+  size: 387, 368
+  orig: 450, 450
+  offset: 36, 31
+  index: -1
+tongshao_11
+  rotate: false
+  xy: 2, 182
+  size: 386, 361
+  orig: 450, 450
+  offset: 36, 38
+  index: -1
+tongshao_12
+  rotate: false
+  xy: 1589, 1691
+  size: 384, 355
+  orig: 450, 450
+  offset: 36, 44
+  index: -1
+tongshao_13
+  rotate: false
+  xy: 1589, 1341
+  size: 382, 348
+  orig: 450, 450
+  offset: 36, 51
+  index: -1
+tongshao_14
+  rotate: false
+  xy: 390, 3
+  size: 381, 344
+  orig: 450, 450
+  offset: 36, 55
+  index: -1
+tongshao_15
+  rotate: false
+  xy: 804, 1031
+  size: 380, 337
+  orig: 450, 450
+  offset: 36, 62
+  index: -1
+tongshao_16
+  rotate: false
+  xy: 786, 406
+  size: 378, 329
+  orig: 450, 450
+  offset: 36, 70
+  index: -1
+tongshao_17
+  rotate: false
+  xy: 777, 82
+  size: 378, 322
+  orig: 450, 450
+  offset: 36, 77
+  index: -1
+tongshao_18
+  rotate: false
+  xy: 1186, 1048
+  size: 375, 317
+  orig: 450, 450
+  offset: 36, 82
+  index: -1
+tongshao_19
+  rotate: false
+  xy: 1563, 1027
+  size: 377, 312
+  orig: 450, 450
+  offset: 36, 87
+  index: -1
+tongshao_20
+  rotate: false
+  xy: 1200, 1367
+  size: 378, 309
+  orig: 450, 450
+  offset: 36, 90
+  index: -1
+tongshao_21
+  rotate: false
+  xy: 806, 1370
+  size: 381, 305
+  orig: 450, 450
+  offset: 36, 94
+  index: -1
+tongshao_22
+  rotate: false
+  xy: 392, 349
+  size: 383, 302
+  orig: 450, 450
+  offset: 36, 97
+  index: -1
+tongshao_23
+  rotate: false
+  xy: 400, 653
+  size: 384, 298
+  orig: 450, 450
+  offset: 36, 101
+  index: -1
+tongshao_24
+  rotate: false
+  xy: 800, 737
+  size: 379, 292
+  orig: 450, 450
+  offset: 36, 107
+  index: -1
+tongshao_25
+  rotate: false
+  xy: 1186, 762
+  size: 372, 284
+  orig: 450, 450
+  offset: 36, 115
+  index: -1
+tongshao_26
+  rotate: false
+  xy: 1560, 749
+  size: 365, 276
+  orig: 450, 450
+  offset: 36, 123
+  index: -1
+tongshao_27
+  rotate: false
+  xy: 1181, 490
+  size: 358, 270
+  orig: 450, 450
+  offset: 36, 129
+  index: -1
+tongshao_28
+  rotate: false
+  xy: 1541, 486
+  size: 352, 261
+  orig: 450, 450
+  offset: 37, 138
+  index: -1
+tongshao_29
+  rotate: false
+  xy: 1495, 201
+  size: 302, 283
+  orig: 450, 450
+  offset: 69, 116
+  index: -1
+tongshao_30
+  rotate: false
+  xy: 1799, 205
+  size: 246, 279
+  orig: 450, 450
+  offset: 99, 120
+  index: -1
+tongshao_31
+  rotate: false
+  xy: 1732, 15
+  size: 133, 184
+  orig: 450, 450
+  offset: 177, 126
+  index: -1
+tongshao_32
+  rotate: false
+  xy: 2, 2
+  size: 122, 178
+  orig: 450, 450
+  offset: 181, 132
+  index: -1
+tongshao_33
+  rotate: false
+  xy: 1942, 1026
+  size: 99, 155
+  orig: 450, 450
+  offset: 191, 139
+  index: -1
+tongyou_00
+  rotate: true
+  xy: 1157, 15
+  size: 156, 211
+  orig: 300, 360
+  offset: 70, 81
+  index: -1
+
+qy_zb_tongyoubairenjia2.png
+size: 427,427
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+04_01
+  rotate: true
+  xy: 303, 13
+  size: 96, 122
+  orig: 160, 160
+  offset: 30, 24
+  index: -1
+huoshaotong_10
+  rotate: false
+  xy: 2, 17
+  size: 156, 125
+  orig: 450, 450
+  offset: 136, 211
+  index: -1
+huoshaotong_16
+  rotate: true
+  xy: 303, 269
+  size: 156, 92
+  orig: 450, 450
+  offset: 136, 244
+  index: -1
+huoshaotong_18
+  rotate: true
+  xy: 303, 111
+  size: 156, 84
+  orig: 450, 450
+  offset: 136, 252
+  index: -1
+tongshao_00
+  rotate: false
+  xy: 2, 144
+  size: 299, 281
+  orig: 450, 450
+  offset: 97, 99
+  index: -1
+tongshao_34
+  rotate: true
+  xy: 160, 56
+  size: 86, 141
+  orig: 450, 450
+  offset: 190, 146
+  index: -1

@@ -1,8 +1,0 @@
-{
-  "name": "V家",
-  "author": "子泽",
-  "version": "2",
-  "intro": "1.本扩展包含武将包，配音包，图片包三个部分。 2.使用方法:配音包:配音包里分为二个部分，既:阵亡配音(die)，武将技能发动配音(skill)，在内部储存→Android→data→yuri.nakamura.noname→audio里，找到对应的文件夹，再将配音包里的二个部分分别黏贴到里面即可。             图片包:图片包只有一个部分既:image，在内部储存→Android→data→yuri.nakamura.noname→image→skin里，将图片包黏贴即可。 3.本扩展还在持续更新中，有想法的可以私聊我",
-  "diskURL": "",
-  "forumURL": ""
-}

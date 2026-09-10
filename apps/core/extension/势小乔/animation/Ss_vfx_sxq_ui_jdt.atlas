@@ -1,0 +1,244 @@
+
+Ss_vfx_sxq_ui_jdt.png
+size: 1957,441
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+vfx_jdt_glow_play_00000
+  rotate: false
+  xy: 685, 20
+  size: 105, 4
+  orig: 895, 68
+  offset: 106, 18
+  index: -1
+vfx_jdt_glow_play_00001
+  rotate: false
+  xy: 1252, 3
+  size: 338, 50
+  orig: 895, 68
+  offset: 549, 3
+  index: -1
+vfx_jdt_glow_play_00002
+  rotate: false
+  xy: 895, 1
+  size: 355, 52
+  orig: 895, 68
+  offset: 514, 4
+  index: -1
+vfx_jdt_glow_play_00003
+  rotate: false
+  xy: 895, 174
+  size: 890, 62
+  orig: 895, 68
+  offset: 0, 4
+  index: -1
+vfx_jdt_glow_play_00004
+  rotate: false
+  xy: 0, 374
+  size: 895, 67
+  orig: 895, 68
+  offset: 0, 1
+  index: -1
+vfx_jdt_glow_play_00005
+  rotate: false
+  xy: 0, 304
+  size: 893, 68
+  orig: 895, 68
+  offset: 0, 0
+  index: -1
+vfx_jdt_glow_play_00006
+  rotate: false
+  xy: 0, 234
+  size: 893, 68
+  orig: 895, 68
+  offset: 0, 0
+  index: -1
+vfx_jdt_glow_play_00007
+  rotate: false
+  xy: 0, 164
+  size: 893, 68
+  orig: 895, 68
+  offset: 0, 0
+  index: -1
+vfx_jdt_glow_play_00008
+  rotate: false
+  xy: 0, 94
+  size: 893, 68
+  orig: 895, 68
+  offset: 0, 0
+  index: -1
+vfx_jdt_glow_play_00009
+  rotate: false
+  xy: 897, 374
+  size: 893, 67
+  orig: 895, 68
+  offset: 0, 1
+  index: -1
+vfx_jdt_glow_play_00010
+  rotate: false
+  xy: 0, 26
+  size: 893, 66
+  orig: 895, 68
+  offset: 0, 2
+  index: -1
+vfx_jdt_glow_play_00011
+  rotate: false
+  xy: 895, 306
+  size: 894, 66
+  orig: 895, 68
+  offset: 0, 2
+  index: -1
+vfx_jdt_glow_play_00012
+  rotate: false
+  xy: 895, 238
+  size: 893, 66
+  orig: 895, 68
+  offset: 0, 2
+  index: -1
+vfx_jdt_glow_play_00013
+  rotate: false
+  xy: 895, 112
+  size: 888, 60
+  orig: 895, 68
+  offset: 0, 5
+  index: -1
+vfx_jdt_glow_play_00014
+  rotate: false
+  xy: 895, 55
+  size: 868, 55
+  orig: 895, 68
+  offset: 14, 7
+  index: -1
+vfx_jdt_glow_play_00015
+  rotate: false
+  xy: 1592, 23
+  size: 312, 30
+  orig: 895, 68
+  offset: 217, 14
+  index: -1
+vfx_jdt_glow_play_00016
+  rotate: true
+  xy: 1791, 55
+  size: 317, 29
+  orig: 895, 68
+  offset: 209, 15
+  index: -1
+vfx_jdt_glow_play_00017
+  rotate: true
+  xy: 1930, 119
+  size: 322, 27
+  orig: 895, 68
+  offset: 202, 16
+  index: -1
+vfx_jdt_glow_play_00018
+  rotate: true
+  xy: 1901, 114
+  size: 327, 27
+  orig: 895, 68
+  offset: 195, 16
+  index: -1
+vfx_jdt_glow_play_00019
+  rotate: true
+  xy: 1873, 89
+  size: 332, 26
+  orig: 895, 68
+  offset: 189, 17
+  index: -1
+vfx_jdt_glow_play_00020
+  rotate: true
+  xy: 1846, 86
+  size: 335, 25
+  orig: 895, 68
+  offset: 184, 17
+  index: -1
+vfx_jdt_glow_play_00021
+  rotate: false
+  xy: 344, 0
+  size: 339, 24
+  orig: 895, 68
+  offset: 179, 18
+  index: -1
+vfx_jdt_glow_play_00022
+  rotate: false
+  xy: 0, 0
+  size: 342, 24
+  orig: 895, 68
+  offset: 175, 18
+  index: -1
+vfx_jdt_glow_play_00023
+  rotate: true
+  xy: 1822, 74
+  size: 347, 22
+  orig: 895, 68
+  offset: 170, 19
+  index: -1
+vfx_jdt_glow_play_00024
+  rotate: false
+  xy: 1792, 432
+  size: 98, 9
+  orig: 895, 68
+  offset: 167, 23
+  index: -1
+vfx_jdt_glow_play_00025
+  rotate: false
+  xy: 1592, 14
+  size: 98, 7
+  orig: 895, 68
+  offset: 164, 24
+  index: -1
+vfx_jdt_glow_play_00026
+  rotate: false
+  xy: 685, 11
+  size: 98, 7
+  orig: 895, 68
+  offset: 161, 24
+  index: -1
+vfx_jdt_glow_play_00027
+  rotate: false
+  xy: 1792, 423
+  size: 98, 7
+  orig: 895, 68
+  offset: 158, 24
+  index: -1
+vfx_jdt_glow_play_00028
+  rotate: false
+  xy: 1794, 16
+  size: 99, 5
+  orig: 895, 68
+  offset: 155, 25
+  index: -1
+vfx_jdt_glow_play_00029
+  rotate: false
+  xy: 1592, 7
+  size: 99, 5
+  orig: 895, 68
+  offset: 153, 25
+  index: -1
+vfx_jdt_glow_play_00030
+  rotate: false
+  xy: 1692, 16
+  size: 100, 5
+  orig: 895, 68
+  offset: 151, 25
+  index: -1
+vfx_jdt_glow_play_00031
+  rotate: false
+  xy: 785, 13
+  size: 100, 5
+  orig: 895, 68
+  offset: 150, 25
+  index: -1
+vfx_jdt_glow_play_00032
+  rotate: false
+  xy: 792, 20
+  size: 101, 4
+  orig: 895, 68
+  offset: 148, 26
+  index: -1
+vfx_jdt_glow_play_00033
+  rotate: false
+  xy: 685, 5
+  size: 100, 4
+  orig: 895, 68
+  offset: 147, 26
+  index: -1

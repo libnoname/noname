@@ -1,0 +1,118 @@
+
+qy_zb_zheji.png
+size: 1081,1081
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+tx_00
+  rotate: false
+  xy: 836, 89
+  size: 197, 274
+  orig: 350, 350
+  offset: 74, 22
+  index: -1
+tx_01
+  rotate: true
+  xy: 248, 61
+  size: 207, 285
+  orig: 350, 350
+  offset: 69, 16
+  index: -1
+tx_02
+  rotate: false
+  xy: 324, 516
+  size: 249, 294
+  orig: 350, 350
+  offset: 39, 7
+  index: -1
+tx_03
+  rotate: false
+  xy: 2, 755
+  size: 276, 324
+  orig: 350, 350
+  offset: 38, 4
+  index: -1
+tx_04
+  rotate: true
+  xy: 2, 480
+  size: 273, 320
+  orig: 350, 350
+  offset: 38, 17
+  index: -1
+tx_05
+  rotate: true
+  xy: 280, 812
+  size: 267, 286
+  orig: 350, 350
+  offset: 38, 21
+  index: -1
+tx_06
+  rotate: false
+  xy: 2, 221
+  size: 244, 257
+  orig: 350, 350
+  offset: 56, 20
+  index: -1
+tx_07
+  rotate: true
+  xy: 575, 588
+  size: 244, 256
+  orig: 350, 350
+  offset: 56, 20
+  index: -1
+tx_08
+  rotate: true
+  xy: 324, 270
+  size: 244, 263
+  orig: 350, 350
+  offset: 56, 19
+  index: -1
+tx_10
+  rotate: true
+  xy: 568, 834
+  size: 245, 271
+  orig: 350, 350
+  offset: 56, 19
+  index: -1
+tx_12
+  rotate: false
+  xy: 589, 116
+  size: 245, 222
+  orig: 350, 350
+  offset: 56, 18
+  index: -1
+tx_14
+  rotate: true
+  xy: 589, 340
+  size: 246, 222
+  orig: 350, 350
+  offset: 55, 18
+  index: -1
+tx_16
+  rotate: false
+  xy: 813, 365
+  size: 246, 221
+  orig: 350, 350
+  offset: 55, 18
+  index: -1
+tx_18
+  rotate: false
+  xy: 833, 612
+  size: 246, 220
+  orig: 350, 350
+  offset: 55, 18
+  index: -1
+tx_20
+  rotate: true
+  xy: 841, 841
+  size: 238, 212
+  orig: 350, 350
+  offset: 58, 22
+  index: -1
+tx_22
+  rotate: false
+  xy: 2, 19
+  size: 222, 200
+  orig: 350, 350
+  offset: 67, 27
+  index: -1

@@ -1,0 +1,452 @@
+.dialog#hy_jiejie_dialog {
+    background-image: url('assets/image/newdialog1.png') !important;
+    background-size: 100% 100%;
+    width: 1303px;
+    height: 420px;
+    left: 50% !important;
+    top: 35px;
+    transform: translateX(-50%) !important;
+    z-index: 6;
+    animation: fadenum 1s ease;
+    display: block !important;
+    text-align: center;
+    position: absolute;
+    margin: 0 auto;
+}
+
+
+@keyframes fadenum {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+.newTitle1 {
+    width: 100%;
+    top: 1px;
+    height: 32px;
+    line-height: 29px;
+    text-align: center;
+    letter-spacing: 3px;
+    background: linear-gradient(#C8BEB4 1%,#FCF8CC 12%, #F3F0BE,#FEF5A8,#E1D275,#C9B173);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-family: 'HYZLSJ';
+    font-size: 50px !important;
+    filter: drop-shadow(2px 0 0.5px #2F1809) drop-shadow(-2px 0 1.5px #2F1809);
+    position: absolute;
+    zoom: 1.4;
+}
+
+.targetname1 {
+    background-image: url('assets/image/cebian.png') !important;
+    background-size: 100% 100%;
+    height: 150px;
+    width: 38px;
+    writing-mode: tb-rl;
+    font-size: 20px;
+    color: #eddac3;
+    text-shadow: 0 0 2px #453325, 0 0 2px #453325;
+    font-family: 'shousha';
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    left: 16%;
+    top: 17%;
+    position: absolute;
+}
+
+.targetarea1 {
+    background-image: url('assets/image/newarena1.png') !important;
+    background-size: 100% 100%;
+    width: 820px;
+    height: 137px;
+    left: 19%;
+    top: 18%;
+    display: block; 
+    border-radius: 5px;
+    flex-wrap: nowrap;
+    overflow-x: visible !important; 
+    flex-direction: row !important;
+    overflow-y: hidden !important;
+    justify-content: flex-start !important;
+    position: absolute;
+    zoom: 1;
+}
+
+.dialog#hy_jiejie_dialog > .targetarea1 > .buttons {
+    margin-top: -5px;
+    margin-left: -4.5px;
+    width: auto;
+    overflow-x: visible !important;
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: row !important;
+    justify-content: flex-start !important;
+}
+
+/* 卡牌样式  */
+.dialog#hy_jiejie_dialog > .targetarea1 > .buttons > div.card {
+    box-shadow: none !important;
+    border: none !important;
+    background-color: transparent !important;
+}
+
+.dialog#hy_jiejie_dialog > .targetarea1 > .buttons > div:not(:first-child) {
+    margin-left: -5px;
+}
+
+.dialog#hy_jiejie_dialog > .targetarea1 > .buttons > div:last-child {
+    margin-right: 0px;
+}
+
+
+.jindutiaoxgxg {
+    display: block;
+    position: absolute;
+    width: 46%;
+    background-image: url('assets/image/time.png');
+    left: 27%;
+    bottom: 22px;
+    height: 20px;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    z-index: 7;
+}
+
+.jindutiaoxgxgx {
+    display: block;
+    position: absolute;
+    background-image: url('assets/image/timex.png');
+    width: 46%;
+    left: 27%;
+    bottom: 22.2px;
+    height: 20px;
+    z-index: 8;
+    animation: nmxiaoshi 45s;
+}
+
+.Footerxxgg {
+    display: flex;
+    text-align: center;
+    top: 290px;
+    width: 100%;
+    color: #BFAF58;
+    font-family: 'shousha';
+    font-size: 20px;
+    z-index: 10;
+    position: absolute;
+    justify-content: center;
+}
+.Footerxxgg2 {
+    display: flex;
+    text-align: center;
+    top: 257px; 
+    width: 100%;
+    color: #BFAF58;
+    font-family: 'shousha';
+    font-size: 23px; 
+    z-index: 10;
+    position: absolute;
+    justify-content: center;
+}
+.Footerxxgg3 {
+    display: flex;
+    text-align: center;
+    top: 370px;
+    width: 100%;
+    color: #BFAF58;
+    font-family: 'shousha';
+    font-size: 23px;
+    z-index: 10;
+    position: absolute;
+    justify-content: center;
+}
+
+.hy_jiejie_btn_container {
+    position: absolute;
+    bottom: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: row; 
+    gap: 15px;
+    flex-wrap: nowrap;
+    width: auto; 
+    min-width: 900px; 
+    justify-content: center;
+    z-index: 11;
+}
+
+.hy_jiejie_btn {
+    width: 160px;
+    height: 62px;
+    background-image: url('assets/image/gbtn.png') !important;
+    background-size: 100% 100% !important;
+    background-repeat: no-repeat;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    writing-mode: horizontal-tb;
+    text-align: center;
+    line-height: 62px;
+    color: #FCF8CC;
+    font-family: 'shousha';
+    font-size: 25px;
+    letter-spacing: 2px;
+    position: relative; 
+    display: inline-block; 
+    flex-shrink: 0;  
+}
+
+.hy_jiejie_btn:hover {
+    filter: brightness(1.2);
+}
+
+@keyframes nmxiaoshi {
+    0% { width: 100%; }
+    100% { width: 0%; }
+}
+
+/************崔芙桂殿************/
+.dialog#tts_beijing{
+	transition:all 0.2s linear;
+	display:flex;
+	width:101.2%;
+	height:330px;
+	border-width:60px 18px 12px 18px;
+	border-style:solid;
+	border-color:transparent;
+	border-image-source:url('assets/image/dialog.png');
+	border-image-slice:61 18 12 18 fill;
+	border-image-repeat:stretch;
+	flex-direction:column;
+	align-items:center;
+	justify-content:flex-start;
+	position:absolute;
+	top:6%;
+	left:-2%;
+	animation:none!important;
+	padding-top:78px;
+}
+.dialog#tts_beijing>.newTitle1{
+	left:calc(50% - 90px);
+	right:calc(50% - 90px);
+	overflow:visible!important;
+	width:180px;
+	top:-18px;
+	height:50px;
+	position:absolute;
+	text-align:center;
+	letter-spacing:3px!important;
+	background:linear-gradient(#C8BEB4 1%, #FCF8CC 12%, #F3F0BE, #FEF5A8, #E1D275, #C9B173, #D6CB6F, #A99355, #AC9557, #A38A51, #A38A51, #B29983, #B19786, #B19786, #B19786, #9B8583),linear-gradient(to right, #FCF8CC, #AC9557);
+	font-family:'HYZLSJ';
+	font-size:42px!important;
+	font-weight:normal;
+	-webkit-background-clip:text;
+	text-shadow:none;
+	-webkit-text-fill-color:transparent;
+	filter:drop-shadow(2px 0 0.5px #2F1809) drop-shadow(-2px 0 1.5px #2F1809) drop-shadow(0 2px 1px #2F1809) drop-shadow(0 -2px 1.5px #2F1809) blur(0.55px) saturate(1.25) contrast(1.25) grayscale(0.08) sepia(0.1);
+}
+
+.dialog#tts_beijing>.tts_grid{
+	width:100%;
+	display:grid;
+	grid-template-columns:256px 256px;
+	justify-content:center;
+	align-content:start;
+	gap:8px;
+	padding:0 10px;
+}
+
+.dialog#tts_beijing .tts_xuanxiang{
+	position:relative;
+	background-image:url('assets/image/game_item_txt_bg_short.png');
+	background-size:100% 100%;
+	background-repeat:no-repeat;
+	width:256px;
+	height:72px;
+	zoom:0.78;
+	display:flex;
+	align-items:center;
+	justify-content:center;
+	color:rgb(42, 32, 30);
+	font-family:'shousha';
+	font-size:27px;
+	font-weight:normal;
+	text-shadow:none;
+	filter:blur(0.3px);
+}
+
+.dialog#tts_beijing .tts_xuanxiang.select,
+.dialog#tts_beijing .tts_xuanxiang.selected{
+	box-shadow:none!important;
+	background-image:url('assets/image/game_item_txt_bg_sel_light.png');
+}
+
+.dialog#tts_beijing>.tts_footer{
+	position:absolute;
+	left:0;
+	bottom:26px;
+	width:100%;
+	text-align:center;
+	padding:0 12px;
+	font-family:'shousha';
+	font-size:22px;
+	color:#E8E2D7;
+	filter:drop-shadow(0 1px 1px #2F1809);
+}
+.dialog#tts_beijing .tts_blue{
+	color:#9FDCD1;
+}
+.dialog#newdialog2 {
+    background-image: url('assets/image/newdialog1.png') !important;
+    background-size: 100% 100%;
+    width: 1303px;
+    height: 420px;
+    left: -50px;
+    top: 35px;
+    display: block !important;
+    z-index: 6;
+    position: absolute;
+    text-align: center;
+    overflow: visible !important;
+    overflow-y: visible !important;
+    animation:fadenum 1s ease;
+}
+
+.dialog#newdialog2>.newTitle2 {
+    left: 5px;
+    overflow: visible !important;
+    padding-top: 0;
+    width: 100%;
+    top: 1px;
+    height: 36px;
+    line-height: 29px;
+    text-align: center;
+    letter-spacing: 3px!important;
+    background: linear-gradient(#C8BEB4 1%,#FCF8CC 12%, #F3F0BE,#FEF5A8,#E1D275,#C9B173,#D6CB6F,#A99355,#AC9557,#A38A51,#A38A51,#B29983,#B19786,#B19786,#B19786, #9B8583 ), linear-gradient(to right,#FCF8CC , #AC9557);
+    font-family: 'HYZLSJ';
+    font-size: 38px !important;
+    font-weight: normal;
+    -webkit-background-clip: text;
+    text-shadow: none;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(2px 0 0.5px #2F1809) drop-shadow(-2px 0 1.5px #2F1809) drop-shadow(0 2px 1px #2F1809) drop-shadow(0 -2px 1.5px #2F1809) blur(0.55px) saturate(1.25) contrast(1.25) grayscale(0.08) sepia(0.1);
+}
+
+.dialog#newdialog2>.targetname2 {
+    background-image: url('assets/image/cebian.png') !important;
+    background-size: 100% 100%;
+    height: 130px;
+    width: 38px;
+    writing-mode: tb-rl;
+    font-size: 20px;
+    left: 16%;
+    top: 17%;
+    color: #eddac3;
+    text-shadow: 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325;
+    font-family: shousha;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+}
+
+.dialog#newdialog2>.myname2 {
+    background-image: url('assets/image/cebian.png') !important;
+    background-size: 100% 100%;
+    height: 130px;
+    width: 38px;
+    writing-mode: tb-rl;
+    font-size: 20px;
+    left: 16%;
+    top: 52%;
+    color: #eddac3;
+    text-shadow: 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325, 0 0 2px #453325;
+    font-family: shousha;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+}
+
+.dialog#newdialog2>.targetarea2 {
+    background-image: url('assets/image/newarena1.png') !important;
+    background-size: 100% 100%;
+    width: 876px;
+    height: 137px;
+    left: 19%;
+    top: 16%;
+    display: block;
+    border-radius: 5px;
+    flex-wrap: nowrap;
+    overflow-x: visible !important;
+    flex-direction: row !important;
+    overflow-y: hidden !important;
+    justify-content: flex-start !important;
+}
+
+.dialog#newdialog2>.myarea2 {
+    background-image: url('assets/image/newarena1.png') !important;
+    background-size: 100% 100%;
+    width: 876px;
+    height: 137px;
+    left: 19%;
+    top: 51%;
+    display: block;
+    border-radius: 5px;
+    flex-wrap: nowrap;
+    overflow-x: visible !important;
+    flex-direction: row !important;
+    overflow-y: hidden !important;
+    justify-content: flex-start !important;
+}
+
+.dialog#newdialog2>.targetarea2>.buttons {
+    margin-top: -5px;
+    margin-left: -4.5px;
+    width: auto;
+    overflow-x: visible !important;
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: row !important;
+    justify-content: flex-start !important;
+}
+
+.dialog#newdialog2>.myarea2>.buttons {
+    margin-top: -5px;
+    margin-left: -4.5px;
+    width: auto;
+    overflow-x: visible !important;
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: row !important;
+    justify-content: flex-start !important;
+}
+
+.dialog#newdialog2>.myarea2>.buttons>.card.selectable.selected:before,
+.dialog#newdialog2>.targetarea2>.buttons>.card.selectable.selected:before {
+    background-image: url('assets/image/card_select1.png');
+    width:120%;
+    left:-10%;
+    top:-7.5%;
+    height:112%;
+    background-size:100% 100%;
+    background-repeat: no-repeat;
+    filter: saturate(1.3);
+}
+
+.dialog#newdialog2>.myarea2>.buttons>div.card,
+.dialog#newdialog2>.targetarea2>.buttons>div.card {
+    box-shadow:none !important;
+    border:none !important;
+    background-color:transparent !important;
+}
+
+.dialog#newdialog2>.myarea2>.buttons>div:not(:first-child),
+.dialog#newdialog2>.targetarea2>.buttons>div:not(:first-child) {
+    margin-left: -1.9px;
+}
+
+.dialog#newdialog2>.myarea2>.buttons>div:last-child,
+.dialog#newdialog2>.targetarea2>.buttons>div:last-child {
+    margin-right: 100px;
+}

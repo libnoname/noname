@@ -1,0 +1,55 @@
+
+ZYSZK_da.png
+size: 599,502
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+ZYSZK
+  rotate: false
+  xy: 2, 2
+  size: 505, 498
+  orig: 505, 498
+  offset: 0, 0
+  index: -1
+ZYSZK_00000
+  rotate: false
+  xy: 568, 168
+  size: 12, 44
+  orig: 123, 121
+  offset: 19, 9
+  index: -1
+ZYSZK_00001
+  rotate: false
+  xy: 509, 128
+  size: 57, 84
+  orig: 123, 121
+  offset: 12, 6
+  index: -1
+ZYSZK_00002
+  rotate: false
+  xy: 509, 309
+  size: 81, 92
+  orig: 123, 121
+  offset: 12, 6
+  index: -1
+ZYSZK_00003
+  rotate: false
+  xy: 509, 403
+  size: 88, 97
+  orig: 123, 121
+  offset: 13, 7
+  index: -1
+ZYSZK_00004
+  rotate: false
+  xy: 509, 214
+  size: 71, 93
+  orig: 123, 121
+  offset: 38, 11
+  index: -1
+ZYSZK_00005
+  rotate: false
+  xy: 509, 70
+  size: 48, 56
+  orig: 123, 121
+  offset: 61, 47
+  index: -1

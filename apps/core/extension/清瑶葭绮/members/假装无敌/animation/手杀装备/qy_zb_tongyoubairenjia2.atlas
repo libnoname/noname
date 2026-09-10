@@ -1,0 +1,237 @@
+
+qy_zb_tongyoubairenjia2.png
+size: 1408,1408
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+03_00
+  rotate: false
+  xy: 160, 27
+  size: 171, 14
+  orig: 240, 100
+  offset: 25, 40
+  index: -1
+04_00
+  rotate: false
+  xy: 1227, 107
+  size: 100, 126
+  orig: 160, 160
+  offset: 28, 22
+  index: -1
+04_01
+  rotate: true
+  xy: 1227, 9
+  size: 96, 122
+  orig: 160, 160
+  offset: 30, 24
+  index: -1
+fangyu_00
+  rotate: true
+  xy: 1058, 52
+  size: 169, 167
+  orig: 450, 450
+  offset: 129, 147
+  index: -1
+fangyu_01
+  rotate: false
+  xy: 1114, 235
+  size: 227, 283
+  orig: 450, 450
+  offset: 103, 91
+  index: -1
+fangyu_02
+  rotate: false
+  xy: 852, 1116
+  size: 284, 290
+  orig: 450, 450
+  offset: 78, 88
+  index: -1
+fangyu_03
+  rotate: false
+  xy: 839, 520
+  size: 279, 292
+  orig: 450, 450
+  offset: 79, 88
+  index: -1
+fangyu_04
+  rotate: false
+  xy: 1120, 524
+  size: 279, 292
+  orig: 450, 450
+  offset: 79, 89
+  index: -1
+fangyu_05
+  rotate: false
+  xy: 834, 223
+  size: 278, 292
+  orig: 450, 450
+  offset: 79, 90
+  index: -1
+fangyu_06
+  rotate: false
+  xy: 554, 219
+  size: 278, 293
+  orig: 450, 450
+  offset: 79, 90
+  index: -1
+fangyu_07
+  rotate: false
+  xy: 560, 517
+  size: 277, 293
+  orig: 450, 450
+  offset: 80, 90
+  index: -1
+fangyu_08
+  rotate: false
+  xy: 841, 814
+  size: 275, 295
+  orig: 450, 450
+  offset: 81, 88
+  index: -1
+fangyu_09
+  rotate: false
+  xy: 283, 514
+  size: 275, 296
+  orig: 450, 450
+  offset: 80, 87
+  index: -1
+fangyu_10
+  rotate: false
+  xy: 2, 215
+  size: 275, 297
+  orig: 450, 450
+  offset: 80, 86
+  index: -1
+fangyu_11
+  rotate: false
+  xy: 279, 215
+  size: 273, 297
+  orig: 450, 450
+  offset: 81, 86
+  index: -1
+fangyu_12
+  rotate: false
+  xy: 285, 812
+  size: 275, 296
+  orig: 450, 450
+  offset: 80, 86
+  index: -1
+fangyu_13
+  rotate: false
+  xy: 1118, 818
+  size: 275, 296
+  orig: 450, 450
+  offset: 80, 86
+  index: -1
+fangyu_14
+  rotate: false
+  xy: 562, 814
+  size: 277, 295
+  orig: 450, 450
+  offset: 80, 86
+  index: -1
+fangyu_15
+  rotate: false
+  xy: 2, 514
+  size: 279, 296
+  orig: 450, 450
+  offset: 80, 85
+  index: -1
+fangyu_16
+  rotate: false
+  xy: 2, 812
+  size: 281, 296
+  orig: 450, 450
+  offset: 80, 85
+  index: -1
+fangyu_17
+  rotate: false
+  xy: 2, 1110
+  size: 283, 296
+  orig: 450, 450
+  offset: 79, 84
+  index: -1
+fangyu_18
+  rotate: false
+  xy: 570, 1111
+  size: 280, 295
+  orig: 450, 450
+  offset: 82, 84
+  index: -1
+fangyu_19
+  rotate: false
+  xy: 287, 1111
+  size: 281, 295
+  orig: 450, 450
+  offset: 81, 84
+  index: -1
+fangyu_20
+  rotate: false
+  xy: 1138, 1122
+  size: 262, 284
+  orig: 450, 450
+  offset: 91, 92
+  index: -1
+fangyu_21
+  rotate: true
+  xy: 160, 43
+  size: 170, 223
+  orig: 450, 450
+  offset: 138, 120
+  index: -1
+fangyu_22
+  rotate: true
+  xy: 160, 43
+  size: 170, 223
+  orig: 450, 450
+  offset: 138, 120
+  index: -1
+fangyu_23
+  rotate: true
+  xy: 160, 43
+  size: 170, 223
+  orig: 450, 450
+  offset: 138, 120
+  index: -1
+fangyu_24
+  rotate: true
+  xy: 160, 43
+  size: 170, 223
+  orig: 450, 450
+  offset: 138, 120
+  index: -1
+fangyu_25
+  rotate: true
+  xy: 160, 43
+  size: 170, 223
+  orig: 450, 450
+  offset: 138, 120
+  index: -1
+fangyu_26
+  rotate: true
+  xy: 385, 43
+  size: 170, 223
+  orig: 450, 450
+  offset: 138, 120
+  index: -1
+fangyu_27
+  rotate: true
+  xy: 610, 47
+  size: 170, 223
+  orig: 450, 450
+  offset: 138, 120
+  index: -1
+fangyu_28
+  rotate: true
+  xy: 835, 53
+  size: 168, 221
+  orig: 450, 450
+  offset: 139, 121
+  index: -1
+tongyou_00
+  rotate: false
+  xy: 2, 2
+  size: 156, 211
+  orig: 300, 360
+  offset: 70, 81
+  index: -1

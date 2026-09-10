@@ -1,0 +1,3078 @@
+.player .identity[data-color='qingyao_xian'],
+div[data-nature='qingyao_xian'],
+span[data-nature='qingyao_xian'] {
+    -webkit-animation: 清瑶text-shadow 20s infinite;
+    animation: 清瑶text-shadow 20s infinite;
+}
+
+.player .identity[data-color='qingyao_xianm'],
+div[data-nature='qingyao_xianm'],
+span[data-nature='qingyao_xianm'] {
+    -webkit-animation: 清瑶text-shadow 20s infinite;
+    animation: 清瑶text-shadow 20s infinite;
+}
+
+.player .identity[data-color='qingyao_xianmm'],
+div[data-nature='qingyao_xianmm'],
+span[data-nature='qingyao_xianmm'] {
+    -webkit-animation: 清瑶text-shadow 20s infinite;
+    animation: 清瑶text-shadow 20s infinite;
+}
+
+.camp-wrap[data-camp='qingyao_xian'] > .camp-back {
+    overflow: hidden;
+    /*height: 171px;*/
+    /*width: 120px;*/
+    /*top: 10px !important;*/
+    /*transform: translateX(-10px);*/
+}
+
+.camp-wrap[data-camp='qingyao_xian'] > .camp-back:before {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    background: linear-gradient(45deg, rgb(255, 0, 106), rgb(0, 255, 196), rgb(255, 0, 247));
+    background-size: 400%;
+    animation: xian_sun 4s infinite;
+}
+
+@keyframes xian_sun {
+    100% {
+        background-position: -400% 0;
+    }
+}
+
+
+.camp-wrap[data-camp='qingyao_xian'] > .camp-name {
+    text-shadow: 0 0 5px rgb(242, 16, 167), 0 0 10px rgb(242, 16, 167), 0 0 15px rgb(242, 16, 167) !important;
+}
+
+.player > .camp-zone[data-camp='qingyao_xian'] > .camp-name {
+    text-shadow: 0 0 5px rgb(242, 16, 167), 0 0 10px rgb(242, 16, 167), 0 0 15px rgb(242, 16, 167) !important;
+}
+
+.player .identity[data-color='qingyao_xian'],
+div[data-nature='qingyao_xian'],
+span[data-nature='qingyao_xian'] {
+    text-shadow: black 0 0 1px, rgba(255, 92, 187, 1) 0 0 2px, rgba(255, 92, 187, 1) 0 0 5px, rgba(255, 95, 187, 1) 0 0 10px, rgba(255, 92, 187, 1) 0 0 10px !important;
+}
+
+div[data-nature='qingyao_xianm'],
+span[data-nature='qingyao_xianm'] {
+    text-shadow: black 0 0 1px, rgba(196, 107, 221, 1) 0 0 2px, rgba(196, 107, 221, 1) 0 0 5px, rgba(196, 107, 221, 1) 0 0 5px, rgba(196, 107, 221, 1) 0 0 5px, black 0 0 1px !important;
+}
+
+div[data-nature='qingyao_xianmm'],
+span[data-nature='qingyao_xianmm'] {
+    text-shadow: black 0 0 1px, rgba(255, 62, 142, 1) 0 0 2px, rgba(255, 62, 142, 1) 0 0 2px, rgba(255, 62, 142, 1) 0 0 2px, rgba(255, 62, 142, 1) 0 0 2px, black 0 0 1px !important;
+}
+
+.button.character.decadeUI.newstyle > .identity[data-nature='qingyao_xian'] {
+    background-image: url("手杀武将详细框/武将势力边框/chara_face_frame_qingyao_xian.png") !important;
+}
+
+
+.qy-mvp-container {
+    width: 80%;
+    height: 80%;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    position: absolute;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.qy-center-container {
+    position: relative;
+    height: 110%;
+    width: 85%;
+    left: 7%;
+}
+
+.qy-mvp-avatarbox {
+    width: 150%;
+    height: 90%;
+    top: 7%;
+    left: -46%;
+    background-size: 100% 100%;
+    background-image: url("images/avatarbox.png");
+}
+
+.qy-mvp-avatarborder {
+    width: 45%;
+    height: 58%;
+    top: 21.9%;
+    left: 30%;
+    background-size: 100% 100%;
+    transform: rotate(12deg);
+    z-index: 2;
+}
+
+.qy-mvp-avatarborder::before {
+    content: attr(data-name);
+    top: 20%;
+    position: absolute;
+    width: 15px;
+    left: 4%;
+    font-size: 1.8vw;
+    font-family: shousha;
+}
+
+.qy-mvp-avatar {
+    background-size: cover;
+    background-position-x: 50%;
+    width: 37%;
+    height: 54%;
+    top: 23.9%;
+    left: 36%;
+    transform: rotate(12deg);
+}
+
+.qy-mvp-qyInfo {
+    position: absolute;
+    width: 120%;
+    height: 80%;
+    top: 23%;
+    left: 85%;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    flex-direction: column;
+}
+
+.qy-mvp-qyInfo div {
+    position: relative;
+    width: 100%;
+}
+
+
+.qy-mvp-center {
+    height: 20%;
+    display: flex;
+    flex-direction: row;
+}
+
+.qy-mvp-center div {
+    font-family: shousha;
+    font-weight: 800;
+}
+
+.qy-player-info * {
+    font-size: 2.7vw;
+    color: rgb(234, 138, 76);
+}
+
+.qy-mvp-name-info {
+    font-size: 4.1vw !important;
+    color: #D9B46C;
+}
+
+.qy-mvp-scoreInfo {
+    top: 7%;
+}
+
+.qy-mvp-xing {
+    position: relative;
+    width: 15px;
+    height: 24%;
+    top: 49%;
+    left: 27%;
+    z-index: 9;
+    transform: rotate(12deg);
+    display: inline-flex;
+    flex-direction: column-reverse;
+}
+
+.qy-mvp-xing > .item {
+    position: relative;
+    background: url(images/pdxx_00000.png);
+    background-size: cover;
+    width: 24px;
+    height: 24px;
+    left: 32%;
+    z-index: 9;
+    transform: rotate(12deg);
+}
+
+.qy-mvp-scoreInfo * {
+    font-family: shousha;
+    font-weight: 800;
+    font-size: 2.7vw;
+    color: #9F9D7C;
+}
+
+.qy-mvp-name-title:first-child {
+    color: #BC9467;
+}
+
+.qy-mvp-name-title:last-child {
+    color: #CC941C;
+}
+
+
+#Jzwd-canvas-animation-parent-div {
+    width: 100%;
+    height: 100%;
+    z-index: 6;
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+
+#Jzwd-canvas-animation-parent-div > canvas {
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 90;
+    display: block;
+    position: absolute;
+    pointer-events: none;
+}
+
+
+#Jzwd-canvas-animation-drag-zoom {
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 104;
+    background: #00000029;
+}
+
+@media (min-width: 1920px) {
+    .qy-mvp-avatarbox {
+        height: 110%;
+        top: -2%;
+    }
+}
+
+
+.qy-input-number-container {
+    background-color: #FFFFFF;
+    position: relative;
+    display: inline-block;
+    width: 180px;
+    line-height: 38px;
+    cursor: move;
+}
+
+.qy-mvp-silver-d1 {
+    width: 40%;
+    height: 40%;
+    z-index: 9;
+    right: -8%;
+    top: -6%;
+    background-image: url("images/silver_d1.png");
+    background-size: 100% 100%;
+    pointer-events: none;
+}
+
+.qy-mvp-silver-d2 {
+    width: 70%;
+    height: 35%;
+    z-index: 9;
+    background-image: url("images/silver_d2.png");
+    background-size: 100% 100%;
+    right: 0;
+    bottom: -3%;
+    pointer-events: none;
+}
+
+
+.qy-shousha-mvp-silver-d1 {
+    width: 44%;
+}
+
+
+.qy-input-number {
+    position: relative;
+    display: inline-block;
+    width: 180px;
+    line-height: 38px;
+}
+
+.qy-input-number__decrease,
+.qy-input-number__increase {
+    position: absolute;
+    z-index: 1;
+    top: 1px;
+    width: 40px;
+    height: auto;
+    text-align: center;
+    background: #f5f7fa;
+    color: #606266;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.qy-input-number__decrease {
+    left: 1px;
+    border-radius: 4px 0 0 4px;
+    border-right: 1px solid #dcdfe6;
+}
+
+.qy-input-number__increase {
+    right: 1px;
+    border-radius: 0 4px 4px 0;
+    border-left: 1px solid #dcdfe6;
+}
+
+.qy-input {
+    position: relative;
+    font-size: 14px;
+    display: block;
+    width: 100%;
+}
+
+.qy-input-number__decrease.is-disabled,
+.qy-input-number__increase.is-disabled {
+    color: #c0c4cc;
+    cursor: not-allowed;
+}
+
+.qy-input input {
+    padding-left: 50px;
+    padding-right: 50px;
+    text-align: center;
+    appearance: none;
+    -webkit-appearance: none;
+    background-color: #fff;
+    background-image: none;
+    border-radius: 4px;
+    border: 1px solid #dcdfe6;
+    box-sizing: border-box;
+    color: #606266;
+    display: inline-block;
+    font-size: inherit;
+    height: 40px;
+    line-height: 40px;
+    outline: none;
+    padding: 0 15px;
+    transition: border-color .2s cubic-bezier(.645, .045, .355, 1);
+    width: 100%;
+    cursor: pointer;
+}
+
+/*============================================= 移植ElementUI css =========================================================*/
+.qy-button {
+    display: inline-block;
+    line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
+    background: #fff;
+    border: 1px solid #dcdfe6;
+    color: #606266;
+    appearance: none;
+    -webkit-appearance: none;
+    text-align: center;
+    box-sizing: border-box;
+    outline: none;
+    margin: 0;
+    transition: .1s;
+    font-weight: 500;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    padding: 12px 20px;
+    font-size: 14px;
+    border-radius: 4px;
+}
+
+.qy-button:focus,
+.qy-button:hover {
+    color: #409eff;
+    border-color: #c6e2ff;
+    background-color: #ecf5ff;
+}
+
+.qy-button:active {
+    color: #3a8ee6;
+    border-color: #3a8ee6;
+    outline: none;
+}
+
+.qy-button--primary {
+    color: #fff;
+    background-color: #409eff;
+    border-color: #409eff;
+}
+
+.qy-button--primary:active {
+    background: #3a8ee6;
+    border-color: #3a8ee6;
+    color: #fff;
+}
+
+.qy-button--primary:focus,
+.qy-button--primary:hover {
+    background: #66b1ff;
+    border-color: #66b1ff;
+    color: #fff;
+}
+
+/*=========================== button end ============================*/
+
+.qy-radio {
+    /*color: #606266;*/
+    color: #ffffffde;
+    font-weight: 500;
+    line-height: 1;
+    position: relative;
+    cursor: pointer;
+    display: inline-block;
+    white-space: nowrap;
+    outline: none;
+    font-size: 14px;
+    margin-right: 30px;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none
+}
+
+.qy-radio.is-bordered {
+    padding: 12px 20px 0 10px;
+    border-radius: 4px;
+    border: 1px solid #dcdfe6;
+    box-sizing: border-box;
+    height: 40px;
+    margin-top: 20px;
+}
+
+.qy-radio.is-bordered.is-checked {
+    border-color: #409eff
+}
+
+.qy-radio.is-bordered.is-disabled {
+    cursor: not-allowed;
+    border-color: #ebeef5
+}
+
+
+.qy-radio--medium.is-bordered {
+    padding: 10px 20px 0 10px;
+    border-radius: 4px;
+    height: 36px
+}
+
+.qy-radio--medium.is-bordered .qy-radio__label {
+    font-size: 14px
+}
+
+.qy-radio--medium.is-bordered .qy-radio__inner {
+    height: 14px;
+    width: 14px
+}
+
+.qy-radio--small.is-bordered {
+    padding: 8px 15px 0 10px;
+    border-radius: 3px;
+    height: 32px
+}
+
+.qy-radio--small.is-bordered .qy-radio__label {
+    font-size: 12px
+}
+
+.qy-radio--small.is-bordered .qy-radio__inner {
+    height: 12px;
+    width: 12px
+}
+
+.qy-radio--mini.is-bordered {
+    padding: 6px 15px 0 10px;
+    border-radius: 3px;
+    height: 28px;
+}
+
+.qy-radio--mini.is-bordered .qy-radio__label {
+    font-size: 12px
+}
+
+.qy-radio--mini.is-bordered .qy-radio__inner {
+    height: 12px;
+    width: 12px
+}
+
+.qy-radio:last-child {
+    margin-right: 0;
+}
+
+.qy-radio__input {
+    white-space: nowrap;
+    cursor: pointer;
+    outline: none;
+    display: inline-block;
+    line-height: 1;
+    position: relative;
+    vertical-align: middle
+}
+
+.qy-radio__input.is-disabled .qy-radio__inner {
+    background-color: #f5f7fa;
+    border-color: #e4e7ed;
+    cursor: not-allowed
+}
+
+.qy-radio__input.is-disabled .qy-radio__inner:after {
+    cursor: not-allowed;
+    background-color: #f5f7fa
+}
+
+.qy-radio__input.is-disabled .qy-radio__inner + .qy-radio__label {
+    cursor: not-allowed
+}
+
+.qy-radio__input.is-disabled.is-checked .qy-radio__inner {
+    background-color: #f5f7fa;
+    border-color: #e4e7ed
+}
+
+.qy-radio__input.is-disabled.is-checked .qy-radio__inner:after {
+    background-color: #c0c4cc
+}
+
+.qy-radio__input.is-disabled + span.qy-radio__label {
+    color: #c0c4cc;
+    cursor: not-allowed
+}
+
+.qy-radio__input.is-checked .qy-radio__inner {
+    border-color: #409eff;
+    background: #409eff
+}
+
+.qy-radio__input.is-checked .qy-radio__inner:after {
+    transform: translate(-50%, -50%) scale(1)
+}
+
+.qy-radio__input.is-checked + .qy-radio__label {
+    color: #409eff
+}
+
+.qy-radio__input.is-focus .qy-radio__inner {
+    border-color: #409eff
+}
+
+.qy-radio__inner {
+    border: 1px solid #dcdfe6;
+    border-radius: 100%;
+    width: 14px;
+    height: 14px;
+    background-color: #fff;
+    position: relative;
+    cursor: pointer;
+    display: inline-block;
+    box-sizing: border-box
+}
+
+.qy-radio__inner:hover {
+    border-color: #409eff
+}
+
+.qy-radio__inner:after {
+    width: 4px;
+    height: 4px;
+    border-radius: 100%;
+    background-color: #fff;
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    transition: transform .15s ease-in
+}
+
+.qy-radio__original {
+    opacity: 0;
+    outline: none;
+    position: absolute;
+    z-index: -1;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: 0
+}
+
+.qy-radio:focus:not(.is-focus):not(:active):not(.is-disabled) .qy-radio__inner {
+    box-shadow: 0 0 2px 2px #409eff
+}
+
+.qy-radio__label {
+    font-size: 14px;
+    padding-left: 10px
+}
+
+
+/*===================================================================================*/
+
+
+.qy-limit-container {
+    width: 70%;
+    height: 70%;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.qy-limit-avatar {
+    --scale: 2.6;
+    width: 18%;
+    height: 44%;
+    left: 31%;
+    top: 27%;
+    z-index: 91;
+    transform: rotate(-9deg);
+    background-size: cover;
+    background-position-x: 50%;
+    border-radius: 4%;
+    animation: 1s linear qy-limited-scale;
+}
+
+.qy-juexingji-xiandingji-font-container {
+    --font-size: 40px;
+    white-space: nowrap;
+    display: inline-block;
+    position: relative;
+    left: 55%;
+    top: 60%;
+    font-size: var(--font-size);
+    animation: scale-juexingji-font linear 1.6s forwards;
+    z-index: 92;
+}
+
+.qy-juexingji-xiandingji-font {
+    position: relative;
+    display: inline-block;
+    z-index: 90;
+    font-family: 'hanyizhongli', 'shousha', system-ui;
+    font-weight: lighter;
+    text-shadow: none;
+    pointer-events: none;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    transition: none;
+}
+
+.qy-juexingji-xiandingji-font.qy_juexingji {
+    background-image: linear-gradient(352deg, #7941ff 27%, #fde5fd 70%);
+    text-shadow: none;
+    filter: drop-shadow(1px 1px 1px #2b1f19) drop-shadow(2px 1px 1px #9a48cc)
+    drop-shadow(-1px 0 1px #9a48cc);
+}
+
+.qy-juexingji-xiandingji-font.qy_xiandingji {
+    background-image: linear-gradient(166deg, #fcfc57 36%, #ffb200 70%);
+    filter: drop-shadow(1px 1px 1px #2b1f19) drop-shadow(2px 1px 2px #b3582f)
+    drop-shadow(-2px 0 2px #b3582f87) drop-shadow(0px 0 5px #b3582f87);
+}
+
+.qy-juexingji-xiandingji-font.qy_shimingji {
+    background-image: linear-gradient(rgb(253, 217, 116) 16%, rgb(198, 65, 44) 71%);
+    filter: drop-shadow(0 0 1px #2b1f19) drop-shadow(2px 1px 0px #2b1f19)
+    drop-shadow(1px 0 1px #b3582f87) drop-shadow(0 1px 1px #b3582f87) drop-shadow(-1px 0 1px #c68b2c);
+}
+
+
+.qy_hidden {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    display: none !important;
+}
+
+.qyFriendsCards {
+    background-size: 100% 100%;
+    width: 83px;
+    height: 62px;
+    background-image: url("images/TeammateHand.png");
+}
+
+.qyMvpMeTag {
+    width: 87px;
+    height: 55px;
+    left: 76%;
+    position: absolute;
+}
+
+/* mvpCSS */
+.popup-container[data-qingyao-hidden-mvp-border='true'] .qy-horn,
+.popup-container[data-qingyao-hidden-mvp-border='true'] .qy-vertical,
+.popup-container[data-qingyao-hidden-mvp-border='true'] .qy-horizontal {
+    background-color: transparent;
+}
+
+.qy-avatar {
+    background-image: url(qy_qyqingyaoxuying.jpg);
+    width: 25.6vw;
+    height: 54.8vh;
+    z-index: 100;
+    left: 22.8%;
+    top: 21.4vh;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: top;
+    transform: rotate(-3deg);
+    display: block;
+    animation: qy-avatar-bounceOut 0.6s cubic-bezier(0.4, 0, 1, 1);
+}
+
+.qy-avatar-border {
+    background-image: url(images/border_wei.png);
+    width: 28.7vw;
+    height: 59vh;
+    left: 21.2vw;
+    top: 20vh;
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-position: top;
+    transform: rotate(-3deg);
+    display: block;
+    z-index: 101;
+}
+
+.qy-avatar-border::before {
+    content: attr(data-name);
+    top: 20%;
+    width: 5vh;
+    left: 4.5%;
+    position: absolute;
+    text-align: center;
+    font-size: 4.3vh;
+    font-weight: 550;
+    font-family: shousha, system-ui;
+}
+
+/* 手杀 */
+.qyShouShaMVP {
+    --avatar-width: 21.8vw;
+    --avatar-height: 43vh;
+    --avatar-left: 30.1%;
+    --avatar-top: 29vh;
+    --avatar-border-width: 24.2vw;
+    --avatar-border-height: 46vh;
+    --avatar-border-left: 29vw;
+    --avatar-border-top: 27.9vh;
+    --avatar-rotate: 10deg;
+    --avatar-border-radius: 4%;
+    --avatar-font-size: 3.8vh;
+    --avatar-font-family: shousha, system-ui;
+    --avatar-border-content-top: 20%;
+    --avatar-border-content-width: 4vh;
+    --mvp-border-xing-transform-rotate: 3deg;
+}
+
+.qyShouShaMVP > .qy-avatar {
+    width: var(--avatar-width);
+    height: var(--avatar-height);
+    left: var(--avatar-left);
+    top: var(--avatar-top);
+    transform: rotate(var(--avatar-rotate));
+    display: block;
+    border-radius: var(--avatar-border-radius);
+    animation: none;
+}
+
+.qyShouShaMVP > .qy-avatar-border {
+    background-image: url(images/border_wei.png);
+    width: var(--avatar-border-width);
+    height: var(--avatar-border-height);
+    left: var(--avatar-border-left);
+    top: var(--avatar-border-top);
+    transform: rotate(var(--avatar-rotate));
+    display: block;
+    animation: none;
+}
+
+.qyShouShaMVP .qy-mvp-border-xing > .item {
+    transform: rotate(var(--mvp-border-xing-transform-rotate));
+}
+
+.qyShouShaMVP > .qy-avatar-border::before {
+    content: attr(data-name);
+    top: var(--avatar-border-content-top);
+    width: var(--avatar-border-content-width);
+    font-size: var(--avatar-font-size);
+    font-family: var(--avatar-font-family);
+}
+
+
+/* 魔改港版 */
+.qyMoGaiGangBanMVP {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}
+
+.qyMoGaiGangBanMVP .qy-avatar-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    width: 86%;
+    height: 80%;
+    left: 10%;
+    top: 8%;
+}
+
+.qyMoGaiGangBanMVP .qy-avatar1,
+.qyMoGaiGangBanMVP .qy-avatar2 {
+    width: auto !important;
+    height: 100% !important;
+    position: relative;
+    left: 0 !important;
+    top: 0 !important;
+    transform: none;
+    display: inline-block;
+    flex: 30;
+    animation: none;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: top;
+}
+
+.qyMoGaiGangBanMVP .GangBanMoGaiMVPLine {
+    background-image: url(images/GangBanMoGaiMVPLine.png);
+    position: relative;
+    height: 100%;
+    flex: 1;
+    background-size: 130% 100%;
+    background-repeat: no-repeat;
+    background-position: top;
+}
+
+.qyMoGaiGangBanMVP > .qy-avatar-border {
+    width: 52vw;
+    height: 65vh;
+    left: 0;
+    background-image: url("images/GangBanMoGaiMVPBorder.png") !important;
+}
+
+.qyMoGaiGangBanMVP .qy-avatar-border::before {
+    top: 14%;
+    width: 5vh;
+    left: 4.6%;
+}
+
+.qyMoGaiGangBanMVP .qy-mvp-technology * {
+    color: #eeee74;
+}
+
+.qyMoGaiGangBanMVP .qy-mvp-name-title:first-child {
+    color: #dbdb93;
+}
+
+.qyMoGaiGangBanMVP .qy-mvp-player-nickname {
+    /*玩家名字*/
+    color: #e2ac04;
+}
+
+.qyMoGaiGangBanMVP .qy-mvp-player-technology {
+    /*玩家技术*/
+    color: #dbdb93;
+}
+
+.qyMoGaiGangBanMVP .qy-mvp-yylx {
+    /**遥遥领先*/
+    color: #e54848;
+}
+
+/* 左边的星星 */
+.qy-mvp-border-xing {
+    position: absolute;
+    width: 22%;
+    height: auto;
+    bottom: 3vh;
+    left: 0;
+    transform: rotate(0deg);
+    display: inline-flex;
+    flex-direction: column-reverse;
+}
+
+/* 实体 */
+.qy-mvp-border-xing > .item {
+    position: relative;
+    width: 2.3vw;
+    height: 2.3vw;
+    left: 25%;
+    z-index: 9;
+    background-size: 100% 100%;
+    transform: rotate(-3deg);
+}
+
+/* 星星图片亮 */
+.qy-mvp-border-xing > .on {
+    background-image: url(手杀武将详细框/资料卡/chr_star_on.png);
+}
+
+/* 星星图片暗 */
+.qy-mvp-border-xing > .off {
+    background-image: url(手杀武将详细框/资料卡/chr_star_off.png);
+    width: 2.7vw;
+    height: 2.7vw;
+    left: 20%;
+}
+
+.qy-mvp-right-info {
+    width: 29vw;
+    height: 37vh;
+    left: 48vw;
+    top: 44%;
+    z-index: 70;
+    display: inline-flex;
+    flex-direction: column;
+}
+
+.qy-mvp-player-info > div {
+    position: relative;
+    width: 100%;
+    font-family: shousha;
+    font-weight: 800;
+}
+
+.qy-mvp-technology * {
+    color: #9F9D7C;
+    font-family: shousha;
+    font-size: 2vw;
+    font-weight: 800;
+    table-layout: unset;
+}
+
+.qy-mvp-player-icon {
+    width: 32%;
+    height: 100%;
+    position: relative;
+    background-image: url(dist/static/img/10.png);
+    background-size: 100% 100%;
+    margin-right: 15px;
+}
+
+.qy-mvp-right-info > div {
+    position: relative;
+    flex: 1;
+}
+
+.qy-mvp-name-title {
+    font-size: 2.5vw;
+}
+
+.qy-mvp-player-info {
+    width: 68%;
+    height: 100%;
+}
+
+.qy-mvp-player-info > div {
+    position: relative;
+    width: 100%;
+    font-family: shousha;
+    font-weight: 800;
+    white-space: nowrap;
+    /* text-overflow: ellipsis; */
+    /* overflow: hidden; */
+}
+
+.qy-mvp-player-technology {
+    color: #CC941C;
+    font-size: 2.2vw;
+}
+
+.qy-mvp-player-nickname {
+    font-size: 3vw;
+    color: #D9B46C;
+}
+
+.qy-mvp-player-nickname > img {
+    position: absolute;
+    width: 6vw;
+    top: 5px;
+    margin-left: 15px;
+}
+
+.qy-mvp-right-container {
+    left: 60px;
+}
+
+.qy-mvp-technology {
+    left: 60px;
+}
+
+.qy-mvp-share-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 8%;
+    height: 14%;
+    background-image: url("images/pubtn_share.png");
+    background-size: 100% 100%;
+}
+
+
+.card.qy_selected::after,
+.card.qy_selected::before {
+    opacity: 1;
+}
+
+.qy_round_fuyuan {
+    height: 70% !important;
+    width: calc(100% - 95px) !important;
+    left: 50% !important;
+    top: 40% !important;
+    transition: none !important;
+    transform: translate(-50%, -50%) !important;
+    animation: none !important;
+    z-index: 200 !important;
+    background: rgba(0, 0, 0, 0.2) !important;
+    box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px !important;
+}
+
+#window.qy_selected,
+#arena.qy_selected {
+    border: #0ea90c solid 5px;
+}
+
+.qy_card_selected .card::before {
+    left: -6px;
+    top: -5px;
+    content: '';
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    border: #0ea90c solid 5px;
+    border-image-source: none;
+}
+
+.qy_card_selected .card:after {
+    content: attr(data-num);
+    position: absolute;
+    font-size: 50px;
+    display: block;
+    box-shadow: none;
+    z-index: 1;
+    text-align: center;
+    top: 50px;
+    color: red;
+    pointer-events: none;
+    font-family: shousha;
+}
+/*
+.card-statistics {
+    width: 85%;
+    height: 75%;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    background: #231A1B;
+}
+
+.card-statistics {
+    width: 85%;
+    height: 75%;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    background: #231A1B;
+}
+
+.card-statistics-title {
+    display: flex;
+    position: relative;
+    width: 100%;
+    height: 10%;
+    align-items: center;
+    justify-items: center;
+    background: #372E1F;
+}
+
+.card-statistics-title > div {
+    position: relative;
+    flex: 1;
+    text-align: center;
+    color: #7F7768;
+    font-family: xinwei;
+    font-size: 25px;
+    align-items: center;
+    justify-items: center;
+    text-shadow: none;
+}
+
+.card-statistics-content {
+    display: flex;
+    width: 100%;
+    height: 86%;
+    position: relative;
+}
+
+.card-statistics-content > div {
+    overflow: auto;
+    flex: 1;
+    position: relative;
+    border-right: aliceblue 1px solid;
+}
+
+.card-statistics-content .items {
+    margin: 5px 0;
+    height: 30px;
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+}
+
+.card-statistics-content .items .item {
+    position: relative;
+    flex: .8;
+    background: #C5BA9A;
+    line-height: 2;
+    border-radius: 6px;
+}
+
+.card-statistics-content .items .item-num {
+    position: relative;
+    flex: .2;
+}
+*/
+/* 响应式布局 */
+@media screen and (max-device-width: 980px) {
+
+    /* 结算面板框 */
+    .qy_game_result_bg {
+        width: 85vw;
+    }
+
+    .qy_game_result {
+        width: 85vw;
+    }
+
+    .qy-avatar-1 {
+        width: 197px;
+        height: 271px;
+        left: 342px;
+        top: 87px;
+        position: fixed;
+        transform: rotate(11deg);
+    }
+
+    .qy-avatar-border-1 {
+        /*MVP框大小*/
+        width: 222px;
+        height: 292px;
+        left: 330px;
+        top: 79px;
+        position: fixed;
+        transform: rotate(11deg);
+    }
+
+
+    .qy-avatar {
+        width: 245px;
+        height: 345px;
+        left: 290px;
+        top: 80px;
+        position: fixed;
+        transform: rotate(-3deg);
+    }
+
+    .qy-avatar-border {
+        width: 272px;
+        height: 370px;
+        left: 275px;
+        top: 70px;
+        position: fixed;
+        transform: rotate(-3deg);
+    }
+
+    .qy-mvp-right-info {
+        width: 34vw;
+        height: 54vh;
+        left: 520px;
+    }
+
+    .qy-mvp-player-technology,
+    .qy-mvp-name-title {
+        font-size: 2.6vw;
+    }
+
+    .qy-mvp-player-nickname {
+        font-size: 3.4vw;
+    }
+
+    .qy-mvp-technology * {
+        font-size: 2.3vw;
+    }
+
+    .qy-avatar-border::before {
+        font-size: 5.4vh;
+    }
+
+    .qy-mvp-border-xing {
+        bottom: 20px;
+        left: 11px;
+    }
+
+    .qy-mvp-border-xing > .item {
+        width: 3vw;
+        height: 3vw;
+        left: 2px;
+    }
+
+    .qy-limit-avatar {
+        width: 180px;
+        height: 270px;
+        left: 373px;
+        top: 120px;
+    }
+
+    .qy-limit-font {
+        left: 590px;
+        position: fixed;
+    }
+
+    .qy-mvp-share-button {
+        width: 90px;
+        height: 115px;
+    }
+
+
+}
+
+
+/* 扇形菜单 */
+.qy-inner div {
+    display: flex;
+    width: 50px;
+    height: 50px;
+    position: fixed;
+    border-radius: 50%;
+    justify-content: center;
+    justify-items: center;
+    transition: left, top;
+}
+
+
+/* 移植换肤 - start */
+
+.qingyao_skin {
+    width: 15%;
+    height: 15%;
+    left: 73.9%;
+    top: 34px;
+    min-width: 32px;
+    min-height: 32px;
+    max-width: 32px;
+    max-height: 32px;
+    background-size: cover;
+    pointer-events: auto;
+    background-image: url("images/characterplayer.jpg");
+    border-radius: 50px;
+    cursor: pointer;
+    transition-property: opacity, background, box-shadow;
+    z-index: 999 !important;
+}
+
+.player .qingyao_skin {
+    left: 73%;
+}
+
+.player.fullskin2 .avatar .qingyao_skin,
+.player.fullskin2 .avatar2 .qingyao_skin {
+    left: 47%;
+}
+
+#bosslist > .player > .qingyao_Skin_Node > div {
+    left: 142px;
+    top: 30px;
+}
+
+.button > div > .qingyao_skin {
+    left: 67%;
+    top: 25px;
+    min-width: 28px;
+    min-height: 28px;
+}
+
+.name:not(.qingyao_skin),
+.name.name2:not(.qingyao_skin) {
+    pointer-events: none;
+}
+
+.hp:not(.qingyao_skin),
+.hp.text:not(.qingyao_skin) {
+    pointer-events: none;
+}
+
+.unseen > .avatar > div > .qingyao_skin {
+    pointer-events: none;
+    opacity: 0;
+    display: none;
+}
+
+.unseen2 > .avatar2 > div > .qingyao_skin {
+    pointer-events: none;
+    opacity: 0;
+    display: none;
+}
+
+
+.qingyao_character_skin_Node {
+    width: 470px;
+    height: 260px;
+    text-align: left;
+    background-image: url("images/charactercard.png");
+    background-size: 100% 100%;
+    z-index: 9;
+    cursor: default;
+    transition-property: none;
+}
+
+.qingyao_character_skin_Close {
+    top: 2%;
+    width: 20px;
+    height: 20px;
+    right: 1.1%;
+    cursor: pointer;
+    z-index: 99999;
+    border-top: rgba(248, 247, 246, 0.47) solid 2px !important;
+    border-left: rgba(248, 247, 246, 0.47) solid 2px !important;
+    border-bottom: rgb(61, 62, 64) solid 2px !important;
+    border-right: rgb(61, 62, 64) solid 2px !important;
+    text-align: center;
+    font-family: xinwei;
+    font-weight: bold;
+    transition: none;
+}
+
+.qingyao_character_skin_Close span {
+    top: 57%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    position: absolute;
+    color: rgb(245, 228, 211);
+}
+
+.qingyao_character_skin_Close:hover:active span {
+    top: 68%;
+}
+
+.qingyao_Skin_minimize {
+    right: 7.5%;
+    top: 2.4%;
+    width: 4.2%;
+    height: 7.4%;
+    cursor: pointer;
+    position: absolute;
+    z-index: 99999;
+    transition: none;
+    border-top: rgba(248, 247, 246, 0.47) solid 2px !important;
+    border-left: rgba(248, 247, 246, 0.47) solid 2px !important;
+    border-bottom: rgb(61, 62, 64) solid 2px !important;
+    border-right: rgb(61, 62, 64) solid 2px !important;
+}
+
+.qingyao_Skin_minimize:hover {
+    -webkit-filter: brightness(1.2);
+    filter: brightness(1.2);
+}
+
+.qingyao_Skin_minimize:hover:active {
+    border-top: #3d3e40 solid 2px !important;
+    border-left: #3d3e40 solid 2px !important;
+    border-bottom: #b2a79c solid 2px !important;
+    border-right: #f8f7f6 solid 2px !important;
+}
+
+.qingyao_Skin_minimize::before {
+    content: '\2013';
+    font-weight: bold;
+    color: rgb(245, 228, 211);
+    text-align: center;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    position: absolute;
+}
+
+.qingyao_Skin_minimize:hover:active::before {
+    top: 2px;
+}
+
+.qingyao_Skin_Node_guanbi {
+    width: 100%;
+    height: 100%;
+    z-index: 8;
+    cursor: default;
+}
+
+.qingyao_character_skin_Button {
+    position: relative;
+    width: 94px;
+    white-space: pre-wrap;
+    margin-top: 6px;
+    margin-right: 6px;
+    margin-left: 6px;
+    height: 127px;
+    background-size: cover;
+    background-position: 50% 0;
+    text-align: left;
+    border-radius: 0;
+}
+
+.qingyao_character_skin_content .qingyao_character_skin_dragZoom,
+.qingyao_character_skin_content .qingyao_character_skin_Close {
+    box-shadow: black 0 0 1px,
+    rgba(17, 87, 128, 1) 0 0 2px,
+    rgba(17, 87, 128, 1) 0 0 5px,
+    rgba(17, 87, 128, 1) 0 0 5px,
+    rgba(17, 87, 128, 1) 0 0 5px,
+    rgba(17, 87, 128, 1) 0 0 5px,
+    rgba(17, 87, 128, 1) 0 0 5px;
+}
+
+
+.qingyao_character_skin_Button > .qingyao_character_skin_yxy_div {
+    box-shadow: rgba(36, 193, 241, 1) 0 0 10px, rgba(36, 193, 241, 1) 0 0 10px, rgba(36, 193, 241, 1) 0 0 10px, rgba(36, 193, 241, 1) 0 0 10px
+}
+
+.qingyao_character_skin_yxy_div {
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 999;
+}
+
+.qingyao_character_skin_content {
+    height: 82%;
+    width: 94%;
+    padding-left: 4.8%;
+    padding-bottom: 1%;
+    text-align: left;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    position: relative;
+    z-index: 999999;
+    top: 0;
+    cursor: default;
+}
+
+.qingyao_character_skin_yxy {
+    background-image: url("images/characterYXY.png");
+    background-size: 100% 100%;
+    position: absolute;
+    top: 26%;
+    width: 100%;
+    height: 50%;
+}
+
+.qingyao_character_skin_WJS > div {
+    opacity: 0.9 !important;
+}
+
+.qingyao_character_skin_WJSX {
+    opacity: 0.7;
+    width: 100%;
+    z-index: 999 !important;
+    height: 100%;
+    background-color: #000000ab;
+    pointer-events: none;
+}
+
+.qingyao_character_skin_WJS {
+    top: 45px;
+    width: 100%;
+    height: 25px;
+    color: yellow;
+    font-size: 17px;
+    opacity: 0.9 !important;
+    background: rgba(0, 0, 0, 0.6)
+    /*#080809*/;
+    font-family: xinwei;
+}
+
+.qingyao_character_skin_tswz {
+    font-family: xinwei;
+    font-size: 20px;
+    text-align: center;
+    width: 100%;
+    height: 13%;
+    position: relative;
+    display: block;
+}
+
+.qingyao_Skin_info {
+    width: 100%;
+    min-height: 23%;
+    background-color: rgba(0, 0, 0, 0.6);
+    /*#1d0b0ba8*/
+    bottom: 0;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgb(250, 250, 200);
+    word-wrap: break-word;
+    word-break: break-all;
+    font-family: 'shousha', 'xinwei';
+    pointer-events: all;
+}
+
+.qingyao_skin_Button_modular {
+    position: relative;
+    width: 100%;
+    height: 140px;
+    overflow-y: hidden;
+    overflow-x: scroll;
+    white-space: nowrap;
+}
+
+
+.qingyao_Skin_div {
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.qingyao_Skin_GradeOf {
+    height: 15%;
+    color: rgb(239, 230, 217);
+    font-family: 'xingkai';
+    right: 0;
+    font-size: 15px;
+    pointer-events: all;
+}
+
+.qingyao_bounceInLeft {
+    animation: bounceInLeft 0.6s;
+    -webkit-animation: bounceInLeft 0.6s;
+}
+
+.qingyao_bounceOutLeft {
+    animation: bounceOutLeft .6s;
+    -webkit-animation: bounceOutLeft 0.6s;
+}
+
+.qingyao_bounceInRight {
+    animation: bounceInRight 0.6s;
+    -webkit-animation: bounceInRight 0.6s;
+}
+
+.qingyao_bounceInBottom {
+    animation: bounceInBottom 0.6s;
+    -webkit-animation: bounceInBottom 0.6s;
+}
+
+.qingyao_bounceInTop {
+    animation: bounceInTop 0.6s;
+    -webkit-animation: bounceInTop 0.6s;
+}
+
+/* 移植换肤 - end */
+
+
+/** 动画 */
+@-webkit-keyframes qy-avatar-bounceOut {
+    100% {
+        -webkit-transform: scale(1) rotate(-3deg);
+        transform: scale(1) rotate(-3deg)
+    }
+
+    0% {
+        opacity: 0.75;
+        -webkit-transform: scale(2) rotate(-3deg);
+        transform: scale(2) rotate(-3deg);
+    }
+}
+
+@keyframes qy-avatar-bounceOut {
+    100% {
+        -webkit-transform: scale(1) rotate(-3deg);
+        transform: scale(1) rotate(-3deg)
+    }
+
+    0% {
+        opacity: 0.75;
+        -webkit-transform: scale(2) rotate(-3deg);
+        transform: scale(2) rotate(-3deg);
+    }
+}
+
+@keyframes qy-limited-scale {
+    0% {
+        width: 128px;
+        top: 50%;
+        height: 200px;
+        left: 50%;
+        transform: translate3d(-50%, -50%, 0) scale(1);
+    }
+
+    35% {
+        width: 128px;
+        top: 50%;
+        height: 200px;
+        left: 50%;
+        transform: translate3d(-50%, -50%, 0) scale(calc(var(--scale) / 2));
+    }
+
+    60%, 70% {
+        width: 128px;
+        top: 50%;
+        height: 200px;
+        left: 50%;
+        transform: translate3d(-50%, -50%, 0) scale(calc(var(--scale) - 0.2));
+    }
+
+    90% {
+        width: 128px;
+        top: 50%;
+        height: 200px;
+        left: 50%;
+        transform: translate3d(-50%, -50%, 0) scale(var(--scale));
+    }
+}
+
+@keyframes scale-juexingji-font {
+    0%, 18% {
+        opacity: 0;
+        transform: scale(0.75);
+    }
+
+    20% {
+        opacity: 0.5;
+        transform: scale(3);
+    }
+
+    25% {
+        opacity: 1;
+        transform: scale(1.5);
+    }
+
+    27%, 100% {
+        opacity: 1;
+        transform: scale(2);
+    }
+}
+
+
+/*scal*/
+
+.qy-horn {
+    width: 35px;
+    height: 35px;
+    z-index: 1;
+    background-color: red;
+    position: absolute;
+    opacity: 0.5;
+}
+
+.qy-vertical {
+    width: 14px;
+    height: calc(100% - 14px);
+    margin: 7px 0;
+    position: absolute;
+    cursor: col-resize;
+    opacity: 0.3;
+}
+
+.qy-horizontal {
+    width: calc(100% - 14px);
+    height: 14px;
+    margin: 0 7px;
+    position: absolute;
+    cursor: row-resize;
+    opacity: 0.3;
+}
+
+.qy-top {
+    top: -8px;
+    left: 0;
+}
+
+.qy-left {
+    top: 0;
+    left: -8px;
+}
+
+.qy-bottom {
+    left: 0;
+    bottom: -8px;
+}
+
+.qy-right {
+    top: 0;
+    right: -8px;
+}
+
+
+.qy-leftTop {
+    cursor: nw-resize;
+    left: -15px;
+    top: -15px;
+}
+
+.qy-rightTop {
+    cursor: ne-resize;
+    right: -15px;
+    top: -15px;
+}
+
+.qy-leftBottom {
+    cursor: sw-resize;
+    bottom: -15px;
+    left: -15px;
+}
+
+.qy-rightBottom {
+    cursor: se-resize;
+    right: -15px;
+    bottom: -15px;
+}
+
+/* 隐藏铁锁连环 */
+.player.qyLinkHide > .chain {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    display: none !important;
+}
+
+.qy_tap {
+    height: 3em;
+    background-image: url(animation/tap.png);
+    background-size: 100% 100%;
+    z-index: 50;
+    background-repeat: no-repeat;
+    transition: none;
+    transform: rotate(124deg);
+    transform-origin: top left;
+}
+
+.qypopup {
+    width: 100%;
+    display: inline-block;
+    cursor: pointer;
+    text-decoration: underline;
+    font-size: 20px;
+}
+
+.qymenubutton {
+    width: 19vw;
+    z-index: 10;
+    bottom: 20px;
+    right: 20px;
+    font-family: 'shousha', system-ui;
+    font-size: 3vmax;
+    cursor: pointer;
+}
+
+.caption:not(.normal) > .qypopup {
+    width: 97%;
+    margin: auto;
+    cursor: pointer;
+    text-align: center;
+}
+
+
+/* 结算面板 */
+.qy_game_result_container {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    z-index: 5;
+}
+
+/* 背景图 */
+.qy_game_result_bg {
+    width: calc(90vw - 200px);
+    height: 60%;
+    left: 50%;
+    top: 40%;
+    z-index: 5;
+    border-style: solid;
+    border-color: transparent;
+    border-width: 80px 100px 40px 100px;
+    border-image-slice: 100 150 40 150 fill;
+    border-image-source: url('手杀结算面板/game_result_bg.png');
+    transform: translate3d(-50%, -50%, 0);
+}
+
+/* 实体框 */
+.qy_game_result {
+    width: calc(90vw - 20px);
+    height: calc(60% + 90px);
+    left: 50%;
+    display: flex;
+    top: 39%;
+    z-index: 5;
+    transform: translate3d(-50%, -50%, 0);
+}
+
+/* 旗帜 */
+.qy_game_result_banner {
+    flex: 1.1;
+    position: relative;
+    background-image: url('手杀结算面板/game_result_banner.png');
+    background-size: 104% 100%;
+    background-repeat: no-repeat;
+    top: -10px;
+}
+
+/* 分数 */
+.qy_game_result_fraction_container {
+    position: relative;
+    flex: 3;
+    display: grid;
+    height: calc(100% - 0.8vmax);
+    grid-template-columns: 4vmax calc(100% - 6vmax);
+    grid-template-rows: repeat(3, max-content);
+    grid-row-gap: 5px;
+    overflow-y: auto;
+}
+
+.qy_game_result_fraction_container > div {
+    position: relative;
+}
+
+.qy_game_result_fraction_container table {
+    text-align: center;
+    font-size: 2.1vw;
+    font-family: 'shousha', system-ui;
+}
+
+.qy_game_result_fraction_container table > tr,
+.qy_game_result_fraction_container table > tr > td {
+    position: relative;
+
+}
+
+.qy_game_lookon_eye {
+    width: 4vmax;
+    height: 3vmax;
+    margin: 0 auto;
+    position: relative;
+    background-size: 100% 100%;
+    background-image: url("手杀结算面板/game_lookon_eye.png");
+}
+
+.qy_game_lookon_look_text {
+    color: #978664;
+    font-size: 1.8vmax;
+    width: 100%;
+    left: 0;
+    bottom: -4px;
+    font-weight: lighter;
+}
+
+.qy_game_result_fraction_container td:nth-child(1) {
+    width: 8%;
+}
+
+.qy_game_result_fraction_container td:nth-child(2) {
+    width: 28%;
+}
+
+.qy_game_result_fraction_container td:nth-child(3) {
+    width: 16%;
+}
+
+.qy_game_result_fraction_container td:nth-child(4) {
+    width: 15%;
+}
+
+.qy_game_result_fraction_container td:nth-child(5) {
+    width: 16%;
+}
+
+.qy_game_result_fraction_container td:nth-child(6) {
+    width: 10%;
+}
+
+/* 头部标题 */
+table.qy_game_result_fraction_title {
+    color: #5f4e3e;
+}
+
+table.qy_game_result_fraction_title td {
+    padding-top: 10px;
+}
+
+/* 胜利玩家列表 */
+table.qy_game_result_fraction_table_win {
+    background-color: #34402b;
+    border-radius: 8px;
+    color: #74929b;
+    box-shadow: black 0 0 2px, black 0 0 2px;
+}
+
+.qy_game_result_fraction_container table td > div {
+    position: relative;
+    box-sizing: border-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+    word-break: break-all;
+    display: block;
+}
+
+.qy_game_result_xing_container {
+    display: flex !important;
+    flex-wrap: nowrap;
+}
+
+.qy_game_result_xing {
+    flex: 1;
+    height: 1.8vmax;
+    position: relative;
+    background-size: cover;
+}
+
+/* 势力图片 */
+.qy_game_result_fraction_item {
+    width: 3.4vmax;
+    height: 3.8vmax;
+    position: relative;
+    background-size: 100% 100%;
+    background-image: url('手杀结算面板/game_fig_gz_qun.png');
+}
+
+.qy_game_result_fraction_table_fail .qy_game_result_fraction_item {
+    filter: grayscale(1);
+}
+
+/* 身份 */
+.qy_game_result_fraction_item_identity_zhu {
+    background-image: url('手杀结算面板/game_figure_zhu.png');
+}
+
+.qy_game_result_fraction_item_identity_zhong {
+    background-image: url('手杀结算面板/game_figure_zhong.png');
+}
+
+.qy_game_result_fraction_item_identity_fan {
+    background-image: url('手杀结算面板/game_figure_fan.png');
+}
+
+.qy_game_result_fraction_item_identity_nei {
+    background-image: url('手杀结算面板/game_figure_nei.png');
+}
+
+.qy_game_result_fraction_item_identity_cai {
+    background-image: url('手杀结算面板/game_figure_fan.png');
+}
+
+/* 国战 */
+.qy_game_result_fraction_item_group_qun {
+    background-image: url('手杀结算面板/game_fig_gz_qun.png');
+}
+
+.qy_game_result_fraction_item_group_shu {
+    background-image: url('手杀结算面板/game_fig_gz_shu.png');
+}
+
+.qy_game_result_fraction_item_group_wei {
+    background-image: url('手杀结算面板/game_fig_gz_wei.png');
+}
+
+.qy_game_result_fraction_item_group_wu {
+    background-image: url('手杀结算面板/game_fig_gz_wu.png');
+}
+
+/* 斗地主 */
+.qy_game_result_fraction_item_doudizhu_zhu {
+    background-image: url('手杀结算面板/game_figure_zhu.png');
+}
+
+.qy_game_result_fraction_item_doudizhu_fan {
+    background-image: url('手杀结算面板/game_figure_nong.png');
+}
+
+/* 失败玩家列表 */
+table.qy_game_result_fraction_table_fail {
+    background-color: #452e23;
+    border-radius: 8px;
+    box-shadow: black 0 0 1px, black 0 0 1px;
+    color: #c0a9a1;
+}
+
+.qy_game_result_fraction_text {
+    background-size: 90% 100%;
+    background-repeat: no-repeat;
+    background-position: 50%;
+    width: 4vmax;
+    height: 4vmax;
+}
+
+.qy_game_result_fraction_text_win {
+    background-image: url("手杀结算面板/game_result_text_win.png");
+}
+
+.qy_game_result_fraction_text_fail {
+    background-image: url("手杀结算面板/game_result_text_fail.png");
+}
+
+.qy_game_result_banner_info_container {
+    position: relative;
+    height: fit-content;
+    width: 100%;
+    margin-top: 13%;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: center;
+    padding-left: 16%;
+    padding-right: 10%;
+    box-sizing: border-box;
+}
+
+.qy_game_result_banner_info_container:nth-child(2) {
+    margin-top: 10%;
+}
+
+.qy_game_result_banner_info_title {
+    position: relative;
+    width: 100%;
+    text-align: center;
+    font-family: 'shousha', system-ui;
+    font-size: 2.6vmax;
+    color: #d27f58;
+    text-shadow: 2px 0 10px #d27f58, 2px 0 10px #d27f58;
+}
+
+.qy_game_result_match_mvpbg_adv {
+    position: absolute;
+    width: 113%;
+    left: 0;
+    height: 120%;
+    background-image: url('手杀结算面板/game_result_match_mvpbg_adv.png');
+    background-size: cover;
+    z-index: 1;
+    background-position: center;
+}
+
+
+.qy_game_result_banner_info_table {
+    position: relative;
+    width: 100%;
+}
+
+.qy_game_result_banner_info_table {
+    position: relative;
+    display: flex;
+    align-content: center;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+}
+
+.qy_game_result_banner_info_table tr {
+    width: 100%;
+}
+
+.qy_game_result_banner_info_table table {
+    width: 100%;
+    color: #cdada4;
+    font-family: 'shousha', system-ui;
+    font-size: 2vmax;
+}
+
+.qy_game_result_banner_info_table td:nth-child(2) {
+    text-align: end;
+}
+
+.qy_game_result_banner_info_table td {
+    white-space: nowrap;
+}
+
+
+/* ================ 自定义特效框 ================ */
+/* 遮罩层 */
+.qy_animation_dialog_container {
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    background: rgba(0, 0, 0, 0.2);
+    position: fixed;
+    z-index: 98;
+}
+
+/* dialog框 */
+.qy_animation_dialog {
+    height: 90%;
+    width: 95% !important;
+    top: 50%;
+    left: 50%;
+    display: flex;
+    z-index: 99 !important;
+    overflow: hidden scroll;
+    transform: translate3d(-50%, -50%, 0px);
+    animation: 0.3s ease 0s 1 normal none running !important;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-content: center;
+}
+
+/* 搜索框 */
+.qy_animation_dialog_content_search {
+    position: relative;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 0.7vh;
+}
+
+/*.
+qy_animation_dialog_content_search > input{
+    width: 22vw;
+    height: 4vh;
+    font-size: 2vw;
+}
+
+.qy_animation_dialog_content_search > button{
+    width: 5vw;
+    height: 4.6vh;
+    margin-left: 0.5vw;
+}
+*/
+
+.qy_animation_dialog_content {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin: 1.3% 10px;
+    overflow-x: auto;
+    height: 96%;
+    width: 97%;
+    top: 0;
+}
+
+/* 每一个选项 */
+.qy_animation_dialog_item {
+    --margin-right: 0px;
+    --margin-left: 0px;
+    --padding: 0px;
+    --border-width: 1px;
+    width: calc(50% - 20px - 6px);
+    left: 0;
+    top: 0;
+    display: flex;
+    overflow: hidden;
+    border-radius: 0;
+    position: relative;
+    margin: 13px 3px 3px 3px;
+    flex-direction: row;
+    align-items: flex-start;
+    align-content: flex-start;
+    flex-wrap: wrap;
+    padding: 0 10px;
+}
+
+/* 特效名称包容器 */
+.qy_animation_dialog_item_name_container {
+    display: flex;
+    position: relative;
+    width: 100%;
+    justify-content: center;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    background-repeat: round;
+}
+
+/* 特效名称 */
+.qy_animation_dialog_item_name {
+    top: 0;
+    width: 100%;
+    cursor: pointer;
+    /*white-space: nowrap;*/
+    font-size: 3.5vw;
+    text-align: center;
+    position: relative;
+    margin-top: 8px;
+    transition: opacity 0.5s ease 0s;
+    font-family: shousha, system-ui;
+    background-repeat: round;
+}
+
+/* 特效详情包裹层 */
+.qy_animation_dialog_item_content_container {
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: row;
+    justify-content: flex-start;
+    width: 100%;
+    position: relative;
+    margin: 10px 0;
+}
+
+/* 特效信息 */
+.qy_animation_dialog_item_info_container {
+    position: relative;
+    width: 100%;
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: row;
+    justify-content: flex-start;
+}
+
+/* 特效详情 */
+.qy_animation_dialog_item_content {
+    flex: 1;
+    width: 80%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin-right: 6px;
+    font-size: 3.5vw;
+    font-family: xinwei, shousha, system-ui;
+}
+
+/* 点击框 */
+.qy_animation_dialog_item_content_active {
+    cursor: pointer;
+}
+
+/* 特效主要参数查看框 */
+.qy_animation_dialog_item_content_info {
+    width: 30%;
+    flex: auto;
+    display: flex;
+    font-size: 2vw;
+    flex-wrap: wrap;
+    align-items: center;
+    flex-direction: row;
+    align-content: flex-start;
+    translate: none;
+}
+
+.qy_animation_dialog_item_content_info > div {
+    position: relative;
+    width: calc(50% - 10px);
+    padding: 10px 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    max-height: calc(30% - 16px);
+    transition: none;
+
+}
+
+/* 特效按钮包裹层 */
+.qy_animation_dialog_item_button_container {
+    width: 25%;
+    flex-wrap: wrap;
+    font-size: 2.5vw;
+    position: relative;
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+}
+
+/* 按钮 */
+.qy_animation_dialog_item_button_container > .qy_animation_button {
+    width: 100%;
+    margin: 2px 0;
+    padding: 3px 0;
+    font-size: 2.5vw;
+    cursor: pointer;
+    text-align: center;
+    white-space: nowrap;
+    font-family: shousha, system-ui;
+    transition: all 0.5s ease 0s;
+    position: relative;
+}
+
+/* 新增特效按钮 */
+.qy_animation_dialog_add_button {
+    width: 60%;
+    height: 20%;
+    position: relative;
+    font-size: 8vw;
+    font-family: shousha, system-ui;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 10px auto;
+    cursor: pointer;
+}
+
+/* 按钮点击效果 */
+.qy_animation_dialog_item_name:active:hover,
+.qy_animation_dialog_add_button:active:hover {
+    transform: scale3d(0.97, 0.97, 1);
+}
+
+.qy_animation_button:active:hover {
+    transform: scale3d(0.9, 0.9, 1);
+}
+
+/* 按钮发光效果 */
+.qy_animation_bottom_button_container > .qyglow {
+    filter: none;
+    -webkit-filter: none;
+    pointer-events: auto;
+    box-shadow: rgb(0 0 0 / 20%) 0 0 0 1px, rgb(0 133 255 / 40%) 0 0 5px, rgb(0 133 255 / 50%) 0 0 12px, rgb(0 133 255 / 80%) 0 0 15px;
+}
+
+
+/* 自定义的dialog */
+.qy_animation_custom {
+    width: 100%;
+    height: 85%;
+    text-align: left;
+    border-radius: 8px;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    align-content: flex-start;
+    flex-wrap: wrap;
+    align-items: stretch;
+    position: relative;
+}
+
+/* 自定义参数的编辑框 */
+.qy_animation_custom > .item {
+    left: 0;
+    top: 0;
+    height: auto;
+    display: flex;
+    min-width: 30%;
+    max-width: 40%;
+    font-size: 2vw;
+    flex-wrap: wrap;
+    margin: 7px 10px;
+    padding: 6px 10px;
+    position: relative;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    font-family: STXinwei, xinwei, system-ui;
+}
+
+.qy_animation_custom > .item > textarea {
+    resize: vertical;
+}
+
+/* 自增数字 -- start */
+.qy_animation_custom .qy-input-number-container {
+    background-color: transparent;
+    line-height: unset;
+    position: relative;
+    min-width: 40%;
+    height: 100%;
+    flex: 1;
+    cursor: default;
+}
+
+.qy_animation_custom .qy-input-number {
+    height: 5vh;
+    width: 100%;
+}
+
+.qy_animation_custom .qy-input-number-container .qy-input-number__decrease,
+.qy_animation_custom .qy-input-number-container .qy-input-number__increase {
+    height: 100%;
+    top: 0;
+    font-size: 1.5vw;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    line-height: unset !important;
+}
+
+.qy_animation_custom .qy-input input,
+.qy_animation_custom .qy-input-number,
+.qy_animation_custom .qy-input {
+    top: 0;
+    left: 0;
+    border: none;
+    height: 100%;
+    line-height: unset;
+    font-size: 1.5vw;
+}
+
+.qy_animation_custom > .item > .qy-input {
+    font-size: 1.5vw;
+}
+
+/* 自增数字 -- end */
+
+.qy_animation_custom input,
+.qy_animation_custom select {
+    font-size: 1.5vw;
+}
+
+.qy_animation_custom input[type="checkbox"] {
+    width: 1.6vw;
+    height: 1.6vw;
+}
+
+.popup-container.editor {
+    z-index: 120;
+}
+
+.qy_animation_custom input[type="checkbox"],
+.qy_animation_custom > label {
+    cursor: pointer;
+}
+
+/* 自定义参参数框的低下的按钮框 */
+.qy_animation_bottom_button_container {
+    width: 100%;
+    height: 14%;
+    text-align: center;
+    border-radius: 8px;
+    overflow: auto;
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-content: center;
+    align-items: center;
+    z-index: 1;
+}
+
+/* 按钮 */
+.qy_animation_bottom_button_container > div {
+    position: relative;
+    height: 90%;
+    flex: 1;
+    font-size: 3vw;
+    font-family: STXinwei, 'xinwei', system-ui;
+    margin: 0 10px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 重新加载按钮 */
+.qy_animation_dialog_item_content_menu_reload {
+    position: relative;
+    border-radius: unset;
+    margin-left: 10px;
+    cursor: pointer;
+    padding: 2px;
+}
+
+.qy_animation_dialog_item_content_menu_reload:active:hover,
+.qy_animation_bottom_button_container > div:active:hover,
+.qy_animation_dialog_item_content_active:active:hover {
+    transform: scale3d(0.95, 0.95, 1);
+}
+
+.qy_animation_custom > .item {
+    box-shadow: rgb(255 255 255) 0 0 0 1px, rgb(0 0 0 / 20%) 0 3px 10px;
+}
+
+.qy_animation_bottom_button_container > div {
+    box-shadow: rgb(255 255 255) 0 0 0 1px, rgb(0 0 0 / 20%) 0 3px 10px;
+}
+
+
+/* 手杀4.5风格 */
+.qy_animation_dialog_content {
+    position: relative;
+    display: flex;
+    margin: 1.3% 0;
+    overflow-x: auto;
+    height: 96%;
+    width: 99%;
+    top: 0;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: center;
+    align-content: flex-start;
+}
+
+.qy_animation_dialog[data-theme='mobile4.5'][data-type='menu'] {
+    background-image: url('./images/mobile4.5/menu/beijing.png');
+    background-size: 101.5% 104.5%;
+    background-position: center;
+    justify-content: center;
+    align-content: flex-start;
+}
+
+.qy_animation_dialog[data-theme='mobile4.5'][data-type='menu'] .qy_animation_dialog_item {
+    width: calc(50% - var(--padding) - var(--padding) - var(--margin-right) - var(--margin-left) - var(--border-width) - var(--border-width) - var(--border-width) - var(--border-width));
+    margin: 0 0 10px var(--margin-left);
+    padding: var(--padding);
+}
+
+.qy_animation_dialog[data-theme='mobile4.5'][data-type='menu'] .qy_animation_dialog_item_name {
+    background-image: url("./images/mobile4.5/menu/kaiguan.png");
+    margin: 5px 10px;
+    color: #e6e6ff;
+}
+
+.qy_animation_dialog[data-theme='mobile4.5'][data-type='menu'] .qy_animation_dialog_item_content.qy_animation_dialog_item_content_active {
+    background-image: url("./images/mobile4.5/menu/zhonglei.png");
+    background-size: 108% 124%;
+    background-position: center;
+    color: #99e747c4;
+}
+
+.qy_animation_dialog[data-theme='mobile4.5'][data-type='menu'] .qy_animation_dialog_item_content_container {
+    background-image: url(./images/mobile4.5/menu/xiaofenkuang2.png);
+    background-size: 100% 100%;
+    width: 71%;
+    padding: 7px;
+    margin: 0;
+    flex: 4;
+}
+
+.qy_animation_dialog[data-theme='mobile4.5'][data-type='menu'] .qy_animation_dialog_item_name_container {
+    background-image: url("./images/mobile4.5/menu/xiaofenkuang3.png");
+    background-size: 101% 100%;
+}
+
+.qy_animation_dialog[data-theme='mobile4.5'][data-type='menu'] .qy_animation_dialog_item {
+    --padding: 5px;
+    background-color: #39332c;
+}
+
+.qy_animation_dialog[data-theme='mobile4.5'][data-type='menu'] .qy_animation_dialog_item:nth-child(2n) {
+    --margin-left: 5px;
+}
+
+.qy_animation_dialog[data-theme='mobile4.5'][data-type='menu'] .qy_animation_dialog_item_button_container {
+    background-image: url(./images/mobile4.5/menu/xiaofenkuang2.png);
+    background-size: 100% 100%;
+    padding: 3px 6px 3px 3px;
+    flex: 1;
+}
+
+.qy_animation_dialog[data-theme='mobile4.5'][data-type='menu'] .qy_animation_button {
+    background-image: url("./images/mobile4.5/menu/caozuo.png");
+    background-size: 110% 160%;
+    background-position: center;
+    color: #eee58ab3;
+}
+
+.qy_animation_dialog[data-theme='mobile4.5'][data-type='menu'] .qy_animation_dialog_add_button {
+    background-image: url(./images/mobile4.5/menu/dafenkuang1.png);
+    background-size: 104% 127%;
+    background-position: center;
+    color: #ffffffd9;
+}
+
+
+.qy_animation_dialog[data-type='item'][data-theme='mobile4.5'] {
+    background-image: url(./images/mobile4.5/item/beijing3.png);
+    justify-content: center;
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+}
+
+.qy_animation_dialog[data-type='item'][data-theme='mobile4.5'] .qy_animation_dialog_content {
+    width: 94.5%;
+    left: -0.18%;
+    height: 92.5%;
+}
+
+.qy_animation_dialog[data-type='item'][data-theme='mobile4.5'] .qy_animation_dialog_item {
+    background-color: #39332c;
+    border: #6c5f38 1px solid;
+    width: calc(50% - 20px - 6px - 4px);
+}
+
+.qy_animation_dialog[data-type='item'][data-theme='mobile4.5'] .qy_animation_dialog_item_name_container {
+    background-image: url(./images/mobile4.5/item/xiaofenkuang3.png);
+}
+
+.qy_animation_dialog[data-type='item'][data-theme='mobile4.5'] .qy_animation_dialog_item_name {
+    background-image: url(./images/mobile4.5/item/kaiguan.png);
+    margin: 5px 5px 5px 10px;
+    color: #e6e6ff;
+    top: 2px;
+    left: 0;
+}
+
+.qy_animation_dialog[data-type='item'][data-theme='mobile4.5'] .qy_animation_dialog_item_content_container {
+    background-image: url(./images/mobile4.5/item/xiaofenkuang1.png);
+    background-size: 105% 100%;
+    background-position: center;
+    padding: 2px;
+    margin: 2px 3px 2px 0;
+}
+
+.qy_animation_dialog[data-type='item'][data-theme='mobile4.5'] .qy_animation_dialog_item_button_container {
+    background-image: url(./images/mobile4.5/item/xiaofenkuang2.png);
+    background-size: 105% 100%;
+    margin: 2px 0;
+    padding: 2px;
+}
+
+.qy_animation_dialog[data-type='item'][data-theme='mobile4.5'] .qy_animation_dialog_item_content_info > div {
+    background-image: url(./images/mobile4.5/item/zhonglei.png);
+    background-size: 102% 108%;
+    white-space: nowrap;
+}
+
+.qy_animation_dialog[data-type='item'][data-theme='mobile4.5'] .qy_animation_button {
+    background-image: url(./images/mobile4.5/item/caozuo.png);
+    background-size: 100% 110%;
+    background-position-y: 160%;
+    margin: 0;
+    display: flex;
+    flex: 2;
+    justify-content: center;
+    align-items: center;
+}
+
+
+.qy_animation_dialog[data-type='item'][data-theme='mobile4.5'] .qy_animation_dialog_add_button {
+    background-image: url(./images/mobile4.5/item/dafenkuang.png);
+    background-size: 100% 100%;
+}
+
+/* 手杀4.5风格 End */
+
+/* 十周年UI风格 Start */
+.qy_animation_dialog[data-theme="decade"] {
+    background-image: url(./images/decade/menu/beijing.png);
+    background-size: 101% 106%;
+    background-position: center;
+    justify-content: center;
+    align-content: center;
+}
+
+.qy_animation_dialog[data-theme='decade'] .qy_animation_dialog_content {
+    height: 90%;
+    width: 99%;
+    margin: 0;
+}
+
+.qy_animation_dialog[data-type='menu'][data-theme='decade'] .qy_animation_dialog_add_button {
+    background-image: url(./images/decade/menu/xiaofenkuang2.png);
+    background-size: 100% 100%;
+}
+
+.qy_animation_dialog[data-type='menu'][data-theme='decade'] .qy_animation_dialog_item {
+    background-image: url(./images/decade/menu/xiaofenkuang1.png);
+    background-size: 100% 100%;
+    padding: 5px 6px 4px 12px;
+    width: calc(50% - var(--margin-left) - var(--margin-right) - 5px - 6px - 5px - 12px);
+    margin: 10px var(--margin-right) 0 var(--margin-left);
+}
+
+.qy_animation_dialog[data-type='menu'][data-theme='decade'] .qy_animation_dialog_item_name_container {
+    background-image: url(./images/decade/menu/xiaofenkuang3.png);
+    background-size: 104% 111%;
+    background-position: center;
+}
+
+.qy_animation_dialog[data-type='menu'][data-theme='decade'] .qy_animation_dialog_item_name {
+    margin-top: 0;
+    background-image: url(./images/decade/menu/kaiguan.png);
+    background-size: 105% 108%;
+    background-position-x: 40%;
+    top: 1px;
+}
+
+.qy_animation_dialog[data-type='menu'][data-theme='decade'] .qy_animation_dialog_item_info_container {
+    background-image: url(./images/decade/menu/dafenkuang1.png);
+    background-size: 108% 103%;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+
+.qy_animation_dialog[data-type='menu'][data-theme='decade'] .qy_animation_dialog_item_content.qy_animation_dialog_item_content_active {
+    background-image: url(./images/decade/menu/zhonglei.png);
+    background-size: 99% 97%;
+    background-position-x: center;
+    margin: 4px 0;
+    background-repeat: no-repeat;
+}
+
+.qy_animation_dialog[data-type='menu'][data-theme='decade'] .qy_animation_dialog_item_content_container {
+    margin: 0;
+    background-image: url(./images/decade/menu/xiaofenkuang2.png);
+    background-size: 101% 92%;
+    background-position: center;
+}
+
+.qy_animation_dialog[data-type='menu'][data-theme='decade'] .qy_animation_dialog_item_button_container {
+    background-image: url(./images/decade/menu/xiaofenkuang2.png);
+    background-size: 100% 100%;
+}
+
+.qy_animation_dialog[data-type=menu][data-theme=decade] .qy_animation_button {
+    background-image: url(./images/decade/menu/caozuo.png);
+    background-size: 100% 110%;
+    background-position: center;
+    margin: 0 0 2px 0;
+}
+
+.qy_animation_dialog[data-type='menu'][data-theme='decade'] .qy_animation_dialog_item:nth-child(even) {
+    --margin-left: 7px;
+}
+
+.qy_animation_dialog[data-type='menu'][data-theme='decade'] .qy_animation_dialog_item:nth-child(odd) {
+    --margin-right: 5px;
+}
+
+
+.qy_animation_dialog[data-type='item'][data-theme='decade'] .qy_animation_dialog_item {
+    background-image: url(./images/decade/item/dafenkuang.png);
+    background-size: 100% 100%;
+}
+
+.qy_animation_dialog[data-type='item'][data-theme='decade'] .qy_animation_dialog_content {
+    width: 97%;
+    height: 90%;
+}
+
+.qy_animation_dialog[data-type='item'][data-theme='decade'] .qy_animation_dialog_item_name {
+    margin: 3px 3px 2px;
+    background-image: url(./images/decade/item/kaiguan.png);
+    background-size: 100% 100%;
+}
+
+.qy_animation_dialog[data-type='item'][data-theme='decade'] .qy_animation_dialog_item_content_container {
+    background-image: url(./images/decade/item/xiaofenkuang2.png);
+    background-size: 100% 100%;
+    margin: 0 0 8px 4px;
+}
+
+.qy_animation_dialog[data-type='item'][data-theme='decade'] .qy_animation_dialog_item_content_info > div {
+    background-image: url(./images/decade/item/caozuo.png);
+    background-size: 104% 120%;
+    background-position: center;
+    margin: 0;
+}
+
+.qy_animation_dialog[data-type='item'][data-theme='decade'] .qy_animation_dialog_item_content.qy_animation_dialog_item_content_info {
+    margin: 0;
+}
+
+.qy_animation_dialog[data-type='item'][data-theme='decade'] .qy_animation_dialog_item_button_container {
+    background-image: url(./images/decade/item/xiaofenkuang1.png);
+    background-size: 100% 100%;
+}
+
+.qy_animation_dialog[data-type='item'][data-theme='decade'] .qy_animation_dialog_item_button_container > .qy_animation_button {
+    background-image: url(./images/decade/item/zhonglei.png);
+    background-size: 100% 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    flex: 1;
+}
+
+.qy_animation_dialog[data-type='item'][data-theme='decade'] .qy_animation_dialog_item_name_container {
+    background-image: url(./images/decade/item/xiaofenkuang3.png);
+    background-size: 101% 100%;
+    background-position: center;
+}
+
+.qy_animation_dialog[data-type='item'][data-theme='decade'] .qy_animation_dialog_add_button {
+    background-image: url(./images/decade/item/caozuo.png);
+    background-size: 104% 132%;
+    background-position: center;
+}
+
+/* 十周年UI End */
+
+/* 手杀UI Start */
+.qy_animation_dialog[data-type='menu'][data-theme='mobile'] {
+    background-image: url(./images/mobile/menu/beijing.png);
+    background-size: 102% 102%;
+    justify-content: center;
+    background-position-x: center;
+}
+
+.qy_animation_dialog[data-type='menu'][data-theme='mobile'] .qy_animation_dialog_item {
+    background-image: url(./images/mobile/menu/dafenkuang1.png?a=777);
+    background-size: 102% 99%;
+    background-position: center;
+    --padding: 14px;
+    padding: var(--padding);
+    width: calc(50% - var(--margin-right) - var(--margin-left) - var(--padding) - 22px);
+}
+
+.qy_animation_dialog[data-type='menu'][data-theme='mobile'] .qy_animation_dialog_item_name_container {
+    background-image: url(./images/mobile/menu/xiaofenkuang3.png);
+    background-size: 100% 100%;
+}
+
+.qy_animation_dialog[data-type='menu'][data-theme='mobile'] .qy_animation_dialog_item_name {
+    background-image: url(./images/mobile/menu/kaiguan.png);
+    background-size: 100% 100%;
+    margin: 2px 3px 2px 6px;
+}
+
+.qy_animation_dialog[data-type='menu'][data-theme='mobile'] .qy_animation_dialog_item_content_container {
+    background-image: url(./images/mobile/menu/xiaofenkuang2.png);
+    background-size: 100% 100%;
+    margin: 0;
+}
+
+.qy_animation_dialog[data-type='menu'][data-theme='mobile'] .qy_animation_dialog_item_content.qy_animation_dialog_item_content_active {
+    background-image: url(./images/mobile/menu/zhonglei.png);
+    background-size: 107% 135%;
+    background-position: center;
+    padding: 7px;
+}
+
+
+.qy_animation_dialog[data-type='menu'][data-theme='mobile'] .qy_animation_dialog_item_button_container {
+    background-image: url(./images/mobile/menu/xiaofenkuang1.png);
+    background-size: 100% 100%;
+}
+
+.qy_animation_dialog[data-type='menu'][data-theme='mobile'] .qy_animation_button {
+    background-image: url(./images/mobile/menu/caozuo.png);
+    background-size: 100% 105%;
+    display: flex;
+    flex: 1;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+}
+
+.qy_animation_dialog[data-type='menu'][data-theme='mobile'] .qy_animation_dialog_content {
+    height: 90%;
+    width: 98%;
+    left: 3px;
+}
+
+.qy_animation_dialog[data-type='menu'][data-theme='mobile'] .qy_animation_dialog_add_button {
+    background-image: url(./images/mobile/menu/dafenkuang2.png);
+    background-size: 105% 120%;
+    background-position-x: center;
+}
+
+
+.qy_animation_dialog[data-type='item'][data-theme='mobile'] {
+    background-image: url(./images/mobile/item/beijing.png);
+    background-size: 102% 102%;
+    background-position-x: center;
+    background-position-y: -10%;
+}
+
+.qy_animation_dialog[data-type='item'][data-theme='mobile'] .qy_animation_dialog_content {
+    width: 99%;
+    height: 80%;
+    top: 6%;
+}
+
+.qy_animation_dialog[data-type='item'][data-theme='mobile'] .qy_animation_dialog_item {
+    background-image: url(./images/mobile/item/dafenkuang.png);
+    background-size: 100% 100%;
+    margin: 0;
+    padding: 3% 3% 2%;
+    width: calc(50% - 3% - 3% - 2%);
+}
+
+.qy_animation_dialog[data-type='item'][data-theme='mobile'] .qy_animation_dialog_item_name_container {
+    background-image: url(./images/mobile/item/xiaofenkuang3.png);
+    background-size: 102% 100%;
+    background-position: center;
+}
+
+.qy_animation_dialog[data-type='item'][data-theme='mobile'] .qy_animation_dialog_item_name {
+    margin: 2px 6px 2px 7px;
+    background-image: url(./images/mobile/item/kaiguan.png);
+    background-size: 100% 100%;
+    background-position: center;
+}
+
+.qy_animation_dialog[data-type='item'][data-theme='mobile'] .qy_animation_dialog_item_content_container {
+    background-image: url(./images/mobile/item/xiaofenkuang2.png);
+    background-size: 101% 100%;
+    background-position: center;
+    margin: 0;
+    flex: 4;
+}
+
+.qy_animation_dialog[data-type='item'][data-theme='mobile'] .qy_animation_dialog_item_content_info > div {
+    background-image: url(./images/mobile/item/zhonglei.png);
+    background-size: 100% 103%;
+    background-position: center;
+    white-space: nowrap;
+}
+
+.qy_animation_dialog[data-type='item'][data-theme='mobile'] .qy_animation_dialog_item_content.qy_animation_dialog_item_content_info {
+    margin: 0 5px 0 2px;
+}
+
+.qy_animation_dialog[data-type='item'][data-theme='mobile'] .qy_animation_dialog_item_button_container {
+    background-image: url(./images/mobile/item/xiaofenkuang1.png);
+    background-size: 100% 100%;
+    background-position: center;
+    flex: 1;
+}
+
+.qy_animation_dialog[data-type='item'][data-theme='mobile'] .qy_animation_button {
+    flex: 1;
+    background-image: url(./images/mobile/item/caozuo.png);
+    background-size: 100% 103%;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.qy_animation_dialog[data-type='item'][data-theme='mobile'] .qy_animation_dialog_add_button {
+    background-image: url(./images/mobile/item/caozuo.png);
+    background-size: 70% 120%;
+    background-position: center;
+    background-repeat: no-repeat;
+    align-items: flex-start;
+}
+
+/* 手杀UI End */
+
+/* OnlineUI Start */
+.qy_animation_dialog[data-type='menu'][data-theme='OnlineUI'] {
+    background-image: url(images/online/menu/beijing.png);
+    background-size: 100% 100%;
+    justify-content: center;
+}
+
+.qy_animation_dialog[data-type='menu'][data-theme='OnlineUI'] .qy_animation_dialog_content {
+    width: 90%;
+    height: 80%;
+    top: 8%;
+}
+
+.qy_animation_dialog[data-type='menu'][data-theme='OnlineUI'] .qy_animation_dialog_item {
+    background-image: url(images/online/menu/dafenkuang.png);
+    background-size: 100% 100%;
+    width: calc(50% - var(--margin-left) - var(--margin-right));
+}
+
+.qy_animation_dialog[data-type='menu'][data-theme='OnlineUI'] .qy_animation_dialog_item:nth-child(odd) {
+    --margin-left: 5%;
+}
+
+.qy_animation_dialog[data-type='menu'][data-theme='OnlineUI'] .qy_animation_dialog_item:nth-child(even) {
+    --margin-right: 6%;
+}
+
+.qy_animation_dialog[data-type='menu'][data-theme='OnlineUI'] .qy_animation_dialog_item_button_container > .qy_animation_button {
+    background-image: url(images/online/menu/caozuo.png);
+    background-size: 100% 100%;
+    flex: 1;
+    display: flex;
+    padding: 6px 0 3px 0;
+    align-items: center;
+    flex-wrap: nowrap;
+    justify-content: center;
+    text-align: center;
+}
+
+.qy_animation_dialog[data-type='menu'][data-theme='OnlineUI'] .qy_animation_dialog_item_button_container {
+    background-image: url(images/online/menu/xiaofenkuang1.jpg);
+    background-size: 100% 100%;
+    padding: 2px;
+}
+
+.qy_animation_dialog[data-type='menu'][data-theme='OnlineUI'] .qy_animation_dialog_item_content_container {
+    background-image: url(images/online/menu/xiaofenkuang2.jpg);
+    background-size: 100% 100%;
+    margin: 0 5px 0 0;
+}
+
+.qy_animation_dialog[data-type='menu'][data-theme='OnlineUI'] .qy_animation_dialog_item_content.qy_animation_dialog_item_content_active {
+    background-image: url(images/online/menu/zhonglei.png);
+    background-size: 100% 100%;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.qy_animation_dialog[data-type='menu'][data-theme='OnlineUI'] .qy_animation_dialog_item_name {
+    background-image: url(images/online/menu/kaiguan.png);
+    background-size: 100% 100%;
+    margin: 0;
+}
+
+.qy_animation_dialog[data-type='menu'][data-theme='OnlineUI'] .qy_animation_dialog_item_name_container {
+    border: 2px solid black;
+    margin-top: 5px;
+}
+
+.qy_animation_dialog[data-type='menu'][data-theme='OnlineUI'] .qy_animation_dialog_add_button {
+    background-image: url(images/online/menu/zhonglei.png);
+    background-size: 100% 100%;
+    margin: 0 auto;
+    height: 25%;
+    width: auto;
+    padding: 0 4vw;
+    min-width: 60%;
+}
+
+
+/* item */
+.qy_animation_dialog[data-type='item'][data-theme='OnlineUI'] {
+    background-image: url(images/online/item/beijing.png);
+    background-size: 100% 100%;
+    justify-content: center;
+}
+
+.qy_animation_dialog[data-type='item'][data-theme='OnlineUI'] .qy_animation_dialog_content {
+    width: 96%;
+    height: 85%;
+    top: 5%;
+}
+
+.qy_animation_dialog[data-type='item'][data-theme='OnlineUI'] .qy_animation_dialog_item {
+    background-image: url(images/online/item/dafenkuang2.png);
+    background-size: 100% 100%;
+}
+
+.qy_animation_dialog[data-type='item'][data-theme='OnlineUI'] .qy_animation_dialog_item_name {
+    background-image: url(images/online/item/kaiguan.png);
+    background-size: 100% 100%;
+}
+
+.qy_animation_dialog[data-type='item'][data-theme='OnlineUI'] .qy_animation_dialog_item_info_container {
+    background-image: url(images/online/item/dafenkuang1.png);
+    background-size: 103% 100%;
+    background-position: center;
+    padding-left: 1%;
+}
+
+.qy_animation_dialog[data-type='item'][data-theme='OnlineUI'] .qy_animation_dialog_item_content_info > div {
+    background-image: url(images/online/item/zhonglei.png);
+    background-size: 100% 100%;
+}
+
+.qy_animation_dialog[data-type='item'][data-theme='OnlineUI'] .qy_animation_dialog_item_button_container > .qy_animation_button {
+    background-image: url(images/online/item/caozuo.png);
+    background-size: 100% 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qy_animation_dialog[data-type='item'][data-theme='OnlineUI'] .qy_animation_dialog_add_button {
+    background-image: url(images/online/item/caozuo.png);
+    background-size: 100% 100%;
+}
+
+/* OnlineUI End */

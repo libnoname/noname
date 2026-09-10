@@ -1,0 +1,48 @@
+
+xiaoyouxi_shenglixing.png
+size: 341,199
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+images/shenglixing/slx_00006
+  rotate: false
+  xy: 2, 4
+  size: 73, 75
+  orig: 116, 115
+  offset: 21, 22
+  index: -1
+images/shenglixing/slx_00013
+  rotate: true
+  xy: 233, 4
+  size: 89, 92
+  orig: 116, 115
+  offset: 13, 14
+  index: -1
+images/shenglixing/slx_00015
+  rotate: true
+  xy: 233, 95
+  size: 102, 106
+  orig: 116, 115
+  offset: 7, 7
+  index: -1
+images/shenglixing/slx_00017
+  rotate: false
+  xy: 118, 83
+  size: 113, 114
+  orig: 116, 115
+  offset: 2, 1
+  index: -1
+images/shenglixing/slx_00019
+  rotate: true
+  xy: 2, 81
+  size: 116, 114
+  orig: 116, 115
+  offset: 0, 1
+  index: -1
+images/shenglixing/slx_00020
+  rotate: true
+  xy: 118, 2
+  size: 79, 82
+  orig: 116, 115
+  offset: 18, 19
+  index: -1

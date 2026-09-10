@@ -1,0 +1,83 @@
+
+Ss_ZhengJing_KaBei.png
+size: 536,536
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+kap_00
+  rotate: false
+  xy: 2, 178
+  size: 126, 174
+  orig: 130, 176
+  offset: 2, 1
+  index: -1
+kap_01
+  rotate: false
+  xy: 138, 360
+  size: 126, 174
+  orig: 130, 176
+  offset: 2, 1
+  index: -1
+kap_02
+  rotate: false
+  xy: 2, 2
+  size: 126, 174
+  orig: 130, 176
+  offset: 2, 1
+  index: -1
+kap_03
+  rotate: false
+  xy: 266, 360
+  size: 126, 174
+  orig: 130, 176
+  offset: 2, 1
+  index: -1
+kap_04
+  rotate: false
+  xy: 394, 360
+  size: 126, 174
+  orig: 130, 176
+  offset: 2, 1
+  index: -1
+kap_05
+  rotate: false
+  xy: 130, 178
+  size: 126, 174
+  orig: 130, 176
+  offset: 2, 1
+  index: -1
+kap_06
+  rotate: false
+  xy: 130, 2
+  size: 126, 174
+  orig: 130, 176
+  offset: 2, 1
+  index: -1
+kap_07
+  rotate: false
+  xy: 258, 184
+  size: 126, 174
+  orig: 130, 176
+  offset: 2, 1
+  index: -1
+kap_08
+  rotate: false
+  xy: 258, 8
+  size: 126, 174
+  orig: 130, 176
+  offset: 2, 1
+  index: -1
+kap_09
+  rotate: false
+  xy: 386, 184
+  size: 126, 174
+  orig: 130, 176
+  offset: 2, 1
+  index: -1
+kapai_huxi_00
+  rotate: false
+  xy: 2, 354
+  size: 134, 180
+  orig: 134, 180
+  offset: 0, 0
+  index: -1

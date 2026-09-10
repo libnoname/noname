@@ -1,0 +1,13 @@
+
+qy_zb_nvzhuang.png
+size: 254,254
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+nvzhuang_00
+  rotate: false
+  xy: 2, 12
+  size: 250, 240
+  orig: 250, 240
+  offset: 0, 0
+  index: -1

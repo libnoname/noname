@@ -1,0 +1,10 @@
+extension["虎牢关吕布"]={
+	intro:"",
+	author:"",
+	netdisk:"",
+	forum:"",
+	version:"",
+	files:["hlg_molin.jpg","zhenqianjiaofeng.png","extension.js","hlg_nuyan.jpg","hlg_xiaohu.jpg",
+		"hlg_shenwei.jpg"],
+	size:"2.1MB"
+};

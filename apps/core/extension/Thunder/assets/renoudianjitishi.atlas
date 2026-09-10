@@ -1,0 +1,34 @@
+
+renoudianjitishi.png
+size: 465,115
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+daquan
+  rotate: false
+  xy: 310, 3
+  size: 110, 110
+  orig: 115, 115
+  offset: 3, 2
+  index: -1
+shiquan
+  rotate: false
+  xy: 422, 72
+  size: 41, 41
+  orig: 42, 42
+  offset: 1, 0
+  index: -1
+shou1
+  rotate: false
+  xy: 2, 2
+  size: 156, 111
+  orig: 157, 112
+  offset: 0, 1
+  index: -1
+shou2
+  rotate: false
+  xy: 160, 3
+  size: 148, 110
+  orig: 149, 112
+  offset: 0, 1
+  index: -1

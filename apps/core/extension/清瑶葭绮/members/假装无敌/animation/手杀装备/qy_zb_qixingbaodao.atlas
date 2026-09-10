@@ -1,0 +1,118 @@
+
+qy_zb_qixingbaodao.png
+size: 1222,1222
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+tx_05
+  rotate: false
+  xy: 844, 867
+  size: 358, 172
+  orig: 421, 255
+  offset: 34, 8
+  index: -1
+tx_06
+  rotate: false
+  xy: 844, 1041
+  size: 373, 179
+  orig: 421, 255
+  offset: 27, 3
+  index: -1
+tx_07
+  rotate: false
+  xy: 833, 681
+  size: 387, 184
+  orig: 421, 255
+  offset: 21, 0
+  index: -1
+tx_08
+  rotate: false
+  xy: 2, 570
+  size: 402, 189
+  orig: 421, 255
+  offset: 14, 0
+  index: -1
+tx_09
+  rotate: false
+  xy: 2, 761
+  size: 414, 215
+  orig: 421, 255
+  offset: 7, 0
+  index: -1
+tx_10
+  rotate: false
+  xy: 418, 734
+  size: 413, 242
+  orig: 421, 255
+  offset: 8, 0
+  index: -1
+tx_11
+  rotate: false
+  xy: 2, 978
+  size: 420, 242
+  orig: 421, 255
+  offset: 1, 0
+  index: -1
+tx_12
+  rotate: false
+  xy: 424, 978
+  size: 418, 242
+  orig: 421, 255
+  offset: 3, 0
+  index: -1
+tx_13
+  rotate: false
+  xy: 406, 513
+  size: 330, 219
+  orig: 421, 255
+  offset: 45, 22
+  index: -1
+tx_14
+  rotate: false
+  xy: 2, 349
+  size: 330, 219
+  orig: 421, 255
+  offset: 45, 22
+  index: -1
+tx_15
+  rotate: true
+  xy: 2, 17
+  size: 330, 219
+  orig: 421, 255
+  offset: 45, 22
+  index: -1
+tx_16
+  rotate: true
+  xy: 223, 17
+  size: 330, 219
+  orig: 421, 255
+  offset: 45, 22
+  index: -1
+tx_17
+  rotate: false
+  xy: 738, 460
+  size: 330, 219
+  orig: 421, 255
+  offset: 45, 22
+  index: -1
+tx_18
+  rotate: true
+  xy: 444, 181
+  size: 330, 219
+  orig: 421, 255
+  offset: 45, 22
+  index: -1
+tx_19
+  rotate: true
+  xy: 665, 128
+  size: 330, 217
+  orig: 421, 255
+  offset: 45, 22
+  index: -1
+tx_20
+  rotate: false
+  xy: 884, 246
+  size: 330, 212
+  orig: 421, 255
+  offset: 45, 22
+  index: -1

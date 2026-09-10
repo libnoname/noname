@@ -1,0 +1,97 @@
+
+xiaoyouxi_xingxingposui.png
+size: 831,304
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+images/xingxing/xing_00002
+  rotate: false
+  xy: 730, 12
+  size: 52, 54
+  orig: 152, 159
+  offset: 51, 55
+  index: -1
+images/xingxing/xing_00003
+  rotate: false
+  xy: 735, 225
+  size: 81, 77
+  orig: 152, 159
+  offset: 35, 45
+  index: -1
+images/xingxing/xing_00004
+  rotate: true
+  xy: 730, 68
+  size: 104, 99
+  orig: 152, 159
+  offset: 24, 34
+  index: -1
+images/xingxing/xing_00005
+  rotate: true
+  xy: 611, 174
+  size: 128, 122
+  orig: 152, 159
+  offset: 12, 22
+  index: -1
+images/xingxing/xing_00006
+  rotate: true
+  xy: 146, 150
+  size: 152, 147
+  orig: 152, 159
+  offset: 0, 8
+  index: -1
+images/xingxing/xing_00007
+  rotate: true
+  xy: 319, 8
+  size: 152, 144
+  orig: 152, 159
+  offset: 0, 11
+  index: -1
+images/xingxing/xing_00008
+  rotate: false
+  xy: 601, 15
+  size: 127, 147
+  orig: 152, 159
+  offset: 6, 7
+  index: -1
+images/xingxing/xing_00009
+  rotate: true
+  xy: 456, 164
+  size: 138, 153
+  orig: 152, 159
+  offset: 3, 4
+  index: -1
+images/xingxing/xing_00010
+  rotate: true
+  xy: 2, 2
+  size: 139, 156
+  orig: 152, 159
+  offset: 2, 2
+  index: -1
+images/xingxing/xing_00011
+  rotate: true
+  xy: 160, 6
+  size: 142, 157
+  orig: 152, 159
+  offset: 1, 2
+  index: -1
+images/xingxing/xing_00012
+  rotate: false
+  xy: 2, 143
+  size: 142, 159
+  orig: 152, 159
+  offset: 1, 0
+  index: -1
+images/xingxing/xing_00013
+  rotate: true
+  xy: 295, 162
+  size: 140, 159
+  orig: 152, 159
+  offset: 2, 0
+  index: -1
+images/xingxing/xing_00014
+  rotate: false
+  xy: 465, 5
+  size: 134, 157
+  orig: 152, 159
+  offset: 8, 0
+  index: -1

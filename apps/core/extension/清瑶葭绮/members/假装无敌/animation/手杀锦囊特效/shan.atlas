@@ -1,0 +1,13 @@
+
+shan.png
+size: 128,128
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+a
+  rotate: false
+  xy: 2, 2
+  size: 79, 103
+  orig: 79, 103
+  offset: 0, 0
+  index: -1

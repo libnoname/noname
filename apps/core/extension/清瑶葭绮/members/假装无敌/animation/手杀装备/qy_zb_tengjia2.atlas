@@ -1,0 +1,55 @@
+
+qy_zb_tengjia2.png
+size: 372,372
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+tengjia_fangyu_01
+  rotate: false
+  xy: 2, 52
+  size: 141, 166
+  orig: 290, 338
+  offset: 75, 92
+  index: -1
+tengjia_fangyu_02
+  rotate: true
+  xy: 145, 20
+  size: 106, 130
+  orig: 360, 360
+  offset: 131, 121
+  index: -1
+tengjia_shouji02_01
+  rotate: false
+  xy: 277, 30
+  size: 93, 96
+  orig: 360, 360
+  offset: 126, 151
+  index: -1
+tengjia_shouji02_02
+  rotate: false
+  xy: 2, 220
+  size: 161, 150
+  orig: 360, 360
+  offset: 101, 137
+  index: -1
+tengjia_shouji02_03
+  rotate: false
+  xy: 165, 250
+  size: 159, 120
+  orig: 360, 360
+  offset: 102, 134
+  index: -1
+tengjia_shouji02_04
+  rotate: false
+  xy: 165, 128
+  size: 159, 120
+  orig: 360, 360
+  offset: 102, 134
+  index: -1
+tengjia_shouji_02
+  rotate: true
+  xy: 326, 163
+  size: 207, 20
+  orig: 360, 120
+  offset: 76, 50
+  index: -1

@@ -1,0 +1,13 @@
+
+Ss_vfx_sxq_ui_xz.png
+size: 332,189
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+vfx_xz_glow
+  rotate: false
+  xy: 0, 0
+  size: 332, 189
+  orig: 332, 189
+  offset: 0, 0
+  index: -1

@@ -1,0 +1,76 @@
+
+niao.png
+size: 927,927
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+niao_00000
+  rotate: false
+  xy: 721, 134
+  size: 204, 244
+  orig: 254, 306
+  offset: 25, 31
+  index: -1
+niao_00001
+  rotate: false
+  xy: 514, 380
+  size: 233, 263
+  orig: 254, 306
+  offset: 21, 28
+  index: -1
+niao_00002
+  rotate: false
+  xy: 504, 84
+  size: 215, 276
+  orig: 254, 306
+  offset: 19, 2
+  index: -1
+niao_00003
+  rotate: false
+  xy: 514, 645
+  size: 248, 280
+  orig: 254, 306
+  offset: 6, 0
+  index: -1
+niao_00004
+  rotate: false
+  xy: 258, 85
+  size: 244, 275
+  orig: 254, 306
+  offset: 0, 6
+  index: -1
+niao_00005
+  rotate: false
+  xy: 2, 358
+  size: 254, 282
+  orig: 254, 306
+  offset: 0, 0
+  index: -1
+niao_00006
+  rotate: false
+  xy: 258, 362
+  size: 254, 279
+  orig: 254, 306
+  offset: 0, 4
+  index: -1
+niao_00007
+  rotate: false
+  xy: 2, 642
+  size: 254, 283
+  orig: 254, 306
+  offset: 0, 0
+  index: -1
+niao_00008
+  rotate: false
+  xy: 258, 643
+  size: 254, 282
+  orig: 254, 306
+  offset: 0, 0
+  index: -1
+niao_00009
+  rotate: false
+  xy: 2, 75
+  size: 254, 281
+  orig: 254, 306
+  offset: 0, 0
+  index: -1

@@ -1,0 +1,62 @@
+
+SSXF_PJN_hengfu.png
+size: 662,662
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+hengfu_00
+  rotate: false
+  xy: 577, 533
+  size: 33, 127
+  orig: 600, 200
+  offset: 284, 35
+  index: -1
+hengfu_01
+  rotate: true
+  xy: 528, 82
+  size: 191, 127
+  orig: 600, 200
+  offset: 205, 35
+  index: -1
+hengfu_02
+  rotate: false
+  xy: 131, 17
+  size: 349, 127
+  orig: 600, 200
+  offset: 126, 35
+  index: -1
+hengfu_03
+  rotate: false
+  xy: 131, 146
+  size: 395, 127
+  orig: 600, 200
+  offset: 103, 35
+  index: -1
+hengfu_04
+  rotate: false
+  xy: 131, 275
+  size: 439, 127
+  orig: 600, 200
+  offset: 81, 35
+  index: -1
+hengfu_05
+  rotate: false
+  xy: 131, 404
+  size: 485, 127
+  orig: 600, 200
+  offset: 58, 35
+  index: -1
+hengfu_06
+  rotate: true
+  xy: 2, 2
+  size: 529, 127
+  orig: 600, 200
+  offset: 36, 35
+  index: -1
+hengfu_07
+  rotate: false
+  xy: 2, 533
+  size: 573, 127
+  orig: 600, 200
+  offset: 14, 35
+  index: -1

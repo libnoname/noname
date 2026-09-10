@@ -1,0 +1,41 @@
+
+effect_tao.png
+size: 1024,256
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+tao-a
+  rotate: false
+  xy: 2, 2
+  size: 172, 172
+  orig: 172, 172
+  offset: 0, 0
+  index: -1
+tao-b
+  rotate: false
+  xy: 697, 65
+  size: 91, 109
+  orig: 91, 109
+  offset: 0, 0
+  index: -1
+tao-c
+  rotate: false
+  xy: 523, 13
+  size: 172, 161
+  orig: 172, 161
+  offset: 0, 0
+  index: -1
+tao-d
+  rotate: false
+  xy: 176, 3
+  size: 172, 171
+  orig: 172, 171
+  offset: 0, 0
+  index: -1
+tao-e
+  rotate: false
+  xy: 350, 4
+  size: 171, 170
+  orig: 171, 170
+  offset: 0, 0
+  index: -1

@@ -1,0 +1,368 @@
+
+SS_SWY_zhuangshi1.png
+size: 1969,1978
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+gyjn/gyjn_007
+  rotate: true
+  xy: 1720, 212
+  size: 776, 180
+  orig: 934, 245
+  offset: 158, 29
+  index: -1
+gyjn/gyjn_014
+  rotate: false
+  xy: 2, 743
+  size: 857, 245
+  orig: 934, 245
+  offset: 77, 0
+  index: -1
+gyjn/gyjn_015
+  rotate: false
+  xy: 862, 990
+  size: 857, 245
+  orig: 934, 245
+  offset: 77, 0
+  index: -1
+gyjn/gyjn_016
+  rotate: false
+  xy: 2, 1731
+  size: 858, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_017
+  rotate: false
+  xy: 2, 496
+  size: 857, 245
+  orig: 934, 245
+  offset: 77, 0
+  index: -1
+gyjn/gyjn_018
+  rotate: false
+  xy: 2, 1484
+  size: 858, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_019
+  rotate: false
+  xy: 862, 1731
+  size: 858, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_020
+  rotate: false
+  xy: 2, 1237
+  size: 858, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_021
+  rotate: false
+  xy: 861, 743
+  size: 857, 245
+  orig: 934, 245
+  offset: 77, 0
+  index: -1
+gyjn/gyjn_022
+  rotate: false
+  xy: 2, 249
+  size: 857, 245
+  orig: 934, 245
+  offset: 77, 0
+  index: -1
+gyjn/gyjn_024
+  rotate: false
+  xy: 862, 1484
+  size: 858, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_026
+  rotate: false
+  xy: 2, 990
+  size: 858, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_027
+  rotate: false
+  xy: 861, 496
+  size: 857, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_028
+  rotate: false
+  xy: 861, 2
+  size: 856, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_033
+  rotate: false
+  xy: 862, 1237
+  size: 858, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_034
+  rotate: false
+  xy: 2, 2
+  size: 857, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_037
+  rotate: false
+  xy: 861, 249
+  size: 857, 245
+  orig: 934, 245
+  offset: 77, 0
+  index: -1
+gyjn/gyjn_064
+  rotate: true
+  xy: 1722, 1127
+  size: 849, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+
+SS_SWY_zhuangshi12.png
+size: 1965,1978
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+gyjn/gyjn_013
+  rotate: false
+  xy: 859, 1237
+  size: 854, 245
+  orig: 934, 245
+  offset: 80, 0
+  index: -1
+gyjn/gyjn_029
+  rotate: false
+  xy: 2, 1237
+  size: 855, 245
+  orig: 934, 245
+  offset: 77, 0
+  index: -1
+gyjn/gyjn_030
+  rotate: false
+  xy: 859, 990
+  size: 853, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_031
+  rotate: false
+  xy: 2, 1731
+  size: 856, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_032
+  rotate: false
+  xy: 2, 1484
+  size: 856, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_035
+  rotate: false
+  xy: 860, 1731
+  size: 856, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_036
+  rotate: false
+  xy: 860, 1484
+  size: 855, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_038
+  rotate: false
+  xy: 2, 990
+  size: 855, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_039
+  rotate: false
+  xy: 2, 496
+  size: 853, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_040
+  rotate: false
+  xy: 2, 743
+  size: 854, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_041
+  rotate: false
+  xy: 858, 743
+  size: 852, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_042
+  rotate: true
+  xy: 1718, 1128
+  size: 848, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_043
+  rotate: false
+  xy: 2, 249
+  size: 852, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_044
+  rotate: true
+  xy: 1714, 276
+  size: 850, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_046
+  rotate: false
+  xy: 857, 496
+  size: 851, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_048
+  rotate: false
+  xy: 2, 2
+  size: 851, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_054
+  rotate: false
+  xy: 856, 249
+  size: 851, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_062
+  rotate: false
+  xy: 855, 2
+  size: 851, 245
+  orig: 934, 245
+  offset: 77, 0
+  index: -1
+
+SS_SWY_zhuangshi13.png
+size: 1887,1345
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+gyjn/gyjn_001
+  rotate: true
+  xy: 1453, 566
+  size: 348, 178
+  orig: 934, 245
+  offset: 586, 30
+  index: -1
+gyjn/gyjn_003
+  rotate: true
+  xy: 1705, 29
+  size: 495, 180
+  orig: 934, 245
+  offset: 439, 29
+  index: -1
+gyjn/gyjn_005
+  rotate: false
+  xy: 743, 552
+  size: 644, 180
+  orig: 934, 245
+  offset: 290, 29
+  index: -1
+gyjn/gyjn_006
+  rotate: false
+  xy: 743, 734
+  size: 708, 180
+  orig: 934, 245
+  offset: 226, 29
+  index: -1
+gyjn/gyjn_009
+  rotate: false
+  xy: 743, 916
+  size: 812, 180
+  orig: 934, 245
+  offset: 122, 29
+  index: -1
+gyjn/gyjn_010
+  rotate: true
+  xy: 1705, 526
+  size: 817, 180
+  orig: 934, 245
+  offset: 117, 29
+  index: -1
+gyjn/gyjn_011
+  rotate: false
+  xy: 860, 36
+  size: 825, 241
+  orig: 934, 245
+  offset: 109, 0
+  index: -1
+gyjn/gyjn_012
+  rotate: false
+  xy: 2, 2
+  size: 856, 242
+  orig: 934, 245
+  offset: 78, 0
+  index: -1
+gyjn/gyjn_045
+  rotate: false
+  xy: 854, 1098
+  size: 849, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_050
+  rotate: true
+  xy: 2, 493
+  size: 850, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_052
+  rotate: true
+  xy: 496, 495
+  size: 848, 245
+  orig: 934, 245
+  offset: 77, 0
+  index: -1
+gyjn/gyjn_056
+  rotate: false
+  xy: 854, 279
+  size: 849, 245
+  orig: 934, 245
+  offset: 77, 0
+  index: -1
+gyjn/gyjn_058
+  rotate: true
+  xy: 249, 494
+  size: 849, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1
+gyjn/gyjn_060
+  rotate: false
+  xy: 2, 246
+  size: 850, 245
+  orig: 934, 245
+  offset: 76, 0
+  index: -1

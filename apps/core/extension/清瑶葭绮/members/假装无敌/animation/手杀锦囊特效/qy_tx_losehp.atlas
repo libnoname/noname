@@ -1,0 +1,153 @@
+
+qy_tx_losehp.png
+size: 961,961
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+dsc_0
+  rotate: false
+  xy: 2, 730
+  size: 167, 229
+  orig: 200, 250
+  offset: 18, 10
+  index: -1
+dsc_1
+  rotate: false
+  xy: 2, 499
+  size: 167, 229
+  orig: 200, 250
+  offset: 18, 10
+  index: -1
+dsc_10
+  rotate: true
+  xy: 340, 623
+  size: 167, 229
+  orig: 200, 250
+  offset: 18, 10
+  index: -1
+dsc_11
+  rotate: true
+  xy: 571, 625
+  size: 165, 226
+  orig: 200, 250
+  offset: 19, 11
+  index: -1
+dsc_12
+  rotate: true
+  xy: 571, 458
+  size: 165, 226
+  orig: 200, 250
+  offset: 19, 11
+  index: -1
+dsc_13
+  rotate: true
+  xy: 340, 456
+  size: 165, 226
+  orig: 200, 250
+  offset: 19, 11
+  index: -1
+dsc_14
+  rotate: true
+  xy: 568, 291
+  size: 165, 226
+  orig: 200, 250
+  offset: 19, 11
+  index: -1
+dsc_15
+  rotate: true
+  xy: 340, 289
+  size: 165, 226
+  orig: 200, 250
+  offset: 19, 11
+  index: -1
+dsc_16
+  rotate: false
+  xy: 796, 232
+  size: 163, 224
+  orig: 200, 250
+  offset: 20, 12
+  index: -1
+dsc_17
+  rotate: true
+  xy: 568, 126
+  size: 163, 224
+  orig: 200, 250
+  offset: 20, 12
+  index: -1
+dsc_18
+  rotate: false
+  xy: 794, 6
+  size: 162, 224
+  orig: 200, 250
+  offset: 20, 12
+  index: -1
+dsc_19
+  rotate: true
+  xy: 340, 126
+  size: 161, 220
+  orig: 200, 250
+  offset: 21, 14
+  index: -1
+dsc_2
+  rotate: false
+  xy: 2, 268
+  size: 167, 229
+  orig: 200, 250
+  offset: 18, 10
+  index: -1
+dsc_20
+  rotate: false
+  xy: 799, 574
+  size: 157, 216
+  orig: 200, 250
+  offset: 23, 16
+  index: -1
+dsc_3
+  rotate: false
+  xy: 2, 37
+  size: 167, 229
+  orig: 200, 250
+  offset: 18, 10
+  index: -1
+dsc_4
+  rotate: true
+  xy: 171, 792
+  size: 167, 229
+  orig: 200, 250
+  offset: 18, 10
+  index: -1
+dsc_5
+  rotate: true
+  xy: 402, 792
+  size: 167, 229
+  orig: 200, 250
+  offset: 18, 10
+  index: -1
+dsc_6
+  rotate: true
+  xy: 633, 792
+  size: 167, 229
+  orig: 200, 250
+  offset: 18, 10
+  index: -1
+dsc_7
+  rotate: false
+  xy: 171, 561
+  size: 167, 229
+  orig: 200, 250
+  offset: 18, 10
+  index: -1
+dsc_8
+  rotate: false
+  xy: 171, 330
+  size: 167, 229
+  orig: 200, 250
+  offset: 18, 10
+  index: -1
+dsc_9
+  rotate: false
+  xy: 171, 99
+  size: 167, 229
+  orig: 200, 250
+  offset: 18, 10
+  index: -1

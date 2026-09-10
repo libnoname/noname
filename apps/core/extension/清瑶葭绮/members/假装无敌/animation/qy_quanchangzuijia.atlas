@@ -1,0 +1,258 @@
+
+qy_quanchangzuijia.png
+size: 2048,2048
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1hu_00001
+  rotate: false
+  xy: 2, 1647
+  size: 1635, 399
+  orig: 1635, 399
+  offset: 0, 0
+  index: -1
+1hu_00002
+  rotate: false
+  xy: 2, 1283
+  size: 920, 362
+  orig: 927, 371
+  offset: 4, 4
+  index: -1
+1hu_000022/1hu_000022_00000
+  rotate: true
+  xy: 633, 357
+  size: 511, 187
+  orig: 560, 200
+  offset: 32, 1
+  index: -1
+1hu_000022/1hu_000022_00001
+  rotate: true
+  xy: 822, 412
+  size: 456, 176
+  orig: 560, 200
+  offset: 57, 2
+  index: -1
+1hu_000022/1hu_000022_00002
+  rotate: false
+  xy: 877, 881
+  size: 95, 132
+  orig: 560, 200
+  offset: 32, 32
+  index: -1
+1hu_000022/1hu_000022_00003
+  rotate: true
+  xy: 1760, 11
+  size: 163, 133
+  orig: 560, 200
+  offset: 32, 31
+  index: -1
+1hu_000022/1hu_000022_00004
+  rotate: false
+  xy: 1865, 586
+  size: 181, 125
+  orig: 560, 200
+  offset: 82, 31
+  index: -1
+1hu_000022/1hu_000022_00005
+  rotate: false
+  xy: 1865, 265
+  size: 179, 130
+  orig: 560, 200
+  offset: 161, 22
+  index: -1
+1hu_000022/1hu_000022_00006
+  rotate: false
+  xy: 1865, 397
+  size: 180, 187
+  orig: 560, 200
+  offset: 238, 1
+  index: -1
+1hu_000022/1hu_000022_00007
+  rotate: false
+  xy: 1583, 176
+  size: 188, 187
+  orig: 560, 200
+  offset: 308, 1
+  index: -1
+1hu_000022/1hu_000022_00008
+  rotate: true
+  xy: 1571, 7
+  size: 167, 187
+  orig: 560, 200
+  offset: 376, 1
+  index: -1
+ddd/ddd_00000
+  rotate: false
+  xy: 1000, 325
+  size: 314, 277
+  orig: 400, 400
+  offset: 36, 71
+  index: -1
+ddd/ddd_00001
+  rotate: false
+  xy: 1252, 44
+  size: 317, 279
+  orig: 400, 400
+  offset: 35, 70
+  index: -1
+ddd/ddd_00002
+  rotate: false
+  xy: 1726, 713
+  size: 320, 279
+  orig: 400, 400
+  offset: 34, 70
+  index: -1
+ddd/ddd_00003
+  rotate: false
+  xy: 2, 27
+  size: 318, 281
+  orig: 400, 400
+  offset: 38, 69
+  index: -1
+ddd/ddd_00004
+  rotate: true
+  xy: 1338, 1322
+  size: 323, 281
+  orig: 400, 400
+  offset: 33, 69
+  index: -1
+ddd/ddd_00005
+  rotate: false
+  xy: 322, 29
+  size: 324, 280
+  orig: 400, 400
+  offset: 35, 69
+  index: -1
+ddd/ddd_00006
+  rotate: true
+  xy: 1747, 994
+  size: 326, 280
+  orig: 400, 400
+  offset: 34, 68
+  index: -1
+ddd/ddd_00007
+  rotate: true
+  xy: 1583, 365
+  size: 325, 280
+  orig: 400, 400
+  offset: 37, 68
+  index: -1
+ddd/ddd_00008
+  rotate: false
+  xy: 927, 45
+  size: 323, 278
+  orig: 400, 400
+  offset: 38, 68
+  index: -1
+ddd/ddd_00009
+  rotate: true
+  xy: 648, 31
+  size: 324, 277
+  orig: 400, 400
+  offset: 37, 70
+  index: -1
+diwenliii/diwenliii_00000
+  rotate: false
+  xy: 2, 723
+  size: 558, 558
+  orig: 558, 558
+  offset: 0, 0
+  index: -1
+kuozhanguang/kuozhanguang_00000
+  rotate: false
+  xy: 562, 870
+  size: 313, 411
+  orig: 466, 664
+  offset: 78, 119
+  index: -1
+kuozhanguang/kuozhanguang_00001
+  rotate: false
+  xy: 318, 311
+  size: 313, 410
+  orig: 466, 664
+  offset: 78, 120
+  index: -1
+kuozhanguang/kuozhanguang_00002
+  rotate: true
+  xy: 1621, 1322
+  size: 312, 410
+  orig: 466, 664
+  offset: 78, 120
+  index: -1
+kuozhanguang/kuozhanguang_00003
+  rotate: false
+  xy: 1639, 1636
+  size: 314, 410
+  orig: 466, 664
+  offset: 77, 120
+  index: -1
+kuozhanguang/kuozhanguang_00004
+  rotate: true
+  xy: 1336, 1006
+  size: 314, 409
+  orig: 466, 664
+  offset: 77, 121
+  index: -1
+kuozhanguang/kuozhanguang_00005
+  rotate: true
+  xy: 924, 1015
+  size: 314, 410
+  orig: 466, 664
+  offset: 77, 120
+  index: -1
+kuozhanguang/kuozhanguang_00006
+  rotate: true
+  xy: 1315, 692
+  size: 312, 409
+  orig: 466, 664
+  offset: 78, 121
+  index: -1
+kuozhanguang/kuozhanguang_00007
+  rotate: false
+  xy: 1000, 604
+  size: 313, 409
+  orig: 466, 664
+  offset: 77, 121
+  index: -1
+kuozhanguang/kuozhanguang_00008
+  rotate: true
+  xy: 924, 1331
+  size: 314, 412
+  orig: 466, 664
+  offset: 76, 118
+  index: -1
+kuozhanguang/kuozhanguang_00009
+  rotate: false
+  xy: 2, 310
+  size: 314, 411
+  orig: 466, 664
+  offset: 76, 119
+  index: -1
+kuozhanguang/kuozhanguang_00010
+  rotate: false
+  xy: 1316, 345
+  size: 265, 345
+  orig: 326, 464
+  offset: 31, 59
+  index: -1
+liziguangdian1/liziguangdian1_00000
+  rotate: false
+  xy: 822, 359
+  size: 57, 51
+  orig: 128, 128
+  offset: 34, 33
+  index: -1
+liziguangdian1/liziguangdian1_00001
+  rotate: true
+  xy: 1955, 1952
+  size: 94, 87
+  orig: 128, 128
+  offset: 11, 11
+  index: -1
+tihuan
+  rotate: false
+  xy: 562, 804
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1

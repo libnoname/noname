@@ -1,0 +1,65 @@
+{
+"skeleton": {
+	"hash": "W61uHEUI6lALbYbFIbyxHy//X5k",
+	"spine": "3.8.75",
+	"x": -136.72,
+	"y": -140.81,
+	"width": 270,
+	"height": 270,
+	"images": "C:/Users/Administrator/Desktop/123",
+	"audio": "C:\\Users\\Administrator\\Desktop\\123"
+},
+"bones": [
+	{ "name": "root", "x": -143.22, "y": -147.31 }
+],
+"slots": [
+	{ "name": "a", "bone": "root", "attachment": "a" }
+],
+"skins": [
+	{
+		"name": "default",
+		"attachments": {
+			"a": {
+				"a": {
+					"type": "mesh",
+					"uvs": [ 0, 1, 1, 1, 1, 0, 0, 0 ],
+					"triangles": [ 0, 3, 2, 0, 2, 1 ],
+					"vertices": [ 88.7, 6.5, 276.5, 88.7, 194.3, 276.5, 6.5, 194.3 ],
+					"hull": 4,
+					"edges": [ 0, 6, 0, 2, 2, 4, 4, 6 ],
+					"width": 256,
+					"height": 256
+				}
+			}
+		}
+	}
+],
+"animations": {
+	"play": {
+		"slots": {
+			"a": {
+				"color": [
+					{ "color": "ffffff00" },
+					{ "time": 0.7333, "color": "ffffffff" },
+					{ "time": 1.2333, "color": "ffffff00" }
+				]
+			}
+		},
+		"deform": {
+			"default": {
+				"a": {
+					"a": [
+						{
+							"vertices": [ -1.50282, 0.59746, -0.59744, -1.50282, 1.50279, -0.59744, 0.59746, 1.50282 ]
+						},
+						{
+							"time": 1.2333,
+							"vertices": [ -66.86288, 53.18513, -53.18517, -66.86293, 66.8629, -53.18506, 53.18514, 66.8629 ]
+						}
+					]
+				}
+			}
+		}
+	}
+}
+}

@@ -1,0 +1,111 @@
+
+qy_tx_leishouji_1.png
+size: 1656,1656
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1fang_00
+  rotate: false
+  xy: 1360, 1366
+  size: 294, 288
+  orig: 460, 460
+  offset: 89, 100
+  index: -1
+1fang_01
+  rotate: false
+  xy: 2, 4
+  size: 304, 300
+  orig: 460, 460
+  offset: 83, 87
+  index: -1
+1fang_02
+  rotate: false
+  xy: 2, 1206
+  size: 451, 448
+  orig: 460, 460
+  offset: 7, 12
+  index: -1
+1fang_03
+  rotate: false
+  xy: 2, 756
+  size: 451, 448
+  orig: 460, 460
+  offset: 7, 12
+  index: -1
+1fang_04
+  rotate: false
+  xy: 908, 1206
+  size: 450, 448
+  orig: 460, 460
+  offset: 8, 12
+  index: -1
+1fang_05
+  rotate: false
+  xy: 455, 1206
+  size: 451, 448
+  orig: 460, 460
+  offset: 7, 12
+  index: -1
+1fang_06
+  rotate: false
+  xy: 2, 306
+  size: 451, 448
+  orig: 460, 460
+  offset: 7, 12
+  index: -1
+1fang_07
+  rotate: false
+  xy: 455, 756
+  size: 451, 448
+  orig: 460, 460
+  offset: 7, 12
+  index: -1
+1fang_08
+  rotate: false
+  xy: 455, 306
+  size: 450, 448
+  orig: 460, 460
+  offset: 8, 12
+  index: -1
+1fang_09
+  rotate: false
+  xy: 908, 758
+  size: 448, 446
+  orig: 460, 460
+  offset: 8, 14
+  index: -1
+1fang_10
+  rotate: false
+  xy: 908, 313
+  size: 444, 443
+  orig: 460, 460
+  offset: 9, 17
+  index: -1
+1fang_11
+  rotate: false
+  xy: 308, 84
+  size: 160, 220
+  orig: 460, 460
+  offset: 192, 74
+  index: -1
+1fang_12
+  rotate: false
+  xy: 470, 176
+  size: 143, 128
+  orig: 460, 460
+  offset: 198, 99
+  index: -1
+1fang_13
+  rotate: false
+  xy: 1360, 1232
+  size: 145, 132
+  orig: 460, 460
+  offset: 202, 92
+  index: -1
+1fang_14
+  rotate: false
+  xy: 308, 27
+  size: 140, 55
+  orig: 460, 460
+  offset: 202, 97
+  index: -1

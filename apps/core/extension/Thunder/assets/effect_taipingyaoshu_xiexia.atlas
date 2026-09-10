@@ -1,0 +1,251 @@
+
+effect_taipingyaoshu_xiexia.png
+size: 1024,1024
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+ranshao_00
+  rotate: false
+  xy: 289, 915
+  size: 137, 107
+  orig: 143, 107
+  offset: 1, 0
+  index: -1
+ranshao_01
+  rotate: true
+  xy: 2, 539
+  size: 137, 107
+  orig: 143, 107
+  offset: 1, 0
+  index: -1
+ranshao_02
+  rotate: false
+  xy: 121, 699
+  size: 137, 107
+  orig: 143, 107
+  offset: 1, 0
+  index: -1
+ranshao_03
+  rotate: false
+  xy: 428, 915
+  size: 137, 107
+  orig: 143, 107
+  offset: 1, 0
+  index: -1
+ranshao_04
+  rotate: true
+  xy: 2, 400
+  size: 137, 107
+  orig: 143, 107
+  offset: 1, 0
+  index: -1
+ranshao_05
+  rotate: false
+  xy: 567, 915
+  size: 137, 107
+  orig: 143, 107
+  offset: 1, 0
+  index: -1
+ranshao_06
+  rotate: true
+  xy: 2, 262
+  size: 136, 107
+  orig: 143, 107
+  offset: 2, 0
+  index: -1
+ranshao_07
+  rotate: false
+  xy: 289, 811
+  size: 133, 102
+  orig: 143, 107
+  offset: 6, 5
+  index: -1
+ranshao_08
+  rotate: false
+  xy: 706, 920
+  size: 132, 102
+  orig: 143, 107
+  offset: 6, 5
+  index: -1
+ranshao_09
+  rotate: true
+  xy: 2, 129
+  size: 131, 101
+  orig: 143, 107
+  offset: 7, 6
+  index: -1
+ranshao_10
+  rotate: false
+  xy: 424, 822
+  size: 128, 91
+  orig: 143, 107
+  offset: 10, 9
+  index: -1
+ranshao_11
+  rotate: false
+  xy: 840, 932
+  size: 127, 90
+  orig: 143, 107
+  offset: 11, 10
+  index: -1
+ranshao_12
+  rotate: true
+  xy: 2, 2
+  size: 125, 89
+  orig: 143, 107
+  offset: 12, 11
+  index: -1
+ranshao_13
+  rotate: false
+  xy: 554, 826
+  size: 119, 87
+  orig: 143, 107
+  offset: 13, 14
+  index: -1
+ranshao_14
+  rotate: true
+  xy: 260, 695
+  size: 111, 80
+  orig: 143, 107
+  offset: 19, 19
+  index: -1
+ranshao_15
+  rotate: false
+  xy: 111, 269
+  size: 98, 72
+  orig: 143, 107
+  offset: 24, 28
+  index: -1
+ranshao_16
+  rotate: false
+  xy: 376, 625
+  size: 51, 68
+  orig: 143, 107
+  offset: 43, 29
+  index: -1
+ranshao_17
+  rotate: true
+  xy: 111, 669
+  size: 7, 8
+  orig: 143, 107
+  offset: 68, 89
+  index: -1
+tpys
+  rotate: false
+  xy: 2, 808
+  size: 285, 214
+  orig: 285, 214
+  offset: 0, 0
+  index: -1
+yan_00
+  rotate: false
+  xy: 2, 678
+  size: 117, 128
+  orig: 128, 128
+  offset: 6, 0
+  index: -1
+zi_00
+  rotate: false
+  xy: 93, 27
+  size: 8, 100
+  orig: 115, 105
+  offset: 106, 5
+  index: -1
+zi_01
+  rotate: false
+  xy: 236, 347
+  size: 17, 101
+  orig: 115, 105
+  offset: 97, 4
+  index: -1
+zi_02
+  rotate: false
+  xy: 349, 592
+  size: 25, 101
+  orig: 115, 105
+  offset: 89, 4
+  index: -1
+zi_03
+  rotate: true
+  xy: 121, 664
+  size: 33, 105
+  orig: 115, 105
+  offset: 81, 0
+  index: -1
+zi_04
+  rotate: false
+  xy: 193, 343
+  size: 41, 105
+  orig: 115, 105
+  offset: 73, 0
+  index: -1
+zi_05
+  rotate: false
+  xy: 969, 917
+  size: 49, 105
+  orig: 115, 105
+  offset: 65, 0
+  index: -1
+zi_06
+  rotate: false
+  xy: 201, 450
+  size: 56, 105
+  orig: 115, 105
+  offset: 58, 0
+  index: -1
+zi_07
+  rotate: false
+  xy: 209, 557
+  size: 64, 105
+  orig: 115, 105
+  offset: 50, 0
+  index: -1
+zi_08
+  rotate: false
+  xy: 275, 588
+  size: 72, 105
+  orig: 115, 105
+  offset: 42, 0
+  index: -1
+zi_09
+  rotate: false
+  xy: 111, 343
+  size: 80, 105
+  orig: 115, 105
+  offset: 34, 0
+  index: -1
+zi_10
+  rotate: false
+  xy: 111, 450
+  size: 88, 105
+  orig: 115, 105
+  offset: 26, 0
+  index: -1
+zi_11
+  rotate: false
+  xy: 111, 557
+  size: 96, 105
+  orig: 115, 105
+  offset: 18, 0
+  index: -1
+zi_12
+  rotate: false
+  xy: 556, 719
+  size: 104, 105
+  orig: 115, 105
+  offset: 10, 0
+  index: -1
+zi_13
+  rotate: true
+  xy: 449, 708
+  size: 112, 105
+  orig: 115, 105
+  offset: 2, 0
+  index: -1
+zi_14
+  rotate: true
+  xy: 342, 695
+  size: 114, 105
+  orig: 115, 105
+  offset: 0, 0
+  index: -1

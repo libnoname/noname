@@ -1,0 +1,167 @@
+
+qy_zb_yuanrongjingxienu.png
+size: 1804,1804
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+nu_00
+  rotate: false
+  xy: 2, 1152
+  size: 650, 650
+  orig: 650, 650
+  offset: 0, 0
+  index: -1
+nu_02
+  rotate: false
+  xy: 2, 634
+  size: 516, 516
+  orig: 650, 650
+  offset: 66, 47
+  index: -1
+nu_04
+  rotate: false
+  xy: 2, 310
+  size: 357, 322
+  orig: 650, 650
+  offset: 141, 144
+  index: -1
+nu_06
+  rotate: true
+  xy: 1118, 851
+  size: 354, 284
+  orig: 650, 650
+  offset: 141, 160
+  index: -1
+nu_08
+  rotate: false
+  xy: 2, 10
+  size: 361, 298
+  orig: 650, 650
+  offset: 138, 154
+  index: -1
+nu_10
+  rotate: true
+  xy: 520, 785
+  size: 365, 296
+  orig: 650, 650
+  offset: 137, 152
+  index: -1
+nu_12
+  rotate: true
+  xy: 818, 842
+  size: 363, 298
+  orig: 650, 650
+  offset: 138, 153
+  index: -1
+nu_14
+  rotate: false
+  xy: 365, 33
+  size: 359, 297
+  orig: 650, 650
+  offset: 141, 154
+  index: -1
+nu_16
+  rotate: false
+  xy: 1379, 1208
+  size: 353, 297
+  orig: 650, 650
+  offset: 144, 158
+  index: -1
+nu_18
+  rotate: true
+  xy: 1404, 855
+  size: 351, 291
+  orig: 650, 650
+  offset: 146, 162
+  index: -1
+nu_20
+  rotate: false
+  xy: 818, 551
+  size: 347, 289
+  orig: 650, 650
+  offset: 148, 166
+  index: -1
+nu_22
+  rotate: false
+  xy: 654, 1207
+  size: 385, 285
+  orig: 650, 650
+  offset: 151, 173
+  index: -1
+nu_24
+  rotate: true
+  xy: 1167, 503
+  size: 346, 293
+  orig: 650, 650
+  offset: 153, 169
+  index: -1
+nu_26
+  rotate: true
+  xy: 1462, 513
+  size: 340, 297
+  orig: 650, 650
+  offset: 154, 168
+  index: -1
+nu_28
+  rotate: false
+  xy: 654, 1494
+  size: 449, 308
+  orig: 650, 650
+  offset: 156, 169
+  index: -1
+nu_30
+  rotate: false
+  xy: 361, 332
+  size: 339, 300
+  orig: 650, 650
+  offset: 157, 171
+  index: -1
+nu_32
+  rotate: false
+  xy: 1105, 1507
+  size: 367, 295
+  orig: 650, 650
+  offset: 162, 179
+  index: -1
+nu_34
+  rotate: false
+  xy: 1041, 1207
+  size: 336, 285
+  orig: 650, 650
+  offset: 165, 190
+  index: -1
+nu_36
+  rotate: true
+  xy: 726, 2
+  size: 332, 285
+  orig: 650, 650
+  offset: 166, 192
+  index: -1
+nu_38
+  rotate: false
+  xy: 1474, 1522
+  size: 321, 280
+  orig: 650, 650
+  offset: 171, 197
+  index: -1
+nu_40
+  rotate: false
+  xy: 1462, 244
+  size: 285, 267
+  orig: 650, 650
+  offset: 205, 213
+  index: -1
+nu_42
+  rotate: false
+  xy: 702, 336
+  size: 269, 213
+  orig: 650, 650
+  offset: 213, 267
+  index: -1
+zhugenu
+  rotate: true
+  xy: 1013, 11
+  size: 231, 174
+  orig: 233, 176
+  offset: 1, 1
+  index: -1

@@ -1,0 +1,328 @@
+
+king.png
+size: 253,525
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Cloak
+  rotate: false
+  xy: 2, 278
+  size: 136, 122
+  orig: 136, 122
+  offset: 0, 0
+  index: -1
+Collar_D
+  rotate: false
+  xy: 39, 137
+  size: 68, 42
+  orig: 68, 42
+  offset: 0, 0
+  index: -1
+L_Arm
+  rotate: false
+  xy: 159, 62
+  size: 31, 32
+  orig: 31, 32
+  offset: 0, 0
+  index: -1
+L_Collar
+  rotate: true
+  xy: 150, 169
+  size: 51, 50
+  orig: 51, 50
+  offset: 0, 0
+  index: -1
+L_Foot
+  rotate: false
+  xy: 159, 96
+  size: 31, 42
+  orig: 31, 42
+  offset: 0, 0
+  index: -1
+L_Gaiter
+  rotate: false
+  xy: 120, 21
+  size: 36, 36
+  orig: 36, 36
+  offset: 0, 0
+  index: -1
+L_Hand
+  rotate: false
+  xy: 180, 273
+  size: 20, 18
+  orig: 21, 18
+  offset: 0, 0
+  index: -1
+L_Leg
+  rotate: false
+  xy: 109, 213
+  size: 39, 63
+  orig: 39, 63
+  offset: 0, 0
+  index: -1
+L_Shoulder
+  rotate: false
+  xy: 159, 140
+  size: 41, 27
+  orig: 41, 27
+  offset: 0, 0
+  index: -1
+L_Skirt
+  rotate: false
+  xy: 113, 84
+  size: 44, 62
+  orig: 44, 62
+  offset: 0, 0
+  index: -1
+L_Take on
+  rotate: true
+  xy: 90, 3
+  size: 54, 28
+  orig: 55, 28
+  offset: 0, 0
+  index: -1
+L_UpperArm
+  rotate: false
+  xy: 168, 293
+  size: 29, 43
+  orig: 29, 43
+  offset: 0, 0
+  index: -1
+Neck
+  rotate: true
+  xy: 180, 227
+  size: 19, 16
+  orig: 23, 16
+  offset: 2, 0
+  index: -1
+Neckline
+  rotate: true
+  xy: 229, 149
+  size: 36, 22
+  orig: 36, 22
+  offset: 0, 0
+  index: -1
+Pelvis
+  rotate: true
+  xy: 140, 338
+  size: 62, 39
+  orig: 62, 39
+  offset: 0, 0
+  index: -1
+R_Arm
+  rotate: true
+  xy: 227, 313
+  size: 35, 24
+  orig: 35, 24
+  offset: 0, 0
+  index: -1
+R_Cloak1
+  rotate: false
+  xy: 41, 59
+  size: 70, 76
+  orig: 71, 76
+  offset: 1, 0
+  index: -1
+R_Cloak2
+  rotate: false
+  xy: 39, 181
+  size: 68, 95
+  orig: 68, 95
+  offset: 0, 0
+  index: -1
+R_Collar
+  rotate: false
+  xy: 202, 261
+  size: 49, 50
+  orig: 49, 50
+  offset: 0, 0
+  index: -1
+R_Foot
+  rotate: false
+  xy: 192, 95
+  size: 31, 42
+  orig: 31, 42
+  offset: 0, 0
+  index: -1
+R_Gaiter
+  rotate: false
+  xy: 158, 24
+  size: 36, 36
+  orig: 36, 36
+  offset: 0, 0
+  index: -1
+R_Hand
+  rotate: true
+  xy: 230, 74
+  size: 19, 18
+  orig: 19, 18
+  offset: 0, 0
+  index: -1
+R_Leg
+  rotate: false
+  xy: 109, 148
+  size: 39, 63
+  orig: 39, 63
+  offset: 0, 0
+  index: -1
+R_Shoulder
+  rotate: true
+  xy: 229, 187
+  size: 43, 22
+  orig: 43, 22
+  offset: 0, 0
+  index: -1
+R_Skirt
+  rotate: false
+  xy: 181, 339
+  size: 44, 62
+  orig: 44, 62
+  offset: 0, 0
+  index: -1
+R_Take on
+  rotate: true
+  xy: 150, 222
+  size: 54, 28
+  orig: 55, 28
+  offset: 1, 0
+  index: -1
+R_Take on2
+  rotate: true
+  xy: 225, 107
+  size: 30, 26
+  orig: 30, 26
+  offset: 0, 0
+  index: -1
+R_UpperArm
+  rotate: true
+  xy: 192, 65
+  size: 28, 36
+  orig: 28, 36
+  offset: 0, 0
+  index: -1
+Skirt
+  rotate: true
+  xy: 202, 232
+  size: 27, 49
+  orig: 27, 49
+  offset: 0, 0
+  index: -1
+Spine
+  rotate: true
+  xy: 41, 2
+  size: 55, 47
+  orig: 55, 47
+  offset: 0, 0
+  index: -1
+bm_dabi
+  rotate: false
+  xy: 140, 278
+  size: 26, 58
+  orig: 26, 58
+  offset: 0, 0
+  index: -1
+bm_dabi2
+  rotate: false
+  xy: 202, 178
+  size: 25, 52
+  orig: 25, 52
+  offset: 0, 0
+  index: -1
+bm_houpifeng
+  rotate: false
+  xy: 228, 390
+  size: 23, 133
+  orig: 23, 133
+  offset: 0, 0
+  index: -1
+bm_pifeng
+  rotate: false
+  xy: 2, 402
+  size: 155, 121
+  orig: 155, 121
+  offset: 0, 0
+  index: -1
+bm_shou1
+  rotate: true
+  xy: 113, 59
+  size: 23, 19
+  orig: 23, 19
+  offset: 0, 0
+  index: -1
+bm_shou2
+  rotate: true
+  xy: 120, 2
+  size: 17, 18
+  orig: 17, 18
+  offset: 0, 0
+  index: -1
+bm_shou3
+  rotate: false
+  xy: 199, 313
+  size: 19, 24
+  orig: 19, 24
+  offset: 0, 0
+  index: -1
+bm_shou4
+  rotate: true
+  xy: 134, 59
+  size: 23, 19
+  orig: 23, 19
+  offset: 0, 0
+  index: -1
+bm_shou5_1
+  rotate: true
+  xy: 225, 95
+  size: 10, 18
+  orig: 10, 18
+  offset: 0, 0
+  index: -1
+bm_shou5_2
+  rotate: false
+  xy: 180, 248
+  size: 15, 23
+  orig: 15, 23
+  offset: 0, 0
+  index: -1
+bm_xiaobi1
+  rotate: true
+  xy: 227, 350
+  size: 38, 24
+  orig: 38, 24
+  offset: 0, 0
+  index: -1
+bm_xiaobi2
+  rotate: true
+  xy: 202, 139
+  size: 37, 25
+  orig: 37, 25
+  offset: 0, 0
+  index: -1
+head
+  rotate: false
+  xy: 159, 403
+  size: 67, 120
+  orig: 67, 120
+  offset: 0, 0
+  index: -1
+jian
+  rotate: true
+  xy: 2, 7
+  size: 120, 37
+  orig: 120, 37
+  offset: 0, 0
+  index: -1
+jian2
+  rotate: true
+  xy: 2, 129
+  size: 147, 35
+  orig: 147, 35
+  offset: 0, 0
+  index: -1
+tx_guangxiao
+  rotate: false
+  xy: 196, 33
+  size: 24, 30
+  orig: 26, 33
+  offset: 1, 2
+  index: -1

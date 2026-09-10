@@ -1,0 +1,167 @@
+
+qy_zb_yinfengyi.png
+size: 1011,1011
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+tx_02
+  rotate: false
+  xy: 933, 182
+  size: 72, 65
+  orig: 240, 240
+  offset: 86, 85
+  index: -1
+tx_03
+  rotate: false
+  xy: 242, 576
+  size: 228, 205
+  orig: 240, 240
+  offset: 1, 9
+  index: -1
+tx_04
+  rotate: false
+  xy: 710, 379
+  size: 238, 206
+  orig: 240, 240
+  offset: 2, 9
+  index: -1
+tx_05
+  rotate: false
+  xy: 2, 575
+  size: 238, 206
+  orig: 240, 240
+  offset: 2, 9
+  index: -1
+tx_06
+  rotate: false
+  xy: 710, 587
+  size: 239, 209
+  orig: 240, 240
+  offset: 1, 9
+  index: -1
+tx_07
+  rotate: false
+  xy: 482, 798
+  size: 239, 211
+  orig: 240, 240
+  offset: 1, 9
+  index: -1
+tx_08
+  rotate: false
+  xy: 723, 798
+  size: 239, 211
+  orig: 240, 240
+  offset: 1, 9
+  index: -1
+tx_09
+  rotate: false
+  xy: 2, 783
+  size: 239, 226
+  orig: 240, 240
+  offset: 1, 9
+  index: -1
+tx_10
+  rotate: false
+  xy: 243, 783
+  size: 237, 226
+  orig: 240, 240
+  offset: 1, 9
+  index: -1
+tx_11
+  rotate: true
+  xy: 482, 574
+  size: 222, 226
+  orig: 240, 240
+  offset: 6, 9
+  index: -1
+tx_12
+  rotate: true
+  xy: 242, 370
+  size: 204, 216
+  orig: 240, 240
+  offset: 19, 9
+  index: -1
+tx_13
+  rotate: true
+  xy: 2, 381
+  size: 192, 202
+  orig: 240, 240
+  offset: 27, 10
+  index: -1
+tx_14
+  rotate: false
+  xy: 200, 185
+  size: 195, 183
+  orig: 240, 240
+  offset: 23, 23
+  index: -1
+tx_15
+  rotate: true
+  xy: 397, 2
+  size: 189, 179
+  orig: 240, 240
+  offset: 27, 24
+  index: -1
+tx_16
+  rotate: false
+  xy: 2, 185
+  size: 196, 194
+  orig: 240, 240
+  offset: 23, 25
+  index: -1
+tx_17
+  rotate: true
+  xy: 460, 381
+  size: 191, 194
+  orig: 240, 240
+  offset: 27, 25
+  index: -1
+tx_18
+  rotate: true
+  xy: 460, 193
+  size: 186, 192
+  orig: 240, 240
+  offset: 32, 25
+  index: -1
+tx_19
+  rotate: true
+  xy: 2, 4
+  size: 179, 189
+  orig: 240, 240
+  offset: 36, 25
+  index: -1
+tx_20
+  rotate: true
+  xy: 193, 5
+  size: 178, 187
+  orig: 240, 240
+  offset: 40, 25
+  index: -1
+tx_21
+  rotate: false
+  xy: 578, 7
+  size: 175, 184
+  orig: 240, 240
+  offset: 38, 26
+  index: -1
+tx_22
+  rotate: false
+  xy: 654, 195
+  size: 175, 182
+  orig: 240, 240
+  offset: 37, 26
+  index: -1
+tx_23
+  rotate: false
+  xy: 755, 14
+  size: 176, 179
+  orig: 240, 240
+  offset: 36, 27
+  index: -1
+tx_24
+  rotate: false
+  xy: 831, 249
+  size: 144, 128
+  orig: 240, 240
+  offset: 50, 49
+  index: -1

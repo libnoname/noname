@@ -1,0 +1,62 @@
+
+xiaoyouxi_shengli_biankuang.png
+size: 731,42
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+images/guangxian/gx_00007
+  rotate: false
+  xy: 517, 32
+  size: 204, 8
+  orig: 513, 8
+  offset: 309, 0
+  index: -1
+images/guangxian/gx_00008
+  rotate: false
+  xy: 409, 12
+  size: 257, 8
+  orig: 513, 8
+  offset: 256, 0
+  index: -1
+images/guangxian/gx_00009
+  rotate: false
+  xy: 2, 2
+  size: 370, 8
+  orig: 513, 8
+  offset: 143, 0
+  index: -1
+images/guangxian/gx_00010
+  rotate: false
+  xy: 2, 32
+  size: 513, 8
+  orig: 513, 8
+  offset: 0, 0
+  index: -1
+images/guangxian/gx_00011
+  rotate: false
+  xy: 2, 22
+  size: 513, 8
+  orig: 513, 8
+  offset: 0, 0
+  index: -1
+images/guangxian/gx_00012
+  rotate: false
+  xy: 2, 12
+  size: 405, 8
+  orig: 513, 8
+  offset: 0, 0
+  index: -1
+images/guangxian/gx_00013
+  rotate: false
+  xy: 374, 3
+  size: 355, 7
+  orig: 513, 8
+  offset: 0, 1
+  index: -1
+images/guangxian/gx_00014
+  rotate: false
+  xy: 517, 23
+  size: 185, 7
+  orig: 513, 8
+  offset: 0, 1
+  index: -1

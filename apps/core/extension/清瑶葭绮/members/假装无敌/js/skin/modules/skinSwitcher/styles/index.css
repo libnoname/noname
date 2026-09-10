@@ -1,0 +1,1776 @@
+/* 雷雷的换肤样式css - Start */
+
+/* ============================================================
+   性能优化：覆盖无名杀引擎默认过渡
+   无名杀引擎默认所有 div 有 transition: all 0.5s
+   这会导致每次类名切换都触发昂贵的重排重绘
+   ============================================================ */
+.qy-skin__overlay,
+.qy-skin__backdrop,
+.qy-skin__btn--info,
+.qy-skin__btn--change,
+.qy-skin__btn--edit,
+.qy-skin__dialog,
+.qy-skin__dialog--decade,
+.qy-skin__dialog.decade,
+.qy-skin__cover,
+.qy-skin__cover--decade,
+.qy-skin__area,
+.qy-skin__area--decade-1,
+.qy-skin__area--decade-2,
+.qy-skin__item,
+.qy-skin__item--decade,
+.qy-skin__item.decade,
+.qy-skin__auto--decade,
+.qy-skin__auto-item--decade,
+.qy-skin__auto,
+.qy-skin__auto-item,
+.qy-skin__toggle--double-decade,
+.qy-skin__toggle--double,
+.qy-skin__arrow,
+.qy-skin__arrow--decade,
+.qy-char_detail_skin_arrow,
+.qy-skin__btn--dynamic,
+.qy-skin__btn--screenshot,
+.qy-skin__camp,
+.qy-skin__camp > .qy-skin__camp-name,
+.qyhp-wrap,
+.primary-avatar,
+.qydynamic-wrap,
+.qydynamic-wrap > .animation-player,
+.qy-skin__item-text,
+.qy-skin__tips,
+.qy-skin__quality-shousha,
+.qy-skin__item-default,
+.qy-skin__camp-back,
+.qy-skin__camp > .qy-skin__avatar-name-back,
+.qy-skin__auto-border,
+.qy-skin__auto-border--decade,
+.qy-skin__auto-item,
+.qy-skin__auto-item--decade,
+.qy-skin__toggle--double > .qy-zhuskin,
+.qy-skin__toggle--double > .qy-fuskin,
+.qy-skin__toggle--double-decade > .qy-zhuskin,
+.qy-skin__toggle--double-decade > .qy-fuskin {
+    transition: none !important;
+}
+
+/* ============================================================
+   尊重用户系统偏好：减少动画
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ==================== 皮肤项悬停微交互 ==================== */
+
+/* 皮肤项悬停效果 - 使用 filter（GPU 友好），避免 box-shadow 在背景图上产生框 */
+.qy-skin__item {
+    transition: filter 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.qy-skin__item:hover {
+    /* 悬停时轻微提亮整体 */
+    filter: brightness(1.05);
+}
+
+.qy-skin__item:active {
+    /* 点击时轻微调暗 */
+    filter: brightness(0.98);
+}
+
+/* 选中状态 - 使用 filter 提亮 */
+.qy-skin__item[data-selected="true"] {
+    filter: brightness(1.08);
+}
+
+/* ==================== 控制箭头悬停微交互 ==================== */
+
+.qy-skin__arrow--decade,
+.qy-skin__arrow {
+    /* 箭头悬停效果 - 仅使用 filter，避免 box-shadow 在背景图上产生框 */
+    transition: filter 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.qy-skin__arrow--decade:hover,
+.qy-skin__arrow:hover {
+    /* 悬停时轻微提亮 */
+    filter: brightness(1.15);
+}
+
+.qy-skin__arrow--decade:active,
+.qy-skin__arrow:active {
+    /* 点击时轻微调暗 */
+    filter: brightness(0.9);
+}
+
+/* ==================== 主副将切换按钮微交互 ==================== */
+
+.qy-skin__zhuskin,
+.qy-skin__fuskin {
+    /* 主副将按钮悬停效果 - 仅使用 filter，避免 box-shadow 在背景图上产生框 */
+    transition: filter 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.qy-skin__zhuskin:hover:not(.sel),
+.qy-skin__fuskin:hover:not(.sel) {
+    /* 未选中时悬停：去除部分灰度，让按钮看起来更亮 */
+    filter: grayscale(0.5) brightness(1.1);
+}
+
+.qy-skin__zhuskin:active:not(.sel),
+.qy-skin__fuskin:active:not(.sel) {
+    /* 未选中时点击：深化灰度 */
+    filter: grayscale(0.8) brightness(0.95);
+}
+
+/* ==================== 皮肤项默认标记选中动画 ==================== */
+
+.qy-skin__item-default {
+    /* 默认标记淡入动画 */
+    transition: opacity 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.qy-skin__item-default[data-sel="true"] {
+    /* 选中时轻微脉冲效果，吸引注意 */
+    animation: qy-skin__selected-pulse 2s ease-in-out infinite;
+}
+
+/* 默认标记脉冲动画 - 非常柔和的呼吸效果 */
+@keyframes qy-skin__selected-pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.8;
+        transform: scale(1.02);
+    }
+}
+
+/* ==================== 对话框入场动画 ==================== */
+
+.qy-skin__dialog,
+.qy-skin__dialog--decade,
+.qy-skin__dialog.decade {
+    /* 对话框入场动画 */
+    animation: qy-skin__dialog-fade-in 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    /* GPU 加速提示 */
+    will-change: opacity, transform;
+}
+
+/* 对话框淡入 + 缩放入场 - 自然优雅 */
+@keyframes qy-skin__dialog-fade-in {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+/* ==================== 背景遮罩淡入动画 ==================== */
+
+.qy-skin__container-background {
+    /* 背景遮罩淡入 */
+    animation: qy-skin__overlay-fade-in 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    /* GPU 加速提示 */
+    will-change: opacity;
+}
+
+/* 背景遮罩淡入 - 快速不突兀 */
+@keyframes qy-skin__overlay-fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* ==================== 切换至大页面按钮悬停 ==================== */
+
+.qy-skin__btn--enlarge {
+    /* 扩大按钮悬停效果 - 仅使用 background-color，避免 box-shadow 在背景图上产生框 */
+    transition: background-color 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.qy-skin__btn--enlarge:hover {
+    background-color: rgba(138, 136, 132, 0.3);
+}
+
+.qy-skin__btn--enlarge:active {
+    background-color: rgba(138, 136, 132, 0.4);
+}
+
+/* ==================== 动皮切换按钮微交互 ==================== */
+
+.qy-skin__btn--dynamic {
+    /* 动皮按钮悬停效果 - 仅使用 opacity，避免 box-shadow 在背景图上产生框 */
+    transition: opacity 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                background-image 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.qy-skin__btn--dynamic:hover {
+    opacity: 0.9;
+}
+
+/* ==================== 防倒卖提示动画优化 ==================== */
+
+.qy-skin__tips > div {
+    /* 滚动提示使用 transform 动画（已有） */
+    /* 这里添加淡入效果，让提示更自然 */
+    animation: marquee-x 15s linear infinite,
+               qy-skin__tips-fade-in 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* 提示文本淡入 */
+@keyframes qy-skin__tips-fade-in {
+    from {
+        opacity: 0;
+        transform: translate3d(100%, 0, 0);
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* 重写 marquee-x 以与淡入配合 */
+@keyframes marquee-x {
+    from {
+        transform: translate3d(100%, 0, 0);
+    }
+    to {
+        transform: translate3d(-100%, 0, 0);
+    }
+}
+
+/* ==================== 减少动画模式 ==================== */
+
+@media (prefers-reduced-motion: reduce) {
+    /* 禁用所有自定义微交互动画 */
+    .qy-skin__item,
+    .qy-skin__item.decade,
+    .qy-skin__item--decade {
+        animation: none !important;
+        transition: none !important;
+    }
+
+    .qy-skin__item:hover,
+    .qy-skin__item.decade:hover {
+        transform: none;
+        filter: none;
+    }
+
+    .qy-skin__arrow--decade:hover,
+    .qy-skin__arrow:hover {
+        transform: none;
+        opacity: 1;
+    }
+
+    .qy-skin__item-default[data-sel="true"] {
+        animation: none !important;
+    }
+
+    .qy-skin__dialog,
+    .qy-skin__dialog--decade,
+    .qy-skin__dialog.decade {
+        animation: none !important;
+    }
+
+    .qy-skin__container-background {
+        animation: none !important;
+    }
+}
+
+.qy-skin__overlay {
+    inset: 0;
+    z-index: 3;
+    position: fixed;
+}
+
+.qy-skin__backdrop {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: 8px;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 9990 !important;
+    transition: none;
+}
+
+.qy-skin__btn--info {
+    width: 50px;
+    height: 45px;
+    left: calc(50% - 25px);
+    top: calc(50% - 30px);
+    background-size: 100% 100%;
+    background-image: url(../../../../../images/mobile/charactercard/bigedit_info.png);
+    animation: qy-skin__btn--info 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    position: absolute;
+    /* GPU 加速提示 */
+    will-change: transform;
+}
+
+.qy-skin__btn--change {
+    width: 50px;
+    height: 45px;
+    left: calc(50% - 25px);
+    top: calc(50% - 30px);
+    background-size: 100% 100%;
+    background-image: url(../../../../../images/mobile/charactercard/bigedit_changeskin.png);
+    animation: qy-skin__btn--change 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    position: absolute;
+    /* GPU 加速提示 */
+    will-change: transform;
+}
+
+.qy-skin__btn--edit {
+    width: 50px;
+    height: 45px;
+    left: calc(50% - 25px);
+    top: calc(50% - 30px);
+    background-size: 100% 100%;
+    background-image: url(../../../../../images/mobile/charactercard/bigedit_editdynamic.png);
+    animation: qy-skin__btn--edit 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    position: absolute;
+    /* GPU 加速提示 */
+    will-change: transform;
+}
+
+@keyframes qy-skin__btn--info {
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        transform: translateX(-50px);
+    }
+}
+
+@keyframes qy-skin__btn--change {
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        transform: translateX(50px);
+    }
+}
+
+@keyframes qy-skin__btn--edit {
+    from {
+        transform: translateY(0);
+    }
+
+    to {
+        transform: translateY(-65px);
+    }
+}
+
+/* 在动画结束后移除 will-change 以释放 GPU 资源 */
+.qy-skin__btn--info,
+.qy-skin__btn--change,
+.qy-skin__btn--edit {
+    animation-composition: accumulate;
+}
+
+
+.qy-skin__overlay {
+    z-index: 3;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+}
+
+
+/* thunder添加部分↓*/
+.qy-skin__overlay {
+    z-index: 3;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.qy-skin__dialog--decade {
+    z-index: 40;
+    display: block;
+    left: 50%;
+    top: 49%;
+    width: 922px;
+    height: 336px;
+    transform: translate(-50%, -50%);
+    background-size: 100% 100%;
+    background-image: url('../../../../../images/decade/charactercard/huanfuDg2.png');
+}
+
+.qy-skin__cover--decade {
+    z-index: 9;
+    display: block;
+    left: calc(9.8%);
+    top: calc(6.89%);
+    width: calc(80.04%);
+    height: calc(87.01%);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.qy-skin__arrow--decade {
+    top: 45%;
+    left: 95.1%;
+    width: 3%;
+    height: 14%;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    background-position: center;
+    background-image: url('../../../../../images/newui_arrow_right.png');
+    z-index: 65;
+    display: none;
+    cursor: pointer;
+}
+
+.qy-skin__arrow--decade.left {
+    transform: rotateY(180deg);
+    left: 2%;
+}
+
+.qy_char_detail_skin_arrow:active,
+.qy-skin__arrow--decade:active {
+    transform: scale(0.8);
+}
+
+.qy_char_detail_skin_arrow.right:active,
+.qy-skin__arrow--decade.left:active {
+    transform: rotateY(180deg) scale(0.8);
+}
+
+.qy-skin__arrow--decade[data-visiable=true] {
+    display: block;
+}
+
+.qy-skin__area--decade-1,
+.qy-skin__area--decade-2 {
+    z-index: 9;
+    text-align: left;
+    left: 0;
+    top: 0;
+    height: 100%;
+    border-radius: 10px;
+    transition: transform 0s;
+    overflow: hidden;
+    display: none;
+    position: relative;
+}
+
+.qy-skin__cover--decade[data-visible='1'] > .qy-skin__area--decade-1,
+.qy-skin__cover--decade[data-visible='2'] > .qy-skin__area--decade-2 {
+    display: block;
+}
+
+.qy-skin__item--decade {
+    z-index: 10;
+    display: block;
+    left: 63px;
+    top: 27px;
+    width: 120px;
+    height: 69%;
+    background-size: cover;
+    background-position: center;
+    border-radius: 8px;
+}
+
+/* 十周年样式 */
+.qy-skin__item--decade > .primary-avatar {
+    left: 0;
+    top: auto;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 1;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: top;
+    border-radius: 8px;
+    transition-property: opacity, transform;
+    z-index: 62;
+}
+
+.qy-skin__dialog--decade[data-outcrop-skin='on'] .primary-avatar {
+    height: 194px;
+    clip-path: url(#solo-clip);
+}
+
+.qy-skin__dialog--decade[data-outcrop-skin='on'].shousha .primary-avatar {
+    height: 208px;
+    clip-path: url(#solo-clip);
+}
+
+.qy-skin__dialog--decade[data-outcrop-skin='on'] .qy-skin__item--decade {
+    height: 180px;
+    top: 32px;
+}
+
+.qy-skin__item--decade.unseen > .primary-avatar,
+.qy-skin__item--decade.d-skin > .primary-avatar,
+.qy-skin__item--decade.d-skin2 > .primary-avatar {
+    opacity: 0;
+}
+
+.qy-skin__dialog--decade[data-outcrop-skin='on'] .qy-skin__camp {
+    top: -16px;
+}
+
+
+.qy-skin__name--decade {
+    writing-mode: lr-tb;
+    color: #debf88;
+    width: 100%;
+    height: 100%;
+    font-family: 'yuanli', system-ui;
+    text-shadow: 0 0 5px rgb(77, 54, 46), 0 0 10px rgb(77, 54, 46), 0 0 15px rgb(77, 54, 46);
+    font-size: 18px;
+    text-align: center;
+    left: -1px;
+    top: -9px;
+    /* letter-spacing: -2px; */
+}
+
+.qy-skin__dialog--decade[data-outcrop-skin='on'] .qydynamic-wrap {
+    height: 101%;
+}
+
+.qy-skin__dialog--decade[data-outcrop-skin='on'] .qydynamic-wrap > .animation-player {
+    height: 112%;
+    clip-path: url(#dskin-clip);
+}
+
+.qy-skin__auto--decade {
+    left: calc(45%);
+    width: 84px;
+    bottom: 7%;
+    height: 28px;
+    z-index: 41;
+    overflow: hidden;
+}
+
+.qy-skin__auto-border--decade {
+    left: 0;
+    width: 100%;
+    bottom: 0;
+    height: 100%;
+    background-size: 100% 100%;
+    background-position: 100%;
+    z-index: 41;
+    background-image: url('../../../../../images/decade/charactercard/dc_autoskinborder.png');
+}
+
+.qy-skin__auto-item--decade {
+    left: calc(-67%);
+    width: 139px;
+    bottom: 1%;
+    height: 27px;
+    background-size: 100% 100%;
+    background-position: 100%;
+    z-index: 40;
+    background-image: url('../../../../../images/decade/charactercard/dc_autoskinitem.png');
+    /* ❌ transition: all 1s;  性能杀手，已移除 */
+    /* ✅ 仅过渡 transform 属性，GPU 加速 */
+    transition: transform 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    /* GPU 加速提示 */
+    will-change: transform;
+}
+
+.qy-skin__auto--decade[data-auto=true] > .qy-skin__auto-item--decade {
+    /* 使用 transform 而非 left，避免触发重排 */
+    transform: translateX(67%);
+}
+
+.qy-skin__toggle--double-decade {
+    width: 68px;
+    height: 87px;
+    top: 14.8%;
+    left: -7%;
+    position: absolute;
+    display: none;
+    /* ❌ transition: all 0.2s;  性能杀手，已移除 */
+    /* ✅ 仅过渡 opacity 和 transform，GPU 加速 */
+    transition: opacity 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    /* GPU 加速提示 */
+    will-change: opacity, transform;
+}
+
+.qy-skin__dialog--decade[data-double=true] > .qy-skin__toggle--double-decade {
+    display: block;
+}
+
+.qy-skin__camp[data-camp='wei'] > .qy-skin__camp-back {
+    background: linear-gradient(to bottom, rgb(45, 103, 153), rgb(19, 45, 78));
+}
+
+.qy-skin__camp[data-camp='shu'] > .qy-skin__camp-back {
+    background: linear-gradient(to bottom, rgb(153, 28, 34), rgb(57, 12, 17));
+}
+
+.qy-skin__camp[data-camp='wu'] > .qy-skin__camp-back {
+    background: linear-gradient(to bottom, rgb(29, 114, 29), rgb(34, 42, 27));
+}
+
+.qy-skin__camp[data-camp='qun'] > .qy-skin__camp-back {
+    background: linear-gradient(to bottom, rgb(154, 148, 122), rgb(74, 72, 57));
+}
+
+.qy-skin__camp[data-camp='shen'] > .qy-skin__camp-back {
+    background: linear-gradient(to bottom, rgb(189, 163, 18), rgb(67, 52, 9));
+}
+
+.qy-skin__camp[data-camp='shen2'] > .qy-skin__camp-back {
+    background: linear-gradient(to bottom, rgb(112, 52, 126), rgb(52, 18, 55));
+}
+
+.qy-skin__camp[data-camp='ye'] > .qy-skin__camp-back {
+    background: linear-gradient(to bottom, rgb(112, 52, 126), rgb(52, 18, 55));
+}
+
+.qy-skin__camp[data-camp='western'] > .qy-skin__camp-back {
+    background: linear-gradient(to bottom, rgb(93, 44, 105), rgb(54, 18, 58));
+}
+
+.qy-skin__camp[data-camp='jin'] > .qy-skin__camp-back {
+    background: linear-gradient(to bottom, rgb(112, 52, 126), rgb(52, 18, 55));
+}
+
+.qy-skin__camp[data-camp='han'] > .qy-skin__camp-back {
+    background: linear-gradient(to bottom, rgb(112, 52, 126), rgb(52, 18, 55));
+}
+
+.qy-skin__camp[data-camp='daqin'] > .qy-skin__camp-back {
+    background: linear-gradient(to bottom, rgb(100, 100, 100), rgb(0, 0, 0));
+}
+
+.qy-skin__camp[data-camp='ming'] > .qy-skin__camp-back {
+    background: linear-gradient(to bottom, rgb(153, 28, 34), rgb(57, 12, 17));
+}
+
+.qy-skin__camp[data-camp='yao'] > .qy-skin__camp-back {
+    background: linear-gradient(to bottom, rgb(144, 0, 0), rgb(17, 73, 132));
+}
+
+.qy-skin__camp[data-camp='xin'] > .qy-skin__camp-back {
+    background: linear-gradient(to bottom, rgb(112, 52, 126), rgb(52, 18, 55));
+}
+
+.qy-skin__camp > .qy-skin__camp-border {
+    display: block;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    background-image: url('../../../../../images/decoration/border_camp.png');
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+}
+
+.qy-skin__camp[data-border-level='one'] > .qy-skin__camp-border {
+    background-image: url('../../../../../images/decoration/border_camp1.png');
+}
+
+.qy-skin__camp[data-border-level='two'] > .qy-skin__camp-border {
+    background-image: url('../../../../../images/decoration/border_camp2.png');
+}
+
+.qy-skin__camp[data-border-level='three'] > .qy-skin__camp-border {
+    background-image: url('../../../../../images/decoration/border_camp3.png');
+}
+
+.qy-skin__camp[data-border-level='four'] > .qy-skin__camp-border {
+    background-image: url('../../../../../images/decoration/border_camp4.png');
+}
+
+.qy-skin__camp > .qy-skin__camp-name {
+    font-family: xinwei, xingkai, system-ui;
+    font-display: swap;
+    font-size: 26px;
+    width: 100%;
+    height: 33.5%;
+    display: flex;
+    text-align: center;
+    align-items: center;
+    align-content: center;
+    justify-content: center;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    transition: none;
+    text-shadow: 0 0 5px #e0ea33, 0 0 15px #e0ea33, 0 0 25px #e0ea33;
+}
+
+.qy-skin__camp[data-camp='wei'] > .qy-skin__camp-name {
+    text-shadow: 0 0 5px rgb(50, 50, 255), 0 0 10px rgb(120, 120, 255), 0 0 15px rgb(100, 100, 255);
+}
+
+.qy-skin__camp[data-camp='shu'] > .qy-skin__camp-name {
+    text-shadow: 0 0 5px rgb(255, 100, 100), 0 0 10px rgb(255, 50, 50), 0 0 15px rgb(255, 50, 50);
+}
+
+.qy-skin__camp[data-camp='wu'] > .qy-skin__camp-name {
+    text-shadow: 0 0 5px rgb(100, 233, 100), 0 0 10px rgb(50, 255, 50), 0 0 15px rgb(50, 255, 50);
+}
+
+.qy-skin__camp[data-camp='qun'] > .qy-skin__camp-name {
+    text-shadow: 0 0 5px rgb(170, 170, 170), 0 0 10px rgb(118, 118, 118), 0 0 15px rgb(118, 118, 118);
+}
+
+.qy-skin__camp[data-camp='shen'] > .qy-skin__camp-name {
+    text-shadow: 0 0 5px rgb(255, 200, 0), 0 0 10px rgb(255, 200, 0), 0 0 15px rgb(255, 200, 0);
+}
+
+.qy-skin__avatar-name {
+    display: flex;
+    align-items: center;
+    align-content: center;
+    justify-content: center;
+    font-size: 18px;
+    line-height: 22px;
+    font-family: yuanli;
+    text-align: center;
+    /*text-shadow: none; #000 1px 0 0, #000 0 1px 0, #000 -1px 0 0, #000 0 -1px 0;*/
+    left: 26%;
+    top: 16%;
+    right: 26%;
+    bottom: 1%;
+    position: absolute;
+    white-space: break-spaces;
+}
+
+.qyhp-wrap[data-border-level='one'] {
+    border-image-source: url('../../../../../images/decoration/border_hp1.png');
+}
+
+.qyhp-wrap[data-border-level='two'] {
+    border-image-source: url('../../../../../images/decoration/border_hp2.png');
+}
+
+.qyhp-wrap[data-border-level='three'] {
+    border-image-source: url('../../../../../images/decoration/border_hp3.png');
+}
+
+.qyhp-wrap[data-border-level='four'] {
+    border-image-source: url('../../../../../images/decoration/border_hp4.png');
+}
+
+
+.qydynamic-wrap {
+    display: block;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+    background-size: cover;
+    background-repeat: no-repeat;
+    pointer-events: none;
+    z-index: 60;
+}
+
+.qydynamic-wrap > .animation-player {
+    display: block;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    border-radius: inherit;
+    pointer-events: none;
+    height: 180px;
+}
+
+
+.qy-skin__btn--dynamic {
+    width: 72%;
+    height: 20%;
+    left: 11%;
+    bottom: -24%;
+    background-image: url(../../../../../images/mobile/charactercard/dong.png);
+    background-size: 100% 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+    cursor: pointer;
+    z-index: 88;
+    display: none;
+    /* 仅过渡 opacity 和 background-image，避免 all */
+    transition: opacity 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                background-image 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: opacity, background-image;
+}
+
+.qy-skin__btn--dynamic[toggle=true] {
+    display: block;
+}
+
+.qy-skin__btn--dynamic.jing {
+    background-image: url('../../../../../images/mobile/charactercard/jing.png');
+}
+
+.qy-domtoimage {
+    cursor: pointer;
+    right: 0;
+    top: -5%;
+    width: 50px;
+    height: 50px;
+    background-image: url('../../../../../images/camera.png');
+    background-size: 80% 80%;
+    background-repeat: no-repeat;
+    background-position: center;
+    position: absolute;
+    z-index: 99;
+    display: none;
+}
+
+.qy-domtoimage[single=true] {
+    display: block;
+}
+
+
+.qy-skin__btn--screenshot {
+    width: 30%;
+    height: 20%;
+    left: 37%;
+    top: -20%;
+    background-image: url('../../../../../images/camera.png');
+    background-size: 70% 70%;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: 88;
+    display: none;
+}
+
+.qy-skin__btn--screenshot[toggle=true] {
+    display: block;
+}
+
+.qy-skinshotcanvas {
+    width: 120px;
+    height: 180px;
+    z-index: 80;
+    top: 200px;
+    left: 200px;
+    position: absolute;
+}
+
+.qy-zhuskin {
+    width: 100%;
+    height: 41px;
+    top: 0;
+    right: 0;
+    background-size: 100% 100%;
+    background-image: url('../../../../../images/decade/charactercard/zhujiangskin.png');
+}
+
+.qy-zhuskin.sel {
+    background-image: url('../../../../../images/decade/charactercard/zhujiangskinsel.png');
+}
+
+.qy-fuskin {
+    width: 100%;
+    height: 41px;
+    bottom: 0;
+    right: 0;
+    background-size: 100% 100%;
+    background-image: url('../../../../../images/decade/charactercard/fujiangskin.png');
+}
+
+.qy-fuskin.sel {
+    background-image: url('../../../../../images/decade/charactercard/fujiangskinsel.png');
+}
+
+.qy-skinQua-decade {
+    width: 70%;
+    height: 29%;
+    left: 14%;
+    top: 61%;
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    z-index: 88;
+    pointer-events: none;
+}
+
+
+/*---------------------------------------手杀样式部分--------------------------------*/
+
+.qy-skin__container-background {
+    z-index: 100;
+    display: block;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    position: fixed;
+}
+
+
+.qy-skin__background {
+    z-index: 40;
+    display: block;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    background-color: black;
+    opacity: 0.8;
+    position: fixed;
+}
+
+
+.qy-skin__border {
+    z-index: 40;
+    display: block;
+    width: 0;
+    height: 100%;
+    background-size: auto 100%;
+    background-position: center;
+    background-image: url('../../../../../images/border.png');
+}
+
+
+.qy-skin__btn--enlarge {
+    cursor: pointer;
+    z-index: 10;
+    left: 20%;
+    top: -10%;
+    text-align: center;
+    line-height: 30px;
+    width: 120px;
+    height: 30px;
+    background-size: 100% 100%;
+    transform: translateX(-50%);
+    border: #8a8884 1px solid;
+    border-radius: 8px;
+}
+
+.qy-skin__tips {
+    z-index: 9;
+    right: 0;
+    top: -10%;
+    text-align: center;
+    line-height: 30px;
+    height: 30px;
+    background-size: 100% 100%;
+    transform: translateX(-10%);
+    border: #8a8884 1px solid;
+    border-radius: 8px;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.qy-skin__tips > div {
+    position: relative;
+    /* 使用 transform 动画，配合 will-change 进行 GPU 加速 */
+    animation: marquee-x 15s linear infinite;
+    /* GPU 加速提示 */
+    will-change: transform;
+    backface-visibility: hidden;
+    /* 优化渲染层 */
+    contain: layout style paint;
+}
+
+/* 防倒卖提示高亮文本样式 */
+.qy-skin__tips .highlight-text {
+    color: yellow;
+}
+
+@keyframes marquee-x {
+    from {
+        transform: translate3d(100%, 0, 0);
+    }
+    to {
+        transform: translate3d(-100%, 0, 0);
+    }
+}
+
+.qy-skin__cover {
+    z-index: 9;
+    display: block;
+    left: calc(3.7%);
+    top: calc(7.09%);
+    width: calc(93.14%);
+    height: calc(87.01%);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.qy-skin__dialog {
+    z-index: 40;
+    display: block;
+    left: 50%;
+    top: 55%;
+    /* width: 830px; */
+    width: 100%;
+    height: 302px;
+    transform: translate(-50%, -50%);
+    font-family: shousha, system-ui;
+}
+
+.qy-skin__cover {
+    z-index: 9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    left: 5%;
+    top: 6.89%;
+    width: 90%;
+    height: 87.01%;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.qy-skin__cover[data-overstep=true] {
+    display: block;
+}
+
+.qy-skin__arrow {
+    top: 39%;
+    left: 95%;
+    width: 5%;
+    height: 26%;
+    background-repeat: no-repeat;
+    background-size: 55% 55%;
+    background-position: center;
+    background-image: url('../../../../../images/newui_arrow_right.png');
+    z-index: 65;
+    display: none;
+}
+
+.qy-skin__arrow.left {
+    transform: rotateY(180deg);
+    left: 0;
+}
+
+.qy-skin__arrow:active {
+    transform: scale(0.8);
+}
+
+.qy-skin__arrow.left:active {
+    transform: rotateY(180deg) scale(0.8);
+}
+
+.qy-skin__arrow[data-visiable=true] {
+    display: block;
+}
+
+.qy-skin__area {
+    z-index: 9;
+    text-align: left;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 100%;
+    border-radius: 10px;
+    transition: transform 0s;
+    position: relative;
+    overflow-x: auto;
+    overflow-y: hidden;
+    flex-wrap: wrap;
+    flex-direction: column;
+    align-content: safe center;
+    -webkit-align-content: safe center;
+}
+
+.qy-skin__cover[data-visible='1'] > .qy-skin__area, .qy-skin__cover[data-visible='2'] > .qy-skin__area {
+    display: flex;
+}
+
+.qy-skin__item {
+    z-index: 10;
+    left: 0;
+    bottom: -10px;
+    width: 128px;
+    height: 193px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 8px;
+    position: relative;
+    display: inline-block;
+    margin: 0 15px;
+}
+
+.qy-skin__quality-shousha {
+    width: 49%;
+    height: 33%;
+    right: -6%;
+    top: 6px;
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    z-index: 98;
+    transition: none;
+}
+
+.qy-skin__item.d-skin > .qy-skin__camp,
+.qy-skin__item.d-skin2 > .qy-skin__camp,
+.qy-skin__item.d-skin > .qy-skin__quality-shousha,
+.qy-skin__item.d-skin2 > .qy-skin__quality-shousha {
+    top: -11px;
+}
+
+.qy-skin__dialog[data-outcrop-skin='on'] .qy-skin__item.d-skin > .qy-skin__camp,
+.qy-skin__dialog[data-outcrop-skin='on'] .qy-skin__item.d-skin2 > .qy-skin__camp {
+    top: -21px;
+}
+
+.qy-skin__item-default {
+    left: -0;
+    width: 100%;
+    bottom: -7px;
+    height: 100%;
+    background-size: 100% 100%;
+    pointer-events: none;
+    background-repeat: no-repeat;
+    background-image: url('../../../../../images/mobile/charactercard/ss-defaultskin.png');
+    z-index: 99;
+    transition: none;
+}
+
+.qy-skin__item-default[data-sel=true] {
+    background-image: url('../../../../../images/mobile/charactercard/ss-defaultskinsel.png');
+}
+
+.qydynamic-wrap, .qy-skin__item > .primary-avatar {
+    left: 5px;
+    top: auto;
+    bottom: 2.2px;
+    width: 90.6%;
+    height: 90.6%;
+    opacity: 1;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: top;
+    border-radius: 9px;
+    transition-property: opacity, transform;
+    z-index: 61;
+}
+
+.qy-skin__dialog[data-outcrop-skin='on'] .primary-avatar,
+.qy-outcrop.primary-avatar {
+    height: 103.6%;
+}
+
+.qy-skin__item.unseen > .primary-avatar,
+.qy-skin__item.d-skin > .primary-avatar,
+.qy-skin__item.d-skin2 > .primary-avatar {
+    opacity: 0;
+}
+
+/* 露头样式，十周年的 */
+.qy-skin__item.unseen > .qy-skin__camp-back {
+    clip-path: polygon(0% 100%, 100% 100%, 100% 6%, 0% 6%);
+}
+
+
+.qy-skin__camp {
+    display: block;
+    left: -8px;
+    top: -4px;
+    width: 33px;
+    height: 118px;
+    transition: none;
+    z-index: 95;
+}
+
+.qy-skin__camp-back {
+    left: -4.2%;
+    bottom: -4%;
+    height: 101%;
+    width: 107%;
+    background-image: url('../../../../../images/decoration/skinFrm1.png');
+    background-size: 100% 100%;
+    transition: none;
+    pointer-events: none;
+}
+
+.qy-skin__camp-back[data-pinzhi='junk'] {
+    background-image: url('../../../../../images/decoration/skinFrm2.png');
+}
+
+.qy-skin__camp-back[data-pinzhi='rare'] {
+    background-image: url('../../../../../images/decoration/skinFrm3.png');
+}
+
+.qy-skin__camp-back[data-pinzhi='common'] {
+    background-image: url('../../../../../images/decoration/skinFrm3.png');
+}
+
+.qy-skin__camp-back[data-pinzhi='epic'] {
+    background-image: url('../../../../../images/decoration/skinFrm4.png');
+}
+
+.qy-skin__camp-back[data-pinzhi='legend'] {
+    background-image: url('../../../../../images/decoration/skinFrm5.png');
+}
+
+.qy-skin__item.unseen > .qy-skin__camp-back {
+    height: 110%;
+    width: 104%;
+    left: -3.7%;
+    z-index: 94;
+    background-image: url(../../../../../images/decoration/skin_dynamic_frame4.png);
+    clip-path: none;
+}
+
+.qy-skin__item.unseen > .qy-skin__camp-back[data-pinzhi='传说'] {
+    height: 110%;
+    width: 104%;
+    left: -3.7%;
+    z-index: 94;
+    background-image: url(../../../../../images/decoration/skin_dynamic_frame4.png);
+    clip-path: none;
+}
+
+.qy-skin__camp > .qy-skin__camp-name {
+    font-display: swap;
+    font-size: 26px;
+    width: 160%;
+    height: 50%;
+    display: flex;
+    text-align: center;
+    align-items: center;
+    align-content: center;
+    justify-content: center;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    transition: none;
+    text-shadow: 0 0 5px #e0ea33, 0 0 15px #e0ea33, 0 0 25px #e0ea33;
+}
+
+.qy-skin__camp[data-camp='wei'] > .qy-skin__camp-name {
+    text-shadow: 0 0 5px rgb(50, 50, 255), 0 0 10px rgb(120, 120, 255), 0 0 15px rgb(100, 100, 255);
+}
+
+.qy-skin__camp[data-camp='shu'] > .qy-skin__camp-name {
+    text-shadow: 0 0 5px rgb(255, 100, 100), 0 0 10px rgb(255, 50, 50), 0 0 15px rgb(255, 50, 50);
+}
+
+.qy-skin__camp[data-camp='wu'] > .qy-skin__camp-name {
+    text-shadow: 0 0 5px rgb(100, 233, 100), 0 0 10px rgb(50, 255, 50), 0 0 15px rgb(50, 255, 50);
+}
+
+.qy-skin__camp[data-camp='qun'] > .qy-skin__camp-name {
+    text-shadow: 0 0 5px rgb(170, 170, 170), 0 0 10px rgb(118, 118, 118), 0 0 15px rgb(118, 118, 118);
+}
+
+.qy-skin__camp[data-camp='shen'] > .qy-skin__camp-name {
+    text-shadow: 0 0 5px rgb(255, 200, 0), 0 0 10px rgb(255, 200, 0), 0 0 15px rgb(255, 200, 0);
+}
+
+.qy-skin__camp > .qy-skin__avatar-name {
+    display: block;
+    font-size: 20px;
+    writing-mode: lr-tb;
+    line-height: 22px;
+    font-family: shousha;
+    text-shadow: #000 1px 0 0, #000 0 1px 0, #000 -1px 0 0, #000 0 -1px 0;
+    left: 40%;
+    top: 49%;
+    width: 68%;
+    height: 70%;
+    position: absolute;
+}
+
+.qy-skin__camp > .qy-skin__avatar-name-back {
+    display: block;
+    left: 40%;
+    top: 29%;
+    width: 68%;
+    height: 85%;
+    position: absolute;
+    background-image: linear-gradient(to top, transparent 0%, rgb(20 20 20 / 40%) 30%);
+    z-index: -1;
+}
+
+.qyhp-wrap {
+    right: 5%;
+    bottom: 1%;
+    width: 50px;
+    height: 45px;
+    border: #8a8884 1px solid;
+    border-radius: 8px;
+    z-index: 80;
+    transition: none;
+    background-color: rgba(1, 1, 1, 0.7);
+}
+
+
+.qy-skin__item-text {
+    writing-mode: lr-tb;
+    color: #8a8884;
+    width: 90%;
+    height: 90%;
+    font-size: 18px;
+    line-height: 20px;
+    font-weight: bold;
+    text-align: center;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    /* letter-spacing: -2px; */
+}
+
+
+.qy-skin__auto {
+    left: calc(46.6%);
+    width: 84px;
+    bottom: -5%;
+    height: 28px;
+    z-index: 41;
+    overflow: hidden;
+}
+
+.qy-skin__auto-border {
+    left: 0;
+    width: 100%;
+    bottom: 0;
+    height: 100%;
+    background-size: 100% 100%;
+    background-position: 100%;
+    z-index: 41;
+    background-image: url('../../../../../images/decade/charactercard/dc_autoskinborder.png');
+}
+
+.qy-skin__auto-item {
+    left: calc(-67%);
+    width: 139px;
+    bottom: 1%;
+    height: 27px;
+    background-size: 100% 100%;
+    background-position: 100%;
+    z-index: 40;
+    background-image: url('../../../../../images/decade/charactercard/dc_autoskinitem.png');
+    /* ❌ transition: all 1s;  性能杀手，已移除 */
+    /* ✅ 仅过渡 transform 属性，GPU 加速 */
+    transition: transform 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    /* GPU 加速提示 */
+    will-change: transform;
+}
+
+.qy-skin__auto[data-auto=true] > .qy-skin__auto-item {
+    /* 使用 transform 而非 left，避免触发重排 */
+    transform: translateX(67%);
+}
+
+.qy-skin__toggle--double {
+    width: 110px;
+    height: 50px;
+    top: -10%;
+    left: 44%;
+    position: absolute;
+    display: none;
+    /* ❌ transition: all 0.2s;  性能杀手，已移除 */
+    /* ✅ 仅过渡 opacity 和 transform，GPU 加速 */
+    transition: opacity 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    /* GPU 加速提示 */
+    will-change: opacity, transform;
+    z-index: 44;
+}
+
+.qy-skin__dialog[data-double=true] > .qy-skin__toggle--double {
+    display: block;
+}
+
+.qy-skin__toggle--double > .qy-zhuskin {
+    width: 55px;
+    height: 50px;
+    top: 0;
+    left: 0;
+    background-size: 100% 100%;
+    background-image: url('../../../../../images/decade/charactercard/ss_zhujiang.png');
+    filter: grayscale(1);
+    transform: scale(0.8);
+    /* GPU 加速过渡 */
+    transition: filter 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.qy-skin__toggle--double > .qy-zhuskin.sel {
+    filter: grayscale(0);
+    transform: scale(1);
+}
+
+.qy-skin__toggle--double > .qy-fuskin {
+    width: 55px;
+    height: 50px;
+    bottom: 0;
+    right: 0;
+    background-size: 100% 100%;
+    background-image: url('../../../../../images/decade/charactercard/ss_fujiang.png');
+    filter: grayscale(1);
+    transform: scale(0.8);
+    /* GPU 加速过渡 */
+    transition: filter 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.qy-skin__toggle--double > .qy-fuskin.sel {
+    filter: grayscale(0);
+    transform: scale(1);
+}
+
+
+.qy-skin__photo-overlay {
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    background-repeat: no-repeat;
+    background-size: 90% 90%;
+    background-position: center;
+    z-index: 100;
+    font-size: 40px;
+    text-align: right;
+}
+
+
+/* ================================== 十周年样式 ================================== */
+.qy-skin__dialog.decade {
+    top: 55%;
+    height: 345px;
+    background-image: url(../../../../../images/decade/changeskin/skill_window_bg_1.png);
+    background-size: 100% 103%;
+    background-repeat: no-repeat;
+}
+
+.qy-skin__dialog.decade > .qy-skin__tips {
+    top: -20%;
+    left: 20%;
+    right: 5%;
+}
+
+.qy-skin__dialog.decade > .qy-skin__cover {
+    left: 17%;
+    top: 15%;
+    width: 66%;
+    height: 73%;
+}
+
+.qy-skin__dialog.decade > .qy-skin__arrow--decade {
+    background-image: url(../../../../../images/decade/changeskin/dc_smarrow.png);
+    right: 12%;
+    left: unset;
+    top: 42.5%;
+}
+
+.qy-skin__dialog.decade > .qy-skin__arrow--decade.left {
+    left: 12%;
+}
+
+
+.qy-skin__item.decade {
+    bottom: -13px;
+    /*width: 135px;*/
+    /*height: 79%;*/
+    margin: 0 21.2px;
+}
+
+.qy-skin__item.decade .qy-skin__item-default {
+    left: -14px;
+    width: 119%;
+    bottom: -21%;
+    height: 120%;
+    background-size: 92% 100%;
+    background-repeat: no-repeat;
+    background-image: url('../../../../../images/decade/charactercard/dc_defaultskin.png');
+    z-index: 65;
+}
+
+.qy-skin__item.decade .qy-skin__item-default[data-sel=true] {
+    background-image: url('../../../../../images/decade/charactercard/dc_defaultskinsel.png');
+}
+
+.qy-skin__item.decade .qy-skin__camp {
+    left: -18px;
+    top: 4px;
+    width: 41px;
+    height: 75%;
+}
+
+.qy-skin__item.decade .qy-skin__camp > .qy-skin__camp-name {
+    top: 4%;
+    left: 3%;
+    height: 26%;
+    z-index: 1;
+    width: 100%;
+}
+
+.qy-skin__item.decade .qy-skin__camp > .qy-skin__avatar-name-back {
+    background-image: url(../../../../../images/decoration/border_camp5.png);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    width: 113%;
+    height: 100%;
+    top: 0;
+    left: -4%;
+    z-index: auto;
+}
+
+.qy-skin__item.decade .qy-skin__camp > .qy-skin__avatar-name-back::before {
+    z-index: -2;
+    content: '';
+    position: absolute;
+    background: linear-gradient(to bottom, rgb(155, 129, 108), rgb(73, 71, 58));
+    -webkit-clip-path: polygon(0 0, 100% 0, 100% 93%, 50% 100%, 0% 93%);
+    width: 48%;
+    height: 96%;
+    left: 27%;
+    top: 3%;
+}
+
+.qy-skin__item.decade .qy-skin__camp > .qy-skin__avatar-name-back.dynamic::after {
+    z-index: -3;
+    content: '';
+    position: absolute;
+    width: 61%;
+    height: 45%;
+    left: 22%;
+    bottom: -28%;
+    background-position: 50% 50%;
+    background-image: url("../../../../../images/decade/changeskin/dynamc_mark.png");
+    background-size: cover;
+}
+
+.qy-skin__item.decade .qyhp-wrap {
+    background-color: unset;
+    display: block;
+    right: 6px;
+    bottom: -3px;
+    width: 15px;
+    height: 55px;
+    border-width: 24px 5px 21px 82px;
+    border-style: solid;
+    border-color: transparent;
+    border-image-source: url('../../../../../images/decoration/border_hp.png');
+    border-image-slice: 32 6 25 113 fill;
+    pointer-events: none;
+    z-index: 88;
+}
+
+.qy-skin__item.decade .qy-skin__camp > .qy-skin__avatar-name {
+    display: flex;
+    align-items: center;
+    align-content: center;
+    justify-content: center;
+    font-size: 18px;
+    line-height: 20px;
+    font-family: yuanli;
+    text-align: center;
+    bottom: 1%;
+    position: absolute;
+    white-space: break-spaces;
+    left: 38%;
+    right: 36%;
+    top: 20%;
+    width: auto;
+    height: auto;
+    text-shadow: none;
+    flex-wrap: wrap;
+}
+
+.qy-skin__item.decade .qy-skin__camp > .qy-skin__avatar-name > span.dyeing {
+    color: rgb(216 163 105);
+}
+
+.qy-skin__item.decade .qy-skin__camp > .qy-skin__avatar-name > span.down {
+    transform: translateY(20%);
+}
+
+.qy-skin__item.decade > .qy-skin__btn--dynamic {
+    top: 58%;
+    width: 50%;
+    height: 15%;
+    left: 20%;
+    background-image: url('../../../../../images/decade/changeskin/dong.png');
+}
+
+.qy-skin__item.decade > .qy-skin__btn--dynamic.jing {
+    background-image: url('../../../../../images/decade/changeskin/jing.png');
+}
+
+.qy-skin__item.decade .qy-domtoimage[single=true] {
+    display: none;
+}
+
+.decade.qy-skin__dialog::before {
+    color: #f7daac;
+    font-family: 'shousha';
+    content: '选择皮肤';
+    text-align: center;
+    font-size: 30px;
+    position: absolute;
+    width: 45%;
+    height: 46px;
+    left: 27.7%;
+    top: -10%;
+    z-index: 43;
+    background-image: url(../../../../../images/decade/changeskin/skill_window_title.png);
+    background-size: contain;
+    background-repeat: no-repeat;
+    padding-top: 3px;
+    letter-spacing: -3px;
+    text-shadow: 0 0 0 #ff0000;
+}
+
+.qy-skin__dialog[data-outcrop-skin='on'] .qy-skin__item.decade > .primary-avatar {
+    height: 98%;
+}
+
+.qy-skin__item.decade .qy-skin__camp-back {
+    background-image: none;
+}
+
+.qy-skin__item.decade .qy-skin__item-text {
+    color: #ddc4a4;
+    font-size: 15px;
+    line-height: 16px;
+    left: 0px;
+    top: -5%;
+    letter-spacing: 0;
+    position: absolute;
+    text-overflow: clip;
+    overflow: hidden;
+    margin: 0;
+    height: 66px;
+    font-weight: normal;
+}
+
+.qingyaoLoadImageOptimization div.buttons,
+.qy_pub_character_container {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 100px 200px;
+}
+
+
+/*---------- 来源：https://code.juejin.cn/pen/7172092763444346892 ----------*/
+.checkbox-wrapper-8 {
+    bottom: 30px;
+    left: 2%;
+    z-index: 42;
+}
+
+.checkbox-wrapper-8 .tgl {
+    display: none;
+}
+
+.checkbox-wrapper-8 .tgl {
+    box-sizing: border-box;
+}
+
+.checkbox-wrapper-8 .tgl + .tgl-btn {
+    outline: 0;
+    display: inline-block;
+    width: 100px;
+    height: 44px;
+    position: relative;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.checkbox-wrapper-8 .tgl + .tgl-btn:after,
+.checkbox-wrapper-8 .tgl + .tgl-btn:before {
+    position: relative;
+    display: block;
+    content: "";
+    width: 50%;
+    height: 100%;
+    font-size: 20px;
+}
+
+.checkbox-wrapper-8 .tgl + .tgl-btn:after {
+    left: 0;
+}
+
+.checkbox-wrapper-8 .tgl + .tgl-btn:before {
+    display: none;
+}
+
+.checkbox-wrapper-8 .tgl:checked + .tgl-btn:after {
+    left: 50%;
+}
+
+.checkbox-wrapper-8 .tgl-skewed + .tgl-btn {
+    overflow: hidden;
+    transform: skew(-10deg);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    transition: all 0.2s ease;
+    font-family: sans-serif;
+    background: #888;
+}
+
+.checkbox-wrapper-8 .tgl-skewed + .tgl-btn:after,
+.checkbox-wrapper-8 .tgl-skewed + .tgl-btn:before {
+    transform: skew(10deg);
+    display: inline-block;
+    transition: all 0.2s ease;
+    width: 100%;
+    text-align: center;
+    position: absolute;
+    line-height: 48px;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+}
+
+.checkbox-wrapper-8 .tgl-skewed + .tgl-btn:after {
+    left: 100%;
+    content: attr(data-tg-on);
+}
+
+.checkbox-wrapper-8 .tgl-skewed + .tgl-btn:before {
+    left: 0;
+    content: attr(data-tg-off);
+}
+
+.checkbox-wrapper-8 .tgl-skewed + .tgl-btn:active {
+    background: #888;
+}
+
+.checkbox-wrapper-8 .tgl-skewed + .tgl-btn:active:before {
+    left: -10%;
+}
+
+.checkbox-wrapper-8 .tgl-skewed:checked + .tgl-btn {
+    background: #86d993;
+}
+
+.checkbox-wrapper-8 .tgl-skewed:checked + .tgl-btn:before {
+    left: -100%;
+}
+
+.checkbox-wrapper-8 .tgl-skewed:checked + .tgl-btn:after {
+    left: 0;
+}
+
+.checkbox-wrapper-8 .tgl-skewed:checked + .tgl-btn:active:after {
+    left: 10%;
+}

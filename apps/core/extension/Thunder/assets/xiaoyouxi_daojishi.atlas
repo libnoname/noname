@@ -1,0 +1,34 @@
+
+xiaoyouxi_daojishi.png
+size: 446,131
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+images/1
+  rotate: true
+  xy: 318, 10
+  size: 40, 77
+  orig: 66, 80
+  offset: 10, 1
+  index: -1
+images/2
+  rotate: false
+  xy: 382, 52
+  size: 62, 77
+  orig: 66, 80
+  offset: 2, 1
+  index: -1
+images/3
+  rotate: false
+  xy: 318, 52
+  size: 62, 77
+  orig: 66, 80
+  offset: 2, 1
+  index: -1
+images/ks
+  rotate: false
+  xy: 2, 2
+  size: 314, 127
+  orig: 315, 128
+  offset: 0, 1
+  index: -1

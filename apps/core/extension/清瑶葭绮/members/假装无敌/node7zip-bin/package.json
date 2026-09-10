@@ -1,0 +1,23 @@
+{
+  "name": "7zip-bin",
+  "description": "7-Zip precompiled binaries",
+  "version": "5.2.0",
+  "files": [
+    "*.js",
+    "7x.sh",
+    "index.d.ts",
+    "linux",
+    "mac",
+    "win"
+  ],
+  "license": "MIT",
+  "repository": "develar/7zip-bin",
+  "keywords": [
+    "7zip",
+    "7z",
+    "7za"
+  ],
+  "__npminstall_done": true,
+  "_from": "7zip-bin@5.2.0",
+  "_resolved": "https://registry.npmmirror.com/7zip-bin/-/7zip-bin-5.2.0.tgz"
+}

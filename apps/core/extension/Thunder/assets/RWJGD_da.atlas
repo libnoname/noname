@@ -1,0 +1,27 @@
+
+RWJGD_da.png
+size: 960,521
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+RWJGD1
+  rotate: false
+  xy: 2, 2
+  size: 563, 517
+  orig: 563, 517
+  offset: 0, 0
+  index: -1
+RWJGD2
+  rotate: true
+  xy: 567, 106
+  size: 413, 391
+  orig: 413, 391
+  offset: 0, 0
+  index: -1
+yanjing
+  rotate: false
+  xy: 567, 80
+  size: 34, 24
+  orig: 34, 24
+  offset: 0, 0
+  index: -1

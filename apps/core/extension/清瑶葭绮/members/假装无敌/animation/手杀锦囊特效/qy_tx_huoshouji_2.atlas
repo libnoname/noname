@@ -1,0 +1,62 @@
+
+qy_tx_huoshouji_2.png
+size: 926,926
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+huo_00000
+  rotate: false
+  xy: 769, 786
+  size: 144, 138
+  orig: 389, 321
+  offset: 125, 91
+  index: -1
+huo_00001
+  rotate: true
+  xy: 690, 78
+  size: 264, 234
+  orig: 389, 321
+  offset: 62, 40
+  index: -1
+huo_00002
+  rotate: false
+  xy: 373, 76
+  size: 315, 266
+  orig: 389, 321
+  offset: 36, 24
+  index: -1
+huo_00003
+  rotate: false
+  xy: 392, 344
+  size: 334, 278
+  orig: 389, 321
+  offset: 27, 20
+  index: -1
+huo_00004
+  rotate: false
+  xy: 2, 12
+  size: 352, 291
+  orig: 389, 321
+  offset: 19, 14
+  index: -1
+huo_00005
+  rotate: false
+  xy: 392, 624
+  size: 375, 300
+  orig: 389, 321
+  offset: 8, 9
+  index: -1
+huo_00006
+  rotate: false
+  xy: 2, 619
+  size: 388, 305
+  orig: 389, 321
+  offset: 1, 8
+  index: -1
+huo_00007
+  rotate: false
+  xy: 2, 305
+  size: 369, 312
+  orig: 389, 321
+  offset: 20, 4
+  index: -1

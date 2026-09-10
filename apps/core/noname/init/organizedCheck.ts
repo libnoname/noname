@@ -9,7 +9,9 @@ export function showOrganizedCheck() {
 	const packs = installed.map(p => {
 		const registered = lib.characterPack[p.name] || {};
 		const enabled = !!lib.config[`extension_${p.name}_enable`];
-		const missing = enabled ? p.characters.filter(id => !registered[id]) : [];
+		// Incremental imports deliberately reuse existing core characters with the same ID.
+		const reused = enabled ? p.characters.filter(id => !registered[id] && lib.character[id]) : [];
+		const missing = enabled ? p.characters.filter(id => !registered[id] && !lib.character[id]) : [];
 		missingCharacters.push(...missing.map(id => `${p.name}/${id}`));
 		for (const id of enabled ? p.characters : []) {
 			const character = registered[id];
@@ -29,7 +31,7 @@ export function showOrganizedCheck() {
 			}
 			for (const skill of skills || []) check(skill);
 		}
-		return { name: p.name, enabled, expected: p.characters.length, registered: Object.keys(registered).length, missing };
+		return { name: p.name, enabled, expected: p.characters.length, registered: Object.keys(registered).length, reused, missing };
 	});
 	const node = document.createElement("details");
 	node.id = "organized-extension-check";
