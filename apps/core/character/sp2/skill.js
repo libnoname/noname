@@ -1012,7 +1012,7 @@ const skills = {
 				onremove: true,
 				forced: true,
 				locked: false,
-				intro: { content: "其他角色计算与你的距离和你的拼点点数+#" },
+				intro: { content: "其他角色计算与你的距离和你的拼点点数+#且你拼点时摸一张牌" },
 				trigger: {
 					player: "compare",
 					target: "compare",
