@@ -41821,7 +41821,7 @@ const skills = {
 				onremove: true,
 				mark: true,
 				intro: {
-					content: num => "手牌上限" + (num < 0 ? "" : "+") + num,
+					content: num => `手牌上限${num < 0 ? "" : "+"}${num}`,
 				},
 			},
 		},
@@ -41829,63 +41829,50 @@ const skills = {
 	baoshu: {
 		audio: 2,
 		trigger: { player: "phaseZhunbeiBegin" },
-		direct: true,
 		filter(event, player) {
 			return player.maxHp > 0;
 		},
-		content() {
-			"step 0";
-			player.chooseTarget([1, player.maxHp], get.prompt("baoshu"), "令至多" + get.cnNumber(player.maxHp) + "名角色重置武将牌并获得“梳”").set("ai", function (target) {
-				var att = get.attitude(player, target);
-				if (att <= 0) {
-					return 0;
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					selectTarget: [1, player.maxHp],
+					prompt: get.prompt(event.skill),
+					prompt2: `令至多${get.cnNumber(player.maxHp)}名角色重置武将牌并获得“梳”`,
+					ai: target => {
+						const att = get.attitude(player, target);
+						if (att <= 0) {
+							return 0;
+						}
+						//if(target.isTurnedOver()) return 3*att;
+						if (target.isLinked() && get.effect(target, { name: "tiesuo" }, player, player) > 0) {
+							return 1.6 * att;
+						}
+						if (ui.selected.targets.length >= Math.sqrt(1 + player.maxHp)) {
+							return 0;
+						}
+						if (target !== player) {
+							return 1.3 * att;
+						}
+						return att;
+					},
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const targets = event.targets.sortBySeat();
+			const markCount = 1 + player.maxHp - targets.length;
+			for (const target of targets) {
+				if (!target.isIn()) {
+					continue;
 				}
-				//if(target.isTurnedOver()) return 3*att;
-				if (target.isLinked() && get.effect(target, { name: "tiesuo" }, player, player) > 0) {
-					return 1.6 * att;
+				if (target.isLinked()) {
+					await target.link();
 				}
-				if (ui.selected.targets.length >= Math.sqrt(1 + player.maxHp)) {
-					return 0;
+				if (!target.isIn()) {
+					continue;
 				}
-				if (target != player) {
-					return 1.3 * att;
-				}
-				return att;
-			});
-			"step 1";
-			if (result.bool) {
-				var targets = result.targets;
-				targets.sortBySeat();
-				player.logSkill("baoshu", targets);
-				event.targets = targets;
-				event.num = 0;
-				event.num2 = 1 + player.maxHp - targets.length;
-			} else {
-				event.finish();
-			}
-			"step 2";
-			var target = targets[num];
-			event.target = target;
-			if (!target.isIn()) {
-				if (num < targets.length - 1) {
-					event.num++;
-					event.goto(2);
-				} else {
-					event.finish();
-				}
-			} else if (target.isLinked()) {
-				target.link();
-			}
-			"step 3";
-			if (target.isIn()) {
 				target.addSkill("baoshu_draw");
-				target.addMark("baoshu", event.num2);
-			}
-			if (num < targets.length - 1) {
-				event.num++;
-				event.goto(2);
-			} else {
-				event.finish();
+				target.addMark("baoshu", markCount);
 			}
 		},
 		marktext: "梳",
@@ -41906,8 +41893,8 @@ const skills = {
 				filter(event, player) {
 					return !event.numFixed && player.hasMark("baoshu");
 				},
-				content() {
-					var num = player.countMark("baoshu");
+				async content(event, trigger, player) {
+					const num = player.countMark("baoshu");
 					trigger.num += num;
 					trigger.player.removeMark("baoshu", num);
 				},
