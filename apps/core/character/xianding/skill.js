@@ -34327,48 +34327,51 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filterTarget(card, player, target) {
-			return target.countCards("h") && target != player;
+			return target.hasCards("h") && target !== player;
 		},
-		content() {
-			"step 0";
-			var forced = target.hasCard(i => player.hasUseTarget(i), "h");
-			player
-				.choosePlayerCard(target, "h", "visible", forced, "获得并使用其中一张牌")
-				.set("filterButton", button => {
-					return _status.event.player.hasUseTarget(button.link);
+		async content(event, trigger, player) {
+			const target = event.target;
+			const forced = target.hasCard(card => player.hasUseTarget(card), "h");
+			const result = await player
+				.choosePlayerCard({
+					target,
+					position: "h",
+					visible: true,
+					forced,
+					prompt: "获得并使用其中一张牌",
+					filterButton: button => player.hasUseTarget(button.link),
+					ai: button => player.getUseValue(button.link),
 				})
-				.set("ai", button => {
-					return _status.event.player.getUseValue(button.link);
-				});
-			"step 1";
+				.forResult();
 			if (result.bool) {
-				var card = result.links[0];
-				event.card = card;
-				player.gain(card, "giveAuto");
-			} else {
-				event.goto(3);
-			}
-			"step 2";
-			if (get.position(card) == "h" && get.owner(card) == player && player.hasUseTarget(card)) {
-				if (get.name(card, player) == "sha") {
-					player.chooseUseTarget(card, true, false);
-				} else {
-					player.chooseUseTarget(card, true);
+				const card = result.links[0];
+				await player.gain({
+					cards: [card],
+					animate: "giveAuto",
+				});
+				if (get.position(card) === "h" && get.owner(card) === player && player.hasUseTarget(card)) {
+					if (get.name(card, player) === "sha") {
+						await player.chooseUseTarget({
+							card,
+							forced: true,
+							addCount: false,
+						});
+					} else {
+						await player.chooseUseTarget({
+							card,
+							forced: true,
+						});
+					}
 				}
 			}
-			"step 3";
-			if (
-				player.hasHistory("useCard", evt => {
-					return evt.getParent(2).name == "dcjianzheng" && evt.targets.includes(target);
-				})
-			) {
-				player.link(true);
-				target.link(true);
-			} else {
-				event.finish();
+
+			const usedOnTarget = player.hasHistory("useCard", evt => evt.getParent(2).name === "dcjianzheng" && evt.targets.includes(target));
+			if (!usedOnTarget) {
+				return;
 			}
-			"step 4";
-			target.viewHandcards(player);
+			await player.link(true);
+			await target.link(true);
+			await target.viewHandcards(player);
 		},
 		ai: {
 			order: 10,
