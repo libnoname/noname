@@ -3639,7 +3639,10 @@ const skills = {
 		},
 		forced: true,
 		async content(event, trigger, player) {
-			trigger.num += Math.min(5, game.filterPlayer().reduce((sum, current) => sum + current.countDisabledSlot(), 0));
+			trigger.num += Math.min(
+				5,
+				game.filterPlayer().reduce((sum, current) => sum + current.countDisabledSlot(), 0)
+			);
 		},
 		group: "dczhiti_drawEnd",
 		subSkill: {
@@ -15337,7 +15340,12 @@ const skills = {
 				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
 					return target.countDiscardableCards(player, "he");
 				})
-				.set("ai", target => get.effect(target, { name: "guohe_copy2" }, get.player(), get.player()))
+				.set("ai", target => {
+					const trigger = get.event().getTrigger();
+					//防止无效自己上的装备或濒死喝酒完杀自己
+					if (get.effect(trigger.target, trigger.card, trigger.player, trigger.target) > 0) return 0;
+					return get.effect(target, { name: "guohe_copy2" }, get.player(), get.player());
+				})
 				.forResult();
 		},
 		async content(event, trigger, player) {
