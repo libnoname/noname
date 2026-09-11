@@ -184,6 +184,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
+      - name: Make Gradle wrapper executable
+        run: chmod +x apps/mobile/android/gradlew
+
       - name: Install pnpm
         uses: pnpm/action-setup@v5
         with:
@@ -240,18 +243,6 @@ jobs:
           cp apps/mobile/android/app/build/outputs/apk/release/app-release.apk release/noname.android.apk
           sha256sum release/noname.android.apk > release/noname.android.apk.sha256
 
-      - name: Build signed Android App Bundle
-        shell: bash
-        env:
-          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: |
-          set -euo pipefail
-          pnpm -F @noname/mobile build:android -- --aab --skip-web-build
-          cp apps/mobile/android/app/build/outputs/bundle/release/app-release.aab release/noname.android.aab
-          sha256sum release/noname.android.aab > release/noname.android.aab.sha256
-
       - name: Upload Android packages to release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -260,8 +251,6 @@ jobs:
           gh release upload "$TAG" \
             release/noname.android.apk \
             release/noname.android.apk.sha256 \
-            release/noname.android.aab \
-            release/noname.android.aab.sha256 \
             --clobber
 
   release:
