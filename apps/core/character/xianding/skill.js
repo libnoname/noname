@@ -32197,154 +32197,131 @@ const skills = {
 		multitarget: true,
 		multiline: true,
 		filterTarget(card, player, target) {
-			if (player == target) {
+			if (player === target) {
 				return false;
 			}
-			var next = player.getNext(),
-				prev = player.getPrevious();
-			var selected = ui.selected.targets;
-			if (!selected.includes(next) && !selected.includes(prev)) {
-				return target == next || target == prev;
+			const next = player.getNext();
+			const previous = player.getPrevious();
+			const selected = ui.selected.targets;
+			if (!selected.includes(next) && !selected.includes(previous)) {
+				return target === next || target === previous;
 			}
-			for (var i of selected) {
-				if (i.getNext() == target || i.getPrevious() == target) {
+			for (const current of selected) {
+				if (current.getNext() === target || current.getPrevious() === target) {
 					return true;
 				}
 			}
 			return false;
 		},
-		contentBefore() {
-			event.getParent()._dcchangqu_targets = targets.slice();
+		async contentBefore(event, trigger, player) {
+			event.getParent()._dcchangqu_targets = event.targets.slice();
 		},
-		content() {
-			"step 0";
-			event.targets = event.getParent()._dcchangqu_targets;
-			var current = targets[0];
-			current.addMark("dcchangqu_warship");
-			current.addMark("dcchangqu_warshipx", 1, false);
-			event.num = 0;
-			game.delayx();
-			"step 1";
-			var target = targets.shift();
-			event.target = target;
-			var num = Math.max(1, event.num);
-			var nextPlayer = targets.find(i => {
-				return i.isIn();
-			});
-			if (target.hasMark("dcchangqu_warshipx")) {
-				var prompt2 = "是否交给" + get.translation(player) + get.cnNumber(num) + "张手牌？" + (nextPlayer ? "若如此做，将“战舰”移动给" + get.translation(nextPlayer) + "，" : "，") + "否则你下次受到的属性伤害值+" + num;
-				target
-					.chooseCard(get.translation(player) + "对你发动了【长驱】", prompt2, num)
-					.set("ai", card => {
-						if (_status.event.att > 0) {
-							return 15 - get.value(card);
-						}
-						if (_status.event.take) {
-							return 0;
-						}
-						return 8.2 - 0.8 * Math.min(5, _status.event.target.hp + _status.event.target.hujia) - get.value(card);
+		async content(event, trigger, player) {
+			const targets = event.getParent()._dcchangqu_targets;
+			const firstTarget = targets[0];
+			firstTarget.addMark("dcchangqu_warship");
+			firstTarget.addMark("dcchangqu_warshipx", 1, false);
+			let count = 0;
+			await game.delayx();
+			while (targets.length) {
+				const target = targets.shift();
+				if (!target.hasMark("dcchangqu_warshipx")) {
+					break;
+				}
+				const num = Math.max(1, count);
+				const nextPlayer = targets.find(current => current.isIn());
+				const prompt2 = `是否交给${get.translation(player)}${get.cnNumber(num)}张手牌？${nextPlayer ? `若如此做，将“战舰”移动给${get.translation(nextPlayer)}，` : "，"}否则你下次受到的属性伤害值+${num}`;
+				const getEffect = (target, source, num) => {
+					const natures = ["fire", "thunder", "ice"];
+					return natures.map(nature => (get.damageEffect(target, target, source, nature) * Math.sqrt(num)) / Math.min(1.5, 1 + target.countCards("h"))).reduce((sum, effect) => sum + effect, 0) / natures.length;
+				};
+				const effect = getEffect(player, player, num);
+				const take = targets.some((current, index) => getEffect(current, player, num + index + 1) < effect);
+				const attitude = get.attitude(target, player);
+				const result = await target
+					.chooseCard({
+						prompt: `${get.translation(player)}对你发动了【长驱】`,
+						prompt2,
+						selectCard: num,
+						ai: card => {
+							if (attitude > 0) {
+								return 15 - get.value(card);
+							}
+							if (take) {
+								return 0;
+							}
+							return 8.2 - 0.8 * Math.min(5, target.hp + target.hujia) - get.value(card);
+						},
 					})
-					.set("att", get.attitude(target, player))
-					.set("take", function () {
-						var base = num;
-						var getEffect = function (target, player, num) {
-							var natures = ["fire", "thunder", "ice"];
-							return (
-								natures
-									.map(nature => {
-										return (get.damageEffect(target, target, player, nature) * Math.sqrt(num)) / Math.min(1.5, 1 + target.countCards("h"));
-									})
-									.reduce((sum, eff) => {
-										return sum + eff;
-									}, 0) / natures.length
-							);
-						};
-						var eff = getEffect(player, player, base);
-						return targets
-							.some((current, ind) => {
-								var num = base + ind + 1;
-								var effx = getEffect(current, player, num);
-								return effx < eff;
-							})
-							.set("target", target);
-					});
-			} else {
-				event.goto(4);
+					.forResult();
+				if (!result.bool) {
+					target.addSkill("dcchangqu_add");
+					target.addMark("dcchangqu_add", num, false);
+					await target.link(true);
+					break;
+				}
+
+				await target.give(result.cards, player);
+				count++;
+				const nextTarget = targets.find(current => current.isIn());
+				if (nextTarget) {
+					target.line(nextTarget);
+					nextTarget.addMark("dcchangqu_warship", target.countMark("dcchangqu_warship"));
+					nextTarget.addMark("dcchangqu_warshipx", target.countMark("dcchangqu_warshipx"), false);
+				}
+				target.removeMark("dcchangqu_warship", target.countMark("dcchangqu_warship"));
+				target.removeMark("dcchangqu_warshipx", target.countMark("dcchangqu_warshipx"), false);
+				if (!nextTarget) {
+					break;
+				}
+				await game.delayx();
 			}
-			"step 2";
-			if (result.bool) {
-				var cards = result.cards;
-				target.give(cards, player);
-				event.num++;
-			} else {
-				target.addSkill("dcchangqu_add");
-				target.addMark("dcchangqu_add", Math.max(1, event.num), false);
-				target.link(true);
-				event.goto(4);
+
+			for (const current of game.players.concat(game.dead)) {
+				delete current.storage.dcchangqu_warshipx;
 			}
-			"step 3";
-			var nextPlayer = targets.find(i => {
-				return i.isIn();
-			});
-			if (nextPlayer) {
-				target.line(nextPlayer);
-				nextPlayer.addMark("dcchangqu_warship", target.countMark("dcchangqu_warship"));
-				nextPlayer.addMark("dcchangqu_warshipx", target.countMark("dcchangqu_warshipx"), false);
-				event.goto(1);
-				game.delayx();
-			}
-			target.removeMark("dcchangqu_warship", target.countMark("dcchangqu_warship"));
-			target.removeMark("dcchangqu_warshipx", target.countMark("dcchangqu_warshipx"), false);
-			"step 4";
-			var targets = game.players.slice().concat(game.dead);
-			targets.forEach(i => {
-				delete i.storage.dcchangqu_warshipx;
-			});
 		},
 		ai: {
 			order: 10,
 			expose: 0.05,
 			result: {
 				target(player, target) {
-					let targets = game.filterPlayer(i => i != player);
+					let targets = game.filterPlayer(current => current !== player);
 					targets.sortBySeat(player);
-					let targets2 = targets.slice(0).reverse();
+					const reversedTargets = targets.slice().reverse();
 					let sum = 0;
-					let maxSum = -Infinity,
-						maxIndex = -1;
-					let maxSum2 = -Infinity,
-						maxIndex2 = -1;
-					for (let i = 0; i < targets.length; i++) {
-						let current = targets[i];
-						let att = -get.attitude(player, current) - 0.1;
-						let val = Math.sqrt(i + 1) * att;
-						val /= 0.01 + Math.max(3, current.countCards("h") / 2);
-						sum += val;
+					let maxSum = -Infinity;
+					let maxIndex = -1;
+					let reversedMaxSum = -Infinity;
+					let reversedMaxIndex = -1;
+					for (const [index, current] of targets.entries()) {
+						const attitude = -get.attitude(player, current) - 0.1;
+						const value = (Math.sqrt(index + 1) * attitude) / (0.01 + Math.max(3, current.countCards("h") / 2));
+						sum += value;
 						if (sum > maxSum) {
 							maxSum = sum;
-							maxIndex = i;
+							maxIndex = index;
 						}
 					}
 					sum = 0;
-					for (let i = 0; i < targets2.length; i++) {
-						let current = targets[i];
-						let att = -get.attitude(player, current) - 0.1;
-						let val = Math.sqrt(i + 1) * att;
-						val /= 0.01 + Math.max(3, current.countCards("h") / 2);
-						sum += val;
-						if (sum > maxSum2) {
-							maxSum2 = sum;
-							maxIndex2 = i;
+					for (const [index] of reversedTargets.entries()) {
+						const current = targets[index];
+						const attitude = -get.attitude(player, current) - 0.1;
+						const value = (Math.sqrt(index + 1) * attitude) / (0.01 + Math.max(3, current.countCards("h") / 2));
+						sum += value;
+						if (sum > reversedMaxSum) {
+							reversedMaxSum = sum;
+							reversedMaxIndex = index;
 						}
 					}
-					if (maxSum < maxSum2) {
-						targets = targets2;
-						maxIndex = maxIndex2;
+					if (maxSum < reversedMaxSum) {
+						targets = reversedTargets;
+						maxIndex = reversedMaxIndex;
 					}
 					if (ui.selected.targets.length > maxIndex) {
 						return -100 * get.sgnAttitude(player, target);
 					}
-					if (target == targets[ui.selected.targets.length]) {
+					if (target === targets[ui.selected.targets.length]) {
 						return get.sgnAttitude(player, target);
 					}
 					return 0;
@@ -32370,8 +32347,7 @@ const skills = {
 				forced: true,
 				onremove: true,
 				charlotte: true,
-				content() {
-					"step 0";
+				async content(event, trigger, player) {
 					trigger.num += player.countMark("dcchangqu_add");
 					player.removeSkill("dcchangqu_add");
 				},
