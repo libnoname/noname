@@ -43534,16 +43534,14 @@ const skills = {
 		mark: true,
 		intro: {
 			content(storage, player) {
-				return "出牌阶段限一次，" + (storage ? "你可以获得一名其他角色的至多两张手牌。" : "你可以将至多两张手牌交给一名其他角色。") + "若以此法移动的牌包含【酒】或♥牌，则你可令得到牌的角色执行一项：①回复1点体力。②复原武将牌。";
+				return `出牌阶段限一次，${storage ? "你可以获得一名其他角色的至多两张手牌。" : "你可以将至多两张手牌交给一名其他角色。"}若以此法移动的牌包含【酒】或♥牌，则你可令得到牌的角色执行一项：①回复1点体力。②复原武将牌。`;
 			},
 		},
 		filter(event, player) {
 			if (player.storage.bazhan) {
-				return game.hasPlayer(function (current) {
-					return current != player && current.countGainableCards(player, "h") > 0;
-				});
+				return game.hasPlayer(current => current !== player && current.hasGainableCards(player, "h"));
 			}
-			return player.countCards("h") > 0;
+			return player.hasCards("h");
 		},
 		filterCard: true,
 		discard: false,
@@ -43555,11 +43553,11 @@ const skills = {
 			return [1, 2];
 		},
 		filterTarget(card, player, target) {
-			if (player == target) {
+			if (player === target) {
 				return false;
 			}
 			if (player.storage.bazhan) {
-				return target.countGainableCards(player, "h") > 0;
+				return target.hasGainableCards(player, "h");
 			}
 			return true;
 		},
@@ -43571,105 +43569,94 @@ const skills = {
 		},
 		delay: false,
 		check(card) {
-			var player = _status.event.player;
-			var bool1 = false,
-				bool2 = false;
-			for (var i of game.players) {
-				if (get.attitude(player, i) <= 0 || player == i) {
+			const player = _status.event.player;
+			let bool1 = false;
+			let bool2 = false;
+			for (const current of game.players) {
+				if (get.attitude(player, current) <= 0 || player === current) {
 					continue;
 				}
 				bool1 = true;
-				if (i.isDamaged() || i.isTurnedOver()) {
+				if (current.isDamaged() || current.isTurnedOver()) {
 					bool2 = true;
 					break;
 				}
 			}
-			if (bool2 && !ui.selected.cards.length && (get.suit(card, player) == "heart" || get.name(card, player) == "jiu")) {
+			if (bool2 && !ui.selected.cards.length && (get.suit(card, player) === "heart" || get.name(card, player) === "jiu")) {
 				return 10;
 			}
 			if (bool1) {
 				return 9 - get.value(card);
 			}
-			if (get.color(card) == "red") {
+			if (get.color(card) === "red") {
 				return 5 - get.value(card);
 			}
 			return 0;
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
+			let moveEvent;
+			const target = player.storage.bazhan ? player : event.target;
 			if (player.storage.bazhan) {
-				event.recover = player;
-				player.gainPlayerCard(target, "h", true, "visibleMove", [1, 2]);
+				moveEvent = player.gainPlayerCard({
+					target: event.target,
+					position: "h",
+					forced: true,
+					visibleMove: true,
+					selectButton: [1, 2],
+				});
 			} else {
-				event.recover = target;
-				player.give(cards, target);
+				moveEvent = player.give(event.cards, event.target);
 			}
 			player.changeZhuanhuanji("bazhan");
-			"step 1";
-			var target = event.recover;
-			var cards = event.cards;
+			const result = await moveEvent.forResult();
+			let cards = event.cards;
 			if (result.bool && result.cards && result.cards.length) {
 				cards = result.cards;
 			}
-			if (
-				!cards ||
-				!target ||
-				!target.getCards("h").filter(function (i) {
-					return cards.includes(i);
-				}).length ||
-				(function () {
-					for (var card of cards) {
-						if (get.suit(card, target) == "heart" || get.name(card, target) == "jiu") {
-							return false;
-						}
-					}
-					return true;
-				})()
-			) {
-				event.finish();
+			if (!cards || !target || !target.hasCards("h", card => cards.includes(card)) || !cards.some(card => get.suit(card, target) === "heart" || get.name(card, target) === "jiu")) {
 				return;
 			}
-			var list = [];
-			event.addIndex = 0;
-			var str = get.translation(target);
-			event.target = target;
+			const list = [];
+			let addIndex = 0;
+			const str = get.translation(target);
 			if (target.isDamaged()) {
-				list.push("令" + str + "回复1点体力");
+				list.push(`令${str}回复1点体力`);
 			} else {
-				event.addIndex++;
+				addIndex++;
 			}
 			if (target.isLinked() || target.isTurnedOver()) {
-				list.push("令" + get.translation(target) + "复原武将牌");
+				list.push(`令${str}复原武将牌`);
 			}
 			if (!list.length) {
-				event.finish();
-			} else {
-				player
-					.chooseControl("cancel2")
-					.set("choiceList", list)
-					.set("ai", function () {
-						var evt = _status.event.getParent();
-						if (get.attitude(evt.player, evt.target) < 0) {
+				return;
+			}
+			const choice = await player
+				.chooseControl({
+					controls: ["cancel2"],
+					choiceList: list,
+					ai: () => {
+						if (get.attitude(player, target) < 0) {
 							return "cancel2";
 						}
-						if (evt.target.hp > 1 && evt.target.isTurnedOver()) {
-							return 1 - evt.addIndex;
+						if (target.hp > 1 && target.isTurnedOver()) {
+							return 1 - addIndex;
 						}
 						return 0;
-					});
+					},
+				})
+				.forResult();
+			if (choice.control === "cancel2") {
+				return;
 			}
-			"step 2";
-			if (result.control == "cancel2") {
-				event.finish();
-			} else if (result.index + event.addIndex == 0) {
-				event.recover.recover();
-				event.finish();
-			} else if (event.recover.isLinked()) {
-				event.recover.link();
+			if (choice.index + addIndex === 0) {
+				await target.recover();
+				return;
 			}
-			"step 3";
-			if (event.recover.isTurnedOver()) {
-				event.recover.turnOver();
+			if (target.isLinked()) {
+				await target.link();
+			}
+			if (target.isTurnedOver()) {
+				await target.turnOver();
 			}
 		},
 		ai: {
@@ -43680,13 +43667,13 @@ const skills = {
 						return -1;
 					}
 					if (ui.selected.cards.length) {
-						var cards = ui.selected.cards,
-							card = cards[0];
+						const cards = ui.selected.cards;
+						const card = cards[0];
 						if (get.value(cards, target) < 0) {
 							return -0.5;
 						}
 						if (get.attitude(player, target) > 0) {
-							if ((target.isDamaged() || target.isTurnedOver()) && (get.suit(card, target) == "heart" || get.name(card, target) == "jiu")) {
+							if ((target.isDamaged() || target.isTurnedOver()) && (get.suit(card, target) === "heart" || get.name(card, target) === "jiu")) {
 								return 3;
 							}
 							if (target.hasUseTarget(card) && target.getUseValue(card) > player.getUseValue(card, null, true)) {
