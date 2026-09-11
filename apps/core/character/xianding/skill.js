@@ -35805,66 +35805,76 @@ const skills = {
 		audio: "dcjinjie",
 		trigger: { global: "dying" },
 		hasPhase(player) {
-			var history = player.actionHistory;
-			for (var i = history.length - 1; i >= 0; i--) {
-				if (history[i].isMe && !history[i].isSkipped) {
+			const history = player.actionHistory;
+			for (let index = history.length - 1; index >= 0; index--) {
+				if (history[index].isMe && !history[index].isSkipped) {
 					return true;
 				}
-				if (history[i].isRound) {
+				if (history[index].isRound) {
 					break;
 				}
 			}
 			return false;
 		},
-		direct: true,
-		content() {
-			"step 0";
-			player.chooseBool(get.prompt("oldjinjie", trigger.player), "令其摸一张牌").set("ai", () => {
-				return get.attitude(_status.event.player, _status.event.getTrigger().player) > 0;
-			});
-			"step 1";
-			if (result.bool) {
-				player.logSkill("oldjinjie", trigger.player);
-				trigger.player.draw();
-			} else {
-				event.finish();
-			}
+		async cost(event, trigger, player) {
+			const target = trigger.player;
+			event.result = await player
+				.chooseBool({
+					prompt: get.prompt(event.skill, target),
+					prompt2: "令其摸一张牌",
+					ai: () => get.attitude(player, target) > 0,
+				})
+				.forResult();
+		},
+		logTarget: "player",
+		async content(event, trigger, player) {
+			const target = trigger.player;
+			await target.draw();
 			if (lib.skill.oldjinjie.hasPhase(player)) {
-				event.finish();
+				return;
 			}
-			"step 2";
-			var num = 0;
-			var history = player.actionHistory;
-			for (var i = history.length - 1; i >= 0; i--) {
-				for (var evt of history[i].useSkill) {
-					if (evt.skill == "oldjinjie") {
+
+			let num = 0;
+			const history = player.actionHistory;
+			for (let index = history.length - 1; index >= 0; index--) {
+				for (const skillEvent of history[index].useSkill) {
+					if (skillEvent.skill === "oldjinjie") {
 						num++;
 					}
 				}
-				if (history[i].isRound) {
+				if (history[index].isRound) {
 					break;
 				}
 			}
-			if (num == 0) {
-				player.chooseBool(get.prompt("oldjinjie", trigger.player), "令其回复1点体力").set("ai", () => {
-					var player = _status.event.player;
-					return get.effect(_status.event.getTrigger().player, { name: "tao" }, player, player) > 0;
-				});
-			} else {
-				player
-					.chooseToDiscard(get.prompt("oldjinjie", trigger.player), "弃置" + get.cnNumber(num) + "张牌，令其回复1点体力", "he", num)
-					.set("ai", card => {
-						if (_status.event.eff > 0) {
-							return get.value({ name: "tao" }) - get.value(card);
-						}
-						return 0;
+			let recoverResult;
+			if (num === 0) {
+				recoverResult = await player
+					.chooseBool({
+						prompt: get.prompt("oldjinjie", target),
+						prompt2: "令其回复1点体力",
+						ai: () => get.effect(target, { name: "tao" }, player, player) > 0,
 					})
-					.set("eff", get.effect(trigger.player, { name: "tao" }, player, player));
+					.forResult();
+			} else {
+				const recoverEffect = get.effect(target, { name: "tao" }, player, player);
+				recoverResult = await player
+					.chooseToDiscard({
+						prompt: get.prompt("oldjinjie", target),
+						prompt2: `弃置${get.cnNumber(num)}张牌，令其回复1点体力`,
+						position: "he",
+						selectCard: num,
+						ai: card => {
+							if (recoverEffect > 0) {
+								return get.value({ name: "tao" }) - get.value(card);
+							}
+							return 0;
+						},
+					})
+					.forResult();
 			}
-			"step 3";
-			if (result.bool) {
-				player.line(trigger.player, "green");
-				trigger.player.recover();
+			if (recoverResult.bool) {
+				player.line(target, "green");
+				await target.recover();
 			}
 		},
 	},
