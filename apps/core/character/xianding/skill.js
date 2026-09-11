@@ -33337,59 +33337,61 @@ const skills = {
 		audio: 2,
 		trigger: { target: "useCardToTargeted" },
 		filter(event, player) {
-			if (event.player == player || get.color(event.card) != "black") {
+			if (event.player === player || get.color(event.card) !== "black") {
 				return false;
 			}
 			if (player.hasSkill("jiu")) {
-				return player.countCards("h", card => {
-					return _status.connectMode || lib.filter.cardDiscardable(card, player, "dcjiudun");
-				});
+				return player.hasDiscardableCards(player, "h", card => _status.connectMode || lib.filter.cardDiscardable(card, player, "dcjiudun"));
 			}
 			return true;
 		},
-		direct: true,
-		content() {
-			"step 0";
+		async cost(event, trigger, player) {
 			if (player.hasSkill("jiu")) {
-				player
-					.chooseToDiscard(get.prompt("dcjiudun"), '<div class="text center">弃置一张手牌，令' + get.translation(trigger.card) + "对你无效</div>")
-					.set("logSkill", "dcjiudun")
-					.set("ai", card => {
-						if (_status.event.goon) {
-							return 4.5 + Math.max(0, 3 - player.hp) - get.value(card);
-						}
-						return 0;
+				const goon = get.effect(player, trigger.card, trigger.player, player) < -4 * Math.max(0, 5 - Math.sqrt(player.countCards("h")));
+				const result = await player
+					.chooseToDiscard({
+						prompt: get.prompt(event.skill),
+						prompt2: `<div class="text center">弃置一张手牌，令${get.translation(trigger.card)}对你无效</div>`,
+						chooseonly: true,
+						ai: card => (goon ? 4.5 + Math.max(0, 3 - player.hp) - get.value(card) : 0),
 					})
-					.set(
-						"goon",
-						(function () {
-							if (get.effect(player, trigger.card, trigger.player, player) < -4 * Math.max(0, 5 - Math.sqrt(player.countCards("h")))) {
-								return true;
-							}
-							return false;
-						})()
-					);
-				event.goto(2);
-			} else {
-				player.chooseBool(get.prompt("dcjiudun"), "摸一张牌，然后视为使用一张【酒】").set("ai", () => 1);
+					.set("goon", goon)
+					.forResult();
+				event.result = {
+					...result,
+					cost_data: "discard",
+				};
+				return;
 			}
-			"step 1";
-			if (result.bool) {
-				player.logSkill("dcjiudun");
-				player.draw();
-				player.chooseUseTarget("jiu", true);
-			}
-			event.finish();
-			"step 2";
-			if (result.bool) {
+			const result = await player
+				.chooseBool({
+					prompt: get.prompt(event.skill),
+					prompt2: "摸一张牌，然后视为使用一张【酒】",
+					ai: () => true,
+				})
+				.forResult();
+			event.result = {
+				...result,
+				cost_data: "use",
+			};
+		},
+		async content(event, trigger, player) {
+			if (event.cost_data === "discard") {
+				await player.discard(event.cards);
 				trigger.excluded.add(player);
 				game.log(trigger.card, "对", player, "无效");
+				return;
 			}
+			await player.draw();
+			await player.chooseUseTarget({
+				card: { name: "jiu", isCard: true },
+				forced: true,
+			});
 		},
 		ai: {
 			jiuSustain: true,
 			skillTagFilter(player, tag, name) {
-				if (name != "phase") {
+				if (name !== "phase") {
 					return false;
 				}
 			},
@@ -33403,9 +33405,7 @@ const skills = {
 							card.name !== "huogong" &&
 							get.tag(card, "damage") &&
 							get.attitude(player, target) <= 0 &&
-							target.hasCard(i => {
-								return _status.connectMode || lib.filter.cardDiscardable(i, player, "dcjiudun");
-							}, "h")
+							target.hasCard(card => _status.connectMode || lib.filter.cardDiscardable(card, player, "dcjiudun"), "h")
 						) {
 							return [0, -1];
 						}
