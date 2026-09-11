@@ -36176,7 +36176,6 @@ const skills = {
 	dcyuanmo: {
 		audio: 2,
 		trigger: { player: ["damageEnd", "phaseZhunbeiBegin"] },
-		direct: true,
 		group: "dcyuanmo_add",
 		init(player) {
 			player.storage.dcyuanmo_range = 0;
@@ -36190,98 +36189,92 @@ const skills = {
 				return;
 			}
 			player.storage.dcyuanmo_range += num;
-			if (player.storage.dcyuanmo_range != 0) {
+			if (player.storage.dcyuanmo_range !== 0) {
 				player.markSkill("dcyuanmo_range");
 			} else {
 				player.unmarkSkill("dcyuanmo_range");
 			}
-			game.log(player, "的攻击范围", (num > 0 ? "+" : "") + num);
+			game.log(player, "的攻击范围", `${num > 0 ? "+" : ""}${num}`);
 		},
-		content() {
-			"step 0";
-			event.targets = game.filterPlayer(current => player.inRange(current));
-			var choiceList = ["攻击范围+1。然后若你攻击范围内的角色数因此增加，你可以获得其中任意名角色的一张牌", "攻击范围-1。然后你摸两张牌"];
-			player
-				.chooseControl("cancel2")
-				.set("prompt", get.prompt("dcyuanmo"))
-				.set("choiceList", choiceList)
-				.set("ai", () => {
-					return _status.event.choice;
-				})
-				.set(
-					"choice",
-					(function () {
-						if (
-							trigger.name == "phaseZhunbei" &&
-							player.getAttackRange() == 1 &&
-							!player.hasCard(card => {
-								if (get.subtype(card) != "equip1" && !player.hasUseTarget(card)) {
-									return false;
-								}
-								var num = 1;
-								var info = get.info(card, false);
-								if (info && info.distance && typeof info.distance.attackFrom == "number") {
-									num -= info.distance.attackFrom;
-								}
-								return num > 1;
-							}, "hs")
-						) {
-							return "选项一";
-						}
-						var targets = event.targets.slice(),
-							targetsx = [];
-						var _tmp = player.storage.dcyuanmo_range;
-						player.storage.dcyuanmo_range++;
-						try {
-							targetsx = game.filterPlayer(current => player.inRange(current));
-						} catch (e) {
-							player.storage.dcyuanmo_range = _tmp;
-						}
-						player.storage.dcyuanmo_range = _tmp;
-						targetsx.removeArray(targets);
-						return targetsx.reduce((p, c) => {
-							return p + Math.max(0, get.effect(c, { name: "shunshou_copy2" }, player, player));
-						}, 0) >
-							get.effect(player, { name: "draw" }, player, player) * 1.3
-							? "选项一"
-							: "选项二";
-					})()
-				);
-			"step 1";
-			if (result.control == "cancel2") {
-				event.finish();
-				return;
+		async cost(event, trigger, player) {
+			const previousTargets = game.filterPlayer(current => player.inRange(current));
+			const choiceList = ["攻击范围+1。然后若你攻击范围内的角色数因此增加，你可以获得其中任意名角色的一张牌", "攻击范围-1。然后你摸两张牌"];
+			let preferredChoice;
+			if (
+				trigger.name === "phaseZhunbei" &&
+				player.getAttackRange() === 1 &&
+				!player.hasCard(card => {
+					if (get.subtype(card) !== "equip1" && !player.hasUseTarget(card)) {
+						return false;
+					}
+					let range = 1;
+					const info = get.info(card, false);
+					if (info?.distance && typeof info.distance.attackFrom === "number") {
+						range -= info.distance.attackFrom;
+					}
+					return range > 1;
+				}, "hs")
+			) {
+				preferredChoice = "选项一";
+			} else {
+				const originalRange = player.storage.dcyuanmo_range;
+				let expandedTargets;
+				player.storage.dcyuanmo_range++;
+				try {
+					expandedTargets = game.filterPlayer(current => player.inRange(current));
+				} finally {
+					player.storage.dcyuanmo_range = originalRange;
+				}
+				expandedTargets.removeArray(previousTargets);
+				const gainEffect = expandedTargets.reduce((sum, current) => sum + Math.max(0, get.effect(current, { name: "shunshou_copy2" }, player, player)), 0);
+				preferredChoice = gainEffect > get.effect(player, { name: "draw" }, player, player) * 1.3 ? "选项一" : "选项二";
 			}
-			player.logSkill("dcyuanmo");
-			if (result.control == "选项一") {
+			const { control } = await player
+				.chooseControl({
+					controls: ["cancel2"],
+					prompt: get.prompt(event.skill),
+					choiceList,
+					ai: () => preferredChoice,
+				})
+				.forResult();
+			event.result = {
+				bool: control !== "cancel2",
+				cost_data: control,
+			};
+		},
+		async content(event, trigger, player) {
+			const control = event.cost_data;
+			const previousTargets = game.filterPlayer(current => player.inRange(current));
+			if (control === "选项一") {
 				lib.skill.dcyuanmo.change(player, 1);
-				var targetsx = game.filterPlayer(current => player.inRange(current));
-				if (targetsx.length <= targets.length) {
-					event.finish();
-				} else {
-					event.targets = targetsx.removeArray(targets);
+				const newTargets = game.filterPlayer(current => player.inRange(current));
+				if (newTargets.length <= previousTargets.length) {
+					return;
+				}
+				newTargets.removeArray(previousTargets);
+				const result = await player
+					.chooseTarget({
+						prompt: "远谟：获得任意名本次进入你攻击范围的角色的一张牌",
+						selectTarget: [1, newTargets.length],
+						filterTarget: (_card, player, target) => newTargets.includes(target) && target.hasGainableCards(player, "he"),
+						ai: target => get.effect(target, { name: "shunshou_copy2" }, player, player),
+					})
+					.forResult();
+				if (!result.bool) {
+					return;
+				}
+				const targets = result.targets.sortBySeat();
+				player.line(targets);
+				for (const target of targets) {
+					await player.gainPlayerCard({
+						target,
+						position: "he",
+						forced: true,
+					});
 				}
 			} else {
 				lib.skill.dcyuanmo.change(player, -1);
-				player.draw(2);
-				event.finish();
-			}
-			"step 2";
-			player
-				.chooseTarget("远谟：获得任意名本次进入你攻击范围的角色的一张牌", [1, targets.length], (card, player, target) => {
-					return _status.event.getParent().targets.includes(target) && target.countGainableCards(player, "he") > 0;
-				})
-				.set("ai", target => {
-					var player = _status.event.player;
-					return get.effect(target, { name: "shunshou_copy2" }, player, player);
-				});
-			"step 3";
-			if (result.bool) {
-				var targets = result.targets.sortBySeat();
-				player.line(targets);
-				for (var target of targets) {
-					player.gainPlayerCard(target, "he", true);
-				}
+				await player.draw(2);
 			}
 		},
 		subSkill: {
@@ -36293,7 +36286,7 @@ const skills = {
 				},
 				prompt2: "令你的攻击范围+1",
 				check: () => true,
-				content() {
+				async content(event, trigger, player) {
 					lib.skill.dcyuanmo.change(player, 1);
 				},
 			},
@@ -36301,8 +36294,8 @@ const skills = {
 				charlotte: true,
 				intro: {
 					content(storage, player) {
-						var num = player.storage.dcyuanmo_range;
-						return "攻击范围" + (num >= 0 ? "+" : "") + num;
+						const num = player.storage.dcyuanmo_range;
+						return `攻击范围${num >= 0 ? "+" : ""}${num}`;
 					},
 				},
 				mod: {
