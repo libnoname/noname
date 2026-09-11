@@ -44797,53 +44797,44 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseUseBegin" },
 		filter(event, player) {
-			// /-?
-			// if (!ui.cardPile.hasChildNodes() && !ui.discardPile.hasChildNodes()) {
-			// }
-			var hs = player.getCards("h");
-			if (!hs.length) {
-				return false;
-			}
-			for (var i of hs) {
-				if (!lib.filter.cardDiscardable(i, player, "qingjiao")) {
-					return false;
-				}
-			}
-			return true;
+			const hs = player.getCards("h");
+			return hs.length > 0 && hs.every(card => lib.filter.cardDiscardable(card, player, "qingjiao"));
 		},
-		//check:function(event,player){
-		//	return player.countCards('h')<=player.hp;
-		//},
-		content() {
-			"step 0";
-			player.chooseToDiscard(true, "h", player.countCards("h"));
-			"step 1";
-			var evt = trigger.getParent();
+		async content(event, trigger, player) {
+			await player.chooseToDiscard({ forced: true, position: "h", selectCard: player.countCards("h") });
+			const evt = trigger.getParent();
 			if (evt && evt.getParent && !evt.qingjiao) {
 				evt.qingjiao = true;
-				var next = game.createEvent("qingjiao_discard", false, evt.getParent());
+				const next = game.createEvent("qingjiao_discard", false, evt.getParent());
 				next.player = player;
-				next.setContent(function () {
-					var hs = player.getCards("he");
-					if (hs.length) {
-						player.discard(hs);
+				next.setContent(async (event, trigger, player) => {
+					const hs = player.getCards("he");
+					if (!hs.length) {
+						return;
 					}
+					await player.discard({ cards: hs });
 				});
 			}
-			"step 2";
-			var list = [];
-			var typelist = [];
-			var getType = function (card) {
-				var sub = get.subtype(card);
-				if (sub) {
-					return sub;
+			const list = [];
+			const typelist = [];
+			const getType = card => get.subtype(card) || card.name;
+			for (const node of ui.cardPile.childNodes) {
+				const typex = getType(node);
+				if (typelist.includes(typex)) {
+					continue;
 				}
-				return card.name;
-			};
-			for (var i = 0; i < ui.cardPile.childElementCount; i++) {
-				var node = ui.cardPile.childNodes[i];
-				var typex = getType(node);
-				if (!typelist.includes(typex)) {
+				list.push(node);
+				typelist.push(typex);
+				if (list.length >= 8) {
+					break;
+				}
+			}
+			if (list.length < 8) {
+				for (const node of ui.discardPile.childNodes) {
+					const typex = getType(node);
+					if (typelist.includes(typex)) {
+						continue;
+					}
 					list.push(node);
 					typelist.push(typex);
 					if (list.length >= 8) {
@@ -44851,20 +44842,7 @@ const skills = {
 					}
 				}
 			}
-			if (list.length < 8) {
-				for (var i = 0; i < ui.discardPile.childElementCount; i++) {
-					var node = ui.discardPile.childNodes[i];
-					var typex = getType(node);
-					if (!typelist.includes(typex)) {
-						list.push(node);
-						typelist.push(typex);
-						if (list.length >= 8) {
-							break;
-						}
-					}
-				}
-			}
-			player.gain(list, "gain2");
+			await player.gain({ cards: list, animate: "gain2" });
 		},
 	},
 	//王双
