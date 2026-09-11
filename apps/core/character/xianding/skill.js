@@ -38313,79 +38313,84 @@ const skills = {
 			player: ["phaseBegin", "enterGame"],
 		},
 		filter(event, player, name) {
-			if (name == "phaseBefore" && game.phaseNumber > 0) {
+			if (name === "phaseBefore" && game.phaseNumber > 0) {
 				return false;
 			}
 			if (player.getEquip("pilitoushiche")) {
-				return game.hasPlayer(function (current) {
-					return current != player && current.countDiscardableCards(player, "he") > 0;
-				});
-			} else {
-				return player.hasEquipableSlot(5);
+				return game.hasPlayer(current => current !== player && current.hasDiscardableCards(player, "he"));
 			}
+			return player.hasEquipableSlot(5);
 		},
-		direct: true,
-		content() {
-			"step 0";
+		async cost(event, trigger, player) {
 			if (player.getEquip("pilitoushiche")) {
-				event.goto(2);
-				player
-					.chooseTarget(get.prompt("dcpoyuan"), "弃置一名其他角色的至多两张牌", function (card, player, target) {
-						return target != player && target.countDiscardableCards(player, "he") > 0;
+				const result = await player
+					.chooseTarget({
+						prompt: get.prompt(event.skill),
+						prompt2: "弃置一名其他角色的至多两张牌",
+						filterTarget: (_card, player, target) => target !== player && target.hasDiscardableCards(player, "he"),
+						ai: target => {
+							const cards = target.getDiscardableCards(player, "he");
+							let attitude = get.attitude(player, target);
+							if (attitude < 0 && target.hasSkillTag("noe")) {
+								attitude /= 2;
+							}
+							let positiveCards = [];
+							let negativeCards = [];
+							for (const card of cards) {
+								if (get.value(card, target) > 0) {
+									positiveCards.push(card);
+								} else {
+									negativeCards.push(card);
+								}
+							}
+							positiveCards = positiveCards.sort((a, b) => get.value(b, target) - get.value(a, target)).slice(0, 2);
+							negativeCards = negativeCards.sort((a, b) => get.value(b, target) - get.value(a, target)).slice(0, 2);
+							let positiveEffect = 0;
+							let negativeEffect = 0;
+							for (const card of positiveCards) {
+								positiveEffect += get.value(card, target);
+							}
+							for (const card of negativeCards) {
+								if (get.position(card) === "e") {
+									negativeEffect += 1 - get.value(card, target);
+								}
+							}
+							return -attitude * Math.max(positiveEffect, negativeEffect);
+						},
 					})
-					.set("ai", function (target) {
-						var player = _status.event.player,
-							cards = target.getDiscardableCards(player, "he");
-						var att = get.attitude(player, target);
-						if (att < 0 && target.hasSkillTag("noe")) {
-							att /= 2;
-						}
-						var zheng = [],
-							fu = [];
-						for (var i of cards) {
-							var val = get.value(i, target);
-							if (val > 0) {
-								zheng.push(i);
-							} else {
-								fu.push(i);
-							}
-						}
-						zheng.sort((a, b) => get.value(b, target) - get.value(a, target));
-						fu.sort((a, b) => get.value(b, target) - get.value(a, target));
-						zheng = zheng.slice(0, 2);
-						fu = fu.slice(0, 2);
-						var eff1 = 0,
-							eff2 = 0;
-						for (var i of zheng) {
-							eff1 += get.value(i, target);
-						}
-						for (var i of fu) {
-							if (get.position(i) == "e") {
-								eff2 += 1 - get.value(i, target);
-							}
-						}
-						return -att * Math.max(eff1, eff2);
-					});
-			} else {
-				player.chooseBool(get.prompt("dcpoyuan"), "装备一张【霹雳投石车】").set("ai", function () {
-					return true;
+					.forResult();
+				event.result = {
+					...result,
+					cost_data: "discard",
+				};
+				return;
+			}
+			const result = await player
+				.chooseBool({
+					prompt: get.prompt(event.skill),
+					prompt2: "装备一张【霹雳投石车】",
+					ai: () => true,
+				})
+				.forResult();
+			event.result = {
+				...result,
+				cost_data: "equip",
+			};
+		},
+		async content(event, trigger, player) {
+			if (event.cost_data === "discard") {
+				await player.discardPlayerCard({
+					target: event.targets[0],
+					forced: true,
+					position: "he",
+					selectButton: [1, 2],
 				});
+				return;
 			}
-			"step 1";
-			if (result.bool) {
-				player.logSkill("dcpoyuan");
-				var card = game.createCard("pilitoushiche", "diamond", 9);
-				player.$gain2(card);
-				game.delayx();
-				player.equip(card);
-			}
-			event.finish();
-			"step 2";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("dcpoyuan", target);
-				player.discardPlayerCard(target, true, "he", [1, 2]);
-			}
+			const card = game.createCard("pilitoushiche", "diamond", 9);
+			player.$gain2(card);
+			await game.delayx();
+			await player.equip(card);
 		},
 	},
 	dchuace: {
