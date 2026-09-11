@@ -3665,20 +3665,20 @@ const skills = {
 		audio: 2,
 		trigger: { player: "equipAfter" },
 		forced: true,
+		getType(card) {
+			const type = get.type2(card, false);
+			return type === "equip" ? get.subtype(card, false) : type;
+		},
 		filter(event, player, name, card) {
-			const subtypes = get.subtypes(card);
-			return !player.getStorage("jingyi_used").some(i => subtypes.includes(i));
+			return !player.getStorage("jingyi_used").includes(lib.skill.jingyi.getType(card));
 		},
 		getIndex(event, player) {
-			return event.vcards?.length ? event.vcards : (event.cards ?? []);
+			return event.cards ?? [];
 		},
 		async content(event, trigger, player) {
-			const card = event.indexedData,
-				subtypes = get.subtypes(card);
+			const type = lib.skill.jingyi.getType(event.indexedData);
 			player.addTempSkill(event.name + "_used");
-			if (subtypes?.length) {
-				player.markAuto(event.name + "_used", subtypes);
-			}
+			player.markAuto(event.name + "_used", [type]);
 			const num = player.getCards("e").reduce((sum, card) => {
 				const num = card.viewAs ? card.cards.length : 1;
 				return sum + num;
@@ -3696,7 +3696,7 @@ const skills = {
 				onremove: true,
 				mark: true,
 				marktext: "益",
-				intro: { content: "本回合已触发装备副类别：$" },
+				intro: { content: "本回合已触发类别：$" },
 			},
 		},
 	},
