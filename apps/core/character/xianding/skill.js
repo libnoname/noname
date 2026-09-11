@@ -41293,69 +41293,54 @@ const skills = {
 	},
 	shawu: {
 		trigger: { player: "useCardToTargeted" },
-		direct: true,
 		filter(event, player) {
-			return (
-				event.card.name == "sha" &&
-				event.player.isIn() &&
-				(player.hasMark("shawu") ||
-					player.countCards("h", function (card) {
-						return lib.filter.cardDiscardable(card, player, "shawu");
-					}) > 1)
-			);
+			return event.card.name === "sha" && event.player.isIn() && (player.hasMark("shawu") || player.countCards("h", card => lib.filter.cardDiscardable(card, player, "shawu")) > 1);
 		},
-		content() {
-			"step 0";
-			var list = [];
-			if (
-				player.countCards("h", function (card) {
-					return lib.filter.cardDiscardable(card, player, "shawu");
-				}) > 1
-			) {
+		async cost(event, trigger, player) {
+			const target = trigger.target;
+			const list = [];
+			if (player.countCards("h", card => lib.filter.cardDiscardable(card, player, "shawu")) > 1) {
 				list.push("弃置手牌");
 			}
 			if (player.hasMark("shawu")) {
 				list.push("移除标记");
 			}
 			list.push("cancel2");
-			player
-				.chooseControl(list)
-				.set("prompt", get.prompt("shawu", trigger.target))
-				.set("prompt2", "弃置两张手牌，或移去一枚“沙”并摸两张牌，然后对该角色造成1点伤害")
-				.set("ai", function () {
-					var player = _status.event.player,
-						target = _status.event.getTrigger().target;
-					if (get.damageEffect(target, player, player) <= 0) {
+			const result = await player
+				.chooseControl({
+					controls: list,
+					prompt: get.prompt(event.skill, target),
+					prompt2: "弃置两张手牌，或移去一枚“沙”并摸两张牌，然后对该角色造成1点伤害",
+					ai: () => {
+						if (get.damageEffect(target, player, player) <= 0) {
+							return "cancel2";
+						}
+						if (player.hasMark("shawu")) {
+							return "移除标记";
+						}
+						if (player.countCards("h", card => lib.filter.cardDiscardable(card, player, "shawu") && get.value(card) <= 6.5) > 1) {
+							return "弃置手牌";
+						}
 						return "cancel2";
-					}
-					if (player.hasMark("shawu")) {
-						return "移除标记";
-					}
-					if (
-						player.countCards("h", function (card) {
-							return lib.filter.cardDiscardable(card, player, "shawu") && get.value(card) <= 6.5;
-						}) > 1
-					) {
-						return "弃置手牌";
-					}
-					return "cancel2";
-				});
-			"step 1";
-			var target = trigger.target;
-			if (result.control == "cancel2") {
-				event.finish();
-				return;
-			} else if (result.control == "移除标记") {
-				player.logSkill("shawu", target);
+					},
+				})
+				.forResult();
+			event.result = {
+				bool: result.control !== "cancel2",
+				targets: [target],
+				cost_data: result.control,
+			};
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			if (event.cost_data === "移除标记") {
 				player.removeMark("shawu", 1);
-				player.draw(2);
-				target.damage();
-				event.finish();
-			} else {
-				player.chooseToDiscard("h", true, 2).logSkill = ["shawu", target];
+				await player.draw(2);
+				await target.damage();
+				return;
 			}
-			"step 2";
-			trigger.target.damage();
+			await player.chooseToDiscard({ position: "h", forced: true, selectCard: 2 });
+			await target.damage();
 		},
 		intro: {
 			content: "mark",
