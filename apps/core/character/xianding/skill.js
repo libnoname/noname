@@ -31001,9 +31001,7 @@ const skills = {
 	//新杀许靖
 	dcshangyu: {
 		audio: 2,
-		init: () => {
-			game.addGlobalSkill("dcshangyu_ai");
-		},
+		init: () => game.addGlobalSkill("dcshangyu_ai"),
 		onremove: () => {
 			if (!game.hasPlayer(i => i.hasSkill("dcshangyu", null, null, false), true)) {
 				game.removeGlobalSkill("dcshangyu_ai");
@@ -31014,60 +31012,52 @@ const skills = {
 			player: "enterGame",
 		},
 		filter(event, player) {
-			return event.name != "phase" || game.phaseNumber == 0;
+			return event.name !== "phase" || game.phaseNumber === 0;
 		},
 		forced: true,
-		content() {
-			"step 0";
-			var card = get.cardPile(card => get.name(card, false) == "sha");
-			if (card) {
-				event.card = card;
-				player.gain(card, "gain2").gaintag.add("dcshangyu_tag");
-				player.markAuto("dcshangyu", card);
-			} else {
+		async content(event, trigger, player) {
+			const card = get.cardPile(card => get.name(card, false) === "sha");
+			if (!card) {
 				player.chat("不是，连杀都没有？");
-				event.finish();
+				return;
 			}
-			"step 1";
-			if (get.owner(card) == player && get.position(card) == "h" && game.hasPlayer(current => current != player)) {
-				let targets = game
-					.filterPlayer(
-						i => {
-							return get.attitude(player, i) > 0;
-						},
-						null,
-						true
-					)
-					.sortBySeat(
-						get.zhu(player) ||
-							game.findPlayer(i => {
-								return i.getSeatNum() === 1;
-							})
-					);
-				if (targets.includes(player)) {
-					targets = targets.slice(0, targets.indexOf(player));
-				}
-				player
-					.chooseTarget(`是否将${get.translation(card)}交给一名其他角色？`, lib.filter.notMe)
-					.set("ai", target => {
-						let idx = _status.event.targets.indexOf(target);
-						if (idx < 0) {
-							return -1;
-						}
-						return 1 / (idx + 1);
-					})
-					.set("targets", targets);
-			} else {
-				event.finish();
+			event.card = card;
+			const gainEvent = player.gain({
+				cards: [card],
+				animate: "gain2",
+				gaintag: ["dcshangyu_tag"],
+			});
+			player.markAuto("dcshangyu", card);
+			await gainEvent;
+			if (get.owner(card) !== player || get.position(card) !== "h" || !game.hasPlayer(current => current !== player)) {
+				return;
 			}
-			"step 2";
+			let targets = game
+				.filterPlayer(current => get.attitude(player, current) > 0, null, true)
+				.sortBySeat(get.zhu(player) || game.findPlayer(current => current.getSeatNum() === 1));
+			if (targets.includes(player)) {
+				targets = targets.slice(0, targets.indexOf(player));
+			}
+			const result = await player
+				.chooseTarget({
+					prompt: `是否将${get.translation(card)}交给一名其他角色？`,
+					filterTarget: lib.filter.notMe,
+					ai: target => {
+						const index = targets.indexOf(target);
+						return index < 0 ? -1 : 1 / (index + 1);
+					},
+				})
+				.set("targets", targets)
+				.forResult();
 			if (result.bool) {
-				var target = result.targets[0];
+				const target = result.targets[0];
 				player.line(target);
 				if (get.mode() !== "identity" || player.identity !== "nei") {
 					player.addExpose(0.2);
 				}
-				player.give(card, target).gaintag.add("dcshangyu_tag");
+				const giveEvent = player.give(card, target);
+				giveEvent.gaintag.add("dcshangyu_tag");
+				await giveEvent;
 			}
 			player.addSkill("dcshangyu_effect");
 		},
@@ -31076,22 +31066,18 @@ const skills = {
 				mod: {
 					aiOrder(player, card, num) {
 						if (
-							get.itemtype(card) == "card" &&
+							get.itemtype(card) === "card" &&
 							card.hasGaintag("dcshangyu_tag") &&
-							game.hasPlayer(current => {
-								return current.hasSkill("dcshangyu") && get.attitude(player, current) >= 0;
-							})
+							game.hasPlayer(current => current.hasSkill("dcshangyu") && get.attitude(player, current) >= 0)
 						) {
 							return num + 0.1;
 						}
 					},
 					aiValue(player, card, num) {
 						if (
-							get.itemtype(card) == "card" &&
+							get.itemtype(card) === "card" &&
 							card.hasGaintag("dcshangyu_tag") &&
-							game.hasPlayer(current => {
-								return current.hasSkill("dcshangyu") && get.attitude(player, current) >= 0;
-							})
+							game.hasPlayer(current => current.hasSkill("dcshangyu") && get.attitude(player, current) >= 0)
 						) {
 							return num / 10;
 						}
@@ -31103,16 +31089,12 @@ const skills = {
 				trigger: {
 					player: "dieAfter",
 				},
-				filter: () => {
-					return !game.hasPlayer(i => i.hasSkill("dcshangyu", null, null, false), true);
-				},
+				filter: () => !game.hasPlayer(current => current.hasSkill("dcshangyu", null, null, false), true),
 				silent: true,
 				forceDie: true,
 				forced: true,
 				popup: false,
-				content: () => {
-					game.removeGlobalSkill("dcshangyu_ai");
-				},
+				content: async () => game.removeGlobalSkill("dcshangyu_ai"),
 			},
 			effect: {
 				audio: "dcshangyu",
@@ -31126,9 +31108,8 @@ const skills = {
 				charlotte: true,
 				direct: true,
 				group: ["dcshangyu_transfer", "dcshangyu_addTag"],
-				content() {
-					"step 0";
-					var list = [player];
+				async content(event, trigger, player) {
+					const list = [player];
 					if (trigger.source && trigger.source.isIn()) {
 						player.logSkill("dcshangyu_effect", trigger.source);
 						list.push(trigger.source);
@@ -31136,7 +31117,7 @@ const skills = {
 						player.logSkill("dcshangyu_effect");
 					}
 					list.sortBySeat();
-					game.asyncDraw(list);
+					await game.asyncDraw(list);
 				},
 			},
 			transfer: {
@@ -31147,61 +31128,52 @@ const skills = {
 				forced: true,
 				direct: true,
 				filter(event, player) {
-					if (
-						!game.hasPlayer(current => {
-							return !player.getStorage("dcshangyu_transfer").includes(current);
-						})
-					) {
+					if (!game.hasPlayer(current => !player.getStorage("dcshangyu_transfer").includes(current))) {
 						return false;
 					}
-					return event.getd().some(card => {
-						return get.position(card) == "d" && player.getStorage("dcshangyu").includes(card);
-					});
+					return event.getd().some(card => get.position(card) === "d" && player.getStorage("dcshangyu").includes(card));
 				},
-				content() {
-					"step 0";
-					var cards = trigger.getd().filter(card => {
-							return get.position(card) == "d" && player.getStorage("dcshangyu").includes(card);
-						}),
-						targets = game
-							.filterPlayer(current => {
-								return !player.getStorage("dcshangyu_transfer").includes(current);
-							})
-							.sortBySeat(_status.currentPhase);
+				async content(event, trigger, player) {
+					const cards = trigger.getd().filter(card => get.position(card) === "d" && player.getStorage("dcshangyu").includes(card));
+					const targets = game.filterPlayer(current => !player.getStorage("dcshangyu_transfer").includes(current)).sortBySeat(_status.currentPhase);
 					if (targets.length && targets[0] === _status.currentPhase && !_status.currentPhase?.getCardUsable("sha")) {
 						targets.push(targets.shift());
 					}
-					event.cards = cards;
-					player
-						.chooseTarget(
-							`赏誉：将${get.translation(cards)}交给一名可选角色`,
-							(card, player, target) => {
-								return !player.getStorage("dcshangyu_transfer").includes(target);
+					const result = await player
+						.chooseTarget({
+							prompt: `赏誉：将${get.translation(cards)}交给一名可选角色`,
+							filterTarget: (_card, player, target) => !player.getStorage("dcshangyu_transfer").includes(target),
+							forced: true,
+							ai: target => {
+								const att = get.sgnAttitude(player, target);
+								const index = 1 + targets.indexOf(target);
+								if (att < 0) {
+									return -index;
+								}
+								return att + 1 / index;
 							},
-							true
-						)
-						.set("ai", target => {
-							let att = get.sgnAttitude(_status.event.player, target),
-								idx = 1 + _status.event.targets.indexOf(target);
-							if (att < 0) {
-								return -idx;
-							}
-							return att + 1 / idx;
 						})
-						.set("targets", targets);
-					"step 1";
-					if (result.bool) {
-						var target = result.targets[0];
-						player.logSkill("dcshangyu_transfer", target);
-						if (!player.storage.dcshangyu_transfer) {
-							player.when({ global: "phaseAfter" }).step(async () => {
-								player.unmarkSkill("dcshangyu_transfer");
-								delete player.storage.dcshangyu_transfer;
-							});
-						}
-						player.markAuto("dcshangyu_transfer", target);
-						target.gain(cards, "gain2").set("giver", player).gaintag.add("dcshangyu_tag");
+						.set("targets", targets)
+						.forResult();
+					if (!result.bool) {
+						return;
 					}
+					const target = result.targets[0];
+					player.logSkill("dcshangyu_transfer", target);
+					if (!player.storage.dcshangyu_transfer) {
+						player.when({ global: "phaseAfter" }).step(async () => {
+							player.unmarkSkill("dcshangyu_transfer");
+							delete player.storage.dcshangyu_transfer;
+						});
+					}
+					player.markAuto("dcshangyu_transfer", target);
+					await target
+						.gain({
+							cards,
+							animate: "gain2",
+							gaintag: ["dcshangyu_tag"],
+						})
+						.set("giver", player);
 				},
 				intro: {
 					content: "本回合已交给过$",
@@ -31217,16 +31189,16 @@ const skills = {
 				lastDo: true,
 				filter(event, player) {
 					return game.hasPlayer(current => {
-						var cards = event.getg(current);
+						const cards = event.getg(current);
 						return cards.some(card => player.getStorage("dcshangyu").includes(card));
 					});
 				},
-				content() {
+				async content(event, trigger, player) {
 					game.countPlayer(current => {
-						var cards = trigger.getg(current);
+						const cards = trigger.getg(current);
 						if (cards.length) {
-							cards = cards.filter(card => player.getStorage("dcshangyu").includes(card));
-							current.addGaintag(cards, "dcshangyu_tag");
+							const taggedCards = cards.filter(card => player.getStorage("dcshangyu").includes(card));
+							current.addGaintag(taggedCards, "dcshangyu_tag");
 						}
 					});
 				},
