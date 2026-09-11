@@ -32098,46 +32098,45 @@ const skills = {
 		trigger: {
 			player: "phaseDrawEnd",
 		},
-		direct: true,
 		filter(event, player) {
-			return player.countCards("h") > 0;
+			return player.hasCards("h");
 		},
-		content() {
-			"step 0";
-			player
-				.chooseCard("h", get.prompt("dcmianyao"), "展示点数最小的一张牌并随机插入牌堆中，然后于回合结束时摸此牌点数张牌。", function (card, player) {
-					var num = get.number(card, player);
-					return !player.hasCard(card2 => {
-						return card != card2 && get.number(card2, player) < num;
-					});
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseCard({
+					position: "h",
+					prompt: get.prompt(event.skill),
+					prompt2: "展示点数最小的一张牌并随机插入牌堆中，然后于回合结束时摸此牌点数张牌。",
+					filterCard: (card, player) => {
+						const num = get.number(card, player);
+						return !player.hasCard(card2 => card !== card2 && get.number(card2, player) < num);
+					},
+					ai: card => {
+						const value = player.getUseValue(card, null, true);
+						if (value > 5 && get.number(card) <= 2) {
+							return 0;
+						}
+						return 1 + 1 / Math.max(0.1, value);
+					},
 				})
-				.set("ai", card => {
-					var player = _status.event.player;
-					var value = player.getUseValue(card, null, true);
-					if (value > 5 && get.number(card) <= 2) {
-						return 0;
-					}
-					return 1 + 1 / Math.max(0.1, value);
-				});
-			"step 1";
-			if (result.bool) {
-				player.logSkill("dcmianyao");
-				var card = result.cards[0];
-				event.card = card;
-				player.showCards([card], get.translation(player) + "发动了【免徭】");
-			} else {
-				event.finish();
-			}
-			"step 2";
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const card = event.cards[0];
+			event.card = card;
+			await player.showCards([card], `${get.translation(player)}发动了【免徭】`);
 			player.$throw(1, 1000);
-			player.lose(card, ui.cardPile).insert_index = function () {
-				return ui.cardPile.childNodes[get.rand(0, ui.cardPile.childNodes.length - 1)];
-			};
+			const loseEvent = player.lose({
+				cards: [card],
+				position: ui.cardPile,
+			});
+			loseEvent.insert_index = () => ui.cardPile.childNodes[get.rand(0, ui.cardPile.childNodes.length - 1)];
 			player.addTempSkill("dcmianyao_draw");
-			var num = get.number(card);
+			const num = get.number(card);
 			if (num > 0) {
 				player.addMark("dcmianyao_draw", num, false);
 			}
+			await loseEvent;
 		},
 		subSkill: {
 			draw: {
@@ -32151,8 +32150,8 @@ const skills = {
 				forced: true,
 				charlotte: true,
 				onremove: true,
-				content() {
-					player.draw(player.countMark("dcmianyao_draw"));
+				async content(event, trigger, player) {
+					await player.draw(player.countMark("dcmianyao_draw"));
 				},
 			},
 		},
