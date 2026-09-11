@@ -39322,9 +39322,9 @@ const skills = {
 			if (!player.hasSkill("dchuishu")) {
 				return false;
 			}
-			var list = lib.skill.dchuishu.getList(player);
-			for (var i of list) {
-				if (i >= 5) {
+			const list = lib.skill.dchuishu.getList(player);
+			for (const num of list) {
+				if (num >= 5) {
 					return true;
 				}
 			}
@@ -39332,44 +39332,38 @@ const skills = {
 		},
 		skillAnimation: true,
 		animationColor: "wood",
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			player.gainMaxHp();
-			player.recover();
-			"step 1";
-			player.removeSkills("dcyishu");
-			"step 2";
-			var list;
+			await player.gainMaxHp();
+			await player.recover();
+			await player.removeSkills("dcyishu");
+			let list;
 			if (_status.characterlist) {
 				list = [];
-				for (var i = 0; i < _status.characterlist.length; i++) {
-					var name = _status.characterlist[i];
-					if (lib.character[name][1] == "wu" && (lib.character[name][0] == "female" || lib.character[name][0] == "double")) {
+				for (const name of _status.characterlist) {
+					if (lib.character[name][1] === "wu" && (lib.character[name][0] === "female" || lib.character[name][0] === "double")) {
 						list.push(name);
 					}
 				}
 			} else if (_status.connectMode) {
-				list = get.charactersOL(function (i) {
-					return lib.character[i][1] != "wu" || (lib.character[i][0] != "female" && lib.character[i][0] != "double");
-				});
+				list = get.charactersOL(
+					name => lib.character[name][1] !== "wu" || (lib.character[name][0] !== "female" && lib.character[name][0] !== "double")
+				);
 			} else {
-				list = get.gainableCharacters(function (info) {
-					return info[1] == "wu" && (info[0] == "female" || info[0] == "double");
-				});
+				list = get.gainableCharacters(info => info[1] === "wu" && (info[0] === "female" || info[0] === "double"));
 			}
-			var players = game.players.concat(game.dead);
-			for (var i = 0; i < players.length; i++) {
-				list.remove(players[i].name);
-				list.remove(players[i].name1);
-				list.remove(players[i].name2);
+			const players = game.players.concat(game.dead);
+			for (const current of players) {
+				list.remove(current.name);
+				list.remove(current.name1);
+				list.remove(current.name2);
 			}
 			list = list.randomGets(4);
-			var skills = [];
-			for (var i of list) {
+			const skills = [];
+			for (const name of list) {
 				skills.addArray(
-					(lib.character[i][3] || []).filter(function (skill) {
-						var info = get.info(skill);
+					(lib.character[name][3] || []).filter(skill => {
+						const info = get.info(skill);
 						return info && !info.charlotte;
 					})
 				);
@@ -39379,12 +39373,13 @@ const skills = {
 					bool: false,
 					skills: [],
 				};
+				await player.draw(3);
 				return;
 			}
 			if (player.isUnderControl()) {
 				game.swapPlayerAuto(player);
 			}
-			var switchToAuto = function () {
+			const switchToAuto = () => {
 				_status.imchoosing = false;
 				event._result = {
 					bool: true,
@@ -39397,26 +39392,26 @@ const skills = {
 					event.control.close();
 				}
 			};
-			var chooseButton = function (list, skills) {
-				var event = _status.event;
-				if (!event._result) {
-					event._result = {};
+			const chooseButton = (list, skills) => {
+				const currentEvent = _status.event;
+				if (!currentEvent._result) {
+					currentEvent._result = {};
 				}
-				event._result.skills = [];
-				var rSkill = event._result.skills;
-				var dialog = ui.create.dialog("请选择获得至多两个技能", [list, "character"], "hidden");
-				event.dialog = dialog;
-				var table = document.createElement("div");
+				currentEvent._result.skills = [];
+				const selectedSkills = currentEvent._result.skills;
+				const dialog = ui.create.dialog("请选择获得至多两个技能", [list, "character"], "hidden");
+				currentEvent.dialog = dialog;
+				const table = document.createElement("div");
 				table.classList.add("add-setting");
 				table.style.margin = "0";
 				table.style.width = "100%";
 				table.style.position = "relative";
-				for (var i = 0; i < skills.length; i++) {
-					var td = ui.create.div(".shadowed.reduce_radius.pointerdiv.tdnode");
-					td.link = skills[i];
+				for (const skill of skills) {
+					const td = ui.create.div(".shadowed.reduce_radius.pointerdiv.tdnode");
+					td.link = skill;
 					table.appendChild(td);
-					td.innerHTML = "<span>" + get.translation(skills[i]) + "</span>";
-					td.addEventListener(lib.config.touchscreen ? "touchend" : "click", function () {
+					td.innerHTML = `<span>${get.translation(skill)}</span>`;
+					td.addEventListener(lib.config.touchscreen ? "touchend" : "click", clickEvent => {
 						if (_status.dragged) {
 							return;
 						}
@@ -39424,19 +39419,20 @@ const skills = {
 							return;
 						}
 						_status.tempNoButton = true;
-						setTimeout(function () {
+						setTimeout(() => {
 							_status.tempNoButton = false;
 						}, 500);
-						var link = this.link;
-						if (!this.classList.contains("bluebg")) {
-							if (rSkill.length >= 2) {
+						const target = clickEvent.currentTarget;
+						const link = target.link;
+						if (!target.classList.contains("bluebg")) {
+							if (selectedSkills.length >= 2) {
 								return;
 							}
-							rSkill.add(link);
-							this.classList.add("bluebg");
+							selectedSkills.add(link);
+							target.classList.add("bluebg");
 						} else {
-							this.classList.remove("bluebg");
-							rSkill.remove(link);
+							target.classList.remove("bluebg");
+							selectedSkills.remove(link);
 						}
 					});
 				}
@@ -39444,43 +39440,44 @@ const skills = {
 				dialog.add("　　");
 				dialog.open();
 
-				event.switchToAuto = function () {
-					event.dialog.close();
-					event.control.close();
+				currentEvent.switchToAuto = () => {
+					currentEvent.dialog.close();
+					currentEvent.control.close();
 					game.resume();
 					_status.imchoosing = false;
 				};
-				event.control = ui.create.control("ok", function (link) {
-					event.dialog.close();
-					event.control.close();
+				currentEvent.control = ui.create.control("ok", () => {
+					currentEvent.dialog.close();
+					currentEvent.control.close();
 					game.resume();
 					_status.imchoosing = false;
 				});
-				for (var i = 0; i < event.dialog.buttons.length; i++) {
-					event.dialog.buttons[i].classList.add("selectable");
+				for (const button of currentEvent.dialog.buttons) {
+					button.classList.add("selectable");
 				}
 				game.pause();
 				game.countChoose();
 			};
 			if (event.isMine()) {
 				chooseButton(list, skills);
+				await game.pause();
 			} else if (event.isOnline()) {
 				event.player.send(chooseButton, list, skills);
 				event.player.wait();
 				game.pause();
+				await game.pause();
 			} else {
 				switchToAuto();
 			}
-			"step 3";
-			var map = event.result || result;
+			const map = event.result || event._result;
 			if (map.skills && map.skills.length) {
 				//player.removeSkill('dchuishu');
 				//for(var i of map.skills) player.addSkillLog(i);
-				player.changeSkills(map.skills, ["dchuishu"]);
+				await player.changeSkills(map.skills, ["dchuishu"]);
 				player.markAuto("zhuSkill_dcligong", map.skills);
-			} else {
-				player.draw(3);
+				return;
 			}
+			await player.draw(3);
 		},
 		ai: {
 			combo: "dchuishu",
