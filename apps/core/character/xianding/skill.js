@@ -40319,138 +40319,122 @@ const skills = {
 		},
 		logTarget: "player",
 		check(event, player) {
-			var num = player.hp;
+			let num = player.hp;
 			if (player.hasSkill("dczhongjie") && (player.storage.dczhongjie_roundcount || 0) < game.roundNumber) {
 				num++;
 			}
 			return num > 1;
 		},
-		content() {
-			"step 0";
-			player.loseHp();
-			event.target = trigger.player;
-			"step 1";
-			var num = player.getDamagedHp();
+		async content(event, trigger, player) {
+			await player.loseHp();
+			const target = trigger.player;
+			const num = player.getDamagedHp();
 			if (num > 0) {
-				player.draw(num);
+				await player.draw(num);
 			}
-			if (player == target) {
-				event.finish();
+			if (player === target) {
+				return;
 			}
-			"step 2";
-			var ts = target.getCards("h");
-			if (ts.length < 2) {
-				event.finish();
-			} else {
-				var hs = player.getCards("h");
-				ts = ts.randomGets(Math.floor(ts.length / 2));
-				if (!hs.length) {
-					player.viewCards(get.translation(target) + "的部分手牌", ts);
-					event.finish();
-					return;
-				}
-				var next = player.chooseToMove("夙守：交换至多" + get.cnNumber(Math.min(hs.length, ts.length, player.getDamagedHp())) + "张牌");
-				next.set("list", [
-					[get.translation(target) + "的部分手牌", ts, "dcsushou_tag"],
-					["你的手牌", hs],
-				]);
-				next.set("filterMove", function (from, to, moved) {
-					if (typeof to == "number") {
-						return false;
-					}
-					var player = _status.event.player;
-					var hs = player.getCards("h");
-					var changed = hs.filter(function (card) {
-						return !moved[1].includes(card);
-					});
-					var changed2 = moved[1].filter(function (card) {
-						return !hs.includes(card);
-					});
-					if (changed.length < player.getDamagedHp()) {
-						return true;
-					}
-					var pos1 = moved[0].includes(from.link) ? 0 : 1,
-						pos2 = moved[0].includes(to.link) ? 0 : 1;
-					if (pos1 == pos2) {
-						return true;
-					}
-					if (pos1 == 0) {
-						if (changed.includes(from.link)) {
-							return true;
+			let targetCards = target.getCards("h");
+			if (targetCards.length < 2) {
+				return;
+			}
+			const handCards = player.getCards("h");
+			targetCards = targetCards.randomGets(Math.floor(targetCards.length / 2));
+			if (!handCards.length) {
+				await player.viewCards(`${get.translation(target)}的部分手牌`, targetCards);
+				return;
+			}
+			const max = Math.min(handCards.length, targetCards.length, player.getDamagedHp());
+			const result = await player
+				.chooseToMove({
+					prompt: `夙守：交换至多${get.cnNumber(max)}张牌`,
+					list: [
+						[`${get.translation(target)}的部分手牌`, targetCards, "dcsushou_tag"],
+						["你的手牌", handCards],
+					],
+					processAI: list => {
+						const { max, target } = get.event();
+						const player = get.player();
+						const att = get.attitude(player, target);
+						if (max <= 0) {
+							return [list[0][1], list[1][1]];
 						}
-						return changed2.includes(to.link);
-					}
-					if (changed2.includes(from.link)) {
-						return true;
-					}
-					return changed.includes(to.link);
-				});
-				next.set("max", Math.min(hs.length, ts.length, player.getDamagedHp()));
-				next.set("target", target);
-				next.set("processAI", function (list) {
-					const { max, target } = get.event();
-					const player = get.player();
-					const att = get.attitude(player, target);
-					if (max > 0) {
-						let gain, give;
+						let gain;
+						let give;
 						if (att <= 1) {
 							gain = list[0][1]
-								.sort((a, b) => {
-									return player.getUseValue(b, null, true) - player.getUseValue(a, null, true);
-								})
-								.slice(0, _status.event.max);
-							give = list[1][1]
-								.sort((a, b) => {
-									return get.value(a, player) - get.value(b, player);
-								})
-								.slice(0, _status.event.max);
+								.sort((a, b) => player.getUseValue(b, null, true) - player.getUseValue(a, null, true))
+								.slice(0, max);
+							give = list[1][1].sort((a, b) => get.value(a, player) - get.value(b, player)).slice(0, max);
 						} else {
 							give = list[1][1]
-								.sort((a, b) => {
-									return target.getUseValue(b, null, true) - target.getUseValue(a, null, true);
-								})
-								.slice(0, _status.event.max);
-							gain = list[0][1]
-								.sort((a, b) => {
-									return get.value(a, target) - get.value(b, target);
-								})
-								.slice(0, _status.event.max);
+								.sort((a, b) => target.getUseValue(b, null, true) - target.getUseValue(a, null, true))
+								.slice(0, max);
+							gain = list[0][1].sort((a, b) => get.value(a, target) - get.value(b, target)).slice(0, max);
 						}
-						for (let i of gain) {
-							if (att <= 1 && get.value(i, player) < get.value(give[0], player)) {
+						for (const card of gain) {
+							if (att <= 1 && get.value(card, player) < get.value(give[0], player)) {
 								continue;
 							}
-							let j = give.shift();
-							list[0][1].remove(i);
-							list[0][1].push(j);
-							list[1][1].remove(j);
-							list[1][1].push(i);
+							const replacement = give.shift();
+							list[0][1].remove(card);
+							list[0][1].push(replacement);
+							list[1][1].remove(replacement);
+							list[1][1].push(card);
 							if (!give.length) {
 								break;
 							}
 						}
+						return [list[0][1], list[1][1]];
+					},
+				})
+				.set("filterMove", (from, to, moved) => {
+					if (typeof to === "number") {
+						return false;
 					}
-					return [list[0][1], list[1][1]];
-				});
-			}
-			"step 3";
-			var moved = result.moved;
-			var hs = player.getCards("h"),
-				ts = target.getCards("h");
-			var cards1 = [],
-				cards2 = [];
-			for (var i of result.moved[0]) {
-				if (!ts.includes(i)) {
-					cards1.push(i);
+					const player = _status.event.player;
+					const handCards = player.getCards("h");
+					const changed = handCards.filter(card => !moved[1].includes(card));
+					const changed2 = moved[1].filter(card => !handCards.includes(card));
+					if (changed.length < player.getDamagedHp()) {
+						return true;
+					}
+					const pos1 = moved[0].includes(from.link) ? 0 : 1;
+					const pos2 = moved[0].includes(to.link) ? 0 : 1;
+					if (pos1 === pos2) {
+						return true;
+					}
+					if (pos1 !== 0) {
+						if (changed2.includes(from.link)) {
+							return true;
+						}
+						return changed.includes(to.link);
+					}
+					if (changed.includes(from.link)) {
+						return true;
+					}
+					return changed2.includes(to.link);
+				})
+				.set("max", max)
+				.set("target", target)
+				.forResult();
+			const currentHandCards = player.getCards("h");
+			const currentTargetCards = target.getCards("h");
+			const cards1 = [];
+			const cards2 = [];
+			for (const card of result.moved[0]) {
+				if (!currentTargetCards.includes(card)) {
+					cards1.push(card);
 				}
 			}
-			for (var i of result.moved[1]) {
-				if (!hs.includes(i)) {
-					cards2.push(i);
+			for (const card of result.moved[1]) {
+				if (!currentHandCards.includes(card)) {
+					cards2.push(card);
 				}
 			}
 			if (cards1.length) {
-				player.swapHandcards(target, cards1, cards2);
+				await player.swapHandcards(target, cards1, cards2);
 			}
 		},
 	},
