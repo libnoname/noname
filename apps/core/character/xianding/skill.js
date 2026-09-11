@@ -35426,41 +35426,41 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseZhunbeiBegin" },
 		forced: true,
-		content() {
-			"step 0";
-			player.recover();
-			if (!game.hasPlayer(current => current != player)) {
-				event.finish();
-			} else {
-				player.chooseTarget("残肆：选择一名其他角色", true, lib.filter.notMe).set("ai", target => {
-					var player = _status.event.player;
-					var list = ["recover", "sha", "juedou", "huogong"];
-					return list.reduce((p, c) => {
-						return p + get.effect(target, { name: c }, player, player);
-					}, 0);
-				});
+		async content(event, trigger, player) {
+			await player.recover();
+			if (!game.hasPlayer(current => current !== player)) {
+				return;
 			}
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.line(target, "fire");
-				target.recover();
-				event.list = ["sha", "juedou", "huogong"];
-				player.addTempSkill("dccansi_draw");
-				player.storage.dccansi_draw = target;
-			} else {
-				event.finish();
+			const result = await player
+				.chooseTarget({
+					prompt: "残肆：选择一名其他角色",
+					forced: true,
+					filterTarget: lib.filter.notMe,
+					ai: target => {
+						const cardNames = ["recover", "sha", "juedou", "huogong"];
+						return cardNames.reduce((effect, name) => effect + get.effect(target, { name }, player, player), 0);
+					},
+				})
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
-			"step 2";
-			var card = { name: event.list.shift(), isCard: true };
-			if (target.isIn() && player.canUse(card, target, false)) {
-				player.useCard(card, target, false);
+
+			const target = result.targets[0];
+			player.line(target, "fire");
+			await target.recover();
+			player.addTempSkill("dccansi_draw");
+			player.storage.dccansi_draw = target;
+			for (const name of ["sha", "juedou", "huogong"]) {
+				const card = { name, isCard: true };
+				if (target.isIn() && player.canUse(card, target, false)) {
+					await player.useCard({
+						card,
+						targets: [target],
+						addCount: false,
+					});
+				}
 			}
-			if (event.list.length) {
-				event.redo();
-			}
-			"step 3";
 			player.removeSkill("dccansi_draw");
 		},
 		subSkill: {
@@ -35471,11 +35471,11 @@ const skills = {
 				charlotte: true,
 				onremove: true,
 				filter(event, player) {
-					return event.getParent(3).name == "dccansi" && player.storage.dccansi_draw == event.player;
+					return event.getParent(3).name === "dccansi" && player.storage.dccansi_draw === event.player;
 				},
-				content() {
-					for (var i = 0; i < trigger.num; i++) {
-						player.draw(2);
+				async content(event, trigger, player) {
+					for (let count = 0; count < trigger.num; count++) {
+						await player.draw(2);
 					}
 				},
 			},
