@@ -29899,6 +29899,7 @@ const skills = {
 		lose: false,
 		delay: false,
 		async content(event, trigger, player) {
+			const { cards } = event;
 			var targets = game
 				.filterPlayer(function (current) {
 					return current != player;
