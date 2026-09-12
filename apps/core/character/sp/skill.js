@@ -24427,7 +24427,7 @@ const skills = {
 					selectCard: -1,
 					filterCard: () => false,
 					log: false,
-					precontent() {
+					async precontent(event, trigger, player) {
 						player.addTempSkill("liangyuan_used", "roundStart");
 						player.markAuto("liangyuan_used", event.result.card.name);
 						player.logSkill("liangyuan");
