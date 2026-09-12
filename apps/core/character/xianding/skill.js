@@ -32706,64 +32706,54 @@ const skills = {
 			player: "useCardToPlayered",
 		},
 		filter(event, player) {
-			if (player != _status.currentPhase) {
+			if (player !== _status.currentPhase) {
 				return false;
 			}
 			if (!event.isFirstTarget) {
 				return false;
 			}
-			if (event.card.name != "sha" && get.type(event.card, null, false) != "trick") {
+			if (event.card.name !== "sha" && get.type(event.card, null, false) !== "trick") {
 				return false;
 			}
-			if (player.countCards("h") != player.getHistory("useCard").indexOf(event.getParent()) + 1) {
+			if (player.countCards("h") !== player.getHistory("useCard").indexOf(event.getParent()) + 1) {
 				return false;
 			}
-			return event.targets.some(target => {
-				return target != player && target.isIn();
-			});
+			return event.targets.some(target => target !== player && target.isIn());
 		},
-		direct: true,
 		locked: false,
-		content() {
-			"step 0";
-			var targets = trigger.targets.filter(target => {
-				return target != player && target.isIn();
-			});
-			player
-				.chooseTarget(get.prompt("dcdyqingshi"), "对一名不为你的目标角色造成1点伤害", (card, player, target) => {
-					return _status.event.targets.includes(target);
-				})
-				.set("ai", target => {
-					var player = _status.event.player;
+		async cost(event, trigger, player) {
+			const targets = trigger.targets.filter(target => target !== player && target.isIn());
+			const next = player.chooseTarget({
+				prompt: get.prompt(event.skill),
+				prompt2: "对一名不为你的目标角色造成1点伤害",
+				filterTarget: (card, player, target) => _status.event.targets.includes(target),
+				ai: target => {
+					const player = _status.event.player;
 					return get.damageEffect(target, player, player);
-				})
-				.set("targets", targets);
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("dcdyqingshi", target);
-				target.damage();
-			}
+				},
+			});
+			next.set("targets", targets);
+			event.result = await next.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			await target.damage();
 		},
 		mod: {
 			aiOrder(player, card, num) {
-				if (_status.currentPhase != player) {
+				if (_status.currentPhase !== player) {
 					return;
 				}
-				var cardsh = [];
+				const cardsh = [];
 				if (Array.isArray(card.cards)) {
-					cardsh.addArray(
-						card.cards.filter(card => {
-							return get.position(card) == "h";
-						})
-					);
+					cardsh.addArray(card.cards.filter(card => get.position(card) === "h"));
 				}
-				var del = player.countCards("h") - cardsh.length - player.getHistory("useCard").length - 1;
+				const del = player.countCards("h") - cardsh.length - player.getHistory("useCard").length - 1;
 				if (del < 0) {
 					return;
 				}
 				if (del > 0) {
-					if (card.name == "sha" || get.type(card, null, player) != "trick") {
+					if (card.name === "sha" || get.type(card, null, player) !== "trick") {
 						return num / 3;
 					}
 					return num + 1;
