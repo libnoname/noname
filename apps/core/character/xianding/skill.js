@@ -37802,95 +37802,81 @@ const skills = {
 		},
 		filter(event, player) {
 			return (
-				event.player
-					.getAllHistory()
-					.filter(history => {
-						return history.isMe && !history.isSkipped;
-					})
-					.indexOf(event.player.getHistory()) === 0 &&
-				lib.skill.dctongguan.derivation.some(i => {
-					return (player.getStorage("dctongguan")[i] || 0) < 2;
-				})
+				event.player.getAllHistory().find(history => history.isMe && !history.isSkipped) === event.player.getHistory() &&
+				lib.skill.dctongguan.derivation.some(skill => (player.getStorage("dctongguan")[skill] || 0) < 2)
 			);
 		},
 		forced: true,
 		locked: false,
 		logTarget: "player",
 		derivation: ["dctongguan_wuyong", "dctongguan_gangying", "dctongguan_duomou", "dctongguan_guojue", "dctongguan_renzhi"],
-		content() {
-			"step 0";
-			var skills = lib.skill.dctongguan.derivation.slice();
-			player
-				.chooseControl(
-					skills.filter(i => {
-						return (player.getStorage("dctongguan")[i] || 0) < 2;
-					})
-				)
-				.set(
-					"choiceList",
-					skills.map(i => {
-						var info = "";
-						switch (player.getStorage("dctongguan")[i]) {
-							case 1:
-								info = ' style="opacity:0.65;"';
-								break;
-							case 2:
-								info = ' style="text-decoration:line-through; opacity:0.3;"';
-								break;
+		async content(event, trigger, player) {
+			const skills = lib.skill.dctongguan.derivation.slice();
+			const controls = skills.filter(skill => (player.getStorage("dctongguan")[skill] || 0) < 2);
+			const choiceList = skills.map(skill => {
+				let style = "";
+				switch (player.getStorage("dctongguan")[skill]) {
+					case 1:
+						style = ' style="opacity:0.65;"';
+						break;
+					case 2:
+						style = ' style="text-decoration:line-through; opacity:0.3;"';
+						break;
+				}
+				const name = get.translation(lib.translate[`${skill}_ab`] || get.translation(skill).slice(0, 2));
+				const count = get.cnNumber(player.getStorage("dctongguan")[skill] || 0);
+				return `<div class="skill">「${name}」</div><div${style}>${get.skillInfoTranslation(skill, player, false)}（已选过${count}次）</div>`;
+			});
+			const target = trigger.player;
+			const result = await player
+				.chooseControl({
+					controls,
+					choiceList,
+					prompt: `统观：为${get.translation(target)}选择一个属性`,
+					ai: () => {
+						const skillInfo = target
+							.getSkills(null, false, false)
+							.map(skill => get.skillInfoTranslation(skill, null, false))
+							.join("");
+						const choices = [];
+						if (controls.includes("dctongguan_wuyong") && /你对\S{1,15}造成\S{1,10}伤害/.test(skillInfo)) {
+							choices.push("dctongguan_wuyong");
 						}
-						return '<div class="skill">「' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "」</div>" + "<div" + info + ">" + get.skillInfoTranslation(i, player, false) + "（已选过" + get.cnNumber(player.getStorage("dctongguan")[i] || 0) + "次）" + "</div>";
-					})
-				)
+						if (controls.includes("dctongguan_gangying") && /回复\S{1,5}体力/.test(skillInfo) && player.getFriends().length) {
+							choices.push("dctongguan_gangying");
+						}
+						if (controls.includes("dctongguan_duomou") && /你(可|可以)?摸\S{1,3}张牌/.test(skillInfo)) {
+							choices.push("dctongguan_duomou");
+						}
+						if (controls.includes("dctongguan_guojue") && /(当【过河拆桥】使用|((弃置|获得)\S{1,5}其他角色\S{1,7}牌|))/.test(skillInfo)) {
+							choices.push("dctongguan_guojue");
+						}
+						if (controls.includes("dctongguan_renzhi") && /交给\S{0,5}其他角色/.test(skillInfo) && player.getFriends().length) {
+							choices.push("dctongguan_renzhi");
+						}
+						return choices.length ? choices.randomGet() : controls.randomGet();
+					},
+				})
 				.set("displayIndex", false)
-				.set("prompt", "统观：为" + get.translation(trigger.player) + "选择一个属性")
-				.set("ai", function () {
-					var controls = _status.event.controls,
-						target = _status.event.getTrigger().player;
-					var str = target
-						.getSkills(null, false, false)
-						.map(i => get.skillInfoTranslation(i, null, false))
-						.join("");
-					var choices = [];
-					if (controls.includes("dctongguan_wuyong") && /你对\S{1,15}造成\S{1,10}伤害/.test(str)) {
-						choices.push("dctongguan_wuyong");
-					}
-					if (controls.includes("dctongguan_gangying") && /回复\S{1,5}体力/.test(str) && _status.event.player.getFriends().length) {
-						choices.push("dctongguan_gangying");
-					}
-					if (controls.includes("dctongguan_duomou") && /你(可|可以)?摸\S{1,3}张牌/.test(str)) {
-						choices.push("dctongguan_duomou");
-					}
-					if (controls.includes("dctongguan_guojue") && /(当【过河拆桥】使用|((弃置|获得)\S{1,5}其他角色\S{1,7}牌|))/.test(str)) {
-						choices.push("dctongguan_guojue");
-					}
-					if (controls.includes("dctongguan_renzhi") && /交给\S{0,5}其他角色/.test(str) && _status.event.player.getFriends().length) {
-						choices.push("dctongguan_renzhi");
-					}
-					if (choices.length) {
-						return choices.randomGet();
-					}
-					return _status.event.controls.randomGet();
-				});
-			"step 1";
-			if (result.control) {
-				var skill = result.control;
-				player.localMarkSkill(skill, trigger.player, event);
-				// game.log(player,'为',trigger.player,'选择了','#g「'+get.translation(skill)+'」','属性');
-				game.log(player, "为", trigger.player, "选择了", "#g一个属性");
-				// player.popup(skill);
-				trigger.player.addSkill(skill);
-				if (!player.storage.dctongguan) {
-					player.storage.dctongguan = {};
-				}
-				if (!player.storage.dctongguan[skill]) {
-					player.storage.dctongguan[skill] = 0;
-				}
-				player.storage.dctongguan[skill]++;
+				.forResult();
+			if (!result.control) {
+				return;
 			}
+			const skill = result.control;
+			player.localMarkSkill(skill, target, event);
+			game.log(player, "为", target, "选择了", "#g一个属性");
+			target.addSkill(skill);
+			if (!player.storage.dctongguan) {
+				player.storage.dctongguan = {};
+			}
+			if (!player.storage.dctongguan[skill]) {
+				player.storage.dctongguan[skill] = 0;
+			}
+			player.storage.dctongguan[skill]++;
 		},
 		localMark(skill, player) {
-			var name = skill,
-				info;
+			const name = skill;
+			let info;
 			if (player.marks[name]) {
 				player.updateMarks();
 			}
