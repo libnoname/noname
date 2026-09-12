@@ -3655,10 +3655,11 @@ const skills = {
 				forced: true,
 				logTarget: "player",
 				async content(event, trigger, player) {
+					const num = Math.min(trigger.player.countDisabledSlot(), trigger.player.countCards("hej"));
 					await player.discardPlayerCard({
 						target: trigger.player,
 						position: "hej",
-						selectButton: trigger.player.countDisabledSlot(),
+						selectButton: num,
 						allowChooseAll: true,
 					});
 				},
