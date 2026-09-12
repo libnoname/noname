@@ -34556,52 +34556,28 @@ const skills = {
 			const draw = event.player.maxHp - event.player.countCards("h");
 			return draw <= 2 && event.player.getHp(true) - draw >= 1;
 		},
-		content() {
-			"step 0";
-			var draw = Math.min(5, trigger.player.maxHp - trigger.player.countCards("h"));
-			trigger.player
-				.chooseControl()
-				.set("choiceList", [(draw > 0 ? "摸" + get.cnNumber(draw) + "张牌，然后" : "令") + "你本回合使用【杀】的次数上限-1", "当你本回合使用牌被抵消后，" + get.translation(player) + "摸一张牌"])
-				.set("ai", () => _status.event.choice)
-				.set(
-					"choice",
-					(function () {
-						var draw = Math.min(5, Math.max(0, trigger.player.maxHp - trigger.player.countCards("h")));
-						if (get.attitude(trigger.player, player) > 0) {
-							if (draw >= 3 || trigger.player.getCardUsable("sha") > 1) {
-								return "选项一";
-							}
-							if (
-								!draw ||
-								(draw <= 1 &&
-									trigger.player.countCards("hs", card => {
-										return get.name(card) == "sha" && trigger.player.hasValueTarget(card);
-									}))
-							) {
-								return "选项二";
-							}
-							return "选项一";
-						} else {
-							if (draw >= 4) {
-								return "选项一";
-							}
-							if (
-								draw < 2 &&
-								trigger.player.countCards("hs", card => {
-									return trigger.player.hasValueTarget(card);
-								})
-							) {
-								return "选项二";
-							}
-							return "选项一";
-						}
-					})()
-				)
-				.set("prompt", "劝守：请选择一项");
-			"step 1";
-			game.log(trigger.player, "选择了", "#y" + result.control);
-			if (result.control == "选项一") {
-				var draw = Math.min(5, trigger.player.maxHp - trigger.player.countCards("h"));
+		async content(event, trigger, player) {
+			const draw = Math.min(5, Math.max(0, trigger.player.maxHp - trigger.player.countCards("h")));
+			const friendly = get.attitude(trigger.player, player) > 0;
+			const chooseRespond = friendly
+				? draw < 3 &&
+					trigger.player.getCardUsable("sha") <= 1 &&
+					(!draw || (draw <= 1 && trigger.player.hasCards("hs", card => get.name(card) === "sha" && trigger.player.hasValueTarget(card))))
+				: draw < 2 && trigger.player.hasCards("hs", card => trigger.player.hasValueTarget(card));
+			const choice = chooseRespond ? "选项二" : "选项一";
+			const result = await trigger.player
+				.chooseControl({
+					choiceList: [
+						`${draw > 0 ? `摸${get.cnNumber(draw)}张牌，然后` : "令"}你本回合使用【杀】的次数上限-1`,
+						`当你本回合使用牌被抵消后，${get.translation(player)}摸一张牌`,
+					],
+					ai: () => _status.event.choice,
+					choice,
+					prompt: "劝守：请选择一项",
+				})
+				.forResult();
+			game.log(trigger.player, "选择了", `#y${result.control}`);
+			if (result.control === "选项一") {
 				if (draw > 0) {
 					trigger.player.draw(draw);
 				}
@@ -34623,7 +34599,7 @@ const skills = {
 				intro: { content: "使用【杀】的次数上限-#" },
 				mod: {
 					cardUsable(card, player, num) {
-						if (card.name == "sha") {
+						if (card.name === "sha") {
 							return num - player.countMark("dcquanshou_sha");
 						}
 					},
@@ -34632,7 +34608,7 @@ const skills = {
 			respond: {
 				trigger: { player: ["shaMiss", "eventNeutralized"] },
 				filter(event, player) {
-					if (event.type != "card" && event.name != "_wuxie") {
+					if (event.type !== "card" && event.name !== "_wuxie") {
 						return false;
 					}
 					return player.getStorage("dcquanshou_respond").some(i => i.isIn());
@@ -34643,10 +34619,10 @@ const skills = {
 				onremove: true,
 				marktext: '<span style="text-decoration: line-through;">守</span>',
 				intro: { content: "本回合使用的牌被抵消后，$摸一张牌" },
-				content() {
-					var targets = player.getStorage("dcquanshou_respond");
+				async content(event, trigger, player) {
+					const targets = player.getStorage("dcquanshou_respond");
 					targets.sortBySeat();
-					for (var target of targets) {
+					for (const target of targets) {
 						if (target.isIn()) {
 							target.logSkill("dcquanshou_respond", player);
 							target.draw();
