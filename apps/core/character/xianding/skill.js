@@ -37254,13 +37254,14 @@ const skills = {
 		filter(event, player) {
 			return player.countMark("dclingfang") > 0;
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.removeMark("dclingfang", 1);
-			"step 1";
-			var card = get.discardPile(card => get.color(card, false) == "black", "random");
+			const card = get.discardPile(card => get.color(card, false) === "black", "random");
 			if (card) {
-				player.gain(card, "gain2");
+				player.gain({
+					cards: [card],
+					animate: "gain2",
+				});
 			}
 			player.loseHp();
 		},
