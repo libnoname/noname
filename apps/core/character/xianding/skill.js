@@ -39461,62 +39461,59 @@ const skills = {
 	dcxianzhu: {
 		audio: 2,
 		trigger: { source: "damageSource" },
-		direct: true,
 		filter(event, player) {
-			if (!event.card || event.card.name != "sha") {
+			if (!event.card || event.card.name !== "sha") {
 				return false;
 			}
-			var card = player.getEquip("dagongche");
+			const card = player.getEquip("dagongche");
 			if (!card) {
 				return false;
 			}
-			var num = 0;
-			for (var i = 1; i <= 3; i++) {
-				var key = "大攻车选项" + get.cnNumber(i, true);
+			let num = 0;
+			for (let i = 1; i <= 3; i++) {
+				const key = `大攻车选项${get.cnNumber(i, true)}`;
 				if (card.storage[key]) {
 					num += card.storage[key];
 				}
 			}
 			return num < 5;
 		},
-		content() {
-			"step 0";
-			var choiceList = ["令【杀】无距离限制且无视防具", "令【杀】的可选目标数+1", "令后续的弃牌数量+1"];
-			var list = [];
-			var card = player.getEquip("dagongche");
-			for (var i = 1; i <= 3; i++) {
-				var key = "大攻车选项" + get.cnNumber(i, true);
-				var num = card.storage[key];
-				if (i == 1) {
+		async cost(event, trigger, player) {
+			const choiceList = ["令【杀】无距离限制且无视防具", "令【杀】的可选目标数+1", "令后续的弃牌数量+1"];
+			const list = [];
+			const card = player.getEquip("dagongche");
+			for (let i = 1; i <= 3; i++) {
+				const key = `大攻车选项${get.cnNumber(i, true)}`;
+				const num = card.storage[key];
+				if (i === 1) {
 					if (!num) {
 						list.push("选项一");
 					} else {
-						choiceList[0] = '<span style="opacity:0.5; ">' + choiceList[0] + "（已强化）</span>";
+						choiceList[0] = `<span style="opacity:0.5; ">${choiceList[0]}（已强化）</span>`;
 					}
 				} else {
-					list.push("选项" + get.cnNumber(i, true));
+					list.push(`选项${get.cnNumber(i, true)}`);
 					if (num) {
-						choiceList[i - 1] += "（已强化" + num + "次）";
+						choiceList[i - 1] += `（已强化${num}次）`;
 					}
 				}
 			}
-			player
-				.chooseControl(list, "cancel2")
-				.set("prompt", "是否发动【陷筑】强化【大攻车】？")
-				.set("choiceList", choiceList)
-				.set("ai", function () {
-					var player = _status.event.player,
-						controls = _status.event.controls.slice(0);
-					var getval = function (choice) {
-						var card = player.getEquip("dagongche");
-						if (choice == "选项一") {
-							card.storage.大攻车选项一 = 1;
-							var goon = false;
-							if (
-								game.hasPlayer(function (current) {
-									var eff1 = 0,
-										eff2 = 0;
-									var cardx = { name: "sha", isCard: true };
+			const result = await player
+				.chooseControl({
+					controls: [...list, "cancel2"],
+					prompt: "是否发动【陷筑】强化【大攻车】？",
+					choiceList,
+					ai: () => {
+						const player = _status.event.player;
+						const controls = _status.event.controls.slice(0);
+						const getval = choice => {
+							const card = player.getEquip("dagongche");
+							if (choice === "选项一") {
+								card.storage.大攻车选项一 = 1;
+								const goon = game.hasPlayer(current => {
+									let eff1 = 0;
+									let eff2 = 0;
+									const cardx = { name: "sha", isCard: true };
 									if (player.canUse(cardx, current)) {
 										eff1 = get.effect(current, cardx, player, player);
 									}
@@ -39525,55 +39522,54 @@ const skills = {
 										eff2 = get.effect(current, cardx, player, player);
 									}
 									return eff2 > eff1;
-								})
-							) {
-								goon = true;
-							}
-							delete card.storage.大攻车选项一;
-							if (goon) {
-								return 5;
+								});
+								delete card.storage.大攻车选项一;
+								if (goon) {
+									return 5;
+								}
+								return 0;
+							} else if (choice === "选项二") {
+								let num = 1;
+								if (card.storage.大攻车选项二) {
+									num += card.storage.大攻车选项二;
+								}
+								const cardx = { name: "sha", isCard: true };
+								if (
+									game.countPlayer(current => player.canUse(cardx, current) && get.effect(current, cardx, player, player) > 0) > num
+								) {
+									return 2;
+								}
+							} else if (choice === "选项三") {
+								return 1;
 							}
 							return 0;
-						} else if (choice == "选项二") {
-							var num = 1;
-							if (card.storage.大攻车选项二) {
-								num += card.storage.大攻车选项二;
+						};
+						let eff = 0;
+						let current = "cancel2";
+						for (const control of controls) {
+							const effx = getval(control);
+							if (effx > eff) {
+								eff = effx;
+								current = control;
 							}
-							var cardx = { name: "sha", isCard: true };
-							if (
-								game.countPlayer(function (current) {
-									return player.canUse(cardx, current) && get.effect(current, cardx, player, player) > 0;
-								}) > num
-							) {
-								return 2;
-							}
-						} else if (choice == "选项三") {
-							return 1;
 						}
-						return 0;
-					};
-					var eff = 0,
-						current = "cancel2";
-					for (var i of controls) {
-						var effx = getval(i);
-						if (effx > eff) {
-							eff = effx;
-							current = i;
-						}
-					}
-					return current;
-				});
-			"step 1";
-			if (result.control != "cancel2") {
-				player.logSkill("dcxianzhu");
-				var card = player.getEquip("dagongche"),
-					key = "大攻车" + result.control;
-				if (!card.storage[key]) {
-					card.storage[key] = 0;
-				}
-				card.storage[key]++;
-				lib.skill.dcwanglu.broadcast(player);
+						return current;
+					},
+				})
+				.forResult();
+			event.result = {
+				bool: result.control !== "cancel2",
+				cost_data: result.control,
+			};
+		},
+		async content(event, trigger, player) {
+			const equip = player.getEquip("dagongche");
+			const key = `大攻车${event.cost_data}`;
+			if (!equip.storage[key]) {
+				equip.storage[key] = 0;
 			}
+			equip.storage[key]++;
+			lib.skill.dcwanglu.broadcast(player);
 		},
 		ai: {
 			combo: "dcwanglu",
