@@ -35796,25 +35796,26 @@ const skills = {
 	oldjue: {
 		audio: "dcjue",
 		trigger: { player: "phaseZhunbeiBegin" },
-		direct: true,
 		filter(event, player) {
 			return game.hasPlayer(current => (current.getHp() > player.getHp() || current.countCards("h") > player.countCards("h")) && player.canUse("sha", current, false));
 		},
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt("oldjue"), "视为对一名体力值或手牌数大于你的角色使用一张【杀】", (card, player, target) => {
-					return player.canUse("sha", target, false) && (target.getHp() > player.getHp() || target.countCards("h") > player.countCards("h"));
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt(event.skill),
+					prompt2: "视为对一名体力值或手牌数大于你的角色使用一张【杀】",
+					filterTarget: (card, player, target) => player.canUse("sha", target, false) && (target.getHp() > player.getHp() || target.countCards("h") > player.countCards("h")),
+					ai: target => get.effect(target, { name: "sha" }, player),
 				})
-				.set("ai", target => {
-					return get.effect(target, { name: "sha" }, _status.event.player);
-				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("oldjue", target);
-				player.useCard({ name: "sha", isCard: true }, target, false);
-			}
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			await player.useCard({
+				card: { name: "sha", isCard: true },
+				targets: [target],
+				addCount: false,
+			});
 		},
 	},
 	dcjue: {
