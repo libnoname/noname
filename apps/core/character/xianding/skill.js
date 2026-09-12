@@ -44139,30 +44139,33 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "gray",
 		filter(event, player) {
-			return game.hasPlayer(current => current != player);
+			return game.hasPlayer(current => current !== player);
 		},
-		content() {
-			"step 0";
-			player
-				.chooseTarget("请选择【毒逝】的目标", "选择一名其他角色，令其获得技能【毒逝】", true, lib.filter.notMe)
+		async content(event, trigger, player) {
+			const result = await player
+				.chooseTarget({
+					prompt: "请选择【毒逝】的目标",
+					prompt2: "选择一名其他角色，令其获得技能【毒逝】",
+					forced: true,
+					filterTarget: lib.filter.notMe,
+					ai: target => -get.attitude(player, target),
+				})
 				.set("forceDie", true)
-				.set("ai", function (target) {
-					return -get.attitude(_status.event.player, target);
-				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("dushi", target);
-				target.markSkill("dushi");
-				target.addSkills("dushi");
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
+			const target = result.targets[0];
+			player.logSkill("dushi", target);
+			target.markSkill("dushi");
+			target.addSkills("dushi");
 		},
 		intro: { content: "您已经获得弘农王的诅咒" },
 	},
 	dushi2: {
 		mod: {
 			cardSavable(card, player, target) {
-				if (card.name == "tao" && target != player && target.hasSkill("dushi")) {
+				if (card.name === "tao" && target !== player && target.hasSkill("dushi")) {
 					return false;
 				}
 			},
