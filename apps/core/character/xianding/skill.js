@@ -41041,27 +41041,26 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "fire",
 		filter(event, player) {
-			return player != event.player;
+			return player !== event.player;
 		},
 		logTarget: "player",
 		check(event, player) {
 			return get.rank(event.player.name, true) >= 5;
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			var skills = trigger.player.getSkills(null, false, false).filter(function (i) {
-				var info = get.info(i);
+			const skills = trigger.player.getSkills(null, false, false).filter(skill => {
+				const info = get.info(skill);
 				return info && !info.charlotte;
 			});
 			if (skills.length) {
-				//for(var i of skills) player.addSkillLog(i);
-				player.addSkills(skills);
+				await player.addSkills(skills);
 			}
-			player.removeSkills("xiaowu");
-			var num = player.countMark("shawu");
+			await player.removeSkills("xiaowu");
+			const num = player.countMark("shawu");
 			if (num > 0) {
 				player.removeMark("shawu", num);
-				player.draw(num);
+				await player.draw(num);
 			}
 		},
 		group: "huaping_give",
@@ -41071,30 +41070,32 @@ const skills = {
 				trigger: { player: "die" },
 				direct: true,
 				filter(event, player) {
-					return event.player == player;
+					return event.player === player;
 				},
 				forceDie: true,
 				skillAnimation: true,
 				animationColor: "gray",
-				content() {
-					"step 0";
-					player
-						.chooseTarget(get.prompt("huaping"), "令一名其他角色获得〖沙舞〗", lib.filter.notMe)
+				async content(event, trigger, player) {
+					const result = await player
+						.chooseTarget({
+							prompt: get.prompt("huaping"),
+							prompt2: "令一名其他角色获得〖沙舞〗",
+							filterTarget: lib.filter.notMe,
+							ai: target => get.attitude(_status.event.player, target) + 100,
+						})
 						.set("forceDie", true)
-						.set("ai", function (target) {
-							return get.attitude(_status.event.player, target) + 100;
-						});
-					"step 1";
-					if (result.bool) {
-						var target = result.targets[0];
-						player.awakenSkill("huaping");
-						player.logSkill("huaping_give", target);
-						target.addSkills("shawu");
-						var num = player.countMark("shawu");
-						if (num > 0) {
-							player.removeMark("shawu", num);
-							target.addMark("shawu", num);
-						}
+						.forResult();
+					if (!result.bool) {
+						return;
+					}
+					const target = result.targets[0];
+					player.awakenSkill("huaping");
+					player.logSkill("huaping_give", target);
+					await target.addSkills("shawu");
+					const num = player.countMark("shawu");
+					if (num > 0) {
+						player.removeMark("shawu", num);
+						target.addMark("shawu", num);
 					}
 				},
 			},
