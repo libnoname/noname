@@ -38846,25 +38846,26 @@ const skills = {
 			return player.storage.dchuishu.slice(0);
 		},
 		trigger: { player: "phaseDrawEnd" },
-		content() {
-			"step 0";
-			var list = lib.skill.dchuishu.getList(player);
-			event.list = list;
-			player.draw(list[0]);
-			"step 1";
+		async content(event, trigger, player) {
+			const list = lib.skill.dchuishu.getList(player);
+			await player.draw(list[0]);
 			player.addTempSkill("dchuishu_effect");
-			player.chooseToDiscard("h", true, event.list[1]);
+			await player.chooseToDiscard({
+				position: "h",
+				forced: true,
+				selectCard: list[1],
+			});
 		},
 		onremove: true,
 		mark: true,
 		intro: {
 			markcount(storage, player) {
-				var list = lib.skill.dchuishu.getList(player);
-				return Math.max.apply(Math, list);
+				const list = lib.skill.dchuishu.getList(player);
+				return Math.max(...list);
 			},
 			content(storage, player) {
-				var list = lib.skill.dchuishu.getList(player);
-				return "摸牌阶段结束时，你可以摸[" + list[0] + "]张牌。若如此做：你弃置[" + list[1] + "]张手牌，且当你于本回合内弃置第[" + list[2] + "]+1张牌后，你从弃牌堆中获得[" + list[2] + "]张非基本牌。";
+				const list = lib.skill.dchuishu.getList(player);
+				return `摸牌阶段结束时，你可以摸[${list[0]}]张牌。若如此做：你弃置[${list[1]}]张手牌，且当你于本回合内弃置第[${list[2]}]+1张牌后，你从弃牌堆中获得[${list[2]}]张非基本牌。`;
 			},
 		},
 		subSkill: {
@@ -38876,25 +38877,25 @@ const skills = {
 					global: "loseAsyncAfter",
 				},
 				filter(event, player) {
-					var num = lib.skill.dchuishu.getList(player)[2];
-					if (typeof num != "number") {
+					const num = lib.skill.dchuishu.getList(player)[2];
+					if (typeof num !== "number") {
 						return false;
 					}
-					if (event.type != "discard" || event.getlx === false) {
+					if (event.type !== "discard" || event.getlx === false) {
 						return false;
 					}
-					var evt = event.getl(player);
-					if (evt.cards2.length == 0) {
+					const evt = event.getl(player);
+					if (evt.cards2.length === 0) {
 						return false;
 					}
-					var prev = 0,
-						goon = true;
-					player.getHistory("lose", function (evt) {
-						if (!goon || evt.type != "discard") {
+					let prev = 0;
+					let goon = true;
+					player.getHistory("lose", evt => {
+						if (!goon || evt.type !== "discard") {
 							return false;
 						}
 						prev += evt.cards2.length;
-						if (evt == event || event.getParent() == event) {
+						if (evt === event || event.getParent() === event) {
 							goon = false;
 							return false;
 						}
@@ -38904,21 +38905,21 @@ const skills = {
 				forced: true,
 				popup: false,
 				firstDo: true,
-				content() {
-					var num = lib.skill.dchuishu.getList(player)[2];
-					var cards = [];
-					for (var i = 0; i < num; i++) {
-						var card = get.discardPile(function (card) {
-							return get.type(card) != "basic" && !cards.includes(card);
-						}, "random");
-						if (card) {
-							cards.push(card);
-						} else {
+				async content(event, trigger, player) {
+					const num = lib.skill.dchuishu.getList(player)[2];
+					const cards = [];
+					for (let i = 0; i < num; i++) {
+						const card = get.discardPile(card => get.type(card) !== "basic" && !cards.includes(card), "random");
+						if (!card) {
 							break;
 						}
+						cards.push(card);
 					}
 					if (cards.length) {
-						player.gain(cards, "gain2");
+						await player.gain({
+							cards,
+							animate: "gain2",
+						});
 					}
 				},
 			},
