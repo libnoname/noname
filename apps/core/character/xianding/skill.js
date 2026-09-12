@@ -34636,27 +34636,27 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseUseBegin" },
 		filter(event, player) {
-			var cards = lib.skill.dcshexue.getLast();
+			const cards = lib.skill.dcshexue.getLast();
 			return cards.some(card => player.hasUseTarget(card, false));
 		},
 		getLast() {
-			var cards = [];
-			for (var current of game.filterPlayer()) {
-				var history = current.actionHistory;
+			const cards = [];
+			for (const current of game.filterPlayer()) {
+				const history = current.actionHistory;
 				if (history.length < 2) {
 					continue;
 				}
-				if (history[history.length - 2].isMe) {
-					var evts = history[history.length - 2].useCard;
-					for (var i = evts.length - 1; i >= 0; i--) {
-						var evt = evts[i];
-						if (get.type(evt.card) != "basic" && get.type(evt.card) != "trick") {
-							continue;
-						}
-						var evtx = evt.getParent("phaseUse");
-						if (evtx && evtx.player == current) {
-							cards.push({ name: evt.card.name, nature: evt.card.nature });
-						}
+				if (!history[history.length - 2].isMe) {
+					continue;
+				}
+				const evts = history[history.length - 2].useCard;
+				for (const evt of evts.slice().reverse()) {
+					if (get.type(evt.card) !== "basic" && get.type(evt.card) !== "trick") {
+						continue;
+					}
+					const evtx = evt.getParent("phaseUse");
+					if (evtx && evtx.player === current) {
+						cards.push({ name: evt.card.name, nature: evt.card.nature });
 					}
 				}
 			}
@@ -34664,20 +34664,21 @@ const skills = {
 		},
 		direct: true,
 		group: "dcshexue_end",
-		content() {
-			"step 0";
-			var cards = lib.skill.dcshexue.getLast();
-			cards = cards.filter(card => player.hasUseTarget(card, false));
-			player.chooseButton(["设学：是否将一张牌当作其中一张牌使用？", [cards, "vcard"]]);
-			"step 1";
+		async content(event, trigger, player) {
+			const cards = lib.skill.dcshexue.getLast().filter(card => player.hasUseTarget(card, false));
+			const result = await player
+				.chooseButton({
+					createDialog: ["设学：是否将一张牌当作其中一张牌使用？", [cards, "vcard"]],
+				})
+				.forResult();
 			if (!result.bool) {
 				return;
 			}
-			var card = result.links[0];
-			game.broadcastAll(function (card) {
+			const card = result.links[0];
+			game.broadcastAll(card => {
 				lib.skill.dcshexue_backup.viewAs = card;
 			}, card);
-			var next = player.chooseToUse();
+			const next = player.chooseToUse();
 			next.set("openskilldialog", `###${get.prompt("dcshexue")}###将一张牌当做${get.translation(card.nature) || ""}【${get.translation(card.name)}】使用`);
 			next.set("norestore", true);
 			next.set("addCount", false);
@@ -34687,12 +34688,13 @@ const skills = {
 				replace: { window() {} },
 			});
 			next.backup("dcshexue_backup");
+			await next;
 		},
 		subSkill: {
 			backup: {
 				audio: "dcshexue",
 				filterCard(card) {
-					return get.itemtype(card) == "card";
+					return get.itemtype(card) === "card";
 				},
 				filterTarget: lib.filter.targetEnabled,
 				position: "hes",
@@ -34704,32 +34706,27 @@ const skills = {
 				audio: "dcshexue",
 				trigger: { player: "phaseUseEnd" },
 				filter(event, player) {
-					return player.getHistory("useCard", evt => {
-						return evt.getParent("phaseUse") == event && (get.type(evt.card) == "basic" || get.type(evt.card) == "trick");
-					}).length;
+					return player.getHistory("useCard", evt => evt.getParent("phaseUse") === event && (get.type(evt.card) === "basic" || get.type(evt.card) === "trick")).length;
 				},
 				prompt2(event, player) {
 					return "令下一回合的角色于其出牌阶段开始时选择是否将一张牌当做你本阶段使用过的一张基本牌或普通锦囊牌使用？";
 				},
 				check(event, player) {
-					let evt = event.getParent("phase").getParent();
+					const evt = event.getParent("phase").getParent();
 					let nextPlayer = player.getNext();
 					if (evt && evt.next && evt.next.length) {
 						nextPlayer = evt.next[0].player;
 					}
 					return get.attitude(player, nextPlayer) > 0;
 				},
-				content() {
-					var history = player.getHistory("useCard", evt => {
-						return evt.getParent("phaseUse") == trigger && (get.type(evt.card) == "basic" || get.type(evt.card) == "trick");
-					});
+				async content(event, trigger, player) {
+					const history = player.getHistory("useCard", evt => evt.getParent("phaseUse") === trigger && (get.type(evt.card) === "basic" || get.type(evt.card) === "trick"));
 					player.addSkill("dcshexue_studyclear");
 					if (!player.storage.dcshexue_studyclear) {
 						player.storage.dcshexue_studyclear = [];
 					}
 					history.forEach(evt => {
-						var card = evt.card;
-						card = { name: card.name, nature: card.nature };
+						const card = { name: evt.card.name, nature: evt.card.nature };
 						player.storage.dcshexue_studyclear.push(card);
 					});
 				},
@@ -34743,11 +34740,11 @@ const skills = {
 				charlotte: true,
 				direct: true,
 				async content(event, trigger, player) {
-					let cards = player.getStorage("dcshexue_study");
+					const cards = player.getStorage("dcshexue_study");
 					const result = await player
-						.chooseButton(["设学：是否将一张牌当作其中一张牌使用？", [cards, "vcard"]])
-						.set("ai", button => {
-							return get.event().player.getUseValue(button.link, false);
+						.chooseButton({
+							createDialog: ["设学：是否将一张牌当作其中一张牌使用？", [cards, "vcard"]],
+							ai: button => get.event().player.getUseValue(button.link, false),
 						})
 						.forResult();
 					if (!result.bool) {
@@ -34757,9 +34754,9 @@ const skills = {
 					if (!trigger.player.hasUseTarget(card, false)) {
 						return;
 					}
-					game.broadcastAll(function (card) {
+					game.broadcastAll(card => {
 						lib.skill.dcshexue_backup.viewAs = card;
-						lib.skill.dcshexue_backup.prompt = "设学：是否将一张牌当做" + get.translation(card) + "使用？";
+						lib.skill.dcshexue_backup.prompt = `设学：是否将一张牌当做${get.translation(card)}使用？`;
 					}, card);
 					await trigger.player
 						.chooseToUse()
@@ -34785,7 +34782,7 @@ const skills = {
 				silent: true,
 				onremove: true,
 				lastDo: true,
-				content() {
+				async content(event, trigger, player) {
 					trigger.player.addTempSkill("dcshexue_study");
 					if (!trigger.player.storage.dcshexue_study) {
 						trigger.player.storage.dcshexue_study = [];
