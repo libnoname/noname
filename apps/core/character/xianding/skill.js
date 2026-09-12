@@ -33544,162 +33544,140 @@ const skills = {
 			if (player.getStorage("dcqingshi_clear").includes(event.card.name)) {
 				return false;
 			}
-			if (
-				player.hasCard(card => {
-					return get.name(card) == event.card.name;
-				})
-			) {
-				return true;
-			}
-			return false;
+			return player.hasCard(card => get.name(card) === event.card.name);
 		},
-		direct: true,
-		content() {
-			"step 0";
-			var choices = [];
-			var choiceList = ["令" + get.translation(trigger.card) + "对其中一个目标角色造成的伤害+1", "令任意名其他角色各摸一张牌", "摸三张牌，然后〖情势〗于本回合失效"];
+		async cost(event, trigger, player) {
+			const choices = [];
+			const choiceList = [`令${get.translation(trigger.card)}对其中一个目标角色造成的伤害+1`, "令任意名其他角色各摸一张牌", "摸三张牌，然后〖情势〗于本回合失效"];
 			if (trigger.targets && trigger.targets.length) {
 				choices.push("选项一");
 			} else {
-				choiceList[0] = '<span style="opacity:0.5">' + choiceList[0] + "(无目标角色)</span>";
+				choiceList[0] = `<span style="opacity:0.5">${choiceList[0]}(无目标角色)</span>`;
 			}
-			if (game.countPlayer(i => i != player)) {
+			if (game.hasPlayer(current => current !== player)) {
 				choices.push("选项二");
 			} else {
-				choiceList[1] = '<span style="opacity:0.5">' + choiceList[1] + "</span>";
+				choiceList[1] = `<span style="opacity:0.5">${choiceList[1]}</span>`;
 			}
 			choices.push("选项三");
-			player
-				.chooseControl(choices, "cancel2")
-				.set("choiceList", choiceList)
-				.set("prompt", get.prompt("dcqingshi"))
-				.set("ai", () => {
-					return _status.event.choice;
-				})
-				.set(
-					"choice",
-					(() => {
-						var choicesx = choices.slice();
-						var cards = player.getCards("hs");
-						var bool1 =
-								get.tag(trigger.card, "damage") &&
-								choicesx.includes("选项一") &&
-								trigger.targets.some(current => {
-									return get.attitude(player, current) < 0;
-								}),
-							bool2 = choicesx.includes("选项二");
-						if (bool2) {
-							bool2 = game.countPlayer(function (current) {
-								return player != current && get.attitude(player, current) > 0;
-							});
-						} else {
-							bool2 = 0;
-						}
-						if (bool1 || bool2) {
-							for (var i = 0; i < cards.length; i++) {
-								var name = get.name(cards[i]);
-								if (player.getStorage("dcqingshi_clear").includes(name)) {
-									continue;
-								}
-								for (var j = i + 1; j < cards.length; j++) {
-									if (name === get.name(cards[j]) && get.position(cards[i]) + get.position(cards[j]) !== "ss" && player.hasValueTarget(cards[i])) {
-										choicesx.remove("选项三");
-										break;
-									}
-								}
-							}
-						}
-						if (bool2 > 2) {
-							return "选项二";
-						}
-						if (choicesx.includes("选项三")) {
-							return "选项三";
-						}
-						if (bool2 === 2) {
-							return "选项二";
-						}
-						if (bool1) {
-							return "选项一";
-						}
-						if (bool2) {
-							return "选项二";
-						}
-						return "cancel2";
-					})()
-				);
-			"step 1";
-			if (result.control != "cancel2") {
-				player.logSkill("dcqingshi");
-				game.log(player, "选择了", "#y" + result.control);
-				var index = ["选项一", "选项二", "选项三"].indexOf(result.control) + 1;
-				player.addTempSkill("dcqingshi_clear");
-				player.markAuto("dcqingshi_clear", [trigger.card.name]);
-				var next = game.createEvent("dcqingshi_after");
-				next.player = player;
-				next.card = trigger.card;
-				next.setContent(lib.skill.dcqingshi["content" + index]);
+			const choicesx = choices.slice();
+			const cards = player.getCards("hs");
+			const bool1 = get.tag(trigger.card, "damage") && choicesx.includes("选项一") && trigger.targets.some(current => get.attitude(player, current) < 0);
+			let bool2 = choicesx.includes("选项二");
+			if (bool2) {
+				bool2 = game.countPlayer(current => player !== current && get.attitude(player, current) > 0);
+			} else {
+				bool2 = 0;
 			}
-		},
-		content1() {
-			"step 0";
-			player
-				.chooseTarget("令" + get.translation(card) + "对其中一个目标造成的伤害+1", true, (card, player, target) => {
-					return _status.event.targets.includes(target);
-				})
-				.set("ai", target => {
-					return 2 - get.attitude(_status.event.player, target);
-				})
-				.set("targets", event.getParent().getTrigger().targets);
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.line(target);
-				player.addTempSkill("dcqingshi_ex");
-				if (!player.storage.dcqingshi_ex) {
-					player.storage.dcqingshi_ex = [];
+			if (bool1 || bool2) {
+				for (const [index, firstCard] of cards.entries()) {
+					const name = get.name(firstCard);
+					if (player.getStorage("dcqingshi_clear").includes(name)) {
+						continue;
+					}
+					for (const secondCard of cards.slice(index + 1)) {
+						if (name === get.name(secondCard) && get.position(firstCard) + get.position(secondCard) !== "ss" && player.hasValueTarget(firstCard)) {
+							choicesx.remove("选项三");
+							break;
+						}
+					}
 				}
-				player.storage.dcqingshi_ex.push([target, card]);
 			}
+			let choice = "cancel2";
+			if (bool2 > 2) {
+				choice = "选项二";
+			} else if (choicesx.includes("选项三")) {
+				choice = "选项三";
+			} else if (bool2 === 2) {
+				choice = "选项二";
+			} else if (bool1) {
+				choice = "选项一";
+			} else if (bool2) {
+				choice = "选项二";
+			}
+			const result = await player
+				.chooseControl({
+					controls: [...choices, "cancel2"],
+					choiceList,
+					prompt: get.prompt(event.skill),
+					ai: () => choice,
+				})
+				.forResult();
+			event.result = {
+				bool: result.control !== "cancel2",
+				cost_data: result.control,
+			};
 		},
-		content2() {
-			"step 0";
-			player.chooseTarget("令任意名其他角色各摸一张牌", [1, Infinity], true, lib.filter.notMe).set("ai", target => {
-				return get.attitude(_status.event.player, target);
+		async content(event, trigger, player) {
+			const choice = event.cost_data;
+			game.log(player, "选择了", `#y${choice}`);
+			const index = ["选项一", "选项二", "选项三"].indexOf(choice) + 1;
+			player.addTempSkill("dcqingshi_clear");
+			player.markAuto("dcqingshi_clear", [trigger.card.name]);
+			await lib.skill.dcqingshi[`content${index}`](event, trigger, player);
+		},
+		async content1(event, trigger, player) {
+			const { card } = trigger;
+			const next = player.chooseTarget({
+				prompt: `令${get.translation(card)}对其中一个目标造成的伤害+1`,
+				forced: true,
+				filterTarget: (card, player, target) => _status.event.targets.includes(target),
+				ai: target => 2 - get.attitude(_status.event.player, target),
 			});
-			"step 1";
-			if (result.bool) {
-				var targets = result.targets;
-				targets.sortBySeat();
-				player.line(targets);
-				game.asyncDraw(targets);
-				game.delayex();
+			next.set("targets", trigger.targets);
+			const result = await next.forResult();
+			if (!result.bool) {
+				return;
 			}
+			const target = result.targets[0];
+			player.line(target);
+			player.addTempSkill("dcqingshi_ex");
+			if (!player.storage.dcqingshi_ex) {
+				player.storage.dcqingshi_ex = [];
+			}
+			player.storage.dcqingshi_ex.push([target, card]);
 		},
-		content3() {
-			"step 0";
-			player.draw(3);
+		async content2(event, trigger, player) {
+			const result = await player
+				.chooseTarget({
+					prompt: "令任意名其他角色各摸一张牌",
+					selectTarget: [1, Infinity],
+					forced: true,
+					filterTarget: lib.filter.notMe,
+					ai: target => get.attitude(_status.event.player, target),
+				})
+				.forResult();
+			if (!result.bool) {
+				return;
+			}
+			const targets = result.targets;
+			targets.sortBySeat();
+			player.line(targets);
+			await game.asyncDraw(targets);
+			await game.delayex();
+		},
+		async content3(event, trigger, player) {
+			await player.draw(3);
 			player.tempBanSkill("dcqingshi");
 		},
 		subSkill: {
-			ex: {
-				trigger: { source: "damageBegin1" },
-				filter(event, player) {
-					return (
-						player.storage.dcqingshi_ex &&
-						player.storage.dcqingshi_ex.some(info => {
-							return info[0] == event.player && info[1] == event.card;
-						})
-					);
+				ex: {
+					trigger: { source: "damageBegin1" },
+					filter(event, player) {
+						return (
+							player.storage.dcqingshi_ex &&
+							player.storage.dcqingshi_ex.some(info => info[0] === event.player && info[1] === event.card)
+						);
 				},
 				forced: true,
-				charlotte: true,
-				popup: false,
-				onremove: true,
-				content() {
-					trigger.num++;
-					for (var i = 0; i < player.storage.dcqingshi_ex.length; i++) {
-						if (player.storage.dcqingshi_ex[i][1] == trigger.card) {
-							player.storage.dcqingshi_ex.splice(i--, 1);
+					charlotte: true,
+					popup: false,
+					onremove: true,
+					async content(event, trigger, player) {
+						trigger.num++;
+						for (const info of [...player.storage.dcqingshi_ex]) {
+							if (info[1] === trigger.card) {
+								player.storage.dcqingshi_ex.remove(info);
 						}
 					}
 				},
