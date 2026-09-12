@@ -42895,12 +42895,12 @@ const skills = {
 			global: ["equipAfter", "addJudgeAfter", "loseAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
 		},
 		filter(event, player) {
-			var current = _status.currentPhase;
-			if (!current || current == player || !current.isIn() || !current.isPhaseUsing()) {
+			const current = _status.currentPhase;
+			if (!current || current === player || !current.isIn() || !current.isPhaseUsing()) {
 				return false;
 			}
-			var evt = event.getl(current);
-			return evt && evt.hs && evt.hs.length && current.countCards("h") == 0;
+			const evt = event.getl(current);
+			return evt && evt.hs && evt.hs.length && !current.hasCards("h");
 		},
 		usable: 1,
 		logTarget() {
@@ -42910,28 +42910,25 @@ const skills = {
 		check(event, player) {
 			return get.attitude(player, _status.currentPhase) > 0;
 		},
-		content() {
-			"step 0";
-			game.asyncDraw([_status.currentPhase, player], 2);
-			"step 1";
-			var e1 = player.getHistory("gain", function (evt) {
-				return evt.getParent(2) == event;
+		async content(event, trigger, player) {
+			const target = _status.currentPhase;
+			await game.asyncDraw([target, player], 2);
+			const e1 = player.getHistory("gain", evt => {
+				return evt.getParent(2) === event;
 			})[0];
-			if (e1 && e1.cards && e1.cards.length == 2 && get.type(e1.cards[0]) == get.type(e1.cards[1])) {
+			if (e1 && e1.cards && e1.cards.length === 2 && get.type(e1.cards[0]) === get.type(e1.cards[1])) {
 				player.addTempSkill("yaner_zhiren", { player: "phaseBegin" });
 				game.log(player, "修改了技能", "#g【织纴】");
 			}
-			var target = _status.currentPhase;
 			if (target.isIn() && target.isDamaged()) {
-				var e2 = target.getHistory("gain", function (evt) {
-					return evt.getParent(2) == event;
+				const e2 = target.getHistory("gain", evt => {
+					return evt.getParent(2) === event;
 				})[0];
-				if (e2 && e2.cards && e2.cards.length == 2 && get.type(e2.cards[0]) == get.type(e2.cards[1])) {
-					target.recover();
+				if (e2 && e2.cards && e2.cards.length === 2 && get.type(e2.cards[0]) === get.type(e2.cards[1])) {
+					await target.recover();
 				}
 			}
-			"step 2";
-			game.delayx();
+			await game.delayx();
 		},
 		subSkill: {
 			zhiren: { charlotte: true },
