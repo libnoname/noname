@@ -38501,25 +38501,20 @@ const skills = {
 	dcfuxue: {
 		audio: 2,
 		trigger: { player: "phaseZhunbeiBegin" },
-		direct: true,
 		filter(event, player) {
 			return player.hp > 0 && ui.discardPile.childNodes.length > 0;
 		},
-		content() {
-			"step 0";
-			var cards = Array.from(ui.discardPile.childNodes);
-			var gains = cards.slice(0);
-			var history = game.getAllGlobalHistory("cardMove", function (evt) {
-				if (evt.name == "lose") {
-					return evt.position == ui.discardPile;
+		async cost(event, trigger, player) {
+			const cards = Array.from(ui.discardPile.childNodes);
+			const gains = cards.slice();
+			const history = game.getAllGlobalHistory("cardMove", evt => {
+				if (evt.name === "lose") {
+					return evt.position === ui.discardPile;
 				}
-				return evt.name == "cardsDiscard";
+				return evt.name === "cardsDiscard";
 			});
-			for (var i = history.length - 1; i >= 0; i--) {
-				var evt = history[i];
-				var cards2 = evt.cards.filter(function (card) {
-					return cards.includes(card);
-				});
+			for (const evt of history.slice().reverse()) {
+				const cards2 = evt.cards.filter(card => cards.includes(card));
 				if (cards2.length) {
 					if (lib.skill.dcfuxue.isUse(evt)) {
 						gains.removeArray(cards2);
@@ -38530,42 +38525,51 @@ const skills = {
 					break;
 				}
 			}
-			if (gains.length) {
-				var num = player.hp;
-				player.chooseButton(["复学：选择获得" + (num > 0 ? "至多" : "") + get.cnNumber(num) + "张牌", gains], [1, num]).set("ai", function (button) {
-					var player = _status.event.player,
-						card = button.link;
-					var getn = function (card) {
-						return player.countCards("h", card.name) + ui.selected.buttons.filter(button => button.link.name == card.name).length;
-					};
-					var val = player.getUseValue(card);
-					if (card.name == "tao" && getn(card) >= player.getDamagedHp()) {
-						return 0;
-					}
-					if (card.name == "sha" && getn(card) >= player.getCardUsable("sha")) {
-						return 0;
-					}
-					return val;
-				});
-			} else {
-				event.finish();
+			if (!gains.length) {
+				event.result = { bool: false };
+				return;
 			}
-			"step 1";
-			if (result.bool) {
-				player.logSkill("dcfuxue");
-				player.gain(result.links, "gain2").gaintag.add("dcfuxue");
-			}
+			const num = player.hp;
+			const result = await player
+				.chooseButton({
+					createDialog: [`复学：选择获得至多${get.cnNumber(num)}张牌`, gains],
+					selectButton: [1, num],
+					ai: button => {
+						const card = button.link;
+						const getCount = card => player.countCards("h", card.name) + ui.selected.buttons.filter(button => button.link.name === card.name).length;
+						const value = player.getUseValue(card);
+						if (card.name === "tao" && getCount(card) >= player.getDamagedHp()) {
+							return 0;
+						}
+						if (card.name === "sha" && getCount(card) >= player.getCardUsable("sha")) {
+							return 0;
+						}
+						return value;
+					},
+				})
+				.forResult();
+			event.result = {
+				bool: result.bool,
+				cost_data: result.links,
+			};
+		},
+		async content(event, trigger, player) {
+			await player.gain({
+				cards: event.cost_data,
+				animate: "gain2",
+				gaintag: ["dcfuxue"],
+			});
 		},
 		isUse(event) {
-			if (event.name != "cardsDiscard") {
+			if (event.name !== "cardsDiscard") {
 				return false;
 			}
-			var evtx = event.getParent();
-			if (evtx.name != "orderingDiscard") {
+			const evtx = event.getParent();
+			if (evtx.name !== "orderingDiscard") {
 				return false;
 			}
-			var evt2 = evtx.relatedEvent || evtx.getParent();
-			return evt2.name == "phaseJudge" || evt2.name == "useCard";
+			const relatedEvent = evtx.relatedEvent || evtx.getParent();
+			return relatedEvent.name === "phaseJudge" || relatedEvent.name === "useCard";
 		},
 		group: "dcfuxue_draw",
 		subSkill: {
@@ -38576,21 +38580,16 @@ const skills = {
 				locked: false,
 				mod: {
 					aiOrder(player, card, num) {
-						if (get.itemtype(card) == "card" && card.hasGaintag("dcfuxue")) {
+						if (get.itemtype(card) === "card" && card.hasGaintag("dcfuxue")) {
 							return num + 0.5;
 						}
 					},
 				},
 				filter(event, player) {
-					return (
-						player.hp > 0 &&
-						!player.hasCard(function (card) {
-							return card.hasGaintag("dcfuxue");
-						}, "h")
-					);
+					return player.hp > 0 && !player.hasCard(card => card.hasGaintag("dcfuxue"), "h");
 				},
-				content() {
-					player.draw(player.hp);
+				async content(event, trigger, player) {
+					await player.draw(player.hp);
 				},
 			},
 		},
