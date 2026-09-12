@@ -32868,55 +32868,51 @@ const skills = {
 			if (player.hp > 0) {
 				return false;
 			}
-			var characters = ["dc_ganfuren", "dc_mifuren"];
+			const characters = ["dc_ganfuren", "dc_mifuren"];
 			game.countPlayer(current => {
-				if (current.name1 == "dc_ganfuren" || current.name2 == "dc_ganfuren") {
+				if (current.name1 === "dc_ganfuren" || current.name2 === "dc_ganfuren") {
 					characters.remove("dc_ganfuren");
 				}
-				if (current.name1 == "dc_mifuren" || current.name2 == "dc_mifuren") {
+				if (current.name1 === "dc_mifuren" || current.name2 === "dc_mifuren") {
 					characters.remove("dc_mifuren");
 				}
 			});
-			return (
-				characters.length &&
-				[player.name1, player.name2].some(name => {
-					return get.character(name, 3).includes("dcxunbie");
-				})
-			);
+			return characters.length && [player.name1, player.name2].some(name => get.character(name, 3).includes("dcxunbie"));
 		},
 		check: () => true,
 		skillAnimation: true,
 		animationColor: "fire",
 		limited: true,
 		derivation: ["dcyongjue", "dcshushen", "dcshenzhi", "dcguixiu", "dccunsi"],
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			var characters = ["dc_ganfuren", "dc_mifuren"];
-			game.countPlayer(current => {
-				if (current.name1 == "dc_ganfuren" || current.name2 == "dc_ganfuren") {
+			const characters = ["dc_ganfuren", "dc_mifuren"];
+			for (const current of game.filterPlayer()) {
+				if (current.name1 === "dc_ganfuren" || current.name2 === "dc_ganfuren") {
 					characters.remove("dc_ganfuren");
 				}
-				if (current.name1 == "dc_mifuren" || current.name2 == "dc_mifuren") {
+				if (current.name1 === "dc_mifuren" || current.name2 === "dc_mifuren") {
 					characters.remove("dc_mifuren");
 				}
-			});
-			if (characters.length == 1) {
-				event._result = { control: characters[0] };
+			};
+			let character;
+			if (characters.length === 1) {
+				character = characters[0];
 			} else {
-				player
-					.chooseControl(characters)
-					.set("dialog", ["选择要替换成的武将", [characters, "character"]])
-					.set("ai", () => [0, 1].randomGet());
+				const result = await player
+					.chooseControl({
+						controls: characters,
+						dialog: ["选择要替换成的武将", [characters, "character"]],
+						ai: () => [0, 1].randomGet(),
+					})
+					.forResult();
+				character = result.control;
 			}
-			"step 1";
-			var character = result.control;
 			if (!_status.characterlist) {
 				game.initCharacterList();
 			}
-			player.reinitCharacter(get.character(player.name2, 3).includes("dcxunbie") ? player.name2 : player.name1, character);
-			"step 2";
-			player.recover(1 - player.hp);
+			await player.reinitCharacter(get.character(player.name2, 3).includes("dcxunbie") ? player.name2 : player.name1, character);
+			await player.recover(1 - player.hp);
 			player.addTempSkill("dcxunbie_muteki");
 		},
 		subSkill: {
@@ -32927,7 +32923,7 @@ const skills = {
 				},
 				charlotte: true,
 				forced: true,
-				content() {
+				async content(event, trigger, player) {
 					trigger.cancel();
 				},
 				mark: true,
