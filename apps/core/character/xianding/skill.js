@@ -31214,42 +31214,37 @@ const skills = {
 		filter(event, player) {
 			return !player.hasMark("dccaixia_clear");
 		},
-		direct: true,
 		locked: false,
-		content() {
-			"step 0";
-			var choices = Array.from({
+		async cost(event, trigger, player) {
+			const choices = Array.from({
 				length: Math.min(5, game.players.length + game.dead.length),
 			}).map((_, i) => get.cnNumber(i + 1, true));
-			player
-				.chooseControl(choices, "cancel2")
-				.set("prompt", get.prompt("dccaixia"))
-				.set("prompt2", "你可以摸至多" + get.cnNumber(choices.length) + "张牌，但是你此后需要再使用等量的牌才可再发动本技能。")
-				.set("ai", () => {
-					return _status.event.choice;
-				})
-				.set(
-					"choice",
-					(function () {
-						var cards = player.getCards("hs", card => get.name(card, player) !== "sha" && player.hasValueTarget(card));
-						var damage = Math.min(player.getCardUsable({ name: "sha" }), player.countCards("hs", "sha")) + cards.filter(i => get.tag(i, "damage")).length;
-						if (player.isPhaseUsing() || player.hp + player.hujia + player.countCards("hs", card => get.tag(card, "recover")) > 2) {
-							if (damage) {
-								return Math.min(choices.length - 1, cards.length - damage);
-							}
-							return Math.min(choices.length - 1, cards.length - 1);
-						}
-						return choices.length - 1;
-					})()
-				);
-			"step 1";
-			if (result.control != "cancel2") {
-				player.logSkill("dccaixia");
-				var num = result.index + 1;
-				player.draw(num);
-				player.addMark("dccaixia_clear", num, false);
-				player.addSkill("dccaixia_clear");
+			const cards = player.getCards("hs", card => get.name(card, player) !== "sha" && player.hasValueTarget(card));
+			const damage = Math.min(player.getCardUsable({ name: "sha" }), player.countCards("hs", "sha")) + cards.filter(card => get.tag(card, "damage")).length;
+			let choice;
+			if (player.isPhaseUsing() || player.hp + player.hujia + player.countCards("hs", card => get.tag(card, "recover")) > 2) {
+				choice = damage ? Math.min(choices.length - 1, cards.length - damage) : Math.min(choices.length - 1, cards.length - 1);
+			} else {
+				choice = choices.length - 1;
 			}
+			const result = await player
+				.chooseControl({
+					controls: [...choices, "cancel2"],
+					prompt: get.prompt(event.skill),
+					prompt2: `你可以摸至多${get.cnNumber(choices.length)}张牌，但是你此后需要再使用等量的牌才可再发动本技能。`,
+					ai: () => choice,
+				})
+				.forResult();
+			event.result = {
+				bool: result.control !== "cancel2",
+				cost_data: result.index + 1,
+			};
+		},
+		async content(event, trigger, player) {
+			const num = event.cost_data;
+			await player.draw(num);
+			player.addMark("dccaixia_clear", num, false);
+			player.addSkill("dccaixia_clear");
 		},
 		mod: {
 			aiOrder(player, card, num) {
@@ -31271,7 +31266,7 @@ const skills = {
 				forced: true,
 				popup: false,
 				charlotte: true,
-				content() {
+				async content(event, trigger, player) {
 					player.removeMark("dccaixia_clear", 1, false);
 				},
 				intro: {
