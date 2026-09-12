@@ -44321,44 +44321,43 @@ const skills = {
 			if (player.storage.lvli > 1) {
 				return false;
 			}
-			if (player.storage.lvli > 0 && (player != _status.currentPhase || !player.storage.choujue)) {
+			if (player.storage.lvli > 0 && (player !== _status.currentPhase || !player.storage.choujue)) {
 				return false;
 			}
-			return event.type != "wuxie" && event.type != "respondShan";
+			return event.type !== "wuxie" && event.type !== "respondShan";
 		},
 		chooseButton: {
 			dialog(event, player) {
-				var list = [];
-				for (var i = 0; i < lib.inpile.length; i++) {
-					var name = lib.inpile[i];
-					if (name == "wuxie") {
+				const list = [];
+				for (const name of lib.inpile) {
+					if (name === "wuxie") {
 						continue;
 					}
-					if (name == "sha") {
+					if (name === "sha") {
 						list.push(["基本", "", "sha"]);
 						list.push(["基本", "", "sha", "fire"]);
 						list.push(["基本", "", "sha", "thunder"]);
-					} else if (get.type(name) == "trick") {
+					} else if (get.type(name) === "trick") {
 						list.push(["锦囊", "", name]);
-					} else if (get.type(name) == "basic") {
+					} else if (get.type(name) === "basic") {
 						list.push(["基本", "", name]);
 					}
 				}
 				return ui.create.dialog(event.lvli6 ? get.prompt("lvli") : "膂力", [list, "vcard"]);
 			},
 			filter(button, player) {
-				var evt = _status.event.getParent();
-				if (evt && typeof evt.filterCard == "function") {
+				const evt = _status.event.getParent();
+				if (evt && typeof evt.filterCard === "function") {
 					return evt.filterCard({ name: button.link[2] }, player, evt);
 				}
 				return lib.filter.filterCard({ name: button.link[2], isCard: true }, player, _status.event.getParent());
 			},
 			check(button) {
-				var player = _status.event.player;
-				if (player.countCards("h", button.link[2])) {
+				const player = _status.event.player;
+				if (player.hasCards("h", button.link[2])) {
 					return 0;
 				}
-				if (_status.event.getParent().type != "phase" && !_status.event.getParent().lvli6) {
+				if (_status.event.getParent().type !== "phase" && !_status.event.getParent().lvli6) {
 					return 1;
 				}
 				return player.getUseValue({ name: button.link[2], isCard: true });
@@ -44377,7 +44376,7 @@ const skills = {
 				};
 			},
 			prompt(links, player) {
-				return "请选择" + (get.translation(links[0][3]) || "") + get.translation(links[0][2]) + "的目标";
+				return `请选择${get.translation(links[0][3]) || ""}${get.translation(links[0][2])}的目标`;
 			},
 		},
 		ai: {
@@ -44397,39 +44396,35 @@ const skills = {
 		priority: 35,
 		sourceSkill: "lvli",
 		filter(event, player) {
-			return event.skill == "lvli_backup" || event.skill == "lvli5" || event.skill == "lvli4";
+			return event.skill === "lvli_backup" || event.skill === "lvli5" || event.skill === "lvli4";
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.logSkill("lvli");
 			player.storage.lvli++;
-			player.popup(trigger.card.name, trigger.name == "useCard" ? "metal" : "wood");
-			"step 1";
-			var random = 0.5 + player.countCards("e") * 0.1;
+			player.popup(trigger.card.name, trigger.name === "useCard" ? "metal" : "wood");
+			let random = 0.5 + player.countCards("e") * 0.1;
 			if (get.isLuckyStar(player)) {
 				random = 1;
 			}
 			if (random >= Math.random()) {
 				player.popup("洗具");
-			} else {
-				player.popup("杯具");
-				trigger.cancel();
-				if (!trigger.getParent().lvli6) {
-					trigger.getParent().goto(0);
-				}
-				game.broadcastAll(
-					function (str) {
-						var dialog = ui.create.dialog(str);
-						dialog.classList.add("center");
-						setTimeout(function () {
-							dialog.close();
-						}, 1000);
-					},
-					get.translation(player) + "声明的" + get.translation(trigger.card.name) + "并没有生效"
-				);
-				game.log("然而什么都没有发生");
-				game.delay(2);
+				return;
 			}
+			player.popup("杯具");
+			trigger.cancel();
+			if (!trigger.getParent().lvli6) {
+				trigger.getParent().goto(0);
+			}
+			game.broadcastAll(
+				str => {
+					const dialog = ui.create.dialog(str);
+					dialog.classList.add("center");
+					setTimeout(() => dialog.close(), 1000);
+				},
+				`${get.translation(player)}声明的${get.translation(trigger.card.name)}并没有生效`
+			);
+			game.log("然而什么都没有发生");
+			await game.delay(2);
 		},
 	},
 	lvli3: {
@@ -44438,7 +44433,7 @@ const skills = {
 		silent: true,
 		popup: false,
 		sourceSkill: "lvli",
-		content() {
+		async content(event, trigger, player) {
 			player.storage.lvli = 0;
 		},
 	},
@@ -44450,7 +44445,7 @@ const skills = {
 			if (player.storage.lvli > 1) {
 				return false;
 			}
-			if (player.storage.lvli > 0 && (player != _status.currentPhase || !player.storage.choujue)) {
+			if (player.storage.lvli > 0 && (player !== _status.currentPhase || !player.storage.choujue)) {
 				return false;
 			}
 			return true;
@@ -44468,7 +44463,7 @@ const skills = {
 				if (player.storage.lvli > 1) {
 					return false;
 				}
-				if (player.storage.lvli > 0 && (player != _status.currentPhase || !player.storage.choujue)) {
+				if (player.storage.lvli > 0 && (player !== _status.currentPhase || !player.storage.choujue)) {
 					return false;
 				}
 				return true;
@@ -44485,7 +44480,7 @@ const skills = {
 			if (player.storage.lvli > 1) {
 				return false;
 			}
-			if (player.storage.lvli > 0 && (player != _status.currentPhase || !player.storage.choujue)) {
+			if (player.storage.lvli > 0 && (player !== _status.currentPhase || !player.storage.choujue)) {
 				return false;
 			}
 			return true;
@@ -44510,17 +44505,18 @@ const skills = {
 			if (player.storage.lvli > 1) {
 				return false;
 			}
-			if (player.storage.lvli > 0 && (player != _status.currentPhase || !player.storage.choujue)) {
+			if (player.storage.lvli > 0 && (player !== _status.currentPhase || !player.storage.choujue)) {
 				return false;
 			}
 			return true;
 		},
-		content() {
-			var next = player.chooseToUse();
+		async content(event, trigger, player) {
+			const next = player.chooseToUse();
 			next.set("norestore", true);
 			next.set("_backupevent", "lvli");
 			next.backup("lvli");
 			next.set("lvli6", true);
+			await next;
 		},
 	},
 	choujue: {
