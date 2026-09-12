@@ -22012,7 +22012,7 @@ const skills = {
 		subSkill: {
 			backup: {
 				filterCard(card) {
-					return get.itemtype(card) == "card";
+					return get.itemtype(card) === "card";
 				},
 				position: "hes",
 				viewAs: {
@@ -32343,72 +32343,67 @@ const skills = {
 			return event.player.isIn() && !event.player.getHistory("sourceDamage").length;
 		},
 		direct: true,
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			trigger.player.addTempSkill("dcshiji_forbidself");
-			var list = [];
-			for (var name of lib.inpile) {
-				var type = get.type(name);
-				if (type != "trick") {
+			const list = [];
+			for (const name of lib.inpile) {
+				const type = get.type(name);
+				if (type !== "trick") {
 					continue;
 				}
 				if (player.getStorage("dcshiji_used").includes(name)) {
 					continue;
 				}
-				var card = {
-					name: name,
+				const card = {
+					name,
 					storage: { dcshiji: true },
 				};
 				if (trigger.player.hasUseTarget(card)) {
 					list.push([type, "", name]);
 				}
 			}
-			if (list.length) {
-				player
-					.chooseButton([get.prompt("dcshiji", trigger.player), [list, "vcard"]])
-					.set("ai", button => {
+			if (!list.length) {
+				return;
+			}
+			const nextButton = player.chooseButton({
+				createDialog: [get.prompt("dcshiji", trigger.player), [list, "vcard"]],
+				ai: button => {
 						if (_status.event.tochoose) {
 							return _status.event.getTrigger().player.getUseValue({ name: button.link[2] });
 						}
 						return 0;
-					})
-					.set(
-						"tochoose",
-						get.attitude(player, trigger.player) > 0 &&
-							trigger.player.hasCard(card => {
-								return get.value(card) < 7;
-							}, "hes")
-					);
-			} else {
-				event.finish();
+					},
+			});
+			nextButton.set("tochoose", get.attitude(player, trigger.player) > 0 && trigger.player.hasCard(card => get.value(card) < 7, "hes"));
+			const result = await nextButton.forResult();
+			if (!result.bool) {
+				return;
 			}
-			"step 1";
-			if (result.bool) {
-				var card = {
-					name: result.links[0][2],
-					storage: { dcshiji: true },
-				};
-				var str = get.translation(card);
-				player.logSkill("dcshiji", trigger.player);
-				player.addTempSkill("dcshiji_used", "roundStart");
-				player.markAuto("dcshiji_used", [card.name]);
-				player.popup(str);
-				game.log(player, "声明了", "#y" + str);
-				game.broadcastAll(function (card) {
-					lib.skill.dcshiji_backup.viewAs = card;
-					lib.skill.dcshiji_backup.prompt = "十计：是否将一张牌当做" + get.translation(card) + "使用？";
-				}, card);
-				var next = trigger.player.chooseToUse();
-				next.set("openskilldialog", "十计：是否将一张牌当做" + get.translation(card) + "使用？");
-				next.set("norestore", true);
-				next.set("addCount", false);
-				next.set("_backupevent", "dcshiji_backup");
-				next.set("custom", {
-					add: {},
-					replace: { window() {} },
-				});
-				next.backup("dcshiji_backup");
-			}
+			const card = {
+				name: result.links[0][2],
+				storage: { dcshiji: true },
+			};
+			const str = get.translation(card);
+			player.logSkill("dcshiji", trigger.player);
+			player.addTempSkill("dcshiji_used", "roundStart");
+			player.markAuto("dcshiji_used", [card.name]);
+			player.popup(str);
+			game.log(player, "声明了", `#y${str}`);
+			game.broadcastAll(card => {
+				lib.skill.dcshiji_backup.viewAs = card;
+				lib.skill.dcshiji_backup.prompt = `十计：是否将一张牌当做${get.translation(card)}使用？`;
+			}, card);
+			const next = trigger.player.chooseToUse();
+			next.set("openskilldialog", `十计：是否将一张牌当做${get.translation(card)}使用？`);
+			next.set("norestore", true);
+			next.set("addCount", false);
+			next.set("_backupevent", "dcshiji_backup");
+			next.set("custom", {
+				add: {},
+				replace: { window() {} },
+			});
+			next.backup("dcshiji_backup");
+			await next;
 		},
 		subSkill: {
 			backup: {
@@ -32433,7 +32428,7 @@ const skills = {
 				charlotte: true,
 				mod: {
 					targetEnabled(card, player, target) {
-						if (player == target && card.storage && card.storage.dcshiji) {
+							if (player === target && card.storage && card.storage.dcshiji) {
 							return false;
 						}
 					},
