@@ -36991,9 +36991,9 @@ const skills = {
 		derivation: "dcshouze",
 		group: ["dclianzhi_connect", "dclianzhi_reproach"],
 		filter(event, player) {
-			return player.getStorage("dclianzhi").filter(i => i && i.isIn()).length;
+			return player.getStorage("dclianzhi").some(i => i?.isIn());
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.recover();
 			game.asyncDraw([player].concat(player.getStorage("dclianzhi").filter(i => i && i.isIn())).sortBySeat());
 		},
@@ -37010,31 +37010,34 @@ const skills = {
 				forced: true,
 				direct: true,
 				filter(event, player) {
-					return game.hasPlayer(current => current != player) && (event.name != "phase" || game.phaseNumber == 0);
+					return game.hasPlayer(current => current !== player) && (event.name !== "phase" || game.phaseNumber === 0);
 				},
-				content() {
-					"step 0";
-					player
-						.chooseTarget("连枝：请选择一名其他角色", lib.translate.dclianzhi_info, true, (card, player, target) => {
-							return target != player && !player.getStorage("dclianzhi").includes(target);
+				async content(event, trigger, player) {
+					const result = await player
+						.chooseTarget({
+							prompt: "连枝：请选择一名其他角色",
+							prompt2: lib.translate.dclianzhi_info,
+							forced: true,
+							filterTarget: (card, player, target) => target !== player && !player.getStorage("dclianzhi").includes(target),
+							ai: target => {
+								const att = get.attitude(player, target);
+								if (att > 0) {
+									return att + 1;
+								}
+								if (att === 0) {
+									return Math.random();
+								}
+								return att;
+							},
 						})
-						.set("ai", target => {
-							var att = get.attitude(_status.event.player, target);
-							if (att > 0) {
-								return att + 1;
-							}
-							if (att == 0) {
-								return Math.random();
-							}
-							return att;
-						})
-						.set("animate", false);
-					"step 1";
-					if (result.bool) {
-						var target = result.targets[0];
-						player.logSkill("dclianzhi");
-						player.markAuto("dclianzhi", [target]);
+						.set("animate", false)
+						.forResult();
+					if (!result.bool) {
+						return;
 					}
+					const target = result.targets[0];
+					player.logSkill("dclianzhi");
+					player.markAuto("dclianzhi", [target]);
 				},
 			},
 			reproach: {
@@ -37044,22 +37047,24 @@ const skills = {
 					return player.getStorage("dclianzhi").includes(event.player);
 				},
 				direct: true,
-				content() {
-					"step 0";
-					var num = Math.max(1, player.countMark("dclingfang"));
-					player
-						.chooseTarget(get.prompt("dclianzhi"), "选择一名其他角色，你与其各获得〖受责〗，且其获得" + num + "枚“绞”标记", (card, player, target) => {
-							return target != player;
+				async content(event, trigger, player) {
+					const num = Math.max(1, player.countMark("dclingfang"));
+					const result = await player
+						.chooseTarget({
+							prompt: get.prompt("dclianzhi"),
+							prompt2: `选择一名其他角色，你与其各获得〖受责〗，且其获得${num}枚“绞”标记`,
+							filterTarget: lib.filter.notMe,
+							ai: target => -get.attitude(player, target),
 						})
-						.set("ai", target => -get.attitude(_status.event.player, target));
-					"step 1";
-					if (result.bool) {
-						var target = result.targets[0];
-						player.logSkill("dclianzhi_reproach", target);
-						player.addSkills("dcshouze");
-						target.addSkills("dcshouze");
-						target.addMark("dclingfang", Math.max(1, player.countMark("dclingfang")));
+						.forResult();
+					if (!result.bool) {
+						return;
 					}
+					const target = result.targets[0];
+					player.logSkill("dclianzhi_reproach", target);
+					player.addSkills("dcshouze");
+					target.addSkills("dcshouze");
+					target.addMark("dclingfang", num);
 				},
 			},
 		},
