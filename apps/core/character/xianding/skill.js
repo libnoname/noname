@@ -34847,45 +34847,38 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filterTarget(card, player, target) {
-			if (ui.selected.targets.length) {
-				if (ui.selected.targets[0].hp == target.hp) {
-					return false;
-				}
+			if (ui.selected.targets.length && ui.selected.targets[0].hp === target.hp) {
+				return false;
 			}
-			return target != player;
+			return target !== player;
 		},
 		selectTarget: [1, 2],
 		complexTarget: true,
 		multiline: true,
-		content() {
-			"step 0";
-			target
-				.chooseToDiscard(get.translation(player) + "对你发动了【文灿】", "是否弃置两张花色不同的牌？或者点击“取消”，令其本回合对你使用牌无距离和次数限制", "he", 2, (card, player) => {
-					if (!ui.selected.cards.length) {
-						return true;
-					}
-					var suit = get.suit(card, player);
-					for (var i of ui.selected.cards) {
-						if (get.suit(i, player) == suit) {
-							return false;
+		async content(event, trigger, player) {
+			const nofear = player.countCards("hs", card => get.tag(card, "damage") && player.canUse(card, target, false) && get.effect(target, card, player, target) <= 0) < target.hp;
+			const result = await target
+				.chooseToDiscard({
+					prompt: `${get.translation(player)}对你发动了【文灿】`,
+					prompt2: "是否弃置两张花色不同的牌？或者点击“取消”，令其本回合对你使用牌无距离和次数限制",
+					position: "he",
+					selectCard: 2,
+					filterCard: (card, player) => {
+						if (!ui.selected.cards.length) {
+							return true;
 						}
-					}
-					return true;
+						const suit = get.suit(card, player);
+						for (const selectedCard of ui.selected.cards) {
+							if (get.suit(selectedCard, player) === suit) {
+								return false;
+							}
+						}
+						return true;
+					},
+					complexCard: true,
+					ai: card => (nofear ? 0 : 5 - get.value(card)),
 				})
-				.set("complexCard", true)
-				.set("ai", card => {
-					if (_status.event.nofear) {
-						return 0;
-					}
-					return 5 - get.value(card);
-				})
-				.set(
-					"nofear",
-					player.countCards("hs", card => {
-						return get.tag(card, "damage") && player.canUse(card, target, false) && get.effect(target, card, player, target) <= 0;
-					}) < target.hp
-				);
-			"step 1";
+				.forResult();
 			if (!result.bool) {
 				player.addTempSkill("dcwencan_paoxiao");
 				player.markAuto("dcwencan_paoxiao", [target]);
