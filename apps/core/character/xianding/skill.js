@@ -43490,15 +43490,12 @@ const skills = {
 			if (!event.getl || !event.getg) {
 				return [];
 			}
-			let evt = event.getl(player);
+			const evt = event.getl(player);
 			if (!evt || !evt.hs || !evt.hs.length) {
 				return [];
 			}
 			return game
-				.filterPlayer(current => {
-					let evtx = event.getg(current);
-					return evtx && evtx.some(card => evt.hs.includes(card));
-				})
+				.filterPlayer(current => event.getg(current)?.some(card => evt.hs.includes(card)))
 				.sortBySeat();
 		},
 		logTarget(_1, _2, _3, target) {
@@ -43509,10 +43506,10 @@ const skills = {
 			if (!target.storage.jiaoying2) {
 				target.storage.jiaoying2 = [];
 			}
-			const cs = trigger.getl(player).hs,
-				cards = trigger.getg(target).filter(card => cs.includes(card));
-			for (let i of cards) {
-				target.storage.jiaoying2.add(get.color(i, player));
+			const cs = trigger.getl(player).hs;
+			const cards = trigger.getg(target).filter(card => cs.includes(card));
+			for (const card of cards) {
+				target.storage.jiaoying2.add(get.color(card, player));
 			}
 			target.addTempSkill("jiaoying2");
 			target.markSkill("jiaoying2");
@@ -43525,7 +43522,7 @@ const skills = {
 		ai: {
 			directHit_ai: true,
 			skillTagFilter(player, tag, arg) {
-				var target = arg.target;
+				const target = arg.target;
 				if (target.getStorage("jiaoying2").includes("red") && get.tag(arg.card, "respondShan") && !target.hasSkillTag("respondShan", true, null, true)) {
 					return true;
 				}
@@ -43557,10 +43554,8 @@ const skills = {
 		filter(event, player) {
 			return player.storage.jiaoying3.includes(event.player);
 		},
-		content() {
-			while (player.storage.jiaoying3.includes(trigger.player)) {
-				player.storage.jiaoying3.remove(trigger.player);
-			}
+		async content(event, trigger, player) {
+			player.storage.jiaoying3 = player.storage.jiaoying3.filter(target => target !== trigger.player);
 			if (!player.storage.jiaoying3.length) {
 				player.removeSkill("jiaoying3");
 			}
@@ -43573,35 +43568,34 @@ const skills = {
 		charlotte: true,
 		sourceSkill: "jiaoying",
 		filter(event, player) {
-			return (
-				player.getStorage("jiaoying3").length > 0 &&
-				game.hasPlayer(function (current) {
-					return current.countCards("h") < 5;
-				})
-			);
+			return player.getStorage("jiaoying3").length > 0 && game.hasPlayer(current => current.countCards("h") < 5);
 		},
-		content() {
-			"step 0";
-			player.storage.jiaoying3.shift();
-			player
-				.chooseTarget("醮影：令一名角色将手牌摸至五张", function (card, player, target) {
-					return target.countCards("h") < 5;
-				})
-				.set("ai", function (target) {
-					var att = get.attitude(_status.event.player, target);
-					if (att > 2) {
-						return 5 - target.countCards("h");
-					}
-					return att / 3;
-				});
-			"step 1";
-			if (result.bool) {
-				player.logSkill("jiaoying", result.targets);
-				for (var i = 0; i < result.targets.length; i++) {
-					result.targets[i].drawTo(5);
+		async content(event, trigger, player) {
+			for (
+				let canContinue = lib.skill.jiaoying3_draw.filter(null, player);
+				canContinue;
+				canContinue = lib.skill.jiaoying3_draw.filter(null, player)
+			) {
+				player.storage.jiaoying3.shift();
+				const result = await player
+					.chooseTarget({
+						prompt: "醮影：令一名角色将手牌摸至五张",
+						filterTarget: (card, player, target) => target.countCards("h") < 5,
+						ai: target => {
+							const att = get.attitude(player, target);
+							if (att > 2) {
+								return 5 - target.countCards("h");
+							}
+							return att / 3;
+						},
+					})
+					.forResult();
+				if (!result.bool) {
+					break;
 				}
-				if (lib.skill.jiaoying3_draw.filter(null, player)) {
-					event.goto(0);
+				player.logSkill("jiaoying", result.targets);
+				for (const target of result.targets) {
+					await target.drawTo(5);
 				}
 			}
 		},
