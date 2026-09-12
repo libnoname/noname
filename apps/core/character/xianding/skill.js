@@ -42107,18 +42107,20 @@ const skills = {
 	syjiqiao: {
 		audio: 2,
 		trigger: { player: "phaseUseBegin" },
-		content() {
-			var cards = get.cards(player.maxHp);
-			cards.sort(function (a, b) {
-				return get.color(b).length - get.color(a).length;
+		async content(event, trigger, player) {
+			const cards = get.cards(player.maxHp);
+			cards.sort((a, b) => get.color(b).length - get.color(a).length);
+			player.addToExpansion({
+				cards,
+				animate: "gain2",
+				gaintag: ["syjiqiao"],
 			});
-			player.addToExpansion(cards, "gain2").gaintag.add("syjiqiao");
 			player.addTempSkill("syjiqiao_gain", "phaseUseAfter");
 		},
 		onremove(player, skill) {
-			var cards = player.getExpansions(skill);
+			const cards = player.getExpansions(skill);
 			if (cards.length) {
-				player.loseToDiscardpile(cards);
+				player.loseToDiscardpile({ cards });
 			}
 		},
 		intro: {
@@ -42134,59 +42136,61 @@ const skills = {
 				filter(event, player) {
 					return player.hasCard(card => card.hasGaintag("syjiqiao"), "x");
 				},
-				content() {
-					"step 0";
-					var cards = player.getExpansions("syjiqiao");
-					var dialog = ["激峭：选择获得一张牌"];
-					var reds = [],
-						blacks = [];
-					for (var i of cards) {
-						(get.color(i) == "red" ? reds : blacks).push(i);
+				async content(event, trigger, player) {
+					const cards = player.getExpansions("syjiqiao");
+					const dialog = ["激峭：选择获得一张牌"];
+					const reds = [];
+					const blacks = [];
+					for (const card of cards) {
+						(get.color(card) === "red" ? reds : blacks).push(card);
 					}
-					if (reds.length > 0) {
+					if (reds.length) {
 						dialog.push('<div class="text center">红色牌</div>');
 						dialog.push(reds);
 					}
-					if (blacks.length > 0) {
+					if (blacks.length) {
 						dialog.push('<div class="text center">黑色牌</div>');
 						dialog.push(blacks);
 					}
-					player.chooseButton(dialog, true).set("ai", function (button) {
-						var player = _status.event.player;
-						var color = get.color(button.link),
-							cards = player.getExpansions("syjiqiao");
-						var num1 = cards.filter(card => get.color(card) == color).length,
-							num2 = cards.length - num1;
-						if (num1 >= num2) {
-							return get.value(button.link);
-						}
-						return 0;
-					});
-					"step 1";
-					if (result.bool) {
-						player.gain(result.links, "gain2");
-					} else {
-						event.finish();
+					const result = await player
+						.chooseButton({
+							createDialog: dialog,
+							forced: true,
+							ai(button) {
+								const player = _status.event.player;
+								const color = get.color(button.link);
+								const cards = player.getExpansions("syjiqiao");
+								const num1 = cards.filter(card => get.color(card) === color).length;
+								const num2 = cards.length - num1;
+								return num1 >= num2 ? get.value(button.link) : 0;
+							},
+						})
+						.forResult();
+					if (!result.bool) {
+						return;
 					}
-					"step 2";
-					var map = { red: 0, black: 0 },
-						cards = player.getExpansions("syjiqiao");
-					for (var i of cards) {
-						var color = get.color(i, false);
-						if (map[color] != undefined) {
+					await player.gain({
+						cards: result.links,
+						animate: "gain2",
+					});
+					const map = { red: 0, black: 0 };
+					const expansionCards = player.getExpansions("syjiqiao");
+					for (const card of expansionCards) {
+						const color = get.color(card, false);
+						if (map[color] !== undefined) {
 							map[color]++;
 						}
 					}
-					if (map.red == map.black) {
-						player.recover();
+					if (map.red === map.black) {
+						await player.recover();
 					} else {
-						player.loseHp();
+						await player.loseHp();
 					}
 				},
 				onremove(player) {
-					var cards = player.getExpansions("syjiqiao");
+					const cards = player.getExpansions("syjiqiao");
 					if (cards.length) {
-						player.loseToDiscardpile(cards);
+						player.loseToDiscardpile({ cards });
 					}
 				},
 			},
