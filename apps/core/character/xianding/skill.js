@@ -35694,7 +35694,7 @@ const skills = {
 		filter(event, player) {
 			return !event.numFixed;
 		},
-		content() {
+		async content(event, trigger, player) {
 			trigger.num += 2;
 			trigger.dczhaohan = true;
 			player.addTempSkill("dczhaohan_choose", "phaseDrawAfter");
@@ -35708,45 +35708,41 @@ const skills = {
 				forced: true,
 				charlotte: true,
 				popup: false,
-				content() {
-					"step 0";
-					var choices = [],
-						choiceList = ["将两张手牌交给一名没有手牌的角色", "弃置两张手牌"];
-					if (game.hasPlayer(current => current.countCards("h") == 0)) {
+				async content(event, trigger, player) {
+					const choices = [];
+					const choiceList = ["将两张手牌交给一名没有手牌的角色", "弃置两张手牌"];
+					if (game.hasPlayer(current => !current.hasCards("h"))) {
 						choices.push("选项一");
 					} else {
-						choiceList[0] = '<span style="opacity:0.5; ">' + choiceList[0] + "</span>";
+						choiceList[0] = `<span style="opacity:0.5; ">${choiceList[0]}</span>`;
 					}
 					choices.push("选项二");
-					if (choices.length == 1) {
-						event._result = { control: "选项二" };
-					} else {
-						player
-							.chooseControl(choices)
-							.set("choiceList", choiceList)
-							.set("ai", () => _status.event.choice)
-							.set(
-								"choice",
-								(function () {
-									if (
-										game.hasPlayer(current => {
-											return current.countCards("h") == 0 && get.attitude(player, current) > 0;
-										})
-									) {
-										return "选项一";
-									}
-									return "选项二";
-								})()
-							);
+					let control = "选项二";
+					if (choices.length > 1) {
+						const choice = game.hasPlayer(current => !current.hasCards("h") && get.attitude(player, current) > 0) ? "选项一" : "选项二";
+						control = await player
+							.chooseControl({
+								controls: choices,
+								choiceList,
+								ai: () => choice,
+							})
+							.forResultControl();
 					}
-					"step 1";
-					if (result.control == "选项一") {
-						player.chooseCardTarget({
+					if (control !== "选项一") {
+						await player.chooseToDiscard({
+							prompt: "昭汉：请弃置两张手牌",
+							forced: true,
+							selectCard: 2,
+						});
+						return;
+					}
+					const result = await player
+						.chooseCardTarget({
 							filterCard: true,
 							selectCard: 2,
 							forced: true,
 							filterTarget(card, player, target) {
-								return !target.countCards("h");
+								return !target.hasCards("h");
 							},
 							ai1(card) {
 								return 7 - get.value(card);
@@ -35755,14 +35751,10 @@ const skills = {
 								return get.attitude(_status.event.player, target);
 							},
 							prompt: "将两张手牌交给一名没有手牌的角色",
-						});
-					} else {
-						player.chooseToDiscard("昭汉：请弃置两张手牌", true, 2);
-						event.finish();
-					}
-					"step 2";
+						})
+						.forResult();
 					if (result.bool) {
-						player.give(result.cards, result.targets[0]);
+						await player.give(result.cards, result.targets[0]);
 					}
 				},
 			},
