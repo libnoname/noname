@@ -34976,53 +34976,48 @@ const skills = {
 		filter(event, player) {
 			return player.getExpansions("dcwangyuan").length;
 		},
-		direct: true,
-		content() {
-			"step 0";
-			var cards = player.getExpansions("dcwangyuan");
-			player
-				.chooseButton([get.prompt("dclingyin") + "（当前轮数：" + get.cnNumber(game.roundNumber, true) + "）", cards], [1, game.roundNumber])
-				.set("ai", button => {
-					var color = _status.event.color,
-						player = _status.event.player;
-					if (ui.selected.buttons.length > 0 && ui.selected.buttons.length == player.getExpansions("dcwangyuan").length - 1) {
-						return 0;
-					}
-					if (color == 1) {
-						return get.value(button.link);
-					}
-					if (color) {
-						return get.color(button.link) == color ? 1 : 0;
-					}
-					return 0;
-				})
-				.set(
-					"color",
-					(function () {
-						var cardsR = cards.filter(i => get.color(i) == "red");
-						if (cardsR.length == cards.length || cardsR.length == 0 || cards.length <= game.roundNumber) {
-							return 1;
-						}
-						if (cardsR.length <= game.roundNumber) {
-							return "red";
-						}
-						if (cards.length - cardsR.length <= game.roundNumber) {
-							return "black";
-						}
-						return 1;
-					})()
-				);
-			"step 1";
-			if (result.bool) {
-				player.logSkill("dclingyin");
-				var cards = result.links;
-				player.gain(cards, "gain2");
-				var cardsx = player.getExpansions("dcwangyuan").removeArray(cards);
-				if (cardsx.length <= 1 || get.color(cardsx) != "none") {
-					player.addTempSkill("dclingyin_effect");
-					player.addMark("dclingyin_effect", 1, false);
-					game.log(player, "获得了", "#g【铃音】", "的后续效果");
+		async cost(event, trigger, player) {
+			const cards = player.getExpansions("dcwangyuan");
+			const redCards = cards.filter(card => get.color(card) === "red");
+			let color = 1;
+			if (redCards.length !== cards.length && redCards.length !== 0 && cards.length > game.roundNumber) {
+				if (redCards.length <= game.roundNumber) {
+					color = "red";
+				} else if (cards.length - redCards.length <= game.roundNumber) {
+					color = "black";
 				}
+			}
+			const result = await player
+				.chooseButton({
+					createDialog: [`${get.prompt(event.skill)}（当前轮数：${get.cnNumber(game.roundNumber, true)}）`, cards],
+					selectButton: [1, game.roundNumber],
+					ai: button => {
+						if (ui.selected.buttons.length > 0 && ui.selected.buttons.length === player.getExpansions("dcwangyuan").length - 1) {
+							return 0;
+						}
+						if (color === 1) {
+							return get.value(button.link);
+						}
+						if (color) {
+							return get.color(button.link) === color ? 1 : 0;
+						}
+						return 0;
+					},
+				})
+				.forResult();
+			event.result = {
+				bool: result.bool,
+				cost_data: result.links,
+			};
+		},
+		async content(event, trigger, player) {
+			const gainedCards = event.cost_data;
+			await player.gain({ cards: gainedCards, animate: "gain2" });
+			const remainingCards = player.getExpansions("dcwangyuan").removeArray(gainedCards);
+			if (remainingCards.length <= 1 || get.color(remainingCards) !== "none") {
+				player.addTempSkill("dclingyin_effect");
+				player.addMark("dclingyin_effect", 1, false);
+				game.log(player, "获得了", "#g【铃音】", "的后续效果");
 			}
 		},
 		ai: {
@@ -35040,16 +35035,16 @@ const skills = {
 				onremove: true,
 				prompt: "将一张武器牌或防具牌当【决斗】使用",
 				filterCard(card) {
-					return get.subtype(card) == "equip1" || get.subtype(card) == "equip2";
+					return get.subtype(card) === "equip1" || get.subtype(card) === "equip2";
 				},
 				position: "hes",
 				filter(event, player) {
-					if (event.name == "chooseToUse") {
-						return player.countCards("hes", { subtype: ["equip1", "equip2"] }) > 0;
+					if (event.name === "chooseToUse") {
+						return player.hasCards("hes", { subtype: ["equip1", "equip2"] });
 					}
-					return event.player != player;
+					return event.player !== player;
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.num += player.countMark("dclingyin_effect");
 				},
 				ai: {
