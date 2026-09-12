@@ -33108,19 +33108,15 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseUseBegin" },
 		filter(event, player) {
-			return player.countCards("h");
+			return player.hasCards("h");
 		},
 		check(event, player) {
-			return player.hasCard(card => {
-				return get.color(card) == "black" || (get.color(card) == "red" && player.hasValueTarget(card));
-			});
+			return player.hasCard(card => get.color(card) === "black" || (get.color(card) === "red" && player.hasValueTarget(card)));
 		},
-		content() {
-			"step 0";
-			player.showHandcards();
-			"step 1";
+		async content(event, trigger, player) {
+			await player.showHandcards();
 			player.addTempSkill("dczhaowen_effect");
-			game.broadcastAll(function (cards) {
+			game.broadcastAll(cards => {
 				cards.forEach(card => card.addGaintag("dczhaowen_tag"));
 			}, player.getCards("h"));
 		},
@@ -33137,24 +33133,18 @@ const skills = {
 				},
 				hiddenCard(player, name) {
 					return (
-						get.type(name) == "trick" &&
+						get.type(name) === "trick" &&
 						!player.getStorage("dczhaowen_viewed").includes(name) &&
-						player.countCards("h", card => {
-							return get.color(card) == "black" && card.hasGaintag("dczhaowen_tag");
-						}) > 0
+						player.hasCards("h", card => get.color(card) === "black" && card.hasGaintag("dczhaowen_tag"))
 					);
 				},
 				filter(event, player) {
-					if (
-						!player.hasCard(card => {
-							return get.color(card) == "black" && card.hasGaintag("dczhaowen_tag");
-						})
-					) {
+					if (!player.hasCard(card => get.color(card) === "black" && card.hasGaintag("dczhaowen_tag"))) {
 						return false;
 					}
-					var storage = player.getStorage("dczhaowen_viewed");
-					for (var i of lib.inpile) {
-						if (!storage.includes(i) && get.type(i) == "trick" && event.filterCard(get.autoViewAs({ name: i }, "unsure"), player, event)) {
+					const storage = player.getStorage("dczhaowen_viewed");
+					for (const i of lib.inpile) {
+						if (!storage.includes(i) && get.type(i) === "trick" && event.filterCard(get.autoViewAs({ name: i }, "unsure"), player, event)) {
 							return true;
 						}
 					}
@@ -33162,20 +33152,17 @@ const skills = {
 				},
 				chooseButton: {
 					dialog(event, player) {
-						var cards = player.getCards("h", card => {
-							return get.color(card) == "black" && card.hasGaintag("dczhaowen_tag");
-						});
-						var storage = player.getStorage("dczhaowen_viewed");
-						var list = [];
-						for (var i of lib.inpile) {
-							if (!storage.includes(i) && get.type(i) == "trick" && event.filterCard(get.autoViewAs({ name: i }, "unsure"), player, event)) {
+						const storage = player.getStorage("dczhaowen_viewed");
+						const list = [];
+						for (const i of lib.inpile) {
+							if (!storage.includes(i) && get.type(i) === "trick" && event.filterCard(get.autoViewAs({ name: i }, "unsure"), player, event)) {
 								list.push(["锦囊", "", i]);
 							}
 						}
 						return ui.create.dialog("昭文", [list, "vcard"], "hidden");
 					},
 					check(button) {
-						var player = _status.event.player;
+						const player = _status.event.player;
 						return player.getUseValue({ name: button.link[2] }) + 1;
 					},
 					backup(links, player) {
@@ -33183,7 +33170,7 @@ const skills = {
 							audio: "dczhaowen",
 							popname: true,
 							filterCard(card, player) {
-								return get.color(card) == "black" && card.hasGaintag("dczhaowen_tag");
+								return get.color(card) === "black" && card.hasGaintag("dczhaowen_tag");
 							},
 							selectCard: 1,
 							position: "h",
@@ -33197,21 +33184,21 @@ const skills = {
 						};
 					},
 					prompt(links, player) {
-						return "将一张展示过的黑色手牌当做" + get.translation(links[0][2]) + "使用";
+						return `将一张展示过的黑色手牌当做${get.translation(links[0][2])}使用`;
 					},
 				},
 				group: "dczhaowen_draw",
 				mod: {
 					aiOrder(player, card, num) {
-						var cards = [];
+						const cards = [];
 						if (card.cards) {
 							cards.addArray(cards);
 						}
-						if (get.itemtype(card) == "card") {
+						if (get.itemtype(card) === "card") {
 							cards.push(card);
 						}
-						for (var cardx of cards) {
-							if (get.color(cardx) != "red") {
+						for (const cardx of cards) {
+							if (get.color(cardx) !== "red") {
 								continue;
 							}
 							if (cardx.hasGaintag("dczhaowen_tag")) {
@@ -33233,37 +33220,37 @@ const skills = {
 				charlotte: true,
 				trigger: { player: "useCard" },
 				filter(event, player) {
-					var cards = event.cards.filter(card => get.color(card, player) == "red");
+					const cards = event.cards.filter(card => get.color(card, player) === "red");
 					return player.hasHistory("lose", evt => {
-						if (event != (evt.relatedEvent || evt.getParent())) {
+						if (event !== (evt.relatedEvent || evt.getParent())) {
 							return false;
 						}
-						for (var i in evt.gaintag_map) {
+						for (const i in evt.gaintag_map) {
 							if (evt.gaintag_map[i].includes("dczhaowen_tag")) {
-								if (cards.some(card => card.cardid == i)) {
+								if (cards.some(card => card.cardid === i)) {
 									return true;
 								}
 							}
 						}
 					});
 				},
-				content() {
-					var num = 0;
-					var cards = trigger.cards.filter(card => get.color(card, player) == "red");
+				async content(event, trigger, player) {
+					let num = 0;
+					const cards = trigger.cards.filter(card => get.color(card, player) === "red");
 					player.getHistory("lose", evt => {
-						if (trigger != (evt.relatedEvent || evt.getParent())) {
+						if (trigger !== (evt.relatedEvent || evt.getParent())) {
 							return false;
 						}
-						for (var i in evt.gaintag_map) {
+						for (const i in evt.gaintag_map) {
 							if (evt.gaintag_map[i].includes("dczhaowen_tag")) {
-								if (cards.some(card => card.cardid == i)) {
+								if (cards.some(card => card.cardid === i)) {
 									num++;
 								}
 							}
 						}
 					});
-					while (num--) {
-						player.draw();
+					for (let i = 0; i < num; i++) {
+						await player.draw();
 					}
 				},
 				ai: {
