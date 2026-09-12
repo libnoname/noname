@@ -36998,19 +36998,19 @@ const skills = {
 			return game.hasPlayer(current => lib.skill.dcjingzao.filterTarget(null, player, current));
 		},
 		filterTarget(card, player, target) {
-			return player != target && !target.hasSkill("dcjingzao_temp");
+			return player !== target && !target.hasSkill("dcjingzao_temp");
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
+			const { target } = event;
 			target.addTempSkill("dcjingzao_temp");
-			var cards = get.cards(3 + player.countMark("dcjingzao_add") - player.countMark("dcjingzao_ban"), true);
+			const cards = get.cards(3 + player.countMark("dcjingzao_add") - player.countMark("dcjingzao_ban"), true);
 			event.cards = cards;
 			game.log(player, "亮出了", event.cards);
 			event.videoId = lib.status.videoId++;
 			game.broadcastAll(
-				function (player, target, id, cards) {
-					var str = get.translation(player) + "对" + (target == game.me ? "你" : get.translation(target)) + "发动了【经造】";
-					var dialog = ui.create.dialog(str, cards);
+				(player, target, id, cards) => {
+					const str = `${get.translation(player)}对${target === game.me ? "你" : get.translation(target)}发动了【经造】`;
+					const dialog = ui.create.dialog(str, cards);
 					dialog.videoId = id;
 				},
 				player,
@@ -37018,62 +37018,60 @@ const skills = {
 				event.videoId,
 				event.cards
 			);
-			game.addVideo("showCards", player, [get.translation(player) + "发动了【经造】", get.cardsInfo(event.cards)]);
-			game.delay();
-			"step 1";
-			target
-				.chooseToDiscard("he")
-				.set("prompt", false)
-				.set("filterCard", card => {
-					var names = _status.event.getParent().cards.map(i => i.name);
+			game.addVideo("showCards", player, [`${get.translation(player)}发动了【经造】`, get.cardsInfo(event.cards)]);
+			await game.delay();
+			const next = target.chooseToDiscard({
+				position: "he",
+				prompt: false,
+				filterCard: card => {
+					const names = _status.event.getParent().cards.map(card => card.name);
 					return names.includes(get.name(card));
-				})
-				.set("ai", card => {
-					var target = _status.event.player,
-						player = _status.event.getParent().player;
-					var att = get.attitude(target, player),
-						val = get.value(card);
+				},
+				ai: card => {
+					const target = _status.event.player;
+					const player = _status.event.getParent().player;
+					const att = get.attitude(target, player);
+					const val = get.value(card);
 					if (!lib.skill.dcjingzao.filter(null, player)) {
 						if (att > 0) {
 							return 0;
 						}
 						return 6 - val;
-					} else {
-						if (att > 0) {
-							return 4 - val;
-						}
-						return 0;
 					}
-				});
-			var update = function (id, source) {
-				var dialog = get.idDialog(id);
+					if (att > 0) {
+						return 4 - val;
+					}
+					return 0;
+				},
+			});
+			const update = (id, source) => {
+				const dialog = get.idDialog(id);
 				if (dialog) {
-					var div = ui.create.div("", dialog.content, 1);
-					var name = get.translation(source);
-					div.innerHTML = "弃置一张满足条件的牌，然后" + name + "〖经造〗本回合亮出牌数+1；或点“取消”令" + name + "随机获得每种牌名的牌各一张，且〖经造〗本回合失效";
+					const div = ui.create.div("", dialog.content, 1);
+					const name = get.translation(source);
+					div.innerHTML = `弃置一张满足条件的牌，然后${name}〖经造〗本回合亮出牌数+1；或点“取消”令${name}随机获得每种牌名的牌各一张，且〖经造〗本回合失效`;
 					ui.update();
 				}
 			};
-			if (target == game.me) {
+			if (target === game.me) {
 				update(event.videoId, player);
 			} else if (target.isOnline()) {
 				target.send(update, event.videoId, player);
 			}
-			"step 2";
+			const result = await next.forResult();
 			game.broadcastAll("closeDialog", event.videoId);
 			if (result.bool) {
 				player.addTempSkill("dcjingzao_add");
 				player.addMark("dcjingzao_add", 1, false);
 			} else {
-				var cards = cards.randomSort(),
-					cards2 = [];
-				for (var card of cards) {
-					if (!cards2.map(i => i.name).includes(card.name)) {
+				const cards2 = [];
+				for (const card of cards.randomSort()) {
+					if (!cards2.some(current => current.name === card.name)) {
 						cards2.push(card);
 					}
 				}
 				if (cards2.length) {
-					player.gain(cards2, "gain2");
+					await player.gain({ cards: cards2, animate: "gain2" });
 				}
 				player.addTempSkill("dcjingzao_ban");
 				player.addMark("dcjingzao_ban", cards2.length, false);
