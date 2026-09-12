@@ -34049,14 +34049,14 @@ const skills = {
 	dchuizhi: {
 		audio: 2,
 		trigger: { player: "phaseZhunbeiBegin" },
-		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseToDiscard(get.prompt("dchuizhi"), "你可以选择弃置任意张手牌并点击“确定”，将手牌摸至与全场手牌数最多的角色数相同。", [0, Infinity])
-				.set("allowChooseAll", true)
-				.set("logSkill", "dchuizhi")
-				.set("ai", card => {
+		async cost(event, trigger, player) {
+			const next = player.chooseToDiscard({
+				prompt: get.prompt(event.skill),
+				prompt2: "你可以选择弃置任意张手牌并点击“确定”，将手牌摸至与全场手牌数最多的角色数相同。",
+				selectCard: [0, Infinity],
+				allowChooseAll: true,
+				chooseonly: true,
+				ai: card => {
 					if (_status.event.isMax) {
 						if (ui.selected.cards.length) {
 							return -get.value(card);
@@ -34064,21 +34064,25 @@ const skills = {
 						return 0;
 					}
 					return 6 - get.value(card);
-				})
-				.set("isMax", player.isMaxHandcard());
-			"step 1";
-			if (result.bool) {
-				var num = 0,
-					targets = game.filterPlayer();
-				for (var current of targets) {
-					if (current.isMaxHandcard()) {
-						num = current.countCards("h");
-						break;
-					}
-				}
-				num = Math.max(1, Math.min(5, num - player.countCards("h")));
-				player.draw(num);
+				},
+			});
+			next.set("isMax", player.isMaxHandcard());
+			event.result = await next.forResult();
+		},
+		async content(event, trigger, player) {
+			if (event.cards.length) {
+				await player.discard(event.cards);
 			}
+			let num = 0;
+			const targets = game.filterPlayer();
+			for (const current of targets) {
+				if (current.isMaxHandcard()) {
+					num = current.countCards("h");
+					break;
+				}
+			}
+			num = Math.max(1, Math.min(5, num - player.countCards("h")));
+			await player.draw(num);
 		},
 	},
 	dcjijiao: {
