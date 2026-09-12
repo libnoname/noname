@@ -35103,9 +35103,7 @@ const skills = {
 	//谢灵毓
 	dcyuandi: {
 		audio: 2,
-		init: () => {
-			game.addGlobalSkill("dcyuandi_ai");
-		},
+		init: () => game.addGlobalSkill("dcyuandi_ai"),
 		onremove: () => {
 			if (!game.hasPlayer(i => i.hasSkill("dcyuandi", null, null, false), true)) {
 				game.removeGlobalSkill("dcyuandi_ai");
@@ -35113,100 +35111,82 @@ const skills = {
 		},
 		trigger: { global: "useCard" },
 		filter(event, player) {
-			var evt = event.getParent("phaseUse");
-			if (!evt || evt.player != event.player) {
+			const evt = event.getParent("phaseUse");
+			if (!evt || evt.player !== event.player) {
 				return false;
 			}
-			if (event.player == player || !event.targets || event.targets.length > 1 || event.targets[0] != event.player) {
+			if (event.player === player || !event.targets || event.targets.length > 1 || event.targets[0] !== event.player) {
 				return false;
 			}
-			return (
-				event.player
-					.getHistory("useCard", evtx => {
-						return evtx.getParent("phaseUse") == evt;
-					})
-					.indexOf(event) == 0
-			);
+			return event.player.getHistory("useCard", evtx => evtx.getParent("phaseUse") === evt).indexOf(event) === 0;
 		},
-		direct: true,
-		content() {
-			"step 0";
-			var target = trigger.player;
-			var name = get.translation(target);
-			var choices = ["选项二"];
-			var choiceList = ["弃置" + name + "一张手牌", "你与" + name + "各摸一张牌"];
-			if (target.countDiscardableCards(player, "h")) {
+		async cost(event, trigger, player) {
+			const target = trigger.player;
+			const name = get.translation(target);
+			const choices = ["选项二"];
+			const choiceList = [`弃置${name}一张手牌`, `你与${name}各摸一张牌`];
+			if (target.hasDiscardableCards(player, "h")) {
 				choices.unshift("选项一");
 			} else {
-				choiceList[0] = '<span style="opacity:0.5; ">' + choiceList[0] + "</span>";
+				choiceList[0] = `<span style="opacity:0.5; ">${choiceList[0]}</span>`;
 			}
-			player
-				.chooseControl(choices, "cancel2")
-				.set("choiceList", choiceList)
-				.set("ai", () => {
-					return _status.event.choice;
+			const choice = get.attitude(player, target) < 0 ? (choices.includes("选项一") ? "选项一" : "cancel2") : "选项二";
+			const result = await player
+				.chooseControl({
+					controls: [...choices, "cancel2"],
+					choiceList,
+					ai: () => _status.event.choice,
+					prompt: get.prompt(event.skill, target),
+					choice,
 				})
-				.set("prompt", get.prompt("dcyuandi", trigger.player))
-				.set(
-					"choice",
-					(function () {
-						if (get.attitude(player, target) < 0) {
-							if (choices.includes("选项一")) {
-								return "选项一";
-							}
-							return "cancel2";
-						}
-						return "选项二";
-					})()
-				);
-			"step 1";
-			if (result.control != "cancel2") {
-				var target = trigger.player;
-				player.logSkill("dcyuandi", target);
-				if (result.control == "选项一") {
-					player.discardPlayerCard(target, "h", true);
-					if (get.mode() !== "identity" || player.identity !== "nei") {
-						player.addExpose(0.15);
-					}
-				} else {
-					game.asyncDraw([target, player]);
+				.forResult();
+			event.result = {
+				bool: result.control !== "cancel2",
+				targets: [target],
+				cost_data: result.control,
+			};
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			if (event.cost_data === "选项一") {
+				await player.discardPlayerCard({
+					target,
+					position: "h",
+					forced: true,
+				});
+				if (get.mode() !== "identity" || player.identity !== "nei") {
+					player.addExpose(0.15);
 				}
+			} else {
+				await game.asyncDraw([target, player]);
 			}
 		},
 		subSkill: {
 			ai: {
 				mod: {
 					aiOrder(player, card, num) {
-						var info = get.info(card);
+						const info = get.info(card);
 						if (!info || !info.toself) {
 							return;
 						}
-						var evt = _status.event.getParent("phaseUse");
-						if (!evt || evt.player != player) {
+						const evt = _status.event.getParent("phaseUse");
+						if (!evt || evt.player !== player) {
 							return;
 						}
-						if (player.hasHistory("useCard", evtx => evtx.getParent("phaseUse") == evt)) {
+						if (player.hasHistory("useCard", evtx => evtx.getParent("phaseUse") === evt)) {
 							return;
 						}
-						if (
-							game.hasPlayer(current => {
-								return current.hasSkill("dcyuandi") && get.attitude(player, current) >= 0;
-							})
-						) {
+						if (game.hasPlayer(current => current.hasSkill("dcyuandi") && get.attitude(player, current) >= 0)) {
 							return num + 10;
 						}
 						return num / 3;
 					},
 				},
 				trigger: { player: "dieAfter" },
-				filter: () => {
-					return !game.hasPlayer(i => i.hasSkill("dcyuandi", null, null, false), true);
-				},
+				filter: () => !game.hasPlayer(i => i.hasSkill("dcyuandi", null, null, false), true),
 				silent: true,
 				forceDie: true,
-				content: () => {
-					game.removeGlobalSkill("dcyuandi_ai");
-				},
+				content: async () => game.removeGlobalSkill("dcyuandi_ai"),
 			},
 		},
 	},
