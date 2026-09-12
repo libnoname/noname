@@ -32975,71 +32975,56 @@ const skills = {
 			player: "useCard",
 		},
 		filter(event, player) {
-			var evtx = event.getParent("phaseUse");
-			if (!evtx || evtx.player != player) {
+			const evtx = event.getParent("phaseUse");
+			if (!evtx || evtx.player !== player) {
 				return false;
 			}
-			return (
-				player
-					.getHistory("useCard", evt => {
-						return evt.card.name == "sha" && event.getParent("phaseUse") == evtx;
-					})
-					.indexOf(event) == 0
-			);
+			return player.getHistory("useCard", evt => evt.card.name === "sha" && event.getParent("phaseUse") === evtx).indexOf(event) === 0;
 		},
-		direct: true,
-		content() {
-			"step 0";
-			var choices = ["选项一"];
-			var choiceList = ["令" + get.translation(trigger.card) + "不计入次数", "获得此牌"];
+		async cost(event, trigger, player) {
+			const choices = ["选项一"];
+			const choiceList = [`令${get.translation(trigger.card)}不计入次数`, "获得此牌"];
 			if (trigger.cards.length) {
 				choices.push("选项二");
-				choiceList[1] = "获得" + get.translation(trigger.cards);
+				choiceList[1] = `获得${get.translation(trigger.cards)}`;
 			} else {
-				choiceList[1] = '<span style="opacity:0.5">' + choiceList[1] + "</span>";
+				choiceList[1] = `<span style="opacity:0.5">${choiceList[1]}</span>`;
 			}
 			choices.push("cancel2");
-			player
-				.chooseControl(choices)
-				.set("choiceList", choiceList)
-				.set("ai", () => {
-					return _status.event.choice;
-				})
-				.set(
-					"choice",
-					(function () {
-						if (choices.length == 3 && trigger.addCount === false) {
-							return 1;
-						}
-						if (player.getCardUsable({ name: "sha" }) < player.countCards("hs", "sha")) {
-							return 0;
-						}
-						if (choices.length == 3) {
-							return 1;
-						}
-						return 0;
-					})()
-				);
-			"step 1";
-			if (result.control == "cancel2") {
-				event.finish();
-				return;
+			let choice = 0;
+			if (choices.length === 3 && trigger.addCount === false) {
+				choice = 1;
+			} else if (player.getCardUsable({ name: "sha" }) >= player.countCards("hs", "sha") && choices.length === 3) {
+				choice = 1;
 			}
-			player.logSkill("dcyongjue");
-			game.log(player, "选择了", "#y" + result.control);
-			if (result.control == "选项一") {
+			const result = await player
+				.chooseControl({
+					controls: choices,
+					choiceList,
+					ai: () => choice,
+				})
+				.forResult();
+			event.result = {
+				bool: result.control !== "cancel2",
+				cost_data: result.control,
+			};
+		},
+		async content(event, trigger, player) {
+			const choice = event.cost_data;
+			game.log(player, "选择了", `#y${choice}`);
+			if (choice === "选项一") {
 				if (trigger.addCount !== false) {
 					trigger.addCount = false;
-					const stat = player.getStat().card,
-						name = trigger.card.name;
+					const stat = player.getStat().card;
+					const name = trigger.card.name;
 					if (typeof stat[name] === "number") {
 						stat[name]--;
 					}
 				}
 			} else {
-				var cards = trigger.cards.filterInD();
+				const cards = trigger.cards.filterInD();
 				if (cards.length) {
-					player.gain(cards, "gain2");
+					await player.gain({ cards, animate: "gain2" });
 				}
 			}
 		},
