@@ -32571,7 +32571,7 @@ const skills = {
 		},
 		chooseButton: {
 			dialog(event, player) {
-				var dialog = ui.create.dialog("谏国：请选择一项", "hidden");
+				const dialog = ui.create.dialog("谏国：请选择一项", "hidden");
 				dialog.add([
 					[
 						["discard", "令一名角色摸一张牌，然后弃置一半手牌"],
@@ -32585,40 +32585,30 @@ const skills = {
 				return !player.getStorage("dcjianguo_used").includes(button.link);
 			},
 			check(button) {
-				var player = _status.event.player;
-				if (button.link == "discard") {
-					var discard = Math.max.apply(
-						Math,
-						game
-							.filterPlayer(current => {
-								return lib.skill.dcjianguo_discard.filterTarget(null, player, current);
-							})
-							.map(current => {
-								return get.effect(current, "dcjianguo_discard", player, player);
-							})
+				const player = _status.event.player;
+				if (button.link === "discard") {
+					const discard = Math.max(
+						...game
+							.filterPlayer(current => lib.skill.dcjianguo_discard.filterTarget(null, player, current))
+							.map(current => get.effect(current, "dcjianguo_discard", player, player))
 					);
 					return discard;
 				}
-				if (button.link == "draw") {
-					var draw = Math.max.apply(
-						Math,
-						game
-							.filterPlayer(current => {
-								return lib.skill.dcjianguo_draw.filterTarget(null, player, current);
-							})
-							.map(current => {
-								return get.effect(current, "dcjianguo_draw", player, player);
-							})
+				if (button.link === "draw") {
+					const draw = Math.max(
+						...game
+							.filterPlayer(current => lib.skill.dcjianguo_draw.filterTarget(null, player, current))
+							.map(current => get.effect(current, "dcjianguo_draw", player, player))
 					);
 					return draw;
 				}
 				return 0;
 			},
 			backup(links) {
-				return get.copy(lib.skill["dcjianguo_" + links[0]]);
+				return get.copy(lib.skill[`dcjianguo_${links[0]}`]);
 			},
 			prompt(links) {
-				if (links[0] == "discard") {
+				if (links[0] === "discard") {
 					return "令一名角色摸一张牌，然后弃置一半手牌";
 				}
 				return "令一名角色弃置一张牌，然后摸等同于手牌数一半的牌";
@@ -32640,20 +32630,23 @@ const skills = {
 			backup: { audio: "dcjianguo" },
 			discard: {
 				audio: "dcjianguo",
-				filterTarget: () => true,
-				filterCard: () => false,
-				selectCard: -1,
-				content() {
-					"step 0";
-					player.addTempSkill("dcjianguo_used", "phaseUseAfter");
-					player.markAuto("dcjianguo_used", ["discard"]);
-					target.draw();
-					game.delayex();
-					"step 1";
-					var num = Math.ceil(target.countCards("h") / 2);
-					if (num > 0) {
-						target.chooseToDiscard(num, true, "谏国：请弃置" + get.cnNumber(num) + "张手牌");
-					}
+					filterTarget: () => true,
+					filterCard: () => false,
+					selectCard: -1,
+					async content(event, trigger, player) {
+						const { target } = event;
+						player.addTempSkill("dcjianguo_used", "phaseUseAfter");
+						player.markAuto("dcjianguo_used", ["discard"]);
+						await target.draw();
+						await game.delayex();
+						const num = Math.ceil(target.countCards("h") / 2);
+						if (num > 0) {
+							await target.chooseToDiscard({
+								selectCard: num,
+								forced: true,
+								prompt: `谏国：请弃置${get.cnNumber(num)}张手牌`,
+							});
+						}
 				},
 				ai: {
 					result: {
@@ -32667,30 +32660,33 @@ const skills = {
 					},
 				},
 			},
-			draw: {
-				audio: "dcjianguo",
-				filterTarget(card, player, target) {
-					return target.countCards("he");
-				},
-				filterCard: () => false,
-				selectCard: -1,
-				content() {
-					"step 0";
-					player.addTempSkill("dcjianguo_used", "phaseUseAfter");
-					player.markAuto("dcjianguo_used", ["draw"]);
-					target.chooseToDiscard("he", true, "谏国：请弃置一张牌");
-					"step 1";
-					var num = Math.ceil(target.countCards("h") / 2);
-					if (num > 0) {
-						target.draw(num);
+				draw: {
+					audio: "dcjianguo",
+					filterTarget(card, player, target) {
+						return target.hasCards("he");
+					},
+					filterCard: () => false,
+					selectCard: -1,
+					async content(event, trigger, player) {
+						const { target } = event;
+						player.addTempSkill("dcjianguo_used", "phaseUseAfter");
+						player.markAuto("dcjianguo_used", ["draw"]);
+						await target.chooseToDiscard({
+							position: "he",
+							forced: true,
+							prompt: "谏国：请弃置一张牌",
+						});
+						const num = Math.ceil(target.countCards("h") / 2);
+						if (num > 0) {
+							await target.draw(num);
 					}
 				},
-				ai: {
-					result: {
-						target(player, target) {
-							var fix = 0;
-							var num = target.countCards("h");
-							if (player == target && num % 2 == 1 && num >= 5) {
+					ai: {
+						result: {
+							target(player, target) {
+								let fix = 0;
+								const num = target.countCards("h");
+								if (player === target && num % 2 === 1 && num >= 5) {
 								fix += 1;
 							}
 							return Math.ceil(num / 2 - 0.5) + fix;
