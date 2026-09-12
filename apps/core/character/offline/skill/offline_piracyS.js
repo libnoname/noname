@@ -25,7 +25,7 @@ const skills = {
 					},
 					ai1(button) {
 						const link = button.link[2].slice(6);
-						if (link == "hear") return 0.8;
+						if (link == "heart") return 0.8;
 						return Math.random();
 					},
 					ai2(target) {
