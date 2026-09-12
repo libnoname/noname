@@ -41103,47 +41103,42 @@ const skills = {
 		trigger: { player: "useCardToPlayered" },
 		logTarget: "target",
 		filter(event, player) {
-			return event.targets.length == 1 && player != event.target && event.target.countCards("h") > 1;
+			return event.targets.length === 1 && player !== event.target && event.target.countCards("h") > 1;
 		},
 		check(event, player) {
-			var target = event.target;
+			const target = event.target;
 			if (get.attitude(player, target) >= 0) {
 				return false;
 			}
-			if (get.color(event.card) == "none") {
+			if (get.color(event.card) === "none") {
 				return true;
 			}
 			return Math.floor(target.countCards("h") / 2) >= Math.floor(player.countCards("h") / 2);
 		},
-		content() {
-			"step 0";
-			var target = trigger.target;
+		async content(event, trigger, player) {
+			const target = trigger.target;
 			event.target = target;
-			var num = Math.floor(target.countCards("h") / 2);
-			if (num > 0) {
-				player.discardPlayerCard(target, "h", num, true);
-			} else {
-				event.finish();
+			const num = Math.floor(target.countCards("h") / 2);
+			if (num <= 0) {
+				return;
 			}
-			"step 1";
-			var suit = get.suit(trigger.card);
-			if (result.bool && lib.suit.includes(suit) && player.countCards("h") > 1) {
-				var bool = false;
-				for (var i of result.cards) {
-					if (get.suit(i, target) == suit) {
-						bool = true;
-						break;
-					}
-				}
-				if (!bool) {
-					event.finish();
-				}
-			} else {
-				event.finish();
+			const result = await player
+				.discardPlayerCard({
+					target,
+					position: "h",
+					selectButton: num,
+					forced: true,
+				})
+				.forResult();
+			const suit = get.suit(trigger.card);
+			if (!result.bool || !lib.suit.includes(suit) || player.countCards("h") <= 1) {
+				return;
 			}
-			"step 2";
-			if (player.countCards("h") > 0) {
-				player.chooseToDiscard("h", 1, true);
+			if (!result.cards.some(card => get.suit(card, target) === suit)) {
+				return;
+			}
+			if (player.hasCards("h")) {
+				await player.chooseToDiscard({ position: "h", selectCard: 1, forced: true });
 			}
 		},
 	},
