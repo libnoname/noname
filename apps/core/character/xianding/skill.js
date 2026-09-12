@@ -41707,51 +41707,46 @@ const skills = {
 		audio: 2,
 		trigger: { global: ["phaseDrawEnd", "phaseDrawSkipped", "phaseDrawCancelled"] },
 		filter(event, player) {
-			if (player == event.player) {
+			if (player === event.player) {
 				return false;
 			}
-			var num = 0;
-			event.player.getHistory("gain", function (evt) {
-				if (evt.getParent().name == "draw" && evt.getParent("phaseDraw") == event) {
-					num += evt.cards.length;
-				}
-			});
-			return num != 2;
+			const num = event.player
+				.getHistory("gain", evt => evt.getParent().name === "draw" && evt.getParent("phaseDraw") === event)
+				.map(evt => evt.cards.length)
+				.reduce((a, b) => a + b);
+			return num !== 2;
 		},
 		frequent: true,
 		logTarget: "player",
-		content() {
-			"step 0";
-			var num = 0;
-			trigger.player.getHistory("gain", function (evt) {
-				if (evt.getParent().name == "draw" && evt.getParent("phaseDraw") == trigger) {
-					num += evt.cards.length;
-				}
-			});
+		async content(event, trigger, player) {
+			let num = trigger.player
+				.getHistory("gain", evt => evt.getParent().name === "draw" && evt.getParent("phaseDraw") === trigger)
+				.map(evt => evt.cards.length)
+				.reduce((a, b) => a + b);
 			num = Math.abs(num - 2);
 			event.num = num;
-			player.draw(num);
-			"step 1";
-			if (trigger.player.isIn()) {
-				player
-					.chooseControl(" +" + num + " ", " -" + num + " ", "cancel2")
-					.set("prompt", "是否改变" + get.translation(trigger.player) + "本回合的手牌上限？")
-					.set("ai", function () {
-						var sgn = get.sgn(get.attitude(_status.event.player, _status.event.getTrigger().player));
-						if (sgn == 0) {
+			await player.draw(num);
+			if (!trigger.player.isIn()) {
+				return;
+			}
+			const result = await player
+				.chooseControl({
+					controls: [` +${num} `, ` -${num} `, "cancel2"],
+					prompt: `是否改变${get.translation(trigger.player)}本回合的手牌上限？`,
+					ai: () => {
+						const sgn = get.sgn(get.attitude(player, trigger.player));
+						if (sgn === 0) {
 							return 2;
 						}
-						if (sgn == 1) {
+						if (sgn === 1) {
 							return 0;
 						}
 						return 1;
-					});
-			} else {
-				event.finish();
-			}
-			"step 2";
+					},
+				})
+				.forResult();
 			if (result.index < 2) {
-				var target = trigger.player;
+				const target = trigger.player;
 				player.line(target);
 				if (!target.storage.tiqi_effect) {
 					target.storage.tiqi_effect = 0;
@@ -41762,10 +41757,10 @@ const skills = {
 			}
 		},
 		subSkill: {
-			effect: {
-				mod: {
-					maxHandcard(player, num) {
-						if (typeof player.storage.tiqi_effect == "number") {
+				effect: {
+					mod: {
+						maxHandcard(player, num) {
+							if (typeof player.storage.tiqi_effect === "number") {
 							return num + player.storage.tiqi_effect;
 						}
 					},
