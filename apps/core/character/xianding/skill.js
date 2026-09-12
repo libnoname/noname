@@ -42921,20 +42921,23 @@ const skills = {
 		trigger: { player: "phaseJieshuBegin" },
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt(event.skill), "令一名角色获得“追还”效果")
-				.set("ai", target => {
-					let player = get.player(),
-						att = get.attitude(player, target);
-					if (target.hasSkill("maixie") || target.hasSkill("maixie_defend")) {
-						att /= 3;
-					}
-					if (target != player) {
-						att /= Math.pow(game.players.length - get.distance(player, target, "absolute"), 0.7);
-					}
-					if (!target.hasSkill("zhuihuan_effect")) {
-						att *= 1.5;
-					}
-					return att;
+				.chooseTarget({
+					prompt: get.prompt(event.skill),
+					prompt2: "令一名角色获得“追还”效果",
+					ai: target => {
+						const player = get.player();
+						let att = get.attitude(player, target);
+						if (target.hasSkill("maixie") || target.hasSkill("maixie_defend")) {
+							att /= 3;
+						}
+						if (target !== player) {
+							att /= Math.pow(game.players.length - get.distance(player, target, "absolute"), 0.7);
+						}
+						if (!target.hasSkill("zhuihuan_effect")) {
+							att *= 1.5;
+						}
+						return att;
+					},
 				})
 				.set("animate", false)
 				.forResult();
@@ -42942,7 +42945,7 @@ const skills = {
 		logLine: false,
 		async content(event, trigger, player) {
 			const [target] = event.targets;
-			target.addTempSkill(event.name + "_effect", { player: "phaseZhunbei" });
+			target.addTempSkill(`${event.name}_effect`, { player: "phaseZhunbei" });
 			await game.delayx();
 		},
 		subSkill: {
@@ -42964,8 +42967,8 @@ const skills = {
 					const [target] = event.targets;
 					if (target.hp > player.hp) {
 						await target.damage(2);
-					} else if (target.countCards("h")) {
-						await target.randomDiscard(2, "h");
+					} else if (target.hasCards("h")) {
+						await target.randomDiscard({ num: 2, position: "h" });
 					}
 				},
 				group: "zhuihuan_record",
@@ -42977,7 +42980,7 @@ const skills = {
 				popup: false,
 				charlotte: true,
 				filter(event, player) {
-					return get.itemtype(event.source) == "player";
+					return get.itemtype(event.source) === "player";
 				},
 				async content(event, trigger, player) {
 					player.markAuto("zhuihuan_effect", [trigger.source]);
@@ -42992,41 +42995,27 @@ const skills = {
 		onremove: true,
 		sourceSkill: "zhuihuan",
 		filter(event, player) {
-			if (player.storage.zhuihuan2_new) {
-				for (var source of player.storage.zhuihuan2_new) {
-					if (!source.isIn()) {
-						continue;
-					}
-					if (source.hp > player.hp) {
-						return true;
-					}
-					return source.countCards("h") > 0;
-				}
+			const source = player.storage.zhuihuan2_new?.find(source => source.isIn());
+			if (!source) {
+				return false;
 			}
+			return source.hp > player.hp || source.hasCards("h");
 		},
 		logTarget(event, player) {
-			return player.storage.zhuihuan2_new.filter(function (target) {
-				return target.isIn();
-			});
+			return player.storage.zhuihuan2_new.filter(target => target.isIn());
 		},
-		content() {
-			"step 0";
-			event.targets = player.storage.zhuihuan2_new;
+		async content(event, trigger, player) {
+			const targets = player.storage.zhuihuan2_new;
 			player.removeSkill("zhuihuan2_new");
-			"step 1";
-			var target = targets.shift();
-			if (target.isIn()) {
-				if (target.hp > player.hp) {
-					target.damage(2);
-				} else {
-					var hs = target.getCards("h");
-					if (hs.length) {
-						target.discard(hs.randomGets(2));
-					}
+			for (const target of targets) {
+				if (!target.isIn()) {
+					continue;
 				}
-			}
-			if (targets.length) {
-				event.redo();
+				if (target.hp > player.hp) {
+					await target.damage(2);
+				} else if (target.hasCards("h")) {
+					await target.randomDiscard({ num: 2, position: "h" });
+				}
 			}
 		},
 		group: "zhuihuan2_new_count",
@@ -43038,9 +43027,9 @@ const skills = {
 				popup: false,
 				charlotte: true,
 				filter(event, player) {
-					return get.itemtype(event.source) == "player";
+					return get.itemtype(event.source) === "player";
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.markAuto("zhuihuan2_new", [trigger.source]);
 				},
 			},
@@ -43053,17 +43042,17 @@ const skills = {
 		logTarget: "source",
 		sourceSkill: "zhuihuan",
 		filter(event, player) {
-			var source = event.source;
+			const source = event.source;
 			if (source.hp > player.hp) {
 				return true;
 			}
-			return source.countCards("h") > 0;
+			return source.hasCards("h");
 		},
-		content() {
+		async content(event, trigger, player) {
 			if (player.hp < trigger.source.hp) {
-				trigger.source.damage();
+				await trigger.source.damage();
 			} else {
-				trigger.source.discard(trigger.source.getCards("h").randomGet());
+				await trigger.source.randomDiscard({ position: "h" });
 			}
 		},
 		mark: true,
