@@ -7205,18 +7205,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 					game.reload();
 				});
 			} else if (lib.config.mode == "versus") {
-				if (_status.mode == "standard" || _status.mode == "three") {
-					ui.create.control("再战", function () {
-						game.saveConfig("continue_name_versus" + (_status.mode == "three" ? "_three" : ""), {
-							friend: _status.friendBackup,
-							enemy: _status.enemyBackup,
-							color: _status.color,
-						});
-						game.saveConfig("mode", lib.config.mode);
-						localStorage.setItem(lib.configprefix + "directstart", true);
-						game.reload();
-					});
-				}
+				game.createVersusContinueControl();
 			} else if (!_status.connectMode && get.config("continue_game") && !ui.continue_game && !_status.brawl && !game.no_continue_game) {
 				ui.continue_game = ui.create.control("再战", game.reloadCurrent);
 			}
