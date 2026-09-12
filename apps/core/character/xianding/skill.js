@@ -37547,22 +37547,25 @@ const skills = {
 		audio: "dcxiangmian",
 		trigger: { global: "phaseJieshuBegin" },
 		filter(event, player) {
-			return !player.getStorage("olddcxiangmian").includes(event.player) && player != event.player;
+			return !player.getStorage("olddcxiangmian").includes(event.player) && player !== event.player;
 		},
 		logTarget: "player",
 		check(event, player) {
 			return get.attitude(player, event.player) < 0;
 		},
-		content() {
-			"step 0";
-			player.judge(card => 2 / Math.sqrt(get.number(card, false))).set("judge2", result => result.bool);
-			"step 1";
+		async content(event, trigger, player) {
+			const result = await player
+				.judge({
+					judge: card => 2 / Math.sqrt(get.number(card, false)),
+					judge2: result => result.bool,
+				})
+				.forResult();
 			player.markAuto("olddcxiangmian", [trigger.player]);
 			trigger.player.addSkill("olddcxiangmian_countdown");
 			if (!trigger.player.storage["olddcxiangmian_countdown"]) {
 				trigger.player.storage["olddcxiangmian_countdown"] = [];
 			}
-			[player.playerid, result.suit, result.number].forEach(i => trigger.player.storage["olddcxiangmian_countdown"].push(i));
+			trigger.player.storage["olddcxiangmian_countdown"].push(player.playerid, result.suit, result.number);
 			trigger.player.markSkill("olddcxiangmian_countdown");
 		},
 		intro: { content: "已对$发动过技能" },
@@ -37579,19 +37582,15 @@ const skills = {
 				charlotte: true,
 				intro: {
 					markcount(storage) {
-						if (storage) {
-							var list = storage.filter((_, i) => i % 3 == 2);
-							return Math.min.apply(null, list);
+						if (!storage) {
+							return;
 						}
+						const list = storage.filter((_, index) => index % 3 === 2);
+						return Math.min(...list);
 					},
 					content(storage, player) {
-						var str = "使用";
-						for (var i = 0; i < storage.length / 3; i++) {
-							str += get.cnNumber(storage[i * 3 + 2]) + "张" + get.translation(storage[i * 3 + 1]) + "牌、";
-						}
-						str = str.slice(0, -1);
-						str += "后，失去等同于体力值的体力";
-						return str;
+						const descriptions = Array.from({ length: storage.length / 3 }, (_, index) => `${get.cnNumber(storage[index * 3 + 2])}张${get.translation(storage[index * 3 + 1])}牌`);
+						return `使用${descriptions.join("、")}后，失去等同于体力值的体力`;
 					},
 				},
 				filter(event, player) {
@@ -37600,53 +37599,53 @@ const skills = {
 					}
 					return player
 						.getStorage("olddcxiangmian_countdown")
-						.filter((_, i) => i % 3 == 1)
+						.filter((_, index) => index % 3 === 1)
 						.includes(get.suit(event.card, player));
 				},
-				content() {
-					"step 0";
-					var storage = player.getStorage("olddcxiangmian_countdown");
-					for (var i = 0; i < storage.length / 3; i++) {
-						if (storage[i * 3 + 1] == get.suit(trigger.card, player)) {
-							storage[i * 3 + 2]--;
+				async content(event, trigger, player) {
+					const storage = player.getStorage("olddcxiangmian_countdown");
+					const suit = get.suit(trigger.card, player);
+					storage.forEach((value, index) => {
+						if (index % 3 === 1 && value === suit) {
+							storage[index + 1]--;
 						}
-					}
+					});
 					player.markSkill("olddcxiangmian_countdown");
-					"step 1";
-					var storage = player.getStorage("olddcxiangmian_countdown");
-					for (var i = 0; i < storage.length / 3; i++) {
-						if (storage[i * 3 + 2] <= 0) {
-							if (!event.isMine() && !event.isOnline()) {
-								game.delayx();
-							}
-							player.logSkill("olddcxiangmian_countdown");
-							var target = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
-							player.storage["olddcxiangmian_countdown"].splice(i * 3, 3);
-							if (!player.getStorage("olddcxiangmian_countdown").length) {
-								player.removeSkill("olddcxiangmian_countdown");
-							}
-							if (player.hp > 0) {
-								player.loseHp(player.hp);
-							}
-							i--;
+					for (
+						let expiredIndex = storage.findIndex((value, index) => index % 3 === 2 && value <= 0);
+						expiredIndex !== -1;
+						expiredIndex = storage.findIndex((value, index) => index % 3 === 2 && value <= 0)
+					) {
+						if (!event.isMine() && !event.isOnline()) {
+							game.delayx();
+						}
+						player.logSkill("olddcxiangmian_countdown");
+						storage.splice(expiredIndex - 2, 3);
+						if (!storage.length) {
+							player.removeSkill("olddcxiangmian_countdown");
+						}
+						if (player.hp > 0) {
+							player.loseHp(player.hp);
 						}
 					}
 				},
 				ai: {
 					effect: {
 						player_use(card, player, target) {
-							if (typeof card != "object") {
+							if (typeof card !== "object") {
 								return;
 							}
-							var storage = player.getStorage("olddcxiangmian_countdown");
-							for (var i = 0; i < storage.length / 3; i++) {
-								if (get.suit(card, player) == storage[i * 3 + 1] && storage[i * 3 + 2] == 1) {
-									if (!player.canSave(player) && !get.tag(card, "save")) {
-										return [0, -100, 0, 0];
-									}
-									return [1, -2 * player.hp, 1, 0];
-								}
+							const storage = player.getStorage("olddcxiangmian_countdown");
+							const imminent = Array.from({ length: storage.length / 3 }, (_, index) => index).some(
+								index => get.suit(card, player) === storage[index * 3 + 1] && storage[index * 3 + 2] === 1
+							);
+							if (!imminent) {
+								return;
 							}
+							if (!player.canSave(player) && !get.tag(card, "save")) {
+								return [0, -100, 0, 0];
+							}
+							return [1, -2 * player.hp, 1, 0];
 						},
 					},
 				},
