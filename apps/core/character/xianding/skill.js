@@ -45393,19 +45393,17 @@ const skills = {
 		forced: true,
 		locked: false,
 		filter(event, player) {
-			return event.name != "phase" || game.phaseNumber == 0;
+			return event.name !== "phase" || game.phaseNumber === 0;
 		},
-		content() {
-			"step 0";
-			var i = 0;
-			var list = [];
-			while (i++ < 2) {
-				var card = get.cardPile(
-					function (card) {
-						if (get.type(card) != "equip") {
+		async content(event, trigger, player) {
+			const list = [];
+			for (let i = 0; i < 2; i++) {
+				const card = get.cardPile(
+					card => {
+						if (get.type(card) !== "equip") {
 							return false;
 						}
-						return list.length == 0 || get.subtype(card) != get.subtype(list[0]);
+						return list.length === 0 || get.subtype(card) !== get.subtype(list[0]);
 					},
 					false,
 					"random"
@@ -45415,20 +45413,19 @@ const skills = {
 				}
 			}
 			if (!list.length) {
-				event.finish();
 				return;
 			}
-			event.list = list;
-			player.gain(event.list, "gain2");
-			"step 1";
-			game.delay(1);
-			var card = event.list.shift();
-			if (player.getCards("h").includes(card)) {
+			await player.gain({
+				cards: list,
+				animate: "gain2",
+			});
+			for (const card of list) {
+				await game.delay(1);
+				if (!player.getCards("h").includes(card)) {
+					continue;
+				}
 				player.$give(card, player, false);
-				player.equip(card);
-			}
-			if (event.list.length) {
-				event.redo();
+				await player.equip(card);
 			}
 		},
 		group: "pytianjiang_move",
@@ -45440,24 +45437,23 @@ const skills = {
 		position: "e",
 		sourceSkill: "pytianjiang",
 		filter(event, player) {
-			return player.countCards("e") > 0;
+			return player.hasCards("e");
 		},
 		check() {
 			return 1;
 		},
 		filterCard: true,
 		filterTarget(event, player, target) {
-			return target != player && target.canEquip(ui.selected.cards[0], true);
+			return target !== player && target.canEquip(ui.selected.cards[0], true);
 		},
 		prepare: "give",
 		discard: false,
 		lose: false,
-		content() {
-			"step 0";
-			target.equip(cards[0]);
-			"step 1";
-			if (cards[0].name.indexOf("pyzhuren_") == 0 && !player.getCards("e").includes(cards[0])) {
-				player.draw(2);
+		async content(event, trigger, player) {
+			const { cards, target } = event;
+			await target.equip(cards[0]);
+			if (cards[0].name.indexOf("pyzhuren_") === 0 && !player.getCards("e").includes(cards[0])) {
+				await player.draw(2);
 			}
 		},
 		ai: {
@@ -45471,19 +45467,19 @@ const skills = {
 			result: {
 				target(player, target) {
 					if (ui.selected.cards.length) {
-						let card = ui.selected.cards[0],
-							tv = get.value(card, target),
-							sub = get.subtype(card);
+						const card = ui.selected.cards[0];
+						const tv = get.value(card, target);
+						const sub = get.subtype(card);
 						if (sub === "equip1") {
-							let ev = Infinity,
-								te = target.getEquips(1);
+							let ev = Infinity;
+							const te = target.getEquips(1);
 							if (!te.length) {
 								return tv;
 							}
-							te.forEach(i => {
-								ev = Math.min(ev, get.value(i));
-							});
-							if (card.name.indexOf("pyzhuren_") == 0) {
+							for (const equip of te) {
+								ev = Math.min(ev, get.value(equip));
+							}
+							if (card.name.indexOf("pyzhuren_") === 0) {
 								return 2 + tv - ev;
 							}
 							return tv - ev;
@@ -45491,7 +45487,7 @@ const skills = {
 						if (target.hasCard(i => get.subtype(i) === sub, "he")) {
 							return 0;
 						}
-						let pv = get.value(card, player);
+						const pv = get.value(card, player);
 						if (pv > 0 && Math.abs(tv) <= pv) {
 							return 0;
 						}
