@@ -32773,9 +32773,9 @@ const skills = {
 		trigger: { player: "useCardAfter" },
 		filter(event, player) {
 			if (
-				event.targets.length != 1 ||
+				event.targets.length !== 1 ||
 				!player.hasHistory("lose", evt => {
-					if ((evt.relatedEvent || evt.getParent()) != event) {
+					if ((evt.relatedEvent || evt.getParent()) !== event) {
 						return false;
 					}
 					return event.cards.every(card => evt.hs.includes(card));
@@ -32786,34 +32786,37 @@ const skills = {
 			if (!["basic", "trick"].includes(get.type(event.card, null, false))) {
 				return false;
 			}
-			if (event.getParent(2).name == "dcchanjuan") {
+			if (event.getParent(2).name === "dcchanjuan") {
 				return false;
 			}
 			return !player.storage.dcchanjuan[event.card.name] || player.storage.dcchanjuan[event.card.name] < 2;
 		},
 		direct: true,
-		content() {
-			"step 0";
-			var card = {
+		async content(event, trigger, player) {
+			const card = {
 				name: trigger.card.name,
 				nature: trigger.card.nature,
 				isCard: true,
 			};
-			player
-				.chooseUseTarget(card, get.prompt("dcchanjuan"), false, false)
-				.set("prompt2", "视为再使用一张" + get.translation(card))
-				.set("logSkill", "dcchanjuan");
-			"step 1";
-			if (result.bool) {
-				if (!player.storage.dcchanjuan[trigger.card.name]) {
-					player.storage.dcchanjuan[trigger.card.name] = 0;
-				}
-				player.storage.dcchanjuan[trigger.card.name]++;
-				var list1 = trigger.targets,
-					list2 = result.targets;
-				if (list1.slice().removeArray(list2).length == 0 && list2.slice().removeArray(list1).length == 0) {
-					player.draw();
-				}
+			const next = player.chooseUseTarget({
+				card,
+				prompt: get.prompt("dcchanjuan"),
+				prompt2: `视为再使用一张${get.translation(card)}`,
+				addCount: false,
+			});
+			next.set("logSkill", "dcchanjuan");
+			const result = await next.forResult();
+			if (!result.bool) {
+				return;
+			}
+			if (!player.storage.dcchanjuan[trigger.card.name]) {
+				player.storage.dcchanjuan[trigger.card.name] = 0;
+			}
+			player.storage.dcchanjuan[trigger.card.name]++;
+			const list1 = trigger.targets;
+			const list2 = result.targets;
+			if (list1.slice().removeArray(list2).length === 0 && list2.slice().removeArray(list1).length === 0) {
+				await player.draw();
 			}
 		},
 		ai: { threaten: 2 },
@@ -32821,19 +32824,11 @@ const skills = {
 		intro: {
 			markcount: storage => 0,
 			content(storage) {
-				var str = "已使用牌名：",
-					names = Object.keys(storage);
+				const names = Object.keys(storage);
 				if (!names.length) {
-					str += "无";
-				} else {
-					names.forEach(name => {
-						str += "<br><li>【";
-						str += get.translation(name);
-						str += "】：";
-						str += storage[name] + "次";
-					});
+					return "已使用牌名：无";
 				}
-				return str;
+				return `已使用牌名：${names.map(name => `<br><li>【${get.translation(name)}】：${storage[name]}次`).join("")}`;
 			},
 		},
 	},
