@@ -34419,19 +34419,17 @@ const skills = {
 		discard: false,
 		lose: false,
 		delay: false,
-		content() {
-			"step 0";
-			player.recast(cards);
-			"step 1";
+		async content(event, trigger, player) {
+			await player.recast(cards);
 			player.addTempSkill("dcctjiuxian_help");
-			player.chooseUseTarget(
-				{
+			await player.chooseUseTarget({
+				card: {
 					name: "juedou",
 					isCard: true,
 					storage: { dcctjiuxian: true },
 				},
-				true
-			);
+				forced: true,
+			});
 		},
 		ai: {
 			order() {
@@ -34444,10 +34442,10 @@ const skills = {
 			},
 			result: {
 				player(player) {
-					let target = null,
-						maxval = 0;
-					for (let i of game.players) {
-						let jdeff = get.effect(
+					let target = null;
+					let maxval = 0;
+					for (const i of game.players) {
+						const jdeff = get.effect(
 							i,
 							{
 								name: "juedou",
@@ -34474,8 +34472,8 @@ const skills = {
 							continue;
 						}
 						let receff = 0;
-						game.filterPlayer(function (current) {
-							if (player != current && i.inRange(current) && current.isDamaged()) {
+						game.filterPlayer(current => {
+							if (player !== current && i.inRange(current) && current.isDamaged()) {
 								receff = Math.max(receff, get.recoverEffect(current, i, i));
 							}
 						});
@@ -34501,31 +34499,26 @@ const skills = {
 						event.card.storage.dcctjiuxian &&
 						event.player.isIn() &&
 						event.getParent(2).targets.includes(event.player) &&
-						game.hasPlayer(current => {
-							return current != player && event.player.inRange(current) && current.isDamaged();
-						})
+						game.hasPlayer(current => current !== player && event.player.inRange(current) && current.isDamaged())
 					);
 				},
 				direct: true,
 				forced: true,
 				charlotte: true,
-				content() {
-					"step 0";
-					player
-						.chooseTarget("救陷：是否令其攻击范围内的一名其他角色回复1点体力？", (card, player, target) => {
-							if (_status.event.player == target) {
-								return false;
-							}
-							return target.isDamaged() && _status.event.targetx.inRange(target);
+				async content(event, trigger, player) {
+					const result = await player
+						.chooseTarget({
+							prompt: "救陷：是否令其攻击范围内的一名其他角色回复1点体力？",
+							filterTarget: (card, player, target) => player !== target && target.isDamaged() && trigger.player.inRange(target),
+							ai: target => get.recoverEffect(target, player, player),
 						})
-						.set("targetx", trigger.player)
-						.set("ai", target => get.recoverEffect(target, _status.event.player, _status.event.player));
-					"step 1";
-					if (result.bool) {
-						var target = result.targets[0];
-						player.logSkill("dcctjiuxian_help", target);
-						target.recover(player);
+						.forResult();
+					if (!result.bool) {
+						return;
 					}
+					const target = result.targets[0];
+					player.logSkill("dcctjiuxian_help", target);
+					await target.recover({ source: player });
 				},
 			},
 		},
