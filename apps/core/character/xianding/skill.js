@@ -118,7 +118,7 @@ const skills = {
 			global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
 		},
 		filter(event, player) {
-			return event.getl(player).hs.length > 0 && player.isMinHandcard();
+			return event.getl?.(player)?.hs?.length > 0 && player.isMinHandcard();
 		},
 		async content(event, trigger, player) {
 			if (player.hasSkill("dcranlv") && player.storage["dcranlv"]?.length) {
@@ -129,7 +129,7 @@ const skills = {
 					prompt: "是否对自己造成一点火焰伤害？",
 					ai() {
 						const player = get.player();
-						return player.hp == 2 && game.countPlayer(current => current.isLinked() && get.attitude(player, target) < 0);
+						return player.hp == 2 && game.countPlayer(current => current.isLinked() && get.attitude(player, current) < 0);
 					},
 				})
 				.forResult();
