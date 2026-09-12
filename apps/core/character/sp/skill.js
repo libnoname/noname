@@ -17482,7 +17482,7 @@ const skills = {
 					}
 					return 0.1;
 				})
-				.set("callback", function () {
+				.set("callback", async event => {
 					var card = event.judgeResult.card;
 					player.addTempSkill("olweifu_clear");
 					player.addTempSkill("olweifu_add");
