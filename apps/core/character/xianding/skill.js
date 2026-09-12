@@ -38730,23 +38730,28 @@ const skills = {
 		forced: true,
 		locked: false,
 		filter(event, player) {
-			return (event.name != "phase" || game.phaseNumber == 0) && game.hasPlayer(current => current != player);
+			return (event.name !== "phase" || game.phaseNumber === 0) && game.hasPlayer(current => current !== player);
 		},
-		content() {
-			"step 0";
-			player.chooseTarget(true, lib.filter.notMe, "抚悼：请选择一名“继子”", "你或“继子”每回合首次使用牌指定对方为目标后各摸两张牌；杀死你或“继子”的角色称为“决裂”。你或“继子”对“决裂”造成的伤害+1。“决裂”对你使用牌后，其本回合内不能再使用牌。").set("ai", function (target) {
-				return get.attitude(_status.event.player, target);
-			});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("dcfudao", target);
-				game.log(target, "成为了", player, "的继子");
-				player.addSkill("dcfudao_effect");
-				target.addSkill("dcfudao_effect");
-				player.markAuto("dcfudao_effect", [target]);
-				target.markAuto("dcfudao_effect", [player]);
+		async content(event, trigger, player) {
+			const result = await player
+				.chooseTarget({
+					forced: true,
+					filterTarget: lib.filter.notMe,
+					prompt: "抚悼：请选择一名“继子”",
+					prompt2: "你或“继子”每回合首次使用牌指定对方为目标后各摸两张牌；杀死你或“继子”的角色称为“决裂”。你或“继子”对“决裂”造成的伤害+1。“决裂”对你使用牌后，其本回合内不能再使用牌。",
+					ai: target => get.attitude(_status.event.player, target),
+				})
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
+			const target = result.targets[0];
+			player.logSkill("dcfudao", target);
+			game.log(target, "成为了", player, "的继子");
+			player.addSkill("dcfudao_effect");
+			target.addSkill("dcfudao_effect");
+			player.markAuto("dcfudao_effect", [target]);
+			target.markAuto("dcfudao_effect", [player]);
 		},
 		group: "dcfudao_refuse",
 		subSkill: {
@@ -38756,20 +38761,18 @@ const skills = {
 				charlotte: true,
 				usable: 1,
 				filter(event, player) {
-					var target = event.target;
-					if (player == target || !target.isIn()) {
+					const target = event.target;
+					if (player === target || !target.isIn()) {
 						return false;
 					}
 					return player.getStorage("dcfudao_effect").includes(target);
 				},
 				logTarget: "target",
-				content() {
-					"step 0";
-					var list = [player, trigger.target];
+				async content(event, trigger, player) {
+					const list = [player, trigger.target];
 					list.sortBySeat();
-					game.asyncDraw(list, 2);
-					"step 1";
-					game.delayx();
+					await game.asyncDraw(list, 2);
+					await game.delayx();
 				},
 				marktext: "继",
 				intro: { content: "已和$成为继母子关系" },
@@ -38782,9 +38785,9 @@ const skills = {
 				lastDo: true,
 				silent: true,
 				filter(event, player) {
-					return get.itemtype(event.source) == "player";
+					return get.itemtype(event.source) === "player";
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.source.markAuto("dcfudao_deadmark", [player]);
 				},
 				marktext: "裂",
@@ -38797,16 +38800,16 @@ const skills = {
 				trigger: { source: "damageBegin1" },
 				forced: true,
 				filter(event, player) {
-					var storage1 = event.player.getStorage("dcfudao_deadmark"),
-						storage2 = player.getStorage("dcfudao_effect");
-					for (var i of storage1) {
+					const storage1 = event.player.getStorage("dcfudao_deadmark");
+					const storage2 = player.getStorage("dcfudao_effect");
+					for (const i of storage1) {
 						if (storage2.includes(i)) {
 							return true;
 						}
 					}
 					return false;
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.num++;
 				},
 				logTarget: "player",
@@ -38815,11 +38818,11 @@ const skills = {
 				trigger: { target: "useCardToTargeted" },
 				forced: true,
 				filter(event, player) {
-					var storage1 = event.player.getStorage("dcfudao_deadmark"),
-						storage2 = player.getStorage("dcfudao_effect");
-					return storage1.some(i => storage2.includes(i)) && get.color(event.card) == "black";
+					const storage1 = event.player.getStorage("dcfudao_deadmark");
+					const storage2 = player.getStorage("dcfudao_effect");
+					return storage1.some(i => storage2.includes(i)) && get.color(event.card) === "black";
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.player.addTempSkill("dcfudao_blocker");
 				},
 				logTarget: "player",
