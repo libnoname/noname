@@ -39415,27 +39415,15 @@ const skills = {
 		check(event, player) {
 			return player.canMoveCard(true);
 		},
-		content() {
-			"step 0";
-			player.moveCard(true);
-			"step 1";
-			if (result.bool && player.canMoveCard()) {
-				var goon = true,
-					players = game.filterPlayer();
-				for (var i = 0; i < players.length; i++) {
-					for (var j = i + 1; j < players.length; j++) {
-						if (!players[i].inRange(players[j]) || !players[i].inRangeOf(players[j])) {
-							goon = false;
-							break;
-						}
-					}
-					if (!goon) {
-						break;
-					}
-				}
-				if (goon) {
-					player.moveCard();
-				}
+		async content(event, trigger, player) {
+			const result = await player.moveCard({ forced: true }).forResult();
+			if (!result.bool || !player.canMoveCard()) {
+				return;
+			}
+			const players = game.filterPlayer();
+			const allInRange = players.every((current, index) => players.slice(index + 1).every(target => current.inRange(target) && current.inRangeOf(target)));
+			if (allInRange) {
+				await player.moveCard();
 			}
 		},
 	},
