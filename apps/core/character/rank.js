@@ -123,6 +123,7 @@ window.noname_character_rank = {
 	a: [
 		"sxrm_chen_caocao",
 		"sxrm_lusu",
+		"huan_zhouyu",
 		"sxrm_zhangzhao",
 		"dc_muludawang",
 		"mb_shen_machao",
@@ -2815,6 +2816,7 @@ window.noname_character_rank = {
 			"sxrm_zhugeliang",
 			"sxrm_chen_caocao",
 			"sxrm_lusu",
+			"huan_zhouyu",
 			"sxrm_zhangzhao",
 			"pot_lvyi",
 			"huan_daqiao",

@@ -361,7 +361,7 @@ window.noname_character_replace = {
 	zhoufei: ["zhoufei", "yue_zhoufei", "re_zhoufei"],
 	zhouqun: ["ol_zhouqun", "zhouqun"],
 	zhoutai: ["zhoutai", "xin_zhoutai", "old_zhoutai"],
-	zhouyu: ["zhouyu", "re_zhouyu", "dc_sb_zhouyu", "yue_zhouyu", "sb_zhouyu", "pot_zhouyu", "mb_zhouyu", "jx_zhouyu", "ps1062_zhouyu", "ps2080_zhouyu", "jy_zhouyu", "tw_dm_zhouyu", "sxrm_zhouyu"],
+	zhouyu: ["zhouyu", "re_zhouyu", "dc_sb_zhouyu", "yue_zhouyu", "sb_zhouyu", "pot_zhouyu", "mb_zhouyu", "jx_zhouyu", "ps1062_zhouyu", "ps2080_zhouyu", "jy_zhouyu", "tw_dm_zhouyu", "sxrm_zhouyu", "huan_zhouyu"],
 	zhugedan: ["zhugedan", "re_zhugedan", "jsrg_zhugedan"],
 	zhugeguo: ["zhugeguo", "yue_zhugeguo", "tw_zhugeguo", "huan_zhugeguo", "mb_zhugeguo", "clan_zhugeguo"],
 	zhugejin: ["zhugejin", "dc_sb_zhugejin", "sb_zhugejin", "star_zhugejin"],
