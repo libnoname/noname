@@ -35197,30 +35197,21 @@ const skills = {
 		filter(event, player) {
 			return player.countCards("h") < player.maxHp || player.isDamaged();
 		},
-		content() {
-			"step 0";
-			player.recover(player.getDamagedHp(true));
-			player.drawTo(player.maxHp);
-			"step 1";
-			var check = 0;
-			if (
-				player.hasHistory("gain", evt => {
-					return evt.getParent(2) == event && evt.cards.length >= 3;
-				})
-			) {
+		async content(event, trigger, player) {
+			await player.recover(player.getDamagedHp(true));
+			await player.drawTo(player.maxHp);
+			let check = 0;
+			if (player.hasHistory("gain", evt => evt.getParent(2) === event && evt.cards.length >= 3)) {
 				check |= 1;
 			}
-			if (
-				game.getGlobalHistory("changeHp", evt => {
-					return evt.getParent().name == "recover" && evt.getParent(2) == event;
-				}).length
-			) {
+			if (game.getGlobalHistory("changeHp", evt => evt.getParent().name === "recover" && evt.getParent(2) === event).length) {
 				check |= 2;
 			}
-			if (check > 0) {
-				player.addTempSkill("dcxinyou_effect");
-				player.storage.dcxinyou_effect = check;
+			if (!check) {
+				return;
 			}
+			player.addTempSkill("dcxinyou_effect");
+			player.storage.dcxinyou_effect = check;
 		},
 		ai: {
 			order: 1,
@@ -35236,12 +35227,17 @@ const skills = {
 				filter(event, player) {
 					return player.storage.dcxinyou_effect;
 				},
-				content() {
+				async content(event, trigger, player) {
 					if ((player.storage.dcxinyou_effect & 1) > 0) {
 						player.loseHp();
 					}
 					if ((player.storage.dcxinyou_effect & 2) > 0) {
-						player.chooseToDiscard("心幽：请弃置一张牌", 1, true, "he");
+						player.chooseToDiscard({
+							prompt: "心幽：请弃置一张牌",
+							selectCard: 1,
+							forced: true,
+							position: "he",
+						});
 					}
 				},
 			},
