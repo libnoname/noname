@@ -43886,18 +43886,21 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			let storage = player.getStorage("zunwei");
+			const storage = player.getStorage("zunwei");
 			return (
 				storage.length < 3 &&
-				game.hasPlayer(current => {
-					return (player.isDamaged() && current.getHp() > player.getHp() && !storage.includes(0)) || (current.countCards("h") > player.countCards("h") && !storage.includes(1)) || (current.countCards("e") > player.countCards("e") && !storage.includes(2));
-				})
+				game.hasPlayer(
+					current =>
+						(player.isDamaged() && current.getHp() > player.getHp() && !storage.includes(0)) ||
+						(current.countCards("h") > player.countCards("h") && !storage.includes(1)) ||
+						(current.countCards("e") > player.countCards("e") && !storage.includes(2))
+				)
 			);
 		},
 		chooseButton: {
 			dialog(event, player) {
-				var list = ["选择体力值大于你的一名角色", "选择手牌数大于你的一名角色", "选择装备数大于你的一名角色"];
-				var choiceList = ui.create.dialog("尊位：请选择一项", "forcebutton", "hidden");
+				const list = ["选择体力值大于你的一名角色", "选择手牌数大于你的一名角色", "选择装备数大于你的一名角色"];
+				const choiceList = ui.create.dialog("尊位：请选择一项", "forcebutton", "hidden");
 				choiceList.add([
 					list.map((item, i) => {
 						if (player.getStorage("zunwei").includes(i)) {
@@ -43914,53 +43917,39 @@ const skills = {
 				if (player.getStorage("zunwei").includes(button.link)) {
 					return false;
 				}
-				if (button.link == 0) {
+				if (button.link === 0) {
 					if (!player.isDamaged()) {
 						return false;
 					}
-					return game.hasPlayer(current => {
-						return current.getHp() > player.getHp();
-					});
+					return game.hasPlayer(current => current.getHp() > player.getHp());
 				}
-				if (button.link == 1) {
-					return game.hasPlayer(current => {
-						return current.countCards("h") > player.countCards("h");
-					});
+				if (button.link === 1) {
+					return game.hasPlayer(current => current.countCards("h") > player.countCards("h"));
 				}
-				if (button.link == 2) {
-					return game.hasPlayer(current => {
-						return current.countCards("e") > player.countCards("e");
-					});
+				if (button.link === 2) {
+					return game.hasPlayer(current => current.countCards("e") > player.countCards("e"));
 				}
 			},
 			backup(links) {
-				var next = get.copy(lib.skill.zunwei.backups[links[0]]);
+				const next = get.copy(lib.skill.zunwei.backups[links[0]]);
 				next.audio = "zunwei";
-				next.filterCard = function () {
-					return false;
-				};
+				next.filterCard = () => false;
 				next.selectCard = -1;
 				return next;
 			},
 			check(button) {
-				var player = _status.event.player;
+				const player = _status.event.player;
 				switch (button.link) {
 					case 0: {
-						var target = game.findPlayer(function (current) {
-							return current.isMaxHp();
-						});
+						const target = game.findPlayer(current => current.isMaxHp());
 						return (Math.min(target.hp, player.maxHp) - player.hp) * 2;
 					}
 					case 1: {
-						var target = game.findPlayer(function (current) {
-							return current.isMaxHandcard();
-						});
+						const target = game.findPlayer(current => current.isMaxHandcard());
 						return Math.min(5, target.countCards("h") - player.countCards("h")) * 0.8;
 					}
 					case 2: {
-						var target = game.findPlayer(function (current) {
-							return current.isMaxEquip();
-						});
+						const target = game.findPlayer(current => current.isMaxEquip());
 						return (target.countCards("e") - player.countCards("e")) * 1.4;
 					}
 				}
@@ -43977,12 +43966,14 @@ const skills = {
 					}
 					return target.hp > player.hp;
 				},
-				content() {
-					player.recover(target.hp - player.hp);
+				async content(event, trigger, player) {
+					const { target } = event;
+					const recoverEvent = player.recover(target.hp - player.hp);
 					if (!player.storage.zunwei) {
 						player.storage.zunwei = [];
 					}
 					player.storage.zunwei.add(0);
+					await recoverEvent;
 				},
 				ai: {
 					order: 10,
@@ -43997,12 +43988,14 @@ const skills = {
 				filterTarget(card, player, target) {
 					return target.countCards("h") > player.countCards("h");
 				},
-				content() {
-					player.draw(Math.min(5, target.countCards("h") - player.countCards("h")));
+				async content(event, trigger, player) {
+					const { target } = event;
+					const drawEvent = player.draw(Math.min(5, target.countCards("h") - player.countCards("h")));
 					if (!player.storage.zunwei) {
 						player.storage.zunwei = [];
 					}
 					player.storage.zunwei.add(1);
+					await drawEvent;
 				},
 				ai: {
 					order: 10,
@@ -44017,28 +44010,28 @@ const skills = {
 				filterTarget(card, player, target) {
 					return target.countCards("e") > player.countCards("e");
 				},
-				content() {
-					"step 0";
+				async content(event, trigger, player) {
+					const { target } = event;
 					if (!player.storage.zunwei) {
 						player.storage.zunwei = [];
 					}
 					player.storage.zunwei.add(2);
-					event.num = 1;
-					"step 1";
-					var type = "equip" + num;
-					if (!player.hasEmptySlot(type)) {
-						return;
-					}
-					var card = get.cardPile2(function (card) {
-						return get.subtype(card, false) == type && player.canUse(card, player);
-					});
-					if (card) {
-						player.chooseUseTarget(card, true).nopopup = true;
-					}
-					"step 2";
-					event.num++;
-					if (event.num <= 5 && target.isIn() && player.countCards("e") < target.countCards("e")) {
-						event.goto(1);
+					for (let num = 1; num <= 5; num++) {
+						if (num > 1 && (!target.isIn() || player.countCards("e") >= target.countCards("e"))) {
+							break;
+						}
+						const type = `equip${num}`;
+						if (!player.hasEmptySlot(type)) {
+							continue;
+						}
+						const card = get.cardPile2(card => get.subtype(card, false) === type && player.canUse(card, player));
+						if (card) {
+							await player.chooseUseTarget({
+								card,
+								forced: true,
+								nopopup: true,
+							});
+						}
 					}
 				},
 				ai: {
