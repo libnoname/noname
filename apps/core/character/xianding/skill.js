@@ -40971,61 +40971,61 @@ const skills = {
 		complexSelect: true,
 		complexTarget: true,
 		filterTarget(card, player, target) {
-			if (player == target) {
+			if (player === target) {
 				return false;
 			}
-			var next = player.getNext(),
-				prev = player.getPrevious();
-			var selected = ui.selected.targets;
+			const next = player.getNext();
+			const prev = player.getPrevious();
+			const selected = ui.selected.targets;
 			if (!selected.includes(next) && !selected.includes(prev)) {
-				return target == next || target == prev;
+				return target === next || target === prev;
 			}
-			for (var i of selected) {
-				if (i.getNext() == target || i.getPrevious() == target) {
+			for (const current of selected) {
+				if (current.getNext() === target || current.getPrevious() === target) {
 					return true;
 				}
 			}
 			return false;
 		},
-		contentBefore() {
+		async contentBefore(event, trigger, player) {
 			event.getParent()._xiaowu_targets = [];
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
+			const { target } = event;
 			if (!target.isIn()) {
-				event.finish();
 				return;
 			}
-			target
-				.chooseControl()
-				.set("choiceList", ["令" + get.translation(player) + "摸一张牌", "令自己摸一张牌"])
-				.set("ai", function () {
-					var player = _status.event.player,
-						target = _status.event.getParent().player;
-					var all = _status.event.getParent().targets.length,
-						dam = _status.event.getParent(2)._xiaowu_targets.length;
-					if (get.attitude(player, target) > 0 || dam >= Math.floor(all / 2)) {
-						return 0;
-					}
-					return 1;
-				});
-			"step 1";
-			if (result.index == 0) {
-				player.draw();
+			const result = await target
+				.chooseControl({
+					choiceList: [`令${get.translation(player)}摸一张牌`, "令自己摸一张牌"],
+					ai: () => {
+						const player = _status.event.player;
+						const target = _status.event.getParent().player;
+						const all = _status.event.getParent().targets.length;
+						const dam = _status.event.getParent(2)._xiaowu_targets.length;
+						if (get.attitude(player, target) > 0 || dam >= Math.floor(all / 2)) {
+							return 0;
+						}
+						return 1;
+					},
+				})
+				.forResult();
+			if (result.index === 0) {
+				await player.draw();
 			} else {
-				target.draw();
+				await target.draw();
 				event.getParent()._xiaowu_targets.push(target);
 			}
 		},
-		contentAfter() {
-			var targetsx = event.getParent()._xiaowu_targets;
-			var num = targets.length - targetsx.length - targetsx.length;
+		async contentAfter(event, trigger, player) {
+			const targetsx = event.getParent()._xiaowu_targets;
+			const num = event.targets.length - targetsx.length - targetsx.length;
 			if (num > 0) {
 				player.addMark("shawu", 1);
 			} else if (num < 0) {
 				player.line(targetsx, "fire");
-				for (var i of targetsx) {
-					i.damage();
+				for (const target of targetsx) {
+					await target.damage();
 				}
 			}
 		},
