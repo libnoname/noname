@@ -45486,11 +45486,7 @@ const skills = {
 			if (player.hasJudge("bingliang")) {
 				return false;
 			}
-			return (
-				player.countCards("hes", function (card) {
-					return get.color(card) == "black" && get.type(card) == "basic";
-				}) > 0
-			);
+			return player.hasCards("hes", card => get.color(card) === "black" && get.type(card) === "basic");
 		},
 		position: "hes",
 		discard: false,
@@ -45501,99 +45497,64 @@ const skills = {
 		},
 		filterCard(card, player, event) {
 			const bingliang = get.autoViewAs({ name: "bingliang", cards: [card] }, [card]);
-			return get.color(card) == "black" && get.type(card) == "basic" && player.canAddJudge(bingliang);
+			return get.color(card) === "black" && get.type(card) === "basic" && player.canAddJudge(bingliang);
 		},
 		selectTarget: -1,
 		filterTarget(card, player, target) {
-			return player == target;
+			return player === target;
 		},
 		check(card) {
 			return 9 - get.value(card);
 		},
-		// onuse:function(links,player){
-		// 	var next=game.createEvent('kuiji_content',false,_status.event.getParent());
-		// 	next.player=player;
-		// 	next.setContent(lib.skill.kuiji.kuiji_content);
-		// },
-		// kuiji_content:function(){
-		content() {
-			"step 0";
-			player.addJudge({ name: "bingliang" }, cards);
-			player.draw();
-			"step 1";
-			var next = player.chooseTarget().set("ai", function (target) {
-				let player = _status.event.player;
-				if (
-					target.hasSkillTag(
-						"filterDamage",
-						null,
-						{
-							player: player,
-						},
-						true
-					)
-				) {
-					return get.damageEffect(target, player, player);
-				}
-				return 2 * get.damageEffect(target, player, player);
-			});
-			if (!["identity", "guozhan"].includes(get.mode())) {
-				next.set("prompt", "选择一名体力值最大的敌方角色，对其造成2点伤害");
-				next.set("filterTarget", function (card, player, target) {
-					return (
-						target.isEnemyOf(player) &&
-						!game.hasPlayer(function (current) {
-							return current.isEnemyOf(player) && current.hp > target.hp;
-						})
-					);
-				});
-			} else {
-				next.set("prompt", "选择一名除你外体力值最大的角色，对其造成2点伤害");
-				next.set("filterTarget", function (card, player, target) {
-					return (
-						player != target &&
-						!game.hasPlayer(function (current) {
-							return current != player && current.hp > target.hp;
-						})
-					);
-				});
+		async content(event, trigger, player) {
+			const { cards } = event;
+			await player.addJudge({ name: "bingliang" }, cards);
+			await player.draw();
+			const identityMode = ["identity", "guozhan"].includes(get.mode());
+			const result = await player
+				.chooseTarget({
+					prompt: identityMode
+						? "选择一名除你外体力值最大的角色，对其造成2点伤害"
+						: "选择一名体力值最大的敌方角色，对其造成2点伤害",
+					filterTarget: identityMode
+						? (card, player, target) =>
+							player !== target && !game.hasPlayer(current => current !== player && current.hp > target.hp)
+						: (card, player, target) =>
+							target.isEnemyOf(player) &&
+							!game.hasPlayer(current => current.isEnemyOf(player) && current.hp > target.hp),
+					ai(target) {
+						const player = _status.event.player;
+						const effect = get.damageEffect(target, player, player);
+						if (target.hasSkillTag("filterDamage", null, { player }, true)) {
+							return effect;
+						}
+						return 2 * effect;
+					},
+				})
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
-			"step 2";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.line(target);
-				target.damage(2);
-			}
+			const target = result.targets[0];
+			player.line(target);
+			await target.damage(2);
 		},
 		ai: {
 			result: {
 				target(player, target) {
-					let es;
-					if (["identity", "guozhan"].includes(get.mode())) {
-						es = game.hasPlayer(i => {
-							return (
-								i != player &&
-								!game.hasPlayer(j => {
-									return player !== j && j.hp > i.hp;
-								}) &&
+					const identityMode = ["identity", "guozhan"].includes(get.mode());
+					const es = game.hasPlayer(
+						identityMode
+							? i =>
+								i !== player &&
+								!game.hasPlayer(j => player !== j && j.hp > i.hp) &&
 								get.attitude(player, i) < 0
-							);
-						});
-					} else {
-						es = game.hasPlayer(i => {
-							return (
+							: i =>
 								i.isEnemyOf(player) &&
-								!game.hasPlayer(j => {
-									return j.hp > i.hp && j.isEnemyOf(player);
-								}) &&
+								!game.hasPlayer(j => j.hp > i.hp && j.isEnemyOf(player)) &&
 								get.attitude(player, i) < 0
-							);
-						});
-					}
-					if (es) {
-						return 2;
-					}
-					return -1.5;
+					);
+					return es ? 2 : -1.5;
 				},
 			},
 			order: 12,
@@ -45603,61 +45564,44 @@ const skills = {
 			dying: {
 				trigger: { global: "dying" },
 				filter(event, player) {
-					let evt = event.getParent(2);
-					return evt && evt.name == "kuiji";
+					const evt = event.getParent(2);
+					return evt && evt.name === "kuiji";
 				},
 				locked: true,
 				direct: true,
-				content() {
-					"step 0";
-					var list;
-					if (["identity", "guozhan"].includes(get.mode())) {
-						list = game
-							.filterPlayer(current => {
-								return (
+				async content(event, trigger, player) {
+					const identityMode = ["identity", "guozhan"].includes(get.mode());
+					const list = game
+						.filterPlayer(
+							identityMode
+								? current =>
 									current !== trigger.player &&
-									!game.hasPlayer(i => {
-										return trigger.player !== i && i.hp < current.hp;
-									})
-								);
-							})
-							.filter(i => i.isDamaged());
-					} else {
-						list = game
-							.filterPlayer(current => {
-								return (
+									!game.hasPlayer(i => trigger.player !== i && i.hp < current.hp)
+								: current =>
 									current.isFriendOf(player) &&
-									!game.hasPlayer(i => {
-										return i.hp < current.hp && i.isFriendOf(player);
-									})
-								);
-							})
-							.filter(i => i.isDamaged());
-					}
+									!game.hasPlayer(i => i.hp < current.hp && i.isFriendOf(player))
+						)
+						.filter(i => i.isDamaged());
+					let result;
 					if (list.length > 1) {
-						player
-							.chooseTarget(
-								"溃击：选择一名角色回复1点体力",
-								(card, player, target) => {
-									return _status.event.list.includes(target);
-								},
-								true
-							)
+						result = await player
+							.chooseTarget({
+								prompt: "溃击：选择一名角色回复1点体力",
+								forced: true,
+								filterTarget: (_card, _player, target) => _status.event.list.includes(target),
+								ai: target => get.recoverEffect(target, player, _status.event.player),
+							})
 							.set("list", list)
-							.set("ai", target => {
-								return get.recoverEffect(target, player, _status.event.player);
-							});
-					} else if (list.length) {
-						event._result = { bool: true, targets: list };
+							.forResult();
 					} else {
-						event._result = { bool: false };
+						result = { bool: Boolean(list.length), targets: list };
 					}
-					"step 1";
-					if (result.bool) {
-						let target = result.targets[0];
-						player.logSkill("kuiji", target);
-						target.recover();
+					if (!result.bool) {
+						return;
 					}
+					const target = result.targets[0];
+					player.logSkill("kuiji", target);
+					await target.recover();
 				},
 			},
 		},
