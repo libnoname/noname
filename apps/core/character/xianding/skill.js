@@ -38601,7 +38601,7 @@ const skills = {
 		usable: 2,
 		chooseButton: {
 			dialog(event, player) {
-				var dialog = ui.create.dialog("讽言：请选择一项", "hidden");
+				const dialog = ui.create.dialog("讽言：请选择一项", "hidden");
 				dialog.add([
 					[
 						["gain", "令一名体力值不大于你的其他角色交给你一张手牌"],
@@ -38615,30 +38615,26 @@ const skills = {
 				return !player.getStorage("dcfengyan_used").includes(button.link);
 			},
 			check(button) {
-				var player = _status.event.player;
+				const player = _status.event.player;
 				if (
-					button.link == "gain" &&
-					game.hasPlayer(function (current) {
-						return lib.skill.dcfengyan_gain.filterTarget(null, player, current) && get.effect(current, "dcfengyan_gain", player, player) > 0;
-					})
+					button.link === "gain" &&
+					game.hasPlayer(current => lib.skill.dcfengyan_gain.filterTarget(null, player, current) && get.effect(current, "dcfengyan_gain", player, player) > 0)
 				) {
 					return 4;
 				}
 				if (
-					button.link == "sha" &&
-					game.hasPlayer(function (current) {
-						return lib.skill.dcfengyan_sha.filterTarget(null, player, current) && get.effect(current, "dcfengyan_sha", player, player) > 0;
-					})
+					button.link === "sha" &&
+					game.hasPlayer(current => lib.skill.dcfengyan_sha.filterTarget(null, player, current) && get.effect(current, "dcfengyan_sha", player, player) > 0)
 				) {
 					return 4;
 				}
 				return 2;
 			},
 			backup(links) {
-				return get.copy(lib.skill["dcfengyan_" + links[0]]);
+				return get.copy(lib.skill[`dcfengyan_${links[0]}`]);
 			},
 			prompt(links) {
-				if (links[0] == "gain") {
+				if (links[0] === "gain") {
 					return "令一名体力值不大于你的其他角色交给你一张手牌";
 				}
 				return "视为对一名手牌数不大于你的其他角色使用【杀】";
@@ -38658,18 +38654,23 @@ const skills = {
 			gain: {
 				audio: "dcfengyan",
 				filterTarget(card, player, target) {
-					return target != player && target.hp <= player.hp && target.countCards("h") > 0;
+					return target !== player && target.hp <= player.hp && target.hasCards("h");
 				},
 				filterCard: () => false,
 				selectCard: -1,
-				content() {
-					"step 0";
+				async content(event, trigger, player) {
 					player.addTempSkill("dcfengyan_used", "phaseUseAfter");
 					player.markAuto("dcfengyan_used", "gain");
-					target.chooseCard("h", true, "交给" + get.translation(player) + "一张牌");
-					"step 1";
+					const { target } = event;
+					const result = await target
+						.chooseCard({
+							position: "h",
+							forced: true,
+							prompt: `交给${get.translation(player)}一张牌`,
+						})
+						.forResult();
 					if (result.bool) {
-						target.give(result.cards, player);
+						await target.give(result.cards, player);
 					}
 				},
 				ai: {
@@ -38686,21 +38687,21 @@ const skills = {
 			sha: {
 				audio: "dcfengyan",
 				filterTarget(card, player, target) {
-					return target != player && target.countCards("h") <= player.countCards("h") && player.canUse("sha", target, false);
+					return target !== player && target.countCards("h") <= player.countCards("h") && player.canUse("sha", target, false);
 				},
 				filterCard: () => false,
 				selectCard: -1,
-				content() {
+				async content(event, trigger, player) {
 					player.addTempSkill("dcfengyan_used", "phaseUseAfter");
 					player.markAuto("dcfengyan_used", "sha");
-					player.useCard(
-						{
+					await player.useCard({
+						card: {
 							name: "sha",
 							isCard: true,
 						},
-						target,
-						false
-					);
+						targets: [event.target],
+						addCount: false,
+					});
 				},
 				ai: {
 					result: {
