@@ -118,7 +118,7 @@ const skills = {
 			global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
 		},
 		filter(event, player) {
-			return event.getl(player).hs.length > 0 && player.isMinHandcard();
+			return event.getl?.(player)?.hs?.length > 0 && player.isMinHandcard();
 		},
 		async content(event, trigger, player) {
 			if (player.hasSkill("dcranlv") && player.storage["dcranlv"]?.length) {
@@ -129,7 +129,7 @@ const skills = {
 					prompt: "是否对自己造成一点火焰伤害？",
 					ai() {
 						const player = get.player();
-						return player.hp == 2 && game.countPlayer(current => current.isLinked() && get.attitude(player, target) < 0);
+						return player.hp == 2 && game.countPlayer(current => current.isLinked() && get.attitude(player, current) < 0);
 					},
 				})
 				.forResult();
@@ -2982,43 +2982,40 @@ const skills = {
 			suits.forEach(suit => {
 				suitMap[get.translation(suit)] = suit;
 			});
-			const result =
-				types.length > 1 || suits.length > 1
-					? await player
-							.chooseButton({
-								createDialog: [
-									"靖谋：记录至多三种花色与类型",
-									[
-										[types.slice(0).map(type => get.translation(type)), "tdnodes"],
-										[suits.slice(0).map(suit => get.translation(suit)), "tdnodes"],
-									],
-								],
-								selectButton: [1, 6],
-								complexButton: true,
-								filterButton(button) {
-									let { types, suits } = get.event();
-									types = types.slice(0).map(type => get.translation(type));
-									suits = suits.slice(0).map(suit => get.translation(suit));
-									if (!ui.selected.buttons?.length) {
-										return true;
-									}
-									const selectedTypes = ui.selected.buttons.filter(b => types.includes(b.link)).length;
-									const selectedSuits = ui.selected.buttons.filter(b => suits.includes(b.link)).length;
-									if (types.includes(button.link)) {
-										return selectedTypes < Math.min(3, types.length);
-									} else if (suits.includes(button.link)) {
-										return selectedSuits < Math.min(3, suits.length);
-									}
-									return true;
-								},
-								ai(button) {
-									return 1 + Math.random();
-								},
-							})
-							.set("types", types)
-							.set("suits", suits)
-							.forResult()
-					: { bool: true, links: types.concat(suits).map(i => get.translation(i)) };
+			const result = await player
+				.chooseButton({
+					createDialog: [
+						"靖谋：记录至多三种花色与类型",
+						[
+							[types.slice(0).map(type => get.translation(type)), "tdnodes"],
+							[suits.slice(0).map(suit => get.translation(suit)), "tdnodes"],
+						],
+					],
+					selectButton: [1, 6],
+					complexButton: true,
+					filterButton(button) {
+						let { types, suits } = get.event();
+						types = types.slice(0).map(type => get.translation(type));
+						suits = suits.slice(0).map(suit => get.translation(suit));
+						if (!ui.selected.buttons?.length) {
+							return true;
+						}
+						const selectedTypes = ui.selected.buttons.filter(b => types.includes(b.link)).length;
+						const selectedSuits = ui.selected.buttons.filter(b => suits.includes(b.link)).length;
+						if (types.includes(button.link)) {
+							return selectedTypes < Math.min(3, types.length);
+						} else if (suits.includes(button.link)) {
+							return selectedSuits < Math.min(3, suits.length);
+						}
+						return true;
+					},
+					ai(button) {
+						return 1 + Math.random();
+					},
+				})
+				.set("types", types)
+				.set("suits", suits)
+				.forResult();
 			if (result?.bool && result.links?.length) {
 				const { links } = result;
 				const list = [];
@@ -3642,7 +3639,10 @@ const skills = {
 		},
 		forced: true,
 		async content(event, trigger, player) {
-			trigger.num += Math.min(5, game.filterPlayer().reduce((sum, current) => sum + current.countDisabledSlot(), 0));
+			trigger.num += Math.min(
+				5,
+				game.filterPlayer().reduce((sum, current) => sum + current.countDisabledSlot(), 0)
+			);
 		},
 		group: "dczhiti_drawEnd",
 		subSkill: {
@@ -3655,10 +3655,11 @@ const skills = {
 				forced: true,
 				logTarget: "player",
 				async content(event, trigger, player) {
+					const num = Math.min(trigger.player.countDisabledSlot(), trigger.player.countCards("hej"));
 					await player.discardPlayerCard({
 						target: trigger.player,
 						position: "hej",
-						selectButton: trigger.player.countDisabledSlot(),
+						selectButton: num,
 						allowChooseAll: true,
 					});
 				},
@@ -15340,7 +15341,12 @@ const skills = {
 				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
 					return target.countDiscardableCards(player, "he");
 				})
-				.set("ai", target => get.effect(target, { name: "guohe_copy2" }, get.player(), get.player()))
+				.set("ai", target => {
+					const trigger = get.event().getTrigger();
+					//防止无效自己上的装备或濒死喝酒完杀自己
+					if (get.effect(trigger.target, trigger.card, trigger.player, trigger.target) > 0) return 0;
+					return get.effect(target, { name: "guohe_copy2" }, get.player(), get.player());
+				})
 				.forResult();
 		},
 		async content(event, trigger, player) {

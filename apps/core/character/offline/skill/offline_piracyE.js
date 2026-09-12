@@ -2198,6 +2198,7 @@ const skills = {
 	},
 	//夏侯玄
 	pehuanfu: {
+		audio: "olhuanfu",
 		trigger: {
 			player: "useCardToPlayered",
 			target: "useCardToTargeted",

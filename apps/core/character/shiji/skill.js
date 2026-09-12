@@ -42,7 +42,7 @@ const skills = {
 				const targets = result.targets.sortBySeat();
 				player.line(targets);
 				const link = result.links[0];
-				for(const target of targets) {
+				for (const target of targets) {
 					target.addSkill(event.name + "_buff");
 					if (!target.storage.mbdingyi_buff) {
 						target.storage.mbdingyi_buff = [0, 0, 0, 0];
@@ -383,30 +383,44 @@ const skills = {
 					}
 				},
 			},
+			mark2: { charlotte: true, onremove: true },
 			mark: {
 				marktext: "定",
 				intro: {
 					name: "平定",
 					content(storage, player) {
-						const num = player.countHistory("useCard");
+						const num = player.countMark("yingba_mark2");
 						return `<li>当前拥有${storage}个平定标记且每回合使用的前${storage}张牌不能指定拥有〖英霸〗的角色<li>本回合已使用${num}张牌`;
 					},
 					onunmark: true,
 				},
-				charlotte: true,
-				countUseCard(player) {
-					return player.countHistory("useCard");
+				init(player, skill) {
+					if (player.hasHistory("useCard")) {
+						player.addTempSkill("yingba_mark2");
+						player.addMark("yingba_mark2", player.countHistory("useCard"), false);
+					}
 				},
+				onremove: true,
+				charlotte: true,
 				mod: {
 					playerEnabled(card, player, target) {
 						if (!target.hasSkill("yingba", null, false, false) || !player.hasMark("yingba_mark")) {
 							return;
 						}
-						const num = get.info("yingba_mark").countUseCard(player);
+						const num = player.countMark("yingba_mark2");
 						if (num < player.countMark("yingba_mark")) {
 							return false;
 						}
 					},
+				},
+				silent: true,
+				popup: false,
+				firstDo: true,
+				trigger: { player: "useCard1" },
+				async content(event, trigger, player) {
+					player.addTempSkill("yingba_mark2");
+					player.addMark("yingba_mark2", 1, false);
+					player.markSkill(event.name);
 				},
 			},
 		},
@@ -6725,11 +6739,11 @@ const skills = {
 						})
 						.forResult();
 					if (result?.bool && result.links?.length) {
-					event.result = {
-						bool: result.bool,
-						cards: result.links,
-					};
-				}
+						event.result = {
+							bool: result.bool,
+							cards: result.links,
+						};
+					}
 				},
 				logTarget: "player",
 				async content(event, trigger, player) {
