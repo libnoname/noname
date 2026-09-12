@@ -42356,21 +42356,15 @@ const skills = {
 			if (!player.getHistory("useCard").length) {
 				return false;
 			}
-			var evt = event.getParent("phaseUse");
+			const evt = event.getParent("phaseUse");
 			if (!evt || !evt.player) {
 				return false;
 			}
-			return (
-				player
-					.getHistory("sourceDamage", function (evtx) {
-						return evtx.getParent("phaseUse") == evt;
-					})
-					.indexOf(event) == 0
-			);
+			return player.getHistory("sourceDamage", evtx => evtx.getParent("phaseUse") === evt).indexOf(event) === 0;
 		},
 		frequent: true,
-		content() {
-			player.draw(player.getHistory("useCard").length);
+		async content(event, trigger, player) {
+			await player.draw(player.getHistory("useCard").length);
 		},
 		group: "zhukou_all",
 		subSkill: {
@@ -42378,22 +42372,23 @@ const skills = {
 				audio: "zhukou",
 				trigger: { player: "phaseJieshuBegin" },
 				filter(event, player) {
-					return game.countPlayer(current => current != player) > 1 && !player.getHistory("sourceDamage").length;
+					return game.countPlayer(current => current !== player) > 1 && !player.getHistory("sourceDamage").length;
 				},
-				direct: true,
-				content() {
-					"step 0";
-					player.chooseTarget(get.prompt("zhukou"), "对两名其他角色各造成1点伤害", 2, lib.filter.notMe).set("ai", function (target) {
-						var player = _status.event.player;
-						return get.damageEffect(target, player, player);
-					});
-					"step 1";
-					if (result.bool) {
-						var targets = result.targets.sortBySeat();
-						player.logSkill("zhukou", targets);
-						for (var i of targets) {
-							i.damage();
-						}
+				async cost(event, trigger, player) {
+					event.result = await player
+						.chooseTarget({
+							prompt: get.prompt(event.skill),
+							prompt2: "对两名其他角色各造成1点伤害",
+							selectTarget: 2,
+							filterTarget: lib.filter.notMe,
+							ai: target => get.damageEffect(target, player, player),
+						})
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					const targets = event.targets.sortBySeat();
+					for (const target of targets) {
+						target.damage();
 					}
 				},
 			},
