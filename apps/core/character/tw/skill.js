@@ -20395,153 +20395,134 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseZhunbeiBegin" },
 		filter(event, player) {
-			return game.hasPlayer(function (current) {
-				return current != player && current.countDiscardableCards(player, "hej") > 0;
-			});
+			return game.hasPlayer(current => current !== player && current.hasDiscardableCards(player, "hej"));
 		},
-		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt2("twtanfeng"), function (card, player, target) {
-					return target != player && target.countDiscardableCards(player, "hej") > 0;
-				})
-				.set("ai", function (target) {
-					var player = _status.event.player,
-						num = 1;
-					if (get.attitude(player, target) > 0) {
-						num = 3;
-					} else if (!target.countCards("he") || !target.canUse("sha", player)) {
-						if (target.hp + target.countCards("hs", { name: ["tao", "jiu"] }) <= 1) {
-							num = 2;
-						} else {
-							num = 1.2;
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2(event.skill),
+					filterTarget: (card, player, target) => target !== player && target.hasDiscardableCards(player, "hej"),
+					ai: target => {
+						const player = _status.event.player;
+						let num = 1;
+						if (get.attitude(player, target) > 0) {
+							num = 3;
+						} else if (!target.hasCards("he") || !target.canUse("sha", player)) {
+							if (target.hp + target.countCards("hs", { name: ["tao", "jiu"] }) <= 1) {
+								num = 2;
+							} else {
+								num = 1.2;
+							}
 						}
-					}
-					return get.effect(target, { name: "guohe" }, player, player) * num * (player.hp <= 1 && get.attitude(player, target) <= 0 ? 0 : 1);
+						return get.effect(target, { name: "guohe" }, player, player) * num * (player.hp <= 1 && get.attitude(player, target) <= 0 ? 0 : 1);
+					},
 				})
-				.setHiddenSkill(event.name);
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("twtanfeng", target);
-				player.discardPlayerCard(target, "hej", true);
-			} else {
-				event.finish();
-			}
-			"step 2";
-			target.chooseCardTarget({
+				.setHiddenSkill(event.skill)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			await player.discardPlayerCard({ target, position: "hej", forced: true });
+			const useResult = await target.chooseCardTarget({
 				position: "hes",
-				prompt: "选择一张牌当做【杀】对" + get.translation(player) + "使用",
+				prompt: `选择一张牌当做【杀】对${get.translation(player)}使用`,
 				prompt2: "或点击“取消”，受到其造成的1点火焰伤害，并令其跳过本回合的一个阶段（准备阶段和结束阶段除外）",
 				filterCard(card, player) {
 					return player.canUse(get.autoViewAs({ name: "sha" }, [card]), _status.event.getParent().player, false);
 				},
 				filterTarget(card, player, target) {
-					var source = _status.event.getParent().player;
-					if (target != source && !ui.selected.targets.includes(source)) {
+					const source = _status.event.getParent().player;
+					if (target !== source && !ui.selected.targets.includes(source)) {
 						return false;
 					}
 					card = get.autoViewAs({ name: "sha" }, [card]);
 					return lib.filter.filterTarget.apply(this, arguments);
 				},
 				selectTarget() {
-					var card = get.card(),
-						player = get.player();
+					let card = get.card();
+					const player = get.player();
 					if (!card) {
 						return;
 					}
 					card = get.autoViewAs({ name: "sha" }, [card]);
-					var range = [1, 1];
+					const range = [1, 1];
 					game.checkMod(card, player, range, "selectTarget", player);
 					return range;
 				},
 				ai1(card) {
-					var player = _status.event.player,
-						target = _status.event.getParent().player;
-					var eff = get.effect(target, get.autoViewAs({ name: "sha" }, [card]), player, player);
-					var eff2 = get.damageEffect(player, target, player, "fire");
+					const player = _status.event.player;
+					const target = _status.event.getParent().player;
+					const eff = get.effect(target, get.autoViewAs({ name: "sha" }, [card]), player, player);
+					const eff2 = get.damageEffect(player, target, player, "fire");
 					if (eff < 0 || eff2 > 0 || eff2 > eff || get.tag(card, "recover")) {
 						return 0;
 					}
-					return (player.hp == 1 ? 10 : 6) - get.value(card);
+					return (player.hp === 1 ? 10 : 6) - get.value(card);
 				},
 				ai2(target) {
-					if (target == _status.event.getParent().player) {
+					if (target === _status.event.getParent().player) {
 						return 100;
 					}
 					return get.effect(target, { name: "sha" }, _status.event.player);
 				},
-			});
-			"step 3";
-			if (result.bool) {
-				var cards = result.cards,
-					targets = result.targets;
-				var cardx = get.autoViewAs({ name: "sha" }, cards);
-				target.useCard(cardx, cards, targets, false);
-				event.finish();
-			} else {
-				player.line(target, "fire");
-				target.damage(1, "fire");
-			}
-			"step 4";
-			if (!target.isIn()) {
-				event.finish();
+			}).forResult();
+			if (useResult.bool) {
+				const card = get.autoViewAs({ name: "sha" }, useResult.cards);
+				await target.useCard({ card, cards: useResult.cards, targets: useResult.targets, addCount: false });
 				return;
 			}
-			var list = [];
-			var list2 = [];
-			event.map = {
+
+			player.line(target, "fire");
+			await target.damage({ num: 1, nature: "fire" });
+			if (!target.isIn()) {
+				return;
+			}
+
+			const list = [];
+			const list2 = [];
+			const phaseMap = {
 				phaseJudge: "判定阶段",
 				phaseDraw: "摸牌阶段",
 				phaseUse: "出牌阶段",
 				phaseDiscard: "弃牌阶段",
 			};
-			for (var i of ["phaseJudge", "phaseDraw", "phaseUse", "phaseDiscard"]) {
-				if (!player.skipList.includes(i)) {
-					i = event.map[i];
-					list.push(i);
-					if (i != "判定阶段" && i != "弃牌阶段") {
-						list2.push(i);
-					}
+			for (const phase of ["phaseJudge", "phaseDraw", "phaseUse", "phaseDiscard"]) {
+				if (player.skipList.includes(phase)) {
+					continue;
+				}
+				const phaseName = phaseMap[phase];
+				list.push(phaseName);
+				if (phaseName !== "判定阶段" && phaseName !== "弃牌阶段") {
+					list2.push(phaseName);
 				}
 			}
-			target
-				.chooseControl(list)
-				.set("prompt", "探锋：令" + get.translation(player) + "跳过一个阶段")
-				.set("ai", function () {
-					return _status.event.choice;
+			const attitude = get.attitude(target, player);
+			let choice;
+			if (attitude > 0) {
+				choice = list.includes("判定阶段") && player.hasCards("j") ? "判定阶段" : "弃牌阶段";
+			} else if (list.includes("摸牌阶段") && player.hasJudge("lebu")) {
+				choice = "摸牌阶段";
+			} else if ((list.includes("出牌阶段") && player.hasJudge("bingliang")) || player.needsToDiscard() > 0) {
+				choice = "出牌阶段";
+			} else {
+				choice = list2.randomGet();
+			}
+			const controlResult = await target
+				.chooseControl({
+					controls: list,
+					prompt: `探锋：令${get.translation(player)}跳过一个阶段`,
+					ai: () => _status.event.choice,
 				})
-				.set(
-					"choice",
-					(function () {
-						var att = get.attitude(target, player);
-						var num = player.countCards("j");
-						if (att > 0) {
-							if (list.includes("判定阶段") && num > 0) {
-								return "判定阶段";
-							}
-							return "弃牌阶段";
-						}
-						if (list.includes("摸牌阶段") && player.hasJudge("lebu")) {
-							return "摸牌阶段";
-						}
-						if ((list.includes("出牌阶段") && player.hasJudge("bingliang")) || player.needsToDiscard() > 0) {
-							return "出牌阶段";
-						}
-						return list2.randomGet();
-					})()
-				);
-			"step 5";
-			for (var i in event.map) {
-				if (event.map[i] == result.control) {
-					player.skip(i);
+				.set("choice", choice)
+				.forResult();
+			for (const phase in phaseMap) {
+				if (phaseMap[phase] === controlResult.control) {
+					player.skip(phase);
 				}
 			}
-			target.popup(result.control);
+			target.popup(controlResult.control);
 			target.line(player);
-			game.log(player, "跳过了", "#y" + result.control);
+			game.log(player, "跳过了", `#y${controlResult.control}`);
 		},
 	},
 	//宗预
