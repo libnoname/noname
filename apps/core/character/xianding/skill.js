@@ -558,19 +558,15 @@ const skills = {
 								return 0.5;
 							case "club":
 								return 1;
-								break;
 							case "spade":
 								if (player.hasCards("he")) {
 									return -1;
 								}
 								return 0;
-								break;
 							case "diamond":
 								return -2;
-								break;
 							default:
 								return 0;
-								break;
 						}
 					})
 					.set("judge2", result => (result.bool ? true : false))
@@ -29541,13 +29537,14 @@ const skills = {
 							.forResult();
 					}
 					switch (result3.control) {
-						case "置入“翼”":
+						case "置入“翼”": {
 							player.addTempSkill("dczhifou_0");
 							const result4 = await target.chooseCard("he", choiceList[0], true).forResult();
 							if (result4.bool) {
 								player.addToExpansion(result4.cards, target, "give").gaintag.add("dclingxi");
 							}
 							break;
+						}
 						case "弃置卡牌":
 							player.addTempSkill("dczhifou_1");
 							target.chooseToDiscard("he", 2, true);
@@ -42497,17 +42494,18 @@ const skills = {
 											})
 									)
 								);
-							case 4:
+							case 4: {
 								let num = 0;
-								game.countPlayer(current => {
+								for (const current of game.filterPlayer()) {
 									if (current !== player && get.attitude(player, current) > 0) {
 										const num2 = Math.min(5, current.maxHp) - current.countCards("h");
 										if (num2 > num) {
 											num = num2;
 										}
 									}
-								});
+								};
 								return num * 0.8;
+							}
 						}
 					})
 					.forResult();
