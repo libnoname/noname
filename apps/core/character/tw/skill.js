@@ -25768,66 +25768,66 @@ const skills = {
 		},
 		direct: true,
 		filter(event, player) {
-			if (event.type != "discard") {
+			if (event.type !== "discard") {
 				return false;
 			}
-			var evt = event.getl(player);
-			for (var card of evt.cards2) {
-				if (get.suit(card, player) == "spade") {
-					return true;
-				}
-			}
-			return false;
+			const evt = event.getl(player);
+			return evt.cards2.some(card => get.suit(card, player) === "spade");
 		},
 		forced: true,
-		content() {
-			"step 0";
-			var cards = [];
-			var evt = trigger.getl(player);
-			for (var card of evt.cards2) {
-				if (get.suit(card, player) == "spade") {
-					cards.push(card);
-				}
-			}
+		async content(event, trigger, player) {
+			const evt = trigger.getl(player);
+			const cards = evt.cards2.filter(card => get.suit(card, player) === "spade");
 			if (!cards.length) {
-				event.finish();
-			} else {
-				event.cards = cards;
+				return;
 			}
-			"step 1";
-			if (event.cards.length == 1) {
-				event._result = { bool: true, links: event.cards };
-			} else {
-				player.chooseButton(["鬼门：选择一张♠牌，为其进行判定", event.cards], true);
-			}
-			"step 2";
-			if (result.bool && result.links) {
-				event.judgingSpade = result.links[0];
-				event.cards.remove(event.judgingSpade);
-				game.log(player, "选择", "#y" + get.translation(event.judgingSpade), "进行判定");
-				player.judge(function (result) {
-					var card = _status.event.getParent().judgingSpade;
-					if (Math.abs(get.number(result) - get.number(card)) <= 1) {
-						return 4;
+			event.cards = cards;
+			while (cards.length) {
+				let judgingSpade;
+				if (cards.length === 1) {
+					judgingSpade = cards[0];
+				} else {
+					const buttonResult = await player
+						.chooseButton({
+							createDialog: ["鬼门：选择一张♠牌，为其进行判定", cards],
+							forced: true,
+						})
+						.forResult();
+					if (!buttonResult.bool || !buttonResult.links) {
+						return;
 					}
-					return -1;
-				}).judge2 = function (result) {
-					return result.bool;
-				};
-			} else {
-				event.finish();
-			}
-			"step 3";
-			if (result.bool && game.hasPlayer(current => current != player)) {
-				player.chooseTarget("选择一名其他角色，对其造成2点雷电伤害", lib.filter.notMe, true).set("ai", target => get.damageEffect(target, player, player, "thunder"));
-			}
-			"step 4";
-			if (result.bool) {
-				player.line(result.targets[0], "thunder");
-				result.targets[0].damage(2, "thunder");
-			}
-			if (event.cards.length) {
-				event.goto(1);
+					judgingSpade = buttonResult.links[0];
+				}
+				event.judgingSpade = judgingSpade;
+				cards.remove(judgingSpade);
+				game.log(player, "选择", `#y${get.translation(judgingSpade)}`, "进行判定");
+				const judgeResult = await player
+					.judge({
+						judge: result => {
+							if (Math.abs(get.number(result) - get.number(judgingSpade)) <= 1) {
+								return 4;
+							}
+							return -1;
+						},
+						judge2: result => result.bool,
+					})
+					.forResult();
+				if (!judgeResult.bool || !game.hasPlayer(current => current !== player)) {
+					continue;
+				}
+				const targetResult = await player
+					.chooseTarget({
+						prompt: "选择一名其他角色，对其造成2点雷电伤害",
+						filterTarget: lib.filter.notMe,
+						forced: true,
+						ai: target => get.damageEffect(target, player, player, "thunder"),
+					})
+					.forResult();
+				if (targetResult.bool) {
+					const target = targetResult.targets[0];
+					player.line(target, "thunder");
+					await target.damage({ num: 2, nature: "thunder" });
+				}
 			}
 		},
 	},
