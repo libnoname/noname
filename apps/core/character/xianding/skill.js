@@ -35370,7 +35370,8 @@ const skills = {
 		filter(event, player) {
 			return player.countCards("h") > 7;
 		},
-		forced: true,
+		direct: true,
+		locked: true,
 		intro: {
 			markcount: "expansion",
 			content: "expansion",
