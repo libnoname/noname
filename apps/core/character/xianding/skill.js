@@ -37372,82 +37372,74 @@ const skills = {
 		},
 		forced: true,
 		filter(event, player) {
-			if (player == _status.currentPhase) {
+			if (player === _status.currentPhase) {
 				return false;
 			}
 			return (
 				(!event.hasNature() &&
-					!player.hasHistory(
-						"damage",
-						evt => {
-							return !evt.hasNature() && evt != event;
-						},
-						event
-					)) ||
+					!player.hasHistory("damage", evt => !evt.hasNature() && evt !== event, event)) ||
 				(event.hasNature() &&
-					!player.hasHistory(
-						"damage",
-						evt => {
-							return evt.hasNature() && evt != event;
-						},
-						event
-					) &&
+					!player.hasHistory("damage", evt => evt.hasNature() && evt !== event, event) &&
 					event.source &&
 					event.source.isIn() &&
-					event.source.countGainableCards(player, "h"))
+					event.source.hasGainableCards(player, "h"))
 			);
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			if (!trigger.hasNature()) {
-				player.recover();
-			} else {
-				var cards = trigger.source.getGainableCards(player, "h");
-				if (cards.length) {
-					player.gain(cards.randomGet(), trigger.source, "giveAuto", "bySelf");
-				}
+				await player.recover();
+				return;
+			}
+			const cards = trigger.source.getGainableCards(player, "h");
+			if (cards.length) {
+				await player.gain({
+					cards: [cards.randomGet()],
+					source: trigger.source,
+					animate: "giveAuto",
+					bySelf: true,
+				});
 			}
 		},
 		ai: {
-			effect: {
-				target(card, player, target) {
-					if (player._dcfangdu_aiChecking || target == _status.currentPhase) {
-						return;
-					}
+				effect: {
+					target(card, player, target) {
+						if (player._dcfangdu_aiChecking || target === _status.currentPhase) {
+							return;
+						}
 					if (!get.tag(card, "damage") || player.hasSkillTag("jueqing", false, target)) {
 						return;
 					}
 					if (_status.event.getParent("useCard", true) || _status.event.getParent("_wuxie", true)) {
 						return;
-					}
-					if (!get.tag(card, "natureDamage")) {
-						if (target.hasHistory("damage", evt => !evt.hasNature())) {
-							return 1.5;
-						} else if (
-							target.hp <= 1 ||
-							(player.hasSkillTag("damageBonus", false, {
-								target: target,
-								card: card,
-							}) &&
-								!target.hasSkillTag("filterDamage", null, {
-									player: player,
-									card: card,
-								}))
-						) {
-							return 0.75;
-						} else {
+						}
+						if (!get.tag(card, "natureDamage")) {
+							if (target.hasHistory("damage", evt => !evt.hasNature())) {
+								return 1.5;
+							}
+							if (
+								target.hp <= 1 ||
+								(player.hasSkillTag("damageBonus", false, {
+									target,
+									card,
+								}) &&
+									!target.hasSkillTag("filterDamage", null, {
+										player,
+										card,
+									}))
+							) {
+								return 0.75;
+							}
 							if (get.attitude(player, target) > 0) {
 								return [0, 0];
 							}
-							var sha = player.getCardUsable({ name: "sha" });
+							let sha = player.getCardUsable({ name: "sha" });
 							player._dcfangdu_aiChecking = true;
-							var num = player.countCards("h", function (card) {
-								if (get.name(card) == "sha") {
-									if (sha == 0) {
+							let num = player.countCards("h", card => {
+								if (get.name(card) === "sha") {
+									if (sha === 0) {
 										return false;
-									} else {
-										sha--;
 									}
+									sha--;
 								}
 								return player.canUse(card, target) && get.effect(target, card, player, player) > 0;
 							});
@@ -37459,7 +37451,6 @@ const skills = {
 								return [0, 0];
 							}
 						}
-					}
 					if (get.tag(card, "natureDamage") && !target.hasHistory("damage", evt => evt.hasNature()) && player.countCards("he") > 1) {
 						return [1, 1, 1, -1];
 					}
