@@ -15980,265 +15980,235 @@ const skills = {
 		audio: "xinfu_xingluan",
 		trigger: { player: "phaseJieshuBegin" },
 		frequent: true,
-		content() {
-			"step 0";
-			event.cards = game.cardsGotoOrdering(get.cards(6)).cards;
-			event.list = [];
-			event.videoId = lib.status.videoId++;
+		async content(event, trigger, player) {
+			const cards = game.cardsGotoOrdering(get.cards(6)).cards;
+			const videoId = lib.status.videoId++;
 			game.broadcastAll(
-				function (player, id, cards) {
-					var str;
-					if (player == game.me && !_status.auto) {
-						str = "兴乱：选择分配一种类别的牌";
-					} else {
-						str = "兴乱";
-					}
-					var dialog = ui.create.dialog(str, cards);
+				(player, id, cards) => {
+					const str = player === game.me && !_status.auto ? "兴乱：选择分配一种类别的牌" : "兴乱";
+					const dialog = ui.create.dialog(str, cards);
 					dialog.videoId = id;
 				},
 				player,
-				event.videoId,
-				event.cards
+				videoId,
+				cards
 			);
-			event.time = get.utc();
-			game.addVideo("showCards", player, ["兴乱", get.cardsInfo(event.cards)]);
+			const startTime = get.utc();
+			game.addVideo("showCards", player, ["兴乱", get.cardsInfo(cards)]);
 			game.addVideo("delay", null, 2);
-			"step 1";
-			var list = ["basic", "trick", "equip"].filter(type => cards.some(card => get.type2(card) == type));
-			let fs = game
-					.filterPlayer(i => get.attitude(_status.event.player, i) > 0)
-					.sort((a, b) => {
-						if (a === player) {
-							//尽量把player往前放
-							if (a.hp < b.hp) {
-								return 1;
-							}
-							return -1;
-						}
-						if (b === player) {
-							if (b.hp < a.hp) {
-								return -1;
-							}
+			const typeList = ["basic", "trick", "equip"].filter(type => cards.some(card => get.type2(card) === type));
+			const friendlyPlayers = game
+				.filterPlayer(i => get.attitude(_status.event.player, i) > 0)
+				.sort((a, b) => {
+					if (a === player) {
+						//尽量把player往前放
+						if (a.hp < b.hp) {
 							return 1;
 						}
-						return b.hp - a.hp;
-					}),
-				es = game.filterPlayer(i => get.attitude(_status.event.player, i) < 0).sort((a, b) => a.hp - b.hp),
-				types = list
-					.map(type => {
-						let num = 0;
-						for (let i of event.cards) {
-							if (get.type2(i) == type) {
-								num++;
-							}
+						return -1;
+					}
+					if (b === player) {
+						if (b.hp < a.hp) {
+							return -1;
 						}
-						return [type, num];
-					})
-					.sort((a, b) => b[1] - a[1]);
-			event.tempCache = {
+						return 1;
+					}
+					return b.hp - a.hp;
+				});
+			const enemyPlayers = game.filterPlayer(i => get.attitude(_status.event.player, i) < 0).sort((a, b) => a.hp - b.hp);
+			const types = typeList
+				.map(type => {
+					let num = 0;
+					for (const card of cards) {
+						if (get.type2(card) === type) {
+							num++;
+						}
+					}
+					return [type, num];
+				})
+				.sort((a, b) => b[1] - a[1]);
+			const tempCache = {
 				max: -Infinity,
 				tars: [],
 			};
-			for (let idx = 0; idx < types.length; idx++) {
-				let f,
-					e,
-					temp = 0,
-					tars = [],
-					type = types[idx][1];
-				if (es.length * 3 >= type) {
+			for (const [typeName, typeCount] of types) {
+				let friendlyScore;
+				let targets = [];
+				if (enemyPlayers.length * 3 >= typeCount) {
 					//都分给敌人
-					e = -type;
-					while (temp < es.length && temp < type) {
-						e += 10 / (2 + es[temp].hp);
-						tars.push(es[temp]);
-						temp++;
+					let enemyScore = -typeCount;
+					for (let index = 0; index < enemyPlayers.length && index < typeCount; index++) {
+						enemyScore += 10 / (2 + enemyPlayers[index].hp);
+						targets.push(enemyPlayers[index]);
 					}
-					if (e > event.tempCache.max) {
-						event.tempCache.type = types[idx][0];
-						event.tempCache.max = e;
-						event.tempCache.tars = tars.slice(0);
-						delete event.tempCache.more;
+					if (enemyScore > tempCache.max) {
+						tempCache.type = typeName;
+						tempCache.max = enemyScore;
+						tempCache.tars = targets.slice(0);
+						delete tempCache.more;
 					}
 				}
-				if (fs.length * 3 >= type) {
+				if (friendlyPlayers.length * 3 >= typeCount) {
 					//都分给队友
-					tars = [];
-					f = type - 10 / (2 + fs[0].hp);
-					temp = type - Math.max(3, type); //让血厚的尽可能多拿
-					if (temp) {
-						if (fs.length < 3) {
-							tars.push(fs[1]);
-							if (temp >= 3) {
-								f -= 10 / (2 + fs[1].hp);
+					targets = [];
+					friendlyScore = typeCount - 10 / (2 + friendlyPlayers[0].hp);
+					let remaining = typeCount - Math.max(3, typeCount); //让血厚的尽可能多拿
+					if (remaining) {
+						if (friendlyPlayers.length < 3) {
+							targets.push(friendlyPlayers[1]);
+							if (remaining >= 3) {
+								friendlyScore -= 10 / (2 + friendlyPlayers[1].hp);
 							}
 						} else {
-							if (player !== fs[0]) {
-								tars.push(player);
-								temp -= Math.max(2, temp);
+							if (player !== friendlyPlayers[0]) {
+								targets.push(player);
+								remaining -= Math.max(2, remaining);
 							}
-							if (temp) {
-								tars.addArray(
-									fs
-										.filter(i => fs[0] !== i && player !== i)
-										.sort((a, b) => {
-											return get.attitude(_status.event.player, b) - get.attitude(_status.event.player, a);
-										})
-										.slice(temp < 3 ? -1 : -2)
+							if (remaining) {
+								targets.addArray(
+									friendlyPlayers
+										.filter(current => friendlyPlayers[0] !== current && player !== current)
+										.sort((a, b) => get.attitude(_status.event.player, b) - get.attitude(_status.event.player, a))
+										.slice(remaining < 3 ? -1 : -2)
 								);
 							}
 						}
 					}
-					if (f > event.tempCache.max) {
-						event.tempCache.type = types[idx][0];
-						event.tempCache.max = f;
-						event.tempCache.more = fs[0];
-						event.tempCache.tars = tars.slice(0);
+					if (friendlyScore > tempCache.max) {
+						tempCache.type = typeName;
+						tempCache.max = friendlyScore;
+						tempCache.more = friendlyPlayers[0];
+						tempCache.tars = targets.slice(0);
 					}
 				}
 			}
-			player
-				.chooseControl(list)
-				.set("ai", function () {
-					return _status.event.type;
+			const controlResult = await player
+				.chooseControl({
+					controls: typeList,
+					ai: event => event.type,
 				})
-				.set("type", event.tempCache.type);
-			"step 2";
-			game.broadcastAll("closeDialog", event.videoId);
-			event.cardsx = [];
-			var type = result.control;
-			for (var j of cards) {
-				if (type == get.type2(j)) {
-					event.cardsx.push(j);
-				}
-			}
-			var time = 1000 - (get.utc() - event.time);
+				.set("type", tempCache.type)
+				.forResult();
+			game.broadcastAll("closeDialog", videoId);
+			const cardsToGive = cards.filter(card => controlResult.control === get.type2(card));
+			const time = 1000 - (get.utc() - startTime);
 			if (time > 0) {
-				game.delay(0, time);
+				await game.delay(0, time);
 			}
-			player.$gain2(event.cardsx, false);
-			game.delayx();
+			player.$gain2(cardsToGive, false);
+			await game.delayx();
 			if (_status.connectMode) {
-				game.broadcastAll(function () {
+				game.broadcastAll(() => {
 					_status.noclearcountdown = true;
 				});
 			}
-			event.given_map = {};
-			event.num = 0;
-			"step 3";
-			if (event.cardsx.length > 1) {
-				player.chooseCardButton("兴乱：请选择要分配的牌", true, event.cardsx, [1, Math.min(3, event.cardsx.length)]).set("ai", function (button) {
-					if (ui.selected.buttons.length == 0) {
-						return get.buttonValue(button);
-					}
-					return 0;
-				});
-			} else if (event.cardsx.length == 1) {
-				event._result = { links: event.cardsx.slice(0), bool: true };
-			} else {
-				event.goto(6);
-			}
-			"step 4";
-			if (result.bool) {
-				var cards = result.links;
-				event.togive = cards.slice(0);
-				player
-					.chooseTarget("选择获得" + get.translation(cards) + "的角色", event.cardsx.length == 1, (card, player, target) => {
-						var map = _status.event.getParent().given_map;
-						var togive = _status.event.getParent().togive;
-						return (map[target.playerid] || []).length + togive.length <= 3;
-					})
-					.set("ai", function (target) {
-						let targets = _status.event.targets,
-							att = get.attitude(_status.event.player, target);
-						if (targets.length) {
-							if (targets.includes(target)) {
-								return Math.max(1, att * _status.event.value);
+			const givenMap = {};
+			let num = 0;
+			while (cardsToGive.length) {
+				let cardResult;
+				if (cardsToGive.length === 1) {
+					cardResult = { links: cardsToGive.slice(0), bool: true };
+				} else {
+					cardResult = await player
+						.chooseCardButton({
+							prompt: "兴乱：请选择要分配的牌",
+							forced: true,
+							cards: cardsToGive,
+							select: [1, Math.min(3, cardsToGive.length)],
+							ai: button => (ui.selected.buttons.length === 0 ? get.buttonValue(button) : 0),
+						})
+						.forResult();
+				}
+				if (!cardResult.bool) {
+					continue;
+				}
+				const selectedCards = cardResult.links;
+				const targetResult = await player
+					.chooseTarget({
+						prompt: `选择获得${get.translation(selectedCards)}的角色`,
+						forced: cardsToGive.length === 1,
+						filterTarget: (card, player, target) => (givenMap[target.playerid] || []).length + selectedCards.length <= 3,
+						ai: target => {
+							const targets = _status.event.targets;
+							const attitude = get.attitude(_status.event.player, target);
+							if (!targets.length) {
+								return attitude * _status.event.value;
 							}
-							return 0;
-						}
-						return att * _status.event.value;
+							return targets.includes(target) ? Math.max(1, attitude * _status.event.value) : 0;
+						},
 					})
 					.set(
 						"value",
-						cards.reduce((p, c) => p + get.value(c, player, "raw"), 0)
+						selectedCards.reduce((sum, card) => sum + get.value(card, player, "raw"), 0)
 					)
-					.set("more", event.tempCache.more)
+					.set("more", tempCache.more)
 					.set(
 						"targets",
-						(function () {
-							let arr = [],
-								arr2 = [];
-							if (event.tempCache.more && (event.given_map[event.tempCache.more.playerid] || []).length + cards.length <= 3) {
-								return [event.tempCache.more];
+						(() => {
+							const unusedTargets = [];
+							const usedTargets = [];
+							if (tempCache.more && (givenMap[tempCache.more.playerid] || []).length + selectedCards.length <= 3) {
+								return [tempCache.more];
 							}
-							for (let cur of event.tempCache.tars) {
-								let map = (event.given_map[cur.playerid] || []).length;
-								if (map + cards.length <= 3) {
-									if (map) {
-										arr2.push(cur);
-									} else {
-										arr.push(cur);
-									}
+							for (const current of tempCache.tars) {
+								const givenCount = (givenMap[current.playerid] || []).length;
+								if (givenCount + selectedCards.length > 3) {
+									continue;
+								}
+								if (givenCount) {
+									usedTargets.push(current);
+								} else {
+									unusedTargets.push(current);
 								}
 							}
-							if (arr.length) {
-								return arr;
-							}
-							return arr2;
+							return unusedTargets.length ? unusedTargets : usedTargets;
 						})()
-					);
-			}
-			"step 5";
-			if (result.bool) {
-				event.cardsx.removeArray(event.togive);
-				if (result.targets.length) {
-					var id = result.targets[0].playerid,
-						map = event.given_map;
-					if (!map[id]) {
-						map[id] = [];
+					)
+					.forResult();
+				if (!targetResult.bool) {
+					continue;
+				}
+				cardsToGive.removeArray(selectedCards);
+				if (targetResult.targets.length) {
+					const id = targetResult.targets[0].playerid;
+					if (!givenMap[id]) {
+						givenMap[id] = [];
 					}
-					map[id].addArray(event.togive);
+					givenMap[id].addArray(selectedCards);
 				}
-				if (event.cardsx.length > 0) {
-					event.goto(3);
-				}
-			} else {
-				event.goto(3);
 			}
-			"step 6";
 			if (_status.connectMode) {
-				game.broadcastAll(function () {
+				game.broadcastAll(() => {
 					delete _status.noclearcountdown;
 					game.stopCountChoose();
 				});
 			}
-			var list = [];
-			for (var i in event.given_map) {
-				var source = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
-				if (player == source) {
-					event.num += event.given_map[i].length;
+			const gainList = [];
+			for (const [id, givenCards] of Object.entries(givenMap)) {
+				const source = (_status.connectMode ? lib.playerOL : game.playerMap)[id];
+				if (player === source) {
+					num += givenCards.length;
 				}
 				player.line(source, "green");
-				game.log(source, "获得了", event.given_map[i]);
-				list.push([source, event.given_map[i]]);
+				game.log(source, "获得了", givenCards);
+				gainList.push([source, givenCards]);
 			}
-			game.loseAsync({
-				gain_list: list,
+			await game.loseAsync({
+				gain_list: gainList,
 				giver: player,
 				animate: "gain2",
 			}).setContent("gaincardMultiple");
-			"step 7";
-			var list = [];
-			for (var i in event.given_map) {
-				var source = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
-				if (event.given_map[i].length >= num) {
-					list.push(source);
+			const loseHpList = [];
+			for (const [id, givenCards] of Object.entries(givenMap)) {
+				const source = (_status.connectMode ? lib.playerOL : game.playerMap)[id];
+				if (givenCards.length >= num) {
+					loseHpList.push(source);
 				}
 			}
-			list.sortBySeat();
-			player.line(list);
-			for (var i of list) {
-				i.loseHp();
+			loseHpList.sortBySeat();
+			player.line(loseHpList);
+			for (const target of loseHpList) {
+				await target.loseHp();
 			}
 		},
 	},
