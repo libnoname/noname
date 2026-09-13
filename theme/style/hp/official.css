@@ -1,0 +1,69 @@
+.hp:not(.text):not(.actcount):not(.treasure)[data-condition="high"] > div:not(.lost):not(.shield) {
+	background: url("image/official1.png");
+	box-shadow: none;
+	border: none;
+	background-size: 100% 100%;
+	transform: scale(1.4);
+	border-radius: 0px;
+}
+.hp:not(.text):not(.actcount):not(.treasure)[data-condition="mid"] > div:not(.lost):not(.shield) {
+	background: url("image/official2.png");
+	box-shadow: none;
+	border: none;
+	background-size: 100% 100%;
+	transform: scale(1.4);
+	border-radius: 0px;
+}
+.hp:not(.text):not(.actcount):not(.treasure)[data-condition="low"] > div:not(.lost):not(.shield) {
+	background: url("image/official3.png");
+	box-shadow: none;
+	border: none;
+	background-size: 100% 100%;
+	transform: scale(1.4);
+	border-radius: 0px;
+}
+.hp:not(.text):not(.actcount):not(.treasure) > .lost {
+	background: url("image/official4.png");
+	box-shadow: none;
+	border: none;
+	background-size: 100% 100%;
+	transform: scale(1.4);
+	border-radius: 0px;
+}
+.hp:not(.text):not(.actcount):not(.treasure) > .shield {
+	background: url("image/shield.png");
+	box-shadow: none;
+	border: none;
+	background-size: 100% 100%;
+	transform: scale(1.4);
+	border-radius: 0px;
+}
+
+#arena.oldlayout
+	.player
+	.hp:not(.text):not(.actcount):not(.treasure)[data-condition="high"]
+	> div:not(.lost):not(.shield) {
+	transform: scale(1.6);
+}
+#arena.oldlayout
+	.player
+	.hp:not(.text):not(.actcount):not(.treasure)[data-condition="mid"]
+	> div:not(.lost):not(.shield) {
+	transform: scale(1.6);
+}
+#arena.oldlayout
+	.player
+	.hp:not(.text):not(.actcount):not(.treasure)[data-condition="low"]
+	> div:not(.lost):not(.shield) {
+	transform: scale(1.6);
+}
+#arena.oldlayout .player .hp:not(.text):not(.actcount):not(.treasure) > .lost {
+	transform: scale(1.6);
+}
+#arena.oldlayout .player .hp:not(.text):not(.actcount):not(.treasure) > .shield {
+	transform: scale(1.6);
+}
+
+.button.newstyle > .hp > .text {
+	margin-left: 5px;
+}
