@@ -33703,17 +33703,19 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "metal",
 		check(card) {
-			if (get.type(card) != "basic" && get.type(card) != "trick") {
+			if (get.type(card) !== "basic" && get.type(card) !== "trick") {
 				return 0;
 			}
 			return get.value(card) - 7.5;
 		},
-		content() {
-			"step 0";
-			var card = cards[0];
+		async content(event, trigger, player) {
+			const card = event.cards[0];
 			player.awakenSkill(event.name);
-			var cardx = game.createCard2(card.name, card.suit, card.number, card.nature);
-			player.gain(cardx).gaintag.add("dczhizhe");
+			const cardx = game.createCard2(card.name, card.suit, card.number, card.nature);
+			await player.gain({
+				cards: [cardx],
+				gaintag: ["dczhizhe"],
+			});
 			player.addSkill("dczhizhe_effect");
 		},
 		ai: {
@@ -33743,9 +33745,7 @@ const skills = {
 							player._dczhizhe_mod = true;
 							if (
 								player.hp < 3 &&
-								player.needsToDiscard(0, (i, player) => {
-									return !player.canIgnoreHandcard(i) && get.useful(i) > 6;
-								})
+									player.needsToDiscard(0, (i, player) => !player.canIgnoreHandcard(i) && get.useful(i) > 6)
 							) {
 								return num * 1.5;
 							}
@@ -33758,44 +33758,43 @@ const skills = {
 				charlotte: true,
 				forced: true,
 				filter(event, player) {
-					return player.hasHistory("lose", function (evt) {
-						if ((evt.relatedEvent || evt.getParent()) != event) {
-							return false;
-						}
-						for (var i in evt.gaintag_map) {
-							if (evt.gaintag_map[i].includes("dczhizhe")) {
-								if (
-									event.cards.some(card => {
-										return get.position(card, true) == "o" && card.cardid == i;
-									})
-								) {
+						return player.hasHistory("lose", evt => {
+							if ((evt.relatedEvent || evt.getParent()) !== event) {
+								return false;
+							}
+							for (const i in evt.gaintag_map) {
+								if (!evt.gaintag_map[i].includes("dczhizhe")) {
+									continue;
+								}
+								if (event.cards.some(card => get.position(card, true) === "o" && card.cardid === i)) {
 									return true;
 								}
 							}
-						}
 						return false;
 					});
 				},
-				content() {
-					"step 0";
-					var cards = [];
-					player.getHistory("lose", function (evt) {
-						if ((evt.relatedEvent || evt.getParent()) != trigger) {
-							return false;
-						}
-						for (var i in evt.gaintag_map) {
-							if (evt.gaintag_map[i].includes("dczhizhe")) {
-								var cardsx = trigger.cards.filter(card => {
-									return get.position(card, true) == "o" && card.cardid == i;
-								});
+					async content(event, trigger, player) {
+						const cards = [];
+						player.getHistory("lose", evt => {
+							if ((evt.relatedEvent || evt.getParent()) !== trigger) {
+								return false;
+							}
+							for (const i in evt.gaintag_map) {
+								if (!evt.gaintag_map[i].includes("dczhizhe")) {
+									continue;
+								}
+								const cardsx = trigger.cards.filter(card => get.position(card, true) === "o" && card.cardid === i);
 								if (cardsx.length) {
 									cards.addArray(cardsx);
 								}
 							}
-						}
-					});
-					if (cards.length) {
-						player.gain(cards, "gain2").gaintag.addArray(["dczhizhe", "dczhizhe_clear"]);
+						});
+						if (cards.length) {
+							await player.gain({
+								cards,
+								animate: "gain2",
+								gaintag: ["dczhizhe", "dczhizhe_clear"],
+							});
 						player.addTempSkill("dczhizhe_clear");
 					}
 				},
@@ -33807,42 +33806,42 @@ const skills = {
 				},
 				mod: {
 					cardEnabled2(card, player) {
-						var cards = [];
+							const cards = [];
 						if (card.cards) {
 							cards.addArray(cards);
 						}
-						if (get.itemtype(card) == "card") {
+							if (get.itemtype(card) === "card") {
 							cards.push(card);
 						}
-						for (var cardx of cards) {
+							for (const cardx of cards) {
 							if (cardx.hasGaintag("dczhizhe_clear")) {
 								return false;
 							}
 						}
 					},
 					cardRespondable(card, player) {
-						var cards = [];
+							const cards = [];
 						if (card.cards) {
 							cards.addArray(cards);
 						}
-						if (get.itemtype(card) == "card") {
+							if (get.itemtype(card) === "card") {
 							cards.push(card);
 						}
-						for (var cardx of cards) {
+							for (const cardx of cards) {
 							if (cardx.hasGaintag("dczhizhe_clear")) {
 								return false;
 							}
 						}
 					},
 					cardSavable(card, player) {
-						var cards = [];
+							const cards = [];
 						if (card.cards) {
 							cards.addArray(cards);
 						}
-						if (get.itemtype(card) == "card") {
+							if (get.itemtype(card) === "card") {
 							cards.push(card);
 						}
-						for (var cardx of cards) {
+							for (const cardx of cards) {
 							if (cardx.hasGaintag("dczhizhe_clear")) {
 								return false;
 							}
