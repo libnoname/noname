@@ -3589,10 +3589,13 @@ const skills = {
 					prompt2: "令其跳过下一个摸牌阶段并令你摸两张牌，或受到你造成的1点伤害",
 					position: "he",
 					ai(card) {
+						const { player, target } = get.event();
+						if (get.attitude(player, target) > 0) return 0;
 						return 6 - get.value(card);
 					},
 					chooseonly: true,
 				})
+				.set("target", trigger.player)
 				.forResult();
 		},
 		logTarget: "player",
