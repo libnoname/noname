@@ -18262,126 +18262,118 @@ const skills = {
 		filter(event, player) {
 			return player.countCards("he") > 1 && game.countPlayer() > 2;
 		},
-		direct: true,
-		content() {
-			"step 0";
-			var ai2 = function (target) {
-				var player = _status.event.player;
+		async cost(event, trigger, player) {
+			const targetAi = target => {
 				if (get.attitude(player, target) <= 0) {
 					return 0;
 				}
-				var list = ["sha", "juedou"];
-				var num = Math.max.apply(
-					Math,
-					list.map(function (i) {
-						return target.getUseValue({ name: i, isCard: true }, false);
-					})
-				);
+				const cardNames = ["sha", "juedou"];
+				let num = Math.max(...cardNames.map(name => target.getUseValue({ name, isCard: true }, false)));
 				if (target.hasSkillTag("nogain")) {
 					num /= 4;
 				}
 				return num;
 			};
-			player.chooseCardTarget({
-				prompt: get.prompt2("twxuanhuo"),
-				filterCard: true,
-				selectCard: 2,
-				position: "he",
-				filterTarget: lib.filter.notMe,
-				goon: game.hasPlayer(function (current) {
-					return current != player && ai2(player, current) > 0;
-				}),
-				ai1(card) {
-					if (!_status.event.goon) {
-						return 0;
-					}
-					return 7 - get.value(card);
-				},
-				ai2: ai2,
-			});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("twxuanhuo", target);
-				player.give(result.cards, target);
-			} else {
-				event.finish();
-			}
-			"step 2";
-			if (
-				game.hasPlayer(function (current) {
-					return current != player && current != target;
+			const shouldGive = game.hasPlayer(current => current !== player && targetAi(player, current) > 0);
+			event.result = await player
+				.chooseCardTarget({
+					prompt: get.prompt2(event.skill),
+					filterCard: true,
+					selectCard: 2,
+					position: "he",
+					filterTarget: lib.filter.notMe,
+					ai1: card => {
+						if (!shouldGive) {
+							return 0;
+						}
+						return 7 - get.value(card);
+					},
+					ai2: targetAi,
 				})
-			) {
-				player
-					.chooseTarget(
-						function (card, player, target) {
-							return target != player && target != _status.event.target;
-						},
-						"选择" + get.translation(target) + "使用【杀】或【决斗】的目标",
-						true
-					)
-					.set("target", target)
-					.set("ai", function (target) {
-						var evt = _status.event;
-						var list = ["sha", "juedou"];
-						return Math.max.apply(
-							Math,
-							list.map(function (i) {
-								var card = { name: i, isCard: true };
-								if (!evt.target.canUse(card, target, false)) {
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			await player.give(event.cards, target);
+			if (!game.hasPlayer(current => current !== player && current !== target)) {
+				return;
+			}
+			const secondTargetResult = await player
+				.chooseTarget({
+					prompt: `选择${get.translation(target)}使用【杀】或【决斗】的目标`,
+					forced: true,
+					filterTarget: (card, player, current) => current !== player && current !== target,
+					ai: current => {
+						const cardNames = ["sha", "juedou"];
+						return Math.max(
+							...cardNames.map(name => {
+								const card = { name, isCard: true };
+								if (!target.canUse(card, current, false)) {
 									return 0;
 								}
-								return get.effect(target, card, evt.target, evt.player);
+								return get.effect(current, card, target, player);
 							})
 						);
-					});
-			} else {
-				event.finish();
-			}
-			"step 3";
-			var target2 = result.targets[0];
-			event.target2 = target2;
+					},
+				})
+				.forResult();
+			const target2 = secondTargetResult.targets[0];
 			player.line(target2);
-			var vcards = [];
+			const vcards = [];
 			if (target.canUse({ name: "sha", isCard: true }, target2, false)) {
 				vcards.push(["基本", "", "sha"]);
 			}
 			if (target.canUse({ name: "juedou", isCard: true }, target2, false)) {
 				vcards.push(["锦囊", "", "juedou"]);
 			}
+			if (!vcards.length && !target.hasCards("h")) {
+				return;
+			}
+
+			let choiceIndex;
 			if (!vcards.length) {
-				if (!target.countCards("h")) {
-					event.finish();
-				} else {
-					event._result = { index: 1 };
-				}
-			} else if (!target.countCards("h")) {
-				event.vcards = vcards;
-				event._result = { index: 0 };
+				choiceIndex = 1;
+			} else if (!target.hasCards("h")) {
+				choiceIndex = 0;
 			} else {
-				event.vcards = vcards;
-				target.chooseControl().set("choiceList", ["视为对" + get.translation(target2) + "使用一张【杀】或【决斗】", "令" + get.translation(player) + "获得你的两张牌"]);
+				const choiceResult = await target
+					.chooseControl({
+						choiceList: [`视为对${get.translation(target2)}使用一张【杀】或【决斗】`, `令${get.translation(player)}获得你的两张牌`],
+					})
+					.forResult();
+				choiceIndex = choiceResult.index;
 			}
-			"step 4";
-			if (result.index == 0) {
-				if (event.vcards.length == 1) {
-					event._result = { links: event.vcards, bool: true };
-				} else {
-					target.chooseButton(["请选择要对" + get.translation(event.target2) + "使用的牌", [event.vcards, "vcard"]], true).set("ai", function (button) {
-						var player = _status.event.player;
-						return get.effect(_status.event.getParent().target2, { name: button.link[2], isCard: true }, player, player);
-					});
-				}
+			if (choiceIndex === 1) {
+				await player.gainPlayerCard({
+					target,
+					selectButton: 2,
+					position: "he",
+					forced: true,
+				});
+				return;
+			}
+
+			let selectedVCard;
+			if (vcards.length === 1) {
+				selectedVCard = vcards[0];
 			} else {
-				player.gainPlayerCard(target, 2, "he", true);
-				event.finish();
+				const buttonResult = await target
+					.chooseButton({
+						createDialog: [`请选择要对${get.translation(target2)}使用的牌`, [vcards, "vcard"]],
+						forced: true,
+						ai: button => get.effect(target2, { name: button.link[2], isCard: true }, target, target),
+					})
+					.forResult();
+				if (!buttonResult.bool) {
+					return;
+				}
+				selectedVCard = buttonResult.links[0];
 			}
-			"step 5";
-			if (result.bool) {
-				target.useCard({ name: result.links[0][2], isCard: true }, false, event.target2);
-			}
+			await target.useCard({
+				card: { name: selectedVCard[2], isCard: true },
+				targets: [target2],
+				addCount: false,
+			});
 		},
 		ai: {
 			expose: 0.15,
