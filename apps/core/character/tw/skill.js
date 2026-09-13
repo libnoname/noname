@@ -29027,13 +29027,14 @@ const skills = {
 			backup(links, player) {
 				return {
 					audio: "twlingbao",
+					cards: links,
 					filterCard(card) {
-						return links.includes(card);
+						return get.info("twlingbao_backup").cards.includes(card);
 					},
 					selectCard: -1,
 					position: "x",
 					async content(event, trigger, player) {
-						const cards = links,
+						const cards = get.info("twlingbao_backup").cards,
 							colors = cards.map(card => get.color(card)).unique();
 						await player.draw(2);
 						if (colors.length == 1 && colors[0] == "red") {
