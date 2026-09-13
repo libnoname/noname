@@ -31735,7 +31735,7 @@ const skills = {
 				for (const target of players) {
 					for (const evt of target.iterHistory("sourceDamage")) {
 						num += evt.num;
-					};
+					}
 				}
 			}
 			await player.draw(num);
@@ -33510,7 +33510,6 @@ const skills = {
 							let wuxie = countWuxie(target);
 							for (let i = Math.min(cards.length, judges.length) - 1; i >= 0; i--) {
 								const j = judges[i];
-								const cardj = j.viewAs ? { name: j.viewAs, cards: j.cards || [j] } : j;
 								if (wuxie > 0 && get.effect(target, j, target, target) < 0) {
 									wuxie--;
 									continue;
