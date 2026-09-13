@@ -37701,6 +37701,7 @@ const skills = {
 			return !player.getStorage("dcxiangmian").includes(target) && player !== target;
 		},
 		async content(event, trigger, player) {
+			const target = event.target;
 			const result = await target
 				.judge({
 					judge: card => -2 / Math.sqrt(get.number(card, false)),
