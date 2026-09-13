@@ -40776,18 +40776,15 @@ const skills = {
 		},
 		autodelay: true,
 		async content(event, trigger, player) {
-			await player
-				.chooseToDiscard(true, "he", card => {
-					const { player, usefulCards } = get.event();
-					if (usefulCards.includes(card)) {
-						return 0.1;
-					}
+			await player.chooseToDiscard({
+				forced: true,
+				position: "he",
+				ai(card) {
+					const player = get.player();
+					if (player.hasUseTarget(card)) return 0.1;
 					return 20 - get.value(card);
-				})
-				.set(
-					"usefulCards",
-					player.getDiscardableCards(player, "h", card => player.getUseValue(card))
-				);
+				},
+			});
 		},
 	},
 	rechouhai: {
