@@ -23260,8 +23260,8 @@ const skills = {
 		trigger: { player: "phaseUseBegin" },
 		init(player) {
 			if (player.isPhaseUsing()) {
-				var hs = player.getCards("h");
-				player.getHistory("gain", function (evt) {
+				const hs = player.getCards("h");
+				player.getHistory("gain", evt => {
 					hs.removeArray(evt.cards);
 				});
 				if (hs.length) {
@@ -23270,69 +23270,61 @@ const skills = {
 			}
 		},
 		filter(event, player) {
-			return player.countCards("he");
+			return player.hasCards("he");
 		},
 		forced: true,
 		group: "twzaoli_mark",
-		content() {
-			"step 0";
-			if (player.countCards("h", card => get.type(card) != "equip")) {
-				player
-					.chooseCard(
-						"h",
-						[1, Infinity],
-						true,
-						"躁厉：请选择至少一张非装备手牌，你弃置这些牌和所有装备牌",
-						(card, player) => {
-							return get.type(card) != "equip" && lib.filter.cardDiscardable(card, player, "twzaoli");
+		async content(event, trigger, player) {
+			let chosenCards = [];
+			if (player.hasCards("h", card => get.type(card) !== "equip")) {
+				const result = await player
+					.chooseCard({
+						position: "h",
+						selectCard: [1, Infinity],
+						forced: true,
+						prompt: "躁厉：请选择至少一张非装备手牌，你弃置这些牌和所有装备牌",
+						filterCard: (card, player) => get.type(card) !== "equip" && lib.filter.cardDiscardable(card, player, "twzaoli"),
+						allowChooseAll: true,
+						ai: card => {
+							if (!card.hasGaintag("twzaoli_temp")) {
+								return 5 - get.value(card);
+							}
+							return 1;
 						},
-						"allowChooseAll"
-					)
-					.set("ai", function (card) {
-						if (!card.hasGaintag("twzaoli_temp")) {
-							return 5 - get.value(card);
-						}
-						return 1;
-					});
+					})
+					.forResult();
+				chosenCards = result.cards || [];
 			}
-			"step 1";
-			var cards = player.getCards("he", { type: "equip" });
-			var subtype = [];
-			event.subtype = subtype.addArray(cards.map(card => get.subtype(card)));
-			cards.addArray(result.cards || []);
+			const cards = player.getCards("he", { type: "equip" });
+			const subtypes = [];
+			event.subtype = subtypes.addArray(cards.map(card => get.subtype(card)));
+			cards.addArray(chosenCards);
 			if (cards.length) {
-				player.discard(cards);
+				await player.discard({ cards });
 			}
 			event.cards = cards;
-			"step 2";
-			player.draw(cards.length);
-			"step 3";
-			var num = 0;
-			if (event.subtype.length) {
-				for (var i of event.subtype) {
-					var card = get.cardPile2(function (card) {
-						return get.type(card) == "equip" && get.subtype(card) == i;
-					});
-					if (card) {
-						num++;
-						player.$gain2(card);
-						game.delayx();
-						player.equip(card);
-					}
+			await player.draw(cards.length);
+			let num = 0;
+			for (const subtype of subtypes) {
+				const card = get.cardPile2(card => get.type(card) === "equip" && get.subtype(card) === subtype);
+				if (card) {
+					num++;
+					player.$gain2(card);
+					await game.delayx();
+					await player.equip(card);
 				}
 			}
 			if (num <= 2) {
-				event.finish();
+				return;
 			}
-			"step 4";
-			player.loseHp();
+			await player.loseHp();
 		},
 		onremove(player) {
 			player.removeGaintag("twzaoli");
 		},
 		mod: {
 			cardEnabled2(card, player) {
-				if (player.isPhaseUsing() && get.itemtype(card) == "card" && card.hasGaintag("twzaoli")) {
+				if (player.isPhaseUsing() && get.itemtype(card) === "card" && card.hasGaintag("twzaoli")) {
 					return false;
 				}
 			},
@@ -23341,14 +23333,14 @@ const skills = {
 			mark: {
 				trigger: { player: ["phaseUseBegin", "phaseUseAfter", "phaseAfter"] },
 				filter(event, player) {
-					return player.countCards("h");
+					return player.hasCards("h");
 				},
 				direct: true,
 				firstDo: true,
-				content() {
-					if (event.triggername == "phaseUseBegin") {
-						var hs = player.getCards("h");
-						player.getHistory("gain", function (evt) {
+				async content(event, trigger, player) {
+					if (event.triggername === "phaseUseBegin") {
+						const hs = player.getCards("h");
+						player.getHistory("gain", evt => {
 							hs.removeArray(evt.cards);
 						});
 						if (hs.length) {
