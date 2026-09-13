@@ -11158,7 +11158,7 @@ export default () => {
 			boss_qiangzheng_info: "锁定技，结束阶段，你获得每个敌方角色的一张手牌。",
 			boss_baolin: "暴凌",
 			guizhen: "归真",
-			guizhen_info: "每当你失去最后一张手牌，你可以所有敌人失去全部手牌，没有手牌的角色失去1点体力（不触发技能）。",
+			guizhen_info: "每当你失去最后一张手牌，你可以令所有敌人失去全部手牌，没有手牌的角色失去1点体力（不触发技能）。",
 			boss_shengshou: "圣手",
 			boss_shengshou_info: "每当你使用一张牌，你可以进行一次判定，若为红色，你回复1点体力。",
 			wuqin: "五禽戏",
