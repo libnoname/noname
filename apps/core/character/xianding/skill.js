@@ -42006,41 +42006,37 @@ const skills = {
 		limited: true,
 		enable: "chooseToUse",
 		filter(event, player) {
-			if (event.type != "dying") {
+			if (event.type !== "dying") {
 				return false;
 			}
-			if (player != event.dying) {
+			if (player !== event.dying) {
 				return false;
 			}
 			return true;
 		},
 		async content(event, trigger, player) {
-			"step 0";
 			player.awakenSkill(event.name);
 			if (!_status.characterlist) {
 				game.initCharacterList();
 			}
-			if (_status.characterlist.includes("xushi")) {
-				if (player.name2 && get.character(player.name2)[3].includes("syxiongyi")) {
-					await player.reinitCharacter(player.name2, "xushi");
-				} else {
-					await player.reinitCharacter(player.name1, "xushi");
-				}
-				if (player.hp < 3) {
-					await player.recover(3 - player.hp);
-				}
-			} else {
+			if (!_status.characterlist.includes("xushi")) {
 				await player.addSkills("olhunzi");
 				if (player.hp < 1) {
 					await player.recover(1 - player.hp);
 				}
+				return;
+			}
+			const name = player.name2 && get.character(player.name2)[3].includes("syxiongyi") ? player.name2 : player.name1;
+			await player.reinitCharacter(name, "xushi");
+			if (player.hp < 3) {
+				await player.recover(3 - player.hp);
 			}
 		},
 		ai: {
 			order: 1,
 			save: true,
 			skillTagFilter(player, arg, target) {
-				return player == target;
+				return player === target;
 			},
 			result: {
 				player: 10,
