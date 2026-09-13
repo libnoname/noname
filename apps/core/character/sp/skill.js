@@ -107,7 +107,7 @@ const skills = {
 							[
 								[
 									["exchange", "其观看你的手牌并获得两张与展示牌花色不同的牌，然后你获得展示牌"],
-									["loseHp", "失去1点体力，其可重新展示牌并选择其他角色"],
+									["loseHp", "失去1点体力，其可沿用展示牌重新选择其他角色"],
 								],
 								"textbutton",
 							],
@@ -152,20 +152,13 @@ const skills = {
 				}
 				await target.loseHp();
 				if (!player.isIn() || !lib.skill.zexing.filter(event, player)) break;
+				if (get.owner(shown) !== player || !["h", "e"].includes(get.position(shown))) break;
+				// 选项二沿用最初展示的牌，仅重新选择目标。
 				const next = await player
-					.chooseCardTarget({
-						prompt: "择行：可重新展示一张牌并选择一名其他角色",
-						position: "he",
-						selectCard: 1,
-						selectTarget: 1,
-						filterCard: true,
-						filterTarget: lib.skill.zexing.filterTarget,
-						ai1: card => 6 - get.value(card),
-						ai2: target => -get.attitude(get.player(), target),
-					})
+					.chooseTarget("择行：沿用展示牌，可重新选择一名其他角色", lib.skill.zexing.filterTarget)
+					.set("ai", target => -get.attitude(get.player(), target))
 					.forResult();
 				if (!next.bool) break;
-				shown = next.cards[0];
 				target = next.targets[0];
 			}
 		},
