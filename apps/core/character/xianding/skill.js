@@ -38064,7 +38064,7 @@ const skills = {
 						break;
 					}
 					case 1: {
-						if (!game.hasPlayer(target => target.isDamaged())) {
+						if (!game.hasPlayer(target => target !== player && target.isDamaged())) {
 							break;
 						}
 						const result = await player
