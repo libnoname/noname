@@ -15775,12 +15775,14 @@ const skills = {
 		audio: "qirang",
 		trigger: { player: "equipEnd" },
 		frequent: true,
-		content() {
-			var card = get.cardPile(function (card) {
-				return get.type2(card) == "trick";
-			});
+		async content(event, trigger, player) {
+			const card = get.cardPile(card => get.type2(card) === "trick");
 			if (card) {
-				player.gain(card, "gain2").gaintag.add("twqirang");
+				await player.gain({
+					cards: [card],
+					animate: "gain2",
+					gaintag: ["twqirang"],
+				});
 				player.addTempSkill("twqirang_use");
 				player.addTempSkill("twqirang_clear", ["phaseZhunbeiAfter", "phaseDrawAfter", "phaseUseAfter", "phaseDiscardAfter", "phaseJieshuAfter", "phaseAfter"]);
 			}
@@ -15788,7 +15790,7 @@ const skills = {
 		ai: {
 			effect: {
 				target(card, player, target, current) {
-					if (get.type(card) == "equip" && !get.cardtag(card, "gifts")) {
+					if (get.type(card) === "equip" && !get.cardtag(card, "gifts")) {
 						return [1, 3];
 					}
 				},
@@ -15806,80 +15808,51 @@ const skills = {
 				trigger: { player: "useCard2" },
 				forced: true,
 				filter(event, player) {
-					if (get.type2(event.card) != "trick") {
+					if (get.type2(event.card) !== "trick") {
 						return false;
 					}
-					if (
-						!player.hasHistory("lose", function (evt) {
-							if ((evt.relatedEvent || evt.getParent()) != event) {
-								return false;
-							}
-							for (var i in evt.gaintag_map) {
-								if (evt.gaintag_map[i].includes("twqirang")) {
-									return true;
-								}
-							}
+					return player.hasHistory("lose", evt => {
+						if ((evt.relatedEvent || evt.getParent()) !== event) {
 							return false;
-						})
-					) {
-						return false;
-					}
-					return true;
+						}
+						return Object.values(evt.gaintag_map).some(gaintags => gaintags.includes("twqirang"));
+					});
 				},
-				content() {
-					"step 0";
+				async content(event, trigger, player) {
 					game.log(trigger.card, "不可被响应");
 					trigger.directHit.addArray(game.players);
-					var info = get.info(trigger.card);
-					if (info.allowMultiple == false) {
-						event.finish();
-					} else if (trigger.targets) {
-						if (
-							!info.multitarget &&
-							!game.hasPlayer(function (current) {
-								return !trigger.targets.includes(current) && lib.filter.targetEnabled2(trigger.card, player, current);
-							})
-						) {
-							event.finish();
-						}
-					} else {
-						event.finish();
+					const info = get.info(trigger.card);
+					if (info.allowMultiple === false || !trigger.targets) {
+						return;
 					}
-					"step 1";
-					var prompt2 = "为" + get.translation(trigger.card) + "增加或减少一个目标";
-					player
-						.chooseTarget(get.prompt("twqirang"), function (card, player, target) {
-							var player = _status.event.player;
-							if (_status.event.targets.includes(target)) {
-								return true;
-							}
-							return lib.filter.targetEnabled2(_status.event.card, player, target);
-						})
-						.set("prompt2", prompt2)
-						.set("ai", function (target) {
-							var trigger = _status.event.getTrigger();
-							var player = _status.event.player;
-							return get.effect(target, trigger.card, player, player) * (_status.event.targets.includes(target) ? -1 : 1);
-						})
-						.set("targets", trigger.targets)
-						.set("card", trigger.card);
-					"step 2";
-					if (result.bool) {
-						if (!event.isMine() && !event.isOnline()) {
-							game.delayx();
-						}
-						event.targets = result.targets;
-					} else {
-						event.finish();
+					if (!info.multitarget && !game.hasPlayer(current => !trigger.targets.includes(current) && lib.filter.targetEnabled2(trigger.card, player, current))) {
+						return;
 					}
-					"step 3";
-					if (event.targets) {
-						player.line(event.targets);
-						if (trigger.targets.includes(event.targets[0])) {
-							trigger.targets.removeArray(event.targets);
-						} else {
-							trigger.targets.addArray(event.targets);
-						}
+					const targetResult = await player
+						.chooseTarget({
+							prompt: get.prompt("twqirang"),
+							prompt2: `为${get.translation(trigger.card)}增加或减少一个目标`,
+							filterTarget: (card, player, target) => {
+								if (trigger.targets.includes(target)) {
+									return true;
+								}
+								return lib.filter.targetEnabled2(trigger.card, player, target);
+							},
+							ai: target => get.effect(target, trigger.card, player, player) * (trigger.targets.includes(target) ? -1 : 1),
+						})
+						.forResult();
+					if (!targetResult.bool) {
+						return;
+					}
+					if (!event.isMine() && !event.isOnline()) {
+						await game.delayx();
+					}
+					event.targets = targetResult.targets;
+					player.line(event.targets);
+					if (trigger.targets.includes(event.targets[0])) {
+						trigger.targets.removeArray(event.targets);
+					} else {
+						trigger.targets.addArray(event.targets);
 					}
 				},
 				mod: {
@@ -15887,7 +15860,7 @@ const skills = {
 						if (!card.cards) {
 							return;
 						}
-						for (var i of card.cards) {
+						for (const i of card.cards) {
 							if (i.hasGaintag("twqirang")) {
 								return true;
 							}
