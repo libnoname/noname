@@ -40147,6 +40147,9 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			await player.loseHp();
+			if (player.isDead() || !player.isIn()) {
+				return;
+			}
 			const target = trigger.player;
 			const num = player.getDamagedHp();
 			if (num > 0) {
