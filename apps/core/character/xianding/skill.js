@@ -32954,12 +32954,12 @@ const skills = {
 		animationColor: "orange",
 		filterTarget: true,
 		derivation: "dcyongjue",
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
+			const { target } = event;
 			player.awakenSkill(event.name);
 			target.addSkills("dcyongjue");
-			if (target != player) {
-				player.draw(2);
+			if (target !== player) {
+				await player.draw(2);
 			}
 		},
 		ai: {
