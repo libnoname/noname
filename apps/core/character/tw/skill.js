@@ -19496,65 +19496,44 @@ const skills = {
 		trigger: { player: "phaseBegin" },
 		direct: true,
 		filter(event, player) {
-			return (
-				!player.hasSkill("twyaohu_round") &&
-				game.hasPlayer(function (current) {
-					return current.group && current.group != "unknown";
-				})
-			);
+			return !player.hasSkill("twyaohu_round") && game.hasPlayer(current => current.group && current.group !== "unknown");
 		},
-		content() {
-			"step 0";
-			var list = [];
-			game.countPlayer(function (current) {
-				if (current.group && current.group != "unknown") {
+		async content(event, trigger, player) {
+			const list = [];
+			game.countPlayer(current => {
+				if (current.group && current.group !== "unknown") {
 					list.add(current.group);
 				}
 			});
-			list.sort(function (a, b) {
-				return lib.group.indexOf(a) - lib.group.indexOf(b);
-			});
+			list.sort((a, b) => lib.group.indexOf(a) - lib.group.indexOf(b));
 			if (!player.hasSkill("twyaohu")) {
 				list.push("cancel2");
 			}
-			player
-				.chooseControl(list)
-				.set("prompt", "邀虎：请选择一个势力")
-				.set("ai", function () {
-					return _status.event.choice;
+			const getn = group =>
+				game.countPlayer(current => {
+					if (current.group !== group) {
+						return false;
+					}
+					if (player === current) {
+						return 2;
+					}
+					if (get.attitude(current, player) > 0) {
+						return 1;
+					}
+					return 1.3;
+				});
+			const choice = [...list].sort((a, b) => getn(b) - getn(a))[0];
+			const result = await player
+				.chooseControl({
+					controls: list,
+					prompt: "邀虎：请选择一个势力",
+					choice: list.indexOf(choice),
+					ai: () => _status.event.choice,
 				})
-				.set(
-					"choice",
-					(function () {
-						var getn = function (group) {
-							return game.countPlayer(function (current) {
-								if (current.group != group) {
-									return false;
-								}
-								if (player == current) {
-									return 2;
-								}
-								if (get.attitude(current, player) > 0) {
-									return 1;
-								}
-								return 1.3;
-							});
-						};
-						list.sort(function (a, b) {
-							return getn(b) - getn(a);
-						});
-						return list[0];
-					})()
-				);
-			"step 1";
-			if (result.control != "cancel2") {
-				player.logSkill(
-					"twyaohu",
-					game.filterPlayer(function (current) {
-						return current.group == result.control;
-					})
-				);
-				game.log(player, "选择了", "#y" + get.translation(result.control + 2));
+				.forResult();
+			if (result.control !== "cancel2") {
+				player.logSkill("twyaohu", game.filterPlayer(current => current.group === result.control));
+				game.log(player, "选择了", `#y${get.translation(result.control + 2)}`);
 				player.storage.yaohu = result.control;
 				player.storage.twyaohu = result.control;
 				player.markSkill("twyaohu");
@@ -19574,62 +19553,64 @@ const skills = {
 				forced: true,
 				locked: false,
 				logTarget: "player",
-				content() {
-					"step 0";
-					var target = trigger.player;
+				async content(event, trigger, player) {
+					const target = trigger.player;
 					event.target = target;
-					target.chooseButton(["选择获得一张“生”", player.getExpansions("jutu")], true).set("ai", function (button) {
-						return get.value(button.link, player);
-					});
-					"step 1";
-					if (result.bool) {
-						target.gain(result.links, "give", player);
-					}
-					"step 2";
-					if (
-						game.hasPlayer(function (current) {
-							return current != player && current != target;
+					const buttonResult = await target
+						.chooseButton({
+							createDialog: ["选择获得一张“生”", player.getExpansions("jutu")],
+							forced: true,
+							ai: button => get.value(button.link, player),
 						})
-					) {
-						player
-							.chooseTarget(true, "选择" + get.translation(target) + "使用【杀】的目标", function (card, player, target) {
-								return target != player && target != _status.event.source;
-							})
-							.set("source", target)
-							.set("ai", function (target) {
-								var evt = _status.event;
-								return get.effect(target, { name: "sha" }, evt.source, evt.player);
-							});
-					} else {
-						event._result = { bool: false };
-						event.goto(4);
+						.forResult();
+					if (buttonResult.bool) {
+						await target.gain({
+							cards: buttonResult.links,
+							source: player,
+							animate: "give",
+						});
 					}
-					"step 3";
-					var target2 = result.targets[0];
+					if (!game.hasPlayer(current => current !== player && current !== target)) {
+						player.addTempSkill("twyaohu_effect");
+						return;
+					}
+					const targetResult = await player
+						.chooseTarget({
+							forced: true,
+							prompt: `选择${get.translation(target)}使用【杀】的目标`,
+							filterTarget: (card, player, target) => target !== player && target !== _status.event.source,
+							ai: target => {
+								const evt = _status.event;
+								return get.effect(target, { name: "sha" }, evt.source, evt.player);
+							},
+						})
+						.set("source", target)
+						.forResult();
+					const target2 = targetResult.targets[0];
 					player.line(target2, "green");
-					target
-						.chooseToUse(
-							function (card, player, event) {
-								if (get.name(card) != "sha") {
+					const useResult = await target
+						.chooseToUse({
+							prompt: `对${get.translation(target2)}使用一张杀，否则本回合使用伤害牌指定${get.translation(player)}为目标时须交给${get.translation(player)}两张牌，否则此牌对${get.translation(player)}无效`,
+							filterCard: (card, player, event) => {
+								if (get.name(card) !== "sha") {
 									return false;
 								}
-								return lib.filter.filterCard.apply(this, arguments);
+								return lib.filter.filterCard(card, player, event);
 							},
-							"对" + get.translation(target2) + "使用一张杀，否则本回合使用伤害牌指定" + get.translation(player) + "为目标时须交给" + get.translation(player) + "两张牌，否则此牌对" + get.translation(player) + "无效"
-						)
+							filterTarget: (card, player, target) => {
+								if (target !== _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
+									return false;
+								}
+								return lib.filter.targetEnabled(card, player, target);
+							},
+							complexTarget: true,
+						})
 						.set("targetRequired", true)
 						.set("complexSelect", true)
-						.set("complexTarget", true)
-						.set("filterTarget", function (card, player, target) {
-							if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
-								return false;
-							}
-							return lib.filter.targetEnabled.apply(this, arguments);
-						})
 						.set("sourcex", target2)
-						.set("addCount", false);
-					"step 4";
-					if (!result.bool) {
+						.set("addCount", false)
+						.forResult();
+					if (!useResult.bool) {
 						player.addTempSkill("twyaohu_effect");
 					}
 				},
@@ -19640,28 +19621,29 @@ const skills = {
 				charlotte: true,
 				forced: true,
 				filter(event, player) {
-					return event.player == _status.currentPhase && get.is.damageCard(event.card);
+					return event.player === _status.currentPhase && get.is.damageCard(event.card);
 				},
 				logTarget: "player",
-				content() {
-					"step 0";
-					var hs = trigger.player.getCards("he");
-					if (hs.length < 2) {
-						event._result = { bool: false };
-					} else {
-						trigger.player
-							.chooseCard(2, "交给" + get.translation(player) + "两张牌，否则取消" + get.translation(trigger.card) + "对其的目标", "he")
-							.set("ai", card => {
-								if (_status.event.goon) {
-									return 5 - get.value(card);
-								}
-								return 0;
+				async content(event, trigger, player) {
+					let result = { bool: false };
+					if (trigger.player.countCards("he") >= 2) {
+						result = await trigger.player
+							.chooseCard({
+								selectCard: 2,
+								prompt: `交给${get.translation(player)}两张牌，否则取消${get.translation(trigger.card)}对其的目标`,
+								position: "he",
+								ai: card => {
+									if (_status.event.goon) {
+										return 5 - get.value(card);
+									}
+									return 0;
+								},
 							})
-							.set("goon", get.effect(player, trigger.card, trigger.player, trigger.player) > 0);
+							.set("goon", get.effect(player, trigger.card, trigger.player, trigger.player) > 0)
+							.forResult();
 					}
-					"step 1";
 					if (result.bool) {
-						trigger.player.give(result.cards, player);
+						await trigger.player.give(result.cards, player);
 					} else {
 						trigger.untrigger();
 						trigger.targets.remove(player);
