@@ -20558,165 +20558,118 @@ const skills = {
 		audio: "zhibian",
 		trigger: { player: "phaseUseBegin" },
 		filter(event, player) {
-			return game.hasPlayer(current => current != player && player.canCompare(current));
+			return game.hasPlayer(current => current !== player && player.canCompare(current));
 		},
-		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt("twzhibian"), "与一名其他角色拼点", function (card, player, target) {
-					return target != player && player.canCompare(target);
-				})
-				.set("ai", function (target) {
-					if (!_status.event.goon) {
-						return false;
-					}
-					var att = get.attitude(player, target);
-					if (
-						att < 0 &&
-						(target.countCards("h") > 1 ||
-							target.countCards("e", function (card) {
-								return player.canEquip(card) && get.effect(player, card, target, player) > 0;
-							}))
-					) {
-						return -att / Math.sqrt(target.countCards("h"));
-					}
-					if (!player.isDamaged()) {
-						return false;
-					}
-					if (att <= 0) {
-						return (1 - att) / Math.sqrt(target.countCards("h"));
-					}
-					return Math.sqrt((2 / att) * Math.sqrt(target.countCards("h")));
-				})
-				.set(
-					"goon",
-					(function () {
-						if (
-							!player.hasCard(function (card) {
-								return card.number >= 14 - player.hp && get.value(card) <= 5;
-							})
-						) {
+		async cost(event, trigger, player) {
+			const canInitiate = player.hasCard(card => card.number >= 14 - player.hp && get.value(card) <= 5);
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt(event.skill),
+					prompt2: "与一名其他角色拼点",
+					filterTarget: (card, player, target) => target !== player && player.canCompare(target),
+					ai: target => {
+						if (!canInitiate) {
 							return false;
 						}
-						return true;
-					})()
-				);
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("twzhibian", target);
-				player.chooseToCompare(target);
-			} else {
-				event.finish();
+						const attitude = get.attitude(player, target);
+						if (attitude < 0 && (target.countCards("h") > 1 || target.hasCards("e", card => player.canEquip(card) && get.effect(player, card, target, player) > 0))) {
+							return -attitude / Math.sqrt(target.countCards("h"));
+						}
+						if (!player.isDamaged()) {
+							return false;
+						}
+						if (attitude <= 0) {
+							return (1 - attitude) / Math.sqrt(target.countCards("h"));
+						}
+						return Math.sqrt((2 / attitude) * Math.sqrt(target.countCards("h")));
+					},
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const compareResult = await player.chooseToCompare(target).forResult();
+			if (!compareResult.bool) {
+				await player.loseHp();
+				return;
 			}
-			"step 2";
-			if (result.bool) {
-				var list = [],
-					list2 = ["将" + get.translation(target) + "区域中的一张牌移动到你的区域内", "回复1点体力", "背水！弃置一张非基本牌，并依次执行上述所有选项"];
-				if (
-					target.countCards("h") ||
-					target.hasCard(function (card) {
-						return player.canEquip(card);
-					}, "e") ||
-					target.hasCard(function (card) {
-						return player.canAddJudge(card);
-					}, "j")
-				) {
-					list.push("选项一");
-				} else {
-					list2[0] = '<span style="opacity:0.5">' + list2[0] + "</span>";
-				}
-				if (player.isDamaged()) {
-					list.push("选项二");
-				} else {
-					list2[1] = '<span style="opacity:0.5">' + list2[1] + "</span>";
-				}
-				if (!list.length) {
-					event.finish();
-					return;
-				}
-				if (player.countCards("he", card => get.type(card) != "basic")) {
-					list.push("背水！");
-				} else {
-					list2[2] = '<span style="opacity:0.5">' + list2[2] + "</span>";
-				}
-				list.push("cancel2");
-				player
-					.chooseControl(list)
-					.set("prompt", "直辩：选择一项")
-					.set("choiceList", list2)
-					.set("ai", function () {
-						var target = _status.event.getParent().target;
-						if (
-							_status.event.controls.includes("背水！") &&
-							player.isDamaged() &&
-							(target.countCards("h") ||
-								target.countCards("e", function (card) {
-									return player.canEquip(card) && get.value(card, target) >= 4 + player.getDamagedHp();
-								}))
-						) {
+
+			const controls = [];
+			const choiceList = [`将${get.translation(target)}区域中的一张牌移动到你的区域内`, "回复1点体力", "背水！弃置一张非基本牌，并依次执行上述所有选项"];
+			if (target.hasCards("h") || target.hasCard(card => player.canEquip(card), "e") || target.hasCard(card => player.canAddJudge(card), "j")) {
+				controls.push("选项一");
+			} else {
+				choiceList[0] = `<span style="opacity:0.5">${choiceList[0]}</span>`;
+			}
+			if (player.isDamaged()) {
+				controls.push("选项二");
+			} else {
+				choiceList[1] = `<span style="opacity:0.5">${choiceList[1]}</span>`;
+			}
+			if (!controls.length) {
+				return;
+			}
+			if (player.hasCards("he", card => get.type(card) !== "basic")) {
+				controls.push("背水！");
+			} else {
+				choiceList[2] = `<span style="opacity:0.5">${choiceList[2]}</span>`;
+			}
+			controls.push("cancel2");
+			const controlResult = await player
+				.chooseControl({
+					controls,
+					prompt: "直辩：选择一项",
+					choiceList,
+					ai: event => {
+						if (event.controls.includes("背水！") && player.isDamaged() && (target.hasCards("h") || target.hasCards("e", card => player.canEquip(card) && get.value(card, target) >= 4 + player.getDamagedHp()))) {
 							return 2;
 						}
-						if (
-							player.isDamaged() &&
-							(player.hp <= 2 ||
-								(!target.countCards("h") &&
-									!target.countCards("e", function (card) {
-										return player.canEquip(card) && get.value(card, target) >= 4 + player.getDamagedHp();
-									})))
-						) {
+						if (player.isDamaged() && (player.hp <= 2 || (!target.hasCards("h") && !target.hasCards("e", card => player.canEquip(card) && get.value(card, target) >= 4 + player.getDamagedHp())))) {
 							return 1;
 						}
 						return 0;
-					});
-			} else {
-				player.loseHp();
-				event.finish();
+					},
+				})
+				.forResult();
+			const control = controlResult.control;
+			if (control === "cancel2") {
+				return;
 			}
-			"step 3";
-			if (result.control != "cancel2") {
-				event.control = result.control;
-				if (
-					result.control == "背水！" &&
-					player.countCards("he", function (card) {
-						return get.type(card) != "basic";
+			if (control === "背水！" && player.hasCards("he", card => get.type(card) !== "basic")) {
+				await player.chooseToDiscard({
+					position: "he",
+					forced: true,
+					filterCard: card => get.type(card) !== "basic",
+				});
+			}
+			if (control === "选项一" || control === "背水！") {
+				const cardResult = await player
+					.choosePlayerCard({
+						target,
+						position: "hej",
+						forced: true,
+						ai: get.buttonValue,
 					})
-				) {
-					player.chooseToDiscard("he", true, function (card) {
-						return get.type(card) != "basic";
-					});
-				}
-			} else {
-				event.finish();
-			}
-			"step 4";
-			if (event.control == "选项一" || event.control == "背水！") {
-				player.choosePlayerCard(target, "hej", true).set("ai", get.buttonValue);
-			} else {
-				event.goto(6);
-			}
-			"step 5";
-			if (result.bool) {
-				var card = result.cards[0];
-				switch (get.position(card)) {
-					case "h":
-						player.gain(card, target, "giveAuto");
-						break;
-					case "e":
-						target.$give(card, player, false);
-						player.equip(card);
-						break;
-					case "j":
-						target.$give(card, player, false);
-						player.addJudge(card);
-						break;
+					.forResult();
+				if (cardResult.bool) {
+					const card = cardResult.cards[0];
+					switch (get.position(card)) {
+						case "h":
+							await player.gain({ cards: [card], source: target, animate: "giveAuto" });
+							break;
+						case "e":
+							target.$give(card, player, false);
+							await player.equip(card);
+							break;
+						case "j":
+							target.$give(card, player, false);
+							await player.addJudge(card);
+							break;
+					}
 				}
 			}
-			"step 6";
-			if (event.control == "选项二" || event.control == "背水！") {
-				player.recover();
+			if (control === "选项二" || control === "背水！") {
+				await player.recover();
 			}
 		},
 	},
