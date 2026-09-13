@@ -18911,75 +18911,71 @@ const skills = {
 		audio: "xingwu",
 		trigger: { player: "phaseDiscardBegin" },
 		filter(event, player) {
-			return player.countCards("he");
+			return player.hasCards("he");
 		},
-		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseCard("he", get.prompt("twxingwu"), "将一张牌置于武将牌上作为“星舞”")
-				.set("ai", function (card) {
-					if (_status.event.goon) {
-						return 20 - get.value(card);
-					}
-					return 7 - get.value(card);
+		async cost(event, trigger, player) {
+			const shouldPlace = player.needsToDiscard() || player.getExpansions("twxingwu").length > 1;
+			event.result = await player
+				.chooseCard({
+					position: "he",
+					prompt: get.prompt(event.skill),
+					prompt2: "将一张牌置于武将牌上作为“星舞”",
+					ai: card => {
+						if (shouldPlace) {
+							return 20 - get.value(card);
+						}
+						return 7 - get.value(card);
+					},
 				})
-				.set("goon", player.needsToDiscard() || player.getExpansions("twxingwu").length > 1);
-			"step 1";
-			if (result.bool) {
-				player.logSkill("twxingwu");
-				var cards = result.cards;
-				player.addToExpansion(cards, player, "give").gaintag.add("twxingwu");
-			} else {
-				event.finish();
-			}
-			"step 2";
-			game.delayx();
-			if (player.getExpansions("twxingwu").length < 3 || !game.hasPlayer(current => current != player)) {
-				event.finish();
-			}
-			"step 3";
-			player
-				.chooseButton(["是否移去三张“星舞”牌并发射核弹？", player.getExpansions("twxingwu")], 3)
-				.set("ai", function (button) {
-					if (_status.event.goon) {
-						return 1;
-					}
-					return 0;
-				})
-				.set(
-					"goon",
-					game.hasPlayer(current => get.damageEffect(current, player, player) < 0)
-				);
-			"step 4";
-			if (result.bool) {
-				player.loseToDiscardpile(result.links);
-			} else {
-				event.finish();
-			}
-			"step 5";
-			player.chooseTarget("星舞：选择一名其他角色", "弃置其装备区内的所有牌。然后对其造成2点伤害（若其性别包含女性则改为1点）", true, lib.filter.notMe).set("ai", function (target) {
-				return (
-					get.damageEffect(target, player, player) *
-					Math.sqrt(
-						4 +
-							target.countCards("e", function (card) {
-								return get.value(card, target) > 0;
-							})
-					) *
-					(target.hasSex("female") ? 1 : 2)
-				);
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			await player.addToExpansion({
+				cards: event.cards,
+				source: player,
+				animate: "give",
+				gaintag: ["twxingwu"],
 			});
-			"step 6";
-			if (result.bool && result.targets && result.targets.length) {
-				var target = result.targets[0];
-				player.line(target, "green");
-				var num = target.countCards("e");
-				if (num) {
-					player.discardPlayerCard(target, "e", num, true);
-				}
-				target.damage(target.hasSex("female") ? 1 : 2);
+			await game.delayx();
+			if (player.getExpansions("twxingwu").length < 3 || !game.hasPlayer(current => current !== player)) {
+				return;
 			}
+			const shouldLaunch = game.hasPlayer(current => get.damageEffect(current, player, player) < 0);
+			const buttonResult = await player
+				.chooseButton({
+					createDialog: ["是否移去三张“星舞”牌并发射核弹？", player.getExpansions("twxingwu")],
+					selectButton: 3,
+					ai: () => (shouldLaunch ? 1 : 0),
+				})
+				.forResult();
+			if (!buttonResult.bool) {
+				return;
+			}
+			await player.loseToDiscardpile({ cards: buttonResult.links });
+			const targetResult = await player
+				.chooseTarget({
+					prompt: "星舞：选择一名其他角色",
+					prompt2: "弃置其装备区内的所有牌。然后对其造成2点伤害（若其性别包含女性则改为1点）",
+					forced: true,
+					filterTarget: lib.filter.notMe,
+					ai: target => get.damageEffect(target, player, player) * Math.sqrt(4 + target.countCards("e", card => get.value(card, target) > 0)) * (target.hasSex("female") ? 1 : 2),
+				})
+				.forResult();
+			if (!targetResult.bool || !targetResult.targets?.length) {
+				return;
+			}
+			const target = targetResult.targets[0];
+			player.line(target, "green");
+			const num = target.countCards("e");
+			if (num) {
+				await player.discardPlayerCard({
+					target,
+					position: "e",
+					selectButton: num,
+					forced: true,
+				});
+			}
+			await target.damage(target.hasSex("female") ? 1 : 2);
 		},
 		intro: {
 			content: "expansion",
@@ -18995,10 +18991,10 @@ const skills = {
 			if (player.hasSkill("twpingting")) {
 				return;
 			}
-			var cards = player.getExpansions(skill);
-			if (cards.length) {
-				player.loseToDiscardpile(cards);
-			}
+				const cards = player.getExpansions(skill);
+				if (cards.length) {
+					player.loseToDiscardpile({ cards });
+				}
 		},
 	},
 	twpingting: {
