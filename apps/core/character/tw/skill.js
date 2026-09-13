@@ -29023,37 +29023,46 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(e, player) {
-			return player.countCards("e") > 0;
+			return player.hasCards("e");
 		},
 		filterTarget(card, player, target) {
-			return target != player && target.countCards("h") > 0;
+			return target !== player && target.hasCards("h");
 		},
-		content() {
-			"step 0";
-			target.chooseCard("交给" + get.translation(player) + "一张手牌", "h", true);
-			"step 1";
-			target.give(result.cards, player);
-			"step 2";
-			if (player.countGainableCards(player, "e")) {
-				target.gainPlayerCard(player, "e", true);
-			}
-			"step 3";
-			if (target.isDamaged() && target.hp <= player.hp) {
-				player.chooseBool("是否令" + get.translation(target) + "回复1点体力？").set("ai", function () {
-					return get.recoverEffect(target, player, player);
+		async content(event, trigger, player) {
+			const { target } = event;
+			const cardResult = await target
+				.chooseCard({
+					prompt: `交给${get.translation(player)}一张手牌`,
+					position: "h",
+					forced: true,
+				})
+				.forResult();
+			await target.give(cardResult.cards, player);
+			if (player.hasGainableCards(player, "e")) {
+				await target.gainPlayerCard({
+					target: player,
+					position: "e",
+					forced: true,
 				});
 			}
-			"step 4";
-			if (result.bool) {
-				target.recover();
+			if (target.isDamaged() && target.hp <= player.hp) {
+				const recoverResult = await player
+					.chooseBool({
+						prompt: `是否令${get.translation(target)}回复1点体力？`,
+						ai: () => get.recoverEffect(target, player, player),
+					})
+					.forResult();
+				if (recoverResult.bool) {
+					await target.recover();
+				}
 			}
 		},
 		ai: {
 			order: 8,
 			result: {
 				target(player, target) {
-					var eff = target.isDamaged() && target.hp <= player.hp ? get.recoverEffect(target, player, target) : 0;
-					if (eff <= 0 && !player.countGainableCards(target, "e")) {
+					const eff = target.isDamaged() && target.hp <= player.hp ? get.recoverEffect(target, player, target) : 0;
+					if (eff <= 0 && !player.hasGainableCards(target, "e")) {
 						return -1;
 					}
 					return eff;
