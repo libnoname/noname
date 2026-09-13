@@ -16539,115 +16539,114 @@ const skills = {
 		audio: "jiexun",
 		trigger: { player: "phaseJieshuBegin" },
 		onremove: true,
-		direct: true,
 		derivation: ["twfunanx", "twjiexunx"],
-		content() {
-			"step 0";
-			var suits = {};
-			game.countPlayer(current => {
-				for (var card of current.getCards("ej")) {
-					if (typeof suits[get.suit(card)] != "number") {
+		async cost(event, trigger, player) {
+			const suits = {};
+			for (const current of game.filterPlayer()) {
+				for (const card of current.iterableGetCards("ej")) {
+					if (typeof suits[get.suit(card)] !== "number") {
 						suits[get.suit(card)] = 0;
 					}
 					suits[get.suit(card)]++;
 				}
-			});
-			var choices = lib.suit.slice();
+			}
+			const choices = lib.suit.slice();
 			choices.push("cancel2");
-			var str = lib.suit
-				.map(suit => {
-					return get.translation(suit) + "：" + get.cnNumber(suits[suit] || 0) + "张";
-				})
-				.join("；");
-			player
-				.chooseControl(choices)
-				.set("prompt", get.prompt("twjiexun") + "（已发动过" + get.cnNumber(player.countMark("twjiexun")) + "次）")
-				.set("ai", function () {
-					var player = _status.event.player;
-					var map = {};
-					game.countPlayer(current => {
-						for (var card of current.getCards("ej")) {
-							if (typeof map[get.suit(card)] != "number") {
-								map[get.suit(card)] = 0;
+			const suitDescription = lib.suit.map(suit => `${get.translation(suit)}：${get.cnNumber(suits[suit] || 0)}张`).join("；");
+			const controlResult = await player
+				.chooseControl({
+					controls: choices,
+					prompt: `${get.prompt(event.skill)}（已发动过${get.cnNumber(player.countMark("twjiexun"))}次）`,
+					prompt2: `${get.skillInfoTranslation("twjiexun", player, false)}<br>${suitDescription}`,
+					ai: (event, player) => {
+						const map = {};
+						for (const current of game.filterPlayer()) {
+							for (const card of current.iterableGetCards("ej")) {
+								if (typeof map[get.suit(card)] !== "number") {
+									map[get.suit(card)] = 0;
+								}
+								map[get.suit(card)]++;
 							}
-							map[get.suit(card)]++;
 						}
-					});
-					for (var suit in map) {
-						map[suit] = Math.abs(map[suit]);
-					}
-					var bool = game.hasPlayer(current => get.attitude(player, current) > 0 && player != current);
-					var list = lib.suit.slice().sort((a, b) => (bool ? 1 : -1) * ((map[b] || 0) - (map[a] || 0)));
-					if ((bool && map[list[0]] > 0) || !bool || player.hasMark("twjiexun")) {
-						return list[0];
-					}
-					return "cancel2";
+						for (const suit of Object.keys(map)) {
+							map[suit] = Math.abs(map[suit]);
+						}
+						const hasFriend = game.hasPlayer(current => get.attitude(player, current) > 0 && player !== current);
+						const sortedSuits = lib.suit.slice().sort((a, b) => (hasFriend ? 1 : -1) * ((map[b] || 0) - (map[a] || 0)));
+						if ((hasFriend && map[sortedSuits[0]] > 0) || !hasFriend || player.hasMark("twjiexun")) {
+							return sortedSuits[0];
+						}
+						return "cancel2";
+					},
 				})
-				.set("prompt2", get.skillInfoTranslation("twjiexun", player, false) + "<br>" + str);
-			"step 1";
-			if (result.control != "cancel2") {
-				var suit = result.control;
-				event.suit = suit;
-				var num1 = game.countPlayer(function (current) {
-					return current.countCards("ej", { suit: suit });
-				});
-				var num2 = player.countMark("twjiexun");
-				event.num1 = num1;
-				event.num2 = num2;
-				var str = "令一名其他角色摸" + get.cnNumber(num1) + "张牌";
-				if (num2) {
-					str += "，然后弃置" + get.cnNumber(num2) + "张牌";
-				}
-				player
-					.chooseTarget("请选择【诫训】的目标", str, lib.filter.notMe)
-					.set("ai", function (target) {
-						var player = _status.event.player,
-							att = get.attitude(player, target);
-						return _status.event.eff * get.sgn(att) + att / 114514;
-					})
-					.set("eff", num1 >= num2 && num1 > 0 ? 1 : -1);
-			} else {
-				event.finish();
+				.forResult();
+			if (controlResult.control === "cancel2") {
+				event.result = { bool: false };
+				return;
 			}
-			"step 2";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("twjiexun", target);
-				if (player.hasMark("twjiexun") || event.num1) {
-					player.addExpose(0.2);
-				}
-				player.popup(event.suit);
-				game.log(player, "选择了", "#y" + get.translation(event.suit));
-				player.addMark("twjiexun", 1, false);
-				if (event.num1) {
-					target.draw(event.num1);
-				}
-			} else {
-				event.finish();
+			const suit = controlResult.control;
+			const drawCount = game.countPlayer(current => current.countCards("ej", { suit }));
+			const discardCount = player.countMark("twjiexun");
+			let targetPrompt = `令一名其他角色摸${get.cnNumber(drawCount)}张牌`;
+			if (discardCount) {
+				targetPrompt += `，然后弃置${get.cnNumber(discardCount)}张牌`;
 			}
-			"step 3";
-			if (event.num2) {
-				target.chooseToDiscard(event.num2, true, "he");
-			} else {
-				event.finish();
+			const effect = drawCount >= discardCount && drawCount > 0 ? 1 : -1;
+			const targetResult = await player
+				.chooseTarget({
+					prompt: "请选择【诫训】的目标",
+					prompt2: targetPrompt,
+					filterTarget: lib.filter.notMe,
+					ai: target => {
+						const attitude = get.attitude(player, target);
+						return effect * get.sgn(attitude) + attitude / 114514;
+					},
+				})
+				.forResult();
+			event.result = {
+				bool: targetResult.bool,
+				targets: targetResult.targets,
+				cost_data: { suit, drawCount, discardCount },
+			};
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const { suit, drawCount, discardCount } = event.cost_data;
+			if (player.hasMark("twjiexun") || drawCount) {
+				player.addExpose(0.2);
 			}
-			"step 4";
-			if (result?.cards?.length > 0 && result.autochoose && result.cards?.length === result.rawcards?.length && !player.hasSkill("funan_jiexun")) {
-				player
-					.chooseControl()
-					.set("choiceList", ["摸" + get.cnNumber(event.num2) + "张牌，将【诫训】的发动次数归零", "修改【复难】和【诫训】"])
-					.set("ai", () => _status.event.choice)
-					.set("prompt", "诫训：选择一项")
-					.set("choice", event.num2 >= 4 ? 0 : event.num2 <= 1 ? 1 : [0, 1].randomGet());
-			} else {
-				event.finish();
+			player.popup(suit);
+			game.log(player, "选择了", `#y${get.translation(suit)}`);
+			player.addMark("twjiexun", 1, false);
+			if (drawCount) {
+				await target.draw(drawCount);
 			}
-			"step 5";
-			if (result.index == 0) {
-				player.draw(event.num2);
+			if (!discardCount) {
+				return;
+			}
+			const discardResult = await target
+				.chooseToDiscard({
+					selectCard: discardCount,
+					forced: true,
+					position: "he",
+				})
+				.forResult();
+			if (!(discardResult?.cards?.length > 0 && discardResult.autochoose && discardResult.cards.length === discardResult.rawcards?.length) || player.hasSkill("funan_jiexun")) {
+				return;
+			}
+			const optionResult = await player
+				.chooseControl({
+					choiceList: [`摸${get.cnNumber(discardCount)}张牌，将【诫训】的发动次数归零`, "修改【复难】和【诫训】"],
+					ai: event => event.choice,
+					prompt: "诫训：选择一项",
+					choice: discardCount >= 4 ? 0 : discardCount <= 1 ? 1 : [0, 1].randomGet(),
+				})
+				.forResult();
+			if (optionResult.index === 0) {
+				const drawEvent = player.draw(discardCount);
 				player.removeMark("twjiexun", player.countMark("twjiexun"), false);
 				game.log(player, "归零了", "#g【诫训】", "的发动次数");
+				await drawEvent;
 			} else {
 				game.log(player, "修改了", "#g【复难】", "和", "#g【诫训】");
 				player.addSkill("funan_jiexun");
