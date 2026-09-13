@@ -18723,55 +18723,51 @@ const skills = {
 		filter(event, player) {
 			return player.getExpansions("twzhengrong").length >= 3;
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			player.draw(player.getExpansions("twzhengrong").length);
-			"step 1";
-			if (player.countCards("h") == 0) {
-				event.goto(3);
-			} else {
-				var next = player.chooseToMove("鸿举：请选择要交换的手牌和“荣”");
-				next.set("list", [
-					[get.translation(player) + "（你）的“荣”", player.getExpansions("twzhengrong"), "twzhengrong_tag"],
-					["手牌区", player.getCards("h")],
-				]);
-				next.set("filterMove", function (from, to) {
-					return typeof to != "number";
-				});
-				next.set("processAI", function (list) {
-					var player = _status.event.player,
-						cards = list[0][1].concat(list[1][1]).sort(function (a, b) {
-							return player.getUseValue(a) - player.getUseValue(b);
-						}),
-						cards2 = cards.splice(0, player.getExpansions("twzhengrong").length);
-					return [cards2, cards];
-				});
-			}
-			"step 2";
-			if (result.bool) {
-				var pushs = result.moved[0],
-					gains = result.moved[1];
-				pushs.removeArray(player.getExpansions("twzhengrong"));
-				gains.removeArray(player.getCards("h"));
-				if (!pushs.length || pushs.length != gains.length) {
-					return;
+			await player.draw(player.getExpansions("twzhengrong").length);
+			if (player.hasCards("h")) {
+				const moveResult = await player
+					.chooseToMove({
+						prompt: "鸿举：请选择要交换的手牌和“荣”",
+						list: [
+							[`${get.translation(player)}（你）的“荣”`, player.getExpansions("twzhengrong"), "twzhengrong_tag"],
+							["手牌区", player.getCards("h")],
+						],
+						processAI: list => {
+							const player = _status.event.player;
+							const cards = list[0][1].concat(list[1][1]).sort((a, b) => player.getUseValue(a) - player.getUseValue(b));
+							const expansionCards = cards.splice(0, player.getExpansions("twzhengrong").length);
+							return [expansionCards, cards];
+						},
+					})
+					.set("filterMove", (from, to) => typeof to !== "number")
+					.forResult();
+				if (moveResult.bool) {
+					const pushs = moveResult.moved[0];
+					const gains = moveResult.moved[1];
+					pushs.removeArray(player.getExpansions("twzhengrong"));
+					gains.removeArray(player.getCards("h"));
+					if (pushs.length && pushs.length === gains.length) {
+						await player.addToExpansion({ cards: pushs, source: player, animate: "giveAuto", gaintag: ["twzhengrong"] });
+						game.log(player, "将", pushs, "作为“荣”置于武将牌上");
+						await player.gain({ cards: gains, animate: "gain2" });
+					}
 				}
-				player.addToExpansion(pushs, player, "giveAuto").gaintag.add("twzhengrong");
-				game.log(player, "将", pushs, "作为“荣”置于武将牌上");
-				player.gain(gains, "gain2");
 			}
-			"step 3";
+
 			player.addSkills("twqingce");
-			player
-				.chooseBool("是否减1点体力上限并获得〖扫讨〗？")
-				.set("ai", () => _status.event.bool)
-				.set("bool", player.isDamaged() && player.countCards("h") >= 3 ? (Math.random() < 0.5 ? true : false) : false);
-			"step 4";
-			if (result.bool) {
-				player.loseMaxHp();
+			const gainSaotao = await player
+				.chooseBool({
+					prompt: "是否减1点体力上限并获得〖扫讨〗？",
+					ai: () => _status.event.bool,
+				})
+				.set("bool", player.isDamaged() && player.countCards("h") >= 3 && Math.random() < 0.5)
+				.forResultBool();
+			if (gainSaotao) {
+				await player.loseMaxHp();
 				player.addSkills("twsaotao");
-				game.delayx();
+				await game.delayx();
 			}
 		},
 		ai: {
