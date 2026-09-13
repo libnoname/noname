@@ -27417,98 +27417,91 @@ const skills = {
 		trigger: {
 			player: "phaseUseBegin",
 		},
-		direct: true,
 		filter(event, player) {
 			return player.hasCards("he");
 		},
-		content() {
-			"step 0";
-			player.chooseCardTarget({
-				filterCard: true,
-				filterTarget: lib.filter.notMe,
-				position: "he",
-				prompt: get.prompt2("xinzhenjun"),
-				ai1(card) {
-					var player = _status.event.player;
-					if (card.name == "sha" && get.color(card) == "red") {
-						for (var i = 0; i < game.players.length; i++) {
-							var current = game.players[i];
-							if (current != player && get.attitude(player, current) > 0 && current.hasValueTarget(card)) {
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseCardTarget({
+					filterCard: true,
+					filterTarget: lib.filter.notMe,
+					position: "he",
+					prompt: get.prompt2(event.skill),
+					ai1: card => {
+						const player = _status.event.player;
+						if (card.name === "sha" && get.color(card) === "red") {
+							if (game.players.some(current => current !== player && get.attitude(player, current) > 0 && current.hasValueTarget(card))) {
 								return 7;
 							}
+							return 0;
 						}
-						return 0;
-					}
-					return 7 - get.value(card);
-				},
-				ai2(target) {
-					var player = _status.event.player;
-					var card = ui.selected.cards[0];
-					var att = get.attitude(player, target);
-					if (get.value(card) < 0) {
-						return -att * 2;
-					}
-					if (target.countCards("h", { name: "sha", color: "red" }) || target.hasSkill("wusheng") || target.hasSkill("new_rewusheng") || target.hasSkill("wushen") || (card.name == "sha" && get.color(card) == "red" && target.hasValueTarget(card))) {
-						return att * 2;
-					}
-					var eff = 0;
-					game.countPlayer(function (current) {
-						if (target != current && get.distance(target, current, "attack") > 1) {
-							return;
+						return 7 - get.value(card);
+					},
+					ai2: target => {
+						const player = _status.event.player;
+						const card = ui.selected.cards[0];
+						const att = get.attitude(player, target);
+						if (get.value(card) < 0) {
+							return -att * 2;
 						}
-						var eff2 = get.damageEffect(current, player, player);
-						if (eff2 > eff) {
-							eff = eff2;
+						if (target.hasCards("h", { name: "sha", color: "red" }) || target.hasSkill("wusheng") || target.hasSkill("new_rewusheng") || target.hasSkill("wushen") || (card.name === "sha" && get.color(card) === "red" && target.hasValueTarget(card))) {
+							return att * 2;
 						}
-					});
-					if (att > 0 && eff > 0) {
-						eff += 2 * att;
-					}
-					return eff;
-				},
-			});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("xinzhenjun", target);
-				player.give(result.cards, target);
-			} else {
-				event.finish();
-			}
-			"step 2";
-			target.chooseToUse({
-				filterCard(card) {
-					return get.name(card) == "sha" && get.color(card) != "black" && lib.filter.cardEnabled.apply(this, arguments);
-				},
-				prompt: "请使用一张不为黑色的【杀】，否则" + get.translation(player) + "可以对你或你攻击范围内的一名其他角色造成1点伤害",
-			});
-			"step 3";
-			if (result.bool) {
-				var num = 1;
-				game.countPlayer2(function (current) {
-					current.getHistory("damage", function (evt) {
-						if (evt.getParent(evt.notLink() ? 4 : 8) == event) {
+						let eff = 0;
+						game.countPlayer(current => {
+							if (target !== current && get.distance(target, current, "attack") > 1) {
+								return;
+							}
+							const eff2 = get.damageEffect(current, player, player);
+							if (eff2 > eff) {
+								eff = eff2;
+							}
+						});
+						if (att > 0 && eff > 0) {
+							eff += 2 * att;
+						}
+						return eff;
+					},
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			await player.give(event.cards, target);
+			const useResult = await target
+				.chooseToUse({
+					filterCard: (card, player, event) => {
+						return get.name(card) === "sha" && get.color(card) !== "black" && lib.filter.cardEnabled(card, player, event);
+					},
+					prompt: `请使用一张不为黑色的【杀】，否则${get.translation(player)}可以对你或你攻击范围内的一名其他角色造成1点伤害`,
+				})
+				.forResult();
+			if (useResult.bool) {
+				let num = 1;
+				game.countPlayer2(current => {
+					current.getHistory("damage", evt => {
+						if (evt.getParent(evt.notLink() ? 4 : 8) === event) {
 							num += evt.num;
 						}
 					});
 				});
-				player.draw(num);
-				event.finish();
-			} else {
-				player
-					.chooseTarget("是否对" + get.translation(target) + "或其攻击范围内的一名角色造成1点伤害？", function (card, player, target) {
-						return target == _status.event.targetx || _status.event.targetx.inRange(target);
-					})
-					.set("targetx", event.target).ai = function (target) {
-					var player = _status.event.player;
-					return get.damageEffect(target, player, player);
-				};
+				await player.draw(num);
+				return;
 			}
-			"step 4";
-			if (result.bool) {
-				player.line(result.targets);
-				result.targets[0].damage("nocard");
+			const targetResult = await player
+				.chooseTarget({
+					prompt: `是否对${get.translation(target)}或其攻击范围内的一名角色造成1点伤害？`,
+					filterTarget: (card, player, target) => target === _status.event.targetx || _status.event.targetx.inRange(target),
+					ai: target => {
+						const player = _status.event.player;
+						return get.damageEffect(target, player, player);
+					},
+				})
+				.set("targetx", target)
+				.forResult();
+			if (targetResult.bool) {
+				player.line(targetResult.targets);
+				await targetResult.targets[0].damage({ nocard: true });
 			}
 		},
 	},
