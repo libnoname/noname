@@ -3727,6 +3727,7 @@ const skills = {
 						position: "hej",
 						selectButton: num,
 						allowChooseAll: true,
+						forced: true,
 					});
 				},
 			},
