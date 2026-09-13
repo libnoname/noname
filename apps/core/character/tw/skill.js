@@ -12846,62 +12846,68 @@ const skills = {
 		audio: 2,
 		trigger: { player: "useCardAfter" },
 		filter(event, player) {
-			var evt = event.getParent("phaseUse");
-			if (!evt || evt.player != player) {
+			const evt = event.getParent("phaseUse");
+			if (!evt || evt.player !== player) {
 				return false;
 			}
-			var type = get.type2(event.card);
+			const type = get.type2(event.card);
 			return !player.hasHistory("gain", evtx => {
-				if (evtx.getParent("phaseUse") != evt) {
+				if (evtx.getParent("phaseUse") !== evt) {
 					return false;
 				}
-				return evtx.cards.some(card => get.type2(card) == type);
+				return evtx.cards.some(card => get.type2(card) === type);
 			});
 		},
-		direct: true,
-		content() {
-			"step 0";
-			var prompt2 = "展示一名角色的一张手牌。若展示牌为" + get.translation(get.type2(trigger.card)) + "牌，则你获得之，否则其弃置之并摸一张牌。然后若其在你的攻击范围内，且你不在其攻击范围内，你对其造成1点伤害";
-			player
-				.chooseTarget(get.prompt("twhuiyuan"), prompt2, (card, player, target) => {
-					return target.countCards("h");
+		async cost(event, trigger, player) {
+			const prompt2 = `展示一名角色的一张手牌。若展示牌为${get.translation(get.type2(trigger.card))}牌，则你获得之，否则其弃置之并摸一张牌。然后若其在你的攻击范围内，且你不在其攻击范围内，你对其造成1点伤害`;
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt(event.skill),
+					prompt2,
+					filterTarget: (card, player, target) => target.hasCards("h"),
+					ai: target => {
+						const player = _status.event.player;
+						const att = get.attitude(player, target);
+						return -att + (player.inRange(target) && !target.inRange(player) ? get.damageEffect(target, player, player) / 3 : 0);
+					},
 				})
-				.set("ai", target => {
-					var player = _status.event.player;
-					var att = get.attitude(player, target);
-					return -att + (player.inRange(target) && !target.inRange(player) ? get.damageEffect(target, player, player) / 3 : 0);
-				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("twhuiyuan", target);
-				player.choosePlayerCard(target, "h", true, "回援：展示" + get.translation(target) + "一张手牌");
-			} else {
-				event.finish();
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const cardResult = await player
+				.choosePlayerCard({
+					target,
+					position: "h",
+					forced: true,
+					prompt: `回援：展示${get.translation(target)}一张手牌`,
+				})
+				.forResult();
+			if (!cardResult.bool) {
+				return;
 			}
-			"step 2";
-			if (result.bool) {
-				var card = result.cards[0];
-				target.showCards([card], get.translation(target) + "【回援】展示");
-				if (get.type2(card) == get.type2(trigger.card)) {
-					if (lib.filter.canBeGained(card, target, player)) {
-						player.gain(card, target, "giveAuto", "bySelf");
-					}
-				} else {
-					if (lib.filter.canBeDiscarded(card, target, player)) {
-						target.discard(card, player);
-						target.draw();
-					}
+			const card = cardResult.cards[0];
+			await target.showCards([card], `${get.translation(target)}【回援】展示`);
+			if (get.type2(card) === get.type2(trigger.card)) {
+				if (lib.filter.canBeGained(card, target, player)) {
+					await player.gain({
+						cards: [card],
+						source: target,
+						animate: "giveAuto",
+						bySelf: true,
+					});
 				}
-			} else {
-				event.finish();
+			} else if (lib.filter.canBeDiscarded(card, target, player)) {
+				await target.discard({
+					cards: [card],
+					discarder: player,
+				});
+				await target.draw();
 			}
-			"step 3";
 			if (player.inRange(target) && !target.inRange(player)) {
 				game.log(player, "触发了", "#y搏击", "效果");
 				player.line(target);
-				target.damage();
+				await target.damage({});
 			}
 		},
 		ai: {
