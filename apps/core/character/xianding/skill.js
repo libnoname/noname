@@ -34933,30 +34933,33 @@ const skills = {
 		},
 		frequent: true,
 		filter(event, player, name) {
-			if (player == _status.currentPhase) {
-				return name == "logSkill" && event.skill == "dcliying" && player.getExpansions("dcwangyuan").length < game.countPlayer2();
+			if (player === _status.currentPhase) {
+				return name === "logSkill" && event.skill === "dcliying" && player.getExpansions("dcwangyuan").length < game.countPlayer2();
 			}
-			if (name == "logSkill") {
+			if (name === "logSkill") {
 				return false;
 			}
 			if (player.getExpansions("dcwangyuan").length >= game.countPlayer2()) {
 				return false;
 			}
-			if (event.name == "gain" && event.player == player) {
+			if (event.name === "gain" && event.player === player) {
 				return false;
 			}
-			var evt = event.getl(player);
+			const evt = event.getl(player);
 			return evt && evt.cards2 && evt.cards2.length > 0;
 		},
-		content() {
-			"step 0";
-			var cards = player.getExpansions("dcwangyuan");
-			var card = get.cardPile2(cardx => {
-				var type = get.type2(cardx);
-				return (type == "basic" || type == "trick") && !cards.some(cardxx => get.name(cardx, false) == get.name(cardxx, false));
+		async content(event, trigger, player) {
+			const cards = player.getExpansions("dcwangyuan");
+			const card = get.cardPile2(cardx => {
+				const type = get.type2(cardx);
+				return (type === "basic" || type === "trick") && !cards.some(cardxx => get.name(cardx, false) === get.name(cardxx, false));
 			}, "random");
 			if (card) {
-				player.addToExpansion(card, "gain2").gaintag.add("dcwangyuan");
+				await player.addToExpansion({
+					cards: [card],
+					animate: "gain2",
+					gaintag: ["dcwangyuan"],
+				});
 			}
 		},
 		ai: {
