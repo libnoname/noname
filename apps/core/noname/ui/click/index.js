@@ -4222,6 +4222,13 @@ export class Click {
 			uiintro.listen(clickintro);
 		}
 		uiintro._close = clicklayer;
+		const readingClose = uiintro.querySelector(".skill-reading-close");
+		if (readingClose) {
+			readingClose.onclick = event => {
+				event.stopPropagation();
+				clicklayer.call(layer, event);
+			};
+		}
 
 		game.pause2();
 		return uiintro;

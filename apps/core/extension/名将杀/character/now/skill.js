@@ -3439,7 +3439,7 @@ const skills = {
 	    		async cost(event, trigger, player) {
 	    			event.result = await player
 	    				.chooseTarget(get.prompt(event.skill), "削弱一名角色的2张牌")
-	    				.set("ai", card => {
+	    				.set("ai", target => {
 							const player = get.player();
 							const att = get.attitude(player, target);
 							const cards = target.getCards("he", card => {

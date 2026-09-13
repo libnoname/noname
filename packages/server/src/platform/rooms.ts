@@ -139,7 +139,7 @@ export class Rooms {
         revision: room.revision, createdAt: room.createdAt, characterPool: room.characterPool,
         // Search results only need seat occupancy. Account identifiers,
         // player codes, presence and the worker instance stay private.
-        members: room.members.map(member => ({ id: "", code: "", nickname: "", avatar: "", ready: false, online: false, seat: member.seat })),
+        members: room.members.map(member => ({ id: "", code: "", nickname: "", avatar: "", ready: false, online: false, seat: member.seat, isAI: member.isAI })),
       };
       return result;
     });
@@ -203,7 +203,7 @@ export class Rooms {
           // departure cancels that allocation instead of stranding its peers.
           view.state = "waiting";
           delete view.instanceId; delete view.instanceReady;
-          view.members.forEach(item => { item.ready = false; delete item.resumeUntil; });
+          view.members.forEach(item => { item.ready = !!item.isAI; delete item.resumeUntil; });
         }
         if (view.state === "in_game") {
           member.online = false; member.abandoned = true; delete member.resumeUntil;
@@ -229,7 +229,21 @@ export class Rooms {
         }
         return null;
       }
-      if (type === "room.ready") {
+      if (type === "room.ai") {
+        this.waiting(room); this.owner(room, account.id);
+        const { seats, enabled } = payload;
+        if (typeof enabled !== "boolean" || !Array.isArray(seats) || !seats.length || seats.length > view.capacity
+          || new Set(seats).size !== seats.length || seats.some(seat => !Number.isInteger(seat) || seat < 0 || seat >= view.capacity)) {
+          throw new OnlineError("INVALID_ARGUMENT", "请选择有效的 AI 席位");
+        }
+        for (const seat of seats) {
+          const member = view.members.find(member => member.seat === seat);
+          if (enabled ? !!member : !member?.isAI) throw new OnlineError("INVALID_ARGUMENT", enabled ? "只能在空位添加 AI" : "只能移除 AI 席位");
+        }
+        if (enabled) {
+          for (const seat of seats) view.members.push({ id: `ai:${randomUUID()}`, code: "", nickname: `AI ${seat + 1}号`, avatar: "caocao", seat, isAI: true, ready: true, online: false });
+        } else view.members = view.members.filter(member => !seats.includes(member.seat));
+      } else if (type === "room.ready") {
         this.waiting(room);
         if (typeof payload.ready !== "boolean") throw new OnlineError("INVALID_ARGUMENT", "无效准备状态");
         view.members.find(item => item.id === account.id)!.ready = payload.ready;
@@ -238,16 +252,16 @@ export class Rooms {
         if (payload.name === undefined && payload.characterPool === undefined) throw new OnlineError("INVALID_ARGUMENT", "请提供要修改的房间规则");
         if (payload.name !== undefined) view.name = text(payload.name, 1, 32);
         if (payload.characterPool !== undefined) view.characterPool = normalizeCharacterPool(payload.characterPool);
-        view.members.forEach(member => member.ready = false);
+        view.members.forEach(member => member.ready = !!member.isAI);
       } else if (type === "room.rematch") {
         this.owner(room, account.id);
         if (view.state !== "finished") throw new OnlineError("INVALID_ARGUMENT", "对局尚未结束");
-        view.members = view.members.filter(member => this.active.get(member.id) === view.id);
+        view.members = view.members.filter(member => member.isAI || this.active.get(member.id) === view.id);
         view.state = "waiting"; delete view.instanceId; delete view.instanceReady;
-        view.members.forEach(member => { member.ready = false; delete member.abandoned; delete member.resumeUntil; });
+        view.members.forEach(member => { member.ready = !!member.isAI; delete member.abandoned; delete member.resumeUntil; });
       } else if (type === "room.start") {
         this.waiting(room); this.owner(room, account.id);
-        if (view.members.length !== view.capacity || !view.members.every(member => member.ready && member.online)) throw new OnlineError("NOT_READY", "需要所有席位到齐并准备");
+        if (view.members.length !== view.capacity || !view.members.every(member => member.isAI || member.ready && member.online)) throw new OnlineError("NOT_READY", "请等待真人玩家准备，并由房主为剩余空位添加 AI 或等待玩家加入");
         if (this.hosts.count >= maxInstances()) throw new OnlineError("SERVICE_BUSY", "服务器对局已满，请稍后再试");
         view.characterPool = normalizeCharacterPool(view.characterPool);
         view.state = "starting"; view.instanceId = randomUUID(); view.instanceReady = false;
@@ -295,7 +309,7 @@ export class Rooms {
         if (room.view.instanceId !== instanceId || room.view.state === "finished") return;
         await this.db.saveResult(instanceId, room.view.id, event.results);
         room.view.state = "finished"; delete room.view.instanceId; delete room.view.instanceReady;
-        room.view.members.forEach(member => { member.ready = false; delete member.resumeUntil; });
+        room.view.members.forEach(member => { member.ready = !!member.isAI; delete member.resumeUntil; });
         await this.save(room);
         clearTimeout(room.startupTimer); room.startupTimer = undefined;
         for (const member of room.view.members) if (this.active.get(member.id) === room.view.id) this.publish(member.id, "game.finished", { roomId: room.view.id, instanceId, results: event.results });
@@ -320,7 +334,7 @@ export class Rooms {
       await this.hosts.stop(instanceId);
       room.view.state = room.view.state === "starting" ? "waiting" : "finished";
       delete room.view.instanceId; delete room.view.instanceReady;
-      room.view.members.forEach(member => { member.ready = false; delete member.resumeUntil; });
+      room.view.members.forEach(member => { member.ready = !!member.isAI; delete member.resumeUntil; });
       await this.save(room);
       clearTimeout(startupTimer); room.startupTimer = undefined;
       const missing = Array.isArray(resources) ? resources.filter(id => typeof id === "string" && /^(character|card):[a-zA-Z0-9_]{1,100}$/.test(id)).slice(0, 35).join("、") : "";

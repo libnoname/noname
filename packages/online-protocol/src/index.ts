@@ -11,7 +11,7 @@ export function modePreset(id: unknown) { return ONLINE_MODES.find(mode => mode.
 export type SessionType = "offline" | "online";
 export type RoomState = "waiting" | "starting" | "in_game" | "finished" | "closed";
 export interface Account { id: string; code: string; nickname: string; avatar: string; }
-export interface Member extends Account { ready: boolean; online: boolean; seat: number; resumeUntil?: number; abandoned?: boolean; }
+export interface Member extends Account { ready: boolean; online: boolean; seat: number; isAI?: boolean; resumeUntil?: number; abandoned?: boolean; }
 export interface Room {
   id: string; code: string; name: string; ownerId: string; modeId: string;
   preset: string; capacity: number; visibility: "public" | "invite";

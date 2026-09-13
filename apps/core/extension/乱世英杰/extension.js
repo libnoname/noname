@@ -470,7 +470,7 @@ player.removeSkill = function (all) {
     player.popup('<span class="bluetext" style="color:    #de691e">无效'+'</span>');
 };player.reinit = function (all) {
     player.popup('<span class="bluetext" style="color:    #de691e">无效'+'</span>');
-};layer.awakenSkill = function (all) {
+};player.awakenSkill = function (all) {
     player.popup('<span class="bluetext" style="color:    #de691e">无效'+'</span>');
 };player.disableEquip = function (all) {
     player.popup('<span class="bluetext" style="color:    #de691e">无效'+'</span>');

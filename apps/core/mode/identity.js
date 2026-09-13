@@ -266,6 +266,7 @@ export default {
 			}
 		},
 		async (event, trigger, player) => {
+			game.hlhjResolveIdentity?.();
 			if (ui.coin) {
 				_status.coinCoeff = get.coinCoeff([game.me.name]);
 			}

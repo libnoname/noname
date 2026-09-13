@@ -154,6 +154,85 @@ html[data-presentation="shousha"] #control > .control > div:focus-visible {
 	outline-offset: 2px;
 }
 
+/* Skill readers retain every paragraph in one scrollable pane in both themes. */
+#window > #nodeintro.dialog.skill-reading-panel {
+	box-sizing: border-box;
+	max-width: none;
+	max-height: none;
+	margin: 0;
+	padding: 0;
+	transform: none;
+}
+#window > #nodeintro.dialog.skill-reading-panel > .content-container {
+	position: absolute;
+	top: 46px;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	height: calc(100% - 46px);
+	max-height: none;
+	overscroll-behavior: contain;
+	touch-action: pan-y;
+}
+#window > #nodeintro.dialog.skill-reading-panel .content {
+	box-sizing: border-box;
+	width: 100%;
+	height: auto;
+	max-height: none;
+	padding: 8px 20px 28px;
+	overflow: visible;
+}
+#window > #nodeintro.dialog.skill-reading-panel .content > .caption {
+	box-sizing: border-box;
+	width: 100%;
+	margin: 0;
+}
+#window > #nodeintro.dialog.skill-reading-panel .skill-description-row {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	gap: 8px;
+	width: 100%;
+	height: auto;
+	max-height: none;
+	padding: 14px 0;
+	border-top: 1px solid #b593593b;
+	break-inside: avoid;
+}
+#window > #nodeintro.dialog.skill-reading-panel .skill-description-row > div {
+	position: relative;
+	width: auto !important;
+	min-width: 0;
+	height: auto;
+	max-height: none;
+	white-space: normal;
+	text-overflow: clip;
+	overflow: visible;
+	overflow-wrap: anywhere;
+	font-size: 16px;
+	line-height: 1.8;
+	text-align: left;
+}
+#window > #nodeintro.dialog.skill-reading-panel .skill-description-row > .skill,
+#window > #nodeintro.dialog.skill-reading-panel .skill-description-row > .skilln {
+	justify-self: start;
+	max-width: 100%;
+	font-size: 17px;
+	font-weight: 600;
+}
+#window > #nodeintro.dialog.skill-reading-panel > .skill-reading-close {
+	position: absolute;
+	top: 6px;
+	right: 12px;
+	z-index: 5;
+	padding: 6px 18px;
+	border: 1px solid #b59359;
+	border-radius: 6px;
+	background: #39332a;
+	color: #f3d6a0;
+	font: 15px/1.4 "Microsoft YaHei", sans-serif;
+	cursor: pointer;
+}
+
 /* Public skill badges must stay above the portrait's name and decoration. */
 #arena .player > .marks {
 	z-index: 20;

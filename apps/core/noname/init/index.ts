@@ -195,16 +195,23 @@ export async function boot() {
 			appearenceConfig.identity_font.item[value] = font;
 			appearenceConfig.cardtext_font.item[value] = font;
 			appearenceConfig.global_font.item[value] = font;
-			fontSheet.insertRule(`@font-face {font-family: '${value}'; src: local('${font}'), url('${lib.assetURL}font/${value}.woff2');}`, 0);
+			fontSheet.insertRule(`@font-face {font-family: '${value}'; font-display: swap; src: local('${font}'), url('${lib.assetURL}font/${value}.woff2');}`, 0);
 			if (suitsFont) {
-				fontSheet.insertRule(`@font-face {font-family: '${value}'; src: local('${font}'), url('${lib.assetURL}font/suits.woff2');}`, 0);
+				fontSheet.insertRule(`@font-face {font-family: '${value}'; font-display: swap; unicode-range: U+2660-2667; src: url('${lib.assetURL}font/suits.woff2');}`, 0);
 			}
 		});
 		if (suitsFont) {
-			fontSheet.insertRule(`@font-face {font-family: 'Suits'; src: url('${lib.assetURL}font/suits.woff2');}`, 0);
+			fontSheet.insertRule(`@font-face {font-family: 'Suits'; font-display: swap; src: url('${lib.assetURL}font/suits.woff2');}`, 0);
 		}
-		fontSheet.insertRule(`@font-face {font-family: 'NonameSuits'; src: url('${lib.assetURL}font/suits.woff2');}`, 0);
-		fontSheet.insertRule(`@font-face {font-family: 'MotoyaLMaru'; src: url('${lib.assetURL}font/motoyamaru.woff2');}`, 0);
+		fontSheet.insertRule(`@font-face {font-family: 'NonameSuits'; font-display: swap; src: url('${lib.assetURL}font/suits.woff2');}`, 0);
+		fontSheet.insertRule(`@font-face {font-family: 'MotoyaLMaru'; font-display: swap; src: url('${lib.assetURL}font/motoyamaru.woff2');}`, 0);
+		// Warm active fonts before dealing; never block readable fallback text.
+		const activeFonts = new Set(["xinwei", config.get("name_font"), config.get("cardtext_font"), config.get("global_font")]);
+		for (const font of activeFonts) {
+			if (typeof font === "string" && Object.hasOwn(pack.font, font)) {
+				void document.fonts?.load(`16px "${font}"`, "情思杀闪桃123").catch(() => {});
+			}
+		}
 		appearenceConfig.cardtext_font.item.default = "默认";
 		appearenceConfig.global_font.item.default = "默认";
 	}

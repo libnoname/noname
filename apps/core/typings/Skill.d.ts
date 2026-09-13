@@ -60,6 +60,8 @@ declare interface SkillHookTrigger {
 
 /** mod的配置 */
 declare interface Mod {
+	/** 手牌实际入手后的同步处理；普通获得和 directgain 均调用，早于 gainAfter。 */
+	handcardGain?(player: Player): void;
 	/**
 	 * 卡牌能否主动弃置
 	 */

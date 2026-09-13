@@ -55,6 +55,7 @@ export function installHost() {
 		return false;
 	}
 	const clients = new Map();
+	const aiSeats = new Set(spec.members.filter(member => member.isAI).map(member => member.id));
 	const choices = new Map();
 	const prompts = new Map();
 	const consumed = new Map();
@@ -69,7 +70,7 @@ export function installHost() {
 	};
 	const seatStatus = player => {
 		if (!player) return;
-		const label = player.ws?.closed ? "离线托管" : player.isAuto ? "托管" : "";
+		const label = aiSeats.has(player.playerid) ? "AI" : player.ws?.closed ? "离线托管" : player.isAuto ? "托管" : "";
 		game.broadcastAll(function (target, label) {
 			target.node.nameol.textContent = target.nickname + (label ? " · " + label : "");
 		}, player, label);
@@ -149,6 +150,7 @@ export function installHost() {
 	const originalWait = lib.element.Player.prototype.wait;
 	const originalUnwait = lib.element.Player.prototype.unwait;
 	lib.element.Player.prototype.unwait = function (result) {
+		if (aiSeats.has(this.playerid)) return originalUnwait.call(this, result);
 		const token = choices.get(this.playerid)?.token;
 		choices.get(this.playerid)?.selection._onlineValidationDialog?.close();
 		choices.delete(this.playerid);
@@ -157,6 +159,8 @@ export function installHost() {
 		return originalUnwait.call(this, result);
 	};
 	lib.element.Player.prototype.wait = function (...args) {
+		// Parallel choices may call wait even for the local game.me element.
+		if (aiSeats.has(this.playerid)) return originalWait.apply(this, args);
 		const token = `${spec.instanceId}:${++serial}`;
 		const event = sendingEvent || _status.event;
 		const prompt = prompts.get(this.playerid);
@@ -178,6 +182,8 @@ export function installHost() {
 		lib.node = { clients: [], observing: [], banned: [], torespond: {}, torespondtimeout: {}, waitForResult: {}, reconnectTokens: new Map() };
 		lib.playerOL = {}; lib.cardOL = {}; lib.vcardOL = {}; lib.wsOL = {};
 		for (const member of spec.members) {
+			// AI seats run locally in the rules engine and never wait for a client.
+			if (member.isAI) continue;
 			const transport = {
 				wsid: member.id,
 				send(raw) { deliver(member.id, { type: "engine", accountId: member.id, raw }); },
@@ -202,8 +208,8 @@ export function installHost() {
 		game.broadcast("gameStart");
 		emit({ type: "started" });
 	};
-	// Every arena slot is remote, including the element used as game.me by UI
-	// helpers. game.notMe ensures its choices also go through the remote path.
+	// Human seats are remote; AI seats use the engine's local decision path.
+	// game.notMe keeps the host's game.me element from requesting local input.
 	game.randomMapOL = function (type) {
 		game.prepareArena(spec.members.length);
 		if (type === "hidden") ui.arena.classList.add("playerhidden");
@@ -211,6 +217,7 @@ export function installHost() {
 		for (let i = 0; i < spec.members.length; i++) {
 			const member = spec.members[i], player = game.players[i];
 			player.playerid = member.id; player.ws = clients.get(member.id);
+			if (member.isAI) player.isAuto = true;
 			player.nickname = member.nickname; player.setNickname();
 			lib.playerOL[player.playerid] = player; map.push([player.playerid, player.nickname]);
 		}

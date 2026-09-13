@@ -8437,6 +8437,8 @@ export class Player extends HTMLDivElement {
 		if (cards2.length) {
 			this.node.handcards2.prepend(...cards2);
 		}
+		// Direct deals bypass gainAfter; apply hand-entry rules before syncing cards.
+		game.checkMod(this, "handcardGain", this);
 
 		if (this == game.me || _status.video) {
 			ui.updatehl();

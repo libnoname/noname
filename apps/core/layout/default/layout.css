@@ -1510,6 +1510,19 @@ div:not(.handcards) > .card:not(.thrown) > .info > span,
 	top: 0;
 	background-size: cover;
 }
+/* 情思 is a full-bleed painting; inset its art without clipping card labels,
+ * flower tags or the engine's selection/target outlines. */
+.card[data-card-name="hlhj_qingsi"] > .image,
+#arena.oblongcard:not(.chess) > .card.fullskin[data-card-name="hlhj_qingsi"] > .image,
+#arena.oblongcard:not(.chess) .handcards > .card.fullskin[data-card-name="hlhj_qingsi"] > .image {
+	left: 3px;
+	top: 3px;
+	width: calc(100% - 6px);
+	height: calc(100% - 6px);
+	border-radius: inherit;
+	background-position: center;
+	box-shadow: inset 0 0 4px 1px rgba(35, 24, 12, 0.75);
+}
 .card.infohidden > div {
 	display: none !important;
 }

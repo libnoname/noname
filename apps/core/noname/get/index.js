@@ -4970,7 +4970,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				} else {
 					opacity = "";
 				}
-				var skilltrans = get.translation(skills[i]).slice(0, 2);
+				var skilltrans = get.translation(skills[i]);
 				str += '<div class="skill" style="' + opacity + '">【' + skilltrans + '】</div><div style="' + opacity + '">' + get.skillInfoTranslation(skills[i], null, false) + '</div><div style="display:block;height:10px"></div>';
 			}
 		}
@@ -5109,6 +5109,16 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			return uiintro;
 		}
 		var i, translation, intro, str;
+		// Related rules remain readable even before the derived skill is gained.
+		const appendHlhjRules = (skills, player) => {
+			const related = [];
+			if (skills.includes("hlhj_guimeng") && !skills.includes("hlhj_yiyuan")) related.push("hlhj_yiyuan");
+			if (skills.includes("hlhj_jiangzhu")) related.push("hlhj_qingsi");
+			for (const name of related) {
+				const description = name === "hlhj_qingsi" ? lib.translate[name + "_info"] : get.skillInfoTranslation(name, player, false);
+				if (description) uiintro.add('<div><div class="skill">【' + get.translation(name) + '】</div><div>' + description + '</div></div>');
+			}
+		};
 		if (node._nointro) {
 			return;
 		}
@@ -5228,6 +5238,11 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 
 			var skills = node.getSkills(null, false, false).slice(0);
 			var skills2 = game.filterSkills(skills, node);
+			// Keep all printed Daiyu skills visible after death/loss of a skill,
+			// while respecting unrevealed generals in hidden-character modes.
+			if ([node.name1 || node.name, node.name2].some((name, index) => name === "hlhj_daiyu" && !node.isUnseen?.(index))) {
+				skills.addArray(get.character("hlhj_daiyu", 3));
+			}
 			if (node == game.me && node.hiddenSkills.length) {
 				skills.addArray(node.hiddenSkills);
 			}
@@ -5241,12 +5256,12 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 					continue;
 				}
 				if (lib.translate[skills[i] + "_info"]) {
-					if (lib.translate[skills[i] + "_ab"]) {
+					if (!lib.translate[skills[i]] && lib.translate[skills[i] + "_ab"]) {
 						translation = lib.translate[skills[i] + "_ab"];
 					} else {
 						translation = get.translation(skills[i]);
 						if (!lib.skill[skills[i]].nobracket) {
-							translation = `【${translation.slice(0, 2)}】`;
+							translation = `【${translation}】`;
 						}
 					}
 
@@ -5335,6 +5350,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 					}
 				}
 			}
+			appendHlhjRules(skills, node);
 			// if(get.is.phoneLayout()){
 			// 	var storage=node.storage;
 			// 	for(i in storage){
@@ -6057,12 +6073,12 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				var skills = get.character(character, 3);
 				for (i = 0; i < skills.length; i++) {
 					if (lib.translate[skills[i] + "_info"]) {
-						if (lib.translate[skills[i] + "_ab"]) {
+						if (!lib.translate[skills[i]] && lib.translate[skills[i] + "_ab"]) {
 							translation = lib.translate[skills[i] + "_ab"];
 						} else {
 							translation = get.translation(skills[i]);
 							if (!lib.skill[skills[i]].nobracket) {
-								translation = `【${translation.slice(0, 2)}】`;
+								translation = `【${translation}】`;
 							}
 						}
 
@@ -6073,6 +6089,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 						}
 					}
 				}
+				appendHlhjRules(skills, null);
 				var modepack = lib.characterPack["mode_" + get.mode()];
 				if (lib.config.show_favourite && lib.character[node.link] && (!modepack || !modepack[node.link]) && (!simple || get.is.phoneLayout())) {
 					var addFavourite = ui.create.div(".text.center.pointerdiv");

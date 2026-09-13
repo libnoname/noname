@@ -1,0 +1,1985 @@
+{
+  "character": "hlhj_daiyu",
+  "source": "theme/绛珠仙子_配音",
+  "mode": "random-variants",
+  "missing": [
+    "XX11"
+  ],
+  "pendingGroups": [],
+  "imports": [
+    {
+      "id": "JZ01",
+      "variant": "01",
+      "source": "1JZ/01/01.mp3",
+      "file": "hlhj_daiyu_jz01_01.mp3",
+      "sha256": "8de46924dd2b3be1ea25dcb0a4ac4c3886d4dc2428841a16be797e935c8381d4"
+    },
+    {
+      "id": "JZ02",
+      "variant": "01",
+      "source": "1JZ/02/02_1.mp3",
+      "file": "hlhj_daiyu_jz02_01.mp3",
+      "sha256": "902830ca6ec6fdff508f4f1efa63ae0fee5a361e8bb22b8f75a370b98540a502"
+    },
+    {
+      "id": "JZ02",
+      "variant": "02",
+      "source": "1JZ/02/02_2.mp3",
+      "file": "hlhj_daiyu_jz02_02.mp3",
+      "sha256": "f7c4da6315a79cd28ba03f077d05f38b2a6a70f567db055e3afe0c69d8322f5a"
+    },
+    {
+      "id": "JZ03",
+      "variant": "01",
+      "source": "1JZ/03/03_1.mp3",
+      "file": "hlhj_daiyu_jz03_01.mp3",
+      "sha256": "d1c06570ac609e9972eab9ab72ec2a9714ff659c0292dbb1f2177af6c7d668f4"
+    },
+    {
+      "id": "JZ03",
+      "variant": "02",
+      "source": "1JZ/03/03_2.mp3",
+      "file": "hlhj_daiyu_jz03_02.mp3",
+      "sha256": "566b44cbff35e234dca97ca9a1610920dfc88708fba465c3a76033134ee88758"
+    },
+    {
+      "id": "JZ04",
+      "variant": "01",
+      "source": "1JZ/04/04_1.mp3",
+      "file": "hlhj_daiyu_jz04_01.mp3",
+      "sha256": "4da1eb57a46c9aff108912f5a01abc9af2fccdda6d672c20de4379e6c3f1a1c4"
+    },
+    {
+      "id": "JZ04",
+      "variant": "02",
+      "source": "1JZ/04/04_2.mp3",
+      "file": "hlhj_daiyu_jz04_02.mp3",
+      "sha256": "1b004cb745e0966c46f568605b0eb227a29f928392c3b2da54b7b3fd8a7a089f"
+    },
+    {
+      "id": "JZ05",
+      "variant": "01",
+      "source": "1JZ/05/05_1.mp3",
+      "file": "hlhj_daiyu_jz05_01.mp3",
+      "sha256": "f994dab08fffb0771b7e6a78e0b9f6ab1e36b0d267a130746301447f057aaea2"
+    },
+    {
+      "id": "JZ05",
+      "variant": "02",
+      "source": "1JZ/05/05_2.mp3",
+      "file": "hlhj_daiyu_jz05_02.mp3",
+      "sha256": "074518bf0d2b0ec5b8e36c9d4744a59ca22d63f1f5541b20c1c25f7833488e3a"
+    },
+    {
+      "id": "JZ06",
+      "variant": "01",
+      "source": "1JZ/06/06_1.mp3",
+      "file": "hlhj_daiyu_jz06_01.mp3",
+      "sha256": "251ffdb175ee5e67b6d52ff18be8c994c1ca1a4056253f95f962824d017c277f"
+    },
+    {
+      "id": "JZ06",
+      "variant": "02",
+      "source": "1JZ/06/06_2.mp3",
+      "file": "hlhj_daiyu_jz06_02.mp3",
+      "sha256": "397633384b096ab89d3a35190dc401c70bccc50ee62c8f8e74760dcaf2c206d1"
+    },
+    {
+      "id": "JZ07",
+      "variant": "01",
+      "source": "1JZ/07/07_1.mp3",
+      "file": "hlhj_daiyu_jz07_01.mp3",
+      "sha256": "fa0eb8264fe49b31c631171a46e439d998818db37b894a35d85470ebe153b548"
+    },
+    {
+      "id": "JZ07",
+      "variant": "02",
+      "source": "1JZ/07/07_2.mp3",
+      "file": "hlhj_daiyu_jz07_02.mp3",
+      "sha256": "1c272e66aa863b83793f289358312a3092f83c371edd512ebf0776066202aeb3"
+    },
+    {
+      "id": "JZ08",
+      "variant": "01",
+      "source": "1JZ/08/08_1.mp3",
+      "file": "hlhj_daiyu_jz08_01.mp3",
+      "sha256": "9f836bf424c99fd93956dc674d889fa4c307a9733bbfe44b415a5b808381d1e6"
+    },
+    {
+      "id": "JZ08",
+      "variant": "02",
+      "source": "1JZ/08/08_2.mp3",
+      "file": "hlhj_daiyu_jz08_02.mp3",
+      "sha256": "9cb3dccab8a29ec5d6311074ca5c9d0365ed92ddde30e2a0c3215f928f22e82f"
+    },
+    {
+      "id": "JZ09",
+      "variant": "01",
+      "source": "1JZ/09/09_1.mp3",
+      "file": "hlhj_daiyu_jz09_01.mp3",
+      "sha256": "6c4faeb214cec58f176780d4b61fbe2fe77798c11ae18a2c1ffc0d73a881b2e4"
+    },
+    {
+      "id": "JZ09",
+      "variant": "02",
+      "source": "1JZ/09/09_2.mp3",
+      "file": "hlhj_daiyu_jz09_02.mp3",
+      "sha256": "788ff38ccd5997743efed9cfa7fa42a05568015ef5e43ec831340a6883a2c196"
+    },
+    {
+      "id": "JZ10",
+      "variant": "01",
+      "source": "1JZ/10/10_1.mp3",
+      "file": "hlhj_daiyu_jz10_01.mp3",
+      "sha256": "dd09f3eaa54a0d35e5ffd1cbceb019f57bf465ab1eeb366435c761f42a1b17f0"
+    },
+    {
+      "id": "JZ10",
+      "variant": "02",
+      "source": "1JZ/10/10_2.mp3",
+      "file": "hlhj_daiyu_jz10_02.mp3",
+      "sha256": "e25f914ee3f24b9696bbd914565a15fd5074b9a402026af1364141694b95b944"
+    },
+    {
+      "id": "JZ11",
+      "variant": "01",
+      "source": "1JZ/11/11_1.mp3",
+      "file": "hlhj_daiyu_jz11_01.mp3",
+      "sha256": "48573f1401791209e5c323eb513c31276f1442e6e9ecda6b7c16440751aaa171"
+    },
+    {
+      "id": "JZ11",
+      "variant": "02",
+      "source": "1JZ/11/11_2.mp3",
+      "file": "hlhj_daiyu_jz11_02.mp3",
+      "sha256": "43ee4d852e666418033f0870af362402e3fa292482c0882ca0d96e2dd026b879"
+    },
+    {
+      "id": "JZ12",
+      "variant": "01",
+      "source": "1JZ/12/12_1.mp3",
+      "file": "hlhj_daiyu_jz12_01.mp3",
+      "sha256": "b5f56a377d0f76ab90b48d486323b720e5ebbcc680f130050193c6012ce616f7"
+    },
+    {
+      "id": "JZ12",
+      "variant": "02",
+      "source": "1JZ/12/12_2.mp3",
+      "file": "hlhj_daiyu_jz12_02.mp3",
+      "sha256": "5f6608d53e06bd4b4cb538045364e66545f8e0de21e65b2a20792db64da87f44"
+    },
+    {
+      "id": "JZ13",
+      "variant": "01",
+      "source": "1JZ/13/13_1.mp3",
+      "file": "hlhj_daiyu_jz13_01.mp3",
+      "sha256": "42f1da7261337d22658df6eb2de396d97ed4816a99c3f95016ccf92026c48371"
+    },
+    {
+      "id": "JZ13",
+      "variant": "02",
+      "source": "1JZ/13/13_2.mp3",
+      "file": "hlhj_daiyu_jz13_02.mp3",
+      "sha256": "0c5c36c3b1b4af7fa81c1f690246ec75013a845529b2e4ea409a3af91ea3bb71"
+    },
+    {
+      "id": "MS01",
+      "variant": "01",
+      "source": "2MS/21/11_1.mp3",
+      "file": "hlhj_daiyu_ms01_01.mp3",
+      "sha256": "a73e7d52421bee9c37edead78c011fcaa5b7cdd7677f9ff38dbcbd0fe44dc8e0"
+    },
+    {
+      "id": "MS01",
+      "variant": "02",
+      "source": "2MS/21/11_2.mp3",
+      "file": "hlhj_daiyu_ms01_02.mp3",
+      "sha256": "6641552d72c13f868c62978ea745049e3032a156071eb06092ce230d12f79a8e"
+    },
+    {
+      "id": "MS02",
+      "variant": "01",
+      "source": "2MS/22/12_1.mp3",
+      "file": "hlhj_daiyu_ms02_01.mp3",
+      "sha256": "0e9f6e0c698eef1525988d18cbaf09b3f3348128c9fccf1310a6a8b5a6a204c3"
+    },
+    {
+      "id": "MS02",
+      "variant": "02",
+      "source": "2MS/22/12_2.mp3",
+      "file": "hlhj_daiyu_ms02_02.mp3",
+      "sha256": "0f83f556ab826f23950c50ab1c6c07d45c785f3326e8737efe9bc2d34cfba54f"
+    },
+    {
+      "id": "MS03",
+      "variant": "01",
+      "source": "2MS/23/13_1.mp3",
+      "file": "hlhj_daiyu_ms03_01.mp3",
+      "sha256": "2afcd1ffafd017a1341d00e3246e435824b17b8ada862db1c63d6f6ac24f223d"
+    },
+    {
+      "id": "MS03",
+      "variant": "02",
+      "source": "2MS/23/13_2.mp3",
+      "file": "hlhj_daiyu_ms03_02.mp3",
+      "sha256": "c7c7b85f853e29bdf8a5d006a0203bd1a0e7815aca2df3fcfca733ccc52544ac"
+    },
+    {
+      "id": "MS04",
+      "variant": "01",
+      "source": "2MS/24/14_1.mp3",
+      "file": "hlhj_daiyu_ms04_01.mp3",
+      "sha256": "1cf3cec8cc8115c1c794b0d14b2923f58ec2d6a166e554b0d8304f8ad78c1e99"
+    },
+    {
+      "id": "MS04",
+      "variant": "02",
+      "source": "2MS/24/14_2.mp3",
+      "file": "hlhj_daiyu_ms04_02.mp3",
+      "sha256": "17e789e87a6daa46c3788feb3a4d83979152eef34802959296664613156ae3bd"
+    },
+    {
+      "id": "MS05",
+      "variant": "01",
+      "source": "2MS/25/15_1.mp3",
+      "file": "hlhj_daiyu_ms05_01.mp3",
+      "sha256": "7625085723ad6af21ca3ce2e7e0588cf99d3e733895ce498bf7a000185c20c4b"
+    },
+    {
+      "id": "MS05",
+      "variant": "02",
+      "source": "2MS/25/15_2.mp3",
+      "file": "hlhj_daiyu_ms05_02.mp3",
+      "sha256": "1d8434bf22dbedfada4543aac5397c9eb9c3d12e04c4316d450409d6b4cc3f1a"
+    },
+    {
+      "id": "MS06",
+      "variant": "01",
+      "source": "2MS/26/16_1.mp3",
+      "file": "hlhj_daiyu_ms06_01.mp3",
+      "sha256": "2149e26d51f4b627b5cf2afca3d9deee7548c2ce92241bb22d781fcba4f99543"
+    },
+    {
+      "id": "MS06",
+      "variant": "02",
+      "source": "2MS/26/16_2.mp3",
+      "file": "hlhj_daiyu_ms06_02.mp3",
+      "sha256": "13f19ae3848f6cf9136617b6065833eb0a305b557a751b59b89dabbbb9d1a2cd"
+    },
+    {
+      "id": "MS07",
+      "variant": "01",
+      "source": "2MS/27/17_1.mp3",
+      "file": "hlhj_daiyu_ms07_01.mp3",
+      "sha256": "12e6190864ce75fc6fc97a12b0e541320763e3451c8ea3044452f6c2a765703a"
+    },
+    {
+      "id": "MS07",
+      "variant": "02",
+      "source": "2MS/27/17_2.mp3",
+      "file": "hlhj_daiyu_ms07_02.mp3",
+      "sha256": "2be370449fe69ea0745943140e844aeb0dcf69637e2049e0c791c780a7a30a8b"
+    },
+    {
+      "id": "MS08",
+      "variant": "01",
+      "source": "2MS/28/18_1.mp3",
+      "file": "hlhj_daiyu_ms08_01.mp3",
+      "sha256": "6aecc9c4236fbafd9746646b9558750a21ecbbdbf70e45f5d6471191a9f491cf"
+    },
+    {
+      "id": "MS08",
+      "variant": "02",
+      "source": "2MS/28/18_2.mp3",
+      "file": "hlhj_daiyu_ms08_02.mp3",
+      "sha256": "aa6df0a7772ebe91ca9414104bb901bd8302794e8bd5448f6f7658314e368915"
+    },
+    {
+      "id": "MS09",
+      "variant": "01",
+      "source": "2MS/29/29_1.mp3",
+      "file": "hlhj_daiyu_ms09_01.mp3",
+      "sha256": "6bc7bc577a11ec2b6cf06ef51cda7e65a75302cf20e50c002589f10c792de99e"
+    },
+    {
+      "id": "MS09",
+      "variant": "02",
+      "source": "2MS/29/29_2.mp3",
+      "file": "hlhj_daiyu_ms09_02.mp3",
+      "sha256": "3e109bccb5168162fd7c345c11c3147da68cebcec75b834a50ac10ff3920cf60"
+    },
+    {
+      "id": "MS10",
+      "variant": "01",
+      "source": "2MS/30/30_1.mp3",
+      "file": "hlhj_daiyu_ms10_01.mp3",
+      "sha256": "d363431ced91aab7b6e3ad1a40998f0553374231dd1a29cb8cc2be5c2c9e1c6a"
+    },
+    {
+      "id": "MS10",
+      "variant": "02",
+      "source": "2MS/30/30_2.mp3",
+      "file": "hlhj_daiyu_ms10_02.mp3",
+      "sha256": "3336fefb71710849514d8a5db02c54569984beb7c2047f28bc097755878b8161"
+    },
+    {
+      "id": "MS11",
+      "variant": "01",
+      "source": "2MS/31/31_1.mp3",
+      "file": "hlhj_daiyu_ms11_01.mp3",
+      "sha256": "2dac04a419f2affe954125dcd42852781a8d39bc76c58fa5737c71ae2fedb2fe"
+    },
+    {
+      "id": "MS11",
+      "variant": "02",
+      "source": "2MS/31/31_2.mp3",
+      "file": "hlhj_daiyu_ms11_02.mp3",
+      "sha256": "10380a0c37f6a692f912e34abd3744e58b0e0e1af47ce968b45af614c8f38fad"
+    },
+    {
+      "id": "MS12",
+      "variant": "01",
+      "source": "2MS/32/32_1.mp3",
+      "file": "hlhj_daiyu_ms12_01.mp3",
+      "sha256": "c5ce232bc7771809bb0d91232c3c44005ac7693587a3ad1399a39a7cb02fd3b6"
+    },
+    {
+      "id": "MS12",
+      "variant": "02",
+      "source": "2MS/32/32_2.mp3",
+      "file": "hlhj_daiyu_ms12_02.mp3",
+      "sha256": "3ef9142b15dabf560766067beb362c347a0675027222abb4c5284df2e660caa0"
+    },
+    {
+      "id": "MS13",
+      "variant": "01",
+      "source": "2MS/33/33_1.mp3",
+      "file": "hlhj_daiyu_ms13_01.mp3",
+      "sha256": "0bb0d893bcefb59ee71490e676826f3efff7da8f7f2a60db162573b2590dcd98"
+    },
+    {
+      "id": "MS13",
+      "variant": "02",
+      "source": "2MS/33/33_2.mp3",
+      "file": "hlhj_daiyu_ms13_02.mp3",
+      "sha256": "96d7eb89a15db1e2664f7740907f4da527f7d6efa21038c33c968ff4ef5cbc43"
+    },
+    {
+      "id": "MS14",
+      "variant": "01",
+      "source": "2MS/34/34_1.mp3",
+      "file": "hlhj_daiyu_ms14_01.mp3",
+      "sha256": "bebaee2c57eea54615e88e5b7fdf7b0670bd70f81715d93095e4454cc2d2fb3f"
+    },
+    {
+      "id": "MS14",
+      "variant": "02",
+      "source": "2MS/34/34_2.mp3",
+      "file": "hlhj_daiyu_ms14_02.mp3",
+      "sha256": "dafb15d37172f0c9423a453a946da2c0d0500816f6f13e1a7906c1291b3baa42"
+    },
+    {
+      "id": "XD01",
+      "variant": "01",
+      "source": "3XD/31/21_1.mp3",
+      "file": "hlhj_daiyu_xd01_01.mp3",
+      "sha256": "59d6ef8142a13536195858fd751791500d3e1a620cbf4c838d6772de2adfb6d9"
+    },
+    {
+      "id": "XD01",
+      "variant": "02",
+      "source": "3XD/31/21_2.mp3",
+      "file": "hlhj_daiyu_xd01_02.mp3",
+      "sha256": "165b66ff8dedec90d965fa33d23fce693494c77abb238c8993f2af6d2256f68c"
+    },
+    {
+      "id": "XD02",
+      "variant": "01",
+      "source": "3XD/32/21_1.mp3",
+      "file": "hlhj_daiyu_xd02_01.mp3",
+      "sha256": "2827b79eee936dc5ef410027c13f648999a8026bf5c31624e75d1e931a8809f5"
+    },
+    {
+      "id": "XD02",
+      "variant": "02",
+      "source": "3XD/32/21_2.mp3",
+      "file": "hlhj_daiyu_xd02_02.mp3",
+      "sha256": "d5a60b1cefbe291a033f652eb8284b449dee6942a864ecccb9f8353beace10c9"
+    },
+    {
+      "id": "XD03",
+      "variant": "01",
+      "source": "3XD/33/22_1.mp3",
+      "file": "hlhj_daiyu_xd03_01.mp3",
+      "sha256": "b106202516608c383e42222ea1cbd0b06373614456d35869f91931ad5226005a"
+    },
+    {
+      "id": "XD03",
+      "variant": "02",
+      "source": "3XD/33/22_2.mp3",
+      "file": "hlhj_daiyu_xd03_02.mp3",
+      "sha256": "8c42a31561622bbb5fb0f2e5c069dbb856108414c4b869fefb66abd8423dac1f"
+    },
+    {
+      "id": "XD03",
+      "variant": "03",
+      "source": "3XD/33/22_3.mp3",
+      "file": "hlhj_daiyu_xd03_03.mp3",
+      "sha256": "b1bb2f2e23e12910dd5e2e01b728960f490d0ff391d3ee3f9b518250426c80c9"
+    },
+    {
+      "id": "XD04",
+      "variant": "01",
+      "source": "3XD/34/23_1.mp3",
+      "file": "hlhj_daiyu_xd04_01.mp3",
+      "sha256": "1ce7783ca43c584d382ea8b5f2f4e91523dc5003b07394b836370a870c3a18cd"
+    },
+    {
+      "id": "XD04",
+      "variant": "02",
+      "source": "3XD/34/23_2.mp3",
+      "file": "hlhj_daiyu_xd04_02.mp3",
+      "sha256": "9eb5b145a21fcde15bcd9783a806d7471f405c8b4dd66937f32ac0072c61a15e"
+    },
+    {
+      "id": "XD05",
+      "variant": "01",
+      "source": "3XD/35/24_1.mp3",
+      "file": "hlhj_daiyu_xd05_01.mp3",
+      "sha256": "aab4d01aad1270da7743f1bda243b710d67cbeff9922b31eaef9326bb6d35fbf"
+    },
+    {
+      "id": "XD05",
+      "variant": "02",
+      "source": "3XD/35/24_2.mp3",
+      "file": "hlhj_daiyu_xd05_02.mp3",
+      "sha256": "7c17bb81b3fbfa7f7f8b11819d729423e042ec56251fe887df7f42101a657cfe"
+    },
+    {
+      "id": "XD06",
+      "variant": "01",
+      "source": "3XD/36/25_1.mp3",
+      "file": "hlhj_daiyu_xd06_01.mp3",
+      "sha256": "e61cda48287ddc78729bb0f17d3c2fbdc1d8675ccaf0722a8b7d596d28f1190d"
+    },
+    {
+      "id": "XD06",
+      "variant": "02",
+      "source": "3XD/36/25_2.mp3",
+      "file": "hlhj_daiyu_xd06_02.mp3",
+      "sha256": "11a8e021486b94071d2b4ee93ee08cb4d690d5440b0480c9eada44efdabf7c84"
+    },
+    {
+      "id": "XD07",
+      "variant": "01",
+      "source": "3XD/37/27_1.mp3",
+      "file": "hlhj_daiyu_xd07_01.mp3",
+      "sha256": "397a2c8f99b96ae388355bb14843cd5e46275e7be1b0af74371cd4289f308b19"
+    },
+    {
+      "id": "XD07",
+      "variant": "02",
+      "source": "3XD/37/27_2.mp3",
+      "file": "hlhj_daiyu_xd07_02.mp3",
+      "sha256": "dde1c55bdb12fdc113f2ce745334ce89e03fdd24d07595f2d694ca9794fbeb30"
+    },
+    {
+      "id": "XD08",
+      "variant": "01",
+      "source": "3XD/38/28_1.mp3",
+      "file": "hlhj_daiyu_xd08_01.mp3",
+      "sha256": "794966408de964c0605d45ed3f58ba2d9f20812da5c78babf3de2927fa16f3db"
+    },
+    {
+      "id": "XD08",
+      "variant": "02",
+      "source": "3XD/38/28_2.mp3",
+      "file": "hlhj_daiyu_xd08_02.mp3",
+      "sha256": "d051471de95e55812aa703da5c1320461de3dad3fe3cb03a7f765f0cefb848b1"
+    },
+    {
+      "id": "XD09",
+      "variant": "01",
+      "source": "3XD/39/29_1.mp3",
+      "file": "hlhj_daiyu_xd09_01.mp3",
+      "sha256": "e0d4a8664fffef6e79e26a21e5d619a74f8804b7330addcb1d071c12157ca5e8"
+    },
+    {
+      "id": "XD09",
+      "variant": "02",
+      "source": "3XD/39/29_2.mp3",
+      "file": "hlhj_daiyu_xd09_02.mp3",
+      "sha256": "9e600da1c4ae5dddf7c51a377bd48b0612e158cefbb932de3a1b066ed40999fe"
+    },
+    {
+      "id": "XD10",
+      "variant": "01",
+      "source": "3XD/40/30_1.mp3",
+      "file": "hlhj_daiyu_xd10_01.mp3",
+      "sha256": "e0d4a8664fffef6e79e26a21e5d619a74f8804b7330addcb1d071c12157ca5e8"
+    },
+    {
+      "id": "XD10",
+      "variant": "02",
+      "source": "3XD/40/30_2.mp3",
+      "file": "hlhj_daiyu_xd10_02.mp3",
+      "sha256": "9e600da1c4ae5dddf7c51a377bd48b0612e158cefbb932de3a1b066ed40999fe"
+    },
+    {
+      "id": "ZH01",
+      "variant": "01",
+      "source": "4ZH/40/40_1.mp3",
+      "file": "hlhj_daiyu_zh01_01.mp3",
+      "sha256": "ee9a397a3264936b0b82371877871e2f5ceda19b4fa647c8e2686dc661c4481e"
+    },
+    {
+      "id": "ZH01",
+      "variant": "02",
+      "source": "4ZH/40/40_2.mp3",
+      "file": "hlhj_daiyu_zh01_02.mp3",
+      "sha256": "57f615ed35080ffd1153aa8ba2b8ae0b6a5c86ed0eb6d93deade15ccb147806c"
+    },
+    {
+      "id": "ZH02",
+      "variant": "01",
+      "source": "4ZH/41/41_1.mp3",
+      "file": "hlhj_daiyu_zh02_01.mp3",
+      "sha256": "e7ce7ae3c94407f986f56158d355e6d107d1af67bcb83e87378250b2e7a7fbe8"
+    },
+    {
+      "id": "ZH02",
+      "variant": "02",
+      "source": "4ZH/41/41_2.mp3",
+      "file": "hlhj_daiyu_zh02_02.mp3",
+      "sha256": "51965da3a7732fe0ae267c2b130283a70640325f061bea1d5c426fbbdd40ebda"
+    },
+    {
+      "id": "ZH03",
+      "variant": "01",
+      "source": "4ZH/42/42_1.mp3",
+      "file": "hlhj_daiyu_zh03_01.mp3",
+      "sha256": "ec7c42c934272d05f75ac337bdc90b61dd22a2f382065f3e0774ae429a4d2431"
+    },
+    {
+      "id": "ZH03",
+      "variant": "02",
+      "source": "4ZH/42/42_2.mp3",
+      "file": "hlhj_daiyu_zh03_02.mp3",
+      "sha256": "0d661a234ecbf027bfb0900c836ccff01fe071c3c35d952d0636ea98c0fdfb96"
+    },
+    {
+      "id": "ZH04",
+      "variant": "01",
+      "source": "4ZH/43/43_1.mp3",
+      "file": "hlhj_daiyu_zh04_01.mp3",
+      "sha256": "5aef9ab6651be1e4da738a3b07f1da1c5fb28f6ff25a961efc3c74497c6663d8"
+    },
+    {
+      "id": "ZH04",
+      "variant": "02",
+      "source": "4ZH/43/43_2.mp3",
+      "file": "hlhj_daiyu_zh04_02.mp3",
+      "sha256": "b7a1138994a3abf6e06d26234e06cc24bbdcbc4818f260d605e12756eb5cef88"
+    },
+    {
+      "id": "ZH05",
+      "variant": "01",
+      "source": "4ZH/44/44_1.mp3",
+      "file": "hlhj_daiyu_zh05_01.mp3",
+      "sha256": "ddcceaca935cef499baa09336920318c2d9226f42d6523dce4e5d9f34b9f573a"
+    },
+    {
+      "id": "ZH05",
+      "variant": "02",
+      "source": "4ZH/44/44_2.mp3",
+      "file": "hlhj_daiyu_zh05_02.mp3",
+      "sha256": "32041daafaf0a18a65812eb125ef953d7346bb99db423d381b164b74f974fb31"
+    },
+    {
+      "id": "ZH06",
+      "variant": "01",
+      "source": "4ZH/45/45_1.mp3",
+      "file": "hlhj_daiyu_zh06_01.mp3",
+      "sha256": "7bcc0c40fd47e2caafee01c57fdf2ca265c55a5a6a06b3d64f53541a2492870e"
+    },
+    {
+      "id": "ZH06",
+      "variant": "02",
+      "source": "4ZH/45/45_2.mp3",
+      "file": "hlhj_daiyu_zh06_02.mp3",
+      "sha256": "d044f1a13ab8d84a49a88fa234ca10527aeb118023fc464254f8160c8155038f"
+    },
+    {
+      "id": "ZH07",
+      "variant": "01",
+      "source": "4ZH/46/46_1.mp3",
+      "file": "hlhj_daiyu_zh07_01.mp3",
+      "sha256": "52271b028142c49761b46518edc3f9756169f7463b449f5ce357bb291f268ac8"
+    },
+    {
+      "id": "ZH07",
+      "variant": "02",
+      "source": "4ZH/46/46_2.mp3",
+      "file": "hlhj_daiyu_zh07_02.mp3",
+      "sha256": "224e86aa3a06d43db317de1b528d2fdceae529280437348554f4b0ef9ee693ab"
+    },
+    {
+      "id": "ZH08",
+      "variant": "01",
+      "source": "4ZH/47/47_1.mp3",
+      "file": "hlhj_daiyu_zh08_01.mp3",
+      "sha256": "0a78286b2b46d5010b6403fbf41f4680d7e58dacb569183de3bd7a5cc86f8688"
+    },
+    {
+      "id": "ZH08",
+      "variant": "02",
+      "source": "4ZH/47/47_2.mp3",
+      "file": "hlhj_daiyu_zh08_02.mp3",
+      "sha256": "d49e9e4dfa22f598eaf3312b6b1241241c688b5c8665347d93c3756daeac9fea"
+    },
+    {
+      "id": "ZH09",
+      "variant": "01",
+      "source": "4ZH/48/48_1.mp3",
+      "file": "hlhj_daiyu_zh09_01.mp3",
+      "sha256": "0692ef5e2cf56227d45242a9827052de95258fc5b10ce82d6324789040e5e475"
+    },
+    {
+      "id": "ZH09",
+      "variant": "02",
+      "source": "4ZH/48/48_2.mp3",
+      "file": "hlhj_daiyu_zh09_02.mp3",
+      "sha256": "354e5f6bf0a1146b1ac71e41a624d777147b3a0c0aa20ace3b7bb9df5e603f1a"
+    },
+    {
+      "id": "ZH10",
+      "variant": "01",
+      "source": "4ZH/49/ElevenLabs_2026-09-13T12_05_05_林黛玉_gen_sp100_s50_sb75_v3 (1).mp3",
+      "file": "hlhj_daiyu_zh10_01.mp3",
+      "sha256": "a1df4cd38f1fa72ad074b33762161c51d3b7b7b4b5d32ceca6bee5b206e28ef0"
+    },
+    {
+      "id": "ZH10",
+      "variant": "02",
+      "source": "4ZH/49/ElevenLabs_2026-09-13T12_05_05_林黛玉_gen_sp100_s50_sb75_v3.mp3",
+      "file": "hlhj_daiyu_zh10_02.mp3",
+      "sha256": "8bb4ea2866a31dcd9f5322dcde4faa2592703bda84bd5de8a355d84283dd91a7"
+    },
+    {
+      "id": "ZH11",
+      "variant": "01",
+      "source": "4ZH/50/50_1.mp3",
+      "file": "hlhj_daiyu_zh11_01.mp3",
+      "sha256": "a93c9dcaa9c8dadcf19db92d286ed1ecb194389ff224624ea831dd01df034269"
+    },
+    {
+      "id": "ZH11",
+      "variant": "02",
+      "source": "4ZH/50/50_2.mp3",
+      "file": "hlhj_daiyu_zh11_02.mp3",
+      "sha256": "4fa757136e405df78eb21bb926a3dc6c34eb470273ae6d7a816f0b0ed88bc9bf"
+    },
+    {
+      "id": "ZH12",
+      "variant": "01",
+      "source": "4ZH/51/51_1.mp3",
+      "file": "hlhj_daiyu_zh12_01.mp3",
+      "sha256": "9e4661b4a96aed664371bd0bda54d6771be489c87f825a50893b03fe50786621"
+    },
+    {
+      "id": "ZH12",
+      "variant": "02",
+      "source": "4ZH/51/51_2.mp3",
+      "file": "hlhj_daiyu_zh12_02.mp3",
+      "sha256": "aebb1cd2f92f4cccbb9b5eeeb76a388aca52ba3735fb2c92db35e866cbb5139c"
+    },
+    {
+      "id": "XX01",
+      "variant": "01",
+      "source": "5XX/51/51_1.mp3",
+      "file": "hlhj_daiyu_xx01_01.mp3",
+      "sha256": "331ff74921b3eda1693ce0395e2a23e1ba95c89c152d0245fe8b0767e83adeec"
+    },
+    {
+      "id": "XX01",
+      "variant": "02",
+      "source": "5XX/51/51_2.mp3",
+      "file": "hlhj_daiyu_xx01_02.mp3",
+      "sha256": "1f5448f2c7dc34b6d88a4bbfa7e93a486c0f600350269c8c35edb6eba502ac59"
+    },
+    {
+      "id": "XX02",
+      "variant": "01",
+      "source": "5XX/52/52_1.mp3",
+      "file": "hlhj_daiyu_xx02_01.mp3",
+      "sha256": "2124e3830c7749dae84166d2ef4577809b2f34d761b2b5772f79deb072d0f124"
+    },
+    {
+      "id": "XX02",
+      "variant": "02",
+      "source": "5XX/52/52_2.mp3",
+      "file": "hlhj_daiyu_xx02_02.mp3",
+      "sha256": "d54a14faaf6cc8254276db4774e3d56035667f2e87d920e5f401eafd67b0933d"
+    },
+    {
+      "id": "XX02",
+      "variant": "03",
+      "source": "5XX/52/52_3.mp3",
+      "file": "hlhj_daiyu_xx02_03.mp3",
+      "sha256": "de22666be4eab9923da5b3973638c3406d5bb2ecf7b4de2314feddbf1cf1921d"
+    },
+    {
+      "id": "XX03",
+      "variant": "01",
+      "source": "5XX/54/54_1.mp3",
+      "file": "hlhj_daiyu_xx03_01.mp3",
+      "sha256": "5f4cc7f7cfed2f9ad5308a18b004ad05f7a8cf4220af31963903be76ddc7f687"
+    },
+    {
+      "id": "XX03",
+      "variant": "02",
+      "source": "5XX/54/54_2.mp3",
+      "file": "hlhj_daiyu_xx03_02.mp3",
+      "sha256": "5da336b17468abecc09d2615e0960d8f906ad9781e55820248d5e7ef633dbe0a"
+    },
+    {
+      "id": "XX04",
+      "variant": "01",
+      "source": "5XX/55/55_1.mp3",
+      "file": "hlhj_daiyu_xx04_01.mp3",
+      "sha256": "0948cdd34c5f65dbe3e57741c5ef65d6657f91fcf0bb78a11130453e600d9fd2"
+    },
+    {
+      "id": "XX04",
+      "variant": "02",
+      "source": "5XX/55/55_2.mp3",
+      "file": "hlhj_daiyu_xx04_02.mp3",
+      "sha256": "a82a5495acd4b54db14264a43bebd4bb0fc993d6ad2ac75af7b63f154d5024c9"
+    },
+    {
+      "id": "XX05",
+      "variant": "01",
+      "source": "5XX/56/56_1.mp3",
+      "file": "hlhj_daiyu_xx05_01.mp3",
+      "sha256": "79d7e8a60913fc21fb29dfecbb3810f173ba8fac714cc19e018c87d9d635c84f"
+    },
+    {
+      "id": "XX05",
+      "variant": "02",
+      "source": "5XX/56/56_2.mp3",
+      "file": "hlhj_daiyu_xx05_02.mp3",
+      "sha256": "cf5cafbbbff639dbedb548b9566ac0c33c8cb7d0fa3ac2776b82e3c3c242d53c"
+    },
+    {
+      "id": "XX06",
+      "variant": "01",
+      "source": "5XX/57/57_1.mp3",
+      "file": "hlhj_daiyu_xx06_01.mp3",
+      "sha256": "f5cff426bb8059ad7deb7dd7f64b2af004811690d15e596dc1c9f74a63369abe"
+    },
+    {
+      "id": "XX06",
+      "variant": "02",
+      "source": "5XX/57/57_2.mp3",
+      "file": "hlhj_daiyu_xx06_02.mp3",
+      "sha256": "b55b1150071a9315861cfb5e776804055a65565c44c9321fd3bae79b556a13bc"
+    },
+    {
+      "id": "XX07",
+      "variant": "01",
+      "source": "5XX/58/58_1.mp3",
+      "file": "hlhj_daiyu_xx07_01.mp3",
+      "sha256": "b7172169de1bf53da707ac0370605a85dfe59abe7032876fa2f67a06e0668587"
+    },
+    {
+      "id": "XX07",
+      "variant": "02",
+      "source": "5XX/58/58_2.mp3",
+      "file": "hlhj_daiyu_xx07_02.mp3",
+      "sha256": "58f4add206939b42f6d9985b7ab28bd51dacc55638016e6f42614fd914fad8c5"
+    },
+    {
+      "id": "XX08",
+      "variant": "01",
+      "source": "5XX/59/59_1.mp3",
+      "file": "hlhj_daiyu_xx08_01.mp3",
+      "sha256": "307a760955cf6e2a906a7fccbeb47c2f55ab5c8c8375113c08952435d1ab8d69"
+    },
+    {
+      "id": "XX08",
+      "variant": "02",
+      "source": "5XX/59/59_2.mp3",
+      "file": "hlhj_daiyu_xx08_02.mp3",
+      "sha256": "24cfee82f2512ffe44f396abf2a9f7c8669d8ff313ac9e4427be50afbc0ccfc8"
+    },
+    {
+      "id": "XX09",
+      "variant": "01",
+      "source": "5XX/60/60_1.mp3",
+      "file": "hlhj_daiyu_xx09_01.mp3",
+      "sha256": "c957bfef3d61fe7ddceef1495f5fe11bce93547f8077448636cb32639f677b68"
+    },
+    {
+      "id": "XX09",
+      "variant": "02",
+      "source": "5XX/60/60_2.mp3",
+      "file": "hlhj_daiyu_xx09_02.mp3",
+      "sha256": "b63a34c2492ea11dc1241c495ff60e6310816c312bd7ceac700eb891af9e0e26"
+    },
+    {
+      "id": "XX10",
+      "variant": "01",
+      "source": "5XX/61/61_1.mp3",
+      "file": "hlhj_daiyu_xx10_01.mp3",
+      "sha256": "fe97fa15fe1400bc5807b6a2fbd6b8f84c27578838ed94fb58ec7883d3562d89"
+    },
+    {
+      "id": "XX10",
+      "variant": "02",
+      "source": "5XX/61/61_2.mp3",
+      "file": "hlhj_daiyu_xx10_02.mp3",
+      "sha256": "713d99297aa6ac486cf0a8564ebbc744f2cc715f6876f6422324556da02d9618"
+    },
+    {
+      "id": "GM01",
+      "variant": "01",
+      "source": "6GM/61/61_1.mp3",
+      "file": "hlhj_daiyu_gm01_01.mp3",
+      "sha256": "90d56d35b07e651044578350fbf740c367756b256362ace85665ce47c115b20a"
+    },
+    {
+      "id": "GM01",
+      "variant": "02",
+      "source": "6GM/61/61_2.mp3",
+      "file": "hlhj_daiyu_gm01_02.mp3",
+      "sha256": "e261db88541fea2af54302640aa217a2cb1ad9529aae83024d970c13cec286bc"
+    },
+    {
+      "id": "GM02",
+      "variant": "01",
+      "source": "6GM/62/62_1.mp3",
+      "file": "hlhj_daiyu_gm02_01.mp3",
+      "sha256": "d13cb3528d32045cbdd0777b9ce4be99c781087183baf019f8a76ace62cc68b8"
+    },
+    {
+      "id": "GM02",
+      "variant": "02",
+      "source": "6GM/62/62_2.mp3",
+      "file": "hlhj_daiyu_gm02_02.mp3",
+      "sha256": "e8f46597264bbab6fc1f4975ced6eccc8e4689a253e12f9877dfac9e7c448c9c"
+    },
+    {
+      "id": "GM03",
+      "variant": "01",
+      "source": "6GM/63/63_1.mp3",
+      "file": "hlhj_daiyu_gm03_01.mp3",
+      "sha256": "b78b78ed15059f3defee01e875ed1dbb17fecf1d5ce0228aa901dac365ed0e19"
+    },
+    {
+      "id": "GM03",
+      "variant": "02",
+      "source": "6GM/63/63_2.mp3",
+      "file": "hlhj_daiyu_gm03_02.mp3",
+      "sha256": "41a16c14d4f116af598d128a8d15c9cf0730070f573668441266877fc0b7e714"
+    },
+    {
+      "id": "GM04",
+      "variant": "01",
+      "source": "6GM/64/64_1.mp3",
+      "file": "hlhj_daiyu_gm04_01.mp3",
+      "sha256": "151fe4e1bb85f45a74c9e5d361e5158c955e309b1a7b007fcc84dc8e6bd8b63c"
+    },
+    {
+      "id": "GM04",
+      "variant": "02",
+      "source": "6GM/64/64_2.mp3",
+      "file": "hlhj_daiyu_gm04_02.mp3",
+      "sha256": "86ea682fd012886c3c8d22762b7fb361dea0ad85872fe5a3b5623fc8dc855143"
+    },
+    {
+      "id": "GM05",
+      "variant": "01",
+      "source": "6GM/65/65_1.mp3",
+      "file": "hlhj_daiyu_gm05_01.mp3",
+      "sha256": "296f62376a4f0a6d447c0f06bae71ecee976fa7153d7172f68000624881dd2a3"
+    },
+    {
+      "id": "GM05",
+      "variant": "02",
+      "source": "6GM/65/65_2.mp3",
+      "file": "hlhj_daiyu_gm05_02.mp3",
+      "sha256": "d377b06961ddf8aed5a7b55c3fb21dce3af82bb5aa3414c2044b4f1e1d9ad538"
+    },
+    {
+      "id": "GM06",
+      "variant": "01",
+      "source": "6GM/66/66_1.mp3",
+      "file": "hlhj_daiyu_gm06_01.mp3",
+      "sha256": "0da5be6d007824ac7f31d79f05c999c86679957bf3c634b2c255774bdf30d12c"
+    },
+    {
+      "id": "GM06",
+      "variant": "02",
+      "source": "6GM/66/66_2.mp3",
+      "file": "hlhj_daiyu_gm06_02.mp3",
+      "sha256": "dd97f43b663fcd1dd8f874869f89237650d30a0307d7f937e2a1f466685cdda8"
+    },
+    {
+      "id": "GM07",
+      "variant": "01",
+      "source": "6GM/67/67_1.mp3",
+      "file": "hlhj_daiyu_gm07_01.mp3",
+      "sha256": "02475ac2060a696d304201c23c36b73a9b56c590deb56547b4ab04377dd671ac"
+    },
+    {
+      "id": "GM07",
+      "variant": "02",
+      "source": "6GM/67/67_2.mp3",
+      "file": "hlhj_daiyu_gm07_02.mp3",
+      "sha256": "25eceea1b8c9c5f12db853e63e97ff17b4cebdd7aae2514734a1f2f63b6308e8"
+    },
+    {
+      "id": "GM08",
+      "variant": "01",
+      "source": "6GM/68/68_1.mp3",
+      "file": "hlhj_daiyu_gm08_01.mp3",
+      "sha256": "11760a35d91bc62815353c25017123f166e63e0aae885465f0b5cf4b841bc068"
+    },
+    {
+      "id": "GM08",
+      "variant": "02",
+      "source": "6GM/68/68_2.mp3",
+      "file": "hlhj_daiyu_gm08_02.mp3",
+      "sha256": "1e96fd53ffca5c118eb2a32cb975b06d12b1d47c59801b455dec69ece0ecfe63"
+    },
+    {
+      "id": "GM09",
+      "variant": "01",
+      "source": "6GM/69/69_1.mp3",
+      "file": "hlhj_daiyu_gm09_01.mp3",
+      "sha256": "c566499b5a99f73f62daad0b47133ec3fdde3afc23e652b7ade04eccc42d7513"
+    },
+    {
+      "id": "GM09",
+      "variant": "02",
+      "source": "6GM/69/69_2.mp3",
+      "file": "hlhj_daiyu_gm09_02.mp3",
+      "sha256": "4ff4dffc5b926d78dcc0a56ea5387b6c7e7bdd0f8ab6580a1bfe04bcfd928b3f"
+    },
+    {
+      "id": "GM10",
+      "variant": "01",
+      "source": "6GM/70/70_1.mp3",
+      "file": "hlhj_daiyu_gm10_01.mp3",
+      "sha256": "09b14b678e94b83c18c505035aefdd334de3b55c9a7f9ad650dc195435a9e2a5"
+    },
+    {
+      "id": "GM10",
+      "variant": "02",
+      "source": "6GM/70/70_2.mp3",
+      "file": "hlhj_daiyu_gm10_02.mp3",
+      "sha256": "4592e2d7167e904cc9cd118138bedcc0cd17dbb35bf6e20ae657ae3c58ae2775"
+    },
+    {
+      "id": "GM11",
+      "variant": "01",
+      "source": "6GM/72/72_1.mp3",
+      "file": "hlhj_daiyu_gm11_01.mp3",
+      "sha256": "9661275e8d4a5597eee940ff1c91c918549b44447510102b9e31e4242e704129"
+    },
+    {
+      "id": "GM11",
+      "variant": "02",
+      "source": "6GM/72/72_2.mp3",
+      "file": "hlhj_daiyu_gm11_02.mp3",
+      "sha256": "090c9959f553ecbd42cb9994d722719a7d7417f6edb1bb8175253864a4149680"
+    },
+    {
+      "id": "GM12",
+      "variant": "01",
+      "source": "6GM/73/73_1.mp3",
+      "file": "hlhj_daiyu_gm12_01.mp3",
+      "sha256": "07f0e3bba00f5bf9986286d31721d682cf784526e6af325cb7d7fc5ba22f19e1"
+    },
+    {
+      "id": "GM12",
+      "variant": "02",
+      "source": "6GM/73/73_2.mp3",
+      "file": "hlhj_daiyu_gm12_02.mp3",
+      "sha256": "3bda8dcb24caacc36012bfc79b7dfd2ce578989a1d386b5eb00a914d1cca4d2d"
+    },
+    {
+      "id": "GM13",
+      "variant": "01",
+      "source": "6GM/74/74_1.mp3",
+      "file": "hlhj_daiyu_gm13_01.mp3",
+      "sha256": "f33ec10efd3e9521552cbacffcf327402e37b709c1da775af22e465b2e058d03"
+    },
+    {
+      "id": "GM13",
+      "variant": "02",
+      "source": "6GM/74/74_2.mp3",
+      "file": "hlhj_daiyu_gm13_02.mp3",
+      "sha256": "68d7b4628f69bdc207aa73113c6477eb65c4592abbd8a8a792fa302478867d11"
+    },
+    {
+      "id": "YY01",
+      "variant": "01",
+      "source": "7YY/71/71_1.mp3",
+      "file": "hlhj_daiyu_yy01_01.mp3",
+      "sha256": "6e28a5b5152e18d1975f597d5b6e50a05f8593b96188b8abaf0bce18e96dc161"
+    },
+    {
+      "id": "YY01",
+      "variant": "02",
+      "source": "7YY/71/71_2.mp3",
+      "file": "hlhj_daiyu_yy01_02.mp3",
+      "sha256": "04f617cd2200137f7f241c5075d96bcaf1ac55b2a550987efca20a41eee8d096"
+    },
+    {
+      "id": "YY02",
+      "variant": "01",
+      "source": "7YY/72/72_1.mp3",
+      "file": "hlhj_daiyu_yy02_01.mp3",
+      "sha256": "1d84c42413a320a5de4d926c7ece7d2dec97e7562823f93ab5f6c22448e2da41"
+    },
+    {
+      "id": "YY02",
+      "variant": "02",
+      "source": "7YY/72/72_2.mp3",
+      "file": "hlhj_daiyu_yy02_02.mp3",
+      "sha256": "505ab53c0b6687bb7ca43a61f6cd3ba321c67d62fb8ea448b79ad8ed21765d42"
+    },
+    {
+      "id": "YY03",
+      "variant": "01",
+      "source": "7YY/73/73_1.mp3",
+      "file": "hlhj_daiyu_yy03_01.mp3",
+      "sha256": "9481a143d17aa050bf2c071ef325ce99c3132ab419a70b64335b9157abbffc4f"
+    },
+    {
+      "id": "YY03",
+      "variant": "02",
+      "source": "7YY/73/73_2.mp3",
+      "file": "hlhj_daiyu_yy03_02.mp3",
+      "sha256": "d4175d4bfac979fc2d0c033715eabdcb50b035934065d2da6f3ba339b6889e3e"
+    },
+    {
+      "id": "YY04",
+      "variant": "01",
+      "source": "7YY/74/74_1.mp3",
+      "file": "hlhj_daiyu_yy04_01.mp3",
+      "sha256": "5f1e633963fed15e1b15843095bd554fbf03ba9a66d7a9b7c6c9b21f0faeac8f"
+    },
+    {
+      "id": "YY04",
+      "variant": "02",
+      "source": "7YY/74/74_2.mp3",
+      "file": "hlhj_daiyu_yy04_02.mp3",
+      "sha256": "7e18effa3f1add11d74d2e7fa894ffb77898b189f83ee764876d7c5a8043f536"
+    },
+    {
+      "id": "YY05",
+      "variant": "01",
+      "source": "7YY/75/75_1.mp3",
+      "file": "hlhj_daiyu_yy05_01.mp3",
+      "sha256": "a7a0115a8b77b967b48ab3a165660015ff953660a042db5c97184da7fa4872ed"
+    },
+    {
+      "id": "YY05",
+      "variant": "02",
+      "source": "7YY/75/75_2.mp3",
+      "file": "hlhj_daiyu_yy05_02.mp3",
+      "sha256": "99d07b10bb95ecc68b4e74f54e0a2139d5ed1786c188a4d232e88042775d8981"
+    },
+    {
+      "id": "YY06",
+      "variant": "01",
+      "source": "7YY/76/76_1.mp3",
+      "file": "hlhj_daiyu_yy06_01.mp3",
+      "sha256": "df9962144b6e71f023c2fe002175b94870c3a1eb531ae67861a263a583397925"
+    },
+    {
+      "id": "YY06",
+      "variant": "02",
+      "source": "7YY/76/76_2.mp3",
+      "file": "hlhj_daiyu_yy06_02.mp3",
+      "sha256": "5c929cba15da950137649bfe6b94c62a64c243b18147f381dd249338956e1ab7"
+    },
+    {
+      "id": "YY07",
+      "variant": "01",
+      "source": "7YY/77/77_1.mp3",
+      "file": "hlhj_daiyu_yy07_01.mp3",
+      "sha256": "6f3fe00015c1d5e6a6a5ea16d957912c3419ffafabaaccdd83dd808bf2d54fcb"
+    },
+    {
+      "id": "YY07",
+      "variant": "02",
+      "source": "7YY/77/77_2.mp3",
+      "file": "hlhj_daiyu_yy07_02.mp3",
+      "sha256": "239337a405a87effcdc7459ea6879fbbf6733d72112db5375d5f248095351215"
+    },
+    {
+      "id": "YY08",
+      "variant": "01",
+      "source": "7YY/78/78_1.mp3",
+      "file": "hlhj_daiyu_yy08_01.mp3",
+      "sha256": "f8187f3df31c11c05d8dcd4c604cef0b0de2d40c9a8cc2190d906ba1261f0210"
+    },
+    {
+      "id": "YY08",
+      "variant": "02",
+      "source": "7YY/78/78_2.mp3",
+      "file": "hlhj_daiyu_yy08_02.mp3",
+      "sha256": "31aba6808f267a11a4c4bea627c46c4250b6c81d6447fb368b95153cec07706f"
+    },
+    {
+      "id": "YY09",
+      "variant": "01",
+      "source": "7YY/79/79_1.mp3",
+      "file": "hlhj_daiyu_yy09_01.mp3",
+      "sha256": "c619553412dd0be27ae87f58e42cef0b48debe542ce0211a93a1bb8d108e0e4a"
+    },
+    {
+      "id": "YY09",
+      "variant": "02",
+      "source": "7YY/79/79_2.mp3",
+      "file": "hlhj_daiyu_yy09_02.mp3",
+      "sha256": "33d6cbb9c14416a2fff25086b7314e76494ae58c92d67cf87c6b8c7a13ae7344"
+    },
+    {
+      "id": "YY10",
+      "variant": "01",
+      "source": "7YY/80/80_1.mp3",
+      "file": "hlhj_daiyu_yy10_01.mp3",
+      "sha256": "df7a6f54272497e5f0bda8b2d690ac4c81ae525bbda9a3cafca67d7ab9cb0e7c"
+    },
+    {
+      "id": "YY10",
+      "variant": "02",
+      "source": "7YY/80/80_2.mp3",
+      "file": "hlhj_daiyu_yy10_02.mp3",
+      "sha256": "4d37e1de643d86a875e25c6729c74224bbdbe343279ccc84edea579376f11256"
+    },
+    {
+      "id": "YY11",
+      "variant": "01",
+      "source": "7YY/81/81_1.mp3",
+      "file": "hlhj_daiyu_yy11_01.mp3",
+      "sha256": "7ba63e745c810f35711520d438128570dd529f254f52ee9d21c479cf3f6baedf"
+    },
+    {
+      "id": "YY11",
+      "variant": "02",
+      "source": "7YY/81/81_2.mp3",
+      "file": "hlhj_daiyu_yy11_02.mp3",
+      "sha256": "7907822a9ae995fd6d0524b314a59ea88a3fbee82432df6951a44bd5b8213120"
+    },
+    {
+      "id": "YY12",
+      "variant": "01",
+      "source": "7YY/82/82_1.mp3",
+      "file": "hlhj_daiyu_yy12_01.mp3",
+      "sha256": "f66da2423404f5c74d95c57f5df1f1a62a8dd3b55ebed39498406a7d93861ffb"
+    },
+    {
+      "id": "YY12",
+      "variant": "02",
+      "source": "7YY/82/82_2.mp3",
+      "file": "hlhj_daiyu_yy12_02.mp3",
+      "sha256": "c78387e9e16f4d91c783d9f8edf80d424246320894dc892c96a34ea5722ff109"
+    },
+    {
+      "id": "YY13",
+      "variant": "01",
+      "source": "7YY/83/83_1.mp3",
+      "file": "hlhj_daiyu_yy13_01.mp3",
+      "sha256": "1bb23900dc69ccfd76040859afe15a6f19baedb78d0f99011fd6488c20ab1aea"
+    },
+    {
+      "id": "YY13",
+      "variant": "02",
+      "source": "7YY/83/83_2.mp3",
+      "file": "hlhj_daiyu_yy13_02.mp3",
+      "sha256": "804bf7f1d4ac4fa7d374055c81984a77b3c74631fe5f1fe3f5b01719d57276f5"
+    },
+    {
+      "id": "YY14",
+      "variant": "01",
+      "source": "7YY/84/84_1.mp3",
+      "file": "hlhj_daiyu_yy14_01.mp3",
+      "sha256": "83c07bc92313776b8791f9d6f941b57b848a406086b24f13d99eb078054e5821"
+    },
+    {
+      "id": "YY14",
+      "variant": "02",
+      "source": "7YY/84/84_2.mp3",
+      "file": "hlhj_daiyu_yy14_02.mp3",
+      "sha256": "80111c592b402f7909d0d673ce44e784b2baba18e2ad407ad7e047c74a80ea75"
+    },
+    {
+      "id": "QS01",
+      "variant": "01",
+      "source": "8QS/81/81_1.mp3",
+      "file": "hlhj_daiyu_qs01_01.mp3",
+      "sha256": "255e1e0f5058620448f152cf5257299b3a30cfd560c5fdfb1c3c1f6e87a154ff"
+    },
+    {
+      "id": "QS01",
+      "variant": "02",
+      "source": "8QS/81/81_2.mp3",
+      "file": "hlhj_daiyu_qs01_02.mp3",
+      "sha256": "1de25a55571a356dd3ff89e5a75b6c516b8987a85359584ffc0f7cfdb3646b1d"
+    },
+    {
+      "id": "QS02",
+      "variant": "01",
+      "source": "8QS/82/82_1.mp3",
+      "file": "hlhj_daiyu_qs02_01.mp3",
+      "sha256": "0b96847e1786f1fcaf5e8c74e97408b0a99dab22eb1cdde807f2a8a18c0cc233"
+    },
+    {
+      "id": "QS02",
+      "variant": "02",
+      "source": "8QS/82/82_2.mp3",
+      "file": "hlhj_daiyu_qs02_02.mp3",
+      "sha256": "514f4fa2cad88e2daf34476e9066c707977a2d9495aab239e2b9b90171d9fce1"
+    },
+    {
+      "id": "QS03",
+      "variant": "01",
+      "source": "8QS/83/83_1.mp3",
+      "file": "hlhj_daiyu_qs03_01.mp3",
+      "sha256": "34b5b09d7b5e8cbcb6c2ced8e3a74a833440e11eccadc0c54c58879429f36f79"
+    },
+    {
+      "id": "QS03",
+      "variant": "02",
+      "source": "8QS/83/83_2.mp3",
+      "file": "hlhj_daiyu_qs03_02.mp3",
+      "sha256": "701e1c2b2c915a0da897396b447de4adb3c195ca800d1f364f8f580e3da9cda0"
+    },
+    {
+      "id": "QS04",
+      "variant": "01",
+      "source": "8QS/84/84_1.mp3",
+      "file": "hlhj_daiyu_qs04_01.mp3",
+      "sha256": "11605a307907d259d29e3209c389802ae2d28008276adc22aeb2df744b7e3914"
+    },
+    {
+      "id": "QS04",
+      "variant": "02",
+      "source": "8QS/84/84_2.mp3",
+      "file": "hlhj_daiyu_qs04_02.mp3",
+      "sha256": "25c9a63643bed2ff5a754fc088bc475372062f0076b7e3861a7fb222e3506592"
+    },
+    {
+      "id": "QS05",
+      "variant": "01",
+      "source": "8QS/85/85_1.mp3",
+      "file": "hlhj_daiyu_qs05_01.mp3",
+      "sha256": "469bec4398080853d335ab9357a9ff143f568277cf85068e6b9425744c9be5e1"
+    },
+    {
+      "id": "QS05",
+      "variant": "02",
+      "source": "8QS/85/85_2.mp3",
+      "file": "hlhj_daiyu_qs05_02.mp3",
+      "sha256": "90fa77ab6f7f3ffffdc52a4fc8f35e89041081f7df3332bc433b5451d97c0620"
+    },
+    {
+      "id": "QS06",
+      "variant": "01",
+      "source": "8QS/86/86_1.mp3",
+      "file": "hlhj_daiyu_qs06_01.mp3",
+      "sha256": "4483f827163f111138d938f71f4d464daf7e872bbeb6065b4f1a0b87fb813fd5"
+    },
+    {
+      "id": "QS06",
+      "variant": "02",
+      "source": "8QS/86/86_2.mp3",
+      "file": "hlhj_daiyu_qs06_02.mp3",
+      "sha256": "02517a693351821f26d3c8c21211907bd44c3564ae7830d873f5259beb4d3716"
+    },
+    {
+      "id": "QS07",
+      "variant": "01",
+      "source": "8QS/87/87_1.mp3",
+      "file": "hlhj_daiyu_qs07_01.mp3",
+      "sha256": "a5d7f0630730ae32d8523e4003568460cf0cb96b321db5abb95a645095dd0f63"
+    },
+    {
+      "id": "QS07",
+      "variant": "02",
+      "source": "8QS/87/87_2.mp3",
+      "file": "hlhj_daiyu_qs07_02.mp3",
+      "sha256": "d60d968725670846bc2c8be0cad79689d4c8f0f2430d6502c1dd0bdc1d9dad33"
+    },
+    {
+      "id": "QS08",
+      "variant": "01",
+      "source": "8QS/88/88_1.mp3",
+      "file": "hlhj_daiyu_qs08_01.mp3",
+      "sha256": "7cb7a002eeca5aba8ed40b1efbdbab315afc1aaa1dc4ba79aeb8affa1a228eda"
+    },
+    {
+      "id": "QS08",
+      "variant": "02",
+      "source": "8QS/88/88_2.mp3",
+      "file": "hlhj_daiyu_qs08_02.mp3",
+      "sha256": "e175b2d04e4ce3a8ac59a0c4f90b44084452233b0333e88df62fb490b996dca5"
+    },
+    {
+      "id": "QS09",
+      "variant": "01",
+      "source": "8QS/89/89_1.mp3",
+      "file": "hlhj_daiyu_qs09_01.mp3",
+      "sha256": "7a5583ce9c6482f13bad6504e8914d2c313faf1d1177949aba85000798b91242"
+    },
+    {
+      "id": "QS09",
+      "variant": "02",
+      "source": "8QS/89/89_2.mp3",
+      "file": "hlhj_daiyu_qs09_02.mp3",
+      "sha256": "4998eae9ceba0f8e974a519610ec53505e975f156ce6e94f6645697a916cd27f"
+    },
+    {
+      "id": "QS10",
+      "variant": "01",
+      "source": "8QS/90/90_1.mp3",
+      "file": "hlhj_daiyu_qs10_01.mp3",
+      "sha256": "39e096af341bcaea45b0fc8039c3e8c67d5e82f59baaa38a4beb341c3334a403"
+    },
+    {
+      "id": "QS10",
+      "variant": "02",
+      "source": "8QS/90/90_2.mp3",
+      "file": "hlhj_daiyu_qs10_02.mp3",
+      "sha256": "b53e200509d58a7fae47897d2993b72e53726955f2c0575eaf7f17ba315f54ea"
+    },
+    {
+      "id": "QS11",
+      "variant": "01",
+      "source": "8QS/91/91_1.mp3",
+      "file": "hlhj_daiyu_qs11_01.mp3",
+      "sha256": "2f4ff20c4d8655e6993c9daec408b5789e05b3a2aad2590659d00a49d84e12e5"
+    },
+    {
+      "id": "QS11",
+      "variant": "02",
+      "source": "8QS/91/91_2.mp3",
+      "file": "hlhj_daiyu_qs11_02.mp3",
+      "sha256": "8638f235165dc5bf9818cc9182f03ff12b8a4478a683c81af89c58197dc18bcc"
+    },
+    {
+      "id": "QS12",
+      "variant": "01",
+      "source": "8QS/92/92_1.mp3",
+      "file": "hlhj_daiyu_qs12_01.mp3",
+      "sha256": "4e004d300f5640c391b9159a70a4b95365e03b8e6acbe9f02c02d20708d27e42"
+    },
+    {
+      "id": "QS12",
+      "variant": "02",
+      "source": "8QS/92/92_2.mp3",
+      "file": "hlhj_daiyu_qs12_02.mp3",
+      "sha256": "c5d62a748c8ddf3ff43dd8a0e82fbe017ef2011d2f723b2ee68ba7b40f6dec35"
+    },
+    {
+      "id": "QS13",
+      "variant": "01",
+      "source": "8QS/93/93_1.mp3",
+      "file": "hlhj_daiyu_qs13_01.mp3",
+      "sha256": "3e0dd7d973ad23b6939a396cede23b3d41710164478e9ced28ffd1b540953ca3"
+    },
+    {
+      "id": "QS13",
+      "variant": "02",
+      "source": "8QS/93/93_2.mp3",
+      "file": "hlhj_daiyu_qs13_02.mp3",
+      "sha256": "2dd2b025786e0fb1f19272cda4450e820398d4f99dd3b5433f15dc422fbdf41d"
+    },
+    {
+      "id": "EN01",
+      "variant": "01",
+      "source": "9EN/91/91_1.mp3",
+      "file": "hlhj_daiyu_en01_01.mp3",
+      "sha256": "39e8c7446bbad827b8ad224102887c153c8af04abcd360eb514de4e3baf0b27f"
+    },
+    {
+      "id": "EN01",
+      "variant": "02",
+      "source": "9EN/91/91_2.mp3",
+      "file": "hlhj_daiyu_en01_02.mp3",
+      "sha256": "e5e7e8fc917140a2154fed8400a6196f8485291da52423aee5ef2c320eecaf71"
+    },
+    {
+      "id": "EN02",
+      "variant": "01",
+      "source": "9EN/92/92_1.mp3",
+      "file": "hlhj_daiyu_en02_01.mp3",
+      "sha256": "2e1937a0be1ad5b2f1e0b78318add073497aa0016d5e4f460730f86d79ed7c14"
+    },
+    {
+      "id": "EN02",
+      "variant": "02",
+      "source": "9EN/92/92_2.mp3",
+      "file": "hlhj_daiyu_en02_02.mp3",
+      "sha256": "049ec23282c6404abea55f36380cdd5690eb320f39e143ffadcc2924e06fabda"
+    },
+    {
+      "id": "EN03",
+      "variant": "01",
+      "source": "9EN/93/93_1.mp3",
+      "file": "hlhj_daiyu_en03_01.mp3",
+      "sha256": "686ea4ab27bd8d07e4d29d3fff3c3eae920bb9b8f93947b09b970ff2c1e2673f"
+    },
+    {
+      "id": "EN03",
+      "variant": "02",
+      "source": "9EN/93/93_2.mp3",
+      "file": "hlhj_daiyu_en03_02.mp3",
+      "sha256": "3fbaf0c30d19c75e4a9956b2d195e987bd75adaf5cad8f0a9f9742891e119c09"
+    },
+    {
+      "id": "EN04",
+      "variant": "01",
+      "source": "9EN/94/94_1.mp3",
+      "file": "hlhj_daiyu_en04_01.mp3",
+      "sha256": "c842d2b95f1481e10e03d65066bece359c17e906c81a9a2147a4d187f708347c"
+    },
+    {
+      "id": "EN04",
+      "variant": "02",
+      "source": "9EN/94/94_2.mp3",
+      "file": "hlhj_daiyu_en04_02.mp3",
+      "sha256": "98790820803a00fe4efd38966bbee0e6d3745a3ed5ed65412b3862d9721817f9"
+    },
+    {
+      "id": "D01",
+      "variant": "01",
+      "source": "10D/D01/D01_1.mp3",
+      "file": "hlhj_daiyu_d01_01.mp3",
+      "sha256": "2ffdc3c07d95c6ce15f80f3ce025ef9ed42bd9e6e68347cb27ad4dcf52b9d122"
+    },
+    {
+      "id": "D01",
+      "variant": "02",
+      "source": "10D/D01/D01_2.mp3",
+      "file": "hlhj_daiyu_d01_02.mp3",
+      "sha256": "7fb28bb18ce099ad5a80f16a2a2a58bfc1f5d848005b9aa4f5e7441fa2892c49"
+    },
+    {
+      "id": "D02",
+      "variant": "01",
+      "source": "10D/D02/ElevenLabs_2026-09-13T10_51_34_林黛玉_gen_sp100_s50_sb75_v3 (1).mp3",
+      "file": "hlhj_daiyu_d02_01.mp3",
+      "sha256": "d309a5d04b106cd37961cbb28a62754d667db7c2cf8965c73eb4e9464ba44b89"
+    },
+    {
+      "id": "D02",
+      "variant": "02",
+      "source": "10D/D02/ElevenLabs_2026-09-13T10_51_34_林黛玉_gen_sp100_s50_sb75_v3.mp3",
+      "file": "hlhj_daiyu_d02_02.mp3",
+      "sha256": "3e143673a68d077a1c46498952d8b505edbe66080c4d3b3a47e508ee357ddba1"
+    },
+    {
+      "id": "D02",
+      "variant": "03",
+      "source": "10D/D02/ElevenLabs_2026-09-13T10_52_50_林黛玉_gen_sp100_s50_sb75_v3 (1).mp3",
+      "file": "hlhj_daiyu_d02_03.mp3",
+      "sha256": "40bb97693cd5761f21fe6d18d18f772e11089f57aebf8465c6a8b62274ad87c5"
+    },
+    {
+      "id": "D02",
+      "variant": "04",
+      "source": "10D/D02/ElevenLabs_2026-09-13T10_52_50_林黛玉_gen_sp100_s50_sb75_v3.mp3",
+      "file": "hlhj_daiyu_d02_04.mp3",
+      "sha256": "d0f5e17c1044975d3df0689140ec1b18ba2803895bfc35e4f8cb62c7b8659752"
+    },
+    {
+      "id": "D03",
+      "variant": "01",
+      "source": "10D/D03/D03_1.mp3",
+      "file": "hlhj_daiyu_d03_01.mp3",
+      "sha256": "0c55d5759d5bfab87405c8a0bbfb93910d6492937e3cb58ee81930cb900135c7"
+    },
+    {
+      "id": "D03",
+      "variant": "02",
+      "source": "10D/D03/D03_2.mp3",
+      "file": "hlhj_daiyu_d03_02.mp3",
+      "sha256": "2b33ce8b686296ae3ff0ba7d807fee0616d37ac95ee0779c69a8461fd12a0b4f"
+    },
+    {
+      "id": "D04",
+      "variant": "01",
+      "source": "10D/D04/D04_1.mp3",
+      "file": "hlhj_daiyu_d04_01.mp3",
+      "sha256": "b8dc77ccfcca56a2c2db3044b56c916db930f4ea973d530aa069fb3cb4b077ea"
+    },
+    {
+      "id": "D04",
+      "variant": "02",
+      "source": "10D/D04/D04_2.mp3",
+      "file": "hlhj_daiyu_d04_02.mp3",
+      "sha256": "27b39e9ae4b421cc2dfb609ebdf71c9ea8ac15ae015d5246953197da15c0efce"
+    },
+    {
+      "id": "D05",
+      "variant": "01",
+      "source": "10D/D05/ElevenLabs_2026-09-13T10_54_55_林黛玉_gen_sp100_s50_sb75_v3 (1).mp3",
+      "file": "hlhj_daiyu_d05_01.mp3",
+      "sha256": "640f957c1ea9533f4830346c7a280de2925da7198e397b75d069f67c189cd826"
+    },
+    {
+      "id": "D05",
+      "variant": "02",
+      "source": "10D/D05/ElevenLabs_2026-09-13T10_54_55_林黛玉_gen_sp100_s50_sb75_v3.mp3",
+      "file": "hlhj_daiyu_d05_02.mp3",
+      "sha256": "f5401f603022312148093b7c3d99929d7681ac25a745e1ac7d39d10caf8ab340"
+    },
+    {
+      "id": "P01",
+      "variant": "01",
+      "source": "11P/P01/ElevenLabs_2026-09-13T11_03_59_林黛玉_gen_sp100_s50_sb75_v3 (1).mp3",
+      "file": "hlhj_daiyu_p01_01.mp3",
+      "sha256": "ca6c6f58421b9253cf516a0bb3ca55e8a705e36a9f69e70920c91483ffbafbb5"
+    },
+    {
+      "id": "P01",
+      "variant": "02",
+      "source": "11P/P01/ElevenLabs_2026-09-13T11_03_59_林黛玉_gen_sp100_s50_sb75_v3.mp3",
+      "file": "hlhj_daiyu_p01_02.mp3",
+      "sha256": "ee5f64430731adf0498fa58cca6734856bc5b9494fc9d6d5562bbf04a5d81794"
+    },
+    {
+      "id": "P02",
+      "variant": "01",
+      "source": "11P/P02/ElevenLabs_2026-09-13T11_06_08_林黛玉_gen_sp100_s50_sb75_v3 (1).mp3",
+      "file": "hlhj_daiyu_p02_01.mp3",
+      "sha256": "2eba80c56be5cd526da565540a013ec3e8517119bf1b442afc40c8e6b3f18602"
+    },
+    {
+      "id": "P02",
+      "variant": "02",
+      "source": "11P/P02/ElevenLabs_2026-09-13T11_06_08_林黛玉_gen_sp100_s50_sb75_v3.mp3",
+      "file": "hlhj_daiyu_p02_02.mp3",
+      "sha256": "952ee8377dd6e40d8880123ee3261725097e38b22dd8fa63e275dd650eb19235"
+    },
+    {
+      "id": "P03",
+      "variant": "01",
+      "source": "11P/P03/ElevenLabs_2026-09-13T11_06_40_林黛玉_gen_sp100_s50_sb75_v3 (1).mp3",
+      "file": "hlhj_daiyu_p03_01.mp3",
+      "sha256": "e6ad5aa3ccd3cf33e8d216efc582c253fb5efcf123b48f339554a1f4015f0859"
+    },
+    {
+      "id": "P03",
+      "variant": "02",
+      "source": "11P/P03/ElevenLabs_2026-09-13T11_06_40_林黛玉_gen_sp100_s50_sb75_v3.mp3",
+      "file": "hlhj_daiyu_p03_02.mp3",
+      "sha256": "1f8a26209b7057f1025f3532b2c96ea2b1e93087c8a56e4b852093ebdfb72cfc"
+    },
+    {
+      "id": "P04",
+      "variant": "01",
+      "source": "11P/P04/ElevenLabs_2026-09-13T11_08_20_林黛玉_gen_sp100_s50_sb75_v3 (1).mp3",
+      "file": "hlhj_daiyu_p04_01.mp3",
+      "sha256": "75f85be4a871f7ba8e29b4789c470dbc67a89a5aab00f1521cd9d5317a32e914"
+    },
+    {
+      "id": "P04",
+      "variant": "02",
+      "source": "11P/P04/ElevenLabs_2026-09-13T11_08_20_林黛玉_gen_sp100_s50_sb75_v3.mp3",
+      "file": "hlhj_daiyu_p04_02.mp3",
+      "sha256": "eead30e3b76ab902a59af3f2f6ab1ebf958e074f8e20ed671f6c4c22d1f1fe6f"
+    },
+    {
+      "id": "P05",
+      "variant": "01",
+      "source": "11P/P05/ElevenLabs_2026-09-13T11_07_16_林黛玉_gen_sp100_s50_sb75_v3 (1).mp3",
+      "file": "hlhj_daiyu_p05_01.mp3",
+      "sha256": "1aa022210fedbd3366d101e757368e17e592a697699aa01dc081a38e2363092e"
+    },
+    {
+      "id": "P05",
+      "variant": "02",
+      "source": "11P/P05/ElevenLabs_2026-09-13T11_07_16_林黛玉_gen_sp100_s50_sb75_v3.mp3",
+      "file": "hlhj_daiyu_p05_02.mp3",
+      "sha256": "418ce236b90362a54a95c0a8b902b646a1dcb27f341317344168c7585e631f0a"
+    },
+    {
+      "id": "P06",
+      "variant": "01",
+      "source": "11P/P06/ElevenLabs_2026-09-13T11_08_49_林黛玉_gen_sp100_s50_sb75_v3 (1).mp3",
+      "file": "hlhj_daiyu_p06_01.mp3",
+      "sha256": "fa50dfffd9e470488b41a3eb3297a03886855dd523676cab93b9a0d4d139171f"
+    },
+    {
+      "id": "P06",
+      "variant": "02",
+      "source": "11P/P06/ElevenLabs_2026-09-13T11_08_49_林黛玉_gen_sp100_s50_sb75_v3.mp3",
+      "file": "hlhj_daiyu_p06_02.mp3",
+      "sha256": "4185c1b3fee098d8ccbb6753816ef79a564f4fc21987ba8dbb014c294eca0430"
+    },
+    {
+      "id": "P07",
+      "variant": "01",
+      "source": "11P/P07/ElevenLabs_2026-09-13T11_09_06_林黛玉_gen_sp100_s50_sb75_v3 (1).mp3",
+      "file": "hlhj_daiyu_p07_01.mp3",
+      "sha256": "9f76af5a9b24996b156d02bebeac0d588527297348c02a26d4b60a1eb9bfb2ce"
+    },
+    {
+      "id": "P07",
+      "variant": "02",
+      "source": "11P/P07/ElevenLabs_2026-09-13T11_09_06_林黛玉_gen_sp100_s50_sb75_v3.mp3",
+      "file": "hlhj_daiyu_p07_02.mp3",
+      "sha256": "ae9aa9385657d7fb84c9acb5585fbfe972dda23c76a70ff04ef4ed79321506f2"
+    },
+    {
+      "id": "P08",
+      "variant": "01",
+      "source": "11P/P08/ElevenLabs_2026-09-13T11_09_34_林黛玉_gen_sp100_s50_sb75_v3 (1).mp3",
+      "file": "hlhj_daiyu_p08_01.mp3",
+      "sha256": "b462e46f88c8b1a1923e5a87cbf948227f297984eb6cc689192f633d853bde2e"
+    },
+    {
+      "id": "P08",
+      "variant": "02",
+      "source": "11P/P08/ElevenLabs_2026-09-13T11_09_34_林黛玉_gen_sp100_s50_sb75_v3.mp3",
+      "file": "hlhj_daiyu_p08_02.mp3",
+      "sha256": "a4712fa8c6783cebc82228106aa5dcbdfb19b8735aafa23550831170ae595842"
+    },
+    {
+      "id": "B01",
+      "variant": "01",
+      "source": "12B/B01/ElevenLabs_2026-09-13T11_11_08_林黛玉_gen_sp100_s50_sb75_v3 (1).mp3",
+      "file": "hlhj_daiyu_b01_01.mp3",
+      "sha256": "61b963e11e1c42929412cd6d0da30e62def4a1bcab7fe60139af14b34ceaf09b"
+    },
+    {
+      "id": "B01",
+      "variant": "02",
+      "source": "12B/B01/ElevenLabs_2026-09-13T11_11_08_林黛玉_gen_sp100_s50_sb75_v3.mp3",
+      "file": "hlhj_daiyu_b01_02.mp3",
+      "sha256": "a4ebfb0e035f2412ea81e7e995d929154167c391ff8a055436f72f4df48d167a"
+    },
+    {
+      "id": "B02",
+      "variant": "01",
+      "source": "12B/B02/ElevenLabs_2026-09-13T11_11_40_林黛玉_gen_sp100_s50_sb75_v3 (1).mp3",
+      "file": "hlhj_daiyu_b02_01.mp3",
+      "sha256": "f6f8b7f3178689448437503741ec836b4111e1c884bbc716502b5bc290421acb"
+    },
+    {
+      "id": "B02",
+      "variant": "02",
+      "source": "12B/B02/ElevenLabs_2026-09-13T11_11_40_林黛玉_gen_sp100_s50_sb75_v3.mp3",
+      "file": "hlhj_daiyu_b02_02.mp3",
+      "sha256": "7686d2b8b433fa4d6d501ec4970794974b9381cb6f9f132f9375049c0e8a6374"
+    },
+    {
+      "id": "B03",
+      "variant": "01",
+      "source": "12B/B03/ElevenLabs_2026-09-13T11_11_54_林黛玉_gen_sp100_s50_sb75_v3 (1).mp3",
+      "file": "hlhj_daiyu_b03_01.mp3",
+      "sha256": "271b50183d039011ed7b0c42cb11f38268ee375d81354e1a5036a6900b8ed112"
+    },
+    {
+      "id": "B03",
+      "variant": "02",
+      "source": "12B/B03/ElevenLabs_2026-09-13T11_11_54_林黛玉_gen_sp100_s50_sb75_v3.mp3",
+      "file": "hlhj_daiyu_b03_02.mp3",
+      "sha256": "f6da74c835758052b0566827f30d17f1c683f2cc86031dba0cbe042c21285896"
+    },
+    {
+      "id": "B04",
+      "variant": "01",
+      "source": "12B/B04/ElevenLabs_2026-09-13T11_12_16_林黛玉_gen_sp100_s50_sb75_v3 (1).mp3",
+      "file": "hlhj_daiyu_b04_01.mp3",
+      "sha256": "91939a5edeff63e87fe6468000c51fcd733ed8c214c02cc804cd17de4e3f498a"
+    },
+    {
+      "id": "B04",
+      "variant": "02",
+      "source": "12B/B04/ElevenLabs_2026-09-13T11_12_16_林黛玉_gen_sp100_s50_sb75_v3.mp3",
+      "file": "hlhj_daiyu_b04_02.mp3",
+      "sha256": "17c0cdbb3b832ce8d8f2bd531500caf1a7149b7762882bad8af63d3cae8f1a7b"
+    },
+    {
+      "id": "H01",
+      "variant": "01",
+      "source": "13O/H01/ElevenLabs_2026-09-13T11_14_44_林黛玉_gen_sp100_s50_sb75_v3 (1).mp3",
+      "file": "hlhj_daiyu_h01_01.mp3",
+      "sha256": "143daf02fea40f531148907687719bffd66800f604abd94ec16fc39412f0c30b"
+    },
+    {
+      "id": "H01",
+      "variant": "02",
+      "source": "13O/H01/ElevenLabs_2026-09-13T11_14_44_林黛玉_gen_sp100_s50_sb75_v3.mp3",
+      "file": "hlhj_daiyu_h01_02.mp3",
+      "sha256": "d29ffc2b6c0a662bf908045fa9db6a90d1181a778f0b3408391468903a109d63"
+    },
+    {
+      "id": "H02",
+      "variant": "01",
+      "source": "13O/H02/ElevenLabs_2026-09-13T11_15_17_林黛玉_gen_sp100_s50_sb75_v3 (1).mp3",
+      "file": "hlhj_daiyu_h02_01.mp3",
+      "sha256": "4189646793af9d1326ac19344d8143bb6d956421cebf0f97e296bd8f83ef0a92"
+    },
+    {
+      "id": "H02",
+      "variant": "02",
+      "source": "13O/H02/ElevenLabs_2026-09-13T11_15_17_林黛玉_gen_sp100_s50_sb75_v3.mp3",
+      "file": "hlhj_daiyu_h02_02.mp3",
+      "sha256": "cb313944a00bbf4825dc419bf89f174128a3750717348e67df14068b72274b82"
+    },
+    {
+      "id": "DY01",
+      "variant": "01",
+      "source": "13O/DY01/ElevenLabs_2026-09-13T11_15_43_林黛玉_gen_sp100_s50_sb75_v3 (1).mp3",
+      "file": "hlhj_daiyu_dy01_01.mp3",
+      "sha256": "07a35eb666f0ea077b400a8335cb836e81b53fed3ae4d9d70114ff4d331c90ea"
+    },
+    {
+      "id": "DY01",
+      "variant": "02",
+      "source": "13O/DY01/ElevenLabs_2026-09-13T11_15_43_林黛玉_gen_sp100_s50_sb75_v3.mp3",
+      "file": "hlhj_daiyu_dy01_02.mp3",
+      "sha256": "4124aabad8ad1933c4321c54b7f6569f03c09069d0cac185fea59a706bb1dc2a"
+    },
+    {
+      "id": "DY02",
+      "variant": "01",
+      "source": "13O/DY02/ElevenLabs_2026-09-13T11_16_05_林黛玉_gen_sp100_s50_sb75_v3 (1).mp3",
+      "file": "hlhj_daiyu_dy02_01.mp3",
+      "sha256": "f66e77ef9413bfa904c91fe7839bcc67d337993e2e2a84388f6946940cee6f47"
+    },
+    {
+      "id": "DY02",
+      "variant": "02",
+      "source": "13O/DY02/ElevenLabs_2026-09-13T11_16_05_林黛玉_gen_sp100_s50_sb75_v3.mp3",
+      "file": "hlhj_daiyu_dy02_02.mp3",
+      "sha256": "74dd01fb2c05b16ea39164abb105da072727795e86bf31494197e3bb44ce11ed"
+    },
+    {
+      "id": "DY03",
+      "variant": "01",
+      "source": "13O/DY03/ElevenLabs_2026-09-13T11_16_25_林黛玉_gen_sp100_s50_sb75_v3 (1).mp3",
+      "file": "hlhj_daiyu_dy03_01.mp3",
+      "sha256": "20c6c5d2efe169ec8df97438b538e17ce87b7a9a7f90460cc9ebe80ef0c80fae"
+    },
+    {
+      "id": "DY03",
+      "variant": "02",
+      "source": "13O/DY03/ElevenLabs_2026-09-13T11_16_25_林黛玉_gen_sp100_s50_sb75_v3.mp3",
+      "file": "hlhj_daiyu_dy03_02.mp3",
+      "sha256": "7b161074c449e25bf4119b07e5f9fa60c07e3ad47cce8866d024982e7784a85a"
+    },
+    {
+      "id": "DY04",
+      "variant": "01",
+      "source": "13O/DY04/ElevenLabs_2026-09-13T11_17_10_林黛玉_gen_sp100_s50_sb75_v3 (1).mp3",
+      "file": "hlhj_daiyu_dy04_01.mp3",
+      "sha256": "e9f2791fd7393f2d7c60f9e3d55ed7ef08663c917f7bab32eb08dac1e1e07d84"
+    },
+    {
+      "id": "DY04",
+      "variant": "02",
+      "source": "13O/DY04/ElevenLabs_2026-09-13T11_17_10_林黛玉_gen_sp100_s50_sb75_v3.mp3",
+      "file": "hlhj_daiyu_dy04_02.mp3",
+      "sha256": "61641164395f1eff18be4224005b75910aecd5630e534c657f33ddb59222e6cb"
+    },
+    {
+      "id": "W01",
+      "variant": "01",
+      "source": "13O/W01/ElevenLabs_2026-09-13T11_17_32_林黛玉_gen_sp100_s50_sb75_v3 (1).mp3",
+      "file": "hlhj_daiyu_w01_01.mp3",
+      "sha256": "7ef99e62ddd0a7a4977e783906d06c3448fdda7315be8cba0759d6be485a6187"
+    },
+    {
+      "id": "W01",
+      "variant": "02",
+      "source": "13O/W01/ElevenLabs_2026-09-13T11_17_32_林黛玉_gen_sp100_s50_sb75_v3.mp3",
+      "file": "hlhj_daiyu_w01_02.mp3",
+      "sha256": "4e2d3ab56963ac469e31aea757d0ca9d1a500669a2797b7349d82980e98a116a"
+    },
+    {
+      "id": "W02",
+      "variant": "01",
+      "source": "13O/W02/ElevenLabs_2026-09-13T11_18_08_林黛玉_gen_sp100_s50_sb75_v3 (1).mp3",
+      "file": "hlhj_daiyu_w02_01.mp3",
+      "sha256": "530bd69fa0a5ef3dcaaaafac04eea995f8e42737aad0a2119b334bde58e7b389"
+    },
+    {
+      "id": "W02",
+      "variant": "02",
+      "source": "13O/W02/ElevenLabs_2026-09-13T11_18_08_林黛玉_gen_sp100_s50_sb75_v3.mp3",
+      "file": "hlhj_daiyu_w02_02.mp3",
+      "sha256": "8d3a90f82d5d0976ec0eff80114961b97c20ed2d0838e84e4112c109e4a50856"
+    },
+    {
+      "id": "W03",
+      "variant": "01",
+      "source": "13O/W03/ElevenLabs_2026-09-13T11_18_32_林黛玉_gen_sp100_s50_sb75_v3 (1).mp3",
+      "file": "hlhj_daiyu_w03_01.mp3",
+      "sha256": "b4dab8e7f4b44670698d2efe26569400ecc37a801ee072830efd475b1781e52b"
+    },
+    {
+      "id": "W03",
+      "variant": "02",
+      "source": "13O/W03/ElevenLabs_2026-09-13T11_18_32_林黛玉_gen_sp100_s50_sb75_v3.mp3",
+      "file": "hlhj_daiyu_w03_02.mp3",
+      "sha256": "ab3d90ce6302144387a6d6ee7640b2cfe5e9d4b7867c6fc75fc750ae1eccb232"
+    },
+    {
+      "id": "W04",
+      "variant": "01",
+      "source": "13O/W04/ElevenLabs_2026-09-13T11_19_01_林黛玉_gen_sp100_s50_sb75_v3 (1).mp3",
+      "file": "hlhj_daiyu_w04_01.mp3",
+      "sha256": "e9b0430ce9fc7f08762fad02029f9119cce4fae5e94b0ca29277219f7512ce7c"
+    },
+    {
+      "id": "W04",
+      "variant": "02",
+      "source": "13O/W04/ElevenLabs_2026-09-13T11_19_01_林黛玉_gen_sp100_s50_sb75_v3.mp3",
+      "file": "hlhj_daiyu_w04_02.mp3",
+      "sha256": "99113383152cea25de79c03aa9da612d5d9ed5ec1615c68e53b503618a33d4b9"
+    },
+    {
+      "id": "L01",
+      "variant": "01",
+      "source": "13O/L01/ElevenLabs_2026-09-13T11_19_21_林黛玉_gen_sp100_s50_sb75_v3 (1).mp3",
+      "file": "hlhj_daiyu_l01_01.mp3",
+      "sha256": "dc6dfee7a2774d7b33c9aa98b8a9ee348f45e7b2e1821eb05549f1e5182fa07d"
+    },
+    {
+      "id": "L01",
+      "variant": "02",
+      "source": "13O/L01/ElevenLabs_2026-09-13T11_19_21_林黛玉_gen_sp100_s50_sb75_v3.mp3",
+      "file": "hlhj_daiyu_l01_02.mp3",
+      "sha256": "e74933ccfa54ff29204e941ba89513892552d97b832f9de63a1c8082f32d5f4d"
+    },
+    {
+      "id": "L02",
+      "variant": "01",
+      "source": "13O/L02/ElevenLabs_2026-09-13T11_19_48_林黛玉_gen_sp100_s50_sb75_v3 (1).mp3",
+      "file": "hlhj_daiyu_l02_01.mp3",
+      "sha256": "7abdfde7351cb24d7b12679090f0e05ba335f29b89872d68fbba14b4168fa9b6"
+    },
+    {
+      "id": "L02",
+      "variant": "02",
+      "source": "13O/L02/ElevenLabs_2026-09-13T11_19_48_林黛玉_gen_sp100_s50_sb75_v3.mp3",
+      "file": "hlhj_daiyu_l02_02.mp3",
+      "sha256": "39b130d13322bdfd472955ea91540d65fe64c27436776ae24f77d6cfc4030c99"
+    },
+    {
+      "id": "L03",
+      "variant": "01",
+      "source": "13O/L03/ElevenLabs_2026-09-13T11_20_08_林黛玉_gen_sp100_s50_sb75_v3 (1).mp3",
+      "file": "hlhj_daiyu_l03_01.mp3",
+      "sha256": "529444e9c285b1f9b5238fc73752f87c40eee674e791ce885cd202bc9287ab36"
+    },
+    {
+      "id": "L03",
+      "variant": "02",
+      "source": "13O/L03/ElevenLabs_2026-09-13T11_20_08_林黛玉_gen_sp100_s50_sb75_v3.mp3",
+      "file": "hlhj_daiyu_l03_02.mp3",
+      "sha256": "5764f804cd4da460caeab06081a353ba7807879a75270c94af535dfa0ce3e599"
+    },
+    {
+      "id": "TS01",
+      "variant": "01",
+      "source": "14TS/TS01/TS01_1_01.mp3",
+      "file": "hlhj_daiyu_ts01_01.mp3",
+      "sha256": "0c457a80c7ceea95595ed2ca1008b5fe9c1cab88ec3a4f87f985389f7c402997"
+    },
+    {
+      "id": "TS01",
+      "variant": "02",
+      "source": "14TS/TS01/TS01_2_01.mp3",
+      "file": "hlhj_daiyu_ts01_02.mp3",
+      "sha256": "c26afb9f1a1f52905d129ce18741deea5dda0f48a2e6df9f6d6da2a7a9e55c1e"
+    },
+    {
+      "id": "TS01",
+      "variant": "03",
+      "source": "14TS/TS01/TS01_3_01.mp3",
+      "file": "hlhj_daiyu_ts01_03.mp3",
+      "sha256": "19afac2d1cb39c9616a497efad8bbb0a44ef13bf2a7cd98b50cf2a050578f590"
+    },
+    {
+      "id": "TS02",
+      "variant": "01",
+      "source": "14TS/TS02/TS02_1.mp3",
+      "file": "hlhj_daiyu_ts02_01.mp3",
+      "sha256": "c977e604e104c5b30c2900b1ad850ad1b0b054706cf1de4a89d54c29a049fe08"
+    },
+    {
+      "id": "TS02",
+      "variant": "02",
+      "source": "14TS/TS02/TS02_2.mp3",
+      "file": "hlhj_daiyu_ts02_02.mp3",
+      "sha256": "5c6b39134e98ba01ec388a434be8d85c6db9b40a2126ac081a4017c69223e37e"
+    },
+    {
+      "id": "TS03",
+      "variant": "01",
+      "source": "14TS/TS03/ElevenLabs_2026-09-13T11_35_29_林黛玉_gen_sp100_s50_sb75_v3 (1).mp3",
+      "file": "hlhj_daiyu_ts03_01.mp3",
+      "sha256": "63f3c8f7d3313bb8bf90eb69932e89520179c1fc8ac995239ad47d3ea9f8f1f7"
+    },
+    {
+      "id": "TS03",
+      "variant": "02",
+      "source": "14TS/TS03/ElevenLabs_2026-09-13T11_35_29_林黛玉_gen_sp100_s50_sb75_v3.mp3",
+      "file": "hlhj_daiyu_ts03_02.mp3",
+      "sha256": "077f36abeb7de639972620c392fa6839bac93ed522a35304f548fe922625e87d"
+    },
+    {
+      "id": "TS04",
+      "variant": "01",
+      "source": "14TS/TS04/ElevenLabs_2026-09-13T11_36_55_林黛玉_gen_sp100_s50_sb75_v3 (1).mp3",
+      "file": "hlhj_daiyu_ts04_01.mp3",
+      "sha256": "02c4a5da1b9db794d3ae62084b9090b88fa8b74b5ef39a3ae3a7b44b023e92c6"
+    },
+    {
+      "id": "TS04",
+      "variant": "02",
+      "source": "14TS/TS04/ElevenLabs_2026-09-13T11_36_55_林黛玉_gen_sp100_s50_sb75_v3.mp3",
+      "file": "hlhj_daiyu_ts04_02.mp3",
+      "sha256": "1b7f7521c4fe0ccf1e076ef45b906cb8ccde1a789edc2bf8dcd887a3c0a63d8d"
+    },
+    {
+      "id": "TS05",
+      "variant": "01",
+      "source": "14TS/TS05/ElevenLabs_2026-09-13T11_37_31_林黛玉_gen_sp100_s50_sb75_v3 (1).mp3",
+      "file": "hlhj_daiyu_ts05_01.mp3",
+      "sha256": "9489b57c6c63af52db705f212fb01317ad2af910926f1fab64ba5bbaf4c4b41c"
+    },
+    {
+      "id": "TS05",
+      "variant": "02",
+      "source": "14TS/TS05/ElevenLabs_2026-09-13T11_37_31_林黛玉_gen_sp100_s50_sb75_v3.mp3",
+      "file": "hlhj_daiyu_ts05_02.mp3",
+      "sha256": "e619df6d52c728eb716641c66f3df2d63612af6ea4cb78987f6eae8ae7b39847"
+    },
+    {
+      "id": "TS06",
+      "variant": "01",
+      "source": "14TS/TS06/ElevenLabs_2026-09-13T11_37_58_林黛玉_gen_sp100_s50_sb75_v3 (1).mp3",
+      "file": "hlhj_daiyu_ts06_01.mp3",
+      "sha256": "1dc5f2b5da18a0fc3fa9e643cd77b2b1dd5da42a908144755701042c1c800b69"
+    },
+    {
+      "id": "TS06",
+      "variant": "02",
+      "source": "14TS/TS06/ElevenLabs_2026-09-13T11_37_58_林黛玉_gen_sp100_s50_sb75_v3.mp3",
+      "file": "hlhj_daiyu_ts06_02.mp3",
+      "sha256": "a00ea68d66e4a448ac8ece3c9413ecfae563f4340c40d7206149ae67896a6221"
+    }
+  ]
+}

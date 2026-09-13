@@ -35,12 +35,26 @@
           <div class="online-room-actions" role="group" aria-label="房间操作">
             <button v-if="s.room.state === 'waiting'" :class="{ 'online-primary': !isOwner }" :disabled="s.maintenance || busy" @click="ready">{{ myReady ? '取消准备' : '准备就绪' }}</button>
             <button v-if="isOwner && s.room.state === 'waiting'" class="online-primary" :disabled="s.maintenance || busy || !canStart" @click="start">开始对局</button>
+            <button v-if="isOwner && s.room.state === 'waiting' && emptySeats.length" :disabled="busy" @click="setAI(emptySeats, true)">AI 补满空位</button>
             <button v-if="isOwner && s.room.state === 'finished'" class="online-primary" :disabled="s.maintenance || busy" @click="run(() => roomCommand('room.rematch'))">再来一局</button>
             <button :disabled="busy || s.room.state === 'starting'" @click="leaveRoom">离开房间</button>
           </div>
         </header>
-        <div class="online-seats"><article v-for="seat in s.room.capacity" :key="seat" :class="{ occupied: memberAt(seat - 1) }"><template v-if="memberAt(seat - 1)"><img :src="avatar" alt="" /><strong>{{ memberAt(seat - 1)?.nickname }}</strong><small>{{ memberAt(seat - 1)?.id === s.room.ownerId ? '房主 · ' : '' }}{{ !memberAt(seat - 1)?.online ? '已离线' : memberAt(seat - 1)?.ready ? '已准备' : '等待准备' }}</small></template><template v-else><span class="seat-plus">＋</span><strong>虚位以待</strong><small>等待玩家加入</small></template><b>{{ seat }}</b></article></div>
-        <div v-if="isOwner && s.room.state === 'waiting'" class="online-room-management"><form @submit.prevent="renameRoom"><input v-model="newName" maxlength="32" placeholder="新的房间名称" aria-label="新的房间名称" /><button :disabled="busy || !newName.trim()">修改房名</button></form><button v-for="member in s.room.members.filter(m => m.id !== s.account?.id)" :key="member.id" :disabled="busy" @click="run(() => roomCommand('room.kick', { accountId: member.id }))">移出 {{ member.nickname }}</button></div>
+        <div class="online-seats">
+          <article v-for="seat in s.room.capacity" :key="seat" :class="{ occupied: memberAt(seat - 1) }">
+            <template v-if="memberAt(seat - 1)">
+              <img :src="avatar" alt="" /><strong>{{ memberAt(seat - 1)?.nickname }}</strong>
+              <small>{{ memberAt(seat - 1)?.id === s.room.ownerId ? '房主 · ' : '' }}{{ memberAt(seat - 1)?.isAI ? 'AI · 自动参战' : !memberAt(seat - 1)?.online ? '已离线' : memberAt(seat - 1)?.ready ? '已准备' : '等待准备' }}</small>
+              <button v-if="isOwner && s.room.state === 'waiting' && memberAt(seat - 1)?.isAI" class="seat-kick" :disabled="busy" :aria-label="`移除 ${seat} 号位 AI`" @click="setAI([seat - 1], false)">移除 AI</button>
+            </template>
+            <template v-else>
+              <span class="seat-plus">＋</span><strong>虚位以待</strong><small>等待玩家加入</small>
+              <button v-if="isOwner && s.room.state === 'waiting'" :disabled="busy" :aria-label="`为 ${seat} 号位添加 AI`" @click="setAI([seat - 1], true)">添加 AI</button>
+            </template>
+            <b>{{ seat }}</b>
+          </article>
+        </div>
+        <div v-if="isOwner && s.room.state === 'waiting'" class="online-room-management"><form @submit.prevent="renameRoom"><input v-model="newName" maxlength="32" placeholder="新的房间名称" aria-label="新的房间名称" /><button :disabled="busy || !newName.trim()">修改房名</button></form><button v-for="member in s.room.members.filter(m => !m.isAI && m.id !== s.account?.id)" :key="member.id" :disabled="busy" @click="run(() => roomCommand('room.kick', { accountId: member.id }))">移出 {{ member.nickname }}</button></div>
         <details v-if="isOwner && s.room.state === 'waiting'" class="online-pool-settings" @toggle="togglePoolEditor">
           <summary>修改武将池</summary>
           <CharacterPoolEditor v-if="poolEditorOpen" v-model="editPool" :mode-id="s.room.modeId" :disabled="busy" />
@@ -48,6 +62,7 @@
           <button class="online-primary" :disabled="busy || !poolChanged" @click="savePool">保存武将池</button>
           <button :disabled="busy" @click="editPool = normalizeCharacterPool(s.room.characterPool)">还原当前规则</button>
         </details>
+        <p v-if="s.room.state === 'waiting'">房主可为剩余空位分配 AI；AI 自动选将和行动。所有席位入席、真人玩家准备后即可开局。</p>
         <div class="online-room-bottom"><section><h3>房间消息</h3><div class="online-chat" aria-live="polite"><p v-if="!s.chat.length">分享房间码，邀请朋友加入。房间消息仅本次会话保留。</p><p v-for="message in s.chat" :key="message.id"><strong>{{ message.nickname }}</strong> {{ message.text }}</p></div><form class="online-chat-form" @submit.prevent="chat"><input v-model="chatText" maxlength="300" aria-label="房间消息" placeholder="说点什么…" /><button :disabled="busy || !chatText.trim()">发送</button></form></section><aside><h3>对局规则</h3><p>{{ ruleName }} · 标准卡牌</p><p>武将池：{{ characterPoolLabel(s.room.characterPool) }}</p><details v-if="s.room.characterPool?.banned.length"><summary>查看禁将</summary><p>{{ s.room.characterPool.banned.map(id => get.translation(id)).join("、") }}</p></details><p>单将 · 30 秒行动时限</p><p>全员到齐并准备后，由房主开始。</p><button @click="copyCode">{{ codeCopied ? '已复制' : '复制房间码' }}</button><p v-if="s.room.state === 'starting'" role="status">正在准备托管对局，请保持在线…</p><p v-if="s.room.state === 'in_game'">对局正在进行，可恢复原席位继续对战。</p></aside></div>
       </section>
       <div v-else class="online-body">
@@ -98,8 +113,9 @@ const poolChanged = computed(() => JSON.stringify(normalizeCharacterPool(editPoo
 watch(() => `${s.room?.id}:${JSON.stringify(s.room?.characterPool)}`, () => { editPool.value = normalizeCharacterPool(s.room?.characterPool); }, { immediate: true });
 function togglePoolEditor(event: Event) { poolEditorOpen.value = (event.target as HTMLDetailsElement).open; }
 const isOwner = computed(() => s.room?.ownerId === s.account?.id), myReady = computed(() => s.room?.members.find(m => m.id === s.account?.id)?.ready);
-const canStart = computed(() => s.room && s.room.members.length === s.room.capacity && s.room.members.every(m => m.ready && m.online));
+const canStart = computed(() => s.room && s.room.members.length === s.room.capacity && s.room.members.every(m => m.isAI || m.ready && m.online));
 const memberAt = (seat: number) => s.room?.members.find(m => m.seat === seat);
+const emptySeats = computed(() => Array.from({ length: s.room?.capacity || 0 }, (_, seat) => seat).filter(seat => !memberAt(seat)));
 let disposed = false, refreshTimer: ReturnType<typeof setTimeout> | undefined;
 watch(showCreate, value => { modalError.value = ''; value ? createDialog.value?.showModal() : createDialog.value?.close(); });
 watch(showJoin, value => { modalError.value = ''; value ? joinDialog.value?.showModal() : joinDialog.value?.close(); });
@@ -114,6 +130,7 @@ const roomCommand = (type: string, payload = {}) => command(type, { roomId: s.ro
 const savePool = () => run(() => roomCommand('room.update', { characterPool: editPool.value }));
 const ready = () => run(() => roomCommand('room.ready', { ready: !myReady.value }));
 const start = () => run(() => roomCommand('room.start'));
+const setAI = (seats: number[], enabled: boolean) => run(() => roomCommand('room.ai', { seats, enabled }));
 const leaveRoom = () => run(async () => { await roomCommand('room.leave'); s.room = null; await refresh(); });
 const chat = () => run(async () => { await command('room.chat', { roomId: s.room!.id, text: chatText.value }); chatText.value = ''; });
 const copyCode = () => run(async () => { await copyOnlineText(s.room!.code); codeCopied.value = true; });

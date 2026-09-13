@@ -9052,7 +9052,23 @@ export class Library {
 	}
 	placePoppedDialog(dialog, e) {
 		const styledIntro = document.documentElement.dataset.presentation === "shousha" && dialog.id === "nodeintro";
-		if (styledIntro) {
+		const skillReading = dialog.id === "nodeintro" && !!dialog.content.querySelector(".skill, .skilln");
+		dialog.classList.toggle("skill-reading-panel", skillReading);
+		if (skillReading) {
+			// Use the engine's zoomed coordinates, not CSS viewport units.
+			dialog.style.width = Math.max(1, Math.min(960, ui.window.offsetWidth - 24)) + "px";
+			dialog.contentContainer.style.overflowY = "auto";
+			dialog.contentContainer.style.overflowX = "hidden";
+			dialog.clickintro = true;
+			if (!dialog.querySelector(".skill-reading-close")) {
+				const close = document.createElement("button");
+				close.type = "button";
+				close.className = "skill-reading-close";
+				close.textContent = "关闭";
+				dialog.appendChild(close);
+			}
+		}
+		if (styledIntro && !skillReading) {
 			// Measure wrapped text at the final width before calculating height and position.
 			dialog.style.width = Math.max(1, Math.min(360, ui.window.offsetWidth - 24)) + "px";
 		}
@@ -9071,7 +9087,9 @@ export class Library {
 		if (dialog._mod_height) {
 			height += dialog._mod_height;
 		}
-		if (styledIntro) {
+		if (skillReading) {
+			height = Math.max(1, ui.window.offsetHeight - 24);
+		} else if (styledIntro) {
 			height = Math.max(1, Math.min(height, ui.window.offsetHeight * 0.78, ui.window.offsetHeight - 24));
 		}
 		dialog.style.height = height + "px";
@@ -9087,7 +9105,10 @@ export class Library {
 			idealtop = ui.window.offsetHeight - 10 - dialog.offsetHeight;
 		}
 		dialog.style.top = idealtop + "px";
-		if (styledIntro) {
+		if (skillReading) {
+			dialog.style.left = Math.max(0, (ui.window.offsetWidth - dialog.offsetWidth) / 2) + "px";
+			dialog.style.top = "12px";
+		} else if (styledIntro) {
 			// Keep the wider reading panel inside the engine's zoomed coordinate space.
 			const maxLeft = Math.max(12, ui.window.offsetWidth - dialog.offsetWidth - 12);
 			dialog.style.left = Math.max(12, Math.min(parseFloat(dialog.style.left) || 12, maxLeft)) + "px";

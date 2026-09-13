@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>黛玉风华 · 本地验证</title>
+<style>
+    body { margin: 0; color: #eee; font: 16px/1.6 "Microsoft YaHei",sans-serif; }
+    #arena { min-height: 100vh; }
+    #avatar { position: fixed; left: 6vw; top: 22vh; width: 180px; height: 270px; border-radius: 12px; }
+    #controls { position: fixed; right: 24px; top: 24px; display: flex; gap: 12px; }
+    button { padding: 10px 16px; cursor: pointer; }
+    #media { position: fixed; bottom: 24px; left: 24px; background: #152526e6; padding: 12px; border-radius: 8px; }
+    #media p { margin: 4px; }
+</style>
+<div id="arena"><div id="avatar"></div></div>
+<div id="controls"><button id="end-track">跳至曲尾</button><button id="leave">黛玉离场 / 入场</button></div>
+<section id="media"><p>验证页面：设置仅存于内存，不修改游戏配置。</p><p id="audio-status">等待音频</p></section>
+<script type="module">
+    import { installDaiyuAppearance } from "/extension/红楼幻境/appearance.js";
+    const NativeAudio = window.Audio;
+    let themeAudio;
+    window.Audio = function () {
+        themeAudio = new NativeAudio();
+        themeAudio.controls = true; document.querySelector("#media").append(themeAudio);
+        const audio = themeAudio;
+        const report = () => {
+            document.querySelector("#audio-status").textContent = `${decodeURIComponent(audio.currentSrc.split("/").pop() || "")} · ${Number.isFinite(audio.duration) ? audio.duration.toFixed(1) + " 秒" : "加载中"} · ${audio.error ? "错误 " + audio.error.code : audio.paused ? "已暂停" : "播放中"}`;
+        };
+        for (const event of ["loadedmetadata", "playing", "pause", "error", "emptied"]) audio.addEventListener(event, report);
+        return audio;
+    };
+    const player = { name: "hlhj_daiyu", node: { avatar: document.querySelector("#avatar") }, isConnected: true,
+        active: true, isIn() { return this.active; }, isUnseen: () => false, countMark: () => 0 };
+    const lib = { assetURL: "/", config: { background_music: "music_default" }, skill: {}, arenaReady: [], onover: [] };
+    const game = { players: [player], me: player, saveConfig(key, value) { lib.config[key] = value; } };
+    const ui = { window: document.querySelector("#arena"), system2: {}, backgroundMusic: new NativeAudio(),
+        create: { system(label, onclick) { const button = document.createElement("button"); button.textContent = label; button.onclick = onclick; document.querySelector("#controls").append(button); return button; } } };
+    ui.backgroundMusic.volume = 0.5;
+    const appearance = installDaiyuAppearance(lib, game, ui, {}, {}, { theme: "image/hlhj/theme/", original: "image/character/hlhj_daiyu.svg" });
+    document.querySelector("#end-track").onclick = () => {
+        if (themeAudio && Number.isFinite(themeAudio.duration)) { themeAudio.currentTime = Math.max(0, themeAudio.duration - 0.2); themeAudio.play().catch(() => {}); }
+    };
+    document.querySelector("#leave").onclick = () => { player.active = !player.active; appearance.refresh(); };
+</script>
+</html>

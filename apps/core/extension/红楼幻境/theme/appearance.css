@@ -1,0 +1,63 @@
+.hlhj-portrait-layer, .hlhj-portrait-frame {
+    position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+}
+.hlhj-portrait-layer { overflow: hidden; z-index: 1; width: 100%; height: 100%; contain: layout paint; }
+.hlhj-portrait-frame {
+    display: block; width: 100%; height: 100%;
+    background-size: cover; background-position: center 22%; opacity: 0;
+    transition: opacity 1.2s ease;
+}
+.hlhj-portrait-frame.visible { opacity: 1; }
+/* Standalone-extension fallback for the core card-frame rule. */
+/* Oblong layouts normally shift square artwork down 8px. This full-bleed
+ * painting needs the same inset on every edge, including mobile/long2/nova. */
+.card[data-card-name="hlhj_qingsi"] > .image,
+#arena.oblongcard:not(.chess) > .card.fullskin[data-card-name="hlhj_qingsi"] > .image,
+#arena.oblongcard:not(.chess) .handcards > .card.fullskin[data-card-name="hlhj_qingsi"] > .image {
+    left: 3px; top: 3px; width: calc(100% - 6px); height: calc(100% - 6px);
+    border-radius: inherit; background-position: center;
+    box-shadow: inset 0 0 4px 1px rgba(35, 24, 12, .75);
+}
+body > .hlhj-backdrop { position: fixed; inset: 0; z-index: -3; pointer-events: none; overflow: hidden; }
+.hlhj-backdrop-scene { position: absolute; inset: 0; background: center/cover no-repeat; opacity: 0; transition: opacity 1.6s; contain: layout paint; }
+.hlhj-backdrop[data-theme="bamboo"] [data-scene="bamboo"],
+.hlhj-backdrop[data-theme="dream"] [data-scene="dream"] { opacity: 1; }
+.hlhj-backdrop::after { content: ""; position: absolute; inset: 0; background: #101c245c; transition: background 1.6s; }
+.hlhj-backdrop[data-theme="dream"]::after { background: #15132430; }
+.hlhj-theme-dialog {
+    box-sizing: border-box; position: fixed; inset: 0; width: min(800px, calc(100vw - 32px));
+    max-height: calc(100dvh - 40px); overflow: auto; margin: auto; padding: 24px;
+    border: 1px solid #b9aa83; border-radius: 16px; color: #e9e1d1;
+    background: linear-gradient(135deg, #172e2b, #222b2b 55%, #342833);
+    box-shadow: 0 20px 80px #0009; font: 15px/1.6 "Microsoft YaHei", sans-serif;
+}
+.hlhj-theme-dialog::backdrop { background: #070e17aa; backdrop-filter: blur(5px); }
+.hlhj-theme-dialog * { box-sizing: border-box; position: static; }
+.hlhj-theme-dialog div { transition: none; }
+.hlhj-theme-dialog header { position: relative; padding-right: 70px; margin-bottom: 20px; }
+.hlhj-theme-dialog header small { color: #cfb78b; letter-spacing: .2em; }
+.hlhj-theme-dialog h2 { margin: 5px 0; font-size: 25px; color: #f3dec4; }
+.hlhj-theme-dialog p { margin: 8px 0; }
+.hlhj-theme-dialog header > button { position: absolute; top: 0; right: 0; }
+.hlhj-theme-preview { float: left; width: 33%; margin: 0 24px 20px 0; border-radius: 10px; aspect-ratio: 2/3; object-fit: cover; }
+.hlhj-theme-fields { display: grid; gap: 13px; }
+.hlhj-theme-fields label { display: grid; gap: 5px; color: #cfc5b6; }
+.hlhj-theme-fields select { width: 100%; min-width: 0; color: #f2eadb; background: #172321; border: 1px solid #67736a; border-radius: 7px; padding: 9px 10px; font: inherit; }
+.hlhj-theme-fields input { width: 100%; accent-color: #d5af8b; }
+.hlhj-theme-fields select:disabled { opacity: .5; }
+.hlhj-scene-preview { display: block; width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 8px; }
+.hlhj-scene-preview[hidden] { display: none; }
+.hlhj-theme-hint { font-size: 12px; color: #b6bdb3; }
+.hlhj-theme-dialog [role="status"] { clear: both; font-size: 13px; color: #cdd8cb; padding-top: 8px; }
+.hlhj-theme-dialog footer { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; padding-top: 12px; }
+.hlhj-theme-dialog button { min-height: 38px; padding: 7px 15px; border: 1px solid #ad9777; border-radius: 7px; color: #f0e4ce; background: #3f4b40; cursor: pointer; font: inherit; }
+.hlhj-theme-dialog footer button:first-child { background: #c7ad85; color: #282b23; }
+.hlhj-theme-dialog :focus-visible { outline: 2px solid #e9c5a2; outline-offset: 3px; }
+@media (max-width: 560px) {
+    .hlhj-theme-dialog { padding: 16px; }
+    .hlhj-theme-preview { float: none; width: 130px; display: block; margin: 0 auto 18px; }
+    .hlhj-theme-dialog h2 { font-size: 21px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .hlhj-portrait-frame, .hlhj-backdrop-scene, .hlhj-backdrop::after { transition: none; }
+}

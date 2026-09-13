@@ -11346,6 +11346,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				addv();
 				player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
 				player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
+				game.checkMod(player, "handcardGain", player);
 				player.update();
 				if (player === game.me) {
 					ui.updatehl();
