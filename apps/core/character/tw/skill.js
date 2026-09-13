@@ -26256,138 +26256,100 @@ const skills = {
 		},
 		direct: true,
 		filter(event, player) {
-			if (player == _status.currentPhase) {
+			if (player === _status.currentPhase) {
 				return false;
 			}
-			var cards = event.getg(player);
+			const cards = event.getg(player);
 			if (!cards.length) {
 				return false;
 			}
-			return game.hasPlayer(function (current) {
-				if (current == player) {
+			return game.hasPlayer(current => {
+				if (current === player) {
 					return false;
 				}
-				var evt = event.getl(current);
+				const evt = event.getl(current);
 				if (!evt || !evt.cards2 || !evt.cards2.filter(card => cards.includes(card)).length) {
 					return false;
 				}
 				return !current.hasSkill("twyujue_effect0") || !current.hasSkill("twyujue_effect1");
 			});
 		},
-		content() {
-			"step 0";
-			var cards = trigger.getg(player);
-			var list = game
-				.filterPlayer(function (current) {
-					if (current == player) {
+		async content(event, trigger, player) {
+			const gainedCards = trigger.getg(player);
+			const targets = game
+				.filterPlayer(current => {
+					if (current === player) {
 						return false;
 					}
-					var evt = trigger.getl(current);
-					if (!evt || !evt.cards2 || !evt.cards2.filter(card => cards.includes(card)).length) {
+					const evt = trigger.getl(current);
+					if (!evt || !evt.cards2 || !evt.cards2.filter(card => gainedCards.includes(card)).length) {
 						return false;
 					}
 					return !current.hasSkill("twyujue_effect0") || !current.hasSkill("twyujue_effect1");
 				})
 				.sortBySeat();
-			event.targets = list;
-			"step 1";
-			var target = event.targets.shift();
-			if (target.isIn()) {
-				event.target = target;
-				var num = 2;
+			for (const target of targets) {
+				if (!target.isIn()) {
+					continue;
+				}
+				let count = 2;
 				if (target.hasSkill("twyujue_effect0")) {
-					num--;
+					count--;
 				}
 				if (target.hasSkill("twyujue_effect1")) {
-					num--;
+					count--;
 				}
-				var cards = trigger.getg(player);
-				num = Math.min(num, trigger.getl(target).cards2.filter(i => cards.includes(i)).length);
-				if (num > 0) {
-					event.count = num;
-				} else if (targets.length > 0) {
-					event.redo();
-				} else {
-					event.finish();
-				}
-			} else if (targets.length > 0) {
-				event.redo();
-			} else {
-				event.finish();
-			}
-			"step 2";
-			event.count--;
-			player.chooseBool(get.prompt("twyujue", target), "可令其选择本回合内未选择过的一项：⒈弃置攻击范围内一名角色的一张牌。⒉下一次使用牌时，从牌堆中获得一张同类别的牌。").set("ai", function () {
-				var evt = _status.event.getParent();
-				return get.attitude(evt.player, evt.target) > 0;
-			});
-			"step 3";
-			if (result.bool) {
-				player.logSkill("twyujue", target);
-				var list = [0, 1];
-				if (target.hasSkill("twyujue_effect0")) {
-					list.remove(0);
-				}
-				if (target.hasSkill("twyujue_effect1")) {
-					list.remove(1);
-				}
-				if (!list.length) {
-					event.goto(6);
-				} else if (list.length == 1) {
-					event._result = { index: list[0] };
-				} else {
-					target
-						.chooseControl()
-						.set("choiceList", ["弃置攻击范围内一名角色的一张牌", "下一次使用牌时，从牌堆中获得一张同类别的牌"])
-						.set("ai", function () {
-							var player = _status.event.player;
-							if (
-								game.hasPlayer(function (current) {
-									return player.inRange(current) && current.countDiscardableCards(player, "he") > 0 && get.effect(current, { name: "guohe_copy2" }, player, player) > 0;
-								})
-							) {
-								return 0;
-							}
-							return 1;
-						});
-				}
-			} else {
-				event.goto(6);
-			}
-			"step 4";
-			target.addTempSkill("twyujue_effect" + result.index);
-			if (result.index == 0) {
-				if (
-					game.hasPlayer(function (current) {
-						return target.inRange(current) && current.countDiscardableCards(target, "he") > 0;
-					})
-				) {
-					target
-						.chooseTarget("弃置攻击范围内一名角色的一张牌", true, function (card, player, target) {
-							return player.inRange(target) && target.countDiscardableCards(player, "he") > 0;
+				count = Math.min(count, trigger.getl(target).cards2.filter(card => gainedCards.includes(card)).length);
+				for (let index = 0; index < count; index++) {
+					const boolResult = await player
+						.chooseBool({
+							prompt: get.prompt("twyujue", target),
+							prompt2: "可令其选择本回合内未选择过的一项：⒈弃置攻击范围内一名角色的一张牌。⒉下一次使用牌时，从牌堆中获得一张同类别的牌。",
+							ai: () => get.attitude(player, target) > 0,
 						})
-						.set("ai", function (target) {
-							var player = _status.event.player;
-							return get.effect(target, { name: "guohe_copy2" }, player, player);
-						});
-				} else {
-					event.goto(6);
+						.forResult();
+					if (boolResult.bool) {
+						player.logSkill("twyujue", target);
+						const availableEffects = [0, 1];
+						if (target.hasSkill("twyujue_effect0")) {
+							availableEffects.remove(0);
+						}
+						if (target.hasSkill("twyujue_effect1")) {
+							availableEffects.remove(1);
+						}
+						let effectIndex;
+						if (availableEffects.length === 1) {
+							effectIndex = availableEffects[0];
+						} else if (availableEffects.length > 1) {
+							const controlResult = await target
+								.chooseControl({
+									choiceList: ["弃置攻击范围内一名角色的一张牌", "下一次使用牌时，从牌堆中获得一张同类别的牌"],
+									ai: (event, player) => (game.hasPlayer(current => player.inRange(current) && current.hasDiscardableCards(player, "he") && get.effect(current, { name: "guohe_copy2" }, player, player) > 0) ? 0 : 1),
+								})
+								.forResult();
+							effectIndex = controlResult.index;
+						}
+						if (effectIndex != null) {
+							target.addTempSkill(`twyujue_effect${effectIndex}`);
+						}
+						if (effectIndex === 0 && game.hasPlayer(current => target.inRange(current) && current.hasDiscardableCards(target, "he"))) {
+							const discardTargetResult = await target
+								.chooseTarget({
+									prompt: "弃置攻击范围内一名角色的一张牌",
+									forced: true,
+									filterTarget: (card, player, target) => player.inRange(target) && target.hasDiscardableCards(player, "he"),
+									ai: target => get.effect(target, { name: "guohe_copy2" }, _status.event.player, _status.event.player),
+								})
+								.forResult();
+							if (discardTargetResult.bool) {
+								const discardTarget = discardTargetResult.targets[0];
+								target.line(discardTarget, "green");
+								await target.discardPlayerCard({ target: discardTarget, position: "he", forced: true });
+							}
+						}
+					}
+					await game.delayx();
 				}
-			} else {
-				event.goto(6);
-			}
-			"step 5";
-			if (result.bool) {
-				var target2 = result.targets[0];
-				target.line(target2, "green");
-				target.discardPlayerCard(target2, "he", true);
-			}
-			"step 6";
-			game.delayx();
-			if (event.count > 0) {
-				event.goto(2);
-			} else if (targets.length) {
-				event.goto(1);
 			}
 		},
 		subSkill: {
@@ -26401,14 +26363,12 @@ const skills = {
 				usable: 1,
 				forced: true,
 				popup: false,
-				content() {
+				async content(event, trigger, player) {
 					player.unmarkSkill("twyujue_effect1");
-					var type2 = get.type2(trigger.card, false);
-					var card = get.cardPile2(function (card) {
-						return get.type2(card, false) == type2;
-					});
+					const type2 = get.type2(trigger.card, false);
+					const card = get.cardPile2(card => get.type2(card, false) === type2);
 					if (card) {
-						trigger.player.gain(card, "gain2");
+						await trigger.player.gain({ cards: [card], animate: "gain2" });
 					}
 				},
 				mark: true,
@@ -26421,18 +26381,16 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		filter(event, player) {
-			if (!player.countCards("he")) {
+			if (!player.hasCards("he")) {
 				return false;
 			}
-			var targets = game.filterPlayer(function (current) {
-				return current != player && current.hasSkill("twyujue");
-			});
+			const targets = game.filterPlayer(current => current !== player && current.hasSkill("twyujue"));
 			if (!targets.length) {
 				return false;
 			}
-			for (var target of targets) {
-				var num = 2;
-				if (player.group == "qun" && target.hasZhuSkill("twfengqi", player)) {
+			for (const target of targets) {
+				let num = 2;
+				if (player.group === "qun" && target.hasZhuSkill("twfengqi", player)) {
 					num = 4;
 				}
 				if (target.countMark("twyujue_clear") < num) {
@@ -26442,17 +26400,14 @@ const skills = {
 			return false;
 		},
 		selectCard() {
-			var player = _status.event.player;
-			var targets = game.filterPlayer(function (current) {
-				return current != player && current.hasSkill("twyujue");
-			});
+			const player = _status.event.player;
+			const targets = game.filterPlayer(current => current !== player && current.hasSkill("twyujue"));
 			return [
 				1,
-				Math.max.apply(
-					Math,
-					targets.map(function (target) {
-						var num = 2;
-						if (player.group == "qun" && target.hasZhuSkill("twfengqi", player)) {
+				Math.max(
+					...targets.map(target => {
+						let num = 2;
+						if (player.group === "qun" && target.hasZhuSkill("twfengqi", player)) {
 							num = 4;
 						}
 						return num - target.countMark("twyujue_clear");
@@ -26465,26 +26420,22 @@ const skills = {
 			if (!target.hasSkill("twyujue")) {
 				return false;
 			}
-			var num = 2;
-			if (player.group == "qun" && target.hasZhuSkill("twfengqi", player)) {
+			let num = 2;
+			if (player.group === "qun" && target.hasZhuSkill("twfengqi", player)) {
 				num = 4;
 			}
 			return num - target.countMark("twyujue_clear") >= Math.max(1, ui.selected.cards.length);
 		},
 		selectTarget() {
-			var player = _status.event.player;
-			var targets = game.filterPlayer(function (current) {
-				return current != player && current.hasSkill("twyujue");
-			});
+			const player = _status.event.player;
+			const targets = game.filterPlayer(current => current !== player && current.hasSkill("twyujue"));
 			return targets.length > 1 ? 1 : -1;
 		},
 		complexSelect: true,
 		prompt() {
-			var player = _status.event.player;
-			var targets = game.filterPlayer(function (current) {
-				return current != player && current.hasSkill("twyujue");
-			});
-			return "将任意张牌交给" + get.translation(targets) + (targets.length > 1 ? "中的一人" : "");
+			const player = _status.event.player;
+			const targets = game.filterPlayer(current => current !== player && current.hasSkill("twyujue"));
+			return `将任意张牌交给${get.translation(targets)}${targets.length > 1 ? "中的一人" : ""}`;
 		},
 		position: "he",
 		discard: false,
@@ -26494,40 +26445,28 @@ const skills = {
 			if (ui.selected.cards.length) {
 				return 0;
 			}
-			var player = _status.event.player;
-			if (
-				game.hasPlayer(function (current) {
-					return lib.skill.twyujue_give.filterTarget(null, player, current) && get.attitude(player, current) > 0;
-				})
-			) {
-				var val = get.value(card);
-				if (val <= 0 && get.position(card) == "e") {
-					return 100 - val;
+			const player = _status.event.player;
+			if (game.hasPlayer(current => lib.skill.twyujue_give.filterTarget(null, player, current) && get.attitude(player, current) > 0)) {
+				const value = get.value(card);
+				if (value <= 0 && get.position(card) === "e") {
+					return 100 - value;
 				}
-				if (
-					!player.hasSkill("twyujue_effect1") &&
-					player.hasCard(function (cardx) {
-						return cardx != card && player.getUseValue(cardx, null, true) > 0;
-					}, "hs")
-				) {
+				if (!player.hasSkill("twyujue_effect1") && player.hasCard(cardx => cardx !== card && player.getUseValue(cardx, null, true) > 0, "hs")) {
 					return 6 - get.value(card);
 				}
-				if (
-					!player.hasSkill("twyujue_effect0") &&
-					game.hasPlayer(function (current) {
-						return player.inRange(current) && current.countDiscardableCards(player, "he") > 0 && get.effect(current, { name: "guohe_copy2" }, player, player) > 0;
-					})
-				) {
+				if (!player.hasSkill("twyujue_effect0") && game.hasPlayer(current => player.inRange(current) && current.hasDiscardableCards(player, "he") && get.effect(current, { name: "guohe_copy2" }, player, player) > 0)) {
 					return 5.5 - get.value(card);
 				}
 			}
 			return 0;
 		},
-		content() {
+		async content(event, trigger, player) {
+			const { cards, target } = event;
 			game.trySkillAudio("twyujue", target);
-			player.give(cards, target);
+			const giveEvent = player.give(cards, target);
 			target.addTempSkill("twyujue_clear");
 			target.addMark("twyujue_clear", cards.length, false);
+			await giveEvent;
 		},
 		ai: {
 			order: 10,
