@@ -35415,6 +35415,9 @@ const skills = {
 				}
 				if (!choiceResult.bool) {
 					await player.loseHp();
+					if (player.isDead() || !player.isIn()) {
+						break;
+					}
 					continue;
 				}
 				const card = choiceResult.links[0];
