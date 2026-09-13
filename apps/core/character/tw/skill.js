@@ -13807,51 +13807,49 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseJieshuBegin" },
 		direct: true,
-		content() {
-			"step 0";
-			var damage = player.getHistory("sourceDamage").length;
+		async content(event, trigger, player) {
+			const damage = player.getHistory("sourceDamage").length;
 			if (damage) {
-				player.chooseTarget(get.prompt("twshezhong"), "令至多" + get.cnNumber(damage) + "名其他角色下个摸牌阶段的摸牌数-1", [1, damage], lib.filter.notMe).set("ai", target => {
-					return -get.attitude(_status.event.player, target);
-				});
-			} else {
-				event.goto(2);
-			}
-			"step 1";
-			if (result.bool) {
-				var targets = result.targets;
-				player.logSkill("twshezhong", targets);
-				for (var target of targets) {
-					target.addSkill("twshezhong_minus");
-					target.addMark("twshezhong_minus", 1, false);
+				const minusResult = await player
+					.chooseTarget({
+						prompt: get.prompt("twshezhong"),
+						prompt2: `令至多${get.cnNumber(damage)}名其他角色下个摸牌阶段的摸牌数-1`,
+						selectTarget: [1, damage],
+						filterTarget: lib.filter.notMe,
+						ai: target => -get.attitude(_status.event.player, target),
+					})
+					.forResult();
+				if (minusResult.bool) {
+					player.logSkill("twshezhong", minusResult.targets);
+					for (const target of minusResult.targets) {
+						target.addSkill("twshezhong_minus");
+						target.addMark("twshezhong_minus", 1, false);
+					}
 				}
 			}
-			"step 2";
-			var targets = [];
-			for (var evt of player.getHistory("damage")) {
+			const targets = [];
+			for (const evt of player.getHistory("damage")) {
 				if (evt.source && evt.source.isIn()) {
 					targets.add(evt.source);
 				}
 			}
-			if (targets.length) {
-				player
-					.chooseTarget(get.prompt("twshezhong"), "将手牌摸至一名与一名本回合对你造成过伤害的角色的体力值相同，且至多摸至五张", (card, player, target) => {
-						return _status.event.targets.includes(target);
-					})
-					.set("ai", target => {
-						return Math.max(0.1, target.hp - _status.event.player.countCards("h"));
-					})
-					.set("targets", targets);
-			} else {
-				event.finish();
+			if (!targets.length) {
+				return;
 			}
-			"step 3";
-			if (result.bool) {
-				var target = result.targets[0];
+			const drawResult = await player
+				.chooseTarget({
+					prompt: get.prompt("twshezhong"),
+					prompt2: "将手牌摸至一名与一名本回合对你造成过伤害的角色的体力值相同，且至多摸至五张",
+					filterTarget: (card, player, target) => targets.includes(target),
+					ai: target => Math.max(0.1, target.hp - _status.event.player.countCards("h")),
+				})
+				.forResult();
+			if (drawResult.bool) {
+				const target = drawResult.targets[0];
 				player.logSkill("twshezhong", target);
-				var num = Math.min(target.hp, 5) - player.countCards("h");
+				const num = Math.min(target.hp, 5) - player.countCards("h");
 				if (num > 0) {
-					player.draw(num);
+					await player.draw(num);
 				}
 			}
 		},
@@ -13860,10 +13858,10 @@ const skills = {
 				trigger: { player: "phaseDrawBegin" },
 				forced: true,
 				onremove: true,
-				content() {
-					var num = player.countMark("twshezhong_minus");
+				async content(event, trigger, player) {
+					const num = player.countMark("twshezhong_minus");
 					trigger.num -= num;
-					game.log(player, "的额定摸牌数", "#g-" + num);
+					game.log(player, "的额定摸牌数", `#g-${num}`);
 					player.removeSkill("twshezhong_minus");
 				},
 				mark: true,
