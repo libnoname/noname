@@ -14843,50 +14843,45 @@ const skills = {
 	twlinglu: {
 		trigger: { player: "phaseUseBegin" },
 		filter(event, player) {
-			return game.hasPlayer(function (current) {
-				return current != player;
-			});
+			return game.hasPlayer(current => current !== player);
 		},
-		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt2("twlinglu"), function (card, player, target) {
-					return target != player;
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2(event.skill),
+					filterTarget: (card, player, target) => target !== player,
+					ai: target => {
+						const player = _status.event.player;
+						const attitude = get.attitude(player, target);
+						if (target.countCards("hs") > 4 && target.hp >= 3) {
+							return attitude;
+						}
+						if (player.getStorage("twlinglu").includes(target)) {
+							return -2 * attitude;
+						}
+						return -attitude;
+					},
 				})
-				.set("ai", function (target) {
-					var player = _status.event.player,
-						att = get.attitude(player, target);
-					if (target.countCards("hs") > 4 && target.hp >= 3) {
-						return att;
-					}
-					if (player.getStorage("twlinglu").includes(target)) {
-						return -2 * att;
-					}
-					return -att;
-				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("twlinglu", target);
-				target.addTempSkill("twlinglu_order", { player: "phaseAfter" });
-				if (!target.storage.twlinglu_settle) {
-					target.storage.twlinglu_settle = [];
-				}
-				target.storage.twlinglu_settle.unshift([player, 1]);
-				if (player.getStorage("twlinglu").includes(target)) {
-					player.chooseBool("是否令" + get.translation(target) + "于〖令戮〗失败时进行两次结算？").set("ai", function () {
-						return true;
-					});
-				} else {
-					event.finish();
-				}
-			} else {
-				event.finish();
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			target.addTempSkill("twlinglu_order", { player: "phaseAfter" });
+			if (!target.storage.twlinglu_settle) {
+				target.storage.twlinglu_settle = [];
 			}
-			"step 2";
-			if (result.bool) {
+			target.storage.twlinglu_settle.unshift([player, 1]);
+			if (!player.getStorage("twlinglu").includes(target)) {
+				return;
+			}
+
+			const settleTwice = await player
+				.chooseBool({
+					prompt: `是否令${get.translation(target)}于〖令戮〗失败时进行两次结算？`,
+					ai: () => true,
+				})
+				.forResultBool();
+			if (settleTwice) {
 				target.storage.twlinglu_settle[0][1]++;
 				game.log(target, "于本次强令失败时进行两次结算");
 			}
@@ -14904,10 +14899,10 @@ const skills = {
 				marktext: "令",
 				intro: {
 					content(storage, player) {
-						return "<li>任务目标：于你下回合结束前造成的伤害不小于2点<br><li>已造成" + player.countMark("twlinglu_order") + "点伤害";
+						return `<li>任务目标：于你下回合结束前造成的伤害不小于2点<br><li>已造成${player.countMark("twlinglu_order")}点伤害`;
 					},
-				},
-				content() {
+					},
+				async content(event, trigger, player) {
 					player.addMark("twlinglu_order", trigger.num, false);
 				},
 			},
@@ -14920,38 +14915,26 @@ const skills = {
 				filter(event, player) {
 					return player.getStorage("twlinglu_settle").length > 0;
 				},
-				content() {
-					"step 0";
-					var list = player.getStorage("twlinglu_settle").shift();
-					var target = list[0],
-						count = list[1] || 1;
-					event.target = target;
-					event.count = count;
-					"step 1";
-					if (player.countMark("twlinglu_order") >= 2) {
-						game.log(player, "成功完成了", target, "发布的", "#g【令戮】", "强令");
-						player.popup("强令成功", "wood");
-						player.draw(2);
-						event.finish();
-					} else {
+				async content(event, trigger, player) {
+					while (player.getStorage("twlinglu_settle").length > 0) {
+						const settlement = player.getStorage("twlinglu_settle").shift();
+						const target = settlement[0];
+						const count = settlement[1] || 1;
+						if (player.countMark("twlinglu_order") >= 2) {
+							game.log(player, "成功完成了", target, "发布的", "#g【令戮】", "强令");
+							player.popup("强令成功", "wood");
+							await player.draw(2);
+							return;
+						}
+
 						game.log(player, "未完成", target, "发布的", "#g【令戮】", "强令");
 						player.popup("强令失败", "fire");
-					}
-					"step 2";
-					if (player.countMark("twlinglu_order") >= 2) {
-						game.delayx();
-					} else {
-						event.count--;
-						player.loseHp();
-					}
-					"step 3";
-					if (event.count > 0) {
-						event.goto(2);
-					}
-					"step 4";
-					if (player.getStorage("twlinglu_settle").length > 0) {
-						event.goto(0);
-						game.delayx();
+						for (let i = 0; i < count; i++) {
+							await player.loseHp();
+						}
+						if (player.getStorage("twlinglu_settle").length > 0) {
+							await game.delayx();
+						}
 					}
 				},
 			},
