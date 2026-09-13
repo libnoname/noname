@@ -16273,170 +16273,140 @@ const skills = {
 			global: ["gainAfter", "loseAsyncAfter"],
 		},
 		filter(event, player) {
-			if (event.name == "gain") {
-				var cards = event.getg(event.player);
+			if (event.name === "gain") {
+				const cards = event.getg(event.player);
 				if (!cards.length) {
 					return false;
 				}
-				var cards2 = event.getl(player).cards2;
-				for (var i of cards2) {
-					if (
-						cards.includes(i) &&
-						event.player.countCards("he", card => {
-							return card != i && get.type2(card) == get.type2(i);
-						})
-					) {
+				const lostCards = event.getl(player).cards2;
+				for (const card of lostCards) {
+					if (cards.includes(card) && event.player.hasCards("he", current => current !== card && get.type2(current) === get.type2(card))) {
 						return true;
 					}
 				}
 				return false;
-			} else {
-				if (event.type != "gain") {
-					return false;
-				}
-				var cards = event.getl(player).cards2;
-				if (!cards.length) {
-					return false;
-				}
-				return game.hasPlayer(current => {
-					if (current == player) {
-						return false;
-					}
-					var cardsx = event.getg(current);
-					for (var i of cardsx) {
-						if (
-							cards.includes(i) &&
-							current.countCards("he", card => {
-								return card != i && get.type2(card) == get.type2(i);
-							})
-						) {
-							return true;
-						}
-					}
-					return false;
-				});
 			}
+			if (event.type !== "gain") {
+				return false;
+			}
+			const cards = event.getl(player).cards2;
+			if (!cards.length) {
+				return false;
+			}
+			return game.hasPlayer(current => {
+				if (current === player) {
+					return false;
+				}
+				const gainedCards = event.getg(current);
+				for (const card of gainedCards) {
+					if (cards.includes(card) && current.hasCards("he", currentCard => currentCard !== card && get.type2(currentCard) === get.type2(card))) {
+						return true;
+					}
+				}
+				return false;
+			});
 		},
 		logTarget(event, player) {
-			if (event.name == "gain") {
+			if (event.name === "gain") {
 				return event.player;
-			} else {
-				var cards = event.getl(player).cards2;
-				return game.filterPlayer(current => {
-					if (current == player) {
-						return false;
-					}
-					var cardsx = event.getg(current);
-					for (var i of cardsx) {
-						if (
-							cards.includes(i) &&
-							current.countCards("he", card => {
-								return card != i && get.type2(card) == get.type2(i);
-							})
-						) {
-							return true;
-						}
-					}
-					return false;
-				});
 			}
+			const cards = event.getl(player).cards2;
+			return game.filterPlayer(current => {
+				if (current === player) {
+					return false;
+				}
+				const gainedCards = event.getg(current);
+				for (const card of gainedCards) {
+					if (cards.includes(card) && current.hasCards("he", currentCard => currentCard !== card && get.type2(currentCard) === get.type2(card))) {
+						return true;
+					}
+				}
+				return false;
+			});
 		},
 		direct: true,
-		content() {
-			"step 0";
-			if (trigger.name == "gain") {
-				event.targets = [trigger.player];
+		async content(event, trigger, player) {
+			let targets;
+			if (trigger.name === "gain") {
+				targets = [trigger.player];
 			} else {
-				var cards = trigger.getl(player).cards2;
-				event.targets = game.filterPlayer(current => {
-					if (current == player) {
+				const cards = trigger.getl(player).cards2;
+				targets = game.filterPlayer(current => {
+					if (current === player) {
 						return false;
 					}
-					var cardsx = trigger.getg(current);
-					for (var i of cardsx) {
-						if (
-							cards.includes(i) &&
-							current.countCards("he", card => {
-								return card != i && get.type2(card) == get.type2(i);
-							})
-						) {
+					const gainedCards = trigger.getg(current);
+					for (const card of gainedCards) {
+						if (cards.includes(card) && current.hasCards("he", currentCard => currentCard !== card && get.type2(currentCard) === get.type2(card))) {
 							return true;
 						}
 					}
 					return false;
 				});
 			}
-			"step 1";
-			var target = event.targets.shift();
-			event.target = target;
-			player.chooseBool(get.prompt("twejian", target), "当其他角色得到你的牌后，若其有其他与此牌类型相同的牌，你可以令其选择一项：1.受到你造成的1点伤害；2.弃置这些牌").set("ai", () => {
-				return get.attitude(player, _status.event.getParent().target) < 0;
-			});
-			"step 2";
-			if (result.bool) {
-				player.logSkill("twejian", target);
-				var cards = trigger.getg(target);
-				event.cards = cards;
-				event.cardType = [];
-				for (var card of cards) {
-					event.cardType.add(get.type(card, "trick", target));
+
+			for (const target of targets) {
+				const activate = await player
+					.chooseBool({
+						prompt: get.prompt("twejian", target),
+						prompt2: "当其他角色得到你的牌后，若其有其他与此牌类型相同的牌，你可以令其选择一项：1.受到你造成的1点伤害；2.弃置这些牌",
+						ai: () => get.attitude(player, target) < 0,
+					})
+					.forResultBool();
+				if (!activate) {
+					continue;
 				}
-				var list = ["选项一", "选项二"];
-				target
-					.chooseControl(list)
-					.set("prompt", "恶荐：请选择一项")
-					.set("choiceList", ["受到1点伤害", "弃置所有除" + get.translation(cards) + "外的" + get.translation(event.cardType) + "牌"])
-					.set("ai", function () {
-						var player = _status.event.player;
-						var types = _status.event.cardType,
-							cards = player.getCards("he", function (card) {
-								return types.includes(get.type2(card));
-							});
-						if (cards.length == 1) {
-							return "选项二";
-						}
-						if (cards.length >= 2) {
-							for (var i = 0; i < cards.length; i++) {
-								if (get.tag(cards[i], "save")) {
+
+				player.logSkill("twejian", target);
+				const gainedCards = trigger.getg(target);
+				const cardTypes = [];
+				for (const card of gainedCards) {
+					cardTypes.add(get.type(card, "trick", target));
+				}
+				const controlResult = await target
+					.chooseControl({
+						controls: ["选项一", "选项二"],
+						prompt: "恶荐：请选择一项",
+						choiceList: ["受到1点伤害", `弃置所有除${get.translation(gainedCards)}外的${get.translation(cardTypes)}牌`],
+						ai: () => {
+							const player = _status.event.player;
+							const types = _status.event.cardTypes;
+							const cards = player.getCards("he", card => types.includes(get.type2(card)));
+							if (cards.length === 1) {
+								return "选项二";
+							}
+							if (cards.length >= 2) {
+								for (const card of cards) {
+									if (get.tag(card, "save")) {
+										return "选项一";
+									}
+								}
+							}
+							if (player.hp === 1) {
+								return "选项二";
+							}
+							for (const card of cards) {
+								if (get.value(card) >= 8) {
 									return "选项一";
 								}
 							}
-						}
-						if (player.hp == 1) {
-							return "选项二";
-						}
-						for (var i = 0; i < cards.length; i++) {
-							if (get.value(cards[i]) >= 8) {
+							if (cards.length > 2 && player.hp > 2) {
 								return "选项一";
 							}
-						}
-						if (cards.length > 2 && player.hp > 2) {
-							return "选项一";
-						}
-						if (cards.length > 3) {
-							return "选项一";
-						}
-						return "选项二";
+							if (cards.length > 3) {
+								return "选项一";
+							}
+							return "选项二";
+						},
 					})
-					.set("cardType", event.cardType);
-			} else {
-				event.goto(4);
-			}
-			"step 3";
-			if (result.control == "选项一") {
-				target.damage();
-			} else {
-				target.discard(
-					target.getCards("he", card => {
-						return event.cardType.includes(get.type2(card)) && !cards.includes(card);
-					})
-				);
-			}
-			"step 4";
-			if (event.targets.length > 0) {
-				event.goto(1);
-			} else {
-				event.finish();
+					.set("cardTypes", cardTypes)
+					.forResult();
+				if (controlResult.control === "选项一") {
+					await target.damage();
+					continue;
+				}
+				const cards = target.getCards("he", card => cardTypes.includes(get.type2(card)) && !gainedCards.includes(card));
+				await target.discard({ cards });
 			}
 		},
 		ai: {
