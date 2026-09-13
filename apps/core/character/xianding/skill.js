@@ -45505,48 +45505,53 @@ const skills = {
 		filterCard: true,
 		selectCard: 1,
 		check(card) {
-			var player = _status.event.player;
-			var name = "pyzhuren_" + card[card.name == "shandian" ? "name" : "suit"];
+			const player = _status.event.player;
+			const name = `pyzhuren_${card[card.name === "shandian" ? "name" : "suit"]}`;
 			if (!lib.card[name] || (_status.pyzhuren && _status.pyzhuren[name])) {
-				if (!player.countCards("h", "sha")) {
+				if (!player.hasCards("h", "sha")) {
 					return 4 - get.value(card);
 				}
 				return 0;
 			}
 			return 7 - get.value(card);
 		},
-		content() {
+		async content(event, trigger, player) {
 			//player.addSkill('pyzhuren_destroy');
 			if (!_status.pyzhuren) {
 				_status.pyzhuren = {};
 			}
-			var rand = 0.85;
-			var num = get.number(cards[0]);
+			const { cards } = event;
+			let rand = 0.85;
+			const num = get.number(cards[0]);
 			if (num > 4) {
 				rand = 0.9;
 			}
 			if (num > 8) {
 				rand = 0.95;
 			}
-			if (num > 12 || cards[0].name == "shandian" || get.isLuckyStar(player)) {
+			if (num > 12 || cards[0].name === "shandian" || get.isLuckyStar(player)) {
 				rand = 1;
 			}
-			var name = "pyzhuren_" + cards[0][cards[0].name == "shandian" ? "name" : "suit"];
+			const name = `pyzhuren_${cards[0][cards[0].name === "shandian" ? "name" : "suit"]}`;
 			if (!lib.card[name] || _status.pyzhuren[name] || Math.random() > rand) {
 				player.popup("杯具");
 				game.log(player, "锻造失败");
-				var card = get.cardPile(function (card) {
-					return card.name == "sha";
-				});
+				const card = get.cardPile(card => card.name === "sha");
 				if (card) {
-					player.gain(card, "gain2");
+					await player.gain({
+						cards: [card],
+						animate: "gain2",
+					});
 				}
-			} else {
-				_status.pyzhuren[name] = true;
-				var card = game.createCard(name, cards[0].name == "shandian" ? "spade" : cards[0].suit, 1);
-				card.destroyed = "discardPile";
-				player.gain(card, "gain2");
+				return;
 			}
+			_status.pyzhuren[name] = true;
+			const card = game.createCard(name, cards[0].name === "shandian" ? "spade" : cards[0].suit, 1);
+			card.destroyed = "discardPile";
+			await player.gain({
+				cards: [card],
+				animate: "gain2",
+			});
 		},
 		ai: {
 			order: 10,
@@ -45561,24 +45566,26 @@ const skills = {
 		usable: 1,
 		equipSkill: true,
 		filter(event, player) {
-			return event.getParent().name == "sha";
+			return event.getParent().name === "sha";
 		},
-		content() {
-			"step 0";
-			player.judge(function (card) {
-				var player = _status.event.getParent("pyzhuren_heart").player;
-				if (player.isHealthy() && get.color(card) == "red") {
-					return 0;
-				}
-				return 2;
-			});
-			"step 1";
+		async content(event, trigger, player) {
+			const result = await player
+				.judge({
+					judge: card => {
+						const player = _status.event.getParent("pyzhuren_heart").player;
+						if (player.isHealthy() && get.color(card) === "red") {
+							return 0;
+						}
+						return 2;
+					},
+				})
+				.forResult();
 			switch (result.color) {
 				case "red":
-					player.recover();
+					await player.recover();
 					break;
 				case "black":
-					player.draw(2);
+					await player.draw(2);
 					break;
 				default:
 					break;
@@ -45604,8 +45611,8 @@ const skills = {
 		locked: false,
 		mod: {
 			cardUsable(card, player, num) {
-				var cardx = player.getEquip("pyzhuren_diamond");
-				if (card.name == "sha" && (!cardx || player.hasSkill("pyzhuren_diamond", null, false) || (!_status.pyzhuren_diamond_temp && !ui.selected.cards.includes(cardx)))) {
+				const cardx = player.getEquip("pyzhuren_diamond");
+				if (card.name === "sha" && (!cardx || player.hasSkill("pyzhuren_diamond", null, false) || (!_status.pyzhuren_diamond_temp && !ui.selected.cards.includes(cardx)))) {
 					return num + 1;
 				}
 			},
@@ -45613,9 +45620,9 @@ const skills = {
 				if (!_status.event.addCount_extra || player.hasSkill("pyzhuren_diamond", null, false)) {
 					return;
 				}
-				if (card && card == player.getEquip("pyzhuren_diamond")) {
+				if (card && card === player.getEquip("pyzhuren_diamond")) {
 					_status.pyzhuren_diamond_temp = true;
-					var bool = lib.filter.cardUsable(get.autoViewAs({ name: "sha" }, ui.selected.cards.concat([card])), player);
+					const bool = lib.filter.cardUsable(get.autoViewAs({ name: "sha" }, ui.selected.cards.concat([card])), player);
 					delete _status.pyzhuren_diamond_temp;
 					if (!bool) {
 						return false;
@@ -45624,37 +45631,31 @@ const skills = {
 			},
 		},
 		filter(event, player) {
-			if (event.getParent().name != "sha") {
+			if (event.getParent().name !== "sha") {
 				return false;
 			}
-			return (
-				player.countCards("he", card => {
-					return card != player.getEquip("pyzhuren_diamond");
-				}) > 0
-			);
+			return player.hasCards("he", card => card !== player.getEquip("pyzhuren_diamond"));
 		},
 		async cost(event, trigger, player) {
-			const next = player.chooseToDiscard(
-				"he",
-				(card, player) => {
-					return card != player.getEquip("pyzhuren_diamond");
+			const next = player.chooseToDiscard({
+				position: "he",
+				filterCard: (card, player) => card !== player.getEquip("pyzhuren_diamond"),
+				prompt: get.prompt(event.name.slice(0, -5), trigger.player),
+				prompt2: "弃置一张牌，令即将对其造成的伤害+1",
+				ai: card => {
+					const { goon, target } = get.event();
+					if (goon) {
+						return 30 / (1 + target.hp) - get.value(card);
+					}
+					return -1;
 				},
-				get.prompt(event.name.slice(0, -5), trigger.player),
-				"弃置一张牌，令即将对其造成的伤害+1"
-			);
-			next.set("target", trigger.player);
-			next.set("ai", card => {
-				const { goon, target } = get.event();
-				if (goon) {
-					return 30 / (1 + target.hp) - get.value(card);
-				}
-				return -1;
 			});
+			next.set("target", trigger.player);
 			next.set(
 				"goon",
 				get.attitude(player, trigger.player) < 0 &&
 					!trigger.player.hasSkillTag("filterDamage", null, {
-						player: player,
+						player,
 						card: trigger.card,
 					}) &&
 					get.damageEffect(trigger.player, player, player, get.natureList(trigger)) > 0
@@ -45678,37 +45679,32 @@ const skills = {
 		trigger: { player: "useCard2" },
 		equipSkill: true,
 		filter(event, player) {
-			if (event.card.name != "sha" && get.type(event.card) != "trick") {
+			if (event.card.name !== "sha" && get.type(event.card) !== "trick") {
 				return false;
 			}
-			var info = get.info(event.card);
-			if (info.allowMultiple == false) {
+			const info = get.info(event.card);
+			if (info.allowMultiple === false || !event.targets || info.multitarget) {
 				return false;
 			}
-			if (event.targets && !info.multitarget) {
-				if (
-					game.hasPlayer(function (current) {
-						return lib.filter.targetEnabled2(event.card, player, current) && lib.filter.targetInRange(event.card, player, current) && !event.targets.includes(current);
-					})
-				) {
-					return true;
-				}
-			}
-			return false;
+			return game.hasPlayer(current => lib.filter.targetEnabled2(event.card, player, current) && lib.filter.targetInRange(event.card, player, current) && !event.targets.includes(current));
 		},
 		usable: 2,
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt(event.skill), `为${get.translation(trigger.card)}额外指定一个目标`, (card, player, target) => {
-					if (_status.event.targets.includes(target)) {
-						return false;
-					}
-					return lib.filter.targetEnabled2(_status.event.card, player, target) && lib.filter.targetInRange(_status.event.card, player, target);
-				})
-				.set("ai", target => {
-					const trigger = _status.event.getTrigger();
-					const player = _status.event.player;
-					return get.effect(target, trigger.card, player, player);
+				.chooseTarget({
+					prompt: get.prompt(event.skill),
+					prompt2: `为${get.translation(trigger.card)}额外指定一个目标`,
+					filterTarget: (card, player, target) => {
+						if (_status.event.targets.includes(target)) {
+							return false;
+						}
+						return lib.filter.targetEnabled2(_status.event.card, player, target) && lib.filter.targetInRange(_status.event.card, player, target);
+					},
+					ai: target => {
+						const trigger = _status.event.getTrigger();
+						const player = _status.event.player;
+						return get.effect(target, trigger.card, player, player);
+					},
 				})
 				.set("targets", trigger.targets)
 				.set("card", trigger.card)
@@ -45744,18 +45740,16 @@ const skills = {
 					player: "loseAfter",
 					global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
 				},
-				filter: (event, player) => {
-					return player.isDamaged() && !player.hasSkillTag("unequip2");
-				},
+				filter: (event, player) => player.isDamaged() && !player.hasSkillTag("unequip2"),
 				getIndex(event, player) {
 					const evt = event.getl(player);
 					const lostCards = [];
-					evt.es.forEach(card => {
+					for (const card of evt.es) {
 						const VEquip = evt.vcard_map.get(card);
 						if (VEquip.name === "pyzhuren_club") {
 							lostCards.add(VEquip);
 						}
-					});
+					}
 					return lostCards.length;
 				},
 				async content(event, trigger, player) {
@@ -45768,18 +45762,16 @@ const skills = {
 		audio: true,
 		trigger: { player: "useCardToPlayered" },
 		filter(event, player) {
-			return event.card.name == "sha"; //&&event.targets.length==1&&get.color(event.card)=='black';
+			return event.card.name === "sha";
 		},
 		check(event, player) {
 			return get.attitude(player, event.target) <= 0;
 		},
 		equipSkill: true,
 		logTarget: "target",
-		content() {
-			var num = player.getHistory("useSkill", function (evt) {
-				return evt.skill == "pyzhuren_spade";
-			}).length;
-			trigger.target.loseHp(Math.min(num, 5)); //.set('source',player);
+		async content(event, trigger, player) {
+			const num = player.getHistory("useSkill", evt => evt.skill === "pyzhuren_spade").length;
+			await trigger.target.loseHp(Math.min(num, 5));
 		},
 		ai: {
 			equipValue(card, player) {
@@ -45791,7 +45783,7 @@ const skills = {
 			jueqing: true,
 			unequip_ai: true,
 			skillTagFilter(player, tag, arg) {
-				if (tag == "unequip_ai") {
+				if (tag === "unequip_ai") {
 					return arg && arg.name === "sha";
 				}
 			},
@@ -45801,35 +45793,38 @@ const skills = {
 		audio: true,
 		trigger: { player: "useCardToPlayered" },
 		filter(event, player) {
-			return event.card.name == "sha"; //&&event.targets.length==1;
+			return event.card.name === "sha";
 		},
 		check(event, player) {
 			return get.attitude(player, event.target) <= 0;
 		},
 		equipSkill: true,
 		logTarget: "target",
-		content() {
-			"step 0";
-			trigger.target.judge(function (card) {
-				var suit = get.suit(card);
-				if (suit == "spade") {
-					return -10;
-				}
-				if (suit == "club") {
-					return -5;
-				}
-				return 0;
-			}).judge2 = function (result) {
-				return result.color == "black" ? true : false;
-			};
-			"step 1";
-			if (result.suit == "spade") {
-				trigger.target.damage(3, "thunder");
-				//trigger.getParent().excluded.add(trigger.target);
-			} else if (result.suit == "club") {
-				trigger.target.damage("thunder");
-				player.recover();
-				player.draw();
+		async content(event, trigger, player) {
+			const result = await trigger.target
+				.judge({
+					judge: card => {
+						const suit = get.suit(card);
+						if (suit === "spade") {
+							return -10;
+						}
+						if (suit === "club") {
+							return -5;
+						}
+						return 0;
+					},
+					judge2: result => result.color === "black",
+				})
+				.forResult();
+			if (result.suit === "spade") {
+				await trigger.target.damage({
+					num: 3,
+					nature: "thunder",
+				});
+			} else if (result.suit === "club") {
+				await trigger.target.damage({ nature: "thunder" });
+				await player.recover();
+				await player.draw();
 			}
 		},
 		ai: {
