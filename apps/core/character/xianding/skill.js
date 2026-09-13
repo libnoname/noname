@@ -136,7 +136,8 @@ const skills = {
 					prompt: "是否对自己造成一点火焰伤害？",
 					ai() {
 						const player = get.player();
-						return player.hp === 2 && game.countPlayer(current => current.isLinked() && get.attitude(player, target) < 0);
+						const target = event.getParent()?.target;
+						return player.hp === 2 && game.hasPlayer(current => current.isLinked() && get.attitude(player, target) < 0);
 					},
 				})
 				.forResult();
@@ -31726,18 +31727,18 @@ const skills = {
 			return true;
 		},
 		async content(event, trigger, player) {
-			const num = 1;
+			let num = 1;
 			const current = _status.currentPhase;
 			if (current && trigger.source !== current) {
-				let num = 0;
+				num = 0;
 				const players = game.players.slice(0).concat(game.dead);
 				for (const target of players) {
-					target.getHistory("sourceDamage", evt => {
+					for (const evt of target.iterHistory("sourceDamage")) {
 						num += evt.num;
-					});
+					};
 				}
 			}
-			player.draw(num);
+			await player.draw(num);
 		},
 	},
 	dcpandi: {
@@ -31832,6 +31833,7 @@ const skills = {
 			return players.includes(target);
 		},
 		async content(event, trigger, player) {
+			const target = event.target;
 			if (target.isIn()) {
 				player.storage.dcpandi_effect = target;
 				player.addTempSkill("dcpandi_effect", "phaseUseAfter");
@@ -34199,6 +34201,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
+			const target = event.target;
 			const cards = lib.skill.dcjijiao.getCards(player);
 			if (cards.length) {
 				target.gain(cards, "gain2").gaintag.add("dcjijiao");
@@ -34483,6 +34486,7 @@ const skills = {
 		lose: false,
 		delay: false,
 		async content(event, trigger, player) {
+			const cards = event.cards;
 			await player.recast(cards);
 			player.addTempSkill("dcctjiuxian_help");
 			await player.chooseUseTarget({
@@ -34905,6 +34909,7 @@ const skills = {
 		complexTarget: true,
 		multiline: true,
 		async content(event, trigger, player) {
+			const target = event.target;
 			const nofear = player.countCards("hs", card => get.tag(card, "damage") && player.canUse(card, target, false) && get.effect(target, card, player, target) <= 0) < target.hp;
 			const result = await target
 				.chooseToDiscard({
@@ -40038,6 +40043,7 @@ const skills = {
 		allowChooseAll: true,
 		async content(event, trigger, player) {
 			player.changeZhuanhuanji("dckaiji");
+			const cards = event.cards;
 			if (!cards.length) {
 				player.draw(Math.min(player.maxHp, 5));
 			}
@@ -41862,6 +41868,8 @@ const skills = {
 		lose: false,
 		delay: false,
 		async content(event, trigger, player) {
+			const target = event.target;
+			const cards = event.cards;
 			target.addToExpansion(cards, player, "give").gaintag.add("xinzhoufu2");
 			target.addSkill("xinzhoufu_judge");
 		},
@@ -44265,7 +44273,7 @@ const skills = {
 		},
 		filterTarget: lib.filter.notMe,
 		async content(event, trigger, player) {
-			target.damage("nocard");
+			await event.target.damage("nocard");
 		},
 		ai: {
 			order: 1,
