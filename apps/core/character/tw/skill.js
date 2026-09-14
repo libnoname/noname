@@ -6437,68 +6437,69 @@ const skills = {
 		audio: "xinzenhui",
 		trigger: { player: "useCardToPlayer" },
 		filter(event, player) {
-			if (event.targets.length != 1) {
+			if (event.targets.length !== 1) {
 				return false;
 			}
-			var card = event.card;
-			if (card.name != "sha" && (get.type(card, null, false) != "trick" || get.color(card, false) != "black")) {
+			const card = event.card;
+			if (card.name !== "sha" && (get.type(card, null, false) !== "trick" || get.color(card, false) !== "black")) {
 				return false;
 			}
 			if (!player.isPhaseUsing() || player.hasSkill("twzenhui2")) {
 				return false;
 			}
-			return game.hasPlayer(function (current) {
-				return current != player && current != event.target && lib.filter.targetEnabled2(card, player, current) && lib.filter.targetInRange(card, player, current);
-			});
+			return game.hasPlayer(current => current !== player && current !== event.target && lib.filter.targetEnabled2(card, player, current) && lib.filter.targetInRange(card, player, current));
 		},
-		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt2("twzenhui"), function (card, player, target) {
-					if (player == target) {
-						return false;
-					}
-					var evt = _status.event.getTrigger();
-					return !evt.targets.includes(target) && lib.filter.targetEnabled2(evt.card, player, target) && lib.filter.targetInRange(evt.card, player, target);
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2(event.skill),
+					filterTarget: (card, player, target) => {
+						if (player === target) {
+							return false;
+						}
+						const evt = _status.event.getTrigger();
+						return !evt.targets.includes(target) && lib.filter.targetEnabled2(evt.card, player, target) && lib.filter.targetInRange(evt.card, player, target);
+					},
+					ai: target => {
+						const trigger = _status.event.getTrigger();
+						const player = _status.event.player;
+						return Math.max(target.hasGainableCards(player, "hej") ? get.effect(target, { name: "shunshou" }, player, player) : 0, get.effect(target, trigger.card, player, player));
+					},
 				})
-				.set("ai", function (target) {
-					var trigger = _status.event.getTrigger();
-					var player = _status.event.player;
-					return Math.max(target.countGainableCards(player, "hej") ? get.effect(target, { name: "shunshou" }, player, player) : 0, get.effect(target, trigger.card, player, player));
-				});
-			"step 1";
-			if (result.bool) {
-				player.addTempSkill("twzenhui2", "phaseUseAfter");
-				var target = result.targets[0],
-					str = get.translation(target);
-				event.target = target;
-				player.logSkill("twzenhui", target);
-				if (!target.countGainableCards(player, "hej")) {
-					event._result = { index: 0 };
-				} else {
-					player
-						.chooseControl()
-						.set("choiceList", ["令" + str + "也成为" + get.translation(trigger.card) + "的目标", "获得" + str + "区域里的一张牌，然后" + str + "成为" + get.translation(trigger.card) + "的使用者"])
-						.set("ai", function () {
-							var trigger = _status.event.getTrigger();
-							var player = _status.event.player,
-								target = _status.event.getParent().target;
-							return (target.countGainableCards(player, "hej") ? get.effect(target, { name: "shunshou" }, player, player) : 0) > get.effect(target, trigger.card, player, player) ? 1 : 0;
-						});
-				}
-			} else {
-				event.finish();
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			player.addTempSkill("twzenhui2", "phaseUseAfter");
+			const target = event.targets[0];
+			const str = get.translation(target);
+			event.target = target;
+			let index = 0;
+			if (target.hasGainableCards(player, "hej")) {
+				const controlResult = await player
+					.chooseControl({
+						choiceList: [`令${str}也成为${get.translation(trigger.card)}的目标`, `获得${str}区域里的一张牌，然后${str}成为${get.translation(trigger.card)}的使用者`],
+						ai: () => {
+							const trigger = _status.event.getTrigger();
+							const player = _status.event.player;
+							const target = _status.event.getParent().target;
+							return (target.hasGainableCards(player, "hej") ? get.effect(target, { name: "shunshou" }, player, player) : 0) > get.effect(target, trigger.card, player, player) ? 1 : 0;
+						},
+					})
+					.forResult();
+				index = controlResult.index;
 			}
-			"step 2";
-			if (result.index == 1) {
+			if (index === 1) {
 				trigger.untrigger();
-				trigger.getParent().player = event.target;
-				game.log(event.target, "成为了", trigger.card, "的使用者");
-				player.gainPlayerCard(target, true, "hej");
+				trigger.getParent().player = target;
+				game.log(target, "成为了", trigger.card, "的使用者");
+				await player.gainPlayerCard({
+					target,
+					forced: true,
+					position: "hej",
+				});
 			} else {
-				game.log(event.target, "成为了", trigger.card, "的额外目标");
-				trigger.getParent().targets.push(event.target);
+				game.log(target, "成为了", trigger.card, "的额外目标");
+				trigger.getParent().targets.push(target);
 			}
 		},
 	},
