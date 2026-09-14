@@ -1,4 +1,13 @@
 const characters = {
+	ps_shen_diaochan: {
+		sex: "female",
+		group: "shen",
+		hp: 3,
+		skills: ["psmeihun", "pshuoxin"],
+		groupInGuozhan: "qun",
+		names: "null|null",
+		dieAudio: ["shen_diaochan"],
+	},
 	ym_luoguanzhong: {
 		sex: "male",
 		group: "qun",

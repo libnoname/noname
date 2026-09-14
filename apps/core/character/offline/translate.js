@@ -1,6 +1,12 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	ps_shen_diaochan: "★神貂蝉",
+	ps_shen_diaochan_prefix: "★|神",
+	psmeihun: "魅魂",
+	psmeihun_info: "结束阶段或当你成为【杀】的目标后，你可以令一名其他角色交给你一张你声明的花色的牌，若其没有则你观看其手牌然后弃置其中一张。",
+	pshuoxin: "惑心",
+	pshuoxin_info: "限定技，其他角色的回合开始前，你可令此回合改为由你操控。",
 	ym_luoguanzhong: "春秋罗贯中",
 	ym_luoguanzhong_prefix: "春秋",
 	ymzhuhun: "著魂",
