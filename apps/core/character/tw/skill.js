@@ -21885,67 +21885,59 @@ const skills = {
 			if (!event.isFirstTarget || !get.is.damageCard(event.card)) {
 				return false;
 			}
-			return (
-				!player.hasSkillTag("noCompareSource") &&
-				game.hasPlayer(target => {
-					return player.canCompare(target, true);
-				})
-			);
+			return !player.hasSkillTag("noCompareSource") && game.hasPlayer(target => player.canCompare(target, true));
 		},
 		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt2("twzhenhu"), [1, 3], function (card, player, target) {
-					return player.canCompare(target, true);
+		async content(event, trigger, player) {
+			const result = await player
+				.chooseTarget({
+					prompt: get.prompt2("twzhenhu"),
+					selectTarget: [1, 3],
+					filterTarget: (_card, player, target) => player.canCompare(target, true),
+					ai: target => {
+						const player = _status.event.player;
+						const targets = _status.event.getTrigger().targets;
+						let num = 0;
+						if (player.hasSkill("twlvren")) {
+							num += 2 * (ui.selected.targets.length + 1);
+						}
+						if (player.hasSkill("twchuanshu_effect")) {
+							num += 3;
+						}
+						const hs = player.getCards("h").sort((a, b) => get.number(b) - get.number(a));
+						if (!hs.length) {
+							return -1;
+						}
+						const ts = target.getCards("h").sort((a, b) => get.number(b) - get.number(a));
+						if (Math.min(13, get.number(hs[0]) + num) <= get.number(ts[0])) {
+							return -1;
+						}
+						return get.effect(target, { name: "guohe_copy2" }, player, player) / 2 + (targets.includes(target) ? get.damageEffect(target, player, player) : 0);
+					},
 				})
-				.set("ai", function (target) {
-					var player = _status.event.player,
-						targets = _status.event.getTrigger().targets;
-					var num = 0;
-					if (player.hasSkill("twlvren")) {
-						num += 2 * (ui.selected.targets.length + 1);
-					}
-					if (player.hasSkill("twchuanshu_effect")) {
-						num += 3;
-					}
-					var hs = player.getCards("h").sort((a, b) => get.number(b) - get.number(a));
-					if (hs.length == 0) {
-						return -1;
-					}
-					var ts = target.getCards("h").sort((a, b) => get.number(b) - get.number(a));
-					if (Math.min(13, get.number(hs[0]) + num) <= get.number(ts[0])) {
-						return -1;
-					}
-					return get.effect(target, { name: "guohe_copy2" }, player, player) / 2 + (targets.includes(target) ? get.damageEffect(target, player, player) : 0);
-				});
-			"step 1";
-			if (result.bool) {
-				var targets = result.targets.sortBySeat();
-				event.targets = targets;
-				player.logSkill("twzhenhu", targets);
-				player.draw();
-			} else {
-				event.finish();
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
-			"step 2";
-			player
-				.chooseToCompare(targets, function (card) {
-					return get.number(card);
-				})
-				.setContent("chooseToCompareMeanwhile");
-			"step 3";
-			if (result.winner && result.winner == player) {
-				event.targets.remove(result.winner);
-				player.line(event.targets, trigger.card.nature);
+			const targets = result.targets.sortBySeat();
+			event.targets = targets;
+			player.logSkill("twzhenhu", targets);
+			await player.draw();
+			const compareResult = await player
+				.chooseToCompare(targets, card => get.number(card))
+				.setContent("chooseToCompareMeanwhile")
+				.forResult();
+			if (compareResult.winner === player) {
+				targets.remove(compareResult.winner);
+				player.line(targets, trigger.card.nature);
 				player.addTempSkill("twzhenhu_add");
 				if (!trigger.card.storage) {
 					trigger.card.storage = {};
 				}
-				trigger.card.storage.twzhenhu = event.targets;
-			} else {
-				player.loseHp();
+				trigger.card.storage.twzhenhu = targets;
+				return;
 			}
+			await player.loseHp();
 		},
 		subSkill: {
 			add: {
@@ -21958,10 +21950,10 @@ const skills = {
 					if (!event.card || !event.card.storage) {
 						return false;
 					}
-					var targets = event.card.storage.twzhenhu;
+					const targets = event.card.storage.twzhenhu;
 					return targets && targets.includes(event.player);
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.num++;
 				},
 			},
