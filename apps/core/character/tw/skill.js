@@ -17744,74 +17744,72 @@ const skills = {
 		audio: "fenming",
 		trigger: { player: "phaseZhunbeiBegin" },
 		filter(event, player) {
-			return game.hasPlayer(function (target) {
-				return target != player && (target.countCards("he") || !target.isLinked());
-			});
+			return game.hasPlayer(target => target !== player && (target.hasCards("he") || !target.isLinked()));
+
 		},
-		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt2("twfenming"), function (card, player, target) {
-					return target != player && (target.countCards("he") || !target.isLinked());
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2(event.skill),
+					filterTarget: (card, player, target) => target !== player && (target.hasCards("he") || !target.isLinked()),
+					ai: target => get.damageEffect(target, player, player),
 				})
-				.set("ai", function (target) {
-					var player = _status.event.player;
-					return get.damageEffect(target, player, player);
-				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("twfenming", target);
-				var list = [],
-					choiceList = ["令" + get.translation(target) + "弃置一张牌", "令" + get.translation(target) + "横置", "背水！横置并依次令" + get.translation(target) + "执行上述所有选项"];
-				if (target.countCards("he")) {
-					list.push("选项一");
-				} else {
-					choiceList[0] = '<span style="opacity:0.5">' + choiceList[0] + "</span>";
-				}
-				if (!target.isLinked()) {
-					list.push("选项二");
-				} else {
-					choiceList[1] = '<span style="opacity:0.5">' + choiceList[1] + "</span>";
-				}
-				if (target.countCards("he") && !target.isLinked() && !player.isLinked()) {
-					list.push("背水！");
-				} else {
-					choiceList[2] = '<span style="opacity:0.5">' + choiceList[2] + "</span>";
-				}
-				if (list.length == 1) {
-					event._result = { control: list[0] };
-				} else {
-					player
-						.chooseControl(list)
-						.set("choiceList", choiceList)
-						.set("ai", function () {
-							var list = _status.event.controls;
-							if (list.includes("背水！")) {
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const [target] = event.targets;
+			const list = [];
+			const choiceList = [`令${get.translation(target)}弃置一张牌`, `令${get.translation(target)}横置`, `背水！横置并依次令${get.translation(target)}执行上述所有选项`];
+			const canDiscard = target.hasCards("he");
+			const canLink = !target.isLinked();
+			if (canDiscard) {
+				list.push("选项一");
+			} else {
+				choiceList[0] = `<span style="opacity:0.5">${choiceList[0]}</span>`;
+			}
+			if (canLink) {
+				list.push("选项二");
+			} else {
+				choiceList[1] = `<span style="opacity:0.5">${choiceList[1]}</span>`;
+			}
+			if (canDiscard && canLink && !player.isLinked()) {
+				list.push("背水！");
+			} else {
+				choiceList[2] = `<span style="opacity:0.5">${choiceList[2]}</span>`;
+			}
+			let control = list[0];
+			if (list.length !== 1) {
+				const controlResult = await player
+					.chooseControl({
+						controls: list,
+						choiceList,
+						prompt: "奋命：请选择一项",
+						ai: () => {
+							const controls = _status.event.controls;
+							if (controls.includes("背水！")) {
 								return "背水！";
 							}
-							if (list.includes("选项一")) {
+							if (controls.includes("选项一")) {
 								return "选项一";
 							}
 							return "选项二";
-						})
-						.set("prompt", "奋命：请选择一项");
-				}
-			} else {
-				event.finish();
+						},
+					})
+					.forResult();
+				control = controlResult.control;
 			}
-			"step 2";
-			game.log(player, "选择了", "#y" + result.control);
-			if (result.control != "选项二") {
-				target.chooseToDiscard("he", true);
+			game.log(player, "选择了", `#y${control}`);
+			if (control !== "选项二") {
+				await target.chooseToDiscard({
+					position: "he",
+					forced: true,
+				});
 			}
-			if (result.control != "选项一" && !target.isLinked()) {
-				target.link(true);
+			if (control !== "选项一" && !target.isLinked()) {
+				await target.link(true);
 			}
-			if (result.control == "背水！" && !player.isLinked()) {
-				player.link(true);
+			if (control === "背水！" && !player.isLinked()) {
+				await player.link(true);
 			}
 		},
 	},
