@@ -27046,27 +27046,27 @@ const skills = {
 		trigger: { player: "useCardToPlayered" },
 		logTarget: "target",
 		filter(event, player) {
-			return (event.card.name == "sha" || event.card.name == "juedou") && event.targets.length == 1 && event.target.countCards("h") > 0;
+			return (event.card.name === "sha" || event.card.name === "juedou") && event.targets.length === 1 && event.target.hasCards("h");
 		},
 		onremove: true,
-		content() {
-			"step 0";
-			event.target = trigger.target;
-			player.viewHandcards(trigger.target);
-			"step 1";
-			var num = target.countCards("h", player.storage.twfengpo ? { color: "red" } : { suit: "diamond" });
+		async content(event, trigger, player) {
+			const target = trigger.target;
+			event.target = target;
+			await player.viewHandcards(target);
+			const num = target.countCards("h", player.storage.twfengpo ? { color: "red" } : { suit: "diamond" });
 			if (!num) {
-				event.finish();
 				return;
 			}
-			event.num = num;
-			player.chooseControl().set("choiceList", ["摸" + num + "张牌", "令" + get.translation(trigger.card) + "的伤害值基数+" + num]);
-			"step 2";
-			if (result.index == 0) {
-				player.draw(num);
-			} else {
+			const result = await player
+				.chooseControl({
+					choiceList: [`摸${num}张牌`, `令${get.translation(trigger.card)}的伤害值基数+${num}`],
+				})
+				.forResult();
+			if (result.index !== 0) {
 				trigger.getParent().baseDamage += num;
+				return;
 			}
+			await player.draw(num);
 		},
 		group: "twfengpo_kill",
 		subSkill: {
@@ -27077,7 +27077,7 @@ const skills = {
 				filter: (event, player) => !player.storage.twfengpo,
 				skillAnimation: true,
 				animationColor: "fire",
-				content() {
+				async content(event, trigger, player) {
 					player.storage.twfengpo = true;
 					player.popup("凤魄");
 					game.log(player, "恢复了技能", "#g【凤魄】");
