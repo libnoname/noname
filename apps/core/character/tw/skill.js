@@ -24693,24 +24693,22 @@ const skills = {
 		audio: 2,
 		trigger: { player: "useCardAfter" },
 		filter(event, player) {
-			var evt = event.getParent("phaseUse");
-			if (!evt || evt.player != player) {
+			const evt = event.getParent("phaseUse");
+			if (!evt || evt.player !== player) {
 				return false;
 			}
-			var history = player.getHistory("useCard", function (evtx) {
-				return evtx.getParent("phaseUse") == evt;
+			const history = player.getHistory("useCard", evtx => {
+				return evtx.getParent("phaseUse") === evt;
 			});
-			return history && history.indexOf(event) == player.hp - 1;
+			return history && history.indexOf(event) === player.hp - 1;
 		},
 		frequent: true,
-		content() {
-			"step 0";
-			player.draw(2);
-			"step 1";
+		async content(event, trigger, player) {
+			await player.draw(2);
 			if (
 				player.getHistory("sourceDamage").length ||
-				player.getHistory("gain", function (evt) {
-					return evt.getParent("phaseUse") == trigger.getParent("phaseUse") && evt.getParent().name == "draw";
+				player.getHistory("gain", evt => {
+					return evt.getParent("phaseUse") === trigger.getParent("phaseUse") && evt.getParent().name === "draw";
 				}).length > 1
 			) {
 				player.addMark("twjingce", 1);
