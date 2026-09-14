@@ -18884,46 +18884,53 @@ const skills = {
 			}
 		},
 		filter(event, player) {
-			if (event.name == "dying") {
-				return player == _status.currentPhase && event.player != player;
+			if (event.name === "dying") {
+				return player === _status.currentPhase && event.player !== player;
 			}
 			return true;
 		},
 		forced: true,
 		group: "twpingting_update",
 		derivation: ["tianxiang", "liuli"],
-		content() {
-			"step 0";
-			player.draw();
-			player.chooseCard("he", "娉婷：将一张牌置于武将牌上，称为“星舞”", true).set("ai", function (card) {
-				return -get.value(card);
-			});
-			"step 1";
+		async content(event, trigger, player) {
+			await player.draw();
+			const result = await player
+				.chooseCard({
+					position: "he",
+					prompt: "娉婷：将一张牌置于武将牌上，称为“星舞”",
+					forced: true,
+					ai: card => -get.value(card),
+				})
+				.forResult();
 			if (result.bool) {
-				var cards = result.cards;
-				player.addToExpansion(cards, player, "give").gaintag.add("twxingwu");
+				await player.addToExpansion({
+					cards: result.cards,
+					source: player,
+					animate: "give",
+					gaintag: ["twxingwu"],
+				});
 			}
 		},
 		onremove(player, skill) {
 			if (player.hasSkill("twxingwu")) {
 				return;
 			}
-			var cards = player.getExpansions(skill);
+			const cards = player.getExpansions(skill);
 			if (cards.length) {
-				player.loseToDiscardpile(cards);
+				player.loseToDiscardpile({ cards });
 			}
 		},
 		subSkill: {
 			update: {
 				trigger: { player: ["loseAfter", "loseAsyncAfter", "addToExpansionAfter"] },
 				filter(event, player) {
-					var cards = player.getExpansions("twxingwu"),
-						skills = player.additionalSkills.twpingting;
+					const cards = player.getExpansions("twxingwu");
+					const skills = player.additionalSkills.twpingting;
 					return !((cards.length && skills && skills.length) || (!cards.length && (!skills || !skills.length)));
 				},
 				forced: true,
 				silent: true,
-				content() {
+				async content(event, trigger, player) {
 					lib.skill.twpingting.init(player, "twpingting");
 				},
 			},
