@@ -25248,87 +25248,79 @@ const skills = {
 			twhuangjin: target => Math.random() / 5,
 			twguimen: target => Math.sqrt(Math.min(3, target.countCards("he", { suit: "spade" }))) * 0.09,
 			twzhouzu: target => {
-				var rand = Math.random();
+				const rand = Math.random();
 				if (rand < 0.8) {
 					return 1 - Math.sqrt(0.8 - rand);
 				}
 				return 1;
 			},
 			twdidao: (target, player) => {
-				if (
-					[target, player].some(current =>
-						current.getSkills().some(skill => {
-							var info = get.info(skill);
-							if (!info || !info.ai || !info.ai.rejudge) {
-								return false;
-							}
-							return true;
-						})
-					)
-				) {
+				if ([target, player].some(current => current.getSkills().some(skill => Boolean(get.info(skill)?.ai?.rejudge)))) {
 					return 0.05;
 				}
 				return 0.85 + Math.random() / 5;
 			},
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			player.loseMaxHp();
-			player.recover();
-			var skills = lib.skill.twbudao.derivation,
-				map = lib.skill.twbudao.skillValue;
-			skills = skills.randomGets(3);
-			var target = game.filterPlayer().sort((a, b) => get.attitude(player, b) - get.attitude(player, a))[0];
-			if (player.identity == "nei" || get.attitude(player, target) < 6) {
-				target = player;
-			}
-			player
-				.chooseControl(skills)
-				.set(
-					"choiceList",
-					skills.map(function (i) {
-						return '<div class="skill">【' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "】</div><div>" + get.skillInfoTranslation(i, player, false) + "</div>";
-					})
-				)
-				.set("displayIndex", false)
-				.set("prompt", "布道：选择获得一个技能")
-				.set("ai", () => {
-					return _status.event.choice;
+			await player.loseMaxHp();
+			await player.recover();
+			const skills = lib.skill.twbudao.derivation.randomGets(3);
+			const map = lib.skill.twbudao.skillValue;
+			const bestTarget = game.filterPlayer().sort((a, b) => get.attitude(player, b) - get.attitude(player, a))[0];
+			const aiTarget = player.identity === "nei" || get.attitude(player, bestTarget) < 6 ? player : bestTarget;
+			const choiceList = skills.map(skill => `<div class="skill">【${get.translation(lib.translate[`${skill}_ab`] || get.translation(skill).slice(0, 2))}】</div><div>${get.skillInfoTranslation(skill, player, false)}</div>`);
+			const choice = [...skills].sort((a, b) => (map[b](aiTarget, player) || 0.5) - (map[a](aiTarget, player) || 0.5))[0];
+			const controlResult = await player
+				.chooseControl({
+					controls: skills,
+					choiceList,
+					prompt: "布道：选择获得一个技能",
+					ai: () => _status.event.choice,
+					choice,
 				})
-				.set("choice", skills.sort((a, b) => (map[b](target, player) || 0.5) - (map[a](target, player) || 0.5))[0]);
-			"step 1";
-			var skill = result.control;
-			player.addSkills(skill);
-			event.twbudao_skill = skill;
-			player.chooseTarget(lib.filter.notMe, "是否令一名其他角色也获得【" + get.translation(skill) + "】？").set("ai", function (target) {
-				var player = _status.event.player;
-				if (player.identity == "nei") {
-					return 0;
-				}
-				return get.attitude(player, target);
-			});
-			"step 2";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.line(target, "green");
-				target.addSkills(event.twbudao_skill);
-				var cards = target.getCards("he");
-				if (!cards.length) {
-					event.finish();
-				} else if (cards.length == 1) {
-					event._result = { bool: true, cards: cards };
-				} else {
-					target.chooseCard("he", true, "交给" + get.translation(player) + "一张牌作为学费");
-				}
-			} else {
-				event.finish();
+				.set("displayIndex", false)
+				.forResult();
+			const skill = controlResult.control;
+			await player.addSkills(skill);
+			const targetResult = await player
+				.chooseTarget({
+					prompt: `是否令一名其他角色也获得【${get.translation(skill)}】？`,
+					filterTarget: lib.filter.notMe,
+					ai: target => {
+						const player = _status.event.player;
+						if (player.identity === "nei") {
+							return 0;
+						}
+						return get.attitude(player, target);
+					},
+				})
+				.forResult();
+			if (!targetResult.bool) {
+				return;
 			}
-			"step 3";
-			if (result.bool) {
-				target.give(result.cards, player);
+			const target = targetResult.targets[0];
+			player.line(target, "green");
+			const addSkillEvent = target.addSkills(skill);
+			let cards = target.getCards("he");
+			await addSkillEvent;
+			if (!cards.length) {
+				return;
 			}
+			if (cards.length > 1) {
+				const cardResult = await target
+					.chooseCard({
+						position: "he",
+						forced: true,
+						prompt: `交给${get.translation(player)}一张牌作为学费`,
+					})
+					.forResult();
+				if (!cardResult.bool) {
+					return;
+				}
+				cards = cardResult.cards;
+			}
+			await target.give(cards, player);
 		},
 	},
 	twzhouhu: {
