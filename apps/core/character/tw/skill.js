@@ -24417,43 +24417,38 @@ const skills = {
 		limited: true,
 		audio: 2,
 		filter(event, player) {
-			return game.hasPlayer(function (current) {
-				return current != player && current.countCards("he") > 0;
-			});
+			return game.hasPlayer(current => current !== player && current.hasCards("he"));
 		},
 		prompt: "是否发动【觞贺】？",
 		skillAnimation: true,
 		animationColor: "soil",
-		logTarget: (event, player) => game.filterPlayer(current => current != player),
-		content() {
-			"step 0";
+		logTarget: (event, player) => game.filterPlayer(current => current !== player),
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			event.targets = game.filterPlayer(current => current != player);
-			event.num = 0;
-			event.jiu = false;
-			"step 1";
-			event.current = targets[num];
-			if (!event.current.countCards("he")) {
-				event.goto(3);
-			} else {
-				event.current.chooseCard("交给" + get.translation(player) + "一张牌", "he", true).set("ai", function (card) {
-					var evt = _status.event.getParent();
-					return 100 - get.value(card);
-				});
-			}
-			"step 2";
-			if (result.bool && result.cards && result.cards.length) {
-				event.current.give(result.cards, player);
-				if (!event.jiu && get.name(result.cards[0], player) == "jiu") {
-					event.jiu = true;
+			event.targets = game.filterPlayer(current => current !== player);
+			let hasJiu = false;
+			for (const current of event.targets) {
+				if (!current.hasCards("he")) {
+					continue;
 				}
+				const result = await current
+					.chooseCard({
+						prompt: `交给${get.translation(player)}一张牌`,
+						position: "he",
+						forced: true,
+						ai: card => 100 - get.value(card),
+					})
+					.forResult();
+				if (!result.bool || !result.cards?.length) {
+					continue;
+				}
+				if (!hasJiu && get.name(result.cards[0], player) === "jiu") {
+					hasJiu = true;
+				}
+				await current.give(result.cards, player);
 			}
-			"step 3";
-			event.num++;
-			if (event.num < targets.length) {
-				event.goto(1);
-			} else if (!event.jiu && player.hp < 1) {
-				player.recover(1 - player.hp);
+			if (!hasJiu && player.hp < 1) {
+				await player.recover(1 - player.hp);
 			}
 		},
 	},
