@@ -25259,7 +25259,7 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return !player.hasSkill("twzhouhu_mahou") && player.countCards("h", lib.skill.twzhouhu.filterCard) > 0;
+			return !player.hasSkill("twzhouhu_mahou") && player.hasCards("h", lib.skill.twzhouhu.filterCard);
 		},
 		filterCard: { color: "red" },
 		check(card) {
@@ -25268,24 +25268,25 @@ const skills = {
 			}
 			return 7 - get.value(card);
 		},
-		content() {
-			"step 0";
-			player
-				.chooseControl("1回合", "2回合", "3回合")
-				.set("prompt", "请选择施法时长")
-				.set("ai", function () {
-					var player = _status.event.player;
-					var safe = 1;
-					if (safe < Math.min(3, game.countPlayer(), player.getDamagedHp())) {
-						var next = player.next;
-						while (next != player && get.attitude(next, player) > 0) {
-							safe++;
-							next = next.next;
+		async content(event, trigger, player) {
+			const result = await player
+				.chooseControl({
+					controls: ["1回合", "2回合", "3回合"],
+					prompt: "请选择施法时长",
+					ai: () => {
+						const player = _status.event.player;
+						let safe = 1;
+						if (safe < Math.min(3, game.countPlayer(), player.getDamagedHp())) {
+							let next = player.next;
+							while (next !== player && get.attitude(next, player) > 0) {
+								safe++;
+								next = next.next;
+							}
 						}
-					}
-					return Math.max(1, Math.min(safe, 3, game.countPlayer(), player.getDamagedHp())) - 1;
-				});
-			"step 1";
+						return Math.max(1, Math.min(safe, 3, game.countPlayer(), player.getDamagedHp())) - 1;
+					},
+				})
+				.forResult();
 			player.storage.twzhouhu_mahou = [result.index + 1, result.index + 1];
 			player.addTempSkill("twzhouhu_mahou", { player: "die" });
 		},
@@ -25301,19 +25302,20 @@ const skills = {
 				forced: true,
 				popup: false,
 				charlotte: true,
-				content() {
-					var list = player.storage.twzhouhu_mahou;
+				async content(event, trigger, player) {
+					const list = player.storage.twzhouhu_mahou;
 					list[1]--;
-					if (list[1] == 0) {
-						game.log(player, "的“咒护”魔法生效");
-						player.logSkill("twzhouhu");
-						var num = list[0];
-						player.recover(num);
-						player.removeSkill("twzhouhu_mahou");
-					} else {
-						game.log(player, "的“咒护”魔法剩余", "#g" + list[1] + "回合");
+					if (list[1] !== 0) {
+						game.log(player, "的“咒护”魔法剩余", `#g${list[1]}回合`);
 						player.markSkill("twzhouhu_mahou");
+						return;
 					}
+					game.log(player, "的“咒护”魔法生效");
+					player.logSkill("twzhouhu");
+					const num = list[0];
+					const recoverEvent = player.recover(num);
+					player.removeSkill("twzhouhu_mahou");
+					await recoverEvent;
 				},
 				mark: true,
 				onremove: true,
@@ -25327,10 +25329,10 @@ const skills = {
 						return 0;
 					},
 					content(storage) {
-						if (storage) {
-							return "经过" + storage[1] + "个“回合结束时”后，回复" + storage[0] + "点体力";
+						if (!storage) {
+							return "未指定施法效果";
 						}
-						return "未指定施法效果";
+						return `经过${storage[1]}个“回合结束时”后，回复${storage[0]}点体力`;
 					},
 				},
 			},
