@@ -24629,31 +24629,37 @@ const skills = {
 		marktext: "☯",
 		intro: {
 			content(storage, player) {
-				return (storage ? "当你使用【杀】指定唯一目标后" : "当你成为【杀】的唯一目标后") + "目标角色须交给使用者一张牌。若此牌为装备牌，则使用者可使用此牌。";
+				return `${storage ? "当你使用【杀】指定唯一目标后" : "当你成为【杀】的唯一目标后"}目标角色须交给使用者一张牌。若此牌为装备牌，则使用者可使用此牌。`;
 			},
 		},
 		filter(event, player, name) {
-			return event.card.name == "sha" && event.targets.length == 1 && event.player.isIn() && event.target.countCards("he") > 0 && (name == "useCardToPlayered") == Boolean(player.storage.twfeifu);
+			return event.card.name === "sha" && event.targets.length === 1 && event.player.isIn() && event.target.hasCards("he") && (name === "useCardToPlayered") === Boolean(player.storage.twfeifu);
 		},
 		logTarget(event, player) {
 			return player.storage.twfeifu ? event.target : event.player;
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.changeZhuanhuanji("twfeifu");
-			trigger.target.chooseCard("he", true, "非服：交给" + get.translation(trigger.player) + "一张牌", "若选择装备牌，则其可以使用此牌");
-			"step 1";
-			if (result.bool) {
-				var card = result.cards[0];
-				event.card = card;
-				trigger.target.give(card, trigger.player);
-			} else {
-				event.finish();
+			const result = await trigger.target
+				.chooseCard({
+					position: "he",
+					forced: true,
+					prompt: `非服：交给${get.translation(trigger.player)}一张牌`,
+					prompt2: "若选择装备牌，则其可以使用此牌",
+				})
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
-			"step 2";
-			var target = trigger.player;
-			if (target.getCards("h").includes(card) && get.type(card, null, target) == "equip" && target.hasUseTarget(card)) {
-				target.chooseUseTarget(card, "nopopup");
+
+			const card = result.cards[0];
+			await trigger.target.give(card, trigger.player);
+			const target = trigger.player;
+			if (target.getCards("h").includes(card) && get.type(card, null, target) === "equip" && target.hasUseTarget(card)) {
+				await target.chooseUseTarget({
+					card,
+					nopopup: true,
+				});
 			}
 		},
 	},
