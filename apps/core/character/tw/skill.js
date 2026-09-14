@@ -17822,53 +17822,45 @@ const skills = {
 		filterCard: true,
 		locked: false,
 		filter(event, player) {
-			return player.countCards("he");
+			return player.hasCards("he");
 		},
 		check(card) {
-			var base = 0,
-				player = _status.event.player,
-				suit = get.suit(card, player),
-				added = false,
-				added2 = false,
-				added3;
+			const player = _status.event.player;
+			const suit = get.suit(card, player);
+			let base = 0;
+			let added = false;
+			let added2 = false;
+			let added3;
 			if (
-				get.type(card) == "equip" &&
-				game.hasPlayer(function (target) {
-					var att = get.attitude(player, target);
-					if (att >= 0) {
-						return 0;
-					}
-					if (
-						target.countCards("he", function (card) {
-							return get.value(card) > 5;
-						})
-					) {
-						return -att;
-					}
+				get.type(card) === "equip" &&
+				game.hasPlayer(target => {
+					const att = get.attitude(player, target);
+					return att < 0 && target.hasCards("he", card => get.value(card) > 5) ? -att : 0;
 				})
 			) {
 				base += 6;
 			}
-			var hs = player.getCards("h");
-			var muniu = player.getEquip("muniu");
-			if (muniu && card != muniu && muniu.cards) {
+			let hs = player.getCards("h");
+			const muniu = player.getEquip("muniu");
+			if (muniu && card !== muniu && muniu.cards) {
 				hs = hs.concat(muniu.cards);
 			}
-			for (var i of hs) {
-				if (i != card && get.name(i) == "sha") {
-					if (get.suit(i, player) == suit) {
-						if (player.hasValueTarget(i, false)) {
-							added3 = true;
-							base += 5.5;
-						}
-					} else {
-						if (player.hasValueTarget(i, false)) {
-							added2 = true;
-						}
-						if (!added && !player.hasValueTarget(i, null, true) && player.hasValueTarget(i, false, true)) {
-							base += 4;
-							added = true;
-						}
+			for (const i of hs) {
+				if (i === card || get.name(i) !== "sha") {
+					continue;
+				}
+				if (get.suit(i, player) === suit) {
+					if (player.hasValueTarget(i, false)) {
+						added3 = true;
+						base += 5.5;
+					}
+				} else {
+					if (player.hasValueTarget(i, false)) {
+						added2 = true;
+					}
+					if (!added && !player.hasValueTarget(i, null, true) && player.hasValueTarget(i, false, true)) {
+						base += 4;
+						added = true;
 					}
 				}
 			}
@@ -17877,27 +17869,28 @@ const skills = {
 			}
 			return base - get.value(card);
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
+			const cards = event.cards;
 			player.addTempSkill("twgongji2");
 			player.markAuto("twgongji2", [get.suit(cards[0], player)]);
-			"step 1";
-			if (get.type(cards[0], null, cards[0].original == "h" ? player : false) == "equip") {
-				player
-					.chooseTarget("是否弃置一名角色的一张牌？", function (card, player, target) {
-						return player != target && target.countCards("he");
-					})
-					.set("ai", function (target) {
-						var player = _status.event.player;
-						return get.effect(target, { name: "guohe_copy2" }, player, player);
-					});
-			} else {
+			if (get.type(cards[0], null, cards[0].original === "h" ? player : false) !== "equip") {
 				event.finish();
+				return;
 			}
-			"step 2";
+			const result = await player
+				.chooseTarget({
+					prompt: "是否弃置一名角色的一张牌？",
+					filterTarget: (card, player, target) => player !== target && target.hasCards("he"),
+					ai: target => get.effect(target, { name: "guohe_copy2" }, player, player),
+				})
+				.forResult();
 			if (result.bool) {
 				player.line(result.targets, "green");
-				player.discardPlayerCard(result.targets[0], "he", true);
+				await player.discardPlayerCard({
+					target: result.targets[0],
+					position: "he",
+					forced: true,
+				});
 			}
 		},
 		mod: {
@@ -17918,16 +17911,13 @@ const skills = {
 		trigger: { player: "useCard1" },
 		sourceSkill: "twgongji",
 		filter(event, player) {
-			if (_status.currentPhase == player && event.card.name == "sha" && player.getStorage("twgongji2").includes(get.suit(event.card)) && event.addCount !== false) {
-				return true;
-			}
-			return false;
+			return _status.currentPhase === player && event.card.name === "sha" && player.getStorage("twgongji2").includes(get.suit(event.card)) && event.addCount !== false;
 		},
 		forced: true,
 		locked: false,
 		popup: false,
 		firstDo: true,
-		content() {
+		async content(event, trigger, player) {
 			trigger.addCount = false;
 			if (player.stat[player.stat.length - 1].card.sha > 0) {
 				player.stat[player.stat.length - 1].card.sha--;
@@ -17935,15 +17925,16 @@ const skills = {
 		},
 		mod: {
 			cardUsable(card, player) {
-				if (card.name == "sha") {
-					const suit = get.suit(card);
-					if (suit === "unsure" || player.getStorage("twgongji2").includes(suit)) {
-						return Infinity;
-					}
+				if (card.name !== "sha") {
+					return;
+				}
+				const suit = get.suit(card);
+				if (suit === "unsure" || player.getStorage("twgongji2").includes(suit)) {
+					return Infinity;
 				}
 			},
 			aiOrder(player, card, num) {
-				if (get.name(card) == "sha" && !player.getStorage("twgongji2").includes(get.suit(card))) {
+				if (get.name(card) === "sha" && !player.getStorage("twgongji2").includes(get.suit(card))) {
 					return num + 1;
 				}
 			},
