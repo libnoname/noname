@@ -21465,32 +21465,29 @@ const skills = {
 	twchayi: {
 		audio: "shameng2.mp3",
 		trigger: { player: "phaseJieshuBegin" },
-		direct: true,
-		content() {
-			"step 0";
-			player.chooseTarget(get.prompt2("twchayi"), lib.filter.notMe).set("ai", function (target) {
-				var player = _status.event.player;
-				return -get.attitude(player, target);
-			});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("twchayi", target);
-				if (!target.countCards("h")) {
-					event._result = { index: 1 };
-				} else {
-					target.chooseControl().set("choiceList", ["展示手牌", "下一次使用牌时候弃一张牌"]);
-				}
-			} else {
-				event.finish();
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2(event.skill),
+					filterTarget: lib.filter.notMe,
+					ai: target => -get.attitude(player, target),
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			let index = 1;
+			if (target.hasCards("h")) {
+				const result = await target
+					.chooseControl({ choiceList: ["展示手牌", "下一次使用牌时候弃一张牌"] })
+					.forResult();
+				index = result.index;
 			}
-			"step 2";
-			target.storage.twchayi_re = [result.index, target.countCards("h")];
+			target.storage.twchayi_re = [index, target.countCards("h")];
 			target.addSkill("twchayi_re");
 			target.markSkill("twchayi_re");
-			if (result.index == 0) {
-				target.showCards(target.getCards("h"), get.translation(target) + "的手牌");
+			if (index === 0) {
+				await target.showCards(target.getCards("h"), `${get.translation(target)}的手牌`);
 			} else {
 				target.addMark("twchayi_effect", 1, false);
 				target.addSkill("twchayi_effect");
@@ -21504,8 +21501,12 @@ const skills = {
 				audio: "twchayi",
 				trigger: { player: "useCard" },
 				forced: true,
-				content() {
-					player.chooseToDiscard("he", true, player.countMark("twchayi_effect"));
+				async content(event, trigger, player) {
+					player.chooseToDiscard({
+						position: "he",
+						forced: true,
+						selectCard: player.countMark("twchayi_effect"),
+					});
 					player.removeSkill("twchayi_effect");
 				},
 			},
@@ -21518,14 +21519,14 @@ const skills = {
 				filter(event, player) {
 					return player.storage.twchayi_re;
 				},
-				content() {
-					if (player.countCards("h") != player.storage.twchayi_re[1]) {
+				async content(event, trigger, player) {
+					if (player.countCards("h") !== player.storage.twchayi_re[1]) {
 						player.popup("察异");
-						if (player.storage.twchayi_re[0] == 0) {
+						if (player.storage.twchayi_re[0] === 0) {
 							player.addMark("twchayi_effect", 1, false);
 							player.addSkill("twchayi_effect");
 						} else {
-							player.showCards(player.getCards("h"), get.translation(player) + "的手牌");
+							player.showCards(player.getCards("h"), `${get.translation(player)}的手牌`);
 						}
 					}
 					player.removeSkill("twchayi_re");
@@ -21542,7 +21543,7 @@ const skills = {
 						if (!storage || !storage.length) {
 							return;
 						}
-						return "下个回合结束时，若你的手牌数不为" + storage[1] + "，你" + (storage[0] == 0 ? "下次使用牌时弃置一张牌" : "展示所有手牌");
+						return `下个回合结束时，若你的手牌数不为${storage[1]}，你${storage[0] === 0 ? "下次使用牌时弃置一张牌" : "展示所有手牌"}`;
 					},
 				},
 			},
