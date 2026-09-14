@@ -28839,40 +28839,41 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return player.countCards("h") > 0;
+			return player.hasCards("h");
 		},
 		filterTarget: lib.filter.notMe,
 		delay: 0,
-		content() {
-			"step 0";
-			event.cards = player.getCards("h");
-			player.give(event.cards, target).gaintag.add("twrangyi");
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const cards = player.getCards("h");
+			const giveEvent = player.give(cards, target);
+			giveEvent.gaintag.add("twrangyi");
 			target.addTempSkill("twrangyi2");
-			"step 1";
-			target.chooseToUse({
-				prompt: "请使用得到的一张牌，或者受到来自" + get.translation(player) + "的1点伤害",
-				filterCard(card, player) {
-					if (get.itemtype(card) != "card" || !card.hasGaintag("twrangyi")) {
-						return false;
-					}
-					return lib.filter.filterCard(card, player, event);
-				},
-				cards: cards,
-			});
-			"step 2";
+			await giveEvent;
+			const result = await target
+				.chooseToUse({
+					prompt: `请使用得到的一张牌，或者受到来自${get.translation(player)}的1点伤害`,
+					filterCard(card, player) {
+						if (get.itemtype(card) !== "card" || !card.hasGaintag("twrangyi")) {
+							return false;
+						}
+						return lib.filter.filterCard(card, player, event);
+					},
+					cards,
+				})
+				.forResult();
 			target.removeSkill("twrangyi2");
 			if (!result.bool) {
-				target.damage("nocard");
+				await target.damage({ nocard: true });
 			}
 		},
 		ai: {
 			order: 1,
 			result: {
 				target(player, target) {
-					var hs = player.getCards("h");
-					for (var i = 0; i < hs.length; i++) {
-						var hi = hs[i];
-						if (hi.name == "tao" || target.hasValueTarget(hi, null, true)) {
+					const hs = player.getCards("h");
+					for (const hi of hs) {
+						if (hi.name === "tao" || target.hasValueTarget(hi, null, true)) {
 							return 1;
 						}
 					}
@@ -28888,21 +28889,13 @@ const skills = {
 		charlotte: true,
 		sourceSkill: "twrangyi",
 		filter(event, player) {
-			var evt = event.getParent(2);
-			return (
-				evt.name == "twrangyi" &&
-				evt.player.isIn() &&
-				player.countCards("h", function (card) {
-					return card.hasGaintag("twrangyi");
-				}) > 0
-			);
+			const evt = event.getParent(2);
+			return evt.name === "twrangyi" && evt.player.isIn() && player.hasCards("h", card => card.hasGaintag("twrangyi"));
 		},
-		content() {
-			var cards = player.getCards("h", function (card) {
-				return card.hasGaintag("twrangyi");
-			});
-			game.delayx();
-			player.give(cards, trigger.getParent(2).player);
+		async content(event, trigger, player) {
+			const cards = player.getCards("h", card => card.hasGaintag("twrangyi"));
+			await game.delayx();
+			await player.give(cards, trigger.getParent(2).player);
 		},
 		onremove(player) {
 			player.removeGaintag("twrangyi");
