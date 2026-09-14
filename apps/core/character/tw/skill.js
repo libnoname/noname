@@ -26315,87 +26315,64 @@ const skills = {
 	twgezhi: {
 		audio: 2,
 		trigger: { player: "useCard" },
-		direct: true,
 		filter(event, player) {
-			if (!player.countCards("h")) {
+			if (!player.hasCards("h")) {
 				return false;
 			}
-			var evt = event.getParent("phaseUse");
-			if (!evt || evt.player != player) {
+			const evt = event.getParent("phaseUse");
+			if (!evt || evt.player !== player) {
 				return false;
 			}
-			var type = get.type2(event.card, false);
-			return !player.hasHistory(
-				"useCard",
-				function (evtx) {
-					return evtx != event && get.type2(evtx.card, false) == type && evtx.getParent("phaseUse") == evt;
-				},
-				event
-			);
+			const type = get.type2(event.card, false);
+			return !player.hasHistory("useCard", evtx => evtx !== event && get.type2(evtx.card, false) === type && evtx.getParent("phaseUse") === evt, event);
 		},
-		content() {
-			"step 0";
+		async cost(event, trigger, player) {
 			if (!event.isMine() && !event.isOnline()) {
-				game.delayx();
+				await game.delayx();
 			}
-			player.chooseCard("是否发动【革制】重铸一张牌？", lib.filter.cardRecastable).set("ai", function (card) {
-				return 5.5 - get.value(card);
-			});
-			"step 1";
-			if (result.bool) {
-				player.logSkill("twgezhi");
-				player.recast(result.cards);
-			}
+			event.result = await player
+				.chooseCard({
+					prompt: "是否发动【革制】重铸一张牌？",
+					filterCard: lib.filter.cardRecastable,
+					ai: card => 5.5 - get.value(card),
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			await player.recast(event.cards);
 		},
 		group: "twgezhi_buff",
 		subSkill: {
 			buff: {
 				audio: "twgezhi",
 				trigger: { player: "phaseUseEnd" },
-				direct: true,
 				filter(event, player) {
-					return (
-						player.getHistory("lose", function (evt) {
-							return evt.getParent(3).name == "twgezhi" && evt.getParent("phaseUse") == event;
-						}).length > 1
-					);
+					return player.getHistory("lose", evt => evt.getParent(3).name === "twgezhi" && evt.getParent("phaseUse") === event).length > 1;
 				},
-				content() {
-					"step 0";
-					player
-						.chooseTarget(get.prompt("twgezhi"), "你可以令一名角色选择获得一个其未获得过的效果：⒈攻击范围+2；⒉手牌上限+2；⒊加1点体力上限。", function (card, player, target) {
-							return !target.hasSkill("twgezhi_选项一") || !target.hasSkill("twgezhi_选项二") || !target.hasSkill("twgezhi_选项三");
+				async cost(event, trigger, player) {
+					event.result = await player
+						.chooseTarget({
+							prompt: get.prompt("twgezhi"),
+							prompt2: "你可以令一名角色选择获得一个其未获得过的效果：⒈攻击范围+2；⒉手牌上限+2；⒊加1点体力上限。",
+							filterTarget: (_card, player, target) => !target.hasSkill("twgezhi_选项一") || !target.hasSkill("twgezhi_选项二") || !target.hasSkill("twgezhi_选项三"),
+							ai: target => get.attitude(_status.event.player, target),
 						})
-						.set("ai", function (target) {
-							return get.attitude(_status.event.player, target);
-						});
-					"step 1";
-					if (result.bool) {
-						var target = result.targets[0];
-						event.target = target;
-						player.logSkill("twgezhi", target);
-						var list = [];
-						for (var i = 1; i <= 3; i++) {
-							var str = "选项" + get.cnNumber(i, true);
-							if (!target.hasSkill("twgezhi_" + str)) {
-								list.push(str);
-							}
-						}
-						if (list.length == 1) {
-							event._result = { control: list[0] };
-						} else {
-							target
-								.chooseControl(list)
-								.set("choiceList", ["令自己的攻击范围+2", "令自己的手牌上限+2", "令自己的体力上限+1"])
-								.set("ai", function () {
-									var player = _status.event.player,
-										controls = _status.event.controls;
-									if (
-										controls.includes("选项一") &&
-										game.hasPlayer(function (current) {
-											return (get.realAttitude || get.attitude)(player, current) < 0 && get.distance(player, current, "attack") > 1;
-										})
-									) {
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					const target = event.targets[0];
+					event.target = target;
+					const controls = ["选项一", "选项二", "选项三"].filter(control => !target.hasSkill(`twgezhi_${control}`));
+					let control = controls[0];
+					if (controls.length > 1) {
+						const controlResult = await target
+							.chooseControl({
+								controls,
+								choiceList: ["令自己的攻击范围+2", "令自己的手牌上限+2", "令自己的体力上限+1"],
+								ai: () => {
+									const player = _status.event.player;
+									const controls = _status.event.controls;
+									if (controls.includes("选项一") && game.hasPlayer(current => (get.realAttitude || get.attitude)(player, current) < 0 && get.distance(player, current, "attack") > 1)) {
 										return "选项一";
 									}
 									if (controls.includes("选项二") && player.needsToDiscard()) {
@@ -26405,19 +26382,16 @@ const skills = {
 										return "选项三";
 									}
 									return controls.randomGet();
-								});
-						}
-					} else {
-						event._triggered = null;
-						event.finish();
+								},
+							})
+							.forResult();
+						control = controlResult.control;
 					}
-					"step 2";
-					target.addSkill("twgezhi_" + result.control);
-					if (result.control == "选项三") {
-						target.gainMaxHp();
+					target.addSkill(`twgezhi_${control}`);
+					if (control === "选项三") {
+						await target.gainMaxHp();
 					}
-					"step 3";
-					game.delayx();
+					await game.delayx();
 				},
 			},
 			选项一: {
