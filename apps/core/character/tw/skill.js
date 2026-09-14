@@ -17230,57 +17230,64 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return game.hasPlayer(function (current) {
-				return current.countCards("he");
-			});
+			return game.hasPlayer(current => current.hasCards("he"));
 		},
 		filterTarget(card, player, target) {
-			return target.countCards("he");
+			return target.hasCards("he");
 		},
-		content() {
-			"step 0";
-			target.chooseToDiscard("he", true);
-			"step 1";
-			var list = ["binglinchengxiax"];
-			list.addArray(get.zhinangs());
-			player.chooseButton(["危迫：令其获得一张智囊牌或【兵临城下】", [list, "vcard"]], true).set("ai", function (button) {
-				return _status.event.getParent().target.getUseValue({ name: button.link[2] });
+		async content(event, trigger, player) {
+			const { target } = event;
+			await target.chooseToDiscard({
+				position: "he",
+				forced: true,
 			});
-			"step 2";
-			if (result.bool) {
-				var name = result.links[0][2],
-					card = false;
-				game.log(player, "选择了", "#y" + get.translation(name));
-				if (name == "binglinchengxiax") {
-					if (!_status.binglinchengxiax) {
-						_status.binglinchengxiax = [
-							["spade", 7],
-							["club", 7],
-							["club", 13],
-						];
-						game.broadcastAll(function () {
-							lib.inpile.add("binglinchengxiax");
-						});
-					}
-					if (_status.binglinchengxiax.length) {
-						var info = _status.binglinchengxiax.randomRemove();
-						card = game.createCard2("binglinchengxiax", info[0], info[1]);
-					}
+			const list = ["binglinchengxiax"];
+			list.addArray(get.zhinangs());
+			const result = await player
+				.chooseButton({
+					createDialog: ["危迫：令其获得一张智囊牌或【兵临城下】", [list, "vcard"]],
+					forced: true,
+					ai: button => _status.event.getParent().target.getUseValue({ name: button.link[2] }),
+				})
+				.forResult();
+			if (!result.bool) {
+				return;
+			}
+			const name = result.links[0][2];
+			let card = false;
+			game.log(player, "选择了", `#y${get.translation(name)}`);
+			if (name === "binglinchengxiax") {
+				if (!_status.binglinchengxiax) {
+					_status.binglinchengxiax = [
+						["spade", 7],
+						["club", 7],
+						["club", 13],
+					];
+					game.broadcastAll(() => {
+						lib.inpile.add("binglinchengxiax");
+					});
 				}
-				if (!card) {
-					card = get.cardPile(name);
+				if (_status.binglinchengxiax.length) {
+					const info = _status.binglinchengxiax.randomRemove();
+					card = game.createCard2("binglinchengxiax", info[0], info[1]);
 				}
-				if (card) {
-					target.gain(card, "gain2");
-				}
+			}
+			if (!card) {
+				card = get.cardPile(name);
+			}
+			if (card) {
+				await target.gain({
+					cards: [card],
+					animate: "gain2",
+				});
 			}
 		},
 		ai: {
 			order: 7.1,
 			result: {
 				target(player, target) {
-					if (target == player) {
-						return player.countCards("he") ? 10 : 0.01;
+					if (target === player) {
+						return player.hasCards("he") ? 10 : 0.01;
 					}
 					return (target.countCards("he") + 0.5) * Math.sqrt(Math.max(1, target.hp));
 				},
