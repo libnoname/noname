@@ -11561,8 +11561,10 @@ const skills = {
 		},
 		direct: true,
 		async content(event, trigger, player) {
-			var result = await player
-				.chooseBool()
+			const result = await player
+				.chooseBool({
+					choice: lib.skill.twxinghan.check(null, player),
+				})
 				.set("createDialog", [
 					get.prompt("twxinghan"),
 					`<div class="text center">按顺序使用以下“侠义”牌。但是回合结束时你须弃置所有手牌并失去X点体力（X为你的体力值-1且X至少为1）</div>`,
@@ -11572,27 +11574,29 @@ const skills = {
 						.reverse(),
 					"hidden",
 				])
-				.set("choice", lib.skill.twxinghan.check(null, player))
 				.forResult();
 			if (!result.bool) {
-				event.finish();
 				return;
 			}
 			while (true) {
-				var cards = player
+				const cards = player
 					.getExpansions("twshenyi")
 					.filter(card => player.hasUseTarget(card))
 					.reverse();
 				if (!cards.length) {
 					break;
 				}
-				await player.chooseUseTarget(true, cards[0], false);
+				await player.chooseUseTarget({
+					forced: true,
+					card: cards[0],
+					addCount: false,
+				});
 			}
 			player.when("phaseEnd").step(async () => {
-				if (player.countCards("h")) {
+				if (player.hasCards("h")) {
 					await player.chooseToDiscard(player.countCards("h"), true);
 				}
-				var num = Math.max(1, player.getHp() - 1);
+				const num = Math.max(1, player.getHp() - 1);
 				await player.loseHp(num);
 			});
 		},
@@ -11605,17 +11609,17 @@ const skills = {
 					global: ["equipEnd", "addJudgeEnd", "gainEnd", "loseAsyncEnd", "addToExpansionEnd"],
 				},
 				filter(event, player) {
-					return (player.getExpansions("twshenyi").length && event.name != "die" && (_status.currentPhase != player || player.isDying())) ^ player.hasSkill("twxinghan_in");
+					return (player.getExpansions("twshenyi").length && event.name !== "die" && (_status.currentPhase !== player || player.isDying())) ^ player.hasSkill("twxinghan_in");
 				},
 				forced: true,
 				firstDo: true,
 				silent: true,
 				forceDie: true,
-				content() {
-					if (player.getExpansions("twshenyi").length && trigger.name != "die" && (_status.currentPhase != player || player.isDying())) {
-						var cards = player.getExpansions("twshenyi");
-						var cardsx = cards.map(card => {
-							var cardx = ui.create.card();
+				async content(event, trigger, player) {
+					if (player.getExpansions("twshenyi").length && trigger.name !== "die" && (_status.currentPhase !== player || player.isDying())) {
+						const cards = player.getExpansions("twshenyi");
+						const cardsx = cards.map(card => {
+							const cardx = ui.create.card();
 							cardx.init(get.cardInfo(card));
 							cardx._cardid = card.cardid;
 							return cardx;
@@ -11637,14 +11641,13 @@ const skills = {
 				forced: true,
 				locked: false,
 				silent: true,
-				content() {
-					"step 0";
-					var cards2 = player.getCards("s", card => card.hasGaintag("twxinghan_tag"));
+				async content(event, trigger, player) {
+					const cards2 = player.getCards("s", card => card.hasGaintag("twxinghan_tag"));
 					if (player.isOnline2()) {
 						player.send(
-							function (cards, player) {
+							(cards, player) => {
 								cards.forEach(i => i.delete());
-								if (player == game.me) {
+								if (player === game.me) {
 									ui.updatehl();
 								}
 							},
@@ -11653,13 +11656,12 @@ const skills = {
 						);
 					}
 					cards2.forEach(i => i.delete());
-					if (player == game.me) {
+					if (player === game.me) {
 						ui.updatehl();
 					}
-					"step 1";
-					var cards = player.getExpansions("twshenyi");
-					var cardsx = cards.map(card => {
-						var cardx = ui.create.card();
+					const cards = player.getExpansions("twshenyi");
+					const cardsx = cards.map(card => {
+						const cardx = ui.create.card();
 						cardx.init(get.cardInfo(card));
 						cardx._cardid = card.cardid;
 						return cardx;
@@ -11667,12 +11669,12 @@ const skills = {
 					player.directgains(cardsx, null, "twxinghan_tag");
 				},
 				onremove(player) {
-					var cards2 = player.getCards("s", card => card.hasGaintag("twxinghan_tag"));
+					const cards2 = player.getCards("s", card => card.hasGaintag("twxinghan_tag"));
 					if (player.isOnline2()) {
 						player.send(
-							function (cards, player) {
+							(cards, player) => {
 								cards.forEach(i => i.delete());
-								if (player == game.me) {
+								if (player === game.me) {
 									ui.updatehl();
 								}
 							},
@@ -11681,7 +11683,7 @@ const skills = {
 						);
 					}
 					cards2.forEach(i => i.delete());
-					if (player == game.me) {
+					if (player === game.me) {
 						ui.updatehl();
 					}
 				},
@@ -11691,7 +11693,7 @@ const skills = {
 				charlotte: true,
 				trigger: { player: ["useCardBefore", "respondBefore"] },
 				filter(event, player) {
-					var cards = player.getCards("s", card => card.hasGaintag("twxinghan_tag") && card._cardid);
+					const cards = player.getCards("s", card => card.hasGaintag("twxinghan_tag") && card._cardid);
 					return (
 						event.cards &&
 						event.cards.some(card => {
@@ -11702,24 +11704,23 @@ const skills = {
 				forced: true,
 				popup: false,
 				firstDo: true,
-				content() {
-					var idList = player.getCards("s", card => card.hasGaintag("twxinghan_tag")).map(i => i._cardid);
-					var cards = player.getExpansions("twshenyi");
-					var cards2 = [];
-					for (var card of trigger.cards) {
-						var cardx = cards.find(cardx => cardx.cardid == card._cardid);
+				async content(event, trigger, player) {
+					const cards = player.getExpansions("twshenyi");
+					const cards2 = [];
+					for (const card of trigger.cards) {
+						const cardx = cards.find(cardx => cardx.cardid === card._cardid);
 						if (cardx) {
 							cards2.push(cardx);
 						}
 					}
-					var cards3 = trigger.cards.slice();
+					const cards3 = trigger.cards.slice();
 					trigger.cards = cards2;
 					trigger.card.cards = cards2;
 					if (player.isOnline2()) {
 						player.send(
-							function (cards, player) {
+							(cards, player) => {
 								cards.forEach(i => i.delete());
-								if (player == game.me) {
+								if (player === game.me) {
 									ui.updatehl();
 								}
 							},
@@ -11728,7 +11729,7 @@ const skills = {
 						);
 					}
 					cards3.forEach(i => i.delete());
-					if (player == game.me) {
+					if (player === game.me) {
 						ui.updatehl();
 					}
 				},
