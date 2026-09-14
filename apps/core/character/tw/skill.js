@@ -20064,82 +20064,63 @@ const skills = {
 			if (!player.getEquips(1).length) {
 				return false;
 			}
-			return game.hasPlayer(function (current) {
-				return player.inRange(current) && player.canCompare(current);
-			});
+			return game.hasPlayer(current => player.inRange(current) && player.canCompare(current));
 		},
 		pindianCheck(player, target) {
-			var hs = player.getCards("h").sort(function (a, b) {
-				return b.number - a.number;
-			});
-			var ts = target.getCards("h").sort(function (a, b) {
-				return b.number - a.number;
-			});
+			const hs = player.getCards("h").sort((a, b) => b.number - a.number);
+			const ts = target.getCards("h").sort((a, b) => b.number - a.number);
 			if (!hs.length || !ts.length) {
 				return 0;
 			}
-			if (Math.min(13, hs[0].number + player.getAttackRange()) > ts[0].number || (ts[0].number > 9 && get.value(ts[0]) <= 5) || target.countCards("j")) {
-				return true;
-			}
-			return false;
+			return Math.min(13, hs[0].number + player.getAttackRange()) > ts[0].number || (ts[0].number > 9 && get.value(ts[0]) <= 5) || target.hasCards("j");
 		},
-		direct: true,
 		locked: false,
 		group: ["twjianwei_pindian", "twjianwei_zhaocha"],
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt("twjianwei"), "与攻击范围内的一名角色拼点。若你赢，你获得其每个区域里的一张牌；若其赢，其获得你装备区里的武器牌", function (card, player, target) {
-					return player.inRange(target) && player.canCompare(target);
-				})
-				.set("ai", function (target) {
-					var player = _status.event.player;
-					if (lib.skill.twjianwei.pindianCheck(player, target)) {
-						return -5 * get.attitude(player, target);
-					}
-					return -get.attitude(player, target);
-				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("twjianwei", target);
-				player.chooseToCompare(target);
-			} else {
-				event.finish();
-			}
-			"step 2";
-			if (result.bool) {
-				var num = 0;
-				if (target.countCards("h")) {
-					num++;
-				}
-				if (target.countCards("e")) {
-					num++;
-				}
-				if (target.countCards("j")) {
-					num++;
-				}
-				if (num) {
-					player.gainPlayerCard(target, num, "hej", true).set("filterButton", function (button) {
-						for (var i = 0; i < ui.selected.buttons.length; i++) {
-							if (get.position(button.link) == get.position(ui.selected.buttons[i].link)) {
-								return false;
-							}
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt(event.skill),
+					prompt2: "与攻击范围内的一名角色拼点。若你赢，你获得其每个区域里的一张牌；若其赢，其获得你装备区里的武器牌",
+					filterTarget: (card, player, target) => player.inRange(target) && player.canCompare(target),
+					ai(target) {
+						if (lib.skill.twjianwei.pindianCheck(player, target)) {
+							return -5 * get.attitude(player, target);
 						}
-						return true;
+						return -get.attitude(player, target);
+					},
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const [target] = event.targets;
+			const result = await player.chooseToCompare(target).forResult();
+			if (result.bool) {
+				const num = ["h", "e", "j"].filter(position => target.hasCards(position)).length;
+				if (num) {
+					await player.gainPlayerCard({
+						target,
+						selectButton: num,
+						position: "hej",
+						forced: true,
+						filterButton: button => {
+							return ui.selected.buttons.every(selected => get.position(button.link) !== get.position(selected.link));
+						},
 					});
 				}
 			} else if (!result.tie) {
-				var card = player.getEquips(1);
-				if (card.length) {
-					target.gain(card, player, "give");
+				const cards = player.getEquips(1);
+				if (cards.length) {
+					await target.gain({
+						cards,
+						source: player,
+						animate: "give",
+					});
 				}
 			}
 		},
 		mod: {
 			aiValue(player, card, num) {
-				if (card.name == "qinggang" || card.name == "qibaodao") {
+				if (card.name === "qinggang" || card.name === "qibaodao") {
 					return num / 5;
 				}
 			},
@@ -20148,7 +20129,7 @@ const skills = {
 			unequip: true,
 			unequip_ai: true,
 			skillTagFilter(player, tag, arg) {
-				if (!arg || !arg.card || arg.card.name != "sha" || !player.getEquip(1)) {
+				if (!arg || !arg.card || arg.card.name !== "sha" || !player.getEquip(1)) {
 					return false;
 				}
 			},
@@ -20161,81 +20142,75 @@ const skills = {
 					if (!player.getEquips(1).length || player.getAttackRange() <= 0) {
 						return false;
 					}
-					if (event.player == player) {
+					if (event.player === player) {
 						return !event.iwhile;
 					}
 					return true;
 				},
 				forced: true,
 				locked: false,
-				content() {
-					var num = player.getAttackRange();
-					if (player == trigger.player) {
-						trigger.num1 += num;
-						if (trigger.num1 > 13) {
-							trigger.num1 = 13;
-						}
+				async content(event, trigger, player) {
+					const num = player.getAttackRange();
+					if (player === trigger.player) {
+						trigger.num1 = Math.min(13, trigger.num1 + num);
 					} else {
-						trigger.num2 += num;
-						if (trigger.num2 > 13) {
-							trigger.num2 = 13;
-						}
+						trigger.num2 = Math.min(13, trigger.num2 + num);
 					}
-					game.log(player, "的拼点牌点数+" + num);
+					game.log(player, `的拼点牌点数+${num}`);
 				},
 			},
 			//你是故意找茬是不是
 			zhaocha: {
 				trigger: { global: "phaseZhunbeiBegin" },
 				filter(event, player) {
-					if (event.player == player) {
+					if (event.player === player) {
 						return false;
 					}
 					return event.player.canCompare(player);
 				},
 				direct: true,
-				content() {
-					"step 0";
-					trigger.player
-						.chooseBool("剑威：是否与" + get.translation(player) + "拼点？", "若你赢，你获得其装备区里的武器牌；若其赢，其获得你每个区域里的一张牌")
-						.set("ai", () => _status.event.choice)
-						.set("choice", get.attitude(trigger.player, player) < 0 && !lib.skill.twjianwei.pindianCheck(player, trigger.player));
-					"step 1";
-					if (result.bool) {
-						trigger.player.logSkill("twjianwei", player);
-						trigger.player.chooseToCompare(player);
-					} else {
-						event.finish();
+				async content(event, trigger, player) {
+					const choice = get.attitude(trigger.player, player) < 0 && !lib.skill.twjianwei.pindianCheck(player, trigger.player);
+					const boolResult = await trigger.player
+						.chooseBool({
+							prompt: `剑威：是否与${get.translation(player)}拼点？`,
+							prompt2: "若你赢，你获得其装备区里的武器牌；若其赢，其获得你每个区域里的一张牌",
+							choice,
+							ai: () => get.event().choice,
+						})
+						.forResult();
+					if (!boolResult.bool) {
+						return;
 					}
-					"step 2";
-					if (!result.tie) {
-						if (result.bool) {
-							var card = player.getEquips(1);
-							if (card.length) {
-								trigger.player.gain(card, player, "give");
-							}
-						} else {
-							var num = 0;
-							if (trigger.player.countCards("h")) {
-								num++;
-							}
-							if (trigger.player.countCards("e")) {
-								num++;
-							}
-							if (trigger.player.countCards("j")) {
-								num++;
-							}
-							if (num) {
-								player.gainPlayerCard(trigger.player, num, "hej", true).set("filterButton", function (button) {
-									for (var i = 0; i < ui.selected.buttons.length; i++) {
-										if (get.position(button.link) == get.position(ui.selected.buttons[i].link)) {
-											return false;
-										}
-									}
-									return true;
-								});
-							}
+
+					trigger.player.logSkill("twjianwei", player);
+					const result = await trigger.player.chooseToCompare(player).forResult();
+					if (result.tie) {
+						return;
+					}
+					if (result.bool) {
+						const cards = player.getEquips(1);
+						if (cards.length) {
+							await trigger.player.gain({
+								cards,
+								source: player,
+								animate: "give",
+							});
 						}
+						return;
+					}
+
+					const num = ["h", "e", "j"].filter(position => trigger.player.hasCards(position)).length;
+					if (num) {
+						await player.gainPlayerCard({
+							target: trigger.player,
+							selectButton: num,
+							position: "hej",
+							forced: true,
+							filterButton: button => {
+								return ui.selected.buttons.every(selected => get.position(button.link) !== get.position(selected.link));
+							},
+						});
 					}
 				},
 			},
