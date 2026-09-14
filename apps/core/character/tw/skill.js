@@ -17697,36 +17697,40 @@ const skills = {
 	twyilie: {
 		audio: "duanxie",
 		trigger: { player: "phaseUseBegin" },
-		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseControl("选项一", "选项二", "背水！", "cancel2")
-				.set("choiceList", ["本阶段内使用【杀】的次数上限+1", "本回合内使用【杀】指定处于连环状态的目标后，或使用【杀】被【闪】抵消时，摸一张牌", "背水！失去1点体力并依次执行上述所有选项"])
-				.set("ai", function () {
-					if (
-						player.countCards("hs", function (card) {
-							return get.name(card) == "sha" && player.hasValueTarget(card);
-						}) > player.getCardUsable({ name: "sha" })
-					) {
-						return player.hp > 2 ? 2 : 0;
-					}
-					return 1;
+		async cost(event, trigger, player) {
+			const result = await player
+				.chooseControl({
+					controls: ["选项一", "选项二", "背水！", "cancel2"],
+					prompt: get.prompt(event.skill),
+					choiceList: ["本阶段内使用【杀】的次数上限+1", "本回合内使用【杀】指定处于连环状态的目标后，或使用【杀】被【闪】抵消时，摸一张牌", "背水！失去1点体力并依次执行上述所有选项"],
+					ai: () => {
+						if (
+							player.countCards("hs", card => get.name(card) === "sha" && player.hasValueTarget(card)) > player.getCardUsable({ name: "sha" })
+						) {
+							return player.hp > 2 ? 2 : 0;
+						}
+						return 1;
+					},
 				})
-				.set("prompt", get.prompt("twyilie"));
-			"step 1";
-			if (result.control != "cancel2") {
-				player.logSkill("twyilie");
-				game.log(player, "选择了", "#g【毅烈】", "的", "#y" + result.control);
-				if (result.index % 2 == 0) {
-					player.addTempSkill("twyilie_add", "phaseUseEnd");
-				}
-				if (result.index > 0) {
-					player.addTempSkill("twyilie_miss");
-				}
-				if (result.index == 2) {
-					player.loseHp();
-				}
+				.forResult();
+			event.result = {
+				bool: result.control !== "cancel2",
+				cost_data: { control: result.control, index: result.index },
+			};
+		},
+		async content(event, trigger, player) {
+			const {
+				cost_data: { control, index },
+			} = event;
+			game.log(player, "选择了", "#g【毅烈】", "的", `#y${control}`);
+			if (index % 2 === 0) {
+				player.addTempSkill("twyilie_add", "phaseUseEnd");
+			}
+			if (index > 0) {
+				player.addTempSkill("twyilie_miss");
+			}
+			if (index === 2) {
+				player.loseHp();
 			}
 		},
 		subSkill: {
@@ -17734,7 +17738,7 @@ const skills = {
 				charlotte: true,
 				mod: {
 					cardUsable(card, player, num) {
-						if (card.name == "sha") {
+						if (card.name === "sha") {
 							return num + 1;
 						}
 					},
@@ -17747,13 +17751,13 @@ const skills = {
 				audio: "duanxie",
 				trigger: { player: ["useCardToTargeted", "shaMiss"] },
 				filter(event, player, name) {
-					if (name == "useCardToTargeted") {
-						return event.card.name == "sha" && event.target.isLinked();
+					if (name === "useCardToTargeted") {
+						return event.card.name === "sha" && event.target.isLinked();
 					}
 					return true;
 				},
 				forced: true,
-				content() {
+				async content(event, trigger, player) {
 					player.draw();
 				},
 			},
