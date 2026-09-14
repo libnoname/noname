@@ -23011,16 +23011,16 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseZhunbeiBegin" },
 		filter(event, player) {
-			var targets = player.getStorage("twsuizheng");
+			const targets = player.getStorage("twsuizheng");
 			if (!targets.length) {
 				return false;
 			}
 			return targets.some(target => target.hp <= 2 || !target.isIn());
 		},
 		check(event, player) {
-			var targets = player.getStorage("twsuizheng");
-			var val = 0;
-			for (var target of targets) {
+			const targets = player.getStorage("twsuizheng");
+			let val = 0;
+			for (const target of targets) {
 				if (target.hp <= 2 && target.isIn()) {
 					val -= get.attitude(player, target);
 				} else if (!target.isIn()) {
@@ -23032,108 +23032,104 @@ const skills = {
 		limited: true,
 		skillAnimation: true,
 		animationColor: "thunder",
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			var list1 = ["equip3", "equip4"].map(i => get.translation(i)),
-				list2 = ["basic", "trick", "equip"].map(i => get.translation(i));
-			var targets = player.getStorage("twsuizheng"),
-				str = get.translation(targets);
-			if (targets.length) {
-				str = "与" + str;
-			}
-			player
-				.chooseButton(2, true, ["颓盗：废除你" + str + "的一个坐骑栏废除并选择一个类别", "坐骑栏", [list1, "tdnodes"], "类别", [list2, "tdnodes"]])
-				.set("filterButton", function (button) {
-					var list = _status.event.list,
-						link = button.link;
-					if (ui.selected.buttons.length) {
-						if (list.includes(ui.selected.buttons[0].link) && list.includes(link)) {
-							return false;
-						}
-						if (!list.includes(ui.selected.buttons[0].link) && !list.includes(link)) {
-							return false;
-						}
-					}
-					return true;
-				})
-				.set("ai", function (button) {
-					var player = _status.event.player;
-					var list = _status.event.list,
-						link = button.link;
-					if (list.includes(link)) {
-						if (player.hasDisabledSlot(4)) {
-							return "攻击马";
-						}
-						if (player.hasDisabledSlot(3)) {
-							return "防御马";
-						}
-						return "攻击马";
-					}
-					if (!list.includes(link)) {
-						var player = _status.event.player;
-						var targets = player.getStorage("twsuizheng");
-						for (var target of targets) {
-							if (target.isIn()) {
-								var listx = [0, 0, 0],
-									list2 = ["basic", "trick", "equip"].map(i => get.translation(i));
-								for (var i of target.getCards("he")) {
-									listx[list2.indexOf(get.translation(get.type2(i)))]++;
-								}
-								return list2[listx.indexOf(Math.max.apply(Math, listx))];
+			const list1 = ["equip3", "equip4"].map(i => get.translation(i));
+			const list2 = ["basic", "trick", "equip"].map(i => get.translation(i));
+			const currentTargets = player.getStorage("twsuizheng");
+			const translatedTargets = get.translation(currentTargets);
+			const targetText = currentTargets.length ? `与${translatedTargets}` : translatedTargets;
+			const buttonResult = await player
+				.chooseButton({
+					selectButton: 2,
+					forced: true,
+					createDialog: [`颓盗：废除你${targetText}的一个坐骑栏废除并选择一个类别`, "坐骑栏", [list1, "tdnodes"], "类别", [list2, "tdnodes"]],
+					filterButton: button => {
+						const list = _status.event.list;
+						const link = button.link;
+						if (ui.selected.buttons.length) {
+							const selectedLink = ui.selected.buttons[0].link;
+							if (list.includes(selectedLink) === list.includes(link)) {
+								return false;
 							}
 						}
-						return 1 + Math.random();
-					}
-				})
-				.set("list", list1);
-			"step 1";
-			if (result.links[0].indexOf("马") == -1) {
-				result.links.reverse();
-			}
-			var subtype = result.links[0] == "防御马" ? "equip3" : "equip4",
-				type = { 基本: "basic", 锦囊: "trick", 装备: "equip" }[result.links[1]];
-			player.disableEquip(subtype);
-			var targets = player.getStorage("twsuizheng");
-			for (var target of targets) {
-				if (target && target.isIn()) {
-					target.disableEquip(subtype);
-					var cards = target.getCards("he", card => get.type2(card) == type);
-					player.gain(cards, target, "give");
-					event.gainners = cards;
-				} else {
-					var cards = [];
-					for (var i = 1; i <= 2; i++) {
-						var card = get.cardPile2(function (card) {
-							return !cards.includes(card) && get.type2(card) == type;
-						});
-						if (card) {
-							cards.push(card);
-						} else {
-							break;
+						return true;
+					},
+					ai: button => {
+						const currentPlayer = _status.event.player;
+						const list = _status.event.list;
+						const link = button.link;
+						if (list.includes(link)) {
+							if (currentPlayer.hasDisabledSlot(4)) {
+								return "攻击马";
+							}
+							if (currentPlayer.hasDisabledSlot(3)) {
+								return "防御马";
+							}
+							return "攻击马";
 						}
-					}
-					player.gain(cards, "gain2");
-					event.gainners = cards;
-				}
-			}
-			"step 2";
-			player
-				.chooseTarget("请重新选择【随征】目标", true, function (card, player, target) {
-					return !player.getStorage("twsuizheng").includes(target);
+						const targets = currentPlayer.getStorage("twsuizheng");
+						for (const target of targets) {
+							if (!target.isIn()) {
+								continue;
+							}
+							const counts = [0, 0, 0];
+							const types = ["basic", "trick", "equip"].map(i => get.translation(i));
+							for (const card of target.getCards("he")) {
+								counts[types.indexOf(get.translation(get.type2(card)))]++;
+							}
+							return types[counts.indexOf(Math.max(...counts))];
+						}
+						return 1 + Math.random();
+					},
 				})
-				.set("ai", function (target) {
-					var player = _status.event.player;
-					return Math.max(1 + get.attitude(player, target) * get.threaten(target), Math.random());
-				});
-			"step 3";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.line(target);
-				game.log(player, "选择了", target, "作为", "“随征”角色");
-				delete player.storage.twsuizheng;
-				player.markAuto("twsuizheng", [target]);
+				.set("list", list1)
+				.forResult();
+			if (!buttonResult.links[0].includes("马")) {
+				buttonResult.links.reverse();
 			}
+			const subtype = buttonResult.links[0] === "防御马" ? "equip3" : "equip4";
+			const type = { 基本: "basic", 锦囊: "trick", 装备: "equip" }[buttonResult.links[1]];
+			await player.disableEquip({ slots: [subtype] });
+			const targets = player.getStorage("twsuizheng");
+			for (const target of targets) {
+				if (target?.isIn()) {
+					await target.disableEquip({ slots: [subtype] });
+					const cards = target.getCards("he", card => get.type2(card) === type);
+					event.gainners = cards;
+					await player.gain({ cards, source: target, animate: "give" });
+					continue;
+				}
+				const cards = [];
+				for (let i = 0; i < 2; i++) {
+					const card = get.cardPile2(card => !cards.includes(card) && get.type2(card) === type);
+					if (!card) {
+						break;
+					}
+					cards.push(card);
+				}
+				event.gainners = cards;
+				await player.gain({ cards, animate: "gain2" });
+			}
+			const targetResult = await player
+				.chooseTarget({
+					prompt: "请重新选择【随征】目标",
+					forced: true,
+					filterTarget: (_card, player, target) => !player.getStorage("twsuizheng").includes(target),
+					ai: target => {
+						const player = _status.event.player;
+						return Math.max(1 + get.attitude(player, target) * get.threaten(target), Math.random());
+					},
+				})
+				.forResult();
+			if (!targetResult.bool) {
+				return;
+			}
+			const target = targetResult.targets[0];
+			player.line(target);
+			game.log(player, "选择了", target, "作为", "“随征”角色");
+			delete player.storage.twsuizheng;
+			player.markAuto("twsuizheng", [target]);
 		},
 		ai: { combo: "twsuizheng" },
 	},
