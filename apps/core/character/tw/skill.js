@@ -18918,52 +18918,54 @@ const skills = {
 		audio: "xuewei",
 		trigger: { global: "phaseUseBegin" },
 		filter(event, player) {
-			return event.player != player && game.players.length > 2 && !player.hasSkill("twxuewei_round");
+			return event.player !== player && game.players.length > 2 && !player.hasSkill("twxuewei_round");
 		},
-		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt2("twxuewei"), function (card, player, target) {
-					return target != player && target != _status.event.getTrigger().player;
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2(event.skill),
+					filterTarget: (card, player, target) => target !== player && target !== _status.event.getTrigger().player,
+					ai: target => {
+						if (get.attitude(player, _status.event.getTrigger().player) >= 0) {
+							return 0;
+						}
+						return get.attitude(player, target);
+					},
 				})
-				.set("ai", function (target) {
-					if (get.attitude(player, _status.event.getTrigger().player) >= 0) {
-						return 0;
-					}
-					return get.attitude(player, target);
-				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("twxuewei", trigger.player, false);
-				player.addTempSkill("twxuewei_round", "roundStart");
-				player.line2([trigger.player, target]);
-				trigger.player
-					.chooseControl("选项一", "选项二")
-					.set("choiceList", ["本回合不能对" + get.translation(target) + "使用【杀】且手牌上限-2", "令" + get.translation(player) + "视为对你使用一张【决斗】"])
-					.set("ai", function () {
-						var player = _status.event.player,
-							source = _status.event.getParent().player;
-						if (get.effect(player, { name: "juedou" }, source, player) > 0) {
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			event.target = target;
+			player.logSkill("twxuewei", trigger.player, false);
+			player.addTempSkill("twxuewei_round", "roundStart");
+			player.line2([trigger.player, target]);
+			const result = await trigger.player
+				.chooseControl({
+					controls: ["选项一", "选项二"],
+					choiceList: [`本回合不能对${get.translation(target)}使用【杀】且手牌上限-2`, `令${get.translation(player)}视为对你使用一张【决斗】`],
+					ai: (event, ctrlPlayer) => {
+						const source = event.getParent().player;
+						if (get.effect(ctrlPlayer, { name: "juedou" }, source, ctrlPlayer) > 0) {
 							return 1;
 						}
-						if (player.hp - player.countCards("h") > 2 || player.hp <= 2) {
+						if (ctrlPlayer.hp - ctrlPlayer.countCards("h") > 2 || ctrlPlayer.hp <= 2) {
 							return 0;
 						}
 						return 1;
-					});
-			} else {
-				event.finish();
-			}
-			"step 2";
-			game.log(trigger.player, "选择了", "#g【血卫】", "的", "#y" + result.control);
-			if (result.control == "选项一") {
+					},
+				})
+				.forResult();
+			game.log(trigger.player, "选择了", "#g【血卫】", "的", `#y${result.control}`);
+			if (result.control === "选项一") {
 				trigger.player.markAuto("twxuewei_block", [target]);
 				trigger.player.addTempSkill("twxuewei_block");
 			} else {
-				player.useCard({ name: "juedou", isCard: true }, trigger.player, false);
+				await player.useCard({
+					card: { name: "juedou", isCard: true },
+					targets: [trigger.player],
+					addCount: false,
+				});
 			}
 		},
 		subSkill: {
@@ -18979,7 +18981,7 @@ const skills = {
 						if (!storage || !storage.length) {
 							return;
 						}
-						return "不能对" + get.translation(storage) + "使用【杀】；手牌上限-" + 2 * storage.length;
+						return `不能对${get.translation(storage)}使用【杀】；手牌上限-${2 * storage.length}`;
 					},
 				},
 				mod: {
@@ -18987,7 +18989,7 @@ const skills = {
 						return num - 2 * player.getStorage("twxuewei_block").length;
 					},
 					playerEnabled(card, player, target) {
-						if (card.name == "sha" && player.getStorage("twxuewei_block").includes(target)) {
+						if (card.name === "sha" && player.getStorage("twxuewei_block").includes(target)) {
 							return false;
 						}
 					},
