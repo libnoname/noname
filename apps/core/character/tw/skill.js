@@ -19026,70 +19026,77 @@ const skills = {
 		audio: "liechi",
 		trigger: { player: "damageEnd" },
 		filter(event, player) {
-			return event.source && event.source.hp >= player.hp && (event.source.countCards("h") > player.countCards("h") || event.source.countCards("he"));
+			return event.source && event.source.hp >= player.hp && (event.source.countCards("h") > player.countCards("h") || event.source.hasCards("he"));
 		},
-		direct: true,
-		content() {
-			"step 0";
-			var num = trigger.source.countCards("h") - player.countCards("h");
-			event.num = num;
-			var list = [],
-				choiceList = ["令" + get.translation(trigger.source) + "弃置" + get.cnNumber(num) + "张手牌", "弃置" + get.translation(trigger.source) + "一张牌", "背水！弃置一张装备牌，然后依次执行以上所有选项"];
-			if (trigger.source.countCards("h") > player.countCards("h")) {
+		async cost(event, trigger, player) {
+			const source = trigger.source;
+			const num = source.countCards("h") - player.countCards("h");
+			const list = [];
+			const choiceList = [`令${get.translation(source)}弃置${get.cnNumber(num)}张手牌`, `弃置${get.translation(source)}一张牌`, "背水！弃置一张装备牌，然后依次执行以上所有选项"];
+			if (source.countCards("h") > player.countCards("h")) {
 				list.push("选项一");
 			} else {
-				choiceList[0] = '<span style="opacity:0.5">' + choiceList[0] + "</span>";
+				choiceList[0] = `<span style="opacity:0.5">${choiceList[0]}</span>`;
 			}
-			if (trigger.source.countCards("he")) {
+			if (source.hasCards("he")) {
 				list.push("选项二");
 			} else {
-				choiceList[1] = '<span style="opacity:0.5">' + choiceList[1] + "</span>";
+				choiceList[1] = `<span style="opacity:0.5">${choiceList[1]}</span>`;
 			}
-			if (
-				trigger.source.countCards("h") > player.countCards("h") &&
-				trigger.source.countCards("he") &&
-				player.countCards("he", { type: "equip" }) &&
-				game.getGlobalHistory("changeHp", evt => {
-					return evt.player == player && evt.getParent()._dyinged;
-				}).length
-			) {
+			if (source.countCards("h") > player.countCards("h") && source.hasCards("he") && player.hasCards("he", { type: "equip" }) && game.getGlobalHistory("changeHp", evt => evt.player === player && evt.getParent()._dyinged).length) {
 				list.push("背水！");
 			} else {
-				choiceList[2] = '<span style="opacity:0.5">' + choiceList[2] + "（未进入过濒死状态）</span>";
+				choiceList[2] = `<span style="opacity:0.5">${choiceList[2]}（未进入过濒死状态）</span>`;
 			}
-			player
-				.chooseControl(list, "cancel2")
-				.set("prompt", get.prompt("twliechi", trigger.source))
-				.set("choiceList", choiceList)
-				.set("ai", () => _status.event.choice)
-				.set(
-					"choice",
-					(function () {
-						if (get.attitude(player, trigger.source) > 0) {
-							return "cancel2";
-						}
-						if (list.includes("背水！")) {
-							return "背水！";
-						}
-						if (num > 1) {
-							return "选项一";
-						}
-						return "选项二";
-					})()
-				);
-			"step 1";
-			if (result.control != "cancel2") {
-				player.logSkill("twliechi", trigger.source);
-				game.log(player, "选择了", "#g【烈斥】", "的", "#y" + result.control);
-				if (result.control != "选项二") {
-					trigger.source.chooseToDiscard("h", num, true, "allowChooseAll");
-				}
-				if (result.control != "选项一") {
-					player.discardPlayerCard(trigger.source, "he", true);
-				}
-				if (result.control == "背水！") {
-					player.chooseToDiscard("he", { type: "equip" }, true);
-				}
+			let choice;
+			if (get.attitude(player, source) > 0) {
+				choice = "cancel2";
+			} else if (list.includes("背水！")) {
+				choice = "背水！";
+			} else if (num > 1) {
+				choice = "选项一";
+			} else {
+				choice = "选项二";
+			}
+			const result = await player
+				.chooseControl({
+					controls: [...list, "cancel2"],
+					prompt: get.prompt(event.skill, source),
+					choiceList,
+					ai: () => choice,
+				})
+				.forResult();
+			event.result = {
+				bool: result.control !== "cancel2",
+				targets: [source],
+				cost_data: { num, control: result.control },
+			};
+		},
+		async content(event, trigger, player) {
+			const source = trigger.source;
+			const { num, control } = event.cost_data;
+			game.log(player, "选择了", "#g【烈斥】", "的", `#y${control}`);
+			if (control !== "选项二") {
+				await source.chooseToDiscard({
+					position: "h",
+					selectCard: num,
+					forced: true,
+					allowChooseAll: true,
+				});
+			}
+			if (control !== "选项一") {
+				await player.discardPlayerCard({
+					target: source,
+					position: "he",
+					forced: true,
+				});
+			}
+			if (control === "背水！") {
+				await player.chooseToDiscard({
+					position: "he",
+					filterCard: { type: "equip" },
+					forced: true,
+				});
 			}
 		},
 	},
