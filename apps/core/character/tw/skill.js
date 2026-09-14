@@ -12990,62 +12990,62 @@ const skills = {
 	twzhiqu: {
 		audio: 2,
 		trigger: { player: "phaseJieshuBegin" },
-		direct: true,
-		content() {
-			"step 0";
-			var count = get.cnNumber(
+		async cost(event, trigger, player) {
+			const count = get.cnNumber(
 				game.countPlayer(current => {
 					return get.distance(player, current) <= 1;
 				})
 			);
-			player.chooseTarget(get.prompt("twzhiqu"), "选择一名其他角色并视为使用牌堆顶" + count + "张牌中的【杀】。若你与其均在对方的攻击范围内，你改为依次对其使用牌堆顶" + count + "张牌中的【杀】或锦囊牌。", lib.filter.notMe).set("ai", target => {
-				var player = _status.event.player;
-				return get.effect(target, { name: "sha" }, player, player) * (get.distance(player, target) == 1 ? 2 : 1);
-			});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("twzhiqu", target);
-				event.fight = player.inRange(target) && target.inRange(player);
-				if (event.fight) {
-					game.log(player, "触发了", "#y搏击", "效果");
-				}
-				event.cards = game
-					.cardsGotoOrdering(
-						get.cards(
-							game.countPlayer(current => {
-								return get.distance(player, current) <= 1;
-							})
-						)
-					)
-					.cards.slice();
-			} else {
-				event.finish();
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt(event.skill),
+					prompt2: `选择一名其他角色并视为使用牌堆顶${count}张牌中的【杀】。若你与其均在对方的攻击范围内，你改为依次对其使用牌堆顶${count}张牌中的【杀】或锦囊牌。`,
+					filterTarget: lib.filter.notMe,
+					ai: target => {
+						const player = _status.event.player;
+						return get.effect(target, { name: "sha" }, player, player) * (get.distance(player, target) === 1 ? 2 : 1);
+					},
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const fight = player.inRange(target) && target.inRange(player);
+			if (fight) {
+				game.log(player, "触发了", "#y搏击", "效果");
 			}
-			"step 2";
-			if (player.isIn() && target.isIn() && cards.length) {
-				do {
-					var card = cards.shift();
-				} while (get.name(card) != "sha" && (!event.fight || get.type2(card) != "trick") && cards.length);
-				if (get.name(card) != "sha" && (!event.fight || get.type2(card) != "trick")) {
-					return;
+			const cards = get.cards(
+				game.countPlayer(current => {
+					return get.distance(player, current) <= 1;
+				})
+			);
+			await game.cardsGotoOrdering(cards);
+			for (const card of cards) {
+				if (!player.isIn() || !target.isIn()) {
+					break;
 				}
-				player.showCards([card], get.translation(player) + "发动了【直取】");
-				player
-					.chooseUseTarget(card, true, false, "nodistance")
-					.set("filterTarget", function (card, player, target) {
-						var evt = _status.event;
-						if (_status.event.name == "chooseTarget") {
-							evt = evt.getParent();
-						}
-						if (target != player && target != evt.twzhiqu_target) {
-							return false;
-						}
-						return lib.filter.targetEnabledx(card, player, target);
+				if (get.name(card) !== "sha" && (!fight || get.type2(card) !== "trick")) {
+					continue;
+				}
+				await player.showCards([card], `${get.translation(player)}发动了【直取】`);
+				await player
+					.chooseUseTarget({
+						card,
+						forced: true,
+						addCount: false,
+						nodistance: true,
+						filterTarget: (card, player, target) => {
+							let evt = _status.event;
+							if (_status.event.name === "chooseTarget") {
+								evt = evt.getParent();
+							}
+							if (target !== player && target !== evt.twzhiqu_target) {
+								return false;
+							}
+							return lib.filter.targetEnabledx(card, player, target);
+						},
 					})
 					.set("twzhiqu_target", target);
-				event.redo();
 			}
 		},
 	},
