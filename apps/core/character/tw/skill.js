@@ -19286,67 +19286,76 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseJieshuBegin" },
 		filter(event, player) {
-			return game.hasPlayer(function (current) {
-				return current != player && player.canUse("sha", current, false, false);
-			});
+			return game.hasPlayer(current => current !== player && player.canUse("sha", current, false, false));
 		},
-		direct: true,
-		content() {
-			"step 0";
-			var list = [];
-			player.getHistory("useCard", function (evt) {
-				if (get.type(evt.card) != "basic") {
+		async cost(event, trigger, player) {
+			const list = [];
+			player.getHistory("useCard", evt => {
+				if (get.type(evt.card) !== "basic") {
 					return;
 				}
-				var name = evt.card.name,
-					nature = game.hasNature(evt.card) ? get.nature(evt.card) : "";
-				if (!list.includes(name + nature)) {
-					list.push(name + nature);
+				const name = evt.card.name;
+				const nature = game.hasNature(evt.card) ? get.nature(evt.card) : "";
+				if (!list.includes(`${name}${nature}`)) {
+					list.push(`${name}${nature}`);
 				}
 			});
-			event.addDamage = list.length > 1;
-			player
-				.chooseTarget(get.prompt("twfenwu"), "失去1点体力并视为使用一张无距离限制的【杀】" + (event.addDamage ? "（伤害基数+1）" : ""), function (card, player, target) {
-					return target != player && player.canUse("sha", target, false, false);
+			const addDamage = list.length > 1;
+			const result = await player
+				.chooseTarget({
+					prompt: get.prompt(event.skill),
+					prompt2: `失去1点体力并视为使用一张无距离限制的【杀】${addDamage ? "（伤害基数+1）" : ""}`,
+					filterTarget: (card, player, target) => target !== player && player.canUse("sha", target, false, false),
+					ai: target => {
+						const player = _status.event.player;
+						if (player.hp + player.countCards("hs", { name: ["tao", "jiu"] }) <= 1) {
+							return -1;
+						}
+						let num = 1;
+						if (
+							(!target.mayHaveShan(player, "use") ||
+								player.hasSkillTag(
+									"directHit_ai",
+									true,
+									{
+										target,
+										card: { name: "sha" },
+									},
+									true
+								)) &&
+							!target.hasSkillTag("filterDamage", null, {
+								player,
+								card: { name: "sha" },
+							})
+						) {
+							num = 1.3;
+						}
+						return get.effect(target, { name: "sha" }, player, player) * num;
+					},
 				})
-				.set("ai", function (target) {
-					var player = _status.event.player;
-					if (player.hp + player.countCards("hs", { name: ["tao", "jiu"] }) <= 1) {
-						return -1;
-					}
-					var num = 1;
-					if (
-						(!target.mayHaveShan(player, "use") ||
-							player.hasSkillTag(
-								"directHit_ai",
-								true,
-								{
-									target: target,
-									card: { name: "sha" },
-								},
-								true
-							)) &&
-						!target.hasSkillTag("filterDamage", null, {
-							player: player,
-							card: { name: "sha" },
-						})
-					) {
-						num = 1.3;
-					}
-					return get.effect(target, { name: "sha" }, player, player) * num;
-				});
-			"step 1";
-			if (result.bool) {
-				var num = 1;
-				var target = result.targets[0];
-				player.logSkill("twfenwu", target);
-				player.loseHp();
-				if (event.addDamage) {
-					num = 2;
-					game.log("#y杀", "的伤害基数+1");
-				}
-				player.useCard({ name: "sha", isCard: true }, target, false).baseDamage = num;
+				.forResult();
+			event.result = {
+				bool: result.bool,
+				targets: result.targets,
+				cost_data: addDamage,
+			};
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const loseHpEvent = player.loseHp();
+			let num = 1;
+			if (event.cost_data) {
+				num = 2;
+				game.log("#y杀", "的伤害基数+1");
 			}
+			const useCardEvent = player.useCard({
+				card: { name: "sha", isCard: true },
+				targets: [target],
+				addCount: false,
+			});
+			useCardEvent.baseDamage = num;
+			await loseHpEvent;
+			await useCardEvent;
 		},
 	},
 	//呼厨泉
