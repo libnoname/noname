@@ -15439,8 +15439,8 @@ const skills = {
 		audio: 2,
 		trigger: { player: "dying" },
 		filter(event, player) {
-			var target = _status.currentPhase;
-			return player.hp <= 0 && target && target.isIn() && target != player;
+			const target = _status.currentPhase;
+			return player.hp <= 0 && target && target.isIn() && target !== player;
 		},
 		skillAnimation: true,
 		animationColor: "gray",
@@ -15448,40 +15448,40 @@ const skills = {
 		logTarget(event, player) {
 			return _status.currentPhase;
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			var target = _status.currentPhase;
-			if (target.hp <= 0) {
-				event._result = { bool: false };
-			} else {
-				target
-					.chooseToDiscard("h", target.hp, get.translation(player) + "对你发动了【示恭】，是否弃置" + get.cnNumber(target.hp) + "张手牌？", "若如此做，其将体力回复至1点；或者点击“取消”加1点体力上限并回复1点体力，摸一张牌，然后其将体力回复至体力上限")
-					.set("ai", card => {
-						if (!_status.event.goon) {
-							return 0;
-						}
-						return 7 - get.value(card);
+			const target = _status.currentPhase;
+			let result = { bool: false };
+			if (target.hp > 0) {
+				result = await target
+					.chooseToDiscard({
+						position: "h",
+						selectCard: target.hp,
+						prompt: `${get.translation(player)}对你发动了【示恭】，是否弃置${get.cnNumber(target.hp)}张手牌？`,
+						prompt2: "若如此做，其将体力回复至1点；或者点击“取消”加1点体力上限并回复1点体力，摸一张牌，然后其将体力回复至体力上限",
+						ai: card => {
+							if (!_status.event.goon) {
+								return 0;
+							}
+							return 7 - get.value(card);
+						},
 					})
-					.set("goon", get.attitude(target, player) >= 0);
+					.set("goon", get.attitude(target, player) >= 0)
+					.forResult();
 			}
-			"step 1";
-			var target = _status.currentPhase;
 			if (result.bool) {
-				var num = 1 - player.hp;
+				const num = 1 - player.hp;
 				if (num > 0) {
-					player.recover(num);
+					await player.recover(num);
 				}
-				event.finish();
-			} else {
-				target.gainMaxHp();
-				target.recover();
-				target.draw();
+				return;
 			}
-			"step 2";
-			var num = player.maxHp - player.hp;
+			await target.gainMaxHp();
+			await target.recover();
+			await target.draw();
+			const num = player.maxHp - player.hp;
 			if (num > 0) {
-				player.recover(num);
+				await player.recover(num);
 			}
 		},
 	},
