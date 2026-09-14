@@ -17947,44 +17947,36 @@ const skills = {
 		limited: true,
 		enable: "phaseUse",
 		filterTarget: true,
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			event.players = game.filterPlayer(function (current) {
-				return current != target && current.inRange(target);
-			});
-			event.players.sortBySeat();
-			"step 1";
-			if (event.players.length) {
-				event.current = event.players.shift();
-				event.current.addTempClass("target");
-				player.line(event.current, "green");
-				if (!event.current.countCards("he") || !target.isIn()) {
-					event._result = { bool: false };
-				} else {
-					event.current
-						.chooseToDiscard({ subtype: "equip1" }, "he", "解烦：弃置一张武器牌，或令" + get.translation(target) + "摸一张牌")
-						.set("ai", function (card) {
-							if (!_status.event.target.isIn()) {
-								return 0;
-							}
-							if (get.attitude(_status.event.player, _status.event.target) < 0) {
-								return 7 - get.value(card);
-							}
-							return -1;
+			const players = game.filterPlayer(current => current !== target && current.inRange(target));
+			players.sortBySeat();
+			for (const current of players) {
+				current.addTempClass("target");
+				player.line(current, "green");
+				let result = { bool: false };
+				if (current.hasCards("he") && target.isIn()) {
+					result = await current
+						.chooseToDiscard({
+							filterCard: { subtype: "equip1" },
+							position: "he",
+							prompt: `解烦：弃置一张武器牌，或令${get.translation(target)}摸一张牌`,
+							ai: card => {
+								if (!target.isIn()) {
+									return 0;
+								}
+								return get.attitude(current, target) < 0 ? 7 - get.value(card) : -1;
+							},
 						})
-						.set("target", target);
+						.set("target", target)
+						.forResult();
 				}
-			} else {
-				player.addSkill("twjiefan2");
-				player.markAuto("twjiefan2", [target]);
-				event.finish();
+				if (!result.bool && target.isIn()) {
+					await target.draw();
+				}
 			}
-			"step 2";
-			if (!result.bool && target.isIn()) {
-				target.draw();
-			}
-			event.goto(1);
+			player.addSkill("twjiefan2");
+			player.markAuto("twjiefan2", [target]);
 		},
 		ai: {
 			order: 5,
@@ -17993,10 +17985,10 @@ const skills = {
 					if (player.hp > 2 && game.phaseNumber < game.players.length * 2) {
 						return 0;
 					}
-					var num = 0,
-						players = game.filterPlayer();
-					for (var i = 0; i < players.length; i++) {
-						if (players[i] != target && players[i].inRange(target)) {
+					const players = game.filterPlayer();
+					let num = 0;
+					for (const current of players) {
+						if (current !== target && current.inRange(target)) {
 							num++;
 						}
 					}
@@ -18015,7 +18007,7 @@ const skills = {
 		},
 		forced: true,
 		popup: false,
-		content() {
+		async content(event, trigger, player) {
 			player.removeSkill("twjiefan2");
 			player.restoreSkill("twjiefan");
 		},
