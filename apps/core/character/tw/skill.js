@@ -12377,30 +12377,34 @@ const skills = {
 				enable: "phaseUse",
 				forceaudio: true,
 				filter(event, player) {
-					return (
-						player.group == "qun" &&
-						game.hasPlayer(function (current) {
-							return current != player && current.hasZhuSkill("twshijun", player) && !current.getExpansions("yishe").length;
-						})
-					);
+					return player.group === "qun" && game.hasPlayer(current => current !== player && current.hasZhuSkill("twshijun", player) && !current.getExpansions("yishe").length);
 				},
 				filterTarget(card, player, target) {
-					return target != player && target.hasZhuSkill("twshijun", player) && !target.getExpansions("yishe").length;
+					return target !== player && target.hasZhuSkill("twshijun", player) && !target.getExpansions("yishe").length;
 				},
 				prompt: "摸一张牌然后将一张牌作为“米”置于主公的武将牌上",
-				content() {
-					"step 0";
-					player.draw();
-					"step 1";
-					if (player.countCards("he")) {
-						player.chooseCard("将一张牌置于" + get.translation(target) + "的武将牌上", "he", true);
-					} else {
-						event.finish();
+				async content(event, trigger, player) {
+					const { target } = event;
+					await player.draw();
+					if (!player.hasCards("he")) {
+						return;
 					}
-					"step 2";
-					if (result.bool) {
-						target.addToExpansion(result.cards, player, "give").gaintag.add("yishe");
+					const result = await player
+						.chooseCard({
+							prompt: `将一张牌置于${get.translation(target)}的武将牌上`,
+							position: "he",
+							forced: true,
+						})
+						.forResult();
+					if (!result.bool) {
+						return;
 					}
+					await target.addToExpansion({
+						cards: result.cards,
+						source: player,
+						animate: "give",
+						gaintag: ["yishe"],
+					});
 				},
 				ai: {
 					order: 7,
