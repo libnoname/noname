@@ -23535,22 +23535,22 @@ const skills = {
 		forced: true,
 		locked: false,
 		filter(event, player) {
-			if (event.name == "phase" && game.phaseNumber != 0) {
+			if (event.name === "phase" && game.phaseNumber !== 0) {
 				return false;
 			}
 			return !player.hasSkill("twzhengjian_eff0") && !player.hasSkill("twzhengjian_eff1");
 		},
-		content() {
-			"step 0";
-			player
-				.chooseControl()
-				.set("prompt", "征建：请选择一种效果")
-				.set("choiceList", ["令“出牌阶段内未使用过非基本牌”的其他角色受到惩罚", "令“出牌阶段内未得到过牌”的其他角色受到惩罚"])
-				.set("ai", () => (Math.random() <= 0.5 ? 0 : 1));
-			"step 1";
-			player.addSkill("twzhengjian_eff" + result.index);
-			game.log(player, "获得了", "#g【征建】", "的", "#y效果" + get.cnNumber(result.index + 1, true));
-			game.delayx();
+		async content(event, trigger, player) {
+			const result = await player
+				.chooseControl({
+					prompt: "征建：请选择一种效果",
+					choiceList: ["令“出牌阶段内未使用过非基本牌”的其他角色受到惩罚", "令“出牌阶段内未得到过牌”的其他角色受到惩罚"],
+					ai: () => (Math.random() <= 0.5 ? 0 : 1),
+				})
+				.forResult();
+			player.addSkill(`twzhengjian_eff${result.index}`);
+			game.log(player, "获得了", "#g【征建】", "的", `#y效果${get.cnNumber(result.index + 1, true)}`);
+			await game.delayx();
 		},
 		onremove: true,
 		subSkill: {
@@ -23562,43 +23562,52 @@ const skills = {
 				marktext: "建",
 				mark: true,
 				filter(event, player) {
-					if (event.player == player || event._twzhengjian || !event.player.isIn()) {
+					if (event.player === player || event._twzhengjian || !event.player.isIn()) {
 						return false;
 					}
-					if (
-						event.player.hasHistory("useCard", function (evt) {
-							return evt.getParent("phaseUse") == event && get.type(evt.card) != "basic";
-						})
-					) {
+					if (event.player.hasHistory("useCard", evt => evt.getParent("phaseUse") === event && get.type(evt.card) !== "basic")) {
 						return false;
 					}
-					return player.storage.twzhengjian || event.player.countCards("he") > 0;
+					return player.storage.twzhengjian || event.player.hasCards("he");
 				},
 				logTarget: "player",
-				content() {
-					"step 0";
+				async content(event, trigger, player) {
 					trigger._twzhengjian = true;
-					var target = trigger.player;
-					event.target = target;
+					const target = trigger.player;
+					let result;
 					if (player.storage.twzhengjian) {
-						player
-							.chooseBool("征建：是否对" + get.translation(target) + "造成1点伤害？")
-							.set("ai", () => _status.event.goon)
-							.set("goon", get.damageEffect(target, player, _status.event.player) > 0);
+						result = await player
+							.chooseBool({
+								prompt: `征建：是否对${get.translation(target)}造成1点伤害？`,
+								ai: () => _status.event.goon,
+							})
+							.set("goon", get.damageEffect(target, player, _status.event.player) > 0)
+							.forResult();
 					} else {
-						target.chooseCard("he", true, "交给" + get.translation(player) + "一张牌");
+						result = await target
+							.chooseCard({
+								position: "he",
+								forced: true,
+								prompt: `交给${get.translation(player)}一张牌`,
+							})
+							.forResult();
 					}
-					"step 1";
 					if (result.bool) {
-						if (result.cards && result.cards.length) {
-							target.give(result.cards, player).type = "twzhengjian";
+						if (result.cards?.length) {
+							const giveEvent = target.give(result.cards, player);
+							giveEvent.type = "twzhengjian";
+							await giveEvent;
 						} else {
-							target.damage();
+							await target.damage();
 						}
 					}
-					player.chooseBool("是否变更【征建】的效果？").set("ai", () => Math.random() > 0.5);
-					"step 2";
-					if (result.bool) {
+					const changeResult = await player
+						.chooseBool({
+							prompt: "是否变更【征建】的效果？",
+							ai: () => Math.random() > 0.5,
+						})
+						.forResult();
+					if (changeResult.bool) {
 						player.removeSkill("twzhengjian_eff0");
 						player.addSkill("twzhengjian_eff1");
 						game.log(player, "将", "#g【征建】", "的效果变更为", "#y效果二");
@@ -23621,43 +23630,52 @@ const skills = {
 				marktext: "征",
 				mark: true,
 				filter(event, player) {
-					if (event.player == player || event._twzhengjian || !event.player.isIn()) {
+					if (event.player === player || event._twzhengjian || !event.player.isIn()) {
 						return false;
 					}
-					if (
-						event.player.hasHistory("gain", function (evt) {
-							return evt.getParent("phaseUse") == event;
-						})
-					) {
+					if (event.player.hasHistory("gain", evt => evt.getParent("phaseUse") === event)) {
 						return false;
 					}
-					return player.storage.twzhengjian || event.player.countCards("he") > 0;
+					return player.storage.twzhengjian || event.player.hasCards("he");
 				},
 				logTarget: "player",
-				content() {
-					"step 0";
+				async content(event, trigger, player) {
 					trigger._twzhengjian = true;
-					var target = trigger.player;
-					event.target = target;
+					const target = trigger.player;
+					let result;
 					if (player.storage.twzhengjian) {
-						player
-							.chooseBool("征建：是否对" + get.translation(target) + "造成1点伤害？")
-							.set("ai", () => _status.event.goon)
-							.set("goon", get.damageEffect(target, player, _status.event.player) > 0);
+						result = await player
+							.chooseBool({
+								prompt: `征建：是否对${get.translation(target)}造成1点伤害？`,
+								ai: () => _status.event.goon,
+							})
+							.set("goon", get.damageEffect(target, player, _status.event.player) > 0)
+							.forResult();
 					} else {
-						target.chooseCard("he", true, "交给" + get.translation(player) + "一张牌");
+						result = await target
+							.chooseCard({
+								position: "he",
+								forced: true,
+								prompt: `交给${get.translation(player)}一张牌`,
+							})
+							.forResult();
 					}
-					"step 1";
 					if (result.bool) {
-						if (result.cards && result.cards.length) {
-							target.give(result.cards, player).type = "twzhengjian";
+						if (result.cards?.length) {
+							const giveEvent = target.give(result.cards, player);
+							giveEvent.type = "twzhengjian";
+							await giveEvent;
 						} else {
-							target.damage();
+							await target.damage();
 						}
 					}
-					player.chooseBool("是否变更【征建】的效果？").set("ai", () => Math.random() > 0.5);
-					"step 2";
-					if (result.bool) {
+					const changeResult = await player
+						.chooseBool({
+							prompt: "是否变更【征建】的效果？",
+							ai: () => Math.random() > 0.5,
+						})
+						.forResult();
+					if (changeResult.bool) {
 						player.removeSkill("twzhengjian_eff1");
 						player.addSkill("twzhengjian_eff0");
 						game.log(player, "将", "#g【征建】", "的效果变更为", "#y效果一");
