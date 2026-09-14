@@ -18575,21 +18575,19 @@ const skills = {
 		audio: "liewei",
 		trigger: { source: "dieAfter" },
 		forced: true,
-		content() {
-			"step 0";
-			if (!player.hasSkill("twcuorui", null, null, false) || !player.awakenedSkills.includes("twcuorui")) {
-				event._result = { index: 0 };
-			} else {
-				player
-					.chooseControl()
-					.set("prompt", "裂围：请选择一项")
-					.set("choiceList", ["摸两张牌", "重置〖挫锐〗"])
-					.set("ai", function () {
-						return 1;
-					});
+		async content(event, trigger, player) {
+			let index = 0;
+			if (player.hasSkill("twcuorui", null, null, false) && player.awakenedSkills.includes("twcuorui")) {
+				const result = await player
+					.chooseControl({
+						prompt: "裂围：请选择一项",
+						choiceList: ["摸两张牌", "重置〖挫锐〗"],
+						ai: () => 1,
+					})
+					.forResult();
+				index = result.index;
 			}
-			"step 1";
-			if (result.index == 0) {
+			if (index === 0) {
 				player.draw(2);
 			} else {
 				player.restoreSkill("twcuorui");
