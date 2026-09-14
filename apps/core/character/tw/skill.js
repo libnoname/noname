@@ -28988,13 +28988,13 @@ const skills = {
 	twliancai: {
 		trigger: { player: ["turnOverEnd", "phaseJieshuBegin"] },
 		filter(card, player, target) {
-			return target == "phaseJieshuBegin" || player.countCards("h") < player.hp;
+			return target === "phaseJieshuBegin" || player.countCards("h") < player.hp;
 		},
 		filterTarget(card, player, target) {
-			return target != player && target.countGainableCards(player, "e") > 0;
+			return target !== player && target.hasGainableCards(player, "e");
 		},
 		check(card, player) {
-			if (card.name == "turnOver") {
+			if (card.name === "turnOver") {
 				return true;
 			}
 			if (player.isTurnedOver()) {
@@ -29003,36 +29003,41 @@ const skills = {
 			if (player.hp - player.countCards("h") > 1) {
 				return true;
 			}
-			return game.hasPlayer(function (current) {
-				return lib.skill.twliancai.filterTarget(null, player, current) && lib.skill.twliancai.filterAI(current);
-			});
+			return game.hasPlayer(current => lib.skill.twliancai.filterTarget(null, player, current) && lib.skill.twliancai.filterAI(current));
 		},
 		filterAI(target) {
-			var player = _status.event.player;
-			var att = get.attitude(player, target);
-			if (target.isDamaged() && target.countCards("e", "baiyin") && att > 0) {
+			const player = _status.event.player;
+			const att = get.attitude(player, target);
+			if (target.isDamaged() && target.hasCards("e", "baiyin") && att > 0) {
 				return 2 * att;
 			}
 			return -att;
 		},
 		prompt2(card, player, target) {
-			return card.name == "phaseJieshu" ? "将武将牌翻面，然后获得一名其他角色装备区内的一张牌" : "将手牌摸至与体力值相同";
+			return card.name === "phaseJieshu" ? "将武将牌翻面，然后获得一名其他角色装备区内的一张牌" : "将手牌摸至与体力值相同";
 		},
-		content() {
-			"step 0";
-			if (event.triggername == "phaseJieshuBegin") {
-				player.turnOver();
-			} else {
-				player.draw(player.hp - player.countCards("h"));
-				event.finish();
+		async content(event, trigger, player) {
+			if (event.triggername !== "phaseJieshuBegin") {
+				await player.draw(player.hp - player.countCards("h"));
+				return;
 			}
-			"step 1";
-			player.chooseTarget("获得一名角色装备区内的一张牌", lib.skill.twliancai.filterTarget).ai = lib.skill.twliancai.filterAI;
-			"step 2";
-			if (result.bool) {
-				player.line(result.targets, "thunder");
-				player.gainPlayerCard("e", true, result.targets[0]);
+			await player.turnOver();
+			const result = await player
+				.chooseTarget({
+					prompt: "获得一名角色装备区内的一张牌",
+					filterTarget: lib.skill.twliancai.filterTarget,
+					ai: lib.skill.twliancai.filterAI,
+				})
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
+			player.line(result.targets, "thunder");
+			await player.gainPlayerCard({
+				target: result.targets[0],
+				position: "e",
+				forced: true,
+			});
 		},
 	},
 	twqijia: {
