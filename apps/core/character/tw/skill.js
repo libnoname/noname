@@ -18583,71 +18583,47 @@ const skills = {
 			if (!event.isPhaseUsing(player)) {
 				return false;
 			}
-			if (event.name == "damage") {
-				return (
-					player
-						.getHistory("sourceDamage", evt => {
-							return evt.getParent("phaseUse") == event.getParent("phaseUse");
-						})
-						.indexOf(event) == 0
-				);
+			if (event.name === "damage") {
+				return player.getHistory("sourceDamage", evt => evt.getParent("phaseUse") === event.getParent("phaseUse")).indexOf(event) === 0;
 			}
-			if (!event.targets || event.targets.every(target => target == player)) {
+			if (!event.targets || event.targets.every(target => target === player)) {
 				return false;
 			}
-			return (
-				player
-					.getAllHistory("useCard", function (evt) {
-						if (!evt.isPhaseUsing(player)) {
-							return false;
-						}
-						if (evt.targets.every(target => target == player)) {
-							return false;
-						}
-						return true;
-					})
-					.indexOf(event) %
-					2 ==
-				1
-			);
+			return player.getAllHistory("useCard", evt => evt.isPhaseUsing(player) && !evt.targets.every(target => target === player)).indexOf(event) % 2 === 1;
 		},
-		direct: true,
-		content() {
-			"step 0";
-			if (
-				!game.hasPlayer(function (target) {
-					return target != player && target.countCards("he");
-				})
-			) {
-				event.finish();
+		async cost(event, trigger, player) {
+			if (!game.hasPlayer(target => target !== player && target.hasCards("he"))) {
+				event.result = { bool: false };
 				return;
 			}
-			player
-				.chooseTarget(get.prompt("twzhengrong"), "将一名其他角色的一张牌置于武将牌上，称为“荣”", function (card, player, target) {
-					return target != player && target.countCards("he");
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt(event.skill),
+					prompt2: "将一名其他角色的一张牌置于武将牌上，称为“荣”",
+					filterTarget: (card, player, target) => target !== player && target.hasCards("he"),
+					ai: target => get.effect(target, { name: "guohe_copy2" }, player, player),
 				})
-				.set("ai", function (target) {
-					return get.effect(target, { name: "guohe_copy2" }, _status.event.player, _status.event.player);
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			event.target = target;
+			const cardResult = await player.choosePlayerCard({ target, position: "he", forced: true }).forResult();
+			if (cardResult.bool) {
+				const next = player.addToExpansion({
+					cards: cardResult.links,
+					source: target,
+					animate: "give",
 				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = result.targets[0];
-				player.logSkill("twzhengrong", target);
-				player.choosePlayerCard(target, "he", true);
-			} else {
-				event.finish();
-			}
-			"step 2";
-			if (result.bool) {
-				player.addToExpansion(result.links, target, "give").gaintag.add("twzhengrong");
+				next.gaintag.add("twzhengrong");
+				await next;
 			}
 		},
 		marktext: "荣",
 		onremove(player, skill) {
-			var cards = player.getExpansions(skill);
+			const cards = player.getExpansions(skill);
 			if (cards.length) {
-				player.loseToDiscardpile(cards);
+				player.loseToDiscardpile({ cards });
 			}
 		},
 		intro: {
