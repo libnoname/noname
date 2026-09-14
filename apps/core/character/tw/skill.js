@@ -6588,111 +6588,110 @@ const skills = {
 	//魏关羽
 	twdanji: {
 		derivation: ["mashu", "nuzhan"],
-			audio: "danji",
-			trigger: { player: "phaseZhunbeiBegin" },
-			filter(event, player) {
-				const zhu = get.zhu(player);
-				if (zhu?.isZhu && (lib.translate[zhu.name].includes("刘备") || (zhu.name2 && lib.translate[zhu.name2].includes("刘备")))) {
-					return false;
-				}
-				return player.countCards("h") > player.hp;
+		audio: "danji",
+		trigger: { player: "phaseZhunbeiBegin" },
+		filter(event, player) {
+			const zhu = get.zhu(player);
+			if (zhu?.isZhu && (lib.translate[zhu.name].includes("刘备") || (zhu.name2 && lib.translate[zhu.name2].includes("刘备")))) {
+				return false;
+			}
+			return player.countCards("h") > player.hp;
 		},
 		forced: true,
-			juexingji: true,
-			skillAnimation: true,
-			animationColor: "water",
-			async content(event, trigger, player) {
-				player.awakenSkill(event.name);
-				await player.loseMaxHp();
-				await player.addSkills(["mashu", "nuzhan"]);
-				player.addSkill("twdanji_effect");
-			},
+		juexingji: true,
+		skillAnimation: true,
+		animationColor: "water",
+		async content(event, trigger, player) {
+			player.awakenSkill(event.name);
+			await player.loseMaxHp();
+			await player.addSkills(["mashu", "nuzhan"]);
+			player.addSkill("twdanji_effect");
+		},
 		subSkill: {
 			effect: {
 				charlotte: true,
 				mark: true,
 				intro: { content: "每回合首次使用转化【杀】结算结束后摸一张牌" },
 				audio: "danji",
-					trigger: { player: "useCardAfter" },
-					filter(event, player) {
-						return (
-							player
-								.getHistory("useCard", evt => evt.card.name === "sha" && evt.cards && evt.cards.length && !event.card.isCard)
-								.indexOf(event) === 0
-						);
-					},
-					forced: true,
-					async content(event, trigger, player) {
-						await player.draw();
-					},
+				trigger: { player: "useCardAfter" },
+				filter(event, player) {
+					return player.getHistory("useCard", evt => evt.card.name === "sha" && evt.cards && evt.cards.length && !event.card.isCard).indexOf(event) === 0;
+				},
+				forced: true,
+				async content(event, trigger, player) {
+					await player.draw();
+				},
 			},
 		},
 	},
 	//谯周
 	twxingbu: {
-		audio: "xingbu",
-		trigger: { player: "phaseJieshuBegin" },
-		frequent: true,
-		content() {
-			"step 0";
-			var cards = get.cards(3);
-			game.updateRoundNumber();
-			event.cards = cards;
-			player.showCards(cards, get.translation(player) + "发动了【星卜】");
-			"step 1";
-			var num = 0,
-				list = [
+			audio: "xingbu",
+			trigger: { player: "phaseJieshuBegin" },
+			frequent: true,
+			async content(event, trigger, player) {
+				const cards = get.cards(3);
+				game.updateRoundNumber();
+				await player.showCards(cards, `${get.translation(player)}发动了【星卜】`);
+				let num = 0;
+				const list = [
 					["荧惑守心", "出牌阶段使用【杀】的次数-1"],
 					["扶匡东柱", "出牌阶段使用的第一张牌结算完成后，弃置一张牌并摸两张牌"],
 					["五星连珠", "摸牌阶段多摸两张牌，出牌阶段使用【杀】的次数+1，跳过弃牌阶段"],
 				];
-			for (var i of cards) {
-				if (get.color(i, false) == "red") {
-					num++;
+				for (const card of cards) {
+					if (get.color(card, false) === "red") {
+						num++;
+					}
 				}
-			}
-			if (num == 0) {
-				num = 1;
-			}
-			player.chooseTarget("是否令一名其他角色获得“" + list[num - 1][0] + "”效果？", list[num - 1][1], lib.filter.notMe).set("ai", function (target) {
-				var player = _status.event.player,
-					num = _status.event.getParent().num;
-				var att = get.attitude(player, target);
-				switch (num) {
-					case 1:
-						return -get.sgn(att) * target.countCards("hs", { name: "sha" }) - 1;
-					case 2:
-						return att;
-					case 3:
-						return att * (target.hasJudge("lebu") ? 3 : 1);
+				if (num === 0) {
+					num = 1;
 				}
-			});
-			event.num = num;
-			"step 2";
-			if (result.bool) {
-				player.addExpose(0.15);
-				var skill = "twxingbu_effect" + num;
-				var target = result.targets[0];
-				player.line(target);
-				game.log(player, "选择了", target);
-				target.popup(skill);
-				target.addTempSkill(skill, { player: "phaseAfter" });
-				target.addMark(skill, 1, false);
-				game.delayx();
-			}
-			game.cardsDiscard(cards);
+				event.num = num;
+				const result = await player
+					.chooseTarget({
+						prompt: `是否令一名其他角色获得“${list[num - 1][0]}”效果？`,
+						prompt2: list[num - 1][1],
+						filterTarget: lib.filter.notMe,
+						ai: target => {
+							const player = _status.event.player;
+							const num = _status.event.getParent().num;
+							const att = get.attitude(player, target);
+							switch (num) {
+								case 1:
+									return -get.sgn(att) * target.countCards("hs", { name: "sha" }) - 1;
+								case 2:
+									return att;
+								case 3:
+									return att * (target.hasJudge("lebu") ? 3 : 1);
+							}
+						},
+					})
+					.forResult();
+				if (result.bool) {
+					player.addExpose(0.15);
+					const skill = `twxingbu_effect${num}`;
+					const target = result.targets[0];
+					player.line(target);
+					game.log(player, "选择了", target);
+					target.popup(skill);
+					target.addTempSkill(skill, { player: "phaseAfter" });
+					target.addMark(skill, 1, false);
+					await game.delayx();
+				}
+				await game.cardsDiscard(cards);
 		},
 		subSkill: {
 			effect1: {
 				charlotte: true,
 				onremove: true,
 				marktext: "惑",
-				intro: { content: "出牌阶段使用【杀】的次数-#" },
-				mod: {
-					cardUsable(card, player, num) {
-						if (card.name == "sha") {
-							return num - player.countMark("twxingbu_effect1");
-						}
+					intro: { content: "出牌阶段使用【杀】的次数-#" },
+					mod: {
+						cardUsable(card, player, num) {
+							if (card.name === "sha") {
+								return num - player.countMark("twxingbu_effect1");
+							}
 					},
 				},
 			},
@@ -6701,52 +6700,52 @@ const skills = {
 				onremove: true,
 				marktext: "匡",
 				intro: { content: "出牌阶段使用的第一张牌结算完成后，弃置#张牌并摸#*2张牌" },
-				audio: "xingbu",
-				trigger: { player: "useCardAfter" },
-				filter(event, player) {
-					var evt = event.getParent("phaseUse");
-					if (!evt || evt.player != player) {
-						return false;
-					}
-					return (
-						player
-							.getHistory("useCard", function (evtx) {
-								return evtx.getParent("phaseUse") == evt;
-							})
-							.indexOf(event) < player.countMark("twxingbu_effect2")
-					);
-				},
-				forced: true,
-				content() {
-					"step 0";
-					player.chooseToDiscard(player.countMark("twxingbu_effect2"), "he", true);
-					"step 1";
-					player.draw(player.countMark("twxingbu_effect2") * 2);
+					audio: "xingbu",
+					trigger: { player: "useCardAfter" },
+					filter(event, player) {
+						const evt = event.getParent("phaseUse");
+						if (!evt || evt.player !== player) {
+							return false;
+						}
+						return (
+							player
+								.getHistory("useCard", evtx => evtx.getParent("phaseUse") === evt)
+								.indexOf(event) < player.countMark("twxingbu_effect2")
+						);
+					},
+					forced: true,
+					async content(event, trigger, player) {
+						await player.chooseToDiscard({
+							selectCard: player.countMark("twxingbu_effect2"),
+							position: "he",
+							forced: true,
+						});
+						await player.draw(player.countMark("twxingbu_effect2") * 2);
 				},
 			},
 			effect3: {
 				charlotte: true,
 				onremove: true,
 				marktext: "星",
-				intro: { content: "摸牌阶段多摸#*2张牌，出牌阶段使用【杀】的次数+#，跳过弃牌阶段" },
-				mod: {
-					cardUsable(card, player, num) {
-						if (card.name == "sha") {
-							return num + player.countMark("twxingbu_effect3");
-						}
+					intro: { content: "摸牌阶段多摸#*2张牌，出牌阶段使用【杀】的次数+#，跳过弃牌阶段" },
+					mod: {
+						cardUsable(card, player, num) {
+							if (card.name === "sha") {
+								return num + player.countMark("twxingbu_effect3");
+							}
 					},
 				},
-				audio: "xingbu",
-				trigger: { player: ["phaseDrawBegin2", "phaseDiscardBefore"] },
-				filter(event, player) {
-					if (event.name == "phaseDiscard") {
-						return true;
-					}
-					return !event.numFixed;
-				},
-				forced: true,
-				content() {
-					if (trigger.name == "phaseDiscard") {
+					audio: "xingbu",
+					trigger: { player: ["phaseDrawBegin2", "phaseDiscardBefore"] },
+					filter(event, player) {
+						if (event.name === "phaseDiscard") {
+							return true;
+						}
+						return !event.numFixed;
+					},
+					forced: true,
+					async content(event, trigger, player) {
+						if (trigger.name === "phaseDiscard") {
 						trigger.cancel();
 					} else {
 						trigger.num += player.countMark("twxingbu_effect3") * 2;
