@@ -9337,22 +9337,25 @@ const skills = {
 		check(event, player) {
 			return get.attitude(player, event.player) > 0 && (!event.source || get.attitude(player, event.source) < 0);
 		},
-		content() {
-			"step 0";
-			player.judge().set("callback", function () {
-				if (event.judgeResult.number > 5) {
-					var player = event.getParent(2)._trigger.player;
-					if (get.position(card, true) == "o") {
-						player.gain(card, "gain2");
+		async content(event, trigger, player) {
+			const result = await player
+				.judge()
+				.set("callback", async event => {
+					if (event.judgeResult.number <= 5) {
+						return;
 					}
-				}
-			});
-			"step 1";
+					const target = event.getParent(2)._trigger.player;
+					const card = event.card;
+					if (get.position(card, true) === "o") {
+						await target.gain({ cards: [card], animate: "gain2" });
+					}
+				})
+				.forResult();
 			if (result.number < 7) {
-				var source = trigger.source;
-				if (source && source.isIn() && source.countCards("h") > 0) {
+				const source = trigger.source;
+				if (source && source.isIn() && source.hasCards("h")) {
 					player.line(source);
-					source.chooseToDiscard("h", true);
+					await source.chooseToDiscard({ position: "h", forced: true });
 				}
 			}
 		},
