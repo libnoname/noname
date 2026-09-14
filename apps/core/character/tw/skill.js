@@ -22857,25 +22857,32 @@ const skills = {
 		audio: 3,
 		trigger: { global: "phaseBefore", player: "enterGame" },
 		filter(event, player) {
-			return game.hasPlayer(current => current != player) && (event.name != "phase" || game.phaseNumber == 0);
+			return game.hasPlayer(current => current !== player) && (event.name !== "phase" || game.phaseNumber === 0);
 		},
 		forced: true,
 		logAudio: () => 1,
-		content() {
-			"step 0";
-			player.chooseTarget("请选择【随征】的目标", lib.translate.twsuizheng_info, lib.filter.notMe, true).set("ai", function (target) {
-				var player = _status.event.player;
-				return Math.max(1 + get.attitude(player, target) * get.threaten(target), Math.random());
-			});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.line(target);
-				game.log(player, "选择了", target, "作为", "“随征”角色");
-				player.markAuto("twsuizheng", [target]);
-				player.addSkill("twsuizheng_draw");
-				player.addSkill("twsuizheng_xianfu");
+		async content(event, trigger, player) {
+			const result = await player
+				.chooseTarget({
+					prompt: "请选择【随征】的目标",
+					prompt2: lib.translate.twsuizheng_info,
+					filterTarget: lib.filter.notMe,
+					forced: true,
+					ai: target => {
+						const currentPlayer = _status.event.player;
+						return Math.max(1 + get.attitude(currentPlayer, target) * get.threaten(target), Math.random());
+					},
+				})
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
+			const target = result.targets[0];
+			player.line(target);
+			game.log(player, "选择了", target, "作为", "“随征”角色");
+			player.markAuto("twsuizheng", [target]);
+			player.addSkill("twsuizheng_draw");
+			player.addSkill("twsuizheng_xianfu");
 		},
 		ai: { expose: 0.3 },
 		intro: { content: "已选择$为“随征”角色" },
@@ -22889,8 +22896,8 @@ const skills = {
 				},
 				forced: true,
 				logTarget: "source",
-				content() {
-					player.draw();
+				async content(event, trigger, player) {
+					await player.draw();
 				},
 			},
 			xianfu: {
@@ -22902,28 +22909,32 @@ const skills = {
 				forced: true,
 				charlotte: true,
 				logTarget: "player",
-				content() {
-					"step 0";
-					player
-						.chooseToDiscard(2, "随征：弃置两张基本牌", "若你弃牌，你令" + get.translation(trigger.player) + "回复1点体力；或点击“取消”失去1点体力，令" + get.translation(trigger.player) + "获得一张【杀】或【决斗】", { type: "basic" })
-						.set("ai", function (card) {
-							if (_status.event.refuse) {
-								return -1;
-							}
-							return 6 - get.value(card);
+				async content(event, trigger, player) {
+					const result = await player
+						.chooseToDiscard({
+							selectCard: 2,
+							prompt: "随征：弃置两张基本牌",
+							prompt2: `若你弃牌，你令${get.translation(trigger.player)}回复1点体力；或点击“取消”失去1点体力，令${get.translation(trigger.player)}获得一张【杀】或【决斗】`,
+							filterCard: { type: "basic" },
+							ai: card => {
+								if (_status.event.refuse) {
+									return -1;
+								}
+								return 6 - get.value(card);
+							},
 						})
-						.set("refuse", get.attitude(player, trigger.player) <= 0 || get.effect(player, { name: "losehp" }) >= 0);
-					"step 1";
+						.set("refuse", get.attitude(player, trigger.player) <= 0 || get.effect(player, { name: "losehp" }) >= 0)
+						.forResult();
 					if (result.bool) {
-						trigger.player.recover();
-					} else {
-						player.loseHp();
-						var card = get.cardPile(function (card) {
-							return card.name == "sha" || card.name == "juedou";
-						});
-						if (card) {
-							trigger.player.gain(card, "gain2");
-						}
+						await trigger.player.recover();
+						return;
+					}
+					const loseHpEvent = player.loseHp();
+					const card = get.cardPile(card => card.name === "sha" || card.name === "juedou");
+					const gainEvent = card ? trigger.player.gain({ cards: [card], animate: "gain2" }) : null;
+					await loseHpEvent;
+					if (gainEvent) {
+						await gainEvent;
 					}
 				},
 			},
