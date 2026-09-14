@@ -24800,22 +24800,19 @@ const skills = {
 	twlihuo: {
 		trigger: { player: "useCard1" },
 		filter(event, player) {
-			if (event.card.name == "sha" && !game.hasNature(event.card)) {
-				return true;
-			}
-			return false;
+			return event.card.name === "sha" && !game.hasNature(event.card);
 		},
 		audio: "lihuo",
 		prompt2(event) {
-			return "将" + get.translation(event.card) + "改为火属性";
+			return `将${get.translation(event.card)}改为火属性`;
 		},
 		audioname: ["re_chengpu"],
 		check(event, player) {
-			return game.hasPlayer(function (current) {
+			return game.hasPlayer(current => {
 				return !event.targets.includes(current) && player.canUse(event.card, current) && get.effect(current, { name: "sha", nature: "fire", cards: event.cards.slice(0) }, player, player) > 0;
 			});
 		},
-		content() {
+		async content(event, trigger, player) {
 			game.setNature(trigger.card, "fire");
 			trigger.card.twlihuo_buffed = true;
 		},
@@ -24828,38 +24825,35 @@ const skills = {
 		trigger: { player: "useCard2" },
 		sourceSkill: "twlihuo",
 		filter(event, player) {
-			if (event.card.name != "sha" || !game.hasNature(event.card, "fire")) {
+			if (event.card.name !== "sha" || !game.hasNature(event.card, "fire")) {
 				return false;
 			}
-			return game.hasPlayer(function (current) {
+			return game.hasPlayer(current => {
 				return !event.targets.includes(current) && player.canUse(event.card, current);
 			});
 		},
 		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt("twlihuo"), "为" + get.translation(trigger.card) + "增加一个目标", function (card, player, target) {
-					return !_status.event.sourcex.includes(target) && player.canUse(_status.event.card, target);
+		async content(event, trigger, player) {
+			const result = await player
+				.chooseTarget({
+					prompt: get.prompt("twlihuo"),
+					prompt2: `为${get.translation(trigger.card)}增加一个目标`,
+					filterTarget(card, player, target) {
+						return !trigger.targets.includes(target) && player.canUse(trigger.card, target);
+					},
+					ai: target => get.effect(target, trigger.card, player, player),
 				})
-				.set("sourcex", trigger.targets)
-				.set("card", trigger.card)
-				.set("ai", function (target) {
-					var player = _status.event.player;
-					return get.effect(target, _status.event.card, player, player);
-				});
-			"step 1";
-			if (result.bool) {
-				if (!event.isMine() && !_status.connectMode) {
-					game.delayx();
-				}
-				event.target = result.targets[0];
-			} else {
-				event.finish();
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
-			"step 2";
-			player.logSkill("twlihuo", event.target);
-			trigger.targets.push(event.target);
+			if (!event.isMine() && !_status.connectMode) {
+				await game.delayx();
+			}
+
+			const target = result.targets[0];
+			player.logSkill("twlihuo", target);
+			trigger.targets.push(target);
 		},
 	},
 	twlihuo3: {
@@ -24868,16 +24862,16 @@ const skills = {
 		filter(event, player) {
 			return (
 				event.card.twlihuo_buffed &&
-				player.getHistory("sourceDamage", function (evt) {
-					return evt.card == event.card && evt._dyinged;
+				player.getHistory("sourceDamage", evt => {
+					return evt.card === event.card && evt._dyinged;
 				}).length > 0
 			);
 		},
 		forced: true,
 		audio: "lihuo",
 		audioname: ["re_chengpu"],
-		content() {
-			player.loseHp();
+		async content(event, trigger, player) {
+			await player.loseHp();
 		},
 	},
 	twchunlao: {
