@@ -17601,20 +17601,20 @@ const skills = {
 		audio: "bingyi_xin_guyong",
 		trigger: { player: "phaseJieshuBegin" },
 		filter(event, player) {
-			return player.countCards("h");
+			return player.hasCards("h");
 		},
 		filterx(event, player) {
-			var cards = player.getCards("h");
-			if (cards.length == 1) {
+			const cards = player.getCards("h");
+			if (cards.length === 1) {
 				return true;
 			}
-			var color = get.color(cards[0], player),
-				type = get.type2(cards[0], player);
-			for (var i = 1; i < cards.length; i++) {
-				if (color && get.color(cards[i], player) != color) {
+			let color = get.color(cards[0], player);
+			let type = get.type2(cards[0], player);
+			for (const card of cards.slice(1)) {
+				if (color && get.color(card, player) !== color) {
 					color = false;
 				}
-				if (type && get.type2(cards[i], player) != type) {
+				if (type && get.type2(card, player) !== type) {
 					type = false;
 				}
 				if (!color && !type) {
@@ -17624,56 +17624,60 @@ const skills = {
 			return true;
 		},
 		filtery(event, player) {
-			var cards = player.getCards("h");
+			const cards = player.getCards("h");
 			if (player.countCards("h") <= 1) {
 				return false;
 			}
-			var color = get.color(cards[0], player),
-				type = get.type2(cards[0], player);
-			var colorx = true,
-				typex = true;
-			for (var i = 1; i < cards.length; i++) {
-				if (color && get.color(cards[i], player) != color) {
+			const color = get.color(cards[0], player);
+			const type = get.type2(cards[0], player);
+			let colorx = true;
+			let typex = true;
+			for (const card of cards.slice(1)) {
+				if (color && get.color(card, player) !== color) {
 					colorx = false;
 				}
-				if (type && get.type2(cards[i], player) != type) {
+				if (type && get.type2(card, player) !== type) {
 					typex = false;
 				}
 			}
 			return colorx && typex;
 		},
-		direct: true,
-		content() {
-			"step 0";
-			event.boolx = false;
-			if (lib.skill.twbingyi.filtery(trigger, player)) {
-				event.boolx = true;
-			}
+		async cost(event, trigger, player) {
+			const boolx = lib.skill.twbingyi.filtery(trigger, player);
+			let result;
 			if (lib.skill.twbingyi.filterx(trigger, player)) {
-				player.chooseTarget(get.prompt("twbingyi"), "选择至多" + get.cnNumber(player.countCards("h")) + "名角色，你展示所有手牌，这些角色各摸一张牌" + (event.boolx ? "，然后你移去所有“慎”" : ""), [0, player.countCards("h")]).set("ai", function (target) {
-					return get.attitude(_status.event.player, target);
-				}).animate = false;
+				result = await player
+					.chooseTarget({
+						prompt: get.prompt(event.skill),
+						prompt2: `选择至多${get.cnNumber(player.countCards("h"))}名角色，你展示所有手牌，这些角色各摸一张牌${boolx ? "，然后你移去所有“慎”" : ""}`,
+						selectTarget: [0, player.countCards("h")],
+						ai: target => get.attitude(_status.event.player, target),
+					})
+					.set("animate", false)
+					.forResult();
 			} else {
-				player.chooseBool(get.prompt("twbingyi"), "展示所有手牌").ai = function () {
-					return false;
-				};
+				result = await player
+					.chooseBool({
+						prompt: get.prompt(event.skill),
+						prompt2: "展示所有手牌",
+						ai: () => false,
+					})
+					.forResult();
 			}
-			"step 1";
-			if (result.bool) {
-				player.logSkill("twbingyi");
-				player.showHandcards(get.translation(player) + "发动了【秉壹】");
-				event.targets = result.targets;
-			} else {
-				event.finish();
-			}
-			"step 2";
+			event.result = {
+				bool: result.bool,
+				targets: result.targets,
+				cost_data: boolx,
+			};
+		},
+		async content(event, trigger, player) {
+			await player.showHandcards(`${get.translation(player)}发动了【秉壹】`);
+			const targets = event.targets;
 			if (targets && targets.length) {
-				player.line(targets, "green");
 				targets.sortBySeat();
-				game.asyncDraw(targets);
+				await game.asyncDraw(targets);
 			}
-			"step 3";
-			if (event.boolx) {
+			if (event.cost_data) {
 				player.removeMark("twgyshenxing", player.countMark("twgyshenxing"));
 			}
 		},
