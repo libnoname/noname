@@ -14213,32 +14213,31 @@ const skills = {
 		init(player) {
 			lib.skill.baonvezhi.change(player, 0);
 		},
-		direct: true,
 		derivation: ["twxiongjun", "baonvezhi_faq"],
 		group: "twjuntun_extra",
 		filter(event, player) {
 			return (
-				(event.name != "phase" || game.phaseNumber == 0) &&
+				(event.name !== "phase" || game.phaseNumber === 0) &&
 				game.hasPlayer(current => {
 					return !current.hasSkill("twxiongjun");
 				})
 			);
 		},
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt("twjuntun"), "令一名角色获得〖凶军〗", (card, player, target) => {
-					return !target.hasSkill("twxiongjun");
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt(event.skill),
+					prompt2: "令一名角色获得〖凶军〗",
+					filterTarget: (_card, _player, target) => !target.hasSkill("twxiongjun"),
+					ai: target => get.attitude(player, target) - 2,
 				})
-				.set("ai", target => get.attitude(player, target) - 2);
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("twjuntun", target);
-				target.addSkills("twxiongjun");
-				if (target != player) {
-					player.addExpose(0.25);
-				}
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			target.addSkills("twxiongjun");
+			if (target !== player) {
+				player.addExpose(0.25);
 			}
 		},
 		subSkill: {
@@ -14248,10 +14247,10 @@ const skills = {
 				forced: true,
 				locked: false,
 				filter(event, player) {
-					return event.source && event.source.hasSkill("twxiongjun") && event.source != player;
+					return event.source && event.source.hasSkill("twxiongjun") && event.source !== player;
 				},
 				logTarget: "source",
-				content() {
+				async content(event, trigger, player) {
 					lib.skill.baonvezhi.change(player, trigger.num);
 				},
 			},
