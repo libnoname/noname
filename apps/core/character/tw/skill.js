@@ -14363,40 +14363,40 @@ const skills = {
 		init(player) {
 			lib.skill.baonvezhi.change(player, 0);
 		},
-		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseButton(["黠凤：选择要消耗的暴虐值", [["tw_bn_1", "tw_bn_2", "tw_bn_3"], "vcard"]], button => {
-					var num = player.countCards("hs", card => get.tag(card, "damage") && game.hasPlayer(current => get.effect(current, card, player, player) > 0));
-					if (num <= 0) {
-						return 0;
-					}
-					if (num >= 3) {
-						num = 3;
-					}
-					if (button.link[2] == "tw_bn_" + num) {
-						return 10;
-					}
-					return 1;
+		async cost(event, trigger, player) {
+			const result = await player
+				.chooseButton({
+					createDialog: ["黠凤：选择要消耗的暴虐值", [["tw_bn_1", "tw_bn_2", "tw_bn_3"], "vcard"]],
+					filterButton: button => {
+						const link = button.link[2];
+						return link[link.length - 1] * 1 <= player.storage.baonvezhi;
+					},
+					ai: button => {
+						let num = player.countCards("hs", card => get.tag(card, "damage") && game.hasPlayer(current => get.effect(current, card, player, player) > 0));
+						if (num <= 0) {
+							return 0;
+						}
+						if (num >= 3) {
+							num = 3;
+						}
+						if (button.link[2] === `tw_bn_${num}`) {
+							return 10;
+						}
+						return 1;
+					},
 				})
-				.set("filterButton", button => {
-					var player = _status.event.player;
-					var link = button.link[2];
-					if (link[link.length - 1] * 1 > player.storage.baonvezhi) {
-						return false;
-					}
-					return true;
-				});
-			"step 1";
-			if (result.bool) {
-				player.logSkill("twxiafeng");
-				var link = result.links[0][2],
-					num = link[link.length - 1] * 1;
-				player.addTempSkill("twxiafeng_effect");
-				player.storage.twxiafeng_effect = num;
-				lib.skill.baonvezhi.change(player, -num);
-			}
+				.forResult();
+			event.result = {
+				bool: result.bool,
+				cost_data: result.links,
+			};
+		},
+		async content(event, trigger, player) {
+			const link = event.cost_data[0][2];
+			const num = link[link.length - 1] * 1;
+			player.addTempSkill("twxiafeng_effect");
+			player.storage.twxiafeng_effect = num;
+			lib.skill.baonvezhi.change(player, -num);
 		},
 		subSkill: {
 			effect: {
@@ -14406,18 +14406,18 @@ const skills = {
 					return !player.storage.twxiafeng_effect2;
 				},
 				forced: true,
-				content() {
-					var count = player.getHistory("useCard", evt => evt.getParent("phaseUse").player == player).length;
-					if (count == player.storage.twxiafeng_effect) {
+				async content(event, trigger, player) {
+					const count = player.getHistory("useCard", evt => evt.getParent("phaseUse").player === player).length;
+					if (count === player.storage.twxiafeng_effect) {
 						player.storage.twxiafeng_effect2 = true;
 					}
 					if (count <= player.storage.twxiafeng_effect) {
 						trigger.directHit.addArray(game.players);
 						if (trigger.addCount !== false) {
 							trigger.addCount = false;
-							var stat = player.getStat().card,
-								name = trigger.card.name;
-							if (typeof stat[name] == "number") {
+							const stat = player.getStat().card;
+							const name = trigger.card.name;
+							if (typeof stat[name] === "number") {
 								stat[name]--;
 							}
 						}
