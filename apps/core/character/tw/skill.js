@@ -18746,13 +18746,16 @@ const skills = {
 			},
 			prompt: () => "弃置一名角色区域内的一张牌",
 		},
-		contentx() {
-			"step 0";
-			var card = lib.skill.twqingce_backup.card;
-			player.loseToDiscardpile([card]);
-			"step 1";
-			if (target.countDiscardableCards(player, "hej") > 0) {
-				player.discardPlayerCard("hej", true, target);
+		async contentx(event, trigger, player) {
+			const { target } = event;
+			const card = lib.skill.twqingce_backup.card;
+			await player.loseToDiscardpile({ cards: [card] });
+			if (target.hasDiscardableCards(player, "hej")) {
+				await player.discardPlayerCard({
+					target,
+					position: "hej",
+					forced: true,
+				});
 			}
 		},
 		ai: {
@@ -18760,11 +18763,7 @@ const skills = {
 			order: 8,
 			result: {
 				player(player) {
-					if (
-						game.hasPlayer(function (target) {
-							return get.effect(target, { name: "guohe" }, player, player) > 4 * Math.max(0, 5 - player.getExpansions("twzhengrong").length);
-						})
-					) {
+					if (game.hasPlayer(target => get.effect(target, { name: "guohe" }, player, player) > 4 * Math.max(0, 5 - player.getExpansions("twzhengrong").length))) {
 						return 1;
 					}
 					return 0;
