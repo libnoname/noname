@@ -25368,30 +25368,30 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return !player.hasSkill("twharvestinori_mahou") && player.countCards("h", lib.skill.twharvestinori.filterCard) > 0;
+			return !player.hasSkill("twharvestinori_mahou") && player.hasCards("h", lib.skill.twharvestinori.filterCard);
 		},
 		filterCard: { color: "black" },
 		check(card) {
 			return 8 - get.value(card);
 		},
-		content() {
-			"step 0";
-			player
-				.chooseControl("1回合", "2回合", "3回合")
-				.set("prompt", "请选择施法时长")
-				.set("ai", function () {
-					var player = _status.event.player;
-					var safe = player.hp;
-					if (safe < Math.min(3, game.countPlayer())) {
-						var next = player.next;
-						while (next != player && get.attitude(next, player) > 0) {
-							safe++;
-							next = next.next;
+		async content(event, trigger, player) {
+			const result = await player
+				.chooseControl({
+					controls: ["1回合", "2回合", "3回合"],
+					prompt: "请选择施法时长",
+					ai: () => {
+						let safe = player.hp;
+						if (safe < Math.min(3, game.countPlayer())) {
+							let next = player.next;
+							while (next !== player && get.attitude(next, player) > 0) {
+								safe++;
+								next = next.next;
+							}
 						}
-					}
-					return Math.max(1, Math.min(safe, 3, game.countPlayer())) - 1;
-				});
-			"step 1";
+						return Math.max(1, Math.min(safe, 3, game.countPlayer())) - 1;
+					},
+				})
+				.forResult();
 			player.storage.twharvestinori_mahou = [result.index + 1, result.index + 1];
 			player.addTempSkill("twharvestinori_mahou", { player: "die" });
 		},
@@ -25407,17 +25407,18 @@ const skills = {
 				forced: true,
 				popup: false,
 				charlotte: true,
-				content() {
-					var list = player.storage.twharvestinori_mahou;
+				async content(event, trigger, player) {
+					const list = player.storage.twharvestinori_mahou;
 					list[1]--;
-					if (list[1] == 0) {
+					if (list[1] === 0) {
 						game.log(player, "的“丰祈”魔法生效");
 						player.logSkill("twharvestinori");
-						var num = list[0] * 2;
-						player.draw(num);
+						const num = list[0] * 2;
+						const drawEvent = player.draw(num);
 						player.removeSkill("twharvestinori_mahou");
+						await drawEvent;
 					} else {
-						game.log(player, "的“丰祈”魔法剩余", "#g" + list[1] + "回合");
+						game.log(player, "的“丰祈”魔法剩余", `#g${list[1]}回合`);
 						player.markSkill("twharvestinori_mahou");
 					}
 				},
@@ -25434,7 +25435,7 @@ const skills = {
 					},
 					content(storage) {
 						if (storage) {
-							return "经过" + storage[1] + "个“回合结束时”后，摸" + storage[0] * 2 + "张牌";
+							return `经过${storage[1]}个“回合结束时”后，摸${storage[0] * 2}张牌`;
 						}
 						return "未指定施法效果";
 					},
