@@ -25015,46 +25015,60 @@ const skills = {
 		filter(event, player) {
 			return !player.getExpansions("twfengji").length && !player.hasSkill("twfengji_mahou") && player.countCards("he");
 		},
-		direct: true,
-		content() {
-			"step 0";
-			player.chooseCard("he", get.prompt2("twfengji")).set("ai", function (card) {
-				var name = card.name,
-					num = 0;
-				for (var i = 0; i < ui.cardPile.childNodes.length; i++) {
-					if (ui.cardPile.childNodes[i].name == name) {
-						num++;
-					}
-				}
-				if (num < 2) {
-					return false;
-				}
-				return 8 - get.value(card);
-			});
-			"step 1";
-			if (result.bool) {
-				player.logSkill("twfengji");
-				player.addToExpansion(result.cards, player, "giveAuto").gaintag.add("twfengji");
-				player
-					.chooseControl("1回合", "2回合", "3回合")
-					.set("prompt", "请选择施法时长")
-					.set("ai", function () {
-						var player = _status.event.player;
-						var safe = Math.min(player.getHandcardLimit(), player.countCards("h", "shan"));
-						if (safe < Math.min(3, game.countPlayer())) {
-							var next = player.next;
-							while (next != player && get.attitude(next, player) > 0) {
-								safe++;
-								next = next.next;
+		async cost(event, trigger, player) {
+			const result = await player
+				.chooseCard({
+					position: "he",
+					prompt: get.prompt2("twfengji"),
+					ai: (card) => {
+						const name = card.name;
+						let num = 0;
+						for (const node of ui.cardPile.childNodes) {
+							if (node.name === name) {
+								num++;
 							}
 						}
-						return Math.max(2, Math.min(safe, 3, game.countPlayer())) - 1;
-					});
-			} else {
-				event.finish();
+						if (num < 2) {
+							return false;
+						}
+						return 8 - get.value(card);
+					},
+				})
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
-			"step 2";
-			player.storage.twfengji_mahou = [result.index + 1, result.index + 1];
+			const controlResult = await player
+				.chooseControl("1回合", "2回合", "3回合")
+				.set("prompt", "请选择施法时长")
+				.set("ai", () => {
+					const player = _status.event.player;
+					let safe = Math.min(player.getHandcardLimit(), player.countCards("h", "shan"));
+					if (safe < Math.min(3, game.countPlayer())) {
+						let next = player.next;
+						while (next !== player && get.attitude(next, player) > 0) {
+							safe++;
+							next = next.next;
+						}
+					}
+					return Math.max(2, Math.min(safe, 3, game.countPlayer())) - 1;
+				})
+				.forResult();
+			event.result = {
+				bool: true,
+				cards: result.cards,
+				cost_data: controlResult.index,
+			};
+		},
+		async content(event, trigger, player) {
+			const index = event.cost_data;
+			await player.addToExpansion({
+				cards: event.cards,
+				source: player,
+				animate: "giveAuto",
+				gaintag: ["twfengji"],
+			});
+			player.storage.twfengji_mahou = [index + 1, index + 1];
 			player.addTempSkill("twfengji_mahou", { player: "die" });
 		},
 		marktext: "示",
@@ -25074,21 +25088,21 @@ const skills = {
 				forced: true,
 				popup: false,
 				charlotte: true,
-				content() {
-					var list = player.storage.twfengji_mahou;
+				async content(event, trigger, player) {
+					const list = player.storage.twfengji_mahou;
 					list[1]--;
-					if (list[1] == 0) {
+					if (list[1] === 0) {
 						game.log(player, "的“蜂集”魔法生效");
 						player.logSkill("twfengji");
-						var cards = player.getExpansions("twfengji");
+						const cards = player.getExpansions("twfengji");
 						if (cards.length) {
-							var cards2 = [],
-								num = list[0];
-							for (var card of cards) {
-								for (var i = 0; i < num; i++) {
-									var card2 = get.cardPile2(function (cardx) {
-										return cardx.name == card.name && !cards2.includes(cardx);
-									});
+							let cards2 = [];
+							const num = list[0];
+							for (const card of cards) {
+								for (let i = 0; i < num; i++) {
+									const card2 = get.cardPile2(
+										(cardx) => cardx.name === card.name && !cards2.includes(cardx)
+									);
 									if (card2) {
 										cards2.push(card2);
 									} else {
@@ -25098,13 +25112,13 @@ const skills = {
 							}
 							game.delayx();
 							if (cards2.length) {
-								player.gain(cards2, "gain2");
+								await player.gain(cards2, "gain2");
 							}
-							player.loseToDiscardpile(cards);
+							await player.loseToDiscardpile(cards);
 						}
 						player.removeSkill("twfengji_mahou");
 					} else {
-						game.log(player, "的“蜂集”魔法剩余", "#g" + list[1] + "回合");
+						game.log(player, `的“蜂集”魔法剩余`, `#g${list[1]}回合`);
 						player.markSkill("twfengji_mahou");
 					}
 				},
