@@ -12062,16 +12062,16 @@ const skills = {
 	//张昭
 	twlijian: {
 		getCards(event) {
-			var cards = [];
-			game.countPlayer2(function (current) {
-				current.checkHistory("lose", function (evt) {
-					if (evt.position == ui.discardPile && evt.getParent("phaseDiscard") == event) {
+			const cards = [];
+			game.countPlayer2(current => {
+				current.checkHistory("lose", evt => {
+					if (evt.position === ui.discardPile && evt.getParent("phaseDiscard") === event) {
 						cards.addArray(evt.cards);
 					}
 				});
 			});
-			game.checkGlobalHistory("cardMove", function (evt) {
-				if (evt.name == "cardsDiscard" && evt.getParent("phaseDiscard") == event) {
+			game.checkGlobalHistory("cardMove", evt => {
+				if (evt.name === "cardsDiscard" && evt.getParent("phaseDiscard") === event) {
 					cards.addArray(evt.cards);
 				}
 			});
@@ -12081,7 +12081,7 @@ const skills = {
 		sunbenSkill: true,
 		trigger: { global: "phaseDiscardEnd" },
 		filter(event, player) {
-			if (event.player != player && event.player.isIn()) {
+			if (event.player !== player && event.player.isIn()) {
 				return lib.skill.twlijian.getCards(event).length;
 			}
 			return false;
@@ -12092,47 +12092,60 @@ const skills = {
 			player.removeSkill("twlijian_sunben");
 			player.awakenSkill(event.name);
 			player.addSkill("twlijian_sunben");
-			const cards = lib.skill.twlijian.getCards(trigger),
-				target = trigger.player;
+			const cards = lib.skill.twlijian.getCards(trigger);
+			const target = trigger.player;
 			const result = await player
-				.chooseToMove("力谏：请分配" + get.translation(target) + "和你获得的牌", true, "allowChooseAll")
-				.set("list", [[get.translation(target) + "获得的牌", cards], ["你获得的牌"]])
-				.set("processAI", function (list) {
-					var player = _status.event.player;
-					var target = _status.event.getTrigger().player;
-					var att = get.attitude(player, target);
-					var cards = _status.event.cards;
-					var cardx = cards.filter(card => card.name == "du");
-					var cardy = cards.removeArray(cardx);
-					switch (get.sgn(att)) {
-						case 1:
-							return [cards, []];
-						case 0:
-							return [cardx, cardy];
-						case -1:
-							var num = Math.ceil(cards.length / 2) + (cards.length % 2 == 0 ? 1 : 0);
+				.chooseToMove({
+					prompt: `力谏：请分配${get.translation(target)}和你获得的牌`,
+					forced: true,
+					allowChooseAll: true,
+					list: [[`${get.translation(target)}获得的牌`, cards], ["你获得的牌"]],
+					processAI: list => {
+						const player = _status.event.player;
+						const target = _status.event.getTrigger().player;
+						const att = get.attitude(player, target);
+						const cards = _status.event.cards;
+						const cardx = cards.filter(card => card.name === "du");
+						const cardy = cards.removeArray(cardx);
+						switch (get.sgn(att)) {
+							case 1:
+								return [cards, []];
+							case 0:
+								return [cardx, cardy];
+							case -1: {
+							let num = Math.ceil(cards.length / 2) + (cards.length % 2 === 0 ? 1 : 0);
 							if (num > 1 && player.hasSkill("twchungang")) {
 								num--;
 							}
 							if (get.damageEffect(target, player, player) <= 0 || num > 2 || cardx.length > cardy.length) {
 								return [cardx, cardy];
 							}
-							var num2 = cardy.length - cardx.length;
-							num2 = Math.ceil(num2 / 2) + (num2 % 2 == 0 ? 1 : 0);
+							let num2 = cardy.length - cardx.length;
+							num2 = Math.ceil(num2 / 2) + (num2 % 2 === 0 ? 1 : 0);
 							cardy.sort((a, b) => get.value(b) - get.value(a));
 							cardx.addArray(cardy.slice(num, cardy.length));
 							return [cardx, cardy.slice(0, num)];
-					}
+							}
+						}
+					},
 				})
 				.set("cards", cards)
 				.forResult();
 			if (result?.bool) {
-				await target.gain(result.moved[0], "gain2");
-				await player.gain(result.moved[1], "gain2");
+				await target.gain({
+					cards: result.moved[0],
+					animate: "gain2",
+				});
+				await player.gain({
+					cards: result.moved[1],
+					animate: "gain2",
+				});
 				if (result.moved[0].length > result.moved[1].length) {
 					const result2 = await player
-						.chooseBool("是否对" + get.translation(target) + "造成1点伤害？")
-						.set("choice", get.damageEffect(target, player, player) > 0)
+						.chooseBool({
+							prompt: `是否对${get.translation(target)}造成1点伤害？`,
+							choice: get.damageEffect(target, player, player) > 0,
+						})
 						.forResult();
 					if (result2?.bool) {
 						player.line(target);
@@ -12158,8 +12171,8 @@ const skills = {
 						return (num || 0).toString();
 					},
 					content(storage, player) {
-						const num1 = storage || 0,
-							num2 = player.countMark("twlijian_sunben_limit");
+						const num1 = storage || 0;
+						const num2 = player.countMark("twlijian_sunben_limit");
 						return `弃牌堆进入牌进度：${num1}/${num2}`;
 					},
 				},
@@ -12167,18 +12180,18 @@ const skills = {
 					global: ["loseAfter", "cardsDiscardAfter", "loseAsyncAfter", "equipAfter"],
 				},
 				filter(event, player) {
-					var cards = event.getd();
+					const cards = event.getd();
 					if (!cards.length) {
 						return false;
 					}
-					var list = cards.slice();
+					const list = cards.slice();
 					game.checkGlobalHistory(
 						"cardMove",
-						function (evt) {
-							if (evt == event || evt.getParent() == event || (evt.name != "lose" && evt.name != "cardsDiscard")) {
+						evt => {
+							if (evt === event || evt.getParent() === event || (evt.name !== "lose" && evt.name !== "cardsDiscard")) {
 								return false;
 							}
-							if (evt.name == "lose" && evt.position != ui.discardPile) {
+							if (evt.name === "lose" && evt.position !== ui.discardPile) {
 								return false;
 							}
 							list.removeArray(evt.cards);
@@ -12190,16 +12203,15 @@ const skills = {
 				forced: true,
 				popup: false,
 				firstDo: true,
-				content() {
-					"step 0";
-					var cards = trigger.getd().slice();
+				async content(event, trigger, player) {
+					const cards = trigger.getd().slice();
 					game.checkGlobalHistory(
 						"cardMove",
-						function (evt) {
-							if (evt == trigger || evt.getParent() == trigger || (evt.name != "lose" && evt.name != "cardsDiscard")) {
+						evt => {
+							if (evt === trigger || evt.getParent() === trigger || (evt.name !== "lose" && evt.name !== "cardsDiscard")) {
 								return false;
 							}
-							if (evt.name == "lose" && evt.position != ui.discardPile) {
+							if (evt.name === "lose" && evt.position !== ui.discardPile) {
 								return false;
 							}
 							cards.removeArray(evt.cards);
@@ -12207,7 +12219,6 @@ const skills = {
 						trigger
 					);
 					player.addMark("twlijian_sunben", cards.length, false);
-					"step 1";
 					if (player.countMark("twlijian_sunben") >= player.countMark("twlijian_sunben_limit")) {
 						player.removeSkill("twlijian_sunben");
 						if (player.hasSkill("twlijian", null, null, false) && !player.hasSkill("twlijian")) {
