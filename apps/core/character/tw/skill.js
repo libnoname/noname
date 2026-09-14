@@ -20770,7 +20770,7 @@ const skills = {
 			global: "phaseBefore",
 		},
 		filter(event, player) {
-			return event.name != "phase" || game.phaseNumber == 0;
+			return event.name !== "phase" || game.phaseNumber === 0;
 		},
 		forced: true,
 		locked: false,
@@ -20783,31 +20783,41 @@ const skills = {
 			}
 			const result =
 				hs.length > 2
-					? await player.chooseCard("he", true, 2, "选择两张牌洗入牌堆").forResult()
+					? await player
+							.chooseCard({
+								position: "he",
+								forced: true,
+								selectCard: 2,
+								prompt: "选择两张牌洗入牌堆",
+							})
+							.forResult()
 					: {
 							bool: true,
 							cards: hs,
 						};
-			if (result?.bool) {
-				player.$throw(result.cards.length, 1000);
-				const next = player.lose(result.cards, ui.cardPile);
-				next.insert_index = function () {
-					return ui.cardPile.childNodes[get.rand(0, Math.min(4, game.countPlayer()) * 2 - 2)];
-				};
-				player.markAuto("twyizhu", result.cards);
-				await next;
-				game.updateRoundNumber();
-				await game.delayx();
+			if (!result?.bool) {
+				return;
 			}
+
+			player.$throw(result.cards.length, 1000);
+			const next = player.lose({
+				cards: result.cards,
+				position: ui.cardPile,
+			});
+			next.insert_index = () => ui.cardPile.childNodes[get.rand(0, Math.min(4, game.countPlayer()) * 2 - 2)];
+			player.markAuto("twyizhu", result.cards);
+			await next;
+			game.updateRoundNumber();
+			await game.delayx();
 		},
 		intro: {
 			mark(dialog, content, player) {
-				if (player == game.me || player.isUnderControl()) {
+				if (player === game.me || player.isUnderControl()) {
 					dialog.addAuto(content);
 				} else {
-					var names = [];
-					for (var i of content) {
-						names.add(i.name);
+					const names = [];
+					for (const card of content) {
+						names.add(card.name);
 					}
 					return get.translation(names);
 				}
@@ -20820,30 +20830,26 @@ const skills = {
 				filter(event, player) {
 					return (
 						player.getStorage("twyizhu").length &&
-						event.player != player &&
-						event.targets.length == 1 &&
-						event.cards.filter(function (i) {
-							return player.getStorage("twyizhu").includes(i);
-						}).length > 0
+						event.player !== player &&
+						event.targets.length === 1 &&
+						event.cards.some(card => player.getStorage("twyizhu").includes(card))
 					);
 				},
 				logTarget: "player",
 				forced: true,
 				locked: false,
-				content() {
-					"step 0";
-					var list = [];
+				async content(event, trigger, player) {
 					if (
-						!game.hasPlayer(function (current) {
-							return current != trigger.target && lib.filter.targetEnabled2(trigger.card, trigger.player, current);
+						!game.hasPlayer(current => {
+							return current !== trigger.target && lib.filter.targetEnabled2(trigger.card, trigger.player, current);
 						})
 					) {
-						event.goto(3);
+						return;
 					}
-					var filter = function (event, player) {
-						var card = event.card,
-							info = get.info(card);
-						if (info.allowMultiple == false) {
+					const filter = (event, player) => {
+						const card = event.card;
+						const info = get.info(card);
+						if (info.allowMultiple === false) {
 							return false;
 						}
 						if (!info.multitarget) {
@@ -20851,50 +20857,53 @@ const skills = {
 						}
 						return false;
 					};
-					var enable = filter(trigger.getParent(), trigger.player);
-					var prompt2 = "操作提示：";
+					const enable = filter(trigger.getParent(), trigger.player);
+					let prompt2 = "操作提示：";
 					if (enable) {
 						prompt2 += "选择一名合法的其他角色，以增加其为目标；或";
 					}
-					prompt2 += "选择目标角色（" + get.translation(trigger.target) + "）和另一名合法的角色，以取消前者为目标并增加后者为目标";
-					player
-						.chooseTarget("遗珠：是否" + (enable ? "增加或" : "") + "修改目标？", prompt2, [enable ? 1 : 2, 2], (card, player, target) => {
-							var evt = _status.event.getTrigger(),
-								card = evt.card;
-							if (target == evt.target) {
-								return true;
-							}
-							if (ui.selected.targets.length && ui.selected.targets[0] != evt.target) {
-								return false;
-							}
-							return lib.filter.targetEnabled2(card, evt.player, target);
+					prompt2 += `选择目标角色（${get.translation(trigger.target)}）和另一名合法的角色，以取消前者为目标并增加后者为目标`;
+					const result = await player
+						.chooseTarget({
+							prompt: `遗珠：是否${enable ? "增加或" : ""}修改目标？`,
+							prompt2,
+							selectTarget: [enable ? 1 : 2, 2],
+							filterTarget: (_card, player, target) => {
+								const evt = get.event().getTrigger();
+								const card = evt.card;
+								if (target === evt.target) {
+									return true;
+								}
+								if (ui.selected.targets.length && ui.selected.targets[0] !== evt.target) {
+									return false;
+								}
+								return lib.filter.targetEnabled2(card, evt.player, target);
+							},
+							ai(target) {
+								const evt = get.event().getTrigger();
+								const card = evt.card;
+								const player = get.event().player;
+								if (target === evt.target && get.effect(evt.target, card, evt.player, player) < 0) {
+									return 100;
+								}
+								if (target === evt.target) {
+									return -100;
+								}
+								return get.effect(target, card, evt.player, player);
+							},
 						})
-						.set("targetprompt", target => {
-							return target == _status.event.targetx ? "取消目标" : "增加目标";
-						})
+						.set("targetprompt", target => (target === get.event().targetx ? "取消目标" : "增加目标"))
 						.set("filterOk", () => {
-							if (ui.selected.targets.length == 1 && ui.selected.targets[0] == _status.event.targetx) {
+							if (ui.selected.targets.length === 1 && ui.selected.targets[0] === get.event().targetx) {
 								return false;
 							}
 							return true;
 						})
-						.set("ai", target => {
-							var evt = _status.event.getTrigger(),
-								card = evt.card,
-								player = _status.event.player;
-							if (target == evt.target && get.effect(evt.target, card, evt.player, player) < 0) {
-								return 100;
-							}
-							if (target == evt.target) {
-								return -100;
-							}
-							return get.effect(target, card, evt.player, player);
-						})
 						.set("targetx", trigger.target)
-						.set("card", trigger.card);
-					"step 1";
+						.set("card", trigger.card)
+						.forResult();
 					if (result.bool) {
-						var target = result.targets[result.targets[0] == trigger.target ? 1 : 0];
+						const target = result.targets[result.targets[0] === trigger.target ? 1 : 0];
 						if (result.targets.length > 1) {
 							player.line2([trigger.target, target]);
 							trigger.targets.remove(trigger.target);
@@ -20905,13 +20914,11 @@ const skills = {
 						}
 						trigger.targets.push(target);
 					}
-					"step 2";
-					var list = trigger.cards.filter(function (i) {
-						return player.getStorage("twyizhu").includes(i);
-					});
-					player.unmarkAuto("twyizhu", list);
-					player.draw();
-					game.delayx();
+
+					const cards = trigger.cards.filter(card => player.getStorage("twyizhu").includes(card));
+					player.unmarkAuto("twyizhu", cards);
+					await player.draw();
+					await game.delayx();
 				},
 			},
 			discard: {
@@ -20922,18 +20929,11 @@ const skills = {
 				forced: true,
 				locked: false,
 				filter(event, player) {
-					return (
-						player.getStorage("twyizhu").length &&
-						event.getd().filter(function (i) {
-							return player.getStorage("twyizhu").includes(i);
-						}).length > 0
-					);
+					return player.getStorage("twyizhu").length && event.getd().some(card => player.getStorage("twyizhu").includes(card));
 				},
-				content() {
-					var list = trigger.getd().filter(function (i) {
-						return player.getStorage("twyizhu").includes(i);
-					});
-					player.unmarkAuto("twyizhu", list);
+				async content(event, trigger, player) {
+					const cards = trigger.getd().filter(card => player.getStorage("twyizhu").includes(card));
+					player.unmarkAuto("twyizhu", cards);
 				},
 			},
 		},
