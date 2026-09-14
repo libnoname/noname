@@ -18522,14 +18522,12 @@ const skills = {
 		animationColor: "thunder",
 		trigger: { player: "phaseZhunbeiBegin" },
 		filter(event, player) {
-			return game.hasPlayer(function (current) {
-				return current.countCards("h") > player.countCards("h");
-			});
+			return game.hasPlayer(current => current.countCards("h") > player.countCards("h"));
 		},
 		check(event, player) {
-			var num = 0;
-			for (var target of game.players) {
-				if (target != player && target.countCards("h") > num) {
+			let num = 0;
+			for (const target of game.players) {
+				if (target !== player && target.countCards("h") > num) {
 					num = target.countCards("h");
 				}
 			}
@@ -18537,36 +18535,36 @@ const skills = {
 			return num - player.countCards("h") >= 2;
 		},
 		prompt(event, player) {
-			var num = 0;
-			for (var target of game.players) {
-				if (target != player && target.countCards("h") > num) {
+			let num = 0;
+			for (const target of game.players) {
+				if (target !== player && target.countCards("h") > num) {
 					num = target.countCards("h");
 				}
 			}
 			num = Math.min(num, 5 + player.countCards("h"));
-			return get.prompt("twcuorui") + "（可摸" + get.cnNumber(num - player.countCards("h")) + "张牌）";
+			return `${get.prompt("twcuorui")}（可摸${get.cnNumber(num - player.countCards("h"))}张牌）`;
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			var num = 0;
-			for (var target of game.players) {
-				if (target != player && target.countCards("h") > num) {
+			let num = 0;
+			for (const target of game.players) {
+				if (target !== player && target.countCards("h") > num) {
 					num = target.countCards("h");
 				}
 			}
 			num = Math.min(num, 5 + player.countCards("h"));
-			player.drawTo(num);
+			await player.drawTo(num);
 			if (!player.isDisabledJudge()) {
 				player.disableJudge();
-				event.finish();
-			} else {
-				player.chooseTarget("挫锐：是否对一名其他角色造成1点伤害？", lib.filter.notMe).set("ai", function (target) {
-					var player = _status.event.player;
-					return get.damageEffect(target, player, player);
-				});
+				return;
 			}
-			"step 1";
+			const result = await player
+				.chooseTarget({
+					prompt: "挫锐：是否对一名其他角色造成1点伤害？",
+					filterTarget: lib.filter.notMe,
+					ai: target => get.damageEffect(target, player, player),
+				})
+				.forResult();
 			if (result.bool) {
 				player.line(result.targets[0]);
 				result.targets[0].damage();
