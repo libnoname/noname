@@ -1,7 +1,8 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 import { arenaReady } from "./arenaReady.js";
+import { installRuntime } from "./runtime.js";
 
-export function precontent(config, pack) {
+export async function precontent(config, pack) {
 	var mjs = {
 		get maxEquipBase() {
 			return Number(game.getExtensionConfig("名将杀", "maxEquipBase")) || 3;
@@ -406,65 +407,21 @@ export function precontent(config, pack) {
 		}
 		return origin_player_canEquip.apply(this, arguments);
 	};
-	// 感谢子虚（@凉水化白开）的代码，已征得作者同意
-	const resolveObjectPath = async (path) => {
-        await game.getFileList(path, async (folders, files) => {
-            for (const file of files) {
-                const objPath = path.slice(21).replace(/\//g, ".");
-                const result = await import("../../../" + path + "/" + file);
-                if (!result.default) continue;
-                eval(`mergeObjects(${objPath}, result.default)`);
-            }
-            for (const folder of folders) resolveObjectPath(path + "/" + folder)
-        });
-    };
-    const mergeObjects = function (obj, obj2) {
-        if (obj.toString().slice(0, 5) == "class") {
-            mergeObjects(obj.prototype, obj2);
-            return;
-        }
-        for (const i in obj2) {
-            if (Object.getOwnPropertyDescriptor(obj2, i).get) Object.defineProperty(obj, i, Object.getOwnPropertyDescriptor(obj2, i))
-            else if (obj2[i] instanceof Map) {
-                obj[i] ??= new Map()
-                for (const [key, value] of obj2[i])
-                    obj[i].set(key, value)
-            }
-            else if (obj2[i] instanceof Set) {
-                obj[i] ??= new Set()
-                obj[i] = new Set([...obj[i], ...obj2[i]])
-            }
-            else if (Array.isArray(obj2[i])) {
-                obj[i] ??= []
-                obj[i].addArray(obj2[i])
-            }
-            else if (typeof obj2[i] == "object") {
-                obj[i] ??= {}
-                mergeObjects(obj[i], obj2[i])
-            }
-            else Object.defineProperty(obj, i, Object.getOwnPropertyDescriptor(obj2, i))
-        }
-    }
-    resolveObjectPath("extension/名将杀/src/js/lib");
+	// Install the shared rules first; precontent is awaited by the core loader.
+	await installRuntime();
 
-	Promise.all([
+	await Promise.all([
 		import("../card/index.js"),
 		import("../character/now/index.js"),
 		import("../character/new/index.js"),
 		import("../character/old/index.js"),
 		// 当前发布包未包含 skin/index.js，跳过可选的皮肤模块。
 		import("../mode/index.js"),
-	])
-		.then(() => {
-			lib.translate.mjs_card_config = "名将杀";
-			lib.translate.mjs_character_config = "名将杀";
-			lib.translate.mjsnew_character_config = "名将新修";
-			lib.translate.mjsold_character_config = "名将旧改";
-		})
-		.catch(err => {
-			alert("『名将杀』扩展导入失败", err);
-			console.error("Error:『名将杀』扩展导入失败" + err.message);
-		});
+	]);
+	lib.translate.mjs_card_config = "名将杀";
+	lib.translate.mjs_character_config = "名将杀";
+	lib.translate.mjsnew_character_config = "名将新修";
+	lib.translate.mjsold_character_config = "名将旧改";
 	
 	lib.arenaReady.push(() => {
 		if (!_status.connectMode) return;

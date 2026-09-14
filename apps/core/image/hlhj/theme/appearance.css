@@ -8,6 +8,13 @@
     transition: opacity 1.2s ease;
 }
 .hlhj-portrait-frame.visible { opacity: 1; }
+.hlhj-motion-video {
+    position: absolute; inset: 0; display: block; width: 100%; height: 100%;
+    border-radius: inherit; object-fit: cover; object-position: center;
+    pointer-events: none; opacity: 0; transition: opacity .2s ease;
+}
+.hlhj-motion-video.visible { opacity: 1; }
+.hlhj-portrait-frame > .hlhj-motion-video { object-position: center 22%; }
 /* Standalone-extension fallback for the core card-frame rule. */
 /* Oblong layouts normally shift square artwork down 8px. This full-bleed
  * painting needs the same inset on every edge, including mobile/long2/nova. */
@@ -20,8 +27,7 @@
 }
 body > .hlhj-backdrop { position: fixed; inset: 0; z-index: -3; pointer-events: none; overflow: hidden; }
 .hlhj-backdrop-scene { position: absolute; inset: 0; background: center/cover no-repeat; opacity: 0; transition: opacity 1.6s; contain: layout paint; }
-.hlhj-backdrop[data-theme="bamboo"] [data-scene="bamboo"],
-.hlhj-backdrop[data-theme="dream"] [data-scene="dream"] { opacity: 1; }
+.hlhj-backdrop-scene.visible { opacity: 1; }
 .hlhj-backdrop::after { content: ""; position: absolute; inset: 0; background: #101c245c; transition: background 1.6s; }
 .hlhj-backdrop[data-theme="dream"]::after { background: #15132430; }
 .hlhj-theme-dialog {
@@ -59,5 +65,5 @@ body > .hlhj-backdrop { position: fixed; inset: 0; z-index: -3; pointer-events: 
     .hlhj-theme-dialog h2 { font-size: 21px; }
 }
 @media (prefers-reduced-motion: reduce) {
-    .hlhj-portrait-frame, .hlhj-backdrop-scene, .hlhj-backdrop::after { transition: none; }
+    .hlhj-portrait-frame, .hlhj-backdrop-scene, .hlhj-backdrop::after, .hlhj-motion-video { transition: none; }
 }

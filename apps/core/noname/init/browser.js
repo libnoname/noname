@@ -26,12 +26,10 @@ export default async function browserReady({ lib, game }) {
 	};
 
 	game.exit = async function () {
-		const beforeUnload = window.onbeforeunload;
-		window.onbeforeunload = null;
-		window.close();
-		await new Promise(resolve => setTimeout(resolve, 300));
-		window.onbeforeunload = beforeUnload;
-		throw new Error("浏览器不允许网页关闭此标签页，请手动关闭标签页；桌面客户端可完全退出程序。");
+		// Browsers cannot close a user-opened tab. Reuse the existing return path
+		// so legacy extension buttons also leave the game without an engine error.
+		const { returnToMainMenu } = await import("../ui/gameNavigation.js");
+		await returnToMainMenu();
 	};
 
 	game.open = function (url) {
@@ -41,12 +39,24 @@ export default async function browserReady({ lib, game }) {
 	if (import.meta.env.VITE_PUBLIC_ONLINE === "1") return;
 	const adpt = new BrowserAdapter();
 	const fs = new FileSystem(adpt);
+	// Vite explicitly configures the local file-service routes. Install the API
+	// immediately; one slow startup probe must not permanently remove methods that
+	// extensions require. Actual operations still report real service errors.
+	if (import.meta.env.DEV) {
+		lib.fs = fs;
+		installLegacyFileSystemAPI(game, fs);
+		return;
+	}
+	const probe = new AbortController();
+	const probeTimeout = setTimeout(() => probe.abort(), 3000);
 	try {
 		// 这里只探测 dev server 的连通性和响应格式；文件不存在会返回 null。
-		await fs.stat("noname.js");
+		await requestBackend("/checkFile", "noname.js", { fileName: "noname.js" }, { signal: probe.signal });
 	} catch (e) {
 		console.warn("文件服务不可用，继续使用浏览器存储:", e);
 		return;
+	} finally {
+		clearTimeout(probeTimeout);
 	}
 	lib.fs = fs;
 	installLegacyFileSystemAPI(game, fs);

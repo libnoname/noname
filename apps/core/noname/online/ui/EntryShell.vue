@@ -14,11 +14,11 @@
   </section>
 </template>
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, defineAsyncComponent } from "vue";
 import { lib, game } from "noname";
 import ShoushaSplash from "../../init/onload/ShoushaSplash.vue";
 import OnloadSplash from "../../init/onload/OnloadSplash.vue";
-import OnlineLobby from "./OnlineLobby.vue";
+const OnlineLobby = defineAsyncComponent(() => import("./OnlineLobby.vue"));
 import { disconnectPlatform, onlineState, prepareRoomNavigation } from "../client";
 import { openGameNavigation } from "../../ui/gameNavigation.js";
 import "./online.css";

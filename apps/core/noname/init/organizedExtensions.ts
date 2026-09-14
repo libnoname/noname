@@ -74,14 +74,30 @@ export async function registerOrganizedExtensions(config: { get: (key: string) =
 	const disabled = new Set(validation.disabled.map(p => p.name));
 	const defaultDisabled = new Set(installed.filter(item => "defaultEnabled" in item && item.defaultEnabled === false).map(item => item.name));
 	// These original, manually installed extensions predate the archive registry.
-	// Make them discoverable too, without enabling previously unconfigured code.
-	const names = new Set([...bundled, ...installed.map(item => item.name)]);
+	// Make them discoverable too; the requested first-party pack is restored below.
+	const names = new Set([...bundled, ...installed.map(item => item.name), ...registered]);
 	for (const name of names) {
-		if (registered.has(name)) continue;
+		if (registered.has(name)) {
+			// Registration history is not the load list. Repair a missing enabled
+			// entry, while respecting explicit disable/uninstall choices.
+			if (!extensions.includes(name) && config.get(`extension_${name}_enable`) === true) {
+				extensions.push(name);
+				changed = true;
+			}
+			continue;
+		}
 		if (!extensions.includes(name)) extensions.push(name);
-		if (!config.has(`extension_${name}_enable`)) await save(`extension_${name}_enable`, !bundled.includes(name) && !disabled.has(name) && !defaultDisabled.has(name));
+		// Restore the requested first-party pack once when adopting it into the
+		// registry; earlier directory discovery/emergency recovery left it off.
+		if (name === "红楼幻境" || !config.has(`extension_${name}_enable`)) {
+			await save(`extension_${name}_enable`, name === "红楼幻境" || (!bundled.includes(name) && !disabled.has(name) && !defaultDisabled.has(name)));
+		}
 		registered.add(name);
 		changed = true;
+	}
+	// Retain identities of manually imported packs as well as bundled packages.
+	for (const name of extensions) {
+		if (!registered.has(name)) { registered.add(name); changed = true; }
 	}
 	if (changed) {
 		await save("extensions", extensions);

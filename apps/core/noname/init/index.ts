@@ -11,6 +11,7 @@ import { importCardPack, importCharacterPack, importExtension, importMode } from
 import { loadCard, loadCardPile, loadCharacter, loadExtension, loadMode, loadPlay } from "./loading.js";
 import { registerOrganizedExtensions, isRetiredApkExtension } from "./organizedExtensions.js";
 import { registerOrganizedCompatibility } from "./organizedCompatibility.js";
+import { warmImages } from "../util/imageReady.js";
 
 // 无名杀，启动！
 export async function boot() {
@@ -206,12 +207,14 @@ export async function boot() {
 		fontSheet.insertRule(`@font-face {font-family: 'NonameSuits'; font-display: swap; src: url('${lib.assetURL}font/suits.woff2');}`, 0);
 		fontSheet.insertRule(`@font-face {font-family: 'MotoyaLMaru'; font-display: swap; src: url('${lib.assetURL}font/motoyamaru.woff2');}`, 0);
 		// Warm active fonts before dealing; never block readable fallback text.
-		const activeFonts = new Set(["xinwei", config.get("name_font"), config.get("cardtext_font"), config.get("global_font")]);
+		const activeFonts = new Set(["xinwei", "shousha", config.get("name_font"), config.get("identity_font"), config.get("cardtext_font"), config.get("global_font")]);
 		for (const font of activeFonts) {
 			if (typeof font === "string" && Object.hasOwn(pack.font, font)) {
 				void document.fonts?.load(`16px "${font}"`, "情思杀闪桃123").catch(() => {});
 			}
 		}
+		void document.fonts?.load('16px "NonameSuits"', "♠♥♣♦").catch(() => {});
+		void document.fonts?.load('16px "MotoyaLMaru"', "0123456789JQKA").catch(() => {});
 		appearenceConfig.cardtext_font.item.default = "默认";
 		appearenceConfig.global_font.item.default = "默认";
 	}
@@ -301,14 +304,11 @@ export async function boot() {
 		document.addEventListener("touchmove", ui.click.windowtouchmove);
 	}
 
-	// 在dom加载完后执行相应的操作
-	await new Promise(resolve => {
-		if (document.readyState !== "complete") {
-			window.onload = resolve;
-		} else {
-			resolve(void 0);
-		}
-	});
+	// Only the DOM is required. window.load also waits for decorative media/fonts
+	// and serializes extension loading behind requests unrelated to game readiness.
+	if (document.readyState === "loading") {
+		await new Promise<void>(resolve => document.addEventListener("DOMContentLoaded", () => resolve(), { once: true }));
+	}
 
 	const extensionlist = await trackLoad(getExtensionList());
 	if (extensionlist.length) {
@@ -540,6 +540,7 @@ export async function boot() {
 
 		let { promise, resolve } = Promise.withResolvers();
 		await splash.init(node, resolve);
+		document.getElementById("noname-boot-status")?.remove();
 
 		let result = await promise;
 
@@ -654,8 +655,26 @@ export async function boot() {
 		lib.init.startBefore();
 		delete lib.init.startBefore;
 	}
+	// Begin loading only the actual deck artwork while the arena/selection UI is
+	// being assembled. Hidden pile cards otherwise don't fetch CSS backgrounds.
+	if (!lib.config.hide_card_image) {
+		const images: string[] = [];
+		for (const name of new Set<string>((lib.card.list || []).map(card => card[2]))) {
+			const info = lib.card[name];
+			if (!info?.fullskin) continue;
+			const image = info.image;
+			if (typeof image === "string" && !/^(db:|character:)|^(background|card)$/.test(image)) {
+				const path = image.replace(/^ext:/, "extension/");
+				images.push(URL.canParse(path) ? path : lib.assetURL + path);
+			} else if (!image) {
+				images.push(lib.assetURL + (info.modeimage ? `image/mode/${info.modeimage}/card/${info.cardimage || name}.png` : `image/card/${info.cardimage || name}.png`));
+			}
+		}
+		warmImages(images);
+	}
 
 	ui.create.arena();
+	document.getElementById("noname-boot-status")?.remove();
 	if (installHost() === false) return;
 	game.createEvent("game", false).setContent(lib.init.start);
 	if (lib.mode[lib.config.mode] && lib.mode[lib.config.mode].fromextension) {
@@ -679,8 +698,15 @@ export async function boot() {
 
 async function getExtensionList() {
 	if (isHosted() || import.meta.env.VITE_PUBLIC_ONLINE === "1" || sessionStorage.getItem("noname_online_game")) return [];
-	const { showExtensionRecovery } = await import("./extensionRecovery.js");
+	const { showExtensionRecovery, recoverLegacyEmergency } = await import("./extensionRecovery.js");
+	await recoverLegacyEmergency(lib, config, (key, value) => game.promises.saveConfig(key, value)).catch(error => {
+		console.warn("旧扩展开关暂未恢复，保留快照和恢复入口", error);
+	});
 	showExtensionRecovery(lib, config, (key, value) => game.promises.saveConfig(key, value));
+	if (sessionStorage.getItem(lib.configprefix + "disable_extension")) {
+		sessionStorage.removeItem(lib.configprefix + "disable_extension");
+		return [];
+	}
 	if (localStorage.getItem(lib.configprefix + "disable_extension")) return [];
 	await registerOrganizedExtensions(config, (key, value) => game.promises.saveConfig(key, value));
 
@@ -696,12 +722,11 @@ async function getExtensionList() {
 	const searchParamsImportExtension = new URLSearchParams(location.search).get("importExtensionName");
 
 	window.resetExtension = async () => {
-		// Preserve only extension switches, not the entire save, before emergency disabling.
-		localStorage.setItem(lib.configprefix + "extension_emergency_enabled", JSON.stringify(config.get("extensions").filter(ext => config.get(`extension_${ext}_enable`) === true)));
-		for (let ext of config.get("extensions")) {
-			await game.promises.saveConfig(`extension_${ext}_enable`, false);
-		}
-		localStorage.setItem(lib.configprefix + "disable_extension", String(true));
+		// A slow or failed boot must never rewrite the user's installed-pack list
+		// or enable switches. Safe mode applies to the next boot in this tab only.
+		const enabled = (config.get("extensions") || []).filter(ext => config.get(`extension_${ext}_enable`) === true);
+		sessionStorage.setItem(lib.configprefix + "extension_emergency_enabled", JSON.stringify(enabled));
+		sessionStorage.setItem(lib.configprefix + "disable_extension", "true");
 	};
 
 	const extensions: string[] = config.get("extensions");
@@ -711,7 +736,12 @@ async function getExtensionList() {
 
 	if (autoImport) {
 		const extensionPath = new URL("./extension/", rootURL);
-		const [extFolders] = await game.promises.getFileList(get.relativePath(extensionPath));
+		// Directory discovery is optional. A temporarily unavailable file service
+		// must not prevent already registered HTTP-loadable extensions from starting.
+		const [extFolders] = await game.promises.getFileList(get.relativePath(extensionPath)).catch(error => {
+			console.warn("无法扫描新增扩展，继续加载已登记的扩展:", error);
+			return [[], []] as [string[], string[]];
+		});
 
 		const unimportedExtensions = extFolders.filter(folder => !isRetiredApkExtension(folder) && !extensions.includes(folder) && !config.get("all").plays.includes(folder));
 
@@ -890,7 +920,7 @@ async function loadConfig() {
 	});
 	lib.db = event.target.result;
 
-	let result;
+	let result = (await game.getDB("config")) || {};
 	// 懒人包配置
 	// 可选配置文件不可访问时，仍应加载浏览器中已有的配置。
 	const hasConfigTxt = await game.promises.checkFile("noname.config.txt").then(
@@ -905,22 +935,22 @@ async function loadConfig() {
 		try {
 			const configStr = await game.promises.readFileAsText("noname.config.txt");
 
-			let data;
-			({ config: result = {}, data = {} } = JSON.parse(lib.init.decode(configStr)));
-			for (let i in result) {
-				game.saveConfig(i, result[i]);
+			const { config: imported = {}, data = {} } = JSON.parse(lib.init.decode(configStr));
+			if (!imported || typeof imported !== "object" || Array.isArray(imported) ||
+				!data || typeof data !== "object" || Array.isArray(data)) throw new Error("配置文件格式无效");
+			for (let i in imported) {
+				await game.promises.saveConfig(i, imported[i]);
 			}
 			for (let i in data) {
-				game.putDB("data", i, data[i]);
+				await game.putDB("data", i, data[i]);
 			}
+			result = { ...result, ...imported };
+			lib.init.background();
+			await game.promises.removeFile("noname.config.txt");
 		} catch (e) {
-			console.error(e);
-			result = {};
+			console.error("配置导入未完成，继续使用已保存配置并保留原文件", e);
+			result = (await game.getDB("config")) || result;
 		}
-		lib.init.background();
-		await game.promises.removeFile("noname.config.txt").catch(e => console.error(e));
-	} else {
-		result = await game.getDB("config");
 	}
 
 	// 读取模式

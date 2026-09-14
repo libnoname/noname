@@ -1,7 +1,6 @@
 import { lib, game, ui } from "noname";
 import { createApp } from "vue";
 
-import EntryShell from "@/online/ui/EntryShell.vue";
 import type { OnloadSplash as IOnloadSplash } from "./onload-splash";
 
 export class DefaultSplash implements IOnloadSplash {
@@ -14,6 +13,8 @@ export class DefaultSplash implements IOnloadSplash {
 	private clicked?: HTMLElement;
 
 	async init(node: HTMLDivElement, resolve: (mode: string) => void): Promise<void> {
+		// The lobby component graph is not needed to initialize the core or directstart.
+		const { default: EntryShell } = await import("@/online/ui/EntryShell.vue");
 		this.resolve = resolve;
 		this.clicked = undefined;
 		const shousha = lib.config.presentation_style !== "classic";

@@ -109,6 +109,10 @@ async function navigate(destination) {
 	game.reload();
 }
 
+export function returnToMainMenu() {
+	return navigate("lobby");
+}
+
 /** Shared by the toolbar and both local/online settings menus. */
 export function openGameNavigation() {
 	if (_status.reloading) return;

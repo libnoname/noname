@@ -3621,6 +3621,9 @@ export class Player extends HTMLDivElement {
 		if (update !== false) {
 			this.$update();
 		}
+		// Cosmetic initialization follows the selected general immediately, rather
+		// than waiting for the appearance controller's one-second marks timer.
+		if (character === "hlhj_daiyu" || character2 === "hlhj_daiyu") game.hlhjAppearance?.refresh();
 		return this;
 	}
 	$init(character, character2) {

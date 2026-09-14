@@ -30,9 +30,19 @@ export default defineConfig({
 		},
 	},
 	plugins: [vue()],
+	// Discover common runtime dependencies before the first browser request, rather
+	// than restarting dependency optimization as dynamic packs arrive.
+	optimizeDeps: {
+		entries: ["index.html"],
+		include: ["core-js-bundle", "vue", "vue/dist/vue.esm-browser.js", "pinyin-pro", "jszip", "dedent", "path-browserify-esm",
+			"stackframe", "error-stack-parser", "stacktrace-gps", "stacktrace-js", "crypto-js", "nosleep.js", "pressure"],
+	},
 	server: {
 		host: "127.0.0.1",
 		port: port.client,
+		// Do not silently switch ports: a different origin has a different save DB.
+		strictPort: true,
+		warmup: { clientFiles: ["./noname/entry.ts", "./noname/init/index.ts", "./noname/online/ui/EntryShell.vue"] },
 		fs: {
 			allow: ["../.."],
 		},

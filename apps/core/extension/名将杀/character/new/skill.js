@@ -1768,6 +1768,7 @@ const skills5 = {
         usable: 1,
         filterTarget: lib.filter.notMe,
         async content(event, trigger, player) {
+            const target = event.target;
             let num = 0;
             const result = await target
                 .chooseToGive(player, "he")
@@ -1779,7 +1780,7 @@ const skills5 = {
                 .chooseTarget(`令${get.translation(target)}对一名角色打出一张杀`)
                 .forResult();
             if (result2.bool && result2.targets?.length) {
-                const target2 = result.targets[0];
+                const target2 = result2.targets[0];
                 const result = await target
                     .chooseToUse(
                         `你可以对${get.translation(target2)}使用一张杀`,
@@ -2238,10 +2239,10 @@ const skills5 = {
             return event[event.name == "phaseDraw" ? "player" : "source"];
         },
         async content(event, trigger, player) {
-            const [target] = event.targets;
             const prompt2 = trigger.name == "phaseDraw" ? "摸牌阶段，减1点体力上限并令摸牌数+1" : "造成伤害时，减1点手牌上限令此伤害+1";
+            const target = trigger[trigger.name == "phaseDraw" ? "player" : "source"];
             const result = await target
-                .chooseBool(`你可取消“${prompt}”的效果，然后受到${get.translation(player)}造成的1点伤害。`)
+                .chooseBool(`你可取消“${prompt2}”的效果，然后受到${get.translation(player)}造成的1点伤害。`)
                 .set("ai", () => {
                     return get.event().choice;
                 })

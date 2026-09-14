@@ -146,6 +146,10 @@ Reflect.defineProperty(HTMLDivElement.prototype, "setBackground", {
 			return this;
 		}
 		const requestedName = name;
+		if (type === "character" && name === "hlhj_daiyu") {
+			const appearance = (game as typeof game & { hlhjAppearance?: { prepare?: () => void } }).hlhjAppearance;
+			appearance?.prepare?.();
+		}
 		const request = {};
 		backgroundRequests.set(this, request);
 		let selectedSkin;
@@ -266,16 +270,10 @@ HTMLDivElement.prototype.setBackgroundDB = async function (img) {
  * @type { typeof HTMLDivElement['prototype']['setBackgroundImage'] }
  */
 HTMLDivElement.prototype.setBackgroundImage = function (img) {
-	if (Array.isArray(img)) {
-		this.style.backgroundImage = img
-			.unique()
-			.map(v => `url("${lib.assetURL}${v}")`)
-			.join(",");
-	} else if (URL.canParse(img)) {
-		this.style.backgroundImage = `url("${img}")`;
-	} else {
-		this.style.backgroundImage = `url("${lib.assetURL}${img}")`;
-	}
+	const sources = (Array.isArray(img) ? img : [img]).filter(Boolean).map(v => URL.canParse(v) ? v : `${lib.assetURL}${v}`);
+	// Character buttons and card copies read/clone this style immediately. Keep
+	// the legacy synchronous contract, including CSS fallback image layers.
+	this.style.backgroundImage = [...new Set(sources)].map(src => `url(${JSON.stringify(src)})`).join(",");
 	return this;
 };
 /**

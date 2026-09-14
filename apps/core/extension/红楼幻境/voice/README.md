@@ -30,14 +30,14 @@
 
 1. 为人物编写独立事件配置，参照 `daiyu.js`；每个事件包含 `label`、`lines`、`category`，可附加 `cooldown`、`group` 和 `ttl`。`priority` 兼容保留但不再决定抢占、排队或抑制；技能分类忽略冷却，其他分类沿用设置。根目录、人物名、台词都由配置提供，公共控制器不含黛玉技能名。`isBond` 是可选的关系查询，不修改角色关系。
 2. 为人物建立导入清单，包含 `character`、`source`、`document`、`folders`。文件夹到台词编号必须明确一一对应，同一目录内全部MP3均作为该句的演绎版本接入。文本表格沿用审核稿格式；如果采用其他格式，可直接提供静态 `clips` 清单：每句包含 `text` 与 `variants` 文件名数组。公共播放器仍兼容旧的单文件 `file` 字段，不要求其他人物同步迁移。
-3. 从仓库根目录运行 `node scripts/import-hlhj-voices.mjs apps/core/extension/红楼幻境/voice/import/<人物ID>.json`。这是资源整理操作，不运行测试或构建。脚本生成全部演绎、字幕清单与开发客户端镜像；重复执行覆盖相同规范文件，仅清理上次清单记录且内容未被修改的过时生成文件，不移动或删除原录音。
+3. 从仓库根目录运行 `node scripts/import-hlhj-voices.mjs apps/core/extension/红楼幻梦/voice/import/<人物ID>.json`。这是资源整理操作，不运行测试或构建。脚本生成全部演绎、字幕清单与开发客户端镜像；重复执行覆盖相同规范文件，仅清理上次清单记录且内容未被修改的过时生成文件，不移动或删除原录音。
 4. 在扩展 `precontent` 中用同一个 `installVoiceRuntime` 返回值调用 `register(spec)`，并用 `voiceFiles(clip)` 展开各句的全部演绎加入扩展的 `files.audio`。保留唯一 `_hlhj_voice_events` 公共规则技能。
 5. 在实际发动成功的位置调用 `game.hlhjVoice?.emit(player, characterId, eventName)`，每次独立创建播放任务。旧的 `scope` 接口保留为空操作，无须改动已有角色的调用，但也不再抑制连锁配音。隐藏信息使用 `{ private: true }`；外观使用 `{ local: true, event: false }`。已接入的技能设 `audio:false`，避免本体额外按技能名播放重复声音。
 6. 外观控制器可用 `addMusicAdapter(factor => ...)` 注册临时音乐衰减，释放时调用返回的取消函数。人物之间共享播放管理，无需复制控制器或修改本体声音方法。
 
 ## 资源发布与版本移植
 
-独立扩展使用 `extension/红楼幻境/theme/`，当前内置适配器使用 `image/hlhj/theme/`；传给人物配置的根目录来自扩展现有路径参数。没有绝对磁盘路径、在线TTS请求或浏览器目录枚举。
+独立扩展使用 `extension/红楼幻梦/theme/`，当前内置适配器使用 `image/hlhj/theme/`；传给人物配置的根目录来自扩展现有路径参数。没有绝对磁盘路径、在线TTS请求或浏览器目录枚举。
 
 开发镜像和托管发布脚本排除以 `_配音` 结尾的原录音目录，仅发布规范资源。手动分发扩展时需带上 `extension.js`、`appearance.js`、`voice/runtime.js`、人物配置、`voice/catalogs` 及 `theme/voices`，不必带原录音、导入记录和开发脚本。原有卡图、背景、歌单等资源仍按扩展原发布清单携带。
 

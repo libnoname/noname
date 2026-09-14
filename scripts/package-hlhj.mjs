@@ -16,6 +16,8 @@ const entries = [];
 async function collect(dir) {
     for (const item of (await readdir(dir, { withFileTypes: true })).sort((a, b) => a.name.localeCompare(b.name))) {
         const path = join(dir, item.name);
+        // Original video masters are retained locally, never duplicated in the release.
+        if (relative(source, path).replaceAll("\\", "/") === "theme/动态资源") continue;
         if (item.isDirectory()) await collect(path);
         else if (item.isFile()) entries.push({ path, name: relative(source, path).replaceAll("\\", "/"), data: await readFile(path) });
         else throw new Error(`不打包符号链接或特殊文件：${path}`);

@@ -1891,16 +1891,19 @@ span.chr_detail_prop_jianghun_text {
 
 @font-face {
     font-family: 'hanyizhongli';
+    font-display: swap;
     src: local('汉仪中隶书简'), url('fonts/汉仪中隶书简.ttf');
 }
 
 @font-face {
     font-family: '方正隶变GBK';
+    font-display: swap;
     src: local('方正隶变GBK'), url('fonts/方正隶变GBK.ttf');
 }
 
 @font-face {
     font-family: '汉仪中圆简';
+    font-display: swap;
     src: local('汉仪中圆简'), url('fonts/汉仪中圆简.ttf');
 }
 

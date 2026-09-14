@@ -28,7 +28,7 @@ export async function onlineBuildId(root: string) {
   for (const path of ["apps/core/noname", "apps/core/character", "apps/core/card", "apps/core/mode", "apps/core/game",
     "apps/core/layout", "apps/core/theme", "apps/core/scripts", "apps/core/index.html", "apps/core/noname.js",
     "apps/core/extension/红楼幻境/extension.js", "apps/core/extension/红楼幻境/info.json",
-    "apps/core/extension/红楼幻境/appearance.js", "apps/core/extension/红楼幻境/theme/appearance.css",
+    "apps/core/extension/红楼幻境/appearance.js", "apps/core/extension/红楼幻境/motion.js", "apps/core/extension/红楼幻境/theme/appearance.css",
     "apps/core/extension/红楼幻境/theme/catalog.js", "apps/core/extension/红楼幻境/voice/runtime.js",
     "apps/core/extension/红楼幻境/voice/daiyu.js", "apps/core/extension/红楼幻境/voice/panel.js", "apps/core/extension/红楼幻境/voice/catalogs",
     "apps/core/package.json", "apps/core/pnpm-lock.yaml", "apps/core/vite.config.ts", "packages/online-protocol/src",
@@ -52,7 +52,7 @@ export async function assembleOnline(root: string, client: boolean, build: strin
     return client || (stat.isDirectory() ? !excluded.has(top) : isHostRuntimeFile(name));
   } });
   if (client) {
-    await cp(resolve(root, "apps/core/image"), join(output, "image"), { recursive: true, filter: path => !path.split(/[\\/]/).some(part => part.endsWith("_配音")) });
+    await cp(resolve(root, "apps/core/image"), join(output, "image"), { recursive: true, filter: path => !path.split(/[\\/]/).some(part => part === "动态资源" || part.endsWith("_配音")) });
     await cp(resolve(root, "apps/core/audio"), join(output, "audio"), { recursive: true });
     // Reviewed extension art is shipped as ordinary media. The trusted host
     // still excludes /extension and never loads client-supplied executable code.
@@ -60,7 +60,7 @@ export async function assembleOnline(root: string, client: boolean, build: strin
     await mkdir(join(output, "image/card"), { recursive: true });
     await cp(resolve(root, "apps/core/extension/红楼幻境/hlhj_daiyu.svg"), join(output, "image/character/hlhj_daiyu.svg"));
     await cp(resolve(root, "apps/core/extension/红楼幻境/hlhj_qingsi.png"), join(output, "image/card/hlhj_qingsi.png"));
-    await cp(resolve(root, "apps/core/extension/红楼幻境/theme"), join(output, "image/hlhj/theme"), { recursive: true, filter: path => !path.split(/[\\/]/).some(part => part.endsWith("_配音")) });
+    await cp(resolve(root, "apps/core/extension/红楼幻境/theme"), join(output, "image/hlhj/theme"), { recursive: true, filter: path => !path.split(/[\\/]/).some(part => part === "动态资源" || part.endsWith("_配音")) });
   }
   await cp(resolve(root, "LICENSE"), join(output, "LICENSE"));
   await writeFile(join(output, "deployment.json"), JSON.stringify({ build, origin, kind: client ? "client" : "host" }) + "\n");

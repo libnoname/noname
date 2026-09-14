@@ -191,7 +191,7 @@ const skills = {
         async cost(event, trigger, player) {
             event.result = await player
                 .chooseTarget(get.prompt2(event.skill), )
-                .set("ai", card => {
+                .set("ai", target => {
                     const player = get.player();
                     const att = get.attitude(player, target);
                     const cards = target.getCards("he", card => {
@@ -4126,7 +4126,7 @@ const skills = {
             return event.getg && event.getg(player)?.some(card => card.name == "sha");
         },
         async content(event, trigger, player) {
-            const cards = (trigger?.getg?.(player) ?? player.getCards("h")).filter(card => card, name == "sha");
+            const cards = (trigger?.getg?.(player) ?? player.getCards("h")).filter(card => card.name == "sha");
             const gains = [];
             for (const card of cards) {
                 const trick = mjs.getTrick("random");
@@ -6360,7 +6360,7 @@ const skills4 = {
                         gain.filter((i) => trigger.giver === player2 || lose.includes(i)),
                         "mjsnpcfengying"
                     );
-                    player.markAuto("mjsnpcfengying_effect", target);
+                    player2.markAuto("mjsnpcfengying_effect", target);
                 },
             },
             lose: {
@@ -6620,7 +6620,7 @@ const skills4 = {
             const target = event.targets[0];
             player.logSkill(event.name, target);
             const list = target.getCards("h").reduce((list2, card) => list2.add(get.type2(card)), []);
-            await player.viewHandcards(target1);
+            await player.viewHandcards(target);
             if (list.length < 3) {
                 await target.damage();
             }

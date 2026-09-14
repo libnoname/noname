@@ -953,7 +953,7 @@ const skills = {
 					player.removeSkill(event.name);
 					const skillCount = "mjsqianchongjiexia_restore";
 		        	player.addTempSkill(skillCount, "phaseUseAfter");
-					const skills = get.info("mjszhujianyishi").getSkills(target);
+					const skills = get.info("mjszhujianyishi").getSkills(player);
 			        if (!skills.length) {
 			            return;
 			        }
@@ -1588,7 +1588,7 @@ const skills = {
 	            await game.loseAsync({ lose_list }).setContent("chooseToCompareLose");
 	            await game.delayx();
 	        }
-	        cardList.addArray(cards.filter(destroy));
+	        cardList.addArray(cards.filter(filter));
 	        if (cardList.length) {
 	        	game.log(cardList, "被销毁");
 	            await game.cardsGotoSpecial(cardList);
@@ -3042,7 +3042,7 @@ const skills = {
 		async content(event, trigger, player) {
 			player.addSkill("mjshuatingheli_effect");
 			player.markAuto("mjshuatingheli_effect", event.cost_data);
-			const card = mjs.createCard(equip.cost_data);
+			const card = mjs.createCard(event.cost_data);
 			if (card) {
 				await player.gain(card, "draw");
 			}
@@ -3885,7 +3885,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget(get.prompt2(event.skill))
-				.set("ai", card => {
+				.set("ai", target => {
 					const player = get.player();
 					const att = get.attitude(player, target);
 					const cards = target.getCards("he", card => {
@@ -5895,7 +5895,7 @@ const skills = {
 			result: {
 				player(player) {
 			        return player.countCards("h", card => {
-			            return card.name == "sha" && lib.filter.canBeStrengthened(card, target, "mjsjiniuxiangshi");
+			            return card.name == "sha" && lib.filter.canBeStrengthened(card, player, "mjsjiniuxiangshi");
 			        });
 				},
 			},
@@ -11103,7 +11103,7 @@ const skills = {
 						}*/
 						await player.chooseUseTarget(card, true, false);
 						if (player.hasHistory("useCard", evt => {
-							return evt.getParent() == event && targets[0].hasHistory("sourceDamage", evtx => evtx.card == evt.card);
+							return evt.getParent() == event && player.hasHistory("sourceDamage", evtx => evtx.card == evt.card);
 						})) {
 							await game.asyncDraw([player, target]);
 						}
@@ -11866,8 +11866,8 @@ const skills = {
 			const card = get.cardPile("mjschuanguoyuxi", "field") || game.createCard2("mjschuanguoyuxi", "taiji", 1);
 			const owner = get.owner(card);
 			if (owner) {
-				await player.gain(card, target, "give");
-				await target.gain(event.cards, "gain2");
+				await player.gain(card, owner, "give");
+				await owner.gain(event.cards, "gain2");
 			} else {
 				await player.gain(card, "gain2");
 				await game.delayx();
@@ -12589,18 +12589,19 @@ const skills = {
 			event.turn = event.targets[0];
 			event.num = 0;
 			while (event.num < 2) {
+				let next;
 				const cards = event.source.getCards("h", card => {
 					return get.name(card, event.source) == "sha" && event.source.canUse(card, event.turn, false, false);
 				});
 				if (cards.length) {
 					const card = cards.randomGet();
-					const next = event.source.useCard(card, event.turn, false);
+					next = event.source.useCard(card, event.turn, false);
 					await next;
 				} else {
 					event.num++;
 				}
 				[event.source, event.turn] = [event.turn, event.source];
-				if (game.hasGlobalHistory("everything", evt => evt.name == "dying" && evt.getParent(3) == next)) {
+				if (next && game.hasGlobalHistory("everything", evt => evt.name == "dying" && evt.getParent(3) == next)) {
 					break;
 				}
 			}
@@ -14722,9 +14723,7 @@ const skills = {
 					cards2 = cards.splice(0, player.getExpansions("mjsyingshibuzhen").length);
 				return [cards2, cards];
 			});
-			const {
-				result: { bool, moved },
-			} = await next.forResult();
+			const { bool, moved } = await next.forResult();
 			if (bool && moved?.length) {
 				event.getParent().cost_data = moved;
 				return;

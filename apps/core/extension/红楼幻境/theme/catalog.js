@@ -3,6 +3,12 @@ export const themes = {
     "bamboo": {
         "name": "潇湘竹影",
         "image": "xiaoxiang-garden.png",
+        "poster": "motion/background-bamboo.webp",
+        "video": "motion/background-bamboo.mp4",
+        "portrait": {
+            "image": "motion/portrait-bamboo.webp",
+            "video": "motion/portrait-bamboo.mp4"
+        },
         "album": "竹窗听雨",
         "tracks": [
             "竹窗听雨/竹窗听雨1.mp3",
@@ -12,6 +18,12 @@ export const themes = {
     "dream": {
         "name": "绛珠归梦",
         "image": "jiangzhu-dream-garden.png",
+        "poster": "motion/background-dream.webp",
+        "video": "motion/background-dream.mp4",
+        "portrait": {
+            "image": "motion/portrait-dream.webp",
+            "video": "motion/portrait-dream.mp4"
+        },
         "album": "绛珠归梦",
         "tracks": [
             "绛珠归梦/绛珠归梦1.mp3",

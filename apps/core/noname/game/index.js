@@ -9400,8 +9400,21 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		}
 		lib.status.reload++;
 		return new Promise((resolve, reject) => {
-			const record = lib.db.transaction([storeName], "readwrite").objectStore(storeName).put(structuredClone(value), idbValidKey);
-			record.onerror = event => {
+			let transaction, record;
+			try {
+				const data = structuredClone(value);
+				transaction = lib.db.transaction([storeName], "readwrite");
+				record = transaction.objectStore(storeName).put(data, idbValidKey);
+			} catch (error) {
+				game.reload2();
+				reject(error);
+				return;
+			}
+			// Request success precedes the actual commit. Reloading from its callback
+			// could lose freshly saved extension switches; finish on commit instead.
+			let successEvent;
+			record.onsuccess = event => { successEvent = event; };
+			transaction.onabort = event => {
 				if (typeof onError == "function") {
 					onError(event);
 					game.reload2();
@@ -9411,7 +9424,8 @@ ${e instanceof Error ? e.stack : String(e)}`);
 					reject(event);
 				}
 			};
-			record.onsuccess = event => {
+			transaction.oncomplete = () => {
+				const event = successEvent;
 				if (typeof onSuccess == "function") {
 					_status.dburgent = true;
 					onSuccess(event);
@@ -9834,7 +9848,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			base[key] = value;
 		}
 
-		save(storeKey, "config", value).then(callback);
+		return save(storeKey, "config", value).then(callback);
 	}
 	/**
 	 * @param { string } key

@@ -155,7 +155,11 @@ export class GamePromises {
 		}
 
 		// @ts-expect-error ignore
-		return new Promise(resolve => game.saveConfig(key, value, local, resolve));
+		return new Promise((resolve, reject) => {
+			// Keep callback compatibility for legacy wrappers, but propagate a
+			// failed persistence promise instead of leaving callers pending forever.
+			game.saveConfig(key, value, local, resolve)?.catch(reject);
+		});
 	}
 	/**
 	 * @param { string } key
