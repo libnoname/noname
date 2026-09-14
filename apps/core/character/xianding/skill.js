@@ -3926,6 +3926,7 @@ const skills = {
 	},
 	dckeming: {
 		audio: 2,
+		frequent: true,
 		trigger: {
 			player: "damageEnd",
 			source: "damageSource",
@@ -18748,6 +18749,7 @@ const skills = {
 	},
 	dcsugang: {
 		audio: 2,
+		frequent: true,
 		trigger: { player: "phaseUseBegin" },
 		async content(event, trigger, player) {
 			const result = await player
@@ -24697,6 +24699,7 @@ const skills = {
 	dcshizha: {
 		audio: 2,
 		usable: 1,
+		frequent: true,
 		trigger: { global: "changeHpAfter" },
 		check: () => true,
 		async content(event, trigger, player) {
@@ -33215,6 +33218,7 @@ const skills = {
 	//阮籍
 	dczhaowen: {
 		audio: 2,
+		frequent: true,
 		trigger: { player: "phaseUseBegin" },
 		filter(event, player) {
 			return player.hasCards("h");
@@ -38187,6 +38191,7 @@ const skills = {
 			global: "phaseBefore",
 			player: ["phaseBegin", "enterGame"],
 		},
+		frequent: true,
 		filter(event, player, name) {
 			if (name === "phaseBefore" && game.phaseNumber > 0) {
 				return false;
@@ -38245,6 +38250,7 @@ const skills = {
 					prompt: get.prompt(event.skill),
 					prompt2: "装备一张【霹雳投石车】",
 					ai: () => true,
+					frequentSkill: event.skill,
 				})
 				.forResult();
 			event.result = {
@@ -38882,6 +38888,7 @@ const skills = {
 	//全惠解
 	dchuishu: {
 		audio: 2,
+		frequent: true,
 		getList(player) {
 			if (!player.storage.dchuishu) {
 				return [3, 1, 2];
@@ -41979,6 +41986,7 @@ const skills = {
 	//孙翊
 	syjiqiao: {
 		audio: 2,
+		frequent: true,
 		trigger: { player: "phaseUseBegin" },
 		async content(event, trigger, player) {
 			const cards = get.cards(player.maxHp);
@@ -42546,7 +42554,7 @@ const skills = {
 											num = num2;
 										}
 									}
-								};
+								}
 								return num * 0.8;
 							}
 						}
@@ -42882,6 +42890,7 @@ const skills = {
 			}
 			return false;
 		},
+		frequent: true,
 		prompt2(event, player) {
 			const cards2 = get.info("youyan").getCards(event, player);
 			return `获得与${get.translation(cards2)}花色${cards2.length > 1 ? "各" : ""}不相同的牌各一张`;
