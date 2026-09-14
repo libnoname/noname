@@ -16954,29 +16954,26 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseZhunbeiBegin" },
 		filter(event, player) {
-			return game.hasPlayer(function (current) {
-				return player.canUse("juedou", current, false);
-			});
+			return game.hasPlayer(current => player.canUse("juedou", current, false));
 		},
-		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt("twqingkou"), "视为对一名其他角色使用一张【决斗】", function (card, player, target) {
-					return player.canUse("juedou", target, false);
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt(event.skill),
+					prompt2: "视为对一名其他角色使用一张【决斗】",
+					filterTarget: (card, player, target) => player.canUse("juedou", target, false),
+					ai: target => get.effect(target, { name: "juedou" }, player, player),
 				})
-				.set("ai", function (target) {
-					var player = _status.event.player;
-					return get.effect(target, { name: "juedou" }, player, player);
-				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("twqingkou", target);
-				player.useCard({ name: "juedou", isCard: true, storage: { twqingkou: true } }, target, false);
-				player.addTempSkill("twqingkou_after");
-			}
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const [target] = event.targets;
+			player.useCard({
+				card: { name: "juedou", isCard: true, storage: { twqingkou: true } },
+				targets: [target],
+				addCount: false,
+			});
+			player.addTempSkill("twqingkou_after");
 		},
 		subSkill: {
 			after: {
@@ -16986,17 +16983,17 @@ const skills = {
 				},
 				charlotte: true,
 				direct: true,
-				content() {
-					var targets = game
+				async content(event, trigger, player) {
+					const targets = game
 						.filterPlayer(current => {
-							return current.hasHistory("sourceDamage", function (evt) {
-								return evt.card == trigger.card;
+							return current.hasHistory("sourceDamage", evt => {
+								return evt.card === trigger.card;
 							});
 						})
 						.sortBySeat();
-					for (var target of targets) {
+					for (const target of targets) {
 						target.draw();
-						if (target == player) {
+						if (target === player) {
 							player.skip("phaseJudge");
 							game.log(player, "跳过了", "#y判定阶段");
 							player.skip("phaseDiscard");
