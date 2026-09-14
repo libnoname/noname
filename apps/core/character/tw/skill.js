@@ -11243,8 +11243,8 @@ const skills = {
 		audio: 2,
 		trigger: { source: "damageBegin2", player: "damageBegin4" },
 		filter(event, player, name) {
-			if (name == "damageBegin2") {
-				if (event.hasNature() || event.player == player) {
+			if (name === "damageBegin2") {
+				if (event.hasNature() || event.player === player) {
 					return false;
 				}
 				return player.countCards("h") >= event.player.countCards("h");
@@ -11253,20 +11253,21 @@ const skills = {
 		},
 		forced: true,
 		logAudio(event, player, name) {
-			return name == "damageBegin2" ? "twfenwang2.mp3" : "twfenwang1.mp3";
+			return name === "damageBegin2" ? "twfenwang2.mp3" : "twfenwang1.mp3";
 		},
-		content() {
-			"step 0";
-			if (event.triggername == "damageBegin2") {
+		async content(event, trigger, player) {
+			if (event.triggername === "damageBegin2") {
 				player.line(trigger.player);
 				trigger.num++;
-				event.finish();
-			} else {
-				player.chooseToDiscard("h", "弃置一张手牌，或令此伤害+1").set("ai", function (card) {
-					return 8 - get.value(card);
-				});
+				return;
 			}
-			"step 1";
+			const result = await player
+				.chooseToDiscard({
+					position: "h",
+					prompt: "弃置一张手牌，或令此伤害+1",
+					ai: card => 8 - get.value(card),
+				})
+				.forResult();
 			if (!result.bool) {
 				trigger.num++;
 			}
