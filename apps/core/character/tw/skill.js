@@ -21395,25 +21395,21 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return player.countCards("he") || player.hasSkill("twmuyue_effect");
+			return player.hasCards("he") || player.hasSkill("twmuyue_effect");
 		},
 		chooseButton: {
 			dialog() {
-				var list = [];
-				for (var i of lib.inpile) {
-					var type = get.type(i);
-					if (type == "basic" || type == "trick") {
+				const list = [];
+				for (const i of lib.inpile) {
+					const type = get.type(i);
+					if (type === "basic" || type === "trick") {
 						list.push([type, "", i]);
 					}
 				}
 				return ui.create.dialog("睦约", [list, "vcard"]);
 			},
 			check(button) {
-				if (
-					!get.cardPile2(function (cardx) {
-						return cardx.name == button.link[2];
-					})
-				) {
+				if (!get.cardPile2(cardx => cardx.name === button.link[2])) {
 					return 0;
 				}
 				return get.value({ name: button.link[2] });
@@ -21425,7 +21421,7 @@ const skills = {
 						return !player.hasSkill("twmuyue_effect");
 					},
 					selectCard() {
-						var player = _status.event.player;
+						const player = _status.event.player;
 						return player.hasSkill("twmuyue_effect") ? -1 : 1;
 					},
 					check(card) {
@@ -21434,30 +21430,26 @@ const skills = {
 					position: "he",
 					card: links[0],
 					filterTarget: true,
-					content() {
-						"step 0";
-						var card = lib.skill.twmuyue_backup.card;
-						event.card = card;
+					async content(event, trigger, player) {
+						const card = lib.skill.twmuyue_backup.card;
+						const { target } = event;
 						player.removeSkill("twmuyue_effect");
-						var cardx = get.cardPile2(function (cardx) {
-							return cardx.name == card[2];
-						});
+						const cardx = get.cardPile2(cardx => cardx.name === card[2]);
 						player.line(target, "green");
 						if (cardx) {
-							target.gain(cardx, "gain2");
+							await target.gain({ cards: [cardx], animate: "gain2" });
 						} else {
 							player.chat("无牌可得了吗？！");
-							game.log("但是牌堆中已经没有", "#g【" + get.translation(card[2]) + "】", "了！");
+							game.log("但是牌堆中已经没有", `#g【${get.translation(card[2])}】`, "了！");
 						}
-						"step 1";
-						if (cards && cards.length && get.name(cards[0], player) == card[2]) {
+						if (event.cards?.length && get.name(event.cards[0], player) === card[2]) {
 							player.addSkill("twmuyue_effect");
 						}
 					},
 					ai: {
 						result: {
 							target(player, target) {
-								var att = Math.abs(get.attitude(player, target));
+								let att = Math.abs(get.attitude(player, target));
 								if (target.hasSkill("nogain")) {
 									att /= 10;
 								}
@@ -21468,7 +21460,7 @@ const skills = {
 				};
 			},
 			prompt(links, player) {
-				return (player.hasSkill("twmuyue_effect") ? "" : "弃置一张牌，") + "令一名角色从牌堆中获得一张【" + get.translation(links[0][2]) + "】";
+				return `${player.hasSkill("twmuyue_effect") ? "" : "弃置一张牌，"}令一名角色从牌堆中获得一张【${get.translation(links[0][2])}】`;
 			},
 		},
 		ai: {
