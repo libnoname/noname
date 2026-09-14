@@ -20964,17 +20964,15 @@ const skills = {
 		filterTarget: true,
 		multitarget: true,
 		multiline: true,
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			game.filterPlayer()
 				.sortBySeat()
-				.forEach(function (current) {
+				.forEach(current => {
 					current.removeSkills("twgonghuan");
 				});
-			"step 1";
-			targets.sortBySeat();
-			for (var i of targets) {
-				i.addSkills("twgonghuan");
+			event.targets.sortBySeat();
+			for (const target of event.targets) {
+				await target.addSkills("twgonghuan");
 			}
 		},
 		derivation: "twgonghuan",
