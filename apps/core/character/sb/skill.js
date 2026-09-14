@@ -8954,6 +8954,7 @@ const skills = {
 	sbjianxiong: {
 		audio: 2,
 		trigger: { player: "damageEnd" },
+		frequent: true,
 		group: "sbjianxiong_mark",
 		filter(event, player) {
 			return (get.itemtype(event.cards) === "cards" && event.cards.some(i => get.position(i, true) === "o")) || 3 - player.countMark("sbjianxiong") > 0;
