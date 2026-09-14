@@ -11896,10 +11896,10 @@ const skills = {
 		sunbenSkill: true,
 		enable: "phaseUse",
 		filter(event, player) {
-			return player.countCards("h") && game.countPlayer() > 1;
+			return player.hasCards("h") && game.countPlayer() > 1;
 		},
 		filterCard(card, player) {
-			return !ui.selected.cards.some(cardx => get.suit(cardx, player) == get.suit(card, player));
+			return !ui.selected.cards.some(cardx => get.suit(cardx, player) === get.suit(card, player));
 		},
 		selectCard: [1, 4],
 		check(card) {
@@ -11921,9 +11921,12 @@ const skills = {
 			if (cards.length < 2) {
 				return;
 			}
-			const card = get.cardPile2(card => get.type(card) == "equip");
+			const card = get.cardPile2(card => get.type(card) === "equip");
 			if (card) {
-				await player.gain(card, "gain2");
+				await player.gain({
+					cards: [card],
+					animate: "gain2",
+				});
 			}
 			let result;
 			if (player.countCards("h") >= target.countCards("h")) {
@@ -11935,27 +11938,28 @@ const skills = {
 			} else {
 				const str = get.translation(target);
 				result = await player
-					.chooseControl()
-					.set("choiceList", ["将手牌数摸至与" + str + "相同", "观看" + str + "的手牌并获得其一种花色的所有手牌"])
-					.set("ai", () => {
-						const { player, target } = get.event();
-						if (target.countCards("h") - player.countCards("h") > target.countCards("h") / 4 || get.attitude(player, target) > 0) {
-							return 0;
-						}
-						return 1;
+					.chooseControl({
+						choiceList: [`将手牌数摸至与${str}相同`, `观看${str}的手牌并获得其一种花色的所有手牌`],
+						ai: () => {
+							const { player, target } = get.event();
+							if (target.countCards("h") - player.countCards("h") > target.countCards("h") / 4 || get.attitude(player, target) > 0) {
+								return 0;
+							}
+							return 1;
+						},
 					})
 					.set("target", target)
 					.forResult();
 			}
-			if (result?.index == 0) {
+			if (result?.index === 0) {
 				await player.drawTo(target.countCards("h"));
 				return;
 			}
-			const list = [],
-				dialog = ["劝迁：获得" + get.translation(target) + "一种花色的所有牌"];
-			for (let suit of lib.suit.concat("none")) {
+			const list = [];
+			const dialog = [`劝迁：获得${get.translation(target)}一种花色的所有牌`];
+			for (const suit of lib.suit.concat("none")) {
 				if (target.countCards("h", { suit: suit })) {
-					dialog.push('<div class="text center">' + get.translation(suit + "2") + "牌</div>");
+					dialog.push(`<div class="text center">${get.translation(`${suit}2`)}牌</div>`);
 					dialog.push(target.getCards("h", { suit: suit }));
 					list.push(suit);
 				}
@@ -11964,15 +11968,15 @@ const skills = {
 				return;
 			}
 			const result2 = await player
-				.chooseControl(list)
-				.set("dialog", dialog)
-				.set("ai", () => {
-					return _status.event.control;
+				.chooseControl({
+					controls: list,
+					dialog,
+					ai: () => _status.event.control,
 				})
 				.set(
 					"control",
 					(() => {
-						let getv = cards => cards.map(i => get.value(i)).reduce((p, c) => p + c, 0);
+						const getv = cards => cards.map(i => get.value(i)).reduce((p, c) => p + c, 0);
 						return list.sort((a, b) => {
 							return getv(target.getCards("h", { suit: b })) - getv(target.getCards("h", { suit: a }));
 						})[0];
@@ -11980,7 +11984,11 @@ const skills = {
 				)
 				.forResult();
 			if (result2?.control) {
-				await player.gain(target.getCards("h", { suit: result2.control }), target, "give");
+				await player.gain({
+					cards: target.getCards("h", { suit: result2.control }),
+					source: target,
+					animate: "give",
+				});
 			}
 		},
 		ai: {
@@ -12010,19 +12018,17 @@ const skills = {
 					global: "loseAsyncAfter",
 				},
 				filter(event, player) {
-					if (event.type != "discard") {
+					if (event.type !== "discard") {
 						return false;
 					}
-					var evt = event.getl(player);
-					return evt && evt.hs && evt.hs.length;
+					const evt = event.getl(player);
+					return evt?.hs?.length > 0;
 				},
 				forced: true,
 				popup: false,
 				firstDo: true,
-				content() {
-					"step 0";
+				async content(event, trigger, player) {
 					player.addMark("old_twquanqian_sunben", trigger.getl(player).hs.length, false);
-					"step 1";
 					if (player.countMark("old_twquanqian_sunben") >= 6) {
 						player.removeSkill("old_twquanqian_sunben");
 						if (player.hasSkill("old_twquanqian", null, null, false) && !player.hasSkill("old_twquanqian")) {
