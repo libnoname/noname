@@ -19895,40 +19895,40 @@ const skills = {
 	twruilian: {
 		audio: 2,
 		trigger: { global: "roundStart" },
-		direct: true,
-		content() {
-			"step 0";
-			player.chooseTarget(get.prompt2("twruilian")).set("ai", function (target) {
-				var player = _status.event.player,
-					att = get.attitude(player, target),
-					eff = att / (player == target ? 2 : 1) + 1;
-				if (att >= 0) {
-					if (target.hasSkill("yongsi")) {
-						return eff * 5;
-					}
-					if (target.hasSkill("zhiheng") || target.hasSkill("rezhiheng")) {
-						return eff * 4;
-					}
-					if (target.hasSkill("rekurou")) {
-						return eff * 3;
-					}
-					if (target.hasSkill("xinlianji") || target.hasSkill("dclianji")) {
-						return eff * 2;
-					}
-					if (target.needsToDiscard()) {
-						return eff * 1.5;
-					}
-					return eff;
-				}
-				return 0;
-			});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("twruilian", target);
-				player.markAuto("twruilian2", [target]);
-				player.addSkill("twruilian2");
-			}
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2(event.skill),
+					ai(target) {
+						const att = get.attitude(player, target);
+						const eff = att / (player === target ? 2 : 1) + 1;
+						if (att >= 0) {
+							if (target.hasSkill("yongsi")) {
+								return eff * 5;
+							}
+							if (target.hasSkill("zhiheng") || target.hasSkill("rezhiheng")) {
+								return eff * 4;
+							}
+							if (target.hasSkill("rekurou")) {
+								return eff * 3;
+							}
+							if (target.hasSkill("xinlianji") || target.hasSkill("dclianji")) {
+								return eff * 2;
+							}
+							if (target.needsToDiscard()) {
+								return eff * 1.5;
+							}
+							return eff;
+						}
+						return 0;
+					},
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const [target] = event.targets;
+			player.markAuto("twruilian2", [target]);
+			player.addSkill("twruilian2");
 		},
 	},
 	twruilian2: {
@@ -19942,65 +19942,64 @@ const skills = {
 			return player.getStorage("twruilian2").includes(event.player);
 		},
 		intro: { content: "已选择$" },
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.removeSkill("twruilian2");
-			var target = trigger.player;
-			event.target = target;
-			var cards = [];
-			target.getHistory("lose", function (evt) {
-				if (evt.type == "discard") {
+			const target = trigger.player;
+			const cards = [];
+			target.getHistory("lose", evt => {
+				if (evt.type === "discard") {
 					cards.addArray(evt.cards2);
 				}
 			});
 			if (cards.length < 2) {
-				event.finish();
-			} else {
-				event.cards = cards;
+				return;
 			}
-			"step 1";
-			var list = [];
-			for (var type of ["basic", "trick", "equip"]) {
-				for (var card of event.cards) {
-					if (get.type2(card) == type) {
-						list.push(type);
-						break;
-					}
+
+			const controls = [];
+			for (const type of ["basic", "trick", "equip"]) {
+				if (cards.some(card => get.type2(card) === type)) {
+					controls.push(type);
 				}
 			}
-			list.push("cancel2");
-			player
-				.chooseControl(list)
-				.set("prompt", "睿敛：是否与" + get.translation(target) + "各获得一种类型的牌？")
-				.set("ai", function () {
-					var player = _status.event.player,
-						list = _status.event.controls;
-					if (player.hp <= 3 && !player.countCards("h", { name: ["shan", "tao"] }) && list.includes("basic")) {
-						return "basic";
-					}
-					if (player.countCards("he", { type: "equip" }) < 2 && list.includes("equip")) {
-						return "equip";
-					}
-					if (list.includes("trick")) {
-						return "trick";
-					}
-					return list.remove("cancel2").randomGet();
+			controls.push("cancel2");
+			const result = await player
+				.chooseControl({
+					controls,
+					prompt: `睿敛：是否与${get.translation(target)}各获得一种类型的牌？`,
+					ai() {
+						const { controls, player } = get.event();
+						if (player.hp <= 3 && !player.hasCards("h", { name: ["shan", "tao"] }) && controls.includes("basic")) {
+							return "basic";
+						}
+						if (player.countCards("he", { type: "equip" }) < 2 && controls.includes("equip")) {
+							return "equip";
+						}
+						if (controls.includes("trick")) {
+							return "trick";
+						}
+						return controls.filter(control => control !== "cancel2").randomGet();
+					},
+				})
+				.forResult();
+			if (result.control === "cancel2") {
+				return;
+			}
+
+			player.logSkill("twruilian2", target);
+			const type = result.control;
+			const targets = [target, player].sortBySeat(_status.currentPhase);
+			const gains = [];
+			for (const current of targets) {
+				const card = get.discardPile(card => get.type2(card) === type && !gains.some(([, gainedCard]) => gainedCard === card));
+				if (card) {
+					gains.push([current, card]);
+				}
+			}
+			for (const [current, card] of gains) {
+				await current.gain({
+					cards: [card],
+					animate: "gain2",
 				});
-			"step 2";
-			if (result.control != "cancel2") {
-				player.logSkill("twruilian2", target);
-				var type = result.control;
-				var list = [target, player].sortBySeat(_status.currentPhase),
-					cards = [];
-				for (var current of list) {
-					var card = get.discardPile(function (card) {
-						return get.type2(card) == type && !cards.includes(card);
-					});
-					if (card) {
-						cards.push(card);
-						current.gain(card, "gain2");
-					}
-				}
 			}
 		},
 	},
