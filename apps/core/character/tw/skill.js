@@ -20999,67 +20999,62 @@ const skills = {
 	twxiawei: {
 		audio: 2,
 		trigger: { player: "phaseZhunbeiBegin" },
-		direct: true,
 		locked: false,
 		group: ["twxiawei_init", "twxiawei_lose", "twxiawei_unmark"],
-		content() {
-			"step 0";
-			player
-				.chooseControl("1", "2", "3", "4", "cancel2")
-				.set("prompt", get.prompt("twxiawei"))
-				.set("prompt2", "妄行：将X+1张牌置于武将牌上，称为“威”")
-				.set("ai", function () {
-					var player = _status.event.player;
-					if (player.maxHp > 3) {
-						return 3;
-					}
-					return Math.min(3, player.countCards("he") + 1);
-				});
-			"step 1";
-			if (result.control != "cancel2") {
-				var num = result.index + 1,
-					cards = get.cards(num + 1);
-				player.logSkill("twxiawei");
-				player.addTempSkill("wangxing");
-				player.addMark("wangxing", num, false);
-				player.$gain2(cards, false);
-				game.log(player, "将", cards, "作为“威”置于了武将牌上");
-				player.loseToSpecial(cards, "twxiawei").visible = true;
-			} else {
-				event.finish();
-			}
-			"step 2";
+		async cost(event, trigger, player) {
+			const result = await player
+				.chooseControl({
+					controls: ["1", "2", "3", "4", "cancel2"],
+					prompt: get.prompt(event.skill),
+					prompt2: "妄行：将X+1张牌置于武将牌上，称为“威”",
+					ai(_event, player) {
+						if (player.maxHp > 3) {
+							return 3;
+						}
+						return Math.min(3, player.countCards("he") + 1);
+					},
+				})
+				.forResult();
+			event.result = {
+				bool: result.control !== "cancel2",
+				cost_data: result.index + 1,
+			};
+		},
+		async content(event, trigger, player) {
+			const num = event.cost_data;
+			const cards = get.cards(num + 1);
+			player.addTempSkill("wangxing");
+			player.addMark("wangxing", num, false);
+			player.$gain2(cards, false);
+			game.log(player, "将", cards, "作为“威”置于了武将牌上");
+			const next = player.loseToSpecial(cards, "twxiawei");
+			next.visible = true;
+			await next;
 			player.markSkill("twxiawei");
-			game.delayx();
+			await game.delayx();
 		},
 		marktext: "威",
 		intro: {
 			mark(dialog, storage, player) {
-				var cards = player.getCards("s", function (card) {
-					return card.hasGaintag("twxiawei");
-				});
-				if (!cards || !cards.length) {
+				const cards = player.getCards("s", card => card.hasGaintag("twxiawei"));
+				if (!cards.length) {
 					return;
 				}
 				dialog.addAuto(cards);
 			},
 			markcount(storage, player) {
-				return player.countCards("s", function (card) {
-					return card.hasGaintag("twxiawei");
-				});
+				return player.countCards("s", card => card.hasGaintag("twxiawei"));
 			},
 			onunmark(storage, player) {
-				var cards = player.getCards("s", function (card) {
-					return card.hasGaintag("twxiawei");
-				});
+				const cards = player.getCards("s", card => card.hasGaintag("twxiawei"));
 				if (cards.length) {
-					player.loseToDiscardpile(cards);
+					player.loseToDiscardpile({ cards });
 				}
 			},
 		},
 		mod: {
 			aiOrder(player, card, num) {
-				if (get.itemtype(card) == "card" && card.hasGaintag("twxiawei")) {
+				if (get.itemtype(card) === "card" && card.hasGaintag("twxiawei")) {
 					return num + 0.5;
 				}
 			},
@@ -21069,48 +21064,42 @@ const skills = {
 				audio: "twxiawei",
 				trigger: { global: "phaseBefore", player: "enterGame" },
 				filter(event, player) {
-					return event.name != "phase" || game.phaseNumber == 0;
+					return event.name !== "phase" || game.phaseNumber === 0;
 				},
 				forced: true,
 				locked: false,
-				content() {
-					"step 0";
-					var cards = [];
-					for (var i = 1; i <= 2; i++) {
-						var card = get.cardPile2(function (card) {
-							return !cards.includes(card) && get.type(card) == "basic";
-						});
+				async content(event, trigger, player) {
+					const cards = [];
+					for (let i = 0; i < 2; i++) {
+						const card = get.cardPile2(card => !cards.includes(card) && get.type(card) === "basic");
 						if (card) {
 							cards.push(card);
 						}
 					}
-					if (cards.length) {
-						player.$gain2(cards, false);
-						game.log(player, "将", cards, "作为“威”置于了武将牌上");
-						player.loseToSpecial(cards, "twxiawei").visible = true;
-					} else {
-						event.finish();
+					if (!cards.length) {
+						return;
 					}
-					"step 1";
+
+					player.$gain2(cards, false);
+					game.log(player, "将", cards, "作为“威”置于了武将牌上");
+					const next = player.loseToSpecial(cards, "twxiawei");
+					next.visible = true;
+					await next;
 					player.markSkill("twxiawei");
-					game.delayx();
+					await game.delayx();
 				},
 			},
 			lose: {
 				audio: "twxiawei",
 				trigger: { player: "phaseBegin" },
 				filter(event, player) {
-					return player.countCards("s", function (card) {
-						return card.hasGaintag("twxiawei");
-					});
+					return player.hasCards("s", card => card.hasGaintag("twxiawei"));
 				},
 				forced: true,
 				locked: false,
-				content() {
-					var cards = player.getCards("s", function (card) {
-						return card.hasGaintag("twxiawei");
-					});
-					player.loseToDiscardpile(cards);
+				async content(event, trigger, player) {
+					const cards = player.getCards("s", card => card.hasGaintag("twxiawei"));
+					await player.loseToDiscardpile({ cards });
 				},
 			},
 			unmark: {
@@ -21119,14 +21108,12 @@ const skills = {
 					if (!event.ss || !event.ss.length) {
 						return false;
 					}
-					return !player.countCards("s", function (card) {
-						return card.hasGaintag("twxiawei");
-					});
+					return !player.hasCards("s", card => card.hasGaintag("twxiawei"));
 				},
 				charlotte: true,
 				forced: true,
 				silent: true,
-				content() {
+				async content(event, trigger, player) {
 					player.unmarkSkill("twxiawei");
 				},
 			},
