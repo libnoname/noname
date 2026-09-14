@@ -21887,13 +21887,13 @@ const skills = {
 		audio: 2,
 		trigger: { source: "damageBegin3" },
 		filter(event, player) {
-			return event.player != player && event.player.isIn() && !event.player.hasMark("twlvren");
+			return event.player !== player && event.player.isIn() && !event.player.hasMark("twlvren");
 		},
 		logTarget: "player",
 		forced: true,
 		locked: false,
 		group: ["twlvren_more", "twlvren_add"],
-		content() {
+		async content(event, trigger, player) {
 			trigger.player.addMark("twlvren", 1);
 		},
 		ai: {
@@ -21912,42 +21912,40 @@ const skills = {
 				audio: "twlvren",
 				trigger: { player: "useCard2" },
 				filter(event, player) {
-					var card = event.card,
-						info = get.info(card);
-					if (info.allowMultiple == false) {
+					const card = event.card;
+					const info = get.info(card);
+					if (info.allowMultiple === false) {
 						return false;
 					}
 					if (event.targets && !info.multitarget) {
 						return (
 							get.is.damageCard(event.card) &&
 							event.targets &&
-							game.hasPlayer(function (target) {
+							game.hasPlayer(target => {
 								return target.hasMark("twlvren") && !event.targets.includes(target) && lib.filter.targetEnabled2(card, player, target);
 							})
 						);
 					}
 					return false;
 				},
-				direct: true,
-				content() {
-					"step 0";
-					player
-						.chooseTarget(get.prompt("twlvren"), "为" + get.translation(trigger.card) + "额外指定一个有“刃”的角色为目标", function (card, player, target) {
-							var evt = _status.event.getTrigger();
-							return target.hasMark("twlvren") && !evt.targets.includes(target) && lib.filter.targetEnabled2(evt.card, player, target);
+				async cost(event, trigger, player) {
+					event.result = await player
+						.chooseTarget({
+							prompt: get.prompt(event.skill),
+							prompt2: `为${get.translation(trigger.card)}额外指定一个有“刃”的角色为目标`,
+							filterTarget: (card, player, target) => {
+								return target.hasMark("twlvren") && !trigger.targets.includes(target) && lib.filter.targetEnabled2(trigger.card, player, target);
+							},
+							ai: target => get.effect(target, trigger.card, player),
 						})
-						.set("ai", function (target) {
-							return get.effect(target, _status.event.getTrigger().card, _status.event.player);
-						});
-					"step 1";
-					if (result.bool) {
-						var targets = result.targets;
-						player.logSkill("twlvren", targets);
-						player.line(targets, trigger.card.nature);
-						trigger.targets.addArray(targets);
-						for (var i of targets) {
-							i.removeMark("twlvren", i.countMark("twlvren"), false);
-						}
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					const { targets } = event;
+					player.line(targets, trigger.card.nature);
+					trigger.targets.addArray(targets);
+					for (const target of targets) {
+						target.removeMark("twlvren", target.countMark("twlvren"), false);
 					}
 				},
 			},
@@ -21955,16 +21953,16 @@ const skills = {
 				audio: "twlvren",
 				trigger: { player: "compare", target: "compare" },
 				filter(event, player) {
-					if (player != event.target && event.iwhile) {
+					if (player !== event.target && event.iwhile) {
 						return false;
 					}
 					return true;
 				},
 				forced: true,
 				locked: false,
-				content() {
-					var num = 2 * trigger.lose_list.length;
-					if (player == trigger.player) {
+				async content(event, trigger, player) {
+					const num = 2 * trigger.lose_list.length;
+					if (player === trigger.player) {
 						trigger.num1 += num;
 						if (trigger.num1 > 13) {
 							trigger.num1 = 13;
