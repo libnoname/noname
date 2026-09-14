@@ -20753,9 +20753,9 @@ const skills = {
 		trigger: { global: "phaseEnd" },
 		logAudio: () => 4,
 		filter(event, player) {
-			var targets = [];
+			const targets = [];
 			player.getHistory("sourceDamage", evt => {
-				if (player != evt.player && evt._dyinged) {
+				if (player !== evt.player && evt._dyinged) {
 					targets.add(evt.player);
 				}
 			});
@@ -20767,28 +20767,28 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "wood",
 		group: "twchuhai_lose",
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			game.log(player, "成功完成使命");
 			player.awakenSkill("twchuhai");
 			if (!player.isDisabledJudge()) {
-				player.disableJudge();
+				await player.disableJudge();
 			}
-			event.current = player.next;
-			"step 1";
-			if (!event.current.countCards("he")) {
-				event.goto(3);
-			} else {
-				event.current.chooseCard("交给" + get.translation(player) + "一张牌", "he", true).set("ai", get.disvalue2);
-			}
-			"step 2";
-			if (result.bool && result.cards && result.cards.length) {
-				event.current.give(result.cards, player);
-			}
-			"step 3";
-			event.current = event.current.next;
-			if (event.current != player) {
-				event.goto(1);
+			for (let current = player.next; current !== player; current = current.next) {
+				if (!current.hasCards("he")) {
+					continue;
+				}
+				const result = await current
+					.chooseCard({
+						prompt: `交给${get.translation(player)}一张牌`,
+						position: "he",
+						forced: true,
+						ai: get.disvalue2,
+					})
+					.forResult();
+				if (!result.bool || !result.cards?.length) {
+					continue;
+				}
+				await current.give(result.cards, player);
 			}
 		},
 		subSkill: {
@@ -20800,40 +20800,37 @@ const skills = {
 				forced: true,
 				dutySkill: true,
 				filter(event, player) {
-					var cards = event.getg(player);
+					const cards = event.getg(player);
 					if (!cards.length) {
 						return false;
 					}
 					return game.hasPlayer(current => {
-						if (current == player) {
+						if (current === player) {
 							return false;
 						}
-						var evt = event.getl(current);
-						if (evt && evt.cards && evt.cards.length) {
-							return true;
-						}
-						return false;
+						const evt = event.getl(current);
+						return Boolean(evt?.cards?.length);
 					});
 				},
-				content() {
-					"step 0";
-					var cards = trigger.getg(player);
+				async content(event, trigger, player) {
+					const cards = trigger.getg(player);
 					if (!cards.length) {
-						event.finish();
 						return;
 					}
-					player
-						.chooseCard("h", "除害：将其中一张得到的牌置入弃牌堆", true, function (card) {
-							return _status.event.cards?.includes(card);
+					const result = await player
+						.chooseCard({
+							position: "h",
+							prompt: "除害：将其中一张得到的牌置入弃牌堆",
+							forced: true,
+							filterCard: card => _status.event.cards?.includes(card),
+							ai: card => -get.value(card),
 						})
-						.set("ai", function (card) {
-							return -get.value(card);
-						})
-						.set("cards", cards);
-					"step 1";
-					if (result.bool) {
-						player.loseToDiscardpile(result.cards);
+						.set("cards", cards)
+						.forResult();
+					if (!result.bool) {
+						return;
 					}
+					await player.loseToDiscardpile({ cards: result.cards });
 				},
 			},
 		},
