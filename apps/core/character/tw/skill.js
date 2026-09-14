@@ -24874,39 +24874,40 @@ const skills = {
 	twchunlao: {
 		audio: "chunlao",
 		trigger: { player: "phaseZhunbeiBegin" },
-		direct: true,
 		filter(event, player) {
 			return (
-				game.hasPlayer(function (current) {
-					return current.countCards("hej") > 0;
-				}) &&
-				!game.hasPlayer(function (current) {
-					return current.getExpansions("twchunlao").length > 0;
-				})
+				game.hasPlayer(current => current.hasCards("hej")) &&
+				!game.hasPlayer(current => current.getExpansions("twchunlao").length > 0)
 			);
 		},
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt("twchunlao"), "将一名角色区域内的一张牌作为“醇”置于其武将牌上", function (card, player, target) {
-					return target.countCards("hej") > 0;
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt(event.skill),
+					prompt2: "将一名角色区域内的一张牌作为“醇”置于其武将牌上",
+					filterTarget: (_card, player, target) => target.hasCards("hej"),
+					ai: target => get.attitude(player, target) * (player === target ? 1 : 2),
 				})
-				.set("ai", function (target) {
-					return get.attitude(_status.event.player, target) * (player == target ? 1 : 2);
-				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("twchunlao", target);
-				player.choosePlayerCard(target, "hej", true);
-			} else {
-				event.finish();
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const result = await player
+				.choosePlayerCard({
+					target,
+					position: "hej",
+					forced: true,
+				})
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
-			"step 2";
-			if (result.bool) {
-				target.addToExpansion(result.cards, target, "give").gaintag.add("twchunlao");
-			}
+			await target.addToExpansion({
+				cards: result.cards,
+				source: target,
+				animate: "give",
+				gaintag: ["twchunlao"],
+			});
 		},
 		intro: {
 			content: "expansion",
@@ -24918,66 +24919,53 @@ const skills = {
 				trigger: { global: "useCard" },
 				direct: true,
 				filter(event, player) {
-					return event.card.name == "sha" && event.player.countCards("he") > 0 && event.player.getExpansions("twchunlao").length > 0;
+					return event.card.name === "sha" && event.player.hasCards("he") && event.player.getExpansions("twchunlao").length > 0;
 				},
-				content() {
-					"step 0";
-					event.target = trigger.player;
-					event.target
-						.chooseCard("he", "醇醪：是否交给" + get.translation(player) + "一张牌，令" + get.translation(trigger.card) + "的伤害值基数+1？")
-						.set("ai", function (card) {
-							if (!_status.event.goon) {
-								return 3.5 - get.value(card);
+				async content(event, trigger, player) {
+					const target = trigger.player;
+					const goon = (() => {
+						if (get.attitude(target, player) < 0) {
+							return false;
+						}
+						for (const current of trigger.targets) {
+							if (
+								(!current.mayHaveShan(player, "use") ||
+									trigger.player.hasSkillTag("directHit_ai", true, { target: current, card: trigger.card }, true)) &&
+								get.attitude(player, current) < 0 &&
+								!trigger.player.hasSkillTag("jueqing", false, current) &&
+								!current.hasSkillTag("filterDamage", null, {
+									player: trigger.player,
+									card: trigger.card,
+								})
+							) {
+								return true;
 							}
-							return 7 - get.value(card);
+						}
+						return false;
+					})();
+					const chooseEvent = target
+						.chooseCard({
+							position: "he",
+							prompt: `醇醪：是否交给${get.translation(player)}一张牌，令${get.translation(trigger.card)}的伤害值基数+1？`,
+							ai: card => (_status.event.goon ? 7 : 3.5) - get.value(card),
 						})
-						.set(
-							"goon",
-							(function () {
-								if (get.attitude(target, player) < 0) {
-									return false;
-								}
-								for (var target of trigger.targets) {
-									if (
-										!target.mayHaveShan(player, "use") ||
-										trigger.player.hasSkillTag(
-											"directHit_ai",
-											true,
-											{
-												target: target,
-												card: trigger.card,
-											},
-											true
-										)
-									) {
-										if (
-											get.attitude(player, target) < 0 &&
-											!trigger.player.hasSkillTag("jueqing", false, target) &&
-											!target.hasSkillTag("filterDamage", null, {
-												player: trigger.player,
-												card: trigger.card,
-											})
-										) {
-											return true;
-										}
-									}
-								}
-								return false;
-							})()
-						);
-					if (!event.target.isUnderControl(true) && !event.target.isOnline()) {
-						game.delayx();
+						.set("goon", goon);
+					const delayEvent = !target.isUnderControl(true) && !target.isOnline() ? game.delayx() : null;
+					const result = await chooseEvent.forResult();
+					if (delayEvent) {
+						await delayEvent;
 					}
-					"step 1";
-					if (result.bool) {
-						target.logSkill("twchunlao", player);
-						if (!target.hasSkill("twchunlao")) {
-							game.trySkillAudio("twchunlao", player);
-						}
-						if (player != target) {
-							target.give(result.cards, player, "giveAuto");
-						}
-						trigger.baseDamage++;
+					if (!result.bool) {
+						return;
+					}
+					target.logSkill("twchunlao", player);
+					if (!target.hasSkill("twchunlao")) {
+						game.trySkillAudio("twchunlao", player);
+					}
+					const giveEvent = player !== target ? target.give(result.cards, player, "giveAuto") : null;
+					trigger.baseDamage++;
+					if (giveEvent) {
+						await giveEvent;
 					}
 				},
 			},
@@ -24988,18 +24976,18 @@ const skills = {
 				filter(event, player) {
 					return event.player.getExpansions("twchunlao").length > 0;
 				},
-				prompt2: (event, player) => "移去" + get.translation(event.player) + "武将牌上的“醇”并摸一张牌，然后令其回复1点体力",
+				prompt2: (event, player) => `移去${get.translation(event.player)}武将牌上的“醇”并摸一张牌，然后令其回复1点体力`,
 				check(event, player) {
 					return get.attitude(player, event.player) > 0;
 				},
-				content() {
-					var target = trigger.player,
-						cards = target.getExpansions("twchunlao");
+				async content(event, trigger, player) {
+					const target = trigger.player;
+					const cards = target.getExpansions("twchunlao");
 					if (cards.length) {
-						target.loseToDiscardpile(cards);
+						await target.loseToDiscardpile({ cards });
 					}
-					player.draw();
-					target.recover();
+					await player.draw();
+					await target.recover();
 				},
 			},
 		},
