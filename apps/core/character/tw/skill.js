@@ -27887,55 +27887,59 @@ const skills = {
 		filterTarget(card, player, target) {
 			return target.hp >= player.hp;
 		},
-		content() {
-			"step 0";
-			var str = get.translation(target);
-			player
-				.chooseControl()
-				.set("choiceList", ["摸两张牌，然后令" + str + "视为对自己使用【杀】", "令" + str + "摸两张牌，然后视为对其使用【杀】"])
-				.set("ai", function () {
-					var evt = _status.event.getParent(),
-						player = evt.player,
-						target = evt.target;
-					var card = { name: "sha", isCard: true },
-						att = get.attitude(player, target) > 0;
-					if (!target.canUse(card, player, false) || get.effect(player, card, target, player) >= 0) {
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const str = get.translation(target);
+			const { index } = await player
+				.chooseControl({
+					choiceList: [`摸两张牌，然后令${str}视为对自己使用【杀】`, `令${str}摸两张牌，然后视为对其使用【杀】`],
+					ai: () => {
+						const evt = _status.event.getParent();
+						const player = evt.player;
+						const target = evt.target;
+						const card = { name: "sha", isCard: true };
+						const att = get.attitude(player, target) > 0;
+						if (!target.canUse(card, player, false) || get.effect(player, card, target, player) >= 0) {
+							return 0;
+						}
+						if (att && (!player.canUse(card, target, false) || get.effect(target, card, player, player) >= 0)) {
+							return 1;
+						}
+						if (target.hasSkill("nogain") && player.canUse(card, target, false) && get.effect(target, card, player, player) > 0) {
+							return 1;
+						}
+						if (player.hasShan()) {
+							return 0;
+						}
+						if (att && target.hasShan()) {
+							return 1;
+						}
 						return 0;
-					}
-					if (att && (!player.canUse(card, target, false) || get.effect(target, card, player, player) >= 0)) {
-						return 1;
-					}
-					if (target.hasSkill("nogain") && player.canUse(card, target, false) && get.effect(target, card, player, player) > 0) {
-						return 1;
-					}
-					if (player.hasShan()) {
-						return 0;
-					}
-					if (att && target.hasShan()) {
-						return 1;
-					}
-					return 0;
-				});
-			"step 1";
-			var list = [player, target];
-			if (result.index == 1) {
+					},
+				})
+				.forResult();
+			const list = [player, target];
+			if (index === 1) {
 				list.reverse();
 			}
-			event.list = list;
-			list[0].draw(2);
-			"step 2";
-			var list = event.list;
-			if (list[1].isIn() && list[0].isIn() && list[1].canUse("sha", list[0], false)) {
-				list[1].useCard({ name: "sha", isCard: true }, list[0], false, "noai");
+			await list[0].draw(2);
+			if (!list[1].isIn() || !list[0].isIn() || !list[1].canUse("sha", list[0], false)) {
+				return;
 			}
+			await list[1].useCard({
+				card: { name: "sha", isCard: true },
+				targets: [list[0]],
+				addCount: false,
+				noai: true,
+			});
 		},
 		ai: {
 			order: 5,
 			expose: 0,
 			result: {
 				player(player, target) {
-					var card = { name: "sha", isCard: true },
-						att = get.attitude(player, target) > 0;
+					const card = { name: "sha", isCard: true };
+					const att = get.attitude(player, target) > 0;
 					if (!target.canUse(card, player, false) || get.effect(player, card, target, player) >= 0) {
 						return 2;
 					}
