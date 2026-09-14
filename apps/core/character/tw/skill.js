@@ -11060,30 +11060,31 @@ const skills = {
 		multitarget: true,
 		multiline: true,
 		group: "twdanlie_add",
-		content() {
-			"step 0";
-			player.chooseToCompare(targets).setContent("chooseToCompareMeanwhile");
-			"step 1";
-			if (result.winner && result.winner == player) {
+		async content(event, trigger, player) {
+			const { targets } = event;
+			const result = await player.chooseToCompare(targets).setContent("chooseToCompareMeanwhile").forResult();
+			if (result.winner && result.winner === player) {
 				player.line(targets);
-				targets.forEach(target => target.damage());
+				for (const target of targets) {
+					await target.damage();
+				}
 			} else {
-				player.loseHp();
+				await player.loseHp();
 			}
 		},
 		ai: {
 			order: 10,
 			result: {
 				target(player, target) {
-					var att = get.attitude(player, target);
+					const att = get.attitude(player, target);
 					if (att >= 0) {
 						return 0;
 					}
 					if (player.getHp() > 2) {
 						return -get.damageEffect(target, player, player) - 10 / target.countCards("h");
 					}
-					var hs = player.getCards("h").sort((a, b) => b.number - a.number);
-					var ts = target.getCards("h").sort((a, b) => b.number - a.number);
+					const hs = player.getCards("h").sort((a, b) => b.number - a.number);
+					const ts = target.getCards("h").sort((a, b) => b.number - a.number);
 					if (!hs.length || !ts.length) {
 						return 0;
 					}
@@ -11102,16 +11103,16 @@ const skills = {
 					if (!player.isDamaged()) {
 						return false;
 					}
-					if (player != event.target && event.iwhile) {
+					if (player !== event.target && event.iwhile) {
 						return false;
 					}
 					return true;
 				},
 				forced: true,
 				locked: false,
-				content() {
-					var num = player.getDamagedHp();
-					if (player == trigger.player) {
+				content(event, trigger, player) {
+					const num = player.getDamagedHp();
+					if (player === trigger.player) {
 						trigger.num1 += num;
 						if (trigger.num1 > 13) {
 							trigger.num1 = 13;
