@@ -21144,18 +21144,24 @@ const skills = {
 		filter(event, player) {
 			return player.countMark("wangxing") > 0;
 		},
-		content() {
-			"step 0";
-			player.chooseToDiscard("he", player.countMark("wangxing"), "妄行：请弃置" + get.cnNumber(player.countMark("wangxing")) + "张牌，或减1点体力上限").set("ai", function (card) {
-				var player = _status.event.player;
-				if (player.maxHp == 1) {
-					return 100 - get.value(card);
-				}
-				return 5 + Math.max(0, 5 - player.maxHp) - get.value(card);
-			});
-			"step 1";
+		async content(event, trigger, player) {
+			const num = player.countMark("wangxing");
+			const result = await player
+				.chooseToDiscard({
+					position: "he",
+					selectCard: num,
+					prompt: `妄行：请弃置${get.cnNumber(num)}张牌，或减1点体力上限`,
+					ai: card => {
+						const player = _status.event.player;
+						if (player.maxHp === 1) {
+							return 100 - get.value(card);
+						}
+						return 5 + Math.max(0, 5 - player.maxHp) - get.value(card);
+					},
+				})
+				.forResult();
 			if (!result.bool) {
-				player.loseMaxHp();
+				await player.loseMaxHp();
 			}
 		},
 		intro: { content: "回合结束时，你须弃置#张牌，否则减1点体力上限" },
