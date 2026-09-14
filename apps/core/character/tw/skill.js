@@ -23706,24 +23706,21 @@ const skills = {
 			if (player.storage.twzhengjian || !player.hasSkill("twzhengjian", null, null, false) || !event.getg(player).length) {
 				return false;
 			}
-			var num1 = game.countPlayer2();
-			var list = [];
-			player.getAllHistory("gain", function (evt) {
-				if (evt.type == "twzhengjian") {
+			const num1 = game.countPlayer2();
+			const list = [];
+			player.getAllHistory("gain", evt => {
+				if (evt.type === "twzhengjian") {
 					list.add(evt.source);
 				}
 			});
 			return list.length >= Math.ceil(num1 / 2);
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			"step 1";
-			player.recover(2);
+			await player.recover(2);
 			player.addSkill("twzhongchi_effect");
 			player.storage.twzhengjian = true;
-			"step 2";
-			game.delayx();
+			await game.delayx();
 		},
 		subSkill: {
 			effect: {
@@ -23734,9 +23731,9 @@ const skills = {
 				trigger: { player: "damageBegin1" },
 				forced: true,
 				filter(event, player) {
-					return event.card && event.card.name == "sha";
+					return event.card && event.card.name === "sha";
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.num++;
 				},
 			},
