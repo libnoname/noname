@@ -23316,42 +23316,42 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return game.hasPlayer(function (current) {
-				return current.countGainableCards(player, "he") > 0;
-			});
+			return game.hasPlayer(current => current.hasGainableCards(player, "he"));
 		},
 		filterTarget(card, player, target) {
-			return target != player && target.countGainableCards(player, "hej") > 0;
+			return target !== player && target.hasGainableCards(player, "hej");
 		},
-		content() {
-			"step 0";
-			player.gainPlayerCard(target, "hej", true);
-			"step 1";
-			var hs = player.getCards("he");
-			if (hs.length) {
-				if (hs.length == 1) {
-					event._result = { bool: true, cards: hs };
-				} else {
-					player.chooseCard(true, "交给" + get.translation(target) + "一张牌", "he", true);
+		async content(event, trigger, player) {
+			const target = event.target;
+			await player.gainPlayerCard({ target, position: "hej", forced: true });
+			let cards = player.getCards("he");
+			if (!cards.length) {
+				return;
+			}
+			if (cards.length > 1) {
+				const result = await player
+					.chooseCard({
+						prompt: `交给${get.translation(target)}一张牌`,
+						position: "he",
+						forced: true,
+					})
+					.forResult();
+				if (!result.bool) {
+					return;
 				}
-			} else {
-				event.finish();
+				cards = result.cards;
 			}
-			"step 2";
-			player.give(result.cards, target);
-			"step 3";
-			if (target.hp >= player.hp) {
-				player.draw();
+			await player.give(cards, target);
+			if (target.hp < player.hp) {
+				return;
 			}
+			await player.draw();
 		},
 		ai: {
 			order: 8,
 			result: {
 				player(player, target) {
-					if (target.hp >= player.hp) {
-						return 1;
-					}
-					return 0;
+					return target.hp >= player.hp ? 1 : 0;
 				},
 				target(player, target) {
 					return get.effect(target, { name: "shunshou" }, player, target) / 10;
