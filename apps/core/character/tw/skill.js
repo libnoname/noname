@@ -6588,50 +6588,43 @@ const skills = {
 	//魏关羽
 	twdanji: {
 		derivation: ["mashu", "nuzhan"],
-		audio: "danji",
-		trigger: { player: "phaseZhunbeiBegin" },
-		filter(event, player) {
-			var zhu = get.zhu(player);
-			if (zhu && zhu.isZhu) {
-				if (lib.translate[zhu.name].indexOf("刘备") != -1 || (zhu.name2 && lib.translate[zhu.name2].indexOf("刘备") != -1)) {
+			audio: "danji",
+			trigger: { player: "phaseZhunbeiBegin" },
+			filter(event, player) {
+				const zhu = get.zhu(player);
+				if (zhu?.isZhu && (lib.translate[zhu.name].includes("刘备") || (zhu.name2 && lib.translate[zhu.name2].includes("刘备")))) {
 					return false;
 				}
-			}
-			return player.countCards("h") > player.hp;
+				return player.countCards("h") > player.hp;
 		},
 		forced: true,
-		juexingji: true,
-		skillAnimation: true,
-		animationColor: "water",
-		content() {
-			"step 0";
-			player.awakenSkill(event.name);
-			player.loseMaxHp();
-			"step 1";
-			player.addSkills(["mashu", "nuzhan"]);
-			"step 2";
-			player.addSkill("twdanji_effect");
-		},
+			juexingji: true,
+			skillAnimation: true,
+			animationColor: "water",
+			async content(event, trigger, player) {
+				player.awakenSkill(event.name);
+				await player.loseMaxHp();
+				await player.addSkills(["mashu", "nuzhan"]);
+				player.addSkill("twdanji_effect");
+			},
 		subSkill: {
 			effect: {
 				charlotte: true,
 				mark: true,
 				intro: { content: "每回合首次使用转化【杀】结算结束后摸一张牌" },
 				audio: "danji",
-				trigger: { player: "useCardAfter" },
-				filter(event, player) {
-					return (
-						player
-							.getHistory("useCard", function (evt) {
-								return evt.card.name == "sha" && evt.cards && evt.cards.length && !event.card.isCard;
-							})
-							.indexOf(event) == 0
-					);
-				},
-				forced: true,
-				content() {
-					player.draw();
-				},
+					trigger: { player: "useCardAfter" },
+					filter(event, player) {
+						return (
+							player
+								.getHistory("useCard", evt => evt.card.name === "sha" && evt.cards && evt.cards.length && !event.card.isCard)
+								.indexOf(event) === 0
+						);
+					},
+					forced: true,
+					async content(event, trigger, player) {
+						await player.draw();
+					},
 			},
 		},
 	},
