@@ -24723,41 +24723,48 @@ const skills = {
 		filter(event, player) {
 			return event.source && player.hasMark("twjingce");
 		},
-		direct: true,
-		content() {
-			"step 0";
-			var choiceList = ["令" + get.translation(trigger.source) + "本回合不能再使用或打出牌"];
-			if (trigger.source.countCards("he")) {
-				choiceList.push("令" + get.translation(trigger.source) + "弃置两张牌");
+		async cost(event, trigger, player) {
+			const { source } = trigger;
+			const choiceList = [`令${get.translation(source)}本回合不能再使用或打出牌`];
+			if (source.hasCards("he")) {
+				choiceList.push(`令${get.translation(source)}弃置两张牌`);
 			}
-			player
-				.chooseControl("cancel2")
-				.set("prompt2", get.prompt2("yuzhang"))
-				.set("choiceList", choiceList)
-				.set("ai", function () {
-					var player = _status.event.player,
-						source = _status.event.source;
-					if (get.attitude(player, source) >= 0) {
-						return "cancel2";
-					}
-					if (source.hasSkillTag("noh") || source.hasSkillTag("noe") || source.countCards("h") >= 4) {
-						return 0;
-					}
-					if (source.hp > 1 && source.countCards("he") > 1) {
-						return 1;
-					}
-					return [0, 1].randomGet();
+			const result = await player
+				.chooseControl({
+					controls: ["cancel2"],
+					prompt2: get.prompt2(event.skill),
+					choiceList,
+					ai: () => {
+						if (get.attitude(player, source) >= 0) {
+							return "cancel2";
+						}
+						if (source.hasSkillTag("noh") || source.hasSkillTag("noe") || source.countCards("h") >= 4) {
+							return 0;
+						}
+						if (source.hp > 1 && source.countCards("he") > 1) {
+							return 1;
+						}
+						return [0, 1].randomGet();
+					},
 				})
-				.set("source", trigger.source);
-			"step 1";
-			if (result.control != "cancel2") {
-				player.logSkill("yuzhang", trigger.source);
-				player.removeMark("twjingce", 1);
-				if (result.index == 0) {
-					trigger.source.addTempSkill("yuzhang_dontuse");
-				} else {
-					trigger.source.chooseToDiscard("he", 2, true);
-				}
+				.forResult();
+			event.result = {
+				bool: result.control !== "cancel2",
+				targets: [source],
+				cost_data: result.index,
+			};
+		},
+		async content(event, trigger, player) {
+			const { source } = trigger;
+			player.removeMark("twjingce", 1);
+			if (event.cost_data === 0) {
+				source.addTempSkill("yuzhang_dontuse");
+			} else {
+				await source.chooseToDiscard({
+					position: "he",
+					selectCard: 2,
+					forced: true,
+				});
 			}
 		},
 		group: "yuzhang_skip",
@@ -24771,23 +24778,20 @@ const skills = {
 					return player.hasMark("twjingce");
 				},
 				prompt2(event, player) {
-					var str = "弃置一枚“策”并跳过";
-					var list = lib.skill.yuzhang.subSkill.skip.trigger.player.slice();
-					list = list.map(i => i.slice(0, -6));
-					str += ["准备", "判定", "摸牌", "出牌", "弃牌", "结束"][list.indexOf(event.name)];
-					str += "阶段";
-					return str;
+					const list = lib.skill.yuzhang.subSkill.skip.trigger.player.slice().map(i => i.slice(0, -6));
+					const phaseName = ["准备", "判定", "摸牌", "出牌", "弃牌", "结束"][list.indexOf(event.name)];
+					return `弃置一枚“策”并跳过${phaseName}阶段`;
 				},
 				check(event, player) {
-					if (event.name == "phaseDiscard") {
+					if (event.name === "phaseDiscard") {
 						return player.needsToDiscard();
 					}
-					if (event.name == "phaseJudge") {
-						return player.countCards("j");
+					if (event.name === "phaseJudge") {
+						return player.hasCards("j");
 					}
 					return false;
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.removeMark("twjingce", 1);
 					trigger.cancel();
 				},
