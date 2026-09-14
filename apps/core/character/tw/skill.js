@@ -24505,9 +24505,9 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return game.hasPlayer(function (current) {
+			return game.hasPlayer(current => {
 				return (
-					current.getSkills(null, false, false).filter(function (i) {
+					current.getSkills(null, false, false).filter(i => {
 						return get.is.zhuanhuanji(i, current);
 					}).length > 0
 				);
@@ -24515,31 +24515,34 @@ const skills = {
 		},
 		filterTarget(card, player, target) {
 			return (
-				target.getSkills(null, false, false).filter(function (i) {
+				target.getSkills(null, false, false).filter(i => {
 					return get.is.zhuanhuanji(i, target);
 				}).length > 0
 			);
 		},
-		content() {
-			"step 0";
-			var list = target.getSkills(null, false, false).filter(function (i) {
+		async content(event, trigger, player) {
+			const { target } = event;
+			const list = target.getSkills(null, false, false).filter(i => {
 				return get.is.zhuanhuanji(i, target);
 			});
-			if (list.length == 1) {
-				event._result = { control: list[0] };
+			let control;
+			if (list.length === 1) {
+				control = list[0];
 			} else {
-				player
-					.chooseControl(list)
-					.set("prompt", "选择变更" + get.translation(target) + "一个技能的状态")
-					.set("choice", list.includes("twfeifu") ? "twfeifu" : 0)
-					.set("ai", () => _status.event.choice);
+				const result = await player
+					.chooseControl({
+						controls: list,
+						prompt: `选择变更${get.translation(target)}一个技能的状态`,
+						choice: list.includes("twfeifu") ? "twfeifu" : 0,
+						ai: () => _status.event.choice,
+					})
+					.forResult();
+				control = result.control;
 			}
-			"step 1";
-			var skill = result.control;
-			target.changeZhuanhuanji(skill);
-			target.popup(skill, "wood");
-			game.log(target, "的", "#g【" + get.translation(skill) + "】", "发生了状态变更");
-			game.delayx();
+			target.changeZhuanhuanji(control);
+			target.popup(control, "wood");
+			game.log(target, "的", `#g【${get.translation(control)}】`, "发生了状态变更");
+			await game.delayx();
 		},
 		ai: {
 			order: 8,
@@ -24560,31 +24563,32 @@ const skills = {
 					player: "damageEnd",
 					source: "damageSource",
 				},
-				direct: true,
 				filter(event, player) {
-					return game.hasPlayer(function (current) {
+					return game.hasPlayer(current => {
 						return (
-							current.getSkills(null, false, false).filter(function (i) {
+							current.getSkills(null, false, false).filter(i => {
 								return get.is.zhuanhuanji(i, current);
 							}).length > 0
 						);
 					});
 				},
-				content() {
-					"step 0";
-					player.chooseTarget(lib.skill.twfuzuan.filterTarget, get.prompt("twfuzuan"), "变更一名角色的一个转换技的状态").set("ai", function (target) {
-						var player = _status.event.player;
-						return get.effect(target, "twfuzuan", player, player);
-					});
-					"step 1";
-					if (result.bool) {
-						var target = result.targets[0];
-						player.logSkill("twfuzuan", target);
-						var next = game.createEvent("twfuzuan");
-						next.player = player;
-						next.target = target;
-						next.setContent(lib.skill.twfuzuan.content);
-					}
+				async cost(event, trigger, player) {
+					event.result = await player
+						.chooseTarget({
+							prompt: get.prompt(event.skill),
+							prompt2: "变更一名角色的一个转换技的状态",
+							filterTarget: lib.skill.twfuzuan.filterTarget,
+							ai: target => get.effect(target, "twfuzuan", player, player),
+						})
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					const [target] = event.targets;
+					const next = game.createEvent("twfuzuan");
+					next.player = player;
+					next.target = target;
+					next.setContent(lib.skill.twfuzuan.content);
+					await next;
 				},
 			},
 		},
