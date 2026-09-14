@@ -7212,13 +7212,13 @@ const skills = {
 		},
 	},
 	//神张角
-	yizhao: {
-		audio: 2,
+	dcyizhao: {
+		audio: "yizhao",
+		inherit: "yizhao",
 		trigger: {
 			player: ["useCard", "respond", "loseEnd"],
 			global: "loseAsyncEnd",
 		},
-		forced: true,
 		filter(event, player) {
 			if (["useCard", "respond"].includes(event.name)) {
 				const number = get.number(event.card);
@@ -7228,15 +7228,6 @@ const skills = {
 				return false;
 			}
 			return event.getl?.(player)?.cards2?.some(card => typeof get.number(card) === "number" && get.number(card) > 0);
-		},
-		marktext: "黄",
-		intro: {
-			name: "黄(异兆/肆军)",
-			name2: "黄",
-			content: "mark",
-			markcount(storage, player) {
-				return (storage || 0).toString().slice(-2);
-			},
 		},
 		async content(event, trigger, player) {
 			event.num = player.countMark("yizhao");
@@ -7249,6 +7240,40 @@ const skills = {
 					cards.reduce((sum, card) => sum + (typeof get.number(card) === "number" ? get.number(card) : 0), 0)
 				);
 			}
+			const num = Math.floor(event.num / 10) % 10;
+			const num2 = Math.floor(player.countMark("yizhao") / 10) % 10;
+			if (num !== num2) {
+				const card = get.cardPile2(card => {
+					return get.number(card, false) === num2;
+				});
+				if (card) {
+					await player.gain(card, "gain2");
+				}
+			}
+		},
+	},
+	yizhao: {
+		audio: 2,
+		trigger: {
+			player: ["useCard", "respond"],
+		},
+		forced: true,
+		filter(event, player) {
+			const number = get.number(event.card);
+			return typeof number === "number" && number > 0;
+		},
+		marktext: "黄",
+		intro: {
+			name: "黄(异兆/肆军)",
+			name2: "黄",
+			content: "mark",
+			markcount(storage, player) {
+				return (storage || 0).toString().slice(-2);
+			},
+		},
+		async content(event, trigger, player) {
+			event.num = player.countMark("yizhao");
+			player.addMark("yizhao", get.number(trigger.card));
 			const num = Math.floor(event.num / 10) % 10;
 			const num2 = Math.floor(player.countMark("yizhao") / 10) % 10;
 			if (num !== num2) {
