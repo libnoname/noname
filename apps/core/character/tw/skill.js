@@ -27203,53 +27203,53 @@ const skills = {
 	twyanhuo: {
 		audio: "yanhuo",
 		trigger: { player: "die" },
-		direct: true,
 		forceDie: true,
 		skillAnimation: true,
 		animationColor: "thunder",
 		filter(event, player) {
-			return (
-				player.countCards("he") > 0 &&
-				game.hasPlayer(function (current) {
-					return current != player && current.countCards("h") > 0;
-				})
-			);
+			return player.hasCards("he") && game.hasPlayer(current => current !== player && current.hasCards("h"));
 		},
-		content() {
-			"step 0";
-			var num = player.countCards("he"),
-				str = get.cnNumber(num);
-			event.num1 = num;
-			event.num2 = 1;
-			var list = ["令一名其他角色弃置" + str + "张牌"];
+		async cost(event, trigger, player) {
+			const num = player.countCards("he");
+			const str = get.cnNumber(num);
+			const choiceList = [`令一名其他角色弃置${str}张牌`];
 			if (num > 1) {
-				list.push("令至多" + str + "名其他角色各弃置一张牌");
+				choiceList.push(`令至多${str}名其他角色各弃置一张牌`);
 			}
-			player.chooseControl("cancel2").set("choiceList", list).set("prompt", get.prompt("twyanhuo")).set("forceDie", true);
-			"step 1";
-			if (result.control != "cancel2") {
-				if (result.index == 0) {
-					event.num2 = event.num1;
-					event.num1 = 1;
-				}
-				player
-					.chooseTarget([1, event.num1], true, "请选择【延祸】的目标", function (card, player, target) {
-						return target != player && target.countCards("he") > 0;
-					})
-					.set("forceDie", true)
-					.set("ai", function (target) {
-						return -get.attitude(_status.event.player, target);
-					});
-			} else {
-				event.finish();
+			const controlResult = await player
+				.chooseControl({
+					controls: ["cancel2"],
+					choiceList,
+					prompt: get.prompt("twyanhuo"),
+				})
+				.set("forceDie", true)
+				.forResult();
+			if (controlResult.control === "cancel2") {
+				event.result = { bool: false };
+				return;
 			}
-			"step 2";
-			if (result.bool) {
-				var targets = result.targets.sortBySeat();
-				player.logSkill("twyanhuo", targets);
-				for (var i of targets) {
-					i.chooseToDiscard(true, "he", event.num2);
-				}
+			const selectTarget = controlResult.index === 0 ? 1 : num;
+			const discardNum = controlResult.index === 0 ? num : 1;
+			const targetResult = await player
+				.chooseTarget({
+					selectTarget: [1, selectTarget],
+					forced: true,
+					prompt: "请选择【延祸】的目标",
+					filterTarget: (_card, player, target) => target !== player && target.hasCards("he"),
+					ai: target => -get.attitude(_status.event.player, target),
+				})
+				.set("forceDie", true)
+				.forResult();
+			event.result = {
+				bool: targetResult.bool,
+				targets: targetResult.targets,
+				cost_data: discardNum,
+			};
+		},
+		async content(event, trigger, player) {
+			const targets = event.targets.sortBySeat();
+			for (const target of targets) {
+				await target.chooseToDiscard({ forced: true, position: "he", selectCard: event.cost_data });
 			}
 		},
 	},
