@@ -16692,45 +16692,38 @@ const skills = {
 		trigger: { player: "phaseJieshuBegin" },
 		filter(event, player) {
 			return (
-				game.hasPlayer(function (current) {
-					return current != player && current.countCards("h") > player.countCards("h");
-				}) &&
-				game.hasPlayer(function (current) {
-					return current != player && current.hp > player.hp;
-				})
+				game.hasPlayer(current => current !== player && current.countCards("h") > player.countCards("h")) &&
+				game.hasPlayer(current => current !== player && current.hp > player.hp)
 			);
 		},
 		logTarget(event, player) {
 			return game.players.sortBySeat(player);
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			event.num = 0;
 			event.cards = [];
 			event.targets = game.players.sortBySeat(player);
-			"step 1";
-			var target = targets[num];
-			if (target.countCards("he")) {
-				target.chooseToDiscard("he", true);
-			} else {
-				event._result = { bool: false };
+			for (const target of event.targets) {
+				if (target.hasCards("he")) {
+					const result = await target
+						.chooseToDiscard({
+							position: "he",
+							forced: true,
+						})
+						.forResult();
+					if (result.bool && Array.isArray(result.cards)) {
+						event.cards.addArray(result.cards);
+					}
+				}
+				event.num++;
 			}
-			"step 2";
-			if (result.bool && Array.isArray(result.cards)) {
-				event.cards.addArray(result.cards);
-			}
-			event.num++;
-			if (event.num < targets.length) {
-				event.goto(1);
-			} else {
-				game.delayx();
-			}
-			"step 3";
-			var cards = cards.filter(function (i) {
-				return get.position(i, true) == "d" && get.color(i, false) == "red";
-			});
+			await game.delayx();
+			const cards = event.cards.filter(i => get.position(i, true) === "d" && get.color(i, false) === "red");
 			if (cards.length) {
-				player.gain(cards, "gain2");
+				await player.gain({
+					cards,
+					animate: "gain2",
+				});
 			}
 		},
 	},
