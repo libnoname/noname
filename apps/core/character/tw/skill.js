@@ -16561,16 +16561,15 @@ const skills = {
 		filter(event, player) {
 			return !player.hasSkill("twxingzhui_mahou");
 		},
-		content() {
-			"step 0";
-			player.loseHp();
-			player
-				.chooseControl("1回合", "2回合", "3回合")
-				.set("prompt", "请选择施法时长")
-				.set("ai", function () {
-					return 2;
-				});
-			"step 1";
+		async content(event, trigger, player) {
+			await player.loseHp();
+			const result = await player
+				.chooseControl({
+					controls: ["1回合", "2回合", "3回合"],
+					prompt: "请选择施法时长",
+					ai: () => 2,
+				})
+				.forResult();
 			player.storage.twxingzhui_mahou = [result.index + 1, result.index + 1];
 			player.addTempSkill("twxingzhui_mahou", { player: "die" });
 		},
@@ -16594,55 +16593,60 @@ const skills = {
 				forced: true,
 				popup: false,
 				charlotte: true,
-				content() {
-					"step 0";
-					var list = player.storage.twxingzhui_mahou;
+				async content(event, trigger, player) {
+					const list = player.storage.twxingzhui_mahou;
 					list[1]--;
-					if (list[1] == 0) {
-						game.log(player, "的", "#g星坠", "魔法生效");
-						player.logSkill("twxingzhui");
-						var num = list[0];
-						event.num = num;
-						var cards = game.cardsGotoOrdering(get.cards(num * 2)).cards;
-						event.cards = cards;
-						player.showCards(cards, get.translation(player) + "发动了【星坠】");
-						player.removeSkill("twxingzhui_mahou");
-					} else {
-						game.log(player, "的", "#g星坠", "魔法剩余", "#g" + list[1] + "回合");
+					if (list[1] !== 0) {
+						game.log(player, "的", "#g星坠", "魔法剩余", `#g${list[1]}回合`);
 						player.markSkill("twxingzhui_mahou");
-						event.finish();
+						return;
 					}
-					"step 1";
-					var cards2 = [];
-					for (var card of event.cards) {
-						if (get.color(card, false) == "black") {
-							cards2.push(card);
-						}
-					}
+					game.log(player, "的", "#g星坠", "魔法生效");
+					player.logSkill("twxingzhui");
+					const num = list[0];
+					event.num = num;
+					const cards = get.cards(num * 2);
+					await game.cardsGotoOrdering(cards);
+					await player.showCards(cards, `${get.translation(player)}发动了【星坠】`);
+					player.removeSkill("twxingzhui_mahou");
+					const cards2 = cards.filter(card => get.color(card, false) === "black");
 					if (!cards2.length) {
-						event.finish();
-					} else {
-						event.cards2 = cards2;
-						var str = "令一名其他角色获得其中的黑色牌（" + get.translation(cards2) + "）";
-						if (cards2.length >= event.num) {
-							str += "，然后对其造成" + get.cnNumber(event.num) + "点伤害";
-						}
-						player.chooseTarget("请选择〖星坠〗的目标", str, lib.filter.notMe).set("ai", function (target) {
-							var player = _status.event.player;
-							if (_status.event.getParent().cards2.length >= _status.event.getParent().num) {
-								return get.damageEffect(target, player, player, "thunder");
-							}
-							return get.attitude(player, target);
-						});
+						return;
 					}
-					"step 2";
-					if (result.bool) {
-						var target = result.targets[0];
-						player.line(target);
-						target.gain(event.cards2, "gain2");
-						if (event.cards2.length >= num) {
-							target.damage(event.num, "thunder");
-						}
+					event.cards2 = cards2;
+					let prompt2 = `令一名其他角色获得其中的黑色牌（${get.translation(cards2)}）`;
+					if (cards2.length >= num) {
+						prompt2 += `，然后对其造成${get.cnNumber(num)}点伤害`;
+					}
+					const result = await player
+						.chooseTarget({
+							prompt: "请选择〖星坠〗的目标",
+							prompt2,
+							filterTarget: lib.filter.notMe,
+							ai: target => {
+								const player = _status.event.player;
+								const parent = _status.event.getParent();
+								if (parent.cards2.length >= parent.num) {
+									return get.damageEffect(target, player, player, "thunder");
+								}
+								return get.attitude(player, target);
+							},
+						})
+						.forResult();
+					if (!result.bool) {
+						return;
+					}
+					const target = result.targets[0];
+					player.line(target);
+					await target.gain({
+						cards: cards2,
+						animate: "gain2",
+					});
+					if (cards2.length >= num) {
+						await target.damage({
+							num,
+							nature: "thunder",
+						});
 					}
 				},
 				mark: true,
@@ -16658,7 +16662,7 @@ const skills = {
 					},
 					content(storage) {
 						if (storage) {
-							return "经过" + storage[1] + "个“回合结束时”后，亮出牌堆顶的" + get.cnNumber(storage[0] * 2) + "张牌并执行后续效果";
+							return `经过${storage[1]}个“回合结束时”后，亮出牌堆顶的${get.cnNumber(storage[0] * 2)}张牌并执行后续效果`;
 						}
 						return "未指定施法效果";
 					},
