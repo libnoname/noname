@@ -23076,44 +23076,45 @@ const skills = {
 		audio: "xinqingxi2.mp3",
 		trigger: { player: "useCardToPlayered" },
 		filter(event, player) {
-			return event.card.name == "sha" && player.getHistory("useCard", evt => evt.card.name == "sha").indexOf(event.getParent()) == 0;
+			return event.card.name === "sha" && player.getHistory("useCard", evt => evt.card.name === "sha").indexOf(event.getParent()) === 0;
 		},
 		check(event, player) {
 			return true;
 		},
 		logTarget: "target",
-		content() {
-			"step 0";
-			var target = trigger.target;
-			event.target = target;
-			if (!target.countCards("e")) {
-				event._result = { index: 0 };
-			} else {
-				target
-					.chooseControl()
-					.set("ai", function () {
-						if (_status.event.goon || player.hp > 2) {
-							return 0;
-						}
-						return 1;
+		async content(event, trigger, player) {
+			const target = trigger.target;
+			let index = 0;
+			if (target.hasCards("e")) {
+				const goon = get.attitude(target, player) > 0;
+				const result = await target
+					.chooseControl({
+						choiceList: [
+							`令${get.translation(player)}摸${get.cnNumber(Math.max(1, player.countCards("e")))}张牌，且此【杀】不可被响应`,
+							`弃置装备区中的所有牌并弃置${get.translation(player)}装备区等量的牌，此【杀】造成的伤害+1`,
+						],
+						ai: () => (goon || player.hp > 2 ? 0 : 1),
 					})
-					.set("choiceList", ["令" + get.translation(player) + "摸" + get.cnNumber(Math.max(1, player.countCards("e"))) + "张牌，且此【杀】不可被响应", "弃置装备区中的所有牌并弃置" + get.translation(player) + "装备区等量的牌，此【杀】造成的伤害+1"])
-					.set("goon", get.attitude(target, player) > 0);
+					.forResult();
+				index = result.index;
 			}
-			"step 1";
-			if (result.index == 0) {
-				player.draw(Math.max(1, player.countCards("e")));
+			if (index === 0) {
+				const drawEvent = player.draw(Math.max(1, player.countCards("e")));
 				trigger.getParent().directHit.add(target);
 				game.log(trigger.card, "不可被", target, "响应");
-				event.finish();
-			} else {
-				var num = target.countCards("e");
-				target.discard(target.getCards("e"));
-				target.discardPlayerCard(player, "e", num, true);
+				await drawEvent;
+				return;
 			}
-			"step 2";
-			var map = trigger.customArgs;
-			var id = target.playerid;
+			const num = target.countCards("e");
+			await target.discard({ cards: target.getCards("e") });
+			await target.discardPlayerCard({
+				target: player,
+				position: "e",
+				selectButton: num,
+				forced: true,
+			});
+			const map = trigger.customArgs;
+			const id = target.playerid;
 			if (!map[id]) {
 				map[id] = {};
 			}
@@ -23122,7 +23123,7 @@ const skills = {
 			}
 			map[id].extraDamage++;
 			game.log(trigger.card, "对", target, "造成的伤害+1");
-			game.delayx();
+			await game.delayx();
 		},
 	},
 	//孙翊
