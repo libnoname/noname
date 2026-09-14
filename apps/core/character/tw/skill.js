@@ -18047,12 +18047,12 @@ const skills = {
 		audio: "shuangren",
 		trigger: { player: "phaseUseBegin" },
 		filter(event, player, name) {
-			if (!player.countCards("h")) {
+			if (!player.hasCards("h")) {
 				return false;
 			}
-			if (name == "phaseUseEnd") {
-				return !player.hasHistory("sourceDamage", function (evt) {
-					return evt.card.name == "sha" && event.getParent("phaseUse") == evt;
+			if (name === "phaseUseEnd") {
+				return !player.hasHistory("sourceDamage", evt => {
+					return evt.card.name === "sha" && event.getParent("phaseUse") === evt;
 				});
 			}
 			return true;
@@ -18060,66 +18060,75 @@ const skills = {
 		direct: true,
 		group: "twshuangren_end",
 		preHidden: true,
-		content() {
-			"step 0";
-			var forced =
-				event.getParent(2).name == "twshuangren_end" &&
-				game.hasPlayer(current => {
-					return player.canCompare(current);
-				});
-			var str = "与一名角色拼点，若你：赢，你可以视为对至多两名至其的距离不大于1的角色使用一张【杀】；没赢，其可以视为对你使用一张【杀】";
-			player
-				.chooseTarget(forced ? "双刃：选择一名角色" : get.prompt("twshuangren"), str, forced, (card, player, target) => {
-					return player.canCompare(target);
-				})
-				.set("ai", target => {
-					if (_status.event.goon) {
-						return get.effect(target, { name: "sha" }, _status.event.player);
-					}
-					return 0;
-				})
-				.set("goon", event.triggername != "phaseUseBegin" || (player.countCards("hs", "sha") > 0 && player.hasValueTarget({ name: "sha" })));
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("twshuangren", target);
-				if (player.canCompare(target)) {
-					player.chooseToCompare(target);
-				} else {
-					event.finish();
-				}
-			} else {
-				event.finish();
-			}
-			"step 2";
-			if (result.bool) {
-				event.sha = true;
-				player
-					.chooseTarget([1, 2], "请选择【杀】的目标", true, function (card, player, target) {
-						if (!player.canUse("sha", target, false, false)) {
-							return false;
+		async content(event, trigger, player) {
+			const forced = event.getParent(2).name === "twshuangren_end" && game.hasPlayer(current => player.canCompare(current));
+			const goon = event.triggername !== "phaseUseBegin" || (player.hasCards("hs", "sha") && player.hasValueTarget({ name: "sha" }));
+			const targetResult = await player
+				.chooseTarget({
+					prompt: forced ? "双刃：选择一名角色" : get.prompt("twshuangren"),
+					prompt2: "与一名角色拼点，若你：赢，你可以视为对至多两名至其的距离不大于1的角色使用一张【杀】；没赢，其可以视为对你使用一张【杀】",
+					forced,
+					filterTarget: (card, player, target) => player.canCompare(target),
+					ai: target => {
+						if (_status.event.goon) {
+							return get.effect(target, { name: "sha" }, _status.event.player);
 						}
-						return get.distance(target, _status.event.targetx) <= 1;
-					})
-					.set("ai", function (target) {
-						var player = _status.event.player;
-						return get.effect(target, { name: "sha" }, player, player);
-					})
-					.set("targetx", target);
-			} else {
-				target.chooseBool("双刃：是否视为对" + get.translation(player) + "使用一张杀？").set("choice", get.effect(player, { name: "sha" }, target, target) > 0);
+						return 0;
+					},
+				})
+				.set("goon", goon)
+				.forResult();
+			if (!targetResult.bool) {
+				return;
 			}
-			"step 3";
-			if (result.bool) {
-				if (event.sha == true) {
-					result.targets.sortBySeat();
-					for (var i of result.targets) {
-						player.useCard({ name: "sha", isCard: true }, i, false);
-					}
-				} else {
-					target.useCard({ name: "sha", isCard: true }, player, false);
+
+			const target = targetResult.targets[0];
+			player.logSkill("twshuangren", target);
+			if (!player.canCompare(target)) {
+				return;
+			}
+			const compareResult = await player.chooseToCompare(target).forResult();
+			if (compareResult.bool) {
+				const shaResult = await player
+					.chooseTarget({
+						selectTarget: [1, 2],
+						prompt: "请选择【杀】的目标",
+						forced: true,
+						filterTarget: (card, player, current) => {
+							if (!player.canUse("sha", current, false, false)) {
+								return false;
+							}
+							return get.distance(current, target) <= 1;
+						},
+						ai: current => get.effect(current, { name: "sha" }, player, player),
+					})
+					.forResult();
+				if (!shaResult.bool) {
+					return;
 				}
+				shaResult.targets.sortBySeat();
+				for (const current of shaResult.targets) {
+					await player.useCard({
+						card: { name: "sha", isCard: true },
+						targets: [current],
+						addCount: false,
+					});
+				}
+				return;
+			}
+
+			const shaResult = await target
+				.chooseBool({
+					prompt: `双刃：是否视为对${get.translation(player)}使用一张杀？`,
+					choice: get.effect(player, { name: "sha" }, target, target) > 0,
+				})
+				.forResult();
+			if (shaResult.bool) {
+				await target.useCard({
+					card: { name: "sha", isCard: true },
+					targets: [player],
+					addCount: false,
+				});
 			}
 		},
 		subSkill: {
@@ -18127,46 +18136,45 @@ const skills = {
 				audio: "shuangren",
 				trigger: { player: "phaseUseEnd" },
 				filter(event, player, name) {
-					if (!player.countCards("h")) {
+					if (!player.hasCards("h")) {
 						return false;
 					}
 					return (
-						!player.hasHistory("useSkill", function (evt) {
-							return evt.skill == "twshuangren";
+						!player.hasHistory("useSkill", evt => {
+							return evt.skill === "twshuangren";
 						}) &&
-						!player.hasHistory("sourceDamage", function (evt) {
-							return evt.card && evt.card.name == "sha";
+						!player.hasHistory("sourceDamage", evt => {
+							return evt.card && evt.card.name === "sha";
 						})
 					);
 				},
 				direct: true,
 				preHidden: true,
-				content() {
-					"step 0";
-					player
-						.chooseToDiscard(get.prompt("twshuangren"), "弃置一张牌发动〖双刃〗", "he")
-						.set("ai", function (card) {
+				async content(event, trigger, player) {
+					const goon = player.hasCard(card => {
+						if (player.needsToDiscard() > 1) {
+							return card.number > 10 && get.value(card) <= 5;
+						}
+						return (card.number >= 9 && get.value(card) <= 5) || get.value(card) <= 3;
+					});
+					const result = await player
+						.chooseToDiscard({
+							prompt: get.prompt("twshuangren"),
+							prompt2: "弃置一张牌发动〖双刃〗",
+							position: "he",
+							ai: card => {
 							if (_status.event.goon) {
 								return 5 - get.value(card);
 							}
 							return 0;
+							},
 						})
-						.set(
-							"goon",
-							(function () {
-								return player.hasCard(function (card) {
-									if (player.needsToDiscard() > 1) {
-										return card.number > 10 && get.value(card) <= 5;
-									}
-									return (card.number >= 9 && get.value(card) <= 5) || get.value(card) <= 3;
-								});
-							})()
-						)
+						.set("goon", goon)
 						.setHiddenSkill("twshuangren")
-						.set("logSkill", "twshuangren");
-					"step 1";
+						.set("logSkill", "twshuangren")
+						.forResult();
 					if (result.bool) {
-						player.useSkill("twshuangren");
+						await player.useSkill({ skill: "twshuangren" });
 					}
 				},
 			},
