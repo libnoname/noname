@@ -21568,26 +21568,24 @@ const skills = {
 		audio: "shengxi_feiyi",
 		trigger: { player: "phaseJieshuBegin" },
 		filter(event, player) {
-			return player.getHistory("useCard").length > 0 && player.getHistory("sourceDamage").length == 0;
+			return player.getHistory("useCard").length > 0 && player.getHistory("sourceDamage").length === 0;
 		},
-		direct: true,
-		content() {
-			"step 0";
-			var list = get.zhinangs();
-			player.chooseButton(["###" + get.prompt("twshengxi") + "###获得一张智囊并摸一张牌", [list, "vcard"]]).set("ai", function (card) {
-				return (Math.random() + 0.5) * get.value({ name: card.link[2] }, _status.event.player);
-			});
-			"step 1";
-			if (result.bool) {
-				player.logSkill("twshengxi");
-				var card = get.cardPile2(function (card) {
-					return card.name == result.links[0][2];
-				});
-				if (card) {
-					player.gain(card, "gain2");
-				}
-				player.draw();
+		async cost(event, trigger, player) {
+			const result = await player
+				.chooseButton([`###${get.prompt(event.skill)}###获得一张智囊并摸一张牌`, [get.zhinangs(), "vcard"]])
+				.set("ai", card => (Math.random() + 0.5) * get.value({ name: card.link[2] }, _status.event.player))
+				.forResult();
+			event.result = {
+				bool: result.bool,
+				cost_data: result.links,
+			};
+		},
+		async content(event, trigger, player) {
+			const card = get.cardPile2(card => card.name === event.cost_data[0][2]);
+			if (card) {
+				await player.gain({ cards: [card], animate: "gain2" });
 			}
+			await player.draw();
 		},
 		group: "twshengxi_zhunbei",
 		subfrequent: ["zhunbei"],
@@ -21597,23 +21595,21 @@ const skills = {
 				trigger: { player: "phaseZhunbeiBegin" },
 				frequent: true,
 				prompt2: "从游戏外或牌堆中获得一张【调剂盐梅】",
-				content() {
+				async content(event, trigger, player) {
 					if (!_status.tiaojiyanmei_suits || _status.tiaojiyanmei_suits.length > 0) {
 						if (!lib.inpile.includes("tiaojiyanmei")) {
-							game.broadcastAll(function () {
+							game.broadcastAll(() => {
 								lib.inpile.add("tiaojiyanmei");
 							});
 						}
 						if (!_status.tiaojiyanmei_suits) {
 							_status.tiaojiyanmei_suits = lib.suit.slice(0);
 						}
-						player.gain(game.createCard2("tiaojiyanmei", _status.tiaojiyanmei_suits.randomRemove(), 6), "gain2");
+						await player.gain({ cards: [game.createCard2("tiaojiyanmei", _status.tiaojiyanmei_suits.randomRemove(), 6)], animate: "gain2" });
 					} else {
-						var card = get.cardPile2(function (card) {
-							return card.name == "tiaojiyanmei";
-						});
+						const card = get.cardPile2(card => card.name === "tiaojiyanmei");
 						if (card) {
-							player.gain(card, "gain2");
+							await player.gain({ cards: [card], animate: "gain2" });
 						}
 					}
 				},
