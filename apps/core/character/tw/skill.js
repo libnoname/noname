@@ -20568,49 +20568,47 @@ const skills = {
 		audio: "zhangming",
 		trigger: { player: "useCardToTargeted" },
 		filter(event, player) {
-			if (event.target == player || (event.card.storage && event.card.storage.twguoyi)) {
+			if (event.target === player || (event.card.storage && event.card.storage.twguoyi)) {
 				return false;
 			}
-			return (event.card.name == "sha" || get.type(event.card) == "trick") && (event.target.isMaxHp() || event.target.isMaxHandcard() || player.countCards("h") <= player.getDamagedHp() + 1);
+			return (event.card.name === "sha" || get.type(event.card) === "trick") && (event.target.isMaxHp() || event.target.isMaxHandcard() || player.countCards("h") <= player.getDamagedHp() + 1);
 		},
 		check(event, player) {
 			return get.attitude(player, event.target) <= 0;
 		},
 		logTarget: "target",
 		group: "twguoyi_reuse",
-		content() {
-			"step 0";
-			event.bool1 = false;
-			event.bool2 = false;
-			if (trigger.target.isMaxHp() || trigger.target.isMaxHandcard()) {
-				event.bool1 = true;
-			}
-			if (player.countCards("h") <= player.getDamagedHp() + 1) {
-				event.bool2 = true;
-			}
-			if (!trigger.target.countCards("he")) {
-				event._result = { index: 0 };
+		async content(event, trigger, player) {
+			const bool1 = trigger.target.isMaxHp() || trigger.target.isMaxHandcard();
+			const bool2 = player.countCards("h") <= player.getDamagedHp() + 1;
+			let result;
+			if (!trigger.target.hasCards("he")) {
+				result = { index: 0 };
 			} else {
-				trigger.target
-					.chooseControl()
-					.set("choiceList", ["本回合不能使用或打出手牌", "弃置" + get.cnNumber(player.getDamagedHp() + 1) + "张牌"])
-					.set("ai", function () {
-						var player = _status.event.player;
-						if (player.countCards("h") <= player.getHandcardLimit()) {
-							return 0;
-						}
-						return 1;
-					});
+				result = await trigger.target
+					.chooseControl({
+						choiceList: ["本回合不能使用或打出手牌", `弃置${get.cnNumber(player.getDamagedHp() + 1)}张牌`],
+						ai(_event, player) {
+							if (player.countCards("h") <= player.getHandcardLimit()) {
+								return 0;
+							}
+							return 1;
+						},
+					})
+					.forResult();
 			}
-			"step 1";
-			player.addTempSkill("twguoyi_" + result.index);
-			if (result.index == 0) {
+
+			player.addTempSkill(`twguoyi_${result.index}`);
+			if (result.index === 0) {
 				trigger.target.addTempSkill("twguoyi_hand");
 			} else {
-				trigger.target.chooseToDiscard("he", player.getDamagedHp() + 1, true);
+				await trigger.target.chooseToDiscard({
+					position: "he",
+					selectCard: player.getDamagedHp() + 1,
+					forced: true,
+				});
 			}
-			"step 2";
-			if ((event.bool1 && event.bool2) || (player.hasSkill("twguoyi_0") && player.hasSkill("twguoyi_1"))) {
+			if ((bool1 && bool2) || (player.hasSkill("twguoyi_0") && player.hasSkill("twguoyi_1"))) {
 				if (!trigger.getParent().twguoyi_reuse) {
 					trigger.getParent().twguoyi_reuse = {
 						name: trigger.card.name,
@@ -20630,7 +20628,7 @@ const skills = {
 				intro: { content: "不能使用或打出手牌" },
 				mod: {
 					cardEnabled2(card) {
-						if (get.position(card) == "h") {
+						if (get.position(card) === "h") {
 							return false;
 						}
 					},
@@ -20643,10 +20641,10 @@ const skills = {
 					return event.twguoyi_reuse;
 				},
 				direct: true,
-				content() {
-					var card = trigger.twguoyi_reuse;
-					for (var i of trigger.targets) {
-						if (!i.isIn() || !player.canUse(card, i, false)) {
+				async content(event, trigger, player) {
+					const card = trigger.twguoyi_reuse;
+					for (const target of trigger.targets) {
+						if (!target.isIn() || !player.canUse(card, target, false)) {
 							return;
 						}
 					}
@@ -20654,19 +20652,24 @@ const skills = {
 						return;
 					}
 					if (trigger.addedTargets && trigger.addedTargets.length) {
-						for (var i of trigger.addedTargets) {
-							if (!i.isIn()) {
+						for (const target of trigger.addedTargets) {
+							if (!target.isIn()) {
 								return;
 							}
 						}
 					}
-					var next = player.useCard(get.copy(card), trigger.targets, false);
+					const next = player.useCard({
+						card: get.copy(card),
+						targets: trigger.targets,
+						addCount: false,
+					});
 					if (trigger.addedTarget) {
 						next.addedTarget = trigger.addedTarget;
 					}
 					if (trigger.addedTargets && trigger.addedTargets.length) {
 						next.addedTargets = trigger.addedTargets.slice(0);
 					}
+					await next;
 				},
 			},
 		},
