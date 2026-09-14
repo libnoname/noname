@@ -24134,72 +24134,69 @@ const skills = {
 			player: "loseAfter",
 			global: "loseAsyncAfter",
 		},
-		direct: true,
 		filter(event, player) {
-			if (player == _status.currentPhase || event.type != "discard" || event.getlx === false || !game.hasPlayer(current => current != player)) {
+			if (player === _status.currentPhase || event.type !== "discard" || event.getlx === false || !game.hasPlayer(current => current !== player)) {
 				return false;
 			}
-			var evt = event.getl(player);
-			for (var i of evt.cards2) {
-				if (get.color(i, player) == "red" && get.position(i, true) == "d") {
+			const evt = event.getl(player);
+			for (const card of evt.cards2) {
+				if (get.color(card, player) === "red" && get.position(card, true) === "d") {
 					return true;
 				}
 			}
 			return false;
 		},
-		content() {
-			"step 0";
-			var cards = [],
-				cards2 = trigger.getl(player).cards2;
-			for (var i of cards2) {
-				if (get.color(i, player) == "red" && get.position(i, true) == "d") {
-					cards.push(i);
-				}
+		async cost(event, trigger, player) {
+			const cards = trigger.getl(player).cards2.filter(card => get.color(card, player) === "red" && get.position(card, true) === "d");
+			const goon = game.hasPlayer(current => current !== player && get.attitude(player, current) > 0);
+			const buttonResult = await player
+				.chooseButton({
+					createDialog: ["从击：选择任意张牌交给其他角色", cards],
+					selectButton: [1, cards.length],
+					ai: button => (goon ? get.value(button.link) : button.link.name === "du" ? 1 : 0),
+				})
+				.forResult();
+			if (!buttonResult.bool) {
+				event.result = { bool: false };
+				return;
 			}
-			player
-				.chooseButton(["从击：选择任意张牌交给其他角色", cards], [1, cards.length])
-				.set(
-					"goon",
-					game.hasPlayer(function (current) {
-						return current != player && get.attitude(player, current) > 0;
-					})
-				)
-				.set("ai", function (button) {
-					if (_status.event.goon) {
-						return get.value(button.link);
-					}
-					return button.link.name == "du" ? 1 : 0;
-				});
-			"step 1";
-			if (result.bool) {
-				event.cards = result.links;
-				player.chooseTarget("选择一名角色获得以下牌：", get.translation(cards), true, lib.filter.notMe).set("ai", function (target) {
-					var player = _status.event.player,
-						cards = _status.event.getParent().cards;
-					if (cards[0].name == "du") {
-						return -get.attitude(player, target);
-					}
-					var att = get.attitude(player, target);
-					if (att <= 0) {
-						return 0;
-					}
-					if (target.hasSkillTag("nogain")) {
-						att /= 10;
-					}
-					if (target.hasJudge("lebu")) {
-						att /= 4;
-					}
-					return get.value(cards, target) * att;
-				});
-			} else {
-				event.finish();
-			}
-			"step 2";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("twcongji", target);
-				target.gain(cards, "gain2");
-			}
+
+			const selectedCards = buttonResult.links;
+			const targetResult = await player
+				.chooseTarget({
+					prompt: "选择一名角色获得以下牌：",
+					prompt2: get.translation(selectedCards),
+					forced: true,
+					filterTarget: lib.filter.notMe,
+					ai(target) {
+						if (selectedCards[0].name === "du") {
+							return -get.attitude(player, target);
+						}
+						let att = get.attitude(player, target);
+						if (att <= 0) {
+							return 0;
+						}
+						if (target.hasSkillTag("nogain")) {
+							att /= 10;
+						}
+						if (target.hasJudge("lebu")) {
+							att /= 4;
+						}
+						return get.value(selectedCards, target) * att;
+					},
+				})
+				.forResult();
+			event.result = {
+				bool: targetResult.bool,
+				cards: selectedCards,
+				targets: targetResult.targets,
+			};
+		},
+		async content(event, trigger, player) {
+			await event.targets[0].gain({
+				cards: event.cards,
+				animate: "gain2",
+			});
 		},
 	},
 	//王粲
