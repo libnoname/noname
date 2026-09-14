@@ -4,7 +4,7 @@ const translates = {
 	pot_heqi: "势贺齐",
 	pot_heqi_prefix: "势",
 	potshanxi: "闪袭",
-	potshanxi_tag: "invisible",
+	potshanxi_tag: "应机",
 	potshanxi_info: `出牌阶段每名角色限一次，你可将一张${get.poptip({
 		id: "potshanxi_yingji",
 		name: "应机牌",

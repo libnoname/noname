@@ -3,7 +3,114 @@ import html from "dedent";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
-	//神曹操------by 清风
+	//神貂蝉
+	psmeihun: {
+		audio: "meihun",
+		trigger: {
+			player: "phaseJieshuBegin",
+			target: "useCardToTargeted",
+		},
+		filter(event, player) {
+			if (event.name !== "phaseJieshu" && event.card.name !== "sha") {
+				return false;
+			}
+			return game.hasPlayer(current => current !== player && current.hasCards("he"));
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseButtonTarget({
+					createDialog: ["魅魂：你可以令一名其他角色交给你一张牌", [lib.suit.slice().map(i => ["", "", `lukai_${i}`]), "vcard"]],
+					filterTarget(card, player, target) {
+						return target != player && target.hasCards("he");
+					},
+					ai1(button) {
+						const link = button.link[2].slice(6);
+						if (link == "heart") return 0.8;
+						return Math.random();
+					},
+					ai2(target) {
+						return -get.attitude(get.player(), target);
+					},
+				})
+				.forResult();
+			if (event.result?.bool && event.result.links?.length) {
+				const suit = event.result.links[0][2].slice(6);
+				event.result.cost_data = suit;
+			}
+		},
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+				cost_data: suit,
+			} = event;
+			player.chat(get.translation(suit + 2));
+			game.log(player, "选择了", `#y${get.translation(suit + 2)}`);
+			if (target.hasGainableCards(player, "h", { suit })) {
+				await target.chooseToGive({ target: player, position: "he", filterCard: card => get.suit(card) == suit, forced: true });
+			} else {
+				if (target.hasCards("h")) {
+					await player.discardPlayerCard({ target, forced: true, position: "h", visible: true });
+				}
+			}
+		},
+	},
+	pshuoxin: {
+		audio: "huoxin",
+		limited: true,
+		skillAnimation: true,
+		animationColor: "wood",
+		trigger: { global: "phaseBeginStart" },
+		filter(event, player) {
+			return player != event.player && !event.player._trueMe;
+		},
+		check(event, player) {
+			return get.attitude(player, event.player) < 0;
+		},
+		logTarget: "player",
+		async content(event, trigger, player) {
+			player.awakenSkill(event.name);
+			const target = event.targets[0];
+			target._trueMe = player;
+			game.addGlobalSkill("autoswap");
+			if (target === game.me) {
+				game.notMe = true;
+				if (!_status.auto) {
+					ui.click.auto();
+				}
+			}
+			target.addSkill(event.name + "_after");
+		},
+		subSkill: {
+			after: {
+				trigger: {
+					player: ["phaseAfter", "dieAfter"],
+					global: "phaseBeforeStart",
+				},
+				lastDo: true,
+				charlotte: true,
+				forceDie: true,
+				forced: true,
+				silent: true,
+				async content(event, trigger, player) {
+					player.removeSkill(event.name);
+				},
+				onremove(player) {
+					if (player === game.me) {
+						if (!game.notMe) {
+							game.swapPlayerAuto(player._trueMe);
+						} else {
+							delete game.notMe;
+						}
+						if (_status.auto) {
+							ui.click.auto();
+						}
+					}
+					delete player._trueMe;
+				},
+			},
+		},
+	},
+	//神曹操
 	psguixin: {
 		audio: "guixin",
 		trigger: {

@@ -831,7 +831,7 @@ export default {
 					return dialog;
 				},
 				check(button) {
-					return -button._number + 1;
+					return button?._number > 0 ? 0.1 : 1;
 				},
 				backup(links, player) {
 					return {
