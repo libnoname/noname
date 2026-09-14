@@ -16820,27 +16820,27 @@ const skills = {
 		filter(event, player) {
 			return Math.max(0, player.hp) + player.maxHp <= 9;
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			player.removeSkills("twjiekuang");
-			"step 1";
-			var num = player.countCards("he"),
-				cards = [];
-			player.discard(player.getCards("he"));
-			for (var i = 0; i < num; i++) {
-				var card = get.cardPile(function (card) {
-					return card.name == "sha" && !cards.includes(card);
-				});
+			await player.removeSkills("twjiekuang");
+			const handCards = player.getCards("he");
+			const num = handCards.length;
+			const cards = [];
+			const discardEvent = player.discard({ cards: handCards });
+			for (let i = 0; i < num; i++) {
+				const card = get.cardPile(card => card.name === "sha" && !cards.includes(card));
 				if (card) {
 					cards.push(card);
 				}
 			}
+			await discardEvent;
 			if (cards.length) {
-				player.gain(cards, "gain2");
+				await player.gain({
+					cards,
+					animate: "gain2",
+				});
 			}
-			"step 2";
-			player.addSkills("twluanlve");
+			await player.addSkills("twluanlve");
 		},
 	},
 	twluanlve: {
