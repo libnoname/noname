@@ -28650,6 +28650,7 @@ const skills = {
 			player: "damageEnd",
 			source: "damageSource",
 		},
+		frequent: true,
 		usable: 1,
 		async content(event, trigger, player) {
 			const result = await player.draw(2).forResult();
