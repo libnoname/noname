@@ -26384,12 +26384,12 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "fire",
 		filter(event, player) {
-			var cards = player.getCards("h", { type: "basic" });
+			const cards = player.getCards("h", { type: "basic" });
 			if (!cards.length) {
 				return false;
 			}
-			for (var i of cards) {
-				if (!game.checkMod(i, player, "unchanged", "cardEnabled2", player)) {
+			for (const card of cards) {
+				if (!game.checkMod(card, player, "unchanged", "cardEnabled2", player)) {
 					return false;
 				}
 			}
@@ -26410,15 +26410,15 @@ const skills = {
 					if (get.attitude(player, target) >= 0) {
 						return -20;
 					}
-					var cards = ui.selected.cards.slice(0);
-					var names = [];
-					for (var i of cards) {
-						names.add(i.name);
+					const cards = ui.selected.cards.slice(0);
+					const names = [];
+					for (const card of cards) {
+						names.add(card.name);
 					}
 					if (names.length < player.hp) {
 						return 0;
 					}
-					if (player.hasUnknown() && (player.identity != "fan" || !target.isZhu)) {
+					if (player.hasUnknown() && (player.identity !== "fan" || !target.isZhu)) {
 						return 0;
 					}
 					return lib.card.sha.ai.result.target.apply(this, arguments);
@@ -26442,11 +26442,11 @@ const skills = {
 				charlotte: true,
 				trigger: { source: "damageBegin1" },
 				filter(event, player) {
-					if (!event.card || !event.card.storage || !event.card.storage.twsidai || event.getParent().type != "card") {
+					if (!event.card || !event.card.storage || !event.card.storage.twsidai || event.getParent().type !== "card") {
 						return false;
 					}
-					for (var i of event.cards) {
-						if (i.name == "jiu") {
+					for (const card of event.cards) {
+						if (card.name === "jiu") {
 							return true;
 						}
 					}
@@ -26466,8 +26466,8 @@ const skills = {
 					if (!event.card || !event.card.storage || !event.card.storage.twsidai || !event.player.isIn()) {
 						return false;
 					}
-					for (var i of event.cards) {
-						if (i.name == "tao") {
+					for (const card of event.cards) {
+						if (card.name === "tao") {
 							return true;
 						}
 					}
@@ -26485,8 +26485,8 @@ const skills = {
 					if (!event.card || !event.card.storage || !event.card.storage.twsidai || !event.target.isIn()) {
 						return false;
 					}
-					for (var i of event.cards) {
-						if (i.name == "shan") {
+					for (const card of event.cards) {
+						if (card.name === "shan") {
 							return true;
 						}
 					}
@@ -26494,20 +26494,19 @@ const skills = {
 				},
 				forced: true,
 				popup: false,
-				content() {
-					"step 0";
-					trigger.target.chooseToDiscard("h", { type: "basic" }, "弃置一张基本牌，否则不能响应" + get.translation(trigger.card)).set("ai", function (card) {
-						var player = _status.event.player;
-						if (
-							player.hasCard("hs", function (cardx) {
-								return cardx != card && get.name(cardx, player) == "shan";
-							})
-						) {
-							return 12 - get.value(card);
-						}
-						return 0;
-					});
-					"step 1";
+				async content(event, trigger, player) {
+					const target = trigger.target;
+					const result = await target
+						.chooseToDiscard({
+							position: "h",
+							filterCard: { type: "basic" },
+							prompt: `弃置一张基本牌，否则不能响应${get.translation(trigger.card)}`,
+							ai: card =>
+								target.hasCard(cardx => cardx !== card && get.name(cardx, target) === "shan", "hs")
+									? 12 - get.value(card)
+									: 0,
+						})
+						.forResult();
 					if (!result.bool) {
 						trigger.directHit.add(trigger.target);
 					}
@@ -26520,16 +26519,16 @@ const skills = {
 		trigger: { player: ["phaseJieshuBegin", "damageEnd"] },
 		round: 1,
 		filter(event, player) {
-			if (event.name != "phaseJieshu") {
-				var history = player.getHistory("damage");
-				for (var i of history) {
-					if (i == event) {
+			if (event.name !== "phaseJieshu") {
+				const history = player.getHistory("damage");
+				for (const historyEvent of history) {
+					if (historyEvent === event) {
 						break;
 					}
 					return false;
 				}
-				var all = player.actionHistory;
-				for (var i = all.length - 2; i >= 0; i--) {
+				const all = player.actionHistory;
+				for (let i = all.length - 2; i >= 0; i--) {
 					if (all[i].damage.length) {
 						return false;
 					}
@@ -26546,11 +26545,10 @@ const skills = {
 			);
 		},
 		check(event, player) {
-			var cards = [],
-				names = [];
-			for (var i = 0; i < ui.discardPile.childNodes.length; i++) {
-				var card = ui.discardPile.childNodes[i];
-				if (get.type(card, null, false) == "basic" && !names.includes(card.name)) {
+			const cards = [];
+			const names = [];
+			for (const card of ui.discardPile.childNodes) {
+				if (get.type(card, null, false) === "basic" && !names.includes(card.name)) {
 					cards.push(card);
 					names.push(card.name);
 				}
@@ -26563,21 +26561,18 @@ const skills = {
 			}
 			return false;
 		},
-		content() {
-			"step 0";
-			player.discard(player.getCards("h"));
-			"step 1";
-			var cards = [],
-				names = [];
-			for (var i = 0; i < ui.discardPile.childNodes.length; i++) {
-				var card = ui.discardPile.childNodes[i];
-				if (get.type(card, null, false) == "basic" && !names.includes(card.name)) {
+		async content(event, trigger, player) {
+			await player.discard({ cards: player.getCards("h") });
+			const cards = [];
+			const names = [];
+			for (const card of ui.discardPile.childNodes) {
+				if (get.type(card, null, false) === "basic" && !names.includes(card.name)) {
 					cards.push(card);
 					names.push(card.name);
 				}
 			}
 			if (cards.length) {
-				player.gain(cards, "gain2");
+				await player.gain({ cards, animate: "gain2" });
 			}
 		},
 	},
