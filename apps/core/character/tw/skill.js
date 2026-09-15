@@ -18782,8 +18782,9 @@ const skills = {
 		filter(event, player) {
 			return event.player !== player && game.players.length > 2 && !player.hasSkill("twxuewei_round");
 		},
-		async cost(event, trigger, player) {
-			event.result = await player
+		direct: true,
+		async content(event, trigger, player) {
+			const result = await player
 				.chooseTarget({
 					prompt: get.prompt2(event.skill),
 					filterTarget: (card, player, target) => target !== player && target !== _status.event.getTrigger().player,
@@ -18795,14 +18796,15 @@ const skills = {
 					},
 				})
 				.forResult();
-		},
-		async content(event, trigger, player) {
-			const target = event.targets[0];
+			if (!result.bool || !result.targets?.length) {
+				return;
+			}
+			const target = result.targets[0];
 			event.target = target;
 			player.logSkill("twxuewei", trigger.player, false);
 			player.addTempSkill("twxuewei_round", "roundStart");
 			player.line2([trigger.player, target]);
-			const result = await trigger.player
+			const result2 = await trigger.player
 				.chooseControl({
 					controls: ["选项一", "选项二"],
 					choiceList: [`本回合不能对${get.translation(target)}使用【杀】且手牌上限-2`, `令${get.translation(player)}视为对你使用一张【决斗】`],
@@ -18818,8 +18820,8 @@ const skills = {
 					},
 				})
 				.forResult();
-			game.log(trigger.player, "选择了", "#g【血卫】", "的", `#y${result.control}`);
-			if (result.control === "选项一") {
+			game.log(trigger.player, "选择了", "#g【血卫】", "的", `#y${result2.control}`);
+			if (result2.control === "选项一") {
 				trigger.player.markAuto("twxuewei_block", [target]);
 				trigger.player.addTempSkill("twxuewei_block");
 			} else {
