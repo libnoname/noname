@@ -47546,11 +47546,11 @@ const skills = {
 			return 9 - get.value(card);
 		},
 		onuse(links, player) {
-			var next = game.createEvent("limu_recover", false, _status.event.getParent());
+			const next = game.createEvent("limu_recover", false, _status.event.getParent());
 			next.player = player;
-			next.setContent(function () {
-				player.recover();
-			});
+			next.setContent(async (event, trigger, player) => {
+        		await player.recover();
+      		});
 		},
 		ai: {
 			result: {
