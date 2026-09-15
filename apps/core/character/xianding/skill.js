@@ -28826,7 +28826,7 @@ const skills = {
 					return 0;
 				})
 				.set("judge2", result => result.bool)
-				.set("callback", event => {
+				.set("callback", function(event, player) {
 					const evtx = event.getParent();
 					const evt = event.getParent(evtx.eventName).getTrigger();
 					if (!evt.source?.isIn() || !evt.card || typeof get.info("dczhantao").getNumber(evt.card) !== "number") {
