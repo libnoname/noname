@@ -23,6 +23,7 @@ import dedent from "dedent";
 import { PoptipManager, HTMLPoptipElement } from "./poptip.js";
 import { ZhanfaManager } from "./zhanfa.js";
 import skills from "./skill.js";
+import { DefaultFileSystemAdapter, FileSystem } from "./fs/index.js";
 
 const html = dedent;
 
@@ -7226,6 +7227,20 @@ export class Library {
 						map.siguo_character.hide();
 					}
 				},
+				continue_game: {
+					name: "显示再战",
+					init: true,
+					onclick(bool) {
+						game.saveConfig("continue_game", bool, this._link.config.mode);
+						if (get.config("continue_game") && get.mode() == "versus") {
+							game.createVersusContinueControl();
+						} else if (ui.continue_game) {
+							ui.continue_game.close();
+							delete ui.continue_game;
+						}
+					},
+					intro: "游戏结束后可选择用相同的武将再进行一局游戏",
+				},
 				versus_mode: {
 					name: "游戏模式",
 					init: "two",
@@ -8845,6 +8860,17 @@ export class Library {
 			);
 		},
 	};
+	/**
+	 * 文件系统操作入口（新）。
+	 *
+	 * 旨在整合之前`game.readFile/writeFile/...`用于读写文件的函数，为多平台支持提供统一适配器
+	 * 
+	 * 当前仅浏览器的开发服务器环境会安装具体适配器；其他运行环境暂使用默认适配器，
+	 * 调用文件系统操作时会抛出错误。此入口为后续 Node.js/Cordova 适配保留统一接口。
+	 *
+	 * @type {FileSystem}
+	 */
+	fs = new FileSystem(new DefaultFileSystemAdapter());
 	/**
 	 * @type {import('path-browserify-esm')}
 	 */

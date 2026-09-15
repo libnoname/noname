@@ -23,6 +23,24 @@ const characters = {
 		names: "null|null-null|null",
 		isUnseen: true,
 	},
+	xiangxue_liushan: {
+		sex: "male",
+		group: "shu",
+		hp: 3,
+		skills: ["xiangxue", "zhiyong"],
+	},
+	haoxue_lvmeng: {
+		sex: "male",
+		group: "wu",
+		hp: 4,
+		skills: ["haoxue", "qiongshe"],
+	},
+	boxue_caochong: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["boxue", "zhizhong"],
+	},
 	natu_guanyu: {
 		sex: "male",
 		group: "shu",
@@ -525,7 +543,6 @@ const characters = {
 		group: "qun",
 		hp: 4,
 		skills: ["oldingxi", "olnengchen", "olhuojie"],
-		img: "image/character/jsrg_caocao.jpg",
 	},
 	jiangziya: {
 		sex: "male",

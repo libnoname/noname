@@ -2410,7 +2410,7 @@ export const extensionMenu = function (connectMenu) {
 			if (source && source[index]) {
 				extensionURL = source[index];
 			} else {
-				extensionURL = lib.updateURL.replace(/noname/g, "noname-extension") + "/master/";
+				extensionURL = "https://raw.githubusercontent.com/libnoname/noname-extension/master/";
 			}
 
 			var reloadnode = ui.create.div(".config.toggle.pointerdiv", "重新启动", page, game.reload);

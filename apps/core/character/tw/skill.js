@@ -883,11 +883,11 @@ const skills = {
 		enable: "chooseToUse",
 		popup: false,
 		filterCard(card) {
-			return get.tag(card, "damage") > 0;
+			return get.is.damageCard(card);
 		},
 		filter(event, player) {
 			const name = player.storage.twsaoting ? "jiu" : "juedou";
-			return player.hasCards("hes", card => get.tag(card, "damage") > 0) && event.filterCard(get.autoViewAs({ name }, "unsure"), player, event);
+			return player.hasCards("hes", card => get.is.damageCard(card)) && event.filterCard(get.autoViewAs({ name }, "unsure"), player, event);
 		},
 		position: "hes",
 		viewAs(cards, player) {
@@ -912,6 +912,11 @@ const skills = {
 						await player.draw();
 					}
 				});
+		},
+		hiddenCard(player, name) {
+			const storage = player.storage.twsaoting;
+			const namex = storage ? "jiu" : "juedou";
+			return name == namex && player.hasCards("hes", card => get.is.damageCard(card));
 		},
 		ai: {
 			order(item, player) {
@@ -4572,6 +4577,17 @@ const skills = {
 				target.markAuto(skill, [[phase, target.getCards("h")]]);
 				target.addGaintag(target.getCards("h"), "twsbfangzhu");
 			}
+		},
+		ai: {
+			maixie_defend: true,
+			effect: {
+				target(card, player, target) {
+					if (player.hasSkillTag("jueqing", false, target)) {
+						return [1, -1];
+					}
+					return 0.8;
+				},
+			},
 		},
 		group: "twsbfangzhu_liufang",
 		subSkill: {
@@ -19477,6 +19493,8 @@ const skills = {
 	//呼厨泉
 	twfupan: {
 		audio: 3,
+		logAudio: index => (typeof index == "number" ? `twfupan${index}.mp3` : 1),
+		frequent: true,
 		trigger: {
 			player: "damageEnd",
 			source: "damageSource",
@@ -19546,6 +19564,7 @@ const skills = {
 				player.line(target, "green");
 				await player.give(cards, target);
 				if (!player.storage.twfupan[target.playerid]) {
+					player.logSkill(event.name, [target], null, null, [2]);
 					player.storage.twfupan[target.playerid] = 1;
 					await player.draw(2);
 				} else {
@@ -19555,6 +19574,7 @@ const skills = {
 						.set("bool", get.damageEffect(target, player, player) > 0)
 						.forResult();
 					if (result?.bool) {
+						player.logSkill(event.name, [target], null, null, [3]);
 						player.storage.twfupan[target.playerid]++;
 						player.line(target, "fire");
 						await target.damage();
@@ -24952,6 +24972,7 @@ const skills = {
 		},
 		audio: 2,
 		trigger: { player: "useCardAfter" },
+		frequent: true,
 		filter(event, player) {
 			var evt = event.getParent("phaseUse");
 			if (!evt || evt.player != player) {
@@ -27650,7 +27671,7 @@ const skills = {
 		},
 		direct: true,
 		filter(event, player) {
-			return player.countCards("he") > 0;
+			return player.hasCards("he");
 		},
 		content() {
 			"step 0";
@@ -29011,13 +29032,14 @@ const skills = {
 			backup(links, player) {
 				return {
 					audio: "twlingbao",
+					cards: links,
 					filterCard(card) {
-						return links.includes(card);
+						return get.info("twlingbao_backup").cards.includes(card);
 					},
 					selectCard: -1,
 					position: "x",
 					async content(event, trigger, player) {
-						const cards = links,
+						const cards = get.info("twlingbao_backup").cards,
 							colors = cards.map(card => get.color(card)).unique();
 						await player.draw(2);
 						if (colors.length == 1 && colors[0] == "red") {

@@ -1,4 +1,6 @@
 export default {
+	//ol_zhonghui: "",
+	ol_shen_huangzhong: "血刃斩穹",
 	ol_sb_zhurong: "见放崇山",
 	ol_bulianshi: "无冕之后",
 	//ol_liufeng: "",

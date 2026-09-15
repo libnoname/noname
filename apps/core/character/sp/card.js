@@ -213,37 +213,37 @@ const cards = {
 		filterTarget(card, player, target) {
 			return target.countCards("h") && target != player && target.hasSex("male");
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
+			const { target } = event;
 			event.list = game
 				.filterPlayer(function (current) {
 					return current != player && current != target && current.hasSex("female");
 				})
 				.sortBySeat();
-			"step 1";
-			if (target.countCards("h") && event.list.length) {
-				event.current = event.list.shift();
-				event.current.gainPlayerCard(target, true, "h");
-				target.line2([event.current, player]);
-			} else {
-				event.goto(4);
+			while (true) {
+				if (target.countCards("h") && event.list.length) {
+					event.current = event.list.shift();
+					const next = event.current.gainPlayerCard(target, true, "h");
+					target.line2([event.current, player]);
+					await next;
+					const result = await event.current.chooseCard("h", true, "将一张手牌交给" + get.translation(player)).forResult();
+					if (result.bool) {
+						await event.current.give(result.cards, player);
+					}
+				} else {
+					break;
+				}
 			}
-			"step 2";
-			event.current.chooseCard("h", true, "将一张手牌交给" + get.translation(player));
-			"step 3";
-			if (result.bool) {
-				event.current.give(result.cards, player);
-			}
-			event.goto(1);
-			"step 4";
-			var n1 = target.countCards("h");
-			var n2 = player.countCards("h");
+			const n1 = target.countCards("h");
+			const n2 = player.countCards("h");
 			if (n1 > n2) {
-				target.damage(player);
+				const next = target.damage(player);
 				player.line(target);
+				await next;
 			} else if (n1 < n2) {
-				player.damage(target);
+				const next = player.damage(target);
 				target.line(player);
+				await next;
 			}
 		},
 		ai: {
@@ -280,14 +280,13 @@ const cards = {
 		filterTarget(card, player, target) {
 			return target != player;
 		},
-		content() {
-			"step 0";
-			var num = Math.min(5, target.maxHp - target.hp);
+		async content(event, trigger, player) {
+			const { target } = event;
+			const num = Math.min(5, target.maxHp - target.hp);
 			if (num) {
-				target.draw(num);
+				await target.draw(num);
 			}
-			"step 1";
-			target.damage();
+			await target.damage();
 		},
 		ai: {
 			order: 6,

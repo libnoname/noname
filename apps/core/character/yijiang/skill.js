@@ -648,6 +648,7 @@ const skills = {
 	oldmiji: {
 		trigger: { player: ["phaseZhunbeiBegin", "phaseJieshuBegin"] },
 		audio: 2,
+		frequent: true,
 		filter(event, player) {
 			return player.isDamaged();
 		},
@@ -11530,13 +11531,13 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			await player.loseMaxHp();
 			await player.chooseDrawRecover(2, true, (event, player) => {
-				if (player.hp == 1 && player.isDamaged()) {
+				if (player.hp == 1 && player.getDamagedHp() > 1) {
 					return "recover_hp";
 				}
 				return "draw_card";
 			});
+			await player.loseMaxHp();
 			await player.addSkills("paiyi");
 		},
 		ai: { combo: "quanji" },
@@ -12565,6 +12566,7 @@ const skills = {
 			player: "phaseJieshuBegin",
 		},
 		locked: false,
+		frequent: true,
 		filter(event, player) {
 			return player.hp < player.maxHp;
 		},
@@ -13621,6 +13623,7 @@ const skills = {
 		audio: 2,
 		audioname2: { sxrm_caocao: "zhiyu_sxrm_caocao", tw_sxrm_caocao: "zhiyu_sxrm_caocao" },
 		trigger: { player: "damageEnd" },
+		frequent: true,
 		preHidden: true,
 		async content(event, trigger, player) {
 			await player.draw();

@@ -1,4 +1,19 @@
 const characters = {
+	ps_shen_diaochan: {
+		sex: "female",
+		group: "shen",
+		hp: 3,
+		skills: ["psmeihun", "pshuoxin"],
+		groupInGuozhan: "qun",
+		names: "null|null",
+		dieAudio: ["shen_diaochan"],
+	},
+	ym_luoguanzhong: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["ymzhuhun", "ymjingshi", "ymranhan"],
+	},
 	lx_simazhao: {
 		sex: "male",
 		group: "wei",
@@ -20,7 +35,6 @@ const characters = {
 		group: "shen",
 		hp: 4,
 		skills: ["lxyuli", "lxtingwei", "lxjimie"],
-		img: "image/character/mb_shen_machao.jpg",
 		dieAudios: ["mb_shen_machao"],
 	},
 	lx_simafu: {
@@ -239,6 +253,19 @@ const characters = {
 		group: "qun",
 		hp: 4,
 		skills: ["pepozhen", "petaoge", "pezhenguan"],
+	},
+	ylyg_sunce: {
+		sex: "male",
+		group: "wu",
+		hp: 4,
+		skills: ["ylyg_jiang", "ylyg_hunzi", "ylyg_zhiba"],
+		isZhugong: true,
+	},
+	ylyg_caiwenji: {
+		sex: "female",
+		group: "qun",
+		hp: 3,
+		skills: ["ylyg_duanchang", "ylyg_beige"],
 	},
 	ylyg_xuhuang: {
 		sex: "male",

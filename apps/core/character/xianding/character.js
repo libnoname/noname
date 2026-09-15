@@ -1,4 +1,24 @@
 const characters = {
+	cuizhi: {
+		sex: "female",
+		group: "shu",
+		hp: 4,
+		skills: ["dcranlv", "dcjuexun"],
+		names: "崔|null",
+	},
+	luwenyi: {
+		sex: "female",
+		group: "wu",
+		hp: 3,
+		skills: ["dccaiyun", "dcqieyan"],
+		names: "陆|null",
+	},
+	dc_sb_chengpu: {
+		sex: "male",
+		group: "wu",
+		hp: 5,
+		skills: ["dcsbjianwei", "dcsbjuzhan"],
+	},
 	liupanxi: {
 		sex: "female",
 		group: "shu",
@@ -58,7 +78,7 @@ const characters = {
 	dc_sb_wangping: {
 		sex: "male",
 		group: "shu",
-		hp: 4,
+		hp: 5,
 		skills: ["dcsbyouyi", "dcsbfangong"],
 	},
 	dc_sb_masu: {
@@ -70,7 +90,7 @@ const characters = {
 	dc_sb_zhugeliang: {
 		sex: "male",
 		group: "shu",
-		hp: 3,
+		hp: 4,
 		skills: ["dcsbjingmou", "dcsbguyi"],
 		names: "诸葛|亮",
 		clans: ["琅琊诸葛氏"],
@@ -86,7 +106,7 @@ const characters = {
 	dc_shen_zhangliao: {
 		sex: "male",
 		group: "shen",
-		hp: 4,
+		hp: 5,
 		skills: ["dccuxi", "dcduorui", "dczhiti"],
 		groupInGuozhan: "wei",
 		dieAudios: ["shen_zhangliao"],
@@ -188,8 +208,8 @@ const characters = {
 	shen_zhangjiao: {
 		sex: "male",
 		group: "shen",
-		hp: 3,
-		skills: ["yizhao", "sijun", "sanshou", "tianjie"],
+		hp: 4,
+		skills: ["dcyizhao", "sijun", "sanshou", "tianjie"],
 		groupInGuozhan: "qun",
 	},
 	shen_zhangfei: {
@@ -1381,6 +1401,12 @@ const characters = {
 		group: "wu",
 		hp: 4,
 		skills: ["dczhengyue"],
+	},
+	sunhe: {
+		sex: "male",
+		group: "wu",
+		hp: 4,
+		skills: ["guanchong", "chanchu"],
 	},
 };
 
