@@ -16808,12 +16808,12 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const [target] = event.targets;
-			player.useCard({
+			player.addTempSkill("twqingkou_after");
+			await player.useCard({
 				card: { name: "juedou", isCard: true, storage: { twqingkou: true } },
 				targets: [target],
 				addCount: false,
 			});
-			player.addTempSkill("twqingkou_after");
 		},
 		subSkill: {
 			after: {
