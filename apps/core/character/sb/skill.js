@@ -503,29 +503,33 @@ const skills = {
 	//谋张郃·重做
 	sbqiaobian: {
 		getNum(player) {
-			return ["h", "e", "j"].filter(position => {
+			let num = 0;
+			for (const position of ["h", "e", "j"]) {
 				const cards = player.getDiscardableCards(player, position);
 				if (position === "j") {
-					return cards.some(card => {
+					num += cards.filter(card => {
 						const cardj = card.viewAs ? { name: card.viewAs } : card;
 						if (cardj.name === "xumou_jsrg") {
 							return false;
 						}
 						return get.effect(player, cardj, player, player) < 0;
-					});
+					}).length;
 				} else if (position === "e") {
-					if (cards.some(card => get.value(card, player) < 7)) {
-						return true;
-					}
-					if (player.isDamaged() && cards.some(card => card.name === "baiyin") && get.recoverEffect(player, player, player) > 0) {
-						if (player.hp === 1 && !player.hujia) {
+					num += cards.filter(card => {
+						if (get.value(card, player) < 7) {
 							return true;
 						}
-					}
-					return false;
+						if (player.isDamaged() && card.name === "baiyin" && get.recoverEffect(player, player, player) > 0) {
+							return player.hp === 1 && !player.hujia;
+						}
+						return false;
+					}).length;
+				} else {
+					num += cards.filter(card => get.value(card, player) < 6.5).length;
 				}
-				return cards.some(card => get.value(card, player) < 6.5);
-			}).length;
+			}
+			// 一次至多弃置三张牌
+			return Math.min(3, num);
 		},
 		choice: {
 			phaseDraw(player, bool = false, numx = 0) {
@@ -605,10 +609,7 @@ const skills = {
 				.set("filterButton", button => {
 					const card = button.link;
 					const player = get.player();
-					if (!lib.filter.cardDiscardable(card, player)) {
-						return false;
-					}
-					return !ui.selected.buttons.reduce((list, cardx) => list.add(get.position(cardx.link)), []).includes(get.position(card));
+					return lib.filter.cardDiscardable(card, player);
 				})
 				.set("ai", button => {
 					const { player, numx } = get.event();
@@ -721,7 +722,7 @@ const skills = {
 				forced: true,
 				locked: false,
 				async content(event, trigger, player) {
-					const next = player.draw(3);
+					const next = player.draw(2);
 					next.gaintag.add("sbqiaobian");
 					await next;
 					player.addTempSkill("sbqiaobian_phaseJieshu");
