@@ -34328,8 +34328,8 @@ const skills = {
 					visible: true,
 					forced,
 					prompt: "获得并使用其中一张牌",
-					filterButton: button => player.hasUseTarget(button.link),
-					ai: button => player.getUseValue(button.link),
+					filterButton: button => get.player().hasUseTarget(button.link),
+					ai: button => get.player().getUseValue(button.link),
 				})
 				.forResult();
 			if (result.bool) {
