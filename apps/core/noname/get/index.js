@@ -1547,7 +1547,7 @@ export class Get {
 			url += "/";
 		}
 		if (master != "nodev") {
-			return url + "master/";
+			return url + "main/apps/core/";
 		} else {
 			return url + "v" + lib.version + "/";
 		}
