@@ -16337,38 +16337,36 @@ const skills = {
 			return get.attitude(player, event.target) < 0;
 		},
 		logTarget: "target",
-		content() {
-			"step 0";
-			trigger.target
-				.chooseControl()
-				.set("choiceList", ["受到" + get.translation(player) + "对你造成的1点伤害", "令" + get.translation(player) + "使用的下一张牌对你造成的伤害+2"])
-				.set("ai", function () {
-					var target = _status.event.player,
-						player = _status.event.getParent().player;
-					if (
-						target.hp <= 3 &&
-						target.hp > 1 &&
-						player.countCards("hs", function (card) {
-							return get.tag(card, "damage") && player.canUse(card, target);
-						}) > 0
-					) {
-						return 0;
-					}
-					return 1;
-				});
-			"step 1";
-			var target = trigger.target;
-			switch (result.index) {
-				case 0:
-					player.line(target, "fire");
-					target.damage();
-					break;
-				case 1:
-					target.line(player, "fire");
-					player.storage.twxuhe_damage = target;
-					trigger.getParent().twxuhe = true;
-					player.addTempSkill("twxuhe_damage");
-					break;
+		async content(event, trigger, player) {
+			const target = trigger.target;
+			const result = await target
+				.chooseControl({
+					choiceList: [
+						`受到${get.translation(player)}对你造成的1点伤害`,
+						`令${get.translation(player)}使用的下一张牌对你造成的伤害+2`,
+					],
+					ai: () => {
+						const target = _status.event.player;
+						const player = _status.event.getParent().player;
+						if (
+							target.hp <= 3 &&
+							target.hp > 1 &&
+							player.countCards("hs", card => get.tag(card, "damage") && player.canUse(card, target)) > 0
+						) {
+							return 0;
+						}
+						return 1;
+					},
+				})
+				.forResult();
+			if (result.index === 0) {
+				player.line(target, "fire");
+				await target.damage();
+			} else {
+				target.line(player, "fire");
+				player.storage.twxuhe_damage = target;
+				trigger.getParent().twxuhe = true;
+				player.addTempSkill("twxuhe_damage");
 			}
 		},
 		subSkill: {
@@ -16383,18 +16381,18 @@ const skills = {
 				},
 				direct: true,
 				filter(event, player) {
-					if (event.name == "useCard") {
+					if (event.name === "useCard") {
 						return !event.twxuhe;
 					}
 					if (!event.card) {
 						return false;
 					}
-					var evt = event.getParent(2);
-					var history = player.getHistory("useCard");
-					return evt.name == "useCard" && history[history.indexOf(evt) - 1].twxuhe;
+					const evt = event.getParent(2);
+					const history = player.getHistory("useCard");
+					return evt.name === "useCard" && history[history.indexOf(evt) - 1].twxuhe;
 				},
-				content() {
-					if (trigger.name != "useCard") {
+				async content(event, trigger, player) {
+					if (trigger.name !== "useCard") {
 						trigger.num += 2;
 					}
 					player.removeSkill("twxuhe_damage");
