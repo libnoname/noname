@@ -1,6 +1,53 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const cards = {
+	chixueren: {
+		derivation: "ol_shen_huangzhong",
+		cardcolor: "heart",
+		type: "equip",
+		subtype: "equip1",
+		distance: {
+			attackFrom: -2,
+			attackRange(card, player) {
+				if (!player.hasSkill("shenyu", null, false, false)) {
+					return 0;
+				}
+				return 3;
+			},
+		},
+		loseDelay: false,
+		cardPrompt(card, player) {
+			let str = lib.translate[card.name + "_info"];
+			const vcard = card[card.cardSymbol];
+			if (vcard) {
+				const storage = vcard.storage?.chixueren?.filter(i => get.translation(i) != i);
+				if (storage?.length) {
+					str += `<br><span class="yellowtext"><li>已吞噬技能：${storage.map(i => get.poptip(i)).join("、")}</span>`;
+				}
+			}
+			return str;
+		},
+		async onLose(event, trigger, player) {
+			const { cards } = event;
+			if ((!event.getParent(2) || event.getParent(2).name != "swapEquip") && (event.getParent().type != "equip" || event.getParent().swapEquip)) {
+				game.log(cards, "被销毁");
+				await game.cardsGotoSpecial(cards, false);
+				if (event.getParent().type == "gain") {
+					event.getParent(2).cards.removeArray(cards);
+				}
+			}
+		},
+		ai: {
+			equipValue(card, player) {
+				if (!player.hasSkill("shenyu", null, false, false)) {
+					return 0;
+				}
+				return 5;
+			},
+			basic: { equipValue: 5 },
+		},
+		skills: ["chixueren_skill"],
+	},
 	lusu_phaseZhunbei: {
 		fullskin: true,
 		noname: true,
@@ -32,6 +79,7 @@ const cards = {
 		type: "equip",
 		subtype: "equip1",
 		async onLose(event, trigger, player) {
+			const { cards } = event;
 			if (!lib.card.sizhaojian.inShanShanFestival() && (!event.getParent(2) || event.getParent(2).name != "swapEquip") && (event.getParent().type != "equip" || event.getParent().swapEquip)) {
 				cards.forEach(card => {
 					card.fix();

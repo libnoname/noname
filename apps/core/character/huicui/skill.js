@@ -1013,8 +1013,16 @@ const skills = {
 					.forResult();
 			} else {
 				event.result = await player
-					.chooseBool(get.prompt2(event.skill))
-					//.set("choice", player.isDamaged() || num < -1 || get.attitude(player, trigger.player) > 0)
+					.chooseBool({
+						prompt: get.prompt2(event.skill),
+						ai() {
+							const player = get.player(),
+								target = _status.currentPhase;
+							if (player.isDamaged()) return true;
+							if (target?.isIn() && get.attitude(player, target) < 0) return true;
+							return false;
+						},
+					})
 					.forResult();
 			}
 		},
@@ -1027,13 +1035,12 @@ const skills = {
 				await player.modedDiscard(event.cards);
 			}
 			const num = player.countCards("h") - count;
-			if (num == 0) {
+			if (num <= 0) {
 				await player.recover();
-			}
-			if (num < 0) {
 				const target = _status.currentPhase;
-				if (target?.isIn() && target.hasGainableCards(player, "he") && player != target) {
-					await player.gainPlayerCard(target, "he", true);
+				const position = player == target ? "e" : "he";
+				if (target?.isIn() && target.hasGainableCards(player, position)) {
+					await player.gainPlayerCard({ target, position, forced: true });
 				}
 			}
 			//player.addTempSkill("dczhangguan_effect");
@@ -7764,6 +7771,7 @@ const skills = {
 			if (sign > 0) {
 				result = await player
 					.chooseBool(get.prompt("dczuowei"), "令" + get.translation(trigger.card) + "不可被响应")
+					.set("frequentSkill", event.name)
 					.set("ai", () => 1)
 					.forResult();
 			} else if (sign == 0) {
@@ -15866,6 +15874,7 @@ const skills = {
 	tongli: {
 		audio: 2,
 		trigger: { player: "useCardToPlayered" },
+		frequent: true,
 		filter(event, player) {
 			if (!event.isFirstTarget || (event.card.storage && event.card.storage.tongli)) {
 				return false;
@@ -17641,6 +17650,7 @@ const skills = {
 	guowu: {
 		audio: 2,
 		trigger: { player: "phaseUseBegin" },
+		frequent: true,
 		filter(event, player) {
 			return player.countCards("h") > 0;
 		},

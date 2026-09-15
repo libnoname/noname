@@ -3665,20 +3665,21 @@ const skills = {
 		audio: 2,
 		trigger: { player: "equipAfter" },
 		forced: true,
+		getTypes(card) {
+			const type = get.type2(card, false);
+			return type === "equip" ? get.subtypes(card) : [type];
+		},
 		filter(event, player, name, card) {
-			const subtypes = get.subtypes(card);
-			return !player.getStorage("jingyi_used").some(i => subtypes.includes(i));
+			const used = player.getStorage("jingyi_used");
+			return lib.skill.jingyi.getTypes(card).some(type => !used.includes(type));
 		},
 		getIndex(event, player) {
 			return event.cards ?? [];
 		},
 		async content(event, trigger, player) {
-			const card = event.indexedData,
-				subtypes = get.subtypes(card);
+			const types = lib.skill.jingyi.getTypes(event.indexedData);
 			player.addTempSkill(event.name + "_used");
-			if (subtypes?.length) {
-				player.markAuto(event.name + "_used", subtypes);
-			}
+			player.markAuto(event.name + "_used", types);
 			const num = player.getCards("e").reduce((sum, card) => {
 				const num = card.viewAs ? card.cards.length : 1;
 				return sum + num;
@@ -6264,7 +6265,7 @@ const skills = {
 			}
 			return range < 3 && event.num > 1;
 		},
-		async content(event, trigger) {
+		async content(event, trigger, player) {
 			if (event.triggername === "damageBegin1") {
 				trigger.num++;
 			} else {
@@ -6966,7 +6967,7 @@ const skills = {
 				check(event, player) {
 					const bool = game.hasPlayer2(current => {
 						return current.hasHistory("damage", evt => evt.card == event.card);
-					}, true)
+					}, true);
 					if (bool) {
 						return true;
 					}

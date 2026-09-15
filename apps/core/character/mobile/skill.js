@@ -525,29 +525,31 @@ const skills = {
 	reqizhi: {
 		audio: 4,
 		logAudio: () => 2,
-		chargeSkill: 3,
+		chargeSkill: 2,
 		beginMarkCount: 1,
 		init(player, skill) {
 			const num = lib.skill[skill].beginMarkCount;
 			player.addCharge(num, false);
 		},
 		enable: "phaseUse",
-		filterTarget: true,
+		filterTarget(card, player, target) {
+			return !player.getStorage("reqizhi_effect").includes(target);
+		},
 		filter(event, player) {
-			return player.countCharge();
+			return player.countCharge() && game.hasPlayer(target => get.info("reqizhi").filterTarget(null, player, target));
 		},
 		async content(event, trigger, player) {
 			const target = event.target;
 			player.removeCharge(1);
-			player.addTempSkill(event.name + "_effect");
+			player.addTempSkill(event.name + "_effect", "phaseAnyAfter");
 			player.markAuto(event.name + "_effect", [target]);
-			await target.draw({ num: 3 });
+			await target.draw({ num: 2 });
 		},
 		ai: {
 			order: 1,
 			result: {
 				player(player) {
-					if (player.countCharge() > 2 || player.getCardUsable("sha", true)) {
+					if (player.countCharge() > 1 || player.getCardUsable("sha", true)) {
 						return 1;
 					}
 					return 0;
@@ -557,28 +559,29 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
-				audio: ["reqizhi3.mp3", "reqizhi4.mp3"],
+				audio: "reqizhi",
+				logAudio: () => ["reqizhi3.mp3", "reqizhi4.mp3"],
 				charlotte: true,
 				onremove: true,
 				forced: true,
 				intro: {
-					content: "本回合使用基本牌或普通锦囊牌指定目标后，依次观看$的手牌并弃置其中一张",
+					content: "本阶段使用基本牌或普通锦囊牌指定目标后，依次观看$的手牌并弃置其一张牌",
 				},
 				trigger: {
 					player: "useCardToPlayered",
 				},
 				filter(event, player) {
-					return event.isFirstTarget && event.targets?.length && ["basic", "trick"].includes(get.type(event.card)) && player.getStorage("reqizhi_effect").some(target => target.countCards("h"));
+					return event.isFirstTarget && event.targets?.length && ["basic", "trick"].includes(get.type(event.card)) && player.getStorage("reqizhi_effect").some(target => target.hasCards("he"));
 				},
 				logTarget(event, player) {
 					return player
 						.getStorage("reqizhi_effect")
-						.filter(target => target.countCards("h"))
+						.filter(target => target.hasCards("he"))
 						.sortBySeat();
 				},
 				async content(event, trigger, player) {
 					const targets = event.targets;
-					await game.doAsyncInOrder(targets, async target => player.discardPlayerCard({ target, forced: true, position: "h", visible: true }));
+					await game.doAsyncInOrder(targets, async target => player.discardPlayerCard({ target, forced: true, position: "he", visible: true }));
 				},
 			},
 		},
@@ -592,7 +595,7 @@ const skills = {
 		},
 		filter(event, player) {
 			const storage = player.getStorage("rejinqu", [0, 0]);
-			return event.name == "useCard" ? storage[0] >= 3 && game.hasPlayer(target => target.countCharge(true)) : storage[1] > 0;
+			return event.name == "useCard" ? storage[0] >= 2 && game.hasPlayer(target => target.countCharge(true)) && player == _status.currentPhase && ["basic", "trick"].includes(get.type(event.card)) : storage[1] > 0;
 		},
 		init(player, skill) {
 			if (!player.storage[skill]) {
@@ -617,7 +620,7 @@ const skills = {
 			},
 			content(storage) {
 				storage = storage ?? [0, 0];
-				let str = `<li>使用牌数：${storage[0]}/3`;
+				let str = `<li>使用牌数：${storage[0]}/2`;
 				if (storage[1] > 0) {
 					str += `<li>本回合蓄力点最大值：${storage[1]}`;
 				}
@@ -646,7 +649,9 @@ const skills = {
 									.set("targets", targets)
 									.forResult()
 							: { bool: true, targets: targets };
-					result.targets[0].addCharge(1);
+					if (result?.bool && result.targets?.length) {
+						result.targets[0].addCharge(1);
+					}
 				}
 			} else {
 				const num = storage[1];
@@ -660,7 +665,10 @@ const skills = {
 					player: ["phaseBeforeStart", "addMark", "removeMark", "phaseAfter", "useCardAfter"],
 				},
 				filter(event, player) {
-					return ["phase", "useCard"].includes(event.name) || (event.markName == "charge" && player == _status.currentPhase);
+					if (event.name == "useCard") {
+						return player == _status.currentPhase && ["basic", "trick"].includes(get.type(event.card));
+					}
+					return event.name == "phase" || (event.markName == "charge" && player == _status.currentPhase);
 				},
 				async content(event, trigger, player) {
 					if (!player.storage.rejinqu) {
@@ -3646,6 +3654,7 @@ const skills = {
 	//缘吕布
 	mblvezhen: {
 		audio: 2,
+		frequent: true,
 		trigger: {
 			player: "phaseUseBegin",
 		},
@@ -4599,7 +4608,7 @@ const skills = {
 				return;
 			}
 			const card = result.links[0];
-			if (player.hasUseTarget(card)) {
+			if (player.hasUseTarget(card, false)) {
 				if (puts.includes(card)) {
 					game.clearCardKnowers(card);
 				}
@@ -25965,6 +25974,7 @@ const skills = {
 			player.$fullscreenpop("败移", "thunder");
 		},
 		async content(event, trigger, player) {
+			const { targets } = event;
 			player.awakenSkill(event.name);
 			game.broadcastAll(
 				function (target1, target2) {
@@ -28517,10 +28527,10 @@ const skills = {
 					const list = player.getStorage("zhouxuan_effect").find(list => list[0] == target);
 					if (
 						list?.[1]?.some(([name, type]) => {
-							if (Array.isArray(link) && get.name(card) == button.link[2]) {
+							if (Array.isArray(link) && get.name(name) == button.link[2]) {
 								return true;
 							}
-							if (typeof link == "string" && get.type2(card) == link) {
+							if (typeof link == "string" && get.type2(name) == link) {
 								return true;
 							}
 							return false;
@@ -29890,6 +29900,7 @@ const skills = {
 		lose: false,
 		delay: false,
 		async content(event, trigger, player) {
+			const { cards } = event;
 			var targets = game
 				.filterPlayer(function (current) {
 					return current != player;
@@ -30689,6 +30700,7 @@ const skills = {
 	xinfu_daigong: {
 		usable: 1,
 		audio: 2,
+		frequent: true,
 		trigger: {
 			player: "damageBegin4",
 		},
