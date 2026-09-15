@@ -25397,30 +25397,31 @@ const skills = {
 			return !player.hasSkill("twzuhuo_mahou") && player.countCards("he", lib.skill.twzuhuo.filterCard) > 0;
 		},
 		filterCard(card) {
-			return get.type(card) != "basic";
+			return get.type(card) !== "basic";
 		},
 		position: "he",
 		check(card) {
 			return 7 - get.value(card);
 		},
-		content() {
-			"step 0";
-			player
-				.chooseControl("1回合", "2回合", "3回合")
-				.set("prompt", "请选择施法时长")
-				.set("ai", function () {
-					var player = _status.event.player;
-					var safe = Math.min(player.getHandcardLimit(), player.countCards("h", "shan"));
-					if (safe < Math.min(3, game.countPlayer())) {
-						var next = player.next;
-						while (next != player && get.attitude(next, player) > 0) {
-							safe++;
-							next = next.next;
+		async content(event, trigger, player) {
+			const result = await player
+				.chooseControl({
+					controls: ["1回合", "2回合", "3回合"],
+					prompt: "请选择施法时长",
+					ai: () => {
+						const player = _status.event.player;
+						let safe = Math.min(player.getHandcardLimit(), player.countCards("h", "shan"));
+						if (safe < Math.min(3, game.countPlayer())) {
+							let next = player.next;
+							while (next !== player && get.attitude(next, player) > 0) {
+								safe++;
+								next = next.next;
+							}
 						}
-					}
-					return Math.max(2, Math.min(safe, 3, game.countPlayer())) - 1;
-				});
-			"step 1";
+						return Math.max(2, Math.min(safe, 3, game.countPlayer())) - 1;
+					},
+				})
+				.forResult();
 			player.storage.twzuhuo_mahou = [result.index + 1, result.index + 1];
 			player.addTempSkill("twzuhuo_mahou", { player: "die" });
 		},
@@ -25436,18 +25437,18 @@ const skills = {
 				forced: true,
 				popup: false,
 				charlotte: true,
-				content() {
-					var list = player.storage.twzuhuo_mahou;
+				async content(event, trigger, player) {
+					const list = player.storage.twzuhuo_mahou;
 					list[1]--;
-					if (list[1] == 0) {
+					if (list[1] === 0) {
 						game.log(player, "的“阻祸”魔法生效");
 						player.logSkill("twzuhuo");
-						var num = list[0];
+						const num = list[0];
 						player.addSkill("twzuhuo_effect");
 						player.addMark("twzuhuo_effect", num, false);
 						player.removeSkill("twzuhuo_mahou");
 					} else {
-						game.log(player, "的“阻祸”魔法剩余", "#g" + list[1] + "回合");
+						game.log(player, "的“阻祸”魔法剩余", `#g${list[1]}回合`);
 						player.markSkill("twzuhuo_mahou");
 					}
 				},
@@ -25464,7 +25465,7 @@ const skills = {
 					},
 					content(storage) {
 						if (storage) {
-							return "经过" + storage[1] + "个“回合结束时”后，获得" + storage[0] + "层“防止一次伤害”的效果";
+							return `经过${storage[1]}个“回合结束时”后，获得${storage[0]}层“防止一次伤害”的效果`;
 						}
 						return "未指定施法效果";
 					},
@@ -25478,7 +25479,7 @@ const skills = {
 				filter(event, player) {
 					return player.hasMark("twzuhuo_effect");
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.cancel();
 					player.removeMark("twzuhuo_effect", 1, false);
 					if (!player.countMark("twzuhuo_effect")) {
