@@ -29128,26 +29128,30 @@ const skills = {
 	twtijin: {
 		trigger: { global: "useCardToPlayer" },
 		filter(event, player) {
-			return event.card?.name == "sha" && event.player != player && event.target != player && event.targets.length == 1 && player.inRange(event.player);
+			return event.card?.name === "sha" && event.player !== player && event.target !== player && event.targets.length === 1 && player.inRange(event.player);
 		},
 		logTarget: "target",
 		check(event, player) {
 			return get.effect(event.targets[0], event.card, event.player, player) <= get.effect(player, event.card, event.player, player);
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			trigger.targets.length = 0;
 			trigger.getParent().triggeredTargets1.length = 0;
 			trigger.targets.push(player);
-			var next = game.createEvent("twtijin_discard", null, trigger.getParent(2));
+			const next = game.createEvent("twtijin_discard", null, trigger.getParent(2));
 			next.player = player;
 			next.target = trigger.player;
-			next.setContent(function () {
-				if (target.isDead() || !target.countCards("he")) {
+			next.setContent(async (event, trigger, player) => {
+				const { target } = event;
+				if (target.isDead() || !target.hasCards("he")) {
 					return;
 				}
 				player.line(target, "green");
-				player.discardPlayerCard(target, true, "he");
+				await player.discardPlayerCard({
+					target,
+					forced: true,
+					position: "he",
+				});
 			});
 		},
 	},
