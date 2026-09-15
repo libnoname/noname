@@ -211,7 +211,6 @@ const characters = {
 		group: "wei",
 		hp: 3,
 		skills: ["spmiaolve", "spyingjia"],
-		img: "image/character/tw_dongzhao.jpg",
 		dieAudios: ["tw_dongzhao"],
 	},
 	pot_taishici: {

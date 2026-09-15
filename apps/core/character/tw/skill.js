@@ -19493,6 +19493,8 @@ const skills = {
 	//呼厨泉
 	twfupan: {
 		audio: 3,
+		logAudio: index => (typeof index == "number" ? `twfupan${index}.mp3` : 1),
+		frequent: true,
 		trigger: {
 			player: "damageEnd",
 			source: "damageSource",
@@ -19562,6 +19564,7 @@ const skills = {
 				player.line(target, "green");
 				await player.give(cards, target);
 				if (!player.storage.twfupan[target.playerid]) {
+					player.logSkill(event.name, [target], null, null, [2]);
 					player.storage.twfupan[target.playerid] = 1;
 					await player.draw(2);
 				} else {
@@ -19571,6 +19574,7 @@ const skills = {
 						.set("bool", get.damageEffect(target, player, player) > 0)
 						.forResult();
 					if (result?.bool) {
+						player.logSkill(event.name, [target], null, null, [3]);
 						player.storage.twfupan[target.playerid]++;
 						player.line(target, "fire");
 						await target.damage();
@@ -24968,6 +24972,7 @@ const skills = {
 		},
 		audio: 2,
 		trigger: { player: "useCardAfter" },
+		frequent: true,
 		filter(event, player) {
 			var evt = event.getParent("phaseUse");
 			if (!evt || evt.player != player) {

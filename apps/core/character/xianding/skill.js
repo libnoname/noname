@@ -3589,10 +3589,13 @@ const skills = {
 					prompt2: "令其跳过下一个摸牌阶段并令你摸两张牌，或受到你造成的1点伤害",
 					position: "he",
 					ai(card) {
+						const { player, target } = get.event();
+						if (get.attitude(player, target) > 0) return 0;
 						return 6 - get.value(card);
 					},
 					chooseonly: true,
 				})
+				.set("target", trigger.player)
 				.forResult();
 		},
 		logTarget: "player",
@@ -3724,6 +3727,7 @@ const skills = {
 						position: "hej",
 						selectButton: num,
 						allowChooseAll: true,
+						forced: true,
 					});
 				},
 			},
@@ -3922,6 +3926,7 @@ const skills = {
 	},
 	dckeming: {
 		audio: 2,
+		frequent: true,
 		trigger: {
 			player: "damageEnd",
 			source: "damageSource",
@@ -7208,13 +7213,13 @@ const skills = {
 		},
 	},
 	//神张角
-	yizhao: {
-		audio: 2,
+	dcyizhao: {
+		audio: "yizhao",
+		inherit: "yizhao",
 		trigger: {
 			player: ["useCard", "respond", "loseEnd"],
 			global: "loseAsyncEnd",
 		},
-		forced: true,
 		filter(event, player) {
 			if (["useCard", "respond"].includes(event.name)) {
 				const number = get.number(event.card);
@@ -7224,15 +7229,6 @@ const skills = {
 				return false;
 			}
 			return event.getl?.(player)?.cards2?.some(card => typeof get.number(card) === "number" && get.number(card) > 0);
-		},
-		marktext: "黄",
-		intro: {
-			name: "黄(异兆/肆军)",
-			name2: "黄",
-			content: "mark",
-			markcount(storage, player) {
-				return (storage || 0).toString().slice(-2);
-			},
 		},
 		async content(event, trigger, player) {
 			event.num = player.countMark("yizhao");
@@ -7245,6 +7241,40 @@ const skills = {
 					cards.reduce((sum, card) => sum + (typeof get.number(card) === "number" ? get.number(card) : 0), 0)
 				);
 			}
+			const num = Math.floor(event.num / 10) % 10;
+			const num2 = Math.floor(player.countMark("yizhao") / 10) % 10;
+			if (num !== num2) {
+				const card = get.cardPile2(card => {
+					return get.number(card, false) === num2;
+				});
+				if (card) {
+					await player.gain(card, "gain2");
+				}
+			}
+		},
+	},
+	yizhao: {
+		audio: 2,
+		trigger: {
+			player: ["useCard", "respond"],
+		},
+		forced: true,
+		filter(event, player) {
+			const number = get.number(event.card);
+			return typeof number === "number" && number > 0;
+		},
+		marktext: "黄",
+		intro: {
+			name: "黄(异兆/肆军)",
+			name2: "黄",
+			content: "mark",
+			markcount(storage, player) {
+				return (storage || 0).toString().slice(-2);
+			},
+		},
+		async content(event, trigger, player) {
+			event.num = player.countMark("yizhao");
+			player.addMark("yizhao", get.number(trigger.card));
 			const num = Math.floor(event.num / 10) % 10;
 			const num2 = Math.floor(player.countMark("yizhao") / 10) % 10;
 			if (num !== num2) {
@@ -18719,6 +18749,7 @@ const skills = {
 	},
 	dcsugang: {
 		audio: 2,
+		frequent: true,
 		trigger: { player: "phaseUseBegin" },
 		async content(event, trigger, player) {
 			const result = await player
@@ -24668,6 +24699,7 @@ const skills = {
 	dcshizha: {
 		audio: 2,
 		usable: 1,
+		frequent: true,
 		trigger: { global: "changeHpAfter" },
 		check: () => true,
 		async content(event, trigger, player) {
@@ -33186,6 +33218,7 @@ const skills = {
 	//阮籍
 	dczhaowen: {
 		audio: 2,
+		frequent: true,
 		trigger: { player: "phaseUseBegin" },
 		filter(event, player) {
 			return player.hasCards("h");
@@ -38158,6 +38191,7 @@ const skills = {
 			global: "phaseBefore",
 			player: ["phaseBegin", "enterGame"],
 		},
+		frequent: true,
 		filter(event, player, name) {
 			if (name === "phaseBefore" && game.phaseNumber > 0) {
 				return false;
@@ -38216,6 +38250,7 @@ const skills = {
 					prompt: get.prompt(event.skill),
 					prompt2: "装备一张【霹雳投石车】",
 					ai: () => true,
+					frequentSkill: event.skill,
 				})
 				.forResult();
 			event.result = {
@@ -38853,6 +38888,7 @@ const skills = {
 	//全惠解
 	dchuishu: {
 		audio: 2,
+		frequent: true,
 		getList(player) {
 			if (!player.storage.dchuishu) {
 				return [3, 1, 2];
@@ -41950,6 +41986,7 @@ const skills = {
 	//孙翊
 	syjiqiao: {
 		audio: 2,
+		frequent: true,
 		trigger: { player: "phaseUseBegin" },
 		async content(event, trigger, player) {
 			const cards = get.cards(player.maxHp);
@@ -42517,7 +42554,7 @@ const skills = {
 											num = num2;
 										}
 									}
-								};
+								}
 								return num * 0.8;
 							}
 						}
@@ -42853,6 +42890,7 @@ const skills = {
 			}
 			return false;
 		},
+		frequent: true,
 		prompt2(event, player) {
 			const cards2 = get.info("youyan").getCards(event, player);
 			return `获得与${get.translation(cards2)}花色${cards2.length > 1 ? "各" : ""}不相同的牌各一张`;
