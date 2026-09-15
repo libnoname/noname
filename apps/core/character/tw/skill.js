@@ -26339,7 +26339,7 @@ const skills = {
 			if (!event.target || !event.target.isIn() || !player.hasZhuSkill("twfengqi", event.target)) {
 				return false;
 			}
-			var target = event.target;
+			const target = event.target;
 			return target.getStockSkills(true, true).some(skill => {
 				if (target.hasSkill(skill)) {
 					return false;
@@ -26350,14 +26350,17 @@ const skills = {
 		},
 		skillAnimation: true,
 		animationColor: "thunder",
-		content() {
-			"step 0";
-			event.target = trigger.target;
-			event.target.chooseBool(get.prompt("twfengqi"), "获得武将牌上的所有主公技");
-			"step 1";
+		async content(event, trigger, player) {
+			const target = trigger.target;
+			const result = await target
+				.chooseBool({
+					prompt: get.prompt("twfengqi"),
+					prompt2: "获得武将牌上的所有主公技",
+				})
+				.forResult();
 			if (result.bool) {
 				target.logSkill("twfengqi", player);
-				var skills = target.getStockSkills(true, true).filter(skill => {
+				const skills = target.getStockSkills(true, true).filter(skill => {
 					if (target.hasSkill(skill)) {
 						return false;
 					}
