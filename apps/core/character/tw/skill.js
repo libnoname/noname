@@ -12528,17 +12528,17 @@ const skills = {
 	twqiushou: {
 		trigger: { global: "useCardAfter" },
 		filter(event, player) {
-			if (event.card.name != "nanman") {
+			if (event.card.name !== "nanman") {
 				return false;
 			}
-			var num = 0,
-				bool = false;
-			for (var i of event.targets) {
-				if (!i.isAlive()) {
+			let num = 0;
+			let bool = false;
+			for (const target of event.targets) {
+				if (!target.isAlive()) {
 					bool = true;
 				}
-				i.getHistory("damage", function (evt) {
-					if (evt.getParent(2) == event) {
+				target.getHistory("damage", evt => {
+					if (evt.getParent(2) === event) {
 						num += evt.num;
 					}
 				});
@@ -12548,15 +12548,13 @@ const skills = {
 		zhuSkill: true,
 		forced: true,
 		logTarget(event, player) {
-			return game.filterPlayer(function (target) {
+			return game.filterPlayer(target => {
 				return ["shu", "qun"].includes(target.group);
 			});
 		},
-		content() {
-			"step 0";
-			game.asyncDraw(lib.skill.twqiushou.logTarget(trigger.player));
-			"step 1";
-			game.delayx();
+		async content(event, trigger, player) {
+			await game.asyncDraw(lib.skill.twqiushou.logTarget(trigger.player));
+			await game.delayx();
 		},
 	},
 	//刘协
