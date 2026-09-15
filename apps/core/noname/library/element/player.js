@@ -12693,18 +12693,16 @@ export class Player extends HTMLDivElement {
 	getEquipRange(cards) {
 		const player = this;
 		if (!cards) {
-			const filter = function (card) {
+			cards = player.getVCards("e", function (card) {
 				return !card.cards?.some(card => {
 					return ui.selected.cards?.includes(card);
 				});
-			};
-			cards = player.getVCards("e", filter);
-			cards.push(...player.getCards("e", card => !card.cardSymbol && filter(card)));
+			});
 		}
 		const range = cards.reduce((range, card) => {
 			let newRange = false;
 			const info = get.info(card, false);
-			if (info?.distance) {
+			if (info.distance) {
 				//如果存在attackRange 则通过attackRange动态获取攻击范围
 				if (typeof info.distance.attackRange == "function") {
 					newRange = info.distance.attackRange(card, player);
