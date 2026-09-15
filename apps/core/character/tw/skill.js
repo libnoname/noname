@@ -25502,28 +25502,30 @@ const skills = {
 			return !player.hasSkill("twzhouzu_mahou");
 		},
 		filterTarget(card, player, target) {
-			return player != target;
+			return player !== target;
 		},
 		line: false,
 		delay: false,
-		content() {
-			"step 0";
-			player
-				.chooseControl("1回合", "2回合", "3回合")
-				.set("prompt", "请选择施法时长")
-				.set("ai", function () {
-					var player = _status.event.player;
-					var safe = 1;
-					if (safe < Math.min(3, game.countPlayer())) {
-						var next = player.next;
-						while (next != player && get.attitude(next, player) > 0) {
-							safe++;
-							next = next.next;
+		async content(event, trigger, player) {
+			const target = event.target;
+			const result = await player
+				.chooseControl({
+					controls: ["1回合", "2回合", "3回合"],
+					prompt: "请选择施法时长",
+					ai: () => {
+						const player = _status.event.player;
+						let safe = 1;
+						if (safe < Math.min(3, game.countPlayer())) {
+							let next = player.next;
+							while (next !== player && get.attitude(next, player) > 0) {
+								safe++;
+								next = next.next;
+							}
 						}
-					}
-					return Math.max(2, Math.min(safe, 3, game.countPlayer())) - 1;
-				});
-			"step 1";
+						return Math.max(2, Math.min(safe, 3, game.countPlayer())) - 1;
+					},
+				})
+				.forResult();
 			player.storage.twzhouzu_mahou = [result.index + 1, result.index + 1, target];
 			player.addTempSkill("twzhouzu_mahou", { player: "die" });
 		},
@@ -25535,19 +25537,25 @@ const skills = {
 				forced: true,
 				popup: false,
 				charlotte: true,
-				content() {
-					var list = player.storage.twzhouzu_mahou;
+				async content(event, trigger, player) {
+					const list = player.storage.twzhouzu_mahou;
 					list[1]--;
-					if (list[1] == 0) {
+					if (list[1] === 0) {
 						game.log(player, "的“咒诅”魔法生效");
-						var num = list[0],
-							target = list[2];
+						const num = list[0];
+						const target = list[2];
 						player.logSkill("twzhouzu", target);
-						target.chooseToDiscard(get.translation(player) + "对你的“咒诅”魔法生效，请弃置" + get.cnNumber(list[0]) + "张牌", list[0], true);
-						target.damage("thunder");
+						const discard = target.chooseToDiscard({
+							prompt: `${get.translation(player)}对你的“咒诅”魔法生效，请弃置${get.cnNumber(list[0])}张牌`,
+							selectCard: list[0],
+							forced: true,
+						});
+						const damage = target.damage({ nature: "thunder" });
 						player.removeSkill("twzhouzu_mahou");
+						await discard;
+						await damage;
 					} else {
-						game.log(player, "的“咒阻”魔法剩余", "#g" + list[1] + "回合");
+						game.log(player, "的“咒阻”魔法剩余", `#g${list[1]}回合`);
 						player.markSkill("twzhouzu_mahou");
 					}
 				},
@@ -25564,7 +25572,7 @@ const skills = {
 					},
 					content(storage) {
 						if (storage) {
-							return "经过" + storage[1] + "个“回合结束时”后，你令" + get.translation(storage[2]) + "弃置" + get.cnNumber(storage[0]) + "张牌，然后你对其造成1点雷电伤害";
+							return `经过${storage[1]}个“回合结束时”后，你令${get.translation(storage[2])}弃置${get.cnNumber(storage[0])}张牌，然后你对其造成1点雷电伤害`;
 						}
 						return "未指定施法效果";
 					},
