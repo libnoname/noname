@@ -28826,7 +28826,7 @@ const skills = {
 					return 0;
 				})
 				.set("judge2", result => result.bool)
-				.set("callback", event => {
+				.set("callback", function(event, player) {
 					const evtx = event.getParent();
 					const evt = event.getParent(evtx.eventName).getTrigger();
 					if (!evt.source?.isIn() || !evt.card || typeof get.info("dczhantao").getNumber(evt.card) !== "number") {
@@ -43424,13 +43424,13 @@ const skills = {
 			} else {
 				moveEvent = player.give(event.cards, event.target);
 			}
-			player.changeZhuanhuanji("bazhan");
+			player.changeZhuanhuanji(event.name);
 			const result = await moveEvent.forResult();
 			let cards = event.cards;
-			if (result.bool && result.cards && result.cards.length) {
+			if (result?.bool && result.cards?.length) {
 				cards = result.cards;
 			}
-			if (!cards || !target || !target.hasCards("h", card => cards.includes(card)) || !cards.some(card => get.suit(card, target) === "heart" || get.name(card, target) === "jiu")) {
+			if (!cards || !target?.isIn() || !target.hasCards("h", card => cards.includes(card)) || !cards.some(card => get.suit(card, target) === "heart" || get.name(card, target) === "jiu")) {
 				return;
 			}
 			const list = [];
