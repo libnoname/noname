@@ -13078,7 +13078,7 @@ const skills = {
 			if (!player.isPhaseUsing()) {
 				return false;
 			}
-			if (player == event.player) {
+			if (player === event.player) {
 				return false;
 			}
 			if (!event.player.isIn()) {
@@ -13087,7 +13087,7 @@ const skills = {
 			if (!event.card) {
 				return false;
 			}
-			return event.card.name == "sha" || (get.type(event.card) == "trick" && get.tag(event.card, "damage"));
+			return event.card.name === "sha" || (get.type(event.card) === "trick" && get.tag(event.card, "damage"));
 		},
 		logTarget: "player",
 		check(event, player) {
@@ -13104,59 +13104,56 @@ const skills = {
 			}
 			return false;
 		},
-		content() {
-			"step 0";
-			var target = trigger.player;
-			event.target = target;
-			target
-				.chooseControl()
-				.set("choiceList", ["你摸一张牌，然后直到" + get.translation(player) + "下个回合开始时，其至其他角色的距离-1", get.translation(player) + "摸一张牌，然后直到其下个回合开始时，你至其的距离-1"])
-				.set("prompt", "先锋：请选择一项")
-				.set("ai", () => {
-					return _status.event.choice;
+		async content(event, trigger, player) {
+			const target = trigger.player;
+			const choice = (() => {
+				const att = get.attitude(target, player);
+				if (att === 0) {
+					return 0;
+				}
+				if (player.hasSkill("twzhiqu")) {
+					const cnt = game.countPlayer(current => get.distance(player, current) === 2);
+					if (att > 0) {
+						if (cnt || player.needsToDiscard(1)) {
+							return 0;
+						}
+						return 1;
+					}
+					if (!cnt) {
+						return 0;
+					}
+					if (cnt >= 2 || get.distance(target, player, "attack") === 2 || get.distance(target, player) === 2) {
+						return 1;
+					}
+					return 0;
+				}
+				if (
+					att < 0 ||
+					(player.needsToDiscard(1) &&
+						game.hasPlayer(current => current !== player && current !== target && !player.inRange(current)))
+				) {
+					return 0;
+				}
+				return [0, 1].randomGet();
+			})();
+			const result = await target
+				.chooseControl({
+					choiceList: [
+						`你摸一张牌，然后直到${get.translation(player)}下个回合开始时，其至其他角色的距离-1`,
+						`${get.translation(player)}摸一张牌，然后直到其下个回合开始时，你至其的距离-1`,
+					],
+					prompt: "先锋：请选择一项",
+					ai: () => _status.event.choice,
 				})
-				.set(
-					"choice",
-					(function () {
-						var att = get.attitude(target, player);
-						if (att === 0) {
-							return 0;
-						}
-						if (player.hasSkill("twzhiqu")) {
-							var cnt = game.countPlayer(current => get.distance(player, current) === 2);
-							if (att > 0) {
-								if (cnt || player.needsToDiscard(1)) {
-									return 0;
-								}
-								return 1;
-							}
-							if (!cnt) {
-								return 0;
-							}
-							if (cnt >= 2 || get.distance(target, player, "attack") === 2 || get.distance(target, player) === 2) {
-								return 1;
-							}
-							return 0;
-						}
-						if (
-							att < 0 ||
-							(player.needsToDiscard(1) &&
-								game.hasPlayer(function (current) {
-									return current !== player && current !== target && !player.inRange(current);
-								}))
-						) {
-							return 0;
-						}
-						return [0, 1].randomGet();
-					})()
-				);
-			"step 1";
-			if (result.index == 0) {
-				target.draw();
+				.set("choice", choice)
+				.forResult();
+			if (result.index === 0) {
+				const draw = target.draw();
 				player.addTempSkill("twxianfeng_me", { player: "phaseBegin" });
 				player.addMark("twxianfeng_me", 1, false);
+				await draw;
 			} else {
-				player.draw();
+				const draw = player.draw();
 				target.addSkill("twxianfeng_others");
 				game.broadcastAll(
 					(target, id) => {
@@ -13172,6 +13169,7 @@ const skills = {
 					target,
 					player.playerid
 				);
+				await draw;
 			}
 		},
 		subSkill: {
@@ -13195,8 +13193,8 @@ const skills = {
 				forced: true,
 				intro: {
 					markcount(storage, player) {
-						var max = 0;
-						for (var id in storage) {
+						let max = 0;
+						for (const id in storage) {
 							if (storage[id] > max) {
 								max = storage[id];
 							}
@@ -13207,15 +13205,15 @@ const skills = {
 						if (!storage) {
 							return "";
 						}
-						var str = "";
-						var map = _status.connectMode ? lib.playerOL : game.playerMap;
-						for (var id in storage) {
-							str += "至" + get.translation(map[id]) + "的距离-" + storage[id] + "、";
+						let str = "";
+						const map = _status.connectMode ? lib.playerOL : game.playerMap;
+						for (const id in storage) {
+							str += `至${get.translation(map[id])}的距离-${storage[id]}、`;
 						}
 						return str.slice(0, -1);
 					},
 				},
-				content() {
+				async content(event, trigger, player) {
 					delete player.storage.twxianfeng_others[trigger.player.playerid];
 					if (get.is.empty(player.storage.twxianfeng_others)) {
 						player.removeSkill("twxianfeng_others");
@@ -13223,7 +13221,7 @@ const skills = {
 				},
 				mod: {
 					globalFrom(from, to, distance) {
-						if (from.storage.twxianfeng_others && typeof from.storage.twxianfeng_others[to.playerid] == "number") {
+						if (from.storage.twxianfeng_others && typeof from.storage.twxianfeng_others[to.playerid] === "number") {
 							return distance - from.storage.twxianfeng_others[to.playerid];
 						}
 					},
