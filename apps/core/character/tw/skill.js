@@ -12794,7 +12794,7 @@ const skills = {
 				charlotte: true,
 				trigger: { player: "phaseAfter" },
 				direct: true,
-				content() {
+				async content(event, trigger, player) {
 					player.storage.twchongwangx = [];
 				},
 			},
@@ -12802,33 +12802,31 @@ const skills = {
 				trigger: { player: "phaseUseBegin" },
 				filter(event, player) {
 					return (
-						player.group == "qun" &&
-						game.hasPlayer(function (current) {
-							return current != player && current.hasZhuSkill("twchongwang", player) && !current.storage.twchongwang.includes(player);
+						player.group === "qun" &&
+						game.hasPlayer(current => {
+							return current !== player && current.hasZhuSkill("twchongwang", player) && !current.storage.twchongwang.includes(player);
 						})
 					);
 				},
-				direct: true,
-				content() {
-					"step 0";
-					player.chooseCardTarget({
+				async cost(event, trigger, player) {
+					event.result = await player.chooseCardTarget({
 						prompt: "崇望：是否将一张牌交给主公并获得双重庇护？",
 						selectCard: 1,
 						filterCard: true,
 						filterTarget(card, player, target) {
-							return target != player && target.hasZhuSkill("twchongwang", player) && !target.storage.twchongwang.includes(player);
+							return target !== player && target.hasZhuSkill("twchongwang", player) && !target.storage.twchongwang.includes(player);
 						},
 						position: "he",
 						ai1(card) {
-							if (card.name == "du") {
+							if (card.name === "du") {
 								return 10;
-							} else if (ui.selected.cards.length && ui.selected.cards[0].name == "du") {
+							} else if (ui.selected.cards.length && ui.selected.cards[0].name === "du") {
 								return 0;
 							}
-							var player = _status.event.player;
+							const player = _status.event.player;
 							if (
 								ui.selected.cards.length > 4 ||
-								!game.hasPlayer(function (current) {
+								!game.hasPlayer(current => {
 									return get.attitude(player, current) > 0 && !current.hasSkillTag("nogain");
 								})
 							) {
@@ -12837,9 +12835,9 @@ const skills = {
 							return 1 / Math.max(0.1, get.value(card));
 						},
 						ai2(target) {
-							var player = _status.event.player,
-								att = get.attitude(player, target);
-							if (ui.selected.cards[0].name == "du") {
+							const player = _status.event.player;
+							let att = get.attitude(player, target);
+							if (ui.selected.cards[0].name === "du") {
 								return -att;
 							}
 							if (target.hasSkillTag("nogain")) {
@@ -12847,14 +12845,17 @@ const skills = {
 							}
 							return att;
 						},
+					}).forResult();
+				},
+				async content(event, trigger, player) {
+					const target = event.targets[0];
+					await target.gain({
+						cards: event.cards,
+						source: player,
+						animate: "giveAuto",
 					});
-					"step 1";
-					if (result.bool) {
-						player.logSkill("twchongwang", result.targets[0]);
-						result.targets[0].gain(result.cards, player, "giveAuto");
-						result.targets[0].storage.twchongwang.push(player);
-						result.targets[0].storage.twchongwangx.push(player);
-					}
+					target.storage.twchongwang.push(player);
+					target.storage.twchongwangx.push(player);
 				},
 			},
 		},
