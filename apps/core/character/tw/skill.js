@@ -27193,30 +27193,39 @@ const skills = {
 			return player.hasCard(lib.skill.twdaoji.filterCard, "he");
 		},
 		filterCard(card) {
-			return get.type(card) != "basic";
+			return get.type(card) !== "basic";
 		},
 		position: "he",
 		filterTarget(card, player, target) {
-			return target != player && player.inRange(target) && target.hasCard(card => lib.filter.canBeGained(card, target, player), "he");
+			return target !== player && player.inRange(target) && target.hasCard(card => lib.filter.canBeGained(card, target, player), "he");
 		},
 		check(card) {
 			return 8 - get.value(card);
 		},
-		content() {
-			"step 0";
-			player.gainPlayerCard(target, "he", true);
-			"step 1";
-			if (result.bool && result.cards && result.cards.length == 1) {
-				var card = result.cards[0];
+		async content(event, trigger, player) {
+			const target = event.target;
+			const result = await player
+				.gainPlayerCard({
+					target,
+					position: "he",
+					forced: true,
+				})
+				.forResult();
+			if (result.bool && result.cards && result.cards.length === 1) {
+				const card = result.cards[0];
 				if (player.getCards("h").includes(card)) {
-					var type = get.type(card);
-					if (type == "basic") {
-						player.draw();
-					} else if (type == "equip") {
+					const type = get.type(card);
+					if (type === "basic") {
+						await player.draw();
+					} else if (type === "equip") {
 						if (player.hasUseTarget(card)) {
-							player.chooseUseTarget(card, "nopopup", true);
+							await player.chooseUseTarget({
+								card,
+								nopopup: true,
+								forced: true,
+							}).forResult();
 						}
-						target.damage("nocard");
+						await target.damage({ nocard: true });
 					}
 				}
 			}
