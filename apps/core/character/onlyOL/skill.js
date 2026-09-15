@@ -13714,6 +13714,7 @@ const skills = {
 	olmiji: {
 		audio: 2,
 		trigger: { player: "phaseJieshuBegin" },
+		frequent: true,
 		filter(event, player) {
 			return player.isDamaged();
 		},

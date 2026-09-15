@@ -35,7 +35,6 @@ const characters = {
 		group: "shen",
 		hp: 4,
 		skills: ["lxyuli", "lxtingwei", "lxjimie"],
-		img: "image/character/mb_shen_machao.jpg",
 		dieAudios: ["mb_shen_machao"],
 	},
 	lx_simafu: {

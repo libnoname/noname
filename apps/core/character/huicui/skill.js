@@ -15874,6 +15874,7 @@ const skills = {
 	tongli: {
 		audio: 2,
 		trigger: { player: "useCardToPlayered" },
+		frequent: true,
 		filter(event, player) {
 			if (!event.isFirstTarget || (event.card.storage && event.card.storage.tongli)) {
 				return false;
@@ -17649,6 +17650,7 @@ const skills = {
 	guowu: {
 		audio: 2,
 		trigger: { player: "phaseUseBegin" },
+		frequent: true,
 		filter(event, player) {
 			return player.countCards("h") > 0;
 		},

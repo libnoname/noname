@@ -3389,6 +3389,7 @@ const skills = {
 	clanqieyi: {
 		audio: 2,
 		trigger: { player: ["phaseUseBegin", "useCardAfter"] },
+		frequent: true,
 		filter(event, player) {
 			if (event.name == "useCard") {
 				if (!player.hasSkill("clanqieyi_effect") || !lib.suits.includes(get.suit(event.card))) {
@@ -3402,8 +3403,11 @@ const skills = {
 		async cost(event, trigger, player) {
 			if (trigger.name == "phaseUse") {
 				event.result = await player
-					.chooseBool(get.prompt2(event.skill))
-					.set("ai", () => true)
+					.chooseBool({
+						prompt: get.prompt2(event.skill),
+						ai: () => true,
+						frequentSkill: event.skill,
+					})
 					.forResult();
 			} else {
 				event.result = { bool: true };
