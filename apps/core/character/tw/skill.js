@@ -29129,29 +29129,30 @@ const skills = {
 	},
 	twyanqin: {
 		trigger: { player: "phaseBegin" },
-		direct: true,
-		content() {
-			"step 0";
-			var list = [];
-			if (player.group != "wei") {
+		async cost(event, trigger, player) {
+			const list = [];
+			if (player.group !== "wei") {
 				list.push("wei2");
 			}
-			if (player.group != "shu") {
+			if (player.group !== "shu") {
 				list.push("shu2");
 			}
 			list.push("cancel2");
-			player
-				.chooseControl(list)
-				.set("ai", function () {
-					return list.randomGet();
+			const result = await player
+				.chooseControl({
+					controls: list,
+					ai: () => list.randomGet(),
+					prompt: get.prompt2(event.skill),
 				})
-				.set("prompt", get.prompt2("twyanqin"));
-			"step 1";
-			if (result.control != "cancel2") {
-				player.logSkill("twyanqin");
-				var group = result.control.slice(0, 3);
-				player.changeGroup(group);
-			}
+				.forResult();
+			event.result = {
+				bool: result.control !== "cancel2",
+				cost_data: result.control,
+			};
+		},
+		async content(event, trigger, player) {
+			const group = event.cost_data.slice(0, 3);
+			player.changeGroup(group);
 		},
 		ai: {
 			combo: "twbaobian",
