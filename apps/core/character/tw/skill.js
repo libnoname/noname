@@ -14716,28 +14716,33 @@ const skills = {
 		onremove: true,
 		derivation: "twlinglu",
 		filter(event, player) {
-			return game.hasPlayer(function (current) {
-				return player.canUse({ name: "sha", isCard: true }, current, false) && current != player && !player.getStorage("twkunsi").includes(current);
+			return game.hasPlayer(current => {
+				return player.canUse({ name: "sha", isCard: true }, current, false) && current !== player && !player.getStorage("twkunsi").includes(current);
 			});
 		},
 		filterTarget(card, player, target) {
-			return player.canUse({ name: "sha", isCard: true }, target, false) && target != player && !player.getStorage("twkunsi").includes(target);
+			return player.canUse({ name: "sha", isCard: true }, target, false) && target !== player && !player.getStorage("twkunsi").includes(target);
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
+			const target = event.target;
 			player.markAuto("twkunsi", [target]);
 			player.storage.twkunsi.sortBySeat();
 			player.markSkill("twkunsi");
-			player.useCard({ name: "sha", isCard: true }, target, false).animate = false;
-			"step 1";
+			const useCard = player.useCard({
+				card: { name: "sha", isCard: true },
+				targets: [target],
+				addCount: false,
+			});
+			useCard.animate = false;
+			await useCard;
 			if (
-				!player.hasHistory("sourceDamage", function (evt) {
-					var card = evt.card;
-					if (!card || card.name != "sha") {
+				!player.hasHistory("sourceDamage", evt => {
+					const card = evt.card;
+					if (!card || card.name !== "sha") {
 						return false;
 					}
-					var evtx = evt.getParent("useCard");
-					return evtx.card == card && evtx.getParent() == event;
+					const evtx = evt.getParent("useCard");
+					return evtx.card === card && evtx.getParent() === event;
 				})
 			) {
 				player.line(target);
@@ -14768,8 +14773,8 @@ const skills = {
 			clear: {
 				forced: true,
 				onremove(player, skill) {
-					var targets = player.getStorage(skill);
-					for (var target of targets) {
+					const targets = player.getStorage(skill);
+					for (const target of targets) {
 						if (target.isIn()) {
 							target.removeAdditionalSkill("twkunsi_temp");
 						}
