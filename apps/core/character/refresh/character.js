@@ -38,6 +38,7 @@ const characters = {
 		hp: 4,
 		skills: ["regongao", "rejuyi"],
 		names: "诸葛|诞",
+		clans: ["琅琊诸葛氏"],
 	},
 	re_caorui: {
 		sex: "male",
@@ -666,6 +667,7 @@ const characters = {
 		hp: 3,
 		skills: ["reguanxing", "kongcheng"],
 		names: "诸葛|亮",
+		clans: ["琅琊诸葛氏"],
 	},
 	re_huaxiong: {
 		sex: "male",
@@ -744,6 +746,7 @@ const characters = {
 		hp: 3,
 		skills: ["bazhen", "olhuoji", "olkanpo", "cangzhuo"],
 		names: "诸葛|亮",
+		clans: ["琅琊诸葛氏"],
 	},
 	ol_yanwen: {
 		sex: "male",

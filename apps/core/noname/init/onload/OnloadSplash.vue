@@ -56,6 +56,7 @@ onMounted(() => {
     }
 
     if (!lib.config.touchscreen) {
+      node.addEventListener("pointerdown", e => node.setPointerCapture(e.pointerId));
       node.addEventListener("mousedown", () => node.classList.add("glow"));
       node.addEventListener("mouseup", () => node.classList.remove("glow"));
       node.addEventListener("mouseleave", () => node.classList.remove("glow"));

@@ -1,17 +1,27 @@
 //@ts-nocheck
+import { FileSystem, FileSystemError, FileSystemErrorCode, installLegacyFileSystemAPI } from "@/library/fs";
+
+/**
+ * @typedef { import("@/library/fs").FileSystemAdapter } FileSystemAdapter
+ * @typedef { import("@/library/fs").FileHandle } FileHandle
+ * @typedef { import("@/library/fs").FileInfo } FileInfo
+ * @typedef { import("@/library/fs").OpenOptions } OpenOptions
+ */
+
 export default async function browserReady({ lib, game }) {
 	lib.path = (await import("path-browserify-esm")).default;
+	const adpt = new BrowserAdapter();
+	const fs = new FileSystem(adpt);
 
 	try {
-		await fetch(`/checkFile?fileName=noname.js`)
-			.then(response => response.json())
-			.then(result => {
-				if (!result?.success) throw new Error(result.errorMsg);
-			});
+		// 这里只探测 dev server 的连通性和响应格式；文件不存在会返回 null。
+		await fs.stat("noname.js");
 	} catch (e) {
 		console.error("文件读写函数初始化失败:", e);
 		return;
 	}
+	lib.fs = fs;
+	installLegacyFileSystemAPI(game, fs);
 
 	game.export = function (data, name) {
 		if (typeof data === "string") {
@@ -35,219 +45,343 @@ export default async function browserReady({ lib, game }) {
 	game.open = function (url) {
 		window.open(url);
 	};
+}
 
+/**
+ * @implements { FileSystemAdapter }
+ */
+class BrowserAdapter {
 	/**
-	 * 检查指定的路径是否是一个文件
-	 *
-	 * @param {string} fileName - 需要查询的路径
-	 * @param {(result: -1 | 0 | 1) => void} [callback] - 回调函数；接受的参数意义如下:
-	 *  - `-1`: 路径不存在或无法访问
-	 *  - `0`: 路径的内容不是文件
-	 *  - `1`: 路径的内容是文件
-	 * @param {(err: Error) => void} [onerror] - 接收错误的回调函数
-	 * @return {void} - 由于三端的异步需求和历史原因，文件管理必须为回调异步函数
+	 * @param {string} path
+	 * @param {OpenOptions} [options]
+	 * @returns {Promise<FileHandle>}
 	 */
-	game.checkFile = function checkFile(fileName, callback, onerror) {
-		fetch(`/checkFile?fileName=${fileName}`)
-			.then(response => response.json())
-			.then(result => {
-				if (result) {
-					if (result.success) {
-						switch (result.data) {
-							case "file":
-								callback?.(1);
-								return;
-							case "directory":
-								callback?.(0);
-								return;
-							default:
-								callback?.(-1);
-								return;
-						}
-					}
-				}
+	async open(path, options = {}) {
+		assertValidPath(path);
 
-				onerror?.(result?.errorMsg);
-			})
-			.catch(onerror);
-	};
+		const append = options.append === true;
+		const writable = options.write === true || append;
+		const readable = options.read ?? !writable;
 
-	/**
-	 * 检查指定的路径是否是一个目录
-	 *
-	 * @param {string} dir - 需要查询的路径
-	 * @param {(result: -1 | 0 | 1) => void} [callback] - 回调函数；接受的参数意义如下:
-	 *  - `-1`: 路径不存在或无法访问
-	 *  - `0`: 路径的内容不是目录
-	 *  - `1`: 路径的内容是目录
-	 * @param {(err: Error) => void} [onerror] - 接收错误的回调函数
-	 * @return {void} - 由于三端的异步需求和历史原因，文件管理必须为回调异步函数
-	 */
-	game.checkDir = function checkDir(dir, callback, onerror) {
-		fetch(`/checkDir?dir=${dir}`)
-			.then(response => response.json())
-			.then(result => {
-				if (result) {
-					if (result.success) {
-						switch (result.data) {
-							case "file":
-								callback?.(0);
-								return;
-							case "directory":
-								callback?.(1);
-								return;
-							default:
-								callback?.(-1);
-								return;
-						}
-					}
-				}
-
-				onerror?.(result?.errorMsg);
-			})
-			.catch(onerror);
-	};
-
-	game.readFile = function readFile(fileName, callback = () => {}, error = () => {}) {
-		fetch(`/readFile?fileName=${fileName}`)
-			.then(response => response.json())
-			.then(result => {
-				if (result?.success) {
-					const data = result.data;
-
-					/** @type {Uint8Array} */
-					let buffer;
-					if (typeof data == "string") {
-						buffer = Uint8Array.fromBase64(data);
-					} else if (Array.isArray(data)) {
-						buffer = new Uint8Array(data);
-					}
-
-					callback(buffer.buffer);
-				} else {
-					error(result?.errorMsg);
-				}
-			})
-			.catch(error);
-	};
-
-	game.readFileAsText = function readFileAsText(fileName, callback = () => {}, error = () => {}) {
-		fetch(`/readFileAsText?fileName=${fileName}`)
-			.then(response => response.json())
-			.then(result => {
-				if (result?.success) {
-					callback(result.data);
-				} else {
-					error(result?.errorMsg);
-				}
-			})
-			.catch(error);
-	};
-
-	game.writeFile = function writeFile(data, path, name, callback = () => {}) {
-		game.ensureDirectory(path, () => {
-			if (Object.prototype.toString.call(data) == "[object File]") {
-				const fileReader = new FileReader();
-				fileReader.onload = event => {
-					game.writeFile(event.target.result, path, name, callback);
-				};
-				fileReader.readAsArrayBuffer(data, "UTF-8");
-			} else {
-				let filePath = path;
-				if (path.endsWith("/")) {
-					filePath += name;
-				} else if (path == "") {
-					filePath += name;
-				} else {
-					filePath += "/" + name;
-				}
-
-				fetch(`/writeFile`, {
-					method: "post",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({
-						data:
-							typeof data == "string"
-								? data
-								: Array.prototype.slice.call(new Uint8Array(data)),
-						path: filePath,
-					}),
-				})
-					.then(response => response.json())
-					.then(result => {
-						if (result?.success) {
-							callback();
-						} else {
-							callback(result?.errorMsg);
-						}
-					});
-			}
-		});
-	};
-
-	game.removeFile = function removeFile(fileName, callback = () => {}, error = () => {}) {
-		fetch(`/removeFile?fileName=${fileName}`)
-			.then(response => response.json())
-			.then(result => {
-				callback(result.errorMsg);
-			})
-			.catch(error);
-	};
-
-	game.getFileList = function getFileList(dir, callback = () => {}, onerror) {
-		fetch(`/getFileList?dir=${dir}`)
-			.then(response => response.json())
-			.then(result => {
-				if (!result) {
-					throw new Error("Cannot get available resource.");
-				}
-
-				if (result.success) {
-					callback(result.data.folders, result.data.files);
-				} else if (onerror) {
-					onerror(new Error(result.errorMsg));
-				}
-			});
-	};
-
-	game.ensureDirectory = function ensureDirectory(list, callback = () => {}, file = false) {
-		let pathArray = typeof list == "string" ? list.split("/") : list;
-		if (file) {
-			pathArray = pathArray.slice(0, -1);
+		if (!readable && !writable) {
+			throw createFileSystemError(FileSystemErrorCode.IoError, path, "open requires read or write access");
 		}
-		game.createDir(pathArray.join("/"), callback, console.error);
-	};
+		if ((options.create || options.createNew || options.truncate) && !writable) {
+			throw createFileSystemError(FileSystemErrorCode.IoError, path, "create, createNew and truncate require write access");
+		}
 
-	game.createDir = function createDir(
-		directory,
-		successCallback = () => {},
-		errorCallback = () => {}
-	) {
-		fetch(`/createDir?dir=${directory}`)
-			.then(response => response.json())
-			.then(result => {
-				if (result?.success) {
-					successCallback();
-				} else {
-					errorCallback(new Error("创建文件夹失败"));
+		const info = await this.stat(path);
+		if (options.createNew && info !== null) {
+			throw createFileSystemError(FileSystemErrorCode.AlreadyExists, path, "Path already exists");
+		}
+		if (info !== null && info.type !== "file") {
+			throw createFileSystemError(FileSystemErrorCode.NotFile, path, "Path is not a file");
+		}
+		if (info === null) {
+			if (!options.create && !options.createNew) {
+				throw createFileSystemError(FileSystemErrorCode.NotFound, path, "File does not exist");
+			}
+			await this.write(path, new Uint8Array());
+		} else if (options.truncate) {
+			await this.write(path, new Uint8Array());
+		}
+
+		return new BrowserFileHandle(this, path, readable, writable, append);
+	}
+
+	/**
+	 * @param {string} path
+	 * @returns {Promise<Uint8Array>}
+	 */
+	async read(path) {
+		assertValidPath(path);
+		const data = await requestBackend("/readFile", path, { fileName: path });
+
+		try {
+			if (isByteArray(data)) {
+				return new Uint8Array(data);
+			}
+			if (typeof data === "string") {
+				if (typeof Uint8Array.fromBase64 === "function") {
+					return Uint8Array.fromBase64(data);
 				}
-			})
-			.catch(errorCallback);
-	};
-	game.removeDir = function removeDir(
-		directory,
-		successCallback = () => {},
-		errorCallback = () => {}
-	) {
-		fetch(`/removeDir?dir=${directory}`)
-			.then(response => response.json())
-			.then(result => {
-				if (result?.success) {
-					successCallback();
-				} else {
-					errorCallback(new Error("创建文件夹失败"));
-				}
-			})
-			.catch(errorCallback);
-	};
+
+				const decoded = atob(data);
+				return Uint8Array.from(decoded, character => character.charCodeAt(0));
+			}
+		} catch (error) {
+			throw toFileSystemError(error, path);
+		}
+
+		throw createFileSystemError(FileSystemErrorCode.IoError, path, "Invalid readFile response data");
+	}
+
+	/**
+	 * @param {string} path
+	 * @param {Uint8Array} data
+	 * @returns {Promise<void>}
+	 */
+	async write(path, data) {
+		assertValidPath(path);
+		assertUint8Array(data, path);
+
+		await requestBackend("/writeFile", path, undefined, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ path, data: Array.from(data) }),
+		});
+	}
+
+	/**
+	 * @param {string} path
+	 * @returns {Promise<FileInfo | null>}
+	 */
+	async stat(path) {
+		assertValidPath(path);
+		const type = await requestBackend("/checkFile", path, { fileName: path });
+
+		if (type === "file" || type === "directory") {
+			return { type };
+		}
+		return null;
+	}
+
+	/**
+	 * @param {string} path
+	 * @returns {Promise<import("@/library/fs").DirEntry[]>}
+	 */
+	async list(path) {
+		assertValidPath(path);
+		const data = await requestBackend("/getFileList", path, { dir: path });
+		if (!isStringArray(data?.folders) || !isStringArray(data?.files)) {
+			throw createFileSystemError(FileSystemErrorCode.IoError, path, "Invalid getFileList response data");
+		}
+
+		return [...data.folders.map(name => ({ name, type: "directory" })), ...data.files.map(name => ({ name, type: "file" }))];
+	}
+
+	/**
+	 * @param {string} path
+	 * @param {import("@/library/fs").CreateDirOptions} [options]
+	 * @returns {Promise<void>}
+	 */
+	async createDir(path, options = {}) {
+		assertValidPath(path);
+
+		if (!options.recursive) {
+			const info = await this.stat(path);
+			if (info !== null) {
+				throw createFileSystemError(FileSystemErrorCode.AlreadyExists, path, "Path already exists");
+			}
+
+			const parentPath = getParentPath(path);
+			const parentInfo = await this.stat(parentPath);
+			if (parentInfo === null) {
+				throw createFileSystemError(FileSystemErrorCode.NotFound, parentPath, "Parent directory does not exist");
+			}
+			if (parentInfo.type !== "directory") {
+				throw createFileSystemError(FileSystemErrorCode.NotDirectory, parentPath, "Parent path is not a directory");
+			}
+		}
+
+		await requestBackend("/createDir", path, { dir: path });
+	}
+
+	/**
+	 * @param {string} path
+	 * @param {import("@/library/fs").RemoveOptions} [options]
+	 * @returns {Promise<void>}
+	 */
+	async remove(path, options = {}) {
+		assertValidPath(path);
+		const info = await this.stat(path);
+		if (info === null) {
+			throw createFileSystemError(FileSystemErrorCode.NotFound, path, "Path does not exist");
+		}
+
+		if (info.type === "file") {
+			await requestBackend("/removeFile", path, { fileName: path });
+			return;
+		}
+
+		if (!options.recursive && (await this.list(path)).length > 0) {
+			throw createFileSystemError(FileSystemErrorCode.IoError, path, "Directory is not empty");
+		}
+		await requestBackend("/removeDir", path, { dir: path });
+	}
+}
+
+/** @implements {FileHandle} */
+class BrowserFileHandle {
+	constructor(adapter, path, readable, writable, append) {
+		this.adapter = adapter;
+		this.path = path;
+		this.readable = readable;
+		this.writable = writable;
+		this.append = append;
+		this.closed = false;
+	}
+
+	async readAll() {
+		this.assertOpen();
+		if (!this.readable) {
+			throw createFileSystemError(FileSystemErrorCode.IoError, this.path, "File is not open for reading");
+		}
+		return this.adapter.read(this.path);
+	}
+
+	async write(data) {
+		this.assertWritable();
+		assertUint8Array(data, this.path);
+
+		if (!this.append) {
+			await this.adapter.write(this.path, data);
+			return;
+		}
+
+		const current = await this.adapter.read(this.path);
+		const combined = new Uint8Array(current.length + data.length);
+		combined.set(current);
+		combined.set(data, current.length);
+		await this.adapter.write(this.path, combined);
+	}
+
+	async stat() {
+		this.assertOpen();
+		const info = await this.adapter.stat(this.path);
+		if (info === null) {
+			throw createFileSystemError(FileSystemErrorCode.NotFound, this.path, "File does not exist");
+		}
+		return info;
+	}
+
+	async truncate(size = 0) {
+		this.assertWritable();
+		if (!Number.isSafeInteger(size) || size < 0) {
+			throw createFileSystemError(FileSystemErrorCode.InvalidPath, this.path, "truncate size must be a non-negative safe integer");
+		}
+
+		const current = await this.adapter.read(this.path);
+		if (current.length === size) return;
+
+		try {
+			const resized = new Uint8Array(size);
+			resized.set(current.subarray(0, size));
+			await this.adapter.write(this.path, resized);
+		} catch (error) {
+			throw toFileSystemError(error, this.path);
+		}
+	}
+
+	async close() {
+		this.closed = true;
+	}
+
+	assertOpen() {
+		if (this.closed) {
+			throw createFileSystemError(FileSystemErrorCode.IoError, this.path, "File handle is closed");
+		}
+	}
+
+	assertWritable() {
+		this.assertOpen();
+		if (!this.writable) {
+			throw createFileSystemError(FileSystemErrorCode.IoError, this.path, "File is not open for writing");
+		}
+	}
+}
+
+async function requestBackend(route, path, query, init) {
+	const queryString = query ? `?${new URLSearchParams(query)}` : "";
+	let response;
+
+	try {
+		response = await fetch(`${route}${queryString}`, init);
+	} catch (error) {
+		throw toFileSystemError(error, path);
+	}
+
+	let result;
+	try {
+		result = await response.json();
+	} catch {
+		const detail = describeBackendResponse(response);
+		throw createFileSystemError(FileSystemErrorCode.IoError, path, `Backend returned invalid JSON (${detail})`);
+	}
+
+	if (!result || typeof result !== "object" || typeof result.success !== "boolean") {
+		throw createFileSystemError(FileSystemErrorCode.IoError, path, "Backend returned an invalid response");
+	}
+	if (!response.ok || !result.success) {
+		const message = result.errorMsg || `Backend request failed with HTTP ${response.status}`;
+		throw toFileSystemError(new Error(String(message)), path);
+	}
+
+	return result.data;
+}
+
+function describeBackendResponse(response) {
+	const status = Number.isInteger(response.status) ? response.status : 0;
+	const rawContentType = response.headers?.get?.("content-type") ?? "";
+	const mediaType = rawContentType.split(";", 1)[0].trim().toLowerCase();
+	return /^[a-z0-9!#$&^_.+-]+\/[a-z0-9!#$&^_.+-]+$/.test(mediaType)
+		? `HTTP ${status}, Content-Type: ${mediaType}`
+		: `HTTP ${status}`;
+}
+
+function assertValidPath(path) {
+	if (typeof path !== "string" || path.includes("\0")) {
+		throw createFileSystemError(FileSystemErrorCode.InvalidPath, String(path), "Path must be a string without null bytes");
+	}
+}
+
+function getParentPath(path) {
+	const normalized = path.replace(/[\\/]+$/, "");
+	const separatorIndex = Math.max(normalized.lastIndexOf("/"), normalized.lastIndexOf("\\"));
+	return separatorIndex < 0 ? "." : normalized.slice(0, separatorIndex) || ".";
+}
+
+function isStringArray(value) {
+	return Array.isArray(value) && value.every(item => typeof item === "string");
+}
+
+function isByteArray(value) {
+	return Array.isArray(value) && value.every(item => Number.isInteger(item) && item >= 0 && item <= 255);
+}
+
+function assertUint8Array(data, path) {
+	if (!(data instanceof Uint8Array)) {
+		throw createFileSystemError(FileSystemErrorCode.IoError, path, "write data must be a Uint8Array");
+	}
+}
+
+function createFileSystemError(code, path, message, cause) {
+	return new FileSystemError(code, path, {
+		cause: cause ?? new Error(message),
+		detail: message,
+	});
+}
+
+function toFileSystemError(error, path) {
+	if (error instanceof FileSystemError) return error;
+
+	const message = error instanceof Error ? error.message : String(error);
+	let code = FileSystemErrorCode.IoError;
+	if (/\bENOENT\b|not found|不存在/i.test(message)) {
+		code = FileSystemErrorCode.NotFound;
+	} else if (/\bEEXIST\b|already exists|已存在/i.test(message)) {
+		code = FileSystemErrorCode.AlreadyExists;
+	} else if (/\bENOTDIR\b|not a directory|不是文件夹|不是目录/i.test(message)) {
+		code = FileSystemErrorCode.NotDirectory;
+	} else if (/\bEISDIR\b|not a file|不是文件|不能删除文件夹/i.test(message)) {
+		code = FileSystemErrorCode.NotFile;
+	} else if (/\b(?:EACCES|EPERM|EROFS)\b|permission denied|无权限|拒绝访问/i.test(message)) {
+		code = FileSystemErrorCode.PermissionDenied;
+	} else if (/\b(?:EINVAL|ENAMETOOLONG)\b|invalid path|只能访问/i.test(message)) {
+		code = FileSystemErrorCode.InvalidPath;
+	}
+
+	return new FileSystemError(code, path, {
+		cause: error instanceof Error ? error : new Error(message),
+	});
 }

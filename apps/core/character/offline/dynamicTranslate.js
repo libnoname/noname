@@ -1,6 +1,31 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const dynamicTranslates = {
+	lxzuoyou(player, skill) {
+		const storage = player.storage[skill];
+		let yang = "你可受到1点无来源伤害，令一名角色获得1点护甲",
+			yin = "你可失去1点护甲，对一名角色造成1点伤害";
+		if (storage) {
+			yin = `<span class="bluetext">${yin}</span>`;
+		} else {
+			yang = `<span class="firetext">${yang}</span>`;
+		}
+		const start = "转换技，出牌阶段限一次，";
+		return `${start}阳：${yang}；阴：${yin}。`;
+	},
+	ymhengren(player, skill) {
+		const storage = player.storage[skill];
+		let yang = "开始时",
+			yin = "结束时";
+		if (storage) {
+			yin = `<span class='bluetext'>${yin}</span>`;
+		} else {
+			yang = `<span class='firetext'>${yang}</span>`;
+		}
+		const start = "转换技，其他角色的出牌阶段：",
+			end = "，若其本阶段有【杀】的剩余使用次数，你可以使用一张【杀】（将计入其使用次数且伤害+1）。";
+		return `${start}阳：${yang}；阴：${yin}${end}`;
+	},
 	huamao_wushen(player, skill) {
 		const suit = get.translation(get.info("wxdl_huamao").getSuit(player, skill));
 		return `锁定技。①你的${suit}手牌均视为【杀】。②你使用${suit}【杀】无距离和次数限制且不可被响应。`;

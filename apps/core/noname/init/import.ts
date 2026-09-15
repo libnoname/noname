@@ -21,16 +21,13 @@ export async function importExtension(name: string) {
 	if (!game.hasExtension(name) && !lib.config.all.stockextension.includes(name)) {
 		// @ts-expect-error ignore
 		await game.import("extension", await createEmptyExtension(name));
-		// if (_status.extensionLoading) {
-		// 	await Promise.all(_status.extensionLoading);
-		// }
 		return;
+	}
+	if (lib.config.fuck_sojson && !_status.connectMode) {
+		await checkExtensionSojson(name);
 	}
 	try {
 		await importFunction("extension", `/extension/${name}/extension`);
-		// if (_status.extensionLoading) {
-		// 	await Promise.all(_status.extensionLoading);
-		// }
 	} catch (e) {
 		console.error(`扩展《${name}》加载失败`, e);
 		let close = confirm(`扩展《${name}》加载失败，是否关闭此扩展？错误信息: \n${e instanceof Error ? e.stack : String(e)}`);
@@ -38,9 +35,6 @@ export async function importExtension(name: string) {
 			game.saveConfig(`extension_${name}_enable`, false);
 			// @ts-expect-error ignore
 			await game.import("extension", await createEmptyExtension(name));
-			// if (_status.extensionLoading) {
-			// 	await Promise.all(_status.extensionLoading);
-			// }
 		}
 	}
 }
@@ -75,6 +69,20 @@ async function importFunction(type: "card" | "character" | "extension" | "mode",
 	}
 	// @ts-expect-error ignore
 	await game.import(type, modeContent.default);
+}
+
+async function checkExtensionSojson(name: string) {
+	const suffixes = window.isSecureContext ? [".js", ".ts"] : [".js"];
+	for (const suffix of suffixes) {
+		const file = `extension/${name}/extension${suffix}`;
+		try {
+			const code = await game.promises.readFileAsText(file);
+			if (code.includes("sojson") || code.includes("jsjiami") || code.includes("var _0x")) {
+				alert(`检测到您安装了使用免费版sojson进行加密的扩展。请谨慎使用这些扩展，避免游戏数据遭到破坏。\n扩展名称：${name}`);
+				return;
+			}
+		} catch {}
+	}
 }
 
 export async function createEmptyExtension(name: string) {

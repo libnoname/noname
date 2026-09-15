@@ -1,4 +1,14 @@
-# 无名杀
+<h1 align="center">无名杀</h1>
+
+> 本仓库是由 Jiahui-Gu 维护的个人版本，基于 [libnoname/noname](https://github.com/libnoname/noname) 持续同步并保留个人维护改动。此版本的自更新跟随 [Jiahui-Gu/noname](https://github.com/Jiahui-Gu/noname) 的 `main` 分支。
+
+<p align="center">
+  <a href="https://github.com/libnoname/noname/actions/workflows/build.yml"><img alt="构建状态" src="https://img.shields.io/github/actions/workflow/status/libnoname/noname/build.yml?branch=main&style=flat-square"></a>
+  <a href="https://github.com/libnoname/noname/releases/latest"><img alt="最新版本" src="https://img.shields.io/github/v/release/libnoname/noname?display_name=tag&style=flat-square"></a>
+  <a href="https://github.com/libnoname/noname/releases"><img alt="累计下载" src="https://img.shields.io/github/downloads/libnoname/noname/total?style=flat-square"></a>
+  <a href="https://github.com/libnoname/noname/graphs/contributors"><img alt="项目贡献者" src="https://img.shields.io/github/contributors/libnoname/noname?style=flat-square"></a>
+  <a href="./LICENSE"><img alt="许可证" src="https://img.shields.io/github/license/libnoname/noname?style=flat-square"></a>
+</p>
 
 ## 项目使用约定
 

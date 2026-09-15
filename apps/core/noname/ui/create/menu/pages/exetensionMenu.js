@@ -1942,17 +1942,18 @@ export const extensionMenu = function (connectMenu) {
 								const descriptor = Object.getOwnPropertyDescriptor(obj, key);
 								if (descriptor?.get || descriptor?.set) {
 									if (descriptor.get) {
-										str += indent + get.stringify(descriptor.get, 1) + ",\n";
+										str += indent + get.stringify(descriptor.get, 1, true) + ",\n";
 									}
 									if (descriptor.set) {
-										str += indent + get.stringify(descriptor.set, 1) + ",\n";
+										str += indent + get.stringify(descriptor.set, 1, true) + ",\n";
 									}
 								} else {
 									let keyString = (/[^a-zA-Z]/.test(key) ? `"${key}"` : key) + ": ";
-									if (get.is.functionMethod(obj, key)) {
+									const isFunctionMethod = get.is.functionMethod(obj, key);
+									if (isFunctionMethod) {
 										keyString = "";
 									}
-									str += indent + keyString + get.stringify(obj[key], 1) + ",\n";
+									str += indent + keyString + get.stringify(obj[key], 1, isFunctionMethod) + ",\n";
 								}
 							}
 							Object.getOwnPropertySymbols(obj).forEach(symbol => {
@@ -2149,17 +2150,18 @@ export const extensionMenu = function (connectMenu) {
 								const descriptor = Object.getOwnPropertyDescriptor(obj, key);
 								if (descriptor?.get || descriptor?.set) {
 									if (descriptor.get) {
-										str += indent + get.stringify(descriptor.get, 1) + ",\n";
+										str += indent + get.stringify(descriptor.get, 1, true) + ",\n";
 									}
 									if (descriptor.set) {
-										str += indent + get.stringify(descriptor.set, 1) + ",\n";
+										str += indent + get.stringify(descriptor.set, 1, true) + ",\n";
 									}
 								} else {
 									let keyString = (/[^a-zA-Z]/.test(key) ? `"${key}"` : key) + ": ";
-									if (get.is.functionMethod(obj, key)) {
+									const isFunctionMethod = get.is.functionMethod(obj, key);
+									if (isFunctionMethod) {
 										keyString = "";
 									}
-									str += indent + keyString + get.stringify(obj[key], 1) + ",\n";
+									str += indent + keyString + get.stringify(obj[key], 1, isFunctionMethod) + ",\n";
 								}
 							}
 							Object.getOwnPropertySymbols(obj).forEach(symbol => {
@@ -2408,7 +2410,7 @@ export const extensionMenu = function (connectMenu) {
 			if (source && source[index]) {
 				extensionURL = source[index];
 			} else {
-				extensionURL = lib.updateURL.replace(/noname/g, "noname-extension") + "/master/";
+				extensionURL = "https://raw.githubusercontent.com/libnoname/noname-extension/master/";
 			}
 
 			var reloadnode = ui.create.div(".config.toggle.pointerdiv", "重新启动", page, game.reload);

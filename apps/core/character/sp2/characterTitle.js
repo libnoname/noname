@@ -1,4 +1,5 @@
 export default {
+	star_zhugejin: "怀玉之臣",
 	caobao: "杯盏游神",
 	star_zhangsong: "乌鹊折槁",
 	star_zhanghe: "河北之庭柱",

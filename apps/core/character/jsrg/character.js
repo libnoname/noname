@@ -269,6 +269,7 @@ const characters = {
 		hp: 3,
 		names: "诸葛|亮",
 		skills: ["jsrgwentian", "jsrgchushi", "jsrgyinlve"],
+		clans: ["琅琊诸葛氏"],
 	},
 	jsrg_jiangwei: {
 		sex: "male",
@@ -449,6 +450,7 @@ const characters = {
 		hp: 4,
 		skills: ["jsrgzuozhan", "jsrgcuibing", "jsrglangan"],
 		names: "诸葛|诞",
+		clans: ["琅琊诸葛氏"],
 	},
 	jsrg_wangjun: {
 		sex: "male",

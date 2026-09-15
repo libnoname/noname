@@ -1,4 +1,12 @@
 export default {
+	tw_jushou: "监军谋国",
+	tw_baosanniang: "南中武娘",
+	huan_fazheng: "如虎添翼",
+	tw_sb_yl_luzhi: "国之桢干",
+	huan_sunce: "问鼎中原",
+	huan_daqiao: "温矜姝华",
+	huan_xiaoqiao: "潇湘冷月",
+	tw_pot_huanjie: "定计谋国",
 	tw_lingju: "情随梦逝",
 	tw_sb_xiahoudun: "独眼的罗刹",
 	tw_yj_fazheng: "弹铗待试",
@@ -49,7 +57,7 @@ export default {
 	tw_jianshuo: "西园硕犀",
 	tw_mateng: "驰骋西陲", //这个皮肤在海外和普通称号一样，但是在国内OL改名叫安狄将军
 	tw_baoxin: "坚朴的忠相",
-	tw_liufuren: "酷妒的海棠",//热辣的海藻（）
+	tw_liufuren: "酷妒的海棠", //热辣的海藻（）
 	tw_wangling: "深谋远虑",
 	tw_zhugeguo: "仙池起舞",
 	tw_fanchou: "反攻长安",

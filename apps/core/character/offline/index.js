@@ -2,7 +2,7 @@ import { lib, game, ui, get, ai, _status } from "noname";
 import characters from "./character.js";
 import cards from "./card.js";
 import pinyins from "./pinyin.js";
-import skills from "./skill/index.js";
+import skills from "./skill";
 import translates from "./translate.js";
 import characterIntros from "./intro.js";
 import characterFilters from "./characterFilter.js";
@@ -34,6 +34,8 @@ game.import("character", function () {
 				["sm_shen_sunquan", []],
 				["sm_mo_sunquan", []],
 			],
+			lx_simazhao: [["lx_simazhao_shadow", ["die:jin_jsrg_simazhao"]]],
+			lx_caomao: [["lx_caomao_shadow", []]],
 		},
 		dynamicTranslate: { ...dynamicTranslates },
 		characterIntro: { ...characterIntros },

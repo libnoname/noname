@@ -58,4 +58,4 @@ GameEvent 系统由五个正交模块组成：
 - **新手入门**：按上面表格从上到下阅读——先理解"外部怎么用事件"（interaction），再深入内部机制
 - **调试事件流**：重点读 [relationships.md](relationships.md)（事件栈、waitNext、tempEvent）
 - **编写技能**：重点读 [trigger.md](trigger.md) + [content.md](content.md)
-- **迁移旧代码**：参考 [content.md](content.md) 末尾的 Step 迁移附录 + 各废弃模块文档
+- **迁移旧代码**：参考 [content.md](content.md) 末尾的 Step 迁移附录、[Player 事件对象参数迁移指南](../player-event-object-parameters-migration.md) + 各废弃模块文档

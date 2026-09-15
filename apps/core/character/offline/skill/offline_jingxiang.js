@@ -14,7 +14,7 @@ const skills = {
 		filter(event, player) {
 			return !event.numFixed;
 		},
-		content() {
+		async content(event, trigger, player) {
 			trigger.num += player.hp;
 		},
 		ai: {
@@ -31,15 +31,15 @@ const skills = {
 		usable: 1,
 		audio: "dcsbronghuo",
 		filter(event, player) {
-			return player.countCards("h");
+			return player.hasCards("h");
 		},
 		filterTarget: lib.filter.notMe,
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			let list = Array.from(Array(player.countCards("h") + 1)).map((i, p) => p);
-			let dialog = [`猜测${get.translation(player)}拥有的红色手牌数量`];
+			const list = Array.from(Array(player.countCards("h") + 1)).map((i, p) => p);
+			const dialog = [`猜测${get.translation(player)}拥有的红色手牌数量`];
 			while (list.length) {
-				let nums = list.slice(0, Math.min(10, list.length));
+				const nums = list.slice(0, Math.min(10, list.length));
 				list.removeArray(nums);
 				dialog.push([nums, "tdnodes"]);
 			}
@@ -49,13 +49,13 @@ const skills = {
 				.forResult();
 			if (result.bool) {
 				target.chat(`我猜你有${result.links[0]}张红色牌！`);
-				game.log(target, "猜测", player, "有红色牌", "#g" + result.links[0] + "张");
+				game.log(target, "猜测", player, "有红色牌", `#g${result.links[0]}张`);
 				if (event.isMine() && !event.isOnline()) {
 					await game.delay();
 				}
 				await player.showHandcards(`${get.translation(player)}发动了【绽焰】`);
-				const num = Math.min(3, Math.abs(result.links[0] - player.countCards("h", card => get.color(card, player) == "red")));
-				const redCards = player.getCards("he", card => get.color(card, player) == "red");
+				const num = Math.min(3, Math.abs(result.links[0] - player.countCards("h", card => get.color(card, player) === "red")));
+				const redCards = player.getCards("he", card => get.color(card, player) === "red");
 				if (redCards.length) {
 					await player.give(redCards, target);
 				}
@@ -76,7 +76,7 @@ const skills = {
 	jxwusheng: {
 		mod: {
 			targetInRange(card) {
-				if (get.suit(card) == "diamond" && card.name == "sha") {
+				if (get.suit(card) === "diamond" && card.name === "sha") {
 					return true;
 				}
 			},
@@ -91,12 +91,12 @@ const skills = {
 					if (info[3]) {
 						return false;
 					}
-					if (name != "sha" && name != "jiu") {
+					if (name !== "sha" && name !== "jiu") {
 						return false;
 					}
-					return get.type(name) == "basic";
+					return get.type(name) === "basic";
 				})
-				.some(card => player.hasCard(cardx => get.color(cardx, player) == "red" && event.filterCard({ name: card[2], nature: card[3], cards: [cardx] }, player, event), "hes"));
+				.some(card => player.hasCard(cardx => get.color(cardx, player) === "red" && event.filterCard({ name: card[2], nature: card[3], cards: [cardx] }, player, event), "hes"));
 		},
 		chooseButton: {
 			dialog(event, player) {
@@ -106,30 +106,30 @@ const skills = {
 						if (info[3]) {
 							return false;
 						}
-						if (name != "sha" && name != "jiu") {
+						if (name !== "sha" && name !== "jiu") {
 							return false;
 						}
-						return get.type(name) == "basic";
+						return get.type(name) === "basic";
 					})
-					.filter(card => player.hasCard(cardx => get.color(cardx, player) == "red" && event.filterCard({ name: card[2], nature: card[3], cards: [cardx] }, player, event), "hes"));
+					.filter(card => player.hasCard(cardx => get.color(cardx, player) === "red" && event.filterCard({ name: card[2], nature: card[3], cards: [cardx] }, player, event), "hes"));
 				return ui.create.dialog("武圣", [list, "vcard"]);
 			},
 			filter(button, player) {
 				return _status.event.getParent().filterCard({ name: button.link[2], nature: button.link[3] }, player, _status.event.getParent());
 			},
 			check(button) {
-				if (_status.event.getParent().type != "phase") {
+				if (_status.event.getParent().type !== "phase") {
 					return 1;
 				}
-				const player = get.event().player,
-					value = player.getUseValue({ name: button.link[2], nature: button.link[3] });
+				const player = get.event().player;
+				const value = player.getUseValue({ name: button.link[2], nature: button.link[3] });
 				return value;
 			},
 			backup(links, player) {
 				return {
 					audio: "wusheng",
 					filterCard(card, player) {
-						return get.color(card, player) == "red";
+						return get.color(card, player) === "red";
 					},
 					popname: true,
 					check(card) {
@@ -140,18 +140,18 @@ const skills = {
 				};
 			},
 			prompt(links, player) {
-				return "将一张牌当作" + (get.translation(links[0][3]) || "") + "【" + get.translation(links[0][2]) + "】使用或打出";
+				return `将一张牌当作${get.translation(links[0][3]) || ""}【${get.translation(links[0][2])}】使用或打出`;
 			},
 		},
 		hiddenCard(player, name) {
-			if (name != "jiu") {
+			if (name !== "jiu") {
 				return false;
 			}
-			return player.countCards("hes", { color: "red" });
+			return player.hasCards("hes", { color: "red" });
 		},
 		ai: {
 			skillTagFilter(player) {
-				if (!player.countCards("hes", { color: "red" })) {
+				if (!player.hasCards("hes", { color: "red" })) {
 					return false;
 				}
 			},
@@ -209,7 +209,7 @@ const skills = {
 		ai: {
 			effect: {
 				target(card, player, target) {
-					if (card.name == "guiyoujie") {
+					if (card.name === "guiyoujie") {
 						return [0, 1];
 					}
 				},
@@ -226,7 +226,7 @@ const skills = {
 		onChooseToUse(event) {
 			if (!event.jxtuwei && !game.online) {
 				const player = get.player();
-				const cards = Array.from(ui.discardPile.childNodes).filter(card => get.type(card) == "equip");
+				const cards = Array.from(ui.discardPile.childNodes).filter(card => get.type(card) === "equip");
 				event.set("jxtuwei", cards);
 			}
 		},
@@ -239,15 +239,15 @@ const skills = {
 		chooseButton: {
 			dialog(event, player) {
 				const list2 = event.jxtuwei;
-				var dialog = ui.create.dialog('###突围###<div class="text center">请选择一张装备牌置入一名其他角色的装备区</div>');
+				const dialog = ui.create.dialog('###突围###<div class="text center">请选择一张装备牌置入一名其他角色的装备区</div>');
 				if (list2.length) {
 					dialog.add(list2);
 				}
 				return dialog;
 			},
 			check(button) {
-				var player = _status.event.player;
-				var num = get.value(button.link);
+				const player = _status.event.player;
+				const num = get.value(button.link);
 				if (!game.hasPlayer(target => !player.getStorage("jxtuwei").includes(target) && get.attitude(player, target) > 0)) {
 					return num;
 				}
@@ -261,21 +261,19 @@ const skills = {
 					},
 					check: () => 1,
 					async content(event, trigger, player) {
-						const cardx = lib.skill.jxtuwei_backup.card,
-							target = event.targets[0];
+						const cardx = lib.skill.jxtuwei_backup.card;
+						const target = event.targets[0];
 						target.$gain2(cardx);
 						await game.delayx();
 						await target.equip(cardx);
 						player.markAuto("jxtuwei", target);
-						if (target != player) {
+						if (target !== player) {
 							const result = await player
 								.chooseControl("令其摸一张牌", "对其造成1点伤害", "cancel2")
-								.set("ai", function () {
-									return _status.event.choice;
-								})
+								.set("ai", () => _status.event.choice)
 								.set(
 									"choice",
-									(function () {
+									(() => {
 										if (get.damageEffect(target, player, player) > 0) {
 											return "对其造成1点伤害";
 										}
@@ -286,10 +284,10 @@ const skills = {
 									})()
 								)
 								.forResult();
-							if (result.index == 0) {
+							if (result.index === 0) {
 								await target.draw();
 							}
-							if (result.index == 1) {
+							if (result.index === 1) {
 								player.line(target, "green");
 								await target.damage();
 							}
@@ -298,7 +296,7 @@ const skills = {
 					ai: {
 						result: {
 							target(player, target) {
-								var att = get.attitude(player, target);
+								const att = get.attitude(player, target);
 								if (att > 0) {
 									return 3;
 								}
@@ -312,7 +310,7 @@ const skills = {
 				};
 			},
 			prompt(links, player) {
-				return "请选择置入" + get.translation(links) + "的角色";
+				return `请选择置入${get.translation(links)}的角色`;
 			},
 		},
 		subSkill: {
@@ -327,21 +325,19 @@ const skills = {
 		},
 		forced: true,
 		filter(event, player) {
-			if (event.name == "gameDraw") {
+			if (event.name === "gameDraw") {
 				return true;
 			}
-			return event.name != "phase" || game.phaseNumber == 0;
+			return event.name !== "phase" || game.phaseNumber === 0;
 		},
 		async content(event, trigger, player) {
-			if (trigger.name == "gameDraw") {
+			if (trigger.name === "gameDraw") {
 				const me = player;
 				const numx = trigger.num;
-				trigger.num = function (player) {
-					return (player == me ? game.countGroup() : 0) + (typeof numx == "function" ? numx(player) : numx);
-				};
+				trigger.num = player => (player === me ? game.countGroup() : 0) + (typeof numx === "function" ? numx(player) : numx);
 				return;
 			}
-			let cards = [];
+			const cards = [];
 			while (cards.length < 2) {
 				const card = game.createCard2("jingxiangshengshi", "heart", 5);
 				cards.push(card);
@@ -372,7 +368,7 @@ const skills = {
 			}
 			await player.chooseUseTarget(card, true);
 			for (const target of game.players) {
-				if (target.getHistory("gain", evt => evt.getParent(event.name) == event).length && target != player) {
+				if (target.getHistory("gain", evt => evt.getParent(event.name) === event).length && target !== player) {
 					target.addTempSkill("jxfujing_effect", "roundStart");
 					target.markAuto("jxfujing_effect", player);
 				}
@@ -413,24 +409,24 @@ const skills = {
 		},
 		usable: 1,
 		filter(event, player, name) {
-			const target = name == "damageBegin1" ? event.player : event.source;
+			const target = name === "damageBegin1" ? event.player : event.source;
 			return target && target.isIn() && target.countCards("h") < player.countCards("h");
 		},
 		async cost(event, trigger, player) {
-			const target = event.triggername == "damageBegin1" ? trigger.player : trigger.source;
-			const prompt2 = `交给其一张牌并令此伤害${event.triggername == "damageBegin1" ? "+" : "-"}1`;
+			const target = event.triggername === "damageBegin1" ? trigger.player : trigger.source;
+			const prompt2 = `交给其一张牌并令此伤害${event.triggername === "damageBegin1" ? "+" : "-"}1`;
 			const result = await player
 				.chooseCard(get.prompt(event.skill, target), prompt2, "he")
-				.set("ai", function (card) {
-					const eff = _status.event.eff,
-						isPlayer = _status.event.isPlayer;
+				.set("ai", card => {
+					const eff = _status.event.eff;
+					const isPlayer = _status.event.isPlayer;
 					if ((isPlayer && eff < 0) || (!isPlayer && eff > 0)) {
 						return 6 - get.value(card);
 					}
 					return 0;
 				})
 				.set("eff", get.damageEffect(trigger.player, trigger.source, player))
-				.set("isPlayer", player == trigger.player)
+				.set("isPlayer", player === trigger.player)
 				.forResult();
 			event.result = {
 				bool: result.bool,
@@ -440,7 +436,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			await player.give(event.cards, event.targets[0]);
-			if (event.triggername == "damageBegin1") {
+			if (event.triggername === "damageBegin1") {
 				trigger.num++;
 			} else {
 				trigger.num--;

@@ -374,6 +374,13 @@ export const defaultHooks: {
 				event.checkJyliezhou = true;
 			}
 		},
+		function chixueren(event, player) {
+			const { source } = event;
+			const distance = get.distance(source, player);
+			if (source?.inRange(player) && !game.hasPlayer(current => current != player && source?.inRange(current) && get.distance(source, current) > distance)) {
+				event.checkChixueren = true;
+			}
+		},
 	],
 
 	checkDamage2: [],

@@ -38,6 +38,7 @@ const characters = {
 		skills: ["sxrmbingqu", "sxrmfanxin"],
 		groupBorder: "shen",
 		names: "诸葛|亮",
+		clans: ["琅琊诸葛氏"],
 	},
 	sxrm_jiahua: {
 		sex: "male",

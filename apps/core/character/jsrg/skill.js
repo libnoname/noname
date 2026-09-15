@@ -1007,7 +1007,9 @@ const skills = {
 			const target = event.target,
 				targets = [player].concat(
 					(() => {
-						return get.mode() === "identity" ? [] : player.getFriends();
+						//return get.mode() === "identity" ? [] : player.getFriends();
+						//终于没有若为了
+						return [];
 					})()
 				);
 			//生成dialog
@@ -1180,12 +1182,9 @@ const skills = {
 					})
 					.forResult();
 				if (!result?.cards?.length || result.cards[0] === card) {
+					player.logSkill("mbsaojian", null, null, null, [3]);
 					break;
 				}
-			}
-			if (target.countCards("h") > player.countCards("h")) {
-				player.logSkill("mbsaojian", null, null, null, [3]);
-				await player.loseHp();
 			}
 		},
 		chooseCard(player, eventId, videoId, source) {
@@ -4637,7 +4636,11 @@ const skills = {
 						})
 						.join("\n");
 					if (lib.skill.jsrgzhenfeng.getInclusion(str, card)) {
-						eff += get.damageEffect(player, player, player);
+						let num = 1;
+						if (player.getHp() + player.hujia <= 1) {
+							num++;
+						}
+						eff += get.damageEffect(player, player, player) * num;
 					}
 				}
 				return eff;
@@ -9153,7 +9156,7 @@ const skills = {
 				.set("logSkill", "jsrgfeiyang")
 				.set("ai", function (card) {
 					if (_status.event.goon) {
-						return 6 - get.value(card);
+						return 9 - get.value(card);
 					}
 					return 0;
 				})
@@ -9161,6 +9164,9 @@ const skills = {
 					"goon",
 					(() => {
 						if (player.hasSkillTag("rejudge") && player.countCards("j") < 2) {
+							return false;
+						}
+						if (player.hasSkill("dckanyu", null, false, false) && !player.hasCards("j", card => card.name == "lebu")) {
 							return false;
 						}
 						return player.hasCard(function (card) {

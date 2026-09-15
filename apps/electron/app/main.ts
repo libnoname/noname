@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
-import { app, BrowserWindow, crashReporter } from "electron";
+import { app, BrowserWindow, crashReporter, dialog, Menu, shell } from "electron";
 import fs from "fs";
 import path from "path";
 import remote from "@electron/remote/main/index.js";
@@ -99,6 +99,70 @@ function createMainWindow() {
 		win.loadURL(`http://localhost:8089/index.html`);
 	}
 	remote.enable(win.webContents);
+	const menuTemplate: Electron.MenuItemConstructorOptions[] = [
+		{
+			label: "操作",
+			submenu: [
+				{
+					label: "打开无名杀目录",
+					click: () => {
+						shell.showItemInFolder(path.join(app.getAppPath(), "app"));
+					},
+				},
+			],
+		},
+		{
+			label: "窗口",
+			submenu: [
+				{
+					label: "重新加载当前窗口",
+					role: "reload",
+				},
+				{
+					label: "打开/关闭控制台",
+					role: "toggleDevTools",
+				},
+				{
+					type: "separator",
+				},
+				{
+					label: "全屏模式",
+					role: "togglefullscreen",
+				},
+				{
+					label: "最小化",
+					role: "minimize",
+				},
+				{
+					type: "separator",
+				},
+			],
+		},
+		{
+			label: "帮助",
+			submenu: [
+				{
+					label: "bug反馈",
+					click: () => {
+						shell.openExternal("https://tieba.baidu.com/p/9117747182");
+					},
+				},
+				{
+					label: "版权声明",
+					click: () => {
+						dialog.showMessageBoxSync(win, {
+							message:
+								"【无名杀】属于个人（水乎）开发项目且【完全免费】。如非法倒卖用于牟利将承担法律责任 开发团队将追究到底",
+							type: "info",
+							title: "版权声明",
+							icon: path.join(app.getAppPath(), "app", "noname.ico"),
+						});
+					},
+				},
+			],
+		},
+	];
+	Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate));
 	return win;
 }
 

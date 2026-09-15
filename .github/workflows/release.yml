@@ -62,6 +62,9 @@ jobs:
     name: Build Packages
     needs: create-release
     runs-on: ubuntu-latest
+    env:
+      NONAME_BUILD_CHANNEL: release
+      NONAME_BUILD_COMMIT: ${{ github.sha }}
 
     steps:
       - name: Checkout repository
@@ -94,6 +97,12 @@ jobs:
           cd ../../../dist
           7z a ../release/noname.full.zip *
 
+          cd ../release
+          7z t noname.core.zip
+          7z t noname.full.zip
+          sha256sum noname.core.zip > noname.core.zip.sha256
+          sha256sum noname.full.zip > noname.full.zip.sha256
+
       - name: Upload packages to release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -102,13 +111,18 @@ jobs:
 
           gh release upload "$TAG" \
           release/noname.core.zip \
+          release/noname.core.zip.sha256 \
           release/noname.full.zip \
+          release/noname.full.zip.sha256 \
           --clobber
 
   build-installer:
     name: Build Installer
     needs: create-release
     runs-on: windows-latest
+    env:
+      NONAME_BUILD_CHANNEL: release
+      NONAME_BUILD_COMMIT: ${{ github.sha }}
 
     steps:
       - name: Checkout repository
@@ -144,6 +158,7 @@ jobs:
           pnpm -F @noname/electron build:win
           EXE="$(find output -maxdepth 1 -name '*.exe' | head -n 1)"
           cp "$EXE" "release/noname.Setup.${VER}.exe"
+          sha256sum "release/noname.Setup.${VER}.exe" > "release/noname.Setup.${VER}.exe.sha256"
 
       - name: Upload installer to release
         shell: bash
@@ -154,7 +169,89 @@ jobs:
 
           gh release upload "$TAG" \
           "release/noname.Setup.${VER}.exe" \
+          "release/noname.Setup.${VER}.exe.sha256" \
           --clobber
+
+  build-android:
+    name: Build Android packages
+    needs: create-release
+    runs-on: ubuntu-latest
+    env:
+      NONAME_BUILD_CHANNEL: release
+      NONAME_BUILD_COMMIT: ${{ github.sha }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x apps/mobile/android/gradlew
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          version: 10
+          run_install: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: "pnpm"
+
+      - name: Install JDK 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK packages
+        shell: bash
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Prepare Android signing keystore
+        shell: bash
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          set -euo pipefail
+          : "${ANDROID_KEYSTORE_BASE64:?Missing GitHub Secret ANDROID_KEYSTORE_BASE64}"
+          SIGNING_DIR="$RUNNER_TEMP/noname-android-signing"
+          mkdir -p "$SIGNING_DIR"
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$SIGNING_DIR/noname-release.jks"
+          echo "ANDROID_KEYSTORE_PATH=$SIGNING_DIR/noname-release.jks" >> "$GITHUB_ENV"
+
+      - name: Build signed Android APK
+        shell: bash
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          mkdir -p release
+          pnpm -F @noname/mobile build:android
+          cp apps/mobile/android/app/build/outputs/apk/release/app-release.apk release/noname.android.apk
+          sha256sum release/noname.android.apk > release/noname.android.apk.sha256
+
+      - name: Upload Android packages to release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          gh release upload "$TAG" \
+            release/noname.android.apk \
+            release/noname.android.apk.sha256 \
+            --clobber
 
   release:
     name: Release Version
@@ -162,6 +259,7 @@ jobs:
     needs:
       - build-packages
       - build-installer
+      - build-android
     permissions:
       contents: write
       discussions: write
@@ -188,6 +286,7 @@ jobs:
       - create-release
       - build-packages
       - build-installer
+      - build-android
       - release
     runs-on: ubuntu-latest
 

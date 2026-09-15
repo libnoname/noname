@@ -1,6 +1,8 @@
 export default {
 	//two_yj_hanbing: "",
 	//two_yj_tengjia: "",
+	old_pot_dengai: "勇气陵云",
+	yj_y_xunxu: "博律明识",
 	cy_lingju: "情随梦逝",
 	old_zhangxingcai: "将门红妆",
 	old_xusheng: "奋身御前",

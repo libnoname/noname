@@ -10,8 +10,8 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技，",
-			end = `。${get.poptip("rule_chengshi")}：你于出牌阶段内使用【杀】的次数+1，且此【杀】结算完毕后，你获得之。`;
+		let start = "转换技，游戏开始时，若你的势力为蜀，此技能的初始状态改为阴；",
+			end = `。${get.poptip("rule_chengshi")}：你使用【杀】的次数上限+1，且此【杀】结算完毕后，你获得之。`;
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
 	mbkubai(player, skill) {
@@ -116,9 +116,9 @@ const dynamicTranslates = {
 		const removed = player?.getStorage("mbjieyuan_removed", "");
 		if (beishui) {
 			if (removed === "damageSource") {
-				return "锁定技，你受到伤害时，你可以选择一项：1、弃置一张红色牌，令此伤害-2；2、从牌堆中获得两张红色牌。";
+				return "你受到伤害时，你可以选择一项：1、弃置一张红色牌，令此伤害-2；2、从牌堆中获得两张红色牌。";
 			}else if (removed === "damage") {
-				return "锁定技，你造成伤害时，你可以选择一项：1、弃置一张黑色牌，令此伤害+2；2、从牌堆中获得两张黑色牌。";
+				return "你造成伤害时，你可以选择一项：1、弃置一张黑色牌，令此伤害+2；2、从牌堆中获得两张黑色牌。";
 			}
 		}
 		return `你造成伤害时，你可以选择一项：1、弃置一张黑色牌，令此伤害+1；2、从牌堆中获得一张黑色牌。你受到伤害时，你可以选择一项：1、弃置一张红色牌，令此伤害-1；2、从牌堆中获得一张红色牌。${get.poptip("rule_beishui")}：删除另一个时机的效果，将伤害的增减、获得牌的数量改为2，然后失去背水选项。`;

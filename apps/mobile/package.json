@@ -9,6 +9,7 @@
   ],
   "scripts": {
     "sync": "tsx afterSync.ts",
+    "build:android": "tsx buildAndroid.ts",
     "lint": "pnpm eslint src/**"
   },
   "dependencies": {
