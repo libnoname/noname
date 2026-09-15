@@ -28964,22 +28964,26 @@ const skills = {
 		//group:'twqijia_alka',
 		enable: "phaseUse",
 		filter(event, player) {
-			return player.countCards("e", function (card) {
+			return player.countCards("e", card => {
 				return !player.getStorage("twqijia_alka").includes(get.subtype(card));
 			});
 		},
 		filterTarget(card, player, target) {
-			return target != player && player.canUse({ name: "sha" }, target);
+			return target !== player && player.canUse({ name: "sha" }, target);
 		},
 		position: "e",
 		filterCard(card, player) {
 			return !player.getStorage("twqijia_alka").includes(get.subtype(card));
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
+			const { cards, target } = event;
 			player.addTempSkill("twqijia_alka");
 			player.storage.twqijia_alka.push(get.subtype(cards[0]));
-			player.useCard({ name: "sha" }, target, false);
+			await player.useCard({
+				card: { name: "sha" },
+				targets: [target],
+				addCount: false,
+			});
 		},
 		subSkill: {
 			alka: {
