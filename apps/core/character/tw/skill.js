@@ -13339,12 +13339,8 @@ const skills = {
 			});
 			return skills.length > 0;
 		},
-		//group: "twduoren_remove",
 		prompt2(event, player) {
 			const skills = event.player.getStockSkills(true, true).filter(skill => {
-				/*if (player.hasSkill(skill, null, false, false)) {
-					return false;
-				}*/
 				const info = get.info(skill);
 				return info && !info.hiddenSkill && !info.zhuSkill && !info.charlotte;
 			});
@@ -13379,56 +13375,6 @@ const skills = {
 				})
 			);
 		},
-		/*content() {
-			"step 0";
-			player.loseMaxHp();
-			"step 1";
-			var skills = trigger.player.getSkills(null, false, false).filter(skill => {
-				if (player.hasSkill(skill, null, false, false)) {
-					return false;
-				}
-				var info = get.info(skill);
-				return info && !info.hiddenSkill && !info.zhuSkill && !info.charlotte;
-			});
-			if (skills.length) {
-				//for(var i of skills) player.addSkillLog(i);
-				player.addSkills(skills);
-				player.markAuto("twduoren", skills);
-				game.broadcastAll(function (list) {
-					game.expandSkills(list);
-					for (var i of list) {
-						var info = lib.skill[i];
-						if (!info) {
-							continue;
-						}
-						if (!info.audioname2) {
-							info.audioname2 = {};
-						}
-						info.audioname2.xia_xiahouzie = "twduoren";
-					}
-				}, skills);
-			}
-		},
-		subSkill: {
-			remove: {
-				audio: "twduoren",
-				trigger: { source: "dying" },
-				filter(event, player) {
-					return (
-						event.player != player &&
-						player.getStorage("twduoren").some(skill => {
-							return player.hasSkill(skill, null, false, false);
-						})
-					);
-				},
-				forced: true,
-				locked: false,
-				content() {
-					player.removeSkills(player.getStorage("twduoren"));
-					delete player.storage.twduoren;
-				},
-			},
-		},*/
 	},
 	//赵娥
 	twyanshi: {
