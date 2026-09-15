@@ -25791,24 +25791,21 @@ const skills = {
 		charlotte: true,
 		forced: true,
 		filter(event, player) {
-			return player != event.player && event.card.name == "sha" && event.player.countCards("he") > 0;
+			return player !== event.player && event.card.name === "sha" && event.player.countCards("he") > 0;
 		},
 		logTarget: "player",
-		content() {
-			"step 0";
-			game.delayx();
-			trigger.player
-				.chooseToDiscard("he", "令法：弃置一张牌，或受到来自" + get.translation(player) + "的1点伤害")
-				.set("goon", get.damageEffect(trigger.player, player, trigger.player) < 0)
-				.set("ai", function (card) {
-					if (!_status.event.goon) {
-						return 0;
-					}
-					return 8 - get.value(card);
-				});
-			"step 1";
+		async content(event, trigger, player) {
+			await game.delayx();
+			const goon = get.damageEffect(trigger.player, player, trigger.player) < 0;
+			const result = await trigger.player
+				.chooseToDiscard({
+					position: "he",
+					prompt: `令法：弃置一张牌，或受到来自${get.translation(player)}的1点伤害`,
+					ai: card => (goon ? 8 - get.value(card) : 0),
+				})
+				.forResult();
 			if (!result.bool) {
-				trigger.player.damage();
+				await trigger.player.damage();
 			}
 		},
 		mark: true,
@@ -25822,26 +25819,23 @@ const skills = {
 		charlotte: true,
 		forced: true,
 		filter(event, player) {
-			return player != event.player && event.card.name == "tao" && event.player.countCards("he") > 0;
+			return player !== event.player && event.card.name === "tao" && event.player.countCards("he") > 0;
 		},
 		logTarget: "player",
-		content() {
-			"step 0";
-			game.delayx();
-			trigger.player
-				.chooseCard("he", "令法：交给" + get.translation(player) + "一张牌，否则受到来自其的1点伤害")
-				.set("goon", get.damageEffect(trigger.player, player, trigger.player) < 0)
-				.set("ai", function (card) {
-					if (!_status.event.goon) {
-						return 0;
-					}
-					return 8 - get.value(card);
-				});
-			"step 1";
+		async content(event, trigger, player) {
+			await game.delayx();
+			const goon = get.damageEffect(trigger.player, player, trigger.player) < 0;
+			const result = await trigger.player
+				.chooseCard({
+					position: "he",
+					prompt: `令法：交给${get.translation(player)}一张牌，否则受到来自其的1点伤害`,
+					ai: card => (goon ? 8 - get.value(card) : 0),
+				})
+				.forResult();
 			if (!result.bool) {
-				trigger.player.damage();
+				await trigger.player.damage();
 			} else {
-				trigger.player.give(result.cards, player);
+				await trigger.player.give(result.cards, player);
 			}
 		},
 		mark: true,
