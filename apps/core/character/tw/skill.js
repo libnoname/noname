@@ -25591,20 +25591,18 @@ const skills = {
 		forced: true,
 		logTarget: "player",
 		filter(event, player) {
-			return event.card.name == "sha" && typeof get.number(event.card) == "number";
+			return event.card.name === "sha" && typeof get.number(event.card) === "number";
 		},
-		content() {
-			"step 0";
-			player.judge(function (result) {
-				var evt = _status.event.getTrigger();
-				if (Math.abs(get.number(result) - get.number(evt.card)) <= 1) {
+		async content(event, trigger, player) {
+			const judge = player.judge(card => {
+				const evt = _status.event.getTrigger();
+				if (Math.abs(get.number(card) - get.number(evt.card)) <= 1) {
 					return 2;
 				}
 				return -1;
-			}).judge2 = function (result) {
-				return result.bool;
-			};
-			"step 1";
+			});
+			judge.judge2 = result => result.bool;
+			const result = await judge.forResult();
 			if (result.bool) {
 				trigger.getParent().excluded.add(player);
 			}
@@ -25612,7 +25610,7 @@ const skills = {
 		ai: {
 			effect: {
 				target_use(card, player, target, current, isLink) {
-					if (card.name == "sha" && !isLink) {
+					if (card.name === "sha" && !isLink) {
 						return 0.8;
 					}
 				},
