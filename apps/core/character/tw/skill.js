@@ -29037,12 +29037,12 @@ const skills = {
 		trigger: { global: "useCardToTarget" },
 		logTarget: "target",
 		filter(event, player) {
-			return event.card && event.card.name == "sha" && event.player != player && event.targets.length == 1 && event.targets[0] != player;
+			return event.card && event.card.name === "sha" && event.player !== player && event.targets.length === 1 && event.targets[0] !== player;
 		},
 		check(event, player) {
 			return get.effect(event.targets[0], event.card, event.player, player) <= get.effect(player, event.card, event.player, player);
 		},
-		content() {
+		async content(event, trigger, player) {
 			trigger.getParent().twxiaolian = trigger.targets[0];
 			trigger.targets.length = 0;
 			trigger.getParent().triggeredTargets2.length = 0;
@@ -29066,7 +29066,7 @@ const skills = {
 				},
 				mod: {
 					globalTo(from, to, distance) {
-						if (from != to && to.storage.twxiaolian_distance) {
+						if (from !== to && to.storage.twxiaolian_distance) {
 							return distance + to.storage.twxiaolian_distance.length;
 						}
 					},
@@ -29077,26 +29077,38 @@ const skills = {
 				trigger: { player: "damageEnd" },
 				direct: true,
 				filter(event, player) {
-					return event.getParent(2).twxiaolian != undefined;
+					return event.getParent(2).twxiaolian !== undefined;
 				},
-				content() {
-					"step 0";
-					var target = trigger.getParent(2).twxiaolian;
-					event.target = target;
-					player.chooseCard("是否将一张牌当做【马】置于" + get.translation(target) + "的武将牌旁？", "he").ai = function (card) {
-						if (get.attitude(_status.event.player, _status.event.getParent("twxiaolian_damage").target) > 2) {
-							return 7 - get.value(card);
-						}
-						return 0;
+				async cost(event, trigger, player) {
+					const target = trigger.getParent(2).twxiaolian;
+					const result = await player
+						.chooseCard({
+							prompt: `是否将一张牌当做【马】置于${get.translation(target)}的武将牌旁？`,
+							position: "he",
+							ai: card => {
+								if (get.attitude(_status.event.player, _status.event.getParent("twxiaolian_damage").target) > 2) {
+									return 7 - get.value(card);
+								}
+								return 0;
+							},
+						})
+						.forResult();
+					event.result = {
+						...result,
+						targets: [target],
 					};
-					"step 1";
-					if (result.bool) {
-						player.logSkill("twxiaolian", target);
-						player.lose(result.cards, ui.special, "toStorage");
-						target.addSkill("twxiaolian_distance");
-						target.storage.twxiaolian_distance.addArray(result.cards);
-						target.markSkill("twxiaolian_distance");
-					}
+				},
+				async content(event, trigger, player) {
+					const target = trigger.getParent(2).twxiaolian;
+					const lose = player.lose({
+						cards: event.cards,
+						position: ui.special,
+						toStorage: true,
+					});
+					target.addSkill("twxiaolian_distance");
+					target.storage.twxiaolian_distance.addArray(event.cards);
+					target.markSkill("twxiaolian_distance");
+					await lose;
 				},
 			},
 		},
