@@ -32633,7 +32633,7 @@ const skills = {
 						.chooseTarget({
 							prompt: `将${get.translation(card)}置于一名角色的场上`,
 							forced: true,
-							filterTarget: (_card, _player, target) => validTargets.includes(target),
+							filterTarget: (_card, _player, target) => get.event().validTargets.includes(target),
 							ai: target =>
 								get.attitude(player, target) *
 								(type === "equip"
@@ -32648,6 +32648,7 @@ const skills = {
 											target
 										)),
 						})
+						.set("validTargets", validTargets)
 						.forResult();
 					if (targetResult.bool && targetResult.targets?.length) {
 						const target = targetResult.targets[0];
