@@ -322,7 +322,8 @@ const cards = {
 		subtype: "equip5",
 		skills: ["zhuangshu_basic"],
 		forceDie: true,
-		onLose() {
+		async onLose(event) {
+			const { cards } = event;
 			if ((!event.getParent(2) || event.getParent(2).name != "swapEquip") && (event.getParent().type != "equip" || event.getParent().swapEquip)) {
 				cards.forEach(card => {
 					card.fix();
@@ -350,7 +351,8 @@ const cards = {
 		subtype: "equip5",
 		forceDie: true,
 		skills: ["zhuangshu_trick"],
-		onLose() {
+		async onLose(event) {
+			const { cards } = event;
 			if ((!event.getParent(2) || event.getParent(2).name != "swapEquip") && (event.getParent().type != "equip" || event.getParent().swapEquip)) {
 				cards.forEach(card => {
 					card.fix();
@@ -373,7 +375,8 @@ const cards = {
 		skills: ["zhuangshu_equip"],
 		forceDie: true,
 		inherit: "zhuangshu_basic",
-		onLose() {
+		async onLose(event) {
+			const { cards } = event;
 			if ((!event.getParent(2) || event.getParent(2).name != "swapEquip") && (event.getParent().type != "equip" || event.getParent().swapEquip)) {
 				cards.forEach(card => {
 					card.fix();
