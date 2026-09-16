@@ -1001,7 +1001,7 @@ const skills = {
 							}
 						}
 						if (cards.length) {
-							await player.gain({ cards, animate: "gain2" });
+							await player.gain({ cards, animate: "draw" });
 						}
 					}
 					if (targetx.length) {
@@ -1264,7 +1264,7 @@ const skills = {
 				}
 			}
 			if (cards.length) {
-				await player.gain({ cards, animate: "gain2" });
+				await player.gain({ cards, animate: "draw" });
 			}
 			if (targetx.length) {
 				await game.doAsyncInOrder(targetx, async target => {
