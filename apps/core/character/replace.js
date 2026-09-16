@@ -477,4 +477,5 @@ window.noname_character_replace = {
 	chengji: ["chengji", "lx_chengji"],
 	shen_huangzhong: ["ol_shen_huangzhong", "shen_huangzhong"],
 	huanshujun: ["huanshujun", "dc_huanhuaijin"],
+	shen_sunce: ["shen_sunce", "sm_shenmo_sunce"],
 };
