@@ -902,7 +902,7 @@ const skills = {
 			return 10 - get.value(card);
 		},
 		async precontent(event, trigger, player) {
-			player.logSkill("twsaotao", null, null, null, [event.result.card.name == "jiu" ? 2 : 1]);
+			player.logSkill("twsaoting", null, null, null, [event.result.card.name == "jiu" ? 2 : 1]);
 			player.changeZhuanhuanji("twsaoting");
 			player
 				.when({ player: "useCard" })
