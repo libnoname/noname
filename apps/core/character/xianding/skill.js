@@ -32650,7 +32650,7 @@ const skills = {
 						})
 						.set("validTargets", validTargets)
 						.forResult();
-					if (targetResult.bool && targetResult.targets?.length) {
+					if (targetResult?.bool && targetResult.targets?.length) {
 						const target = targetResult.targets[0];
 						player.line(target);
 						player.$give(card, target, false);
@@ -32670,7 +32670,6 @@ const skills = {
 					});
 					game.log(player, "将", card, "置于了", `#y${control}`);
 				}
-
 				for (const current of game.filterPlayer()) {
 					const currentEquipCount = current.countCards("e");
 					const previousEquipCount = equipCount[current.playerid] || 0;
