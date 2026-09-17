@@ -110,6 +110,7 @@ window.noname_character_perfectPairs = {
 	zhangxuan: ["zhangyao"],
 	zhaoyun: ["liushan"],
 	zhonghui: ["jiangwei"],
+	ol_caozhi: ["caopi"],
 	ol_zhonghui: ["jiangwei"],
 	zhoucang: ["guanyu"],
 	zhouyu: ["huanggai", "re_huanggai", "xiaoqiao", "zhouyi"],

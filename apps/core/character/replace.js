@@ -120,7 +120,7 @@ window.noname_character_replace = {
 	hansui: ["hansui", "re_hansui", "xin_hansui", "jsrg_hansui", "wn_hansui"],
 	haomeng: ["haomeng", "tw_haomeng"],
 	hejin: ["hejin", "re_hejin", "tw_hejin", "tw_jsrg_hejin", "jsrg_hejin"],
-	heqi: ["re_heqi", "heqi"],
+	heqi: ["re_heqi", "heqi", "pot_heqi"],
 	huaman: ["huaman", "sp_huaman"],
 	huangchengyan: ["huangchengyan", "dc_huangchengyan", "ns_huangchengyan"],
 	std_huangchong: ["std_huangchong", "zj_huangchong"],
@@ -180,7 +180,7 @@ window.noname_character_replace = {
 	lukai: ["ol_lukai", "lukai"],
 	lukang: ["lukang", "wu_lukang", "jsrg_lukang", "zj_lukang"],
 	luotong: ["dc_luotong", "luotong", "std_dc_luotong", "scl_luotong", "dc_sb_luotong"],
-	luxun: ["luxun", "re_luxun", "wu_luxun", "dc_sb_lunxun", "sb_luxun", "jsrg_luxun", "huan_luxun", "ty_luxun", "drag_luxun", "sxrm_luxun"],
+	luxun: ["luxun", "re_luxun", "wu_luxun", "dc_sb_luxun", "sb_luxun", "jsrg_luxun", "huan_luxun", "ty_luxun", "drag_luxun", "sxrm_luxun"],
 	luyusheng: ["ol_luyusheng", "luyusheng", "mb_luyusheng", "ns_luyusheng", "clan_luyusheng"],
 	lvboshe: ["lvboshe", "sxrm_lvboshe", "std_lvboshe"],
 	lvbu: ["lvbu", "re_lvbu", "ol_jsrg_lvbu", "dm_lvbu", "v_lvbu", "sb_lvbu", "o_lvbu", "jsrg_lvbu", "ps_lvbu", "ca_lvbu", "scl_lvbu", "jun_lvbu", "xy_lvbu"],
@@ -476,4 +476,5 @@ window.noname_character_replace = {
 	lizhaojiaobo: ["lizhaojiaobo", "lx_lizhaojiaobo"],
 	chengji: ["chengji", "lx_chengji"],
 	shen_huangzhong: ["ol_shen_huangzhong", "shen_huangzhong"],
+	huanshujun: ["huanshujun", "dc_huanhuaijin"],
 };

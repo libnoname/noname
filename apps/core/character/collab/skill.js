@@ -11,7 +11,7 @@ const skills = {
 	},
 	//博学曹冲
 	boxue: {
-		audio: 3,
+		audio: 2,
 		enable: "chooseToUse",
 		canUseCards(event, player) {
 			const discards = Array.from(ui.discardPile.childNodes);
@@ -2151,6 +2151,7 @@ const skills = {
 			player: ["damageEnd", "phaseBegin"],
 		},
 		forced: true,
+		locked: false,
 		skillList: ["dcshentui", "dcxurui", "dchaoshi", "dcniyun", "dcfanzhuan", "dckeshui", "dchuibian", "dcweiqu", "dcmaimeng", "dczuandai", "dcgunyuan", "quanjia", "xuyuan", "xiaomian"],
 		filter(event, player) {
 			return get.info("dcbaibian").skillList.some(skill => !player.hasSkill(skill, null, false, false));

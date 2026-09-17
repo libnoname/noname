@@ -3654,6 +3654,7 @@ const skills = {
 	//缘吕布
 	mblvezhen: {
 		audio: 2,
+		frequent: true,
 		trigger: {
 			player: "phaseUseBegin",
 		},
@@ -25973,6 +25974,7 @@ const skills = {
 			player.$fullscreenpop("败移", "thunder");
 		},
 		async content(event, trigger, player) {
+			const { targets } = event;
 			player.awakenSkill(event.name);
 			game.broadcastAll(
 				function (target1, target2) {
@@ -28525,10 +28527,10 @@ const skills = {
 					const list = player.getStorage("zhouxuan_effect").find(list => list[0] == target);
 					if (
 						list?.[1]?.some(([name, type]) => {
-							if (Array.isArray(link) && get.name(card) == button.link[2]) {
+							if (Array.isArray(link) && get.name(name) == button.link[2]) {
 								return true;
 							}
-							if (typeof link == "string" && get.type2(card) == link) {
+							if (typeof link == "string" && get.type2(name) == link) {
 								return true;
 							}
 							return false;
@@ -29898,6 +29900,7 @@ const skills = {
 		lose: false,
 		delay: false,
 		async content(event, trigger, player) {
+			const { cards } = event;
 			var targets = game
 				.filterPlayer(function (current) {
 					return current != player;
@@ -30697,6 +30700,7 @@ const skills = {
 	xinfu_daigong: {
 		usable: 1,
 		audio: 2,
+		frequent: true,
 		trigger: {
 			player: "damageBegin4",
 		},

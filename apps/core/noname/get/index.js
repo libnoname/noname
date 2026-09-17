@@ -5877,7 +5877,10 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 								var dist = lib.card[name].distance;
 								if (dist.attackFrom) {
 									added = true;
-									uiintro.add('<div class="text center">攻击范围：' + get.owner(node)?.getEquipRange([node[node.cardSymbol]]) + "</div>"); //(-dist.attackFrom + 1)
+									const rangeCard = Vcard || trueCard[trueCard.cardSymbol] || (!trueCard.classList.contains("emptyequip") && lib.card[trueCard.name] ? trueCard : false);
+									const owner = get.owner(node);
+									const range = owner && rangeCard ? owner.getEquipRange([rangeCard]) : -dist.attackFrom + 1;
+									uiintro.add('<div class="text center">攻击范围：' + range + "</div>"); //
 								}
 							}
 							if (!added) {

@@ -1,4 +1,5 @@
 export default {
+	ym_luoguanzhong: "湖海散人",
 	lx_jiachong: "凶凶踽行",
 	lx_chengji: "劣犬良弓",
 	lx_lizhaojiaobo: "竭诚尽节",
@@ -377,6 +378,7 @@ export default {
 	sp_sm_shen_machao: "赛马神",
 	mark_shen_machao: "迅鹭惊雷",
 	shen_diaochan: "欲界非天",
+	ps_shen_diaochan: "三界若空华",
 	boss_zhaoyun: "天龙乘云",
 	zc26_shen_huangyueying: "卧龙的点睛人",
 	shen_jiaxu: "文和乱武",

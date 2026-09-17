@@ -2,7 +2,7 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 const dynamicTranslates = {
 	dcranlv(player, skill) {
-		if (!player.storage[skill].length) {
+		if (!player.storage[skill]?.length) {
 			return lib.translate[skill + "_info"];
 		}
 		let list = [
