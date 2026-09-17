@@ -2534,6 +2534,7 @@ const skills = {
 			return 15 - get.value(card);
 		},
 		ai: {
+			combo: "sxrmsuwu",
 			save: true,
 			order(item, player) {
 				const num = game.filterPlayer(current => player != current).reduce((sum, current) => sum + current.countConnectedCards() * -get.sgnAttitude(player, current), 0);
