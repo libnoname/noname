@@ -6674,11 +6674,12 @@ export class Library {
 					item: {
 						normal: "势备",
 						yingbian: "应变",
+						jiubian: "九变",
 						old: "怀旧",
 					},
 					frequent: true,
 					restart: true,
-					intro: "<li>势备：默认模式，使用线下《君临天下·势备篇》的牌堆进行游戏。<br><li>应变：使用OL的应变国战牌堆进行游戏。<br><li>怀旧：使用传统国战的牌堆进行游戏。",
+					intro: "<li>势备：默认模式，使用线下《君临天下·势备篇》的牌堆进行游戏。<br><li>应变：使用OL的应变国战牌堆进行游戏。<br><li>九变：使用九变篇国战牌堆进行游戏。<br><li>怀旧：使用传统国战的牌堆进行游戏。",
 				},
 				connect_player_number: {
 					name: "游戏人数",
@@ -6691,10 +6692,22 @@ export class Library {
 				},
 				connect_aozhan: {
 					name: "鏖战模式",
-					init: true,
-					intro: "若开启此选项，则将在游戏中引入“鏖战模式”的规则：<br>当游戏中仅剩四名或更少角色时（七人以下游戏时改为三名或更少），若此时全场没有超过一名势力相同的角色，则从一个新的回合开始，游戏进入鏖战模式直至游戏结束。<br>◇在鏖战模式下，【桃】只能当做【杀】或【闪】使用或打出，不能用来回复体力。<br>注：进入鏖战模式后，即使之后有两名或者更多势力相同的角色出现，仍然不会取消鏖战模式。",
+					init: "normal",
+					item: {
+						off: "关闭",
+						normal: "原鏖战",
+						jiubian: "九变鏖战",
+					},
+					intro: "◇原鏖战：进入鏖战后，【桃】只能当做【杀】或【闪】使用或打出，不能用来回复体力。<br>◇九变鏖战：进入鏖战后，【桃】只能当做【酒】使用或打出，并且每轮开始时翻开一张场景牌并执行对应效果。",
 					frequent: true,
 					restart: true,
+				},
+				connect_qunlangCharacters: {
+					name: "使用群狼环鼎武将",
+					init: false,
+					frequent: true,
+					restart: true,
+					intro: "开启后，部分旧国战武将将替换为群狼环鼎修订版本，并隐藏对应的九变篇独立武将。",
 				},
 				get connect_separatism() {
 					return lib.mode.guozhan.config.separatism;
@@ -6760,12 +6773,13 @@ export class Library {
 					item: {
 						normal: "势备",
 						yingbian: "应变",
+						jiubian: "九变",
 						old: "怀旧",
 						free: "自由",
 					},
 					frequent: true,
 					restart: true,
-					intro: "<li>势备：默认模式，使用线下《君临天下·势备篇》的牌堆进行游戏。<br><li>应变：使用OL的应变国战牌堆进行游戏。<br><li>怀旧：使用传统国战的牌堆进行游戏。<br><li>自由：使用玩家的自定义牌堆进行游戏。",
+					intro: "<li>势备：默认模式，使用线下《君临天下·势备篇》的牌堆进行游戏。<br><li>应变：使用OL的应变国战牌堆进行游戏。<br><li>九变：使用九变篇国战牌堆进行游戏。<br><li>怀旧：使用传统国战的牌堆进行游戏。<br><li>自由：使用玩家的自定义牌堆进行游戏。",
 				},
 				player_number: {
 					name: "游戏人数",
@@ -6784,10 +6798,22 @@ export class Library {
 				},
 				aozhan: {
 					name: "鏖战模式",
-					init: true,
+					init: "normal",
+					item: {
+						off: "关闭",
+						normal: "原鏖战",
+						jiubian: "九变鏖战",
+					},
 					frequent: true,
 					restart: true,
-					intro: "若开启此选项，则将在游戏中引入“鏖战模式”的规则：<br>当游戏中仅剩四名或更少角色时（七人以下游戏时改为三名或更少），若此时全场没有超过一名势力相同的角色，则从一个新的回合开始，游戏进入鏖战模式直至游戏结束。<br>◇在鏖战模式下，【桃】只能当做【杀】或【闪】使用或打出，不能用来回复体力。<br>注：进入鏖战模式后，即使之后有两名或者更多势力相同的角色出现，仍然不会取消鏖战模式。",
+					intro: "◇原鏖战：进入鏖战后，【桃】只能当做【杀】或【闪】使用或打出，不能用来回复体力。<br>◇九变鏖战：进入鏖战后，【桃】只能当做【酒】使用或打出，并且每轮开始时翻开一张场景牌并执行对应效果。<br>◇场景牌包括：不进则退、胜者为王、激励、祸起、落石、贱礼。",
+				},
+				qunlangCharacters: {
+					name: "使用群狼环鼎武将",
+					init: false,
+					frequent: true,
+					restart: true,
+					intro: "开启后，部分旧国战武将将替换为群狼环鼎修订版本，并隐藏对应的九变篇独立武将。",
 				},
 				separatism: {
 					name: "群雄割据",
@@ -6870,6 +6896,7 @@ export class Library {
 				},
 				changeViceType: {
 					name: "副将变更方式",
+					intro: "发现式：从候选武将中选择副将。随机式：随机变更为一名副将。九变模式固定使用随机式，不受此设置影响。",
 					init: "default",
 					item: {
 						default: "发现式",

@@ -341,10 +341,6 @@ export default {
 				return false;
 			}
 			// @ts-expect-error 类型系统未来可期
-			if (game.countPlayer() < 4) {
-				return false;
-			}
-			// @ts-expect-error 类型系统未来可期
 			return player.siege(event.target) && event.player.siege(event.target);
 		},
 		forced: true,

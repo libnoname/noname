@@ -3,6 +3,8 @@ import zhen, { sort as zhenSort } from "./zhen.js";
 import shi, { sort as shiSort } from "./shi.js";
 import bian, { sort as bianSort } from "./bian.js";
 import quan, { sort as quanSort } from "./quan.js";
+import jiubian, { sort as jiubianSort } from "./jiubian.js";
+import zifeng, { sort as zifengSort } from "./zifeng.js";
 
 export default {
 	[normalSort]: Object.keys(normal),
@@ -10,6 +12,8 @@ export default {
 	[shiSort]: Object.keys(shi),
 	[bianSort]: Object.keys(bian),
 	[quanSort]: Object.keys(quan),
+	[jiubianSort]: Object.keys(jiubian),
+	[zifengSort]: Object.keys(zifeng),
 	guozhan_jun: ["gz_jun_caocao", "gz_jun_sunquan", "gz_jun_liubei", "gz_jun_zhangjiao", "gz_jun_jin_simayi"],
 	guozhan_single: ["gz_re_xushu", "gz_yanbaihu", "gz_wujing", "gz_dongzhao", "gz_huangzu", "gz_zhugeke", "gz_liuba", "gz_zhuling"],
 	// 谷爱凌
