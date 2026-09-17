@@ -1896,7 +1896,9 @@ export class Player extends HTMLDivElement {
 	/**
 	 * 新的废除装备区
 	 *
-	 * 参数：废除来源角色（不写默认当前事件角色），废除区域（数字/区域字符串/数组，可以写多个，重复废除）
+	 * 参数支持两种形式：
+	 * - 选项对象：`{ slots, all, source }`，`all: true` 表示废除指定装备栏类型当前*所有*仍启用的槽位；
+	 * - 位置参数：废除来源角色（player，不写默认当前事件角色）与废除区域（数字/区域字符串/数组，可写多个）。
 	 *
 	 * @param {import("./Player/type.d").EventDisableEquipParams} [params]
 	 */
@@ -1912,6 +1914,8 @@ export class Player extends HTMLDivElement {
 			for (const arg of args) {
 				if (get.itemtype(arg) == "player") {
 					next.source = arg;
+				} else if (typeof arg == "object" && !Array.isArray(arg) && arg !== null && get.itemtype(arg) == null) {
+					Object.assign(next, arg);
 				} else if (Array.isArray(arg)) {
 					for (const slot of arg) {
 						if (typeof slot == "string") {
@@ -1934,7 +1938,7 @@ export class Player extends HTMLDivElement {
 		if (!next.source) {
 			next.source = _status.event.player;
 		}
-		if (!next.slots.length) {
+		if (!next.all && !next.slots.length) {
 			_status.event.next.remove(next);
 			next.resolve();
 		}
@@ -1945,7 +1949,9 @@ export class Player extends HTMLDivElement {
 	/**
 	 * 新的恢复装备区
 	 *
-	 * 参数：恢复来源角色（不写默认当前事件角色），恢复区域（数字/区域字符串/数组，可以写多个，重复恢复）
+	 * 参数支持两种形式：
+	 * - 选项对象：`{ slots, all, source }`，`all: true` 表示恢复指定装备栏类型当前*所有*被废除的槽位；
+	 * - 位置参数：恢复来源角色（player，不写默认当前事件角色）与恢复区域（数字/区域字符串/数组，可写多个）。
 	 *
 	 * @param {import("./Player/type.d").EventEnableEquipParams} [params]
 	 */
@@ -1983,7 +1989,7 @@ export class Player extends HTMLDivElement {
 		if (!next.source) {
 			next.source = _status.event.player;
 		}
-		if (!next.slots.length) {
+		if (!next.all && !next.slots.length) {
 			_status.event.next.remove(next);
 			next.resolve();
 		}

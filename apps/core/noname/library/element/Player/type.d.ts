@@ -259,11 +259,19 @@ export interface EventHideShownCardsParams {
 export interface EventDisableEquipParams {
 	source?: Player;
 	slots?: string[];
+	/**
+	 * 设为 true 时，废除指定装备栏类型当前*所有*仍启用的槽位。
+	 */
+	all?: boolean;
 }
 
 export interface EventEnableEquipParams {
 	source?: Player;
 	slots?: string[];
+	/**
+	 * 设为 true 时，恢复指定装备栏类型当前*所有*被废除的槽位。
+	 */
+	all?: boolean;
 }
 
 export interface EventExpandEquipParams {
