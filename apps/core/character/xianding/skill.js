@@ -34166,7 +34166,7 @@ const skills = {
 			event.result = await next.forResult();
 		},
 		async content(event, trigger, player) {
-			if (event.cards.length) {
+			if (event.cards?.length) {
 				await player.discard(event.cards);
 			}
 			let num = 0;
