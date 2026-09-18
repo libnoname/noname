@@ -4767,6 +4767,7 @@ const skills = {
 	hefeizherui: {
 		derivation: "hefei_xianjian",
 		audio: 4,
+		logAudio: () => 2,
 		trigger: { global: "useCardToPlayered" },
 		filter(event, player) {
 			if (event.card.name != "sha" || get.is.convertedCard(event.card) || get.is.virtualCard(event.card)) {
@@ -4837,6 +4838,7 @@ const skills = {
 		subSkill: {
 			damage: {
 				audio: "hefeizherui",
+				logAudio: () => ["hefeizherui3.mp3", "hefeizherui4.mp3"],
 				trigger: { global: ["loseAfter", "loseAsyncAfter", "equipAfter", "addJudgeAfter", "addToExpansionAfter", "gainAfter"] },
 				getIndex(event, player) {
 					let list = [];
