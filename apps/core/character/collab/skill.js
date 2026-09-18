@@ -1,253 +1,5 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
-const oljuhunSuitMap = {
-	heart: "spade",
-	diamond: "heart",
-	spade: "club",
-	club: "diamond",
-};
-
-function isOljuhunPoker(card) {
-	return !!card?.classList?.contains("oljuhun");
-}
-
-function getOljuhunRank(card) {
-	const number = get.number(card, false);
-	return number === 1 ? 14 : number;
-}
-
-function getOljuhunCombo(cards) {
-	if (cards.length >= 2 && cards.length <= 4 && cards.every(card => getOljuhunRank(card) === getOljuhunRank(cards[0]))) {
-		return [null, null, "pair", "triple", "bomb"][cards.length];
-	}
-	const numbers = cards.map(getOljuhunRank).sort((a, b) => a - b);
-	if (numbers.length >= 5 && numbers[0] >= 3 && numbers.every((number, index) => !index || number === numbers[index - 1] + 1)) {
-		return "straight";
-	}
-	return null;
-}
-
-function canCompleteOljuhunCombo(selected, available) {
-	if (!selected.length || selected.some(card => !available.includes(card))) {
-		return false;
-	}
-	const counts = new Map();
-	const selectedCounts = new Map();
-	for (const card of available) {
-		const number = getOljuhunRank(card);
-		counts.set(number, (counts.get(number) || 0) + 1);
-	}
-	for (const card of selected) {
-		const number = getOljuhunRank(card);
-		selectedCounts.set(number, (selectedCounts.get(number) || 0) + 1);
-	}
-	const templates = [];
-	for (const [number, count] of counts) {
-		for (let size = 2; size <= Math.min(4, count); size++) {
-			templates.push(new Map([[number, size]]));
-		}
-	}
-	for (let start = 3; start <= 10; start++) {
-		const straight = new Map();
-		for (let number = start; number <= 14 && counts.has(number); number++) {
-			straight.set(number, 1);
-			if (straight.size >= 5) {
-				templates.push(new Map(straight));
-			}
-		}
-	}
-	return templates.some(template => [...selectedCounts].every(([number, count]) => (template.get(number) || 0) >= count));
-}
-
-function sortOljuhunPokerCards(player) {
-	game.broadcastAll(player => {
-		const value = card => {
-			const number = get.number(card, false);
-			return number === 1 ? 14 : number === 2 ? 15 : number;
-		};
-		for (const hand of [player.node.handcards1, player.node.handcards2]) {
-			const nodes = Array.from(hand.childNodes);
-			const isSortable = card => card.classList?.contains("oljuhun") && !card.classList.contains("glows");
-			const sorted = nodes.filter(isSortable).sort((a, b) => value(a) - value(b));
-			let index = 0;
-			for (const card of nodes.map(card => (isSortable(card) ? sorted[index++] : card))) {
-				hand.appendChild(card);
-			}
-		}
-		if (player === game.me) {
-			ui.updatehl();
-		}
-	}, player);
-}
-
-function installOljuhunSortControl() {
-	if (lib._oljuhunSortControlInstalled) {
-		return;
-	}
-	lib._oljuhunSortControlInstalled = true;
-	const close = () => {
-		if (ui.oljuhunSortControl) {
-			ui.oljuhunSortControl.close();
-			delete ui.oljuhunSortControl;
-		}
-	};
-	lib.hooks.checkEnd.push(event => {
-		if (event.skill !== "oljuhun_play" || !event.isMine() || !event.player?.hasCards("h", isOljuhunPoker)) {
-			close();
-			return;
-		}
-		if (!ui.oljuhunSortControl) {
-			ui.oljuhunSortControl = ui.create.control("理牌", () => {
-				const current = get.event();
-				if (current !== event || current.skill !== "oljuhun_play") {
-					close();
-					return;
-				}
-				sortOljuhunPokerCards(current.player);
-				game.check();
-			});
-		}
-	});
-	lib.hooks.uncheckEnd.push(close);
-}
-
-function paintOljuhunCards(cards, owner, restoreAtEnd) {
-	const data = cards.map(card => [card, oljuhunSuitMap[get.suit(card, false)] || get.suit(card, false), get.number(card)]);
-	game.broadcastAll(
-		(data, owner, restoreAtEnd) => {
-			for (const node of [owner.node.handcards1, owner.node.handcards2]) {
-				node.cardMod ??= {};
-				node.cardMod.oljuhun = card => (card.classList.contains("oljuhun") ? ["扑克牌", "仅可用于牛头马面的拘魂组合；离开手牌区时恢复原牌。"] : undefined);
-			}
-			const symbols = { heart: "♥", diamond: "♦", spade: "♠", club: "♣" };
-			const displayNumbers = { 1: "A", 11: "J", 12: "Q", 13: "K" };
-			for (const [card, suit, number] of data) {
-				card._oljuhunOwner = owner;
-				card._oljuhunEnd = restoreAtEnd;
-				card.classList.add("oljuhun");
-				card.dataset.pokerSuit = suit;
-				if (card.cardid != null) {
-					card.dataset.pokerSource = String(card.cardid);
-				}
-				const labelText = `${displayNumbers[number] || number}\n${symbols[suit] || ""}`;
-				let label = card.querySelector(":scope > .oljuhun-label");
-				if (!label) {
-					label = document.createElement("div");
-					label.className = "oljuhun-label";
-					card.appendChild(label);
-				}
-				label.textContent = labelText;
-				const styles = {
-					visibility: "visible",
-					display: "block",
-					position: "absolute",
-					left: "6px",
-					top: "7px",
-					right: "auto",
-					bottom: "auto",
-					width: "28px",
-					height: "auto",
-					margin: "0",
-					padding: "0",
-					"z-index": "20",
-					"pointer-events": "none",
-					"white-space": "pre",
-					"font-family": "Georgia, serif",
-					"font-size": "23px",
-					"font-weight": "bold",
-					"line-height": "25px",
-					"text-align": "center",
-					"text-shadow": "none",
-					color: ["heart", "diamond"].includes(suit) ? "#bd2429" : "#171717",
-					opacity: "1",
-					transform: "none",
-					background: "transparent",
-				};
-				for (const [key, value] of Object.entries(styles)) {
-					label.style.setProperty(key, value, "important");
-				}
-				let lowerLabel = card.querySelector(":scope > .oljuhun-label-bottom");
-				if (!lowerLabel) {
-					lowerLabel = document.createElement("div");
-					lowerLabel.className = "oljuhun-label oljuhun-label-bottom";
-					card.appendChild(lowerLabel);
-				}
-				lowerLabel.textContent = labelText;
-				const lowerStyles = { ...styles, left: "auto", top: "auto", right: "6px", bottom: "7px", transform: "rotate(180deg)", "transform-origin": "center center" };
-				for (const [key, value] of Object.entries(lowerStyles)) {
-					lowerLabel.style.setProperty(key, value, "important");
-				}
-			}
-		},
-		data,
-		owner,
-		restoreAtEnd
-	);
-}
-
-function restoreOljuhunCards(cards) {
-	game.broadcastAll(cards => {
-		const displayed = Array.from(document.querySelectorAll(".card.oljuhun"));
-		for (const card of cards) {
-			const id = card.cardid == null ? null : String(card.cardid);
-			const nodes = new Set([card, card.clone]);
-			if (id !== null) {
-				for (const node of displayed) {
-					if (node.dataset.pokerSource === id || (node._cardid != null && String(node._cardid) === id)) {
-						nodes.add(node);
-					}
-				}
-			}
-			for (const node of nodes) {
-				if (!node) {
-					continue;
-				}
-				node.querySelectorAll(":scope > .oljuhun-label").forEach(label => label.remove());
-				node.classList.remove("oljuhun");
-				delete node.dataset.pokerSuit;
-				delete node.dataset.pokerSource;
-				delete node._oljuhunOwner;
-				delete node._oljuhunEnd;
-			}
-		}
-	}, cards);
-}
-
-async function rewardOljuhunCombo(player, type) {
-	if (!player.hasSkill("oldianbu")) {
-		return;
-	}
-	player.addTempSkill("oldianbu_used");
-	if (!player.getStorage("oldianbu_used").includes(type)) {
-		player.markAuto("oldianbu_used", [type]);
-		const useEvent = player.chooseUseTarget({
-			card: { name: "wuzhong", isCard: true },
-			forced: true,
-		});
-		await useEvent;
-		const gains = player.getHistory("gain", event => {
-			let current = event;
-			while (current) {
-				if (current === useEvent) {
-					return true;
-				}
-				const parent = current.getParent?.();
-				if (!parent || parent === current) {
-					break;
-				}
-				current = parent;
-			}
-			return false;
-		});
-		for (const gain of gains) {
-			player.addGaintag(gain.cards, "oldianbu");
-		}
-	}
-	if (type === "bomb") {
-		player.unmarkAuto("oldianbu_used", player.getStorage("oldianbu_used").slice());
-	}
-}
-
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
 	//OL牛马
@@ -282,21 +34,192 @@ const skills = {
 		},
 	},
 	oljuhun: {
+		isPoker(card) {
+			return !!card?.classList?.contains("oljuhun");
+		},
+		getRank(card) {
+			const number = get.number(card, false);
+			return number === 1 ? 14 : number;
+		},
+		getCombo(cards) {
+			if (cards.length >= 2 && cards.length <= 4 && cards.every(card => lib.skill.oljuhun.getRank(card) === lib.skill.oljuhun.getRank(cards[0]))) {
+				return [null, null, "pair", "triple", "bomb"][cards.length];
+			}
+			const numbers = cards.map(lib.skill.oljuhun.getRank).sort((a, b) => a - b);
+			if (numbers.length >= 5 && numbers[0] >= 3 && numbers.every((number, index) => !index || number === numbers[index - 1] + 1)) {
+				return "straight";
+			}
+			return null;
+		},
+		canCompleteCombo(selected, available) {
+			if (!selected.length || selected.some(card => !available.includes(card))) {
+				return false;
+			}
+			const counts = new Map();
+			const selectedCounts = new Map();
+			for (const card of available) {
+				const number = lib.skill.oljuhun.getRank(card);
+				counts.set(number, (counts.get(number) || 0) + 1);
+			}
+			for (const card of selected) {
+				const number = lib.skill.oljuhun.getRank(card);
+				selectedCounts.set(number, (selectedCounts.get(number) || 0) + 1);
+			}
+			const templates = [];
+			for (const [number, count] of counts) {
+				for (let size = 2; size <= Math.min(4, count); size++) {
+					templates.push(new Map([[number, size]]));
+				}
+			}
+			for (let start = 3; start <= 10; start++) {
+				const straight = new Map();
+				for (let number = start; number <= 14 && counts.has(number); number++) {
+					straight.set(number, 1);
+					if (straight.size >= 5) {
+						templates.push(new Map(straight));
+					}
+				}
+			}
+			return templates.some(template => [...selectedCounts].every(([number, count]) => (template.get(number) || 0) >= count));
+		},
+		paintCards(cards, owner, restoreAtEnd) {
+			const oljuhunSuitMap = {
+				heart: "spade",
+				diamond: "heart",
+				spade: "club",
+				club: "diamond",
+			};
+			const data = cards.map(card => [card, oljuhunSuitMap[get.suit(card, false)] || get.suit(card, false), get.number(card)]);
+			game.broadcastAll(
+				(data, owner, restoreAtEnd) => {
+					for (const node of [owner.node.handcards1, owner.node.handcards2]) {
+						node.cardMod ??= {};
+						node.cardMod.oljuhun = card => (card.classList.contains("oljuhun") ? ["扑克牌", "仅可用于牛头马面的拘魂组合；离开手牌区时恢复原牌。"] : undefined);
+					}
+					const symbols = { heart: "♥", diamond: "♦", spade: "♠", club: "♣" };
+					const displayNumbers = { 1: "A", 11: "J", 12: "Q", 13: "K" };
+					for (const [card, suit, number] of data) {
+						card._oljuhunOwner = owner;
+						card._oljuhunEnd = restoreAtEnd;
+						card.classList.add("oljuhun");
+						card.dataset.pokerSuit = suit;
+						if (card.cardid != null) {
+							card.dataset.pokerSource = String(card.cardid);
+						}
+						const labelText = `${displayNumbers[number] || number}\n${symbols[suit] || ""}`;
+						let label = card.querySelector(":scope > .oljuhun-label");
+						if (!label) {
+							label = document.createElement("div");
+							label.className = "oljuhun-label";
+							card.appendChild(label);
+						}
+						label.textContent = labelText;
+						const styles = {
+							visibility: "visible",
+							display: "block",
+							position: "absolute",
+							left: "6px",
+							top: "7px",
+							right: "auto",
+							bottom: "auto",
+							width: "28px",
+							height: "auto",
+							margin: "0",
+							padding: "0",
+							"z-index": "20",
+							"pointer-events": "none",
+							"white-space": "pre",
+							"font-family": "Georgia, serif",
+							"font-size": "23px",
+							"font-weight": "bold",
+							"line-height": "25px",
+							"text-align": "center",
+							"text-shadow": "none",
+							color: ["heart", "diamond"].includes(suit) ? "#bd2429" : "#171717",
+							opacity: "1",
+							transform: "none",
+							background: "transparent",
+						};
+						for (const [key, value] of Object.entries(styles)) {
+							label.style.setProperty(key, value, "important");
+						}
+						let lowerLabel = card.querySelector(":scope > .oljuhun-label-bottom");
+						if (!lowerLabel) {
+							lowerLabel = document.createElement("div");
+							lowerLabel.className = "oljuhun-label oljuhun-label-bottom";
+							card.appendChild(lowerLabel);
+						}
+						lowerLabel.textContent = labelText;
+						const lowerStyles = { ...styles, left: "auto", top: "auto", right: "6px", bottom: "7px", transform: "rotate(180deg)", "transform-origin": "center center" };
+						for (const [key, value] of Object.entries(lowerStyles)) {
+							lowerLabel.style.setProperty(key, value, "important");
+						}
+					}
+				},
+				data,
+				owner,
+				restoreAtEnd
+			);
+		},
 		audio: 5,
 		forced: true,
 		locked: false,
 		global: "oljuhun_rules",
 		group: "oljuhun_play",
 		init() {
-			installOljuhunSortControl();
+			if (lib._oljuhunSortControlInstalled) {
+				return;
+			}
+			lib._oljuhunSortControlInstalled = true;
+			const close = () => {
+				if (ui.oljuhunSortControl) {
+					ui.oljuhunSortControl.close();
+					delete ui.oljuhunSortControl;
+				}
+			};
+			lib.hooks.checkEnd.push(event => {
+				if (event.skill !== "oljuhun_play" || !event.isMine() || !event.player?.hasCards("h", lib.skill.oljuhun.isPoker)) {
+					close();
+					return;
+				}
+				if (!ui.oljuhunSortControl) {
+					ui.oljuhunSortControl = ui.create.control("理牌", () => {
+						const current = get.event();
+						if (current !== event || current.skill !== "oljuhun_play") {
+							close();
+							return;
+						}
+						game.broadcastAll(player => {
+							const value = card => {
+								const number = get.number(card, false);
+								return number === 1 ? 14 : number === 2 ? 15 : number;
+							};
+							for (const hand of [player.node.handcards1, player.node.handcards2]) {
+								const nodes = Array.from(hand.childNodes);
+								const isSortable = card => card.classList?.contains("oljuhun") && !card.classList.contains("glows");
+								const sorted = nodes.filter(isSortable).sort((a, b) => value(a) - value(b));
+								let index = 0;
+								for (const card of nodes.map(card => (isSortable(card) ? sorted[index++] : card))) {
+									hand.appendChild(card);
+								}
+							}
+							if (player === game.me) {
+								ui.updatehl();
+							}
+						}, current.player);
+						game.check();
+					});
+				}
+			});
+			lib.hooks.uncheckEnd.push(close);
 		},
 		trigger: { player: "phaseUseBegin" },
 		filter(event, player) {
-			return player.hasCards("h", card => !isOljuhunPoker(card));
+			return player.hasCards("h", card => !lib.skill.oljuhun.isPoker(card));
 		},
 		async content(event, trigger, player) {
-			paintOljuhunCards(
-				player.getCards("h", card => !isOljuhunPoker(card)),
+			lib.skill.oljuhun.paintCards(
+				player.getCards("h", card => !lib.skill.oljuhun.isPoker(card)),
 				player,
 				true
 			);
@@ -306,15 +229,15 @@ const skills = {
 				enable: "phaseUse",
 				audio: "oljuhun",
 				filter(event, player) {
-					const available = player.getCards("h", isOljuhunPoker);
-					return available.some(card => canCompleteOljuhunCombo([card], available));
+					const available = player.getCards("h", lib.skill.oljuhun.isPoker);
+					return available.some(card => lib.skill.oljuhun.canCompleteCombo([card], available));
 				},
 				filterCard(card, player) {
-					if (!isOljuhunPoker(card)) {
+					if (!lib.skill.oljuhun.isPoker(card)) {
 						return false;
 					}
 					const selected = [...new Set([...(ui.selected.cards || []), card])];
-					return canCompleteOljuhunCombo(selected, player.getCards("h", isOljuhunPoker));
+					return lib.skill.oljuhun.canCompleteCombo(selected, player.getCards("h", lib.skill.oljuhun.isPoker));
 				},
 				complexCard: true,
 				complexSelect: true,
@@ -322,7 +245,7 @@ const skills = {
 				manualConfirm: true,
 				selectCard: [2, 12],
 				filterOk() {
-					return !!getOljuhunCombo(ui.selected.cards);
+					return !!lib.skill.oljuhun.getCombo(ui.selected.cards);
 				},
 				check: () => 1,
 				discard: false,
@@ -330,7 +253,7 @@ const skills = {
 				delay: 0,
 				prompt: "打出对子、三条、炸弹或至少五张的顺子（3至A，不含2）",
 				async content(event, trigger, player) {
-					const type = getOljuhunCombo(event.cards);
+					const type = lib.skill.oljuhun.getCombo(event.cards);
 					if (!type) {
 						return;
 					}
@@ -361,9 +284,7 @@ const skills = {
 							}
 						}
 					} else if (type === "triple") {
-						const targets = [...new Set([player.getNext(), player.getPrevious()])]
-							.filter(current => current !== player && current.hasCards("he"))
-							.sortBySeat();
+						const targets = [...new Set([player.getNext(), player.getPrevious()])].filter(current => current !== player && current.hasCards("he")).sortBySeat();
 						if (targets.length) {
 							await player.gainMultiple(targets, "he");
 						}
@@ -380,13 +301,13 @@ const skills = {
 						if (result.bool) {
 							await result.targets[0].damage({ num: 2, source: player });
 						}
-					} else if (game.hasPlayer(current => current.hasCards("h", card => !isOljuhunPoker(card)))) {
+					} else if (game.hasPlayer(current => current.hasCards("h", card => !lib.skill.oljuhun.isPoker(card)))) {
 						const result = await player
 							.chooseTarget({
 								prompt: "拘魂：将一名角色随机两张手牌变为扑克牌",
 								forced: true,
 								filterTarget(card, player, target) {
-									return target.hasCards("h", card => !isOljuhunPoker(card));
+									return target.hasCards("h", card => !lib.skill.oljuhun.isPoker(card));
 								},
 								ai(target) {
 									return -get.attitude(player, target);
@@ -395,10 +316,41 @@ const skills = {
 							.forResult();
 						if (result.bool) {
 							const target = result.targets[0];
-							paintOljuhunCards(target.getCards("h", card => !isOljuhunPoker(card)).randomGets(2), target, target === player);
+							lib.skill.oljuhun.paintCards(target.getCards("h", card => !lib.skill.oljuhun.isPoker(card)).randomGets(2), target, target === player);
 						}
 					}
-					await rewardOljuhunCombo(player, type);
+					if (!player.hasSkill("oldianbu")) {
+						return;
+					}
+					player.addTempSkill("oldianbu_used");
+					if (!player.getStorage("oldianbu_used").includes(type)) {
+						player.markAuto("oldianbu_used", [type]);
+						const useEvent = player.chooseUseTarget({
+							card: { name: "wuzhong", isCard: true },
+							forced: true,
+						});
+						await useEvent;
+						const gains = player.getHistory("gain", event => {
+							let current = event;
+							while (current) {
+								if (current === useEvent) {
+									return true;
+								}
+								const parent = current.getParent?.();
+								if (!parent || parent === current) {
+									break;
+								}
+								current = parent;
+							}
+							return false;
+						});
+						for (const gain of gains) {
+							player.addGaintag(gain.cards, "oldianbu");
+						}
+					}
+					if (type === "bomb") {
+						player.unmarkAuto("oldianbu_used", player.getStorage("oldianbu_used").slice());
+					}
 				},
 				ai: {
 					order: 9,
@@ -416,32 +368,59 @@ const skills = {
 				async content(event, trigger, player) {
 					const cards = [];
 					for (const card of trigger.cards || []) {
-						if (isOljuhunPoker(card) && get.position(card, true) === "d") {
+						if (lib.skill.oljuhun.isPoker(card) && get.position(card, true) === "d") {
 							cards.push(card);
 						}
 					}
 					for (const owner of [...game.players, ...game.dead]) {
 						const lost = trigger.getl?.(owner)?.hs || (trigger.name === "lose" && trigger.player === owner ? trigger.hs || [] : []);
 						for (const card of lost) {
-							if (isOljuhunPoker(card)) {
+							if (lib.skill.oljuhun.isPoker(card)) {
 								cards.push(card);
 							}
 						}
 						if (trigger.name === "phase" && owner === trigger.player) {
 							for (const card of owner.getCards("h")) {
-								if (isOljuhunPoker(card) && card._oljuhunEnd) {
+								if (lib.skill.oljuhun.isPoker(card) && card._oljuhunEnd) {
 									cards.push(card);
 								}
 							}
 						}
 					}
 					if (cards.length) {
-						restoreOljuhunCards([...new Set(cards)]);
+						game.broadcastAll(
+							cards => {
+								const displayed = Array.from(document.querySelectorAll(".card.oljuhun"));
+								for (const card of cards) {
+									const id = card.cardid == null ? null : String(card.cardid);
+									const nodes = new Set([card, card.clone]);
+									if (id !== null) {
+										for (const node of displayed) {
+											if (node.dataset.pokerSource === id || (node._cardid != null && String(node._cardid) === id)) {
+												nodes.add(node);
+											}
+										}
+									}
+									for (const node of nodes) {
+										if (!node) {
+											continue;
+										}
+										node.querySelectorAll(":scope > .oljuhun-label").forEach(label => label.remove());
+										node.classList.remove("oljuhun");
+										delete node.dataset.pokerSuit;
+										delete node.dataset.pokerSource;
+										delete node._oljuhunOwner;
+										delete node._oljuhunEnd;
+									}
+								}
+							},
+							[...new Set(cards)]
+						);
 					}
 				},
 				mod: {
 					cardname(card) {
-						if (isOljuhunPoker(card)) {
+						if (lib.skill.oljuhun.isPoker(card)) {
 							return "oljuhun_poker";
 						}
 					},
@@ -449,17 +428,17 @@ const skills = {
 						if (!card) {
 							return;
 						}
-						if ((isOljuhunPoker(card) || (card.cards || []).some(isOljuhunPoker)) && get.event()?.skill !== "oljuhun_play") {
+						if ((lib.skill.oljuhun.isPoker(card) || (card.cards || []).some(lib.skill.oljuhun.isPoker)) && get.event()?.skill !== "oljuhun_play") {
 							return false;
 						}
 					},
 					cardRespondable(card) {
-						if (card && isOljuhunPoker(card) && get.event()?.skill !== "oljuhun_play") {
+						if (card && lib.skill.oljuhun.isPoker(card) && get.event()?.skill !== "oljuhun_play") {
 							return false;
 						}
 					},
 					cardRecastable(card) {
-						if (card && (isOljuhunPoker(card) || (card.cards || []).some(isOljuhunPoker))) {
+						if (card && (lib.skill.oljuhun.isPoker(card) || (card.cards || []).some(lib.skill.oljuhun.isPoker))) {
 							return false;
 						}
 					},
