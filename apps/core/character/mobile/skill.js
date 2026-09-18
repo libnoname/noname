@@ -4199,7 +4199,7 @@ const skills = {
 		audio: 4,
 		trigger: { player: "useCardAfter" },
 		filter(event, player) {
-			return get.is.damageCard(event.card) && event.targets?.some(target => target !== player);
+			return get.is.damageCard(event.card) && event.targets?.some(target => target !== player && target.isIn());
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
@@ -4221,7 +4221,7 @@ const skills = {
 				})
 				.set(
 					"targets",
-					trigger.targets.filter(target => target !== player)
+					trigger.targets.filter(target => target !== player && target.isIn())
 				)
 				.forResult();
 		},
