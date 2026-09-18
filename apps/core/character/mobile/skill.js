@@ -2391,7 +2391,7 @@ const skills = {
 					if (cards.length >= discardNum) {
 						return 2;
 					}
-					return 0;
+					return 1;
 				},
 			},
 			threaten: 3,
