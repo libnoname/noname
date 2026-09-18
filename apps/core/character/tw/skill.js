@@ -17808,6 +17808,7 @@ const skills = {
 		enable: "phaseUse",
 		filterTarget: true,
 		async content(event, trigger, player) {
+			const { target } = event;
 			player.awakenSkill(event.name);
 			const players = game.filterPlayer(current => current !== target && current.inRange(target));
 			players.sortBySeat();

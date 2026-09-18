@@ -2391,7 +2391,7 @@ const skills = {
 					if (cards.length >= discardNum) {
 						return 2;
 					}
-					return 0;
+					return 1;
 				},
 			},
 			threaten: 3,
@@ -4199,7 +4199,7 @@ const skills = {
 		audio: 4,
 		trigger: { player: "useCardAfter" },
 		filter(event, player) {
-			return get.is.damageCard(event.card) && event.targets?.some(target => target !== player);
+			return get.is.damageCard(event.card) && event.targets?.some(target => target !== player && target.isIn());
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
@@ -4221,7 +4221,7 @@ const skills = {
 				})
 				.set(
 					"targets",
-					trigger.targets.filter(target => target !== player)
+					trigger.targets.filter(target => target !== player && target.isIn())
 				)
 				.forResult();
 		},
@@ -4733,7 +4733,7 @@ const skills = {
 					.filter(evt => evt == trigger.getParent("useCard", true, true))
 					.step(async (event, trigger, player) => {
 						const cards = trigger.cards.filterInD("od");
-						if (!cards?.length) {
+						if (!cards?.length || !target?.isIn()) {
 							return;
 						}
 						const list = [];
@@ -4767,6 +4767,7 @@ const skills = {
 	hefeizherui: {
 		derivation: "hefei_xianjian",
 		audio: 4,
+		logAudio: () => 2,
 		trigger: { global: "useCardToPlayered" },
 		filter(event, player) {
 			if (event.card.name != "sha" || get.is.convertedCard(event.card) || get.is.virtualCard(event.card)) {
@@ -4837,6 +4838,7 @@ const skills = {
 		subSkill: {
 			damage: {
 				audio: "hefeizherui",
+				logAudio: () => ["hefeizherui3.mp3", "hefeizherui4.mp3"],
 				trigger: { global: ["loseAfter", "loseAsyncAfter", "equipAfter", "addJudgeAfter", "addToExpansionAfter", "gainAfter"] },
 				getIndex(event, player) {
 					let list = [];
