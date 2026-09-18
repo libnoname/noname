@@ -902,7 +902,7 @@ const skills = {
 			return 10 - get.value(card);
 		},
 		async precontent(event, trigger, player) {
-			player.logSkill("twsaotao", null, null, null, [event.result.card.name == "jiu" ? 2 : 1]);
+			player.logSkill("twsaoting", null, null, null, [event.result.card.name == "jiu" ? 2 : 1]);
 			player.changeZhuanhuanji("twsaoting");
 			player
 				.when({ player: "useCard" })
@@ -1001,7 +1001,7 @@ const skills = {
 							}
 						}
 						if (cards.length) {
-							await player.gain({ cards, animate: "gain2" });
+							await player.gain({ cards, animate: "draw" });
 						}
 					}
 					if (targetx.length) {
@@ -1264,7 +1264,7 @@ const skills = {
 				}
 			}
 			if (cards.length) {
-				await player.gain({ cards, animate: "gain2" });
+				await player.gain({ cards, animate: "draw" });
 			}
 			if (targetx.length) {
 				await game.doAsyncInOrder(targetx, async target => {
@@ -29341,12 +29341,12 @@ const skills = {
 			player: ["phaseZhunbeiBegin", "phaseJieshuBegin"],
 		},
 		filter(event, player) {
-			return game.hasPlayer(current => player.canCompare(current));
+			return game.hasPlayer(current => player.canCompare(current, true));
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget(get.prompt2(event.skill), (card, player2, target) => {
-					return player2.canCompare(target);
+					return player2.canCompare(target, true);
 				})
 				.set("ai", target => {
 					const player2 = get.player();
@@ -29357,6 +29357,7 @@ const skills = {
 		async content(event, trigger, player) {
 			await player.draw(1);
 			const target = event.targets[0];
+			if (!player.canCompare(target)) return;
 			const next = player.chooseToCompare(target).set("isDelay", true);
 			await next;
 			await game.delay();
