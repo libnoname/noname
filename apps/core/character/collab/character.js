@@ -21,7 +21,6 @@ const characters = {
 		hp: 4,
 		skills: ["oldianbu", "oljuhun"],
 		names: "null|null-null|null",
-		isUnseen: true,
 	},
 	xiangxue_liushan: {
 		sex: "male",
