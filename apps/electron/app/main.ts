@@ -94,7 +94,7 @@ function createMainWindow() {
 		},
 	});
 	if (import.meta.env.DEV) {
-		win.loadURL(`http://localhost:8080`);
+		win.loadURL(`http://127.0.0.1:8080`);
 	} else {
 		win.loadURL(`http://localhost:8089/index.html`);
 	}
