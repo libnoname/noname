@@ -1,11 +1,5 @@
 //@ts-nocheck
-import { FileSystem, FileSystemError, FileSystemErrorCode, installLegacyFileSystemAPI } from "@/library/fs";
-
-/**
- * @typedef { import("@/library/fs").FileSystemAdapter } FileSystemAdapter
- * @typedef { import("@/library/fs").FileHandle } FileHandle
- * @typedef { import("@/library/fs").OpenOptions } OpenOptions
- */
+import { checkVersion } from "../library/update.js";
 
 export default function nodeReady({ lib, game, get, _status, ui }) {
 	// 处理Node环境下的http情况
@@ -82,9 +76,6 @@ export default function nodeReady({ lib, game, get, _status, ui }) {
 		},
 	};
 	lib.path = lib.node.path;
-	const fs = new FileSystem(new NodeFileSystemAdapter(lib.node.fs, lib.node.path, __dirname));
-	lib.fs = fs;
-	installLegacyFileSystemAPI(game, fs);
 
 	game.download = function (url, folder, onsuccess, onerror, dev, onprogress) {
 		if (!url.startsWith("http")) {
@@ -165,238 +156,309 @@ export default function nodeReady({ lib, game, get, _status, ui }) {
 		window.open(url);
 	};
 	
+	/**
+	 * 检查指定的路径是否是一个文件
+	 *
+	 * @param {string} fileName - 需要查询的路径
+	 * @param {(result: -1 | 0 | 1) => void} [callback] - 回调函数；接受的参数意义如下:
+	 *  - `-1`: 路径不存在或无法访问
+	 *  - `0`: 路径的内容不是文件
+	 *  - `1`: 路径的内容是文件
+	 * @param {(err: Error) => void} [onerror] - 接收错误的回调函数
+	 * @return {void} - 由于三端的异步需求和历史原因，文件管理必须为回调异步函数
+	 */
+	game.checkFile = function (fileName, callback, onerror) {
+		let filePath = __dirname + "/" + fileName;
+
+		// 如果路径不存在，则无需再尝试获取信息
+		if (!lib.node.fs.existsSync(filePath)) {
+			callback?.(-1);
+			return;
+		}
+
+		lib.node.fs.stat(filePath, (err, stat) => {
+			if (err) {
+				// 如果是无法访问的情况，则按照函数需求返回-1
+				if (err.code === "EACCES") {
+					callback?.(-1);
+				}
+				// 反之则直接将err传入onerror
+				else {
+					onerror?.(err);
+				}
+				return;
+			}
+
+			callback?.(stat.isFile() ? 1 : 0);
+		});
+	};
+
+	/**
+	 * 检查指定的路径是否是一个目录
+	 *
+	 * @param {string} dir - 需要查询的路径
+	 * @param {(result: -1 | 0 | 1) => void} [callback] - 回调函数；接受的参数意义如下:
+	 *  - `-1`: 路径不存在或无法访问
+	 *  - `0`: 路径的内容不是目录
+	 *  - `1`: 路径的内容是目录
+	 * @param {(err: Error) => void} [onerror] - 接收错误的回调函数
+	 * @return {void} - 由于三端的异步需求和历史原因，文件管理必须为回调异步函数
+	 */
+	game.checkDir = function (dir, callback, onerror) {
+		let dirPath = __dirname + "/" + dir;
+
+		// 如果路径不存在，则无需再尝试获取信息
+		if (!lib.node.fs.existsSync(dirPath)) {
+			callback?.(-1);
+			return;
+		}
+
+		lib.node.fs.stat(dirPath, (err, stat) => {
+			if (err) {
+				// 如果是无法访问的情况，则按照函数需求返回-1
+				if (err.code === "EACCES") {
+					callback?.(-1);
+				}
+				// 反之则直接将err传入onerror
+				else {
+					onerror?.(err);
+				}
+				return;
+			}
+
+			callback?.(stat.isDirectory() ? 1 : 0);
+		});
+	};
+
+	game.readFile = function (filename, callback, onerror) {
+		lib.node.fs.readFile(__dirname + "/" + filename, function (err, data) {
+			if (err) {
+				onerror(err);
+			} else {
+				callback(data);
+			}
+		});
+	};
+	game.readFileAsText = function (filename, callback, onerror) {
+		lib.node.fs.readFile(__dirname + "/" + filename, "utf-8", function (err, data) {
+			if (err) {
+				onerror(err);
+			} else {
+				callback(data);
+			}
+		});
+	};
+	game.writeFile = function (data, path, name, callback) {
+		game.ensureDirectory(path, function () {
+			if (Object.prototype.toString.call(data) == "[object File]") {
+				var fileReader = new FileReader();
+				fileReader.onload = function (e) {
+					game.writeFile(e.target.result, path, name, callback);
+				};
+				fileReader.readAsArrayBuffer(data, "UTF-8");
+			} else {
+				lib.node.fs.writeFile(
+					__dirname + "/" + path + "/" + name,
+					typeof data == "string" ? data : new Uint8Array(data),
+					null,
+					callback
+				);
+			}
+		});
+	};
+	game.removeFile = function (filename, callback) {
+		lib.node.fs.unlink(__dirname + "/" + filename, callback || function () {});
+	};
+	game.getFileList = (dir, success, failure) => {
+		var files = [],
+			folders = [];
+		dir = __dirname + "/" + dir;
+		if (typeof failure == "undefined") {
+			failure = err => {
+				throw err;
+			};
+		} else if (failure == null) {
+			failure = () => {};
+		}
+		try {
+			lib.node.fs.readdir(dir, (err, filelist) => {
+				if (err) {
+					failure(err);
+					return;
+				}
+				for (var i = 0; i < filelist.length; i++) {
+					if (filelist[i][0] != "." && filelist[i][0] != "_") {
+						if (lib.node.fs.statSync(dir + "/" + filelist[i]).isDirectory()) {
+							folders.push(filelist[i]);
+						} else {
+							files.push(filelist[i]);
+						}
+					}
+				}
+				success(folders, files);
+			});
+		} catch (e) {
+			failure(e);
+		}
+	};
+	game.ensureDirectory = (list, callback, file) => {
+		const directoryList = typeof list == "string" ? [list] : list.slice().reverse(),
+			number = file ? 1 : 0,
+			access = (path, directory, createDirectory) => {
+				if (directory.length <= number) {
+					createDirectory();
+					return;
+				}
+				path += `/${directory.pop()}`;
+				const fullPath = `${__dirname}${path}`;
+				return new Promise((resolve, reject) =>
+					lib.node.fs.access(fullPath, errnoException => {
+						if (errnoException) {
+							reject();
+						} else {
+							resolve();
+						}
+					})
+				)
+					.catch(
+						() =>
+							new Promise((resolve, reject) =>
+								lib.node.fs.mkdir(fullPath, errnoException => {
+									if (errnoException) {
+										reject(errnoException);
+									} else {
+										resolve();
+									}
+								})
+							)
+					)
+					.then(() => access(path, directory, createDirectory), console.log);
+			};
+		new Promise(resolve => {
+			const createDirectory = () => {
+				if (directoryList.length) {
+					access("", directoryList.pop().split("/").reverse(), createDirectory);
+				} else {
+					if (typeof callback == "function") {
+						callback();
+					}
+					resolve();
+				}
+			};
+			createDirectory();
+		});
+	};
+	game.createDir = (directory, successCallback, errorCallback) => {
+		const target = lib.node.path.join(__dirname, directory);
+		if (lib.node.fs.existsSync(target)) {
+			// 修改逻辑，路径存在且是文件才会报错
+			if (!lib.node.fs.lstatSync(target).isDirectory()) {
+				if (typeof errorCallback == "function") {
+					errorCallback(new Error(`${target}文件已存在`));
+				} else if (typeof successCallback == "function") {
+					successCallback();
+				}
+			} else if (typeof successCallback == "function") {
+				successCallback();
+			}
+		} else if (checkVersion(process.versions.node, "10.12.0") > -1) {
+			lib.node.fs.mkdir(target, { recursive: true }, e => {
+				if (e) {
+					if (typeof errorCallback == "function") {
+						errorCallback(e);
+					} else {
+						throw e;
+					}
+				} else {
+					if (typeof successCallback == "function") {
+						successCallback();
+					}
+				}
+			});
+		} else {
+			const paths = directory.split("/").reverse();
+			let path = __dirname;
+			const redo = () => {
+				path = lib.node.path.join(path, paths.pop());
+				const exists = lib.node.fs.existsSync(path);
+				const callback = e => {
+					if (e) {
+						if (typeof errorCallback != "function") {
+							throw e;
+						}
+						errorCallback(e);
+						return;
+					}
+					if (paths.length) {
+						return redo();
+					}
+					if (typeof successCallback == "function") {
+						successCallback();
+					}
+				};
+				if (!exists) {
+					lib.node.fs.mkdir(path, callback);
+				} else {
+					callback();
+				}
+			};
+			redo();
+		}
+	};
+	game.removeDir = (directory, successCallback, errorCallback) => {
+		const target = lib.node.path.join(__dirname, directory);
+		if (!lib.node.fs.existsSync(target)) {
+			if (typeof errorCallback == "function") {
+				errorCallback(new Error(`${target}不存在`));
+			}
+		} else if (!lib.node.fs.lstatSync(target).isDirectory()) {
+			if (typeof errorCallback == "function") {
+				errorCallback(new Error(`${target}不是文件夹`));
+			}
+		} else if (checkVersion(process.versions.node, "12.10.0") > -1) {
+			lib.node.fs.rmdir(target, { recursive: true }, e => {
+				if (e) {
+					if (typeof errorCallback == "function") {
+						errorCallback(e);
+					} else {
+						throw e;
+					}
+				} else {
+					if (typeof successCallback == "function") {
+						successCallback();
+					}
+				}
+			});
+		} else {
+			const deleteFolderRecursive = path => {
+				if (!lib.node.fs.existsSync(path)) {
+					return;
+				}
+				lib.node.fs.readdirSync(path).forEach(file => {
+					const currentPath = `${path}/${file}`;
+					if (lib.node.fs.lstatSync(currentPath).isDirectory()) {
+						deleteFolderRecursive(currentPath);
+					} else {
+						lib.node.fs.unlinkSync(currentPath);
+					}
+				});
+				lib.node.fs.rmdirSync(path);
+				if (path === target && typeof successCallback == "function") {
+					successCallback();
+				}
+			};
+			try {
+				deleteFolderRecursive(target);
+			} catch (e) {
+				if (typeof errorCallback == "function") {
+					errorCallback(e);
+				} else {
+					throw e;
+				}
+			}
+		}
+	};
 	if (ui.updateUpdate) {
 		ui.updateUpdate();
 	}
-}
-
-/** @implements {FileSystemAdapter} */
-class NodeFileSystemAdapter {
-	constructor(nodeFs, path, root) {
-		this.nodeFs = nodeFs;
-		this.path = path;
-		this.root = root;
-	}
-
-	/** @param {string} path @param {OpenOptions} [options] @returns {Promise<FileHandle>} */
-	async open(path, options = {}) {
-		assertValidPath(path);
-		const append = options.append === true;
-		const writable = options.write === true || append;
-		const readable = options.read ?? !writable;
-
-		if (!readable && !writable) {
-			throw createFileSystemError(FileSystemErrorCode.IoError, path, "open requires read or write access");
-		}
-		if ((options.create || options.createNew || options.truncate) && !writable) {
-			throw createFileSystemError(FileSystemErrorCode.IoError, path, "create, createNew and truncate require write access");
-		}
-
-		const info = await this.stat(path);
-		if (options.createNew && info !== null) {
-			throw createFileSystemError(FileSystemErrorCode.AlreadyExists, path, "Path already exists");
-		}
-		if (info !== null && info.type !== "file") {
-			throw createFileSystemError(FileSystemErrorCode.NotFile, path, "Path is not a file");
-		}
-		if (info === null) {
-			if (!options.create && !options.createNew) {
-				throw createFileSystemError(FileSystemErrorCode.NotFound, path, "File does not exist");
-			}
-			await this.write(path, new Uint8Array());
-		} else if (options.truncate) {
-			await this.write(path, new Uint8Array());
-		}
-
-		return new NodeFileHandle(this, path, readable, writable, append);
-	}
-
-	async read(path) {
-		assertValidPath(path);
-		try {
-			const data = await this.nodeFs.promises.readFile(this.resolve(path));
-			return new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
-		} catch (error) {
-			throw toFileSystemError(error, path);
-		}
-	}
-
-	async write(path, data) {
-		assertValidPath(path);
-		assertUint8Array(data, path);
-		try {
-			await this.nodeFs.promises.writeFile(this.resolve(path), data);
-		} catch (error) {
-			throw toFileSystemError(error, path);
-		}
-	}
-
-	async stat(path) {
-		assertValidPath(path);
-		try {
-			const stat = await this.nodeFs.promises.stat(this.resolve(path));
-			return {
-				type: stat.isFile() ? "file" : stat.isDirectory() ? "directory" : "other",
-				size: stat.size,
-				createdAt: stat.birthtime,
-				modifiedAt: stat.mtime,
-				accessedAt: stat.atime,
-			};
-		} catch (error) {
-			if (error?.code === "ENOENT") return null;
-			throw toFileSystemError(error, path);
-		}
-	}
-
-	async list(path) {
-		assertValidPath(path);
-		try {
-			const entries = await this.nodeFs.promises.readdir(this.resolve(path), { withFileTypes: true });
-			return entries.map(entry => ({
-				name: entry.name,
-				type: entry.isFile() ? "file" : entry.isDirectory() ? "directory" : "other",
-			}));
-		} catch (error) {
-			throw toFileSystemError(error, path);
-		}
-	}
-
-	async createDir(path, options = {}) {
-		assertValidPath(path);
-		try {
-			await this.nodeFs.promises.mkdir(this.resolve(path), { recursive: options.recursive === true });
-		} catch (error) {
-			throw toFileSystemError(error, path);
-		}
-	}
-
-	async remove(path, options = {}) {
-		assertValidPath(path);
-		try {
-			const info = await this.stat(path);
-			if (info === null) {
-				throw createFileSystemError(FileSystemErrorCode.NotFound, path, "Path does not exist");
-			}
-			if (info.type === "directory") {
-				if (options.recursive) {
-					await this.nodeFs.promises.rm(this.resolve(path), { recursive: true });
-				} else {
-					await this.nodeFs.promises.rmdir(this.resolve(path));
-				}
-			} else {
-				await this.nodeFs.promises.unlink(this.resolve(path));
-			}
-		} catch (error) {
-			throw toFileSystemError(error, path);
-		}
-	}
-
-	resolve(path) {
-		return this.path.join(this.root, path);
-	}
-}
-
-/** @implements {FileHandle} */
-class NodeFileHandle {
-	constructor(adapter, path, readable, writable, append) {
-		this.adapter = adapter;
-		this.path = path;
-		this.readable = readable;
-		this.writable = writable;
-		this.append = append;
-		this.closed = false;
-	}
-
-	async readAll() {
-		this.assertOpen();
-		if (!this.readable) {
-			throw createFileSystemError(FileSystemErrorCode.IoError, this.path, "File is not open for reading");
-		}
-		return this.adapter.read(this.path);
-	}
-
-	async write(data) {
-		this.assertWritable();
-		assertUint8Array(data, this.path);
-		if (!this.append) return this.adapter.write(this.path, data);
-
-		const current = await this.adapter.read(this.path);
-		const combined = new Uint8Array(current.length + data.length);
-		combined.set(current);
-		combined.set(data, current.length);
-		await this.adapter.write(this.path, combined);
-	}
-
-	async stat() {
-		this.assertOpen();
-		const info = await this.adapter.stat(this.path);
-		if (info === null) {
-			throw createFileSystemError(FileSystemErrorCode.NotFound, this.path, "File does not exist");
-		}
-		return info;
-	}
-
-	async truncate(size = 0) {
-		this.assertWritable();
-		if (!Number.isSafeInteger(size) || size < 0) {
-			throw createFileSystemError(FileSystemErrorCode.InvalidPath, this.path, "truncate size must be a non-negative safe integer");
-		}
-		const current = await this.adapter.read(this.path);
-		if (current.length === size) return;
-		const resized = new Uint8Array(size);
-		resized.set(current.subarray(0, size));
-		await this.adapter.write(this.path, resized);
-	}
-
-	async close() {
-		this.closed = true;
-	}
-
-	assertOpen() {
-		if (this.closed) {
-			throw createFileSystemError(FileSystemErrorCode.IoError, this.path, "File handle is closed");
-		}
-	}
-
-	assertWritable() {
-		this.assertOpen();
-		if (!this.writable) {
-			throw createFileSystemError(FileSystemErrorCode.IoError, this.path, "File is not open for writing");
-		}
-	}
-}
-
-function assertValidPath(path) {
-	if (typeof path !== "string" || path.includes("\0")) {
-		throw createFileSystemError(FileSystemErrorCode.InvalidPath, String(path), "Path must be a string without null bytes");
-	}
-}
-
-function assertUint8Array(data, path) {
-	if (!(data instanceof Uint8Array)) {
-		throw createFileSystemError(FileSystemErrorCode.IoError, path, "write data must be a Uint8Array");
-	}
-}
-
-function createFileSystemError(code, path, message, cause) {
-	return new FileSystemError(code, path, { cause: cause ?? new Error(message), detail: message });
-}
-
-function toFileSystemError(error, path) {
-	if (error instanceof FileSystemError) return error;
-
-	const code = {
-		ENOENT: FileSystemErrorCode.NotFound,
-		EEXIST: FileSystemErrorCode.AlreadyExists,
-		ENOTDIR: FileSystemErrorCode.NotDirectory,
-		EISDIR: FileSystemErrorCode.NotFile,
-		EACCES: FileSystemErrorCode.PermissionDenied,
-		EPERM: FileSystemErrorCode.PermissionDenied,
-		EROFS: FileSystemErrorCode.PermissionDenied,
-		EINVAL: FileSystemErrorCode.InvalidPath,
-		ENAMETOOLONG: FileSystemErrorCode.InvalidPath,
-	}[error?.code] ?? FileSystemErrorCode.IoError;
-	return new FileSystemError(code, path, {
-		cause: error instanceof Error ? error : new Error(String(error)),
-	});
 }

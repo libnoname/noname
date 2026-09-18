@@ -1,12 +1,5 @@
 //@ts-nocheck
 import { checkVersion } from "../library/update.js";
-import { FileSystem, FileSystemError, FileSystemErrorCode, installLegacyFileSystemAPI } from "@/library/fs";
-
-/**
- * @typedef { import("@/library/fs").FileSystemAdapter } FileSystemAdapter
- * @typedef { import("@/library/fs").FileHandle } FileHandle
- * @typedef { import("@/library/fs").OpenOptions } OpenOptions
- */
 
 export default async function cordovaReady({ lib, game, get, _status, ui }) {
 	lib.path = (await import("path-browserify-esm")).default;
@@ -20,12 +13,6 @@ export default async function cordovaReady({ lib, game, get, _status, ui }) {
 	});
 
 	const nonameInitialized = localStorage.getItem("noname_inited");
-	if (!nonameInitialized) {
-		throw new Error("未找到游戏目录配置: noname_inited");
-	}
-	const fs = new FileSystem(new CordovaFileSystemAdapter(nonameInitialized));
-	lib.fs = fs;
-	installLegacyFileSystemAPI(game, fs);
 
 	if (lib.device == "android") {
 		// 新客户端导入扩展逻辑
@@ -246,6 +233,268 @@ export default async function cordovaReady({ lib, game, get, _status, ui }) {
 		}
 	};
 
+	game.checkFile = function (fileName, callback, onerror) {
+		let path = lib.path.join(nonameInitialized, fileName);
+
+		window.resolveLocalFileSystemURL(
+			path,
+			entry => {
+				callback?.(entry.isFile ? 1 : 0);
+			},
+			error => {
+				if ([FileError.NOT_FOUND_ERR, FileError.NOT_READABLE_ERR].includes(error.code)) {
+					callback?.(-1);
+				} else {
+					onerror?.(new Error(`Code: ${error.code}`));
+				}
+			}
+		);
+	};
+
+	game.checkDir = function (dir, callback, onerror) {
+		let path = lib.path.join(nonameInitialized, dir);
+
+		window.resolveLocalFileSystemURL(
+			path,
+			entry => {
+				callback?.(entry.isDirectory ? 1 : 0);
+			},
+			error => {
+				if ([FileError.NOT_FOUND_ERR, FileError.NOT_READABLE_ERR].includes(error.code)) {
+					callback?.(-1);
+				} else {
+					onerror?.(new Error(`Code: ${error.code}`));
+				}
+			}
+		);
+	};
+
+	game.readFile = function (filename, callback, onerror) {
+		window.resolveLocalFileSystemURL(
+			nonameInitialized,
+			function (entry) {
+				entry.getFile(
+					filename,
+					{},
+					function (fileEntry) {
+						fileEntry.file(function (fileToLoad) {
+							var fileReader = new FileReader();
+							fileReader.onload = function (e) {
+								callback(e.target.result);
+							};
+							fileReader.readAsArrayBuffer(fileToLoad, "UTF-8");
+						}, onerror);
+					},
+					onerror
+				);
+			},
+			onerror
+		);
+	};
+	game.readFileAsText = function (filename, callback, onerror) {
+		window.resolveLocalFileSystemURL(
+			nonameInitialized,
+			function (entry) {
+				entry.getFile(
+					filename,
+					{},
+					function (fileEntry) {
+						fileEntry.file(function (fileToLoad) {
+							var fileReader = new FileReader();
+							fileReader.onload = function (e) {
+								callback(e.target.result);
+							};
+							fileReader.readAsText(fileToLoad, "UTF-8");
+						}, onerror);
+					},
+					onerror
+				);
+			},
+			onerror
+		);
+	};
+	game.writeFile = function (data, path, name, callback) {
+		game.ensureDirectory(path, function () {
+			if (Object.prototype.toString.call(data) == "[object File]") {
+				var fileReader = new FileReader();
+				fileReader.onload = function (e) {
+					game.writeFile(e.target.result, path, name, callback);
+				};
+				fileReader.readAsArrayBuffer(data, "UTF-8");
+			} else {
+				window.resolveLocalFileSystemURL(
+					nonameInitialized + path,
+					function (entry) {
+						entry.getFile(
+							name,
+							{ create: true },
+							function (fileEntry) {
+								fileEntry.createWriter(function (fileWriter) {
+									fileWriter.onwriteend = callback;
+									fileWriter.write(data);
+								}, callback);
+							},
+							callback
+						);
+					},
+					callback
+				);
+			}
+		});
+	};
+	game.removeFile = function (dir, callback) {
+		window.resolveLocalFileSystemURL(
+			nonameInitialized,
+			function (entry) {
+				entry.getFile(
+					dir,
+					{},
+					function (fileEntry) {
+						fileEntry.remove();
+						if (callback) {
+							callback();
+						}
+					},
+					callback || function () {}
+				);
+			},
+			callback || function () {}
+		);
+	};
+	game.getFileList = (dir, success, failure) => {
+		var files = [],
+			folders = [];
+		window.resolveLocalFileSystemURL(
+			nonameInitialized + dir,
+			entry => {
+				var dirReader = entry.createReader();
+				var entries = [];
+				var readEntries = () => {
+					dirReader.readEntries(results => {
+						if (!results.length) {
+							entries.sort();
+							for (var i = 0; i < entries.length; i++) {
+								if (entries[i].isDirectory) {
+									folders.push(entries[i].name);
+								} else {
+									files.push(entries[i].name);
+								}
+							}
+							success(folders, files);
+						} else {
+							entries = entries.concat(Array.from(results));
+							readEntries();
+						}
+					}, failure);
+				};
+				readEntries();
+			},
+			failure
+		);
+	};
+	game.ensureDirectory = (list, callback, file) => {
+		const directoryList = typeof list == "string" ? [list] : list.slice().reverse(),
+			num = file ? 1 : 0,
+			access = (entry, directory, createDirectory) => {
+				if (directory.length <= num) {
+					createDirectory();
+					return;
+				}
+				const str = directory.pop();
+				return new Promise((resolve, reject) =>
+					entry.getDirectory(
+						str,
+						{
+							create: false,
+						},
+						resolve,
+						reject
+					)
+				)
+					.catch(
+						() =>
+							new Promise(resolve =>
+								entry.getDirectory(
+									str,
+									{
+										create: true,
+									},
+									resolve
+								)
+							)
+					)
+					.then(directoryEntry => access(directoryEntry, directory, createDirectory));
+			};
+		return new Promise((resolve, reject) =>
+			window.resolveLocalFileSystemURL(
+				nonameInitialized,
+				rootEntry => {
+					const createDirectory = () => {
+						if (directoryList.length) {
+							access(rootEntry, directoryList.pop().split("/").reverse(), createDirectory);
+						}
+						if (typeof callback == "function") {
+							callback();
+						}
+						resolve();
+					};
+					createDirectory();
+				},
+				reject
+			)
+		);
+	};
+	game.createDir = (directory, successCallback, errorCallback) => {
+		const paths = directory.split("/").reverse();
+		new Promise((resolve, reject) => window.resolveLocalFileSystemURL(nonameInitialized, resolve, reject)).then(
+			directoryEntry => {
+				const redo = entry =>
+					new Promise((resolve, reject) =>
+						entry.getDirectory(
+							paths.pop(),
+							{
+								create: true,
+							},
+							resolve,
+							reject
+						)
+					).then(resolvedDirectoryEntry => {
+						if (paths.length) {
+							return redo(resolvedDirectoryEntry);
+						}
+						if (typeof successCallback == "function") {
+							successCallback();
+						}
+					});
+				return redo(directoryEntry);
+			},
+			reason => {
+				if (typeof errorCallback != "function") {
+					return Promise.reject(reason);
+				}
+				errorCallback(reason);
+			}
+		);
+	};
+	game.removeDir = (directory, successCallback, errorCallback) => {
+		window.resolveLocalFileSystemURL(
+			`${nonameInitialized}${directory}`,
+			directoryEntry => {
+				directoryEntry.removeRecursively(() => {
+					if (typeof successCallback == "function") {
+						successCallback();
+					}
+				});
+			},
+			e => {
+				if (typeof errorCallback == "function") {
+					errorCallback(e);
+				} else {
+					throw e;
+				}
+			}
+		);
+	};
 	if (ui.updateUpdate) {
 		ui.updateUpdate();
 	}
@@ -275,318 +524,4 @@ export default async function cordovaReady({ lib, game, get, _status, ui }) {
 	} else {
 		showbar();
 	}
-}
-
-/** @implements {FileSystemAdapter} */
-class CordovaFileSystemAdapter {
-	constructor(root) {
-		this.root = root;
-	}
-
-	/** @param {string} path @param {OpenOptions} [options] @returns {Promise<FileHandle>} */
-	async open(path, options = {}) {
-		assertValidPath(path);
-		const append = options.append === true;
-		const writable = options.write === true || append;
-		const readable = options.read ?? !writable;
-
-		if (!readable && !writable) {
-			throw createFileSystemError(FileSystemErrorCode.IoError, path, "open requires read or write access");
-		}
-		if ((options.create || options.createNew || options.truncate) && !writable) {
-			throw createFileSystemError(FileSystemErrorCode.IoError, path, "create, createNew and truncate require write access");
-		}
-
-		const info = await this.stat(path);
-		if (options.createNew && info !== null) {
-			throw createFileSystemError(FileSystemErrorCode.AlreadyExists, path, "Path already exists");
-		}
-		if (info !== null && info.type !== "file") {
-			throw createFileSystemError(FileSystemErrorCode.NotFile, path, "Path is not a file");
-		}
-		if (info === null) {
-			if (!options.create && !options.createNew) {
-				throw createFileSystemError(FileSystemErrorCode.NotFound, path, "File does not exist");
-			}
-			await this.write(path, new Uint8Array());
-		} else if (options.truncate) {
-			await this.write(path, new Uint8Array());
-		}
-
-		return new CordovaFileHandle(this, path, readable, writable, append);
-	}
-
-	async read(path) {
-		assertValidPath(path);
-		try {
-			const entry = await this.resolve(path);
-			if (!entry.isFile) {
-				throw createFileSystemError(FileSystemErrorCode.NotFile, path, "Path is not a file");
-			}
-			const file = await new Promise((resolve, reject) => entry.file(resolve, reject));
-			const data = await new Promise((resolve, reject) => {
-				const reader = new FileReader();
-				reader.onload = event => resolve(event.target.result);
-				reader.onerror = () => reject(reader.error);
-				reader.readAsArrayBuffer(file);
-			});
-			return new Uint8Array(data);
-		} catch (error) {
-			throw toFileSystemError(error, path);
-		}
-	}
-
-	async write(path, data) {
-		assertValidPath(path);
-		assertUint8Array(data, path);
-		try {
-			const { parent, name } = splitPath(path);
-			if (!name) {
-				throw createFileSystemError(FileSystemErrorCode.InvalidPath, path, "File name is empty");
-			}
-			const directoryEntry = await this.resolve(parent);
-			if (!directoryEntry.isDirectory) {
-				throw createFileSystemError(FileSystemErrorCode.NotDirectory, parent, "Parent path is not a directory");
-			}
-			let fileEntry;
-			try {
-				fileEntry = await new Promise((resolve, reject) =>
-					directoryEntry.getFile(name, { create: true }, resolve, reject)
-				);
-			} catch (error) {
-				if (error?.code === 11) {
-					throw createFileSystemError(FileSystemErrorCode.NotFile, path, "Path is not a file", error);
-				}
-				throw error;
-			}
-			const writer = await new Promise((resolve, reject) => fileEntry.createWriter(resolve, reject));
-			await new Promise((resolve, reject) => {
-				let writing = false;
-				writer.onerror = event => reject(writer.error ?? event);
-				writer.onwriteend = () => {
-					if (!writing) {
-						writing = true;
-						writer.seek(0);
-						writer.write(new Blob([data]));
-						return;
-					}
-					resolve();
-				};
-				writer.truncate(0);
-			});
-		} catch (error) {
-			throw toFileSystemError(error, path);
-		}
-	}
-
-	async stat(path) {
-		assertValidPath(path);
-		try {
-			const entry = await this.resolve(path);
-			const metadata = await new Promise((resolve, reject) => entry.getMetadata(resolve, reject));
-			return {
-				type: entry.isFile ? "file" : entry.isDirectory ? "directory" : "other",
-				size: metadata.size,
-				modifiedAt: metadata.modificationTime,
-			};
-		} catch (error) {
-			if (error?.code === 1) return null;
-			throw toFileSystemError(error, path);
-		}
-	}
-
-	async list(path) {
-		assertValidPath(path);
-		try {
-			const entry = await this.resolve(path);
-			if (!entry.isDirectory) {
-				throw createFileSystemError(FileSystemErrorCode.NotDirectory, path, "Path is not a directory");
-			}
-			const reader = entry.createReader();
-			const entries = [];
-			while (true) {
-				const batch = await new Promise((resolve, reject) => reader.readEntries(resolve, reject));
-				if (batch.length === 0) break;
-				entries.push(...batch);
-			}
-			return entries.map(entry => ({
-				name: entry.name,
-				type: entry.isFile ? "file" : entry.isDirectory ? "directory" : "other",
-			}));
-		} catch (error) {
-			throw toFileSystemError(error, path);
-		}
-	}
-
-	async createDir(path, options = {}) {
-		assertValidPath(path);
-		try {
-			const segments = path.split("/").filter(segment => segment.length > 0 && segment !== ".");
-			if (segments.length === 0) {
-				if (options.recursive) return;
-				throw createFileSystemError(FileSystemErrorCode.AlreadyExists, path, "Path already exists");
-			}
-
-			if (!options.recursive) {
-				if ((await this.stat(path)) !== null) {
-					throw createFileSystemError(FileSystemErrorCode.AlreadyExists, path, "Path already exists");
-				}
-				const name = segments.pop();
-				const parent = await this.resolve(segments.join("/"));
-				if (!parent.isDirectory) {
-					throw createFileSystemError(FileSystemErrorCode.NotDirectory, path, "Parent path is not a directory");
-				}
-				await new Promise((resolve, reject) =>
-					parent.getDirectory(name, { create: true, exclusive: true }, resolve, reject)
-				);
-				return;
-			}
-
-			let entry = await this.resolve("");
-			for (const segment of segments) {
-				try {
-					entry = await new Promise((resolve, reject) =>
-						entry.getDirectory(segment, { create: true }, resolve, reject)
-					);
-				} catch (error) {
-					if (error?.code === 11) {
-						throw createFileSystemError(FileSystemErrorCode.NotDirectory, path, "Path contains a file", error);
-					}
-					throw error;
-				}
-			}
-		} catch (error) {
-			throw toFileSystemError(error, path);
-		}
-	}
-
-	async remove(path, options = {}) {
-		assertValidPath(path);
-		try {
-			const entry = await this.resolve(path);
-			if (entry.isDirectory && options.recursive) {
-				await new Promise((resolve, reject) => entry.removeRecursively(resolve, reject));
-			} else {
-				await new Promise((resolve, reject) => entry.remove(resolve, reject));
-			}
-		} catch (error) {
-			throw toFileSystemError(error, path);
-		}
-	}
-
-	resolve(path) {
-		return new Promise((resolve, reject) =>
-			window.resolveLocalFileSystemURL(`${this.root}${path}`, resolve, reject)
-		);
-	}
-}
-
-/** @implements {FileHandle} */
-class CordovaFileHandle {
-	constructor(adapter, path, readable, writable, append) {
-		this.adapter = adapter;
-		this.path = path;
-		this.readable = readable;
-		this.writable = writable;
-		this.append = append;
-		this.closed = false;
-	}
-
-	async readAll() {
-		this.assertOpen();
-		if (!this.readable) {
-			throw createFileSystemError(FileSystemErrorCode.IoError, this.path, "File is not open for reading");
-		}
-		return this.adapter.read(this.path);
-	}
-
-	async write(data) {
-		this.assertWritable();
-		assertUint8Array(data, this.path);
-		if (!this.append) return this.adapter.write(this.path, data);
-
-		const current = await this.adapter.read(this.path);
-		const combined = new Uint8Array(current.length + data.length);
-		combined.set(current);
-		combined.set(data, current.length);
-		await this.adapter.write(this.path, combined);
-	}
-
-	async stat() {
-		this.assertOpen();
-		const info = await this.adapter.stat(this.path);
-		if (info === null) {
-			throw createFileSystemError(FileSystemErrorCode.NotFound, this.path, "File does not exist");
-		}
-		return info;
-	}
-
-	async truncate(size = 0) {
-		this.assertWritable();
-		if (!Number.isSafeInteger(size) || size < 0) {
-			throw createFileSystemError(FileSystemErrorCode.InvalidPath, this.path, "truncate size must be a non-negative safe integer");
-		}
-		const current = await this.adapter.read(this.path);
-		if (current.length === size) return;
-		const resized = new Uint8Array(size);
-		resized.set(current.subarray(0, size));
-		await this.adapter.write(this.path, resized);
-	}
-
-	async close() {
-		this.closed = true;
-	}
-
-	assertOpen() {
-		if (this.closed) {
-			throw createFileSystemError(FileSystemErrorCode.IoError, this.path, "File handle is closed");
-		}
-	}
-
-	assertWritable() {
-		this.assertOpen();
-		if (!this.writable) {
-			throw createFileSystemError(FileSystemErrorCode.IoError, this.path, "File is not open for writing");
-		}
-	}
-}
-
-function splitPath(path) {
-	const separator = path.lastIndexOf("/");
-	return separator < 0
-		? { parent: "", name: path }
-		: { parent: path.slice(0, separator + 1), name: path.slice(separator + 1) };
-}
-
-function assertValidPath(path) {
-	if (typeof path !== "string" || path.includes("\0")) {
-		throw createFileSystemError(FileSystemErrorCode.InvalidPath, String(path), "Path must be a string without null bytes");
-	}
-}
-
-function assertUint8Array(data, path) {
-	if (!(data instanceof Uint8Array)) {
-		throw createFileSystemError(FileSystemErrorCode.IoError, path, "write data must be a Uint8Array");
-	}
-}
-
-function createFileSystemError(code, path, message, cause) {
-	return new FileSystemError(code, path, { cause: cause ?? new Error(message), detail: message });
-}
-
-function toFileSystemError(error, path) {
-	if (error instanceof FileSystemError) return error;
-
-	const code = {
-		1: FileSystemErrorCode.NotFound,
-		2: FileSystemErrorCode.PermissionDenied,
-		4: FileSystemErrorCode.PermissionDenied,
-		5: FileSystemErrorCode.InvalidPath,
-		6: FileSystemErrorCode.PermissionDenied,
-		8: FileSystemErrorCode.InvalidPath,
-		12: FileSystemErrorCode.AlreadyExists,
-	}[error?.code] ?? FileSystemErrorCode.IoError;
-	return new FileSystemError(code, path, {
-		cause: error instanceof Error ? error : new Error(`Cordova FileError: ${String(error?.code ?? error)}`),
-	});
 }
