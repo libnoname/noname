@@ -4733,7 +4733,7 @@ const skills = {
 					.filter(evt => evt == trigger.getParent("useCard", true, true))
 					.step(async (event, trigger, player) => {
 						const cards = trigger.cards.filterInD("od");
-						if (!cards?.length) {
+						if (!cards?.length || !target?.isIn()) {
 							return;
 						}
 						const list = [];
