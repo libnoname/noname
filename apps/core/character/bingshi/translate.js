@@ -111,7 +111,7 @@ const translates = {
 	pot_dongzhao: "势董昭",
 	pot_dongzhao_prefix: "势",
 	spmiaolve: "妙略",
-	spmiaolve_info: `游戏开始时，你获得两张${get.poptip("dz_mantianguohai")}；当你受到伤害后，你可以选择一项：1：摸两张牌；2：从牌堆或弃牌堆中获得一张智囊。`,
+	spmiaolve_info: `游戏开始时，你获得两张${get.poptip("dz_mantianguohai")}；当你受到伤害后，你可以选择一项：1：摸两张牌；2：从牌堆或弃牌堆中获得一张${get.poptip("rule_zhinang")}。`,
 	spyingjia: "迎驾",
 	spyingjia_info: "限定技，一名角色的回合结束后，若你本回合使用了大于等于两张同名锦囊牌，你可以弃置一张手牌，令一名角色执行一个额外的回合，此额外回合开始时，其摸两张牌。",
 	pot_lougui: "势娄圭",
