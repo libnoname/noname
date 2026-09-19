@@ -2708,6 +2708,7 @@ const skills = {
 							skill_popup: false,
 						};
 					} else {
+						player.logSkill("mbsizi", null, null, null, [3]);
 						trigger.num++;
 					}
 				},

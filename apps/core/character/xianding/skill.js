@@ -28826,7 +28826,7 @@ const skills = {
 					return 0;
 				})
 				.set("judge2", result => result.bool)
-				.set("callback", function(event, player) {
+				.set("callback", async (event) => {
 					const evtx = event.getParent();
 					const evt = event.getParent(evtx.eventName).getTrigger();
 					if (!evt.source?.isIn() || !evt.card || typeof get.info("dczhantao").getNumber(evt.card) !== "number") {
@@ -32633,7 +32633,7 @@ const skills = {
 						.chooseTarget({
 							prompt: `将${get.translation(card)}置于一名角色的场上`,
 							forced: true,
-							filterTarget: (_card, _player, target) => validTargets.includes(target),
+							filterTarget: (_card, _player, target) => get.event().validTargets.includes(target),
 							ai: target =>
 								get.attitude(player, target) *
 								(type === "equip"
@@ -32648,8 +32648,9 @@ const skills = {
 											target
 										)),
 						})
+						.set("validTargets", validTargets)
 						.forResult();
-					if (targetResult.bool && targetResult.targets?.length) {
+					if (targetResult?.bool && targetResult.targets?.length) {
 						const target = targetResult.targets[0];
 						player.line(target);
 						player.$give(card, target, false);
@@ -32669,7 +32670,6 @@ const skills = {
 					});
 					game.log(player, "将", card, "置于了", `#y${control}`);
 				}
-
 				for (const current of game.filterPlayer()) {
 					const currentEquipCount = current.countCards("e");
 					const previousEquipCount = equipCount[current.playerid] || 0;
@@ -34166,7 +34166,7 @@ const skills = {
 			event.result = await next.forResult();
 		},
 		async content(event, trigger, player) {
-			if (event.cards.length) {
+			if (event.cards?.length) {
 				await player.discard(event.cards);
 			}
 			let num = 0;
