@@ -114,11 +114,9 @@ export function installLegacyFileSystemAPI(game: LegacyFileSystemGame, fileSyste
 	};
 
 	game.ensureDirectory = function ensureDirectory(list, callback = () => {}, file = false) {
-		let pathArray = typeof list === "string" ? list.split("/") : list;
-		if (file) {
-			pathArray = pathArray.slice(0, -1);
-		}
-		fileSystem.createDir(pathArray.join("/"), { recursive: true }).then(callback, console.error);
+		const paths = typeof list === "string" ? [list] : list;
+		const directories = paths.map(path => (file ? path.split("/").slice(0, -1).join("/") : path));
+		Promise.all(directories.map(path => fileSystem.createDir(path, { recursive: true }))).then(() => callback(), console.error);
 	};
 
 	game.createDir = function createDir(directory, successCallback = () => {}, errorCallback = () => {}) {

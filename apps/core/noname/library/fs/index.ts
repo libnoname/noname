@@ -1,8 +1,23 @@
 import type { FileSystemAdapter } from "./adapter";
+import { FileSystemError, FileSystemErrorCode } from "./errors";
 import type { CreateDirOptions, OpenOptions, RemoveOptions } from "./types";
+
+export interface FileSystemBootstrap {
+	readonly ErrorCode: typeof FileSystemErrorCode;
+
+	createError(code: FileSystemErrorCode, path: string, detail: string, cause?: unknown): FileSystemError;
+
+	isError(error: unknown): error is FileSystemError;
+
+	install(adapter: FileSystemAdapter): FileSystem;
+}
 
 export class FileSystem {
 	constructor(private readonly adapter: FileSystemAdapter) {}
+
+	isSupported(): boolean {
+		return this.adapter.supported;
+	}
 
 	open(path: string, options?: OpenOptions) {
 		return this.adapter.open(path, options);
