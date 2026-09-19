@@ -93,15 +93,16 @@ If a file exists in both layers, the SAF file wins. Removing the SAF file reveal
 
 The custom Android plugin is `SafFs`.
 
-It exposes the file APIs used by `game.*` in preload:
+Preload requests SAF directory access, then installs a `FileSystemAdapter` through Core's `fsBootstrap`. Legacy `game.readFile` / `writeFile` / `getFileList` and the other historical file APIs are provided by Core from `lib.fs`; preload does not assign them directly.
 
-- `checkFile`, `checkDir`
-- `readFile`, `readFileAsText`
-- `writeFile`
-- `removeFile`, `removeDir`
-- `getFileList`
-- `createDir`
+The plugin exposes path operations used by the adapter:
 
-Read APIs use overlay semantics. Mutating APIs only touch SAF and reject attempts to modify files that exist only in APK assets.
+- `hasAccess`, `requestAccess`
+- `stat`, `list`, `read`, `write`
+- `createDir`, `remove`
+
+For one upgrade cycle, the previous method names remain as aliases that forward to these operations (`checkFile`, `checkDir`, `readFile`, `readFileAsText`, `writeFile`, `removeFile`, `getFileList`, `removeDir`). `createDir` still accepts the old `{ dir }` argument and treats it as recursive.
+
+Read and `stat`/`list` use overlay semantics. Mutating APIs only touch SAF and reject attempts to modify files that exist only in APK assets. Hidden-name filtering for `game.getFileList` happens in the Core legacy layer, not in the plugin. The compatibility `getFileList` alias still filters `.` / `_` names to match the previous native behavior.
 
 `JsAwarePathHandler` applies the same overlay behavior to `https://localhost/...` WebView requests, so external files can override packaged resources by path.
