@@ -9,6 +9,10 @@ export default {
 
 	gz_yuejian: "约俭",
 	gz_yuejian_info: "锁定技，与你势力相同角色的弃牌阶段开始时，若其本回合未使用牌指定过其他势力的角色为目标，则该角色本回合手牌上限+X（X为其已损失的体力值）。",
+	gz_jiubian_wanwei: "挽危",
+	gz_jiubian_wanwei_info: "每回合限一次，当与你势力相同的其他角色进入濒死状态时，你可以交给其至多三张牌。当其脱离濒死时，你获得等量的牌。",
+	gz_jiubian_yuejian: "约俭",
+	gz_jiubian_yuejian_info: "锁定技，与你势力相同的角色手牌上限+X（X为其已损失的体力值）。",
 
 	gz_qice: "奇策",
 	gz_qice_backup: "奇策",

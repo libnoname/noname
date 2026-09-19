@@ -1,5 +1,71 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
+const jiubianQizhenNames = ["zhanshejian", "yangsuiqiang", "huohuanyi", "baiqilin", "tianlu", "yingwubei", "dunjiatianshu", "jiuzhouding"];
+const isJiubianQizhen = card => get.cardtag(card, "qizhen") || get.cardtag(card, "gz_qizhen");
+const markJiubianQizhen = card => {
+	if (!card || !jiubianQizhenNames.includes(card.name)) return;
+	if (!Array.isArray(card.cardtags)) card.cardtags = [];
+	if (!card.cardtags.includes("qizhen")) card.cardtags.push("qizhen");
+	if (!card.cardtags.includes("gz_qizhen")) card.cardtags.push("gz_qizhen");
+};
+const syncJiubianQizhenTags = () => {
+	for (const node of [ui.cardPile, ui.discardPile, ui.ordering]) {
+		if (!node) continue;
+		for (const card of Array.from(node.childNodes)) {
+			markJiubianQizhen(card);
+		}
+	}
+	for (const player of game.players || []) {
+		for (const card of player.getCards("hej")) {
+			markJiubianQizhen(card);
+		}
+	}
+};
+const guozhanAozhanEvents = ["_aozhan_event_bujinzetui", "_aozhan_event_shengzheweiwang", "_aozhan_event_jili", "_aozhan_event_huoqi", "_aozhan_event_luoshi", "_aozhan_event_jianli"];
+const initGuozhanAozhanEvents = () => {
+	if (!Array.isArray(_status.gzAozhanEventDeck)) {
+		_status.gzAozhanEventDeck = guozhanAozhanEvents.slice().randomSort();
+	}
+	if (!Array.isArray(_status.gzAozhanEventDiscard)) {
+		_status.gzAozhanEventDiscard = [];
+	}
+};
+const drawGuozhanAozhanEvent = () => {
+	initGuozhanAozhanEvents();
+	if (_status.gzAozhanCurrentEvent) {
+		_status.gzAozhanEventDiscard.add(_status.gzAozhanCurrentEvent);
+		delete _status.gzAozhanCurrentEvent;
+	}
+	if (!_status.gzAozhanEventDeck.length) {
+		_status.gzAozhanEventDeck = _status.gzAozhanEventDiscard.slice().randomSort();
+		_status.gzAozhanEventDiscard.length = 0;
+	}
+	if (!_status.gzAozhanEventDeck.length) {
+		return null;
+	}
+	return (_status.gzAozhanCurrentEvent = _status.gzAozhanEventDeck.shift());
+};
+const getGuozhanAozhanMode = () => {
+	const config = _status.connectMode ? lib.configOL.aozhan : get.config("aozhan");
+	if (config === true) return "normal";
+	if (config === false || config == "off" || config == "disabled") return "off";
+	return config || "off";
+};
+const isJiubianAozhan = () => _status._aozhan && _status._aozhanMode == "jiubian";
+const isJiubianCardRuleActive = () => _status.mode == "jiubian" || isJiubianAozhan() || (get.mode() == "guozhan" && jiubianQizhenNames.some(name => lib.card[name]));
+const isGuozhanAozhanEvent = name => isJiubianAozhan() && _status.gzAozhanCurrentEvent == name;
+const guozhanZhenfaEnabled = () => game.players.length >= (_status.mode == "jiubian" ? 3 : 4);
+const getGuozhanAozhanTreasureCards = () => {
+	const cards = [];
+	for (let i = 0; i < ui.discardPile.childElementCount; i++) {
+		const card = ui.discardPile.childNodes[i];
+		if (isJiubianQizhen(card)) {
+			cards.push(card);
+		}
+	}
+	return cards;
+};
+
 export default {
 	//马云騄
 	gzfengpo: {
@@ -5922,12 +5988,12 @@ export default {
 						var num = 0,
 							current = target;
 						while (current != player) {
-							if (current.isFriendOf(player) && !current.isTurnedOver()) {
+							if (current.isVictoryFriendOf(player) && !current.isTurnedOver()) {
 								num++;
 							}
 							current = current.next;
 						}
-						if (num >= player.countMark("gzrebushi") && !target.isFriendOf(player)) {
+						if (num >= player.countMark("gzrebushi") && !target.isVictoryFriendOf(player)) {
 							return -1;
 						}
 						return 6 - get.value(card);
@@ -9241,9 +9307,6 @@ export default {
 			siege: {
 				mod: {
 					maxHandcard(player, num) {
-						if (game.countPlayer() < 4) {
-							return;
-						}
 						var next = player.getNext(),
 							prev = player.getPrevious(),
 							siege = [];
@@ -16379,9 +16442,7 @@ export default {
 			if (get.mode() != "guozhan") {
 				return false;
 			}
-			if (_status.connectMode && !lib.configOL.aozhan) {
-				return false;
-			} else if (!_status.connectMode && !get.config("aozhan")) {
+			if (getGuozhanAozhanMode() == "off") {
 				return false;
 			}
 			if (_status._aozhan) {
@@ -16402,26 +16463,134 @@ export default {
 			}
 			return true;
 		},
-		content() {
+		async content(event, trigger, player) {
 			var color = get.groupnature(player.group, "raw");
 			if (player.isUnseen()) {
 				color = "fire";
 			}
 			player.$fullscreenpop("鏖战模式", color);
-			game.broadcastAll(function () {
+			const config = _status.connectMode ? lib.configOL.aozhan : get.config("aozhan");
+			const mode = config === true ? "normal" : config === false || config == "off" || config == "disabled" ? "off" : config || "off";
+			game.broadcastAll(function (mode) {
+				const getAozhanBox = () => {
+					if (!ui.aozhan) ui.aozhan = ui.create.div("", ui.window);
+					ui.aozhan.classList.remove("touchinfo", "left");
+					ui.aozhan.classList.add("gz-aozhan-box");
+					const currentLeft = ui.aozhan.style.left;
+					const currentTop = ui.aozhan.style.top;
+					ui.aozhan.style.cssText =
+						"position:absolute;z-index:12;left:24px;top:118px;box-sizing:border-box;width:270px;height:auto;min-height:0;padding:0;color:#f5e9cf;text-align:left;line-height:1.45;font-size:14px;font-family:xinwei,serif;text-shadow:0 1px 2px #000,0 0 4px #000;white-space:normal;overflow:visible;pointer-events:auto;cursor:move;user-select:none;touch-action:none;background:transparent;border:0;box-shadow:none;";
+					if (currentLeft) ui.aozhan.style.left = currentLeft;
+					if (currentTop) ui.aozhan.style.top = currentTop;
+					if (!ui.aozhan._gzAozhanDraggable) {
+						ui.aozhan._gzAozhanDraggable = true;
+						let dragInfo = null;
+						const setPosition = (left, top) => {
+							const maxLeft = Math.max(0, ui.window.offsetWidth - ui.aozhan.offsetWidth - 4);
+							const maxTop = Math.max(0, ui.window.offsetHeight - ui.aozhan.offsetHeight - 4);
+							ui.aozhan.style.transition = "none";
+							ui.aozhan.style.animation = "none";
+							ui.aozhan.style.transform = "none";
+							ui.aozhan.style.left = `${Math.max(4, Math.min(maxLeft, left))}px`;
+							ui.aozhan.style.top = `${Math.max(4, Math.min(maxTop, top))}px`;
+						};
+						const saved = (() => {
+							try {
+								return JSON.parse(localStorage.getItem("jiubian_aozhan_box_position") || "null");
+							} catch (e) {
+								return null;
+							}
+						})();
+						requestAnimationFrame(() => {
+							if (saved && typeof saved.left == "number" && typeof saved.top == "number") {
+								setPosition(saved.left, saved.top);
+							}
+						});
+						const stopDrag = () => {
+							document.removeEventListener("pointermove", onMove);
+							document.removeEventListener("pointerup", onUp);
+							document.removeEventListener("pointercancel", stopDrag);
+						};
+						const onMove = e => {
+							if (!dragInfo) return;
+							setPosition(dragInfo.left + e.clientX - dragInfo.x, dragInfo.top + e.clientY - dragInfo.y);
+							e.preventDefault();
+							e.stopPropagation();
+						};
+						const onUp = e => {
+							if (!dragInfo) return;
+							dragInfo = null;
+							stopDrag();
+							ui.aozhan.releasePointerCapture?.(e.pointerId);
+							try {
+								localStorage.setItem(
+									"jiubian_aozhan_box_position",
+									JSON.stringify({ left: parseFloat(ui.aozhan.style.left) || 0, top: parseFloat(ui.aozhan.style.top) || 0 })
+								);
+							} catch (e) {}
+							e.preventDefault();
+							e.stopPropagation();
+						};
+						ui.aozhan.addEventListener("pointerdown", e => {
+							if (e.button && e.button != 0) return;
+							ui.aozhan.setPointerCapture?.(e.pointerId);
+							ui.aozhan.style.transition = "none";
+							ui.aozhan.style.animation = "none";
+							ui.aozhan.style.transform = "none";
+							dragInfo = {
+								x: e.clientX,
+								y: e.clientY,
+								left: parseFloat(ui.aozhan.style.left) || ui.aozhan.offsetLeft,
+								top: parseFloat(ui.aozhan.style.top) || ui.aozhan.offsetTop,
+							};
+							document.addEventListener("pointermove", onMove);
+							document.addEventListener("pointerup", onUp);
+							document.addEventListener("pointercancel", stopDrag);
+							e.preventDefault();
+							e.stopPropagation();
+						});
+					}
+					return ui.aozhan;
+				};
+				const setInfo = name => {
+					if (ui.gzAozhanRefresh) clearInterval(ui.gzAozhanRefresh);
+					delete ui.gzAozhanRefresh;
+					if (ui.gzAozhanMask) ui.gzAozhanMask.delete();
+					if (ui.gzAozhanEventInfo) ui.gzAozhanEventInfo.delete();
+					const node = getAozhanBox();
+					const title = name ? get.translation(name) : "未翻开";
+					const info = name ? lib.translate[name + "_info"] || "" : "";
+					ui.aozhan.style.display = "";
+					ui.aozhan.style.visibility = "";
+					node.innerHTML =
+						'<div style="position:static;margin:0 0 6px 0;font-weight:bold;color:#ffe0a0;text-align:center;line-height:1.35;">场景牌：' +
+						title +
+						"</div>" +
+						(info ? '<div style="position:static;margin-top:5px;font-size:13px;line-height:1.45;white-space:normal;">' + info + "</div>" : "");
+				};
 				_status._aozhan = true;
-				ui.aozhan = ui.create.div(".touchinfo.left", ui.window);
-				ui.aozhan.innerHTML = "鏖战模式";
+				_status._aozhanMode = mode;
+				getAozhanBox().innerHTML = '<div style="position:static;margin:0;font-weight:bold;color:#ffe0a0;text-align:center;line-height:1.35;">' + (mode == "jiubian" ? "九变鏖战" : "鏖战模式") + "</div>";
+				if (mode == "jiubian" || _status.gzAozhanCurrentEvent) {
+					setInfo(_status.gzAozhanCurrentEvent);
+				}
 				if (ui.time3) {
 					ui.time3.style.display = "none";
 				}
-				ui.aozhanInfo = ui.create.system("鏖战模式", null, true);
+				ui.aozhanInfo = ui.create.system(mode == "jiubian" ? "九变鏖战" : "鏖战模式", null, true);
 				lib.setPopped(
 					ui.aozhanInfo,
 					function () {
 						var uiintro = ui.create.dialog("hidden");
-						uiintro.add("鏖战模式");
-						var list = ["当游戏中仅剩四名或更少角色时（七人以下游戏时改为三名或更少），若此时全场没有超过一名势力相同的角色，则从一个新的回合开始，游戏进入鏖战模式直至游戏结束。", "在鏖战模式下，任何角色均不是非转化的【桃】的合法目标。【桃】可以被当做【杀】或【闪】使用或打出。", "进入鏖战模式后，即使之后有两名或者更多势力相同的角色出现，仍然不会取消鏖战模式。"];
+						uiintro.add(mode == "jiubian" ? "九变鏖战" : "鏖战模式");
+						var list = ["当游戏中仅剩四名或更少角色时（七人以下游戏时改为三名或更少），若此时全场没有超过一名势力相同的角色，则从一个新的回合开始，游戏进入鏖战模式直至游戏结束。"];
+						if (mode == "jiubian") {
+							list.push("在九变鏖战下，任何角色均不是非转化的【桃】的合法目标。【桃】可以被当做【酒】使用或打出。");
+							list.push("每轮开始时，翻开一张鏖战事件牌并执行对应效果。事件牌堆全部翻开后，重新洗混。");
+						} else {
+							list.push("在鏖战模式下，【桃】只能当做【杀】或【闪】使用或打出，不能用来回复体力。");
+						}
+						list.push("进入鏖战模式后，即使之后有两名或者更多势力相同的角色出现，仍然不会取消鏖战模式。");
 						var intro = '<ul style="text-align:left;margin-top:0;width:450px">';
 						for (var i = 0; i < list.length; i++) {
 							intro += "<li>" + list[i];
@@ -16438,13 +16607,251 @@ export default {
 					250
 				);
 				game.playBackgroundMusic();
-				lib.init.sheet(`
-					.card[data-card-name = "tao"]>.image {
-						background-image: url(${lib.assetURL}image/card/gz_aozhantao.png) !important;
+				if (mode == "jiubian") {
+					lib.init.sheet(`
+						.card[data-card-name = "tao"]>.image {
+							background-image: url(${lib.assetURL}image/card/jiu.png) !important;
+						}
+					`);
+				}
+			}, mode);
+			game.addGlobalSkill(mode == "jiubian" ? "aozhan_jiubian" : "aozhan");
+			if (mode == "jiubian") {
+				lib.skill._aozhan_event_round.initEvents();
+			}
+		},
+	},
+	_aozhan_event_round: {
+		ruleSkill: true,
+		trigger: { global: "roundStart" },
+		forced: true,
+		popup: false,
+		filter(event) {
+			return isJiubianAozhan() && !event._aozhan_event_round_effected;
+		},
+		initEvents: initGuozhanAozhanEvents,
+		drawEvent: drawGuozhanAozhanEvent,
+		isEvent: isGuozhanAozhanEvent,
+		getTreasureCards: getGuozhanAozhanTreasureCards,
+		async content(event, trigger, player) {
+			if (trigger._aozhan_event_round_effected) return;
+			trigger._aozhan_event_round_effected = true;
+			const name = lib.skill._aozhan_event_round.drawEvent();
+			if (!name) {
+				return;
+			}
+			game.log("鏖战事件", "#y" + get.translation(name));
+			game.broadcastAll(name => {
+				const eventInfo = lib.translate[name + "_info"] || "";
+				const getAozhanBox = () => {
+					if (!ui.aozhan) ui.aozhan = ui.create.div("", ui.window);
+					ui.aozhan.classList.remove("touchinfo", "left");
+					ui.aozhan.classList.add("gz-aozhan-box");
+					const currentLeft = ui.aozhan.style.left;
+					const currentTop = ui.aozhan.style.top;
+					ui.aozhan.style.cssText = "position:absolute;z-index:12;left:24px;top:118px;box-sizing:border-box;width:270px;height:auto;min-height:0;padding:0;color:#f5e9cf;text-align:left;line-height:1.45;font-size:14px;font-family:xinwei,serif;text-shadow:0 1px 2px #000,0 0 4px #000;white-space:normal;overflow:visible;pointer-events:auto;cursor:move;user-select:none;touch-action:none;background:transparent;border:0;box-shadow:none;";
+					if (currentLeft) ui.aozhan.style.left = currentLeft;
+					if (currentTop) ui.aozhan.style.top = currentTop;
+					if (!ui.aozhan._gzAozhanDraggable) {
+						ui.aozhan._gzAozhanDraggable = true;
+						let dragInfo = null;
+						const setPosition = (left, top) => {
+							const maxLeft = Math.max(0, ui.window.offsetWidth - ui.aozhan.offsetWidth - 4);
+							const maxTop = Math.max(0, ui.window.offsetHeight - ui.aozhan.offsetHeight - 4);
+							ui.aozhan.style.transition = "none";
+							ui.aozhan.style.animation = "none";
+							ui.aozhan.style.transform = "none";
+							ui.aozhan.style.left = `${Math.max(4, Math.min(maxLeft, left))}px`;
+							ui.aozhan.style.top = `${Math.max(4, Math.min(maxTop, top))}px`;
+						};
+						const saved = (() => {
+							try {
+								return JSON.parse(localStorage.getItem("jiubian_aozhan_box_position") || "null");
+							} catch (e) {
+								return null;
+							}
+						})();
+						requestAnimationFrame(() => {
+							if (saved && typeof saved.left == "number" && typeof saved.top == "number") {
+								setPosition(saved.left, saved.top);
+							}
+						});
+						const stopDrag = () => {
+							document.removeEventListener("pointermove", onMove);
+							document.removeEventListener("pointerup", onUp);
+							document.removeEventListener("pointercancel", stopDrag);
+						};
+						const onMove = e => {
+							if (!dragInfo) return;
+							setPosition(dragInfo.left + e.clientX - dragInfo.x, dragInfo.top + e.clientY - dragInfo.y);
+							e.preventDefault();
+							e.stopPropagation();
+						};
+						const onUp = e => {
+							if (!dragInfo) return;
+							dragInfo = null;
+							stopDrag();
+							ui.aozhan.releasePointerCapture?.(e.pointerId);
+							try {
+								localStorage.setItem("jiubian_aozhan_box_position", JSON.stringify({ left: parseFloat(ui.aozhan.style.left) || 0, top: parseFloat(ui.aozhan.style.top) || 0 }));
+							} catch (e) {}
+							e.preventDefault();
+							e.stopPropagation();
+						};
+						ui.aozhan.addEventListener("pointerdown", e => {
+							if (e.button && e.button != 0) return;
+							ui.aozhan.setPointerCapture?.(e.pointerId);
+							ui.aozhan.style.transition = "none";
+							ui.aozhan.style.animation = "none";
+							ui.aozhan.style.transform = "none";
+							dragInfo = {
+								x: e.clientX,
+								y: e.clientY,
+								left: parseFloat(ui.aozhan.style.left) || ui.aozhan.offsetLeft,
+								top: parseFloat(ui.aozhan.style.top) || ui.aozhan.offsetTop,
+							};
+							document.addEventListener("pointermove", onMove);
+							document.addEventListener("pointerup", onUp);
+							document.addEventListener("pointercancel", stopDrag);
+							e.preventDefault();
+							e.stopPropagation();
+						});
 					}
-				`);
-			});
-			game.addGlobalSkill("aozhan");
+					return ui.aozhan;
+				};
+				const setInfo = name => {
+					if (ui.gzAozhanRefresh) clearInterval(ui.gzAozhanRefresh);
+					delete ui.gzAozhanRefresh;
+					if (ui.gzAozhanMask) ui.gzAozhanMask.delete();
+					if (ui.gzAozhanEventInfo) ui.gzAozhanEventInfo.delete();
+					const node = getAozhanBox();
+					ui.aozhan.style.display = "";
+					ui.aozhan.style.visibility = "";
+					node.innerHTML = '<div style="position:static;margin:0 0 6px 0;font-weight:bold;color:#ffe0a0;text-align:center;line-height:1.35;">场景牌：' + get.translation(name) + "</div>" + (eventInfo ? '<div style="position:static;margin-top:5px;font-size:13px;line-height:1.45;white-space:normal;">' + eventInfo + "</div>" : "");
+				};
+				if (ui.aozhanInfo) {
+					ui.aozhanInfo.innerHTML = get.translation(name);
+				}
+				if (ui.aozhan) {
+					ui.aozhan.style.display = "";
+				}
+				setInfo(name);
+			}, name);
+			await game.delayx();
+			if (name == "_aozhan_event_luoshi") {
+				const targets = game.filterPlayer(current => current.isAlive() && !current.isUnseen());
+				for (const target of targets) {
+					await target.changeVice().set("repeat", true);
+				}
+			}
+		},
+	},
+	_aozhan_event_bujinzetui_effect: {
+		ruleSkill: true,
+		trigger: { global: "phaseJieshuBegin" },
+		forced: true,
+		filter(event, player) {
+			return lib.skill._aozhan_event_round.isEvent("_aozhan_event_bujinzetui") && event.player.isAlive() && !event.player.hasHistory("sourceDamage") && !event._aozhan_event_bujinzetui_effected;
+		},
+		async content(event, trigger, player) {
+			if (trigger._aozhan_event_bujinzetui_effected) return;
+			trigger._aozhan_event_bujinzetui_effected = true;
+			await trigger.player.loseHp();
+		},
+	},
+	_aozhan_event_shengzheweiwang_effect: {
+		ruleSkill: true,
+		trigger: { global: "dieAfter" },
+		forced: true,
+		filter(event, player) {
+			return lib.skill._aozhan_event_round.isEvent("_aozhan_event_shengzheweiwang") && event.source && event.source.isAlive() && !event._aozhan_event_shengzheweiwang_effected;
+		},
+		async content(event, trigger, player) {
+			if (trigger._aozhan_event_shengzheweiwang_effected) return;
+			trigger._aozhan_event_shengzheweiwang_effected = true;
+			trigger.source.addMark("_aozhan_event_shengzheweiwang_mark", 1, false);
+			game.log(trigger.source, "的摸牌阶段摸牌数", "#g+3");
+		},
+	},
+	_aozhan_event_shengzheweiwang_draw: {
+		ruleSkill: true,
+		trigger: { player: "phaseDrawBegin2" },
+		forced: true,
+		filter(event, player) {
+			return !event.numFixed && player.countMark("_aozhan_event_shengzheweiwang_mark") > 0 && !event._aozhan_event_shengzheweiwang_draw_effected;
+		},
+		async content(event, trigger, player) {
+			if (trigger._aozhan_event_shengzheweiwang_draw_effected) return;
+			trigger._aozhan_event_shengzheweiwang_draw_effected = true;
+			trigger.num += 3 * player.countMark("_aozhan_event_shengzheweiwang_mark");
+		},
+	},
+	_aozhan_event_jili_effect: {
+		ruleSkill: true,
+		mod: {
+			cardUsable(card) {
+				if (lib.skill._aozhan_event_round.isEvent("_aozhan_event_jili") && card.name == "sha") {
+					return Infinity;
+				}
+			},
+			targetInRange(card) {
+				if (lib.skill._aozhan_event_round.isEvent("_aozhan_event_jili") && card.name == "sha") {
+					return true;
+				}
+			},
+		},
+	},
+	_aozhan_event_huoqi_effect: {
+		ruleSkill: true,
+		trigger: { global: "damageBegin1" },
+		forced: true,
+		filter() {
+			return lib.skill._aozhan_event_round.isEvent("_aozhan_event_huoqi");
+		},
+		async content(event, trigger, player) {
+			if (trigger._aozhan_event_huoqi_effected) return;
+			trigger._aozhan_event_huoqi_effected = true;
+			trigger.num++;
+		},
+		ai: {
+			effect: {
+				target(card) {
+					if (lib.skill._aozhan_event_round.isEvent("_aozhan_event_huoqi") && get.tag(card, "damage")) {
+						return [1, -1];
+					}
+				},
+			},
+		},
+	},
+	_aozhan_event_jianli_effect: {
+		ruleSkill: true,
+		trigger: { player: "phaseDrawBegin1" },
+		filter(event, player) {
+			return lib.skill._aozhan_event_round.isEvent("_aozhan_event_jianli") && lib.skill._aozhan_event_round.getTreasureCards().length > 0 && !event._aozhan_event_jianli_effected;
+		},
+		async cost(event, trigger, player) {
+			trigger._aozhan_event_jianli_effected = true;
+			event.result = await player
+				.chooseBool({ prompt: "是否跳过摸牌阶段，获得弃牌堆中至多两张奇珍牌？" })
+				.set("ai", () => true)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			if (trigger._aozhan_event_jianli_done) return;
+			trigger._aozhan_event_jianli_done = true;
+			trigger.cancel();
+			game.log(player, "跳过了", "#y摸牌阶段");
+			const cards = lib.skill._aozhan_event_round.getTreasureCards();
+			if (!cards.length) {
+				return;
+			}
+			const result = await player
+				.chooseCardButton({ prompt: "贱礼：获得弃牌堆中至多两张奇珍牌", cards: cards, select: [1, Math.min(2, cards.length)] })
+				.set("ai", button => get.value(button.link))
+				.forResult();
+			if (result.bool) {
+				await player.gain({ cards: result.links, animate: "gain2" });
+			}
 		},
 	},
 	_guozhan_marks: {
@@ -18687,9 +19094,6 @@ export default {
 			if (event.card.name != "sha") {
 				return false;
 			}
-			if (game.countPlayer() < 4) {
-				return false;
-			}
 			return player.siege(event.target) && event.player.siege(event.target);
 		},
 		forced: true,
@@ -18714,7 +19118,7 @@ export default {
 		zhenfa: "siege",
 		trigger: { global: "useCardToPlayered" },
 		filter(event, player) {
-			if (event.card.name != "sha" || game.countPlayer() < 4) {
+			if (event.card.name != "sha") {
 				return false;
 			}
 			return player.siege(event.target) && event.player.siege(event.target) && event.target.countCards("e");
@@ -19712,6 +20116,9 @@ export default {
 		enable: "phaseUse",
 		usable: 1,
 		getConfig(player, target) {
+			if (!guozhanZhenfaEnabled()) {
+				return false;
+			}
 			if (target == player || !target.isUnseen()) {
 				return false;
 			}
@@ -19742,13 +20149,6 @@ export default {
 				return false;
 			}
 			if (player.hasSkill("undist")) {
-				return false;
-			}
-			if (
-				game.countPlayer(function (current) {
-					return !current.hasSkill("undist");
-				}) < 4
-			) {
 				return false;
 			}
 			return game.hasPlayer(function (current) {
@@ -20214,6 +20614,516 @@ export default {
 		},
 		intro: {
 			content: "手牌上限+#",
+		},
+	},
+	tuqiong_range: {
+		charlotte: true,
+		onremove: true,
+		mod: {
+			targetInRange(card, player, target) {
+				if (player.getStorage("tuqiong_range").includes(target)) {
+					return true;
+				}
+			},
+		},
+	},
+	yangsuiqiang_skill: {
+		equipSkill: true,
+		forced: true,
+		trigger: { source: "damageSource" },
+		filter(event, player) {
+			return event.card?.name == "sha" && event.player?.isIn();
+		},
+		async content(event, trigger, player) {
+			await trigger.player.damage({ nature: "fire", nosource: true });
+		},
+	},
+	dunjiatianshu_skill: {
+		equipSkill: true,
+		audio: true,
+		enable: "phaseUse",
+		usable: 2,
+		async content(event, trigger, player) {
+			await player.changeVice().set("repeat", true);
+		},
+		ai: {
+			order: 8,
+			result: {
+				player(player) {
+					return get.guozhanRank(player.name2, player) <= 3 ? 1 : 0.2;
+				},
+			},
+		},
+	},
+	huohuanyi_prevent: {
+		equipSkill: true,
+		forced: true,
+		trigger: { player: "damageBegin4" },
+		filter(event, player) {
+			return event.hasNature();
+		},
+		async content(event, trigger, player) {
+			trigger.cancel();
+		},
+	},
+	huohuanyi_damage: {
+		equipSkill: true,
+		ai: {
+			effect: {
+				target(card, player, target) {
+					if (card.name != "sha" || !target.countCards("h") || get.attitude(target, player) >= 0) {
+						return;
+					}
+					const hasTengjia = player.getEquips("tengjia").length > 0 && !player.hasSkillTag("unequip2");
+					const cannotSave = player.hp <= 1 && !player.countCards("hs", card => get.tag(card, "save")) && !player.hasSkillTag("save", true);
+					if (hasTengjia || cannotSave) {
+						return [0, 0, 0, -1];
+					}
+				},
+			},
+		},
+		trigger: { target: "useCardToTargeted" },
+		filter(event, player) {
+			return event.card?.name == "sha" && event.player?.isIn() && player.countCards("h") > 0;
+		},
+		async content(event, trigger, player) {
+			const result = await player
+				.chooseToDiscard({ position: "h", prompt: `是否弃置一张手牌，对${get.translation(trigger.player)}造成1点火焰伤害？` })
+				.set("ai", card => {
+					if (get.damageEffect(trigger.player, player, player, "fire") <= 0) {
+						return 0;
+					}
+					return 6 - get.value(card);
+				})
+				.forResult();
+			if (result.bool) {
+				await trigger.player.damage({ nature: "fire" });
+			}
+		},
+	},
+	zhanshejian_skill: {
+		equipSkill: true,
+		forced: true,
+		trigger: { source: "damageSource" },
+		filter(event, player) {
+			return event.card?.name == "sha";
+		},
+		async content(event, trigger, player) {
+			if (player.isDamaged()) {
+				await player.recover();
+			}
+			if (trigger.player?.isIn() && (get.is.jun(trigger.player.name1) || trigger.player.identity == "ye")) {
+				await trigger.player.die(player);
+			}
+		},
+	},
+	baiqilin_skill: {
+		equipSkill: true,
+		forced: true,
+		trigger: { player: "useCardAfter" },
+		filter(event, player) {
+			return event.card?.name == "baiqilin";
+		},
+		async content(event, trigger, player) {
+			const hp = player.hp;
+			const targets = game.filterPlayer(current => current.isIn() && current != player && current.hp > hp).sortBySeat();
+			for (const target of targets) {
+				if (target.isIn()) {
+					await target.damage({ nature: "thunder", nosource: true });
+				}
+			}
+		},
+	},
+	yingwubei_skill: {
+		equipSkill: true,
+		audio: true,
+		enable: "chooseToUse",
+		usable: 9,
+		hiddenCard(player, name) {
+			return name == "jiu" && player.hasCard(card => card.name == "yingwubei", "e");
+		},
+		filter(event, player) {
+			if (!player.hasCard(card => card.name == "yingwubei", "e")) return false;
+			return event.filterCard(get.autoViewAs({ name: "jiu", isCard: true }, "unsure"), player, event);
+		},
+		viewAs(cards, player) {
+			return { name: "jiu", isCard: true };
+		},
+		filterCard: () => false,
+		selectCard: -1,
+		prompt: "将牌堆顶的牌当【酒】使用",
+		log: false,
+		async precontent(event, trigger, player) {
+			player.logSkill("yingwubei_skill");
+			const cards = get.cards();
+			event.result.card = get.autoViewAs({ name: "jiu", isCard: true }, cards);
+			event.result.cards = cards;
+			game.cardsGotoOrdering(cards);
+		},
+		ai: {
+			order: 4,
+			result: {
+				player(player) {
+					return player.hp <= 1 ? 1 : 0.4;
+				},
+			},
+		},
+	},
+	jiuzhouding_skill: {
+		equipSkill: true,
+		forced: true,
+		trigger: { player: "equipAfter" },
+		filter(event, player) {
+			return _status.mode == "jiubian" && !_status.overing && player.hasCard(card => card.name == "jiuzhouding", "e") && player.countCards("e", card => isJiubianQizhen(card)) >= 4;
+		},
+		async content(event, trigger, player) {
+			game.broadcastAll(id => {
+				game.winner_id = id;
+			}, player.playerid);
+			game.log(player, "因", "#y九州鼎", "达成胜利条件");
+			game.checkResult();
+		},
+	},
+	tianlu_skill: {
+		equipSkill: true,
+		charlotte: true,
+		forced: true,
+		silent: true,
+		trigger: {
+			player: ["equipAfter", "showCharacterEnd", "changeGroupAfter"],
+			global: ["gameStart", "showCharacterEnd", "changeGroupAfter", "dieAfter", "phaseBefore"],
+		},
+		lordSkillMap: {
+			wei: "jianan",
+			shu: "shouyue",
+			wu: "jiahe",
+			qun: "hongfa",
+			jin: "gz_jiaping",
+		},
+		lordMarkMap: {
+			jianan: "wuziliangjiangdao",
+			shouyue: "wuhujiangdaqi",
+			jiahe: "yuanjiangfenghuotu",
+			hongfa: "huangjintianbingfu",
+			gz_jiaping: "bahuangsishiling",
+		},
+		getLordSkill(player) {
+			if (_status.mode != "jiubian" || !player?.isIn?.() || !player.hasCard(card => card.name == "tianlu", "e")) {
+				return null;
+			}
+			const group = player.identity;
+			if (!group || group == "unknown" || group == "ye") {
+				return null;
+			}
+			const skill = lib.skill.tianlu_skill.lordSkillMap[group];
+			if (!skill || !lib.skill[skill]) {
+				return null;
+			}
+			if (game.hasPlayer(current => current != player && get.is.jun(current) && !current.isUnseen() && current.isFriendOf(player))) {
+				return null;
+			}
+			return skill;
+		},
+		isTianluZhu(player, skill, group) {
+			if (!skill || (group && player.identity != group)) {
+				return false;
+			}
+			return lib.skill.tianlu_skill.getLordSkill(player) == skill;
+		},
+		clear(player) {
+			const skill = player.storage.tianlu_skill;
+			if (skill) {
+				player.removeAdditionalSkill("tianlu_skill");
+				const mark = lib.skill.tianlu_skill.lordMarkMap[skill];
+				if (mark) {
+					player.unmarkSkill(mark);
+				}
+				delete player.storage.tianlu_skill;
+			}
+		},
+		onremove(player) {
+			lib.skill.tianlu_skill.clear(player);
+		},
+		filter(event, player) {
+			return _status.mode == "jiubian";
+		},
+		async content(event, trigger, player) {
+			const skill = lib.skill.tianlu_skill.getLordSkill(player);
+			const oldSkill = player.storage.tianlu_skill;
+			if (oldSkill == skill) {
+				return;
+			}
+			if (oldSkill) {
+				await player.removeAdditionalSkills("tianlu_skill");
+				const mark = lib.skill.tianlu_skill.lordMarkMap[oldSkill];
+				if (mark) {
+					player.unmarkSkill(mark);
+				}
+				delete player.storage.tianlu_skill;
+			}
+			if (skill) {
+				player.storage.tianlu_skill = skill;
+				await player.addAdditionalSkills("tianlu_skill", skill);
+			}
+		},
+	},
+	_jiubian_tianlu_cleanup: {
+		trigger: { global: ["loseAfter", "equipAfter", "dieAfter", "phaseBefore"] },
+		forced: true,
+		silent: true,
+		filter(event, player) {
+			return _status.mode == "jiubian" && player.storage.tianlu_skill && !player.hasCard(card => card.name == "tianlu", "e");
+		},
+		async content(event, trigger, player) {
+			lib.skill.tianlu_skill.clear(player);
+		},
+	},
+	_jiuzhouding_place: {
+		trigger: { global: ["gameStart", "washCard"] },
+		forced: true,
+		silent: true,
+		filter(event, player) {
+			return isJiubianCardRuleActive() && Array.from(ui.cardPile.childNodes).some(card => card.name == "jiuzhouding");
+		},
+		async content(event, trigger, player) {
+			syncJiubianQizhenTags();
+			const cards = Array.from(ui.cardPile.childNodes).filter(card => card.name == "jiuzhouding");
+			if (cards.length) {
+				await game.cardsDiscard(cards);
+			}
+			syncJiubianQizhenTags();
+		},
+	},
+	_jiubian_qizhen_viewer: {
+		trigger: { global: "gameStart" },
+		forced: true,
+		silent: true,
+		filter(event, player) {
+			return _status.mode == "jiubian" || (get.mode() == "guozhan" && jiubianQizhenNames.some(name => lib.card[name])) || ui.gzQizhenButton || ui.gzQizhenFloatButton;
+		},
+		async content(event, trigger, player) {
+			if (_status.mode != "jiubian" && !(get.mode() == "guozhan" && jiubianQizhenNames.some(name => lib.card[name]))) {
+				if (ui.gzQizhenButton?.close) {
+					ui.gzQizhenButton.close();
+				} else {
+					ui.gzQizhenButton?.remove?.();
+				}
+				ui.gzQizhenFloatButton?.remove?.();
+				delete ui.gzQizhenButton;
+				delete ui.gzQizhenFloatButton;
+				return;
+			}
+			syncJiubianQizhenTags();
+			const openQizhen = () => {
+				syncJiubianQizhenTags();
+				const cards = Array.from(ui.discardPile.childNodes).filter(card => isJiubianQizhen(card));
+				const dialog = ui.create.dialog("弃牌堆中的奇珍牌", "peaceDialog");
+				if (cards.length) {
+					dialog.add(cards, true);
+					for (const button of dialog.buttons) {
+						lib.setIntro(button);
+						button.oncontextmenu = ui.click.rightplayer;
+					}
+				} else {
+					dialog.addText("弃牌堆中没有奇珍牌");
+				}
+				const closeButton = ui.create.div("", dialog);
+				closeButton.innerHTML = "X";
+				closeButton.style.cssText = "position:absolute;right:10px;top:8px;z-index:10;width:30px;height:30px;border-radius:15px;background:rgba(20,20,20,0.72);border:1px solid rgba(255,255,255,0.45);color:#fff;font:bold 22px/30px sans-serif;text-align:center;text-shadow:0 1px 2px #000;cursor:pointer;pointer-events:auto;";
+				closeButton.listen(e => {
+					e.stopPropagation();
+					dialog.close();
+				});
+				dialog._close = dialog.close;
+				dialog.hide = dialog.close = function (...args) {
+					closeButton.remove();
+					if (_status.jiubianQizhenDialog == dialog) {
+						delete _status.jiubianQizhenDialog;
+					}
+					return dialog._close(...args);
+				};
+				if (_status.jiubianQizhenDialog) {
+					_status.jiubianQizhenDialog.close();
+				}
+				_status.jiubianQizhenDialog = dialog;
+				dialog.open();
+			};
+			if (ui.gzQizhenButton) {
+				if (ui.gzQizhenButton.close) {
+					ui.gzQizhenButton.close();
+				} else {
+					ui.gzQizhenButton.remove?.();
+				}
+				delete ui.gzQizhenButton;
+			}
+			if (!ui.gzQizhenFloatButton && ui.window) {
+				ui.gzQizhenFloatButton = ui.create.div("", ui.window);
+				ui.gzQizhenFloatButton.innerHTML = "奇珍";
+				ui.gzQizhenFloatButton.style.cssText = "position:absolute;z-index:999;padding:7px 12px;border:1px solid rgba(255,224,160,0.95);border-radius:4px;background:rgba(35,25,12,0.9);box-shadow:0 0 8px rgba(0,0,0,0.45);color:#ffe0a0;font-weight:bold;font-size:16px;line-height:1.1;text-shadow:0 1px 2px #000;pointer-events:auto;cursor:move;user-select:none;touch-action:none;";
+				const setFloatPosition = (left, top) => {
+					const maxLeft = Math.max(0, ui.window.offsetWidth - ui.gzQizhenFloatButton.offsetWidth - 4);
+					const maxTop = Math.max(0, ui.window.offsetHeight - ui.gzQizhenFloatButton.offsetHeight - 4);
+					ui.gzQizhenFloatButton.style.transition = "none";
+					ui.gzQizhenFloatButton.style.animation = "none";
+					ui.gzQizhenFloatButton.style.transform = "none";
+					ui.gzQizhenFloatButton.style.left = `${Math.max(4, Math.min(maxLeft, left))}px`;
+					ui.gzQizhenFloatButton.style.top = `${Math.max(4, Math.min(maxTop, top))}px`;
+					ui.gzQizhenFloatButton.style.right = "auto";
+				};
+				const savedPosition = (() => {
+					try {
+						return JSON.parse(localStorage.getItem("jiubian_qizhen_float_position") || "null");
+					} catch (e) {
+						return null;
+					}
+				})();
+				requestAnimationFrame(() => {
+					if (savedPosition && typeof savedPosition.left == "number" && typeof savedPosition.top == "number") {
+						setFloatPosition(savedPosition.left, savedPosition.top);
+					} else {
+						setFloatPosition(ui.window.offsetWidth - ui.gzQizhenFloatButton.offsetWidth - 12, 142);
+					}
+				});
+				let dragInfo = null;
+				const saveFloatPosition = () => {
+					localStorage.setItem(
+						"jiubian_qizhen_float_position",
+						JSON.stringify({
+							left: parseFloat(ui.gzQizhenFloatButton.style.left) || 0,
+							top: parseFloat(ui.gzQizhenFloatButton.style.top) || 0,
+						})
+					);
+				};
+				const stopDrag = () => {
+					document.removeEventListener("pointermove", onMove);
+					document.removeEventListener("pointerup", onUp);
+					document.removeEventListener("pointercancel", stopDrag);
+				};
+				const onMove = e => {
+					if (!dragInfo) return;
+					const dx = e.clientX - dragInfo.x;
+					const dy = e.clientY - dragInfo.y;
+					if (Math.abs(dx) + Math.abs(dy) > 4) {
+						dragInfo.moved = true;
+					}
+					setFloatPosition(dragInfo.left + dx, dragInfo.top + dy);
+					e.preventDefault();
+					e.stopPropagation();
+				};
+				const onUp = e => {
+					if (!dragInfo) return;
+					const moved = dragInfo.moved;
+					dragInfo = null;
+					stopDrag();
+					ui.gzQizhenFloatButton.releasePointerCapture?.(e.pointerId);
+					saveFloatPosition();
+					if (!moved) {
+						openQizhen();
+					}
+					e.preventDefault();
+					e.stopPropagation();
+				};
+				ui.gzQizhenFloatButton.addEventListener("pointerdown", e => {
+					if (e.button && e.button != 0) return;
+					ui.gzQizhenFloatButton.setPointerCapture?.(e.pointerId);
+					ui.gzQizhenFloatButton.style.transition = "none";
+					ui.gzQizhenFloatButton.style.animation = "none";
+					ui.gzQizhenFloatButton.style.transform = "none";
+					dragInfo = {
+						x: e.clientX,
+						y: e.clientY,
+						left: parseFloat(ui.gzQizhenFloatButton.style.left) || ui.gzQizhenFloatButton.offsetLeft,
+						top: parseFloat(ui.gzQizhenFloatButton.style.top) || ui.gzQizhenFloatButton.offsetTop,
+						moved: false,
+					};
+					document.addEventListener("pointermove", onMove);
+					document.addEventListener("pointerup", onUp);
+					document.addEventListener("pointercancel", stopDrag);
+					e.preventDefault();
+					e.stopPropagation();
+				});
+			}
+		},
+	},
+	_jiubian_lveshan_mod: {
+		mod: {
+			cardname(card, player) {
+				if (isJiubianCardRuleActive() && card.name == "lveshan") {
+					return "shan";
+				}
+			},
+		},
+	},
+	_jiubian_lveshan_gain: {
+		trigger: { player: "useCardAfter" },
+		direct: true,
+		isLveshanCard(card) {
+			if (!card) return false;
+			if (card.name == "lveshan" || card.viewAs == "lveshan") return true;
+			if (Array.isArray(card.cards)) {
+				return card.cards.some(cardx => lib.skill._jiubian_lveshan_gain.isLveshanCard(cardx));
+			}
+			return false;
+		},
+		filter(event, player) {
+			const respondTo = Array.isArray(event.respondTo) ? event.respondTo : [];
+			const source = respondTo[0];
+			const card = respondTo[1];
+			return isJiubianCardRuleActive() && Array.isArray(event.cards) && event.cards.some(cardx => lib.skill._jiubian_lveshan_gain.isLveshanCard(cardx)) && card?.name == "sha" && source?.isIn?.() && source.countCards("e", cardx => isJiubianQizhen(cardx)) > 0;
+		},
+		async content(event, trigger, player) {
+			const respondTo = trigger.respondTo;
+			const source = respondTo[0];
+			const isQizhen = card => get.cardtag(card, "qizhen") || get.cardtag(card, "gz_qizhen");
+			const cards = source.getCards("e", card => isQizhen(card));
+			if (!cards.length) {
+				return;
+			}
+			const result = await player
+				.chooseBool({ prompt: `是否获得${get.translation(source)}装备区内的一张奇珍牌？` })
+				.set("ai", () => true)
+				.forResult();
+			if (!result.bool || !source?.isIn?.()) {
+				return;
+			}
+			const currentCards = source.getCards("e", card => isQizhen(card));
+			if (!currentCards.length) {
+				return;
+			}
+			if (currentCards.length == 1) {
+				await player.gain({ cards: [currentCards[0]], source: source, animate: "giveAuto" });
+				return;
+			}
+			await player.gainPlayerCard({ target: source, position: "e", forced: true }).set("filterButton", button => currentCards.includes(button.link) || isQizhen(button.link));
+		},
+	},
+	_gz_jiubian_qizhen_rule: {
+		trigger: { player: "damageEnd" },
+		forced: true,
+		silent: true,
+		priority: -10,
+		filter(event, player) {
+			return isJiubianCardRuleActive() && event.source?.isIn() && event.card?.name == "sha" && player.countCards("e", card => isJiubianQizhen(card)) > 0;
+		},
+		async content(event, trigger, player) {
+			const source = trigger.source;
+			const isQizhen = card => get.cardtag(card, "qizhen") || get.cardtag(card, "gz_qizhen");
+			const cards = player.getCards("e", card => isQizhen(card));
+			if (!source?.isIn() || !cards.length) {
+				return;
+			}
+			const result = await source
+				.chooseBool({ prompt: `是否获得${get.translation(player)}装备区内的一张奇珍牌？` })
+				.set("ai", () => true)
+				.forResult();
+			if (!result.bool) {
+				return;
+			}
+			const currentCards = player.getCards("e", card => isQizhen(card));
+			if (!currentCards.length) {
+				return;
+			}
+			await source.gainPlayerCard({ target: player, position: "e", forced: true }).set("filterButton", button => isQizhen(button.link));
 		},
 	},
 };
