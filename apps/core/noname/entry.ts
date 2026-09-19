@@ -2,8 +2,7 @@ import { lib, game, get, _status, ui, ai } from "noname";
 import { boot } from "@/init/index.js";
 import { userAgentLowerCase, device } from "@/util/index.js";
 import { loadBuildInfo } from "@/util/meta.js";
-import { FileSystem, FileSystemError, FileSystemErrorCode, installLegacyFileSystemAPI } from "@/library/fs/index.js";
-import type { FileSystemAdapter, FileSystemBootstrap } from "@/library/fs/index.js";
+import { CoreFileSystemBootstrap } from "@/library/fs/index.js";
 import "core-js-bundle";
 // 保证打包时存在(importmap)
 import "vue/dist/vue.esm-browser.js";
@@ -11,36 +10,13 @@ import "vue/dist/vue.esm-browser.js";
 (async () => {
 	try {
 		lib.device = device;
-		let fileSystemInstalled = false;
-		const fsBootstrap: FileSystemBootstrap = {
-			ErrorCode: FileSystemErrorCode,
-			createError(code, path, detail, cause) {
-				return new FileSystemError(code, path, { detail, cause });
+		const fsBootstrap = new CoreFileSystemBootstrap({
+			getFileSystem: () => lib.fs,
+			setFileSystem: fileSystem => {
+				lib.fs = fileSystem;
 			},
-			isError(error): error is FileSystemError {
-				return error instanceof FileSystemError;
-			},
-			install(adapter: FileSystemAdapter) {
-				if (fileSystemInstalled) {
-					throw new Error("The file system adapter has already been installed");
-				}
-				if (!adapter.supported) {
-					throw new Error("Cannot install an unsupported file system adapter");
-				}
-
-				const previousFileSystem = lib.fs;
-				const fileSystem = new FileSystem(adapter);
-				try {
-					lib.fs = fileSystem;
-					installLegacyFileSystemAPI(game, fileSystem);
-					fileSystemInstalled = true;
-					return fileSystem;
-				} catch (error) {
-					lib.fs = previousFileSystem;
-					throw error;
-				}
-			},
-		};
+			game,
+		});
 
 		// 预加载脚本
 		const path = "/preload.js";

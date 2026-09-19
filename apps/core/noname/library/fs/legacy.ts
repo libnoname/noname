@@ -1,5 +1,5 @@
 import { FileSystemError, FileSystemErrorCode } from "./errors";
-import type { FileSystem } from "./index";
+import type { FileSystem } from "./file-system";
 
 export type LegacyWriteData = string | Blob | ArrayBuffer | ArrayBufferView;
 
@@ -37,10 +37,10 @@ export interface LegacyFileSystemGame {
 	) => void;
 	getFileList?: (
 		directory: string,
-		callback?: (folders: string[], files: string[]) => unknown,
+		callback: (folders: string[], files: string[]) => unknown,
 		onerror?: (error: Error) => void
 	) => void;
-	ensureDirectory?: (paths: string | string[], callback?: () => void, file?: boolean) => void;
+	ensureDirectory?: (paths: string | string[], callback: () => void, file?: boolean) => void;
 	createDir?: (directory: string, successCallback?: () => void, errorCallback?: (error: Error) => void) => void;
 	removeDir?: (directory: string, successCallback?: () => void, errorCallback?: (error: Error) => void) => void;
 }
