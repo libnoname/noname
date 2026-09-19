@@ -247,7 +247,7 @@ const translates = {
 	smfuqing: "扶倾",
 	smfuqing_info: "当你失去牌时，你可以令一名角色回复1点体力。",
 	smchengrui: "骋锐",
-	smchengrui_info: "一名角色的回合结束时，你可以执行以下项至多X次：1.视为使用一张角色；2.摸一张牌（X为上个出牌阶段体力值变化过的角色数）。",
+	smchengrui_info: "一名角色的回合结束时，你可以执行以下项至多X次：1.视为使用一张【决斗】；2.摸一张牌（X为上个出牌阶段体力值变化过的角色数）。",
 	smkuangfei: "狂沸",
 	smkuangfei_info: "出牌阶段限50次，你可以摸一张牌。",
 	smaodou: "鏖斗",
