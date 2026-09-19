@@ -23,7 +23,8 @@
         "build": "tsx scripts/build.ts",
         "build:types": "tsc -p tsconfig.types.json",
         "generateAsset": "tsx scripts/generateAsset.ts",
-        "lint": "pnpm eslint noname/**"
+        "lint": "pnpm eslint noname/**",
+        "test": "vitest run"
     },
     "dependencies": {
         "@codemirror/autocomplete": "^6.20.0",
@@ -72,6 +73,7 @@
         "fs-extra": "^11.3.3",
         "glob": "^13.0.3",
         "vite": "^7.3.1",
-        "vite-plugin-static-copy": "^3.2.0"
+        "vite-plugin-static-copy": "^3.2.0",
+        "vitest": "^4.1.4"
     }
 }
