@@ -226,8 +226,8 @@ const skills = {
 							return 1;
 						}
 						const num = player.countHistory("useSkill", evt => evt.skill != "smbifeng");
-						if ((num + 1) % player.maxHp == 0 && player.isHealthy()) {
-							return -1;
+						if (num + 1 >= player.maxHp && player.isHealthy()) {
+							return 0;
 						}
 					}
 					return 1;
@@ -292,7 +292,7 @@ const skills = {
 			const info = get.info(skill);
 			if (!info || info.charlotte || info.equipSkill) return false;
 			const num = player.countHistory("useSkill", evt => evt.skill != "smbifeng");
-			return num % player.maxHp == 0;
+			return num >= player.maxHp;
 		},
 		async content(event, trigger, player) {
 			const result = await player
