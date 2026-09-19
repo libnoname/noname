@@ -455,7 +455,7 @@ const skills = {
 					prompt: "仇铓：你可以选择一项",
 					ai() {
 						const { player, controls, card, targets } = get.event();
-						if (game.hasPlayer(current => !targets.includes(current) && current != player && player.canUse(card, current, true, false))) {
+						if (game.hasPlayer(current => !targets.includes(current) && current != player && player.canUse(card, current, void 0, false) && get.attitude(player, current) < 0)) {
 							if (controls.length >= 4 && controls.includes("背水！")) {
 								return "背水！";
 							}
@@ -463,7 +463,7 @@ const skills = {
 								return "选项二";
 							}
 						}
-						if (!targets.includes(target => get.attitude(player, target) > 0)) {
+						if (!targets.some(target => get.attitude(player, target) > 0)) {
 							return "选项一";
 						}
 						return "cancel2";

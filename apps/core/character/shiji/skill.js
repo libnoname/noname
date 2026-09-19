@@ -3034,8 +3034,9 @@ const skills = {
 			}).length;
 			if (num > 0) {
 				await player.recover(num);
+				if (!game.hasPlayer(current => current != player)) return;
 				const result = await player
-					.chooseTarget(`神霈：选择一名角色对其造成${num}点雷电伤害`, true)
+					.chooseTarget(`神霈：选择一名其他角色对其造成${num}点雷电伤害`, true, lib.filter.notMe)
 					.set("ai", target => {
 						const { player } = get.event();
 						return get.damageEffect(target, player, player, "thunder");

@@ -1040,14 +1040,12 @@ const skills = {
 			order: 8,
 			result: {
 				target(player, target) {
-					return 1;
-				},
-				player(player, target) {
-					if (get.attitude(player, target) > 0 && player.getHp() > 1) {
-						return 3 + get.damageEffect(player, target, player) / 3;
+					if (game.hasPlayer(current => get.attitude(player, current) > 0)) {
+						return 1;
 					}
-					return 1;
+					return get.sgnAttitude(player, target);
 				},
+				player: 1,
 			},
 		},
 	},
