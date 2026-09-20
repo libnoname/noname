@@ -15550,7 +15550,7 @@ const skills = {
 					viewAs: { name: links[0].name, isCard: true, cards: [links[0]] },
 					popname: true,
 					log: false,
-					precontent() {
+					async precontent(event, trigger, player) {
 						player.logSkill("twmouli");
 						player.addTempSkill("twmouli_used");
 						var name = event.result.card.name;
