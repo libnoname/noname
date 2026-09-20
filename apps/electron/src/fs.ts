@@ -125,7 +125,7 @@ export class ElectronFileSystemAdapter implements FileSystemAdapter {
 
 		let handle: FileHandle | undefined;
 		try {
-			handle = await this.open(inputPath, { write: true, create: true });
+			handle = await this.open(inputPath, { write: true, create: true, truncate: true });
 			await handle.write(data);
 		} finally {
 			if (handle) {
@@ -440,7 +440,6 @@ export class ElectronFileHandle implements FileHandle {
 			}
 			await this.handle.truncate(0);
 			await this.writeAll(data, 0);
-			await this.handle.truncate(data.byteLength);
 		} catch (error) {
 			throw this.mapError(error);
 		}

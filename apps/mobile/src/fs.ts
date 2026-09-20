@@ -39,16 +39,6 @@ export interface SafFsPlugin {
 
 export const SafFs = registerPlugin<SafFsPlugin>("SafFs");
 
-const ERROR_CODES = new Set([
-	"NOT_FOUND",
-	"ALREADY_EXISTS",
-	"NOT_FILE",
-	"NOT_DIRECTORY",
-	"PERMISSION_DENIED",
-	"INVALID_PATH",
-	"IO_ERROR",
-]);
-
 export class MobileFileSystemAdapter implements FileSystemAdapter {
 	readonly supported = true;
 
@@ -223,20 +213,7 @@ export class MobileFileSystemAdapter implements FileSystemAdapter {
 		}
 
 		const code = getCapacitorErrorCode(error);
-		const mapped =
-			code === "NOT_FOUND"
-				? this.bootstrap.ErrorCode.NotFound
-				: code === "ALREADY_EXISTS"
-					? this.bootstrap.ErrorCode.AlreadyExists
-					: code === "NOT_FILE"
-						? this.bootstrap.ErrorCode.NotFile
-						: code === "NOT_DIRECTORY"
-							? this.bootstrap.ErrorCode.NotDirectory
-							: code === "PERMISSION_DENIED"
-								? this.bootstrap.ErrorCode.PermissionDenied
-								: code === "INVALID_PATH"
-									? this.bootstrap.ErrorCode.InvalidPath
-									: this.bootstrap.ErrorCode.IoError;
+		const mapped = resolveKnownErrorCode(this.bootstrap, code);
 		const detail = error instanceof Error ? error.message : String(error);
 		return this.bootstrap.createError(mapped, toDisplayPath(inputPath), detail, error);
 	}
@@ -352,7 +329,18 @@ function getCapacitorErrorCode(error: unknown): string | undefined {
 		return undefined;
 	}
 	const code = error.code;
-	return typeof code === "string" && ERROR_CODES.has(code) ? code : undefined;
+	return typeof code === "string" ? code : undefined;
+}
+
+function resolveKnownErrorCode(bootstrap: FileSystemBootstrap, code: string | undefined) {
+	if (code !== undefined) {
+		for (const value of Object.values(bootstrap.ErrorCode)) {
+			if (value === code) {
+				return value;
+			}
+		}
+	}
+	return bootstrap.ErrorCode.IoError;
 }
 
 function toDisplayPath(inputPath: unknown): string {
