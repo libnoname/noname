@@ -185,16 +185,22 @@ const skills = {
 			return event.targets?.length === 1 && get.tag(event.card, "damage");
 		},
 		async content(event, trigger, player) {
-			const canAdd = game.hasPlayer(target => !trigger.targets.includes(target) && lib.filter.targetEnabled2(trigger.card, player, target) && lib.filter.targetInRange(trigger.card, player, target));
+			const targets = game.filterPlayer(target => !trigger.targets.includes(target) && lib.filter.targetEnabled2(trigger.card, player, target) && lib.filter.targetInRange(trigger.card, player, target));
+			const canAdd = targets.length > 0;
+			let doubleEffect = trigger.targets.reduce((sum, target) => sum + get.effect(target, trigger.card, player, player), 0);
+			// norepeat 仅用于 AI 保守估值，不限制玩家重复结算。后续结算的收益可能因耗牌等因素降低。
+			if (doubleEffect > 0 && get.tag(trigger.card, "norepeat")) doubleEffect *= 0.5;
+			const addEffect = targets.reduce((best, target) => Math.max(best, get.effect(target, trigger.card, player, player)), -Infinity);
 			const choices = [
 				["double", "此牌额外结算一次"],
 				["add", "此牌的目标数+1"],
 			];
 			const result = await player
-				.chooseButton(["荡魔：请选择一项", [choices, "textbutton"]], true)
+				.chooseButton({ createDialog: ["荡魔：请选择一项", [choices, "textbutton"]], forced: true })
 				.set("filterButton", button => button.link !== "add" || get.event().canAdd)
 				.set("canAdd", canAdd)
-				.set("ai", button => (button.link === "double" ? 2 : 1))
+				.set("choiceScores", { double: doubleEffect, add: addEffect })
+				.set("ai", button => get.event().choiceScores[button.link])
 				.forResult();
 			if (result.links[0] === "double") {
 				trigger.effectCount++;
@@ -202,9 +208,13 @@ const skills = {
 				return;
 			}
 			const targetResult = await player
-				.chooseTarget("荡魔：为此牌增加一个目标", true, (card, player, target) => {
-					const evt = get.event().getTrigger();
-					return !evt.targets.includes(target) && lib.filter.targetEnabled2(evt.card, player, target) && lib.filter.targetInRange(evt.card, player, target);
+				.chooseTarget({
+					prompt: "荡魔：为此牌增加一个目标",
+					forced: true,
+					filterTarget: (card, player, target) => {
+						const evt = get.event().getTrigger();
+						return !evt.targets.includes(target) && lib.filter.targetEnabled2(evt.card, player, target) && lib.filter.targetInRange(evt.card, player, target);
+					},
 				})
 				.set("ai", target => get.effect(target, get.event().getTrigger().card, get.player(), get.player()))
 				.forResult();
