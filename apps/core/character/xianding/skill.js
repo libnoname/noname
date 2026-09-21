@@ -2893,9 +2893,7 @@ const skills = {
 	//谋马谡
 	dcsbxinzhan: {
 		audio: 2,
-		trigger: {
-			player: "useCardToPlayer",
-		},
+		trigger: { player: "useCardToPlayer" },
 		filter(event, player) {
 			if (!(event.card?.name === "sha" || get.type(event.card) === "trick") || event.targets.length !== 1 || event.target === player) {
 				return false;
@@ -2972,15 +2970,10 @@ const skills = {
 						if (target.isIn() && target.countCards("he")) {
 							await player.gainPlayerCard(target, 1, "he", true, "visible");
 						}
-						player.recover();
 					} else {
-						const card0 = get.cardPile(card => card.name === "sha");
-						if (card0) {
-							await player.gain(card0, "gain2");
-						}
 						const cardx = new lib.element.VCard({ name: "juedou", isCard: true });
-						if (target.isIn() && player.canUse(cardx, target)) {
-							await player.useCard(cardx, target);
+						if (target.isIn() && target.canUse(cardx, player)) {
+							await target.useCard(cardx, player);
 						}
 					}
 				},
@@ -2991,10 +2984,8 @@ const skills = {
 	},
 	dcsbchengce: {
 		audio: 2,
+		derivation: "dcsbxinzhan",
 		trigger: { global: "roundStart" },
-		filter(event, player) {
-			return game.countPlayer() > 1;
-		},
 		async content(event, trigger, player) {
 			const cards = get.cards(2, true);
 			if (!cards.length) {
@@ -3042,7 +3033,6 @@ const skills = {
 			if (game.countPlayer() < 2) {
 				return;
 			}
-			if (player.isIn()) {
 				const result1 = await player
 					.chooseTarget({
 						prompt: "令一名其他角色观看牌堆顶两张牌并获得其中一张",
@@ -3072,15 +3062,14 @@ const skills = {
 						},
 					})
 					.forResult();
-				const card0 = result2.links[0];
+				const card0 = result2?.links?.[0];
 				if (!card0) {
 					return;
 				}
 				await target.gain(card0, "draw");
 				if (get.tag(card0, "damage")) {
-					if (player.isIn()) {
 						const cardsx = [];
-						while (cardsx.length < 2) {
+						while (cardsx.length < 3) {
 							const card = get.cardPile(i => get.tag(i, "damage") && !cardsx.includes(i));
 							if (card) {
 								cardsx.push(card);
@@ -3089,18 +3078,16 @@ const skills = {
 							}
 						}
 						await player.gain(cardsx, "draw");
-					}
 					if (target.isIn()) {
-						const cardsx = target.getCards("h").randomGets(2);
+						const cardsx = target.getCards("h").filter(card => !get.is.damageCard(card)).randomGets(3);
 						if (cardsx?.length) {
 							target.addTempSkill(`${event.name}_sha`, { global: "roundEnd" });
 							target.addGaintag(cardsx, `${event.name}_sha`);
 						}
 					}
 				} else {
-					if (player.isIn()) {
 						const cardsx = [];
-						while (cardsx.length < 2) {
+						while (cardsx.length < 3) {
 							const card = get.cardPile(i => !get.tag(i, "damage") && !cardsx.includes(i));
 							if (card) {
 								cardsx.push(card);
@@ -3109,13 +3096,10 @@ const skills = {
 							}
 						}
 						await player.gain(cardsx, "draw");
-						player.addSkill(`${event.name}_mianshang`);
-					}
 					if (target.isIn()) {
 						target.addTempSkill("dcsbxinzhan", { global: "roundEnd" });
 					}
 				}
-			}
 		},
 		check: (event, player) => {
 			return game.hasPlayer(current => {
@@ -3137,26 +3121,9 @@ const skills = {
 						}
 					},
 				},
-				trigger: {
-					global: "roundEnd",
-				},
+				trigger: { global: "roundEnd" },
 				onremove(player, skill) {
 					player.removeGaintag("dcsbchengce_sha");
-				},
-				sub: true,
-				sourceSkill: "dcsbchengce",
-			},
-			mianshang: {
-				charlotte: true,
-				forced: true,
-				trigger: { player: "damageBegin4" },
-				async content(event, trigger, player) {
-					player.removeSkill(event.name);
-					trigger.cancel();
-				},
-				mark: true,
-				intro: {
-					content: "防止下次受到的伤害",
 				},
 				sub: true,
 				sourceSkill: "dcsbchengce",

@@ -1,4 +1,9 @@
 export default {
+	"#dcsbchengce1": "孟优此来，必怀虎狼之心。",
+	"#dcsbchengce2": "目有戾气，言藏金铁，恐为诈降。",
+	"#dcsbxinzhan1": "蛮王七纵终归汉，我思一计定乾坤。",
+	"#dcsbxinzhan2": "平夷在乎心，其心既羁，其行当效。",
+	"#dc_sb_masu:die": "谡万死难辞失地败军之咎！",
 	"#dcshiyu1": "观其行，知其谋，详其貌，断其骨。",
 	"#dcshiyu2": "钟会之辈，利口覆邦，其心难测。",
 	"#dcshuaijian1": "尔等食权而肥，忍乎？",
