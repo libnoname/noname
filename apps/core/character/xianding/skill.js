@@ -5,6 +5,180 @@ import { CacheContext } from "../../noname/library/cache/cacheContext.js";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//王元坤
+	dcshiyu: {
+		audio: 2,
+		trigger: { global: "phaseBegin" },
+		round: 1,
+		filter(event, player) {
+			return player != event.player;
+		},
+		async cost(event, trigger, player) {
+			const target = trigger.player;
+			const result = await player
+				.chooseButton({
+					createDialog: [`识预：猜测${get.translation(target)}本回合是否会使用这些类型的牌`, [["basic", "trick", "equip"].map(i => ["", "", `caoying_${i}`]), "vcard"]],
+					selectButton: [1, 3],
+					ai(button) {
+						const { player, target } = get.event();
+						if (get.attitude(player, target) > 0) return 0;
+						const link = button.link[2].slice(8);
+						if (link == "basic") return 1;
+						return 0.5 - Math.random();
+					},
+				})
+				.set("target", target)
+				.forResult();
+			if (result?.bool && result.links?.length) {
+				event.result = {
+					bool: true,
+					targets: [target],
+					cost_data: result.links.map(type => type[2].slice(8)),
+				};
+			}
+		},
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+				cost_data: types1,
+			} = event;
+			player
+				.when({ global: "phaseEnd" })
+				.filter(evt => evt.player == target)
+				.step(async (event, trigger, player) => {
+					const types2 = target
+						.getHistory("useCard")
+						.flatMap(evt => get.type2(evt.card))
+						.unique();
+					let num1 = types1.slice().removeArray(types2).length,
+						num2 = types1.length - num1;
+					if (num2 > 0) {
+						if (target.hasCards("he")) {
+							await player.gainPlayerCard({ forced: true, position: "he", target, selectButton: Math.min(target.countCards("he"), num2) });
+						}
+						player.addTempSkill("dcshiyu_nodamage", "roundStart");
+						player.markAuto("dcshiyu_nodamage", [target]);
+					}
+					if (num1 > 0) {
+						while (num1--) {
+							await target.damage({ num: 1, source: player });
+							await player.damage({ num: 1, source: target });
+						}
+					} else {
+						delete player.storage["dcshiyu_roundcount"];
+					}
+				});
+		},
+		subSkill: {
+			nodamage: {
+				charlotte: true,
+				intro: { content: "防止$本轮下次对你造成的伤害" },
+				onremove: true,
+				forced: true,
+				firstDo: true,
+				trigger: { player: "damageBegin4" },
+				filter(event, player) {
+					return event.source && player.getStorage("dcshiyu_nodamage").includes(event.source);
+				},
+				async content(event, trigger, player) {
+					trigger.cancel();
+					player.unmarkAuto(event.name, [trigger.source]);
+				},
+			},
+		},
+	},
+	dcshuaijian: {
+		audio: 2,
+		trigger: { player: ["phaseBegin", "phaseEnd"] },
+		filter(event, player) {
+			return ["h", "e"].some(pos => game.hasPlayer(current => current.hasCards(pos)));
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseButtonTarget({
+					createDialog: [
+						"率俭：你可以令一名手牌数最多或装备区牌数最多的一名角色弃牌",
+						[
+							[
+								["h", "手牌最多"],
+								["e", "装备区牌最多"],
+							],
+							"tdnodes",
+						],
+					],
+					filterButton(button) {
+						const pos = button.link;
+						return game.hasPlayer(current => current.hasCards(pos));
+					},
+					filterTarget(card, player, target) {
+						if (!ui.selected.buttons?.length) return false;
+						const pos = ui.selected.buttons[0].link;
+						return !game.hasPlayer(current => current.countCards(pos) > target.countCards(pos)) && target.hasCards(pos);
+					},
+					ai1(button) {
+						const player = get.player();
+						if (game.hasPlayer(current => current.hasCards("e"))) {
+							const targets = game.filterPlayer(target => !game.hasPlayer(current => current.countCards("e") > target.countCards("e")) && target.hasCards("e"));
+							if (targets.some(target => get.attitude(player, target) < 0) && game.hasPlayer(current => get.recoverEffect(current, player, player) > 0)) {
+								return button.link == "e";
+							}
+						}
+						if (game.hasPlayer(current => current.hasCards("h"))) {
+							const targets = game.filterPlayer(target => !game.hasPlayer(current => current.countCards("h") > target.countCards("h")) && target.hasCards("h"));
+							if (targets.some(target => get.attitude(player, target) < 0)) {
+								return button.link == "h";
+							}
+						}
+						return 0;
+					},
+					ai2(target) {
+						const player = get.player();
+						if (!ui.selected.buttons?.length) return 0;
+						const pos = ui.selected.buttons[0].link;
+						return -get.attitude(player, target) * target.countCards(pos);
+					},
+				})
+				.forResult();
+			if (event.result?.bool && event.result.links?.length) {
+				event.result.cost_data = event.result.links;
+			}
+		},
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+				cost_data: [pos],
+			} = event;
+			let num = Math.max(...game.filterPlayer(current => current != target).map(current => current.countCards(pos)));
+			num = Math.max(1, target.countCards(pos) - num);
+			let result = await target.chooseToDiscard({ forced: true, position: pos, selectCard: num }).forResult();
+			if (result?.cards?.length) {
+				num = result.cards.length;
+				if (pos == "e" && !game.hasPlayer(current => current.isDamaged())) {
+					return;
+				}
+				const prompt = `率俭：令一名角色${pos == "h" ? `摸${get.cnNumber(num)}张牌` : `回复${num}点体力`}`;
+				result = await player
+					.chooseTarget({
+						prompt,
+						forced: true,
+						filterTarget(card, player, target) {
+							return get.event().pos == "h" || target.isDamaged();
+						},
+						ai(target) {
+							const player = get.player();
+							return get.event().pos == "h" ? get.effect(target, { name: "draw" }, player, player) : get.recoverEffect(target, player, player);
+						},
+					})
+					.set("pos", pos)
+					.forResult();
+				if (result?.bool && result.targets?.length) {
+					const target = result.targets[0];
+					player.line(target);
+					await target[pos == "h" ? "draw" : "recover"](num);
+				}
+			}
+		},
+	},
 	//崔芷
 	dcranlv: {
 		audio: 2,
@@ -28826,7 +29000,7 @@ const skills = {
 					return 0;
 				})
 				.set("judge2", result => result.bool)
-				.set("callback", async (event) => {
+				.set("callback", async event => {
 					const evtx = event.getParent();
 					const evt = event.getParent(evtx.eventName).getTrigger();
 					if (!evt.source?.isIn() || !evt.card || typeof get.info("dczhantao").getNumber(evt.card) !== "number") {

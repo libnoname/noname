@@ -1,4 +1,9 @@
 export default {
+	"#dcshiyu1": "观其行，知其谋，详其貌，断其骨。",
+	"#dcshiyu2": "钟会之辈，利口覆邦，其心难测。",
+	"#dcshuaijian1": "尔等食权而肥，忍乎？",
+	"#dcshuaijian2": "佳丽竞饰容止，何如勤习蚕织？",
+	"#dc_wangyuanji:die": "以是属汝，勿忘我言。",
 	"#dclianyou1": "莫惊，莫啼，阿娘守着你~",
 	"#dclianyou2": "我儿入怀，方觉天下皆安。",
 	"#dccili1": "廊外风霜重，回堂再添衣。",

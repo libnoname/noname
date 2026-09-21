@@ -4,7 +4,7 @@ const characterSort = {
 	sp2_shengun: ["shie", "dc_xia_wangyue", "zhangyu", "suyue", "puyuan", "guanlu", "gexuan", "wufan", "re_zhangbao", "dukui", "zhaozhi", "zhujianping", "dc_zhouxuān", "zerong"],
 	sp2_bizhe: ["dc_chenzhi", "dc_huanjie", "dc_zhushuo", "dc_wuzhi", "dc_zhongyu", "dc_luotong", "dc_wangchang", "chengbing", "dc_yangbiao", "ruanji", "cuimao", "fugan"],
 	sp2_huangjia: ["liuxuan", "dc_xiahouhui", "caomao", "liubian", "dc_liuyu", "quanhuijie", "dingshangwan", "yuanji", "xielingyu", "sunyu", "ganfurenmifuren", "dc_ganfuren", "dc_mifuren", "dc_shixie", "caofang", "zhupeilan", "bianyue", "sunba", "xuxin", "dc_qinghegongzhu", "dc_huanhuaijin", "sunhe"],
-	sp2_zhangtai: ["guozhao", "fanyufeng", "ruanyu", "yangwan", "re_panshu"],
+	sp2_zhangtai: ["guozhao", "fanyufeng", "ruanyu", "yangwan", "re_panshu", "dc_wangyuanji"],
 	sp2_jinse: ["liufuren", "dongxu", "zhanghuai", "wenyuan", "liutan", "caojinyu", "re_sunyi", "re_fengfangnv", "caohua", "laiyinger", "zhangfen", "zhugeruoxue", "caoxian", "zhugemengxue", "lizhaoyi", "cuizhi", "dengwantang"],
 	sp2_yinyu: ["zhouyi", "luyi", "sunlingluan", "caoyi", "pangfengyi", "guotiying", "liupanxi"],
 	sp2_wangzhe: ["dc_daxiaoqiao", "dc_sp_machao", "sp_zhenji"],
