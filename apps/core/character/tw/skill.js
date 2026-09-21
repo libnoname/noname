@@ -434,6 +434,7 @@ const skills = {
 					? await target
 							.chooseCard({
 								prompt: `将一张牌作为“芳妍”牌置于${get.translation(player)}的武将牌上或失去1点体力`,
+								position: "he",
 								ai(card) {
 									const { player, target } = get.event();
 									if (get.attitude(target, player) > 0) {
