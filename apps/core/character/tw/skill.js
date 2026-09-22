@@ -9188,7 +9188,7 @@ const skills = {
 					position: "hes",
 					viewAs: { name: links[0][2] },
 					log: false,
-					precontent() {
+					async precontent(event, trigger, player) {
 						player.logSkill("twcairu");
 						if (!player.storage.twcairu_used) {
 							player.storage.twcairu_used = [];
