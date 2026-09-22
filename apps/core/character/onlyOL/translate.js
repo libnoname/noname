@@ -52,7 +52,7 @@ const translates = {
 	ol_guanping: "OL界关平",
 	ol_guanping_prefix: "OL界",
 	oljieyong: "竭勇",
-	oljieyong_info: "你可将手牌中最后一张红色牌当【杀】使用或打出",
+	oljieyong_info: "你可将手牌中最后一张红色牌当【杀】使用或打出。",
 	dm_zhangfei: "魔张飞",
 	dm_zhangfei_prefix: "魔",
 	olzhuohun: "灼魂",
