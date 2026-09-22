@@ -1,6 +1,7 @@
 import aboutGame from "./about-game";
 import gameControls from "./game-controls";
 import gameApi from "./game-api";
+
 import GamePoptip from "./GamePoptip.vue";
 
 export default {
