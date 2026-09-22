@@ -21,7 +21,6 @@ const characters = {
 		hp: 4,
 		skills: ["oldianbu", "oljuhun"],
 		names: "null|null-null|null",
-		isUnseen: true,
 	},
 	xiangxue_liushan: {
 		sex: "male",
@@ -543,7 +542,6 @@ const characters = {
 		group: "qun",
 		hp: 4,
 		skills: ["oldingxi", "olnengchen", "olhuojie"],
-		img: "image/character/jsrg_caocao.jpg",
 	},
 	jiangziya: {
 		sex: "male",

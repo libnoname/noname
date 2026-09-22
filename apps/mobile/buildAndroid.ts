@@ -36,8 +36,9 @@ if (args.has("--skip-web-build")) {
 
 run("pnpm", ["sync"], mobileRoot, "Capacitor sync");
 
-const gradleCommand = process.platform === "win32" ? "gradlew.bat" : "./gradlew";
-run(gradleCommand, [task, "--no-daemon", "--stacktrace"], androidRoot, `Android ${task}`);
+const gradleCommand = process.platform === "win32" ? "gradlew.bat" : "bash";
+const gradleArgs = process.platform === "win32" ? [task, "--no-daemon", "--stacktrace"] : ["gradlew", task, "--no-daemon", "--stacktrace"];
+run(gradleCommand, gradleArgs, androidRoot, `Android ${task}`);
 
 const output = resolve(
 	androidRoot,

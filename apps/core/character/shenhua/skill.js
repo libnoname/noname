@@ -5525,6 +5525,7 @@ const skills = {
 		audio: 2,
 		audioname2: { caoying: "lingren_xingshang" },
 		trigger: { global: "die" },
+		frequent: true,
 		preHidden: true,
 		filter(event) {
 			return event.player.countCards("he") > 0;

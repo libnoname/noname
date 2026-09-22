@@ -1,4 +1,5 @@
 export default {
+	dc_wangyuanji: "素业谦冲",
 	//cuizhi: "",
 	luwenyi: "卷中避世",
 	//dc_sb_chengpu: "",
@@ -12,7 +13,7 @@ export default {
 	//dc_sb_yangfeng: "",
 	//v_guanyinping: "",
 	dc_sb_wangping: "佯败溯战",
-	//dc_sb_masu: "",
+	dc_sb_masu: "服心屈兵",
 	dc_sb_zhugeliang: "威谋定疆",
 	dc_shen_guanyu: "鬼神再临",
 	dc_shen_zhangliao: "雁门之刑天",

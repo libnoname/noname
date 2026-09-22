@@ -89,7 +89,7 @@ const cards = {
 		type: "equip",
 		subtype: "equip2",
 		loseDelay: false,
-		onLose() {
+		async onLose({ player }) {
 			player.addTempSkill("rw_baiyin_skill_lose");
 		},
 		skills: ["rw_baiyin_skill"],

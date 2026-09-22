@@ -1,6 +1,18 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	pot_heqi: "势贺齐",
+	pot_heqi_prefix: "势",
+	potshanxi: "闪袭",
+	potshanxi_tag: "应机",
+	potshanxi_info: `出牌阶段每名角色限一次，你可将一张${get.poptip({
+		id: "potshanxi_yingji",
+		name: "应机牌",
+		info: "每回合结束时，所有角色手牌中的应机牌会被置入弃牌堆。",
+		type: "character",
+	})}当【决斗】使用。`,
+	potqizhou: "绮胄",
+	potqizhou_info: `当有牌进入你的场上后，你可将一名角色的一张手牌标记为${get.poptip("potshanxi_yingji")}，若此牌为【杀】，你下次发动此技能后摸两张${get.poptip("potshanxi_yingji")}。摸牌阶段，你额外摸两张${get.poptip("potshanxi_yingji")}。`,
 	pot_xiaoqiao: "势小乔",
 	pot_xiaoqiao_prefix: "势",
 	potheyun: "合韵",
@@ -99,7 +111,7 @@ const translates = {
 	pot_dongzhao: "势董昭",
 	pot_dongzhao_prefix: "势",
 	spmiaolve: "妙略",
-	spmiaolve_info: `游戏开始时，你获得两张${get.poptip("dz_mantianguohai")}；当你受到伤害后，你可以选择一项：1：摸两张牌；2：从牌堆或弃牌堆中获得一张智囊。`,
+	spmiaolve_info: `游戏开始时，你获得两张${get.poptip("dz_mantianguohai")}；当你受到伤害后，你可以选择一项：1：摸两张牌；2：从牌堆或弃牌堆中获得一张${get.poptip("rule_zhinang")}。`,
 	spyingjia: "迎驾",
 	spyingjia_info: "限定技，一名角色的回合结束后，若你本回合使用了大于等于两张同名锦囊牌，你可以弃置一张手牌，令一名角色执行一个额外的回合，此额外回合开始时，其摸两张牌。",
 	pot_lougui: "势娄圭",

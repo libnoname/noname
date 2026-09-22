@@ -42,7 +42,7 @@ const skills = {
 				const targets = result.targets.sortBySeat();
 				player.line(targets);
 				const link = result.links[0];
-				for(const target of targets) {
+				for (const target of targets) {
 					target.addSkill(event.name + "_buff");
 					if (!target.storage.mbdingyi_buff) {
 						target.storage.mbdingyi_buff = [0, 0, 0, 0];
@@ -141,7 +141,7 @@ const skills = {
 			const list = get.zhinangs();
 			const result = await player
 				.chooseButtonTarget({
-					createDialog: ["令一名有“定仪”效果的角色获得一张“智囊”牌然后移去其“定仪”效果", [list, "vcard"]],
+					createDialog: ["令一名有“定仪”效果的角色从牌堆中获得一张“智囊”牌然后移去其“定仪”效果", [list, "vcard"]],
 					filterTarget(card, player, target) {
 						return target.storage?.mbdingyi_buff?.some(i => i > 0);
 					},
@@ -167,7 +167,7 @@ const skills = {
 				targets: [target],
 				cost_data: links,
 			} = event;
-			const card = get.cardPile(card => card.name == links[0][2]);
+			const card = get.cardPile2(card => card.name == links[0][2]);
 			if (card) {
 				await target.gain({ cards: [card], animate: "gain2" });
 			}
@@ -383,30 +383,44 @@ const skills = {
 					}
 				},
 			},
+			mark2: { charlotte: true, onremove: true },
 			mark: {
 				marktext: "定",
 				intro: {
 					name: "平定",
 					content(storage, player) {
-						const num = player.countHistory("useCard");
+						const num = player.countMark("yingba_mark2");
 						return `<li>当前拥有${storage}个平定标记且每回合使用的前${storage}张牌不能指定拥有〖英霸〗的角色<li>本回合已使用${num}张牌`;
 					},
 					onunmark: true,
 				},
-				charlotte: true,
-				countUseCard(player) {
-					return player.countHistory("useCard");
+				init(player, skill) {
+					if (player.hasHistory("useCard")) {
+						player.addTempSkill("yingba_mark2");
+						player.addMark("yingba_mark2", player.countHistory("useCard"), false);
+					}
 				},
+				onremove: true,
+				charlotte: true,
 				mod: {
 					playerEnabled(card, player, target) {
 						if (!target.hasSkill("yingba", null, false, false) || !player.hasMark("yingba_mark")) {
 							return;
 						}
-						const num = get.info("yingba_mark").countUseCard(player);
+						const num = player.countMark("yingba_mark2");
 						if (num < player.countMark("yingba_mark")) {
 							return false;
 						}
 					},
+				},
+				silent: true,
+				popup: false,
+				firstDo: true,
+				trigger: { player: "useCard1" },
+				async content(event, trigger, player) {
+					player.addTempSkill("yingba_mark2");
+					player.addMark("yingba_mark2", 1, false);
+					player.markSkill(event.name);
 				},
 			},
 		},
@@ -2665,7 +2679,7 @@ const skills = {
 				.forResult();
 
 			if (!result?.bool || !result.links?.length) {
-				player.logSkill("tingwei", null, null, null, [get.rand(3, 4)]);
+				player.logSkill("tingwei", [target], null, null, [get.rand(3, 4)]);
 				await target.link(true);
 				return;
 			}
@@ -2775,6 +2789,7 @@ const skills = {
 			await target.damage({ num: target.maxHp });
 			player.setStorage("yuli", [], true);
 		},
+		ai: { combo: "tingwei" },
 	},
 	//手杀神姜维
 	mbtiantao: {
@@ -3019,8 +3034,9 @@ const skills = {
 			}).length;
 			if (num > 0) {
 				await player.recover(num);
+				if (!game.hasPlayer(current => current != player)) return;
 				const result = await player
-					.chooseTarget(`神霈：选择一名角色对其造成${num}点雷电伤害`, true)
+					.chooseTarget(`神霈：选择一名其他角色对其造成${num}点雷电伤害`, true, lib.filter.notMe)
 					.set("ai", target => {
 						const { player } = get.event();
 						return get.damageEffect(target, player, player, "thunder");
@@ -6256,7 +6272,7 @@ const skills = {
 					return event.name == "damage" ? event.player : event.target;
 				},
 				filter(event, player, name) {
-					if (!event.card?.name === "sha" || !event.card.storage?.dbchongjian) {
+					if (!event.card || event.card.name !== "sha" || !event.card.storage?.dbchongjian) {
 						return false;
 					}
 					return event.player.hasGainableCards(player, "e") || name == "useCardToPlayer";
@@ -6724,11 +6740,11 @@ const skills = {
 						})
 						.forResult();
 					if (result?.bool && result.links?.length) {
-					event.result = {
-						bool: result.bool,
-						cards: result.links,
-					};
-				}
+						event.result = {
+							bool: result.bool,
+							cards: result.links,
+						};
+					}
 				},
 				logTarget: "player",
 				async content(event, trigger, player) {
@@ -7064,7 +7080,7 @@ const skills = {
 					},
 				})
 				.forResult();
-			if (!result?.bool | !result.targets?.length) {
+			if (!result?.bool || !result.targets?.length) {
 				player.removeGaintag("mingfa");
 				return;
 			}
@@ -7303,7 +7319,7 @@ const skills = {
 						if (
 							!game.hasPlayer(current => {
 								const evt = event.getl?.(current);
-								return evt?.cards?.filterInD("od").some(card => (player.storage.yizhu ?? []).includes(card));
+								return evt?.cards?.filterInD("od")?.length;
 							})
 						) {
 							return false;
@@ -7314,7 +7330,7 @@ const skills = {
 							return false;
 						}
 					}
-					return true;
+					return event.cards.filterInD("od").some(card => (player.storage.yizhu ?? []).includes(card));
 				},
 				async content(event, trigger, player) {
 					const cards = trigger.cards.filterInD("od").slice();

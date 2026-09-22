@@ -6264,7 +6264,7 @@ const skills = {
 			}
 			return range < 3 && event.num > 1;
 		},
-		async content(event, trigger) {
+		async content(event, trigger, player) {
 			if (event.triggername === "damageBegin1") {
 				trigger.num++;
 			} else {
