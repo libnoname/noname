@@ -149,7 +149,7 @@ const skills = {
 				cost_data: [pos],
 			} = event;
 			let num = Math.max(...game.filterPlayer(current => current != target).map(current => current.countCards(pos)));
-			num = Math.max(1, target.countCards(pos) - num + 1);
+			num = Math.max(1, target.countCards(pos) - num);
 			let result = await target.chooseToDiscard({ forced: true, position: pos, selectCard: [num, Infinity] }).forResult();
 			if (result?.cards?.length) {
 				num = result.cards.length;
