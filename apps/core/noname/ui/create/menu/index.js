@@ -1,4 +1,7 @@
 import { ui, game, get, lib, _status } from "noname";
+import { createApp, markRaw } from "vue";
+
+import ConfigItem from "./ConfigItem.vue";
 
 export function openMenu(node, e, onclose) {
 	popupContainer.innerHTML = "";
@@ -191,174 +194,27 @@ export function createMenu(connectMenu, tabs, config) {
 	};
 }
 export function createConfig(config, position) {
-	var node = ui.create.div(".config", config.name);
-	node._link = { config: config };
-	if (!config.clear) {
-		if (config.name != "开启") {
-			if (config.name == "屏蔽弱将") {
-				config.intro = "强度过低的武将（孙策除外）不会出现在选将框，也不会被AI选择";
-			} else if (config.name == "屏蔽强将") {
-				config.intro = "强度过高的武将不会出现在选将框，也不会被AI选择";
-			} else if (!config.intro) {
-				config.intro = "设置" + config.name;
-			}
-			lib.setIntro(node, function (uiintro) {
-				if (lib.config.touchscreen) {
-					_status.dragged = true;
-				}
-				uiintro.style.width = "170px";
-				var str = config.intro;
-				if (typeof str == "function") {
-					str = str();
-				}
-				uiintro._place_text = uiintro.add('<div class="text" style="display:inline">' + str + "</div>");
-			});
-		}
-	} else {
-		node.innerHTML = "<span>" + config.name + "</span>";
-		if (!config.nopointer) {
-			node.classList.add("pointerspan");
+	if (typeof config.item == "function") {
+		config.item = config.item();
+	}
+	if (!config.clear && config.name != "开启") {
+		if (config.name === "屏蔽弱将") {
+			config.intro = "强度过低的武将（孙策除外）不会出现在选将框，也不会被AI选择";
+		} else if (config.name == "屏蔽强将") {
+			config.intro = "强度过高的武将不会出现在选将框，也不会被AI选择";
+		} else if (!config.intro) {
+			config.intro = "设置" + config.name;
 		}
 	}
-	if (config.item) {
-		if (typeof config.item == "function") {
-			config.item = config.item();
-		}
-		if (Array.isArray(config.init)) {
-			void 0;
-		} else {
-			node.classList.add("switcher");
-			node.listen(clickSwitcher);
-			node._link.choosing = ui.create.div("", config.item[config.init] || config.init, node);
-			node._link.menu = ui.create.div(".menu");
-			if (config.visualMenu) {
-				node._link.menu.classList.add("visual");
-				var updateVisual = function () {
-					config.visualMenu(this, this._link, config.item[this._link] || this._link, config);
-				};
-				var createNode = function (i, before) {
-					var visualMenu = ui.create.div();
-					if (config.visualBar) {
-						if (before) {
-							node._link.menu.insertBefore(visualMenu, before);
-						} else {
-							node._link.menu.insertBefore(visualMenu, node._link.menu.lastChild);
-						}
-					} else {
-						node._link.menu.appendChild(visualMenu);
-					}
-					ui.create.div(".name", get.verticalStr(config.item[i] || i), visualMenu);
-					visualMenu._link = i;
-					if (config.visualMenu(visualMenu, i, config.item[i] || i, config) !== false) {
-						visualMenu.listen(clickMenuItem);
-					}
-					visualMenu.update = updateVisual;
-				};
-				if (config.visualBar) {
-					var visualBar = ui.create.div(node._link.menu, function () {
-						this.parentNode.parentNode.noclose = true;
-					});
-					node._link.menu.classList.add("withbar");
-					config.visualBar(visualBar, config.item, createNode, node);
-					visualBar.update = function () {
-						config.visualBar(visualBar, config.item, createNode, node);
-					};
-				}
-				for (var i in config.item) {
-					createNode(i);
-				}
-				lib.setScroll(node._link.menu);
-				node._link.menu.updateBr = function () {
-					var br = Array.from(this.querySelectorAll(".menu.visual>br"));
-					while (br.length) {
-						br.shift().remove();
-					}
-					var split = [];
-					for (var i = 1; i < this.childElementCount; i++) {
-						if (i % 3 == 0) {
-							split.push(this.childNodes[i]);
-						}
-					}
-					for (var i = 0; i < split.length; i++) {
-						this.insertBefore(ui.create.node("br"), split[i]);
-					}
-				};
-				node._link.menu.updateBr();
-			} else {
-				for (var i in config.item) {
-					var textMenu = ui.create.div("", config.item[i] || i, node._link.menu, clickMenuItem);
-					textMenu._link = i;
-					if (config.textMenu) {
-						config.textMenu(textMenu, i, config.item[i] || i, config);
-					}
-					lib.setScroll(node._link.menu);
-				}
-			}
-			node._link.menu._link = node;
-			node._link.current = config.init;
-		}
-	} else if (config.range) {
-		void 0;
-	} else if (config.clear) {
-		if (node.innerHTML.length >= 15) {
-			node.style.height = "auto";
-		}
-		node.listen(clickToggle);
-	} else if (config.input) {
-		node.classList.add("switcher");
-		var input = ui.create.div(node);
-		if (!config.fixed) {
-			input.contentEditable = true;
-			input.style.webkitUserSelect = "text";
-		}
-		input.style.minWidth = "10px";
-		input.style.maxWidth = "60%";
-		input.style.overflow = "hidden";
-		input.style.whiteSpace = "nowrap";
-		input.onkeydown = function (e) {
-			if (e.key == "Enter") {
-				e.preventDefault();
-				e.stopPropagation();
-				input.blur();
-			}
-		};
-		if (config.name == "联机昵称") {
-			input.innerHTML = config.init || "无名玩家";
-			input.onblur = function () {
-				input.innerHTML = input.innerHTML.replace(/<br>/g, "");
-				if (!input.innerHTML || get.is.banWords(input.innerHTML)) {
-					input.innerHTML = "无名玩家";
-				}
-				input.innerHTML = input.innerHTML.slice(0, 12);
-				game.saveConfig("connect_nickname", input.innerHTML);
-				game.saveConfig("connect_nickname", input.innerHTML, "connect");
-			};
-		} else if (config.name == "联机头像") {
-			// 显示当前配置的武将名称（直接使用翻译，不额外添加前缀）
-			const currentId = lib.config.connect_avatar || config.init || "caocao";
-			input.innerHTML = lib.translate[currentId] || "曹操";
-			input.onblur = config.onblur;
-		} else if (config.name == "联机大厅") {
-			input.innerHTML = config.init || lib.hallURL;
-			input.onblur = function () {
-				if (!input.innerHTML) {
-					input.innerHTML = lib.hallURL;
-				}
-				input.innerHTML = input.innerHTML.replace(/<br>/g, "");
-				game.saveConfig("hall_ip", input.innerHTML, "connect");
-			};
-		} else {
-			input.innerHTML = config.init;
-			input.onblur = config.onblur;
-		}
-	} else {
-		node.classList.add("toggle");
-		node.listen(clickToggle);
-		ui.create.div(ui.create.div(node));
-		if (config.init == true) {
-			node.classList.add("on");
-		}
-	}
+	const node = ui.create.div(".config");
+	node._link = { config };
+	createApp(ConfigItem, {
+		config,
+		node: markRaw(node),
+		clickToggle,
+		clickSwitcher,
+		clickMenuItem,
+	}).mount(node);
 	if (position) {
 		position.appendChild(node);
 	}
