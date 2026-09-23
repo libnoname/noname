@@ -412,7 +412,7 @@ const skills = {
 		},
 	},
 	//族荀灌
-	clanzhuiji: {
+	clandunji: {
 		audio: 2,
 		trigger: { player: "useCardAfter" },
 		filter(event, player) {
@@ -457,12 +457,12 @@ const skills = {
 		audio: 2,
 		trigger: { global: "phaseJieshuBegin" },
 		filter(event, player) {
-			const target = player.storage.clanzhuiji;
+			const target = player.storage.clandunji;
 			return get.itemtype(target) === "player" && (game.hasGlobalHistory("changeHp", evt => evt.player === target && evt.changedHp < 0) || target.hasHistory("lose", evt => evt.hs?.length > 0));
 		},
 		forced: true,
 		async content(event, trigger, player) {
-			const target = player.storage.clanzhuiji;
+			const target = player.storage.clandunji;
 			if (game.hasGlobalHistory("changeHp", evt => evt.player === target && evt.changedHp < 0)) {
 				const cards = player.getCards("h", card => get.color(card, player) === "black");
 				if (cards.length > 0 && cards.every(card => game.checkMod(card, player, "unchanged", "cardEnabled2", player))) {
