@@ -68,7 +68,7 @@ const props = defineProps<Props>();
 const config = props.config;
 const showClearLabel = Boolean(config.clear);
 const clearLabel = showClearLabel ? String(config.name) : "";
-const nameHtml = !showClearLabel && typeof config.name == "string" && config.name ? config.name : "";
+const nameHtml = !showClearLabel && typeof config.name === "string" && config.name ? config.name : "";
 const mode = resolveMode(config);
 const node = props.node;
 const link = node._link as ConfigLink;
@@ -83,20 +83,20 @@ function mount() {
 	if (showClearLabel && !config.nopointer) {
 		node.classList.add("pointerspan");
 	}
-	if (!showClearLabel && config.name != "开启") {
+	if (!showClearLabel && config.name !== "开启") {
 		lib.setIntro(node, (uiintro: Dialog & { _place_text?: ReturnType<Dialog["add"]> }) => {
 			if (lib.config.touchscreen) {
 				_status.dragged = true;
 			}
 			uiintro.style.width = "170px";
 			let str = config.intro;
-			if (typeof str == "function") {
+			if (typeof str === "function") {
 				str = str();
 			}
-			uiintro._place_text = uiintro.add('<div class="text" style="display:inline">' + str + "</div>");
+			uiintro._place_text = uiintro.add(`<div class="text" style="display:inline">${str}</div>`);
 		});
 	}
-	if (mode == "switcher") {
+	if (mode === "switcher") {
 		link.choosing = choosing.value!;
 		link.setChoice = setChoice;
 		link.clickSwitcher = openSwitcher;
@@ -105,20 +105,20 @@ function mount() {
 		node.classList.add("switcher");
 		node.listen(openSwitcher);
 		const choice = config.item![String(config.init)] || config.init;
-		setChoice(typeof choice == "string" ? choice : "");
+		setChoice(typeof choice === "string" ? choice : "");
 		buildMenu();
-	} else if (mode == "clear") {
+	} else if (mode === "clear") {
 		if ((`<span>${clearLabel}</span>`).length >= 15) {
 			node.style.height = "auto";
 		}
 		node.listen(props.clickToggle);
-	} else if (mode == "input") {
+	} else if (mode === "input") {
 		node.classList.add("switcher");
 		bindInput(input.value!);
-	} else if (mode == "toggle") {
+	} else if (mode === "toggle") {
 		node.classList.add("toggle");
 		node.listen(props.clickToggle);
-		if (config.init == true) {
+		if (config.init) {
 			node.classList.add("on");
 		}
 	}
@@ -256,7 +256,7 @@ function buildMenu() {
 			}
 			const split: ChildNode[] = [];
 			for (let i = 1; i < this.childElementCount; i++) {
-				if (i % 3 == 0) {
+				if (i % 3 === 0) {
 					split.push(this.childNodes[i]!);
 				}
 			}
@@ -291,13 +291,13 @@ function bindInput(inputNode: HTMLDivElement) {
 	inputNode.style.overflow = "hidden";
 	inputNode.style.whiteSpace = "nowrap";
 	inputNode.onkeydown = function (e) {
-		if (e.key == "Enter") {
+		if (e.key === "Enter") {
 			e.preventDefault();
 			e.stopPropagation();
 			inputNode.blur();
 		}
 	};
-	if (config.name == "联机昵称") {
+	if (config.name === "联机昵称") {
 		inputNode.innerHTML = String(config.init || "无名玩家");
 		inputNode.onblur = function () {
 			inputNode.innerHTML = inputNode.innerHTML.replace(/<br>/g, "");
@@ -308,11 +308,11 @@ function bindInput(inputNode: HTMLDivElement) {
 			game.saveConfig("connect_nickname", inputNode.innerHTML);
 			game.saveConfig("connect_nickname", inputNode.innerHTML, "connect");
 		};
-	} else if (config.name == "联机头像") {
+	} else if (config.name === "联机头像") {
 		const currentId = String(lib.config.connect_avatar || config.init || "caocao");
 		inputNode.innerHTML = lib.translate[currentId] || "曹操";
 		inputNode.onblur = config.onblur ?? null;
-	} else if (config.name == "联机大厅") {
+	} else if (config.name === "联机大厅") {
 		inputNode.innerHTML = String(config.init || lib.hallURL);
 		inputNode.onblur = function () {
 			if (!inputNode.innerHTML) {
