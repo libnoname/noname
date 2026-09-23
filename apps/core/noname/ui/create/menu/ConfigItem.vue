@@ -92,7 +92,8 @@ onMounted(() => {
 		const choosingNode = choosing.value!;
 		node.classList.add("switcher");
 		node.listen(props.clickSwitcher);
-		choosingNode.innerHTML = String(raw.item![String(raw.init)] || raw.init);
+		const choice = raw.item![String(raw.init)] || raw.init;
+		choosingNode.innerHTML = typeof choice == "string" ? choice : "";
 		node._link.choosing = choosingNode;
 		buildMenu(node, raw);
 	} else if (mode == "clear") {
