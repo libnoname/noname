@@ -55,50 +55,7 @@ export function clickToggle() {
 	}
 }
 export function clickSwitcher() {
-	if (this.classList.contains("disabled")) {
-		return;
-	}
-	var node = this;
-	this.classList.add("on");
-	if (this._link.menu) {
-		var pos1 = this.lastChild.getBoundingClientRect();
-		var pos2 = ui.window.getBoundingClientRect();
-		if (this._link.menu.classList.contains("visual")) {
-			openMenu(
-				this._link.menu,
-				{
-					clientX: pos1.left + pos1.width + 5 - pos2.left,
-					clientY: pos1.top - pos2.top,
-				},
-				function () {
-					node.classList.remove("on");
-				}
-			);
-		} else if (this._link.menu.childElementCount > 10) {
-			openMenu(
-				this._link.menu,
-				{
-					clientX: pos1.left + pos1.width + 5 - pos2.left,
-					clientY: Math.min((ui.window.offsetHeight - 400) / 2, pos1.top - pos2.top),
-				},
-				function () {
-					node.classList.remove("on");
-				}
-			);
-			lib.setScroll(this._link.menu);
-		} else {
-			openMenu(
-				this._link.menu,
-				{
-					clientX: pos1.left + pos1.width + 5 - pos2.left,
-					clientY: pos1.top - pos2.top,
-				},
-				function () {
-					node.classList.remove("on");
-				}
-			);
-		}
-	}
+	this._link.clickSwitcher();
 }
 /**
  * @this { HTMLDivElement } menuContainer
@@ -126,18 +83,7 @@ export function clickContainer(connectMenu) {
 }
 export function clickMenuItem() {
 	var node = this.parentNode._link;
-	var config = node._link.config;
-	node._link.current = this.link;
-	var tmpName = node.lastChild.innerHTML;
-	node.lastChild.innerHTML = config.item[this._link];
-	if (config.onclick) {
-		if (config.onclick.call(node, this._link, this) === false) {
-			node.lastChild.innerHTML = tmpName;
-		}
-	}
-	if (config.update) {
-		config.update();
-	}
+	node._link.clickMenuItem(this);
 }
 export function createMenu(connectMenu, tabs, config) {
 	var createPage = function (position) {
@@ -208,13 +154,14 @@ export function createConfig(config, position) {
 	}
 	const node = ui.create.div(".config");
 	node._link = { config };
-	createApp(ConfigItem, {
+	const app = createApp(ConfigItem, {
 		config,
 		node: markRaw(node),
 		clickToggle,
-		clickSwitcher,
-		clickMenuItem,
-	}).mount(node);
+		openMenu,
+	});
+	app.mount(node);
+	node._link.unmount = () => app.unmount();
 	if (position) {
 		position.appendChild(node);
 	}

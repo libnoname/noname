@@ -1,6 +1,7 @@
 <template>
 	<!-- 配置名可以是游戏内 HTML，不是用户输入 -->
 	<span v-if="showClearLabel" v-once v-html="clearLabel"></span>
+	<span v-else-if="nameHtml" v-once v-html="nameHtml"></span>
 	<div v-if="mode === 'toggle'" ref="knob" v-once><div></div></div>
 	<div v-else-if="mode === 'switcher'" ref="choosing" v-once></div>
 	<div v-else-if="mode === 'input'" ref="input" v-once></div>
@@ -32,6 +33,8 @@ interface MenuConfig {
 	textMenu?: (node: HTMLDivElement, link: string, name: string, config: MenuConfig) => void;
 	fixed?: boolean;
 	onblur?: (this: GlobalEventHandlers, event: FocusEvent) => void;
+	onclick?: (this: HTMLDivElement, ...args: unknown[]) => void | boolean;
+	update?: (...args: unknown[]) => void;
 }
 
 interface VisualMenuNode extends HTMLDivElement {
@@ -46,8 +49,18 @@ interface Props {
 	config: MenuConfig;
 	node: HTMLDivElement;
 	clickToggle: (this: HTMLDivElement, event: Event) => void;
-	clickSwitcher: (this: HTMLDivElement, event: Event) => void;
-	clickMenuItem: (this: HTMLDivElement, event: Event) => void;
+	openMenu: (menu: HTMLDivElement, event: { clientX: number; clientY: number }, onclose: () => void) => void;
+}
+
+interface ConfigLink {
+	config: MenuConfig;
+	choosing?: HTMLDivElement;
+	menu?: HTMLDivElement;
+	current?: MenuConfig["init"];
+	setChoice?: (text: string) => void;
+	clickSwitcher?: () => void;
+	clickMenuItem?: (menuItem: HTMLDivElement) => void;
+	addTextMenuItem?: (link: string, label: string, index?: number) => HTMLDivElement;
 }
 
 const props = defineProps<Props>();
@@ -55,33 +68,28 @@ const props = defineProps<Props>();
 const config = props.config;
 const showClearLabel = Boolean(config.clear);
 const clearLabel = showClearLabel ? String(config.name) : "";
+const nameHtml = !showClearLabel && typeof config.name == "string" && config.name ? config.name : "";
 const mode = resolveMode(config);
 const node = props.node;
-const knob = useTemplateRef<HTMLDivElement>("knob");
+const link = node._link as ConfigLink;
 const choosing = useTemplateRef<HTMLDivElement>("choosing");
 const input = useTemplateRef<HTMLDivElement>("input");
 
 onMounted(() => {
-	const raw = node._link.config as MenuConfig;
-	if (showClearLabel && !raw.nopointer) {
+	mount();
+});
+
+function mount() {
+	if (showClearLabel && !config.nopointer) {
 		node.classList.add("pointerspan");
 	}
-	stripComments(node);
-	if (!showClearLabel && typeof raw.name == "string" && raw.name) {
-		node.insertAdjacentHTML("afterbegin", raw.name);
-	}
-	const tail = knob.value || choosing.value || input.value;
-	if (tail) {
-		node.appendChild(tail);
-	}
-	stripComments(node);
-	if (!showClearLabel && raw.name != "开启") {
-		lib.setIntro(node, function (uiintro: Dialog & { _place_text?: ReturnType<Dialog["add"]> }) {
+	if (!showClearLabel && config.name != "开启") {
+		lib.setIntro(node, (uiintro: Dialog & { _place_text?: ReturnType<Dialog["add"]> }) => {
 			if (lib.config.touchscreen) {
 				_status.dragged = true;
 			}
 			uiintro.style.width = "170px";
-			let str = raw.intro;
+			let str = config.intro;
 			if (typeof str == "function") {
 				str = str();
 			}
@@ -89,58 +97,116 @@ onMounted(() => {
 		});
 	}
 	if (mode == "switcher") {
-		const choosingNode = choosing.value!;
+		link.choosing = choosing.value!;
+		link.setChoice = setChoice;
+		link.clickSwitcher = openSwitcher;
+		link.clickMenuItem = selectMenuItem;
+		link.addTextMenuItem = addTextMenuItem;
 		node.classList.add("switcher");
-		node.listen(props.clickSwitcher);
-		const choice = raw.item![String(raw.init)] || raw.init;
-		choosingNode.innerHTML = typeof choice == "string" ? choice : "";
-		node._link.choosing = choosingNode;
-		buildMenu(node, raw);
+		node.listen(openSwitcher);
+		const choice = config.item![String(config.init)] || config.init;
+		setChoice(typeof choice == "string" ? choice : "");
+		buildMenu();
 	} else if (mode == "clear") {
-		if (node.innerHTML.length >= 15) {
+		if ((`<span>${clearLabel}</span>`).length >= 15) {
 			node.style.height = "auto";
 		}
 		node.listen(props.clickToggle);
 	} else if (mode == "input") {
 		node.classList.add("switcher");
-		bindInput(input.value!, raw);
+		bindInput(input.value!);
 	} else if (mode == "toggle") {
 		node.classList.add("toggle");
 		node.listen(props.clickToggle);
-		if (raw.init == true) {
+		if (config.init == true) {
 			node.classList.add("on");
 		}
 	}
-});
-
-function resolveMode(config: MenuConfig): ConfigMode {
-	if (config.item && !Array.isArray(config.init)) {
-		return "switcher";
-	}
-	if (config.item || config.range) {
-		return "plain";
-	}
-	if (config.clear) {
-		return "clear";
-	}
-	if (config.input) {
-		return "input";
-	}
-	return "toggle";
 }
 
-function stripComments(node: HTMLDivElement) {
-	for (const child of Array.from(node.childNodes)) {
-		if (child.nodeType == Node.COMMENT_NODE) {
-			child.remove();
+function setChoice(text: string) {
+	link.choosing!.innerHTML = text;
+}
+
+function openSwitcher() {
+	if (node.classList.contains("disabled")) {
+		return;
+	}
+	node.classList.add("on");
+	const menu = link.menu;
+	if (!menu) {
+		return;
+	}
+	const pos1 = link.choosing!.getBoundingClientRect();
+	const pos2 = ui.window.getBoundingClientRect();
+	const close = () => {
+		node.classList.remove("on");
+	};
+	if (menu.classList.contains("visual")) {
+		props.openMenu(
+			menu,
+			{
+				clientX: pos1.left + pos1.width + 5 - pos2.left,
+				clientY: pos1.top - pos2.top,
+			},
+			close
+		);
+	} else if (menu.childElementCount > 10) {
+		props.openMenu(
+			menu,
+			{
+				clientX: pos1.left + pos1.width + 5 - pos2.left,
+				clientY: Math.min((ui.window.offsetHeight - 400) / 2, pos1.top - pos2.top),
+			},
+			close
+		);
+		lib.setScroll(menu);
+	} else {
+		props.openMenu(
+			menu,
+			{
+				clientX: pos1.left + pos1.width + 5 - pos2.left,
+				clientY: pos1.top - pos2.top,
+			},
+			close
+		);
+	}
+}
+
+function selectMenuItem(menuItem: HTMLDivElement) {
+	const raw = link.config;
+	link.current = menuItem.link;
+	const previous = link.choosing!.innerHTML;
+	setChoice(raw.item![menuItem._link]);
+	if (raw.onclick) {
+		if (raw.onclick.call(node, menuItem._link, menuItem) === false) {
+			setChoice(previous);
 		}
 	}
+	if (raw.update) {
+		raw.update();
+	}
 }
 
-function buildMenu(node: HTMLDivElement, config: MenuConfig) {
+function addTextMenuItem(itemLink: string, label: string, index?: number) {
+	const menu = link.menu!;
+	const textMenu = ui.create.div(
+		"",
+		label,
+		menu,
+		function (this: HTMLDivElement) {
+			selectMenuItem(this);
+		},
+		index
+	);
+	textMenu._link = itemLink;
+	return textMenu;
+}
+
+function buildMenu() {
 	const item = config.item!;
 	const menu = ui.create.div(".menu");
-	node._link.menu = menu;
+	link.menu = menu;
 	if (config.visualMenu) {
 		const visualMenu = config.visualMenu;
 		menu.classList.add("visual");
@@ -161,7 +227,9 @@ function buildMenu(node: HTMLDivElement, config: MenuConfig) {
 			ui.create.div(".name", get.verticalStr(item[i] || i), visualMenuNode);
 			visualMenuNode._link = i;
 			if (visualMenu(visualMenuNode, i, item[i] || i, config) !== false) {
-				visualMenuNode.listen(props.clickMenuItem);
+				visualMenuNode.listen(function (this: HTMLDivElement) {
+					selectMenuItem(this);
+				});
 			}
 			visualMenuNode.update = updateVisual;
 		};
@@ -199,7 +267,9 @@ function buildMenu(node: HTMLDivElement, config: MenuConfig) {
 		menuNode.updateBr();
 	} else {
 		for (const i in item) {
-			const textMenu = ui.create.div("", item[i] || i, menu, props.clickMenuItem);
+			const textMenu = ui.create.div("", item[i] || i, menu, function (this: HTMLDivElement) {
+				selectMenuItem(this);
+			});
 			textMenu._link = i;
 			if (config.textMenu) {
 				config.textMenu(textMenu, i, item[i] || i, config);
@@ -208,52 +278,69 @@ function buildMenu(node: HTMLDivElement, config: MenuConfig) {
 		}
 	}
 	menu._link = node;
-	node._link.current = config.init;
+	link.current = config.init;
 }
 
-function bindInput(input: HTMLDivElement, config: MenuConfig) {
+function bindInput(inputNode: HTMLDivElement) {
 	if (!config.fixed) {
-		input.contentEditable = "true";
-		input.style.webkitUserSelect = "text";
+		inputNode.contentEditable = "true";
+		inputNode.style.webkitUserSelect = "text";
 	}
-	input.style.minWidth = "10px";
-	input.style.maxWidth = "60%";
-	input.style.overflow = "hidden";
-	input.style.whiteSpace = "nowrap";
-	input.onkeydown = function (e) {
+	inputNode.style.minWidth = "10px";
+	inputNode.style.maxWidth = "60%";
+	inputNode.style.overflow = "hidden";
+	inputNode.style.whiteSpace = "nowrap";
+	inputNode.onkeydown = function (e) {
 		if (e.key == "Enter") {
 			e.preventDefault();
 			e.stopPropagation();
-			input.blur();
+			inputNode.blur();
 		}
 	};
 	if (config.name == "联机昵称") {
-		input.innerHTML = String(config.init || "无名玩家");
-		input.onblur = function () {
-			input.innerHTML = input.innerHTML.replace(/<br>/g, "");
-			if (!input.innerHTML || get.is.banWords(input.innerHTML)) {
-				input.innerHTML = "无名玩家";
+		inputNode.innerHTML = String(config.init || "无名玩家");
+		inputNode.onblur = function () {
+			inputNode.innerHTML = inputNode.innerHTML.replace(/<br>/g, "");
+			if (!inputNode.innerHTML || get.is.banWords(inputNode.innerHTML)) {
+				inputNode.innerHTML = "无名玩家";
 			}
-			input.innerHTML = input.innerHTML.slice(0, 12);
-			game.saveConfig("connect_nickname", input.innerHTML);
-			game.saveConfig("connect_nickname", input.innerHTML, "connect");
+			inputNode.innerHTML = inputNode.innerHTML.slice(0, 12);
+			game.saveConfig("connect_nickname", inputNode.innerHTML);
+			game.saveConfig("connect_nickname", inputNode.innerHTML, "connect");
 		};
 	} else if (config.name == "联机头像") {
 		const currentId = String(lib.config.connect_avatar || config.init || "caocao");
-		input.innerHTML = lib.translate[currentId] || "曹操";
-		input.onblur = config.onblur ?? null;
+		inputNode.innerHTML = lib.translate[currentId] || "曹操";
+		inputNode.onblur = config.onblur ?? null;
 	} else if (config.name == "联机大厅") {
-		input.innerHTML = String(config.init || lib.hallURL);
-		input.onblur = function () {
-			if (!input.innerHTML) {
-				input.innerHTML = lib.hallURL;
+		inputNode.innerHTML = String(config.init || lib.hallURL);
+		inputNode.onblur = function () {
+			if (!inputNode.innerHTML) {
+				inputNode.innerHTML = lib.hallURL;
 			}
-			input.innerHTML = input.innerHTML.replace(/<br>/g, "");
-			game.saveConfig("hall_ip", input.innerHTML, "connect");
+			inputNode.innerHTML = inputNode.innerHTML.replace(/<br>/g, "");
+			game.saveConfig("hall_ip", inputNode.innerHTML, "connect");
 		};
 	} else {
-		input.innerHTML = String(config.init);
-		input.onblur = config.onblur ?? null;
+		inputNode.innerHTML = config.init == null ? "" : String(config.init);
+		inputNode.onblur = config.onblur ?? null;
 	}
 }
+
+function resolveMode(config: MenuConfig): ConfigMode {
+	if (config.item && !Array.isArray(config.init)) {
+		return "switcher";
+	}
+	if (config.item || config.range) {
+		return "plain";
+	}
+	if (config.clear) {
+		return "clear";
+	}
+	if (config.input) {
+		return "input";
+	}
+	return "toggle";
+}
+
 </script>
