@@ -2163,7 +2163,7 @@ const skills = {
 		},
 		subSkill: {
 			draw: {
-				audio: "mbshiji",
+				audio: "twshiji",
 				trigger: {
 					global: "showCardsAfter",
 				},
@@ -2182,7 +2182,7 @@ const skills = {
 				},
 			},
 			gain: {
-				audio: "mbshiji",
+				audio: "twshiji",
 				getcard(event, player) {
 					const { card } = event;
 					if (get.name(card) != "huogong") {
@@ -2219,7 +2219,7 @@ const skills = {
 		},
 	},
 	twzhengjun: {
-		audio: "spzhengjun",
+		audio: ["spzhengjun1.mp3", "spzhengjun2.mp3"],
 		trigger: {
 			global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
 		},
