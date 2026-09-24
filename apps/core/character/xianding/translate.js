@@ -909,7 +909,7 @@ const translates = {
 	dc_sb_jiaxu: "新杀谋贾诩",
 	dc_sb_jiaxu_prefix: "新杀谋",
 	dcsbsushen: "肃身",
-	dcsbsushen_info: "限定技，出牌阶段，你可以记录你当前〖覆谋〗的状态、你的手牌数和你的体力值，然后获得技能〖入世〗。",
+	dcsbsushen_info: `限定技，出牌阶段，你可以记录你当前〖覆谋〗的状态、你的手牌数和你的体力值，然后获得技能${get.poptip("dcsbrushi")}。`,
 	dcsbrushi: "入世",
 	dcsbrushi_info: "限定技，出牌阶段，你可以将你当前〖覆谋〗的状态、你的手牌数和你的体力值调整为你发动〖肃身〗时的记录，然后重置〖覆谋〗的发动次数。",
 	dcsbfumou: "覆谋",
