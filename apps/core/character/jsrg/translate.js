@@ -145,7 +145,7 @@ const translates = {
 	jsrgwuchang: "无常",
 	jsrgwuchang_info: "锁定技。①当你获得其他角色的牌后，你变更势力为与其相同。②当你使用【杀】或【决斗】对与你势力相同的目标角色造成伤害时，此伤害+1，然后变更势力为群。",
 	jsrgqingjiao: "轻狡",
-	jsrgqingjiao_info: "群势力技。出牌阶段各限一次。你可以将一张牌当【推心置腹】/【趁火打劫】对一名手牌数大于/小于你的角色使用。",
+	jsrgqingjiao_info: `群势力技。出牌阶段各限一次。你可以将一张牌当${get.poptip("tuixinzhifu")}/${get.poptip("chenghuodajie")}对一名手牌数大于/小于你的角色使用。`,
 	jsrgchengxu: "乘虚",
 	jsrgchengxu_info: "蜀势力技。与你势力相同的其他角色不能响应你使用的牌。",
 	jsrg_zhanghe: "承张郃",
