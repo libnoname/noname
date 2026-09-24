@@ -26681,6 +26681,7 @@ const skills = {
 		enable: "phaseUse",
 		skillAnimation: true,
 		animationColor: "soil",
+		manualConfirm: true,
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			player.storage.dcsbsushen_reload = [Boolean(player.storage.dcsbfumou), player.countCards("h"), player.getHp()];
@@ -26714,6 +26715,7 @@ const skills = {
 		},
 		skillAnimation: true,
 		animationColor: "thunder",
+		manualConfirm: true,
 		async content(event, trigger, player) {
 			const storage = player.storage.dcsbsushen_reload;
 			player.awakenSkill(event.name);
