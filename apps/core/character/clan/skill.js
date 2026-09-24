@@ -8220,7 +8220,7 @@ const skills = {
 	},
 	clandaojie: {
 		audio: 2,
-		audioname: ["clan_xunshu", "clan_xunchen", "clan_xuncai", "clan_xuncan", "clan_xunyou", "clan_xunyu", "clan_xunshuang", "clan_xunshi"],
+		audioname: ["clan_xunshu", "clan_xunchen", "clan_xuncai", "clan_xuncan", "clan_xunyou", "clan_xunyu", "clan_xunshuang", "clan_xunshi", "clan_xunguan"],
 		trigger: { player: "useCardAfter" },
 		filter(event, player) {
 			return (
