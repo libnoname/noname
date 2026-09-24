@@ -422,7 +422,7 @@ const translates = {
 	jsrgzhushou_info: "一名角色的回合结束时，若你于本回合内失去过牌，则你可以选择弃牌堆中本回合置入的点数唯一最大的牌，并对本回合失去过此牌的一名角色造成1点伤害。",
 	jsrgyangge: "扬戈",
 	jsrgyangge_mizhao: "密诏",
-	jsrgyangge_info: "每轮限一次。体力值最低的其他角色可以于其出牌阶段内对你发动〖密诏〗。",
+	jsrgyangge_info: `每轮限一次。体力值最低的其他角色可以于其出牌阶段内对你发动${get.poptip("mizhao")}。`,
 	jsrg_liubiao: "衰刘表",
 	jsrg_liubiao_prefix: "衰",
 	jsrgyansha: "宴杀",
