@@ -1085,7 +1085,8 @@ const skills = {
 	},
 	//势陈群
 	potfaen: {
-		audio: 2,
+		audio: 4,
+		logAudio: () => 2,
 		trigger: { global: "useCard" },
 		filter(event, player) {
 			const history = game.getAllGlobalHistory("useCard");
@@ -1145,6 +1146,7 @@ const skills = {
 		subSkill: {
 			effect: {
 				audio: "potfaen",
+				logAudio: () => ["potfaen3.mp3", "potfaen4.mp3"],
 				charlotte: true,
 				forced: true,
 				onremove: true,
