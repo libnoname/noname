@@ -14724,8 +14724,8 @@ const skills = {
 					prompt: `是否令${get.translation(target)}于〖令戮〗失败时进行两次结算？`,
 					ai: () => true,
 				})
-				.forResultBool();
-			if (settleTwice) {
+				.forResult();
+			if (settleTwice?.bool) {
 				target.storage.twlinglu_settle[0][1]++;
 				game.log(target, "于本次强令失败时进行两次结算");
 			}
@@ -16173,8 +16173,8 @@ const skills = {
 						prompt2: "当其他角色得到你的牌后，若其有其他与此牌类型相同的牌，你可以令其选择一项：1.受到你造成的1点伤害；2.弃置这些牌",
 						ai: () => get.attitude(player, target) < 0,
 					})
-					.forResultBool();
-				if (!activate) {
+					.forResult();
+				if (!activate?.bool) {
 					continue;
 				}
 
@@ -18540,8 +18540,8 @@ const skills = {
 					ai: () => _status.event.bool,
 				})
 				.set("bool", player.isDamaged() && player.countCards("h") >= 3 && Math.random() < 0.5)
-				.forResultBool();
-			if (gainSaotao) {
+				.forResult();
+			if (gainSaotao?.bool) {
 				await player.loseMaxHp();
 				player.addSkills("twsaotao");
 				await game.delayx();
