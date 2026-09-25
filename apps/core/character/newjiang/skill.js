@@ -4314,7 +4314,7 @@ const skills = {
 				cards = [];
 			while (num <= 5) {
 				while (target.hasEmptySlot(num)) {
-					const card = get.cardPile2(card => {
+					const card = get.cardPile(card => {
 						return !cards.includes(card) && get.subtype(card) == "equip" + num && target.canUse(card, target);
 					}, "random");
 					if (card) {
