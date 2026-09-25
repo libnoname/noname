@@ -6313,7 +6313,7 @@ export default () => {
 				fullskin: true,
 				modeimage: "chess",
 				filterTarget(card, player, target) {
-					return player == target;
+					return player === target;
 				},
 				selectTarget: -1,
 				enable(event, player) {
@@ -6330,9 +6330,9 @@ export default () => {
 						return true;
 					}
 				},
-				content() {
-					var neighbour,
-						num = 0;
+				async content(event, trigger, player) {
+					let neighbour;
+					let num = 0;
 					neighbour = player.getNeighbour(-1, 0);
 					if (neighbour && game.obstacles.includes(neighbour) && player.movable(-2, 0)) {
 						game.moveObstacle(neighbour, -1, 0);
@@ -6354,13 +6354,13 @@ export default () => {
 						num++;
 					}
 					if (num) {
-						player.draw(num);
+						await player.draw(num);
 					}
 				},
-				content_old() {
-					"step 0";
+				async content_old(event, trigger, player) {
 					event.obstacles = [];
-					var neighbour;
+					let neighbour;
+					let dialog;
 					neighbour = player.getNeighbour(-1, 0);
 					if (neighbour && game.obstacles.includes(neighbour)) {
 						event.obstacles.push(neighbour);
@@ -6378,32 +6378,32 @@ export default () => {
 						event.obstacles.push(neighbour);
 					}
 					if (!event.obstacles.length) {
-						event.finish();
 						return;
-					} else if (event.obstacles.length == 1) {
+					}
+					if (event.obstacles.length === 1) {
 						event.obstacle = event.obstacles[0];
 					} else if (event.isMine()) {
-						for (var i = 0; i < event.obstacles.length; i++) {
-							event.obstacles[i].classList.add("glow");
+						for (const obstacle of event.obstacles) {
+							obstacle.classList.add("glow");
 						}
 						event.chooseObstacle = true;
-						game.pause();
+						const pause = game.pause();
 						_status.imchoosing = true;
-						event.dialog = ui.create.dialog("选择一个与你相邻的障碍清除之");
+						dialog = ui.create.dialog("选择一个与你相邻的障碍清除之");
+						await pause;
 					}
-					"step 1";
 					_status.imchoosing = false;
 					if (!event.obstacle) {
 						event.obstacle = event.obstacles.randomGet();
 					}
 					game.removeObstacle(event.obstacle.dataset.position);
-					for (var i = 0; i < event.obstacles.length; i++) {
-						event.obstacles[i].classList.remove("glow");
+					for (const obstacle of event.obstacles) {
+						obstacle.classList.remove("glow");
 					}
-					if (event.dialog) {
-						event.dialog.close();
+					if (dialog) {
+						dialog.close();
 					}
-					player.draw();
+					await player.draw();
 				},
 				ai: {
 					result: {
