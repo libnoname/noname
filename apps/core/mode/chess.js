@@ -1268,156 +1268,152 @@ export default () => {
 						}
 					},
 				],
-				chooseToMoveChess() {
-					"step 0";
-					if (!player.movable(0, 1) && !player.movable(0, -1) && !player.movable(1, 0) && !player.movable(-1, 0)) {
-						return;
-					}
-					event.switchToAuto = function () {
-						if (ui.movegrids) {
-							while (ui.movegrids.length) {
-								ui.movegrids.shift().delete();
-							}
+				chooseToMoveChess: [
+					(event, trigger, player) => {
+						const { num } = event;
+						if (!player.movable(0, 1) && !player.movable(0, -1) && !player.movable(1, 0) && !player.movable(-1, 0)) {
+							return;
 						}
-						var list = [];
-						var randomMove = ["moveUp", "moveDown", "moveLeft", "moveRight"];
-						var getMove = function (move) {
-							switch (move) {
-								case "moveUp":
-									return "moveDown";
-								case "moveDown":
-									return "moveUp";
-								case "moveLeft":
-									return "moveRight";
-								case "moveRight":
-									return "moveLeft";
-							}
-						};
-						var dontMove = null;
-						for (var iwhile = 0; iwhile < num; iwhile++) {
-							if (get.mode() == "tafang" && _status.enemies.includes(player)) {
-								var targets2 = [];
-								for (var i = 0; i < ui.chesswidth; i++) {
-									var tafangdes = ui.chesswidth * (ui.chessheight - 1) + i;
-									if (!lib.posmap[tafangdes]) {
-										targets2.push(tafangdes);
-									}
-								}
-								targets2.sort(function (a, b) {
-									return Math.abs((a % ui.chesswidth) - player.getXY()[0]) - Math.abs((b % ui.chesswidth) - player.getXY()[0]);
-								});
-								var tafangmoved = false;
-								for (var i = 0; i < targets2.length; i++) {
-									if (player.moveTowards(targets2[i].toString())) {
-										tafangmoved = true;
-										break;
-									}
-								}
-								if (tafangmoved) {
-									event.moved = true;
-								}
-							} else {
-								var targets = game.filterPlayer(function (current) {
-									return current.side != player.side && current.isIn();
-								});
-								targets.sort(function (a, b) {
-									return get.distance(player, a) - get.distance(player, b);
-								});
-								while (targets.length) {
-									var target = targets.shift();
-									var moveTowards = player.moveTowards(target, [dontMove]);
-									if (moveTowards) {
-										dontMove = getMove(moveTowards);
-										randomMove.remove(dontMove);
-										event.moved = true;
-										break;
-									}
-									if (targets.length == 0) {
-										if (randomMove.length) {
-											var list = randomMove.slice(0);
-											while (list.length) {
-												var thismove = list.randomRemove();
-												if (player[thismove]()) {
-													event.moved = true;
-													dontMove = getMove(thismove);
-													randomMove.remove(dontMove);
-													break;
-												}
-												if (list.length == 0) {
-													return;
-												}
-											}
-										} else {
-											return;
-										}
-									}
-								}
-								if (lib.skill._chessmove.ai.result.player(player) <= 0) {
-									break;
-								}
-							}
-						}
-					};
-					if (event.isMine()) {
-						if (event.prompt) {
-							event.dialog = ui.create.dialog(event.prompt);
-						}
-						var resume = function () {
+						event.switchToAuto = () => {
 							if (ui.movegrids) {
 								while (ui.movegrids.length) {
 									ui.movegrids.shift().delete();
 								}
 							}
-							event.result = { bool: false };
-							game.resume();
-						};
-						if (event.phasing) {
-							event.custom.replace.confirm = resume;
-						} else {
-							event.control = ui.create.control("取消", resume);
-						}
-						game.pause();
-						_status.imchoosing = true;
-						ui.movegrids = [];
-						player.createRangeShadow(num, true);
-						for (var i = 0; i < ui.movegrids.length; i++) {
-							var grid = ui.movegrids[i];
-							if (game.isChessNeighbour(grid, player)) {
-								continue;
-							}
-							for (var j = 0; j < ui.movegrids.length; j++) {
-								if (game.isChessNeighbour(grid, ui.movegrids[j])) {
-									break;
+							const randomMove = ["moveUp", "moveDown", "moveLeft", "moveRight"];
+							const getMove = move => {
+								switch (move) {
+									case "moveUp":
+										return "moveDown";
+									case "moveDown":
+										return "moveUp";
+									case "moveLeft":
+										return "moveRight";
+									case "moveRight":
+										return "moveLeft";
+								}
+							};
+							let dontMove = null;
+							for (let iwhile = 0; iwhile < num; iwhile++) {
+								if (get.mode() === "tafang" && _status.enemies.includes(player)) {
+									const targets2 = [];
+									for (let i = 0; i < ui.chesswidth; i++) {
+										const tafangdes = ui.chesswidth * (ui.chessheight - 1) + i;
+										if (!lib.posmap[tafangdes]) {
+											targets2.push(tafangdes);
+										}
+									}
+									targets2.sort((a, b) => {
+										return Math.abs((a % ui.chesswidth) - player.getXY()[0]) - Math.abs((b % ui.chesswidth) - player.getXY()[0]);
+									});
+									let tafangmoved = false;
+									for (const target of targets2) {
+										if (player.moveTowards(target.toString())) {
+											tafangmoved = true;
+											break;
+										}
+									}
+									if (tafangmoved) {
+										event.moved = true;
+									}
+								} else {
+									const targets = game.filterPlayer(current => {
+										return current.side !== player.side && current.isIn();
+									});
+									targets.sort((a, b) => {
+										return get.distance(player, a) - get.distance(player, b);
+									});
+									while (targets.length) {
+										const target = targets.shift();
+										const moveTowards = player.moveTowards(target, [dontMove]);
+										if (moveTowards) {
+											dontMove = getMove(moveTowards);
+											randomMove.remove(dontMove);
+											event.moved = true;
+											break;
+										}
+										if (targets.length === 0) {
+											if (randomMove.length) {
+												const list = randomMove.slice(0);
+												while (list.length) {
+													const thismove = list.randomRemove();
+													if (player[thismove]()) {
+														event.moved = true;
+														dontMove = getMove(thismove);
+														randomMove.remove(dontMove);
+														break;
+													}
+													if (list.length === 0) {
+														return;
+													}
+												}
+											} else {
+												return;
+											}
+										}
+									}
+									if (lib.skill._chessmove.ai.result.player(player) <= 0) {
+										break;
+									}
 								}
 							}
-							if (j == ui.movegrids.length) {
-								grid.remove();
+						};
+						if (event.isMine()) {
+							if (event.prompt) {
+								event.dialog = ui.create.dialog(event.prompt);
 							}
+							const resume = () => {
+								if (ui.movegrids) {
+									while (ui.movegrids.length) {
+										ui.movegrids.shift().delete();
+									}
+								}
+								event.result = { bool: false };
+								game.resume();
+							};
+							if (event.phasing) {
+								event.custom.replace.confirm = resume;
+							} else {
+								event.control = ui.create.control("取消", resume);
+							}
+							game.pause();
+							_status.imchoosing = true;
+							ui.movegrids = [];
+							player.createRangeShadow(num, true);
+							for (const grid of ui.movegrids) {
+								if (game.isChessNeighbour(grid, player)) {
+									continue;
+								}
+								if (!ui.movegrids.some(other => game.isChessNeighbour(grid, other))) {
+									grid.remove();
+								}
+							}
+						} else {
+							event.switchToAuto();
 						}
-					} else {
-						event.switchToAuto();
-					}
-					"step 1";
-					_status.imchoosing = false;
-					if (event.moved) {
-						game.delay();
-						event.result = {
-							bool: true,
-							move: player.dataset.position,
-						};
-					}
-					if (!event.result) {
-						event.result = {
-							bool: false,
-						};
-					}
-					if (event.control) {
-						event.control.close();
-					}
-					if (event.dialog) {
-						event.dialog.close();
-					}
-				},
+					},
+					(event, trigger, player) => {
+						_status.imchoosing = false;
+						if (event.moved) {
+							game.delay();
+							event.result = {
+								bool: true,
+								move: player.dataset.position,
+							};
+						}
+						if (!event.result) {
+							event.result = {
+								bool: false,
+							};
+						}
+						if (event.control) {
+							event.control.close();
+						}
+						if (event.dialog) {
+							event.dialog.close();
+						}
+					},
+				],
 			},
 		},
 		game: {
