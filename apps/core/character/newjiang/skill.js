@@ -4204,7 +4204,7 @@ const skills = {
 			const { target } = event;
 			await player.draw({ num: 2, nodelay: true });
 			await target.draw(2);
-			const targets = [player, target].filter(current => current.countCards("h") > 1);
+			const targets = [player, target].filter(current => current.hasCards("h"));
 			if (targets.length) {
 				const cards = [];
 				for(const current of targets) {
