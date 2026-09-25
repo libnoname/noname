@@ -181,6 +181,7 @@ const characters = {
 		hp: 4,
 		skills: ["yjqimei", "yjzhuiji"],
 		names: "司马|null",
+		groupBorder: "jin",
 	},
 	xukun: {
 		sex: "male",
