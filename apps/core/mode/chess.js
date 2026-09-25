@@ -4012,24 +4012,21 @@ export default () => {
 				ui.money.childNodes[1].innerHTML = game.data.dust;
 			},
 			chooseCharacter() {
-				var next = game.createEvent("chooseCharacter");
+				const next = game.createEvent("chooseCharacter");
 				next.showConfig = true;
-				next.ai = function (player, list) {
+				next.ai = (player, list) => {
 					if (get.config("double_character")) {
 						player.init(list[0], list[1]);
 					} else {
 						player.init(list[0]);
 					}
 				};
-				next.setContent(function () {
-					"step 0";
+				next.setContent(async (event, trigger, player) => {
 					ui.wuxie.hide();
-					var i;
-					var list = [];
-					var bosslist = [];
-					var jiangelist = [];
-					event.list = list;
-					for (i in lib.character) {
+					const list = [];
+					const bosslist = [];
+					const jiangelist = [];
+					for (const i in lib.character) {
 						if (lib.character[i].isChessBoss) {
 							bosslist.push(i);
 							continue;
@@ -4037,7 +4034,7 @@ export default () => {
 							// if(get.config('chess_jiange')) jiangelist.push(i);
 							continue;
 						}
-						if (i.indexOf("treasure_") == 0) {
+						if (i.indexOf("treasure_") === 0) {
 							continue;
 						}
 						if (lib.character[i].isMinskin) {
@@ -4052,23 +4049,21 @@ export default () => {
 						list.push(i);
 					}
 					list.randomSort();
-					var bosses = ui.create.div(".buttons");
-					event.bosses = bosses;
-					var bossbuttons = ui.create.buttons(bosslist, "character", bosses);
-					var addToButton = function () {
+					const bosses = ui.create.div(".buttons");
+					const bossbuttons = ui.create.buttons(bosslist, "character", bosses);
+					const addToButton = () => {
 						if (ui.cheat2 && ui.cheat2.backup) {
 							return;
 						}
-						_status.event.dialog.content.childNodes[1].innerHTML = ui.selected.buttons.length + "/" + _status.event.selectButton();
+						_status.event.dialog.content.childNodes[1].innerHTML = `${ui.selected.buttons.length}/${_status.event.selectButton()}`;
 					};
-					var jiange = ui.create.div(".buttons");
-					event.jiange = jiange;
-					var jiangebuttons = ui.create.buttons(jiangelist, "character", jiange);
+					const jiange = ui.create.div(".buttons");
+					const jiangebuttons = ui.create.buttons(jiangelist, "character", jiange);
 
-					var clickedBoss = false;
-					var clickBoss = function () {
+					let clickedBoss = false;
+					const clickBoss = function () {
 						clickedBoss = true;
-						var num = bosses.querySelectorAll(".glow").length;
+						let num = bosses.querySelectorAll(".glow").length;
 						if (this.classList.contains("glow")) {
 							this.classList.remove("glow");
 							num--;
@@ -4078,16 +4073,16 @@ export default () => {
 								num++;
 							}
 						}
-						for (var i = 0; i < bosses.childElementCount; i++) {
-							if (num >= 4 && !bosses.childNodes[i].classList.contains("glow")) {
-								bosses.childNodes[i].classList.add("forbidden");
+						for (const button of bosses.childNodes) {
+							if (num >= 4 && !button.classList.contains("glow")) {
+								button.classList.add("forbidden");
 							} else {
-								bosses.childNodes[i].classList.remove("forbidden");
+								button.classList.remove("forbidden");
 							}
 						}
 						if (num) {
 							if (!event.asboss) {
-								event.asboss = ui.create.control("应战", function () {
+								event.asboss = ui.create.control("应战", () => {
 									_status.boss = true;
 									ui.click.ok();
 								});
@@ -4101,8 +4096,8 @@ export default () => {
 						addToButton();
 					};
 
-					var clickedJiange = false;
-					var clickJiange = function () {
+					let clickedJiange = false;
+					const clickJiange = function () {
 						clickedJiange = true;
 						if (this.classList.contains("glow2")) {
 							this.classList.remove("glow2");
@@ -4112,44 +4107,44 @@ export default () => {
 						addToButton();
 					};
 
-					for (var i = 0; i < bossbuttons.length; i++) {
-						bossbuttons[i].classList.add("noclick");
-						bossbuttons[i].listen(clickBoss);
+					for (const button of bossbuttons) {
+						button.classList.add("noclick");
+						button.listen(clickBoss);
 					}
-					for (var i = 0; i < jiangebuttons.length; i++) {
-						jiangebuttons[i].classList.add("noclick");
-						jiangebuttons[i].listen(clickJiange);
+					for (const button of jiangebuttons) {
+						button.classList.add("noclick");
+						button.listen(clickJiange);
 					}
 
-					if (get.config("additional_player") == undefined) {
+					if (get.config("additional_player") == null) {
 						game.saveConfig("additional_player", true, true);
 					}
-					if (get.config("reward") == undefined) {
+					if (get.config("reward") == null) {
 						game.saveConfig("reward", 3, true);
 					}
-					if (get.config("punish") == undefined) {
+					if (get.config("punish") == null) {
 						game.saveConfig("punish", "无", true);
 					}
-					if (get.config("battle_number") == undefined) {
+					if (get.config("battle_number") == null) {
 						game.saveConfig("battle_number", 3, true);
 					}
-					if (get.config("choice_number") == undefined) {
+					if (get.config("choice_number") == null) {
 						game.saveConfig("choice_number", 6, true);
 					}
-					if (get.config("seat_order") == undefined) {
+					if (get.config("seat_order") == null) {
 						game.saveConfig("seat_order", "交替", true);
 					}
-					if (get.config("replace_number") == undefined) {
+					if (get.config("replace_number") == null) {
 						game.saveConfig("replace_number", 0, true);
 					}
-					if (get.config("single_control") == undefined) {
+					if (get.config("single_control") == null) {
 						game.saveConfig("single_control", false, true);
 					}
-					if (get.config("first_less") == undefined) {
+					if (get.config("first_less") == null) {
 						game.saveConfig("first_less", true, true);
 					}
 
-					var dialog = ui.create.dialog("选择出场角色", "hidden");
+					const dialog = ui.create.dialog("选择出场角色", "hidden");
 					dialog.classList.add("fullwidth");
 					dialog.classList.add("fullheight");
 					dialog.classList.add("fixed");
@@ -4163,7 +4158,7 @@ export default () => {
 						dialog.add("守卫剑阁");
 						dialog.add(jiange);
 					}
-					event.addConfig = function (dialog) {
+					const addConfig = dialog => {
 						dialog.add("选项");
 						dialog.choice = {};
 						dialog.choice.zhu = dialog.add(ui.create.switcher("zhu", get.config("zhu"))).querySelector(".toggle");
@@ -4196,12 +4191,12 @@ export default () => {
 							dialog.choice.choice_number.parentNode.classList.add("disabled");
 						}
 					};
-					event.addConfig(dialog);
-					for (var i = 0; i < bosses.childNodes.length; i++) {
-						bosses.childNodes[i].classList.add("squarebutton");
+					addConfig(dialog);
+					for (const button of bosses.childNodes) {
+						button.classList.add("squarebutton");
 					}
-					for (var i = 0; i < jiange.childNodes.length; i++) {
-						jiange.childNodes[i].classList.add("squarebutton");
+					for (const button of jiange.childNodes) {
+						button.classList.add("squarebutton");
 					}
 					ui.control.style.transition = "all 0s";
 
@@ -4211,32 +4206,35 @@ export default () => {
 						ui.control.style.top = "calc(100% - 70px)";
 					}
 
-					var next = game.me.chooseButton(dialog, true).set("onfree", true);
+					const next = game.me.chooseButton({
+						dialog,
+						forced: true,
+						selectButton: () => {
+							const bossnum = bosses.querySelectorAll(".glow").length;
+							if (bossnum) {
+								return 3 * bossnum;
+							}
+							if (!get.config("single_control")) {
+								return 1;
+							}
+							if (get.config("additional_player")) {
+								return parseInt(get.config("battle_number"));
+							}
+							return parseInt(get.config("battle_number")) + parseInt(get.config("replace_number"));
+						},
+					}).set("onfree", true);
 					next._triggered = null;
-					next.selectButton = function () {
-						var bossnum = bosses.querySelectorAll(".glow").length;
-						if (bossnum) {
-							return 3 * bossnum;
-						}
-						if (!get.config("single_control")) {
-							return 1;
-						}
-						if (get.config("additional_player")) {
-							return parseInt(get.config("battle_number"));
-						}
-						return parseInt(get.config("battle_number")) + parseInt(get.config("replace_number"));
-					};
 					next.custom.add.button = addToButton;
-					next.custom.add.window = function (clicked) {
+					next.custom.add.window = clicked => {
 						if (clicked) {
 							return;
 						}
 						if (clickedBoss) {
 							clickedBoss = false;
 						} else {
-							for (var i = 0; i < bosses.childElementCount; i++) {
-								bosses.childNodes[i].classList.remove("forbidden");
-								bosses.childNodes[i].classList.remove("glow");
+							for (const button of bosses.childNodes) {
+								button.classList.remove("forbidden");
+								button.classList.remove("glow");
 							}
 							if (event.asboss) {
 								event.asboss.close();
@@ -4246,14 +4244,14 @@ export default () => {
 						if (clickedJiange) {
 							clickedJiange = false;
 						} else {
-							for (var i = 0; i < jiange.childElementCount; i++) {
-								jiange.childNodes[i].classList.remove("forbidden");
-								jiange.childNodes[i].classList.remove("glow2");
+							for (const button of jiange.childNodes) {
+								button.classList.remove("forbidden");
+								button.classList.remove("glow2");
 							}
 						}
-						var dialog = _status.event.dialog;
+						const dialog = _status.event.dialog;
 						if (dialog.choice) {
-							for (var i in dialog.choice) {
+							for (const i in dialog.choice) {
 								game.saveConfig(i, dialog.choice[i].link, true);
 							}
 							if (get.config("zhu")) {
@@ -4270,14 +4268,14 @@ export default () => {
 								dialog.choice.replace_number.parentNode.classList.remove("disabled");
 								dialog.choice.choice_number.parentNode.classList.add("disabled");
 							}
-							var num = parseInt(get.config("battle_number")) * 4 + parseInt(get.config("replace_number")) + 5;
+							const num = parseInt(get.config("battle_number")) * 4 + parseInt(get.config("replace_number")) + 5;
 							if (dialog.buttons.length > num) {
-								for (var i = num; i < dialog.buttons.length; i++) {
+								for (let i = num; i < dialog.buttons.length; i++) {
 									dialog.buttons[i].remove();
 								}
 								dialog.buttons.splice(num);
 							} else if (dialog.buttons.length < num) {
-								for (var i = dialog.buttons.length; i < num; i++) {
+								for (let i = dialog.buttons.length; i < num; i++) {
 									dialog.buttons.push(ui.create.button(list[i], "character", dialog.buttons[0].parentNode).addTempClass("zoom"));
 								}
 								game.check();
@@ -4285,8 +4283,8 @@ export default () => {
 						}
 						addToButton();
 					};
-					event.changeDialog = function () {
-						if (ui.cheat2 && ui.cheat2.dialog == _status.event.dialog) {
+					event.changeDialog = () => {
+						if (ui.cheat2 && ui.cheat2.dialog === _status.event.dialog) {
 							return;
 						}
 						if (game.changeCoin) {
@@ -4294,8 +4292,8 @@ export default () => {
 						}
 						list.randomSort();
 
-						var buttons = ui.create.div(".buttons");
-						var node = _status.event.dialog.buttons[0].parentNode;
+						const buttons = ui.create.div(".buttons");
+						const node = _status.event.dialog.buttons[0].parentNode;
 						_status.event.dialog.buttons = ui.create.buttons(list.slice(0, parseInt(get.config("battle_number")) * 4 + parseInt(get.config("replace_number")) + 5), "character", buttons);
 						_status.event.dialog.content.insertBefore(buttons, node);
 						buttons.addTempClass("start");
@@ -4317,17 +4315,17 @@ export default () => {
 						// 	dialog.add('守卫剑阁');
 						// 	dialog.add(jiange);
 						// }
-						// event.addConfig(dialog);
+						// addConfig(dialog);
 						// dialog.open();
 						game.uncheck();
 						game.check();
 					};
-					ui.create.cheat = function () {
+					ui.create.cheat = () => {
 						_status.createControl = ui.cheat2;
 						ui.cheat = ui.create.control("更换", event.changeDialog);
 						delete _status.createControl;
 					};
-					var createCharacterDialog = function () {
+					const createCharacterDialog = () => {
 						event.dialogxx = ui.create.characterDialog();
 						event.dialogxx.classList.add("fullwidth");
 						event.dialogxx.classList.add("fullheight");
@@ -4342,9 +4340,9 @@ export default () => {
 					} else {
 						createCharacterDialog();
 					}
-					ui.create.cheat2 = function () {
+					ui.create.cheat2 = () => {
 						ui.cheat2 = ui.create.control("自由选将", function () {
-							if (this.dialog == _status.event.dialog) {
+							if (this.dialog === _status.event.dialog) {
 								if (game.changeCoin) {
 									game.changeCoin(10);
 								}
@@ -4384,7 +4382,7 @@ export default () => {
 					if (!ui.cheat2 && get.config("free_choose")) {
 						ui.create.cheat2();
 					}
-					"step 1";
+					const result = await next.forResult();
 					ui.wuxie.show();
 					if (ui.cheat) {
 						ui.cheat.close();
@@ -4404,25 +4402,25 @@ export default () => {
 						ui.control.style.display = "none";
 					}
 
-					var glows = event.bosses.querySelectorAll(".glow");
-					var glows2 = event.jiange.querySelectorAll(".glow2");
+					const glows = bosses.querySelectorAll(".glow");
+					const glows2 = jiange.querySelectorAll(".glow2");
 					if (!glows.length && !glows2.length) {
 						if (!get.config("single_control")) {
-							var addnum;
+							let addnum;
 							if (get.config("additional_player")) {
 								addnum = parseInt(get.config("battle_number"));
 							} else {
 								addnum = parseInt(get.config("battle_number")) + parseInt(get.config("replace_number"));
 							}
-							for (var i = 0; i < addnum - 1; i++) {
-								result.links.push(event.list.randomRemove());
+							for (let i = 0; i < addnum - 1; i++) {
+								result.links.push(list.randomRemove());
 							}
 						}
 					}
-					for (var i = 0; i < result.links.length; i++) {
-						game.addRecentCharacter(result.links[i]);
+					for (const link of result.links) {
+						game.addRecentCharacter(link);
 					}
-					if (_status.mode == "combat") {
+					if (_status.mode === "combat") {
 						_status.mylist = result.links.slice(0, parseInt(get.config("battle_number")));
 						_status.replacelist = result.links.slice(parseInt(get.config("battle_number")));
 					} else {
@@ -4431,38 +4429,38 @@ export default () => {
 					if (ui.coin) {
 						_status.coinCoeff = get.coinCoeff(_status.mylist);
 					}
-					for (var i = 0; i < result.links.length; i++) {
-						event.list.remove(result.links[i]);
+					for (const link of result.links) {
+						list.remove(link);
 					}
 					if (glows.length) {
 						_status.vsboss = true;
 						_status.enemylist = [];
-						for (var i = 0; i < glows.length; i++) {
-							_status.enemylist.push(glows[i].link);
+						for (const button of glows) {
+							_status.enemylist.push(button.link);
 						}
 						if (_status.boss) {
-							var temp = _status.mylist;
+							const temp = _status.mylist;
 							_status.mylist = _status.enemylist;
 							_status.enemylist = temp;
-							for (var i = _status.enemylist.length; i < _status.mylist.length * 3; i++) {
-								_status.enemylist.push(event.list.randomRemove());
+							for (let i = _status.enemylist.length; i < _status.mylist.length * 3; i++) {
+								_status.enemylist.push(list.randomRemove());
 							}
 						}
 					} else if (glows2.length) {
 						_status.vsboss = true;
 						_status.enemylist = [];
-						for (var i = 0; i < glows2.length; i++) {
-							_status.enemylist.push(glows2[i].link);
+						for (const button of glows2) {
+							_status.enemylist.push(button.link);
 						}
 					} else {
-						event.list.randomSort();
-						_status.enemylist = event.list.splice(0, _status.mylist.length);
-						if (_status.mode == "combat" && _status.replacelist) {
-							_status.enemyreplacelist = event.list.splice(0, _status.replacelist.length);
+						list.randomSort();
+						_status.enemylist = list.splice(0, _status.mylist.length);
+						if (_status.mode === "combat" && _status.replacelist) {
+							_status.enemyreplacelist = list.splice(0, _status.replacelist.length);
 						}
 					}
-					if (_status.mode == "combat" && get.config("additional_player")) {
-						_status.additionallist = event.list;
+					if (_status.mode === "combat" && get.config("additional_player")) {
+						_status.additionallist = list;
 					}
 				});
 			},
