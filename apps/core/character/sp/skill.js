@@ -24584,15 +24584,16 @@ const skills = {
 				player.logSkill("jisi", target);
 				player.awakenSkill(event.name);
 				const list = event.skills2;
-				if (list.length == 0) {
-					event._result = { control: list[0] };
-				}
-				const result2 = await player
-					.chooseControl(list)
-					.set("prompt", "令" + get.translation(target) + "获得一个技能")
-					.set("ai", () => _status.event.choice)
-					.set("choice", list.includes("qianmeng") ? "qianmeng" : list.randomGet())
-					.forResult();
+				if (!list.length) return;
+				const result2 =
+					list.length > 1
+						? await player
+								.chooseControl(list)
+								.set("prompt", "令" + get.translation(target) + "获得一个技能")
+								.set("ai", () => _status.event.choice)
+								.set("choice", list.includes("qianmeng") ? "qianmeng" : list.randomGet())
+								.forResult()
+						: { control: list[0] };
 				target.addSkills(result2.control);
 				const num = player.countCards("h");
 				if (num > 0) {
@@ -47546,10 +47547,10 @@ const skills = {
 			return 9 - get.value(card);
 		},
 		onuse(links, player) {
-			var next = game.createEvent("limu_recover", false, _status.event.getParent());
+			const next = game.createEvent("limu_recover", false, _status.event.getParent());
 			next.player = player;
-			next.setContent(function () {
-				player.recover();
+			next.setContent(async (event, trigger, player) => {
+				await player.recover();
 			});
 		},
 		ai: {

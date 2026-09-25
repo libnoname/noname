@@ -207,6 +207,15 @@ const characters = {
 		skills: ["psnimou", "pskexue", "psjiefa"],
 		groupInGuozhan: "shu",
 	},
+	sm_shenmo_sunce: {
+		sex: "male",
+		group: "shen",
+		hp: 6,
+		skills: ["smxiaoyang", "smlinyuan"],
+		doubleGroup: ["shen", "devil"],
+		groupBorder: "devil",
+		groupInGuozhan: "wu",
+	},
 	sm_shenmo_sunquan: {
 		sex: "male",
 		group: "shen",

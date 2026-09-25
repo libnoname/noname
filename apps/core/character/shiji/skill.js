@@ -141,7 +141,7 @@ const skills = {
 			const list = get.zhinangs();
 			const result = await player
 				.chooseButtonTarget({
-					createDialog: ["令一名有“定仪”效果的角色获得一张“智囊”牌然后移去其“定仪”效果", [list, "vcard"]],
+					createDialog: ["令一名有“定仪”效果的角色从牌堆中获得一张“智囊”牌然后移去其“定仪”效果", [list, "vcard"]],
 					filterTarget(card, player, target) {
 						return target.storage?.mbdingyi_buff?.some(i => i > 0);
 					},
@@ -167,7 +167,7 @@ const skills = {
 				targets: [target],
 				cost_data: links,
 			} = event;
-			const card = get.cardPile(card => card.name == links[0][2]);
+			const card = get.cardPile2(card => card.name == links[0][2]);
 			if (card) {
 				await target.gain({ cards: [card], animate: "gain2" });
 			}
@@ -3034,8 +3034,9 @@ const skills = {
 			}).length;
 			if (num > 0) {
 				await player.recover(num);
+				if (!game.hasPlayer(current => current != player)) return;
 				const result = await player
-					.chooseTarget(`神霈：选择一名角色对其造成${num}点雷电伤害`, true)
+					.chooseTarget(`神霈：选择一名其他角色对其造成${num}点雷电伤害`, true, lib.filter.notMe)
 					.set("ai", target => {
 						const { player } = get.event();
 						return get.damageEffect(target, player, player, "thunder");

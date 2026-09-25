@@ -128,5 +128,13 @@ const cards = {
 			delete player.getStat().skill.ruyijingubang_skill;
 		},
 	},
+	oljuhun_poker: {
+		type: "special",
+		enable: false,
+		ai: {
+			value: 0,
+			useful: 0,
+		},
+	},
 };
 export default cards;
