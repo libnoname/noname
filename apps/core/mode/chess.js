@@ -4540,39 +4540,32 @@ export default () => {
 					if (player.hp <= 1) {
 						return false;
 					}
-					for (var i = 0; i < game.treasures.length; i++) {
-						if (game.treasures[i].name == "treasure_dubiaoxianjing") {
-							return get.chessDistance(game.treasures[i], player) <= 2;
+					for (const treasure of game.treasures) {
+						if (treasure.name === "treasure_dubiaoxianjing") {
+							return get.chessDistance(treasure, player) <= 2;
 						}
 					}
 					return false;
 				},
-				content() {
-					"step 0";
-					var source = null;
-					for (var i = 0; i < game.treasures.length; i++) {
-						if (game.treasures[i].name == "treasure_dubiaoxianjing") {
-							source = game.treasures[i];
-							break;
-						}
+				async content(event, trigger, player) {
+					const source = game.treasures.find(treasure => treasure.name === "treasure_dubiaoxianjing");
+					if (!source) {
+						return;
 					}
-					if (source) {
-						source.chessFocus();
-						source.playerfocus(1000);
-						source.line(player, "thunder");
-						if (lib.config.animation && !lib.config.low_performance) {
-							setTimeout(function () {
-								source.$epic2();
-							}, 300);
-						}
-						game.delay(2);
-					} else {
-						event.finish();
+					source.chessFocus();
+					source.playerfocus(1000);
+					source.line(player, "thunder");
+					if (lib.config.animation && !lib.config.low_performance) {
+						setTimeout(() => {
+							source.$epic2();
+						}, 300);
 					}
-					"step 1";
+					await game.delay(2);
 					game.log("毒镖陷阱发动");
-					player.damage("nosource");
-					player.draw(2);
+					const damage = player.damage({ nosource: true });
+					const draw = player.draw(2);
+					await damage;
+					await draw;
 				},
 			},
 			jiqishi: {
