@@ -1533,6 +1533,28 @@ export default {
 			},
 		},
 	},
+	aozhan_jiubian: {
+		charlotte: true,
+		ruleSkill: true,
+		mod: {
+			cardname(card, player) {
+				if (card.name == "tao") {
+					return "jiu";
+				}
+			},
+		},
+		hiddenCard(player, name) {
+			return name == "jiu" && player.countCards("hs", card => card.name == "tao");
+		},
+		ai: {
+			save: true,
+			skillTagFilter(player, tag, arg) {
+				if (!player.countCards("hs", card => card.name == "tao")) {
+					return false;
+				}
+			},
+		},
+	},
 	global: [],
 	globalmap: {},
 	storage: {},
