@@ -2230,1556 +2230,219 @@ export default () => {
 				});
 			},
 			leaderView() {
-				var next = game.createEvent("leaderView", false);
-				next.setContent(function () {
-					"step 0";
-					var save = get.config("chess_leader_save");
-					if (!save) {
-						save = "save1";
-					}
-					if (!lib.storage[save]) {
-						game.initLeaderSave(save);
-					}
-					game.data = lib.storage[save];
-					ui.wuxie.hide();
-					ui.auto.hide();
-					ui.money = ui.create.div(ui.window);
-					lib.setIntro(ui.money, function (uiintro) {
-						uiintro.add('<span style="font-family:xinwei">' + game.data.money + "金币");
-						uiintro.addText("通过战斗或竞技场可获得金币。花费100金币可招募3名随机武将；花费150金币可参加一次竞技场");
-						uiintro.add('<span style="font-family:xinwei">' + game.data.dust + "招募令");
-						uiintro.addText("通过遣返武将或竞技场可获得招募令。挑战武将成功后可通过招募令招募该武将，普通/稀有/史诗/传说武将分别花费40/100/400/1600招募令");
-					});
-					ui.money.innerHTML = "<span>⚑</span><span>" + game.data.dust + "</span>" + "<span>㉤</span><span>" + game.data.money + "</span>";
-					ui.money.style.top = "auto";
-					ui.money.style.left = "auto";
-					ui.money.style.right = "20px";
-					ui.money.style.bottom = "15px";
-					ui.money.childNodes[0].style.color = "rgb(111, 198, 255)";
-					ui.money.childNodes[1].style.fontFamily = "huangcao";
-					ui.money.childNodes[1].style.marginRight = "10px";
-					ui.money.childNodes[2].style.color = "#FFE600";
-					ui.money.childNodes[3].style.fontFamily = "huangcao";
-					ui.money.style.letterSpacing = "4px";
-					if (get.config("chess_leader_allcharacter")) {
-						for (var i in lib.rank) {
-							if (Array.isArray(lib.rank[i])) {
-								for (var j = 0; j < lib.rank[i].length; j++) {
-									if (!lib.character[lib.rank[i][j]]) {
-										lib.rank[i].splice(j--, 1);
-									}
-								}
-							}
+				const next = game.createEvent("leaderView", false);
+				// UI 回调通过 resume 推进流程，保留数组阶段以等待 pause/delay 和处理选将回跳。
+				next.setContent([
+					(event, trigger, player) => {
+						let save = get.config("chess_leader_save");
+						if (!save) {
+							save = "save1";
 						}
-						for (var i in lib.rank.rarity) {
-							if (Array.isArray(lib.rank.rarity[i])) {
-								for (var j = 0; j < lib.rank.rarity[i].length; j++) {
-									if (!lib.character[lib.rank.rarity[i][j]]) {
-										lib.rank.rarity[i].splice(j--, 1);
-									}
-								}
-							}
+						if (!lib.storage[save]) {
+							game.initLeaderSave(save);
 						}
-					} else {
-						var list = get.gainableCharacters().filter(function (i) {
-							return i.indexOf("leader_") != 0;
+						game.data = lib.storage[save];
+						ui.wuxie.hide();
+						ui.auto.hide();
+						ui.money = ui.create.div(ui.window);
+						lib.setIntro(ui.money, uiintro => {
+							uiintro.add(`<span style="font-family:xinwei">${game.data.money}金币`);
+							uiintro.addText("通过战斗或竞技场可获得金币。花费100金币可招募3名随机武将；花费150金币可参加一次竞技场");
+							uiintro.add(`<span style="font-family:xinwei">${game.data.dust}招募令`);
+							uiintro.addText("通过遣返武将或竞技场可获得招募令。挑战武将成功后可通过招募令招募该武将，普通/稀有/史诗/传说武将分别花费40/100/400/1600招募令");
 						});
-						list.randomSort();
-						for (var i in lib.rank.rarity) {
-							if (Array.isArray(lib.rank.rarity[i])) {
-								for (var j = 0; j < lib.rank.rarity[i].length; j++) {
-									if (!list.includes(lib.rank.rarity[i][j]) || !lib.character[lib.rank.rarity[i][j]]) {
-										lib.rank.rarity[i].splice(j--, 1);
+						ui.money.innerHTML = `<span>⚑</span><span>${game.data.dust}</span><span>㉤</span><span>${game.data.money}</span>`;
+						ui.money.style.top = "auto";
+						ui.money.style.left = "auto";
+						ui.money.style.right = "20px";
+						ui.money.style.bottom = "15px";
+						ui.money.childNodes[0].style.color = "rgb(111, 198, 255)";
+						ui.money.childNodes[1].style.fontFamily = "huangcao";
+						ui.money.childNodes[1].style.marginRight = "10px";
+						ui.money.childNodes[2].style.color = "#FFE600";
+						ui.money.childNodes[3].style.fontFamily = "huangcao";
+						ui.money.style.letterSpacing = "4px";
+						if (get.config("chess_leader_allcharacter")) {
+							for (const i in lib.rank) {
+								if (Array.isArray(lib.rank[i])) {
+									for (let j = 0; j < lib.rank[i].length; j++) {
+										if (!lib.character[lib.rank[i][j]]) {
+											lib.rank[i].splice(j--, 1);
+										}
 									}
 								}
 							}
-						}
-						for (var i in lib.rank) {
-							if (Array.isArray(lib.rank[i])) {
-								for (var j = 0; j < lib.rank[i].length; j++) {
-									if (!list.includes(lib.rank[i][j])) {
-										lib.rank[i].splice(j--, 1);
+							for (const i in lib.rank.rarity) {
+								if (Array.isArray(lib.rank.rarity[i])) {
+									for (let j = 0; j < lib.rank.rarity[i].length; j++) {
+										if (!lib.character[lib.rank.rarity[i][j]]) {
+											lib.rank.rarity[i].splice(j--, 1);
+										}
 									}
 								}
 							}
-						}
-						//var length=Math.ceil(list.length/9);
-						//for(var i in lib.rank){
-						//	if(Array.isArray(lib.rank[i])){
-						//		lib.rank[i]=list.splice(0,length);
-						//	}
-						//}
-					}
-					"step 1";
-					lib.rank.all = lib.rank.s.concat(lib.rank.ap).concat(lib.rank.a).concat(lib.rank.am).concat(lib.rank.bp).concat(lib.rank.b).concat(lib.rank.bm).concat(lib.rank.c).concat(lib.rank.d);
-					lib.rank.rarity.common = [];
-					for (var i = 0; i < lib.rank.all.length; i++) {
-						if (!lib.rank.rarity.legend.includes(lib.rank.all[i]) && !lib.rank.rarity.epic.includes(lib.rank.all[i]) && !lib.rank.rarity.rare.includes(lib.rank.all[i])) {
-							lib.rank.rarity.common.push(lib.rank.all[i]);
-						}
-					}
-
-					ui.control.style.transition = "all 0s";
-					if (get.is.phoneLayout()) {
-						ui.control.style.top = "calc(100% - 80px)";
-					} else {
-						ui.control.style.top = "calc(100% - 70px)";
-					}
-					var cardNode = function (i, name, load) {
-						var node = ui.create.player(ui.window);
-						node.style.transition = "all 0.7s";
-						node.style.opacity = 0;
-						node.style.zIndex = 4;
-						node.classList.add("pointerdiv");
-
-						var kaibao = false;
-						if (!name || typeof i == "string") {
-							if (!name) {
-								name = game.getLeaderCharacter();
-								event.cardnodes.push(node);
-							} else {
-								node.classList.add("minskin");
-							}
-							kaibao = true;
-							node.style.left = "calc(50% - 75px)";
-							node.style.top = "calc(50% - 90px)";
-							ui.refresh(node);
-						} else if (!load) {
-							node.style.transform = "perspective(1200px) rotateY(180deg) translate(0,-200px)";
-						}
-						node.name = name;
-						if (!load) {
-							switch (i) {
-								case 0: {
-									node.style.left = "calc(50% - 75px)";
-									node.style.top = "calc(25% - 90px)";
-									break;
-								}
-								case 1: {
-									node.style.left = "calc(30% - 90px)";
-									node.style.top = "calc(75% - 90px)";
-									break;
-								}
-								case 2: {
-									node.style.left = "calc(70% - 60px)";
-									node.style.top = "calc(75% - 90px)";
-									break;
-								}
-								case "51": {
-									node.style.left = "calc(50% - 60px)";
-									node.style.top = "calc(25% - 75px)";
-									break;
-								}
-								case "52": {
-									node.style.left = "calc(35% - 55px)";
-									node.style.top = "calc(75% - 25px)";
-									break;
-								}
-								case "53": {
-									node.style.left = "calc(65% - 65px)";
-									node.style.top = "calc(75% - 25px)";
-									break;
-								}
-								case "54": {
-									node.style.left = "calc(25% - 75px)";
-									node.style.top = "calc(50% - 70px)";
-									break;
-								}
-								case "55": {
-									node.style.left = "calc(75% - 45px)";
-									node.style.top = "calc(50% - 70px)";
-									break;
+						} else {
+							const list = get.gainableCharacters().filter(i => {
+								return i.indexOf("leader_") !== 0;
+							});
+							list.randomSort();
+							for (const i in lib.rank.rarity) {
+								if (Array.isArray(lib.rank.rarity[i])) {
+									for (let j = 0; j < lib.rank.rarity[i].length; j++) {
+										if (!list.includes(lib.rank.rarity[i][j]) || !lib.character[lib.rank.rarity[i][j]]) {
+											lib.rank.rarity[i].splice(j--, 1);
+										}
+									}
 								}
 							}
-							if (!kaibao) {
-								node.style.top = "calc(50% - 180px)";
+							for (const i in lib.rank) {
+								if (Array.isArray(lib.rank[i])) {
+									for (let j = 0; j < lib.rank[i].length; j++) {
+										if (!list.includes(lib.rank[i][j])) {
+											lib.rank[i].splice(j--, 1);
+										}
+									}
+								}
+							}
+							//var length=Math.ceil(list.length/9);
+							//for(var i in lib.rank){
+							//	if(Array.isArray(lib.rank[i])){
+							//		lib.rank[i]=list.splice(0,length);
+							//	}
+							//}
+						}
+					},
+					(event, trigger, player) => {
+						lib.rank.all = lib.rank.s.concat(lib.rank.ap).concat(lib.rank.a).concat(lib.rank.am).concat(lib.rank.bp).concat(lib.rank.b).concat(lib.rank.bm).concat(lib.rank.c).concat(lib.rank.d);
+						lib.rank.rarity.common = [];
+						for (const item of lib.rank.all) {
+							if (!lib.rank.rarity.legend.includes(item) && !lib.rank.rarity.epic.includes(item) && !lib.rank.rarity.rare.includes(item)) {
+								lib.rank.rarity.common.push(item);
+							}
+						}
+
+						ui.control.style.transition = "all 0s";
+						if (get.is.phoneLayout()) {
+							ui.control.style.top = "calc(100% - 80px)";
+						} else {
+							ui.control.style.top = "calc(100% - 70px)";
+						}
+						const cardNode = (i, name, load) => {
+							const node = ui.create.player(ui.window);
+							node.style.transition = "all 0.7s";
+							node.style.opacity = 0;
+							node.style.zIndex = 4;
+							node.classList.add("pointerdiv");
+
+							let kaibao = false;
+							if (!name || typeof i === "string") {
+								if (!name) {
+									name = game.getLeaderCharacter();
+									event.cardnodes.push(node);
+								} else {
+									node.classList.add("minskin");
+								}
+								kaibao = true;
+								node.style.left = "calc(50% - 75px)";
+								node.style.top = "calc(50% - 90px)";
 								ui.refresh(node);
+							} else if (!load) {
+								node.style.transform = "perspective(1200px) rotateY(180deg) translate(0,-200px)";
 							}
-							node.style.opacity = 1;
-						}
-						node.node.count.remove();
-						node.node.marks.remove();
-						var rarity = game.getRarity(name);
-						if (rarity != "common") {
-							node.rarity = rarity;
-							node.node.intro.style.left = "14px";
-							if (node.classList.contains("minskin")) {
-								node.node.intro.style.top = "84px";
-							} else {
-								node.node.intro.style.top = "145px";
-							}
-							node.node.intro.style.fontSize = "20px";
-							node.node.intro.style.fontFamily = "yuanli";
-							switch (rarity) {
-								case "rare":
-									node.node.intro.dataset.nature = "thunderm";
-									break;
-								case "epic":
-									node.node.intro.dataset.nature = "metalm";
-									break;
-								case "legend":
-									node.node.intro.dataset.nature = "orangem";
-									break;
-							}
-						}
-						if (kaibao) {
-							node.node.avatar.style.display = "none";
-							node.style.transform = "perspective(1200px) rotateY(180deg) translateX(0)";
-							if (typeof i == "string") {
-								node.listen(event.turnCard2);
-							} else {
-								node.listen(turnCard);
-								if (!game.data.character.includes(name)) {
-									game.data.character.push(name);
-									if (game.data.challenge.includes(name)) {
-										game.data.challenge = game.getLeaderList();
-										game.saveData();
-									}
-									var button = ui.create.button(name, "character");
-									button.classList.add("glow2");
-									dialog1.content.lastChild.insertBefore(button, dialog1.content.lastChild.firstChild);
-									dialog1.buttons.push(button);
-									fixButton(button);
-									button.area = "character";
-								} else {
-									switch (rarity) {
-										case "common":
-											game.data.dust += 10;
-											break;
-										case "rare":
-											game.data.dust += 30;
-											break;
-										case "epic":
-											game.data.dust += 150;
-											break;
-										case "legend":
-											game.data.dust += 600;
-											break;
-									}
-								}
-							}
-						} else {
-							node.style.transform = "";
-						}
-						return node;
-					};
-					event.cardNode = cardNode;
-					if (game.data.arena) {
-						ui.money.style.display = "none";
-						_status.enterArena = true;
-						return;
-					}
-					var groupSort = function (name) {
-						if (lib.character[name][1] == "wei") {
-							return 0;
-						}
-						if (lib.character[name][1] == "shu") {
-							return 1;
-						}
-						if (lib.character[name][1] == "wu") {
-							return 2;
-						}
-						if (lib.character[name][1] == "qun") {
-							return 3;
-						}
-						if (lib.character[name][1] == "key") {
-							return 4;
-						}
-					};
-					game.data.character = game.data.character.filter(function (i) {
-						return get.is.object(lib.character[i]);
-					});
-					game.data.character.sort(function (a, b) {
-						var del = groupSort(a) - groupSort(b);
-						if (del != 0) {
-							return del;
-						}
-						var aa = a,
-							bb = b;
-						if (a.indexOf("_") != -1) {
-							a = a.slice(a.indexOf("_") + 1);
-						}
-						if (b.indexOf("_") != -1) {
-							b = b.slice(b.indexOf("_") + 1);
-						}
-						if (a != b) {
-							return a > b ? 1 : -1;
-						}
-						return aa > bb ? 1 : -1;
-					});
-					if (game.data.character.length == 0 || !game.data.challenge) {
-						game.data.character = lib.rank.rarity.common.randomGets(3);
-						game.data.challenge = game.getLeaderList();
-						game.saveData();
-					}
-					var fixButton = function (button) {
-						var rarity = game.getRarity(button.link);
-						if (rarity != "common") {
-							var intro = button.node.intro;
-							intro.classList.add("showintro");
-							intro.style.fontFamily = "yuanli";
-							intro.style.fontSize = "20px";
-							intro.style.top = "82px";
-							intro.style.left = "2px";
-							switch (rarity) {
-								case "rare":
-									intro.dataset.nature = "thunderm";
-									break;
-								case "epic":
-									intro.dataset.nature = "metalm";
-									break;
-								case "legend":
-									intro.dataset.nature = "orangem";
-									break;
-							}
-							intro.innerHTML = get.translation(rarity);
-						}
-					};
-					game.leaderLord = ["leader_caocao", "leader_liubei", "leader_sunquan", "leader_yuri"];
-					var dialog1 = ui.create.dialog("选择君主", "hidden");
-					event.dialog1 = dialog1;
-					dialog1.classList.add("fullheight");
-					dialog1.classList.add("halfleft");
-					dialog1.classList.add("fixed");
-					dialog1.classList.add("pointerbutton");
-					dialog1.add([game.leaderLord, "character"]);
-					var i;
-					for (i = 0; i < dialog1.buttons.length; i++) {
-						dialog1.buttons[i].area = "lord";
-					}
-					var j = i;
-					dialog1.add("选择武将");
-					var getCapt = function (str) {
-						if (str.indexOf("_") == -1) {
-							return str[0];
-						}
-						return str[str.indexOf("_") + 1];
-					};
-					var clickCapt = function (e) {
-						if (_status.dragged) {
-							return;
-						}
-						if (this.classList.contains("thundertext")) {
-							dialog1.currentcapt = null;
-							dialog1.currentcaptnode = null;
-							this.classList.remove("thundertext");
-							for (var i = 0; i < dialog1.buttons.length; i++) {
-								dialog1.buttons[i].style.display = "";
-							}
-						} else {
-							if (dialog1.currentcaptnode) {
-								dialog1.currentcaptnode.classList.remove("thundertext");
-							}
-							dialog1.currentcapt = this.link;
-							dialog1.currentcaptnode = this;
-							this.classList.add("thundertext");
-							for (var i = 0; i < dialog1.buttons.length; i++) {
-								if (dialog1.buttons[i].area != "character") {
-									continue;
-								}
-								if (getCapt(dialog1.buttons[i].link) != dialog1.currentcapt) {
-									dialog1.buttons[i].style.display = "none";
-								} else {
-									dialog1.buttons[i].style.display = "";
-								}
-							}
-						}
-						e.stopPropagation();
-					};
-					var captnode = ui.create.div(".caption");
-					var initcapt = function () {
-						var namecapt = [];
-						for (var i = 0; i < game.data.character.length; i++) {
-							var ii = game.data.character[i];
-							if (namecapt.indexOf(getCapt(ii)) == -1) {
-								namecapt.push(getCapt(ii));
-							}
-						}
-						namecapt.sort(function (a, b) {
-							return a > b ? 1 : -1;
-						});
-						captnode.innerHTML = "";
-						for (i = 0; i < namecapt.length; i++) {
-							var span = document.createElement("span");
-							span.innerHTML = " " + namecapt[i].toUpperCase() + " ";
-							span.link = namecapt[i];
-							span.addEventListener(lib.config.touchscreen ? "touchend" : "click", clickCapt);
-							captnode.appendChild(span);
-						}
-						if (game.data.character.length <= 15) {
-							captnode.style.display = "none";
-						} else {
-							captnode.style.display = "";
-						}
-					};
-					initcapt();
-					dialog1.captnode = captnode;
-					dialog1.add(captnode);
-					dialog1.add([game.data.character, "character"]);
-					for (i = j; i < dialog1.buttons.length; i++) {
-						dialog1.buttons[i].area = "character";
-						fixButton(dialog1.buttons[i]);
-					}
-					dialog1.open();
-
-					var dialog2 = ui.create.dialog("战斗难度", "hidden");
-					event.dialog2 = dialog2;
-					dialog2.classList.add("fullheight");
-					dialog2.classList.add("halfright");
-					dialog2.classList.add("fixed");
-					dialog2.classList.add("pointerbutton");
-					dialog2.add([
-						[
-							["", "", "leader_easy"],
-							["", "", "leader_medium"],
-							["", "", "leader_hard"],
-						],
-						"vcard",
-					]);
-					// for(i=0;i<dialog2.buttons.length;i++){
-					// 	dialog2.buttons[i].node.name.style.fontFamily='xinwei';
-					// 	dialog2.buttons[i].node.name.style.fontSize='30px';
-					// 	dialog2.buttons[i].node.name.style.left='4px';
-					// 	dialog2.buttons[i].node.name.dataset.color='unknownm';
-					// 	dialog2.buttons[i]._nopup=true;
-					// 	dialog2.buttons[i].area='difficulty';
-					// }
-					dialog2.add("敌方人数");
-					dialog2.add([
-						[
-							["", "", "leader_2"],
-							["", "", "leader_3"],
-							["", "", "leader_5"],
-							["", "", "leader_8"],
-						],
-						"vcard",
-					]);
-					for (i = 0; i < dialog2.buttons.length; i++) {
-						dialog2.buttons[i].className = "menubutton large pointerdiv";
-						dialog2.buttons[i].innerHTML = dialog2.buttons[i].node.background.innerHTML;
-						dialog2.buttons[i].style.position = "relative";
-						dialog2.buttons[i].style.fontSize = "";
-						dialog2.buttons[i].style.color = "";
-						dialog2.buttons[i].style.textShadow = "";
-						dialog2.buttons[i]._nopup = true;
-						dialog2.buttons[i].style.marginLeft = "4px";
-						dialog2.buttons[i].style.marginRight = "4px";
-
-						if (i < 3) {
-							dialog2.buttons[i].area = "difficulty";
-						} else {
-							dialog2.buttons[i].area = "number";
-						}
-						// if(i<3){
-						// 	dialog2.buttons[i].style.width='160px';
-						// 	dialog2.buttons[i].node.background.classList.remove('tight');
-						// 	dialog2.buttons[i].node.background.style.whiteSpace='nowrap';
-						// }
-						// dialog2.buttons[i].style.background='rgba(0,0,0,0.2)';
-						// dialog2.buttons[i].style.boxShadow='rgba(0, 0, 0, 0.3) 0 0 0 1px';
-						// dialog2.buttons[i].node.background.style.fontFamily='lishu';
-						// dialog2.buttons[i]._nopup=true;
-						// dialog2.buttons[i].area='number';
-						// dialog2.buttons[i].classList.add('menubg');
-						// dialog2.buttons[i].classList.add('large');
-						// dialog2.buttons[i].classList.remove('card');
-					}
-					dialog2.add("挑战武将");
-					dialog2.add([game.data.challenge, "character"]);
-					for (; i < dialog2.buttons.length; i++) {
-						dialog2.buttons[i].area = "challenge";
-						fixButton(dialog2.buttons[i]);
-					}
-					dialog2.open();
-					dialog1.classList.remove("hidden");
-
-					var selected = {
-						lord: [],
-						character: [],
-						difficulty: [],
-						number: [],
-						challenge: [],
-					};
-					var clearSelected = function () {
-						for (var i = 0; i < dialog1.buttons.length; i++) {
-							dialog1.buttons[i].classList.remove("unselectable");
-							dialog1.buttons[i].classList.remove("selected");
-						}
-						for (var i = 0; i < dialog2.buttons.length; i++) {
-							dialog2.buttons[i].classList.remove("unselectable");
-							dialog2.buttons[i].classList.remove("selected");
-						}
-						for (var j in selected) {
-							selected[j].length = 0;
-						}
-						event.removeCharacter.classList.add("disabled");
-					};
-					event.enterArena = ui.create.control("竞技场", "nozoom", function () {
-						if (game.data.money < 150 && !game.data._arena) {
-							return;
-						}
-						if (_status.qianfan || _status.kaibao) {
-							return;
-						}
-						if (!game.data._arena) {
-							game.changeMoney(-150);
-						}
-						_status.enterArena = true;
-						game.resume();
-					});
-					var turnCard = function () {
-						if (this.turned) {
-							return;
-						}
-						_status.chessclicked = true;
-						this.turned = true;
-						var node = this;
-						node.style.transition = "all ease-in 0.3s";
-						node.style.transform = "perspective(1200px) rotateY(270deg) translateX(150px)";
-						var onEnd = function () {
-							game.minskin = false;
-							node.init(node.name);
-							game.minskin = true;
-							node.node.avatar.style.display = "";
-							if (node.rarity) {
-								node.node.intro.innerHTML = get.translation(node.rarity);
-								node.node.intro.classList.add("showintro");
-							}
-							node.classList.add("playerflip");
-							node.style.transform = "none";
-							node.style.transition = "";
-							if (lib.config.animation && !lib.config.low_performance) {
-								setTimeout(function () {
-									switch (game.getRarity(node.name)) {
-										case "rare":
-											node.$rare();
-											break;
-										case "epic":
-											node.$epic();
-											break;
-										case "legend":
-											node.$legend();
-											break;
-									}
-								}, 150);
-							}
-						};
-						node.listenTransition(onEnd);
-					};
-					var zhaomu2 = function () {
-						if (_status.qianfan || _status.kaibao) {
-							return;
-						}
-						if (game.data.money < 100) {
-							return;
-						}
-						_status.chessclicked = true;
-						ui.arena.classList.add("leaderhide");
-						ui.arena.classList.add("leadercontrol");
-						ui.money.hide();
-						_status.kaibao = true;
-						event.cardnodes = [];
-						setTimeout(function () {
-							event.cardnodes.push(cardNode(0));
-							setTimeout(function () {
-								event.cardnodes.push(cardNode(1));
-								setTimeout(function () {
-									event.cardnodes.push(cardNode(2));
-									ui.money.childNodes[1].innerHTML = game.data.dust;
-									game.changeMoney(-100);
-									if (game.data.character.length > 3 && selected.character.length) {
-										event.removeCharacter.addTempClass("controlpressdownx", 500);
-										event.removeCharacter.classList.remove("disabled");
-									}
-									if (game.data.money < 150 && !game.data._arena) {
-										event.enterArena.classList.add("disabled");
-									} else {
-										event.enterArena.addTempClass("controlpressdownx", 500);
-										event.enterArena.classList.remove("disabled");
-									}
-									if (game.data.money < 100) {
-										event.addCharacter.classList.add("disabled");
-									} else {
-										event.addCharacter.addTempClass("controlpressdownx", 500);
-										event.addCharacter.classList.remove("disabled");
-									}
-									initcapt();
-								}, 200);
-							}, 200);
-						}, 500);
-					};
-					event.addCharacter = ui.create.control("招募", "nozoom", zhaomu2);
-					if (game.data.money < 150 && !game.data._arena) {
-						event.enterArena.classList.add("disabled");
-					}
-					if (game.data.money < 100) {
-						event.addCharacter.classList.add("disabled");
-					}
-					var qianfan = function () {
-						if (_status.kaibao) {
-							return;
-						}
-						if (game.data.character.length <= 3) {
-							return;
-						}
-						if (!selected.character.length) {
-							return;
-						}
-						// _status.chessclicked=true;
-						// _status.qianfan=true;
-						// event.enterArena.style.opacity=0.5;
-						// event.addCharacter.style.opacity=0.5;
-						// event.fight.style.opacity=0.5;
-						var current = selected.character.slice(0);
-						clearSelected();
-						var maxq = game.data.character.length - 3;
-						if (current.length <= maxq) {
-							for (var i = 0; i < current.length; i++) {
-								current[i].classList.add("selected");
-								selected.character.push(current[i]);
-							}
-						}
-						for (var i = 0; i < dialog1.buttons.length; i++) {
-							if (dialog1.buttons[i].area != "character" || maxq == current.length) {
-								dialog1.buttons[i].classList.add("unselectable");
-							}
-						}
-						for (var i = 0; i < dialog2.buttons.length; i++) {
-							dialog2.buttons[i].classList.add("unselectable");
-						}
-						if (!selected.character.length) {
-							alert("至少需要保留3名武将");
-							return;
-						}
-						var translation = get.translation(selected.character[0].link);
-						for (var i = 1; i < selected.character.length; i++) {
-							translation += "、" + get.translation(selected.character[i].link);
-						}
-						var dust = 0;
-						for (var i = 0; i < selected.character.length; i++) {
-							var node = selected.character[i];
-							var rarity = game.getRarity(node.link);
-							switch (rarity) {
-								case "common":
-									dust += 5;
-									break;
-								case "rare":
-									dust += 20;
-									break;
-								case "epic":
-									dust += 100;
-									break;
-								case "legend":
-									dust += 400;
-									break;
-							}
-						}
-						if (confirm(translation + "将被遣返，一共将获得" + dust + "个招募令。是否确定遣返？")) {
-							for (var i = 0; i < selected.character.length; i++) {
-								var node = selected.character[i];
-								var rarity = game.getRarity(node.link);
-								switch (rarity) {
-									case "common":
-										game.changeDust(5);
+							node.name = name;
+							if (!load) {
+								switch (i) {
+									case 0: {
+										node.style.left = "calc(50% - 75px)";
+										node.style.top = "calc(25% - 90px)";
 										break;
-									case "rare":
-										game.changeDust(20);
+									}
+									case 1: {
+										node.style.left = "calc(30% - 90px)";
+										node.style.top = "calc(75% - 90px)";
 										break;
-									case "epic":
-										game.changeDust(100);
+									}
+									case 2: {
+										node.style.left = "calc(70% - 60px)";
+										node.style.top = "calc(75% - 90px)";
 										break;
-									case "legend":
-										game.changeDust(400);
+									}
+									case "51": {
+										node.style.left = "calc(50% - 60px)";
+										node.style.top = "calc(25% - 75px)";
 										break;
-								}
-								game.data.character.remove(node.link);
-								game.saveData();
-								if (game.data.money >= 100) {
-									event.addCharacter.addTempClass("controlpressdownx", 500);
-									event.addCharacter.classList.remove("disabled");
-								}
-								if (game.data.money >= 150) {
-									event.enterArena.addTempClass("controlpressdownx", 500);
-									event.enterArena.classList.remove("disabled");
-								}
-								node.delete();
-								dialog1.buttons.remove(node);
-							}
-							initcapt();
-						}
-					};
-					event.removeCharacter = ui.create.control("遣返", "nozoom", qianfan);
-					event.removeCharacter.classList.add("disabled");
-					event.fight = ui.create.control("开始战斗", "nozoom", function () {
-						if (_status.kaibao || _status.qianfan) {
-							return;
-						}
-						if (selected.challenge.length) {
-							var cname = selected.challenge[0].link;
-							var rarity = game.getRarity(cname);
-							switch (rarity) {
-								case "common":
-									rarity = 40;
-									break;
-								case "rare":
-									rarity = 100;
-									break;
-								case "epic":
-									rarity = 400;
-									break;
-								case "legend":
-									rarity = 1600;
-									break;
-							}
-							if (!confirm("即将挑战" + get.translation(cname) + "，战斗胜利后可消耗" + rarity + "招募令招募该武将，无论是否招募，挑战列表将被刷新。是否继续？")) {
-								return;
-							}
-						}
-						_status.enemylist = [];
-						_status.mylist = [];
-						if (selected.lord.length) {
-							_status.mylist.push(selected.lord[0].link);
-							_status.lord = selected.lord[0].link;
-						}
-						if (selected.character.length) {
-							for (var i = 0; i < selected.character.length; i++) {
-								_status.mylist.push(selected.character[i].link);
-							}
-						} else {
-							_status.mylist = _status.mylist.concat(game.data.character.randomGets(_status.lord ? 2 : 3));
-						}
-						var difficulty;
-						if (selected.challenge.length) {
-							_status.challenge = selected.challenge[0].link;
-							_status.enemylist.push(_status.challenge);
-							switch (game.getRarity(_status.challenge)) {
-								case "common":
-									_status.challengeMoney = 40;
-									break;
-								case "rare":
-									_status.challengeMoney = 100;
-									break;
-								case "epic":
-									_status.challengeMoney = 400;
-									break;
-								case "legend":
-									_status.challengeMoney = 1600;
-									break;
-							}
-							var rank = get.rank(_status.challenge);
-							var total = Math.max(2, _status.mylist.length - 1);
-							var list;
-							switch (rank) {
-								case "s":
-									list = lib.rank.ap;
-									break;
-								case "ap":
-									list = lib.rank.s.concat(lib.rank.a);
-									break;
-								case "a":
-									list = lib.rank.ap.concat(lib.rank.am);
-									break;
-								case "am":
-									list = lib.rank.a.concat(lib.rank.bp);
-									break;
-								case "bp":
-									list = lib.rank.am.concat(lib.rank.b);
-									break;
-								case "b":
-									list = lib.rank.bp.concat(lib.rank.bm);
-									break;
-								case "bm":
-									list = lib.rank.b.concat(lib.rank.c);
-									break;
-								case "c":
-									list = lib.rank.bm.concat(lib.rank.d);
-									break;
-								case "d":
-									list = lib.rank.c;
-									break;
-							}
-							for (var i = 0; i < total; i++) {
-								if (Math.random() < 0.7) {
-									_status.enemylist.push(Array.prototype.randomGet.apply(lib.rank[rank], _status.enemylist.concat(_status.mylist)));
-								} else {
-									_status.enemylist.push(Array.prototype.randomGet.apply(list, _status.enemylist.concat(_status.mylist)));
-								}
-							}
-						} else {
-							var number, list;
-							if (selected.difficulty.length) {
-								difficulty = selected.difficulty[0].link[2];
-							} else {
-								difficulty = "leader_easy";
-							}
-							_status.difficulty = difficulty;
-							if (selected.number.length) {
-								number = selected.number[0].link[2];
-								number = parseInt(number[number.length - 1]);
-							} else {
-								number = 3;
-							}
-							switch (difficulty) {
-								case "leader_easy":
-									list = lib.rank.d.concat(lib.rank.c).concat(lib.rank.bm);
-									break;
-								case "leader_medium":
-									list = lib.rank.b.concat(lib.rank.bp).concat(lib.rank.am);
-									break;
-								case "leader_hard":
-									list = lib.rank.a
-										.concat(lib.rank.ap)
-										.concat(lib.rank.s)
-										.concat(lib.rank.am.randomGets(Math.floor(lib.rank.am.length / 2)));
-									break;
-							}
-							for (var i = 0; i < lib.hiddenCharacters.length; i++) {
-								if (list.length <= number) {
-									break;
-								}
-								list.remove(lib.hiddenCharacters[i]);
-							}
-							for (var i = 0; i < _status.mylist.length; i++) {
-								list.remove(_status.mylist[i]);
-							}
-							_status.enemylist = list.randomGets(number);
-						}
-						var numdel = _status.enemylist.length - _status.mylist.length;
-						var reward = 0;
-						for (var i = 0; i < _status.enemylist.length; i++) {
-							switch (get.rank(_status.enemylist[i])) {
-								case "s":
-									reward += 50;
-									break;
-								case "ap":
-									reward += 40;
-									break;
-								case "a":
-									reward += 32;
-									break;
-								case "am":
-									reward += 25;
-									break;
-								case "bp":
-									reward += 19;
-									break;
-								case "b":
-									reward += 14;
-									break;
-								case "bm":
-									reward += 10;
-									break;
-								case "c":
-									reward += 7;
-									break;
-								case "d":
-									reward += 5;
-									break;
-							}
-						}
-						if (numdel > 0) {
-							switch (difficulty) {
-								case "leader_easy":
-									reward += 10 * numdel;
-									break;
-								case "leader_medium":
-									reward += 20 * numdel;
-									break;
-								case "leader_hard":
-									reward += 40 * numdel;
-									break;
-							}
-						}
-						var punish = 0;
-						for (var i = 0; i < _status.mylist.length; i++) {
-							switch (get.rank(_status.mylist[i])) {
-								case "s":
-									punish += 25;
-									break;
-								case "ap":
-									punish += 20;
-									break;
-								case "a":
-									punish += 16;
-									break;
-								case "am":
-									punish += 12;
-									break;
-								case "bp":
-									punish += 9;
-									break;
-								case "b":
-									punish += 7;
-									break;
-								case "bm":
-									punish += 5;
-									break;
-								case "c":
-									punish += 3;
-									break;
-								case "d":
-									punish += 2;
-									break;
-							}
-						}
-						if (numdel < 0) {
-							switch (difficulty) {
-								case "leader_easy":
-									punish -= 5 * numdel;
-									break;
-								case "leader_medium":
-									punish -= 10 * numdel;
-									break;
-								case "leader_hard":
-									punish -= 20 * numdel;
-									break;
-							}
-						}
-						game.reward = Math.max(3 * _status.enemylist.length, reward - punish);
-						if (!_status.lord) {
-							switch (difficulty) {
-								case "leader_easy":
-									game.reward += 10;
-									break;
-								case "leader_medium":
-									game.reward += 20;
-									break;
-								case "leader_hard":
-									game.reward += 40;
-									break;
-							}
-						}
-						game.resume();
-					});
-					event.custom.replace.button = function (button) {
-						if (_status.kaibao) {
-							return;
-						}
-						if (button.classList.contains("unselectable") && !button.classList.contains("selected")) {
-							return;
-						}
-						_status.chessclicked = true;
-						button.classList.toggle("selected");
-						if (button.classList.contains("selected")) {
-							selected[button.area].add(button);
-						} else {
-							selected[button.area].remove(button);
-						}
-						switch (button.area) {
-							case "lord": {
-								for (var i = 0; i < dialog1.buttons.length; i++) {
-									if (dialog1.buttons[i].area == "lord") {
-										if (selected.lord.length) {
-											dialog1.buttons[i].classList.add("unselectable");
-										} else {
-											dialog1.buttons[i].classList.remove("unselectable");
-										}
+									}
+									case "52": {
+										node.style.left = "calc(35% - 55px)";
+										node.style.top = "calc(75% - 25px)";
+										break;
+									}
+									case "53": {
+										node.style.left = "calc(65% - 65px)";
+										node.style.top = "calc(75% - 25px)";
+										break;
+									}
+									case "54": {
+										node.style.left = "calc(25% - 75px)";
+										node.style.top = "calc(50% - 70px)";
+										break;
+									}
+									case "55": {
+										node.style.left = "calc(75% - 45px)";
+										node.style.top = "calc(50% - 70px)";
+										break;
 									}
 								}
-								break;
-							}
-							case "character": {
-								for (var i = 0; i < dialog1.buttons.length; i++) {
-									if (dialog1.buttons[i].area == "character") {
-										var maxq = game.data.character.length - 3;
-										if ((!_status.qianfan && selected.character.length > 5) || (_status.qianfan && selected.character.length >= maxq)) {
-											dialog1.buttons[i].classList.add("unselectable");
-										} else {
-											dialog1.buttons[i].classList.remove("unselectable");
-										}
-									}
+								if (!kaibao) {
+									node.style.top = "calc(50% - 180px)";
+									ui.refresh(node);
 								}
-								break;
-							}
-							case "difficulty":
-							case "number": {
-								for (var i = 0; i < dialog2.buttons.length; i++) {
-									if (dialog2.buttons[i].area == button.area) {
-										if (selected[button.area].length) {
-											dialog2.buttons[i].classList.add("unselectable");
-										} else {
-											dialog2.buttons[i].classList.remove("unselectable");
-										}
-									}
-								}
-								break;
-							}
-							case "challenge": {
-								if (selected.challenge.length) {
-									for (var i = 0; i < dialog2.buttons.length; i++) {
-										if (dialog2.buttons[i].area == "challenge") {
-											dialog2.buttons[i].classList.add("unselectable");
-										} else {
-											dialog2.buttons[i].classList.add("unselectable");
-											dialog2.buttons[i].classList.remove("selected");
-										}
-									}
-								} else {
-									for (var i = 0; i < dialog2.buttons.length; i++) {
-										dialog2.buttons[i].classList.remove("unselectable");
-									}
-								}
-								break;
-							}
-						}
-						if (selected.character.length && game.data.character.length > 3) {
-							event.removeCharacter.addTempClass("controlpressdownx", 500);
-							event.removeCharacter.classList.remove("disabled");
-						} else {
-							event.removeCharacter.classList.add("disabled");
-						}
-					};
-					event.custom.add.window = function () {
-						if (!_status.kaibao) {
-							var glows = document.querySelectorAll(".button.glow2");
-							for (var i = 0; i < glows.length; i++) {
-								glows[i].classList.remove("glow2");
-							}
-						}
-						if (_status.chessclicked) {
-							_status.chessclicked = false;
-							return;
-						}
-						if (_status.kaibao && event.cardnodes && event.cardnodes.length) {
-							for (var i = 0; i < event.cardnodes.length; i++) {
-								if (!event.cardnodes[i].turned) {
-									return;
-								}
-							}
-							for (var i = 0; i < event.cardnodes.length; i++) {
-								event.cardnodes[i].delete();
-							}
-							ui.arena.classList.remove("leaderhide");
-							setTimeout(function () {
-								ui.arena.classList.remove("leadercontrol");
-							}, 500);
-							ui.money.show();
-							delete event.cardnodes;
-							_status.kaibao = false;
-							return;
-						}
-						if (_status.qianfan) {
-							_status.qianfan = false;
-							event.removeCharacter.replace("遣返", qianfan);
-							if (game.data.money >= 100) {
-								event.addCharacter.addTempClass("controlpressdownx", 500);
-								event.addCharacter.classList.remove("disabled");
-							} else {
-								event.addCharacter.classList.add("disabled");
-							}
-							if (game.data.money >= 150 || game.data._arena) {
-								event.enterArena.addTempClass("controlpressdownx", 500);
-								event.enterArena.classList.remove("disabled");
-							} else {
-								event.enterArena.classList.add("disabled");
-							}
-							event.fight.style.opacity = 1;
-						}
-						clearSelected();
-					};
-					lib.init.onfree();
-					game.pause();
-					"step 2";
-					if (!game.data.arena) {
-						event.dialog1.close();
-						event.dialog2.close();
-						event.fight.close();
-						event.enterArena.close();
-						event.addCharacter.close();
-						event.removeCharacter.close();
-					}
-					ui.arena.classList.add("leaderhide");
-					ui.money.hide();
-					game.delay();
-					"step 3";
-					ui.arena.classList.remove("leaderhide");
-					if (!_status.enterArena) {
-						ui.wuxie.show();
-						ui.auto.show();
-						ui.control.style.top = "";
-						if (!get.is.safari()) {
-							ui.control.style.transition = "";
-							ui.control.style.display = "none";
-						}
-						event.finish();
-					} else {
-						game.minskin = false;
-						event.arenanodes = [];
-						event.arenachoice = [];
-						event.arenachoicenodes = [];
-						event.arrangeNodes = function () {
-							var num = event.arenachoicenodes.length;
-							var width = num * 75 + (num - 1) * 8;
-							for (var i = 0; i < event.arenachoicenodes.length; i++) {
-								var left = -width / 2 + i * 83 - 37.5;
-								if (left < 0) {
-									event.arenachoicenodes[i].style.left = "calc(50% - " + -left + "px)";
-								} else {
-									event.arenachoicenodes[i].style.left = "calc(50% + " + left + "px)";
-								}
-							}
-						};
-						event.clickNode = function () {
-							if (this.classList.contains("removing")) {
-								return;
-							}
-							if (this.isChosen) {
-								if (_status.chessgiveup) {
-									return;
-								}
-								if (!event.choosefinished) {
-									return;
-								}
-								if (this.classList.contains("unselectable") && !this.classList.contains("selected")) {
-									return;
-								}
-								_status.chessclicked = true;
-								this.classList.toggle("selected");
-								if (this.classList.contains("selected")) {
-									this.style.transform = "scale(0.85)";
-								} else {
-									this.style.transform = "scale(0.8)";
-								}
-								if (document.querySelectorAll(".player.selected").length >= 3) {
-									for (var i = 0; i < event.arenachoicenodes.length; i++) {
-										if (!event.arenachoicenodes[i].classList.contains("dead")) {
-											event.arenachoicenodes[i].classList.add("unselectable");
-										}
-									}
-								} else {
-									for (var i = 0; i < event.arenachoicenodes.length; i++) {
-										event.arenachoicenodes[i].classList.remove("unselectable");
-									}
-								}
-							} else {
-								while (event.arenanodes.length) {
-									var node = event.arenanodes.shift();
-									if (node == this) {
-										node.node.hp.hide();
-										node.style.transform = "scale(0.5)";
-										node.style.top = "calc(50% + 50px)";
-										event.arenachoicenodes.push(node);
-										event.arrangeNodes();
-									} else {
-										node.delete();
-									}
-								}
-								this.isChosen = true;
-								event.arenachoice.push(this.name);
-								game.resume();
-							}
-						};
-					}
-					"step 4";
-					var choice;
-					if (game.data._arena) {
-						game.data.arena = game.data._arena;
-						delete game.data._arena;
-					}
-					if (game.data.arena && !_status.arenaLoaded) {
-						game.data.arena.loaded = true;
-						event.arenachoice = game.data.arena.arenachoice;
-						for (var i = 0; i < event.arenachoice.length; i++) {
-							var node = event.cardNode(0, event.arenachoice[i], true);
-							node.node.hp.style.display = "none";
-							node.init(node.name);
-							node.isChosen = true;
-							node.listen(event.clickNode);
-							node.style.transform = "scale(0.5)";
-							node.style.top = "calc(50% + 50px)";
-							event.arenachoicenodes.push(node);
-						}
-						event.arrangeNodes();
-						for (var i = 0; i < event.arenachoicenodes.length; i++) {
-							var node = event.arenachoicenodes[i];
-							if (game.data.arena.choice) {
-								ui.refresh(node);
 								node.style.opacity = 1;
 							}
-						}
-						if (game.data.arena.choice) {
-							choice = game.data.arena.choice;
-						} else {
-							return;
-						}
-					} else {
-						switch (event.arenachoice.length) {
-							case 0:
-								choice = lib.rank.d.randomGets(3);
-								break;
-							case 1:
-								choice = lib.rank.c.randomGets(3);
-								break;
-							case 2:
-								choice = lib.rank.bm.randomGets(3);
-								break;
-							case 3:
-								choice = lib.rank.b.randomGets(3);
-								break;
-							case 4:
-								choice = lib.rank.bp.randomGets(3);
-								break;
-							case 5:
-								choice = lib.rank.am.randomGets(3);
-								break;
-							case 6:
-								choice = lib.rank.a.randomGets(3);
-								break;
-							case 7:
-								choice = lib.rank.ap.randomGets(3);
-								break;
-							case 8:
-								choice = lib.rank.s.randomGets(3);
-								break;
-						}
-						game.data.arena = {
-							win: 0,
-							dead: [],
-							acted: [],
-							choice: choice,
-							arenachoice: event.arenachoice,
-						};
-						game.saveData();
-					}
-					_status.arenaLoaded = true;
-					var node;
-					node = event.cardNode(0, choice[0]);
-					node.init(node.name);
-					node.listen(event.clickNode);
-					event.arenanodes.push(node);
-					setTimeout(function () {
-						node = event.cardNode(1, choice[1]);
-						node.init(node.name);
-						node.listen(event.clickNode);
-						if (event.choosefinished) {
-							node.delete();
-						} else {
-							event.arenanodes.push(node);
-						}
-						setTimeout(function () {
-							node = event.cardNode(2, choice[2]);
-							node.init(node.name);
-							node.listen(event.clickNode);
-							if (event.choosefinished) {
-								node.delete();
-							} else {
-								event.arenanodes.push(node);
-							}
-						}, 200);
-					}, 200);
-					lib.init.onfree();
-					game.pause();
-					"step 5";
-					if (event.arenachoice.length < 9) {
-						event.goto(4);
-					} else {
-						if (_status.arenaLoaded) {
-							game.delay(2);
-						}
-						game.data.arena.arenachoice = event.arenachoice;
-						delete game.data.arena.choice;
-						game.saveData();
-						event.choosefinished = true;
-					}
-					"step 6";
-					game.minskin = true;
-					ui.arena.classList.add("noleft");
-					var nodes = event.arenachoicenodes;
-					for (var i = 0; i < nodes.length; i++) {
-						nodes[i].style.transform = "scale(0.8)";
-					}
-					if (_status.arenaLoaded) {
-						setTimeout(function () {
-							nodes[0].style.left = "calc(50% - 215px)";
-							nodes[0].style.top = "calc(50% - 260px)";
-						}, 0);
-						setTimeout(function () {
-							nodes[1].style.left = "calc(50% - 75px)";
-							nodes[1].style.top = "calc(50% - 260px)";
-						}, 50);
-						setTimeout(function () {
-							nodes[2].style.left = "calc(50% + 65px)";
-							nodes[2].style.top = "calc(50% - 260px)";
-						}, 100);
-						setTimeout(function () {
-							nodes[3].style.left = "calc(50% - 215px)";
-							nodes[3].style.top = "calc(50% - 90px)";
-						}, 150);
-						setTimeout(function () {
-							nodes[4].style.left = "calc(50% - 75px)";
-							nodes[4].style.top = "calc(50% - 90px)";
-						}, 200);
-						setTimeout(function () {
-							nodes[5].style.left = "calc(50% + 65px)";
-							nodes[5].style.top = "calc(50% - 90px)";
-						}, 250);
-						setTimeout(function () {
-							nodes[6].style.left = "calc(50% - 215px)";
-							nodes[6].style.top = "calc(50% + 80px)";
-						}, 300);
-						setTimeout(function () {
-							nodes[7].style.left = "calc(50% - 75px)";
-							nodes[7].style.top = "calc(50% + 80px)";
-						}, 350);
-						setTimeout(function () {
-							nodes[8].style.left = "calc(50% + 65px)";
-							nodes[8].style.top = "calc(50% + 80px)";
-						}, 400);
-					} else {
-						nodes[0].style.left = "calc(50% - 215px)";
-						nodes[0].style.top = "calc(50% - 260px)";
-						nodes[1].style.left = "calc(50% - 75px)";
-						nodes[1].style.top = "calc(50% - 260px)";
-						nodes[2].style.left = "calc(50% + 65px)";
-						nodes[2].style.top = "calc(50% - 260px)";
-						nodes[3].style.left = "calc(50% - 215px)";
-						nodes[3].style.top = "calc(50% - 90px)";
-						nodes[4].style.left = "calc(50% - 75px)";
-						nodes[4].style.top = "calc(50% - 90px)";
-						nodes[5].style.left = "calc(50% + 65px)";
-						nodes[5].style.top = "calc(50% - 90px)";
-						nodes[6].style.left = "calc(50% - 215px)";
-						nodes[6].style.top = "calc(50% + 80px)";
-						nodes[7].style.left = "calc(50% - 75px)";
-						nodes[7].style.top = "calc(50% + 80px)";
-						nodes[8].style.left = "calc(50% + 65px)";
-						nodes[8].style.top = "calc(50% + 80px)";
-						for (var i = 0; i < nodes.length; i++) {
-							ui.refresh(nodes[i]);
-							if (game.data.arena.dead.includes(nodes[i].name)) {
-								nodes[i].classList.add("dead");
-								nodes[i].style.opacity = 0.3;
-							} else {
-								nodes[i].style.opacity = 1;
-								if (game.data.arena.acted.includes(nodes[i].name)) {
-									var acted = nodes[i].node.action;
-									acted.style.opacity = 1;
-									acted.innerHTML = "疲劳";
-									acted.dataset.nature = "soilm";
-									acted.classList.add("freecolor");
-								}
-							}
-						}
-					}
-
-					var victory = ui.create.div().hide();
-					victory.innerHTML = "<span>" + game.data.arena.win + "</span>胜";
-					victory.style.top = "auto";
-					victory.style.left = "auto";
-					victory.style.right = "20px";
-					victory.style.bottom = "15px";
-					victory.style.fontSize = "30px";
-					victory.style.fontFamily = "huangcao";
-					victory.firstChild.style.marginRight = "5px";
-					ui.window.appendChild(victory);
-					ui.refresh(victory);
-					victory.show();
-
-					event.checkPrize = function () {
-						// event.kaibao=true;
-						event.prize = [];
-						event.turnCard2 = function () {
-							if (this.turned) {
-								return;
-							}
-							_status.chessclicked = true;
-							this.turned = true;
-							var node = this;
-							setTimeout(function () {
-								node.turned2 = true;
-							}, 1000);
-							if (node.name == "chess_coin" || node.name == "chess_dust") {
-								node.style.transition = "all 0s";
-								node.style.transform = "none";
-								node.style.overflow = "visible";
-								node.style.background = "none";
-								node.style.boxShadow = "none";
-								var div = ui.create.div(node);
-								div.style.transition = "all 0s";
-								if (node.name == "chess_coin") {
-									div.innerHTML = "<span>㉤</span><span>" + node.num + "</span>";
-									div.firstChild.style.color = "rgb(255, 230, 0)";
-									node.$coin();
+							node.node.count.remove();
+							node.node.marks.remove();
+							const rarity = game.getRarity(name);
+							if (rarity !== "common") {
+								node.rarity = rarity;
+								node.node.intro.style.left = "14px";
+								if (node.classList.contains("minskin")) {
+									node.node.intro.style.top = "84px";
 								} else {
-									div.innerHTML = "<span>⚑</span><span>" + node.num + "</span>";
-									div.firstChild.style.color = "rgb(111, 198, 255)";
-									div.firstChild.style.marginRight = "3px";
-									node.$dust();
+									node.node.intro.style.top = "145px";
 								}
-								div.style.fontFamily = "huangcao";
-								div.style.fontSize = "50px";
-								div.style.top = "40px";
-								div.style.letterSpacing = "8px";
-								div.style.whiteSpace = "nowrap";
-								// div.dataset.nature='metal';
-
-								return;
+								node.node.intro.style.fontSize = "20px";
+								node.node.intro.style.fontFamily = "yuanli";
+								switch (rarity) {
+									case "rare":
+										node.node.intro.dataset.nature = "thunderm";
+										break;
+									case "epic":
+										node.node.intro.dataset.nature = "metalm";
+										break;
+									case "legend":
+										node.node.intro.dataset.nature = "orangem";
+										break;
+								}
 							}
-							node.style.transition = "all ease-in 0.3s";
-							node.style.transform = "perspective(1200px) rotateY(270deg) translateX(150px)";
-							var onEnd = function () {
-								node.init(node.name);
-								node.node.avatar.style.display = "";
-								if (node.rarity) {
-									node.node.intro.innerHTML = get.translation(node.rarity);
-									node.node.intro.classList.add("showintro");
-								}
-								node.classList.add("playerflip");
-								node.style.transform = "none";
-								node.style.transition = "";
-								if (lib.config.animation && !lib.config.low_performance) {
-									setTimeout(function () {
-										switch (game.getRarity(node.name)) {
-											case "rare":
-												node.$rare();
-												break;
-											case "epic":
-												node.$epic();
-												break;
-											case "legend":
-												node.$legend();
-												break;
-										}
-									}, 150);
-								}
-							};
-							node.listenTransition(onEnd);
-						};
-						setTimeout(
-							function () {
-								nodes[0].delete();
-							},
-							400 + Math.random() * 300
-						);
-						setTimeout(
-							function () {
-								nodes[1].delete();
-							},
-							400 + Math.random() * 300
-						);
-						setTimeout(
-							function () {
-								nodes[2].delete();
-							},
-							400 + Math.random() * 300
-						);
-						setTimeout(
-							function () {
-								nodes[3].delete();
-							},
-							400 + Math.random() * 300
-						);
-						setTimeout(
-							function () {
-								nodes[4].delete();
-							},
-							400 + Math.random() * 300
-						);
-						setTimeout(
-							function () {
-								nodes[5].delete();
-							},
-							400 + Math.random() * 300
-						);
-						setTimeout(
-							function () {
-								nodes[6].delete();
-							},
-							400 + Math.random() * 300
-						);
-						setTimeout(
-							function () {
-								nodes[7].delete();
-							},
-							400 + Math.random() * 300
-						);
-						setTimeout(
-							function () {
-								nodes[8].delete();
-							},
-							400 + Math.random() * 300
-						);
-						setTimeout(function () {
-							var prize = new Array(6);
-							var map = [1, 2, 3, 4, 5];
-							var ccount = 3;
-							var win = game.data.arena.win;
-							var prizeValue;
-							switch (win) {
-								case 0:
-									prizeValue = 100;
-									break;
-								case 1:
-									prizeValue = 120;
-									break;
-								case 2:
-									prizeValue = 150;
-									break;
-								case 3:
-									prizeValue = 190;
-									break;
-								case 4:
-									prizeValue = 240;
-									break;
-								case 5:
-									prizeValue = 300;
-									break;
-								case 6:
-									prizeValue = 370;
-									break;
-								case 7:
-									prizeValue = 450;
-									break;
-								case 8:
-									prizeValue = 540;
-									break;
-								case 9:
-									prizeValue = 640;
-									break;
-								case 10:
-									prizeValue = 750;
-									break;
-								case 11:
-									prizeValue = 870;
-									break;
-								case 12:
-									prizeValue = 1000;
-									break;
-							}
-							if (Math.random() < 0.4) {
-								if (win >= 3 && Math.random() < 0.5) {
-									ccount = 4;
-									prizeValue -= 33;
+							if (kaibao) {
+								node.node.avatar.style.display = "none";
+								node.style.transform = "perspective(1200px) rotateY(180deg) translateX(0)";
+								if (typeof i === "string") {
+									node.listen(event.turnCard2);
 								} else {
-									ccount = 2;
-									prizeValue += 33;
-								}
-							}
-							prizeValue -= 100;
-							while (ccount--) {
-								prize[map.randomRemove()] = game.getLeaderCharacter();
-							}
-							if (map.length) {
-								prizeValue /= map.length;
-							}
-							while (map.length) {
-								var val = Math.round((Math.random() * 0.4 + 0.8) * prizeValue);
-								if (Math.random() < 0.7) {
-									prize[map.shift()] = ["chess_coin", Math.max(Math.ceil(Math.random() * 5), val)];
-								} else {
-									val = Math.round(val / 3);
-									prize[map.shift()] = ["chess_dust", Math.max(Math.ceil(Math.random() * 3), val)];
-								}
-							}
-							for (var i = 1; i < prize.length; i++) {
-								if (typeof prize[i] == "string") {
-									var name = prize[i];
-									var rarity = game.getRarity(name);
+									node.listen(turnCard);
 									if (!game.data.character.includes(name)) {
 										game.data.character.push(name);
 										if (game.data.challenge.includes(name)) {
 											game.data.challenge = game.getLeaderList();
+											game.saveData();
 										}
+										const button = ui.create.button(name, "character");
+										button.classList.add("glow2");
+										dialog1.content.lastChild.insertBefore(button, dialog1.content.lastChild.firstChild);
+										dialog1.buttons.push(button);
+										fixButton(button);
+										button.area = "character";
 									} else {
 										switch (rarity) {
 											case "common":
@@ -3796,166 +2459,1514 @@ export default () => {
 												break;
 										}
 									}
-								} else if (prize[i][0] == "chess_coin") {
-									game.data.money += prize[i][1];
-								} else {
-									game.data.dust += prize[i][1];
 								}
-								setTimeout(
-									(function (i) {
-										return function () {
-											var node;
-											if (typeof prize[i] == "string") {
-												node = event.cardNode("5" + i, prize[i]);
-											} else {
-												node = event.cardNode("5" + i, prize[i][0]);
-												node.num = prize[i][1];
-											}
-											event.prize.push(node);
-											if (i == prize.length - 1) {
-												event.kaibao = true;
-											}
-										};
-									})(i),
-									i * 200
-								);
+							} else {
+								node.style.transform = "";
 							}
-							delete game.data.arena;
-							game.saveData();
-						}, 1000);
-					};
-					if (game.data.arena.dead.length < 9 && game.data.arena.win < 12) {
-						event.arenafight = ui.create.control("开始战斗", "nozoom", function () {
-							if (_status.chessgiveup) {
-								return;
-							}
-							_status.mylist = [];
-							var list = [];
-							for (var i = 0; i < nodes.length; i++) {
-								if (nodes[i].classList.contains("selected")) {
-									_status.mylist.push(nodes[i].name);
-								} else if (!nodes[i].classList.contains("dead")) {
-									list.push(nodes[i].name);
-								}
-							}
-							if (_status.mylist.length == 0) {
-								_status.mylist = list.randomGets(3);
-							}
-							if (_status.mylist.length == 0) {
-								return;
-							}
-							for (var i = 0; i < _status.mylist.length; i++) {
-								game.data.arena.dead.push(_status.mylist[i]);
-							}
-							game.saveData();
-							switch (game.data.arena.win) {
-								case 0:
-									list = lib.rank.d.concat(lib.rank.c);
-									break;
-								case 1:
-									list = lib.rank.c.concat(lib.rank.bm);
-									break;
-								case 2:
-									list = lib.rank.bm.concat(lib.rank.b);
-									break;
-								case 3:
-									list = lib.rank.b.concat(lib.rank.bp);
-									break;
-								case 4:
-									list = lib.rank.bp.concat(lib.rank.am);
-									break;
-								case 5:
-									list = lib.rank.am.concat(lib.rank.a);
-									break;
-								case 6:
-									list = lib.rank.a.concat(lib.rank.ap);
-									break;
-								default:
-									list = lib.rank.ap.concat(lib.rank.s);
-							}
-							for (var i = 0; i < _status.mylist.length; i++) {
-								list.remove(_status.mylist[i]);
-							}
-							_status.enemylist = list.randomGets(3);
-							for (var i = 0; i < nodes.length; i++) {
-								nodes[i].delete();
-							}
-							victory.delete();
-							event.arenafight.close();
-							event.arenaback.close();
-							event.arenagiveup.close();
-							game.resume();
-						});
-						event.arenaback = ui.create.control("返回", "nozoom", function () {
-							if (_status.chessgiveup) {
-								return;
-							}
-							game.data._arena = game.data.arena;
-							delete game.data.arena;
-							game.saveData();
-							game.reload();
-						});
-						var giveup = function () {
-							if (confirm("放弃后剩余战斗将视为战败并结算奖励，是否确定放弃？")) {
-								_status.chessclicked = true;
-								event.arenafight.close();
-								event.arenaback.close();
-								event.arenagiveup.close();
-								event.checkPrize();
-							}
-							// _status.chessclicked=true;
-							// _status.chessgiveup=true;
-							// event.arenafight.style.opacity=0.5;
-							// event.arenaback.style.opacity=0.5;
-							// this.replace('确认放弃',function(){
-							// 	_status.chessclicked=true;
-							// 	event.arenafight.close();
-							// 	event.arenaback.close();
-							// 	event.arenagiveup.close();
-							// 	event.checkPrize();
-							// });
+							return node;
 						};
-						event.arenagiveup = ui.create.control("放弃", "nozoom", giveup);
-					} else {
-						event.checkPrize();
-					}
-
-					event.custom.add.window = function () {
-						if (_status.chessclicked) {
-							_status.chessclicked = false;
+						event.cardNode = cardNode;
+						if (game.data.arena) {
+							ui.money.style.display = "none";
+							_status.enterArena = true;
 							return;
 						}
-						if (event.kaibao) {
-							for (var i = 0; i < event.prize.length; i++) {
-								if (!event.prize[i].turned2) {
+						const groupSort = name => {
+							if (lib.character[name][1] === "wei") {
+								return 0;
+							}
+							if (lib.character[name][1] === "shu") {
+								return 1;
+							}
+							if (lib.character[name][1] === "wu") {
+								return 2;
+							}
+							if (lib.character[name][1] === "qun") {
+								return 3;
+							}
+							if (lib.character[name][1] === "key") {
+								return 4;
+							}
+						};
+						game.data.character = game.data.character.filter(i => {
+							return get.is.object(lib.character[i]);
+						});
+						game.data.character.sort((a, b) => {
+							const del = groupSort(a) - groupSort(b);
+							if (del !== 0) {
+								return del;
+							}
+							const aa = a;
+							const bb = b;
+							if (a.indexOf("_") !== -1) {
+								a = a.slice(a.indexOf("_") + 1);
+							}
+							if (b.indexOf("_") !== -1) {
+								b = b.slice(b.indexOf("_") + 1);
+							}
+							if (a !== b) {
+								return a > b ? 1 : -1;
+							}
+							return aa > bb ? 1 : -1;
+						});
+						if (game.data.character.length === 0 || !game.data.challenge) {
+							game.data.character = lib.rank.rarity.common.randomGets(3);
+							game.data.challenge = game.getLeaderList();
+							game.saveData();
+						}
+						const fixButton = button => {
+							const rarity = game.getRarity(button.link);
+							if (rarity !== "common") {
+								const intro = button.node.intro;
+								intro.classList.add("showintro");
+								intro.style.fontFamily = "yuanli";
+								intro.style.fontSize = "20px";
+								intro.style.top = "82px";
+								intro.style.left = "2px";
+								switch (rarity) {
+									case "rare":
+										intro.dataset.nature = "thunderm";
+										break;
+									case "epic":
+										intro.dataset.nature = "metalm";
+										break;
+									case "legend":
+										intro.dataset.nature = "orangem";
+										break;
+								}
+								intro.innerHTML = get.translation(rarity);
+							}
+						};
+						game.leaderLord = ["leader_caocao", "leader_liubei", "leader_sunquan", "leader_yuri"];
+						const dialog1 = ui.create.dialog("选择君主", "hidden");
+						event.dialog1 = dialog1;
+						dialog1.classList.add("fullheight");
+						dialog1.classList.add("halfleft");
+						dialog1.classList.add("fixed");
+						dialog1.classList.add("pointerbutton");
+						dialog1.add([game.leaderLord, "character"]);
+						let i;
+						for (i = 0; i < dialog1.buttons.length; i++) {
+							dialog1.buttons[i].area = "lord";
+						}
+						const j = i;
+						dialog1.add("选择武将");
+						const getCapt = str => {
+							if (str.indexOf("_") === -1) {
+								return str[0];
+							}
+							return str[str.indexOf("_") + 1];
+						};
+						const clickCapt = function (e) {
+							if (_status.dragged) {
+								return;
+							}
+							if (this.classList.contains("thundertext")) {
+								dialog1.currentcapt = null;
+								dialog1.currentcaptnode = null;
+								this.classList.remove("thundertext");
+								for (const item of dialog1.buttons) {
+									item.style.display = "";
+								}
+							} else {
+								if (dialog1.currentcaptnode) {
+									dialog1.currentcaptnode.classList.remove("thundertext");
+								}
+								dialog1.currentcapt = this.link;
+								dialog1.currentcaptnode = this;
+								this.classList.add("thundertext");
+								for (const item of dialog1.buttons) {
+									if (item.area !== "character") {
+										continue;
+									}
+									if (getCapt(item.link) !== dialog1.currentcapt) {
+										item.style.display = "none";
+									} else {
+										item.style.display = "";
+									}
+								}
+							}
+							e.stopPropagation();
+						};
+						const captnode = ui.create.div(".caption");
+						const initcapt = () => {
+							const namecapt = [];
+							for (const item of game.data.character) {
+								const ii = item;
+								if (namecapt.indexOf(getCapt(ii)) === -1) {
+									namecapt.push(getCapt(ii));
+								}
+							}
+							namecapt.sort((a, b) => {
+								return a > b ? 1 : -1;
+							});
+							captnode.innerHTML = "";
+							for (i = 0; i < namecapt.length; i++) {
+								const span = document.createElement("span");
+								span.innerHTML = ` ${namecapt[i].toUpperCase()} `;
+								span.link = namecapt[i];
+								span.addEventListener(lib.config.touchscreen ? "touchend" : "click", clickCapt);
+								captnode.appendChild(span);
+							}
+							if (game.data.character.length <= 15) {
+								captnode.style.display = "none";
+							} else {
+								captnode.style.display = "";
+							}
+						};
+						initcapt();
+						dialog1.captnode = captnode;
+						dialog1.add(captnode);
+						dialog1.add([game.data.character, "character"]);
+						for (i = j; i < dialog1.buttons.length; i++) {
+							dialog1.buttons[i].area = "character";
+							fixButton(dialog1.buttons[i]);
+						}
+						dialog1.open();
+
+						const dialog2 = ui.create.dialog("战斗难度", "hidden");
+						event.dialog2 = dialog2;
+						dialog2.classList.add("fullheight");
+						dialog2.classList.add("halfright");
+						dialog2.classList.add("fixed");
+						dialog2.classList.add("pointerbutton");
+						dialog2.add([
+							[
+								["", "", "leader_easy"],
+								["", "", "leader_medium"],
+								["", "", "leader_hard"],
+							],
+							"vcard",
+						]);
+						// for(i=0;i<dialog2.buttons.length;i++){
+						// 	dialog2.buttons[i].node.name.style.fontFamily='xinwei';
+						// 	dialog2.buttons[i].node.name.style.fontSize='30px';
+						// 	dialog2.buttons[i].node.name.style.left='4px';
+						// 	dialog2.buttons[i].node.name.dataset.color='unknownm';
+						// 	dialog2.buttons[i]._nopup=true;
+						// 	dialog2.buttons[i].area='difficulty';
+						// }
+						dialog2.add("敌方人数");
+						dialog2.add([
+							[
+								["", "", "leader_2"],
+								["", "", "leader_3"],
+								["", "", "leader_5"],
+								["", "", "leader_8"],
+							],
+							"vcard",
+						]);
+						for (i = 0; i < dialog2.buttons.length; i++) {
+							dialog2.buttons[i].className = "menubutton large pointerdiv";
+							dialog2.buttons[i].innerHTML = dialog2.buttons[i].node.background.innerHTML;
+							dialog2.buttons[i].style.position = "relative";
+							dialog2.buttons[i].style.fontSize = "";
+							dialog2.buttons[i].style.color = "";
+							dialog2.buttons[i].style.textShadow = "";
+							dialog2.buttons[i]._nopup = true;
+							dialog2.buttons[i].style.marginLeft = "4px";
+							dialog2.buttons[i].style.marginRight = "4px";
+
+							if (i < 3) {
+								dialog2.buttons[i].area = "difficulty";
+							} else {
+								dialog2.buttons[i].area = "number";
+							}
+							// if(i<3){
+							// 	dialog2.buttons[i].style.width='160px';
+							// 	dialog2.buttons[i].node.background.classList.remove('tight');
+							// 	dialog2.buttons[i].node.background.style.whiteSpace='nowrap';
+							// }
+							// dialog2.buttons[i].style.background='rgba(0,0,0,0.2)';
+							// dialog2.buttons[i].style.boxShadow='rgba(0, 0, 0, 0.3) 0 0 0 1px';
+							// dialog2.buttons[i].node.background.style.fontFamily='lishu';
+							// dialog2.buttons[i]._nopup=true;
+							// dialog2.buttons[i].area='number';
+							// dialog2.buttons[i].classList.add('menubg');
+							// dialog2.buttons[i].classList.add('large');
+							// dialog2.buttons[i].classList.remove('card');
+						}
+						dialog2.add("挑战武将");
+						dialog2.add([game.data.challenge, "character"]);
+						for (; i < dialog2.buttons.length; i++) {
+							dialog2.buttons[i].area = "challenge";
+							fixButton(dialog2.buttons[i]);
+						}
+						dialog2.open();
+						dialog1.classList.remove("hidden");
+
+						const selected = {
+							lord: [],
+							character: [],
+							difficulty: [],
+							number: [],
+							challenge: [],
+						};
+						const clearSelected = () => {
+							for (const item of dialog1.buttons) {
+								item.classList.remove("unselectable");
+								item.classList.remove("selected");
+							}
+							for (const item of dialog2.buttons) {
+								item.classList.remove("unselectable");
+								item.classList.remove("selected");
+							}
+							for (const j in selected) {
+								selected[j].length = 0;
+							}
+							event.removeCharacter.classList.add("disabled");
+						};
+						event.enterArena = ui.create.control("竞技场", "nozoom", () => {
+							if (game.data.money < 150 && !game.data._arena) {
+								return;
+							}
+							if (_status.qianfan || _status.kaibao) {
+								return;
+							}
+							if (!game.data._arena) {
+								game.changeMoney(-150);
+							}
+							_status.enterArena = true;
+							game.resume();
+						});
+						const turnCard = function () {
+							if (this.turned) {
+								return;
+							}
+							_status.chessclicked = true;
+							this.turned = true;
+							const node = this;
+							node.style.transition = "all ease-in 0.3s";
+							node.style.transform = "perspective(1200px) rotateY(270deg) translateX(150px)";
+							const onEnd = () => {
+								game.minskin = false;
+								node.init(node.name);
+								game.minskin = true;
+								node.node.avatar.style.display = "";
+								if (node.rarity) {
+									node.node.intro.innerHTML = get.translation(node.rarity);
+									node.node.intro.classList.add("showintro");
+								}
+								node.classList.add("playerflip");
+								node.style.transform = "none";
+								node.style.transition = "";
+								if (lib.config.animation && !lib.config.low_performance) {
+									setTimeout(() => {
+										switch (game.getRarity(node.name)) {
+											case "rare":
+												node.$rare();
+												break;
+											case "epic":
+												node.$epic();
+												break;
+											case "legend":
+												node.$legend();
+												break;
+										}
+									}, 150);
+								}
+							};
+							node.listenTransition(onEnd);
+						};
+						const zhaomu2 = () => {
+							if (_status.qianfan || _status.kaibao) {
+								return;
+							}
+							if (game.data.money < 100) {
+								return;
+							}
+							_status.chessclicked = true;
+							ui.arena.classList.add("leaderhide");
+							ui.arena.classList.add("leadercontrol");
+							ui.money.hide();
+							_status.kaibao = true;
+							event.cardnodes = [];
+							setTimeout(() => {
+								event.cardnodes.push(cardNode(0));
+								setTimeout(() => {
+									event.cardnodes.push(cardNode(1));
+									setTimeout(() => {
+										event.cardnodes.push(cardNode(2));
+										ui.money.childNodes[1].innerHTML = game.data.dust;
+										game.changeMoney(-100);
+										if (game.data.character.length > 3 && selected.character.length) {
+											event.removeCharacter.addTempClass("controlpressdownx", 500);
+											event.removeCharacter.classList.remove("disabled");
+										}
+										if (game.data.money < 150 && !game.data._arena) {
+											event.enterArena.classList.add("disabled");
+										} else {
+											event.enterArena.addTempClass("controlpressdownx", 500);
+											event.enterArena.classList.remove("disabled");
+										}
+										if (game.data.money < 100) {
+											event.addCharacter.classList.add("disabled");
+										} else {
+											event.addCharacter.addTempClass("controlpressdownx", 500);
+											event.addCharacter.classList.remove("disabled");
+										}
+										initcapt();
+									}, 200);
+								}, 200);
+							}, 500);
+						};
+						event.addCharacter = ui.create.control("招募", "nozoom", zhaomu2);
+						if (game.data.money < 150 && !game.data._arena) {
+							event.enterArena.classList.add("disabled");
+						}
+						if (game.data.money < 100) {
+							event.addCharacter.classList.add("disabled");
+						}
+						const qianfan = () => {
+							if (_status.kaibao) {
+								return;
+							}
+							if (game.data.character.length <= 3) {
+								return;
+							}
+							if (!selected.character.length) {
+								return;
+							}
+							// _status.chessclicked=true;
+							// _status.qianfan=true;
+							// event.enterArena.style.opacity=0.5;
+							// event.addCharacter.style.opacity=0.5;
+							// event.fight.style.opacity=0.5;
+							const current = selected.character.slice(0);
+							clearSelected();
+							const maxq = game.data.character.length - 3;
+							if (current.length <= maxq) {
+								for (const item of current) {
+									item.classList.add("selected");
+									selected.character.push(item);
+								}
+							}
+							for (const item of dialog1.buttons) {
+								if (item.area !== "character" || maxq === current.length) {
+									item.classList.add("unselectable");
+								}
+							}
+							for (const item of dialog2.buttons) {
+								item.classList.add("unselectable");
+							}
+							if (!selected.character.length) {
+								alert("至少需要保留3名武将");
+								return;
+							}
+							let translation = get.translation(selected.character[0].link);
+							for (let i = 1; i < selected.character.length; i++) {
+								translation += `、${get.translation(selected.character[i].link)}`;
+							}
+							let dust = 0;
+							for (const item of selected.character) {
+								const node = item;
+								const rarity = game.getRarity(node.link);
+								switch (rarity) {
+									case "common":
+										dust += 5;
+										break;
+									case "rare":
+										dust += 20;
+										break;
+									case "epic":
+										dust += 100;
+										break;
+									case "legend":
+										dust += 400;
+										break;
+								}
+							}
+							if (confirm(`${translation}将被遣返，一共将获得${dust}个招募令。是否确定遣返？`)) {
+								for (const item of selected.character) {
+									const node = item;
+									const rarity = game.getRarity(node.link);
+									switch (rarity) {
+										case "common":
+											game.changeDust(5);
+											break;
+										case "rare":
+											game.changeDust(20);
+											break;
+										case "epic":
+											game.changeDust(100);
+											break;
+										case "legend":
+											game.changeDust(400);
+											break;
+									}
+									game.data.character.remove(node.link);
+									game.saveData();
+									if (game.data.money >= 100) {
+										event.addCharacter.addTempClass("controlpressdownx", 500);
+										event.addCharacter.classList.remove("disabled");
+									}
+									if (game.data.money >= 150) {
+										event.enterArena.addTempClass("controlpressdownx", 500);
+										event.enterArena.classList.remove("disabled");
+									}
+									node.delete();
+									dialog1.buttons.remove(node);
+								}
+								initcapt();
+							}
+						};
+						event.removeCharacter = ui.create.control("遣返", "nozoom", qianfan);
+						event.removeCharacter.classList.add("disabled");
+						event.fight = ui.create.control("开始战斗", "nozoom", () => {
+							if (_status.kaibao || _status.qianfan) {
+								return;
+							}
+							if (selected.challenge.length) {
+								const cname = selected.challenge[0].link;
+								let rarity = game.getRarity(cname);
+								switch (rarity) {
+									case "common":
+										rarity = 40;
+										break;
+									case "rare":
+										rarity = 100;
+										break;
+									case "epic":
+										rarity = 400;
+										break;
+									case "legend":
+										rarity = 1600;
+										break;
+								}
+								if (!confirm(`即将挑战${get.translation(cname)}，战斗胜利后可消耗${rarity}招募令招募该武将，无论是否招募，挑战列表将被刷新。是否继续？`)) {
 									return;
 								}
 							}
-							game.reload();
+							_status.enemylist = [];
+							_status.mylist = [];
+							if (selected.lord.length) {
+								_status.mylist.push(selected.lord[0].link);
+								_status.lord = selected.lord[0].link;
+							}
+							if (selected.character.length) {
+								for (const item of selected.character) {
+									_status.mylist.push(item.link);
+								}
+							} else {
+								_status.mylist = _status.mylist.concat(game.data.character.randomGets(_status.lord ? 2 : 3));
+							}
+							let difficulty;
+							if (selected.challenge.length) {
+								_status.challenge = selected.challenge[0].link;
+								_status.enemylist.push(_status.challenge);
+								switch (game.getRarity(_status.challenge)) {
+									case "common":
+										_status.challengeMoney = 40;
+										break;
+									case "rare":
+										_status.challengeMoney = 100;
+										break;
+									case "epic":
+										_status.challengeMoney = 400;
+										break;
+									case "legend":
+										_status.challengeMoney = 1600;
+										break;
+								}
+								const rank = get.rank(_status.challenge);
+								const total = Math.max(2, _status.mylist.length - 1);
+								let list;
+								switch (rank) {
+									case "s":
+										list = lib.rank.ap;
+										break;
+									case "ap":
+										list = lib.rank.s.concat(lib.rank.a);
+										break;
+									case "a":
+										list = lib.rank.ap.concat(lib.rank.am);
+										break;
+									case "am":
+										list = lib.rank.a.concat(lib.rank.bp);
+										break;
+									case "bp":
+										list = lib.rank.am.concat(lib.rank.b);
+										break;
+									case "b":
+										list = lib.rank.bp.concat(lib.rank.bm);
+										break;
+									case "bm":
+										list = lib.rank.b.concat(lib.rank.c);
+										break;
+									case "c":
+										list = lib.rank.bm.concat(lib.rank.d);
+										break;
+									case "d":
+										list = lib.rank.c;
+										break;
+								}
+								for (let i = 0; i < total; i++) {
+									if (Math.random() < 0.7) {
+										_status.enemylist.push(Array.prototype.randomGet.apply(lib.rank[rank], _status.enemylist.concat(_status.mylist)));
+									} else {
+										_status.enemylist.push(Array.prototype.randomGet.apply(list, _status.enemylist.concat(_status.mylist)));
+									}
+								}
+							} else {
+								let number;
+								let list;
+								if (selected.difficulty.length) {
+									difficulty = selected.difficulty[0].link[2];
+								} else {
+									difficulty = "leader_easy";
+								}
+								_status.difficulty = difficulty;
+								if (selected.number.length) {
+									number = selected.number[0].link[2];
+									number = parseInt(number[number.length - 1]);
+								} else {
+									number = 3;
+								}
+								switch (difficulty) {
+									case "leader_easy":
+										list = lib.rank.d.concat(lib.rank.c).concat(lib.rank.bm);
+										break;
+									case "leader_medium":
+										list = lib.rank.b.concat(lib.rank.bp).concat(lib.rank.am);
+										break;
+									case "leader_hard":
+										list = lib.rank.a
+											.concat(lib.rank.ap)
+											.concat(lib.rank.s)
+											.concat(lib.rank.am.randomGets(Math.floor(lib.rank.am.length / 2)));
+										break;
+								}
+								for (const item of lib.hiddenCharacters) {
+									if (list.length <= number) {
+										break;
+									}
+									list.remove(item);
+								}
+								for (const item of _status.mylist) {
+									list.remove(item);
+								}
+								_status.enemylist = list.randomGets(number);
+							}
+							const numdel = _status.enemylist.length - _status.mylist.length;
+							let reward = 0;
+							for (const item of _status.enemylist) {
+								switch (get.rank(item)) {
+									case "s":
+										reward += 50;
+										break;
+									case "ap":
+										reward += 40;
+										break;
+									case "a":
+										reward += 32;
+										break;
+									case "am":
+										reward += 25;
+										break;
+									case "bp":
+										reward += 19;
+										break;
+									case "b":
+										reward += 14;
+										break;
+									case "bm":
+										reward += 10;
+										break;
+									case "c":
+										reward += 7;
+										break;
+									case "d":
+										reward += 5;
+										break;
+								}
+							}
+							if (numdel > 0) {
+								switch (difficulty) {
+									case "leader_easy":
+										reward += 10 * numdel;
+										break;
+									case "leader_medium":
+										reward += 20 * numdel;
+										break;
+									case "leader_hard":
+										reward += 40 * numdel;
+										break;
+								}
+							}
+							let punish = 0;
+							for (const item of _status.mylist) {
+								switch (get.rank(item)) {
+									case "s":
+										punish += 25;
+										break;
+									case "ap":
+										punish += 20;
+										break;
+									case "a":
+										punish += 16;
+										break;
+									case "am":
+										punish += 12;
+										break;
+									case "bp":
+										punish += 9;
+										break;
+									case "b":
+										punish += 7;
+										break;
+									case "bm":
+										punish += 5;
+										break;
+									case "c":
+										punish += 3;
+										break;
+									case "d":
+										punish += 2;
+										break;
+								}
+							}
+							if (numdel < 0) {
+								switch (difficulty) {
+									case "leader_easy":
+										punish -= 5 * numdel;
+										break;
+									case "leader_medium":
+										punish -= 10 * numdel;
+										break;
+									case "leader_hard":
+										punish -= 20 * numdel;
+										break;
+								}
+							}
+							game.reward = Math.max(3 * _status.enemylist.length, reward - punish);
+							if (!_status.lord) {
+								switch (difficulty) {
+									case "leader_easy":
+										game.reward += 10;
+										break;
+									case "leader_medium":
+										game.reward += 20;
+										break;
+									case "leader_hard":
+										game.reward += 40;
+										break;
+								}
+							}
+							game.resume();
+						});
+						event.custom.replace.button = button => {
+							if (_status.kaibao) {
+								return;
+							}
+							if (button.classList.contains("unselectable") && !button.classList.contains("selected")) {
+								return;
+							}
+							_status.chessclicked = true;
+							button.classList.toggle("selected");
+							if (button.classList.contains("selected")) {
+								selected[button.area].add(button);
+							} else {
+								selected[button.area].remove(button);
+							}
+							switch (button.area) {
+								case "lord": {
+									for (const item of dialog1.buttons) {
+										if (item.area === "lord") {
+											if (selected.lord.length) {
+												item.classList.add("unselectable");
+											} else {
+												item.classList.remove("unselectable");
+											}
+										}
+									}
+									break;
+								}
+								case "character": {
+									for (const item of dialog1.buttons) {
+										if (item.area === "character") {
+											const maxq = game.data.character.length - 3;
+											if ((!_status.qianfan && selected.character.length > 5) || (_status.qianfan && selected.character.length >= maxq)) {
+												item.classList.add("unselectable");
+											} else {
+												item.classList.remove("unselectable");
+											}
+										}
+									}
+									break;
+								}
+								case "difficulty":
+								case "number": {
+									for (const item of dialog2.buttons) {
+										if (item.area === button.area) {
+											if (selected[button.area].length) {
+												item.classList.add("unselectable");
+											} else {
+												item.classList.remove("unselectable");
+											}
+										}
+									}
+									break;
+								}
+								case "challenge": {
+									if (selected.challenge.length) {
+										for (const item of dialog2.buttons) {
+											if (item.area === "challenge") {
+												item.classList.add("unselectable");
+											} else {
+												item.classList.add("unselectable");
+												item.classList.remove("selected");
+											}
+										}
+									} else {
+										for (const item of dialog2.buttons) {
+											item.classList.remove("unselectable");
+										}
+									}
+									break;
+								}
+							}
+							if (selected.character.length && game.data.character.length > 3) {
+								event.removeCharacter.addTempClass("controlpressdownx", 500);
+								event.removeCharacter.classList.remove("disabled");
+							} else {
+								event.removeCharacter.classList.add("disabled");
+							}
+						};
+						event.custom.add.window = () => {
+							if (!_status.kaibao) {
+								const glows = document.querySelectorAll(".button.glow2");
+								for (const item of glows) {
+									item.classList.remove("glow2");
+								}
+							}
+							if (_status.chessclicked) {
+								_status.chessclicked = false;
+								return;
+							}
+							if (_status.kaibao && event.cardnodes && event.cardnodes.length) {
+								for (const item of event.cardnodes) {
+									if (!item.turned) {
+										return;
+									}
+								}
+								for (const item of event.cardnodes) {
+									item.delete();
+								}
+								ui.arena.classList.remove("leaderhide");
+								setTimeout(() => {
+									ui.arena.classList.remove("leadercontrol");
+								}, 500);
+								ui.money.show();
+								delete event.cardnodes;
+								_status.kaibao = false;
+								return;
+							}
+							if (_status.qianfan) {
+								_status.qianfan = false;
+								event.removeCharacter.replace("遣返", qianfan);
+								if (game.data.money >= 100) {
+									event.addCharacter.addTempClass("controlpressdownx", 500);
+									event.addCharacter.classList.remove("disabled");
+								} else {
+									event.addCharacter.classList.add("disabled");
+								}
+								if (game.data.money >= 150 || game.data._arena) {
+									event.enterArena.addTempClass("controlpressdownx", 500);
+									event.enterArena.classList.remove("disabled");
+								} else {
+									event.enterArena.classList.add("disabled");
+								}
+								event.fight.style.opacity = 1;
+							}
+							clearSelected();
+						};
+						lib.init.onfree();
+						game.pause();
+					},
+					(event, trigger, player) => {
+						if (!game.data.arena) {
+							event.dialog1.close();
+							event.dialog2.close();
+							event.fight.close();
+							event.enterArena.close();
+							event.addCharacter.close();
+							event.removeCharacter.close();
 						}
-						_status.chessgiveup = false;
-						event.arenafight.style.opacity = 1;
-						event.arenaback.style.opacity = 1;
-						event.arenagiveup.replace("放弃", giveup);
-						for (var i = 0; i < nodes.length; i++) {
-							nodes[i].style.transform = "scale(0.8)";
-							nodes[i].classList.remove("selected");
-							nodes[i].classList.remove("unselectable");
+						ui.arena.classList.add("leaderhide");
+						ui.money.hide();
+						game.delay();
+					},
+					(event, trigger, player) => {
+						ui.arena.classList.remove("leaderhide");
+						if (!_status.enterArena) {
+							ui.wuxie.show();
+							ui.auto.show();
+							ui.control.style.top = "";
+							if (!get.is.safari()) {
+								ui.control.style.transition = "";
+								ui.control.style.display = "none";
+							}
+							event.finish();
+						} else {
+							game.minskin = false;
+							event.arenanodes = [];
+							event.arenachoice = [];
+							event.arenachoicenodes = [];
+							event.arrangeNodes = () => {
+								const num = event.arenachoicenodes.length;
+								const width = num * 75 + (num - 1) * 8;
+								for (let i = 0; i < event.arenachoicenodes.length; i++) {
+									const left = -width / 2 + i * 83 - 37.5;
+									if (left < 0) {
+										event.arenachoicenodes[i].style.left = `calc(50% - ${-left}px)`;
+									} else {
+										event.arenachoicenodes[i].style.left = `calc(50% + ${left}px)`;
+									}
+								}
+							};
+							event.clickNode = function () {
+								if (this.classList.contains("removing")) {
+									return;
+								}
+								if (this.isChosen) {
+									if (_status.chessgiveup) {
+										return;
+									}
+									if (!event.choosefinished) {
+										return;
+									}
+									if (this.classList.contains("unselectable") && !this.classList.contains("selected")) {
+										return;
+									}
+									_status.chessclicked = true;
+									this.classList.toggle("selected");
+									if (this.classList.contains("selected")) {
+										this.style.transform = "scale(0.85)";
+									} else {
+										this.style.transform = "scale(0.8)";
+									}
+									if (document.querySelectorAll(".player.selected").length >= 3) {
+										for (const item of event.arenachoicenodes) {
+											if (!item.classList.contains("dead")) {
+												item.classList.add("unselectable");
+											}
+										}
+									} else {
+										for (const item of event.arenachoicenodes) {
+											item.classList.remove("unselectable");
+										}
+									}
+								} else {
+									while (event.arenanodes.length) {
+										const node = event.arenanodes.shift();
+										if (node === this) {
+											node.node.hp.hide();
+											node.style.transform = "scale(0.5)";
+											node.style.top = "calc(50% + 50px)";
+											event.arenachoicenodes.push(node);
+											event.arrangeNodes();
+										} else {
+											node.delete();
+										}
+									}
+									this.isChosen = true;
+									event.arenachoice.push(this.name);
+									game.resume();
+								}
+							};
 						}
-					};
-					lib.init.onfree();
-					game.pause();
-					"step 7";
-					ui.control.style.top = "";
-					if (!get.is.safari()) {
-						ui.control.style.transition = "";
-						ui.control.style.display = "none";
-					}
-					ui.arena.classList.remove("leaderhide");
-					ui.wuxie.show();
-					ui.auto.show();
-					game.delay();
-				});
+					},
+					(event, trigger, player) => {
+						let choice;
+						if (game.data._arena) {
+							game.data.arena = game.data._arena;
+							delete game.data._arena;
+						}
+						if (game.data.arena && !_status.arenaLoaded) {
+							game.data.arena.loaded = true;
+							event.arenachoice = game.data.arena.arenachoice;
+							for (const item of event.arenachoice) {
+								const node = event.cardNode(0, item, true);
+								node.node.hp.style.display = "none";
+								node.init(node.name);
+								node.isChosen = true;
+								node.listen(event.clickNode);
+								node.style.transform = "scale(0.5)";
+								node.style.top = "calc(50% + 50px)";
+								event.arenachoicenodes.push(node);
+							}
+							event.arrangeNodes();
+							for (const item of event.arenachoicenodes) {
+								const node = item;
+								if (game.data.arena.choice) {
+									ui.refresh(node);
+									node.style.opacity = 1;
+								}
+							}
+							if (game.data.arena.choice) {
+								choice = game.data.arena.choice;
+							} else {
+								return;
+							}
+						} else {
+							switch (event.arenachoice.length) {
+								case 0:
+									choice = lib.rank.d.randomGets(3);
+									break;
+								case 1:
+									choice = lib.rank.c.randomGets(3);
+									break;
+								case 2:
+									choice = lib.rank.bm.randomGets(3);
+									break;
+								case 3:
+									choice = lib.rank.b.randomGets(3);
+									break;
+								case 4:
+									choice = lib.rank.bp.randomGets(3);
+									break;
+								case 5:
+									choice = lib.rank.am.randomGets(3);
+									break;
+								case 6:
+									choice = lib.rank.a.randomGets(3);
+									break;
+								case 7:
+									choice = lib.rank.ap.randomGets(3);
+									break;
+								case 8:
+									choice = lib.rank.s.randomGets(3);
+									break;
+							}
+							game.data.arena = {
+								win: 0,
+								dead: [],
+								acted: [],
+								choice: choice,
+								arenachoice: event.arenachoice,
+							};
+							game.saveData();
+						}
+						_status.arenaLoaded = true;
+						let node;
+						node = event.cardNode(0, choice[0]);
+						node.init(node.name);
+						node.listen(event.clickNode);
+						event.arenanodes.push(node);
+						setTimeout(() => {
+							node = event.cardNode(1, choice[1]);
+							node.init(node.name);
+							node.listen(event.clickNode);
+							if (event.choosefinished) {
+								node.delete();
+							} else {
+								event.arenanodes.push(node);
+							}
+							setTimeout(() => {
+								node = event.cardNode(2, choice[2]);
+								node.init(node.name);
+								node.listen(event.clickNode);
+								if (event.choosefinished) {
+									node.delete();
+								} else {
+									event.arenanodes.push(node);
+								}
+							}, 200);
+						}, 200);
+						lib.init.onfree();
+						game.pause();
+					},
+					(event, trigger, player) => {
+						if (event.arenachoice.length < 9) {
+							event.goto(4);
+						} else {
+							if (_status.arenaLoaded) {
+								game.delay(2);
+							}
+							game.data.arena.arenachoice = event.arenachoice;
+							delete game.data.arena.choice;
+							game.saveData();
+							event.choosefinished = true;
+						}
+					},
+					(event, trigger, player) => {
+						game.minskin = true;
+						ui.arena.classList.add("noleft");
+						const nodes = event.arenachoicenodes;
+						for (const item of nodes) {
+							item.style.transform = "scale(0.8)";
+						}
+						if (_status.arenaLoaded) {
+							setTimeout(() => {
+								nodes[0].style.left = "calc(50% - 215px)";
+								nodes[0].style.top = "calc(50% - 260px)";
+							}, 0);
+							setTimeout(() => {
+								nodes[1].style.left = "calc(50% - 75px)";
+								nodes[1].style.top = "calc(50% - 260px)";
+							}, 50);
+							setTimeout(() => {
+								nodes[2].style.left = "calc(50% + 65px)";
+								nodes[2].style.top = "calc(50% - 260px)";
+							}, 100);
+							setTimeout(() => {
+								nodes[3].style.left = "calc(50% - 215px)";
+								nodes[3].style.top = "calc(50% - 90px)";
+							}, 150);
+							setTimeout(() => {
+								nodes[4].style.left = "calc(50% - 75px)";
+								nodes[4].style.top = "calc(50% - 90px)";
+							}, 200);
+							setTimeout(() => {
+								nodes[5].style.left = "calc(50% + 65px)";
+								nodes[5].style.top = "calc(50% - 90px)";
+							}, 250);
+							setTimeout(() => {
+								nodes[6].style.left = "calc(50% - 215px)";
+								nodes[6].style.top = "calc(50% + 80px)";
+							}, 300);
+							setTimeout(() => {
+								nodes[7].style.left = "calc(50% - 75px)";
+								nodes[7].style.top = "calc(50% + 80px)";
+							}, 350);
+							setTimeout(() => {
+								nodes[8].style.left = "calc(50% + 65px)";
+								nodes[8].style.top = "calc(50% + 80px)";
+							}, 400);
+						} else {
+							nodes[0].style.left = "calc(50% - 215px)";
+							nodes[0].style.top = "calc(50% - 260px)";
+							nodes[1].style.left = "calc(50% - 75px)";
+							nodes[1].style.top = "calc(50% - 260px)";
+							nodes[2].style.left = "calc(50% + 65px)";
+							nodes[2].style.top = "calc(50% - 260px)";
+							nodes[3].style.left = "calc(50% - 215px)";
+							nodes[3].style.top = "calc(50% - 90px)";
+							nodes[4].style.left = "calc(50% - 75px)";
+							nodes[4].style.top = "calc(50% - 90px)";
+							nodes[5].style.left = "calc(50% + 65px)";
+							nodes[5].style.top = "calc(50% - 90px)";
+							nodes[6].style.left = "calc(50% - 215px)";
+							nodes[6].style.top = "calc(50% + 80px)";
+							nodes[7].style.left = "calc(50% - 75px)";
+							nodes[7].style.top = "calc(50% + 80px)";
+							nodes[8].style.left = "calc(50% + 65px)";
+							nodes[8].style.top = "calc(50% + 80px)";
+							for (const item of nodes) {
+								ui.refresh(item);
+								if (game.data.arena.dead.includes(item.name)) {
+									item.classList.add("dead");
+									item.style.opacity = 0.3;
+								} else {
+									item.style.opacity = 1;
+									if (game.data.arena.acted.includes(item.name)) {
+										const acted = item.node.action;
+										acted.style.opacity = 1;
+										acted.innerHTML = "疲劳";
+										acted.dataset.nature = "soilm";
+										acted.classList.add("freecolor");
+									}
+								}
+							}
+						}
+
+						const victory = ui.create.div().hide();
+						victory.innerHTML = `<span>${game.data.arena.win}</span>胜`;
+						victory.style.top = "auto";
+						victory.style.left = "auto";
+						victory.style.right = "20px";
+						victory.style.bottom = "15px";
+						victory.style.fontSize = "30px";
+						victory.style.fontFamily = "huangcao";
+						victory.firstChild.style.marginRight = "5px";
+						ui.window.appendChild(victory);
+						ui.refresh(victory);
+						victory.show();
+
+						event.checkPrize = () => {
+							// event.kaibao=true;
+							event.prize = [];
+							event.turnCard2 = function () {
+								if (this.turned) {
+									return;
+								}
+								_status.chessclicked = true;
+								this.turned = true;
+								const node = this;
+								setTimeout(() => {
+									node.turned2 = true;
+								}, 1000);
+								if (node.name === "chess_coin" || node.name === "chess_dust") {
+									node.style.transition = "all 0s";
+									node.style.transform = "none";
+									node.style.overflow = "visible";
+									node.style.background = "none";
+									node.style.boxShadow = "none";
+									const div = ui.create.div(node);
+									div.style.transition = "all 0s";
+									if (node.name === "chess_coin") {
+										div.innerHTML = `<span>㉤</span><span>${node.num}</span>`;
+										div.firstChild.style.color = "rgb(255, 230, 0)";
+										node.$coin();
+									} else {
+										div.innerHTML = `<span>⚑</span><span>${node.num}</span>`;
+										div.firstChild.style.color = "rgb(111, 198, 255)";
+										div.firstChild.style.marginRight = "3px";
+										node.$dust();
+									}
+									div.style.fontFamily = "huangcao";
+									div.style.fontSize = "50px";
+									div.style.top = "40px";
+									div.style.letterSpacing = "8px";
+									div.style.whiteSpace = "nowrap";
+									// div.dataset.nature='metal';
+
+									return;
+								}
+								node.style.transition = "all ease-in 0.3s";
+								node.style.transform = "perspective(1200px) rotateY(270deg) translateX(150px)";
+								const onEnd = () => {
+									node.init(node.name);
+									node.node.avatar.style.display = "";
+									if (node.rarity) {
+										node.node.intro.innerHTML = get.translation(node.rarity);
+										node.node.intro.classList.add("showintro");
+									}
+									node.classList.add("playerflip");
+									node.style.transform = "none";
+									node.style.transition = "";
+									if (lib.config.animation && !lib.config.low_performance) {
+										setTimeout(() => {
+											switch (game.getRarity(node.name)) {
+												case "rare":
+													node.$rare();
+													break;
+												case "epic":
+													node.$epic();
+													break;
+												case "legend":
+													node.$legend();
+													break;
+											}
+										}, 150);
+									}
+								};
+								node.listenTransition(onEnd);
+							};
+							setTimeout(
+								() => {
+									nodes[0].delete();
+								},
+								400 + Math.random() * 300
+							);
+							setTimeout(
+								() => {
+									nodes[1].delete();
+								},
+								400 + Math.random() * 300
+							);
+							setTimeout(
+								() => {
+									nodes[2].delete();
+								},
+								400 + Math.random() * 300
+							);
+							setTimeout(
+								() => {
+									nodes[3].delete();
+								},
+								400 + Math.random() * 300
+							);
+							setTimeout(
+								() => {
+									nodes[4].delete();
+								},
+								400 + Math.random() * 300
+							);
+							setTimeout(
+								() => {
+									nodes[5].delete();
+								},
+								400 + Math.random() * 300
+							);
+							setTimeout(
+								() => {
+									nodes[6].delete();
+								},
+								400 + Math.random() * 300
+							);
+							setTimeout(
+								() => {
+									nodes[7].delete();
+								},
+								400 + Math.random() * 300
+							);
+							setTimeout(
+								() => {
+									nodes[8].delete();
+								},
+								400 + Math.random() * 300
+							);
+							setTimeout(() => {
+								const prize = new Array(6);
+								const map = [1, 2, 3, 4, 5];
+								let ccount = 3;
+								const win = game.data.arena.win;
+								let prizeValue;
+								switch (win) {
+									case 0:
+										prizeValue = 100;
+										break;
+									case 1:
+										prizeValue = 120;
+										break;
+									case 2:
+										prizeValue = 150;
+										break;
+									case 3:
+										prizeValue = 190;
+										break;
+									case 4:
+										prizeValue = 240;
+										break;
+									case 5:
+										prizeValue = 300;
+										break;
+									case 6:
+										prizeValue = 370;
+										break;
+									case 7:
+										prizeValue = 450;
+										break;
+									case 8:
+										prizeValue = 540;
+										break;
+									case 9:
+										prizeValue = 640;
+										break;
+									case 10:
+										prizeValue = 750;
+										break;
+									case 11:
+										prizeValue = 870;
+										break;
+									case 12:
+										prizeValue = 1000;
+										break;
+								}
+								if (Math.random() < 0.4) {
+									if (win >= 3 && Math.random() < 0.5) {
+										ccount = 4;
+										prizeValue -= 33;
+									} else {
+										ccount = 2;
+										prizeValue += 33;
+									}
+								}
+								prizeValue -= 100;
+								while (ccount--) {
+									prize[map.randomRemove()] = game.getLeaderCharacter();
+								}
+								if (map.length) {
+									prizeValue /= map.length;
+								}
+								while (map.length) {
+									let val = Math.round((Math.random() * 0.4 + 0.8) * prizeValue);
+									if (Math.random() < 0.7) {
+										prize[map.shift()] = ["chess_coin", Math.max(Math.ceil(Math.random() * 5), val)];
+									} else {
+										val = Math.round(val / 3);
+										prize[map.shift()] = ["chess_dust", Math.max(Math.ceil(Math.random() * 3), val)];
+									}
+								}
+								for (let i = 1; i < prize.length; i++) {
+									if (typeof prize[i] === "string") {
+										const name = prize[i];
+										const rarity = game.getRarity(name);
+										if (!game.data.character.includes(name)) {
+											game.data.character.push(name);
+											if (game.data.challenge.includes(name)) {
+												game.data.challenge = game.getLeaderList();
+											}
+										} else {
+											switch (rarity) {
+												case "common":
+													game.data.dust += 10;
+													break;
+												case "rare":
+													game.data.dust += 30;
+													break;
+												case "epic":
+													game.data.dust += 150;
+													break;
+												case "legend":
+													game.data.dust += 600;
+													break;
+											}
+										}
+									} else if (prize[i][0] === "chess_coin") {
+										game.data.money += prize[i][1];
+									} else {
+										game.data.dust += prize[i][1];
+									}
+									setTimeout(
+										(i => {
+											return () => {
+												let node;
+												if (typeof prize[i] === "string") {
+													node = event.cardNode(`5${i}`, prize[i]);
+												} else {
+													node = event.cardNode(`5${i}`, prize[i][0]);
+													node.num = prize[i][1];
+												}
+												event.prize.push(node);
+												if (i === prize.length - 1) {
+													event.kaibao = true;
+												}
+											};
+										})(i),
+										i * 200
+									);
+								}
+								delete game.data.arena;
+								game.saveData();
+							}, 1000);
+						};
+						let giveup;
+						if (game.data.arena.dead.length < 9 && game.data.arena.win < 12) {
+							event.arenafight = ui.create.control("开始战斗", "nozoom", () => {
+								if (_status.chessgiveup) {
+									return;
+								}
+								_status.mylist = [];
+								let list = [];
+								for (const item of nodes) {
+									if (item.classList.contains("selected")) {
+										_status.mylist.push(item.name);
+									} else if (!item.classList.contains("dead")) {
+										list.push(item.name);
+									}
+								}
+								if (_status.mylist.length === 0) {
+									_status.mylist = list.randomGets(3);
+								}
+								if (_status.mylist.length === 0) {
+									return;
+								}
+								for (const item of _status.mylist) {
+									game.data.arena.dead.push(item);
+								}
+								game.saveData();
+								switch (game.data.arena.win) {
+									case 0:
+										list = lib.rank.d.concat(lib.rank.c);
+										break;
+									case 1:
+										list = lib.rank.c.concat(lib.rank.bm);
+										break;
+									case 2:
+										list = lib.rank.bm.concat(lib.rank.b);
+										break;
+									case 3:
+										list = lib.rank.b.concat(lib.rank.bp);
+										break;
+									case 4:
+										list = lib.rank.bp.concat(lib.rank.am);
+										break;
+									case 5:
+										list = lib.rank.am.concat(lib.rank.a);
+										break;
+									case 6:
+										list = lib.rank.a.concat(lib.rank.ap);
+										break;
+									default:
+										list = lib.rank.ap.concat(lib.rank.s);
+								}
+								for (const item of _status.mylist) {
+									list.remove(item);
+								}
+								_status.enemylist = list.randomGets(3);
+								for (const item of nodes) {
+									item.delete();
+								}
+								victory.delete();
+								event.arenafight.close();
+								event.arenaback.close();
+								event.arenagiveup.close();
+								game.resume();
+							});
+							event.arenaback = ui.create.control("返回", "nozoom", () => {
+								if (_status.chessgiveup) {
+									return;
+								}
+								game.data._arena = game.data.arena;
+								delete game.data.arena;
+								game.saveData();
+								game.reload();
+							});
+							giveup = () => {
+								if (confirm("放弃后剩余战斗将视为战败并结算奖励，是否确定放弃？")) {
+									_status.chessclicked = true;
+									event.arenafight.close();
+									event.arenaback.close();
+									event.arenagiveup.close();
+									event.checkPrize();
+								}
+								// _status.chessclicked=true;
+								// _status.chessgiveup=true;
+								// event.arenafight.style.opacity=0.5;
+								// event.arenaback.style.opacity=0.5;
+								// this.replace('确认放弃',function(){
+								// 	_status.chessclicked=true;
+								// 	event.arenafight.close();
+								// 	event.arenaback.close();
+								// 	event.arenagiveup.close();
+								// 	event.checkPrize();
+								// });
+							};
+							event.arenagiveup = ui.create.control("放弃", "nozoom", giveup);
+						} else {
+							event.checkPrize();
+						}
+
+						event.custom.add.window = () => {
+							if (_status.chessclicked) {
+								_status.chessclicked = false;
+								return;
+							}
+							if (event.kaibao) {
+								for (const item of event.prize) {
+									if (!item.turned2) {
+										return;
+									}
+								}
+								game.reload();
+							}
+							_status.chessgiveup = false;
+							event.arenafight.style.opacity = 1;
+							event.arenaback.style.opacity = 1;
+							event.arenagiveup.replace("放弃", giveup);
+							for (const item of nodes) {
+								item.style.transform = "scale(0.8)";
+								item.classList.remove("selected");
+								item.classList.remove("unselectable");
+							}
+						};
+						lib.init.onfree();
+						game.pause();
+					},
+					(event, trigger, player) => {
+						ui.control.style.top = "";
+						if (!get.is.safari()) {
+							ui.control.style.transition = "";
+							ui.control.style.display = "none";
+						}
+						ui.arena.classList.remove("leaderhide");
+						ui.wuxie.show();
+						ui.auto.show();
+						game.delay();
+					},
+				]);
 			},
 			saveData() {
 				game.save(get.config("chess_leader_save"), game.data);
