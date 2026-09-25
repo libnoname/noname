@@ -21,7 +21,7 @@ const skills = {
 					selectButton: [1, 3],
 					ai(button) {
 						const { player, target } = get.event();
-						if (get.attitude(player, target) > 0) return 0;
+						if (get.attitude(player, target) > 0 || target.hasCards("j", card => get.name(card) == "lebu")) return 0;
 						const link = button.link[2].slice(8);
 						if (link == "basic") return 1;
 						return 0.5 - Math.random();
