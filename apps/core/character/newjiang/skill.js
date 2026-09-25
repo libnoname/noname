@@ -4202,33 +4202,24 @@ const skills = {
 		filterTarget: lib.filter.notMe,
 		async content(event, trigger, player) {
 			const { target } = event;
-			await player.draw(2, "nodelay");
+			await player.draw({ num: 2, nodelay: true });
 			await target.draw(2);
 			const targets = [player, target].filter(current => current.countCards("h") > 1);
 			if (targets.length) {
-				const next = player.chooseCardOL(targets, "h", true, 2, "齐眉：请展示两张手牌");
-				next._args.remove("glow_result");
-				const result = await next.forResult();
-				const videoId = lib.status.videoId++;
-				game.broadcastAll(
-					(targets, result, id, player) => {
-						const dialog = ui.create.dialog(get.translation(player) + "发动了【齐眉】");
-						dialog.videoId = id;
-						for (let i = 0; i < result.length; i++) {
-							dialog.add('<div class="text center">' + get.translation(targets[i]) + "展示</div>");
-							dialog.add(result[i].cards);
-						}
-					},
-					targets,
-					result,
-					videoId,
-					player
-				);
-				let cards = result.reduce((list, evt) => {
-					list.addArray(evt.cards);
-					return list;
-				}, []);
-				await player.showCards(cards).set("dialog", videoId).set("delay_time", 4).set("multipleShow", true);
+				const cards = [];
+				for(const current of targets) {
+					const result = await current
+						.chooseCard({
+							prompt: "齐眉：请展示至多三张手牌",
+							selectCard: [1, 3],
+							forced: true,
+						})
+						.forResult();
+					if (result?.cards?.length) {
+						cards.addArray(result.cards);
+						await current.showCards(result.cards);
+					}
+				}
 				const suits = cards.reduce((list, card) => list.add(get.suit(card)), []);
 				switch (suits.length) {
 					case 1:
@@ -4252,21 +4243,21 @@ const skills = {
 							if (current.isTurnedOver()) {
 								await current.turnOver(false);
 							}
+							await current.recover();
 						}
 						break;
 					case 3:
-						for (let i = 0; i < result.length; i++) {
-							const current = targets[i],
-								cards = result[i].cards.filter(card => {
+						for (const current of [player, target]) {
+							const cardx = cards.filter(card => {
 									return get.owner(card) === current && current.canRecast(card);
 								});
-							if (cards.length) {
-								await current.recast(cards);
+							if (cardx.length) {
+								await current.recast(cardx);
 							}
 						}
 						break;
 					case 4:
-						await player.draw("nodelay");
+						await player.draw({ num: 1, nodelay: true });
 						await target.draw();
 						break;
 				}

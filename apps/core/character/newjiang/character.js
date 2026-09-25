@@ -178,7 +178,7 @@ const characters = {
 	yj_xuangongzhu: {
 		sex: "female",
 		group: "wei",
-		hp: 3,
+		hp: 4,
 		skills: ["yjqimei", "yjzhuiji"],
 		names: "司马|null",
 	},
