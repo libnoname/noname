@@ -4576,44 +4576,37 @@ export default () => {
 				forced: true,
 				popup: false,
 				filter(event, player) {
-					if (player.hp == player.maxHp) {
+					if (player.hp === player.maxHp) {
 						return false;
 					}
-					for (var i = 0; i < game.treasures.length; i++) {
-						if (game.treasures[i].name == "treasure_jiqishi") {
-							return get.chessDistance(game.treasures[i], player) <= 2;
+					for (const treasure of game.treasures) {
+						if (treasure.name === "treasure_jiqishi") {
+							return get.chessDistance(treasure, player) <= 2;
 						}
 					}
 					return false;
 				},
-				content() {
-					"step 0";
-					var source = null;
-					for (var i = 0; i < game.treasures.length; i++) {
-						if (game.treasures[i].name == "treasure_jiqishi") {
-							source = game.treasures[i];
-							break;
-						}
+				async content(event, trigger, player) {
+					const source = game.treasures.find(treasure => treasure.name === "treasure_jiqishi");
+					if (!source) {
+						return;
 					}
-					if (source) {
-						source.chessFocus();
-						source.playerfocus(1000);
-						source.line(player, "thunder");
-						if (lib.config.animation && !lib.config.low_performance) {
-							setTimeout(function () {
-								source.$epic2();
-							}, 300);
-						}
-						game.delay(2);
-					} else {
-						event.finish();
+					source.chessFocus();
+					source.playerfocus(1000);
+					source.line(player, "thunder");
+					if (lib.config.animation && !lib.config.low_performance) {
+						setTimeout(() => {
+							source.$epic2();
+						}, 300);
 					}
-					"step 1";
+					await game.delay(2);
 					game.log("集气石发动");
-					player.recover("nosource");
-					var he = player.getCards("he");
-					if (he.length) {
-						player.discard(he.randomGets(2));
+					const recover = player.recover({ nosource: true });
+					const cards = player.getCards("he");
+					const discard = cards.length ? player.discard({ cards: cards.randomGets(2) }) : null;
+					await recover;
+					if (discard) {
+						await discard;
 					}
 				},
 			},
