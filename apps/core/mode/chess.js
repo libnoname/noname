@@ -4745,40 +4745,30 @@ export default () => {
 					if (event.num < 2) {
 						return false;
 					}
-					for (var i = 0; i < game.treasures.length; i++) {
-						if (game.treasures[i].name == "treasure_shiyuansu") {
+					for (const treasure of game.treasures) {
+						if (treasure.name === "treasure_shiyuansu") {
 							return true;
 						}
 					}
 					return false;
 				},
-				content() {
-					"step 0";
-					game.delayx();
-					"step 1";
-					var source = null;
-					for (var i = 0; i < game.treasures.length; i++) {
-						if (game.treasures[i].name == "treasure_shiyuansu") {
-							source = game.treasures[i];
-							break;
-						}
+				async content(event, trigger, player) {
+					await game.delayx();
+					const source = game.treasures.find(treasure => treasure.name === "treasure_shiyuansu");
+					if (!source) {
+						return;
 					}
-					if (source) {
-						source.chessFocus();
-						source.playerfocus(1000);
-						source.line(player, "thunder");
-						if (lib.config.animation && !lib.config.low_performance) {
-							setTimeout(function () {
-								source.$epic2();
-							}, 300);
-						}
-						game.delay(2);
-					} else {
-						event.finish();
+					source.chessFocus();
+					source.playerfocus(1000);
+					source.line(player, "thunder");
+					if (lib.config.animation && !lib.config.low_performance) {
+						setTimeout(() => {
+							source.$epic2();
+						}, 300);
 					}
-					"step 2";
+					await game.delay(2);
 					game.log("石元素像发动");
-					player.changeHujia();
+					await player.changeHujia();
 				},
 			},
 			shenmidiaoxiang: {
