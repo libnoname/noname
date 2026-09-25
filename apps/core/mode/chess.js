@@ -4621,44 +4621,35 @@ export default () => {
 					if (player.hp > 1) {
 						return false;
 					}
-					for (var i = 0; i < game.treasures.length; i++) {
-						if (game.treasures[i].name == "treasure_wuyashenxiang") {
-							return get.chessDistance(game.treasures[i], player) <= 3;
+					for (const treasure of game.treasures) {
+						if (treasure.name === "treasure_wuyashenxiang") {
+							return get.chessDistance(treasure, player) <= 3;
 						}
 					}
 					return false;
 				},
-				content() {
-					"step 0";
-					var source = null;
-					for (var i = 0; i < game.treasures.length; i++) {
-						if (game.treasures[i].name == "treasure_wuyashenxiang") {
-							source = game.treasures[i];
-							break;
-						}
+				async content(event, trigger, player) {
+					const source = game.treasures.find(treasure => treasure.name === "treasure_wuyashenxiang");
+					if (!source) {
+						return;
 					}
-					if (source) {
-						source.chessFocus();
-						source.playerfocus(1000);
-						source.line(player, "thunder");
-						if (lib.config.animation && !lib.config.low_performance) {
-							setTimeout(function () {
-								source.$epic2();
-							}, 300);
-						}
-						game.delay(2);
-					} else {
-						event.finish();
+					source.chessFocus();
+					source.playerfocus(1000);
+					source.line(player, "thunder");
+					if (lib.config.animation && !lib.config.low_performance) {
+						setTimeout(() => {
+							source.$epic2();
+						}, 300);
 					}
-					"step 1";
+					await game.delay(2);
 					game.log("乌鸦神像发动");
-					player.recover("nosource");
+					const recover = player.recover({ nosource: true });
 					// player.draw();
-					var card = get.cardPile(function (c) {
-						return get.type(c) == "delay";
-					});
-					if (card) {
-						player.addJudge(card);
+					const card = get.cardPile(c => get.type(c) === "delay");
+					const addJudge = card ? player.addJudge(card) : null;
+					await recover;
+					if (addJudge) {
+						await addJudge;
 					}
 				},
 			},
