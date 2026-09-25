@@ -4661,14 +4661,14 @@ export default () => {
 				forced: true,
 				popup: false,
 				filter(event, player) {
-					var nh = player.countCards("h");
-					if (!nh) {
+					const handCount = player.countCards("h");
+					if (!handCount) {
 						return false;
 					}
-					for (var i = 0; i < game.treasures.length; i++) {
-						if (game.treasures[i].name == "treasure_shenpanxianjing") {
-							for (var j = 0; j < game.players.length; j++) {
-								if (game.players[j].countCards("h") > nh) {
+					for (const treasure of game.treasures) {
+						if (treasure.name === "treasure_shenpanxianjing") {
+							for (const current of game.players) {
+								if (current.countCards("h") > handCount) {
 									return false;
 								}
 							}
@@ -4677,33 +4677,24 @@ export default () => {
 					}
 					return false;
 				},
-				content() {
-					"step 0";
-					var source = null;
-					for (var i = 0; i < game.treasures.length; i++) {
-						if (game.treasures[i].name == "treasure_shenpanxianjing") {
-							source = game.treasures[i];
-							break;
-						}
+				async content(event, trigger, player) {
+					const source = game.treasures.find(treasure => treasure.name === "treasure_shenpanxianjing");
+					if (!source) {
+						return;
 					}
-					if (source) {
-						source.chessFocus();
-						source.playerfocus(1000);
-						source.line(player, "thunder");
-						if (lib.config.animation && !lib.config.low_performance) {
-							setTimeout(function () {
-								source.$epic2();
-							}, 300);
-						}
-						game.delay(2);
-					} else {
-						event.finish();
+					source.chessFocus();
+					source.playerfocus(1000);
+					source.line(player, "thunder");
+					if (lib.config.animation && !lib.config.low_performance) {
+						setTimeout(() => {
+							source.$epic2();
+						}, 300);
 					}
-					"step 1";
+					await game.delay(2);
 					game.log("审判之刃发动");
-					var hs = player.getCards("h");
-					if (hs.length) {
-						player.discard(hs.randomGet());
+					const handCards = player.getCards("h");
+					if (handCards.length) {
+						await player.discard({ cards: [handCards.randomGet()] });
 					}
 				},
 			},
