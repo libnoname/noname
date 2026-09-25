@@ -6191,10 +6191,9 @@ export default () => {
 					}
 					return false;
 				},
-				content() {
-					var xy = target.getXY();
-					var x = xy[0];
-					var y = xy[1];
+				async content(event, trigger, player) {
+					const target = event.target;
+					const [x, y] = target.getXY();
 					if (target.movable(-1, 0)) {
 						game.addTempObstacle(x - 1, y, game.countPlayer());
 					}
@@ -6208,10 +6207,9 @@ export default () => {
 						game.addTempObstacle(x, y - 1, game.countPlayer());
 					}
 				},
-				content_old() {
-					"step 0";
-					var pos = parseInt(player.dataset.position);
-					var poses = [];
+				async content_old(event, trigger, player) {
+					const pos = parseInt(player.dataset.position);
+					const poses = [];
 					if (player.movable(-1, 0)) {
 						poses.push(pos - 1);
 					}
@@ -6225,7 +6223,7 @@ export default () => {
 						poses.push(pos + ui.chesswidth);
 					}
 					event.poses = poses;
-					if (poses.length == 1) {
+					if (poses.length === 1) {
 						event.obstacle = poses[0];
 						event.grids = [];
 					} else if (event.isMine()) {
@@ -6233,16 +6231,16 @@ export default () => {
 							event.obstacle = this.dataset.position;
 							game.resume();
 						});
-						game.pause();
+						const pause = game.pause();
 						_status.imchoosing = true;
-						for (var i = 0; i < event.grids.length; i++) {
-							event.grids[i].addTempClass("start");
+						for (const grid of event.grids) {
+							grid.addTempClass("start");
 						}
 						event.dialog = ui.create.dialog("选择一个位置放置障碍");
+						await pause;
 					} else {
 						event.grids = [];
 					}
-					"step 1";
 					_status.imchoosing = false;
 					if (!event.obstacle) {
 						event.obstacle = event.poses.randomGet();
@@ -6256,7 +6254,7 @@ export default () => {
 					if (event.dialog) {
 						event.dialog.close();
 					}
-					player.draw();
+					await player.draw();
 				},
 				ai: {
 					result: {
