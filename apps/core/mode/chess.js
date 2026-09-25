@@ -4743,39 +4743,29 @@ export default () => {
 				forced: true,
 				popup: false,
 				filter(event, player) {
-					for (var i = 0; i < game.treasures.length; i++) {
-						if (game.treasures[i].name == "treasure_shenmidiaoxiang") {
-							return player.canMoveTowards(game.treasures[i]) && get.chessDistance(game.treasures[i], player) > 3;
+					for (const treasure of game.treasures) {
+						if (treasure.name === "treasure_shenmidiaoxiang") {
+							return player.canMoveTowards(treasure) && get.chessDistance(treasure, player) > 3;
 						}
 					}
 					return false;
 				},
-				content() {
-					"step 0";
-					var source = null;
-					for (var i = 0; i < game.treasures.length; i++) {
-						if (game.treasures[i].name == "treasure_shenmidiaoxiang") {
-							source = game.treasures[i];
-							break;
-						}
+				async content(event, trigger, player) {
+					const source = game.treasures.find(treasure => treasure.name === "treasure_shenmidiaoxiang");
+					if (!source) {
+						return;
 					}
-					if (source) {
-						event.source = source;
-						source.chessFocus();
-						source.playerfocus(1000);
-						source.line(player, "thunder");
-						if (lib.config.animation && !lib.config.low_performance) {
-							setTimeout(function () {
-								source.$epic2();
-							}, 300);
-						}
-						game.delay(2);
-					} else {
-						event.finish();
+					source.chessFocus();
+					source.playerfocus(1000);
+					source.line(player, "thunder");
+					if (lib.config.animation && !lib.config.low_performance) {
+						setTimeout(() => {
+							source.$epic2();
+						}, 300);
 					}
-					"step 1";
+					await game.delay(2);
 					game.log("神秘雕像发动");
-					player.moveTowards(event.source);
+					player.moveTowards(source);
 				},
 			},
 			arenaAdd: {
