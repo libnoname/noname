@@ -5657,23 +5657,21 @@ export default () => {
 					if (!player.movable(0, 1) && !player.movable(0, -1) && !player.movable(1, 0) && !player.movable(-1, 0)) {
 						return false;
 					}
-					var move = 2;
-					move = game.checkMod(player, move, "chessMove", player);
+					const move = game.checkMod(player, 2, "chessMove", player);
 					return move > 0;
 				},
-				content() {
-					"step 0";
-					var move = 2;
-					move = game.checkMod(player, move, "chessMove", player);
-					player.chooseToMoveChess(move).phasing = true;
-					"step 1";
+				async content(event, trigger, player) {
+					const move = game.checkMod(player, 2, "chessMove", player);
+					const choice = player.chooseToMoveChess(move);
+					choice.phasing = true;
+					const result = await choice.forResult();
 					if (ui.confirm) {
 						ui.confirm.classList.add("removing");
 					}
 					if (!result.bool) {
-						var skill = player.getStat().skill;
+						const skill = player.getStat().skill;
 						skill._chessmove--;
-						if (typeof skill._chessmovetried == "number") {
+						if (typeof skill._chessmovetried === "number") {
 							skill._chessmovetried++;
 						} else {
 							skill._chessmovetried = 1;
@@ -5684,42 +5682,42 @@ export default () => {
 					order: 5,
 					result: {
 						playerx(player) {
-							if (get.mode() == "tafang" && _status.enemies.includes(player)) {
+							if (get.mode() === "tafang" && _status.enemies.includes(player)) {
 								return 1;
 							}
-							var nh = player.countCards("h");
-							if (!player.countCards("h", "sha") && !player.countCards("h", "shunshou") && !player.countCards("h", "bingliang")) {
-								if (nh <= Math.min(3, player.hp)) {
+							const handCount = player.countCards("h");
+							if (!player.hasCards("h", "sha") && !player.hasCards("h", "shunshou") && !player.hasCards("h", "bingliang")) {
+								if (handCount <= Math.min(3, player.hp)) {
 									return Math.random() - 0.3;
-								} else if (nh <= Math.min(2, player.hp)) {
+								} else if (handCount <= Math.min(2, player.hp)) {
 									return Math.random() - 0.4;
 								}
 								return Math.random() - 0.5;
 							}
-							var neighbour;
+							let neighbour;
 							neighbour = player.getNeighbour(0, 1);
-							if (neighbour && game.players.includes(neighbour) && neighbour.side != player.side) {
+							if (neighbour && game.players.includes(neighbour) && neighbour.side !== player.side) {
 								if (get.distance(player, neighbour, "attack") < 1) {
 									return 1;
 								}
 								return 0;
 							}
 							neighbour = player.getNeighbour(0, -1);
-							if (neighbour && game.players.includes(neighbour) && neighbour.side != player.side) {
+							if (neighbour && game.players.includes(neighbour) && neighbour.side !== player.side) {
 								if (get.distance(player, neighbour, "attack") < 1) {
 									return 1;
 								}
 								return 0;
 							}
 							neighbour = player.getNeighbour(1, 0);
-							if (neighbour && game.players.includes(neighbour) && neighbour.side != player.side) {
+							if (neighbour && game.players.includes(neighbour) && neighbour.side !== player.side) {
 								if (get.distance(player, neighbour, "attack") < 1) {
 									return 1;
 								}
 								return 0;
 							}
 							neighbour = player.getNeighbour(-1, 0);
-							if (neighbour && game.players.includes(neighbour) && neighbour.side != player.side) {
+							if (neighbour && game.players.includes(neighbour) && neighbour.side !== player.side) {
 								if (get.distance(player, neighbour, "attack") < 1) {
 									return 1;
 								}
@@ -5731,7 +5729,7 @@ export default () => {
 							if (player.getStat().skill._chessmovetried >= 10) {
 								return 0;
 							}
-							var x = lib.skill._chessmove.ai.result.playerx(player);
+							const x = lib.skill._chessmove.ai.result.playerx(player);
 							if (player.isMad()) {
 								return -x;
 							}
