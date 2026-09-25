@@ -4,6 +4,7 @@ const characters = {
 		group: "wei",
 		hp: 3,
 		skills: ["dcshiyu", "dcshuaijian"],
+		groupBorder: "jin",
 	},
 	cuizhi: {
 		sex: "female",
