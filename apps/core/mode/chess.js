@@ -5889,35 +5889,32 @@ export default () => {
 				trigger: { player: "phaseZhunbeiBegin" },
 				forced: true,
 				filter(event, player) {
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i] != player && game.players[i].countCards("h") && get.distance(player, game.players[i]) <= 5) {
+					for (const current of game.players) {
+						if (current !== player && current.hasCards("h") && get.distance(player, current) <= 5) {
 							return true;
 						}
 					}
 					return false;
 				},
-				content() {
-					"step 0";
-					var players = [];
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i] != player && game.players[i].countCards("h") && get.distance(player, game.players[i]) <= 5) {
-							players.push(game.players[i]);
+				async content(event, trigger, player) {
+					const players = [];
+					for (const current of game.players) {
+						if (current !== player && current.hasCards("h") && get.distance(player, current) <= 5) {
+							players.push(current);
 						}
 					}
 					players.sort(lib.sort.seat);
-					event.players = players;
-					"step 1";
-					if (event.players.length) {
-						event.current = event.players.shift();
-						event.current.chooseCard("神天并地：交给" + get.translation(player) + "一张手牌", true);
-					} else {
-						event.finish();
-					}
-					"step 2";
-					if (result.cards.length) {
-						player.gain(result.cards, event.current);
-						event.current.$give(1, player);
-						event.goto(1);
+					for (const current of players) {
+						const result = await current.chooseCard({
+							prompt: `神天并地：交给${get.translation(player)}一张手牌`,
+							forced: true,
+						}).forResult();
+						if (!result.cards.length) {
+							break;
+						}
+						const gain = player.gain({ cards: result.cards, source: current });
+						current.$give(1, player);
+						await gain;
 					}
 				},
 			},
