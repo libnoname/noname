@@ -8,480 +8,487 @@ export default () => {
 		name: "chess",
 		canvasUpdates2: [],
 		hiddenCharacters: [],
-		start() {
-			"step 0";
-			_status.gameDrawed = true;
-			_status.mode = get.config("chess_mode");
-			if (lib.config.player_border == "normal" && (lib.config.layout == "long" || lib.config.layout == "long2")) {
-				ui.arena.classList.add("lslim_player");
-			}
-			// if(_status.mode=='leader'){
-			// 	_status.mode='combat';
-			// }
-			if (lib.config.test_game) {
-				_status.mode = "combat";
-				game.saveConfig("additional_player", false, true);
-			}
-			if (_status.mode == "combat") {
-				_status.first_less = true;
-			}
-			"step 1";
-			for (var i in lib.skill) {
-				if (lib.skill[i].seatRelated === true) {
-					lib.skill[i] = {};
-					if (lib.translate[i + "_info"]) {
-						lib.translate[i + "_info"] = "此模式下不可用";
-					}
+		start: [
+			async (event, trigger, player) => {
+				_status.gameDrawed = true;
+				_status.mode = get.config("chess_mode");
+				if (lib.config.player_border === "normal" && (lib.config.layout === "long" || lib.config.layout === "long2")) {
+					ui.arena.classList.add("lslim_player");
 				}
-			}
-			lib.init.css(lib.assetURL + "layout/mode", "chess");
-			ui.chesssheet = document.createElement("style");
-			document.head.appendChild(ui.chesssheet);
-			var playback = localStorage.getItem(lib.configprefix + "playback");
-			lib.treasurelist = [];
-			if (get.config("chess_character") || playback || _status.mode == "leader") {
-				for (var i in lib.characterPack.mode_chess) {
-					if (i.indexOf("treasure_") == 0) {
-						lib.treasurelist.push(i);
-					}
-					if (!playback && i.indexOf("leader_") == 0 && _status.mode != "leader") {
-						continue;
-					}
-					lib.character[i] = lib.characterPack.mode_chess[i];
+				// if(_status.mode==='leader'){
+				// 	_status.mode='combat';
+				// }
+				if (lib.config.test_game) {
+					_status.mode = "combat";
+					game.saveConfig("additional_player", false, true);
 				}
-			}
-			if (get.config("chess_card")) {
-				lib.card.list.addArray(lib.chess_cardlist);
-			}
-			ui.create.cardsAsync();
-			game.finishCards();
-			game.addGlobalSkill("autoswap");
-			ui.chessContainer = ui.create.div("#chess-container", ui.arena);
-			ui.chessContainer.move = ui.click.moveContainer;
-			ui.chessContainer.chessLeft = 0;
-			ui.chessContainer.chessTop = 0;
-			// lib.setScroll(ui.chessContainer);
-			ui.chess = ui.create.div("#chess", ui.chessContainer);
-			ui.canvas2 = document.createElement("canvas");
-			ui.canvas2.id = "canvas2";
-			ui.chess.appendChild(ui.canvas2);
-			ui.ctx2 = ui.canvas2.getContext("2d");
-			game.me = ui.create.player();
-			if (playback) {
-				for (var i in lib.characterPack) {
-					for (var j in lib.characterPack[i]) {
-						lib.character[j] = lib.character[j] || lib.characterPack[i][j];
-					}
+				if (_status.mode === "combat") {
+					_status.first_less = true;
 				}
-				game.pause();
-				ui.system.style.display = "none";
-				_status.playback = playback;
-				localStorage.removeItem(lib.configprefix + "playback");
-				var store = lib.db.transaction(["video"], "readwrite").objectStore("video");
-				store.get(parseInt(playback)).onsuccess = function (e) {
-					if (e.target.result) {
-						event.video = e.target.result.video;
-						game.resume();
-					} else {
-						alert("播放失败：找不到录像");
-						game.reload();
-					}
-				};
-			} else {
-				switch (_status.mode) {
-					case "leader": {
-						game.leaderView();
-						break;
-					}
-					case "three": {
-						if (lib.config.continue_name_chess) {
-							event._result = {
-								friend: lib.config.continue_name_chess.friend,
-								enemy: lib.config.continue_name_chess.enemy,
-							};
-							_status.color = lib.config.continue_name_chess.color;
-							game.saveConfig("continue_name_chess");
-							game.delay(0.5);
-							lib.init.onfree();
-						} else {
-							game.chooseCharacterDouble(
-								function (i) {
-									if (lib.character[i].isChessBoss) {
-										return false;
-									}
-									return !lib.filter.characterDisabled(i);
-								},
-								function (i) {
-									switch (i) {
-										case 0:
-											return "主帅";
-										case 1:
-											return "副帅";
-										default:
-											return "前锋";
-									}
-								}
-							);
+			},
+			async (event, trigger, player) => {
+				for (const i in lib.skill) {
+					if (lib.skill[i].seatRelated === true) {
+						lib.skill[i] = {};
+						if (lib.translate[`${i}_info`]) {
+							lib.translate[`${i}_info`] = "此模式下不可用";
 						}
-						break;
-					}
-					case "combat": {
-						game.chooseCharacter();
-						break;
-					}
-					default: {
-						game.chooseCharacter();
 					}
 				}
-			}
-			"step 2";
-			ui.arena.classList.add("chess");
-			if (_status.mode == "three") {
-				_status.mylist = result.friend;
-				_status.enemylist = result.enemy;
-				_status.friendBackup = _status.mylist.slice(0);
-				_status.enemyBackup = _status.enemylist.slice(0);
-			}
-			var mylistmap, enemylistmap;
-			if (event.video) {
-				var videocontent;
-				for (var ii = 0; ii < event.video.length; ii++) {
-					if (event.video[ii].type == "init") {
-						videocontent = event.video[ii].content;
-						break;
+				lib.init.css(`${lib.assetURL}layout/mode`, "chess");
+				ui.chesssheet = document.createElement("style");
+				document.head.appendChild(ui.chesssheet);
+				const playback = localStorage.getItem(`${lib.configprefix}playback`);
+				lib.treasurelist = [];
+				if (get.config("chess_character") || playback || _status.mode === "leader") {
+					for (const i in lib.characterPack.mode_chess) {
+						if (i.indexOf("treasure_") === 0) {
+							lib.treasurelist.push(i);
+						}
+						if (!playback && i.indexOf("leader_") === 0 && _status.mode !== "leader") {
+							continue;
+						}
+						lib.character[i] = lib.characterPack.mode_chess[i];
 					}
 				}
-				_status.mylist = [];
-				_status.enemylist = [];
-				mylistmap = [];
-				enemylistmap = [];
-				for (var i = 0; i < videocontent.length; i++) {
-					if (videocontent[i].lord) {
-						_status.lord = videocontent[i].name;
+				if (get.config("chess_card")) {
+					lib.card.list.addArray(lib.chess_cardlist);
+				}
+				ui.create.cardsAsync();
+				game.finishCards();
+				game.addGlobalSkill("autoswap");
+				ui.chessContainer = ui.create.div("#chess-container", ui.arena);
+				ui.chessContainer.move = ui.click.moveContainer;
+				ui.chessContainer.chessLeft = 0;
+				ui.chessContainer.chessTop = 0;
+				// lib.setScroll(ui.chessContainer);
+				ui.chess = ui.create.div("#chess", ui.chessContainer);
+				ui.canvas2 = document.createElement("canvas");
+				ui.canvas2.id = "canvas2";
+				ui.chess.appendChild(ui.canvas2);
+				ui.ctx2 = ui.canvas2.getContext("2d");
+				game.me = ui.create.player();
+				if (playback) {
+					for (const i in lib.characterPack) {
+						for (const j in lib.characterPack[i]) {
+							lib.character[j] = lib.character[j] || lib.characterPack[i][j];
+						}
 					}
-					if (videocontent[i].identity == "friend") {
-						_status.mylist.push(videocontent[i].name);
-						mylistmap.push(videocontent[i].position);
+					game.pause();
+					ui.system.style.display = "none";
+					_status.playback = playback;
+					localStorage.removeItem(`${lib.configprefix}playback`);
+					const store = lib.db.transaction(["video"], "readwrite").objectStore("video");
+					store.get(parseInt(playback)).onsuccess = e => {
+						if (e.target.result) {
+							event.video = e.target.result.video;
+							game.resume();
+						} else {
+							alert("播放失败：找不到录像");
+							game.reload();
+						}
+					};
+				} else {
+					switch (_status.mode) {
+						case "leader": {
+							game.leaderView();
+							break;
+						}
+						case "three": {
+							if (lib.config.continue_name_chess) {
+								event._result = {
+									friend: lib.config.continue_name_chess.friend,
+									enemy: lib.config.continue_name_chess.enemy,
+								};
+								_status.color = lib.config.continue_name_chess.color;
+								game.saveConfig("continue_name_chess");
+								game.delay(0.5);
+								lib.init.onfree();
+							} else {
+								game.chooseCharacterDouble(
+									i => {
+										if (lib.character[i].isChessBoss) {
+											return false;
+										}
+										return !lib.filter.characterDisabled(i);
+									},
+									i => {
+										switch (i) {
+											case 0:
+												return "主帅";
+											case 1:
+												return "副帅";
+											default:
+												return "前锋";
+										}
+									}
+								);
+							}
+							break;
+						}
+						case "combat": {
+							game.chooseCharacter();
+							break;
+						}
+						default: {
+							game.chooseCharacter();
+						}
+					}
+				}
+				// 选将方法不返回子事件；等待队列（含录像恢复），并将结果传给下一个数组步骤。
+				return await event.waitNext();
+			},
+			async (event, trigger, player, result) => {
+				ui.arena.classList.add("chess");
+				if (_status.mode === "three") {
+					_status.mylist = result.friend;
+					_status.enemylist = result.enemy;
+					_status.friendBackup = _status.mylist.slice(0);
+					_status.enemyBackup = _status.enemylist.slice(0);
+				}
+				let mylistmap;
+				let enemylistmap;
+				if (event.video) {
+					let videocontent;
+					for (const video of event.video) {
+						if (video.type === "init") {
+							videocontent = video.content;
+							break;
+						}
+					}
+					_status.mylist = [];
+					_status.enemylist = [];
+					mylistmap = [];
+					enemylistmap = [];
+					for (const entry of videocontent) {
+						if (entry.lord) {
+							_status.lord = entry.name;
+						}
+						if (entry.identity === "friend") {
+							_status.mylist.push(entry.name);
+							mylistmap.push(entry.position);
+						} else {
+							_status.enemylist.push(entry.name);
+							enemylistmap.push(entry.position);
+						}
+					}
+					game.playerMap = lib.posmap;
+				}
+				const num = Math.round((_status.mylist.length + _status.enemylist.length) / 2);
+				let side;
+				if (_status.mode === "three") {
+					side = !_status.color;
+				} else if (_status.mode === "leader") {
+					side = true;
+				} else {
+					side = Math.random() < 0.5;
+				}
+
+				switch (num) {
+					case 1:
+						ui.chessheight = 4;
+						break;
+					case 2:
+						ui.chessheight = 5;
+						break;
+					case 3:
+						ui.chessheight = 5;
+						break;
+					case 4:
+						ui.chessheight = 6;
+						break;
+					case 5:
+						ui.chessheight = 6;
+						break;
+					case 6:
+						ui.chessheight = 7;
+						break;
+					case 7:
+						ui.chessheight = 7;
+						break;
+					case 8:
+						ui.chessheight = 8;
+						break;
+					default:
+						ui.chessheight = 8;
+				}
+				ui.chesswidth = Math.round(ui.chessheight * 1.5);
+
+				if (num === 1) {
+					ui.chesswidth++;
+				}
+				game.initChess();
+
+				const grids = [];
+				const gridnum = ui.chessheight * ui.chesswidth;
+				for (let i = 0; i < gridnum; i++) {
+					grids.push(i);
+				}
+				event.obs = [];
+				if (!event.video) {
+					const nco = parseFloat(get.config("chess_obstacle"));
+					if (nco > 0) {
+						const ng = Math.floor(gridnum * nco);
+						for (let i = 0; i < ng; i++) {
+							const cg = grids.randomRemove();
+							game.addObstacle(cg.toString(), false);
+							event.obs.push(cg.toString());
+						}
+					}
+				}
+				_status.enemyCount = _status.enemylist.length;
+				_status.friendCount = _status.mylist.length;
+				while (_status.mylist.length) {
+					const friend = ui.create.player().addTempClass("start");
+					friend.getId();
+					if (!event.friendZhu) {
+						event.friendZhu = friend;
+					} else if (!event.friendViceZhu) {
+						event.friendViceZhu = friend;
+					}
+					friend.init(_status.mylist.shift());
+					friend.side = side;
+					friend.setIdentity("friend");
+					friend.identity = "friend";
+					friend.node.identity.dataset.color = get.translation(`${side}Color`);
+					game.players.push(friend);
+					ui.chess.appendChild(friend);
+					if (event.video) {
+						ui.placeChess(friend, mylistmap.shift());
 					} else {
-						_status.enemylist.push(videocontent[i].name);
-						enemylistmap.push(videocontent[i].position);
+						ui.placeChess(friend, grids.randomRemove());
+						if (_status.enterArena && game.data.arena.acted.includes(friend.name)) {
+							friend.hp--;
+							friend.update();
+						}
+						if (_status.enterArena) {
+							friend.addSkill("arenaAdd");
+						}
 					}
+					lib.posmap[friend.dataset.position] = friend;
 				}
-				game.playerMap = lib.posmap;
-			}
-			var num = Math.round((_status.mylist.length + _status.enemylist.length) / 2);
-			var friend, enemy;
-			var side;
-			if (_status.mode == "three") {
-				side = !_status.color;
-			} else if (_status.mode == "leader") {
-				side = true;
-			} else {
-				side = Math.random() < 0.5;
-			}
-
-			switch (num) {
-				case 1:
-					ui.chessheight = 4;
-					break;
-				case 2:
-					ui.chessheight = 5;
-					break;
-				case 3:
-					ui.chessheight = 5;
-					break;
-				case 4:
-					ui.chessheight = 6;
-					break;
-				case 5:
-					ui.chessheight = 6;
-					break;
-				case 6:
-					ui.chessheight = 7;
-					break;
-				case 7:
-					ui.chessheight = 7;
-					break;
-				case 8:
-					ui.chessheight = 8;
-					break;
-				default:
-					ui.chessheight = 8;
-			}
-			ui.chesswidth = Math.round(ui.chessheight * 1.5);
-
-			if (num == 1) {
-				ui.chesswidth++;
-			}
-			game.initChess();
-
-			var grids = [];
-			var gridnum = ui.chessheight * ui.chesswidth;
-			for (var i = 0; i < gridnum; i++) {
-				grids.push(i);
-			}
-			event.obs = [];
-			if (!event.video) {
-				var nco = parseFloat(get.config("chess_obstacle"));
-				if (nco > 0) {
-					var ng = Math.floor(gridnum * nco);
-					for (var i = 0; i < ng; i++) {
-						var cg = grids.randomRemove();
-						game.addObstacle(cg.toString(), false);
-						event.obs.push(cg.toString());
+				while (_status.enemylist.length) {
+					const enemy = ui.create.player().addTempClass("start");
+					enemy.getId();
+					enemy.init(_status.enemylist.shift());
+					enemy.side = !side;
+					enemy.setIdentity("enemy");
+					enemy.identity = "enemy";
+					enemy.node.identity.dataset.color = get.translation(`${!side}Color`);
+					game.players.push(enemy);
+					ui.chess.appendChild(enemy);
+					if (event.video) {
+						ui.placeChess(enemy, enemylistmap.shift());
+					} else {
+						ui.placeChess(enemy, grids.randomRemove());
 					}
+					lib.posmap[enemy.dataset.position] = enemy;
 				}
-			}
-			_status.enemyCount = _status.enemylist.length;
-			_status.friendCount = _status.mylist.length;
-			while (_status.mylist.length) {
-				friend = ui.create.player().addTempClass("start");
-				friend.getId();
-				if (!event.friendZhu) {
-					event.friendZhu = friend;
-				} else if (!event.friendViceZhu) {
-					event.friendViceZhu = friend;
-				}
-				friend.init(_status.mylist.shift());
-				friend.side = side;
-				friend.setIdentity("friend");
-				friend.identity = "friend";
-				friend.node.identity.dataset.color = get.translation(side + "Color");
-				game.players.push(friend);
-				ui.chess.appendChild(friend);
-				if (event.video) {
-					ui.placeChess(friend, mylistmap.shift());
-				} else {
-					ui.placeChess(friend, grids.randomRemove());
-					if (_status.enterArena && game.data.arena.acted.includes(friend.name)) {
-						friend.hp--;
-						friend.update();
-					}
-					if (_status.enterArena) {
-						friend.addSkill("arenaAdd");
-					}
-				}
-				lib.posmap[friend.dataset.position] = friend;
-			}
-			while (_status.enemylist.length) {
-				enemy = ui.create.player().addTempClass("start");
-				enemy.getId();
-				enemy.init(_status.enemylist.shift());
-				enemy.side = !side;
-				enemy.setIdentity("enemy");
-				enemy.identity = "enemy";
-				enemy.node.identity.dataset.color = get.translation(!side + "Color");
-				game.players.push(enemy);
-				ui.chess.appendChild(enemy);
-				if (event.video) {
-					ui.placeChess(enemy, enemylistmap.shift());
-				} else {
-					ui.placeChess(enemy, grids.randomRemove());
-				}
-				lib.posmap[enemy.dataset.position] = enemy;
-			}
 
-			if (lib.config.show_handcardbutton) {
-				lib.setPopped(
-					ui.create.system("手牌", null, true),
-					function () {
-						var uiintro = ui.create.dialog("hidden");
-						var added = false;
-						for (var i = 0; i < game.players.length; i++) {
-							if (game.players[i].side == game.me.side && game.players[i] != game.me) {
-								added = true;
-								uiintro.add(get.translation(game.players[i]));
-								var cards = game.players[i].getCards("h");
-								if (cards.length) {
-									uiintro.addSmall(cards, true);
-								} else {
-									uiintro.add("（无）");
+				if (lib.config.show_handcardbutton) {
+					lib.setPopped(
+						ui.create.system("手牌", null, true),
+						() => {
+							const uiintro = ui.create.dialog("hidden");
+							let added = false;
+							for (const current of game.players) {
+								if (current.side === game.me.side && current !== game.me) {
+									added = true;
+									uiintro.add(get.translation(current));
+									const cards = current.getCards("h");
+									if (cards.length) {
+										uiintro.addSmall(cards, true);
+									} else {
+										uiintro.add("（无）");
+									}
 								}
 							}
-						}
-						if (!added) {
-							uiintro.add("无队友");
-						}
-
-						return uiintro;
-					},
-					220
-				);
-			}
-
-			if (!event.video && _status.mode == "combat" && !_status.vsboss && (_status.replacelist.length || get.config("additional_player"))) {
-				_status.enemyDied = 0;
-				_status.friendDied = 0;
-				ui.enemyDied = ui.create.system("杀敌: " + get.cnNumber(0), null, true);
-				ui.friendDied = ui.create.system("阵亡: " + get.cnNumber(0), null, true);
-				if (!get.config("additional_player")) {
-					lib.setPopped(ui.friendDied, function () {
-						if (_status.replacelist.length) {
-							var uiintro = ui.create.dialog("hidden");
-
-							uiintro.add("未上场");
-							uiintro.add([_status.replacelist, "character"]);
+							if (!added) {
+								uiintro.add("无队友");
+							}
 
 							return uiintro;
+						},
+						220
+					);
+				}
+
+				if (!event.video && _status.mode === "combat" && !_status.vsboss && (_status.replacelist.length || get.config("additional_player"))) {
+					_status.enemyDied = 0;
+					_status.friendDied = 0;
+					ui.enemyDied = ui.create.system(`杀敌: ${get.cnNumber(0)}`, null, true);
+					ui.friendDied = ui.create.system(`阵亡: ${get.cnNumber(0)}`, null, true);
+					if (!get.config("additional_player")) {
+						lib.setPopped(ui.friendDied, () => {
+							if (_status.replacelist.length) {
+								const uiintro = ui.create.dialog("hidden");
+
+								uiintro.add("未上场");
+								uiintro.add([_status.replacelist, "character"]);
+
+								return uiintro;
+							}
+						});
+					}
+				}
+				if (!event.video && _status.mode === "combat" && !get.config("single_control") && !_status.boss) {
+					ui.single_swap = ui.create.system(
+						"换人",
+						() => {
+							let bool = false;
+							for (const current of game.players) {
+								if (current.side === game.me.side && current !== game.me) {
+									bool = true;
+									break;
+								}
+							}
+							if (bool) {
+								if (ui.auto.classList.contains("hidden")) {
+									game.me.popup("请稍后换人");
+									return;
+								}
+								if (_status.event.isMine()) {
+									ui.click.auto();
+									setTimeout(() => {
+										ui.click.auto();
+									}, 500);
+								}
+								let player = game.me;
+								for (let i = 0; i < game.players.length; i++) {
+									player = player.next;
+									if (player.side === game.me.side) {
+										game.modeSwapPlayer(player);
+										return;
+									}
+								}
+							}
+						},
+						true
+					);
+				}
+				if (!event.video && _status.mode === "combat" && !_status.vsboss && get.config("additional_player")) {
+					const finishGameBr = document.createElement("br");
+					finishGameBr.classList.add("finish_game");
+					ui.finishGame = ui.create.system("结束游戏", () => {
+						ui.finishGame.remove();
+						if (_status.friendDied < _status.enemyDied) {
+							game.forceOver(true);
+						} else if (_status.friendDied > _status.enemyDied) {
+							game.forceOver(false);
+						} else {
+							game.forceOver();
 						}
 					});
+					ui.finishGame.classList.add("finish_game");
+					ui.finishGame.parentNode.insertBefore(finishGameBr, ui.finishGame);
 				}
-			}
-			if (!event.video && _status.mode == "combat" && !get.config("single_control") && !_status.boss) {
-				ui.single_swap = ui.create.system(
-					"换人",
-					function () {
-						var bool = false;
-						for (var i = 0; i < game.players.length; i++) {
-							if (game.players[i].side == game.me.side && game.players[i] != game.me) {
-								bool = true;
+
+				ui.create.me();
+				ui.create.fakeme();
+
+				if (!event.video && ((_status.mode === "combat" && get.config("zhu") && !_status.vsboss && game.players.length > 2) || _status.mode === "three")) {
+					game.friendZhu = event.friendZhu;
+					game.friendZhu.hp++;
+					game.friendZhu.maxHp++;
+					game.friendZhu.update();
+					game.friendZhu.node.identity.firstChild.innerHTML = "将";
+
+					for (const current of game.players) {
+						if (current.side !== game.me.side) {
+							game.enemyZhu = current;
+							current.hp++;
+							current.maxHp++;
+							current.update();
+							current.node.identity.firstChild.innerHTML = "帅";
+							break;
+						}
+					}
+
+					if ((get.config("main_zhu") || _status.mode === "three") && event.friendViceZhu) {
+						game.friendViceZhu = event.friendViceZhu;
+						game.friendViceZhu.node.identity.firstChild.innerHTML = "仕";
+						for (const current of game.players) {
+							if (current.side !== game.me.side && current !== game.enemyZhu) {
+								game.enemyViceZhu = current;
+								current.node.identity.firstChild.innerHTML = "士";
 								break;
 							}
 						}
-						if (bool) {
-							if (ui.auto.classList.contains("hidden")) {
-								game.me.popup("请稍后换人");
-								return;
-							}
-							if (_status.event.isMine()) {
-								ui.click.auto();
-								setTimeout(function () {
-									ui.click.auto();
-								}, 500);
-							}
-							var player = game.me;
-							for (var i = 0; i < game.players.length; i++) {
-								player = player.next;
-								if (player.side == game.me.side) {
-									game.modeSwapPlayer(player);
-									return;
-								}
-							}
-						}
-					},
-					true
-				);
-			}
-			if (!event.video && _status.mode == "combat" && !_status.vsboss && get.config("additional_player")) {
-				var finishGameBr = document.createElement("br");
-				finishGameBr.classList.add("finish_game");
-				ui.finishGame = ui.create.system("结束游戏", function () {
-					ui.finishGame.remove();
-					if (_status.friendDied < _status.enemyDied) {
-						game.forceOver(true);
-					} else if (_status.friendDied > _status.enemyDied) {
-						game.forceOver(false);
-					} else {
-						game.forceOver();
-					}
-				});
-				ui.finishGame.classList.add("finish_game");
-				ui.finishGame.parentNode.insertBefore(finishGameBr, ui.finishGame);
-			}
-
-			ui.create.me();
-			ui.create.fakeme();
-
-			if (!event.video && ((_status.mode == "combat" && get.config("zhu") && !_status.vsboss && game.players.length > 2) || _status.mode == "three")) {
-				game.friendZhu = event.friendZhu;
-				game.friendZhu.hp++;
-				game.friendZhu.maxHp++;
-				game.friendZhu.update();
-				game.friendZhu.node.identity.firstChild.innerHTML = "将";
-
-				for (var i = 0; i < game.players.length; i++) {
-					if (game.players[i].side != game.me.side) {
-						game.enemyZhu = game.players[i];
-						game.players[i].hp++;
-						game.players[i].maxHp++;
-						game.players[i].update();
-						game.players[i].node.identity.firstChild.innerHTML = "帅";
-						break;
 					}
 				}
 
-				if ((get.config("main_zhu") || _status.mode == "three") && event.friendViceZhu) {
-					game.friendViceZhu = event.friendViceZhu;
-					game.friendViceZhu.node.identity.firstChild.innerHTML = "仕";
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].side != game.me.side && game.players[i] != game.enemyZhu) {
-							game.enemyViceZhu = game.players[i];
-							game.players[i].node.identity.firstChild.innerHTML = "士";
+				ui.chessinfo = ui.create.div(".fakeme.player.playerbg", ui.me, e => {
+					e.stopPropagation();
+				});
+				ui.create.div(ui.chessinfo);
+				lib.setScroll(ui.chessinfo.firstChild);
+
+				game.arrangePlayers();
+			},
+			async (event, trigger, player) => {
+				ui.control.style.display = "";
+				let p;
+				for (const current of game.players) {
+					if (_status.lord) {
+						if (current.name === _status.lord) {
+							p = current;
+							p.addSkill("tongshuai");
+							p.addSkill("leader_zhaoxiang");
+							break;
+						}
+					} else {
+						if (current.side) {
+							p = current;
 							break;
 						}
 					}
 				}
-			}
+				if (event.video) {
+					game.playVideoContent(event.video);
+					game.setChessInfo(p);
+					return;
+				}
 
-			ui.chessinfo = ui.create.div(".fakeme.player.playerbg", ui.me, function (e) {
-				e.stopPropagation();
-			});
-			ui.create.div(ui.chessinfo);
-			lib.setScroll(ui.chessinfo.firstChild);
-
-			game.arrangePlayers();
-			"step 3";
-			ui.control.style.display = "";
-			var p;
-			for (var i = 0; i < game.players.length; i++) {
-				if (_status.lord) {
-					if (game.players[i].name == _status.lord) {
-						p = game.players[i];
-						p.addSkill("tongshuai");
-						p.addSkill("leader_zhaoxiang");
-						break;
+				const players = get.players(lib.sort.position);
+				const info = [];
+				for (const current of players) {
+					info.push({
+						name: current.name,
+						identity: current.identity,
+						position: current.dataset.position,
+						lord: current.name === _status.lord,
+					});
+				}
+				_status.videoInited = true;
+				game.addVideo("init", null, info);
+				if (game.friendZhu) {
+					game.addVideo("identityText", game.friendZhu, "将");
+					game.addVideo("identityText", game.enemyZhu, "帅");
+					if (game.friendViceZhu) {
+						game.addVideo("identityText", game.friendViceZhu, "仕");
+						game.addVideo("identityText", game.enemyViceZhu, "士");
 					}
+				}
+				if (event.obs) {
+					game.addVideo("initobs", null, event.obs);
+				}
+
+				// 保持原步骤的调度顺序：先完成下方 UI 设置，再由数组编译器执行队列。
+				event.trigger("gameStart");
+				game.gameDraw(p);
+				game.me.classList.add("current_action");
+				if (_status.mode === "three") {
+					game.phaseLoopThree(_status.color ? game.enemyZhu : game.friendZhu);
+				} else if (_status.mode === "leader") {
+					game.phaseLoopOrdered(p);
+				} else if (get.config("seat_order") === "指定") {
+					game.phaseLoopOrdered(p);
 				} else {
-					if (game.players[i].side) {
-						p = game.players[i];
-						break;
-					}
+					game.phaseLoop(p);
 				}
-			}
-			if (event.video) {
-				game.playVideoContent(event.video);
 				game.setChessInfo(p);
-				return;
-			}
-
-			var players = get.players(lib.sort.position);
-			var info = [];
-			for (var i = 0; i < players.length; i++) {
-				info.push({
-					name: players[i].name,
-					identity: players[i].identity,
-					position: players[i].dataset.position,
-					lord: players[i].name == _status.lord,
-				});
-			}
-			_status.videoInited = true;
-			game.addVideo("init", null, info);
-			if (game.friendZhu) {
-				game.addVideo("identityText", game.friendZhu, "将");
-				game.addVideo("identityText", game.enemyZhu, "帅");
-				if (game.friendViceZhu) {
-					game.addVideo("identityText", game.friendViceZhu, "仕");
-					game.addVideo("identityText", game.enemyViceZhu, "士");
-				}
-			}
-			if (event.obs) {
-				game.addVideo("initobs", null, event.obs);
-			}
-
-			event.trigger("gameStart");
-			game.gameDraw(p);
-			game.me.classList.add("current_action");
-			if (_status.mode == "three") {
-				game.phaseLoopThree(_status.color ? game.enemyZhu : game.friendZhu);
-			} else if (_status.mode == "leader") {
-				game.phaseLoopOrdered(p);
-			} else if (get.config("seat_order") == "指定") {
-				game.phaseLoopOrdered(p);
-			} else {
-				game.phaseLoop(p);
-			}
-			game.setChessInfo(p);
-		},
+			},
+		],
 		element: {
 			card: {
 				moveTo(player) {
