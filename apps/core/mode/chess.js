@@ -1204,21 +1204,44 @@ export default () => {
 				},
 			},
 			content: {
-				replaceChessPlayer() {
-					"step 0";
-					if (get.config("additional_player")) {
-						if (!event.enemy && !_status.auto && (game.me.isDead() || get.config("single_control"))) {
-							event.dialog = ui.create.dialog("选择替补角色", [_status.additionallist.randomGets(parseInt(get.config("choice_number"))), "character"]);
-							event.filterButton = function () {
+				replaceChessPlayer: [
+					event => {
+						if (get.config("additional_player")) {
+							if (!event.enemy && !_status.auto && (game.me.isDead() || get.config("single_control"))) {
+								event.dialog = ui.create.dialog("选择替补角色", [_status.additionallist.randomGets(parseInt(get.config("choice_number"))), "character"]);
+								event.filterButton = () => {
+									return true;
+								};
+								event.player = game.me;
+								event.forced = true;
+								event.forceDie = true;
+								event.custom.replace.confirm = () => {
+									event.playername = ui.selected.buttons[0].link;
+									event.dialog.close();
+									_status.additionallist.remove(event.playername);
+									if (ui.confirm) {
+										ui.confirm.close();
+									}
+									game.resume();
+								};
+								game.check();
+								game.pause();
+							} else {
+								event.playername = _status.additionallist.randomRemove();
+							}
+						} else if (!event.enemy && get.config("seat_order") === "指定" && !_status.auto && _status.replacelist.length) {
+							_status.replacelist.add(event.playername);
+							event.dialog = ui.create.dialog("选择替补角色", [_status.replacelist, "character"]);
+							event.filterButton = () => {
 								return true;
 							};
 							event.player = game.me;
 							event.forced = true;
 							event.forceDie = true;
-							event.custom.replace.confirm = function () {
+							event.custom.replace.confirm = () => {
 								event.playername = ui.selected.buttons[0].link;
 								event.dialog.close();
-								_status.additionallist.remove(event.playername);
+								_status.replacelist.remove(event.playername);
 								if (ui.confirm) {
 									ui.confirm.close();
 								}
@@ -1227,45 +1250,24 @@ export default () => {
 							game.check();
 							game.pause();
 						} else {
-							event.playername = _status.additionallist.randomRemove();
+							game.delay();
 						}
-					} else if (!event.enemy && get.config("seat_order") == "指定" && !_status.auto && _status.replacelist.length) {
-						_status.replacelist.add(event.playername);
-						event.dialog = ui.create.dialog("选择替补角色", [_status.replacelist, "character"]);
-						event.filterButton = function () {
-							return true;
-						};
-						event.player = game.me;
-						event.forced = true;
-						event.forceDie = true;
-						event.custom.replace.confirm = function () {
-							event.playername = ui.selected.buttons[0].link;
-							event.dialog.close();
-							_status.replacelist.remove(event.playername);
-							if (ui.confirm) {
-								ui.confirm.close();
-							}
-							game.resume();
-						};
-						game.check();
-						game.pause();
-					} else {
-						game.delay();
-					}
-					if (game.me.isDead()) {
-						event.swapNow = true;
-					}
-					"step 1";
-					game.uncheck();
-					var player = game.addChessPlayer(event.playername, event.enemy);
-					game.log(player, "加入游戏");
-					player.chessFocus();
-					player.playerfocus(1000);
-					game.delay(2);
-					if (event.swapNow && player.side == game.me.side) {
-						game.modeSwapPlayer(player);
-					}
-				},
+						if (game.me.isDead()) {
+							event.swapNow = true;
+						}
+					},
+					event => {
+						game.uncheck();
+						const player = game.addChessPlayer(event.playername, event.enemy);
+						game.log(player, "加入游戏");
+						player.chessFocus();
+						player.playerfocus(1000);
+						game.delay(2);
+						if (event.swapNow && player.side === game.me.side) {
+							game.modeSwapPlayer(player);
+						}
+					},
+				],
 				chooseToMoveChess() {
 					"step 0";
 					if (!player.movable(0, 1) && !player.movable(0, -1) && !player.movable(1, 0) && !player.movable(-1, 0)) {
