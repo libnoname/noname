@@ -95,6 +95,28 @@ class SafOverlayStore(private val context: Context) {
         }
     }
 
+    fun assetSize(path: String, basePath: String? = ASSET_BASE_PATH): Long? {
+        return try {
+            context.assets.openFd(assetPath(path, basePath)).use { descriptor ->
+                descriptor.length.takeIf { it >= 0 }
+            }
+        } catch (_: IOException) {
+            null
+        }
+    }
+
+    fun overlayType(path: String): EntryType {
+        val saf = findSaf(path)
+        if (saf != null) {
+            return when {
+                saf.isFile -> EntryType.FILE
+                saf.isDirectory -> EntryType.DIRECTORY
+                else -> EntryType.NONE
+            }
+        }
+        return assetType(path)
+    }
+
     fun assetType(path: String, basePath: String? = ASSET_BASE_PATH): EntryType {
         val assetPath = assetPath(path, basePath)
 

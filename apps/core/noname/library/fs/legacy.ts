@@ -1,5 +1,5 @@
 import { FileSystemError, FileSystemErrorCode } from "./errors";
-import type { FileSystem } from "./index";
+import type { FileSystem } from "./file-system";
 
 export type LegacyWriteData = string | Blob | ArrayBuffer | ArrayBufferView;
 
@@ -37,10 +37,10 @@ export interface LegacyFileSystemGame {
 	) => void;
 	getFileList?: (
 		directory: string,
-		callback?: (folders: string[], files: string[]) => unknown,
+		callback: (folders: string[], files: string[]) => unknown,
 		onerror?: (error: Error) => void
 	) => void;
-	ensureDirectory?: (paths: string | string[], callback?: () => void, file?: boolean) => void;
+	ensureDirectory?: (paths: string | string[], callback: () => void, file?: boolean) => void;
 	createDir?: (directory: string, successCallback?: () => void, errorCallback?: (error: Error) => void) => void;
 	removeDir?: (directory: string, successCallback?: () => void, errorCallback?: (error: Error) => void) => void;
 }
@@ -100,6 +100,7 @@ export function installLegacyFileSystemAPI(game: LegacyFileSystemGame, fileSyste
 				const folders: string[] = [];
 				const files: string[] = [];
 				for (const entry of entries) {
+					if (entry.name.startsWith(".") || entry.name.startsWith("_")) continue;
 					if (entry.type === "directory") {
 						folders.push(entry.name);
 					} else if (entry.type === "file") {
@@ -113,11 +114,9 @@ export function installLegacyFileSystemAPI(game: LegacyFileSystemGame, fileSyste
 	};
 
 	game.ensureDirectory = function ensureDirectory(list, callback = () => {}, file = false) {
-		let pathArray = typeof list === "string" ? list.split("/") : list;
-		if (file) {
-			pathArray = pathArray.slice(0, -1);
-		}
-		fileSystem.createDir(pathArray.join("/"), { recursive: true }).then(callback, console.error);
+		const paths = typeof list === "string" ? [list] : list;
+		const directories = paths.map(path => (file ? path.split("/").slice(0, -1).join("/") : path));
+		Promise.all(directories.map(path => fileSystem.createDir(path, { recursive: true }))).then(() => callback(), console.error);
 	};
 
 	game.createDir = function createDir(directory, successCallback = () => {}, errorCallback = () => {}) {
@@ -149,7 +148,13 @@ function checkPathType(
 ) {
 	fileSystem.stat(path).then(
 		info => callback?.(info === null ? -1 : info.type === expectedType ? 1 : 0),
-		error => handleLegacyError(error, onerror)
+		error => {
+			if (error instanceof FileSystemError && error.code === FileSystemErrorCode.PermissionDenied) {
+				callback?.(-1);
+				return;
+			}
+			handleLegacyError(error, onerror);
+		}
 	);
 }
 

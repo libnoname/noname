@@ -8809,10 +8809,11 @@ export class Library {
 	/**
 	 * 文件系统操作入口（新）。
 	 *
-	 * 旨在整合之前`game.readFile/writeFile/...`用于读写文件的函数，为多平台支持提供统一适配器
-	 * 
-	 * 当前仅浏览器的开发服务器环境会安装具体适配器；其他运行环境暂使用默认适配器，
-	 * 调用文件系统操作时会抛出错误。此入口为后续 Node.js/Cordova 适配保留统一接口。
+	 * 旨在整合之前`game.readFile/writeFile/...`用于读写文件的函数，为多平台支持提供统一适配器。
+	 *
+	 * 各运行环境在初始化期间通过 `CoreFileSystemBootstrap#install` 安装具体适配器。
+	 *
+	 * 尚未安装时使用默认适配器，调用文件系统操作时会抛出错误。
 	 *
 	 * @type {FileSystem}
 	 */
