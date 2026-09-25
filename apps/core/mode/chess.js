@@ -4772,34 +4772,33 @@ export default () => {
 				enable: "phaseUse",
 				usable: 1,
 				filter(event, player) {
-					return _status.enterArena && player.side == game.me.side && game.data.arena.arenachoice.length > game.data.arena.dead.length;
+					return _status.enterArena && player.side === game.me.side && game.data.arena.arenachoice.length > game.data.arena.dead.length;
 				},
 				direct: true,
 				delay: 0,
 				preservecancel: true,
-				content() {
-					"step 0";
-					var list = game.data.arena.arenachoice.slice(0);
-					for (var i = 0; i < game.data.arena.dead.length; i++) {
-						list.remove(game.data.arena.dead[i]);
+				async content(event, trigger, player) {
+					const list = game.data.arena.arenachoice.slice(0);
+					for (const name of game.data.arena.dead) {
+						list.remove(name);
 					}
 					event.dialog = ui.create.dialog("选择一个出场武将", [list, "character"]);
-					game.pause();
+					const pause = game.pause();
 					_status.imchoosing = true;
-					event.custom.replace.button = function (button) {
+					event.custom.replace.button = button => {
 						event.choice = button.link;
 						game.resume();
 					};
 					event.custom.replace.confirm = game.resume;
 					event.switchToAuto = game.resume;
-					"step 1";
+					await pause;
 					if (ui.confirm) {
 						ui.confirm.classList.add("removing");
 					}
 					_status.imchoosing = false;
 					event.dialog.close();
 					if (event.choice) {
-						var name = event.choice;
+						const name = event.choice;
 						game.addChessPlayer(name);
 						game.data.arena.dead.push(name);
 						game.saveData();
@@ -4807,7 +4806,7 @@ export default () => {
 							_status.arenaAdd = [];
 						}
 						_status.arenaAdd.push(name);
-						game.delay();
+						await game.delay();
 					} else {
 						player.getStat("skill").arenaAdd--;
 					}
