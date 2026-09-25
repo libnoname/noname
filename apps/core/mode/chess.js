@@ -5508,101 +5508,101 @@ export default () => {
 				delay: false,
 				preservecancel: true,
 				filter(event, player) {
-					var num = 0;
-					var xy = player.getXY();
-					var neighbour;
+					let num = 0;
+					const xy = player.getXY();
+					let neighbour;
 					neighbour = player.getNeighbour(-1, 0);
-					if (neighbour && typeof neighbour.tempObstacle != "number" && game.obstacles.includes(neighbour)) {
+					if (neighbour && typeof neighbour.tempObstacle !== "number" && game.obstacles.includes(neighbour)) {
 						num++;
-					} else if (xy[0] == 0) {
+					} else if (xy[0] === 0) {
 						num++;
 					}
 					neighbour = player.getNeighbour(1, 0);
-					if (neighbour && typeof neighbour.tempObstacle != "number" && game.obstacles.includes(neighbour)) {
+					if (neighbour && typeof neighbour.tempObstacle !== "number" && game.obstacles.includes(neighbour)) {
 						num++;
 					} else if (xy[0] + 1 >= ui.chesswidth) {
 						num++;
 					}
 					neighbour = player.getNeighbour(0, -1);
-					if (neighbour && typeof neighbour.tempObstacle != "number" && game.obstacles.includes(neighbour)) {
+					if (neighbour && typeof neighbour.tempObstacle !== "number" && game.obstacles.includes(neighbour)) {
 						num++;
-					} else if (xy[1] == 0) {
+					} else if (xy[1] === 0) {
 						num++;
 					}
 					neighbour = player.getNeighbour(0, 1);
-					if (neighbour && typeof neighbour.tempObstacle != "number" && game.obstacles.includes(neighbour)) {
+					if (neighbour && typeof neighbour.tempObstacle !== "number" && game.obstacles.includes(neighbour)) {
 						num++;
 					} else if (xy[1] + 1 >= ui.chessheight) {
 						num++;
 					}
 					return num >= 3;
 				},
-				content() {
-					"step 0";
+				async content(event, trigger, player) {
 					event.obstacles = [];
 					event.movemap = {};
-					var neighbour;
+					let neighbour;
 					neighbour = player.getNeighbour(-1, 0);
-					if (neighbour && typeof neighbour.tempObstacle != "number" && game.obstacles.includes(neighbour)) {
+					if (neighbour && typeof neighbour.tempObstacle !== "number" && game.obstacles.includes(neighbour)) {
 						event.obstacles.push(neighbour);
 						if (player.movable(-2, 0)) {
 							event.movemap["[-1,0]"] = neighbour;
 						}
 					}
 					neighbour = player.getNeighbour(1, 0);
-					if (neighbour && typeof neighbour.tempObstacle != "number" && game.obstacles.includes(neighbour)) {
+					if (neighbour && typeof neighbour.tempObstacle !== "number" && game.obstacles.includes(neighbour)) {
 						event.obstacles.push(neighbour);
 						if (player.movable(2, 0)) {
 							event.movemap["[1,0]"] = neighbour;
 						}
 					}
 					neighbour = player.getNeighbour(0, -1);
-					if (neighbour && typeof neighbour.tempObstacle != "number" && game.obstacles.includes(neighbour)) {
+					if (neighbour && typeof neighbour.tempObstacle !== "number" && game.obstacles.includes(neighbour)) {
 						event.obstacles.push(neighbour);
 						if (player.movable(0, -2)) {
 							event.movemap["[0,-1]"] = neighbour;
 						}
 					}
 					neighbour = player.getNeighbour(0, 1);
-					if (neighbour && typeof neighbour.tempObstacle != "number" && game.obstacles.includes(neighbour)) {
+					if (neighbour && typeof neighbour.tempObstacle !== "number" && game.obstacles.includes(neighbour)) {
 						event.obstacles.push(neighbour);
 						if (player.movable(0, 2)) {
 							event.movemap["[0,1]"] = neighbour;
 						}
 					}
 					if (!event.obstacles.length) {
-						event.finish();
 						return;
-					} else if (event.obstacles.length == 1) {
+					}
+					if (event.obstacles.length === 1) {
 						event.obstacle = event.obstacles[0];
 					} else if (event.isMine()) {
-						for (var i = 0; i < event.obstacles.length; i++) {
-							event.obstacles[i].classList.add("glow");
+						for (const obstacle of event.obstacles) {
+							obstacle.classList.add("glow");
 						}
 						event.chooseObstacle = true;
-						game.pause();
+						const pause = game.pause();
 						_status.imchoosing = true;
 						event.dialog = ui.create.dialog("移动一个与你相邻的路障");
-						event.dialog.add('<div class="text">' + lib.translate._chess_chuzhang_info + "</div>");
-						event.custom.replace.confirm = function () {
+						event.dialog.add(`<div class="text">${lib.translate._chess_chuzhang_info}</div>`);
+						event.custom.replace.confirm = () => {
 							player.getStat().skill._chess_chuzhang--;
 							event.cancelled = true;
 							game.resume();
 						};
+						await pause;
 					}
-					"step 1";
 					if (ui.confirm) {
 						ui.confirm.classList.add("removing");
 					}
 					_status.imchoosing = false;
+					let delay;
 					if (!event.cancelled) {
 						if (!event.obstacle) {
 							event.obstacle = event.obstacles.randomGet();
 						}
-						var moved = false;
-						for (var i in event.movemap) {
-							if (event.movemap[i] == event.obstacle) {
-								var xy = JSON.parse(i);
+						let moved = false;
+						for (const direction in event.movemap) {
+							if (event.movemap[direction] === event.obstacle) {
+								const xy = JSON.parse(direction);
 								if (game.moveObstacle(event.obstacle, xy[0], xy[1])) {
 									moved = true;
 									break;
@@ -5613,13 +5613,16 @@ export default () => {
 							game.removeObstacle(event.obstacle);
 						}
 						player.popup("除障");
-						game.delay();
+						delay = game.delay();
 					}
-					for (var i = 0; i < event.obstacles.length; i++) {
-						event.obstacles[i].classList.remove("glow");
+					for (const obstacle of event.obstacles) {
+						obstacle.classList.remove("glow");
 					}
 					if (event.dialog) {
 						event.dialog.close();
+					}
+					if (delay) {
+						await delay;
 					}
 				},
 				ai: {
