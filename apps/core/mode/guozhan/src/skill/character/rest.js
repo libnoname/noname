@@ -15644,73 +15644,62 @@ export default {
 		},
 		frequent: true,
 		preHidden: true,
-		content() {
-			"step 0";
-			event.cards = game.cardsGotoOrdering(get.cards(2)).cards;
-			"step 1";
+		async content(event, trigger, player) {
+			const ordering = game.cardsGotoOrdering(get.cards(2));
+			const cards = ordering.cards;
+			event.cards = cards;
+			await ordering;
 			if (_status.connectMode) {
-				game.broadcastAll(function () {
+				game.broadcastAll(() => {
 					_status.noclearcountdown = true;
 				});
 			}
-			event.given_map = {};
-			"step 2";
-			if (event.cards.length > 1) {
-				player.chooseCardButton("遗计：请选择要分配的牌", true, event.cards, [1, event.cards.length]).set("ai", function (button) {
-					if (ui.selected.buttons.length == 0) {
-						return 1;
-					}
-					return 0;
-				});
-			} else if (event.cards.length == 1) {
-				event._result = { links: event.cards.slice(0), bool: true };
-			} else {
-				event.finish();
-			}
-			"step 3";
-			if (result.bool) {
-				event.cards.removeArray(result.links);
-				event.togive = result.links.slice(0);
-				player
-					.chooseTarget("选择一名角色获得" + get.translation(result.links), true)
-					.set("ai", function (target) {
-						var att = get.attitude(_status.event.player, target);
+			const givenMap = {};
+			while (cards.length) {
+				const links = cards.length > 1
+					? (await player.chooseCardButton({
+						prompt: "遗计：请选择要分配的牌",
+						forced: true,
+						cards,
+						select: [1, cards.length],
+						ai: () => ui.selected.buttons.length === 0 ? 1 : 0,
+					}).forResult()).links
+					: cards.slice();
+				cards.removeArray(links);
+				const toGive = links.slice();
+				const next = player.chooseTarget({
+					prompt: `选择一名角色获得${get.translation(links)}`,
+					forced: true,
+					ai: target => {
+						const att = get.attitude(_status.event.player, target);
 						if (_status.event.enemy) {
 							return -att;
-						} else if (att > 0) {
-							return att / (1 + target.countCards("h"));
-						} else {
-							return att / 100;
 						}
-					})
-					.set("enemy", get.value(event.togive[0], player, "raw") < 0);
-			}
-			"step 4";
-			if (result.targets.length) {
-				var id = result.targets[0].playerid,
-					map = event.given_map;
-				if (!map[id]) {
-					map[id] = [];
+						return att > 0 ? att / (1 + target.countCards("h")) : att / 100;
+					},
+				}).set("enemy", get.value(toGive[0], player, "raw") < 0);
+				const result = await next.forResult();
+				if (result.targets.length) {
+					const id = result.targets[0].playerid;
+					if (!givenMap[id]) {
+						givenMap[id] = [];
+					}
+					givenMap[id].addArray(toGive);
 				}
-				map[id].addArray(event.togive);
 			}
-			if (cards.length > 0) {
-				event.goto(2);
-			}
-			"step 5";
 			if (_status.connectMode) {
-				game.broadcastAll(function () {
+				game.broadcastAll(() => {
 					delete _status.noclearcountdown;
 					game.stopCountChoose();
 				});
 			}
-			var list = [];
-			for (var i in event.given_map) {
-				var source = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
+			const list = [];
+			for (const id in givenMap) {
+				const source = (_status.connectMode ? lib.playerOL : game.playerMap)[id];
 				player.line(source, "green");
-				list.push([source, event.given_map[i]]);
+				list.push([source, givenMap[id]]);
 			}
-			game.loseAsync({
+			await game.loseAsync({
 				gain_list: list,
 				giver: player,
 				animate: "draw",
@@ -15728,7 +15717,7 @@ export default {
 						if (!target.hasFriend()) {
 							return;
 						}
-						var num = 1;
+						let num = 1;
 						if (get.attitude(player, target) > 0) {
 							if (player.needsToDiscard()) {
 								num = 0.7;
@@ -15739,10 +15728,10 @@ export default {
 						if (target.hp >= 4) {
 							return [1, num * 2];
 						}
-						if (target.hp == 3) {
+						if (target.hp === 3) {
 							return [1, num * 1.5];
 						}
-						if (target.hp == 2) {
+						if (target.hp === 2) {
 							return [1, num * 0.5];
 						}
 					}
