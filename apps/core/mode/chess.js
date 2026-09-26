@@ -583,7 +583,7 @@ export default () => {
 								_status.friends.remove(this);
 								this.classList.add("dead");
 								if (_status.roundStart == this) {
-									_status.roundStart = player.next || player.getNext() || game.players[0];
+									_status.roundStart = this.next || this.getNext() || game.players[0];
 								}
 								if (this == game.me) {
 									if (ui.confirm) {
