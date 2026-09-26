@@ -13829,14 +13829,14 @@ export default {
 		filter(event, player) {
 			//if(event.player!=player) return false;
 			return (
-				game.hasPlayer(function (current) {
-					return current != player && current.identity == "unknown";
-				}) || player.countCards("h", { type: "basic" })
+				game.hasPlayer(current => {
+					return current !== player && current.identity === "unknown";
+				}) || player.hasCards("h", { type: "basic" })
 			);
 		},
 		check(event, player) {
 			if (
-				player.countCards("h", function (card) {
+				player.hasCards("h", card => {
 					return get.value(card) < 7;
 				})
 			) {
@@ -13847,149 +13847,132 @@ export default {
 			}
 		},
 		preHidden: true,
-		content() {
-			"step 0";
-			var choices = [];
-			if (
-				game.hasPlayer(function (current) {
-					return current.isUnseen();
-				})
-			) {
+		async content(event, trigger, player) {
+			const choices = [];
+			if (game.hasPlayer(current => current.isUnseen())) {
 				choices.push("选择一名未确定势力的角色");
 			}
 			if (
-				game.hasPlayer(function (current) {
-					return current != player && !current.isUnseen();
+				game.hasPlayer(current => {
+					return current !== player && !current.isUnseen();
 				}) &&
-				player.countCards("h", { type: "basic" })
+				player.hasCards("h", { type: "basic" })
 			) {
 				choices.push("将一张基本牌交给一名已确定势力的角色");
 			}
-			if (choices.length == 1) {
-				event._result = { index: choices[0] == "选择一名未确定势力的角色" ? 0 : 1 };
+			let index;
+			if (choices.length === 1) {
+				index = choices[0] === "选择一名未确定势力的角色" ? 0 : 1;
 			} else {
-				player
-					.chooseControl()
-					.set("ai", function () {
+				const result = await player.chooseControl({
+					ai: () => {
 						if (choices.length > 1) {
-							var player = _status.event.player;
+							const player = _status.event.player;
+							let identity;
 							if (
-								!game.hasPlayer(function (current) {
+								!game.hasPlayer(current => {
 									return (
 										(!current.isUnseen() && current.getEquip("yuxi")) ||
 										(current.hasSkill("gzyongsi") &&
-											!game.hasPlayer(function (current) {
-												return current.getEquips("yuxi").length > 0;
-											}))
+											!game.hasPlayer(current => current.getEquips("yuxi").length > 0))
 									);
 								}) &&
-								game.hasPlayer(function (current) {
-									return current != player && current.isUnseen();
-								})
+								game.hasPlayer(current => current !== player && current.isUnseen())
 							) {
-								var identity;
-								for (var i = 0; i < game.players; i++) {
+								for (let i = 0; i < game.players; i++) {
 									if (game.players[i].isMajor()) {
 										identity = game.players[i].identity;
 										break;
 									}
 								}
 							}
-							if (!player.isUnseen() && player.identity != identity && get.population(player.identity) + 1 >= get.population(identity)) {
+							if (!player.isUnseen() && player.identity !== identity && get.population(player.identity) + 1 >= get.population(identity)) {
 								return 0;
 							}
 							return 1;
 						}
 						return 0;
-					})
-					.set("prompt", "征辟：请选择一项")
-					.set("choiceList", choices);
-			}
-			"step 1";
-			if (result.index == 0) {
-				player.chooseTarget(
-					"请选择一名未确定势力的角色",
-					function (card, player, target) {
-						return target != player && target.identity == "unknown";
 					},
-					true
-				);
-			} else {
-				player
-					.chooseCardTarget({
-						prompt: "请将一张基本牌交给一名已确定势力的其他角色",
-						position: "h",
-						filterCard(card) {
-							return get.type(card) == "basic";
-						},
-						filterTarget(card, player, target) {
-							return target != player && target.identity != "unknown";
-						},
-						ai1(card) {
-							return 5 - get.value(card);
-						},
-						ai2(target) {
-							var player = _status.event.player;
-							var att = get.attitude(player, target);
-							if (att > 0) {
-								return 0;
-							}
-							return -(att - 1) / target.countCards("h");
-						},
-					})
-					.set("forced", true);
+					prompt: "征辟：请选择一项",
+					choiceList: choices,
+				}).forResult();
+				index = result.index;
 			}
-			"step 2";
-			event.target = result.targets[0];
+			let result;
+			if (index === 0) {
+				result = await player.chooseTarget({
+					prompt: "请选择一名未确定势力的角色",
+					filterTarget: (card, player, target) => target !== player && target.identity === "unknown",
+					forced: true,
+				}).forResult();
+			} else {
+				result = await player.chooseCardTarget({
+					prompt: "请将一张基本牌交给一名已确定势力的其他角色",
+					position: "h",
+					forced: true,
+					filterCard(card) {
+						return get.type(card) === "basic";
+					},
+					filterTarget(card, player, target) {
+						return target !== player && target.identity !== "unknown";
+					},
+					ai1(card) {
+						return 5 - get.value(card);
+					},
+					ai2(target) {
+						const player = _status.event.player;
+						const att = get.attitude(player, target);
+						if (att > 0) {
+							return 0;
+						}
+						return -(att - 1) / target.countCards("h");
+					},
+				}).forResult();
+			}
+			const target = result.targets[0];
 			player.line(result.targets, "green");
 			if (result.cards.length) {
-				event.cards = result.cards;
-				player.give(result.cards, result.targets[0]);
+				await player.give(result.cards, target);
 			} else {
-				player.storage.gzzhengbi_eff1 = result.targets[0];
+				player.storage.gzzhengbi_eff1 = target;
 				player.addTempSkill("gzzhengbi_eff1", "phaseUseAfter");
-				event.finish();
+				return;
 			}
-			"step 3";
-			var choices = [];
-			if (target.countCards("he", { type: ["trick", "delay", "equip"] })) {
-				choices.push("一张非基本牌");
+			const returnChoices = [];
+			if (target.hasCards("he", { type: ["trick", "delay", "equip"] })) {
+				returnChoices.push("一张非基本牌");
 			}
 			if (target.countCards("h", { type: "basic" }) > 1) {
-				choices.push("两张基本牌");
+				returnChoices.push("两张基本牌");
 			}
-			if (choices.length) {
-				target
-					.chooseControl(choices)
-					.set("ai", function (event, player) {
-						if (choices.length > 1) {
-							if (
-								player.countCards("he", { type: ["trick", "delay", "equip"] }, function (card) {
-									return get.value(card) < 7;
-								})
-							) {
-								return 0;
-							}
-							return 1;
-						}
-						return 0;
-					})
-					.set("prompt", "征辟：交给" + get.translation(player) + "…</div>");
-			} else {
-				if (target.countCards("h")) {
-					var cards = target.getCards("h");
-					target.give(cards, player);
-					event.finish();
-				} else {
-					event.finish();
+			if (!returnChoices.length) {
+				if (target.hasCards("h")) {
+					await target.give(target.getCards("h"), player);
 				}
+				return;
 			}
-			"step 4";
-			var check = result.control == "一张非基本牌";
-			target.chooseCard("he", check ? 1 : 2, { type: check ? ["trick", "delay", "equip"] : "basic" }, true);
-			"step 5";
-			if (result.cards) {
-				target.give(result.cards, player);
+			const controlResult = await target.chooseControl({
+				controls: returnChoices,
+				ai: (event, player) => {
+					if (returnChoices.length > 1) {
+						if (player.hasCards("he", { type: ["trick", "delay", "equip"] })) {
+							return 0;
+						}
+						return 1;
+					}
+					return 0;
+				},
+				prompt: `征辟：交给${get.translation(player)}…</div>`,
+			}).forResult();
+			const check = controlResult.control === "一张非基本牌";
+			const cardResult = await target.chooseCard({
+				position: "he",
+				selectCard: check ? 1 : 2,
+				filterCard: { type: check ? ["trick", "delay", "equip"] : "basic" },
+				forced: true,
+			}).forResult();
+			if (cardResult.cards) {
+				await target.give(cardResult.cards, player);
 			}
 		},
 		subSkill: {
@@ -14001,29 +13984,28 @@ export default {
 				forced: true,
 				charlotte: true,
 				filter(event, player) {
-					var target = player.storage.gzzhengbi_eff1;
-					return target && !target.isUnseen() && target.countGainableCards(player, "he") > 0;
+					const target = player.storage.gzzhengbi_eff1;
+					return target && !target.isUnseen() && target.hasGainableCards(player, "he");
 				},
 				logTarget(event, player) {
 					return player.storage.gzzhengbi_eff1;
 				},
-				content() {
-					var num = 0;
-					var target = player.storage.gzzhengbi_eff1;
-					if (target.countGainableCards(player, "h")) {
+				async content(event, trigger, player) {
+					let num = 0;
+					const target = player.storage.gzzhengbi_eff1;
+					if (target.hasGainableCards(player, "h")) {
 						num++;
 					}
-					if (target.countGainableCards(player, "e")) {
+					if (target.hasGainableCards(player, "e")) {
 						num++;
 					}
 					if (num) {
-						player.gainPlayerCard(target, num, "he", true).set("filterButton", function (button) {
-							for (var i = 0; i < ui.selected.buttons.length; i++) {
-								if (get.position(button.link) == get.position(ui.selected.buttons[i].link)) {
-									return false;
-								}
-							}
-							return true;
+						await player.gainPlayerCard({
+							target,
+							selectButton: num,
+							position: "he",
+							forced: true,
+							filterButton: button => !ui.selected.buttons.some(selected => get.position(button.link) === get.position(selected.link)),
 						});
 					}
 				},
