@@ -5460,21 +5460,11 @@ export default () => {
 				trigger: { player: "phaseJieshuBegin" },
 				direct: true,
 				filter(event, player) {
-					return (
-						player.getHistory("useCard", function (evt) {
-							return evt.card.name == "sha";
-						}).length > 0
-					);
+					return player.getHistory("useCard", evt => evt.card.name === "sha").length > 0;
 				},
-				content() {
-					"step 0";
-					player.chooseToMoveChess(
-						player.getHistory("useCard", function (evt) {
-							return evt.card.name == "sha";
-						}).length,
-						get.prompt("lingdong")
-					);
-					"step 1";
+				async content(event, trigger, player) {
+					const num = player.getHistory("useCard", evt => evt.card.name === "sha").length;
+					const result = await player.chooseToMoveChess(num, get.prompt("lingdong")).forResult();
 					if (result.bool) {
 						player.logSkill("lingdong");
 					}
