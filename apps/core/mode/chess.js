@@ -5449,10 +5449,8 @@ export default () => {
 				filter(event, player) {
 					return !player.getStat("damage");
 				},
-				content() {
-					"step 0";
-					player.chooseToMoveChess(2, get.prompt("pianyi"));
-					"step 1";
+				async content(event, trigger, player) {
+					const result = await player.chooseToMoveChess(2, get.prompt("pianyi")).forResult();
 					if (result.bool) {
 						player.logSkill("pianyi");
 					}
