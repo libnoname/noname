@@ -13428,8 +13428,8 @@ export default {
 		audio: "wuziliangjiangdao",
 		forceaudio: true,
 		filter(event, player, name) {
-			if (name != "phaseZhunbeiBegin") {
-				return get.is.jun(player) && player.identity == "wei";
+			if (name !== "phaseZhunbeiBegin") {
+				return get.is.jun(player) && player.identity === "wei";
 			}
 			return this.filter2.apply(this, arguments);
 		},
@@ -13437,21 +13437,19 @@ export default {
 			if (!get.zhu(player, "jianan")) {
 				return false;
 			}
-			if (!player.countCards("he")) {
+			if (!player.hasCards("he")) {
 				return false;
 			}
 			return !player.isUnseen();
 		},
 		direct: true,
-		content() {
-			"step 0";
-			if (event.triggername != "phaseZhunbeiBegin") {
-				event.trigger("jiananUpdate");
-				event.finish();
+		async content(event, trigger, player) {
+			if (event.triggername !== "phaseZhunbeiBegin") {
+				await event.trigger("jiananUpdate");
 				return;
 			}
-			var skills = ["new_retuxi", "qiaobian", "gz_xiaoguo", "gz_jieyue", "gz_duanliang"];
-			game.countPlayer(function (current) {
+			const skills = ["new_retuxi", "qiaobian", "gz_xiaoguo", "gz_jieyue", "gz_duanliang"];
+			game.countPlayer(current => {
 				if (current.hasSkill("new_retuxi")) {
 					skills.remove("new_retuxi");
 				}
@@ -13469,38 +13467,21 @@ export default {
 				}
 			});
 			if (!skills.length) {
-				event.finish();
-			} else {
-				event.skills = skills;
-				var next = player.chooseToDiscard("he");
-				var str = "";
-				for (var i = 0; i < skills.length; i++) {
-					str += "、【";
-					str += get.translation(skills[i]);
-					str += "】";
-				}
-				next.set("prompt", "是否发动【五子良将纛】？");
-				next.set("prompt2", get.translation("弃置一张牌并暗置一张武将牌，获得以下技能中的一个直到下回合开始：" + str.slice(1)));
-				next.logSkill = "g_jianan";
-				next.skills = skills;
-				next.ai = function (card) {
-					var skills = _status.event.skills;
-					var player = _status.event.player;
-					var rank = 0;
-					if (
-						skills.includes("new_retuxi") &&
-						game.countPlayer(function (current) {
-							return get.attitude(player, current) < 0 && current.countGainableCards(player, "h");
-						}) > 1
-					) {
+				return;
+			}
+			const str = skills.map(skill => `【${get.translation(skill)}】`).join("、");
+			const next = player.chooseToDiscard({
+				position: "he",
+				prompt: "是否发动【五子良将纛】？",
+				prompt2: get.translation(`弃置一张牌并暗置一张武将牌，获得以下技能中的一个直到下回合开始：${str}`),
+				ai: card => {
+					const skills = _status.event.skills;
+					const player = _status.event.player;
+					let rank = 0;
+					if (skills.includes("new_retuxi") && game.countPlayer(current => get.attitude(player, current) < 0 && current.hasGainableCards(player, "h")) > 1) {
 						rank = 4;
 					}
-					if (
-						skills.includes("gz_jieyue") &&
-						player.countCards("h", function (card) {
-							return get.value(card) < 7;
-						}) > 1
-					) {
+					if (skills.includes("gz_jieyue") && player.countCards("h", card => get.value(card) < 7) > 1) {
 						rank = 5;
 					}
 					if (skills.includes("qiaobian") && player.countCards("h") > 4) {
@@ -13510,81 +13491,73 @@ export default {
 						return rank + 1 - get.value(card);
 					}
 					return -1;
-				};
+				},
+			});
+			next.logSkill = "g_jianan";
+			next.skills = skills;
+			const discardResult = await next.forResult();
+			if (!discardResult.bool) {
+				return;
 			}
-			"step 1";
-			if (!result.bool) {
-				event.finish();
-			} else {
-				var list = ["主将", "副将"];
-				if (player.isUnseen(0) || get.is.jun(player)) {
-					list.remove("主将");
-				}
-				if (player.isUnseen(1)) {
-					list.remove("副将");
-				}
-				if (!list.length) {
-					event.goto(3);
-				} else if (list.length < 2) {
-					event._result = { control: list[0] };
-				} else {
-					player.chooseControl(list).set("ai", function () {
-						return get.guozhanRank(player.name1, player) < get.guozhanRank(player.name2, player) ? "主将" : "副将";
-					}).prompt = "请选择暗置一张武将牌";
-				}
+			const list = ["主将", "副将"];
+			if (player.isUnseen(0) || get.is.jun(player)) {
+				list.remove("主将");
 			}
-			"step 2";
-			if (!result.control) {
-				event.finish();
-			} else {
-				var num = result.control == "主将" ? 0 : 1;
-				player.hideCharacter(num);
+			if (player.isUnseen(1)) {
+				list.remove("副将");
 			}
-			"step 3";
-			player
-				.chooseControl(event.skills)
-				.set("ai", function () {
-					var skills = event.skills;
+			if (list.length) {
+				const control = list.length === 1
+					? list[0]
+					: (await player.chooseControl({
+						controls: list,
+						prompt: "请选择暗置一张武将牌",
+						ai: () => get.guozhanRank(player.name1, player) < get.guozhanRank(player.name2, player) ? "主将" : "副将",
+					}).forResult()).control;
+				if (!control) {
+					return;
+				}
+				await player.hideCharacter(control === "主将" ? 0 : 1);
+			}
+			const { control: link } = await player
+				.chooseControl({
+					controls: skills,
+					prompt: "选择获得其中的一个技能直到君主的回合开始",
+					ai: () => {
 					if (skills.includes("qiaobian") && player.countCards("h") > 3) {
 						return "qiaobian";
 					}
-					if (
-						skills.includes("gz_jieyue") &&
-						player.countCards("h", function (card) {
-							return get.value(card) < 7;
-						})
-					) {
+					if (skills.includes("gz_jieyue") && player.hasCards("h", card => get.value(card) < 7)) {
 						return "gz_jieyue";
 					}
 					if (skills.includes("new_retuxi")) {
 						return "new_retuxi";
 					}
 					return skills.randomGet();
+					},
 				})
-				.set("prompt", "选择获得其中的一个技能直到君主的回合开始");
-			"step 4";
-			var link = result.control;
+				.forResult();
 			player.addTempSkill(link, "jiananUpdate");
 			player.addTempSkill("jianan_eff", "jiananUpdate");
-			game.log(player, "获得了技能", "#g【" + get.translation(result.control) + "】");
+			game.log(player, "获得了技能", `#g【${get.translation(link)}】`);
 
 			// 语音修复
-			var map = {
+			const map = {
 				new_retuxi: "jianan_tuxi",
 				qiaobian: "jianan_qiaobian",
 				gz_xiaoguo: "jianan_xiaoguo",
 				gz_jieyue: "jianan_jieyue",
 				gz_duanliang: "jianan_duanliang",
 			};
-			var mapSkills = map[link];
-			game.broadcastAll(function () {
-				var info = lib.skill[link];
+			const mapSkills = map[link];
+			game.broadcastAll((link, mapSkills) => {
+				const info = lib.skill[link];
 				if (!info.audioname2) {
 					info.audioname2 = {};
 				}
 				info.audioname2[player.name1] = mapSkills;
 				info.audioname2[player.name2] = mapSkills;
-			}, link);
+			}, link, mapSkills);
 		},
 	},
 	jianan_eff: {
