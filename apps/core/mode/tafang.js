@@ -1108,37 +1108,31 @@ export default () => {
 			},
 			tafang_mech_jiguanren_skill: {
 				filter(player) {
-					for (var i = 0; i < _status.enemies.length; i++) {
-						if (get.chessDistance(player, _status.enemies[i]) <= 3) {
+					for (const target of _status.enemies) {
+						if (get.chessDistance(player, target) <= 3) {
 							return true;
 						}
 					}
 					return false;
 				},
-				content() {
-					"step 0";
-					var list = [];
-					for (var i = 0; i < _status.enemies.length; i++) {
-						if (get.chessDistance(player, _status.enemies[i]) <= 3) {
-							list.push(_status.enemies[i]);
+				async content(event, trigger, player) {
+					const list = [];
+					for (const target of _status.enemies) {
+						if (get.chessDistance(player, target) <= 3) {
+							list.push(target);
 						}
 					}
-					if (list.length) {
-						game.log("机关人发动");
-						player.line(list, "green");
-						game.logv(player, "tafang_mech_jiguanren_skill", list.slice(0)).node.text.style.display = "none";
-						event.list = list;
-					} else {
-						event.finish();
+					if (!list.length) {
+						return;
 					}
-					"step 1";
-					if (event.list.length) {
-						var target = event.list.shift();
-						var he = target.getCards("he");
+					game.log("机关人发动");
+					player.line(list, "green");
+					game.logv(player, "tafang_mech_jiguanren_skill", list.slice(0)).node.text.style.display = "none";
+					for (const target of list) {
+						const he = target.getCards("he");
 						if (he.length) {
-							target.discard(he.randomGets(Math.ceil(Math.random() * 2)));
+							await target.discard({ cards: he.randomGets(Math.ceil(Math.random() * 2)) });
 						}
-						event.redo();
 					}
 				},
 			},
