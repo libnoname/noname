@@ -7259,100 +7259,82 @@ export default {
 		audio: "twtanfeng",
 		trigger: { player: "phaseZhunbeiBegin" },
 		filter(event, player) {
-			return game.hasPlayer(function (current) {
-				return !current.isFriendOf(player) && current.countDiscardableCards(player, "hej") > 0;
+			return game.hasPlayer(current => {
+				return !current.isFriendOf(player) && current.hasDiscardableCards(player, "hej");
 			});
 		},
-		direct: true,
 		preHidden: true,
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt2("gztanfeng"), function (card, player, target) {
-					return !target.isFriendOf(player) && target.countDiscardableCards(player, "hej") > 0;
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2(event.skill),
+					filterTarget: (card, player, target) => !target.isFriendOf(player) && target.hasDiscardableCards(player, "hej"),
+					ai: target => {
+						const player = _status.event.player;
+						if (target.hp + target.countCards("hs", { name: ["tao", "jiu"] }) <= 2) {
+							return 3 * get.effect(target, { name: "guohe" }, player, player);
+						}
+						return get.effect(target, { name: "guohe" }, player, player);
+					},
 				})
-				.set("ai", function (target) {
-					var player = _status.event.player;
-					if (target.hp + target.countCards("hs", { name: ["tao", "jiu"] }) <= 2) {
-						return 3 * get.effect(target, { name: "guohe" }, player, player);
-					}
-					return get.effect(target, { name: "guohe" }, player, player);
-				})
-				.setHiddenSkill(event.name);
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("gztanfeng", target);
-				player.discardPlayerCard(target, "hej", true);
-			} else {
-				event.finish();
+				.setHiddenSkill(event.skill)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			await player.discardPlayerCard({ target, position: "hej", forced: true });
+			const { bool } = await target.chooseBool({
+				prompt: `是否受到${get.translation(player)}造成的1点火焰伤害，令其跳过一个阶段？`,
+				ai: () => _status.event.choice,
+				choice: get.damageEffect(target, player, target, "fire") >= -5,
+			}).forResult();
+			if (!bool) {
+				return;
 			}
-			"step 2";
-			target
-				.chooseBool("是否受到" + get.translation(player) + "造成的1点火焰伤害，令其跳过一个阶段？")
-				.set("ai", () => _status.event.choice)
-				.set("choice", get.damageEffect(target, player, target, "fire") >= -5);
-			"step 3";
-			if (result.bool) {
-				player.line(target);
-				target.damage(1, "fire");
-			} else {
-				event.finish();
-			}
-			"step 4";
-			var list = [];
-			var list2 = [];
-			event.map = {
+			player.line(target);
+			await target.damage({ num: 1, nature: "fire" });
+			const list = [];
+			const list2 = [];
+			const map = {
 				phaseJudge: "判定阶段",
 				phaseDraw: "摸牌阶段",
 				phaseUse: "出牌阶段",
 				phaseDiscard: "弃牌阶段",
 			};
-			for (var i of ["phaseJudge", "phaseDraw", "phaseUse", "phaseDiscard"]) {
-				if (!player.skipList.includes(i)) {
-					i = event.map[i];
-					list.push(i);
-					if (i != "判定阶段" && i != "弃牌阶段") {
-						list2.push(i);
+			for (const phase of ["phaseJudge", "phaseDraw", "phaseUse", "phaseDiscard"]) {
+				if (!player.skipList.includes(phase)) {
+					const name = map[phase];
+					list.push(name);
+					if (name !== "判定阶段" && name !== "弃牌阶段") {
+						list2.push(name);
 					}
 				}
 			}
-			target
-				.chooseControl(list)
-				.set("prompt", "探锋：令" + get.translation(player) + "跳过一个阶段")
-				.set("ai", function () {
-					return _status.event.choice;
-				})
-				.set(
-					"choice",
-					(function () {
-						var att = get.attitude(target, player);
-						var num = player.countCards("j");
-						if (att > 0) {
-							if (list.includes("判定阶段") && num > 0) {
-								return "判定阶段";
-							}
-							return "弃牌阶段";
-						}
-						if (list.includes("摸牌阶段") && player.hasJudge("lebu")) {
-							return "摸牌阶段";
-						}
-						if ((list.includes("出牌阶段") && player.hasJudge("bingliang")) || player.needsToDiscard() > 0) {
-							return "出牌阶段";
-						}
-						return list2.randomGet();
-					})()
-				);
-			"step 5";
-			for (var i in event.map) {
-				if (event.map[i] == result.control) {
-					player.skip(i);
+			let choice;
+			const att = get.attitude(target, player);
+			const num = player.countCards("j");
+			if (att > 0) {
+				choice = list.includes("判定阶段") && num > 0 ? "判定阶段" : "弃牌阶段";
+			} else if (list.includes("摸牌阶段") && player.hasJudge("lebu")) {
+				choice = "摸牌阶段";
+			} else if ((list.includes("出牌阶段") && player.hasJudge("bingliang")) || player.needsToDiscard() > 0) {
+				choice = "出牌阶段";
+			} else {
+				choice = list2.randomGet();
+			}
+			const { control } = await target.chooseControl({
+				controls: list,
+				prompt: `探锋：令${get.translation(player)}跳过一个阶段`,
+				ai: () => _status.event.choice,
+			}).set("choice", choice).forResult();
+			for (const phase in map) {
+				if (map[phase] === control) {
+					player.skip(phase);
 				}
 			}
-			target.popup(result.control);
+			target.popup(control);
 			target.line(player);
-			game.log(player, "跳过了", "#y" + result.control);
+			game.log(player, "跳过了", `#y${control}`);
 		},
 	},
 	//十周年羊祜
