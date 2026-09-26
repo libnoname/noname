@@ -6438,49 +6438,39 @@ export default {
 		skillAnimation: true,
 		animationColor: "thunder",
 		filterTarget: lib.filter.notMe,
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.awakenSkill("gzhongju");
-			event.players = game
-				.filterPlayer(function (current) {
-					return current != player && current != target;
+			const { target } = event;
+			const players = game
+				.filterPlayer(current => {
+					return current !== player && current !== target;
 				})
 				.sortBySeat();
-			game.delayx();
-			player.chooseJunlingFor(event.players[0]).set("prompt", "请选择一项“军令”");
-			"step 1";
-			event.junling = result.junling;
-			event.targets = result.targets;
-			event.num = 0;
-			player.carryOutJunling(player, event.junling, event.targets);
-			"step 2";
-			if (num < event.players.length) {
-				event.current = event.players[num];
-			}
-			if (event.current && event.current.isAlive()) {
-				player.line(event.current);
-				event.current
-					.chooseJunlingControl(player, event.junling, targets)
-					.set("prompt", "鸿举")
-					.set("choiceList", ["执行该军令", "不执行该军令，且被“调虎离山”化"])
-					.set("ai", function () {
-						var evt = _status.event.getParent(2);
-						return get.junlingEffect(evt.player, evt.junling, evt.current, evt.targets, evt.current) > 0 ? 0 : 1;
-					});
-			} else {
-				event.goto(4);
-			}
-			"step 3";
-			if (result.index == 0) {
-				event.current.carryOutJunling(player, event.junling, event.targets);
-			} else {
-				event.current.addTempSkill("diaohulishan");
-			}
-			"step 4";
-			game.delayx();
-			event.num++;
-			if (event.num < event.players.length) {
-				event.goto(2);
+			await game.delayx();
+			const { junling, targets } = await player.chooseJunlingFor(players[0]).set("prompt", "请选择一项“军令”").forResult();
+			event.junling = junling;
+			event.targets = targets;
+			await player.carryOutJunling(player, junling, targets);
+			for (const current of players) {
+				event.current = current;
+				if (current.isAlive()) {
+					player.line(current);
+					const result = await current
+						.chooseJunlingControl(player, junling, targets)
+						.set("prompt", "鸿举")
+						.set("choiceList", ["执行该军令", "不执行该军令，且被“调虎离山”化"])
+						.set("ai", () => {
+							const evt = _status.event.getParent(2);
+							return get.junlingEffect(evt.player, evt.junling, evt.current, evt.targets, evt.current) > 0 ? 0 : 1;
+						})
+						.forResult();
+					if (result.index === 0) {
+						await current.carryOutJunling(player, junling, targets);
+					} else {
+						current.addTempSkill("diaohulishan");
+					}
+				}
+				await game.delayx();
 			}
 		},
 	},
