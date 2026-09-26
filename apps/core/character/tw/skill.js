@@ -6760,7 +6760,7 @@ const skills = {
 			history.push({ twlifeng: [evt, num] });
 			if (history.filter(i => i.twlifeng[0] == evt).length > 1 && num > history[history.length - 2].twlifeng[1]) {
 				await player.draw();
-				player.addTempSkill(event.name + "_used");
+				player.addTempSkill(event.name + "_used", "phaseAnyAfter");
 				player.addMark(event.name + "_used", 1, false);
 			}
 		},
