@@ -2754,6 +2754,7 @@ const skills = {
 					})
 					.forResult();
 				const target = result1.targets[0];
+				player.line(target);
 				await target.draw(num);
 				player.addTempSkill("dcsbyouyi_used");
 				player.markAuto("dcsbyouyi_used", ["loseHp"]);
