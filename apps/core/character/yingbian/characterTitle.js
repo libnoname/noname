@@ -26,7 +26,7 @@ export default {
 	yangyan: "武元皇后",
 	yangzhi: "武悼皇后",
 	xinchang: "英鉴中铭",
-	xuangongzhu: "晋宣公主",
+	xuangongzhu: "高陵公主",
 	gz_xuangongzhu: "宣公主",
 	jin_yanghu: "执德清劭",
 	jin_jiachong: "鲁郡公",

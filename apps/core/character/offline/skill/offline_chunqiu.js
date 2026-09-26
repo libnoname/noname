@@ -972,7 +972,8 @@ const skills = {
 			const skills = get
 				.info(event.name)
 				.derivation.slice()
-				.removeArray(player.getStorage(`${event.name}_gived`));
+				.removeArray(player.getStorage(`${event.name}_gived`))
+				.removeArray(target.getSkills(null, false, false));
 			if (skills.length) {
 				const list = [];
 				for (const skill of skills) {
