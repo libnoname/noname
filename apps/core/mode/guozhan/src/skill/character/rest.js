@@ -9216,51 +9216,39 @@ export default {
 	daming: {
 		audio: 2,
 		trigger: { global: "phaseUseBegin" },
-		direct: true,
 		preHidden: true,
 		filter(event, player) {
 			if (
 				!player.isFriendOf(event.player) ||
-				!game.hasPlayer(function (current) {
+				!game.hasPlayer(current => {
 					return !current.isLinked();
 				})
 			) {
 				return false;
 			}
 			if (_status.connectMode && player.hasSkill("daming")) {
-				return player.countCards("h") > 0;
+				return player.hasCards("h");
 			}
-			return player.countCards("h", function (card) {
-				return get.type2(card, player) == "trick";
+			return player.hasCards("h", card => {
+				return get.type2(card, player) === "trick";
 			});
 		},
-		content() {
-			"step 0";
-			player
+		async cost(event, trigger, player) {
+			const turnPlayer = trigger.player;
+			const goon = get.recoverEffect(turnPlayer, player, player) > 0 || game.hasPlayer(current => {
+				const card = { name: "sha", nature: "thunder", isCard: true };
+				return current !== player && current !== turnPlayer && turnPlayer.canUse(card, current, false) && get.effect(current, card, turnPlayer, player) > 0;
+			});
+			event.result = await player
 				.chooseCardTarget({
-					prompt: get.prompt("daming"),
+					prompt: get.prompt(event.skill),
 					prompt2: "弃置一张锦囊牌并选择要横置的角色",
 					filterCard(card, player) {
-						return get.type2(card, player) == "trick" && lib.filter.cardDiscardable(card, player, "daming");
+						return get.type2(card, player) === "trick" && lib.filter.cardDiscardable(card, player, "daming");
 					},
 					filterTarget(card, player, target) {
 						return !target.isLinked();
 					},
-					goon: (function () {
-						var target = trigger.player;
-						if (get.recoverEffect(target, player, player) > 0) {
-							return true;
-						}
-						var card = { name: "sha", nature: "thunder", isCard: true };
-						if (
-							game.hasPlayer(function (current) {
-								return current != player && current != target && target.canUse(card, current, false) && get.effect(current, card, target, player) > 0;
-							})
-						) {
-							return true;
-						}
-						return false;
-					})(),
 					ai1(card) {
 						if (_status.event.goon) {
 							return 7 - get.value(card);
@@ -9268,11 +9256,11 @@ export default {
 						return 0;
 					},
 					ai2(target) {
-						var player = _status.event.player;
+						const player = _status.event.player;
 						return (
-							(target.identity != "unknown" &&
-							!game.hasPlayer(function (current) {
-								return current != target && current.isFriendOf(target) && current.isLinked();
+							(target.identity !== "unknown" &&
+							!game.hasPlayer(current => {
+								return current !== target && current.isFriendOf(target) && current.isLinked();
 							})
 								? 3
 								: 1) *
@@ -9280,99 +9268,80 @@ export default {
 						);
 					},
 				})
-				.setHiddenSkill("daming");
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("daming", target);
-				player.discard(result.cards);
-			} else {
-				event.finish();
-			}
-			"step 2";
+				.set("goon", goon)
+				.setHiddenSkill(event.skill)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			await player.discard({ cards: event.cards });
 			if (!target.isLinked()) {
-				target.link();
+				await target.link();
 			}
-			"step 3";
-			var map = {},
-				sides = [],
-				pmap = _status.connectMode ? lib.playerOL : game.playerMap,
-				player;
-			for (var i of game.players) {
-				if (i.identity == "unknown") {
+			const map = {};
+			const sides = [];
+			const playerMap = _status.connectMode ? lib.playerOL : game.playerMap;
+			for (const current of game.players) {
+				if (current.identity === "unknown") {
 					continue;
 				}
-				var added = false;
-				for (var j of sides) {
-					if (i.isFriendOf(pmap[j])) {
+				let added = false;
+				for (const side of sides) {
+					if (current.isFriendOf(playerMap[side])) {
 						added = true;
-						map[j].push(i);
-						if (i == this) {
-							player = j;
-						}
+						map[side].push(current);
 						break;
 					}
 				}
 				if (!added) {
-					map[i.playerid] = [i];
-					sides.push(i.playerid);
-					if (i == this) {
-						player = i.playerid;
-					}
+					map[current.playerid] = [current];
+					sides.push(current.playerid);
 				}
 			}
-			var num = 0;
-			for (var i in map) {
-				if (
-					map[i].filter(function (i) {
-						return i.isLinked();
-					}).length
-				) {
+			let num = 0;
+			for (const side in map) {
+				if (map[side].some(current => current.isLinked())) {
 					num++;
 				}
 			}
 			if (num > 0) {
-				player.draw(num);
+				await player.draw(num);
 			}
-			"step 4";
-			if (trigger.player.isIn()) {
-				var target = trigger.player,
-					sha = game.filterPlayer(function (current) {
-						return current != target && current != player && target.canUse({ name: "sha", nature: "thunder", isCard: true }, current, false);
-					});
-				if (sha.length) {
-					var next = player.chooseTarget("请选择" + get.translation(target) + "使用雷【杀】的目标", function (card, player, target) {
-						return _status.event.list.includes(target);
-					});
-					next.set("prompt2", "或点「取消」令其回复1点体力");
-					next.set("goon", get.recoverEffect(target, player, player));
-					next.set("list", sha);
-					next.set("ai", function (target) {
-						var player = _status.event.player;
+			const turnPlayer = trigger.player;
+			if (!turnPlayer.isIn()) {
+				return;
+			}
+			const sha = game.filterPlayer(current => current !== turnPlayer && current !== player && turnPlayer.canUse({ name: "sha", nature: "thunder", isCard: true }, current, false));
+			let shaTarget;
+			if (sha.length) {
+				const result = await player.chooseTarget({
+					prompt: `请选择${get.translation(turnPlayer)}使用雷【杀】的目标`,
+					prompt2: "或点「取消」令其回复1点体力",
+					filterTarget: (card, player, target) => _status.event.list.includes(target),
+					ai: target => {
+						const player = _status.event.player;
 						return get.effect(target, { name: "sha", nature: "thunder", isCard: true }, _status.event.getTrigger().player, player) - _status.event.goon;
-					});
-				} else if (target.isDamaged()) {
-					event._result = { bool: false };
-				} else {
-					event.finish();
+					},
+				}).set("goon", get.recoverEffect(turnPlayer, player, player)).set("list", sha).forResult();
+				if (result.bool) {
+					shaTarget = result.targets[0];
 				}
-			} else {
-				event.finish();
+			} else if (!turnPlayer.isDamaged()) {
+				return;
 			}
-			"step 5";
-			if (result.bool) {
-				var target = result.targets[0];
-				if (player == trigger.player) {
-					player.line(target);
+			if (shaTarget) {
+				if (player === turnPlayer) {
+					player.line(shaTarget);
 				} else {
-					player.line2([trigger.player, target]);
-					game.delay(0.5);
+					player.line2([turnPlayer, shaTarget]);
+					await game.delay(0.5);
 				}
-				trigger.player.useCard({ name: "sha", nature: "thunder", isCard: true }, target, false).animate = false;
+				const use = turnPlayer.useCard({ card: { name: "sha", nature: "thunder", isCard: true }, targets: [shaTarget], addCount: false });
+				use.animate = false;
+				await use;
 			} else {
-				player.line(trigger.player);
-				trigger.player.recover();
+				player.line(turnPlayer);
+				await turnPlayer.recover();
 			}
 		},
 	},
