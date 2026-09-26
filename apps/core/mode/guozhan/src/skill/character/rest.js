@@ -8863,40 +8863,45 @@ export default {
 		enable: "phaseUse",
 		usable: 1,
 		filterTarget(card, player, target) {
-			return target != player && target.countGainableCards(player, "h") > 0;
+			return target !== player && target.hasGainableCards(player, "h");
 		},
-		content() {
-			"step 0";
-			player.gainPlayerCard(target, "h", true, event.name == "gzweimeng" ? [1, player.hp] : 1);
-			"step 1";
-			if (result.bool && target.isIn()) {
-				var num = result.cards.length,
-					hs = player.getCards("he");
-				if (!hs.length) {
-					event.goto(3);
-				} else if (hs.length <= num) {
-					event._result = { bool: true, cards: hs };
-				} else {
-					player.chooseCard("he", true, "选择交给" + get.translation(target) + get.cnNumber(num) + "张牌", num);
+		async content(event, trigger, player) {
+			const { target } = event;
+			const gainResult = await player.gainPlayerCard({
+				target,
+				position: "h",
+				forced: true,
+				selectButton: event.name === "gzweimeng" ? [1, player.hp] : 1,
+			}).forResult();
+			if (gainResult.bool && target.isIn()) {
+				const num = gainResult.cards.length;
+				const cards = player.getCards("he");
+				if (cards.length) {
+					let giveCards = cards;
+					if (cards.length > num) {
+						const result = await player.chooseCard({
+							position: "he",
+							forced: true,
+							prompt: `选择交给${get.translation(target)}${get.cnNumber(num)}张牌`,
+							selectCard: num,
+						}).forResult();
+						giveCards = result.cards;
+					}
+					await player.give(giveCards, target);
 				}
-			} else {
-				event.goto(3);
 			}
-			"step 2";
-			player.give(result.cards, target);
-			"step 3";
-			if (target.isIn() && event.name == "gzweimeng") {
-				player.chooseBool("纵横：是否令" + get.translation(target) + "获得【危盟】？").set("ai", function () {
-					var evt = _status.event.getParent();
-					return get.attitude(evt.player, evt.target) > 0;
-				});
-			} else {
-				event.finish();
-			}
-			"step 4";
-			if (result.bool) {
-				target.addTempSkill("gzweimeng_zongheng", { player: "phaseEnd" });
-				game.log(player, "发起了", "#y纵横", "，令", target, "获得了技能", "#g【危盟】");
+			if (target.isIn() && event.name === "gzweimeng") {
+				const result = await player.chooseBool({
+					prompt: `纵横：是否令${get.translation(target)}获得【危盟】？`,
+					ai: () => {
+						const evt = _status.event.getParent();
+						return get.attitude(evt.player, evt.target) > 0;
+					},
+				}).forResult();
+				if (result.bool) {
+					target.addTempSkill("gzweimeng_zongheng", { player: "phaseEnd" });
+					game.log(player, "发起了", "#y纵横", "，令", target, "获得了技能", "#g【危盟】");
+				}
 			}
 		},
 		derivation: "gzweimeng_zongheng",
