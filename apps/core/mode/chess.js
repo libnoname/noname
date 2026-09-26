@@ -4478,12 +4478,12 @@ export default () => {
 			_tempobstacle: {
 				trigger: { player: "phaseAfter" },
 				silent: true,
-				content() {
-					var list = game.obstacles.slice(0);
-					for (var i = 0; i < list.length; i++) {
-						if (typeof list[i].tempObstacle == "number") {
-							if (--list[i].tempObstacle == 0) {
-								game.removeObstacle(list[i]);
+				async content(event, trigger, player) {
+					const list = game.obstacles.slice(0);
+					for (const obstacle of list) {
+						if (typeof obstacle.tempObstacle === "number") {
+							if (--obstacle.tempObstacle === 0) {
+								game.removeObstacle(obstacle);
 							}
 						}
 					}
@@ -4513,15 +4513,15 @@ export default () => {
 					}
 					return player.movable(dx, dy);
 				},
-				content() {
-					var xy1 = trigger.source.getXY();
-					var xy2 = player.getXY();
-					var dx = xy2[0] - xy1[0];
-					var dy = xy2[1] - xy1[1];
-					if (dx == 0 && Math.abs(dy) == 2) {
+				async content(event, trigger, player) {
+					const xy1 = trigger.source.getXY();
+					const xy2 = player.getXY();
+					let dx = xy2[0] - xy1[0];
+					let dy = xy2[1] - xy1[1];
+					if (dx === 0 && Math.abs(dy) === 2) {
 						dy /= 2;
 					}
-					if (dy == 0 && Math.abs(dx) == 2) {
+					if (dy === 0 && Math.abs(dx) === 2) {
 						dx /= 2;
 					}
 					if (player.movable(dx, dy)) {
@@ -4917,7 +4917,7 @@ export default () => {
 				filter(event, player) {
 					return event.num > 0;
 				},
-				content() {
+				async content(event, trigger, player) {
 					switch (_status.difficulty) {
 						case "leader_easy":
 							game.reward += 2 * trigger.num;
@@ -4957,7 +4957,7 @@ export default () => {
 				filter(event, player) {
 					return get.type(event.card) == "trick" && event.player.isFriendOf(player);
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.nowuxie = true;
 				},
 			},
@@ -5172,12 +5172,16 @@ export default () => {
 					return player != target;
 				},
 				selectTarget: -1,
-				content() {
-					target.goMad();
+				async content(event, trigger, player) {
+					event.target.goMad();
+					let turnOver;
 					if (!player.isTurnedOver()) {
-						player.turnOver();
+						turnOver = player.turnOver();
 					}
 					player.addSkill("cangming2");
+					if (turnOver) {
+						await turnOver;
+					}
 				},
 				ai: {
 					order: 10,
@@ -5240,9 +5244,9 @@ export default () => {
 				trigger: { player: "phaseZhunbeiBegin" },
 				forced: true,
 				popup: false,
-				content() {
-					for (var i = 0; i < game.players.length; i++) {
-						game.players[i].unMad();
+				async content(event, trigger, player) {
+					for (const current of game.players) {
+						current.unMad();
 					}
 					player.removeSkill("cangming2");
 				},
@@ -5334,10 +5338,10 @@ export default () => {
 					}
 					return eff > 0;
 				},
-				content() {
-					var targets = lib.skill.guanchuan.getTargets(player, trigger.targets[0]);
-					for (var i = 0; i < targets.length; i++) {
-						trigger.targets.push(targets[i]);
+				async content(event, trigger, player) {
+					const targets = lib.skill.guanchuan.getTargets(player, trigger.targets[0]);
+					for (const target of targets) {
+						trigger.targets.push(target);
 					}
 					player.logSkill("guanchuan", targets);
 				},
@@ -5368,9 +5372,10 @@ export default () => {
 				filterTarget(card, player, target) {
 					return lib.filter.targetEnabled({ name: "sha" }, player, target) && get.distance(player, target, "pure") <= 5;
 				},
-				content() {
+				async content(event, trigger, player) {
+					const { targets, cards } = event;
 					targets.sort(lib.sort.seat);
-					player.useCard({ name: "sha" }, cards, targets, "luanjian").animate = false;
+					await player.useCard({ card: { name: "sha" }, cards, targets, skill: "luanjian" }).set("animate", false);
 				},
 				multitarget: true,
 				ai: {
@@ -5409,7 +5414,7 @@ export default () => {
 					return get.distance(event.player, player, "attack") > 1 && event.card && event.card.name == "sha";
 				},
 				forced: true,
-				content() {
+				async content(event, trigger, player) {
 					trigger.num++;
 				},
 			},
@@ -5437,8 +5442,8 @@ export default () => {
 						})[0] == event
 					);
 				},
-				content() {
-					player.draw();
+				async content(event, trigger, player) {
+					await player.draw();
 				},
 				ai: {
 					threaten: 1.5,
@@ -5477,7 +5482,7 @@ export default () => {
 				},
 				forced: true,
 				popup: false,
-				content() {
+				async content(event, trigger, player) {
 					player.addTempSkill("noactpunish");
 				},
 			},
@@ -5617,8 +5622,8 @@ export default () => {
 				trigger: { player: "phaseBegin" },
 				forced: true,
 				popup: false,
-				content() {
-					var current = ui.chessinfo.firstChild.querySelector(".glow2");
+				async content(event, trigger, player) {
+					const current = ui.chessinfo.firstChild.querySelector(".glow2");
 					if (current) {
 						current.classList.remove("glow2");
 					}
@@ -5727,7 +5732,7 @@ export default () => {
 				forced: true,
 				priority: 100,
 				popup: false,
-				content() {
+				async content(event, trigger, player) {
 					player.chessFocus();
 				},
 			},
@@ -5745,7 +5750,7 @@ export default () => {
 				filter(event) {
 					return !event.numFixed;
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.num += 2;
 				},
 			},
@@ -5764,8 +5769,8 @@ export default () => {
 					return player.countCards("h", { color: "red" }) > 0;
 				},
 				selectTarget: -1,
-				content() {
-					target.damage("fire");
+				async content(event, trigger, player) {
+					await event.target.damage({ nature: "fire" });
 				},
 				line: "fire",
 				ai: {
@@ -5800,8 +5805,8 @@ export default () => {
 				filterTarget(card, player, target) {
 					return player != target && get.distance(player, target) <= 2;
 				},
-				content() {
-					target.damage(3, "fire");
+				async content(event, trigger, player) {
+					await event.target.damage({ num: 3, nature: "fire" });
 				},
 				ai: {
 					order: 9,
