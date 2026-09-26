@@ -19449,95 +19449,80 @@ export default {
 		enable: "phaseUse",
 		usable: 1,
 		getConfig(player, target) {
-			if (target == player || !target.isUnseen()) {
+			if (target === player || !target.isUnseen()) {
 				return false;
 			}
-			var config = {};
-			var skills = player.getSkills();
-			for (var i = 0; i < skills.length; i++) {
-				var info = get.info(skills[i]).zhenfa;
+			const config = {};
+			const skills = player.getSkills();
+			for (const skill of skills) {
+				const info = get.info(skill).zhenfa;
 				if (info) {
 					config[info] = true;
 				}
 			}
 			if (config.inline) {
-				var next = target.getNext();
-				var previous = target.getPrevious();
-				if (next == player || previous == player || (next && next.inline(player)) || (previous && previous.inline(player))) {
+				const next = target.getNext();
+				const previous = target.getPrevious();
+				if (next === player || previous === player || (next && next.inline(player)) || (previous && previous.inline(player))) {
 					return true;
 				}
 			}
 			if (config.siege) {
-				if (target == player.getNext().getNext() || target == player.getPrevious().getPrevious()) {
+				if (target === player.getNext().getNext() || target === player.getPrevious().getPrevious()) {
 					return true;
 				}
 			}
 			return false;
 		},
 		filter(event, player) {
-			if (player.identity == "ye" || player.identity == "unknown" || !player.wontYe(player.identity)) {
+			if (player.identity === "ye" || player.identity === "unknown" || !player.wontYe(player.identity)) {
 				return false;
 			}
 			if (player.hasSkill("undist")) {
 				return false;
 			}
 			if (
-				game.countPlayer(function (current) {
+					game.countPlayer(current => {
 					return !current.hasSkill("undist");
 				}) < 4
 			) {
 				return false;
 			}
-			return game.hasPlayer(function (current) {
+			return game.hasPlayer(current => {
 				return lib.skill._zhenfazhaohuan.getConfig(player, current);
 			});
 		},
-		content() {
-			"step 0";
-			event.list = game
-				.filterPlayer(function (current) {
+		async content(event, trigger, player) {
+			const targets = game
+				.filterPlayer(current => {
 					return current.isUnseen();
 				})
 				.sortBySeat();
-			"step 1";
-			var target = event.list.shift();
-			event.target = target;
-			if (target.wontYe(player.identity) && lib.skill._zhenfazhaohuan.getConfig(player, target)) {
+			for (const target of targets) {
+				if (!target.wontYe(player.identity) || !lib.skill._zhenfazhaohuan.getConfig(player, target)) {
+					continue;
+				}
 				player.line(target, "green");
-				var list = [];
-				if (target.getGuozhanGroup(0) == player.identity) {
-					list.push("明置" + get.translation(target.name1));
+				const list = [];
+				if (target.getGuozhanGroup(0) === player.identity) {
+					list.push(`明置${get.translation(target.name1)}`);
 				}
-				if (target.getGuozhanGroup(1) == player.identity) {
-					list.push("明置" + get.translation(target.name2));
+				if (target.getGuozhanGroup(1) === player.identity) {
+					list.push(`明置${get.translation(target.name2)}`);
 				}
-				if (list.length > 0) {
-					target
-						.chooseControl(list, "cancel2")
-						.set("prompt", "是否响应" + get.translation(player) + "发起的阵法召唤？")
-						.set("ai", function () {
-							return Math.random() < 0.5 ? 0 : 1;
-						});
-				} else {
-					event.goto(3);
+				if (!list.length) {
+					continue;
 				}
-			} else {
-				event.goto(3);
-			}
-			"step 2";
-			if (result.control != "cancel2") {
-				if (result.control == "明置" + get.translation(target.name1)) {
-					target.showCharacter(0);
-				} else {
-					target.showCharacter(1);
+				const { control } = await target.chooseControl({
+					controls: [...list, "cancel2"],
+					prompt: `是否响应${get.translation(player)}发起的阵法召唤？`,
+					ai: () => Math.random() < 0.5 ? 0 : 1,
+				}).forResult();
+				if (control !== "cancel2") {
+					target.showCharacter(control === `明置${get.translation(target.name1)}` ? 0 : 1);
 				}
 			}
-			"step 3";
-			if (event.list.length) {
-				event.goto(1);
-			}
-			"step 4";
-			game.delay();
+			await game.delay();
 		},
 		ai: {
 			order: 5,
