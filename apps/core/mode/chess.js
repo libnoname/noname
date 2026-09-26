@@ -1269,7 +1269,7 @@ export default () => {
 					},
 				],
 				chooseToMoveChess: [
-					(event, trigger, player) => {
+					async (event, trigger, player) => {
 						const { num } = event;
 						if (!player.movable(0, 1) && !player.movable(0, -1) && !player.movable(1, 0) && !player.movable(-1, 0)) {
 							return;
@@ -1392,7 +1392,7 @@ export default () => {
 							event.switchToAuto();
 						}
 					},
-					(event, trigger, player) => {
+					async (event, trigger, player) => {
 						_status.imchoosing = false;
 						if (event.moved) {
 							game.delay();
@@ -2231,7 +2231,7 @@ export default () => {
 				const next = game.createEvent("leaderView", false);
 				// UI 回调通过 resume 推进流程，保留数组阶段以等待 pause/delay 和处理选将回跳。
 				next.setContent([
-					(event, trigger, player) => {
+					async (event, trigger, player) => {
 						let save = get.config("chess_leader_save");
 						if (!save) {
 							save = "save1";
@@ -2310,7 +2310,7 @@ export default () => {
 							//}
 						}
 					},
-					(event, trigger, player) => {
+					async (event, trigger, player) => {
 						lib.rank.all = lib.rank.s.concat(lib.rank.ap).concat(lib.rank.a).concat(lib.rank.am).concat(lib.rank.bp).concat(lib.rank.b).concat(lib.rank.bm).concat(lib.rank.c).concat(lib.rank.d);
 						lib.rank.rarity.common = [];
 						for (const item of lib.rank.all) {
@@ -3281,7 +3281,7 @@ export default () => {
 						lib.init.onfree();
 						game.pause();
 					},
-					(event, trigger, player) => {
+					async (event, trigger, player) => {
 						if (!game.data.arena) {
 							event.dialog1.close();
 							event.dialog2.close();
@@ -3294,7 +3294,7 @@ export default () => {
 						ui.money.hide();
 						game.delay();
 					},
-					(event, trigger, player) => {
+					async (event, trigger, player) => {
 						ui.arena.classList.remove("leaderhide");
 						if (!_status.enterArena) {
 							ui.wuxie.show();
@@ -3374,7 +3374,7 @@ export default () => {
 							};
 						}
 					},
-					(event, trigger, player) => {
+					async (event, trigger, player) => {
 						let choice;
 						if (game.data._arena) {
 							game.data.arena = game.data._arena;
@@ -3474,7 +3474,7 @@ export default () => {
 						lib.init.onfree();
 						game.pause();
 					},
-					(event, trigger, player) => {
+					async (event, trigger, player) => {
 						if (event.arenachoice.length < 9) {
 							event.goto(4);
 						} else {
@@ -3487,7 +3487,7 @@ export default () => {
 							event.choosefinished = true;
 						}
 					},
-					(event, trigger, player) => {
+					async (event, trigger, player) => {
 						game.minskin = true;
 						ui.arena.classList.add("noleft");
 						const nodes = event.arenachoicenodes;
@@ -3953,7 +3953,7 @@ export default () => {
 						lib.init.onfree();
 						game.pause();
 					},
-					(event, trigger, player) => {
+					async (event, trigger, player) => {
 						ui.control.style.top = "";
 						if (!get.is.safari()) {
 							ui.control.style.transition = "";
