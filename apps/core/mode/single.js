@@ -504,8 +504,7 @@ export default () => {
 				lib.translate[j] = lib.singleTranslate[j];
 			}
 		},
-		start() {
-			"step 0";
+		async start(event, trigger, player) {
 			_status.mode = _status.connectMode ? lib.configOL.single_mode : get.config("single_mode");
 			var playback = localStorage.getItem(lib.configprefix + "playback");
 			if (playback) {
@@ -523,17 +522,15 @@ export default () => {
 						game.reload();
 					}
 				};
-				event.finish();
+				return;
 			} else if (!_status.connectMode) {
 				game.prepareArena(2);
 			}
-			"step 1";
 			if (_status.connectMode) {
-				game.waitForPlayer(function () {
+				await game.waitForPlayer(function () {
 					lib.configOL.number = 2;
 				});
 			}
-			"step 2";
 			if (_status.mode == "normal") {
 				lib.card.list = lib.singlePile.slice(0);
 				game.fixedPile = true;
@@ -599,7 +596,7 @@ export default () => {
 			}
 			if (_status.connectMode) {
 				lib.configOL.number = 2;
-				game.randomMapOL();
+				await game.randomMapOL();
 			} else {
 				for (var i = 0; i < game.players.length; i++) {
 					game.players[i].getId();
@@ -607,15 +604,14 @@ export default () => {
 				if (_status.brawl && _status.brawl.chooseCharacterBefore) {
 					_status.brawl.chooseCharacterBefore();
 				}
-				game.chooseCharacter();
+				await game.chooseCharacter();
 			}
-			"step 3";
 			if (ui.coin) {
 				_status.coinCoeff = get.coinCoeff([game.me.name]);
 			}
 
 			game.syncState();
-			event.trigger("gameStart");
+			await event.trigger("gameStart");
 
 			var players = get.players(lib.sort.position);
 			var info = [];
@@ -630,7 +626,7 @@ export default () => {
 			_status.videoInited = true;
 			game.addVideo("init", null, info);
 
-			game.gameDraw(game.zhu, function (player) {
+			await game.gameDraw(game.zhu, function (player) {
 				if (_status.mode == "dianjiang") {
 					return 4;
 				}
@@ -652,9 +648,8 @@ export default () => {
 			if (_status.connectMode && lib.configOL.change_card) {
 				game.replaceHandcards(game.players.slice(0));
 			}
-			"step 4";
-			game.phaseLoop(game.zhu);
 			game.countPlayer(current => current.showGiveup(), true);
+			await game.phaseLoop(game.zhu);
 		},
 		game: {
 			canReplaceViewpoint: () => true,
@@ -732,19 +727,17 @@ export default () => {
 			chooseCharacterDianjiang() {
 				var next = game.createEvent("chooseCharacter");
 				next.showConfig = true;
-				next.setContent(function () {
-					"step 0";
+				next.setContent(async function (event, trigger, player) {
 					ui.arena.classList.add("choose-character");
 					lib.init.onfree();
-					"step 1";
-					game.me.chooseControl("先手", "后手").prompt = "请选择自己的行动顺序";
-					"step 2";
-					var map = result.control == "先手" ? ["zhu", "fan"] : ["fan", "zhu"];
+					const controlNext = game.me.chooseControl("先手", "后手");
+					controlNext.prompt = "请选择自己的行动顺序";
+					const controlResult = await controlNext.forResult();
+					var map = controlResult.control == "先手" ? ["zhu", "fan"] : ["fan", "zhu"];
 					game.me.identity = map[0];
 					game.me.next.identity = map[1];
 					game.me.showIdentity();
 					game.me.next.showIdentity();
-					"step 3";
 					event.flipassign = true;
 					event.videoId = lib.status.videoId++;
 					var list = [];
@@ -761,7 +754,7 @@ export default () => {
 					var dialog = ui.create.characterDialog("heightset", filter).open();
 					dialog.videoId = event.videoId;
 
-					game.me
+					const firstChoose = game.me
 						.chooseButton(true)
 						.set("ai", function (button) {
 							return Math.random();
@@ -779,16 +772,16 @@ export default () => {
 							})(get.config("double_character"))
 						)
 						.set("dialog", event.videoId);
-					"step 4";
-					game.addRecentCharacter(result.links[0]);
-					_status.characterlist.removeArray(result.links);
-					if (result.links.length == 2) {
-						game.me.init(result.links[0], result.links[1]);
-						game.addRecentCharacter(result.links[1]);
+					const firstResult = await firstChoose.forResult();
+					game.addRecentCharacter(firstResult.links[0]);
+					_status.characterlist.removeArray(firstResult.links);
+					if (firstResult.links.length == 2) {
+						game.me.init(firstResult.links[0], firstResult.links[1]);
+						game.addRecentCharacter(firstResult.links[1]);
 					} else {
-						game.me.init(result.links[0]);
+						game.me.init(firstResult.links[0]);
 					}
-					game.me
+					const secondChoose = game.me
 						.chooseButton(true)
 						.set("ai", function (button) {
 							return Math.random();
@@ -806,15 +799,15 @@ export default () => {
 							})(get.config("double_character"))
 						)
 						.set("dialog", event.videoId);
-					"step 5";
+					const secondResult = await secondChoose.forResult();
 					game.broadcastAll("closeDialog", event.videoId);
-					game.addRecentCharacter(result.links[0]);
-					_status.characterlist.removeArray(result.links);
-					if (result.links.length == 2) {
-						game.me.next.init(result.links[0], result.links[1]);
-						game.addRecentCharacter(result.links[1]);
+					game.addRecentCharacter(secondResult.links[0]);
+					_status.characterlist.removeArray(secondResult.links);
+					if (secondResult.links.length == 2) {
+						game.me.next.init(secondResult.links[0], secondResult.links[1]);
+						game.addRecentCharacter(secondResult.links[1]);
 					} else {
-						game.me.next.init(result.links[0]);
+						game.me.next.init(secondResult.links[0]);
 					}
 					setTimeout(function () {
 						ui.arena.classList.remove("choose-character");
@@ -825,12 +818,12 @@ export default () => {
 						game.me.next._trueMe = game.me;
 					}
 				});
+				return next;
 			},
 			chooseCharacterWuxianhuoli() {
 				const next = game.createEvent("chooseCharacter");
 				next.showConfig = true;
-				next.setContent(function () {
-					"step 0";
+				next.setContent(async function (event, trigger, player) {
 					ui.arena.classList.add("choose-character");
 					lib.init.onfree();
 					var num = [0, 1].randomGet();
@@ -850,7 +843,6 @@ export default () => {
 					game.globalBuff = ["wuxianhuoli_weisuoyuwei"];
 					const randomBuff = ["liuanhuaming", "duoduoyishan", "xushidaifa", "mianmianjudao"].randomGet();
 					game.globalBuff.add(`wuxianhuoli_${randomBuff}`);
-					"step 1";
 					_status.characterChoice = {
 						zhu: _status.characterlist.randomRemove(6),
 						fan: _status.characterlist.randomRemove(6),
@@ -905,15 +897,14 @@ export default () => {
 						dialog.add(`<div class="text">「${ind === 0 ? "固定" : "随机"}」 ${get.translation(buff)}：${get.skillInfoTranslation(buff, null, false)}</div>`);
 					});
 					dialog.add([_status.characterChoice[game.me.identity], "character"]);
-					game.me.chooseButton(true, dialog);
-					"step 2";
+					const chooseResult = await game.me.chooseButton(true, dialog).forResult();
 					if (ui.cheat2) {
 						ui.cheat2.close();
 						delete ui.cheat2;
 					}
-					game.me.init(result.links[0]);
-					game.addRecentCharacter(result.links[0]);
-					_status.characterChoice[game.me.identity].removeArray(result.links);
+					game.me.init(chooseResult.links[0]);
+					game.addRecentCharacter(chooseResult.links[0]);
+					_status.characterChoice[game.me.identity].removeArray(chooseResult.links);
 					var list = _status.characterChoice[game.me.enemy.identity].randomRemove(1);
 					game.me.enemy.init(list[0]);
 					[game.me, game.me.enemy].forEach(current => {
@@ -985,27 +976,24 @@ export default () => {
 						}, 3000);
 					};
 					game.broadcastAll(func);
-					game.delay(0, 3000);
-					"step 3";
+					await game.delay(0, 3000);
 					_status.characterlist.addArray(Object.values(_status.characterChoice).flat());
 					setTimeout(function () {
 						ui.arena.classList.remove("choose-character");
 					}, 500);
 				});
+				return next;
 			},
 			chooseCharacter() {
 				if (_status.mode == "dianjiang") {
-					game.chooseCharacterDianjiang();
-					return;
+					return game.chooseCharacterDianjiang();
 				}
 				if (_status.mode == "wuxianhuoli") {
-					game.chooseCharacterWuxianhuoli();
-					return;
+					return game.chooseCharacterWuxianhuoli();
 				}
 				var next = game.createEvent("chooseCharacter");
 				next.showConfig = true;
-				next.setContent(function () {
-					"step 0";
+				next.setContent(async function (event, trigger, player) {
 					ui.arena.classList.add("choose-character");
 					var num = [0, 1].randomGet();
 					game.players[num].identity = "zhu";
@@ -1021,7 +1009,6 @@ export default () => {
 					for (var i = 0; i < game.players.length; i++) {
 						game.players[i].showIdentity();
 					}
-					"step 1";
 					_status.characterChoice = {
 						zhu: _status.characterlist.randomRemove(3),
 						fan: _status.characterlist.randomRemove(3),
@@ -1036,7 +1023,6 @@ export default () => {
 						event.videoIdx,
 						_status.characterChoice
 					);
-					"step 2";
 					var next = game.fan.chooseButton(true, 1);
 					next.filterButton = function (button) {
 						return _status.event.canChoose.includes(button.link);
@@ -1047,9 +1033,9 @@ export default () => {
 					next.ai = function () {
 						return Math.random();
 					};
-					"step 3";
-					_status.characterChoice.fan.addArray(result.links);
-					_status.characterChoice.all.removeArray(result.links);
+					const fanResult1 = await next.forResult();
+					_status.characterChoice.fan.addArray(fanResult1.links);
+					_status.characterChoice.all.removeArray(fanResult1.links);
 					game.broadcastAll(
 						function (link, choosing, first, id) {
 							var dialog = get.idDialog(id);
@@ -1071,7 +1057,7 @@ export default () => {
 								}
 							}
 						},
-						result.links,
+						fanResult1.links,
 						game.fan,
 						true,
 						event.videoIdx
@@ -1085,9 +1071,9 @@ export default () => {
 					next.ai = function () {
 						return Math.random();
 					};
-					"step 4";
-					_status.characterChoice.zhu.addArray(result.links);
-					_status.characterChoice.all.removeArray(result.links);
+					const zhuResult1 = await next.forResult();
+					_status.characterChoice.zhu.addArray(zhuResult1.links);
+					_status.characterChoice.all.removeArray(zhuResult1.links);
 					game.broadcastAll(
 						function (link, choosing, first, id) {
 							var dialog = get.idDialog(id);
@@ -1109,7 +1095,7 @@ export default () => {
 								}
 							}
 						},
-						result.links,
+						zhuResult1.links,
 						game.zhu,
 						false,
 						event.videoIdx
@@ -1123,9 +1109,9 @@ export default () => {
 					next.ai = function () {
 						return Math.random();
 					};
-					"step 5";
-					_status.characterChoice.fan.addArray(result.links);
-					_status.characterChoice.all.removeArray(result.links);
+					const fanResult2 = await next.forResult();
+					_status.characterChoice.fan.addArray(fanResult2.links);
+					_status.characterChoice.all.removeArray(fanResult2.links);
 					game.broadcastAll(
 						function (link, choosing, first, id) {
 							var dialog = get.idDialog(id);
@@ -1147,7 +1133,7 @@ export default () => {
 								}
 							}
 						},
-						result.links,
+						fanResult2.links,
 						game.fan,
 						true,
 						event.videoIdx
@@ -1161,9 +1147,9 @@ export default () => {
 					next.ai = function () {
 						return Math.random();
 					};
-					"step 6";
-					_status.characterChoice.zhu.addArray(result.links);
-					_status.characterChoice.all.removeArray(result.links);
+					const zhuResult2 = await next.forResult();
+					_status.characterChoice.zhu.addArray(zhuResult2.links);
+					_status.characterChoice.all.removeArray(zhuResult2.links);
 					game.broadcastAll(
 						function (link, choosing, first, id) {
 							var dialog = get.idDialog(id);
@@ -1185,37 +1171,32 @@ export default () => {
 								}
 							}
 						},
-						result.links,
+						zhuResult2.links,
 						game.zhu,
 						false,
 						event.videoIdx
 					);
-					"step 7";
 					game.broadcastAll("closeDialog", event.videoIdx);
-					"step 8";
-					game.me.chooseButton(true, ["请选择出场武将", [_status.characterChoice[game.me.identity], "character"]], _status.mode == "changban" ? 2 : 1);
-					"step 9";
-					game.me.init(result.links[0], _status.mode == "changban" ? result.links[1] : null);
-					_status.characterChoice[game.me.identity].removeArray(result.links);
+					const myResult = await game.me.chooseButton(true, ["请选择出场武将", [_status.characterChoice[game.me.identity], "character"]], _status.mode == "changban" ? 2 : 1).forResult();
+					game.me.init(myResult.links[0], _status.mode == "changban" ? myResult.links[1] : null);
+					_status.characterChoice[game.me.identity].removeArray(myResult.links);
 					var list = _status.characterChoice[game.me.enemy.identity].randomRemove(_status.mode == "changban" ? 2 : 1);
 					game.me.enemy.init(list[0], list[1]);
-					"step 10";
 					setTimeout(function () {
 						ui.arena.classList.remove("choose-character");
 					}, 500);
 				});
+				return next;
 			},
 			chooseCharacterDianjiangOL() {
 				var next = game.createEvent("chooseCharacter");
 				next.showConfig = true;
-				next.setContent(function () {
-					"step 0";
+				next.setContent(async function (event, trigger, player) {
 					var map = Math.random() < 0.5 ? ["zhu", "fan"] : ["fan", "zhu"];
 					game.me.identity = map[0];
 					game.me.next.identity = map[1];
 					game.me.showIdentity();
 					game.me.next.showIdentity();
-					"step 1";
 					//event.flipassign=true;
 					event.videoId = lib.status.videoId++;
 					var list = [];
@@ -1247,7 +1228,7 @@ export default () => {
 						list,
 						event.videoId
 					);
-					game.zhu
+					const zhuChoose = game.zhu
 						.chooseButton(true)
 						.set("ai", function (button) {
 							return Math.random();
@@ -1265,7 +1246,7 @@ export default () => {
 							})(lib.configOL.double_character)
 						)
 						.set("dialog", event.videoId);
-					"step 2";
+					const zhuResult = await zhuChoose.forResult();
 					game.broadcastAll(
 						function (player, character, id) {
 							if (player == game.me) {
@@ -1282,9 +1263,9 @@ export default () => {
 							_status.characterlist.removeArray(character);
 						},
 						game.zhu,
-						result.links
+						zhuResult.links
 					);
-					game.fan
+					const fanChoose = game.fan
 						.chooseButton(true)
 						.set("ai", function (button) {
 							return Math.random();
@@ -1302,7 +1283,7 @@ export default () => {
 							})(lib.configOL.double_character)
 						)
 						.set("dialog", event.videoId);
-					"step 3";
+					const fanResult = await fanChoose.forResult();
 					game.broadcastAll("closeDialog", event.videoId);
 					game.broadcastAll(
 						function (player, character, id) {
@@ -1327,16 +1308,16 @@ export default () => {
 							}, 500);
 						},
 						game.fan,
-						result.links,
+						fanResult.links,
 						event.videoId
 					);
 				});
+				return next;
 			},
 			chooseCharacterWuxianhuoliOL() {
 				var next = game.createEvent("chooseCharacter");
 				next.showConfig = true;
-				next.setContent(function () {
-					"step 0";
+				next.setContent(async function (event, trigger, player) {
 					ui.arena.classList.add("choose-character");
 					var num = [0, 1].randomGet();
 					game.players[num].identity = "zhu";
@@ -1363,7 +1344,6 @@ export default () => {
 						_status.postReconnect.wuxianhuoliBuff = [setBuff, []];
 					}
 					_status.postReconnect.wuxianhuoliBuff[1].addArray(game.globalBuff);
-					"step 1";
 					_status.characterChoice = {
 						zhu: _status.characterlist.randomRemove(6),
 						fan: _status.characterlist.randomRemove(6),
@@ -1421,33 +1401,34 @@ export default () => {
 						dialog.add([_status.characterChoice[identity], "character"]);
 						return [game[identity], true, dialog];
 					});
-					game.me.chooseButtonOL(list, function (player, result) {
-						if (game.online || player == game.me) {
-							player.init(result.links[0]);
-							if (player == game.me) {
-								game.addRecentCharacter(result.links[0]);
+					const chooseResult = await game.me
+						.chooseButtonOL(list, function (player, result) {
+							if (game.online || player == game.me) {
+								player.init(result.links[0]);
+								if (player == game.me) {
+									game.addRecentCharacter(result.links[0]);
+								}
+								player.hp = 10;
+								player.maxHp = 10;
+								player.hujia = 0;
+								player.update();
 							}
-							player.hp = 10;
-							player.maxHp = 10;
-							player.hujia = 0;
-							player.update();
-						}
-					});
-					"step 2";
+						})
+						.forResult();
 					if (ui.cheat2) {
 						ui.cheat2.close();
 						delete ui.cheat2;
 					}
-					for (var i in result) {
+					for (var i in chooseResult) {
 						var current = lib.playerOL[i];
-						if (result[i] == "ai") {
-							result[i] = _status.characterChoice[current.identity].randomGets(1);
+						if (chooseResult[i] == "ai") {
+							chooseResult[i] = _status.characterChoice[current.identity].randomGets(1);
 						} else {
-							result[i] = result[i].links;
+							chooseResult[i] = chooseResult[i].links;
 						}
-						_status.characterChoice[current.identity].removeArray(result[i]);
+						_status.characterChoice[current.identity].removeArray(chooseResult[i]);
 						if (!current.name) {
-							current.init(result[i][0]);
+							current.init(chooseResult[i][0]);
 							if (current.storage.nohp || (lib.character[current.name1].hasHiddenSkill && !current.noclick)) {
 								current.storage.rawHp = 1;
 								current.storage.rawMaxHp = 1;
@@ -1476,7 +1457,7 @@ export default () => {
 						setTimeout(function () {
 							ui.arena.classList.remove("choose-character");
 						}, 500);
-					}, result);
+					}, chooseResult);
 					game.globalBuff.forEach(buff => {
 						game.addGlobalSkill(buff);
 					});
@@ -1541,26 +1522,23 @@ export default () => {
 						}, 3000);
 					};
 					game.broadcastAll(func);
-					game.delay(0, 3000);
-					"step 3";
+					await game.delay(0, 3000);
 					_status.characterlist.addArray(Object.values(_status.characterChoice).flat());
 					setTimeout(function () {
 						ui.arena.classList.remove("choose-character");
 					}, 500);
 				});
+				return next;
 			},
 			chooseCharacterOL() {
 				if (_status.mode == "dianjiang") {
-					game.chooseCharacterDianjiangOL();
-					return;
+					return game.chooseCharacterDianjiangOL();
 				}
 				if (_status.mode == "wuxianhuoli") {
-					game.chooseCharacterWuxianhuoliOL();
-					return;
+					return game.chooseCharacterWuxianhuoliOL();
 				}
 				var next = game.createEvent("chooseCharacter");
-				next.setContent(function () {
-					"step 0";
+				next.setContent(async function (event, trigger, player) {
 					ui.arena.classList.add("choose-character");
 					var num = [0, 1].randomGet();
 					game.players[num].identity = "zhu";
@@ -1576,7 +1554,6 @@ export default () => {
 					for (var i = 0; i < game.players.length; i++) {
 						game.players[i].showIdentity();
 					}
-					"step 1";
 					_status.characterChoice = {
 						zhu: _status.characterlist.randomRemove(3),
 						fan: _status.characterlist.randomRemove(3),
@@ -1591,7 +1568,6 @@ export default () => {
 						event.videoIdx,
 						_status.characterChoice
 					);
-					"step 2";
 					var next = game.fan.chooseButton(true, 1);
 					next.set("filterButton", function (button) {
 						return _status.event.canChoose.includes(button.link);
@@ -1601,9 +1577,9 @@ export default () => {
 					next.ai = function () {
 						return Math.random();
 					};
-					"step 3";
-					_status.characterChoice.fan.addArray(result.links);
-					_status.characterChoice.all.removeArray(result.links);
+					const fanResult1 = await next.forResult();
+					_status.characterChoice.fan.addArray(fanResult1.links);
+					_status.characterChoice.all.removeArray(fanResult1.links);
 					game.broadcastAll(
 						function (link, choosing, first, id) {
 							var dialog = get.idDialog(id);
@@ -1625,7 +1601,7 @@ export default () => {
 								}
 							}
 						},
-						result.links,
+						fanResult1.links,
 						game.fan,
 						true,
 						event.videoIdx
@@ -1639,9 +1615,9 @@ export default () => {
 					next.ai = function () {
 						return Math.random();
 					};
-					"step 4";
-					_status.characterChoice.zhu.addArray(result.links);
-					_status.characterChoice.all.removeArray(result.links);
+					const zhuResult1 = await next.forResult();
+					_status.characterChoice.zhu.addArray(zhuResult1.links);
+					_status.characterChoice.all.removeArray(zhuResult1.links);
 					game.broadcastAll(
 						function (link, choosing, first, id) {
 							var dialog = get.idDialog(id);
@@ -1663,7 +1639,7 @@ export default () => {
 								}
 							}
 						},
-						result.links,
+						zhuResult1.links,
 						game.zhu,
 						false,
 						event.videoIdx
@@ -1677,9 +1653,9 @@ export default () => {
 					next.ai = function () {
 						return Math.random();
 					};
-					"step 5";
-					_status.characterChoice.fan.addArray(result.links);
-					_status.characterChoice.all.removeArray(result.links);
+					const fanResult2 = await next.forResult();
+					_status.characterChoice.fan.addArray(fanResult2.links);
+					_status.characterChoice.all.removeArray(fanResult2.links);
 					game.broadcastAll(
 						function (link, choosing, first, id) {
 							var dialog = get.idDialog(id);
@@ -1701,7 +1677,7 @@ export default () => {
 								}
 							}
 						},
-						result.links,
+						fanResult2.links,
 						game.fan,
 						true,
 						event.videoIdx
@@ -1715,9 +1691,9 @@ export default () => {
 					next.ai = function () {
 						return Math.random();
 					};
-					"step 6";
-					_status.characterChoice.zhu.addArray(result.links);
-					_status.characterChoice.all.removeArray(result.links);
+					const zhuResult2 = await next.forResult();
+					_status.characterChoice.zhu.addArray(zhuResult2.links);
+					_status.characterChoice.all.removeArray(zhuResult2.links);
 					game.broadcastAll(
 						function (link, choosing, first, id) {
 							var dialog = get.idDialog(id);
@@ -1739,35 +1715,34 @@ export default () => {
 								}
 							}
 						},
-						result.links,
+						zhuResult2.links,
 						game.zhu,
 						false,
 						event.videoIdx
 					);
-					"step 7";
 					game.broadcastAll("closeDialog", event.videoIdx);
-					"step 8";
 					var num = _status.mode == "changban" ? 2 : 1;
 					var list = [
 						[game.zhu, num, true, ["选择出场角色", [_status.characterChoice.zhu, "character"]]],
 						[game.fan, num, true, ["选择出场角色", [_status.characterChoice.fan, "character"]]],
 					];
-					game.me.chooseButtonOL(list, function (player, result) {
-						if (game.online || player == game.me) {
-							player.init(result.links[0], result.links[1]);
-						}
-					});
-					"step 9";
-					for (var i in result) {
+					const myResult = await game.me
+						.chooseButtonOL(list, function (player, result) {
+							if (game.online || player == game.me) {
+								player.init(result.links[0], result.links[1]);
+							}
+						})
+						.forResult();
+					for (var i in myResult) {
 						var current = lib.playerOL[i];
-						if (result[i] == "ai") {
-							result[i] = _status.characterChoice[current.identity].randomGets(_status.mode == "changban" ? 2 : 1);
+						if (myResult[i] == "ai") {
+							myResult[i] = _status.characterChoice[current.identity].randomGets(_status.mode == "changban" ? 2 : 1);
 						} else {
-							result[i] = result[i].links;
+							myResult[i] = myResult[i].links;
 						}
-						_status.characterChoice[current.identity].removeArray(result[i]);
+						_status.characterChoice[current.identity].removeArray(myResult[i]);
 						if (!current.name) {
-							current.init(result[i][0], result[i][1]);
+							current.init(myResult[i][0], myResult[i][1]);
 						}
 					}
 					game.broadcast(function (result) {
@@ -1779,11 +1754,12 @@ export default () => {
 						setTimeout(function () {
 							ui.arena.classList.remove("choose-character");
 						}, 500);
-					}, result);
+					}, myResult);
 					setTimeout(function () {
 						ui.arena.classList.remove("choose-character");
 					}, 500);
 				});
+				return next;
 			},
 		},
 		element: {
@@ -1800,14 +1776,14 @@ export default () => {
 					var next = game.createEvent("replacePlayerSingle", false, _status.event.getParent());
 					next.player = this;
 					next.forceDie = true;
-					next.setContent(function () {
-						"step 0";
-						game.delay();
-						"step 1";
-						player.chooseButton(true, ["请选择一名出场武将", [_status.characterChoice[player.identity].slice(0), "character"]]).set("forceDie", true);
-						"step 2";
+					next.setContent(async function (event, trigger, player) {
+						await game.delay();
+						const chooseResult = await player
+							.chooseButton(true, ["请选择一名出场武将", [_status.characterChoice[player.identity].slice(0), "character"]])
+							.set("forceDie", true)
+							.forResult();
 						var source = player;
-						var name = result.links[0];
+						var name = chooseResult.links[0];
 						var color = source.node.identity.dataset.color;
 
 						game.broadcastAll(
@@ -1913,15 +1889,14 @@ export default () => {
 				filterTarget(card, player, target) {
 					return target != player && player.canCompare(target);
 				},
-				content() {
-					"step 0";
+				async content(event, trigger, player) {
+					const target = event.target;
 					player.awakenSkill(event.name);
-					player.chooseToCompare(target);
-					"step 1";
+					const result = await player.chooseToCompare(target).forResult();
 					if (result.bool) {
-						player.useCard({ name: "juedou" }, target, "noai");
+						await player.useCard({ name: "juedou" }, target, "noai");
 					} else {
-						target.useCard({ name: "juedou" }, player, "noai");
+						await target.useCard({ name: "juedou" }, player, "noai");
 					}
 				},
 				ai: {
@@ -1986,14 +1961,14 @@ export default () => {
 				filter(event, player) {
 					return player.isDamaged();
 				},
-				content() {
-					"step 0";
-					player.judge(function (result) {
-						return get.color(result) == "black" ? 2 : -2;
-					});
-					"step 1";
-					if (result.bool == true) {
-						player.recover();
+				async content(event, trigger, player) {
+					const judgeResult = await player
+						.judge(function (result) {
+							return get.color(result) == "black" ? 2 : -2;
+						})
+						.forResult();
+					if (judgeResult.bool == true) {
+						await player.recover();
 					}
 				},
 			},
@@ -2273,26 +2248,23 @@ export default () => {
 				filter(event, player) {
 					return _status.mode == "changban" && player.maxHp <= 3;
 				},
-				content() {
-					"step 0";
-					player.chooseBool("是否更换手牌？").ai = function () {
+				async content(event, trigger, player) {
+					const chooseNext = player.chooseBool("是否更换手牌？");
+					chooseNext.ai = function () {
 						var hs = player.getCards("h");
 						return get.value(hs, "raw") < 6 * hs;
 					};
-					"step 1";
-					if (result.bool) {
+					const chooseResult = await chooseNext.forResult();
+					if (chooseResult.bool) {
 						var hs = player.getCards("h");
-						player.lose(hs, ui.special);
+						const loseNext = player.lose(hs, ui.special);
 						event.hs = hs;
-					} else {
-						event.finish();
-					}
-					"step 2";
-					var hs = event.hs;
-					player.draw(hs.length, "nodelay");
-					for (var i = 0; i < hs.length; i++) {
-						hs[i].fix();
-						ui.cardPile.insertBefore(hs[i], ui.cardPile.childNodes[get.rand(ui.cardPile.childElementCount)]);
+						await loseNext;
+						player.draw(hs.length, "nodelay");
+						for (var i = 0; i < hs.length; i++) {
+							hs[i].fix();
+							ui.cardPile.insertBefore(hs[i], ui.cardPile.childNodes[get.rand(ui.cardPile.childElementCount)]);
+						}
 					}
 				},
 			},
