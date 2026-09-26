@@ -9932,35 +9932,35 @@ export default {
 		enable: "phaseUse",
 		delay: false,
 		filter(event, player) {
-			var isEnemy;
-			if (player.identity == "unknown") {
+			let isEnemy;
+			if (player.identity === "unknown") {
 				if (!player.wontYe("wu")) {
-					isEnemy = function (current) {
-						return current != player;
+					isEnemy = current => {
+						return current !== player;
 					};
 				} else {
-					isEnemy = function (current) {
-						return current != player && current.identity != "wu";
+					isEnemy = current => {
+						return current !== player && current.identity !== "wu";
 					};
 				}
 			} else {
-				isEnemy = function (target) {
+				isEnemy = target => {
 					return target.isEnemyOf(player);
 				};
 			}
-			return game.hasPlayer(function (current) {
+			return game.hasPlayer(current => {
 				return isEnemy(current) && player.inRange(current);
 			});
 		},
 		filterTarget(card, player, target) {
-			if (player == target || !player.inRange(target)) {
+			if (player === target || !player.inRange(target)) {
 				return false;
 			}
-			if (player.identity == "unknown") {
+			if (player.identity === "unknown") {
 				if (!player.wontYe("wu")) {
 					return true;
 				}
-				return target.identity != "wu";
+				return target.identity !== "wu";
 			}
 			return target.isEnemyOf(player);
 		},
@@ -9969,56 +9969,41 @@ export default {
 		selectCard: [0, 1],
 		multitarget: true,
 		multiline: true,
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.awakenSkill("gzduwu");
 			player.addSkill("gzduwu_count");
-			targets.sortBySeat();
-			event.players = targets.slice(0);
-			game.delayx();
-			player.chooseJunlingFor(event.players[0]).set("prompt", "为所有目标角色选择军令牌");
-			"step 1";
-			event.junling = result.junling;
-			event.targets = result.targets;
-			event.num = 0;
-			"step 2";
-			if (num < event.players.length) {
-				event.current = event.players[num];
-			}
-			if (event.current && event.current.isAlive()) {
-				event.current
-					.chooseJunlingControl(player, event.junling, targets)
+			event.targets.sortBySeat();
+			const players = event.targets.slice();
+			await game.delayx();
+			const { junling, targets } = await player.chooseJunlingFor(players[0]).set("prompt", "为所有目标角色选择军令牌").forResult();
+			event.junling = junling;
+			event.targets = targets;
+			for (const current of players) {
+				event.current = current;
+			if (current.isAlive()) {
+				const result = await current
+					.chooseJunlingControl(player, junling, targets)
 					.set("prompt", "黩武")
 					.set("choiceList", ["执行该军令", "不执行该军令并受到1点伤害"])
-					.set("ai", function () {
-						var evt = _status.event.getParent(2);
-						var junlingEff = get.junlingEffect(evt.player, evt.junling, evt.current, evt.targets, evt.current);
-						var damageEff = get.damageEffect(evt.current, evt.player, evt.current);
-						var attitudeSelf = get.attitude(evt.current, evt.current);
-						var drawEff = get.effect(evt.player, { name: "draw" }, evt.player, evt.current);
-
+					.set("ai", () => {
+						const evt = _status.event.getParent(2);
+						const junlingEff = get.junlingEffect(evt.player, evt.junling, evt.current, evt.targets, evt.current);
+						const damageEff = get.damageEffect(evt.current, evt.player, evt.current);
+						const attitudeSelf = get.attitude(evt.current, evt.current);
+						const drawEff = get.effect(evt.player, { name: "draw" }, evt.player, evt.current);
 						return junlingEff > damageEff / attitudeSelf + drawEff ? 0 : 1;
-					});
-			} else {
-				event.goto(4);
+					})
+					.forResult();
+				if (result.index === 0) {
+					await current.carryOutJunling(player, junling, targets);
+				} else {
+					await player.draw();
+					await current.damage();
+				}
 			}
-			"step 3";
-			if (result.index == 0) {
-				event.current.carryOutJunling(player, event.junling, targets);
-			} else {
-				player.draw();
-				event.current.damage();
+				await game.delayx();
 			}
-			"step 4";
-			game.delayx();
-			event.num++;
-			if (event.num < event.players.length) {
-				event.goto(2);
-			}
-			"step 5";
-			var list = player.getStorage("gzduwu_count").filter(function (target) {
-				return target.isAlive();
-			});
+			const list = player.getStorage("gzduwu_count").filter(target => target.isAlive());
 			if (list.length) {
 				player.loseHp();
 			}
@@ -10030,13 +10015,13 @@ export default {
 			result: {
 				player(player) {
 					if (
-						game.countPlayer(function (current) {
+						game.countPlayer(current => {
 							return !current.isFriendOf(player) && !player.inRange(current);
 						}) <= Math.min(2, Math.max(0, game.roundNumber - 1))
 					) {
 						return 1;
 					}
-					if (player.hp == 1) {
+					if (player.hp === 1) {
 						return 1;
 					}
 					return 0;
@@ -10050,9 +10035,9 @@ export default {
 				silent: true,
 				charlotte: true,
 				filter(event, player) {
-					return event.getParent("gzduwu").player == player;
+					return event.getParent("gzduwu").player === player;
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.markAuto("gzduwu_count", [trigger.player]);
 				},
 			},
