@@ -6282,17 +6282,19 @@ const skills = {
 			const round = Math.min(5, game.roundNumber);
 			const name = get.translation(target);
 			await player.give(cards, target);
-			const result = await player
-				.chooseControl(["摸牌", "弃牌"])
+			const controls = ["摸牌"];
+			if (target.hasCards("he")) controls.push("弃牌");
+			const result = controls.length > 1 ? await player
+				.chooseControl(controls)
 				.set("choiceList", [`令${name}摸${get.cnNumber(round)}张牌`, `令${name}随机弃置${get.cnNumber(round)}张手牌`])
 				.set("prompt", "滤心：请选择一项")
 				.set("ai", () => {
 					return get.event().choice;
 				})
 				.set("choice", get.attitude(player, target) > 0 ? "摸牌" : "弃牌")
-				.forResult();
+				.forResult() : { control: controls[0] };
 			let cards2 = [];
-			const makeDraw = result.index === 0;
+			const makeDraw = result.control === "摸牌";
 			if (makeDraw) {
 				const result = await target.draw(round).forResult();
 				cards2 = result.cards;
@@ -6300,12 +6302,12 @@ const skills = {
 				if (cards.length > 0) {
 					const evt = target.randomDiscard(round, "h");
 					await evt;
-					cards2 = evt.done.cards2;
+					cards2 = evt?.done?.cards2;
 				}
 			}
 			const cardName = get.name(cards[0], player);
 			if (
-				cards2.some(card => {
+				cards2?.some(card => {
 					return get.name(card, target) === cardName;
 				})
 			) {
