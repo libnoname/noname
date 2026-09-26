@@ -10213,80 +10213,63 @@ export default {
 		usable: 1,
 		delay: false,
 		filter(event, player) {
-			return player.countCards("h") > 0;
+			return player.hasCards("h");
 		},
-		content() {
-			"step 0";
-			player.showHandcards();
-			"step 1";
-			if (!player.countCards("h", { color: "red" })) {
-				event._result = { control: "黑色" };
-			} else if (!player.countCards("h", { color: "black" })) {
-				event._result = { control: "红色" };
+		async content(event, trigger, player) {
+			await player.showHandcards();
+			let control;
+			if (!player.hasCards("h", { color: "red" })) {
+				control = "黑色";
+			} else if (!player.hasCards("h", { color: "black" })) {
+				control = "红色";
 			} else {
-				player.chooseControl("红色", "黑色").set("ai", function () {
-					var player = _status.event.player,
-						num = player.maxHp - player.getExpansions("gzhuaiyi").length;
-					if (player.countCards("h", { color: "red" }) <= num && player.countCards("h", { color: "black" }) > num) {
-						return "红色";
-					}
-					return "黑色";
-				});
+				const result = await player.chooseControl({
+					controls: ["红色", "黑色"],
+					ai: () => {
+						const player = _status.event.player;
+						const num = player.maxHp - player.getExpansions("gzhuaiyi").length;
+						if (player.countCards("h", { color: "red" }) <= num && player.countCards("h", { color: "black" }) > num) {
+							return "红色";
+						}
+						return "黑色";
+					},
+				}).forResult();
+				control = result.control;
 			}
-			"step 2";
-			event.control = result.control;
-			var cards;
-			if (event.control == "红色") {
-				cards = player.getCards("h", { color: "red" });
-			} else {
-				cards = player.getCards("h", { color: "black" });
+			const cards = player.getCards("h", { color: control === "红色" ? "red" : "black" });
+			await player.discard({ cards });
+			const num = cards.length;
+			const result = await player.chooseTarget({
+				prompt: `请选择至多${get.cnNumber(num)}名有牌的其他角色，获得这些角色的各一张牌。`,
+				selectTarget: [1, num],
+				filterTarget: (card, player, target) => target !== player && target.hasCards("he"),
+				ai: target => -get.attitude(_status.event.player, target) + 0.5,
+			}).forResult();
+			if (!result.bool || !result.targets) {
+				return;
 			}
-			player.discard(cards);
-			event.num = cards.length;
-			"step 3";
-			player
-				.chooseTarget("请选择至多" + get.cnNumber(event.num) + "名有牌的其他角色，获得这些角色的各一张牌。", [1, event.num], function (card, player, target) {
-					return target != player && target.countCards("he") > 0;
-				})
-				.set("ai", function (target) {
-					return -get.attitude(_status.event.player, target) + 0.5;
-				});
-			"step 4";
-			if (result.bool && result.targets) {
-				player.line(result.targets, "green");
-				event.targets = result.targets;
-				event.targets.sort(lib.sort.seat);
-				event.cards = [];
-			} else {
-				event.finish();
+			player.line(result.targets, "green");
+			const targets = result.targets.sort(lib.sort.seat);
+			if (!player.isAlive() || !targets.length) {
+				return;
 			}
-			"step 5";
-			if (player.isAlive() && event.targets.length) {
-				player.gainPlayerCard(event.targets.shift(), "he", true);
-			} else {
-				event.finish();
+			while (player.isAlive() && targets.length) {
+				await player.gainPlayerCard({ target: targets.shift(), position: "he", forced: true });
 			}
-			"step 6";
-			if (result.bool && result.cards && result.cards.length) {
-				event.cards.addArray(result.cards);
+			if (targets.length) {
+				return;
 			}
-			if (event.targets.length) {
-				event.goto(5);
-			}
-			"step 7";
-			var hs = player.getCards("h");
-			cards = cards.filter(function (card) {
-				return get.type(card) == "equip" && hs.includes(card);
-			});
-			if (cards.length) {
-				player.addToExpansion(cards, player, "give").gaintag.add("gzhuaiyi");
+			const handcards = player.getCards("h");
+			const expansionCards = cards.filter(card => get.type(card) === "equip" && handcards.includes(card));
+			if (expansionCards.length) {
+				await player.addToExpansion({ cards: expansionCards, source: player, animate: "give", gaintag: ["gzhuaiyi"] });
 			}
 		},
 		ai: {
 			order: 10,
 			result: {
 				player(player, target) {
-					var num = player.maxHp - player.getExpansions("gzhuaiyi").length;
+					const num = player.maxHp - player.getExpansions("gzhuaiyi").length;
 					if (player.countCards("h", { color: "red" }) <= num) {
 						return 1;
 					}
@@ -10300,7 +10283,7 @@ export default {
 		marktext: "异",
 		intro: { content: "expansion", markcount: "expansion" },
 		onremove(player, skill) {
-			var cards = player.getExpansions(skill);
+			const cards = player.getExpansions(skill);
 			if (cards.length) {
 				player.loseToDiscardpile(cards);
 			}
