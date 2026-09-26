@@ -2785,9 +2785,7 @@ const skills = {
 			sha: {
 				charlotte: true,
 				mark: true,
-				intro: {
-					content: "本回合使用【杀】次数+#",
-				},
+				intro: { content: "本阶段使用【杀】次数+#" },
 				mod: {
 					cardUsable(card, player, num) {
 						if (card.name === "sha") {
@@ -2823,6 +2821,7 @@ const skills = {
 				onremove: true,
 			},
 			eff: {
+				audio: "dcsbyouyi",
 				charlotte: true,
 				forced: true,
 				popup: false,
