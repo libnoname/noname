@@ -7,271 +7,277 @@ export default () => {
 	return {
 		name: "tafang",
 		canvasUpdates2: [],
-		start() {
-			"step 0";
-			_status.gameDrawed = true;
-			lib.init.css(lib.assetURL + "layout/mode", "chess");
-			lib.init.css(lib.assetURL + "layout/mode", "tafang");
-			game.loadMode("chess");
-			"step 1";
-			if (get.is.phoneLayout() && lib.config.touchscreen && !lib.config.show_round_menu && !["system", "menu"].includes(lib.config.swipe_left) && !["system", "menu"].includes(lib.config.swipe_right) && !["system", "menu"].includes(lib.config.swipe_up)) {
-				ui.roundmenu.style.display = "";
-			}
-			if (lib.config.player_border == "normal" && (lib.config.layout == "long" || lib.config.layout == "long2")) {
-				ui.arena.classList.add("lslim_player");
-			}
-			for (var i in result.element) {
-				for (var j in result.element[i]) {
-					if (j != "dieAfter") {
-						lib.element[i][j] = result.element[i][j];
-					}
+		start: [
+			async (event, trigger, player) => {
+				_status.gameDrawed = true;
+				lib.init.css(`${lib.assetURL}layout/mode`, "chess");
+				lib.init.css(`${lib.assetURL}layout/mode`, "tafang");
+				game.loadMode("chess");
+			},
+			async (event, trigger, player) => {
+				const result = event._result;
+				if (get.is.phoneLayout() && lib.config.touchscreen && !lib.config.show_round_menu && !["system", "menu"].includes(lib.config.swipe_left) && !["system", "menu"].includes(lib.config.swipe_right) && !["system", "menu"].includes(lib.config.swipe_up)) {
+					ui.roundmenu.style.display = "";
 				}
-			}
-			for (var i in result.ui) {
-				for (var j in result.ui[i]) {
-					ui[i][j] = result.ui[i][j];
+				if (lib.config.player_border === "normal" && (lib.config.layout === "long" || lib.config.layout === "long2")) {
+					ui.arena.classList.add("lslim_player");
 				}
-			}
-			get.chessDistance = result.get.chessDistance;
-			get.rawAttitude = result.get.rawAttitude;
-			var toLoad = ["addChessPlayer", "addObstacle", "removeObstacle", "isChessNeighbour", "draw2", "updateCanvas2", "setChessInfo", "modeSwapPlayer", "initChess"];
-			for (var i = 0; i < toLoad.length; i++) {
-				game[toLoad[i]] = result.game[toLoad[i]];
-			}
-			toLoad = ["_attackmove", "_phasequeue", "_chessmove", "_chesscenter", "_tempobstacle"];
-			for (var i = 0; i < toLoad.length; i++) {
-				lib.skill[toLoad[i]] = result.skill[toLoad[i]];
-			}
-			ui.placeChess = result.ui.placeChess;
-			ui.click.moveContainer = result.ui.click.moveContainer;
-			for (var i in lib.skill) {
-				if (lib.skill[i].seatRelated === true) {
-					lib.skill[i] = {};
-					if (lib.translate[i + "_info"]) {
-						lib.translate[i + "_info"] = "此模式下不可用";
-					}
-				}
-			}
-			// if(!localStorage.getItem(lib.configprefix+'playback')){
-			//     game.loadMap();
-			// }
-			"step 2";
-			var result = "basic_medium";
-			_status.map = lib.tafang.map[result];
-			_status.mapname = result;
-			ui.chesssheet = document.createElement("style");
-			document.head.appendChild(ui.chesssheet);
-			var playback = localStorage.getItem(lib.configprefix + "playback");
-			lib.mechlist = [];
-			for (var i in lib.characterPack.mode_tafang) {
-				if (i.indexOf("tafang_mech_") == 0) {
-					lib.characterPack.mode_tafang[i][3].push(i + "_skill");
-					lib.mechlist.push(i);
-				}
-				lib.character[i] = lib.characterPack.mode_tafang[i];
-			}
-			ui.create.cardsAsync();
-			game.finishCards();
-			game.addGlobalSkill("autoswap");
-			ui.chessContainer = ui.create.div("#chess-container", ui.arena);
-			ui.chessContainer.move = ui.click.moveContainer;
-			ui.chessContainer.chessLeft = 0;
-			ui.chessContainer.chessTop = 0;
-			// lib.setScroll(ui.chessContainer);
-			ui.chess = ui.create.div("#chess", ui.chessContainer);
-			ui.canvas2 = document.createElement("canvas");
-			ui.canvas2.id = "canvas2";
-			ui.chess.appendChild(ui.canvas2);
-			ui.ctx2 = ui.canvas2.getContext("2d");
-			game.me = ui.create.player();
-			if (playback) {
-				for (var i in lib.characterPack) {
-					for (var j in lib.characterPack[i]) {
-						lib.character[j] = lib.character[j] || lib.characterPack[i][j];
-					}
-				}
-				game.pause();
-				ui.system.style.display = "none";
-				_status.playback = playback;
-				localStorage.removeItem(lib.configprefix + "playback");
-				var store = lib.db.transaction(["video"], "readwrite").objectStore("video");
-				store.get(parseInt(playback)).onsuccess = function (e) {
-					if (e.target.result) {
-						event.video = e.target.result.video;
-						game.resume();
-					} else {
-						alert("播放失败：找不到录像");
-						game.reload();
-					}
-				};
-			}
-			_status.mylist = [];
-			_status.enemylist = [];
-			"step 3";
-			ui.arena.classList.add("chess");
-			if (event.video) {
-				for (var ii = 0; ii < event.video.length; ii++) {
-					if (event.video[ii].type == "init") {
-						_status.mapname = event.video[ii].content;
-						break;
-					}
-				}
-				_status.map = lib.tafang.map[_status.mapname];
-				game.playerMap = lib.posmap;
-			}
-			ui.chesswidth = _status.map.size[0];
-			ui.chessheight = _status.map.size[1];
-			game.initChess();
-
-			var grids = [];
-			var gridnum = ui.chessheight * ui.chesswidth;
-			for (var i = 0; i < gridnum; i++) {
-				grids.push(i);
-			}
-			event.obs = [];
-			if (!event.video) {
-				var tafanglist = [0, 2, 3, 5, 6, 8, 9, 11, 12];
-				for (var i = 0; i < ui.chessheight - 1; i++) {
-					for (var j = 0; j < ui.chesswidth; j++) {
-						if (i >= 8 && j != 0 && j != ui.chesswidth - 1) {
-							continue;
-						}
-						if (tafanglist.includes(j)) {
-							var cg = i * ui.chesswidth + j;
-							grids.remove(cg);
-							game.addObstacle(cg.toString(), false);
-							event.obs.push(cg.toString());
+				for (const i in result.element) {
+					for (const j in result.element[i]) {
+						if (j !== "dieAfter") {
+							lib.element[i][j] = result.element[i][j];
 						}
 					}
 				}
-				for (var i = 0; i < ui.chesswidth; i++) {
-					switch (ui.chesswidth) {
-						case 6:
-							if (i == 2 || i == 3) {
-								continue;
-							}
-							break;
-						case 9:
-							if (i == 3 || i == 4 || i == 5) {
-								continue;
-							}
-							break;
-						case 12:
-							if (i == 4 || i == 5 || i == 6 || i == 7) {
-								continue;
-							}
-							break;
+				for (const i in result.ui) {
+					for (const j in result.ui[i]) {
+						ui[i][j] = result.ui[i][j];
 					}
-					var cg = (ui.chessheight - 1) * ui.chesswidth + i;
-					grids.remove(cg);
-					game.addObstacle(cg.toString(), false);
-					event.obs.push(cg.toString());
 				}
-			}
+				get.chessDistance = result.get.chessDistance;
+				get.rawAttitude = result.get.rawAttitude;
+				const toLoad = ["addChessPlayer", "addObstacle", "removeObstacle", "isChessNeighbour", "draw2", "updateCanvas2", "setChessInfo", "modeSwapPlayer", "initChess"];
+				for (const name of toLoad) {
+					game[name] = result.game[name];
+				}
+				const skillsToLoad = ["_attackmove", "_phasequeue", "_chessmove", "_chesscenter", "_tempobstacle"];
+				for (const name of skillsToLoad) {
+					lib.skill[name] = result.skill[name];
+				}
+				ui.placeChess = result.ui.placeChess;
+				ui.click.moveContainer = result.ui.click.moveContainer;
+				for (const i in lib.skill) {
+					if (lib.skill[i].seatRelated === true) {
+						lib.skill[i] = {};
+						if (lib.translate[`${i}_info`]) {
+							lib.translate[`${i}_info`] = "此模式下不可用";
+						}
+					}
+				}
+				// if(!localStorage.getItem(lib.configprefix+'playback')){
+				//     game.loadMap();
+				// }
+			},
+			async (event, trigger, player) => {
+				const mapname = "basic_medium";
+				_status.map = lib.tafang.map[mapname];
+				_status.mapname = mapname;
+				ui.chesssheet = document.createElement("style");
+				document.head.appendChild(ui.chesssheet);
+				const playback = localStorage.getItem(`${lib.configprefix}playback`);
+				lib.mechlist = [];
+				for (const i in lib.characterPack.mode_tafang) {
+					if (i.indexOf("tafang_mech_") === 0) {
+						lib.characterPack.mode_tafang[i][3].push(`${i}_skill`);
+						lib.mechlist.push(i);
+					}
+					lib.character[i] = lib.characterPack.mode_tafang[i];
+				}
+				ui.create.cardsAsync();
+				game.finishCards();
+				game.addGlobalSkill("autoswap");
+				ui.chessContainer = ui.create.div("#chess-container", ui.arena);
+				ui.chessContainer.move = ui.click.moveContainer;
+				ui.chessContainer.chessLeft = 0;
+				ui.chessContainer.chessTop = 0;
+				// lib.setScroll(ui.chessContainer);
+				ui.chess = ui.create.div("#chess", ui.chessContainer);
+				ui.canvas2 = document.createElement("canvas");
+				ui.canvas2.id = "canvas2";
+				ui.chess.appendChild(ui.canvas2);
+				ui.ctx2 = ui.canvas2.getContext("2d");
+				game.me = ui.create.player();
+				if (playback) {
+					for (const i in lib.characterPack) {
+						for (const j in lib.characterPack[i]) {
+							lib.character[j] = lib.character[j] || lib.characterPack[i][j];
+						}
+					}
+					game.pause();
+					ui.system.style.display = "none";
+					_status.playback = playback;
+					localStorage.removeItem(`${lib.configprefix}playback`);
+					const store = lib.db.transaction(["video"], "readwrite").objectStore("video");
+					store.get(parseInt(playback)).onsuccess = e => {
+						if (e.target.result) {
+							event.video = e.target.result.video;
+							game.resume();
+						} else {
+							alert("播放失败：找不到录像");
+							game.reload();
+						}
+					};
+				}
+				_status.mylist = [];
+				_status.enemylist = [];
+			},
+			async (event, trigger, player) => {
+				ui.arena.classList.add("chess");
+				if (event.video) {
+					for (const entry of event.video) {
+						if (entry.type === "init") {
+							_status.mapname = entry.content;
+							break;
+						}
+					}
+					_status.map = lib.tafang.map[_status.mapname];
+					game.playerMap = lib.posmap;
+				}
+				ui.chesswidth = _status.map.size[0];
+				ui.chessheight = _status.map.size[1];
+				game.initChess();
 
-			if (lib.config.show_handcardbutton) {
-				lib.setPopped(
-					ui.create.system("手牌", null, true),
-					function () {
-						var uiintro = ui.create.dialog("hidden");
-						var added = false;
-						for (var i = 0; i < game.players.length; i++) {
-							if (game.players[i].side == game.me.side && game.players[i] != game.me) {
-								added = true;
-								uiintro.add(get.translation(game.players[i]));
-								var cards = game.players[i].getCards("h");
-								if (cards.length) {
-									uiintro.addSmall(cards, true);
-								} else {
-									uiintro.add("（无）");
+				const grids = [];
+				const gridnum = ui.chessheight * ui.chesswidth;
+				for (let i = 0; i < gridnum; i++) {
+					grids.push(i);
+				}
+				event.obs = [];
+				if (!event.video) {
+					const tafanglist = [0, 2, 3, 5, 6, 8, 9, 11, 12];
+					for (let i = 0; i < ui.chessheight - 1; i++) {
+						for (let j = 0; j < ui.chesswidth; j++) {
+							if (i >= 8 && j !== 0 && j !== ui.chesswidth - 1) {
+								continue;
+							}
+							if (tafanglist.includes(j)) {
+								const cg = i * ui.chesswidth + j;
+								grids.remove(cg);
+								game.addObstacle(cg.toString(), false);
+								event.obs.push(cg.toString());
+							}
+						}
+					}
+					for (let i = 0; i < ui.chesswidth; i++) {
+						switch (ui.chesswidth) {
+							case 6:
+								if (i === 2 || i === 3) {
+									continue;
+								}
+								break;
+							case 9:
+								if (i === 3 || i === 4 || i === 5) {
+									continue;
+								}
+								break;
+							case 12:
+								if (i === 4 || i === 5 || i === 6 || i === 7) {
+									continue;
+								}
+								break;
+						}
+						const cg = (ui.chessheight - 1) * ui.chesswidth + i;
+						grids.remove(cg);
+						game.addObstacle(cg.toString(), false);
+						event.obs.push(cg.toString());
+					}
+				}
+
+				if (lib.config.show_handcardbutton) {
+					lib.setPopped(
+						ui.create.system("手牌", null, true),
+						() => {
+							const uiintro = ui.create.dialog("hidden");
+							let added = false;
+							for (const current of game.players) {
+								if (current.side === game.me.side && current !== game.me) {
+									added = true;
+									uiintro.add(get.translation(current));
+									const cards = current.getCards("h");
+									if (cards.length) {
+										uiintro.addSmall(cards, true);
+									} else {
+										uiintro.add("（无）");
+									}
 								}
 							}
-						}
-						if (!added) {
-							uiintro.add("无队友");
-						}
-						return uiintro;
-					},
-					220
-				);
-			}
+							if (!added) {
+								uiintro.add("无队友");
+							}
+							return uiintro;
+						},
+						220
+					);
+				}
 
-			ui.create.me();
-			ui.create.fakeme();
+				ui.create.me();
+				ui.create.fakeme();
 
-			ui.chessinfo = ui.create.div(".fakeme.player", ui.me, function (e) {
-				e.stopPropagation();
-			});
-			ui.create.div(ui.chessinfo);
-			lib.setScroll(ui.chessinfo.firstChild);
+				ui.chessinfo = ui.create.div(".fakeme.player", ui.me, e => {
+					e.stopPropagation();
+				});
+				ui.create.div(ui.chessinfo);
+				lib.setScroll(ui.chessinfo.firstChild);
 
-			game.arrangePlayers();
-			"step 4";
-			ui.control.style.display = "";
-			if (event.video) {
-				game.playVideoContent(event.video);
-				game.setChessInfo();
-				return;
-			}
-			_status.videoInited = true;
-			game.addVideo("init", null, _status.mapname);
-			if (game.friendZhu) {
-				game.addVideo("identityText", game.friendZhu, "将");
-				game.addVideo("identityText", game.enemyZhu, "帅");
-				if (game.friendViceZhu) {
-					game.addVideo("identityText", game.friendViceZhu, "仕");
-					game.addVideo("identityText", game.enemyViceZhu, "士");
+				game.arrangePlayers();
+			},
+			async (event, trigger, player) => {
+				ui.control.style.display = "";
+				if (event.video) {
+					game.playVideoContent(event.video);
+					game.setChessInfo();
+					return;
 				}
-			}
-			if (event.obs) {
-				game.addVideo("initobs", null, event.obs);
-			}
+				_status.videoInited = true;
+				game.addVideo("init", null, _status.mapname);
+				if (game.friendZhu) {
+					game.addVideo("identityText", game.friendZhu, "将");
+					game.addVideo("identityText", game.enemyZhu, "帅");
+					if (game.friendViceZhu) {
+						game.addVideo("identityText", game.friendViceZhu, "仕");
+						game.addVideo("identityText", game.enemyViceZhu, "士");
+					}
+				}
+				if (event.obs) {
+					game.addVideo("initobs", null, event.obs);
+				}
 
-			ui.me.querySelector(".fakeme.player").hide();
-			ui.me.querySelector(".fakeme.avatar").hide();
+				ui.me.querySelector(".fakeme.player").hide();
+				ui.me.querySelector(".fakeme.avatar").hide();
 
-			var list = [];
-			for (i in lib.character) {
-				if (i.indexOf("treasure_") == 0) {
-					continue;
+				const list = [];
+				for (const i in lib.character) {
+					if (i.indexOf("treasure_") === 0) {
+						continue;
+					}
+					if (i.indexOf("tafang_mech_") === 0) {
+						continue;
+					}
+					if (lib.character[i].isMinskin) {
+						continue;
+					}
+					if (lib.config.forbidchess.includes(i)) {
+						continue;
+					}
+					if (lib.character[i].isBoss) {
+						continue;
+					}
+					if (lib.filter.characterDisabled(i)) {
+						continue;
+					}
+					list.push(i);
 				}
-				if (i.indexOf("tafang_mech_") == 0) {
-					continue;
-				}
-				if (lib.character[i].isMinskin) {
-					continue;
-				}
-				if (lib.config.forbidchess.includes(i)) {
-					continue;
-				}
-				if (lib.character[i].isBoss) {
-					continue;
-				}
-				if (lib.filter.characterDisabled(i)) {
-					continue;
-				}
-				list.push(i);
-			}
-			list.randomSort();
-			_status.characterList = list;
-			_status.friends = [];
-			_status.enemies = [];
-			_status.turnCount = 0;
-			_status.turnTotal = parseInt(get.config("tafang_turn"));
-			ui.turnCount = ui.create.system("", null, true);
-			_status.remainingCount = 0;
+				list.randomSort();
+				_status.characterList = list;
+				_status.friends = [];
+				_status.enemies = [];
+				_status.turnCount = 0;
+				_status.turnTotal = parseInt(get.config("tafang_turn"));
+				ui.turnCount = ui.create.system("", null, true);
+				_status.remainingCount = 0;
 
-			_status.tafangend = [];
-			for (var i = 0; i < ui.chesswidth; i++) {
-				var tafangdes = ui.chesswidth * (ui.chessheight - 1) + i;
-				if (!lib.posmap[tafangdes]) {
-					_status.tafangend.push(tafangdes.toString());
+				_status.tafangend = [];
+				for (let i = 0; i < ui.chesswidth; i++) {
+					const tafangdes = ui.chesswidth * (ui.chessheight - 1) + i;
+					if (!lib.posmap[tafangdes]) {
+						_status.tafangend.push(tafangdes.toString());
+					}
 				}
-			}
-			lib.init.onfree();
-			event.trigger("gameStart");
-			game.phaseLoopTafang();
-		},
+				lib.init.onfree();
+				event.trigger("gameStart");
+				game.phaseLoopTafang();
+			},
+		],
 		element: {
 			content: {
 				chessMechRemove() {
