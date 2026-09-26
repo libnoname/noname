@@ -2859,8 +2859,9 @@ const skills = {
 		limited: true,
 		skillAnimation: true,
 		animationColor: "orange",
+		manualConfirm: true,
 		async content(event, trigger, player) {
-			player.awakenSkill(event.name, true);
+			player.awakenSkill(event.name);
 			await player.recoverTo(player.maxHp);
 			await player.draw(5);
 		},
