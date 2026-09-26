@@ -1400,123 +1400,96 @@ export default {
 	gzchenjian: {
 		audio: "chenjian",
 		trigger: { player: "phaseZhunbeiBegin" },
-		content() {
-			"step 0";
-			var cards = get.cards(3);
+		async content(event, trigger, player) {
+			const cards = get.cards(3);
 			event.cards = cards;
-			player.showCards(cards, get.translation(player) + "发动了【陈见】");
-			"step 1";
-			var list = [];
-			if (
-				player.countCards("he", i => {
-					return lib.filter.cardDiscardable(i, player, "gzchenjian");
-				})
-			) {
+			await player.showCards(cards, `${get.translation(player)}发动了【陈见】`);
+			const list = [];
+			if (player.hasCards("he", i => lib.filter.cardDiscardable(i, player, "gzchenjian"))) {
 				list.push("选项一");
 			}
-			if (
-				event.cards.some(i => {
-					return player.hasUseTarget(i);
-				})
-			) {
+			if (cards.some(i => player.hasUseTarget(i))) {
 				list.push("选项二");
 			}
+			if (!list.length) {
+				return;
+			}
+			let control;
 			if (list.length === 1) {
-				event._result = { control: list[0] };
-			} else if (list.length > 1) {
-				player
-					.chooseControl(list)
-					.set("choiceList", ["弃置一张牌，然后令一名角色获得与你弃置牌花色相同的牌", "使用" + get.translation(event.cards) + "中的一张牌"])
-					.set("prompt", "陈见：请选择一项")
-					.set("ai", () => {
-						let player = _status.event.player,
-							cards = _status.event.getParent().cards;
-						if (
-							cards.some(i => {
-								return player.getUseValue(i) > 0;
-							})
-						) {
+				control = list[0];
+			} else {
+				const result = await player.chooseControl({
+					controls: list,
+					choiceList: ["弃置一张牌，然后令一名角色获得与你弃置牌花色相同的牌", `使用${get.translation(cards)}中的一张牌`],
+					prompt: "陈见：请选择一项",
+					ai: () => {
+						const current = _status.event.player;
+						const shownCards = _status.event.getParent().cards;
+						if (shownCards.some(i => current.getUseValue(i) > 0)) {
 							return "选项二";
 						}
 						return "选项一";
-					});
-			} else {
-				event.finish();
+					},
+				}).forResult();
+				control = result.control;
 			}
-			"step 2";
-			event.choosed = result.control;
-			if (result.control === "cancel2") {
-				event.finish();
-			} else if (result.control === "选项二") {
-				event.goto(6);
+			if (control === "cancel2") {
+				return;
 			}
-			"step 3";
-			if (
-				player.countCards("he", i => {
-					return lib.filter.cardDiscardable(i, player, "chenjian");
-				})
-			) {
-				player
-					.chooseToDiscard("he", true)
-					.set("ai", function (card) {
-						let evt = _status.event.getParent(),
-							val = evt.player.countMark("chenjian") < 2 ? 0 : -get.value(card),
-							suit = get.suit(card);
-						for (let i of evt.cards) {
-							if (get.suit(i, false) == suit) {
-								val += get.value(i, "raw");
+			if (control === "选项一" && player.hasCards("he", i => lib.filter.cardDiscardable(i, player, "chenjian"))) {
+				const discardResult = await player.chooseToDiscard({
+					position: "he",
+					forced: true,
+					ai: card => {
+						const evt = _status.event.getParent();
+						let val = evt.player.countMark("chenjian") < 2 ? 0 : -get.value(card);
+						const suit = get.suit(card);
+						for (const shownCard of evt.cards) {
+							if (get.suit(shownCard, false) === suit) {
+								val += get.value(shownCard, "raw");
 							}
 						}
 						return val;
-					})
-					.set("prompt", "陈见：请弃置一张牌，然后令一名角色获得" + get.translation(event.cards) + "中花色与之相同的牌" + (event.goon ? "？" : ""));
-			} else if (event.choosed === "选项一") {
-				event.goto(6);
-			} else {
-				event.finish();
-			}
-			"step 4";
-			if (result.bool) {
-				var suit = get.suit(result.cards[0], player);
-				var cards2 = event.cards.filter(function (i) {
-					return get.suit(i, false) == suit;
-				});
-				if (cards2.length) {
-					event.cards2 = cards2;
-					player.chooseTarget(true, "选择一名角色获得" + get.translation(cards2)).set("ai", function (target) {
-						var att = get.attitude(_status.event.player, target);
-						if (att > 0) {
-							return att + Math.max(0, 5 - target.countCards("h"));
-						}
-						return att;
-					});
-				} else {
-					event.finish();
+					},
+					prompt: `陈见：请弃置一张牌，然后令一名角色获得${get.translation(cards)}中花色与之相同的牌${event.goon ? "？" : ""}`,
+				}).forResult();
+				if (!discardResult.bool) {
+					return;
 				}
-			} else {
-				event.finish();
+				const suit = get.suit(discardResult.cards[0], player);
+				const matchingCards = cards.filter(i => get.suit(i, false) === suit);
+				if (!matchingCards.length) {
+					return;
+				}
+				const targetResult = await player.chooseTarget({
+					forced: true,
+					prompt: `选择一名角色获得${get.translation(matchingCards)}`,
+					ai: target => {
+						const att = get.attitude(_status.event.player, target);
+						return att > 0 ? att + Math.max(0, 5 - target.countCards("h")) : att;
+					},
+				}).forResult();
+				if (targetResult.bool) {
+					const target = targetResult.targets[0];
+					player.line(target, "green");
+					await target.gain({ cards: matchingCards, animate: "gain2" });
+				}
+				return;
 			}
-			"step 5";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.line(target, "green");
-				target.gain(event.cards2, "gain2");
+			if (control !== "选项一" && control !== "选项二") {
+				return;
 			}
-			event.finish();
-			"step 6";
-			var cards2 = cards.filter(function (i) {
-				return player.hasUseTarget(i);
-			});
-			if (cards2.length) {
-				player.chooseButton(["陈见：" + (event.goon ? "是否" : "请") + "使用其中一张牌" + (event.goon ? "？" : ""), cards2], !event.goon).set("ai", function (button) {
-					return player.getUseValue(button.link);
-				});
-			} else {
-				event.finish();
+			const usableCards = cards.filter(i => player.hasUseTarget(i));
+			if (!usableCards.length) {
+				return;
 			}
-			"step 7";
-			if (result.bool) {
-				player.chooseUseTarget(true, result.links[0], false);
+			const buttonResult = await player.chooseButton({
+				createDialog: [`陈见：${event.goon ? "是否" : "请"}使用其中一张牌${event.goon ? "？" : ""}`, usableCards],
+				forced: !event.goon,
+				ai: button => player.getUseValue(button.link),
+			}).forResult();
+			if (buttonResult.bool) {
+				await player.chooseUseTarget({ forced: true, card: buttonResult.links[0], addCount: false });
 			}
 		},
 	},
