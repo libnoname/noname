@@ -5251,13 +5251,9 @@ export default () => {
 				trigger: { player: "phaseEnd" },
 				forced: true,
 				unique: true,
-				content() {
-					"step 0";
-					event.players = get.players(player);
-					"step 1";
-					if (event.players.length) {
-						event.players.shift().damage("fire");
-						event.redo();
+				async content(event, trigger, player) {
+					for (const target of get.players(player)) {
+						await target.damage({ nature: "fire" });
 					}
 				},
 			},
