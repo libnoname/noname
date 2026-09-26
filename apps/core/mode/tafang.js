@@ -280,15 +280,15 @@ export default () => {
 		],
 		element: {
 			content: {
-				chessMechRemove() {
+				async chessMechRemove(event, trigger, player) {
 					game.treasures.remove(player);
-					setTimeout(function () {
+					setTimeout(() => {
 						player.delete();
 					}, 500);
 					delete lib.posmap[player.dataset.position];
 					game.addVideo("deleteChessPlayer", player);
 					game.addObstacle(player.dataset.position);
-					game.log(get.translation(player) + "使用期限已到");
+					game.log(`${get.translation(player)}使用期限已到`);
 				},
 			},
 			player: {
@@ -841,267 +841,273 @@ export default () => {
 				]);
 			},
 			loadMap() {
-				var next = game.createEvent("loadMap");
-				next.setContent(function () {
-					if (!lib.storage.map) {
-						lib.storage.map = ["basic_small", "basic_medium", "basic_large"];
-					}
-					if (!lib.storage.newmap) {
-						lib.storage.newmap = [];
-					}
-					var sceneview = ui.create.div(".storyscene");
-					if (!lib.config.touchscreen && lib.config.mousewheel) {
-						sceneview._scrollspeed = 30;
-						sceneview._scrollnum = 10;
-						sceneview.onmousewheel = function () {
-							if (!this.classList.contains("lockscroll")) {
-								ui.click.mousewheel.apply(this, arguments);
-							}
-						};
-					}
-					lib.setScroll(sceneview);
-					var switchScene = function () {
-						event.result = this.link;
-						sceneview.delete();
-						setTimeout(game.resume, 300);
-					};
-					var clickScene = function (e) {
-						if (this.classList.contains("unselectable")) {
-							return;
+				const next = game.createEvent("loadMap");
+				next.setContent([
+					async (event, trigger, player) => {
+						if (!lib.storage.map) {
+							lib.storage.map = ["basic_small", "basic_medium", "basic_large"];
 						}
-						if (this._clicking) {
-							return;
+						if (!lib.storage.newmap) {
+							lib.storage.newmap = [];
 						}
-						if (e && e.stopPropagation) {
-							e.stopPropagation();
-						}
-						if (this.classList.contains("flipped")) {
-							return;
-						}
-						if (this.classList.contains("glow3")) {
-							this.classList.remove("glow3");
-							lib.storage.newmap.remove(this.name);
-							game.save("newmap", lib.storage.newmap);
-						}
-						var sceneNode = this.parentNode;
-						var current = document.querySelector(".flipped.scene");
-						if (current) {
-							restoreScene(current, true);
-						}
-						this.content.innerHTML = "";
-						ui.create.div(".menubutton.large.enter", "进入", this.content, switchScene).link = this.name;
-						sceneNode.classList.add("lockscroll");
-						var node = this;
-						node._clicking = true;
-						setTimeout(function () {
-							node._clicking = false;
-						}, 700);
-						sceneNode.dx = ui.window.offsetWidth / 2 - (-sceneNode.scrollLeft + this.offsetLeft + this.offsetWidth / 2);
-						if (Math.abs(sceneNode.dx) < 20) {
-							sceneNode.dx = 0;
-						}
-						if (!sceneNode.sceneInterval && sceneNode.dx) {
-							sceneNode.sceneInterval = setInterval(function () {
-								var dx = sceneNode.dx;
-								if (Math.abs(dx) <= 2) {
-									sceneNode.scrollLeft -= dx;
-									clearInterval(sceneNode.sceneInterval);
-									delete sceneNode.sceneInterval;
-								} else {
-									var ddx = (dx / Math.sqrt(Math.abs(dx))) * 1.5;
-									sceneNode.scrollLeft -= ddx;
-									sceneNode.dx -= ddx;
+						const sceneview = ui.create.div(".storyscene");
+						if (!lib.config.touchscreen && lib.config.mousewheel) {
+							sceneview._scrollspeed = 30;
+							sceneview._scrollnum = 10;
+							sceneview.onmousewheel = function () {
+								if (!this.classList.contains("lockscroll")) {
+									ui.click.mousewheel.apply(this, arguments);
 								}
-							}, 16);
+							};
 						}
-						node.style.transition = "all ease-in 0.2s";
-						node.style.transform = "perspective(1600px) rotateY(90deg) scale(0.75)";
-						var onEnd = function () {
-							node.removeEventListener("webkitTransitionEnd", onEnd);
-							node.classList.add("flipped");
+						lib.setScroll(sceneview);
+						const switchScene = function () {
+							event.result = this.link;
+							sceneview.delete();
+							setTimeout(game.resume, 300);
+						};
+						const clickScene = function (e) {
+							if (this.classList.contains("unselectable")) {
+								return;
+							}
+							if (this._clicking) {
+								return;
+							}
+							if (e && e.stopPropagation) {
+								e.stopPropagation();
+							}
+							if (this.classList.contains("flipped")) {
+								return;
+							}
+							if (this.classList.contains("glow3")) {
+								this.classList.remove("glow3");
+								lib.storage.newmap.remove(this.name);
+								game.save("newmap", lib.storage.newmap);
+							}
+							const sceneNode = this.parentNode;
+							const current = document.querySelector(".flipped.scene");
+							if (current) {
+								restoreScene(current, true);
+							}
+							this.content.innerHTML = "";
+							ui.create.div(".menubutton.large.enter", "进入", this.content, switchScene).link = this.name;
 							sceneNode.classList.add("lockscroll");
-							node.style.transition = "all ease-out 0.4s";
-							node.style.transform = "perspective(1600px) rotateY(180deg) scale(1)";
-						};
-						node.listenTransition(onEnd);
-					};
-					ui.click.scene = clickScene;
-					var restoreScene = function (node, forced) {
-						if (node._clicking && !forced) {
-							return;
-						}
-						if (node.transformInterval) {
-							clearInterval(node.transformInterval);
-							delete node.transformInterval;
-						}
-						var sceneNode = node.parentNode;
-						node._clicking = true;
-						setTimeout(function () {
-							node._clicking = false;
-						}, 700);
-						node.style.transition = "all ease-in 0.2s";
-						node.style.transform = "perspective(1600px) rotateY(90deg) scale(0.75)";
-						var onEnd = function () {
-							node.removeEventListener("webkitTransitionEnd", onEnd);
-							node.classList.remove("flipped");
-							if (!sceneNode.querySelector(".flipped")) {
-								sceneNode.classList.remove("lockscroll");
+							const node = this;
+							node._clicking = true;
+							setTimeout(() => {
+								node._clicking = false;
+							}, 700);
+							sceneNode.dx = ui.window.offsetWidth / 2 - (-sceneNode.scrollLeft + this.offsetLeft + this.offsetWidth / 2);
+							if (Math.abs(sceneNode.dx) < 20) {
+								sceneNode.dx = 0;
 							}
-							node.style.transition = "all ease-out 0.4s";
+							if (!sceneNode.sceneInterval && sceneNode.dx) {
+								sceneNode.sceneInterval = setInterval(() => {
+									const dx = sceneNode.dx;
+									if (Math.abs(dx) <= 2) {
+										sceneNode.scrollLeft -= dx;
+										clearInterval(sceneNode.sceneInterval);
+										delete sceneNode.sceneInterval;
+									} else {
+										const ddx = (dx / Math.sqrt(Math.abs(dx))) * 1.5;
+										sceneNode.scrollLeft -= ddx;
+										sceneNode.dx -= ddx;
+									}
+								}, 16);
+							}
+							node.style.transition = "all ease-in 0.2s";
+							node.style.transform = "perspective(1600px) rotateY(90deg) scale(0.75)";
+							const onEnd = () => {
+								node.removeEventListener("webkitTransitionEnd", onEnd);
+								node.classList.add("flipped");
+								sceneNode.classList.add("lockscroll");
+								node.style.transition = "all ease-out 0.4s";
+								node.style.transform = "perspective(1600px) rotateY(180deg) scale(1)";
+							};
+							node.listenTransition(onEnd);
+						};
+						ui.click.scene = clickScene;
+						const restoreScene = (node, forced) => {
+							if (node._clicking && !forced) {
+								return;
+							}
+							if (node.transformInterval) {
+								clearInterval(node.transformInterval);
+								delete node.transformInterval;
+							}
+							const sceneNode = node.parentNode;
+							node._clicking = true;
+							setTimeout(() => {
+								node._clicking = false;
+							}, 700);
+							node.style.transition = "all ease-in 0.2s";
+							node.style.transform = "perspective(1600px) rotateY(90deg) scale(0.75)";
+							const onEnd = () => {
+								node.removeEventListener("webkitTransitionEnd", onEnd);
+								node.classList.remove("flipped");
+								if (!sceneNode.querySelector(".flipped")) {
+									sceneNode.classList.remove("lockscroll");
+								}
+								node.style.transition = "all ease-out 0.4s";
+								node.style.transform = "perspective(1600px) rotateY(0deg) scale(0.7)";
+							};
+							node.listenTransition(onEnd);
+						};
+						ui.click.scene2 = restoreScene;
+						const createScene = name => {
+							const scene = lib.tafang.map[name];
+							const node = ui.create.div(".scene", clickScene);
 							node.style.transform = "perspective(1600px) rotateY(0deg) scale(0.7)";
-						};
-						node.listenTransition(onEnd);
-					};
-					ui.click.scene2 = restoreScene;
-					var createScene = function (name) {
-						var scene = lib.tafang.map[name];
-						var node = ui.create.div(".scene", clickScene);
-						node.style.transform = "perspective(1600px) rotateY(0deg) scale(0.7)";
-						node.name = name;
-						node.bgnode = ui.create.div(".background.player", node);
-						node.info = scene;
-						ui.create.div(".avatar.menu", node.bgnode);
-						node.namenode = ui.create.div(".name", node, scene.name);
-						if (lib.storage.map.includes(name)) {
-							if (lib.storage.newmap.includes(name)) {
-								node.classList.add("glow3");
+							node.name = name;
+							node.bgnode = ui.create.div(".background.player", node);
+							node.info = scene;
+							ui.create.div(".avatar.menu", node.bgnode);
+							node.namenode = ui.create.div(".name", node, scene.name);
+							if (lib.storage.map.includes(name)) {
+								if (lib.storage.newmap.includes(name)) {
+									node.classList.add("glow3");
+								}
+								node.namenode.dataset.nature = "soilm";
+							} else {
+								node.classList.add("unselectable");
+								node.namenode.innerHTML = "未开启";
 							}
-							node.namenode.dataset.nature = "soilm";
-						} else {
-							node.classList.add("unselectable");
-							node.namenode.innerHTML = "未开启";
+							const content = ui.create.div(".menu", node);
+							lib.setScroll(content);
+							node.content = content;
+							sceneview.appendChild(node);
+							return node;
+						};
+						event.custom.add.window = () => {
+							const current = document.querySelector(".flipped.scene");
+							if (current) {
+								restoreScene(current);
+							}
+						};
+						for (const i in lib.tafang.map) {
+							createScene(i);
 						}
-						var content = ui.create.div(".menu", node);
-						lib.setScroll(content);
-						node.content = content;
-						sceneview.appendChild(node);
-						return node;
-					};
-					event.custom.add.window = function () {
-						var current = document.querySelector(".flipped.scene");
-						if (current) {
-							restoreScene(current);
-						}
-					};
-					for (var i in lib.tafang.map) {
-						createScene(i);
-					}
-					ui.window.appendChild(sceneview.addTempClass("start"));
-					game.pause();
-				});
+						ui.window.appendChild(sceneview.addTempClass("start"));
+						game.pause();
+					},
+				]);
 			},
 		},
 		skill: {
 			tafang_mech_weixingxianjing_skill: {
 				filter(player) {
-					for (var i = 0; i < _status.enemies.length; i++) {
-						if (!_status.enemies[i].isTurnedOver() && get.chessDistance(player, _status.enemies[i]) <= 2) {
+					for (const current of _status.enemies) {
+						if (!current.isTurnedOver() && get.chessDistance(player, current) <= 2) {
 							return true;
 						}
 					}
 					return false;
 				},
-				content() {
-					var list = [];
-					for (var i = 0; i < _status.enemies.length; i++) {
-						if (!_status.enemies[i].isTurnedOver() && get.chessDistance(player, _status.enemies[i]) <= 2) {
-							list.push(_status.enemies[i]);
+				async content(event, trigger, player) {
+					const list = [];
+					for (const current of _status.enemies) {
+						if (!current.isTurnedOver() && get.chessDistance(player, current) <= 2) {
+							list.push(current);
 						}
 					}
 					if (list.length) {
 						game.log("小型陷阱发动");
-						var target = list.randomGet();
-						target.turnOver();
+						const target = list.randomGet();
+						const turnOver = target.turnOver();
 						game.logv(player, "tafang_mech_weixingxianjing_skill", [target]).node.text.style.display = "none";
 						player.line(target, "green");
+						await turnOver;
 					}
 				},
 			},
 			tafang_mech_nengliangqiu_skill: {
 				filter(player) {
-					for (var i = 0; i < _status.friends.length; i++) {
-						if (get.chessDistance(player, _status.friends[i]) <= 3) {
+					for (const current of _status.friends) {
+						if (get.chessDistance(player, current) <= 3) {
 							return true;
 						}
 					}
 					return false;
 				},
-				content() {
-					var list1 = [],
-						list2 = [];
-					for (var i = 0; i < _status.friends.length; i++) {
-						if (get.chessDistance(player, _status.friends[i]) <= 1) {
-							list2.push(_status.friends[i]);
-						} else if (get.chessDistance(player, _status.friends[i]) <= 3) {
-							list1.push(_status.friends[i]);
+				async content(event, trigger, player) {
+					const list1 = [];
+					const list2 = [];
+					for (const current of _status.friends) {
+						if (get.chessDistance(player, current) <= 1) {
+							list2.push(current);
+						} else if (get.chessDistance(player, current) <= 3) {
+							list1.push(current);
 						}
-						// else if(get.chessDistance(player,_status.friends[i])<=4){
-						// 	list2.push(_status.friends[i]);
+						// else if(get.chessDistance(player,current)<=4){
+						// 	list2.push(current);
 						// }
 					}
+					const draws = [];
 					if (list2.length) {
-						game.asyncDraw(list2, 2);
+						draws.push(game.asyncDraw(list2, 2));
 						player.line(list2, "green");
 					}
 					if (list1.length) {
-						game.asyncDraw(list1);
+						draws.push(game.asyncDraw(list1));
 						player.line(list1, "green");
 					}
 					if (list1.length || list2.length) {
 						game.log("能量球发动");
 						game.logv(player, "tafang_mech_nengliangqiu_skill", list1.concat(list2)).node.text.style.display = "none";
 					}
+					await Promise.all(draws);
 				},
 			},
 			tafang_mech_mutong_skill: {
 				filter(player) {
-					for (var i = 0; i < _status.enemies.length; i++) {
-						if (get.chessDistance(player, _status.enemies[i]) <= 3) {
+					for (const current of _status.enemies) {
+						if (get.chessDistance(player, current) <= 3) {
 							return true;
 						}
 					}
 					return false;
 				},
-				content() {
-					var list = [];
-					for (var i = 0; i < _status.enemies.length; i++) {
-						if (get.chessDistance(player, _status.enemies[i]) <= 3) {
-							list.push(_status.enemies[i]);
+				async content(event, trigger, player) {
+					const list = [];
+					for (const current of _status.enemies) {
+						if (get.chessDistance(player, current) <= 3) {
+							list.push(current);
 						}
 					}
 					if (list.length) {
 						game.log("木桶发动");
-						var targets = list.randomGets(1);
+						const targets = list.randomGets(1);
 						game.logv(player, "tafang_mech_mutong_skill", targets).node.text.style.display = "none";
 						player.line(targets, "green");
-						for (var i = 0; i < targets.length; i++) {
-							targets[i].damage("nosource");
+						for (const target of targets) {
+							await target.damage({ nosource: true });
 						}
 					}
 				},
 			},
 			tafang_mech_guangmingquan_skill: {
 				filter(player) {
-					for (var i = 0; i < _status.friends.length; i++) {
-						if (_status.friends[i].hp < _status.friends[i].maxHp && get.chessDistance(player, _status.friends[i]) <= 2) {
+					for (const current of _status.friends) {
+						if (current.hp < current.maxHp && get.chessDistance(player, current) <= 2) {
 							return true;
 						}
 					}
 					return false;
 				},
-				content() {
-					var list = [];
-					for (var i = 0; i < _status.friends.length; i++) {
-						if (_status.friends[i].hp < _status.friends[i].maxHp && get.chessDistance(player, _status.friends[i]) <= 2) {
-							list.push(_status.friends[i]);
+				async content(event, trigger, player) {
+					const list = [];
+					for (const current of _status.friends) {
+						if (current.hp < current.maxHp && get.chessDistance(player, current) <= 2) {
+							list.push(current);
 						}
 					}
 					if (list.length) {
 						game.log("光明泉发动");
 						player.line(list, "green");
 						game.logv(player, "tafang_mech_guangmingquan_skill", list.slice(0)).node.text.style.display = "none";
-						while (list.length) {
-							list.shift().recover();
+						const recoveries = list.map(target => target.recover());
+						for (const recovery of recoveries) {
+							await recovery;
 						}
 					}
 				},
@@ -1138,30 +1144,35 @@ export default () => {
 			},
 			tafang_mech_gongchengche_skill: {
 				filter(player) {
-					for (var i = 0; i < _status.enemies.length; i++) {
-						if (get.chessDistance(player, _status.enemies[i]) <= 2) {
+					for (const current of _status.enemies) {
+						if (get.chessDistance(player, current) <= 2) {
 							return true;
 						}
 					}
 					return false;
 				},
-				content() {
-					var list = [];
-					for (var i = 0; i < _status.enemies.length; i++) {
-						if (get.chessDistance(player, _status.enemies[i]) <= 2) {
-							list.push(_status.enemies[i]);
+				async content(event, trigger, player) {
+					const list = [];
+					for (const current of _status.enemies) {
+						if (get.chessDistance(player, current) <= 2) {
+							list.push(current);
 						}
 					}
 					if (list.length) {
 						game.log("攻城车发动");
-						var target = list.randomGet();
+						const target = list.randomGet();
 						player.line(target, "fire");
-						target.damage("fire", "nosource");
-						var he = target.getCards("he");
+						const damage = target.damage({ nature: "fire", nosource: true });
+						const he = target.getCards("he");
+						let discard;
 						if (he.length) {
-							target.discard(he.randomGet());
+							discard = target.discard({ cards: [he.randomGet()] });
 						}
 						game.logv(player, "tafang_mech_gongchengche_skill", [target]).node.text.style.display = "none";
+						await damage;
+						if (discard) {
+							await discard;
+						}
 					}
 				},
 			},
