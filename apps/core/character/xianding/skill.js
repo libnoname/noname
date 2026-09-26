@@ -2691,7 +2691,7 @@ const skills = {
 			if (!user?.isIn()) {
 				return;
 			}
-			user.addTempSkill("dcsbyouyi_sha");
+			user.addTempSkill("dcsbyouyi_sha", "phaseAnyAfter");
 			user.addMark("dcsbyouyi_sha", 1, false);
 			const control = event.cost_data;
 			if (control === "弃置牌") {
