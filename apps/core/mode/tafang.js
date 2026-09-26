@@ -362,471 +362,483 @@ export default () => {
 				dialog.classList.add("center");
 			},
 			phaseLoopTafang() {
-				var next = game.createEvent("phaseLoop");
-				next.setContent(function () {
-					"step 0";
-					delete _status.roundStart;
-					_status.turnCount++;
-					_status.remainingCount -= _status.friends.length;
-					ui.turnCount.innerHTML = "回合" + get.cnNumber(_status.turnCount, true);
-					var dialog = ui.create.dialog("剩余行动点：" + (10 + _status.remainingCount), "hidden");
-					dialog.style.height = "260px";
-					dialog.style.maxHeight = "260px";
-					dialog.style.top = "calc(50% - 160px)";
-					dialog.classList.add("center");
-					dialog.classList.add("noupdate");
-					dialog.classList.add("fixed");
-					event.dialog = dialog;
-					var list = _status.characterList.splice(0, 6);
-					list.sort(function (a, b) {
-						return get.rank(a, true) - get.rank(b, true);
-					});
-					var map = {};
-					var mechlist = lib.mechlist.randomGets(6);
-					mechlist.sort(function (a, b) {
-						return lib.character[a][5] - lib.character[b][5];
-					});
-					map.bufang = ui.create.buttons(mechlist, "character", dialog.content);
-					var difficulty = parseInt(get.config("tafang_difficulty"));
-					for (var i = 0; i < map.bufang.length; i++) {
-						var button = map.bufang[i];
-						// button.node.name.style.top='8px';
-						button.node.intro.classList.add("showintro");
-						button.node.intro.classList.add("tafang");
-						button.count = difficulty + lib.character[button.link][5] - 2;
-						button.node.intro.innerHTML = get.cnNumber(button.count, true);
-						button._link = "布防";
-					}
-					map.zhaomu = ui.create.buttons(list, "character", dialog.content);
-					for (var i = 0; i < map.zhaomu.length; i++) {
-						var button = map.zhaomu[i];
-						if (lib.config.buttoncharacter_style == "default") {
-							button.node.group.style.display = "none";
-						}
-						button.node.intro.classList.add("showintro");
-						button.node.intro.classList.add("tafang");
-						button.count = difficulty + get.rank(button.link, 3.9) + 3;
-						button.node.intro.innerHTML = get.cnNumber(button.count, true);
-						button._link = "招募";
-					}
-					if (_status.friends.length) {
-						map.xingdong = ui.create.buttons(_status.friends, "player", dialog.content);
-						for (var i = 0; i < map.xingdong.length; i++) {
-							var button = map.xingdong[i];
+				const next = game.createEvent("phaseLoop");
+				next.setContent([
+					async (event, trigger, player) => {
+						delete _status.roundStart;
+						_status.turnCount++;
+						_status.remainingCount -= _status.friends.length;
+						ui.turnCount.innerHTML = `回合${get.cnNumber(_status.turnCount, true)}`;
+						const dialog = ui.create.dialog(`剩余行动点：${10 + _status.remainingCount}`, "hidden");
+						dialog.style.height = "260px";
+						dialog.style.maxHeight = "260px";
+						dialog.style.top = "calc(50% - 160px)";
+						dialog.classList.add("center");
+						dialog.classList.add("noupdate");
+						dialog.classList.add("fixed");
+						event.dialog = dialog;
+						const list = _status.characterList.splice(0, 6);
+						list.sort((a, b) => {
+							return get.rank(a, true) - get.rank(b, true);
+						});
+						const map = {};
+						const mechlist = lib.mechlist.randomGets(6);
+						mechlist.sort((a, b) => {
+							return lib.character[a][5] - lib.character[b][5];
+						});
+						map.bufang = ui.create.buttons(mechlist, "character", dialog.content);
+						const difficulty = parseInt(get.config("tafang_difficulty"));
+						for (const button of map.bufang) {
+							// button.node.name.style.top='8px';
 							button.node.intro.classList.add("showintro");
 							button.node.intro.classList.add("tafang");
-							if (difficulty < 2) {
-								button.count = 1;
-							} else {
-								button.count = 2;
-							}
+							button.count = difficulty + lib.character[button.link][5] - 2;
 							button.node.intro.innerHTML = get.cnNumber(button.count, true);
-							button._link = "行动";
+							button._link = "布防";
 						}
-					} else {
-						map.xingdong = [];
-					}
-					var updateSelected = function () {
-						var count = 10 + _status.remainingCount;
-						var selected = dialog.querySelectorAll(".button.selected");
-						var selectedZhaomu = 0;
-						for (var i = 0; i < selected.length; i++) {
-							count -= selected[i].count;
-							if (selected[i]._link == "招募") {
-								selectedZhaomu++;
+						map.zhaomu = ui.create.buttons(list, "character", dialog.content);
+						for (const button of map.zhaomu) {
+							if (lib.config.buttoncharacter_style === "default") {
+								button.node.group.style.display = "none";
 							}
+							button.node.intro.classList.add("showintro");
+							button.node.intro.classList.add("tafang");
+							button.count = difficulty + get.rank(button.link, 3.9) + 3;
+							button.node.intro.innerHTML = get.cnNumber(button.count, true);
+							button._link = "招募";
 						}
-						for (var i in map) {
-							for (var j = 0; j < map[i].length; j++) {
-								map[i][j].classList.remove("unselectable");
-								map[i][j].classList.add("pointerdiv");
-								if (map[i][j].count > count) {
-									map[i][j].classList.add("unselectable");
-								} else if (i == "zhaomu" && _status.friends.length + selectedZhaomu >= 5) {
-									map[i][j].classList.add("unselectable");
-								} else if (i == "bufang") {
-									var numbufang = 0;
-									for (var k = 0; k < game.treasures.length; k++) {
-										if (game.treasures[k].name == map[i][j].link) {
-											numbufang++;
-										}
-										if (numbufang >= 3) {
-											map[i][j].classList.add("unselectable");
-											break;
+						if (_status.friends.length) {
+							map.xingdong = ui.create.buttons(_status.friends, "player", dialog.content);
+							for (const button of map.xingdong) {
+								button.node.intro.classList.add("showintro");
+								button.node.intro.classList.add("tafang");
+								if (difficulty < 2) {
+									button.count = 1;
+								} else {
+									button.count = 2;
+								}
+								button.node.intro.innerHTML = get.cnNumber(button.count, true);
+								button._link = "行动";
+							}
+						} else {
+							map.xingdong = [];
+						}
+						const updateSelected = () => {
+							let count = 10 + _status.remainingCount;
+							const selected = dialog.querySelectorAll(".button.selected");
+							let selectedZhaomu = 0;
+							for (const button of selected) {
+								count -= button.count;
+								if (button._link === "招募") {
+									selectedZhaomu++;
+								}
+							}
+							for (const i in map) {
+								for (const button of map[i]) {
+									button.classList.remove("unselectable");
+									button.classList.add("pointerdiv");
+									if (button.count > count) {
+										button.classList.add("unselectable");
+									} else if (i === "zhaomu" && _status.friends.length + selectedZhaomu >= 5) {
+										button.classList.add("unselectable");
+									} else if (i === "bufang") {
+										let numbufang = 0;
+										for (const treasure of game.treasures) {
+											if (treasure.name === button.link) {
+												numbufang++;
+											}
+											if (numbufang >= 3) {
+												button.classList.add("unselectable");
+												break;
+											}
 										}
 									}
 								}
 							}
-						}
-						ui.dialog.content.firstChild.innerHTML = "剩余行动点：" + count;
-					};
-					var clickOrder = 0;
-					event.custom.replace.button = function (button) {
-						if (!button.classList.contains("unselectable") || button.classList.contains("selected")) {
-							button.classList.toggle("selected");
-							button._clickOrder = clickOrder++;
-						}
-						updateSelected();
-					};
-					event.custom.add.window = function (clicked) {
-						if (clicked) {
-							return;
-						}
-						if (event.step > 1) {
-							return;
-						}
-						for (var i in map) {
-							for (var j = 0; j < map[i].length; j++) {
-								map[i][j].classList.remove("selected");
-								map[i][j].classList.remove("unselectable");
+							ui.dialog.content.firstChild.innerHTML = `剩余行动点：${count}`;
+						};
+						let clickOrder = 0;
+						event.custom.replace.button = button => {
+							if (!button.classList.contains("unselectable") || button.classList.contains("selected")) {
+								button.classList.toggle("selected");
+								button._clickOrder = clickOrder++;
 							}
-						}
-						updateSelected();
-					};
-					var update = function (link) {
-						for (var i in map) {
-							for (var j = 0; j < map[i].length; j++) {
-								if (map[i][j]._link != link) {
-									map[i][j].style.display = "none";
-								} else {
-									map[i][j].style.display = "";
+							updateSelected();
+						};
+						event.custom.add.window = clicked => {
+							if (clicked) {
+								return;
+							}
+							if (event.step > 1) {
+								return;
+							}
+							for (const i in map) {
+								for (const button of map[i]) {
+									button.classList.remove("selected");
+									button.classList.remove("unselectable");
 								}
 							}
-						}
-						for (var i = 0; i < event.control.childNodes.length; i++) {
-							if (event.control.childNodes[i].innerHTML == link) {
-								event.control.childNodes[i].classList.add("thundertext");
+							updateSelected();
+						};
+						const update = link => {
+							for (const i in map) {
+								for (const button of map[i]) {
+									if (button._link !== link) {
+										button.style.display = "none";
+									} else {
+										button.style.display = "";
+									}
+								}
 							}
-						}
-						_status.lastTafangCommand = link;
-					};
-					event.control = ui.create.control("布防", "招募", function (link, node) {
-						if (node.disabled) {
-							return;
-						}
-						var current = node.parentNode.querySelector(".thundertext");
-						if (current == node) {
-							return;
-						}
-						if (current) {
-							current.classList.remove("thundertext");
-						}
-						update(link);
-					});
-					// if(!_status.friends.length){
-					// 	event.control.lastChild.style.opacity=0.5;
-					// 	if(_status.lastTafangCommand=='行动'){
-					// 		_status.lastTafangCommand='招募';
-					// 	}
-					// }
-					if (_status.friends.length >= 5) {
-						event.control.childNodes[1].style.opacity = 0.5;
-						event.control.childNodes[1].disabled = true;
-						if (_status.lastTafangCommand == "招募") {
-							_status.lastTafangCommand = "布防";
-						}
-					}
-					_status.imchoosing = true;
-					ui.auto.hide();
-					var eventdong = function () {
-						var selected = dialog.querySelectorAll(".button.selected");
-						event.bufang = [];
-						event.zhaomu = [];
-						event.currentPlayers = [];
-						event.xingdong = _status.friends.slice(0);
-						// var xingdongs=[];
-						_status.remainingCount += 10;
-						for (var i = 0; i < selected.length; i++) {
-							switch (selected[i]._link) {
-								case "布防":
-									event.bufang.push(selected[i].link);
-									break;
-								case "招募":
-									event.zhaomu.push(selected[i].link);
-									break;
-								// case '行动':xingdongs.push(selected[i]);break;
+							for (const node of event.control.childNodes) {
+								if (node.innerHTML === link) {
+									node.classList.add("thundertext");
+								}
 							}
-							_status.remainingCount -= selected[i].count;
-						}
-						_status.remainingCount = Math.floor(_status.remainingCount / 2);
-						// xingdongs.sort(function(a,b){
-						// 	return a._clickOrder-b._clickOrder;
-						// });
-						// for(var i=0;i<xingdongs.length;i++){
-						// 	event.xingdong.push(xingdongs[i].link);
+							_status.lastTafangCommand = link;
+						};
+						event.control = ui.create.control("布防", "招募", (link, node) => {
+							if (node.disabled) {
+								return;
+							}
+							const current = node.parentNode.querySelector(".thundertext");
+							if (current === node) {
+								return;
+							}
+							if (current) {
+								current.classList.remove("thundertext");
+							}
+							update(link);
+						});
+						// if(!_status.friends.length){
+						// 	event.control.lastChild.style.opacity=0.5;
+						// 	if(_status.lastTafangCommand=='行动'){
+						// 		_status.lastTafangCommand='招募';
+						// 	}
 						// }
-						game.resume();
-					};
-					event.done = ui.create.control("完成", eventdong);
-					if (_status.lastTafangCommand) {
-						update(_status.lastTafangCommand);
-					} else {
-						update("招募");
-					}
-					if (_status.characterList.length < 6) {
-						game.over(true);
-						event.done.close();
-						event.control.close();
-						return;
-					}
-					setTimeout(function () {
-						dialog.open();
-						updateSelected();
-					}, 50);
-					event.switchToAuto = eventdong;
-					if (!_status.auto && 10 + _status.remainingCount > 0) {
-						game.pause();
-					} else {
-						eventdong();
-					}
-					"step 1";
-					event.dialog.close();
-					event.control.close();
-					event.done.close();
-					delete event.dialog;
-					delete event.control;
-					delete event.done;
-					"step 2";
-					event.chooseObstacle = false;
-					if (event.bufang.length) {
-						event.obstacles = game.obstacles.slice(0);
-						for (var i = 0; i < event.obstacles.length; i++) {
-							event.obstacles[i].classList.add("glow");
+						if (_status.friends.length >= 5) {
+							event.control.childNodes[1].style.opacity = 0.5;
+							event.control.childNodes[1].disabled = true;
+							if (_status.lastTafangCommand === "招募") {
+								_status.lastTafangCommand = "布防";
+							}
 						}
-						event.chooseObstacle = true;
-						event.currentBufang = event.bufang.shift();
-						event.dialog = ui.create.dialog("选择一个位置放置【" + get.translation(event.currentBufang) + "】");
-						if (!_status.auto) {
+						_status.imchoosing = true;
+						ui.auto.hide();
+						const eventdong = () => {
+							const selected = dialog.querySelectorAll(".button.selected");
+							event.bufang = [];
+							event.zhaomu = [];
+							event.currentPlayers = [];
+							event.xingdong = _status.friends.slice(0);
+							// var xingdongs=[];
+							_status.remainingCount += 10;
+							for (const button of selected) {
+								switch (button._link) {
+									case "布防":
+										event.bufang.push(button.link);
+										break;
+									case "招募":
+										event.zhaomu.push(button.link);
+										break;
+									// case '行动':xingdongs.push(selected[i]);break;
+								}
+								_status.remainingCount -= button.count;
+							}
+							_status.remainingCount = Math.floor(_status.remainingCount / 2);
+							// xingdongs.sort(function(a,b){
+							// 	return a._clickOrder-b._clickOrder;
+							// });
+							// for(var i=0;i<xingdongs.length;i++){
+							// 	event.xingdong.push(xingdongs[i].link);
+							// }
+							game.resume();
+						};
+						event.done = ui.create.control("完成", eventdong);
+						if (_status.lastTafangCommand) {
+							update(_status.lastTafangCommand);
+						} else {
+							update("招募");
+						}
+						if (_status.characterList.length < 6) {
+							game.over(true);
+							event.done.close();
+							event.control.close();
+							return;
+						}
+						setTimeout(() => {
+							dialog.open();
+							updateSelected();
+						}, 50);
+						event.switchToAuto = eventdong;
+						if (!_status.auto && 10 + _status.remainingCount > 0) {
 							game.pause();
 						} else {
-							event.obstacle = event.obstacles.randomGet();
+							eventdong();
 						}
-						event.switchToAuto = function () {
-							event.obstacle = event.obstacles.randomGet();
-							game.resume();
-						};
-					} else {
-						delete event.bufang;
-					}
-					"step 3";
-					if (event.dialog) {
+					},
+					async (event, trigger, player) => {
 						event.dialog.close();
+						event.control.close();
+						event.done.close();
 						delete event.dialog;
-					}
-					if (event.chooseObstacle) {
-						game.removeObstacle(event.obstacle.dataset.position);
-						var mech = game.addChessPlayer(event.currentBufang, "treasure", 0, event.obstacle.dataset.position);
+						delete event.control;
+						delete event.done;
+					},
+					async (event, trigger, player) => {
 						event.chooseObstacle = false;
-						event.goto(2);
-					} else {
-						if (event.obstacles) {
-							for (var i = 0; i < event.obstacles.length; i++) {
-								event.obstacles[i].classList.remove("glow");
+						if (event.bufang.length) {
+							event.obstacles = game.obstacles.slice(0);
+							for (const obstacle of event.obstacles) {
+								obstacle.classList.add("glow");
 							}
-							delete event.obstacles;
+							event.chooseObstacle = true;
+							event.currentBufang = event.bufang.shift();
+							event.dialog = ui.create.dialog(`选择一个位置放置【${get.translation(event.currentBufang)}】`);
+							if (!_status.auto) {
+								game.pause();
+							} else {
+								event.obstacle = event.obstacles.randomGet();
+							}
+							event.switchToAuto = () => {
+								event.obstacle = event.obstacles.randomGet();
+								game.resume();
+							};
+						} else {
+							delete event.bufang;
 						}
-						delete event.obstacle;
-						delete event.currentBufang;
-					}
-					"step 4";
-					if (event.dialog) {
-						event.dialog.close();
-						delete event.dialog;
-					}
-					if (event.zhaomu.length) {
-						event.currentZhaomu = event.zhaomu.shift();
-						event.dialog = ui.create.dialog("选择一个位置安排【" + get.translation(event.currentZhaomu) + "】");
-						var size = ui.chesswidth * (ui.chessheight - 1);
-						var clickGrid = function () {
-							var player = game.addChessPlayer(event.currentZhaomu, false, 0, this.dataset.position, false);
-							_status.friends.push(player);
-							event.currentPlayers.push(player);
-							if (!game.me.name) {
-								game.me = player;
-								game.me.classList.add("current_action");
-								ui.me.querySelector(".fakeme.avatar").show();
-								ui.me.querySelector(".fakeme.player").show();
-								ui.create.fakeme();
-								ui.handcards1 = player.node.handcards1.addTempClass("start").fix();
-								ui.handcards2 = player.node.handcards2.addTempClass("start").fix();
-								ui.handcards1Container.appendChild(ui.handcards1);
-								ui.handcards2Container.appendChild(ui.handcards2);
-								ui.updatehl();
-								game.setChessInfo();
-								game.addVideo("tafangMe", player);
+					},
+					async (event, trigger, player) => {
+						if (event.dialog) {
+							event.dialog.close();
+							delete event.dialog;
+						}
+						if (event.chooseObstacle) {
+							game.removeObstacle(event.obstacle.dataset.position);
+							game.addChessPlayer(event.currentBufang, "treasure", 0, event.obstacle.dataset.position);
+							event.chooseObstacle = false;
+							event.goto(2);
+						} else {
+							if (event.obstacles) {
+								for (const obstacle of event.obstacles) {
+									obstacle.classList.remove("glow");
+								}
+								delete event.obstacles;
 							}
-							this.delete();
-							event.redo();
-							game.resume();
-						};
-						if (!event.playergrids) {
-							event.playergrids = [];
-							for (var i = ui.chesswidth; i < size; i++) {
-								if (!lib.posmap[i.toString()]) {
-									var grid = ui.create.div(".player.minskin.playerblank.glow", clickGrid, ui.chess);
-									grid.addTempClass("start");
-									ui.placeChess(grid, i);
-									event.playergrids.push(grid);
+							delete event.obstacle;
+							delete event.currentBufang;
+						}
+					},
+					async (event, trigger, player) => {
+						if (event.dialog) {
+							event.dialog.close();
+							delete event.dialog;
+						}
+						if (event.zhaomu.length) {
+							event.currentZhaomu = event.zhaomu.shift();
+							event.dialog = ui.create.dialog(`选择一个位置安排【${get.translation(event.currentZhaomu)}】`);
+							const size = ui.chesswidth * (ui.chessheight - 1);
+							const clickGrid = function () {
+								const player = game.addChessPlayer(event.currentZhaomu, false, 0, this.dataset.position, false);
+								_status.friends.push(player);
+								event.currentPlayers.push(player);
+								if (!game.me.name) {
+									game.me = player;
+									game.me.classList.add("current_action");
+									ui.me.querySelector(".fakeme.avatar").show();
+									ui.me.querySelector(".fakeme.player").show();
+									ui.create.fakeme();
+									ui.handcards1 = player.node.handcards1.addTempClass("start").fix();
+									ui.handcards2 = player.node.handcards2.addTempClass("start").fix();
+									ui.handcards1Container.appendChild(ui.handcards1);
+									ui.handcards2Container.appendChild(ui.handcards2);
+									ui.updatehl();
+									game.setChessInfo();
+									game.addVideo("tafangMe", player);
+								}
+								this.delete();
+								event.redo();
+								game.resume();
+							};
+							if (!event.playergrids) {
+								event.playergrids = [];
+								for (let i = ui.chesswidth; i < size; i++) {
+									if (!lib.posmap[i.toString()]) {
+										const grid = ui.create.div(".player.minskin.playerblank.glow", clickGrid, ui.chess);
+										grid.addTempClass("start");
+										ui.placeChess(grid, i);
+										event.playergrids.push(grid);
+									}
 								}
 							}
-						}
-						game.pause();
-						if (_status.auto) {
-							setTimeout(function () {
-								clickGrid.call(event.playergrids.randomGet());
-							}, 50);
-						}
-					} else {
-						delete event.zhaomu;
-					}
-					"step 5";
-					_status.imchoosing = false;
-					ui.auto.show();
-					game.delay();
-					if (event.dialog) {
-						event.dialog.close();
-						delete event.dialog;
-					}
-					if (event.playergrids) {
-						for (var i = 0; i < event.playergrids.length; i++) {
-							event.playergrids[i].delete();
-						}
-						delete event.playergrids;
-					}
-					delete event.currentZhaomu;
-					"step 6";
-					var shalldelay = false;
-					for (var i = 0; i < ui.chesswidth; i++) {
-						if (lib.posmap[i] && game.players.includes(lib.posmap[i])) {
-							for (var j = 0; j < ui.chessheight; j++) {
-								var pos = i + j * ui.chesswidth;
-								if (lib.posmap[pos] && lib.posmap[pos].movable(0, 1)) {
-									break;
-								}
+							game.pause();
+							if (_status.auto) {
+								setTimeout(() => {
+									clickGrid.call(event.playergrids.randomGet());
+								}, 50);
 							}
-							if (j < ui.chessheight) {
-								shalldelay = true;
-								for (var k = j; k >= 0; k--) {
-									var pos = i + k * ui.chesswidth;
-									if (lib.posmap[pos]) {
-										lib.posmap[pos].moveDown();
+						} else {
+							delete event.zhaomu;
+						}
+					},
+					async (event, trigger, player) => {
+						_status.imchoosing = false;
+						ui.auto.show();
+						game.delay();
+						if (event.dialog) {
+							event.dialog.close();
+							delete event.dialog;
+						}
+						if (event.playergrids) {
+							for (const grid of event.playergrids) {
+								grid.delete();
+							}
+							delete event.playergrids;
+						}
+						delete event.currentZhaomu;
+					},
+					async (event, trigger, player) => {
+						let shalldelay = false;
+						for (let i = 0; i < ui.chesswidth; i++) {
+							if (lib.posmap[i] && game.players.includes(lib.posmap[i])) {
+								let j = 0;
+								for (; j < ui.chessheight; j++) {
+									const pos = i + j * ui.chesswidth;
+									if (lib.posmap[pos] && lib.posmap[pos].movable(0, 1)) {
+										break;
+									}
+								}
+								if (j < ui.chessheight) {
+									shalldelay = true;
+									for (let k = j; k >= 0; k--) {
+										const pos = i + k * ui.chesswidth;
+										if (lib.posmap[pos]) {
+											lib.posmap[pos].moveDown();
+										}
 									}
 								}
 							}
 						}
-					}
-					if (shalldelay) {
-						game.delay();
-					}
-					"step 7";
-					event.justadded = [];
-					if (_status.characterList.length) {
-						if (_status.enemies.length < ui.chesswidth * 2) {
-							var list1 = [];
-							for (var i = 0; i < ui.chesswidth; i++) {
-								if (!lib.posmap[i]) {
-									list1.push(i);
+						if (shalldelay) {
+							game.delay();
+						}
+					},
+					async (event, trigger, player) => {
+						event.justadded = [];
+						if (_status.characterList.length) {
+							if (_status.enemies.length < ui.chesswidth * 2) {
+								const list1 = [];
+								for (let i = 0; i < ui.chesswidth; i++) {
+									if (!lib.posmap[i]) {
+										list1.push(i);
+									}
 								}
+								if (list1.length) {
+									const enemy = game.addChessPlayer(_status.characterList.shift(), true, 0, list1.randomRemove(), false);
+									_status.enemies.push(enemy);
+									event.justadded.push(enemy.name);
+									event.currentPlayers.push(enemy);
+									if (game.players.length === 1) {
+										ui.me.querySelector(".fakeme.player").show();
+										game.setChessInfo(game.players[0]);
+									}
+									game.delay();
+								}
+								// var difficulty=get.config('tafang_difficulty');
+								// if(_status.turnCount>=10&&list1.length&&difficulty>1){
+								// 	var enemy=game.addChessPlayer(_status.characterList.shift(),true,4,list1.randomRemove());
+								// 	_status.enemies.push(enemy);
+								// 	event.justadded.push(enemy.name);
+								// }
+								// if(_status.turnCount>=20&&list1.length&&difficulty>1){
+								// 	var enemy=game.addChessPlayer(_status.characterList.shift(),true,4,list1.randomRemove());
+								// 	_status.enemies.push(enemy);
+								// 	event.justadded.push(enemy.name);
+								// }
+								// if(list1.length&&difficulty>2){
+								// 	var enemy=game.addChessPlayer(_status.characterList.shift(),true,4,list1.randomRemove());
+								// 	_status.enemies.push(enemy);
+								// 	event.justadded.push(enemy.name);
+								// }
 							}
-							if (list1.length) {
-								var enemy = game.addChessPlayer(_status.characterList.shift(), true, 0, list1.randomRemove(), false);
-								_status.enemies.push(enemy);
-								event.justadded.push(enemy.name);
-								event.currentPlayers.push(enemy);
-								if (game.players.length == 1) {
-									ui.me.querySelector(".fakeme.player").show();
-									game.setChessInfo(game.players[0]);
+						} else {
+							game.over(true);
+						}
+					},
+					async (event, trigger, player) => {
+						if (event.currentPlayers.length > 0) {
+							game.gameDraw(game.me, 4, event.currentPlayers);
+							for (const target of event.currentPlayers) {
+								game.triggerEnter(target);
+							}
+						}
+					},
+					async (event, trigger, player) => {
+						if (event.xingdong.length) {
+							const toact = (event.player = event.xingdong.shift());
+							if (game.players.includes(toact)) {
+								toact.phase();
+								event.trigger("phaseOver");
+							}
+							event.redo();
+						} else {
+							event.xingdong = _status.enemies.slice(0);
+						}
+						delete event.player;
+					},
+					async (event, trigger, player) => {
+						if (event.xingdong.length) {
+							const enemy = (event.player = event.xingdong.shift());
+							if (!event.justadded.includes(enemy.name) && game.players.includes(enemy)) {
+								enemy.phase();
+								event.trigger("phaseOver");
+							}
+							event.redo();
+						} else {
+							event.mechlist = game.treasures.slice(0);
+						}
+						delete event.player;
+					},
+					async (event, trigger, player) => {
+						if (event.mechlist.length) {
+							const mech = event.mechlist.shift();
+							const info = lib.skill[`${mech.name}_skill`];
+							if (!info.filter || info.filter(mech)) {
+								const next = game.createEvent("chessMech");
+								next.player = mech;
+								next.setContent(info.content);
+								mech.chessFocus();
+								if (lib.config.animation && !lib.config.low_performance) {
+									mech.$epic2();
 								}
 								game.delay();
 							}
-							// var difficulty=get.config('tafang_difficulty');
-							// if(_status.turnCount>=10&&list1.length&&difficulty>1){
-							// 	var enemy=game.addChessPlayer(_status.characterList.shift(),true,4,list1.randomRemove());
-							// 	_status.enemies.push(enemy);
-							// 	event.justadded.push(enemy.name);
-							// }
-							// if(_status.turnCount>=20&&list1.length&&difficulty>1){
-							// 	var enemy=game.addChessPlayer(_status.characterList.shift(),true,4,list1.randomRemove());
-							// 	_status.enemies.push(enemy);
-							// 	event.justadded.push(enemy.name);
-							// }
-							// if(list1.length&&difficulty>2){
-							// 	var enemy=game.addChessPlayer(_status.characterList.shift(),true,4,list1.randomRemove());
-							// 	_status.enemies.push(enemy);
-							// 	event.justadded.push(enemy.name);
-							// }
-						}
-					} else {
-						game.over(true);
-					}
-					"step 8";
-					if (event.currentPlayers.length > 0) {
-						game.gameDraw(game.me, 4, event.currentPlayers);
-						for (var target of event.currentPlayers) {
-							game.triggerEnter(target);
-						}
-					}
-					"step 9";
-					if (event.xingdong.length) {
-						var toact = (event.player = event.xingdong.shift());
-						if (game.players.includes(toact)) {
-							toact.phase();
-							event.trigger("phaseOver");
-						}
-						event.redo();
-					} else {
-						event.xingdong = _status.enemies.slice(0);
-					}
-					delete event.player;
-					"step 10";
-					if (event.xingdong.length) {
-						var enemy = (event.player = event.xingdong.shift());
-						if (!event.justadded.includes(enemy.name) && game.players.includes(enemy)) {
-							enemy.phase();
-							event.trigger("phaseOver");
-						}
-						event.redo();
-					} else {
-						event.mechlist = game.treasures.slice(0);
-					}
-					delete event.player;
-					"step 11";
-					if (event.mechlist.length) {
-						var mech = event.mechlist.shift();
-						var info = lib.skill[mech.name + "_skill"];
-						if (!info.filter || info.filter(mech)) {
-							var next = game.createEvent("chessMech");
-							next.player = mech;
-							next.setContent(info.content);
-							mech.chessFocus();
-							if (lib.config.animation && !lib.config.low_performance) {
-								mech.$epic2();
+							if (--mech.hp <= 0) {
+								const next = game.createEvent("chessMechRemove");
+								next.player = mech;
+								next.setContent("chessMechRemove");
+							} else {
+								mech.update();
 							}
-							game.delay();
+							event.redo();
 						}
-						if (--mech.hp <= 0) {
-							var next = game.createEvent("chessMechRemove");
-							next.player = mech;
-							next.setContent("chessMechRemove");
+					},
+					async (event, trigger, player) => {
+						delete event.xingdong;
+						delete event.mechlist;
+						if (_status.turnCount >= _status.turnTotal) {
+							game.over(true);
+							return;
 						} else {
-							mech.update();
+							game.log();
+							event.trigger("roundEnd");
 						}
-						event.redo();
-					}
-					"step 12";
-					delete event.xingdong;
-					delete event.mechlist;
-					if (_status.turnCount >= _status.turnTotal) {
-						game.over(true);
-						return;
-					} else {
-						game.log();
-						event.trigger("roundEnd");
-					}
-					"step 13";
-					event.goto(0);
-					game.delay();
-				});
+					},
+					async (event, trigger, player) => {
+						event.goto(0);
+						game.delay();
+					},
+				]);
 			},
 			loadMap() {
 				var next = game.createEvent("loadMap");
