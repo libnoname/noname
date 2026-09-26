@@ -15825,13 +15825,11 @@ export default {
 			return get.attitude(player, event.target) < 0;
 		},
 		filter(event) {
-			return event.card.name == "sha";
+			return event.card.name === "sha";
 		},
 		logTarget: "target",
-		content() {
-			"step 0";
-			var target = trigger.target;
-			var controls = [];
+		async content(event, trigger, player) {
+			const target = trigger.target;
 			if (get.zhu(player, "shouyue")) {
 				if (!target.isUnseen(0)) {
 					target.addTempSkill("fengyin_main");
@@ -15839,74 +15837,60 @@ export default {
 				if (!target.isUnseen(1)) {
 					target.addTempSkill("fengyin_vice");
 				}
-				event.goto(2);
-			}
-			if (!target.isUnseen(0) && !target.hasSkill("fengyin_main")) {
-				controls.push("主将");
-			}
-			if (!target.isUnseen(1) && !target.hasSkill("fengyin_vice")) {
-				controls.push("副将");
-			}
-			if (controls.length > 0) {
-				if (controls.length == 1) {
-					event._result = { control: controls[0] };
-				} else {
-					player
-						.chooseControl(controls)
-						.set("ai", function () {
-							var choice = "主将";
-							var skills = lib.character[target.name2][3];
-							for (var i = 0; i < skills.length; i++) {
-								var info = get.info(skills[i]);
-								if (info && info.ai && info.ai.maixie) {
-									choice = "副将";
-									break;
-								}
-							}
-							return choice;
-						})
-						.set("prompt", "请选择一个武将牌，令" + get.translation(target) + "该武将牌上的非锁定技全部失效。");
-				}
 			} else {
-				event.goto(2);
-			}
-			"step 1";
-			if (result.control) {
-				player.popup(result.control, "fire");
-				var target = trigger.target;
-				if (result.control == "主将") {
-					target.addTempSkill("fengyin_main");
-				} else {
-					target.addTempSkill("fengyin_vice");
+				const controls = [];
+				if (!target.isUnseen(0) && !target.hasSkill("fengyin_main")) {
+					controls.push("主将");
+				}
+				if (!target.isUnseen(1) && !target.hasSkill("fengyin_vice")) {
+					controls.push("副将");
+				}
+				if (controls.length) {
+					const control = controls.length === 1
+						? controls[0]
+						: (await player.chooseControl({
+							controls,
+							prompt: `请选择一个武将牌，令${get.translation(target)}该武将牌上的非锁定技全部失效。`,
+							ai: () => {
+								for (const skill of lib.character[target.name2][3]) {
+									const info = get.info(skill);
+									if (info?.ai?.maixie) {
+										return "副将";
+									}
+								}
+								return "主将";
+							},
+						}).forResult()).control;
+					if (control) {
+						player.popup(control, "fire");
+						target.addTempSkill(control === "主将" ? "fengyin_main" : "fengyin_vice");
+					}
 				}
 			}
-			"step 2";
-			player.judge(function () {
-				return 0;
-			});
-			"step 3";
-			var suit = get.suit(result.card);
-			var target = trigger.target;
-			var num = target.countCards("h", "shan");
-			target
-				.chooseToDiscard("请弃置一张" + get.translation(suit) + "牌，否则不能使用闪抵消此杀", "he", function (card) {
-					return get.suit(card) == _status.event.suit;
-				})
-				.set("ai", function (card) {
-					var num = _status.event.num;
-					if (num == 0) {
+			const judgeResult = await player.judge({ judge: () => 0 }).forResult();
+			const suit = get.suit(judgeResult.card);
+			const num = target.countCards("h", "shan");
+			const result = await target
+				.chooseToDiscard({
+					prompt: `请弃置一张${get.translation(suit)}牌，否则不能使用闪抵消此杀`,
+					position: "he",
+					filterCard: card => get.suit(card) === _status.event.suit,
+					ai: card => {
+						const num = _status.event.num;
+						if (num === 0) {
 						return 0;
 					}
-					if (card.name == "shan") {
+					if (card.name === "shan") {
 						return num > 1 ? 2 : 0;
 					}
 					return 8 - get.value(card);
+					},
 				})
 				.set("num", num)
-				.set("suit", suit);
-			"step 4";
+				.set("suit", suit)
+				.forResult();
 			if (result && !result.bool) {
-				trigger.getParent().directHit.add(trigger.target);
+				trigger.getParent().directHit.add(target);
 			}
 		},
 	},
