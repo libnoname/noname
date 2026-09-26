@@ -2695,6 +2695,8 @@ const skills = {
 			user.addMark("dcsbyouyi_sha", 1, false);
 			const control = event.cost_data;
 			if (control === "弃置牌") {
+				player.addTempSkill("dcsbyouyi_used");
+				player.markAuto("dcsbyouyi_used", ["discard"]);
 				const result = await player
 					.chooseToDiscard({
 						position: "he",
@@ -2720,8 +2722,6 @@ const skills = {
 					return;
 				}
 				await player.draw();
-				player.addTempSkill("dcsbyouyi_used");
-				player.markAuto("dcsbyouyi_used", ["discard"]);
 				if (!player.storage["dcsbyouyi_eff"]) {
 					player.storage["dcsbyouyi_eff"] = {
 						draw: 0,
@@ -2732,6 +2732,8 @@ const skills = {
 				player.storage["dcsbyouyi_eff"].draw += result.cards.length;
 				player.storage["dcsbyouyi_eff"].sum += result.cards.length;
 			} else {
+				player.addTempSkill("dcsbyouyi_used");
+				player.markAuto("dcsbyouyi_used", ["loseHp"]);
 				const result = await player
 					.chooseControl({
 						controls: ["1", "2", "3", "4"],
@@ -2756,8 +2758,6 @@ const skills = {
 				const target = result1.targets[0];
 				player.line(target);
 				await target.draw(num);
-				player.addTempSkill("dcsbyouyi_used");
-				player.markAuto("dcsbyouyi_used", ["loseHp"]);
 				if (!player.storage["dcsbyouyi_eff"]) {
 					player.storage["dcsbyouyi_eff"] = {
 						draw: 0,
