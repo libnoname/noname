@@ -694,7 +694,6 @@ export default {
 		 * @param {PlayerGuozhan} player
 		 */
 		async content(event, trigger, player) {
-			"step 0";
 			const groups = [];
 			const players = game.filterPlayer(lib.filter.all);
 
