@@ -6712,10 +6712,20 @@ const skills = {
 	twlifeng: {
 		audio: 2,
 		enable: "phaseUse",
+		usable(skill, player) {
+			return 2 + player.countMark(skill + "_used");
+		},
+		onremove(player, skill) {
+			player.removeTip(skill);
+		},
 		filter(event, player) {
 			return player.countDiscardableCards(player, "he") > 1;
 		},
-		filterCard: lib.filter.cardDiscardable,
+		filterCard(card, player) {
+			if (!lib.filter.cardDiscardable(card, player, "twlifeng")) return false;
+			if (!ui.selected.cards?.length) return true;
+			return get.number(card, player) != get.number(ui.selected.cards[0], player);
+		},
 		selectCard: 2,
 		position: "he",
 		filterTarget(card, player, target) {
@@ -6724,8 +6734,11 @@ const skills = {
 			}
 			let cards = ui.selected.cards,
 				num = Math.abs(get.number(cards[0], player) - get.number(cards[1], player));
-			return get.distance(target, player) == num;
+			return get.distance(target, player) <= num;
 		},
+		selectTarget: -1,
+		multiline: true,
+		multitarget: true,
 		check(card) {
 			return 7 - get.value(card);
 		},
@@ -6734,19 +6747,71 @@ const skills = {
 		discard: false,
 		delay: false,
 		async content(event, trigger, player) {
-			const { cards, target } = event;
-			const isDraw = cards.some(card => !card.hasGaintag("twniwo"));
+			const { cards, targets } = event;
+			targets.sortBySeat();
 			await player.discard(cards);
-			await target.damage();
-			if (isDraw) {
+			await game.doAsyncInOrder(targets, async target => {
+				await target.damage({ source: player, num: 1 });
+			});
+			const num = Math.abs(get.number(cards[0], player) - get.number(cards[1], player));
+			player.addTip(event.name, `${get.translation(event.name)} ${num}`, "phaseAnyAfter");
+			const history = player.getHistory("custom");
+			const evt = event.getParent("phaseUse");
+			history.push({ twlifeng: [evt, num] });
+			if (history.filter(i => i.twlifeng[0] == evt).length > 1 && num > history[history.length - 2].twlifeng[1]) {
 				await player.draw();
+				player.addTempSkill(event.name + "_used");
+				player.addMark(event.name + "_used", 1, false);
 			}
 		},
+		group: "twlifeng_effect",
 		ai: {
 			order: 5,
 			result: {
 				target(player, target) {
 					return get.damageEffect(target, player, player);
+				},
+			},
+		},
+		subSkill: {
+			used: { charlotte: true, onremove: true },
+			effect: {
+				trigger: { source: "damageBegin3" },
+				filter(event, player) {
+					return event.getParent().name == "twlifeng" && event.player.hasCards("h");
+				},
+				async cost(event, trigger, player) {
+					const target = trigger.player,
+						cards = trigger.getParent().cards,
+						num1 = get.number(cards[0]),
+						num2 = get.number(cards[1]);
+					event.result = await target
+						.chooseCard({
+							prompt: `砺锋：重铸一张手牌，若点数为${num1}或${num2}，则防止此伤害`,
+							filterCard: lib.filter.cardRecastable,
+							ai(card) {
+								const player = get.player();
+								if ([get.event().num1, get.event().num2].includes(get.number(card, player))) {
+									return 10 - get.value(card);
+								}
+								return 7 - get.value(card);
+							},
+						})
+						.set("num1", num1)
+						.set("num2", num2)
+						.forResult();
+					if (event.result?.bool) {
+						event.result.cost_data = [num1, num2];
+					}
+				},
+				popup: false,
+				async content(event, trigger, player) {
+					const target = trigger.player,
+						nums = event.cost_data;
+					await target.recast(event.cards);
+					if (nums.includes(get.number(event.cards[0], target))) {
+						trigger.cancel();
+					}
 				},
 			},
 		},
@@ -6864,16 +6929,14 @@ const skills = {
 		trigger: { player: "phaseUseBegin" },
 		filter(event, player) {
 			return (
-				player.countCards("h") &&
-				game.hasPlayer(current => {
-					return current != player && current.countCards("h");
-				})
+				player.hasCards("h") &&
+				game.hasPlayer(current => current != player && current.hasCards("h"))
 			);
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt2(event.name.slice(0, -5)), (card, player, current) => {
-					return current != player && current.countCards("h");
+				.chooseTarget(get.prompt2(event.skill), (card, player, current) => {
+					return current != player && current.hasCards("h");
 				})
 				.set("ai", target => {
 					return -get.attitude(get.player(), target) / (target.countCards("h") + 1);
@@ -6882,15 +6945,15 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			if ([player, target].some(current => !current.countCards("h"))) {
+			if ([player, target].some(current => !current.hasCards("h"))) {
 				return;
 			}
 			const dialog = ["选择你与" + get.translation(target) + "的等量张手牌"];
-			if (player.countCards("h")) {
+			if (player.hasCards("h")) {
 				dialog.add("你的手牌");
 				dialog.add(player.getCards("h"));
 			}
-			if (target.countCards("h")) {
+			if (target.hasCards("h")) {
 				dialog.add(get.translation(target) + "的手牌");
 				let hs = target.getCards("h");
 				if (player.hasSkillTag("viewHandcard", null, target, true)) {
@@ -6899,7 +6962,7 @@ const skills = {
 					dialog.add([hs, "blank"]);
 				}
 			}
-			const result = await player
+			let result = await player
 				.chooseButton(dialog, true, [2, Infinity])
 				.set("filterOk", () => {
 					const buttons = ui.selected.buttons;
@@ -6931,13 +6994,30 @@ const skills = {
 			if (!result?.links?.length) {
 				return;
 			}
+			const links = result.links;
+			result = await player
+				.chooseControl({
+					controls: ["选项一", "选项二"],
+					choiceList: [
+						`你与${get.translation(target)}本回合无法使用或打出这些牌`,
+						`交换你与${get.translation(target)}选择的牌`,
+					],
+					ai: () => get.event().controls.slice().randomGet(),
+				})
+				.forResult();
+			if (typeof result?.control == "string") {
+				if (result.control == "选项一") {
 			for (const owner of [player, target]) {
 				owner.addTempSkill("twniwo_block");
 				owner.addGaintag(
-					result.links.filter(i => get.owner(i) == owner),
+					links.filter(i => get.owner(i) == owner),
 					"twniwo"
 				);
 			}
+		} else {
+			await player.swapHandcards(target, links.filter(i => get.owner(i) == player), links.filter(i => get.owner(i) == target));
+		}
+		}
 		},
 		subSkill: {
 			block: {
