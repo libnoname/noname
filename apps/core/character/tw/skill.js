@@ -6928,10 +6928,7 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseUseBegin" },
 		filter(event, player) {
-			return (
-				player.hasCards("h") &&
-				game.hasPlayer(current => current != player && current.hasCards("h"))
-			);
+			return player.hasCards("h") && game.hasPlayer(current => current != player && current.hasCards("h"));
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
@@ -6998,26 +6995,28 @@ const skills = {
 			result = await player
 				.chooseControl({
 					controls: ["选项一", "选项二"],
-					choiceList: [
-						`你与${get.translation(target)}本回合无法使用或打出这些牌`,
-						`交换你与${get.translation(target)}选择的牌`,
-					],
+					choiceList: [`你与${get.translation(target)}本回合无法使用或打出这些牌`, `交换你与${get.translation(target)}选择的牌，然后〖砺锋〗本回合失效`],
 					ai: () => get.event().controls.slice().randomGet(),
 				})
 				.forResult();
 			if (typeof result?.control == "string") {
 				if (result.control == "选项一") {
-			for (const owner of [player, target]) {
-				owner.addTempSkill("twniwo_block");
-				owner.addGaintag(
-					links.filter(i => get.owner(i) == owner),
-					"twniwo"
-				);
+					for (const owner of [player, target]) {
+						owner.addTempSkill("twniwo_block");
+						owner.addGaintag(
+							links.filter(i => get.owner(i) == owner),
+							"twniwo"
+						);
+					}
+				} else {
+					await player.swapHandcards(
+						target,
+						links.filter(i => get.owner(i) == player),
+						links.filter(i => get.owner(i) == target)
+					);
+					player.tempBanSkill("twlifeng");
+				}
 			}
-		} else {
-			await player.swapHandcards(target, links.filter(i => get.owner(i) == player), links.filter(i => get.owner(i) == target));
-		}
-		}
 		},
 		subSkill: {
 			block: {
