@@ -1293,7 +1293,7 @@ const skills = {
 				const result = await player
 					.chooseTarget({
 						forced: true,
-						prompt: `抚：对一名角色造成${num}点伤害`,
+						prompt: `抚：对一名角色造成${num}点火焰伤害`,
 						ai(target) {
 							const player = get.player();
 							return get.event().num * get.damageEffect(target, player, player, "fire");
