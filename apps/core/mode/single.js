@@ -611,7 +611,7 @@ export default () => {
 			}
 
 			game.syncState();
-			await event.trigger("gameStart");
+			const gameStart = event.trigger("gameStart");
 
 			var players = get.players(lib.sort.position);
 			var info = [];
@@ -626,6 +626,7 @@ export default () => {
 			_status.videoInited = true;
 			game.addVideo("init", null, info);
 
+			await gameStart;
 			await game.gameDraw(game.zhu, function (player) {
 				if (_status.mode == "dianjiang") {
 					return 4;
