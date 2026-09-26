@@ -2774,8 +2774,10 @@ const skills = {
 			}
 			if (sum >= 7) {
 				player.storage["dcsbyouyi_eff"].sum = sum % 7;
-				game.log(player, "重置了", "#g【返攻】");
-				player.restoreSkill("dcsbfangong");
+				if (player.hasSkill("dcsbfangong", null, false, false) && player.awakenedSkills.includes("dcsbfangong")) {
+					game.log(player, "重置了", "#g【返攻】");
+					player.restoreSkill("dcsbfangong");
+				}
 			}
 		},
 		group: "dcsbyouyi_eff",
@@ -3032,73 +3034,76 @@ const skills = {
 			if (game.countPlayer() < 2) {
 				return;
 			}
-				const result1 = await player
-					.chooseTarget({
-						prompt: "令一名其他角色观看牌堆顶两张牌并获得其中一张",
-						forced: true,
-						filterTarget: (card, player, target) => {
-							return target !== player;
-						},
-						ai: target => {
-							const player = get.player();
-							return get.attitude(player, target);
-						},
-					})
-					.forResult();
-				const target = result1.targets[0];
-				const cards0 = get.cards(2, true);
-				const result2 = await target
-					.chooseButton({
-						createDialog: ["选择一张牌获得", cards0],
-						forced: true,
-						ai: button => {
-							const card = button.link;
-							let val = get.value(card);
-							if (!get.tag(card, "damage")) {
-								val += 5;
-							}
-							return val;
-						},
-					})
-					.forResult();
-				const card0 = result2?.links?.[0];
-				if (!card0) {
-					return;
-				}
-				await target.gain(card0, "draw");
-				if (get.tag(card0, "damage")) {
-						const cardsx = [];
-						while (cardsx.length < 3) {
-							const card = get.cardPile(i => get.tag(i, "damage") && !cardsx.includes(i));
-							if (card) {
-								cardsx.push(card);
-							} else {
-								break;
-							}
+			const result1 = await player
+				.chooseTarget({
+					prompt: "令一名其他角色观看牌堆顶两张牌并获得其中一张",
+					forced: true,
+					filterTarget: (card, player, target) => {
+						return target !== player;
+					},
+					ai: target => {
+						const player = get.player();
+						return get.attitude(player, target);
+					},
+				})
+				.forResult();
+			const target = result1.targets[0];
+			const cards0 = get.cards(2, true);
+			const result2 = await target
+				.chooseButton({
+					createDialog: ["选择一张牌获得", cards0],
+					forced: true,
+					ai: button => {
+						const card = button.link;
+						let val = get.value(card);
+						if (!get.tag(card, "damage")) {
+							val += 5;
 						}
-						await player.gain(cardsx, "draw");
-					if (target.isIn()) {
-						const cardsx = target.getCards("h").filter(card => !get.is.damageCard(card)).randomGets(3);
-						if (cardsx?.length) {
-							target.addTempSkill(`${event.name}_sha`, { global: "roundEnd" });
-							target.addGaintag(cardsx, `${event.name}_sha`);
-						}
-					}
-				} else {
-						const cardsx = [];
-						while (cardsx.length < 3) {
-							const card = get.cardPile(i => !get.tag(i, "damage") && !cardsx.includes(i));
-							if (card) {
-								cardsx.push(card);
-							} else {
-								break;
-							}
-						}
-						await player.gain(cardsx, "draw");
-					if (target.isIn()) {
-						target.addTempSkill("dcsbxinzhan", { global: "roundEnd" });
+						return val;
+					},
+				})
+				.forResult();
+			const card0 = result2?.links?.[0];
+			if (!card0) {
+				return;
+			}
+			await target.gain(card0, "draw");
+			if (get.tag(card0, "damage")) {
+				const cardsx = [];
+				while (cardsx.length < 3) {
+					const card = get.cardPile(i => get.tag(i, "damage") && !cardsx.includes(i));
+					if (card) {
+						cardsx.push(card);
+					} else {
+						break;
 					}
 				}
+				await player.gain(cardsx, "draw");
+				if (target.isIn()) {
+					const cardsx = target
+						.getCards("h")
+						.filter(card => !get.is.damageCard(card))
+						.randomGets(3);
+					if (cardsx?.length) {
+						target.addTempSkill(`${event.name}_sha`, { global: "roundEnd" });
+						target.addGaintag(cardsx, `${event.name}_sha`);
+					}
+				}
+			} else {
+				const cardsx = [];
+				while (cardsx.length < 3) {
+					const card = get.cardPile(i => !get.tag(i, "damage") && !cardsx.includes(i));
+					if (card) {
+						cardsx.push(card);
+					} else {
+						break;
+					}
+				}
+				await player.gain(cardsx, "draw");
+				if (target.isIn()) {
+					target.addTempSkill("dcsbxinzhan", { global: "roundEnd" });
+				}
+			}
 		},
 		check: (event, player) => {
 			return game.hasPlayer(current => {
