@@ -2615,11 +2615,9 @@ const skills = {
 	//谋王平
 	dcsbyouyi: {
 		audio: 2,
-		trigger: {
-			target: "useCardToTarget",
-		},
+		trigger: { target: "useCardToTarget" },
 		filter(event, player) {
-			if (!event.player.isIn() || player === event.player) {
+			if (!event.player?.isIn() || player === event.player) {
 				return false;
 			}
 			if (!player.getStorage("dcsbyouyi_used")?.length) {
@@ -2674,7 +2672,7 @@ const skills = {
 						) {
 							return "弃置牌";
 						}
-						if (list.includes("失去体力") && player.hp >= 4) {
+						if (list.includes("失去体力") && player.hp >= 3) {
 							return "失去体力";
 						}
 						return "cancel2";
@@ -2683,18 +2681,18 @@ const skills = {
 				.set("list", choiceList)
 				.forResult();
 			event.result = {
-				bool: result.control !== "cancel2",
-				cost_data: result.control,
+				bool: result?.control !== "cancel2",
+				cost_data: result?.control,
+				targets: [trigger.player],
 			};
 		},
 		async content(event, trigger, player) {
-			const user = trigger.player;
-			if (!user.isIn()) {
+			const user = event.targets[0];
+			if (!user?.isIn()) {
 				return;
 			}
-			player.line(user);
 			user.addTempSkill("dcsbyouyi_sha");
-			user.addMark("dcsbyouyi_sha");
+			user.addMark("dcsbyouyi_sha", 1, false);
 			const control = event.cost_data;
 			if (control === "弃置牌") {
 				const result = await player
