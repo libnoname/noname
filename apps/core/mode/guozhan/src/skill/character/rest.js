@@ -8108,56 +8108,42 @@ export default {
 		usable: 1,
 		filter(event, player) {
 			return (
-				player.countCards("h") > 0 &&
+				player.hasCards("h") &&
 				!player.hasSkillTag("noCompareSource") &&
-				game.hasPlayer(function (current) {
-					return current != player && current.countCards("h") > 0 && !current.hasSkillTag("noCompareTarget");
+				game.hasPlayer(current => {
+					return current !== player && current.hasCards("h") && !current.hasSkillTag("noCompareTarget");
 				})
 			);
 		},
 		filterTarget(card, player, target) {
-			return target != player && target.countCards("h") > 0 && !target.hasSkillTag("noCompareTarget");
+			return target !== player && target.hasCards("h") && !target.hasSkillTag("noCompareTarget");
 		},
-		content() {
-			"step 0";
-			player.chooseToCompare(target);
-			"step 1";
-			if (result.bool) {
-				if (!target.countCards("hej")) {
-					event.goto(3);
-				} else {
-					event.giver = target;
-					event.gainner = player;
-					target.choosePlayerCard(target, true, "hej", 2, "交给" + get.translation(player) + "两张牌");
+		async content(event, trigger, player) {
+			const { target } = event;
+			const compareResult = await player.chooseToCompare(target).forResult();
+			if (compareResult.bool && target.hasCards("hej")) {
+				const result = await target.choosePlayerCard({ target, forced: true, position: "hej", selectButton: 2, prompt: `交给${get.translation(player)}两张牌` }).forResult();
+				if (result.bool) {
+					await target.give(result.cards, player, "giveAuto");
 				}
-			} else if (result.tie) {
-				event.goto(3);
-			} else {
-				if (!player.countCards("he")) {
-					event.goto(3);
-				} else {
-					event.giver = player;
-					event.gainner = target;
-					player.chooseCard(true, "he", "交给" + get.translation(target) + "一张牌");
+			} else if (!compareResult.bool && !compareResult.tie && player.hasCards("he")) {
+				const result = await player.chooseCard({ forced: true, position: "he", prompt: `交给${get.translation(target)}一张牌` }).forResult();
+				if (result.bool) {
+					await player.give(result.cards, target, "giveAuto");
 				}
 			}
-			"step 2";
-			if (result.bool) {
-				event.giver.give(result.cards, event.gainner, "giveAuto");
-			}
-			"step 3";
 			if (target.isIn()) {
-				player.chooseBool("纵横：是否令" + get.translation(target) + "获得【锋略】？").set("ai", function () {
-					var evt = _status.event.getParent();
-					return get.attitude(evt.player, evt.target) > 0;
-				});
-			} else {
-				event.finish();
-			}
-			"step 4";
-			if (result.bool) {
-				target.addTempSkill("gzfenglve_zongheng", { player: "phaseEnd" });
-				game.log(player, "发起了", "#y纵横", "，令", target, "获得了技能", "#g【锋略】");
+				const result = await player.chooseBool({
+					prompt: `纵横：是否令${get.translation(target)}获得【锋略】？`,
+					ai: () => {
+						const evt = _status.event.getParent();
+						return get.attitude(evt.player, evt.target) > 0;
+					},
+				}).forResult();
+				if (result.bool) {
+					target.addTempSkill("gzfenglve_zongheng", { player: "phaseEnd" });
+					game.log(player, "发起了", "#y纵横", "，令", target, "获得了技能", "#g【锋略】");
+				}
 			}
 		},
 		ai: {
@@ -8165,11 +8151,11 @@ export default {
 			result: {
 				target(player, target) {
 					if (
-						!player.hasCard(function (card) {
-							if (get.position(card) != "h") {
+						!player.hasCard(card => {
+							if (get.position(card) !== "h") {
 								return false;
 							}
-							var val = get.value(card);
+							const val = get.value(card);
 							if (val < 0) {
 								return true;
 							}
@@ -8191,32 +8177,25 @@ export default {
 	},
 	gzfenglve_zongheng: {
 		inherit: "gzfenglve",
-		content() {
-			"step 0";
-			player.chooseToCompare(target);
-			"step 1";
-			if (result.bool) {
-				if (!target.countCards("hej")) {
-					event.finish();
-				} else {
-					event.giver = target;
-					event.gainner = player;
-					target.choosePlayerCard(target, true, "hej", "交给" + get.translation(player) + "一张牌");
+		async content(event, trigger, player) {
+			const { target } = event;
+			const compareResult = await player.chooseToCompare(target).forResult();
+			if (compareResult.bool) {
+				if (!target.hasCards("hej")) {
+					return;
 				}
-			} else if (result.tie) {
-				event.finish();
-			} else {
-				if (!player.countCards("he")) {
-					event.finish();
-				} else {
-					event.giver = player;
-					event.gainner = target;
-					player.chooseCard(true, "he", 2, "交给" + get.translation(target) + "两张牌");
+				const result = await target.choosePlayerCard({ target, forced: true, position: "hej", prompt: `交给${get.translation(player)}一张牌` }).forResult();
+				if (result.bool) {
+					await target.give(result.cards, player, "giveAuto");
 				}
-			}
-			"step 2";
-			if (result.bool) {
-				event.giver.give(result.cards, event.gainner, "giveAuto");
+			} else if (!compareResult.tie) {
+				if (!player.hasCards("he")) {
+					return;
+				}
+				const result = await player.chooseCard({ forced: true, position: "he", selectCard: 2, prompt: `交给${get.translation(target)}两张牌` }).forResult();
+				if (result.bool) {
+					await player.give(result.cards, target, "giveAuto");
+				}
 			}
 		},
 		ai: {
@@ -8224,11 +8203,11 @@ export default {
 			result: {
 				target(player, target) {
 					if (
-						!player.hasCard(function (card) {
-							if (get.position(card) != "h") {
+						!player.hasCard(card => {
+							if (get.position(card) !== "h") {
 								return false;
 							}
-							var val = get.value(card);
+							const val = get.value(card);
 							if (val < 0) {
 								return true;
 							}
