@@ -6294,7 +6294,7 @@ const skills = {
 				.set("choice", get.attitude(player, target) > 0 ? "摸牌" : "弃牌")
 				.forResult() : { control: controls[0] };
 			let cards2 = [];
-			const makeDraw = result.control === "摸牌";
+			const makeDraw = result?.control === "摸牌";
 			if (makeDraw) {
 				const result = await target.draw(round).forResult();
 				cards2 = result.cards;
