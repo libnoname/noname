@@ -5265,29 +5265,26 @@ export default () => {
 				forced: true,
 				unique: true,
 				filter(event, player) {
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i] != player && game.players[i].countCards("h")) {
+					for (const current of game.players) {
+						if (current !== player && current.hasCards("h")) {
 							return true;
 						}
 					}
 					return false;
 				},
-				content() {
-					"step 0";
-					var players = get.players(player);
+				async content(event, trigger, player) {
+					const players = get.players(player);
 					players.remove(player);
-					event.players = players;
 					player.line(players, "green");
-					"step 1";
-					if (event.players.length) {
-						var current = event.players.shift();
-						var hs = current.getCards("h");
-						if (hs.length) {
-							var card = hs.randomGet();
-							player.gain(card, current);
-							current.$giveAuto(card, player);
+					for (const current of players) {
+						const hs = current.getCards("h");
+						if (!hs.length) {
+							continue;
 						}
-						event.redo();
+						const card = hs.randomGet();
+						const gain = player.gain({ cards: [card], source: current });
+						current.$giveAuto(card, player);
+						await gain;
 					}
 				},
 			},
