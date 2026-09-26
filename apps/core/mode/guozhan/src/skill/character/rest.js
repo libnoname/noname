@@ -14289,126 +14289,97 @@ export default {
 		audio: 2,
 		enable: "phaseUse",
 		prepare(cards, player) {
-			var targets = game.filterPlayer(function (current) {
+			const targets = game.filterPlayer(current => {
 				return current.isFriendOf(player) || current.isUnseen();
 			});
 			player.line(targets, "fire");
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			player.addTempSkill("jianglue_count");
-			player.chooseJunlingFor(player).set("prompt", "选择一张军令牌，令与你势力相同的其他角色选择是否执行");
-			"step 1";
-			event.junling = result.junling;
-			event.targets = result.targets;
-			event.players = game
-				.filterPlayer(function (current) {
-					if (current == player) {
+			const { junling, targets } = await player.chooseJunlingFor(player).set("prompt", "选择一张军令牌，令与你势力相同的其他角色选择是否执行").forResult();
+			const players = game
+				.filterPlayer(current => {
+					if (current === player) {
 						return false;
 					}
-					return current.isFriendOf(player) || (player.identity != "ye" && current.isUnseen());
+					return current.isFriendOf(player) || (player.identity !== "ye" && current.isUnseen());
 				})
 				.sort(lib.sort.seat);
-			event.num = 0;
-			event.filterName = function (name) {
-				return lib.character[name][1] == player.identity && !get.is.double(name);
+			const filterName = name => {
+				return lib.character[name][1] === player.identity && !get.is.double(name);
 			};
-			"step 2";
-			if (num < event.players.length) {
-				event.current = event.players[num];
-			}
-			if (event.current && event.current.isAlive()) {
-				event.showCharacter = false;
-				var choiceList = ["执行该军令，增加1点体力上限，然后回复1点体力", "不执行该军令"];
-				if (event.current.isFriendOf(player)) {
-					event.current
-						.chooseJunlingControl(player, event.junling, targets)
-						.set("prompt", "将略")
-						.set("choiceList", choiceList)
-						.set("ai", function () {
-							if (event.junling == "junling6" && (event.current.countCards("h") > 3 || event.current.countCards("e") > 2)) {
-								return 1;
-							}
-							return event.junling == "junling5" ? 1 : 0;
-						});
-				} else if ((event.filterName(event.current.name1) || event.filterName(event.current.name2)) && event.current.wontYe(player.identity)) {
-					event.showCharacter = true;
-					choiceList[0] = "明置一张武将牌以" + choiceList[0];
-					choiceList[1] = "不明置武将牌且" + choiceList[1];
-					event.current
-						.chooseJunlingControl(player, event.junling, targets)
-						.set("prompt", "将略")
-						.set("choiceList", choiceList)
-						.set("ai", function () {
-							if (event.junling == "junling6" && (event.current.countCards("h") > 3 || event.current.countCards("e") > 2)) {
-								return 1;
-							}
-							return event.junling == "junling5" ? 1 : 0;
-						});
+			const list = [player];
+			for (const current of players) {
+				if (!current.isAlive()) {
+					continue;
+				}
+				let showCharacter = false;
+				const choiceList = ["执行该军令，增加1点体力上限，然后回复1点体力", "不执行该军令"];
+				const ai = () => {
+					if (junling === "junling6" && (current.countCards("h") > 3 || current.countCards("e") > 2)) {
+						return 1;
+					}
+					return junling === "junling5" ? 1 : 0;
+				};
+				let choose;
+				if (current.isFriendOf(player)) {
+					choose = current.chooseJunlingControl(player, junling, targets).set("prompt", "将略").set("choiceList", choiceList).set("ai", ai);
+				} else if ((filterName(current.name1) || filterName(current.name2)) && current.wontYe(player.identity)) {
+					showCharacter = true;
+					choiceList[0] = `明置一张武将牌以${choiceList[0]}`;
+					choiceList[1] = `不明置武将牌且${choiceList[1]}`;
+					choose = current.chooseJunlingControl(player, junling, targets).set("prompt", "将略").set("choiceList", choiceList).set("ai", ai);
 				} else {
-					event.current.chooseJunlingControl(player, event.junling, targets).set("prompt", "将略").set("controls", ["ok"]);
+					choose = current.chooseJunlingControl(player, junling, targets).set("prompt", "将略").set("controls", ["ok"]);
 				}
-			} else {
-				event.goto(4);
-			}
-			"step 3";
-			event.carry = false;
-			if (result.index == 0 && result.control != "ok") {
-				event.carry = true;
-				if (event.showCharacter) {
-					var list = [];
-					if (event.filterName(event.current.name1)) {
-						list.push("主将");
+				const result = await choose.forResult();
+				if (result.index !== 0 || result.control === "ok") {
+					continue;
+				}
+				if (showCharacter) {
+					const names = [];
+					if (filterName(current.name1)) {
+						names.push("主将");
 					}
-					if (event.filterName(event.current.name2)) {
-						list.push("副将");
+					if (filterName(current.name2)) {
+						names.push("副将");
 					}
-					if (list.length > 1) {
-						event.current.chooseControl(["主将", "副将"]).set("ai", function () {
-							let player = _status.event.player;
-							if (get.character(player.name1, 3).includes("gzxuanhuo")) {
-								return 0;
-							}
-							if (get.character(player.name2, 3).includes("gzxuanhuo")) {
-								return 1;
-							}
-							return Math.random() > 0.5 ? 0 : 1;
-						}).prompt = "选择并展示一张武将牌，然后执行军令";
+					let index;
+					if (names.length > 1) {
+						const selection = await current.chooseControl({
+							controls: ["主将", "副将"],
+							prompt: "选择并展示一张武将牌，然后执行军令",
+							ai: () => {
+								const player = _status.event.player;
+								if (get.character(player.name1, 3).includes("gzxuanhuo")) {
+									return 0;
+								}
+								if (get.character(player.name2, 3).includes("gzxuanhuo")) {
+									return 1;
+								}
+								return Math.random() > 0.5 ? 0 : 1;
+							},
+						}).forResult();
+						index = selection.index;
 					} else {
-						event._result = { index: list[0] == "主将" ? 0 : 1 };
+						index = names[0] === "主将" ? 0 : 1;
 					}
+					current.showCharacter(index);
 				}
+				await current.carryOutJunling(player, junling, targets);
+				list.push(current);
 			}
-			"step 4";
-			if (!event.list) {
-				event.list = [player];
-			}
-			if (event.carry) {
-				if (event.showCharacter) {
-					event.current.showCharacter(result.index);
-				}
-				event.current.carryOutJunling(player, event.junling, targets);
-				event.list.push(event.current);
-			}
-			event.num++;
-			if (event.num < event.players.length) {
-				event.goto(2);
-			}
-			"step 5";
-			event.num = 0;
 			player.storage.jianglue_count = 0;
-			"step 6";
-			if (event.list[num].isAlive()) {
-				event.list[num].gainMaxHp(true);
-				event.list[num].recover();
+			for (const current of list) {
+				if (!current.isAlive()) {
+					continue;
+				}
+				await current.gainMaxHp({ forced: true });
+				await current.recover();
 			}
-			event.num++;
-			"step 7";
-			if (event.num < event.list.length) {
-				event.goto(6);
-			} else if (player.storage.jianglue_count > 0) {
-				player.draw(player.storage.jianglue_count);
+			if (player.storage.jianglue_count > 0) {
+				await player.draw(player.storage.jianglue_count);
 			}
 		},
 		marktext: "略",
@@ -14437,7 +14408,7 @@ export default {
 				filter(event) {
 					return event.getParent("jianglue");
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.storage.jianglue_count++;
 				},
 			},
