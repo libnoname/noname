@@ -11639,69 +11639,57 @@ export default {
 	gzwenji: {
 		audio: 2,
 		trigger: { player: "phaseUseBegin" },
-		direct: true,
 		filter(event, player) {
-			return game.hasPlayer(function (current) {
-				return current != player && current.countCards("he");
+			return game.hasPlayer(current => {
+				return current !== player && current.hasCards("he");
 			});
 		},
 		preHidden: true,
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt2("gzwenji"), function (card, player, target) {
-					return target != player && target.countCards("he") > 0;
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2(event.skill),
+					filterTarget: (card, player, target) => target !== player && target.hasCards("he"),
+					ai: target => {
+						const att = get.attitude(_status.event.player, target);
+						if (target.identity === "unknown" && att <= 0) {
+							return 20;
+						}
+						if (att > 0) {
+							return Math.sqrt(att) / 10;
+						}
+						return 5 - att;
+					},
 				})
-				.set("ai", function (target) {
-					var att = get.attitude(_status.event.player, target);
-					if (target.identity == "unknown" && att <= 0) {
-						return 20;
-					}
-					if (att > 0) {
-						return Math.sqrt(att) / 10;
-					}
-					return 5 - att;
-				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("gzwenji", target);
-				target.chooseCard("he", true, "问计：将一张牌交给" + get.translation(player));
-			} else {
-				event.finish();
+				.setHiddenSkill(event.skill)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const cardResult = await target.chooseCard({ position: "he", forced: true, prompt: `问计：将一张牌交给${get.translation(player)}` }).forResult();
+			if (cardResult.bool) {
+				const giveEvent = target.give(cardResult.cards, player);
+				giveEvent.gaintag.add("gzwenji");
+				await giveEvent;
 			}
-			"step 2";
-			if (result.bool) {
-				event.card = result.cards[0];
-				target.give(result.cards, player).gaintag.add("gzwenji");
-			}
-			"step 3";
-			if (target.identity == "unknown" || target.isFriendOf(player)) {
+			if (target.identity === "unknown" || target.isFriendOf(player)) {
 				player.addTempSkill("gzwenji_respond");
-				event.finish();
-			} else if (
-				target.isIn() &&
-				player.countCards("he", function (card) {
-					return !card.hasGaintag("gzwenji");
-				})
-			) {
-				player
-					.chooseCard("he", "交给" + get.translation(target) + "一张其他牌，或令其摸一张牌", function (card) {
-						return !card.hasGaintag("gzwenji");
-					})
-					.set("ai", function (card) {
-						return 5 - get.value(card);
-					});
-			} else {
-				event.finish();
+				return;
 			}
-			"step 4";
+			if (!target.isIn() || !player.hasCards("he", card => !card.hasGaintag("gzwenji"))) {
+				return;
+			}
+			const result = await player.chooseCard({
+				position: "he",
+				prompt: `交给${get.translation(target)}一张其他牌，或令其摸一张牌`,
+				filterCard: card => !card.hasGaintag("gzwenji"),
+				ai: card => 5 - get.value(card),
+			}).forResult();
 			if (result.bool) {
 				player.give(result.cards, target);
 				player.removeGaintag("gzwenji");
 			} else {
-				target.draw();
+				await target.draw();
 			}
 		},
 		subSkill: {
@@ -11714,7 +11702,7 @@ export default {
 						if (!card.cards) {
 							return;
 						}
-						for (var i of card.cards) {
+						for (const i of card.cards) {
 							if (i.hasGaintag("gzwenji")) {
 								return true;
 							}
@@ -11724,7 +11712,7 @@ export default {
 						if (!card.cards) {
 							return;
 						}
-						for (var i of card.cards) {
+						for (const i of card.cards) {
 							if (i.hasGaintag("gzwenji")) {
 								return Infinity;
 							}
@@ -11737,11 +11725,11 @@ export default {
 				audio: "gzwenji",
 				filter(event, player) {
 					return (
-						player.getHistory("lose", function (evt) {
-							if ((evt.relatedEvent || evt.getParent()) != event) {
-								return false;
-							}
-							for (var i in evt.gaintag_map) {
+							player.getHistory("lose", evt => {
+								if ((evt.relatedEvent || evt.getParent()) !== event) {
+									return false;
+								}
+								for (const i in evt.gaintag_map) {
 								if (evt.gaintag_map[i].includes("gzwenji")) {
 									return true;
 								}
@@ -11750,15 +11738,15 @@ export default {
 						}).length > 0
 					);
 				},
-				content() {
-					trigger.directHit.addArray(
-						game.filterPlayer(function (current) {
-							return current != player;
+					async content(event, trigger, player) {
+						trigger.directHit.addArray(
+							game.filterPlayer(current => {
+								return current !== player;
 						})
 					);
 					if (trigger.addCount !== false) {
 						trigger.addCount = false;
-						var stat = player.getStat();
+							const stat = player.getStat();
 						if (stat && stat.card && stat.card[trigger.card.name]) {
 							stat.card[trigger.card.name]--;
 						}
