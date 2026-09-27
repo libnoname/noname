@@ -5268,7 +5268,7 @@ const skills = {
 					return Math.max(...game.filterPlayer(target => target.countDiscardableCards(target, "he") > 0).map(target => get.effect(target, { name: "guohe_copy2", position: "h" }, player, player)));
 				}
 				if (button.link === "sha") {
-					return player.getUseValue(get.autoViewAs({ name: "sha", isCard: true }), false, false);
+					return player.getUseValue(get.autoViewAs({ name: "sha", isCard: true }), void 0, false);
 				}
 				return 3;
 			},
