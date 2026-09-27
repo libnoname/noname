@@ -9715,23 +9715,25 @@ export default {
 			return game.hasPlayer(target => lib.skill.gzboyan.filterTarget(null, player, target));
 		},
 		filterTarget(card, player, target) {
-			return target != player && target.countCards("h") < target.maxHp;
+			return target !== player && target.countCards("h") < target.maxHp;
 		},
-		content() {
-			"step 0";
-			target.draw(Math.min(5, target.maxHp - target.countCards("h")));
-			"step 1";
+		async content(event, trigger, player) {
+			const { target } = event;
+			await target.draw(Math.min(5, target.maxHp - target.countCards("h")));
 			target.addTempSkill("gzboyan_block");
-			"step 2";
-			if (target.isIn()) {
-				player.chooseBool("纵横：是否令" + get.translation(target) + "获得【驳言】？").set("ai", function () {
-					var evt = _status.event.getParent();
-					return get.attitude(evt.player, evt.target) > 0;
-				});
-			} else {
-				event.finish();
+			if (!target.isIn()) {
+				return;
 			}
-			"step 3";
+
+			const result = await player
+				.chooseBool({
+					prompt: `纵横：是否令${get.translation(target)}获得【驳言】？`,
+					ai: () => {
+						const evt = _status.event.getParent();
+						return get.attitude(evt.player, evt.target) > 0;
+					},
+				})
+				.forResult();
 			if (result.bool) {
 				target.addTempSkill("gzboyan_zongheng", { player: "phaseEnd" });
 				game.log(player, "发起了", "#y纵横", "，令", target, "获得了技能", "#g【驳言】");
@@ -9743,7 +9745,8 @@ export default {
 				enable: "phaseUse",
 				usable: 1,
 				filterTarget: lib.filter.notMe,
-				content() {
+				async content(event, trigger, player) {
+					const { target } = event;
 					target.addTempSkill("gzboyan_block");
 				},
 				ai: {
@@ -9751,9 +9754,9 @@ export default {
 					result: {
 						target(player, target) {
 							if (
-								target.countCards("h", "shan") &&
+								target.hasCards("h", "shan") &&
 								!target.hasSkillTag("respondShan", true, null, true) &&
-								player.countCards("h", function (card) {
+								player.hasCards("h", card => {
 									return get.tag(card, "respondShan") && get.effect(target, card, player, player) > 0 && player.getUseValue(card) > 0;
 								})
 							) {
@@ -9770,7 +9773,7 @@ export default {
 				charlotte: true,
 				mod: {
 					cardEnabled2(card) {
-						if (get.position(card) == "h") {
+						if (get.position(card) === "h") {
 							return false;
 						}
 					},
@@ -9797,10 +9800,10 @@ export default {
 						return Math.min(5, target.maxHp - target.countCards("h"));
 					}
 					if (
-						target.maxHp - target.countCards("h") == 1 &&
-						target.countCards("h", "shan") &&
+						target.maxHp - target.countCards("h") === 1 &&
+						target.hasCards("h", "shan") &&
 						!target.hasSkillTag("respondShan", true, null, true) &&
-						player.countCards("h", function (card) {
+						player.hasCards("h", card => {
 							return get.tag(card, "respondShan") && get.effect(target, card, player, player) > 0 && player.getUseValue(card, null, true) > 0;
 						})
 					) {
