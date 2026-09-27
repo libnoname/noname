@@ -18077,46 +18077,40 @@ export default {
 		audio: "shoucheng",
 		preHidden: true,
 		filter(event, player) {
-			return game.hasPlayer(function (current) {
-				if (current == _status.currentPhase || !current.isFriendOf(player)) {
+			return game.hasPlayer(current => {
+				if (current === _status.currentPhase || !current.isFriendOf(player)) {
 					return false;
 				}
-				var evt = event.getl(current);
-				return evt && evt.hs && evt.hs.length && current.countCards("h") == 0;
+				const evt = event.getl(current);
+				return evt && evt.hs && evt.hs.length && !current.hasCards("h");
 			});
 		},
-		content() {
-			"step 0";
-			event.list = game
-				.filterPlayer(function (current) {
-					if (current == _status.currentPhase || !current.isFriendOf(player)) {
+		async content(event, trigger, player) {
+			const list = game
+				.filterPlayer(current => {
+					if (current === _status.currentPhase || !current.isFriendOf(player)) {
 						return false;
 					}
-					var evt = trigger.getl(current);
+					const evt = trigger.getl(current);
 					return evt && evt.hs && evt.hs.length;
 				})
 				.sortBySeat(_status.currentPhase);
-			"step 1";
-			var target = event.list.shift();
-			event.target = target;
-			if (target.isAlive() && target.countCards("h") == 0) {
-				player
-					.chooseBool(get.prompt2("gzshoucheng", target))
-					.set("ai", function () {
-						return get.attitude(_status.event.player, _status.event.getParent().target) > 0;
+			for (const target of list) {
+				event.target = target;
+				if (!target.isAlive() || target.hasCards("h")) {
+					continue;
+				}
+				const result = await player
+					.chooseBool({
+						prompt: get.prompt2("gzshoucheng", target),
+						ai: () => get.attitude(_status.event.player, _status.event.getParent().target) > 0,
 					})
-					.setHiddenSkill(event.name);
-			} else {
-				event.goto(3);
-			}
-			"step 2";
-			if (result.bool) {
-				player.logSkill(event.name, target);
-				target.draw();
-			}
-			"step 3";
-			if (event.list.length) {
-				event.goto(1);
+					.setHiddenSkill(event.name)
+					.forResult();
+				if (result.bool) {
+					player.logSkill(event.name, target);
+					await target.draw();
+				}
 			}
 		},
 	},
