@@ -8985,16 +8985,16 @@ export default {
 			return (
 				player.hp > 2 &&
 				player.needsToDiscard() > 0 &&
-				game.countPlayer(function (current) {
+				game.countPlayer(current => {
 					return get.attitude(current, player) <= 0;
 				}) >
 					game.countPlayer() / 2
 			);
 		},
 		preHidden: true,
-		content() {
+		async content(event, trigger, player) {
 			player.addTempSkill("gzjuejue_effect");
-			player.loseHp();
+			await player.loseHp();
 		},
 		subSkill: {
 			effect: {
@@ -9004,55 +9004,65 @@ export default {
 				popup: false,
 				filter(event, player) {
 					return (
-						player.getHistory("lose", function (evt) {
-							return evt.type == "discard" && evt.cards2 && evt.cards2.length > 0 && evt.getParent("phaseDiscard") == event;
-						}).length > 0
+						player.getHistory(
+							"lose",
+							evt =>
+								evt.type === "discard" &&
+								evt.cards2 &&
+								evt.cards2.length > 0 &&
+								evt.getParent("phaseDiscard") === event
+						).length > 0
 					);
 				},
-				content() {
-					"step 0";
-					var num = 0;
-					player.getHistory("lose", function (evt) {
-						if (evt.type == "discard" && evt.getParent("phaseDiscard") == trigger) {
-							num += evt.cards2.length;
+				async content(event, trigger, player) {
+					event.num = 0;
+					for (const evt of player.getHistory("lose")) {
+						if (evt.type === "discard" && evt.getParent("phaseDiscard") === trigger) {
+							event.num += evt.cards2.length;
 						}
-					});
-					event.num = num;
+					}
 					event.targets = game
-						.filterPlayer(function (current) {
-							return current != player;
-						})
+						.filterPlayer(current => current !== player)
 						.sortBySeat();
 					player.line(event.targets, "green");
-					"step 1";
-					var target = targets.shift();
-					event.target = target;
-					if (target.isIn()) {
+
+					while (event.targets.length) {
+						const target = event.targets.shift();
+						event.target = target;
+						if (!target.isIn()) {
+							continue;
+						}
+
 						target.addTempClass("target");
-						target.chooseCard("h", num, "将" + get.cnNumber(num) + "张牌置入弃牌堆，或受到1点伤害").set("ai", function (card) {
-							var evt = _status.event.getParent();
-							if (get.damageEffect(evt.target, evt.player, evt.target) >= 0) {
-								return 0;
-							}
-							return 8 / Math.sqrt(evt.num) + evt.target.getDamagedHp() - get.value(card);
-						});
-					} else if (targets.length) {
-						event.redo();
-					} else {
-						event.finish();
-					}
-					"step 2";
-					if (result.bool) {
-						target.lose(result.cards, ui.discardPile, "visible");
-						target.$throw(result.cards, 1000);
-						game.log(target, "将", result.cards, "置入了弃牌堆");
-					} else {
-						target.damage();
-					}
-					"step 3";
-					game.delayx();
-					if (targets.length) {
-						event.goto(1);
+						const result = await target
+							.chooseCard({
+								position: "h",
+								selectCard: event.num,
+								prompt: `将${get.cnNumber(event.num)}张牌置入弃牌堆，或受到1点伤害`,
+								ai: card => {
+									const evt = _status.event.getParent();
+									if (get.damageEffect(evt.target, evt.player, evt.target) >= 0) {
+										return 0;
+									}
+									return 8 / Math.sqrt(evt.num) + evt.target.getDamagedHp() - get.value(card);
+								},
+							})
+							.forResult();
+
+						if (result.bool) {
+							const lose = target.lose({
+								cards: result.cards,
+								position: ui.discardPile,
+								visible: true,
+							});
+							target.$throw(result.cards, 1000);
+							game.log(target, "将", result.cards, "置入了弃牌堆");
+							await lose;
+						} else {
+							await target.damage();
+						}
+
+						await game.delayx();
 					}
 				},
 			},
