@@ -183,7 +183,7 @@ const translates = {
 	ym_zhangxingcai: "春秋张星彩",
 	ym_zhangxingcai_prefix: "春秋",
 	ymhengren: "横刃",
-	ymhengren_info: "转换技，其他角色的出牌阶段：阳，开始时；阴，结束时，若其本阶段有【杀】的剩余使用次数，你可以使用一张【杀】（将计入其使用次数且伤害+1）。",
+	ymhengren_info: "转换技，其他角色的出牌阶段：阳，开始时；阴，结束时。若其本阶段有【杀】的剩余使用次数，你可以使用一张【杀】（将计入其使用次数且伤害+1）。",
 	ymdanjue: "胆决",
 	ymdanjue_info: "当与你距离1以内的角色成为【杀】的目标后，你可以令此【杀】不计入次数，然后其摸一张牌并可以交给你一张牌。",
 	ym_jsrg_diaochan: "春秋梦貂蝉",
