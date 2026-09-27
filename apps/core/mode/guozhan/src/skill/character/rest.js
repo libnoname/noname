@@ -5374,77 +5374,57 @@ export default {
 		audio: "xiaoni",
 		trigger: { player: "showCharacterAfter" },
 		filter(event, player) {
-			if (
-				!game.hasPlayer(function (current) {
-					return get.distance(player, current) <= 1;
-				})
-			) {
+			if (!game.hasPlayer(current => get.distance(player, current) <= 1)) {
 				return false;
 			}
 			return event.toShow.some(name => get.character(name, 3).includes("gzjinyu"));
 		},
 		logTarget(event, player) {
-			return game
-				.filterPlayer(function (current) {
-					return get.distance(player, current) <= 1;
-				})
-				.sortBySeat(player);
+			return game.filterPlayer(current => get.distance(player, current) <= 1).sortBySeat(player);
 		},
 		forced: true,
 		locked: false,
-		content() {
-			"step 0";
-			event.targets = game
-				.filterPlayer(function (current) {
-					return get.distance(player, current) <= 1;
-				})
-				.sortBySeat(player);
-			"step 1";
-			var target = event.targets.shift();
-			event.target = target;
-			if (!target.isUnseen(2)) {
-				if (get.is.jun(target)) {
-					event._result = { control: "副将" };
-				} else {
-					target
-						.chooseControl("主将", "副将")
-						.set("prompt", "近谀：请暗置一张武将牌")
-						.set("ai", function () {
-							var target = _status.event.player;
-							if (get.character(target.name, 3).includes("gzjinyu")) {
-								return "主将";
-							}
-							if (get.character(target.name2, 3).includes("gzjinyu")) {
-								return "副将";
-							}
-							if (
-								lib.character[target.name][3].some(skill => {
-									var info = get.info(skill);
-									return info && info.ai && info.ai.maixie;
-								})
-							) {
-								return "主将";
-							}
-							if (target.name == "gz_zhoutai") {
-								return "副将";
-							}
-							if (target.name2 == "gz_zhoutai") {
-								return "主将";
-							}
-							return "副将";
-						});
+		async content(event, trigger, player) {
+			const targets = game.filterPlayer(current => get.distance(player, current) <= 1).sortBySeat(player);
+			for (const target of targets) {
+				if (target.isUnseen(2)) {
+					await target.chooseToDiscard({ selectCard: 2, position: "he", forced: true });
+					continue;
 				}
-			} else {
-				target.chooseToDiscard(2, "he", true);
-				event.goto(3);
+
+				let control = "副将";
+				if (!get.is.jun(target)) {
+					({ control } = await target
+						.chooseControl({
+							controls: ["主将", "副将"],
+							prompt: "近谀：请暗置一张武将牌",
+							ai: (_event, player) => {
+								if (get.character(player.name, 3).includes("gzjinyu")) {
+									return "主将";
+								}
+								if (get.character(player.name2, 3).includes("gzjinyu")) {
+									return "副将";
+								}
+								if (
+									lib.character[player.name][3].some(skill => {
+										const info = get.info(skill);
+										return info && info.ai && info.ai.maixie;
+									})
+								) {
+									return "主将";
+								}
+								if (player.name === "gz_zhoutai") {
+									return "副将";
+								}
+								if (player.name2 === "gz_zhoutai") {
+									return "主将";
+								}
+								return "副将";
+							},
+						})
+						.forResult());
 			}
-			"step 2";
-			if (result.control) {
-				target.hideCharacter(result.control == "主将" ? 0 : 1);
-			}
-			"step 3";
-			if (event.targets.length) {
-				event.goto(1);
+				await target.hideCharacter(control === "主将" ? 0 : 1);
 			}
 		},
 	},
