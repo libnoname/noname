@@ -11887,180 +11887,187 @@ export default {
 		direct: true,
 		//noHidden:true,
 		filter(event, player) {
-			var target = event.player;
-			return event.isFirstTarget && target.isFriendOf(player) && target.isPhaseUsing() && (target == player || player.hasSkill("gzmidao")) && ["basic", "trick"].includes(get.type(event.card)) && get.tag(event.card, "damage") > 0 && event.cards && event.cards.length && !target.hasSkill("gzmidao2");
+			const target = event.player;
+			return event.isFirstTarget && target.isFriendOf(player) && target.isPhaseUsing() && (target === player || player.hasSkill("gzmidao")) && ["basic", "trick"].includes(get.type(event.card)) && get.tag(event.card, "damage") > 0 && event.cards && event.cards.length && !target.hasSkill("gzmidao2");
 		},
 		preHidden: true,
-		content() {
-			"step 0";
-			var next = trigger.player.chooseBool("是否对" + get.translation(player) + "发动【米道】？", "令该角色修改" + get.translation(trigger.card) + "的花色和伤害属性");
-			next.set("ai", () => false);
-			if (player == next.player) {
-				next.setHiddenSkill(event.name);
-			}
-			"step 1";
-			if (result.bool) {
+		content: [
+			(event, trigger, player) => {
+				const next = trigger.player.chooseBool({
+					prompt: `是否对${get.translation(player)}发动【米道】？`,
+					prompt2: `令该角色修改${get.translation(trigger.card)}的花色和伤害属性`,
+					ai: () => false,
+				});
+				if (player === next.player) {
+					next.setHiddenSkill(event.name);
+				}
+			},
+			(event, trigger, player, result) => {
+				if (!result.bool) {
+					event.finish();
+					return;
+				}
 				player.logSkill("gzmidao");
 				trigger.player.addTempSkill("gzmidao2");
-				if (player != trigger.player) {
+				if (player !== trigger.player) {
 					trigger.player.line(player, "green");
 					//player.gain(result.cards,trigger.player,'giveAuto');
 				}
-			} else {
-				event.finish();
-			}
-			"step 2";
-			if (player.isUnderControl()) {
-				game.swapPlayerAuto(player);
-			}
-			var switchToAuto = function () {
-				_status.imchoosing = false;
-				var listn = ["普通"].concat(lib.inpile_nature);
-				event._result = {
-					bool: true,
-					suit: lib.suit.randomGet(),
-					nature: listn.randomGet(),
-				};
-				if (event.dialog) {
-					event.dialog.close();
+			},
+			(event, trigger, player) => {
+				if (player.isUnderControl()) {
+					game.swapPlayerAuto(player);
 				}
-				if (event.control) {
-					event.control.close();
-				}
-			};
-			var chooseButton = function (player, card) {
-				var event = _status.event;
-				player = player || event.player;
-				if (!event._result) {
-					event._result = {};
-				}
-				var dialog = ui.create.dialog("米道：请修改" + card + "的花色和属性", "forcebutton", "hidden");
-				event.dialog = dialog;
-				dialog.addText("花色");
-				var table = document.createElement("div");
-				table.classList.add("add-setting");
-				table.style.margin = "0";
-				table.style.width = "100%";
-				table.style.position = "relative";
-				var listi = ["spade", "heart", "club", "diamond"];
-				for (var i = 0; i < listi.length; i++) {
-					var td = ui.create.div(".shadowed.reduce_radius.pointerdiv.tdnode");
-					td.link = listi[i];
-					table.appendChild(td);
-					td.innerHTML = "<span>" + get.translation(listi[i]) + "</span>";
-					td.addEventListener(lib.config.touchscreen ? "touchend" : "click", function () {
-						if (_status.dragged) {
-							return;
-						}
-						if (_status.justdragged) {
-							return;
-						}
-						_status.tempNoButton = true;
-						setTimeout(function () {
-							_status.tempNoButton = false;
-						}, 500);
-						var link = this.link;
-						var current = this.parentNode.querySelector(".bluebg");
-						if (current) {
-							current.classList.remove("bluebg");
-						}
-						this.classList.add("bluebg");
-						event._result.suit = link;
-					});
-				}
-				dialog.content.appendChild(table);
-				dialog.addText("属性");
-				var table2 = document.createElement("div");
-				table2.classList.add("add-setting");
-				table2.style.margin = "0";
-				table2.style.width = "100%";
-				table2.style.position = "relative";
-				var listn = ["普通"].concat(lib.inpile_nature);
-				for (var i = 0; i < listn.length; i++) {
-					var td = ui.create.div(".shadowed.reduce_radius.pointerdiv.tdnode");
-					var nature = listn[i];
-					td.link = nature;
-					table2.appendChild(td);
-					td.innerHTML = "<span>" + get.translation(nature) + "</span>";
-					td.addEventListener(lib.config.touchscreen ? "touchend" : "click", function () {
-						if (_status.dragged) {
-							return;
-						}
-						if (_status.justdragged) {
-							return;
-						}
-						_status.tempNoButton = true;
-						setTimeout(function () {
-							_status.tempNoButton = false;
-						}, 500);
-						var link = this.link;
-						var current = this.parentNode.querySelector(".bluebg");
-						if (current) {
-							current.classList.remove("bluebg");
-						}
-						this.classList.add("bluebg");
-						event._result.nature = link;
-					});
-				}
-				dialog.content.appendChild(table2);
-				dialog.add("　　");
-				event.dialog.open();
-
-				event.switchToAuto = function () {
+				const switchToAuto = () => {
+					_status.imchoosing = false;
+					const listn = ["普通"].concat(lib.inpile_nature);
 					event._result = {
 						bool: true,
+						suit: lib.suit.randomGet(),
 						nature: listn.randomGet(),
-						suit: listi.randomGet(),
 					};
-					event.dialog.close();
-					event.control.close();
-					game.resume();
-					_status.imchoosing = false;
-				};
-				event.control = ui.create.control("ok", "cancel2", function (link) {
-					var result = event._result;
-					if (link == "cancel2") {
-						result.bool = false;
-					} else {
-						if (!result.nature || !result.suit) {
-							return;
-						}
-						result.bool = true;
+					if (event.dialog) {
+						event.dialog.close();
 					}
-					event.dialog.close();
-					event.control.close();
-					game.resume();
-					_status.imchoosing = false;
-				});
-				for (var i = 0; i < event.dialog.buttons.length; i++) {
-					event.dialog.buttons[i].classList.add("selectable");
+					if (event.control) {
+						event.control.close();
+					}
+				};
+				const chooseButton = (player, card) => {
+					const event = _status.event;
+					player = player || event.player;
+					if (!event._result) {
+						event._result = {};
+					}
+					const dialog = ui.create.dialog(`米道：请修改${card}的花色和属性`, "forcebutton", "hidden");
+					event.dialog = dialog;
+					dialog.addText("花色");
+					const table = document.createElement("div");
+					table.classList.add("add-setting");
+					table.style.margin = "0";
+					table.style.width = "100%";
+					table.style.position = "relative";
+					const listi = ["spade", "heart", "club", "diamond"];
+					for (const suit of listi) {
+						const td = ui.create.div(".shadowed.reduce_radius.pointerdiv.tdnode");
+						td.link = suit;
+						table.appendChild(td);
+						td.innerHTML = `<span>${get.translation(suit)}</span>`;
+						td.addEventListener(lib.config.touchscreen ? "touchend" : "click", function () {
+							if (_status.dragged) {
+								return;
+							}
+							if (_status.justdragged) {
+								return;
+							}
+							_status.tempNoButton = true;
+							setTimeout(() => {
+								_status.tempNoButton = false;
+							}, 500);
+							const link = this.link;
+							const current = this.parentNode.querySelector(".bluebg");
+							if (current) {
+								current.classList.remove("bluebg");
+							}
+							this.classList.add("bluebg");
+							event._result.suit = link;
+						});
+					}
+					dialog.content.appendChild(table);
+					dialog.addText("属性");
+					const table2 = document.createElement("div");
+					table2.classList.add("add-setting");
+					table2.style.margin = "0";
+					table2.style.width = "100%";
+					table2.style.position = "relative";
+					const listn = ["普通"].concat(lib.inpile_nature);
+					for (const nature of listn) {
+						const td = ui.create.div(".shadowed.reduce_radius.pointerdiv.tdnode");
+						td.link = nature;
+						table2.appendChild(td);
+						td.innerHTML = `<span>${get.translation(nature)}</span>`;
+						td.addEventListener(lib.config.touchscreen ? "touchend" : "click", function () {
+							if (_status.dragged) {
+								return;
+							}
+							if (_status.justdragged) {
+								return;
+							}
+							_status.tempNoButton = true;
+							setTimeout(() => {
+								_status.tempNoButton = false;
+							}, 500);
+							const link = this.link;
+							const current = this.parentNode.querySelector(".bluebg");
+							if (current) {
+								current.classList.remove("bluebg");
+							}
+							this.classList.add("bluebg");
+							event._result.nature = link;
+						});
+					}
+					dialog.content.appendChild(table2);
+					dialog.add("　　");
+					event.dialog.open();
+
+					event.switchToAuto = () => {
+						event._result = {
+							bool: true,
+							nature: listn.randomGet(),
+							suit: listi.randomGet(),
+						};
+						event.dialog.close();
+						event.control.close();
+						game.resume();
+						_status.imchoosing = false;
+					};
+					event.control = ui.create.control("ok", "cancel2", link => {
+						const result = event._result;
+						if (link === "cancel2") {
+							result.bool = false;
+						} else {
+							if (!result.nature || !result.suit) {
+								return;
+							}
+							result.bool = true;
+						}
+						event.dialog.close();
+						event.control.close();
+						game.resume();
+						_status.imchoosing = false;
+					});
+					for (const button of event.dialog.buttons) {
+						button.classList.add("selectable");
+					}
+					game.pause();
+					game.countChoose();
+				};
+				if (event.isMine()) {
+					chooseButton(player, get.translation(trigger.card));
+				} else if (event.isOnline()) {
+					event.player.send(chooseButton, event.player, get.translation(trigger.card));
+					event.player.wait();
+					game.pause();
+				} else {
+					switchToAuto();
 				}
-				game.pause();
-				game.countChoose();
-			};
-			if (event.isMine()) {
-				chooseButton(player, get.translation(trigger.card));
-			} else if (event.isOnline()) {
-				event.player.send(chooseButton, event.player, get.translation(trigger.card));
-				event.player.wait();
-				game.pause();
-			} else {
-				switchToAuto();
-			}
-			"step 3";
-			var map = event.result || result;
-			if (map.bool) {
-				game.log(player, "将", trigger.card, "的花色属性修改为了", "#g" + get.translation(map.suit + 2), "#y" + get.translation(map.nature));
+			},
+			(event, trigger, player, result) => {
+				const map = event.result || result;
+				if (!map.bool) {
+					return;
+				}
+				game.log(player, "将", trigger.card, "的花色属性修改为了", `#g${get.translation(map.suit + 2)}`, `#y${get.translation(map.nature)}`);
 				trigger.card.suit = map.suit;
-				if (map.nature == "普通") {
+				if (map.nature === "普通") {
 					delete trigger.card.nature;
 				} else {
 					trigger.card.nature = map.nature;
 				}
 				trigger.player.storage.gzmidao2 = [trigger.card, map.nature];
-				player.popup(get.translation(map.suit + 2) + get.translation(map.nature), "thunder");
-			}
-		},
+				player.popup(`${get.translation(map.suit + 2)}${get.translation(map.nature)}`, "thunder");
+			},
+		],
 	},
 	gzmidao2: {
 		charlotte: true,
@@ -12070,11 +12077,11 @@ export default {
 		popup: false,
 		onremove: true,
 		filter(event, player) {
-			return player.storage.gzmidao2 && event.card == player.storage.gzmidao2[0];
+			return player.storage.gzmidao2 && event.card === player.storage.gzmidao2[0];
 		},
-		content() {
-			var nature = player.storage.gzmidao2[1];
-			if (nature == "普通") {
+		async content(event, trigger, player) {
+			const nature = player.storage.gzmidao2[1];
+			if (nature === "普通") {
 				delete trigger.nature;
 			} else {
 				trigger.nature = nature;
