@@ -10650,7 +10650,7 @@ export default {
 			if (!game.online) {
 				event.set(
 					"quanjin_list",
-					game.filterPlayer(i => i != event.player && i.getHistory("damage").length)
+					game.filterPlayer(i => i !== event.player && i.getHistory("damage").length)
 				);
 			}
 		},
@@ -10665,38 +10665,36 @@ export default {
 		lose: false,
 		delay: false,
 		check(card) {
-			var evt = _status.event;
+			const evt = _status.event;
 			if (
-				evt.quanjin_list.filter(function (target) {
+				evt.quanjin_list.some(target => {
 					return get.attitude(evt.player, target) > 0;
-				}).length
+				})
 			) {
 				return 8 - get.value(card);
 			}
 			return 6.5 - get.value(card);
 		},
-		content() {
-			"step 0";
-			player.give(cards, target);
-			"step 1";
-			player.chooseJunlingFor(target);
-			"step 2";
-			event.junling = result.junling;
-			event.targets = result.targets;
-			var str = get.translation(player);
-			target
-				.chooseJunlingControl(player, result.junling, result.targets)
+		async content(event, trigger, player) {
+			const { target, cards } = event;
+			await player.give(cards, target);
+
+			const junlingResult = await player.chooseJunlingFor(target).forResult();
+			event.junling = junlingResult.junling;
+			event.targets = junlingResult.targets;
+
+			const result = await target
+				.chooseJunlingControl(player, event.junling, event.targets)
 				.set("prompt", "劝进")
-				.set("choiceList", ["执行该军令，然后" + str + "摸一张牌", "不执行该军令，然后其将手牌摸至与全场最多相同"])
-				.set("ai", function () {
-					var evt = _status.event.getParent(2),
-						player = evt.target,
-						source = evt.player,
-						junling = evt.junling,
-						targets = evt.targets;
-					var num = 0;
-					game.countPlayer(function (current) {
-						var num2 = current.countCards("h");
+				.set("choiceList", [`执行该军令，然后${get.translation(player)}摸一张牌`, "不执行该军令，然后其将手牌摸至与全场最多相同"])
+				.set("ai", () => {
+					const evt = _status.event.getParent(2);
+					const player = evt.target;
+					const source = evt.player;
+					const { junling, targets } = evt;
+					let num = 0;
+					game.countPlayer(current => {
+						const num2 = current.countCards("h");
 						if (num2 > num) {
 							num = num2;
 						}
@@ -10712,23 +10710,24 @@ export default {
 						return get.junlingEffect(source, junling, player, targets, player) > 0;
 					}
 					return get.junlingEffect(source, junling, player, targets, player) > 1;
-				});
-			"step 3";
-			if (result.index == 0) {
-				target.carryOutJunling(player, event.junling, targets);
-				player.draw();
-			} else {
-				var num = 0;
-				game.countPlayer(function (current) {
-					var num2 = current.countCards("h");
-					if (num2 > num) {
-						num = num2;
-					}
-				});
-				num -= player.countCards("h");
-				if (num > 0) {
-					player.draw(Math.min(num, 5));
+				})
+				.forResult();
+			if (result.index === 0) {
+				await target.carryOutJunling(player, event.junling, event.targets);
+				await player.draw();
+				return;
+			}
+
+			let num = 0;
+			game.countPlayer(current => {
+				const num2 = current.countCards("h");
+				if (num2 > num) {
+					num = num2;
 				}
+			});
+			num -= player.countCards("h");
+			if (num > 0) {
+				await player.draw(Math.min(num, 5));
 			}
 		},
 		ai: {
@@ -10738,13 +10737,13 @@ export default {
 					if (get.attitude(player, target) > 0) {
 						return 3.3;
 					}
-					var num = 0;
-					game.countPlayer(function (current) {
-						var num2 = current.countCards("h");
-						if (player == current) {
+					let num = 0;
+					game.countPlayer(current => {
+						let num2 = current.countCards("h");
+						if (player === current) {
 							num2--;
 						}
-						if (target == current) {
+						if (target === current) {
 							num2++;
 						}
 						if (num2 > num) {
