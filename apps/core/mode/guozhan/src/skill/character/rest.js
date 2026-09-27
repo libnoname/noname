@@ -8336,7 +8336,7 @@ export default {
 		filter(event, player) {
 			return !event.numFixed && event.num > 0 && player.maxHp > 0;
 		},
-		content() {
+		async content(event, trigger, player) {
 			trigger.num--;
 			player.addTempSkill("gzgongxiu2", "phaseDrawAfter");
 		},
@@ -8346,40 +8346,41 @@ export default {
 		forced: true,
 		charlotte: true,
 		popup: false,
-		content() {
-			"step 0";
-			var str = "令至多" + get.cnNumber(player.maxHp) + "名角色";
-			if (typeof player.storage.gzgongxiu != "number") {
-				player.chooseControl().set("choiceList", [str + "各摸一张牌", str + "各弃置一张牌"]);
-			} else {
-				event._result = { index: 1 - player.storage.gzgongxiu };
-			}
-			"step 1";
-			var num = result.index;
-			event.index = num;
-			player.storage.gzgongxiu = num;
-			player
-				.chooseTarget(true, [1, player.maxHp], "选择至多" + get.cnNumber(player.maxHp) + "名角色各" + (num ? "弃置" : "摸") + "一张牌")
-				.set("goon", event.index ? -1 : 1)
-				.set("ai", function (target) {
-					var evt = _status.event;
-					return evt.goon * get.attitude(evt.player, target);
-				});
-			"step 2";
+		async content(event, trigger, player) {
+			const choiceList = [`令至多${get.cnNumber(player.maxHp)}名角色各摸一张牌`, `令至多${get.cnNumber(player.maxHp)}名角色各弃置一张牌`];
+			const index =
+				typeof player.storage.gzgongxiu !== "number"
+					? (await player.chooseControl({ choiceList }).forResult()).index
+					: 1 - player.storage.gzgongxiu;
+
+			player.storage.gzgongxiu = index;
+			const result = await player
+				.chooseTarget({
+					forced: true,
+					selectTarget: [1, player.maxHp],
+					prompt: `选择至多${get.cnNumber(player.maxHp)}名角色各${index ? "弃置" : "摸"}一张牌`,
+					ai: target => {
+						const evt = _status.event;
+						return evt.goon * get.attitude(evt.player, target);
+					},
+				})
+				.set("goon", index ? -1 : 1)
+				.forResult();
+
 			if (result.bool) {
-				var targets = result.targets.sortBySeat();
+				const targets = result.targets.sortBySeat();
 				player.line(targets, "green");
-				if (event.index == 0) {
-					game.asyncDraw(targets);
+				if (index === 0) {
+					await game.asyncDraw(targets);
 				} else {
-					for (var i of targets) {
-						i.chooseToDiscard("he", true);
+					for (const target of targets) {
+						await target.chooseToDiscard({ position: "he", forced: true });
 					}
-					event.finish();
+					return;
 				}
 			}
-			"step 3";
-			game.delayx();
+
+			await game.delayx();
 		},
 	},
 	gzjinghe: {
