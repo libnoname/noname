@@ -14040,23 +14040,21 @@ export default {
 		trigger: { player: "phaseZhunbeiBegin" },
 		filter(event, player) {
 			return (
-				player.countCards("h") &&
-				game.hasPlayer(function (current) {
-					return current != player && current.identity != "wei";
+				player.hasCards("h") &&
+				game.hasPlayer(current => {
+					return current !== player && current.identity !== "wei";
 				})
 			);
 		},
-		direct: true,
 		preHidden: true,
-		content() {
-			"step 0";
-			player
+		async cost(event, trigger, player) {
+			event.result = await player
 				.chooseCardTarget({
-					prompt: get.prompt2("gzjieyue"),
+					prompt: get.prompt2(event.skill),
 					position: "h",
 					filterCard: true,
 					filterTarget(card, player, target) {
-						return target.identity != "wei" && target != player;
+						return target.identity !== "wei" && target !== player;
 					},
 					ai1(card, player, target) {
 						if (get.attitude(player, target) > 0) {
@@ -14065,46 +14063,42 @@ export default {
 						return 7 - get.value(card);
 					},
 					ai2(target) {
-						var att = get.attitude(get.event().player, target);
+						const att = get.attitude(get.event().player, target);
 						if (att < 0) {
 							return -att;
 						}
 						return 1;
 					},
 				})
-				.setHiddenSkill("gzjieyue");
-			"step 1";
-			if (result.bool) {
-				event.target = result.targets[0];
-				player.logSkill("gzjieyue", result.targets);
-				player.give(result.cards[0], result.targets[0]);
-				player.chooseJunlingFor(result.targets[0]);
-			} else {
-				event.finish();
-			}
-			"step 2";
-			event.junling = result.junling;
-			event.targets = result.targets;
-			var choiceList = [];
-			choiceList.push("执行该军令，然后" + get.translation(player) + "摸一张牌");
-			choiceList.push("令" + get.translation(player) + "摸牌阶段额外摸三张牌");
-			target
-				.chooseJunlingControl(player, result.junling, result.targets)
+				.setHiddenSkill(event.skill)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const giveEvent = player.give(event.cards[0], target);
+			const junlingEvent = player.chooseJunlingFor(target);
+			await giveEvent;
+			const { junling, targets } = await junlingEvent.forResult();
+			const choiceList = [`执行该军令，然后${get.translation(player)}摸一张牌`, `令${get.translation(player)}摸牌阶段额外摸三张牌`];
+			const result = await target
+				.chooseJunlingControl(player, junling, targets)
 				.set("prompt", "节钺")
 				.set("choiceList", choiceList)
-				.set("ai", function () {
+				.set("ai", () => {
 					if (get.attitude(target, player) > 0) {
-						return get.junlingEffect(player, result.junling, target, result.targets, target) > 1 ? 0 : 1;
+						return get.junlingEffect(player, junling, target, targets, target) > 1 ? 0 : 1;
 					}
-					return get.junlingEffect(player, result.junling, target, result.targets, target) >= -1 ? 0 : 1;
-				});
-			"step 3";
-			if (result.index == 0) {
-				target.carryOutJunling(player, event.junling, targets);
-				player.draw();
-			} else {
+					return get.junlingEffect(player, junling, target, targets, target) >= -1 ? 0 : 1;
+				})
+				.forResult();
+			if (result.index !== 0) {
 				player.addTempSkill("gzjieyue_eff");
+				return;
 			}
+			const carryOutEvent = target.carryOutJunling(player, junling, targets);
+			const drawEvent = player.draw();
+			await carryOutEvent;
+			await drawEvent;
 		},
 		ai: { threaten: 2 },
 		subSkill: {
