@@ -13088,45 +13088,53 @@ export default {
 			return player.storage.gzweidi.length > 0;
 		},
 		filterTarget(card, player, target) {
-			return target != player && player.storage.gzweidi.includes(target);
+			return target !== player && player.storage.gzweidi.includes(target);
 		},
-		content() {
-			"step 0";
-			player.chooseJunlingFor(target);
-			"step 1";
-			event.junling = result.junling;
-			event.targets = result.targets;
-			var choiceList = ["执行该军令"];
-			if (target != player) {
-				choiceList.push("令" + get.translation(player) + "获得你所有手牌，然后交给你等量的牌");
+		async content(event, trigger, player) {
+			const target = event.target;
+			const { junling, targets } = await player.chooseJunlingFor(target).forResult();
+			const choiceList = ["执行该军令"];
+			if (target !== player) {
+				choiceList.push(`令${get.translation(player)}获得你所有手牌，然后交给你等量的牌`);
 			} else {
 				choiceList.push("不执行该军令");
 			}
-			target
-				.chooseJunlingControl(player, result.junling, result.targets)
+			const { index } = await target
+				.chooseJunlingControl(player, junling, targets)
 				.set("prompt", "伪帝")
 				.set("choiceList", choiceList)
-				.set("ai", function () {
+				.set("ai", () => {
 					if (get.attitude(target, player) >= 0) {
-						return get.junlingEffect(player, result.junling, target, result.targets, target) >= 0 ? 0 : 1;
+						return get.junlingEffect(player, junling, target, targets, target) >= 0 ? 0 : 1;
 					}
-					return get.junlingEffect(player, result.junling, target, result.targets, target) >= -1 ? 0 : 1;
-				});
-			"step 2";
-			if (result.index == 0) {
-				target.carryOutJunling(player, event.junling, targets);
-			} else if (target != player && target.countCards("h")) {
-				event.num = target.countCards("h");
-				player.gain(target.getCards("h"), target, "giveAuto");
-				player.chooseCard("交给" + get.translation(target) + get.cnNumber(event.num) + "张牌", "he", event.num, true).set("ai", function (card) {
-					return -get.value(card);
-				});
-			} else {
-				event.finish();
+					return get.junlingEffect(player, junling, target, targets, target) >= -1 ? 0 : 1;
+				})
+				.forResult();
+
+			if (index === 0) {
+				await target.carryOutJunling(player, junling, targets);
+				return;
 			}
-			"step 3";
-			if (result.cards) {
-				player.give(result.cards, target);
+			if (target === player) {
+				return;
+			}
+
+			const num = target.countCards("h");
+			if (!num) {
+				return;
+			}
+			await player.gain({ cards: target.getCards("h"), source: target, animate: "giveAuto" });
+			const { cards } = await player
+				.chooseCard({
+					prompt: `交给${get.translation(target)}${get.cnNumber(num)}张牌`,
+					position: "he",
+					selectCard: num,
+					forced: true,
+					ai: card => -get.value(card),
+				})
+				.forResult();
+			if (cards) {
+				await player.give(cards, target);
 			}
 		},
 		group: ["gzweidi_ft", "gzweidi_ftc"],
@@ -13142,22 +13150,23 @@ export default {
 				trigger: { global: "gainBefore" },
 				silent: true,
 				filter(event, player) {
-					if (player == event.player || player.storage.gzweidi.includes(event.player) || _status.currentPhase != player) {
+					if (player === event.player || player.storage.gzweidi.includes(event.player) || _status.currentPhase !== player) {
 						return false;
 					}
-					if (event.cards.length) {
-						if (event.getParent().name == "draw") {
+					if (!event.cards.length) {
+						return false;
+					}
+					if (event.getParent().name === "draw") {
+						return true;
+					}
+					for (const card of event.cards) {
+						if (get.position(card) === "c" || (!get.position(card) && card.original === "c")) {
 							return true;
-						}
-						for (var i = 0; i < event.cards.length; i++) {
-							if (get.position(event.cards[i]) == "c" || (!get.position(event.cards[i]) && event.cards[i].original == "c")) {
-								return true;
-							}
 						}
 					}
 					return false;
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.storage.gzweidi.push(trigger.player);
 				},
 			},
@@ -13166,9 +13175,9 @@ export default {
 				trigger: { global: "phaseAfter" },
 				silent: true,
 				filter(event, player) {
-					return event.player == player;
+					return event.player === player;
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.storage.gzweidi = [];
 				},
 			},
