@@ -12151,87 +12151,74 @@ export default {
 		audio: 2,
 		trigger: { global: "phaseZhunbeiBegin" },
 		noHidden: true,
-		direct: true,
 		filter(event, player) {
-			return player != event.player && !event.player.isFriendOf(player) && player.countDiscardableCards(event.player, "e") > 0;
+			return player !== event.player && !event.player.isFriendOf(player) && player.hasDiscardableCards(event.player, "e");
 		},
-		content() {
-			"step 0";
-			trigger.player.chooseBool("是否对" + get.translation(player) + "发动【礼下】？", "弃置其装备区内的一张牌，然后选择一项：①弃置两张牌。②失去1点体力。③令其摸两张牌。").set("ai", function () {
-				var player = _status.event.player;
-				var target = _status.event.getParent().player;
-				if (get.attitude(player, target) > 0) {
-					return (
-						target.countCards("e", function (card) {
-							return get.value(card, target) < 3;
-						}) > 0
-					);
-				}
-				if (
-					target.countCards("e", function (card) {
-						return get.value(card, target) >= 7;
-					})
-				) {
-					return true;
-				}
-				var dist = get.distance(player, target, "attack");
-				if (dist > 1 && dist - target.countCards("e") <= 1) {
-					return true;
-				}
-				return false;
-			});
-			"step 1";
-			if (result.bool) {
-				var target = trigger.player;
-				event.target = target;
-				player.logSkill("gzlixia");
-				target.line(player, "green");
-				target.discardPlayerCard(player, "e", true);
-			} else {
-				event.finish();
-			}
-			"step 2";
-			var list = ["失去1点体力", "令" + get.translation(player) + "摸两张牌"];
-			event.addIndex = 0;
+		async cost(event, trigger, player) {
+			const target = trigger.player;
+			event.result = await target
+				.chooseBool({
+					prompt: `是否对${get.translation(player)}发动【礼下】？`,
+					prompt2: "弃置其装备区内的一张牌，然后选择一项：①弃置两张牌。②失去1点体力。③令其摸两张牌。",
+					ai: () => {
+						const player = _status.event.player;
+						const target = _status.event.getParent().player;
+						if (get.attitude(player, target) > 0) {
+							return target.hasCards("e", card => get.value(card, target) < 3);
+						}
+						if (target.hasCards("e", card => get.value(card, target) >= 7)) {
+							return true;
+						}
+						const dist = get.distance(player, target, "attack");
+						return dist > 1 && dist - target.countCards("e") <= 1;
+					},
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = trigger.player;
+			target.line(player, "green");
+			await target.discardPlayerCard({ target: player, position: "e", forced: true });
+
+			const list = ["失去1点体力", `令${get.translation(player)}摸两张牌`];
+			let addIndex = 0;
 			if (
-				target.countCards("h", function (card) {
-					return lib.filter.cardDiscardable(card, target, "gzlixia");
-				}) > 1
+				target.countCards("h", card => lib.filter.cardDiscardable(card, target, "gzlixia")) > 1
 			) {
 				list.unshift("弃置两张牌");
 			} else {
-				event.addIndex++;
+				addIndex++;
 			}
-			target
-				.chooseControl()
-				.set("choiceList", list)
-				.set("ai", function () {
-					var num = 2;
-					var player = _status.event.player;
-					var target = _status.event.getParent().player;
-					if (get.attitude(player, target) >= 0) {
-						num = 2;
-					} else if (
-						player.countCards("he", function (card) {
-							return lib.filter.cardDiscardable(card, player, "gzlixia") && get.value(card, player) < 5;
-						}) > 1
-					) {
-						num = 0;
-					} else if (player.hp + player.countCards("h", "tao") > 3 && !player.hasJudge("lebu")) {
-						num = 1;
-					}
-					return num - _status.event.getParent().addIndex;
-				});
-			"step 3";
-			switch (result.index + event.addIndex) {
+			const { index } = await target
+				.chooseControl({
+					choiceList: list,
+					ai: () => {
+						let num = 2;
+						const player = _status.event.player;
+						const target = _status.event.getParent().player;
+						if (get.attitude(player, target) < 0) {
+							if (
+								player.countCards("he", card => lib.filter.cardDiscardable(card, player, "gzlixia") && get.value(card, player) < 5) > 1
+							) {
+								num = 0;
+							} else if (player.hp + player.countCards("h", "tao") > 3 && !player.hasJudge("lebu")) {
+								num = 1;
+							}
+						}
+						return num - addIndex;
+					},
+				})
+				.forResult();
+
+			switch (index + addIndex) {
 				case 0:
-					target.chooseToDiscard(2, "h", true);
+					await target.chooseToDiscard({ selectCard: 2, position: "h", forced: true });
 					break;
 				case 1:
-					target.loseHp();
+					await target.loseHp();
 					break;
 				case 2:
-					player.draw(2);
+					await player.draw(2);
 					break;
 			}
 		},
