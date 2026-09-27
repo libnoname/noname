@@ -7012,49 +7012,50 @@ export default {
 		},
 		usable: 1,
 		logTarget: "player",
-		content() {
-			"step 0";
-			var target = trigger.player;
-			event.target = target;
+		async content(event, trigger, player) {
+			const target = trigger.player;
+			let control;
 			if (target.hasSex("female") && target.countCards("e") > 0) {
-				player.chooseToDiscard("he", "追妒：是否弃置一张牌并令其执行两项？").set("ai", function (card) {
-					return 8 - get.value(card);
-				});
-			} else {
-				event.goto(2);
+				const discardResult = await player
+					.chooseToDiscard({
+						position: "he",
+						prompt: "追妒：是否弃置一张牌并令其执行两项？",
+						ai: card => 8 - get.value(card),
+					})
+					.forResult();
+				if (discardResult.bool) {
+					control = "我全都要！";
+				}
 			}
-			"step 1";
-			if (result.bool) {
-				event._result = { control: "我全都要！" };
-				event.goto(3);
+			if (control !== "我全都要！") {
+				if (target.countCards("e") > 0) {
+					const result = await target
+						.chooseControl({
+							prompt: "追妒：请选择一项",
+							choiceList: [`令${get.translation(player)}此次对你造成的伤害+1`, "弃置装备区里的所有牌"],
+							ai: (_event, player) => {
+								const cards = player.getCards("e");
+								if (player.hp <= 2) {
+									return 1;
+								}
+								if (get.value(cards) <= 7) {
+									return 1;
+								}
+								return 0;
+							},
+						})
+						.forResult();
+					control = result.control;
+				} else {
+					control = "选项一";
+				}
 			}
-			"step 2";
-			if (target.countCards("e") > 0) {
-				target
-					.chooseControl()
-					.set("prompt", "追妒：请选择一项")
-					.set("choiceList", ["令" + get.translation(player) + "此次对你造成的伤害+1", "弃置装备区里的所有牌"])
-					.set("ai", function () {
-						var player = _status.event.player,
-							cards = player.getCards("e");
-						if (player.hp <= 2) {
-							return 1;
-						}
-						if (get.value(cards) <= 7) {
-							return 1;
-						}
-						return 0;
-					});
-			} else {
-				event._result = { control: "选项一" };
-			}
-			"step 3";
 			player.line(target);
-			if (result.control != "选项二") {
+			if (control !== "选项二") {
 				trigger.num++;
 			}
-			if (result.control != "选项一") {
-				target.chooseToDiscard(target.countCards("e"), true, "e");
+			if (control !== "选项一") {
+				await target.chooseToDiscard({ selectCard: target.countCards("e"), forced: true, position: "e" });
 			}
 		},
 	},
