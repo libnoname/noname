@@ -3396,34 +3396,34 @@ export default {
 	fakexibing: {
 		audio: "xibing",
 		filter(event, player) {
-			if (player == event.player || event.targets.length != 1 || event.player.countCards("h") >= event.player.hp) {
+			if (player === event.player || event.targets.length !== 1 || event.player.countCards("h") >= event.player.hp) {
 				return false;
 			}
-			var bool = function (card) {
-				return (card.name == "sha" || get.type(card, null, false) == "trick") && get.color(card, false) == "black";
+			const isBlackShaOrTrick = card => {
+				return (card.name === "sha" || get.type(card, null, false) === "trick") && get.color(card, false) === "black";
 			};
-			if (!bool(event.card)) {
+			if (!isBlackShaOrTrick(event.card)) {
 				return false;
 			}
-			var evt = event.getParent("phaseUse");
-			if (evt.player != event.player) {
+			const evt = event.getParent("phaseUse");
+			if (evt.player !== event.player) {
 				return false;
 			}
 			return (
-				event.player.getHistory("useCard", function (evtx) {
-					return bool(evtx.card) && evtx.getParent("phaseUse") == evt;
-				})[0] == event.getParent()
+				event.player.getHistory("useCard", evtx => {
+					return isBlackShaOrTrick(evtx.card) && evtx.getParent("phaseUse") === evt;
+				})[0] === event.getParent()
 			);
 		},
 		logTarget: "player",
 		check(event, player) {
-			var target = event.player;
-			var att = get.attitude(player, target);
-			var num2 = Math.min(5, target.hp) - target.countCards("h");
+			const target = event.player;
+			const att = get.attitude(player, target);
+			const num2 = Math.min(5, target.hp) - target.countCards("h");
 			if (num2 <= 0) {
 				return att <= 0;
 			}
-			var num = target.countCards("h", function (card) {
+			const num = target.countCards("h", card => {
 				return target.hasValueTarget(card, null, true);
 			});
 			if (!num) {
@@ -3432,42 +3432,47 @@ export default {
 			return (num - num2) * att < 0;
 		},
 		preHidden: true,
-		content() {
-			"step 0";
-			var num = trigger.player.hp - trigger.player.countCards("h");
+		async content(event, trigger, player) {
+			const num = trigger.player.hp - trigger.player.countCards("h");
 			if (num > 0) {
-				trigger.player.draw(num);
+				await trigger.player.draw(num);
 			}
-			"step 1";
 			trigger.player.addTempSkill("fakexibing_banned");
-			if (get.mode() != "guozhan" || player.isUnseen(2) || trigger.player.isUnseen(2)) {
-				event.finish();
+			if (get.mode() !== "guozhan" || player.isUnseen(2) || trigger.player.isUnseen(2)) {
+				return;
 			}
-			"step 2";
-			var target = trigger.player;
-			var players1 = [player.name1, player.name2];
-			var players2 = [target.name1, target.name2];
-			player
-				.chooseButton(2, ["是否暗置自己和" + get.translation(target) + "的各一张武将牌？", '<div class="text center">你的武将牌</div>', [players1, "character"], '<div class="text center">' + get.translation(target) + "的武将牌</div>", [players2, "character"]])
+			const target = trigger.player;
+			const players1 = [player.name1, player.name2];
+			const players2 = [target.name1, target.name2];
+			const result = await player.chooseButton({
+				selectButton: 2,
+				createDialog: [
+					`是否暗置自己和${get.translation(target)}的各一张武将牌？`,
+					'<div class="text center">你的武将牌</div>',
+					[players1, "character"],
+					`<div class="text center">${get.translation(target)}的武将牌</div>`,
+					[players2, "character"],
+				],
+				complexSelect: true,
+				filterButton: button => {
+					return !get.is.jun(button.link) && (ui.selected.buttons.length === 0) === _status.event.players.includes(button.link);
+				},
+			})
 				.set("players", players1)
-				.set("complexSelect", true)
-				.set("filterButton", function (button) {
-					return !get.is.jun(button.link) && (ui.selected.buttons.length == 0) == _status.event.players.includes(button.link);
-				});
-			"step 3";
-			if (result.bool) {
-				var target = trigger.player;
-				player.hideCharacter(player.name1 == result.links[0] ? 0 : 1);
-				target.hideCharacter(target.name1 == result.links[1] ? 0 : 1);
-				player.addTempSkill("fakexibing_nomingzhi");
-				target.addTempSkill("fakexibing_nomingzhi");
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
+			player.hideCharacter(player.name1 === result.links[0] ? 0 : 1);
+			target.hideCharacter(target.name1 === result.links[1] ? 0 : 1);
+			player.addTempSkill("fakexibing_nomingzhi");
+			target.addTempSkill("fakexibing_nomingzhi");
 		},
 		subSkill: {
 			banned: {
 				mod: {
 					cardEnabled2(card) {
-						if (get.position(card) == "h") {
+						if (get.position(card) === "h") {
 							return false;
 						}
 					},
