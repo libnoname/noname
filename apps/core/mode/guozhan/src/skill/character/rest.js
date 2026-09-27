@@ -14841,9 +14841,9 @@ export default {
 		enable: "phaseUse",
 		filter(event, player) {
 			return (
-				player.countCards("he", { color: "black" }) &&
-				game.hasPlayer(function (current) {
-					return current != player && !current.isUnseen(2);
+				player.hasCards("he", { color: "black" }) &&
+				game.hasPlayer(current => {
+					return current !== player && !current.isUnseen(2);
 				})
 			);
 		},
@@ -14852,7 +14852,7 @@ export default {
 		},
 		position: "he",
 		filterTarget(card, player, target) {
-			if (target == player) {
+			if (target === player) {
 				return false;
 			}
 			return !target.isUnseen(2);
@@ -14860,59 +14860,56 @@ export default {
 		check(card) {
 			return 6 - get.value(card, _status.event.player);
 		},
-		content() {
-			"step 0";
-			event.target = target;
-			event.done = false;
-			"step 1";
-			if (get.is.jun(event.target)) {
-				event._result = { control: "副将" };
-			} else {
-				var choice = "主将";
-				var skills = lib.character[event.target.name2][3];
-				for (var i = 0; i < skills.length; i++) {
-					var info = get.info(skills[i]);
-					if (info && info.ai && info.ai.maixie) {
-						choice = "副将";
-						break;
+		async content(event, trigger, player) {
+			let target = event.target;
+			let done = false;
+			while (true) {
+				let control = "副将";
+				if (!get.is.jun(target)) {
+					let choice = "主将";
+					const skills = lib.character[target.name2][3];
+					for (const skill of skills) {
+						const info = get.info(skill);
+						if (info && info.ai && info.ai.maixie) {
+							choice = "副将";
+							break;
+						}
 					}
+					if (get.character(target.name, 3).includes("buqu")) {
+						choice = "主将";
+					} else if (get.character(target.name2, 3).includes("buqu")) {
+						choice = "副将";
+					}
+					const result = await player
+						.chooseControl({
+							controls: ["主将", "副将"],
+							prompt: `暗置${get.translation(target)}的一张武将牌`,
+							ai: () => _status.event.choice,
+						})
+						.set("choice", choice)
+						.forResult();
+					control = result.control;
 				}
-				if (get.character(event.target.name, 3).includes("buqu")) {
-					choice = "主将";
-				} else if (get.character(event.target.name2, 3).includes("buqu")) {
-					choice = "副将";
+				const hideEvent = target.hideCharacter(control === "主将" ? 0 : 1);
+				target.addTempSkill("qingcheng_ai");
+				if (get.type(event.cards[0]) !== "equip" || done) {
+					await hideEvent;
+					return;
 				}
-				player
-					.chooseControl("主将", "副将", function () {
-						return _status.event.choice;
-					})
-					.set("prompt", "暗置" + get.translation(event.target) + "的一张武将牌")
-					.set("choice", choice);
-			}
-			"step 2";
-			if (result.control == "主将") {
-				event.target.hideCharacter(0);
-			} else {
-				event.target.hideCharacter(1);
-			}
-			event.target.addTempSkill("qingcheng_ai");
-			if (get.type(cards[0]) == "equip" && !event.done) {
-				player
-					.chooseTarget("是否暗置一名武将牌均为明置的角色的一张武将牌？", function (card, player, target) {
-						return target != player && !target.isUnseen(2);
-					})
-					.set("ai", function (target) {
-						return -get.attitude(_status.event.player, target);
-					});
-			} else {
-				event.finish();
-			}
-			"step 3";
-			if (result.bool && result.targets && result.targets.length) {
+				const chooseEvent = player.chooseTarget({
+					prompt: "是否暗置一名武将牌均为明置的角色的一张武将牌？",
+					filterTarget: (card, player, target) => target !== player && !target.isUnseen(2),
+					ai: target => -get.attitude(_status.event.player, target),
+				});
+				await hideEvent;
+				const result = await chooseEvent.forResult();
+				if (!result.bool || !result.targets?.length) {
+					return;
+				}
 				player.line(result.targets[0], "green");
-				event.done = true;
-				event.target = result.targets[0];
-				event.goto(1);
+				done = true;
+				target = result.targets[0];
+				event.target = target;
 			}
 		},
 		ai: {
@@ -14932,7 +14929,7 @@ export default {
 						return 0;
 					}
 					if (
-						player.hasCard(function (card) {
+						player.hasCard(card => {
 							return get.tag(card, "damage") && player.canUse(card, target, true, true);
 						})
 					) {
