@@ -6060,47 +6060,42 @@ export default {
 		filter(event, player) {
 			return event.source && event.source.isIn() && player.canUse("sha", event.source, false);
 		},
-		content() {
-			"step 0";
-			var target = trigger.source;
-			event.target = target;
+		async content(event, trigger, player) {
+			const target = trigger.source;
 			target.addTempSkill("gzyechou_unsavable");
-			player
-				.useCard({ name: "sha", isCard: true }, target)
+			await player
+				.useCard({ card: { name: "sha", isCard: true }, targets: [target] })
 				.set("forceDie", true)
-				.set("oncard", function () {
+				.set("oncard", () => {
 					_status.event.directHit.addArray(game.filterPlayer());
 				});
-			"step 1";
 			player.addTempSkill("gzyechou_unequip");
 			if (!target.isIn() || !player.canUse("sha", target, false)) {
 				player.removeSkill("gzyechou_unequip");
-				event.goto(3);
-			} else {
-				player
-					.useCard(
-						{
-							name: "sha",
-							isCard: true,
-							storage: { gzyechou: true },
-						},
-						target
-					)
-					.set("forceDie", true);
+				target.removeSkill("gzyechou_unsavable");
+				return;
 			}
-			"step 2";
+			await player
+				.useCard({
+					card: {
+						name: "sha",
+						isCard: true,
+						storage: { gzyechou: true },
+					},
+					targets: [target],
+				})
+				.set("forceDie", true);
 			player.removeSkill("gzyechou_unequip");
 			if (!target.isIn() || !player.canUse("sha", target, false)) {
-				event.goto(3);
-			} else {
-				player
-					.useCard({ name: "sha", isCard: true }, target)
-					.set("forceDie", true)
-					.set("oncard", function () {
-						_status.event.baseDamage++;
-					});
+				target.removeSkill("gzyechou_unsavable");
+				return;
 			}
-			"step 3";
+			await player
+				.useCard({ card: { name: "sha", isCard: true }, targets: [target] })
+				.set("forceDie", true)
+				.set("oncard", () => {
+					_status.event.baseDamage++;
+				});
 			target.removeSkill("gzyechou_unsavable");
 		},
 		ai: {
@@ -6111,7 +6106,7 @@ export default {
 				charlotte: true,
 				mod: {
 					targetEnabled(card, player, target) {
-						if (card.name == "tao" && target.isDying() && player.isFriendOf(target) && target != player) {
+						if (card.name === "tao" && target.isDying() && player.isFriendOf(target) && target !== player) {
 							return false;
 						}
 					},
