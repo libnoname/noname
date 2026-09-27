@@ -18155,35 +18155,32 @@ export default {
 	gzhuyuan: {
 		audio: "huyuan",
 		trigger: { player: "phaseJieshuBegin" },
-		direct: true,
 		preHidden: true,
 		filter(event, player) {
-			return player.countCards("he") > 0;
+			return player.hasCards("he");
 		},
-		content() {
-			"step 0";
-			player
+		async cost(event, trigger, player) {
+			event.result = await player
 				.chooseCardTarget({
 					filterCard: true,
 					position: "he",
 					filterTarget(card, player, target) {
-						if (player == target) {
+						if (player === target) {
 							return false;
 						}
-						var card = ui.selected.cards[0];
-						if (get.type(card) != "equip") {
+						const selectedCard = ui.selected.cards[0];
+						if (get.type(selectedCard) !== "equip") {
 							return true;
 						}
-						return target.canEquip(card);
+						return target.canEquip(selectedCard);
 					},
-					prompt: get.prompt2("gzhuyuan"),
+					prompt: get.prompt2(event.skill),
 					complexSelect: true,
 					ai1(card) {
 						if (!_status.event.goon) {
 							return false;
 						}
-						var player = _status.event.player;
-						if (get.type(card) != "equip") {
+						if (get.type(card) !== "equip") {
 							return 0;
 						}
 						return 7.5 - get.value(card);
@@ -18192,74 +18189,68 @@ export default {
 						if (!_status.event.goon) {
 							return false;
 						}
-						var player = _status.event.player,
-							card = ui.selected.cards[0];
+						const player = _status.event.player;
+						const card = ui.selected.cards[0];
 						return get.effect(target, card, player, player);
 					},
-					goon: game.hasPlayer(function (current) {
+					goon: game.hasPlayer(current => {
 						return get.effect(current, { name: "guohe_copy", position: "ej" }, player, player) > 0;
 					}),
 				})
-				.setHiddenSkill("gzhuyuan");
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0],
-					card = result.cards[0];
-				player.logSkill("gzhuyuan", target);
-				if (get.type(card) == "equip") {
-					player.$give(card, target, false);
-					game.delayx();
-					target.equip(card);
-				} else {
-					player.give(card, target);
-					event.finish();
-				}
-			} else {
-				event.finish();
+				.setHiddenSkill(event.skill)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const card = event.cards[0];
+			if (get.type(card) !== "equip") {
+				await player.give(card, target);
+				return;
 			}
-			"step 2";
+			player.$give(card, target, false);
+			const delay = game.delayx();
+			const equipEvent = target.equip(card);
+			await delay;
+			await equipEvent;
 			if (
-				game.hasPlayer(function (current) {
-					return current.hasCard(function (card) {
+				game.hasPlayer(current => {
+					return current.hasCard(card => {
 						return lib.filter.canBeDiscarded(card, player, current);
 					}, "ej");
 				})
 			) {
-				player
-					.chooseTarget("是否弃置场上的一张牌？", function (card, player, target) {
-						return target.hasCard(function (card) {
+				const result = await player
+					.chooseTarget({
+						prompt: "是否弃置场上的一张牌？",
+						filterTarget: (card, player, target) => target.hasCard(card => {
 							return lib.filter.canBeDiscarded(card, player, target);
-						}, "ej");
+						}, "ej"),
+						ai: target => {
+							const player = _status.event.player;
+							return get.effect(target, { name: "guohe_copy", position: "ej" }, player, player);
+						},
 					})
-					.set("ai", function (target) {
-						const player = _status.event.player;
-						return get.effect(target, { name: "guohe_copy", position: "ej" }, player, player);
-					});
-			} else {
-				event.finish();
-			}
-			"step 3";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.line(target, "thunder");
-				player.discardPlayerCard(target, true, "ej");
+					.forResult();
+				if (result.bool) {
+					const discardTarget = result.targets[0];
+					player.line(discardTarget, "thunder");
+					await player.discardPlayerCard({ target: discardTarget, forced: true, position: "ej" });
+				}
 			}
 		},
 	},
 	huyuan: {
 		audio: 2,
 		trigger: { player: "phaseJieshuBegin" },
-		direct: true,
 		preHidden: true,
 		filter(event, player) {
-			return player.countCards("he", { type: "equip" }) > 0;
+			return player.hasCards("he", { type: "equip" });
 		},
-		content() {
-			"step 0";
-			player
+		async cost(event, trigger, player) {
+			event.result = await player
 				.chooseCardTarget({
 					filterCard(card) {
-						return get.type(card) == "equip";
+						return get.type(card) === "equip";
 					},
 					position: "he",
 					filterTarget(card, player, target) {
@@ -18271,36 +18262,40 @@ export default {
 					ai2(target) {
 						return get.attitude(_status.event.player, target) - 3;
 					},
-					prompt: get.prompt2("huyuan"),
+					prompt: get.prompt2(event.skill),
 				})
-				.setHiddenSkill("huyuan");
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("huyuan", target);
-				event.current = target;
-				target.equip(result.cards[0]);
-				if (target != player) {
-					player.$give(result.cards, target, false);
-					game.delay(2);
-				}
-				player
-					.chooseTarget("弃置一名角色的一张牌", function (card, player, target) {
-						var source = _status.event.source;
-						return get.distance(source, target) <= 1 && source != target && target.countCards("he");
-					})
-					.set("ai", function (target) {
-						var player = _status.event.player;
-						return get.effect(target, { name: "guohe_copy2" }, player, player);
-					})
-					.set("source", target);
-			} else {
-				event.finish();
+				.setHiddenSkill(event.skill)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const equipEvent = target.equip(event.cards[0]);
+			let delay;
+			if (target !== player) {
+				player.$give(event.cards, target, false);
+				delay = game.delay(2);
 			}
-			"step 2";
+			const chooseEvent = player
+				.chooseTarget({
+					prompt: "弃置一名角色的一张牌",
+					filterTarget: (card, player, target) => {
+						const source = _status.event.source;
+						return get.distance(source, target) <= 1 && source !== target && target.hasCards("he");
+					},
+					ai: target => {
+						const player = _status.event.player;
+						return get.effect(target, { name: "guohe_copy2" }, player, player);
+					},
+				})
+				.set("source", target);
+			await equipEvent;
+			if (delay) {
+				await delay;
+			}
+			const result = await chooseEvent.forResult();
 			if (result.bool && result.targets.length) {
-				event.current.line(result.targets, "green");
-				player.discardPlayerCard(true, result.targets[0], "he");
+				target.line(result.targets, "green");
+				await player.discardPlayerCard({ target: result.targets[0], forced: true, position: "he" });
 			}
 		},
 	},
