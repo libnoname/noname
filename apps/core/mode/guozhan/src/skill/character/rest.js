@@ -11782,21 +11782,22 @@ export default {
 		trigger: { player: "damageEnd" },
 		frequent: true,
 		preHidden: true,
-		content() {
-			"step 0";
-			event.count = trigger.num;
-			"step 1";
-			event.count--;
-			player.draw();
-			"step 2";
-			if (event.count > 0) {
-				player.chooseBool(get.prompt2("gzbushi")).set("frequentSkill", "gzbushi");
-			} else {
-				event.finish();
-			}
-			"step 3";
-			if (result.bool) {
-				event.goto(1);
+		async content(event, trigger, player) {
+			let count = trigger.num;
+			while (true) {
+				count--;
+				await player.draw();
+				if (count <= 0) {
+					return;
+				}
+
+				const result = await player
+					.chooseBool({ prompt: get.prompt2("gzbushi") })
+					.set("frequentSkill", "gzbushi")
+					.forResult();
+				if (!result.bool) {
+					return;
+				}
 			}
 		},
 		group: "gzbushi_draw",
@@ -11808,18 +11809,21 @@ export default {
 				filter(event, player) {
 					return event.player.isEnemyOf(player) && event.player.isIn();
 				},
-				content() {
-					"step 0";
-					trigger.player.chooseBool("是否对" + get.translation(player) + "发动【布施】？", "你摸一张牌，然后其摸一张牌");
-					"step 1";
-					if (result.bool) {
-						player.logSkill("gzbushi", trigger.player);
-						game.asyncDraw([trigger.player, player]);
-					} else {
-						event.finish();
+				async content(event, trigger, player) {
+					const target = trigger.player;
+					const result = await target
+						.chooseBool({
+							prompt: `是否对${get.translation(player)}发动【布施】？`,
+							prompt2: "你摸一张牌，然后其摸一张牌",
+						})
+						.forResult();
+					if (!result.bool) {
+						return;
 					}
-					"step 2";
-					game.delayx();
+
+					player.logSkill("gzbushi", target);
+					await game.asyncDraw([target, player]);
+					await game.delayx();
 				},
 			},
 		},
@@ -11832,48 +11836,47 @@ export default {
 		},
 		forced: true,
 		filter(event, player, name) {
-			if (name == "damageSource" && player == event.player) {
+			if (name === "damageSource" && player === event.player) {
 				return false;
 			}
-			return game.hasPlayer(function (current) {
+			return game.hasPlayer(current => {
 				return current.isFriendOf(event.player);
 			});
 		},
 		check(event, player) {
 			return player.isFriendOf(event.player);
 		},
-		content() {
-			"step 0";
-			event.count = trigger.num;
-			if (event.triggername == "damageSource") {
-				event.count = 1;
-			}
-			"step 1";
-			event.count--;
-			var target = trigger.player;
-			var list = game.filterPlayer(function (current) {
-				return current.isFriendOf(target);
-			});
-			if (list.length) {
-				if (list.length == 1) {
-					event._result = { bool: true, targets: list };
-				} else {
-					player
-						.chooseTarget("布施：令一名与" + (player == target ? "你" : get.translation(target)) + "势力相同的角色摸一张牌", true, function (card, player, target) {
-							return target.isFriendOf(_status.event.target);
-						})
-						.set("target", target);
+		async content(event, trigger, player) {
+			const target = trigger.player;
+			let count = event.triggername === "damageSource" ? 1 : trigger.num;
+			while (true) {
+				count--;
+				const friends = game.filterPlayer(current => current.isFriendOf(target));
+				if (!friends.length) {
+					return;
 				}
-			} else {
-				event.finish();
-			}
-			"step 2";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.line(target, "green");
-				target.draw();
-				if (event.count) {
-					event.goto(1);
+
+				let chosenTarget;
+				if (friends.length === 1) {
+					chosenTarget = friends[0];
+				} else {
+					const result = await player
+						.chooseTarget({
+							prompt: `布施：令一名与${player === target ? "你" : get.translation(target)}势力相同的角色摸一张牌`,
+							forced: true,
+							filterTarget: (_card, _player, current) => current.isFriendOf(target),
+						})
+						.forResult();
+					if (!result.bool) {
+						return;
+					}
+					chosenTarget = result.targets[0];
+				}
+
+				player.line(chosenTarget, "green");
+				await chosenTarget.draw();
+				if (!count) {
+					return;
 				}
 			}
 		},
