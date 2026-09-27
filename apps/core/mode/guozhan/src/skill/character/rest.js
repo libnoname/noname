@@ -11040,46 +11040,49 @@ export default {
 		zhenfa: "inline",
 		trigger: { player: "phaseJieshuBegin" },
 		filter(event, player) {
-			var bool = player.hasSkill("fengyang");
+			const bool = player.hasSkill("fengyang");
 			return (
-				game.hasPlayer(function (current) {
-					return current != player && current.inline(player);
+				game.hasPlayer(current => {
+					return current !== player && current.inline(player);
 				}) &&
-				game.hasPlayer(function (current) {
-					return (current == player || bool) && current.inline(player) && current.countCards("e") > 0;
+				game.hasPlayer(current => {
+					return (current === player || bool) && current.inline(player) && current.hasCards("e");
 				})
 			);
 		},
 		direct: true,
 		preHidden: true,
-		content() {
-			"step 0";
-			event.list = game
-				.filterPlayer(function (current) {
+		async content(event, trigger, player) {
+			const list = game
+				.filterPlayer(current => {
 					return current.inline(player);
 				})
 				.sortBySeat();
-			"step 1";
-			var target = event.list.shift();
-			if ((target == player || player.hasSkill("fengyang")) && target.countCards("e")) {
+			for (const target of list) {
+				if (target !== player && !player.hasSkill("fengyang")) {
+					continue;
+				}
+				if (!target.hasCards("e")) {
+					continue;
+				}
+
 				event.target = target;
-				var next = target.chooseToDiscard("e", get.prompt("fengyang"), "弃置装备区内的一张牌并摸两张牌").set("ai", function (card) {
-					return 5.5 - get.value(card);
+				const next = target.chooseToDiscard({
+					selectCard: 1,
+					position: "e",
+					prompt: get.prompt("fengyang"),
+					prompt2: "弃置装备区内的一张牌并摸两张牌",
+					ai: card => 5.5 - get.value(card),
 				});
 				next.logSkill = "fengyang";
-				if (player == target) {
+				if (player === target) {
 					next.setHiddenSkill("fengyang");
 				}
-			} else {
-				event.goto(3);
-			}
-			"step 2";
-			if (result.bool) {
-				target.draw(2);
-			}
-			"step 3";
-			if (event.list.length) {
-				event.goto(1);
+
+				const result = await next.forResult();
+				if (result.bool) {
+					await target.draw(2);
+				}
 			}
 		},
 	},
@@ -11092,10 +11095,10 @@ export default {
 				mod: {
 					canBeDiscarded(card, player, target) {
 						if (
-							get.position(card) == "e" &&
-							player.identity != target.identity &&
-							game.hasPlayer(function (current) {
-								return current.hasSkill("fengyang_old") && (current == target || target.inline(current));
+							get.position(card) === "e" &&
+							player.identity !== target.identity &&
+							game.hasPlayer(current => {
+								return current.hasSkill("fengyang_old") && (current === target || target.inline(current));
 							})
 						) {
 							return false;
@@ -11103,10 +11106,10 @@ export default {
 					},
 					canBeGained(card, player, target) {
 						if (
-							get.position(card) == "e" &&
-							player.identity != target.identity &&
-							game.hasPlayer(function (current) {
-								return current.hasSkill("fengyang_old") && (current == target || target.inline(current));
+							get.position(card) === "e" &&
+							player.identity !== target.identity &&
+							game.hasPlayer(current => {
+								return current.hasSkill("fengyang_old") && (current === target || target.inline(current));
 							})
 						) {
 							return false;
