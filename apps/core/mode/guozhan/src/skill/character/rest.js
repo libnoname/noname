@@ -2916,7 +2916,7 @@ export default {
 		audio: "zyshilu",
 		trigger: { player: ["phaseZhunbeiBegin", "phaseUseEnd"] },
 		filter(event, player) {
-			if (event.name == "phaseZhunbei") {
+			if (event.name === "phaseZhunbei") {
 				return player.getStorage("fakeshilu").length;
 			}
 			if (!player.hasViceCharacter()) {
@@ -2928,9 +2928,9 @@ export default {
 		forced: true,
 		//locked: false,
 		async content(event, trigger, player) {
-			if (trigger.name == "phaseZhunbei") {
+			if (trigger.name === "phaseZhunbei") {
 				const num = player.getStorage("fakeshilu").length;
-				await player.chooseToDiscard(num, "h", true);
+				await player.chooseToDiscard({ selectCard: num, position: "h", forced: true });
 				await player.draw(num);
 			} else {
 				await player.changeVice().setContent(get.info("fakeshilu").changeVice);
@@ -2948,43 +2948,42 @@ export default {
 					return all;
 				}, []);
 		},
-		changeVice() {
-			"step 0";
+		async changeVice(event, trigger, player) {
 			player.showCharacter(2);
 			if (!event.num) {
 				event.num = 3;
 			}
-			var group = player.identity;
+			let group = player.identity;
 			if (!lib.group.includes(group)) {
 				group = lib.character[player.name1][1];
 			}
 			_status.characterlist.randomSort();
-			event.tochange = [];
-			for (var i = 0; i < _status.characterlist.length; i++) {
-				if (_status.characterlist[i].indexOf("gz_jun_") == 0) {
+			const tochange = [];
+			for (const character of _status.characterlist) {
+				if (character.indexOf("gz_jun_") === 0) {
 					continue;
 				}
-				var goon = false,
-					group2 = lib.character[_status.characterlist[i]][1];
-				if (group == "ye") {
-					if (group2 != "ye") {
+				let goon = false;
+				const group2 = lib.character[character][1];
+				if (group === "ye") {
+					if (group2 !== "ye") {
 						goon = true;
 					}
 				} else {
-					if (group == group2) {
+					if (group === group2) {
 						goon = true;
 					} else {
-						var double = get.is.double(_status.characterlist[i], true);
+						const double = get.is.double(character, true);
 						if (double && double.includes(group)) {
 							goon = true;
 						}
 					}
 				}
 				if (goon) {
-					event.tochange.push(_status.characterlist[i]);
+					tochange.push(character);
 				}
 			}
-			event.tochange = event.tochange
+			const candidates = tochange
 				.filter(character => {
 					const groups = get.info("fakeshilu").getGroups(player);
 					const doublex = get.is.double(character, true);
@@ -2992,22 +2991,16 @@ export default {
 					return !group.some(j => groups.includes(j));
 				})
 				.randomGets(event.num);
-			if (!event.tochange.length) {
-				event.finish();
-			} else {
-				if (event.tochange.length == 1) {
-					event._result = {
-						bool: true,
-						links: event.tochange,
-					};
-				} else {
-					player.chooseButton(true, ["请选择要变更的武将牌，并将原副将武将牌置于武将牌上", [event.tochange, "character"]]).ai = function (button) {
-						return get.guozhanRank(button.link);
-					};
-				}
+			if (!candidates.length) {
+				return;
 			}
-			"step 1";
-			var name = result.links[0];
+			const name = candidates.length === 1
+				? candidates[0]
+				: (await player.chooseButton({
+					forced: true,
+					createDialog: ["请选择要变更的武将牌，并将原副将武将牌置于武将牌上", [candidates, "character"]],
+					ai: button => get.guozhanRank(button.link),
+				}).forResult()).links[0];
 			_status.characterlist.remove(name);
 			if (player.hasViceCharacter()) {
 				event.change = true;
@@ -3015,37 +3008,32 @@ export default {
 			event.toRemove = player.name2;
 			event.toChange = name;
 			if (event.change) {
-				event.trigger("removeCharacterBefore");
+				await event.trigger("removeCharacterBefore");
+			}
+			if (event.hidden && !player.isUnseen(1)) {
+				await player.hideCharacter(1);
 			}
 			if (event.hidden) {
-				if (!player.isUnseen(1)) {
-					player.hideCharacter(1);
-				}
-			}
-			"step 2";
-			var name = event.toChange;
-			if (event.hidden) {
-				game.log(player, "替换了副将", "#g" + get.translation(player.name2));
+				game.log(player, "替换了副将", `#g${get.translation(player.name2)}`);
 			} else {
-				game.log(player, "将副将从", "#g" + get.translation(player.name2), "变更为", "#g" + get.translation(name));
+				game.log(player, "将副将从", `#g${get.translation(player.name2)}`, "变更为", `#g${get.translation(name)}`);
 			}
 			player.viceChanged = true;
-			player.reinitCharacter(player.name2, name, false);
-			"step 3";
+			await player.reinitCharacter(player.name2, name, false);
 			if (event.change && event.toRemove) {
 				const list = [event.toRemove];
 				player.markAuto("fakeshilu", list);
-				game.log(player, "将", "#g" + get.translation(list), "置于武将牌上作为", "#y“戮”");
+				game.log(player, "将", `#g${get.translation(list)}`, "置于武将牌上作为", "#y“戮”");
 				game.broadcastAll(
 					(player, list) => {
-						var cards = [];
-						for (var i = 0; i < list.length; i++) {
-							var cardname = "huashen_card_" + list[i];
+						const cards = [];
+						for (const character of list) {
+							const cardname = `huashen_card_${character}`;
 							lib.card[cardname] = {
 								fullimage: true,
-								image: "character:" + list[i],
+								image: `character:${character}`,
 							};
-							lib.translate[cardname] = get.rawName2(list[i]);
+							lib.translate[cardname] = get.rawName2(character);
 							cards.push(game.createCard(cardname, "", ""));
 						}
 						player.$draw(cards, "nobroadcast");
