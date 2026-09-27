@@ -9557,92 +9557,93 @@ export default {
 		direct: true,
 		preHidden: true,
 		filter(event, player) {
-			if (player != event.player && !player.hasSkill("gzlianpian")) {
+			if (player !== event.player && !player.hasSkill("gzlianpian")) {
 				return false;
 			}
-			var num = 0;
-			game.getGlobalHistory("cardMove", function (evt) {
-				if (evt.name == "lose" && evt.type == "discard" && evt.getParent(2).player == event.player) {
+			let num = 0;
+			game.getGlobalHistory("cardMove", evt => {
+				if (evt.name === "lose" && evt.type === "discard" && evt.getParent(2).player === event.player) {
 					num += evt.cards2.length;
 				}
 			});
 			if (num <= player.hp) {
 				return false;
 			}
-			if (player == event.player) {
-				return game.hasPlayer(function (current) {
+			if (player === event.player) {
+				return game.hasPlayer(current => {
 					return current.isFriendOf(player) && current.countCards("h") < current.maxHp;
 				});
 			}
 			return player.countDiscardableCards(event.player, "he") > 0 || player.isDamaged();
 		},
-		content() {
-			"step 0";
-			if (player == trigger.player) {
-				player
-					.chooseTarget(get.prompt("gzlianpian"), "令一名己方角色将手牌摸至手牌上限", function (card, player, target) {
-						return target.isFriendOf(player) && target.maxHp > target.countCards("h");
+		async content(event, trigger, player) {
+			if (player === trigger.player) {
+				const result = await player
+					.chooseTarget({
+						prompt: get.prompt("gzlianpian"),
+						prompt2: "令一名己方角色将手牌摸至手牌上限",
+						filterTarget: (card, player, target) => {
+							return target.isFriendOf(player) && target.maxHp > target.countCards("h");
+						},
+						ai: target => {
+							let att = get.attitude(_status.event.player, target);
+							if (target.hasSkillTag("nogain")) {
+								att /= 6;
+							}
+							if (att > 2) {
+								return Math.min(5, target.maxHp) - target.countCards("h");
+							}
+							return att / 3;
+						},
 					})
-					.set("ai", function (target) {
-						var att = get.attitude(_status.event.player, target);
-						if (target.hasSkillTag("nogain")) {
-							att /= 6;
-						}
-						if (att > 2) {
-							return Math.min(5, target.maxHp) - target.countCards("h");
-						}
-						return att / 3;
-					})
-					.setHiddenSkill(event.name);
+					.setHiddenSkill(event.name)
+					.forResult();
+				if (result.bool) {
+					const [target] = result.targets;
+					player.logSkill("gzlianpian", target);
+					await target.draw(Math.min(5, target.maxHp - target.countCards("h")));
+				}
 			} else {
-				event.goto(2);
-				event.addIndex = 0;
-				var list = [],
-					target = trigger.player,
-					str = get.translation(player);
+				let addIndex = 0;
+				const list = [];
+				const target = trigger.player;
+				const str = get.translation(player);
 				event.target = target;
 				if (player.countDiscardableCards(target, "he") > 0) {
-					list.push("弃置" + str + "的一张牌");
+					list.push(`弃置${str}的一张牌`);
 				} else {
-					event.addIndex++;
+					addIndex++;
 				}
+				event.addIndex = addIndex;
 				if (player.isDamaged()) {
-					list.push("令" + str + "回复1点体力");
+					list.push(`令${str}回复1点体力`);
 				}
-				target
-					.chooseControl("cancel2")
-					.set("choiceList", list)
-					.set("ai", function () {
-						var evt = _status.event.getParent();
-						if (get.attitude(evt.target, evt.player) > 0) {
-							return 1 - evt.addIndex;
-						}
-						return evt.addIndex;
+				const result = await target
+					.chooseControl({
+						controls: ["cancel2"],
+						choiceList: list,
+						ai: () => {
+							const evt = _status.event.getParent();
+							if (get.attitude(evt.target, evt.player) > 0) {
+								return 1 - evt.addIndex;
+							}
+							return evt.addIndex;
+						},
+						prompt: `是否对${str}发动【连翩】？`,
 					})
-					.set("prompt", "是否对" + str + "发动【连翩】？");
+					.forResult();
+				if (result.control === "cancel2") {
+					return;
+				}
+				player.logSkill("gzlianpian", target, false);
+				target.line(player, "green");
+				if (result.index + addIndex === 0) {
+					await target.discardPlayerCard({ position: "he", target: player, forced: true });
+				} else {
+					await player.recover();
+				}
+				await game.delayx();
 			}
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("gzlianpian", target);
-				target.draw(Math.min(5, target.maxHp - target.countCards("h")));
-			}
-			event.finish();
-			"step 2";
-			if (result.control == "cancel2") {
-				event.finish();
-				return;
-			}
-			player.logSkill("gzlianpian", target, false);
-			target.line(player, "green");
-			if (result.index + event.addIndex == 0) {
-				target.discardPlayerCard("he", player, true);
-				event.finish();
-			} else {
-				player.recover();
-			}
-			"step 3";
-			game.delayx();
 		},
 	},
 	//冯熙
