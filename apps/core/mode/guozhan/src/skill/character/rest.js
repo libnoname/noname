@@ -13277,79 +13277,75 @@ export default {
 	},
 	gzfudi: {
 		trigger: { global: "damageEnd" },
-		direct: true,
 		preHidden: true,
 		audio: 2,
+		logTarget: "source",
 		filter(event, player) {
-			return event.source && event.source.isAlive() && event.source != player && event.player == player && player.countCards("h") && event.num > 0;
+			return event.source && event.source.isAlive() && event.source !== player && event.player === player && player.hasCards("h") && event.num > 0;
 		},
-		content() {
-			"step 0";
-			var players = game.filterPlayer(function (current) {
+		async cost(event, trigger, player) {
+			const players = game.filterPlayer(current => {
 				return (
 					current.isFriendOf(trigger.source) &&
 					current.hp >= player.hp &&
-					!game.hasPlayer(function (current2) {
+					!game.hasPlayer(current2 => {
 						return current2.hp > current.hp && current2.isFriendOf(trigger.source);
 					})
 				);
 			});
-			var check = true;
+			let check = true;
 			if (!players.length) {
 				check = false;
-			} else {
-				if (get.attitude(player, trigger.source) >= 0) {
-					check = false;
-				}
+			} else if (get.attitude(player, trigger.source) >= 0) {
+				check = false;
 			}
-			player
-				.chooseCard(get.prompt("gzfudi", trigger.source), "交给其一张手牌，然后对其势力中体力值最大且不小于你的一名角色造成1点伤害")
-				.set("aicheck", check)
-				.set("ai", function (card) {
-					if (!_status.event.aicheck) {
-						return 0;
-					}
-					return 9 - get.value(card);
+			event.result = await player
+				.chooseCard({
+					prompt: get.prompt(event.skill, trigger.source),
+					prompt2: "交给其一张手牌，然后对其势力中体力值最大且不小于你的一名角色造成1点伤害",
+					ai: card => {
+						if (!_status.event.aicheck) {
+							return 0;
+						}
+						return 9 - get.value(card);
+					},
 				})
-				.setHiddenSkill(event.name);
-			"step 1";
-			if (result.bool) {
-				player.logSkill("gzfudi", trigger.source);
-				player.give(result.cards, trigger.source);
-			} else {
-				event.finish();
-			}
-			"step 2";
-			var list = game.filterPlayer(function (current) {
+				.set("aicheck", check)
+				.setHiddenSkill(event.skill)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			await player.give(event.cards, trigger.source);
+			const list = game.filterPlayer(current => {
 				return (
 					current.hp >= player.hp &&
 					current.isFriendOf(trigger.source) &&
-					!game.hasPlayer(function (current2) {
+					!game.hasPlayer(current2 => {
 						return current2.hp > current.hp && current2.isFriendOf(trigger.source);
 					})
 				);
 			});
-			if (list.length) {
-				if (list.length == 1) {
-					event._result = { bool: true, targets: list };
-				} else {
-					player
-						.chooseTarget(true, "对" + get.translation(trigger.source) + "势力中体力值最大的一名角色造成1点伤害", function (card, player, target) {
-							return _status.event.list.includes(target);
-						})
-						.set("list", list)
-						.set("ai", function (target) {
-							return get.damageEffect(target, player, player);
-						});
+			if (!list.length) {
+				return;
+			}
+			let target = list[0];
+			if (list.length > 1) {
+				const result = await player
+					.chooseTarget({
+						forced: true,
+						prompt: `对${get.translation(trigger.source)}势力中体力值最大的一名角色造成1点伤害`,
+						filterTarget: (card, player, target) => _status.event.list.includes(target),
+						ai: target => get.damageEffect(target, player, player),
+					})
+					.set("list", list)
+					.forResult();
+				if (!result.bool || !result.targets.length) {
+					return;
 				}
-			} else {
-				event.finish();
+				target = result.targets[0];
 			}
-			"step 3";
-			if (result.bool && result.targets.length) {
-				player.line(result.targets[0]);
-				result.targets[0].damage();
-			}
+			player.line(target);
+			await target.damage();
 		},
 		ai: {
 			maixie: true,
@@ -13360,11 +13356,11 @@ export default {
 						if (player.hasSkillTag("jueqing", false, target)) {
 							return [1, -2];
 						}
-						if (!target.countCards("h")) {
+						if (!target.hasCards("h")) {
 							return [1, -1];
 						}
 						if (
-							game.countPlayer(function (current) {
+							game.countPlayer(current => {
 								return current.isFriendOf(player) && current.hp >= target.hp - 1;
 							})
 						) {
