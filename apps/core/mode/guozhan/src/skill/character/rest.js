@@ -9785,41 +9785,51 @@ export default {
 		usable: 1,
 		filter(event, player) {
 			return (
-				player.countCards("he") > 0 &&
-				game.hasPlayer(function (current) {
-					return current != player && current.countCards("he") > 0;
+				player.hasCards("he") &&
+				game.hasPlayer(current => {
+					return current !== player && current.hasCards("he");
 				})
 			);
 		},
 		filterCard: true,
 		position: "he",
 		filterTarget(card, player, target) {
-			return target != player && target.countCards("he") > 0;
+			return target !== player && target.hasCards("he");
 		},
 		check(card) {
 			return 6 - get.value(card);
 		},
-		content() {
-			"step 0";
-			target
-				.chooseCard("he", "交给" + get.translation(player) + "一张装备牌，或令其获得你的一张牌", { type: "equip" })
-				.set("ai", function (card) {
-					if (_status.event.goon && get.suit(card) == "spade") {
-						return 8 - get.value(card);
-					}
-					return 5 - get.value(card);
+		async content(event, trigger, player) {
+			const { target } = event;
+			const result = await target
+				.chooseCard({
+					position: "he",
+					prompt: `交给${get.translation(player)}一张装备牌，或令其获得你的一张牌`,
+					filterCard: { type: "equip" },
+					ai: card => {
+						if (_status.event.goon && get.suit(card) === "spade") {
+							return 8 - get.value(card);
+						}
+						return 5 - get.value(card);
+					},
 				})
-				.set("goon", target.canUse("sha", player, false) && get.effect(player, { name: "sha" }, target, target) > 0);
-			"step 1";
+				.set("goon", target.canUse("sha", player, false) && get.effect(player, { name: "sha" }, target, target) > 0)
+				.forResult();
 			if (!result.bool) {
-				player.gainPlayerCard(target, "he", true);
-				event.finish();
-			} else {
-				target.give(result.cards, player);
+				await player.gainPlayerCard({
+					target,
+					position: "he",
+					forced: true,
+				});
+				return;
 			}
-			"step 2";
-			if (result.bool && result.cards && result.cards.length && target.isIn() && player.isIn() && get.suit(result.cards[0], target) == "spade" && target.canUse("sha", player, false)) {
-				target.useCard({ name: "sha", isCard: true }, false, player);
+			await target.give(result.cards, player);
+				if (result.cards && result.cards.length && target.isIn() && player.isIn() && get.suit(result.cards[0], target) === "spade" && target.canUse("sha", player, false)) {
+				await target.useCard({
+					card: { name: "sha", isCard: true },
+					targets: [player],
+					addCount: false,
+				});
 			}
 		},
 		ai: {
@@ -9827,9 +9837,7 @@ export default {
 			result: {
 				player(player, target) {
 					if (
-						target.countCards("e", function (card) {
-							return get.suit(card) == "spade" && get.value(card) < 8;
-						}) &&
+						target.hasCards("e", card => get.suit(card) === "spade" && get.value(card) < 8) &&
 						target.canUse("sha", player, false)
 					) {
 						return get.effect(player, { name: "sha" }, target, player);
@@ -9837,7 +9845,7 @@ export default {
 					return 0;
 				},
 				target(player, target) {
-					var es = target.getCards("e").sort(function (a, b) {
+					const es = target.getCards("e").sort((a, b) => {
 						return get.value(b, target) - get.value(a, target);
 					});
 					if (es.length) {
