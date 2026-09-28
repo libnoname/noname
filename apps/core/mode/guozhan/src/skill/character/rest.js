@@ -9981,65 +9981,76 @@ export default {
 		direct: true,
 		preHidden: true,
 		filter(event, player) {
-			return event.player != player && event.player.isIn() && player.countCards("e") > 0 && player.canUse("sha", event.player, false);
+			return event.player !== player && event.player.isIn() && player.countCards("e") > 0 && player.canUse("sha", event.player, false);
 		},
-		content() {
-			"step 0";
-			player
-				.chooseCard("e", get.prompt("gzxishe", trigger.player), "将装备区内的一张牌当做" + (player.hp > trigger.player.hp ? "不可响应的" : "") + "【杀】对其使用", function (card, player) {
-					return player.canUse(
-						{
-							name: "sha",
-							cards: [card],
+		async content(event, trigger, player) {
+			while (true) {
+				const result = await player
+					.chooseCard({
+						position: "e",
+						prompt: get.prompt("gzxishe", trigger.player),
+						prompt2: `将装备区内的一张牌当做${player.hp > trigger.player.hp ? "不可响应的" : ""}【杀】对其使用`,
+						filterCard: (card, player) =>
+							player.canUse(
+								{
+									name: "sha",
+									cards: [card],
+								},
+								_status.event.target,
+								false
+							),
+						ai: card => {
+							const evt = _status.event;
+							const eff = get.effect(
+								evt.target,
+								{
+									name: "sha",
+									cards: [card],
+								},
+								evt.player,
+								evt.player
+							);
+							if (eff <= 0) {
+								return 0;
+							}
+							const val = get.value(card);
+							if (
+								get.attitude(evt.player, evt.target) < -2 &&
+								evt.target.hp <= Math.min(2, evt.player.countCards("e"), evt.player.hp - 1)
+							) {
+								return 2 / Math.max(1, val);
+							}
+							return eff - val;
 						},
-						_status.event.target,
-						false
-					);
-				})
-				.set("target", trigger.player)
-				.set("ai", function (card) {
-					var evt = _status.event,
-						eff = get.effect(
-							evt.target,
-							{
-								name: "sha",
-								cards: [card],
-							},
-							evt.player,
-							evt.player
-						);
-					if (eff <= 0) {
-						return 0;
-					}
-					var val = get.value(card);
-					if (get.attitude(evt.player, evt.target) < -2 && evt.target.hp <= Math.min(2, evt.player.countCards("e"), evt.player.hp - 1)) {
-						return 2 / Math.max(1, val);
-					}
-					return eff - val;
-				})
-				.setHiddenSkill(event.name);
-			"step 1";
-			if (result.bool) {
-				var next = player.useCard({ name: "sha" }, result.cards, "gzxishe", trigger.player, false);
+					})
+					.set("target", trigger.player)
+					.setHiddenSkill(event.name)
+					.forResult();
+				if (!result.bool) {
+					return;
+				}
+
+				const next = player.useCard({ name: "sha" }, result.cards, "gzxishe", trigger.player, false);
 				if (player.hp > trigger.player.hp) {
-					next.oncard = function () {
+					next.oncard = () => {
 						_status.event.directHit.add(trigger.player);
 					};
 				}
-			} else {
-				event.finish();
-			}
-			"step 2";
-			if (trigger.player.isDead()) {
-				player.mayChangeVice(null, "hidden");
-			} else if (lib.skill.gzxishe.filter(trigger, player)) {
-				event.goto(0);
+				await next;
+
+				if (trigger.player.isDead()) {
+					player.mayChangeVice(null, "hidden");
+					return;
+				}
+				if (!lib.skill.gzxishe.filter(trigger, player)) {
+					return;
+				}
 			}
 		},
 		ai: {
 			directHit_ai: true,
 			skillTagFilter(player, tag, arg) {
-				if (_status.event.getParent().name == "gzxishe" && arg.card && arg.card.name == "sha" && arg.target && arg.target == _status.event.target && player.hp > arg.target.hp) {
+				if (_status.event.getParent().name === "gzxishe" && arg.card && arg.card.name === "sha" && arg.target && arg.target === _status.event.target && player.hp > arg.target.hp) {
 					return true;
 				}
 				return false;
