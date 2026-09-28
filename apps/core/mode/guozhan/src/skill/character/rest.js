@@ -5305,66 +5305,59 @@ export default {
 			}
 			return player.isPhaseUsing() && event.player.isIn() && !player.hasSkill("gztongling_used");
 		},
-		direct: true,
-		content() {
-			"step 0";
-			var str = "";
-			if (get.itemtype(trigger.cards) == "cards" && trigger.cards.filterInD().length) {
-				str += "；未造成伤害，其获得" + get.translation(trigger.cards.filterInD());
+		async cost(event, trigger, player) {
+			let str = "";
+			if (get.itemtype(trigger.cards) === "cards" && trigger.cards.filterInD().length) {
+				str = `；未造成伤害，其获得${get.translation(trigger.cards.filterInD())}`;
 			}
-			player
-				.chooseTarget(get.prompt("gztongling"), "令一名势力与你相同的角色选择是否对其使用一张牌。若使用且此牌：造成伤害，你与其各摸两张牌" + str, function (card, player, target) {
-					return target.isFriendOf(player);
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt(event.skill),
+					prompt2: `令一名势力与你相同的角色选择是否对其使用一张牌。若使用且此牌：造成伤害，你与其各摸两张牌${str}`,
+					filterTarget: (card, player, target) => target.isFriendOf(player),
+					ai: target => {
+						const aim = _status.event.aim;
+						const cards = target.getCards("hs", card => target.canUse(card, aim, false) && get.effect(aim, card, target, player) > 0 && get.effect(aim, card, target, target) > 0);
+						if (cards.length) {
+							return cards.some(card => get.tag(card, "damage")) ? 2 : 1;
+						}
+						return 0;
+					},
 				})
-				.set("ai", function (target) {
-					var aim = _status.event.aim;
-					var cards = target.getCards("hs", function (card) {
-						return target.canUse(card, aim, false) && get.effect(aim, card, target, player) > 0 && get.effect(aim, card, target, target) > 0;
-					});
-					if (cards.length) {
-						return cards.some(card => get.tag(card, "damage")) ? 2 : 1;
-					}
-					return 0;
-				})
-				.set("aim", trigger.player);
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("gztongling", target);
-				player.addTempSkill("gztongling_used", "phaseUseAfter");
-				player.line2([target, trigger.player]);
-				target
-					.chooseToUse(
-						function (card, player, event) {
-							return lib.filter.filterCard.apply(this, arguments);
-						},
-						"通令：是否对" + get.translation(trigger.player) + "使用一张牌？"
-					)
-					.set("targetRequired", true)
-					.set("complexSelect", true)
-					.set("complexTarget", true)
-					.set("filterTarget", function (card, player, target) {
-						if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
+				.set("aim", trigger.player)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			player.addTempSkill("gztongling_used", "phaseUseAfter");
+			player.line2([target, trigger.player]);
+			const result = await target
+				.chooseToUse({
+					filterCard: lib.filter.filterCard,
+					prompt: `通令：是否对${get.translation(trigger.player)}使用一张牌？`,
+					complexTarget: true,
+					filterTarget: (card, player, target) => {
+						if (target !== _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
 							return false;
 						}
-						return lib.filter.targetEnabled.apply(this, arguments);
-					})
-					.set("sourcex", trigger.player)
-					.set("addCount", false);
-			} else {
-				event.finish();
+						return lib.filter.targetEnabled(card, player, target);
+					},
+				})
+				.set("targetRequired", true)
+				.set("complexSelect", true)
+				.set("sourcex", trigger.player)
+				.set("addCount", false)
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
-			"step 2";
-			if (result.bool) {
-				if (target.hasHistory("sourceDamage", evt => evt.getParent(4).name == "gztongling")) {
-					player.draw(2, "nodelay");
-					target.draw(2);
-				} else {
-					if (get.itemtype(trigger.cards) == "cards" && trigger.cards.filterInD().length && trigger.player.isIn()) {
-						trigger.player.gain(trigger.cards.filterInD(), "gain2");
-					}
-				}
+			if (target.hasHistory("sourceDamage", evt => evt.getParent(4).name === "gztongling")) {
+				const drawEvent = player.draw({ num: 2, nodelay: true });
+				const targetDrawEvent = target.draw(2);
+				await drawEvent;
+				await targetDrawEvent;
+			} else if (get.itemtype(trigger.cards) === "cards" && trigger.cards.filterInD().length && trigger.player.isIn()) {
+				await trigger.player.gain({ cards: trigger.cards.filterInD(), animate: "gain2" });
 			}
 		},
 		subSkill: { used: { charlotte: true } },
