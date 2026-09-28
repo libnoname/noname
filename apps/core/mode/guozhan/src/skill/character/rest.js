@@ -6114,65 +6114,62 @@ export default {
 		enable: "phaseUse",
 		usable: 1,
 		filterTarget: lib.filter.notMe,
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
+			const victim = event.target;
 			event.targets = game
-				.filterPlayer(function (current) {
-					return current != target && current.isEnemyOf(target);
-				})
+				.filterPlayer(current => current !== victim && current.isEnemyOf(victim))
 				.sortBySeat();
-			"step 1";
-			if (!event.target.isIn()) {
-				event.finish();
-				return;
-			}
-			var target = targets.shift();
-			if (target.isIn() && (_status.connectMode || !lib.config.skip_shan || target.hasSha())) {
-				target
-					.chooseToUse(
-						function (card, player, event) {
-							if (get.name(card) != "sha") {
+			while (event.targets.length) {
+				if (!victim.isIn()) {
+					return;
+				}
+				const attacker = event.targets.shift();
+				if (attacker.isIn() && (_status.connectMode || !lib.config.skip_shan || attacker.hasSha())) {
+					await attacker
+						.chooseToUse({
+							filterCard: (card, player, chooseEvent) => {
+								if (get.name(card) !== "sha") {
+									return false;
+								}
+								return lib.filter.filterCard(card, player, chooseEvent);
+							},
+							prompt: `是否对${get.translation(victim)}使用一张【杀】？`,
+							complexTarget: true,
+							filterTarget: (card, player, target) => {
+								if (target !== _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
 								return false;
 							}
-							return lib.filter.filterCard.apply(this, arguments);
-						},
-						"是否对" + get.translation(event.target) + "使用一张【杀】？"
-					)
-					.set("targetRequired", true)
-					.set("complexSelect", true)
-					.set("complexTarget", true)
-					.set("addCount", false)
-					.set("filterTarget", function (card, player, target) {
-						if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
-							return false;
-						}
-						return lib.filter.targetEnabled.apply(this, arguments);
-					})
-					.set("sourcex", event.target);
+								return lib.filter.targetEnabled(card, player, target);
+							},
+						})
+						.set("targetRequired", true)
+						.set("complexSelect", true)
+						.set("addCount", false)
+						.set("sourcex", victim);
+				}
 			}
-			if (targets.length > 0) {
-				event.redo();
+			if (!victim.isIn()) {
+				return;
 			}
-			"step 2";
-			if (target.isIn()) {
-				var dying = false;
-				var num = target.getHistory("damage", function (evt) {
-					if (evt.card && evt.card.name == "sha") {
-						var evtx = evt.getParent("useCard");
-						if (evt.card == evtx.card && evtx.getParent(2) == event) {
-							if (evt._dyinged) {
-								dying = true;
-							}
-							return true;
-						}
-					}
-				}).length;
-				if (num > 0) {
-					target.addTempSkill("gzyinpan_effect", { player: "phaseAfter" });
-					target.addMark("gzyinpan_effect", num, false);
-					if (dying) {
-						target.recover();
-					}
+			let dying = false;
+			const num = victim.getHistory("damage", evt => {
+				if (evt.card?.name !== "sha") {
+					return false;
+				}
+				const useCardEvent = evt.getParent("useCard");
+				if (evt.card !== useCardEvent.card || useCardEvent.getParent(2) !== event) {
+					return false;
+				}
+				if (evt._dyinged) {
+					dying = true;
+				}
+				return true;
+			}).length;
+			if (num > 0) {
+				victim.addTempSkill("gzyinpan_effect", { player: "phaseAfter" });
+				victim.addMark("gzyinpan_effect", num, false);
+				if (dying) {
+					await victim.recover();
 				}
 			}
 		},
@@ -6184,7 +6181,7 @@ export default {
 			effect: {
 				mod: {
 					cardUsable(card, player, num) {
-						if (card.name == "sha") {
+						if (card.name === "sha") {
 							return num + player.countMark("gzyinpan_effect");
 						}
 					},
