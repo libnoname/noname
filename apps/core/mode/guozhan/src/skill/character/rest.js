@@ -6759,17 +6759,13 @@ export default {
 		audio: "twzhenxi",
 		trigger: { player: "useCardToPlayered" },
 		filter(event, player) {
-			if (event.card.name != "sha") {
+			if (event.card.name !== "sha") {
 				return false;
 			}
 			if (
-				event.target.countCards("he") ||
-				player.hasCard(function (card) {
-					return get.suit(card) == "diamond" && get.type2(card) != "trick" && player.canUse(get.autoViewAs({ name: "lebu" }, [card]), event.target);
-				}, "he") ||
-				player.hasCard(function (card) {
-					return get.suit(card) == "club" && get.type2(card) != "trick" && player.canUse(get.autoViewAs({ name: "bingliang" }, [card]), event.target, false);
-				}, "he")
+				event.target.hasCards("he") ||
+				player.hasCard(card => get.suit(card) === "diamond" && get.type2(card) !== "trick" && player.canUse(get.autoViewAs({ name: "lebu" }, [card]), event.target), "he") ||
+				player.hasCard(card => get.suit(card) === "club" && get.type2(card) !== "trick" && player.canUse(get.autoViewAs({ name: "bingliang" }, [card]), event.target, false), "he")
 			) {
 				return true;
 			}
@@ -6778,101 +6774,99 @@ export default {
 		check(event, player) {
 			return get.attitude(player, event.target) < 0;
 		},
-		direct: true,
-		content() {
-			"step 0";
-			var target = trigger.target;
-			event.target = target;
-			var list = [],
-				choiceList = ["弃置" + get.translation(target) + "一张牌", "将一张♦非锦囊牌当做【乐不思蜀】或♣非锦囊牌当做【兵粮寸断】对" + get.translation(target) + "使用", "背水！若其有暗置的武将牌且你的武将牌均明置，你依次执行上述两项"];
-			if (target.countDiscardableCards(player, "he")) {
+		async cost(event, trigger, player) {
+			const target = trigger.target;
+			const list = [];
+			const choiceList = [`弃置${get.translation(target)}一张牌`, `将一张♦非锦囊牌当做【乐不思蜀】或♣非锦囊牌当做【兵粮寸断】对${get.translation(target)}使用`, "背水！若其有暗置的武将牌且你的武将牌均明置，你依次执行上述两项"];
+			if (target.hasDiscardableCards(player, "he")) {
 				list.push("选项一");
 			} else {
-				choiceList[0] = '<span style="opacity:0.5">' + choiceList[0] + "</span>";
+				choiceList[0] = `<span style="opacity:0.5">${choiceList[0]}</span>`;
 			}
 			if (
-				player.countCards("he", function (card) {
-					return get.suit(card) == "diamond" && get.type2(card) != "trick" && player.canUse(get.autoViewAs({ name: "lebu" }, [card]), target);
-				}) ||
-				player.countCards("he", function (card) {
-					return get.suit(card) == "club" && get.type2(card) != "trick" && player.canUse(get.autoViewAs({ name: "bingliang" }, [card]), target);
-				})
+				player.hasCards("he", card => get.suit(card) === "diamond" && get.type2(card) !== "trick" && player.canUse(get.autoViewAs({ name: "lebu" }, [card]), target)) ||
+				player.hasCards("he", card => get.suit(card) === "club" && get.type2(card) !== "trick" && player.canUse(get.autoViewAs({ name: "bingliang" }, [card]), target))
 			) {
 				list.push("选项二");
 			} else {
-				choiceList[1] = '<span style="opacity:0.5">' + choiceList[1] + "</span>";
+				choiceList[1] = `<span style="opacity:0.5">${choiceList[1]}</span>`;
 			}
 			if (target.isUnseen(2) && !player.isUnseen(2)) {
 				list.push("背水！");
 			} else {
-				choiceList[2] = '<span style="opacity:0.5">' + choiceList[2] + "</span>";
+				choiceList[2] = `<span style="opacity:0.5">${choiceList[2]}</span>`;
 			}
-			player
-				.chooseControl(list, "cancel2")
-				.set("prompt", get.prompt("gzzhenxi", target))
-				.set("choiceList", choiceList)
-				.set("ai", function () {
-					var player = _status.event.player,
-						trigger = _status.event.getTrigger(),
-						list = _status.event.list;
-					if (get.attitude(player, trigger.target) > 0) {
-						return "cancel2";
-					}
-					if (list.includes("背水！")) {
-						return "背水！";
-					}
-					if (list.includes("选项二")) {
-						return "选项二";
-					}
-					return "选项一";
+			const result = await player
+				.chooseControl({
+					controls: [...list, "cancel2"],
+					prompt: get.prompt(event.skill, target),
+					choiceList,
+					ai: () => {
+						const player = _status.event.player;
+						const trigger = _status.event.getTrigger();
+						const list = _status.event.list;
+						if (get.attitude(player, trigger.target) > 0) {
+							return "cancel2";
+						}
+						if (list.includes("背水！")) {
+							return "背水！";
+						}
+						if (list.includes("选项二")) {
+							return "选项二";
+						}
+						return "选项一";
+					},
 				})
 				.set("list", list)
-				.setHiddenSkill("gzzhenxi");
-			"step 1";
-			if (result.control == "cancel2") {
-				event.finish();
-				return;
+				.setHiddenSkill(event.skill)
+				.forResult();
+			event.result = {
+				bool: result.control !== "cancel2",
+				targets: [target],
+				cost_data: result.control,
+			};
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			event.target = target;
+			const choice = event.cost_data;
+			if (choice !== "选项二" && target.hasDiscardableCards(player, "he")) {
+				await player.discardPlayerCard({ target, position: "he", forced: true });
 			}
-			player.logSkill("gzzhenxi", target);
-			event.choice = result.control;
-			if (event.choice != "选项二" && target.countDiscardableCards(player, "he")) {
-				player.discardPlayerCard(target, "he", true);
-			}
-			"step 2";
 			if (
-				event.choice != "选项一" &&
-				(player.hasCard(function (card) {
-					return get.suit(card) == "diamond" && get.type2(card) != "trick" && player.canUse(get.autoViewAs({ name: "lebu" }, [card]), target);
-				}, "he") ||
-					player.hasCard(function (card) {
-						return get.suit(card) == "club" && get.type2(card) != "trick" && player.canUse(get.autoViewAs({ name: "bingliang" }, [card]), target, false);
-					}, "he"))
+				choice !== "选项一" &&
+				(player.hasCard(card => get.suit(card) === "diamond" && get.type2(card) !== "trick" && player.canUse(get.autoViewAs({ name: "lebu" }, [card]), target), "he") ||
+					player.hasCard(card => get.suit(card) === "club" && get.type2(card) !== "trick" && player.canUse(get.autoViewAs({ name: "bingliang" }, [card]), target, false), "he"))
 			) {
-				var next = game.createEvent("gzzhenxi_use");
+				const next = game.createEvent("gzzhenxi_use");
 				next.player = player;
 				next.target = target;
 				next.setContent(lib.skill.gzzhenxi.contentx);
+				await next;
 			}
 		},
 		ai: { unequip_ai: true },
-		contentx() {
-			"step 0";
-			player.chooseCard({
+		async contentx(event, trigger, player) {
+			const { target } = event;
+			const result = await player.chooseCard({
 				position: "hes",
 				forced: true,
 				prompt: "震袭",
-				prompt2: "将一张♦非锦囊牌当做【乐不思蜀】或♣非锦囊牌当做【兵粮寸断】对" + get.translation(target) + "使用",
+				prompt2: `将一张♦非锦囊牌当做【乐不思蜀】或♣非锦囊牌当做【兵粮寸断】对${get.translation(target)}使用`,
 				filterCard(card, player) {
-					if (get.itemtype(card) != "card" || get.type2(card) == "trick" || !["diamond", "club"].includes(get.suit(card))) {
-						return false;
-					}
-					var cardx = { name: get.suit(card) == "diamond" ? "lebu" : "bingliang" };
-					return player.canUse(get.autoViewAs(cardx, [card]), _status.event.getParent().target, false);
+				if (get.itemtype(card) !== "card" || get.type2(card) === "trick" || !["diamond", "club"].includes(get.suit(card))) {
+					return false;
+				}
+				const cardx = { name: get.suit(card) === "diamond" ? "lebu" : "bingliang" };
+				return player.canUse(get.autoViewAs(cardx, [card]), _status.event.getParent().target, false);
 				},
-			});
-			"step 1";
+			}).forResult();
 			if (result.bool) {
-				player.useCard({ name: get.suit(result.cards[0], player) == "diamond" ? "lebu" : "bingliang" }, target, result.cards);
+				await player.useCard({
+					card: { name: get.suit(result.cards[0], player) === "diamond" ? "lebu" : "bingliang" },
+					targets: [target],
+					cards: result.cards,
+				});
 			}
 		},
 	},
