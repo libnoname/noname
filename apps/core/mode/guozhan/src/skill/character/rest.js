@@ -7899,47 +7899,43 @@ export default {
 		trigger: { player: "useCard1" },
 		direct: true,
 		filter(event, player) {
-			if (event.card.name != "juedou" || !event.card.isCard) {
+			if (event.card.name !== "juedou" || !event.card.isCard) {
 				return false;
 			}
 			if (event.targets) {
 				if (
-					game.hasPlayer(function (current) {
-						return !event.targets.includes(current) && lib.filter.targetEnabled2(event.card, player, current);
-					})
+					game.hasPlayer(current => !event.targets.includes(current) && lib.filter.targetEnabled2(event.card, player, current))
 				) {
 					return true;
 				}
 			}
 			return false;
 		},
-		content() {
-			"step 0";
-			var num = game.countPlayer(function (current) {
-				return !trigger.targets.includes(current) && lib.filter.targetEnabled2(trigger.card, player, current);
-			});
-			player
-				.chooseTarget("无双：是否为" + get.translation(trigger.card) + "增加" + (num > 1 ? "至多两个" : "一个") + "目标？", [1, Math.min(2, num)], function (card, player, target) {
-					var trigger = _status.event.getTrigger();
-					var card = trigger.card;
-					return !trigger.targets.includes(target) && lib.filter.targetEnabled2(card, player, target);
+		async content(event, trigger, player) {
+			const num = game.countPlayer(current => !trigger.targets.includes(current) && lib.filter.targetEnabled2(trigger.card, player, current));
+			const result = await player
+				.chooseTarget({
+					prompt: `无双：是否为${get.translation(trigger.card)}增加${num > 1 ? "至多两个" : "一个"}目标？`,
+					selectTarget: [1, Math.min(2, num)],
+					filterTarget: (_card, player, target) => {
+						const currentTrigger = _status.event.getTrigger();
+						return !currentTrigger.targets.includes(target) && lib.filter.targetEnabled2(currentTrigger.card, player, target);
+					},
+					ai: target => {
+						const player = _status.event.player;
+						const card = _status.event.getTrigger().card;
+						return get.effect(target, card, player, player);
+					},
 				})
-				.set("ai", function (target) {
-					var player = _status.event.player;
-					var card = _status.event.getTrigger().card;
-					return get.effect(target, card, player, player);
-				})
-				.setHiddenSkill("gzwushuang");
-			"step 1";
-			if (result.bool) {
-				if (player != game.me && !player.isOnline()) {
-					game.delayx();
-				}
-			} else {
-				event.finish();
+				.setHiddenSkill("gzwushuang")
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
-			"step 2";
-			var targets = result.targets.sortBySeat();
+			if (player !== game.me && !player.isOnline()) {
+				await game.delayx();
+			}
+			const targets = result.targets.sortBySeat();
 			player.logSkill("gzwushuang", targets);
 			trigger.targets.addArray(targets);
 		},
