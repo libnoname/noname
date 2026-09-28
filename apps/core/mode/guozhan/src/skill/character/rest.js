@@ -18344,32 +18344,35 @@ export default {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return player.countCards("h") > 0;
+			return player.hasCards("h");
 		},
 		filterTarget(card, player, target) {
-			return player != target && (target.countCards("h") || target.isUnseen(2));
+			return player !== target && (target.hasCards("h") || target.isUnseen(2));
 		},
-		content() {
-			"step 0";
-			target.viewHandcards(player);
-			"step 1";
-			if (!target.countCards("h")) {
-				event._result = { index: 1 };
+		async content(event, trigger, player) {
+			const { target } = event;
+			await target.viewHandcards(player);
+			let index;
+			if (!target.hasCards("h")) {
+				index = 1;
 			} else if (!target.isUnseen(2)) {
-				event._result = { index: 0 };
+				index = 0;
 			} else {
-				player.chooseControl().set("choiceList", ["观看" + get.translation(target) + "的手牌并可以弃置其中的一张黑色牌", "观看" + get.translation(target) + "的所有暗置的武将牌"]);
-			}
-			"step 2";
-			if (result.index == 0) {
-				player
-					.discardPlayerCard(target, "h")
-					.set("filterButton", function (button) {
-						return get.color(button.link) == "black";
+				({ index } = await player
+					.chooseControl({
+						choiceList: [`观看${get.translation(target)}的手牌并可以弃置其中的一张黑色牌`, `观看${get.translation(target)}的所有暗置的武将牌`],
 					})
-					.set("visible", true);
+					.forResult());
+			}
+			if (index === 0) {
+				await player.discardPlayerCard({
+					target,
+					position: "h",
+					filterButton: button => get.color(button.link) === "black",
+					visible: true,
+				});
 			} else {
-				player.viewCharacter(target, 2);
+				await player.viewCharacter(target, 2);
 			}
 		},
 		ai: {
