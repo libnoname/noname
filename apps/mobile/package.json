@@ -10,6 +10,7 @@
   "scripts": {
     "sync": "tsx afterSync.ts",
     "build:android": "tsx buildAndroid.ts",
+    "build:ios": "tsx buildIos.ts",
     "lint": "pnpm eslint src/**"
   },
   "dependencies": {
@@ -17,6 +18,7 @@
     "@capacitor/app": "^8.0.1",
     "@capacitor/core": "^8.1.0",
     "@capacitor/filesystem": "^8.1.1",
+    "@capacitor/ios": "8.1.0",
     "path-browserify-esm": "1.0.6"
   },
   "devDependencies": {
