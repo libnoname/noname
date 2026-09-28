@@ -8524,90 +8524,96 @@ export default {
 	gzxiongnve: {
 		audio: "zyxiongnve",
 		trigger: { player: "phaseUseBegin" },
-		direct: true,
 		filter(event, player) {
 			return player.getStorage("gzshilu").length > 0;
 		},
-		content() {
-			"step 0";
-			player
-				.chooseButton([get.prompt("gzxiongnve"), [player.storage.gzshilu, "character"]])
-				.set("ai", function (button) {
-					if (!_status.event.goon) {
-						return 0;
-					}
-					var name = button.link,
-						group = get.is.double(name, true);
-					if (!group) {
-						group = [lib.character[name][1]];
-					}
-					for (var i of group) {
-						if (
-							game.hasPlayer(function (current) {
-								return player.inRange(current) && current.identity == i;
-							})
-						) {
-							return 1 + Math.random();
+		async cost(event, trigger, player) {
+			const result = await player
+				.chooseButton({
+					createDialog: [get.prompt(event.skill), [player.storage.gzshilu, "character"]],
+					ai: button => {
+						if (!_status.event.goon) {
+							return 0;
 						}
-					}
-					return 0;
+						const name = button.link;
+						let group = get.is.double(name, true);
+						if (!group) {
+							group = [lib.character[name][1]];
+						}
+						for (const i of group) {
+							if (
+								game.hasPlayer(current => {
+									return player.inRange(current) && current.identity === i;
+								})
+							) {
+								return 1 + Math.random();
+							}
+						}
+						return 0;
+					},
 				})
 				.set(
 					"goon",
-					player.countCards("hs", function (card) {
+					player.countCards("hs", card => {
 						return get.tag(card, "damage") && player.hasValueTarget(card);
 					}) > 1
-				);
-			"step 1";
-			if (result.bool) {
-				player.logSkill("gzxiongnve");
-				lib.skill.gzxiongnve.throwCharacter(player, result.links);
-				game.delayx();
-				var group = get.is.double(result.links[0], true);
-				if (!group) {
-					group = [lib.character[result.links[0]][1]];
-				}
-				event.group = group;
-				var str = get.translation(group);
-				player
-					.chooseControl()
-					.set("prompt", "选择获得一项效果")
-					.set("choiceList", ["本回合对" + str + "势力的角色造成的伤害+1", "本回合对" + str + "势力的角色造成伤害后，获得对方的一张牌", "本回合对" + str + "势力的角色使用牌没有次数限制"])
-					.set("ai", function () {
-						var player = _status.event.player;
+				)
+				.forResult();
+			event.result = {
+				bool: result.bool,
+				cost_data: result.links,
+			};
+		},
+		async content(event, trigger, player) {
+			const characters = event.cost_data;
+			lib.skill.gzxiongnve.throwCharacter(player, characters);
+			await game.delayx();
+			const character = characters[0];
+			let group = get.is.double(character, true);
+			if (!group) {
+				group = [lib.character[character][1]];
+			}
+			const str = get.translation(group);
+			const result = await player
+				.chooseControl({
+					prompt: "选择获得一项效果",
+					choiceList: [
+						`本回合对${str}势力的角色造成的伤害+1`,
+						`本回合对${str}势力的角色造成伤害后，获得对方的一张牌`,
+						`本回合对${str}势力的角色使用牌没有次数限制`,
+					],
+					ai: () => {
+						const player = _status.event.player;
 						if (
-							player.countCards("hs", function (card) {
-								return get.name(card) == "sha" && player.hasValueTarget(card);
-							}) > player.getCardUsable("sha")
+							player.countCards("hs", card => get.name(card) === "sha" && player.hasValueTarget(card)) >
+							player.getCardUsable("sha")
 						) {
 							return 0;
 						}
 						return get.rand(1, 2);
-					});
-			} else {
-				event.finish();
-			}
-			"step 2";
-			var skill = "gzxiongnve_effect" + result.index;
-			player.markAuto(skill, event.group);
+					},
+				})
+				.forResult();
+			const skill = `gzxiongnve_effect${result.index}`;
+			player.markAuto(skill, group);
 			player.addTempSkill(skill);
-			game.log(player, "本回合对" + get.translation(event.group) + "势力的角色", "#g" + lib.skill[skill].promptx);
+			game.log(player, `本回合对${get.translation(group)}势力的角色`, `#g${lib.skill[skill].promptx}`);
 		},
 		group: "gzxiongnve_end",
 		throwCharacter(player, list) {
 			player.unmarkAuto("gzshilu", list);
 			_status.characterlist.addArray(list);
-			game.log(player, "从", "#y“戮”", "中移去了", "#g" + get.translation(list));
+			game.log(player, "从", "#y“戮”", "中移去了", `#g${get.translation(list)}`);
 			game.broadcastAll(
-				function (player, list) {
-					var cards = [];
-					for (var i = 0; i < list.length; i++) {
-						var cardname = "huashen_card_" + list[i];
+				(player, list) => {
+					const cards = [];
+					for (const character of list) {
+						const cardname = `huashen_card_${character}`;
 						lib.card[cardname] = {
 							fullimage: true,
-							image: "character:" + list[i],
+							image: `character:${character}`,
 						};
-						lib.translate[cardname] = get.rawName2(list[i]);
+						lib.translate[cardname] = get.rawName2(character);
 						cards.push(game.createCard(cardname, "", ""));
 					}
 					player.$throw(cards, 1000, "nobroadcast");
@@ -8631,7 +8637,7 @@ export default {
 					return player.getStorage("gzxiongnve_effect0").includes(event.player.identity);
 				},
 				logTarget: "player",
-				content() {
+				async content(event, trigger, player) {
 					trigger.num++;
 				},
 			},
@@ -8646,11 +8652,15 @@ export default {
 				trigger: { source: "damageEnd" },
 				forced: true,
 				filter(event, player) {
-					return player.getStorage("gzxiongnve_effect1").includes(event.player.identity) && event.player.countGainableCards(player, "he") > 0;
+					return player.getStorage("gzxiongnve_effect1").includes(event.player.identity) && event.player.hasGainableCards(player, "he");
 				},
 				logTarget: "player",
-				content() {
-					player.gainPlayerCard(trigger.player, true, "he");
+				async content(event, trigger, player) {
+					await player.gainPlayerCard({
+						target: trigger.player,
+						forced: true,
+						position: "he",
+					});
 				},
 			},
 			effect2: {
@@ -8677,29 +8687,28 @@ export default {
 				},
 				trigger: { player: "damageBegin3" },
 				filter(event, player) {
-					return event.source && event.source != player;
+					return event.source && event.source !== player;
 				},
 				forced: true,
 				logTarget: "source",
-				content() {
+				async content(event, trigger, player) {
 					trigger.num--;
 				},
 				ai: {
 					effect: {
 						target(card, player, target) {
-							if (target == player) {
-								return;
-							}
-							if (player.hasSkillTag("jueqing", false, target)) {
-								return;
-							}
-							var num = get.tag(card, "damage");
-							if (num) {
-								if (num > 1) {
-									return 0.5;
+							if (target !== player) {
+								if (player.hasSkillTag("jueqing", false, target)) {
+									return;
 								}
-								return 0;
-							}
+								const num = get.tag(card, "damage");
+								if (num) {
+									if (num > 1) {
+										return 0.5;
+									}
+									return 0;
+								}
+								}
 						},
 					},
 				},
@@ -8710,32 +8719,37 @@ export default {
 				filter(event, player) {
 					return player.getStorage("gzshilu").length > 1;
 				},
-				content() {
-					"step 0";
-					player.chooseButton(["是否移去两张“戮”获得减伤？", [player.storage.gzshilu, "character"]], 2).set("ai", function (button) {
-						var name = button.link,
-							group = get.is.double(name, true);
-						if (!group) {
-							group = [lib.character[name][1]];
-						}
-						for (var i of group) {
-							if (
-								game.hasPlayer(function (current) {
-									return current.identity == i;
-								})
-							) {
-								return 0;
-							}
-						}
-						return 1;
-					});
-					"step 1";
-					if (result.bool) {
-						player.logSkill("gzxiongnve");
-						lib.skill.gzxiongnve.throwCharacter(player, result.links);
-						player.addTempSkill("gzxiongnve_effect3", { player: "phaseBegin" });
-						game.delayx();
+				async content(event, trigger, player) {
+					const result = await player
+						.chooseButton({
+							createDialog: ["是否移去两张“戮”获得减伤？", [player.storage.gzshilu, "character"]],
+							selectButton: 2,
+							ai: button => {
+								const name = button.link;
+								let group = get.is.double(name, true);
+								if (!group) {
+									group = [lib.character[name][1]];
+								}
+								for (const i of group) {
+									if (
+										game.hasPlayer(current => {
+											return current.identity === i;
+										})
+									) {
+										return 0;
+									}
+								}
+								return 1;
+							},
+						})
+						.forResult();
+					if (!result.bool) {
+						return;
 					}
+					player.logSkill("gzxiongnve");
+					lib.skill.gzxiongnve.throwCharacter(player, result.links);
+					player.addTempSkill("gzxiongnve_effect3", { player: "phaseBegin" });
+					await game.delayx();
 				},
 			},
 		},
