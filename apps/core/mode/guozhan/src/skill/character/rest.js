@@ -8350,7 +8350,7 @@ export default {
 			return player.maxHp > 0 && player.countCards("h") > 0 && !player.hasSkill("gzjinghe_clear");
 		},
 		selectCard() {
-			var max = _status.event.player.maxHp;
+			const max = _status.event.player.maxHp;
 			if (ui.selected.targets.length) {
 				return [ui.selected.targets.length, max];
 			}
@@ -8364,9 +8364,9 @@ export default {
 		},
 		filterCard(card) {
 			if (ui.selected.cards.length) {
-				var name = get.name(card);
-				for (var i of ui.selected.cards) {
-					if (get.name(i) == name) {
+				const name = get.name(card);
+				for (const selectedCard of ui.selected.cards) {
+					if (get.name(selectedCard) === name) {
 						return false;
 					}
 				}
@@ -8375,13 +8375,13 @@ export default {
 		},
 		position: "h",
 		check(card) {
-			var player = _status.event.player;
+			const player = _status.event.player;
 			if (
-				game.countPlayer(function (current) {
+				game.countPlayer(current => {
 					return get.attitude(player, current) > 0 && !current.isUnseen();
 				}) > ui.selected.cards.length
 			) {
-				return get.position(card) == "e" ? 2 : 1;
+				return get.position(card) === "e" ? 2 : 1;
 			}
 			return 0;
 		},
@@ -8391,38 +8391,31 @@ export default {
 		delay: false,
 		multitarget: true,
 		multiline: true,
-		content() {
-			"step 0";
-			player.showCards(cards, get.translation(player) + "发动了【经合】");
-			event.skills = lib.skill.gzjinghe.derivation.randomGets(targets.length);
+		async content(event, trigger, player) {
+			const showCardsEvent = player.showCards(event.cards, `${get.translation(player)}发动了【经合】`);
+			const skills = lib.skill.gzjinghe.derivation.randomGets(event.targets.length);
 			player.addTempSkill("gzjinghe_clear", { player: "phaseBegin" });
 			event.targets.sortBySeat();
-			event.num = 0;
-			"step 1";
-			event.target = targets[num];
-			event.num++;
-			event.target
-				.chooseControl(event.skills, "cancel2")
-				.set(
-					"choiceList",
-					event.skills.map(function (i) {
-						return '<div class="skill">【' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "】</div><div>" + get.skillInfoTranslation(i, player, false) + "</div>";
+			await showCardsEvent;
+
+			for (const target of event.targets) {
+				const { control: skill } = await target
+					.chooseControl({
+						controls: [...skills, "cancel2"],
+						choiceList: skills.map(skill => `<div class="skill">【${get.translation(lib.translate[skill + "_ab"] || get.translation(skill).slice(0, 2))}】</div><div>${get.skillInfoTranslation(skill, player, false)}</div>`),
+						prompt: "选择获得一个技能",
 					})
-				)
-				.set("displayIndex", false)
-				.set("prompt", "选择获得一个技能");
-			"step 2";
-			var skill = result.control;
-			if (skill != "cancel2") {
-				event.skills.remove(skill);
-				target.addAdditionalSkills("gzjinghe_" + player.playerid, skill);
-				target.popup(skill);
-			}
-			if (event.num < event.targets.length) {
-				event.goto(1);
-			}
-			if (target != game.me && !target.isOnline2()) {
-				game.delayx();
+					.set("displayIndex", false)
+					.forResult();
+				if (skill !== "cancel2") {
+					skills.remove(skill);
+					const addSkillEvent = target.addAdditionalSkills(`gzjinghe_${player.playerid}`, skill);
+					target.popup(skill);
+					await addSkillEvent;
+				}
+				if (target !== game.me && !target.isOnline2()) {
+					await game.delayx();
+				}
 			}
 		},
 		ai: {
@@ -8436,8 +8429,8 @@ export default {
 		subSkill: {
 			clear: {
 				onremove(player) {
-					game.countPlayer(function (current) {
-						current.removeAdditionalSkills("gzjinghe_" + player.playerid);
+					game.countPlayer(current => {
+						current.removeAdditionalSkills(`gzjinghe_${player.playerid}`);
 					});
 				},
 			},
