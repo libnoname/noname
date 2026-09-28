@@ -10285,28 +10285,27 @@ export default {
 		},
 		check: () => false,
 		preHidden: true,
-		content() {
-			"step 0";
-			player.showHandcards();
-			"step 1";
-			var hs = player.countCards("h");
-			if (
-				game.hasPlayer(function (current) {
-					return current != player && current.countCards("h") <= hs;
+		async content(event, trigger, player) {
+			await player.showHandcards();
+			const handcardCount = player.countCards("h");
+			if (!game.hasPlayer(current => current !== player && current.countCards("h") <= handcardCount)) {
+				return;
+			}
+
+			const result = await player
+				.chooseTarget({
+					forced: true,
+					prompt: "请选择要交换手牌的目标角色",
+					filterTarget: (_card, player, target) => target !== player && target.countCards("h") <= player.countCards("h"),
 				})
-			) {
-				player.chooseTarget(true, "请选择要交换手牌的目标角色", function (card, player, target) {
-					return target != player && target.countCards("h") <= player.countCards("h");
-				});
-			} else {
-				event.finish();
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
-			"step 2";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.line(target, "green");
-				player.swapHandcards(target);
-			}
+
+			const target = result.targets[0];
+			player.line(target, "green");
+			await player.swapHandcards(target);
 		},
 	},
 	gzsuzhi: {
