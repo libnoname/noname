@@ -5693,25 +5693,24 @@ export default {
 		enable: "phaseUse",
 		usable: 1,
 		//delay:0,
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			if (!player.storage.gzrejinghe_tianshu) {
-				var list = lib.skill.gzrejinghe.derivation.slice(0);
+				const list = lib.skill.gzrejinghe.derivation.slice(0);
 				list.remove("gzrejinghe_faq");
-				var list2 = list.slice(0, get.rand(0, list.length));
+				const list2 = list.slice(0, get.rand(0, list.length));
 				list.removeArray(list2);
 				list.addArray(list2);
 				player.storage.gzrejinghe_tianshu = list;
 			} else {
-				var first = player.storage.gzrejinghe_tianshu[0];
+				const first = player.storage.gzrejinghe_tianshu[0];
 				player.storage.gzrejinghe_tianshu.remove(first);
 				player.storage.gzrejinghe_tianshu.push(first);
 			}
 			game.log(player, "转动了", "#g“天书”");
 			player.markSkill("gzrejinghe");
-			var skill = player.storage.gzrejinghe_tianshu[0];
+			const skill = player.storage.gzrejinghe_tianshu[0];
 			event.skill = skill;
-			var cardname = "gzrejinghe_" + skill;
+			const cardname = `gzrejinghe_${skill}`;
 			lib.card[cardname] = {
 				fullimage: true,
 				image: "character:re_nanhualaoxian",
@@ -5719,42 +5718,35 @@ export default {
 			lib.translate[cardname] = get.translation(skill);
 			event.videoId = lib.status.videoId++;
 			game.broadcastAll(
-				function (player, id, card) {
-					ui.create.dialog(get.translation(player) + "转动了“天书”", [[card], "card"]).videoId = id;
+				(player, id, card) => {
+					ui.create.dialog(`${get.translation(player)}转动了“天书”`, [[card], "card"]).videoId = id;
 				},
 				player,
 				event.videoId,
 				game.createCard(cardname, " ", " ")
 			);
-			game.delay(3);
-			"step 1";
+			await game.delay(3);
 			game.broadcastAll("closeDialog", event.videoId);
-			var targets = game.filterPlayer(current => !current.hasSkill(event.skill));
+			const targets = game.filterPlayer(current => !current.hasSkill(skill));
 			if (!targets.length) {
-				event.finish();
 				return;
 			}
-			player
-				.chooseTarget(
-					"经合：令一名角色获得技能【" + get.translation(event.skill) + "】",
-					function (card, player, target) {
-						return _status.event.targets.includes(target);
-					},
-					true
-				)
-				.set("ai", function (target) {
-					var player = _status.event.player;
-					return get.attitude(player, target);
+			const result = await player
+				.chooseTarget({
+					prompt: `经合：令一名角色获得技能【${get.translation(skill)}】`,
+					filterTarget: (card, player, target) => _status.event.targets.includes(target),
+					forced: true,
+					ai: target => get.attitude(_status.event.player, target),
 				})
-				.set("targets", targets);
-			"step 2";
+				.set("targets", targets)
+				.forResult();
 			if (result.bool) {
-				var target = result.targets[0],
-					skill = event.skill;
+				const target = result.targets[0];
 				player.line(target);
 				player.addTempSkill("gzrejinghe_clear", { player: "phaseBegin" });
-				target.addAdditionalSkills("gzrejinghe_" + player.playerid, skill);
+				const addSkillsEvent = target.addAdditionalSkills(`gzrejinghe_${player.playerid}`, skill);
 				target.popup(skill);
+				await addSkillsEvent;
 			}
 		},
 		intro: {
@@ -5762,19 +5754,19 @@ export default {
 			markcount: () => 8,
 			mark(dialog, storage, player) {
 				dialog.content.style["overflow-x"] = "visible";
-				var list = player.storage.gzrejinghe_tianshu;
-				var core = document.createElement("div");
-				var centerX = -10,
-					centerY = 80,
-					radius = 80;
-				var radian = (Math.PI * 2) / list.length;
-				for (var i = 0; i < list.length; i++) {
-					var td = document.createElement("div");
-					td.innerHTML = get.translation(list[i]).slice(0, 1);
+				const list = player.storage.gzrejinghe_tianshu;
+				const core = document.createElement("div");
+				const centerX = -10;
+				const centerY = 80;
+				const radius = 80;
+				const radian = (Math.PI * 2) / list.length;
+				for (const [i, skill] of list.entries()) {
+					const td = document.createElement("div");
+					td.innerHTML = get.translation(skill).slice(0, 1);
 					td.style.position = "absolute";
 					core.appendChild(td);
-					td.style.left = centerX + radius * Math.sin(radian * i) + "px";
-					td.style.top = centerY - radius * Math.cos(radian * i) + "px";
+					td.style.left = `${centerX + radius * Math.sin(radian * i)}px`;
+					td.style.top = `${centerY - radius * Math.cos(radian * i)}px`;
 				}
 				dialog.content.appendChild(core);
 			},
@@ -5787,8 +5779,8 @@ export default {
 		subSkill: {
 			clear: {
 				onremove(player) {
-					game.countPlayer(function (current) {
-						current.removeAdditionalSkills("gzrejinghe_" + player.playerid);
+					game.countPlayer(current => {
+						current.removeAdditionalSkills(`gzrejinghe_${player.playerid}`);
 					});
 				},
 			},
