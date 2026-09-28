@@ -6758,7 +6758,8 @@ const skills = {
 			const history = player.getHistory("custom");
 			const evt = event.getParent("phaseUse");
 			history.push({ twlifeng: [evt, num] });
-			if (history.filter(i => i.twlifeng[0] == evt).length > 1 && num > history[history.length - 2].twlifeng[1]) {
+			const lifeng = history.filter(i => i.twlifeng?.[0] == evt);
+			if (lifeng.length > 1 && num > lifeng[lifeng.length - 2].twlifeng[1]) {
 				await player.draw();
 				player.addTempSkill(event.name + "_used", "phaseAnyAfter");
 				player.addMark(event.name + "_used", 1, false);
