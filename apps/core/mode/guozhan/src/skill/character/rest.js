@@ -10965,35 +10965,33 @@ export default {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return game.hasPlayer(function (current) {
+			return game.hasPlayer(current => {
 				return lib.skill.donggui.filterTarget(null, player, current);
 			});
 		},
 		filterTarget(card, player, target) {
-			return target != player && !target.isUnseen(2) && player.canUse("diaohulishan", target);
+			return target !== player && !target.isUnseen(2) && player.canUse("diaohulishan", target);
 		},
-		content() {
-			"step 0";
-			player.chooseButton(["暗置" + get.translation(target) + "的一张武将牌", [[target.name1, target.name2], "character"]], true).set("filterButton", function (button) {
-				return !get.is.jun(button.link);
-			});
-			"step 1";
-			var target1 = target.getNext();
-			var target2 = target.getPrevious();
-			if (target1 == target2 || target.inline(target1) || target.inline(target2) || target1.inline(target2)) {
-				event.finish();
-			} else {
-				event.target1 = target1;
-				event.target2 = target2;
-			}
-			target.hideCharacter(result.links[0] == target.name1 ? 0 : 1);
+		async content(event, trigger, player) {
+			const target = event.target;
+			const result = await player
+				.chooseButton({
+					createDialog: [`暗置${get.translation(target)}的一张武将牌`, [[target.name1, target.name2], "character"]],
+					forced: true,
+					filterButton: button => !get.is.jun(button.link),
+				})
+				.forResult();
+
+			const target1 = target.getNext();
+			const target2 = target.getPrevious();
+			const shouldDraw = !(target1 === target2 || target.inline(target1) || target.inline(target2) || target1.inline(target2));
+			target.hideCharacter(result.links[0] === target.name1 ? 0 : 1);
 			target.addTempSkill("donggui2");
-			player.useCard({ name: "diaohulishan", isCard: true }, target);
-			"step 2";
-			if (event.target1.inline(event.target2)) {
-				player.draw(
-					game.countPlayer(function (current) {
-						return current.inline(event.target1);
+			await player.useCard({ name: "diaohulishan", isCard: true }, target);
+			if (shouldDraw && target1.inline(target2)) {
+				await player.draw(
+					game.countPlayer(current => {
+						return current.inline(target1);
 					})
 				);
 			}
@@ -11002,13 +11000,13 @@ export default {
 			order: 2,
 			result: {
 				player(player, target) {
-					var target1 = target.getNext();
-					var target2 = target.getPrevious();
-					if (target1 == target2 || target.inline(target1) || target.inline(target2) || target1.inline(target2) || !target1.isFriendOf(target2)) {
+					const target1 = target.getNext();
+					const target2 = target.getPrevious();
+					if (target1 === target2 || target.inline(target1) || target.inline(target2) || target1.inline(target2) || !target1.isFriendOf(target2)) {
 						return 0;
 					}
-					var num = game.countPlayer(function (current) {
-						return current != target1 && current != target2 && (current.inline(target1) || current.inline(target2));
+					const num = game.countPlayer(current => {
+						return current !== target1 && current !== target2 && (current.inline(target1) || current.inline(target2));
 					});
 					return 2 + num;
 				},
