@@ -9607,11 +9607,11 @@ export default {
 		audio: "yusui",
 		trigger: { target: "useCardToTargeted" },
 		filter(event, player) {
-			return event.player != player && event.player.isIn() && event.player.isEnemyOf(player) && get.color(event.card) == "black";
+			return event.player !== player && event.player.isIn() && event.player.isEnemyOf(player) && get.color(event.card) === "black";
 		},
 		logTarget: "player",
 		check(event, player) {
-			var target = event.player;
+			const target = event.player;
 			if (player.hp < 3 || get.attitude(player, target) > -3) {
 				return false;
 			}
@@ -9625,41 +9625,50 @@ export default {
 		},
 		usable: 1,
 		preHidden: true,
-		content() {
-			"step 0";
-			player.loseHp();
-			event.target = trigger.player;
-			"step 1";
-			event.addIndex = 0;
-			var list = [];
-			if (target.maxHp > 0 && target.countCards("h") > 0) {
-				list.push("令其弃置" + get.cnNumber(target.maxHp) + "张手牌");
+		async content(event, trigger, player) {
+			const target = trigger.player;
+			const loseHpEvent = player.loseHp();
+			event.target = target;
+			await loseHpEvent;
+
+			let addIndex = 0;
+			const list = [];
+			if (target.maxHp > 0 && target.hasCards("h")) {
+				list.push(`令其弃置${get.cnNumber(target.maxHp)}张手牌`);
 			} else {
-				event.addIndex++;
+				addIndex++;
 			}
 			if (target.hp > player.hp) {
-				list.push("令其失去" + get.cnNumber(target.hp - player.hp) + "点体力");
+				list.push(`令其失去${get.cnNumber(target.hp - player.hp)}点体力`);
 			}
 			if (!list.length) {
-				event.finish();
-			} else if (list.length == 1) {
-				event._result = { index: 0 };
-			} else {
-				player
-					.chooseControl()
-					.set("choiceList", list)
-					.set("prompt", "令" + get.translation(target) + "执行一项")
-					.set("ai", function () {
-						var player = _status.event.player,
-							target = _status.event.getParent().target;
-						return target.hp - player.hp > Math.min(target.maxHp, target.countCards("h")) / 2 ? 1 : 0;
-					});
+				return;
 			}
-			"step 2";
-			if (result.index + event.addIndex == 0) {
-				target.chooseToDiscard(target.maxHp, true, "h");
+
+			let result;
+			if (list.length === 1) {
+				result = { index: 0 };
 			} else {
-				target.loseHp(target.hp - player.hp);
+				result = await player
+					.chooseControl({
+						choiceList: list,
+						prompt: `令${get.translation(target)}执行一项`,
+						ai: () => {
+							const player = _status.event.player;
+							const target = _status.event.getParent().target;
+							return target.hp - player.hp > Math.min(target.maxHp, target.countCards("h")) / 2 ? 1 : 0;
+						},
+					})
+					.forResult();
+			}
+			if (result.index + addIndex === 0) {
+				await target.chooseToDiscard({
+					selectCard: target.maxHp,
+					forced: true,
+					position: "h",
+				});
+			} else {
+				await target.loseHp(target.hp - player.hp);
 			}
 		},
 	},
