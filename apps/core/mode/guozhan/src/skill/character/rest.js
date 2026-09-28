@@ -9426,35 +9426,30 @@ export default {
 		limited: true,
 		delay: false,
 		filter(event, player) {
-			var isFriend;
-			if (player.identity == "unknown") {
-				var group = "shu";
+			let isFriend;
+			if (player.identity === "unknown") {
+				let group = "shu";
 				if (!player.wontYe("shu")) {
 					group = null;
 				}
-				isFriend = function (current) {
-					return current == player || current.identity == group;
-				};
+				isFriend = current => current === player || current.identity === group;
 			} else {
-				isFriend = function (target) {
-					return target.isFriendOf(player);
-				};
+				isFriend = target => target.isFriendOf(player);
 			}
-			return game.hasPlayer(function (current) {
+			return game.hasPlayer(current => {
 				return isFriend(current) && current.isDamaged();
 			});
 		},
 		selectTarget: -1,
 		filterTarget(card, player, target) {
-			if (player == target) {
+			if (player === target) {
 				return true;
 			}
-			if (player.identity == "unknown") {
-				var group = "shu";
+			if (player.identity === "unknown") {
 				if (!player.wontYe("shu")) {
 					return false;
 				}
-				return target.identity == group;
+				return target.identity === "shu";
 			}
 			return target.isFriendOf(player);
 		},
@@ -9464,51 +9459,45 @@ export default {
 		multiline: true,
 		skillAnimation: true,
 		animationColor: "orange",
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.awakenSkill("qingyin");
-			event.num = 0;
-			"step 1";
-			if (targets[num].isDamaged()) {
-				targets[num].recover(targets[num].maxHp - targets[num].hp);
+			for (const target of event.targets) {
+				if (target.isDamaged()) {
+					await target.recover(target.maxHp - target.hp);
+				}
 			}
-			event.num++;
-			if (event.num < targets.length) {
-				event.redo();
-			}
-			"step 2";
+			const charactersToRemove = [];
 			if (lib.character[player.name1][3].includes("qingyin")) {
-				player.removeCharacter(0);
+				charactersToRemove.push(0);
 			}
 			if (lib.character[player.name2][3].includes("qingyin")) {
-				player.removeCharacter(1);
+				charactersToRemove.push(1);
+			}
+			for (const index of charactersToRemove) {
+				await player.removeCharacter(index);
 			}
 		},
 		ai: {
 			order(item, player) {
-				var isFriend;
-				if (player.identity == "unknown") {
-					var group = "shu";
+				let isFriend;
+				if (player.identity === "unknown") {
+					let group = "shu";
 					if (!player.wontYe("shu")) {
 						group = null;
 					}
-					isFriend = function (current) {
-						return current == player || current.identity == group;
-					};
+					isFriend = current => current === player || current.identity === group;
 				} else {
-					isFriend = function (target) {
-						return target.isFriendOf(player);
-					};
+					isFriend = target => target.isFriendOf(player);
 				}
-				var targets = game.filterPlayer(function (current) {
+				const targets = game.filterPlayer(current => {
 					return isFriend(current);
 				});
-				var num = 0,
-					max = 0;
-				for (var i of targets) {
-					var dam = i.maxHp - i.hp;
-					num += dam;
-					max += i.maxHp;
+				let num = 0;
+				let max = 0;
+				for (const target of targets) {
+					const damage = target.maxHp - target.hp;
+					num += damage;
+					max += target.maxHp;
 				}
 				return num / max >= 1 / Math.max(1.6, game.roundNumber) ? 1 : -1;
 			},
