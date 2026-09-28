@@ -5867,22 +5867,21 @@ export default {
 		filter(event, player) {
 			return !player.getExpansions("gzremidao").length;
 		},
-		content() {
-			"step 0";
-			player.draw(2);
-			"step 1";
-			var cards = player.getCards("he");
+		async content(event, trigger, player) {
+			await player.draw(2);
+			const cards = player.getCards("he");
 			if (!cards.length) {
-				event.finish();
-			} else if (cards.length <= 2) {
-				event._result = { bool: true, cards: cards };
-			} else {
-				player.chooseCard(2, "he", true, "选择两张牌作为“米”");
+				return;
 			}
-			"step 2";
-			if (result.bool) {
-				player.addToExpansion(result.cards, player, "give").gaintag.add("gzremidao");
+			let selectedCards = cards;
+			if (cards.length > 2) {
+				const result = await player.chooseCard({ selectCard: 2, position: "he", forced: true, prompt: "选择两张牌作为“米”" }).forResult();
+				if (!result.bool) {
+					return;
+				}
+				selectedCards = result.cards;
 			}
+			await player.addToExpansion({ cards: selectedCards, source: player, animate: "give", gaintag: ["gzremidao"] });
 		},
 		marktext: "米",
 		intro: {
@@ -5890,9 +5889,9 @@ export default {
 			markcount: "expansion",
 		},
 		onremove(player, skill) {
-			var cards = player.getExpansions(skill);
+			const cards = player.getExpansions(skill);
 			if (cards.length) {
-				player.loseToDiscardpile(cards);
+				player.loseToDiscardpile({ cards });
 			}
 		},
 		subSkill: {
@@ -5901,66 +5900,68 @@ export default {
 				filter(event, player) {
 					return player.getExpansions("gzremidao").length && event.player.isAlive();
 				},
-				direct: true,
-				content() {
-					"step 0";
-					var list = player.getExpansions("gzremidao");
-					player
-						.chooseButton([get.translation(trigger.player) + "的" + (trigger.judgestr || "") + "判定为" + get.translation(trigger.player.judging[0]) + "，" + get.prompt("gzremidao"), list, "hidden"], function (button) {
-							var card = button.link;
-							var trigger = _status.event.getTrigger();
-							var player = _status.event.player;
-							var judging = _status.event.judging;
-							var result = trigger.judge(card) - trigger.judge(judging);
-							var attitude = get.attitude(player, trigger.player);
-							if (result == 0) {
-								return 0.5;
-							}
-							return result * attitude;
-						})
-						.set("judging", trigger.player.judging[0])
-						.set("filterButton", function (button) {
-							var player = _status.event.player;
-							var card = button.link;
-							var mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
-							if (mod2 != "unchanged") {
-								return mod2;
-							}
-							var mod = game.checkMod(card, player, "unchanged", "cardRespondable", player);
-							if (mod != "unchanged") {
-								return mod;
-							}
-							return true;
-						});
-					"step 1";
-					if (result.bool) {
+					direct: true,
+					async content(event, trigger, player) {
+						const list = player.getExpansions("gzremidao");
+						const result = await player
+							.chooseButton({
+								createDialog: [`${get.translation(trigger.player)}的${trigger.judgestr || ""}判定为${get.translation(trigger.player.judging[0])}，${get.prompt("gzremidao")}`, list, "hidden"],
+								ai: button => {
+									const card = button.link;
+									const trigger = _status.event.getTrigger();
+									const player = _status.event.player;
+									const judging = _status.event.judging;
+									const difference = trigger.judge(card) - trigger.judge(judging);
+									const attitude = get.attitude(player, trigger.player);
+									if (difference === 0) {
+										return 0.5;
+									}
+									return difference * attitude;
+								},
+								filterButton: button => {
+									const player = _status.event.player;
+									const card = button.link;
+									const mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
+									if (mod2 !== "unchanged") {
+										return mod2;
+									}
+									const mod = game.checkMod(card, player, "unchanged", "cardRespondable", player);
+									if (mod !== "unchanged") {
+										return mod;
+									}
+									return true;
+								},
+							})
+							.set("judging", trigger.player.judging[0])
+							.forResult();
+						if (!result.bool) {
+							return;
+						}
 						event.forceDie = true;
-						player.respond(result.links, "gzremidao", "highlight", "noOrdering");
-						result.cards = result.links;
-						var card = result.cards[0];
+						const cards = result.links;
+						const card = cards[0];
+						const respondEvent = player.respond({ cards, skill: "gzremidao", highlight: true, noOrdering: true });
 						event.card = card;
-					} else {
-						event.finish();
-					}
-					"step 2";
-					if (result.bool) {
-						if (trigger.player.judging[0].clone) {
-							trigger.player.judging[0].clone.classList.remove("thrownhighlight");
-							game.broadcast(function (card) {
+						await respondEvent;
+						const oldCard = trigger.player.judging[0];
+						if (oldCard.clone) {
+							oldCard.clone.classList.remove("thrownhighlight");
+							game.broadcast(card => {
 								if (card.clone) {
 									card.clone.classList.remove("thrownhighlight");
 								}
-							}, trigger.player.judging[0]);
-							game.addVideo("deletenode", player, get.cardsInfo([trigger.player.judging[0].clone]));
+							}, oldCard);
+							game.addVideo("deletenode", player, get.cardsInfo([oldCard.clone]));
 						}
-						player.$gain2(trigger.player.judging[0]);
-						player.gain(trigger.player.judging[0]);
-						trigger.player.judging[0] = result.cards[0];
-						trigger.orderingCards.addArray(result.cards);
+						player.$gain2(oldCard);
+						const gainEvent = player.gain({ cards: [oldCard] });
+						trigger.player.judging[0] = card;
+						trigger.orderingCards.addArray(cards);
 						game.log(trigger.player, "的判定牌改为", card);
-						game.delay(2);
-					}
-				},
+						const delay = game.delay(2);
+						await gainEvent;
+						await delay;
+					},
 				ai: {
 					rejudge: true,
 					tag: { rejudge: 0.6 },
