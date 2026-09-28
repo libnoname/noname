@@ -5975,13 +5975,13 @@ export default {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			var players = game.filterPlayer(current => current != player);
+			const players = game.filterPlayer(current => current !== player);
 			if (players.length < 2) {
 				return false;
 			}
-			for (var i = 0; i < players.length - 1; i++) {
-				for (var j = i + 1; j < players.length; j++) {
-					if (players[i].isEnemyOf(players[j])) {
+			for (const [index, current] of players.entries()) {
+				for (const other of players.slice(index + 1)) {
+					if (current.isEnemyOf(other)) {
 						return true;
 					}
 				}
@@ -5993,28 +5993,27 @@ export default {
 		complexSelect: true,
 		selectTarget: 2,
 		filterTarget(card, player, target) {
-			if (target == player) {
+			if (target === player) {
 				return false;
 			}
-			var targets = ui.selected.targets;
-			if (targets.length == 0) {
+			const targets = ui.selected.targets;
+			if (targets.length === 0) {
 				return player.canUse("zhibi", target);
 			}
 			return target.isEnemyOf(targets[0]);
 		},
 		targetprompt: ["被知己知彼", "获得牌"],
-		content() {
-			"step 0";
-			player.useCard({ name: "zhibi", isCard: true }, targets[0]);
-			"step 1";
-			if (player.countCards("he") > 0 && targets[1].isAlive()) {
-				player.chooseCard("he", true, "交给" + get.translation(targets[1]) + "一张牌");
-			} else {
-				event.finish();
+		async content(event, trigger, player) {
+			const [firstTarget, secondTarget] = event.targets;
+			await player.useCard({ card: { name: "zhibi", isCard: true }, targets: [firstTarget] });
+			if (!player.hasCards("he") || !secondTarget.isAlive()) {
+				return;
 			}
-			"step 2";
-			player.give(result.cards, targets[1]);
-			player.draw();
+			const result = await player.chooseCard({ position: "he", forced: true, prompt: `交给${get.translation(secondTarget)}一张牌` }).forResult();
+			const giveEvent = player.give(result.cards, secondTarget);
+			const drawEvent = player.draw();
+			await giveEvent;
+			await drawEvent;
 		},
 		ai: {
 			order: 6,
