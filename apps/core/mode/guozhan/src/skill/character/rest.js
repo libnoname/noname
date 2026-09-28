@@ -10391,12 +10391,12 @@ export default {
 		audio: 2,
 		mod: {
 			targetInRange(card, player, target) {
-				if (card.name == "sha" && target.hp >= player.hp) {
+				if (card.name === "sha" && target.hp >= player.hp) {
 					return true;
 				}
 			},
 			cardUsableTarget(card, player, target) {
-				if (card.name == "sha" && target.hp >= player.hp) {
+				if (card.name === "sha" && target.hp >= player.hp) {
 					return true;
 				}
 			},
@@ -10405,58 +10405,56 @@ export default {
 		forced: true,
 		preHidden: true,
 		filter(event, player) {
-			return game.hasPlayer(function (current) {
+			return game.hasPlayer(current => {
 				return current.isEnemyOf(player) && player.inRangeOf(current);
 			});
 		},
 		logTarget(event, player) {
-			return game.filterPlayer(function (current) {
+			return game.filterPlayer(current => {
 				return current.isEnemyOf(player) && player.inRangeOf(current);
 			});
 		},
 		check: () => false,
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			event.targets = game
-				.filterPlayer(function (current) {
+				.filterPlayer(current => {
 					return current.isEnemyOf(player) && player.inRangeOf(current);
 				})
 				.sortBySeat();
-			"step 1";
-			var target = event.targets.shift();
-			if (target.isIn()) {
+			while (event.targets.length) {
+				const target = event.targets.shift();
+				if (!target.isIn()) {
+					continue;
+				}
 				event.target = target;
-				target
+				const result = await target
 					.chooseToUse(
 						function (card, player, event) {
-							if (get.name(card) != "sha") {
+							if (get.name(card) !== "sha") {
 								return false;
 							}
 							return lib.filter.filterCard.apply(this, arguments);
 						},
-						"豹烈：对" + get.translation(player) + "使用一张杀，或令其弃置你的一张牌"
+						`豹烈：对${get.translation(player)}使用一张杀，或令其弃置你的一张牌`
 					)
 					.set("targetRequired", true)
 					.set("complexSelect", true)
 					.set("complexTarget", true)
 					.set("filterTarget", function (card, player, target) {
-						if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
+						if (target !== _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
 							return false;
 						}
 						return lib.filter.filterTarget.apply(this, arguments);
 					})
-					.set("sourcex", player);
-			} else if (targets.length) {
-				event.redo();
-			} else {
-				event.finish();
-			}
-			"step 2";
-			if (result.bool == false && target.countCards("he") > 0) {
-				player.discardPlayerCard(target, "he", true);
-			}
-			if (targets.length) {
-				event.goto(1);
+					.set("sourcex", player)
+					.forResult();
+				if (result.bool === false && target.countCards("he") > 0) {
+					await player.discardPlayerCard({
+						target,
+						position: "he",
+						forced: true,
+					});
+				}
 			}
 		},
 	},
