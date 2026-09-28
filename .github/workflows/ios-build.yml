@@ -106,12 +106,24 @@ jobs:
           df -h /
           du -sh dist
 
-      - name: Generate iOS Capacitor project
+      - name: Verify iOS Capacitor project
         working-directory: apps/mobile
-        # Capacitor 8 的 iOS 模板使用 Swift Package Manager，无需任何额外参数。
+        # iOS 工程（apps/mobile/ios）已随仓库提交，与 android/ 的处理方式保持一致。
+        # 这样做是为了在其中维护原生代码（NonameBridgeViewController / NonameRouter 等），
+        # 实现安卓 JsAwareAssetsPathHandler 等价的「可写覆盖层 + 扩展加载」能力。
+        #
+        # 如果目录缺失（例如贡献者删掉了、或 checkout 不完整），就回退到现场生成，
+        # 保证构建不至于完全跑不起来；但此时原生修改不会被应用，因此给出明确提示。
         env:
           CI: "true"
-        run: npx cap add ios
+        run: |
+          if [ -f "ios/App/App.xcodeproj/project.pbxproj" ]; then
+            echo "iOS 工程已存在于仓库中 ✓"
+            ls -la ios/App/App/*.swift
+          else
+            echo "::warning::仓库里没有 ios/ 工程，回退为现场生成（原生覆盖层修改将不会生效）"
+            npx cap add ios
+          fi
 
       - name: Capacitor sync (builds preload.js)
         working-directory: apps/mobile

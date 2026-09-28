@@ -28,7 +28,8 @@
  *
  * 产物：`apps/mobile/ios/build/export/<AppName>.ipa`
  *
- * ⚠️ 首次运行前需要先有 iOS 工程，即先执行 `npx cap add ios`（本脚本会检查并提示）。
+ * ⚠️ iOS 工程（`apps/mobile/ios/`）已随仓库提供，无需先执行 `npx cap add ios`。
+ *    仅在工程缺失时本脚本会报错并提示如何恢复。
  *
  * 💡 没有 Mac 或不想配开发者证书时，可以走 GitHub Actions 云端构建未签名 ipa，
  *    见 `.github/workflows/ios-build.yml` 与本仓库的 iOS 操作手册。
@@ -59,7 +60,7 @@ Options:
 Requirements:
   - Must run on macOS (xcodebuild is required).
   - Xcode 26.0+ (Capacitor 8 uses Swift Package Manager).
-  - Run "npx cap add ios" once before the first build to generate the Xcode project.
+  - The iOS project ships with the repository (apps/mobile/ios).
 `);
 	process.exit(0);
 }
@@ -85,7 +86,10 @@ if (!teamId) {
 
 if (!existsSync(iosRoot)) {
 	throw new Error(
-		`iOS project not found at ${iosRoot}.\n` + `Run "npx cap add ios" in ${mobileRoot} first (on macOS).`
+		`iOS project not found at ${iosRoot}.\n` +
+			"IOS 工程随仓库提供，请先恢复它：\n" +
+			`  git -C ${workspaceRoot} checkout -- apps/mobile/ios\n` +
+			"若该目录确实尚未纳入版本管理，才需要在 macOS 上执行 `npx cap add ios`。"
 	);
 }
 
@@ -99,9 +103,9 @@ const buildTargetFlag = existsSync(workspacePath) ? "-workspace" : "-project";
 if (!existsSync(workspacePath) && !existsSync(projectPath)) {
 	throw new Error(
 		`Xcode project not found at ${projectPath}.\n` +
-			"请在 Mac 上执行：\n" +
-			"  cd apps/mobile && npx cap add ios\n" +
-			"（或先删除 ios/ 目录再重新执行 npx cap add ios）"
+			"请从 Git 恢复 iOS 工程：\n" +
+			`  git -C ${workspaceRoot} checkout -- apps/mobile/ios\n` +
+			"（仅在确实要重新生成时才用 `npx cap add ios`，但那会丢失 Noname*.swift 等自定义文件）"
 	);
 }
 

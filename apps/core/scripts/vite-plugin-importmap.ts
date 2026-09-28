@@ -77,7 +77,18 @@ export default function vitePluginJIT(importMap: Record<string, string> = {}): P
 		};
 
 		if (!("serviceWorker" in navigator)) {
-			alert(globalText.SERVICE_WORKER_NOT_SUPPORT);
+			// iOS 的 WKWebView 至今不支持 service worker，属于平台限制而非用户环境问题。
+			// 移动端弹这种「功能不可用」的提示只会挡住游戏，因此静默跳过即时编译功能。
+			// 其他平台（桌面浏览器等）保持原有提示，方便用户升级浏览器后重试。
+			//
+			// 平台识别与 @capacitor/core 的 getPlatformId 保持一致：
+			// WKWebView 会注入 window.webkit.messageHandlers.bridge，据此判断为 iOS。
+			// 这里不能用 Capacitor.getPlatform()，因为该 JS 属于页面最早的脚本，
+			// 此时 @capacitor/core 尚未加载。
+			const isIOSWebView = !!(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.bridge);
+			if (!isIOSWebView) {
+				alert(globalText.SERVICE_WORKER_NOT_SUPPORT);
+			}
 			return;
 		}
 

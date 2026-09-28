@@ -34,6 +34,39 @@
 
 实现见 [`src/fs/ios.ts`](../src/fs/ios.ts)，与 Android 的 `SafFsPlugin` 共用 [`src/fs/types.ts`](../src/fs/types.ts) 定义的 `NativeFileSystem` 接口，映射逻辑集中在 [`src/fs/legacy-api.ts`](../src/fs/legacy-api.ts)。
 
+### 0.1.1 覆盖层有两层，缺一不可
+
+上面的 `fs/ios.ts` 只覆盖了**走游戏文件 API 的那部分读写**（`game.readFile` / `game.writeFile` …）。
+但游戏加载扩展用的是 `<script src="...">`，走的是 **WebView 的网络请求**，不经过 `game.*` API。
+
+因此 Android 在原生层额外注册了 `WebViewAssetLoader`：所有对 `https://localhost/...` 的资源请求都会先查 SAF 可写目录、命中即返回用户文件，否则回退打包资源。
+
+iOS 侧对应的实现是自定义 `Router`：
+
+| | Android | iOS |
+| --- | --- | --- |
+| 拦截机制 | `WebViewAssetLoader` + `JsAwareAssetsPathHandler` | `WKURLSchemeHandler`（Capacitor 内置的 `WebViewAssetHandler`） |
+| 扩展点 | `PathHandler.handle(path)` | `Router.route(for:)` |
+| 归一化规则 | 去首尾 `/`、过滤 `.`、拒绝 `..` | 同左（`NonameRouter.normalize`） |
+| pnpm 兼容 | `.pnpm` → `_pnpm` | 同左 |
+| 命中判断 | SAF 里存在该文件 | `Documents/noname/` 下存在该文件 |
+| 自定义代码 | `MainActivity.kt`（仓库内） | `NonameBridgeViewController.swift` + `NonameRouter.swift`（仓库内） |
+
+> Capacitor 会把 `route(for:)` 的**返回值直接当作磁盘绝对路径**去 `Data(contentsOf:)`，所以命中覆盖层时返回沙盒文件的绝对路径即可。
+
+这两个 Swift 文件位于 [`ios/App/App/`](../ios/App/App/)，通过继承 `CAPBridgeViewController` 并重写 `router()` 生效；
+`Main.storyboard` 里的初始 ViewController 已从 `CAPBridgeViewController` 改为 `NonameBridgeViewController`。
+
+> iOS 工程（`apps/mobile/ios/`）与 Android 的 `android/` 一样**提交进仓库**，就是为了能维护这两个文件。
+
+### 0.1.2 即时编译（JIT）在 iOS 上自动降级
+
+游戏有一个可选的「即时编译功能」，依赖 `service worker`。iOS 的 WKWebView **不支持 service worker**，因此该功能在 iOS 上不可用。
+
+原先的实现会弹出「无法启用即时编译功能」的提示框，挡住游戏画面。现在改为：检测到 iOS WebView 时**静默跳过**，不弹窗；其他平台（桌面浏览器等）保持原有提示。
+
+改动位于 [`apps/core/scripts/vite-plugin-importmap.ts`](../../core/scripts/vite-plugin-importmap.ts) 生成的 `game.js` 中，通过 `window.webkit.messageHandlers.bridge` 判断是否为 iOS WebView（与 `@capacitor/core` 的 `getPlatformId` 保持一致）。
+
 ### 0.2 目录列举：`asset-manifest.json`
 
 游戏启动时需要「列目录」来扫描有哪些武将、卡牌、模式（`getFileList`）。
@@ -56,7 +89,7 @@
 GitHub 为公共仓库免费提供 macOS 云主机（Apple Silicon）。工作流 `.github/workflows/ios-build.yml` 会自动完成：
 
 ```
-装 Node/pnpm → 编译网页资源 → 生成资源清单 → 生成 Xcode 工程
+装 Node/pnpm → 编译网页资源 → 生成资源清单 → 同步进已提交的 Xcode 工程
   → 编译（不签名）→ 组装 Payload → 打包成 .ipa → 上传 Artifact / Release
 ```
 
@@ -137,14 +170,19 @@ cd noname
 pnpm install
 ```
 
-### 2.3 生成 iOS 工程
+### 2.3 获取 iOS 工程
+
+`apps/mobile/ios/` **已随仓库提供**（与 `android/` 一样纳入版本管理），克隆下来即可直接构建，**不需要**执行 `npx cap add ios`。
+
+如果你只是想确认工程完整，可以检查关键文件是否存在：
 
 ```bash
-cd apps/mobile
-npx cap add ios
+ls apps/mobile/ios/App/App/*.swift
+# AppDelegate.swift  NonameBridgeViewController.swift  NonameRouter.swift
 ```
 
-成功后会生成 `apps/mobile/ios/` 目录。**此步骤只需执行一次**，之后重新构建不必重复。
+> 仅在工程被误删时才需要重建：`npx cap add ios` 会重新生成一份**官方默认模板**，
+> 此时上面两个 `Noname*.swift` 会丢失，需从 Git 恢复（`git checkout -- apps/mobile/ios`）。
 
 ### 2.4 查询 Team ID
 
@@ -241,8 +279,9 @@ apps/mobile/ios/build/export/<AppName>.ipa
 | `No signing certificate` | Team ID 填错，或 Apple ID 未在 Xcode 中登录 |
 | `Unable to find a destination` | 缺 iOS 平台支持，执行 `xcodebuild -downloadPlatform iOS` |
 | `Bad Allocation` | `.ipa` 过大，见第 3 节裁剪资源 |
-| `iOS project not found` | 未执行 `npx cap add ios` |
-| `Xcode project/workspace not found` | iOS 工程未初始化好，删除 `apps/mobile/ios` 后重跑 `npx cap add ios` |
+| `iOS project not found` | `apps/mobile/ios/` 工程缺失，执行 `git checkout -- apps/mobile/ios` 恢复 |
+| 扩展加载不了 / 用户放的扩展不生效 | 请求层覆盖层（`NonameRouter`）未生效。确认 `Main.storyboard` 的初始 ViewController 是 `NonameBridgeViewController`，且该 Swift 文件已加入 Xcode 工程的编译目标 |
+| 游戏启动时弹出「无法启用即时编译功能」 | 说明当前运行的仍是旧版 `game.js`。重新构建网页资源（`pnpm build`）以让 JIT 降级逻辑生效 |
 | 菜单 / 顶部按钮点不动 | 系统栏（状态栏、导航栏）浮层吃掉了触摸事件。确认 `capacitor.config.ts` 中 `SystemBars.hidden` 为 `true`，且未启用 `contentInset` |
 | 游戏能启动但读不到武将 / 卡牌 | `asset-manifest.json` 缺失或未随资源裁剪更新，重新执行 `pnpm --filter @noname/mobile sync` |
 
@@ -256,7 +295,11 @@ apps/mobile/ios/build/export/<AppName>.ipa
 | [`src/fs/ios.ts`](../src/fs/ios.ts) | iOS 文件系统实现（沙盒覆盖层 + 内置资源清单列举） |
 | [`src/fs/types.ts`](../src/fs/types.ts) | 跨平台共用的 `NativeFileSystem` 接口与工具函数 |
 | [`src/fs/legacy-api.ts`](../src/fs/legacy-api.ts) | 把 `NativeFileSystem` 映射为游戏所需的回调式 `game.*` API |
+| [`ios/App/App/NonameBridgeViewController.swift`](../ios/App/App/NonameBridgeViewController.swift) | 继承 `CAPBridgeViewController`，重写 `router()` 挂上自定义路由器 |
+| [`ios/App/App/NonameRouter.swift`](../ios/App/App/NonameRouter.swift) | **请求层覆盖层**：让 `<script src>` / `fetch` 也能读到 `Documents/noname/` 中的用户文件（等价于 Android 的 `JsAwareAssetsPathHandler`） |
+| [`ios/App/App/Base.lproj/Main.storyboard`](../ios/App/App/Base.lproj/Main.storyboard) | 初始 ViewController 指向 `NonameBridgeViewController` |
 | [`buildIos.ts`](../buildIos.ts) | 本地 Mac 一键构建脚本 |
 | [`afterSync.ts`](../afterSync.ts) | `cap sync` 前置步骤：打包 preload、生成资源清单 |
 | [`capacitor.config.ts`](../capacitor.config.ts) | Capacitor 平台配置（含 iOS 的 `contentInset`、`SystemBars`） |
+| [`apps/core/scripts/vite-plugin-importmap.ts`](../../core/scripts/vite-plugin-importmap.ts) | 生成 `game.js`（含 JIT 初始化与 iOS 静默降级逻辑） |
 | [`.github/workflows/ios-build.yml`](../../../.github/workflows/ios-build.yml) | 云端未签名 `.ipa` 构建工作流 |
