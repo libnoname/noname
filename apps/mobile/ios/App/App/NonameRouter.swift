@@ -38,15 +38,19 @@ class NonameRouter: NSObject, Router {
     /// Capacitor 会传进来 URL 的 `path` 部分，例如 `/noname/entry.js`。
     /// 返回磁盘绝对路径：命中沙盒则返回沙盒路径，否则回退内置资源路径。
     func route(for path: String) -> String {
-        // 与官方 CapacitorRouter 一致：直接做字符串拼接，不经过 URL 解析，
-        // 避免百分号编码 / 解码带来的路径差异。
-        let fallback = basePath + path
+        // 与官方 CapacitorRouter 的语义严格对齐（必须逐字对齐，否则会加载失败）：
+        //   - 无扩展名（含空路径 "/"）视为 SPA 路由，回退到 index.html；
+        //   - 有扩展名则直接拼接 basePath。
+        // 注意官方在无扩展名分支返回的是 `basePath + "/index.html"` 而不是
+        // `basePath + path`，这里若照字面拼接会得到目录路径，
+        // `Data(contentsOf:)` 读目录抛错 → 首页加载失败 → 黑屏。
+        let pathURL = URL(fileURLWithPath: path)
+        let fallback = pathURL.pathExtension.isEmpty ? basePath + "/index.html" : basePath + path
 
         guard isOverlayEnabled else { return fallback }
 
         // 只有带扩展名、看起来像静态资源的路径才尝试覆盖层查找。
         // 无扩展名的路径是 SPA 路由，官方实现会把它当作 index.html。
-        let pathURL = URL(fileURLWithPath: path)
         guard !pathURL.pathExtension.isEmpty else { return fallback }
 
         guard let normalized = Self.normalize(path) else {
@@ -58,9 +62,10 @@ class NonameRouter: NSObject, Router {
             return overlayURL.path
         }
 
-        // `pnpm` 在打包产物里用 `.pnpm` 目录，而移动端同步时会改名为 `_pnpm`
-        // （见 `apps/mobile/android/.../SafOverlayStore.kt` 的 pnpmCompat）。
-        // 覆盖层里若用户放的是改名后的版本，这里同样要兜底。
+        // `pnpm` 的目录名在不同平台不一致：安卓打包时会把 `.pnpm` 改名为 `_pnpm`
+        // （见 `apps/mobile/afterSync.ts` 的 `patchAndroidAssets`），iOS 的 `public/`
+        // 则保持 `.pnpm` 原样。用户若从安卓侧拷来覆盖层文件，目录名会是 `_pnpm`，
+        // 因此这里做一次兼容查找：先按原名找，未命中再按 `_pnpm` 找。
         if normalized.contains(".pnpm") {
             let compatNormalized = normalized.replacingOccurrences(of: ".pnpm", with: "_pnpm")
             if let compatURL = overlayFileURL(for: compatNormalized) {
