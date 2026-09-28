@@ -7046,69 +7046,58 @@ export default {
 		logTarget: () => _status.currentPhase,
 		check(event, player) {
 			if (
-				player.countCards("h", function (card) {
-					var mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
-					if (mod2 != "unchanged") {
+				player.countCards("h", card => {
+					const mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
+					if (mod2 !== "unchanged") {
 						return mod2;
 					}
-					var mod = game.checkMod(card, player, event.player, "unchanged", "cardSavable", player);
-					if (mod != "unchanged") {
+					const mod = game.checkMod(card, player, event.player, "unchanged", "cardSavable", player);
+					if (mod !== "unchanged") {
 						return mod;
 					}
-					var savable = get.info(card).savable;
-					if (typeof savable == "function") {
+					let savable = get.info(card).savable;
+					if (typeof savable === "function") {
 						savable = savable(card, player, event.player);
 					}
 					return savable;
 				}) >=
-				1 - event.player.hp
+					1 - event.player.hp
 			) {
 				return false;
 			}
 			return true;
 		},
-		content() {
-			"step 0";
-			var target = _status.currentPhase;
-			event.target = target;
+		async content(event, trigger, player) {
+			const target = _status.currentPhase;
 			player.awakenSkill("gzshigong");
-			var list = lib.character[player.name2][3].filter(function (skill) {
-				return get.skillCategoriesOf(skill, player).length == 0;
-			});
+			const list = lib.character[player.name2][3].filter(skill => get.skillCategoriesOf(skill, player).length === 0);
+			await player.removeCharacter(1);
 			if (!list.length) {
-				event._result = { control: "cancel2" };
-				event.goto(2);
-			} else {
-				event.list = list;
+				await player.recover(1 - player.hp);
+				return;
 			}
-			player.removeCharacter(1);
-			"step 1";
-			target
-				.chooseControl(event.list, "cancel2")
-				.set(
-					"choiceList",
-					event.list.map(i => {
-						return '<div class="skill">【' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "】</div><div>" + get.skillInfoTranslation(i, _status.currentPhase, false) + "</div>";
-					})
-				)
-				.set("displayIndex", false)
-				.set("ai", function () {
-					if (get.attitude(_status.event.player, _status.event.getParent().player) > 0) {
-						return 0;
-					}
-					return [0, 1].randomGet();
+			const result = await target
+				.chooseControl({
+					controls: [...list, "cancel2"],
+					choiceList: list.map(skill => `<div class="skill">【${get.translation(lib.translate[skill + "_ab"] || get.translation(skill).slice(0, 2))}】</div><div>${get.skillInfoTranslation(skill, target, false)}</div>`),
+					ai: event => {
+						if (get.attitude(event.player, event.getParent().player) > 0) {
+							return 0;
+						}
+						return [0, 1].randomGet();
+					},
+					prompt: `${get.translation(player)}对你发动了【示恭】`,
+					prompt2: "获得一个技能并令其将体力回复至体力上限；或点击“取消”，令其将体力值回复至1点。",
 				})
-				.set("prompt", get.translation(player) + "对你发动了【示恭】")
-				.set("prompt2", "获得一个技能并令其将体力回复至体力上限；或点击“取消”，令其将体力值回复至1点。");
-			"step 2";
-			if (result.control == "cancel2") {
-				player.recover(1 - player.hp);
-				event.finish();
-			} else {
-				target.addSkills(result.control);
-				target.line(player);
-				player.recover(player.maxHp - player.hp);
+				.set("displayIndex", false)
+				.forResult();
+			if (result.control === "cancel2") {
+				await player.recover(1 - player.hp);
+				return;
 			}
+			await target.addSkills(result.control);
+			target.line(player);
+			await player.recover(player.maxHp - player.hp);
 		},
 	},
 	//海外服华雄
