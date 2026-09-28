@@ -14719,12 +14719,12 @@ const skills = {
 				return;
 			}
 
-			const settleTwice = await player
+			const { bool: settleTwice } = await player
 				.chooseBool({
 					prompt: `是否令${get.translation(target)}于〖令戮〗失败时进行两次结算？`,
 					ai: () => true,
 				})
-				.forResultBool();
+				.forResult();
 			if (settleTwice) {
 				target.storage.twlinglu_settle[0][1]++;
 				game.log(target, "于本次强令失败时进行两次结算");
@@ -16167,13 +16167,13 @@ const skills = {
 			}
 
 			for (const target of targets) {
-				const activate = await player
+				const { boolactivate } = await player
 					.chooseBool({
 						prompt: get.prompt("twejian", target),
 						prompt2: "当其他角色得到你的牌后，若其有其他与此牌类型相同的牌，你可以令其选择一项：1.受到你造成的1点伤害；2.弃置这些牌",
 						ai: () => get.attitude(player, target) < 0,
 					})
-					.forResultBool();
+					.forResult();
 				if (!activate) {
 					continue;
 				}
@@ -18534,13 +18534,13 @@ const skills = {
 			}
 
 			player.addSkills("twqingce");
-			const gainSaotao = await player
+			const { bool: gainSaotao } = await player
 				.chooseBool({
 					prompt: "是否减1点体力上限并获得〖扫讨〗？",
 					ai: () => _status.event.bool,
 				})
 				.set("bool", player.isDamaged() && player.countCards("h") >= 3 && Math.random() < 0.5)
-				.forResultBool();
+				.forResult();
 			if (gainSaotao) {
 				await player.loseMaxHp();
 				player.addSkills("twsaotao");

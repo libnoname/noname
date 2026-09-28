@@ -35845,13 +35845,13 @@ const skills = {
 					let control = "选项二";
 					if (choices.length > 1) {
 						const choice = game.hasPlayer(current => !current.hasCards("h") && get.attitude(player, current) > 0) ? "选项一" : "选项二";
-						control = await player
+						({ control } = await player
 							.chooseControl({
 								controls: choices,
 								choiceList,
 								ai: () => choice,
 							})
-							.forResultControl();
+							.forResult());
 					}
 					if (control !== "选项一") {
 						await player.chooseToDiscard({
