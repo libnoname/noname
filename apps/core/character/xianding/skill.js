@@ -19562,7 +19562,7 @@ const skills = {
 										}
 										return player
 											.getDiscardableCards(player, "he")
-											.sort((a, b) => get.unuseful(a) - get.unuseful(b))
+											.sort((a, b) => get.unuseful(b) - get.unuseful(a))
 											.slice(0, num);
 									})()
 								);
@@ -19621,7 +19621,7 @@ const skills = {
 						player.countCards("h") -
 						player
 							.getDiscardableCards(player, "he")
-							.sort((a, b) => get.unuseful(a) - get.unuseful(b))
+							.sort((a, b) => get.unuseful(b) - get.unuseful(a))
 							.slice(0, num)
 							.filter(card => get.position(card) === "h").length;
 				for (const target of targets) {
@@ -19665,7 +19665,7 @@ const skills = {
 				.set("ai", target => {
 					const diff = get.event().prenum - target.countCards("h");
 					let eff = get.info("dcsbzhanban").getEffect(get.player(), target, diff);
-					return eff === 0;
+					return eff < 0;
 				})
 				.set(
 					"prenum",
