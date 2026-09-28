@@ -16167,7 +16167,7 @@ const skills = {
 			}
 
 			for (const target of targets) {
-				const { boolactivate } = await player
+				const { bool: activate } = await player
 					.chooseBool({
 						prompt: get.prompt("twejian", target),
 						prompt2: "当其他角色得到你的牌后，若其有其他与此牌类型相同的牌，你可以令其选择一项：1.受到你造成的1点伤害；2.弃置这些牌",
