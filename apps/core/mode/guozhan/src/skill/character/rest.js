@@ -2263,14 +2263,13 @@ export default {
 		init(player) {
 			player.checkMainSkill("fakebaoling");
 		},
-		content() {
-			"step 0";
-			player.removeCharacter(1);
-			"step 1";
-			player.gainMaxHp(3);
-			player.recover(3);
-			"step 2";
-			player.addSkills("fakebenghuai");
+		async content(event, trigger, player) {
+			await player.removeCharacter(1);
+			const gainMaxHpEvent = player.gainMaxHp(3);
+			const recoverEvent = player.recover(3);
+			await gainMaxHpEvent;
+			await recoverEvent;
+			await player.addSkills("fakebenghuai");
 		},
 		derivation: "fakebenghuai",
 	},
