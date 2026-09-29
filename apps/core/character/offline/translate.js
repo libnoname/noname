@@ -1502,6 +1502,8 @@ const translates = {
 	jdsbjieyin_info: "锁定技，出牌阶段开始时，你令一名手牌数不大于你的角色选择一项：1.交给你X张手牌（X=min(2,其手牌数)且至少为1），然后获得1点护甲；2.你回复1点体力并获得所有“妆”，然后减少1点体力上限，变更势力为吴。",
 	jdsbliangzhu: "良助",
 	jdsbliangzhu_info: "蜀势力技。出牌阶段限一次，你可以将一名其他角色装备区的一张牌置于你的武将牌上，称为“妆”，然后令一名其他角色回复1点体力。",
+	jd_sb_xiaoji: "枭姬",
+	jd_sb_xiaoji_info: "吴势力技。当你失去装备区里的一张牌后，你摸两张牌，然后可以弃置场上的一张牌。",
 	jd_sb_liubei: "九鼎刘备",
 	jd_sb_liubei_prefix: "九鼎",
 	jdsbzhangwu: "章武",
