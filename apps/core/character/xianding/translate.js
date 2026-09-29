@@ -274,7 +274,7 @@ const translates = {
 	shen_pangtong_prefix: "神",
 	luansuo: "鸾锁",
 	luansuo_info: "锁定技。①你的回合内，所有角色不能弃置手牌。②回合开始时，所有角色的当前手牌视为【铁索连环】直到有与此牌对应花色的牌进入弃牌堆或回合结束。",
-	luansuo_append: `<span style="font-family:yuanli">子右：神庞统<del>™的</del>不能用【过河拆桥】拆无法被弃置牌的角色的牌，是<del>™</del>因为无名杀底层<del>™的</del>会在用【过河拆桥】前™检查一遍目标是否有<del>™</del>能被拆的牌，没有就<del>™的</del>不让用。谁再<del>™</del>问我看到就<del>™禁言</del>关爱谁。</span>`,
+	luansuo_append: `<span style="font-family:yuanli">子右：神庞统<delTMD</del>不能用【过河拆桥】拆无法被弃置牌的角色的牌，是<del>TM</del>因为无名杀底层<del>TMD</del>会在用【过河拆桥】前<del>TM</del>检查一遍目标是否有<del>TM</del>能被拆的牌，没有就<del>TMD</del>不让用。谁再<del>TM</del>问我看到就<del>TM禁言</del>关爱谁。</span>`,
 	fengliao: "凤燎",
 	fengliao_info: "锁定技，转换技，你使用牌指定唯一目标后，阳：你令其摸一张牌；阴：你对其造成1点火焰伤害。",
 	kunyu: "鹍浴",
