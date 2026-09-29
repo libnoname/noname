@@ -9020,7 +9020,6 @@ const skills = {
 	//复活神将
 	luansuo: {
 		audio: 2,
-		derivation: "luansuo_faq",
 		trigger: { player: "phaseBegin" },
 		filter(event, player) {
 			return game.hasPlayer(target => target.countCards("h"));
