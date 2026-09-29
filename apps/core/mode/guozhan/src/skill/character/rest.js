@@ -14572,16 +14572,15 @@ export default {
 			player: "phaseJieshuBegin",
 		},
 		preHidden: true,
-		content() {
-			"step 0";
-			var list = [],
-				players = game.filterPlayer();
-			for (var target of players) {
+		async content(event, trigger, player) {
+			const list = [];
+			const players = game.filterPlayer();
+			for (const target of players) {
 				if (target.isUnseen()) {
 					continue;
 				}
-				var add = true;
-				for (var i of list) {
+				let add = true;
+				for (const i of list) {
 					if (i.isFriendOf(target)) {
 						add = false;
 						break;
@@ -14591,27 +14590,33 @@ export default {
 					list.add(target);
 				}
 			}
-			event.num = list.length;
-			player.draw(event.num);
-			if (event.num > 2) {
-				player.turnOver();
+			const num = list.length;
+			const draw = player.draw(num);
+			const turnOver = num > 2 ? player.turnOver() : null;
+			await draw;
+			if (turnOver) {
+				await turnOver;
 			}
-			"step 1";
-			player
-				.chooseCard("h", true, "弃置一张手牌，若以此法弃置的是装备牌，则你改为使用之")
-				.set("ai", function (card) {
-					if (get.type(card) == "equip") {
-						return 5 - get.value(card);
-					}
-					return -get.value(card);
+			const result = await player
+				.chooseCard({
+					position: "h",
+					forced: true,
+					prompt: "弃置一张手牌，若以此法弃置的是装备牌，则你改为使用之",
+					filterCard: lib.filter.cardDiscardable,
+					ai(card) {
+						if (get.type(card) === "equip") {
+							return 5 - get.value(card);
+						}
+						return -get.value(card);
+					},
 				})
-				.set("filterCard", lib.filter.cardDiscardable);
-			"step 2";
+				.forResult();
 			if (result.bool && result.cards.length) {
-				if (get.type(result.cards[0]) == "equip" && player.hasUseTarget(result.cards[0])) {
-					player.chooseUseTarget(result.cards[0], true, "nopopup");
+				const card = result.cards[0];
+				if (get.type(card) === "equip" && player.hasUseTarget(card)) {
+					await player.chooseUseTarget({ card, forced: true, nopopup: true });
 				} else {
-					player.discard(result.cards[0]);
+					await player.discard({ cards: [card] });
 				}
 			}
 		},
