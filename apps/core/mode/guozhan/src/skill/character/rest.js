@@ -6600,26 +6600,20 @@ export default {
 		audio: "xinfu_jianji",
 		inherit: "xinfu_jianji",
 		filterTarget: true,
-		content() {
-			"step 0";
-			target.draw("visible");
-			"step 1";
-			var card = result?.cards?.[0];
-			if (
-				card &&
-				game.hasPlayer(function (current) {
-					return target.canUse(card, current);
-				}) &&
-				get.owner(card) == target
-			) {
-				target.chooseToUse({
-					prompt: "是否使用" + get.translation(card) + "？",
-					filterCard(cardx, player, target) {
-						return cardx == _status.event.cardx;
-					},
-					cardx: card,
-				});
+		async content(event, trigger, player) {
+			const { target } = event;
+			const { cards } = await target.draw({ visible: true }).forResult();
+			const card = cards?.[0];
+			if (!card || !game.hasPlayer(current => target.canUse(card, current)) || get.owner(card) !== target) {
+				return;
 			}
+			const useEvent = target
+				.chooseToUse({
+					prompt: `是否使用${get.translation(card)}？`,
+					filterCard: cardx => cardx === _status.event.cardx,
+				})
+				.set("cardx", card);
+			await useEvent;
 		},
 		ai: {
 			order: 10,
