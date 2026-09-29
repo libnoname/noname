@@ -6902,7 +6902,7 @@ export default {
 			global: "loseAsyncAfter",
 		},
 		filter(event, player) {
-			if (player == _status.currentPhase) {
+			if (player === _status.currentPhase) {
 				return false;
 			}
 			return event.getg(player).length;
@@ -6910,31 +6910,30 @@ export default {
 		frequent: true,
 		group: "gzjiansu_use",
 		preHidden: ["gzjiansu_use"],
-		content() {
-			player.showCards(trigger.getg(player), get.translation(player) + "发动了【俭素】");
+		async content(event, trigger, player) {
+			player.showCards(trigger.getg(player), `${get.translation(player)}发动了【俭素】`);
 			player.addGaintag(trigger.getg(player), "gzjiansu_tag");
 			player.markSkill("gzjiansu");
 		},
 		intro: {
 			mark(dialog, content, player) {
-				var hs = player.getCards("h", function (card) {
+				const hs = player.getCards("h", card => {
 					return card.hasGaintag("gzjiansu_tag");
 				});
-				if (hs.length) {
-					dialog.addSmall(hs);
-				} else {
+				if (!hs.length) {
 					dialog.addText("无已展示手牌");
+					return;
 				}
+				dialog.addSmall(hs);
 			},
 			content(content, player) {
-				var hs = player.getCards("h", function (card) {
+				const hs = player.getCards("h", card => {
 					return card.hasGaintag("gzjiansu_tag");
 				});
-				if (hs.length) {
-					return get.translation(hs);
-				} else {
+				if (!hs.length) {
 					return "无已展示手牌";
 				}
+				return get.translation(hs);
 			},
 		},
 		subSkill: {
@@ -6942,54 +6941,43 @@ export default {
 				audio: "gzjiansu",
 				trigger: { player: "phaseUseBegin" },
 				filter(event, player) {
-					var num = player.countCards("h", function (card) {
+					const num = player.countCards("h", card => {
 						return card.hasGaintag("gzjiansu_tag");
 					});
 					return (
 						num > 0 &&
-						game.hasPlayer(function (current) {
+						game.hasPlayer(current => {
 							return current.isDamaged() && current.getDamagedHp() <= num;
 						})
 					);
 				},
-				direct: true,
-				content() {
-					"step 0";
-					player
+				async cost(event, trigger, player) {
+					event.result = await player
 						.chooseCardTarget({
 							prompt: get.prompt("gzjiansu"),
 							prompt2: "弃置任意张“俭”，令一名体力值不大于你以此法弃置的牌数的角色回复1点体力",
-							filterCard(card) {
-								return get.itemtype(card) == "card" && card.hasGaintag("gzjiansu_tag");
-							},
+							filterCard: card => get.itemtype(card) === "card" && card.hasGaintag("gzjiansu_tag"),
 							selectCard: [1, Infinity],
-							filterTarget(card, player, target) {
-								return target.isDamaged();
-							},
-							filterOk() {
-								return ui.selected.targets.length && ui.selected.targets[0].hp <= ui.selected.cards.length;
-							},
-							ai1(card) {
+							filterTarget: (_card, targetPlayer, target) => target.isDamaged(),
+							filterOk: () => ui.selected.targets.length && ui.selected.targets[0].hp <= ui.selected.cards.length,
+							ai1: card => {
 								if (ui.selected.targets.length && ui.selected.targets[0].hp <= ui.selected.cards.length) {
 									return 0;
 								}
 								return 6 - get.value(card);
 							},
-							ai2(target) {
-								var player = _status.event.player;
-								return get.recoverEffect(target, player, player);
-							},
+							ai2: target => get.recoverEffect(target, player, player),
 							allowChooseAll: true,
 						})
-						.setHiddenSkill("gzjiansu_use");
-					"step 1";
-					if (result.bool) {
-						var target = result.targets[0],
-							cards = result.cards;
-						player.logSkill("gzjiansu_use", target);
-						player.discard(cards);
-						target.recover();
-					}
+						.setHiddenSkill(event.skill)
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					const target = event.targets[0];
+					const discardEvent = player.discard({ cards: event.cards });
+					const recoverEvent = target.recover();
+					await discardEvent;
+					await recoverEvent;
 				},
 			},
 		},
