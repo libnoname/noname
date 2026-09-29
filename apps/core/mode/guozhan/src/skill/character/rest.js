@@ -3609,36 +3609,36 @@ export default {
 		unique: true,
 		audio: "zhiwei",
 		inherit: "zhiwei",
-		filter(event, player, name) {
-			if (!game.hasPlayer(current => current != player)) {
+		direct: false,
+		filter(event, player) {
+			if (!game.hasPlayer(current => current !== player)) {
 				return false;
 			}
 			return (
-				event.name == "showCharacter" &&
+				event.name === "showCharacter" &&
 				event.toShow.some(name => {
 					return get.character(name, 3).includes("fakezhiwei");
 				})
 			);
 		},
-		content() {
-			"step 0";
-			player
-				.chooseTarget("请选择【至微】的目标", true, lib.filter.notMe)
-				.set("ai", target => {
-					var att = get.attitude(_status.event.player, target);
-					if (att > 0) {
-						return 1 + att;
-					}
-					return Math.random();
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: "请选择【至微】的目标",
+					prompt2: lib.translate.fakezhiwei_info,
+					forced: true,
+					filterTarget: lib.filter.notMe,
+					ai: target => {
+						const attitude = get.attitude(_status.event.player, target);
+						return attitude > 0 ? 1 + attitude : Math.random();
+					},
 				})
-				.set("prompt2", lib.translate.fakezhiwei_info);
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("fakezhiwei", target);
-				player.storage.fakezhiwei_effect = target;
-				player.addSkill("fakezhiwei_effect");
-			}
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			player.storage.fakezhiwei_effect = target;
+			player.addSkill("fakezhiwei_effect");
 		},
 		onremove(player) {
 			player.removeSkill("fakezhiwei_effect");
@@ -3653,7 +3653,7 @@ export default {
 					return get.character(event.toHide, 3).includes("fakezhiwei");
 				},
 				forced: true,
-				content() {
+				async content(event, trigger, player) {
 					trigger.cancel();
 				},
 				mark: "character",
@@ -3665,11 +3665,11 @@ export default {
 				trigger: { global: "damageSource" },
 				forced: true,
 				filter(event, player) {
-					return event.source == player.storage.fakezhiwei_effect;
+					return event.source === player.storage.fakezhiwei_effect;
 				},
 				logTarget: "source",
-				content() {
-					player.draw();
+				async content(event, trigger, player) {
+					await player.draw();
 				},
 			},
 			discard: {
@@ -3678,15 +3678,15 @@ export default {
 				forced: true,
 				filter(event, player) {
 					return (
-						event.player == player.storage.fakezhiwei_effect &&
+						event.player === player.storage.fakezhiwei_effect &&
 						player.hasCard(card => {
 							return _status.connectMode || lib.filter.cardDiscardable(card, player);
 						}, "h")
 					);
 				},
 				logTarget: "player",
-				content() {
-					player.chooseToDiscard("h", true);
+				async content(event, trigger, player) {
+					await player.chooseToDiscard({ position: "h", forced: true });
 				},
 			},
 			gain: {
@@ -3697,20 +3697,28 @@ export default {
 				},
 				forced: true,
 				filter(event, player) {
-					if (event.type != "discard" || event.getlx === false || event.getParent("phaseDiscard").player != player || !player.storage.fakezhiwei_effect || !player.storage.fakezhiwei_effect.isIn()) {
+					if (
+						event.type !== "discard" ||
+						event.getlx === false ||
+						event.getParent("phaseDiscard").player !== player ||
+						!player.storage.fakezhiwei_effect?.isIn()
+					) {
 						return false;
 					}
-					var evt = event.getl(player);
+					const evt = event.getl(player);
 					return evt && evt.cards2.filterInD("d").length > 0;
 				},
 				logTarget(event, player) {
 					return player.storage.fakezhiwei_effect;
 				},
-				content() {
+				async content(event, trigger, player) {
 					if (trigger.delay === false) {
-						game.delay();
+						await game.delay();
 					}
-					player.storage.fakezhiwei_effect.gain(trigger.getl(player).cards2.filterInD("d"), "gain2");
+					await player.storage.fakezhiwei_effect.gain({
+						cards: trigger.getl(player).cards2.filterInD("d"),
+						animate: "gain2",
+					});
 				},
 			},
 			clear: {
@@ -3721,26 +3729,28 @@ export default {
 				},
 				forced: true,
 				filter(event, player) {
-					if (event.name == "die") {
-						return event.player == player.storage.fakezhiwei_effect;
+					if (event.name === "die") {
+						return event.player === player.storage.fakezhiwei_effect;
 					}
-					if (event.name == "removeCharacter") {
+					if (event.name === "removeCharacter") {
 						return get.character(event.toRemove, 3).includes("fakezhiwei");
 					}
 					return get.character(event.toHide, 3).includes("fakezhiwei");
 				},
-				content() {
-					"step 0";
+				async content(event, trigger, player) {
 					player.removeSkill("fakezhiwei_effect");
-					if (trigger.name != "die") {
-						event.finish();
+					if (trigger.name !== "die") {
+						return;
 					}
-					"step 1";
+					const hideEvents = [];
 					if (get.character(player.name1, 3).includes("fakezhiwei")) {
-						player.hideCharacter(0);
+						hideEvents.push(player.hideCharacter(0));
 					}
 					if (get.character(player.name2, 3).includes("fakezhiwei")) {
-						player.hideCharacter(1);
+						hideEvents.push(player.hideCharacter(1));
+					}
+					for (const hideEvent of hideEvents) {
+						await hideEvent;
 					}
 				},
 			},
