@@ -18530,15 +18530,16 @@ export default {
 		check(event, player) {
 			return player.hp <= 1 || get.guozhanRank(player.name2, player) <= 3;
 		},
-		content() {
-			"step 0";
-			player.removeCharacter(1);
-			"step 1";
-			player.removeSkills("baoling");
-			player.gainMaxHp(3, true);
-			"step 2";
-			player.recover(3);
-			player.addSkills("benghuai");
+		async content(event, trigger, player) {
+			await player.removeCharacter(1);
+			const removeSkillsEvent = player.removeSkills("baoling");
+			const gainMaxHpEvent = player.gainMaxHp({ num: 3, forced: true });
+			await removeSkillsEvent;
+			await gainMaxHpEvent;
+			const recoverEvent = player.recover(3);
+			const addSkillsEvent = player.addSkills("benghuai");
+			await recoverEvent;
+			await addSkillsEvent;
 		},
 		derivation: "benghuai",
 	},
