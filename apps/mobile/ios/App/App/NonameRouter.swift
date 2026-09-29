@@ -24,9 +24,15 @@ class NonameRouter: NSObject, Router {
     /// Capacitor 的内置资源根目录（`ios/App/App/public`）。
     var basePath: String = ""
 
-    /// 游戏用来存放可写数据的沙盒目录名，位于 App 的 Documents 下。
-    /// 与 `apps/mobile/src/fs/ios.ts` 中的 `WRITABLE_ROOT` 保持一致。
-    static let writableRoot = "noname"
+    /// 可写层相对 App `Documents/` 的根目录名。
+    ///
+    /// 取**空字符串**表示直接把 `Documents/` 当作游戏根目录，与
+    /// `apps/mobile/src/fs/ios.ts` 的 `WRITABLE_ROOT`、以及安卓端
+    /// 「用户选定目录自身即根目录」的语义保持一致。
+    ///
+    /// 好处：iOS「文件」App 暴露的正是 `Documents/`，玩家手动放进去的
+    /// 素材（`image/character/...`）与扩展能被这一层直接读到。
+    static let writableRoot = ""
 
     /// 是否启用沙盒覆盖层（仅 iOS 真机/模拟器构建启用；测试时可关闭）。
     var isOverlayEnabled = true
@@ -82,9 +88,12 @@ class NonameRouter: NSObject, Router {
     private func overlayFileURL(for normalized: String) -> URL? {
         guard let documentsURL else { return nil }
 
-        let candidate = documentsURL
-            .appendingPathComponent(Self.writableRoot, isDirectory: true)
-            .appendingPathComponent(normalized)
+        // writableRoot 为空时，Documents 本身就是游戏根目录；
+        // 此时不能再去 appendingPathComponent("")，否则会多出一层路径分隔符。
+        let base = Self.writableRoot.isEmpty
+            ? documentsURL
+            : documentsURL.appendingPathComponent(Self.writableRoot, isDirectory: true)
+        let candidate = base.appendingPathComponent(normalized)
 
         var isDirectory: ObjCBool = false
         guard FileManager.default.fileExists(atPath: candidate.path, isDirectory: &isDirectory),

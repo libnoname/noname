@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
     <key>CFBundleDisplayName</key>
-	<string>noname</string>
+	<string>无名杀</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -22,7 +22,15 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<!-- 让 App 的 Documents 目录出现在「文件」App 的「我的 iPhone」下，
+	     玩家可以直接把立绘 / 语音 / 扩展拖进去（详见 apps/mobile/docs/ios.md）。 -->
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
 	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<!-- 允许通过 Finder / iTunes 访问 Documents（配合上面的
+	     LSSupportsOpeningDocumentsInPlace，「文件」App 才会显示该目录）。 -->
+	<key>UIFileSharingEnabled</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>

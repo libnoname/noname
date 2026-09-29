@@ -19,13 +19,7 @@
 
 import { Filesystem, Directory, Encoding } from "@capacitor/filesystem";
 import { Capacitor } from "@capacitor/core";
-import type {
-	NativeAccessResult,
-	NativeEntryResult,
-	NativeFileSystem,
-	NativeListResult,
-	NativeReadResult,
-} from "./types.js";
+import type { NativeAccessResult, NativeEntryResult, NativeFileSystem, NativeListResult, NativeReadResult } from "./types.js";
 
 /**
  * 内置资源根目录。
@@ -37,8 +31,21 @@ import type {
  */
 const BUNDLED_BASE_URL = "capacitor://localhost";
 
-/** 可写层的根目录名（位于 iOS 的 Documents 目录下） */
-const WRITABLE_ROOT = "noname";
+/**
+ * 可写层的根目录名（位于 iOS 的 Documents 目录下）。
+ *
+ * 这里刻意取**空字符串**，也就是把 `Documents/` 本身当作游戏根目录，原因有两点：
+ *
+ * 1. **与安卓对齐**：安卓端 SAF 让用户选的那个目录就是游戏根目录，没有中间层
+ *    （见 `SafOverlayStore` 的 `rootUri`）。iOS 用空根后两端语义一致。
+ * 2. **方便手动导入**：iOS 的「文件」App 暴露的正是 `Documents/`
+ *    （见 `Info.plist` 的 `UIFileSharingEnabled` + `LSSupportsOpeningDocumentsInPlace`）。
+ *    根目录对齐后，玩家可以直接在「文件」里按 `image/character`、`audio/skill`、
+ *    `extension` 的结构放入素材与扩展，游戏立刻就能读到，无需越狱或重装。
+ *
+ * ⚠️ 必须与 `ios/App/App/NonameRouter.swift` 的 `writableRoot` 保持一致。
+ */
+const WRITABLE_ROOT = "";
 
 export class IosFileSystem implements NativeFileSystem {
 	/**
@@ -130,19 +137,25 @@ export class IosFileSystem implements NativeFileSystem {
 		// 再叠加可写层的条目（同名时以可写层为准，与覆盖层语义一致）
 		const writablePath = this.toWritablePath(options.dir);
 		if (await this.exists(writablePath)) {
-			const result = await Filesystem.readdir({
-				path: writablePath,
-				directory: Directory.Documents,
-			});
-			for (const entry of result.files) {
-				if (entry.type === "directory") {
-					folders.add(entry.name);
-					files.delete(entry.name);
-				} else {
-					if (!folders.has(entry.name)) {
-						files.add(entry.name);
+			try {
+				const result = await Filesystem.readdir({
+					path: writablePath,
+					directory: Directory.Documents,
+				});
+				for (const entry of result.files) {
+					if (entry.type === "directory") {
+						folders.add(entry.name);
+						files.delete(entry.name);
+					} else {
+						if (!folders.has(entry.name)) {
+							files.add(entry.name);
+						}
 					}
 				}
+			} catch (error) {
+				// 列举**可写根目录**时 path 是空串，个别 Capacitor 实现可能不接受。
+				// 这不该让整个列举失败——退化成「只返回内置层」即可，读取不受影响。
+				console.warn(`[ios-fs] 列举可写目录失败（已降级为仅内置资源）: ${options.dir}`, error);
 			}
 		}
 
@@ -241,9 +254,17 @@ export class IosFileSystem implements NativeFileSystem {
 		}
 	}
 
-	/** 游戏内路径 → Documents 目录下的相对路径 */
+	/**
+	 * 游戏内路径 → Documents 目录下的相对路径。
+	 *
+	 * `WRITABLE_ROOT` 为空时，返回值就是相对 Documents 的裸路径
+	 * （根目录本身对应空字符串）。
+	 */
 	private toWritablePath(path: string): string {
 		const normalized = normalizeSegments(path);
+		if (WRITABLE_ROOT === "") {
+			return normalized;
+		}
 		if (normalized === "") {
 			return WRITABLE_ROOT;
 		}
@@ -328,10 +349,7 @@ export class IosFileSystem implements NativeFileSystem {
 			}
 		}
 
-		return [
-			...[...folders].map(name => ({ name, isDirectory: true })),
-			...[...files].map(name => ({ name, isDirectory: false })),
-		];
+		return [...[...folders].map(name => ({ name, isDirectory: true })), ...[...files].map(name => ({ name, isDirectory: false }))];
 	}
 
 	/** 懒加载并缓存资源清单；缺失时退化为空清单（仅影响目录列举，不影响文件读取） */

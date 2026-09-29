@@ -28,9 +28,15 @@
 - **Android** 使用 SAF（Storage Access Framework）：需要用户手动授权一个可写目录，游戏资源与存档都放在其中。
 - **iOS** 是应用沙盒，没有「让用户选目录」这个概念，因此不需要授权流程：
   - **只读层**：随 App 打包的内置资源，由 Capacitor 在 `capacitor://localhost` 下提供；
-  - **可写层**：沙盒内的 `Documents/noname/`，存放存档、扩展、导出文件。
+  - **可写层**：沙盒内的 `Documents/` 目录本身，存放存档、扩展、素材与导出文件。
 
-读取遵循**覆盖层**语义：先查 `Documents`（可写层），命中则返回；否则回退到内置资源（只读层）。这样「用户改动过的文件覆盖内置文件、删除用户文件即还原内置文件」的行为与 Android 一致。
+> **为什么可写层根目录就是 `Documents/` 本身（而不是它的某个子目录）。**
+> 一是与安卓对齐——安卓 SAF 里用户选的那个目录就是游戏根目录，同样没有中间层；
+> 二是方便手动导入——iOS「文件」App 暴露的正是 `Documents/`，根目录对齐后玩家可以直接
+> 在「文件」里按 `image/character`、`audio/skill`、`extension` 的层级放东西（见第 6 节）。
+> 该值定义在 `src/fs/ios.ts` 的 `WRITABLE_ROOT`，**必须与 `NonameRouter.swift` 的 `writableRoot` 一致**。
+
+读取遵循**覆盖层**语义：先查可写层（`Documents/`），命中则返回；否则回退到内置资源（只读层）。这样「用户改动过的文件覆盖内置文件、删除用户文件即还原内置文件」的行为与 Android 一致。
 
 实现见 [`src/fs/ios.ts`](../src/fs/ios.ts)，与 Android 的 `SafFsPlugin` 共用 [`src/fs/types.ts`](../src/fs/types.ts) 定义的 `NativeFileSystem` 接口，映射逻辑集中在 [`src/fs/legacy-api.ts`](../src/fs/legacy-api.ts)。
 
@@ -49,7 +55,7 @@ iOS 侧对应的实现是自定义 `Router`：
 | 扩展点 | `PathHandler.handle(path)` | `Router.route(for:)` |
 | 归一化规则 | 去首尾 `/`、过滤 `.`、拒绝 `..` | 同左（`NonameRouter.normalize`） |
 | pnpm 兼容 | `.pnpm` → `_pnpm` | 同左 |
-| 命中判断 | SAF 里存在该文件 | `Documents/noname/` 下存在该文件 |
+| 命中判断 | SAF 里存在该文件 | `Documents/` 下存在该文件 |
 | 自定义代码 | `MainActivity.kt`（仓库内） | `NonameBridgeViewController.swift` + `NonameRouter.swift`（仓库内） |
 
 > Capacitor 会把 `route(for:)` 的**返回值直接当作磁盘绝对路径**去 `Data(contentsOf:)`，所以命中覆盖层时返回沙盒文件的绝对路径即可。
@@ -296,7 +302,7 @@ apps/mobile/ios/build/export/<AppName>.ipa
 > **菜单 → 其它 → 更新 → 下载素材**
 
 点击「开始下载」后，会从上游 GitHub 仓库（`libnoname/noname` 的 `main` 分支）
-把这批资源取回来，写入应用沙盒的 `Documents/noname/` 目录。由于 iOS 侧
+把这批资源取回来，写入应用沙盒的可写层（`Documents/`）。由于 iOS 侧
 「文件系统覆盖层」+「请求层覆盖层」的存在，写进去的文件会被游戏直接读到，
 **不需要重装、也不需要改任何游戏代码**。
 
@@ -308,7 +314,7 @@ apps/mobile/ios/build/export/<AppName>.ipa
 | 文件清单 | **首选构建期内置的 `asset-download-manifest.json`**（由 `afterSync.ts` 在资源仍完整时生成，随包发布，完全离线）。仅在它缺失时才回退到 `api.github.com` 的 Git Trees API |
 | 文件内容 | 按顺序尝试多个源，第一个成功即用：GitHub Raw → jsDelivr → jsDelivr(Fastly) → jsDelivr(Gcore)。某源连续失败 5 次自动切换 |
 | 上游路径前缀 | `apps/core/`（注意不是仓库根目录） |
-| 本地落盘路径 | 去掉前缀后写入，如 `image/character/zhaoyun.jpg` → `Documents/noname/image/character/zhaoyun.jpg` |
+| 本地落盘路径 | 去掉前缀后写入，如 `image/character/zhaoyun.jpg` → `Documents/image/character/zhaoyun.jpg` |
 | 断点续传 | 有历史记录时逐个 `checkFile` 跳过已下载项，因此「取消后再点」是续传而非重下 |
 | 出错诊断 | 面板上的**「测试连接」**按钮会逐个探测各下载源并原地列出 HTTP 状态；下载结束语也会带上「源」与「清单来源」 |
 | 规模 | 约 11900 个文件 / 约 970MB，请尽量在 Wi-Fi 下进行 |
@@ -331,7 +337,42 @@ apps/mobile/ios/build/export/<AppName>.ipa
 
 ---
 
-## 7. 相关实现文件
+## 7. 在「文件」App 里手动导入素材与扩展
+
+iOS 版开启了文件共享，可以直接用系统「文件」App 打开游戏目录：
+
+> **「文件」App → 浏览 → 我的 iPhone → 无名杀**
+
+目录结构与游戏内部路径一一对应：
+
+```
+无名杀/
+├── 使用说明.txt          首次启动自动生成
+├── image/character/     武将立绘（文件名 = 武将 ID，如 zhaoyun.jpg）
+├── audio/skill/         技能语音（文件名 = 技能 ID，如 benghuai.mp3）
+├── audio/die/           阵亡语音（文件名 = 武将 ID，如 zhaoyun.mp3）
+└── extension/           扩展（每个扩展一个文件夹，文件夹名即扩展名）
+```
+
+放进去的文件会**覆盖**内置的同名资源；删掉就还原成内置版本，因此只补一部分也可以。
+
+### 实现要点
+
+| 关注点 | 做法 |
+| --- | --- |
+| 让目录出现在「文件」App | `Info.plist` 的 `UIFileSharingEnabled` + `LSSupportsOpeningDocumentsInPlace`（两个都要开，缺一不可） |
+| 文件夹显示名 | 取自 `CFBundleDisplayName`，当前为「无名杀」。⚠️ 它会**同时改变主屏上的 App 名称** |
+| 层级对齐 | 可写根目录设为空串，`Documents/` 即游戏根目录（见第 0.1 节） |
+| 空目录没有指引 | `preload.ts` 的 `ensureImportSkeleton()` 在 iOS 启动时预建上面四个目录并写一份 `使用说明.txt`（若已存在则不覆盖） |
+| 何时生效 | 静态资源（立绘 / 语音）随下次读取生效；新武将包 / 扩展需要重启游戏重新扫描 |
+| iCloud 备份 | `Documents/` 默认会进 iCloud 备份。用「下载素材」补齐约 1GB 资源后，备份体积也会相应增长 |
+
+> 不需要额外做「导入」按钮：游戏本来就跑在覆盖层上，只要文件出现在 `Documents/`
+> 的对应位置，下一次读取就会命中。
+
+---
+
+## 8. 相关实现文件
 
 | 文件 | 作用 |
 | --- | --- |
@@ -341,7 +382,7 @@ apps/mobile/ios/build/export/<AppName>.ipa
 | [`src/fs/legacy-api.ts`](../src/fs/legacy-api.ts) | 把 `NativeFileSystem` 映射为游戏所需的回调式 `game.*` API |
 | [`src/asset-download.ts`](../src/asset-download.ts) | **补充下载武将原画与语音**：在「菜单 → 其它 → 更新」注入按钮，从上游 GitHub 拉取被瘦身裁掉的资源 |
 | [`ios/App/App/NonameBridgeViewController.swift`](../ios/App/App/NonameBridgeViewController.swift) | 继承 `CAPBridgeViewController`，重写 `router()` 挂上自定义路由器 |
-| [`ios/App/App/NonameRouter.swift`](../ios/App/App/NonameRouter.swift) | **请求层覆盖层**：让 `<script src>` / `fetch` 也能读到 `Documents/noname/` 中的用户文件（等价于 Android 的 `JsAwareAssetsPathHandler`） |
+| [`ios/App/App/NonameRouter.swift`](../ios/App/App/NonameRouter.swift) | **请求层覆盖层**：让 `<script src>` / `fetch` 也能读到 `Documents/` 中的用户文件（等价于 Android 的 `JsAwareAssetsPathHandler`） |
 | [`ios/App/App/Base.lproj/Main.storyboard`](../ios/App/App/Base.lproj/Main.storyboard) | 初始 ViewController 指向 `NonameBridgeViewController` |
 | [`buildIos.ts`](../buildIos.ts) | 本地 Mac 一键构建脚本 |
 | [`afterSync.ts`](../afterSync.ts) | `cap sync` 前置步骤：打包 preload、生成资源清单（`writeAssetManifest`）与补充下载清单（`writeDownloadManifest`） |
