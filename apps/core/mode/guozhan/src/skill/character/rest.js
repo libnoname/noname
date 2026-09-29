@@ -18993,45 +18993,49 @@ export default {
 		inherit: "xiaoguo",
 		audio: "xiaoguo",
 		preHidden: true,
-		content() {
-			"step 0";
-			var nono = Math.abs(get.attitude(player, trigger.player)) < 3;
+		async content(event, trigger, player) {
+			let nono = Math.abs(get.attitude(player, trigger.player)) < 3;
 			if (get.damageEffect(trigger.player, player, player) <= 0) {
 				nono = true;
 			}
-			var next = player.chooseToDiscard(get.prompt2("gzxiaoguo", trigger.player), {
-				type: "basic",
-			});
-			next.set("ai", function (card) {
-				if (_status.event.nono) {
-					return 0;
-				}
-				return 8 - get.useful(card);
-			});
-			next.set("logSkill", ["gzxiaoguo", trigger.player]);
-			next.set("nono", nono);
-			next.setHiddenSkill("gzxiaoguo");
-			"step 1";
-			if (result.bool) {
-				var nono = get.damageEffect(trigger.player, player, trigger.player) >= 0;
-				trigger.player
-					.chooseToDiscard("弃置一张装备牌，或受到1点伤害", "he", { type: "equip" })
-					.set("ai", function (card) {
+			const discardResult = await player
+				.chooseToDiscard({
+					prompt: get.prompt2("gzxiaoguo", trigger.player),
+					filterCard: { type: "basic" },
+					ai: card => {
 						if (_status.event.nono) {
 							return 0;
 						}
-						if (_status.event.player.hp == 1) {
+						return 8 - get.useful(card);
+					},
+				})
+				.set("logSkill", ["gzxiaoguo", trigger.player])
+				.set("nono", nono)
+				.setHiddenSkill("gzxiaoguo")
+				.forResult();
+			if (!discardResult.bool) {
+				return;
+			}
+			nono = get.damageEffect(trigger.player, player, trigger.player) >= 0;
+			const targetDiscardResult = await trigger.player
+				.chooseToDiscard({
+					prompt: "弃置一张装备牌，或受到1点伤害",
+					position: "he",
+					filterCard: { type: "equip" },
+					ai: card => {
+						if (_status.event.nono) {
+							return 0;
+						}
+						if (_status.event.player.hp === 1) {
 							return 10 - get.value(card);
 						}
 						return 9 - get.value(card);
-					})
-					.set("nono", nono);
-			} else {
-				event.finish();
-			}
-			"step 2";
-			if (!result.bool) {
-				trigger.player.damage();
+					},
+				})
+				.set("nono", nono)
+				.forResult();
+			if (!targetDiscardResult.bool) {
+				await trigger.player.damage();
 			}
 		},
 	},
