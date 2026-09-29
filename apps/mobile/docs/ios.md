@@ -291,6 +291,7 @@ apps/mobile/ios/build/export/<AppName>.ipa
 | 菜单 / 顶部按钮点不动 | 系统栏（状态栏、导航栏）浮层吃掉了触摸事件。确认 `capacitor.config.ts` 中 `SystemBars.hidden` 为 `true`，且未启用 `contentInset` |
 | 游戏能启动但读不到武将 / 卡牌 | `asset-manifest.json` 缺失或未随资源裁剪更新，重新执行 `pnpm --filter @noname/mobile sync` |
 | 武将没有立绘 / 技能与阵亡没有语音 | 这是**瘦身包的预期表现**（见第 3 节）。进「菜单 → 其它 → 更新 → 下载素材」补齐，或直接关掉 `slim_assets` 重新构建 |
+| 导入文件时列表里的文件是**灰色、点不动** | iOS 的「文件」选择器会按 `accept` 严格过滤，且没有「显示全部文件」的逃生入口。已由 [`src/ios-file-input.ts`](../src/ios-file-input.ts) 在 iOS 上统一去掉 `accept` 修掉；若文件在 iCloud 上未下载，仍需先点一下让它下载 |
 
 ---
 
@@ -381,6 +382,7 @@ iOS 版开启了文件共享，可以直接用系统「文件」App 打开游戏
 | [`src/fs/types.ts`](../src/fs/types.ts) | 跨平台共用的 `NativeFileSystem` 接口与工具函数 |
 | [`src/fs/legacy-api.ts`](../src/fs/legacy-api.ts) | 把 `NativeFileSystem` 映射为游戏所需的回调式 `game.*` API |
 | [`src/asset-download.ts`](../src/asset-download.ts) | **补充下载武将原画与语音**：在「菜单 → 其它 → 更新」注入按钮，从上游 GitHub 拉取被瘦身裁掉的资源 |
+| [`src/ios-file-input.ts`](../src/ios-file-input.ts) | **放宽文件选择器**：iOS 的「文件」选择器按 `accept` 严格过滤且无逃生入口，这里统一去掉 `accept`，避免「导入背景音乐 / 扩展 / 图片」时文件全灰、点不动 |
 | [`ios/App/App/NonameBridgeViewController.swift`](../ios/App/App/NonameBridgeViewController.swift) | 继承 `CAPBridgeViewController`，重写 `router()` 挂上自定义路由器 |
 | [`ios/App/App/NonameRouter.swift`](../ios/App/App/NonameRouter.swift) | **请求层覆盖层**：让 `<script src>` / `fetch` 也能读到 `Documents/` 中的用户文件（等价于 Android 的 `JsAwareAssetsPathHandler`） |
 | [`ios/App/App/Base.lproj/Main.storyboard`](../ios/App/App/Base.lproj/Main.storyboard) | 初始 ViewController 指向 `NonameBridgeViewController` |

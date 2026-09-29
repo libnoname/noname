@@ -4,6 +4,7 @@ import { Capacitor, registerPlugin, SystemBars } from "@capacitor/core";
 import { installAssetDownloader } from "./asset-download.js";
 import { createIosFileSystem } from "./fs/ios.js";
 import { attachFileSystemAPI } from "./fs/legacy-api.js";
+import { relaxFileInputFilters } from "./ios-file-input.js";
 import { base64ToArrayBuffer, callbackError, joinFilePath, sanitizeExportName, writeDataToBase64, type NativeAccessResult, type NativeFileSystem } from "./fs/types.js";
 
 /**
@@ -170,6 +171,11 @@ export default async function preload({ lib, game, ui }) {
 	// 不 await —— 这是锦上添花，不该拖慢启动，更不该因失败影响游戏。
 	if (platform === "ios") {
 		void ensureImportSkeleton(game).catch(error => console.warn("[mobile] 预建导入目录失败:", error));
+
+		// iOS 的「文件」选择器会按 accept 严格过滤、且没有「显示全部文件」的逃生入口，
+		// 导致「选项 → 音效 → 背景音乐 → 导入」这类地方整份列表全灰、点不动。
+		// 这里统一去掉所有文件选择框的 accept，改为选完再由游戏自己判断。
+		relaxFileInputFilters();
 	}
 
 	// 以下三项依赖具体运行容器，不适合同步进文件系统适配层
