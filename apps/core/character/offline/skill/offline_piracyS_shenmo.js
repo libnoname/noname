@@ -98,7 +98,6 @@ const skills = {
 							target.popup("坐牢结束啦！");
 							await target.restEnd({ hp: target.getHp() });
 						});
-						player.removeSkill(event.name);
 					}
 				},
 			},
