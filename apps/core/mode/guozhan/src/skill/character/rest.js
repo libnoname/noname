@@ -15625,66 +15625,64 @@ export default {
 		trigger: {
 			player: "damageEnd",
 		},
-		direct: true,
 		preHidden: true,
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt2("gzfangzhu"), function (card, player, target) {
-					return player != target;
-				})
-				.setHiddenSkill("gzfangzhu").ai = function (target) {
-				if (target.hasSkillTag("noturn")) {
-					return 0;
-				}
-				var player = _status.event.player,
-					att = get.attitude(player, target);
-				if (att == 0) {
-					return 0;
-				}
-				if (att > 0) {
-					if (target.isTurnedOver()) {
-						return 1000 - target.countCards("h");
-					}
-					return -1;
-				} else {
-					if (target.isTurnedOver()) {
-						return -1;
-					}
-					if (player.getDamagedHp() >= 3) {
-						return -1;
-					}
-					return target.countCards("h") + 1;
-				}
-			};
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("gzfangzhu", target);
-				var num = player.getDamagedHp();
-				if (num > 0) {
-					target.chooseToDiscard("he", num, "放逐：弃置" + get.cnNumber(num) + "张牌并失去1点体力", "或者点击“取消”不弃牌，改为摸" + get.cnNumber(num) + "张牌并叠置").set("ai", function (card) {
-						var player = _status.event.player;
-						if (player.isTurnedOver()) {
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2(event.skill),
+					filterTarget: (_card, player, target) => player !== target,
+					ai(target) {
+						if (target.hasSkillTag("noturn")) {
+							return 0;
+						}
+						const player = _status.event.player;
+						const attitude = get.attitude(player, target);
+						if (attitude === 0) {
+							return 0;
+						}
+						if (attitude > 0) {
+							if (target.isTurnedOver()) {
+								return 1000 - target.countCards("h");
+							}
 							return -1;
 						}
-						return player.hp * player.hp - Math.max(1, get.value(card));
-					});
+						if (target.isTurnedOver() || player.getDamagedHp() >= 3) {
+							return -1;
+						}
+						return target.countCards("h") + 1;
+					},
+				})
+				.setHiddenSkill(event.skill)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const num = player.getDamagedHp();
+			if (num > 0) {
+				const result = await target
+					.chooseToDiscard({
+						position: "he",
+						selectCard: num,
+						prompt: `放逐：弃置${get.cnNumber(num)}张牌并失去1点体力`,
+						prompt2: `或者点击“取消”不弃牌，改为摸${get.cnNumber(num)}张牌并叠置`,
+						ai(card) {
+							const player = _status.event.player;
+							if (player.isTurnedOver()) {
+								return -1;
+							}
+							return player.hp * player.hp - Math.max(1, get.value(card));
+						},
+					})
+					.forResult();
+				if (result.bool) {
+					await target.loseHp();
 				} else {
-					target.turnOver();
-					event.finish();
+					await target.draw(num);
+					await target.turnOver();
 				}
-			} else {
-				event.finish();
+				return;
 			}
-			"step 2";
-			if (result.bool) {
-				target.loseHp();
-			} else {
-				target.draw(player.getDamagedHp());
-				target.turnOver();
-			}
+			await target.turnOver();
 		},
 		ai: {
 			maixie: true,
@@ -15701,14 +15699,14 @@ export default {
 						if (!target.hasFriend()) {
 							return;
 						}
-						var hastarget = false;
-						var turnfriend = false;
-						var players = game.filterPlayer();
-						for (var i = 0; i < players.length; i++) {
-							if (get.attitude(target, players[i]) < 0 && !players[i].isTurnedOver()) {
+						let hastarget = false;
+						let turnfriend = false;
+						const players = game.filterPlayer();
+						for (const current of players) {
+							if (get.attitude(target, current) < 0 && !current.isTurnedOver()) {
 								hastarget = true;
 							}
-							if (get.attitude(target, players[i]) > 0 && players[i].isTurnedOver()) {
+							if (get.attitude(target, current) > 0 && current.isTurnedOver()) {
 								hastarget = true;
 								turnfriend = true;
 							}
@@ -15716,7 +15714,7 @@ export default {
 						if (get.attitude(player, target) > 0 && !hastarget) {
 							return;
 						}
-						if (turnfriend || target.hp == target.maxHp) {
+						if (turnfriend || target.hp === target.maxHp) {
 							return [0.5, 1];
 						}
 						if (target.hp > 1) {
