@@ -73,6 +73,16 @@ const skills = {
 		mod: {
 			cardUsable(card, player, num) {
 				if (card?.storage?.twjianying) return Infinity;
+				const cardx = player.storage.twjianying;
+				if (cardx && get.suit(cardx) == get.suit(card, player)) {
+					return Infinity;
+				}
+			},
+			targetInRange(card, player) {
+				const cardx = player.storage.twjianying;
+				if (cardx && get.number(cardx) == get.number(card, player)) {
+					return true;
+				}
 			},
 		},
 		ai: {
@@ -155,6 +165,13 @@ const skills = {
 				silent: true,
 				async content(event, trigger, player) {
 					const skill = get.sourceSkillFor(event.name);
+					const card = player.storage[skill];
+					if (trigger.addCount != false && card && get.suit(card) == get.suit(trigger.card, player)) {
+						trigger.addCount = false;
+						const stat = player.getStat().card,
+							name = trigger.card.name;
+						if (typeof stat[name] === "number") stat[name]--;
+					}
 					lib.skill[skill].init(player, skill);
 				},
 			},
