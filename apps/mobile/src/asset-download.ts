@@ -39,14 +39,22 @@
  *
  * ## 文件清单从哪来
  *
- * 不能读包内的 `asset-manifest.json`——因为它是在**删除资源之后**重建的，
- * 里面恰好不含我们要下载的文件。因此改为在运行时向上游拉取文件树：
+ * **首选：构建期内置的 `asset-download-manifest.json`**（见 `afterSync.ts`）。
+ * 它由构建脚本在资源仍完整的阶段生成，随包发布，运行时直接读取——
+ * 完全离线，不依赖任何接口，这是最主要、也最稳的路径。
  *
- * - 文件列表：`GET /git/trees/<branch>?recursive=1`（GitHub Git Trees API，匿名可用）
- * - 文件内容：`GET https://raw.githubusercontent.com/<owner>/<repo>/<branch>/<path>`
+ * 注意**不能**读包内的 `asset-manifest.json`：那一份是在**删除资源之后**重建的，
+ * 恰好不含我们要下载的文件。
  *
- * 说明：GitHub 对匿名 API 有 60 次/小时的限额，本模块**只用 1 次**列目录，
- * 其余全部走 raw（raw 不计入 API 限额）。
+ * **回退：GitHub Git Trees API**（`GET /git/trees/<branch>?recursive=1`）。
+ * 仅在内置清单缺失时使用（例如用旧包运行），因为该接口匿名限额只有 60 次/小时，
+ * 且在大陆网络下常被干扰。
+ *
+ * ## 文件内容从哪来
+ *
+ * `CONTENT_SOURCES` 里按顺序尝试多个源（GitHub Raw + 三个 jsDelivr 节点），
+ * 第一个成功即用；某个源连续失败若干次会自动切换到下一个。
+ * 这样单一域名被墙/被限流时不会导致整体失败。
  */
 
 /** 上游仓库坐标（与 `apps/core/noname/library/update-urls.js` 中的 github 源保持一致） */
@@ -70,11 +78,51 @@ const TARGET_GROUPS: { prefix: string; label: string }[] = [
 /** 立绘占位图必须保留在内置资源里，下载时跳过它们（避免无意义覆盖） */
 const SKIP_BASENAMES = /^default_silhouette_/;
 
-/** 并发下载数。太高会被 raw.githubusercontent.com 限流，太低则速度起不来 */
+/**
+ * 构建期生成的内置下载清单（见 `apps/mobile/afterSync.ts` 的 `writeDownloadManifest`）。
+ *
+ * 它是文件清单的**首选来源**：全部离线，不依赖任何接口。
+ * 只有它缺失时（例如用旧包运行）才回退到 GitHub Trees API。
+ */
+const BUNDLED_MANIFEST = "asset-download-manifest.json";
+
+/**
+ * 文件内容的下载源。**按顺序尝试，第一个成功即用。**
+ *
+ * 之所以要多个源：`raw.githubusercontent.com` 在大陆网络下经常被干扰，
+ * 而 `api.github.com` 还会额外受匿名限额（60 次/小时）影响。
+ * jsDelivr 是正经的公共 CDN，国内可达性明显更好，作为主要备用。
+ *
+ * 同一份文件在四个源上路径完全一致（都是 `<owner>/<repo>@<branch>/<path>`），
+ * 因此切换源不需要改任何清单数据。
+ */
+const CONTENT_SOURCES: { name: string; url: (path: string) => string }[] = [
+	{
+		name: "GitHub Raw",
+		url: path => `https://raw.githubusercontent.com/${UPSTREAM.owner}/${UPSTREAM.repo}/${UPSTREAM.branch}/${path}`,
+	},
+	{
+		name: "jsDelivr",
+		url: path => `https://cdn.jsdelivr.net/gh/${UPSTREAM.owner}/${UPSTREAM.repo}@${UPSTREAM.branch}/${path}`,
+	},
+	{
+		name: "jsDelivr(Fastly)",
+		url: path => `https://fastly.jsdelivr.net/gh/${UPSTREAM.owner}/${UPSTREAM.repo}@${UPSTREAM.branch}/${path}`,
+	},
+	{
+		name: "jsDelivr(Gcore)",
+		url: path => `https://gcore.jsdelivr.net/gh/${UPSTREAM.owner}/${UPSTREAM.repo}@${UPSTREAM.branch}/${path}`,
+	},
+];
+
+/** 并发下载数。太高会被 CDN 限流，太低则速度起不来 */
 const DOWNLOAD_CONCURRENCY = 6;
 
-/** 单次下载失败后的重试次数（网络抖动很常见） */
-const MAX_RETRY = 3;
+/** 同一个源上单个文件的尝试次数（网络抖动很常见） */
+const ATTEMPTS_PER_SOURCE = 2;
+
+/** 某个源连续失败多少次后，自动切换到下一个源 */
+const SOURCE_FAILURE_THRESHOLD = 5;
 
 /** 进度界面刷新节流：每下载 N 个文件刷新一次 DOM，避免频繁重排 */
 const UI_REFRESH_STEP = 10;
@@ -362,6 +410,8 @@ function renderPage(page: HTMLElement, lib: LibLike, game: GameLike, ui: UiLike)
 	progressBar.appendChild(progressFill);
 
 	const statusLine = document.createElement("div");
+	// 带上类名：既是样式锚点，也让本地 jsdom 测试能稳定取到这一行
+	statusLine.classList.add("asset-download-status");
 	statusLine.style.cssText = "font-size:14px;white-space:normal;line-height:1.5;";
 	statusLine.textContent = readStateSummary();
 
@@ -375,7 +425,7 @@ function renderPage(page: HTMLElement, lib: LibLike, game: GameLike, ui: UiLike)
 	let running = false;
 	let cancelRequested = false;
 
-	// 先声明两个按钮，再做事件绑定，避免处理器里引用尚未初始化的变量
+	// 先声明按钮，再做事件绑定，避免处理器里引用尚未初始化的变量
 	const stopButton = ui.create.node("button", "清空记录", () => {
 		// 只清掉本地的进度记录；真正的文件删除交给游戏内既有机制，避免误删玩家已下载的资源
 		clearState();
@@ -383,6 +433,32 @@ function renderPage(page: HTMLElement, lib: LibLike, game: GameLike, ui: UiLike)
 	});
 	stopButton.disabled = true;
 	stopButton.style.marginLeft = "8px";
+
+	/**
+	 * 诊断入口：逐个探测下载源，结果原地铺开。
+	 *
+	 * 之所以要做这个按钮：iOS 上玩家看不到控制台，出问题时只能靠猜。
+	 * 有了它，「哪个域名通、哪个不通」一眼可见，不必再来回构建验证。
+	 */
+	const testButton = ui.create.node("button", "测试连接", async () => {
+		testButton.disabled = true;
+		statusLine.style.whiteSpace = "pre-line";
+		statusLine.textContent = "正在测试下载源…";
+
+		const lines: string[] = [];
+		try {
+			await testSources(line => {
+				lines.push(line);
+				statusLine.textContent = lines.join("\n");
+			});
+			lines.push("· 只要有一个源显示 ✓ 即可正常下载（会自动选用可用的那个）");
+		} catch (error) {
+			lines.push(`测试失败：${describeError(error)}`);
+		}
+
+		statusLine.textContent = lines.join("\n");
+		testButton.disabled = false;
+	});
 
 	const startButton = ui.create.node("button", "开始下载", async () => {
 		if (running) {
@@ -397,6 +473,8 @@ function renderPage(page: HTMLElement, lib: LibLike, game: GameLike, ui: UiLike)
 		cancelRequested = false;
 		startButton.textContent = "取消下载";
 		stopButton.disabled = false;
+		testButton.disabled = true;
+		statusLine.style.whiteSpace = "pre-line";
 
 		try {
 			await runDownload({ lib, game, ui, statusLine, progressFill, shouldCancel: () => cancelRequested });
@@ -408,10 +486,12 @@ function renderPage(page: HTMLElement, lib: LibLike, game: GameLike, ui: UiLike)
 			running = false;
 			startButton.disabled = false;
 			stopButton.disabled = true;
+			testButton.disabled = false;
 		}
 	});
 
 	buttonRow.appendChild(startButton);
+	buttonRow.appendChild(testButton);
 	buttonRow.appendChild(stopButton);
 
 	ul.appendChild(progressBox);
@@ -441,9 +521,9 @@ async function runDownload(ctx: RunDownloadContext): Promise<void> {
 
 	statusLine.textContent = "正在获取资源清单…";
 
-	const files = await fetchRemoteFileList(ctx.shouldCancel);
+	const { items: files, origin } = await resolveFileList(ctx.shouldCancel);
 	if (files.length === 0) {
-		throw new Error("未获取到任何可下载文件，请检查网络后重试");
+		throw new Error("未获取到任何可下载文件：内置清单缺失，且接口也不可用");
 	}
 
 	const total = files.length;
@@ -452,13 +532,17 @@ async function runDownload(ctx: RunDownloadContext): Promise<void> {
 	const failed: string[] = [];
 	let cursor = 0;
 
+	/** 当前使用的下载源；连续失败达到阈值就往后切 */
+	let sourceIndex = 0;
+	let sourceFailures = 0;
+
 	const updateUi = (force = false) => {
 		if (!force && done % UI_REFRESH_STEP !== 0) {
 			return;
 		}
 		const percent = ((done / total) * 100).toFixed(1);
 		progressFill.style.width = `${percent}%`;
-		statusLine.textContent = `正在下载：${done}/${total}（${percent}%）` + `${skipped ? `，已跳过 ${skipped}` : ""}` + `${failed.length ? `，失败 ${failed.length}` : ""}`;
+		statusLine.textContent = `正在下载：${done}/${total}（${percent}%）　源：${CONTENT_SOURCES[sourceIndex].name}　清单：${origin}` + `${skipped ? `，已跳过 ${skipped}` : ""}` + `${failed.length ? `，失败 ${failed.length}` : ""}`;
 	};
 
 	/**
@@ -484,11 +568,24 @@ async function runDownload(ctx: RunDownloadContext): Promise<void> {
 				if (resumable && (await fileExists(game, item.localPath))) {
 					skipped++;
 				} else {
-					await downloadOne(game, item.remotePath, item.localPath);
+					const result = await downloadOne(game, item, sourceIndex);
+					if (result.ok) {
+						sourceFailures = 0;
+						// 记住真正成功的那个源，后续继续用它
+						sourceIndex = result.sourceIndex;
+					} else {
+						failed.push(`${item.localPath}（${result.error}）`);
+						sourceFailures++;
+						// 连续失败过多 → 判定该源不可用，切到下一个
+						if (sourceFailures >= SOURCE_FAILURE_THRESHOLD && sourceIndex < CONTENT_SOURCES.length - 1) {
+							console.warn(`[asset-download] ${CONTENT_SOURCES[sourceIndex].name} 连续失败 ${sourceFailures} 次，切换到下一个源`);
+							sourceIndex++;
+							sourceFailures = 0;
+						}
+					}
 				}
 			} catch (error) {
-				// 重试若干次后仍失败就记下来，不中断整体流程
-				failed.push(item.localPath);
+				failed.push(`${item.localPath}（${describeError(error)}）`);
 				console.warn(`[asset-download] 下载失败: ${item.localPath}`, error);
 			} finally {
 				done++;
@@ -509,12 +606,19 @@ async function runDownload(ctx: RunDownloadContext): Promise<void> {
 		return;
 	}
 
+	const succeeded = total - failed.length - skipped;
+	// 结束语里同时带上「清单来源」和「实际使用的源」：
+	// 玩家截图发来时，这两项就足以判断是清单问题还是域名可达性问题。
+	const usedSource = CONTENT_SOURCES[sourceIndex].name;
+
 	if (failed.length) {
-		statusLine.textContent = `下载完成：成功 ${total - failed.length - skipped}，已存在 ${skipped}，失败 ${failed.length}。可再次点击以重试失败项。`;
+		// 把失败原因摊开给用户看：多数情况下这一句就能定位是哪个域名不可达
+		const sample = failed.slice(0, 3).join("；");
+		statusLine.textContent = `下载完成：成功 ${succeeded}，已存在 ${skipped}，失败 ${failed.length}。` + `源：${usedSource}　清单：${origin}。失败示例：${sample}。可再次点击重试失败项。`;
 	} else if (skipped === total) {
-		statusLine.textContent = `资源已完备（${total}/${total}），无需重复下载。`;
+		statusLine.textContent = `资源已完备（${total}/${total}），无需重复下载。源：${usedSource}　清单：${origin}`;
 	} else {
-		statusLine.textContent = `下载完成：新增 ${total - skipped}/${total}（已存在 ${skipped}），武将原画与语音已就绪。`;
+		statusLine.textContent = `下载完成：新增 ${succeeded}/${total}（已存在 ${skipped}），武将原画与语音已就绪。源：${usedSource}　清单：${origin}`;
 	}
 	progressFill.style.width = "100%";
 
@@ -540,29 +644,67 @@ function fileExists(game: GameLike, localPath: string): Promise<boolean> {
 	});
 }
 
-/** 下载单个文件：raw → base64 → game.writeFile */
-async function downloadOne(game: GameLike, remotePath: string, localPath: string): Promise<void> {
-	const url = `https://raw.githubusercontent.com/${UPSTREAM.owner}/${UPSTREAM.repo}/${UPSTREAM.branch}/${remotePath}`;
+/** 下载失败时携带 HTTP 状态码，便于区分「文件不存在(404)」与「该源不可用」 */
+class DownloadError extends Error {
+	status?: number;
 
-	let lastError: unknown = null;
-	for (let attempt = 1; attempt <= MAX_RETRY; attempt++) {
-		try {
-			const response = await fetch(url, { cache: "no-store" });
-			if (!response.ok) {
-				throw new Error(`HTTP ${response.status}`);
+	constructor(message: string, status?: number) {
+		super(message);
+		this.name = "DownloadError";
+		this.status = status;
+	}
+}
+
+/**
+ * 下载单个文件：多源尝试 → base64 → game.writeFile。
+ *
+ * 从 `preferred` 号源开始依次尝试，规则：
+ * - **404 视为确定性失败**（该文件在上游确实不存在），立即结束、不再换源；
+ * - 其它错误（超时 / 5xx / 429 / 网络不通）继续尝试下一个源——这正是
+ *   「GitHub Raw 被干扰时自动改走 jsDelivr」的落点。
+ *
+ * @returns 是否成功、最终生效的源序号，以及失败原因
+ */
+async function downloadOne(game: GameLike, item: DownloadItem, preferred: number): Promise<{ ok: boolean; sourceIndex: number; error?: string }> {
+	let lastError = "未知错误";
+
+	for (let i = preferred; i < CONTENT_SOURCES.length; i++) {
+		const source = CONTENT_SOURCES[i];
+
+		for (let attempt = 1; attempt <= ATTEMPTS_PER_SOURCE; attempt++) {
+			try {
+				const response = await fetch(source.url(item.remotePath), { cache: "no-store" });
+				if (!response.ok) {
+					throw new DownloadError(`HTTP ${response.status}`, response.status);
+				}
+				const buffer = await response.arrayBuffer();
+				await writeFileAsync(game, arrayBufferToBase64(buffer), item.localPath);
+				return { ok: true, sourceIndex: i };
+			} catch (error) {
+				lastError = describeError(error);
+
+				// 404 是确定性结论：换源也没用
+				if (error instanceof DownloadError && error.status === 404) {
+					return { ok: false, sourceIndex: i, error: lastError };
+				}
+
+				// 同一源内的退避重试
+				if (attempt < ATTEMPTS_PER_SOURCE) {
+					await sleep(150 * attempt);
+				}
 			}
-			const buffer = await response.arrayBuffer();
-			const base64 = arrayBufferToBase64(buffer);
-			await writeFileAsync(game, base64, localPath);
-			return;
-		} catch (error) {
-			lastError = error;
-			// 简单退避，避免连续打同一个地址
-			await sleep(200 * attempt);
 		}
 	}
 
-	throw lastError instanceof Error ? lastError : new Error(String(lastError));
+	return { ok: false, sourceIndex: CONTENT_SOURCES.length - 1, error: lastError };
+}
+
+/** 把各种异常统一成可读文案 */
+function describeError(error: unknown): string {
+	if (error instanceof Error) {
+		return error.message;
+	}
+	return String(error);
 }
 
 /** 把 `game.writeFile` 的回调风格包成 Promise */
@@ -594,10 +736,85 @@ interface DownloadItem {
 }
 
 /**
+ * 读取构建期内置的下载清单（`asset-download-manifest.json`）。
+ *
+ * 这是清单的**首选来源**：随包发布、完全离线，不依赖任何接口。
+ * 文件缺失或格式不对时返回空数组，由调用方回退到 API。
+ *
+ * 用相对路径 fetch：iOS 下会经过请求层覆盖层，若玩家在 Documents 里放了
+ * 同名文件则优先使用玩家那份（便于自行定制）。
+ */
+async function readBundledManifest(): Promise<DownloadItem[]> {
+	try {
+		const response = await fetch(BUNDLED_MANIFEST, { cache: "no-store" });
+		if (!response.ok) {
+			return [];
+		}
+		const data: unknown = await response.json();
+		if (!Array.isArray(data)) {
+			return [];
+		}
+		return data.filter((path): path is string => typeof path === "string" && path.length > 0).map(localPath => ({ localPath, remotePath: `${UPSTREAM_ASSET_ROOT}/${localPath}` }));
+	} catch (error) {
+		console.warn("[asset-download] 读取内置清单失败，将回退到接口:", describeError(error));
+		return [];
+	}
+}
+
+/**
+ * 取得待下载文件清单：**内置清单优先**，缺失时才退回 GitHub Trees API。
+ *
+ * @returns 清单，以及来源说明（会显示在界面上，便于排查）
+ */
+async function resolveFileList(shouldCancel: () => boolean): Promise<{ items: DownloadItem[]; origin: string }> {
+	const bundled = await readBundledManifest();
+	if (bundled.length > 0) {
+		return { items: bundled, origin: "内置" };
+	}
+
+	console.warn("[asset-download] 未找到内置清单，回退到 GitHub API");
+	return { items: await fetchRemoteFileList(shouldCancel), origin: "接口" };
+}
+
+/**
+ * 逐个探测各下载源是否可用，把结果交给 `report` 逐行输出。
+ *
+ * 这是给玩家（以及远程排查）用的诊断入口：下载失败时一眼就能看出
+ * 哪个域名在这台设备、这条网络上通，哪个不通。
+ */
+async function testSources(report: (line: string) => void): Promise<void> {
+	const all = await readBundledManifest();
+	// 清单为空时用一个稳定的样例文件兜底探测
+	const probe = all[0] ?? {
+		localPath: "image/character/ahuinan.jpg",
+		remotePath: `${UPSTREAM_ASSET_ROOT}/image/character/ahuinan.jpg`,
+	};
+
+	for (const source of CONTENT_SOURCES) {
+		const url = source.url(probe.remotePath);
+		try {
+			// 先用 HEAD 省流量；个别 CDN 不支持 HEAD（405）时再退回 GET
+			let response = await fetch(url, { method: "HEAD", cache: "no-store" });
+			if (response.status === 405) {
+				response = await fetch(url, { cache: "no-store" });
+			}
+			report(`${response.ok ? "✓" : "✗"} ${source.name}：HTTP ${response.status}`);
+		} catch (error) {
+			report(`✗ ${source.name}：${describeError(error)}`);
+		}
+	}
+
+	report(`· 内置清单：${all.length > 0 ? `${all.length} 个文件` : "缺失（会回退到 GitHub 接口）"}`);
+}
+
+/**
  * 通过 GitHub Git Trees API 拉取上游文件树，过滤出我们需要的三类资源。
  *
- * 相比 `contents` API（单目录上限 1000 条，装不下 7600+ 技能语音），
- * Trees API 一次就能返回完整树；实测该仓库 `truncated: false`。
+ * 仅在**内置清单缺失**时才会走到这里。相比 `contents` API（单目录上限 1000 条，
+ * 装不下 7600+ 技能语音），Trees API 一次就能返回完整树；实测该仓库 `truncated: false`。
+ *
+ * ⚠️ 该接口匿名限额 60 次/小时，且在大陆网络下常返回 5xx —— 所以它只是兜底，
+ * 正常路径应当由构建期清单承担。
  */
 async function fetchRemoteFileList(shouldCancel: () => boolean): Promise<DownloadItem[]> {
 	const apiUrl = `https://api.github.com/repos/${UPSTREAM.owner}/${UPSTREAM.repo}/git/trees/${UPSTREAM.branch}?recursive=1`;

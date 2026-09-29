@@ -64,9 +64,7 @@ function capSync() {
 	});
 
 	if (result.status !== 0) {
-		throw new Error(
-			`cap sync failed with exit code ${result.status ?? "unknown"}${result.error ? `: ${result.error.message}` : ""}`
-		);
+		throw new Error(`cap sync failed with exit code ${result.status ?? "unknown"}${result.error ? `: ${result.error.message}` : ""}`);
 	}
 }
 
@@ -84,6 +82,46 @@ function patchAndroidAssets() {
 }
 
 /**
+ * 生成「补充下载清单」`dist/asset-download-manifest.json`。
+ *
+ * 用途：iOS 瘦身包会删掉 `audio/skill`、`audio/die`、`image/character` 三个目录
+ * （见 `.github/workflows/ios-build.yml` 的 slim_assets），游戏内的「下载素材」
+ * 按钮需要知道**该补哪些文件**。
+ *
+ * 为什么不复用 `asset-manifest.json`：那一份是在**删除资源之后**重建的，
+ * 恰好不含被删掉的文件。必须在资源还完整的阶段（本函数执行时）单独留一份。
+ *
+ * 顺带的好处：运行时不再需要请求 `api.github.com`。
+ * 该接口匿名限额只有 60 次/小时，且在大陆网络下常被干扰返回 5xx。
+ *
+ * 注意：必须在 `writeAssetManifest()` **之前**调用，这样本文件会被列进
+ * `asset-manifest.json` 的忽略项，不会反过来污染内置资源清单。
+ */
+function writeDownloadManifest() {
+	/** 与 asset-download.ts 里的 TARGET_GROUPS 保持一致 */
+	const groups = ["image/character", "audio/skill", "audio/die"];
+	const entries: string[] = [];
+
+	for (const group of groups) {
+		const absolute = resolve(distDir, group);
+		if (!existsSync(absolute)) {
+			console.warn(`asset-download-manifest: 跳过缺失目录 ${group}`);
+			continue;
+		}
+		for (const name of readdirSync(absolute)) {
+			// 默认剪影是游戏必需的占位图，任何时候都内置，无需下载
+			if (name.startsWith("default_silhouette_")) continue;
+			if (!statSync(resolve(absolute, name)).isFile()) continue;
+			entries.push(`${group}/${name}`);
+		}
+	}
+
+	entries.sort();
+	writeFileSync(resolve(distDir, "asset-download-manifest.json"), `${JSON.stringify(entries)}\n`, "utf8");
+	console.log(`asset-download-manifest.json written: ${entries.length} entries`);
+}
+
+/**
  * 生成内置资源清单 `dist/asset-manifest.json`。
  *
  * iOS 的 WKWebView 自定义 scheme 不支持目录列举，运行时的 `getFileList`
@@ -92,7 +130,7 @@ function patchAndroidAssets() {
  */
 function writeAssetManifest() {
 	const entries: string[] = [];
-	const ignored = new Set(["asset-manifest.json", "preload.js", "node_modules"]);
+	const ignored = new Set(["asset-manifest.json", "asset-download-manifest.json", "preload.js", "node_modules"]);
 
 	const collect = (dir: string) => {
 		for (const name of readdirSync(dir)) {
@@ -117,6 +155,7 @@ function writeAssetManifest() {
 }
 
 await buildPreload();
+writeDownloadManifest();
 writeAssetManifest();
 capSync();
 patchAndroidAssets();

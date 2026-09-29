@@ -305,12 +305,18 @@ apps/mobile/ios/build/export/<AppName>.ipa
 | 关注点 | 做法 |
 | --- | --- |
 | 何时显示 | 优先用 WebView 桥 `window.webkit.messageHandlers.bridge` 判断 iOS（与 `packages/jit` 同款、已在真机验证），`lib.device === "ios"` 兜底；安卓 / 浏览器不受影响 |
-| 文件清单 | `GET https://api.github.com/repos/libnoname/noname/git/trees/main?recursive=1`（一次请求拿到整棵树） |
-| 文件内容 | `https://raw.githubusercontent.com/libnoname/noname/main/<path>`（不计入 API 限额） |
+| 文件清单 | **首选构建期内置的 `asset-download-manifest.json`**（由 `afterSync.ts` 在资源仍完整时生成，随包发布，完全离线）。仅在它缺失时才回退到 `api.github.com` 的 Git Trees API |
+| 文件内容 | 按顺序尝试多个源，第一个成功即用：GitHub Raw → jsDelivr → jsDelivr(Fastly) → jsDelivr(Gcore)。某源连续失败 5 次自动切换 |
 | 上游路径前缀 | `apps/core/`（注意不是仓库根目录） |
 | 本地落盘路径 | 去掉前缀后写入，如 `image/character/zhaoyun.jpg` → `Documents/noname/image/character/zhaoyun.jpg` |
 | 断点续传 | 有历史记录时逐个 `checkFile` 跳过已下载项，因此「取消后再点」是续传而非重下 |
+| 出错诊断 | 面板上的**「测试连接」**按钮会逐个探测各下载源并原地列出 HTTP 状态；下载结束语也会带上「源」与「清单来源」 |
 | 规模 | 约 11900 个文件 / 约 970MB，请尽量在 Wi-Fi 下进行 |
+
+> **为什么清单要内置、而不是运行时查接口。**
+> `api.github.com` 匿名限额只有 60 次/小时，且在国内网络下常返回 5xx（实测真机上就出现过
+> HTTP 500）。把它降级为兜底、把清单做进包里，既去掉限额风险，也让首次下载少一次失败点。
+> 同理，单一域名被墙不再致命——四个源里只要有一个通就能下完。
 
 > **⚠️ 一个容易踩的坑：菜单页在构建阶段是 detached 的。**
 >
@@ -338,7 +344,7 @@ apps/mobile/ios/build/export/<AppName>.ipa
 | [`ios/App/App/NonameRouter.swift`](../ios/App/App/NonameRouter.swift) | **请求层覆盖层**：让 `<script src>` / `fetch` 也能读到 `Documents/noname/` 中的用户文件（等价于 Android 的 `JsAwareAssetsPathHandler`） |
 | [`ios/App/App/Base.lproj/Main.storyboard`](../ios/App/App/Base.lproj/Main.storyboard) | 初始 ViewController 指向 `NonameBridgeViewController` |
 | [`buildIos.ts`](../buildIos.ts) | 本地 Mac 一键构建脚本 |
-| [`afterSync.ts`](../afterSync.ts) | `cap sync` 前置步骤：打包 preload、生成资源清单 |
+| [`afterSync.ts`](../afterSync.ts) | `cap sync` 前置步骤：打包 preload、生成资源清单（`writeAssetManifest`）与补充下载清单（`writeDownloadManifest`） |
 | [`capacitor.config.ts`](../capacitor.config.ts) | Capacitor 平台配置（含 iOS 的 `contentInset`、`SystemBars`） |
 | [`apps/core/scripts/vite-plugin-importmap.ts`](../../core/scripts/vite-plugin-importmap.ts) | 生成 `game.js`（含 JIT 初始化与 iOS 静默降级逻辑） |
 | [`.github/workflows/ios-build.yml`](../../../.github/workflows/ios-build.yml) | 云端未签名 `.ipa` 构建工作流 |
