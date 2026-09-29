@@ -17458,7 +17458,7 @@ export default {
 		enable: "phaseUse",
 		filterCard: true,
 		filter(event, player) {
-			return player.countCards("h");
+			return player.hasCards("h");
 		},
 		filterTarget(card, player, target) {
 			return target.isFriendOf(player);
@@ -17466,29 +17466,26 @@ export default {
 		check(card) {
 			return 7 - get.value(card);
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
+			const { target } = event;
 			player.awakenSkill("gzxiongsuan");
-			target.damage("nocard");
-			"step 1";
-			player.draw(3);
-			var list = [];
-			var skills = target.getOriginalSkills();
-			for (var i = 0; i < skills.length; i++) {
-				if (lib.skill[skills[i]].limited && target.awakenedSkills.includes(skills[i])) {
-					list.push(skills[i]);
-				}
-			}
-			if (list.length == 1) {
-				target.storage.gzxiongsuan_restore = list[0];
+			await target.damage({ nocard: true });
+			await player.draw(3);
+			const skills = target.getOriginalSkills().filter(skill => lib.skill[skill].limited && target.awakenedSkills.includes(skill));
+			if (skills.length === 1) {
+				target.storage.gzxiongsuan_restore = skills[0];
 				target.addTempSkill("gzxiongsuan_restore");
-				event.finish();
-			} else if (list.length > 1) {
-				player.chooseControl(list).set("prompt", "选择一个限定技在回合结束后重置之");
-			} else {
-				event.finish();
+				return;
 			}
-			"step 2";
+			if (skills.length === 0) {
+				return;
+			}
+			const result = await player
+				.chooseControl({
+					controls: skills,
+					prompt: "选择一个限定技在回合结束后重置之",
+				})
+				.forResult();
 			target.storage.gzxiongsuan_restore = result.control;
 			target.addTempSkill("gzxiongsuan_restore");
 		},
@@ -17499,7 +17496,7 @@ export default {
 				popup: false,
 				charlotte: true,
 				onremove: true,
-				content() {
+				async content(event, trigger, player) {
 					player.restoreSkill(player.storage.gzxiongsuan_restore);
 				},
 			},
@@ -17509,15 +17506,13 @@ export default {
 			damage: true,
 			result: {
 				target(player, target) {
-					if (target.hp > 1) {
-						var skills = target.getOriginalSkills();
-						for (var i = 0; i < skills.length; i++) {
-							if (lib.skill[skills[i]].limited && target.awakenedSkills.includes(skills[i])) {
-								return 8;
-							}
-						}
+					if (
+						target.hp > 1 &&
+						target.getOriginalSkills().some(skill => lib.skill[skill].limited && target.awakenedSkills.includes(skill))
+					) {
+						return 8;
 					}
-					if (target != player) {
+					if (target !== player) {
 						return 0;
 					}
 					if (get.damageEffect(target, player, player) >= 0) {
@@ -17526,15 +17521,12 @@ export default {
 					if (target.hp >= 4) {
 						return 5;
 					}
-					if (target.hp == 3) {
-						if (
-							player.countCards("h") <= 2 &&
-							game.hasPlayer(function (current) {
-								return current.hp <= 1 && get.attitude(player, current) < 0;
-							})
-						) {
-							return 3;
-						}
+					if (
+						target.hp === 3 &&
+						player.countCards("h") <= 2 &&
+						game.hasPlayer(current => current.hp <= 1 && get.attitude(player, current) < 0)
+					) {
+						return 3;
 					}
 					return 0;
 				},
