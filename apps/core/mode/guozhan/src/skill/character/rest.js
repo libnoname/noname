@@ -5810,22 +5810,20 @@ export default {
 		audio: "gzbushi",
 		trigger: { player: ["phaseZhunbeiBegin", "phaseAfter"] },
 		check(event, player) {
-			return event.name == "phase";
+			return event.name === "phase";
 		},
 		forced: true,
 		locked: false,
-		content() {
-			"step 0";
-			if (trigger.name == "phaseZhunbei") {
-				var num = game.countPlayer() - player.hp - 2;
+		async content(event, trigger, player) {
+			if (trigger.name === "phaseZhunbei") {
+				const num = game.countPlayer() - player.hp - 2;
 				if (num > 0) {
-					player.chooseToDiscard(num, "he", true);
+					await player.chooseToDiscard({ selectCard: num, position: "he", forced: true });
 				}
 			} else {
 				player.addMark("gzrebushi", player.hp);
-				event.finish();
+				return;
 			}
-			"step 1";
 			player.removeMark("gzrebushi", player.countMark("gzrebushi"));
 			if (!player.hasMark("gzrebushi")) {
 				player.unmarkSkill("gzrebushi");
@@ -5836,41 +5834,47 @@ export default {
 			give: {
 				trigger: { global: "phaseZhunbeiBegin" },
 				filter(event, player) {
-					if (event.player == player) {
+					if (event.player === player) {
 						return false;
 					}
-					return player.hasMark("gzrebushi") && player.countCards("he");
+					return player.hasMark("gzrebushi") && player.hasCards("he");
 				},
 				direct: true,
-				content() {
-					"step 0";
-					player.chooseCard(get.prompt("gzrebushi"), "he", "失去1个“义舍”标记，将一张牌交给" + get.translation(trigger.player) + "并摸两张牌").set("ai", function (card) {
-						var player = _status.event.player;
-						var trigger = _status.event.getTrigger();
-						var target = trigger.player;
-						var num = 0,
-							current = target;
-						while (current != player) {
-							if (current.isFriendOf(player) && !current.isTurnedOver()) {
-								num++;
-							}
-							current = current.next;
-						}
-						if (num >= player.countMark("gzrebushi") && !target.isFriendOf(player)) {
-							return -1;
-						}
-						return 6 - get.value(card);
-					});
-					"step 1";
-					if (result.bool) {
-						player.logSkill("gzrebushi", trigger.player);
-						player.removeMark("gzrebushi", 1);
-						if (!player.hasMark("gzrebushi")) {
-							player.unmarkSkill("gzrebushi");
-						}
-						trigger.player.gain(result.cards, player, "giveAuto");
-						player.draw(2);
+				async content(event, trigger, player) {
+					const result = await player
+						.chooseCard({
+							prompt: get.prompt("gzrebushi"),
+							position: "he",
+							prompt2: `失去1个“义舍”标记，将一张牌交给${get.translation(trigger.player)}并摸两张牌`,
+							ai: card => {
+								const target = trigger.player;
+								let num = 0;
+								let current = target;
+								while (current !== player) {
+									if (current.isFriendOf(player) && !current.isTurnedOver()) {
+										num++;
+									}
+									current = current.next;
+								}
+								if (num >= player.countMark("gzrebushi") && !target.isFriendOf(player)) {
+									return -1;
+								}
+								return 6 - get.value(card);
+							},
+						})
+						.forResult();
+					if (!result.bool) {
+						return;
 					}
+					player.logSkill("gzrebushi", trigger.player);
+					player.removeMark("gzrebushi", 1);
+					if (!player.hasMark("gzrebushi")) {
+						player.unmarkSkill("gzrebushi");
+					}
+					const gainEvent = trigger.player.gain({ cards: result.cards, source: player, animate: "giveAuto" });
+					const drawEvent = player.draw(2);
+					await gainEvent;
+					await drawEvent;
 				},
 			},
 		},
