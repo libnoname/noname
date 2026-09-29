@@ -17998,34 +17998,28 @@ export default {
 			if (player.storage.jizhao) {
 				return false;
 			}
-			if (event.type == "dying") {
-				if (player != event.dying) {
-					return false;
-				}
-				return true;
+			if (event.type !== "dying") {
+				return false;
 			}
-			return false;
+			return player === event.dying;
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.awakenSkill("jizhao");
 			player.storage.jizhao = true;
-			var num = player.maxHp - player.countCards("h");
+			const num = player.maxHp - player.countCards("h");
 			if (num > 0) {
-				player.draw(num);
+				await player.draw(num);
 			}
-			"step 1";
 			if (player.hp < 2) {
-				player.recover(2 - player.hp);
+				await player.recover(2 - player.hp);
 			}
-			"step 2";
 			player.removeSkill("wuhujiangdaqi");
-			player.changeSkills(["rerende"], ["shouyue"]);
+			await player.changeSkills(["rerende"], ["shouyue"]);
 		},
 		ai: {
 			order: 1,
 			skillTagFilter(player, arg, target) {
-				if (player != target || player.storage.jizhao) {
+				if (player !== target || player.storage.jizhao) {
 					return false;
 				}
 			},
