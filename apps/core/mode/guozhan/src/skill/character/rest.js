@@ -6546,25 +6546,31 @@ export default {
 				}) && !player.storage.gzdianhu_effect
 			);
 		},
-		content() {
-			"step 0";
-			player.chooseTarget("请选择【点虎】的目标", true, "给一名角色标上“虎”标记。当你或你的队友对该角色造成伤害后摸一张牌。", lib.filter.notMe).set("ai", function (target) {
-				var player = _status.event.player;
-				var distance = game.countPlayer(function (current) {
-					if (current.isFriendOf(player)) {
-						return Math.pow(get.distance(current, target), 1.2);
-					}
-				});
-				return 10 / distance;
-			});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("gzdianhu", target);
-				target.markSkill("gzdianhu_mark");
-				player.addSkill("gzdianhu_effect");
-				player.markAuto("gzdianhu_effect", [target]);
+		async content(event, trigger, player) {
+			const result = await player
+				.chooseTarget({
+					prompt: "请选择【点虎】的目标",
+					forced: true,
+					prompt2: "给一名角色标上“虎”标记。当你或你的队友对该角色造成伤害后摸一张牌。",
+					filterTarget: lib.filter.notMe,
+					ai: target => {
+						const distance = game.countPlayer(current => {
+							if (current.isFriendOf(player)) {
+								return Math.pow(get.distance(current, target), 1.2);
+							}
+						});
+						return 10 / distance;
+					},
+				})
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
+			const target = result.targets[0];
+			player.logSkill("gzdianhu", target);
+			target.markSkill("gzdianhu_mark");
+			player.addSkill("gzdianhu_effect");
+			player.markAuto("gzdianhu_effect", [target]);
 		},
 		subSkill: {
 			mark: {
@@ -6580,12 +6586,12 @@ export default {
 					if (!player.getStorage("gzdianhu_effect").includes(event.player)) {
 						return false;
 					}
-					var source = event.source;
+					const source = event.source;
 					return source && source.isAlive() && source.isFriendOf(player);
 				},
 				logTarget: "source",
-				content() {
-					trigger.source.draw();
+				async content(event, trigger, player) {
+					await trigger.source.draw();
 				},
 			},
 		},
