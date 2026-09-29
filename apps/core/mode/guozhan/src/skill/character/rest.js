@@ -14690,26 +14690,24 @@ export default {
 		},
 		direct: true,
 		preHidden: true,
-		content() {
-			"step 0";
-			event.num = trigger.num || 1;
-			"step 1";
-			player
-				.chooseTarget(get.prompt2("new_shushen"), function (card, player, target) {
-					return target != player;
-				})
-				.set("ai", function (target) {
-					return get.attitude(_status.event.player, target);
-				})
-				.setHiddenSkill("new_shushen");
-			"step 2";
-			if (result.bool) {
-				player.logSkill("new_shushen", result.targets);
-				result.targets[0].draw();
-				if (event.num > 1) {
-					event.num--;
-					event.goto(1);
+		async content(event, trigger, player) {
+			let num = trigger.num || 1;
+			while (num > 0) {
+				const result = await player
+					.chooseTarget({
+						prompt: get.prompt2("new_shushen"),
+						filterTarget: (_card, player, target) => target !== player,
+						ai: target => get.attitude(_status.event.player, target),
+					})
+					.setHiddenSkill("new_shushen")
+					.forResult();
+				if (!result.bool) {
+					return;
 				}
+				const target = result.targets[0];
+				player.logSkill("new_shushen", result.targets);
+				await target.draw();
+				num--;
 			}
 		},
 		ai: {
