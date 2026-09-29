@@ -7357,43 +7357,49 @@ export default {
 	gzjilei: {
 		inherit: "jilei",
 		preHidden: true,
-		content() {
-			"step 0";
-			player
-				.chooseControl("basic", "trick", "equip", "cancel2", function () {
-					var source = _status.event.source;
-					if (get.attitude(_status.event.player, source) > 0) {
-						return "cancel2";
-					}
-					var list = ["basic", "trick", "equip"].filter(function (name) {
-						return !source.storage.jilei2 || !source.storage.jilei2.includes(name);
-					});
-					if (!list.length) {
-						return "cancel2";
-					}
-					if (
-						list.includes("trick") &&
-						source.countCards("h", function (card) {
-							return get.type(card, null, source) == "trick" && source.hasValueTarget(card);
-						}) > 1
-					) {
-						return "trick";
-					}
-					return list[0];
+		async cost(event, trigger, player) {
+			const source = trigger.source;
+			const result = await player
+				.chooseControl({
+					controls: ["basic", "trick", "equip", "cancel2"],
+					prompt: get.prompt2("jilei", source),
+					ai: () => {
+						if (get.attitude(player, source) > 0) {
+							return "cancel2";
+						}
+						const list = ["basic", "trick", "equip"].filter(name => {
+							return !source.storage.jilei2 || !source.storage.jilei2.includes(name);
+						});
+						if (!list.length) {
+							return "cancel2";
+						}
+						if (
+							list.includes("trick") &&
+							source.countCards("h", card => {
+								return get.type(card, null, source) === "trick" && source.hasValueTarget(card);
+							}) > 1
+						) {
+							return "trick";
+						}
+						return list[0];
+					},
 				})
-				.set("prompt", get.prompt2("jilei", trigger.source))
-				.set("source", trigger.source)
-				.setHiddenSkill("gzjilei");
-			"step 1";
-			if (result.control != "cancel2") {
-				player.logSkill("gzjilei", trigger.source);
-				player.chat(get.translation(result.control) + "牌");
-				game.log(player, "声明了", "#y" + get.translation(result.control) + "牌");
-				trigger.source.addTempSkill("jilei2");
-				trigger.source.storage.jilei2.add(result.control);
-				trigger.source.updateMarks("jilei2");
-				game.delayx();
-			}
+				.setHiddenSkill(event.skill)
+				.forResult();
+			event.result = {
+				bool: result.control !== "cancel2",
+				targets: [source],
+				cost_data: result.control,
+			};
+		},
+		async content(event, trigger, player) {
+			const control = event.cost_data;
+			player.chat(`${get.translation(control)}牌`);
+			game.log(player, "声明了", `#y${get.translation(control)}牌`);
+			trigger.source.addTempSkill("jilei2");
+			trigger.source.storage.jilei2.add(control);
+			trigger.source.updateMarks("jilei2");
+			await game.delayx();
 		},
 	},
 	//诸葛瑾
