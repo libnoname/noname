@@ -6181,7 +6181,7 @@ export default {
 			effect: {
 				mod: {
 					cardUsable(card, player, num) {
-						if (card.name === "sha") {
+						if (card.name == "sha") {
 							return num + player.countMark("gzyinpan_effect");
 						}
 					},
@@ -12935,66 +12935,65 @@ export default {
 		},
 		direct: true,
 		preHidden: true,
-		content() {
-			"step 0";
-			var check = player.countCards("h", { color: "red" }) > 1 || player.countCards("h", { color: "black" }) > 1;
-			player
-				.chooseCard(get.prompt("keshou"), "弃置两张颜色相同的牌，令即将受到的伤害-1", "he", 2, function (card) {
-					if (ui.selected.cards.length) {
-						return get.color(card) == get.color(ui.selected.cards[0]);
-					}
-					return true;
-				})
-				.set("complexCard", true)
-				.set("ai", function (card) {
-					if (!_status.event.check) {
-						return 0;
-					}
-					var player = _status.event.player;
-					if (player.hp == 1) {
-						if (
-							!player.countCards("h", function (card) {
-								return get.tag(card, "save");
-							}) &&
-							!player.hasSkillTag("save", true)
-						) {
-							return 10 - get.value(card);
+		async content(event, trigger, player) {
+			const check = player.countCards("h", { color: "red" }) > 1 || player.countCards("h", { color: "black" }) > 1;
+			const result = await player
+				.chooseCard({
+					prompt: get.prompt("keshou"),
+					prompt2: "弃置两张颜色相同的牌，令即将受到的伤害-1",
+					position: "he",
+					selectCard: 2,
+					filterCard(card) {
+						if (ui.selected.cards.length) {
+							return get.color(card) === get.color(ui.selected.cards[0]);
 						}
-						return 7 - get.value(card);
-					}
-					return 6 - get.value(card);
+						return true;
+					},
+					complexCard: true,
+					ai(card) {
+						if (!_status.event.check) {
+							return 0;
+						}
+						const player = _status.event.player;
+						if (player.hp === 1) {
+							if (
+								!player.countCards("h", card => get.tag(card, "save")) &&
+								!player.hasSkillTag("save", true)
+							) {
+								return 10 - get.value(card);
+							}
+							return 7 - get.value(card);
+						}
+						return 6 - get.value(card);
+					},
 				})
 				.set("check", check)
-				.setHiddenSkill(event.name);
-			"step 1";
-			var logged = false;
+				.setHiddenSkill(event.name)
+				.forResult();
+			let logged = false;
 			if (result.cards) {
 				logged = true;
 				player.logSkill("keshou");
-				player.discard(result.cards);
+				await player.discard({ cards: result.cards });
 				trigger.num--;
 			}
 			if (
 				!player.isUnseen() &&
-				!game.hasPlayer(function (current) {
-					return current != player && current.isFriendOf(player);
+				!game.hasPlayer(current => {
+					return current !== player && current.isFriendOf(player);
 				})
 			) {
 				if (!logged) {
 					player.logSkill("keshou");
 				}
-				player.judge(function (card) {
-					if (get.color(card) == "red") {
-						return 1;
-					}
-					return 0;
-				});
+				const judgeResult = await player.judge({
+					judge: card => (get.color(card) === "red" ? 1 : 0),
+				}).forResult();
+				if (judgeResult.judge > 0) {
+					await player.draw();
+				}
 			} else {
-				event.finish();
-			}
-			"step 2";
-			if (result.judge > 0) {
-				player.draw();
+				return;
 			}
 		},
 	},
@@ -13013,15 +13012,18 @@ export default {
 		},
 		frequent: true,
 		preHidden: true,
-		content() {
-			"step 0";
-			player.gain(trigger.result.card, "gain2");
-			player.chooseBool("是否令" + get.translation(_status.currentPhase) + "本回合的手牌上限和使用【杀】的次数上限+1？").ai = function () {
-				return get.attitude(player, _status.currentPhase) > 0;
-			};
-			"step 1";
+		async content(event, trigger, player) {
+			const gain = player.gain({ cards: [trigger.result.card], animate: "gain2" });
+			const choose = player.chooseBool({
+				prompt: `是否令${get.translation(_status.currentPhase)}本回合的手牌上限和使用【杀】的次数上限+1？`,
+				ai() {
+					return get.attitude(player, _status.currentPhase) > 0;
+				},
+			});
+			await gain;
+			const result = await choose.forResult();
 			if (result.bool) {
-				var target = _status.currentPhase;
+				const target = _status.currentPhase;
 				if (!target.hasSkill("zhuwei_eff")) {
 					target.addTempSkill("zhuwei_eff");
 					target.storage.zhuwei_eff = 1;
