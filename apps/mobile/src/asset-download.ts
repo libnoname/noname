@@ -125,7 +125,7 @@ export interface AssetDownloaderOptions {
  * 把「下载武将原画与语音」入口挂到「菜单 → 其它 → 更新」页。
  *
  * 实现方式是在 `ui.create.otherMenu` 外面包一层：原函数照常渲染它自己的菜单按钮，
- * 等它跑完后再往「其它」页的左侧容器追加我们的按钮，并为它挂上自己的内容页。
+ * 我们则在它执行期间捕获「其它」页的左右两个容器，再把按钮与内容页塞进去。
  * 这样 core 侧一行都不用改，整个功能都留在 `apps/mobile` 层。
  *
  * 注意调用时机：`preload()` 在 `boot()` 之前执行，而菜单是在 `boot()` 阶段才构建的，
@@ -151,15 +151,29 @@ export function installAssetDownloader(options: AssetDownloaderOptions): void {
 	}
 
 	const wrapped = function (this: unknown, ...args: unknown[]) {
-		const result = (original as (...a: unknown[]) => unknown).apply(this, args);
-
 		// 联机菜单（connectMenu = true）不提供这个入口，与 core 里「更新」页的处理保持一致
 		if (args[0]) {
-			return result;
+			return (original as (...a: unknown[]) => unknown).apply(this, args);
+		}
+
+		// 「其它」页在菜单构建阶段尚未接入 document（见 interceptMenuPane 的说明），
+		// 因此只能在 otherMenu 执行期间就地捕获容器，不能事后查 DOM。
+		const captured: { leftPane: HTMLElement | null } = { leftPane: null };
+		const restore = interceptMenuPane(ui, captured);
+
+		let result: unknown;
+		try {
+			result = (original as (...a: unknown[]) => unknown).apply(this, args);
+		} finally {
+			restore();
 		}
 
 		try {
-			appendDownloadButton(lib, game, ui);
+			if (captured.leftPane) {
+				attachDownloadEntry(lib, game, ui, captured.leftPane);
+			} else {
+				console.warn("[asset-download] 未能捕获「其它」页左侧容器，跳过注入");
+			}
 		} catch (error) {
 			// 菜单渲染失败不应连累整个「其它」页
 			console.error("[asset-download] 注入按钮失败:", error);
@@ -172,17 +186,65 @@ export function installAssetDownloader(options: AssetDownloaderOptions): void {
 	ui.create.otherMenu = wrapped;
 }
 
+/**
+ * 在 `otherMenu` 执行期间临时包一层 `ui.create.div`，**捕获它把
+ * `.menubutton.large` 塞进了哪个容器**——那正是「其它」页的 `.left.pane`。
+ *
+ * ### 为什么非得这样捕获
+ *
+ * `createMenu()` 里每一页都是 `createPage(active ? menuContent : null)` 创建的，
+ * 非激活页的父节点是 `null`，也就是**整页（含 `.left.pane` / `.right.pane`）在菜单
+ * 构建阶段并不在 document 里**；只有用户点开该标签时才会被
+ * `menuContent.appendChild(this._link)` 接上去。
+ *
+ * 因此此刻任何基于 `document.querySelectorAll` 的查找都会落空。
+ * 这正是上一版按钮没出现的原因——当时用「更新」按钮反查父节点，查不到任何东西。
+ *
+ * ### 捕获为什么可靠
+ *
+ * `otherMenu` 一定会调用
+ * `ui.create.div(".menubutton.large", "更新", start.firstChild, clickMode)`，
+ * 其中 `start.firstChild` 就是该页的 `.left.pane`。
+ * 我们只认**第一个** `.menubutton.large`（即最先创建的「更新」按钮），
+ * 从它的实参里取出那个带 `pane` class 的父元素即可。
+ * 更早创建的圆形按钮是 `.menubutton.round.highlight`，不含 `large`，会被自然排除。
+ *
+ * @returns 还原 `ui.create.div` 的函数；调用方必须在 finally 中执行
+ */
+function interceptMenuPane(ui: UiLike, out: { leftPane: HTMLElement | null }): () => void {
+	const create = ui.create;
+	const originalDiv = create.div;
+
+	create.div = function (...a: unknown[]) {
+		const node = (originalDiv as (...x: unknown[]) => unknown).apply(this, a);
+
+		if (!out.leftPane && typeof a[0] === "string" && a[0].includes("menubutton") && a[0].includes("large")) {
+			// 父容器通常是第 3 个实参，但为稳健起见扫描全部实参
+			const parent = a.find(x => isElement(x) && (x as HTMLElement).classList.contains("pane"));
+			if (parent) {
+				out.leftPane = parent as HTMLElement;
+			}
+		}
+
+		return node;
+	};
+
+	return () => {
+		create.div = originalDiv;
+	};
+}
+
+/** 判断一个值是不是 DOM 元素（用 nodeType 而非 instanceof，避免跨 window 失效） */
+function isElement(value: unknown): boolean {
+	return typeof value === "object" && value !== null && (value as { nodeType?: number }).nodeType === 1;
+}
+
 // ---------------------------------------------------------------------------
 // 界面
 // ---------------------------------------------------------------------------
 
 /**
- * 往「其它」页左侧容器追加按钮。
- *
- * `otherMenu.js` 内部用 `start.firstChild`（即 `.left.pane`）作为按钮容器、
- * `start.lastChild`（即 `.right.pane`）作为内容页容器，但这两个变量都在闭包里拿不到。
- * 这里改为从已渲染的 DOM 反查：core 一定会在左侧容器里渲染「更新」按钮，
- * 于是可以从它反推出左右两个 pane。
+ * 把按钮与内容页挂到已捕获的「其它」页容器上。
  *
  * 关键点：core 的按钮切换由闭包内的 `clickMode` 驱动，它做了三件事——
  *   1. 清掉兄弟按钮的 `.active`；
@@ -194,29 +256,18 @@ export function installAssetDownloader(options: AssetDownloaderOptions): void {
  * `clickMode` 找不到 `link`，我们那页就会残留在右侧。
  * 因此下面显式复刻了这套语义。
  */
-function appendDownloadButton(lib: LibLike, game: GameLike, ui: UiLike): void {
-	// iOS 之外（安卓 / 浏览器）不需要这个功能
-	if (lib.device !== "ios") {
+function attachDownloadEntry(lib: LibLike, game: GameLike, ui: UiLike, leftPane: HTMLElement): void {
+	// iOS 之外（安卓 / 桌面浏览器）不提供该入口
+	if (!isIosRuntime(lib)) {
 		return;
 	}
 
-	const layout = findMenuLayout();
-	if (!layout) {
-		console.warn("[asset-download] 找不到「其它」页的左右容器，跳过注入");
-		return;
-	}
-	const { leftPane, rightPane } = layout;
-
-	// 防止重复注入（菜单可能被重建）
+	// 菜单可能被重建（例如重开一局），避免重复注入
 	if (leftPane.querySelector(".asset-download-button")) {
 		return;
 	}
 
 	const page = ui.create.div(".menu-help.asset-download-page");
-
-	/**
-	 * @type {HTMLDivElement & { link?: HTMLElement }}
-	 */
 	const button = ui.create.div(".menubutton.large.asset-download-button", "下载素材", leftPane);
 
 	// 与 core 保持一致：把内容页挂在按钮的 `link` 上，
@@ -239,9 +290,13 @@ function appendDownloadButton(lib: LibLike, game: GameLike, ui: UiLike): void {
 		button.classList.add("active");
 
 		// 进入内容页时，藏掉「其它」页右上角那几颗圆形快捷按钮，避免视觉干扰
-		hideRoundButtons();
+		hideRoundButtons(leftPane.parentNode);
 
-		rightPane.appendChild(page);
+		// 右侧内容容器是左侧按钮容器的下一个兄弟（`.left.pane` + `.right.pane`）
+		const rightPane = leftPane.nextElementSibling;
+		if (rightPane instanceof HTMLElement) {
+			rightPane.appendChild(page);
+		}
 	});
 
 	// 左侧栏只有 34% 宽、默认字号 26px，长标签会溢出，这里缩小
@@ -251,29 +306,29 @@ function appendDownloadButton(lib: LibLike, game: GameLike, ui: UiLike): void {
 	renderPage(page, lib, game, ui);
 }
 
-/** 从菜单结构里反查「其它」页的左右两个容器 */
-function findMenuLayout(): { leftPane: HTMLElement; rightPane: HTMLElement } | null {
-	// 「更新」是本功能的锚点：core 一定会在左侧容器里渲染它
-	const allButtons = Array.from(document.querySelectorAll<HTMLElement>(".menubutton.large"));
-	const anchor = allButtons.find(el => el.textContent?.trim() === "更新");
-	const leftPane = anchor?.parentNode instanceof HTMLElement ? anchor.parentNode : null;
-
-	if (!leftPane) {
-		return null;
+/**
+ * 判断当前是否为 iOS 运行环境。
+ *
+ * 首选判据是 WebView 桥：`window.webkit.messageHandlers.bridge` 由 Capacitor 原生层注入，
+ * 安卓侧没有它。这也是 `packages/jit` 里已经**在用户真机上验证有效**的同款判断
+ * （JIT 弹窗正是靠它静默跳过的），因此比 `lib.device` 更可靠。`lib.device` 作为兜底。
+ */
+function isIosRuntime(lib: LibLike): boolean {
+	const wk = (window as unknown as { webkit?: { messageHandlers?: { bridge?: unknown } } }).webkit;
+	if (wk?.messageHandlers?.bridge) {
+		return true;
 	}
-
-	// 布局是 `.menu-content > div > (.left.pane + .right.pane)`，右侧就是左容器的下一个兄弟
-	const rightPane = leftPane.nextElementSibling;
-	if (!(rightPane instanceof HTMLElement)) {
-		return null;
-	}
-
-	return { leftPane, rightPane };
+	return lib.device === "ios";
 }
 
 /** 藏掉「其它」页右上角的圆形快捷按钮（作/执/清/播/存/删） */
-function hideRoundButtons(): void {
-	document.querySelectorAll<HTMLElement>(".menu.main > .menu-content > div > .menubutton.round").forEach(el => (el.style.display = "none"));
+function hideRoundButtons(scope: Node | null): void {
+	if (!(scope instanceof HTMLElement)) {
+		return;
+	}
+	scope.querySelectorAll<HTMLElement>(".menubutton.round").forEach(el => {
+		el.style.display = "none";
+	});
 }
 
 /** 渲染内容页（标题、说明、统计、按钮、进度条、日志） */

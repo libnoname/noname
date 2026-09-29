@@ -304,13 +304,24 @@ apps/mobile/ios/build/export/<AppName>.ipa
 
 | 关注点 | 做法 |
 | --- | --- |
-| 何时显示 | 仅 `lib.device === "ios"` 时注入按钮，安卓 / 浏览器不受影响 |
+| 何时显示 | 优先用 WebView 桥 `window.webkit.messageHandlers.bridge` 判断 iOS（与 `packages/jit` 同款、已在真机验证），`lib.device === "ios"` 兜底；安卓 / 浏览器不受影响 |
 | 文件清单 | `GET https://api.github.com/repos/libnoname/noname/git/trees/main?recursive=1`（一次请求拿到整棵树） |
 | 文件内容 | `https://raw.githubusercontent.com/libnoname/noname/main/<path>`（不计入 API 限额） |
 | 上游路径前缀 | `apps/core/`（注意不是仓库根目录） |
 | 本地落盘路径 | 去掉前缀后写入，如 `image/character/zhaoyun.jpg` → `Documents/noname/image/character/zhaoyun.jpg` |
 | 断点续传 | 有历史记录时逐个 `checkFile` 跳过已下载项，因此「取消后再点」是续传而非重下 |
 | 规模 | 约 11900 个文件 / 约 970MB，请尽量在 Wi-Fi 下进行 |
+
+> **⚠️ 一个容易踩的坑：菜单页在构建阶段是 detached 的。**
+>
+> `createMenu()` 用 `createPage(active ? menuContent : null)` 建页，非激活页的父节点是
+> `null`，**整页并不在 document 里**，只有用户点开对应标签才会被 append 上去。
+> 所以 `ui.create.otherMenu` 执行期间，任何 `document.querySelectorAll` 都查不到「其它」页的按钮。
+>
+> 本功能的做法是在 `otherMenu` 执行期间临时包一层 `ui.create.div`，从**实参**里
+> 直接捕获那个 `.left.pane`（`otherMenu` 必然会用
+> `ui.create.div(".menubutton.large", "更新", start.firstChild, clickMode)`）。
+> 改这块代码时请勿改回 DOM 查询——那样会静默失效。
 
 ---
 
