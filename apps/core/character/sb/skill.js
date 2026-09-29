@@ -3215,7 +3215,7 @@ const skills = {
 				})
 				.set("source", target)
 				.forResult();
-			if (typeof result?.control === "string") {
+			if (typeof result?.control === "string" && result.control != "cancel2") {
 				event.result = {
 					bool: true,
 					cost_data: result.control,
