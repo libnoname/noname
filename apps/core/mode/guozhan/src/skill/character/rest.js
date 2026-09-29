@@ -4431,25 +4431,23 @@ export default {
 		check(event, player) {
 			return (
 				player.getHistory("useSkill", evt => {
-					return evt.skill == "fakeqizhi";
+					return evt.skill === "fakeqizhi";
 				}).length >= player.countCards("h")
 			);
 		},
 		prompt2(event, player) {
-			const num = player.getHistory("useSkill", evt => evt.skill == "fakeqizhi").length;
-			return "摸两张牌，然后将手牌弃置至" + get.cnNumber(num) + "张";
+			const num = player.getHistory("useSkill", evt => evt.skill === "fakeqizhi").length;
+			return `摸两张牌，然后将手牌弃置至${get.cnNumber(num)}张`;
 		},
-		content() {
-			"step 0";
-			player.draw(2);
-			"step 1";
-			var dh =
+		async content(event, trigger, player) {
+			await player.draw(2);
+			const discardNum =
 				player.countCards("h") -
 				player.getHistory("useSkill", evt => {
-					return evt.skill == "fakeqizhi";
+					return evt.skill === "fakeqizhi";
 				}).length;
-			if (dh > 0) {
-				player.chooseToDiscard(dh, true);
+			if (discardNum > 0) {
+				await player.chooseToDiscard({ selectCard: discardNum, forced: true });
 			}
 		},
 		ai: { combo: "fakeqizhi" },
