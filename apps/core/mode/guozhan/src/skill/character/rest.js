@@ -16763,15 +16763,18 @@ export default {
 		trigger: { player: "damageEnd" },
 		forced: true,
 		filter(event, player) {
-			return event.card && (event.card.name == "sha" || get.type(event.card, "trick") == "trick") && player.getExpansions("yuanjiangfenghuotu").length > 0;
+			return event.card && (event.card.name === "sha" || get.type(event.card, "trick") === "trick") && player.getExpansions("yuanjiangfenghuotu").length > 0;
 		},
-		content() {
-			"step 0";
-			player.chooseCardButton("将一张“烽火”置入弃牌堆", player.getExpansions("yuanjiangfenghuotu"), true);
-			"step 1";
+		async content(event, trigger, player) {
+			const result = await player
+				.chooseCardButton({
+					prompt: "将一张“烽火”置入弃牌堆",
+					cards: player.getExpansions("yuanjiangfenghuotu"),
+					forced: true,
+				})
+				.forResult();
 			if (result.bool) {
-				var card = result.links[0];
-				player.loseToDiscardpile(card);
+				await player.loseToDiscardpile({ cards: [result.links[0]] });
 			}
 		},
 	},
@@ -16780,9 +16783,9 @@ export default {
 		audio: ["yuanjiangfenghuotu", 2],
 		forceaudio: true,
 		filter(event, player) {
-			var zhu = get.zhu(player, "jiahe");
+			const zhu = get.zhu(player, "jiahe");
 			if (zhu) {
-				return player.countCards("he", { type: "equip" }) > 0;
+				return player.hasCards("he", { type: "equip" });
 			}
 			return false;
 		},
@@ -16790,23 +16793,22 @@ export default {
 		position: "he",
 		usable: 1,
 		check(card) {
-			var zhu = get.zhu(_status.event.player, "jiahe");
+			const zhu = get.zhu(_status.event.player, "jiahe");
 			if (!zhu) {
 				return 0;
 			}
-			var num = 7 - get.value(card);
-			if (get.position(card) == "h") {
+			const num = 7 - get.value(card);
+			if (get.position(card) === "h") {
 				if (zhu.getExpansions("huangjintianbingfu").length >= 5) {
 					return num - 3;
 				}
 				return num + 3;
 			} else {
-				var player = _status.event.player;
-				var zhu = get.zhu(player, "jiahe");
-				var sub = get.subtype(card);
+				const player = _status.event.player;
+				const zhu = get.zhu(player, "jiahe");
 				if (
-					player.countCards("h", function (card) {
-						return get.type(card) == "equip" && get.subtype(card) == "sub" && player.hasValueTarget(card);
+					player.hasCards("h", card => {
+						return get.type(card) === "equip" && get.subtype(card) === "sub" && player.hasValueTarget(card);
 					})
 				) {
 					return num + 4;
@@ -16821,19 +16823,21 @@ export default {
 		lose: false,
 		delay: false,
 		prepare(cards, player) {
-			var zhu = get.zhu(player, "jiahe");
+			const zhu = get.zhu(player, "jiahe");
 			player.line(zhu);
 		},
-		content() {
-			var zhu = get.zhu(player, "jiahe");
-			zhu.addToExpansion(cards, player, "give").gaintag.add("yuanjiangfenghuotu");
+		async content(event, trigger, player) {
+			const zhu = get.zhu(player, "jiahe");
+			const next = zhu.addToExpansion({ cards: event.cards, source: player, animate: "give" });
+			next.gaintag.add("yuanjiangfenghuotu");
+			await next;
 		},
 		ai: {
 			order(item, player) {
 				if (
 					player.hasSkillTag("noe") ||
-					!player.countCards("h", function (card) {
-						return get.type(card) == "equip" && !player.canEquip(card) && player.hasValueTarget(card);
+					!player.hasCards("h", card => {
+						return get.type(card) === "equip" && !player.canEquip(card) && player.hasValueTarget(card);
 					})
 				) {
 					return 1;
@@ -16851,83 +16855,70 @@ export default {
 		audio: "jiahe_put",
 		forceaudio: true,
 		filter(event, player) {
-			var zhu = get.zhu(player, "jiahe");
+			const zhu = get.zhu(player, "jiahe");
 			if (zhu && zhu.getExpansions("yuanjiangfenghuotu").length) {
 				return true;
 			}
 			return false;
 		},
-		content() {
-			"step 0";
-			var zhu = get.zhu(player, "jiahe");
-			event.num = zhu.getExpansions("yuanjiangfenghuotu").length;
-			"step 1";
-			var list = [];
-			if (event.num >= 1 && !(player.hasSkill("reyingzi") || player.hasSkill("jiahe_reyingzi"))) {
-				list.push("reyingzi");
-			}
-			if (event.num >= 2 && !(player.hasSkill("haoshi") || player.hasSkill("jiahe_haoshi"))) {
-				list.push("haoshi");
-			}
-			if (event.num >= 3 && !(player.hasSkill("shelie") || player.hasSkill("jiahe_shelie"))) {
-				list.push("shelie");
-			}
-			if (event.num >= 4 && !(player.hasSkill("gz_duoshi") || player.hasSkill("jiahe_duoshi"))) {
-				list.push("gz_duoshi");
-			}
-			if (!list.length) {
-				event.finish();
-				return;
-			}
-			var prompt2 = "你可以获得下列一项技能直到回合结束";
-			if (list.length >= 5) {
-				if (event.done) {
-					prompt2 += " (2/2)";
-				} else {
-					prompt2 += " (1/2)";
+		async content(event, trigger, player) {
+			const zhu = get.zhu(player, "jiahe");
+			const num = zhu.getExpansions("yuanjiangfenghuotu").length;
+			const skillMap = {
+				reyingzi: "jiahe_reyingzi",
+				haoshi: "jiahe_haoshi",
+				shelie: "jiahe_shelie",
+				gz_duoshi: "jiahe_duoshi",
+			};
+			let done = false;
+			while (true) {
+				const controls = [];
+				if (num >= 1 && !(player.hasSkill("reyingzi") || player.hasSkill("jiahe_reyingzi"))) {
+					controls.push("reyingzi");
 				}
-			}
-			list.push("cancel2");
-			player
-				.chooseControl(list)
-				.set("prompt", get.translation("yuanjiangfenghuotu"))
-				.set("prompt2", prompt2)
-				.set("centerprompt2", true)
-				.set("ai", function (evt, player) {
-					var controls = _status.event.controls;
-					if (controls.includes("haoshi")) {
-						var nh = player.countCards("h");
-						if (player.hasSkill("reyingzi")) {
-							if (nh == 0) {
-								return "haoshi";
-							}
-						} else {
-							if (nh <= 1) {
+				if (num >= 2 && !(player.hasSkill("haoshi") || player.hasSkill("jiahe_haoshi"))) {
+					controls.push("haoshi");
+				}
+				if (num >= 3 && !(player.hasSkill("shelie") || player.hasSkill("jiahe_shelie"))) {
+					controls.push("shelie");
+				}
+				if (num >= 4 && !(player.hasSkill("gz_duoshi") || player.hasSkill("jiahe_duoshi"))) {
+					controls.push("gz_duoshi");
+				}
+				if (!controls.length) {
+					return;
+				}
+				let prompt2 = "你可以获得下列一项技能直到回合结束";
+				if (controls.length >= 5) {
+					prompt2 += done ? " (2/2)" : " (1/2)";
+				}
+				controls.push("cancel2");
+				const choose = player.chooseControl({
+					controls,
+					prompt: get.translation("yuanjiangfenghuotu"),
+					prompt2,
+					ai(_event, player) {
+						const controls = _status.event.controls;
+						if (controls.includes("haoshi")) {
+							const handSize = player.countCards("h");
+							if (player.hasSkill("reyingzi") ? handSize === 0 : handSize <= 1) {
 								return "haoshi";
 							}
 						}
-					}
-					if (controls.includes("shelie")) {
-						return "shelie";
-					}
-					if (controls.includes("reyingzi")) {
-						return "reyingzi";
-					}
-					if (controls.includes("gz_duoshi")) {
-						return "gz_duoshi";
-					}
-					return controls.randomGet();
+						for (const skill of ["shelie", "reyingzi", "gz_duoshi"]) {
+							if (controls.includes(skill)) {
+								return skill;
+							}
+						}
+						return controls.randomGet();
+					},
 				});
-			"step 2";
-			if (result.control != "cancel2") {
-				var map = {
-					reyingzi: "jiahe_reyingzi",
-					haoshi: "jiahe_haoshi",
-					shelie: "jiahe_shelie",
-					gz_duoshi: "jiahe_duoshi",
-				};
-				var skills = map[result.control];
-				player.addTempSkills(skills);
+				choose.set("centerprompt2", true);
+				const result = await choose.forResult();
+				if (result.control === "cancel2") {
+					return;
+				}
+				const addition = player.addTempSkills(skillMap[result.control]);
 
 				/* 语音修复
 						if (skills == "gz_duoshi") {
@@ -16945,14 +16936,16 @@ export default {
 							}, player);
 						}*/
 
-				if (!event.done) {
+				if (!done) {
 					player.logSkill("jiahe_put");
 				}
+				await addition;
 				// game.log(player,'获得了技能','【'+get.translation(skill)+'】');
-				if (event.num >= 5 && !event.done) {
-					event.done = true;
-					event.goto(1);
+				if (num >= 5 && !done) {
+					done = true;
+					continue;
 				}
+				return;
 			}
 		},
 	},
