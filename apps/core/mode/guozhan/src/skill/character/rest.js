@@ -18656,24 +18656,22 @@ export default {
 	gzqianxi: {
 		audio: "qianxi",
 		trigger: { player: "phaseZhunbeiBegin" },
-		content() {
-			"step 0";
-			player.judge();
-			"step 1";
-			event.color = result.color;
-			player
-				.chooseTarget(function (card, player, target) {
-					return player != target && get.distance(player, target) <= 1;
-				}, true)
-				.set("ai", function (target) {
-					return -get.attitude(_status.event.player, target);
-				});
-			"step 2";
+		async content(event, trigger, player) {
+			const judgeResult = await player.judge().forResult();
+			const color = judgeResult.color;
+			const result = await player
+				.chooseTarget({
+					filterTarget: (_card, chooser, target) => chooser !== target && get.distance(chooser, target) <= 1,
+					forced: true,
+					ai: target => -get.attitude(player, target),
+				})
+				.forResult();
 			if (result.bool && result.targets.length) {
-				result.targets[0].storage.qianxi2 = event.color;
-				result.targets[0].addSkill("qianxi2");
+				const target = result.targets[0];
+				target.storage.qianxi2 = color;
+				target.addSkill("qianxi2");
 				player.line(result.targets, "green");
-				game.addVideo("storage", result.targets[0], ["qianxi2", event.color]);
+				game.addVideo("storage", target, ["qianxi2", color]);
 			}
 		},
 	},
