@@ -12893,37 +12893,36 @@ export default {
 			if (!(event.player && event.player.isAlive() && event.source && event.source.isAlive())) {
 				return false;
 			}
-			return event.player.isFriendOf(player) && event.reason && event.reason.name == "damage";
+			return event.player.isFriendOf(player) && event.reason && event.reason.name === "damage";
 		},
 		check(event, player) {
 			return get.attitude(player, event.player) > 0;
 		},
 		logTarget: "source",
 		preHidden: true,
-		content() {
-			"step 0";
-			player.chooseJunlingFor(trigger.source);
-			"step 1";
-			event.junling = result.junling;
-			event.targets = result.targets;
-			var choiceList = [];
-			choiceList.push("执行该军令");
-			choiceList.push("令" + get.translation(trigger.player) + (trigger.player == trigger.source ? "（你）" : "") + "回复1点体力");
-			trigger.source
-				.chooseJunlingControl(player, result.junling, result.targets)
+		async content(event, trigger, player) {
+			const { junling, targets } = await player.chooseJunlingFor(trigger.source).forResult();
+			event.junling = junling;
+			event.targets = targets;
+			const choiceList = [
+				"执行该军令",
+				`令${get.translation(trigger.player)}${trigger.player === trigger.source ? "（你）" : ""}回复1点体力`,
+			];
+			const result = await trigger.source
+				.chooseJunlingControl(player, junling, targets)
 				.set("prompt", "补益")
 				.set("choiceList", choiceList)
-				.set("ai", function () {
+				.set("ai", () => {
 					if (get.recoverEffect(trigger.player, player, _status.event.player) > 0) {
 						return 1;
 					}
-					return get.attitude(trigger.source, trigger.player) < 0 && get.junlingEffect(player, result.junling, trigger.source, result.targets, trigger.source) >= -2 ? 1 : 0;
-				});
-			"step 2";
-			if (result.index == 0) {
-				trigger.source.carryOutJunling(player, event.junling, targets);
+					return get.attitude(trigger.source, trigger.player) < 0 && get.junlingEffect(player, junling, trigger.source, targets, trigger.source) >= -2 ? 1 : 0;
+				})
+				.forResult();
+			if (result.index === 0) {
+				await trigger.source.carryOutJunling(player, event.junling, event.targets);
 			} else {
-				trigger.player.recover(player);
+				await trigger.player.recover({ source: player });
 			}
 		},
 		audio: ["buyi", 2],
