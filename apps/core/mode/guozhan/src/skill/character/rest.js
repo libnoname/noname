@@ -7474,7 +7474,7 @@ export default {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return player.hasCard(function (card) {
+			return player.hasCard(card => {
 				return lib.skill.gzhongyuan.filterCard(card);
 			}, "h");
 		},
@@ -7484,8 +7484,9 @@ export default {
 		position: "h",
 		discard: false,
 		lose: false,
-		content() {
-			cards[0].addGaintag("_lianheng");
+		async content(event, trigger, player) {
+			const card = event.cards[0];
+			card.addGaintag("_lianheng");
 			player.addTempSkill("gzhongyuan_clear");
 		},
 		check(card) {
@@ -7504,30 +7505,29 @@ export default {
 			draw: {
 				audio: "hongyuan",
 				trigger: { player: "drawBefore" },
-				direct: true,
 				filter(event, player) {
 					return (
-						event.getParent().name == "_lianheng" &&
-						game.hasPlayer(function (current) {
-							return current != player && current.isFriendOf(player);
+						event.getParent().name === "_lianheng" &&
+						game.hasPlayer(current => {
+							return current !== player && current.isFriendOf(player);
 						})
 					);
 				},
-				content() {
-					"step 0";
-					player
-						.chooseTarget(get.prompt("gzhongyuan"), "将摸牌（" + get.cnNumber(trigger.num) + "张）转移给一名同势力角色", function (card, player, target) {
-							return target != player && target.isFriendOf(player);
+				async cost(event, trigger, player) {
+					event.result = await player
+						.chooseTarget({
+							prompt: get.prompt("gzhongyuan"),
+							prompt2: `将摸牌（${get.cnNumber(trigger.num)}张）转移给一名同势力角色`,
+							filterTarget: (_card, targetPlayer, target) => target !== targetPlayer && target.isFriendOf(targetPlayer),
+							ai: () => -1,
 						})
 						.setHiddenSkill("gzhongyuan")
-						.set("ai", () => -1);
-					"step 1";
-					if (result.bool) {
-						var target = result.targets[0];
-						player.logSkill("gzhongyuan", target);
-						trigger.cancel();
-						target.draw(trigger.num);
-					}
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					const target = event.targets[0];
+					trigger.cancel();
+					await target.draw(trigger.num);
 				},
 			},
 		},
