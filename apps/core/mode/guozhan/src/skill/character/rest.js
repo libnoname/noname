@@ -1079,40 +1079,45 @@ export default {
 		audio: "moukui",
 		trigger: { player: "useCardToPlayered" },
 		filter(event, player) {
-			return event.card?.name == "sha";
+			return event.card?.name === "sha";
 		},
 		direct: true,
 		preHidden: true,
-		content() {
-			"step 0";
-			var list = ["选项一"];
-			if (trigger.target.countDiscardableCards(player, "he") > 0) {
+		async content(event, trigger, player) {
+			const list = ["选项一"];
+			if (trigger.target.hasDiscardableCards(player, "he")) {
 				list.push("选项二");
 			}
 			list.push("背水！");
 			list.push("cancel2");
-			player
-				.chooseControl(list)
-				.set("choiceList", ["摸一张牌", "弃置" + get.translation(trigger.target) + "的一张牌", "背水！依次执行以上两项。然后若此【杀】未对其造成过伤害，则其弃置你的一张牌。"])
-				.set("prompt", get.prompt(event.name, trigger.target))
-				.setHiddenSkill(event.name);
-			"step 1";
-			if (result.control != "cancel2") {
-				var target = trigger.target;
+			const { control } = await player
+				.chooseControl({
+					controls: list,
+					choiceList: [
+						"摸一张牌",
+						`弃置${get.translation(trigger.target)}的一张牌`,
+						"背水！依次执行以上两项。然后若此【杀】未对其造成过伤害，则其弃置你的一张牌。",
+					],
+					prompt: get.prompt(event.name, trigger.target),
+				})
+				.setHiddenSkill(event.name)
+				.forResult();
+			if (control !== "cancel2") {
+				const target = trigger.target;
 				player.logSkill(event.name, target);
-				if (result.control == "选项一" || result.control == "背水！") {
-					player.draw();
+				if (control === "选项一" || control === "背水！") {
+					await player.draw();
 				}
-				if (result.control == "选项二" || result.control == "背水！") {
-					player.discardPlayerCard(target, true, "he");
+				if (control === "选项二" || control === "背水！") {
+					await player.discardPlayerCard({ target, forced: true, position: "he" });
 				}
-				if (result.control == "背水！") {
-					player.addTempSkill(event.name + "_effect");
-					var evt = trigger.getParent();
-					if (!evt[event.name + "_effect"]) {
-						evt[event.name + "_effect"] = [];
+				if (control === "背水！") {
+					player.addTempSkill(`${event.name}_effect`);
+					const evt = trigger.getParent();
+					if (!evt[`${event.name}_effect`]) {
+						evt[`${event.name}_effect`] = [];
 					}
-					evt[event.name + "_effect"].add(target);
+					evt[`${event.name}_effect`].add(target);
 				}
 			}
 		},
@@ -1122,19 +1127,21 @@ export default {
 				trigger: { player: "useCardAfter" },
 				filter(event, player) {
 					return event.gzmoukui_effect?.some(current => {
-						return current.isIn() && !current.hasHistory("damage", evt => evt.card == event.card);
+						return current.isIn() && !current.hasHistory("damage", evt => evt.card === event.card);
 					});
 				},
 				forced: true,
 				popup: false,
-				content() {
-					var list = trigger.gzmoukui_effect
+				async content(event, trigger, player) {
+					const list = trigger.gzmoukui_effect
 						.filter(current => {
-							return current.isIn() && !current.hasHistory("damage", evt => evt.card == trigger.card);
+							return current.isIn() && !current.hasHistory("damage", evt => evt.card === trigger.card);
 						})
 						.sortBySeat();
-					for (var i of list) {
-						i.discardPlayerCard(player, true, "he").boolline = true;
+					for (const current of list) {
+						const discardEvent = current.discardPlayerCard({ target: player, forced: true, position: "he" });
+						discardEvent.boolline = true;
+						await discardEvent;
 					}
 				},
 			},
