@@ -7621,34 +7621,32 @@ export default {
 	gzluoyi: {
 		audio: "luoyi",
 		trigger: { player: "phaseDrawEnd" },
-		direct: true,
 		preHidden: true,
 		filter(event, player) {
-			return player.countCards("he") > 0;
+			return player.hasCards("he");
 		},
-		content() {
-			"step 0";
-			player
-				.chooseToDiscard("he", get.prompt2("gzluoyi"))
-				.setHiddenSkill("gzluoyi")
-				.set("ai", function (card) {
-					var player = _status.event.player;
-					if (
-						player.hasCard(function (cardx) {
-							if (cardx == card) {
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseToDiscard({
+					position: "he",
+					prompt: get.prompt2(event.skill),
+					chooseonly: true,
+					ai: card => {
+						const hasAttack = player.hasCard(cardx => {
+							if (cardx === card) {
 								return false;
 							}
-							return (cardx.name == "sha" || cardx.name == "juedou") && player.hasValueTarget(cardx, null, true);
-						}, "hs")
-					) {
-						return 5 - get.value(card);
-					}
-					return -get.value(card);
-				}).logSkill = "gzluoyi";
-			"step 1";
-			if (result.bool) {
-				player.addTempSkill("gzluoyi_buff");
-			}
+							return (cardx.name === "sha" || cardx.name === "juedou") && player.hasValueTarget(cardx, null, true);
+						}, "hs");
+						return hasAttack ? 5 - get.value(card) : -get.value(card);
+					},
+				})
+				.setHiddenSkill(event.skill)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			await player.discard({ cards: event.cards });
+			player.addTempSkill("gzluoyi_buff");
 		},
 		subSkill: {
 			buff: {
@@ -7657,9 +7655,9 @@ export default {
 				forced: true,
 				trigger: { source: "damageBegin1" },
 				filter(event, player) {
-					return event.card && (event.card.name == "sha" || event.card.name == "juedou") && event.getParent().type == "card";
+					return event.card && (event.card.name === "sha" || event.card.name === "juedou") && event.getParent().type === "card";
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.num++;
 				},
 			},
