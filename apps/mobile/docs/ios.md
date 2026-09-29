@@ -284,10 +284,37 @@ apps/mobile/ios/build/export/<AppName>.ipa
 | 游戏启动时弹出「无法启用即时编译功能」 | 说明当前运行的仍是旧版 `game.js`。重新构建网页资源（`pnpm build`）以让 JIT 降级逻辑生效 |
 | 菜单 / 顶部按钮点不动 | 系统栏（状态栏、导航栏）浮层吃掉了触摸事件。确认 `capacitor.config.ts` 中 `SystemBars.hidden` 为 `true`，且未启用 `contentInset` |
 | 游戏能启动但读不到武将 / 卡牌 | `asset-manifest.json` 缺失或未随资源裁剪更新，重新执行 `pnpm --filter @noname/mobile sync` |
+| 武将没有立绘 / 技能与阵亡没有语音 | 这是**瘦身包的预期表现**（见第 3 节）。进「菜单 → 其它 → 更新 → 下载素材」补齐，或直接关掉 `slim_assets` 重新构建 |
 
 ---
 
-## 6. 相关实现文件
+## 6. 补充下载武将原画与语音
+
+瘦身包会把 `audio/skill`、`audio/die`、`image/character` 三大目录删掉（见第 3 节），
+结果是武将**没有立绘、没有配音**。iOS 版为此提供了一个补下载入口：
+
+> **菜单 → 其它 → 更新 → 下载素材**
+
+点击「开始下载」后，会从上游 GitHub 仓库（`libnoname/noname` 的 `main` 分支）
+把这批资源取回来，写入应用沙盒的 `Documents/noname/` 目录。由于 iOS 侧
+「文件系统覆盖层」+「请求层覆盖层」的存在，写进去的文件会被游戏直接读到，
+**不需要重装、也不需要改任何游戏代码**。
+
+实现要点（详见 [`src/asset-download.ts`](../src/asset-download.ts)）：
+
+| 关注点 | 做法 |
+| --- | --- |
+| 何时显示 | 仅 `lib.device === "ios"` 时注入按钮，安卓 / 浏览器不受影响 |
+| 文件清单 | `GET https://api.github.com/repos/libnoname/noname/git/trees/main?recursive=1`（一次请求拿到整棵树） |
+| 文件内容 | `https://raw.githubusercontent.com/libnoname/noname/main/<path>`（不计入 API 限额） |
+| 上游路径前缀 | `apps/core/`（注意不是仓库根目录） |
+| 本地落盘路径 | 去掉前缀后写入，如 `image/character/zhaoyun.jpg` → `Documents/noname/image/character/zhaoyun.jpg` |
+| 断点续传 | 有历史记录时逐个 `checkFile` 跳过已下载项，因此「取消后再点」是续传而非重下 |
+| 规模 | 约 11900 个文件 / 约 970MB，请尽量在 Wi-Fi 下进行 |
+
+---
+
+## 7. 相关实现文件
 
 | 文件 | 作用 |
 | --- | --- |
@@ -295,6 +322,7 @@ apps/mobile/ios/build/export/<AppName>.ipa
 | [`src/fs/ios.ts`](../src/fs/ios.ts) | iOS 文件系统实现（沙盒覆盖层 + 内置资源清单列举） |
 | [`src/fs/types.ts`](../src/fs/types.ts) | 跨平台共用的 `NativeFileSystem` 接口与工具函数 |
 | [`src/fs/legacy-api.ts`](../src/fs/legacy-api.ts) | 把 `NativeFileSystem` 映射为游戏所需的回调式 `game.*` API |
+| [`src/asset-download.ts`](../src/asset-download.ts) | **补充下载武将原画与语音**：在「菜单 → 其它 → 更新」注入按钮，从上游 GitHub 拉取被瘦身裁掉的资源 |
 | [`ios/App/App/NonameBridgeViewController.swift`](../ios/App/App/NonameBridgeViewController.swift) | 继承 `CAPBridgeViewController`，重写 `router()` 挂上自定义路由器 |
 | [`ios/App/App/NonameRouter.swift`](../ios/App/App/NonameRouter.swift) | **请求层覆盖层**：让 `<script src>` / `fetch` 也能读到 `Documents/noname/` 中的用户文件（等价于 Android 的 `JsAwareAssetsPathHandler`） |
 | [`ios/App/App/Base.lproj/Main.storyboard`](../ios/App/App/Base.lproj/Main.storyboard) | 初始 ViewController 指向 `NonameBridgeViewController` |

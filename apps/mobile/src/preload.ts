@@ -1,6 +1,7 @@
 import { App } from "@capacitor/app";
 import { Capacitor, registerPlugin, SystemBars } from "@capacitor/core";
 
+import { installAssetDownloader } from "./asset-download.js";
 import { createIosFileSystem } from "./fs/ios.js";
 import { attachFileSystemAPI } from "./fs/legacy-api.js";
 import {
@@ -74,7 +75,7 @@ async function hideSystemBars() {
 	}
 }
 
-export default async function preload({ lib, game }) {
+export default async function preload({ lib, game, ui }) {
 	lib.path = (await import("path-browserify-esm")).default;
 
 	const platform = Capacitor.getPlatform();
@@ -93,6 +94,12 @@ export default async function preload({ lib, game }) {
 
 	// 各平台通用的文件读写 API（checkFile / readFile / writeFile / getFileList ...）
 	attachFileSystemAPI(game, fs);
+
+	// iOS 侧载包为控制体积未内置武将原画与语音（见 ios-build.yml 的 slim_assets），
+	// 这里在「菜单 → 其它 → 更新」里补一个下载入口，把资源从上游仓库拉进可写目录。
+	// 必须在 attachFileSystemAPI 之后安装，因为它依赖 game.writeFile。
+	// 注意：安装时机早于 boot()，而菜单是在 boot() 阶段才构建的，因此包裹一定会被用到。
+	installAssetDownloader({ lib, game, ui });
 
 	// 以下三项依赖具体运行容器，不适合同步进文件系统适配层
 
