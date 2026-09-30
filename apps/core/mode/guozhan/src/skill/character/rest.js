@@ -7963,33 +7963,37 @@ export default {
 		group: ["gzshensu_1", "gzshensu_2"],
 		preHidden: ["gzshensu_1", "gzshensu_2", "gzshensu"],
 		trigger: { player: "phaseDiscardBegin" },
-		direct: true,
 		filter(event, player) {
 			return player.hp > 0;
 		},
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt("gzshensu"), "失去1点体力并跳过弃牌阶段，视为对一名其他角色使用一张无距离限制的【杀】", function (card, player, target) {
-					return player.canUse("sha", target, false);
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt(event.skill),
+					prompt2: "失去1点体力并跳过弃牌阶段，视为对一名其他角色使用一张无距离限制的【杀】",
+					filterTarget: (card, player, target) => player.canUse("sha", target, false),
+					ai: target => {
+						const player = _status.event.player;
+						if (!_status.event.goon || player.hp <= target.hp) {
+							return false;
+						}
+						return get.effect(target, { name: "sha", isCard: true }, player, player);
+					},
 				})
-				.setHiddenSkill("gzshensu")
 				.set("goon", player.needsToDiscard())
-				.set("ai", function (target) {
-					var player = _status.event.player;
-					if (!_status.event.goon || player.hp <= target.hp) {
-						return false;
-					}
-					return get.effect(target, { name: "sha", isCard: true }, player, player);
-				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("gzshensu", target);
-				player.loseHp();
-				trigger.cancel();
-				player.useCard({ name: "sha", isCard: true }, target, false);
-			}
+				.setHiddenSkill("gzshensu")
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const loseHpEvent = player.loseHp();
+			trigger.cancel();
+			await loseHpEvent;
+			await player.useCard({
+				card: { name: "sha", isCard: true },
+				targets: [target],
+				addCount: false,
+			});
 		},
 		subSkill: {
 			1: {
