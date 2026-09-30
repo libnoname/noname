@@ -72,7 +72,7 @@ const characters = {
 	std_xushao: {
 		sex: "male",
 		group: "qun",
-		hp: 3,
+		hp: 4,
 		skills: ["stdyingmen", "stdpingjian"],
 	},
 	std_zhangxuan: {
