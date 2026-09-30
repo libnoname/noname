@@ -8457,35 +8457,35 @@ export default {
 		preHidden: true,
 		trigger: { global: "dieAfter" },
 		prompt2(event, player) {
-			return "将其的所有武将牌" + (player == event.source ? "及武将牌库里的两张随机武将牌" : "") + "置于武将牌上作为“戮”";
+			return `将其的所有武将牌${player === event.source ? "及武将牌库里的两张随机武将牌" : ""}置于武将牌上作为“戮”`;
 		},
 		logTarget: "player",
-		content() {
-			var list = [],
-				target = trigger.player;
-			if (target.name1 && target.name1.indexOf("gz_shibing") != 0 && _status.characterlist.includes(target.name1)) {
+		async content(event, trigger, player) {
+			const list = [];
+			const target = trigger.player;
+			if (target.name1 && target.name1.indexOf("gz_shibing") !== 0 && _status.characterlist.includes(target.name1)) {
 				list.push(target.name1);
 			}
-			if (target.name2 && target.name2.indexOf("gz_shibing") != 0 && _status.characterlist.includes(target.name1)) {
+			if (target.name2 && target.name2.indexOf("gz_shibing") !== 0 && _status.characterlist.includes(target.name1)) {
 				list.push(target.name2);
 			}
 			_status.characterlist.removeArray(list);
-			if (player == trigger.source) {
+			if (player === trigger.source) {
 				list.addArray(_status.characterlist.randomRemove(2));
 			}
 			if (list.length) {
 				player.markAuto("gzshilu", list);
-				game.log(player, "将", "#g" + get.translation(list), "置于武将牌上作为", "#y“戮”");
+				game.log(player, "将", `#g${get.translation(list)}`, "置于武将牌上作为", "#y“戮”");
 				game.broadcastAll(
-					function (player, list) {
-						var cards = [];
-						for (var i = 0; i < list.length; i++) {
-							var cardname = "huashen_card_" + list[i];
+					(player, list) => {
+						const cards = [];
+						for (const name of list) {
+							const cardname = `huashen_card_${name}`;
 							lib.card[cardname] = {
 								fullimage: true,
-								image: "character:" + list[i],
+								image: `character:${name}`,
 							};
-							lib.translate[cardname] = get.rawName2(list[i]);
+							lib.translate[cardname] = get.rawName2(name);
 							cards.push(game.createCard(cardname, "", ""));
 						}
 						player.$draw(cards, "nobroadcast");
@@ -8521,17 +8521,24 @@ export default {
 				audio: "gzshilu",
 				trigger: { player: "phaseZhunbeiBegin" },
 				filter(event, player) {
-					return player.getStorage("gzshilu").length > 0 && player.countCards("he") > 0;
+					return player.getStorage("gzshilu").length > 0 && player.hasCards("he");
 				},
 				direct: true,
-				content() {
-					"step 0";
-					var num = Math.min(player.getStorage("gzshilu").length, player.countCards("he"));
-					player.chooseToDiscard("he", get.prompt("gzshilu"), "弃置至多" + get.cnNumber(num) + "张牌并摸等量的牌", [1, num]).logSkill = "gzshilu";
-					"step 1";
-					if (result.bool && result.cards && result.cards.length) {
-						player.draw(result.cards.length);
+				async content(event, trigger, player) {
+					const num = Math.min(player.getStorage("gzshilu").length, player.countCards("he"));
+					const result = await player
+						.chooseToDiscard({
+							position: "he",
+							prompt: get.prompt("gzshilu"),
+							prompt2: `弃置至多${get.cnNumber(num)}张牌并摸等量的牌`,
+							selectCard: [1, num],
+						})
+						.set("logSkill", "gzshilu")
+						.forResult();
+					if (!result.bool || !result.cards?.length) {
+						return;
 					}
+					await player.draw(result.cards.length);
 				},
 			},
 		},
