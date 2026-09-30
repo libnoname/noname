@@ -8247,31 +8247,27 @@ export default {
 		preHidden: true,
 		filter(event, player) {
 			return (
-				player.countCards("h") > 0 &&
-				!player.hasCard(function (card) {
+				player.hasCards("h") &&
+				!player.hasCard(card => {
 					return !lib.filter.cardDiscardable(card, player, "gzduannian");
 				}, "h")
 			);
 		},
 		check(event, player) {
 			return (
-				player.countCards("h", function (card) {
-					return get.value(card) >= 6;
-				}) <= Math.max(1, player.countCards("h") / 2)
+				player.countCards("h", card => get.value(card) >= 6) <= Math.max(1, player.countCards("h") / 2)
 			);
 		},
-		content() {
-			"step 0";
-			var cards = player.getCards("h", function (card) {
+		async content(event, trigger, player) {
+			const cards = player.getCards("h", card => {
 				return lib.filter.cardDiscardable(card, player, "gzduannian");
 			});
-			if (cards.length) {
-				player.discard(cards);
-			} else {
-				event.finish();
+			if (!cards.length) {
+				return;
 			}
-			"step 1";
-			player.drawTo(player.maxHp);
+
+			await player.discard({ cards });
+			await player.drawTo(player.maxHp);
 		},
 	},
 	gzlianyou: {
