@@ -8786,35 +8786,23 @@ export default {
 			return player.isMinHandcard();
 		},
 		logTarget(event, player) {
-			var isFriend;
-			if (player.identity == "unknown") {
-				var group = "shu";
+			if (player.identity === "unknown") {
+				let group = "shu";
 				if (!player.wontYe("shu")) {
 					group = null;
 				}
-				isFriend = function (current) {
-					return current == player || current.identity == group;
-				};
-			} else {
-				isFriend = function (target) {
-					return target.isFriendOf(player);
-				};
+				return game.filterPlayer(current => current === player || current.identity === group);
 			}
-			return game.filterPlayer(isFriend);
+			return game.filterPlayer(target => target.isFriendOf(player));
 		},
-		content() {
-			"step 0";
-			var list = game.filterPlayer(function (current) {
-				return current.isFriendOf(player);
-			});
-			if (list.length == 1) {
-				list[0].draw();
-				event.finish();
-			} else {
-				game.asyncDraw(list);
+		async content(event, trigger, player) {
+			const list = game.filterPlayer(current => current.isFriendOf(player));
+			if (list.length === 1) {
+				await list[0].draw();
+				return;
 			}
-			"step 1";
-			game.delayx();
+			await game.asyncDraw(list);
+			await game.delayx();
 		},
 	},
 	gzweimeng: {
