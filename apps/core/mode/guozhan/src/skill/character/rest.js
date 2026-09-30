@@ -8272,25 +8272,24 @@ export default {
 	},
 	gzlianyou: {
 		trigger: { player: "die" },
-		direct: true,
 		forceDie: true,
 		skillAnimation: true,
 		animationColor: "fire",
-		content() {
-			"step 0";
-			player
-				.chooseTarget(lib.filter.notMe, get.prompt("gzlianyou"), "令一名其他角色获得〖兴火〗")
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					filterTarget: lib.filter.notMe,
+					prompt: get.prompt(event.skill),
+					prompt2: "令一名其他角色获得〖兴火〗",
+					ai: target => 10 + get.attitude(_status.event.player, target) * (target.hasSkillTag("fireAttack", null, null, true) ? 2 : 1),
+				})
 				.set("forceDie", true)
-				.set("ai", function (target) {
-					return 10 + get.attitude(_status.event.player, target) * (target.hasSkillTag("fireAttack", null, null, true) ? 2 : 1);
-				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("gzlianyou", target);
-				target.addSkills("gzxinghuo");
-				game.delayx();
-			}
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			await target.addSkills("gzxinghuo");
+			await game.delayx();
 		},
 		derivation: "gzxinghuo",
 	},
