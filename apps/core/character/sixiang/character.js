@@ -115,7 +115,7 @@ const characters = {
 	std_zhangfen: {
 		sex: "male",
 		group: "wu",
-		hp: 3,
+		hp: 4,
 		skills: ["stdwanglu"],
 	},
 	std_zhaoyan: {

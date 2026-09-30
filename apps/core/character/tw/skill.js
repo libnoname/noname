@@ -29803,9 +29803,7 @@ const skills = {
 	//tw疑伏皇后 当当当当当 看精彩纷纷 ☁袁神
 	twmitu: {
 		audio: "sxrmmitu",
-		trigger: {
-			player: "phaseZhunbeiBegin",
-		},
+		trigger: { player: "phaseZhunbeiBegin" },
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget(get.prompt2(event.skill), [1, 3])
@@ -29827,6 +29825,7 @@ const skills = {
 				target.addTempSkill("twmitu_ai", "phaseChange");
 			}
 			for (const target of event.targets) {
+				if (!player.isIn()) return;
 				if (!game.hasPlayer(current => target.canCompare(current))) {
 					continue;
 				}
