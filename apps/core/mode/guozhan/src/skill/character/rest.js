@@ -7799,7 +7799,7 @@ export default {
 		locked: false,
 		mod: {
 			targetInRange(card, player, target) {
-				if (card.name == "sha" && target.countCards("h") < player.countCards("h")) {
+				if (card.name === "sha" && target.countCards("h") < player.countCards("h")) {
 					return true;
 				}
 			},
@@ -7811,47 +7811,52 @@ export default {
 		},
 		trigger: { player: "useCardToPlayered" },
 		filter(event, player) {
-			return event.card.name == "sha" && player.hp <= event.target.hp;
+			return event.card.name === "sha" && player.hp <= event.target.hp;
 		},
-		direct: true,
 		preHidden: true,
-		content() {
-			"step 0";
-			var str = get.translation(trigger.target),
-				card = get.translation(trigger.card);
-			player
-				.chooseControl("cancel2")
-				.set("choiceList", ["令" + card + "对" + str + "的伤害+1", "令" + str + "不能响应" + card])
-				.set("prompt", get.prompt("gzliegong", trigger.target))
+		logTarget: "target",
+		async cost(event, trigger, player) {
+			const target = get.translation(trigger.target);
+			const card = get.translation(trigger.card);
+			const result = await player
+				.chooseControl({
+					controls: ["cancel2"],
+					choiceList: [`令${card}对${target}的伤害+1`, `令${target}不能响应${card}`],
+					prompt: get.prompt("gzliegong", trigger.target),
+					ai: (_event, player) => {
+						const target = _status.event.getTrigger().target;
+						if (get.attitude(player, target) > 0) {
+							return 2;
+						}
+						return target.mayHaveShan(player, "use") ? 1 : 0;
+					},
+				})
 				.setHiddenSkill("gzliegong")
-				.set("ai", function () {
-					var player = _status.event.player,
-						target = _status.event.getTrigger().target;
-					if (get.attitude(player, target) > 0) {
-						return 2;
-					}
-					return target.mayHaveShan(player, "use") ? 1 : 0;
-				});
-			"step 1";
-			if (result.control != "cancel2") {
-				var target = trigger.target;
-				player.logSkill("gzliegong", target);
-				if (result.index == 1) {
-					game.log(trigger.card, "不可被", target, "响应");
-					trigger.directHit.add(target);
-				} else {
-					game.log(trigger.card, "对", target, "的伤害+1");
-					var map = trigger.getParent().customArgs,
-						id = target.playerid;
-					if (!map[id]) {
-						map[id] = {};
-					}
-					if (!map[id].extraDamage) {
-						map[id].extraDamage = 0;
-					}
-					map[id].extraDamage++;
-				}
+				.forResult();
+
+			event.result = {
+				bool: result.control !== "cancel2",
+				cost_data: result.index,
+			};
+		},
+		async content(event, trigger, player) {
+			const target = trigger.target;
+			if (event.cost_data === 1) {
+				game.log(trigger.card, "不可被", target, "响应");
+				trigger.directHit.add(target);
+				return;
 			}
+
+			game.log(trigger.card, "对", target, "的伤害+1");
+			const map = trigger.getParent().customArgs;
+			const id = target.playerid;
+			if (!map[id]) {
+				map[id] = {};
+			}
+			if (!map[id].extraDamage) {
+				map[id].extraDamage = 0;
+			}
+			map[id].extraDamage++;
 		},
 	},
 	//潘凤
