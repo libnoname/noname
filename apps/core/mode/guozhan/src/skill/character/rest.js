@@ -12061,49 +12061,46 @@ export default {
 		noHidden: true,
 		forced: true,
 		filter(event, player) {
-			return player != event.player && !event.player.isFriendOf(player) && !player.inRangeOf(event.player);
+			return player !== event.player && !event.player.isFriendOf(player) && !player.inRangeOf(event.player);
 		},
 		logTarget: "player",
-		content() {
-			"step 0";
-			var target = trigger.player;
+		async content(event, trigger, player) {
+			const target = trigger.player;
 			event.target = target;
-			if (!player.countDiscardableCards(target, "e")) {
-				player.draw();
-				event.finish();
+			if (!player.hasDiscardableCards(target, "e")) {
+				await player.draw();
 				return;
 			}
-			var str = get.translation(player);
-			target
-				.chooseControl()
-				.set("prompt", str + "发动了【礼下】，请选择一项")
-				.set("choiceList", ["令" + str + "摸一张牌", "弃置" + str + "装备区内的一张牌并失去1点体力"])
-				.set("ai", function () {
-					var player = _status.event.player,
-						target = _status.event.getParent().player;
-					if (player.hp <= 1 || get.attitude(player, target) >= 0) {
+			const str = get.translation(player);
+			const result = await target
+				.chooseControl({
+					prompt: `${str}发动了【礼下】，请选择一项`,
+					choiceList: [`令${str}摸一张牌`, `弃置${str}装备区内的一张牌并失去1点体力`],
+					ai: () => {
+						const player = _status.event.player;
+						const target = _status.event.getParent().player;
+						if (player.hp <= 1 || get.attitude(player, target) >= 0) {
+							return 0;
+						}
+						if (target.hasCards("e", card => get.value(card, target) >= 7 - player.hp)) {
+							return 1;
+						}
+						const dist = get.distance(player, target, "attack");
+						if (dist > 1 && dist - target.countCards("e") <= 1) {
+							return true;
+						}
 						return 0;
-					}
-					if (
-						target.countCards("e", function (card) {
-							return get.value(card, target) >= 7 - player.hp;
-						}) > 0
-					) {
-						return 1;
-					}
-					var dist = get.distance(player, target, "attack");
-					if (dist > 1 && dist - target.countCards("e") <= 1) {
-						return true;
-					}
-					return 0;
-				});
-			"step 1";
-			if (result.index == 0) {
-				player.draw();
-			} else {
-				target.discardPlayerCard(player, "e", true);
-				target.loseHp();
+					},
+				})
+				.forResult();
+			if (result.index === 0) {
+				await player.draw();
+				return;
 			}
+			const discard = target.discardPlayerCard({ target: player, position: "e", forced: true });
+			const loseHp = target.loseHp();
+			await discard;
+			await loseHp;
 		},
 	},
 	gzlixia: {
