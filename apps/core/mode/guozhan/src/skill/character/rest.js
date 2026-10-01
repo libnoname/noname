@@ -11434,14 +11434,14 @@ export default {
 	gzxingzhao: {
 		audio: 2,
 		getNum() {
-			var list = [],
-				players = game.filterPlayer();
-			for (var target of players) {
+			const list = [];
+			const players = game.filterPlayer();
+			for (const target of players) {
 				if (target.isUnseen() || target.isHealthy()) {
 					continue;
 				}
-				var add = true;
-				for (var i of list) {
+				let add = true;
+				for (const i of list) {
 					if (i.isFriendOf(target)) {
 						add = false;
 						break;
@@ -11470,39 +11470,40 @@ export default {
 				filter(event, player) {
 					return lib.skill.gzxingzhao.getNum() > 0;
 				},
-				content() {
-					"step 0";
-					var cards = get.cards(4);
-					game.cardsGotoOrdering(cards);
-					var next = player.chooseToMove("恂恂：将两张牌置于牌堆顶", true);
-					next.set("list", [["牌堆顶", cards], ["牌堆底"]]);
-					next.set("filterMove", function (from, to, moved) {
-						if (to == 1 && moved[1].length >= 2) {
+				async content(event, trigger, player) {
+					const cards = get.cards(4);
+					const ordering = game.cardsGotoOrdering(cards);
+					const choice = player.chooseToMove({
+						prompt: "恂恂：将两张牌置于牌堆顶",
+						forced: true,
+						list: [["牌堆顶", cards], ["牌堆底"]],
+						processAI: list => {
+							const cards = list[0][1].slice(0).sort((a, b) => get.value(b) - get.value(a));
+							return [cards, cards.splice(2)];
+						},
+					});
+					choice.set("filterMove", (from, to, moved) => {
+						if (to === 1 && moved[1].length >= 2) {
 							return false;
 						}
 						return true;
 					});
-					next.set("filterOk", function (moved) {
-						return moved[1].length == 2;
-					});
-					next.set("processAI", function (list) {
-						var cards = list[0][1].slice(0).sort(function (a, b) {
-							return get.value(b) - get.value(a);
-						});
-						return [cards, cards.splice(2)];
-					});
-					"step 1";
-					var top = result.moved[0];
-					var bottom = result.moved[1];
+					choice.set("filterOk", moved => moved[1].length === 2);
+					await ordering;
+					const result = await choice.forResult();
+					const top = result.moved[0];
+					const bottom = result.moved[1];
 					top.reverse();
-					game.cardsGotoPile(top.concat(bottom), ["top_cards", top], (event, card) => {
+					const moveToPile = game.cardsGotoPile(top.concat(bottom), ["top_cards", top], (event, card) => {
 						if (event.top_cards.includes(card)) {
 							return ui.cardPile.firstChild;
 						}
 						return null;
 					});
 					game.updateRoundNumber();
-					game.delayx();
+					const delay = game.delayx();
+					await moveToPile;
+					await delay;
 				},
 			},
 			use: {
@@ -11512,11 +11513,11 @@ export default {
 				},
 				forced: true,
 				filter(event, player) {
-					return (event.name == "damage" || get.type(event.card) == "equip") && lib.skill.gzxingzhao.getNum() > 1 && !player.isMaxHandcard();
+					return (event.name === "damage" || get.type(event.card) === "equip") && lib.skill.gzxingzhao.getNum() > 1 && !player.isMaxHandcard();
 				},
 				frequent: true,
-				content() {
-					player.draw();
+				async content(event, trigger, player) {
+					await player.draw();
 				},
 			},
 			draw: {
@@ -11524,17 +11525,17 @@ export default {
 				trigger: { player: "damageEnd" },
 				forced: true,
 				filter(event, player) {
-					return lib.skill.gzxingzhao.getNum() > 1 && event.source && event.source.isAlive() && event.source.countCards("h") != player.countCards("h");
+					return lib.skill.gzxingzhao.getNum() > 1 && event.source && event.source.isAlive() && event.source.countCards("h") !== player.countCards("h");
 				},
 				logTarget(event, player) {
-					var target = event.source;
+					const target = event.source;
 					return target.countCards("h") > player.countCards("h") ? player : target;
 				},
 				check(event, player) {
 					return get.attitude(player, lib.skill.gzxingzhao_draw.logTarget(event, player)) > 0;
 				},
-				content() {
-					lib.skill.gzxingzhao_draw.logTarget(trigger, player).draw();
+				async content(event, trigger, player) {
+					await lib.skill.gzxingzhao_draw.logTarget(trigger, player).draw();
 				},
 			},
 			skip: {
@@ -11544,7 +11545,7 @@ export default {
 				filter() {
 					return lib.skill.gzxingzhao.getNum() > 2;
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.cancel();
 					game.log(player, "跳过了", "#y弃牌阶段");
 				},
@@ -11556,12 +11557,12 @@ export default {
 					global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
 				},
 				filter(event, player) {
-					var evt = event.getl(player);
-					return evt && evt.player == player && evt.es && evt.es.length > 0 && lib.skill.gzxingzhao.getNum() > 3;
+					const evt = event.getl(player);
+					return evt && evt.player === player && evt.es && evt.es.length > 0 && lib.skill.gzxingzhao.getNum() > 3;
 				},
 				forced: true,
-				content() {
-					player.draw();
+				async content(event, trigger, player) {
+					await player.draw();
 				},
 			},
 		},
@@ -11569,7 +11570,7 @@ export default {
 			threaten: 3,
 			effect: {
 				target_use(card, player, target, current) {
-					if (lib.skill.gzxingzhao.getNum() > 3 && get.type(card) == "equip" && !get.cardtag(card, "gifts")) {
+					if (lib.skill.gzxingzhao.getNum() > 3 && get.type(card) === "equip" && !get.cardtag(card, "gifts")) {
 						return [1, 2];
 					}
 				},
