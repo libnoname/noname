@@ -10173,35 +10173,31 @@ export default {
 	gzcongcha: {
 		audio: 2,
 		trigger: { player: "phaseZhunbeiBegin" },
-		direct: true,
 		filter(event, player) {
-			return game.hasPlayer(function (current) {
-				return current != player && current.isUnseen();
-			});
+			return game.hasPlayer(current => current !== player && current.isUnseen());
 		},
 		preHidden: "gzcongcha_draw",
 		prompt2: "选择一名武将牌均暗置的其他角色",
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt2("gzcongcha"), function (card, player, target) {
-					return target != player && target.isUnseen();
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt2(event.skill),
+					filterTarget: (_card, player, target) => target !== player && target.isUnseen(),
+					ai: target => {
+						if (get.attitude(_status.event.player, target) > 0) {
+							return Math.random() + Math.sqrt(target.hp);
+						}
+						return Math.random() + Math.sqrt(Math.max(1, 4 - target.hp));
+					},
 				})
-				.set("ai", function (target) {
-					if (get.attitude(_status.event.player, target) > 0) {
-						return Math.random() + Math.sqrt(target.hp);
-					}
-					return Math.random() + Math.sqrt(Math.max(1, 4 - target.hp));
-				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("gzcongcha", target);
-				player.storage.gzcongcha2 = target;
-				player.addTempSkill("gzcongcha2", { player: "phaseBegin" });
-				target.addSkill("gzcongcha_ai");
-				game.delayx();
-			}
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			player.storage.gzcongcha2 = target;
+			player.addTempSkill("gzcongcha2", { player: "phaseBegin" });
+			target.addSkill("gzcongcha_ai");
+			await game.delayx();
 		},
 		subfrequent: ["draw"],
 		group: "gzcongcha_draw",
@@ -10211,15 +10207,10 @@ export default {
 				trigger: { player: "phaseDrawBegin2" },
 				frequent: true,
 				filter(event, player) {
-					return (
-						!event.numFixed &&
-						!game.hasPlayer(function (current) {
-							return current.isUnseen();
-						})
-					);
+					return !event.numFixed && !game.hasPlayer(current => current.isUnseen());
 				},
 				prompt: "是否发动【聪察】多摸两张牌？",
-				content() {
+				async content(event, trigger, player) {
 					trigger.num += 2;
 				},
 			},
@@ -10234,25 +10225,21 @@ export default {
 				if (_status.brawl) {
 					return false;
 				}
-				var group = lib.character[player.name1][1];
-				if (tag == "mingzhi_yes") {
+				const group = lib.character[player.name1][1];
+				if (tag === "mingzhi_yes") {
 					if (
-						group != "ye" &&
+						group !== "ye" &&
 						player.wontYe(group) &&
-						game.hasPlayer(function (current) {
-							return current.storage.gzcongcha2 == player && current.identity == group;
-						})
+						game.hasPlayer(current => current.storage.gzcongcha2 === player && current.identity === group)
 					) {
 						return true;
 					}
 					return false;
 				}
-				if (group == "ye" && !player.wontYe(group)) {
+				if (group === "ye" && !player.wontYe(group)) {
 					return true;
 				}
-				return game.hasPlayer(function (current) {
-					return current.storage.gzcongcha2 == player && current.identity != group;
-				});
+				return game.hasPlayer(current => current.storage.gzcongcha2 === player && current.identity !== group);
 			},
 		},
 	},
@@ -10262,20 +10249,18 @@ export default {
 		charlotte: true,
 		onremove: true,
 		filter(event, player) {
-			return event.player == player.storage.gzcongcha2;
+			return event.player === player.storage.gzcongcha2;
 		},
 		logTarget: "player",
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.removeSkill("gzcongcha2");
 			trigger.player.removeSkill("gzcongcha_ai");
 			if (player.isFriendOf(trigger.player)) {
-				game.asyncDraw([player, trigger.player].sortBySeat(_status.currentPhase), 2);
+				await game.asyncDraw([player, trigger.player].sortBySeat(_status.currentPhase), 2);
 			} else {
-				trigger.player.loseHp();
+				await trigger.player.loseHp();
 			}
-			"step 1";
-			game.delayx();
+			await game.delayx();
 		},
 		mark: "character",
 		intro: { content: "已指定$为目标" },
