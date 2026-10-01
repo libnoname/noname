@@ -10802,31 +10802,38 @@ export default {
 		trigger: { player: "phaseUseBegin" },
 		forced: true,
 		preHidden: true,
-		content() {
-			"step 0";
-			player.chooseTarget("请选择【雉盗】的目标", "本回合内只能对自己和该角色使用牌，且第一次对其造成伤害时摸一张牌", lib.filter.notMe, true).set("ai", function (target) {
-				var player = _status.event.player;
-				return (1 - get.sgn(get.attitude(player, target))) * Math.max(1, get.distance(player, target));
-			});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.line(target, "green");
-				game.log(player, "选择了", target);
-				player.storage.gzzhidao2 = target;
-				player.addTempSkill("gzzhidao2");
+		async content(event, trigger, player) {
+			const result = await player
+				.chooseTarget({
+					prompt: "请选择【雉盗】的目标",
+					prompt2: "本回合内只能对自己和该角色使用牌，且第一次对其造成伤害时摸一张牌",
+					filterTarget: lib.filter.notMe,
+					forced: true,
+					ai: target => {
+						const currentPlayer = _status.event.player;
+						return (1 - get.sgn(get.attitude(currentPlayer, target))) * Math.max(1, get.distance(currentPlayer, target));
+					},
+				})
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
+			const target = result.targets[0];
+			player.line(target, "green");
+			game.log(player, "选择了", target);
+			player.storage.gzzhidao2 = target;
+			player.addTempSkill("gzzhidao2");
 		},
 	},
 	gzzhidao2: {
 		mod: {
 			playerEnabled(card, player, target) {
-				if (target != player && target != player.storage.gzzhidao2) {
+				if (target !== player && target !== player.storage.gzzhidao2) {
 					return false;
 				}
 			},
 			globalFrom(from, to) {
-				if (to == from.storage.gzzhidao2) {
+				if (to === from.storage.gzzhidao2) {
 					return -Infinity;
 				}
 			},
@@ -10837,18 +10844,22 @@ export default {
 		charlotte: true,
 		filter(event, player) {
 			return (
-				event.player == player.storage.gzzhidao2 &&
+				event.player === player.storage.gzzhidao2 &&
 				player
-					.getHistory("sourceDamage", function (evt) {
-						return evt.player == event.player;
+					.getHistory("sourceDamage", evt => {
+						return evt.player === event.player;
 					})
-					.indexOf(event) == 0 &&
-				event.player.countGainableCards(player, "hej") > 0
+					.indexOf(event) === 0 &&
+				event.player.hasGainableCards(player, "hej")
 			);
 		},
 		logTarget: "player",
-		content() {
-			player.gainPlayerCard(trigger.player, "hej", true);
+		async content(event, trigger, player) {
+			await player.gainPlayerCard({
+				target: trigger.player,
+				position: "hej",
+				forced: true,
+			});
 		},
 	},
 	gzyjili: {
