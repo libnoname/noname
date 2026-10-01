@@ -11303,70 +11303,61 @@ export default {
 		limited: true,
 		preHidden: true,
 		filter(event, player) {
-			return player != event.player;
+			return player !== event.player;
 		},
 		logTarget: "player",
 		skillAnimation: true,
 		animationColor: "orange",
 		check(event, player) {
-			var target = event.player;
+			const target = event.player;
 			if (get.attitude(player, target) >= -3) {
 				return false;
 			}
 			if (
 				event.player.hasJudge("lebu") &&
-				!game.hasPlayer(function (current) {
-					return get.attitude(current, target) > 0 && current.hasWuxie();
-				})
+				!game.hasPlayer(current => get.attitude(current, target) > 0 && current.hasWuxie())
 			) {
 				return false;
 			}
-			var num =
+			const num =
 				Math.min(
 					target.getCardUsable("sha"),
-					target.countCards("h", function (card) {
-						return get.name(card, target) == "sha" && target.hasValueTarget(card);
-					})
+					target.countCards("h", card => get.name(card, target) === "sha" && target.hasValueTarget(card))
 				) +
-				target.countCards("h", function (card) {
-					return get.name(card, target) != "sha" && target.hasValueTarget(card);
-				});
+				target.countCards("h", card => get.name(card, target) !== "sha" && target.hasValueTarget(card));
 			return num >= Math.max(2, target.hp);
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.awakenSkill("gzpozhen");
-			var target = trigger.player;
+			const target = trigger.player;
 			target.addTempSkill("gzpozhen2");
-			var list = game.filterPlayer(function (current) {
-				return current != target && (current.inline(target) || (current == target.getNext().getNext() && current.siege(target.getNext())) || (current == target.getPrevious().getPrevious() && current.siege(target.getPrevious())));
+			const list = game.filterPlayer(current => {
+				return current !== target && (current.inline(target) || (current === target.getNext().getNext() && current.siege(target.getNext())) || (current === target.getPrevious().getPrevious() && current.siege(target.getPrevious())));
 			});
-			if (list.length) {
-				list.add(target);
-				list.sortBySeat(target);
-				event.targets = list;
-			} else {
-				event.finish();
+			if (!list.length) {
+				return;
 			}
-			"step 1";
-			var target = targets.shift();
-			if (target.countDiscardableCards(player, "he") > 0) {
-				player.discardPlayerCard(target, "he", true).boolline = true;
-			}
-			if (targets.length) {
-				event.redo();
+			list.add(target);
+			list.sortBySeat(target);
+			for (const current of list) {
+				if (!current.hasDiscardableCards(player, "he")) {
+					continue;
+				}
+				const discardEvent = player.discardPlayerCard({ target: current, position: "he", forced: true });
+				discardEvent.boolline = true;
+				await discardEvent;
 			}
 		},
 	},
 	gzpozhen2: {
 		mod: {
 			cardEnabled2(card) {
-				if (get.position(card) == "h") {
+				if (get.position(card) === "h") {
 					return false;
 				}
 			},
 			cardRecastable(card) {
-				if (get.position(card) == "h") {
+				if (get.position(card) === "h") {
 					return false;
 				}
 			},
