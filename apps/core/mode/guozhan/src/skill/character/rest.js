@@ -15044,23 +15044,21 @@ export default {
 				},
 				//priority:1,
 				filter(event, player) {
-					return event.skill == "new_longdan_shan" && event.getParent(2).name == "sha";
+					return event.skill === "new_longdan_shan" && event.getParent(2).name === "sha";
 				},
 				direct: true,
-				content() {
-					"step 0";
-					player
-						.chooseTarget("是否发动【龙胆】令一名其他角色回复1点体力？", function (card, player, target) {
-							return target != _status.event.source && target != player && target.isDamaged();
+				async content(event, trigger, player) {
+					const result = await player
+						.chooseTarget({
+							prompt: "是否发动【龙胆】令一名其他角色回复1点体力？",
+							filterTarget: (card, player, target) => target !== _status.event.source && target !== player && target.isDamaged(),
+							ai: target => get.attitude(_status.event.player, target),
 						})
-						.set("ai", function (target) {
-							return get.attitude(_status.event.player, target);
-						})
-						.set("source", trigger.getParent(2).player);
-					"step 1";
+						.set("source", trigger.getParent(2).player)
+						.forResult();
 					if (result.bool && result.targets && result.targets.length) {
 						player.logSkill("new_longdan", result.targets[0]);
-						result.targets[0].recover();
+						await result.targets[0].recover();
 					}
 				},
 			},
@@ -15073,22 +15071,20 @@ export default {
 				},
 				direct: true,
 				filter(event, player) {
-					return event.skill == "new_longdan_sha";
+					return event.skill === "new_longdan_sha";
 				},
-				content() {
-					"step 0";
-					player
-						.chooseTarget("是否发动【龙胆】对一名其他角色造成1点伤害？", function (card, player, target) {
-							return target != _status.event.target && target != player;
+				async content(event, trigger, player) {
+					const result = await player
+						.chooseTarget({
+							prompt: "是否发动【龙胆】对一名其他角色造成1点伤害？",
+							filterTarget: (card, player, target) => target !== _status.event.target && target !== player,
+							ai: target => -get.attitude(_status.event.player, target),
 						})
-						.set("ai", function (target) {
-							return -get.attitude(_status.event.player, target);
-						})
-						.set("target", trigger.target);
-					"step 1";
+						.set("target", trigger.target)
+						.forResult();
 					if (result.bool && result.targets && result.targets.length) {
 						player.logSkill("new_longdan", result.targets[0]);
-						result.targets[0].damage();
+						await result.targets[0].damage();
 					}
 				},
 			},
@@ -15104,10 +15100,10 @@ export default {
 					if (!get.zhu(player, "shouyue")) {
 						return false;
 					}
-					return event.skill == "new_longdan_sha" || event.skill == "new_longdan_shan";
+					return event.skill === "new_longdan_sha" || event.skill === "new_longdan_shan";
 				},
-				content() {
-					player.draw();
+				async content(event, trigger, player) {
+					await player.draw();
 					//player.storage.fanghun2++;
 				},
 				sub: true,
@@ -15124,7 +15120,7 @@ export default {
 				},
 				position: "hs",
 				viewAsFilter(player) {
-					if (!player.countCards("hs", "shan")) {
+					if (!player.hasCards("hs", "shan")) {
 						return false;
 					}
 				},
@@ -15142,7 +15138,7 @@ export default {
 					},
 					respondSha: true,
 					skillTagFilter(player) {
-						if (!player.countCards("hs", "shan")) {
+						if (!player.hasCards("hs", "shan")) {
 							return false;
 						}
 					},
@@ -15168,14 +15164,14 @@ export default {
 					return 1;
 				},
 				viewAsFilter(player) {
-					if (!player.countCards("hs", "sha")) {
+					if (!player.hasCards("hs", "sha")) {
 						return false;
 					}
 				},
 				ai: {
 					respondShan: true,
 					skillTagFilter(player) {
-						if (!player.countCards("hs", "sha")) {
+						if (!player.hasCards("hs", "sha")) {
 							return false;
 						}
 					},
