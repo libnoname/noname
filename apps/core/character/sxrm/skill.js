@@ -4117,9 +4117,7 @@ const skills = {
 	//伏寿
 	sxrmmitu: {
 		audio: 2,
-		trigger: {
-			player: "phaseZhunbeiBegin",
-		},
+		trigger: { player: "phaseZhunbeiBegin" },
 		filter(event, player) {
 			return game.hasPlayer(current => current.isDamaged());
 		},
@@ -4146,6 +4144,7 @@ const skills = {
 				target.addTempSkill("sxrmmitu_ai", "phaseChange");
 			}
 			for (const target of event.targets) {
+				if (!player.isIn()) return;
 				if (!game.hasPlayer(current => target.canCompare(current))) {
 					continue;
 				}

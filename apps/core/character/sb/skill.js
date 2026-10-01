@@ -3215,7 +3215,7 @@ const skills = {
 				})
 				.set("source", target)
 				.forResult();
-			if (typeof result?.control === "string") {
+			if (typeof result?.control === "string" && result.control != "cancel2") {
 				event.result = {
 					bool: true,
 					cost_data: result.control,
@@ -9966,6 +9966,45 @@ const skills = {
 				}
 			}
 			return 6 - get.value(card);
+		},
+		//抄的裴秀
+		prompt(event, player) {
+			if (!game.online) {
+				event.custom ??= {};
+				event.custom.add ??= {};
+				if (!event.custom.add.card?._sbzhiheng) {
+					const addCard = event.custom.add.card;
+					const fn = function () {
+						const evt = get.event();
+						if (evt && evt.skill == "sbzhiheng") {
+							const cards = ui.selected.cards;
+							let num = cards.length;
+							const nums = ["h", "e", "j"].map(pos => player.countCards(pos, card => !cards.includes(card)));
+							const count = {};
+							for (const i of nums) {
+								count[i] = (count[i] || 0) + 1;
+							}
+							if (Math.max(...Object.values(count)) > 1) {
+								num += Math.max(...Object.values(count));
+							}
+							const text = num > 0 && cards.length > 0 ? `<div style="width:100%;text-align:center">将获得${num}张牌</div>` : "弃置任意张牌并摸对应数量的牌";
+							const dialog = evt.skillDialog;
+							if (dialog && get.objtype(dialog) == "div") {
+								const captions = dialog.querySelectorAll(".caption");
+								if (captions.length > 1) {
+									captions[captions.length - 1].innerHTML = text;
+								}
+							}
+						}
+						if (typeof addCard == "function") {
+							addCard.call(this);
+						}
+					};
+					fn._sbzhiheng = true;
+					event.custom.add.card = fn;
+				}
+			}
+			return "弃置任意张牌并摸等量+X张牌（X为你因此弃置牌后牌数相等的区域数且不可为1）";
 		},
 		async content(event, trigger, player) {
 			const discard = player.modedDiscard({ cards: event.cards });
