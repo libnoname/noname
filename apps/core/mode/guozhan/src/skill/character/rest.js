@@ -15513,30 +15513,29 @@ export default {
 		trigger: {
 			player: "damageEnd",
 		},
-		direct: true,
 		preHidden: true,
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt("gzjieming"), "令一名角色将手牌补至X张（X为其体力上限且至多为5）", function (card, player, target) {
-					return true; //target.countCards('h')<Math.min(target.maxHp,5);
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt(event.skill),
+					prompt2: "令一名角色将手牌补至X张（X为其体力上限且至多为5）",
+					filterTarget: () => true,
+					ai: target => {
+						const att = get.attitude(_status.event.player, target);
+						if (att > 2) {
+							return Math.max(0, Math.min(5, target.maxHp) - target.countCards("h"));
+						}
+						return att / 3;
+					},
 				})
-				.set("ai", function (target) {
-					var att = get.attitude(_status.event.player, target);
-					if (att > 2) {
-						return Math.max(0, Math.min(5, target.maxHp) - target.countCards("h"));
-					}
-					return att / 3;
-				})
-				.setHiddenSkill("gzjieming");
-			"step 1";
-			if (result.bool) {
-				player.logSkill("gzjieming", result.targets);
-				for (var i = 0; i < result.targets.length; i++) {
-					var num = Math.min(5, result.targets[i].maxHp) - result.targets[i].countCards("h");
-					if (num > 0) {
-						result.targets[i].draw(num);
-					}
+				.setHiddenSkill(event.skill)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			for (const target of event.targets) {
+				const num = Math.min(5, target.maxHp) - target.countCards("h");
+				if (num > 0) {
+					await target.draw(num);
 				}
 			}
 		},
@@ -15549,11 +15548,11 @@ export default {
 						if (player.hasSkillTag("jueqing", false, target)) {
 							return [1, -2];
 						}
-						var max = 0;
-						var players = game.filterPlayer();
-						for (var i = 0; i < players.length; i++) {
-							if (get.attitude(target, players[i]) > 0) {
-								max = Math.max(Math.min(5, players[i].hp) - players[i].countCards("h"), max);
+						let max = 0;
+						const players = game.filterPlayer();
+						for (const current of players) {
+							if (get.attitude(target, current) > 0) {
+								max = Math.max(Math.min(5, current.hp) - current.countCards("h"), max);
 							}
 						}
 						switch (max) {
@@ -15567,7 +15566,7 @@ export default {
 								return [0, max];
 						}
 					}
-					if ((card.name == "tao" || card.name == "caoyao") && target.hp > 1 && target.countCards("h") <= target.hp) {
+					if ((card.name === "tao" || card.name === "caoyao") && target.hp > 1 && target.countCards("h") <= target.hp) {
 						return [0, 0];
 					}
 				},
