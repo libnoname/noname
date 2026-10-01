@@ -6284,15 +6284,18 @@ const skills = {
 			await player.give(cards, target);
 			const controls = ["摸牌"];
 			if (target.hasCards("he")) controls.push("弃牌");
-			const result = controls.length > 1 ? await player
-				.chooseControl(controls)
-				.set("choiceList", [`令${name}摸${get.cnNumber(round)}张牌`, `令${name}随机弃置${get.cnNumber(round)}张手牌`])
-				.set("prompt", "滤心：请选择一项")
-				.set("ai", () => {
-					return get.event().choice;
-				})
-				.set("choice", get.attitude(player, target) > 0 ? "摸牌" : "弃牌")
-				.forResult() : { control: controls[0] };
+			const result =
+				controls.length > 1
+					? await player
+							.chooseControl(controls)
+							.set("choiceList", [`令${name}摸${get.cnNumber(round)}张牌`, `令${name}随机弃置${get.cnNumber(round)}张手牌`])
+							.set("prompt", "滤心：请选择一项")
+							.set("ai", () => {
+								return get.event().choice;
+							})
+							.set("choice", get.attitude(player, target) > 0 ? "摸牌" : "弃牌")
+							.forResult()
+					: { control: controls[0] };
 			let cards2 = [];
 			const makeDraw = result?.control === "摸牌";
 			if (makeDraw) {
@@ -21617,7 +21620,7 @@ const skills = {
 			if (player === event.player) {
 				return true;
 			}
-			return (event?.targets?.includes(player) || player === event.target) && player.countDiscardableCards(player, "he") > 0;
+			return (event?.targets?.includes(player) || player === event.target) && player.hasDiscardableCards(player, "he");
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
@@ -21661,7 +21664,7 @@ const skills = {
 			}
 			return cards;
 		},
-		group: ["dcshenduan_effect"],
+		group: "dcshenduan_effect",
 		subSkill: {
 			effect: {
 				audio: "dcshenduan",
@@ -21700,16 +21703,7 @@ const skills = {
 				forced: true,
 				locked: false,
 				async content(event, trigger, player) {
-					const targets = [player].concat(event.targets.sortBySeat());
-					for (const target of targets) {
-						const card = lib.skill.dcshenduan.getExtreCard("min");
-						if (card) {
-							game.log(target, "从牌堆获得一张牌");
-							await target.gain(card, "draw");
-						} else {
-							break;
-						}
-					}
+					const targets = event.targets.sortBySeat();
 					const putter = trigger.name === "compareMultiple" ? trigger.winner : trigger.result.winner;
 					if (putter?.isIn()) {
 						const card = trigger.dcshenduan_list?.filter(arr => arr[0] === putter)[0][2];
@@ -21719,28 +21713,30 @@ const skills = {
 						game.log(putter, "将", card, "置于牌堆底");
 						await game.cardsGotoPile(card);
 					}
+					for (const target of targets) {
+						const card = lib.skill.dcshenduan.getExtreCard("min");
+						if (card) {
+							game.log(target, "从牌堆获得一张牌");
+							await target.gain(card, "draw");
+						} else {
+							break;
+						}
+					}
 				},
 			},
 		},
 	},
 	dckegou: {
 		audio: 2,
-		enable: "phaseUse",
-		trigger: { global: "phaseEnd" },
+		trigger: {
+			global: "phaseEnd",
+			player: "phaseUseBegin",
+		},
 		filter(event, player) {
 			if (!game.hasPlayer(target => player.canCompare(target))) {
 				return false;
 			}
-			if (event.name === "chooseToUse") {
-				return !player.hasSkill("dckegou_used");
-			}
-			return _status.currentPhase !== player && (player.hasHistory("useCard") || player.hasHistory("respond"));
-		},
-		async precontent(event, trigger, player) {
-			player.addTempSkill("dckegou_used", "phaseUseAfter");
-		},
-		filterTarget(card, player, target) {
-			return player.canCompare(target);
+			return event.name == "phaseUse" || player.hasHistory("useCard") || player.hasHistory("respond");
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
@@ -21750,42 +21746,41 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
+			let result;
 			while (player.canCompare(target)) {
-				const result = await player.chooseToCompare(target).forResult();
-				if (result.bool) {
-					const cards = lib.skill.dcshenduan.getExtreCard("min", Math.min(3, Math.abs(result.num1 - result.num2)));
+				result = await player.chooseToCompare(target).forResult();
+				if (result?.bool) {
+					const cards = lib.skill.dcshenduan.getExtreCard("min", 2);
 					if (cards.length) {
 						await player.gain(cards, "gain2");
 					}
 					break;
 				} else {
 					if (target.canUse({ name: "sha", isCard: true }, player, false, false)) {
-						await target.useCard(get.autoViewAs({ name: "sha", isCard: true }), player, false);
+						result = await target
+							.chooseBool({
+								prompt: `克构：你可以视为对${get.translation(player)}使用一张【杀】`,
+								ai: () => get.event().goon,
+							})
+							.set("goon", get.effect(player, { name: "sha" }, target, target) > 0)
+							.forResult();
+						if (result?.bool) {
+							await target.useCard(get.autoViewAs({ name: "sha", isCard: true }), player, false);
+						}
 					}
 					if (!player.canCompare(target)) {
 						break;
 					}
-					const result2 = await player
+					result = await player
 						.chooseBool(`克构：是否继续与${get.translation(target)}拼点`)
 						.set("ai", () => get.attitude(get.player(), get.event().target) < 0)
 						.set("target", target)
 						.forResult();
-					if (!result2.bool) {
+					if (!result?.bool) {
 						break;
 					}
 				}
 			}
-		},
-		ai: {
-			order: 5,
-			result: {
-				target: -1,
-			},
-		},
-		subSkill: {
-			used: {
-				charlotte: true,
-			},
 		},
 	},
 	dcdixian: {
@@ -21821,26 +21816,34 @@ const skills = {
 							player.addSkill("dcdixian_effect");
 							player.markAuto("dcdixian_effect", [num]); //用数组存还是考虑到后续重置限定技的问题（）
 						} else {
+							const ej = game.filterPlayer().reduce((list, current) => list.addArray(current.getCards("ej", cardx => get.number(cardx, false) === 13)), []);
 							const discard = Array.from(ui["discardPile"].childNodes).filter(cardx => get.number(cardx, false) === 13);
 							const cards = Array.from(ui["cardPile"].childNodes)
 								.filter(cardx => get.number(cardx, false) === 13)
-								.concat(discard);
+								.concat(discard)
+								.concat(ej);
 							if (cards.length) {
 								//照搬武陆逊的写法，父子在技能代码上也有联系，这很合理吧（）
 								const next = player.gain(cards);
 								next.shown_cards = discard;
+								next.ej_cards = ej;
 								next.set("animate", event => {
 									const player = event.player;
 									const cards = event.cards;
 									const shown = event.shown_cards;
-									if (shown.length < cards.length) {
-										const num = cards.length - shown.length;
+									const ej = event.ej_cards;
+									if (shown.length < cards.length - ej.length) {
+										const num = cards.length - shown.length - ej.length;
 										player.$draw(num);
 										game.log(player, "从牌堆获得了", get.cnNumber(num), "张点数为K的牌");
 									}
 									if (shown.length > 0) {
 										player.$gain2(shown, false);
 										game.log(player, "从弃牌堆获得了", shown);
+									}
+									if (ej.length > 0) {
+										player.$gain2(shown, false);
+										game.log(player, "从场上获得了", ej);
 									}
 									return 500;
 								});
