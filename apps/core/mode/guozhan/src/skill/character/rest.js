@@ -10302,7 +10302,7 @@ export default {
 		derivation: "gzfankui",
 		mod: {
 			targetInRange(card, player, target) {
-				if (player == _status.currentPhase && player.countMark("gzsuzhi_count") < 3 && get.type2(card) == "trick") {
+				if (player === _status.currentPhase && player.countMark("gzsuzhi_count") < 3 && get.type2(card) === "trick") {
 					return true;
 				}
 			},
@@ -10312,8 +10312,8 @@ export default {
 		filter(event, player) {
 			return player.countMark("gzsuzhi_count") < 3;
 		},
-		content() {
-			player.addTempSkills("gzfankui", { player: "phaseBegin" });
+		async content(event, trigger, player) {
+			await player.addTempSkills("gzfankui", { player: "phaseBegin" });
 		},
 		group: ["gzsuzhi_damage", "gzsuzhi_draw", "gzsuzhi_gain"],
 		preHidden: ["gzsuzhi_damage", "gzsuzhi_draw", "gzsuzhi_gain"],
@@ -10323,9 +10323,9 @@ export default {
 				trigger: { source: "damageBegin1" },
 				forced: true,
 				filter(event, player) {
-					return player == _status.currentPhase && player.countMark("gzsuzhi_count") < 3 && event.card && (event.card.name == "sha" || event.card.name == "juedou") && event.getParent().type == "card";
+					return player === _status.currentPhase && player.countMark("gzsuzhi_count") < 3 && event.card && (event.card.name === "sha" || event.card.name === "juedou") && event.getParent().type === "card";
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.num++;
 					player.addTempSkill("gzsuzhi_count");
 					player.addMark("gzsuzhi_count", 1, false);
@@ -10336,12 +10336,13 @@ export default {
 				trigger: { player: "useCard" },
 				forced: true,
 				filter(event, player) {
-					return player == _status.currentPhase && player.countMark("gzsuzhi_count") < 3 && event.card.isCard && get.type2(event.card) == "trick";
+					return player === _status.currentPhase && player.countMark("gzsuzhi_count") < 3 && event.card.isCard && get.type2(event.card) === "trick";
 				},
-				content() {
-					player.draw();
+				async content(event, trigger, player) {
+					const draw = player.draw();
 					player.addTempSkill("gzsuzhi_count");
 					player.addMark("gzsuzhi_count", 1, false);
+					await draw;
 				},
 			},
 			gain: {
@@ -10349,21 +10350,23 @@ export default {
 				trigger: { global: "loseAfter" },
 				forced: true,
 				filter(event, player) {
-					if (player != _status.currentPhase || event.type != "discard" || player == event.player || player.countMark("gzsuzhi_count") >= 3) {
+					if (player !== _status.currentPhase || event.type !== "discard" || player === event.player || player.countMark("gzsuzhi_count") >= 3) {
 						return false;
 					}
-					return event.player.countGainableCards(player, "he") > 0;
+					return event.player.hasGainableCards(player, "he");
 				},
 				logTarget: "player",
-				content() {
-					"step 0";
+				async content(event, trigger, player) {
 					player.addTempSkill("gzsuzhi_count");
 					player.addMark("gzsuzhi_count", 1, false);
-					if (trigger.delay == false) {
-						game.delay();
+					if (trigger.delay === false) {
+						await game.delay();
 					}
-					"step 1";
-					player.gainPlayerCard(trigger.player, "he", true);
+					await player.gainPlayerCard({
+						target: trigger.player,
+						position: "he",
+						forced: true,
+					});
 				},
 			},
 			count: {
