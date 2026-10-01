@@ -14204,11 +14204,7 @@ export default {
 		derivation: ["fz_wusheng", "fz_new_paoxiao", "fz_new_longdan", "fz_new_tieji", "fz_liegong", "fz_xinkuanggu"],
 		ai: {
 			threaten(player, target) {
-				if (
-					game.hasPlayer(function (current) {
-						return current != target && current.isFriendOf(target);
-					})
-				) {
+				if (game.hasPlayer(current => current !== target && current.isFriendOf(target))) {
 					return 1.5;
 				}
 				return 0.5;
@@ -14221,46 +14217,40 @@ export default {
 				enable: "phaseUse",
 				usable: 1,
 				filter(event, player) {
-					return (
-						!player.isUnseen() &&
-						player.countCards("h") > 0 &&
-						game.hasPlayer(function (current) {
-							return current != player && current.hasSkill("gzxuanhuo") && player.isFriendOf(current);
-						})
-					);
+				return !player.isUnseen() && player.hasCards("h") && game.hasPlayer(current => current !== player && current.hasSkill("gzxuanhuo") && player.isFriendOf(current));
 				},
 				prompt: "弃置一张手牌，然后获得以下技能中的一个：〖武圣〗〖咆哮〗〖龙胆〗〖铁骑〗〖烈弓〗〖狂骨〗",
 				position: "h",
 				filterCard: true,
 				check(card) {
-					let player = _status.event.player,
-						shas = player.countCards("h", cardx => {
-							return cardx != card && cardx.name == "sha" && player.hasUseTarget(cardx);
-						}),
-						count = player.getCardUsable("sha"),
-						val = (get.name(card) == "sha" ? 2 : 1) * get.value(card);
+					const player = _status.event.player;
+					const shas = player.countCards("h", cardx => cardx !== card && cardx.name === "sha" && player.hasUseTarget(cardx));
+					const count = player.getCardUsable("sha");
+					const val = (get.name(card) === "sha" ? 2 : 1) * get.value(card);
 					if (!shas || count - shas > 1) {
 						return (player.needsToDiscard() ? 7 : 1) - val;
 					}
 					return 7 - val;
 				},
-				content() {
-					"step 0";
-					var list = ["gz_wusheng", "gz_paoxiao", "gz_longdan", "gz_tieji", "liegong", "xinkuanggu"];
-					player
-						.chooseControl(list)
-						.set("ai", function () {
-							let res = get.event().res;
-							if (list.includes(res)) {
-								return res;
-							}
-							return 0;
+				async content(event, trigger, player) {
+					const list = ["gz_wusheng", "gz_paoxiao", "gz_longdan", "gz_tieji", "liegong", "xinkuanggu"];
+					const result = await player
+						.chooseControl({
+							controls: list,
+							prompt: "选择并获得一项技能直到回合结束",
+							ai: () => {
+								const res = get.event().res;
+								if (list.includes(res)) {
+									return res;
+								}
+								return 0;
+							},
 						})
 						.set(
 							"res",
-							(function () {
-								let shas = player.mayHaveSha(player, "use", null, "count"),
-									count = player.getCardUsable("sha");
+							(() => {
+								const shas = player.mayHaveSha(player, "use", null, "count");
+								const count = player.getCardUsable("sha");
 								if (shas > count) {
 									return "gzpaoxiao";
 								}
@@ -14273,10 +14263,9 @@ export default {
 								return ["new_longdan", "new_tieji", "liegong"].randomGet(); //脑子不够用了
 							})()
 						)
-						.set("prompt", "选择并获得一项技能直到回合结束");
-					"step 1";
+						.forResult();
 					player.popup(result.control);
-					var map = {
+					const map = {
 						gz_wusheng: "fz_wusheng",
 						gz_paoxiao: "fz_new_paoxiao",
 						gz_longdan: "fz_new_longdan",
@@ -14285,8 +14274,8 @@ export default {
 						xinkuanggu: "fz_xinkuanggu",
 					};
 					player.addTempSkill(map[result.control]);
-					game.log(player, "获得了技能", "#g【" + get.translation(result.control) + "】");
-					game.delay();
+					game.log(player, "获得了技能", `#g【${get.translation(result.control)}】`);
+					await game.delay();
 				},
 				// forceaudio:true,
 				// audio:['xuanhuo',2],
