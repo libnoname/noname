@@ -1304,7 +1304,7 @@ const skills = {
 			}
 		},
 		ai: {
-			order: 9,
+			order: 15,
 			result: {
 				player: 1,
 			},

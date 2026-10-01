@@ -653,7 +653,7 @@ const skills = {
 				if (typeof num1 === "number") {
 					return Math.abs(num1 - num2);
 				} else if (typeof num1 === "function") {
-					return Math.abs(num1(card, player) - nmu2);
+					return Math.abs(num1(card, player) - num2);
 				} else {
 					return Math.abs(num1[1] - num2);
 				}

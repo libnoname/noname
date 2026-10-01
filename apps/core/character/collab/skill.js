@@ -1218,7 +1218,7 @@ const skills = {
 				if (current == player) {
 					return false;
 				}
-				return current.hasHistory("useCard", evt => evt.card.name == event.card.name);
+				return current.hasAllHistory("useCard", evt => evt.card.name == event.card.name);
 			});
 			return bool1 || bool2;
 		},
@@ -1231,7 +1231,7 @@ const skills = {
 				if (current == player) {
 					return false;
 				}
-				return current.hasHistory("useCard", evt => evt.card.name == event.card.name);
+				return current.hasAllHistory("useCard", evt => evt.card.name == event.card.name);
 			});
 			if (bool11 && bool2) {
 				num++;
@@ -1253,7 +1253,7 @@ const skills = {
 				if (current == player) {
 					return false;
 				}
-				return current.hasHistory("useCard", evt => evt.card.name == event.card.name);
+				return current.hasAllHistory("useCard", evt => evt.card.name == event.card.name);
 			});
 			if (bool11 && bool2) {
 				num++;
@@ -1277,7 +1277,7 @@ const skills = {
 				if (current == player) {
 					return false;
 				}
-				return current.hasHistory("useCard", evt => evt.card.name == trigger.card.name);
+				return current.hasAllHistory("useCard", evt => evt.card.name == trigger.card.name);
 			});
 			if (bool11 && bool2) {
 				player.popup("乘势");
@@ -1293,7 +1293,7 @@ const skills = {
 				const result = await player
 					.chooseTarget({
 						forced: true,
-						prompt: `抚：对一名角色造成${num}点伤害`,
+						prompt: `抚：对一名角色造成${num}点火焰伤害`,
 						ai(target) {
 							const player = get.player();
 							return get.event().num * get.damageEffect(target, player, player, "fire");

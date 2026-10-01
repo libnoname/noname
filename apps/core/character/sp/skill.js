@@ -3602,6 +3602,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
+				audio: "olbiguo",
 				charlotte: true,
 				trigger: {
 					target: "useCardToTargeted",

@@ -29,7 +29,7 @@ jobs:
 
           git fetch --force --tags origin
 
-          LATEST_TAG="$(git tag -l 'v*' | grep -E '^v[0-9]+([.][0-9]+)*$' | sort -V | tail -n 1)"
+          LATEST_TAG="$(git tag -l 'v*' | grep -E '^v[0-9]+([.][0-9]+){2,}$' | sort -V | tail -n 1)"
           if [[ "$TAG" == "$LATEST_TAG" ]]; then
             IS_LATEST_RELEASE=true
           else
@@ -208,6 +208,8 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
 
       - name: Install Android SDK packages
         shell: bash
