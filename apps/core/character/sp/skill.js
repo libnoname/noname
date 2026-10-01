@@ -27309,7 +27309,7 @@ const skills = {
 				card = get.card(),
 				event = get.event();
 			const num = Math.max(target.getAllHistory("useCard", evt => evt.card.name == "sha").length, 1);
-			if (card.name == "juedou" && target != player && event.skill == "juesheng") {
+			if (card && card.name == "juedou" && target != player && event.skill == "juesheng") {
 				return `决生 ${num}`;
 			}
 		},
