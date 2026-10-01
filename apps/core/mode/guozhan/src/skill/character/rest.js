@@ -9395,34 +9395,33 @@ export default {
 		direct: true,
 		preHidden: true,
 		filter(event, player) {
-			if ((player != event.player && !player.hasSkill("gztongduo")) || !event.player.isFriendOf(player)) {
+			if ((player !== event.player && !player.hasSkill("gztongduo")) || !event.player.isFriendOf(player)) {
 				return false;
 			}
 			return (
-				event.player.getHistory("lose", function (evt) {
-					return evt.type == "discard" && evt.cards2.length > 0 && evt.getParent("phaseDiscard").player == event.player;
+				event.player.getHistory("lose", evt => {
+					return evt.type === "discard" && evt.cards2.length > 0 && evt.getParent("phaseDiscard").player === event.player;
 				}).length > 0
 			);
 		},
-		content() {
-			"step 0";
-			var num = 0;
-			trigger.player.getHistory("lose", function (evt) {
-				if (evt.type == "discard" && evt.getParent("phaseDiscard").player == trigger.player) {
+		async content(event, trigger, player) {
+			let num = 0;
+			trigger.player.getHistory("lose", evt => {
+				if (evt.type === "discard" && evt.getParent("phaseDiscard").player === trigger.player) {
 					num += evt.cards2.length;
 				}
 			});
 			num = Math.min(3, num);
-			event.num = num;
-			var next = trigger.player.chooseBool("是否发动【统度】摸" + get.cnNumber(num) + "张牌？");
-			if (player == trigger.player) {
+			const next = trigger.player.chooseBool({ prompt: `是否发动【统度】摸${get.cnNumber(num)}张牌？` });
+			if (player === trigger.player) {
 				next.setHiddenSkill("gztongduo");
 			}
-			"step 1";
-			if (result.bool) {
-				player.logSkill("gztongduo", trigger.player);
-				trigger.player.draw(num);
+			const result = await next.forResult();
+			if (!result.bool) {
+				return;
 			}
+			player.logSkill("gztongduo", trigger.player);
+			await trigger.player.draw(num);
 		},
 	},
 	qingyin: {
