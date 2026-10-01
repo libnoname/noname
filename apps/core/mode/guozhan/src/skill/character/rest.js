@@ -10462,54 +10462,39 @@ export default {
 			return get.attitude(player, event.player) > 0;
 		},
 		preHidden: true,
-		content() {
-			"step 0";
-			trigger.player.draw();
-			if (
-				player.hasHistory("damage", function (evt) {
-					return evt.card == trigger.card;
-				}) &&
-				game.hasPlayer(function (current) {
-					if (current.hasMark("yinyang_mark") || !current.isFriendOf(player)) {
+		async content(event, trigger, player) {
+			const draw = trigger.player.draw();
+			const canGainMark = current => {
+				if (current.hasMark("yinyang_mark") || !current.isFriendOf(player)) {
+					return false;
+				}
+				const names = get.nameList(current).filter(i => i.indexOf("gz_shibing") !== 0);
+				game.getAllGlobalHistory("everything", evt => {
+					if (evt.name !== "showCharacter" || evt.player !== current) {
 						return false;
 					}
-					let names = get.nameList(current).filter(i => i.indexOf("gz_shibing") !== 0);
-					game.getAllGlobalHistory("everything", evt => {
-						if (evt.name !== "showCharacter" || evt.player !== current) {
-							return false;
-						}
-						names.removeArray(evt.toShow);
-					});
-					return names.length === 0;
-				})
-			) {
-				player
-					.chooseTarget("是否令一名武将牌均明置过的己方角色获得“阴阳鱼”标记？", function (card, player, current) {
-						if (current.hasMark("yinyang_mark") || !current.isFriendOf(player)) {
-							return false;
-						}
-						let names = get.nameList(current).filter(i => i.indexOf("gz_shibing") !== 0);
-						game.getAllGlobalHistory("everything", evt => {
-							if (evt.name !== "showCharacter" || evt.player !== current) {
-								return false;
-							}
-							names.removeArray(evt.toShow);
-						});
-						return names.length === 0;
-					})
-					.set("ai", function (target) {
-						return get.attitude(_status.event.player, target) * Math.sqrt(1 + target.needsToDiscard());
-					});
-			} else {
-				event.finish();
+					names.removeArray(evt.toShow);
+				});
+				return names.length === 0;
+			};
+			if (!player.hasHistory("damage", evt => evt.card === trigger.card) || !game.hasPlayer(canGainMark)) {
+				await draw;
+				return;
 			}
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.line(target, "green");
-				target.addMark("yinyang_mark", 1, false);
-				game.delayx();
+			const choice = player.chooseTarget({
+				prompt: "是否令一名武将牌均明置过的己方角色获得“阴阳鱼”标记？",
+				filterTarget: (_card, _player, current) => canGainMark(current),
+				ai: target => get.attitude(_status.event.player, target) * Math.sqrt(1 + target.needsToDiscard()),
+			});
+			await draw;
+			const result = await choice.forResult();
+			if (!result.bool) {
+				return;
 			}
+			const target = result.targets[0];
+			player.line(target, "green");
+			target.addMark("yinyang_mark", 1, false);
+			await game.delayx();
 		},
 	},
 	gzshicai: {
