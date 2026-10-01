@@ -13900,28 +13900,23 @@ export default {
 		filterCard: true,
 		selectCard: -1,
 		filter(event, player) {
-			return !player.storage.gzfengying && player.countCards("h") > 0;
+			return !player.storage.gzfengying && player.hasCards("h");
 		},
 		filterTarget(card, player, target) {
-			return target == player;
+			return target === player;
 		},
 		selectTarget: -1,
 		discard: false,
 		lose: false,
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
+			const { cards, target } = event;
 			player.awakenSkill("gzfengying");
 			player.storage.gzfengying = true;
-			player.useCard({ name: "xietianzi" }, cards, target);
-			"step 1";
-			var list = game.filterPlayer(function (current) {
-				return current.isFriendOf(player) && current.countCards("h") < current.maxHp;
-			});
+			await player.useCard({ card: { name: "xietianzi" }, cards, targets: [target] });
+			const list = game.filterPlayer(current => current.isFriendOf(player) && current.countCards("h") < current.maxHp);
 			list.sort(lib.sort.seat);
 			player.line(list, "thunder");
-			game.asyncDraw(list, function (current) {
-				return current.maxHp - current.countCards("h");
-			});
+			await game.asyncDraw(list, current => current.maxHp - current.countCards("h"));
 		},
 		skillAnimation: "epic",
 		animationColor: "gray",
@@ -13929,24 +13924,21 @@ export default {
 			order: 0.1,
 			result: {
 				player(player) {
-					var value = 0;
-					var cards = player.getCards("h");
+					let value = 0;
+					const cards = player.getCards("h");
 					if (cards.length >= 4) {
 						return 0;
 					}
-					for (var i = 0; i < cards.length; i++) {
-						value += Math.max(0, get.value(cards[i], player, "raw"));
+					for (const card of cards) {
+						value += Math.max(0, get.value(card, player, "raw"));
 					}
-					var targets = game.filterPlayer(function (current) {
-						return current.isFriendOf(player) && current != player;
-					});
-					var eff = 0;
-					for (var i = 0; i < targets.length; i++) {
-						var num = targets[i].countCards("h") < targets[i].maxHp;
-						if (num <= 0) {
+					const targets = game.filterPlayer(current => current.isFriendOf(player) && current !== player);
+					let eff = 0;
+					for (const target of targets) {
+						if (target.countCards("h") >= target.maxHp) {
 							continue;
 						}
-						eff += num;
+						eff++;
 					}
 					return 5 * eff - value;
 				},
