@@ -14486,11 +14486,11 @@ export default {
 				trigger: { target: "useCardToTargeted" },
 				forced: true,
 				filter(event, player) {
-					return event.card.name == "tao" && event.player != player;
+					return event.card.name === "tao" && event.player !== player;
 				},
 				logTarget: "player",
-				content() {
-					trigger.player.draw();
+				async content(event, trigger, player) {
+					await trigger.player.draw();
 				},
 			},
 			damage: {
@@ -14498,22 +14498,26 @@ export default {
 				trigger: { player: "damageEnd" },
 				forced: true,
 				filter(event, player) {
-					return event.source && event.source != player && event.num > 0;
+					return event.source && event.source !== player && event.num > 0;
 				},
-				content() {
-					"step 0";
+				async content(event, trigger, player) {
 					player.logSkill("enyuan_damage", trigger.source);
-					trigger.source.chooseCard("交给" + get.translation(player) + "一张手牌，或失去1点体力", "h").set("ai", function (card) {
-						if (get.attitude(_status.event.player, _status.event.getParent().player) > 0) {
-							return 11 - get.value(card);
-						}
-						return 7 - get.value(card);
-					});
-					"step 1";
+					const result = await trigger.source
+						.chooseCard({
+							prompt: `交给${get.translation(player)}一张手牌，或失去1点体力`,
+							position: "h",
+							ai: card => {
+								if (get.attitude(_status.event.player, _status.event.getParent().player) > 0) {
+									return 11 - get.value(card);
+								}
+								return 7 - get.value(card);
+							},
+						})
+						.forResult();
 					if (result.bool) {
-						trigger.source.give(result.cards[0], player, "giveAuto");
+						await trigger.source.give(result.cards[0], player, "giveAuto");
 					} else {
-						trigger.source.loseHp();
+						await trigger.source.loseHp();
 					}
 				},
 			},
