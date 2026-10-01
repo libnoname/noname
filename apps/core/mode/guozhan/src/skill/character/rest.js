@@ -9055,7 +9055,6 @@ export default {
 		audio: 2,
 		trigger: { player: "phaseJieshuBegin" },
 		zhenfa: "siege",
-		direct: true,
 		locked: false,
 		filter(event, player) {
 			return (
@@ -9066,45 +9065,41 @@ export default {
 			);
 		},
 		preHidden: true,
-		content() {
-			"step 0";
-			var list = game.filterPlayer(function (current) {
+		async cost(event, trigger, player) {
+			const list = game.filterPlayer(current => {
 				return player.sieged(current) && player.canUse("sha", current, false);
 			});
-			if (player.hasSkill("gzfangyuan")) {
-				if (list.length == 1) {
-					event._result = { bool: true, targets: list };
-				} else {
-					player
-						.chooseTarget(
-							"方圆：视为对一名围攻你的角色使用【杀】",
-							function (card, player, target) {
-								return _status.event.list.includes(target);
-							},
-							true
-						)
-						.set("list", list)
-						.set("ai", function (target) {
-							var player = _status.event.player;
-							return get.effect(target, { name: "sha", isCard: true }, player, player);
-						})
-						.setHiddenSkill("gzfangyuan");
+			const forced = player.hasSkill("gzfangyuan");
+			if (forced) {
+				if (list.length === 1) {
+					event.result = { bool: true, targets: list };
+					return;
 				}
-			} else {
-				player
-					.chooseTarget(get.prompt("gzfangyuan"), "视为对一名围攻你的角色使用【杀】", function (card, player, target) {
-						return _status.event.list.includes(target);
-					})
-					.set("list", list)
-					.set("ai", function (target) {
-						var player = _status.event.player;
-						return get.effect(target, { name: "sha", isCard: true }, player, player);
-					});
 			}
-			"step 1";
-			if (result.bool) {
-				player.useCard({ name: "sha", isCard: true }, result.targets[0], "gzfangyuan", false);
+			const next = player.chooseTarget({
+				selectTarget: 1,
+				prompt: forced ? "方圆：视为对一名围攻你的角色使用【杀】" : get.prompt("gzfangyuan"),
+				prompt2: forced ? undefined : "视为对一名围攻你的角色使用【杀】",
+				forced,
+				filterTarget: (_card, _player, target) => _status.event.list.includes(target),
+				ai: target => {
+					const player = _status.event.player;
+					return get.effect(target, { name: "sha", isCard: true }, player, player);
+				},
+			});
+			next.set("list", list);
+			if (forced) {
+				next.setHiddenSkill("gzfangyuan");
 			}
+			event.result = await next.forResult();
+		},
+		async content(event, trigger, player) {
+			await player.useCard({
+				card: { name: "sha", isCard: true },
+				targets: event.targets,
+				skill: "gzfangyuan",
+				addCount: false,
+			});
 		},
 		global: "gzfangyuan_siege",
 		subSkill: {
