@@ -5287,52 +5287,48 @@ export default {
 		global: "gzbolan_global",
 		enable: "phaseUse",
 		usable: 1,
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			if ((event.num && event.num > 0) || !_status.characterlist.length) {
-				event.finish();
 				return;
 			}
-			var character = _status.characterlist.randomGet();
-			var groups,
-				double = get.is.double(character, true);
-			if (double) {
-				groups = double.slice(0);
-			} else {
-				groups = [lib.character[character][1]];
-			}
-			event.groups = groups;
-			event.videoId = lib.status.videoId++;
+			const character = _status.characterlist.randomGet();
+			const double = get.is.double(character, true);
+			const groups = double ? double.slice(0) : [lib.character[character][1]];
+			const videoId = lib.status.videoId++;
 			game.broadcastAll(
-				function (player, id, character) {
-					ui.create.dialog(get.translation(player) + "发动了【博览】", [[character], "character"]).videoId = id;
+				(player, id, character) => {
+					ui.create.dialog(`${get.translation(player)}发动了【博览】`, [[character], "character"]).videoId = id;
 				},
 				player,
-				event.videoId,
+				videoId,
 				character
 			);
-			game.delay(3);
-			"step 1";
-			game.broadcastAll("closeDialog", event.videoId);
-			var list1 = ["wei", "shu", "wu", "qun", "jin"],
-				list2 = ["gz_qice", "tiaoxin", "gz_zhiheng", "new_chuli", "gzsanchen"];
-			var skills = [];
-			for (var i = 0; i < list1.length; i++) {
-				if (event.groups.includes(list1[i])) {
-					skills.push(list2[i]);
+			await game.delay(3);
+			game.broadcastAll("closeDialog", videoId);
+			const list1 = ["wei", "shu", "wu", "qun", "jin"];
+			const list2 = ["gz_qice", "tiaoxin", "gz_zhiheng", "new_chuli", "gzsanchen"];
+			const skills = [];
+			for (const [index, group] of list1.entries()) {
+				if (groups.includes(group)) {
+					skills.push(list2[index]);
 				}
 			}
 			if (!skills.length) {
-				event.finish();
-			} else if (skills.length == 1) {
-				event._result = { control: skills[0] };
-			} else {
-				player.chooseControl(skills).set("prompt", "选择获得一个技能直到回合结束");
+				return;
 			}
-			"step 2";
-			var skill = result.control;
-			player.addTempSkills(skill);
+			let skill = skills[0];
+			if (skills.length > 1) {
+				const result = await player
+					.chooseControl({
+						controls: skills,
+						prompt: "选择获得一个技能直到回合结束",
+					})
+					.forResult();
+				skill = result.control;
+			}
+			const next = player.addTempSkills(skill);
 			player.popup(skill);
+			await next;
 		},
 		derivation: ["gz_qice", "tiaoxin", "gz_zhiheng", "new_chuli", "gzsanchen"],
 		ai: {
@@ -5345,17 +5341,15 @@ export default {
 				filter(event, player) {
 					return (
 						!player.hasSkill("gzbolan", true) &&
-						game.hasPlayer(function (current) {
-							return current != player && current.hasSkill("gzbolan");
-						})
+						game.hasPlayer(current => current !== player && current.hasSkill("gzbolan"))
 					);
 				},
 				selectTarget: -1,
 				filterTarget(card, player, target) {
-					return target != player && target.hasSkill("gzbolan");
+					return target !== player && target.hasSkill("gzbolan");
 				},
-				contentAfter() {
-					player.loseHp();
+				async contentAfter(event, trigger, player) {
+					await player.loseHp();
 				},
 				ai: {
 					order: 10,
