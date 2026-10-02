@@ -16369,10 +16369,11 @@ export default {
 			markcount: "expansion",
 		},
 		onremove(player, skill) {
-			var cards = player.getExpansions(skill);
-			if (cards.length) {
-				player.loseToDiscardpile(cards);
+			const cards = player.getExpansions(skill);
+			if (!cards.length) {
+				return;
 			}
+			player.loseToDiscardpile({ cards });
 		},
 		ai: {
 			threaten: 1.8,
@@ -16381,75 +16382,75 @@ export default {
 		preHidden: true,
 		subSkill: {
 			add: {
+				audio: "qianhuan",
 				trigger: { global: "damageEnd" },
 				filter(event, player) {
-					var suits = [],
-						cards = player.getExpansions("qianhuan");
-					for (var i = 0; i < cards.length; i++) {
-						suits.add(get.suit(cards[i]));
+					const suits = [];
+					for (const card of player.getExpansions("qianhuan")) {
+						suits.add(get.suit(card));
 					}
 					if (suits.length >= lib.suit.length) {
 						return false;
 					}
 					return (
 						player.isFriendOf(event.player) &&
-						player.hasCard(function (card) {
-							if (_status.connectMode && get.position(card) == "h") {
+						player.hasCard(card => {
+							if (_status.connectMode && get.position(card) === "h") {
 								return true;
 							}
 							return !suits.includes(get.suit(card));
 						}, "he")
 					);
 				},
-				direct: true,
-				content() {
-					"step 0";
-					var suits = [],
-						cards = player.getExpansions("qianhuan");
-					for (var i = 0; i < cards.length; i++) {
-						suits.add(get.suit(cards[i]));
+				async cost(event, trigger, player) {
+					const suits = [];
+					for (const card of player.getExpansions("qianhuan")) {
+						suits.add(get.suit(card));
 					}
-					player
-						.chooseCard("he", get.prompt2("qianhuan"), function (card) {
-							return !_status.event.suits.includes(get.suit(card));
+					event.result = await player
+						.chooseCard({
+							position: "he",
+							prompt: get.prompt2("qianhuan"),
+							filterCard: card => !suits.includes(get.suit(card)),
+							ai: card => 9 - get.value(card),
 						})
-						.set("ai", function (card) {
-							return 9 - get.value(card);
-						})
-						.set("suits", suits)
-						.setHiddenSkill("qianhuan");
-					"step 1";
-					if (result.bool) {
-						player.logSkill("qianhuan");
-						var card = result.cards[0];
-						player.addToExpansion(card, player, "give").gaintag.add("qianhuan");
-					}
+						.setHiddenSkill("qianhuan")
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					const card = event.cards[0];
+					await player.addToExpansion({
+						cards: [card],
+						source: player,
+						animate: "give",
+						gaintag: ["qianhuan"],
+					});
 				},
 			},
 			use: {
+				audio: "qianhuan",
 				trigger: { global: "useCardToTarget" },
 				filter(event, player) {
 					if (!["basic", "trick"].includes(get.type(event.card, "trick"))) {
 						return false;
 					}
-					return event.target && player.isFriendOf(event.target) && event.targets.length == 1 && player.getExpansions("qianhuan").length;
+					return event.target && player.isFriendOf(event.target) && event.targets.length === 1 && player.getExpansions("qianhuan").length;
 				},
-				direct: true,
-				content() {
-					"step 0";
-					var goon = get.effect(trigger.target, trigger.card, trigger.player, player) < 0;
+				logTarget: "player",
+				async cost(event, trigger, player) {
+					let goon = get.effect(trigger.target, trigger.card, trigger.player, player) < 0;
 					if (goon) {
 						if (["tiesuo", "diaohulishan", "lianjunshengyan", "zhibi", "chiling", "lulitongxin"].includes(trigger.card.name)) {
 							goon = false;
-						} else if (trigger.card.name == "sha") {
+						} else if (trigger.card.name === "sha") {
 							if (trigger.target.mayHaveShan(player, "use") || trigger.target.hp >= 3) {
 								goon = false;
 							}
-						} else if (trigger.card.name == "guohe") {
-							if (trigger.target.countCards("he") >= 3 || !trigger.target.countCards("h")) {
+						} else if (trigger.card.name === "guohe") {
+							if (trigger.target.countCards("he") >= 3 || !trigger.target.hasCards("h")) {
 								goon = false;
 							}
-						} else if (trigger.card.name == "shuiyanqijunx") {
+						} else if (trigger.card.name === "shuiyanqijunx") {
 							if (trigger.target.countCards("e") <= 1 || trigger.target.hp >= 3) {
 								goon = false;
 							}
@@ -16457,23 +16458,21 @@ export default {
 							goon = false;
 						}
 					}
-					player
-						.chooseButton()
-						.set("goon", goon)
-						.set("ai", function (button) {
-							if (_status.event.goon) {
-								return 1;
-							}
-							return 0;
+					const result = await player
+						.chooseButton({
+							createDialog: [get.prompt("qianhuan"), `<div class="text center">移去一张“千幻”牌令${get.translation(trigger.player)}对${get.translation(trigger.target)}的${get.translation(trigger.card)}失效</div>`, player.getExpansions("qianhuan")],
+							ai: () => (_status.event.goon ? 1 : 0),
 						})
-						.set("createDialog", [get.prompt("qianhuan"), '<div class="text center">移去一张“千幻”牌令' + get.translation(trigger.player) + "对" + get.translation(trigger.target) + "的" + get.translation(trigger.card) + "失效</div>", player.getExpansions("qianhuan")]);
-					"step 1";
-					if (result.bool) {
-						player.logSkill("qianhuan", trigger.player);
-						trigger.getParent().targets.remove(trigger.target);
-						var card = result.links[0];
-						player.loseToDiscardpile(card);
-					}
+						.set("goon", goon)
+						.forResult();
+					event.result = {
+						bool: result.bool,
+						cost_data: result.links,
+					};
+				},
+				async content(event, trigger, player) {
+					trigger.getParent().targets.remove(trigger.target);
+					await player.loseToDiscardpile({ cards: event.cost_data });
 				},
 			},
 		},
