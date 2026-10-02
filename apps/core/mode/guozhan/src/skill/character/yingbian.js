@@ -4903,17 +4903,16 @@ export default {
 			return !player.getStorage("gzzhaosong").includes("效果②") && game.hasPlayer(current => lib.skill.gzzhaosong.filterTarget(null, player, current));
 		},
 		filterTarget(card, player, target) {
-			return target != player && (target.isUnseen(2) || target.countCards("h") > 0);
+			return target !== player && (target.isUnseen(2) || target.hasCards("h"));
 		},
 		promptfunc: () => "出牌阶段，你可观看一名其他角色的所有暗置武将牌和手牌，然后可以获得其区域内的一张牌。",
-		content() {
+		async content(event, trigger, player) {
+			const { target } = event;
 			player.markAuto("gzzhaosong", ["效果②"]);
-			if (target.isUnseen(2)) {
-				player.viewCharacter(target, 2);
-			}
-			if (target.countCards("hej") > 0) {
-				player.gainPlayerCard(target, "hej", "visible");
-			}
+			const view = target.isUnseen(2) ? player.viewCharacter(target, 2) : null;
+			const gain = target.hasCards("hej") ? player.gainPlayerCard({ target, position: "hej", visible: true }) : null;
+			await view;
+			await gain;
 		},
 		ai: {
 			order: 11,
@@ -4936,65 +4935,64 @@ export default {
 				check(event, player) {
 					return event.player.isFriendOf(player) && get.attitude(player, event.player) > 0;
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.markAuto("gzzhaosong", ["效果①"]);
-					var target = trigger.player,
-						num = 2 - target.hp;
-					if (num > 0) {
-						target.recover(num);
-					}
-					target.draw();
+					const target = trigger.player;
+					const num = 2 - target.hp;
+					const recover = num > 0 ? target.recover(num) : null;
+					const draw = target.draw();
+					await recover;
+					await draw;
 				},
 			},
 			sha: {
 				audio: "zhaosong",
 				trigger: { global: "useCard2" },
-				direct: true,
 				filter(event, player) {
-					if (event.card.name != "sha" || player.getStorage("gzzhaosong").includes("效果③")) {
+					if (event.card.name !== "sha" || player.getStorage("gzzhaosong").includes("效果③")) {
 						return false;
 					}
-					return game.hasPlayer(function (current) {
+					return game.hasPlayer(current => {
 						return !event.targets.includes(current) && lib.filter.filterTarget(event.card, event.player, current);
 					});
 				},
-				content() {
-					"step 0";
-					player
-						.chooseTarget([1, 2], get.prompt("gzzhaosong"), "为" + get.translation(trigger.card) + "增加至多两个目标", function (card, player, target) {
-							var event = _status.event.getTrigger();
-							return !event.targets.includes(target) && lib.filter.filterTarget(event.card, event.player, target);
-						})
-						.set("ai", function (target) {
-							var event = _status.event.getTrigger();
-							return get.effect(target, event.card, event.player, _status.event.player);
+				async cost(event, trigger, player) {
+					const result = await player
+						.chooseTarget({
+							selectTarget: [1, 2],
+							prompt: get.prompt("gzzhaosong"),
+							prompt2: `为${get.translation(trigger.card)}增加至多两个目标`,
+							filterTarget: (card, player, target) => {
+								const trigger = _status.event.getTrigger();
+								return !trigger.targets.includes(target) && lib.filter.filterTarget(trigger.card, trigger.player, target);
+							},
+							ai: target => {
+								const trigger = _status.event.getTrigger();
+								return get.effect(target, trigger.card, trigger.player, _status.event.player);
+							},
 						})
 						.set(
 							"goon",
-							game.countPlayer(function (current) {
+							game.countPlayer(current => {
 								return !trigger.targets.includes(current) && lib.filter.filterTarget(trigger.card, trigger.player, current) && get.effect(current, trigger.card, trigger.player, player) > 0;
 							}) >=
 								Math.min(
 									2,
-									game.countPlayer(function (current) {
+									game.countPlayer(current => {
 										return !trigger.targets.includes(current) && lib.filter.filterTarget(trigger.card, trigger.player, current);
 									})
 								)
 						)
-						.setHiddenSkill("gzzhaosong_sha");
-					"step 1";
-					if (result.bool) {
-						if (!event.isMine() && !event.isOnline()) {
-							game.delayx();
-						}
-					} else {
-						event.finish();
+						.setHiddenSkill(event.skill)
+						.forResult();
+					if (result.bool && !event.isMine() && !event.isOnline()) {
+						await game.delayx();
 					}
-					"step 2";
-					var targets = result.targets;
+					event.result = result;
+				},
+				async content(event, trigger, player) {
 					player.markAuto("gzzhaosong", ["效果③"]);
-					player.logSkill("gzzhaosong_sha", targets);
-					trigger.targets.addArray(targets);
+					trigger.targets.addArray(event.targets);
 				},
 			},
 		},
