@@ -4614,24 +4614,24 @@ export default {
 			return !player.getStorage("fakenaxiang").includes(get.info("fakenaxiang").logTarget(event, player));
 		},
 		logTarget(event, player) {
-			return event.source == player ? event.player : event.source;
+			return event.source === player ? event.player : event.source;
 		},
 		forced: true,
 		async content(event, trigger, player) {
 			const target = get.info("fakenaxiang").logTarget(trigger, player);
 			const { junling, targets } = await player.chooseJunlingFor(target).forResult();
 			const { index } = await target.chooseJunlingControl(player, junling, targets).set("prompt", "纳降：是否执行军令？").forResult();
-			if (index == 0) {
+			if (index === 0) {
 				await target.carryOutJunling(player, junling, targets);
-			} else {
-				if (!player.storage.fakenaxiang) {
-					player.when(["phaseBegin", "die"]).step(async () => {
-						player.unmarkSkill("fakenaxiang");
-						delete player.storage.fakenaxiang;
-					});
-				}
-				player.markAuto("fakenaxiang", [target]);
+				return;
 			}
+			if (!player.storage.fakenaxiang) {
+				player.when(["phaseBegin", "die"]).step(async () => {
+					player.unmarkSkill("fakenaxiang");
+					delete player.storage.fakenaxiang;
+				});
+			}
+			player.markAuto("fakenaxiang", [target]);
 		},
 		onremove: true,
 		marktext: '<span style="text-decoration: line-through;">降</span>',
@@ -4641,12 +4641,12 @@ export default {
 			discard: {
 				trigger: { player: "chooseCardBegin" },
 				filter(event, player) {
-					return event.getParent().name == "yingbianZhuzhan";
+					return event.getParent().name === "yingbianZhuzhan";
 				},
 				forced: true,
 				popup: false,
 				firstDo: true,
-				content() {
+				async content(event, trigger, player) {
 					trigger.filterCard = lib.filter.cardDiscardable;
 				},
 			},
@@ -4656,8 +4656,8 @@ export default {
 					if (event.card.yingbian) {
 						return false;
 					}
-					const temporaryYingbian = event.temporaryYingbian || [],
-						card = event.card;
+					const temporaryYingbian = event.temporaryYingbian || [];
+					const card = event.card;
 					if (temporaryYingbian.includes("force") || get.cardtag(card, "yingbian_force")) {
 						return true;
 					}
@@ -4666,57 +4666,51 @@ export default {
 				forced: true,
 				popup: false,
 				firstDo: true,
-				content() {
-					"step 0";
+				async content(event, trigger, player) {
 					trigger.card.yingbian = true;
-					event.card = trigger.card;
-					event.temporaryYingbian = trigger.temporaryYingbian || [];
-					if (event.temporaryYingbian.includes("force") || get.cardtag(event.card, "yingbian_force") || trigger.forceYingbian || player.hasSkillTag("forceYingbian")) {
+					const card = trigger.card;
+					const temporaryYingbian = trigger.temporaryYingbian || [];
+					if (temporaryYingbian.includes("force") || get.cardtag(card, "yingbian_force") || trigger.forceYingbian || player.hasSkillTag("forceYingbian")) {
 						player.popup("yingbian_force_tag", lib.yingbian.condition.color.get("force"));
-						game.log(player, "触发了", event.card, "的应变条件");
-						event._result = { bool: true };
+						game.log(player, "触发了", card, "的应变条件");
 					} else {
 						trigger.yingbianZhuzhanAI = (player, card, source, targets) => cardx => {
 							if (get.attitude(player, source) <= 0) {
 								return 0;
 							}
-							var info = get.info(card),
-								num = 0;
+							const info = get.info(card);
+							let num = 0;
 							if (info && info.ai && info.ai.yingbian) {
-								var ai = info.ai.yingbian(card, source, targets, player);
+								const ai = info.ai.yingbian(card, source, targets, player);
 								if (ai) {
 									num = ai;
 								}
 							}
 							return Math.max(num, 6) - get.value(cardx);
 						};
-						lib.yingbian.condition.complex.get("zhuzhan")(trigger);
-					}
-					"step 1";
-					if (!result.bool) {
-						return;
-					}
-					var yingbianEffectExecuted = false;
-					lib.yingbian.effect.forEach((value, key) => {
-						if (!event.temporaryYingbian.includes(key) && !get.cardtag(card, `yingbian_${key}`)) {
+						const result = await lib.yingbian.condition.complex.get("zhuzhan")(trigger).forResult();
+						if (!result.bool) {
 							return;
 						}
-						game.yingbianEffect(trigger, value);
-						if (!yingbianEffectExecuted) {
-							yingbianEffectExecuted = true;
+					}
+					const effects = [];
+					for (const [key, value] of lib.yingbian.effect) {
+						if (!temporaryYingbian.includes(key) && !get.cardtag(card, `yingbian_${key}`)) {
+							continue;
 						}
-					});
-					if (!yingbianEffectExecuted) {
-						var defaultYingbianEffect = get.defaultYingbianEffect(card);
+						effects.push(game.yingbianEffect(trigger, value));
+					}
+					if (!effects.length) {
+						const defaultYingbianEffect = get.defaultYingbianEffect(card);
 						if (lib.yingbian.effect.has(defaultYingbianEffect)) {
-							game.yingbianEffect(trigger, lib.yingbian.effect.get(defaultYingbianEffect));
-							if (!yingbianEffectExecuted) {
-								yingbianEffectExecuted = true;
-							}
+							effects.push(game.yingbianEffect(trigger, lib.yingbian.effect.get(defaultYingbianEffect)));
 						}
 					}
-					if (yingbianEffectExecuted) {
+					if (effects.length) {
 						player.addTempSkill("yingbian_changeTarget");
+					}
+					for (const effect of effects) {
+						await effect;
 					}
 				},
 			},
