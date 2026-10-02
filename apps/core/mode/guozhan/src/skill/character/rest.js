@@ -17996,34 +17996,37 @@ export default {
 		},
 		preHidden: true,
 		//frequent:true,
-		direct: true,
 		filter(event, player) {
-			if (event.card.name != "sha") {
+			if (event.card.name !== "sha") {
 				return false;
 			}
-			if (event.name == "useCardToPlayered" && !event.isFirstTarget) {
+			if (event.name === "useCardToPlayered" && !event.isFirstTarget) {
 				return false;
 			}
-			var target = lib.skill.gzyicheng.logTarget(event, player);
-			if (target == player) {
+			const target = lib.skill.gzyicheng.logTarget(event, player);
+			if (target === player) {
 				return true;
 			}
 			return target.inline(player) && target.isAlive() && player.hasSkill("gzyicheng");
 		},
 		logTarget(event, player) {
-			return event.name == "useCardToPlayered" ? event.player : event.target;
+			return event.name === "useCardToPlayered" ? event.player : event.target;
 		},
-		content() {
-			"step 0";
-			var target = lib.skill.gzyicheng.logTarget(trigger, player);
-			event.target = target;
-			target.chooseBool(get.prompt("gzyicheng"), "摸一张牌，然后弃置一张牌").set("frequentSkill", "gzyicheng");
-			"step 1";
-			if (result.bool) {
-				player.logSkill("gzyicheng", target);
-				target.draw();
-				target.chooseToDiscard("he", true);
-			}
+		async cost(event, trigger, player) {
+			const target = lib.skill.gzyicheng.logTarget(trigger, player);
+			event.result = await target
+				.chooseBool({
+					prompt: get.prompt(event.skill),
+					prompt2: "摸一张牌，然后弃置一张牌",
+				})
+				.set("frequentSkill", event.skill)
+				.forResult();
+			event.result.targets = [target];
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			await target.draw();
+			await target.chooseToDiscard({ position: "he", forced: true });
 		},
 	},
 
