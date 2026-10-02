@@ -16573,13 +16573,13 @@ export default {
 		derivation: "gz_zhiheng",
 		filterCard: true,
 		check(card) {
-			if (get.type(card) == "equip") {
+			if (get.type(card) === "equip") {
 				return 0;
 			}
-			var player = _status.event.player;
-			var num =
-				game.countPlayer(function (current) {
-					if (current.identity == "wu") {
+			const player = _status.event.player;
+			const num =
+				game.countPlayer(current => {
+					if (current.identity === "wu") {
 						return current.countCards("e");
 					}
 				}) + player.getExpansions("yuanjiangfenghuotu").length;
@@ -16594,37 +16594,34 @@ export default {
 			}
 			return 0;
 		},
-		content() {
-			"step 0";
-			var num =
-				game.countPlayer(function (current) {
-					if (current.identity == "wu") {
+		async content(event, trigger, player) {
+			const num =
+				game.countPlayer(current => {
+					if (current.identity === "wu") {
 						return current.countCards("e");
 					}
 				}) + player.getExpansions("yuanjiangfenghuotu").length;
-			if (num) {
-				event.shown = get.cards(num);
-				player.showCards(event.shown, get.translation("lianzi"));
-			} else {
-				event.finish();
+			if (!num) {
 				return;
 			}
-			"step 1";
-			var list = [];
-			var discards = [];
-			var type = get.type(cards[0], "trick");
-			for (var i = 0; i < event.shown.length; i++) {
-				if (get.type(event.shown[i], "trick") == type) {
-					list.push(event.shown[i]);
+			const shown = get.cards(num);
+			await player.showCards(shown, get.translation("lianzi"));
+			const list = [];
+			const discards = [];
+			const type = get.type(event.cards[0], "trick");
+			for (const card of shown) {
+				if (get.type(card, "trick") === type) {
+					list.push(card);
 				} else {
-					discards.push(event.shown[i]);
+					discards.push(card);
 				}
 			}
-			game.cardsDiscard(discards);
+			const shouldChangeSkills = list.length >= 3 && player.hasStockSkill("lianzi");
+			await game.cardsDiscard(discards);
 			if (list.length) {
-				player.gain(list, "gain2");
-				if (list.length >= 3 && player.hasStockSkill("lianzi")) {
-					player.changeSkills(["gz_zhiheng"], ["lianzi"]);
+				await player.gain({ cards: list, animate: "gain2" });
+				if (shouldChangeSkills) {
+					await player.changeSkills(["gz_zhiheng"], ["lianzi"]);
 				}
 			}
 		},
