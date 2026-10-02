@@ -16488,13 +16488,11 @@ export default {
 		audio: "zhiman",
 		inherit: "zhiman",
 		preHidden: true,
-		content() {
-			"step 0";
-			if (trigger.player.countGainableCards(player, "ej")) {
-				player.gainPlayerCard(trigger.player, "ej", true);
+		async content(event, trigger, player) {
+			if (trigger.player.hasGainableCards(player, "ej")) {
+				player.gainPlayerCard({ target: trigger.player, position: "ej", forced: true });
 			}
 			trigger.cancel();
-			"step 1";
 			if (player.isFriendOf(trigger.player)) {
 				trigger.player.mayChangeVice();
 			}
