@@ -17489,33 +17489,30 @@ export default {
 			if (!event.filterCard({ name: "sha" })) {
 				return false;
 			}
-			var zhu = get.zhu(player, "hongfa");
+			const zhu = get.zhu(player, "hongfa");
 			if (zhu && zhu.getExpansions("huangjintianbingfu").length > 0) {
 				return true;
 			}
 			return false;
 		},
-		content() {
-			"step 0";
-			var zhu = get.zhu(player, "hongfa");
-			player
-				.chooseCardButton(get.prompt("huangjintianbingfu"), zhu.getExpansions("huangjintianbingfu"))
-				.set("ai", function () {
-					if (_status.event.goon) {
-						return 1;
-					}
-					return 0;
+		async content(event, trigger, player) {
+			const zhu = get.zhu(player, "hongfa");
+			const result = await player
+				.chooseCardButton({
+					prompt: get.prompt("huangjintianbingfu"),
+					cards: zhu.getExpansions("huangjintianbingfu"),
+					ai: () => (_status.event.goon ? 1 : 0),
 				})
-				.set("goon", player.countCards("h", "sha") == 0);
-			"step 1";
-			if (result.bool) {
-				var card = result.links[0];
-				trigger.untrigger();
-				trigger.responded = true;
-				trigger.result = { bool: true, card: { name: "sha" }, cards: [card] };
-				var zhu = get.zhu(player, "hongfa");
-				player.logSkill("hongfa_respond", zhu);
+				.set("goon", !player.hasCards("h", "sha"))
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
+			const card = result.links[0];
+			trigger.untrigger();
+			trigger.responded = true;
+			trigger.result = { bool: true, card: { name: "sha" }, cards: [card] };
+			player.logSkill("hongfa_respond", get.zhu(player, "hongfa"));
 		},
 	},
 	hongfa_use: {
@@ -17526,7 +17523,7 @@ export default {
 			if (!event.filterCard({ name: "sha" }, player)) {
 				return false;
 			}
-			var zhu = get.zhu(player, "hongfa");
+			const zhu = get.zhu(player, "hongfa");
 			if (zhu && zhu.getExpansions("huangjintianbingfu").length > 0) {
 				return true;
 			}
@@ -17534,7 +17531,7 @@ export default {
 		},
 		chooseButton: {
 			dialog(event, player) {
-				var zhu = get.zhu(player, "hongfa");
+				const zhu = get.zhu(player, "hongfa");
 				return ui.create.dialog("黄巾天兵符", zhu.getExpansions("huangjintianbingfu"), "hidden");
 			},
 			backup(links, player) {
@@ -17545,10 +17542,10 @@ export default {
 					selectCard: -1,
 					viewAs: { name: "sha", cards: links },
 					cards: links,
-					precontent() {
-						var cards = lib.skill.hongfa_use_backup.cards;
+					async precontent(event, trigger, player) {
+						const cards = lib.skill.hongfa_use_backup.cards;
 						event.result.cards = cards;
-						player.logSkill("hongfa_use", result.targets);
+						player.logSkill("hongfa_use", event.result.targets);
 					},
 				};
 			},
@@ -17559,7 +17556,7 @@ export default {
 		ai: {
 			respondSha: true,
 			skillTagFilter(player) {
-				var zhu = get.zhu(player, "hongfa");
+				const zhu = get.zhu(player, "hongfa");
 				if (zhu && zhu.getExpansions("huangjintianbingfu").length > 0) {
 					return true;
 				}
@@ -17570,7 +17567,7 @@ export default {
 			},
 			result: {
 				player(player) {
-					if (player.countCards("h", "sha")) {
+					if (player.hasCards("h", "sha")) {
 						return 0;
 					}
 					return 1;
@@ -17591,11 +17588,11 @@ export default {
 			player.markSkill("huangjintianbingfu");
 		},
 		filter(event, player) {
-			return player.getExpansions("huangjintianbingfu").length == 0 && get.population("qun") > 0;
+			return player.getExpansions("huangjintianbingfu").length === 0 && get.population("qun") > 0;
 		},
-		content() {
-			var cards = get.cards(get.population("qun"));
-			player.addToExpansion(cards, "gain2").gaintag.add("huangjintianbingfu");
+		async content(event, trigger, player) {
+			const cards = get.cards(get.population("qun"));
+			await player.addToExpansion({ cards, animate: "gain2", gaintag: ["huangjintianbingfu"] });
 		},
 		ai: {
 			threaten: 2,
@@ -17609,18 +17606,20 @@ export default {
 				filter(event, player) {
 					return player.getExpansions("huangjintianbingfu").length > 0;
 				},
-				direct: true,
-				content() {
-					"step 0";
-					player.chooseCardButton(get.prompt("hongfa"), player.getExpansions("huangjintianbingfu")).set("ai", function () {
-						return 1;
-					});
-					"step 1";
-					if (result.bool) {
-						player.logSkill("hongfa_hp");
-						player.loseToDiscardpile(result.links);
-						trigger.cancel();
-					}
+				async cost(event, trigger, player) {
+					const result = await player
+						.chooseCardButton({
+							prompt: get.prompt("hongfa"),
+							cards: player.getExpansions("huangjintianbingfu"),
+							ai: () => 1,
+						})
+						.forResult();
+					event.result = { bool: result.bool, cards: result.links };
+				},
+				async content(event, trigger, player) {
+					const next = player.loseToDiscardpile({ cards: event.cards });
+					trigger.cancel();
+					await next;
 				},
 			},
 		},
