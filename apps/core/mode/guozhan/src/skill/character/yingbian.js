@@ -5191,18 +5191,16 @@ export default {
 		audio: "sanchen",
 		enable: "phaseUse",
 		filter(event, player) {
-			var stat = player.getStat("sanchen");
-			return game.hasPlayer(function (current) {
-				return !stat || !stat.includes(current);
-			});
+			const stat = player.getStat("sanchen");
+			return game.hasPlayer(current => !stat || !stat.includes(current));
 		},
 		filterTarget(card, player, target) {
-			var stat = player.getStat("sanchen");
+			const stat = player.getStat("sanchen");
 			return !stat || !stat.includes(target);
 		},
 		usable: 1,
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
+			const { target } = event;
 			if (!player._fakesanchen) {
 				player._fakesanchen = true;
 				player.when({ global: "phaseAfter" }).step(async () => {
@@ -5212,42 +5210,36 @@ export default {
 					}
 				});
 			}
-			var stat = player.getStat();
+			const stat = player.getStat();
 			if (!stat.sanchen) {
 				stat.sanchen = [];
 			}
 			stat.sanchen.push(target);
-			target.draw(3);
-			"step 1";
-			if (!target.countCards("he")) {
-				event.finish();
-			} else {
-				target.chooseToDiscard("he", true, 3).set("ai", function (card) {
-					var list = ui.selected.cards.map(function (i) {
-						return get.type2(i);
-					});
-					if (!list.includes(get.type2(card))) {
-						return 7 - get.value(card);
-					}
-					return -get.value(card);
-				});
+			await target.draw(3);
+			if (!target.hasCards("he")) {
+				return;
 			}
-			"step 2";
-			if (result.bool && result.cards && result.cards.length) {
-				var list = [];
-				for (var i of result.cards) {
-					list.add(get.type2(i));
-				}
-				if (list.length == result.cards.length) {
-					target.draw();
-					player.getStat("skill").gzsanchen--;
-					player.addMark("gzsanchen", 1, false);
-				}
-			} else {
-				target.draw();
-				player.getStat("skill").gzsanchen--;
-				player.addMark("gzsanchen", 1, false);
+			const result = await target
+				.chooseToDiscard({
+					position: "he",
+					forced: true,
+					selectCard: 3,
+					ai: card => {
+						const list = ui.selected.cards.map(card => get.type2(card));
+						if (!list.includes(get.type2(card))) {
+							return 7 - get.value(card);
+						}
+						return -get.value(card);
+					},
+				})
+				.forResult();
+			if (result.bool && result.cards?.length && new Set(result.cards.map(card => get.type2(card))).size !== result.cards.length) {
+				return;
 			}
+			const draw = target.draw();
+			player.getStat("skill").gzsanchen--;
+			player.addMark("gzsanchen", 1, false);
+			await draw;
 		},
 		ai: {
 			order: 9,
