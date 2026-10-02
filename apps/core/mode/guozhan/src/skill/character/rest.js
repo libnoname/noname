@@ -18573,62 +18573,62 @@ export default {
 		forced: true,
 		forceDie: true,
 		filter(event, player) {
-			return event.source && event.source.isIn() && event.source != player && (event.source.hasMainCharacter() || event.source.hasViceCharacter());
+			return event.source && event.source.isIn() && event.source !== player && (event.source.hasMainCharacter() || event.source.hasViceCharacter());
 		},
-		content() {
-			"step 0";
-			if (!trigger.source.hasViceCharacter()) {
-				event._result = { control: "主将" };
-			} else if (!trigger.source.hasMainCharacter()) {
-				event._result = { control: "副将" };
+		async content(event, trigger, player) {
+			const source = trigger.source;
+			let control;
+			if (!source.hasViceCharacter()) {
+				control = "主将";
+			} else if (!source.hasMainCharacter()) {
+				control = "副将";
 			} else {
-				player
-					.chooseControl("主将", "副将", function () {
-						return _status.event.choice;
+				let rank = get.guozhanRank(source.name1, source) - get.guozhanRank(source.name2, source);
+				if (rank === 0) {
+					rank = Math.random() > 0.5 ? 1 : -1;
+				}
+				const choice = rank * get.attitude(player, source) > 0 ? "副将" : "主将";
+				const result = await player
+					.chooseControl({
+						controls: ["主将", "副将"],
+						prompt: `令${get.translation(source)}失去一张武将牌的所有技能`,
+						ai: () => _status.event.choice,
 					})
-					.set("prompt", "令" + get.translation(trigger.source) + "失去一张武将牌的所有技能")
 					.set("forceDie", true)
-					.set(
-						"choice",
-						(function () {
-							var rank = get.guozhanRank(trigger.source.name1, trigger.source) - get.guozhanRank(trigger.source.name2, trigger.source);
-							if (rank == 0) {
-								rank = Math.random() > 0.5 ? 1 : -1;
-							}
-							return rank * get.attitude(player, trigger.source) > 0 ? "副将" : "主将";
-						})()
-					);
+					.set("choice", choice)
+					.forResult();
+				control = result.control;
 			}
-			"step 1";
-			var skills;
-			if (result.control == "主将") {
-				trigger.source.showCharacter(0);
-				game.broadcastAll(function (player) {
+			let skills;
+			if (control === "主将") {
+				source.showCharacter(0);
+				game.broadcastAll(player => {
 					player.node.avatar.classList.add("disabled");
-				}, trigger.source);
-				skills = lib.character[trigger.source.name][3];
-				game.log(trigger.source, "失去了主将技能");
+				}, source);
+				skills = lib.character[source.name][3];
+				game.log(source, "失去了主将技能");
 			} else {
-				trigger.source.showCharacter(1);
-				game.broadcastAll(function (player) {
+				source.showCharacter(1);
+				game.broadcastAll(player => {
 					player.node.avatar2.classList.add("disabled");
-				}, trigger.source);
-				skills = lib.character[trigger.source.name2][3];
-				game.log(trigger.source, "失去了副将技能");
+				}, source);
+				skills = lib.character[source.name2][3];
+				game.log(source, "失去了副将技能");
 			}
-			var list = skills.filter(skill => {
+			const list = skills.filter(skill => {
 				const info = get.info(skill);
 				return info && !info.charlotte && !info.persevereSkill;
 			});
-			if (list.length) {
-				trigger.source.removeSkills(list);
+			const next = list.length ? source.removeSkills(list) : null;
+			player.line(source, "green");
+			if (next) {
+				await next;
 			}
-			player.line(trigger.source, "green");
 		},
 		logTarget: "source",
 		ai: {
 			threaten(player, target) {
-				if (target.hp == 1) {
+				if (target.hp === 1) {
 					return 0.2;
 				}
 				return 1.5;
