@@ -2466,6 +2466,7 @@ const skills = {
 				await player.recover();
 				if (player.hasDisabledSlot()) {
 					await player.chooseToEnable();
+					player.changeSkin({ characterName: "v_guanyinping" }, "v_guanyinping_shadow");
 				}
 			}
 		},
@@ -2513,6 +2514,7 @@ const skills = {
 					if (player.hasEnabledSlot()) {
 						await player.chooseToDisable();
 					}
+					player.changeSkin({ characterName: "v_guanyinping" }, "v_guanyinping");
 					if (game.countPlayer(current => current != player && current.hasCards("he"))) {
 						let result = await player
 							.chooseTarget({
