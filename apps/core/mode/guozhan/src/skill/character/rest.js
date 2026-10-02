@@ -16635,7 +16635,7 @@ export default {
 	jubao: {
 		mod: {
 			canBeGained(card, source, player) {
-				if (source != player && get.position(card) == "e" && get.subtype(card) == "equip5") {
+				if (source !== player && get.position(card) === "e" && get.subtype(card) === "equip5") {
 					return false;
 				}
 			},
@@ -16646,33 +16646,24 @@ export default {
 		forced: true,
 		unique: true,
 		filter(event, player) {
-			if (
-				game.hasPlayer(function (current) {
-					return current.countCards("ej", function (card) {
-						return card.name == "dinglanyemingzhu";
-					});
-				})
-			) {
+			if (game.hasPlayer(current => current.hasCards("ej", card => card.name === "dinglanyemingzhu"))) {
 				return true;
 			}
-			for (var i = 0; i < ui.discardPile.childElementCount; i++) {
-				if (ui.discardPile.childNodes[i].name == "dinglanyemingzhu") {
+			for (const card of ui.discardPile.childNodes) {
+				if (card.name === "dinglanyemingzhu") {
 					return true;
 				}
 			}
 			return false;
 		},
-		content() {
-			"step 0";
-			player.draw();
-			"step 1";
-			var target = game.findPlayer(function (current) {
-				return current != player && current.countCards("e", "dinglanyemingzhu");
-			});
-			if (target && target.countGainableCards(player, "he")) {
-				player.line(target, "green");
-				player.gainPlayerCard(target, true);
+		async content(event, trigger, player) {
+			await player.draw();
+			const target = game.findPlayer(current => current !== player && current.hasCards("e", "dinglanyemingzhu"));
+			if (!target || !target.hasGainableCards(player, "he")) {
+				return;
 			}
+			player.line(target, "green");
+			await player.gainPlayerCard({ target, forced: true });
 		},
 		ai: {
 			threaten: 1.5,
