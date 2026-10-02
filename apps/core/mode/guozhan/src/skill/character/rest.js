@@ -17115,49 +17115,42 @@ export default {
 		mark: true,
 		intro: {
 			mark(dialog, storage, player) {
-				if (storage && storage.length) {
-					if (player.isUnderControl(true)) {
-						dialog.addSmall([storage, "character"]);
-						var skills = [];
-						for (var i in player.storage.gzhuashen_map) {
-							skills.addArray(player.storage.gzhuashen_map[i]);
-						}
-						dialog.addText("可用技能：" + (skills.length ? get.translation(skills) : "无"));
-					} else {
-						return "共有" + get.cnNumber(storage.length) + "张“化身”";
-					}
-				} else {
+				if (!storage || !storage.length) {
 					return "没有化身";
 				}
+				if (!player.isUnderControl(true)) {
+					return `共有${get.cnNumber(storage.length)}张“化身”`;
+				}
+				dialog.addSmall([storage, "character"]);
+				const skills = [];
+				for (const name in player.storage.gzhuashen_map) {
+					skills.addArray(player.storage.gzhuashen_map[name]);
+				}
+				dialog.addText(`可用技能：${skills.length ? get.translation(skills) : "无"}`);
 			},
 			content(storage, player) {
-				if (player.isUnderControl(true)) {
-					var skills = [];
-					for (var i in player.storage.gzhuashen_map) {
-						skills.addArray(player.storage.gzhuashen_map[i]);
-					}
-					return get.translation(storage) + "；可用技能：" + (skills.length ? get.translation(skills) : "无");
-				} else {
-					return "共有" + get.cnNumber(storage.length) + "张“化身”";
+				if (!player.isUnderControl(true)) {
+					return `共有${get.cnNumber(storage.length)}张“化身”`;
 				}
+				const skills = [];
+				for (const name in player.storage.gzhuashen_map) {
+					skills.addArray(player.storage.gzhuashen_map[name]);
+				}
+				return `${get.translation(storage)}；可用技能：${skills.length ? get.translation(skills) : "无"}`;
 			},
 		},
 		filterSkill(name) {
-			var skills = lib.character[name][3].slice(0);
-			for (var i = 0; i < skills.length; i++) {
-				var info = lib.skill[skills[i]];
-				if (info.unique || info.limited || info.mainSkill || info.viceSkill || get.is.locked(skills[i])) {
-					skills.splice(i--, 1);
-				}
-			}
-			return skills;
+			return lib.character[name][3].filter(skill => {
+				const info = lib.skill[skill];
+				return !(info.unique || info.limited || info.mainSkill || info.viceSkill || get.is.locked(skill));
+			});
 		},
 		addCharacter(player, name, show) {
-			var skills = lib.skill.gzhuashen.filterSkill(name);
+			const skills = lib.skill.gzhuashen.filterSkill(name);
 			if (skills.length) {
 				player.storage.gzhuashen_map[name] = skills;
-				for (var i = 0; i < skills.length; i++) {
-					player.addAdditionalSkill("hidden:gzhuashen", skills[i], true);
+				for (const skill of skills) {
+					player.addAdditionalSkill("hidden:gzhuashen", skill, true);
 				}
 			}
 			player.storage.gzhuashen.add(name);
@@ -17169,40 +17162,41 @@ export default {
 		},
 		drawCharacter(player, list) {
 			game.broadcastAll(
-				function (player, list) {
-					if (player.isUnderControl(true)) {
-						var cards = [];
-						for (var i = 0; i < list.length; i++) {
-							var cardname = "huashen_card_" + list[i];
-							lib.card[cardname] = {
-								fullimage: true,
-								image: "character:" + list[i],
-							};
-							lib.translate[cardname] = get.rawName2(list[i]);
-							cards.push(game.createCard(cardname, "", ""));
-						}
-						player.$draw(cards, "nobroadcast");
+				(player, list) => {
+					if (!player.isUnderControl(true)) {
+						return;
 					}
+					const cards = [];
+					for (const name of list) {
+						const cardname = `huashen_card_${name}`;
+						lib.card[cardname] = {
+							fullimage: true,
+							image: `character:${name}`,
+						};
+						lib.translate[cardname] = get.rawName2(name);
+						cards.push(game.createCard(cardname, "", ""));
+					}
+					player.$draw(cards, "nobroadcast");
 				},
 				player,
 				list
 			);
 		},
 		removeCharacter(player, name) {
-			var skills = lib.skill.gzhuashen.filterSkill(name);
+			const skills = lib.skill.gzhuashen.filterSkill(name);
 			if (skills.length) {
 				delete player.storage.gzhuashen_map[name];
-				for (var i = 0; i < skills.length; i++) {
-					var remove = true;
-					for (var j in player.storage.gzhuashen_map) {
-						if (j != name && game.expandSkills(player.storage.gzhuashen_map[j].slice(0)).includes(skills[i])) {
+				for (const skill of skills) {
+					let remove = true;
+					for (const source in player.storage.gzhuashen_map) {
+						if (source !== name && game.expandSkills(player.storage.gzhuashen_map[source].slice(0)).includes(skill)) {
 							remove = false;
 							break;
 						}
 					}
 					if (remove) {
-						player.removeAdditionalSkill("hidden:gzhuashen", skills[i]);
-						player.storage.gzhuashen_removing.remove(skills[i]);
+						player.removeAdditionalSkill("hidden:gzhuashen", skill);
+						player.storage.gzhuashen_removing.remove(skill);
 					}
 				}
 			}
@@ -17214,10 +17208,10 @@ export default {
 			if (player.getStockSkills().includes(skill)) {
 				return [];
 			}
-			var sources = [];
-			for (var i in player.storage.gzhuashen_map) {
-				if (game.expandSkills(player.storage.gzhuashen_map[i].slice(0)).includes(skill)) {
-					sources.push(i);
+			const sources = [];
+			for (const name in player.storage.gzhuashen_map) {
+				if (game.expandSkills(player.storage.gzhuashen_map[name].slice(0)).includes(skill)) {
+					sources.push(name);
 				}
 			}
 			return sources;
@@ -17230,29 +17224,28 @@ export default {
 				filter(event, player) {
 					return player.storage.gzhuashen.length < 2;
 				},
-				content() {
-					"step 0";
-					var list = _status.characterlist.randomGets(5);
+				async content(event, trigger, player) {
+					const list = _status.characterlist.randomGets(5);
 					if (!list.length) {
-						event.finish();
 						return;
 					}
-					player
-						.chooseButton([1, 2])
-						.set("ai", function (button) {
-							return get.rank(button.link, true);
+					const result = await player
+						.chooseButton({
+							selectButton: [1, 2],
+							ai: button => get.rank(button.link, true),
+							createDialog: ["选择至多两张武将牌作为“化身”", [list, "character"]],
 						})
-						.set("createDialog", ["选择至多两张武将牌作为“化身”", [list, "character"]]);
-					"step 1";
-					if (result.bool) {
-						for (var i = 0; i < result.links.length; i++) {
-							lib.skill.gzhuashen.addCharacter(player, result.links[i]);
-						}
-						lib.skill.gzhuashen.drawCharacter(player, result.links.slice(0));
-						game.delayx();
-						player.addTempSkill("gzhuashen_triggered");
-						game.log(player, "获得了" + get.cnNumber(result.links.length) + "张", "#g化身");
+						.forResult();
+					if (!result.bool) {
+						return;
 					}
+					for (const name of result.links) {
+						lib.skill.gzhuashen.addCharacter(player, name);
+					}
+					lib.skill.gzhuashen.drawCharacter(player, result.links.slice(0));
+					game.delayx();
+					player.addTempSkill("gzhuashen_triggered");
+					game.log(player, `获得了${get.cnNumber(result.links.length)}张`, "#g化身");
 				},
 			},
 			swap: {
@@ -17264,34 +17257,32 @@ export default {
 					}
 					return player.storage.gzhuashen.length >= 2;
 				},
-				content() {
-					"step 0";
-					var list = player.storage.gzhuashen.slice(0);
+				async content(event, trigger, player) {
+					const list = player.storage.gzhuashen.slice(0);
 					if (!list.length) {
-						event.finish();
 						return;
 					}
-					player
-						.chooseButton()
-						.set("ai", function () {
-							return Math.random() - 0.3;
+					const result = await player
+						.chooseButton({
+							ai: () => Math.random() - 0.3,
+							createDialog: ["是否替换一张“化身”？", [list, "character"]],
 						})
-						.set("createDialog", ["是否替换一张“化身”？", [list, "character"]]);
-					"step 1";
-					if (result.bool) {
-						player.logSkill("gzhuashen");
-						game.log(player, "替换了一张", "#g化身");
-						lib.skill.gzhuashen.addCharacter(player, _status.characterlist.randomGet(), true);
-						lib.skill.gzhuashen.removeCharacter(player, result.links[0]);
-						game.delayx();
+						.forResult();
+					if (!result.bool) {
+						return;
 					}
+					player.logSkill("gzhuashen");
+					game.log(player, "替换了一张", "#g化身");
+					lib.skill.gzhuashen.addCharacter(player, _status.characterlist.randomGet(), true);
+					lib.skill.gzhuashen.removeCharacter(player, result.links[0]);
+					game.delayx();
 				},
 			},
 			triggered: {},
 			flash: {
 				hookTrigger: {
 					log(player, skill) {
-						var sources = lib.skill.gzhuashen.getSkillSources(player, skill);
+						const sources = lib.skill.gzhuashen.getSkillSources(player, skill);
 						if (sources.length) {
 							player.flashAvatar("gzhuashen", sources.randomGet());
 							player.storage.gzhuashen_removing.add(skill);
@@ -17303,23 +17294,22 @@ export default {
 				filter(event, player) {
 					return event.skill && lib.skill.gzhuashen.getSkillSources(player, event.skill).length > 0;
 				},
-				content() {
+				async content(event, trigger, player) {
 					lib.skill.gzhuashen_flash.hookTrigger.log(player, trigger.skill);
 				},
 			},
 			clear: {
 				trigger: { player: "phaseAfter" },
 				silent: true,
-				content() {
+				async content(event, trigger, player) {
 					player.storage.gzhuashen_trigger.length = 0;
 				},
 			},
 			disallow: {
 				hookTrigger: {
 					block(event, player, name, skill) {
-						for (var i = 0; i < player.storage.gzhuashen_trigger.length; i++) {
-							var info = player.storage.gzhuashen_trigger[i];
-							if (info[0] == event && info[1] == name && lib.skill.gzhuashen.getSkillSources(player, skill).length > 0) {
+						for (const info of player.storage.gzhuashen_trigger) {
+							if (info[0] === event && info[1] === name && lib.skill.gzhuashen.getSkillSources(player, skill).length > 0) {
 								return true;
 							}
 						}
@@ -17346,24 +17336,23 @@ export default {
 				filter(event, player) {
 					return event.skill && lib.skill.gzhuashen.getSkillSources(player, event.skill).length > 0;
 				},
-				content() {
-					"step 0";
-					if (trigger.name == "trigger") {
+				async content(event, trigger, player) {
+					if (trigger.name === "trigger") {
 						player.storage.gzhuashen_trigger.push([trigger._trigger, trigger.triggername]);
 					}
-					var sources = lib.skill.gzhuashen.getSkillSources(player, trigger.skill);
-					if (sources.length == 1) {
-						event.directresult = sources[0];
-					} else {
-						player.chooseButton(true).set("createDialog", ["移除一张“化身”牌", [sources, "character"]]);
+					const sources = lib.skill.gzhuashen.getSkillSources(player, trigger.skill);
+					let name = sources[0];
+					if (sources.length !== 1) {
+						const result = await player
+							.chooseButton({
+								forced: true,
+								createDialog: ["移除一张“化身”牌", [sources, "character"]],
+							})
+							.forResult();
+						name = result?.links[0];
 					}
-					"step 1";
-					if (!event.directresult && result && result.links[0]) {
-						event.directresult = result.links[0];
-					}
-					var name = event.directresult;
 					lib.skill.gzhuashen.removeCharacter(player, name);
-					game.log(player, "移除了化身牌", "#g" + get.translation(name));
+					game.log(player, "移除了化身牌", `#g${get.translation(name)}`);
 				},
 			},
 		},
