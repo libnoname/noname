@@ -5038,12 +5038,11 @@ export default {
 		},
 		forced: true,
 		locked: false,
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.storage.gzxuanbei = true;
-			var cards = [];
+			const cards = [];
 			while (cards.length < 2) {
-				var card = get.cardPile2(function (card) {
+				const card = get.cardPile2(card => {
 					if (cards.includes(card)) {
 						return false;
 					}
@@ -5051,17 +5050,17 @@ export default {
 				});
 				if (!card) {
 					break;
-				} else {
-					cards.push(card);
 				}
+				cards.push(card);
 			}
+			const gainEvent = cards.length ? player.gain({ cards: cards.slice(), animate: "gain2" }) : null;
+			const drawEvent = cards.length < 2 ? player.draw(2 - cards.length) : null;
 			if (cards.length) {
-				player.gain(cards, "gain2");
+				await gainEvent;
 			}
 			if (cards.length < 2) {
-				player.draw(2 - cards.length);
+				await drawEvent;
 			}
-			"step 1";
 			player.addTempSkill("gzxuanbei_effect");
 		},
 		group: "gzxuanbei_change",
@@ -5074,8 +5073,8 @@ export default {
 				filter(event, player) {
 					return get.cardtag(event.card, "lianheng");
 				},
-				content() {
-					player.draw();
+				async content(event, trigger, player) {
+					await player.draw();
 				},
 				ai: { forceYingbian: true },
 				mark: true,
@@ -5084,31 +5083,31 @@ export default {
 			change: {
 				audio: "xuanbei",
 				trigger: { player: "die" },
-				direct: true,
 				forceDie: true,
 				skillAnimation: true,
 				animationColor: "thunder",
-				content() {
-					"step 0";
-					player
-						.chooseTarget(get.prompt("gzxuanbei"), "令一名其他角色变更副将", lib.filter.notMe)
+				async cost(event, trigger, player) {
+					event.result = await player
+						.chooseTarget({
+							prompt: get.prompt("gzxuanbei"),
+							prompt2: "令一名其他角色变更副将",
+							filterTarget: lib.filter.notMe,
+							ai: target => {
+								const player = _status.event.player;
+								const rank = get.guozhanRank(target.name2, target) <= 3;
+								const att = get.attitude(player, target);
+								if (att > 0) {
+									return (4 - rank) * att;
+								}
+								return -(rank - 6) * att;
+							},
+						})
 						.set("forceDie", true)
-						.set("ai", function (target) {
-							var player = _status.event.player;
-							var rank = get.guozhanRank(target.name2, target) <= 3;
-							var att = get.attitude(player, target);
-							if (att > 0) {
-								return (4 - rank) * att;
-							}
-							return -(rank - 6) * att;
-						});
-					"step 1";
-					if (result.bool) {
-						var target = result.targets[0];
-						player.logSkill("gzxuanbei_change", target);
-						game.delayx();
-						target.changeVice();
-					}
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					game.delayx();
+					await event.targets[0].changeVice();
 				},
 			},
 		},
