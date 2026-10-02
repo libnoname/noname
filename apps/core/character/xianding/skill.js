@@ -182,8 +182,8 @@ const skills = {
 	//崔芷
 	dcranlv: {
 		audio: 2,
-		init(player) {
-			player.storage["dcranlv"] = [true, true, true];
+		init(player, skill) {
+			player.setStorage(skill, [true, true, true], true);
 		},
 		trigger: { global: "damageEnd" },
 		filter(event, player) {
@@ -199,7 +199,7 @@ const skills = {
 			return !event.hasNature("linked") && num > 0;
 		},
 		async cost(event, trigger, player) {
-			const choiceList = ["横置或重置至多两名角色", "摸两张牌", "弃置一名角色两张牌"];
+			const choiceList = ["横置或重置至多四名角色", "摸三张牌", "弃置一名角色两张牌"];
 			const controls = [];
 			for (const i of [0, 1, 2]) {
 				if (player.getStorage("dcranlv")[i]) {
@@ -208,6 +208,11 @@ const skills = {
 					choiceList[i] = `<span style="text-decoration: line-through;">${choiceList[i]}</span>`;
 				}
 			}
+			if (!game.hasPlayer(current => current.hasDiscardableCards(player, "he"))) {
+				controls.remove("选项三");
+				choiceList[2] = `<span style="text-decoration: line-through;">${choiceList[2]}</span>`;
+			}
+			if (!controls.length) return;
 			controls.push("cancel2");
 			const result = await player
 				.chooseControl({
@@ -222,7 +227,7 @@ const skills = {
 						}
 						if (
 							controls.includes("选项三") &&
-							game.countPlayer(current => {
+							game.hasPlayer(current => {
 								return get.effect(current, { name: "guohe_copy2" }, player, player) && current.hasDiscardableCards(player, "he");
 							})
 						) {
@@ -233,12 +238,14 @@ const skills = {
 				})
 				.set("controls", controls)
 				.forResult();
-			event.result = {
-				bool: result.control !== "cancel2",
-				cost_data: {
-					control: result.control,
-				},
-			};
+			if (typeof result?.control == "string" && result.control != "cancel2") {
+				event.result = {
+					bool: true,
+					cost_data: {
+						control: result.control,
+					},
+				};
+			}
 		},
 		async content(event, trigger, player) {
 			const control = event.cost_data.control;
@@ -247,9 +254,9 @@ const skills = {
 			if (index === 0) {
 				const result = await player
 					.chooseTarget({
-						prompt: "选择横置或重置至多2名角色",
+						prompt: "选择横置或重置至多四名角色",
 						forced: true,
-						selectTarget: [1, 2],
+						selectTarget: [1, 4],
 						ai(target) {
 							const player = get.player();
 							if (player === target) {
@@ -265,20 +272,25 @@ const skills = {
 						},
 					})
 					.forResult();
-				const targets = result.targets.sortBySeat();
-				player.line(targets);
-				for (const i of targets) {
-					await i.link();
+				if (result?.bool && result.targets?.length) {
+					const targets = result.targets.sortBySeat();
+					player.line(targets);
+					for (const i of targets) {
+						await i.link();
+					}
 				}
 			} else if (index === 1) {
-				await player.draw(2);
+				await player.draw(3);
 			} else {
+				if (!game.hasPlayer(current => current.hasDiscardableCards(player, "he"))) {
+					return;
+				}
 				const result = await player
 					.chooseTarget({
 						prompt: "选择一名角色并弃置其两张牌",
 						forced: true,
 						filterTarget(card, player, target) {
-							return target.countDiscardableCards(player, "he");
+							return target.hasDiscardableCards(player, "he");
 						},
 						ai: target => {
 							const player = get.player();
@@ -286,8 +298,10 @@ const skills = {
 						},
 					})
 					.forResult();
-				const target = result.targets[0];
-				await player.discardPlayerCard(target, true, "he", 2);
+				if (result?.bool && result.targets?.length) {
+					const target = result.targets[0];
+					await player.discardPlayerCard({ target, forced: true, position: "he", selectButton: Math.min(2, target.countCards("he")) });
+				}
 			}
 		},
 	},
@@ -299,54 +313,63 @@ const skills = {
 			global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
 		},
 		filter(event, player) {
-			return event.getl?.(player)?.hs?.length > 0 && player.isMinHandcard();
+			return event.getl?.(player)?.hs?.length > 0 && !player.isMaxHandcard();
 		},
 		async content(event, trigger, player) {
 			if (player.hasSkill("dcranlv") && player.storage["dcranlv"]?.length) {
-				player.storage["dcranlv"] = [true, true, true];
+				player.setStorage("dcranlv", [true, true, true], true);
+				game.log(player, `重置了〖${get.translation(event.name)}〗`);
 			}
-			const { bool } = await player
+			const result = await player
 				.chooseBool({
-					prompt: "是否对自己造成一点火焰伤害？",
+					prompt: "绝殉：是否对自己造成一点火焰伤害？",
 					ai() {
 						const player = get.player();
 						return player.hp === 2 && game.hasPlayer(current => current.isLinked() && get.attitude(player, current) < 0);
 					},
 				})
 				.forResult();
-			if (bool) {
+			if (result?.bool) {
 				await player.damage("fire");
-				if (player.isMinHp()) {
+				if (!player.isMaxHp()) {
 					const targets = game.filterPlayer(current => current !== player && current.isLinked());
 					player.line(targets);
+					player.addSkill("dcjuexun_die");
 					targets.forEach(i => {
 						i.addSkill("dcjuexun_eff");
-						i.addMark("dcjuexun_eff", 1);
+						i.addMark("dcjuexun_eff", 1, false);
 					});
 				}
 			}
 		},
-		check: () => true,
 		subSkill: {
+			//十周年结算   死亡后清除加伤效果
+			die: {
+				silent: true,
+				popup: false,
+				charlotte: true,
+				firstDo: true,
+				forceDie: true,
+				trigger: { player: "dieEnd" },
+				async content(event, trigger, player) {
+					game.countPlayer(current => current.removeSkill("dcjuexun_eff"));
+				},
+			},
 			eff: {
 				forced: true,
 				charlotte: true,
 				popup: false,
-				trigger: {
-					player: "damageBegin3",
-				},
+				onremove: true,
+				trigger: { player: "damageBegin3" },
 				filter(event, player) {
-					return event.hasNature("fire") && player.countMark("dcjuexun_eff");
+					return event.hasNature() && player.hasMark("dcjuexun_eff");
 				},
 				async content(event, trigger, player) {
 					trigger.num += player.countMark("dcjuexun_eff");
 					player.removeSkill("dcjuexun_eff");
 				},
 				mark: true,
-				intro: {
-					onremove: true,
-					content: "下次受到的火焰伤害+#",
-				},
+				intro: { content: "下次受到的属性伤害+#" },
 			},
 		},
 	},

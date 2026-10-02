@@ -2463,6 +2463,9 @@ window.noname_character_rank = {
 	],
 	rarity: {
 		legend: [
+			"luwenyi",
+			"cuizhi",
+			"dc_sb_chengpu",
 			"sxrm_caoren",
 			"sxrm_zhaoyun",
 			"sxrm_sunshangxiang",
