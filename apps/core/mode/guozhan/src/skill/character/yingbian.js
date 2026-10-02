@@ -5377,21 +5377,26 @@ export default {
 	gzchoufa: {
 		audio: "choufa",
 		inherit: "choufa",
-		content() {
-			"step 0";
-			player.choosePlayerCard(target, "h", true);
-			"step 1";
-			if (result?.bool && result.cards?.length) {
-				player.showCards(result.cards, get.translation(player) + "对" + get.translation(target) + "发动了【筹伐】");
-				var type = get.type2(result.cards[0], target),
-					hs = target.getCards("h", function (card) {
-						return card != result.cards[0] && get.type2(card, target) != type;
-					});
-				if (hs.length) {
-					target.addGaintag(hs, "xinchoufa");
-					target.addTempSkill("xinchoufa2");
-				}
+		async content(event, trigger, player) {
+			const { target } = event;
+			const result = await player
+				.choosePlayerCard({
+					target,
+					position: "h",
+					forced: true,
+				})
+				.forResult();
+			if (!result?.bool || !result.cards?.length) {
+				return;
 			}
+			const next = player.showCards(result.cards, `${get.translation(player)}对${get.translation(target)}发动了【筹伐】`);
+			const type = get.type2(result.cards[0], target);
+			const hs = target.getCards("h", card => card !== result.cards[0] && get.type2(card, target) !== type);
+			if (hs.length) {
+				target.addGaintag(hs, "xinchoufa");
+				target.addTempSkill("xinchoufa2");
+			}
+			await next;
 		},
 	},
 	//张春华
@@ -5465,29 +5470,40 @@ export default {
 		direct: true,
 		preHidden: true,
 		filter(event, player) {
-			var target = event.player;
-			return target != player && target.isIn() && target.isUnseen(2) && player.countCards("he") > 0 && player.canUse({ name: "sha", nature: "ice" }, target, false);
+			const target = event.player;
+			return target !== player && target.isIn() && target.isUnseen(2) && player.hasCards("he") && player.canUse({ name: "sha", nature: "ice" }, target, false);
 		},
-		content() {
-			"step 0";
-			player
-				.chooseCard("he", get.prompt("gzqingleng", trigger.player), "将一张牌当做冰【杀】对其使用", function (card, player) {
-					return player.canUse(get.autoViewAs({ name: "sha", nature: "ice" }, [card]), _status.event.target, false);
+		async content(event, trigger, player) {
+			const result = await player
+				.chooseCard({
+					position: "he",
+					prompt: get.prompt("gzqingleng", trigger.player),
+					prompt2: "将一张牌当做冰【杀】对其使用",
+					filterCard: (card, player) => player.canUse(get.autoViewAs({ name: "sha", nature: "ice" }, [card]), _status.event.target, false),
+					ai: card => {
+						if (get.effect(_status.event.target, get.autoViewAs({ name: "sha", nature: "ice" }, [card]), player) <= 0) {
+							return false;
+						}
+						return 6 - get.value(card);
+					},
 				})
 				.set("target", trigger.player)
-				.set("ai", function (card) {
-					if (get.effect(_status.event.target, get.autoViewAs({ name: "sha", nature: "ice" }, [card]), player) <= 0) {
-						return false;
-					}
-					return 6 - get.value(card);
-				})
-				.setHiddenSkill(event.name);
-			"step 1";
-			if (result.bool) {
-				player.useCard(get.autoViewAs({ name: "sha", nature: "ice" }, result.cards), result.cards, false, trigger.player, "gzqingleng");
-				if (trigger.player.isUnseen()) {
-					player.draw();
-				}
+				.setHiddenSkill(event.name)
+				.forResult();
+			if (!result.bool) {
+				return;
+			}
+			const next = player.useCard({
+				card: get.autoViewAs({ name: "sha", nature: "ice" }, result.cards),
+				cards: result.cards,
+				addCount: false,
+				targets: [trigger.player],
+				skill: "gzqingleng",
+			});
+			const draw = trigger.player.isUnseen() ? player.draw() : null;
+			await next;
+			if (draw) {
+				await draw;
 			}
 		},
 	},
