@@ -18342,24 +18342,23 @@ export default {
 		filterTarget: true,
 		skillAnimation: true,
 		animationColor: "orange",
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
+			const { target } = event;
 			if (player.checkMainSkill("gzcunsi", false)) {
-				player.removeCharacter(0);
+				await player.removeCharacter(0);
 			} else {
-				player.removeCharacter(1);
+				await player.removeCharacter(1);
 			}
-			"step 1";
-			target.addSkills("gzyongjue");
-			if (target != player) {
-				target.draw(2);
+			await target.addSkills("gzyongjue");
+			if (target !== player) {
+				await target.draw(2);
 			}
 		},
 		ai: {
 			order: 9,
 			result: {
 				player(player, target) {
-					var num = 0;
+					let num = 0;
 					if (player.isDamaged() && target.isFriendOf(player)) {
 						num++;
 						if (target.hasSkill("kanpo")) {
@@ -18383,7 +18382,7 @@ export default {
 						if (target.hasSkill("zhangwu")) {
 							num += 1.5;
 						}
-						if (target != player) {
+						if (target !== player) {
 							num += 0.5;
 						}
 					}
