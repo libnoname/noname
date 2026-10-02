@@ -5516,64 +5516,52 @@ export default {
 			if (player.hasSkill("gzquanbian_blocker")) {
 				return false;
 			}
-			var phase = event.getParent("phaseUse");
-			if (!phase || phase.player != player) {
+			const phase = event.getParent("phaseUse");
+			if (!phase || phase.player !== player) {
 				return false;
 			}
-			var suit = get.suit(event.card);
+			const suit = get.suit(event.card);
 			if (!lib.suit.includes(suit) || !lib.skill.quanbian.hasHand(event)) {
 				return false;
 			}
 			return (
-				player.getHistory("useCard", function (evt) {
-					return evt != event && get.suit(evt.card) == suit && lib.skill.quanbian.hasHand(evt) && evt.getParent("phaseUse") == phase;
-				}).length +
-					player.getHistory("respond", function (evt) {
-						return evt != event && get.suit(evt.card) == suit && lib.skill.quanbian.hasHand(evt) && evt.getParent("phaseUse") == phase;
-					}).length ==
+				player.getHistory("useCard", evt => evt !== event && get.suit(evt.card) === suit && lib.skill.quanbian.hasHand(evt) && evt.getParent("phaseUse") === phase).length +
+					player.getHistory("respond", evt => evt !== event && get.suit(evt.card) === suit && lib.skill.quanbian.hasHand(evt) && evt.getParent("phaseUse") === phase).length ===
 				0
 			);
 		},
-		content() {
-			"step 0";
-			var cards = get.cards(player.maxHp);
-			for (var i = cards.length - 1; i >= 0; i--) {
+		async content(event, trigger, player) {
+			const cards = get.cards(player.maxHp);
+			for (let i = cards.length - 1; i >= 0; i--) {
 				ui.cardPile.insertBefore(cards[i], ui.cardPile.firstChild);
 			}
 			game.updateRoundNumber();
-			player.chooseButton(["权变：选择获得一张牌", cards], true).set("ai", function (button) {
-				var player = _status.event.player,
-					card = button.link;
-				var suit = get.suit(card, false),
-					val = get.value(card);
-				if (
-					player.hasHistory("useCard", function (evt) {
-						return get.suit(evt.card, false) == suit;
-					}) ||
-					player.hasHistory("respond", function (evt) {
-						return get.suit(evt.card, false) == suit;
-					})
-				) {
-					return val;
-				}
-				return val + 8;
-			});
-			"step 1";
-			if (result.bool) {
-				var card = result.links[0];
-				player.gain(card, "gain2");
-				var suit = get.suit(card, false);
-				if (
-					player.hasHistory("useCard", function (evt) {
-						return get.suit(evt.card, false) == suit;
-					}) ||
-					player.hasHistory("respond", function (evt) {
-						return get.suit(evt.card, false) == suit;
-					})
-				) {
-					player.addTempSkill("gzquanbian_blocker");
-				}
+			const result = await player
+				.chooseButton({
+					createDialog: ["权变：选择获得一张牌", cards],
+					forced: true,
+					ai: button => {
+						const player = _status.event.player;
+						const card = button.link;
+						const suit = get.suit(card, false);
+						const val = get.value(card);
+						if (player.hasHistory("useCard", evt => get.suit(evt.card, false) === suit) || player.hasHistory("respond", evt => get.suit(evt.card, false) === suit)) {
+							return val;
+						}
+						return val + 8;
+					},
+				})
+				.forResult();
+			if (!result.bool) {
+				return;
 			}
+			const card = result.links[0];
+			const next = player.gain({ cards: [card], animate: "gain2" });
+			const suit = get.suit(card, false);
+			if (player.hasHistory("useCard", evt => get.suit(evt.card, false) === suit) || player.hasHistory("respond", evt => get.suit(evt.card, false) === suit)) {
+				player.addTempSkill("gzquanbian_blocker");
+			}
+			await next;
 		},
 		subSkill: { blocker: { charlotte: true } },
 	},
