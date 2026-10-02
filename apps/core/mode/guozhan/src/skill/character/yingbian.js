@@ -3591,25 +3591,25 @@ export default {
 	fakeqimei: {
 		audio: "qimei",
 		trigger: { player: "phaseZhunbeiBegin" },
-		direct: true,
 		preHidden: true,
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt("fakeqimei"), "选择一名其他角色并获得“齐眉”效果", lib.filter.notMe)
-				.set("ai", target => {
-					var player = _status.event.player;
-					return get.attitude(player, target) / (Math.abs(player.countCards("h") + 2 - target.countCards("h")) + 1);
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt(event.skill),
+					prompt2: "选择一名其他角色并获得“齐眉”效果",
+					filterTarget: lib.filter.notMe,
+					ai: target => {
+						const player = _status.event.player;
+						return get.attitude(player, target) / (Math.abs(player.countCards("h") + 2 - target.countCards("h")) + 1);
+					},
 				})
-				.setHiddenSkill("fakeqimei");
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("fakeqimei", target);
-				player.addTempSkill("fakeqimei_draw");
-				player.storage.fakeqimei_draw = target;
-				game.delayx();
-			}
+				.setHiddenSkill(event.skill)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			player.addTempSkill("fakeqimei_draw");
+			player.storage.fakeqimei_draw = event.targets[0];
+			await game.delayx();
 		},
 		subSkill: {
 			draw: {
@@ -3621,45 +3621,43 @@ export default {
 					global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "loseAfter", "addToExpansionAfter"],
 				},
 				filter(event, player) {
-					var target = player.storage.fakeqimei_draw;
+					const target = player.storage.fakeqimei_draw;
 					if (!target || !target.isIn()) {
 						return false;
 					}
-					if (player.countCards("h") != target.countCards("h")) {
+					if (player.countCards("h") !== target.countCards("h")) {
 						return false;
 					}
-					var hasChange = function (event, player) {
-						var gain = 0,
-							lose = 0;
+					const hasChange = (event, player) => {
+						let gain = 0;
+						let lose = 0;
 						if (event.getg) {
 							gain = event.getg(player).length;
 						}
 						if (event.getl) {
 							lose = event.getl(player).hs.length;
 						}
-						return gain != lose;
+						return gain !== lose;
 					};
 					return (hasChange(event, player) && target.isDamaged()) || (hasChange(event, target) && player.isDamaged());
 				},
-				content() {
-					"step 0";
+				async content(event, trigger, player) {
 					if (trigger.delay === false) {
-						game.delayx();
+						await game.delayx();
 					}
-					"step 1";
-					var target = player.storage.fakeqimei_draw;
+					const target = player.storage.fakeqimei_draw;
 					player.logSkill("fakeqimei_draw", target);
-					var drawer = [];
-					var hasChange = function (event, player) {
-						var gain = 0,
-							lose = 0;
+					const drawer = [];
+					const hasChange = (event, player) => {
+						let gain = 0;
+						let lose = 0;
 						if (event.getg) {
 							gain = event.getg(player).length;
 						}
 						if (event.getl) {
 							lose = event.getl(player).hs.length;
 						}
-						return gain != lose;
+						return gain !== lose;
 					};
 					if (hasChange(trigger, player)) {
 						drawer.push(target);
@@ -3667,10 +3665,14 @@ export default {
 					if (hasChange(trigger, target)) {
 						drawer.push(player);
 					}
-					for (const i of drawer) {
-						if (i.isDamaged()) {
-							i.recover();
+					const recoveries = [];
+					for (const current of drawer) {
+						if (current.isDamaged()) {
+							recoveries.push(current.recover());
 						}
+					}
+					for (const recovery of recoveries) {
+						await recovery;
 					}
 				},
 				group: "fakeqimei_hp",
@@ -3687,21 +3689,21 @@ export default {
 					return player.storage.fakeqimei_draw;
 				},
 				filter(event, player) {
-					if (event.changedHp == 0) {
+					if (event.changedHp === 0) {
 						return false;
 					}
-					var target = player.storage.fakeqimei_draw;
+					const target = player.storage.fakeqimei_draw;
 					if (!target || !target.isIn()) {
 						return false;
 					}
-					if (player != event.player && target != event.player) {
+					if (player !== event.player && target !== event.player) {
 						return false;
 					}
-					return player.hp == target.hp;
+					return player.hp === target.hp;
 				},
 				async content(event, trigger, player) {
 					await game.delayx();
-					await (player == trigger.player ? player.storage.fakeqimei_draw : player).draw();
+					await (player === trigger.player ? player.storage.fakeqimei_draw : player).draw();
 				},
 			},
 		},
