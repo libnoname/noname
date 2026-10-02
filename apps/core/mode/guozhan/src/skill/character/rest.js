@@ -16289,18 +16289,16 @@ export default {
 		usable: 1,
 		prompt: "将至多三张可合纵的牌交给一名与你势力不同的角色，或未确定势力的角色，若你交给与你势力不同的角色，则你摸等量的牌",
 		filter(event, player) {
-			return player.hasCard(function (card) {
-				return card.hasTag("lianheng") || card.hasGaintag("_lianheng");
-			}, "h");
+			return player.hasCard(card => card.hasTag("lianheng") || card.hasGaintag("_lianheng"), "h");
 		},
 		filterCard(card) {
-			if (get.itemtype(card) != "card") {
+			if (get.itemtype(card) !== "card") {
 				return false;
 			}
 			return card.hasTag("lianheng") || card.hasGaintag("_lianheng");
 		},
 		filterTarget(card, player, target) {
-			if (target == player) {
+			if (target === player) {
 				return false;
 			}
 			if (player.isUnseen()) {
@@ -16309,7 +16307,7 @@ export default {
 			return !target.isFriendOf(player);
 		},
 		check(card) {
-			if (card.name == "tao") {
+			if (card.name === "tao") {
 				return 0;
 			}
 			return 7 - get.value(card);
@@ -16318,12 +16316,11 @@ export default {
 		discard: false,
 		lose: false,
 		delay: false,
-		content() {
-			"step 0";
-			player.give(cards, target);
-			"step 1";
+		async content(event, trigger, player) {
+			const { cards, target } = event;
+			await player.give(cards, target);
 			if (!target.isUnseen()) {
-				player.draw(cards.length);
+				await player.draw(cards.length);
 			}
 		},
 		ai: {
@@ -16332,13 +16329,7 @@ export default {
 			},
 			result: {
 				player(player, target) {
-					var huoshao = false;
-					for (var i = 0; i < ui.selected.cards.length; i++) {
-						if (ui.selected.cards[i].name == "huoshaolianying") {
-							huoshao = true;
-							break;
-						}
-					}
+					const huoshao = ui.selected.cards.some(card => card.name === "huoshaolianying");
 					if (huoshao && player.inline(target.getNext())) {
 						return -3;
 					}
