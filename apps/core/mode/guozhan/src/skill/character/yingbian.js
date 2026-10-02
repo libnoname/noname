@@ -4792,16 +4792,16 @@ export default {
 		trigger: { global: "useCardToTarget" },
 		logTarget: "player",
 		filter(event, player) {
-			return event.card.name == "sha" && event.target.isIn() && event.target.isFriendOf(player);
+			return event.card.name === "sha" && event.target.isIn() && event.target.isFriendOf(player);
 		},
 		preHidden: true,
 		skillAnimation: true,
 		animationColor: "thunder",
 		check(event, player) {
-			var source = event.player,
-				targets = event.targets,
-				card = event.card;
-			for (var target of targets) {
+			const source = event.player;
+			const targets = event.targets;
+			const card = event.card;
+			for (const target of targets) {
 				if (target.hasShan() || get.effect(target, card, source, player) >= 0) {
 					continue;
 				}
@@ -4811,7 +4811,7 @@ export default {
 			}
 			return false;
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.awakenSkill("gzmaihuo");
 			trigger.targets.length = 0;
 			trigger.getParent().triggeredTargets2.length = 0;
@@ -4829,13 +4829,16 @@ export default {
 				filter(event, player) {
 					return player.getStorage("gzmaihuo_effect").includes(event.player) && event.player.canUse("sha", player, false);
 				},
-				content() {
-					"step 0";
-					var target = trigger.player;
+				async content(event, trigger, player) {
+					const target = trigger.player;
 					player.unmarkAuto("gzmaihuo_effect", [target]);
 					target.removeMark("gzmaihuo_mark", 1, false);
-					target.useCard({ name: "sha", isCard: true }, player, "gzmaihuo_effect", false);
-					"step 1";
+					await target.useCard({
+						card: { name: "sha", isCard: true },
+						targets: [player],
+						skill: "gzmaihuo_effect",
+						addCount: false,
+					});
 					if (!player.getStorage("gzmaihuo_effect").length) {
 						player.removeSkill("gzmaihuo_effect");
 					}
@@ -4846,16 +4849,19 @@ export default {
 				trigger: { player: "damageBegin2" },
 				forced: true,
 				filter(event, player) {
-					return event.card && event.card.name == "sha" && event.getParent().skill == "gzmaihuo_effect";
+					return event.card && event.card.name === "sha" && event.getParent().skill === "gzmaihuo_effect";
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.cancel();
-					player.draw(2);
+					const draw = player.draw(2);
+					let change;
 					if (player.checkMainSkill("gzmaihuo", false)) {
-						player.removeCharacter(0);
+						change = player.removeCharacter(0);
 					} else if (player.checkViceSkill("gzmaihuo", false)) {
-						player.changeVice();
+						change = player.changeVice();
 					}
+					await draw;
+					await change;
 				},
 			},
 			mark: {
