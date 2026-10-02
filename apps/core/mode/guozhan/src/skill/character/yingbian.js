@@ -5124,75 +5124,63 @@ export default {
 		check(event, player) {
 			return (
 				player.isDamaged() &&
-				player.hasCard(function (card) {
-					return 5.5 - get.value(card);
-				}, "he")
+				player.hasCard(card => 5.5 - get.value(card), "he")
 			);
 		},
-		content() {
-			"step 0";
-			var list = [],
-				num = 0;
-			if (
-				player.isHealthy() ||
-				!player.hasCard(function (card) {
-					return lib.filter.cardDiscardable(card, player, "gztairan");
-				}, "he")
-			) {
-				num = 1;
+		async content(event, trigger, player) {
+			const list = [];
+			const num = player.isHealthy() || !player.hasCard(card => lib.filter.cardDiscardable(card, player, "gztairan"), "he") ? 1 : 0;
+			for (let i = num; i <= player.hp; i++) {
+				list.push(`${i}点`);
 			}
-			event.num = num;
-			for (var i = num; i <= player.hp; i++) {
-				list.push(i + "点");
-			}
-			player.chooseControl(list).set("prompt", "###请先失去任意点体力###此回合结束时，你将恢复等量的体力");
-			"step 1";
-			var num1 = result.index + num;
-			event.num1 = num1;
+			const result = await player
+				.chooseControl({
+					controls: list,
+					prompt: "###请先失去任意点体力###此回合结束时，你将恢复等量的体力",
+				})
+				.forResult();
+			const num1 = result.index + num;
 			if (num1 > 0) {
-				player.loseHp(num1);
+				await player.loseHp(num1);
 			}
-			"step 2";
-			if (
-				player.isDamaged() &&
-				player.hasCard(function (card) {
-					return lib.filter.cardDiscardable(card, player, "gztairan");
-				}, "he")
-			) {
-				var next = player.chooseToDiscard("he", [1, player.getDamagedHp()], "然后请弃置任意张牌", "此回合结束时，你将摸等量的牌。", "allowChooseAll").set("ai", function (card) {
-					return 5.5 - get.value(card);
-				});
-				if (event.num1 == 0) {
-					next.set("forced", true);
+			let num2 = 0;
+			if (player.isDamaged() && player.hasCard(card => lib.filter.cardDiscardable(card, player, "gztairan"), "he")) {
+				const discardResult = await player
+					.chooseToDiscard({
+						position: "he",
+						selectCard: [1, player.getDamagedHp()],
+						prompt: "然后请弃置任意张牌",
+						prompt2: "此回合结束时，你将摸等量的牌。",
+						allowChooseAll: true,
+						ai: card => 5.5 - get.value(card),
+						forced: num1 === 0,
+					})
+					.forResult();
+				if (discardResult.bool) {
+					num2 = discardResult.cards.length;
 				}
 			}
-			"step 3";
-			var num2 = 0;
-			if (result.bool) {
-				num2 = result.cards.length;
-			}
-			var storage = [event.num1, num2];
 			player.addTempSkill("gztairan_effect");
-			player.storage.gztairan_effect = storage;
+			player.storage.gztairan_effect = [num1, num2];
 		},
 		subSkill: {
 			effect: {
 				audio: "tairan",
 				trigger: { player: "phaseEnd" },
 				filter(event, player) {
-					var storage = player.storage.gztairan_effect;
-					return storage && storage.length == 2 && (storage[1] > 0 || player.isDamaged());
+					const storage = player.storage.gztairan_effect;
+					return storage && storage.length === 2 && (storage[1] > 0 || player.isDamaged());
 				},
 				forced: true,
 				charlotte: true,
 				onremove: true,
-				content() {
-					var storage = player.storage.gztairan_effect;
+				async content(event, trigger, player) {
+					const storage = player.storage.gztairan_effect;
 					if (storage[0] > 0) {
-						player.recover(storage[0]);
+						await player.recover(storage[0]);
 					}
 					if (storage[1] > 0) {
-						player.draw(storage[1]);
+						await player.draw(storage[1]);
 					}
 				},
 			},
