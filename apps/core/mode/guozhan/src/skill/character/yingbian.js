@@ -5005,17 +5005,23 @@ export default {
 		filter(event, player) {
 			return event.player.isFriendOf(player) && player.getStorage("gzzhaosong").length > 0;
 		},
-		direct: true,
-		content() {
-			"step 0";
-			var list = player.getStorage("gzzhaosong").slice(0);
+		async cost(event, trigger, player) {
+			const list = player.getStorage("gzzhaosong").slice(0);
 			list.push("cancel2");
-			player.chooseControl(list).set("prompt", get.prompt("gzlisi")).set("prompt2", "恢复〖诏颂〗的一个已发动的选项");
-			"step 1";
-			if (result.control != "cancel2") {
-				player.logSkill("gzlisi");
-				player.unmarkAuto("gzzhaosong", [result.control]);
-			}
+			const result = await player
+				.chooseControl({
+					controls: list,
+					prompt: get.prompt(event.skill),
+					prompt2: "恢复〖诏颂〗的一个已发动的选项",
+				})
+				.forResult();
+			event.result = {
+				bool: result.control !== "cancel2",
+				cost_data: result.control,
+			};
+		},
+		async content(event, trigger, player) {
+			player.unmarkAuto("gzzhaosong", [event.cost_data]);
 		},
 	},
 	//杨艳
