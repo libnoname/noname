@@ -2425,64 +2425,49 @@ const skills = {
 	dcshaowei: {
 		audio: 2,
 		audioname: ["v_guanyinping_shadow"],
-		forced: true,
-		locked: false,
 		trigger: {
 			player: "loseAfter",
 			global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
 		},
+		usable: 1,
 		filter(event, player) {
 			if (event.name === "gain" && event.player === player) {
 				return false;
 			}
-			const evt = event.getl(player);
+			const evt = event.getl?.(player);
 			if (!evt?.cards2?.length) {
 				return false;
 			}
-			return ["diamond", "heart"].some(suit => {
-				return evt.cards2.some(i => get.suit(i, player) === suit) && !player.getStorage("dcshaowei_used")?.includes(suit);
-			});
+			const suits = evt.cards2
+				.map(card => get.suit(card, player))
+				.filter(suit => ["diamond", "heart"].includes(suit))
+				.unique();
+			if (!player.isDamaged() && !player.hasDisabledSlot()) {
+				suits.remove("heart");
+			}
+			return suits.length;
+		},
+		getIndex(event, player) {
+			const evt = event.getl?.(player);
+			return evt.cards2
+				.map(card => get.suit(card, player))
+				.filter(suit => ["diamond", "heart"].includes(suit))
+				.unique();
+		},
+		prompt2(event, player, name, suit) {
+			if (suit == "diamond") return "你失去♦️牌后，你可以摸两张牌";
+			return "你失去♥️牌后，你可以回复1点体力并恢复一个装备栏";
 		},
 		async content(event, trigger, player) {
-			const evt = trigger.getl(player);
-			if (!evt?.cards2?.length) {
-				return;
-			}
-			const suits = ["diamond", "heart"].filter(suit => {
-				return evt.cards2.some(i => get.suit(i, player) === suit) && !player.getStorage("dcshaowei_used")?.includes(suit);
-			});
-			if (suits.includes("diamond")) {
-				const cardsx = [];
-				while (cardsx.length < 3) {
-					const card = get.cardPile2(i => get.color(i) === "red" && !cardsx.includes(i));
-					if (card) {
-						cardsx.push(card);
-					} else {
-						break;
-					}
-				}
-				if (cardsx.length) {
-					await player.gain(cardsx, "draw");
-				}
-				player.addTempSkill("dcshaowei_used");
-				player.markAuto("dcshaowei_used", ["diamond"]);
-			}
-			if (suits.includes("heart")) {
+			const suit = event.indexedData;
+			if (suit == "diamond") {
+				await player.draw(2);
+			} else {
 				await player.recover();
 				if (player.hasDisabledSlot()) {
 					await player.chooseToEnable();
 				}
-				player.addTempSkill("dcshaowei_used");
-				player.markAuto("dcshaowei_used", ["heart"]);
 			}
-		},
-		subSkill: {
-			used: {
-				charlotte: true,
-				onremove: true,
-				sub: true,
-				sourceSkill: "dcshaowei",
-			},
 		},
 	},
 	dcdichou: {
@@ -2494,75 +2479,70 @@ const skills = {
 			name2: "仇",
 		},
 		marktext: "仇",
-		trigger: {
-			target: "useCardToTarget",
-		},
+		trigger: { global: "useCard" },
 		filter(event, player) {
-			return event.player !== player;
+			if (player != event.player) {
+				return event.targets?.includes(player);
+			}
+			return event.targets?.some(target => target.hasMark("dcdichou") && target != player);
 		},
+		logTarget: (event, player) => (event.player != player ? event.player : event.targets.filter(target => target.hasMark("dcdichou") && target != player)),
 		async content(event, trigger, player) {
-			const target = trigger.player;
-			if (target.isIn()) {
-				target.addMark("dcdichou", 1);
+			const targets = event.targets;
+			if (player !== trigger.player) {
+				targets[0].addMark(event.name);
+			} else {
+				await game.doAsyncInOrder(targets, async target => {
+					await player.draw();
+					target.removeMark(event.name);
+					target.getHistory("custom").push({ dcdichou: true });
+				});
 			}
 		},
-		group: ["dcdichou_discard", "dcdichou_draw", "dcdichou_damage"],
+		group: ["dcdichou_discard", "dcdichou_damage"],
 		subSkill: {
 			discard: {
+				audio: "dcdichou",
+				audioname: ["v_guanyinping_shadow"],
 				forced: true,
-				trigger: {
-					player: "phaseBegin",
-				},
+				trigger: { player: "phaseBegin" },
 				filter(event, player) {
-					return player.hasEnabledSlot() || game.countPlayer(i => i.countMark("dcdichou") && i.countDiscardableCards(player, "he"));
+					return player.hasEnabledSlot();
 				},
 				async content(event, trigger, player) {
 					if (player.hasEnabledSlot()) {
 						await player.chooseToDisable();
 					}
-					if (game.countPlayer(i => i.countMark("dcdichou") && i.countDiscardableCards(player, "he"))) {
-						const result = await player
+					if (game.countPlayer(current => current != player && current.hasCards("he"))) {
+						let result = await player
 							.chooseTarget({
-								prompt: "弃置一名有“仇”的角色一张牌",
+								prompt: "涤仇：获得一名其他角色一张牌",
 								filterTarget(card, player, target) {
-									return target.countMark("dcdichou") && target.countDiscardableCards(player, "he");
+									return target != player && target.hasCards("he");
 								},
 								forced: true,
 								ai: target => {
-									return -get.attitude(get.player(), target);
+									return get.effect(target, { name: "shunshou_copy2" }, get.player(), get.player());
 								},
 							})
 							.forResult();
-						const target = result.targets[0];
-						const { links } = await player
-							.discardPlayerCard({
-								target,
-								forced: true,
-								position: "he",
-							})
-							.forResult();
-						const card = links[0];
-						if (!card) {
-							return;
+						if (result?.bool && result.targets?.length) {
+							const target = result.targets[0];
+							player.line(target);
+							result = await player.gainPlayerCard({ target, forced: true, position: "he" }).forResult();
+							if (result?.links?.length) {
+								const card = result.links[0];
+								const num = get.cardNameLength(card);
+								player.addTempSkill("dcdichou_eff");
+								player.addMark("dcdichou_eff", num, false);
+							}
 						}
-						const num = get.translation(get.name(card)).length;
-						if (!num) {
-							return;
-						}
-						player.addTempSkill("dcdichou_eff");
-						player.addMark("dcdichou_eff", num);
 					}
 				},
-				sub: true,
-				sourceSkill: "dcdichou",
 			},
 			eff: {
-				audio: 2,
 				charlotte: true,
-				mark: true,
-				intro: {
-					content: "本回合攻击范围与使用【杀】的次数上限均+#",
-				},
+				intro: { content: "本回合攻击范围与使用【杀】的次数上限均+#" },
 				onremove: true,
 				mod: {
 					attackRange(player, num) {
@@ -2574,52 +2554,38 @@ const skills = {
 						}
 					},
 				},
-				sub: true,
-				sourceSkill: "dcdichou",
-			},
-			draw: {
-				forced: true,
-				trigger: {
-					player: "useCardToPlayer",
-				},
-				filter(event, player) {
-					return event.target.countMark("dcdichou");
-				},
-				async content(event, trigger, player) {
-					const target = trigger.target;
-					target.removeMark("dcdichou", 1);
-					await player.draw();
-				},
-				sub: true,
-				sourceSkill: "dcdichou",
 			},
 			damage: {
+				audio: "dcdichou",
+				audioname: ["v_guanyinping_shadow"],
 				forced: true,
-				trigger: {
-					player: "phaseEnd",
-				},
+				trigger: { player: "phaseEnd" },
 				filter(event, player) {
-					return game.countPlayer(i => i.countMark("dcdichou"));
+					return game.hasPlayer(i => i.hasMark("dcdichou"));
 				},
+				logTarget: () => game.filterPlayer(i => i.hasMark("dcdichou")).sortBySeat(),
 				async content(event, trigger, player) {
+					for (const current of event.targets) {
+						if (current.hasMark("dcdichou")) {
+							current.clearMark("dcdichou");
+							current.getHistory("custom").push({ dcdichou: true });
+						}
+					}
 					const result = await player
 						.chooseTarget({
-							prompt: "对任意名有“仇”的角色各造成1点火焰伤害并移除其“仇”",
+							prompt: "涤仇：对任意名本回合移除过“仇”的角色各造成1点火焰伤害",
 							selectTarget: [1, Infinity],
 							forced: true,
 							filterTarget: (card, player, target) => {
-								return target.countMark("dcdichou");
+								return target.hasHistory("custom", evt => evt.dcdichou);
 							},
 							ai: target => {
 								const player = get.player();
-								if (get.damageEffect(target, player, player, "fire") > 0) {
-									return 1;
-								}
-								return 0;
+								return get.damageEffect(target, player, player, "fire");
 							},
 						})
 						.forResult();
-					if (!result.targets?.length) {
+					if (!result?.targets?.length) {
 						return;
 					}
 					const targets = result.targets.sortBySeat();
@@ -2629,11 +2595,8 @@ const skills = {
 							continue;
 						}
 						target.damage("fire");
-						target.removeMark("dcdichou", target.countMark("dcdichou"));
 					}
 				},
-				sub: true,
-				sourceSkill: "dcdichou",
 			},
 		},
 	},
