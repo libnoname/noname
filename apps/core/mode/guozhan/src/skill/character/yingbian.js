@@ -4402,45 +4402,42 @@ export default {
 		trigger: { player: "loseAfter" },
 		filter(event, player) {
 			const evt = event.getParent(2);
-			if (evt.name != "yingbianZhuzhan") {
+			if (evt.name !== "yingbianZhuzhan") {
 				return false;
 			}
-			const color = (get.color(evt.card) == get.color(event.cards[0])).toString();
-			if (
-				color == "true" &&
-				!game.hasPlayer(target => {
-					return target != player && target.countCards("he");
-				})
-			) {
+			const color = (get.color(evt.card) === get.color(event.cards[0])).toString();
+			if (color === "true" && !game.hasPlayer(target => target !== player && target.hasCards("he"))) {
 				return false;
 			}
 			return !player.getStorage("fakecaiwang_used").includes(color);
 		},
 		async cost(event, trigger, player) {
-			const color = (get.color(trigger.getParent(2).card) == get.color(trigger.cards[0])).toString();
-			if (color == "false") {
+			const color = (get.color(trigger.getParent(2).card) === get.color(trigger.cards[0])).toString();
+			if (color === "false") {
 				//event.result=await player.chooseBool(get.prompt('fakecaiwang'),'摸一张牌').forResult();
 				event.result = { bool: true };
 			} else {
 				event.result = await player
-					.chooseTarget(get.prompt("fakecaiwang"), "弃置一名其他角色的一张牌", (card, player, target) => {
-						return target != player && target.countCards("he");
-					})
-					.set("ai", target => {
-						const player = get.event().player;
-						return get.effect(target, { name: "guohe_copy2" }, player, player);
+					.chooseTarget({
+						prompt: get.prompt("fakecaiwang"),
+						prompt2: "弃置一名其他角色的一张牌",
+						filterTarget: (card, player, target) => target !== player && target.hasCards("he"),
+						ai: target => {
+							const player = get.event().player;
+							return get.effect(target, { name: "guohe_copy2" }, player, player);
+						},
 					})
 					.forResult();
 			}
 		},
 		async content(event, trigger, player) {
-			const color = (get.color(trigger.getParent(2).card) == get.color(trigger.cards[0])).toString();
+			const color = (get.color(trigger.getParent(2).card) === get.color(trigger.cards[0])).toString();
 			player.addTempSkill("fakecaiwang_used");
 			player.markAuto("fakecaiwang_used", [color]);
-			if (color == "false") {
+			if (color === "false") {
 				await player.draw();
 			} else {
-				await player.discardPlayerCard(event.targets[0], "he", true);
+				await player.discardPlayerCard({ target: event.targets[0], position: "he", forced: true });
 			}
 		},
 		group: "fakecaiwang_zhuzhan",
@@ -4455,38 +4452,37 @@ export default {
 				locked: false,
 				popup: false,
 				firstDo: true,
-				content() {
+				async content(event, trigger, player) {
 					trigger.setContent(get.info("fakecaiwang").yingbian);
 				},
 			},
 		},
-		yingbian() {
-			"step 0";
+		async yingbian(event, trigger, player) {
 			event._global_waiting = true;
 			event.send = (player, card, source, targets, id, id2, yingbianZhuzhanAI, skillState) => {
 				if (skillState) {
 					player.applySkills(skillState);
 				}
-				var type = get.type2(card),
-					str = get.translation(source);
+				const type = get.type2(card);
+				let str = get.translation(source);
 				if (targets && targets.length) {
 					str += `对${get.translation(targets)}`;
 				}
 				str += `使用了${get.translation(card)}，是否弃置一张${get.translation(type)}为其助战？`;
-				player.chooseCard({
-					filterCard: (card, player) => get.type2(card) == type && lib.filter.cardDiscardable(card, player),
+				const next = player.chooseCard({
+					filterCard: (card, player) => get.type2(card) === type && lib.filter.cardDiscardable(card, player),
 					prompt: str,
 					position: "h",
 					_global_waiting: true,
-					id: id,
-					id2: id2,
+					id,
+					id2,
 					ai:
-						typeof yingbianZhuzhanAI == "function"
+						typeof yingbianZhuzhanAI === "function"
 							? yingbianZhuzhanAI(player, card, source, targets)
 							: cardx => {
-									var info = get.info(card);
+									const info = get.info(card);
 									if (info && info.ai && info.ai.yingbian) {
-										var ai = info.ai.yingbian(card, source, targets, player);
+										const ai = info.ai.yingbian(card, source, targets, player);
 										if (!ai) {
 											return 0;
 										}
@@ -4497,43 +4493,42 @@ export default {
 									return 5 - get.value(cardx);
 								},
 				});
-				if (!game.online) {
+				if (game.online) {
+					_status.event._resultid = id;
+					game.resume();
+				}
+				return next;
+			};
+			const type = get.type2(event.card);
+			const list = game.filterPlayer(current => current.hasCards("h") && (_status.connectMode || current.hasCard(cardx => get.type2(cardx) === type, "h"))).sortBySeat(_status.currentPhase || player);
+			event.id = get.id();
+			while (true) {
+				if (!list.length) {
 					return;
 				}
-				_status.event._resultid = id;
-				game.resume();
-			};
-			"step 1";
-			var type = get.type2(card);
-			event.list = game.filterPlayer(current => current.countCards("h") && (_status.connectMode || current.hasCard(cardx => get.type2(cardx) == type, "h"))).sortBySeat(_status.currentPhase || player);
-			event.id = get.id();
-			"step 2";
-			if (!event.list.length) {
-				event.finish();
-			} else if (_status.connectMode && (event.list[0].isOnline() || event.list[0] == game.me)) {
-				event.goto(4);
-			} else {
-				event.send((event.current = event.list.shift()), event.card, player, trigger.targets, event.id, trigger.parent.id, trigger.yingbianZhuzhanAI);
-			}
-			"step 3";
-			if (result.bool) {
-				event.zhuzhanresult = event.current;
-				event.zhuzhanresult2 = result;
-				if (event.current != game.me) {
-					game.delayx();
+				if (_status.connectMode && (list[0].isOnline() || list[0] === game.me)) {
+					break;
 				}
-				event.goto(8);
-			} else {
-				event.goto(2);
+				const current = list.shift();
+				const result = await event.send(current, event.card, player, trigger.targets, event.id, trigger.parent.id, trigger.yingbianZhuzhanAI).forResult();
+				if (!result.bool) {
+					continue;
+				}
+				event.zhuzhanresult = current;
+				event.zhuzhanresult2 = result;
+				if (current !== game.me) {
+					await game.delayx();
+				}
+				break;
 			}
-			"step 4";
-			var id = event.id,
-				sendback = (result, player) => {
-					if (result && result.id == id && !event.zhuzhanresult && result.bool) {
+			if (!event.zhuzhanresult) {
+				const id = event.id;
+				const sendback = (result, player) => {
+					if (result && result.id === id && !event.zhuzhanresult && result.bool) {
 						event.zhuzhanresult = player;
 						event.zhuzhanresult2 = result;
 						game.broadcast("cancel", id);
-						if (_status.event.id == id && _status.event.name == "chooseCard" && _status.paused) {
+						if (_status.event.id === id && _status.event.name === "chooseCard" && _status.paused) {
 							return () => {
 								event.resultOL = _status.event.resultOL;
 								ui.click.cancel();
@@ -4542,69 +4537,61 @@ export default {
 								}
 							};
 						}
-					} else if (_status.event.id == id && _status.event.name == "chooseCard" && _status.paused) {
+					} else if (_status.event.id === id && _status.event.name === "chooseCard" && _status.paused) {
 						return () => (event.resultOL = _status.event.resultOL);
 					}
-				},
-				withme = false,
-				withol = false,
-				list = event.list;
-			for (var i = 0; i < list.length; i++) {
-				var current = list[i];
-				if (current.isOnline()) {
-					withol = true;
-					current.wait(sendback);
-					current.send(event.send, current, event.card, player, trigger.targets, event.id, trigger.parent.id, trigger.yingbianZhuzhanAI, get.skillState(current));
-					list.splice(i--, 1);
-				} else if (current == game.me) {
-					withme = true;
-					event.send(current, event.card, player, trigger.targets, event.id, trigger.parent.id, trigger.yingbianZhuzhanAI);
-					list.splice(i--, 1);
-				}
-			}
-			if (!withme) {
-				event.goto(6);
-			}
-			if (_status.connectMode && (withme || withol)) {
-				game.players.forEach(value => {
-					if (value != player) {
-						value.showTimer();
+				};
+				let localChoice;
+				let withol = false;
+				for (const current of list) {
+					if (current.isOnline()) {
+						withol = true;
+						current.wait(sendback);
+						current.send(event.send, current, event.card, player, trigger.targets, event.id, trigger.parent.id, trigger.yingbianZhuzhanAI, get.skillState(current));
+					} else if (current === game.me) {
+						localChoice = event.send(current, event.card, player, trigger.targets, event.id, trigger.parent.id, trigger.yingbianZhuzhanAI);
 					}
-				});
+				}
+				if (_status.connectMode && (localChoice || withol)) {
+					game.players.forEach(value => {
+						if (value !== player) {
+							value.showTimer();
+						}
+					});
+				}
+				if (localChoice) {
+					const result = await localChoice.forResult();
+					if (result?.bool && !event.zhuzhanresult) {
+						game.broadcast("cancel", event.id);
+						event.zhuzhanresult = game.me;
+						event.zhuzhanresult2 = result;
+					}
+				}
+				if (withol && !event.resultOL) {
+					await game.pause();
+				}
+				game.players.forEach(value => value.hideTimer());
 			}
-			event.withol = withol;
-			"step 5";
-			if (!result || !result.bool || event.zhuzhanresult) {
-				return;
-			}
-			game.broadcast("cancel", event.id);
-			event.zhuzhanresult = game.me;
-			event.zhuzhanresult2 = result;
-			"step 6";
-			if (event.withol && !event.resultOL) {
-				game.pause();
-			}
-			"step 7";
-			game.players.forEach(value => value.hideTimer());
-			"step 8";
 			if (event.zhuzhanresult) {
-				var target = event.zhuzhanresult;
-				if (target == player && player.hasSkill("fakecaiwang")) {
+				const target = event.zhuzhanresult;
+				if (target === player && player.hasSkill("fakecaiwang")) {
 					player.logSkill("fakecaiwang");
 				}
 				target.line(player, "green");
-				target.modedDiscard(event.zhuzhanresult2.cards);
-				if (typeof event.afterYingbianZhuzhan == "function") {
+				// 保持原时序：先执行响应回调和日志，再结算弃牌。
+				const discard = target.modedDiscard({ cards: event.zhuzhanresult2.cards });
+				if (typeof event.afterYingbianZhuzhan === "function") {
 					event.afterYingbianZhuzhan(event, trigger);
 				}
-				var yingbianCondition = event.name.slice(8).toLowerCase(),
-					yingbianConditionTag = `yingbian_${yingbianCondition}_tag`;
+				const yingbianCondition = event.name.slice(8).toLowerCase();
+				const yingbianConditionTag = `yingbian_${yingbianCondition}_tag`;
 				target.popup(yingbianConditionTag, lib.yingbian.condition.color.get(yingbianCondition));
-				game.log(target, "响应了", '<span class="bluetext">' + (target == player ? "自己" : get.translation(player)) + "</span>", "发起的", yingbianConditionTag);
+				game.log(target, "响应了", `<span class="bluetext">${target === player ? "自己" : get.translation(player)}</span>`, "发起的", yingbianConditionTag);
 				target.addExpose(0.2);
 				event.result = {
 					bool: true,
 				};
+				await discard;
 			} else {
 				event.result = {
 					bool: false,
