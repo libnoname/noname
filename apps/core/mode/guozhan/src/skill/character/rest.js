@@ -15931,19 +15931,19 @@ export default {
 			if (player.hasSkillTag("nomingzhi", false, null, true)) {
 				return false;
 			}
-			var bool = false;
-			var skillm = lib.character[player.name1][3];
-			var skillv = lib.character[player.name2][3];
+			let bool = false;
+			const skillm = lib.character[player.name1][3];
+			const skillv = lib.character[player.name2][3];
 			if (player.isUnseen(0)) {
-				for (var i = 0; i < skillm.length; i++) {
-					if (get.is.locked(skillm[i])) {
+				for (const skillName of skillm) {
+					if (get.is.locked(skillName)) {
 						bool = true;
 					}
 				}
 			}
 			if (player.isUnseen(1)) {
-				for (var i = 0; i < skillv.length; i++) {
-					if (get.is.locked(skillv[i])) {
+				for (const skillName of skillv) {
+					if (get.is.locked(skillName)) {
 						bool = true;
 					}
 				}
@@ -15951,30 +15951,28 @@ export default {
 			return bool;
 		},
 		popup: false,
-		content() {
-			"step 0";
-			var choice = [];
-			var skillm = lib.character[player.name1][3];
-			var skillv = lib.character[player.name2][3];
+		async content(event, trigger, player) {
+			const choice = [];
+			const skillm = lib.character[player.name1][3];
+			const skillv = lib.character[player.name2][3];
 			if (player.isUnseen(0)) {
-				for (var i = 0; i < skillm.length; i++) {
-					if (get.is.locked(skillm[i]) && !choice.includes("明置主将")) {
+				for (const skillName of skillm) {
+					if (get.is.locked(skillName) && !choice.includes("明置主将")) {
 						choice.push("明置主将");
 					}
 				}
 			}
 			if (player.isUnseen(1)) {
-				for (var i = 0; i < skillv.length; i++) {
-					if (get.is.locked(skillv[i]) && !choice.includes("明置副将")) {
+				for (const skillName of skillv) {
+					if (get.is.locked(skillName) && !choice.includes("明置副将")) {
 						choice.push("明置副将");
 					}
 				}
 			}
-			if (choice.length == 2) {
+			if (choice.length === 2) {
 				choice.push("全部明置");
 			}
-			player.chooseControl(choice);
-			"step 1";
+			const result = await player.chooseControl({ controls: choice }).forResult();
 			if (result.control) {
 				switch (result.control) {
 					case "取消":
