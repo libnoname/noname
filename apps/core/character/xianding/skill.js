@@ -2424,6 +2424,7 @@ const skills = {
 	//威关银屏
 	dcshaowei: {
 		audio: 2,
+		audioname: ["v_guanyinping_shadow"],
 		forced: true,
 		locked: false,
 		trigger: {
@@ -2486,6 +2487,7 @@ const skills = {
 	},
 	dcdichou: {
 		audio: 2,
+		audioname: ["v_guanyinping_shadow"],
 		forced: true,
 		intro: {
 			content: "mark",
