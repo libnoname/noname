@@ -18522,51 +18522,26 @@ export default {
 		filter(event) {
 			return !event.iwhile;
 		},
-		direct: true,
 		preHidden: true,
-		content() {
-			"step 0";
-			player
-				.chooseControl("点数+3", "点数-3", "cancel2")
-				.set("prompt", get.prompt2("yingyang"))
-				.set("ai", function () {
-					if (_status.event.small) {
-						return 1;
-					} else {
-						return 0;
-					}
+		async cost(event, trigger, player) {
+			const result = await player
+				.chooseControl({
+					controls: ["点数+3", "点数-3", "cancel2"],
+					prompt: get.prompt2(event.skill),
+					ai: () => (_status.event.small ? 1 : 0),
 				})
-				.set("small", trigger.small);
-			"step 1";
-			if (result.index != 2) {
-				player.logSkill("yingyang");
-				if (result.index == 0) {
-					game.log(player, "拼点牌点数+3");
-					if (player == trigger.player) {
-						trigger.num1 += 3;
-						if (trigger.num1 > 13) {
-							trigger.num1 = 13;
-						}
-					} else {
-						trigger.num2 += 3;
-						if (trigger.num2 > 13) {
-							trigger.num2 = 13;
-						}
-					}
-				} else {
-					game.log(player, "拼点牌点数-3");
-					if (player == trigger.player) {
-						trigger.num1 -= 3;
-						if (trigger.num1 < 1) {
-							trigger.num1 = 1;
-						}
-					} else {
-						trigger.num2 -= 3;
-						if (trigger.num2 < 1) {
-							trigger.num2 = 1;
-						}
-					}
-				}
+				.set("small", trigger.small)
+				.forResult();
+			event.result = { bool: result.index !== 2, cost_data: result.index };
+		},
+		async content(event, trigger, player) {
+			const increase = event.cost_data === 0;
+			game.log(player, `拼点牌点数${increase ? "+3" : "-3"}`);
+			const key = player === trigger.player ? "num1" : "num2";
+			if (increase) {
+				trigger[key] = Math.min(13, trigger[key] + 3);
+			} else {
+				trigger[key] = Math.max(1, trigger[key] - 3);
 			}
 		},
 	},
