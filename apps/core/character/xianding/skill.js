@@ -608,6 +608,7 @@ const skills = {
 						prompt2: `将一张手牌当${trigger.card.nature ? get.translation(trigger.card.nature) : ""}【${get.translation(trigger.card.name)}】对${get.translation(trigger.player)}使用`,
 						position: "h",
 						filterCard(card, player) {
+							const trigger = get.event().triggerx;
 							return player.canUse(get.autoViewAs({ name: trigger.card.name, nature: trigger.card.nature }, [card]), trigger.player, false, false);
 						},
 						ai: card => {
