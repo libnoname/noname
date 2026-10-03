@@ -1,4 +1,12 @@
 const characters = {
+	// OL孙寒华 by WeiqiaoCode
+	ol_sunhanhua: {
+		sex: "female",
+		group: "wu",
+		hp: 3,
+		skills: ["olhuaguang", "olxuanbai"],
+		names: "孙|寒华",
+	},
 	wangai: {
 		sex: "female",
 		group: "wei",
