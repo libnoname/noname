@@ -14,9 +14,9 @@ const skills = {
 			if (event.name === "damage") {
 				return !player.getRoundHistory("sourceDamage", evt => evt.num > 0).length;
 			}
-			return event.source === player && game.getRoundHistory("everything", evt => evt.name === "recover" && evt.source === player)[0] === event;
+			return event.source === player && event.num > 0 && game.getRoundHistory("everything", evt => evt.name === "recover" && evt.source === player && evt.num > 0)[0] === event;
 		},
-		content() {
+		async content(event, trigger, player) {
 			trigger.num++;
 		},
 		mod: {
@@ -131,7 +131,7 @@ const skills = {
 					const parent = lose.getParent();
 					return !(parent?.name === "equip" && parent.player === player);
 				},
-				content() {
+				async content(event, trigger, player) {
 					const lose = trigger.getl(player);
 					for (const card of lose.cards2.filter(card => card.name === "ol_cailian" && !card.destroyed)) {
 						card.fix();
