@@ -1,4 +1,10 @@
 const characters = {
+	yudu: {
+		sex: "male",
+		group: "qun",
+		hp: 5,
+		skills: ["jianlei", "juzhi"],
+	},
 	yj_wanglang: {
 		sex: "male",
 		group: "qun",
@@ -15,7 +21,7 @@ const characters = {
 		sex: "male",
 		group: "qun",
 		hp: 3,
-		skills: ["youtan", "ciren", "zhancai"]
+		skills: ["youtan", "ciren", "zhancai"],
 	},
 	yj_hanbing: {
 		sex: "female",

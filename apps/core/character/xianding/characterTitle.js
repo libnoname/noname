@@ -1,6 +1,6 @@
 export default {
 	dc_wangyuanji: "素业谦冲",
-	//cuizhi: "",
+	cuizhi: "烈烛烬明",
 	luwenyi: "卷中避世",
 	//dc_sb_chengpu: "",
 	//liupanxi: "",
@@ -11,7 +11,7 @@ export default {
 	wu_zhangfei: "烈武桓威",
 	dc_sb_guanyu: "单刀赴会",
 	//dc_sb_yangfeng: "",
-	//v_guanyinping: "",
+	v_guanyinping: "凋棠醒春薄",
 	dc_sb_wangping: "佯败溯战",
 	dc_sb_masu: "服心屈兵",
 	dc_sb_zhugeliang: "威谋定疆",
