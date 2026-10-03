@@ -122,6 +122,10 @@ const skills = {
 					return !player.hasSkill("potwuyi_round") && ["sha", "shan"].includes(name);
 				},
 				ai: {
+					order: 3,
+					result: {
+						player: 1,
+					},
 					fireAttack: true,
 					respondSha: true,
 					respondShan: true,
