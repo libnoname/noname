@@ -1,0 +1,20 @@
+.card:not(*:empty) {
+	color: rgb(77, 60, 51);
+	text-shadow: none;
+	background: url("../../woodden/wood.jpg");
+	background-size: auto;
+}
+
+#arena:not(.chess) .player[data-position="0"] > .equips > .equip5 > .image {
+	background-position: -6px -6px;
+}
+
+#arena.mobile:not(.chess) .player[data-position="0"] > .equips > .equip5 {
+	border-radius: 100%;
+}
+#arena.mobile:not(.chess) .player[data-position="0"] > .equips > .equip5 > .name {
+	display: none;
+}
+#arena.mobile:not(.chess) .player[data-position="0"] > .equips > .equip5 > .info {
+	display: none;
+}

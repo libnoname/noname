@@ -1,0 +1,448 @@
+@import "../newlayout/layout.css";
+#arena {
+	height: calc(95% + 20px);
+}
+#control {
+	width: calc(5000% / 47 - 240px);
+	left: calc(-150% / 47 + 120px);
+	bottom: 150px;
+	height: 40px;
+}
+#arena.phone #control {
+	bottom: 160px;
+}
+#arena.ipad #control {
+	bottom: 155px;
+}
+#arena:not(.chess) > #me,
+#arena:not(.chess) > #mebg,
+#arena:not(.chess) > #autonode {
+	bottom: 30px;
+	width: calc(5000% / 47);
+	left: calc(-150% / 47);
+	top: auto;
+	border-radius: 0 !important;
+	height: 120px;
+}
+#arena.oblongcard:not(.chess) > #me,
+#arena.oblongcard:not(.chess) > #mebg,
+#arena.oblongcard:not(.chess) > #autonode {
+	height: 140px;
+}
+#arena.oblongcard:not(.chess) > .card,
+#arena.oblongcard:not(.chess) .handcards > .card {
+	height: 120px;
+}
+#arena.oblongcard:not(.chess) > .card > .image,
+#arena.oblongcard:not(.chess) .handcards > .card > .image {
+	height: 110px;
+	top: 8px;
+	background-position-x: -3px;
+}
+#arena.oblongcard:not(.chess) #handcards1 {
+	height: 100%;
+	top: 2px;
+}
+#arena.oblongcard:not(.chess):not(.choose-character) #control {
+	bottom: 165px;
+}
+#arena.phone.oblongcard:not(.chess):not(.choose-character) #control {
+	bottom: 180px;
+}
+
+#arena:not(.chess) > #autonode {
+	width: calc(5000% / 47 - 240px);
+	left: calc(-150% / 47 + 120px);
+}
+#arena:not(.mobile).single-handcard #handcards1 {
+	width: calc(100% - 120px);
+}
+#window.rightbar #system,
+#window.leftbar #system {
+	width: calc(100% - 62px);
+}
+#window.leftbar #system {
+	left: 50px;
+}
+#window.rightbar #historybar {
+	left: calc(100% - 50px);
+	border-radius: 0;
+	top: 0;
+	height: 100%;
+}
+#window.leftbar #historybar {
+	left: 0;
+	border-radius: 0;
+	top: 0;
+	height: 100%;
+}
+
+#window.single-handcard #historybar {
+	height: calc(100% - 121px);
+}
+#window.oblongcard.single-handcard #historybar {
+	height: calc(100% - 141px);
+}
+
+#window.leftbar #arena:not(.chess) > #me,
+#window.leftbar #arena:not(.chess) > #mebg,
+#window.leftbar #arena:not(.chess) > #autonode {
+	width: calc(5000% / 47 + 2500px / 47);
+	left: calc(-150% / 47 - 50px - 75px / 47);
+}
+#window.leftbar #arena:not(.chess) > #autonode {
+	width: calc(5000% / 47 + 2500px / 47 - 240px);
+	left: calc(-150% / 47 - 50px - 75px / 47 + 120px);
+}
+#window.rightbar #arena:not(.chess) > #me,
+#window.rightbar #arena:not(.chess) > #mebg,
+#window.rightbar #arena:not(.chess) > #autonode {
+	width: calc(5000% / 47 + 2500px / 47);
+	left: calc(-150% / 47 - 75px / 47);
+}
+#window.rightbar #arena:not(.chess) > #autonode {
+	width: calc(5000% / 47 + 2500px / 47 - 240px);
+	left: calc(-150% / 47 - 75px / 47 + 120px);
+}
+#arena:not(.chess) #handcards1 {
+	height: 120px;
+	padding: 0;
+	top: calc(100% - 120px);
+}
+#arena:not(.chess) #handcards1.scrollh {
+	top: calc(100% - 180px);
+	height: 180px;
+}
+#arena:not(.chess).oblongcard #handcards1.scrollh {
+	top: calc(100% - 200px);
+	height: 200px;
+}
+#arena:not(.chess) #handcards1.scrollh > div {
+	height: 120px;
+	top: 60px;
+}
+#arena:not(.chess).oblongcard #handcards1.scrollh > div {
+	top: 62px;
+}
+#arena:not(.chess):not(.single-handcard) #handcards1 {
+	width: calc(100% - 240px);
+	left: calc(150% / 47 - 300% / 94 + 625% / 47 - 105px + 120px);
+}
+#arena:not(.single-handcard):not(.chess) > #me,
+#arena:not(.single-handcard):not(.chess) > #mebg,
+#arena:not(.single-handcard):not(.chess) > #autonode {
+	left: 0 !important;
+	bottom: 38px !important;
+	width: calc(9700% / 94) !important;
+}
+#arena:not(.single-handcard):not(.chess) > #mebg {
+	visibility: hidden;
+}
+#arena:not(.single-handcard):not(.chess) > #me #handcards1 {
+	left: 150px !important;
+	width: calc(100% - 150px) !important;
+}
+#arena:not(.single-handcard):not(.chess) > #me #handcards1 > .handcards {
+	left: 0 !important;
+}
+#autonode {
+	display: table !important;
+}
+@media screen and (max-width: 1105px) {
+	#arena[data-number="8"]:not(.single-handcard):not(.chess) > #me,
+	#arena[data-number="8"]:not(.single-handcard):not(.chess) > #mebg,
+	#arena[data-number="8"]:not(.single-handcard):not(.chess) > #autonode {
+		left: calc(-300% / 94 + 625% / 47 - 105px) !important;
+		width: calc(9700% / 94 + 300% / 94 - 625% / 47 + 105px) !important;
+	}
+}
+#handcards2 {
+	display: none;
+}
+.dialog {
+	height: calc(100% - 370px);
+	bottom: 170px;
+}
+#arena.choose-character > .dialog .placeholder + .placeholder {
+	display: none;
+}
+#arena.choose-character > .dialog .placeholder {
+	margin-bottom: 4px;
+	height: 0px;
+}
+#arena.choose-character > .dialog.noupdate .placeholder {
+	margin-bottom: 0;
+	height: 0;
+}
+#arena.choose-character > .dialog {
+	height: calc(100% - 280px);
+	bottom: 80px;
+}
+#arena.choose-character > .dialog.scroll3 {
+	height: calc(100% - 240px);
+}
+#arena.phone.choose-character > .dialog {
+	bottom: 93px;
+}
+#arena.ipad.choose-character > .dialog {
+	bottom: 96px;
+}
+#arena.discard-player-card > #control,
+#arena.gain-player-card > #control,
+#arena.choose-player-card > #control,
+#arena.choose-to-move > #control,
+#arena.choose-character > #control {
+	bottom: 30px;
+	transition: all 0s;
+}
+#arena.phone.discard-player-card > #control,
+#arena.phone.gain-player-card > #control,
+#arena.phone.choose-player-card > #control,
+#arena.phone.choose-to-move > #control,
+#arena.phone.choose-character > #control {
+	bottom: 43px;
+}
+#arena.ipad.discard-player-card > #control,
+#arena.ipad.gain-player-card > #control,
+#arena.ipad.choose-player-card > #control,
+#arena.ipad.choose-to-move > #control,
+#arena.ipad.choose-character > #control {
+	bottom: 45px;
+}
+.dialog.fullheight {
+	height: calc(100% - 123px) !important;
+	top: 40px !important;
+}
+
+#me > .fakeme.avatar {
+	width: 120px;
+	height: 100%;
+	border-radius: 0px;
+	top: 0;
+	left: 0;
+	background-size: cover;
+	clip-path: polygon(-10px 0, 130px 0, 130px 130px, -10px 130px);
+	-webkit-clip-path: polygon(-10px 0, 130px 0, 130px 130px, -10px 130px);
+}
+#window[data-radius_size="increase"] #me > .fakeme.avatar,
+#window[data-radius_size="reduce"] #me > .fakeme.avatar {
+	border-radius: 0px;
+}
+
+/*--------位置(8人)------*/
+[data-number="8"] > .player[data-position="1"] {
+	top: calc(55% - 135px);
+	left: calc(100% - 150px);
+}
+[data-number="8"] > .player[data-position="2"] {
+	top: calc(10% - 50px);
+	left: calc(100% - 150px);
+}
+[data-number="8"] > .player[data-position="3"] {
+	top: 0;
+	left: calc(75% - 112.5px);
+}
+[data-number="8"] > .player[data-position="4"] {
+	top: 0;
+	left: calc(50% - 75px);
+}
+[data-number="8"] > .player[data-position="5"] {
+	top: 0;
+	left: calc(25% - 37.5px);
+}
+[data-number="8"] > .player[data-position="6"] {
+	top: calc(10% - 50px);
+	left: 0;
+}
+[data-number="8"] > .player[data-position="7"] {
+	top: calc(55% - 135px);
+	left: 0;
+}
+/*--------位置(7人)------*/
+[data-number="7"] > .player[data-position="1"] {
+	top: calc(55% - 135px);
+	left: calc(100% - 150px);
+}
+[data-number="7"] > .player[data-position="2"] {
+	top: calc(10% - 50px);
+	left: calc(100% - 150px);
+}
+[data-number="7"] > .player[data-position="3"] {
+	top: 0;
+	left: calc(62.5% - 75px);
+}
+[data-number="7"] > .player[data-position="4"] {
+	top: 0;
+	left: calc(37.5% - 75px);
+}
+[data-number="7"] > .player[data-position="5"] {
+	top: calc(10% - 50px);
+	left: 0;
+}
+[data-number="7"] > .player[data-position="6"] {
+	top: calc(55% - 135px);
+	left: 0;
+}
+/*--------位置(6人)------*/
+#arena[data-number="6"] > .player[data-position="1"] {
+	top: calc(30% - 128px);
+	left: calc(100% - 120px);
+}
+#arena[data-number="6"] > .player[data-position="2"] {
+	top: 0px;
+	left: calc(75% - 90px);
+}
+#arena[data-number="6"] > .player[data-position="3"] {
+	top: 0;
+	left: calc(50% - 60px);
+}
+#arena[data-number="6"] > .player[data-position="4"] {
+	top: 0px;
+	left: calc(25% - 30px);
+}
+#arena[data-number="6"] > .player[data-position="5"] {
+	top: calc(30% - 128px);
+	left: 0;
+}
+/*--------位置(5人)------*/
+#arena[data-number="5"] > .player[data-position="1"] {
+	top: calc(30% - 128px);
+	left: calc(100% - 120px);
+}
+#arena[data-number="5"] > .player[data-position="2"] {
+	top: 0;
+	left: calc(200% / 3 - 80px);
+}
+#arena[data-number="5"] > .player[data-position="3"] {
+	top: 0;
+	left: calc(100% / 3 - 40px);
+}
+#arena[data-number="5"] > .player[data-position="4"] {
+	top: calc(30% - 128px);
+	left: 0;
+}
+/*--------位置(4人)------*/
+#arena[data-number="4"] > .player[data-position="1"] {
+	top: calc(30% - 128px);
+	left: calc(100% - 120px);
+}
+#arena[data-number="4"] > .player[data-position="2"] {
+	top: 0;
+	left: calc(50% - 60px);
+}
+#arena[data-number="4"] > .player[data-position="3"] {
+	top: calc(30% - 128px);
+	left: 0;
+}
+/*--------位置(3人)------*/
+#arena[data-number="3"] > .player[data-position="1"] {
+	top: calc(60% / 3 - 88px);
+	left: calc(75% + 80px);
+}
+#arena[data-number="3"] > .player[data-position="2"] {
+	top: calc(60% / 3 - 88px);
+	left: calc(25% - 200px);
+}
+/*--------位置(2人)------*/
+#arena[data-number="2"] > .player[data-position="1"] {
+	top: 0;
+	left: calc(50% - 60px);
+}
+/*--------位置(1人)------*/
+.player[data-position="0"] {
+	top: calc(100% - 220px);
+	left: 0;
+}
+
+#arena[data-player_height_nova="default"] > .player[data-position="0"]:not(.minskin) {
+	top: calc(100% - 236px);
+}
+[data-number="8"][data-player_height_nova="default"] > .player[data-position="1"],
+[data-number="8"][data-player_height_nova="default"] > .player[data-position="7"],
+[data-number="7"][data-player_height_nova="default"] > .player[data-position="1"],
+[data-number="7"][data-player_height_nova="default"] > .player[data-position="6"] {
+	top: calc(55% - 143px);
+}
+
+#arena[data-player_height_nova="default"] > .player:not(.minskin) {
+	height: 196px !important;
+}
+#arena[data-player_height_nova="default"] .timerbar > div {
+	top: 181px;
+}
+
+#arena[data-player_height_nova="default"] > .player .avatar {
+	height: 176px;
+}
+#arena.slim_player[data-player_height_nova="default"] .player:not(.minskin):not(.fakeme) .avatar {
+	height: 182px;
+}
+
+#arena.uslim_player[data-player_height_nova="default"] .player:not(.minskin):not(.fakeme) .avatar {
+	height: 190px;
+}
+#arena.mslim_player[data-player_height_nova="default"] .player:not(.minskin):not(.fakeme) .avatar {
+	height: 186px;
+}
+#arena[data-player_height_nova="default"] > .player.fullskin2 .avatar2 {
+	height: 176px;
+}
+
+#arena.slim_player[data-player_height_nova="default"] > .player.fullskin2:not(.minskin) .avatar2 {
+	height: 182px;
+}
+#arena.uslim_player[data-player_height_nova="default"] > .player.fullskin2:not(.minskin) .avatar2 {
+	height: 190px;
+}
+#arena.mslim_player[data-player_height_nova="default"] > .player.fullskin2:not(.minskin) .avatar2 {
+	height: 186px;
+}
+
+#arena[data-player_height_nova="long"] > .player[data-position="0"]:not(.minskin) {
+	top: calc(100% - 250px);
+}
+[data-number="8"][data-player_height_nova="long"] > .player[data-position="1"],
+[data-number="8"][data-player_height_nova="long"] > .player[data-position="7"],
+[data-number="7"][data-player_height_nova="long"] > .player[data-position="1"],
+[data-number="7"][data-player_height_nova="long"] > .player[data-position="6"] {
+	top: calc(55% - 150px);
+}
+
+#arena[data-player_height_nova="long"] > .player:not(.minskin) {
+	height: 210px !important;
+}
+#arena[data-player_height_nova="long"] .timerbar > div {
+	top: 195px;
+}
+
+#arena[data-player_height_nova="long"] > .player .avatar {
+	height: 190px;
+}
+#arena.slim_player[data-player_height_nova="long"] .player:not(.minskin):not(.fakeme) .avatar {
+	height: 196px;
+}
+
+#arena.uslim_player[data-player_height_nova="long"] .player:not(.minskin):not(.fakeme) .avatar {
+	height: 204px;
+}
+#arena.mslim_player[data-player_height_nova="long"] .player:not(.minskin):not(.fakeme) .avatar {
+	height: 200px;
+}
+#arena[data-player_height_nova="long"] > .player.fullskin2 .avatar2 {
+	height: 190px;
+}
+
+#arena.slim_player[data-player_height_nova="long"] > .player.fullskin2:not(.minskin) .avatar2 {
+	height: 196px;
+}
+#arena.uslim_player[data-player_height_nova="long"] > .player.fullskin2:not(.minskin) .avatar2 {
+	height: 204px;
+}
+#arena.mslim_player[data-player_height_nova="long"] > .player.fullskin2:not(.minskin) .avatar2 {
+	height: 200px;
+}
+
+#arena > .player:not(.minskin) > .avatar,
+#arena > .player:not(.minskin) > .avatar2 {
+	background-position: 50% 0 !important;
+}
