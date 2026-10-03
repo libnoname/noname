@@ -19597,10 +19597,10 @@ const skills = {
 		getEffect(player, target, num, hasZhuSkill) {
 			let result = 0;
 			if (num < 0) {
-				result += get.effect(target, { name: "guohe_copy2" }, target, player) * num * Math.exp(num / 10);
+				result += get.effect(target, { name: "guohe_copy2" }, target, player) * (3 - num) * Math.exp(num / 10);
 				result += get.effect(target, { name: "draw" }, player, player) * 3 * Math.exp(-3 / 10);
 			} else if (num > 0) {
-				result += get.effect(target, { name: "draw" }, player, player) * num * Math.exp(-num / 10);
+				result += get.effect(target, { name: "draw" }, player, player) * (3 + num) * Math.exp(-num / 10);
 				result += get.effect(target, { name: "guohe_copy2" }, target, player) * 3 * Math.exp(-3 / 10);
 			} else {
 				result += get.damageEffect(target, player, player);
@@ -19682,7 +19682,7 @@ const skills = {
 							player.countCards("h") -
 							player
 								.getDiscardableCards(player, "he")
-								.sort((a, b) => get.unuseful(a) - get.unuseful(b))
+								.sort((a, b) => get.unuseful(b) - get.unuseful(a))
 								.slice(0, num)
 								.filter(card => get.position(card) === "h").length
 						);
