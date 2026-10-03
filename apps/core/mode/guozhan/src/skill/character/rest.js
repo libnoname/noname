@@ -15016,7 +15016,7 @@ export default {
 					trigger.setContent("addToExpansion");
 					trigger.gaintag = ["new_kongcheng"];
 					trigger.untrigger();
-					await trigger.trigger("addToExpansionBefore");
+					trigger.trigger("addToExpansionBefore");
 				},
 				sub: true,
 				forced: true,
