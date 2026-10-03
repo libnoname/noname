@@ -23406,6 +23406,7 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
+		manualConfirm: true,
 		async content(event, trigger, player) {
 			const cards = [];
 			while (true) {
