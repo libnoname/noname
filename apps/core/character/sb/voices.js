@@ -1,4 +1,9 @@
 export default {
+	"#sbpique1": "但持宫中不损，不使阙漏有加。",
+    "#sbpique2": "国以冒耄而损，不因均平而亡。",
+    "#sbzhongchun1": "臣追先帝殊遇，定报之于陛下也。",
+    "#sbzhongchun2": "陛下若有疑困，臣定知无不言。",
+    "#sb_guoyouzhi:die": "空余辅政之能，未有治恶之力啊。",
 	"#sbzhenwei1": "吾刃未折，家国不堕！",
 	"#sbzhenwei2": "纵魏军百万，难撼吾寸土！",
 	"#sbheyuan1": "扼守涿乡要道，休教刘备西遁。",
