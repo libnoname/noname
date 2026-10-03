@@ -97,7 +97,7 @@ export class Character {
 	isAiForbidden = false;
 	/**
 	 * 武将牌在炉石模式/挑战模式下的特殊信息
-	 * @type { any[]|undefined }
+	 * @type { any | undefined }
 	 **/
 	extraModeData;
 	/**
