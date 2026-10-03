@@ -2,6 +2,46 @@
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//落井下石与锦上添花
+	mb_luojingxiashi: {
+		charlotte: true,
+		mark: true,
+		silent: true,
+		popup: false,
+		intro: { content: "下次受到伤害后，失去X点体力（X为# × 伤害点数）" },
+		forced: true,
+		onremove: true,
+		trigger: { player: "damageEnd" },
+		filter(event, player) {
+			return event.num > 0;
+		},
+		async content(event, trigger, player) {
+			await player.loseHp(trigger.num * player.countMark(event.name));
+			player.removeSkill(event.name);
+		},
+	},
+	mb_jinshangtianhua: {
+		charlotte: true,
+		mark: true,
+		intro: { content: "下次获得牌时，摸X张牌（X为# × 获得牌数且至多摸五张）" },
+		forced: true,
+		onremove: true,
+		silent: true,
+		popup: false,
+		trigger: {
+			player: "gainEnd",
+			global: "loseAsyncEnd",
+		},
+		filter(event, player) {
+			return event.getg?.(player)?.length;
+		},
+		async content(event, trigger, player) {
+			const mark = player.countMark(event.name);
+			player.removeSkill(event.name);
+			const num = Math.min(5, trigger.getg(player).length * mark);
+			await player.draw(num);
+		},
+	},
 	//马云禄
 	mbfengpo: {
 		audio: "fengpo",

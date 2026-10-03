@@ -1,6 +1,10 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	mb_luojingxiashi: "落井下石",
+	mb_luojingxiashi_info: "出牌阶段，对一名角色使用，其下次受到伤害后，失去等量体力。",
+	mb_jinshangtianhua: "锦上添花",
+	mb_jinshangtianhua_info: "出牌阶段，对一名角色使用，其下一次获得牌时，额外摸等量张牌（至多摸五张牌）。",
 	mb_mayunlu: "手杀马云禄",
 	mb_mayunlu_prefix: "手杀",
 	mbfengpo: "凤魄",
