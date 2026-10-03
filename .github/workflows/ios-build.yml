@@ -1,0 +1,404 @@
+name: Build unsigned iOS IPA
+
+# 用途：在没有 Mac（或 Mac 太老装不了新 Xcode）的情况下，用 GitHub 免费提供的
+# macOS 云端机器把《无名杀》编译成 **未签名** 的 .ipa，再交给 SideStore / AltStore
+# 用你自己的 Apple ID 重签安装。
+#
+# 为什么必须是「未签名」的 ipa：
+#   CI 上没有你的开发者证书，xcodebuild 无法完成签名。但 SideStore 本来就会
+#   用你自己的 Apple ID 重新签名，所以未签名的 ipa 正是它需要的输入格式。
+#
+# 为什么用 macos-26 而不是 macos-15：
+#   Capacitor 8 的 iOS 模板使用 Swift Package Manager，要求 Xcode 26.0+；
+#   macos-26 镜像自带 Xcode 26.x，正好满足。这个组合也顺带解决了
+#   「Intel Mac 无法安装 Xcode 26」的问题——云端机器是 Apple Silicon。
+#
+# 触发方式：GitHub 网页 → Actions → “Build unsigned iOS IPA” → Run workflow
+# 产物位置：运行页面底部的 Artifacts；同时会附到自动创建的 Release 上。
+#
+# 详细说明与本地构建方式见 apps/mobile/docs/ios.md。
+
+on:
+  # 手动触发（推荐）
+  workflow_dispatch:
+    inputs:
+      retention_days:
+        description: "Artifact 保留天数（1-90）"
+        required: false
+        default: "14"
+      create_release:
+        description: "是否把 ipa 同时发到 Release"
+        type: boolean
+        required: false
+        default: true
+      slim_assets:
+        description: "资源瘦身：裁掉大体积可选资源（技能/阵亡语音、武将立绘），把 ipa 压到 300MB 以内以便侧载"
+        type: boolean
+        required: false
+        default: true
+
+  # 打 tag 时自动构建，方便发版
+  push:
+    tags:
+      - "ios-v*"
+
+permissions:
+  contents: write # 创建 Release 需要
+
+jobs:
+  build-ipa:
+    name: Build unsigned IPA
+    # macos-26 自带 Xcode 26.x，满足 Capacitor 8 的要求（Capacitor 8 的 iOS 模板
+    # 改用 Swift Package Manager，最低 Xcode 26.0，且不再需要 CocoaPods）。
+    runs-on: macos-26
+    timeout-minutes: 90
+
+    steps:
+      - name: Show runner info and free disk
+        run: |
+          echo "===== Runner ====="
+          uname -a
+          sw_vers
+          echo "===== Xcode ====="
+          xcodebuild -version
+          echo "===== Disk before checkout ====="
+          df -h /
+
+      - name: Checkout repository (shallow)
+        uses: actions/checkout@v6
+        with:
+          # ⚠️ 极其关键：本仓库 Git 历史巨大（约 2.6TB），
+          # 必须用 depth=1 只拉最新一个 commit，否则会耗尽 runner 磁盘。
+          fetch-depth: 1
+          lfs: false
+          submodules: false
+
+      - name: Disk after checkout
+        run: df -h /
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          version: 10
+          run_install: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: "pnpm"
+
+      - name: Install dependencies
+        # --ignore-scripts 跳过 electron 等无关平台重活，加快安装
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Disk after install
+        run: df -h /
+
+      - name: Build web assets (dist/)
+        env:
+          NONAME_BUILD_CHANNEL: test
+          NONAME_BUILD_COMMIT: ${{ github.sha }}
+        run: pnpm build
+
+      - name: Disk after web build
+        run: |
+          df -h /
+          du -sh dist
+
+      - name: Verify iOS Capacitor project
+        working-directory: apps/mobile
+        # iOS 工程（apps/mobile/ios）已随仓库提交，与 android/ 的处理方式保持一致。
+        # 这样做是为了在其中维护原生代码（NonameBridgeViewController / NonameRouter 等），
+        # 实现安卓 JsAwareAssetsPathHandler 等价的「可写覆盖层 + 扩展加载」能力。
+        #
+        # 如果目录缺失（例如贡献者删掉了、或 checkout 不完整），就回退到现场生成，
+        # 保证构建不至于完全跑不起来；但此时原生修改不会被应用，因此给出明确提示。
+        env:
+          CI: "true"
+        run: |
+          if [ -f "ios/App/App.xcodeproj/project.pbxproj" ]; then
+            echo "iOS 工程已存在于仓库中 ✓"
+            ls -la ios/App/App/*.swift
+          else
+            echo "::warning::仓库里没有 ios/ 工程，回退为现场生成（原生覆盖层修改将不会生效）"
+            npx cap add ios
+          fi
+
+      - name: Capacitor sync (builds preload.js)
+        working-directory: apps/mobile
+        # afterSync.ts 内部顺序：buildPreload() → writeAssetManifest() → capSync()
+        # 这一步会把 preload.js 与 dist 全量资源同步进 ios/App/App/public。
+        # 资源裁剪放在下一步，裁剪后再用 `cap copy` 重拷一次覆盖。
+        run: pnpm sync
+
+      # Capacitor 8 使用 Swift Package Manager，默认只生成 apps/mobile/ios/App/App.xcodeproj，
+      # 不再有带 Pods 的 App.xcworkspace。这里同时兼容两种布局：
+      # 优先用 .xcworkspace（若存在），否则回退到 .xcodeproj。
+      - name: Locate iOS project
+        id: ios
+        working-directory: apps/mobile/ios
+        run: |
+          echo "===== ios 目录结构 ====="
+          find . -maxdepth 3 \( -name "*.xcworkspace" -o -name "*.xcodeproj" \) | sort
+
+          # 先找 workspace（必须是 *.xcodeproj 同级的那个，排除 xcodeproj 内部自带的）
+          WS=$(find . -maxdepth 3 -type d -name "*.xcworkspace" \
+                 ! -path "*.xcodeproj/*" | head -n1)
+
+          if [ -n "$WS" ]; then
+            TARGET="$WS"
+            MODE=workspace
+          else
+            # Capacitor 8 / SPM 布局：直接用 App.xcodeproj
+            PROJ=$(find . -maxdepth 3 -type d -name "*.xcodeproj" \
+                     ! -path "*.xcodeproj/*" | head -n1)
+            if [ -z "$PROJ" ]; then
+              echo "::error::既找不到 .xcworkspace 也找不到 .xcodeproj"
+              find . -maxdepth 4 -type d || true
+              exit 1
+            fi
+            TARGET="$PROJ"
+            MODE=project
+          fi
+
+          # 归一化去掉开头的 ./ ，避免拼出 apps/mobile/ios/./App 这类路径
+          PROJ_DIR=$(dirname "$TARGET")
+          PROJ_DIR=${PROJ_DIR#./}
+          echo "mode=$MODE" >> "$GITHUB_OUTPUT"
+          echo "target=$(basename "$TARGET")" >> "$GITHUB_OUTPUT"
+          echo "app_dir=$PROJ_DIR" >> "$GITHUB_OUTPUT"
+          echo "Found $MODE: $TARGET (dir: $PROJ_DIR)"
+
+          # 安全校验：目标目录里必须真的存在 xcodeproj，否则说明选错了位置
+          if ! ls "$PROJ_DIR"/*.xcodeproj >/dev/null 2>&1; then
+            echo "::error::$PROJ_DIR 下没有 .xcodeproj，说明选错了目录。"
+            ls -la "$PROJ_DIR"
+            exit 1
+          fi
+          echo ".xcodeproj found in $PROJ_DIR ✓"
+
+      - name: Slim assets (optional)
+        if: github.event_name == 'push' || inputs.slim_assets
+        working-directory: apps/mobile
+        run: |
+          # 侧载工具对未压缩 App 体积非常敏感：
+          #   - AltStore 未打补丁时 >300MB 的 ipa 直接报 Bad Allocation
+          #   - 即使打 4GB patch，Apple 侧未压缩 App 硬上限仍是 4GB
+          # 本仓库全量资源约 2.8GB，不裁剪几乎必然装不上。
+          #
+          # 裁掉的资源体积最大、且缺失不影响可玩性（自动保留必需占位图）：
+          #   audio/skill       470M  武将技能语音（全为 mp3，整目录删）
+          #   audio/die         111M  阵亡语音（全为 mp3，整目录删）
+          #   image/character   390M  武将立绘（保留 3 张 default_silhouette_*）
+          DIST=../../dist
+          # 同步进 iOS 工程的资源目录（排除 xcodeproj 内部的干扰路径）
+          PUBLIC=$(find ios -maxdepth 5 -type d -path "*/App/public" \
+                     ! -path "*.xcodeproj/*" | head -n1)
+          echo "dist=$DIST public=$PUBLIC"
+          if [ -z "$PUBLIC" ]; then
+            echo "::error::找不到 iOS 工程内的 public 目录，无法裁剪。"
+            find ios -maxdepth 4 -type d ! -path "*.xcodeproj/*" || true
+            exit 1
+          fi
+          echo "===== 裁剪前 ====="
+          du -sh "$DIST"
+          du -sh "$PUBLIC" 2>/dev/null || true
+
+          # 同时删 dist 与已同步进 iOS 工程的那一份。
+          # 注意：`cap copy` 只做增量拷贝，不会清理目标目录里的多余文件，
+          # 所以必须显式删除 iOS 工程内的对应目录，否则瘦身形同虚设。
+          for TARGET in "$DIST" "$PUBLIC"; do
+            [ -d "$TARGET" ] || continue
+
+            # 语音类可以整目录删除（目录内全是 mp3，无必需文件）
+            rm -rf "$TARGET/audio/skill"
+            rm -rf "$TARGET/audio/die"
+
+            # 武将立绘目录里有 3 张游戏必需的默认剪影
+            # （characterDefaultPicturePath = image/character/default_silhouette_），
+            # 不能整个目录删掉，否则未提供立绘的武将会显示破图。
+            # 做法：把必需的 3 张剪影先挪到临时区，删目录后再放回原位置。
+            if [ -d "$TARGET/image/character" ]; then
+              TMP_KEEP=$(mktemp -d)
+              find "$TARGET/image/character" -maxdepth 1 -name 'default_silhouette_*' -exec cp {} "$TMP_KEEP/" \; 2>/dev/null || true
+              rm -rf "$TARGET/image/character"
+              mkdir -p "$TARGET/image/character"
+              cp "$TMP_KEEP"/default_silhouette_* "$TARGET/image/character/" 2>/dev/null || true
+              rm -rf "$TMP_KEEP"
+            fi
+          done
+
+          echo "===== 裁剪后 ====="
+          du -sh "$DIST"
+          du -sh "$PUBLIC" 2>/dev/null || true
+          du -sh "$DIST"/* | sort -rh | head -10
+
+          # 资源变了，asset-manifest.json 必须同步重建（dist 与 iOS 工程两份都要），
+          # 否则运行时会尝试读取已删除的文件。
+          rebuild_manifest() {
+            ROOT="$1" node -e "
+          const fs=require('fs'),path=require('path');
+          const root=process.env.ROOT, out=path.resolve(root,'asset-manifest.json');
+          const ignored=new Set(['asset-manifest.json','preload.js','node_modules']);
+          const entries=[];
+          (function walk(dir){
+            for(const name of fs.readdirSync(dir)){
+              if(ignored.has(name)) continue;
+              const abs=path.join(dir,name);
+              if(fs.statSync(abs).isDirectory()){ walk(abs); continue; }
+              entries.push(path.relative(root,abs).split(path.sep).join('/'));
+            }
+          })(root);
+          entries.sort();
+          fs.writeFileSync(out, JSON.stringify(entries)+'\n');
+          console.log(root + ' asset-manifest.json: ' + entries.length + ' entries');
+          "
+          }
+
+          rebuild_manifest "$DIST"
+          if [ -d "$PUBLIC" ]; then rebuild_manifest "$PUBLIC"; fi
+
+          # 把裁剪后的 dist（含新清单）覆盖同步到 iOS 工程。
+          # preload.js 未变化，无需重建。
+          npx cap copy ios
+
+      - name: Show project and scheme
+        working-directory: apps/mobile/ios/${{ steps.ios.outputs.app_dir }}
+        run: |
+          ls -la
+          if [ "${{ steps.ios.outputs.mode }}" = "workspace" ]; then
+            xcodebuild -list -workspace "${{ steps.ios.outputs.target }}"
+          else
+            xcodebuild -list -project "${{ steps.ios.outputs.target }}"
+          fi
+
+      - name: Build unsigned archive
+        working-directory: apps/mobile/ios/${{ steps.ios.outputs.app_dir }}
+        run: |
+          set -o pipefail
+
+          # 提前体检：若可用空间不足 5GB，直接给出明确结论，
+          # 避免 xcodebuild 在磁盘写满时抛出难以排查的报错。
+          AVAIL_KB=$(df -k / | awk 'NR==2 {print $4}')
+          AVAIL_GB=$((AVAIL_KB / 1024 / 1024))
+          echo "Available disk: ${AVAIL_GB} GB"
+          if [ "$AVAIL_GB" -lt 5 ]; then
+            echo "::error::磁盘不足（仅剩 ${AVAIL_GB} GB）。本仓库 Git 历史过大，请参考 workflow 顶部注释。"
+            du -sh . 2>/dev/null || true
+            exit 1
+          fi
+
+          # 根据探测结果决定用 -workspace 还是 -project
+          if [ "${{ steps.ios.outputs.mode }}" = "workspace" ]; then
+            TARGET_FLAG="-workspace"
+          else
+            TARGET_FLAG="-project"
+          fi
+
+          # CODE_SIGNING_ALLOWED=NO 是核心：没有证书也能编译出 .app
+          xcodebuild \
+            $TARGET_FLAG "${{ steps.ios.outputs.target }}" \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination "generic/platform=iOS" \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_ENTITLEMENTS="" \
+            AD_HOC_CODE_SIGNING_ALLOWED=YES \
+            ONLY_ACTIVE_ARCH=NO \
+            build
+
+      - name: Package unsigned IPA
+        id: package
+        run: |
+          APP_PATH=$(find "$RUNNER_TEMP/DerivedData/Build/Products/Release-iphoneos" -maxdepth 1 -name "*.app" -type d | head -n1)
+          if [ -z "$APP_PATH" ]; then
+            echo "::error::No .app bundle found. Build output:"
+            find "$RUNNER_TEMP/DerivedData/Build/Products" -maxdepth 2 || true
+            exit 1
+          fi
+          echo "Found app bundle: $APP_PATH"
+
+          IPA_NAME="noname-ios-unsigned"
+          BUILD_DIR="$RUNNER_TEMP/ipa-build"
+          rm -rf "$BUILD_DIR"
+          mkdir -p "$BUILD_DIR/Payload"
+          cp -r "$APP_PATH" "$BUILD_DIR/Payload/"
+
+          # 顺手剥掉 macOS 的扩展属性文件，减小体积
+          find "$BUILD_DIR/Payload" -name "._*" -delete || true
+
+          cd "$BUILD_DIR"
+          zip -qry "$IPA_NAME.ipa" Payload
+
+          echo "IPA size:"
+          du -h "$IPA_NAME.ipa"
+          ls -lh "$IPA_NAME.ipa"
+
+          echo "ipa_path=$BUILD_DIR/$IPA_NAME.ipa" >> "$GITHUB_OUTPUT"
+          echo "ipa_name=$IPA_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: noname-ios-unsigned
+          path: ${{ steps.package.outputs.ipa_path }}
+          # workflow_dispatch 时用用户填的天数；tag 触发时 inputs 为空，回退到 14 天
+          retention-days: ${{ github.event_name == 'workflow_dispatch' && fromJSON(inputs.retention_days) || 14 }}
+          if-no-files-found: error
+
+      - name: Publish to Release
+        if: github.event_name == 'push' || inputs.create_release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          IPA_PATH: ${{ steps.package.outputs.ipa_path }}
+        run: |
+          # tag 触发时用 tag 名做 Release 标签，手动触发时按运行序号生成
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            TAG="${{ github.ref_name }}"
+            TITLE="iOS unsigned ${{ github.ref_name }}"
+          else
+            TAG="ios-build-${{ github.run_number }}"
+            TITLE="iOS unsigned build #${{ github.run_number }}"
+          fi
+          echo "Release tag: $TAG"
+
+          # 标签已存在就复用，否则新建
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $TAG already exists, uploading asset only."
+          else
+            gh release create "$TAG" \
+              --repo "$GITHUB_REPOSITORY" \
+              --title "$TITLE" \
+              --notes "未签名 iOS ipa（GitHub Actions 自动构建，commit ${{ github.sha }}）。
+
+          **安装方式**：把这个 .ipa 导入 SideStore / AltStore，用你自己的 Apple ID 重签后安装。
+
+          ⚠️ 未签名包无法直接安装，必须经过侧载工具重签。免费 Apple ID 签名的应用 7 天后过期，需要重新刷新。"
+          fi
+
+          gh release upload "$TAG" "$IPA_PATH" --repo "$GITHUB_REPOSITORY" --clobber
+
+      - name: Summary
+        env:
+          IPA_PATH: ${{ steps.package.outputs.ipa_path }}
+        run: |
+          IPA_SIZE=$(du -h "$IPA_PATH" | cut -f1)
+          {
+            echo "## iOS 未签名 IPA 构建完成 ✅"
+            echo ""
+            echo "| 项目 | 值 |"
+            echo "| --- | --- |"
+            echo "| 产物 | \`noname-ios-unsigned.ipa\` |"
+            echo "| 大小 | ${IPA_SIZE} |"
+            echo "| 签名 | 未签名（需 SideStore/AltStore 重签） |"
+            echo "| Xcode | $(xcodebuild -version | head -n1) |"
+            echo ""
+            echo "下载：本页底部 **Artifacts**，或 [Releases](https://github.com/$GITHUB_REPOSITORY/releases)。"
+            echo ""
+            echo "> 装到 iPhone 的步骤见 \`apps/mobile/docs/ios.md\`。"
+          } >> "$GITHUB_STEP_SUMMARY"
