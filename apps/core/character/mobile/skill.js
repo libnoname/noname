@@ -40,7 +40,8 @@ const skills = {
 						const num = player.countCards("he", { suit: "diamond" }) + target.countCards("e", { suit: "diamond" }) + Math.floor(target.countCards("h") / 5);
 						if (get.attitude(player, target) > 0 && controls.includes("摸牌") && num > 0) return "摸牌";
 						if (get.attitude(player, target) < 0) {
-							return controls.slice().remove("cancel2").randomGet();
+							if (controls.includes("摸牌")) return "摸牌";
+							return "加伤";
 						}
 						return "cancel2";
 					},
