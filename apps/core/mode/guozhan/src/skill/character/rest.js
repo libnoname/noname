@@ -10543,26 +10543,26 @@ export default {
 		preHidden: true,
 		async content(event, trigger, player) {
 			const draw = trigger.player.draw();
-			const canGainMark = current => {
-				if (current.hasMark("yinyang_mark") || !current.isFriendOf(player)) {
-					return false;
-				}
-				const names = get.nameList(current).filter(i => i.indexOf("gz_shibing") !== 0);
-				game.getAllGlobalHistory("everything", evt => {
-					if (evt.name !== "showCharacter" || evt.player !== current) {
-						return false;
-					}
-					names.removeArray(evt.toShow);
-				});
-				return names.length === 0;
-			};
 			if (!player.hasHistory("damage", evt => evt.card === trigger.card) || !game.hasPlayer(canGainMark)) {
 				await draw;
 				return;
 			}
 			const choice = player.chooseTarget({
 				prompt: "是否令一名武将牌均明置过的己方角色获得“阴阳鱼”标记？",
-				filterTarget: (_card, _player, current) => canGainMark(current),
+				filterTarget(_card, _player, current) {
+					return canGainMark(current);
+
+					function canGainMark(current) {
+						if (current.hasMark("yinyang_mark") || !current.isFriendOf(player)) {
+							return false;
+						}
+						const shownNames = new Set(game.getAllGlobalHistory("everything", evt => evt.name === "showCharacter" && evt.player === current).flatMap(evt => evt.toShow));
+						return get
+							.nameList(current)
+							.filter(name => !name.startsWith("gz_shibing"))
+							.every(name => shownNames.has(name));
+					}
+				},
 				ai: target => get.attitude(_status.event.player, target) * Math.sqrt(1 + target.needsToDiscard()),
 			});
 			await draw;
@@ -10574,6 +10574,17 @@ export default {
 			player.line(target, "green");
 			target.addMark("yinyang_mark", 1, false);
 			await game.delayx();
+
+			function canGainMark(current) {
+				if (current.hasMark("yinyang_mark") || !current.isFriendOf(player)) {
+					return false;
+				}
+				const shownNames = new Set(game.getAllGlobalHistory("everything", evt => evt.name === "showCharacter" && evt.player === current).flatMap(evt => evt.toShow));
+				return get
+					.nameList(current)
+					.filter(name => !name.startsWith("gz_shibing"))
+					.every(name => shownNames.has(name));
+			}
 		},
 	},
 	gzshicai: {
@@ -16523,9 +16534,10 @@ export default {
 						.chooseCard({
 							position: "he",
 							prompt: get.prompt2("qianhuan"),
-							filterCard: card => !suits.includes(get.suit(card)),
+							filterCard: card => !get.event().suits.includes(get.suit(card)),
 							ai: card => 9 - get.value(card),
 						})
+						.set("suits", suits)
 						.setHiddenSkill("qianhuan")
 						.forResult();
 				},
