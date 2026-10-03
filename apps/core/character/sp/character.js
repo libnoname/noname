@@ -1,4 +1,12 @@
 const characters = {
+	// 唐棠 by weiqiaocode
+	tangtang: {
+		sex: "female",
+		group: "qun",
+		hp: 3,
+		skills: ["zexing", "tt_zhiyi"],
+		img: "image/character/tangtang.png",
+	},
 	wangai: {
 		sex: "female",
 		group: "wei",
