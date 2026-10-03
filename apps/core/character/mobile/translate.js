@@ -1,6 +1,10 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	mb_mayunlu: "手杀马云禄",
+	mb_mayunlu_prefix: "手杀",
+	mbfengpo: "凤魄",
+	mbfengpo_info: "每阶段各限一次，你使用【杀】或【决斗】指定唯一目标后，你可选择一项：1.摸X张牌；2.令此牌伤害+X（X为你与目标方片牌数之和）。",
 	mb_shen_lvbu: "手杀神吕布",
 	mb_shen_lvbu_prefix: "手杀神",
 	mbwumou: "无谋",

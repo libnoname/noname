@@ -196,7 +196,7 @@ window.noname_character_replace = {
 	manchong: ["manchong", "re_manchong", "ol_manchong"],
 	masu: ["xin_masu", "re_masu", "masu", "dc_sb_masu", "ns_masu"],
 	mateng: ["dc_mateng", "tw_mateng", "std_mateng", "mateng", "v_mateng"],
-	mayunlu: ["mayunlu", "tw_mayunlu", "std_mayunlu"],
+	mayunlu: ["mayunlu", "tw_mayunlu", "std_mayunlu", "mb_mayunlu"],
 	mazhong: ["mazhong", "re_mazhong", "tw_mazhong"],
 	menghuo: ["menghuo", "re_menghuo", "sb_menghuo", "sp_menghuo", "dc_sp_menghuo", "jd_sb_menghuo"],
 	mengyou: ["mengyou", "ns_mengyou"],
