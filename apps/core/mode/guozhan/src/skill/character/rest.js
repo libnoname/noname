@@ -9718,6 +9718,9 @@ export default {
 			const loseHpEvent = player.loseHp();
 			event.target = target;
 			await loseHpEvent;
+			if (!player.isAlive()) {
+				return;
+			}
 
 			let addIndex = 0;
 			const list = [];
