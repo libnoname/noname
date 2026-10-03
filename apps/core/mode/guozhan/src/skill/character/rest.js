@@ -7048,7 +7048,7 @@ export default {
 								}
 								return 6 - get.value(card);
 							},
-							ai2: target => get.recoverEffect(target, player, player),
+							ai2: target => get.recoverEffect(target, get.player(), get.player()),
 							allowChooseAll: true,
 						})
 						.setHiddenSkill(event.skill)
@@ -18683,7 +18683,7 @@ export default {
 				.chooseTarget({
 					filterTarget: (_card, chooser, target) => chooser !== target && get.distance(chooser, target) <= 1,
 					forced: true,
-					ai: target => -get.attitude(player, target),
+					ai: target => -get.attitude(get.player(), target),
 				})
 				.forResult();
 			if (result.bool && result.targets.length) {
