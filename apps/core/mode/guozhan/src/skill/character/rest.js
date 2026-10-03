@@ -5592,7 +5592,10 @@ export default {
 				return;
 			}
 			while (player.isIn() && targets.length) {
-				await player.gainPlayerCard({ target: targets.shift(), position: "he", forced: true });
+				const result = await player.gainPlayerCard({ target: targets.shift(), position: "he", forced: true }).forResult();
+				if (result.bool && result.cards && result.cards.length) {
+					cards.addArray(result.cards);
+				}
 			}
 			if (targets.length) {
 				return;
@@ -10195,7 +10198,10 @@ export default {
 				return;
 			}
 			while (player.isAlive() && targets.length) {
-				await player.gainPlayerCard({ target: targets.shift(), position: "he", forced: true });
+				const result = await player.gainPlayerCard({ target: targets.shift(), position: "he", forced: true }).forResult();
+				if (result.bool && result.cards && result.cards.length) {
+					cards.addArray(result.cards);
+				}
 			}
 			if (targets.length) {
 				return;
