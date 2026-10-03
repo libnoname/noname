@@ -1618,22 +1618,7 @@ export class Library {
 												break;
 											}
 										}
-										var textMenu = ui.create.div("", str, nodeyy, function () {
-											var node = this.parentNode._link;
-											var config = node._link.config;
-											node._link.current = this.link;
-											var tmpName = node.lastChild.innerHTML;
-											node.lastChild.innerHTML = config.item[this._link];
-											if (config.onclick) {
-												if (config.onclick.call(node, this._link, this) === false) {
-													node.lastChild.innerHTML = tmpName;
-												}
-											}
-											if (config.update) {
-												config.update();
-											}
-										});
-										textMenu._link = str;
+										nodexx._link.addTextMenuItem(str, str);
 										nodezz.item[name] = str;
 										alert("已添加扩展地址：" + str);
 									}
@@ -2278,9 +2263,9 @@ export class Library {
 								delete lib.configMenu.appearence.config.image_background.item[background];
 								if (lib.config.image_background == background) {
 									background = "default";
-									this.lastChild.innerHTML = "默认";
+									this._link.setChoice("默认");
 								} else {
-									this.lastChild.innerHTML = lib.configMenu.appearence.config.image_background.item[lib.config.image_background];
+									this._link.setChoice(lib.configMenu.appearence.config.image_background.item[lib.config.image_background]);
 									return;
 								}
 							} else if (node.firstChild.innerHTML == get.verticalStr("删除")) {
@@ -2298,10 +2283,9 @@ export class Library {
 									delete lib.configMenu.appearence.config.image_background.item[background];
 									if (lib.config.image_background == background) {
 										background = "default";
-										this.lastChild.innerHTML = "默认";
+										this._link.setChoice("默认");
 									} else {
-										this.lastChild.innerHTML =
-											lib.configMenu.appearence.config.image_background.item[lib.config.image_background];
+										this._link.setChoice(lib.configMenu.appearence.config.image_background.item[lib.config.image_background]);
 										return;
 									}
 								}
@@ -2441,7 +2425,7 @@ export class Library {
 								node.classList.remove("showdelete");
 								if (lib.config.card_style == "custom") {
 									lib.configMenu.appearence.config.card_style.onclick("default");
-									switcher.lastChild.innerHTML = "默认";
+									switcher._link.setChoice("默认");
 								}
 								button.classList.add("transparent");
 							}
@@ -2590,7 +2574,7 @@ export class Library {
 								node.classList.remove("hideadd");
 								if (lib.config.cardback_style == "custom") {
 									lib.configMenu.appearence.config.cardback_style.onclick("default");
-									switcher.lastChild.innerHTML = "默认";
+									switcher._link.setChoice("默认");
 								}
 								button.classList.add("transparent");
 							}
@@ -2802,7 +2786,7 @@ export class Library {
 								node.classList.remove("hideadd");
 								if (lib.config.hp_style == "custom") {
 									lib.configMenu.appearence.config.hp_style.onclick("default");
-									switcher.lastChild.innerHTML = "默认";
+									switcher._link.setChoice("默认");
 								}
 								button.classList.add("transparent");
 								button.classList.remove("shown");
@@ -2998,7 +2982,7 @@ export class Library {
 								node.classList.remove("showdelete");
 								if (lib.config.player_style == "custom") {
 									lib.configMenu.appearence.config.player_style.onclick("default");
-									switcher.lastChild.innerHTML = "默认";
+									switcher._link.setChoice("默认");
 								}
 								button.classList.add("transparent");
 							}
@@ -3173,7 +3157,7 @@ export class Library {
 								node.classList.remove("showdelete");
 								if (lib.config.border_style == "custom") {
 									lib.configMenu.appearence.config.border_style.onclick("default");
-									switcher.lastChild.innerHTML = "默认";
+									switcher._link.setChoice("默认");
 								}
 								button.classList.add("transparent");
 							}
@@ -3385,7 +3369,7 @@ export class Library {
 								node.classList.remove("showdelete");
 								if (lib.config.menu_style == "custom") {
 									lib.configMenu.appearence.config.menu_style.onclick("default");
-									switcher.lastChild.innerHTML = "默认";
+									switcher._link.setChoice("默认");
 								}
 								button.classList.add("transparent");
 							}
@@ -3525,7 +3509,7 @@ export class Library {
 								node.classList.remove("showdelete");
 								if (lib.config.control_style == "custom") {
 									lib.configMenu.appearence.config.control_style.onclick("default");
-									switcher.lastChild.innerHTML = "默认";
+									switcher._link.setChoice("默认");
 								}
 								button.classList.add("transparent");
 							}
@@ -5077,7 +5061,7 @@ export class Library {
 				},
 				background_music: {
 					updatex: function () {
-						this.lastChild.innerHTML = this._link.config.item[lib.config.background_music];
+						this._link.setChoice(this._link.config.item[lib.config.background_music]);
 						var menu = this._link.menu;
 						for (var i = 0; i < menu.childElementCount; i++) {
 							if (
@@ -6832,7 +6816,7 @@ export class Library {
 				},
 				aozhan_bgm: {
 					updatex: function () {
-						this.lastChild.innerHTML = this._link.config.item[lib.config.mode_config.guozhan.aozhan_bgm];
+						this._link.setChoice(this._link.config.item[lib.config.mode_config.guozhan.aozhan_bgm]);
 						if (!Array.isArray(_status.aozhanBGMToRemove)) {
 							return;
 						}
