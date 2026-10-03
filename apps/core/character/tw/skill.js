@@ -392,7 +392,8 @@ const skills = {
 		audio: 2,
 		trigger: { player: "useCardAfter" },
 		filter(event, player) {
-			return !player.getStorage("twshuyin_used").includes(get.suit(event.card));
+			const suit = get.suit(event.card, player);
+			return player.getHistory("useCard", evt => get.suit(evt.card, player) === suit).indexOf(event) === 0;
 		},
 		async cost(event, trigger, player) {
 			const result = await player
@@ -409,7 +410,7 @@ const skills = {
 					],
 					filterTarget(card, player, target) {
 						if (!ui.selected.buttons?.length || ui.selected.buttons[0].link == "effect") {
-							return false;
+							return target == player;
 						}
 						return target.hasCards("he");
 					},
@@ -424,8 +425,11 @@ const skills = {
 						return 1 + Math.random();
 					},
 					ai2(target) {
-						if (!ui.selected.buttons?.length || ui.selected.buttons[0].link == "effect") {
+						if (!ui.selected.buttons?.length) {
 							return 0;
+						}
+						if (ui.selected.buttons[0].link == "effect") {
+							return 1;
 						}
 						return -get.attitude(get.player(), target);
 					},
@@ -436,15 +440,13 @@ const skills = {
 					bool: true,
 					cost_data: result.links[0],
 				};
-				if (result.targets?.length) {
+				if (result.targets?.length && result.links[0] == "gain") {
 					event.result.targets = result.targets;
 				}
 			}
 		},
 		async content(event, trigger, player) {
 			const { targets, cost_data: link } = event;
-			player.addTempSkill(event.name + "_used");
-			player.markAuto(event.name + "_used", [get.suit(trigger.card)]);
 			await player.draw();
 			if (targets?.length) {
 				const target = targets[0];
@@ -473,6 +475,12 @@ const skills = {
 				player.addSkill(event.name + "_effect");
 				//player.addMark(event.name + "_effect", 1, false);
 			}
+		},
+		init(player, skill) {
+			player.addSkill(skill + "_mark");
+		},
+		onremove(player, skill) {
+			player.removeSkill(skill + "_mark");
 		},
 		subSkill: {
 			effect: {
@@ -507,6 +515,33 @@ const skills = {
 					);
 					trigger.effectCount += num;
 					player.removeSkill(event.name);
+				},
+			},
+			mark: {
+				charlotte: true,
+				silent: true,
+				popup: false,
+				firstDo: true,
+				init(player, skill) {
+					const history = player.getHistory("useCard");
+					if (history.length) {
+						player.addTempSkill("twshuyin_used");
+						const suits = history.reduce((list, evt) => list.add(get.suit(evt.card, player)), []);
+						suits.sort((a, b) => lib.suit.indexOf(b) - lib.suit.indexOf(a));
+						player.setStorage("twshuyin_used", suits);
+						player.addTip(skill, `${get.translation(skill)}${suits.map(suit => get.translation(suit)).join("")}`, "phaseAfter");
+					}
+				},
+				onremove(player, skill) {
+					player.removeTip(skill);
+					player.removeSkill("twshuyin_used");
+				},
+				trigger: {player: "useCard"},
+				filter(event, player) {
+					return !player.getStorage("twshuyin_used").includes(get.suit(event.card, player));
+				},
+				async content(event, trigger, player) {
+					get.info(event.name).init(player, event.name);
 				},
 			},
 			used: { charlotte: true, onremove: true, intro: { content: "本回合已使用：$" } },
