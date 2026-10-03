@@ -229,9 +229,7 @@ const skills = {
 		check(card) {
 			return 114514 - get.value(card);
 		},
-		viewAs: {
-			name: "juedou",
-		},
+		viewAs: { name: "juedou" },
 		async precontent(event, trigger, player) {
 			const target = event.result.targets[0];
 			player.addTempSkill("potshanxi_used", "phaseAnyAfter");
@@ -240,10 +238,7 @@ const skills = {
 		ai: {
 			combo: "potqizhou",
 			order: 6,
-			result: {
-				player: 1,
-				target: -1,
-			},
+			result: { player: 1 },
 		},
 		subSkill: {
 			used: { charlotte: true, onremove: true },
