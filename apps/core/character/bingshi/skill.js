@@ -237,8 +237,9 @@ const skills = {
 		},
 		ai: {
 			combo: "potqizhou",
-			order: 6,
-			result: { player: 1 },
+			order() {
+				return get.order({ name: "juedou" }) + 0.5;
+			},
 		},
 		subSkill: {
 			used: { charlotte: true, onremove: true },
