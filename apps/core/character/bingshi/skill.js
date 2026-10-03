@@ -3,6 +3,215 @@ import { lib, game, ui, get, ai, _status } from "noname";
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
 	//potential--潜在, 潜力, 可能, 电位, 潜能, 势
+	//势赵云
+	potwuyi: {
+		audio: 6,
+		logAudio(event, player) {
+			return `potwuyi${player.getStorage("potwuyi").length + 1}.mp3`;
+		},
+		locked: false,
+		forced: true,
+		mod: {
+			cardUsable(card, player) {
+				if (player.getStorage("potwuyi").length > 1 && get.type(card) == "basic") return Infinity;
+			},
+			targetInRange(card, player) {
+				if (player.getStorage("potwuyi").length > 2 && get.type(card) == "basic") return true;
+			},
+		},
+		init(player, skill) {
+			const names = player.getStorage(skill);
+			player.countHistory("lose", evt => {
+				const evtx = evt.getParent();
+				const evt2 = evtx.relatedEvent || evtx.getParent();
+				if (evt.hs?.length) {
+					names.addArray(player.getHistory("useCard", evt3 => evt3.getParent() == evt2 && get.type(evt3.card) == "basic").map(evt3 => evt3.card.name));
+					names.addArray(player.getHistory("respond", evt3 => evt3.getParent() == evt2 && get.type(evt3.card) == "basic").map(evt3 => evt3.card.name));
+				}
+			});
+			if (names.length) {
+				names.unique();
+				const namex = ["sha", "shan", "tao", "jiu"];
+				names.sort((a, b) => namex.indexOf(a) - namex.indexOf(b));
+				player.setStorage(skill, names, true);
+				player.addTip(skill, `${get.translation(skill)}${names.map(name => get.translation(name)).join("")}`);
+			}
+		},
+		onremove(player, skill) {
+			delete player.storage[skill];
+			player.removeTip(skill);
+		},
+		trigger: { player: ["useCard", "respond"] },
+		filter(event, player) {
+			if (player.getStorage("potwuyi").length >= 4) return false;
+			return player.hasHistory("lose", evt => evt.getParent() == event && evt.hs?.length) && !player.getStorage("potwuyi").includes(event.card.name) && get.type(event.card) == "basic";
+		},
+		async content(event, trigger, player) {
+			get.info(event.name).init(player, event.name);
+			if (player.getStorage(event.name).length >= 4 && player.countCards("h") != 4) {
+				if (player.countCards("h") < 4) await player.drawTo(4);
+				else await player.chooseToDiscard({ forced: true, position: "h", selectCard: player.countCards("h") - 4 });
+			}
+		},
+		intro: {
+			content(storage, player) {
+				if (!storage?.length) return "当前未使用或打出任何牌名的牌";
+				let str = `当前已使用或打出：${storage.map(name => get.translation(name)).join("")}`;
+				return str;
+			},
+		},
+		group: ["potwuyi_weijing", "potwuyi_gaoda"],
+		subSkill: {
+			round: { charlotte: true },
+			weijing: {
+				audio: ["potwuyi5.mp3", "potwuyi6.mp3"],
+				enable: "chooseToUse",
+				filter(event, player) {
+					if (player.getStorage("potwuyi").length < 1) return false;
+					if (player.hasSkill("potwuyi_round")) return false;
+					return get.inpileVCardList(info => {
+						if (!["sha", "shan"].includes(info[2])) return false;
+						const card = get.autoViewAs({ name: info[2], nature: info[3] }, "unsure");
+						return event.filterCard(card, player, event);
+					}).length;
+				},
+				chooseButton: {
+					dialog(event, player) {
+						const list = get.inpileVCardList(info => {
+							if (!["sha", "shan"].includes(info[2])) return false;
+							const card = get.autoViewAs({ name: info[2], nature: info[3] }, "unsure");
+							return event.filterCard(card, player, event);
+						});
+						return ui.create.dialog("武翊", [list, "vcard"]);
+					},
+					filter(button, player) {
+						return _status.event.getParent().filterCard({ name: button.link[2] }, player, _status.event.getParent());
+					},
+					check(button) {
+						if (_status.event.getParent().type != "phase") {
+							return 1;
+						}
+						const player = get.player();
+						return player.getUseValue({
+							name: button.link[2],
+							nature: button.link[3],
+						});
+					},
+					backup(links, player) {
+						return {
+							filterCard: () => false,
+							selectCard: -1,
+							popname: true,
+							viewAs: {
+								name: links[0][2],
+								nature: links[0][3],
+							},
+							log: false,
+							async precontent(event, trigger, player) {
+								player.logSkill("potwuyi_weijing");
+								player.addTempSkill("potwuyi_round", "roundStart");
+							},
+						};
+					},
+					prompt(links, player) {
+						return "视为使用一张" + (get.translation(links[0][3]) || "") + get.translation(links[0][2]);
+					},
+				},
+				hiddenCard(player, name) {
+					if (player.getStorage("potwuyi").length < 1) return false;
+					return !player.hasSkill("potwuyi_round") && ["sha", "shan"].includes(name);
+				},
+				ai: {
+					fireAttack: true,
+					respondSha: true,
+					respondShan: true,
+					skillTagFilter(player, tag, arg) {
+						if (arg === "respond") {
+							return false;
+						}
+						return (() => {
+							switch (tag) {
+								case "fireAttack":
+									return ["sha"];
+								default:
+									return [tag.slice("respond".length).toLowerCase()];
+							}
+						})().some(name => get.info("potwuyi_weijing").hiddenCard(player, name));
+					},
+				},
+			},
+			gaoda: {
+				audio: "potwuyi",
+				inherit: "boss_juejing2",
+				locked: false,
+				filter(event, player) {
+					if (player.getStorage("potwuyi").length < 4) return false;
+					if (event.name === "gain" && event.player === player) {
+						return player.countCards("h") != 4;
+					}
+					let evt = event.getl?.(player);
+					if (!evt?.hs?.length || player.countCards("h") == 4) {
+						return false;
+					}
+					evt = event;
+					for (let i = 0; i < 4; i++) {
+						evt = evt.getParent("potwuyi_gaoda");
+						if (evt.name !== "potwuyi_gaoda") {
+							return true;
+						}
+					}
+					return false;
+				},
+				sourceSkill: "potwuyi",
+			},
+		},
+	},
+	potcuifeng: {
+		audio: 4,
+		logAudio: event => (event.name == "phase" ? 2 : ["potcuifeng3.mp3", "potcuifeng4.mp3"]),
+		trigger: { global: ["phaseEnd", "damageBegin1"] },
+		filter(event, player) {
+			if (event.name == "phase") {
+				const card = get.autoViewAs({ name: "juedou", isCard: true }, "unsure");
+				return event.player != player && player.countMark("potcuifeng_round") < 2 && player.canUse(card, event.player);
+			}
+			return event.card?.storage?.potcuifeng && game.hasPlayer(current => current.hasHistory("respond", evt => evt.card.name == "sha"));
+		},
+		async cost(event, trigger, player) {
+			if (trigger.name == "phase") {
+				event.result = await player
+					.chooseBool({
+						prompt: get.prompt(event.skill, trigger.player),
+						prompt2: "视为对其使用一张【决斗】？",
+						ai() {
+							const { player, target } = get.event();
+							const card = get.autoViewAs({ name: "juedou", isCard: true }, "unsure");
+							return get.effect(target, card, player, player);
+						},
+					})
+					.set("target", trigger.player)
+					.forResult();
+				if (event.result?.bool) {
+					event.result.targets = [trigger.player];
+				}
+			} else {
+				event.result = { bool: true };
+			}
+		},
+		async content(event, trigger, player) {
+			if (trigger.name == "phase") {
+				player.addTempSkill(`${event.name}_round`, "roundStart");
+				player.addMark(`${event.name}_round`, 1, false);
+				const { targets } = event;
+				const card = get.autoViewAs({ name: "juedou", isCard: true, storage: { potcuifeng: true } }, "unsure");
+				await player.useCard({ card, targets });
+			} else {
+				const num = game.filterPlayer().reduce((sum, target) => sum + target.countHistory("respond", evt => evt.card.name == "sha"), 0);
+				trigger.num += num;
+			}
+		},
+		subSkill: { round: { charlotte: true, onremove: true } },
+	},
 	//势贺齐
 	potshanxi: {
 		audio: 4,
