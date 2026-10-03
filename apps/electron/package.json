@@ -6,12 +6,13 @@
   "main": "dist/app/main.js",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"vite\" \"pnpm -F noname dev\"",
-    "build": "vite build",
+    "dev": "pnpm build:preload && concurrently \"vite\" \"pnpm -F noname dev\"",
+    "build": "vite build && pnpm build:preload",
+    "build:preload": "vite build --config vite.preload.config.ts",
     "build:win": "tsx build.ts win",
     "build:linux": "tsx build.ts linux",
     "build:mac": "tsx build.ts macos",
-    "lint": "pnpm eslint app/**"
+    "lint": "pnpm eslint app/** src/**"
   },
   "devDependencies": {
     "electron": "^39.5.2",

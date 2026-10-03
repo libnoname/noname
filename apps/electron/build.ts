@@ -1,5 +1,6 @@
 import { build as buildElectron, Platform, Arch, type PackagerOptions, type Configuration } from "electron-builder";
 import { build as buildVite } from "vite";
+import preloadConfig from "./vite.preload.config";
 
 async function main(targets: PackagerOptions["targets"], config: Partial<Configuration> = {}) {
 	const appPaths = await buildElectron({
@@ -27,10 +28,11 @@ async function main(targets: PackagerOptions["targets"], config: Partial<Configu
 }
 
 await buildVite();
+await buildVite(preloadConfig);
 
 switch (process.argv[2]) {
 	case "win":
-		main(Platform.WINDOWS.createTarget("nsis", Arch.x64), {
+		await main(Platform.WINDOWS.createTarget("nsis", Arch.x64), {
 			win: {
 				verifyUpdateCodeSignature: false,
 				icon: "noname.ico",
@@ -42,10 +44,10 @@ switch (process.argv[2]) {
 		});
 		break;
 	case "linux":
-		main(Platform.LINUX.createTarget("AppImage", Arch.x64));
+		await main(Platform.LINUX.createTarget("AppImage", Arch.x64));
 		break;
 	case "macos":
-		main(Platform.MAC.createTarget("dmg", Arch.arm64, Arch.x64), {
+		await main(Platform.MAC.createTarget("dmg", Arch.arm64, Arch.x64), {
 			mac: {
 				identity: null,
 			},
