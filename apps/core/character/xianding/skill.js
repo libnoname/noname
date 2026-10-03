@@ -19515,63 +19515,25 @@ const skills = {
 				}
 				return true;
 			},
-			check(button) {
-				const player = get.player();
-				const link = button.link;
-				const hs = player.countCards("h");
-				const nums = [];
-				const effs = [];
-				const mine = [];
-				if (link < 0) {
-					// 考虑人机可能弃装备牌
-					const discard = player
-						.getCards("he")
-						.sort((a, b) => get.value(a, player) - get.value(b, player))
-						.slice(0, 3);
-					let num = -discard.length;
-					for (const card of discard) {
-						if (get.position(card) === "e") {
-							num++;
-						} else {
-							// 计算弃牌收益
-							mine.push((mine.at(-1) || 0) - get.value(card, player));
-						}
-					}
-					if (!num) {
-						return 0;
-					}
-					while (num < 0) {
-						// 枚举可能弃牌情况
-						nums.push(hs + num);
-						num++;
+			check({ link: num }) {
+				const player = get.player(),
+					{ getEffect, checkDiscard } = get.info("dcsbzhanban");
+				const hasZhuSkill = player.hasSkill("dcsbtiancheng");
+				let effs = 0;
+				if (num > 0) {
+					//自己的摸牌收益，缩小下和弃牌选项的收益差距
+					effs += (get.effect(player, { name: "draw" }, player, player) * num) / 10;
+					const targets = game.filterPlayer(current => current != player),
+						hs = player.countCards("h") + num;
+					for (const target of targets) {
+						const diff = hs - target.countCards("h");
+						effs += getEffect(player, target, diff, hasZhuSkill);
 					}
 				} else {
-					nums.push(hs + link);
-					mine.push(link * get.effect(player, { name: "draw" }, player, player));
+					//没有详细弃牌选项，直接用外部ai
+					effs += checkDiscard(player)?.[1] ?? 0;
 				}
-				for (const num of nums) {
-					// 自己的摸弃牌收益+其他人的
-					let eff = mine.pop();
-					eff += game
-						.filterPlayer(targetx => targetx !== player)
-						.reduce((sum, targetx) => {
-							const numx = num - targetx.countCards("h");
-							let val;
-							if (numx > 0) {
-								val = (numx - 3) * get.effect(targetx, { name: "draw" }, player, player);
-							} else if (numx < 0) {
-								val = (numx + 3) * get.effect(targetx, { name: "draw" }, player, player);
-							} else {
-								val = get.damageEffect(targetx, player, player);
-							}
-							if (val < 0 && player.hasZhuSkill("dcsbtiancheng", targetx)) {
-								return sum;
-							}
-							return sum + val;
-						}, 0);
-					effs.push(eff);
-				}
-				return Math.max(...effs);
+				return effs;
 			},
 			backup(links) {
 				return {
@@ -19586,7 +19548,27 @@ const skills = {
 						if (link > 0) {
 							await player.draw(link);
 						} else if (link < 0) {
-							await player.chooseToDiscard(`斩绊：请弃置一至三张牌`, "he", [1, 3], true);
+							await player
+								.chooseToDiscard(`斩绊：请弃置一至三张牌`, "he", [1, 3], true)
+								.set("ai", card => {
+									if (get.event().resultAI.includes(card)) {
+										return 1;
+									}
+									return 0;
+								})
+								.set(
+									"resultAI",
+									(function () {
+										let num = get.info("dcsbzhanban").checkDiscard(player)?.[0];
+										if (!num) {
+											return [];
+										}
+										return player
+											.getDiscardableCards(player, "he")
+											.sort((a, b) => get.unuseful(b) - get.unuseful(a))
+											.slice(0, num);
+									})()
+								);
 						}
 					},
 					async content(event, trigger, player) {
@@ -19611,6 +19593,50 @@ const skills = {
 					},
 				};
 			},
+		},
+		getEffect(player, target, num, hasZhuSkill) {
+			let result = 0;
+			if (num < 0) {
+				result += get.effect(target, { name: "guohe_copy2" }, target, player) * (3 - num) * Math.exp(num / 10);
+				result += get.effect(target, { name: "draw" }, player, player) * 3 * Math.exp(-3 / 10);
+			} else if (num > 0) {
+				result += get.effect(target, { name: "draw" }, player, player) * (3 + num) * Math.exp(-num / 10);
+				result += get.effect(target, { name: "guohe_copy2" }, target, player) * 3 * Math.exp(-3 / 10);
+			} else {
+				result += get.damageEffect(target, player, player);
+			}
+			//若有主公技，且目标角色为群雄势力，对自己收益为负，则在主公技内取消该目标
+			if (hasZhuSkill && target.group === "qun" && result < 0) {
+				result = 0;
+			}
+			return result;
+		},
+		checkDiscard(player) {
+			const hasZhuSkill = player.hasSkill("dcsbtiancheng"),
+				{ getEffect } = get.info("dcsbzhanban"),
+				targets = game.filterPlayer(current => current != player);
+			let num = Math.min(player.countDiscardableCards(player, "he"), 3),
+				result;
+			while (num > 0) {
+				//初始收益为0，否则基本不考虑弃牌
+				let effs = 0,
+					hs =
+						player.countCards("h") -
+						player
+							.getDiscardableCards(player, "he")
+							.sort((a, b) => get.unuseful(b) - get.unuseful(a))
+							.slice(0, num)
+							.filter(card => get.position(card) === "h").length;
+				for (const target of targets) {
+					const diff = hs - target.countCards("h");
+					effs += getEffect(player, target, diff, hasZhuSkill);
+				}
+				if (!result || result[1] < effs) {
+					result = [num, effs];
+				}
+				num--;
+			}
+			return result;
 		},
 		ai: {
 			order: 5,
@@ -19640,20 +19666,28 @@ const skills = {
 					return target !== player && target.group === "qun" && get.event().getTrigger().result.targets.includes(target);
 				})
 				.set("ai", target => {
-					const num = get.player().countCards("h");
-					const numx = num - target.countCards("h");
-					const att = get.attitude(get.player(), target);
-					let val;
-					if (numx > 0) {
-						val = numx - 3;
-					} else if (numx < 0) {
-						val = numx + 3;
-					} else {
-						val = -2;
-					}
-					val = val === 0 ? 0.5 : val;
-					return val * att < 0;
+					const diff = get.event().prenum - target.countCards("h");
+					let eff = get.info("dcsbzhanban").getEffect(get.player(), target, diff);
+					return eff < 0;
 				})
+				.set(
+					"prenum",
+					(function () {
+						const link = get.info("dcsbzhanban_backup").link;
+						if (link > 0) {
+							return player.countCards("h") + link;
+						}
+						const num = get.info("dcsbzhanban").checkDiscard(player)?.[0] || -1;
+						return (
+							player.countCards("h") -
+							player
+								.getDiscardableCards(player, "he")
+								.sort((a, b) => get.unuseful(b) - get.unuseful(a))
+								.slice(0, num)
+								.filter(card => get.position(card) === "h").length
+						);
+					})()
+				)
 				.forResult();
 		},
 		async content(event, trigger, player) {
@@ -35815,13 +35849,13 @@ const skills = {
 					let control = "选项二";
 					if (choices.length > 1) {
 						const choice = game.hasPlayer(current => !current.hasCards("h") && get.attitude(player, current) > 0) ? "选项一" : "选项二";
-						control = await player
+						({ control } = await player
 							.chooseControl({
 								controls: choices,
 								choiceList,
 								ai: () => choice,
 							})
-							.forResultControl();
+							.forResult());
 					}
 					if (control !== "选项一") {
 						await player.chooseToDiscard({
