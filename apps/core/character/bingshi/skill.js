@@ -1087,6 +1087,7 @@ const skills = {
 	potfaen: {
 		audio: 4,
 		logAudio: () => 2,
+		usable: 2,
 		trigger: { global: "useCard" },
 		filter(event, player) {
 			const history = game.getAllGlobalHistory("useCard");
@@ -1206,7 +1207,7 @@ const skills = {
 						return get.event().targets.includes(target);
 					},
 					ai(target) {
-						return get.attitude(get.player(), target) * (114514 - target.countCards("h"));
+						return get.effect(target, { name: "draw" }, get.player(), get.player());
 					},
 				})
 				.set("targets", targets)
@@ -1216,10 +1217,7 @@ const skills = {
 			const {
 				targets: [target],
 			} = event;
-			//我不好说
-			const next = target.phaseDraw();
-			event.next.remove(next);
-			trigger.next.push(next);
+			await target.draw(2);
 		},
 	},
 	//势曹真
