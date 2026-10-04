@@ -1574,6 +1574,41 @@ const skills = {
 			},
 		},
 	},
+	jdsbxiaoji: {
+		audio: "sbxiaoji",
+		inherit: "xiaoji",
+		forced: true,
+		locked: false,
+		groupSkill: "wu",
+		filter(event, player) {
+			return player.group == "wu";
+		},
+		async content(event, trigger, player) {
+			await player.draw(2);
+			if (!game.hasPlayer(current => current.hasDiscardableCards(player, "ej"))) {
+				return;
+			}
+			const result = await player
+				.chooseTarget("是否弃置场上的一张牌？", (card, player, target) => {
+					return target.countDiscardableCards(player, "ej");
+				})
+				.set("ai", target => {
+					const player = get.player();
+					const att = get.attitude(player, target);
+					if (att > 0 && (target.countCards("j") > 0 || target.countCards("e", card => get.value(card, target) < 0))) {
+						return 2;
+					}
+					if (att < 0 && target.countCards("e") > 0 && !target.hasSkillTag("noe")) {
+						return 1;
+					}
+					return 0;
+				})
+				.forResult();
+			if (result?.bool && result?.targets?.length) {
+				await player.discardPlayerCard(result.targets[0], "ej", true);
+			}
+		},
+	},
 	//九鼎-种地的
 	jdsbjieyue: {
 		audio: "sbjieyue",

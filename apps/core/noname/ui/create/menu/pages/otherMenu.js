@@ -1127,6 +1127,7 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 					clickMode.call(firstOther);
 				}
 			}
+			start.firstChild.scrollTop = 0;
 		});
 	}
 

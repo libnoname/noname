@@ -1,4 +1,11 @@
 export default {
+	"#clandunji1": "收敛身形，隐迹鲁阳。",
+	"#clandunji2": "家严手迹，望君台鉴。",
+	"#clanyunying1": "晓角吟风，一叶坠露。",
+	"#clanyunying2": "鬓动云影，搅乱天星。",
+	"#clandaojie_clan_xunguan1": "有高蹈之志，方能步高蹈之途。",
+	"#clandaojie_clan_xunguan2": "身虽稚幼，亦能称节方手。",
+	"#clan_xunguan:die": "襄城在前五十里，望诸君勉力……",
 	"#clanshixi1": "满枝橘子香，小女窗前贴花黄。",
 	"#clanshixi2": "提裙扑流萤，囊灯一盏照夜读。",
 	"#clanjianbai1": "阿耶答应我的事，一定能做到。",
@@ -246,5 +253,4 @@ export default {
 	"#clanzelie_clan_lujing1": "曹贼之强，跨险南北，终止濡须铁壁。",
 	"#clanzelie_clan_lujing2": "伪备之盛，泽身白帝，胆裂江东风雷。",
 	"#clan_lujing:die": "阿童复阿童，不畏岸兽，畏蛟龙……",
-
 };

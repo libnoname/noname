@@ -1829,7 +1829,7 @@ declare interface SkillAI {
 			effect有3种可能的返回值,1个数字，长度为2的数组，长度为4的数组。
 			1个数字n:收益*n
 			长度为2的数组[a,b]:a*收益+b
-			长度为4的数组[a,b,c,d]:对目标为a*收益+b，对使用者为c*收益+d
+			长度为4的数组[a,b,c,d]:对你为a*收益+b，对另一个视角为c*收益+d
 			*注意 zeroplayertarget 实际上是[0,0,0,0]  zerotarget  实际上是[0,0
 			"下面以target:function(){},别人对你使用杀为例，括号里为可能的技能描述"
 				return -1;//负影响(杀对你造成伤害时改为等量回复)
@@ -1849,7 +1849,7 @@ declare interface SkillAI {
 		 * 
 		 * 返回结果的字符串："zeroplayer","zerotarget","zeroplayertarget",指定最终结果的:对使用者的收益值,对目标的收益值为0
 		 * 
-		 * 返回数组的情况[a,b,c,d]:对被使用者 a*result+b 对被使用者c*result+d
+		 * 返回数组的情况[a,b,c,d]:对使用者 a*result1+b 对被使用者c*result2+d
 		 * @param result1 即当前ai.result.player的结果
 		 */
 		player?(card: Card, player: Player, target: Player, result1: number): "zeroplayer" | "zerotarget" | "zeroplayertarget" | number | number[] | void | boolean;
@@ -1858,7 +1858,7 @@ declare interface SkillAI {
 		 * 
 		 * 返回结果的字符串："zeroplayer","zerotarget","zeroplayertarget",指定最终结果的:对使用者的收益值,对目标的收益值为0
 		 * 
-		 * 返回数组的情况[a,b,c,d]:对被使用者a*result+b 对被使用者c*result+d
+		 * 返回数组的情况[a,b,c,d]:对被使用者a*result2+b 对使用者c*result1+d
 		 * @param result2 即当前ai.result.target的结果
 		 */
 		target?(card: Card, player: Player, target: Player, result2: number): "zeroplayer" | "zerotarget" | "zeroplayertarget" | number | number[] | boolean | void;
