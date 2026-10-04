@@ -2371,7 +2371,6 @@ const skills = {
 				async content(event, trigger) {
 					game.addVideo("diex", trigger.player);
 					trigger.reserveOut = true;
-					trigger.pszhaoluan = true;
 					trigger.player.storage.pszhaoluan_pending = true;
 				},
 			},
@@ -2383,7 +2382,7 @@ const skills = {
 					if (get.mode() !== "identity" || !player.isIn() || !player.hasSkill("pszhaoluan")) {
 						return false;
 					}
-					return !player.identityShown || game.dead.some(current => current.storage.pszhaoluan_pending);
+					return !_status.over && (!player.identityShown || game.dead.some(current => current.storage.pszhaoluan_pending));
 				},
 				async content(event, trigger, player) {
 					const list = game.dead.filter(current => current.storage.pszhaoluan_pending);
@@ -2436,15 +2435,17 @@ const skills = {
 			},
 			check: {
 				mode: ["identity"],
-				trigger: { global: "dieAfter" },
+				trigger: { global: "phaseAfter" },
 				forced: true,
 				forceDie: true,
+				priority: -1,
+				popup: false,
 				filter(event, player) {
 					return (
 						get.mode() === "identity" &&
 						!_status.over &&
 						player.hasSkill("pszhaoluan") &&
-						event.pszhaoluan === true
+						game.dead.some(current => current.storage.pszhaoluan_pending)
 					);
 				},
 				async content(event, trigger, player) {
