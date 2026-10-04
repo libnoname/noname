@@ -7,6 +7,7 @@ export default {
 	cuilie: "镇纲责僭",
 	star_jiangwan: "讬忠赞业",
 	star_yanliang: "狰颤四方",
+	star_dongyun: "謇谔镇慝",
 	lijue: "奸谋恶勇",
 	zhangji: "武威雄豪",
 	fanchou: "庸生变难",
