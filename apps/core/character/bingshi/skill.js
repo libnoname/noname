@@ -210,7 +210,7 @@ const skills = {
 				const card = get.autoViewAs({ name: "juedou", isCard: true, storage: { potcuifeng: true } }, "unsure");
 				await player.useCard({ card, targets });
 			} else {
-				const num = game.filterPlayer().reduce((sum, target) => sum + target.countHistory("respond", evt => evt.card.name == "sha"), 0);
+				const num = game.filterPlayer2().reduce((sum, target) => sum + target.countHistory("respond", evt => evt.card.name == "sha"), 0);
 				trigger.num += num;
 			}
 		},
