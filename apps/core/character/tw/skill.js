@@ -3254,7 +3254,7 @@ const skills = {
 				await target.draw({ num: 1 + extra });
 			}
 		},
-		marktext: "笨",
+		marktext: "策",
 		intro: {
 			name: "策(明策)",
 			name2: "策",
