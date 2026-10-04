@@ -7,6 +7,76 @@ export default {
 	name: "huodong",
 	connect: true,
 	card: {
+		mb_luojingxiashi: {
+			fullskin: true,
+			type: "trick",
+			enable: true,
+			selectTarget: 1,
+			filterTarget: true,
+			async content(event, trigger, player) {
+				const { target } = event;
+				//这居然可叠加？？？
+				target.addSkill("mb_luojingxiashi");
+				target.addMark("mb_luojingxiashi", 1, false);
+			},
+			ai: {
+				basic: {
+					order: 8,
+					useful: (card, i) => 10 / (3 + i),
+					value: (card, player) => {
+						let max = 0;
+						for (const current of game.filterPlayer()) {
+							max = Math.max(max, get.attitude(player, current));
+						}
+						if (max <= 0) {
+							return 5;
+						}
+						return 0.42 * max;
+					},
+				},
+				result: {
+					target: -1,
+				},
+				tag: {
+					loseHp: 1,
+				},
+			},
+		},
+		mb_jinshangtianhua: {
+			fullskin: true,
+			type: "trick",
+			enable: true,
+			selectTarget: 1,
+			filterTarget: true,
+			async content(event, trigger, player) {
+				const { target } = event;
+				target.addSkill("mb_jinshangtianhua");
+				target.addMark("mb_jinshangtianhua", 1, false);
+			},
+			ai: {
+				wuxie(target, card, player, viewer) {
+					if (target.countCards("h") * Math.max(target.hp, 5) > 6) {
+						return 0;
+					}
+				},
+				basic: {
+					order: 114514,
+					useful: 2.9,
+					value(card, player) {
+						if (player.hp > 2) {
+							return 7;
+						}
+						return 7 - 0.7 * Math.min(3, player.countCards("hs"));
+					},
+				},
+				result: {
+					target: 2,
+				},
+				tag: {
+					draw: 2,
+				},
+			},
+		},
 		//青囊书
 		//杨彪：孩子们我没意见
 		mb_qingnangshu: {
@@ -1733,6 +1803,46 @@ export default {
 		},
 	},
 	skill: {
+		//落井下石与锦上添花
+		mb_luojingxiashi: {
+			charlotte: true,
+			mark: true,
+			silent: true,
+			popup: false,
+			intro: { content: "下次受到伤害后，失去X点体力（X为# × 伤害点数）" },
+			forced: true,
+			onremove: true,
+			trigger: { player: "damageEnd" },
+			filter(event, player) {
+				return event.num > 0;
+			},
+			async content(event, trigger, player) {
+				await player.loseHp(trigger.num * player.countMark(event.name));
+				player.removeSkill(event.name);
+			},
+		},
+		mb_jinshangtianhua: {
+			charlotte: true,
+			mark: true,
+			intro: { content: "下次获得牌时，摸X张牌（X为# × 获得牌数且至多摸五张）" },
+			forced: true,
+			onremove: true,
+			silent: true,
+			popup: false,
+			trigger: {
+				player: "gainEnd",
+				global: "loseAsyncEnd",
+			},
+			filter(event, player) {
+				return event.getg?.(player)?.length;
+			},
+			async content(event, trigger, player) {
+				const mark = player.countMark(event.name);
+				player.removeSkill(event.name);
+				const num = Math.min(5, trigger.getg(player).length * mark);
+				await player.draw(num);
+			},
+		},
 		//青囊书
 		mb_qingnangshu_skill: {
 			equipSkill: true,
@@ -2307,6 +2417,10 @@ export default {
 		},
 	},
 	translate: {
+		mb_luojingxiashi: "落井下石",
+		mb_luojingxiashi_info: "出牌阶段，对一名角色使用，其下次受到伤害后，失去等量体力。",
+		mb_jinshangtianhua: "锦上添花",
+		mb_jinshangtianhua_info: "出牌阶段，对一名角色使用，其下一次获得牌时，额外摸等量张牌（至多摸五张牌）。",
 		mb_qingnangshu: "青囊书",
 		mb_qingnangshu_bg: "书",
 		mb_qingnangshu_info: "锁定技，准备阶段，你加1点体力上限并回复1点体力（剩余3次）。",

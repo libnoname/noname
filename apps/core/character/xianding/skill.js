@@ -3197,7 +3197,7 @@ const skills = {
 							[suits.slice(0).map(suit => get.translation(suit)), "tdnodes"],
 						],
 					],
-					selectButton: [1, 6],
+					selectButton: [1, 3],
 					complexButton: true,
 					filterButton(button) {
 						let { types, suits } = get.event();

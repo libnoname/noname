@@ -1,6 +1,12 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	sb_guoyouzhi: "谋郭攸之",
+	sb_guoyouzhi_prefix: "谋",
+	sbpique: "裨阙",
+	sbpique_info: "出牌阶段限一次，你可观看一名其他角色的手牌。然后你可交给其任意张其未拥有的牌名的手牌，并可将手牌数调整至你此次交出的牌名数。",
+	sbzhongchun: "忠纯",
+	sbzhongchun_info: "一名角色的结束阶段，你可选择一张弃牌堆中其本回合弃置的牌，令其获得且其可使用之。",
 	sb_zhanghe_prefix: "谋",
 	sb_yujin_prefix: "谋",
 	sb_huaxiong_prefix: "谋",
