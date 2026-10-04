@@ -8,7 +8,7 @@ const skills = {
 		trigger: { player: "useCardToPlayered" },
 		locked: false,
 		mod: {
-			aiOrder(player, card, order) {
+			aiOrder(player, card, num) {
 				if (num > 0 && get.suit(card) == "diamond") {
 					return num - 0.1;
 				}
