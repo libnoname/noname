@@ -7942,8 +7942,8 @@ const skills = {
 			},
 			check(button) {
 				const player = get.player();
-				if (button.link == "recover") {
-					return player.getHp() <= 2;
+				if (button.link == "recover" && player.getDamagedHp() >= 2) {
+					return 10;
 				}
 				if (button.link == "cover") {
 					let numbers = [player.getHp(), player.getDamagedHp(), game.countPlayer()];
