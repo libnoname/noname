@@ -356,7 +356,7 @@ const translates = {
 	ylyg_beige: "悲歌",
 	ylyg_beige_info: `当一名角色受到【杀】造成的伤害后，你可以弃置一张牌，然后令其判定并记录花色（当记录了所有花色后，你获得${get.poptip("ylyg_quzhong")}）。若结果为：♥，其回复X点体力（X为此伤害值）；♦，其摸三张牌；♣，伤害来源弃置两张牌；♠，伤害来源翻面。`,
 	ylyg_quzhong: "曲终",
-	ylyg_quzhong_info: "每名角色的结束阶段，你可以将你本回合弃置的一张牌当【杀】使用；当你在此【杀】结算中发动〖悲歌〗时，交换描述中的‘其’与‘伤害来源’。",
+	ylyg_quzhong_info: `每名角色的结束阶段，你可以将你本回合弃置的一张牌当【杀】使用；当你在此【杀】结算中发动${get.poptip("ylyg_beige")}时，交换描述中的‘其’与‘伤害来源’。`,
 	ylyg_zhurong: "雁翎祝融",
 	ylyg_zhurong_prefix: "雁翎",
 	ylyg_lieren: "烈刃",
