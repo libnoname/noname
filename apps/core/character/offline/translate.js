@@ -86,7 +86,7 @@ const translates = {
 	lxzuoyou: "佐佑",
 	lxzuoyou_info: "转换技，出牌阶段限一次，①你可受到1点无来源伤害，令一名角色获得1点护甲；②你可失去1点护甲，对一名角色造成1点伤害。",
 	lxshishou: "侍守",
-	lxshishou_info: "：一名角色的结束阶段，若你于此回合造成或受到过伤害，你可以令一名与你势力相同的角色获得1点护甲。",
+	lxshishou_info: "一名角色的结束阶段，若你于此回合造成或受到过伤害，你可以令一名与你势力相同的角色获得1点护甲。",
 	lx_chengji: "PE成济",
 	lx_chengji_prefix: "PE",
 	lxkuangli: "狂戾",
