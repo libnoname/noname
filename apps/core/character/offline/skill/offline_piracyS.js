@@ -2189,31 +2189,32 @@ const skills = {
 					bool: true,
 				};
 			} else {
+				const list = [
+					["all", "废除一名其他角色的所有装备栏"],
+					["equip1", "武器栏"],
+					["equip2", "防具栏"],
+				];
+				if (get.is.mountCombined()) {
+					list.push(["equip3_4", "坐骑栏"]);
+				} else {
+					list.push(["equip3", "防御马"], ["equip4", "进攻马"]);
+				}
+				list.push(["equip5", "宝物栏"]);
 				const result = await player
 					.chooseButtonTarget({
 						createDialog: [
 							"卸兵：废除一名其他角色的所有装备栏或废除所有其他角色的同一种装备栏直到本轮结束",
-							[
-								[
-									["all", "废除一名其他角色的所有装备栏"],
-									["equip1", "武器栏"],
-									["equip2", "防具栏"],
-									["equip3", "防御马"],
-									["equip4", "进攻马"],
-									["equip5", "宝物栏"],
-								],
-								"tdnodes",
-							],
+							[list, "tdnodes"],
 						],
 						filterButton(button) {
 							if (button.link === "all") {
 								return true;
 							}
-							return game.hasPlayer(current => current !== player && current.hasEnabledSlot(button.link));
+							return game.hasPlayer(current => current !== get.player() && current.hasEnabledSlot(button.link));
 						},
 						complexSelect: true,
 						filterTarget(card, player, target) {
-							if (!ui.selected.buttons?.length || target === player) {
+							if (!ui.selected.buttons?.length || target === get.player()) {
 								return false;
 							}
 							const link = ui.selected.buttons[0].link;
@@ -2255,7 +2256,7 @@ const skills = {
 					targets,
 					cost_data: [link],
 				} = event;
-				const type = link === "all" ? ["equip1", "equip2", "equip3", "equip4", "equip5"] : [link];
+				const type = link === "all" ? ["equip1", "equip2", "equip3", "equip4", "equip5"] : link === "equip3_4" ? ["equip3", "equip4"] : [link];
 				const disabledCounts = {};
 				await game.doAsyncInOrder(targets, async target => {
 					const before = { ...(target.disabledSlots || {}) };
@@ -2305,6 +2306,9 @@ const skills = {
 				if (!target?.isIn()) {
 					return;
 				}
+				if (!current.isIn()) {
+					continue;
+				}
 				const result = await current
 					.chooseBool({
 						prompt: `众矢：对${get.translation(target)}造成一点伤害或点“取消”失去一点体力`,
@@ -2351,7 +2355,27 @@ const skills = {
 		},
 	},
 	pszhaoluan: {
-		group: ["pszhaoluan_die", "pszhaoluan_show", "pszhaoluan_check"],
+		group: ["pszhaoluan_die", "pszhaoluan_show", "pszhaoluan_check", "pszhaoluan_clear"],
+		settleDead(target) {
+			const source = target.storage.pszhaoluan_pending;
+			delete target.storage.pszhaoluan_pending;
+			if (target.dieAfter) {
+				target.dieAfter();
+			}
+			if (target.dieAfter2) {
+				target.dieAfter2(get.itemtype(source) == "player" ? source : undefined);
+			}
+		},
+		onremove(player) {
+			if (get.mode() !== "identity" || _status.over) {
+				return;
+			}
+			for (const current of game.dead.slice()) {
+				if (current.storage.pszhaoluan_pending) {
+					lib.skill.pszhaoluan.settleDead(current);
+				}
+			}
+		},
 		subSkill: {
 			die: {
 				mode: ["identity"],
@@ -2371,7 +2395,7 @@ const skills = {
 				async content(event, trigger) {
 					game.addVideo("diex", trigger.player);
 					trigger.reserveOut = true;
-					trigger.player.storage.pszhaoluan_pending = true;
+					trigger.player.storage.pszhaoluan_pending = trigger.source || true;
 				},
 			},
 			show: {
@@ -2403,23 +2427,22 @@ const skills = {
 					}
 					const target = targetResult.targets[0];
 					const identity = identityPlayer.identity;
-					game.broadcastAll(target2 => {
-						target2.showIdentity();
-						delete target2.storage.pszhaoluan_pending;
-					}, identityPlayer);
 					game.addVideo("showIdentity", identityPlayer, identityPlayer.identity);
-					if (identityPlayer.special_identity) {
-						game.broadcastAll(
-							(zhu, identity) => {
-								zhu.removeSkill(identity);
-							},
-							game.zhu,
-							identityPlayer.special_identity
-						);
+					if (identityPlayer.storage.pszhaoluan_pending) {
+						lib.skill.pszhaoluan.settleDead(identityPlayer);
+						game.broadcastAll(target2 => {
+							if (target2.$dieAfter) {
+								target2.$dieAfter();
+							}
+						}, identityPlayer);
+					} else {
+						game.broadcastAll(target2 => {
+							target2.showIdentity();
+						}, identityPlayer);
+						const shownIdentity = identityPlayer.special_identity || identity;
+						const shownName = identityPlayer.special_identity ? get.translation(shownIdentity) : get.translation(`${shownIdentity}2`);
+						game.log(identityPlayer, "展示了", `#g${shownName}`, "的身份牌");
 					}
-					const shownIdentity = identityPlayer.special_identity || identity;
-					const shownName = identityPlayer.special_identity ? get.translation(shownIdentity) : get.translation(`${shownIdentity}2`);
-					game.log(identityPlayer, "展示了", `#g${shownName}`, "的身份牌");
 					if (identity === "zhong") {
 						const cards = target.getCards("hej");
 						if (cards.length) {
@@ -2427,9 +2450,6 @@ const skills = {
 						}
 					} else if (identity === "fan") {
 						await target.draw(3);
-					}
-					if (!_status.over) {
-						game.checkResult();
 					}
 				},
 			},
@@ -2451,6 +2471,29 @@ const skills = {
 				async content(event, trigger, player) {
 					if (!_status.over) {
 						game.checkResult();
+					}
+				},
+			},
+			clear: {
+				mode: ["identity"],
+				trigger: { player: "dieAfter" },
+				forced: true,
+				forceDie: true,
+				popup: false,
+				filter(event, player) {
+					return (
+						get.mode() === "identity" &&
+						!_status.over &&
+						event.player === player &&
+						game.dead.some(current => current.storage.pszhaoluan_pending) &&
+						!game.hasPlayer(current => current !== player && current.isIn() && current.hasSkill("pszhaoluan"))
+					);
+				},
+				async content() {
+					for (const current of game.dead.slice()) {
+						if (current.storage.pszhaoluan_pending) {
+							lib.skill.pszhaoluan.settleDead(current);
+						}
 					}
 				},
 			},
