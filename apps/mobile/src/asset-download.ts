@@ -130,6 +130,19 @@ const UI_REFRESH_STEP = 10;
 /** 记录「已处理」的本地存储键，用于界面显示上次完成情况 */
 const STORAGE_KEY = "noname_asset_download_state";
 
+/**
+ * 落盘格式版本。
+ *
+ * **只要写入方式变了就必须 +1。** 因为「续传」是靠「文件已存在」来判断跳过的，
+ * 一旦旧版本写出的文件内容有问题（例如曾经把 base64 文本当成文件内容写进去，
+ * 导致图片与音频全部损坏），那些坏文件会被续传逻辑当成「已下载」永久留着。
+ * 提升版本号即可让旧记录失效，从而强制重新下载、覆盖坏文件。
+ *
+ * - v1：早期版本（曾经把 base64 字符串直接当内容写入，产出损坏文件）
+ * - v2：改为传原始 ArrayBuffer 字节
+ */
+const WRITE_FORMAT_VERSION = 2;
+
 // ---------------------------------------------------------------------------
 // 类型（尽量宽松，避免与 core 的运行时对象强耦合）
 // ---------------------------------------------------------------------------
@@ -144,8 +157,10 @@ interface LibLike {
 
 interface GameLike {
 	[key: string]: any;
-	/** 由 `attachFileSystemAPI` 挂载，写入 Documents/noname/<path> */
+	/** 由 `attachFileSystemAPI` 挂载，写入可写层（iOS 下即 `Documents/<path>`） */
 	writeFile?: (data: string | ArrayBuffer | ArrayBufferView | Blob, path: string, name: string, callback?: (error?: unknown) => void) => void;
+	/** 由 `attachFileSystemAPI` 挂载，读取文件；回调收到 ArrayBuffer */
+	readFile?: (fileName: string, callback?: (data: ArrayBuffer) => void, onerror?: (err: Error) => void) => void;
 	/** 由 `attachFileSystemAPI` 挂载，先确保父目录存在 */
 	ensureDirectory?: (list: string | string[], callback?: () => void, file?: boolean) => void;
 	/** 由 `attachFileSystemAPI` 挂载；1 = 文件存在，0 = 是目录，-1 = 不存在 */
@@ -536,6 +551,9 @@ async function runDownload(ctx: RunDownloadContext): Promise<void> {
 	let sourceIndex = 0;
 	let sourceFailures = 0;
 
+	/** 第一个成功写入的文件，收尾时回读做写入自检（见 verifyWrittenBytes） */
+	let firstWritten: { localPath: string; byteLength: number } | null = null;
+
 	const updateUi = (force = false) => {
 		if (!force && done % UI_REFRESH_STEP !== 0) {
 			return;
@@ -573,6 +591,10 @@ async function runDownload(ctx: RunDownloadContext): Promise<void> {
 						sourceFailures = 0;
 						// 记住真正成功的那个源，后续继续用它
 						sourceIndex = result.sourceIndex;
+						// 只留第一个成功写入的文件，收尾时回读一次做写入自检
+						if (!firstWritten && typeof result.byteLength === "number") {
+							firstWritten = { localPath: item.localPath, byteLength: result.byteLength };
+						}
 					} else {
 						failed.push(`${item.localPath}（${result.error}）`);
 						sourceFailures++;
@@ -611,6 +633,12 @@ async function runDownload(ctx: RunDownloadContext): Promise<void> {
 	// 玩家截图发来时，这两项就足以判断是清单问题还是域名可达性问题。
 	const usedSource = CONTENT_SOURCES[sourceIndex].name;
 
+	// 收尾自检：回读一个刚写入的文件，确认字节数一致。
+	// 这一步能在界面上直接暴露「写入层把内容弄坏了」这类问题——
+	// 之前就出过「全部下载成功、但原画与语音一个都出不来」的事故。
+	const verdict = firstWritten ? await verifyWrittenBytes(game, firstWritten) : "";
+	const tail = verdict ? `　${verdict}` : "";
+
 	if (failed.length) {
 		// 把失败原因摊开给用户看：多数情况下这一句就能定位是哪个域名不可达
 		const sample = failed.slice(0, 3).join("；");
@@ -618,12 +646,48 @@ async function runDownload(ctx: RunDownloadContext): Promise<void> {
 	} else if (skipped === total) {
 		statusLine.textContent = `资源已完备（${total}/${total}），无需重复下载。源：${usedSource}　清单：${origin}`;
 	} else {
-		statusLine.textContent = `下载完成：新增 ${succeeded}/${total}（已存在 ${skipped}），武将原画与语音已就绪。源：${usedSource}　清单：${origin}`;
+		statusLine.textContent = `下载完成：新增 ${succeeded}/${total}（已存在 ${skipped}），武将原画与语音已就绪。源：${usedSource}　清单：${origin}${tail}`;
 	}
 	progressFill.style.width = "100%";
 
 	saveState({ total, done, failed: failed.length });
 	refreshAssets(ctx.ui);
+}
+
+/**
+ * 回读一个刚写入的文件，比对字节数。
+ *
+ * 这是对**写入链路**的端到端自检。来历：曾经出过一次「下载全部成功、
+ * 但原画与语音一个都出不来」的事故，根因是写入时把 base64 文本当成了文件内容
+ * （`game.writeFile` 收到字符串会当作内容本身，收到 ArrayBuffer 才是二进制）。
+ * 当时若做一次回读比对，就能立刻把问题锁定在写入层，而不必去怀疑读取层。
+ *
+ * @returns 供界面显示的结论；无法回读时返回空串（不干扰正常流程）
+ */
+async function verifyWrittenBytes(game: GameLike, sample: { localPath: string; byteLength: number }): Promise<string> {
+	if (typeof game.readFile !== "function") {
+		return "";
+	}
+
+	const actual = await new Promise<number | null>(resolve => {
+		try {
+			game.readFile!(
+				sample.localPath,
+				data => resolve(data?.byteLength ?? null),
+				() => resolve(null)
+			);
+		} catch {
+			resolve(null);
+		}
+	});
+
+	if (actual === null) {
+		return "";
+	}
+	if (actual !== sample.byteLength) {
+		return `⚠️ 写入校验失败：${sample.localPath} 期望 ${sample.byteLength} 字节、实际 ${actual} 字节，文件可能已损坏`;
+	}
+	return `写入校验：通过（${sample.byteLength} 字节）`;
 }
 
 /** 查询可写层里是否已经有这个文件（用于续传时跳过已下载项） */
@@ -665,7 +729,7 @@ class DownloadError extends Error {
  *
  * @returns 是否成功、最终生效的源序号，以及失败原因
  */
-async function downloadOne(game: GameLike, item: DownloadItem, preferred: number): Promise<{ ok: boolean; sourceIndex: number; error?: string }> {
+async function downloadOne(game: GameLike, item: DownloadItem, preferred: number): Promise<{ ok: boolean; sourceIndex: number; error?: string; byteLength?: number }> {
 	let lastError = "未知错误";
 
 	for (let i = preferred; i < CONTENT_SOURCES.length; i++) {
@@ -678,8 +742,14 @@ async function downloadOne(game: GameLike, item: DownloadItem, preferred: number
 					throw new DownloadError(`HTTP ${response.status}`, response.status);
 				}
 				const buffer = await response.arrayBuffer();
-				await writeFileAsync(game, arrayBufferToBase64(buffer), item.localPath);
-				return { ok: true, sourceIndex: i };
+				// ⚠️ 这里必须传**原始字节**（ArrayBuffer），不能先自己转成 base64 字符串。
+				// `game.writeFile` → `writeDataToBase64()` 对字符串的处理是
+				// 「UTF-8 编码这段文本、再 base64」，也就是把字符串**当成文件内容**；
+				// 若这里传 base64 文本，落盘的就会是那串文本本身（图片/音频全部损坏，
+				// 表现为下载成功但原画与语音都出不来）。
+				// 传 ArrayBuffer 时它会走 `new Uint8Array(data)` 分支，得到正确字节。
+				await writeFileAsync(game, buffer, item.localPath);
+				return { ok: true, sourceIndex: i, byteLength: buffer.byteLength };
 			} catch (error) {
 				lastError = describeError(error);
 
@@ -708,13 +778,19 @@ function describeError(error: unknown): string {
 }
 
 /** 把 `game.writeFile` 的回调风格包成 Promise */
-function writeFileAsync(game: GameLike, base64: string, localPath: string): Promise<void> {
+/**
+ * 把 `game.writeFile` 的回调风格包成 Promise。
+ *
+ * `data` 传**原始字节**：见 `downloadOne` 里的说明，
+ * 传字符串会被当成文件内容、传 ArrayBuffer 才是二进制。
+ */
+function writeFileAsync(game: GameLike, data: ArrayBuffer, localPath: string): Promise<void> {
 	const slash = localPath.lastIndexOf("/");
 	const dir = slash === -1 ? "" : localPath.slice(0, slash);
 	const name = slash === -1 ? localPath : localPath.slice(slash + 1);
 
 	return new Promise<void>((resolve, reject) => {
-		game.writeFile!(base64, dir, name, (error?: unknown) => {
+		game.writeFile!(data, dir, name, (error?: unknown) => {
 			if (error) {
 				reject(error instanceof Error ? error : new Error(String(error)));
 			} else {
@@ -905,11 +981,13 @@ interface DownloadState {
 	total: number;
 	done: number;
 	failed: number;
+	/** 写入这笔记录时使用的落盘格式版本，见 `WRITE_FORMAT_VERSION` */
+	format: number;
 }
 
-function saveState(state: Omit<DownloadState, "at">): void {
+function saveState(state: Omit<DownloadState, "at" | "format">): void {
 	try {
-		localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...state, at: Date.now() }));
+		localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...state, at: Date.now(), format: WRITE_FORMAT_VERSION }));
 	} catch {
 		// 隐私模式下 localStorage 可能不可写
 	}
@@ -930,8 +1008,12 @@ function readStateSummary(): string {
 		if (!raw) {
 			return "尚未下载。点击「开始下载」补齐武将原画与语音。";
 		}
-		const state = JSON.parse(raw) as DownloadState;
-		const time = new Date(state.at).toLocaleString();
+		const state = JSON.parse(raw) as Partial<DownloadState>;
+		const time = state.at ? new Date(state.at).toLocaleString() : "未知时间";
+		if (state.format !== WRITE_FORMAT_VERSION) {
+			// 明确告诉玩家为什么会「重下」：旧格式写出的文件内容是坏的，必须覆盖
+			return `检测到旧版本下载的文件（${time}），其内容有误、无法显示，需要重新下载覆盖。点击「开始下载」即可。`;
+		}
 		const failed = state.failed ? `，失败 ${state.failed}` : "";
 		return `上次下载：${time}（${state.done}/${state.total}${failed}）`;
 	} catch {
@@ -947,7 +1029,14 @@ function readStateSummary(): string {
  */
 function hasPreviousDownload(): boolean {
 	try {
-		return localStorage.getItem(STORAGE_KEY) !== null;
+		const raw = localStorage.getItem(STORAGE_KEY);
+		if (!raw) {
+			return false;
+		}
+		const state = JSON.parse(raw) as Partial<DownloadState>;
+		// 只有「同一种落盘格式」留下的文件才敢当成已下载跳过。
+		// 格式变过 → 旧文件内容可能是坏的 → 返回 false，强制整批重下覆盖。
+		return state.format === WRITE_FORMAT_VERSION;
 	} catch {
 		return false;
 	}
@@ -956,17 +1045,6 @@ function hasPreviousDownload(): boolean {
 // ---------------------------------------------------------------------------
 // 小工具
 // ---------------------------------------------------------------------------
-
-/** ArrayBuffer → base64（分块，避免超大语音文件触发调用栈溢出） */
-function arrayBufferToBase64(buffer: ArrayBuffer): string {
-	const bytes = new Uint8Array(buffer);
-	const CHUNK_SIZE = 0x8000;
-	let binary = "";
-	for (let i = 0; i < bytes.length; i += CHUNK_SIZE) {
-		binary += String.fromCharCode(...bytes.subarray(i, i + CHUNK_SIZE));
-	}
-	return btoa(binary);
-}
 
 function sleep(ms: number): Promise<void> {
 	return new Promise(resolve => setTimeout(resolve, ms));
