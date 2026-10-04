@@ -2,6 +2,15 @@ import { lib, game, ui, get, ai, _status } from "noname";
 const translates = {
 	dc_feiyi: "新杀费祎",
 	dc_feiyi_prefix: "新杀",
+	dc_sunjun: "新杀孙峻",
+	dc_sunjun_prefix: "新杀",
+	dcbeizhu: "备诛",
+	dcbeizhu_info: `每回合结束时，若你本回合满足过以下一项，你可以执行与之相邻的一项，然后令一名角色${get.poptip({
+		id: "dcbeizhu_tip",
+		name: "执行",
+		type: "character",
+		info: "结算细节：<li>不执行“至少”<li>弃牌来源为执行者<li>伤害无来源",
+	})}剩余的一项：1.至少受到序号数点伤害；2.至少被弃置序号数张牌；3.至少摸序号数张牌。<br>你的回合开始时，你可以交换两个相邻的选项。`,
 	dcqiansu: "谦素",
 	dcqiansu_info: "其他角色的结束阶段，若其手牌数比你多，你可以摸三张牌，然后交给该角色其中一张。",
 	dcxingbang: "兴邦",
