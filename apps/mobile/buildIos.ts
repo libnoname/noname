@@ -32,7 +32,7 @@
  *    仅在工程缺失时本脚本会报错并提示如何恢复。
  *
  * 💡 没有 Mac 或不想配开发者证书时，可以走 GitHub Actions 云端构建未签名 ipa，
- *    见 `.github/workflows/ios-build.yml` 与本仓库的 iOS 操作手册。
+ *    见 `.github/workflows/ios-build.yml` 与 [`docs/ios.md`](./docs/ios.md)。
  */
 
 import { spawnSync } from "node:child_process";
