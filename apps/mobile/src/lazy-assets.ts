@@ -58,6 +58,12 @@
  * - 其它错误（超时 / 5xx / 域名不可达）会换源重试，仍失败则同样在**本会话内**放弃，
  *   绝不在后台反复打网络。
  *
+ * ## 刻意不做界面反馈
+ *
+ * 这件事发生在**玩家正在打牌的时候**：任何浮层都会挡住牌桌，所以这里
+ * **不显示任何提示**。素材晚几百毫秒出现本身完全可以接受（只有首次遇到某武将
+ * 才会多等一下），进度只写 console 供排查用。
+ *
  * 所有状态都只存在于内存（每个会话重建）：文件是否已存在由 `game.checkFile` 判断，
  * 它会同时看可写层与内置资源，因此「上次已经补好」的结论天然持久。
  */
@@ -227,9 +233,8 @@ export function installLazyAssets(options: LazyAssetsOptions): LazyAssetsHandle 
 	let running = 0;
 	/** 记住上次成功的源，后续文件优先用它 */
 	let preferredSource = 0;
+	/** 本次会话补齐的文件数，只用于日志 */
 	let downloaded = 0;
-
-	const indicator = createIndicator();
 
 	/** 真正去取文件：探测 → 下载 → 落盘 */
 	async function acquire(path: string): Promise<LazyOutcome> {
@@ -260,12 +265,16 @@ export function installLazyAssets(options: LazyAssetsOptions): LazyAssetsHandle 
 		return "unavailable";
 	}
 
-	/** 从队列取任务填满并发位 */
+	/**
+	 * 从队列取任务填满并发位。
+	 *
+	 * 按需下载**不做任何界面提示**：这是玩游戏时发生的事，任何浮层都会挡住牌桌，
+	 * 而且素材晚几百毫秒出现本身是可以接受的。进度只写到 console，供排查用。
+	 */
 	function pump(): void {
 		while (running < CONCURRENCY && queue.length > 0) {
 			const task = queue.shift()!;
 			running++;
-			indicator.update(running + queue.length, downloaded);
 
 			acquire(task.path)
 				.catch(error => {
@@ -275,7 +284,6 @@ export function installLazyAssets(options: LazyAssetsOptions): LazyAssetsHandle 
 				.then(outcome => task.resolve(outcome))
 				.finally(() => {
 					running--;
-					indicator.update(running + queue.length, downloaded);
 					pump();
 				});
 		}
@@ -460,50 +468,4 @@ function withBuster(url: string, stamp: number = Date.now()): string {
 	if (!url || /^(data|blob):/i.test(url)) return url;
 	const separator = url.includes("?") ? "&" : "?";
 	return `${url}${separator}${BUSTER_KEY}=${stamp}`;
-}
-
-/**
- * 角落里的下载提示。
- *
- * 按需下载会让开局多出零点几秒的等待，没有反馈的话玩家会以为游戏卡住了。
- * 做成不可交互、自动淡出的小胶囊，尽量不打扰游戏本身。
- */
-function createIndicator(): { update: (pending: number, done: number) => void } {
-	let node: HTMLElement | null = null;
-	let hideTimer: ReturnType<typeof setTimeout> | null = null;
-
-	const ensure = (): HTMLElement | null => {
-		if (node?.isConnected) return node;
-		const host = document.body ?? document.documentElement;
-		if (!host) return null;
-
-		node = document.createElement("div");
-		node.className = "lazy-assets-indicator";
-		node.style.cssText = ["position:fixed", "left:50%", "bottom:9%", "transform:translateX(-50%)", "padding:3px 12px", "border-radius:14px", "background:rgba(0,0,0,.55)", "color:#fff", "font-size:13px", "line-height:1.7", "white-space:nowrap", "pointer-events:none", "z-index:9999", "opacity:0", "transition:opacity .3s"].join(";");
-		host.appendChild(node);
-		return node;
-	};
-
-	return {
-		update(pending, done) {
-			if (pending <= 0) {
-				if (node && hideTimer === null) {
-					hideTimer = setTimeout(() => {
-						hideTimer = null;
-						if (node) node.style.opacity = "0";
-					}, 900);
-				}
-				return;
-			}
-
-			const target = ensure();
-			if (!target) return;
-			if (hideTimer !== null) {
-				clearTimeout(hideTimer);
-				hideTimer = null;
-			}
-			target.textContent = done > 0 ? `正在补齐素材…（已下载 ${done}）` : "正在补齐素材…";
-			target.style.opacity = "1";
-		},
-	};
 }
