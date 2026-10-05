@@ -277,6 +277,9 @@ apps/mobile/ios/build/export/<AppName>.ipa
 
 两者写入的是同一个可写层（`Documents/`），互不冲突：批量下载过的文件，按需下载检测到本地已有就会直接跳过。
 
+两者的成果还会汇总进同一份「素材就绪」进度（存储键 `noname_asset_progress`），
+「下载素材」面板上的进度条按它显示——因此**只靠边玩边下补的文件也会体现在进度里**。
+
 > 💡 想打一个「素材齐全」的包（例如上架前回归、模拟器调试）：本地执行
 > `pnpm build && pnpm --filter @noname/mobile sync`，再直接对 `apps/mobile/ios` 出包。
 
@@ -335,7 +338,7 @@ apps/mobile/ios/build/export/<AppName>.ipa
 | 语音的需求信号 | 在 `window` 上用**捕获阶段**监听 `error`（媒体元素的 error 不冒泡）。必须抢在 core 自己的 `onerror` 之前，因为它会把 `<audio>` 从文档里摘掉 |
 | 补完怎么让界面更新 | 文件下好后把原 URL 加一个 `?_lazy=<时间戳>` 后缀重新设一次——同名同值的 `background-image` / `audio.src` 属于空操作，浏览器不会重新请求。该后缀由 `NonameRouter.stripQuery` 剥掉（见第 5 节的请求层覆盖层） |
 | 不重复下载 | 会话内记录「已确认存在 / 已确认拿不到」；同一路径并发请求只下一次；`404` 视为上游确实没有，不再换源重试 |
-| 界面反馈 | **刻意没有任何提示**：这件事发生在玩家打牌的过程中，任何浮层都会挡住牌桌。素材晚几百毫秒出现可以接受，进度只写 `console` 供排查 |
+| 界面反馈 | **刻意没有任何提示**：这件事发生在玩家打牌的过程中，任何浮层都会挡住牌桌。素材晚几百毫秒出现可以接受，进度只写 `console` 供排查；想「看见」进度就去「下载素材」面板（见 6.2） |
 
 ### 6.2 批量下载（可选，菜单入口）
 
@@ -349,6 +352,7 @@ apps/mobile/ios/build/export/<AppName>.ipa
 | 关注点 | 做法 |
 | --- | --- |
 | 何时显示 | 优先用 WebView 桥 `window.webkit.messageHandlers.bridge` 判断 iOS（与 `packages/jit` 同款、已在真机验证），`lib.device === "ios"` 兜底；安卓 / 浏览器不受影响 |
+| 进度显示 | 面板上有两处：**「素材就绪进度」**（`已就绪/总数`，按边玩边下与批量下载**共用**的记录算，包含内置已有项，每秒刷新）与状态行（本次运行在做什么）。批量下载运行期间进度条改为显示本次运行的实时进度 |
 | 文件清单 | **首选构建期内置的 `asset-download-manifest.json`**（由 `afterSync.ts` 在资源仍完整时生成，随包发布，完全离线）。仅在它缺失时才回退到 `api.github.com` 的 Git Trees API |
 | 文件内容 | 按顺序尝试多个源，第一个成功即用：GitHub Raw → jsDelivr → jsDelivr(Fastly) → jsDelivr(Gcore)。某源连续失败 5 次自动切换（与 6.1 共用同一份 `CONTENT_SOURCES`） |
 | 上游路径前缀 | `apps/core/`（注意不是仓库根目录） |

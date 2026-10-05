@@ -64,11 +64,14 @@
  * **不显示任何提示**。素材晚几百毫秒出现本身完全可以接受（只有首次遇到某武将
  * 才会多等一下），进度只写 console 供排查用。
  *
+ * 想「看见」进度的话，去「菜单 → 其它 → 更新 → 下载素材」：那个面板的进度条
+ * 按**两边共用**的就绪进度显示（见 `recordLazyAsset`），所以这里补的文件同样算数。
+ *
  * 所有状态都只存在于内存（每个会话重建）：文件是否已存在由 `game.checkFile` 判断，
  * 它会同时看可写层与内置资源，因此「上次已经补好」的结论天然持久。
  */
 
-import { CONTENT_SOURCES, SKIP_BASENAMES, TARGET_GROUPS, fetchAssetBytes, fileExists, isIosRuntime, toRemotePath, writeFileAsync, type GameLike, type LibLike, type UiLike } from "./asset-download.js";
+import { CONTENT_SOURCES, SKIP_BASENAMES, TARGET_GROUPS, fetchAssetBytes, fileExists, isIosRuntime, recordLazyAsset, toRemotePath, writeFileAsync, type GameLike, type LibLike, type UiLike } from "./asset-download.js";
 
 export interface LazyAssetsOptions {
 	lib: LibLike;
@@ -255,6 +258,8 @@ export function installLazyAssets(options: LazyAssetsOptions): LazyAssetsHandle 
 			preferredSource = result.sourceIndex;
 			available.add(path);
 			downloaded++;
+			// 同步进与「下载素材」共用的就绪进度，让那个面板的进度条也能反映按需补齐的成果
+			recordLazyAsset();
 			console.log(`[lazy-assets] 已补齐 ${path}（${result.buffer.byteLength} 字节，源：${CONTENT_SOURCES[result.sourceIndex].name}）`);
 			return "downloaded";
 		}

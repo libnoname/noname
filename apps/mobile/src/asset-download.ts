@@ -12,9 +12,12 @@
  * | **边玩边下**（默认） | 无感，游戏用到谁就下谁 | 日常游玩，见 `lazy-assets.ts` |
  * | **批量下载**（本模块） | 菜单 → 其它 → 更新 → 下载素材 | 想在 Wi-Fi 下一次补齐约 970MB |
  *
- * 两者共用同一份下载源与写盘逻辑（`fetchAssetBytes` / `writeFileAsync`），
- * 但各自维护自己的状态：本模块靠 `localStorage` 记进度做续传，
- * 懒加载只在本局内缓存「已确认存在/拿不到」的结论。
+ * 两者不仅共用同一份下载源与写盘逻辑（`fetchAssetBytes` / `writeFileAsync`），
+ * 还**共用一份「素材就绪」进度**（`PROGRESS_KEY`）：面板上的进度条按它显示，
+ * 所以边玩边下在游玩过程中补的文件同样会体现在进度里。
+ *
+ * 各自的状态则分开维护：本模块靠 `STORAGE_KEY` 记完成情况做续传，
+ * 懒加载只在本局内缓存「已确认存在/拿不到」的结论（见 `lazy-assets.ts`）。
  *
  * ---
  *
@@ -167,6 +170,15 @@ const STORAGE_KEY = "noname_asset_download_state";
  * - v2：改为传原始 ArrayBuffer 字节
  */
 const WRITE_FORMAT_VERSION = 2;
+
+/**
+ * 「素材就绪」进度的本地存储键。
+ *
+ * 与 `STORAGE_KEY`（批量下载自己的完成记录）**分开存**：这一份是「边玩边下」
+ * 与「批量下载」共用的就绪计数，面板上的进度条按它显示——因此边玩边下
+ * 在游玩过程中补的文件也会体现在进度里，而不是只有点了批量下载才看得见。
+ */
+const PROGRESS_KEY = "noname_asset_progress";
 
 // ---------------------------------------------------------------------------
 // 类型（尽量宽松，避免与 core 的运行时对象强耦合）
@@ -438,6 +450,11 @@ function renderPage(page: HTMLElement, lib: LibLike, game: GameLike, ui: UiLike)
 	ul.appendChild(desc);
 	ul.appendChild(hint);
 
+	// `running` 必须在 `renderReady` 之前声明：renderReady 要读它，
+	// 而且紧接着就会被调用一次（放在后面会触发 TDZ）。
+	let running = false;
+	let cancelRequested = false;
+
 	// ---- 进度区 ----
 	const progressBox = document.createElement("li");
 	progressBox.style.marginTop = "8px";
@@ -446,8 +463,21 @@ function renderPage(page: HTMLElement, lib: LibLike, game: GameLike, ui: UiLike)
 	progressBar.style.cssText = "width:100%;height:12px;background:rgba(255,255,255,0.15);border-radius:6px;overflow:hidden;margin:6px 0;";
 
 	const progressFill = document.createElement("div");
+	// 带上类名：既是样式锚点，也让本地 jsdom 测试能稳定取到这一根进度条
+	progressFill.classList.add("asset-progress-fill");
 	progressFill.style.cssText = "width:0%;height:100%;background:#4caf50;transition:width 0.2s;";
 	progressBar.appendChild(progressFill);
+
+	/**
+	 * 「素材就绪进度」一行。
+	 *
+	 * 与下面的状态行刻意分开：状态行讲的是「这次下载正在做什么」，这一行讲的是
+	 * 「素材总体补到什么程度」，两者数据来源不同（一个来自本次运行，
+	 * 一个来自边玩边下与批量下载**共用**的进度记录）。
+	 */
+	const readyLine = document.createElement("div");
+	readyLine.classList.add("asset-ready-status");
+	readyLine.style.cssText = "font-size:14px;white-space:normal;line-height:1.5;";
 
 	const statusLine = document.createElement("div");
 	// 带上类名：既是样式锚点，也让本地 jsdom 测试能稳定取到这一行
@@ -456,20 +486,70 @@ function renderPage(page: HTMLElement, lib: LibLike, game: GameLike, ui: UiLike)
 	statusLine.textContent = readStateSummary();
 
 	progressBox.appendChild(progressBar);
+	progressBox.appendChild(readyLine);
 	progressBox.appendChild(statusLine);
+
+	/** 清单条目总数（用来算百分比）；读到之前为 0 */
+	let assetTotal = 0;
+
+	/**
+	 * 把进度条画成「素材就绪进度」。
+	 *
+	 * 批量下载运行期间不画——那段时间进度条由 `runDownload` 驱动，显示的是**本次运行**
+	 * 的实时进度，含义不同，不能互相覆盖。
+	 */
+	const renderReady = (): void => {
+		if (running) return;
+
+		const record = readProgress();
+		const ready = record?.ready ?? 0;
+
+		if (!assetTotal) {
+			readyLine.textContent = "素材就绪进度：正在读取资源清单…";
+			return;
+		}
+
+		const done = Math.min(ready, assetTotal);
+		const percent = ((done / assetTotal) * 100).toFixed(1);
+		progressFill.style.width = `${percent}%`;
+		// 边玩边下补的那部分单独说明：玩家一次都没点过「开始下载」，也能看到它在涨
+		const lazyPart = record?.lazy ? `　其中边玩边下补齐 ${record.lazy} 个` : "";
+		readyLine.textContent = `素材就绪进度：${done}/${assetTotal}（${percent}%）${lazyPart}`;
+	};
+
+	// 先占位，等清单读完（总数未知时只显示「正在读取资源清单…」）
+	renderReady();
+	void resolveAssetTotal()
+		.then(total => {
+			assetTotal = total;
+			renderReady();
+		})
+		.catch(() => {});
+
+	/**
+	 * 面板开着的时候，边玩边下可能仍在后台补文件（例如翻武将菜单会加载立绘），
+	 * 所以每秒重画一次。节点被摘掉后自动停掉，不留计时器。
+	 */
+	const readyTimer = setInterval(() => {
+		if (!progressBox.isConnected) {
+			clearInterval(readyTimer);
+			return;
+		}
+		// 页面不可见时没必要重排
+		if (typeof document !== "undefined" && document.visibilityState === "hidden") return;
+		renderReady();
+	}, 1000);
 
 	// ---- 按钮区 ----
 	const buttonRow = document.createElement("li");
 	buttonRow.style.marginTop = "8px";
-
-	let running = false;
-	let cancelRequested = false;
 
 	// 先声明按钮，再做事件绑定，避免处理器里引用尚未初始化的变量
 	const stopButton = ui.create.node("button", "清空记录", () => {
 		// 只清掉本地的进度记录；真正的文件删除交给游戏内既有机制，避免误删玩家已下载的资源
 		clearState();
 		statusLine.textContent = readStateSummary();
+		renderReady();
 	});
 	stopButton.disabled = true;
 	stopButton.style.marginLeft = "8px";
@@ -527,6 +607,8 @@ function renderPage(page: HTMLElement, lib: LibLike, game: GameLike, ui: UiLike)
 			startButton.disabled = false;
 			stopButton.disabled = true;
 			testButton.disabled = false;
+			// 本次运行结束：进度条交还给「素材就绪进度」，不再显示本次运行的临时进度
+			renderReady();
 		}
 	});
 
@@ -648,6 +730,8 @@ async function runDownload(ctx: RunDownloadContext): Promise<void> {
 	if (ctx.shouldCancel()) {
 		statusLine.textContent = `已取消：${done}/${total}（已下载 ${done - skipped - failed.length}，已跳过 ${skipped}）。再次点击可继续。`;
 		saveState({ total, done, failed: failed.length });
+		// 已经处理过的文件同样计入「素材就绪」；还没轮到的那些仍算未就绪
+		writeProgress({ total, ready: done - failed.length });
 		// 部分文件已落盘，让游戏重新扫描资源目录
 		refreshAssets(ctx.ui);
 		return;
@@ -673,7 +757,9 @@ async function runDownload(ctx: RunDownloadContext): Promise<void> {
 	} else {
 		statusLine.textContent = `下载完成：新增 ${succeeded}/${total}（已存在 ${skipped}），武将原画与语音已就绪。源：${usedSource}　清单：${origin}${tail}`;
 	}
-	progressFill.style.width = "100%";
+	// 收尾不直接把进度条拉到 100%：交给面板的 `renderReady()` 改画「素材就绪进度」，
+	// 这样有失败项时不会虚报 100%。
+	writeProgress({ total, ready: total - failed.length });
 
 	saveState({ total, done, failed: failed.length });
 	refreshAssets(ctx.ui);
@@ -1044,6 +1130,8 @@ function saveState(state: Omit<DownloadState, "at" | "format">): void {
 function clearState(): void {
 	try {
 		localStorage.removeItem(STORAGE_KEY);
+		// 共用的「素材就绪」进度一并清掉，否则会出现「已清空记录、进度条还剩一半」的怪现象
+		localStorage.removeItem(PROGRESS_KEY);
 	} catch {
 		// 忽略
 	}
@@ -1088,6 +1176,91 @@ function hasPreviousDownload(): boolean {
 	} catch {
 		return false;
 	}
+}
+
+// ---------------------------------------------------------------------------
+// 「素材就绪」进度（边玩边下与批量下载共用）
+// ---------------------------------------------------------------------------
+
+interface AssetProgress {
+	/** 目标文件总数（清单条目数）；读到清单之前为 0 */
+	total: number;
+	/** 已确认就绪的文件数 */
+	ready: number;
+	/** 其中由「边玩边下」补齐的数量（只用于界面说明，不参与计算） */
+	lazy: number;
+	/** 写入这笔记录时使用的落盘格式版本，见 `WRITE_FORMAT_VERSION` */
+	writeFormat: number;
+	at: number;
+}
+
+/**
+ * 读取共享进度。
+ *
+ * 落盘格式变过就直接作废：那种情况下旧文件的内容可能是坏的，
+ * 把它们算成「已就绪」会让进度条虚高。
+ */
+function readProgress(): AssetProgress | null {
+	try {
+		const raw = localStorage.getItem(PROGRESS_KEY);
+		if (!raw) return null;
+		const stored = JSON.parse(raw) as Partial<AssetProgress>;
+		if (stored.writeFormat !== WRITE_FORMAT_VERSION) return null;
+		return {
+			total: typeof stored.total === "number" ? stored.total : 0,
+			ready: typeof stored.ready === "number" ? stored.ready : 0,
+			lazy: typeof stored.lazy === "number" ? stored.lazy : 0,
+			writeFormat: WRITE_FORMAT_VERSION,
+			at: typeof stored.at === "number" ? stored.at : 0,
+		};
+	} catch {
+		return null;
+	}
+}
+
+/** 合并写入共享进度；未提供的字段沿用旧值 */
+function writeProgress(next: { total?: number; ready?: number; lazy?: number }): void {
+	const current = readProgress();
+	const merged: AssetProgress = {
+		total: next.total ?? current?.total ?? 0,
+		ready: next.ready ?? current?.ready ?? 0,
+		lazy: next.lazy ?? current?.lazy ?? 0,
+		writeFormat: WRITE_FORMAT_VERSION,
+		at: Date.now(),
+	};
+	try {
+		localStorage.setItem(PROGRESS_KEY, JSON.stringify(merged));
+	} catch {
+		// 隐私模式下 localStorage 可能不可写
+	}
+}
+
+/**
+ * 「边玩边下」成功补齐了一个文件 —— 记进共享进度。
+ *
+ * 这样「下载素材」面板上的进度条才能把它算进来：玩家一次都没点过
+ * 「开始下载」，也能看到素材在变多。
+ *
+ * 这里只做**自增**是安全的：`lazy-assets` 在下载前已经确认过本地没有这个文件，
+ * 因此每个调用都对应一个真正就绪的新文件；而批量下载写入的是**绝对值**，
+ * 它天然会修正累计误差。
+ */
+export function recordLazyAsset(): void {
+	const current = readProgress();
+	writeProgress({ ready: (current?.ready ?? 0) + 1, lazy: (current?.lazy ?? 0) + 1 });
+}
+
+/**
+ * 清单条目数 —— 计算「素材就绪」百分比的分母。
+ *
+ * 每次打开面板读一次内置清单即可（它随包发布、同一次运行内不会变），因此刻意
+ * **不做模块级缓存**：缓存会让测试换清单后仍拿到旧数字。读不到时退回历史记录里的
+ * 总数，再不行返回 0（界面退化成不显示百分比，而不是显示一个错误的比例）。
+ */
+async function resolveAssetTotal(): Promise<number> {
+	const items = await readBundledManifest();
+	if (items.length > 0) return items.length;
+	return readProgress()?.total ?? 0;
 }
 
 // ---------------------------------------------------------------------------
