@@ -14,8 +14,8 @@
  *
  * | 方式 | 触发 | 代价 |
  * | --- | --- | --- |
- * | 批量补齐（`asset-download.ts`） | 玩家手动点「菜单 → 其它 → 更新 → 下载素材」 | 一次约 970MB，得等 |
  * | **边玩边下（本模块）** | 游戏用到谁就下谁，无需操作 | 首次遇到某武将时轻微延迟 |
+ * | 批量补齐（`asset-download.ts`） | **游戏启动后自动开始**；也可在「菜单 → 其它 → 更新 → 下载素材」里开始 / 停止 | 一次约 970MB，静默跑完 |
  *
  * 两者共用同一份下载源与写盘逻辑，文件也都落在同一个可写层，互不冲突：
  * 批量下载补齐过的文件，懒加载探测时会直接当作「本地已有」跳过。
@@ -93,7 +93,7 @@ export interface LazyAssetsHandle {
 	request(path: string): Promise<LazyOutcome>;
 }
 
-/** 并发上限。刻意比批量下载（6）小：开局时游戏自己也在抢带宽，别把首屏挤掉 */
+/** 并发上限。刻意比批量下载（6）小：游戏自己也在抢带宽，别把首屏挤掉 */
 const CONCURRENCY = 3;
 
 /** 缓存击穿用的查询参数名，见文件头「一个必须处理的细节」 */
@@ -274,7 +274,7 @@ export function installLazyAssets(options: LazyAssetsOptions): LazyAssetsHandle 
 	 * 从队列取任务填满并发位。
 	 *
 	 * 按需下载**不做任何界面提示**：这是玩游戏时发生的事，任何浮层都会挡住牌桌，
-	 * 而且素材晚几百毫秒出现本身是可以接受的。进度只写到 console，供排查用。
+	 * 而且素材晚几百毫秒出现本身是可以接受的。想「看见」进度就去「下载素材」面板。
 	 */
 	function pump(): void {
 		while (running < CONCURRENCY && queue.length > 0) {

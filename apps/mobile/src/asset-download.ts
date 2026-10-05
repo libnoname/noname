@@ -215,6 +215,173 @@ export interface AssetDownloaderOptions {
 	lib: LibLike;
 	game: GameLike;
 	ui: UiLike;
+	/**
+	 * 是否在游戏启动后**自动**开始补齐素材（默认 `true`，仅 iOS 生效）。
+	 *
+	 * 侧载包的武将原画与语音是被裁掉的，玩家不点任何按钮也应该慢慢补齐；
+	 * 关掉它一般只用于本地测试。
+	 */
+	autoDownload?: boolean;
+	/** 自动下载的启动延迟（毫秒），默认 `AUTO_DOWNLOAD_DELAY`。测试里会调小 */
+	autoDownloadDelayMs?: number;
+}
+
+// ---------------------------------------------------------------------------
+// 模块级运行状态（面板与「自动下载」共用）
+// ---------------------------------------------------------------------------
+
+/**
+ * 当前这次批量下载的可见状态。
+ *
+ * 为什么放在**模块级**而不是面板里：下载由游戏启动时自动触发，那一刻玩家可能
+ * 根本没打开过「下载素材」面板；而面板每次打开都会重建 DOM，状态挂在面板上就会丢。
+ * 面板只读这里，因此「进度条跟着动」与「停止下载」在任意时刻都能生效。
+ */
+interface RunSnapshot {
+	running: boolean;
+	/** 已收到停止请求、正在收尾 */
+	stopping: boolean;
+	total: number;
+	done: number;
+	skipped: number;
+	failed: number;
+	/** 当前使用的下载源名 */
+	source: string;
+	/** 清单来源：内置 / 接口 */
+	origin: string;
+	/** 结束语（空闲时显示）：下载完成 / 已取消 / 出错 */
+	summary: string;
+}
+
+function idleSnapshot(): RunSnapshot {
+	return { running: false, stopping: false, total: 0, done: 0, skipped: 0, failed: 0, source: "", origin: "", summary: "" };
+}
+
+let runSnapshot: RunSnapshot = idleSnapshot();
+
+/**
+ * 面板订阅者：状态一变就通知它们重画。
+ *
+ * 光靠面板自己的 1 秒轮询不够——下载可能在面板打开之前就开始了，
+ * 而且轮询期间界面会"滞后一秒"，进度条看起来一顿一顿的。
+ */
+const runListeners = new Set<() => void>();
+
+function notifyRun(): void {
+	for (const listener of [...runListeners]) {
+		try {
+			listener();
+		} catch (error) {
+			console.warn("[asset-download] 刷新面板失败:", error);
+		}
+	}
+}
+
+/** 订阅运行状态变化；返回值用于取消订阅 */
+export function subscribeRun(listener: () => void): () => void {
+	runListeners.add(listener);
+	return () => {
+		runListeners.delete(listener);
+	};
+}
+
+/** 请求停止当前运行；没有在跑时为 null */
+let requestStop: (() => void) | null = null;
+
+/** 自动下载只安排一次：重复安装 preload 时不要叠出多个定时器 */
+let autoDownloadScheduled = false;
+
+/** 自动下载的启动延迟：先让首屏与启动流程跑完，别跟它们抢带宽 */
+const AUTO_DOWNLOAD_DELAY = 6000;
+
+/**
+ * 启动一次批量下载（玩家点按钮，或游戏启动时自动触发）。
+ *
+ * @returns 是否真的启动了；已在运行、或环境不支持时返回 `false`
+ */
+function startDownload(options: AssetDownloaderOptions): boolean {
+	if (runSnapshot.running) {
+		return false;
+	}
+
+	if (typeof options.game.writeFile !== "function") {
+		runSnapshot = { ...idleSnapshot(), summary: "当前环境不支持写入文件（game.writeFile 缺失）" };
+		notifyRun();
+		return false;
+	}
+
+	let canceled = false;
+	requestStop = () => {
+		canceled = true;
+		runSnapshot.stopping = true;
+		notifyRun();
+	};
+	runSnapshot = { ...idleSnapshot(), running: true, summary: "正在获取资源清单…" };
+	notifyRun();
+
+	console.log("[asset-download] 开始补齐素材");
+
+	void runDownload({
+		lib: options.lib,
+		game: options.game,
+		ui: options.ui,
+		shouldCancel: () => canceled,
+		report: patch => {
+			Object.assign(runSnapshot, patch);
+			notifyRun();
+		},
+	})
+		.catch(error => {
+			console.error("[asset-download] 下载流程出错:", error);
+			runSnapshot.summary = `下载失败：${error instanceof Error ? error.message : String(error)}`;
+		})
+		.finally(() => {
+			const { summary } = runSnapshot;
+			runSnapshot.running = false;
+			runSnapshot.stopping = false;
+			requestStop = null;
+			notifyRun();
+			console.log(`[asset-download] 本次结束：${summary}`);
+		});
+
+	return true;
+}
+
+/**
+ * 游戏启动后自动开始补齐素材（也就是「静默下载」）。
+ *
+ * 约定：
+ * - 只在 iOS 上安排（其它平台包里资源是齐全的，装了也没意义）；
+ * - 延迟 `AUTO_DOWNLOAD_DELAY` 再启动，免得跟首屏加载抢带宽；
+ * - **已经补齐过就跳过**——否则每次启动都要白跑一万多次本地探测；
+ * - 停止只对本次生效：下次启动会重新安排一次，没下完的接着下。
+ */
+function scheduleAutoDownload(options: AssetDownloaderOptions): void {
+	if (autoDownloadScheduled) {
+		return;
+	}
+	autoDownloadScheduled = true;
+
+	const delay = options.autoDownloadDelayMs ?? AUTO_DOWNLOAD_DELAY;
+	setTimeout(() => {
+		if (runSnapshot.running) return;
+		void hasNothingToDo().then(nothingToDo => {
+			if (nothingToDo) {
+				console.log("[asset-download] 素材已齐全，跳过自动下载");
+				return;
+			}
+			startDownload(options);
+		});
+	}, delay);
+}
+
+/** 素材是否已全部就绪（用于跳过自动下载） */
+async function hasNothingToDo(): Promise<boolean> {
+	const total = await resolveAssetTotal();
+	if (total <= 0) {
+		return false;
+	}
+	return (readProgress()?.ready ?? 0) >= total;
 }
 
 // ---------------------------------------------------------------------------
@@ -284,6 +451,12 @@ export function installAssetDownloader(options: AssetDownloaderOptions): void {
 
 	(wrapped as any).__assetDownloadWrapped = true;
 	ui.create.otherMenu = wrapped;
+
+	// 侧载包的素材是被裁掉的：启动后**自动**开始补齐，不需要玩家点任何按钮。
+	// 想关掉就传 `autoDownload: false`（本地测试就是这么用的）。
+	if (options.autoDownload !== false && isIosRuntime(lib)) {
+		scheduleAutoDownload(options);
+	}
 }
 
 /**
@@ -440,7 +613,7 @@ function renderPage(page: HTMLElement, lib: LibLike, game: GameLike, ui: UiLike)
 	title.style.fontWeight = "bold";
 
 	const desc = document.createElement("li");
-	desc.innerHTML = "iOS 侧载包为控制体积，未内置武将原画、技能语音与阵亡语音。" + "点击下方按钮可从上游仓库补齐这些资源（写入应用沙盒，随下随生效，无需重启游戏）。";
+	desc.innerHTML = "iOS 侧载包为控制体积，未内置武将原画、技能语音与阵亡语音。" + "游戏会在后台自动补齐这些资源（写入应用沙盒，随下随生效，无需重启游戏）；需要中断时可以随时点「停止下载」。";
 
 	const hint = document.createElement("li");
 	hint.style.opacity = "0.7";
@@ -449,11 +622,6 @@ function renderPage(page: HTMLElement, lib: LibLike, game: GameLike, ui: UiLike)
 	ul.appendChild(title);
 	ul.appendChild(desc);
 	ul.appendChild(hint);
-
-	// `running` 必须在 `renderReady` 之前声明：renderReady 要读它，
-	// 而且紧接着就会被调用一次（放在后面会触发 TDZ）。
-	let running = false;
-	let cancelRequested = false;
 
 	// ---- 进度区 ----
 	const progressBox = document.createElement("li");
@@ -483,62 +651,68 @@ function renderPage(page: HTMLElement, lib: LibLike, game: GameLike, ui: UiLike)
 	// 带上类名：既是样式锚点，也让本地 jsdom 测试能稳定取到这一行
 	statusLine.classList.add("asset-download-status");
 	statusLine.style.cssText = "font-size:14px;white-space:normal;line-height:1.5;";
-	statusLine.textContent = readStateSummary();
 
 	progressBox.appendChild(progressBar);
 	progressBox.appendChild(readyLine);
 	progressBox.appendChild(statusLine);
 
-	/** 清单条目总数（用来算百分比）；读到之前为 0 */
+	/** 清单条目总数（算百分比的分母）；读到之前为 0 */
 	let assetTotal = 0;
 
 	/**
-	 * 把进度条画成「素材就绪进度」。
+	 * 画「素材就绪进度」。
 	 *
-	 * 批量下载运行期间不画——那段时间进度条由 `runDownload` 驱动，显示的是**本次运行**
-	 * 的实时进度，含义不同，不能互相覆盖。
+	 * 运行中直接用本次运行的实时数字（`done - failed` 就是已就绪的数量），空闲时用
+	 * 共享记录——两者含义一致，所以进度条不会在运行结束的那一刻"跳一下"。
 	 */
 	const renderReady = (): void => {
-		if (running) return;
-
 		const record = readProgress();
-		const ready = record?.ready ?? 0;
+		const live = runSnapshot.running;
+		const total = live ? runSnapshot.total : assetTotal || record?.total || 0;
+		const ready = live ? Math.max(0, runSnapshot.done - runSnapshot.failed) : (record?.ready ?? 0);
 
-		if (!assetTotal) {
+		if (!total) {
 			readyLine.textContent = "素材就绪进度：正在读取资源清单…";
 			return;
 		}
 
-		const done = Math.min(ready, assetTotal);
-		const percent = ((done / assetTotal) * 100).toFixed(1);
+		const done = Math.min(ready, total);
+		const percent = ((done / total) * 100).toFixed(1);
 		progressFill.style.width = `${percent}%`;
 		// 边玩边下补的那部分单独说明：玩家一次都没点过「开始下载」，也能看到它在涨
 		const lazyPart = record?.lazy ? `　其中边玩边下补齐 ${record.lazy} 个` : "";
-		readyLine.textContent = `素材就绪进度：${done}/${assetTotal}（${percent}%）${lazyPart}`;
+		readyLine.textContent = `素材就绪进度：${done}/${total}（${percent}%）${lazyPart}`;
 	};
 
-	// 先占位，等清单读完（总数未知时只显示「正在读取资源清单…」）
-	renderReady();
-	void resolveAssetTotal()
-		.then(total => {
-			assetTotal = total;
-			renderReady();
-		})
-		.catch(() => {});
-
 	/**
-	 * 面板开着的时候，边玩边下可能仍在后台补文件（例如翻武将菜单会加载立绘），
-	 * 所以每秒重画一次。节点被摘掉后自动停掉，不留计时器。
+	 * 画状态行与按钮文案。
+	 *
+	 * 下载很可能是**在玩家打开面板之前**就自动开始的，所以文案一律从模块级快照推出来，
+	 * 而不是由「点击事件」驱动——否则打开面板会看到一片空白。
 	 */
-	const readyTimer = setInterval(() => {
-		if (!progressBox.isConnected) {
-			clearInterval(readyTimer);
+	const renderRun = (): void => {
+		const snapshot = runSnapshot;
+
+		if (snapshot.running) {
+			startButton.textContent = snapshot.stopping ? "正在停止…" : "停止下载";
+			startButton.disabled = snapshot.stopping;
+			stopButton.disabled = true;
+			testButton.disabled = true;
+			const percent = snapshot.total ? ((snapshot.done / snapshot.total) * 100).toFixed(1) : "0.0";
+			statusLine.textContent = `正在下载：${snapshot.done}/${snapshot.total}（${percent}%）　源：${snapshot.source || "…"}　清单：${snapshot.origin || "…"}` + `${snapshot.skipped ? `，已跳过 ${snapshot.skipped}` : ""}` + `${snapshot.failed ? `，失败 ${snapshot.failed}` : ""}`;
 			return;
 		}
-		// 页面不可见时没必要重排
-		if (typeof document !== "undefined" && document.visibilityState === "hidden") return;
-		renderReady();
-	}, 1000);
+
+		startButton.disabled = false;
+		startButton.textContent = snapshot.summary ? "重新下载" : "开始下载";
+		stopButton.disabled = true;
+		testButton.disabled = false;
+
+		const persisted = readStateSummary();
+		// 「旧格式文件内容已坏、必须重下」这条提醒优先于本次会话的结束语——
+		// 那是玩家必须处理的问题，不能被「上次下载完成」盖掉。
+		statusLine.textContent = stateNeedsRedownload() ? persisted : snapshot.summary || persisted;
+	};
 
 	// ---- 按钮区 ----
 	const buttonRow = document.createElement("li");
@@ -548,7 +722,7 @@ function renderPage(page: HTMLElement, lib: LibLike, game: GameLike, ui: UiLike)
 	const stopButton = ui.create.node("button", "清空记录", () => {
 		// 只清掉本地的进度记录；真正的文件删除交给游戏内既有机制，避免误删玩家已下载的资源
 		clearState();
-		statusLine.textContent = readStateSummary();
+		renderRun();
 		renderReady();
 	});
 	stopButton.disabled = true;
@@ -580,36 +754,21 @@ function renderPage(page: HTMLElement, lib: LibLike, game: GameLike, ui: UiLike)
 		testButton.disabled = false;
 	});
 
-	const startButton = ui.create.node("button", "开始下载", async () => {
-		if (running) {
-			// 下载中再点就是「取消」
-			cancelRequested = true;
-			startButton.textContent = "正在取消…";
-			startButton.disabled = true;
+	/**
+	 * 主按钮：运行中就是「停止下载」，空闲时是「开始下载 / 重新下载」。
+	 *
+	 * ⚠️ 停止**只对本次生效**：下次启动游戏会自动重新开始（已经下过的会被跳过，
+	 * 所以是接着下，而不是从头再来）。
+	 */
+	const startButton = ui.create.node("button", "开始下载", () => {
+		if (runSnapshot.running) {
+			requestStop?.();
+			renderRun();
 			return;
 		}
-
-		running = true;
-		cancelRequested = false;
-		startButton.textContent = "取消下载";
-		stopButton.disabled = false;
-		testButton.disabled = true;
-		statusLine.style.whiteSpace = "pre-line";
-
-		try {
-			await runDownload({ lib, game, ui, statusLine, progressFill, shouldCancel: () => cancelRequested });
-			startButton.textContent = "重新下载";
-		} catch (error) {
-			statusLine.textContent = `下载失败：${error instanceof Error ? error.message : String(error)}`;
-			startButton.textContent = "重试";
-		} finally {
-			running = false;
-			startButton.disabled = false;
-			stopButton.disabled = true;
-			testButton.disabled = false;
-			// 本次运行结束：进度条交还给「素材就绪进度」，不再显示本次运行的临时进度
-			renderReady();
-		}
+		startDownload({ lib, game, ui });
+		renderRun();
+		renderReady();
 	});
 
 	buttonRow.appendChild(startButton);
@@ -619,6 +778,41 @@ function renderPage(page: HTMLElement, lib: LibLike, game: GameLike, ui: UiLike)
 	ul.appendChild(progressBox);
 	ul.appendChild(buttonRow);
 	page.appendChild(ul);
+
+	// 首次绘制。必须在按钮就位之后——`renderRun` 会引用它们。
+	renderRun();
+	renderReady();
+
+	// 状态一变就立刻重画，进度条才会"跟着动"，而不是每秒跳一格
+	const unsubscribe = subscribeRun(() => {
+		renderRun();
+		renderReady();
+	});
+
+	void resolveAssetTotal()
+		.then(total => {
+			assetTotal = total;
+			renderReady();
+		})
+		.catch(() => {
+			// 读不到清单就保持占位文案，不影响下载本身
+		});
+
+	/**
+	 * 兜底轮询：万一有变化没走到订阅（例如清单读取完成后的补画），每秒也重画一次。
+	 * 节点被摘掉后停掉订阅与计时器，不留垃圾。
+	 */
+	const refreshTimer = setInterval(() => {
+		if (!progressBox.isConnected) {
+			unsubscribe();
+			clearInterval(refreshTimer);
+			return;
+		}
+		// 页面不可见时没必要重排
+		if (typeof document !== "undefined" && document.visibilityState === "hidden") return;
+		renderRun();
+		renderReady();
+	}, 1000);
 }
 
 // ---------------------------------------------------------------------------
@@ -629,19 +823,13 @@ interface RunDownloadContext {
 	lib: LibLike;
 	game: GameLike;
 	ui: UiLike;
-	statusLine: HTMLElement;
-	progressFill: HTMLElement;
 	shouldCancel: () => boolean;
+	/** 把运行期进度同步到模块级快照，供面板（可能同时开着）显示 */
+	report: (patch: Partial<RunSnapshot>) => void;
 }
 
 async function runDownload(ctx: RunDownloadContext): Promise<void> {
-	const { game, statusLine, progressFill } = ctx;
-
-	if (typeof game.writeFile !== "function") {
-		throw new Error("当前环境不支持写入文件（game.writeFile 缺失）");
-	}
-
-	statusLine.textContent = "正在获取资源清单…";
+	const { game, report } = ctx;
 
 	const { items: files, origin } = await resolveFileList(ctx.shouldCancel);
 	if (files.length === 0) {
@@ -661,13 +849,14 @@ async function runDownload(ctx: RunDownloadContext): Promise<void> {
 	/** 第一个成功写入的文件，收尾时回读做写入自检（见 verifyWrittenBytes） */
 	let firstWritten: { localPath: string; byteLength: number } | null = null;
 
+	report({ total, origin });
+
+	/** 同步进度到面板：每 `UI_REFRESH_STEP` 个文件一次，收尾时强制一次 */
 	const updateUi = (force = false) => {
 		if (!force && done % UI_REFRESH_STEP !== 0) {
 			return;
 		}
-		const percent = ((done / total) * 100).toFixed(1);
-		progressFill.style.width = `${percent}%`;
-		statusLine.textContent = `正在下载：${done}/${total}（${percent}%）　源：${CONTENT_SOURCES[sourceIndex].name}　清单：${origin}` + `${skipped ? `，已跳过 ${skipped}` : ""}` + `${failed.length ? `，失败 ${failed.length}` : ""}`;
+		report({ done, skipped, failed: failed.length, source: CONTENT_SOURCES[sourceIndex].name, origin });
 	};
 
 	/**
@@ -683,6 +872,7 @@ async function runDownload(ctx: RunDownloadContext): Promise<void> {
 			if (ctx.shouldCancel()) {
 				return;
 			}
+
 			const index = cursor++;
 			if (index >= total) {
 				return;
@@ -728,7 +918,12 @@ async function runDownload(ctx: RunDownloadContext): Promise<void> {
 	updateUi(true);
 
 	if (ctx.shouldCancel()) {
-		statusLine.textContent = `已取消：${done}/${total}（已下载 ${done - skipped - failed.length}，已跳过 ${skipped}）。再次点击可继续。`;
+		report({
+			done,
+			skipped,
+			failed: failed.length,
+			summary: `已取消：${done}/${total}（已下载 ${done - skipped - failed.length}，已跳过 ${skipped}）。再次点击可继续。`,
+		});
 		saveState({ total, done, failed: failed.length });
 		// 已经处理过的文件同样计入「素材就绪」；还没轮到的那些仍算未就绪
 		writeProgress({ total, ready: done - failed.length });
@@ -748,16 +943,20 @@ async function runDownload(ctx: RunDownloadContext): Promise<void> {
 	const verdict = firstWritten ? await verifyWrittenBytes(game, firstWritten) : "";
 	const tail = verdict ? `　${verdict}` : "";
 
+	let summary: string;
 	if (failed.length) {
 		// 把失败原因摊开给用户看：多数情况下这一句就能定位是哪个域名不可达
 		const sample = failed.slice(0, 3).join("；");
-		statusLine.textContent = `下载完成：成功 ${succeeded}，已存在 ${skipped}，失败 ${failed.length}。` + `源：${usedSource}　清单：${origin}。失败示例：${sample}。可再次点击重试失败项。`;
+		summary = `下载完成：成功 ${succeeded}，已存在 ${skipped}，失败 ${failed.length}。` + `源：${usedSource}　清单：${origin}。失败示例：${sample}。可再次点击重试失败项。`;
 	} else if (skipped === total) {
-		statusLine.textContent = `资源已完备（${total}/${total}），无需重复下载。源：${usedSource}　清单：${origin}`;
+		summary = `资源已完备（${total}/${total}），无需重复下载。源：${usedSource}　清单：${origin}`;
 	} else {
-		statusLine.textContent = `下载完成：新增 ${succeeded}/${total}（已存在 ${skipped}），武将原画与语音已就绪。源：${usedSource}　清单：${origin}${tail}`;
+		summary = `下载完成：新增 ${succeeded}/${total}（已存在 ${skipped}），武将原画与语音已就绪。源：${usedSource}　清单：${origin}${tail}`;
 	}
-	// 收尾不直接把进度条拉到 100%：交给面板的 `renderReady()` 改画「素材就绪进度」，
+
+	report({ done, skipped, failed: failed.length, source: usedSource, origin, summary });
+
+	// 进度条不在这里收尾：面板按「素材就绪进度」（ready/total）画，
 	// 这样有失败项时不会虚报 100%。
 	writeProgress({ total, ready: total - failed.length });
 
@@ -1154,6 +1353,25 @@ function readStateSummary(): string {
 		return `上次下载：${time}（${state.done}/${state.total}${failed}）`;
 	} catch {
 		return "尚未下载。点击「开始下载」补齐武将原画与语音。";
+	}
+}
+
+/**
+ * 本地是否留有「旧落盘格式」的记录。
+ *
+ * 那种文件的内容是坏的（见 `WRITE_FORMAT_VERSION`），必须重下覆盖，
+ * 所以这条提醒的优先级高于「本次会话的结束语」。
+ */
+function stateNeedsRedownload(): boolean {
+	try {
+		const raw = localStorage.getItem(STORAGE_KEY);
+		if (!raw) {
+			return false;
+		}
+		const state = JSON.parse(raw) as Partial<DownloadState>;
+		return state.format !== WRITE_FORMAT_VERSION;
+	} catch {
+		return false;
 	}
 }
 
