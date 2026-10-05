@@ -45004,6 +45004,7 @@ const skills = {
 				filterCard: true,
 				selectCard: -1,
 				position: "h",
+				manualConfirm: true,
 				ai: {
 					order: 0.1,
 					nokeep: true,
