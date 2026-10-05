@@ -9291,7 +9291,7 @@ const skills = {
 			}
 		},
 		ai: {
-			combo: "mbhuxiao",
+			combo: "mbxuehen",
 			order: 10,
 			result: { player: 1 },
 		},
