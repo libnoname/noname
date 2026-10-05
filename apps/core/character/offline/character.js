@@ -1993,7 +1993,7 @@ const characters = {
 		sex: "female",
 		group: "shu",
 		hp: 4,
-		skills: ["jdsbjieyin", "jdsbliangzhu", "sbxiaoji"],
+		skills: ["jdsbjieyin", "jdsbliangzhu", "jdsbxiaoji"],
 		dieAudios: ["sb_sunshangxiang"],
 		groupBorder: "wu",
 	},
