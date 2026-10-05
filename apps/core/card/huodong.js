@@ -1824,7 +1824,7 @@ export default {
 		mb_jinshangtianhua: {
 			charlotte: true,
 			mark: true,
-			intro: { content: "下次获得牌时，摸X张牌（X为# × 获得牌数且至多摸五张）" },
+			intro: { content: "下次获得牌时，摸X张牌（X为# × 获得牌数且至多为五）" },
 			forced: true,
 			onremove: true,
 			silent: true,
@@ -1839,7 +1839,7 @@ export default {
 			async content(event, trigger, player) {
 				const mark = player.countMark(event.name);
 				player.removeSkill(event.name);
-				const num = Math.min(5, trigger.getg(player).length * mark);
+				const num = Math.min(5, trigger.getg(player).length) * mark;
 				await player.draw(num);
 			},
 		},
