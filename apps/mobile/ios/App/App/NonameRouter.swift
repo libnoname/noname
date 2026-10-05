@@ -44,14 +44,24 @@ class NonameRouter: NSObject, Router {
     /// Capacitor 会传进来 URL 的 `path` 部分，例如 `/noname/entry.js`。
     /// 返回磁盘绝对路径：命中沙盒则返回沙盒路径，否则回退内置资源路径。
     func route(for path: String) -> String {
+        // 先剥掉查询串与锚点，再按路径定位文件。
+        //
+        // 「边玩边下」（apps/mobile/src/lazy-assets.ts）在补齐某个素材后，
+        // 需要让 WebView 重新请求同一个文件——而把 `style.backgroundImage` /
+        // `audio.src` 设成与之前完全相同的值属于空操作。因此那边会给 URL 追加
+        // 一个 `?_lazy=<时间戳>` 后缀；这里统一丢弃，保证两种写法都指向同一个文件。
+        // （Capacitor 不同版本传进来的可能是 `url.path` 也可能是含 query 的字符串，
+        //  在本地剥一次就不必依赖它的实现细节。）
+        let cleanedPath = Self.stripQuery(path)
+
         // 与官方 CapacitorRouter 的语义严格对齐（必须逐字对齐，否则会加载失败）：
         //   - 无扩展名（含空路径 "/"）视为 SPA 路由，回退到 index.html；
         //   - 有扩展名则直接拼接 basePath。
         // 注意官方在无扩展名分支返回的是 `basePath + "/index.html"` 而不是
         // `basePath + path`，这里若照字面拼接会得到目录路径，
         // `Data(contentsOf:)` 读目录抛错 → 首页加载失败 → 黑屏。
-        let pathURL = URL(fileURLWithPath: path)
-        let fallback = pathURL.pathExtension.isEmpty ? basePath + "/index.html" : basePath + path
+        let pathURL = URL(fileURLWithPath: cleanedPath)
+        let fallback = pathURL.pathExtension.isEmpty ? basePath + "/index.html" : basePath + cleanedPath
 
         guard isOverlayEnabled else { return fallback }
 
@@ -59,7 +69,7 @@ class NonameRouter: NSObject, Router {
         // 无扩展名的路径是 SPA 路由，官方实现会把它当作 index.html。
         guard !pathURL.pathExtension.isEmpty else { return fallback }
 
-        guard let normalized = Self.normalize(path) else {
+        guard let normalized = Self.normalize(cleanedPath) else {
             // 归一化失败（例如包含 `..`）时直接使用内置资源，避免路径穿越。
             return fallback
         }
@@ -102,6 +112,17 @@ class NonameRouter: NSObject, Router {
         }
 
         return candidate
+    }
+
+    /// 剥掉 URL 里的查询串与锚点，只留下路径部分。
+    ///
+    /// 供「边玩边下」的缓存击穿后缀（`?v=<时间戳>`）使用：加了后缀才能让 WebView
+    /// 重新请求同一个文件，而定位文件时又必须把它去掉。
+    static func stripQuery(_ path: String) -> String {
+        guard let index = path.firstIndex(where: { $0 == "?" || $0 == "#" }) else {
+            return path
+        }
+        return String(path[path.startIndex..<index])
     }
 
     /// 归一化 URL path：去掉首尾 `/`、过滤 `.` 空段，遇到 `..` 返回 nil。

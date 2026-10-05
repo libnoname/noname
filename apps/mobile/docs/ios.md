@@ -111,7 +111,9 @@ GitHub 为公共仓库免费提供 macOS 云主机（Apple Silicon）。工作�
    | --- | --- | --- |
    | `retention_days` | `14` | 产出的 ipa 在 GitHub 上保留多少天 |
    | `create_release` | 勾上 | 同时发布到 Release 页面，方便长期下载 |
-   | `slim_assets` | 勾上 | **建议勾选**，裁掉 970MB 语音与立绘，否则大概率装不进手机（见第 3 节） |
+
+   > 武将原画与语音**不再有开关**：这个工作流恒定把它们排除（约 970MB），
+   > 改由游戏内「边玩边下」按需补齐。理由与替代方案见第 3 节。
 
 4. 点 **Run workflow** 开始构建。
 
@@ -258,10 +260,25 @@ apps/mobile/ios/build/export/<AppName>.ipa
 
 裁剪后约 **337 MB**，可正常侧载。
 
-- **路线 A**：触发工作流时勾选 `slim_assets`，会自动裁剪、保留必需的 3 张默认剪影、并重建资源清单；
-- **路线 B**：手动删除目录后，**必须重新执行 `pnpm --filter @noname/mobile sync`** 重建 `asset-manifest.json`。
+- **路线 A（云端构建）**：`ios-build.yml` 里的 “Strip character art and voice” 步骤**恒定执行**，没有开关——它只保留必需的 3 张默认剪影，并重建资源清单；
+- **路线 B（本地构建）**：若你也想让本地包瘦身，手动删除上述目录后**必须重新执行 `pnpm --filter @noname/mobile sync`** 重建 `asset-manifest.json`。
 
 > ⚠️ `image/character` 中的 `default_silhouette_*` 是**游戏必需**的默认剪影，不能整目录删干净，否则没有立绘的武将会显示破图。
+
+### 裁掉的资源怎么补回来
+
+包内不含武将原画与语音，但游戏提供了两条互补的路径（实现见
+[`src/lazy-assets.ts`](../src/lazy-assets.ts) 与 [`src/asset-download.ts`](../src/asset-download.ts)）：
+
+| 方式 | 触发 | 代价 |
+| --- | --- | --- |
+| **边玩边下**（默认，推荐） | 无感：游戏用到某个武将的立绘/语音时才去下那一个文件 | 首次遇到某武将时有零点几秒延迟，仅一次 |
+| 批量补齐 | 菜单 → 其它 → 更新 → **下载素材** | 一次约 970MB，适合在 Wi-Fi 下一次性下完 |
+
+两者写入的是同一个可写层（`Documents/`），互不冲突：批量下载过的文件，按需下载检测到本地已有就会直接跳过。
+
+> 💡 想打一个「素材齐全」的包（例如上架前回归、模拟器调试）：本地执行
+> `pnpm build && pnpm --filter @noname/mobile sync`，再直接对 `apps/mobile/ios` 出包。
 
 ---
 
@@ -290,22 +307,42 @@ apps/mobile/ios/build/export/<AppName>.ipa
 | 游戏启动时弹出「无法启用即时编译功能」 | 说明当前运行的仍是旧版 `game.js`。重新构建网页资源（`pnpm build`）以让 JIT 降级逻辑生效 |
 | 菜单 / 顶部按钮点不动 | 系统栏（状态栏、导航栏）浮层吃掉了触摸事件。确认 `capacitor.config.ts` 中 `SystemBars.hidden` 为 `true`，且未启用 `contentInset` |
 | 游戏能启动但读不到武将 / 卡牌 | `asset-manifest.json` 缺失或未随资源裁剪更新，重新执行 `pnpm --filter @noname/mobile sync` |
-| 武将没有立绘 / 技能与阵亡没有语音 | 这是**瘦身包的预期表现**（见第 3 节）。进「菜单 → 其它 → 更新 → 下载素材」补齐，或直接关掉 `slim_assets` 重新构建 |
+| 武将没有立绘 / 技能与阵亡没有语音 | 第一次遇到某个武将时会**按需下载**（见第 6 节），几秒内自动出现；若是「刚开局就一片空白且迟迟不出现」，说明网络拿不到素材，进「菜单 → 其它 → 更新 → 下载素材」点「测试连接」看哪个源不通 |
+| 对局刚开始时卡一下、底部出现「正在补齐素材…」 | 这是**边玩边下**在下载该武将在本局用到的立绘/语音，属于预期行为，仅首次出现 |
 | 导入文件时列表里的文件是**灰色、点不动** | iOS 的「文件」选择器会按 `accept` 严格过滤，且没有「显示全部文件」的逃生入口。已由 [`src/ios-file-input.ts`](../src/ios-file-input.ts) 在 iOS 上统一去掉 `accept` 修掉；若文件在 iCloud 上未下载，仍需先点一下让它下载 |
 
 ---
 
-## 6. 补充下载武将原画与语音
+## 6. 补齐武将原画与语音
 
 瘦身包会把 `audio/skill`、`audio/die`、`image/character` 三大目录删掉（见第 3 节），
-结果是武将**没有立绘、没有配音**。iOS 版为此提供了一个补下载入口：
+结果是武将**没有立绘、没有配音**。iOS 版有两条互补的补齐路径，都从上游 GitHub 仓库
+（`libnoname/noname` 的 `main` 分支）取文件，写进应用沙盒的可写层（`Documents/`）。
+由于 iOS 侧「文件系统覆盖层」+「请求层覆盖层」的存在，写进去的文件会被游戏直接读到，
+**不需要重装、也不需要改任何游戏代码**。
+
+### 6.1 边玩边下（默认，无需操作）
+
+游戏用到某个武将的立绘或语音、而本地没有时，**只把那一个文件**取回来。
+首次遇到某个武将会多出零点几秒等待，之后永久命中本地。
+
+实现要点（详见 [`src/lazy-assets.ts`](../src/lazy-assets.ts)）：
+
+| 关注点 | 做法 |
+| --- | --- |
+| 适用范围 | 只处理被裁掉的三个前缀：`image/character/`、`audio/skill/`、`audio/die/`；`default_silhouette_*` 是打包保留的必需资源，不参与 |
+| 立绘的需求信号 | 包装 `HTMLDivElement.prototype.setBackgroundImage`（`setBackground` 最终也走它）。⚠️ 该方法由 core 的 `init/polyfill.ts` 在**启动时**才挂到原型上，而 `preload` 跑得更早，因此不能用赋值抢——要在原型上装一个**访问器属性**，让 core 之后的赋值必须经过我们 |
+| 语音的需求信号 | 在 `window` 上用**捕获阶段**监听 `error`（媒体元素的 error 不冒泡）。必须抢在 core 自己的 `onerror` 之前，因为它会把 `<audio>` 从文档里摘掉 |
+| 补完怎么让界面更新 | 文件下好后把原 URL 加一个 `?_lazy=<时间戳>` 后缀重新设一次——同名同值的 `background-image` / `audio.src` 属于空操作，浏览器不会重新请求。该后缀由 `NonameRouter.stripQuery` 剥掉（见第 5 节的请求层覆盖层） |
+| 不重复下载 | 会话内记录「已确认存在 / 已确认拿不到」；同一路径并发请求只下一次；`404` 视为上游确实没有，不再换源重试 |
+| 反馈 | 底部出现不可交互的小提示「正在补齐素材…」，空闲约 1 秒后自动淡出 |
+
+### 6.2 批量下载（可选，菜单入口）
 
 > **菜单 → 其它 → 更新 → 下载素材**
 
-点击「开始下载」后，会从上游 GitHub 仓库（`libnoname/noname` 的 `main` 分支）
-把这批资源取回来，写入应用沙盒的可写层（`Documents/`）。由于 iOS 侧
-「文件系统覆盖层」+「请求层覆盖层」的存在，写进去的文件会被游戏直接读到，
-**不需要重装、也不需要改任何游戏代码**。
+适合想在 Wi-Fi 下一次性补齐约 970MB 的场景。点击「开始下载」后批量取回全部资源；
+中途取消可以**续传**（靠 `checkFile` 跳过已存在项）。
 
 实现要点（详见 [`src/asset-download.ts`](../src/asset-download.ts)）：
 
@@ -313,10 +350,11 @@ apps/mobile/ios/build/export/<AppName>.ipa
 | --- | --- |
 | 何时显示 | 优先用 WebView 桥 `window.webkit.messageHandlers.bridge` 判断 iOS（与 `packages/jit` 同款、已在真机验证），`lib.device === "ios"` 兜底；安卓 / 浏览器不受影响 |
 | 文件清单 | **首选构建期内置的 `asset-download-manifest.json`**（由 `afterSync.ts` 在资源仍完整时生成，随包发布，完全离线）。仅在它缺失时才回退到 `api.github.com` 的 Git Trees API |
-| 文件内容 | 按顺序尝试多个源，第一个成功即用：GitHub Raw → jsDelivr → jsDelivr(Fastly) → jsDelivr(Gcore)。某源连续失败 5 次自动切换 |
+| 文件内容 | 按顺序尝试多个源，第一个成功即用：GitHub Raw → jsDelivr → jsDelivr(Fastly) → jsDelivr(Gcore)。某源连续失败 5 次自动切换（与 6.1 共用同一份 `CONTENT_SOURCES`） |
 | 上游路径前缀 | `apps/core/`（注意不是仓库根目录） |
 | 本地落盘路径 | 去掉前缀后写入，如 `image/character/zhaoyun.jpg` → `Documents/image/character/zhaoyun.jpg` |
 | 断点续传 | 有历史记录时逐个 `checkFile` 跳过已下载项，因此「取消后再点」是续传而非重下 |
+| 落盘格式版本 | `WRITE_FORMAT_VERSION`：**只要写入方式变了就必须 +1**，否则旧版本写出的坏文件会被续传逻辑永久当成「已下载」 |
 | 出错诊断 | 面板上的**「测试连接」**按钮会逐个探测各下载源并原地列出 HTTP 状态；下载结束语也会带上「源」与「清单来源」 |
 | 规模 | 约 11900 个文件 / 约 970MB，请尽量在 Wi-Fi 下进行 |
 
@@ -377,7 +415,7 @@ iOS 版开启了文件共享，可以直接用系统「文件」App 打开游戏
 | 层级对齐 | 可写根目录设为空串，`Documents/` 即游戏根目录（见第 0.1 节） |
 | 空目录没有指引 | `preload.ts` 的 `ensureImportSkeleton()` 在 iOS 启动时预建上面四个目录并写一份 `使用说明.txt`（若已存在则不覆盖） |
 | 何时生效 | 静态资源（立绘 / 语音）随下次读取生效；新武将包 / 扩展需要重启游戏重新扫描 |
-| iCloud 备份 | `Documents/` 默认会进 iCloud 备份。用「下载素材」补齐约 1GB 资源后，备份体积也会相应增长 |
+| iCloud 备份 | `Documents/` 默认会进 iCloud 备份。按需下载/批量补齐积累约 1GB 素材后，备份体积也会相应增长 |
 
 > 不需要额外做「导入」按钮：游戏本来就跑在覆盖层上，只要文件出现在 `Documents/`
 > 的对应位置，下一次读取就会命中。
@@ -392,7 +430,8 @@ iOS 版开启了文件共享，可以直接用系统「文件」App 打开游戏
 | [`src/fs/ios.ts`](../src/fs/ios.ts) | iOS 文件系统实现（沙盒覆盖层 + 内置资源清单列举） |
 | [`src/fs/types.ts`](../src/fs/types.ts) | 跨平台共用的 `NativeFileSystem` 接口与工具函数 |
 | [`src/fs/legacy-api.ts`](../src/fs/legacy-api.ts) | 把 `NativeFileSystem` 映射为游戏所需的回调式 `game.*` API |
-| [`src/asset-download.ts`](../src/asset-download.ts) | **补充下载武将原画与语音**：在「菜单 → 其它 → 更新」注入按钮，从上游 GitHub 拉取被瘦身裁掉的资源 |
+| [`src/lazy-assets.ts`](../src/lazy-assets.ts) | **边玩边下**（默认）：游戏用到立绘/语音而本地没有时，就地按需下载该文件并让界面/音频重新取到它 |
+| [`src/asset-download.ts`](../src/asset-download.ts) | **批量补充下载**：在「菜单 → 其它 → 更新」注入按钮，从上游 GitHub 一次性拉取被裁掉的约 970MB 资源。同时对外提供两者共用的多源下载与写盘函数 |
 | [`src/ios-file-input.ts`](../src/ios-file-input.ts) | **放宽文件选择器**：iOS 的「文件」选择器按 `accept` 严格过滤且无逃生入口，这里统一去掉 `accept`，避免「导入背景音乐 / 扩展 / 图片」时文件全灰、点不动 |
 | [`ios/App/App/NonameBridgeViewController.swift`](../ios/App/App/NonameBridgeViewController.swift) | 继承 `CAPBridgeViewController`，重写 `router()` 挂上自定义路由器 |
 | [`ios/App/App/NonameRouter.swift`](../ios/App/App/NonameRouter.swift) | **请求层覆盖层**：让 `<script src>` / `fetch` 也能读到 `Documents/` 中的用户文件（等价于 Android 的 `JsAwareAssetsPathHandler`） |

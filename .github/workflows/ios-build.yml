@@ -13,6 +13,16 @@ name: Build unsigned iOS IPA
 #   macos-26 镜像自带 Xcode 26.x，正好满足。这个组合也顺带解决了
 #   「Intel Mac 无法安装 Xcode 26」的问题——云端机器是 Apple Silicon。
 #
+# 为什么必须删掉武将原画与语音（而不是做成可选项）：
+#   全量资源约 2.8GB，其中 audio/skill(470M) + image/character(390M) + audio/die(111M)
+#   占了将近 1GB。侧载工具装不下这个体积（AltStore 未打补丁时 >300MB 直接报
+#   Bad Allocation），而这三类资源又完全可以「用到谁下谁」——
+#   因此本工作流**恒定**把它们排除，改由游戏内的「边玩边下」按需补齐
+#   （实现见 apps/mobile/src/lazy-assets.ts）。
+#   如果要打「一次性带齐素材」的包（例如上架前的真机回归、或模拟器调试），
+#   请在本地执行：pnpm build && pnpm --filter @noname/mobile sync，
+#   然后直接对 apps/mobile/ios 出包，不要走这个工作流。
+#
 # 触发方式：GitHub 网页 → Actions → “Build unsigned iOS IPA” → Run workflow
 # 产物位置：运行页面底部的 Artifacts；同时会附到自动创建的 Release 上。
 #
@@ -31,12 +41,6 @@ on:
         type: boolean
         required: false
         default: true
-      slim_assets:
-        description: "资源瘦身：裁掉大体积可选资源（技能/阵亡语音、武将立绘），把 ipa 压到 300MB 以内以便侧载"
-        type: boolean
-        required: false
-        default: true
-
   # 打 tag 时自动构建，方便发版
   push:
     tags:
@@ -178,16 +182,20 @@ jobs:
           fi
           echo ".xcodeproj found in $PROJ_DIR ✓"
 
-      - name: Slim assets (optional)
-        if: github.event_name == 'push' || inputs.slim_assets
+      - name: Strip character art and voice (always)
         working-directory: apps/mobile
         run: |
           # 侧载工具对未压缩 App 体积非常敏感：
           #   - AltStore 未打补丁时 >300MB 的 ipa 直接报 Bad Allocation
           #   - 即使打 4GB patch，Apple 侧未压缩 App 硬上限仍是 4GB
-          # 本仓库全量资源约 2.8GB，不裁剪几乎必然装不上。
+          # 本仓库全量资源约 2.8GB，不处理几乎必然装不上。
           #
-          # 裁掉的资源体积最大、且缺失不影响可玩性（自动保留必需占位图）：
+          # ⚠️ 本步骤**恒定执行**，没有任何开关：
+          # 武将原画与语音不再随包发布，改为游戏内「边玩边下」——
+          # 用到谁就只下谁（详见 apps/mobile/src/lazy-assets.ts）。
+          # 因此这里只管把三大目录删掉，不必再关心「要不要打包」。
+          #
+          # 处理的对象（缺失不影响开局可玩性，且都有内置兜底）：
           #   audio/skill       470M  武将技能语音（全为 mp3，整目录删）
           #   audio/die         111M  阵亡语音（全为 mp3，整目录删）
           #   image/character   390M  武将立绘（保留 3 张 default_silhouette_*）
@@ -201,7 +209,7 @@ jobs:
             find ios -maxdepth 4 -type d ! -path "*.xcodeproj/*" || true
             exit 1
           fi
-          echo "===== 裁剪前 ====="
+          echo "===== 处理前 ====="
           du -sh "$DIST"
           du -sh "$PUBLIC" 2>/dev/null || true
 
@@ -229,7 +237,7 @@ jobs:
             fi
           done
 
-          echo "===== 裁剪后 ====="
+          echo "===== 处理后 ====="
           du -sh "$DIST"
           du -sh "$PUBLIC" 2>/dev/null || true
           du -sh "$DIST"/* | sort -rh | head -10
@@ -377,6 +385,9 @@ jobs:
               --notes "未签名 iOS ipa（GitHub Actions 自动构建，commit ${{ github.sha }}）。
 
           **安装方式**：把这个 .ipa 导入 SideStore / AltStore，用你自己的 Apple ID 重签后安装。
+
+          **素材说明**：为把 ipa 控制在这个体积，包内**不含**武将原画、技能语音与阵亡语音；
+          游戏会在用到时自动按需下载（需要联网，首次遇到某个武将时略有延迟）。
 
           ⚠️ 未签名包无法直接安装，必须经过侧载工具重签。免费 Apple ID 签名的应用 7 天后过期，需要重新刷新。"
           fi

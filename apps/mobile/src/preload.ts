@@ -5,6 +5,7 @@ import { installAssetDownloader } from "./asset-download.js";
 import { createIosFileSystem } from "./fs/ios.js";
 import { attachFileSystemAPI } from "./fs/legacy-api.js";
 import { relaxFileInputFilters } from "./ios-file-input.js";
+import { installLazyAssets } from "./lazy-assets.js";
 import { base64ToArrayBuffer, callbackError, joinFilePath, sanitizeExportName, writeDataToBase64, type NativeAccessResult, type NativeFileSystem } from "./fs/types.js";
 
 /**
@@ -161,11 +162,19 @@ export default async function preload({ lib, game, ui }) {
 	// 各平台通用的文件读写 API（checkFile / readFile / writeFile / getFileList ...）
 	attachFileSystemAPI(game, fs);
 
-	// iOS 侧载包为控制体积未内置武将原画与语音（见 ios-build.yml 的 slim_assets），
-	// 这里在「菜单 → 其它 → 更新」里补一个下载入口，把资源从上游仓库拉进可写目录。
-	// 必须在 attachFileSystemAPI 之后安装，因为它依赖 game.writeFile。
-	// 注意：安装时机早于 boot()，而菜单是在 boot() 阶段才构建的，因此包裹一定会被用到。
-	installAssetDownloader({ lib, game, ui });
+	// iOS 侧载包为控制体积**恒定**不打包武将原画与语音（见 ios-build.yml 的
+	// “Strip character art and voice” 步骤），这里提供两条互补的补齐路径。
+	//
+	// 1）「边玩边下」（默认、无需操作）：游戏用到某个武将的立绘/语音而本地没有时，
+	//    就地把它从上游拉下来写进可写目录。见 `lazy-assets.ts`。
+	// 2）手动批量下载：菜单 → 其它 → 更新 → 下载素材，一次补齐约 970MB。
+	//
+	// 两者都必须在 attachFileSystemAPI 之后安装，因为它们依赖 game.writeFile/checkFile。
+	// 注意：安装时机早于 boot()，而菜单是在 boot() 阶段才构建的，因此菜单包裹一定会被用到。
+	if (platform === "ios") {
+		installLazyAssets({ lib, game, ui });
+		installAssetDownloader({ lib, game, ui });
+	}
 
 	// iOS：预建「文件」App 里可见的导入目录与说明，方便玩家手动放素材 / 扩展。
 	// 不 await —— 这是锦上添花，不该拖慢启动，更不该因失败影响游戏。

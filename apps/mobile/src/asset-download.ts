@@ -1,13 +1,28 @@
 /**
- * iOS 端「补充下载武将原画与语音」功能。
+ * iOS 端「补齐武将原画与语音」——**手动批量**下载入口。
+ *
+ * ---
+ *
+ * ## 与「边玩边下」的分工
+ *
+ * 同一个 iOS 侧载包里有两条互补的补齐路径：
+ *
+ * | 路径 | 入口 | 何时用 |
+ * | --- | --- | --- |
+ * | **边玩边下**（默认） | 无感，游戏用到谁就下谁 | 日常游玩，见 `lazy-assets.ts` |
+ * | **批量下载**（本模块） | 菜单 → 其它 → 更新 → 下载素材 | 想在 Wi-Fi 下一次补齐约 970MB |
+ *
+ * 两者共用同一份下载源与写盘逻辑（`fetchAssetBytes` / `writeFileAsync`），
+ * 但各自维护自己的状态：本模块靠 `localStorage` 记进度做续传，
+ * 懒加载只在本局内缓存「已确认存在/拿不到」的结论。
  *
  * ---
  *
  * ## 背景
  *
  * iOS 侧载包（AltStore / SideStore）对未压缩 App 体积非常敏感：
- * 上游 `.github/workflows/ios-build.yml` 的 `slim_assets` 步骤会把这三大目录整目录删掉，
- * 否则约 2.8GB 的资源根本装不进手机：
+ * 上游 `.github/workflows/ios-build.yml` 会**恒定**把这三大目录整目录删掉
+ * （不再有开关），否则约 2.8GB 的资源根本装不进手机：
  *
  * - `audio/skill`    470M  武将技能语音（全为 mp3）
  * - `audio/die`      111M  阵亡语音（全为 mp3）
@@ -17,17 +32,17 @@
  *
  * ## 本模块的做法
  *
- * 在「菜单 → 其它 → 更新」页里，针对 iOS 追加一个「下载武将原画与语音」按钮，
- * 点击后把这些资源从**上游 GitHub 仓库**补齐，写进 iOS 的 Documents 可写目录。
+ * 在「菜单 → 其它 → 更新」页里，针对 iOS 追加一个「下载素材」按钮，
+ * 点击后把这些资源从**上游 GitHub 仓库**一次性补齐，写进 iOS 的 Documents 可写目录。
  *
  * 之所以写入后立刻生效，是因为 iOS 端已经有两层「覆盖层」：
  *
  * 1. `apps/mobile/src/fs/ios.ts` 的 `IosFileSystem`：
- *    `readFile` 先查 `Documents/noname/<path>`，未命中才回退内置资源；
+ *    `readFile` 先查 `Documents/<path>`，未命中才回退内置资源；
  * 2. `apps/mobile/ios/App/App/NonameRouter.swift`：
  *    WebView 对 `<img src>` / `<audio src>` 的直接请求也走同一套覆盖层。
  *
- * 因此只要把文件写进 `Documents/noname/image/character/xxx.jpg`，
+ * 因此只要把文件写进 `Documents/image/character/xxx.jpg`，
  * 游戏里的立绘与语音就都能读到——**无需修改 core 里的任何业务代码**，
  * 也无需改动文件系统实现层。
  *
@@ -66,17 +81,27 @@ const UPSTREAM = {
 };
 
 /** 上游仓库里资源所在的根目录（注意：不是仓库根目录，而是 `apps/core`） */
-const UPSTREAM_ASSET_ROOT = "apps/core";
+export const UPSTREAM_ASSET_ROOT = "apps/core";
 
-/** 游戏内路径前缀 → 该目录的说明，用于界面显示 */
-const TARGET_GROUPS: { prefix: string; label: string }[] = [
+/**
+ * 被瘦身包裁掉的目录（游戏内路径前缀 → 说明）。
+ *
+ * 这三个前缀同时也是「边玩边下」的适用范围（见 `lazy-assets.ts`）：
+ * 只有它们会被真正删掉，其余资源都内置在包里。
+ */
+export const TARGET_GROUPS: { prefix: string; label: string }[] = [
 	{ prefix: "image/character/", label: "武将原画" },
 	{ prefix: "audio/skill/", label: "技能语音" },
 	{ prefix: "audio/die/", label: "阵亡语音" },
 ];
 
 /** 立绘占位图必须保留在内置资源里，下载时跳过它们（避免无意义覆盖） */
-const SKIP_BASENAMES = /^default_silhouette_/;
+export const SKIP_BASENAMES = /^default_silhouette_/;
+
+/** 游戏内路径 → 上游仓库路径 */
+export function toRemotePath(localPath: string): string {
+	return `${UPSTREAM_ASSET_ROOT}/${localPath}`;
+}
 
 /**
  * 构建期生成的内置下载清单（见 `apps/mobile/afterSync.ts` 的 `writeDownloadManifest`）。
@@ -96,7 +121,7 @@ const BUNDLED_MANIFEST = "asset-download-manifest.json";
  * 同一份文件在四个源上路径完全一致（都是 `<owner>/<repo>@<branch>/<path>`），
  * 因此切换源不需要改任何清单数据。
  */
-const CONTENT_SOURCES: { name: string; url: (path: string) => string }[] = [
+export const CONTENT_SOURCES: { name: string; url: (path: string) => string }[] = [
 	{
 		name: "GitHub Raw",
 		url: path => `https://raw.githubusercontent.com/${UPSTREAM.owner}/${UPSTREAM.repo}/${UPSTREAM.branch}/${path}`,
@@ -147,7 +172,7 @@ const WRITE_FORMAT_VERSION = 2;
 // 类型（尽量宽松，避免与 core 的运行时对象强耦合）
 // ---------------------------------------------------------------------------
 
-interface LibLike {
+export interface LibLike {
 	[key: string]: any;
 	/** core 会把它设成 "ios" / "android" / undefined */
 	device?: string;
@@ -155,7 +180,7 @@ interface LibLike {
 	init?: any;
 }
 
-interface GameLike {
+export interface GameLike {
 	[key: string]: any;
 	/** 由 `attachFileSystemAPI` 挂载，写入可写层（iOS 下即 `Documents/<path>`） */
 	writeFile?: (data: string | ArrayBuffer | ArrayBufferView | Blob, path: string, name: string, callback?: (error?: unknown) => void) => void;
@@ -167,7 +192,7 @@ interface GameLike {
 	checkFile?: (fileName: string, callback?: (result: -1 | 0 | 1) => void, onerror?: (err: Error) => void) => void;
 }
 
-interface UiLike {
+export interface UiLike {
 	[key: string]: any;
 	create?: any;
 	window?: HTMLElement;
@@ -376,7 +401,7 @@ function attachDownloadEntry(lib: LibLike, game: GameLike, ui: UiLike, leftPane:
  * 安卓侧没有它。这也是 `packages/jit` 里已经**在用户真机上验证有效**的同款判断
  * （JIT 弹窗正是靠它静默跳过的），因此比 `lib.device` 更可靠。`lib.device` 作为兜底。
  */
-function isIosRuntime(lib: LibLike): boolean {
+export function isIosRuntime(lib: LibLike): boolean {
 	const wk = (window as unknown as { webkit?: { messageHandlers?: { bridge?: unknown } } }).webkit;
 	if (wk?.messageHandlers?.bridge) {
 		return true;
@@ -691,7 +716,7 @@ async function verifyWrittenBytes(game: GameLike, sample: { localPath: string; b
 }
 
 /** 查询可写层里是否已经有这个文件（用于续传时跳过已下载项） */
-function fileExists(game: GameLike, localPath: string): Promise<boolean> {
+export function fileExists(game: GameLike, localPath: string): Promise<boolean> {
 	if (typeof game.checkFile !== "function") {
 		return Promise.resolve(false);
 	}
@@ -719,17 +744,31 @@ class DownloadError extends Error {
 	}
 }
 
+/** `fetchAssetBytes` 的结果 */
+export interface AssetBytesResult {
+	ok: boolean;
+	/** 最终命中的源序号（失败时为最后一个尝试过的源） */
+	sourceIndex: number;
+	buffer?: ArrayBuffer;
+	error?: string;
+	/** 上游确实没有这个文件（HTTP 404）——换源与重试都没有意义 */
+	notFound?: boolean;
+}
+
 /**
- * 下载单个文件：多源尝试 → base64 → game.writeFile。
+ * 取回单个文件的**原始字节**（不写盘），供批量下载与「边玩边下」共用。
  *
  * 从 `preferred` 号源开始依次尝试，规则：
  * - **404 视为确定性失败**（该文件在上游确实不存在），立即结束、不再换源；
  * - 其它错误（超时 / 5xx / 429 / 网络不通）继续尝试下一个源——这正是
  *   「GitHub Raw 被干扰时自动改走 jsDelivr」的落点。
  *
- * @returns 是否成功、最终生效的源序号，以及失败原因
+ * ⚠️ 返回的是 ArrayBuffer，调用方直接把它交给 `writeFileAsync`。
+ * **不要**自己转成 base64 字符串再写：`game.writeFile` → `writeDataToBase64()`
+ * 对字符串的处理是「UTF-8 编码这段文本、再 base64」，也就是把字符串当成文件内容，
+ * 落盘的会是那串文本本身（曾因此产出过一批损坏的图片与音频）。
  */
-async function downloadOne(game: GameLike, item: DownloadItem, preferred: number): Promise<{ ok: boolean; sourceIndex: number; error?: string; byteLength?: number }> {
+export async function fetchAssetBytes(remotePath: string, preferred = 0): Promise<AssetBytesResult> {
 	let lastError = "未知错误";
 
 	for (let i = preferred; i < CONTENT_SOURCES.length; i++) {
@@ -737,25 +776,17 @@ async function downloadOne(game: GameLike, item: DownloadItem, preferred: number
 
 		for (let attempt = 1; attempt <= ATTEMPTS_PER_SOURCE; attempt++) {
 			try {
-				const response = await fetch(source.url(item.remotePath), { cache: "no-store" });
+				const response = await fetch(source.url(remotePath), { cache: "no-store" });
 				if (!response.ok) {
 					throw new DownloadError(`HTTP ${response.status}`, response.status);
 				}
-				const buffer = await response.arrayBuffer();
-				// ⚠️ 这里必须传**原始字节**（ArrayBuffer），不能先自己转成 base64 字符串。
-				// `game.writeFile` → `writeDataToBase64()` 对字符串的处理是
-				// 「UTF-8 编码这段文本、再 base64」，也就是把字符串**当成文件内容**；
-				// 若这里传 base64 文本，落盘的就会是那串文本本身（图片/音频全部损坏，
-				// 表现为下载成功但原画与语音都出不来）。
-				// 传 ArrayBuffer 时它会走 `new Uint8Array(data)` 分支，得到正确字节。
-				await writeFileAsync(game, buffer, item.localPath);
-				return { ok: true, sourceIndex: i, byteLength: buffer.byteLength };
+				return { ok: true, sourceIndex: i, buffer: await response.arrayBuffer() };
 			} catch (error) {
 				lastError = describeError(error);
 
 				// 404 是确定性结论：换源也没用
 				if (error instanceof DownloadError && error.status === 404) {
-					return { ok: false, sourceIndex: i, error: lastError };
+					return { ok: false, sourceIndex: i, error: lastError, notFound: true };
 				}
 
 				// 同一源内的退避重试
@@ -767,6 +798,23 @@ async function downloadOne(game: GameLike, item: DownloadItem, preferred: number
 	}
 
 	return { ok: false, sourceIndex: CONTENT_SOURCES.length - 1, error: lastError };
+}
+
+/** 下载单个文件：多源尝试取回字节 → 写入可写层。 */
+async function downloadOne(game: GameLike, item: DownloadItem, preferred: number): Promise<{ ok: boolean; sourceIndex: number; error?: string; byteLength?: number }> {
+	const result = await fetchAssetBytes(item.remotePath, preferred);
+	if (!result.ok || !result.buffer) {
+		return { ok: false, sourceIndex: result.sourceIndex, error: result.error };
+	}
+
+	try {
+		await writeFileAsync(game, result.buffer, item.localPath);
+	} catch (error) {
+		// 写盘失败与「源」无关，换源没有意义，直接上报
+		return { ok: false, sourceIndex: result.sourceIndex, error: describeError(error) };
+	}
+
+	return { ok: true, sourceIndex: result.sourceIndex, byteLength: result.buffer.byteLength };
 }
 
 /** 把各种异常统一成可读文案 */
@@ -784,7 +832,7 @@ function describeError(error: unknown): string {
  * `data` 传**原始字节**：见 `downloadOne` 里的说明，
  * 传字符串会被当成文件内容、传 ArrayBuffer 才是二进制。
  */
-function writeFileAsync(game: GameLike, data: ArrayBuffer, localPath: string): Promise<void> {
+export function writeFileAsync(game: GameLike, data: ArrayBuffer, localPath: string): Promise<void> {
 	const slash = localPath.lastIndexOf("/");
 	const dir = slash === -1 ? "" : localPath.slice(0, slash);
 	const name = slash === -1 ? localPath : localPath.slice(slash + 1);

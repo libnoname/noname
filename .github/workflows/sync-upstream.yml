@@ -1,0 +1,164 @@
+name: Sync with upstream
+
+# 用途：让本 Fork 与上游 libnoname/noname 保持同步，不用手动点「Sync fork」。
+#
+# 触发：
+#   - 每天 UTC 16:00（= 北京时间 00:00）自动跑一次；
+#   - 也可以手动 Run workflow。
+#
+# 实现在服务端完成，不需要把仓库拉下来：
+#   - 比较：GET /repos/{fork}/compare/main...{upstream-owner}:main
+#     （跨 fork 比较时，head 位置写 **owner:branch**，且 owner 只能用
+#       owner 名，写成 `owner/repo:branch` 会 404——两种写法都实测过）
+#   - 合并：POST /repos/{fork}/merge-upstream  （就是网页上「Sync fork」按钮调的那个接口）
+# 这样做是必须的——本仓库工作树接近 3GB（资源文件为主），就算浅克隆也很容易把
+# 免费 runner 的磁盘吃满，再叠加一次三方合并基本没戏。
+#
+# 比较结果的字段含义（base=本 Fork、head=上游，别记反）：
+#   - `ahead_by`  = 上游领先本 Fork 的提交数 → 就是本次要拉进来的量
+#   - `behind_by` = 本 Fork 独有的提交数（自定义改动）
+#
+# ⚠️ 两个容易踩的点：
+#   1. GitHub 的 schedule **只会在默认分支上执行**。因此这个文件必须存在于
+#      fork 的 main 上；只放在功能分支里，定时任务永远不会被触发。
+#   2. 合并是**合并**而不是重置：本 Fork 的 main 有一批自定义提交
+#      （README 改写、ios-build.yml、移除调研文档等），不会被上游覆盖。
+#      若上游恰好改到同一批文件，会产生冲突 → 该次运行会**失败并打印明确原因**，
+#      需要按提示在本地解决后 push。这是刻意设计的：宁可报错，也不冒险强推。
+#   3. 定时任务在仓库连续 60 天没有任何提交活动后会被 GitHub 自动停用，
+#      届时 Actions 页面会出现提示，重新启用即可。
+
+on:
+  schedule:
+    # cron 一律使用 UTC。中国没有夏令时，UTC 16:00 恒等于北京时间次日 00:00。
+    - cron: "0 16 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write # merge-upstream 需要写权限
+
+# 同一时刻只允许一个同步任务，避免两次运行互相打架
+concurrency:
+  group: sync-upstream
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Sync main from upstream
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      FORK: ${{ github.repository }}
+      UPSTREAM: libnoname/noname
+      # 跨 fork 比较时 head 位置只写 **owner**（写成 owner/repo 会 404，已实测）
+      UPSTREAM_OWNER: libnoname
+      BRANCH: main
+
+    steps:
+      - name: 比较上游与 Fork
+        id: compare
+        run: |
+          set -euo pipefail
+
+          upstream_sha=$(gh api "repos/$UPSTREAM/commits/$BRANCH" --jq .sha)
+          fork_sha=$(gh api "repos/$FORK/commits/$BRANCH" --jq .sha)
+
+          echo "上游 $UPSTREAM/$BRANCH = $upstream_sha"
+          echo "本 Fork $FORK/$BRANCH = $fork_sha"
+          echo "upstream_sha=$upstream_sha" >> "$GITHUB_OUTPUT"
+          echo "fork_sha=$fork_sha" >> "$GITHUB_OUTPUT"
+
+          if [ "$upstream_sha" = "$fork_sha" ]; then
+            echo "up_to_date=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::上游没有新提交，无需同步"
+            exit 0
+          fi
+          echo "up_to_date=false" >> "$GITHUB_OUTPUT"
+
+          # 下面只是给人看的补充信息。跨 fork 比较要把 `owner:branch` 写在 head 位置，
+          # 且万一接口不可用也不该让整次运行失败，所以一律兜底。
+          echo "----- 与上游的差距 -----"
+          gh api "repos/$FORK/compare/$BRANCH...$UPSTREAM_OWNER:$BRANCH" \
+            --jq '"上游领先 " + (.ahead_by|tostring) + " 个提交；本 Fork 另有 " + (.behind_by|tostring) + " 个自定义提交" + (if .status == "diverged" then "（已分叉，将产生一个合并提交）" else "" end)' \
+            2>/dev/null || echo "(无法获取差距信息，继续尝试合并)"
+          gh api "repos/$FORK/compare/$BRANCH...$UPSTREAM_OWNER:$BRANCH" \
+            --jq '.commits[] | "  * " + .sha[0:8] + " " + (.commit.message | split("\n")[0])' \
+            2>/dev/null | head -20 || true
+
+      - name: 合并上游更新
+        id: merge
+        if: steps.compare.outputs.up_to_date != 'true'
+        run: |
+          set -uo pipefail
+
+          echo "开始合并 $UPSTREAM:$BRANCH → $FORK:$BRANCH"
+
+          if response=$(gh api -X POST "repos/$FORK/merge-upstream" -f branch="$BRANCH" 2>&1); then
+            echo "$response"
+            # 用 sed 而不是 jq 解析：gh 自带的 `--jq` 不能在「失败时要原样打印响应体」
+            # 的场景下工作（那需要把 POST 再发一次），而 jq 是否预装并不由我们决定。
+            merge_type=$(printf '%s' "$response" | tr -d ' \n' | sed -n 's/.*"merge_type":"\([^"]*\)".*/\1/p')
+            echo "merge_type=${merge_type:-unknown}" >> "$GITHUB_OUTPUT"
+            echo "::notice::已同步上游更新（merge_type=${merge_type:-unknown}）"
+            exit 0
+          fi
+
+          # 失败：最常见的是「本 Fork 的自定义提交与上游改动撞在同一批文件」。
+          # 刻意在这里直接失败，而不是改用强推——强推会丢掉 Fork 的自定义提交。
+          echo "$response"
+          echo "::error::自动合并失败，请手动处理："
+          echo "::error::  git fetch upstream && git merge upstream/main   # 解决冲突后 push"
+          echo "::error::若报的是权限问题（Resource not accessible by integration），"
+          echo "::error::改用个人访问令牌：把 secrets.GITHUB_TOKEN 换成具有 repo 权限的 PAT。"
+          exit 1
+
+      - name: 核对合并结果
+        id: verify
+        if: steps.compare.outputs.up_to_date != 'true' && steps.merge.outcome == 'success'
+        run: |
+          set -euo pipefail
+
+          new_sha=$(gh api "repos/$FORK/commits/$BRANCH" --jq .sha)
+          echo "同步后 $FORK/$BRANCH = $new_sha"
+          echo "new_sha=$new_sha" >> "$GITHUB_OUTPUT"
+
+          # 合并完成后，「上游领先」应当归零；否则还有上游提交没进来
+          # 注意字段方向：base=本 Fork、head=上游，所以看的是 ahead_by
+          compare_api="repos/$FORK/compare/$BRANCH...$UPSTREAM_OWNER:$BRANCH"
+          gh api "$compare_api" --jq '"status=" + .status + " 上游仍领先 " + (.ahead_by|tostring) + " 个提交；本 Fork 自定义提交 " + (.behind_by|tostring) + " 个"'
+
+          remaining=$(gh api "$compare_api" --jq .ahead_by)
+          if [ "$remaining" != "0" ]; then
+            echo "::error::合并后上游仍领先 $remaining 个提交，请手动检查"
+            exit 1
+          fi
+          echo "::notice::已确认与上游同步（上游领先 0 个提交）"
+
+      - name: 写入运行摘要
+        if: always()
+        env:
+          UP_TO_DATE: ${{ steps.compare.outputs.up_to_date }}
+          MERGE_OUTCOME: ${{ steps.merge.outcome }}
+          MERGE_TYPE: ${{ steps.merge.outputs.merge_type }}
+          NEW_SHA: ${{ steps.verify.outputs.new_sha }}
+          FORK_SHA: ${{ steps.compare.outputs.fork_sha }}
+        run: |
+          {
+            echo "## 上游同步结果"
+            echo ""
+            echo "| 项目 | 值 |"
+            echo "| --- | --- |"
+            echo "| 上游 | \`libnoname/noname:main\` |"
+            echo "| 本 Fork | \`${FORK_SHA:-未知}\` → \`${NEW_SHA:-未变化}\` |"
+            if [ "$UP_TO_DATE" = "true" ]; then
+              echo "| 结论 | 上游无新提交，未做改动 |"
+            elif [ "$MERGE_OUTCOME" = "success" ]; then
+              echo "| 结论 | 已同步（merge_type: ${MERGE_TYPE:-未知}） |"
+            else
+              echo "| 结论 | ❌ 合并失败，见上方日志（通常是冲突，需要本地手动合并） |"
+            fi
+            echo ""
+            echo "> 手动同步等价操作：在 Fork 页面点 **Sync fork**，或本地 \`git fetch upstream && git merge upstream/main\`。"
+          } >> "$GITHUB_STEP_SUMMARY"
