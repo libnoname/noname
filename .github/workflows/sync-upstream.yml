@@ -100,6 +100,8 @@ jobs:
       FORK: ${{ github.repository }}
       UPSTREAM: libnoname/noname
       UPSTREAM_OWNER: libnoname
+      # 上游用来对比的分支。**不要用 $BRANCH**——那会去查 libnoname:feat/ios-support（不存在）。
+      UPSTREAM_BRANCH: main
       BRANCH: ${{ matrix.branch }}
 
     steps:
@@ -119,7 +121,7 @@ jobs:
             echo "::notice::当前使用 SYNC_TOKEN（身份：$actor）"
           fi
 
-          upstream_sha=$(gh api "repos/$UPSTREAM/commits/$BRANCH" --jq .sha)
+          upstream_sha=$(gh api "repos/$UPSTREAM/commits/$UPSTREAM_BRANCH" --jq .sha)
           fork_sha=$(gh api "repos/$FORK/commits/$BRANCH" --jq .sha)
 
           echo "上游 $UPSTREAM/$BRANCH = $upstream_sha"
@@ -130,7 +132,7 @@ jobs:
           # ⚠️ 判据是「上游是否领先本 Fork」，**不能**用「两边 SHA 是否相等」：
           # 本 Fork 有自己的提交，一旦合并过一次，两边 SHA 就再也不会相等了，
           # 那样每天都会白跑一次合并（接口会回 merge_type=none，但没有任何意义）。
-          compare_api="repos/$FORK/compare/$BRANCH...$UPSTREAM_OWNER:$BRANCH"
+          compare_api="repos/$FORK/compare/$BRANCH...$UPSTREAM_OWNER:$UPSTREAM_BRANCH"
           ahead=$(gh api "$compare_api" --jq .ahead_by 2>/dev/null || echo "")
           case "$ahead" in
             ''|*[!0-9]*)
@@ -210,7 +212,7 @@ jobs:
 
           # 合并完成后，「上游领先」应当归零；否则还有上游提交没进来
           # 注意字段方向：base=本 Fork、head=上游，所以看的是 ahead_by
-          compare_api="repos/$FORK/compare/$BRANCH...$UPSTREAM_OWNER:$BRANCH"
+          compare_api="repos/$FORK/compare/$BRANCH...$UPSTREAM_OWNER:$UPSTREAM_BRANCH"
           gh api "$compare_api" --jq '"status=" + .status + " 上游仍领先 " + (.ahead_by|tostring) + " 个提交；本 Fork 自定义提交 " + (.behind_by|tostring) + " 个"'
 
           remaining=$(gh api "$compare_api" --jq .ahead_by)
