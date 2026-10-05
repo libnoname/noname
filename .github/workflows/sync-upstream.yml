@@ -87,6 +87,17 @@ jobs:
         run: |
           set -euo pipefail
 
+          # 自检：确认当前用的到底是哪个令牌。内置 GITHUB_TOKEN 的身份是
+          # github-actions[bot]，配了 SYNC_TOKEN 则显示你自己的用户名。
+          # 这条日志的价值在于：一旦合并被「workflows permission」拒绝，
+          # 看这里就知道是「PAT 没生效」还是「PAT 权限不够」。
+          actor=$(gh api /user --jq '.login' 2>/dev/null || echo "unknown")
+          if [ "$actor" = "github-actions[bot]" ]; then
+            echo "::warning::当前使用内置 GITHUB_TOKEN（未配置 SYNC_TOKEN）：上游若改动 .github/workflows/ 下的文件，本次合并会被拒绝"
+          else
+            echo "::notice::当前使用 SYNC_TOKEN（身份：$actor）"
+          fi
+
           upstream_sha=$(gh api "repos/$UPSTREAM/commits/$BRANCH" --jq .sha)
           fork_sha=$(gh api "repos/$FORK/commits/$BRANCH" --jq .sha)
 
