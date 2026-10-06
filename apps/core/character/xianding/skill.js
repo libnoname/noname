@@ -644,6 +644,7 @@ const skills = {
 	},
 	// 谋卫瓘
 	dcsbqingshi: {
+		audio: 2,
 		trigger: { player: "useCardAfter" },
 		filter(event, player) {
 			const evts = player.getHistory("lose", evt => (evt.relatedEvent || evt.getParent()) === event);
@@ -739,6 +740,7 @@ const skills = {
 		},
 	},
 	dcsbzaoji: {
+		audio: 2,
 		trigger: { player: "damageEnd" },
 		prompt2: "摸三张牌并弃置其中的【杀】",
 		async content(event, trigger, player) {
