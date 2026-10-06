@@ -4,6 +4,7 @@ import shi from "./shi.js";
 import bian from "./bian.js";
 import quan from "./quan.js";
 import yingbian from "./yingbian.js";
+import zifeng from "./zifeng.js";
 import wushuang from "./wushuang.js";
 
 import rest from "./rest.js";
@@ -16,5 +17,6 @@ export default {
 	...bian,
 	...quan,
 	...yingbian,
+	...zifeng,
 	...wushuang,
 };

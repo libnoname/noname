@@ -405,7 +405,7 @@ export default {
 		},
 		filter(event, player) {
 			// @ts-expect-error 类型系统未来可期
-			if (event.card.name != "sha" || game.countPlayer() < 4) {
+			if (event.card.name != "sha") {
 				return false;
 			}
 			// @ts-expect-error 类型系统未来可期
