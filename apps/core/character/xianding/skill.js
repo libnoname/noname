@@ -41775,7 +41775,7 @@ const skills = {
 			const num = event.player
 				.getHistory("gain", evt => evt.getParent().name === "draw" && evt.getParent("phaseDraw") === event)
 				.map(evt => evt.cards.length)
-				.reduce((a, b) => a + b);
+				.reduce((a, b) => a + b, 0);
 			return num !== 2;
 		},
 		frequent: true,
