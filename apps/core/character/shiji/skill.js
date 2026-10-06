@@ -315,11 +315,11 @@ const skills = {
 					return true;
 				}
 			},
-			cardUsableTarget(card, player, target) {
+			/*cardUsableTarget(card, player, target) {
 				if (target.hasMark("yingba_mark")) {
 					return Infinity;
 				}
-			},
+			},*/
 		},
 		enable: "phaseUse",
 		usable: 1,
@@ -340,7 +340,7 @@ const skills = {
 			await player.loseMaxHp();
 		},
 		locked: false,
-		group: ["yingba_limit"],
+		group: "yingba_limit",
 		ai: {
 			threaten(player, target) {
 				if (player === target || player.isDamaged() || get.attitude(player, target) > 0) {
@@ -435,7 +435,7 @@ const skills = {
 		logTarget: "target",
 		async content(event, trigger, player) {
 			trigger.getParent().directHit.add(trigger.target);
-			if (player.getHistory("gain", evt => evt.getParent(2).name === "scfuhai").length < 2) {
+			if (player.getHistory("gain", evt => evt.getParent(2).name === "scfuhai").length < 3) {
 				await player.draw();
 			}
 		},
@@ -498,94 +498,55 @@ const skills = {
 		trigger: { player: "damageBegin4" },
 		forced: true,
 		filter(event, player) {
-			return event.source && event.source !== player && player.maxHp > 1 && player.hasCards("he");
+			return event.source && event.source !== player && player.maxHp > 1 && player.hasCards("h");
 		},
 		async content(event, trigger, player) {
 			trigger.cancel();
 			await player.loseMaxHp();
-			if (!player.hasCards("he")) {
+			if (!player.hasCards("h")) {
 				return;
 			}
-			const controls = [],
-				choiceList = ["交给其他角色一张牌", "重铸一张牌"];
-			if (game.hasPlayer(current => current != player)) {
-				controls.push("给牌");
-			} else {
-				choiceList[0] = `<span style="opacity:0.5">` + choiceList[0] + "</span>";
-			}
-			controls.push("重铸牌");
-			let result;
-			result =
-				controls.length > 1
-					? await player
-							.chooseControl({
-								prompt: "冯河：请选择一项",
-								controls,
-								choiceList,
-								ai() {
-									const player = get.player();
-									if (game.hasPlayer(current => current != player && get.attitude(player, current) > 0) && player.countCards("h") > 3) {
-										return "给牌";
-									}
-									return "重铸牌";
-								},
-							})
-							.forResult()
-					: { control: controls[0] };
-			if (typeof result?.control == "string") {
-				const control = result.control;
-				if (control == "给牌") {
-					result = await player
-						.chooseCardTarget({
-							prompt: "冯河：将一张牌交给一名其他角色",
-							filterCard: true,
-							forced: true,
-							filterTarget: lib.filter.notMe,
-							position: "he",
-							ai1(card) {
-								const player = get.player();
-								if (get.tag(card, "recover") && !game.hasPlayer(current => get.attitude(current, player) > 0 && !current.hasSkillTag("nogain"))) {
-									return 0;
-								}
-								return 1 / Math.max(0.1, get.value(card));
-							},
-							ai2(target) {
-								const player = get.player();
-								let att = get.attitude(player, target);
-								if (target.hasSkillTag("nogain")) {
-									att /= 9;
-								}
-								return 4 + att;
-							},
-						})
-						.forResult();
+			const result = await player
+				.chooseCardTarget({
+					prompt: "冯河：将一张手牌交给一名其他角色或重铸一张手牌",
+					filterCard: true,
+					forced: true,
+					filterTarget: lib.filter.notMe,
+					selectTarget: [0, 1],
+					position: "h",
+					filterOk() {
+						if (!ui.selected.cards?.length) return false;
+						if (ui.selected.targets?.length) return true;
+						const card = ui.selected.cards[0];
+						return lib.filter.cardRecastable(card, player);
+					},
+					ai1(card) {
+						const player = get.player();
+						if (get.tag(card, "recover") && !game.hasPlayer(current => get.attitude(current, player) > 0 && !current.hasSkillTag("nogain"))) {
+							return 0;
+						}
+						return 1 / Math.max(0.1, get.value(card));
+					},
+					ai2(target) {
+						const player = get.player();
+						if (game.hasPlayer(current => current != player && get.attitude(player, current) > 0)) {
+							return (Math.random() >= 0.5 ? 0 : 1) * get.attitude(player, target);
+						}
+						return 0;
+					},
+				})
+				.forResult();
+			if (result?.bool && result.cards?.length) {
+				const { targets, cards } = result;
+				if (targets?.length) {
+					player.line(targets, "green");
+					await player.give(cards, targets[0]);
 				} else {
-					result = await player
-						.chooseCard({
-							prompt: "冯河：请重铸一张牌",
-							filterCard(card, player) {
-								return lib.filter.cardRecastable(card, player);
-							},
-							forced: true,
-							position: "he",
-							ai(card) {
-								return 5 - get.value(card);
-							},
-						})
-						.forResult();
+					await player.recast(cards);
 				}
-				if (result?.bool && result.cards?.length) {
-					const { targets, cards } = result;
-					if (targets?.length) {
-						player.line(targets, "green");
-						await player.give(cards, targets[0]);
-					} else {
-						await player.recast(cards);
-					}
-					if (trigger.source?.isIn() && player.hasSkill("yingba")) {
-						trigger.source.addSkill("yingba_mark");
-						trigger.source.addMark("yingba_mark", 1);
-					}
+				if (trigger.source?.isIn() && player.hasSkill("yingba")) {
+					trigger.source.addSkill("yingba_mark");
+					trigger.source.addMark("yingba_mark", 1);
 				}
 			}
 		},
