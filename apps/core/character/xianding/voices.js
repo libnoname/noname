@@ -1,6 +1,4 @@
 export default {
-	"#dccuxi1": "辽来！辽来！",
-	"#dccuxi2": "逍遥津水赤，尽是吴儿血!",
 	"#dcsbchengce1": "孟优此来，必怀虎狼之心。",
 	"#dcsbchengce2": "目有戾气，言藏金铁，恐为诈降。",
 	"#dcsbxinzhan1": "蛮王七纵终归汉，我思一计定乾坤。",
