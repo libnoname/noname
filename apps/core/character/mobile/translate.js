@@ -1,6 +1,10 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	mb_mayunlu: "手杀马云禄",
+	mb_mayunlu_prefix: "手杀",
+	mbfengpo: "凤魄",
+	mbfengpo_info: "每阶段各限一次，你使用【杀】或【决斗】指定唯一目标后，你可选择一项：1.摸X张牌；2.令此牌伤害+X（X为你与目标方片牌数之和）。",
 	mb_shen_lvbu: "手杀神吕布",
 	mb_shen_lvbu_prefix: "手杀神",
 	mbwumou: "无谋",
@@ -1057,7 +1061,7 @@ const translates = {
 	mbzengou: "谮构",
 	mbzengou_info: "出牌阶段限一次，你可以观看一名其他角色的手牌，然后你选择一项：①视为使用两张其手牌中未拥有的基本牌牌名的牌（不计入次数且无次数限制且不可重复）；②将你与其手牌中共同牌名的牌替换为牌堆中等量的【杀】，你的这些牌不计入手牌上限直到你的结束阶段。然后你选择一个基本牌牌名，令其获得1枚此牌名对应的“诬”标记（每回合使用的前三张牌结算完毕后，若拥有此牌名的“诬”标记，则失去1点体力并移去1枚此牌名的“诬”标记）。",
 	mbfeili: "诽离",
-	mbfeili_info: "当你受到伤害时，若你拥有〖谮构〗，则你可以弃置两张牌并防止此伤害；若此伤害存在来源且伤害来源拥有“诬”标记，则你可以改为移去其“诬”标记并防止此伤害，你摸四张牌且你不能再对其发动〖谮构〗。",
+	mbfeili_info: `当你受到伤害时，若你拥有${get.poptip("mbzengou")}，则你可以弃置两张牌并防止此伤害；若此伤害存在来源且伤害来源拥有“诬”标记，则你可以改为移去其“诬”标记并防止此伤害，你摸四张牌且你不能再对其发动${get.poptip("mbzengou")}。`,
 	friend_cuijun: "友崔均",
 	friend_cuijun_prefix: "友",
 	friendshunyi: "顺逸",

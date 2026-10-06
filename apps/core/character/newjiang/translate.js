@@ -1,6 +1,11 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	yudu: "于毒",
+	jianlei: "坚垒",
+	jianlei_info: "你可将装备区内的黑色/红色牌当【杀】/【闪】使用或打出，你的装备栏每有一种花色，你的攻击范围+1，若包含四种花色，其他角色与你计算距离+1。",
+	juzhi: "踞峙",
+	juzhi_info: "出牌阶段每种花色限一次，你可以将一张手牌置入你的空置装备烂，视为对攻击范围内的一名使用一张【杀】；回合结束时，若你在以此法指定的目标攻击范围内，其可以弃置一张牌视为对你使用一张【杀】。",
 	yj_wanglang: "☆王朗",
 	yj_wanglang_prefix: "☆",
 	fuyu: "负隅",

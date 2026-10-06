@@ -1,4 +1,18 @@
 const characters = {
+	ggbond: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["tangguo", "kangzhang"],
+		names: "null|null",
+	},
+	feifeigongzhu: {
+		sex: "female",
+		group: "qun",
+		hp: 4,
+		skills: ["conghui", "wubang"],
+		names: "null|null",
+	},
 	ol_chitu: {
 		sex: "female",
 		group: "shu",
