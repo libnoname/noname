@@ -14369,6 +14369,7 @@ const skills = {
 		audio: "pingjian",
 		enable: "phaseUse",
 		usable: 1,
+		manualConfirm: true,
 		sourceSkill: "pingjian",
 		prompt: () => lib.translate.pingjian_info,
 		async content(event, trigger, player) {

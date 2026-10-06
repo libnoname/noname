@@ -1,4 +1,13 @@
+import { lib, game, ui, get, ai, _status } from "noname";
 const translates = {
+	two_yudu: "攻郡于毒",
+	two_yudu_prefix: "攻郡",
+	gongjun: "攻郡",
+	gongjun_info: "每回合限一次，你对其他角色使用牌时，你可令一名目标角色弃置任意张牌，然后你从牌堆中随机获得其未弃置的花色牌各一张。",
+	gongjun2: "攻郡",
+	gongjun2_info: "每回合限一次，你对其他角色/其他角色对你使用牌时，你可令一名目标角色/该牌使用者弃置任意张牌，然后你从牌堆中随机获得其未弃置的花色牌各一张。",
+	zhuzhai: "筑寨",
+	zhuzhai_info: `觉醒技，若你因${get.poptip("gongjun")}获得过四种花色的牌，修改${get.poptip("gongjun")}为${get.poptip("gongjun2")}。`,
 	old_pot_dengai: "牢势邓艾",
 	old_pot_dengai_prefix: "牢|势",
 	old_zhangxingcai: "旧张星彩",

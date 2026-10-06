@@ -478,4 +478,5 @@ window.noname_character_replace = {
 	shen_huangzhong: ["ol_shen_huangzhong", "shen_huangzhong"],
 	huanshujun: ["huanshujun", "dc_huanhuaijin"],
 	shen_sunce: ["shen_sunce", "sm_shenmo_sunce"],
+	yudu: ["yudu", "hm_yudu", "two_yudu"],
 };
