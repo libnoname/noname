@@ -115,6 +115,7 @@ const skills = {
 	},
 	// 新杀孙峻
 	dcbeizhu: {
+		audio: 2,
 		trigger: { global: "phaseEnd" },
 		async cost(event, trigger, player) {
 			const map = player.getStorage("dcbeizhu", ["damage", "discard", "draw"]);
