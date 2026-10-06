@@ -527,7 +527,7 @@ const skills = {
 			player: ["useCard", "respond"],
 		},
 		filter(event, player) {
-			return event.card.name == "sha" && game.hasPlayer(current => current != player && current.hasCards("he"));
+			return event.card.name == "sha" && game.hasPlayer(current => current != player && current.hasCards("hej"));
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
