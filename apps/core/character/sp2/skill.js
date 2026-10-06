@@ -126,6 +126,7 @@ const skills = {
 	},
 	// 星董允
 	starzhengting: {
+		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
 		chooseTarget: 1,
@@ -244,6 +245,7 @@ const skills = {
 		},
 	},
 	starbishi: {
+		audio: 2,
 		round: 1,
 		trigger: { global: "phaseEnd" },
 		check(event, player) {
