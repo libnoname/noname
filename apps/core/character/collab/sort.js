@@ -5,7 +5,7 @@ const characterSort = {
 	collab_decade: ["libai", "xiaoyuehankehan", "zhutiexiong", "wu_zhutiexiong"],
 	collab_remake: ["dc_caocao", "dc_liubei", "dc_sunquan", "nezha", "dc_sunce", "dc_zhaoyun", "dc_wuyi", "ren_jiangwei", "ren_dengai"],
 	collab_duanwu_2024: ["quyuan"],
-	collab_dcdoudizhui: ["you_zhugeliang", "yuanshaoyuanshu", "tianji", "dc_noname", "xin_sunquan", "liuxiecaojie", "weiqing", "shi_cenhun"],
+	collab_dcdoudizhui: ["you_zhugeliang", "yuanshaoyuanshu", "tianji", "dc_noname", "xin_sunquan", "liuxiecaojie", "weiqing", "shi_cenhun", "ggbond", "feifeigongzhu"],
 	collab_oldoudizhu: ["ol_le_zhugeliang", "ol_le_caohong", "ol_le_liushan", "bigsb_dengai", "wild_liru", "strong_caochong", "taipingsangong", "wuhujiang", "ol_jsrg_caocao", "ol_jsrg_lvbu", "ol_nianshou", "hanshiwuhu", "ol_xiahouen", "ol_le_caopi", "ol_niuma", "ol_le_menghuo", "ol_chitu"],
 	collab_shanhetu: ["ol_re_nianshou"],
 	collab_mbdoudizhu: ["tw_dm_zhouyu", "tw_dm_quyi", "jm_yuanshu", "mb_muniu", "mb_chitu", "mb_jueying", "mb_dilu", "natu_zhaoyun", "natu_guanyu", "natu_zhugeliang", "xiangxue_liushan", "haoxue_lvmeng", "boxue_caochong"],

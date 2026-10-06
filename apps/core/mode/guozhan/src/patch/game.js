@@ -1,6 +1,20 @@
 import { lib, game, Game, ui, get, ai, _status } from "noname";
 import { showYexingsContent, chooseCharacterContent, chooseCharacterOLContent } from "./content.js";
 
+const withoutGouniResultEffect = callback => {
+	const old = _status.gz_gouni_checkingResult;
+	_status.gz_gouni_checkingResult = true;
+	try {
+		return callback();
+	} finally {
+		if (old) {
+			_status.gz_gouni_checkingResult = old;
+		} else {
+			delete _status.gz_gouni_checkingResult;
+		}
+	}
+};
+
 export class GameGuozhan extends Game {
 	/**
 	 * 不确定是干啥的，反正恒返回真
@@ -189,7 +203,7 @@ export class GameGuozhan extends Game {
 		uiintro.add('<div class="text chat">珠联璧合：' + (lib.configOL.zhulian ? "开启" : "关闭"));
 		uiintro.add('<div class="text chat">出牌时限：' + lib.configOL.choose_timeout + "秒");
 		uiintro.add('<div class="text chat">国战牌堆：' + (lib.configOL.guozhanpile ? "开启" : "关闭"));
-		uiintro.add('<div class="text chat">鏖战模式：' + (lib.configOL.aozhan ? "开启" : "关闭"));
+		uiintro.add('<div class="text chat">鏖战模式：' + ({ off: "关闭", normal: "原鏖战", jiubian: "九变鏖战" }[lib.configOL.aozhan] || (lib.configOL.aozhan ? "原鏖战" : "关闭")));
 		last = uiintro.add('<div class="text chat">观看下家副将：' + (lib.configOL.viewnext ? "开启" : "关闭"));
 
 		// @ts-expect-error 祖宗之法就是这么写的
@@ -339,6 +353,7 @@ export class GameGuozhan extends Game {
 	 * > ?
 	 */
 	tryResult() {
+		return withoutGouniResultEffect(() => {
 		var map = {},
 			sides = [],
 			pmap = _status.connectMode ? lib.playerOL : game.playerMap,
@@ -434,12 +449,14 @@ export class GameGuozhan extends Game {
 				game.checkResult();
 			}
 		}
+		});
 	}
 
 	/**
 	 * 检查游戏结果
 	 */
 	checkResult() {
+		return withoutGouniResultEffect(() => {
 		// @ts-expect-error 祖宗之法就是这么写的
 		_status.overing = true;
 		// @ts-expect-error 祖宗之法就是这么写的
@@ -452,6 +469,7 @@ export class GameGuozhan extends Game {
 		game.over(winner && winner.isFriendOf(me) ? true : false);
 		// @ts-expect-error 祖宗之法就是这么写的
 		game.showIdentity();
+		});
 	}
 
 	/**
@@ -460,9 +478,11 @@ export class GameGuozhan extends Game {
 	 * @returns {boolean}
 	 */
 	checkOnlineResult(player) {
+		return withoutGouniResultEffect(() => {
 		// @ts-expect-error 祖宗之法就是这么写的
 		var winner = lib.playerOL[game.winner_id];
 		return winner && winner.isFriendOf(game.me);
+		});
 	}
 
 	chooseCharacter() {

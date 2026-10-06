@@ -526,6 +526,65 @@ export default {
 		},
 	},
 
+	gz_jiubian_wanwei: {
+		audio: "wanwei",
+		trigger: {
+			global: "dying",
+		},
+		usable: 1,
+		preHidden: true,
+		filter(event, player) {
+			return event.player != player && event.player.isFriendOf(player) && player.countCards("he") > 0;
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseCard({ position: "he", selectCard: [1, Math.min(3, player.countCards("he"))], prompt: get.prompt2(event.skill, trigger.player) })
+				.set("ai", card => {
+					const player = get.event().player,
+						target = get.event().getTrigger().player;
+					if (get.attitude(player, target) <= 0) {
+						return 0;
+					}
+					return 6 - get.value(card);
+				})
+				.forResult();
+		},
+		logTarget: "player",
+		async content(event, trigger, player) {
+			const cards = event.cards;
+			await player.give(cards, trigger.player);
+			player.addTempSkill("gz_jiubian_wanwei_gain", "phaseAfter");
+			if (!player.storage.gz_jiubian_wanwei_gain) {
+				player.storage.gz_jiubian_wanwei_gain = [];
+			}
+			player.storage.gz_jiubian_wanwei_gain.push([trigger.player, cards.length]);
+		},
+		subSkill: {
+			gain: {
+				charlotte: true,
+				forced: true,
+				popup: false,
+				trigger: {
+					global: "dyingAfter",
+				},
+				filter(event, player) {
+					return event.player.isAlive() && player.getStorage("gz_jiubian_wanwei_gain").some(info => info[0] == event.player);
+				},
+				async content(event, trigger, player) {
+					const list = player.getStorage("gz_jiubian_wanwei_gain");
+					const info = list.find(item => item[0] == trigger.player);
+					list.remove(info);
+					if (info && info[1] > 0) {
+						await player.gain({ cards: get.cards(info[1]), animate: "gain2" });
+					}
+				},
+				onremove(player) {
+					delete player.storage.gz_jiubian_wanwei_gain;
+				},
+			},
+		},
+	},
+
 	gz_yuejian: {
 		audio: "yuejian",
 		trigger: {
@@ -561,6 +620,18 @@ export default {
 						return player.maxHp;
 					},
 				},
+			},
+		},
+	},
+
+	gz_jiubian_yuejian: {
+		audio: "yuejian",
+		forced: true,
+		mod: {
+			maxHandcard(player, num) {
+				if (game.hasPlayer(current => current.hasSkill("gz_jiubian_yuejian") && current.isFriendOf(player))) {
+					return num + player.getDamagedHp();
+				}
 			},
 		},
 	},

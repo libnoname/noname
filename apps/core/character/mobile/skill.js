@@ -2,6 +2,82 @@
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//马云禄
+	mbfengpo: {
+		audio: "fengpo",
+		trigger: { player: "useCardToPlayered" },
+		locked: false,
+		mod: {
+			aiOrder(player, card, num) {
+				if (num > 0 && get.suit(card) == "diamond") {
+					return num - 0.1;
+				}
+			},
+			aiValue(player, card, num) {
+				if (num > 0 && get.suit(card) == "diamond") {
+					return num + 0.1;
+				}
+			},
+			aiUseful() {
+				return lib.skill.mbfengpo.mod.aiValue.apply(this, arguments);
+			},
+		},
+		filter(event, player) {
+			if (event.targets.length != 1 || !["sha", "juedou"].includes(event.card.name)) {
+				return false;
+			}
+			return player.getStorage("mbfengpo_used").length < 2;
+		},
+		async cost(event, trigger, player) {
+			const controls = ["加伤", "摸牌", "cancel2"].removeArray(player.getStorage(`${event.skill}_used`));
+			if (controls.length <= 1) return;
+			const result = await player
+				.chooseControl({
+					controls,
+					prompt: get.prompt2(event.skill),
+					ai() {
+						const { controls, player, target } = get.event();
+						const num = player.countCards("he", { suit: "diamond" }) + target.countCards("e", { suit: "diamond" }) + Math.floor(target.countCards("h") / 5);
+						if (get.attitude(player, target) > 0 && controls.includes("摸牌") && num > 0) return "摸牌";
+						if (get.attitude(player, target) < 0) {
+							if (controls.includes("摸牌")) return "摸牌";
+							return "加伤";
+						}
+						return "cancel2";
+					},
+				})
+				.set("target", trigger.target)
+				.forResult();
+			if (typeof result?.control == "string" && result.control != "cancel2") {
+				event.result = {
+					bool: true,
+					cost_data: result.control,
+					targets: [trigger.target],
+				};
+			}
+		},
+		async content(event, trigger, player) {
+			const {
+				cost_data: control,
+				targets: [target],
+			} = event;
+			player.addTempSkill(`${event.name}_used`, "phaseAnyAfter");
+			player.markAuto(`${event.name}_used`, [control]);
+			const num = player.countCards("he", { suit: "diamond" }) + target.countCards("he", { suit: "diamond" });
+			if (num > 0) {
+				if (control == "摸牌") {
+					await player.draw(num);
+				} else {
+					const evt = trigger.getParent();
+					evt.baseDamage ??= 1;
+					evt.baseDamage += num;
+				}
+			} else {
+				player.popup("杯具");
+			}
+		},
+		subSkill: { used: { charlotte: true, onremove: true } },
+	},
 	//神吕布
 	mbwumou: {
 		audio: "wumou",
@@ -9215,7 +9291,7 @@ const skills = {
 			}
 		},
 		ai: {
-			combo: "mbhuxiao",
+			combo: "mbxuehen",
 			order: 10,
 			result: { player: 1 },
 		},

@@ -1,4 +1,5 @@
 export default {
+	two_yudu: "朝歌渠帅",
 	//two_yj_hanbing: "",
 	//two_yj_tengjia: "",
 	old_pot_dengai: "勇气陵云",

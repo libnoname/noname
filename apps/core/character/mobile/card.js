@@ -196,7 +196,7 @@ const cards = {
 					return 1;
 				}
 				player._rewrite_zhuge_temp = true;
-				const result = (function() {
+				const result = (function () {
 					if (
 						!game.hasPlayer(function (current) {
 							return player.canUse("sha", current) && get.effect(current, { name: "sha" }, player, player) > 0;
