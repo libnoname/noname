@@ -1131,6 +1131,11 @@ export const showYexingsContent = async (event, _trigger, player) => {
  */
 export const hideCharacter = async (event, _trigger, player) => {
 	const { num } = event;
+	// 同时保护直接创建的暗置事件，以及事件执行前武将牌发生替换的情况。
+	if (get.is.jun(player["name" + (num + 1)])) {
+		event.cancel();
+		return;
+	}
 
 	// @ts-expect-error 类型就是这么写的
 	game.addVideo("hideCharacter", player, num);

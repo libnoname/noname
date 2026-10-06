@@ -20453,11 +20453,18 @@ export default {
 		},
 		async cost(event, trigger, player) {
 			const target = trigger.player;
-			const next = target.chooseControl("主将", "副将", "cancel2");
+			const controls = ["主将", "副将"].filter((control, index) => !get.is.jun(target["name" + (index + 1)]));
+			if (!controls.length) {
+				return;
+			}
+			const next = target.chooseControl(...controls, "cancel2");
 			next.set("prompt", "擅统：是否暗置一张武将牌，令此回合使用的下一张牌无距离和次数限制？");
-			next.set("ai", () => "副将");
+			next.set("ai", () => {
+				const controls = get.event().controls;
+				return controls.includes("副将") ? "副将" : controls[0];
+			});
 			const result = await next.forResult();
-			if (result.control != "cancel2") {
+			if (controls.includes(result.control)) {
 				event.result = {
 					bool: true,
 					cost_data: result.control == "主将" ? 0 : 1,
@@ -20468,7 +20475,13 @@ export default {
 			const target = trigger.player;
 			const index = event.cost_data;
 			const name = index == 0 ? target.name1 : target.name2;
+			if (get.is.jun(name) || target.isUnseen(index)) {
+				return;
+			}
 			await target.hideCharacter(index);
+			if (!target.isUnseen(index)) {
+				return;
+			}
 			target.storage.gz_ol_shantong_effect = true;
 			target.storage.gz_ol_shantong_watch = {
 				source: player,

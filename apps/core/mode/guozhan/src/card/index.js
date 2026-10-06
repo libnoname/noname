@@ -127,12 +127,27 @@ export default {
 			if (result.cards?.length) {
 				await player.give(result.cards, target);
 			}
-			player.identity = "ye";
-			player._ye = true;
-			player.identityShown = true;
-			player.setIdentity("ye");
-			player.node.identity.classList.remove("guessing");
+			// 君主及其同势力角色不能因卡牌效果成为野心家，摸牌、给牌仍正常结算。
+			if (get.is.jun(player.name1) || get.zhu(player) || player.identity == "ye") {
+				return;
+			}
+			const next = game.createEvent("changeGroupInGuozhan", false);
+			next.player = player;
+			next.targets = [player];
+			next.fromGroups = [player.identity];
+			next.toGroup = "ye";
+			next.setContent("emptyEvent");
+			game.broadcastAll(player => {
+				player.identity = "ye";
+				player.identityShown = true;
+				player.setIdentity("ye");
+				player.node.identity.classList.remove("guessing");
+			}, player);
+			// 保留原势力供君主升变时恢复；_ye 仅用于原生野心家主将的亮将奖励。
+			game.addVideo("setIdentity", player, "ye");
 			game.log(player, "成为了", "#g野心家");
+			await next;
+			game.tryResult();
 		},
 		recastable: true,
 		ai: {
