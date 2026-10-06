@@ -638,6 +638,7 @@ const skills = {
 	},
 	// OL谋周瑜
 	olsbguqu: {
+		audio: 2,
 		forced: true,
 		group: ["olsbguqu_show", "olsbguqu_draw"],
 		global: "olsbguqu_nouse",
@@ -733,6 +734,7 @@ const skills = {
 		},
 	},
 	olsbzuifeng: {
+		audio: 2,
 		enable: "phaseUse",
 		selectCard: 1,
 		selectTarget: 1,
