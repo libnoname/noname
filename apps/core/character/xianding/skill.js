@@ -2303,16 +2303,12 @@ const skills = {
 					player.addTempSkill("dcsbxieshi_mark");
 					player.storage["dcsbxieshi_mark"] = player.countCards("h");
 				},
-				sub: true,
-				sourceSkill: "dcsbxieshi",
 			},
 			mark: {
 				charlotte: true,
 				onremove(player, skill) {
 					delete player.storage[skill];
 				},
-				sub: true,
-				sourceSkill: "dcsbxieshi",
 			},
 		},
 	},
@@ -2788,7 +2784,6 @@ const skills = {
 			},
 			used: {
 				charlotte: true,
-				sub: true,
 				mark: true,
 				intro: {
 					content(storage, player) {
@@ -2969,8 +2964,6 @@ const skills = {
 						}
 					}
 				},
-				sub: true,
-				sourceSkill: "dcsbxinzhan",
 			},
 		},
 	},
@@ -3092,7 +3085,7 @@ const skills = {
 				}
 				await player.gain(cardsx, "draw");
 				if (target.isIn()) {
-					target.addTempSkill("dcsbxinzhan", { global: "roundEnd" });
+					target.addTempSkills("dcsbxinzhan", { global: "roundEnd" });
 				}
 			}
 		},
@@ -3120,8 +3113,6 @@ const skills = {
 				onremove(player, skill) {
 					player.removeGaintag("dcsbchengce_sha");
 				},
-				sub: true,
-				sourceSkill: "dcsbchengce",
 			},
 		},
 	},
@@ -46079,7 +46070,6 @@ const skills = {
 			harmonia: {
 				forced: true,
 				audio: "gxlianhua",
-				sub: true,
 				trigger: { player: "phaseZhunbeiBegin" },
 				//filter:function(event,player){
 				//	return player.storage.gxlianhua&&player.storage.gxlianhua.red+player.storage.gxlianhua.black>0;
