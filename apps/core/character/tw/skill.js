@@ -3254,7 +3254,7 @@ const skills = {
 				await target.draw({ num: 1 + extra });
 			}
 		},
-		marktext: "笨",
+		marktext: "策",
 		intro: {
 			name: "策(明策)",
 			name2: "策",
@@ -5470,6 +5470,12 @@ const skills = {
 				];
 				event.controls = [ui.create.control(controls.concat(["清除选择", "stayleft"]))];
 			};
+			const closeFunc = () => {
+				const event = get.event();
+				if (event?.controls) {
+					event.controls[0].close();
+				}
+			};
 			if (event.isMine()) {
 				func();
 			} else if (event.isOnline()) {
@@ -5589,6 +5595,11 @@ const skills = {
 				storage[2] = names;
 			} else {
 				storage[2] = [];
+				if (event.isMine()) {
+					closeFunc();
+				} else if (event.isOnline()) {
+					event.player.send(closeFunc);
+				}
 			}
 			player.markSkill("twkanpo");
 		},

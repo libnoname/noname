@@ -1,6 +1,12 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	pot_zhaoyun: "势赵云",
+	pot_zhaoyun_prefix: "势",
+	potwuyi: "武翊",
+	potwuyi_info: "若你从手牌使用或打出过的基本牌牌名数不小于：1.每轮限一次，你可视为使用一张任意【杀】或【闪】；2.你使用基本牌无次数限制；3.你使用基本牌无距离限制；4.当你获得或失去手牌后，将你的手牌数调整为4。",
+	potcuifeng: "摧锋",
+	potcuifeng_info: "每轮限两次，每回合结束时，你可视为对当前回合角色使用一张【决斗】且此【决斗】造成伤害+X（X为本回合所有角色打出【杀】的次数）。",
 	pot_heqi: "势贺齐",
 	pot_heqi_prefix: "势",
 	potshanxi: "闪袭",

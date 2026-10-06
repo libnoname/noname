@@ -270,6 +270,7 @@ const skills = {
 									prompt: `迫饮：你可以重铸任意张牌`,
 									selectCard: [1, Infinity],
 									filterCard: lib.filter.cardRecastable,
+									allowChooseAll: true,
 									position: "he",
 									ai(card) {
 										const player = get.player();
