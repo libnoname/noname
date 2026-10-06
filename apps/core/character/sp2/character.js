@@ -33,7 +33,7 @@ const characters = {
 	cuilie: {
 		sex: "male",
 		group: "qun",
-		hp: 3,
+		hp: 4,
 		skills: ["dczijue", "dcchibi"],
 	},
 	star_jiangwan: {

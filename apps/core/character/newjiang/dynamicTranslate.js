@@ -3,7 +3,7 @@ import { lib, game, ui, get, ai, _status } from "noname";
 const dynamicTranslates = {
 	lkbushi(player) {
 		var list = lib.skill.lkbushi.getBushi(player).map(i => get.translation(i));
-		return "①你使用" + list[0] + "牌无次数限制。②当你使用或打出" + list[1] + "牌后，你摸一张牌。③当你成为" + list[2] + "牌的目标后，你可以弃置一张牌，令此牌对你无效。④结束阶段开始时，你从牌堆或弃牌堆获得一张" + list[3] + "牌。⑤准备阶段开始时，你可调整此技能中四种花色的对应顺序。";
+		return "①你使用" + list[0] + "牌无次数限制。②当你使用或打出" + list[1] + "牌后，你摸一张牌。③当你成为" + list[2] + "牌的目标后，你可以弃置一张牌，令此牌对你无效。④结束阶段开始时，你从牌堆获得一张" + list[3] + "牌。⑤准备阶段开始时，你可调整此技能中四种花色的对应顺序。";
 	},
 	diezhang(player) {
 		const bool = player.storage.diezhang;

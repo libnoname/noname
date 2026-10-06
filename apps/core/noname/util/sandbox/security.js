@@ -565,6 +565,7 @@ async function initSecurity({ lib, game, ui, get, ai, _status }) {
 		lib.cheat,
 		lib.node,
 		lib.message,
+		lib.fs,
 		window.process,
 		window.module,
 		window.exports,
@@ -600,6 +601,19 @@ async function initSecurity({ lib, game, ui, get, ai, _status }) {
 		})
 		// 让 Monitor 开始工作
 		.start(); // 差点忘记启动了喵
+
+	// lib.fs 可能在平台初始化期间被替换，不能只限制初始化时的实例。
+	new Monitor()
+		.action(AccessAction.READ)
+		.action(AccessAction.WRITE)
+		.action(AccessAction.DEFINE)
+		.action(AccessAction.DELETE)
+		.require("target", lib)
+		.require("property", "fs")
+		.then(() => {
+			throw new Error("不允许不受信任的代码访问 `lib.fs`");
+		})
+		.start();
 
 	// 监听原型、toStringTag的更改
 	const toStringTag = Symbol.toStringTag;

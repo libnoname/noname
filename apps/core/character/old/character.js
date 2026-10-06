@@ -1,4 +1,12 @@
 const characters = {
+	two_yudu: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["gongjun", "zhuzhai"],
+		img: "image/character/yudu.jpg",
+		dieAudios: ["yudu"],
+	},
 	old_pot_dengai: {
 		sex: "male",
 		group: "wei",

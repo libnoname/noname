@@ -2534,6 +2534,7 @@ const skills = {
 			return 15 - get.value(card);
 		},
 		ai: {
+			combo: "sxrmsuwu",
 			save: true,
 			order(item, player) {
 				const num = game.filterPlayer(current => player != current).reduce((sum, current) => sum + current.countConnectedCards() * -get.sgnAttitude(player, current), 0);
@@ -4116,9 +4117,7 @@ const skills = {
 	//伏寿
 	sxrmmitu: {
 		audio: 2,
-		trigger: {
-			player: "phaseZhunbeiBegin",
-		},
+		trigger: { player: "phaseZhunbeiBegin" },
 		filter(event, player) {
 			return game.hasPlayer(current => current.isDamaged());
 		},
@@ -4145,6 +4144,7 @@ const skills = {
 				target.addTempSkill("sxrmmitu_ai", "phaseChange");
 			}
 			for (const target of event.targets) {
+				if (!player.isIn()) return;
 				if (!game.hasPlayer(current => target.canCompare(current))) {
 					continue;
 				}

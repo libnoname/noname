@@ -3,6 +3,111 @@ import html from "dedent";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//项羽
+	pegaishi: {
+		audio: 2,
+		forced: true,
+		trigger: {
+			player: "useCard",
+			global: "damageBegin4",
+		},
+		filter(event, player) {
+			const num = player.getSeatNum();
+			if (event.name == "damage") {
+				return event.source == player && (event.player.getSeatNum() > num || player.hp == 1);
+			}
+			return game.hasPlayer(current => current.getSeatNum() < num || player.hp == 1);
+		},
+		logTarget(event, player) {
+			const num = player.getSeatNum();
+			return event.name == "damage" ? event.player : game.filterPlayer(current => current.getSeatNum() < num || player.hp == 1).sortBySeat();
+		},
+		async content(event, trigger, player) {
+			if (trigger.name == "damage") {
+				trigger.num++;
+			} else {
+				const targets = event.targets;
+				trigger.directHit.addArray(targets);
+				game.log(targets, "不可响应", trigger.card);
+			}
+		},
+	},
+	pefuqin: {
+		audio: 2,
+		derivation: ["dcfencheng", "jsrgyansha"],
+		dutySkill: true,
+		frequent: true,
+		trigger: { player: "phaseUseBegin" },
+		async content(event, trigger, player) {
+			const num = 1 + Array.from(ui.discardPile.childNodes).filter(card => get.number(card) == 13).length + game.filterPlayer().flatMap(current => current.getCards("ej", card => get.number(card) == 13)).length;
+			await player.draw({ num });
+			player.addTempSkill(event.name + "_use", "phaseAnyAfter");
+			player.addMark(event.name + "_use", num, false);
+		},
+		group: ["pefuqin_achieve"],
+		subSkill: {
+			achieve: {
+				audio: "pefuqin",
+				forced: true,
+				locked: false,
+				skillAnimation: true,
+				animationColor: "wood",
+				trigger: { global: "die" },
+				async content(event, trigger, player) {
+					if (trigger.source == player) {
+						player.awakenSkill("pefuqin");
+					}
+					await player.addSkills(["dcfencheng", "jsrgyansha"]);
+					//太监音太难听了   静音了
+					game.broadcastAll(skill => {
+						const info = get.info(skill);
+						if (info) {
+							info.audioname2 ??= {};
+							info.audioname2.pe_xiangyu = "pefuqin";
+						}
+					}, "dcfencheng");
+				},
+			},
+			use: {
+				charlotte: true,
+				onremove: true,
+				intro: { content: "本阶段使用的下#张牌无次数限制" },
+				mod: {
+					cardUsable: () => Infinity,
+				},
+				silent: true,
+				firstDo: true,
+				popup: false,
+				trigger: { player: "useCard" },
+				filter(event, player) {
+					return player.hasMark("pefuqin_use");
+				},
+				async content(event, trigger, player) {
+					player.removeMark(event.name);
+					if (trigger.addCount != false) {
+						const stat = player.getStat("card"),
+							name = trigger.card.name;
+						if (typeof stat[name] == "number" && stat[name] > 0) {
+							stat[name]--;
+						}
+					}
+					if (!player.hasMark(event.name)) {
+						player.removeSkill(event.name);
+					}
+				},
+			},
+		},
+	},
+	peyinghao: {
+		audio: 2,
+		zhuSkill: true,
+		locked: false,
+		mod: {
+			attackRange(player, num) {
+				return num + game.countPlayer(current => current.group == player.group);
+			},
+		},
+	},
 	//上官婉儿
 	pecaishi: {
 		audio: 2,
@@ -270,7 +375,7 @@ const skills = {
 					.filter(evt => ["basic", "trick"].includes(get.type(evt.card)))
 					.flatMap(evt => get.autoViewAs({ name: evt.card.name, nature: evt.card.nature, isCard: true }, "unsure"))
 					.unique();
-				return cards.some(card => player.hasUseTarget(card));
+				return cards.some(card => player.hasUseTarget(card)) && event.player == target;
 			}
 			const cards = event.getg?.(target);
 			return event.getParent(2)?.name !== "peersheng" && cards?.length > 0;
@@ -771,7 +876,8 @@ const skills = {
 					.forResult();
 				if (result?.bool && result.links?.length) {
 					const skill = result.links[0];
-					await player.addAdditionalSkills(event.name, skill);
+					const skills = player.additionalSkills?.[event.name] ?? [];
+          			await player.addAdditionalSkills(event.name, skills.concat([skill]));
 					lib.card[`huashen_card_${name}`].skills.push(skill);
 				}
 			}
@@ -1694,6 +1800,7 @@ const skills = {
 	},
 	//e郭照
 	pepianchong: {
+		audio: "pianchong",
 		trigger: { player: "phaseDrawBegin1" },
 		check(event, player) {
 			return true;
@@ -1712,6 +1819,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
+				audio: "pepianchong",
 				trigger: {
 					player: ["loseAfter"],
 					global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
@@ -1739,6 +1847,7 @@ const skills = {
 		},
 	},
 	pezunwei: {
+		audio: "zunwei",
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
@@ -2089,6 +2198,7 @@ const skills = {
 	},
 	//夏侯玄
 	pehuanfu: {
+		audio: "olhuanfu",
 		trigger: {
 			player: "useCardToPlayered",
 			target: "useCardToTargeted",

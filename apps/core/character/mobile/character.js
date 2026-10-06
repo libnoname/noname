@@ -1,4 +1,11 @@
 const characters = {
+	mb_mayunlu: {
+		sex: "female",
+		group: "shu",
+		hp: 4,
+		skills: ["mashu", "mbfengpo"],
+		dieAudios: ["mayunlu"],
+	},
 	mb_shen_caocao: {
 		sex: "male",
 		group: "shen",
@@ -80,6 +87,7 @@ const characters = {
 		group: "wei",
 		hp: 3,
 		skills: ["mbshefu", "mbbenyu"],
+		dieAudios: ["chengyu"],
 	},
 	mb_dongbai: {
 		sex: "female",

@@ -440,7 +440,7 @@ const translates = {
 	mia_fengfa: "风发",
 	mia_fengfa_info: "锁定技。摸牌阶段，你多摸X张牌（X为你上回合使用过的牌数）。",
 	kano_liezhen: "列阵",
-	kano_liezhen_info: "结束阶段，若你本回合内使用过牌且这些牌的类型：不均相同，你可视为使用【排兵布阵】或智囊；均相同，你获得仁库中的所有牌（没有则改为摸两张牌）。",
+	kano_liezhen_info: `结束阶段，若你本回合内使用过牌且这些牌的类型：不均相同，你可视为使用${get.poptip("kano_paibingbuzhen")}或${get.poptip("rule_zhinang")}；均相同，你获得仁库中的所有牌（没有则改为摸两张牌）。`,
 	kano_paibingbuzhen: "排兵布阵",
 	kano_paibingbuzhen_info: "出牌阶段，对至多三名角色使用。目标角色摸一张牌，然后将一张牌置入仁库。若仁库中的牌类型或颜色均相同，则你摸一张牌。",
 	kano_poyu: "破羽",

@@ -2606,15 +2606,19 @@ const skills = {
 				return;
 			}
 			await player.showCards(hs, `${get.translation(player)}发动了【${get.translation(event.name)}】`);
-			const colors = hs.map(card => get.color(card)).toUniqued();
-			if (colors.length !== 1) {
+			const blacks = hs.filter(card => get.color(card) === "black").length;
+			const reds = hs.filter(card => get.color(card) === "red").length;
+			if (blacks !== reds) {
 				return;
 			}
 			const result = await player
-				.chooseTarget(true, get.prompt2(event.name))
-				.set("ai", target => {
-					const player = get.player();
-					return get.damageEffect(target, player, player);
+				.chooseTarget({
+					forced: true,
+					prompt: "昭心：是否对一名角色造成1点伤害？",
+					ai(target) {
+						const player = get.player();
+						return get.damageEffect(target, player, player);
+					},
 				})
 				.forResult();
 			if (result?.bool && result?.targets?.length) {

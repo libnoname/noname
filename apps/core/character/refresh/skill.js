@@ -2335,6 +2335,7 @@ const skills = {
 	rezhiyu: {
 		audio: 2,
 		trigger: { player: "damageEnd" },
+		frequent: true,
 		async content(event, trigger, player) {
 			await player.draw();
 			if (!player.countCards("h")) {
@@ -3564,13 +3565,23 @@ const skills = {
 					},
 				})
 				.forResult();
-			if (result?.bool) {
+			if (result?.bool && result.cards?.length && result.targets?.length) {
 				const targets = result.targets;
 				player.logSkill("reyingshi", targets[1]);
 				const card = result.cards[0];
 				player.showCards(card, get.translation(player) + "对" + get.translation(targets[1]) + "发动了【应势】");
 				player.line(targets[0], "fire");
-
+				const suit = get.suit(card),
+					number = get.number(card);
+				const cardx = Array.from(ui.cardPile.childNodes).filter(card => {
+					if (card.suit == suit && card.number == number) {
+						return true;
+					}
+				});
+				if (cardx.length) {
+					await player.showCards(cardx, `${get.translation(player)}发动了【应势】`);
+				}
+				await game.delayx(2);
 				const next = targets[0].chooseToUse(
 					function (card, player, event) {
 						if (get.name(card) != "sha") {
@@ -3609,8 +3620,6 @@ const skills = {
 							});
 						})
 					) {
-						const suit = get.suit(card),
-							number = get.number(card);
 						cards.addArray(
 							Array.from(ui.cardPile.childNodes).filter(cardx => {
 								if (cardx.suit == suit && cardx.number == number) {
@@ -6697,7 +6706,7 @@ const skills = {
 					player.addTempSkill("xinpaiyi_used", "phaseUseEnd");
 					player.markAuto("xinpaiyi_used", [0]);
 					var card = lib.skill.xinpaiyi_backup.card;
-					player.loseToDiscardpile(card);
+					await player.loseToDiscardpile(card);
 
 					// step 1
 					await target.draw(Math.max(1, player.getExpansions("xinquanji").length)).forResult();
@@ -7057,7 +7066,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const { name } = event;
 			player.awakenSkill(name);
-			await player.draw(Math.min(5, player.maxHp - player.countCards("h")));
+			await player.drawTo(player.maxHp);
 		},
 	},
 	//新郭淮
@@ -9823,6 +9832,7 @@ const skills = {
 		audio: 2,
 		zhuSkill: true,
 		trigger: { global: "damageSource" },
+		frequent: true,
 		filter(event, player) {
 			if (player == event.source || !event.source || event.source.group != "qun") {
 				return false;
@@ -12536,7 +12546,7 @@ const skills = {
 			const cmpResult = await comp.forResult();
 
 			// step 2: 根据拼点结果处理
-			if ((player === source && cmpResult.bool) || (target === source && !cmpResult.bool)) {
+			if ((player === source && (cmpResult.bool || cmpResult.tie)) || (target === source && !cmpResult.bool)) {
 				event.cards = [cmpResult.player, cmpResult.target].filterInD("d");
 				if (!event.cards.length) return;
 
@@ -14444,6 +14454,7 @@ const skills = {
 		audio: "rejianxiong",
 		audioname: ["shen_caopi", "mb_caocao"],
 		audioname2: { caoying: "lingren_jianxiong" },
+		frequent: true,
 		trigger: { player: "damageEnd" },
 		async content(event, trigger, player) {
 			if (get.itemtype(trigger.cards) == "cards" && get.position(trigger.cards[0], true) == "o") {
@@ -15739,7 +15750,7 @@ const skills = {
 	},
 	reguicai: {
 		audio: 2,
-		audioname: ["new_simayi"],
+		audioname2: { new_simayi: "reguicai_new_simayi" },
 		trigger: { global: "judge" },
 		filter(event, player) {
 			return player.countCards("hes") > 0;
@@ -15808,6 +15819,7 @@ const skills = {
 			rejudge: true,
 			tag: { rejudge: 1 },
 		},
+		subSkill: { new_simayi: { audio: 2 } },
 	},
 	refankui: {
 		audio: 2,

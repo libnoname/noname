@@ -390,7 +390,7 @@ const skills = {
 	},
 	guicai: {
 		audio: 2,
-		audioname2: { xin_simayi: "jilue_guicai" },
+		audioname2: { new_simayi: "reguicai_new_simayi" },
 		trigger: { global: "judge" },
 		preHidden: true,
 		filter(event, player) {
@@ -856,7 +856,7 @@ const skills = {
 					},
 				});
 				if (get.mode() !== "guozhan" && !player.hasSkillTag("rejudge")) {
-					judgeEvent.set("callback", async event => {
+					judgeEvent.set("callback", async (event, trigger, player) => {
 						if (event.judgeResult.color === "black" && get.position(event.card, true) === "o") {
 							await player.gain({
 								cards: [event.card],
@@ -1548,7 +1548,7 @@ const skills = {
 		audio: 2,
 		audioname: ["jianyong"],
 		audioname2: {
-			xin_simayi: "jilue_jizhi",
+			new_simayi: "rejizhi_new_simayi",
 		},
 		trigger: { player: "useCard" },
 		frequent: true,
@@ -1577,7 +1577,7 @@ const skills = {
 		audio: 2,
 		audioname: ["gz_jun_sunquan"],
 		audioname2: {
-			xin_simayi: "jilue_zhiheng",
+			new_simayi: "rezhiheng_new_simayi",
 		},
 		mod: {
 			aiOrder(player, card, num) {

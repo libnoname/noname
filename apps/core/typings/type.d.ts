@@ -16,6 +16,26 @@ type SMap<V> = Record<string, V>;
 /** 单体与集合类型 */
 type SAAType<T> = T | T[];
 
+/**
+ * 菜单「其它 - 帮助」条目内容。
+ *
+ * - `string`：每次进入时写入 innerHTML；若以 getter 提供，会在每次进入时重新求值。
+ * - `{ setup }` / `{ data }`：视为 Vue 组件。
+ *   - 默认保活：首次进入 `createApp().mount`，离开时只把容器移出父节点，再次进入不重建。
+ *     此默认值仅为兼容旧行为；后续版本可能改为默认卸载。
+ *   - `persist: false`：离开时 `unmount` 并清空容器，再次进入重新挂载。
+ * - `{ mount(container) }`：首次进入时调用 `mount`。
+ *   - 若同步返回清理函数，离开时调用该函数并清空容器，再次进入会重新 `mount`。
+ *   - 若无返回值，离开时只把容器移出父节点，再次进入不再调用 `mount`（与历史行为一致）。
+ * `mount` 只支持同步返回值；`Promise` 不会被当作 teardown。
+ * 生命周期回调（`mount`、teardown、Vue `mounted`/`unmounted`）内不要再切换菜单页。
+ */
+type HelpContent = string | { mount(container: Element): void | (() => void); } | HelpVueContent;
+
+type HelpVueContent = {
+	persist?: boolean;
+} & import("vue").Component;
+
 
 type Row_Item = SAAType<Card | Player | string>;
 type Row_Item_Option<T = Row_Item> = {
@@ -198,24 +218,10 @@ declare interface importCharacterConfig {
      */
     get?: Record<string, any>;
     /**
-     * 帮助内容将显示在菜单－选项－帮助中
-     * 
-     * 游戏编辑器的帮助代码基本示例结构：
-     * 
-     * "帮助条目":
-     * ```jsx
-     *  <ul>
-     *      <li>列表1-条目1
-     *      <li>列表1-条目2
-     *  </ul>
-     *  <ol>
-     *      <li>列表2-条目1
-     *      <li>列表2-条目2
-     *  </ul>
-     * ```
-     * (目前可显示帮助信息：mode，extension，card卡包，character武将包)
+     * 帮助内容，显示在菜单－其它－帮助。见 {@link HelpContent}。
+     * （mode、extension、card、character 可提供）
      */
-    help?: Record<string, string>;
+    help?: Record<string, HelpContent>;
 
     [key: string]: any;
 }
@@ -244,24 +250,10 @@ declare interface importCardConfig {
     /** 卡牌翻译 */
     translate: Record<string, string> | string;
     /**
-     * 帮助内容将显示在菜单－选项－帮助中
-     * 
-     * 游戏编辑器的帮助代码基本示例结构：
-     * 
-     * "帮助条目":
-     * ```jsx
-     *  <ul>
-     *      <li>列表1-条目1
-     *      <li>列表1-条目2
-     *  </ul>
-     *  <ol>
-     *      <li>列表2-条目1
-     *      <li>列表2-条目2
-     *  </ul>
-     * ```
-     * (目前可显示帮助信息：mode，extension，card卡包，character武将包)
+     * 帮助内容，显示在菜单－其它－帮助。见 {@link HelpContent}。
+     * （mode、extension、card、character 可提供）
      */
-    help?: Record<string, string>;
+    help?: Record<string, HelpContent>;
 
     [key: string]: any;
 }
@@ -343,24 +335,10 @@ declare interface importModeConfig {
      */
     get?: Record<string, any>;
     /**
-     * 帮助内容将显示在菜单－选项－帮助中
-     * 
-     * 游戏编辑器的帮助代码基本示例结构：
-     * 
-     * "帮助条目":
-     * ```jsx
-     *  <ul>
-     *      <li>列表1-条目1
-     *      <li>列表1-条目2
-     *  </ul>
-     *  <ol>
-     *      <li>列表2-条目1
-     *      <li>列表2-条目2
-     *  </ul>
-     * ```
-     * (目前可显示帮助信息：mode，extension，card卡包，character武将包)
+     * 帮助内容，显示在菜单－其它－帮助。见 {@link HelpContent}。
+     * （mode、extension、card、character 可提供）
      */
-    help?: Record<string, string>;
+    help?: Record<string, HelpContent>;
 
     [key: string]: any;
 }
@@ -473,25 +451,11 @@ declare interface importExtensionConfig {
     precontent?(data?: Record<string, any>): void;
     /** 删除该扩展后调用 */
     onremove?(): void;
-    /** 
-     * 帮助内容将显示在菜单－选项－帮助中
-     * 
-     * 游戏编辑器的帮助代码基本示例结构：
-     * 
-     * "帮助条目":
-     * ```jsx
-     *  <ul>
-     *      <li>列表1-条目1
-     *      <li>列表1-条目2
-     *  </ul>
-     *  <ol>
-     *      <li>列表2-条目1
-     *      <li>列表2-条目2
-     *  </ul>
-     * ```
-     * (目前可显示帮助信息：mode，extension，card卡包，character武将包)
+    /**
+     * 帮助内容，显示在菜单－其它－帮助。见 {@link HelpContent}。
+     * （mode、extension、card、character 可提供）
      */
-    help?: Record<string, string>;
+    help?: Record<string, HelpContent>;
     /** 相关文件名 */
     files?: {
         character?: string[],
@@ -586,24 +550,10 @@ declare interface importPlayConfig {
      */
     get?: Record<string, any>;
     /**
-     * 帮助内容将显示在菜单－选项－帮助中
-     * 
-     * 游戏编辑器的帮助代码基本示例结构：
-     * 
-     * "帮助条目":
-     * ```jsx
-     *  <ul>
-     *      <li>列表1-条目1
-     *      <li>列表1-条目2
-     *  </ul>
-     *  <ol>
-     *      <li>列表2-条目1
-     *      <li>列表2-条目2
-     *  </ul>
-     * ```
-     * (目前可显示帮助信息：mode，extension，card卡包，character武将包)
+     * 帮助内容，显示在菜单－其它－帮助。见 {@link HelpContent}。
+     * （mode、extension、card、character 可提供）
      */
-    help?: Record<string, string>;
+    help?: Record<string, HelpContent>;
     [key: string]: any;
 }
 
@@ -762,8 +712,8 @@ declare interface PackageData {
         config?: Record<string, SelectConfigData>;
         /** 扩展主代码 */
         content?: (config: Record<string, any>, pack: PackageData) => void;
-        /** 扩展帮助信息 */
-        help?: Record<string, string>;
+        /** 扩展帮助信息，见 {@link HelpContent} */
+        help?: Record<string, HelpContent>;
         /** 扩展启动代码 */
         precontent?: (data?: Record<string, any>) => void;
     }

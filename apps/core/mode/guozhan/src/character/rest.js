@@ -678,6 +678,30 @@ export default {
 		hp: 4,
 		skills: ["gz_mashu", "gzfengpo"],
 	}),
+	gz_ol_caozhi: new Character({
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		maxHp: 3,
+		skills: ["gz_ol_jiushi", "gz_ol_zongpei"],
+		img: "image/character/ol_caozhi.jpg",
+	}),
+	gz_ol_sunjun: new Character({
+		sex: "male",
+		group: "wu",
+		hp: 4,
+		maxHp: 4,
+		skills: ["gz_ol_suchao", "gz_ol_zhulian"],
+		img: "image/character/mb_sunjun.jpg",
+	}),
+	gz_ol_jianshuo: new Character({
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		maxHp: 4,
+		skills: ["gz_ol_shantong", "gz_ol_qiuchou"],
+		img: "image/character/tw_jianshuo.jpg",
+	}),
 };
 
 export const sort = "";

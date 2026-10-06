@@ -1,13 +1,12 @@
 import { build } from "vite";
 import { execFileSync } from "node:child_process";
-import { join, dirname } from "path";
+import { join } from "path";
 import { existsSync, readdirSync, writeFileSync } from "fs";
 import { Target, viteStaticCopy } from "vite-plugin-static-copy";
 import generateImportMap from "./vite-plugin-importmap";
 import jit from "@noname/jit";
 import type { BuildChannel, BuildInfo } from "../noname/util/meta";
 
-import { moderned_characters } from "../game/config.json";
 const root = join(import.meta.dirname, "..");
 
 /**
@@ -59,40 +58,39 @@ async function main() {
 	const individuals: Record<IndividualType, IndividualContent[]> = {
 		character: [],
 		mode: [
-			{ name: "identity", index: "mode/identity.js", moderned: false },
-			{ name: "doudizhu", index: "mode/doudizhu.js", moderned: false },
+			{ name: "identity", index: "mode/identity.js", source: "mode/identity.js" },
+			{ name: "doudizhu", index: "mode/doudizhu.js", source: "mode/doudizhu.js" },
 		],
 		card: [],
 	};
 
-	// #3446 - 通过moderned_characters配置更新character内容
-	for (const name of moderned_characters) {
-		let index = `character/${name}/index.ts`
-		if (!existsSync(join(root, index))) {
-			index = `character/${name}/index.js`;
-		}
+	// #4427 - 武将包均重写完毕
+	const characterDirectories = readdirSync(join(root, "character"), { withFileTypes: true })
+		.filter(entry => entry.isDirectory())
+		.sort((a, b) => a.name.localeCompare(b.name));
+	for (const { name } of characterDirectories) {
 		individuals.character.push({
 			name,
-			index,
-			moderned: true,
+			index: getDirectoryEntry("character", name),
+			source: `character/${name}`,
 		});
 	}
 
 	// #3941 - 卡牌包均重写完毕
-	for (const file of readdirSync(join(root, "card"))) {
+	for (const file of readdirSync(join(root, "card")).sort()) {
+		const index = `card/${file}`;
 		individuals.card.push({
 			name: getEntryName(file),
-			index: `card/${file}`,
-			moderned: false,
+			index,
+			source: index,
 		});
 	}
 
 	// 将单独构建的包体全部复制到dist/src中
 	for (const [type, content] of Object.entries(individuals)) {
-		for (const { index, moderned } of content) {
-			const src = moderned ? dirname(index) : index;
+		for (const { source } of content) {
 			const dest = `src/${type}`;
-			staticModules.push({ src, dest });
+			staticModules.push({ src: source, dest });
 		}
 	}
 
@@ -109,7 +107,7 @@ async function main() {
 
 		// 获取需要单独复制的文件
 		const copies: Target[] = [];
-		for (const file of readdirSync(join(root, type))) {
+		for (const file of readdirSync(join(root, type)).sort()) {
 			if (getEntryName(file) in input) {
 				continue;
 			}
@@ -216,6 +214,18 @@ function getEntryName(file: string): string {
 	return file.replace(/\.(js|ts)$/, "");
 }
 
+/** 取得目录型包体的入口，优先使用 TypeScript 文件。 */
+function getDirectoryEntry(type: IndividualType, name: string): string {
+	for (const extension of ["ts", "js"]) {
+		const index = `${type}/${name}/index.${extension}`;
+		if (existsSync(join(root, index))) {
+			return index;
+		}
+	}
+
+	throw new Error(`未找到${type}包体“${name}”的入口文件`);
+}
+
 const buildChannels = ["test", "nightly", "release"] as const satisfies readonly BuildChannel[];
 type ArtifactBuildChannel = (typeof buildChannels)[number];
 
@@ -248,8 +258,8 @@ interface IndividualContent {
 	name: string;
 	/** 包体入口文件，使用相对于 apps/core 的路径。 */
 	index: string;
-	/** 是否属于已经现代化为目录入口的包体。 */
-	moderned: boolean;
+	/** 复制到 dist/src 的源码文件或目录。 */
+	source: string;
 }
 
 if (import.meta.main) {

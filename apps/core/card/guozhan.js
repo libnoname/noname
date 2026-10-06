@@ -1138,7 +1138,7 @@ export default {
 							return 0;
 						}
 						return player.countCards("hs", card => {
-							if (ui.selected.cards.includes(card)) {
+							if (ui.selected.cards.includes(card) || get.name(card) === "diaohulishan") {
 								return false;
 							}
 							const cardx = get.autoViewAs({ name: get.name(card), nature: get.nature(card), cards: [card] }, [card]);
@@ -1536,7 +1536,7 @@ export default {
 					const card = list.randomGet();
 					lib.inpile.add(card[2]);
 					await player.gain({
-						cards: game.createCard2(card[2], card[0], card[1], void 0),
+						cards: [game.createCard2(card[2], card[0], card[1], void 0)],
 						animate: "gain2",
 					});
 				}
@@ -2411,7 +2411,7 @@ export default {
 		zhibi: "知己知彼",
 		zhibi_info: "出牌阶段，对一名有手牌或有暗置武将牌的其他角色使用。你选择一项：⒈观看其手牌。⒉观看其的一张暗置武将牌。",
 		yiyi: "以逸待劳",
-		yiyi_info_guozhan: "出牌阶段，对所有己方角色使用。目标角色摸两张牌，然后弃置两张牌。",
+		yiyi_info_guozhan: "出牌阶段，对所有与你势力相同的角色使用。目标角色摸两张牌，然后弃置两张牌。",
 		yiyi_info_combat: "出牌阶段，对所有己方角色使用。目标角色摸两张牌，然后弃置两张牌。",
 		yiyi_info: "出牌阶段，对至多三名角色使用。目标角色摸两张牌，然后弃置两张牌。",
 		yiyi_bg: "逸",

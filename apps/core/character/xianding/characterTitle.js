@@ -1,4 +1,8 @@
 export default {
+	dc_wangyuanji: "素业谦冲",
+	cuizhi: "烈烛烬明",
+	luwenyi: "卷中避世",
+	//dc_sb_chengpu: "",
 	//liupanxi: "",
 	//dengwantang: ""，
 	v_mateng: "千骑卷黄沙",
@@ -7,10 +11,10 @@ export default {
 	wu_zhangfei: "烈武桓威",
 	dc_sb_guanyu: "单刀赴会",
 	//dc_sb_yangfeng: "",
-	//v_guanyinping: "",
-	//dc_sb_wangping: "",
-	//dc_sb_masu: "",
-	//dc_sb_zhugeliang: "",
+	v_guanyinping: "凋棠醒春薄",
+	dc_sb_wangping: "佯败溯战",
+	dc_sb_masu: "服心屈兵",
+	dc_sb_zhugeliang: "威谋定疆",
 	dc_shen_guanyu: "鬼神再临",
 	dc_shen_zhangliao: "雁门之刑天",
 	dc_shen_caopi: "月晦书轮回",

@@ -41,6 +41,17 @@ export async function boot() {
 
 	await loadConfig();
 
+	// 兼容原有鏖战布尔设置，保持原规则并正确显示新的选择菜单。
+	for (const mode of ["guozhan", "connect"]) {
+		const settings = lib.config.mode_config[mode];
+		if (!settings) continue;
+		for (const key of ["aozhan", "connect_aozhan"]) {
+			if (typeof settings[key] === "boolean") {
+				settings[key] = settings[key] ? "normal" : "off";
+			}
+		}
+	}
+
 	for (const name in get.config("translate")) {
 		lib.translate[name] = get.config("translate")[name];
 	}
