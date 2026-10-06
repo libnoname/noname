@@ -2,6 +2,91 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//攻郡于毒
+	gongjun: {
+		audio: 2,
+		trigger: { global: "useCard" },
+		filter(event, player) {
+			if (player == event.player) {
+				return event.targets?.some(target => target != player && target.hasCards("he"));
+			}
+			return player.storage.zhuzhai && event.targets?.includes(player) && event.player.hasCards("he");
+		},
+		usable: 1,
+		async cost(event, trigger, player) {
+			const targets = player == trigger.player ? trigger.targets.filter(target => target != player && target.hasCards("he")) : [trigger.player];
+			event.result = await player
+				.chooseTarget({
+					prompt: `攻郡：令一名角色弃置任意张牌，然后你从牌堆中随机获得其未弃置的花色牌各一张`,
+					filterTarget(card, player, target) {
+						return get.event().targets.includes(target) && target.hasCards("he");
+					},
+					ai(target) {
+						return get.effect(target, { name: "guohe_copy2" }, get.player(), get.player());
+					},
+				})
+				.set("targets", targets)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			if (!target.hasCards("he")) return;
+			const result = await target
+				.chooseToDiscard({
+					prompt: `攻郡：弃置任意张牌，然后${get.translation(player)}从牌堆随机获得其未弃置的花色牌各一张`,
+					selectCard: [1, Infinity],
+					position: "he",
+					complexCard: true,
+					forced: true,
+					ai(card) {
+						const { player, target } = get.event();
+						const cards = ui.selected.cards;
+						if (get.attitude(player, target) > 0 && cards?.length) return 0;
+						if (get.attitude(player, target) < 0) {
+							if (cards.map(card => get.suit(card)).includes(get.suit(card))) return 0;
+							return 5.5 - get.value(card);
+						}
+						return 114514 - get.value(card);
+					},
+				})
+				.set("target", player)
+				.forResult();
+			if (result?.cards?.length) {
+				const suits = lib.suit.slice().removeArray(result.cards.map(card => get.suit(card)));
+				if (suits.length) {
+					const cards = [];
+					for (const suit of suits) {
+						const card = get.cardPile2(card => get.suit(card) == suit);
+						if (card) cards.push(card);
+					}
+					if (cards.length) {
+						game.log(player, `从牌堆获得了${get.cnNumber(cards.length)}张牌`);
+						await player.gain({ cards, animate: "draw" });
+						player.markAuto(
+							event.name,
+							cards.map(card => get.suit(card))
+						);
+					}
+				}
+			}
+		},
+		intro: { content: "已获得花色：$" },
+	},
+	zhuzhai: {
+		audio: 2,
+		juexingji: true,
+		forced: true,
+		skillAnimation: true,
+		animationColor: "thunder",
+		trigger: { player: "gongjunAfter" },
+		filter(event, player) {
+			return player.getStorage("gongjun").length >= 4;
+		},
+		async content(event, trigger, player) {
+			player.awakenSkill(event.name);
+			player.storage.zhuzhai = true;
+		},
+	},
 	//勘律荀勖
 	kanlv: {
 		audio: 2,

@@ -16603,6 +16603,7 @@ const skills = {
 		filterTarget(card, player, target) {
 			return target.countCards("h") > 0;
 		},
+		manualConfirm: true,
 		selectTarget: -1,
 		multitarget: true,
 		multiline: true,

@@ -3571,7 +3571,7 @@ const skills = {
 							.set("given_map", given_map)
 							.set("toGive", cards[0])
 							.forResult();
-						result.links = cards.slice(0);
+						result.links = cards.slice(0) ?? [];
 					} else {
 						break;
 					}
