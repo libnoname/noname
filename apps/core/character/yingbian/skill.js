@@ -559,36 +559,19 @@ const skills = {
 					return player.hasExpansions("xinwanyi");
 				},
 				async content(event, trigger, player) {
-					const result = await player
-						.chooseTarget({
-							prompt: "婉嫕：令一名角色获得一张“嫕”",
-							forced: true,
-							ai(target) {
-								const player = get.player();
-								return get.attitude(player, target);
-							},
-						})
-						.forResult();
-					if (!result.bool || !result.targets?.length) {
-						return;
-					}
-					const [target] = result.targets;
-					player.line(target, "green");
 					const cards = player.getExpansions("xinwanyi");
-					if (cards.length === 1) {
-						await player.give(cards, target, true);
-						return;
-					}
-					const result2 = await player
-						.chooseButton({
-							createDialog: [`令${get.translation(target)}获得一张“嫕”`, cards],
-							forced: true,
+					const result = await player
+						.chooseButtonTarget({
+							createDialog: ["婉嫕：令一名角色获得一张“嫕”", cards],
+							ai1: button => get.buttonValue(button),
+							ai2: target => get.attitude(get.player(), target),
 						})
 						.forResult();
-					if (!result2.bool || !result2.links?.length) {
-						return;
+					if (result?.bool && result.targets?.length && result.links?.length) {
+						const target = result.targets[0];
+						player.line(target);
+						await player.give(result.links, target, true);
 					}
-					await player.give(result2.links, target, true);
 				},
 			},
 		},
