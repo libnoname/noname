@@ -11,15 +11,9 @@ export default () => {
 		},
 		async start(event, trigger, player) {
 			ui.auto.hide();
-			if (!lib.storage.scene) {
-				lib.storage.scene = {};
-			}
-			if (!lib.storage.stage) {
-				lib.storage.stage = {};
-			}
-			if (!_status.extensionmade) {
-				_status.extensionmade = [];
-			}
+			lib.storage.scene ||= {};
+			lib.storage.stage ||= {};
+			_status.extensionmade ||= [];
 			if (_status.extensionscene) {
 				game.save("scene", lib.storage.scene);
 			}
@@ -27,13 +21,7 @@ export default () => {
 				game.save("stage", lib.storage.stage);
 			}
 			const dialog = ui.create.dialog("hidden");
-			dialog.classList.add("fixed");
-			dialog.classList.add("scroll1");
-			dialog.classList.add("scroll2");
-			dialog.classList.add("fullwidth");
-			dialog.classList.add("fullheight");
-			dialog.classList.add("noupdate");
-			dialog.classList.add("character");
+			dialog.classList.add("fixed", "scroll1", "scroll2", "fullwidth", "fullheight", "noupdate", "character");
 			dialog.contentContainer.style.overflow = "visible";
 			dialog.style.overflow = "hidden";
 			dialog.content.style.height = "100%";
@@ -68,16 +56,10 @@ export default () => {
 				}
 				const showcase = node.nodes[node.nodes.length - 1];
 				showcase.style.height = `${dialog.content.offsetHeight - showcase.offsetTop}px`;
-				if (typeof showcase.action === "function") {
-					if (showcase.action(showcase._showcased ? false : true) !== false) {
-						showcase._showcased = true;
-					}
+				if (typeof showcase.action === "function" && showcase.action(!showcase._showcased) !== false) {
+					showcase._showcased = true;
 				}
-				if (node._nostart) {
-					start.style.display = "none";
-				} else {
-					start.style.display = "";
-				}
+				start.style.display = node._nostart ? "none" : "";
 				game.save("currentBrawl", node.link);
 			};
 			const createNode = name => {
@@ -144,7 +126,7 @@ export default () => {
 				}
 				let info;
 				let stage;
-				if (active.link.indexOf("stage_") === 0) {
+				if (active.link.startsWith("stage_")) {
 					let level;
 					if (Array.isArray(directStage)) {
 						level = { index: directStage[1] };
@@ -279,23 +261,25 @@ export default () => {
 				}
 			};
 			const start = ui.create.div(".menubutton.round.highlight", "斗", dialog.content, clickStart);
-			start.style.position = "absolute";
-			start.style.left = "auto";
-			start.style.right = "10px";
-			start.style.top = "auto";
-			start.style.bottom = "10px";
-			start.style.width = "80px";
-			start.style.height = "80px";
-			start.style.lineHeight = "80px";
-			start.style.margin = "0";
-			start.style.padding = "5px";
-			start.style.fontSize = "72px";
-			start.style.zIndex = 3;
-			start.style.transition = "all 0s";
+			Object.assign(start.style, {
+				position: "absolute",
+				left: "auto",
+				right: "10px",
+				top: "auto",
+				bottom: "10px",
+				width: "80px",
+				height: "80px",
+				lineHeight: "80px",
+				margin: "0",
+				padding: "5px",
+				fontSize: "72px",
+				zIndex: 3,
+				transition: "all 0s",
+			});
 			game.addScene = (name, clear) => {
 				const scene = lib.storage.scene[name];
 				const brawl = {
-					name: name,
+					name,
 					intro: scene.intro,
 				};
 				for (const i in lib.brawl.scene.template) {
@@ -316,7 +300,7 @@ export default () => {
 			game.addStage = (name, clear) => {
 				const stage = lib.storage.stage[name];
 				const brawl = {
-					name: name,
+					name,
 					intro: stage.intro,
 					content: {},
 				};
