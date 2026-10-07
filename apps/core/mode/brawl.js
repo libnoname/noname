@@ -410,7 +410,7 @@ export default () => {
 				name: "幻化之战",
 				mode: "identity",
 				intro: ["杀死所有其他角色，成为最后的存活者", "所有角色改为四血白板，依靠灵力值获得技能。灵力值可以通过各种方式获得"],
-				showcase: function (init) {
+				showcase(init) {
 					if (init) {
 						this.nodes = [];
 					} else {
@@ -418,18 +418,18 @@ export default () => {
 							this.nodes.shift().remove();
 						}
 					}
-					var lx = this.offsetWidth / 2 - 120;
-					var ly = Math.min(lx, this.offsetHeight / 2 - 60);
-					var setPos = function (node) {
-						var i = node.index;
-						var deg = (Math.PI / 4) * i;
-						var dx = Math.round(lx * Math.cos(deg));
-						var dy = Math.round(ly * Math.sin(deg));
-						node.style.transform = "translate(" + dx + "px," + dy + "px)";
+					const lx = this.offsetWidth / 2 - 120;
+					const ly = Math.min(lx, this.offsetHeight / 2 - 60);
+					const setPos = node => {
+						const i = node.index;
+						const deg = (Math.PI / 4) * i;
+						const dx = Math.round(lx * Math.cos(deg));
+						const dy = Math.round(ly * Math.sin(deg));
+						node.style.transform = `translate(${dx}px,${dy}px)`;
 					};
-					var characterz = ["guyong", "litong", "mazhong", "fuwan", "chengpu", "liaohua", "xinxianying", "liuyu"];
-					for (var i = 0; i < 8; i++) {
-						var node = ui.create.player(null, true);
+					const characterz = ["guyong", "litong", "mazhong", "fuwan", "chengpu", "liaohua", "xinxianying", "liuyu"];
+					for (let i = 0; i < 8; i++) {
+						const node = ui.create.player(null, true);
 						this.nodes.push(node);
 						node.init(characterz[i]);
 						node.classList.add("minskin");
@@ -445,18 +445,18 @@ export default () => {
 						setPos(node);
 						this.appendChild(node);
 					}
-					var nodes = this.nodes;
-					this.showcaseinterval = setInterval(function () {
-						for (var i = 0; i < nodes.length; i++) {
-							nodes[i].index++;
-							if (nodes[i].index > 7) {
-								nodes[i].index = 0;
+					const nodes = this.nodes;
+					this.showcaseinterval = setInterval(() => {
+						for (const node of nodes) {
+							node.index++;
+							if (node.index > 7) {
+								node.index = 0;
 							}
-							setPos(nodes[i]);
+							setPos(node);
 						}
 					}, 1000);
 				},
-				init: function () {},
+				init() {},
 				content: {
 					submode: "normal",
 					chooseCharacterBefore() {
