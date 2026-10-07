@@ -13556,7 +13556,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget(get.prompt(event.skill), "令一名角色下回合内获得〖随征〗效果")
-				.set("", target => {
+				.set("ai", target => {
 					const player = get.player();
 					const attitude = get.attitude(player, target);
 					if (target.hasJudge("lebu")) {
@@ -16603,6 +16603,7 @@ const skills = {
 		filterTarget(card, player, target) {
 			return target.countCards("h") > 0;
 		},
+		manualConfirm: true,
 		selectTarget: -1,
 		multitarget: true,
 		multiline: true,

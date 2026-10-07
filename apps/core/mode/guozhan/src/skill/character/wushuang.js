@@ -270,12 +270,12 @@ export default {
 		audio: "wushen",
 		mod: {
 			cardname(card, player, name) {
-				if (get.suit(card) == "heart" && lib.card[card.name].type != "basic") {
+				if (get.suit(card) === "heart" && lib.card[card.name].type !== "basic") {
 					return "sha";
 				}
 			},
 			cardnature(card, player) {
-				if (get.suit(card) == "heart" && lib.card[card.name].type != "basic") {
+				if (get.suit(card) === "heart" && lib.card[card.name].type !== "basic") {
 					return false;
 				}
 			},
@@ -301,9 +301,9 @@ export default {
 		},
 		forced: true,
 		filter(event, player) {
-			return event.card.name == "sha" && get.suit(event.card) == "heart";
+			return event.card.name === "sha" && get.suit(event.card) === "heart";
 		},
-		content() {
+		async content(event, trigger, player) {
 			if (trigger.addCount !== false) {
 				trigger.addCount = false;
 				if (player.stat[player.stat.length - 1].card.sha > 0) {

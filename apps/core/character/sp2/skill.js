@@ -270,6 +270,7 @@ const skills = {
 									prompt: `迫饮：你可以重铸任意张牌`,
 									selectCard: [1, Infinity],
 									filterCard: lib.filter.cardRecastable,
+									allowChooseAll: true,
 									position: "he",
 									ai(card) {
 										const player = get.player();
@@ -14368,6 +14369,7 @@ const skills = {
 		audio: "pingjian",
 		enable: "phaseUse",
 		usable: 1,
+		manualConfirm: true,
 		sourceSkill: "pingjian",
 		prompt: () => lib.translate.pingjian_info,
 		async content(event, trigger, player) {
