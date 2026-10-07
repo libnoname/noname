@@ -9,7 +9,7 @@ export default () => {
 		game: {
 			syncMenu: true,
 		},
-		start() {
+		async start(event, trigger, player) {
 			ui.auto.hide();
 			if (!lib.storage.scene) {
 				lib.storage.scene = {};
@@ -26,7 +26,7 @@ export default () => {
 			if (_status.extensionstage) {
 				game.save("stage", lib.storage.stage);
 			}
-			var dialog = ui.create.dialog("hidden");
+			const dialog = ui.create.dialog("hidden");
 			dialog.classList.add("fixed");
 			dialog.classList.add("scroll1");
 			dialog.classList.add("scroll2");
@@ -41,55 +41,53 @@ export default () => {
 			if (!lib.storage.directStage) {
 				dialog.open();
 			}
-			var packnode = ui.create.div(".packnode", dialog);
+			const packnode = ui.create.div(".packnode", dialog);
 			lib.setScroll(packnode);
-			var clickCapt = function () {
-				var active = this.parentNode.querySelector(".active");
-				if (this.link == "stage") {
-					if (get.is.empty(lib.storage.scene)) {
-						alert("请创建至少1个场景");
-						return;
-					}
+			const clickCapt = node => {
+				const active = node.parentNode.querySelector(".active");
+				if (node.link === "stage" && get.is.empty(lib.storage.scene)) {
+					alert("请创建至少1个场景");
+					return;
 				}
 				if (active) {
-					if (active == this) {
+					if (active === node) {
 						return;
 					}
-					for (var i = 0; i < active.nodes.length; i++) {
-						active.nodes[i].remove();
-						if (active.nodes[i].showcaseinterval) {
-							clearInterval(active.nodes[i].showcaseinterval);
-							delete active.nodes[i].showcaseinterval;
+					for (const activeNode of active.nodes) {
+						activeNode.remove();
+						if (activeNode.showcaseinterval) {
+							clearInterval(activeNode.showcaseinterval);
+							delete activeNode.showcaseinterval;
 						}
 					}
 					active.classList.remove("active");
 				}
-				this.classList.add("active");
-				for (var i = 0; i < this.nodes.length; i++) {
-					dialog.content.appendChild(this.nodes[i]);
+				node.classList.add("active");
+				for (const contentNode of node.nodes) {
+					dialog.content.appendChild(contentNode);
 				}
-				var showcase = this.nodes[this.nodes.length - 1];
-				showcase.style.height = dialog.content.offsetHeight - showcase.offsetTop + "px";
-				if (typeof showcase.action == "function") {
+				const showcase = node.nodes[node.nodes.length - 1];
+				showcase.style.height = `${dialog.content.offsetHeight - showcase.offsetTop}px`;
+				if (typeof showcase.action === "function") {
 					if (showcase.action(showcase._showcased ? false : true) !== false) {
 						showcase._showcased = true;
 					}
 				}
-				if (this._nostart) {
+				if (node._nostart) {
 					start.style.display = "none";
 				} else {
 					start.style.display = "";
 				}
-				game.save("currentBrawl", this.link);
+				game.save("currentBrawl", node.link);
 			};
-			var createNode = function (name) {
-				var info = lib.brawl[name];
-				var node = ui.create.div(".dialogbutton.menubutton.large", info.name, packnode, clickCapt);
+			const createNode = name => {
+				const info = lib.brawl[name];
+				const node = ui.create.div(".dialogbutton.menubutton.large", info.name, packnode, () => clickCapt(node));
 				node.style.transition = "all 0s";
-				var caption = info.name;
-				var modeinfo = "";
+				const caption = info.name;
+				let modeinfo = "";
 				if (info.mode) {
-					modeinfo = get.translation(info.mode) + "模式";
+					modeinfo = `${get.translation(info.mode)}模式`;
 				}
 				if (info.submode) {
 					if (modeinfo) {
@@ -97,23 +95,23 @@ export default () => {
 					}
 					modeinfo += info.submode;
 				}
-				var intro;
+				let intro;
 				if (Array.isArray(info.intro)) {
 					intro = '<ul style="text-align:left;margin-top:0;width:450px">';
 					if (modeinfo) {
-						intro += "<li>" + modeinfo;
+						intro += `<li>${modeinfo}`;
 					}
-					for (var i = 0; i < info.intro.length; i++) {
-						intro += "<li>" + info.intro[i];
+					for (const line of info.intro) {
+						intro += `<li>${line}`;
 					}
 				} else {
 					intro = "";
 					if (modeinfo) {
-						intro += "（" + modeinfo + "）";
+						intro += `（${modeinfo}）`;
 					}
 					intro += info.intro;
 				}
-				var showcase = ui.create.div();
+				const showcase = ui.create.div();
 				showcase.style.margin = "0px";
 				showcase.style.padding = "0px";
 				showcase.style.width = "100%";
@@ -128,157 +126,159 @@ export default () => {
 				}
 				node.link = name;
 				node._nostart = info.nostart;
-				if (lib.storage.currentBrawl == name) {
-					clickCapt.call(node);
+				if (lib.storage.currentBrawl === name) {
+					clickCapt(node);
 				}
 				return node;
 			};
-			var clickStart = function () {
-				var active = packnode.querySelector(".active");
-				if (active) {
-					for (var i = 0; i < active.nodes.length; i++) {
-						if (active.nodes[i].showcaseinterval) {
-							clearInterval(active.nodes[i].showcaseinterval);
-							delete active.nodes[i].showcaseinterval;
-						}
-					}
-					var info;
-					if (active.link.indexOf("stage_") == 0) {
-						var level;
-						if (Array.isArray(arguments[0])) {
-							level = { index: arguments[0][1] };
-						} else {
-							level = dialog.content.querySelector(".menubutton.large.active");
-						}
-						if (level) {
-							var stagesave = lib.storage.stage;
-							var stage = stagesave[active.link.slice(6)];
-							game.save("lastStage", level.index);
-							if (stage.mode == "loopTest") {
-								//console.log('关卡 lastStage: ', level.index, stage);
-								var SSS = localStorage.getItem("SSS");
-								if (!SSS) {
-									SSS = 1;
-								}
-								var NNN = ui.create.system("LV" + (level.index + 1) + "/" + SSS, null, true);
-							}
-							lib.onover.push(function (bool) {
-								_status.createControl = ui.controls[0];
-								//lib.storage.stage[stage.name] = stage;
-								//console.log('关卡 场景对局结果: ', bool, level.index + 1, stage.scenes.length);
-								if (stage.mode == "loopTest") {
-									//console.log('关卡 自动进入下一Scene场景', level.index, stage.scenes);
-									game.delay(1, 1500);
-									//next_level.click();
-									if (level.index + 1 < stage.scenes.length) {
-										game.save("directStage", [stage.name, level.index + 1], "brawl");
-									} else {
-										game.save("directStage", [stage.name, 0], "brawl");
-										var SSS = localStorage.getItem("SSS");
-										if (!SSS) {
-											SSS = 1;
-										} else {
-											SSS = Number(SSS) + 1;
-										}
-										//当前通关数
-										localStorage.setItem("SSS", SSS);
-									}
-									localStorage.setItem(lib.configprefix + "directstart", true);
-									game.reload();
-								}
-
-								if (bool && level.index + 1 < stage.scenes.length) {
-									ui.create.control("下一关", function () {
-										game.save("directStage", [stage.name, level.index + 1], "brawl");
-										localStorage.setItem(lib.configprefix + "directstart", true);
-										game.reload();
-									});
-									if (level.index + 1 > stage.level) {
-										stage.level = level.index + 1;
-										game.save("stage", stagesave, "brawl");
-									}
-									if (stage.mode != "sequal") {
-										game.save("lastStage", level.index + 1, "brawl");
-									}
-								} else {
-									ui.create.control("重新开始", function () {
-										if (stage.mode == "sequal" && bool && level.index == stage.scenes.length - 1) {
-											game.save("directStage", [stage.name, 0], "brawl");
-										} else {
-											game.save("directStage", [stage.name, level.index], "brawl");
-										}
-										localStorage.setItem(lib.configprefix + "directstart", true);
-										game.reload();
-									});
-									if (stage.mode == "sequal" && level.index == stage.scenes.length - 1) {
-										stage.level = 0;
-										game.save("stage", stagesave, "brawl");
-									}
-									if (stage.mode != "sequal") {
-										game.save("lastStage", level.index, "brawl");
-									}
-								}
-								delete _status.createControl;
-							});
-							var scene = stage.scenes[level.index];
-							info = {
-								name: scene.name,
-								intro: scene.intro,
-							};
-							for (var i in lib.brawl.scene.template) {
-								info[i] = get.copy(lib.brawl.scene.template[i]);
-							}
-							if (!scene.gameDraw) {
-								info.content.noGameDraw = true;
-							}
-							info.content.scene = scene;
-						} else {
-							return;
-						}
-					} else {
-						info = lib.brawl[active.link];
-					}
-					lib.translate.restart = "返回";
-					dialog.delete();
-					ui.brawlinfo = ui.create.system("乱斗", null, true);
-					lib.setPopped(
-						ui.brawlinfo,
-						function () {
-							var uiintro = ui.create.dialog("hidden");
-							uiintro.add(info.name);
-							var intro;
-							if (Array.isArray(info.intro)) {
-								intro = '<ul style="text-align:left;margin-top:0;width:450px">';
-								for (var i = 0; i < info.intro.length; i++) {
-									intro += "<li>" + info.intro[i];
-								}
-								intro += "</ul>";
-							} else {
-								intro = info.intro;
-							}
-							uiintro.add('<div class="text center">' + intro + "</div>");
-							var ul = uiintro.querySelector("ul");
-							if (ul) {
-								ul.style.width = "180px";
-							}
-							uiintro.add(ui.create.div(".placeholder"));
-							return uiintro;
-						},
-						250
-					);
-					ui.auto.show();
-					_status.brawl = info.content;
-					game.switchMode(info.mode);
-					if (info.init) {
-						info.init();
-					}
-					if (stage && stage.mode == "loopTest") {
-						//console.log("关卡开局就托管：brawl", info, stage);
-						ui.click.auto();
+			const clickStart = directStage => {
+				const active = packnode.querySelector(".active");
+				if (!active) {
+					return;
+				}
+				for (const activeNode of active.nodes) {
+					if (activeNode.showcaseinterval) {
+						clearInterval(activeNode.showcaseinterval);
+						delete activeNode.showcaseinterval;
 					}
 				}
+				let info;
+				let stage;
+				if (active.link.indexOf("stage_") === 0) {
+					let level;
+					if (Array.isArray(directStage)) {
+						level = { index: directStage[1] };
+					} else {
+						level = dialog.content.querySelector(".menubutton.large.active");
+					}
+					if (level) {
+						const stagesave = lib.storage.stage;
+						stage = stagesave[active.link.slice(6)];
+						game.save("lastStage", level.index);
+						if (stage.mode === "loopTest") {
+							//console.log('关卡 lastStage: ', level.index, stage);
+							let SSS = localStorage.getItem("SSS");
+							if (!SSS) {
+								SSS = 1;
+							}
+							const NNN = ui.create.system(`LV${level.index + 1}/${SSS}`, null, true);
+						}
+						lib.onover.push(bool => {
+							_status.createControl = ui.controls[0];
+							//lib.storage.stage[stage.name] = stage;
+							//console.log('关卡 场景对局结果: ', bool, level.index + 1, stage.scenes.length);
+							if (stage.mode === "loopTest") {
+								//console.log('关卡 自动进入下一Scene场景', level.index, stage.scenes);
+								game.delay(1, 1500);
+								//next_level.click();
+								if (level.index + 1 < stage.scenes.length) {
+									game.save("directStage", [stage.name, level.index + 1], "brawl");
+								} else {
+									game.save("directStage", [stage.name, 0], "brawl");
+									let SSS = localStorage.getItem("SSS");
+									if (!SSS) {
+										SSS = 1;
+									} else {
+										SSS = Number(SSS) + 1;
+									}
+									//当前通关数
+									localStorage.setItem("SSS", SSS);
+								}
+								localStorage.setItem(`${lib.configprefix}directstart`, true);
+								game.reload();
+							}
+
+							if (bool && level.index + 1 < stage.scenes.length) {
+								ui.create.control("下一关", () => {
+									game.save("directStage", [stage.name, level.index + 1], "brawl");
+									localStorage.setItem(`${lib.configprefix}directstart`, true);
+									game.reload();
+								});
+								if (level.index + 1 > stage.level) {
+									stage.level = level.index + 1;
+									game.save("stage", stagesave, "brawl");
+								}
+								if (stage.mode !== "sequal") {
+									game.save("lastStage", level.index + 1, "brawl");
+								}
+							} else {
+								ui.create.control("重新开始", () => {
+									if (stage.mode === "sequal" && bool && level.index === stage.scenes.length - 1) {
+										game.save("directStage", [stage.name, 0], "brawl");
+									} else {
+										game.save("directStage", [stage.name, level.index], "brawl");
+									}
+									localStorage.setItem(`${lib.configprefix}directstart`, true);
+									game.reload();
+								});
+								if (stage.mode === "sequal" && level.index === stage.scenes.length - 1) {
+									stage.level = 0;
+									game.save("stage", stagesave, "brawl");
+								}
+								if (stage.mode !== "sequal") {
+									game.save("lastStage", level.index, "brawl");
+								}
+							}
+							delete _status.createControl;
+						});
+						const scene = stage.scenes[level.index];
+						info = {
+							name: scene.name,
+							intro: scene.intro,
+						};
+						for (const i in lib.brawl.scene.template) {
+							info[i] = get.copy(lib.brawl.scene.template[i]);
+						}
+						if (!scene.gameDraw) {
+							info.content.noGameDraw = true;
+						}
+						info.content.scene = scene;
+					} else {
+						return;
+					}
+				} else {
+					info = lib.brawl[active.link];
+				}
+				lib.translate.restart = "返回";
+				dialog.delete();
+				ui.brawlinfo = ui.create.system("乱斗", null, true);
+				lib.setPopped(
+					ui.brawlinfo,
+					() => {
+						const uiintro = ui.create.dialog("hidden");
+						uiintro.add(info.name);
+						let intro;
+						if (Array.isArray(info.intro)) {
+							intro = '<ul style="text-align:left;margin-top:0;width:450px">';
+							for (const line of info.intro) {
+								intro += `<li>${line}`;
+							}
+							intro += "</ul>";
+						} else {
+							intro = info.intro;
+						}
+						uiintro.add(`<div class="text center">${intro}</div>`);
+						const ul = uiintro.querySelector("ul");
+						if (ul) {
+							ul.style.width = "180px";
+						}
+						uiintro.add(ui.create.div(".placeholder"));
+						return uiintro;
+					},
+					250
+				);
+				ui.auto.show();
+				_status.brawl = info.content;
+				game.switchMode(info.mode);
+				if (info.init) {
+					info.init();
+				}
+				if (stage && stage.mode === "loopTest") {
+					//console.log("关卡开局就托管：brawl", info, stage);
+					ui.click.auto();
+				}
 			};
-			var start = ui.create.div(".menubutton.round.highlight", "斗", dialog.content, clickStart);
+			const start = ui.create.div(".menubutton.round.highlight", "斗", dialog.content, clickStart);
 			start.style.position = "absolute";
 			start.style.left = "auto";
 			start.style.right = "10px";
@@ -292,114 +292,114 @@ export default () => {
 			start.style.fontSize = "72px";
 			start.style.zIndex = 3;
 			start.style.transition = "all 0s";
-			game.addScene = function (name, clear) {
-				var scene = lib.storage.scene[name];
-				var brawl = {
+			game.addScene = (name, clear) => {
+				const scene = lib.storage.scene[name];
+				const brawl = {
 					name: name,
 					intro: scene.intro,
 				};
-				for (var i in lib.brawl.scene.template) {
+				for (const i in lib.brawl.scene.template) {
 					brawl[i] = get.copy(lib.brawl.scene.template[i]);
 				}
 				if (!scene.gameDraw) {
 					brawl.content.noGameDraw = true;
 				}
 				brawl.content.scene = scene;
-				lib.brawl["scene_" + name] = brawl;
-				var node = createNode("scene_" + name);
+				lib.brawl[`scene_${name}`] = brawl;
+				const node = createNode(`scene_${name}`);
 				if (clear) {
 					game.addSceneClear();
-					clickCapt.call(node);
+					clickCapt(node);
 					_status.sceneChanged = true;
 				}
 			};
-			game.addStage = function (name, clear) {
-				var stage = lib.storage.stage[name];
-				var brawl = {
+			game.addStage = (name, clear) => {
+				const stage = lib.storage.stage[name];
+				const brawl = {
 					name: name,
 					intro: stage.intro,
 					content: {},
 				};
-				for (var i in lib.brawl.stage.template) {
+				for (const i in lib.brawl.stage.template) {
 					brawl[i] = get.copy(lib.brawl.stage.template[i]);
 				}
 				brawl.content.stage = stage;
-				lib.brawl["stage_" + name] = brawl;
-				var node = createNode("stage_" + name);
+				lib.brawl[`stage_${name}`] = brawl;
+				const node = createNode(`stage_${name}`);
 				if (clear) {
 					game.addStageClear();
-					clickCapt.call(node);
+					clickCapt(node);
 				}
 			};
-			game.removeScene = function (name) {
+			game.removeScene = name => {
 				delete lib.storage.scene[name];
 				game.save("scene", lib.storage.scene);
 				_status.sceneChanged = true;
-				for (var i = 0; i < packnode.childElementCount; i++) {
-					if (packnode.childNodes[i].link == "scene_" + name) {
-						if (packnode.childNodes[i].classList.contains("active")) {
-							for (var j = 0; j < packnode.childElementCount; j++) {
-								if (packnode.childNodes[j].link == "scene") {
-									clickCapt.call(packnode.childNodes[j]);
+				for (const node of packnode.childNodes) {
+					if (node.link === `scene_${name}`) {
+						if (node.classList.contains("active")) {
+							for (const menuNode of packnode.childNodes) {
+								if (menuNode.link === "scene") {
+									clickCapt(menuNode);
 								}
 							}
 						}
-						packnode.childNodes[i].remove();
+						node.remove();
 						break;
 					}
 				}
 			};
-			game.removeStage = function (name) {
+			game.removeStage = name => {
 				delete lib.storage.stage[name];
 				game.save("stage", lib.storage.stage);
-				for (var i = 0; i < packnode.childElementCount; i++) {
-					if (packnode.childNodes[i].link == "stage_" + name) {
-						if (packnode.childNodes[i].classList.contains("active")) {
-							for (var j = 0; j < packnode.childElementCount; j++) {
+				for (const node of packnode.childNodes) {
+					if (node.link === `stage_${name}`) {
+						if (node.classList.contains("active")) {
+							for (const menuNode of packnode.childNodes) {
 								if (get.is.empty(lib.storage.scene)) {
-									if (packnode.childNodes[j].link == "scene") {
-										clickCapt.call(packnode.childNodes[j]);
+									if (menuNode.link === "scene") {
+										clickCapt(menuNode);
 									}
 								} else {
-									if (packnode.childNodes[j].link == "stage") {
-										clickCapt.call(packnode.childNodes[j]);
+									if (menuNode.link === "stage") {
+										clickCapt(menuNode);
 									}
 								}
 							}
 						}
-						packnode.childNodes[i].remove();
+						node.remove();
 						break;
 					}
 				}
 			};
-			var sceneNode;
-			for (var i in lib.brawl) {
+			let sceneNode;
+			for (const i in lib.brawl) {
 				if (get.config(i) === false) {
 					continue;
 				}
-				if (i == "scene") {
+				if (i === "scene") {
 					sceneNode = createNode(i);
 				} else {
 					createNode(i);
 				}
 			}
 			if (sceneNode) {
-				game.switchScene = function () {
-					clickCapt.call(sceneNode);
+				game.switchScene = () => {
+					clickCapt(sceneNode);
 				};
 			}
-			for (var i in lib.storage.scene) {
+			for (const i in lib.storage.scene) {
 				game.addScene(i);
 			}
-			for (var i in lib.storage.stage) {
+			for (const i in lib.storage.stage) {
 				game.addStage(i);
 			}
 			if (!lib.storage.currentBrawl) {
-				clickCapt.call(packnode.firstChild);
+				clickCapt(packnode.firstChild);
 			}
 			game.save("lastStage");
 			if (lib.storage.directStage) {
-				var directStage = lib.storage.directStage;
+				const directStage = lib.storage.directStage;
 				game.save("directStage");
 				clickStart(directStage);
 			}
