@@ -1332,25 +1332,24 @@ const skills = {
 			const position = player.storage.twfenxin_achieve ? "he" : "h";
 			if (event.isOnline() || player.storage.twfenxin_achieve) return player.hasCards(position);
 			if (name == "damageBegin2")
-				return player.hasCard(card => {
+				return player.hasCards(position, card => {
 					return get.color(card) == "black" && lib.filter.canBeDiscarded(card, player, player);
-				}, position);
-			return player.hasCard(card => {
+				});
+			return player.hasCards(position, card => {
 				return get.color(card) == "red" && lib.filter.canBeDiscarded(card, player, player);
-			}, position);
-		},
-		logTarget(event, player, name) {
-			return name == "damageBegin4" ? event.source : event.player;
+			});
 		},
 		async cost(event, trigger, player) {
+			const target = event.triggername == "damageBegin4" ? trigger.source : trigger.player;
 			event.result = await player
 				.chooseCard({
-					prompt: get.prompt2(event.skill),
-					selectCard: 1,
+					prompt: get.prompt(event.skill, target),
+					prompt2: lib.dynamicTranslate[event.skill](player, event.skill),
 					filterCard(card, player) {
+						const color = event.triggername == "damageBegin2" ? "black" : "red";
 						if (player.storage.twfenxin_achieve) return player.canRecast(card);
-						if (event.triggername == "damageBegin2") return get.color(card) == "black" && lib.filter.canBeDiscarded(card, player, player);
-						return get.color(card) == "red" && lib.filter.canBeDiscarded(card, player, player);
+						if (get.color(card, player) != color) return false;
+						return lib.filter.canBeDiscarded(card, player, player);
 					},
 					ai(card) {
 						return 6 - get.value(card);
@@ -1358,6 +1357,9 @@ const skills = {
 				})
 				.set("position", player.storage.twfenxin_achieve ? "he" : "h")
 				.forResult();
+			if (event.result?.bool) {
+				event.result.targets = [target];
+			}
 		},
 		async content(event, trigger, player) {
 			const { cards } = event;
