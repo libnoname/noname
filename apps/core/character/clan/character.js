@@ -124,6 +124,7 @@ const characters = {
 		group: "qun",
 		hp: 4,
 		skills: ["clandunji", "clanyunying", "clandaojie"],
+		groupBorder: "jin",
 		clans: ["颍川荀氏"],
 	},
 	clan_zhugeguo: {
