@@ -2,6 +2,279 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//于毒
+	jianlei: {
+		audio: 2,
+		enable: ["chooseToUse", "chooseToRespond"],
+		filter(event, player) {
+			for (const name of ["sha", "shan"]) {
+				const color = name == "sha" ? "black" : "red";
+				if (
+					player.hasCards("e", card => {
+						const cardx = get.autoViewAs({ name, cards: [card] }, [card]);
+						return get.color(card, player) == color && event.filterCard(cardx, player, event);
+					})
+				)
+					return true;
+			}
+			return false;
+		},
+		filterCard(card, player, event) {
+			event ??= get.event();
+			const filter = event._backup.filterCard;
+			for (const name of ["sha", "shan"]) {
+				const color = name == "sha" ? "black" : "red";
+				const cardx = get.autoViewAs({ name, cards: [card] }, [card]);
+				if (get.color(card, player) == color && filter(cardx, player, event)) return true;
+			}
+			return false;
+		},
+		position: "e",
+		viewAs(cards, player) {
+			if (cards.length) {
+				const color = get.color(cards[0], player);
+				return { name: color == "black" ? "sha" : "shan" };
+			}
+			return null;
+		},
+		prompt: "将一张黑色/红色牌当做【杀】/【闪】使用或打出",
+		hiddenCard(player, name) {
+			if (!["sha", "shan"].includes(name)) return false;
+			const color = name == "sha" ? "black" : "red";
+			return player.hasCards("e", { color });
+		},
+		locked: false,
+		mod: {
+			attackRange(player, num) {
+				return (
+					num +
+					player
+						.getCards("e")
+						.map(card => get.suit(card, player))
+						.unique().length
+				);
+			},
+			globalTo(from, to, distance) {
+				const num = to
+					.getCards("e")
+					.map(card => get.suit(card, to))
+					.unique().length;
+				if (num >= 4) {
+					return distance + 1;
+				}
+			},
+		},
+		ai: {
+			order: 5,
+			result: {
+				player: 1,
+			},
+			respondSha: true,
+			respondShan: true,
+			skillTagFilter(player, tag) {
+				const name = tag == "respondSha" ? "sha" : "shan";
+				return get.info("jianlei").hiddenCard(player, name);
+			},
+		},
+	},
+	juzhi: {
+		audio: 2,
+		createCard(type) {
+			if (!_status.postReconnect.juzhi) {
+				_status.postReconnect.juzhi = [
+					function (list) {
+						for (const type2 of list) {
+							lib.skill.juzhi.createCard(type2);
+						}
+					},
+					[],
+				];
+			}
+			_status.postReconnect.juzhi[1].add(type);
+			if (!lib.card[`juzhi_${type}`]) {
+				lib.translate[`juzhi_${type}`] = "踞峙";
+				const card = {
+					derivation: "yudu",
+					fullskin: true,
+					image: "image/card/yudu_juzhi.png",
+					type,
+					ai: { basic: { equipValue: 2 } },
+					originalType: type,
+					cardPrompt(card) {
+						let str = `原本是一张${get.translation(this.originalType)}牌。`,
+							subtypes = get.subtypes(card);
+						if (subtypes?.length) {
+							str = `${str.slice(0, -1)}，被置入了${subtypes.map(i => `${get.translation(i)}栏`).join("、")}。`;
+						}
+						return str;
+					},
+					async onLose(event, trigger, player) {
+						event.cards.forEach(card => {
+							card.fix();
+							ui.discardPile.appendChild(card);
+							game.log(card, "被置入了弃牌堆");
+						});
+						if (event.getParent(2).name == "gain") {
+							const remove = event.getParent(2).cards.filter(card => card[card.cardSymbol] == event.card);
+							event.getParent(2).cards.removeArray(remove);
+						}
+					},
+				};
+				lib.translate[`juzhi_${type}_info`] = `原本是一张${get.translation(type)}牌。`;
+				lib.card[`juzhi_${type}`] = card;
+				game.finishCard(`juzhi_${type}`);
+			}
+		},
+		video(player, info) {
+			for (const type of info[0]) {
+				lib.skill.juzhi.createCard(type);
+			}
+		},
+		enable: "phaseUse",
+		filter(event, player) {
+			if (!player.hasCards("h", card => !player.getStorage("juzhi_used").includes(get.suit(card, player)))) return false;
+			for (let i = 0; i <= 5; i++) {
+				if (player.hasEquipableSlot(i)) {
+					return true;
+				}
+			}
+			return false;
+		},
+		chooseButton: {
+			dialog(event, player) {
+				return ui.create.dialog("###踞峙###你可将一张手牌置于你的任意装备栏内（可替换原装备牌），然后视为对攻击范围内的一名角色视为使用一张【杀】");
+			},
+			chooseControl(event, player) {
+				const choices = [];
+				for (let i = 0; i <= 5; i++) {
+					if (player.hasEquipableSlot(i)) {
+						choices.push(`equip${i}`);
+					}
+				}
+				choices.push("cancel2");
+				return choices;
+			},
+			check() {
+				const player = get.player(),
+					num = [5, 3, 4, 1, 2].find(index => player.hasEmptySlot(index));
+				if (num) {
+					return `equip${num}`;
+				}
+				return "cancel2";
+			},
+			backup(result, player) {
+				return {
+					audio: "juzhi",
+					slot: result.control,
+					filterCard(card, player) {
+						return !player.getStorage("juzhi_used").includes(get.suit(card, player));
+					},
+					position: "h",
+					discard: false,
+					lose: false,
+					delay: false,
+					prepare: "throw",
+					async content(event, trigger, player) {
+						player.addTempSkill("juzhi_used", "phaseAnyAfter");
+						player.markAuto("juzhi_used", [get.suit(event.cards[0], player)]);
+						const type = get.type2(event.cards[0]);
+						const list = [type];
+						game.addVideo("skill", player, ["juzhi", [list]]);
+						game.broadcastAll(
+							(player, list) => {
+								for (const type of list) {
+									lib.skill.juzhi.createCard(type);
+								}
+							},
+							player,
+							list
+						);
+						let card = get.autoViewAs({ name: `juzhi_${type}` }, event.cards);
+						card.subtypes = [lib.skill.juzhi_backup.slot];
+						await player.equip(card);
+						card = get.autoViewAs({ name: "sha", isCard: true }, "unsure");
+						const targets = game.filterPlayer(current => player.inRange(current) && player.canUse(card, current, false, false));
+						if (!targets.length) return;
+						const result = await player
+							.chooseTarget({
+								prompt: "距峙：视为对攻击范围内的一名角色视为使用一张【杀】",
+								filterTarget(card, player, target) {
+									return get.event().targets.includes(target);
+								},
+								ai(target) {
+									const { card, player } = get.event();
+									return get.effect(target, card, player, player);
+								},
+								forced: true,
+							})
+							.set("targets", targets)
+							.set("card", card)
+							.forResult();
+						if (result?.bool && result.targets?.length) {
+							const target = result.targets[0];
+							await player.useCard({ card, targets: [target], addCount: false });
+							player.addTempSkill("juzhi_effect");
+							player.markAuto("juzhi_effect", [target]);
+						}
+					},
+					ai1(card) {
+						const player = get.player();
+						if (player.hasCards("e", cardx => get.type2(cardx, false) === get.type2(card, false))) {
+							return 7 - get.value(card);
+						}
+						return 15 - get.value(card);
+					},
+					ai2: () => 1,
+				};
+			},
+			prompt(result, player) {
+				return `选择一张手牌置入${get.translation(result.control)}栏`;
+			},
+		},
+		ai: {
+			order: 10,
+			result: {
+				player: 1,
+			},
+		},
+		subSkill: {
+			used: { charlotte: true, onremove: true },
+			backup: {},
+			effect: {
+				charlotte: true,
+				onremove: true,
+				intro: { content: "回合结束时，若你在$的攻击范围内，其可以弃置一张牌视为对你使用一张【杀】" },
+				silent: true,
+				popup: false,
+				trigger: { global: "phaseEnd" },
+				async content(event, trigger, player) {
+					const targets = player.getStorage(event.name);
+					player.removeSkill(event.name);
+					const card = get.autoViewAs({ name: "sha", isCard: true }, "unsure");
+					await game.doAsyncInOrder(targets, async target => {
+						if (target?.isIn() && target.hasDiscardableCards(target, "he") && target.inRange(player)) {
+							const result = await target
+								.chooseToDiscard({
+									position: "he",
+									prompt: `弃置一张牌视为对${get.translation(player)}视为一张【杀】`,
+									ai(card) {
+										const { player, target, cardx } = get.event();
+										if (get.attitude(player, target) > 0 || !player.canUse(cardx, target, false)) return 0;
+										return 7 - get.value(card);
+									},
+								})
+								.set("target", player)
+								.set("cardx", card)
+								.forResult();
+							if (result?.cards?.length) {
+								await target.useCard({ card, targets: [player] });
+							}
+						}
+					});
+				},
+			},
+		},
+	},
 	//☆王朗
 	fuyu: {
 		audio: 4,
@@ -4202,33 +4475,24 @@ const skills = {
 		filterTarget: lib.filter.notMe,
 		async content(event, trigger, player) {
 			const { target } = event;
-			await player.draw(2, "nodelay");
+			await player.draw({ num: 2, nodelay: true });
 			await target.draw(2);
-			const targets = [player, target].filter(current => current.countCards("h") > 1);
+			const targets = [player, target].filter(current => current.hasCards("h"));
 			if (targets.length) {
-				const next = player.chooseCardOL(targets, "h", true, 2, "齐眉：请展示两张手牌");
-				next._args.remove("glow_result");
-				const result = await next.forResult();
-				const videoId = lib.status.videoId++;
-				game.broadcastAll(
-					(targets, result, id, player) => {
-						const dialog = ui.create.dialog(get.translation(player) + "发动了【齐眉】");
-						dialog.videoId = id;
-						for (let i = 0; i < result.length; i++) {
-							dialog.add('<div class="text center">' + get.translation(targets[i]) + "展示</div>");
-							dialog.add(result[i].cards);
-						}
-					},
-					targets,
-					result,
-					videoId,
-					player
-				);
-				let cards = result.reduce((list, evt) => {
-					list.addArray(evt.cards);
-					return list;
-				}, []);
-				await player.showCards(cards).set("dialog", videoId).set("delay_time", 4).set("multipleShow", true);
+				const cards = [];
+				for (const current of targets) {
+					const result = await current
+						.chooseCard({
+							prompt: "齐眉：请展示至多三张手牌",
+							selectCard: [1, 3],
+							forced: true,
+						})
+						.forResult();
+					if (result?.cards?.length) {
+						cards.addArray(result.cards);
+						await current.showCards(result.cards);
+					}
+				}
 				const suits = cards.reduce((list, card) => list.add(get.suit(card)), []);
 				switch (suits.length) {
 					case 1:
@@ -4252,21 +4516,21 @@ const skills = {
 							if (current.isTurnedOver()) {
 								await current.turnOver(false);
 							}
+							await current.recover();
 						}
 						break;
 					case 3:
-						for (let i = 0; i < result.length; i++) {
-							const current = targets[i],
-								cards = result[i].cards.filter(card => {
-									return get.owner(card) === current && current.canRecast(card);
-								});
-							if (cards.length) {
-								await current.recast(cards);
+						for (const current of [player, target]) {
+							const cardx = cards.filter(card => {
+								return get.owner(card) === current && current.canRecast(card);
+							});
+							if (cardx.length) {
+								await current.recast(cardx);
 							}
 						}
 						break;
 					case 4:
-						await player.draw("nodelay");
+						await player.draw({ num: 1, nodelay: true });
 						await target.draw();
 						break;
 				}
@@ -4323,7 +4587,7 @@ const skills = {
 				cards = [];
 			while (num <= 5) {
 				while (target.hasEmptySlot(num)) {
-					const card = get.cardPile2(card => {
+					const card = get.cardPile(card => {
 						return !cards.includes(card) && get.subtype(card) == "equip" + num && target.canUse(card, target);
 					}, "random");
 					if (card) {
@@ -6966,7 +7230,7 @@ const skills = {
 				check(event, player) {
 					const bool = game.hasPlayer2(current => {
 						return current.hasHistory("damage", evt => evt.card == event.card);
-					}, true)
+					}, true);
 					if (bool) {
 						return true;
 					}

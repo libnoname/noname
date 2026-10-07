@@ -1,4 +1,5 @@
 export default {
+	yudu: "朝歌渠帅",
 	yj_wanglang: "负固不服",
 	//yj_puyuan: "",
 	//yao_yuanshu: "",

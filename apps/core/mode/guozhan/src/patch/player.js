@@ -1,5 +1,13 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
+const guozhanZhenfaEnabled = () => game.players.length >= (_status.mode == "jiubian" ? 3 : 4);
+const hasGouniRelation = (player, target) => {
+	if (_status.gz_gouni_checkingResult || !player || !target || player == target) {
+		return false;
+	}
+	return player.getStorage("gz_gouni_effect").includes(target) || target.getStorage("gz_gouni_effect").includes(player);
+};
+
 export class PlayerGuozhan extends lib.element.Player {
 	/**
 	 * @type {string}
@@ -112,29 +120,65 @@ export class PlayerGuozhan extends lib.element.Player {
 		if (!this.playerid) {
 			return;
 		}
-		const changedSkills = Reflect.get(_status, "changedSkills") ?? {};
-		Reflect.set(_status, "changedSkills", changedSkills);
 		const skill = _status.event?.name;
-		if (repeat || !changedSkills[this.playerid] || !changedSkills[this.playerid].includes(skill)) {
-			var next = game.createEvent("mayChangeVice");
-			// @ts-expect-error 类型就是这么写的
-			next.setContent("mayChangeVice");
-			// @ts-expect-error 类型就是这么写的
-			next.player = this;
-			next.skill = skill;
-			if (repeat || (!_status.connectMode && get.config("changeViceType") == "online")) {
-				// @ts-expect-error 类型就是这么写的
-				next.repeat = true;
+		if (_status.mode != "jiubian") {
+			const changedSkills = Reflect.get(_status, "changedSkills") ?? {};
+			Reflect.set(_status, "changedSkills", changedSkills);
+			if (!repeat && changedSkills[this.playerid]?.includes(skill)) {
+				return;
 			}
-			if (hidden == "hidden") {
-				// @ts-expect-error 类型就是这么写的
-				next.hidden = true;
-			}
-			return next;
 		}
+		var next = game.createEvent("mayChangeVice");
+		// @ts-expect-error 类型就是这么写的
+		next.setContent("mayChangeVice");
+		// @ts-expect-error 类型就是这么写的
+		next.player = this;
+		next.skill = skill;
+		if (repeat || (_status.mode != "jiubian" && !_status.connectMode && get.config("changeViceType") == "online")) {
+			// @ts-expect-error 类型就是这么写的
+			next.repeat = true;
+		}
+		if (hidden == "hidden") {
+			// @ts-expect-error 类型就是这么写的
+			next.hidden = true;
+		}
+		return next;
 	}
 
 	// 后面摆了，相信后人的智慧
+
+	isEnemyOf() {
+		return !this.isFriendOf.call(this, ...arguments);
+	}
+
+	isFriendOf(player) {
+		if (hasGouniRelation(this, player)) return false;
+		return this.isVictoryFriendOf(player);
+	}
+
+	/**
+	 * 已知的共同胜负关系，供 AI 阵营评价使用，不受构逆影响。
+	 * 不推断暗置身份；保留野心家结盟、自身及未知身份的原有判断。
+	 * 技能条件、卡牌合法目标仍使用 isFriendOf。
+	 */
+	isVictoryFriendOf(player) {
+		if (!player) {
+			return false;
+		}
+		if (this == player) {
+			return true;
+		}
+		if (this.getStorage("yexinjia_friend").includes(player) || player.getStorage("yexinjia_friend").includes(this)) {
+			return true;
+		}
+		if (this.identity == "unknown" || this.identity == "ye") {
+			return false;
+		}
+		if (player.identity == "unknown" || player.identity == "ye") {
+			return false;
+		}
+		return this.identity == player.identity;
+	}
 
 	/**
 	 * 判断是否“不是”队友
@@ -147,6 +191,9 @@ export class PlayerGuozhan extends lib.element.Player {
 		// @ts-expect-error 类型就是这么写的
 		if (this == target) {
 			return false;
+		}
+		if (hasGouniRelation(this, target)) {
+			return true;
 		}
 		//野心家建国情况
 		if (this.getStorage("yexinjia_friend").includes(target)) {
@@ -188,6 +235,9 @@ export class PlayerGuozhan extends lib.element.Player {
 	 * @returns { boolean }
 	 */
 	sameIdentityAs(target, shown) {
+		if (hasGouniRelation(this, target)) {
+			return false;
+		}
 		if (this.getStorage("yexinjia_friend").includes(target)) {
 			return true;
 		}
@@ -316,7 +366,7 @@ export class PlayerGuozhan extends lib.element.Player {
 	}
 	dieAfter(source) {
 		this.showCharacter(2);
-		if (get.is.jun(this.name1)) {
+		if (get.is.jun(this.name1) && this.identity != "ye") {
 			if (source && source.identity == this.identity) {
 				source.shijun = true;
 			} else if (source && source.identity != "ye") {
@@ -528,7 +578,7 @@ export class PlayerGuozhan extends lib.element.Player {
 		next.player = this;
 		// @ts-expect-error 类型就是这么写的
 		next.setContent("changeVice");
-		next.num = !_status.connectMode && get.config("changeViceType") == "online" ? 1 : 3;
+		next.num = _status.mode == "jiubian" || (!_status.connectMode && get.config("changeViceType") == "online") ? 1 : 3;
 		if (hidden) {
 			// @ts-expect-error 类型就是这么写的
 			next.hidden = true;
@@ -799,6 +849,21 @@ export class PlayerGuozhan extends lib.element.Player {
 		}
 		var name1 = this.name1;
 		var name2 = this.name2;
+		const isJiananfengPair = (name1, name2) => {
+			if (!name1 || !name2) {
+				return false;
+			}
+			if (name1 == "gz_jiananfeng") {
+				return get.character(name2)?.sex == "male";
+			}
+			if (name2 == "gz_jiananfeng") {
+				return get.character(name1)?.sex == "male";
+			}
+			return false;
+		};
+		if (isJiananfengPair(name1, name2)) {
+			return true;
+		}
 		const junFilter = (name1, name2, reverse) => {
 			if (reverse !== true && junFilter(name2, name1, true)) {
 				return true;
@@ -850,6 +915,9 @@ export class PlayerGuozhan extends lib.element.Player {
 	 * @returns { boolean }
 	 */
 	siege(player) {
+		if (!guozhanZhenfaEnabled()) {
+			return false;
+		}
 		if (this.identity == "unknown" || this.hasSkill("undist")) {
 			return false;
 		}
@@ -876,6 +944,9 @@ export class PlayerGuozhan extends lib.element.Player {
 	 * @returns { boolean }
 	 */
 	sieged(player) {
+		if (!guozhanZhenfaEnabled()) {
+			return false;
+		}
 		if (this.identity == "unknown") {
 			return false;
 		}
@@ -900,6 +971,9 @@ export class PlayerGuozhan extends lib.element.Player {
 	 * @returns { boolean }
 	 */
 	inline() {
+		if (!guozhanZhenfaEnabled()) {
+			return false;
+		}
 		if (this.identity == "unknown" || this.identity == "ye" || this.hasSkill("undist")) {
 			return false;
 		}
