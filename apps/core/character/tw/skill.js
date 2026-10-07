@@ -1398,9 +1398,7 @@ const skills = {
 			fail: {
 				audio: "fenxin",
 				forced: true,
-				trigger: {
-					player: "dying",
-				},
+				trigger: { player: "dying" },
 				async content(event, trigger, player) {
 					player.awakenSkill("twfenxin");
 					game.log(player, "使命失败");
@@ -1411,9 +1409,7 @@ const skills = {
 			achieve: {
 				audio: "fenxin",
 				forced: true,
-				trigger: {
-					global: ["damageAfter", "dieAfter"],
-				},
+				trigger: { global: ["damageAfter", "dieAfter"] },
 				skillAnimation: true,
 				animationColor: "metal",
 				filter(event, player) {
@@ -1483,9 +1479,7 @@ const skills = {
 	},
 	twfucheng: {
 		audio: 2,
-		trigger: {
-			player: "phaseZhunbeiBegin",
-		},
+		trigger: { player: "phaseBegin" },
 		forced: true,
 		derivation: ["sbwushuang", "sbbiyue"],
 		filter(event, player) {
