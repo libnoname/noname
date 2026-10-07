@@ -60,6 +60,7 @@ async function main() {
 		mode: [
 			{ name: "identity", index: "mode/identity.js", source: "mode/identity.js" },
 			{ name: "doudizhu", index: "mode/doudizhu.js", source: "mode/doudizhu.js" },
+			{ name: "guozhan", index: getDirectoryEntry("mode", "guozhan"), source: "mode/guozhan" },
 		],
 		card: [],
 	};

@@ -47,7 +47,7 @@ export async function importMode(name: string) {
 		}
 	}
 	const alreadyModernMode = lib.config.moderned_modes || [];
-	const path = alreadyModernMode.includes(name) ? `/mode/${name}/index` : `/mode/${name}`;
+	const path = alreadyModernMode.includes(name) && import.meta.env.DEV ? `/mode/${name}/index` : `/mode/${name}`;
 	await importFunction("mode", path);
 }
 
