@@ -1481,11 +1481,7 @@ const skills = {
 			const cards = trigger.cards.filterInD();
 			target.storage.maihuo_target = player;
 			target.addSkill("maihuo_effect");
-			await target.addToExpansion({
-				cards,
-				animate: "gain2",
-				gaintag: ["maihuo_effect"],
-			});
+			await target.addToExpansion({ cards, animate: "gain2", gaintag: ["maihuo_effect"] });
 		},
 		group: "maihuo_damage",
 		subSkill: {
@@ -1494,28 +1490,18 @@ const skills = {
 				forced: true,
 				charlotte: true,
 				filter(event, player) {
-					return player.getExpansions("maihuo_effect").length > 0;
+					return player.hasExpansions("maihuo_effect");
 				},
 				async content(event, trigger, player) {
 					const cards = player.getExpansions("maihuo_effect");
 					let card = cards[0];
 					if (card.name !== "sha") {
-						card = get.autoViewAs(
-							{
-								name: "sha",
-								isCard: true,
-							},
-							cards
-						);
+						card = get.autoViewAs({ name: "sha", isCard: true }, cards);
 					}
 					const target = player.storage.maihuo_target;
 					player.removeSkill("maihuo_effect");
-					if (target.isIn() && player.canUse(card, target, null, true)) {
-						await player.useCard({
-							card,
-							cards,
-							targets: [target],
-						});
+					if (target.isIn() && player.canUse(card, target, void 0, true)) {
+						await player.useCard({ card, cards, targets: [target] });
 					}
 				},
 				marktext: "祸",
@@ -1532,11 +1518,12 @@ const skills = {
 				ai: { threaten: 1.05 },
 			},
 			damage: {
+				audio: "maihuo",
 				trigger: { source: "damageSource" },
 				forced: true,
 				locked: false,
 				filter(event, player) {
-					return event.player.hasSkill("maihuo_effect") && event.player.getExpansions("maihuo_effect").length > 0;
+					return event.player.hasSkill("maihuo_effect") && event.player.hasExpansions("maihuo_effect");
 				},
 				async content(event, trigger, player) {
 					trigger.player.removeSkill("maihuo_effect");
