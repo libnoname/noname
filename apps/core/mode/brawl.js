@@ -1292,11 +1292,11 @@ export default () => {
 				name: "幻化三国",
 				mode: "identity",
 				intro: ["所有角色受到1点伤害时，随机获得一张未加入游戏的武将牌，称为“副将”", "一名角色至多持有3个“副将”，超过数量上限时须将相应数量的“副将”放回武将牌堆", "玩家持有“副将”的所有技能"],
-				showcase: function (init) {
+				showcase(init) {
 					const node = this;
 					let player;
 					const initPlayer = name => {
-						let player = ui.create.player(null, true);
+						const player = ui.create.player(null, true);
 						player.node.avatar.style.backgroundSize = "cover";
 						player.node.avatar.setBackground(name, "character");
 						player.node.avatar.show();
@@ -1315,30 +1315,31 @@ export default () => {
 					} else {
 						player = node.playernode;
 					}
-					let num = 0,
-						num2 = 0,
-						nameList = ["pot_yuji", "ol_nanhualaoxian", "pot_yuji_shadow", "re_zuoci"],
-						names = game.initCharacterList();
-					this.showcaseinterval = setInterval(function () {
-						let dx, dy;
-						if (num2 % 5 == 0) {
+					let num = 0;
+					let num2 = 0;
+					const nameList = ["pot_yuji", "ol_nanhualaoxian", "pot_yuji_shadow", "re_zuoci"];
+					const names = game.initCharacterList();
+					this.showcaseinterval = setInterval(() => {
+						let dx;
+						let dy;
+						if (num2 % 5 === 0) {
 							player.classList.add("zoomin3");
 							player.hide();
 							player.style.transitionDuration = "0.7s";
-							setTimeout(function () {
+							setTimeout(() => {
 								player.style.transitionProperty = "none";
 								player.classList.remove("zoomin3");
 								player.classList.add("zoomout2");
-								setTimeout(function () {
+								setTimeout(() => {
 									player.style.transitionProperty = "";
 									player.classList.remove("zoomout2");
 									num++;
-									let nowName = nameList[num % 4];
+									const nowName = nameList[num % 4];
 									player.node.avatar.setBackground(nowName, "character");
 									player.show();
 								}, 500);
 							}, 700);
-							for (var i = 0; i < 5; i++) {
+							for (let i = 0; i < 5; i++) {
 								switch (i) {
 									case 0:
 										dx = -180;
@@ -1361,7 +1362,7 @@ export default () => {
 										dy = 0;
 										break;
 								}
-								let card = initPlayer(names.randomGet());
+								const card = initPlayer(names.randomGet());
 								card.style.left = "calc(50% - 52px)";
 								card.style.top = "68px";
 								card.style.position = "absolute";
@@ -1371,23 +1372,16 @@ export default () => {
 								node.appendChild(card);
 								ui.refresh(card);
 								card.style.opacity = 1;
-								card.style.transform = "translate(" + dx + "px," + dy + "px)";
-								setTimeout(
-									(function (card) {
-										return function () {
-											card.delete();
-										};
-									})(card),
-									700
-								);
+								card.style.transform = `translate(${dx}px,${dy}px)`;
+								setTimeout(() => card.delete(), 700);
 							}
 						}
 						num2++;
 					}, 700);
 				},
-				init: function () {
+				init() {
 					game.identityVideoName = "三国杀·幻";
-					var pack = {
+					const pack = {
 						pack: {
 							card: {
 								hhsg_tianshu: {
@@ -1597,24 +1591,24 @@ export default () => {
 									},
 									filter(event, player) {
 										const cards = player.getExpansions("hhsg_qianhuan");
-										if (event.name == "damage") {
-											return player.countCards("he", card => {
+										if (event.name === "damage") {
+											return player.hasCards("he", card => {
 												return cards.every(cardx => {
-													return get.suit(cardx) != get.suit(card);
+													return get.suit(cardx) !== get.suit(card);
 												});
 											});
 										}
 										if (!["basic", "trick"].includes(get.type(event.card))) {
 											return false;
 										}
-										if (event.targets?.length != 1) {
+										if (event.targets?.length !== 1) {
 											return false;
 										}
 										return cards.length;
 									},
 									async cost(event, trigger, player) {
 										const cards = player.getExpansions(event.skill);
-										if (trigger.name == "damage") {
+										if (trigger.name === "damage") {
 											event.result = await player
 												.chooseCard(
 													get.prompt(event.skill),
@@ -1655,7 +1649,7 @@ export default () => {
 											if (player.isUnderControl(true)) {
 												dialog.addAuto(cards);
 											} else {
-												return "共有" + get.cnNumber(cards.length) + "张牌";
+												return `共有${get.cnNumber(cards.length)}张牌`;
 											}
 										},
 										markcount: "expansion",
@@ -1667,7 +1661,7 @@ export default () => {
 										}
 									},
 									async content(event, trigger, player) {
-										if (trigger.name == "damage") {
+										if (trigger.name === "damage") {
 											const next = player.addToExpansion(event.cards, "giveAuto", player);
 											next.gaintag.add(event.name);
 											await next;
@@ -1725,7 +1719,7 @@ export default () => {
 										global: "chooseToGainViceBegin",
 									},
 									filter(event, player) {
-										return event.player != player && !event.fromJinghe;
+										return event.player !== player && !event.fromJinghe;
 									},
 									logTarget: "player",
 									async content(event, trigger, player) {
@@ -1742,7 +1736,7 @@ export default () => {
 												return;
 											}
 											await player.gainNewVice(result.links);
-											let num = player.viceCharacters.length - 3;
+											const num = player.viceCharacters.length - 3;
 											if (num > 0) {
 												await player.chooseToRemoveVice(num);
 											}
@@ -1782,7 +1776,7 @@ export default () => {
 						},
 						get: {
 							viceCharacterList() {
-								let list = (_status.characterlist ?? game.initCharacterList()).slice(0);
+								const list = (_status.characterlist ?? game.initCharacterList()).slice(0);
 								game.filterPlayer2().forEach(current => {
 									list.removeArray(get.nameList(current));
 									list.removeArray(get.viceCharacter(current));
@@ -1828,7 +1822,7 @@ export default () => {
 								}
 								const gains = list.randomGets(event.num);
 								await player.gainNewVice(gains);
-								let num = player.viceCharacters.length - 3;
+								const num = player.viceCharacters.length - 3;
 								if (num > 0) {
 									await player.chooseToRemoveVice(num);
 								}
@@ -1897,17 +1891,17 @@ export default () => {
 								player.viceCharacters ??= [];
 								player.viceCharacters.addArray(vices);
 								game.broadcastAll(
-									function (player, list) {
+									(player, list) => {
 										const cards = [];
-										for (let i = 0; i < list.length; i++) {
-											const cardname = "huashen_card_" + list[i];
+										for (const name of list) {
+											const cardname = `huashen_card_${name}`;
 											lib.card[cardname] = {
 												fullimage: true,
-												image: "character/" + list[i],
+												image: `character/${name}`,
 											};
-											lib.translate[cardname] = get.rawName2(list[i]);
+											lib.translate[cardname] = get.rawName2(name);
 											const card = game.createCard(cardname, "", "");
-											card.setBackground(list[i], "character");
+											card.setBackground(name, "character");
 											cards.push(card);
 										}
 										player.$draw(cards, "nobroadcast");
@@ -1941,17 +1935,17 @@ export default () => {
 								player.viceCharacters ??= [];
 								player.viceCharacters.removeArray(vices);
 								game.broadcastAll(
-									function (player, list) {
+									(player, list) => {
 										const cards = [];
-										for (let i = 0; i < list.length; i++) {
-											const cardname = "huashen_card_" + list[i];
+										for (const name of list) {
+											const cardname = `huashen_card_${name}`;
 											lib.card[cardname] = {
 												fullimage: true,
-												image: "character/" + list[i],
+												image: `character/${name}`,
 											};
-											lib.translate[cardname] = get.rawName2(list[i]);
+											lib.translate[cardname] = get.rawName2(name);
 											const card = game.createCard(cardname, "", "");
-											card.setBackground(list[i], "character");
+											card.setBackground(name, "character");
 											cards.push(card);
 										}
 										player.$throw(cards, 1000, "nobroadcast");
@@ -1979,22 +1973,22 @@ export default () => {
 						},
 						game: {},
 					};
-					var func = function (pack) {
-						for (var i in pack.pack) {
-							for (var j in pack.pack[i]) {
+					const func = pack => {
+						for (const i in pack.pack) {
+							for (const j in pack.pack[i]) {
 								lib[i][j] = pack.pack[i][j];
 							}
 						}
-						for (var i in pack.eltc) {
+						for (const i in pack.eltc) {
 							lib.element.content[i] = pack.eltc[i];
 						}
-						for (var i in pack.eltp) {
+						for (const i in pack.eltp) {
 							lib.element.player[i] = pack.eltp[i];
 						}
-						for (var i in pack.game) {
+						for (const i in pack.game) {
 							game[i] = pack.game[i];
 						}
-						for (var i in pack.get) {
+						for (const i in pack.get) {
 							get[i] = pack.get[i];
 						}
 						lib.new_huanhuazhizhan = pack;
@@ -2002,13 +1996,13 @@ export default () => {
 					func(pack);
 				},
 				content: {
-					cardPile: function (list) {
-						for (let i = 0; i < list.length; i++) {
-							if (list[i][2] == "muniu") {
-								list[i][2] = "hhsg_tianshu";
+					cardPile(list) {
+						for (const card of list) {
+							if (card[2] === "muniu") {
+								card[2] = "hhsg_tianshu";
 							}
-							if (list[i].containsAll("lebu", 6, "heart") || list[i].containsAll("wuxie", "diamond", 12)) {
-								list[i][2] = "hhsg_sadou";
+							if (card.containsAll("lebu", 6, "heart") || card.containsAll("wuxie", "diamond", 12)) {
+								card[2] = "hhsg_sadou";
 							}
 						}
 						return list;
