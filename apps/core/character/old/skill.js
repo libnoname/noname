@@ -433,8 +433,8 @@ const skills = {
 				await target.damage();
 			} else {
 				await player.draw({ num: 1 });
-				if ((target == player && !player.hasCards("e")) || !player.hasCards("he")) return;
 				const position = target == player ? "e" : "he";
+				if (!player.hasCards(position)) return;
 				await player.chooseToGive({
 					prompt: `竭雠：交给${get.translation(target)}一张牌`,
 					forced: true,
