@@ -1482,10 +1482,12 @@ const skills = {
 		},
 	},
 	twfucheng: {
+		audio: 2,
 		trigger: {
 			player: "phaseZhunbeiBegin",
 		},
 		forced: true,
+		derivation: ["sbwushuang", "sbbiyue"],
 		filter(event, player) {
 			if (player.hasSkill("sbwushuang") && player.getCards("h").every(card => get.color(card) == "black")) return false;
 			if (player.hasSkill("sbbiyue") && player.getCards("h").every(card => get.color(card) == "red")) return false;
