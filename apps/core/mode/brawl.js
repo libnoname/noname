@@ -721,15 +721,15 @@ export default () => {
 												const type = event.type;
 												switch (type) {
 													case 1: {
-														game.countPlayer(current => {
+														for (const current of game.filterPlayer()) {
 															current.loseHp();
-														});
+														}
 														break;
 													}
 													case 2: {
-														game.countPlayer(current => {
+														for (const current of game.filterPlayer()) {
 															current.draw({ num: 2, nodelay: true });
-														});
+														}
 														break;
 													}
 													case 3: {
@@ -738,23 +738,23 @@ export default () => {
 														break;
 													}
 													case 4: {
-														game.countPlayer(current => {
+														for (const current of game.filterPlayer()) {
 															const he = current.getCards("he");
 															if (he.length) {
 																current.discard({ cards: [he.randomGet()], delay: false });
 															}
-														});
+														}
 														break;
 													}
 													case 5: {
-														game.countPlayer(current => {
+														for (const current of game.filterPlayer()) {
 															current.changeLingli(1);
-														});
+														}
 														break;
 													}
 													case 6: {
 														const cards = [];
-														game.countPlayer(current => {
+														for (const current of game.filterPlayer()) {
 															const card = get.cardPile(card => {
 																return !cards.includes(card) && get.type(card) === "equip";
 															});
@@ -763,11 +763,11 @@ export default () => {
 																current.$gain(card, "gain2");
 																current.gain({ cards: [card] });
 															}
-														});
+														}
 														break;
 													}
 													case 7: {
-														game.countPlayer(current => {
+														for (const current of game.filterPlayer()) {
 															if (current.skillH.length < 3) {
 																const skills = lib.huanhuazhizhan.skills;
 																skills.randomSort();
@@ -778,7 +778,7 @@ export default () => {
 																	}
 																}
 															}
-														});
+														}
 														break;
 													}
 													case 8: {
@@ -793,10 +793,10 @@ export default () => {
 											},
 											(event, trigger, player) => {
 												if (game.playerx().length <= 4 && !_status._aozhan) {
-													game.countPlayer2(current => {
+													for (const current of game.filterPlayer2()) {
 														delete current._toKill;
 														delete current._toSave;
-													});
+													}
 													ui.huanhuazhizhan.innerHTML = "死战模式";
 													_status._aozhan = true;
 													game.playBackgroundMusic();
@@ -1057,7 +1057,7 @@ export default () => {
 									}
 									if (!_status._aozhan) {
 										const that = this;
-										game.countPlayer(current => {
+										for (const current of game.filterPlayer()) {
 											if (current._toSave === that) {
 												game.log(current, "保护失败");
 												const cards = current.getCards("he");
@@ -1065,7 +1065,7 @@ export default () => {
 													current.discard({ cards: cards.randomGets(4) });
 												}
 											}
-										});
+										}
 									}
 								},
 								logAi: () => {},
@@ -1097,12 +1097,7 @@ export default () => {
 							},
 							game: {
 								playerx: () => {
-									return game.filterPlayer(current => {
-										if (current.name.indexOf("hhzz_") === 0) {
-											return;
-										}
-										return true;
-									});
+									return game.filterPlayer(current => !current.name.startsWith("hhzz_"));
 								},
 								randomMission: () => {
 									if (_status._aozhan) {
@@ -1171,14 +1166,14 @@ export default () => {
 												game.addGlobalSkill(item);
 											}
 											game.me.addSkillH(result.control);
-											game.countPlayer(current => {
+											for (const current of game.filterPlayer()) {
 												if (!current.name) {
 													current.init(_status.characterlist.randomRemove(1)[0]);
 													current.addSkillH(["xiandeng", "shulv", "xisheng"].randomGet());
 												}
 												current.storage._lingli = 0;
 												current.markSkill("_lingli");
-											});
+											}
 											game.showIdentity(true);
 										},
 										(event, trigger, player) => {
