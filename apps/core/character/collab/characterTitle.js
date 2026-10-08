@@ -10,6 +10,7 @@ export default {
 	natu_zhaoyun: "长坂救主",
 	natu_zhugeliang: "鞠躬尽瘁",
 	tw_dm_zhouyu: "魔气纵横",
+	tw_dm_zhangliang: "鏖战广宗",
 	jm_yuanshu: "基米", //我说得有基米精神
 	mb_muniu: "自行奇甲",
 	mb_chitu: "烈火流霞",

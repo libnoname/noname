@@ -87,6 +87,12 @@ const characters = {
 		hp: 4,
 		skills: ["twjuyan", "twlihuo", "yingjian", "yiran"],
 	},
+	tw_dm_zhangliang: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["twrenfang", "twjuemie", "twjianming", "relonghun"],
+	},
 	ol_re_nianshou: {
 		sex: "male",
 		group: "qun",
