@@ -3519,11 +3519,11 @@ export default () => {
 						_status.qianlidanji = {
 							completeNumber: 0,
 							used: ["pujing", "huban", "caiyang"],
-							addFellow: function (name) {
+							async addFellow(name) {
 								game.fan.dataset.position = 2;
 								ui.arena.setNumber(3);
 								game.fellow = game.addFellow(1, name);
-								game.fellow.gain(get.cards(4));
+								const gain = game.fellow.gain({ cards: get.cards(4) });
 								game.fellow.identity = "zhong";
 								game.fellow.setIdentity();
 								game.fellow.identityShown = true;
@@ -3544,106 +3544,95 @@ export default () => {
 									});
 									game.fellow.stat.push({ card: {}, skill: {} });
 								}
+								await gain;
 							},
 							completeReward: [
 								[
 									"回复1点体力并摸一张牌",
-									function () {
-										game.zhu.recover();
-										game.zhu.draw();
+									async () => {
+										await game.zhu.recover();
+										await game.zhu.draw();
 									},
 								],
 								[
 									"摸三张牌",
-									function () {
-										game.zhu.draw(3);
+									async () => {
+										await game.zhu.draw(3);
 									},
 								],
 								[
 									"将一张防具牌置入装备区并摸一张牌",
-									function () {
-										var card = get.cardPile(function (card) {
-											return get.subtype(card) == "equip2" && !get.cardtag(card, "gifts");
-										});
+									async () => {
+										const card = get.cardPile(card => get.subtype(card) === "equip2" && !get.cardtag(card, "gifts"));
 										if (card) {
-											game.zhu.equip(card);
+											await game.zhu.equip(card);
 										}
-										game.zhu.draw();
+										await game.zhu.draw();
 									},
 								],
 								[
 									"将一张武器牌置入装备区并摸一张牌",
-									function () {
-										var card = get.cardPile(function (card) {
-											return get.subtype(card) == "equip1" && !get.cardtag(card, "gifts");
-										});
+									async () => {
+										const card = get.cardPile(card => get.subtype(card) === "equip1" && !get.cardtag(card, "gifts"));
 										if (card) {
-											game.zhu.equip(card);
+											await game.zhu.equip(card);
 										}
-										game.zhu.draw();
+										await game.zhu.draw();
 									},
 								],
 								[
 									"回复2点体力并弃置一张牌",
-									function () {
-										game.zhu.recover(2);
-										game.zhu.chooseToDiscard("he", true);
+									async () => {
+										await game.zhu.recover(2);
+										await game.zhu.chooseToDiscard({ position: "he", forced: true });
 									},
 								],
 								[
 									"摸五张牌，然后弃置三张牌",
-									function () {
-										game.zhu.draw(5);
-										game.zhu.chooseToDiscard(3, "he", true);
+									async () => {
+										await game.zhu.draw(5);
+										await game.zhu.chooseToDiscard({ selectCard: 3, position: "he", forced: true });
 									},
 								],
 								[
 									"摸五张牌，然后对手摸两张牌",
-									function () {
-										game.zhu.draw(5);
-										game.fan.draw(2);
+									async () => {
+										await game.zhu.draw(5);
+										await game.fan.draw(2);
 									},
 								],
 								[
 									"将一张武器牌和一张防具牌置入装备区",
-									function () {
-										var card = get.cardPile(function (card) {
-											return get.subtype(card) == "equip1" && !get.cardtag(card, "gifts");
-										});
+									async () => {
+										const card = get.cardPile(card => get.subtype(card) === "equip1" && !get.cardtag(card, "gifts"));
 										if (card) {
-											game.zhu.equip(card);
+											await game.zhu.equip(card);
 										}
-										var card2 = get.cardPile(function (card) {
-											return get.subtype(card) == "equip2" && !get.cardtag(card, "gifts");
-										});
+										const card2 = get.cardPile(card => get.subtype(card) === "equip2" && !get.cardtag(card, "gifts"));
 										if (card2) {
-											game.zhu.equip(card2);
+											await game.zhu.equip(card2);
 										}
 									},
 								],
 								[
 									"将一张武器牌和一张防御坐骑牌置入装备区",
-									function () {
-										var card = get.cardPile(function (card) {
-											return get.subtype(card) == "equip1" && !get.cardtag(card, "gifts");
-										});
+									async () => {
+										const card = get.cardPile(card => get.subtype(card) === "equip1" && !get.cardtag(card, "gifts"));
 										if (card) {
-											game.zhu.equip(card);
+											await game.zhu.equip(card);
 										}
-										var card2 = get.cardPile(function (card) {
-											return get.subtype(card) == "equip3" && !get.cardtag(card, "gifts");
-										});
+										const card2 = get.cardPile(card => get.subtype(card) === "equip3" && !get.cardtag(card, "gifts"));
 										if (card2) {
-											game.zhu.equip(card2);
+											await game.zhu.equip(card2);
 										}
 									},
 								],
 								[
 									"弃置所有手牌并于下一关获得【涅槃】(标)",
-									function () {
-										var hs = game.zhu.getCards("h");
+									async () => {
+										const hs = game.zhu.getCards("h");
 										if (hs.length) {
-											game.zhu.discard(hs);
+											await game.zhu.discard({ cards: hs });
 										}
 										game.zhu.addSkill("oldniepan");
 										game.zhu.restoreSkill("oldniepan");
@@ -3652,144 +3641,134 @@ export default () => {
 								],
 								[
 									"获得两张锦囊牌",
-									function () {
-										var list = [];
+									async () => {
+										const list = [];
 										while (list.length < 2) {
-											var card = get.cardPile(function (card) {
-												return !list.includes(card) && get.type(card, "trick") == "trick";
-											});
+											const card = get.cardPile(card => !list.includes(card) && get.type(card, "trick") === "trick");
 											if (!card) {
 												break;
 											}
 											list.push(card);
 										}
 										if (list.length) {
-											game.zhu.gain(list, "gain2", "log");
+											await game.zhu.gain({ cards: list, animate: "gain2", log: true });
 										}
 									},
 								],
 								[
 									"将体力回复至体力上限，然后弃置一张牌",
-									function () {
-										var num = game.zhu.maxHp - game.zhu.hp;
+									async () => {
+										const num = game.zhu.maxHp - game.zhu.hp;
 										if (num) {
-											game.zhu.recover(num);
+											await game.zhu.recover(num);
 										}
-										game.zhu.chooseToDiscard("he", true);
+										await game.zhu.chooseToDiscard({ position: "he", forced: true });
 									},
 								],
 								[
 									"弃置两张牌，在下一关的第一个回合后进行一个额外的回合",
-									function () {
-										game.zhu.chooseToDiscard(2, true, "he");
+									async () => {
+										await game.zhu.chooseToDiscard({ selectCard: 2, position: "he", forced: true });
 										game.zhu.addSkill("qianlidanji_phase");
 									},
 								],
 								[
 									"摸一张牌，然后将对手翻面",
-									function () {
-										game.zhu.draw();
-										game.fan.turnOver(true);
+									async () => {
+										await game.zhu.draw();
+										await game.fan.turnOver(true);
 									},
 								],
 								[
 									"摸一张牌，然后令对手受到1点伤害",
-									function () {
-										game.zhu.draw();
-										game.fan.damage(game.zhu);
+									async () => {
+										await game.zhu.draw();
+										await game.fan.damage({ source: game.zhu });
 									},
 								],
 								[
 									"获得五张基本牌",
-									function () {
-										var list = [];
+									async () => {
+										const list = [];
 										while (list.length < 5) {
-											var card = get.cardPile(function (card) {
-												return !list.includes(card) && get.type(card) == "basic";
-											});
+											const card = get.cardPile(card => !list.includes(card) && get.type(card) === "basic");
 											if (!card) {
 												break;
 											}
 											list.push(card);
 										}
 										if (list.length) {
-											game.zhu.gain(list, "gain2", "log");
+											await game.zhu.gain({ cards: list, animate: "gain2", log: true });
 										}
 									},
 								],
 								[
 									"失去1点体力，然后摸五张牌",
-									function () {
-										game.zhu.loseHp();
-										game.zhu.draw(5);
+									async () => {
+										await game.zhu.loseHp();
+										await game.zhu.draw(5);
 									},
 								],
 								[
 									"失去体力至1点，然后摸七张牌",
-									function () {
-										var num = game.zhu.hp - 1;
+									async () => {
+										const num = game.zhu.hp - 1;
 										if (num) {
-											game.zhu.loseHp(num);
+											await game.zhu.loseHp(num);
 										}
-										game.zhu.draw(7);
+										await game.zhu.draw(7);
 									},
 								],
 								[
 									"弃置一张牌，然后令对手受到2点伤害",
-									function () {
-										game.zhu.chooseToDiscard("he", true);
-										game.fan.damage(game.zhu, 2);
+									async () => {
+										await game.zhu.chooseToDiscard({ position: "he", forced: true });
+										await game.fan.damage({ source: game.zhu, num: 2 });
 									},
 								],
 								[
 									"在下一关中召唤普净一同战斗",
-									function () {
-										_status.qianlidanji.addFellow("pujing");
+									async () => {
+										await _status.qianlidanji.addFellow("pujing");
 									},
 								],
 								[
 									"在下一关中召唤胡班一同战斗",
-									function () {
-										_status.qianlidanji.addFellow("huban");
+									async () => {
+										await _status.qianlidanji.addFellow("huban");
 									},
 								],
 								[
 									"将一张宝物牌置入装备区并摸一张牌",
-									function () {
-										var card = get.cardPile(function (card) {
-											return get.subtype(card) == "equip5" && !get.cardtag(card, "gifts");
-										});
+									async () => {
+										const card = get.cardPile(card => get.subtype(card) === "equip5" && !get.cardtag(card, "gifts"));
 										if (card) {
-											game.zhu.equip(card);
+											await game.zhu.equip(card);
 										}
-										game.zhu.draw();
+										await game.zhu.draw();
 									},
 								],
 								[
 									"摸五张牌，然后将自己翻面",
-									function () {
-										game.zhu.draw(5);
-										game.zhu.turnOver(true);
+									async () => {
+										await game.zhu.draw(5);
+										await game.zhu.turnOver(true);
 									},
 								],
 								[
 									"获得一张【酒】和一张【杀】",
-									function () {
-										var list = [];
-										var card = get.cardPile(function (card) {
-											return card.name == "sha";
-										});
-										if (card) {
-											list.push(card);
+									async () => {
+										const list = [];
+										const sha = get.cardPile(card => card.name === "sha");
+										if (sha) {
+											list.push(sha);
 										}
-										var card = get.cardPile(function (card) {
-											return card.name == "jiu";
-										});
-										if (card) {
-											list.push(card);
+										const jiu = get.cardPile(card => card.name === "jiu");
+										if (jiu) {
+											list.push(jiu);
 										}
 										if (list.length) {
-											game.zhu.gain(list, "gain2", "log");
+											await game.zhu.gain({ cards: list, animate: "gain2", log: true });
 										}
 									},
 								],
@@ -3840,7 +3819,7 @@ export default () => {
 										}
 									}
 								},
-								// 选择奖励和敌人；先完成同步修改及入队，再统一结算换关效果。
+								// 选择奖励和敌人，完成换关设置后等待奖励结算。
 								async (event, trigger, player) => {
 									if (_status.over || event.finished) {
 										return;
@@ -3857,21 +3836,13 @@ export default () => {
 									}
 									let reward;
 									if (_status.qianlidanji.completeNumber !== 5) {
-										const list = _status.qianlidanji.completeReward.randomGets(3);
-										const list2 = [];
-										for (let i = 0; i < list.length; i++) {
-											list2.push(list[i][1]);
-											list[i] = list[i][0];
-										}
+										const rewards = _status.qianlidanji.completeReward.randomGets(3);
 										if (_status.qianlidanji.completeNumber >= 6) {
-											list.push("我不想再打了，直接在这里结束吧！");
-											list2.push(() => {
-												game.over(true);
-											});
+											rewards.push(["我不想再打了，直接在这里结束吧！", () => game.over(true)]);
 										}
 										const result = await game.zhu
 											.chooseControl({
-												choiceList: list,
+												choiceList: rewards.map(([label]) => label),
 												prompt: `请选择一项奖励（当前已通过${_status.qianlidanji.completeNumber}关）`,
 											})
 											.forResult();
@@ -3882,7 +3853,7 @@ export default () => {
 											game.over(true);
 											return;
 										}
-										reward = list2[result.index];
+										reward = rewards[result.index][1];
 									}
 									_status.characterlist.removeArray(_status.qianlidanji.used);
 									let name = "caiyang";
@@ -3934,7 +3905,7 @@ export default () => {
 									source.gain({ cards: get.cards(gain) })._triggered = null;
 									game.triggerEnter(source);
 									if (reward) {
-										reward.call(event);
+										await reward();
 									}
 								},
 								// 换关效果结算完成后，清理并终止上一回合事件链。
