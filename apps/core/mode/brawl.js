@@ -42,6 +42,7 @@ export default () => {
 						return;
 					}
 					for (const activeNode of active.nodes) {
+						activeNode.showcasecleanup?.();
 						activeNode.remove();
 						if (activeNode.showcaseinterval) {
 							clearInterval(activeNode.showcaseinterval);
@@ -119,6 +120,7 @@ export default () => {
 					return;
 				}
 				for (const activeNode of active.nodes) {
+					activeNode.showcasecleanup?.();
 					if (activeNode.showcaseinterval) {
 						clearInterval(activeNode.showcaseinterval);
 						delete activeNode.showcaseinterval;
@@ -3454,64 +3456,100 @@ export default () => {
 				mode: "identity",
 				showcase(init) {
 					const node = this;
-					let player1;
+					node.showcasecleanup?.();
+					const showcaseInterval = 2600;
+					const lineDuration = 1000;
 					if (init) {
-						player1 = ui.create.player(null, true).init("jsp_guanyu");
-						player1.node.marks.remove();
-						player1.node.hp.remove();
-						player1.style.left = "20px";
-						player1.style.top = "20px";
-						player1.style.transform = "scale(0.9)";
-						player1.node.count.remove();
-						this.appendChild(player1);
-						this.player1 = player1;
-					} else {
-						player1 = this.player1;
+						const createPlayer = name => {
+							const player = ui.create.player(null, true).init(name);
+							player.node.marks.remove();
+							player.node.hp.remove();
+							player.node.count.remove();
+							player.style.top = "20px";
+							player.style.transition = "none";
+							return player;
+						};
+						node.player1 = createPlayer("jsp_guanyu");
+						node.player1.style.left = "20px";
+						node.player1.style.transform = "scale(0.9)";
+						node.appendChild(node.player1);
+						node.player2 = createPlayer("caiyang");
+						node.player2.style.left = "auto";
+						node.player2.style.right = "20px";
+						node.player2.style.opacity = 0;
 					}
-					const func = () => {
-						const player2 = ui.create.player(null, true).init("caiyang");
-						player2.node.marks.remove();
-						player2.node.hp.remove();
-						player2.style.left = "auto";
-						player2.style.right = "20px";
-						player2.style.top = "20px";
-						player2.node.count.remove();
-						player2.style.transform = "scale(0.7)";
-						player2.style.opacity = 0;
-						node.appendChild(player2);
-						ui.refresh(player2);
-						player2.style.opacity = 1;
-						player2.style.transform = "scale(0.9)";
-						setTimeout(() => {
-							if (!player2) {
-								return;
-							}
-							game.linexy([player1.getLeft() + player1.offsetWidth / 2, player1.getTop() + player1.offsetHeight / 2, player2.getLeft() + player2.offsetWidth / 2, player2.getTop() + player2.offsetHeight / 2], node);
-							setTimeout(() => {
-								const popup = ui.create.div(".damage");
-								popup.innerHTML = "-1";
-								popup.dataset.nature = "soil";
-								player2.appendChild(popup);
-								ui.refresh(popup);
-								popup.classList.add("damageadded");
-								popup.listenTransition(() => {
-									setTimeout(() => {
-										popup.delete();
-									}, 300);
-								});
-							}, 250);
-						}, 600);
-						setTimeout(() => {
-							if (!player2) {
-								return;
-							}
-							player2.style.transition = "all 0.5s";
-							player2.style.transform = "scale(1.2)";
-							player2.delete();
-						}, 1200);
+					const { player1, player2 } = node;
+					const popup = ui.create.div(".damage", player2);
+					popup.textContent = "-1";
+					popup.dataset.nature = "soil";
+					popup.style.transition = "none";
+					const line = ui.create.div(".linexy", node);
+					line.style.background = "linear-gradient(transparent, white, white)";
+					line.style.transition = "none";
+					line.style.opacity = 0;
+					node.appendChild(player2);
+					let animations = [];
+					const cancelAnimations = () => {
+						for (const animation of animations) {
+							animation.cancel();
+						}
+						animations = [];
 					};
-					node.showcaseinterval = setInterval(func, 2600);
-					func();
+					node.showcasecleanup = () => {
+						clearInterval(node.showcaseinterval);
+						delete node.showcaseinterval;
+						cancelAnimations();
+						player2.remove();
+						popup.remove();
+						line.remove();
+						delete node.showcasecleanup;
+					};
+					const play = () => {
+						cancelAnimations();
+						animations.push(
+							player2.animate(
+								[
+									{ opacity: 0, transform: "scale(0.7)", offset: 0, easing: "ease" },
+									{ opacity: 1, transform: "scale(0.9)", offset: 500 / 1700 },
+									{ opacity: 1, transform: "scale(0.9)", offset: 1200 / 1700, easing: "ease" },
+									{ opacity: 0, transform: "scale(1.2)", offset: 1 },
+								],
+								{ duration: 1700, fill: "both" }
+							)
+						);
+						animations.push(
+							popup.animate(
+								[
+									{ opacity: 0, transform: "scale(0.7)", offset: 0, easing: "ease" },
+									{ opacity: 1, transform: "scale(1)", offset: 500 / 1300 },
+									{ opacity: 1, transform: "scale(1)", offset: 800 / 1300, easing: "ease" },
+									{ opacity: 0, transform: "scale(1)", offset: 1 },
+								],
+								{ delay: 850, duration: 1300, fill: "both" }
+							)
+						);
+						const x = player1.getLeft() + player1.offsetWidth / 2;
+						const y = player1.getTop() + player1.offsetHeight / 2;
+						const dx = player2.getLeft() + player2.offsetWidth / 2 - x;
+						const dy = player2.getTop() + player2.offsetHeight / 2 - y;
+						const rotation = `rotate(${(Math.atan2(dy, dx) * 180) / Math.PI - 90}deg)`;
+						line.style.left = `${x}px`;
+						line.style.top = `${y}px`;
+						line.style.height = `${Math.hypot(dx, dy)}px`;
+						animations.push(
+							line.animate(
+								[
+									{ opacity: 1, transform: `${rotation} scaleY(0)`, offset: 0, easing: "ease" },
+									{ opacity: 1, transform: `${rotation} scaleY(1)`, offset: 1 / 3 },
+									{ opacity: 1, transform: `${rotation} scaleY(1)`, offset: 2 / 3, easing: "ease" },
+									{ opacity: 0, transform: `${rotation} scaleY(1)`, offset: 1 },
+								],
+								{ delay: 600, duration: lineDuration, fill: "forwards" }
+							)
+						);
+					};
+					node.showcaseinterval = setInterval(play, showcaseInterval);
+					play();
 				},
 				intro: ["无尽而漫长的单挑试炼", lib.config.qianlidanji_level ? "你的最高纪录是连续通过" + lib.config.qianlidanji_level + "关，是否能够突破这一记录呢？" : "你能否过五关斩六将，击败古城战神蔡阳呢？"],
 				init() {
