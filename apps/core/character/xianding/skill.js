@@ -368,7 +368,6 @@ const skills = {
 					trigger.num += player.countMark("dcjuexun_eff");
 					player.removeSkill("dcjuexun_eff");
 				},
-				mark: true,
 				intro: { content: "下次受到的属性伤害+#" },
 			},
 		},
