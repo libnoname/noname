@@ -3794,151 +3794,173 @@ export default () => {
 									},
 								],
 							],
-							replace_character: function () {
-								"step 0";
-								if (game.zhu._oldniepan) {
-									game.zhu.removeSkill("oldniepan");
-									delete game.zhu._oldniepan;
-								}
-								_status.qianlidanji.completeNumber++;
-								if (!lib.config.qianlidanji_level || lib.config.qianlidanji_level < _status.qianlidanji.completeNumber) {
-									lib.config.qianlidanji_level = _status.qianlidanji.completeNumber;
-									game.saveConfig("qianlidanji_level", lib.config.qianlidanji_level);
-								}
-								if (game.fellow && game.fellow.isAlive()) {
-									if (ui.land && ui.land.player == game.fellow) {
-										game.addVideo("destroyLand");
-										ui.land.destroy();
+							replace_character: [
+								// 清理上一关奖励和援军，子事件在本段结束后结算。
+								async (event, trigger, player) => {
+									if (game.zhu._oldniepan) {
+										game.zhu.removeSkill("oldniepan");
+										delete game.zhu._oldniepan;
 									}
-									game.zhu.next = game.fan;
-									game.fan.next = game.zhu;
-									game.zhu.nextSeat = game.fan;
-									game.fan.nextSeat = game.zhu;
-									game.players.remove(game.fellow);
-									_status.dying.remove(game.fellow);
-									game.fellow.out();
-									for (var mark in game.fellow.marks) {
-										game.fellow.unmarkSkill(mark);
+									_status.qianlidanji.completeNumber++;
+									if (!lib.config.qianlidanji_level || lib.config.qianlidanji_level < _status.qianlidanji.completeNumber) {
+										lib.config.qianlidanji_level = _status.qianlidanji.completeNumber;
+										await game.promises.saveConfig("qianlidanji_level", lib.config.qianlidanji_level);
 									}
-									while (game.fellow.node.marks.childNodes.length > 1) {
-										game.fellow.node.marks.lastChild.remove();
-									}
-									for (var i in game.fellow.tempSkills) {
-										game.fellow.removeSkill(i);
-									}
-									var skills = game.fellow.getSkills();
-									for (var i = 0; i < skills.length; i++) {
-										if (lib.skill[skills[i]].temp) {
-											game.fellow.removeSkill(skills[i]);
+									if (game.fellow && game.fellow.isAlive()) {
+										if (ui.land && ui.land.player === game.fellow) {
+											game.addVideo("destroyLand");
+											ui.land.destroy();
+										}
+										game.zhu.next = game.fan;
+										game.fan.next = game.zhu;
+										game.zhu.nextSeat = game.fan;
+										game.fan.nextSeat = game.zhu;
+										game.players.remove(game.fellow);
+										_status.dying.remove(game.fellow);
+										game.fellow.out();
+										for (const mark in game.fellow.marks) {
+											game.fellow.unmarkSkill(mark);
+										}
+										const marks = game.fellow.node.marks;
+										for (const node of [...marks.childNodes].slice(1)) {
+											node.remove();
+										}
+										for (const skill in game.fellow.tempSkills) {
+											game.fellow.removeSkill(skill);
+										}
+										const skills = game.fellow.getSkills();
+										for (const skill of skills) {
+											if (lib.skill[skill].temp) {
+												game.fellow.removeSkill(skill);
+											}
+										}
+										const cards = game.fellow.getCards("hej");
+										for (const card of cards) {
+											ui.discardPile.appendChild(card);
 										}
 									}
-									var cards = game.fellow.getCards("hej");
-									while (cards.length) {
-										ui.discardPile.appendChild(cards.shift());
-									}
-								}
-								"step 1";
-								if (game.fellow) {
-									game.dead.remove(game.fellow);
-									game.fellow.remove();
-									game.fan.dataset.position = 1;
-									ui.arena.setNumber(2);
-									game.zhu.next = game.fan;
-									game.fan.next = game.zhu;
-									game.zhu.nextSeat = game.fan;
-									game.fan.nextSeat = game.zhu;
-								}
-								if (_status.qianlidanji.completeNumber != 5) {
-									var list = _status.qianlidanji.completeReward.randomGets(3);
-									var list2 = [];
-									for (var i = 0; i < list.length; i++) {
-										list2.push(list[i][1]);
-										list[i] = list[i][0];
-									}
-									if (_status.qianlidanji.completeNumber >= 6) {
-										list.push("我不想再打了，直接在这里结束吧！");
-										list2.push(function () {
-											game.over(true);
-										});
-									}
-									event.list = list2;
-									game.zhu
-										.chooseControl()
-										.set("choiceList", list)
-										.set("prompt", "请选择一项奖励（当前已通过" + _status.qianlidanji.completeNumber + "关）");
-								}
-								"step 2";
-								if (_status.qianlidanji.completeNumber != 5) {
-									if (result.index == 3) {
-										game.over(true);
+								},
+								// 选择奖励和敌人；先完成同步修改及入队，再统一结算换关效果。
+								async (event, trigger, player) => {
+									if (_status.over || event.finished) {
 										return;
 									}
-									event.reward = event.list[result.index];
-								}
-								_status.characterlist.removeArray(_status.qianlidanji.used);
-								if (_status.qianlidanji.completeNumber == 5) {
-									event._result = { links: ["caiyang"] };
-								} else {
-									game.zhu.chooseButton(["选择下一关出战的对手", [_status.characterlist.randomGets(3), "character"]], true);
-								}
-								"step 3";
-								_status.event.getParent("phaseLoop").player = game.zhu;
-								var source = game.fan;
-								var name = result.links[0];
-								source.revive(null, false);
-								_status.characterlist.remove(name);
-								_status.qianlidanji.used.push(name);
-								source.uninit();
-								source.init(name);
-								game.addVideo("reinit", source, [name]);
-								source.lose(source.getCards("hej"))._triggered = null;
-								var gain = 4;
-								var add = 0;
-								switch (_status.qianlidanji.completeNumber) {
-									case 5:
-										break;
-									case 1:
-										gain = 5;
-										break;
-									case 2:
-										gain = 5;
-										add = 1;
-										break;
-									case 3:
-										gain = 6;
-										add = 1;
-										break;
-									default:
-										gain = 6;
-										add = 2;
-										break;
-								}
-								source.hp += add;
-								source.maxHp += add;
-								source.update();
-								source.gain(get.cards(gain))._triggered = null;
-								game.triggerEnter(source);
-								if (event.reward) {
-									event.reward();
-								}
-								"step 4";
-								var cards = Array.from(ui.ordering.childNodes);
-								while (cards.length) {
-									cards.shift().discard();
-								}
-								var evt = _status.event.getParent("phase");
-								if (evt) {
+									if (game.fellow) {
+										game.dead.remove(game.fellow);
+										game.fellow.remove();
+										game.fan.dataset.position = 1;
+										ui.arena.setNumber(2);
+										game.zhu.next = game.fan;
+										game.fan.next = game.zhu;
+										game.zhu.nextSeat = game.fan;
+										game.fan.nextSeat = game.zhu;
+									}
+									let reward;
+									if (_status.qianlidanji.completeNumber !== 5) {
+										const list = _status.qianlidanji.completeReward.randomGets(3);
+										const list2 = [];
+										for (let i = 0; i < list.length; i++) {
+											list2.push(list[i][1]);
+											list[i] = list[i][0];
+										}
+										if (_status.qianlidanji.completeNumber >= 6) {
+											list.push("我不想再打了，直接在这里结束吧！");
+											list2.push(() => {
+												game.over(true);
+											});
+										}
+										const result = await game.zhu
+											.chooseControl({
+												choiceList: list,
+												prompt: `请选择一项奖励（当前已通过${_status.qianlidanji.completeNumber}关）`,
+											})
+											.forResult();
+										if (_status.over || event.finished) {
+											return;
+										}
+										if (result.index === 3) {
+											game.over(true);
+											return;
+										}
+										reward = list2[result.index];
+									}
+									_status.characterlist.removeArray(_status.qianlidanji.used);
+									let name = "caiyang";
+									if (_status.qianlidanji.completeNumber !== 5) {
+										const result = await game.zhu
+											.chooseButton({
+												createDialog: ["选择下一关出战的对手", [_status.characterlist.randomGets(3), "character"]],
+												forced: true,
+											})
+											.forResult();
+										if (_status.over || event.finished) {
+											return;
+										}
+										name = result.links[0];
+									}
+									event.getParent("phaseLoop").player = game.zhu;
+									const source = game.fan;
+									source.revive(null, false);
+									_status.characterlist.remove(name);
+									_status.qianlidanji.used.push(name);
+									source.uninit();
+									source.init(name);
+									game.addVideo("reinit", source, [name]);
+									source.lose({ cards: source.getCards("hej") })._triggered = null;
+									let gain = 4;
+									let add = 0;
+									switch (_status.qianlidanji.completeNumber) {
+										case 5:
+											break;
+										case 1:
+											gain = 5;
+											break;
+										case 2:
+											gain = 5;
+											add = 1;
+											break;
+										case 3:
+											gain = 6;
+											add = 1;
+											break;
+										default:
+											gain = 6;
+											add = 2;
+											break;
+									}
+									source.hp += add;
+									source.maxHp += add;
+									source.update();
+									source.gain({ cards: get.cards(gain) })._triggered = null;
+									game.triggerEnter(source);
+									if (reward) {
+										reward.call(event);
+									}
+								},
+								// 换关效果结算完成后，清理并终止上一回合事件链。
+								async (event, trigger, player) => {
+									if (_status.over || event.finished) {
+										return;
+									}
+									const cards = Array.from(ui.ordering.childNodes);
+									for (const card of cards) {
+										card.discard();
+									}
+									const evt = event.getParent("phase");
+									if (!evt) {
+										return;
+									}
 									game.resetSkills();
-									let evtx = _status.event;
-									while (evtx != evt) {
+									let evtx = event;
+									while (evtx !== evt) {
 										evtx.finish();
 										evtx.untrigger(true);
 										evtx = evtx.getParent();
 									}
 									evtx.finish();
 									evtx.untrigger(true);
-								}
-							},
+								},
+							],
 						};
 					}
 					_status.qianlidanji.player_number = get.config("player_number");
