@@ -3458,16 +3458,11 @@ const skills = {
 		},
 		subSkill: {
 			damage: {
-				audio: 2,
 				onremove: true,
-				intro: {
-					content: "下次受到的伤害+1",
-				},
+				intro: { content: "下次受到的伤害+#" },
 				charlotte: true,
 				forced: true,
-				trigger: {
-					player: "damageBegin3",
-				},
+				trigger: { player: "damageBegin3" },
 				filter(event, player) {
 					return player.hasMark("twfushu_damage");
 				},
