@@ -51,6 +51,12 @@ const characters = {
 		skills: ["dcsbjinglian", "dcsbxieshu", "dcsbzongzi"],
 		clans: ["颍川钟氏"],
 	},
+	dc_sb_weiguan: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["dcsbqingshi", "dcsbzaoji"],
+	},
 	lizhaoyi: {
 		sex: "female",
 		group: "shu",

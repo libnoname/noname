@@ -4,6 +4,31 @@ const dynamicTranslates = {
 	dcyanxi(player) {
 		return lib.translate["dcyanxi_info"].replace(/零/, get.cnNumber(player.countMark("dcyanxi")));
 	},
+	dcbeizhu(player) {
+		const map = player.getStorage("dcbeizhu", ["damage", "discard", "draw"]);
+		let str = `<span class="bluetext">`;
+		for (let index in map) {
+			if (map[index] === "damage") {
+				str += parseInt(index) + 1;
+				str += ".至少受到序号数点伤害";
+			}
+			if (map[index] === "discard") {
+				str += parseInt(index) + 1;
+				str += ".至少被弃置序号数张牌";
+			}
+			if (map[index] === "draw") {
+				str += parseInt(index) + 1;
+				str += ".至少摸序号数张牌";
+			}
+			if (index !== "2") str += "；";
+		}
+		return `每回合结束时，若你本回合满足过以下一项，你可以${get.poptip({
+			id: "dcbeizhu_tip",
+			name: "执行",
+			type: "character",
+			info: "结算细节：<li>不执行“至少”<li>弃牌来源为执行者<li>伤害无来源",
+		})}与之相邻的一项，然后令一名角色执行剩余的一项：${str}。</span><br>你的回合开始时，你可以交换两个相邻的选项。`;
+	},
 	dcboxuan(player) {
 		if (player.storage.dcboxuan) {
 			return lib.translate["dcboxuan_rewrite_info"];

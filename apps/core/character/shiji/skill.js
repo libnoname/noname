@@ -340,7 +340,7 @@ const skills = {
 			await player.loseMaxHp();
 		},
 		locked: false,
-		group: "yingba_limit",
+		//group: "yingba_limit",
 		ai: {
 			threaten(player, target) {
 				if (player === target || player.isDamaged() || get.attitude(player, target) > 0) {

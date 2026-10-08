@@ -517,6 +517,9 @@ export class PlayerGuozhan extends lib.element.Player {
 			return;
 		}
 		var name = this["name" + (num + 1)];
+		if (get.is.jun(name)) {
+			return;
+		}
 		var next = game.createEvent("hideCharacter");
 		// @ts-expect-error 类型就是这么写的
 		next.player = this;

@@ -76,7 +76,6 @@ const skills = {
 		trigger: { global: "phaseJieshuBegin" },
 		filter(event, player) {
 			const cards = event.player.getHistory("lose", evt => evt.type == "discard" && evt.cards2?.length).reduce((list, evt) => list.addArray(evt.cards2), []);
-			game.log(cards);
 			return cards.someInD("d");
 		},
 		async cost(event, trigger, player) {

@@ -325,7 +325,7 @@ const skills = {
 					prompt: "绝殉：是否对自己造成一点火焰伤害？",
 					ai() {
 						const player = get.player();
-						return player.hp === 2 && game.hasPlayer(current => current.isLinked() && get.attitude(player, current) < 0);
+						return player.hp > 2 && game.hasPlayer(current => current.isLinked() && get.attitude(player, current) < 0) && player.isLinked();
 					},
 				})
 				.forResult();
@@ -368,7 +368,6 @@ const skills = {
 					trigger.num += player.countMark("dcjuexun_eff");
 					player.removeSkill("dcjuexun_eff");
 				},
-				mark: true,
 				intro: { content: "下次受到的属性伤害+#" },
 			},
 		},
@@ -640,6 +639,145 @@ const skills = {
 				}
 				await player.useCard(cardx, event.cost_data.cards, trigger.player, false);
 			}
+		},
+	},
+	// 谋卫瓘
+	dcsbqingshi: {
+		audio: 2,
+		trigger: { player: "useCardAfter" },
+		filter(event, player) {
+			const evts = player.getHistory("lose", evt => (evt.relatedEvent || evt.getParent()) === event);
+			if (evts && evts.length === 1 && evts[0].hs.length > 0) {
+				if (!player.countCards("h", card => get.name(card, player) === "sha")) {
+					return true;
+				}
+			}
+		},
+		async cost(event, trigger, player) {
+			const list = game.filterPlayer(current => {
+				if (current.hasHistory("damage")) {
+					return false;
+				}
+				return player.canUse(get.autoViewAs({ name: "sha", isCard: true }), current, true, false);
+			});
+			if (!list.length) return false;
+			const result = await player
+				.chooseTarget({
+					prompt: get.prompt("dcsbqingshi"),
+					prompt: "视为对一名其他角色使用【杀】，若造成伤害，结束阶段其可以对你使用【杀】。",
+					selectTarget: 1,
+					list,
+					filterTarget(card, player, target) {
+						if (player === target) return false;
+						return get.event().list.includes(target);
+					},
+					ai(target) {
+						return get.effect(target, get.autoViewAs({ name: "sha", isCard: true }), player, player) + target.hasSha(null, true) * get.effect(player, get.autoViewAs({ name: "sha", isCard: true }), target, player);
+					},
+				})
+				.forResult();
+			if (result?.targets?.length) {
+				event.result = {
+					bool: true,
+					cost_data: result.targets[0],
+				};
+			}
+		},
+		async content(event, trigger, player) {
+			const target = event.cost_data;
+			const useEvent = player.useCard({
+				card: get.autoViewAs({ name: "sha", isCard: true }),
+				targets: [target],
+				addCount: false,
+			});
+			await useEvent;
+			const victim = game.filterPlayer2(current => {
+				return current.hasHistory("damage", evt => evt.card === useEvent.card);
+			});
+			if (victim.length) {
+				player.addTempSkill("dcsbqingshi_sha");
+				player.markAuto("dcsbqingshi_sha", victim);
+			}
+		},
+		subSkill: {
+			sha: {
+				charlotte: true,
+				onremove: true,
+				trigger: { global: "phaseJieshuBegin" },
+				direct: true,
+				async content(event, trigger, player) {
+					const enables = player
+						.getStorage("dcsbqingshi_sha")
+						.filter(current => current.isIn())
+						.sortBySeat();
+					if (!enables.length) return;
+					game.doAsyncInOrder(enables, async current => {
+						await current
+							.chooseToUse(
+								function (card, player, event) {
+									if (get.name(card) !== "sha") {
+										return false;
+									}
+									return lib.filter.filterCard.apply(this, arguments);
+								},
+								"清势：是否对" + get.translation(player) + "使用一张【杀】？"
+							)
+							.set("targetRequired", true)
+							.set("complexSelect", true)
+							.set("complexTarget", true)
+							.set("filterTarget", function (card, player, target) {
+								if (target != get.event().sourcex && !ui.selected.targets.includes(get.event().sourcex)) {
+									return false;
+								}
+								return lib.filter.filterTarget.apply(this, arguments);
+							})
+							.set("sourcex", player)
+							.forResult();
+					});
+				},
+			},
+		},
+	},
+	dcsbzaoji: {
+		audio: 2,
+		trigger: { player: "damageEnd" },
+		prompt2: "摸三张牌并弃置其中的【杀】",
+		async content(event, trigger, player) {
+			const { cards } = await player.draw(3).forResult();
+			const sha = cards.filter(card => get.name(card, player) === "sha");
+			if (sha.length) {
+				player.discard(sha);
+			}
+		},
+		group: "dcsbzaoji_damage",
+		subSkill: {
+			damage: {
+				trigger: { source: "damageBegin1" },
+				direct: true,
+				filter(event, player) {
+					return player.countCards("h", card => get.name(card, player) === "sha");
+				},
+				async content(event, trigger, player) {
+					const result = await player
+						.chooseToDiscard({
+							prompt: `###${get.prompt("dcsbzaoji")}###弃置一张【杀】令伤害+1`,
+							position: "h",
+							selectCard: 1,
+							logSkill: "dcsbzaoji",
+							target: trigger.player,
+							filterCard(card) {
+								return get.name(card, player) === "sha";
+							},
+							ai(card) {
+								return get.attitude(get.player(), get.event().target) <= 0;
+							},
+						})
+						.forResult();
+					if (result?.cards.length) {
+						trigger.num++;
+					}
+				},
+			},
 		},
 	},
 	//刘盼兮
@@ -2303,16 +2441,12 @@ const skills = {
 					player.addTempSkill("dcsbxieshi_mark");
 					player.storage["dcsbxieshi_mark"] = player.countCards("h");
 				},
-				sub: true,
-				sourceSkill: "dcsbxieshi",
 			},
 			mark: {
 				charlotte: true,
 				onremove(player, skill) {
 					delete player.storage[skill];
 				},
-				sub: true,
-				sourceSkill: "dcsbxieshi",
 			},
 		},
 	},
@@ -2788,7 +2922,6 @@ const skills = {
 			},
 			used: {
 				charlotte: true,
-				sub: true,
 				mark: true,
 				intro: {
 					content(storage, player) {
@@ -2969,8 +3102,6 @@ const skills = {
 						}
 					}
 				},
-				sub: true,
-				sourceSkill: "dcsbxinzhan",
 			},
 		},
 	},
@@ -3092,7 +3223,7 @@ const skills = {
 				}
 				await player.gain(cardsx, "draw");
 				if (target.isIn()) {
-					target.addTempSkill("dcsbxinzhan", { global: "roundEnd" });
+					target.addTempSkills("dcsbxinzhan", { global: "roundEnd" });
 				}
 			}
 		},
@@ -3120,8 +3251,6 @@ const skills = {
 				onremove(player, skill) {
 					player.removeGaintag("dcsbchengce_sha");
 				},
-				sub: true,
-				sourceSkill: "dcsbchengce",
 			},
 		},
 	},
@@ -46077,7 +46206,6 @@ const skills = {
 			harmonia: {
 				forced: true,
 				audio: "gxlianhua",
-				sub: true,
 				trigger: { player: "phaseZhunbeiBegin" },
 				//filter:function(event,player){
 				//	return player.storage.gxlianhua&&player.storage.gxlianhua.red+player.storage.gxlianhua.black>0;

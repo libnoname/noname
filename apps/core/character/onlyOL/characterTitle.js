@@ -2,6 +2,7 @@ export default {
 	//ol_zhonghui: "",
 	ol_shen_huangzhong: "血刃斩穹",
 	ol_sb_zhurong: "见放崇山",
+	ol_sb_zhouyu: "雅量之魁英",
 	ol_bulianshi: "无冕之后",
 	//ol_liufeng: "",
 	ol_quancong: "其时声明",

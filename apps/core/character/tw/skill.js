@@ -596,7 +596,7 @@ const skills = {
 			player: ["useCard", "respond"],
 		},
 		filter(event, player) {
-			return event.card.name == "sha" && game.hasPlayer(current => current != player && current.hasCards("he"));
+			return event.card.name == "sha" && game.hasPlayer(current => current != player && current.hasCards("hej"));
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
@@ -1401,25 +1401,24 @@ const skills = {
 			const position = player.storage.twfenxin_achieve ? "he" : "h";
 			if (event.isOnline() || player.storage.twfenxin_achieve) return player.hasCards(position);
 			if (name == "damageBegin2")
-				return player.hasCard(card => {
+				return player.hasCards(position, card => {
 					return get.color(card) == "black" && lib.filter.canBeDiscarded(card, player, player);
-				}, position);
-			return player.hasCard(card => {
+				});
+			return player.hasCards(position, card => {
 				return get.color(card) == "red" && lib.filter.canBeDiscarded(card, player, player);
-			}, position);
-		},
-		logTarget(event, player, name) {
-			return name == "damageBegin4" ? event.source : event.player;
+			});
 		},
 		async cost(event, trigger, player) {
+			const target = event.triggername == "damageBegin4" ? trigger.source : trigger.player;
 			event.result = await player
 				.chooseCard({
-					prompt: get.prompt2(event.skill),
-					selectCard: 1,
+					prompt: get.prompt(event.skill, target),
+					prompt2: lib.dynamicTranslate[event.skill](player, event.skill),
 					filterCard(card, player) {
+						const color = event.triggername == "damageBegin2" ? "black" : "red";
 						if (player.storage.twfenxin_achieve) return player.canRecast(card);
-						if (event.triggername == "damageBegin2") return get.color(card) == "black" && lib.filter.canBeDiscarded(card, player, player);
-						return get.color(card) == "red" && lib.filter.canBeDiscarded(card, player, player);
+						if (get.color(card, player) != color) return false;
+						return lib.filter.canBeDiscarded(card, player, player);
 					},
 					ai(card) {
 						return 6 - get.value(card);
@@ -1427,6 +1426,9 @@ const skills = {
 				})
 				.set("position", player.storage.twfenxin_achieve ? "he" : "h")
 				.forResult();
+			if (event.result?.bool) {
+				event.result.targets = [target];
+			}
 		},
 		async content(event, trigger, player) {
 			const { cards } = event;
@@ -1467,9 +1469,7 @@ const skills = {
 			fail: {
 				audio: "fenxin",
 				forced: true,
-				trigger: {
-					player: "dying",
-				},
+				trigger: { player: "dying" },
 				async content(event, trigger, player) {
 					player.awakenSkill("twfenxin");
 					game.log(player, "使命失败");
@@ -1480,9 +1480,7 @@ const skills = {
 			achieve: {
 				audio: "fenxin",
 				forced: true,
-				trigger: {
-					global: ["damageAfter", "dieAfter"],
-				},
+				trigger: { global: ["damageAfter", "dieAfter"] },
 				skillAnimation: true,
 				animationColor: "metal",
 				filter(event, player) {
@@ -1551,10 +1549,10 @@ const skills = {
 		},
 	},
 	twfucheng: {
-		trigger: {
-			player: "phaseZhunbeiBegin",
-		},
+		audio: 2,
+		trigger: { player: "phaseBegin" },
 		forced: true,
+		derivation: ["sbwushuang", "sbbiyue"],
 		filter(event, player) {
 			if (player.hasSkill("sbwushuang") && player.getCards("h").every(card => get.color(card) == "black")) return false;
 			if (player.hasSkill("sbbiyue") && player.getCards("h").every(card => get.color(card) == "red")) return false;
