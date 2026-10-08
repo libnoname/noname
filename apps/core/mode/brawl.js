@@ -2065,9 +2065,10 @@ export default () => {
 				name: "导师月英",
 				mode: "identity",
 				intro: "牌堆中所有普通锦囊牌数量翻倍；移除拥有集智技能的角色",
-				showcase: function (init) {
-					var node = this;
-					var player1, player2;
+				showcase(init) {
+					const node = this;
+					let player1;
+					let player2;
 					if (init) {
 						player1 = ui.create.player(null, true).init("huangyueying");
 						player2 = ui.create.player(null, true);
@@ -2078,11 +2079,13 @@ export default () => {
 						} else {
 							player2.init("huangyueying");
 						}
-						player1.style.left = "20px";
-						player1.style.top = "20px";
-						player1.style.transform = "scale(0.9)";
-						player1.node.count.innerHTML = "2";
-						player1.node.count.dataset.condition = "mid";
+						if (player1 != null) {
+							player1.style.left = "20px";
+							player1.style.top = "20px";
+							player1.style.transform = "scale(0.9)";
+							player1.node.count.innerHTML = "2";
+							player1.node.count.dataset.condition = "mid";
+						}
 						player2.style.left = "auto";
 						player2.style.right = "20px";
 						player2.style.top = "20px";
@@ -2098,104 +2101,70 @@ export default () => {
 						player2 = this.player2;
 					}
 
-					var createCard = function (wuxie) {
-						var card;
+					const animateCard = (wuxie, right, duration) => {
+						const card = wuxie ? game.createCard("wuxie", "noclick") : ui.create.card(null, "noclick", true);
+						const transform = `scale(0.9) translate(${right ? -137 : 137}px,152px)`;
 						if (wuxie) {
-							card = game.createCard("wuxie", "noclick");
 							card.style.transform = "scale(0.9)";
-						} else {
-							card = ui.create.card(null, "noclick", true);
 						}
-						card.style.opacity = 0;
+						card.style.opacity = "0";
 						card.style.position = "absolute";
-						card.style.zIndex = 2;
-						card.style.margin = 0;
-						return card;
-					};
-
-					var func = function () {
-						game.linexy([player1.getLeft() + player1.offsetWidth / 2, player1.getTop() + player1.offsetHeight / 2, player2.getLeft() + player2.offsetWidth / 2, player2.getTop() + player2.offsetHeight / 2], node);
-						var card = createCard(true);
-						card.style.left = "43px";
+						card.style.zIndex = "2";
+						card.style.margin = "0";
+						card.style.left = right ? "auto" : "43px";
+						if (right) {
+							card.style.right = "43px";
+						}
 						card.style.top = "58px";
+						if (!wuxie) {
+							card.style.transform = transform;
+						}
 						node.appendChild(card);
 						ui.refresh(card);
-						card.style.opacity = 1;
-						card.style.transform = "scale(0.9) translate(137px,152px)";
-						setTimeout(function () {
-							card.delete();
-						}, 1000);
-						player1.node.count.innerHTML = "1";
+						card.style.opacity = "1";
+						card.style.transform = wuxie ? transform : "scale(0.9)";
+						setTimeout(() => card.delete(), duration);
+					};
 
-						setTimeout(function () {
+					const drawCard = (player, right, duration) => {
+						setTimeout(() => {
 							if (!node.showcaseinterval) {
 								return;
 							}
-							player1.node.count.innerHTML = "2";
-							var card = createCard();
-							card.style.left = "43px";
-							card.style.top = "58px";
-							card.style.transform = "scale(0.9) translate(137px,152px)";
-							node.appendChild(card);
-							ui.refresh(card);
-							card.style.opacity = 1;
-							card.style.transform = "scale(0.9)";
-							setTimeout(function () {
-								card.delete();
-							}, 1000);
+							player.node.count.innerHTML = "2";
+							animateCard(false, right, duration);
 						}, 300);
+					};
 
-						setTimeout(function () {
+					const func = () => {
+						game.linexy([player1.getLeft() + player1.offsetWidth / 2, player1.getTop() + player1.offsetHeight / 2, player2.getLeft() + player2.offsetWidth / 2, player2.getTop() + player2.offsetHeight / 2], node);
+						animateCard(true, false, 1000);
+						player1.node.count.innerHTML = "1";
+						drawCard(player1, false, 1000);
+
+						setTimeout(() => {
 							if (!node.showcaseinterval) {
 								return;
 							}
 							player2.node.count.innerHTML = "1";
 							game.linexy([player2.getLeft() + player2.offsetWidth / 2, player2.getTop() + player2.offsetHeight / 2, player1.getLeft() + player1.offsetWidth / 2, player1.getTop() + player1.offsetHeight / 2], node);
-							var card = createCard(true);
-							card.style.left = "auto";
-							card.style.right = "43px";
-							card.style.top = "58px";
-							node.appendChild(card);
-							ui.refresh(card);
-							card.style.opacity = 1;
-							card.style.transform = "scale(0.9) translate(-137px,152px)";
-							setTimeout(function () {
-								card.delete();
-							}, 700);
-
-							setTimeout(function () {
-								if (!node.showcaseinterval) {
-									return;
-								}
-								player2.node.count.innerHTML = "2";
-								var card = createCard();
-								card.style.left = "auto";
-								card.style.right = "43px";
-								card.style.top = "58px";
-								card.style.transform = "scale(0.9) translate(-137px,152px)";
-								node.appendChild(card);
-								ui.refresh(card);
-								card.style.opacity = 1;
-								card.style.transform = "scale(0.9)";
-								setTimeout(function () {
-									card.delete();
-								}, 700);
-							}, 300);
+							animateCard(true, true, 700);
+							drawCard(player2, true, 700);
 						}, 1000);
 					};
 					node.showcaseinterval = setInterval(func, 2200);
 					func();
 				},
-				init: function () {
+				init() {
 					for (const i in lib.character) {
-						const { skills } = get.character(i),
-							checked = [];
+						const { skills } = get.character(i);
+						const checked = [];
 						const check = skill => {
 							if (checked.includes(skill)) {
 								return false;
 							}
 							checked.add(skill);
-							if (lib.translate[skill] == "集智") {
+							if (lib.translate[skill] === "集智") {
 								return true;
 							}
 							let { derivation } = get.info(skill);
@@ -2213,13 +2182,13 @@ export default () => {
 					}
 				},
 				content: {
-					cardPile: function (list) {
+					cardPile(list) {
 						game.identityVideoName = "导师月英";
-						var list2 = [];
-						for (var i = 0; i < list.length; i++) {
-							list2.push(list[i]);
-							if (get.type(list[i][2]) == "trick") {
-								list2.push(list[i]);
+						const list2 = [];
+						for (const card of list) {
+							list2.push(card);
+							if (get.type(card[2]) === "trick") {
+								list2.push(card);
 							}
 						}
 						return list2;
