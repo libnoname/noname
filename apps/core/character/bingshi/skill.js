@@ -652,7 +652,7 @@ const skills = {
 					selectCard: [1, Infinity],
 					filterTarget: lib.filter.notMe,
 					position: "h",
-					complexCard: true,
+					allowChooseAll: true,
 					ai1(card) {
 						if (ui.selected.cards?.length) {
 							return 0;

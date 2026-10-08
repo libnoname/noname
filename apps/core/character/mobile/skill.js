@@ -8174,6 +8174,7 @@ const skills = {
 							return (target === source || ui.selected.targets.includes(source)) && lib.filter.targetEnabled.apply(this, arguments);
 						})
 						.set("sourcex", target)
+						.set("addCount", false)
 						.forResult();
 					if (result?.bool) {
 						sgn--;
