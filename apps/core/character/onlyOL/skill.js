@@ -1478,7 +1478,7 @@ const skills = {
 				const damage = target.damage(player);
 				await damage;
 				const damaged = damage.player;
-				if (damaged?.hasHistory("damage", evt => evt === damage) && !drawnTargets.has(damaged)) {
+				if (damaged?.hasHistory("damage", evt => evt === damage && evt.num > 0) && !drawnTargets.has(damaged)) {
 					drawnTargets.add(damaged);
 					await player.draw();
 				}
@@ -1525,7 +1525,7 @@ const skills = {
 				return;
 			}
 			const controls = choices.map(choice => choice[0]);
-			const controlResult = await player.chooseControl(controls).set("prompt", "胆守：请选择一项").set("ai", () => controls[0]).forResult();
+			const controlResult = await player.chooseControl(controls).set("prompt", "胆守：请选择一项").set("ai", () => get.event().controls[0]).forResult();
 			const choice = choices.find(item => item[0] == controlResult.control);
 			if (!choice) {
 				return;
