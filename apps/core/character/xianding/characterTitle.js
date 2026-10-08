@@ -13,6 +13,7 @@ export default {
 	//dc_sb_yangfeng: "",
 	v_guanyinping: "凋棠醒春薄",
 	dc_sb_wangping: "佯败溯战",
+	dc_sb_weiguan: "明识清允",
 	dc_sb_masu: "服心屈兵",
 	dc_sb_zhugeliang: "威谋定疆",
 	dc_shen_guanyu: "鬼神再临",
