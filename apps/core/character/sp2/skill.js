@@ -124,6 +124,207 @@ const skills = {
 			}
 		},
 	},
+	// 星董允
+	starzhengting: {
+		audio: 2,
+		enable: "phaseUse",
+		usable: 1,
+		chooseTarget: 1,
+		filterTarget: lib.filter.notMe,
+		async content(event, trigger, player) {
+			const { target } = event;
+			await player.viewHandcards(target);
+			await target.viewHandcards(player);
+			const att = get.attitude(player, target);
+			const result = await player
+				.chooseControl({
+					prompt: "请选择一项为你与其执行：",
+					controls: ["选项一", "选项二"],
+					choiceList: ["将手牌弃至每种花色各剩一张", "将手牌中没有的花色各补充一张"],
+					forced: true,
+					att,
+					ai() {
+						return get.event().att > 0 ? "选项二" : "选项一";
+					},
+				})
+				.forResult();
+			if (result) {
+				if (result.control === "选项一") {
+					for (const current of [player, target]) {
+						const hs = current.getCards("h");
+						const suits = hs.map(card => get.suit(card, current));
+						if (!hs.length) continue;
+						let choose;
+						let shouldBeChosen = 0;
+						for (const suit of hs.map(card => get.suit(card)).unique()) {
+							const cards = hs.filter(card => get.suit(card) === suit);
+							if (cards.length > 1 && cards.some(card => lib.filter.cardDiscardable(card, player, "starzhengting"))) {
+								choose = true;
+							}
+							const stuck = cards.filter(card => !lib.filter.cardDiscardable(card, player, "starzhengting")).length;
+							if (stuck) {
+								shouldBeChosen += cards.length - stuck;
+							} else {
+								shouldBeChosen += cards.length - 1;
+							}
+						}
+						if (!choose) continue;
+						const result = await current
+							.chooseCard("请弃置每种花色多余的手牌", [shouldBeChosen, Infinity], true, (card, player2) => {
+								if (!lib.filter.cardDiscardable(card, player2, "starzhengting")) {
+									return false;
+								}
+								const selected = ui.selected.cards;
+								if (
+									get.numOf(
+										player2
+											.getCards("h")
+											.removeArray(selected)
+											.map(card2 => get.suit(card2, player2)),
+										get.suit(card, player2)
+									) !== 1
+								) {
+									return true;
+								}
+							})
+							.set("complexCard", true)
+							.set("suits", suits)
+							.set("ai", card => -get.value(card))
+							.forResult();
+						if (!result?.cards?.length) {
+							continue;
+						}
+						await current.discard(result.cards);
+					}
+				}
+				if (result.control === "选项二") {
+					for (const current of [player, target]) {
+						const hs = current.getCards("h");
+						if (hs.map(card => get.suit(card)).toUniqued().length > 3) {
+							continue;
+						}
+						const gain = [];
+						let allSuits = hs
+							.concat(gain)
+							.map(card => get.suit(card))
+							.toUniqued();
+						while (allSuits.length < 4) {
+							const card = get.cardPile(card => !allSuits.includes(get.suit(card)), null, "buttom");
+							if (!card) {
+								player.say("怎么空了？");
+								break;
+							}
+							gain.add(card);
+							allSuits = hs
+								.concat(gain)
+								.map(card => get.suit(card))
+								.toUniqued();
+						}
+						if (gain.length) {
+							await current.gain({
+								cards: gain,
+								animate: "gain2",
+							});
+						}
+					}
+				}
+			}
+		},
+		ai: {
+			order: 3,
+			result: {
+				player(player, target) {
+					const att = get.attitude(player, target);
+					if (att > 0) {
+						return Math.min(1, 8 - target.countCards("h"));
+					} else {
+						return target.countCards("h");
+					}
+				},
+			},
+		},
+	},
+	starbishi: {
+		audio: 2,
+		round: 1,
+		trigger: { global: "phaseEnd" },
+		check(event, player) {
+			return get.attitude(player, event.player) > 0;
+		},
+		async content(event, trigger, player) {
+			const target = trigger.player;
+			if (player !== trigger.player && player.countCards("h")) {
+				const result = await player
+					.chooseCard({
+						prompt: get.prompt("starbishi"),
+						prompt2: `交给${get.translation(trigger.player)}任意张牌（可不交），若其手牌数与体力值相等会执行出牌阶段。`,
+						position: "he",
+						selectCard: [1, Infinity],
+						att: get.attitude(player, trigger.player),
+						target: trigger.player,
+						ai(card) {
+							const target = get.event().target;
+							const att = get.event().att;
+							if (att <= 0 || target.countCards("h") >= target.getHp()) {
+								return 0;
+							}
+							if (target.countCards("h") + ui.selected.cards.length < target.getHp()) {
+								return target.getUseValue(card);
+							}
+							return 0;
+						},
+					})
+					.forResult();
+				const cards = result.cards;
+				if (cards.length) await player.give(cards, target);
+			}
+			if (target.countCards("h") === target.getHp()) {
+				trigger.phaseList.splice(trigger.num, 0, `phaseUse|${event.name}`);
+				target
+					.when("phaseUseBegin")
+					.filter(evt => evt._extraPhaseReason == event.name)
+					.step(async (event, trigger, player) => {
+						target.addTempSkill(`starbishi_buff`, "phaseChange");
+						target.markAuto("starbishi_buff", player);
+					});
+			}
+		},
+		subSkill: {
+			buff: {
+				charlotte: true,
+				direct: true,
+				onremove: true,
+				trigger: { player: "useCard" },
+				mark: true,
+				marktext: "士",
+				intro: {
+					content(storage, player) {
+						let str = "使用第一张牌不可被响应";
+						const source = storage?.[0];
+						if (source) {
+							str += `<br>使用伤害牌时${get.translation(source)}摸一张牌`;
+						}
+						return str;
+					},
+				},
+				async content(event, trigger, player) {
+					if (
+						player
+							.getHistory("useCard", evt => {
+								return evt.getParent("phaseUse") == event.getParent("phaseUse");
+							})
+							.indexOf(event) === 0
+					) {
+						trigger.nowuxie = true;
+						trigger.directHit.addArray(game.players);
+					}
+					if (get.tag(trigger.card, "damage")) {
+						player.getStorage("starbishi_buff")[0]?.draw();
+					}
+				},
+			},
+		},
+	},
 	//曹豹
 	yanjiu: {
 		audio: 2,
