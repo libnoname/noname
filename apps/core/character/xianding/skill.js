@@ -325,7 +325,7 @@ const skills = {
 					prompt: "绝殉：是否对自己造成一点火焰伤害？",
 					ai() {
 						const player = get.player();
-						return player.hp === 2 && game.hasPlayer(current => current.isLinked() && get.attitude(player, current) < 0);
+						return player.hp > 2 && game.hasPlayer(current => current.isLinked() && get.attitude(player, current) < 0) && player.isLinked();
 					},
 				})
 				.forResult();
@@ -368,7 +368,6 @@ const skills = {
 					trigger.num += player.countMark("dcjuexun_eff");
 					player.removeSkill("dcjuexun_eff");
 				},
-				mark: true,
 				intro: { content: "下次受到的属性伤害+#" },
 			},
 		},
