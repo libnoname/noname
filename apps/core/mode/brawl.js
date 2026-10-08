@@ -3452,9 +3452,9 @@ export default () => {
 			qianlidanji: {
 				name: "千里单骑",
 				mode: "identity",
-				showcase: function (init) {
-					var node = this;
-					var player1;
+				showcase(init) {
+					const node = this;
+					let player1;
 					if (init) {
 						player1 = ui.create.player(null, true).init("jsp_guanyu");
 						player1.node.marks.remove();
@@ -3468,8 +3468,8 @@ export default () => {
 					} else {
 						player1 = this.player1;
 					}
-					var func = function () {
-						var player2 = ui.create.player(null, true).init("caiyang");
+					const func = () => {
+						const player2 = ui.create.player(null, true).init("caiyang");
 						player2.node.marks.remove();
 						player2.node.hp.remove();
 						player2.style.left = "auto";
@@ -3482,26 +3482,26 @@ export default () => {
 						ui.refresh(player2);
 						player2.style.opacity = 1;
 						player2.style.transform = "scale(0.9)";
-						setTimeout(function () {
+						setTimeout(() => {
 							if (!player2) {
 								return;
 							}
 							game.linexy([player1.getLeft() + player1.offsetWidth / 2, player1.getTop() + player1.offsetHeight / 2, player2.getLeft() + player2.offsetWidth / 2, player2.getTop() + player2.offsetHeight / 2], node);
-							setTimeout(function () {
-								var popup = ui.create.div(".damage");
+							setTimeout(() => {
+								const popup = ui.create.div(".damage");
 								popup.innerHTML = "-1";
 								popup.dataset.nature = "soil";
 								player2.appendChild(popup);
 								ui.refresh(popup);
 								popup.classList.add("damageadded");
-								popup.listenTransition(function () {
-									setTimeout(function () {
+								popup.listenTransition(() => {
+									setTimeout(() => {
 										popup.delete();
 									}, 300);
 								});
 							}, 250);
 						}, 600);
-						setTimeout(function () {
+						setTimeout(() => {
 							if (!player2) {
 								return;
 							}
@@ -3514,7 +3514,7 @@ export default () => {
 					func();
 				},
 				intro: ["无尽而漫长的单挑试炼", lib.config.qianlidanji_level ? "你的最高纪录是连续通过" + lib.config.qianlidanji_level + "关，是否能够突破这一记录呢？" : "你能否过五关斩六将，击败古城战神蔡阳呢？"],
-				init: function () {
+				init() {
 					if (!_status.qianlidanji) {
 						_status.qianlidanji = {
 							completeNumber: 0,
