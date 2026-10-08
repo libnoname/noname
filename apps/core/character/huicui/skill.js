@@ -113,6 +113,332 @@ const skills = {
 			},
 		},
 	},
+	// 新杀孙峻
+	dcbeizhu: {
+		audio: 2,
+		trigger: { global: "phaseEnd" },
+		async cost(event, trigger, player) {
+			const map = player.getStorage("dcbeizhu", ["damage", "discard", "draw"]);
+			const enable = [];
+			const adj = [];
+			const adjAdd = function (i) {
+				return [i - 1, i + 1].filter(index => ![-1, 3].includes(index));
+			};
+			for (let i in map) {
+				let num = 0;
+				let ii = parseInt(i);
+				if (map[i] === "discard") {
+					player.getHistory("lose").forEach(evt => {
+						if (evt.type === "discard") num += evt.cards.length;
+					});
+					if (num > ii) {
+						enable.add(ii);
+						adj.add(...adjAdd(ii));
+					}
+				}
+				if (map[i] === "damage") {
+					player.getHistory("damage").forEach(evt => (num += evt.num));
+					if (num > ii) {
+						enable.add(ii);
+						adj.add(...adjAdd(ii));
+					}
+				}
+				if (map[i] === "draw") {
+					player.getHistory("gain").forEach(evt => {
+						if (evt.getParent().name === "draw") num += evt.cards.length;
+					});
+					if (num > ii) {
+						enable.add(ii);
+						adj.add(...adjAdd(ii));
+					}
+				}
+			}
+			if (!adj.length) {
+				return false;
+			}
+			enable.sort();
+			adj.unique();
+			if (adj.length === 1 && map[adj[0]] === "discard") {
+				if (player.countCards("he") < adj[0] + 1) {
+					return false;
+				}
+			}
+			const choiceList = [],
+				controls = [];
+			const another = function (second) {
+				const list = [];
+				for (let first of enable) {
+					if (first === second || Math.abs(first - second) > 1) continue;
+					list.add([0, 1, 2].removeArray([first, second])[0]);
+				}
+				return list.sort();
+			};
+			for (let i in map) {
+				const str = get.translation(another(parseInt(i)).map(ind => ind + 1));
+				const num = parseInt(i) + 1;
+				if (map[i] === "damage") {
+					if (adj.includes(num - 1)) {
+						controls.push("受伤");
+						choiceList.push(`受到序号数点无来源伤害（${num}点，剩余选项${str}）`);
+					} else {
+						choiceList.push(`<span style="opacity:0.5">受到序号数点无来源伤害</span>`);
+					}
+				}
+				if (map[i] === "discard") {
+					if (adj.includes(num - 1) && player.countDiscardableCards("he") >= num) {
+						controls.push("弃牌");
+						choiceList.push(`弃置序号数张牌（${num}张，剩余选项${str}）`);
+					} else {
+						choiceList.push(`<span style="opacity:0.5">弃置序号数张牌</span>`);
+					}
+				}
+				if (map[i] === "draw") {
+					if (adj.includes(num - 1)) {
+						controls.push("摸牌");
+						choiceList.push(`摸序号数张牌（${num}张，剩余选项${str}）`);
+					} else {
+						choiceList.push(`<span style="opacity:0.5">摸序号数张牌</span>`);
+					}
+				}
+			}
+			controls.push("cancel2");
+			const result = await player
+				.chooseControl({
+					controls,
+					choiceList,
+					prompt: `###${get.prompt(event.skill)}###执行以下一项，并令一名角色执行剩下的一项`,
+					map,
+					ai() {
+						const list = ["摸牌", "弃牌", "受伤"];
+						const map = get.event().map;
+						// if内部只有十常侍局才运行
+						if (!game.hasPlayer(current => get.attitude(get.event().player, current) <= 0)) {
+							for (let index in list) {
+								const controlId = ["draw", "discard", "damage"][index];
+								let lasts = [];
+								for (let index of another(map.indexOf(controlId))) {
+									lasts.add(map[index]);
+								}
+								if (lasts.includes("damage") || map[index] === "damage") list.remove(list[index]);
+							}
+							if (!list.length) return "cancel2";
+						}
+						const choice = list.filter(choice => get.event().controls.includes(choice))[0];
+						if (choice === "受伤" && map.indexOf("damage") > 0) {
+							return "cancel2";
+						}
+						return choice;
+					},
+				})
+				.forResult();
+			if (result?.control !== "cancel2") {
+				const controlId = [
+					["摸牌", "draw"],
+					["弃牌", "discard"],
+					["受伤", "damage"],
+				].find(line => line[0] === result.control)[1];
+				let lasts = [];
+				for (let index of another(map.indexOf(controlId))) {
+					lasts.add(map[index]);
+				}
+				event.result = {
+					bool: true,
+					cost_data: [controlId, lasts],
+				};
+			}
+		},
+		async content(event, trigger, player) {
+			const data = event.cost_data;
+			const map = player.getStorage("dcbeizhu", ["damage", "discard", "draw"]);
+			const controlId = data[0],
+				lasts = data[1];
+			const num = map.indexOf(controlId) + 1;
+			if (controlId === "draw") {
+				await player.draw(num);
+			}
+			if (controlId === "damage") {
+				await player.damage(num, "nosource");
+			}
+			if (controlId === "discard") {
+				await player.chooseToDiscard({
+					forced: true,
+					position: "he",
+					selectCard: num,
+				});
+			}
+			let choice;
+			if (lasts.length > 1) {
+				const choiceList = [],
+					controls = [];
+				for (let control of lasts) {
+					let num = map.indexOf(control) + 1;
+					if (control === "draw") {
+						controls.add("摸牌");
+						choiceList.add(`摸${get.cnNumber(num)}张牌`);
+					}
+					if (control === "discard") {
+						controls.add("弃牌");
+						choiceList.add(`弃置${get.cnNumber(num)}张牌`);
+					}
+					if (control === "damage") {
+						controls.add("受伤");
+						choiceList.add(`受到${num}点无来源伤害`);
+					}
+				}
+				const result = await player
+					.chooseControl({
+						forced: true,
+						prompt: "备诛：选择一项令一名角色执行",
+						controls,
+						choiceList,
+						lasts,
+						map,
+						ai() {
+							// 看收益绝对值，十常侍局看收益
+							let list = [];
+							const lasts = get.event().lasts;
+							let abs;
+							if (game.hasPlayer(current => get.attitude(get.event().player, current) <= 0)) {
+								abs = true;
+							}
+							for (let index in map) {
+								if (!lasts.includes(map[index])) continue;
+								let mult = 1;
+								if (map[index] === "damage") mult = 2;
+								const control = [
+									["摸牌", "draw"],
+									["弃牌", "discard"],
+									["受伤", "damage"],
+								].find(line => line[1] === map[index])[0];
+								let val = mult * (index + 1);
+								if (abs) val = Math.abs(val);
+								list.add([val, control]);
+							}
+							list.sort((a, b) => a[0] - b[0]);
+							return list[0][1];
+						},
+					})
+					.forResult();
+				if (!result?.control) return;
+				choice = [
+					["摸牌", "draw"],
+					["弃牌", "discard"],
+					["受伤", "damage"],
+				].find(line => line[0] === result.control)[1];
+			} else {
+				choice = lasts[0];
+			}
+			const num2 = map.indexOf(choice) + 1;
+			let prompt = "备诛：选择一名角色，令其";
+			switch (choice) {
+				case "draw":
+					prompt += `摸${get.cnNumber(num2)}张牌`;
+					break;
+				case "discard":
+					prompt += `弃置${get.cnNumber(num2)}张牌`;
+					break;
+				case "damage":
+					prompt += `受到${num2}点无来源伤害`;
+					break;
+			}
+			const result = await player
+				.chooseTarget({
+					forced: true,
+					prompt,
+					choice,
+					filterTarget(card, player, target) {
+						if (get.event().choice === "discard") {
+							return target.countCards("he");
+						}
+						return true;
+					},
+					ai(target) {
+						const player = get.player();
+						if (choice === "draw") {
+							return get.attitude(player, target);
+						} else {
+							return -get.attitude(player, target);
+						}
+					},
+				})
+				.forResult();
+			if (!result?.targets?.length) {
+				return;
+			}
+			if (choice === "discard") {
+				await result.targets[0].chooseToDiscard({
+					forced: true,
+					position: "he",
+					selectCard: num2,
+					prompt: `备诛：请弃置${get.cnNumber(num2)}张牌`,
+				});
+				return;
+			}
+			if (choice === "draw") {
+				await result.targets[0].draw(num2);
+				return;
+			}
+			if (choice === "damage") {
+				await result.targets[0].damage(num2, "nosource");
+			}
+		},
+		group: "dcbeizhu_switch",
+		subSkill: {
+			switch: {
+				trigger: { player: "phaseBegin" },
+				async cost(event, trigger, player) {
+					const map = player.getStorage("dcbeizhu", ["damage", "discard", "draw"]);
+					const choiceList = [];
+					for (let i in map) {
+						if (map[i] === "damage") {
+							choiceList.push(`至少<span class="bluetext">受到</span>序号数点伤害`);
+						}
+						if (map[i] === "discard") {
+							choiceList.push(`至少<span class="bluetext">被弃置</span>序号数张牌`);
+						}
+						if (map[i] === "draw") {
+							choiceList.push(`至少<span class="bluetext">摸</span>序号数张牌`);
+						}
+					}
+					const result = await player
+						.chooseControl({
+							choiceList,
+							prompt: get.prompt("dcbeizhu"),
+							controls: ["交换前两项", "交换后两项", "cancel2"],
+							map,
+							ai() {
+								const map = get.event().map;
+								if (map.indexOf("damage") === 0) {
+									return "交换前两项";
+								} else if (map.indexOf("damage") === 1) {
+									return "交换后两项";
+								} else if (map[0] !== "discard") {
+									return "交换前两项";
+								}
+								return "cancel2";
+							},
+						})
+						.forResult();
+					if (!result?.control || result.control === "cancel2") {
+						return false;
+					}
+					event.result = {
+						bool: true,
+						cost_data: result.control,
+					};
+				},
+				async content(event, trigger, player) {
+					const control = event.cost_data;
+					const map = player.getStorage("dcbeizhu", ["damage", "discard", "draw"]);
+					if (control === "交换前两项") {
+						player.setStorage("dcbeizhu", [map[1], map[0], map[2]]);
+					} else {
+						player.setStorage("dcbeizhu", [map[0], map[2], map[1]]);
+					}
+				},
+			},
+		},
+	},
 	//乐曹植
 	dcfuyue: {
 		mod: {

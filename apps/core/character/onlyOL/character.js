@@ -19,6 +19,12 @@ const characters = {
 		skills: ["olsbrenche", "olsbyalian"],
 		names: "null|null",
 	},
+	ol_sb_zhouyu: {
+		sex: "male",
+		group: "wu",
+		hp: 4,
+		skills: ["olsbguqu", "olsbzuifeng"],
+	},
 	ol_liufeng: {
 		sex: "male",
 		group: "shu",
