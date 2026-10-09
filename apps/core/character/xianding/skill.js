@@ -731,8 +731,7 @@ const skills = {
 								}
 								return lib.filter.filterTarget.apply(this, arguments);
 							})
-							.set("sourcex", player)
-							.forResult();
+							.set("sourcex", player);
 					});
 				},
 			},
@@ -773,7 +772,7 @@ const skills = {
 							},
 						})
 						.forResult();
-					if (result?.cards.length) {
+					if (result?.cards?.length) {
 						trigger.num++;
 					}
 				},
