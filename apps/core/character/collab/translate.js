@@ -521,6 +521,12 @@ const translates = {
 	tw_dm_zhouyu_prefix: "TW|魔",
 	yiran: "易燃",
 	yiran_info: "锁定技，你受到的火焰伤害+1。",
+	tw_dm_zhangliang: "TW魔张梁",
+	tw_dm_zhangliang_prefix: "TW|魔",
+	twrenfang: "人方",
+	twrenfang_info: "锁定技，当一张你使用或打出的牌进入弃牌堆后，你获得1个“人方”标记，你每有1个/5个“人方”标记，你的手牌上限/出【杀】次数便+1。",
+	twjuemie: "绝灭",
+	twjuemie_info: `出牌阶段限一次，你可移去36个“人方”标记，然后你可${get.poptip("rule_shifa")}：对X名角色（不足则所有）造成36点雷电伤害。`,
 };
 
 export default translates;
