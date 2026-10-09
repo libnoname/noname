@@ -93,11 +93,30 @@ jobs:
           cache: "pnpm"
 
       - name: Install dependencies
-        # --ignore-scripts 跳过 electron 等无关平台重活，加快安装
-        run: pnpm install --frozen-lockfile --ignore-scripts
+        # --ignore-scripts 跳过 electron 等无关平台重活，加快安装。
+        # --prefer-offline：优先用本地 pnpm store / setup-node 拉回的缓存，命中时省去
+        # 远端元数据往返。收益小但无副作用（lockfile 未变时等价于 --frozen-lockfile）。
+        run: pnpm install --frozen-lockfile --ignore-scripts --prefer-offline
 
       - name: Disk after install
         run: df -h /
+
+      # P1-2：缓存 Vite 的依赖预构建/转换缓存，命中后 `pnpm build` 可跳过部分重复编译。
+      # ⚠️ 为什么收益有限、且不做更激进的事：
+      #   `Build web assets` 实测约 50s，其中相当一部分是 scripts/build.ts 把约 2.8GB 的
+      #   audio/image 资源**复制**进 dist —— 那是纯文件 I/O，无法缓存，也不在本文件可控范围内
+      #   （scripts/build.ts 属于其他文件，本次禁止改动）。所以这里只缓存 node_modules/.vite，
+      #   属于锦上添花，且有 key 未命中时的失败安全（cache miss 只是退化到原行为）。
+      # key 用 pnpm-lock.yaml 哈希：依赖不变时缓存稳定复用；依赖变化时自动失效，避免脏缓存。
+      - name: Cache Vite build cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules/.vite
+            apps/mobile/node_modules/.vite
+          key: vite-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            vite-${{ runner.os }}-
 
       - name: Build web assets (dist/)
         env:
@@ -271,15 +290,40 @@ jobs:
           # preload.js 未变化，无需重建。
           npx cap copy ios
 
-      - name: Show project and scheme
+      # P0-1：原步骤名为 `Show project and scheme`，里面除了 `ls -la` 还跑了一次
+      # `xcodebuild -list`（-workspace/-project 二选一）。实测该命令独占约 18s —— 它会
+      # 完整加载工程并触发一次 Swift Package Manager 依赖解析，而我们**只是用它打印 scheme 名**，
+      # 对本工作流没有任何决策作用（下面 xcodebuild 里 scheme 名恒为 App）。
+      # 因此整段删除，只保留廉价的目录列表。工程存在性已由 `Locate iOS project` 步骤
+      # 用 `.xcodeproj` 校验兜底，信息没有丢失。
+      - name: Show project directory
         working-directory: apps/mobile/ios/${{ steps.ios.outputs.app_dir }}
-        run: |
-          ls -la
-          if [ "${{ steps.ios.outputs.mode }}" = "workspace" ]; then
-            xcodebuild -list -workspace "${{ steps.ios.outputs.target }}"
-          else
-            xcodebuild -list -project "${{ steps.ios.outputs.target }}"
-          fi
+        run: ls -la
+
+      # P1-1：缓存 Swift Package Manager 的依赖检出与编译产物。
+      # ⚠️ 缓存 key 的关键修正：不要用 Package.resolved 做哈希输入 —— 本仓库
+      #   `apps/mobile/ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/` 下**只有**
+      #   IDEWorkspaceChecks.plist，根本没有 Package.resolved 文件，`hashFiles(...)` 会恒返回
+      #   空串，导致 key 退化（永远 miss 或永远命中旧缓存）。
+      # 因此改用 `CapApp-SPM/Package.swift` 作为哈希输入之一。⚠️ 更正：该文件**并未被版本管理**
+      #   （见 apps/mobile/.gitignore:30 —— Capacitor CLI 每次 `cap sync` 都会重写这份 SPM 清单，
+      #   它会写入本机 node_modules 的绝对/相对路径，提交后在别的机器/CI 上路径必然失效，故不纳入
+      #   版本管理、交给 cap sync 现场生成）。但它正是第 12 步 `Capacitor sync` 现场生成的，而本步骤
+      #   排在其后，因此 `hashFiles()` 能取到真实的依赖指纹，不会退化成空串。它显式列出了
+      #   capacitor-swift-pm 8.1.0 及两个本地 path 依赖，足以代表 SPM 依赖指纹。
+      # ⚠️ 又因它是**生成物**（万一某次 `pnpm sync` 异常未生成，key 会退化），key 里**同时**加入恒被
+      #   版本管理的 pnpm-lock.yaml：`hashFiles` 接受多个参数，任一文件缺失时它对该文件返回空串、
+      #   其余仍参与计算，因此 key 不会整体退化为空串，也就不会误撞过期缓存。
+      # 命中后 xcodebuild 可跳过 `swift package resolve` 的网络拉取，第二次运行起见效。
+      - name: Cache SPM packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Caches/org.swift.swiftpm
+            ${{ runner.temp }}/SourcePackages
+          key: spm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'apps/mobile/ios/App/CapApp-SPM/Package.swift') }}
+          restore-keys: |
+            spm-${{ runner.os }}-
 
       - name: Build unsigned archive
         working-directory: apps/mobile/ios/${{ steps.ios.outputs.app_dir }}
@@ -305,6 +349,22 @@ jobs:
           fi
 
           # CODE_SIGNING_ALLOWED=NO 是核心：没有证书也能编译出 .app
+          #
+          # P0-2：只编 arm64 + 关闭调试符号。
+          #   - 侧载到真机只需 arm64；原值 ONLY_ACTIVE_ARCH=NO 会 arm64 + x86_64 双架构编译，
+          #     白白多花一份时间，因此改为 ONLY_ACTIVE_ARCH=YES。
+          #   - 必须**显式**再给 ARCHS=arm64 与 EXCLUDED_ARCHS：在 `generic/platform=iOS`
+          #     destination 下 ONLY_ACTIVE_ARCH 有时会被忽略，不显式指定 ARCHS 会报
+          #     "No architectures to compile for ..."。
+          #   - DEBUG_INFORMATION_FORMAT=dwarf + GCC_GENERATE_DEBUGGING_SYMBOLS=NO：跳过 dSYM
+          #     生成（侧载 ipa 用不到符号表）。COPY_PHASE_STRIP / STRIP_INSTALLED_PRODUCT：
+          #     剥离已安装产物，在关闭 DEBUG_INFO 后可以安全生效。
+          #   - -quiet：减少 CI 日志 I/O（原有 `set -o pipefail` 保留）。
+          #   - -clonedSourcePackagesDirPath：把 SPM 依赖检出指向缓存目录（见上一步 Cache SPM packages）。
+          # ❌ 故意**不加** DEPLOYMENT_POSTPROCESSING=YES：它会触发额外 strip 后处理，某些第三方
+          #   Swift 包在链接期依赖符号表时可能报错，收益不明确、风险明确，本次不做。
+          # 其余签名相关参数（CODE_SIGNING_ALLOWED/REQUIRED、CODE_SIGN_IDENTITY/ENTITLEMENTS、
+          # AD_HOC_CODE_SIGNING_ALLOWED）与 -derivedDataPath 一律原样保留。
           xcodebuild \
             $TARGET_FLAG "${{ steps.ios.outputs.target }}" \
             -scheme App \
@@ -312,12 +372,20 @@ jobs:
             -sdk iphoneos \
             -destination "generic/platform=iOS" \
             -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            -clonedSourcePackagesDirPath "$RUNNER_TEMP/SourcePackages" \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGN_ENTITLEMENTS="" \
             AD_HOC_CODE_SIGNING_ALLOWED=YES \
-            ONLY_ACTIVE_ARCH=NO \
+            ONLY_ACTIVE_ARCH=YES \
+            ARCHS=arm64 \
+            EXCLUDED_ARCHS="i386 x86_64" \
+            DEBUG_INFORMATION_FORMAT=dwarf \
+            GCC_GENERATE_DEBUGGING_SYMBOLS=NO \
+            COPY_PHASE_STRIP=YES \
+            STRIP_INSTALLED_PRODUCT=YES \
+            -quiet \
             build
 
       - name: Package unsigned IPA
@@ -341,7 +409,12 @@ jobs:
           find "$BUILD_DIR/Payload" -name "._*" -delete || true
 
           cd "$BUILD_DIR"
-          zip -qry "$IPA_NAME.ipa" Payload
+          # P0-3：改用最快压缩级别 -1。ipa 只是容器，SideStore/AltStore 重签时会解包，
+          # 压缩率不重要；而 `zip` 默认 level 6 实测约 14s。`-1` 是同收益下最稳妥的选择。
+          # ❌ 故意**不用** ditto -c -k --sequesterRsrc：--sequesterRsrc 会写入 __MACOSX
+          #    资源叉条目，侧载工具对 ipa 内部结构敏感，不值得冒这个险。
+          # 保留 -x 排除项，与原逻辑语义一致（额外显式排除 .DS_Store）。
+          zip -1 -qry "$IPA_NAME.ipa" Payload -x '*.DS_Store' -x '*/._*'
 
           echo "IPA size:"
           du -h "$IPA_NAME.ipa"
