@@ -2098,7 +2098,7 @@ const skills = {
 						game.log(player, "的“人方”魔法生效");
 						player.markSkill("twjuemie_mahou");
 					} else {
-						game.log(player, "的“人方”魔法剩余", "#g" + list[1] + "回合");
+						game.log(player, "的“人方”魔法剩余", "#g" + (list[1] - 1) + "回合");
 						player.markSkill("twjuemie_mahou");
 						return;
 					}
@@ -2110,6 +2110,7 @@ const skills = {
 						const result = await player
 							.chooseTarget(true, count, `对${get.cnNumber(count)}名角色造成36点雷电伤害`)
 							.set("ai", target => {
+								const player = get.player();
 								return get.damageEffect(target, player, player, "thunder");
 							})
 							.forResult();
