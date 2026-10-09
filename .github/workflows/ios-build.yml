@@ -105,14 +105,19 @@ jobs:
       # ⚠️ 为什么收益有限、且不做更激进的事：
       #   `Build web assets` 实测约 50s，其中相当一部分是 scripts/build.ts 把约 2.8GB 的
       #   audio/image 资源**复制**进 dist —— 那是纯文件 I/O，无法缓存，也不在本文件可控范围内
-      #   （scripts/build.ts 属于其他文件，本次禁止改动）。所以这里只缓存 node_modules/.vite，
-      #   属于锦上添花，且有 key 未命中时的失败安全（cache miss 只是退化到原行为）。
+      #   （scripts/build.ts 属于其他文件，本次禁止改动）。
+      # ⚠️ 路径修正（原写法是坏的）：Vite 的 cacheDir 默认是**各包自己**的 `node_modules/.vite`，
+      #   而不是仓库根下的那一个。真正的 Vite 构建跑在 apps/core（包名 noname，scripts/build.ts
+      #   第一条就是 `pnpm -F noname... build`），apps/mobile 也依赖 vite。原先写的根目录
+      #   `node_modules/.vite` 并不存在，导致缓存**从未被保存**（日志里两次都报
+      #   "Path(s) specified in the action for caching do(es) not exist, hence no cache is being saved"）。
+      #   因此改为只缓存这两个包各自的 .vite。
       # key 用 pnpm-lock.yaml 哈希：依赖不变时缓存稳定复用；依赖变化时自动失效，避免脏缓存。
       - name: Cache Vite build cache
         uses: actions/cache@v4
         with:
           path: |
-            node_modules/.vite
+            apps/core/node_modules/.vite
             apps/mobile/node_modules/.vite
           key: vite-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
           restore-keys: |
@@ -409,12 +414,15 @@ jobs:
           find "$BUILD_DIR/Payload" -name "._*" -delete || true
 
           cd "$BUILD_DIR"
-          # P0-3：改用最快压缩级别 -1。ipa 只是容器，SideStore/AltStore 重签时会解包，
-          # 压缩率不重要；而 `zip` 默认 level 6 实测约 14s。`-1` 是同收益下最稳妥的选择。
+          # 压缩级别说明（实测后已回退，勿再改回 -1）：曾试过 `zip -1`（level 1），A/B 实测
+          # `Package unsigned IPA` 只从 21s 降到 20s（约 1s，落在噪声范围内），却让 ipa 从
+          # 293,322,687 字节涨到 298,350,006 字节（+5.0MB, +1.7%）。本项目用户是在 30-100 KB/s
+          # 的慢链路上手工下载该包，多 5MB 约等于多等 1-2 分钟，而 CI 只快 1 秒 —— 对该项目属
+          # 负收益，故回退为默认级别（`-qry`）。
           # ❌ 故意**不用** ditto -c -k --sequesterRsrc：--sequesterRsrc 会写入 __MACOSX
           #    资源叉条目，侧载工具对 ipa 内部结构敏感，不值得冒这个险。
-          # 保留 -x 排除项，与原逻辑语义一致（额外显式排除 .DS_Store）。
-          zip -1 -qry "$IPA_NAME.ipa" Payload -x '*.DS_Store' -x '*/._*'
+          # 保留 -x 排除项，语义与原始一致（额外显式排除 .DS_Store）。
+          zip -qry "$IPA_NAME.ipa" Payload -x '*.DS_Store' -x '*/._*'
 
           echo "IPA size:"
           du -h "$IPA_NAME.ipa"
