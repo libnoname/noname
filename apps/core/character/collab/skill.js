@@ -2045,6 +2045,7 @@ const skills = {
 			} else {
 				return;
 			}
+			if (!num) return;
 			player.logSkill("twrenfang");
 			player.addMark("twrenfang", num);
 		},
