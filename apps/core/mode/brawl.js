@@ -3977,14 +3977,13 @@ export default () => {
 				},
 				content: {
 					submode: "normal",
-					chooseCharacterBefore: function () {
+					chooseCharacterBefore() {
 						game.identityVideoName = "千里单骑";
 						game.saveConfig("player_number", _status.qianlidanji.player_number, "identity");
-						game.chooseCharacter = function () {
-							var next = game.createEvent("chooseCharacter");
+						game.chooseCharacter = () => {
+							const next = game.createEvent("chooseCharacter");
 							next.showConfig = true;
-							next.setContent(function () {
-								"step 0";
+							next.setContent(async (event, trigger, player) => {
 								ui.arena.classList.add("choose-character");
 								game.me.identity = "zhu";
 								game.zhu = game.me;
@@ -3998,32 +3997,31 @@ export default () => {
 								game.fan.node.identity.classList.remove("guessing");
 
 								event.list = [];
-								for (var i in lib.character) {
-									if (lib.filter.characterDisabled(i)) {
+								for (const name in lib.character) {
+									if (lib.filter.characterDisabled(name)) {
 										continue;
 									}
-									event.list.push(i);
+									event.list.push(name);
 								}
 								event.list.randomSort();
 								_status.characterlist = event.list.slice(0);
-								var list = event.list.slice(0, 5);
+								let list = event.list.slice(0, 5);
 								delete event.swapnochoose;
-								var dialog;
+								let dialog;
 								if (event.swapnodialog) {
 									dialog = ui.dialog;
 									event.swapnodialog(dialog, list);
 									delete event.swapnodialog;
 								} else {
-									var str = "选择角色";
-									dialog = ui.create.dialog(str, "hidden", [list, "character"]);
+									dialog = ui.create.dialog("选择角色", "hidden", [list, "character"]);
 								}
 								dialog.setCaption("选择角色");
-								game.me.chooseButton(dialog, true).set("onfree", true);
+								const chooseCharacter = game.me.chooseButton({ dialog, forced: true }).set("onfree", true);
 
-								ui.create.cheat = function () {
+								ui.create.cheat = () => {
 									_status.createControl = ui.cheat2;
-									ui.cheat = ui.create.control("更换", function () {
-										if (ui.cheat2 && ui.cheat2.dialog == _status.event.dialog) {
+									ui.cheat = ui.create.control("更换", () => {
+										if (ui.cheat2 && ui.cheat2.dialog === _status.event.dialog) {
 											return;
 										}
 										if (game.changeCoin) {
@@ -4033,8 +4031,8 @@ export default () => {
 										event.list.randomSort();
 										list = event.list.slice(0, 5);
 
-										var buttons = ui.create.div(".buttons");
-										var node = _status.event.dialog.buttons[0].parentNode;
+										const buttons = ui.create.div(".buttons");
+										const node = _status.event.dialog.buttons[0].parentNode;
 										_status.event.dialog.buttons = ui.create.buttons(list, "character", buttons);
 										_status.event.dialog.content.insertBefore(buttons, node);
 										buttons.addTempClass("start");
@@ -4045,7 +4043,7 @@ export default () => {
 									delete _status.createControl;
 								};
 								if (lib.onfree) {
-									lib.onfree.push(function () {
+									lib.onfree.push(() => {
 										event.dialogxx = ui.create.characterDialog("heightset");
 										if (ui.cheat2) {
 											ui.cheat2.addTempClass("controlpressdownx", 500);
@@ -4056,9 +4054,9 @@ export default () => {
 									event.dialogxx = ui.create.characterDialog("heightset");
 								}
 
-								ui.create.cheat2 = function () {
+								ui.create.cheat2 = () => {
 									ui.cheat2 = ui.create.control("自由选将", function () {
-										if (this.dialog == _status.event.dialog) {
+										if (this.dialog === _status.event.dialog) {
 											if (game.changeCoin) {
 												game.changeCoin(10);
 											}
@@ -4100,7 +4098,7 @@ export default () => {
 										ui.create.cheat2();
 									}
 								}
-								"step 1";
+								const characterResult = await chooseCharacter.forResult();
 								if (ui.cheat) {
 									ui.cheat.close();
 									delete ui.cheat;
@@ -4109,32 +4107,40 @@ export default () => {
 									ui.cheat2.close();
 									delete ui.cheat2;
 								}
-								game.addRecentCharacter(result.buttons[0].link);
-								game.zhu.init(result.buttons[0].link);
-								_status.characterlist.remove(result.buttons[0].link);
-								_status.qianlidanji.used.add(result.buttons[0].link);
-								game.zhu.chooseControl("地狱", "困难", "普通", "简单", "无双").set("prompt", "请选择游戏难度");
-								"step 2";
-								var hp = Math.floor(result.index / 2);
-								event.draw = Math.floor((result.index + 1) / 2);
+								game.addRecentCharacter(characterResult.buttons[0].link);
+								game.zhu.init(characterResult.buttons[0].link);
+								_status.characterlist.remove(characterResult.buttons[0].link);
+								_status.qianlidanji.used.add(characterResult.buttons[0].link);
+								const difficultyResult = await game.zhu
+									.chooseControl({
+										controls: ["地狱", "困难", "普通", "简单", "无双"],
+										prompt: "请选择游戏难度",
+									})
+									.forResult();
+								const hp = Math.floor(difficultyResult.index / 2);
+								const draw = Math.floor((difficultyResult.index + 1) / 2);
 								if (hp) {
 									game.zhu.hp += hp;
 									game.zhu.maxHp += hp;
 									game.zhu.update();
 								}
-								game.zhu.chooseButton(["请选择对手的登场武将", [_status.characterlist.randomGets(3), "character"]], true);
-								"step 3";
-								game.fan.init(result.links[0]);
-								_status.characterlist.remove(result.links[0]);
-								_status.qianlidanji.used.add(result.links[0]);
-								if (event.draw) {
-									game.zhu.directgain(get.cards(event.draw));
+								const opponentResult = await game.zhu
+									.chooseButton({
+										createDialog: ["请选择对手的登场武将", [_status.characterlist.randomGets(3), "character"]],
+										forced: true,
+									})
+									.forResult();
+								game.fan.init(opponentResult.links[0]);
+								_status.characterlist.remove(opponentResult.links[0]);
+								_status.qianlidanji.used.add(opponentResult.links[0]);
+								if (draw) {
+									game.zhu.directgain(get.cards(draw));
 								}
-								setTimeout(function () {
+								setTimeout(() => {
 									ui.arena.classList.remove("choose-character");
 								}, 500);
 
-								var pack = {
+								const pack = {
 									character: {
 										pujing: {
 											sex: "male",
@@ -4163,42 +4169,38 @@ export default () => {
 											forced: true,
 											silent: true,
 											firstDo: true,
-											content: function () {
+											async content(event, trigger, player) {
 												player.removeSkill("qianlidanji_phase");
 												player.insertPhase();
 											},
 										},
 									},
 								};
-								for (var i in pack) {
-									for (var j in pack[i]) {
-										lib[i][j] = pack[i][j];
+								for (const category in pack) {
+									for (const name in pack[category]) {
+										lib[category][name] = pack[category][name];
 									}
 								}
 								delete pack.skill;
 								game.addVideo("arrangeLib", null, pack);
-								game.addOverDialog = function (dialog) {
-									dialog.addText("共计通过" + _status.qianlidanji.completeNumber + "关");
+								game.addOverDialog = dialog => {
+									dialog.addText(`共计通过${_status.qianlidanji.completeNumber}关`);
 								};
 								lib.element.player.dieAfter2 = function () {
-									if (this == game.fellow) {
+									if (this === game.fellow) {
 										return;
 									}
 									_status.characterlist.removeArray(_status.qianlidanji.used);
-									if (game.zhu == this || !_status.characterlist.length) {
-										var bool = false;
-										if (_status.qianlidanji.completeNumber > 5) {
-											bool = true;
-										}
-										game.over(bool);
-									} else {
-										var next = game.createEvent("qianlidanji_replace", false);
-										next.setContent(_status.qianlidanji.replace_character);
+									if (game.zhu === this || !_status.characterlist.length) {
+										game.over(_status.qianlidanji.completeNumber > 5);
+										return;
 									}
+									const next = game.createEvent("qianlidanji_replace", false);
+									next.setContent(_status.qianlidanji.replace_character);
 								};
 								lib.element.player.dieAfter = function (source) {
 									_status.characterlist.removeArray(_status.qianlidanji.used);
-									let next = game.createEvent("dieAfter", false);
+									const next = game.createEvent("dieAfter", false);
 									next.player = this;
 									next.forceDie = true;
 									next.source = source;
