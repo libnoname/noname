@@ -276,7 +276,7 @@ const skills = {
 					})
 					.forResult();
 				const cards = result.cards;
-				if (cards.length) await player.give(cards, target);
+				if (cards?.length) await player.give(cards, target);
 			}
 			if (target.countCards("h") === target.getHp()) {
 				trigger.phaseList.splice(trigger.num, 0, `phaseUse|${event.name}`);
