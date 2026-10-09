@@ -2015,25 +2015,25 @@ export default () => {
 				name: "毒战三国",
 				mode: "identity",
 				intro: "牌堆中额外添加10%的毒",
-				showcase: function (init) {
-					var node = this;
-					var func = function () {
-						var card = game.createCard("du", "noclick");
+				showcase(init) {
+					const node = this;
+					const func = () => {
+						const card = game.createCard("du", "noclick");
 						node.nodes.push(card);
 						card.style.position = "absolute";
-						var rand1 = Math.round(Math.random() * 100);
-						var rand2 = Math.round(Math.random() * 100);
-						var rand3 = Math.round(Math.random() * 40) - 20;
-						card.style.left = "calc(" + rand1 + "% - " + rand1 + "px)";
-						card.style.top = "calc(" + rand2 + "% - " + rand2 + "px)";
-						card.style.transform = "scale(0.8) rotate(" + rand3 + "deg)";
+						const rand1 = Math.round(Math.random() * 100);
+						const rand2 = Math.round(Math.random() * 100);
+						const rand3 = Math.round(Math.random() * 40) - 20;
+						card.style.left = `calc(${rand1}% - ${rand1}px)`;
+						card.style.top = `calc(${rand2}% - ${rand2}px)`;
+						card.style.transform = `scale(0.8) rotate(${rand3}deg)`;
 						card.style.opacity = 0;
 						node.appendChild(card);
 						ui.refresh(card);
 						card.style.opacity = 1;
-						card.style.transform = "scale(1) rotate(" + rand3 + "deg)";
+						card.style.transform = `scale(1) rotate(${rand3}deg)`;
 						if (node.nodes.length > 7) {
-							setTimeout(function () {
+							setTimeout(() => {
 								while (node.nodes.length > 5) {
 									node.nodes.shift().delete();
 								}
@@ -2042,20 +2042,20 @@ export default () => {
 					};
 					if (init) {
 						node.nodes = [];
-						for (var i = 0; i < 5; i++) {
+						for (let i = 0; i < 5; i++) {
 							func();
 						}
 					}
 					node.showcaseinterval = setInterval(func, 1000);
 				},
 				content: {
-					cardPile: function (list) {
+					cardPile(list) {
 						game.identityVideoName = "毒战三国杀";
 						lib.config.bannedcards.remove("du");
 						if (game.bannedcards) {
 							game.bannedcards.remove("du");
 						}
-						var num = Math.ceil(list.length / 10);
+						let num = Math.ceil(list.length / 10);
 						while (num--) {
 							list.push([["heart", "diamond", "club", "spade"].randomGet(), Math.ceil(Math.random() * 13), "du"]);
 						}
