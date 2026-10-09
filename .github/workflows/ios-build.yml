@@ -101,29 +101,9 @@ jobs:
       - name: Disk after install
         run: df -h /
 
-      # P1-2：缓存 Vite 的依赖预构建/转换缓存，命中后 `pnpm build` 可跳过部分重复编译。
-      # ⚠️ 为什么收益有限、且不做更激进的事：
-      #   `Build web assets` 实测约 50s，其中相当一部分是 scripts/build.ts 把约 2.8GB 的
-      #   audio/image 资源**复制**进 dist —— 那是纯文件 I/O，无法缓存，也不在本文件可控范围内
-      #   （scripts/build.ts 属于其他文件，本次禁止改动）。
-      # ⚠️ 路径修正（原写法是坏的）：Vite 的 cacheDir 默认是**各包自己**的 `node_modules/.vite`，
-      #   而不是仓库根下的那一个。真正的 Vite 构建跑在 apps/core（包名 noname，scripts/build.ts
-      #   第一条就是 `pnpm -F noname... build`），apps/mobile 也依赖 vite。原先写的根目录
-      #   `node_modules/.vite` 并不存在，导致缓存**从未被保存**（日志里两次都报
-      #   "Path(s) specified in the action for caching do(es) not exist, hence no cache is being saved"）。
-      #   因此改为只缓存这两个包各自的 .vite。
-      # key 用 pnpm-lock.yaml 哈希：依赖不变时缓存稳定复用；依赖变化时自动失效，避免脏缓存。
-      - name: Cache Vite build cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            apps/core/node_modules/.vite
-            apps/mobile/node_modules/.vite
-          key: vite-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: |
-            vite-${{ runner.os }}-
-
       - name: Build web assets (dist/)
+        # 注：不缓存 Vite 构建产物 —— node_modules/.vite 是 dev server 的 dep optimizer 缓存，
+        # vite build 不会写它（实测该缓存从未被保存）。
         env:
           NONAME_BUILD_CHANNEL: test
           NONAME_BUILD_COMMIT: ${{ github.sha }}
