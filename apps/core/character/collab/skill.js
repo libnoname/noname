@@ -2011,6 +2011,140 @@ const skills = {
 			},
 		},
 	},
+	// TW魔张梁
+	twrenfang: {
+		audio: 2,
+		trigger: {
+			global: "cardsDiscardAfter",
+		},
+		direct: true,
+		locked: true,
+		marktext: "方",
+		intro: {
+			content: "你有#个标记",
+		},
+		mod: {
+			maxHandcard(player, num) {
+				return num + player.countMark("twrenfang");
+			},
+			cardUsable(card, player, num) {
+				if (card.name === "sha") {
+					return num + Math.floor(player.countMark("twrenfang") / 5);
+				}
+			},
+		},
+		async content(event, trigger, player) {
+			if (trigger.getParent().name !== "orderingDiscard") {
+				return;
+			}
+			const evt = trigger.getParent().getParent();
+			if (evt.player !== player) return;
+			let num;
+			if (["useCard", "respond"].includes(evt.name)) {
+				num = trigger.cards.filterInD("d").length;
+			} else {
+				return;
+			}
+			if (!num) return;
+			player.logSkill("twrenfang");
+			player.addMark("twrenfang", num);
+		},
+	},
+	twjuemie: {
+		audio: 2,
+		mahouSkill: true,
+		enable: "phaseUse",
+		usable: 1,
+		filter(event, player) {
+			return !player.hasSkill("twjuemie_mahou") && player.countMark("twrenfang") >= 36;
+		},
+		prompt: "是否移去36个“人方”，并施法：对X名角色造成36点雷电伤害？",
+		async content(event, trigger, player) {
+			player.removeMark("twrenfang", 36);
+			const result = await player
+				.chooseControl("1回合", "2回合", "3回合", "cancel2")
+				.set("prompt", "是否施法：对X名角色造成36点雷电伤害，并选择施法时长？")
+				.set("ai", () => {
+					const player = get.player();
+					let safe = 1;
+					if (safe < Math.min(3, game.countPlayer(), player.getDamagedHp())) {
+						let next = player.next;
+						while (next != player && get.attitude(next, player) > 0) {
+							safe++;
+							next = next.next;
+						}
+					}
+					return Math.max(1, Math.min(safe, 3, game.countPlayer(), player.getDamagedHp())) - 1;
+				})
+				.forResult();
+			if (!result || result.control === "cancel2") return;
+			player.setStorage("twjuemie_mahou", [result.index + 1, result.index + 1]);
+			player.addTempSkill("twjuemie_mahou", { player: "die" });
+		},
+		ai: {
+			order: 9,
+			result: {
+				player: 1,
+			},
+		},
+		subSkill: {
+			mahou: {
+				trigger: { global: "phaseEnd" },
+				direct: true,
+				charlotte: true,
+				async content(event, trigger, player) {
+					const list = player.getStorage("twjuemie_mahou");
+					player.setStorage("twjuemie_mahou", [list[0], list[1] - 1]);
+					if (list[1] - 1 === 0) {
+						game.log(player, "的“人方”魔法生效");
+						player.markSkill("twjuemie_mahou");
+					} else {
+						game.log(player, "的“人方”魔法剩余", "#g" + (list[1] - 1) + "回合");
+						player.markSkill("twjuemie_mahou");
+						return;
+					}
+					let count = list[0];
+					let targets;
+					if (game.filterPlayer().length <= count) {
+						targets = game.filterPlayer();
+					} else {
+						const result = await player
+							.chooseTarget(true, count, `对${get.cnNumber(count)}名角色造成36点雷电伤害`)
+							.set("ai", target => {
+								const player = get.player();
+								return get.damageEffect(target, player, player, "thunder");
+							})
+							.forResult();
+						if (result?.targets?.length) {
+							targets = result.targets;
+							player.line(targets, "thunder");
+						}
+					}
+					if (!targets?.length) return;
+					game.doAsyncInOrder(targets, async target => {
+						await target.damage(36, "thunder");
+					});
+					player.removeSkill("twjuemie_mahou");
+				},
+				mark: true,
+				onremove: true,
+				marktext: "⚡️",
+				intro: {
+					name: "施法：人方",
+					markcount(storage) {
+						if (storage) return storage[0] + "-" + storage[1];
+						return 0;
+					},
+					content(storage) {
+						if (storage) {
+							return "经过" + storage[1] + "个“回合结束时”后，依次选择" + storage[0] + "名角色，对其各造成36点雷电伤害";
+						}
+						return "未指定施法效果";
+					},
+				},
+			},
+		},
+	},
 	//粘兽
 	olsuizhong: {
 		trigger: { player: "damageEnd" },

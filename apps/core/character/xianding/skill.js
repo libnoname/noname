@@ -41913,7 +41913,7 @@ const skills = {
 			let num = trigger.player
 				.getHistory("gain", evt => evt.getParent().name === "draw" && evt.getParent("phaseDraw") === trigger)
 				.map(evt => evt.cards.length)
-				.reduce((a, b) => a + b);
+				.reduce((a, b) => a + b, 0);
 			num = Math.abs(num - 2);
 			event.num = num;
 			await player.draw(num);
