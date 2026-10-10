@@ -1,0 +1,253 @@
+name: Sync with upstream
+
+# 用途：让本 Fork 与上游 libnoname/noname 保持同步，不用手动点「Sync fork」。
+#
+# 覆盖分支：见下方 matrix.branch（当前是 main 与 feat/ios-support）。
+# ⚠️ **每个分支都要单独同步**——两个分支是分叉的，不是包含关系：
+#     main 是 Capacitor 6 的旧线，feat/ios-support 是实际用来出 iOS 包的那条线。
+#     2026-10-05 就踩过这个坑：当时只同步 main，结果 iOS 包（从 feat/ios-support 构建）
+#     缺了上游新增的 21 个资源文件——因为批量下载的文件清单是构建时按**分支自己的**
+#     资源生成的，而不是按上游。
+#
+# 触发：
+#   - 每天 UTC 16:00（= 北京时间 00:00）自动跑一次；
+#   - 也可以手动 Run workflow。
+#
+# 实现在服务端完成，不需要把仓库拉下来：
+#   - 比较：GET /repos/{fork}/compare/main...{upstream-owner}:main
+#     （跨 fork 比较时，head 位置写 **owner:branch**，且 owner 只能用
+#       owner 名，写成 `owner/repo:branch` 会 404——两种写法都实测过）
+#   - 合并：POST /repos/{fork}/merge-upstream  （就是网页上「Sync fork」按钮调的那个接口）
+# 这样做是必须的——本仓库工作树接近 3GB（资源文件为主），就算浅克隆也很容易把
+# 免费 runner 的磁盘吃满，再叠加一次三方合并基本没戏。
+#
+# 比较结果的字段含义（base=本 Fork、head=上游，别记反）：
+#   - `ahead_by`  = 上游领先本 Fork 的提交数 → 就是本次要拉进来的量
+#   - `behind_by` = 本 Fork 独有的提交数（自定义改动）
+#
+# ---------------------------------------------------------------------------
+# ⚠️ 关于 SYNC_TOKEN（重要，第一次实跑时踩出来的）
+#
+# Actions 内置的 GITHUB_TOKEN 属于 GitHub App 安装令牌，**无权创建或修改
+# `.github/workflows/` 下的文件**，而且权限清单里根本没有对应项可开。于是当上游的
+# 更新里包含工作流改动时，合并会被直接拒绝：
+#     refusing to allow a GitHub App to create or update workflow
+#     `.github/workflows/release.yml` without `workflows` permission (422)
+#
+# 因此：
+#   - 上游只改普通文件时（绝大多数日子），GITHUB_TOKEN 就够用，什么都不用配；
+#   - 一旦上游动了 .github/workflows/，就需要一个带 `workflow` 权限的令牌。
+#
+# 需要时按下面做一次即可（约 2 分钟）：
+#   1. 生成细粒度 PAT：https://github.com/settings/personal-access-tokens/new
+#      → Repository access 选 only `cklsit/noname`
+#      → Permissions 给 **Contents: Read and write** 与 **Workflows: Read and write**
+#      （用经典令牌也行：勾 `repo` + `workflow`）
+#   2. 存成本仓库的 Actions secret，名称填 `SYNC_TOKEN`：
+#      Settings → Secrets and variables → Actions → New repository secret
+#   3. 之后本工作流会自动优先使用它（见下方 GH_TOKEN）。
+#
+# 没配也没关系：那种情况下本次运行会**失败并打印上面这条明确原因**，
+# 你手动点一次网页上的「Sync fork」即可（浏览器用你本人的身份，不受此限制）。
+#
+# 其它两个容易踩的点：
+#   1. GitHub 的 schedule **只会在默认分支上执行**。因此这个文件必须存在于
+#      fork 的 main 上；只放在功能分支里，定时任务永远不会被触发。
+#   2. 合并是**合并**而不是重置：本 Fork 的 main 有一批自定义提交
+#      （README 改写、ios-build.yml、移除调研文档等），不会被上游覆盖。
+#      若上游恰好改到同一批文件，会产生冲突 → 该次运行同样会失败并打印原因。
+#      这是刻意设计的：宁可报错，也不冒险强推。
+#   3. 定时任务在仓库连续 60 天没有任何提交活动后会被 GitHub 自动停用，
+#      届时 Actions 页面会出现提示，重新启用即可。
+
+on:
+  schedule:
+    # cron 一律使用 UTC。中国没有夏令时，UTC 16:00 恒等于北京时间次日 00:00。
+    - cron: "0 16 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write # merge-upstream 需要写权限
+
+jobs:
+  sync:
+    name: Sync ${{ matrix.branch }} from upstream
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    # 每个分支一个独立任务，互不影响（fast-fail=false 让一个分支失败不牵连另一个）
+    strategy:
+      fail-fast: false
+      matrix:
+        # 需要跟着上游走的分支。**加分支只改这一行即可。**
+        #   main              —— Fork 的默认分支，网页「Sync fork」按钮同步的就是它
+        #   feat/ios-support  —— 实际用来构建 iOS 包的开发分支（Capacitor 8 那条线）
+        # ⚠️ 这两个分支是分叉的（main 是 Capacitor 6 的旧线），所以必须**各自**同步，
+        #    只同步 main 不够——曾经就因为只同步 main，导致 iOS 包缺了上游新增的
+        #    21 个资源文件（清单按分支资源生成）。
+        branch:
+          - main
+          - feat/ios-support
+
+    # 同一分支同时只允许一个同步任务（按分支分组，两个分支可并行）
+    concurrency:
+      group: sync-upstream-${{ matrix.branch }}
+      cancel-in-progress: false
+
+    env:
+      # 优先用带 workflow 权限的 PAT；没配就退回内置令牌（见文件头说明）
+      GH_TOKEN: ${{ secrets.SYNC_TOKEN || secrets.GITHUB_TOKEN }}
+      FORK: ${{ github.repository }}
+      UPSTREAM: libnoname/noname
+      UPSTREAM_OWNER: libnoname
+      # 上游用来对比的分支。**不要用 $BRANCH**——那会去查 libnoname:feat/ios-support（不存在）。
+      UPSTREAM_BRANCH: main
+      BRANCH: ${{ matrix.branch }}
+
+    steps:
+      - name: 比较上游与 Fork
+        id: compare
+        run: |
+          set -euo pipefail
+
+          # 自检：确认当前用的到底是哪个令牌。内置 GITHUB_TOKEN 的身份是
+          # github-actions[bot]，配了 SYNC_TOKEN 则显示你自己的用户名。
+          # 这条日志的价值在于：一旦合并被「workflows permission」拒绝，
+          # 看这里就知道是「PAT 没生效」还是「PAT 权限不够」。
+          actor=$(gh api /user --jq '.login' 2>/dev/null || echo "unknown")
+          if [ "$actor" = "github-actions[bot]" ]; then
+            echo "::warning::当前使用内置 GITHUB_TOKEN（未配置 SYNC_TOKEN）：上游若改动 .github/workflows/ 下的文件，本次合并会被拒绝"
+          else
+            echo "::notice::当前使用 SYNC_TOKEN（身份：$actor）"
+          fi
+
+          upstream_sha=$(gh api "repos/$UPSTREAM/commits/$UPSTREAM_BRANCH" --jq .sha)
+          fork_sha=$(gh api "repos/$FORK/commits/$BRANCH" --jq .sha)
+
+          echo "上游 $UPSTREAM/$BRANCH = $upstream_sha"
+          echo "本 Fork $FORK/$BRANCH = $fork_sha"
+          echo "upstream_sha=$upstream_sha" >> "$GITHUB_OUTPUT"
+          echo "fork_sha=$fork_sha" >> "$GITHUB_OUTPUT"
+
+          # ⚠️ 判据是「上游是否领先本 Fork」，**不能**用「两边 SHA 是否相等」：
+          # 本 Fork 有自己的提交，一旦合并过一次，两边 SHA 就再也不会相等了，
+          # 那样每天都会白跑一次合并（接口会回 merge_type=none，但没有任何意义）。
+          compare_api="repos/$FORK/compare/$BRANCH...$UPSTREAM_OWNER:$UPSTREAM_BRANCH"
+          ahead=$(gh api "$compare_api" --jq .ahead_by 2>/dev/null || echo "")
+          case "$ahead" in
+            ''|*[!0-9]*)
+              # 比较接口不可用时退回 SHA 判断：宁可多跑一次合并，也不要漏同步
+              echo "::warning::比较接口不可用，退回 SHA 判断"
+              if [ "$upstream_sha" = "$fork_sha" ]; then ahead=0; else ahead=1; fi
+              ;;
+          esac
+          echo "上游领先本 Fork $ahead 个提交"
+
+          if [ "$ahead" = "0" ]; then
+            echo "up_to_date=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::上游没有新提交，无需同步"
+            exit 0
+          fi
+          echo "up_to_date=false" >> "$GITHUB_OUTPUT"
+
+          # 下面只是给人看的补充信息。万一接口不可用也不该让整次运行失败，一律兜底。
+          echo "----- 与上游的差距 -----"
+          gh api "$compare_api" \
+            --jq '"上游领先 " + (.ahead_by|tostring) + " 个提交；本 Fork 另有 " + (.behind_by|tostring) + " 个自定义提交" + (if .status == "diverged" then "（已分叉，将产生一个合并提交）" else "" end)' \
+            2>/dev/null || echo "(无法获取差距信息，继续尝试合并)"
+          gh api "$compare_api" \
+            --jq '.commits[] | "  * " + .sha[0:8] + " " + (.commit.message | split("\n")[0])' \
+            2>/dev/null | head -20 || true
+
+          # 上游这次是否动到了工作流文件？动到了就需要 PAT（见文件头说明）
+          touched=$(gh api "$compare_api" \
+            --jq '[.files[]? | select(.filename | startswith(".github/workflows/"))] | length' \
+            2>/dev/null || echo "0")
+          echo "上游本次改动的工作流文件数：$touched"
+          echo "workflows_touched=$touched" >> "$GITHUB_OUTPUT"
+
+      - name: 合并上游更新
+        id: merge
+        if: steps.compare.outputs.up_to_date != 'true'
+        run: |
+          set -uo pipefail
+
+          echo "开始合并 $UPSTREAM:$BRANCH → $FORK:$BRANCH"
+
+          if response=$(gh api -X POST "repos/$FORK/merge-upstream" -f branch="$BRANCH" 2>&1); then
+            echo "$response"
+            # 用 sed 而不是 jq 解析：这里需要「失败时原样打印响应体」，
+            # 而 `gh api --jq` 只能解析成功响应；也不假设 runner 上装了 jq。
+            merge_type=$(printf '%s' "$response" | tr -d ' \n' | sed -n 's/.*"merge_type":"\([^"]*\)".*/\1/p')
+            echo "merge_type=${merge_type:-unknown}" >> "$GITHUB_OUTPUT"
+            echo "::notice::已同步上游更新（merge_type=${merge_type:-unknown}）"
+            exit 0
+          fi
+
+          echo "$response"
+
+          # ① 最常见的一种失败：合并要改动工作流文件，而内置令牌无此权限
+          if printf '%s' "$response" | grep -q "workflows. permission"; then
+            echo "::error::本次合并需要改动 .github/workflows/ 下的文件，而 Actions 内置的 GITHUB_TOKEN 无权修改工作流文件（GitHub 硬限制，权限清单里没有对应项）。"
+            echo "::error::解决办法：生成一个有 workflow 权限的 PAT，存成本仓库 secret「SYNC_TOKEN」，本工作流会自动改用它（步骤见本文件顶部注释）。"
+            echo "::error::急用可先手动点网页上的「Sync fork」按钮（浏览器用你本人的身份，不受此限制）。"
+            exit 1
+          fi
+
+          # ② 其次是冲突：Fork 的自定义提交与上游改动撞在同一批文件。
+          #    这里刻意直接失败，而不是改用强推——强推会丢掉 Fork 的自定义提交。
+          echo "::error::自动合并失败（多为冲突：本 Fork 的自定义提交与上游改到了同一批文件）。请手动处理："
+          echo "::error::  git fetch upstream && git merge upstream/main   # 解决冲突后 push"
+          exit 1
+
+      - name: 核对合并结果
+        id: verify
+        if: steps.compare.outputs.up_to_date != 'true' && steps.merge.outcome == 'success'
+        run: |
+          set -euo pipefail
+
+          new_sha=$(gh api "repos/$FORK/commits/$BRANCH" --jq .sha)
+          echo "同步后 $FORK/$BRANCH = $new_sha"
+          echo "new_sha=$new_sha" >> "$GITHUB_OUTPUT"
+
+          # 合并完成后，「上游领先」应当归零；否则还有上游提交没进来
+          # 注意字段方向：base=本 Fork、head=上游，所以看的是 ahead_by
+          compare_api="repos/$FORK/compare/$BRANCH...$UPSTREAM_OWNER:$UPSTREAM_BRANCH"
+          gh api "$compare_api" --jq '"status=" + .status + " 上游仍领先 " + (.ahead_by|tostring) + " 个提交；本 Fork 自定义提交 " + (.behind_by|tostring) + " 个"'
+
+          remaining=$(gh api "$compare_api" --jq .ahead_by)
+          if [ "$remaining" != "0" ]; then
+            echo "::error::合并后上游仍领先 $remaining 个提交，请手动检查"
+            exit 1
+          fi
+          echo "::notice::已确认与上游同步（上游领先 0 个提交）"
+
+      - name: 写入运行摘要
+        if: always()
+        env:
+          UP_TO_DATE: ${{ steps.compare.outputs.up_to_date }}
+          MERGE_OUTCOME: ${{ steps.merge.outcome }}
+          MERGE_TYPE: ${{ steps.merge.outputs.merge_type }}
+          NEW_SHA: ${{ steps.verify.outputs.new_sha }}
+          FORK_SHA: ${{ steps.compare.outputs.fork_sha }}
+          WORKFLOWS_TOUCHED: ${{ steps.compare.outputs.workflows_touched }}
+        run: |
+          {
+            echo "## 上游同步结果"
+            echo ""
+            echo "| 项目 | 值 |"
+            echo "| --- | --- |"
+            echo "| 上游 | \`libnoname/noname:main\` |"
+            echo "| 本 Fork | \`${FORK_SHA:-未知}\` → \`${NEW_SHA:-未变化}\` |"
+            echo "| 上游改动的工作流文件 | ${WORKFLOWS_TOUCHED:-0} 个 |"
+            if [ "$UP_TO_DATE" = "true" ]; then
+              echo "| 结论 | 上游无新提交，未做改动 |"
+            elif [ "$MERGE_OUTCOME" = "success" ]; then
+              echo "| 结论 | 已同步（merge_type: ${MERGE_TYPE:-未知}） |"
+            else
+              echo "| 结论 | ❌ 合并失败，见上方日志 |"
+            fi
+            echo ""
+            echo "> 手动同步等价操作：在 Fork 页面点 **Sync fork**，或本地 \`git fetch upstream && git merge upstream/main\`。"
+            echo "> 若失败原因是「无权修改工作流文件」，需要配一个有 workflow 权限的 \`SYNC_TOKEN\`（见本文件顶部注释）。"
+          } >> "$GITHUB_STEP_SUMMARY"

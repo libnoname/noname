@@ -1,3 +1,34 @@
 *.map
 .DS_Store
 .sourcemaps
+
+# ---------- iOS (Capacitor) ----------
+# 生成的 Xcode 工程（ios/）是提交进仓库的，但构建产物与同步进来的 web 资源要忽略，
+# 与 android 目录的处理方式保持一致（参见 apps/mobile/android/.gitignore）。
+
+# Xcode 构建产物
+ios/App/build/
+ios/build/
+ios/DerivedData/
+ios/**/xcuserdata/
+ios/**/*.xcuserstate
+
+# Capacitor 同步进来的 web 资源与生成的配置文件
+ios/App/App/public/
+ios/App/App/capacitor.config.json
+ios/App/App/capacitor.plugins.json
+ios/App/App/config.xml
+
+# Swift Package Manager（Capacitor 8 使用 SPM）
+ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/
+ios/App/.swiftpm/
+ios/App/Packages/
+
+# Capacitor CLI 每次 `cap sync` 都会重写的 SPM 清单。
+# 它会写入本机 node_modules 的绝对/相对路径（形如 `..\..\..\node_modules\.pnpm\...`），
+# 一旦提交，在别的机器 / CI 上路径必然失效，因此不纳入版本管理，交给 cap sync 现场生成。
+ios/App/CapApp-SPM/Package.swift
+
+# CocoaPods（仅在旧模板 / 显式使用 CocoaPods 时出现）
+ios/App/Pods/
+ios/App/Podfile.lock

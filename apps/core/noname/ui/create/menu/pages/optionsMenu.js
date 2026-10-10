@@ -470,6 +470,11 @@ export const optionsMenu = function (connectMenu) {
 							} else {
 								game.putDB("audio", link, fileToLoad, callback);
 							}
+						} else {
+							// 玩家取消了选择、或没选到文件时必须复位标记。
+							// 否则函数开头那道 `if (_status.music_importing) return;` 守卫
+							// 会让「确定」按钮此后**永久失效**——表现为点了没反应。
+							_status.music_importing = false;
 						}
 					};
 				} else if (j == "extension_source") {
