@@ -2,6 +2,123 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//牢宁牢戏眼睛熏鱼牢狂棍母柴油鹿鹿你跑不过我你信吗
+	olfangma: {
+		audio: 2,
+		trigger: {
+			global: "roundStart",
+			player: ["useCard1", "useCard"],
+		},
+		filter(event, player, name) {
+			if (event.name === "useCard") {
+				if (event.card.name !== "sha") return false;
+				const card = player.getCards("h", card => card.name === "chitu")[0];
+				if (!card) return false;
+				let left = player.getCards("h").indexOf(card);
+				let right = player.countCards("h") - player.getCards("h").indexOf(card) - 1;
+				if (left > right) return event.addCount !== false;
+				return left < right;
+			}
+			const card = player.getCards("h")[0];
+			return !card || card.name !== "chitu"; //良驹怎么能是转化牌呢？谁赞成谁反对？反正我赞成
+		},
+		forced: true,
+		async content(event, trigger, player) {
+			let card = player.getCards("h", card => card.name === "chitu")[0];
+			if (trigger.name === "useCard") {
+				let left = player.getCards("h").indexOf(card);
+				let right = player.countCards("h") - player.getCards("h").indexOf(card) - 1;
+				if (left > right) {
+					trigger.addCount = false;
+					const stat = player.getStat().card;
+					const name = trigger.card.name;
+					if (typeof stat[name] == "number") stat[name]--;
+				} else {
+					for (const target of game.filterPlayer(null, null, true)) {
+						const id = target.playerid;
+						const map = trigger.customArgs;
+						map[id] ??= {};
+						if (typeof map[id].shanRequired !== "number") map[id].shanRequired = 0;
+						map[id].shanRequired++;
+					}
+				}
+				return;
+			}
+			if (!card) {
+				card = get.cardPile("chitu");
+				if (card) await player.gain(card, "gain2");
+				else {
+					for (const target of game.filterPlayer().sortBySeat()) {
+						card = target.getGainableCards(player, "hej", card => card.name === "chitu")[0];
+						if (card) {
+							await player.gain(card, target, "give");
+							break;
+						}
+					}
+				}
+			}
+			if (card) {
+				let hs = [card, ...player.getCards("h", cardx => cardx !== card)].reverse();
+				player.sortHandcardOL(hs, true);
+			}
+		},
+		mod: {
+			cardEnabled2(card, player) {
+				if (get.itemtype(card) == "card" && card === player.getCards("h", card => card.name === "chitu")[0]) return false;
+			},
+			cardDiscardable(card, player) {
+				if (card === player.getCards("h", card => card.name === "chitu")[0]) return false;
+			},
+			cardUsable(card, player) {
+				const chitu = player.getCards("h", card => card.name === "chitu")[0];
+				if (card.name !== "sha" || !chitu) return;
+				let left = player.getCards("h").indexOf(chitu);
+				let right = player.countCards("h") - player.getCards("h").indexOf(chitu) - 1;
+				if (left > right) return Infinity;
+			},
+		},
+	},
+	oljingxian: {
+		audio: 2,
+		trigger: {
+			player: "useCardAfter",
+			global: "roundEnd",
+		},
+		filter(event, player) {
+			const card = player.getCards("h", card => card.name === "chitu")[0];
+			if (!card) return false;
+			return (player.getCards("h").at(-1) !== card) === (event.name === "useCard");
+		},
+		forced: true,
+		async content(event, trigger, player) {
+			let card = player.getCards("h", card => card.name === "chitu")[0];
+			if (trigger.name === "useCard") {
+				let cards = player.getCards("h").slice();
+				let index = cards.indexOf(card) + 1;
+				if (cards[index]) {
+					let hs = cards.slice();
+					hs[index] = card;
+					hs[index - 1] = cards[index];
+					player.sortHandcardOL(hs.reverse(), true);
+					player.addSkill(`${event.name}_sha`);
+					player.addGaintag([cards[index]], `${event.name}_sha`);
+				}
+			} else player.insertPhase();
+		},
+		subSkill: {
+			sha: {
+				charlotte: true,
+				mod: {
+					cardname(card) {
+						if (get.itemtype(card) === "card" && card.hasGaintag("oljingxian_sha")) return "sha";
+					},
+					cardnature(card) {
+						if (get.itemtype(card) === "card" && card.hasGaintag("oljingxian_sha")) return false;
+					},
+				},
+			},
+		},
+	},
 	//🐷🐷侠
 	tangguo: {
 		audio: 2,
