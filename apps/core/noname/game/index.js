@@ -929,26 +929,7 @@ export class Game {
 			lib.config.all.background_music.add(link);
 		}
 		config.item[link] = musicName;
-		const textMenu = ui.create.div(
-			"",
-			musicName,
-			menu,
-			function () {
-				const node = this.parentNode._link,
-					config = node._link.config;
-				node._link.current = this.link;
-				const tmpName = node.lastChild.innerHTML;
-				node.lastChild.innerHTML = config.item[this._link];
-				if (config.onclick && config.onclick.call(node, this._link, this) === false) {
-					node.lastChild.innerHTML = tmpName;
-				}
-				if (config.update) {
-					config.update();
-				}
-			},
-			menu.childElementCount - 2
-		);
-		textMenu._link = link;
+		backgroundMusicSetting._link.addTextMenuItem(link, musicName, menu.childElementCount - 2);
 		config.updatex.call(backgroundMusicSetting, []);
 	}
 	/**
