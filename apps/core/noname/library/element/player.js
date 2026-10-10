@@ -472,10 +472,11 @@ export class Player extends HTMLDivElement {
 	/**
 	 * 整理手牌，要联机的不要单独用，主机不会同步状态的
 	 * @param {(a: Card, b: Card) => number|Card[]} [sort] 排序方法，如果传的牌数组，就按数组顺序排
+	 * @param {boolean} forced 是否无视noSortCard标签强制整理手牌
 	 * @returns {boolean|undefined}
 	 */
-	sortHandcard(sort) {
-		if (this.hasSkillTag("noSortCard")) {
+	sortHandcard(sort, forced) {
+		if (!forced && this.hasSkillTag("noSortCard")) {
 			return false;
 		}
 
@@ -538,9 +539,10 @@ export class Player extends HTMLDivElement {
 	/**
 	 * 整理手牌然后如果是联机模式顺便同步
 	 * @param {(a: Card, b: Card) => number|Card[]} [sort] 排序方法，如果传的牌数组，就按数组顺序排
+	 * @param {boolean} forced 是否无视noSortCard标签强制整理手牌
 	 */
-	sortHandcardOL(sort) {
-		const bool = this.sortHandcard(sort);
+	sortHandcardOL(sort, forced) {
+		const bool = this.sortHandcard(sort, forced);
 		//联机要同步手牌状态
 		if (_status.connectMode && bool !== false) {
 			if (game.online) {

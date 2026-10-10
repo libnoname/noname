@@ -444,6 +444,7 @@ const skills = {
 						glow: [],
 						glows: [],
 						clock: null,
+						autoTimer: null,
 						result: null,
 						finish: null,
 					};
@@ -527,6 +528,7 @@ const skills = {
 				}
 				if (action === "close") {
 					if (state && state.clock) clearInterval(state.clock);
+					if (state && state.autoTimer) clearInterval(state.autoTimer);
 					if (dialog) dialog.remove();
 					delete ui["olshilunDialog_" + gid];
 					const helper = ui["olshilunHelper_" + gid];
@@ -608,6 +610,10 @@ const skills = {
 						clearInterval(state.clock);
 						state.clock = null;
 					}
+					if (state.autoTimer) {
+						clearInterval(state.autoTimer);
+						state.autoTimer = null;
+					}
 					const list = state.found.map(index => data.titles[index].title);
 					const result = { bool: list.length > 0, list: list };
 					state.result = result;
@@ -662,43 +668,76 @@ const skills = {
 						}
 					}
 				};
-				if (auto) {
-					const order = data.titles.map((title, index) => index).randomSort();
-					let index = 0;
-					let step = 0;
-					let wait = 0;
+				let autoMode = false;
+				const autoState = { order: [], index: 0, step: 0, wait: 0 };
+				const deadline = Date.now() + total;
+				const isAuto = function () {
+					return !!auto || (player === game.me && !!_status.auto);
+				};
+				const stopClock = function () {
+					if (!state.clock) return;
+					clearInterval(state.clock);
+					state.clock = null;
+				};
+				const startAuto = function () {
+					if (finished || autoMode) return;
+					autoMode = true;
+					stopClock();
+					autoState.order = data.titles.map((title, index) => index).randomSort();
+					autoState.index = 0;
+					autoState.step = 0;
+					autoState.wait = 0;
+					for (const cell of state.cells) cell.style.cursor = "default";
+					if (controls) controls.style.display = "none";
 					state.clock = setInterval(function () {
-						if (finished) return;
+						if (finished || !autoMode) return;
 						if (!ui["olshilunDialog_" + gid]) {
 							finish();
 							return;
 						}
-						if (wait > 0) {
-							wait--;
+						if (autoState.wait > 0) {
+							autoState.wait--;
 							return;
 						}
-						if (index >= order.length) {
+						if (autoState.index >= autoState.order.length) {
 							finish();
 							return;
 						}
-						const title = data.titles[order[index]];
-						state.selected = title.cells.slice(0, ++step);
+						const title = data.titles[autoState.order[autoState.index]];
+						state.selected = title.cells.slice(0, ++autoState.step);
 						send("select", state.selected.slice());
-						if (step >= title.cells.length) {
-							doFound(order[index]);
-							index++;
-							step = 0;
-							wait = get.rand(2, 5);
+						if (autoState.step >= title.cells.length) {
+							doFound(autoState.order[autoState.index]);
+							autoState.index++;
+							autoState.step = 0;
+							autoState.wait = get.rand(2, 5);
 						}
 					}, 260);
-					game.pause();
-					return;
-				}
+				};
+				const startCountdown = function () {
+					stopClock();
+					for (const cell of state.cells) cell.style.cursor = "pointer";
+					if (controls) controls.style.display = "flex";
+					state.clock = setInterval(function () {
+						if (finished) {
+							clearInterval(state.clock);
+							state.clock = null;
+							return;
+						}
+						const left = Math.max(0, deadline - Date.now());
+						if (state.bar) state.bar.style.width = ((left / total) * 100).toFixed(1) + "%";
+						if (left <= 0) finish();
+					}, 200);
+				};
+				const startManual = function () {
+					if (finished || !autoMode) return;
+					autoMode = false;
+					startCountdown();
+				};
 				for (let i = 0; i < state.cells.length; i++) {
 					const cell = state.cells[i];
-					cell.style.cursor = "pointer";
 					cell.addEventListener(lib.config.touchscreen ? "touchend" : "click", function () {
-						if (_status.dragged || _status.justdragged) return;
+						if (autoMode || _status.dragged || _status.justdragged) return;
 						select(Number(this.dataset.index));
 					});
 				}
@@ -724,24 +763,25 @@ const skills = {
 					});
 				};
 				makeButton("重选", function () {
-					if (finished) return;
+					if (autoMode || finished) return;
 					state.selected = [];
-					send("select", [], "请连线完成评鉴");
+					send("select", []);
 				});
 				makeButton("结束", function () {
+					if (autoMode || finished) return;
 					finish();
 				});
-				const start = Date.now();
-				state.clock = setInterval(function () {
+				if (isAuto()) startAuto();
+				else startCountdown();
+				state.autoTimer = setInterval(function () {
 					if (finished) {
-						clearInterval(state.clock);
-						state.clock = null;
+						clearInterval(state.autoTimer);
+						state.autoTimer = null;
 						return;
 					}
-					const left = Math.max(0, total - (Date.now() - start));
-					if (state.bar) state.bar.style.width = ((left / total) * 100).toFixed(1) + "%";
-					if (left <= 0 || _status.auto) finish();
-				}, 200);
+					if (isAuto()) startAuto();
+					else startManual();
+				}, 250);
 				game.pause();
 			}
 			const gid = lib.status.videoId++;
@@ -1003,6 +1043,7 @@ const skills = {
 				await target.addAdditionalSkills("olshilun", skill, true);
 			}
 		},
+		ai: { combo: "olshilun" },
 	},
 	//王皑（春丽来咯）
 	qinmian: {

@@ -17,9 +17,8 @@ const characters = {
 		sex: "female",
 		group: "shu",
 		hp: 4,
-		skills: [],
+		skills: ["olfangma", "oljingxian"],
 		names: "null|null",
-		isUnseen: true,
 	},
 	ol_le_menghuo: {
 		sex: "male",
