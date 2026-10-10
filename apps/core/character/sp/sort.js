@@ -8,7 +8,7 @@ const characterSort = {
 	sp_liesi: ["lvboshe", "mizhu", "weizi", "ol_liuba", "zhangshiping", "ol_zhaozhong"],
 	sp_default: ["sp_ol_liubei", "sp_ol_caocao", "re_jsp_pangtong", "sp_diaochan", "sp_zhaoyun", "sp_sunshangxiang", "sp_caoren", "sp_jiangwei", "sp_machao", "sp_caiwenji", "jsp_guanyu", "jsp_huangyueying", "sp_pangde", "sp_jiaxu", "yuanshu", "sp_zhangliao", "sp_ol_zhanghe", "sp_menghuo", "sp_sunce"],
 	sp_qifu: ["ol_lvlingqi", "zhangqiying", "ol_guozhao", "ol_xuelingyun", "ol_jiangwan", "ol_feiyi", "caoying", "panshu", "caochun", "yuantanyuanshang", "caoshuang", "wolongfengchu", "guansuo", "baosanniang", "fengfangnv", "jin_zhouchu"],
-	sp_wanglang: ["ol_peixiu", "ol_miheng", "ol_nanhualaoxian", "ol_wanglang", "ol_puyuan", "ol_zhouqun"],
+	sp_wanglang: ["ol_xushao", "ol_peixiu", "ol_miheng", "ol_nanhualaoxian", "ol_wanglang", "ol_puyuan", "ol_zhouqun"],
 	sp_zhongdan: ["cuiyan", "huangfusong"],
 	sp_guozhan2: ["sp_dongzhuo"],
 	sp_others: ["hanba", "caiyang"],

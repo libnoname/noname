@@ -2,6 +2,1008 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	//OL许劭
+	olshilun: {
+		audio: 2,
+		enable: "phaseUse",
+		usable: 1,
+		async content(event, trigger, player) {
+			const SIZE = 6;
+			const TITLE_MIN = 2;
+			const TITLE_MAX = 6;
+			const TITLE_COUNT_MIN = 3;
+			const TITLE_COUNT_MAX = 4;
+			const CHAR_LIMIT = 24;
+			const TIME_LIMIT = 45;
+
+			function plainTitle(title) {
+				let str = title == null ? "" : String(title);
+				if (str.includes("<") || str.includes(">")) str = get.plainText(str);
+				return str.replace(/#[a-zA-Z0-9]/g, "").trim();
+			}
+
+			function checkSkill(name, type) {
+				const info = lib.skill[name];
+				if (!info || info.charlotte || info.silent || info.juexingji || info.hiddenSkill || info.dutySkill) return false;
+				if (info.zhuSkill) {
+					const owner = _status.event && _status.event.player ? _status.event.player : game.me;
+					if (!owner || typeof owner.isZhu2 !== "function" || !owner.isZhu2()) return false;
+				}
+				if (type === "phaseUse") {
+					const infox = get.plainText(lib.translate[name + "_info"] || "");
+					if (infox.includes("当你于出牌阶段") && !infox.includes("当你于出牌阶段外")) return true;
+				}
+				let triggers = info.trigger && info.trigger.player;
+				if (!triggers) return false;
+				if (!Array.isArray(triggers)) triggers = [triggers];
+				const targets = { phaseUse: ["phaseUse"], phaseJieshu: ["phaseJieshuBegin"], damage: ["damageEnd"] }[type] || [];
+				return triggers.includes(type) || triggers.some(item => targets.includes(item));
+			}
+
+			function getSkillList(title) {
+				const list = [];
+				const map = _status.characterTitleInited ? _status.characterTitleInited[title] : null;
+				if (map) {
+					for (const type of ["phaseUse", "phaseJieshuBegin", "damageEnd"]) {
+						for (const name of map[type] || []) list.add(name);
+					}
+				}
+				return list;
+			}
+
+			function initTitles() {
+				if (_status.characterTitleInited) return;
+				_status.characterTitleInited = {};
+				game.initCharacterList();
+				const typeMap = { phaseUse: "phaseUse", phaseJieshu: "phaseJieshuBegin", damage: "damageEnd" };
+				const allList = _status.characterlist.slice();
+				for (const target of game.filterPlayer2()) {
+					for (const name of get.nameList(target)) {
+						if (name && lib.character[name] && !name.startsWith("gz_shibing") && !name.startsWith("gz_jun_")) allList.add(name);
+					}
+				}
+				for (const name of allList) {
+					if (!lib.characterTitle[name]) continue;
+					const skills2 = lib.character[name] && lib.character[name].skills;
+					if (!skills2 || !skills2.length) continue;
+					let init = false;
+					const map = { phaseUse: [], phaseJieshuBegin: [], damageEnd: [] };
+					for (const skill2 of skills2) {
+						const skills = [skill2];
+						game.expandSkills(skills);
+						for (const skill of skills) {
+							for (const type of ["phaseUse", "phaseJieshu", "damage"]) {
+								if (checkSkill(skill, type)) {
+									init = true;
+									map[typeMap[type]].add(skill2);
+								}
+							}
+						}
+					}
+					if (init) _status.characterTitleInited[lib.characterTitle[name]] = map;
+				}
+			}
+
+			function getTitlePool() {
+				const pool = [];
+				for (const title of Object.keys(_status.characterTitleInited || {})) {
+					const chars = Array.from(plainTitle(title));
+					if (chars.length < TITLE_MIN || chars.length > TITLE_MAX) continue;
+					if (!chars.every(char => /[\u4e00-\u9fff]/.test(char))) continue;
+					const skills = getSkillList(title);
+					if (!skills.length) continue;
+					pool.push({ title: title, plain: chars.join(""), chars: chars });
+				}
+				return pool;
+			}
+
+			function findPath(cells, length, prefer) {
+				const dirs = prefer
+					? [prefer, [prefer[0] ? 0 : 1, prefer[1] ? 0 : 1]]
+					: [
+							[1, 0],
+							[0, 1],
+						].randomSort();
+				const starts = [];
+				for (let i = 0; i < SIZE * SIZE; i++) {
+					if (!cells[i]) starts.push(i);
+				}
+				if (starts.length < length) return null;
+				starts.randomSort();
+				for (const dir of dirs) {
+					for (const start of starts) {
+						const x = start % SIZE;
+						const y = Math.floor(start / SIZE);
+						const path = [start];
+						let nx = x;
+						let ny = y;
+						for (let step = 1; step < length; step++) {
+							nx += dir[0];
+							ny += dir[1];
+							if (nx >= SIZE || ny >= SIZE) break;
+							const index = ny * SIZE + nx;
+							if (cells[index]) break;
+							path.push(index);
+						}
+						if (path.length === length) return path;
+					}
+				}
+				return null;
+			}
+
+			function tryCreateBoard(pool, charPool) {
+				const total = SIZE * SIZE;
+				const want = TITLE_COUNT_MIN + get.rand(0, TITLE_COUNT_MAX - TITLE_COUNT_MIN);
+				const dirs = [];
+				for (let i = 0; i < want; i++) {
+					dirs.push(i % 2 === 0 ? [1, 0] : [0, 1]);
+				}
+				dirs.randomSort();
+				const cells = new Array(total).fill(null);
+				const titles = [];
+				let budget = CHAR_LIMIT;
+				for (const item of pool.randomSort()) {
+					if (titles.length >= want) break;
+					if (item.chars.length > budget) continue;
+					const path = findPath(cells, item.chars.length, dirs[titles.length]);
+					if (!path) continue;
+					path.forEach((cell, index) => {
+						cells[cell] = { char: item.chars[index] };
+					});
+					titles.push({ title: item.title, plain: item.plain, cells: path.slice(), skills: getSkillList(item.title) });
+					budget -= item.chars.length;
+				}
+				if (titles.length < TITLE_COUNT_MIN) return null;
+				//整盘只有一种走向时重新生成
+				if (titles.length > 1) {
+					const horizontal = titles[0].cells.every(cell => Math.floor(cell / SIZE) === Math.floor(titles[0].cells[0] / SIZE));
+					if (titles.every(item => item.cells.every(cell => Math.floor(cell / SIZE) === Math.floor(item.cells[0] / SIZE)) === horizontal)) return null;
+				}
+				const chars = [];
+				for (let i = 0; i < total; i++) chars[i] = cells[i] ? cells[i].char : charPool.randomGet();
+				return { size: SIZE, chars: chars, titles: titles, timeLimit: TIME_LIMIT };
+			}
+
+			function createBoard() {
+				initTitles();
+				const pool = getTitlePool();
+				if (!pool.length) return null;
+				const charPool = Array.from(new Set(pool.flatMap(item => item.chars)));
+				if (!charPool.length) return null;
+				for (let i = 0; i < 30; i++) {
+					const data = tryCreateBoard(pool, charPool);
+					if (data) return data;
+				}
+				return null;
+			}
+			function board(action, gid, a, b, c) {
+				const dialog = ui["olshilunDialog_" + gid];
+				const state = dialog && dialog.olshilun;
+
+				const paint = function (target) {
+					const data = target.data;
+					for (let i = 0; i < target.cells.length; i++) {
+						const cell = target.cells[i];
+						const isSelected = target.selected.includes(i);
+						const isUsed = !!target.used[i];
+						const isHidden = !!target.hidden[i];
+						const isGlow = target.glow.includes(i);
+						let background = "linear-gradient(160deg, rgba(178,152,216,0.9), rgba(126,96,172,0.9))";
+						let color = "#ffffff";
+						let border = "1px solid rgba(255,255,255,0.55)";
+						let shadow = "none";
+						let text = data.chars[i];
+						if (isUsed) {
+							background = "rgba(58,42,84,0.92)";
+							color = "rgba(232,212,255,0.6)";
+							border = "1px solid rgba(150,110,210,0.85)";
+						} else if (isSelected) {
+							background = "linear-gradient(160deg, rgba(255,242,170,0.98), rgba(244,190,62,0.98))";
+							color = "#4a2c00";
+							border = "1px solid rgba(255,255,255,0.95)";
+							shadow = "0 0 10px 2px rgba(255,224,120,0.95)";
+						}
+						if (isGlow && !isUsed) {
+							border = "1px solid rgba(255,226,138,0.95)";
+							shadow = "0 0 12px 3px rgba(255,220,110,0.95)";
+						}
+						if (isHidden && !isUsed) {
+							text = "?";
+							color = "rgba(226,208,255,0.4)";
+						}
+						cell.innerHTML = text;
+						cell.style.background = background;
+						cell.style.color = color;
+						cell.style.border = border;
+						cell.style.boxShadow = shadow;
+					}
+				};
+
+				const write = function (target, titles) {
+					for (const title of titles) {
+						const head = ui.create.div("", target.panel);
+						head.style.position = "relative";
+						head.innerHTML = "【" + title.plain + "】";
+						head.style.color = "#ffe9a8";
+						head.style.fontSize = "13px";
+						const line = ui.create.div("", target.panel);
+						line.style.position = "relative";
+						line.innerHTML = title.skills.map(name => get.translation(name)).join("　");
+						line.style.color = "#e6dcff";
+						line.style.fontSize = "12px";
+						line.style.lineHeight = "1.25";
+						line.style.wordBreak = "break-all";
+					}
+				};
+
+				const say = function (target, text) {
+					if (target && target.status) target.status.innerHTML = text;
+				};
+
+				const sayOwner = function (target, text) {
+					const me = game.me;
+					if (target && me && me.playerid && target.ownerid && me.playerid !== target.ownerid) {
+						say(target, "请等待" + ((target.data && target.data.ownerName) || "") + "连线完成评鉴");
+						return;
+					}
+					say(target, text);
+				};
+
+				const keepGlow = function (target, entry) {
+					if (entry.timer) clearTimeout(entry.timer);
+					entry.timer = setTimeout(function () {
+						const later = ui["olshilunDialog_" + gid] && ui["olshilunDialog_" + gid].olshilun;
+						if (!later || !later.glows) return;
+						later.glows = later.glows.filter(item => item !== entry);
+						later.glow = later.glows.flatMap(item => item.cells);
+						paint(later);
+					}, 6000);
+				};
+
+				const light = function (index) {
+					const current = ui["olshilunDialog_" + gid] && ui["olshilunDialog_" + gid].olshilun;
+					if (!current || current.found.includes(index)) return;
+					const title = current.data.titles[index];
+					if (!title) return;
+					if (!current.glows) current.glows = [];
+					if (current.glows.some(entry => entry.index === index)) return;
+					const entry = { index: index, cells: title.cells.slice(), timer: null };
+					current.glows.push(entry);
+					current.glow = current.glows.flatMap(item => item.cells);
+					paint(current);
+					keepGlow(current, entry);
+				};
+
+				const dark = function (index) {
+					const current = ui["olshilunDialog_" + gid] && ui["olshilunDialog_" + gid].olshilun;
+					if (!current) return;
+					current.hidden[index] = true;
+					paint(current);
+				};
+
+				if (action === "create") {
+					if (dialog) return;
+					const data = a;
+					const ownerid = b;
+					const size = data.size || 6;
+					const node = ui.create.div(".olshilunDialog.popped", ui.window);
+					node.videoId = gid;
+					node.style.position = "absolute";
+					node.style.transition = "none";
+					node.style.left = "50%";
+					node.style.top = "50%";
+					node.style.transform = "translate(-50%, -50%)";
+					node.style.width = "fit-content";
+					node.style.height = "fit-content";
+					node.style.display = "flex";
+					node.style.flexDirection = "column";
+					node.style.alignItems = "center";
+					node.style.gap = "6px";
+					node.style.padding = "8px 14px 10px";
+					node.style.background = "linear-gradient(160deg, rgba(72,54,104,0.95), rgba(28,20,44,0.95))";
+					node.style.border = "1px solid rgba(220,198,255,0.7)";
+					node.style.borderRadius = "8px";
+					node.style.boxShadow = "0 0 20px rgba(120,80,190,0.65)";
+					node.style.zIndex = "30";
+					const heading = ui.create.div("", node);
+					heading.style.position = "relative";
+					heading.innerHTML = "评鉴";
+					heading.style.color = "#f2e6ff";
+					heading.style.fontSize = "20px";
+					heading.style.fontWeight = "bold";
+					heading.style.letterSpacing = "2px";
+					heading.style.textShadow = "0 0 6px rgba(150,90,220,0.95)";
+					heading.style.cursor = "move";
+					heading.style.userSelect = "none";
+					heading.addEventListener("mousedown", function (event) {
+						if (_status.dragged || _status.justdragged) return;
+						const zoom = game.documentZoom || 1;
+						const rect = node.getBoundingClientRect();
+						const startX = event.clientX;
+						const startY = event.clientY;
+						const startLeft = rect.left / zoom;
+						const startTop = rect.top / zoom;
+						const move = function (ev) {
+							node.style.transform = "";
+							node.style.left = startLeft + (ev.clientX - startX) / zoom + "px";
+							node.style.top = startTop + (ev.clientY - startY) / zoom + "px";
+						};
+						const up = function () {
+							document.removeEventListener("mousemove", move);
+							document.removeEventListener("mouseup", up);
+						};
+						document.addEventListener("mousemove", move);
+						document.addEventListener("mouseup", up);
+						event.preventDefault();
+					});
+					const main = ui.create.div("", node);
+					main.style.position = "relative";
+					main.style.display = "flex";
+					main.style.gap = "8px";
+					main.style.alignItems = "flex-start";
+					const field = ui.create.div("", main);
+					field.style.position = "relative";
+					field.style.display = "flex";
+					field.style.flexDirection = "column";
+					field.style.gap = "3px";
+					field.style.padding = "6px";
+					field.style.background = "rgba(18,10,32,0.7)";
+					field.style.borderRadius = "6px";
+					const cells = [];
+					for (let y = 0; y < size; y++) {
+						const row = ui.create.div("", field);
+						row.style.position = "relative";
+						row.style.display = "flex";
+						row.style.gap = "3px";
+						for (let x = 0; x < size; x++) {
+							const index = y * size + x;
+							const cell = ui.create.div("", row);
+							cell.style.position = "relative";
+							cell.dataset.index = index;
+							cell.innerHTML = data.chars[index];
+							cell.style.width = "42px";
+							cell.style.height = "42px";
+							cell.style.display = "flex";
+							cell.style.alignItems = "center";
+							cell.style.justifyContent = "center";
+							cell.style.textAlign = "center";
+							cell.style.lineHeight = "1";
+							cell.style.fontSize = "24px";
+							cell.style.borderRadius = "4px";
+							cell.style.border = "1px solid rgba(255,255,255,0.55)";
+							cell.style.boxSizing = "border-box";
+							cell.style.userSelect = "none";
+							cells[index] = cell;
+						}
+					}
+					const sidebar = ui.create.div("", main);
+					sidebar.style.position = "relative";
+					sidebar.style.width = "136px";
+					sidebar.style.height = size * 45 + "px";
+					sidebar.style.padding = "6px";
+					sidebar.style.background = "rgba(18,10,32,0.7)";
+					sidebar.style.borderRadius = "6px";
+					sidebar.style.display = "flex";
+					sidebar.style.flexDirection = "column";
+					sidebar.style.gap = "4px";
+					sidebar.style.boxSizing = "border-box";
+					sidebar.style.overflow = "hidden";
+					const sidebarTitle = ui.create.div("", sidebar);
+					sidebarTitle.style.position = "relative";
+					sidebarTitle.innerHTML = "获取技能";
+					sidebarTitle.style.color = "#fff";
+					sidebarTitle.style.fontSize = "14px";
+					sidebarTitle.style.textAlign = "center";
+					sidebarTitle.style.padding = "2px 0";
+					sidebarTitle.style.borderRadius = "4px";
+					sidebarTitle.style.background = "linear-gradient(90deg, rgba(160,100,230,0.95), rgba(88,46,158,0.95))";
+					const sidebarList = ui.create.div("", sidebar);
+					sidebarList.style.position = "relative";
+					sidebarList.style.flex = "1";
+					sidebarList.style.overflow = "auto";
+					sidebarList.style.display = "flex";
+					sidebarList.style.flexDirection = "column";
+					sidebarList.style.gap = "4px";
+					const status = ui.create.div("", node);
+					status.style.position = "relative";
+					status.innerHTML = "请连线完成评鉴";
+					status.style.color = "#ffeccc";
+					status.style.fontSize = "14px";
+					status.style.minHeight = "20px";
+					status.style.maxWidth = size * 45 + "px";
+					status.style.textAlign = "center";
+					status.style.textShadow = "0 0 4px #000";
+					const bar = ui.create.div("", node);
+					bar.style.position = "relative";
+					bar.style.width = size * 45 + "px";
+					bar.style.height = "10px";
+					bar.style.borderRadius = "5px";
+					bar.style.border = "1px solid rgba(255,255,255,0.45)";
+					bar.style.background = "rgba(0,0,0,0.65)";
+					bar.style.overflow = "hidden";
+					bar.style.boxSizing = "border-box";
+					const barInner = ui.create.div("", bar);
+					barInner.style.position = "relative";
+					barInner.style.width = "100%";
+					barInner.style.height = "100%";
+					barInner.style.background = "linear-gradient(90deg, #ff7b6b, #b81f1f)";
+					barInner.style.transition = "width 0.2s linear";
+					node.olshilun = {
+						gid: gid,
+						data: data,
+						ownerid: ownerid,
+						size: size,
+						cells: cells,
+						panel: sidebarList,
+						status: status,
+						bar: barInner,
+						selected: [],
+						found: [],
+						used: {},
+						hidden: {},
+						glow: [],
+						glows: [],
+						clock: null,
+						result: null,
+						finish: null,
+					};
+					paint(node.olshilun);
+					sayOwner(node.olshilun, "请连线完成评鉴");
+					ui["olshilunDialog_" + gid] = node;
+					const me = game.me;
+					if (me && me.playerid && me.playerid !== ownerid && (!me.isIn || me.isIn()) && !ui["olshilunHelper_" + gid]) {
+						const helper = ui.create.div("", node);
+						helper.style.position = "absolute";
+						helper.style.left = "100%";
+						helper.style.top = "50%";
+						helper.style.transform = "translateY(-50%)";
+						helper.style.marginLeft = "8px";
+						helper.style.display = "flex";
+						helper.style.flexDirection = "column";
+						helper.style.gap = "12px";
+						helper.style.zIndex = "31";
+						ui["olshilunHelper_" + gid] = helper;
+						const helperButtons = [];
+						let helperUsed = false;
+						const lockHelper = function () {
+							helperUsed = true;
+							for (const button of helperButtons) {
+								button.dataset.olshilunDisabled = "1";
+								button.style.opacity = "0.4";
+								button.style.boxShadow = "none";
+							}
+						};
+						const pickTitle = function () {
+							const current = ui["olshilunDialog_" + gid] && ui["olshilunDialog_" + gid].olshilun;
+							const list = [];
+							for (let i = 0; i < data.titles.length; i++) {
+								if (!current || !current.found.includes(i)) list.push(i);
+							}
+							return list.randomGet();
+						};
+						const pickCell = function () {
+							const current = ui["olshilunDialog_" + gid] && ui["olshilunDialog_" + gid].olshilun;
+							const list = [];
+							for (let i = 0; i < data.chars.length; i++) {
+								if (current && (current.used[i] || current.hidden[i])) continue;
+								list.push(i);
+							}
+							return list.randomGet();
+						};
+						const addButton = function (text, color, key, action) {
+							const button = ui.create.div("", helper);
+							button.style.position = "relative";
+							button.innerHTML = text;
+							button.style.width = "54px";
+							button.style.height = "54px";
+							button.style.borderRadius = "50%";
+							button.style.display = "flex";
+							button.style.alignItems = "center";
+							button.style.justifyContent = "center";
+							button.style.fontSize = "16px";
+							button.style.fontWeight = "bold";
+							button.style.color = "#fff";
+							button.style.cursor = "pointer";
+							button.style.userSelect = "none";
+							button.style.textShadow = "0 0 4px #000";
+							button.style.background = "radial-gradient(circle at 35% 30%, " + color + ", rgba(24,12,40,0.92))";
+							button.style.boxShadow = "0 0 14px 3px " + color;
+							button.addEventListener(lib.config.touchscreen ? "touchend" : "click", function () {
+								if (helperUsed || _status.dragged || _status.justdragged) return;
+								if (action === "glow" ? pickTitle() == null : pickCell() == null) return;
+								if (game.online) {
+									game.requestSkillData("olshilun_sync", key, 5000, gid);
+								} else {
+									lib.skill.olshilun.helperAction(game.me, gid, action);
+								}
+								lockHelper();
+							});
+							helperButtons.push(button);
+						};
+						addButton("协助", "rgba(255,214,106,0.95)", "assist", "glow");
+						addButton("妨碍", "rgba(255,122,122,0.95)", "hinder", "hide");
+					}
+					return;
+				}
+				if (action === "close") {
+					if (state && state.clock) clearInterval(state.clock);
+					if (dialog) dialog.remove();
+					delete ui["olshilunDialog_" + gid];
+					const helper = ui["olshilunHelper_" + gid];
+					if (helper) helper.remove();
+					delete ui["olshilunHelper_" + gid];
+					return;
+				}
+
+				if (!state) return;
+				if (action === "select") {
+					state.selected = (a || []).slice();
+					if (state.glows) {
+						for (const entry of state.glows) {
+							if (entry.cells.some(cell => state.selected.includes(cell))) keepGlow(state, entry);
+						}
+					}
+					paint(state);
+					sayOwner(state, "请连线完成评鉴");
+					return;
+				}
+				if (action === "found") {
+					const title = state.data.titles[a];
+					if (!title || state.found.includes(a)) return;
+					state.found.push(a);
+					for (const cell of title.cells) state.used[cell] = true;
+					state.selected = [];
+					if (state.glows) {
+						for (const entry of state.glows) {
+							if (entry.index === a && entry.timer) clearTimeout(entry.timer);
+						}
+						state.glows = state.glows.filter(entry => entry.index !== a);
+					}
+					state.glow = state.glows ? state.glows.flatMap(entry => entry.cells) : [];
+					paint(state);
+					write(state, [title]);
+					sayOwner(state, "完成称号：" + title.plain);
+					return;
+				}
+				if (action === "glow") {
+					light(a);
+					return;
+				}
+				if (action === "hide") {
+					dark(a);
+					return;
+				}
+				if (action === "finish") {
+					if (state.clock) {
+						clearInterval(state.clock);
+						state.clock = null;
+					}
+					say(state, b || "");
+					if (state.bar) state.bar.style.width = "0%";
+					return;
+				}
+			}
+			function play(player, gid, data, board, auto) {
+				if (!ui["olshilunDialog_" + gid]) board("create", gid, data, player.playerid);
+				const dialog = ui["olshilunDialog_" + gid];
+				const state = dialog && dialog.olshilun;
+				if (!state) {
+					game.resume();
+					return;
+				}
+				const currentEvent = _status.event;
+				const total = (data.timeLimit || 45) * 1000;
+				const send = function (action, ...args) {
+					if (game.online) board(action, gid, ...args);
+					else game.broadcastAll(board, action, gid, ...args);
+				};
+				let finished = false;
+				const clean = function (text) {
+					return String(text == null ? "" : text).replace(/#[a-zA-Z0-9]/g, "");
+				};
+				const finish = function () {
+					if (finished) return;
+					finished = true;
+					if (state.clock) {
+						clearInterval(state.clock);
+						state.clock = null;
+					}
+					const list = state.found.map(index => data.titles[index].title);
+					const result = { bool: list.length > 0, list: list };
+					state.result = result;
+					const text = list.length ? "评鉴完成：获得 " + list.map(name => "『" + clean(name) + "』").join("") : "评鉴失败";
+					if (game.online && currentEvent) currentEvent._result = result;
+					send("finish", result, text);
+					game.resume();
+					_status.imchoosing = false;
+				};
+				state.finish = finish;
+				const adjacent = function (a, b) {
+					const size = state.size;
+					return Math.abs((a % size) - (b % size)) + Math.abs(Math.floor(a / size) - Math.floor(b / size)) === 1;
+				};
+				const straight = function (a, b) {
+					const size = state.size;
+					return a % size === b % size || Math.floor(a / size) === Math.floor(b / size);
+				};
+				const doFound = function (index) {
+					const title = data.titles[index];
+					if (!title || state.found.includes(index)) return;
+					send("found", index);
+					if (game.online) game.requestSkillData("olshilun_sync", "found", 5000, gid, index);
+					if (!game.online) {
+						game.log(player, "完成称号", "#g" + title.plain);
+						if (player && typeof player.popup === "function") player.popup(title.plain, "fire");
+					}
+					if (state.found.length >= data.titles.length) finish();
+				};
+				const select = function (index) {
+					if (finished || state.used[index]) return;
+					const list = state.selected;
+					const pos = list.indexOf(index);
+					if (pos >= 0) {
+						if (pos === list.length - 1) list.pop();
+						else list.length = pos + 1;
+					} else if (!list.length || (adjacent(list[list.length - 1], index) && straight(list[0], index))) {
+						list.push(index);
+					} else {
+						list.length = 0;
+						list.push(index);
+					}
+					const text = list.map(cell => data.chars[cell]).join("");
+					send("select", list.slice());
+					if (!text) return;
+					const reverse = text.split("").reverse().join("");
+					for (let i = 0; i < data.titles.length; i++) {
+						if (state.found.includes(i)) continue;
+						if (data.titles[i].plain === text || data.titles[i].plain === reverse) {
+							doFound(i);
+							return;
+						}
+					}
+				};
+				if (auto) {
+					const order = data.titles.map((title, index) => index).randomSort();
+					let index = 0;
+					let step = 0;
+					let wait = 0;
+					state.clock = setInterval(function () {
+						if (finished) return;
+						if (!ui["olshilunDialog_" + gid]) {
+							finish();
+							return;
+						}
+						if (wait > 0) {
+							wait--;
+							return;
+						}
+						if (index >= order.length) {
+							finish();
+							return;
+						}
+						const title = data.titles[order[index]];
+						state.selected = title.cells.slice(0, ++step);
+						send("select", state.selected.slice());
+						if (step >= title.cells.length) {
+							doFound(order[index]);
+							index++;
+							step = 0;
+							wait = get.rand(2, 5);
+						}
+					}, 260);
+					game.pause();
+					return;
+				}
+				for (let i = 0; i < state.cells.length; i++) {
+					const cell = state.cells[i];
+					cell.style.cursor = "pointer";
+					cell.addEventListener(lib.config.touchscreen ? "touchend" : "click", function () {
+						if (_status.dragged || _status.justdragged) return;
+						select(Number(this.dataset.index));
+					});
+				}
+				const controls = ui.create.div("", dialog);
+				controls.style.position = "relative";
+				controls.style.display = "flex";
+				controls.style.gap = "12px";
+				const makeButton = function (text, handler) {
+					const button = ui.create.div("", controls);
+					button.style.position = "relative";
+					button.innerHTML = text;
+					button.style.padding = "3px 16px";
+					button.style.borderRadius = "4px";
+					button.style.fontSize = "14px";
+					button.style.color = "#fff";
+					button.style.cursor = "pointer";
+					button.style.userSelect = "none";
+					button.style.background = "linear-gradient(180deg, rgba(160,116,222,0.95), rgba(88,46,158,0.95))";
+					button.style.border = "1px solid rgba(255,255,255,0.5)";
+					button.addEventListener(lib.config.touchscreen ? "touchend" : "click", function () {
+						if (_status.dragged || _status.justdragged) return;
+						handler();
+					});
+				};
+				makeButton("重选", function () {
+					if (finished) return;
+					state.selected = [];
+					send("select", [], "请连线完成评鉴");
+				});
+				makeButton("结束", function () {
+					finish();
+				});
+				const start = Date.now();
+				state.clock = setInterval(function () {
+					if (finished) {
+						clearInterval(state.clock);
+						state.clock = null;
+						return;
+					}
+					const left = Math.max(0, total - (Date.now() - start));
+					if (state.bar) state.bar.style.width = ((left / total) * 100).toFixed(1) + "%";
+					if (left <= 0 || _status.auto) finish();
+				}, 200);
+				game.pause();
+			}
+			const gid = lib.status.videoId++;
+			const data = createBoard();
+			if (!data) {
+				event.result = { bool: false, list: [] };
+				return;
+			}
+			data.ownerName = get.translation(player);
+			game.broadcastAll(board, "create", gid, data, player.playerid);
+			const currentNode = ui["olshilunDialog_" + gid];
+			if (currentNode && currentNode.olshilun) currentNode.olshilun.board = board;
+			lib.skill.olshilun.aiHelperActions(
+				player,
+				gid,
+				game.filterPlayer2(current => current !== player && current.isIn())
+			);
+			if (event.isMine()) {
+				play(player, gid, data, board, false);
+			} else if (event.isOnline()) {
+				event.player.send(play, event.player, gid, data, board, false);
+				event.player.wait();
+				game.pause();
+			} else {
+				play(player, gid, data, board, true);
+			}
+			await game.pause();
+			const state = ui["olshilunDialog_" + gid] && ui["olshilunDialog_" + gid].olshilun;
+			let result = event.result;
+			if (!result || typeof result !== "object" || !Array.isArray(result.list)) {
+				result = (state && state.result) || event._result;
+			}
+			if (!result || typeof result !== "object" || !Array.isArray(result.list)) result = { bool: false, list: [] };
+			event.result = result;
+			const text = result.bool && result.list.length ? "评鉴完成：获得 " + result.list.map(name => "『" + plainTitle(name) + "』").join("") : "评鉴失败";
+			await game.delay(0.6);
+			game.broadcastAll(board, "finish", gid, result, text);
+			await game.delay(1.4);
+			game.broadcastAll(board, "close", gid);
+			if (result?.bool && result.list?.length) {
+				const map = { phaseUse: [], damageEnd: [], phaseJieshuBegin: [] };
+				for (const title of result.list) {
+					for (const item in _status.characterTitleInited[title]) map[item].addArray(_status.characterTitleInited[title][item]);
+				}
+				for (const item in map) {
+					player.storage[event.name][item].addArray(map[item]);
+					game.broadcast((player, storage) => (player.storage = storage), player, player.storage);
+				}
+				const addSkill = Object.values(map).flat();
+				player.refreshSkill(addSkill);
+				await player.addAdditionalSkills(event.name, addSkill, true);
+			}
+		},
+		aiHelperActions(player, gid, targets) {
+			const list = [];
+			for (const target of targets) {
+				if (target === game.me || target.isOnline()) continue;
+				const attitude = get.attitude(target, player);
+				if (!attitude) continue;
+				list.push({ player: target, action: attitude > 0 ? "glow" : "hide" });
+			}
+			list.randomSort();
+			let delay = 700 + get.rand(0, 500);
+			for (const item of list) {
+				setTimeout(() => lib.skill.olshilun.helperAction(item.player, gid, item.action), delay);
+				delay += 700 + get.rand(0, 900);
+			}
+		},
+		helperAction(player, gid, action) {
+			const dialog = ui["olshilunDialog_" + gid];
+			const state = dialog && dialog.olshilun;
+			const board = state && state.board;
+			if (!state || typeof board !== "function") return;
+			const list = [];
+			if (action === "glow") {
+				for (let i = 0; i < state.data.titles.length; i++) {
+					//已完成或正在协助的称号不再重复选中
+					if (state.found.includes(i)) continue;
+					if (state.actorFound && state.actorFound.includes(i)) continue;
+					if (state.glows && state.glows.some(entry => entry.index === i)) continue;
+					list.push(i);
+				}
+			} else {
+				for (let i = 0; i < state.data.chars.length; i++) {
+					//已经被妨碍过、已经用掉的字不再重复选中
+					if (state.used[i] || state.hidden[i]) continue;
+					if (state.actorUsed && state.actorUsed[i]) continue;
+					list.push(i);
+				}
+			}
+			const index = list.randomGet();
+			if (index == null) return;
+			game.log(player, "选择了", action === "glow" ? "#g协助" : "#g妨碍", "评鉴");
+			game.broadcastAll(board, action, gid, index);
+		},
+		ai: {
+			order: 10,
+			result: { player: 1 },
+		},
+		init(player, skill) {
+			game.addGlobalSkill(`${skill}_sync`);
+			player.storage[skill] ??= { phaseUse: [], damageEnd: [], phaseJieshuBegin: [] };
+		},
+		onremove: true,
+		subSkill: {
+			sync: {
+				charlotte: true,
+				sync: {
+					found(player, gid, index) {
+						const dialog = ui["olshilunDialog_" + gid];
+						const state = dialog && dialog.olshilun;
+						const title = state && state.data && state.data.titles[index];
+						if (!title) return;
+						state.actorFound ??= [];
+						state.actorUsed ??= {};
+						if (!state.actorFound.includes(index)) state.actorFound.push(index);
+						for (const cell of title.cells) state.actorUsed[cell] = true;
+					},
+					assist(player, gid) {
+						lib.skill.olshilun.helperAction(player, gid, "glow");
+					},
+					hinder(player, gid) {
+						lib.skill.olshilun.helperAction(player, gid, "hide");
+					},
+				},
+				trigger: { player: ["changeSkillsBegin", "useSkill", "logSkillBegin"] },
+				filter(event, player) {
+					if (event.name === "changeSkills") return event.removeSkill?.some(skill => player.additionalSkills.olshilun?.includes(skill));
+					const info = lib.skill[event.skill];
+					if (!info || info.charlotte) return false;
+					return player.additionalSkills.olshilun?.includes(get.sourceSkillFor(event.skill));
+				},
+				silent: true,
+				async content(event, trigger, player) {
+					if (trigger.name === "changeSkills") {
+						trigger._olshilun_remove = true;
+						for (const skill of trigger.removeSkill) {
+							if (!player.additionalSkills.olshilun?.includes(skill)) continue;
+							for (const item in player.storage.olshilun) {
+								if (player.storage.olshilun[item].includes(skill)) player.storage.olshilun[item].remove(skill);
+							}
+						}
+					} else {
+						const skill = get.sourceSkillFor(trigger.skill);
+						if (trigger.name === "useSkill") player.addTempSkill("olshilun_ban", "phaseUseAfter");
+						else {
+							const evt = trigger.log_event;
+							if (["damage", "phaseJieshu"].includes(evt._trigger.name)) player.addTempSkill(`olshilun_ban_${evt.triggername}`, `${evt._trigger.name}After`);
+							else player.addTempSkill("olshilun_ban", "phaseUseAfter");
+						}
+						await player.removeAdditionalSkills("olshilun", skill);
+					}
+				},
+			},
+			ban: {
+				charlotte: true,
+				init(player, skill) {
+					player.addSkillBlocker(skill);
+				},
+				onremove(player, skill) {
+					player.removeSkillBlocker(skill);
+				},
+				skillBlocker(skill, player) {
+					return player.additionalSkills.olshilun?.includes(skill) && player.storage.olshilun?.phaseUse?.includes(skill);
+				},
+			},
+			ban_damageEnd: {
+				charlotte: true,
+				init(player, skill) {
+					player.addSkillBlocker(skill);
+				},
+				onremove(player, skill) {
+					player.removeSkillBlocker(skill);
+				},
+				skillBlocker(skill, player) {
+					return player.additionalSkills.olshilun?.includes(skill) && player.storage.olshilun?.damageEnd?.includes(skill);
+				},
+			},
+			ban_phaseJieshuBegin: {
+				charlotte: true,
+				init(player, skill) {
+					player.addSkillBlocker(skill);
+				},
+				onremove(player, skill) {
+					player.removeSkillBlocker(skill);
+				},
+				skillBlocker(skill, player) {
+					return player.additionalSkills.olshilun?.includes(skill) && player.storage.olshilun?.phaseJieshuBegin?.includes(skill);
+				},
+			},
+		},
+	},
+	olzhuoming: {
+		audio: 2,
+		trigger: {
+			source: "damageSource",
+			player: "damageEnd",
+			global: "changeSkillsAfter",
+		},
+		filter(event, player, name) {
+			if (event.name === "changeSkills") return event._olshilun_remove;
+			if (player.getHistory(name === "damageSource" ? "sourceDamage" : "damage").indexOf(event) !== 0) return false;
+			return player.additionalSkills.olshilun?.some(skill => {
+				return game.hasPlayer(target => {
+					if (target === player) return false;
+					return !target.hasSkill(skill, null, false, false);
+				});
+			});
+		},
+		async cost(event, trigger, player) {
+			if (trigger.name === "changeSkills") event.result = { bool: true };
+			else {
+				const result = await player
+					.chooseButtonTarget({
+						createDialog: [
+							`###${get.prompt(event.skill)}###<div class='text center'>令一名其他角色获得你的一个“评鉴”技能</div>`,
+							[
+								player.additionalSkills.olshilun.map(skill => {
+									return [skill, '<div class="popup text" style="width:calc(100% - 10px);display:inline-block"><div class="skill">【' + get.translation(skill) + "】</div><div>" + lib.translate[skill + "_info"] + "</div></div>"];
+								}),
+								"textbutton",
+							],
+						],
+						filterButton(button) {
+							const player = get.player();
+							return game.hasPlayer(target => {
+								if (target === player) return false;
+								return !target.hasSkill(button.link, null, false, false);
+							});
+						},
+						filterTarget(cardx, player, target) {
+							if (target === player) return false;
+							return !target.hasSkill(ui.selected.buttons[0].link, null, false, false);
+						},
+						ai1(button) {
+							return 7 - get.skillRank(button.link);
+						},
+						ai2(target) {
+							const player = get.player();
+							return get.attitude(player, target);
+						},
+					})
+					.forResult();
+				if (result?.bool && result.links?.length && result.targets?.length) {
+					event.result = { bool: true, targets: result.targets, cost_data: result.links[0] };
+				}
+			}
+		},
+		async content(event, trigger, player) {
+			if (trigger.name === "changeSkills") await player.draw();
+			else {
+				const target = event.targets[0];
+				const skill = event.cost_data;
+				lib.skill.olshilun.init(target, "olshilun");
+				for (const item in player.storage.olshilun) {
+					if (player.storage.olshilun[item].includes(skill)) target.storage.olshilun[item].add(skill);
+				}
+				await player.removeAdditionalSkills("olshilun", skill);
+				await target.addAdditionalSkills("olshilun", skill, true);
+			}
+		},
+	},
 	//王皑（春丽来咯）
 	qinmian: {
 		audio: 2,
