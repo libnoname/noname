@@ -10080,7 +10080,7 @@ const skills = {
 					position: "hs",
 					viewAs: { name: links[0][2] },
 					log: false,
-					precontent() {
+					async precontent(event, trigger, player) {
 						player.logSkill("twylyanshi");
 						player.awakenSkill("twylyanshi");
 						if (player.storage.twduwang_ylyanshi) {
