@@ -41981,7 +41981,6 @@ const skills = {
 						if (att <= 0) {
 							return 0;
 						}
-						//if(target.isTurnedOver()) return 3*att;
 						if (target.isLinked() && get.effect(target, { name: "tiesuo" }, player, player) > 0) {
 							return 1.6 * att;
 						}
@@ -42003,9 +42002,8 @@ const skills = {
 				if (!target.isIn()) {
 					continue;
 				}
-				if (target.isLinked()) {
-					await target.link();
-				}
+				await target.link(false);
+				await target.turnOver(false);
 				if (!target.isIn()) {
 					continue;
 				}
@@ -42022,7 +42020,6 @@ const skills = {
 				player.removeSkill("baoshu_draw");
 			},
 		},
-		//group: "baoshu_draw",
 		subSkill: {
 			draw: {
 				trigger: { player: "phaseDrawBegin2" },

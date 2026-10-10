@@ -9035,8 +9035,8 @@ const skills = {
 					if (chooseCardResult.bool && chooseCardResult.links.length) {
 						var link = chooseCardResult.links[0];
 						event.cards.add(link);
-						await event.targets[1].equip(link);
 						event.targets[0].$give(link, event.targets[1]);
+						await event.targets[1].equip(link);
 						await game.delay();
 					} else {
 						break;
