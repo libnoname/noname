@@ -26,7 +26,8 @@ name: Build unsigned iOS IPA
 # 触发方式：GitHub 网页 → Actions → “Build unsigned iOS IPA” → Run workflow
 # 产物位置：运行页面底部的 Artifacts；同时会附到自动创建的 Release 上。
 #
-# 详细说明与本地构建方式见 apps/mobile/docs/ios.md。
+# 详细说明与本地构建方式见本仓库根目录的《无名杀 iOS 操作手册》：
+# https://github.com/cklsit/noname/blob/main/%E6%97%A0%E5%90%8D%E6%9D%80iOS%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C.md
 
 on:
   # 手动触发（推荐）
@@ -472,5 +473,5 @@ jobs:
             echo ""
             echo "下载：本页底部 **Artifacts**，或 [Releases](https://github.com/$GITHUB_REPOSITORY/releases)。"
             echo ""
-            echo "> 装到 iPhone 的步骤见 \`apps/mobile/docs/ios.md\`。"
+            echo "> 装到 iPhone 的步骤见[《无名杀 iOS 操作手册》](https://github.com/cklsit/noname/blob/main/%E6%97%A0%E5%90%8D%E6%9D%80iOS%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C.md)。"
           } >> "$GITHUB_STEP_SUMMARY"
