@@ -1904,7 +1904,7 @@ export class Game {
 		if (!lib.node || !lib.node.clients || game.online) {
 			return;
 		}
-		for (const client of lib.node.clients) {
+		for (const client of [...lib.node.clients]) {
 			if (client.inited) {
 				client.send(func, ...args);
 			}
@@ -2187,13 +2187,22 @@ export class Game {
 		game.ws.onmessage = lib.element.ws.onmessage;
 		game.ws.onerror = lib.element.ws.onerror;
 		game.ws.onclose = lib.element.ws.onclose;
+		// 连接超时处理
+		const ws = game.ws;
+		ws._connectTimeout = setTimeout(() => {
+			if (game.ws === ws && ws.readyState !== 1) {
+				ws.close();
+			}
+		}, 10000);
 		_status.ip = ip;
 	}
 	send() {
 		if (game.observe && arguments[0] != "reinited") {
 			return;
 		}
-		if (game.ws) {
+		// readyState 必须为 OPEN(1)；CLOSING(2)/CLOSED(3) 时 game.ws 仍非空，
+		// 直接 send 会抛 InvalidStateError
+		if (game.ws && game.ws.readyState === 1) {
 			const args = Array.from(arguments);
 			if (typeof args[0] == "function") {
 				args.unshift("exec");
