@@ -2201,9 +2201,9 @@ export default () => {
 				name: "唯我独尊",
 				mode: "identity",
 				intro: ["牌堆中杀的数量增加30%", "游戏开始时，主公获得一枚战神标记", "拥有战神标记的角色杀造成的伤害+1", "受到杀造成的伤害后战神印记将移到伤害来源的武将牌上"],
-				showcase: function (init) {
-					var node = this;
-					var player;
+				showcase(init) {
+					const node = this;
+					let player;
 					if (init) {
 						player = ui.create.player(null, true);
 						player.node.avatar.style.backgroundSize = "cover";
@@ -2219,50 +2219,26 @@ export default () => {
 					} else {
 						player = node.playernode;
 					}
-					var num = 0;
-					var num2 = 0;
-					this.showcaseinterval = setInterval(function () {
-						var dx, dy;
-						if (num2 % 5 == 0) {
+					let num2 = 0;
+					node.showcaseinterval = setInterval(() => {
+						if (num2 % 5 === 0) {
 							// player.addTempClass('target');
 							// player.addTempClass('zoomin');
 							player.classList.add("zoomin3");
 							player.hide();
 							player.style.transitionDuration = "0.7s";
-							setTimeout(function () {
+							setTimeout(() => {
 								player.style.transitionProperty = "none";
 								player.classList.remove("zoomin3");
 								player.classList.add("zoomout2");
-								setTimeout(function () {
+								setTimeout(() => {
 									player.style.transitionProperty = "";
 									player.classList.remove("zoomout2");
 									player.show();
 								}, 500);
 							}, 700);
-							for (var i = 0; i < 5; i++) {
-								switch (i) {
-									case 0:
-										dx = -180;
-										dy = 0;
-										break;
-									case 1:
-										dx = -140;
-										dy = 100;
-										break;
-									case 2:
-										dx = 0;
-										dy = 155;
-										break;
-									case 3:
-										dx = 140;
-										dy = 100;
-										break;
-									case 4:
-										dx = 180;
-										dy = 0;
-										break;
-								}
-								var card = game.createCard("sha", "noclick");
+							for (const [dx, dy] of [[-180, 0], [-140, 100], [0, 155], [140, 100], [180, 0]]) {
+								const card = game.createCard("sha", "noclick");
 								card.style.left = "calc(50% - 52px)";
 								card.style.top = "68px";
 								card.style.position = "absolute";
@@ -2272,24 +2248,14 @@ export default () => {
 								node.appendChild(card);
 								ui.refresh(card);
 								card.style.opacity = 1;
-								card.style.transform = "translate(" + dx + "px," + dy + "px)";
-								setTimeout(
-									(function (card) {
-										return function () {
-											card.delete();
-										};
-									})(card),
-									700
-								);
+								card.style.transform = `translate(${dx}px,${dy}px)`;
+								setTimeout(() => card.delete(), 700);
 							}
 						}
 						num2++;
-						if (num >= 5) {
-							num = 0;
-						}
 					}, 700);
 				},
-				init: function () {
+				init() {
 					game.identityVideoName = "唯我独尊";
 					lib.skill.weiwoduzun = {
 						mark: true,
@@ -2301,20 +2267,16 @@ export default () => {
 							damage: {
 								trigger: { source: "damageBegin" },
 								forced: true,
-								filter: function (event) {
-									return event.card && event.card.name == "sha" && event.notLink();
-								},
-								content: function () {
+								filter: event => event.card && event.card.name === "sha" && event.notLink(),
+								async content(event, trigger, player) {
 									trigger.num++;
 								},
 							},
 							lose: {
 								trigger: { player: "damageEnd" },
 								forced: true,
-								filter: function (event) {
-									return event.source && event.source.isAlive();
-								},
-								content: function () {
+								filter: event => event.source && event.source.isAlive(),
+								async content(event, trigger, player) {
 									player.removeSkill("weiwoduzun");
 									trigger.source.addSkill("weiwoduzun");
 								},
@@ -2325,10 +2287,10 @@ export default () => {
 					lib.translate.weiwoduzun_bg = "尊";
 				},
 				content: {
-					cardPile: function (list) {
-						var num = 0;
-						for (var i = 0; i < list.length; i++) {
-							if (list[i][2] == "sha") {
+					cardPile(list) {
+						let num = 0;
+						for (const card of list) {
+							if (card[2] === "sha") {
 								num++;
 							}
 						}
@@ -2337,15 +2299,15 @@ export default () => {
 							return list;
 						}
 						while (num--) {
-							var nature = "";
-							var rand = Math.random();
+							let nature = "";
+							const rand = Math.random();
 							if (rand < 0.15) {
 								nature = "fire";
 							} else if (rand < 0.3) {
 								nature = "thunder";
 							}
-							var suit = ["heart", "spade", "club", "diamond"].randomGet();
-							var number = Math.ceil(Math.random() * 13);
+							const suit = ["heart", "spade", "club", "diamond"].randomGet();
+							const number = Math.ceil(Math.random() * 13);
 							if (nature) {
 								list.push([suit, number, "sha", nature]);
 							} else {
@@ -2354,8 +2316,8 @@ export default () => {
 						}
 						return list;
 					},
-					gameStart: function () {
-						if (_status.mode == "zhong") {
+					gameStart() {
+						if (_status.mode === "zhong") {
 							game.zhong.addSkill("weiwoduzun");
 						} else {
 							game.zhu.addSkill("weiwoduzun");
