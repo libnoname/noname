@@ -3,6 +3,8 @@ import type { FileHandle } from "./handle";
 import type { CreateDirOptions, DirEntry, FileInfo, OpenOptions, RemoveOptions } from "./types";
 
 export interface FileSystemAdapter {
+	readonly supported: boolean;
+
 	open(path: string, options?: OpenOptions): Promise<FileHandle>;
 
 	read(path: string): Promise<Uint8Array>;
@@ -22,6 +24,8 @@ export interface FileSystemAdapter {
  * 在运行环境尚未提供文件系统实现时使用的默认适配器。
  */
 export class DefaultFileSystemAdapter implements FileSystemAdapter {
+	readonly supported = false;
+
 	async open(path: string, _options?: OpenOptions): Promise<FileHandle> {
 		throw this.createError(path);
 	}
@@ -51,7 +55,7 @@ export class DefaultFileSystemAdapter implements FileSystemAdapter {
 	}
 
 	private createError(path: string): FileSystemError {
-		return new FileSystemError(FileSystemErrorCode.IoError, path, {
+		return new FileSystemError(FileSystemErrorCode.NotSupported, path, {
 			cause: new Error("File system adapter has not been initialized, or platform doesn't support file system"),
 		});
 	}
