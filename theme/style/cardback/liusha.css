@@ -1,0 +1,9 @@
+.card:empty,
+.card.infohidden {
+	background: url("image/liusha.png");
+	background-size: 100% 100%;
+}
+.card.infohidden:not(.infoflip) {
+	background: url("image/liusha2.png");
+	background-size: 100% 100%;
+}

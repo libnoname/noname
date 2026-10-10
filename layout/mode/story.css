@@ -1,0 +1,230 @@
+.storyscene {
+	height: 500px;
+	top: calc(50% - 250px);
+	width: 100%;
+	position: absolute;
+	left: 0;
+	overflow-x: scroll;
+	overflow-y: hidden;
+	text-align: center;
+	white-space: nowrap;
+}
+.storyscene.removing {
+	pointer-events: none;
+	transform: translateY(500px);
+}
+.storyscene.lockscroll {
+	overflow-x: hidden;
+}
+.storyscene > .scene {
+	width: 350px;
+	height: 420px;
+	position: relative;
+	left: 0;
+	top: 40px;
+	margin-left: -40px;
+	margin-right: -40px;
+	z-index: 1;
+	border-radius: 16px !important;
+	overflow: hidden;
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.45) 0 3px 10px;
+}
+.storyscene > .scene > .background.player {
+	border-radius: 0 !important;
+	box-shadow: none !important;
+	width: 100%;
+	height: 100%;
+	left: 0;
+	top: 0;
+	z-index: 1;
+}
+.storyscene > .scene.unselectable {
+	opacity: 1 !important;
+	box-shadow: rgba(0, 0, 0, 0.1) 0 0 0 1px, rgba(0, 0, 0, 0.225) 0 3px 10px;
+}
+.storyscene > .scene.unselectable > .background {
+	opacity: 0.3;
+}
+.storyscene > .scene.unselectable > .name {
+	opacity: 0.6;
+}
+.storyscene > .scene.unselectable > div:not(.mask).background {
+	/*opacity: 0.25;*/
+}
+.storyscene > .scene > .mask {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	left: 0;
+	top: 0;
+	z-index: 3;
+}
+.storyscene > .scene > .mask > div {
+	width: 100%;
+	height: 240px;
+	top: calc(50% - 120px);
+	position: absolute;
+	left: 0;
+	text-align: center;
+	font-size: 80px;
+	line-height: 80px;
+	font-family: "xinwei";
+	opacity: 0.8;
+}
+.storyscene > .scene:not(.unselectable) > .mask {
+	display: none;
+}
+.storyscene > .scene.unselectable > .name {
+	/*display: none;*/
+}
+.storyscene > .scene.flipped {
+	z-index: 2;
+	border-radius: 12px !important;
+}
+.storyscene > .scene.flipped > div:not(.menu) {
+	display: none !important;
+}
+.storyscene > .scene:not(.flipped) > .menu {
+	display: none;
+}
+.storyscene > .scene:first-child {
+	margin-left: 50px;
+}
+.storyscene > .scene:last-child {
+	margin-right: 50px;
+}
+.storyscene > .scene > .name {
+	font-size: 48px;
+	left: 25px;
+	top: auto;
+	bottom: 28px;
+	/*transform: rotateY(-180deg);*/
+	border-radius: 16px !important;
+	z-index: 2;
+	font-family: "xinwei";
+}
+.storyscene > .scene > .menu {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	left: 0;
+	top: 0;
+	box-shadow: none;
+	overflow: scroll;
+}
+.storyscene > .scene > .background > .avatar {
+	width: calc(100% - 26px);
+	height: calc(100% - 26px);
+	left: 13px;
+	top: 13px;
+	z-index: 2;
+}
+.storyscene > .scene > .menu {
+	transform: rotateY(-180deg);
+}
+.storyscene > .scene.startscene {
+	-webkit-animation: scene_start 0.5s;
+}
+.scene > .menu > .menubutton.enter {
+	position: absolute;
+	top: auto;
+	bottom: 10px;
+	width: 70px;
+	left: calc(50% - 35px);
+}
+.scene > .menu > .conversation {
+	display: table;
+	position: absolute;
+	left: 16px;
+	top: 0;
+	width: calc(100% - 32px);
+	height: 100%;
+	font-size: 24px;
+	font-family: "xinwei";
+	white-space: normal;
+	text-align: left;
+}
+.scene > .menu > .conversation.center {
+	text-align: center;
+	font-size: 30px;
+}
+.scene > .menu > .avatarconversation {
+	position: relative;
+	display: block;
+	width: 100%;
+	height: 100px;
+	left: 0;
+	margin-top: 10px;
+}
+.scene > .menu > .avatarconversation:last-child {
+	margin-bottom: 10px;
+}
+.scene > .menu > .avatarconversation > div {
+	height: 100%;
+	top: 0;
+}
+.scene > .menu > .avatarconversation > .avatar {
+	width: 100px;
+	height: 100px;
+	left: 10px;
+	background-size: cover;
+}
+.scene > .menu > .avatarconversation.swap > .avatar {
+	left: auto;
+	right: 10px;
+}
+.scene > .menu > .avatarconversation > div:not(.avatar) {
+	width: calc(100% - 120px);
+	left: 120px;
+	top: 5px;
+	height: calc(100% - 5px);
+	text-align: left;
+	white-space: normal;
+	line-height: 18px;
+}
+.scene > .menu > .avatarconversation.swap > div:not(.avatar) {
+	left: auto;
+	right: 120px;
+	text-align: right;
+}
+.scene > .menu > .conversation > div {
+	display: table-cell;
+	vertical-align: middle;
+	position: relative;
+}
+#create-player {
+	width: 400px;
+	height: 300px;
+	left: calc(50% - 200px);
+	top: calc(50% - 150px);
+	position: absolute;
+	-webkit-animation: dialog_start2 0.5s;
+}
+#create-player > div {
+	position: absolute;
+}
+#create-player > .caption {
+	width: 100%;
+	height: 24px;
+	line-height: 24px;
+	left: 0;
+	top: 0;
+	font-family: "xinwei";
+	font-size: 24px;
+	text-align: center;
+}
+
+@-webkit-keyframes scene_start {
+	from {
+		opacity: 0;
+		transform: scale(0.5);
+		margin-left: -175px;
+		margin-right: -175px;
+	}
+	to {
+		opacity: 1;
+		transform: scale(1);
+		margin-left: 16px;
+		margin-right: 16px;
+	}
+}
