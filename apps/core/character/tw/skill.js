@@ -8737,6 +8737,7 @@ const skills = {
 	},
 	// 幻周瑜
 	twdumou: {
+		audio: 2,
 		trigger: {
 			player: ["loseAfter", "gainAfter"],
 			global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
@@ -8901,6 +8902,7 @@ const skills = {
 		},
 	},
 	twhantian: {
+		audio: 2,
 		enable: "phaseUse",
 		locked: false,
 		usable: 1,
