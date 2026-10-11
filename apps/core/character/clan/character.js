@@ -123,7 +123,8 @@ const characters = {
 		sex: "female",
 		group: "qun",
 		hp: 4,
-		skills: ["clanzhuiji", "clanyunying", "clandaojie"],
+		skills: ["clandunji", "clanyunying", "clandaojie"],
+		groupBorder: "jin",
 		clans: ["颍川荀氏"],
 	},
 	clan_zhugeguo: {

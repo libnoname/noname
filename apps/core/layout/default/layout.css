@@ -5734,3 +5734,26 @@ progress.progress::-webkit-progress-value {
 	text-decoration: underline;
 	font-weight: bolder;
 }
+
+.card.oljuhun {
+	background: #f5f0df !important;
+	color: #171717 !important;
+}
+.card.oljuhun > :not(.oljuhun-label) {
+	visibility: hidden !important;
+}
+.card.oljuhun > .oljuhun-label {
+	display: block !important;
+	visibility: visible !important;
+}
+.card.oljuhun.selectable:not(.selected) {
+	outline: 2px solid #eac35b !important;
+	outline-offset: -3px;
+}
+.card.oljuhun.selected {
+	outline: 3px solid #fff0a0 !important;
+	outline-offset: -3px;
+}
+#arena.selecting .card.oljuhun:not(.selectable):not(.selected) {
+	filter: brightness(0.48) grayscale(0.65) !important;
+}

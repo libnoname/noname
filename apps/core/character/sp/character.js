@@ -7,6 +7,12 @@ const characters = {
 		skills: ["olhuaguang", "olxuanbai"],
 		names: "孙|寒华",
 	},
+	ol_xushao: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["olshilun", "olzhuoming"],
+	},
 	wangai: {
 		sex: "female",
 		group: "wei",

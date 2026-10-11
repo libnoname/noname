@@ -1,4 +1,5 @@
 export default {
+	mb_mayunlu: "巾帼花武",
 	//mb_dingshangwan: "",
 	re_wangji: "学行坚白",
 	mb_shen_caocao: "天下归心",

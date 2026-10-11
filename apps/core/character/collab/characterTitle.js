@@ -1,5 +1,7 @@
 export default {
 	//注：此包武将称号多取自于线下制图，可能存在版本差异，线上暂无较统一的版本称号或暂缺）
+	ggbond: "坚毅勇敢",
+	feifeigongzhu: "善良浪漫",
 	ol_niuma: "天选牛马",
 	xiangxue_liushan: "学海无涯",
 	haoxue_lvmeng: "学海无涯",
@@ -8,6 +10,7 @@ export default {
 	natu_zhaoyun: "长坂救主",
 	natu_zhugeliang: "鞠躬尽瘁",
 	tw_dm_zhouyu: "魔气纵横",
+	tw_dm_zhangliang: "鏖战广宗",
 	jm_yuanshu: "基米", //我说得有基米精神
 	mb_muniu: "自行奇甲",
 	mb_chitu: "烈火流霞",

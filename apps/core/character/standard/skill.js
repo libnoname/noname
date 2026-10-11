@@ -856,7 +856,7 @@ const skills = {
 					},
 				});
 				if (get.mode() !== "guozhan" && !player.hasSkillTag("rejudge")) {
-					judgeEvent.set("callback", async event => {
+					judgeEvent.set("callback", async (event, trigger, player) => {
 						if (event.judgeResult.color === "black" && get.position(event.card, true) === "o") {
 							await player.gain({
 								cards: [event.card],
