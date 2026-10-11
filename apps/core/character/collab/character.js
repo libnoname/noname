@@ -24,9 +24,8 @@ const characters = {
 		sex: "male",
 		group: "shu",
 		hp: 4,
-		skills: [],
+		skills: ["oljunzhu", "olrehuanshi"],
 		groupBorder: "qun",
-		isUnseen: true,
 	},
 	ol_niuma: {
 		sex: "male",

@@ -30,32 +30,21 @@ const skills = {
 					if (!owner || typeof owner.isZhu2 !== "function" || !owner.isZhu2()) return false;
 				}
 				if (type === "phaseUse") {
-					const infox = get.plainText(lib.translate[name + "_info"] || "");
-					if (infox.includes("当你于出牌阶段") && !infox.includes("当你于出牌阶段外")) return true;
+					let enables = info.enable;
+					if (!enables) return false;
+					if (!Array.isArray(enables)) enables = [enables];
+					return enables.includes("phaseUse");
 				}
 				let triggers = info.trigger && info.trigger.player;
 				if (!triggers) return false;
 				if (!Array.isArray(triggers)) triggers = [triggers];
-				const targets = { phaseUse: ["phaseUse"], phaseJieshu: ["phaseJieshuBegin"], damage: ["damageEnd"] }[type] || [];
-				return triggers.includes(type) || triggers.some(item => targets.includes(item));
-			}
-
-			function getSkillList(title) {
-				const list = [];
-				const map = _status.characterTitleInited ? _status.characterTitleInited[title] : null;
-				if (map) {
-					for (const type of ["phaseUse", "phaseJieshuBegin", "damageEnd"]) {
-						for (const name of map[type] || []) list.add(name);
-					}
-				}
-				return list;
+				return triggers.includes(type);
 			}
 
 			function initTitles() {
 				if (_status.characterTitleInited) return;
 				_status.characterTitleInited = {};
 				game.initCharacterList();
-				const typeMap = { phaseUse: "phaseUse", phaseJieshu: "phaseJieshuBegin", damage: "damageEnd" };
 				const allList = _status.characterlist.slice();
 				for (const target of game.filterPlayer2()) {
 					for (const name of get.nameList(target)) {
@@ -66,21 +55,15 @@ const skills = {
 					if (!lib.characterTitle[name]) continue;
 					const skills2 = lib.character[name] && lib.character[name].skills;
 					if (!skills2 || !skills2.length) continue;
-					let init = false;
-					const map = { phaseUse: [], phaseJieshuBegin: [], damageEnd: [] };
+					const skills = [];
 					for (const skill2 of skills2) {
-						const skills = [skill2];
-						game.expandSkills(skills);
-						for (const skill of skills) {
-							for (const type of ["phaseUse", "phaseJieshu", "damage"]) {
-								if (checkSkill(skill, type)) {
-									init = true;
-									map[typeMap[type]].add(skill2);
-								}
-							}
+						const list = [skill2];
+						game.expandSkills(list);
+						if (list.some(skill => ["phaseUse", "phaseJieshuBegin", "damageEnd"].some(type => checkSkill(skill, type)))) {
+							skills.add(skill2);
 						}
 					}
-					if (init) _status.characterTitleInited[lib.characterTitle[name]] = map;
+					if (skills.length) _status.characterTitleInited[lib.characterTitle[name]] = skills;
 				}
 			}
 
@@ -90,8 +73,6 @@ const skills = {
 					const chars = Array.from(plainTitle(title));
 					if (chars.length < TITLE_MIN || chars.length > TITLE_MAX) continue;
 					if (!chars.every(char => /[\u4e00-\u9fff]/.test(char))) continue;
-					const skills = getSkillList(title);
-					if (!skills.length) continue;
 					pool.push({ title: title, plain: chars.join(""), chars: chars });
 				}
 				return pool;
@@ -150,7 +131,7 @@ const skills = {
 					path.forEach((cell, index) => {
 						cells[cell] = { char: item.chars[index] };
 					});
-					titles.push({ title: item.title, plain: item.plain, cells: path.slice(), skills: getSkillList(item.title) });
+					titles.push({ title: item.title, plain: item.plain, cells: path.slice(), skills: _status.characterTitleInited[item.title] });
 					budget -= item.chars.length;
 				}
 				if (titles.length < TITLE_COUNT_MIN) return null;
@@ -822,16 +803,10 @@ const skills = {
 			await game.delay(1.4);
 			game.broadcastAll(board, "close", gid);
 			if (result?.bool && result.list?.length) {
-				const map = { phaseUse: [], damageEnd: [], phaseJieshuBegin: [] };
-				for (const title of result.list) {
-					for (const item in _status.characterTitleInited[title]) map[item].addArray(_status.characterTitleInited[title][item]);
-				}
-				for (const item in map) {
-					player.storage[event.name][item].addArray(map[item]);
-					game.broadcast((player, storage) => (player.storage = storage), player, player.storage);
-				}
-				const addSkill = Object.values(map).flat();
+				let addSkill = [];
+				for (const title of result.list) addSkill.addArray(_status.characterTitleInited[title]);
 				player.refreshSkill(addSkill);
+				player.addSkill(`${event.name}_use`);
 				await player.addAdditionalSkills(event.name, addSkill, true);
 			}
 		},
@@ -883,7 +858,6 @@ const skills = {
 		},
 		init(player, skill) {
 			game.addGlobalSkill(`${skill}_sync`);
-			player.storage[skill] ??= { phaseUse: [], damageEnd: [], phaseJieshuBegin: [] };
 		},
 		onremove: true,
 		subSkill: {
@@ -907,69 +881,201 @@ const skills = {
 						lib.skill.olshilun.helperAction(player, gid, "hide");
 					},
 				},
-				trigger: { player: ["changeSkillsBegin", "useSkill", "logSkillBegin"] },
+				trigger: { player: ["changeSkillsBegin", "useSkill", "logSkillBegin", "phaseUseEnd", "damageEnd", "phaseJieshuBegin"] },
 				filter(event, player) {
 					if (event.name === "changeSkills") return event.removeSkill?.some(skill => player.additionalSkills.olshilun?.includes(skill));
-					const info = lib.skill[event.skill];
+					if (event.name === "phaseUse" || event.name === "damage" || event.name === "phaseJieshu") {
+						if (!player.storage.olshilun_use) return false;
+						return Object.keys(player.storage.olshilun_use).some(skill => player.storage.olshilun_use[skill] === event);
+					}
+					const info = get.info(event.skill);
 					if (!info || info.charlotte) return false;
-					return player.additionalSkills.olshilun?.includes(get.sourceSkillFor(event.skill));
+					const skill = get.sourceSkillFor(event);
+					return player.additionalSkills.olshilun?.includes(skill);
 				},
 				silent: true,
 				async content(event, trigger, player) {
 					if (trigger.name === "changeSkills") {
 						trigger._olshilun_remove = true;
 						for (const skill of trigger.removeSkill) {
-							if (!player.additionalSkills.olshilun?.includes(skill)) continue;
-							for (const item in player.storage.olshilun) {
-								if (player.storage.olshilun[item].includes(skill)) player.storage.olshilun[item].remove(skill);
+							if (player.storage.olshilun_use?.[skill]) {
+								delete player.storage.olshilun_use[skill];
+								game.broadcast((player, storage) => (player.storage = storage), player, player.storage);
 							}
 						}
-					} else {
-						const skill = get.sourceSkillFor(trigger.skill);
-						if (trigger.name === "useSkill") player.addTempSkill("olshilun_ban", "phaseUseAfter");
-						else {
-							const evt = trigger.log_event;
-							if (["damage", "phaseJieshu"].includes(evt._trigger.name)) player.addTempSkill(`olshilun_ban_${evt.triggername}`, `${evt._trigger.name}After`);
-							else player.addTempSkill("olshilun_ban", "phaseUseAfter");
+					} else if (trigger.name === "phaseUse" || trigger.name === "damage" || trigger.name === "phaseJieshu") {
+						const skills = Object.keys(player.storage.olshilun_use).filter(skill => player.storage.olshilun_use[skill] === trigger);
+						for (const skill of skills) {
+							if (player.storage.olshilun_use?.[skill]) {
+								delete player.storage.olshilun_use[skill];
+								game.broadcast((player, storage) => (player.storage = storage), player, player.storage);
+							}
 						}
-						await player.removeAdditionalSkills("olshilun", skill);
+					} else await player.removeAdditionalSkills("olshilun", get.sourceSkillFor(trigger));
+				},
+			},
+			use: {
+				charlotte: true,
+				init(player, skill) {
+					player.storage[skill] ??= { event: [] };
+					player.addSkillBlocker(skill);
+				},
+				skillBlocker(skill, player) {
+					return player.additionalSkills.olshilun?.includes(skill) && !player.storage.olshilun_use?.[skill];
+				},
+				onChooseToUse(event) {
+					if (event.type === "phase" && !game.online && !event._olshilun_init) {
+						event._olshilun_init = true;
+						const player = event.player;
+						if (Array.isArray(player.additionalSkills.olshilun)) {
+							let skills = player.additionalSkills.olshilun.slice();
+							game.expandSkills(skills);
+							for (const name of skills) {
+								const info = lib.skill[name];
+								if (info?.onChooseToUse) info.onChooseToUse(event);
+							}
+						}
 					}
 				},
-			},
-			ban: {
-				charlotte: true,
-				init(player, skill) {
-					player.addSkillBlocker(skill);
+				enable: "phaseUse",
+				trigger: { player: ["phaseJieshuBegin", "damageEnd"] },
+				filter(event, player, name) {
+					if (!Array.isArray(player.additionalSkills.olshilun)) return false;
+					if (event.name === "chooseToUse") {
+						if (player.storage.olshilun_use?.event.includes(event.getParent())) return false;
+						return player.additionalSkills.olshilun.some(skillx => {
+							let skills = [skillx];
+							game.expandSkills(skills);
+							return skills.some(skill => {
+								const info = lib.skill[skill];
+								if (!info?.enable || info.charlotte || info.silent || info.juexingji || info.hiddenSkill || info.dutySkill || (info.zhuSkill && !player.isZhu2())) return false;
+								if (info.enable === "phaseUse" || (Array.isArray(info.enable) && info.enable.includes("phaseUse"))) {
+									if (info.filter) {
+										try {
+											const bool = info.filter(event, player);
+											if (!bool) return false;
+										} catch (e) {
+											return false;
+										}
+									} else if (info.viewAs && typeof info.viewAs !== "function") {
+										try {
+											if (event.filterCard && !event.filterCard(info.viewAs, player, event)) return false;
+											if (info.viewAsFilter && info.viewAsFilter(player) === false) return false;
+										} catch (e) {
+											return false;
+										}
+									}
+									return true;
+								}
+							});
+						});
+					}
+					if (player.storage.olshilun_use?.event.includes(event)) return false;
+					return player.additionalSkills.olshilun.some(skillx => {
+						let skills = [skillx];
+						game.expandSkills(skills);
+						return skills.some(skill => {
+							const info = lib.skill[skill];
+							if (!info?.trigger?.player || info.silent || info.juexingji || info.hiddenSkill || info.dutySkill || (info.zhuSkill && !player.isZhu2())) return false;
+							if (info.trigger.player === name || (Array.isArray(info.trigger.player) && info.trigger.player.includes(name))) {
+								if (info.filter) {
+									try {
+										const bool = info.filter(event, player, name);
+										if (!bool) return false;
+									} catch (e) {
+										return false;
+									}
+								}
+								return true;
+							}
+						});
+					});
 				},
-				onremove(player, skill) {
-					player.removeSkillBlocker(skill);
+				prompt(event, player) {
+					event = event || get.event();
+					player = player || event.player;
+					return event.name === "chooseToUse" ? "选择一个“评鉴”技能发动" : get.prompt("olshilun");
 				},
-				skillBlocker(skill, player) {
-					return player.additionalSkills.olshilun?.includes(skill) && player.storage.olshilun?.phaseUse?.includes(skill);
-				},
-			},
-			ban_damageEnd: {
-				charlotte: true,
-				init(player, skill) {
-					player.addSkillBlocker(skill);
-				},
-				onremove(player, skill) {
-					player.removeSkillBlocker(skill);
-				},
-				skillBlocker(skill, player) {
-					return player.additionalSkills.olshilun?.includes(skill) && player.storage.olshilun?.damageEnd?.includes(skill);
-				},
-			},
-			ban_phaseJieshuBegin: {
-				charlotte: true,
-				init(player, skill) {
-					player.addSkillBlocker(skill);
-				},
-				onremove(player, skill) {
-					player.removeSkillBlocker(skill);
-				},
-				skillBlocker(skill, player) {
-					return player.additionalSkills.olshilun?.includes(skill) && player.storage.olshilun?.phaseJieshuBegin?.includes(skill);
+				prompt2: () => "选择一个“评鉴”技能发动",
+				popup: false,
+				delay: 0,
+				async content(event, trigger, player) {
+					let skills;
+					let evt = event.getParent(2);
+					if (!trigger) {
+						player.storage[event.name].event.push(evt.getParent());
+						game.broadcast((player, storage) => (player.storage = storage), player, player.storage);
+						skills = player.additionalSkills.olshilun.filter(skillx => {
+							let skills = [skillx];
+							game.expandSkills(skills);
+							return skills.some(skill => {
+								const info = lib.skill[skill];
+								if (!info?.enable || info.charlotte || info.silent || info.juexingji || info.hiddenSkill || info.dutySkill || (info.zhuSkill && !player.isZhu2())) return false;
+								if (info.enable === "phaseUse" || (Array.isArray(info.enable) && info.enable.includes("phaseUse"))) {
+									if (info.filter) {
+										try {
+											const bool = info.filter(evt, player);
+											if (!bool) return false;
+										} catch (e) {
+											return false;
+										}
+									} else if (info.viewAs && typeof info.viewAs !== "function") {
+										try {
+											if (evt.filterCard && !evt.filterCard(info.viewAs, player, evt)) return false;
+											if (info.viewAsFilter && info.viewAsFilter(player) === false) return false;
+										} catch (e) {
+											return false;
+										}
+									}
+									return true;
+								}
+							});
+						});
+					} else {
+						let name = event.triggername;
+						player.storage[event.name].event.push(trigger);
+						game.broadcast((player, storage) => (player.storage = storage), player, player.storage);
+						skills = player.additionalSkills.olshilun.filter(skillx => {
+							let skills = [skillx];
+							game.expandSkills(skills);
+							return skills.some(skill => {
+								const info = lib.skill[skill];
+								if (!info?.trigger?.player || info.silent || info.juexingji || info.hiddenSkill || info.dutySkill || (info.zhuSkill && !player.isZhu2())) return false;
+								if (info.trigger.player === name || (Array.isArray(info.trigger.player) && info.trigger.player.includes(name))) {
+									if (info.filter) {
+										try {
+											const bool = info.filter(trigger, player, name);
+											if (!bool) return false;
+										} catch (e) {
+											return false;
+										}
+									}
+									return true;
+								}
+							});
+						});
+					}
+					const result = await player
+						.chooseButton({
+							createDialog: [
+								"世论：选择一个“评鉴”技能发动",
+								[
+									skills.map(skill => {
+										return [skill, '<div class="popup text" style="width:calc(100% - 10px);display:inline-block"><div class="skill">【' + get.translation(skill) + "】</div><div>" + lib.translate[skill + "_info"] + "</div></div>"];
+									}),
+									"textbutton",
+								],
+							],
+							forced: true,
+							ai: () => 1 + Math.random(),
+						})
+						.forResult();
+					if (result?.bool && result.links?.length) {
+						const skill = result.links[0];
+						player.addTempSkill(skill);
+						player.storage[event.name][skill] = trigger || evt.getParent();
+						game.broadcast((player, storage) => (player.storage = storage), player, player.storage);
+					}
 				},
 			},
 		},
@@ -1035,11 +1141,9 @@ const skills = {
 			else {
 				const target = event.targets[0];
 				const skill = event.cost_data;
-				lib.skill.olshilun.init(target, "olshilun");
-				for (const item in player.storage.olshilun) {
-					if (player.storage.olshilun[item].includes(skill)) target.storage.olshilun[item].add(skill);
-				}
 				await player.removeAdditionalSkills("olshilun", skill);
+				target.refreshSkill(skill);
+				target.addSkill("olshilun_use");
 				await target.addAdditionalSkills("olshilun", skill, true);
 			}
 		},
