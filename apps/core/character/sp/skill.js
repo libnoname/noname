@@ -8104,6 +8104,7 @@ const skills = {
 	olshanjia: {
 		audio: "shanjia",
 		enable: "phaseUse",
+		manualConfirm: true,
 		prompt() {
 			return lib.translate.olshanjia_info.split("③")[1];
 		},
