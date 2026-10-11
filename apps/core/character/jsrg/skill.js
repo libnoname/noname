@@ -1581,12 +1581,12 @@ const skills = {
 				onremove: true,
 				mod: {
 					cardSavable: (card, player) => {
-						if (player.getStorage("jsrgzonghai_blocker").includes(get.event().getParent()._jsrgzonghai_id)) {
+						if (player.getStorage("jsrgzonghai_blocker").includes(get.event().getParent("dying", false, true)._jsrgzonghai_id)) {
 							return false;
 						}
 					},
 					cardEnabled: (card, player) => {
-						if (player.getStorage("jsrgzonghai_blocker").includes(get.event().getParent()._jsrgzonghai_id)) {
+						if (player.getStorage("jsrgzonghai_blocker").includes(get.event().getParent("dying", false, true)._jsrgzonghai_id)) {
 							return false;
 						}
 					},
