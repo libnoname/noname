@@ -2698,19 +2698,20 @@ const skills = {
 				forced: true,
 				trigger: { player: "phaseEnd" },
 				filter(event, player) {
-					return game.hasPlayer(i => i.hasMark("dcdichou"));
+					return game.hasPlayer(current => current.hasHistory("custom", evt => evt.dcdichou)) || game.hasPlayer(current => current.hasMark("dcdichou"));
 				},
-				logTarget: () => game.filterPlayer(i => i.hasMark("dcdichou")).sortBySeat(),
+				//logTarget: () => game.filterPlayer(i => i.hasMark("dcdichou")).sortBySeat(),
 				async content(event, trigger, player) {
-					for (const current of event.targets) {
+					for (const current of game.filterPlayer()) {
 						if (current.hasMark("dcdichou")) {
 							current.clearMark("dcdichou");
 							current.getHistory("custom").push({ dcdichou: true });
 						}
 					}
+					if (!game.hasPlayer(current => current.hasHistory("custom", evt => evt.dcdichou))) return;
 					const result = await player
 						.chooseTarget({
-							prompt: "涤仇：对任意名本回合移除过“仇”的角色各造成1点火焰伤害",
+							prompt: "涤仇：对至少一名本回合移除过“仇”的角色各造成1点火焰伤害",
 							selectTarget: [1, Infinity],
 							forced: true,
 							filterTarget: (card, player, target) => {
@@ -2728,10 +2729,7 @@ const skills = {
 					const targets = result.targets.sortBySeat();
 					player.line(targets);
 					for (const target of targets) {
-						if (!target.isIn()) {
-							continue;
-						}
-						target.damage("fire");
+						await target.damage("fire");
 					}
 				},
 			},
