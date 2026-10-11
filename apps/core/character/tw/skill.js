@@ -2668,7 +2668,7 @@ const skills = {
 			isCard: true,
 			storage: { twguanhuo: true },
 		},
-		precontent() {
+		async precontent(event, trigger, player) {
 			player.addTempSkill("twguanhuo_effect");
 		},
 		filterCard: () => false,
@@ -6327,15 +6327,13 @@ const skills = {
 		locked: false,
 		viewAs: {
 			name: "sha",
-			storage: {
-				twliyuan: true,
-			},
+			storage: { twliyuan: true },
 		},
 		filter(event, player) {
 			return player.countCards("hes", card => get.subtypes(card).some(i => player.hasDisabledSlot(i)));
 		},
 		position: "hes",
-		precontent() {
+		async precontent(event, trigger, player) {
 			event.getParent().addCount = false;
 		},
 		prompt: "将一张与你已废除的装备栏对应副类别的装备牌当【杀】使用或打出",
@@ -17192,7 +17190,7 @@ const skills = {
 		position: "hs",
 		log: false,
 		group: ["twluanlve_directHit"],
-		precontent() {
+		async precontent(event, trigger, player) {
 			player.logSkill("twluanlve");
 			player.addMark("twluanlve", 1, false);
 		},
@@ -22644,7 +22642,7 @@ const skills = {
 		selectCard() {
 			return _status.event.skill == "twjiange" ? 1 : Infinity;
 		},
-		precontent() {
+		async precontent(event, trigger, player) {
 			if (player != _status.currentPhase) {
 				player
 					.when({ player: ["useCard", "respond"] })
@@ -24526,7 +24524,7 @@ const skills = {
 					filterCard: () => false,
 					selectCard: -1,
 					log: false,
-					precontent() {
+					async precontent(event, trigger, player) {
 						player.logSkill("twyingji");
 						player.draw("nodelay");
 					},
@@ -24572,7 +24570,7 @@ const skills = {
 		selectCard: [0, 1],
 		check: () => 1,
 		log: false,
-		precontent() {
+		async precontent(event, trigger, player) {
 			player.logSkill("twyingji");
 			player.draw("nodelay");
 		},
