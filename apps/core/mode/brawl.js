@@ -2330,10 +2330,10 @@ export default () => {
 				mode: "versus",
 				submode: "2v2",
 				intro: "姓氏相同的武将组合一队",
-				showcase: function (init) {
-					var node = this;
-					var getList = function () {
-						var list = [
+				showcase(init) {
+					const node = this;
+					const getList = () => {
+						const list = [
 							["guanyu", "guanping", "guansuo", "guanyinping"],
 							["caocao", "caopi", "caozhi", "caorui"],
 							["liubei", "liushan", "liuchen"],
@@ -2344,37 +2344,37 @@ export default () => {
 							["mateng", "machao", "old_madai", "mayunlu"],
 						];
 						list.randomSort();
-						var list2 = [];
-						for (var i = 0; i < list.length; i++) {
-							list2 = list2.concat(list[i]);
+						let list2 = [];
+						for (const characters of list) {
+							list2 = list2.concat(characters);
 						}
 						node.list = list2;
 					};
-					var func = function () {
+					const func = () => {
 						if (!node.list.length) {
 							getList();
 						}
-						var card = ui.create.player(null, true);
+						const card = ui.create.player(null, true);
 						card.init(node.list.shift());
 						card.node.marks.remove();
 						card.node.count.remove();
 						card.node.hp.remove();
 						node.nodes.push(card);
 						card.style.position = "absolute";
-						var rand1 = Math.round(Math.random() * 100);
-						var rand2 = Math.round(Math.random() * 100);
-						var rand3 = Math.round(Math.random() * 40) - 20;
-						card.style.left = "calc(" + rand1 + "% - " + rand1 * 1.5 + "px)";
-						card.style.top = "calc(" + rand2 + "% - " + rand2 * 1.8 + "px)";
-						card.style.transform = "scale(1.2) rotate(" + rand3 + "deg)";
+						const rand1 = Math.round(Math.random() * 100);
+						const rand2 = Math.round(Math.random() * 100);
+						const rand3 = Math.round(Math.random() * 40) - 20;
+						card.style.left = `calc(${rand1}% - ${rand1 * 1.5}px)`;
+						card.style.top = `calc(${rand2}% - ${rand2 * 1.8}px)`;
+						card.style.transform = `scale(1.2) rotate(${rand3}deg)`;
 						card.style.opacity = 0;
 						ui.refresh(card);
 						node.appendChild(card);
 						ui.refresh(card);
-						card.style.transform = "scale(0.9) rotate(" + rand3 + "deg)";
+						card.style.transform = `scale(0.9) rotate(${rand3}deg)`;
 						card.style.opacity = 1;
 						if (node.nodes.length > 4) {
-							setTimeout(function () {
+							setTimeout(() => {
 								while (node.nodes.length > 3) {
 									node.nodes.shift().delete();
 								}
@@ -2384,39 +2384,38 @@ export default () => {
 					node.list = [];
 					if (init) {
 						node.nodes = [];
-						for (var i = 0; i < 3; i++) {
+						for (let i = 0; i < 3; i++) {
 							func();
 						}
 					}
 					node.showcaseinterval = setInterval(func, 1000);
 				},
-				init: function () {
-					var map = {};
-					var map3 = [];
-					for (var i in lib.character) {
-						if (lib.filter.characterDisabled(i)) {
+				init() {
+					const map = {};
+					const map3 = [];
+					for (const character in lib.character) {
+						if (lib.filter.characterDisabled(character)) {
 							continue;
 						}
-						if (lib.character[i][1] == "key") {
+						if (lib.character[character][1] === "key") {
 							continue;
 						}
-						var list = get.characterSurname(i);
-						for (var j of list) {
-							var surname = j[0];
+						const list = get.characterSurname(character);
+						for (const [surname] of list) {
 							if (!surname) {
 								continue;
 							}
 							if (!map[surname]) {
 								map[surname] = [];
 							}
-							map[surname].push(i);
+							map[surname].push(character);
 						}
 					}
-					for (var i in map) {
-						if (map[i].length < 6) {
-							delete map[i];
+					for (const surname in map) {
+						if (map[surname].length < 6) {
+							delete map[surname];
 						} else {
-							map3.push(i);
+							map3.push(surname);
 						}
 					}
 					_status.brawl.map = map;
@@ -2425,26 +2424,24 @@ export default () => {
 				content: {
 					submode: "two",
 					chooseCharacterFixed: true,
-					chooseCharacter: function (list, player) {
+					chooseCharacter(list, player) {
 						game.versusVideoName = "同姓之争";
 						_status.noReplaceCharacter = true;
-						if (player.side == game.me.side) {
+						if (player.side === game.me.side) {
 							if (_status.brawl.mylist) {
 								return _status.brawl.mylist.randomGets(2);
 							}
-						} else {
-							if (_status.brawl.enemylist) {
-								return _status.brawl.enemylist.randomGets(2);
-							}
+						} else if (_status.brawl.enemylist) {
+							return _status.brawl.enemylist.randomGets(2);
 						}
-						var surname = _status.brawl.map3.randomRemove();
-						var list = _status.brawl.map[surname];
-						if (player == game.me) {
-							_status.brawl.mylist = list;
+						const surname = _status.brawl.map3.randomRemove();
+						const characters = _status.brawl.map[surname];
+						if (player === game.me) {
+							_status.brawl.mylist = characters;
 						} else {
-							_status.brawl.enemylist = list;
+							_status.brawl.enemylist = characters;
 						}
-						return list.randomRemove(3);
+						return characters.randomRemove(3);
 					},
 				},
 			},
