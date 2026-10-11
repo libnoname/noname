@@ -2585,7 +2585,7 @@ export default () => {
 				name: "同将模式",
 				mode: "identity",
 				intro: "玩家选择一个武将，所有角色均使用此武将",
-				showcase: function (init) {
+				showcase(init) {
 					if (init) {
 						this.nodes = [];
 					} else {
@@ -2593,17 +2593,17 @@ export default () => {
 							this.nodes.shift().remove();
 						}
 					}
-					var lx = this.offsetWidth / 2 - 120;
-					var ly = Math.min(lx, this.offsetHeight / 2 - 60);
-					var setPos = function (node) {
-						var i = node.index;
-						var deg = (Math.PI / 4) * i;
-						var dx = Math.round(lx * Math.cos(deg));
-						var dy = Math.round(ly * Math.sin(deg));
-						node.style.transform = "translate(" + dx + "px," + dy + "px)";
+					const lx = this.offsetWidth / 2 - 120;
+					const ly = Math.min(lx, this.offsetHeight / 2 - 60);
+					const setPos = node => {
+						const i = node.index;
+						const deg = (Math.PI / 4) * i;
+						const dx = Math.round(lx * Math.cos(deg));
+						const dy = Math.round(ly * Math.sin(deg));
+						node.style.transform = `translate(${dx}px,${dy}px)`;
 					};
-					for (var i = 0; i < 8; i++) {
-						var node = ui.create.player(null, true);
+					for (let i = 0; i < 8; i++) {
+						const node = ui.create.player(null, true);
 						this.nodes.push(node);
 						node.init("zuoci");
 						node.classList.add("minskin");
@@ -2619,21 +2619,21 @@ export default () => {
 						setPos(node);
 						this.appendChild(node);
 					}
-					var nodes = this.nodes;
-					this.showcaseinterval = setInterval(function () {
-						for (var i = 0; i < nodes.length; i++) {
-							nodes[i].index++;
-							if (nodes[i].index > 7) {
-								nodes[i].index = 0;
+					const nodes = this.nodes;
+					this.showcaseinterval = setInterval(() => {
+						for (const node of nodes) {
+							node.index++;
+							if (node.index > 7) {
+								node.index = 0;
 							}
-							setPos(nodes[i]);
+							setPos(node);
 						}
 					}, 1000);
 				},
 				content: {
-					gameStart: function () {
+					gameStart() {
 						game.identityVideoName = "同将模式";
-						var target = _status.mode == "zhong" ? game.zhong : game.zhu;
+						const target = _status.mode === "zhong" ? game.zhong : game.zhu;
 						if (get.config("double_character")) {
 							target.init(game.me.name1, game.me.name2);
 						} else {
@@ -2643,11 +2643,11 @@ export default () => {
 						target.maxHp++;
 						target.update();
 						if (get.config("choose_group")) {
-							var list = lib.group.slice(0);
+							const list = lib.group.slice(0);
 							list.remove("shen");
 							game.players.forEach(i => {
-								if (i.group == "shen" && i != game.me) {
-									var group = list.randomGet();
+								if (i.group === "shen" && i !== game.me) {
+									const group = list.randomGet();
 									i.group = group;
 									i.node.name.dataset.nature = get.groupnature(group);
 									i.update();
@@ -2655,30 +2655,27 @@ export default () => {
 							});
 						}
 					},
-					chooseCharacterAi: function (player, list, list2, back) {
-						if (player == game.zhu) {
+					chooseCharacterAi(player, list, list2, back) {
+						if (player === game.zhu) {
 							return;
+						}
+						if (get.config("double_character")) {
+							player.init(game.me.name1, game.me.name2);
 						} else {
-							if (get.config("double_character")) {
-								player.init(game.me.name1, game.me.name2);
-							} else {
-								player.init(game.me.name1);
-							}
+							player.init(game.me.name1);
 						}
 					},
-					chooseCharacter: function (list, list2, num) {
-						if (game.me != game.zhu) {
+					chooseCharacter(list, list2, num) {
+						if (game.me !== game.zhu) {
 							return list.slice(0, list2);
-						} else {
-							if (_status.event.zhongmode) {
-								return list.slice(0, 6);
-							} else {
-								return list.concat(list2.slice(0, num));
-							}
 						}
+						if (_status.event.zhongmode) {
+							return list.slice(0, 6);
+						}
+						return list.concat(list2.slice(0, num));
 					},
-					chooseCharacterBefore: function () {
-						if (_status.mode == "purple") {
+					chooseCharacterBefore() {
+						if (_status.mode === "purple") {
 							_status.mode = "normal";
 						}
 					},
