@@ -58,6 +58,7 @@ const skills = {
 							player,
 							event.name
 						);
+						player.popup("洗具", "wood");
 						return;
 					}
 					switch (get.rand(1, 5)) {
@@ -104,7 +105,7 @@ const skills = {
 							break;
 						case 5:
 							let skills = lib.skill[event.name].skillList.filter(skill => !player.hasSkill(skill, null, false, false));
-							if (!skills.length) await player.addTempSkills(skills.randomGet());
+							if (skills.length) await player.addTempSkills(skills.randomGet());
 							break;
 					}
 				},
@@ -154,6 +155,7 @@ const skills = {
 							player,
 							event.name
 						);
+						player.popup("杯具", "fire");
 						return;
 					}
 					switch (get.rand(1, 5)) {
@@ -177,7 +179,7 @@ const skills = {
 									})
 									.randomGets(num);
 								trigger.targets = targets.sortBySeat();
-								player.line(targets, "fire");
+								player.line(targets, "wood");
 								game.log(trigger.card, "的目标被改为", targets);
 							}
 							break;
@@ -187,7 +189,7 @@ const skills = {
 							break;
 						case 5:
 							let skills = lib.skill[event.name].skillList.filter(skill => !player.hasSkill(skill, null, false, false));
-							if (!skills.length) await player.addTempSkills(skills.randomGet());
+							if (skills.length) await player.addTempSkills(skills.randomGet());
 							break;
 					}
 				},

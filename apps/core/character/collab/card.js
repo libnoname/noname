@@ -73,7 +73,6 @@ const cards = {
 				cards,
 				dialog.videoId
 			);
-			game.log(event.card, "亮出了", cards);
 			for (const nextEvent of nextEvents) await nextEvent;
 		},
 		async content(event, trigger, player) {
