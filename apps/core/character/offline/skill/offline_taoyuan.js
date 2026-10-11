@@ -1751,7 +1751,7 @@ const skills = {
 					}
 					return false;
 				},
-				async content(event, trigger) {
+				async content(event, trigger, player) {
 					trigger.notFromCardpile = true;
 				},
 			},

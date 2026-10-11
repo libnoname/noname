@@ -285,7 +285,7 @@ const skills = {
 			return event.targets.reduce((sum, target) => sum + get.effect(target, event.card, player, player), 0) > 0;
 		},
 		usable: 1,
-		async content(event, trigger) {
+		async content(event, trigger, player) {
 			trigger.effectCount++;
 			game.log(trigger.card, "额外结算一次");
 		},
@@ -412,7 +412,7 @@ const skills = {
 		},
 	},
 	//族荀灌
-	clanzhuiji: {
+	clandunji: {
 		audio: 2,
 		trigger: { player: "useCardAfter" },
 		filter(event, player) {
@@ -457,12 +457,12 @@ const skills = {
 		audio: 2,
 		trigger: { global: "phaseJieshuBegin" },
 		filter(event, player) {
-			const target = player.storage.clanzhuiji;
+			const target = player.storage.clandunji;
 			return get.itemtype(target) === "player" && (game.hasGlobalHistory("changeHp", evt => evt.player === target && evt.changedHp < 0) || target.hasHistory("lose", evt => evt.hs?.length > 0));
 		},
 		forced: true,
 		async content(event, trigger, player) {
-			const target = player.storage.clanzhuiji;
+			const target = player.storage.clandunji;
 			if (game.hasGlobalHistory("changeHp", evt => evt.player === target && evt.changedHp < 0)) {
 				const cards = player.getCards("h", card => get.color(card, player) === "black");
 				if (cards.length > 0 && cards.every(card => game.checkMod(card, player, "unchanged", "cardEnabled2", player))) {
@@ -3389,6 +3389,7 @@ const skills = {
 	clanqieyi: {
 		audio: 2,
 		trigger: { player: ["phaseUseBegin", "useCardAfter"] },
+		frequent: true,
 		filter(event, player) {
 			if (event.name == "useCard") {
 				if (!player.hasSkill("clanqieyi_effect") || !lib.suits.includes(get.suit(event.card))) {
@@ -3402,8 +3403,11 @@ const skills = {
 		async cost(event, trigger, player) {
 			if (trigger.name == "phaseUse") {
 				event.result = await player
-					.chooseBool(get.prompt2(event.skill))
-					.set("ai", () => true)
+					.chooseBool({
+						prompt: get.prompt2(event.skill),
+						ai: () => true,
+						frequentSkill: event.skill,
+					})
 					.forResult();
 			} else {
 				event.result = { bool: true };
@@ -3567,7 +3571,7 @@ const skills = {
 							.set("given_map", given_map)
 							.set("toGive", cards[0])
 							.forResult();
-						result.links = cards.slice(0);
+						result.links = cards.slice(0) ?? [];
 					} else {
 						break;
 					}
@@ -8216,7 +8220,7 @@ const skills = {
 	},
 	clandaojie: {
 		audio: 2,
-		audioname: ["clan_xunshu", "clan_xunchen", "clan_xuncai", "clan_xuncan", "clan_xunyou", "clan_xunyu", "clan_xunshuang", "clan_xunshi"],
+		audioname: ["clan_xunshu", "clan_xunchen", "clan_xuncai", "clan_xuncan", "clan_xunyou", "clan_xunyu", "clan_xunshuang", "clan_xunshi", "clan_xunguan"],
 		trigger: { player: "useCardAfter" },
 		filter(event, player) {
 			return (

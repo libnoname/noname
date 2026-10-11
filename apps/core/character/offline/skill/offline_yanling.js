@@ -201,6 +201,7 @@ const skills = {
 				return suits.map(suit => `${storage?.includes(suit) ? "已记录" : "未记录"}：${names[suit]}`).join("<br>");
 			},
 		},
+		derivation: "ylyg_quzhong",
 		ai: { expose: 0.3 },
 	},
 	ylyg_quzhong: {

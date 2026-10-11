@@ -648,6 +648,7 @@ const skills = {
 	oldmiji: {
 		trigger: { player: ["phaseZhunbeiBegin", "phaseJieshuBegin"] },
 		audio: 2,
+		frequent: true,
 		filter(event, player) {
 			return player.isDamaged();
 		},
@@ -12565,6 +12566,7 @@ const skills = {
 			player: "phaseJieshuBegin",
 		},
 		locked: false,
+		frequent: true,
 		filter(event, player) {
 			return player.hp < player.maxHp;
 		},
@@ -13621,6 +13623,7 @@ const skills = {
 		audio: 2,
 		audioname2: { sxrm_caocao: "zhiyu_sxrm_caocao", tw_sxrm_caocao: "zhiyu_sxrm_caocao" },
 		trigger: { player: "damageEnd" },
+		frequent: true,
 		preHidden: true,
 		async content(event, trigger, player) {
 			await player.draw();

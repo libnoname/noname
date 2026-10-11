@@ -1,6 +1,10 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const dynamicTranslates = {
+	gongjun(player, skill) {
+		if (player.storage.zhuzhai) return lib.translate[`${skill}2_info`];
+		return lib.translate[`${skill}_info`];
+	},
 	chegu(player, skill) {
 		const info = lib.translate[`${skill}_info`],
 			num = 2 + player.countMark(`${skill}_effect`);

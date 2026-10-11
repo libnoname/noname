@@ -6,8 +6,8 @@ const dynamicTranslates = {
 			return lib.translate[skill + "_info"];
 		}
 		let list = [
-			"横置或重置至多两名角色",
-			"摸两张牌",
+			"横置或重置至多四名角色",
+			"摸三张牌",
 			"弃置一名角色两张牌",
 		];
 		for (let i in list) {

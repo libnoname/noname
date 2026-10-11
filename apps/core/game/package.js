@@ -41,6 +41,7 @@ window.noname_package = {
 		extra: "军争",
 		guozhan: "国战",
 		yingbian: "应变篇",
+		jiubian: "九变篇",
 		yongjian: "用间篇",
 		sp: "忠胆英杰",
 		zhulu: "逐鹿天下",

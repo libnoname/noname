@@ -1,6 +1,35 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const cards = {
+	huhaibi: {
+		audio: true,
+		fullskin: true,
+		type: "equip",
+		derivation: "ym_luoguanzhong",
+		subtype: "equip5",
+		bingzhu: ["ym_luoguanzhong"],
+		cardcolor: "spade",
+		skills: ["huhaibi_skill"],
+		destroy: true,
+		ai: {
+			equipValue: 6,
+			basic: {
+				equipValue: 6,
+			},
+		},
+		enable: true,
+		selectTarget: -1,
+		filterTarget: (card, player, target) => player == target && target.canEquip(card, true),
+		modTarget: true,
+		allowMultiple: false,
+		async equipCard(event) {
+			const { card, target } = event;
+			if (!card?.cards.some(card2 => get.position(card2, true) !== "o")) {
+				await target.equip(card);
+			}
+		},
+		toself: true,
+	},
 	sm_prettyDerby: {
 		audio: true,
 		fullskin: true,

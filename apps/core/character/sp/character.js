@@ -7,6 +7,12 @@ const characters = {
 		skills: ["zexing", "tt_zhiyi"],
 		img: "image/character/tangtang.png",
 	},
+	ol_xushao: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["olshilun", "olzhuoming"],
+	},
 	wangai: {
 		sex: "female",
 		group: "wei",
