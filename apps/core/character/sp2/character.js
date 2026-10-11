@@ -5,6 +5,12 @@ const characters = {
 		hp: 3,
 		skills: ["starzunjian", "starhongya"],
 	},
+	star_dongyun: {
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		skills: ["starzhengting", "starbishi"],
+	},
 	caobao: {
 		sex: "male",
 		group: "qun",
@@ -33,7 +39,7 @@ const characters = {
 	cuilie: {
 		sex: "male",
 		group: "qun",
-		hp: 3,
+		hp: 4,
 		skills: ["dczijue", "dcchibi"],
 	},
 	star_jiangwan: {

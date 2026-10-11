@@ -2,6 +2,7 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 const cards = {
 	chixueren: {
+		fullskin: true,
 		derivation: "ol_shen_huangzhong",
 		cardcolor: "heart",
 		type: "equip",
@@ -16,41 +17,20 @@ const cards = {
 			},
 		},
 		loseDelay: false,
-		async onEquip(event, trigger, player) {
-			const { card } = event;
-			const cards = card.cards;
-			if (get.is.ordinaryCard(card) && cards[0].storage?.chixueren?.length) {
-				return;
-			}
-			const lose = player.getHistory("lose", evt => {
-				return evt.getlx == false && evt.type == "equip" && evt.getParent() == event.getParent() && evt.es?.length > 0;
-			})[0];
-			const allLose = game.getAllGlobalHistory("cardMove", evt => {
-				return evt.name == "lose" && evt.getlx == false && evt.type == "equip" && evt.getParent().card.name == "chixueren" && evt.es?.length > 0;
-			});
-			if (lose && allLose.indexOf(lose) == 0) {
-				const skills = lose.es.reduce((list, card) => {
-					return get.subtype(card) == "equip1" ? [...list, ...get.skillsFromEquips([card])] : list;
-				}, []);
-				if (!skills?.length) {
-					return;
-				}
-				const addSkill = card => {
-					card.skills = [...get.info(card).skills, ...skills];
-				};
-				addSkill(card);
-				if (get.is.ordinaryCard(card)) {
-					cards[0].storage.chixueren = get.info(card).skills;
-					addSkill(cards[0]);
-				}
-				if (get.position(card) == "e") {
-					player.addEquipTrigger(card);
+		cardPrompt(card, player) {
+			let str = lib.translate["chixueren_info"];
+			const vcard = card[card.cardSymbol];
+			if (vcard) {
+				const storage = vcard.storage?.chixueren?.filter(i => get.translation(i) != i);
+				if (storage?.length) {
+					str += `<br><span class="yellowtext"><li>已吞噬技能：${storage.map(i => get.poptip(i)).join("、")}</span>`;
 				}
 			}
+			return str;
 		},
 		async onLose(event, trigger, player) {
 			const { cards } = event;
-			if (event.getParent().type != "equip" || !event.getParent(3).name.startsWith("shenyu")) {
+			if ((!event.getParent(2) || event.getParent(2).name != "swapEquip") && (event.getParent().type != "equip" || event.getParent().swapEquip)) {
 				game.log(cards, "被销毁");
 				await game.cardsGotoSpecial(cards, false);
 				if (event.getParent().type == "gain") {

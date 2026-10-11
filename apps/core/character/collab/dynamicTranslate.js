@@ -1,6 +1,11 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const dynamicTranslates = {
+	xiangxue(player, skill) {
+		const bool1 = player.storage.xiangxue1,
+			bool2 = player.storage.xiangxue2;
+		return `锁定技，你每使用${bool1 ? "一" : "两"}张${bool2 ? "" : "未"}使用过的牌名的牌，获得等量个“惘”标记并摸${bool1 ? "两" : "一"}张牌，然后若“惘”数为：6，交换上文中的两个数字；9，删除上文中的未；12，失去此技能。`;
+	},
 	oldianzan(player) {
 		const targets = player.getStorage("oldianzan").filter(target => target?.isIn());
 		let str = "刘禅";

@@ -51,6 +51,7 @@ export default {
 	yingbian_guozhan: yingbian,
 	guozhanPile_yingbian: info.pile.yingbian,
 	guozhanPile_old: info.pile.old,
+	guozhanPile_jiubian: info.pile.jiubian,
 
 	// 模式自行提供的垫片函数
 	game: gamePatch,

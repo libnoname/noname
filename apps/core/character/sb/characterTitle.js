@@ -1,4 +1,5 @@
 export default {
+	sb_guoyouzhi: "性顺志忠",
 	//sb_chentai: "",
 	sb_zhuran: "临危胆定",
 	sp_yangwan: "迷计惑心",

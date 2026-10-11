@@ -40,6 +40,65 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 	saveButton.style.transition = "opacity 0.3s";
 
 	/**
+	 * @typedef { HTMLDivElement & {
+	 * 	helpName?: string,
+	 * 	link?: HTMLDivElement,
+	 * 	_helpTeardown?: (() => void) | null,
+	 * 	_helpPersist?: boolean,
+	 * } } HelpMenuNode
+	 */
+
+	/**
+	 * @param { HelpMenuNode } node
+	 */
+	const mountHelp = function (node) {
+		const page = node.link;
+		if (!page) {
+			return;
+		}
+		const content = lib.help[node.helpName];
+		node._helpPersist = false;
+		node._helpTeardown = null;
+		if (content && typeof content === "object") {
+			if (typeof content.mount === "function") {
+				const teardown = content.mount(page);
+				if (teardown && typeof teardown.then === "function") {
+					console.warn(`lib.help["${node.helpName}"] 的 mount 返回了 Promise，帮助页只支持同步 teardown，该返回值将被忽略`);
+					node._helpPersist = true;
+					return;
+				}
+				if (typeof teardown === "function") {
+					node._helpTeardown = teardown;
+					return;
+				}
+				node._helpPersist = true;
+				return;
+			}
+			if (typeof content.data === "function" || typeof content.setup === "function") {
+				const app = createApp(content);
+				app.mount(page);
+				if (content.persist === false) {
+					node._helpTeardown = () => app.unmount();
+					return;
+				}
+				node._helpPersist = true;
+				return;
+			}
+		}
+		page.innerHTML = content;
+	};
+
+	/**
+	 * @param { HelpMenuNode } node
+	 */
+	const teardownHelp = function (node) {
+		node._helpTeardown?.();
+		node._helpTeardown = null;
+		node._helpPersist = false;
+		node.link?.replaceChildren();
+	};
+
+	/**
 	 * @this { HTMLDivElement }
 	 */
 	var clickMode = function () {
@@ -52,16 +111,21 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 		}
 		if (active) {
 			active.classList.remove("active");
-			active.link.remove();
+			if (active.type === "help" && !active._helpPersist) {
+				teardownHelp(active);
+			}
+			active.link?.remove();
 		}
 		active = this;
 		this.classList.add("active");
-		if (this.link) {
-			rightPane.appendChild(this.link);
-		} else {
+		if (this.type === "help") {
+			if (!this._helpPersist || !this.link) {
+				this._initLink();
+			}
+		} else if (!this.link) {
 			this._initLink();
-			rightPane.appendChild(this.link);
 		}
+		rightPane.appendChild(this.link);
 		if (this.type == "cheat") {
 			cheatButton.style.display = "";
 		} else {
@@ -997,51 +1061,28 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 		}
 	})();
 
-	for (const [name, content] of Object.entries(lib.help)) {
-		// 创建帮助页面的内容元素
-		const page = ui.create.div("");
-		// 创建帮助按钮
-		// TODO: 对是否应该对按钮进行其他框架的挂载处理
+	for (const name of Object.keys(lib.help)) {
 		var node = ui.create.div(".menubutton.large", name, start.firstChild, clickMode);
-		// 设置帮助按钮的类型
-		Reflect.set(node, "type", "help");
-		// 初始化帮助按钮的链接
-		Reflect.set(node, "link", page);
-		// 在非帮助页面下默认隐藏
+		node.type = "help";
+		node.helpName = name;
 		node.style.display = "none";
-		// 设置帮助页面的类名
-		page.classList.add("menu-help");
-
-		// 若传递的内容为对象，则特殊处理
-		if (typeof content == "object") {
-			/** @type {object} */
-			const contentObject = content;
-
-			// 如果对象拥有"mount"方式，则调用该方法进行挂载
-			if (typeof contentObject.mount == "function") {
-				contentObject.mount(page);
+		/**
+		 * @this { HelpMenuNode }
+		 */
+		node._initLink = function () {
+			if (!this.link) {
+				this.link = ui.create.div(".menu-help");
 			}
-			// 如果对象拥有"data"方式或"setup"方式，则视为vue组件
-			else if (typeof contentObject.data == "function" || typeof contentObject.setup == "function") {
-				// 创建vue组件
-				const component = createApp(contentObject);
-				// 挂载到页面
-				component.mount(page);
+			if (this._helpPersist) {
+				return;
 			}
-			// 否则相信`Object#toString`的结果
-			else {
-				page.innerHTML = content;
-			}
-		}
-		// 否则将视为字符串，直接创建文本元素
-		else {
-			page.innerHTML = content;
-		}
+			teardownHelp(this);
+			mountHelp(this);
+		};
 	}
 
 	if (!connectMenu) {
 		var node = ui.create.div(".menubutton.large", "帮助", start.firstChild, function () {
-			var activex = start.firstChild.querySelector(".active");
 			if (this.innerHTML == "帮助") {
 				cheatButton.style.display = "none";
 				runButton.style.display = "none";
@@ -1051,6 +1092,7 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 				deleteButton.style.display = "none";
 
 				this.innerHTML = "返回";
+				let firstHelp = null;
 				for (var i = 0; i < start.firstChild.childElementCount; i++) {
 					var nodex = start.firstChild.childNodes[i];
 					if (nodex == node) {
@@ -1058,19 +1100,17 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 					}
 					if (nodex.type == "help") {
 						nodex.style.display = "";
-						if (activex && activex.type != "help") {
-							activex.classList.remove("active");
-							activex.link.remove();
-							activex = null;
-							nodex.classList.add("active");
-							rightPane.appendChild(nodex.link);
-						}
+						firstHelp ??= nodex;
 					} else {
 						nodex.style.display = "none";
 					}
 				}
+				if (firstHelp) {
+					clickMode.call(firstHelp);
+				}
 			} else {
 				this.innerHTML = "帮助";
+				let firstOther = null;
 				for (var i = 0; i < start.firstChild.childElementCount; i++) {
 					var nodex = start.firstChild.childNodes[i];
 					if (nodex == node) {
@@ -1078,17 +1118,16 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 					}
 					if (nodex.type != "help") {
 						nodex.style.display = "";
-						if (activex && activex.type == "help") {
-							activex.classList.remove("active");
-							activex.link.remove();
-							activex = null;
-							clickMode.call(nodex);
-						}
+						firstOther ??= nodex;
 					} else {
 						nodex.style.display = "none";
 					}
 				}
+				if (firstOther) {
+					clickMode.call(firstOther);
+				}
 			}
+			start.firstChild.scrollTop = 0;
 		});
 	}
 

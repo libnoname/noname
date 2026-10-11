@@ -1,4 +1,9 @@
 export default {
+	"#starbishi1": "臣面冷，不敢忘彼时先帝遗命。",
+    "#starbishi2": "臣言厉，不忍将汉家山河付水流。",
+    "#starzhengting1": "沉溺声色，汉室何日可兴！",
+    "#starzhengting2": "荒废政事，祖宗基业谁承！",
+    "#star_dongyun:die": "子不类父，子不类父啊！",
 	"#starweigu1": "进退皆死路，唯有一战尔！",
 	"#starweigu2": "前有狼虎，后无归乡，唯以命相搏！",
 	"#starjuefa1": "天意高难问，人事尽可为！",

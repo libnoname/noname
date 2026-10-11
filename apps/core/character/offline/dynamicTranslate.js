@@ -23,7 +23,7 @@ const dynamicTranslates = {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
 		const start = "转换技，其他角色的出牌阶段：",
-			end = "，若其本阶段有【杀】的剩余使用次数，你可以使用一张【杀】（将计入其使用次数且伤害+1）。";
+			end = "。若其本阶段有【杀】的剩余使用次数，你可以使用一张【杀】（将计入其使用次数且伤害+1）。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
 	huamao_wushen(player, skill) {
