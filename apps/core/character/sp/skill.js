@@ -28,69 +28,6 @@ const skills = {
 			const relation = lib.skill.zexing.attitudeWeight(source, target);
 			return get.value(card, source) - relation * get.value(card, target) * 0.6;
 		},
-		zhiyiValue(viewer, source, shown, received) {
-			if (!source.hasSkill("tt_zhiyi") || (source.getStat("triggerSkill").tt_zhiyi || 0) >= 1) return 0;
-			const colors = [...new Set(received.map(card => get.color(card, false)).filter(color => ["red", "black"].includes(color)))];
-			const shownColor = get.color(shown, source);
-			const shownInHand = get.position(shown) === "h";
-			// 获得牌时展示牌仍在手中；其余未公开手牌只按数量估计颜色匹配率。
-			const unknown = Math.max(0, source.countCards("h") - (shownInHand ? 1 : 0));
-			const first = shownInHand && colors.includes(shownColor) ? 1 : colors.length === 2 ? (unknown > 0 ? 1 : 0) : colors.length === 1 ? 1 - Math.pow(0.5, unknown) : 0;
-			const second = ["red", "black"].includes(shownColor) ? (colors.includes(shownColor) ? 1 : 1 - Math.pow(0.5, unknown)) : 0;
-			const probability = first + (1 - first) * second;
-			let best = null,
-				bestEffect = 0;
-			for (const current of game.filterPlayer()) {
-				const effect = get.effect(current, { name: "draw" }, source, source);
-				if (effect > bestEffect) {
-					bestEffect = effect;
-					best = current;
-				}
-			}
-			return best ? probability * 4 * lib.skill.zexing.attitudeWeight(viewer, best) : 0;
-		},
-		continuationValue(viewer, source, refused) {
-			const skill = lib.skill.zexing;
-			const options = game
-				.filterPlayer()
-				.filter(current => current !== refused && skill.filterTarget(null, source, current))
-				.map(current => {
-					// 后续角色只用公开体力、手牌数量估计，不读取其手牌内容。
-					const hpRisk = current.hp <= 1 ? 18 : current.hp === 2 ? 10 : 6;
-					const harm = current.countCards("h") < 2 ? hpRisk : Math.min(hpRisk, 6);
-					return {
-						sourceValue: -skill.attitudeWeight(source, current) * harm,
-						viewerValue: -skill.attitudeWeight(viewer, current) * harm,
-					};
-				})
-				.filter(option => option.sourceValue > 0)
-				.sort((a, b) => b.sourceValue - a.sourceValue);
-			// 下一名目标权重较高，再下一名较低；交换或主动停止都会中断后续。
-			return Math.max(-12, Math.min(12, (options[0]?.viewerValue || 0) * 0.65 + (options[1]?.viewerValue || 0) * 0.2));
-		},
-		choiceScore(target, source, shown, suit, option) {
-			const skill = lib.skill.zexing;
-			const cards = skill.gainable(source, target, suit);
-			let value;
-			if (option === "exchange") {
-				if (cards.length < 2) return 0;
-				const picked = cards
-					.slice()
-					.sort((a, b) => skill.pickValue(source, target, b) - skill.pickValue(source, target, a))
-					.slice(0, 2);
-				const loss = picked.reduce((sum, card) => sum + get.value(card, target), 0);
-				const sourceGain = picked.reduce((sum, card) => sum + get.value(card, source), 0) - get.value(shown, source);
-				value = get.value(shown, target) - loss + 0.6 * skill.attitudeWeight(target, source) * sourceGain + skill.zhiyiValue(target, source, shown, picked);
-			} else {
-				const hpCost = target.hp <= 1 ? 100 : target.hp === 2 ? 16 : target.hp === 3 ? 9 : 6;
-				const effect = get.effect(target, { name: "losehp" }, target, target);
-				// 仅使用失去体力的评估，不把受伤触发的卖血技能当作收益。
-				value = effect === 0 ? 0 : effect > 0 ? Math.min(8, effect) : -hpCost;
-				if (target.hp <= 1) value = Math.min(value, -hpCost);
-				if (source.countCards("he") > 0) value += skill.continuationValue(target, source, target);
-			}
-			return 1 / (1 + Math.exp(-Math.max(-100, Math.min(100, value)) / 8));
-		},
 		async content(event, trigger, player) {
 			let shown = event.cards[0],
 				target = event.target;
@@ -121,7 +58,68 @@ const skills = {
 					.set("filterButton", button => button.link !== "exchange" || get.event().canExchange)
 					.set("ai", button => {
 						const evt = get.event();
-						return lib.skill.zexing.choiceScore(get.player(), evt.zexingSource, evt.zexingShown, evt.zexingSuit, button.link);
+						const target = get.player();
+						const source = evt.zexingSource;
+						const shown = evt.zexingShown;
+						const skill = lib.skill.zexing;
+						const cards = skill.gainable(source, target, evt.zexingSuit);
+						let value;
+						if (button.link === "exchange") {
+							if (cards.length < 2) return 0;
+							const picked = cards
+								.slice()
+								.sort((a, b) => skill.pickValue(source, target, b) - skill.pickValue(source, target, a))
+								.slice(0, 2);
+							const loss = picked.reduce((sum, card) => sum + get.value(card, target), 0);
+							const sourceGain = picked.reduce((sum, card) => sum + get.value(card, source), 0) - get.value(shown, source);
+							let zhiyiValue = 0;
+							if (source.hasSkill("tt_zhiyi") && (source.getStat("triggerSkill").tt_zhiyi || 0) < 1) {
+								const colors = [...new Set(picked.map(card => get.color(card, false)).filter(color => ["red", "black"].includes(color)))];
+								const shownColor = get.color(shown, source);
+								const shownInHand = get.position(shown) === "h";
+								// 展示牌仍在手中时，其他未知手牌仅按数量估计颜色匹配率。
+								const unknown = Math.max(0, source.countCards("h") - (shownInHand ? 1 : 0));
+								const first = shownInHand && colors.includes(shownColor) ? 1 : colors.length === 2 ? (unknown > 0 ? 1 : 0) : colors.length === 1 ? 1 - Math.pow(0.5, unknown) : 0;
+								const second = ["red", "black"].includes(shownColor) ? (colors.includes(shownColor) ? 1 : 1 - Math.pow(0.5, unknown)) : 0;
+								const probability = first + (1 - first) * second;
+								let best = null,
+									bestEffect = 0;
+								for (const current of game.filterPlayer()) {
+									const effect = get.effect(current, { name: "draw" }, source, source);
+									if (effect > bestEffect) {
+										bestEffect = effect;
+										best = current;
+									}
+								}
+								zhiyiValue = best ? probability * 4 * skill.attitudeWeight(target, best) : 0;
+							}
+							value = get.value(shown, target) - loss + 0.6 * skill.attitudeWeight(target, source) * sourceGain + zhiyiValue;
+						} else {
+							const hpCost = target.hp <= 1 ? 100 : target.hp === 2 ? 16 : target.hp === 3 ? 9 : 6;
+							const effect = get.effect(target, { name: "losehp" }, target, target);
+							// 仅评估失去体力，不将受伤触发的卖血收益计入。
+							value = effect === 0 ? 0 : effect > 0 ? Math.min(8, effect) : -hpCost;
+							if (target.hp <= 1) value = Math.min(value, -hpCost);
+							if (source.countCards("he") > 0) {
+								const options = game
+									.filterPlayer()
+									.filter(current => current !== target && skill.filterTarget(null, source, current))
+									.map(current => {
+										// 后续角色仅使用公开体力和手牌数量进行估计。
+										const hpRisk = current.hp <= 1 ? 18 : current.hp === 2 ? 10 : 6;
+										const harm = current.countCards("h") < 2 ? hpRisk : Math.min(hpRisk, 6);
+										return {
+											sourceValue: -skill.attitudeWeight(source, current) * harm,
+											viewerValue: -skill.attitudeWeight(target, current) * harm,
+										};
+									})
+									.filter(option => option.sourceValue > 0)
+									.sort((a, b) => b.sourceValue - a.sourceValue);
+								// 后续两名候选目标分别赋予 0.65 和 0.2 权重。
+								value += Math.max(-12, Math.min(12, (options[0]?.viewerValue || 0) * 0.65 + (options[1]?.viewerValue || 0) * 0.2));
+							}
+						}
+						return 1 / (1 + Math.exp(-Math.max(-100, Math.min(100, value)) / 8));
 					})
 					.forResult();
 				if (!choice.bool) break;
@@ -172,9 +170,9 @@ const skills = {
 	tt_zhiyi: {
 		trigger: { global: ["gainAfter", "loseAsyncAfter"] },
 		usable: 1,
-		getRelated(event, player) {
-			// 多人获得由 loseAsync 汇总，避免子 gain 事件重复触发。
-			if (event.name === "gain" && event.getParent().name === "loseAsync") return [];
+		filter(event, player) {
+			// 多人获得事件由 loseAsync 汇总，避免其子 gain 事件重复触发。
+			if (event.name === "gain" && event.getParent().name === "loseAsync") return false;
 			const own = event.getg(player) || [];
 			const lost = event.getl(player)?.cards2 || [];
 			const cards = own.slice();
@@ -184,10 +182,6 @@ const skills = {
 					if (lost.includes(card) && !cards.includes(card)) cards.push(card);
 				}
 			}
-			return cards;
-		},
-		filter(event, player) {
-			const cards = lib.skill.tt_zhiyi.getRelated(event, player);
 			const colors = cards.map(card => get.color(card, false)).filter(color => color === "red" || color === "black");
 			return colors.length > 0 && player.hasCard(card => !cards.includes(card) && colors.includes(get.color(card, player)), "h");
 		},
