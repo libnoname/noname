@@ -8030,9 +8030,7 @@ const skills = {
 							return 10;
 						}
 						if (get.attitude(player, target) < 0) {
-							if (
-								target.hasCards("e", card => get.value(card, player) >= 6)
-							) {
+							if (target.hasCards("e", card => get.value(card, player) >= 6)) {
 								return 12;
 							}
 							return 8;
