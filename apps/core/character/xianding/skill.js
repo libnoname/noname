@@ -1638,7 +1638,7 @@ const skills = {
 				intro: { content: "防止下次受到的伤害" },
 				trigger: { player: "damageBegin4" },
 				//filter(event, player) {
-					//return player.hasMark("dcmingjie_tally");
+				//return player.hasMark("dcmingjie_tally");
 				//},
 				forced: true,
 				async content(event, trigger, player) {
