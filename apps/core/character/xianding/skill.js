@@ -1625,7 +1625,7 @@ const skills = {
 							if (result?.bool) {
 								player.line(target);
 								target.addSkill("dcmingjie_tally");
-								target.addMark("dcmingjie_tally", 1, false);
+								//target.addMark("dcmingjie_tally", 1, false);
 							}
 						}
 					}
@@ -1635,18 +1635,18 @@ const skills = {
 				charlotte: true,
 				onremove: true,
 				marktext: "节",
-				intro: { content: "防止下#次受到的伤害" },
+				intro: { content: "防止下次受到的伤害" },
 				trigger: { player: "damageBegin4" },
-				filter(event, player) {
-					return player.hasMark("dcmingjie_tally");
-				},
+				//filter(event, player) {
+					//return player.hasMark("dcmingjie_tally");
+				//},
 				forced: true,
 				async content(event, trigger, player) {
 					trigger.cancel();
-					player.removeMark(event.name, 1, false);
-					if (!player.hasMark(event.name)) {
-						player.removeSkill(event.name);
-					}
+					//player.removeMark(event.name, 1, false);
+					//if (!player.hasMark(event.name)) {
+					player.removeSkill(event.name);
+					//}
 				},
 			},
 			death: {
