@@ -4919,7 +4919,7 @@ const skills = {
 				await game.doAsyncInOrder(
 					[player, target],
 					async target => {
-						let cardsx = target.getCards("sha", { name: "sha" });
+						let cardsx = target.getCards("h", { name: "sha" });
 						if (cardsx.length) {
 							const result = await target.modedDiscard({ cards: cardsx, discarder: player }).forResult();
 							cardsx = result.cards.slice();
