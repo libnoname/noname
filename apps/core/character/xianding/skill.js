@@ -4690,7 +4690,11 @@ const skills = {
 								return get.type(card) === "basic";
 							},
 							ai(card) {
-								return 6 - get.value(card);
+								const player = get.player();
+								if (player.hasCards("hs", "shan")) {
+									return 6 - get.value(card);
+								}
+								return 0;
 							},
 						})
 						.forResult();
