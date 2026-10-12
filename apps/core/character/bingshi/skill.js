@@ -251,6 +251,21 @@ const skills = {
 				charlotte: true,
 				silent: true,
 				popup: false,
+				mod: {
+					aiOrder(player, card, num) {
+						if (get.itemtype(card) == "card" && card.hasGaintag("potshanxi_tag")) {
+							return num + 0.1;
+						}
+					},
+					aiValue(player, card, num) {
+						if (get.itemtype(card) == "card" && card.hasGaintag("potshanxi_tag")) {
+							return num / 114514;
+						}
+					},
+					aiUseful() {
+						return lib.skill.potshanxi_tag.mod.aiValue.apply(this, arguments);
+					},
+				},
 				trigger: { global: "phaseEnd" },
 				filter(event, player) {
 					return player.hasCards("h", card => card.hasGaintag("potshanxi_tag"));
@@ -320,23 +335,6 @@ const skills = {
 						});
 				}
 			}
-		},
-		locked: false,
-		//应机牌仅对自己可见所以只给自己加个ai
-		mod: {
-			aiOrder(player, card, num) {
-				if (get.itemtype(card) == "card" && card.hasGaintag("potshanxi_tag")) {
-					return num + 0.1;
-				}
-			},
-			aiValue(player, card, num) {
-				if (get.itemtype(card) == "card" && card.hasGaintag("potshanxi_tag")) {
-					return num / 114514;
-				}
-			},
-			aiUseful() {
-				return lib.skill.potqizhou.mod.aiValue.apply(this, arguments);
-			},
 		},
 		group: "potqizhou_draw",
 		subSkill: {
