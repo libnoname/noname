@@ -7,6 +7,9 @@ package-lock.json
 .idea/
 .vscode/
 
+# Cloudflare CLI 本地缓存
+.wrangler/
+
 # macOS
 ._*
 .Spotlight-V100
