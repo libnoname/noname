@@ -15008,7 +15008,6 @@ const skills = {
 		filter(event, player) {
 			return event.source && event.source.countCards("e") > 0;
 		},
-		logTarget: "source",
 		async cost(event, trigger, player) {
 			const att = get.attitude(player, trigger.source);
 			const result = await player
