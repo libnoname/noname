@@ -15008,6 +15008,7 @@ const skills = {
 		filter(event, player) {
 			return event.source && event.source.countCards("e") > 0;
 		},
+		logTarget: "source",
 		async cost(event, trigger, player) {
 			const att = get.attitude(player, trigger.source);
 			const result = await player
@@ -15016,19 +15017,21 @@ const skills = {
 					target: trigger.source,
 					position: "e",
 					ai(button) {
-						if (att <= 0) {
+						if (get.event().att <= 0) {
 							return get.equipValue(button.link);
 						}
 						return 0;
 					},
 				})
 				.set("chooseonly", true)
+				.set("att", att)
 				.forResult();
-
-			event.result = {
-				bool: result.bool,
-				cards: result.links,
-			};
+			if (result?.bool && result.links?.length) {
+				event.result = {
+					bool: true,
+					cards: result.links,
+				};
+			}
 		},
 		logTarget: "source",
 		async content(event, trigger, player) {
