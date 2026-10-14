@@ -2,12 +2,15 @@ name: Sync with upstream
 
 # 用途：让本 Fork 与上游 libnoname/noname 保持同步，不用手动点「Sync fork」。
 #
-# 覆盖分支：见下方 matrix.branch（当前是 main 与 feat/ios-support）。
-# ⚠️ **每个分支都要单独同步**——两个分支是分叉的，不是包含关系：
-#     main 是 Capacitor 6 的旧线，feat/ios-support 是实际用来出 iOS 包的那条线。
+# 覆盖分支：见下方 matrix.branch（当前是 main、feat/ios-support 与 feat/web-pages）。
+# ⚠️ **每个分支都要单独同步**——这些分支是分叉的，不是包含关系：
+#     main             —— Fork 的默认分支，上游同步 + 通用构建 + iOS 旧线；
+#     feat/ios-support —— 实际用来出 iOS 包的那条线（Capacitor 8）；
+#     feat/web-pages   —— 网页版（Cloudflare Pages）部署所在分支。
 #     2026-10-05 就踩过这个坑：当时只同步 main，结果 iOS 包（从 feat/ios-support 构建）
 #     缺了上游新增的 21 个资源文件——因为批量下载的文件清单是构建时按**分支自己的**
 #     资源生成的，而不是按上游。
+#     feat/web-pages 同理：它的产物（dist）也是按分支资源构建的，漏同步会缺素材。
 #
 # 触发：
 #   - 每天 UTC 16:00（= 北京时间 00:00）自动跑一次；
@@ -82,14 +85,16 @@ jobs:
         # 需要跟着上游走的分支。**加分支只改这一行即可。**
         #   main              —— Fork 的默认分支，网页「Sync fork」按钮同步的就是它
         #   feat/ios-support  —— 实际用来构建 iOS 包的开发分支（Capacitor 8 那条线）
-        # ⚠️ 这两个分支是分叉的（main 是 Capacitor 6 的旧线），所以必须**各自**同步，
-        #    只同步 main 不够——曾经就因为只同步 main，导致 iOS 包缺了上游新增的
+        #   feat/web-pages    —— 网页版（Cloudflare Pages）部署所在分支（2026-10-14 加入）
+        # ⚠️ 这些分支是分叉的（main 是 Capacitor 6 的旧线），所以必须**各自**同步，
+        #    只同步某一条不够——曾经就因为只同步 main，导致 iOS 包缺了上游新增的
         #    21 个资源文件（清单按分支资源生成）。
         branch:
           - main
           - feat/ios-support
+          - feat/web-pages
 
-    # 同一分支同时只允许一个同步任务（按分支分组，两个分支可并行）
+    # 同一分支同时只允许一个同步任务（按分支分组，各分支可并行）
     concurrency:
       group: sync-upstream-${{ matrix.branch }}
       cancel-in-progress: false
@@ -100,7 +105,8 @@ jobs:
       FORK: ${{ github.repository }}
       UPSTREAM: libnoname/noname
       UPSTREAM_OWNER: libnoname
-      # 上游用来对比的分支。**不要用 $BRANCH**——那会去查 libnoname:feat/ios-support（不存在）。
+      # 上游用来对比的分支。**不要用 $BRANCH**——那会去查 libnoname:feat/ios-support
+      # 或 libnoname:feat/web-pages（上游都不存在），必然 404。
       UPSTREAM_BRANCH: main
       BRANCH: ${{ matrix.branch }}
 
