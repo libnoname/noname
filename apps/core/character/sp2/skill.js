@@ -2078,6 +2078,7 @@ const skills = {
 					}
 					return 7 - get.value(card);
 				})
+				.set("target", target)
 				.forResult();
 			if (result?.bool && result.cards?.length) {
 				const num = result.cards.length;

@@ -7997,15 +7997,14 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
-		filterCard: true,
+		filterCard: lib.filter.cardDiscardable,
 		position: "he",
-		selectCard: 1,
 		check(card) {
-			var player = _status.event.player;
+			const player = get.player();
 			if (!player.hasSkill("dczuowei")) {
 				return 6 - get.value(card);
 			}
-			if (player.countCards("h") == player.countCards("e") + 1 && !player.hasCard(card => player.hasValueTarget(card), "h")) {
+			if (player.countCards("h") == player.countCards("e") + 1 && !player.hasCards("h", card => player.hasValueTarget(card))) {
 				if (get.position(card) == "e") {
 					return 0;
 				}
@@ -8015,30 +8014,23 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			let result;
-
-			// step 0
-			const targets = game.filterPlayer(current => {
-				return current.countGainableCards(player, "e");
-			});
-			if (targets.length == 0) {
+			const targets = game.filterPlayer(current => current.hasGainableCards(player, "e"));
+			if (!targets.length) {
 				result = { bool: false };
 			} else if (targets.length == 1) {
 				result = { bool: true, targets: targets };
 			} else {
 				result = await player
 					.chooseTarget("自固：获得一名角色装备区里的一张牌", true, (card, player, target) => {
-						return target.countGainableCards(player, "e");
+						return target.hasGainableCards(player, "e");
 					})
 					.set("ai", target => {
-						if (target == _status.event.player) {
+						const player = get.player();
+						if (target == player) {
 							return 10;
 						}
-						if (get.attitude(_status.event.player, target) < 0) {
-							if (
-								target.hasCard(card => {
-									return get.value(card, player) >= 6;
-								})
-							) {
+						if (get.attitude(player, target) < 0) {
+							if (target.hasCards("e", card => get.value(card, player) >= 6)) {
 								return 12;
 							}
 							return 8;
@@ -8047,14 +8039,12 @@ const skills = {
 					})
 					.forResult();
 			}
-			// step 1
 			let target;
-			if (result.bool) {
+			if (result?.bool && result.targets?.length) {
 				target = result.targets[0];
 				event.target = target;
 				result = await player.gainPlayerCard("e", target, true).forResult();
 			}
-			// step 2
 			if (!result.bool || target == player || !result.cards || !result.cards.some(i => get.owner(i) == player)) {
 				await player.draw();
 			}

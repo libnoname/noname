@@ -2382,6 +2382,7 @@ const skills = {
 		audio: "shanjia",
 		enable: "phaseUse",
 		usable: 1,
+		manualConfirm: true,
 		init(player) {
 			player.addSkill("mbshanjia_count");
 		},

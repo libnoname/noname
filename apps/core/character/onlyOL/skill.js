@@ -664,7 +664,7 @@ const skills = {
 				mod: {
 					cardEnabled(card, player) {
 						const source = _status.currentPhase;
-						if (!source.hasSkill("olsbguqu") || source === player || !player.countCards("h", card2 => card2.hasGaintag("olsbguqu_tag"))) {
+						if (!source?.hasSkill("olsbguqu") || source === player || !player.countCards("h", card2 => card2.hasGaintag("olsbguqu_tag"))) {
 							return;
 						}
 						let cards = [];

@@ -1446,6 +1446,7 @@ const characters = {
 		group: "qun",
 		hp: 4,
 		skills: ["hm_dafu", "hm_jipin"],
+		img: "image/character/yudu.jpg",
 	},
 	hm_taosheng: {
 		sex: "male",
