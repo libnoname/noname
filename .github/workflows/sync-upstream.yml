@@ -3,12 +3,12 @@ name: Sync with upstream
 # 用途：让本 Fork 与上游 libnoname/noname 保持同步，不用手动点「Sync fork」。
 #
 # 覆盖分支：见下方 matrix.branch（当前是 main、feat/ios-support 与 feat/web-pages）。
-# ⚠️ **每个分支都要单独同步**——这些分支是分叉的，不是包含关系：
+# ⚠️ 每个分支都要单独同步——这些分支是分叉的，不是包含关系：
 #     main             —— Fork 的默认分支，上游同步 + 通用构建 + iOS 旧线；
 #     feat/ios-support —— 实际用来出 iOS 包的那条线（Capacitor 8）；
 #     feat/web-pages   —— 网页版（Cloudflare Pages）部署所在分支。
 #     2026-10-05 就踩过这个坑：当时只同步 main，结果 iOS 包（从 feat/ios-support 构建）
-#     缺了上游新增的 21 个资源文件——因为批量下载的文件清单是构建时按**分支自己的**
+#     缺了上游新增的 21 个资源文件——因为批量下载的文件清单是构建时按分支自己的
 #     资源生成的，而不是按上游。
 #     feat/web-pages 同理：它的产物（dist）也是按分支资源构建的，漏同步会缺素材。
 #
@@ -18,7 +18,7 @@ name: Sync with upstream
 #
 # 实现在服务端完成，不需要把仓库拉下来：
 #   - 比较：GET /repos/{fork}/compare/main...{upstream-owner}:main
-#     （跨 fork 比较时，head 位置写 **owner:branch**，且 owner 只能用
+#     （跨 fork 比较时，head 位置写 owner:branch，且 owner 只能用
 #       owner 名，写成 `owner/repo:branch` 会 404——两种写法都实测过）
 #   - 合并：POST /repos/{fork}/merge-upstream  （就是网页上「Sync fork」按钮调的那个接口）
 # 这样做是必须的——本仓库工作树接近 3GB（资源文件为主），就算浅克隆也很容易把
@@ -31,8 +31,8 @@ name: Sync with upstream
 # ---------------------------------------------------------------------------
 # ⚠️ 关于 SYNC_TOKEN（重要，第一次实跑时踩出来的）
 #
-# Actions 内置的 GITHUB_TOKEN 属于 GitHub App 安装令牌，**无权创建或修改
-# `.github/workflows/` 下的文件**，而且权限清单里根本没有对应项可开。于是当上游的
+# Actions 内置的 GITHUB_TOKEN 属于 GitHub App 安装令牌，无权创建或修改
+# `.github/workflows/` 下的文件，而且权限清单里根本没有对应项可开。于是当上游的
 # 更新里包含工作流改动时，合并会被直接拒绝：
 #     refusing to allow a GitHub App to create or update workflow
 #     `.github/workflows/release.yml` without `workflows` permission (422)
@@ -44,19 +44,19 @@ name: Sync with upstream
 # 需要时按下面做一次即可（约 2 分钟）：
 #   1. 生成细粒度 PAT：https://github.com/settings/personal-access-tokens/new
 #      → Repository access 选 only `cklsit/noname`
-#      → Permissions 给 **Contents: Read and write** 与 **Workflows: Read and write**
+#      → Permissions 给 Contents: Read and write 与 Workflows: Read and write
 #      （用经典令牌也行：勾 `repo` + `workflow`）
 #   2. 存成本仓库的 Actions secret，名称填 `SYNC_TOKEN`：
 #      Settings → Secrets and variables → Actions → New repository secret
 #   3. 之后本工作流会自动优先使用它（见下方 GH_TOKEN）。
 #
-# 没配也没关系：那种情况下本次运行会**失败并打印上面这条明确原因**，
+# 没配也没关系：那种情况下本次运行会失败并打印上面这条明确原因，
 # 你手动点一次网页上的「Sync fork」即可（浏览器用你本人的身份，不受此限制）。
 #
 # 其它两个容易踩的点：
-#   1. GitHub 的 schedule **只会在默认分支上执行**。因此这个文件必须存在于
+#   1. GitHub 的 schedule 只会在默认分支上执行。因此这个文件必须存在于
 #      fork 的 main 上；只放在功能分支里，定时任务永远不会被触发。
-#   2. 合并是**合并**而不是重置：本 Fork 的 main 有一批自定义提交
+#   2. 合并是合并而不是重置：本 Fork 的 main 有一批自定义提交
 #      （README 改写、ios-build.yml、移除调研文档等），不会被上游覆盖。
 #      若上游恰好改到同一批文件，会产生冲突 → 该次运行同样会失败并打印原因。
 #      这是刻意设计的：宁可报错，也不冒险强推。
@@ -82,11 +82,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # 需要跟着上游走的分支。**加分支只改这一行即可。**
+        # 需要跟着上游走的分支。加分支只改这一行即可。
         #   main              —— Fork 的默认分支，网页「Sync fork」按钮同步的就是它
         #   feat/ios-support  —— 实际用来构建 iOS 包的开发分支（Capacitor 8 那条线）
         #   feat/web-pages    —— 网页版（Cloudflare Pages）部署所在分支（2026-10-14 加入）
-        # ⚠️ 这些分支是分叉的（main 是 Capacitor 6 的旧线），所以必须**各自**同步，
+        # ⚠️ 这些分支是分叉的（main 是 Capacitor 6 的旧线），所以必须各自同步，
         #    只同步某一条不够——曾经就因为只同步 main，导致 iOS 包缺了上游新增的
         #    21 个资源文件（清单按分支资源生成）。
         branch:
@@ -105,7 +105,7 @@ jobs:
       FORK: ${{ github.repository }}
       UPSTREAM: libnoname/noname
       UPSTREAM_OWNER: libnoname
-      # 上游用来对比的分支。**不要用 $BRANCH**——那会去查 libnoname:feat/ios-support
+      # 上游用来对比的分支。不要用 $BRANCH——那会去查 libnoname:feat/ios-support
       # 或 libnoname:feat/web-pages（上游都不存在），必然 404。
       UPSTREAM_BRANCH: main
       BRANCH: ${{ matrix.branch }}
@@ -135,7 +135,7 @@ jobs:
           echo "upstream_sha=$upstream_sha" >> "$GITHUB_OUTPUT"
           echo "fork_sha=$fork_sha" >> "$GITHUB_OUTPUT"
 
-          # ⚠️ 判据是「上游是否领先本 Fork」，**不能**用「两边 SHA 是否相等」：
+          # ⚠️ 判据是「上游是否领先本 Fork」，不能用「两边 SHA 是否相等」：
           # 本 Fork 有自己的提交，一旦合并过一次，两边 SHA 就再也不会相等了，
           # 那样每天都会白跑一次合并（接口会回 merge_type=none，但没有任何意义）。
           compare_api="repos/$FORK/compare/$BRANCH...$UPSTREAM_OWNER:$UPSTREAM_BRANCH"
