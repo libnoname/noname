@@ -1,7 +1,7 @@
 name: Build unsigned iOS IPA
 
 # 用途：在没有 Mac（或 Mac 太老装不了新 Xcode）的情况下，用 GitHub 免费提供的
-# macOS 云端机器把《无名杀》编译成 **未签名** 的 .ipa，再交给 SideStore / AltStore
+# macOS 云端机器把《无名杀》编译成未签名的 .ipa，再交给 SideStore / AltStore
 # 用你自己的 Apple ID 重签安装。
 #
 # 为什么必须是「未签名」的 ipa：
@@ -17,7 +17,7 @@ name: Build unsigned iOS IPA
 #   全量资源约 2.8GB，其中 audio/skill(470M) + image/character(390M) + audio/die(111M)
 #   占了将近 1GB。侧载工具装不下这个体积（AltStore 未打补丁时 >300MB 直接报
 #   Bad Allocation），而这三类资源又完全可以「用到谁下谁」——
-#   因此本工作流**恒定**把它们排除，改由游戏内的「边玩边下」按需补齐
+#   因此本工作流恒定把它们排除，改由游戏内的「边玩边下」按需补齐
 #   （实现见 apps/mobile/src/lazy-assets.ts）。
 #   如果要打「一次性带齐素材」的包（例如上架前的真机回归、或模拟器调试），
 #   请在本地执行：pnpm build && pnpm --filter @noname/mobile sync，
@@ -195,7 +195,7 @@ jobs:
           #   - 即使打 4GB patch，Apple 侧未压缩 App 硬上限仍是 4GB
           # 本仓库全量资源约 2.8GB，不处理几乎必然装不上。
           #
-          # ⚠️ 本步骤**恒定执行**，没有任何开关：
+          # ⚠️ 本步骤恒定执行，没有任何开关：
           # 武将原画与语音不再随包发布，改为游戏内「边玩边下」——
           # 用到谁就只下谁（详见 apps/mobile/src/lazy-assets.ts）。
           # 因此这里只管把三大目录删掉，不必再关心「要不要打包」。
@@ -278,7 +278,7 @@ jobs:
 
       # P0-1：原步骤名为 `Show project and scheme`，里面除了 `ls -la` 还跑了一次
       # `xcodebuild -list`（-workspace/-project 二选一）。实测该命令独占约 18s —— 它会
-      # 完整加载工程并触发一次 Swift Package Manager 依赖解析，而我们**只是用它打印 scheme 名**，
+      # 完整加载工程并触发一次 Swift Package Manager 依赖解析，而我们只是用它打印 scheme 名，
       # 对本工作流没有任何决策作用（下面 xcodebuild 里 scheme 名恒为 App）。
       # 因此整段删除，只保留廉价的目录列表。工程存在性已由 `Locate iOS project` 步骤
       # 用 `.xcodeproj` 校验兜底，信息没有丢失。
@@ -288,16 +288,16 @@ jobs:
 
       # P1-1：缓存 Swift Package Manager 的依赖检出与编译产物。
       # ⚠️ 缓存 key 的关键修正：不要用 Package.resolved 做哈希输入 —— 本仓库
-      #   `apps/mobile/ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/` 下**只有**
+      #   `apps/mobile/ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/` 下只有
       #   IDEWorkspaceChecks.plist，根本没有 Package.resolved 文件，`hashFiles(...)` 会恒返回
       #   空串，导致 key 退化（永远 miss 或永远命中旧缓存）。
-      # 因此改用 `CapApp-SPM/Package.swift` 作为哈希输入之一。⚠️ 更正：该文件**并未被版本管理**
+      # 因此改用 `CapApp-SPM/Package.swift` 作为哈希输入之一。⚠️ 更正：该文件并未被版本管理
       #   （见 apps/mobile/.gitignore:30 —— Capacitor CLI 每次 `cap sync` 都会重写这份 SPM 清单，
       #   它会写入本机 node_modules 的绝对/相对路径，提交后在别的机器/CI 上路径必然失效，故不纳入
       #   版本管理、交给 cap sync 现场生成）。但它正是第 12 步 `Capacitor sync` 现场生成的，而本步骤
       #   排在其后，因此 `hashFiles()` 能取到真实的依赖指纹，不会退化成空串。它显式列出了
       #   capacitor-swift-pm 8.1.0 及两个本地 path 依赖，足以代表 SPM 依赖指纹。
-      # ⚠️ 又因它是**生成物**（万一某次 `pnpm sync` 异常未生成，key 会退化），key 里**同时**加入恒被
+      # ⚠️ 又因它是生成物（万一某次 `pnpm sync` 异常未生成，key 会退化），key 里同时加入恒被
       #   版本管理的 pnpm-lock.yaml：`hashFiles` 接受多个参数，任一文件缺失时它对该文件返回空串、
       #   其余仍参与计算，因此 key 不会整体退化为空串，也就不会误撞过期缓存。
       # 命中后 xcodebuild 可跳过 `swift package resolve` 的网络拉取，第二次运行起见效。
@@ -339,7 +339,7 @@ jobs:
           # P0-2：只编 arm64 + 关闭调试符号。
           #   - 侧载到真机只需 arm64；原值 ONLY_ACTIVE_ARCH=NO 会 arm64 + x86_64 双架构编译，
           #     白白多花一份时间，因此改为 ONLY_ACTIVE_ARCH=YES。
-          #   - 必须**显式**再给 ARCHS=arm64 与 EXCLUDED_ARCHS：在 `generic/platform=iOS`
+          #   - 必须显式再给 ARCHS=arm64 与 EXCLUDED_ARCHS：在 `generic/platform=iOS`
           #     destination 下 ONLY_ACTIVE_ARCH 有时会被忽略，不显式指定 ARCHS 会报
           #     "No architectures to compile for ..."。
           #   - DEBUG_INFORMATION_FORMAT=dwarf + GCC_GENERATE_DEBUGGING_SYMBOLS=NO：跳过 dSYM
@@ -347,7 +347,7 @@ jobs:
           #     剥离已安装产物，在关闭 DEBUG_INFO 后可以安全生效。
           #   - -quiet：减少 CI 日志 I/O（原有 `set -o pipefail` 保留）。
           #   - -clonedSourcePackagesDirPath：把 SPM 依赖检出指向缓存目录（见上一步 Cache SPM packages）。
-          # ❌ 故意**不加** DEPLOYMENT_POSTPROCESSING=YES：它会触发额外 strip 后处理，某些第三方
+          # ❌ 故意不加 DEPLOYMENT_POSTPROCESSING=YES：它会触发额外 strip 后处理，某些第三方
           #   Swift 包在链接期依赖符号表时可能报错，收益不明确、风险明确，本次不做。
           # 其余签名相关参数（CODE_SIGNING_ALLOWED/REQUIRED、CODE_SIGN_IDENTITY/ENTITLEMENTS、
           # AD_HOC_CODE_SIGNING_ALLOWED）与 -derivedDataPath 一律原样保留。
@@ -400,7 +400,7 @@ jobs:
           # 293,322,687 字节涨到 298,350,006 字节（+5.0MB, +1.7%）。本项目用户是在 30-100 KB/s
           # 的慢链路上手工下载该包，多 5MB 约等于多等 1-2 分钟，而 CI 只快 1 秒 —— 对该项目属
           # 负收益，故回退为默认级别（`-qry`）。
-          # ❌ 故意**不用** ditto -c -k --sequesterRsrc：--sequesterRsrc 会写入 __MACOSX
+          # ❌ 故意不用 ditto -c -k --sequesterRsrc：--sequesterRsrc 会写入 __MACOSX
           #    资源叉条目，侧载工具对 ipa 内部结构敏感，不值得冒这个险。
           # 保留 -x 排除项，语义与原始一致（额外显式排除 .DS_Store）。
           zip -qry "$IPA_NAME.ipa" Payload -x '*.DS_Store' -x '*/._*'
