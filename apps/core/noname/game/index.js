@@ -2406,7 +2406,9 @@ export class Game {
 
 		const newTicksMap = ticksMap ?? {};
 		const newSkillTicks = newTicksMap[skill] ?? (newTicksMap[skill] = {});
-		newSkillTicks[sync] ??= Date.now();
+		// 必须每次覆盖时间戳：此前用 `??=` 只在首次写入，
+		// 于是 lastTicks 永远等于第一次调用的时刻，500ms 的频率校验在首次之后永久失效。
+		newSkillTicks[sync] = Date.now();
 		game.#skillSyncTicks.set(player, newTicksMap);
 
 		// 执行并返回喵
@@ -10690,7 +10692,10 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			});
 		}
 		//初始化history和stat
-		player.actionHistory = new Array(players[0].actionHistory.length).fill({
+		// 注意：不能用 Array#fill —— fill 会把同一个对象引用填到每个下标，
+		// 导致所有回合的历史桶共享同一组数组，任一回合计数会串写到其它回合。
+		const actionHistoryLength = players[0].actionHistory.length;
+		player.actionHistory = Array.from({ length: actionHistoryLength }, () => ({
 			useCard: [],
 			respond: [],
 			skipped: [],
@@ -10700,7 +10705,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			damage: [],
 			custom: [],
 			useSkill: [],
-		});
+		}));
 		for (let i = 0; i < players[0].actionHistory.length; i++) {
 			["isRound", "isSkipped"].forEach(key => {
 				if (players[0].actionHistory[i][key]) {
