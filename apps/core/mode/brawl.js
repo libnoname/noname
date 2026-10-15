@@ -3168,9 +3168,10 @@ export default () => {
 				name: "白衣渡江",
 				mode: "versus",
 				submode: "2v2",
-				showcase: function (init) {
-					var node = this;
-					var player1, player2;
+				showcase(init) {
+					const node = this;
+					let player1;
+					let player2;
 					if (init) {
 						player1 = ui.create.player(null, true);
 						player1.classList.add("fullskin");
@@ -3201,26 +3202,26 @@ export default () => {
 						player1 = this.player1;
 						player2 = this.player2;
 					}
-					var func = function () {
-						setTimeout(function () {
+					const func = () => {
+						setTimeout(() => {
 							player1.smoothAvatar();
 							player2.smoothAvatar();
 							player1.node.avatar.setBackground("re_lvmeng", "character");
 							player2.node.avatar.setBackground("re_guanyu", "character");
 						}, 1500);
-						setTimeout(function () {
+						setTimeout(() => {
 							player1.smoothAvatar();
 							player2.smoothAvatar();
 							player1.node.avatar.setBackground("sp_lvmeng", "character");
 							player2.node.avatar.setBackground("jsp_guanyu", "character");
 						}, 3000);
-						setTimeout(function () {
+						setTimeout(() => {
 							player1.smoothAvatar();
 							player2.smoothAvatar();
 							player1.node.avatar.setBackground("shen_lvmeng", "character");
 							player2.node.avatar.setBackground("shen_guanyu", "character");
 						}, 4500);
-						setTimeout(function () {
+						setTimeout(() => {
 							player1.smoothAvatar();
 							player2.smoothAvatar();
 							player1.node.avatar.setBackground("lvmeng", "character");
@@ -3233,131 +3234,135 @@ export default () => {
 				intro: ["玩家在选将时可从8张武将牌里选择两张武将牌，一张面向大家可见（加入游戏），另一张是隐藏面孔（暗置）", "选择的两张武将牌需满足以下至少两个条件：1.性别相同；2.体力上限相同；3.技能数量相同", "每名玩家在其回合开始或回合结束时，可以选择将自己的武将牌弃置，然后使用暗置的武将牌进行剩余的游戏"],
 				content: {
 					submode: "two",
-					chooseCharacterBefore: function () {
+					chooseCharacterBefore() {
 						game.versusVideoName = "白衣渡江";
-						((lib.skill._changeCharacter = {
+						lib.skill._changeCharacter = {
 							trigger: { player: ["phaseBefore", "phaseAfter"] },
 							forced: true,
 							silent: true,
 							popup: false,
-							filter: function (event, player) {
-								return player._backupCharacter != undefined;
+							filter(event, player) {
+								return player._backupCharacter != null;
 							},
-							content: function () {
-								"step 0";
-								player
-									.chooseControl("确定", "取消")
+							async content(event, trigger, player) {
+								const result = await player
+									.chooseControl({
+										controls: ["确定", "取消"],
+										ai: () => (Math.random() < 0.15 ? "确定" : "取消"),
+									})
 									.set("dialog", ["是否替换自己的武将牌？", [[player._backupCharacter], "character"]])
-									.set("ai", function () {
-										return Math.random() < 0.15 ? "确定" : "取消";
-									});
-								"step 1";
-								if (result.control == "确定") {
-									game.log(player, "将", player.name, "替换为了", player._backupCharacter);
-									player.reinit(player.name, player._backupCharacter);
-									player.changeGroup(lib.character[player._backupCharacter][1], false);
-									delete player._backupCharacter;
+									.forResult();
+								if (result.control !== "确定") {
+									return;
 								}
+								game.log(player, "将", player.name, "替换为了", player._backupCharacter);
+								player.reinit(player.name, player._backupCharacter);
+								const changeGroup = player.changeGroup(lib.character[player._backupCharacter][1], false);
+								delete player._backupCharacter;
+								await changeGroup;
 							},
-						}),
-							game.addGlobalSkill("_changeCharacter"));
-						game.chooseCharacterTwo = function () {
-							var next = game.createEvent("chooseCharacter");
-							next.setContent(function () {
-								"step 0";
+						};
+						game.addGlobalSkill("_changeCharacter");
+						game.chooseCharacterTwo = () => {
+							const next = game.createEvent("chooseCharacter");
+							next.setContent(async (event, trigger, player) => {
 								ui.arena.classList.add("choose-character");
-								var bool = Math.random() < 0.5;
-								var bool2 = Math.random() < 0.5;
-								var ref = game.players[0];
+								const bool = Math.random() < 0.5;
+								const bool2 = Math.random() < 0.5;
+								const ref = game.players[0];
 
 								ref.side = bool;
 								ref.next.side = bool2;
 								ref.next.next.side = !bool;
 								ref.previous.side = !bool2;
 
-								var firstChoose = game.players.randomGet();
-								if (firstChoose.next.side == firstChoose.side) {
+								let firstChoose = game.players.randomGet();
+								if (firstChoose.next.side === firstChoose.side) {
 									firstChoose = firstChoose.next;
 								}
 								_status.firstAct = firstChoose;
-								for (var i = 0; i < 4; i++) {
-									firstChoose.node.name.innerHTML = get.verticalStr(get.cnNumber(i + 1, true) + "号位");
+								for (let i = 0; i < 4; i++) {
+									firstChoose.node.name.innerHTML = get.verticalStr(`${get.cnNumber(i + 1, true)}号位`);
 									firstChoose = firstChoose.next;
 								}
 
-								for (var i = 0; i < game.players.length; i++) {
-									if (game.players[i].side == game.me.side) {
-										game.players[i].node.identity.firstChild.innerHTML = "友";
+								for (const current of game.players) {
+									if (current.side === game.me.side) {
+										current.node.identity.firstChild.innerHTML = "友";
 									} else {
-										game.players[i].node.identity.firstChild.innerHTML = "敌";
+										current.node.identity.firstChild.innerHTML = "敌";
 									}
-									game.players[i].node.identity.dataset.color = game.players[i].side + "zhu";
+									current.node.identity.dataset.color = `${current.side}zhu`;
 								}
-								var list = [];
-								for (i in lib.character) {
-									if (!lib.filter.characterDisabled(i)) {
-										list.push(i);
+								const list = [];
+								for (const name in lib.character) {
+									if (!lib.filter.characterDisabled(name)) {
+										list.push(name);
 									}
 								}
-								var choose = [];
 								_status.characterlist = list;
-								event.filterChoice = function (name1, name2) {
-									var info1 = lib.character[name1];
-									var info2 = lib.character[name2];
+								const filterChoice = (name1, name2) => {
+									const info1 = lib.character[name1];
+									const info2 = lib.character[name2];
 									if (!info1 || !info2) {
 										return;
 									}
-									var num = 0;
-									if (info1[0] == info2[0]) {
+									let num = 0;
+									if (info1[0] === info2[0]) {
 										num++;
 									}
-									if (get.infoMaxHp(info1[2]) == get.infoMaxHp(info2[2])) {
+									if (get.infoMaxHp(info1[2]) === get.infoMaxHp(info2[2])) {
 										num++;
 									}
-									if (info1[3].length == info2[3].length) {
+									if (info1[3].length === info2[3].length) {
 										num++;
 									}
 									return num > 1;
 								};
-								var list2 = list.randomGets(8);
-								var next = game.me.chooseButton(2, true, ["请选择您的武将牌", [list2, "character"]]);
-								next.set("onfree", true);
-								next.set("filterButton", function (button) {
-									if (!ui.selected.buttons.length) {
-										for (var i = 0; i < list2.length; i++) {
-											if (list2[i] != button.link && event.filterChoice(button.link, list2[i])) {
-												return true;
+								const list2 = list.randomGets(8);
+								const result = await game.me
+									.chooseButton({
+										selectButton: 2,
+										forced: true,
+										createDialog: ["请选择您的武将牌", [list2, "character"]],
+										filterButton: button => {
+											if (!ui.selected.buttons.length) {
+												for (const name of list2) {
+													if (name !== button.link && filterChoice(button.link, name)) {
+														return true;
+													}
+												}
+												return false;
 											}
-										}
-										return false;
-									}
-									return event.filterChoice(button.link, ui.selected.buttons[0].link);
-								});
-								"step 1";
+											return filterChoice(button.link, ui.selected.buttons[0].link);
+										},
+									})
+									.set("onfree", true)
+									.forResult();
 								game.me.init(result.links[0]);
 								game.me._backupCharacter = result.links[1];
 								_status.characterlist.removeArray(result.links);
-								var list = _status.characterlist;
-								for (var i = 0; i < game.players.length; i++) {
-									if (game.players[i] != game.me) {
-										list.randomSort();
-										var bool = false;
-										for (var k = 0; k < list.length; k++) {
-											for (var j = i + 1; j < list.length; j++) {
-												if (event.filterChoice(list[k], list[j])) {
-													bool = true;
-													game.players[i].init(list[k]);
-													game.players[i]._backupCharacter = list[j];
+								const remaining = _status.characterlist;
+								for (let i = 0; i < game.players.length; i++) {
+									if (game.players[i] !== game.me) {
+										remaining.randomSort();
+										let matched = false;
+										for (let k = 0; k < remaining.length; k++) {
+											for (let j = i + 1; j < remaining.length; j++) {
+												if (filterChoice(remaining[k], remaining[j])) {
+													matched = true;
+													game.players[i].init(remaining[k]);
+													game.players[i]._backupCharacter = remaining[j];
 													break;
 												}
 											}
-											if (bool) {
+											if (matched) {
 												break;
 											}
 										}
 									}
 								}
-								setTimeout(function () {
+								setTimeout(() => {
 									ui.arena.classList.remove("choose-character");
 								}, 500);
 								if (get.config("two_phaseswap")) {
