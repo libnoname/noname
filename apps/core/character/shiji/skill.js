@@ -582,7 +582,7 @@ const skills = {
 					} else {
 						await player.recast(cards);
 					}
-					if (trigger.source?.isIn() && player.hasSkill("yingba")) {
+					if (trigger.source?.isIn() && player.hasSkill("yingba", null, false, false)) {
 						trigger.source.addSkill("yingba_mark");
 						trigger.source.addMark("yingba_mark", 1);
 					}

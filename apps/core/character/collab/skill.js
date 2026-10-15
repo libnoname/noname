@@ -1878,7 +1878,31 @@ const skills = {
 			});
 			//所有对话框都应该分配同一个id
 			const videoId = lib.status.videoId++;
-			const chooseButton = (player, shopMap, isFirst, videoId) => {
+			const pay = (player, cost) => {
+				const nocost = player.hasMark("olxinghan_nocost");
+				if (game.online) {
+					const name = nocost ? "olxinghan_nocost" : "danqi_hufu";
+					const rest = player.countMark(name) - (nocost ? 1 : cost);
+					if (rest > 0) {
+						player.storage[name] = rest;
+					} else {
+						delete player.storage[name];
+					}
+					player.updateMarks();
+					return true;
+				}
+				if (nocost) {
+					player.removeMark("olxinghan_nocost", 1, false);
+				} else if (player.countMark("danqi_hufu") >= cost) {
+					player.removeMark("danqi_hufu", cost);
+				} else {
+					return false;
+				}
+				player.updateMarks("danqi_hufu");
+				player.updateMarks("olxinghan_nocost");
+				return true;
+			};
+			const chooseButton = (player, shopMap, isFirst, videoId, pay) => {
 				const map = shopMap.get(player);
 				//创建神秘对话框
 				const dialog = ui.create.dialog(
@@ -2038,16 +2062,12 @@ const skills = {
 									buttonx.style.setProperty("opacity", "0.5");
 									//发回主机tempResult实现客机立即addZhanfa而不是等事件结束再add
 									if (game.online) {
-										game.send("tempResult", button.link.slice(1, 3));
-									} else {
-										//主机就直接执行了（）
 										if (!isFirst) {
-											if (player.hasMark("olxinghan_nocost")) {
-												player.removeMark("olxinghan_nocost", 1, false);
-											} else {
-												player.removeMark("danqi_hufu", cost);
-											}
+											pay(player, cost);
 										}
+										game.send("tempResult", button.link.slice(1, 3));
+									} else if (isFirst || pay(player, cost)) {
+										//主机就直接执行了（）；付不起就不发（removeMark 在余量不足时会静默不减，等于白送）
 										player.addZhanfa(id);
 									}
 								}
@@ -2082,7 +2102,7 @@ const skills = {
 			}
 			targets.forEach(current => current.showTimer(time));
 			const gainMap = new Map();
-			const args = [shopMap, isFirst, videoId];
+			const args = [shopMap, isFirst, videoId, pay];
 			const getCost = rarity => {
 				return { rare: 1, epic: 2, legend: 3 }[rarity];
 			};
@@ -2092,19 +2112,16 @@ const skills = {
 					if (Array.isArray(result)) {
 						//这里是处理tempResult的流程
 						const [rarity, id] = result;
-						if (!isFirst) {
-							if (player.hasMark("olxinghan_nocost")) {
-								player.removeMark("olxinghan_nocost", 1, false);
-							} else {
-								player.removeMark("danqi_hufu", getCost(rarity));
-							}
+						//客机报上来的购买，主机自己再结一次账：付不起就整笔作废（客机那份余量可能是旧的）
+						if (!isFirst && !pay(player, getCost(rarity))) {
+							return;
 						}
 						gainMap.set(player, (gainMap.get(player) || []).concat([result]));
 						player.addZhanfa(id);
 					} else if (result == "ai") {
 						//处理真人玩家中途离线
 						if (isFirst) {
-							const unselected = ["rare", "epic", "legend"].removeArray(gainMap.get(player).map(i => i[0]));
+							const unselected = ["rare", "epic", "legend"].removeArray((gainMap.get(player) || []).map(i => i[0]));
 							const map = shopMap.get(player);
 							if (unselected.length) {
 								unselected.forEach(i => {
