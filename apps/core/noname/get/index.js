@@ -6558,7 +6558,8 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		}
 		from = from._trueMe || from;
 		arguments[0] = from;
-		var att = CacheContext.requireCacheContext().get.rawAttitude.apply(this, arguments);
+		// 只用到一次缓存，没有已注册的缓存上下文时直接调用，避免白建一个上下文
+		var att = CacheContext.invoke("get", "rawAttitude", this, arguments);
 		if (from.isMad()) {
 			att = -att;
 		}
@@ -6793,8 +6794,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		return 1;
 	}
 	cacheOrder(item) {
-		let cache = CacheContext.requireCacheContext();
-		return cache.get.order(item);
+		return CacheContext.invoke("get", "order", this, [item]);
 	}
 	/**
 	 * @returns { number }
@@ -6848,8 +6848,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		return result;
 	}
 	cacheEffectUse(target, card, player, player2, isLink) {
-		let cache = CacheContext.requireCacheContext();
-		return cache.get.effect_use(target, card, player, player2, isLink);
+		return CacheContext.invoke("get", "effect_use", this, [target, card, player, player2, isLink]);
 	}
 	/**
 	 * 计算使用牌或技能时的AI效果分值。
@@ -7124,8 +7123,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		return final;
 	}
 	cacheEffect(target, card, player, player2, isLink) {
-		let cache = CacheContext.requireCacheContext();
-		return cache.get.effect(target, card, player, player2, isLink);
+		return CacheContext.invoke("get", "effect", this, [target, card, player, player2, isLink]);
 	}
 	/**
 	 * 计算牌或技能对目标的AI效果分值。
