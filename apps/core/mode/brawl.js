@@ -4145,10 +4145,11 @@ export default () => {
 				name: "两军对垒",
 				mode: "versus",
 				submode: "2v2",
-				showcase: function (init) {
-					var node = this;
-					var player1, player2;
-					var list = [
+				showcase(init) {
+					const node = this;
+					let player1;
+					let player2;
+					let list = [
 						["re_sp_zhugeliang", "yujin_yujin", "re_zhangliao", "re_lusu"],
 						["re_huangzhong", "re_xiahouyuan", "zhanghe", "xin_fazheng"],
 						["re_caocao", "xin_yuanshao", "guotufengji", "re_guojia"],
@@ -4185,7 +4186,8 @@ export default () => {
 						player1 = this.player1;
 						player2 = this.player2;
 					}
-					var player3, player4;
+					let player3;
+					let player4;
 					if (init) {
 						player3 = ui.create.player(null, true);
 						player4 = ui.create.player(null, true);
@@ -4218,8 +4220,8 @@ export default () => {
 				intro: ["双方使用特定的武将，搭配特定的技能，还原特定的经典场景"],
 				content: {
 					submode: "two",
-					chooseCharacterBefore: function () {
-						var list = [
+					chooseCharacterBefore() {
+						let list = [
 							{
 								name: "草船借箭",
 								place: [true, false, false, true],
@@ -4672,54 +4674,47 @@ export default () => {
 							];
 						}
 						game.liangjunduilei = list;
-						game.chooseCharacterTwo = function () {
-							var next = game.createEvent("chooseCharacter");
-							next.setContent(function () {
-								"step 0";
+						game.chooseCharacterTwo = () => {
+							const next = game.createEvent("chooseCharacter");
+							next.setContent(async (event, trigger, player) => {
 								ui.arena.classList.add("choose-character");
-								var list = game.liangjunduilei;
-								var id = lib.status.videoId++;
-								var choiceList = ui.create.dialog("请选择要游玩的剧情", "forcebutton");
+								const list = game.liangjunduilei;
+								const id = lib.status.videoId++;
+								const choiceList = ui.create.dialog("请选择要游玩的剧情", "forcebutton");
 								choiceList.videoId = id;
-								choiceList.add([
-									list.map((item, i) => {
-										return [i, `<div class="popup text center" style="width:calc(100% - 10px);display:inline-block">${item.name}</div>`];
-									}),
-									"textbutton",
-								]);
-								game.me.chooseButton(true).set("dialog", id).set("onfree", true);
-								"step 1";
-								var pack = game.liangjunduilei[result.links[0]];
+								choiceList.add([list.map((item, i) => [i, `<div class="popup text center" style="width:calc(100% - 10px);display:inline-block">${item.name}</div>`]), "textbutton"]);
+								const result = await game.me.chooseButton({ forced: true }).set("dialog", id).set("onfree", true).forResult();
+								const pack = game.liangjunduilei[result.links[0]];
 								game.versusVideoName = pack.name;
 								if (get.is.phoneLayout()) {
 									ui.duileiInfo = ui.create.div(".touchinfo.left", ui.window);
 								} else {
 									ui.duileiInfo = ui.create.div(ui.gameinfo);
 								}
-								ui.duileiInfo.innerHTML = "当前剧情：" + pack.name;
-								for (var i in pack.lib) {
-									for (var j in pack.lib[i]) {
+								ui.duileiInfo.innerHTML = `当前剧情：${pack.name}`;
+								for (const i in pack.lib) {
+									for (const j in pack.lib[i]) {
 										lib[i][j] = pack.lib[i][j];
 									}
 								}
-								var player = game.players.randomGet();
-								_status.firstAct = player;
-								for (var i = 0; i < 4; i++) {
-									player.init(pack.character[i]);
-									player.side = pack.place[i];
-									player = player.next;
+								let current = game.players.randomGet();
+								_status.firstAct = current;
+								for (let i = 0; i < 4; i++) {
+									current.init(pack.character[i]);
+									current.side = pack.place[i];
+									current = current.next;
 								}
 
-								for (var i = 0; i < game.players.length; i++) {
-									if (game.players[i].side == game.me.side) {
-										game.players[i].node.identity.firstChild.innerHTML = "友";
+								for (const current of game.players) {
+									if (current.side === game.me.side) {
+										current.node.identity.firstChild.innerHTML = "友";
 									} else {
-										game.players[i].node.identity.firstChild.innerHTML = "敌";
+										current.node.identity.firstChild.innerHTML = "敌";
 									}
-									game.players[i].node.identity.dataset.color = game.players[i].side + "zhu";
+									current.node.identity.dataset.color = `${current.side}zhu`;
 								}
 								game.addVideo("arrangeLib", null, pack.lib);
-								setTimeout(function () {
+								setTimeout(() => {
 									ui.arena.classList.remove("choose-character");
 								}, 500);
 								if (get.config("two_phaseswap")) {
