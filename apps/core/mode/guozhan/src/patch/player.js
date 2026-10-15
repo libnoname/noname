@@ -316,7 +316,7 @@ export class PlayerGuozhan extends lib.element.Player {
 	}
 	dieAfter(source) {
 		this.showCharacter(2);
-		if (get.is.jun(this.name1)) {
+		if (get.is.jun(this.name1) && this.identity != "ye") {
 			if (source && source.identity == this.identity) {
 				source.shijun = true;
 			} else if (source && source.identity != "ye") {
@@ -850,6 +850,9 @@ export class PlayerGuozhan extends lib.element.Player {
 	 * @returns { boolean }
 	 */
 	siege(player) {
+		if (game.players.length < 4) {
+			return false;
+		}
 		if (this.identity == "unknown" || this.hasSkill("undist")) {
 			return false;
 		}
@@ -876,6 +879,9 @@ export class PlayerGuozhan extends lib.element.Player {
 	 * @returns { boolean }
 	 */
 	sieged(player) {
+		if (game.players.length < 4) {
+			return false;
+		}
 		if (this.identity == "unknown") {
 			return false;
 		}
@@ -900,6 +906,9 @@ export class PlayerGuozhan extends lib.element.Player {
 	 * @returns { boolean }
 	 */
 	inline() {
+		if (game.players.length < 4) {
+			return false;
+		}
 		if (this.identity == "unknown" || this.identity == "ye" || this.hasSkill("undist")) {
 			return false;
 		}
