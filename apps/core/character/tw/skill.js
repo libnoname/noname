@@ -29907,6 +29907,7 @@ const skills = {
 				target.addTempSkill("twmitu_ai", "phaseChange");
 			}
 			for (const target of event.targets) {
+				if (!player.isIn()) return;
 				if (!game.hasPlayer(current => target.canCompare(current))) {
 					continue;
 				}

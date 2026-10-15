@@ -70,7 +70,6 @@ export default {
 	"#olqiangang2": "这天下欠朕的，该还了。",
 	"#olqiangang3": "朕心即天意，卿当跪听天怒！",
 	"#dm_sunquan:die": "朕非朕，天下皆朕！",
-	"#ol_jsrg_zhanghe:die": "公天威难抵，郃必效死力。",
 	"#olqiangzhi1": "今观丞相之威，可比当年董卓英雄十倍。",
 	"#olqiangzhi2": "丞相有情有义，吾等西川陋人岂敢鄙之？",
 	"#olxiantu1": "即入汉中，皇叔得川乃是天意。",

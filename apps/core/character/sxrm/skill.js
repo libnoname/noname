@@ -4146,6 +4146,7 @@ const skills = {
 				target.addTempSkill("sxrmmitu_ai", "phaseChange");
 			}
 			for (const target of event.targets) {
+				if (!player.isIn()) return;
 				if (!game.hasPlayer(current => target.canCompare(current))) {
 					continue;
 				}
