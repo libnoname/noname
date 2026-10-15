@@ -1,9 +1,32 @@
 // import { game, get, lib } from "noname";
-import { MD5 } from "crypto-js";
+// 注：这里原本 `import { MD5 } from "crypto-js"`（用于把函数源码哈希成缓存键）。
+// 改用 WeakMap 身份键后不再需要，已移除该 import——它会把整个 crypto-js 拉进
+// 这条模块链，而本文件只用过其中的 MD5。
 
 let cacheEnvironment = false;
 let cacheContext = undefined;
 let proxyed = {};
+
+// 函数参数的缓存键：改用「对象身份」而不是「源码内容」。
+//
+// 原实现是 MD5(param.toString())（crypto-js 的纯 JS MD5），有两个问题：
+//   1. 每次生成缓存键都要把整段函数源码做一次哈希，代价可能超过被缓存的函数本身；
+//   2. 更要紧的是**语义错误**：两个源码相同但捕获变量不同的闭包会得到同一个键，
+//      于是第二个闭包会直接命中第一个的缓存值。形如
+//        for (const name of names) skills[name] = { ai: { effect: () => name.length } };
+//      的写法（同一份源码、不同捕获）就会串味。按身份取键同时更快也更安全。
+let nextFunctionCacheKeyId = 0;
+const functionCacheKeys = new WeakMap();
+
+/** @param {Function} func @returns {number} */
+function getFunctionCacheKey(func) {
+	let id = functionCacheKeys.get(func);
+	if (id === undefined) {
+		id = ++nextFunctionCacheKeyId;
+		functionCacheKeys.set(func, id);
+	}
+	return id;
+}
 
 /**
  * 缓存上下文，用于在各种方法中暂时缓存值，以第一次获取的缓存值为准。
@@ -70,6 +93,38 @@ export class CacheContext {
 			return new CacheContext();
 		}
 		return cache;
+	}
+
+	/**
+	 * 在「已注册缓存上下文」存在时经由缓存代理调用，否则直接调用原函数。
+	 *
+	 * 适用场景：**一次调用里只会用到一次缓存**的包装方法，例如
+	 * `get.attitude` / `get.cacheOrder` / `get.cacheEffect` / `get.cacheEffectUse`。
+	 * 它们原先无条件 `requireCacheContext()`：在没有缓存上下文时（即绝大多数调用，
+	 * 缓存上下文只在 AI 决策窗口里注册）会白建一个 CacheContext——3 个 Proxy 加
+	 * 2 个 Map——再走一遍代理陷阱、算一次缓存键、写进一个随即被丢弃的 Map，
+	 * 一次都不会命中。get.attitude 全仓有近 4000 个调用点，这是纯开销。
+	 *
+	 * 注意**不适用于** `get.effect` / `get.effect_use`：它们在函数体内会多次经由
+	 * 同一个上下文做嵌套缓存（`cache.get.effect` / `cache.delegate(...)`），
+	 * 临时上下文在单次求值内仍有收益，不能短路。
+	 *
+	 * @param {"lib" | "game" | "get"} name 代理对象名
+	 * @param {string} method 方法名
+	 * @param {any} thisArg 调用时的 this
+	 * @param {ArrayLike<any>} args 参数
+	 */
+	static invoke(name, method, thisArg, args) {
+		const context = cacheContext;
+		if (context && context[name]) {
+			return context[name][method].apply(thisArg, args);
+		}
+		const source = proxyed[name];
+		if (source && typeof source[method] === "function") {
+			return source[method].apply(thisArg, args);
+		}
+		// 兜底：代理源尚未注册（正常流程下 init 阶段就会 setProxy）
+		return CacheContext.requireCacheContext()[name][method].apply(thisArg, args);
 	}
 
 	/**
@@ -174,34 +229,39 @@ export class CacheContext {
 	}
 
 	static _getCacheValueFromObject(storage, key, params, source, func) {
-		let cache = storage;
-		let funcCache = CacheContext._ensureMember(cache, key);
-		let cacheKey = CacheContext._wrapParametersToCacheKey(params);
-		let ret = funcCache[cacheKey];
-		if (ret === undefined) {
-			ret = (typeof func == "function" ? func : source[key]).call(source, ...params);
-			funcCache[cacheKey] = ret;
-			//console.log('缓存未命中!'+key+":"+cacheKey+":"+params.length+":ret:"+ret);
-		} else {
-			//console.log(key+":"+cacheKey+":"+params.length+":ret:"+ret);
+		const funcCache = CacheContext._ensureMember(storage, key);
+		const cacheKey = CacheContext._wrapParametersToCacheKey(params);
+
+		// 用 Map + has() 判定未命中。原实现用 `ret === undefined` 当未命中哨兵：
+		// 合法返回 undefined 的函数永远命中不了，每次都得重算。
+		if (funcCache.has(cacheKey)) {
+			return funcCache.get(cacheKey);
 		}
+
+		const ret = (typeof func == "function" ? func : source[key]).call(source, ...params);
+		funcCache.set(cacheKey, ret);
 		return ret;
 	}
 
 	static _ensureMember(obj, key) {
 		let mem = obj[key];
 		if (!mem) {
-			mem = {};
+			mem = new Map();
 			obj[key] = mem;
 		}
 		return mem;
 	}
 
 	static _wrapParametersToCacheKey(params) {
-		return Array.from(params)
-			.filter(p => !(p instanceof CacheContext))
-			.map(param => CacheContext._wrapParameterToCacheKey(param))
-			.join("-");
+		// 用数组 + join 拼接，避免原先 Array.from(...).filter(...).map(...) 的三次分配
+		const parts = [];
+		for (const param of params) {
+			if (param instanceof CacheContext) {
+				continue;
+			}
+			parts.push(CacheContext._wrapParameterToCacheKey(param));
+		}
+		return parts.join("-");
 	}
 
 	static _wrapParameterToCacheKey(param) {
@@ -224,15 +284,20 @@ export class CacheContext {
 			return param.getCacheKey();
 		}
 		if (Array.isArray(param)) {
-			return `[arr:[${param
-				.filter(p => !(p instanceof CacheContext))
-				.map(p => CacheContext._wrapParameterToCacheKey(p))
-				.join("-")}]]`;
+			const parts = [];
+			for (const item of param) {
+				if (item instanceof CacheContext) {
+					continue;
+				}
+				parts.push(CacheContext._wrapParameterToCacheKey(item));
+			}
+			return `[arr:[${parts.join("-")}]]`;
 		}
 		if (typeof param === "function") {
-			return `[f:${MD5(param.toString()).toString()}]`;
+			// 按身份取键，理由见文件顶部的 functionCacheKeys 注释
+			return `[f:${getFunctionCacheKey(param)}]`;
 		}
-		let entries = Object.entries(param);
+		const entries = Object.entries(param);
 		entries.sort((a, b) => (a[0] < b[0] ? -1 : 1));
 		return `[obj:{${entries.map(e => e[0] + ":" + CacheContext._wrapParameterToCacheKey(e[1])).join(",")}}]`;
 	}
