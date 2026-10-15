@@ -38,6 +38,25 @@ export async function importExtension(name: string) {
 	}
 }
 
+/**
+ * 预取扩展模块：只触发动态 `import()`（下载 + 解析 + 填充浏览器模块缓存），
+ * 不执行任何内容求值，因此与加载顺序无关，可以安全地并行调用。
+ *
+ * 扩展的求值本身必须串行——`loadExtension` 会把当前扩展名写进
+ * `_status.extension` / `_status.evaluatingExtension` 这类全局状态，
+ * 并发求值会互相污染（扩展常用它来拼素材路径）。所以这里只并行「取」，
+ * 把「用」留给后面的串行循环；串行循环里的 `import()` 会直接命中模块缓存。
+ *
+ * 任何失败都在这里吞掉：真正的错误诊断与「是否关闭该扩展」的交互
+ * 仍由 `importExtension` 负责，预取只做加速。
+ */
+export function prefetchExtension(name: string) {
+	const path = `/extension/${name}/extension`;
+	return import(/* @vite-ignore */ path + ".js")
+		.catch(() => (window.isSecureContext ? import(/* @vite-ignore */ path + ".ts") : undefined))
+		.catch(() => void 0);
+}
+
 export async function importMode(name: string) {
 	if (lib.mode[name] && lib.mode[name].fromextension) {
 		let loadModeMethod = lib.init["setMode_" + name];
@@ -108,7 +127,7 @@ export async function createEmptyExtension(name: string) {
 		config: {},
 		help: {},
 		package: {
-			translation: extensionInfo.translation,
+			translation : extensionInfo.translation,
 			nopack: true,
 			intro: extensionInfo.intro ? extensionInfo.intro.replace("${assetURL}", lib.assetURL) : "",
 			author: extensionInfo.author ?? "未知",

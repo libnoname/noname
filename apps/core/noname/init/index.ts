@@ -5,7 +5,7 @@ import * as config from "@/util/config.js";
 import { setOnError } from "@/util/error.ts";
 import { security, initializeSandboxRealms } from "@/util/sandbox.js";
 import { CacheContext } from "@/library/cache/cacheContext.js";
-import { importCardPack, importCharacterPack, importExtension, importMode } from "./import.js";
+import { importCardPack, importCharacterPack, importExtension, importMode, prefetchExtension } from "./import.js";
 import { loadCard, loadCardPile, loadCharacter, loadExtension, loadMode, loadPlay } from "./loading.js";
 
 // 无名杀，启动！
@@ -294,22 +294,33 @@ export async function boot() {
 		document.addEventListener("touchmove", ui.click.windowtouchmove);
 	}
 
-	// 在dom加载完后执行相应的操作
-	await new Promise(resolve => {
-		if (document.readyState !== "complete") {
-			window.onload = resolve;
+	// 在 DOM 解析完成后执行相应的操作。
+	//
+	// 这里刻意只等 DOM 就绪，不等 window.onload：入口是 type="module" 的脚本，
+	// 浏览器保证它在文档解析结束后才执行，所以此刻 readyState 至少是 "interactive"，
+	// DOM 已可安全操作。而 window.onload 还要等 CSS、背景图、字体等全部子资源下载完，
+	// 会把下面所有武将包/卡包/扩展的加载一并推迟到那时——纯等待，没有收益。
+	await new Promise<void>(resolve => {
+		if (document.readyState === "complete" || document.readyState === "interactive") {
+			resolve();
 		} else {
-			resolve(void 0);
+			document.addEventListener("DOMContentLoaded", () => resolve(), { once: true });
 		}
 	});
 
 	const extensionlist = await getExtensionList();
 	if (extensionlist.length) {
+		// 扩展的求值必须串行（loadExtension 依赖 _status.extension 等全局状态），
+		// 但模块的下载/解析与顺序无关，先并行预取，串行阶段即可直接命中模块缓存。
+		await Promise.allSettled(extensionlist.map(name => prefetchExtension(name)));
+
 		_status.extensionLoading = [];
 		_status.extensionLoaded = [];
 		for (const i of extensionlist) {
 			await importExtension(i);
 		}
+		// 这次等待不是冗余：importExtension 失败时会走 createEmptyExtension 分支
+		// 并再次 game.import，那批 promise 只会在这里被等到。
 		if (_status.extensionLoading) {
 			await Promise.all(_status.extensionLoading);
 		}
