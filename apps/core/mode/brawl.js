@@ -4738,15 +4738,15 @@ export default () => {
 				fullshow: true,
 				template: {
 					mode: "identity",
-					init: function () {
+					init() {
 						game.saveConfig("double_character", false, "identity");
 						_status.brawl.playerNumber = _status.brawl.scene.players.length;
 					},
-					showcase: function (init) {
+					showcase(init) {
 						if (init) {
-							var name = lib.brawl[this.link].name;
-							var scene = lib.storage.scene[name];
-							ui.create.node("button", "编辑场景", this, function () {
+							const name = lib.brawl[this.link].name;
+							const scene = lib.storage.scene[name];
+							ui.create.node("button", "编辑场景", this, () => {
 								_status.sceneToLoad = scene;
 								game.switchScene();
 							});
@@ -4755,7 +4755,7 @@ export default () => {
 									"button",
 									"管理扩展",
 									this,
-									function () {
+									() => {
 										ui.click.configMenu();
 										ui.click.extensionTab(name);
 									},
@@ -4766,8 +4766,8 @@ export default () => {
 									"button",
 									"删除场景",
 									this,
-									function () {
-										if (confirm("确定删除" + name + "？")) {
+									() => {
+										if (confirm(`确定删除${name}？`)) {
 											game.removeScene(name);
 										}
 									},
@@ -4778,10 +4778,10 @@ export default () => {
 								"button",
 								"导出扩展",
 								this,
-								function () {
-									var str = '{name:"' + name + '",content:function(){\nif(lib.config.mode=="brawl"){\n' + "if(!lib.storage.scene) lib.storage.scene={};\n" + 'if(!lib.storage.scene["' + name + '"]){\nlib.storage.scene["' + name + '"]=' + get.stringify(scene) + ";\n_status.extensionscene=true;}\n" + "if(!_status.extensionmade) _status.extensionmade=[];\n" + '_status.extensionmade.push("' + name + '");\n}}\n}';
-									var extension = {
-										"extension.js": 'game.import("extension",function(lib,game,ui,get,ai,_status){return ' + str + "})",
+								() => {
+									const str = `{name:"${name}",content:function(){\nif(lib.config.mode=="brawl"){\nif(!lib.storage.scene) lib.storage.scene={};\nif(!lib.storage.scene["${name}"]){\nlib.storage.scene["${name}"]=${get.stringify(scene)};\n_status.extensionscene=true;}\nif(!_status.extensionmade) _status.extensionmade=[];\n_status.extensionmade.push("${name}");\n}}\n}`;
+									const extension = {
+										"extension.js": `game.import("extension",function(lib,game,ui,get,ai,_status){return ${str}})`,
 									};
 									game.importExtension(extension, null, name);
 								},
@@ -4794,34 +4794,35 @@ export default () => {
 						noAddSetting: true,
 						identityShown: true,
 						orderedPile: true,
-						cardPile: function (list) {
+						cardPile(list) {
 							list.randomSort();
-							var scene = _status.brawl.scene;
-							var inpile = [];
-							for (var i = 0; i < list.length; i++) {
-								if (lib.card[list[i][2]]) {
-									if (lib.config.bannedcards.includes(list[i][2])) {
-										continue;
-									}
-									if (game.bannedcards && game.bannedcards.includes(list[i][2])) {
-										continue;
-									}
-									inpile.add(list[i][2]);
+							const scene = _status.brawl.scene;
+							const inpile = [];
+							for (const item of list) {
+								if (!lib.card[item[2]]) {
+									continue;
 								}
+								if (lib.config.bannedcards.includes(item[2])) {
+									continue;
+								}
+								if (game.bannedcards && game.bannedcards.includes(item[2])) {
+									continue;
+								}
+								inpile.add(item[2]);
 							}
-							var parseInfo = function (info) {
-								var info2 = [];
-								if (info[1] == "random") {
+							const parseInfo = info => {
+								const info2 = [];
+								if (info[1] === "random") {
 									info2.push(["club", "spade", "heart", "diamond"].randomGet());
 								} else {
 									info2.push(info[1]);
 								}
-								if (info[2] == "random") {
+								if (info[2] === "random") {
 									info2.push(Math.ceil(Math.random() * 13));
 								} else {
 									info2.push(info[2]);
 								}
-								if (info[0] == "random") {
+								if (info[0] === "random") {
 									info2.push(inpile.randomGet());
 								} else {
 									info2.push(info[0]);
@@ -4831,39 +4832,39 @@ export default () => {
 							if (scene.replacepile) {
 								list.length = 0;
 							}
-							for (var i = scene.cardPileTop.length - 1; i >= 0; i--) {
+							for (let i = scene.cardPileTop.length - 1; i >= 0; i--) {
 								list.unshift(parseInfo(scene.cardPileTop[i]));
 							}
-							for (var i = 0; i < scene.cardPileBottom.length; i++) {
-								list.push(parseInfo(scene.cardPileBottom[i]));
+							for (const item of scene.cardPileBottom) {
+								list.push(parseInfo(item));
 							}
-							for (var i = 0; i < scene.discardPile.length; i++) {
-								ui.create.card(ui.discardPile).init(parseInfo(scene.discardPile[i]));
+							for (const item of scene.discardPile) {
+								ui.create.card(ui.discardPile).init(parseInfo(item));
 							}
 							return list;
 						},
-						gameStart: function () {
-							for (var i = 0; i < game.players.length; i++) {
-								game.players[i].node.marks.show();
-								game.players[i].node.name.show();
-								game.players[i].node.name2.show();
-								var info = game.players[i].brawlinfo;
+						gameStart() {
+							for (const player of game.players) {
+								player.node.marks.show();
+								player.node.name.show();
+								player.node.name2.show();
+								const info = player.brawlinfo;
 								if (info.maxHp) {
-									game.players[i].maxHp = info.maxHp;
-									if (game.players[i].hp > game.players[i].maxHp) {
-										game.players[i].hp = game.players[i].maxHp;
+									player.maxHp = info.maxHp;
+									if (player.hp > player.maxHp) {
+										player.hp = player.maxHp;
 									}
 								}
 								if (info.hp) {
-									game.players[i].hp = info.hp;
-									if (game.players[i].hp > game.players[i].maxHp) {
-										game.players[i].maxHp = game.players[i].hp;
+									player.hp = info.hp;
+									if (player.hp > player.maxHp) {
+										player.maxHp = player.hp;
 									}
 								}
-								game.players[i].update();
+								player.update();
 							}
-							var scene = _status.brawl.scene;
-							var over = function (str) {
+							const scene = _status.brawl.scene;
+							const over = str => {
 								switch (str) {
 									case "win":
 										game.over(true);
@@ -4877,8 +4878,8 @@ export default () => {
 								}
 							};
 							if (scene.turns) {
-								var turns = scene.turns[0];
-								lib.onphase.push(function () {
+								let turns = scene.turns[0];
+								lib.onphase.push(() => {
 									turns--;
 									if (turns < 0) {
 										over(scene.turns[1]);
@@ -4886,8 +4887,8 @@ export default () => {
 								});
 							}
 							if (scene.washes) {
-								var washes = scene.washes[0];
-								lib.onwash.push(function () {
+								let washes = scene.washes[0];
+								lib.onwash.push(() => {
 									washes--;
 									if (washes <= 0) {
 										over(scene.washes[1]);
@@ -4895,32 +4896,32 @@ export default () => {
 								});
 							}
 						},
-						chooseCharacterBefore: function () {
-							var scene = _status.brawl.scene;
-							var playercontrol = [];
-							var maxpos = 0;
-							for (var i = 0; i < scene.players.length; i++) {
-								if (scene.players[i].playercontrol) {
-									playercontrol.push(scene.players[i]);
+						chooseCharacterBefore() {
+							const scene = _status.brawl.scene;
+							const playercontrol = [];
+							let maxpos = 0;
+							for (const info of scene.players) {
+								if (info.playercontrol) {
+									playercontrol.push(info);
 								}
-								maxpos = Math.max(maxpos, scene.players[i].position);
+								maxpos = Math.max(maxpos, info.position);
 							}
 
 							if (maxpos < scene.players.length) {
 								maxpos = scene.players.length;
 							}
-							var posmap = [];
-							for (var i = 1; i <= maxpos; i++) {
+							const posmap = [];
+							for (let i = 1; i <= maxpos; i++) {
 								posmap.push(i);
 							}
-							for (var i = 0; i < scene.players.length; i++) {
-								if (scene.players[i].position) {
-									posmap.remove(scene.players[i].position);
+							for (const info of scene.players) {
+								if (info.position) {
+									posmap.remove(info.position);
 								}
 							}
-							for (var i = 0; i < scene.players.length; i++) {
-								if (!scene.players[i].position) {
-									scene.players[i].position = posmap.randomRemove();
+							for (const info of scene.players) {
+								if (!info.position) {
+									info.position = posmap.randomRemove();
 								}
 							}
 							if (playercontrol.length) {
@@ -4928,30 +4929,28 @@ export default () => {
 							} else {
 								game.me.brawlinfo = scene.players.randomGet();
 							}
-							var getpos = function (info) {
-								var dp = info.position - game.me.brawlinfo.position;
+							const getpos = info => {
+								let dp = info.position - game.me.brawlinfo.position;
 								if (dp < 0) {
 									dp += maxpos;
 								}
 								return dp;
 							};
-							scene.players.sort(function (a, b) {
-								return getpos(a) - getpos(b);
-							});
-							var target = game.me;
-							var createCard = function (info) {
-								var info2 = [];
-								if (info[1] == "random") {
+							scene.players.sort((a, b) => getpos(a) - getpos(b));
+							let target = game.me;
+							const createCard = info => {
+								const info2 = [];
+								if (info[1] === "random") {
 									info2.push(["club", "spade", "heart", "diamond"].randomGet());
 								} else {
 									info2.push(info[1]);
 								}
-								if (info[2] == "random") {
+								if (info[2] === "random") {
 									info2.push(Math.ceil(Math.random() * 13));
 								} else {
 									info2.push(info[2]);
 								}
-								if (info[0] == "random") {
+								if (info[0] === "random") {
 									info2.push(lib.inpile.randomGet());
 								} else {
 									info2.push(info[0]);
@@ -4959,36 +4958,33 @@ export default () => {
 								return ui.create.card().init(info2);
 							};
 							_status.firstAct = game.me;
-							for (var i = 0; i < scene.players.length; i++) {
-								var info = scene.players[i];
+							for (const info of scene.players) {
 								target.brawlinfo = info;
 								target.identity = info.identity;
-								if (target.identity == "zhu") {
+								if (target.identity === "zhu") {
 									target.isZhu = true;
 								}
 								target.setIdentity(info.identity);
 								target.node.marks.hide();
-								if (info.name2 != "none" && info.name2 != "random") {
-									if (info.name == "random") {
+								if (info.name2 !== "none" && info.name2 !== "random") {
+									if (info.name === "random") {
 										target.init(info.name2, info.name2);
 										target.node.name.hide();
 										target.node.avatar.hide();
 									} else {
 										target.init(info.name, info.name2);
 									}
-								} else {
-									if (info.name != "random") {
-										if (info.name2 == "random") {
-											target.init(info.name, info.name);
-											target.node.name2.hide();
-											target.node.avatar2.hide();
-										} else {
-											target.init(info.name);
-										}
+								} else if (info.name !== "random") {
+									if (info.name2 === "random") {
+										target.init(info.name, info.name);
+										target.node.name2.hide();
+										target.node.avatar2.hide();
+									} else {
+										target.init(info.name);
 									}
 								}
 								if (info.linked) {
-									target.classList.add("linked" + (get.is.linked2(target) ? "2" : ""));
+									target.classList.add(`linked${get.is.linked2(target) ? "2" : ""}`);
 								}
 								if (info.turnedover) {
 									target.classList.add("turnedover");
@@ -4996,79 +4992,75 @@ export default () => {
 								if (info.position < _status.firstAct.brawlinfo.position) {
 									_status.firstAct = target;
 								}
-								var hs = [];
-								for (var j = 0; j < info.handcards.length; j++) {
-									hs.push(createCard(info.handcards[j]));
+								const hs = [];
+								for (const item of info.handcards) {
+									hs.push(createCard(item));
 								}
 								if (hs.length) {
 									target.directgain(hs);
 								}
-								for (var j = 0; j < info.equips.length; j++) {
-									let card = createCard(info.equips[j]);
+								for (const item of info.equips) {
+									const card = createCard(item);
 									target.addVirtualEquip(get.autoViewAs(card, void 0, false), [card]);
 								}
-								for (var j = 0; j < info.judges.length; j++) {
-									let card = createCard(info.judges[j]);
+								for (const item of info.judges) {
+									const card = createCard(item);
 									target.addVirtualJudge(get.autoViewAs(card, void 0, false), [card]);
 								}
 								target = target.next;
 							}
 						},
-						chooseCharacterAi: function (player, list, list2) {
-							let info = player.brawlinfo;
+						chooseCharacterAi(player, list, list2) {
+							const info = player.brawlinfo;
 							list = list
 								.slice()
-								.map(name => [name, ...(lib.characterReplace?.[name] ?? [])])//这么写是防止有人给lib.characterReplace[name]弄成空数组或者不放name进去
+								.map(name => [name, ...(lib.characterReplace?.[name] ?? [])]) //这么写是防止有人给lib.characterReplace[name]弄成空数组或者不放name进去
 								.unique()
 								.flat();
-							if (info.name2 != "none") {
-								if (info.name == "random" && info.name2 == "random") {
+							if (info.name2 !== "none") {
+								if (info.name === "random" && info.name2 === "random") {
 									player.init(list.randomRemove(), list.randomRemove());
-								} else if (info.name == "random") {
+								} else if (info.name === "random") {
 									player.init(list.randomGet(), info.name2);
-								} else if (info.name2 == "random") {
+								} else if (info.name2 === "random") {
 									player.init(info.name, list.randomGet());
 								}
-							} else {
-								if (info.name == "random") {
-									player.init(list.randomGet());
-								}
+							} else if (info.name === "random") {
+								player.init(list.randomGet());
 							}
 						},
-						chooseCharacter: function (list) {
-							var info = game.me.brawlinfo;
-							var event = _status.event;
-							if (info.name2 == "none") {
-								if (info.name != "random") {
+						chooseCharacter(list) {
+							const info = game.me.brawlinfo;
+							const event = _status.event;
+							if (info.name2 === "none") {
+								if (info.name !== "random") {
 									event.chosen = [info.name];
 								}
+							} else if (info.name2 === "random" && info.name === "random") {
+								_status.brawl.doubleCharacter = true;
+							} else if (info.name === "random") {
+								game.me.init(info.name2, info.name2);
+								game.me.node.avatar.hide();
+								game.me.node.name.hide();
+								_status.brawl.chooseCharacterStr = "选择主将";
+								event.modchosen = [info.name, info.name2];
+							} else if (info.name2 === "random") {
+								game.me.init(info.name, info.name);
+								game.me.node.avatar2.hide();
+								game.me.node.name2.hide();
+								_status.brawl.chooseCharacterStr = "选择副将";
+								event.modchosen = [info.name, info.name2];
 							} else {
-								if (info.name2 == "random" && info.name == "random") {
-									_status.brawl.doubleCharacter = true;
-								} else if (info.name == "random") {
-									game.me.init(info.name2, info.name2);
-									game.me.node.avatar.hide();
-									game.me.node.name.hide();
-									_status.brawl.chooseCharacterStr = "选择主将";
-									event.modchosen = [info.name, info.name2];
-								} else if (info.name2 == "random") {
-									game.me.init(info.name, info.name);
-									game.me.node.avatar2.hide();
-									game.me.node.name2.hide();
-									_status.brawl.chooseCharacterStr = "选择副将";
-									event.modchosen = [info.name, info.name2];
-								} else {
-									event.chosen = [info.name, info.name2];
-								}
+								event.chosen = [info.name, info.name2];
 							}
-							if (game.me.identity == "zhu") {
+							if (game.me.identity === "zhu") {
 								return false;
 							}
 							return "nozhu";
 						},
 					},
 				},
-				showcase: function (init) {
+				showcase(init) {
 					if (init) {
 						lib.translate.zhu = lib.translate.zhu || "主";
 						lib.translate.zhong = lib.translate.zhong || "忠";
@@ -5076,11 +5068,11 @@ export default () => {
 						lib.translate.fan = lib.translate.fan || "反";
 
 						this.style.transition = "all 0s";
-						this.style.height = this.offsetHeight - 10 + "px";
+						this.style.height = `${this.offsetHeight - 10}px`;
 						this.style.overflow = "scroll";
 						lib.setScroll(this);
-						var style = { marginLeft: "3px", marginRight: "3px" };
-						var style2 = {
+						const style = { marginLeft: "3px", marginRight: "3px" };
+						const style2 = {
 							position: "relative",
 							display: "block",
 							left: 0,
@@ -5089,21 +5081,21 @@ export default () => {
 							padding: 0,
 							width: "100%",
 						};
-						var style3 = { marginLeft: "4px", marginRight: "4px", position: "relative" };
+						const style3 = { marginLeft: "4px", marginRight: "4px", position: "relative" };
 
-						var scenename = ui.create.node("input", ui.create.div(style2, "", "场景名称：", this), { width: "120px" });
+						const scenename = ui.create.node("input", ui.create.div(style2, "", "场景名称：", this), { width: "120px" });
 						scenename.type = "text";
 						scenename.style.marginTop = "20px";
-						var sceneintro = ui.create.node("input", ui.create.div(style2, "", "场景描述：", this), { width: "120px" });
+						const sceneintro = ui.create.node("input", ui.create.div(style2, "", "场景描述：", this), { width: "120px" });
 						sceneintro.type = "text";
 						sceneintro.style.marginBottom = "10px";
 
-						var line1 = ui.create.div(style2, this);
-						var addCharacter = ui.create.node(
+						const line1 = ui.create.div(style2, this);
+						const addCharacter = ui.create.node(
 							"button",
 							"添加角色",
 							line1,
-							function () {
+							() => {
 								// line1.style.display='none';
 								resetStatus();
 								editPile.disabled = true;
@@ -5133,11 +5125,11 @@ export default () => {
 							},
 							style
 						);
-						var editPile = ui.create.node(
+						const editPile = ui.create.node(
 							"button",
 							"场景选项",
 							line1,
-							function () {
+							() => {
 								resetCharacter();
 								// editCode.disabled=true;
 								saveButton.disabled = true;
@@ -5169,16 +5161,16 @@ export default () => {
 						// var editCode=ui.create.node('button','编辑代码',line1,function(){
 						//	 console.log(1);
 						// },style);
-						var saveButton = ui.create.node(
+						const saveButton = ui.create.node(
 							"button",
 							"保存场景",
 							line1,
-							function () {
+							() => {
 								if (!scenename.value) {
 									alert("请填写场景名称");
 									return;
 								}
-								var scene = {
+								const scene = {
 									name: scenename.value,
 									intro: sceneintro.value,
 									players: [],
@@ -5186,7 +5178,7 @@ export default () => {
 									cardPileBottom: [],
 									discardPile: [],
 								};
-								for (var i = 0; i < line7.childElementCount; i++) {
+								for (let i = 0; i < line7.childElementCount; i++) {
 									scene.players.push(line7.childNodes[i].info);
 								}
 								if (scene.players.length < 2) {
@@ -5194,20 +5186,20 @@ export default () => {
 									return;
 								}
 								if (lib.storage.scene[scenename.value]) {
-									if (_status.currentScene != scenename.value) {
+									if (_status.currentScene !== scenename.value) {
 										if (!confirm("场景名与现有场景重复，是否覆盖？")) {
 											return;
 										}
 									}
 									game.removeScene(scenename.value);
 								}
-								for (var i = 0; i < line6_t.childElementCount; i++) {
+								for (let i = 0; i < line6_t.childElementCount; i++) {
 									scene.cardPileTop.push(line6_t.childNodes[i].info);
 								}
-								for (var i = 0; i < line6_b.childElementCount; i++) {
+								for (let i = 0; i < line6_b.childElementCount; i++) {
 									scene.cardPileBottom.push(line6_b.childNodes[i].info);
 								}
-								for (var i = 0; i < line6_d.childElementCount; i++) {
+								for (let i = 0; i < line6_d.childElementCount; i++) {
 									scene.discardPile.push(line6_d.childNodes[i].info);
 								}
 								if (replacepile.checked) {
@@ -5216,10 +5208,10 @@ export default () => {
 								if (gameDraw.checked) {
 									scene.gameDraw = true;
 								}
-								if (turnsresult.value != "none") {
+								if (turnsresult.value !== "none") {
 									scene.turns = [parseInt(turns.value), turnsresult.value];
 								}
-								if (washesresult.value != "none") {
+								if (washesresult.value !== "none") {
 									scene.washes = [parseInt(washes.value), washesresult.value];
 								}
 								lib.storage.scene[scene.name] = scene;
@@ -5229,10 +5221,10 @@ export default () => {
 							style
 						);
 
-						var capt1 = ui.create.div(style2, "", "角色信息", this);
-						var line2 = ui.create.div(style2, this);
+						const capt1 = ui.create.div(style2, "", "角色信息", this);
+						const line2 = ui.create.div(style2, this);
 						line2.style.display = "none";
-						var identity = ui.create.selectlist(
+						const identity = ui.create.selectlist(
 							[
 								["zhu", "主公"],
 								["zhong", "忠臣"],
@@ -5245,7 +5237,7 @@ export default () => {
 						identity.value = "fan";
 						identity.style.marginLeft = "3px";
 						identity.style.marginRight = "3px";
-						var position = ui.create.selectlist(
+						const position = ui.create.selectlist(
 							[
 								["0", "随机位置"],
 								["1", "一号位"],
@@ -5262,78 +5254,77 @@ export default () => {
 						);
 						position.style.marginLeft = "3px";
 						position.style.marginRight = "3px";
-						var line2_t = ui.create.div(style2, this);
+						const line2_t = ui.create.div(style2, this);
 						line2_t.style.display = "none";
 						// line2_t.style.marginBottom='10px';
 						ui.create.node("span", "体力：", line2_t);
-						var hp = ui.create.node("input", line2_t, { width: "40px" });
+						const hp = ui.create.node("input", line2_t, { width: "40px" });
 						hp.type = "text";
 						ui.create.node("span", "体力上限：", line2_t, { marginLeft: "10px" });
-						var maxHp = ui.create.node("input", line2_t, { width: "40px" });
+						const maxHp = ui.create.node("input", line2_t, { width: "40px" });
 						maxHp.type = "text";
 						ui.create.node("span", "横置 ", line2_t, { marginLeft: "20px" });
-						var linked = ui.create.node("input", line2_t);
+						const linked = ui.create.node("input", line2_t);
 						linked.type = "checkbox";
 						ui.create.node("span", "翻面 ", line2_t, { marginLeft: "10px" });
-						var turnedover = ui.create.node("input", line2_t);
+						const turnedover = ui.create.node("input", line2_t);
 						turnedover.type = "checkbox";
 						ui.create.node("span", "玩家 ", line2_t, { marginLeft: "10px" });
-						var playercontrol = ui.create.node("input", line2_t);
+						const playercontrol = ui.create.node("input", line2_t);
 						playercontrol.type = "checkbox";
 
-						var list = [];
-						for (var i in lib.character) {
+						const list = [];
+						for (const i in lib.character) {
 							list.push([i, lib.translate[i]]);
 						}
 
-						list.sort(function (a, b) {
+						list.sort((a, b) => {
 							a = a[0];
 							b = b[0];
-							var aa = a,
-								bb = b;
-							if (aa.indexOf("_") != -1) {
+							let aa = a;
+							let bb = b;
+							if (aa.indexOf("_") !== -1) {
 								aa = aa.slice(aa.lastIndexOf("_") + 1);
 							}
-							if (bb.indexOf("_") != -1) {
+							if (bb.indexOf("_") !== -1) {
 								bb = bb.slice(bb.lastIndexOf("_") + 1);
 							}
-							if (aa != bb) {
+							if (aa !== bb) {
 								return aa > bb ? 1 : -1;
 							}
 							return a > b ? 1 : -1;
 						});
 						list.unshift(["random", "自选主将"]);
-						var name1 = ui.create.selectlist(list, list[0], line2);
+						const name1 = ui.create.selectlist(list, list[0], line2);
 						name1.style.marginLeft = "3px";
 						name1.style.marginRight = "3px";
 						name1.style.maxWidth = "80px";
 						list[0][1] = "自选副将";
 						list.unshift(["none", "无副将"]);
-						var name2 = ui.create.selectlist(list, list[0], line2);
+						const name2 = ui.create.selectlist(list, list[0], line2);
 						name2.style.marginLeft = "3px";
 						name2.style.marginRight = "3px";
 						name2.style.maxWidth = "80px";
 
-						var capt9 = ui.create.div(style2, "", "编辑牌堆", this);
+						const capt9 = ui.create.div(style2, "", "编辑牌堆", this);
 						capt9.style.display = "none";
 
-						var capt2 = ui.create.div(style2, "", "添加卡牌", this);
-						var line3 = ui.create.div(style2, this);
+						const capt2 = ui.create.div(style2, "", "添加卡牌", this);
+						const line3 = ui.create.div(style2, this);
 						line3.style.display = "none";
 						capt1.style.display = "none";
 						capt2.style.display = "none";
 
-						var line5 = ui.create.div(style2, this);
+						const line5 = ui.create.div(style2, this);
 						line5.style.display = "none";
-						var pileaddlist = [];
-						for (var i = 0; i < lib.config.cards.length; i++) {
-							if (!lib.cardPack[lib.config.cards[i]]) {
+						const pileaddlist = [];
+						for (const pack of lib.config.cards) {
+							if (!lib.cardPack[pack]) {
 								continue;
 							}
-							for (var j = 0; j < lib.cardPack[lib.config.cards[i]].length; j++) {
-								var cname = lib.cardPack[lib.config.cards[i]][j];
+							for (const cname of lib.cardPack[pack]) {
 								pileaddlist.push([cname, get.translation(cname)]);
-								if (cname == "sha") {
+								if (cname === "sha") {
 									pileaddlist.push(["huosha", "火杀"]);
 									pileaddlist.push(["leisha", "雷杀"]);
 									pileaddlist.push(["icesha", "冰杀"]);
@@ -5342,21 +5333,20 @@ export default () => {
 								}
 							}
 						}
-						for (var i in lib.cardPack) {
+						for (const i in lib.cardPack) {
 							if (lib.config.all.cards.includes(i)) {
 								continue;
 							}
-							for (var j = 0; j < lib.cardPack[i].length; j++) {
-								var cname = lib.cardPack[i][j];
+							for (const cname of lib.cardPack[i]) {
 								pileaddlist.push([cname, get.translation(cname)]);
 							}
 						}
 						pileaddlist.unshift(["random", ["随机卡牌"]]);
-						var cardpileaddname = ui.create.selectlist(pileaddlist, null, line3);
+						const cardpileaddname = ui.create.selectlist(pileaddlist, null, line3);
 						cardpileaddname.style.marginLeft = "3px";
 						cardpileaddname.style.marginRight = "3px";
 						cardpileaddname.style.width = "85px";
-						var cardpileaddsuit = ui.create.selectlist(
+						const cardpileaddsuit = ui.create.selectlist(
 							[
 								["random", "随机花色"],
 								["heart", "红桃"],
@@ -5370,25 +5360,25 @@ export default () => {
 						cardpileaddsuit.style.marginLeft = "3px";
 						cardpileaddsuit.style.marginRight = "3px";
 						cardpileaddsuit.style.width = "85px";
-						var cardpileaddnumber = ui.create.selectlist([["random", "随机点数"], 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13], null, line3);
+						const cardpileaddnumber = ui.create.selectlist([["random", "随机点数"], 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13], null, line3);
 						cardpileaddnumber.style.marginLeft = "3px";
 						cardpileaddnumber.style.marginRight = "3px";
 						cardpileaddnumber.style.width = "85px";
 
-						var fakecard = function (info, position, capt) {
-							var name = info[0],
-								suit = info[1],
-								number = info[2];
-							var card = ui.create.card(null, "noclick", true);
+						const fakecard = (info, position, capt) => {
+							const name = info[0];
+							const suit = info[1];
+							let number = info[2];
+							const card = ui.create.card(null, "noclick", true);
 							card.style.zoom = 0.6;
 							number = parseInt(cardpileaddnumber.value);
-							var name2 = name;
-							var suit2 = suit;
-							var number2 = number;
-							if (name2 == "random") {
+							let name2 = name;
+							let suit2 = suit;
+							let number2 = number;
+							if (name2 === "random") {
 								name2 = "sha";
 							}
-							if (suit2 == "random") {
+							if (suit2 === "random") {
 								suit2 = "?";
 							}
 							if (!number2) {
@@ -5397,7 +5387,7 @@ export default () => {
 							}
 							card.init([suit2, number2, name2]);
 							card.info = info;
-							if (name == "random") {
+							if (name === "random") {
 								card.node.name.innerHTML = get.verticalStr("随机卡牌");
 							}
 							if (position && capt) {
@@ -5411,17 +5401,17 @@ export default () => {
 							}
 							return card;
 						};
-						var cc_h = ui.create.node("button", "加入手牌区", line5, function () {
+						const cc_h = ui.create.node("button", "加入手牌区", line5, () => {
 							fakecard([cardpileaddname.value, cardpileaddsuit.value, cardpileaddnumber.value], line6_h, capt_h);
 							capt_h.style.display = "block";
 						});
-						var cc_e = ui.create.node("button", "加入装备区", line5, function () {
-							if (get.type(cardpileaddname.value) != "equip") {
+						const cc_e = ui.create.node("button", "加入装备区", line5, () => {
+							if (get.type(cardpileaddname.value) !== "equip") {
 								return;
 							}
-							var subtype = get.subtype(cardpileaddname.value);
-							for (var i = 0; i < line6_e.childElementCount; i++) {
-								if (get.subtype(line6_e.childNodes[i].name) == subtype) {
+							const subtype = get.subtype(cardpileaddname.value);
+							for (let i = 0; i < line6_e.childElementCount; i++) {
+								if (get.subtype(line6_e.childNodes[i].name) === subtype) {
 									line6_e.childNodes[i].remove();
 									break;
 								}
@@ -5429,12 +5419,12 @@ export default () => {
 							fakecard([cardpileaddname.value, cardpileaddsuit.value, cardpileaddnumber.value], line6_e, capt_e);
 							capt_e.style.display = "block";
 						});
-						var cc_j = ui.create.node("button", "加入判定区", line5, function () {
-							if (get.type(cardpileaddname.value) != "delay") {
+						const cc_j = ui.create.node("button", "加入判定区", line5, () => {
+							if (get.type(cardpileaddname.value) !== "delay") {
 								return;
 							}
-							for (var i = 0; i < line6_j.childElementCount; i++) {
-								if (line6_j.childNodes[i].name == cardpileaddname.value) {
+							for (let i = 0; i < line6_j.childElementCount; i++) {
+								if (line6_j.childNodes[i].name === cardpileaddname.value) {
 									line6_j.childNodes[i].remove();
 									break;
 								}
@@ -5452,28 +5442,28 @@ export default () => {
 						cc_j.style.marginRight = "3px";
 						cc_j.style.width = "85px";
 
-						var capt_h = ui.create.div(style2, "", "手牌区", this);
-						var line6_h = ui.create.div(style2, this);
-						var capt_e = ui.create.div(style2, "", "装备区", this);
-						var line6_e = ui.create.div(style2, this);
-						var capt_j = ui.create.div(style2, "", "判定区", this);
-						var line6_j = ui.create.div(style2, this);
+						const capt_h = ui.create.div(style2, "", "手牌区", this);
+						const line6_h = ui.create.div(style2, this);
+						const capt_e = ui.create.div(style2, "", "装备区", this);
+						const line6_e = ui.create.div(style2, this);
+						const capt_j = ui.create.div(style2, "", "判定区", this);
+						const line6_j = ui.create.div(style2, this);
 						line6_j.style.marginBottom = "10px";
 						capt_h.style.display = "none";
 						capt_e.style.display = "none";
 						capt_j.style.display = "none";
 
-						var line10 = ui.create.div(style2, this);
+						const line10 = ui.create.div(style2, this);
 						line10.style.display = "none";
-						var ac_h = ui.create.node("button", "加入牌堆顶", line10, function () {
+						const ac_h = ui.create.node("button", "加入牌堆顶", line10, () => {
 							fakecard([cardpileaddname.value, cardpileaddsuit.value, cardpileaddnumber.value], line6_t, capt_t);
 							capt_t.style.display = "block";
 						});
-						var ac_e = ui.create.node("button", "加入牌堆底", line10, function () {
+						const ac_e = ui.create.node("button", "加入牌堆底", line10, () => {
 							fakecard([cardpileaddname.value, cardpileaddsuit.value, cardpileaddnumber.value], line6_b, capt_b);
 							capt_b.style.display = "block";
 						});
-						var ac_j = ui.create.node("button", "加入弃牌堆", line10, function () {
+						const ac_j = ui.create.node("button", "加入弃牌堆", line10, () => {
 							fakecard([cardpileaddname.value, cardpileaddsuit.value, cardpileaddnumber.value], line6_d, capt_d);
 							capt_d.style.display = "block";
 						});
@@ -5487,31 +5477,31 @@ export default () => {
 						ac_j.style.marginRight = "3px";
 						ac_j.style.width = "85px";
 
-						var line11 = ui.create.div(style2, this, "", "<span>替换牌堆</span>");
+						const line11 = ui.create.div(style2, this, "", "<span>替换牌堆</span>");
 						line11.style.display = "none";
-						var replacepile = ui.create.node("input", line11);
+						const replacepile = ui.create.node("input", line11);
 						replacepile.type = "checkbox";
 
 						ui.create.node("span", line11, "开局摸牌", { marginLeft: "10px" });
-						var gameDraw = ui.create.node("input", line11);
+						const gameDraw = ui.create.node("input", line11);
 						gameDraw.type = "checkbox";
 						gameDraw.checked = true;
 
-						var capt_t = ui.create.div(style2, "", "牌堆顶", this);
-						var line6_t = ui.create.div(style2, this);
-						var capt_b = ui.create.div(style2, "", "牌堆底", this);
-						var line6_b = ui.create.div(style2, this);
-						var capt_d = ui.create.div(style2, "", "弃牌堆", this);
-						var line6_d = ui.create.div(style2, this);
+						const capt_t = ui.create.div(style2, "", "牌堆顶", this);
+						const line6_t = ui.create.div(style2, this);
+						const capt_b = ui.create.div(style2, "", "牌堆底", this);
+						const line6_b = ui.create.div(style2, this);
+						const capt_d = ui.create.div(style2, "", "弃牌堆", this);
+						const line6_d = ui.create.div(style2, this);
 						line6_d.style.marginBottom = "10px";
 						capt_t.style.display = "none";
 						capt_b.style.display = "none";
 						capt_d.style.display = "none";
 
-						var line4 = ui.create.div(style2, this);
+						const line4 = ui.create.div(style2, this);
 						line4.style.display = "none";
 						line4.style.marginTop = "20px";
-						var resetCharacter = function () {
+						const resetCharacter = () => {
 							// line1.style.display='block';
 							editPile.disabled = false;
 							// editCode.disabled=false;
@@ -5548,14 +5538,14 @@ export default () => {
 							turnedover.checked = false;
 							playercontrol.checked = false;
 						};
-						var createCharacter = function (info) {
-							var player = ui.create.player(null, true);
-							player._customintro = function (uiintro) {
+						const createCharacter = info => {
+							const player = ui.create.player(null, true);
+							player._customintro = uiintro => {
 								if (info.handcards.length) {
 									uiintro.addText("手牌", true);
-									var hs = ui.create.div(".buttons");
-									for (var i = 0; i < info.handcards.length; i++) {
-										hs.appendChild(fakecard(info.handcards[i]));
+									const hs = ui.create.div(".buttons");
+									for (const item of info.handcards) {
+										hs.appendChild(fakecard(item));
 									}
 									uiintro.add(hs);
 								} else {
@@ -5563,23 +5553,23 @@ export default () => {
 								}
 							};
 							player.info = info;
-							var name = info.name,
-								name3 = info.name2;
-							if (name == "random") {
+							let name = info.name;
+							let name3 = info.name2;
+							if (name === "random") {
 								name = "re_caocao";
 							}
-							if (name3 != "none") {
-								if (name3 == "random") {
+							if (name3 !== "none") {
+								if (name3 === "random") {
 									name3 = "liubei";
 								}
 								player.init(name, name3);
-								if (info.name2 == "random") {
+								if (info.name2 === "random") {
 									player.node.name2.innerHTML = get.verticalStr("自选副将");
 								}
 							} else {
 								player.init(name);
 							}
-							if (info.name == "random") {
+							if (info.name === "random") {
 								player.node.name.innerHTML = get.verticalStr("自选主将");
 							}
 							if (info.maxHp) {
@@ -5588,23 +5578,23 @@ export default () => {
 							if (info.hp) {
 								player.hp = Math.min(info.hp, player.maxHp);
 							}
-							for (var i = 0; i < info.handcards.length; i++) {
+							for (let i = 0; i < info.handcards.length; i++) {
 								player.node.handcards1.appendChild(ui.create.card());
 							}
-							for (var i = 0; i < info.equips.length; i++) {
-								let card = fakecard(info.equips[i]);
+							for (const item of info.equips) {
+								const card = fakecard(item);
 								player.addVirtualEquip(get.autoViewAs(card, void 0, false), [card]);
 							}
-							for (var i = 0; i < info.judges.length; i++) {
-								let card = fakecard(info.judges[i]);
+							for (const item of info.judges) {
+								const card = fakecard(item);
 								player.addVirtualJudge(get.autoViewAs(card, void 0, false), [card]);
 							}
 							player.setIdentity(info.identity);
-							var pos = info.position;
-							if (pos == 0) {
+							let pos = info.position;
+							if (pos === 0) {
 								pos = "随机位置";
 							} else {
-								pos = get.cnNumber(pos, true) + "号位";
+								pos = `${get.cnNumber(pos, true)}号位`;
 							}
 							if (info.linked && info.turnedover) {
 								pos += "<br>横置 - 翻面";
@@ -5634,8 +5624,8 @@ export default () => {
 
 							return player;
 						};
-						ui.create.div(".menubutton.large", "确定", line4, style3, function () {
-							var info = {
+						ui.create.div(".menubutton.large", "确定", line4, style3, () => {
+							const info = {
 								name: name1.value,
 								name2: name2.value,
 								identity: identity.value,
@@ -5649,58 +5639,58 @@ export default () => {
 								equips: [],
 								judges: [],
 							};
-							for (var i = 0; i < line7.childElementCount; i++) {
-								if (info.identity == "zhu" && line7.childNodes[i].info.identity == "zhu") {
+							for (let i = 0; i < line7.childElementCount; i++) {
+								if (info.identity === "zhu" && line7.childNodes[i].info.identity === "zhu") {
 									alert("不能有两个主公");
 									return;
 								}
-								if (info.position != 0 && info.position == line7.childNodes[i].info.position) {
+								if (info.position !== 0 && info.position === line7.childNodes[i].info.position) {
 									alert("座位与现在角色相同");
 									return;
 								}
 							}
-							for (var i = 0; i < line6_h.childElementCount; i++) {
+							for (let i = 0; i < line6_h.childElementCount; i++) {
 								info.handcards.push(line6_h.childNodes[i].info);
 							}
-							for (var i = 0; i < line6_e.childElementCount; i++) {
+							for (let i = 0; i < line6_e.childElementCount; i++) {
 								info.equips.push(line6_e.childNodes[i].info);
 							}
-							for (var i = 0; i < line6_j.childElementCount; i++) {
+							for (let i = 0; i < line6_j.childElementCount; i++) {
 								info.judges.push(line6_j.childNodes[i].info);
 							}
 							createCharacter(info);
 							resetCharacter();
 						});
 						ui.create.div(".menubutton.large", "取消", line4, style3, resetCharacter);
-						var line7 = ui.create.div(style2, this);
+						const line7 = ui.create.div(style2, this);
 						line7.style.marginTop = "12px";
 
-						var capt8 = ui.create.div(style2, "", "胜负条件", this);
+						const capt8 = ui.create.div(style2, "", "胜负条件", this);
 						capt8.style.display = "none";
-						var line8 = ui.create.div(style2, this);
+						const line8 = ui.create.div(style2, this);
 						line8.style.display = "none";
 						line8.style.marginTop = "10px";
 						line8.style.marginBottom = "10px";
-						var turnslist = [...Array.from({ length: 10 }).map((_, i) => [(i + 1).toString(), get.cnNumber(i + 1)])];
-						var results = [
+						const turnslist = Array.from({ length: 10 }, (_, i) => [(i + 1).toString(), get.cnNumber(i + 1)]);
+						const results = [
 							["none", "无"],
 							["win", "胜利"],
 							["lose", "失败"],
 							["tie", "平局"],
 						];
-						var turns = ui.create.selectlist(turnslist, "1", line8);
+						const turns = ui.create.selectlist(turnslist, "1", line8);
 						ui.create.node("span", "个回合后", line8, style);
-						var turnsresult = ui.create.selectlist(results, "none", line8);
+						const turnsresult = ui.create.selectlist(results, "none", line8);
 
-						var washes = ui.create.selectlist(turnslist, "1", line8);
+						const washes = ui.create.selectlist(turnslist, "1", line8);
 						washes.style.marginLeft = "20px";
 						ui.create.node("span", "次洗牌后", line8, style);
-						var washesresult = ui.create.selectlist(results, "none", line8);
+						const washesresult = ui.create.selectlist(results, "none", line8);
 
-						var line9 = ui.create.div(style2, this);
+						const line9 = ui.create.div(style2, this);
 						line9.style.display = "none";
 						line9.style.marginTop = "20px";
-						var resetStatus = function (all) {
+						const resetStatus = all => {
 							// editCode.disabled=false;
 							saveButton.disabled = false;
 							// exportButton.disabled=false;
@@ -5739,7 +5729,7 @@ export default () => {
 
 						ui.create.div(".menubutton.large", "确定", line9, style3, resetStatus);
 
-						game.addSceneClear = function () {
+						game.addSceneClear = () => {
 							resetCharacter();
 							resetStatus(true);
 							scenename.value = "";
@@ -5747,7 +5737,7 @@ export default () => {
 							line7.innerHTML = "";
 							delete _status.currentScene;
 						};
-						game.loadScene = function (scene) {
+						game.loadScene = scene => {
 							resetCharacter();
 							resetStatus(true);
 							scenename.value = scene.name;
@@ -5770,23 +5760,23 @@ export default () => {
 								washes.value = scene.washes[0].toString();
 								washesresult.value = scene.washes[1];
 							}
-							for (var i = 0; i < scene.cardPileTop.length; i++) {
-								fakecard(scene.cardPileTop[i], line6_t, capt_t);
+							for (const item of scene.cardPileTop) {
+								fakecard(item, line6_t, capt_t);
 							}
-							for (var i = 0; i < scene.cardPileBottom.length; i++) {
-								fakecard(scene.cardPileBottom[i], line6_b, capt_b);
+							for (const item of scene.cardPileBottom) {
+								fakecard(item, line6_b, capt_b);
 							}
-							for (var i = 0; i < scene.discardPile.length; i++) {
-								fakecard(scene.discardPile[i], line6_d, capt_d);
+							for (const item of scene.discardPile) {
+								fakecard(item, line6_d, capt_d);
 							}
 
-							for (var i = 0; i < scene.players.length; i++) {
-								createCharacter(scene.players[i]);
+							for (const info of scene.players) {
+								createCharacter(info);
 							}
 						};
 					}
 					if (_status.sceneToLoad) {
-						var scene = _status.sceneToLoad;
+						const scene = _status.sceneToLoad;
 						delete _status.sceneToLoad;
 						game.loadScene(scene);
 					}
@@ -5800,11 +5790,11 @@ export default () => {
 				nostart: true,
 				fullshow: true,
 				template: {
-					showcase: function (init) {
+					showcase(init) {
 						if (init) {
-							var name = lib.brawl[this.link].name;
-							var stage = lib.storage.stage[name];
-							var style2 = {
+							const name = lib.brawl[this.link].name;
+							const stage = lib.storage.stage[name];
+							const style2 = {
 								position: "relative",
 								display: "block",
 								left: 0,
@@ -5813,24 +5803,24 @@ export default () => {
 								padding: 0,
 								width: "100%",
 							};
-							var style3 = { marginLeft: "4px", marginRight: "4px", position: "relative" };
-							var line1 = ui.create.div(style2, this);
-							var line2 = ui.create.div(style2, this);
+							const style3 = { marginLeft: "4px", marginRight: "4px", position: "relative" };
+							const line1 = ui.create.div(style2, this);
+							const line2 = ui.create.div(style2, this);
 							line2.style.lineHeight = "50px";
 							line2.style.overflow = "scroll";
 							lib.setScroll(line2);
-							var container = this.parentNode.parentNode;
-							setTimeout(function () {
-								var rect1 = container.getBoundingClientRect();
-								var rect2 = line2.getBoundingClientRect();
-								line2.style.height = rect1.height - (rect2.top - rect1.top) + "px";
+							const container = this.parentNode.parentNode;
+							setTimeout(() => {
+								const rect1 = container.getBoundingClientRect();
+								const rect2 = line2.getBoundingClientRect();
+								line2.style.height = `${rect1.height - (rect2.top - rect1.top)}px`;
 							}, 1000);
 							if (_status.extensionmade.includes(name)) {
 								ui.create.node(
 									"button",
 									"管理扩展",
 									line1,
-									function () {
+									() => {
 										ui.click.configMenu();
 										ui.click.extensionTab(name);
 									},
@@ -5841,8 +5831,8 @@ export default () => {
 									"button",
 									"删除关卡",
 									line1,
-									function () {
-										if (confirm("确定删除" + name + "？")) {
+									() => {
+										if (confirm(`确定删除${name}？`)) {
 											game.removeStage(name);
 										}
 									},
@@ -5853,50 +5843,50 @@ export default () => {
 								"button",
 								"导出扩展",
 								line1,
-								function () {
-									var level = stage.level;
+								() => {
+									const level = stage.level;
 									stage.level = 0;
-									var str = '{name:"' + name + '",content:function(){\nif(lib.config.mode=="brawl"){\n' + "if(!lib.storage.stage) lib.storage.stage={};\n" + 'if(!lib.storage.stage["' + name + '"]){\nlib.storage.stage["' + name + '"]=' + get.stringify(stage) + ";\n_status.extensionstage=true;}\n" + "if(!_status.extensionmade) _status.extensionmade=[];\n" + '_status.extensionmade.push("' + name + '");\n}}\n}';
+									const str = `{name:"${name}",content:function(){\nif(lib.config.mode=="brawl"){\nif(!lib.storage.stage) lib.storage.stage={};\nif(!lib.storage.stage["${name}"]){\nlib.storage.stage["${name}"]=${get.stringify(stage)};\n_status.extensionstage=true;}\nif(!_status.extensionmade) _status.extensionmade=[];\n_status.extensionmade.push("${name}");\n}}\n}`;
 									stage.level = level;
-									var extension = {
-										"extension.js": 'game.import("extension",function(lib,game,ui,get,ai,_status){return ' + str + "})",
+									const extension = {
+										"extension.js": `game.import("extension",function(lib,game,ui,get,ai,_status){return ${str}})`,
 									};
 									game.importExtension(extension, null, name);
 								},
 								{ marginLeft: "6px" }
 							);
-							var noactive = true;
-							var clickNode = function () {
+							let noactive = true;
+							const clickNode = function () {
 								if (this.classList.contains("unselectable")) {
 									return;
 								}
 								if (!this.classList.contains("active")) {
-									var active = this.parentNode.querySelector(".menubutton.large.active");
+									const active = this.parentNode.querySelector(".menubutton.large.active");
 									if (active) {
 										active.classList.remove("active");
 									}
 									this.classList.add("active");
 								}
 							};
-							for (var i = 0; i < stage.scenes.length; i++) {
-								var node = ui.create.div(".menubutton.large", line2, stage.scenes[i].name, style3, clickNode);
+							for (let i = 0; i < stage.scenes.length; i++) {
+								const node = ui.create.div(".menubutton.large", line2, stage.scenes[i].name, style3, clickNode);
 								node.index = i;
-								if (stage.mode == "sequal") {
-									if (i == stage.level) {
+								if (stage.mode === "sequal") {
+									if (i === stage.level) {
 										node.classList.add("active");
 										noactive = false;
 									} else {
 										node.classList.add("unselectable");
 									}
-								} else if (stage.mode == "normal") {
+								} else if (stage.mode === "normal") {
 									if (i > stage.level) {
 										node.classList.add("unselectable");
 									}
 								}
-								if (lib.storage.lastStage == i && !node.classList.contains("unselectable")) {
+								if (lib.storage.lastStage === i && !node.classList.contains("unselectable")) {
 									node.classList.add("active");
 									noactive = false;
-								} else if (lib.storage.lastStage == undefined && noactive && !node.classList.contains("unselectable")) {
+								} else if (lib.storage.lastStage == null && noactive && !node.classList.contains("unselectable")) {
 									node.classList.add("active");
 									noactive = false;
 								}
@@ -5904,7 +5894,7 @@ export default () => {
 						}
 					},
 				},
-				showcase: function (init) {
+				showcase(init) {
 					if (_status.sceneChanged) {
 						init = true;
 						this.innerHTML = "";
@@ -5912,10 +5902,10 @@ export default () => {
 					}
 					if (init) {
 						this.style.transition = "all 0s";
-						this.style.height = this.offsetHeight - 10 + "px";
+						this.style.height = `${this.offsetHeight - 10}px`;
 						// this.style.overflow='scroll';
 						// lib.setScroll(this);
-						var style2 = {
+						const style2 = {
 							position: "relative",
 							display: "block",
 							left: 0,
@@ -5924,54 +5914,54 @@ export default () => {
 							padding: 0,
 							width: "100%",
 						};
-						var style3 = { marginLeft: "4px", marginRight: "4px", position: "relative" };
+						const style3 = { marginLeft: "4px", marginRight: "4px", position: "relative" };
 
-						var scenename = ui.create.node("input", ui.create.div(style2, "", "关卡名称：", this), { width: "120px" });
+						const scenename = ui.create.node("input", ui.create.div(style2, "", "关卡名称：", this), { width: "120px" });
 						scenename.type = "text";
 						scenename.style.marginTop = "20px";
-						var sceneintro = ui.create.node("input", ui.create.div(style2, "", "关卡描述：", this), { width: "120px" });
+						const sceneintro = ui.create.node("input", ui.create.div(style2, "", "关卡描述：", this), { width: "120px" });
 						sceneintro.type = "text";
 						sceneintro.style.marginBottom = "10px";
 
-						var line1 = ui.create.div(style2, this);
-						var line2 = ui.create.div(style2, this);
+						const line1 = ui.create.div(style2, this);
+						const line2 = ui.create.div(style2, this);
 						line1.style.marginBottom = "10px";
 						line2.style.lineHeight = "50px";
 						line2.style.overflow = "scroll";
 						lib.setScroll(line2);
-						var container = this.parentNode.parentNode;
-						setTimeout(function () {
-							var rect1 = container.getBoundingClientRect();
-							var rect2 = line2.getBoundingClientRect();
-							line2.style.height = rect1.height - (rect2.top - rect1.top) + "px";
+						const container = this.parentNode.parentNode;
+						setTimeout(() => {
+							const rect1 = container.getBoundingClientRect();
+							const rect2 = line2.getBoundingClientRect();
+							line2.style.height = `${rect1.height - (rect2.top - rect1.top)}px`;
 						}, 1000);
-						var scenes = [];
-						for (var i in lib.storage.scene) {
+						const scenes = [];
+						for (const i in lib.storage.scene) {
 							scenes.push([i, i]);
 						}
 						if (!scenes.length) {
 							alert("请创建至少1个场景");
 							return;
 						}
-						var scenelist = ui.create.selectlist(scenes, null, line1);
-						var e1 = function () {
+						const scenelist = ui.create.selectlist(scenes, null, line1);
+						const e1 = function () {
 							if (this.nextSibling) {
 								this.parentNode.insertBefore(this, this.nextSibling.nextSibling);
 							}
 						};
-						var e2 = function () {
-							var that = this;
-							this.movetimeout = setTimeout(function () {
+						const e2 = function () {
+							const that = this;
+							this.movetimeout = setTimeout(() => {
 								e1.call(that);
 							}, 500);
 						};
-						var e3 = function () {
+						const e3 = function () {
 							clearTimeout(this.movetimeout);
 							delete this.movetimeout;
 						};
-						var e4 = function (value) {
-							var node = ui.create.div(".menubutton.large", value, line2, style3, function () {
-								if (confirm("是否移除" + this.innerHTML + "？")) {
+						const e4 = value => {
+							const node = ui.create.div(".menubutton.large", value, line2, style3, function () {
+								if (confirm(`是否移除${this.innerHTML}？`)) {
 									this.remove();
 								}
 							});
@@ -5986,16 +5976,16 @@ export default () => {
 								node.onmouseleave = e3;
 							}
 						};
-						var addButton = ui.create.node(
+						const addButton = ui.create.node(
 							"button",
 							"添加场景",
 							line1,
-							function () {
+							() => {
 								e4(scenelist.value);
 							},
 							{ marginLeft: "6px", marginRight: "12px" }
 						);
-						var sceneconfig = ui.create.selectlist(
+						const sceneconfig = ui.create.selectlist(
 							[
 								["normal", "默认模式"],
 								["sequal", "连续闯关"],
@@ -6005,11 +5995,11 @@ export default () => {
 							null,
 							line1
 						);
-						var saveButton = ui.create.node(
+						const saveButton = ui.create.node(
 							"button",
 							"保存关卡",
 							line1,
-							function () {
+							() => {
 								if (!scenename.value) {
 									alert("请填写关卡名称");
 									return;
@@ -6018,14 +6008,14 @@ export default () => {
 									alert("请添加至少2个场景");
 									return;
 								}
-								var stage = {
+								const stage = {
 									name: scenename.value,
 									intro: sceneintro.value,
 									scenes: [],
 									mode: sceneconfig.value,
 									level: 0,
 								};
-								for (var i = 0; i < line2.childElementCount; i++) {
+								for (let i = 0; i < line2.childElementCount; i++) {
 									stage.scenes.push(lib.storage.scene[line2.childNodes[i].innerHTML]);
 								}
 								if (lib.storage.stage[scenename.value]) {
@@ -6040,7 +6030,7 @@ export default () => {
 							},
 							{ marginLeft: "6px" }
 						);
-						game.addStageClear = function () {
+						game.addStageClear = () => {
 							scenelist.value = scenes[0][0];
 							sceneconfig.value = "normal";
 							scenename.value = "";
