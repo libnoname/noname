@@ -2,9 +2,15 @@ import { lib, game, get, _status, ui, ai } from "noname";
 import { boot } from "@/init/index.js";
 import { userAgentLowerCase, device } from "@/util/index.js";
 import { loadBuildInfo } from "@/util/meta.js";
-import "core-js-bundle";
+// 只引入 core-js 的压缩版本（258 KB）而不是默认入口 index.js（856 KB）。
+// 二者是同一份 bundle，只是后者带注释与缩进；本仓库的目标环境是
+// chrome91 / safari16.4（见 scripts/build.ts 的 target），仍然需要这些 polyfill。
+import "core-js-bundle/minified.js";
 // 保证打包时存在(importmap)
-import "vue/dist/vue.esm-browser.js";
+// 用 prod 版（163 KB）而不是 vue.esm-browser.js（532 KB）：二者都是含运行时编译器的
+// 完整版，区别只是 prod 版去掉了开发期警告与 devtools 钩子。
+// 注意 importmap 里 "vue" 的映射也要同步（见 scripts/build.ts 的 importMap）。
+import "vue/dist/vue.esm-browser.prod.js";
 
 (async () => {
 	try {

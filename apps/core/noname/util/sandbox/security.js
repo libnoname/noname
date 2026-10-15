@@ -1,7 +1,10 @@
 // 声明：沙盒维护的是服务器秩序，让服务器秩序不会因为非房主的玩家以及旁观者的影响，并在此基础上维护玩家设备不受危险代码攻击
 // 但沙盒不会也没有办法维护恶意服务器/房主对于游戏规则的破坏，请玩家尽量选择官方或其他安全的服务器，同时选择一个受信任的玩家作为房主
 
-import { MD5 } from "crypto-js";
+// 只取 crypto-js 的 md5 子模块：本文件只用到 MD5，而 `import { MD5 } from "crypto-js"`
+// 会把整个算法库（AES/Blowfish/pako 等，约 230 KB）拉进首屏依赖图。
+// crypto-js 4.2 的 package.json 没有 exports 字段，子路径导入可用。
+import MD5 from "crypto-js/md5";
 
 // 是否强制所有模式下使用沙盒
 const SANDBOX_FORCED = false;
