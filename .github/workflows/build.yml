@@ -1,16 +1,30 @@
 name: Build and Deploy
 
+# ⚠️ 本 workflow 会把整个 dist 强推到 build-output 分支：实测 15,757 个文件、
+# 约 1.27 GB（其中音频 621 MB、图片 531 MB）。原先它挂在 push: main 上，
+# 也就是**每次合并进 main 都产生一个 1.27 GB 的新提交**，仓库 .git 因此膨胀到
+# 2.5 GiB 量级（git count-objects -vH 实测），clone 与 CI 检出都受影响。
+#
+# 网页版发布已由 cloudflare-pages.yml 接管，这个分支不再承担发布职责，
+# 因此改为仅手动触发：能力保留，但不再自动跑、不再给仓库增重。
+# 如果确认无人再使用 build-output 分支，可以直接删除整个 workflow，
+# 并用 git filter-repo 清理历史中的大对象。
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: write  # 允许 Actions 推送代码到仓库
+
+# 同一时间只跑一个，避免两个任务并发强推同一个分支
+concurrency:
+  group: build-output
+  cancel-in-progress: false
 
 jobs:
   build:
     name: Build and Deploy
     runs-on: ubuntu-latest
+    timeout-minutes: 60
 
     steps:
       - name: Checkout repository
@@ -27,6 +41,10 @@ jobs:
         with:
           node-version: 24
           cache: 'pnpm'
+          # 仓库有 7 份 pnpm-lock.yaml（sharedWorkspaceLockfile: false），
+          # 不指定 cache-dependency-path 时缓存键只跟根 lockfile 挂钩：
+          # 改了子包 lockfile 不会让缓存失效，会出现假命中。
+          cache-dependency-path: '**/pnpm-lock.yaml'
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -45,15 +63,20 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
           mkdir /tmp/dist
-          cp -r dist/* /tmp/dist/
+          # 用 dist/. 而不是 dist/*：后者不匹配点文件，会丢掉 dist/.nomedia
+          # （Android 相册会因此去索引游戏资源图）。
+          cp -a dist/. /tmp/dist/
 
+          # 注：这次 fetch 会把上一版 build-output（约 1.27 GB）连同全部历史一起拉下来。
+          # 由于本 workflow 已改为仅手动触发，这笔开销只在人主动执行时发生；
+          # 若确认 build-output 分支无人使用，可直接删掉整个 workflow。
           git fetch origin
           git checkout --orphan build-output
           git reset --hard
           rm -rf *
 
-          cp -r /tmp/dist/* .
+          cp -a /tmp/dist/. .
 
-          git add .
+          git add -A
           git commit -m "Deploy dist from $GITHUB_SHA"
           git push -f origin build-output
