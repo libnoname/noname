@@ -7671,7 +7671,7 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
-		filterCard: true,
+		filterCard: lib.filter.cardDiscardable,
 		position: "he",
 		selectCard: 1,
 		check(card) {
@@ -7711,7 +7711,7 @@ const skills = {
 							if (
 								target.hasCard(card => {
 									return get.value(card, player) >= 6;
-								})
+								}, "e")
 							) {
 								return 12;
 							}
@@ -7723,7 +7723,7 @@ const skills = {
 			}
 			// step 1
 			let target;
-			if (result.bool) {
+			if (result?.bool && result.targets?.length) {
 				target = result.targets[0];
 				event.target = target;
 				result = await player.gainPlayerCard("e", target, true).forResult();
