@@ -41894,9 +41894,8 @@ const skills = {
 				if (!target.isIn()) {
 					continue;
 				}
-				if (target.isLinked()) {
-					await target.link();
-				}
+				await target.link(false);
+				await target.turnOver(false);
 				if (!target.isIn()) {
 					continue;
 				}
