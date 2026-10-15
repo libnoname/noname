@@ -3595,12 +3595,14 @@ export default () => {
 									"弃置所有手牌并于下一关获得【涅槃】(标)",
 									async () => {
 										const hs = game.zhu.getCards("h");
+										let evt = null;
 										if (hs.length) {
-											await game.zhu.discard({ cards: hs });
+											evt = game.zhu.discard({ cards: hs });
 										}
 										game.zhu.addSkill("oldniepan");
 										game.zhu.restoreSkill("oldniepan");
 										game.zhu._oldniepan = true;
+										await evt;
 									},
 								],
 								[
