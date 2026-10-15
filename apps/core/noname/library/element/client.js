@@ -60,8 +60,39 @@ export class Client {
 		for (var i = 1; i < args.length; i++) {
 			args[i] = get.stringifiedResult(args[i]);
 		}
+		return this.sendSerialized(JSON.stringify(args));
+	}
+	/**
+	 * 把「函数 + 参数」整理成可直接下发的 JSON 报文。
+	 *
+	 * 抽成静态方法是为了让 `game.broadcast` 能在**多客户端**时只序列化一次：
+	 * 原先每个客户端各自走一遍 `get.stringifiedResult` + `JSON.stringify`，
+	 * N 个客户端就是 N 次完全相同的序列化（广播在每次记日志时都会发生）。
+	 *
+	 * @param {any[]} args
+	 * @returns {string}
+	 */
+	static buildPayload(args) {
+		const payload = Array.from(args);
+		if (typeof payload[0] == "function") {
+			payload.unshift("exec");
+		}
+		for (let i = 1; i < payload.length; i++) {
+			payload[i] = get.stringifiedResult(payload[i]);
+		}
+		return JSON.stringify(payload);
+	}
+	/**
+	 * 下发已经序列化好的报文，供广播复用同一份 payload。
+	 *
+	 * @param {string} payload
+	 */
+	sendSerialized(payload) {
+		if (this.closed) {
+			return this;
+		}
 		try {
-			this.ws.send(JSON.stringify(args));
+			this.ws.send(payload);
 		} catch (e) {
 			this.ws.close();
 		}
