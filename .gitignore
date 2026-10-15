@@ -20,3 +20,9 @@ Thumbs.db
 
 # Skill for private use
 .agents/skills/*-selfuse
+
+# packages/fs 的本地自签名证书与私钥。
+# 这两份文件曾经被提交进仓库（其中 .key 是真实 PKCS#8 私钥），现从版本控制移除；
+# 需要 HTTPS 时请自行生成，切勿再提交。
+packages/fs/localhost.decrypted.key
+packages/fs/localhost.crt
