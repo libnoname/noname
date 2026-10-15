@@ -15,10 +15,11 @@ on:
 permissions:
   contents: write  # 允许 Actions 推送代码到仓库
 
-# 同一时间只跑一个，避免两个任务并发强推同一个分支
+# 并发控制：同一时间只保留最新一次构建，避免两个任务并发强推同一个分支。
+# 旧运行还在 checkout / install 阶段就被新运行取代，直接取消，避免排队占满 runner。
 concurrency:
   group: build-output
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build:
