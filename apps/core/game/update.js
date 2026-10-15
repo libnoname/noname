@@ -1,10 +1,10 @@
 window.noname_update = {
-	version: "1.11.6",
+	version: "1.11.6.1",
 	update: "NULL",
 	changeLog: [
-		"国庆快乐",
-		"特此感谢 蓝色大肥鱼 对无名杀的贡献",
-		"详细信息请参考game/updateLog.md"
+		"？",
+		"真有人不用main分支而用维护分支吗",
+		"总之赞美蓝色大肥鱼"
 	],
 	files: [],
 };
