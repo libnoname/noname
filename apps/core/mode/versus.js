@@ -4713,7 +4713,7 @@ export default () => {
 					sex: "male",
 					group: "wei",
 					hp: 5,
-					skills: ["boss_fanshi", "boss_xuanlei", "boss_skonghun"],
+					skills: ["boss_fanshi", "boss_xuanlei", "boss_konghun"],
 					isJiangeBoss: true,
 					isHiddenBoss: true,
 					isBossAllowed: true,
@@ -5600,8 +5600,8 @@ export default () => {
 			boss_leili_info: "每当你的【杀】造成伤害后，你可以对另一名敌方角色造成1点雷电伤害。",
 			boss_fengxing: "风行",
 			boss_fengxing_info: "准备阶段，你可以选择一名敌方角色，若如此做，视为对其使用了一张【杀】。",
-			boss_skonghun: "控魂",
-			boss_skonghun_info: "出牌阶段开始时，若你已损失体力值不小于敌方角色数，你可以对所有敌方角色各造成1点雷电伤害，然后你恢复X点体力（X为受到伤害的角色数）。",
+			boss_konghun: "控魂",
+			boss_konghun_info: "出牌阶段开始时，若你已损失体力值不小于敌方角色数，你可以对所有敌方角色各造成1点雷电伤害，然后你恢复X点体力（X为受到伤害的角色数）。",
 			boss_fanshi: "反噬",
 			boss_fanshi_info: "锁定技，结束阶段，你失去1点体力。",
 			boss_xuanlei: "玄雷",
@@ -7085,7 +7085,7 @@ export default () => {
 					player.loseHp();
 				},
 			},
-			boss_skonghun: {
+			boss_konghun: {
 				audio: true,
 				trigger: { player: "phaseUseBegin" },
 				filter: function (event, player) {

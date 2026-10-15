@@ -9430,7 +9430,7 @@ export default () => {
 					}
 				},
 			},
-			boss_konghun: {
+			boss_kongxin: {
 				trigger: { player: "phaseJieshuBegin" },
 				direct: true,
 				filter() {
@@ -9445,17 +9445,17 @@ export default () => {
 					};
 					"step 1";
 					if (result.bool) {
-						player.logSkill("boss_konghun", result.targets);
+						player.logSkill("boss_kongxin", result.targets);
 						result.targets[0].goMad();
 					}
 				},
-				group: "boss_konghun2",
+				group: "boss_kongxin2",
 			},
-			boss_konghun2: {
+			boss_kongxin2: {
 				trigger: { player: "phaseZhunbeiBegin" },
 				forced: true,
 				popup: false,
-				sourceSkill: "boss_konghun",
+				sourceSkill: "boss_kongxin",
 				content() {
 					var players = game.players.concat(game.dead);
 					for (var i = 0; i < players.length; i++) {
@@ -11164,8 +11164,8 @@ export default () => {
 			wuqin: "五禽戏",
 			wuqin_info: "结束阶段，若你没有手牌，可以摸三张牌。",
 
-			boss_konghun: "控心",
-			boss_konghun_info: "结束阶段，你可以指定一名敌人令其进入混乱状态（不受对方控制，并将队友视为敌人）直到下一回合开始。",
+			boss_kongxin: "控心",
+			boss_kongxin_info: "结束阶段，你可以指定一名敌人令其进入混乱状态（不受对方控制，并将队友视为敌人）直到下一回合开始。",
 			yuehun: "月魂",
 			yuehun_info: "结束阶段，你可以回复1点体力并摸两张牌。",
 			fengwu: "风舞",
