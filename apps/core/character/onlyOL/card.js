@@ -17,7 +17,7 @@ const cards = {
 		},
 		loseDelay: false,
 		cardPrompt(card, player) {
-			let str = lib.translate[card.name + "_info"];
+			let str = lib.translate["chixueren_info"];
 			const vcard = card[card.cardSymbol];
 			if (vcard) {
 				const storage = vcard.storage?.chixueren?.filter(i => get.translation(i) != i);

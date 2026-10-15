@@ -332,12 +332,14 @@ const skills = {
 					prompt: get.prompt(event.skill),
 				})
 				.forResult();
-			event.result = {
-				bool: result?.control != "cancel2",
-				cost_data: {
-					index: ["选项一", "选项二"].indexOf(result.control),
-				},
-			};
+			if (typeof result?.control == "string" && result.control != "cancel2") {
+				event.result = {
+					bool: true,
+					cost_data: {
+						index: ["选项一", "选项二"].indexOf(result.control),
+					},
+				};
+			}
 		},
 		async content(event, trigger, player) {
 			const {
@@ -348,13 +350,13 @@ const skills = {
 				await target.damage();
 			} else {
 				await player.draw({ num: 1 });
-				if ((target == player && !player.hasCards("e")) || !player.hasCards("he")) return;
+				const position = target == player ? "e" : "he";
+				if (!player.hasCards(position)) return;
 				await player.chooseToGive({
 					prompt: `竭雠：交给${get.translation(target)}一张牌`,
-					selectCard: 1,
 					forced: true,
-					position: "he",
-					target: target,
+					position,
+					target,
 					ai(card) {
 						return 6 - get.value(card);
 					},

@@ -3110,7 +3110,7 @@ const skills = {
 				}
 				await player.gain(cardsx, "draw");
 				if (target.isIn()) {
-					target.addTempSkill("dcsbxinzhan", { global: "roundEnd" });
+					target.addTempSkills("dcsbxinzhan", { global: "roundEnd" });
 				}
 			}
 		},

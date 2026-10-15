@@ -597,9 +597,9 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return player.hasCards("he") && game.hasPlayer(current => current !== player && current.hasCards("he"));
+			return player.hasDiscardableCards(player, "he") && game.hasPlayer(current => current !== player && current.hasCards("he"));
 		},
-		filterCard: true,
+		filterCard: lib.filter.cardDiscardable,
 		position: "he",
 		filterTarget(card, player, target) {
 			return target !== player && target.hasCards("he");
@@ -609,15 +609,17 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const { target } = event;
+			if (!target.hasCards("he")) return;
 			const result = await target
-				.chooseCard({
+				.chooseToGive({
 					prompt: `交给${get.translation(player)}一张装备牌，或令其获得你的一张牌`,
 					filterCard(card) {
 						return get.type(card) === "equip";
 					},
+					target: player,
 					position: "he",
 					ai(card) {
-						if (_status.event.goon && get.suit(card) === "spade") {
+						if (get.event().goon && get.suit(card) === "spade") {
 							return 8 - get.value(card);
 						}
 						return 5 - get.value(card);
@@ -633,8 +635,7 @@ const skills = {
 				});
 				return;
 			}
-			const result2 = await target.give(result.cards, player).forResult();
-			if (result2.bool && result2.cards && result2.cards.length && target.isIn() && player.isIn() && get.suit(result2.cards[0], target) === "spade" && target.canUse("sha", player, false)) {
+			if (result.bool && result.cards?.length && target.isIn() && player.isIn() && get.suit(result.cards[0], target) === "spade" && target.canUse("sha", player, false)) {
 				await target.useCard({
 					card: get.autoViewAs({ name: "sha", isCard: true }),
 					targets: [player],
