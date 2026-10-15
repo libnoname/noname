@@ -68,6 +68,13 @@ export async function boot() {
 	// 初始化security
 	await security.initSecurity({ lib, game, ui, get, ai, _status });
 
+	// 沙盒加固当前是「上游有意关闭」的（见 util/sandbox/initRealms.js 的开关注释，
+	// 对应上游提交 3f242939c）。这里明确说明一次，免得后来者读到沙盒相关代码后，
+	// 误以为扩展/模式代码处于隔离运行域中。
+	if (sandboxEnabled && !security.SANDBOX_ENABLED) {
+		console.info("[noname] 沙盒加固未启用：扩展与模式代码在主运行域中执行（这是当前预期行为）。");
+	}
+
 	CacheContext.setProxy({ lib, game, get });
 
 	const ua = userAgentLowerCase;
