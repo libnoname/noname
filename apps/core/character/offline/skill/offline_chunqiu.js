@@ -773,7 +773,7 @@ const skills = {
 					num++;
 				}
 			});
-			if (num === 1) {
+			if (num === 1 && [card].someInD("od")) {
 				await player.gain({ cards: [card], animate: "gain2" });
 			}
 		},

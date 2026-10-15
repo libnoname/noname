@@ -208,6 +208,11 @@ const skills = {
 					choiceList[i] = `<span style="text-decoration: line-through;">${choiceList[i]}</span>`;
 				}
 			}
+			if (!game.hasPlayer(current => current.hasDiscardableCards(player, "he"))) {
+				controls.remove("选项三");
+				choiceList[2] = `<span style="text-decoration: line-through;">${choiceList[2]}</span>`;
+			}
+			if (!controls.length) return;
 			controls.push("cancel2");
 			const result = await player
 				.chooseControl({
@@ -273,6 +278,9 @@ const skills = {
 			} else if (index === 1) {
 				await player.draw(2);
 			} else {
+				if (!game.hasPlayer(current => current.hasDiscardableCards(player, "he"))) {
+					return;
+				}
 				const result = await player
 					.chooseTarget({
 						prompt: "选择一名角色并弃置其两张牌",
@@ -585,6 +593,7 @@ const skills = {
 						prompt2: `将一张手牌当${trigger.card.nature ? get.translation(trigger.card.nature) : ""}【${get.translation(trigger.card.name)}】对${get.translation(trigger.player)}使用`,
 						position: "h",
 						filterCard(card, player) {
+							const trigger = get.event().triggerx;
 							return player.canUse(get.autoViewAs({ name: trigger.card.name, nature: trigger.card.nature }, [card]), trigger.player, false, false);
 						},
 						ai: card => {
