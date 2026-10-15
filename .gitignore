@@ -23,3 +23,25 @@ Thumbs.db
 
 # Skill for private use
 .agents/skills/*-selfuse
+
+# 本项目自身的工具目录 / 工作目录。
+# 这些不要依赖各人机器上的全局 gitignore：换台机器 clone 下来就会满屏 untracked，
+# CI 或打包脚本也可能误收。仓库的 .gitignore 只描述「项目自身会产生什么」。
+# 注：.wrangler/ 见上方「Cloudflare CLI 本地缓存」，此处不重复。
+.git-worktrees/
+.claude/worktrees/
+
+# 纯机器特定的临时目录（例如本地助手的 scratch 目录 *WorkBuddy*）仍走全局
+# gitignore（core.excludesfile）；新增同类条目时请优先放进全局配置。
+
+# packages/fs 的本地自签名证书与私钥。
+# 这两份文件曾经被提交进仓库（其中 .key 是真实 PKCS#8 私钥），现从版本控制移除；
+# 需要 HTTPS 时请自行生成，切勿再提交。
+packages/fs/localhost.decrypted.key
+packages/fs/localhost.crt
+
+# Capacitor 生成的 iOS 原生工程（体积大、可由 `npx cap add ios` 重新生成）
+apps/mobile/ios/
+
+# 本地调研文档（只放本地参考，不入库）
+无名杀*.md
