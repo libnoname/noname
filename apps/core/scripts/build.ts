@@ -28,7 +28,9 @@ async function main() {
 	 */
 	const importMap: Record<string, string> = {
 		noname: "/noname.js",
-		vue: "vue/dist/vue.esm-browser.js",
+		// 用含运行时编译器的 prod 版：与 vue.esm-browser.js 同构，但去掉开发期警告，
+		// 体积从 532 KB 降到 163 KB。扩展通过 importmap 里的 "vue" 拿到同一份。
+		vue: "vue/dist/vue.esm-browser.prod.js",
 		"pinyin-pro": "pinyin-pro",
 		dedent: "dedent",
 		// jszip: "jszip",
@@ -145,7 +147,17 @@ async function buildSelf(target: string | string[], importMap: Record<string, st
 		build: {
 			target,
 			sourcemap: false,
-			minify: false,
+			// 只对本体开启压缩，包体（character/card/mode）**必须保持不压缩**：
+			// 那些包里仍有 585 处 "step N" 步骤标记（571 在 mode、11 在 card、
+			// 3 在 character），而 StepCompiler 是靠 Function.prototype.toString()
+			// 反编译源码、按 "step N" 切段后再 new Function 重编译的。
+			// 压缩（无论改不改名）都会破坏这条链路。
+			//
+			// 本体则是安全的：library/element/content.ts 里 93 项是 async 函数
+			// （走 AsyncCompiler，不反编译）、35 项是函数数组（走 ArrayCompiler，
+			// 直接 Reflect.apply 真实函数对象），**没有**普通函数项，
+			// 因此 StepCompiler 不会碰本体的 content。
+			minify: "esbuild",
 			rollupOptions: {
 				preserveEntrySignatures: "strict",
 				treeshake: false,
@@ -187,6 +199,12 @@ async function buildIndividual(type: string, target: string | string[], input: R
 		build: {
 			target,
 			sourcemap: false,
+			// ⚠️ 不要改成压缩。包体里存在 585 处 "step N" 步骤标记（mode 571、
+			// card 11、character 3），运行时由 StepCompiler 通过
+			// Function.prototype.toString() 反编译、按标记切段后 new Function 重编译。
+			// 一旦压缩，标记会被当作无用表达式删除、外层标识符会被改名，
+			// 步骤化 content 会静默失效或抛 ReferenceError。
+			// 详见 buildSelf() 里的同一处说明。
 			minify: false,
 			outDir: `dist/${type}`,
 			rollupOptions: {
