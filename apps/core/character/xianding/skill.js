@@ -31849,7 +31849,7 @@ const skills = {
 							},
 						})
 						.forResult();
-					if (!result.bool) {
+					if (!result?.bool || !result.targets?.length) {
 						break;
 					}
 					const recoverTarget = result.targets[0];
@@ -31870,12 +31870,13 @@ const skills = {
 					const result = await player
 						.chooseTarget({
 							prompt: "绡刃：对其中一名角色造成1点伤害",
-							filterTarget: (_card, _player, target) => targets.includes(target),
+							filterTarget: (_card, _player, target) => get.event().targets.includes(target),
 							forced: true,
 							ai: target => get.damageEffect(target, player, player),
 						})
+						.set("targets", targets)
 						.forResult();
-					if (!result.bool) {
+					if (!result?.bool || !result.targets?.length) {
 						break;
 					}
 					damageTarget = result.targets[0];
@@ -31897,10 +31898,11 @@ const skills = {
 				const result = await player
 					.chooseBool({
 						prompt: "绡刃：是否再次进行判定并执行对应效果直到未能执行此项或有角色进入濒死状态？",
-						ai: () => shouldContinue,
+						ai: () => get.event().shouldContinue,
 					})
+					.set("shouldContinue", shouldContinue)
 					.forResult();
-				if (!result.bool) {
+				if (!result?.bool) {
 					break;
 				}
 				frequent = true;
@@ -41792,7 +41794,7 @@ const skills = {
 			const num = event.player
 				.getHistory("gain", evt => evt.getParent().name === "draw" && evt.getParent("phaseDraw") === event)
 				.map(evt => evt.cards.length)
-				.reduce((a, b) => a + b);
+				.reduce((a, b) => a + b, 0);
 			return num !== 2;
 		},
 		frequent: true,
