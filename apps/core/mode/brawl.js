@@ -2449,17 +2449,17 @@ export default () => {
 				name: "铜雀夺袍",
 				mode: "identity",
 				intro: ["主公必选曹操", "其余玩家从曹休、文聘、曹洪、张郃、夏侯渊、徐晃、许褚这些武将中随机选中一个", "游戏开始时将麒麟弓和爪黄飞电各置于每名角色的装备区内，大宛马洗入牌堆，移除其他的武器牌和坐骑牌"],
-				init: function () {
+				init() {
 					game.saveConfig("player_number", "8", "identity");
 					game.saveConfig("double_character", false, "identity");
 				},
-				showcase: function (init) {
-					var node = this;
-					var list = ["re_caoxiu", "re_wenpin", "tw_re_caohong", "re_zhanghe", "ol_xiahouyuan", "ol_xuhuang", "re_xuzhu"];
+				showcase(init) {
+					const node = this;
+					const list = ["re_caoxiu", "re_wenpin", "tw_re_caohong", "re_zhanghe", "ol_xiahouyuan", "ol_xuhuang", "re_xuzhu"];
 					list.randomSort();
 					list.push("re_caocao");
-					var func = function () {
-						var card = ui.create.player(null, true);
+					const func = () => {
+						const card = ui.create.player(null, true);
 						card.init(list.shift());
 						card.node.marks.remove();
 						card.node.count.remove();
@@ -2468,29 +2468,29 @@ export default () => {
 						card.style.position = "absolute";
 						card.style.zIndex = 2;
 						card.style.transition = "all 2s";
-						var rand1 = Math.round(Math.random() * 100);
-						var rand2 = Math.round(Math.random() * 100);
-						var rand3 = Math.round(Math.random() * 40) - 20;
-						card.style.left = "calc(" + rand1 + "% - " + rand1 * 1.5 + "px)";
-						card.style.top = "calc(" + rand2 + "% - " + rand2 * 1.8 + "px)";
-						card.style.transform = "scale(0.8) rotate(" + rand3 + "deg)";
+						const rand1 = Math.round(Math.random() * 100);
+						const rand2 = Math.round(Math.random() * 100);
+						const rand3 = Math.round(Math.random() * 40) - 20;
+						card.style.left = `calc(${rand1}% - ${rand1 * 1.5}px)`;
+						card.style.top = `calc(${rand2}% - ${rand2 * 1.8}px)`;
+						card.style.transform = `scale(0.8) rotate(${rand3}deg)`;
 						node.appendChild(card);
 						ui.refresh(card);
 					};
 
-					var list2 = ["qilin", "dawan", "zhuahuang"];
-					var func2 = function () {
-						var card = game.createCard(list2.shift(), "noclick");
+					const list2 = ["qilin", "dawan", "zhuahuang"];
+					const func2 = () => {
+						const card = game.createCard(list2.shift(), "noclick");
 						node.nodes.push(card);
 						card.style.position = "absolute";
 						card.style.zIndex = 2;
 						card.style.transition = "all 2s";
-						var rand1 = Math.round(Math.random() * 100);
-						var rand2 = Math.round(Math.random() * 100);
-						var rand3 = Math.round(Math.random() * 40) - 20;
-						card.style.left = "calc(" + rand1 + "% - " + rand1 + "px)";
-						card.style.top = "calc(" + rand2 + "% - " + rand2 + "px)";
-						card.style.transform = "rotate(" + rand3 + "deg)";
+						const rand1 = Math.round(Math.random() * 100);
+						const rand2 = Math.round(Math.random() * 100);
+						const rand3 = Math.round(Math.random() * 40) - 20;
+						card.style.left = `calc(${rand1}% - ${rand1}px)`;
+						card.style.top = `calc(${rand2}% - ${rand2}px)`;
+						card.style.transform = `rotate(${rand3}deg)`;
 						node.appendChild(card);
 						ui.refresh(card);
 					};
@@ -2502,30 +2502,29 @@ export default () => {
 							node.nodes.shift().remove();
 						}
 					}
-					for (var i = 0; i < 5; i++) {
+					for (let i = 0; i < 5; i++) {
 						func();
 					}
-					for (var i = 0; i < 3; i++) {
+					for (let i = 0; i < 3; i++) {
 						func2();
 						func();
 					}
-					var func3 = function () {
-						for (var i = 0; i < node.nodes.length; i++) {
-							var card = node.nodes[i];
+					const func3 = () => {
+						for (const card of node.nodes) {
 							if (card.classList.contains("player")) {
-								var rand1 = Math.round(Math.random() * 100);
-								var rand2 = Math.round(Math.random() * 100);
-								var rand3 = Math.round(Math.random() * 40) - 20;
-								card.style.left = "calc(" + rand1 + "% - " + rand1 * 1.5 + "px)";
-								card.style.top = "calc(" + rand2 + "% - " + rand2 * 1.8 + "px)";
-								card.style.transform = "scale(0.8) rotate(" + rand3 + "deg)";
+								const rand1 = Math.round(Math.random() * 100);
+								const rand2 = Math.round(Math.random() * 100);
+								const rand3 = Math.round(Math.random() * 40) - 20;
+								card.style.left = `calc(${rand1}% - ${rand1 * 1.5}px)`;
+								card.style.top = `calc(${rand2}% - ${rand2 * 1.8}px)`;
+								card.style.transform = `scale(0.8) rotate(${rand3}deg)`;
 							} else {
-								var rand1 = Math.round(Math.random() * 100);
-								var rand2 = Math.round(Math.random() * 100);
-								var rand3 = Math.round(Math.random() * 40) - 20;
-								card.style.left = "calc(" + rand1 + "% - " + rand1 + "px)";
-								card.style.top = "calc(" + rand2 + "% - " + rand2 + "px)";
-								card.style.transform = "rotate(" + rand3 + "deg)";
+								const rand1 = Math.round(Math.random() * 100);
+								const rand2 = Math.round(Math.random() * 100);
+								const rand3 = Math.round(Math.random() * 40) - 20;
+								card.style.left = `calc(${rand1}% - ${rand1}px)`;
+								card.style.top = `calc(${rand2}% - ${rand2}px)`;
+								card.style.transform = `rotate(${rand3}deg)`;
 							}
 						}
 					};
@@ -2533,45 +2532,44 @@ export default () => {
 					// node.showcaseinterval=setInterval(func3,5000);
 				},
 				content: {
-					cardPile: function (list) {
-						for (var i = 0; i < list.length; i++) {
-							var subtype = get.subtype(list[i][2]);
-							if (subtype == "equip1" || subtype == "equip3" || subtype == "equip4") {
+					cardPile(list) {
+						for (let i = 0; i < list.length; i++) {
+							const subtype = get.subtype(list[i][2]);
+							if (subtype === "equip1" || subtype === "equip3" || subtype === "equip4") {
 								list.splice(i--, 1);
 							}
 						}
-						for (var i = 0; i < 8; i++) {
+						for (let i = 0; i < 8; i++) {
 							list.push([["heart", "diamond", "club", "spade"].randomGet(), Math.ceil(Math.random() * 13), "dawan"]);
 						}
 						return list;
 					},
-					gameStart: function () {
+					gameStart() {
 						game.identityVideoName = "铜雀夺袍";
-						for (var i = 0; i < game.players.length; i++) {
-							game.players[i].$equip(game.createCard("qilin"));
-							game.players[i].$equip(game.createCard("zhuahuang"));
+						for (const player of game.players) {
+							player.$equip(game.createCard("qilin"));
+							player.$equip(game.createCard("zhuahuang"));
 						}
 					},
 					submode: "normal",
 					list: ["re_caoxiu", "re_wenpin", "tw_re_caohong", "re_zhanghe", "ol_xiahouyuan", "ol_xuhuang", "re_xuzhu"],
 					chooseCharacterFixed: true,
-					chooseCharacterAi: function (player) {
-						if (player == game.zhu) {
+					chooseCharacterAi(player) {
+						if (player === game.zhu) {
 							player.init("re_caocao");
 						} else {
 							_status.brawl.list.remove(game.me.name);
 							player.init(_status.brawl.list.randomRemove());
 						}
 					},
-					chooseCharacter: function () {
+					chooseCharacter() {
 						_status.noReplaceCharacter = true;
-						if (game.me == game.zhu) {
+						if (game.me === game.zhu) {
 							return ["re_caocao"];
-						} else {
-							_status.brawl.list.randomSort();
-							return _status.brawl.list;
-							// return _status.brawl.list.randomGets(1);
 						}
+						_status.brawl.list.randomSort();
+						return _status.brawl.list;
+						// return _status.brawl.list.randomGets(1);
 					},
 				},
 			},
