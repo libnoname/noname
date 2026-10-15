@@ -196,22 +196,28 @@ export async function boot() {
 		const appearenceConfig = lib.configMenu.appearence.config,
 			fontSheet = ui.css.fontsheet.sheet,
 			suitsFont = config.get("suits_font");
+		// 字体文件很大（xinwei.woff2 约 7.7 MB，yuanli / shousha 各约 4.7–4.9 MB），
+		// 而 @font-face 的 font-display 默认值是 auto，即「字体没到之前不显示文字」
+		// （FOIT）。弱网下表现为白屏数秒，用户不知道是在加载。
+		// 统一加 font-display: swap：先用回退字体把文字画出来，字体到位后再替换。
+		// 老浏览器不认识该描述符时会直接忽略，不影响解析。
+		const fontFaceRule = (family: string, src: string) => `@font-face {font-family: '${family}'; src: ${src}; font-display: swap;}`;
 		Object.keys(pack.font).forEach(value => {
 			const font = pack.font[value];
 			appearenceConfig.name_font.item[value] = font;
 			appearenceConfig.identity_font.item[value] = font;
 			appearenceConfig.cardtext_font.item[value] = font;
 			appearenceConfig.global_font.item[value] = font;
-			fontSheet.insertRule(`@font-face {font-family: '${value}'; src: local('${font}'), url('${lib.assetURL}font/${value}.woff2');}`, 0);
+			fontSheet.insertRule(fontFaceRule(value, `local('${font}'), url('${lib.assetURL}font/${value}.woff2')`), 0);
 			if (suitsFont) {
-				fontSheet.insertRule(`@font-face {font-family: '${value}'; src: local('${font}'), url('${lib.assetURL}font/suits.woff2');}`, 0);
+				fontSheet.insertRule(fontFaceRule(value, `local('${font}'), url('${lib.assetURL}font/suits.woff2')`), 0);
 			}
 		});
 		if (suitsFont) {
-			fontSheet.insertRule(`@font-face {font-family: 'Suits'; src: url('${lib.assetURL}font/suits.woff2');}`, 0);
+			fontSheet.insertRule(fontFaceRule("Suits", `url('${lib.assetURL}font/suits.woff2')`), 0);
 		}
-		fontSheet.insertRule(`@font-face {font-family: 'NonameSuits'; src: url('${lib.assetURL}font/suits.woff2');}`, 0);
-		fontSheet.insertRule(`@font-face {font-family: 'MotoyaLMaru'; src: url('${lib.assetURL}font/motoyamaru.woff2');}`, 0);
+		fontSheet.insertRule(fontFaceRule("NonameSuits", `url('${lib.assetURL}font/suits.woff2')`), 0);
+		fontSheet.insertRule(fontFaceRule("MotoyaLMaru", `url('${lib.assetURL}font/motoyamaru.woff2')`), 0);
 		appearenceConfig.cardtext_font.item.default = "默认";
 		appearenceConfig.global_font.item.default = "默认";
 	}
