@@ -71,40 +71,23 @@ export default function vitePluginJIT(importMap: Record<string, string> = {}): P
 		// 	return;
 		// }
 
-		// ⚠️ 下面这段是 packages/jit/src/entry.ts 的内联副本（用于本插件生成的
-		// dist/game/game.js；注意该文件目前在仓库内没有任何引用点）。
-		// 两处必须保持一致，改动 JIT 逻辑时请一并修改。
-		//
-		// JIT 依赖 Service Worker 拦截 /extension/** 与 /jit-test.ts，而
-		// service-worker/index.ts 只对 localhost / 127.0.0.1 / 10.0.2.2 生效；
-		// 其他部署形态下注册 SW 没有作用，却要下载并解析约 4.2 MB 的
-		// dist/service-worker.js（内含完整 TypeScript 编译器），失败时还会整页刷新。
-		const isJitUsable = (() => {
-			if (!("serviceWorker" in navigator)) return false;
-			if (location.protocol !== "http:" && location.protocol !== "https:") return false;
-			if (!window.isSecureContext) return false;
-			const wkWebView = window;
-			if (wkWebView.webkit?.messageHandlers?.bridge) return false;
-			return ["localhost", "127.0.0.1", "10.0.2.2"].includes(location.hostname);
-		})();
+		const globalText = {
+			SERVICE_WORKER_NOT_SUPPORT: ["无法启用即时编译功能", "您使用的客户端或浏览器不支持启用serviceWorker"].join("\\\\n"),
+			SERVICE_WORKER_LOAD_FAILED: ["无法启用即时编译功能", "serviceWorker加载失败"].join("\\\\n"),
+		};
 
-		if (!isJitUsable) {
-			console.info("[noname] 即时编译（JIT）在当前环境不可用，已跳过 Service Worker。");
+		if (!("serviceWorker" in navigator)) {
+			alert(globalText.SERVICE_WORKER_NOT_SUPPORT);
 			return;
 		}
 
-		// 只有确实存在旧 worker 时才需要「先注销再重载」，否则首次访问白白多刷一次
-		try {
-			const registrations = await navigator.serviceWorker.getRegistrations();
-			const staleRegistration = registrations.find(registration => registration?.active?.scriptURL == \\\`\\\${scope}service-worker.js\\\`);
-			if (staleRegistration && sessionStorage.getItem("isJITReloaded") !== "true") {
-				await staleRegistration.unregister();
-				sessionStorage.setItem("isJITReloaded", "true");
-				window.location.reload();
-				return;
-			}
-		} catch (e) {
-			console.info("[noname] 查询已有 Service Worker 失败，继续尝试注册。", e);
+		// 初次加载worker，需要重新启动一次
+		if (sessionStorage.getItem("isJITReloaded") !== "true") {
+			let registrations = await navigator.serviceWorker.getRegistrations();
+			await registrations.find(registration => registration?.active?.scriptURL == \\\`\\\${scope}service-worker.js\\\`)?.unregister();
+			sessionStorage.setItem("isJITReloaded", "true");
+			window.location.reload();
+			return;
 		}
 
 		try {
@@ -128,9 +111,13 @@ export default function vitePluginJIT(importMap: Record<string, string> = {}): P
 				sessionStorage.setItem("canUseTs", "true");
 			}
 		} catch (e) {
-			// 注册失败不再整页刷新：那只会让用户反复闪白，问题也不会因此消失。
-			sessionStorage.setItem("canUseTs", "false");
-			console.info("[noname] Service Worker 注册失败，即时编译不可用：", e);
+			if (sessionStorage.getItem("canUseTs") === "false") {
+				console.log("serviceWorker加载失败: ", e);
+				// alert(globalText.SERVICE_WORKER_LOAD_FAILED);
+			} else {
+				sessionStorage.setItem("canUseTs", "false");
+				window.location.reload();
+			}
 		}
 	})();\`
 	document.head.appendChild(jit);
