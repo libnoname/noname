@@ -1,6 +1,11 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	tangtang: "唐棠",
+	zexing: "择行",
+	zexing_info: "出牌阶段限一次，你可展示一张牌并选择一名其他角色，令其选择一项：1.你观看其手牌并获得两张与展示牌花色不同的牌，然后其获得展示牌；2.其失去1点体力，然后你可重新选择一名其他角色并重复此流程（本回合每名角色限一次）。",
+	tt_zhiyi: "知意",
+	tt_zhiyi_info: "每回合限一次，当你获得牌后或其他角色获得你的牌后，若你手牌中有其他此颜色的牌，你可令一名角色摸一张牌。",
 	caoying_basic: "基本",
 	caoying_trick: "锦囊",
 	caoying_equip: "装备",
