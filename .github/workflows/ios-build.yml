@@ -299,7 +299,7 @@ jobs:
 
       # P0-1：原步骤名为 `Show project and scheme`，里面除了 `ls -la` 还跑了一次
       # `xcodebuild -list`（-workspace/-project 二选一）。实测该命令独占约 18s —— 它会
-      # 完整加载工程并触发一次 Swift Package Manager 依赖解析，而我们只是用它打印 scheme 名，
+      # 完整加载工程并触发一次 Swift Package Manager 依赖解析，而该命令只是用来打印 scheme 名，
       # 对本工作流没有任何决策作用（下面 xcodebuild 里 scheme 名恒为 App）。
       # 因此整段删除，只保留廉价的目录列表。工程存在性已由 `Locate iOS project` 步骤
       # 用 `.xcodeproj` 校验兜底，信息没有丢失。
