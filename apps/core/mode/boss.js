@@ -8319,56 +8319,50 @@ export default () => {
 				trigger: { global: "phaseZhunbeiBegin" },
 				forced: true,
 				filter(event, player) {
-					return event.player != player && (event.player.countCards("h") > 1 || event.player.countCards("e") > 1);
+					return event.player !== player && (event.player.countCards("h") > 1 || event.player.countCards("e") > 1);
 				},
-				content() {
-					"step 0";
-					player.line(trigger.player, "green");
-					var next = trigger.player.chooseCard(true, "选择保留一张手牌和一张装备区内的牌，然后弃置其它牌", "he", function (card) {
-						switch (get.position(card)) {
-							case "h": {
-								if (ui.selected.cards.length) {
-									return get.position(ui.selected.cards[0]) == "e";
-								} else {
-									return trigger.player.countCards("h") > 1;
-								}
-							}
-							case "e": {
-								if (ui.selected.cards.length) {
-									return get.position(ui.selected.cards[0]) == "h";
-								} else {
-									return trigger.player.countCards("e") > 1;
-								}
-							}
-						}
-					});
-					var num = 0;
-					if (trigger.player.countCards("h") > 1) {
+				async content(event, trigger, player) {
+					const target = trigger.player;
+					player.line(target, "green");
+					let num = 0;
+					if (target.countCards("h") > 1) {
 						num++;
 					}
-					if (trigger.player.countCards("e") > 1) {
+					if (target.countCards("e") > 1) {
 						num++;
 					}
-					next.selectCard = [num, num];
-					next.ai = function (card) {
-						return get.value(card);
-					};
-					"step 1";
-					if (result.bool) {
-						var he = [];
-						var hs = trigger.player.getCards("h");
-						var es = trigger.player.getCards("e");
-						if (hs.length > 1) {
-							he = he.concat(hs);
-						}
-						if (es.length > 1) {
-							he = he.concat(es);
-						}
-						for (var i = 0; i < result.cards.length; i++) {
-							he.remove(result.cards[i]);
-						}
-						trigger.player.discard(he);
+					const result = await target
+						.chooseCard({
+							forced: true,
+							prompt: "选择保留一张手牌和一张装备区内的牌，然后弃置其它牌",
+							position: "he",
+							filterCard: card => {
+								switch (get.position(card)) {
+									case "h": {
+										if (ui.selected.cards.length) {
+											return get.position(ui.selected.cards[0]) === "e";
+										}
+										return target.countCards("h") > 1;
+									}
+									case "e": {
+										if (ui.selected.cards.length) {
+											return get.position(ui.selected.cards[0]) === "h";
+										}
+										return target.countCards("e") > 1;
+									}
+								}
+							},
+							selectCard: num,
+							ai: card => get.value(card),
+						})
+						.forResult();
+					if (!result.bool) {
+						return;
 					}
+					const hs = target.getCards("h");
+					const es = target.getCards("e");
+					const he = [...(hs.length > 1 ? hs : []), ...(es.length > 1 ? es : [])].filter(card => !result.cards.includes(card));
+					await target.discard({ cards: he });
 				},
 			},
 			boss_nbaonu: {
