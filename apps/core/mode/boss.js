@@ -9708,26 +9708,21 @@ export default () => {
 					if (player.isLinked()) {
 						return true;
 					}
-					return game.hasPlayer(function (current) {
-						return current != player && !current.isLinked();
-					});
+					return game.hasPlayer(current => current !== player && !current.isLinked());
 				},
-				content() {
-					"step 0";
-					event.targets = game.filterPlayer();
-					event.targets.remove(player);
-					event.targets.sort(lib.sort.seat);
+				async content(event, trigger, player) {
+					const targets = game.filterPlayer();
+					targets.remove(player);
+					targets.sort(lib.sort.seat);
 					if (player.isLinked()) {
-						player.link();
+						await player.link();
 					}
-					"step 1";
-					if (event.targets.length) {
-						var target = event.targets.shift();
+					for (const target of targets) {
 						if (!target.isLinked()) {
-							target.link();
+							const next = target.link();
 							player.line(target, "green");
+							await next;
 						}
-						event.redo();
 					}
 				},
 			},
