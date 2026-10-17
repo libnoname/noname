@@ -5,6 +5,10 @@ name: Sync with upstream
 # 覆盖分支：每晚自动枚举本 Fork 的全部现有分支（每分支一个独立任务），
 #     唯一排除 build-output（构建产物分支，由 build.yml 强推维护，不参与上游同步）。
 #     新增分支无需改本文件——创建后会自动纳入下一次同步。
+# 同步源：与本工作流所用的 merge-upstream 接口（即网页「Sync fork」按钮）的实际语义对齐——
+#     上游存在同名分支时，同步「上游的同名分支」；否则回退「上游 main」。
+#     例：fork 的 maint/v1.11.4 ← 上游 maint/v1.11.4；fork 的 feat/web-pages ← 上游 main。
+#     每条分支的任务日志与运行摘要都会写明本次用的同步源。
 # ⚠️ 每个分支都要单独同步——这些分支是分叉的，不是包含关系：
 #     历史教训（2026-10-05）：当时只同步 main，结果 iOS 包（从 feat/ios-support 构建）
 #     缺了上游新增的 21 个资源文件——批量下载清单是构建时按分支自己的资源生成的；
@@ -130,8 +134,9 @@ jobs:
       FORK: ${{ github.repository }}
       UPSTREAM: libnoname/noname
       UPSTREAM_OWNER: libnoname
-      # 同步源恒为上游 main。⚠️ 不要用 $BRANCH——统一锁定 main：
-      # 本工作流的语义是「把上游 main 合进每个分支」，不是「同名分支互相对齐」。
+      # UPSTREAM_BRANCH 是「回退用」的默认同步源（上游 main）。
+      # 若上游存在与 $BRANCH 同名的分支，则以同名分支为准——该探测在 compare 步骤完成，
+      # 与 merge-upstream / 网页「Sync fork」的实际语义一致（否则终态校验会误判失败）。
       UPSTREAM_BRANCH: main
       BRANCH: ${{ matrix.branch }}
 
@@ -155,10 +160,24 @@ jobs:
             echo "::notice::当前使用 SYNC_TOKEN（身份：$actor）"
           fi
 
-          upstream_sha=$(gh api "repos/$UPSTREAM/commits/$UPSTREAM_BRANCH" --jq .sha)
+          # 同步源探测：上游存在同名分支 → 用同名分支；否则回退上游默认分支 main。
+          # （merge-upstream / 网页「Sync fork」的实际语义即「同名优先、回退默认」，
+          #   本工作流与之对齐，避免把「已同步成功」误判为失败。）
+          if upstream_sha=$(gh api "repos/$UPSTREAM/commits/$BRANCH_ENC" --jq .sha 2>/dev/null); then
+            SYNC_SOURCE="$BRANCH"
+            SYNC_LABEL="上游同名分支"
+          else
+            SYNC_SOURCE="$UPSTREAM_BRANCH"
+            SYNC_LABEL="上游 main（回退）"
+            upstream_sha=$(gh api "repos/$UPSTREAM/commits/$UPSTREAM_BRANCH" --jq .sha)
+          fi
+          SRC_ENC=$(printf '%s' "$SYNC_SOURCE" | sed 's/#/%23/g')
+          echo "sync_source=$SYNC_SOURCE" >> "$GITHUB_OUTPUT"
+          echo "sync_label=$SYNC_LABEL" >> "$GITHUB_OUTPUT"
+
           fork_sha=$(gh api "repos/$FORK/commits/$BRANCH_ENC" --jq .sha)
 
-          echo "上游 $UPSTREAM/$UPSTREAM_BRANCH = $upstream_sha"
+          echo "同步源 $UPSTREAM/$SYNC_SOURCE（$SYNC_LABEL）= $upstream_sha"
           echo "本 Fork $FORK/$BRANCH = $fork_sha"
           echo "upstream_sha=$upstream_sha" >> "$GITHUB_OUTPUT"
           echo "fork_sha=$fork_sha" >> "$GITHUB_OUTPUT"
@@ -166,7 +185,7 @@ jobs:
           # ⚠️ 判据是「上游是否领先本 Fork」，不能用「两边 SHA 是否相等」：
           # 本 Fork 有自己的提交，一旦合并过一次，两边 SHA 就再也不会相等了，
           # 那样每天都会白跑一次合并（接口会回 merge_type=none，但没有任何意义）。
-          compare_api="repos/$FORK/compare/$BRANCH_ENC...$UPSTREAM_OWNER:$UPSTREAM_BRANCH"
+          compare_api="repos/$FORK/compare/$BRANCH_ENC...$UPSTREAM_OWNER:$SRC_ENC"
           ahead=$(gh api "$compare_api" --jq .ahead_by 2>/dev/null || echo "")
           case "$ahead" in
             ''|*[!0-9]*)
@@ -206,7 +225,7 @@ jobs:
         run: |
           set -uo pipefail
 
-          echo "开始合并 $UPSTREAM:$UPSTREAM_BRANCH → $FORK:$BRANCH"
+          echo "开始合并 $UPSTREAM → $FORK:$BRANCH（合并接口会自动选择：上游同名分支优先、回退 main）"
 
           if response=$(gh api -X POST "repos/$FORK/merge-upstream" -f branch="$BRANCH" 2>&1); then
             echo "$response"
@@ -241,6 +260,8 @@ jobs:
           set -euo pipefail
 
           BRANCH_ENC=$(printf '%s' "$BRANCH" | sed 's/#/%23/g')
+          SYNC_SOURCE="${{ steps.compare.outputs.sync_source }}"
+          SRC_ENC=$(printf '%s' "$SYNC_SOURCE" | sed 's/#/%23/g')
 
           new_sha=$(gh api "repos/$FORK/commits/$BRANCH_ENC" --jq .sha)
           echo "同步后 $FORK/$BRANCH = $new_sha"
@@ -248,15 +269,15 @@ jobs:
 
           # 合并完成后，「上游领先」应当归零；否则还有上游提交没进来
           # 注意字段方向：base=本 Fork、head=上游，所以看的是 ahead_by
-          compare_api="repos/$FORK/compare/$BRANCH_ENC...$UPSTREAM_OWNER:$UPSTREAM_BRANCH"
-          gh api "$compare_api" --jq '"status=" + .status + " 上游仍领先 " + (.ahead_by|tostring) + " 个提交；本 Fork 自定义提交 " + (.behind_by|tostring) + " 个"'
+          compare_api="repos/$FORK/compare/$BRANCH_ENC...$UPSTREAM_OWNER:$SRC_ENC"
+          gh api "$compare_api" --jq '"status=" + .status + " 同步源仍领先 " + (.ahead_by|tostring) + " 个提交；本 Fork 自定义提交 " + (.behind_by|tostring) + " 个"'
 
           remaining=$(gh api "$compare_api" --jq .ahead_by)
           if [ "$remaining" != "0" ]; then
-            echo "::error::合并后上游仍领先 $remaining 个提交，请手动检查"
+            echo "::error::合并后同步源仍领先 $remaining 个提交（源：$SYNC_SOURCE），请手动检查"
             exit 1
           fi
-          echo "::notice::已确认与上游同步（上游领先 0 个提交）"
+          echo "::notice::已确认与同步源一致（$SYNC_SOURCE 领先 0 个提交）"
 
       - name: 写入运行摘要
         if: always()
@@ -267,13 +288,15 @@ jobs:
           NEW_SHA: ${{ steps.verify.outputs.new_sha }}
           FORK_SHA: ${{ steps.compare.outputs.fork_sha }}
           WORKFLOWS_TOUCHED: ${{ steps.compare.outputs.workflows_touched }}
+          SYNC_LABEL: ${{ steps.compare.outputs.sync_label }}
+          SYNC_SOURCE: ${{ steps.compare.outputs.sync_source }}
         run: |
           {
             echo "## 上游同步结果"
             echo ""
             echo "| 项目 | 值 |"
             echo "| --- | --- |"
-            echo "| 上游 | \`libnoname/noname:main\` |"
+            echo "| 同步源 | ${SYNC_LABEL:-未知}：\`$UPSTREAM:${SYNC_SOURCE:-未知}\` |"
             echo "| 本 Fork | \`${FORK_SHA:-未知}\` → \`${NEW_SHA:-未变化}\` |"
             echo "| 上游改动的工作流文件 | ${WORKFLOWS_TOUCHED:-0} 个 |"
             if [ "$UP_TO_DATE" = "true" ]; then
