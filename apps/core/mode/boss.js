@@ -7343,59 +7343,56 @@ export default () => {
 				filter(event, player) {
 					return [3, 5, 7].includes(game.roundNumber);
 				},
-				content() {
-					"step 0";
-					if (game.roundNumber == 7) {
-						var goumang, shujing;
-						for (var i = 0; i < game.players.length; i++) {
-							if (game.players[i].name == "boss_mushengoumang") {
-								goumang = game.players[i];
+				async content(event, trigger, player) {
+					let targets;
+					let command;
+					if (game.roundNumber === 7) {
+						let goumang;
+						let shujing;
+						for (const current of game.players) {
+							if (current.name === "boss_mushengoumang") {
+								goumang = current;
 							}
-							if (game.players[i].name == "boss_shujing") {
-								shujing = game.players[i];
+							if (current.name === "boss_shujing") {
+								shujing = current;
 							}
 						}
 						if (!goumang || !shujing) {
-							for (var i = 0; i < game.dead.length; i++) {
-								if (game.dead[i].parentNode != player.parentNode) {
+							for (const current of game.dead) {
+								if (current.parentNode !== player.parentNode) {
 									continue;
 								}
-								if (game.dead[i].name == "boss_mushengoumang") {
-									goumang = game.dead[i];
+								if (current.name === "boss_mushengoumang") {
+									goumang = current;
 								}
-								if (game.dead[i].name == "boss_shujing") {
-									shujing = game.dead[i];
+								if (current.name === "boss_shujing") {
+									shujing = current;
 								}
 							}
 						}
-						event.targets = [];
+						targets = [];
 						if (goumang) {
-							event.targets.push(goumang);
+							targets.push(goumang);
 						}
 						if (shujing) {
-							event.targets.push(shujing);
+							targets.push(shujing);
 						}
-						event.command = "revive";
-					} else if (game.roundNumber == 5) {
-						event.targets = game
-							.filterPlayer(function (current) {
-								return current.isEnemyOf(player);
-							})
+						command = "revive";
+					} else if (game.roundNumber === 5) {
+						targets = game
+							.filterPlayer(current => current.isEnemyOf(player))
 							.sortBySeat();
-						event.command = "loseHp";
+						command = "loseHp";
 					} else {
-						event.targets = game
-							.filterPlayer(function (current) {
-								return current.isFriendOf(player);
-							})
+						targets = game
+							.filterPlayer(current => current.isFriendOf(player))
 							.sortBySeat();
-						event.command = "recover";
+						command = "recover";
 					}
-					"step 1";
-					if (event.targets.length) {
-						var target = event.targets.shift();
+					let delay = false;
+					for (const target of targets) {
 						player.line(target, "green");
-						if (event.command == "revive") {
+						if (command === "revive") {
 							player.line(target, "green");
 							if (target.isDead()) {
 								target.maxHp++;
@@ -7404,17 +7401,19 @@ export default () => {
 								target.gainMaxHp();
 								target.recover(3);
 							}
-							target.draw(3, false);
+							const draw = target.draw({ num: 3 }).set("animate", false);
 							target.$draw(3);
-							event.delay = true;
+							delay = true;
+							await draw;
 						} else {
-							target[event.command]();
+							await target[command]();
 						}
-						event.redo();
+						if (!player.isIn()) {
+							return;
+						}
 					}
-					"step 2";
-					if (event.delay) {
-						game.delay();
+					if (delay) {
+						await game.delay();
 					}
 				},
 			},
