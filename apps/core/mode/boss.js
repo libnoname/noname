@@ -3860,22 +3860,18 @@ export default () => {
 				audio: true,
 				trigger: { player: "phaseZhunbeiBegin" },
 				forced: true,
-				content() {
-					"step 0";
-					var list = game.filterPlayer();
+				async content(event, trigger, player) {
+					const list = game.filterPlayer();
 					list.remove(player);
-					if (list.length) {
-						var target = list.randomGet();
-						player.line(target);
-						event.target = target;
-						if (target.countGainableCards(player, "h")) {
-							player.gainPlayerCard(target, "h", true);
-						}
-					} else {
-						event.finish();
+					if (!list.length) {
+						return;
 					}
-					"step 1";
-					target.damage("fire");
+					const target = list.randomGet();
+					player.line(target);
+					if (target.hasGainableCards(player, "h")) {
+						await player.gainPlayerCard({ target, position: "h", forced: true });
+					}
+					await target.damage({ nature: "fire" });
 				},
 			},
 
