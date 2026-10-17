@@ -10,10 +10,10 @@ name: Sync with upstream
 #     例：fork 的 maint/v1.11.4 ← 上游 maint/v1.11.4；fork 的 feat/web-pages ← 上游 main。
 #     每条分支的任务日志与运行摘要都会写明本次用的同步源。
 # ⚠️ 每个分支都要单独同步——这些分支是分叉的，不是包含关系：
-#     历史教训（2026-10-05）：当时只同步 main，结果 iOS 包（从 feat/ios-support 构建）
-#     缺了上游新增的 21 个资源文件——批量下载清单是构建时按分支自己的资源生成的；
+#     背景（2026-10-05 实例）：只同步 main 时，iOS 包（从 feat/ios-support 构建）缺少
+#     上游新增的 21 个资源文件——批量下载清单在构建时按分支自身资源生成；
 #     feat/web-pages 同理（产物 dist 按分支资源构建，漏同步会缺素材）。
-#     因此现在的策略是「全分支覆盖」，任何一条都不会落单。
+#     因此策略为「全分支覆盖」，每个分支都被覆盖。
 #
 # 触发：
 #   - 每天 UTC 16:00（= 北京时间 00:00）自动跑一次（每晚一次，覆盖全部分支）；
@@ -32,7 +32,7 @@ name: Sync with upstream
 #   - `behind_by` = 本 Fork 独有的提交数（自定义改动）
 #
 # ---------------------------------------------------------------------------
-# ⚠️ 关于 SYNC_TOKEN（重要，第一次实跑时踩出来的）
+# ⚠️ 关于 SYNC_TOKEN（重要）
 #
 # Actions 内置的 GITHUB_TOKEN 属于 GitHub App 安装令牌，无权创建或修改
 # `.github/workflows/` 下的文件，而且权限清单里根本没有对应项可开。于是当上游的
@@ -54,9 +54,9 @@ name: Sync with upstream
 #   3. 之后本工作流会自动优先使用它（见下方 GH_TOKEN）。
 #
 # 没配也没关系：那种情况下本次运行会失败并打印上面这条明确原因，
-# 你手动点一次网页上的「Sync fork」即可（浏览器用你本人的身份，不受此限制）。
+# 手动点一次网页上的「Sync fork」即可（浏览器以你的账号身份操作，不受此限制）。
 #
-# 其它容易踩的点：
+# 其它注意事项：
 #   1. GitHub 的 schedule 只会在默认分支上执行。因此这个文件必须存在于
 #      fork 的 main 上；只放在功能分支里，定时任务永远不会被触发。
 #   2. 合并是合并而不是重置：本 Fork 的 main 有一批自定义提交
@@ -243,7 +243,7 @@ jobs:
           if printf '%s' "$response" | grep -q "workflows. permission"; then
             echo "::error::本次合并需要改动 .github/workflows/ 下的文件，而 Actions 内置的 GITHUB_TOKEN 无权修改工作流文件（GitHub 硬限制，权限清单里没有对应项）。"
             echo "::error::解决办法：生成一个有 workflow 权限的 PAT，存成本仓库 secret「SYNC_TOKEN」，本工作流会自动改用它（步骤见本文件顶部注释）。"
-            echo "::error::急用可先手动点网页上的「Sync fork」按钮（浏览器用你本人的身份，不受此限制）。"
+            echo "::error::急用可先手动点网页上的「Sync fork」按钮（浏览器以你的账号身份操作，不受此限制）。"
             exit 1
           fi
 
