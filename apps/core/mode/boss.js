@@ -2973,43 +2973,35 @@ export default () => {
 			},
 			thedayibecomeagod: {
 				trigger: { player: "die" },
-				direct: true,
 				filter(event, player) {
-					return player.group == "shen";
+					return player.group === "shen";
 				},
 				forceDie: true,
 				skillAnimation: true,
 				animationColor: "kami",
-				content() {
-					"step 0";
-					player
-						.chooseTarget(get.prompt2("thedayibecomeagod"), function (card, player, target) {
-							return target.isFriendOf(player);
+				async cost(event, trigger, player) {
+					event.result = await player
+						.chooseTarget({
+							prompt: get.prompt2(event.skill),
+							filterTarget: (card, player, target) => target.isFriendOf(player),
+							ai: target => get.attitude(_status.event.player, target),
 						})
-						.set("forceDie", true).ai = function (target) {
-						return get.attitude(_status.event.player, target);
-					};
-					"step 1";
-					if (result.bool) {
-						var target = result.targets[0];
-						event.target = target;
-						player.logSkill("thedayibecomeagod", target);
-						if (target.group != "shen") {
-							target.changeGroup("shen");
-							game.log("此刻，便是", target, "成为神明之日！");
-							event.finish();
-						} else {
-							target.turnOver(false);
-						}
-					} else {
-						event.finish();
+						.set("forceDie", true)
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					const target = event.targets[0];
+					if (target.group !== "shen") {
+						const changeGroup = target.changeGroup("shen");
+						game.log("此刻，便是", target, "成为神明之日！");
+						await changeGroup;
+						return;
 					}
-					"step 2";
+					await target.turnOver(false);
 					if (target.isDamaged()) {
-						target.recover(target.maxHp - target.hp);
+						await target.recover(target.maxHp - target.hp);
 					}
-					"step 3";
-					target.drawTo(5);
+					await target.drawTo(5);
 				},
 			},
 			TheDayIBecomeAGod: {
@@ -3019,9 +3011,9 @@ export default () => {
 				forced: true,
 				prompt: "是否将此【杀】改为神属性？",
 				filter(event, player) {
-					return player.group == "shen" && event.card.name == "sha";
+					return player.group === "shen" && event.card.name === "sha";
 				},
-				content() {
+				async content(event, trigger, player) {
 					game.log(trigger.card, "被改为神属性");
 					game.setNature(trigger.card, "kami");
 				},
