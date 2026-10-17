@@ -9574,27 +9574,24 @@ export default () => {
 				trigger: { source: "damageAfter" },
 				direct: true,
 				unique: true,
-				content() {
-					"step 0";
-					player.chooseTarget(get.prompt("jidian"), function (card, player, target) {
-						return get.distance(trigger.player, target) <= 1 && trigger.player != target;
-					}).ai = function (target) {
-						return get.damageEffect(target, player, player, "thunder") + 0.1;
-					};
-					"step 1";
-					if (result.bool) {
-						event.target = result.targets[0];
-						event.target.judge(function (card) {
-							return get.color(card) == "red" ? 0 : -1;
-						});
-						player.logSkill("jidian", event.target, false);
-						trigger.player.line(event.target, "thunder");
-					} else {
-						event.finish();
+				async content(event, trigger, player) {
+					const result = await player
+						.chooseTarget({
+							prompt: get.prompt("jidian"),
+							filterTarget: (card, player, target) => get.distance(trigger.player, target) <= 1 && trigger.player !== target,
+							ai: target => get.damageEffect(target, player, player, "thunder") + 0.1,
+						})
+						.forResult();
+					if (!result.bool) {
+						return;
 					}
-					"step 2";
-					if (result.color == "black") {
-						event.target.damage("thunder");
+					const target = result.targets[0];
+					const judge = target.judge({ judge: card => (get.color(card) === "red" ? 0 : -1) });
+					player.logSkill("jidian", target, false);
+					trigger.player.line(target, "thunder");
+					const judgeResult = await judge.forResult();
+					if (judgeResult.color === "black") {
+						await target.damage({ nature: "thunder" });
 					}
 				},
 			},
