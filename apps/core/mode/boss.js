@@ -4905,26 +4905,19 @@ export default () => {
 			boss_xushi: {
 				trigger: { player: ["phaseUseEnd", "turnOverEnd"] },
 				filter(event, player) {
-					return event.name == "phaseUse" || !player.isTurnedOver();
+					return event.name === "phaseUse" || !player.isTurnedOver();
 				},
 				forced: true,
-				content() {
-					"step 0";
-					if (trigger.name == "phaseUse") {
-						player.turnOver();
-						event.finish();
-					} else {
-						event.list = game.filterPlayer(function (current) {
-							return current != player;
-						});
-						event.list.sort(lib.sort.seat);
-						player.line(event.list, "green");
+				async content(event, trigger, player) {
+					if (trigger.name === "phaseUse") {
+						await player.turnOver();
+						return;
 					}
-					"step 1";
-					var target = event.list.shift();
-					target.damage([1, 2].randomGet());
-					if (event.list.length) {
-						event.redo();
+					const list = game.filterPlayer(current => current !== player);
+					list.sort(lib.sort.seat);
+					player.line(list, "green");
+					for (const target of list) {
+						await target.damage([1, 2].randomGet());
 					}
 				},
 			},
