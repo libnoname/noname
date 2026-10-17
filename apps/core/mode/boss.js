@@ -9058,29 +9058,29 @@ export default () => {
 			},
 			boss_didong: {
 				trigger: { player: "phaseJieshuBegin" },
-				direct: true,
-				content() {
-					"step 0";
-					player.chooseTarget(get.prompt("boss_didong"), function (card, player, target) {
-						return target.isEnemyOf(player);
-					}).ai = function (target) {
-						var att = get.attitude(player, target);
-						if (target.isTurnedOver()) {
-							if (att > 0) {
-								return att + 5;
-							}
-							return -1;
-						}
-						if (player.isTurnedOver()) {
-							return 5 - att;
-						}
-						return -att;
-					};
-					"step 1";
-					if (result.bool) {
-						player.logSkill("boss_didong", result.targets);
-						result.targets[0].turnOver();
-					}
+				async cost(event, trigger, player) {
+					event.result = await player
+						.chooseTarget({
+							prompt: get.prompt(event.skill),
+							filterTarget: (card, player, target) => target.isEnemyOf(player),
+							ai: target => {
+								const att = get.attitude(player, target);
+								if (target.isTurnedOver()) {
+									if (att > 0) {
+										return att + 5;
+									}
+									return -1;
+								}
+								if (player.isTurnedOver()) {
+									return 5 - att;
+								}
+								return -att;
+							},
+						})
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					await event.targets[0].turnOver();
 				},
 				ai: {
 					threaten: 1.7,
