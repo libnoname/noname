@@ -5291,18 +5291,15 @@ export default () => {
 						trigger: { global: "roundStart" },
 						forced: true,
 						filter() {
-							return game.roundNumber == 5;
+							return game.roundNumber === 5;
 						},
 						logTarget(event, player) {
 							return player.getEnemies();
 						},
-						content() {
-							"step 0";
-							event.list = player.getEnemies();
-							"step 1";
-							if (event.list.length) {
-								event.list.shift().chooseToDiscard("he", true, 2);
-								event.redo();
+						async content(event, trigger, player) {
+							const list = player.getEnemies();
+							for (const target of list) {
+								await target.chooseToDiscard({ position: "he", forced: true, selectCard: 2 });
 							}
 						},
 					},
@@ -5312,7 +5309,7 @@ export default () => {
 						filter(event, player) {
 							return game.roundNumber < 3 && event.player.isEnemyOf(player);
 						},
-						content() {
+						async content(event, trigger, player) {
 							trigger.num--;
 						},
 					},
@@ -5322,7 +5319,7 @@ export default () => {
 							return event.hasNature("thunder") && game.roundNumber < 7;
 						},
 						forced: true,
-						content() {
+						async content(event, trigger, player) {
 							trigger.cancel();
 						},
 						ai: {
