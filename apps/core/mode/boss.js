@@ -7453,6 +7453,7 @@ export default {
 				event.result = {
 					bool: result.control !== "cancel2",
 					cost_data: result.control,
+					skill_popup: false,
 				};
 			},
 			async content(event, trigger, player) {
