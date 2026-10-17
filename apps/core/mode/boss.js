@@ -3149,56 +3149,58 @@ export default () => {
 			lingsheji: {
 				trigger: { player: "phaseUseEnd" },
 				equipSkill: true,
-				direct: true,
-				content() {
-					"step 0";
-					var list = ["摸一张牌"];
+				async cost(event, trigger, player) {
+					const list = ["摸一张牌"];
 					if (player.countCards("he") > 1) {
 						list.push("将一张牌置于武将牌上，于回合结束后获得之");
 					}
-					player
-						.chooseControl("cancel2")
-						.set("prompt", get.prompt("lingsheji"))
-						.set("choiceList", list)
-						.set("ai", function () {
-							var player = _status.event.player;
-							if (
-								player.countCards("e", function (card) {
-									return card.name != "tengjia" && get.value(card) <= 0;
-								})
-							) {
+					const result = await player
+						.chooseControl({
+							controls: ["cancel2"],
+							prompt: get.prompt(event.skill),
+							choiceList: list,
+							ai: () => {
+								const player = _status.event.player;
+								if (player.hasCards("e", card => card.name !== "tengjia" && get.value(card) <= 0)) {
+									return 1;
+								}
+								if (!player.needsToDiscard()) {
+									return 0;
+								}
 								return 1;
-							}
-							if (!player.needsToDiscard()) {
-								return 0;
-							}
-							return 1;
-						});
-					"step 1";
-					if (result.control == "cancel2") {
-						event.finish();
+							},
+						})
+						.forResult();
+					event.result = {
+						bool: result.control !== "cancel2",
+						cost_data: result.index,
+					};
+				},
+				async content(event, trigger, player) {
+					if (event.cost_data === 0) {
+						await player.draw();
 						return;
 					}
-					player.logSkill("lingsheji");
-					if (result.index == 0) {
-						player.draw();
-						event.finish();
-					} else {
-						player
-							.chooseCard("he", true, function (card, player) {
-								return card != player.getEquip(5);
-							})
-							.set("ai", function (card) {
-								if (get.position(card) == "e" && get.value(card) <= 0) {
+					const result = await player
+						.chooseCard({
+							position: "he",
+							forced: true,
+							filterCard: (card, player) => card !== player.getEquip(5),
+							ai: card => {
+								if (get.position(card) === "e" && get.value(card) <= 0) {
 									return 10;
 								}
-								return (get.position(card) == "h" ? 2 : 1) * -get.value(card);
-							});
+								return (get.position(card) === "h" ? 2 : 1) * -get.value(card);
+							},
+						})
+						.forResult();
+					if (!player.isIn()) {
+						return;
 					}
-					"step 2";
 					player.addSkill("lingsheji2");
-					player.lose(result.cards, ui.special, "toStorage");
+					const lose = player.lose({ cards: result.cards?.slice(), position: ui.special, toStorage: true });
 					player.markAuto("lingsheji2", result.cards);
+					await lose;
 				},
 			},
 			lingsheji2: {
@@ -3206,10 +3208,11 @@ export default () => {
 				equipSkill: true,
 				forced: true,
 				popup: false,
-				content() {
-					player.gain(player.getStorage("lingsheji2"), "gain2", "log");
+				async content(event, trigger, player) {
+					const gain = player.gain({ cards: player.getStorage("lingsheji2").slice(), animate: "gain2", log: true });
 					player.storage.lingsheji2.length = 0;
 					player.removeSkill("lingsheji2");
+					await gain;
 				},
 				intro: { content: "cards" },
 			},
