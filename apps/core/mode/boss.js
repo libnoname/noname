@@ -9434,49 +9434,54 @@ export default () => {
 				unique: true,
 				enable: "phaseUse",
 				usable: 1,
-				content() {
-					"step 0";
-					event.current = player.next;
-					"step 1";
-					event.current.chooseToUse({ name: "sha" }, function (card, player, target) {
-						if (player == target) {
-							return false;
+				async content(event, trigger, player) {
+					let current = player.next;
+					do {
+						const result = await current
+							.chooseToUse({
+								filterCard: { name: "sha" },
+								filterTarget: (card, player, target) => {
+									if (player === target) {
+										return false;
+									}
+									if (get.distance(player, target) <= 1) {
+										return true;
+									}
+									const players = game.filterPlayer();
+									for (const current of players) {
+										if (current === player) {
+											continue;
+										}
+										if (get.distance(player, current) < get.distance(player, target)) {
+											return false;
+										}
+									}
+									return true;
+								},
+							})
+							.forResult();
+						const loseHp = result.bool === false ? current.loseHp() : null;
+						// 在失去体力结算前确定下一名角色并安排延时。
+						current = current.next;
+						if (current !== player) {
+							await game.delay(0.5);
 						}
-						if (get.distance(player, target) <= 1) {
-							return true;
+						if (loseHp) {
+							await loseHp;
 						}
-						var players = game.filterPlayer();
-						for (var i = 0; i < players.length; i++) {
-							if (players[i] == player) {
-								continue;
-							}
-							if (get.distance(player, players[i]) < get.distance(player, target)) {
-								return false;
-							}
-						}
-						return true;
-					});
-					"step 2";
-					if (result.bool == false) {
-						event.current.loseHp();
-					}
-					if (event.current.next != player) {
-						event.current = event.current.next;
-						game.delay(0.5);
-						event.goto(1);
-					}
+					} while (current !== player);
 				},
 				ai: {
 					order: 1,
 					result: {
 						player(player) {
-							if (player.countCards("h", "shan")) {
+							if (player.hasCards("h", "shan")) {
 								return 1;
 							}
-							var num = 0,
-								players = game.filterPlayer();
-							for (var i = 0; i < players.length; i++) {
-								if (players[i].canUse("sha", player) && players[i].countCards("h") > 1) {
+							let num = 0;
+							const players = game.filterPlayer();
+							for (const current of players) {
+								if (current.canUse("sha", player) && current.countCards("h") > 1) {
 									num--;
 								} else {
 									num++;
