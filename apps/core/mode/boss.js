@@ -9880,51 +9880,58 @@ export default () => {
 				trigger: { player: "phaseZhunbeiBegin" },
 				direct: true,
 				filter(event, player) {
-					return player.countCards("j") > 0;
+					return player.hasCards("j");
 				},
-				content() {
-					"step 0";
-					var next = player.discardPlayerCard(player, 2, "hj", "是否一张手牌来弃置一张花色相同的判定牌？");
-					next.filterButton = function (button) {
-						var card = button.link;
-						if (!lib.filter.cardDiscardable(card, player)) {
-							return false;
+				async content(event, trigger, player) {
+					while (true) {
+						const result = await player
+							.discardPlayerCard({
+								target: player,
+								selectButton: 2,
+								position: "hj",
+								prompt: "是否一张手牌来弃置一张花色相同的判定牌？",
+								filterButton: button => {
+									const card = button.link;
+									if (!lib.filter.cardDiscardable(card, player)) {
+										return false;
+									}
+									if (ui.selected.buttons.length === 0) {
+										return true;
+									}
+									if (get.position(ui.selected.buttons[0].link) === "h") {
+										if (get.position(card) !== "j") {
+											return false;
+										}
+									}
+									if (get.position(ui.selected.buttons[0].link) === "j") {
+										if (get.position(card) !== "h") {
+											return false;
+										}
+									}
+									return get.suit(card) === get.suit(ui.selected.buttons[0].link);
+								},
+								ai: button => {
+									const card = button.link;
+									if (get.position(card) === "h") {
+										return 11 - get.value(card);
+									}
+									if (card.name === "lebu") {
+										return 5;
+									}
+									if (card.name === "bingliang") {
+										return 4;
+									}
+									if (card.name === "guiyoujie") {
+										return 3;
+									}
+									return 2;
+								},
+							})
+							.set("logSkill", "xiuluo")
+							.forResult();
+						if (!result.bool || !player.hasCards("j")) {
+							break;
 						}
-						if (ui.selected.buttons.length == 0) {
-							return true;
-						}
-						if (get.position(ui.selected.buttons[0].link) == "h") {
-							if (get.position(card) != "j") {
-								return false;
-							}
-						}
-						if (get.position(ui.selected.buttons[0].link) == "j") {
-							if (get.position(card) != "h") {
-								return false;
-							}
-						}
-						return get.suit(card) == get.suit(ui.selected.buttons[0].link);
-					};
-					next.ai = function (button) {
-						var card = button.link;
-						if (get.position(card) == "h") {
-							return 11 - get.value(card);
-						}
-						if (card.name == "lebu") {
-							return 5;
-						}
-						if (card.name == "bingliang") {
-							return 4;
-						}
-						if (card.name == "guiyoujie") {
-							return 3;
-						}
-						return 2;
-					};
-					next.logSkill = "xiuluo";
-					"step 1";
-					if (result.bool && player.countCards("j")) {
-						event.goto(0);
 					}
 				},
 			},
