@@ -8848,19 +8848,17 @@ export default () => {
 			},
 			boss_xiaoshou: {
 				trigger: { player: "phaseJieshuBegin" },
-				direct: true,
-				content() {
-					"step 0";
-					player.chooseTarget(get.prompt("boss_xiaoshou"), function (card, player, target) {
-						return player != target && target.hp >= player.hp;
-					}).ai = function (target) {
-						return get.damageEffect(target, player, player);
-					};
-					"step 1";
-					if (result.bool) {
-						player.logSkill("boss_xiaoshou", result.targets);
-						result.targets[0].damage(3);
-					}
+				async cost(event, trigger, player) {
+					event.result = await player
+						.chooseTarget({
+							prompt: get.prompt(event.skill),
+							filterTarget: (card, player, target) => player !== target && target.hp >= player.hp,
+							ai: target => get.damageEffect(target, player, player),
+						})
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					await event.targets[0].damage(3);
 				},
 			},
 			boss_manjia: {
