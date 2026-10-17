@@ -9477,54 +9477,52 @@ export default () => {
 			boss_hujia: {
 				audio: 2,
 				trigger: { player: "phaseJieshuBegin" },
-				direct: true,
 				unique: true,
 				filter(event, player) {
-					if (player.hp == player.maxHp) {
+					if (player.hp === player.maxHp) {
 						return false;
 					}
-					if (!player.countCards("he")) {
+					if (!player.hasCards("he")) {
 						return false;
 					}
 					return true;
 				},
-				content() {
-					"step 0";
-					player.chooseCardTarget({
-						position: "he",
-						filterTarget(card, player, target) {
-							if (player == target) {
-								return false;
-							}
-							if (!lib.character[target.name]) {
-								return false;
-							}
-							return true;
-						},
-						filterCard: lib.filter.cardDiscardable,
-						ai1(card) {
-							return get.unuseful(card) + 9;
-						},
-						ai2(target) {
-							if (target.storage.boss_hujia) {
-								return Math.max(1, 10 - target.maxHp);
-							}
-							return 1 / target.maxHp;
-						},
-						prompt: get.prompt("boss_hujia"),
-					});
-					"step 1";
-					if (result.bool) {
-						var target = result.targets[0];
-						player.logSkill("boss_hujia", target);
-						if (target.storage.boss_hujia) {
-							target.loseMaxHp();
-						} else {
-							target.disableSkill("boss_hujia", lib.character[target.name][3]);
-							target.storage.boss_hujia = true;
-						}
-						player.discard(result.cards);
+				async cost(event, trigger, player) {
+					event.result = await player
+						.chooseCardTarget({
+							position: "he",
+							filterTarget(card, player, target) {
+								if (player === target) {
+									return false;
+								}
+								if (!lib.character[target.name]) {
+									return false;
+								}
+								return true;
+							},
+							filterCard: lib.filter.cardDiscardable,
+							ai1(card) {
+								return get.unuseful(card) + 9;
+							},
+							ai2(target) {
+								if (target.storage.boss_hujia) {
+									return Math.max(1, 10 - target.maxHp);
+								}
+								return 1 / target.maxHp;
+							},
+							prompt: get.prompt(event.skill),
+						})
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					const target = event.targets[0];
+					if (target.storage.boss_hujia) {
+						await target.loseMaxHp();
+					} else {
+						target.disableSkill("boss_hujia", lib.character[target.name][3]);
+						target.storage.boss_hujia = true;
 					}
+					await player.discard({ cards: event.cards });
 				},
 				ai: {
 					expose: 0.2,
