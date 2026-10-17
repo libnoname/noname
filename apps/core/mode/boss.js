@@ -9794,47 +9794,46 @@ export default () => {
 				direct: true,
 				unique: true,
 				filter(event) {
-					return get.color(event.card) == "black";
+					return get.color(event.card) === "black";
 				},
-				content() {
-					"step 0";
-					game.delay(0.5);
-					player.chooseTarget(get.prompt("tashui"), function (card, player, target) {
-						return player != target;
-					}).ai = function (target) {
-						//	if(target.isTurnedOver()) return -1;
-						var player = _status.event.player;
-						if (get.attitude(_status.event.player, target) == 0) {
-							return 0;
-						}
-						if (get.attitude(_status.event.player, target) > 0) {
-							if (target.classList.contains("turnedover")) {
-								return 3;
-							}
-							if (target.hasSkillTag("noturn")) {
-								return 1;
-							}
-							return -1;
-						} else {
-							if (target.hasSkillTag("noturn")) {
-								return 0;
-							}
-							if (target.classList.contains("turnedover")) {
-								return -1;
-							}
-							return 5 - target.getDamagedHp();
-						}
-					};
-					"step 1";
+				async content(event, trigger, player) {
+					await game.delay(0.5);
+					const result = await player
+						.chooseTarget({
+							prompt: get.prompt("tashui"),
+							filterTarget: (card, player, target) => player !== target,
+							ai: target => {
+								if (get.attitude(_status.event.player, target) === 0) {
+									return 0;
+								}
+								if (get.attitude(_status.event.player, target) > 0) {
+									if (target.classList.contains("turnedover")) {
+										return 3;
+									}
+									if (target.hasSkillTag("noturn")) {
+										return 1;
+									}
+									return -1;
+								}
+								if (target.hasSkillTag("noturn")) {
+									return 0;
+								}
+								if (target.classList.contains("turnedover")) {
+									return -1;
+								}
+								return 5 - target.getDamagedHp();
+							},
+						})
+						.forResult();
 					if (result.bool) {
 						player.logSkill("tashui", result.targets, "thunder");
-						result.targets[0].turnOver();
+						await result.targets[0].turnOver();
 					}
 				},
 				ai: {
 					effect: {
 						player_use(card) {
-							if (get.color(card) == "black") {
+							if (get.color(card) === "black") {
 								return [1, 2];
 							}
 						},
