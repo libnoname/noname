@@ -3709,25 +3709,19 @@ export default () => {
 				trigger: { player: "die" },
 				forceDie: true,
 				forced: true,
-				content() {
-					"step 0";
-					player
-						.chooseTarget("【诛心】：请选择一名角色，令其受到2点伤害。", function (card, player, target) {
-							return (
-								target != player &&
-								!game.hasPlayer(function (current) {
-									return current != player && current != target && current.hp < target.hp;
-								})
-							);
+				async content(event, trigger, player) {
+					const result = await player
+						.chooseTarget({
+							prompt: "【诛心】：请选择一名角色，令其受到2点伤害。",
+							filterTarget: (card, player, target) => target !== player && !game.hasPlayer(current => current !== player && current !== target && current.hp < target.hp),
+							ai: target => -get.attitude(player, target),
 						})
-						.set("forceDie", true).ai = function (target) {
-						return -get.attitude(_status.event.player, target);
-					};
-					"step 1";
+						.set("forceDie", true)
+						.forResult();
 					if (result.bool) {
-						var target = result.targets[0];
+						const target = result.targets[0];
 						player.line(target);
-						target.damage(2);
+						await target.damage(2);
 					}
 				},
 			},
