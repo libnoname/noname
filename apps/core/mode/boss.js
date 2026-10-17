@@ -2599,10 +2599,10 @@ export default () => {
 			boss_lvbu1: {
 				loopType: 2,
 				gameDraw(player) {
-					if (player == game.boss) {
+					if (player === game.boss) {
 						return 8;
 					}
-					if (player == game.boss.previous) {
+					if (player === game.boss.previous) {
 						return 5;
 					}
 					return 4;
@@ -2619,47 +2619,47 @@ export default () => {
 					lib.inpile.remove("muniu");
 					lib.inpile.addArray(["wushuangfangtianji", "shufazijinguan", "hongmianbaihuapao", "linglongshimandai", "lianjunshengyan"]);
 					lib.inpile.sort(lib.sort.card);
-					var equiplist = [];
-					for (var i = 0; i < ui.cardPile.childElementCount; i++) {
-						var node = ui.cardPile.childNodes[i];
-						if (node.name == "bagua") {
+					const equiplist = [];
+					for (const node of ui.cardPile.childNodes) {
+						if (node.name === "bagua") {
 							node.init([node.suit, node.number, "linglongshimandai"]);
 							equiplist.push(node);
-						} else if (node.name == "tengjia") {
+						} else if (node.name === "tengjia") {
 							node.init([node.suit, node.number, "hongmianbaihuapao"]);
 							equiplist.push(node);
-						} else if (node.name == "fangtian") {
+						} else if (node.name === "fangtian") {
 							node.init([node.suit, node.number, "wushuangfangtianji"]);
 							equiplist.push(node);
-						} else if (node.name == "muniu") {
+						} else if (node.name === "muniu") {
 							node.init([node.suit, node.number, "shufazijinguan"]);
 							equiplist.push(node);
-						} else if (node.name == "wugu" || node.name == "taoyuan") {
+						} else if (node.name === "wugu" || node.name === "taoyuan") {
 							node.init([node.suit, node.number, "lianjunshengyan"]);
 						}
 					}
 					equiplist.randomSort();
-					var next = game.createEvent("boss_jingjia");
+					const next = game.createEvent("boss_jingjia");
 					next.player = game.boss;
 					next.cards = equiplist;
-					next.setContent(function () {
-						"step 0";
-						if (!cards.length) {
-							event.finish();
-							return;
-						}
-						player.logSkill("boss_jingjia");
-						event.num = 1.5;
-						"step 1";
-						var card = cards.shift();
-						if (player.canEquip(card) && Math.random() < event.num) {
-							player.equip(card);
-							event.num = 0.5;
-						}
-						if (cards.length) {
-							event.redo();
-						}
-					});
+					next.setContent([
+						async (event, trigger, player) => {
+							if (!event.cards.length) {
+								event.finish();
+								return;
+							}
+							player.logSkill("boss_jingjia");
+						},
+						async (event, trigger, player) => {
+							let num = 1.5;
+							while (event.cards.length) {
+								const card = event.cards.shift();
+								if (player.canEquip(card) && Math.random() < num) {
+									await player.equip(card);
+									num = 0.5;
+								}
+							}
+						},
+					]);
 				},
 			},
 			boss_zuoci: {
