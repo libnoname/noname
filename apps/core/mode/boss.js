@@ -8602,7 +8602,7 @@ export default () => {
 				global: "boss_bianshen2x",
 				trigger: { player: "dieBegin" },
 				silent: true,
-				content() {
+				async content(event, trigger, player) {
 					player.hide();
 					game.addVideo("hidePlayer", player);
 				},
@@ -8615,15 +8615,13 @@ export default () => {
 				fixed: true,
 				globalFixed: true,
 				filter(event) {
-					if (lib.config.mode != "boss") {
+					if (lib.config.mode !== "boss") {
 						return false;
 					}
-					return event.player == game.boss && event.player.hasSkill("boss_bianshen2");
+					return event.player === game.boss && event.player.hasSkill("boss_bianshen2");
 				},
-				content() {
-					"step 0";
-					game.delay();
-					"step 1";
+				async content(event, trigger, player) {
+					await game.delay();
 					game.changeBoss(["boss_niutou", "boss_mamian"].randomGet());
 				},
 			},
@@ -8634,7 +8632,7 @@ export default () => {
 				trigger: { player: "dieBegin" },
 				silent: true,
 				fixed: true,
-				content() {
+				async content(event, trigger, player) {
 					player.hide();
 					game.addVideo("hidePlayer", player);
 				},
@@ -8647,15 +8645,13 @@ export default () => {
 				fixed: true,
 				globalFixed: true,
 				filter(event) {
-					if (lib.config.mode != "boss") {
+					if (lib.config.mode !== "boss") {
 						return false;
 					}
-					return event.player == game.boss && event.player.hasSkill("boss_bianshen3");
+					return event.player === game.boss && event.player.hasSkill("boss_bianshen3");
 				},
-				content() {
-					"step 0";
-					game.delay();
-					"step 1";
+				async content(event, trigger, player) {
+					await game.delay();
 					game.changeBoss(["boss_baiwuchang", "boss_heiwuchang"].randomGet());
 				},
 			},
@@ -8666,7 +8662,7 @@ export default () => {
 				trigger: { player: "dieBegin" },
 				silent: true,
 				fixed: true,
-				content() {
+				async content(event, trigger, player) {
 					player.hide();
 					game.addVideo("hidePlayer", player);
 				},
@@ -8679,15 +8675,13 @@ export default () => {
 				fixed: true,
 				globalFixed: true,
 				filter(event) {
-					if (lib.config.mode != "boss") {
+					if (lib.config.mode !== "boss") {
 						return false;
 					}
-					return event.player == game.boss && event.player.hasSkill("boss_bianshen4");
+					return event.player === game.boss && event.player.hasSkill("boss_bianshen4");
 				},
-				content() {
-					"step 0";
-					game.delay();
-					"step 1";
+				async content(event, trigger, player) {
+					await game.delay();
 					game.changeBoss(["boss_yecha", "boss_luocha"].randomGet());
 				},
 			},
@@ -9117,7 +9111,7 @@ export default () => {
 				trigger: { global: "gameStart" },
 				forced: true,
 				popup: false,
-				content() {
+				async content(event, trigger, player) {
 					player.smoothAvatar();
 					player.init(["boss_chi", "boss_mo", "boss_wang", "boss_liang"].randomGet());
 					game.addVideo("reinit2", player, player.name);
