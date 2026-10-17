@@ -9240,56 +9240,47 @@ export default () => {
 				audio: 2,
 				trigger: { player: ["respond", "useCard"] },
 				filter(event, player) {
-					return event.card.name == "shan";
+					return event.card.name === "shan";
 				},
 				direct: true,
-				content() {
-					"step 0";
-					player.chooseTarget(get.prompt("boss_leiji")).ai = function (target) {
-						return get.damageEffect(target, player, player, "thunder");
-					};
-					"step 1";
-					if (result.bool) {
-						player.logSkill("boss_leiji", result.targets, "thunder");
-						event.target = result.targets[0];
-						event.target.judge(function (card) {
-							// var suit=get.suit(card);
-							// if(suit=='spade') return -4;
-							// if(suit=='club') return -2;
-							if (get.color(card) == "black") {
-								return -2;
-							}
-							return 0;
-						});
-					} else {
-						event.finish();
+				async content(event, trigger, player) {
+					const result = await player
+						.chooseTarget({
+							prompt: get.prompt("boss_leiji"),
+							ai: target => get.damageEffect(target, player, player, "thunder"),
+						})
+						.forResult();
+					if (!result.bool) {
+						return;
 					}
-					"step 2";
-					if (result.bool == false) {
-						event.target.damage("thunder");
-						player.draw();
+					player.logSkill("boss_leiji", result.targets, "thunder");
+					const target = result.targets[0];
+					const judgeResult = await target.judge({ judge: card => (get.color(card) === "black" ? -2 : 0) }).forResult();
+					if (judgeResult.bool === false) {
+						await target.damage({ nature: "thunder" });
+						await player.draw();
 					}
 				},
 				ai: {
 					effect: {
 						target_use(card, player, target, current) {
 							if (get.tag(card, "respondShan")) {
-								var hastarget = false,
-									players = game.filterPlayer();
-								for (var i = 0; i < players.length; i++) {
-									if (get.attitude(target, players[i]) < 0) {
+								let hastarget = false;
+								const players = game.filterPlayer();
+								for (const current of players) {
+									if (get.attitude(target, current) < 0) {
 										hastarget = true;
 										break;
 									}
 								}
-								var be = target.countCards("e", { color: "black" });
-								if (target.countCards("h", "shan") && be) {
+								const be = target.countCards("e", { color: "black" });
+								if (target.hasCards("h", "shan") && be) {
 									if (!target.hasSkill("guidao")) {
 										return 0;
 									}
 									return [0, hastarget ? target.countCards("he") / 2 : 0];
 								}
-								if (target.countCards("h", "shan") && target.countCards("h") > 2) {
+								if (target.hasCards("h", "shan") && target.countCards("h") > 2) {
 									if (!target.hasSkill("guidao")) {
 										return 0;
 									}
@@ -9298,10 +9289,10 @@ export default () => {
 								if (target.countCards("h") > 3 || (be && target.countCards("h") >= 2)) {
 									return [0, 0];
 								}
-								if (target.countCards("h") == 0) {
+								if (!target.hasCards("h")) {
 									return [1.5, 0];
 								}
-								if (target.countCards("h") == 1 && !be) {
+								if (target.countCards("h") === 1 && !be) {
 									return [1.2, 0];
 								}
 								if (!target.hasSkill("guidao")) {
