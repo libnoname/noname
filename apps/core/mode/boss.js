@@ -7690,42 +7690,34 @@ export default () => {
 				filter(event) {
 					return event.source && event.source.isAlive();
 				},
-				direct: true,
 				logTarget: "source",
-				content() {
-					"step 0";
-					player
-						.chooseToDiscard(get.prompt("boss_zhangwu", trigger.source), "he", [1, Infinity], "allowChooseAll")
-						.set("ai", function (card) {
-							const { player, target } = get.event();
-							if (get.attitude(player, target) < 0) {
-								return 8 - get.value(card);
-							}
-							return 0;
+				async cost(event, trigger, player) {
+					event.result = await player
+						.chooseToDiscard({
+							prompt: get.prompt(event.skill, trigger.source),
+							position: "he",
+							selectCard: [1, Infinity],
+							allowChooseAll: true,
+							chooseonly: true,
+							ai: card => (get.attitude(player, trigger.source) < 0 ? 8 - get.value(card) : 0),
 						})
-						.set("target", trigger.source)
-						.set("logSkill", ["boss_zhangwu", trigger.source]);
-					"step 1";
-					if (result.bool) {
-						var num = result.cards.length;
-						var cnum = get.cnNumber(num);
-						event.num = num;
-						trigger.source.chooseToDiscard("he", "章武：弃置" + cnum + "张牌，或取消并受到" + cnum + "点伤害", num).set("ai", function (card) {
-							if (
-								!trigger.source.hasSkillTag("nodamage", null, {
-									source: player,
-								})
-							) {
-								return 10 - get.value(card);
-							}
-							return 0;
-						});
-					} else {
-						event.finish();
-					}
-					"step 2";
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					const { cards } = event;
+					await player.discard({ cards, discarder: player });
+					const num = cards.length;
+					const cnum = get.cnNumber(num);
+					const result = await trigger.source
+						.chooseToDiscard({
+							prompt: `章武：弃置${cnum}张牌，或取消并受到${cnum}点伤害`,
+							position: "he",
+							selectCard: num,
+							ai: card => (trigger.source.hasSkillTag("nodamage", null, { source: player }) ? 0 : 10 - get.value(card)),
+						})
+						.forResult();
 					if (!result.bool) {
-						trigger.source.damage(event.num);
+						await trigger.source.damage(num);
 					}
 				},
 				ai: {
