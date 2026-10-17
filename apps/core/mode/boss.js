@@ -3038,108 +3038,115 @@ export default () => {
 					}
 					const bool = player.countCards("he") > min;
 					return game.hasPlayer(current => {
-						if (current == player || current == _status.currentPhase) {
+						if (current === player || current === _status.currentPhase) {
 							return false;
 						}
-						if (!bool && current.countCards("h") == 0) {
+						if (!bool && !current.hasCards("h")) {
 							return false;
 						}
 						const history = current.getHistory("gain")[0];
 						if (!history) {
 							return false;
 						}
-						if (event.name == "gain") {
-							return history == event && event.getlx !== false;
+						if (event.name === "gain") {
+							return history === event && event.getlx !== false;
 						}
-						return history.getParent() == event;
+						return history.getParent() === event;
 					});
 				},
-				content() {
-					"step 0";
-					event.targets = game
-						.filterPlayer(function (current) {
-							if (current == player || current == _status.currentPhase) {
+				async content(event, trigger, player) {
+					const targets = game
+						.filterPlayer(current => {
+							if (current === player || current === _status.currentPhase) {
 								return false;
 							}
 							const history = current.getHistory("gain")[0];
 							if (!history) {
 								return false;
 							}
-							if (trigger.name == "gain") {
-								return history == trigger && trigger.getlx !== false;
+							if (trigger.name === "gain") {
+								return history === trigger && trigger.getlx !== false;
 							}
-							return history.getParent() == trigger;
+							return history.getParent() === trigger;
 						})
 						.sortBySeat(_status.currentPhase);
-					"step 1";
-					var target = event.targets.shift();
-					event.target = target;
-					if (target.isIn()) {
-						var list = [];
-						var min = 0;
+					for (const target of targets) {
+						event.target = target;
+						if (!target.isIn()) {
+							continue;
+						}
+						const list = [];
+						let min = 0;
 						if (!player.hasSkill("shanrangzhaoshu", null, false)) {
 							min += get.sgn(player.getEquips("shanrangzhaoshu").length);
 						}
 						if (player.countCards("he") > min) {
 							list.push(`交给${get.translation(target)}一张牌`);
 						}
-						if (target.countCards("he") > 0) {
+						if (target.hasCards("he")) {
 							list.push(`令${get.translation(target)}交给你一张牌`);
 						}
-						event.list = list;
-						if (list.length == 0) {
-							event.goto(4);
-						} else if (list.length == 1) {
-							event._result = { index: 0 };
-						} else {
-							player
-								.chooseControl("cancel2")
-								.set("choiceList", list)
-								.set("prompt", get.prompt("shanrangzhaoshu", target))
-								.set("ai", function () {
-									if (get.attitude(_status.event.player, _status.event.getParent().target) < 0) {
-										return 1;
-									}
-									return "cancel2";
-								});
+						if (list.length === 0) {
+							continue;
 						}
-					} else {
-						event.goto(4);
-					}
-					"step 2";
-					if (result.control == "cancel2") {
-						event.goto(4);
-						return;
-					}
-					player.logSkill("shanrangzhaoshu", target);
-					if (event.list[result.index][0] == "令") {
-						event.gainner = player;
-						event.giver = target;
-						target.chooseCard("he", true, `交给${get.translation(player)}一张牌`);
-					} else {
-						event.giver = player;
-						event.gainner = target;
-						player
-							.chooseCard("he", true, `交给${get.translation(target)}一张牌`)
-							.set("filterCard", function (card, player) {
-								if (_status.event.ignoreCard) {
-									return true;
-								}
-								var cards = player.getEquips("shanrangzhaoshu");
-								if (!cards.includes(card)) {
-									return true;
-								}
-								return cards.some(cardx => cardx != card && !ui.selected.cards.includes(cardx));
-							})
-							.set("ignoreCard", player.hasSkill("shanrangzhaoshu", null, false));
-					}
-					"step 3";
-					if (result.cards && result.cards.length) {
-						event.giver.give(result.cards, event.gainner);
-					}
-					"step 4";
-					if (targets.length > 0) {
-						event.goto(1);
+						let choice = { index: 0 };
+						if (list.length > 1) {
+							choice = await player
+								.chooseControl({
+									controls: ["cancel2"],
+									choiceList: list,
+									prompt: get.prompt("shanrangzhaoshu", target),
+									ai: () => {
+										if (get.attitude(_status.event.player, _status.event.getParent().target) < 0) {
+											return 1;
+										}
+										return "cancel2";
+									},
+								})
+								.forResult();
+						}
+						if (choice.control === "cancel2") {
+							continue;
+						}
+						player.logSkill("shanrangzhaoshu", target);
+						let giver;
+						let gainner;
+						let result;
+						if (list[choice.index][0] === "令") {
+							gainner = player;
+							giver = target;
+							result = await target
+								.chooseCard({
+									position: "he",
+									forced: true,
+									prompt: `交给${get.translation(player)}一张牌`,
+								})
+								.forResult();
+						} else {
+							giver = player;
+							gainner = target;
+							result = await player
+								.chooseCard({
+									position: "he",
+									forced: true,
+									prompt: `交给${get.translation(target)}一张牌`,
+									filterCard: (card, player) => {
+										if (_status.event.ignoreCard) {
+											return true;
+										}
+										const cards = player.getEquips("shanrangzhaoshu");
+										if (!cards.includes(card)) {
+											return true;
+										}
+										return cards.some(cardx => cardx !== card && !ui.selected.cards.includes(cardx));
+									},
+								})
+								.set("ignoreCard", player.hasSkill("shanrangzhaoshu", null, false))
+								.forResult();
+						}
+						if (result.cards?.length) {
+							await giver.give(result.cards, gainner);
+						}
 					}
 				},
 			},
