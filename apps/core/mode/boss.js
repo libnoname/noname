@@ -3419,21 +3419,21 @@ export default () => {
 				superCharlotte: true,
 				charlotte: true,
 				fixed: true,
-				content() {
-					if (get.mode() != "boss") {
+				async content(event, trigger, player) {
+					if (get.mode() !== "boss") {
 						return;
 					}
 					//孟婆
 					if (!_status.shidianyanluo_mengpo && Math.random() <= 0.4) {
-						if (game.me != game.boss) {
+						if (game.me !== game.boss) {
 							game.boss.changeSeat(6);
 						} else {
 							game.boss.nextSeat.changeSeat(3);
 							game.boss.previousSeat.changeSeat(5);
 						}
 						//	game.addBossFellow(game.me==game.boss?1:7,'boss_mengpo');
-						var fellow = game.addFellow(game.me == game.boss ? 1 : 7, "boss_mengpo", "zoominanim");
-						if (_status.shidianyanluo_level != 0) {
+						const fellow = game.addFellow(game.me === game.boss ? 1 : 7, "boss_mengpo", "zoominanim");
+						if (_status.shidianyanluo_level !== 0) {
 							fellow.directgain(get.cards(4));
 						}
 						fellow.side = true;
@@ -3442,11 +3442,11 @@ export default () => {
 						game.addVideo("setIdentity", fellow, "zhong");
 						_status.shidianyanluo_mengpo = true;
 					}
-					var list = ["luxun", "re_luxun", "zhangchunhua", "zuoci", "re_zuoci", "re_yuji", "xin_yuji", "jiangfei", "kongrong"]; //禁将
-					game.countPlayer(function (current) {
-						if (current != game.boss) {
-							for (var i = 0; i < list.length; i++) {
-								if (current.name == list[i] || current.name2 == list[i]) {
+					const list = ["luxun", "re_luxun", "zhangchunhua", "zuoci", "re_zuoci", "re_yuji", "xin_yuji", "jiangfei", "kongrong"]; //禁将
+					game.countPlayer(current => {
+						if (current !== game.boss) {
+							for (const name of list) {
+								if (current.name === name || current.name2 === name) {
 									current.init(["sunce", "re_sunce", "shen_sunce", "sb_sunce"].randomGet());
 								}
 							}
@@ -3465,45 +3465,45 @@ export default () => {
 				popup: false,
 				forceDie: true,
 				filter(event, player) {
-					if (lib.config.mode != "boss") {
+					if (lib.config.mode !== "boss") {
 						return false;
 					}
-					if (_status.shidianyanluo_level == undefined) {
+					if (_status.shidianyanluo_level == null) {
 						return false;
 					}
-					return player == game.boss && event.player == player;
+					return player === game.boss && event.player === player;
 				},
-				content() {
-					var next = game.createEvent("shidianyanluo_huanren", false, trigger.getParent());
+				async content(event, trigger, player) {
+					const next = game.createEvent("shidianyanluo_huanren", false, trigger.getParent());
 					next.player = player;
 					next.forceDie = true;
 					next.setContent(lib.skill.boss_newhuanren2.contentx);
 				},
-				contentx() {
-					"step 0";
-					game.delay();
-					var list = game.filterPlayer();
-					for (var x = 0; x < list.length; x++) {
-						list[x].removeSkill("diaohulishan");
-						list[x].removeSkill("guogong2");
+				async contentx(event, trigger, player) {
+					const delay = game.delay();
+					const players = game.filterPlayer();
+					for (const current of players) {
+						current.removeSkill("diaohulishan");
+						current.removeSkill("guogong2");
 					}
-					var list = game.boss.getEnemies();
-					for (var x = 0; x < list.length; x++) {
-						list[x].removeSkill("boss_wangshi2");
+					const enemies = game.boss.getEnemies();
+					for (const current of enemies) {
+						current.removeSkill("boss_wangshi2");
 					}
-					"step 1";
-					var list = [["boss_chujiangwang", "boss_songdiwang", "boss_wuguanwang", "boss_yanluowang"], ["boss_bianchengwang", "boss_taishanwang", "boss_dushiwang", "boss_pingdengwang"], ["boss_zhuanlunwang"]][_status.shidianyanluo_level];
+					await delay;
+					await event.waitNext();
+					let list = [["boss_chujiangwang", "boss_songdiwang", "boss_wuguanwang", "boss_yanluowang"], ["boss_bianchengwang", "boss_taishanwang", "boss_dushiwang", "boss_pingdengwang"], ["boss_zhuanlunwang"]][_status.shidianyanluo_level];
 					//如果mengpo死亡且50回合内通过第三关，list[2]变成地藏王
-					if (game.phaseNumber <= 50 && _status.shidianyanluo_level == 2 && _status.shidianyanluo_mengpodie == true) {
+					if (game.phaseNumber <= 50 && _status.shidianyanluo_level === 2 && _status.shidianyanluo_mengpodie === true) {
 						list = ["boss_dizangwang"];
 					}
 					if (
-						_status.shidianyanluo_level == 2 &&
+						_status.shidianyanluo_level === 2 &&
 						game.boss
 							.getEnemies()
 							.map(cur => {
 								const names = get.nameList(cur);
-								for (let name of names) {
+								for (const name of names) {
 									if (lib.rank.s.includes(name) || lib.rank.ap.includes(name) || lib.rank.a.includes(name) || lib.rank.am.includes(name)) {
 										return name;
 									}
@@ -3527,38 +3527,39 @@ export default () => {
 					) {
 						list = ["boss_shikieiki"];
 					}
-					if (list.length == 1) {
-						event._result = { control: list[0] };
-					} else {
-						player
-							.chooseControl(list)
+					let control = list[0];
+					if (list.length !== 1) {
+						const result = await player
+							.chooseControl({
+								controls: list,
+								prompt: "选择下一个登场的武将",
+								ai: () => _status.event.choice,
+							})
 							.set("forceDie", true)
 							.set("choice", list.randomGet())
-							.set("ai", function () {
-								return _status.event.choice;
-							}).prompt = "选择下一个登场的武将";
+							.forResult();
+						control = result.control;
 					}
-					"step 2";
 					_status.shidianyanluo_level++;
-					game.changeBoss(result.control);
+					game.changeBoss(control);
 					//地藏王登场摸3
-					if (result.control == "boss_dizangwang") {
+					if (control === "boss_dizangwang") {
 						game.boss.draw(3);
 					}
 					//计回合数
-					var level = _status.shidianyanluo_level;
+					const level = _status.shidianyanluo_level;
 					//孟婆
 					if (!_status.shidianyanluo_mengpo) {
-						if (Math.random() <= 0.5 || level == 2) {
-							if (game.me != game.boss) {
+						if (Math.random() <= 0.5 || level === 2) {
+							if (game.me !== game.boss) {
 								game.boss.changeSeat(6);
 							} else {
 								game.boss.nextSeat.changeSeat(3);
 								game.boss.previousSeat.changeSeat(5);
 							}
 							//game.addBossFellow();
-							var fellow = game.addFellow(game.me == game.boss ? 1 : 7, "boss_mengpo", "zoominanim");
-							if (_status.shidianyanluo_level != 0) {
+							const fellow = game.addFellow(game.me === game.boss ? 1 : 7, "boss_mengpo", "zoominanim");
+							if (_status.shidianyanluo_level !== 0) {
 								fellow.directgain(get.cards(4));
 							}
 							fellow.side = true;
@@ -3569,8 +3570,8 @@ export default () => {
 						}
 					} else {
 						//移除孟婆
-						game.countPlayer2(function (current) {
-							if (current.name == "boss_mengpo") {
+						game.countPlayer2(current => {
+							if (current.name === "boss_mengpo") {
 								current.removed = true;
 								current.classList.add("dead");
 								current.remove();
