@@ -3221,18 +3221,22 @@ export default () => {
 				equipSkill: true,
 				direct: true,
 				filter(event, player) {
-					return player.isPhaseUsing() && player != event.target && event.targets.length == 1 && player.countCards("he") > 2;
+					return player.isPhaseUsing() && player !== event.target && event.targets.length === 1 && player.countCards("he") > 2;
 				},
-				content() {
-					"step 0";
-					player
-						.chooseToDiscard("he", get.prompt("noda_axe", trigger.target), 2, "弃置两张牌，令" + get.translation(trigger.target) + "本回合内不能使用或打出牌且防具技能无效。", function (card, player) {
-							return card != player.getEquip(1);
+				async content(event, trigger, player) {
+					const result = await player
+						.chooseToDiscard({
+							position: "he",
+							prompt: get.prompt("noda_axe", trigger.target),
+							selectCard: 2,
+							prompt2: `弃置两张牌，令${get.translation(trigger.target)}本回合内不能使用或打出牌且防具技能无效。`,
+							filterCard: (card, player) => card !== player.getEquip(1),
+							ai: card => (_status.event.goon ? 7.5 - get.value(card) : 0),
 						})
 						.set("logSkill", ["noda_axe", trigger.target])
 						.set(
 							"goon",
-							(function (event, player) {
+							((event, player) => {
 								if (player.hasSkill("noda_axe2")) {
 									return false;
 								}
@@ -3242,7 +3246,7 @@ export default () => {
 								if (get.attitude(event.player, player) > 0) {
 									return false;
 								}
-								if (get.type(event.card) == "trick" && event.player.hasWuxie()) {
+								if (get.type(event.card) === "trick" && event.player.hasWuxie()) {
 									return true;
 								}
 								if (get.tag(event.card, "respondSha")) {
@@ -3259,13 +3263,7 @@ export default () => {
 								return false;
 							})(trigger, trigger.target)
 						)
-						.set("ai", function (card) {
-							if (_status.event.goon) {
-								return 7.5 - get.value(card);
-							}
-							return 0;
-						});
-					"step 1";
+						.forResult();
 					if (result.bool) {
 						trigger.target.addTempSkill("noda_axe2");
 					}
