@@ -7609,32 +7609,22 @@ export default () => {
 				direct: true,
 				init(player) {
 					player.storage.xiongcai = [];
-					// player.storage.xiongcai2=0;
 				},
 				intro: {
 					content: "characters",
 				},
-				content() {
-					"step 0";
-					// if(player.storage.xiongcai2<1){
-					//		player.storage.xiongcai2++;
-					//		event.finish();
-					// }
-					// else{
-					//		player.storage.xiongcai2=0;
-					// }
-					"step 1";
+				async content(event, trigger, player) {
 					player.logSkill("xiongcai");
-					var list = [];
-					var list2 = [];
-					var players = game.players.concat(game.dead);
-					for (var i = 0; i < players.length; i++) {
-						list2.add(players[i].name);
-						list2.add(players[i].name1);
-						list2.add(players[i].name2);
+					const list = [];
+					const list2 = [];
+					const players = game.players.concat(game.dead);
+					for (const target of players) {
+						list2.add(target.name);
+						list2.add(target.name1);
+						list2.add(target.name2);
 					}
-					for (var i in lib.character) {
-						if (lib.character[i][1] != "wei") {
+					for (const i in lib.character) {
+						if (lib.character[i][1] !== "wei") {
 							continue;
 						}
 						if (lib.character[i].isBoss) {
@@ -7651,17 +7641,17 @@ export default () => {
 						}
 						list.push(i);
 					}
-					var name = list.randomGet();
+					const name = list.randomGet();
 					player.storage.xiongcai.push(name);
 					player.markSkill("xiongcai");
-					var skills = lib.character[name][3];
-					for (var i = 0; i < skills.length; i++) {
-						player.addSkill(skills[i]);
+					const skills = lib.character[name][3];
+					for (const skill of skills) {
+						player.addSkill(skill);
 					}
-					event.dialog = ui.create.dialog('<div class="text center">' + get.translation(player) + "发动了【雄才】", [[name], "character"]);
-					game.delay(2);
-					"step 2";
-					event.dialog.close();
+					const dialog = ui.create.dialog(`<div class="text center">${get.translation(player)}发动了【雄才】`, [[name], "character"]);
+					await game.delay(2);
+					await event.waitNext();
+					dialog.close();
 				},
 			},
 			xiaoxiong: {
