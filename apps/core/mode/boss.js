@@ -689,36 +689,40 @@ export default () => {
 				modeimage: "boss",
 				enable: true,
 				filterTarget(card, player, target) {
-					return target != player && target.countCards("he");
+					return target !== player && target.hasCards("he");
 				},
-				content() {
-					"step 0";
+				async content(event, trigger, player) {
+					const { target } = event;
+					let usedSha = false;
 					if (target.hasSha()) {
-						target.chooseToUse(
-							function (card, player, event) {
-								return get.name(card) == "sha" && lib.filter.filterCard.apply(this, arguments);
-							},
-							"使用一张杀，或交给" + get.translation(player) + "两张牌"
-						);
-					} else {
-						event.directfalse = true;
+						const result = await target
+							.chooseToUse({
+								filterCard: function (card, player, event) {
+									return get.name(card) === "sha" && lib.filter.filterCard.apply(this, arguments);
+								},
+								prompt: `使用一张杀，或交给${get.translation(player)}两张牌`,
+							})
+							.forResult();
+						usedSha = result.bool;
 					}
-					"step 1";
-					var nh = target.countCards("he");
-					if ((event.directfalse || !result.bool) && nh) {
-						if (nh <= 2) {
-							event.directcards = true;
-						} else {
-							target.chooseCard("he", 2, true, "将两张牌交给" + get.translation(player));
-						}
-					} else {
-						event.finish();
+					const num = target.countCards("he");
+					if (usedSha || !num) {
+						return;
 					}
-					"step 2";
-					if (event.directcards) {
-						target.give(target.getCards("he"), player);
-					} else if (result.bool && result.cards && result.cards.length) {
-						target.give(result.cards, player);
+					if (num <= 2) {
+						await target.give(target.getCards("he"), player);
+						return;
+					}
+					const result = await target
+						.chooseCard({
+							position: "he",
+							selectCard: 2,
+							forced: true,
+							prompt: `将两张牌交给${get.translation(player)}`,
+						})
+						.forResult();
+					if (result.bool && result.cards?.length) {
+						await target.give(result.cards, player);
 					}
 				},
 				ai: {
