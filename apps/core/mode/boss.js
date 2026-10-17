@@ -10121,30 +10121,21 @@ export default () => {
 			},
 			jizhen: {
 				trigger: { player: "phaseJieshuBegin" },
-				direct: true,
 				filter(event, player) {
-					return game.hasPlayer(function (current) {
-						return current.isDamaged() && current != player;
-					});
+					return game.hasPlayer(current => current.isDamaged() && current !== player);
 				},
-				content() {
-					"step 0";
-					var num = 0;
-					for (var i = 0; i < game.players.length; i++) {
-						if (!game.players[i].isLinked() && player != game.players[i]) {
-							num++;
-						}
-					}
-					player.chooseTarget(get.prompt("jizhen"), [1, 2], function (card, player, target) {
-						return target.hp < target.maxHp && player != target;
-					}).ai = function (target) {
-						return get.attitude(player, target);
-					};
-					"step 1";
-					if (result.bool) {
-						player.logSkill("jizhen", result.targets);
-						game.asyncDraw(result.targets);
-					}
+				async cost(event, trigger, player) {
+					event.result = await player
+						.chooseTarget({
+							prompt: get.prompt(event.skill),
+							selectTarget: [1, 2],
+							filterTarget: (card, player, target) => target.hp < target.maxHp && player !== target,
+							ai: target => get.attitude(player, target),
+						})
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					await game.asyncDraw(event.targets);
 				},
 				ai: {
 					expose: 0.3,
