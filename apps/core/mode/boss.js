@@ -7845,71 +7845,79 @@ export default () => {
 			fengqi: {
 				trigger: { player: ["phaseZhunbeiBegin", "phaseJieshuBegin"] },
 				direct: true,
-				content() {
-					"step 0";
-					var list = { basic: [], equip: [], trick: [], delay: [] };
-					for (var i = 0; i < lib.inpile.length; i++) {
-						var name = lib.inpile[i];
-						var info = lib.card[name];
-						if (info.autoViewAs || name == "yuansuhuimie") {
+				async content(event, trigger, player) {
+					const list = { basic: [], equip: [], trick: [], delay: [] };
+					for (const name of lib.inpile) {
+						const info = lib.card[name];
+						if (info.autoViewAs || name === "yuansuhuimie") {
 							continue;
 						}
-						if (lib.filter.cardEnabled({ name: name }, player)) {
-							if (!list[info.type]) {
-								list[info.type] = [];
-							}
-							list[info.type].push([get.translation(lib.card[name].type), "", name]);
+						if (!lib.filter.cardEnabled({ name }, player)) {
+							continue;
 						}
+						if (!list[info.type]) {
+							list[info.type] = [];
+						}
+						list[info.type].push([get.translation(lib.card[name].type), "", name]);
 					}
 					list.trick.sort(lib.sort.name);
-					var dialog = ui.create.dialog("风起", [list.trick, "vcard"]);
+					const dialog = ui.create.dialog("风起", [list.trick, "vcard"]);
 					// for(var i in list){
 					//		dialog.addText(get.translation(i)+'牌');
 					//		dialog.add([list[i],'vcard']);
 					// }
-					var rand1 = Math.random() < 1 / 3;
-					var rand2 = Math.random() < 0.5;
-					var rand3 = Math.random() < 1 / 3;
-					var rand4 = Math.random() < 1 / 3;
-					player.chooseButton(dialog).ai = function (button) {
-						var name = button.link[2];
-						if (player.hp <= 1) {
-							switch (name) {
-								case "zhiliaobo":
-									return 1;
-								case "dunpaigedang":
-									return 0.8;
-								case "nanman":
-									return 0.5;
-								default:
-									return 0;
-							}
-						}
-						if (rand4 && player.countCards("h") <= 1) {
-							switch (name) {
-								case "zengbin":
-									return 1;
-								case "wuzhong":
-									return 0.8;
-								default:
-									return 0;
-							}
-						}
-						if (player.hasSkill("qinglonglingzhu")) {
-							if (rand2) {
-								return name == "chiyuxi" ? 0.8 : 0;
-							}
-							return name == "jingleishan" ? 0.8 : 0;
-						}
-						if (rand2) {
-							return name == "wanjian" ? 0.8 : 0;
-						}
-						return name == "nanman" ? 0.8 : 0;
-					};
-					"step 1";
-					if (result.bool) {
-						player.chooseUseTarget(result.links[0][2], true, false);
+					const rand1 = Math.random() < 1 / 3;
+					const rand2 = Math.random() < 0.5;
+					const rand3 = Math.random() < 1 / 3;
+					const rand4 = Math.random() < 1 / 3;
+					const result = await player
+						.chooseButton({
+							dialog,
+							ai: button => {
+								const name = button.link[2];
+								if (player.hp <= 1) {
+									switch (name) {
+										case "zhiliaobo":
+											return 1;
+										case "dunpaigedang":
+											return 0.8;
+										case "nanman":
+											return 0.5;
+										default:
+											return 0;
+									}
+								}
+								if (rand4 && player.countCards("h") <= 1) {
+									switch (name) {
+										case "zengbin":
+											return 1;
+										case "wuzhong":
+											return 0.8;
+										default:
+											return 0;
+									}
+								}
+								if (player.hasSkill("qinglonglingzhu")) {
+									if (rand2) {
+										return name === "chiyuxi" ? 0.8 : 0;
+									}
+									return name === "jingleishan" ? 0.8 : 0;
+								}
+								if (rand2) {
+									return name === "wanjian" ? 0.8 : 0;
+								}
+								return name === "nanman" ? 0.8 : 0;
+							},
+						})
+						.forResult();
+					if (!result.bool) {
+						return;
 					}
+					await player.chooseUseTarget({
+						card: { name: result.links[0][2], isCard: true },
+						forced: true,
+						addCount: false,
+					});
 				},
 				ai: {
 					threaten: 3,
