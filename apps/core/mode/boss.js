@@ -3294,32 +3294,35 @@ export default () => {
 					player: "loseAfter",
 					global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
 				},
-				direct: true,
 				filter(event, player) {
-					var evt = event.getl(player);
+					const evt = event.getl(player);
 					return evt && evt.hs && evt.hs.length > 1 && player.isPhaseUsing();
 				},
-				content() {
-					"step 0";
-					var evt = trigger.getl(player);
-					event.num = evt.hs.length;
-					player
-						.chooseTarget(get.prompt("iwasawa_crowbow"), "弃置一名其他角色的" + get.cnNumber(event.num) + "张牌", function (card, player, target) {
-							return player != target && target.countDiscardableCards(player, "he") > 0;
+				async cost(event, trigger, player) {
+					const num = trigger.getl(player).hs.length;
+					event.result = await player
+						.chooseTarget({
+							prompt: get.prompt(event.skill),
+							prompt2: `弃置一名其他角色的${get.cnNumber(num)}张牌`,
+							filterTarget: (card, player, target) => player !== target && target.hasDiscardableCards(player, "he"),
+							ai: target => {
+								let att = get.attitude(player, target);
+								if (target.countDiscardableCards(player, "he") >= num) {
+									att *= 2;
+								}
+								return -att;
+							},
 						})
-						.set("ai", function (target) {
-							var att = get.attitude(_status.event.player, target);
-							if (target.countDiscardableCards(_status.event.player, "he") >= _status.event.getParent().num) {
-								att = att * 2;
-							}
-							return -att;
-						});
-					"step 1";
-					if (result.bool) {
-						var target = result.targets[0];
-						player.logSkill("iwasawa_crowbow", target);
-						player.discardPlayerCard(target, "he", true, num);
-					}
+						.forResult();
+					event.result.cost_data = num;
+				},
+				async content(event, trigger, player) {
+					await player.discardPlayerCard({
+						target: event.targets[0],
+						position: "he",
+						forced: true,
+						selectButton: event.cost_data,
+					});
 				},
 			},
 			boss_panguan: {
