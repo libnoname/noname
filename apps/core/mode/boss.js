@@ -5677,47 +5677,23 @@ export default () => {
 				global: "boss_futai2",
 				trigger: { player: "phaseZhunbeiBegin" },
 				logTarget(event, player) {
-					return game.filterPlayer(function (current) {
-						return current.isDamaged();
-					});
+					return game.filterPlayer(current => current.isDamaged());
 				},
 				forced: true,
-				content() {
-					"step 0";
-					var list = game
-						.filterPlayer(function (current) {
-							return current.isDamaged();
-						})
-						.sortBySeat();
-					event.list = list;
-					"step 1";
-					if (event.list.length) {
-						event.list.shift().recover();
-						event.redo();
-					}
+				async content(event, trigger, player) {
+					const targets = game.filterPlayer(current => current.isDamaged());
+					await game.doAsyncInOrder(targets, target => target.recover());
 				},
 			},
 			boss_futai2: {
 				mod: {
 					cardSavable(card, player) {
-						if (
-							card.name == "tao" &&
-							!_status.event.skill &&
-							game.hasPlayer(function (current) {
-								return current != player && current.hasSkill("boss_futai") && _status.currentPhase != current;
-							})
-						) {
+						if (card.name === "tao" && !_status.event.skill && game.hasPlayer(current => current !== player && current.hasSkill("boss_futai") && _status.currentPhase !== current)) {
 							return false;
 						}
 					},
 					cardEnabled(card, player) {
-						if (
-							card.name == "tao" &&
-							!_status.event.skill &&
-							game.hasPlayer(function (current) {
-								return current != player && current.hasSkill("boss_futai") && _status.currentPhase != current;
-							})
-						) {
+						if (card.name === "tao" && !_status.event.skill && game.hasPlayer(current => current !== player && current.hasSkill("boss_futai") && _status.currentPhase !== current)) {
 							return false;
 						}
 					},
