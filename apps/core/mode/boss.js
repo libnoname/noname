@@ -1893,241 +1893,248 @@ export default () => {
 				}
 			},
 			chooseCharacter(func) {
-				var next = game.createEvent("chooseCharacter");
+				const next = game.createEvent("chooseCharacter");
 				next.showConfig = true;
 				next.customreplacetarget = func;
-				next.ai = function (player, list) {
+				next.ai = (player, list) => {
 					if (get.config("double_character")) {
 						player.init(list[0], list[1]);
 					} else {
 						player.init(list[0]);
 					}
 				};
-				next.setContent(function () {
-					"step 0";
-					var i;
-					var list = [];
-					event.list = list;
-					for (i in lib.character) {
-						if (lib.character[i].isMinskin) {
-							continue;
-						}
-						if (lib.character[i].isBoss) {
-							continue;
-						}
-						if (lib.character[i].isHiddenBoss) {
-							continue;
-						}
-						if (lib.character[i].isAiForbidden) {
-							continue;
-						}
-						if (lib.config.forbidboss.includes(i)) {
-							continue;
-						}
-						if (lib.filter.characterDisabled(i)) {
-							continue;
-						}
-						list.push(i);
-					}
-					list.randomSort();
-					var dialog = ui.create.dialog("选择参战角色", "hidden");
-					dialog.classList.add("fixed");
-					ui.window.appendChild(dialog);
-					dialog.classList.add("bosscharacter");
-					dialog.classList.add("modeshortcutpause");
-					dialog.classList.add("withbg");
-					// dialog.add('0/3');
-					dialog.add([list.slice(0, 20), "character"]);
-					dialog.noopen = true;
-					var next = game.me.chooseButton(dialog, true).set("onfree", true);
-					next._triggered = null;
-					next.custom.replace.target = event.customreplacetarget;
-					next.selectButton = [3, 3];
-					next.filterButton = function (button) {
-						let { current } = get.event().getParent("game");
-						if (current) {
-							let { name } = current;
-							let banrule = _status.banlist[name];
-							if (!banrule) {
-								return true;
+				next.setContent([
+					async event => {
+						const list = [];
+						event.list = list;
+						for (const i in lib.character) {
+							if (lib.character[i].isMinskin) {
+								continue;
 							}
-							let { link } = button;
-							if (Array.isArray(banrule)) {
-								if (banrule.includes(link)) {
-									return false;
-								}
-							} else if (typeof banrule === "function") {
-								return banrule(button);
+							if (lib.character[i].isBoss) {
+								continue;
 							}
-						}
-						return true;
-					};
-					// next.custom.add.button=function(){
-					//		if(ui.cheat2&&ui.cheat2.backup) return;
-					//		_status.event.dialog.content.childNodes[1].innerHTML=
-					//		ui.selected.buttons.length+'/3';
-					// };
-					event.changeDialog = function () {
-						if (ui.cheat2 && ui.cheat2.dialog == _status.event.dialog) {
-							return;
-						}
-						if (game.changeCoin) {
-							game.changeCoin(-3);
+							if (lib.character[i].isHiddenBoss) {
+								continue;
+							}
+							if (lib.character[i].isAiForbidden) {
+								continue;
+							}
+							if (lib.config.forbidboss.includes(i)) {
+								continue;
+							}
+							if (lib.filter.characterDisabled(i)) {
+								continue;
+							}
+							list.push(i);
 						}
 						list.randomSort();
-
-						var buttons = ui.create.div(".buttons");
-						var node = _status.event.dialog.buttons[0].parentNode;
-						_status.event.dialog.buttons = ui.create.buttons(list.slice(0, 20), "character", buttons);
-						_status.event.dialog.content.insertBefore(buttons, node);
-						buttons.addTempClass("start");
-						node.remove();
-
-						game.uncheck();
-						game.check();
-					};
-					ui.create.cheat = function () {
-						_status.createControl = ui.cheat2 || event.asboss;
-						ui.cheat = ui.create.control("更换", event.changeDialog);
-						delete _status.createControl;
-					};
-					var createCharacterDialog = function () {
-						event.dialogxx = ui.create.characterDialog();
-						event.dialogxx.classList.add("bosscharacter");
-						event.dialogxx.classList.add("withbg");
-						event.dialogxx.classList.add("fixed");
-						if (ui.cheat2) {
-							ui.cheat2.addTempClass("controlpressdownx", 500);
-							ui.cheat2.classList.remove("disabled");
-						}
-					};
-					if (lib.onfree) {
-						lib.onfree.push(createCharacterDialog);
-					} else {
-						createCharacterDialog();
-					}
-					ui.create.cheat2 = function () {
-						_status.createControl = event.asboss;
-						ui.cheat2 = ui.create.control("自由选将", function () {
-							if (this.dialog == _status.event.dialog) {
-								if (game.changeCoin) {
-									game.changeCoin(10);
-								}
-								this.dialog.close();
-								_status.event.dialog = this.backup;
-								ui.window.appendChild(this.backup);
-								delete this.backup;
-								game.uncheck();
-								game.check();
-								if (ui.cheat) {
-									ui.cheat.addTempClass("controlpressdownx", 500);
-									ui.cheat.classList.remove("disabled");
-								}
-								if (_status.bosschoice) {
-									_status.bosschoice.addTempClass("controlpressdownx", 500);
-									_status.bosschoice.classList.remove("disabled");
-								}
-							} else {
-								if (game.changeCoin) {
-									game.changeCoin(-10);
-								}
-								this.backup = _status.event.dialog;
-								_status.event.dialog.close();
-								_status.event.dialog = _status.event.parent.dialogxx;
-								this.dialog = _status.event.dialog;
-								ui.window.appendChild(this.dialog);
-								game.uncheck();
-								game.check();
-								if (ui.cheat) {
-									ui.cheat.classList.add("disabled");
-								}
-								if (_status.bosschoice) {
-									_status.bosschoice.classList.add("disabled");
-								}
-							}
-						});
-						if (lib.onfree) {
-							ui.cheat2.classList.add("disabled");
-						}
-						delete _status.createControl;
-					};
-					if (!ui.cheat && get.config("change_choice")) {
-						ui.create.cheat();
-					}
-					if (!ui.cheat2 && get.config("free_choose")) {
-						ui.create.cheat2();
-					}
-
-					event.asboss = ui.create.control("应战", function () {
-						event.boss = true;
-						event.enemy = [];
-						for (var i = 0; i < ui.selected.buttons.length; i++) {
-							event.enemy.push(ui.selected.buttons[i].link);
-							event.list.remove(ui.selected.buttons[i].link);
-						}
-						while (event.enemy.length < 3) {
-							var name = event.list
-								.filter(name => {
-									let { current } = get.event().getParent("game");
-									if (!current) {
-										return true;
-									}
-									let banrule = _status.banlist[current?.name];
-									if (!banrule) {
-										return true;
-									}
-									if (Array.isArray(banrule)) {
-										if (banrule.includes(name)) {
-											return false;
+						const dialog = ui.create.dialog("选择参战角色", "hidden");
+						dialog.classList.add("fixed");
+						ui.window.appendChild(dialog);
+						dialog.classList.add("bosscharacter");
+						dialog.classList.add("modeshortcutpause");
+						dialog.classList.add("withbg");
+						// dialog.add('0/3');
+						dialog.add([list.slice(0, 20), "character"]);
+						dialog.noopen = true;
+						const next = game.me
+							.chooseButton({
+								dialog,
+								forced: true,
+								selectButton: [3, 3],
+								filterButton: button => {
+									const { current } = get.event().getParent("game");
+									if (current) {
+										const { name } = current;
+										const banrule = _status.banlist[name];
+										if (!banrule) {
+											return true;
 										}
-									} else if (typeof banrule === "function") {
-										return banrule({ link: name });
+										const { link } = button;
+										if (Array.isArray(banrule)) {
+											if (banrule.includes(link)) {
+												return false;
+											}
+										} else if (typeof banrule === "function") {
+											return banrule(button);
+										}
 									}
 									return true;
-								})
-								.randomRemove();
-							if (lib.boss[lib.storage.current] && lib.boss[lib.storage.current].randchoice) {
-								name = lib.boss[lib.storage.current].randchoice(name, event.enemy);
+								},
+							})
+							.set("onfree", true);
+						next._triggered = null;
+						next.custom.replace.target = event.customreplacetarget;
+						// next.custom.add.button=function(){
+						//		if(ui.cheat2&&ui.cheat2.backup) return;
+						//		_status.event.dialog.content.childNodes[1].innerHTML=
+						//		ui.selected.buttons.length+'/3';
+						// };
+						event.changeDialog = () => {
+							if (ui.cheat2 && ui.cheat2.dialog === _status.event.dialog) {
+								return;
 							}
-							if (name) {
-								event.enemy.push(name);
-							} else {
-								break;
+							if (game.changeCoin) {
+								game.changeCoin(-3);
 							}
-						}
-						game.uncheck();
-						if (ui.confirm) {
-							ui.confirm.close();
-						}
-						game.resume();
-					});
-					"step 1";
-					if (ui.cheat) {
-						ui.cheat.close();
-						delete ui.cheat;
-					}
-					if (ui.cheat2) {
-						ui.cheat2.close();
-						delete ui.cheat2;
-					}
-					event.asboss.close();
-					if (_status.bosschoice) {
-						_status.bosschoice.close();
-						delete _status.bosschoice;
-					}
-					if (event.boss) {
-						event.result = {
-							boss: true,
-							links: event.enemy,
+							list.randomSort();
+
+							const buttons = ui.create.div(".buttons");
+							const node = _status.event.dialog.buttons[0].parentNode;
+							_status.event.dialog.buttons = ui.create.buttons(list.slice(0, 20), "character", buttons);
+							_status.event.dialog.content.insertBefore(buttons, node);
+							buttons.addTempClass("start");
+							node.remove();
+
+							game.uncheck();
+							game.check();
 						};
-					} else {
-						event.result = {
-							boss: false,
-							links: result.links,
+						ui.create.cheat = () => {
+							_status.createControl = ui.cheat2 || event.asboss;
+							ui.cheat = ui.create.control("更换", event.changeDialog);
+							delete _status.createControl;
 						};
-						_status.coinCoeff = get.coinCoeff(result.links);
-					}
-				});
+						const createCharacterDialog = () => {
+							event.dialogxx = ui.create.characterDialog();
+							event.dialogxx.classList.add("bosscharacter");
+							event.dialogxx.classList.add("withbg");
+							event.dialogxx.classList.add("fixed");
+							if (ui.cheat2) {
+								ui.cheat2.addTempClass("controlpressdownx", 500);
+								ui.cheat2.classList.remove("disabled");
+							}
+						};
+						if (lib.onfree) {
+							lib.onfree.push(createCharacterDialog);
+						} else {
+							createCharacterDialog();
+						}
+						ui.create.cheat2 = () => {
+							_status.createControl = event.asboss;
+							ui.cheat2 = ui.create.control("自由选将", function () {
+								if (this.dialog === _status.event.dialog) {
+									if (game.changeCoin) {
+										game.changeCoin(10);
+									}
+									this.dialog.close();
+									_status.event.dialog = this.backup;
+									ui.window.appendChild(this.backup);
+									delete this.backup;
+									game.uncheck();
+									game.check();
+									if (ui.cheat) {
+										ui.cheat.addTempClass("controlpressdownx", 500);
+										ui.cheat.classList.remove("disabled");
+									}
+									if (_status.bosschoice) {
+										_status.bosschoice.addTempClass("controlpressdownx", 500);
+										_status.bosschoice.classList.remove("disabled");
+									}
+								} else {
+									if (game.changeCoin) {
+										game.changeCoin(-10);
+									}
+									this.backup = _status.event.dialog;
+									_status.event.dialog.close();
+									_status.event.dialog = _status.event.parent.dialogxx;
+									this.dialog = _status.event.dialog;
+									ui.window.appendChild(this.dialog);
+									game.uncheck();
+									game.check();
+									if (ui.cheat) {
+										ui.cheat.classList.add("disabled");
+									}
+									if (_status.bosschoice) {
+										_status.bosschoice.classList.add("disabled");
+									}
+								}
+							});
+							if (lib.onfree) {
+								ui.cheat2.classList.add("disabled");
+							}
+							delete _status.createControl;
+						};
+						if (!ui.cheat && get.config("change_choice")) {
+							ui.create.cheat();
+						}
+						if (!ui.cheat2 && get.config("free_choose")) {
+							ui.create.cheat2();
+						}
+
+						event.asboss = ui.create.control("应战", () => {
+							event.boss = true;
+							event.enemy = [];
+							for (const button of ui.selected.buttons) {
+								event.enemy.push(button.link);
+								event.list.remove(button.link);
+							}
+							while (event.enemy.length < 3) {
+								let name = event.list
+									.filter(name => {
+										const { current } = get.event().getParent("game");
+										if (!current) {
+											return true;
+										}
+										const banrule = _status.banlist[current?.name];
+										if (!banrule) {
+											return true;
+										}
+										if (Array.isArray(banrule)) {
+											if (banrule.includes(name)) {
+												return false;
+											}
+										} else if (typeof banrule === "function") {
+											return banrule({ link: name });
+										}
+										return true;
+									})
+									.randomRemove();
+								if (lib.boss[lib.storage.current] && lib.boss[lib.storage.current].randchoice) {
+									name = lib.boss[lib.storage.current].randchoice(name, event.enemy);
+								}
+								if (name) {
+									event.enemy.push(name);
+								} else {
+									break;
+								}
+							}
+							game.uncheck();
+							if (ui.confirm) {
+								ui.confirm.close();
+							}
+							game.resume();
+						});
+					},
+					async event => {
+						const result = event._result;
+						if (ui.cheat) {
+							ui.cheat.close();
+							delete ui.cheat;
+						}
+						if (ui.cheat2) {
+							ui.cheat2.close();
+							delete ui.cheat2;
+						}
+						event.asboss.close();
+						if (_status.bosschoice) {
+							_status.bosschoice.close();
+							delete _status.bosschoice;
+						}
+						if (event.boss) {
+							event.result = {
+								boss: true,
+								links: event.enemy,
+							};
+						} else {
+							event.result = {
+								boss: false,
+								links: result.links,
+							};
+							_status.coinCoeff = get.coinCoeff(result.links);
+						}
+					},
+				]);
 				return next;
 			},
 		},
