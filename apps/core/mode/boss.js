@@ -6975,50 +6975,50 @@ export default () => {
 				enable: "phaseUse",
 				mode: ["boss"],
 				filter(event, player) {
-					if (
-						!game.hasPlayer(function (current) {
-							return current.name == "boss_yanling";
-						})
-					) {
+					if (!game.hasPlayer(current => current.name === "boss_yanling")) {
 						return false;
 					}
 					return !player.storage.boss_xingxia || game.roundNumber - player.storage.boss_xingxia >= 2;
 				},
 				unique: true,
 				filterTarget(card, player, target) {
-					return target.name == "boss_yanling";
+					return target.name === "boss_yanling";
 				},
 				selectTarget: -1,
 				line: "fire",
-				content() {
-					target.damage(2, "fire");
+				async content(event, trigger, player) {
+					await event.target.damage({ num: 2, nature: "fire" });
 				},
-				contentAfter() {
-					"step 0";
+				async contentAfter(event, trigger, player) {
 					player.storage.boss_xingxia = game.roundNumber;
-					player.chooseTarget(function (card, player, target) {
-						return target.side != player.side;
-					}).ai = function (target) {
-						return get.damageEffect(target, player, player, "fire");
-					};
-					"step 1";
-					if (result.bool) {
-						event.target = result.targets[0];
-						player.line(event.target, "fire");
-						event.target.chooseToDiscard("he", { color: "red" }, "弃置一张红色牌或受到1点火焰伤害").ai = function (card) {
-							var player = _status.event.player;
-							var source = _status.event.parent.player;
-							if (get.damageEffect(player, source, player, "fire") >= 0) {
-								return 0;
-							}
-							return 8 - get.value(card);
-						};
-					} else {
-						event.finish();
+					const result = await player
+						.chooseTarget({
+							filterTarget: (card, player, target) => target.side !== player.side,
+							ai: target => get.damageEffect(target, player, player, "fire"),
+						})
+						.forResult();
+					if (!result.bool || !player.isIn()) {
+						return;
 					}
-					"step 2";
-					if (!result.bool) {
-						event.target.damage("fire");
+					const target = result.targets[0];
+					player.line(target, "fire");
+					const discardResult = await target
+						.chooseToDiscard({
+							position: "he",
+							filterCard: { color: "red" },
+							prompt: "弃置一张红色牌或受到1点火焰伤害",
+							ai: card => {
+								const player = _status.event.player;
+								const source = _status.event.parent.player;
+								if (get.damageEffect(player, source, player, "fire") >= 0) {
+									return 0;
+								}
+								return 8 - get.value(card);
+							},
+						})
+						.forResult();
+					if (!discardResult.bool && player.isIn()) {
+						await target.damage({ nature: "fire" });
 					}
 				},
 				ai: {
