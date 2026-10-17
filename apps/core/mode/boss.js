@@ -9262,22 +9262,20 @@ export default () => {
 			},
 			boss_konghun: {
 				trigger: { player: "phaseJieshuBegin" },
-				direct: true,
 				filter() {
 					return game.players.length >= 3;
 				},
-				content() {
-					"step 0";
-					player.chooseTarget(function (card, player, target) {
-						return target != player;
-					}).ai = function () {
-						return 1;
-					};
-					"step 1";
-					if (result.bool) {
-						player.logSkill("boss_konghun", result.targets);
-						result.targets[0].goMad();
-					}
+				async cost(event, trigger, player) {
+					event.result = await player
+						.chooseTarget({
+							prompt: get.prompt2(event.skill),
+							filterTarget: lib.filter.notMe,
+							ai: () => 1,
+						})
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					event.targets[0].goMad();
 				},
 				group: "boss_konghun2",
 			},
@@ -9286,11 +9284,10 @@ export default () => {
 				forced: true,
 				popup: false,
 				sourceSkill: "boss_konghun",
-				content() {
-					var players = game.players.concat(game.dead);
-					for (var i = 0; i < players.length; i++) {
-						if (players[i].isMad()) {
-							players[i].unMad();
+				async content(event, trigger, player) {
+					for (const current of game.players.concat(game.dead)) {
+						if (current.isMad()) {
+							current.unMad();
 						}
 					}
 				},
