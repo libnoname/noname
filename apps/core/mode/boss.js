@@ -7192,40 +7192,32 @@ export default () => {
 						enable: "phaseUse",
 						filter(event, player) {
 							if (!player.storage.boss_buchun || game.roundNumber - player.storage.boss_buchun >= 2) {
-								for (var i = 0; i < game.dead.length; i++) {
-									if (game.dead[i].parentNode == player.parentNode && game.dead[i].name == "boss_shujing") {
-										return true;
-									}
-								}
+								return game.dead.some(current => current.parentNode === player.parentNode && current.name === "boss_shujing");
 							}
 							return false;
 						},
-						content() {
-							"step 0";
-							player.loseHp();
+						async content(event, trigger, player) {
+							const loseHp = player.loseHp();
 							player.storage.boss_buchun = game.roundNumber;
-							"step 1";
-							event.targets = [];
-							var dead = game.dead.slice(0);
-							for (var i = 0; i < dead.length; i++) {
-								if (dead[i].parentNode == player.parentNode && dead[i].name == "boss_shujing") {
-									event.targets.push(dead[i]);
-								}
+							await loseHp;
+							if (!player.isIn()) {
+								return;
 							}
-							if (event.targets[0] == player.previousSeat) {
-								event.targets.push(event.targets.shift());
+							const targets = game.dead.filter(current => current.parentNode === player.parentNode && current.name === "boss_shujing");
+							if (targets[0] === player.previousSeat) {
+								targets.push(targets.shift());
 							}
-							"step 2";
-							if (event.targets.length) {
-								var target = event.targets.shift();
+							for (const target of targets) {
 								player.line(target, "green");
 								target.revive(1);
-								target.draw(2, false);
+								const draw = target.draw({ num: 2 }).set("animate", false);
 								target.$draw(2);
-								event.redo();
+								await draw;
+								if (!player.isIn()) {
+									return;
+								}
 							}
-							"step 3";
-							game.delay();
+							await game.delay();
 						},
 						ai: {
 							order: 6,
@@ -7236,9 +7228,7 @@ export default () => {
 									}
 									if (
 										player.hp <= 3 &&
-										game.hasPlayer(function (current) {
-											return current.name == "boss_shujing" && current.hp == 1;
-										})
+										game.hasPlayer(current => current.name === "boss_shujing" && current.hp === 1)
 									) {
 										if (_status.event.getRand() < 0.4) {
 											return 0;
@@ -7247,14 +7237,10 @@ export default () => {
 									if (player.hp >= 3) {
 										return 1;
 									}
-									if (player.hp >= 2 && player != game.boss) {
+									if (player.hp >= 2 && player !== game.boss) {
 										return 1;
 									}
-									if (
-										game.hasPlayer(function (current) {
-											return current.name == "boss_shujing";
-										})
-									) {
+									if (game.hasPlayer(current => current.name === "boss_shujing")) {
 										return 0;
 									}
 									return 1;
@@ -7266,12 +7252,7 @@ export default () => {
 						enable: "phaseUse",
 						filter(event, player) {
 							if (!player.storage.boss_buchun || game.roundNumber - player.storage.boss_buchun >= 2) {
-								for (var i = 0; i < game.dead.length; i++) {
-									if (game.dead[i].parentNode == player.parentNode && game.dead[i].name == "boss_shujing") {
-										return false;
-									}
-								}
-								return true;
+								return !game.dead.some(current => current.parentNode === player.parentNode && current.name === "boss_shujing");
 							}
 							return false;
 						},
@@ -7279,15 +7260,16 @@ export default () => {
 						filterTarget(card, player, target) {
 							return target.isFriendOf(player) && target.isDamaged();
 						},
-						content() {
-							target.recover(2);
+						async content(event, trigger, player) {
+							const recover = event.target.recover(2);
 							player.storage.boss_buchun = game.roundNumber;
+							await recover;
 						},
 						ai: {
 							order: 6,
 							result: {
 								target(player, target) {
-									var num = 1;
+									let num = 1;
 									if (target.maxHp - target.hp >= 2) {
 										num = 1.5;
 									}
