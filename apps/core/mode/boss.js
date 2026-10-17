@@ -7476,39 +7476,37 @@ export default () => {
 			boss_yuance: {
 				trigger: { global: "damageEnd" },
 				filter(event) {
-					return event.source && event.source != event.player && event.source.isAlive() && event.player.isAlive();
+					return event.source && event.source !== event.player && event.source.isAlive() && event.player.isAlive();
 				},
-				direct: true,
-				content() {
-					"step 0";
-					var att1 = get.attitude(player, trigger.player);
-					var att2 = get.attitude(player, trigger.source);
-					var targets = player.getEnemies();
-					var stop = false;
-					for (var i = 0; i < targets.length; i++) {
-						var skills = targets[i].getSkills();
-						for (var j = 0; j < skills.length; j++) {
-							if (get.tag(skills[j], "rejudge", targets[i])) {
+				async cost(event, trigger, player) {
+					const att1 = get.attitude(player, trigger.player);
+					const att2 = get.attitude(player, trigger.source);
+					const targets = player.getEnemies();
+					let stop = false;
+					for (const target of targets) {
+						const skills = target.getSkills();
+						for (const skill of skills) {
+							if (get.tag(skill, "rejudge", target)) {
 								stop = true;
 								break;
 							}
 						}
 					}
-					var rand = Math.random() < 0.5 ? "选项一" : "选项二";
-					var sourcename = get.translation(trigger.source);
-					var playername = get.translation(trigger.player);
-					player
-						.chooseControl("选项一", "选项二", "cancel2", function () {
-							if (att1 == 0 && att2 == 0) {
-								return rand;
-							}
-							if (att1 * att2 >= 0) {
-								if (att1 + att2 > 0) {
-									return "选项二";
-								} else {
-									return "选项一";
+					const rand = Math.random() < 0.5 ? "选项一" : "选项二";
+					const sourcename = get.translation(trigger.source);
+					const playername = get.translation(trigger.player);
+					const result = await player
+						.chooseControl({
+							controls: ["选项一", "选项二", "cancel2"],
+							prompt: get.prompt(event.skill),
+							choiceList: [`若判定结果为黑色，${playername}失去1点体力，否则${sourcename}失去1点体力`, `若判定结果为红色，${playername}回复1点体力，否则${sourcename}回复1点体力`],
+							ai: () => {
+								if (att1 === 0 && att2 === 0) {
+									return rand;
 								}
-							} else {
+								if (att1 * att2 >= 0) {
+									return att1 + att2 > 0 ? "选项二" : "选项一";
+								}
 								if (trigger.player.isHealthy() && trigger.source.isHealthy()) {
 									return rand;
 								}
@@ -7528,76 +7526,56 @@ export default () => {
 										return "选项一";
 									}
 								}
-								if (stop) {
-									return "cancel2";
-								}
-								return rand;
-							}
+								return stop ? "cancel2" : rand;
+							},
 						})
-						.set("prompt", get.prompt("boss_yuance"))
-						.set("choiceList", ["若判定结果为黑色，" + playername + "失去1点体力，否则" + sourcename + "失去1点体力", "若判定结果为红色，" + playername + "回复1点体力，否则" + sourcename + "回复1点体力"]);
-					"step 1";
-					var att1 = get.attitude(player, trigger.player);
-					var att2 = get.attitude(player, trigger.source);
-					if (result.control == "选项一") {
-						event.type = 1;
-						player.judge(function (card) {
-							if (get.color(card) == "black") {
-								if (att1 > 0) {
-									return -1;
-								}
-								if (att1 < 0) {
-									return 1;
-								}
-							} else {
-								if (att2 > 0) {
-									return -1;
-								}
-								if (att2 < 0) {
-									return 1;
-								}
-							}
-							return 0;
-						});
-					} else if (result.control == "选项二") {
-						event.type = 2;
-						player.judge(function (card) {
-							if (get.color(card) == "red") {
-								if (trigger.player.isDamaged()) {
-									if (att1 > 0) {
-										return 1;
-									}
-									if (att1 < 0) {
+						.forResult();
+					event.result = {
+						bool: result.control !== "cancel2",
+						cost_data: result.control,
+					};
+				},
+				async content(event, trigger, player) {
+					const att1 = get.attitude(player, trigger.player);
+					const att2 = get.attitude(player, trigger.source);
+					if (event.cost_data === "选项一") {
+						const result = await player
+							.judge({
+								judge: card => {
+									const att = get.color(card) === "black" ? att1 : att2;
+									if (att > 0) {
 										return -1;
 									}
-								}
-							} else {
-								if (trigger.source.isDamaged()) {
-									if (att2 > 0) {
-										return 1;
-									}
-									if (att2 < 0) {
-										return -1;
-									}
-								}
-							}
-							return 0;
-						});
-					} else {
-						event.finish();
-					}
-					"step 2";
-					if (event.type == 1) {
-						if (result.color == "black") {
-							trigger.player.loseHp();
+									return att < 0 ? 1 : 0;
+								},
+							})
+							.forResult();
+						if (result.color === "black") {
+							await trigger.player.loseHp();
 						} else {
-							trigger.source.loseHp();
+							await trigger.source.loseHp();
 						}
 					} else {
-						if (result.color == "red") {
-							trigger.player.recover();
+						const result = await player
+							.judge({
+								judge: card => {
+									const red = get.color(card) === "red";
+									const target = red ? trigger.player : trigger.source;
+									if (!target.isDamaged()) {
+										return 0;
+									}
+									const att = red ? att1 : att2;
+									if (att > 0) {
+										return 1;
+									}
+									return att < 0 ? -1 : 0;
+								},
+							})
+							.forResult();
+						if (result.color === "red") {
+							await trigger.player.recover();
 						} else {
-							trigger.source.recover();
+							await trigger.source.recover();
 						}
 					}
 				},
