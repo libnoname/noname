@@ -9779,23 +9779,12 @@ export default () => {
 				locked: false,
 				unique: true,
 				filter() {
-					return game.hasPlayer(function (current) {
-						return current.isTurnedOver();
-					});
+					return game.hasPlayer(current => current.isTurnedOver());
 				},
-				content() {
-					"step 0";
-					event.players = get.players(player);
-					event.num = 0;
-					for (var i = 0; i < event.players.length; i++) {
-						if (!event.players[i].isTurnedOver()) {
-							event.players.splice(i--, 1);
-						}
-					}
-					"step 1";
-					if (event.players.length) {
-						event.players.shift().loseHp();
-						event.redo();
+				async content(event, trigger, player) {
+					const players = get.players(player).filter(current => current.isTurnedOver());
+					for (const target of players) {
+						await target.loseHp();
 					}
 				},
 			},
