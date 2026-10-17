@@ -5356,11 +5356,11 @@ export default () => {
 				trigger: { player: "phaseZhunbeiBegin" },
 				forced: true,
 				getTargets(player) {
-					var targets = [];
+					const targets = [];
 					targets.add(player.getNext());
 					targets.add(player.getPrevious());
-					var enemies = player.getEnemies();
-					for (var i = 0; i < targets.length; i++) {
+					const enemies = player.getEnemies();
+					for (let i = 0; i < targets.length; i++) {
 						if (!enemies.includes(targets[i]) || (!targets[i].getEquip(3) && !targets[i].getEquip(4))) {
 							targets.splice(i--, 1);
 						}
@@ -5373,20 +5373,16 @@ export default () => {
 				logTarget(event, player) {
 					return lib.skill.boss_jiazu.getTargets(player);
 				},
-				content() {
-					"step 0";
-					event.list = lib.skill.boss_jiazu.getTargets(player).sortBySeat();
-					"step 1";
-					if (event.list.length) {
-						var target = event.list.shift();
-						var cards = target.getCards("e", function (card) {
-							var subtype = get.subtype(card);
-							return subtype == "equip3" || subtype == "equip4";
+				async content(event, trigger, player) {
+					const targets = lib.skill.boss_jiazu.getTargets(player).sortBySeat();
+					for (const target of targets) {
+						const cards = target.getCards("e", card => {
+							const subtype = get.subtype(card);
+							return subtype === "equip3" || subtype === "equip4";
 						});
 						if (cards.length) {
-							target.discard(cards);
+							await target.discard({ cards });
 						}
-						event.redo();
 					}
 				},
 			},
