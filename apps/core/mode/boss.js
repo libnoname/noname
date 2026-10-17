@@ -9943,14 +9943,10 @@ export default () => {
 				filter(event, player) {
 					return player.hp > 1;
 				},
-				content() {
-					"step 0";
-					event.players = get.players(player);
-					event.num = 0;
-					"step 1";
-					if (event.players.length) {
-						event.players.shift().loseHp();
-						event.redo();
+				async content(event, trigger, player) {
+					const players = get.players(player);
+					for (const target of players) {
+						await target.loseHp();
 					}
 				},
 			},
