@@ -10170,7 +10170,7 @@ export default () => {
 				audio: 2,
 				enable: "phaseUse",
 				filter(event, player) {
-					if (player.countCards("he") == 0) {
+					if (!player.hasCards("he")) {
 						return false;
 					}
 					if (!player.hasSkill("qiangxix")) {
@@ -10190,14 +10190,13 @@ export default () => {
 				filterCard: true,
 				position: "he",
 				check(card) {
-					if (get.position(card) == "e" && _status.event.player.hasSkill("olxuanfeng")) {
+					if (get.position(card) === "e" && _status.event.player.hasSkill("olxuanfeng")) {
 						return 16 - get.value(card);
 					}
 					return 7 - get.value(card);
 				},
-				content() {
-					"step 0";
-					var list = [];
+				async content(event, trigger, player) {
+					const list = [];
 					if (!player.hasSkill("qiangxix")) {
 						list.push("qiangxix");
 					}
@@ -10210,13 +10209,16 @@ export default () => {
 					if (!player.hasSkill("rewansha")) {
 						list.push("rewansha");
 					}
-					if (list.length == 1) {
-						player.addTempSkills(list[0]);
-						event.finish();
-					} else {
-						player
-							.chooseControl(list, function () {
-								if (list.includes("olxuanfeng") && player.countCards("he", { type: "equip" })) {
+					if (list.length === 1) {
+						await player.addTempSkills(list[0]);
+						return;
+					}
+					const result = await player
+						.chooseControl({
+							controls: list,
+							prompt: "选择获得一项技能直到回合结束",
+							ai: () => {
+								if (list.includes("olxuanfeng") && player.hasCards("he", { type: "equip" })) {
 									return "olxuanfeng";
 								}
 								if (!player.getStat().skill.qiangxix) {
@@ -10224,9 +10226,9 @@ export default () => {
 										return "olxuanfeng";
 									}
 									if (list.includes("rewansha") || list.includes("qiangxix")) {
-										var players = game.filterPlayer();
-										for (var i = 0; i < players.length; i++) {
-											if (players[i].hp == 1 && get.attitude(player, players[i]) < 0) {
+										const players = game.filterPlayer();
+										for (const target of players) {
+											if (target.hp === 1 && get.attitude(player, target) < 0) {
 												if (list.includes("rewansha")) {
 													return "rewansha";
 												}
@@ -10247,17 +10249,15 @@ export default () => {
 									return "olxuanfeng";
 								}
 								return "retieji";
-							})
-							.set("prompt", "选择获得一项技能直到回合结束");
-					}
-					"step 1";
-					player.addTempSkills(result.control);
-					// player.popup(get.translation(result.control));
+							},
+						})
+						.forResult();
+					await player.addTempSkills(result.control);
 				},
 				ai: {
 					order() {
-						var player = _status.event.player;
-						if (player.countCards("e", { type: "equip" })) {
+						const player = _status.event.player;
+						if (player.hasCards("e", { type: "equip" })) {
 							return 10;
 						}
 						if (!player.getStat().skill.qiangxix) {
@@ -10267,9 +10267,9 @@ export default () => {
 							if (player.hasSkill("rewansha")) {
 								return 1;
 							}
-							var players = game.filterPlayer();
-							for (var i = 0; i < players.length; i++) {
-								if (players[i].hp == 1 && get.attitude(player, players[i]) < 0) {
+							const players = game.filterPlayer();
+							for (const target of players) {
+								if (target.hp === 1 && get.attitude(player, target) < 0) {
 									return 10;
 								}
 							}
@@ -10278,7 +10278,7 @@ export default () => {
 					},
 					result: {
 						player(player) {
-							if (player.countCards("e", { type: "equip" })) {
+							if (player.hasCards("e", { type: "equip" })) {
 								return 1;
 							}
 							if (!player.getStat().skill.qiangxix) {
@@ -10286,9 +10286,9 @@ export default () => {
 									return 1;
 								}
 								if (!player.hasSkill("rewansha") || !player.hasSkill("qiangxix")) {
-									var players = game.filterPlayer();
-									for (var i = 0; i < players.length; i++) {
-										if (players[i].hp == 1 && get.attitude(player, players[i]) < 0) {
+									const players = game.filterPlayer();
+									for (const target of players) {
+										if (target.hp === 1 && get.attitude(player, target) < 0) {
 											return 1;
 										}
 									}
