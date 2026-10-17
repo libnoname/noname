@@ -4264,23 +4264,22 @@ export default () => {
 				audio: true,
 				direct: true,
 				lastDo: true,
-				content() {
-					"step 0";
-					var card = trigger.player.judging[0];
-					var judge0 = trigger.judge(card);
-					var judge1 = 0;
-					var choice = "cancel2";
-					event.suitchoice = "cancel2";
-					var attitude = get.attitude(player, trigger.player);
-					var list = [];
-					event.suitx = ["heart", "diamond", "club", "spade"];
-					for (var x = 0; x < 4; x++) {
-						for (var i = 1; i < 14; i++) {
+				async content(event, trigger, player) {
+					const card = trigger.player.judging[0];
+					const judge0 = trigger.judge(card);
+					let judge1 = 0;
+					let choice = "cancel2";
+					let suitChoice = "cancel2";
+					const attitude = get.attitude(player, trigger.player);
+					const list = [];
+					const suits = ["heart", "diamond", "club", "spade"];
+					for (const suit of suits) {
+						for (let i = 1; i < 14; i++) {
 							list.add(i);
-							var judge2 =
+							const judge2 =
 								(trigger.judge({
 									name: get.name(card),
-									suit: event.suitx[x],
+									suit,
 									number: i,
 									nature: get.nature(card),
 								}) -
@@ -4288,53 +4287,57 @@ export default () => {
 								attitude;
 							if (judge2 > judge1) {
 								choice = i;
-								event.suitchoice = event.suitx[x];
+								suitChoice = suit;
 								judge1 = judge2;
 							}
 						}
 					}
 					list.push("cancel2");
-					event.suitx.push("cancel2");
-					player
-						.chooseControl(list)
-						.set("ai", function () {
-							return _status.event.choice;
+					suits.push("cancel2");
+					const numberResult = await player
+						.chooseControl({
+							controls: list,
+							ai: () => _status.event.choice,
+							prompt: get.prompt2(event.name),
 						})
-						.set("choice", choice).prompt = get.prompt2(event.name);
-					"step 1";
-					if (result.control != "cancel2") {
-						if (!event.logged) {
-							event.logged = true;
-							player.logSkill(event.name, trigger.player);
-						}
-						game.log(trigger.player, "判定结果点数为", "#g" + result.control);
-						player.popup(result.control, "fire");
-						if (!trigger.fixedResult) {
-							trigger.fixedResult = {};
-						}
-						trigger.fixedResult.number = result.control;
+						.set("choice", choice)
+						.forResult();
+					if (!player.isIn()) {
+						return;
 					}
-					player
-						.chooseControl(event.suitx)
-						.set("ai", function () {
-							return _status.event.choice;
-						})
-						.set("choice", event.suitchoice).prompt = get.prompt2(event.name);
-					"step 2";
-					if (result.control != "cancel2") {
-						if (!event.logged) {
-							event.logged = true;
-							player.logSkill(event.name, trigger.player);
-						}
-						game.log(trigger.player, "判定结果花色为", "#g" + result.control);
-						player.popup(result.control, "fire");
+					if (numberResult.control !== "cancel2") {
+						player.logSkill(event.name, trigger.player);
+						game.log(trigger.player, "判定结果点数为", `#g${numberResult.control}`);
+						player.popup(numberResult.control, "fire");
 						if (!trigger.fixedResult) {
 							trigger.fixedResult = {};
 						}
-						trigger.fixedResult.suit = result.control;
-						if (result.control == "club" || result.control == "spade") {
+						trigger.fixedResult.number = numberResult.control;
+					}
+					const suitResult = await player
+						.chooseControl({
+							controls: suits,
+							ai: () => _status.event.choice,
+							prompt: get.prompt2(event.name),
+						})
+						.set("choice", suitChoice)
+						.forResult();
+					if (!player.isIn()) {
+						return;
+					}
+					if (suitResult.control !== "cancel2") {
+						if (numberResult.control === "cancel2") {
+							player.logSkill(event.name, trigger.player);
+						}
+						game.log(trigger.player, "判定结果花色为", `#g${suitResult.control}`);
+						player.popup(suitResult.control, "fire");
+						if (!trigger.fixedResult) {
+							trigger.fixedResult = {};
+						}
+						trigger.fixedResult.suit = suitResult.control;
+						if (suitResult.control === "club" || suitResult.control === "spade") {
 							trigger.fixedResult.color = "black";
-						} else if (result.control == "heart" || result.control == "diamond") {
+						} else if (suitResult.control === "heart" || suitResult.control === "diamond") {
 							trigger.fixedResult.color = "red";
 						}
 					}
