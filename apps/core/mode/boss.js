@@ -3791,14 +3791,12 @@ export default () => {
 				trigger: { global: "phaseZhunbeiBegin" },
 				forced: true,
 				filter(event, player) {
-					return event.player != player;
+					return event.player !== player;
 				},
 				logTarget: "player",
-				content() {
-					"step 0";
-					trigger.player.loseHp();
-					"step 1";
-					trigger.player.useCard({ name: "jiu" }, trigger.player);
+				async content(event, trigger, player) {
+					await trigger.player.loseHp();
+					await trigger.player.useCard({ card: { name: "jiu" }, targets: [trigger.player] });
 				},
 			},
 			boss_renao: {
