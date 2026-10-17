@@ -5161,21 +5161,18 @@ export default () => {
 				logTarget(event, player) {
 					return player.getEnemies();
 				},
-				content() {
-					"step 0";
-					event.list = player.getEnemies().sortBySeat();
-					"step 1";
-					if (event.list.length) {
-						var target = event.list.shift();
-						if (target.countCards("he")) {
-							var es = target.getCards("e");
-							if (es.length) {
-								target.discard(es);
-							} else {
-								player.discardPlayerCard(target, "h", true);
-							}
+				async content(event, trigger, player) {
+					const list = player.getEnemies().sortBySeat();
+					for (const target of list) {
+						if (!target.hasCards("he")) {
+							continue;
 						}
-						event.redo();
+						const es = target.getCards("e");
+						if (es.length) {
+							await target.discard({ cards: es });
+						} else {
+							await player.discardPlayerCard({ target, position: "h", forced: true });
+						}
 					}
 				},
 			},
