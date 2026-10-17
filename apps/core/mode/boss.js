@@ -8008,38 +8008,41 @@ export default () => {
 				direct: true,
 				priority: 1,
 				unique: true,
-				content() {
-					"step 0";
-					event.cards = get.cards(7);
-					player.chooseCardButton(true, event.cards, "改命：选择一张牌作为你的" + trigger.judgestr + "判定结果").ai = function (button) {
-						if (get.attitude(player, trigger.player) > 0) {
-							return 1 + trigger.judge(button.link);
-						}
-						if (get.attitude(player, trigger.player) < 0) {
-							return 1 - trigger.judge(button.link);
-						}
-						return 0;
-					};
-					"step 1";
+				async content(event, trigger, player) {
+					const cards = get.cards(7);
+					const result = await player
+						.chooseCardButton({
+							forced: true,
+							cards,
+							prompt: `改命：选择一张牌作为你的${trigger.judgestr}判定结果`,
+							ai: button => {
+								if (get.attitude(player, trigger.player) > 0) {
+									return 1 + trigger.judge(button.link);
+								}
+								if (get.attitude(player, trigger.player) < 0) {
+									return 1 - trigger.judge(button.link);
+								}
+								return 0;
+							},
+						})
+						.forResult();
 					if (!result.bool) {
-						event.finish();
 						return;
 					}
 					player.logSkill("gaiming", trigger.player);
-					var card = result.links[0];
-					event.cards.remove(card);
-					var judgestr = get.translation(trigger.player) + "的" + trigger.judgestr + "判定";
-					event.videoId = lib.status.videoId++;
-					event.dialog = ui.create.dialog(judgestr);
-					event.dialog.classList.add("center");
-					event.dialog.videoId = event.videoId;
+					const card = result.links[0];
+					cards.remove(card);
+					const judgestr = `${get.translation(trigger.player)}的${trigger.judgestr}判定`;
+					const videoId = lib.status.videoId++;
+					const dialog = ui.create.dialog(judgestr);
+					dialog.classList.add("center");
+					dialog.videoId = videoId;
 
-					game.addVideo("judge1", player, [get.cardInfo(card), judgestr, event.videoId]);
-					for (var i = 0; i < event.cards.length; i++) {
-						event.cards[i].discard();
+					game.addVideo("judge1", player, [get.cardInfo(card), judgestr, videoId]);
+					for (const remainingCard of cards) {
+						remainingCard.discard();
 					}
-					// var node=card.copy('thrown','center',ui.arena).addTempClass('start');
-					var node;
+					let node;
 					if (game.chess) {
 						node = card.copy("thrown", "center", ui.arena).addTempClass("start");
 					} else {
@@ -8050,9 +8053,9 @@ export default () => {
 					if (card) {
 						trigger.cancel();
 						trigger.result = {
-							card: card,
+							card,
 							judge: trigger.judge(card),
-							node: node,
+							node,
 							number: get.number(card),
 							suit: get.suit(card),
 							color: get.color(card),
@@ -8068,19 +8071,19 @@ export default () => {
 						game.log(trigger.player, "的判定结果为", card);
 						trigger.direct = true;
 						trigger.position.appendChild(card);
-						game.delay(2);
+						await game.delay(2);
 					} else {
-						event.finish();
+						return;
 					}
-					"step 2";
+					await event.waitNext();
 					ui.arena.classList.remove("thrownhighlight");
-					event.dialog.close();
-					game.addVideo("judge2", null, event.videoId);
+					dialog.close();
+					game.addVideo("judge2", null, videoId);
 					ui.clear();
-					var card = trigger.result.card;
-					trigger.position.appendChild(card);
+					const resultCard = trigger.result.card;
+					trigger.position.appendChild(resultCard);
 					trigger.result.node.delete();
-					game.delay();
+					await game.delay();
 				},
 				ai: {
 					effect: {
