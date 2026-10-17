@@ -198,7 +198,7 @@ jobs:
 
           if [ "$ahead" = "0" ]; then
             echo "up_to_date=true" >> "$GITHUB_OUTPUT"
-            echo "::notice::上游没有新提交，无需同步"
+            echo "::notice::本分支已与同步源一致，无需同步"
             exit 0
           fi
           echo "up_to_date=false" >> "$GITHUB_OUTPUT"
@@ -297,13 +297,15 @@ jobs:
             echo "| 项目 | 值 |"
             echo "| --- | --- |"
             echo "| 同步源 | ${SYNC_LABEL:-未知}：\`$UPSTREAM:${SYNC_SOURCE:-未知}\` |"
-            echo "| 本 Fork | \`${FORK_SHA:-未知}\` → \`${NEW_SHA:-未变化}\` |"
             echo "| 上游改动的工作流文件 | ${WORKFLOWS_TOUCHED:-0} 个 |"
             if [ "$UP_TO_DATE" = "true" ]; then
-              echo "| 结论 | 上游无新提交，未做改动 |"
+              echo "| 本 Fork | \`${FORK_SHA:-未知}\`（已与同步源一致） |"
+              echo "| 结论 | ✅ 已同步一致：本分支已是最新，本次无需重复同步 |"
             elif [ "$MERGE_OUTCOME" = "success" ]; then
-              echo "| 结论 | 已同步（merge_type: ${MERGE_TYPE:-未知}） |"
+              echo "| 本 Fork | \`${FORK_SHA:-未知}\` → \`${NEW_SHA:-未知}\` |"
+              echo "| 结论 | ✅ 本次已同步（merge_type: ${MERGE_TYPE:-未知}） |"
             else
+              echo "| 本 Fork | \`${FORK_SHA:-未知}\` → \`${NEW_SHA:-未变化}\` |"
               echo "| 结论 | ❌ 合并失败，见上方日志 |"
             fi
             echo ""
