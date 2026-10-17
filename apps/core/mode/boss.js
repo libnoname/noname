@@ -7908,22 +7908,20 @@ export default () => {
 				trigger: { player: ["damageEnd", "loseHpEnd"] },
 				forced: true,
 				popup: false,
-				content() {
-					"step 0";
-					var num = trigger.num;
+				async content(event, trigger, player) {
+					const num = trigger.num;
 					if (num) {
 						player.storage.xiangxing_count += num;
 					}
+					let skipDamage;
 					if (player.storage.xiangxing_count >= 7) {
-						if (player.hasSkill("yueyin") && lib.skill.yueyin.skipDamage["x" + player.storage.xiangxing](player, trigger)) {
-							event.goto(3);
-						}
-						player.removeSkill("xiangxing" + player.storage.xiangxing);
+						skipDamage = player.hasSkill("yueyin") && lib.skill.yueyin.skipDamage[`x${player.storage.xiangxing}`](player, trigger);
+						player.removeSkill(`xiangxing${player.storage.xiangxing}`);
 						player.storage.xiangxing--;
 						player.storage.xiangxing_count = 0;
 						player.updateMarks();
 						if (player.storage.xiangxing) {
-							player.addSkill("xiangxing" + player.storage.xiangxing);
+							player.addSkill(`xiangxing${player.storage.xiangxing}`);
 						} else {
 							player.awakenSkill(event.name);
 						}
@@ -7931,30 +7929,30 @@ export default () => {
 						game.log(player, "失去了一枚星");
 					} else {
 						player.updateMarks();
-						event.finish();
+						return;
 					}
-					"step 1";
-					var list = game.filterPlayer();
-					list.remove(player);
-					list.sort(lib.sort.seat);
-					var list2 = [];
-					for (var i = 0; i < list.length; i++) {
-						list2.push(0);
+					await event.waitNext();
+					if (!player.isIn()) {
+						return;
 					}
-					for (var i = 0; i < 7; i++) {
-						list2[Math.floor(Math.random() * list2.length)]++;
+					if (!skipDamage) {
+						const targets = game.filterPlayer();
+						targets.remove(player);
+						targets.sort(lib.sort.seat);
+						const damageCounts = Array(targets.length).fill(0);
+						for (let i = 0; i < 7; i++) {
+							damageCounts[Math.floor(Math.random() * damageCounts.length)]++;
+						}
+						for (const [index, target] of targets.entries()) {
+							const damage = target.damage({ num: damageCounts[index], nature: "thunder" });
+							player.line(target, "thunder");
+							await damage;
+							if (!player.isIn()) {
+								return;
+							}
+						}
 					}
-					event.list = list;
-					event.list2 = list2;
-					"step 2";
-					if (event.list.length) {
-						var target = event.list.shift();
-						target.damage(event.list2.shift(), "thunder");
-						player.line(target, "thunder");
-						event.redo();
-					}
-					"step 3";
-					if (player.storage.xiangxing == 0) {
+					if (player.storage.xiangxing === 0) {
 						player.maxHp = 3;
 						player.update();
 					}
