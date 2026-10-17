@@ -8796,20 +8796,18 @@ export default () => {
 			},
 			boss_xixing: {
 				trigger: { player: "phaseZhunbeiBegin" },
-				direct: true,
-				content() {
-					"step 0";
-					player.chooseTarget(get.prompt("boss_xixing"), function (card, player, target) {
-						return player != target && target.isLinked();
-					}).ai = function (target) {
-						return get.damageEffect(target, player, player, "thunder");
-					};
-					"step 1";
-					if (result.bool) {
-						player.logSkill("boss_xixing", result.targets);
-						result.targets[0].damage("thunder");
-						player.recover();
-					}
+				async cost(event, trigger, player) {
+					event.result = await player
+						.chooseTarget({
+							prompt: get.prompt(event.skill),
+							filterTarget: (card, player, target) => player !== target && target.isLinked(),
+							ai: target => get.damageEffect(target, player, player, "thunder"),
+						})
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					await event.targets[0].damage({ nature: "thunder" });
+					await player.recover();
 				},
 			},
 			boss_suoming: {
