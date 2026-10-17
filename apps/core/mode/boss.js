@@ -9238,33 +9238,25 @@ export default () => {
 				trigger: { player: "loseEnd" },
 				frequent: true,
 				filter(event, player) {
-					if (player.countCards("h")) {
+					if (player.hasCards("h")) {
 						return false;
 					}
-					for (var i = 0; i < event.cards.length; i++) {
-						if (event.cards[i].original == "h") {
-							return true;
-						}
-					}
-					return false;
+					return event.cards.some(card => card.original === "h");
 				},
-				content() {
-					"step 0";
-					var players = get.players(player);
+				async content(event, trigger, player) {
+					const players = get.players(player);
 					players.remove(player);
-					event.players = players;
-					"step 1";
-					if (event.players.length) {
-						var current = event.players.shift();
-						var hs = current.getCards("h");
+					for (const current of players) {
+						const hs = current.getCards("h");
 						if (hs.length) {
-							current.lose(hs)._triggered = null;
+							const next = current.lose({ cards: hs });
+							next._triggered = null;
 							current.$throw(hs);
+							await next;
 						} else {
-							current.loseHp();
+							await current.loseHp();
 						}
-						game.delay(0.5);
-						event.redo();
+						await game.delay(0.5);
 					}
 				},
 			},
