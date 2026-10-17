@@ -9004,19 +9004,17 @@ export default () => {
 			},
 			boss_luolei: {
 				trigger: { player: "phaseZhunbeiBegin" },
-				direct: true,
-				content() {
-					"step 0";
-					player.chooseTarget(get.prompt("boss_luolei"), function (card, player, target) {
-						return player != target;
-					}).ai = function (target) {
-						return get.damageEffect(target, player, player, "thunder");
-					};
-					"step 1";
-					if (result.bool) {
-						player.logSkill("boss_luolei", result.targets);
-						result.targets[0].damage("thunder");
-					}
+				async cost(event, trigger, player) {
+					event.result = await player
+						.chooseTarget({
+							prompt: get.prompt(event.skill),
+							filterTarget: lib.filter.notMe,
+							ai: target => get.damageEffect(target, player, player, "thunder"),
+						})
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					await event.targets[0].damage({ nature: "thunder" });
 				},
 			},
 			boss_beiming: {
