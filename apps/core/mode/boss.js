@@ -6106,62 +6106,67 @@ export default () => {
 					}
 					return event.player === game.boss && event.player.hasSkill("boss_chiyan2");
 				},
-				async content(event, trigger, player) {
-					await game.delay();
-					if (game.me !== game.boss) {
-						game.boss.changeSeat(6);
-					} else {
-						game.boss.nextSeat.changeSeat(3);
-						game.boss.previousSeat.changeSeat(5);
-					}
-					game.changeBoss("boss_huoshenzhurong");
-					for (const current of game.players) {
-						current.hp = current.maxHp;
-						current.update();
-					}
-					await game.delay(0.5);
-					await event.waitNext();
-					game.addBossFellow(game.me === game.boss ? 1 : 5, "boss_yanling");
-					game.addBossFellow(7, "boss_yanling");
-					await event.waitNext();
-					let dnum = 0;
-					const dead = game.dead.slice(0);
-					for (const current of dead) {
-						if (!current.side && current.maxHp > 0 && current.parentNode === player.parentNode) {
-							current.revive(current.maxHp);
-							dnum++;
+				content: [
+					async (event, trigger, player) => {
+						await game.delay();
+						if (game.me !== game.boss) {
+							game.boss.changeSeat(6);
+						} else {
+							game.boss.nextSeat.changeSeat(3);
+							game.boss.previousSeat.changeSeat(5);
 						}
-					}
-					for (const current of game.players) {
-						if (current.side) {
-							continue;
+						game.changeBoss("boss_huoshenzhurong");
+						for (const current of game.players) {
+							current.hp = current.maxHp;
+							current.update();
 						}
-						current.removeEquipTrigger();
-						const hej = current.getCards("hej");
-						for (const card of hej) {
-							card.discard(false);
+						await game.delay(0.5);
+					},
+					async (event, trigger, player) => {
+						game.addBossFellow(game.me === game.boss ? 1 : 5, "boss_yanling");
+						game.addBossFellow(7, "boss_yanling");
+					},
+					async (event, trigger, player) => {
+						let dnum = 0;
+						const dead = game.dead.slice(0);
+						for (const current of dead) {
+							if (!current.side && current.maxHp > 0 && current.parentNode === player.parentNode) {
+								current.revive(current.maxHp);
+								dnum++;
+							}
 						}
-						current.hp = current.maxHp;
-						current.hujia = 0;
-						current.classList.remove("turnedover");
-						current.removeLink();
-						current.directgain(get.cards(4 - dnum));
-					}
-					await event.waitNext();
-					while (_status.event.name !== "phaseLoop") {
-						_status.event = _status.event.parent;
-					}
-					game.resetSkills();
-					_status.paused = false;
-					_status.event.player = game.boss;
-					_status.event.step = 0;
-					_status.roundStart = game.boss;
-					game.phaseNumber = 0;
-					game.roundNumber = 0;
-					if (game.bossinfo) {
-						game.bossinfo.loopType = 1;
-					}
-				},
+						for (const current of game.players) {
+							if (current.side) {
+								continue;
+							}
+							current.removeEquipTrigger();
+							const hej = current.getCards("hej");
+							for (const card of hej) {
+								card.discard(false);
+							}
+							current.hp = current.maxHp;
+							current.hujia = 0;
+							current.classList.remove("turnedover");
+							current.removeLink();
+							current.directgain(get.cards(4 - dnum));
+						}
+					},
+					async (event, trigger, player) => {
+						while (_status.event.name !== "phaseLoop") {
+							_status.event = _status.event.parent;
+						}
+						game.resetSkills();
+						_status.paused = false;
+						_status.event.player = game.boss;
+						_status.event.step = 0;
+						_status.roundStart = game.boss;
+						game.phaseNumber = 0;
+						game.roundNumber = 0;
+						if (game.bossinfo) {
+							game.bossinfo.loopType = 1;
+						}
+					},
+				],
 			},
 			boss_chiyan3: {
 				charlotte: true,
@@ -6197,49 +6202,54 @@ export default () => {
 					}
 					return event.player === game.boss && event.player.hasSkill("boss_chiyan3");
 				},
-				async content(event, trigger, player) {
-					await game.delay();
-					game.changeBoss("boss_yandi");
-					await game.delay(0.5);
-					await event.waitNext();
-					game.changeBoss("boss_huoshenzhurong", game.boss.previousSeat);
-					game.changeBoss("boss_yanling", game.boss.nextSeat);
-					await event.waitNext();
-					let dnum = 0;
-					const dead = game.dead.slice(0);
-					for (const current of dead) {
-						if (!current.side && current.maxHp > 0 && current.parentNode === player.parentNode) {
-							current.revive(current.maxHp);
-							dnum++;
+				content: [
+					async (event, trigger, player) => {
+						await game.delay();
+						game.changeBoss("boss_yandi");
+						await game.delay(0.5);
+					},
+					async (event, trigger, player) => {
+						game.changeBoss("boss_huoshenzhurong", game.boss.previousSeat);
+						game.changeBoss("boss_yanling", game.boss.nextSeat);
+					},
+					async (event, trigger, player) => {
+						let dnum = 0;
+						const dead = game.dead.slice(0);
+						for (const current of dead) {
+							if (!current.side && current.maxHp > 0 && current.parentNode === player.parentNode) {
+								current.revive(current.maxHp);
+								dnum++;
+							}
 						}
-					}
-					for (const current of game.players) {
-						if (current.side) {
-							continue;
+						for (const current of game.players) {
+							if (current.side) {
+								continue;
+							}
+							current.removeEquipTrigger();
+							const hej = current.getCards("hej");
+							for (const card of hej) {
+								card.discard(false);
+							}
+							current.hp = current.maxHp;
+							current.hujia = 0;
+							current.classList.remove("turnedover");
+							current.removeLink();
+							current.directgain(get.cards(4 - dnum));
 						}
-						current.removeEquipTrigger();
-						const hej = current.getCards("hej");
-						for (const card of hej) {
-							card.discard(false);
+					},
+					async (event, trigger, player) => {
+						while (_status.event.name !== "phaseLoop") {
+							_status.event = _status.event.parent;
 						}
-						current.hp = current.maxHp;
-						current.hujia = 0;
-						current.classList.remove("turnedover");
-						current.removeLink();
-						current.directgain(get.cards(4 - dnum));
-					}
-					await event.waitNext();
-					while (_status.event.name !== "phaseLoop") {
-						_status.event = _status.event.parent;
-					}
-					game.resetSkills();
-					_status.paused = false;
-					_status.event.player = game.boss;
-					_status.event.step = 0;
-					_status.roundStart = game.boss;
-					game.phaseNumber = 0;
-					game.roundNumber = 0;
-				},
+						game.resetSkills();
+						_status.paused = false;
+						_status.event.player = game.boss;
+						_status.event.step = 0;
+						_status.roundStart = game.boss;
+						game.phaseNumber = 0;
+						game.roundNumber = 0;
+					},
+				],
 			},
 			boss_qingmu: {
 				trigger: { global: "gameStart" },
@@ -6284,62 +6294,67 @@ export default () => {
 					}
 					return event.player === game.boss && event.player.hasSkill("boss_qingmu2");
 				},
-				async content(event, trigger, player) {
-					await game.delay();
-					if (game.me !== game.boss) {
-						game.boss.changeSeat(6);
-					} else {
-						game.boss.nextSeat.changeSeat(3);
-						game.boss.previousSeat.changeSeat(5);
-					}
-					game.changeBoss("boss_mushengoumang");
-					for (const current of game.players) {
-						current.hp = current.maxHp;
-						current.update();
-					}
-					await game.delay(0.5);
-					await event.waitNext();
-					game.addBossFellow(game.me === game.boss ? 1 : 5, "boss_shujing");
-					game.addBossFellow(7, "boss_shujing");
-					await event.waitNext();
-					let dnum = 0;
-					const dead = game.dead.slice(0);
-					for (const current of dead) {
-						if (!current.side && current.maxHp > 0 && current.parentNode === player.parentNode) {
-							current.revive(current.maxHp);
-							dnum++;
+				content: [
+					async (event, trigger, player) => {
+						await game.delay();
+						if (game.me !== game.boss) {
+							game.boss.changeSeat(6);
+						} else {
+							game.boss.nextSeat.changeSeat(3);
+							game.boss.previousSeat.changeSeat(5);
 						}
-					}
-					for (const current of game.players) {
-						if (current.side) {
-							continue;
+						game.changeBoss("boss_mushengoumang");
+						for (const current of game.players) {
+							current.hp = current.maxHp;
+							current.update();
 						}
-						current.removeEquipTrigger();
-						const hej = current.getCards("hej");
-						for (const card of hej) {
-							card.discard(false);
+						await game.delay(0.5);
+					},
+					async (event, trigger, player) => {
+						game.addBossFellow(game.me === game.boss ? 1 : 5, "boss_shujing");
+						game.addBossFellow(7, "boss_shujing");
+					},
+					async (event, trigger, player) => {
+						let dnum = 0;
+						const dead = game.dead.slice(0);
+						for (const current of dead) {
+							if (!current.side && current.maxHp > 0 && current.parentNode === player.parentNode) {
+								current.revive(current.maxHp);
+								dnum++;
+							}
 						}
-						current.hp = current.maxHp;
-						current.hujia = 0;
-						current.classList.remove("turnedover");
-						current.removeLink();
-						current.directgain(get.cards(4 - dnum));
-					}
-					await event.waitNext();
-					while (_status.event.name !== "phaseLoop") {
-						_status.event = _status.event.parent;
-					}
-					game.resetSkills();
-					_status.paused = false;
-					_status.event.player = game.boss;
-					_status.event.step = 0;
-					_status.roundStart = game.boss;
-					game.phaseNumber = 0;
-					game.roundNumber = 0;
-					if (game.bossinfo) {
-						game.bossinfo.loopType = 1;
-					}
-				},
+						for (const current of game.players) {
+							if (current.side) {
+								continue;
+							}
+							current.removeEquipTrigger();
+							const hej = current.getCards("hej");
+							for (const card of hej) {
+								card.discard(false);
+							}
+							current.hp = current.maxHp;
+							current.hujia = 0;
+							current.classList.remove("turnedover");
+							current.removeLink();
+							current.directgain(get.cards(4 - dnum));
+						}
+					},
+					async (event, trigger, player) => {
+						while (_status.event.name !== "phaseLoop") {
+							_status.event = _status.event.parent;
+						}
+						game.resetSkills();
+						_status.paused = false;
+						_status.event.player = game.boss;
+						_status.event.step = 0;
+						_status.roundStart = game.boss;
+						game.phaseNumber = 0;
+						game.roundNumber = 0;
+						if (game.bossinfo) {
+							game.bossinfo.loopType = 1;
+						}
+					},
+				],
 			},
 			boss_qingmu3: {
 				charlotte: true,
@@ -6375,49 +6390,54 @@ export default () => {
 					}
 					return event.player === game.boss && event.player.hasSkill("boss_qingmu3");
 				},
-				async content(event, trigger, player) {
-					await game.delay();
-					game.changeBoss("boss_taihao");
-					await game.delay(0.5);
-					await event.waitNext();
-					game.changeBoss("boss_mushengoumang", game.boss.previousSeat);
-					game.changeBoss("boss_shujing", game.boss.nextSeat);
-					await event.waitNext();
-					let dnum = 0;
-					const dead = game.dead.slice(0);
-					for (const current of dead) {
-						if (!current.side && current.maxHp > 0 && current.parentNode === player.parentNode) {
-							current.revive(current.maxHp);
-							dnum++;
+				content: [
+					async (event, trigger, player) => {
+						await game.delay();
+						game.changeBoss("boss_taihao");
+						await game.delay(0.5);
+					},
+					async (event, trigger, player) => {
+						game.changeBoss("boss_mushengoumang", game.boss.previousSeat);
+						game.changeBoss("boss_shujing", game.boss.nextSeat);
+					},
+					async (event, trigger, player) => {
+						let dnum = 0;
+						const dead = game.dead.slice(0);
+						for (const current of dead) {
+							if (!current.side && current.maxHp > 0 && current.parentNode === player.parentNode) {
+								current.revive(current.maxHp);
+								dnum++;
+							}
 						}
-					}
-					for (const current of game.players) {
-						if (current.side) {
-							continue;
+						for (const current of game.players) {
+							if (current.side) {
+								continue;
+							}
+							current.removeEquipTrigger();
+							const hej = current.getCards("hej");
+							for (const card of hej) {
+								card.discard(false);
+							}
+							current.hp = current.maxHp;
+							current.hujia = 0;
+							current.classList.remove("turnedover");
+							current.removeLink();
+							current.directgain(get.cards(4 - dnum));
 						}
-						current.removeEquipTrigger();
-						const hej = current.getCards("hej");
-						for (const card of hej) {
-							card.discard(false);
+					},
+					async (event, trigger, player) => {
+						while (_status.event.name !== "phaseLoop") {
+							_status.event = _status.event.parent;
 						}
-						current.hp = current.maxHp;
-						current.hujia = 0;
-						current.classList.remove("turnedover");
-						current.removeLink();
-						current.directgain(get.cards(4 - dnum));
-					}
-					await event.waitNext();
-					while (_status.event.name !== "phaseLoop") {
-						_status.event = _status.event.parent;
-					}
-					game.resetSkills();
-					_status.paused = false;
-					_status.event.player = game.boss;
-					_status.event.step = 0;
-					_status.roundStart = game.boss;
-					game.phaseNumber = 0;
-					game.roundNumber = 0;
-				},
+						game.resetSkills();
+						_status.paused = false;
+						_status.event.player = game.boss;
+						_status.event.step = 0;
+						_status.roundStart = game.boss;
+						game.phaseNumber = 0;
+						game.roundNumber = 0;
+					},
+				],
 			},
 			boss_xuanlin: {
 				trigger: { global: "gameStart" },
@@ -6462,61 +6482,66 @@ export default () => {
 					}
 					return event.player === game.boss && event.player.hasSkill("boss_xuanlin2");
 				},
-				async content(event, trigger, player) {
-					await game.delay();
-					if (game.me !== game.boss) {
-						game.boss.changeSeat(6);
-					} else {
-						game.boss.nextSeat.changeSeat(3);
-						game.boss.previousSeat.changeSeat(5);
-					}
-					game.changeBoss("boss_shuishengonggong");
-					for (const current of game.players) {
-						current.hp = current.maxHp;
-						current.update();
-					}
-					await game.delay(0.5);
-					await event.waitNext();
-					game.addBossFellow(game.me === game.boss ? 1 : 7, "boss_shuishenxuanming");
-					await event.waitNext();
-					let dnum = 0;
-					const dead = game.dead.slice(0);
-					for (const current of dead) {
-						if (!current.side && current.maxHp > 0 && current.parentNode === player.parentNode) {
-							current.revive(current.maxHp);
-							dnum++;
+				content: [
+					async (event, trigger, player) => {
+						await game.delay();
+						if (game.me !== game.boss) {
+							game.boss.changeSeat(6);
+						} else {
+							game.boss.nextSeat.changeSeat(3);
+							game.boss.previousSeat.changeSeat(5);
 						}
-					}
-					for (const current of game.players) {
-						if (current.side) {
-							continue;
+						game.changeBoss("boss_shuishengonggong");
+						for (const current of game.players) {
+							current.hp = current.maxHp;
+							current.update();
 						}
-						current.removeEquipTrigger();
-						const hej = current.getCards("hej");
-						for (const card of hej) {
-							card.discard(false);
+						await game.delay(0.5);
+					},
+					async (event, trigger, player) => {
+						game.addBossFellow(game.me === game.boss ? 1 : 7, "boss_shuishenxuanming");
+					},
+					async (event, trigger, player) => {
+						let dnum = 0;
+						const dead = game.dead.slice(0);
+						for (const current of dead) {
+							if (!current.side && current.maxHp > 0 && current.parentNode === player.parentNode) {
+								current.revive(current.maxHp);
+								dnum++;
+							}
 						}
-						current.hp = current.maxHp;
-						current.hujia = 0;
-						current.classList.remove("turnedover");
-						current.removeLink();
-						current.directgain(get.cards(4 - dnum));
-					}
-					await event.waitNext();
-					while (_status.event.name !== "phaseLoop") {
-						_status.event = _status.event.parent;
-					}
-					game.resetSkills();
-					_status.paused = false;
-					_status.event.player = game.boss;
-					_status.event.step = 0;
-					_status.roundStart = game.boss;
-					game.phaseNumber = 0;
-					game.roundNumber = 0;
-					if (game.bossinfo) {
-						game.bossinfo.loopType = 1;
-					}
-				},
+						for (const current of game.players) {
+							if (current.side) {
+								continue;
+							}
+							current.removeEquipTrigger();
+							const hej = current.getCards("hej");
+							for (const card of hej) {
+								card.discard(false);
+							}
+							current.hp = current.maxHp;
+							current.hujia = 0;
+							current.classList.remove("turnedover");
+							current.removeLink();
+							current.directgain(get.cards(4 - dnum));
+						}
+					},
+					async (event, trigger, player) => {
+						while (_status.event.name !== "phaseLoop") {
+							_status.event = _status.event.parent;
+						}
+						game.resetSkills();
+						_status.paused = false;
+						_status.event.player = game.boss;
+						_status.event.step = 0;
+						_status.roundStart = game.boss;
+						game.phaseNumber = 0;
+						game.roundNumber = 0;
+						if (game.bossinfo) {
+							game.bossinfo.loopType = 1;
+						}
+					},
+				],
 			},
 			boss_xuanlin3: {
 				charlotte: true,
@@ -6562,53 +6587,58 @@ export default () => {
 					}
 					return event.player.hasSkill("boss_xuanlin3");
 				},
-				async content(event, trigger, player) {
-					await game.delay();
-					game.changeBoss("boss_zhuanxu");
-					await game.delay(0.5);
-					await event.waitNext();
-					game.addBossFellow(game.me === game.boss ? 7 : 5, "boss_shuishengonggong");
-					game.changeBoss("boss_shuishenxuanming", game.boss.nextSeat);
-					game.boss.previousSeat.maxHp--;
-					game.boss.previousSeat.update();
-					game.boss.nextSeat.maxHp--;
-					game.boss.nextSeat.update();
-					await event.waitNext();
-					let dnum = 0;
-					const dead = game.dead.slice(0);
-					for (const current of dead) {
-						if (!current.side && current.maxHp > 0 && current.parentNode === player.parentNode) {
-							current.revive(current.maxHp);
-							dnum++;
+				content: [
+					async (event, trigger, player) => {
+						await game.delay();
+						game.changeBoss("boss_zhuanxu");
+						await game.delay(0.5);
+					},
+					async (event, trigger, player) => {
+						game.addBossFellow(game.me === game.boss ? 7 : 5, "boss_shuishengonggong");
+						game.changeBoss("boss_shuishenxuanming", game.boss.nextSeat);
+						game.boss.previousSeat.maxHp--;
+						game.boss.previousSeat.update();
+						game.boss.nextSeat.maxHp--;
+						game.boss.nextSeat.update();
+					},
+					async (event, trigger, player) => {
+						let dnum = 0;
+						const dead = game.dead.slice(0);
+						for (const current of dead) {
+							if (!current.side && current.maxHp > 0 && current.parentNode === player.parentNode) {
+								current.revive(current.maxHp);
+								dnum++;
+							}
 						}
-					}
-					for (const current of game.players) {
-						if (current.side) {
-							continue;
+						for (const current of game.players) {
+							if (current.side) {
+								continue;
+							}
+							current.removeEquipTrigger();
+							const hej = current.getCards("hej");
+							for (const card of hej) {
+								card.discard(false);
+							}
+							current.hp = current.maxHp;
+							current.hujia = 0;
+							current.classList.remove("turnedover");
+							current.removeLink();
+							current.directgain(get.cards(4 - dnum));
 						}
-						current.removeEquipTrigger();
-						const hej = current.getCards("hej");
-						for (const card of hej) {
-							card.discard(false);
+					},
+					async (event, trigger, player) => {
+						while (_status.event.name !== "phaseLoop") {
+							_status.event = _status.event.parent;
 						}
-						current.hp = current.maxHp;
-						current.hujia = 0;
-						current.classList.remove("turnedover");
-						current.removeLink();
-						current.directgain(get.cards(4 - dnum));
-					}
-					await event.waitNext();
-					while (_status.event.name !== "phaseLoop") {
-						_status.event = _status.event.parent;
-					}
-					game.resetSkills();
-					_status.paused = false;
-					_status.event.player = game.boss;
-					_status.event.step = 0;
-					_status.roundStart = game.boss;
-					game.phaseNumber = 0;
-					game.roundNumber = 0;
-				},
+						game.resetSkills();
+						_status.paused = false;
+						_status.event.player = game.boss;
+						_status.event.step = 0;
+						_status.roundStart = game.boss;
+						game.phaseNumber = 0;
+						game.roundNumber = 0;
+					},
+				],
 			},
 			boss_baimang: {
 				trigger: { global: "gameStart" },
@@ -6653,62 +6683,67 @@ export default () => {
 					}
 					return event.player === game.boss && event.player.hasSkill("boss_baimang2");
 				},
-				async content(event, trigger, player) {
-					await game.delay();
-					if (game.me !== game.boss) {
-						game.boss.changeSeat(6);
-					} else {
-						game.boss.nextSeat.changeSeat(3);
-						game.boss.previousSeat.changeSeat(5);
-					}
-					game.changeBoss("boss_jinshenrushou");
-					for (const current of game.players) {
-						current.hp = current.maxHp;
-						current.update();
-					}
-					await game.delay(0.5);
-					await event.waitNext();
-					game.addBossFellow(game.me === game.boss ? 1 : 5, "boss_mingxingzhu");
-					game.addBossFellow(7, "boss_mingxingzhu");
-					await event.waitNext();
-					let dnum = 0;
-					const dead = game.dead.slice(0);
-					for (const current of dead) {
-						if (!current.side && current.maxHp > 0 && current.parentNode === player.parentNode) {
-							current.revive(current.maxHp);
-							dnum++;
+				content: [
+					async (event, trigger, player) => {
+						await game.delay();
+						if (game.me !== game.boss) {
+							game.boss.changeSeat(6);
+						} else {
+							game.boss.nextSeat.changeSeat(3);
+							game.boss.previousSeat.changeSeat(5);
 						}
-					}
-					for (const current of game.players) {
-						if (current.side) {
-							continue;
+						game.changeBoss("boss_jinshenrushou");
+						for (const current of game.players) {
+							current.hp = current.maxHp;
+							current.update();
 						}
-						current.removeEquipTrigger();
-						const hej = current.getCards("hej");
-						for (const card of hej) {
-							card.discard(false);
+						await game.delay(0.5);
+					},
+					async (event, trigger, player) => {
+						game.addBossFellow(game.me === game.boss ? 1 : 5, "boss_mingxingzhu");
+						game.addBossFellow(7, "boss_mingxingzhu");
+					},
+					async (event, trigger, player) => {
+						let dnum = 0;
+						const dead = game.dead.slice(0);
+						for (const current of dead) {
+							if (!current.side && current.maxHp > 0 && current.parentNode === player.parentNode) {
+								current.revive(current.maxHp);
+								dnum++;
+							}
 						}
-						current.hp = current.maxHp;
-						current.hujia = 0;
-						current.classList.remove("turnedover");
-						current.removeLink();
-						current.directgain(get.cards(4 - dnum));
-					}
-					await event.waitNext();
-					while (_status.event.name !== "phaseLoop") {
-						_status.event = _status.event.parent;
-					}
-					game.resetSkills();
-					_status.paused = false;
-					_status.event.player = game.boss;
-					_status.event.step = 0;
-					_status.roundStart = game.boss;
-					game.phaseNumber = 0;
-					game.roundNumber = 0;
-					if (game.bossinfo) {
-						game.bossinfo.loopType = 1;
-					}
-				},
+						for (const current of game.players) {
+							if (current.side) {
+								continue;
+							}
+							current.removeEquipTrigger();
+							const hej = current.getCards("hej");
+							for (const card of hej) {
+								card.discard(false);
+							}
+							current.hp = current.maxHp;
+							current.hujia = 0;
+							current.classList.remove("turnedover");
+							current.removeLink();
+							current.directgain(get.cards(4 - dnum));
+						}
+					},
+					async (event, trigger, player) => {
+						while (_status.event.name !== "phaseLoop") {
+							_status.event = _status.event.parent;
+						}
+						game.resetSkills();
+						_status.paused = false;
+						_status.event.player = game.boss;
+						_status.event.step = 0;
+						_status.roundStart = game.boss;
+						game.phaseNumber = 0;
+						game.roundNumber = 0;
+						if (game.bossinfo) {
+							game.bossinfo.loopType = 1;
+						}
+					},
+				],
 			},
 			boss_baimang3: {
 				charlotte: true,
@@ -6744,62 +6779,67 @@ export default () => {
 					}
 					return event.player === game.boss && event.player.hasSkill("boss_baimang3");
 				},
-				async content(event, trigger, player) {
-					await game.delay();
-					game.changeBoss("boss_shaohao");
-					await game.delay(0.5);
-					await event.waitNext();
-					game.changeBoss("boss_jinshenrushou", game.boss.previousSeat);
-					game.changeBoss("boss_mingxingzhu", game.boss.nextSeat);
-					game.boss.previousSeat.maxHp--;
-					game.boss.previousSeat.update();
-					if (game.me !== game.boss) {
-						game.addBossFellow(4, "boss_mingxingzhu");
-					} else {
-						// ui.arena.dataset.number='7';
-						// game.addVideo('arenaNumber',null,7);
-						// game.boss.previousSeat.changeSeat(6);
-						// game.boss.nextSeat.nextSeat.changeSeat(2);
-						// game.boss.nextSeat.nextSeat.nextSeat.changeSeat(3);
-						// game.boss.nextSeat.nextSeat.nextSeat.nextSeat.changeSeat(4);
-						game.addBossFellow(6, "boss_mingxingzhu");
-					}
-					await event.waitNext();
-					let dnum = 0;
-					const dead = game.dead.slice(0);
-					for (const current of dead) {
-						if (!current.side && current.maxHp > 0 && current.parentNode === player.parentNode) {
-							current.revive(current.maxHp);
-							dnum++;
+				content: [
+					async (event, trigger, player) => {
+						await game.delay();
+						game.changeBoss("boss_shaohao");
+						await game.delay(0.5);
+					},
+					async (event, trigger, player) => {
+						game.changeBoss("boss_jinshenrushou", game.boss.previousSeat);
+						game.changeBoss("boss_mingxingzhu", game.boss.nextSeat);
+						game.boss.previousSeat.maxHp--;
+						game.boss.previousSeat.update();
+						if (game.me !== game.boss) {
+							game.addBossFellow(4, "boss_mingxingzhu");
+						} else {
+							// ui.arena.dataset.number='7';
+							// game.addVideo('arenaNumber',null,7);
+							// game.boss.previousSeat.changeSeat(6);
+							// game.boss.nextSeat.nextSeat.changeSeat(2);
+							// game.boss.nextSeat.nextSeat.nextSeat.changeSeat(3);
+							// game.boss.nextSeat.nextSeat.nextSeat.nextSeat.changeSeat(4);
+							game.addBossFellow(6, "boss_mingxingzhu");
 						}
-					}
-					for (const current of game.players) {
-						if (current.side) {
-							continue;
+					},
+					async (event, trigger, player) => {
+						let dnum = 0;
+						const dead = game.dead.slice(0);
+						for (const current of dead) {
+							if (!current.side && current.maxHp > 0 && current.parentNode === player.parentNode) {
+								current.revive(current.maxHp);
+								dnum++;
+							}
 						}
-						current.removeEquipTrigger();
-						const hej = current.getCards("hej");
-						for (const card of hej) {
-							card.discard(false);
+						for (const current of game.players) {
+							if (current.side) {
+								continue;
+							}
+							current.removeEquipTrigger();
+							const hej = current.getCards("hej");
+							for (const card of hej) {
+								card.discard(false);
+							}
+							current.hp = current.maxHp;
+							current.hujia = 0;
+							current.classList.remove("turnedover");
+							current.removeLink();
+							current.directgain(get.cards(4 - dnum));
 						}
-						current.hp = current.maxHp;
-						current.hujia = 0;
-						current.classList.remove("turnedover");
-						current.removeLink();
-						current.directgain(get.cards(4 - dnum));
-					}
-					await event.waitNext();
-					while (_status.event.name !== "phaseLoop") {
-						_status.event = _status.event.parent;
-					}
-					game.resetSkills();
-					_status.paused = false;
-					_status.event.player = game.boss;
-					_status.event.step = 0;
-					_status.roundStart = game.boss;
-					game.phaseNumber = 0;
-					game.roundNumber = 0;
-				},
+					},
+					async (event, trigger, player) => {
+						while (_status.event.name !== "phaseLoop") {
+							_status.event = _status.event.parent;
+						}
+						game.resetSkills();
+						_status.paused = false;
+						_status.event.player = game.boss;
+						_status.event.step = 0;
+						_status.roundStart = game.boss;
+						game.phaseNumber = 0;
+						game.roundNumber = 0;
+					},
+				],
 			},
 			boss_shenyi: {
 				unique: true,
