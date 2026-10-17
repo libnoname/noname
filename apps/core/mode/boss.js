@@ -8930,17 +8930,13 @@ export default () => {
 			boss_lianyu: {
 				trigger: { player: "phaseJieshuBegin" },
 				unique: true,
-				content() {
-					"step 0";
-					event.players = get.players(player);
-					"step 1";
-					if (event.players.length) {
-						var current = event.players.shift();
-						if (current.isEnemyOf(player)) {
-							player.line(current, "fire");
-							current.damage("fire");
+				async content(event, trigger, player) {
+					for (const current of get.players(player)) {
+						if (!current.isEnemyOf(player)) {
+							continue;
 						}
-						event.redo();
+						player.line(current, "fire");
+						await current.damage({ nature: "fire" });
 					}
 				},
 				ai: {
