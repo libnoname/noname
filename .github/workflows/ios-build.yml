@@ -462,9 +462,9 @@ jobs:
               | awk 'NF==3 { if (maj=="" || $1>maj || ($1==maj && ($2>mid || ($2==mid && $3>pat)))) { maj=$1; mid=$2; pat=$3 } } END { if (maj=="") print "1.0.0"; else print maj "." mid "." (pat+1) }')
             upstream_tag=$(gh api repos/libnoname/noname/releases/latest --jq .tag_name 2>/dev/null || echo "未知")
             upstream_sha=$(gh api repos/libnoname/noname/commits/main --jq '.sha[0:8]' 2>/dev/null || echo "未知")
-            TAG="v$next"
-            TITLE="iOS unsigned $next（上游 $upstream_tag）"
-            VERSION_LINE="**版本**：$next（对应上游 \`libnoname/noname\` $upstream_tag，main@$upstream_sha）"
+            TAG="v${next}"
+            TITLE="iOS unsigned ${next}（上游 ${upstream_tag}）"
+            VERSION_LINE="**版本**：${next}（对应上游 \`libnoname/noname\` ${upstream_tag}，main@${upstream_sha}）"
           fi
           echo "Release tag: $TAG"
 
