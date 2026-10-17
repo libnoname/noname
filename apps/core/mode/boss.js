@@ -7061,34 +7061,27 @@ export default () => {
 				filter(event, player) {
 					return [3, 5, 7].includes(game.roundNumber);
 				},
-				content() {
-					"step 0";
-					if (game.roundNumber == 3) {
-						var enemies = game.filterPlayer(function (current) {
-							return current.isEnemyOf(player);
-						});
+				async content(event, trigger, player) {
+					if (game.roundNumber === 3) {
+						const enemies = game.filterPlayer(current => current.isEnemyOf(player));
 						player.line(enemies, "green");
-						for (var i = 0; i < enemies.length; i++) {
-							enemies[i].addSkill("boss_chiyi2");
+						for (const enemy of enemies) {
+							enemy.addSkill("boss_chiyi2");
 						}
-						event.finish();
-					} else if (game.roundNumber == 5) {
-						event.targets = game.filterPlayer().sortBySeat();
-						event.num = 1;
-					} else {
-						event.targets = game
-							.filterPlayer(function (current) {
-								return current.name == "boss_yanling";
-							})
-							.sortBySeat();
-						event.num = 5;
+						return;
 					}
-					"step 1";
-					if (event.targets.length) {
-						var target = event.targets.shift();
+					let targets;
+					let num;
+					if (game.roundNumber === 5) {
+						targets = game.filterPlayer().sortBySeat();
+						num = 1;
+					} else {
+						targets = game.filterPlayer(current => current.name === "boss_yanling").sortBySeat();
+						num = 5;
+					}
+					for (const target of targets) {
 						player.line(target, "fire");
-						target.damage(event.num, "fire");
-						event.redo();
+						await target.damage({ num, nature: "fire" });
 					}
 				},
 			},
@@ -7102,7 +7095,7 @@ export default () => {
 				forced: true,
 				popup: false,
 				sourceSkill: "boss_chiyi",
-				content() {
+				async content(event, trigger, player) {
 					trigger.num++;
 				},
 			},
