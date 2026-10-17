@@ -9665,28 +9665,17 @@ export default () => {
 					player.storage.boss_guihan = false;
 				},
 				filter(event, player) {
-					if (event.type != "dying") {
-						return false;
-					}
-					if (!player.isDying()) {
-						return false;
-					}
-					if (player.storage.boss_guihan) {
-						return false;
-					}
-					return true;
+					return event.type === "dying" && player.isDying() && !player.storage.boss_guihan;
 				},
-				content() {
-					"step 0";
+				async content(event, trigger, player) {
 					player.removeSkill("boss_guihan");
-					player.recover(player.maxHp - player.hp);
+					const recover = player.recover(player.maxHp - player.hp);
 					player.storage.boss_guihan = true;
-					"step 1";
-					player.draw(4);
-					"step 2";
-					for (var i = 0; i < game.players.length; i++) {
-						game.players[i].enableSkill("boss_hujia");
-						delete game.players[i].storage.boss_hujia;
+					await recover;
+					await player.draw(4);
+					for (const current of game.players) {
+						current.enableSkill("boss_hujia");
+						delete current.storage.boss_hujia;
 					}
 					if (game.bossinfo) {
 						game.bossinfo.loopType = 1;
