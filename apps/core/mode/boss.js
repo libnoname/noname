@@ -3377,35 +3377,37 @@ export default () => {
 				silent: true,
 				popup: false,
 				filter(event, player) {
-					if (lib.config.mode != "boss") {
+					if (lib.config.mode !== "boss") {
 						return false;
 					}
-					if (_status.shidianyanluo_level == undefined) {
+					if (_status.shidianyanluo_level == null) {
 						return false;
 					}
-					return player == game.boss;
+					return player === game.boss;
 				},
-				content() {
-					var next = game.createEvent("shidianyanluo_huanren", false, trigger.getParent());
+				async content(event, trigger, player) {
+					const next = game.createEvent("shidianyanluo_huanren", false, trigger.getParent());
 					next.player = player;
 					next.forceDie = true;
 					next.setContent(lib.skill.boss_xhuanren2.contentx);
 				},
-				contentx() {
-					"step 0";
-					game.delay();
-					"step 1";
-					var list = [["boss_chujiangwang", "boss_songdiwang", "boss_wuguanwang", "boss_yanluowang"], ["boss_bianchengwang", "boss_taishanwang", "boss_dushiwang", "boss_pingdengwang"], ["boss_zhuanlunwang"]][_status.shidianyanluo_level];
-					if (list.length == 1) {
-						event._result = { control: list[0] };
-					} else {
-						player.chooseControl(list).set("prompt", "请选择下一个出战的角色").set("forceDie", true).ai = function () {
-							return list.randomGet();
-						};
+				async contentx(event, trigger, player) {
+					await game.delay();
+					const list = [["boss_chujiangwang", "boss_songdiwang", "boss_wuguanwang", "boss_yanluowang"], ["boss_bianchengwang", "boss_taishanwang", "boss_dushiwang", "boss_pingdengwang"], ["boss_zhuanlunwang"]][_status.shidianyanluo_level];
+					let control = list[0];
+					if (list.length !== 1) {
+						const result = await player
+							.chooseControl({
+								controls: list,
+								prompt: "请选择下一个出战的角色",
+								ai: () => list.randomGet(),
+							})
+							.set("forceDie", true)
+							.forResult();
+						control = result.control;
 					}
-					"step 2";
 					_status.shidianyanluo_level++;
-					game.changeBoss(result.control);
+					game.changeBoss(control);
 				},
 			},
 			boss_newhuanren: {
