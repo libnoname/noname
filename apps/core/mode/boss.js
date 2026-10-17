@@ -4753,23 +4753,26 @@ export default () => {
 				filter(event, player) {
 					return player.storage.boss_shedu && player.storage.boss_shedu > 0;
 				},
-				content() {
-					"step 0";
-					var num = player.storage.boss_shedu;
-					event.num = num;
-					var chs = get.cnNumber(num);
-					player.chooseToDiscard("he", num, "弃置" + chs + "张牌，或失去" + chs + "点体力").ai = function (card) {
-						return 12 - get.value(card);
-					};
-					"step 1";
-					if (!result.bool) {
-						player.loseHp(num);
-					}
+				async content(event, trigger, player) {
+					const num = player.storage.boss_shedu;
+					const chs = get.cnNumber(num);
+					const result = await player
+						.chooseToDiscard({
+							position: "he",
+							selectCard: num,
+							prompt: `弃置${chs}张牌，或失去${chs}点体力`,
+							ai: card => 12 - get.value(card),
+						})
+						.forResult();
+					const loseHp = !result.bool ? player.loseHp(num) : null;
 					player.storage.boss_shedu--;
 					if (num > 1) {
 						player.markSkill("boss_shedu");
 					} else {
 						player.unmarkSkill("boss_shedu");
+					}
+					if (loseHp) {
+						await loseHp;
 					}
 				},
 			},
