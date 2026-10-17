@@ -2,19 +2,18 @@ name: Sync with upstream
 
 # 用途：让本 Fork 与上游 libnoname/noname 保持同步，不用手动点「Sync fork」。
 #
-# 覆盖分支：见下方 matrix.branch（当前是 main、feat/ios-support 与 feat/web-pages）。
+# 覆盖分支：每晚自动枚举本 Fork 的全部现有分支（每分支一个独立任务），
+#     唯一排除 build-output（构建产物分支，由 build.yml 强推维护，不参与上游同步）。
+#     新增分支无需改本文件——创建后会自动纳入下一次同步。
 # ⚠️ 每个分支都要单独同步——这些分支是分叉的，不是包含关系：
-#     main             —— Fork 的默认分支，上游同步 + 通用构建 + iOS 旧线；
-#     feat/ios-support —— 实际用来出 iOS 包的那条线（Capacitor 8）；
-#     feat/web-pages   —— 网页版（Cloudflare Pages）部署所在分支。
-#     2026-10-05 就踩过这个坑：当时只同步 main，结果 iOS 包（从 feat/ios-support 构建）
-#     缺了上游新增的 21 个资源文件——因为批量下载的文件清单是构建时按分支自己的
-#     资源生成的，而不是按上游。
-#     feat/web-pages 同理：它的产物（dist）也是按分支资源构建的，漏同步会缺素材。
+#     历史教训（2026-10-05）：当时只同步 main，结果 iOS 包（从 feat/ios-support 构建）
+#     缺了上游新增的 21 个资源文件——批量下载清单是构建时按分支自己的资源生成的；
+#     feat/web-pages 同理（产物 dist 按分支资源构建，漏同步会缺素材）。
+#     因此现在的策略是「全分支覆盖」，任何一条都不会落单。
 #
 # 触发：
-#   - 每天 UTC 16:00（= 北京时间 00:00）自动跑一次；
-#   - 也可以手动 Run workflow。
+#   - 每天 UTC 16:00（= 北京时间 00:00）自动跑一次（每晚一次，覆盖全部分支）；
+#   - 也可以手动 Run workflow（同样覆盖全部分支）。
 #
 # 实现在服务端完成，不需要把仓库拉下来：
 #   - 比较：GET /repos/{fork}/compare/main...{upstream-owner}:main
@@ -53,7 +52,7 @@ name: Sync with upstream
 # 没配也没关系：那种情况下本次运行会失败并打印上面这条明确原因，
 # 你手动点一次网页上的「Sync fork」即可（浏览器用你本人的身份，不受此限制）。
 #
-# 其它两个容易踩的点：
+# 其它容易踩的点：
 #   1. GitHub 的 schedule 只会在默认分支上执行。因此这个文件必须存在于
 #      fork 的 main 上；只放在功能分支里，定时任务永远不会被触发。
 #   2. 合并是合并而不是重置：本 Fork 的 main 有一批自定义提交
@@ -62,6 +61,9 @@ name: Sync with upstream
 #      这是刻意设计的：宁可报错，也不冒险强推。
 #   3. 定时任务在仓库连续 60 天没有任何提交活动后会被 GitHub 自动停用，
 #      届时 Actions 页面会出现提示，重新启用即可。
+#   4. 复刻仓库（fork）的定时工作流可能被平台自动禁用（GitHub 的 fork 资源策略，
+#      2026-10-15 就发生过一次全量停摆）。若发现 nightly 不再触发，到 Actions 页面
+#      把本工作流重新 Enable 即可；手动 Run workflow 不受影响。
 
 on:
   schedule:
@@ -73,26 +75,49 @@ permissions:
   contents: write # merge-upstream 需要写权限
 
 jobs:
+  # 前置：运行时枚举本 Fork 的全部现有分支（排除 build-output），供同步矩阵使用。
+  # 新增分支无需修改本文件——下一次运行会自动纳入。
+  list-branches:
+    name: List all branches
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      branches: ${{ steps.list.outputs.branches }}
+      count: ${{ steps.list.outputs.count }}
+    steps:
+      - name: 枚举分支（排除 build-output）
+        id: list
+        env:
+          GH_TOKEN: ${{ secrets.SYNC_TOKEN || secrets.GITHUB_TOKEN }}
+          FORK: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          all=$(gh api "repos/$FORK/branches?per_page=100" --paginate --jq '.[].name' | sort)
+          names=$(printf '%s\n' "$all" | grep -v -x 'build-output' || true)
+          if [ -z "$names" ]; then
+            echo "::error::未枚举到任何可同步分支（异常，请检查）"
+            exit 1
+          fi
+          # 生成 JSON 数组供 matrix.fromJSON 使用（分支名不含引号/反斜杠，直接包裹即可）
+          json="[$(printf '%s\n' "$names" | sed 's/.*/"&"/' | tr '\n' ',' | sed 's/,$//')]"
+          echo "branches=$json" >> "$GITHUB_OUTPUT"
+          count=$(printf '%s\n' "$names" | grep -c .)
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+          echo "本次将同步的分支（共 $count 个）："
+          printf '%s\n' "$names" | sed 's/^/  - /'
+
   sync:
     name: Sync ${{ matrix.branch }} from upstream
+    needs: list-branches
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
-    # 每个分支一个独立任务，互不影响（fast-fail=false 让一个分支失败不牵连另一个）
+    # 每个分支一个独立任务，互不影响（fail-fast=false 让单个分支失败不牵连其它）
     strategy:
       fail-fast: false
       matrix:
-        # 需要跟着上游走的分支。加分支只改这一行即可。
-        #   main              —— Fork 的默认分支，网页「Sync fork」按钮同步的就是它
-        #   feat/ios-support  —— 实际用来构建 iOS 包的开发分支（Capacitor 8 那条线）
-        #   feat/web-pages    —— 网页版（Cloudflare Pages）部署所在分支（2026-10-14 加入）
-        # ⚠️ 这些分支是分叉的（main 是 Capacitor 6 的旧线），所以必须各自同步，
-        #    只同步某一条不够——曾经就因为只同步 main，导致 iOS 包缺了上游新增的
-        #    21 个资源文件（清单按分支资源生成）。
-        branch:
-          - main
-          - feat/ios-support
-          - feat/web-pages
+        # 分支列表由前置任务在运行时自动枚举（fork 全部现有分支，排除 build-output）
+        branch: ${{ fromJSON(needs.list-branches.outputs.branches) }}
 
     # 同一分支同时只允许一个同步任务（按分支分组，各分支可并行）
     concurrency:
@@ -105,8 +130,8 @@ jobs:
       FORK: ${{ github.repository }}
       UPSTREAM: libnoname/noname
       UPSTREAM_OWNER: libnoname
-      # 上游用来对比的分支。不要用 $BRANCH——那会去查 libnoname:feat/ios-support
-      # 或 libnoname:feat/web-pages（上游都不存在），必然 404。
+      # 同步源恒为上游 main。⚠️ 不要用 $BRANCH——统一锁定 main：
+      # 本工作流的语义是「把上游 main 合进每个分支」，不是「同名分支互相对齐」。
       UPSTREAM_BRANCH: main
       BRANCH: ${{ matrix.branch }}
 
@@ -115,6 +140,9 @@ jobs:
         id: compare
         run: |
           set -euo pipefail
+
+          # 分支名中的 # 在 URL 里会被当作锚点截断，路径参数必须转义（%23）
+          BRANCH_ENC=$(printf '%s' "$BRANCH" | sed 's/#/%23/g')
 
           # 自检：确认当前用的到底是哪个令牌。内置 GITHUB_TOKEN 的身份是
           # github-actions[bot]，配了 SYNC_TOKEN 则显示你自己的用户名。
@@ -128,9 +156,9 @@ jobs:
           fi
 
           upstream_sha=$(gh api "repos/$UPSTREAM/commits/$UPSTREAM_BRANCH" --jq .sha)
-          fork_sha=$(gh api "repos/$FORK/commits/$BRANCH" --jq .sha)
+          fork_sha=$(gh api "repos/$FORK/commits/$BRANCH_ENC" --jq .sha)
 
-          echo "上游 $UPSTREAM/$BRANCH = $upstream_sha"
+          echo "上游 $UPSTREAM/$UPSTREAM_BRANCH = $upstream_sha"
           echo "本 Fork $FORK/$BRANCH = $fork_sha"
           echo "upstream_sha=$upstream_sha" >> "$GITHUB_OUTPUT"
           echo "fork_sha=$fork_sha" >> "$GITHUB_OUTPUT"
@@ -138,7 +166,7 @@ jobs:
           # ⚠️ 判据是「上游是否领先本 Fork」，不能用「两边 SHA 是否相等」：
           # 本 Fork 有自己的提交，一旦合并过一次，两边 SHA 就再也不会相等了，
           # 那样每天都会白跑一次合并（接口会回 merge_type=none，但没有任何意义）。
-          compare_api="repos/$FORK/compare/$BRANCH...$UPSTREAM_OWNER:$UPSTREAM_BRANCH"
+          compare_api="repos/$FORK/compare/$BRANCH_ENC...$UPSTREAM_OWNER:$UPSTREAM_BRANCH"
           ahead=$(gh api "$compare_api" --jq .ahead_by 2>/dev/null || echo "")
           case "$ahead" in
             ''|*[!0-9]*)
@@ -178,7 +206,7 @@ jobs:
         run: |
           set -uo pipefail
 
-          echo "开始合并 $UPSTREAM:$BRANCH → $FORK:$BRANCH"
+          echo "开始合并 $UPSTREAM:$UPSTREAM_BRANCH → $FORK:$BRANCH"
 
           if response=$(gh api -X POST "repos/$FORK/merge-upstream" -f branch="$BRANCH" 2>&1); then
             echo "$response"
@@ -212,13 +240,15 @@ jobs:
         run: |
           set -euo pipefail
 
-          new_sha=$(gh api "repos/$FORK/commits/$BRANCH" --jq .sha)
+          BRANCH_ENC=$(printf '%s' "$BRANCH" | sed 's/#/%23/g')
+
+          new_sha=$(gh api "repos/$FORK/commits/$BRANCH_ENC" --jq .sha)
           echo "同步后 $FORK/$BRANCH = $new_sha"
           echo "new_sha=$new_sha" >> "$GITHUB_OUTPUT"
 
           # 合并完成后，「上游领先」应当归零；否则还有上游提交没进来
           # 注意字段方向：base=本 Fork、head=上游，所以看的是 ahead_by
-          compare_api="repos/$FORK/compare/$BRANCH...$UPSTREAM_OWNER:$UPSTREAM_BRANCH"
+          compare_api="repos/$FORK/compare/$BRANCH_ENC...$UPSTREAM_OWNER:$UPSTREAM_BRANCH"
           gh api "$compare_api" --jq '"status=" + .status + " 上游仍领先 " + (.ahead_by|tostring) + " 个提交；本 Fork 自定义提交 " + (.behind_by|tostring) + " 个"'
 
           remaining=$(gh api "$compare_api" --jq .ahead_by)
