@@ -8989,19 +8989,17 @@ export default () => {
 			},
 			boss_guihuo: {
 				trigger: { player: "phaseJieshuBegin" },
-				direct: true,
-				content() {
-					"step 0";
-					player.chooseTarget(get.prompt("boss_guihuo"), function (card, player, target) {
-						return player != target;
-					}).ai = function (target) {
-						return get.damageEffect(target, player, player, "fire");
-					};
-					"step 1";
-					if (result.bool) {
-						player.logSkill("boss_guihuo", result.targets);
-						result.targets[0].damage("fire");
-					}
+				async cost(event, trigger, player) {
+					event.result = await player
+						.chooseTarget({
+							prompt: get.prompt(event.skill),
+							filterTarget: lib.filter.notMe,
+							ai: target => get.damageEffect(target, player, player, "fire"),
+						})
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					await event.targets[0].damage({ nature: "fire" });
 				},
 			},
 			boss_luolei: {
