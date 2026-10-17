@@ -8789,27 +8789,24 @@ export default () => {
 				frequent: true,
 				unique: true,
 				filter(event, player) {
-					return _status.currentPhase != player;
+					return _status.currentPhase !== player;
 				},
-				content() {
-					"step 0";
-					player.judge(function (card) {
-						return get.color(card) == "red" ? 1 : 0;
-					});
-					"step 1";
-					if (result.bool) {
-						player.chooseTarget(true, "选择一个目标对其造成2点火焰伤害", function (card, player, target) {
-							return player != target;
-						}).ai = function (target) {
-							return get.damageEffect(target, player, player, "fire");
-						};
-					} else {
-						event.finish();
+				async content(event, trigger, player) {
+					const judgeResult = await player.judge({ judge: card => (get.color(card) === "red" ? 1 : 0) }).forResult();
+					if (!judgeResult.bool) {
+						return;
 					}
-					"step 2";
+					const result = await player
+						.chooseTarget({
+							forced: true,
+							prompt: "选择一个目标对其造成2点火焰伤害",
+							filterTarget: (card, player, target) => player !== target,
+							ai: target => get.damageEffect(target, player, player, "fire"),
+						})
+						.forResult();
 					if (result.targets.length) {
 						player.line(result.targets, "fire");
-						result.targets[0].damage(2, "fire");
+						await result.targets[0].damage({ num: 2, nature: "fire" });
 					}
 				},
 				ai: {
