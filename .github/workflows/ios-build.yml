@@ -23,8 +23,18 @@ name: Build unsigned iOS IPA
 #   请在本地执行：pnpm build && pnpm --filter @noname/mobile sync，
 #   然后直接对 apps/mobile/ios 出包，不要走这个工作流。
 #
-# 触发方式：GitHub 网页 → Actions → “Build unsigned iOS IPA” → Run workflow
+# 触发方式（三选一）：
+#   ① 推送到 feat/ios-support 分支即自动构建 —— 配合 sync-upstream 每晚合并，
+#      与 cloudflare-pages 的推送自动部署共同构成「每晚同步 → iOS/网页自动更新」闭环，
+#      维护者日常无需任何人工介入；
+#   ② 打 ios-v* tag 时自动构建（用于人工指定版本号发版）；
+#   ③ GitHub 网页 → Actions → “Build unsigned iOS IPA” → Run workflow（手动触发）。
 # 产物位置：运行页面底部的 Artifacts；同时会附到自动创建的 Release 上。
+#
+# 版本号规则（详见仓库根目录《无名杀 iOS 操作手册》）：
+#   Actions 发布的 Release 一律视为小版本号递增，初始 v1.0.0，此后 patch +1
+#   （v1.0.0 → v1.0.1 → v1.0.2 …），标题与说明同时标注所对应的上游版本；
+#   以 ios-v* tag 触发时，版本号以 tag 名为准，不参与上述自动递增。
 #
 # 详细说明与本地构建方式见本仓库根目录的《无名杀 iOS 操作手册》：
 # https://github.com/cklsit/noname/blob/main/%E6%97%A0%E5%90%8D%E6%9D%80iOS%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C.md
@@ -42,13 +52,24 @@ on:
         type: boolean
         required: false
         default: true
-  # 打 tag 时自动构建，方便发版
+  # 自动触发：
+  #   ① 推送到 feat/ios-support 即构建（配合 sync-upstream 每晚合并 → 每晚自动更新；
+  #      与 cloudflare-pages 的推送自动部署共同构成「同步即更新」闭环）；
+  #   ② 打 ios-v* tag 时构建（人工指定版本）。
   push:
     tags:
       - "ios-v*"
+    branches:
+      - feat/ios-support
 
 permissions:
   contents: write # 创建 Release 需要
+
+# 并发控制：同 ref 只保留一个构建。版本号在发布步骤按「现有 Release」计算并 +0.0.1，
+# 串行可避免两次构建并发算出同一个版本号、发布时 tag 撞车。
+concurrency:
+  group: "ios-build-${{ github.ref }}"
+  cancel-in-progress: false
 
 jobs:
   build-ipa:
@@ -427,13 +448,23 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           IPA_PATH: ${{ steps.package.outputs.ipa_path }}
         run: |
-          # tag 触发时用 tag 名做 Release 标签，手动触发时按运行序号生成
+          set -euo pipefail
+          # 版本号规则：初始 1.0.0；无论 feat/fix，Actions 发布的 Release 一律视为小版本号 +0.0.1。
+          # 版本号 = 现有 Release 中最大 semver（v?X.Y.Z）的 patch+1；无则 1.0.0。
           if [ "${{ github.ref_type }}" = "tag" ]; then
             TAG="${{ github.ref_name }}"
             TITLE="iOS unsigned ${{ github.ref_name }}"
+            VERSION_LINE="**版本**：${{ github.ref_name }}（tag 触发）"
           else
-            TAG="ios-build-${{ github.run_number }}"
-            TITLE="iOS unsigned build #${{ github.run_number }}"
+            tags=$(gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" --paginate --jq '.[].tag_name' 2>/dev/null || true)
+            next=$(printf '%s\n' "$tags" \
+              | sed -nE 's/^v?([0-9]+)\.([0-9]+)\.([0-9]+)$/\1 \2 \3/p' \
+              | awk 'NF==3 { if (maj=="" || $1>maj || ($1==maj && ($2>mid || ($2==mid && $3>pat)))) { maj=$1; mid=$2; pat=$3 } } END { if (maj=="") print "1.0.0"; else print maj "." mid "." (pat+1) }')
+            upstream_tag=$(gh api repos/libnoname/noname/releases/latest --jq .tag_name 2>/dev/null || echo "未知")
+            upstream_sha=$(gh api repos/libnoname/noname/commits/main --jq '.sha[0:8]' 2>/dev/null || echo "未知")
+            TAG="v$next"
+            TITLE="iOS unsigned $next（上游 $upstream_tag）"
+            VERSION_LINE="**版本**：$next（对应上游 \`libnoname/noname\` $upstream_tag，main@$upstream_sha）"
           fi
           echo "Release tag: $TAG"
 
@@ -444,7 +475,9 @@ jobs:
             gh release create "$TAG" \
               --repo "$GITHUB_REPOSITORY" \
               --title "$TITLE" \
-              --notes "未签名 iOS ipa（GitHub Actions 自动构建，commit ${{ github.sha }}）。
+              --notes "$VERSION_LINE
+
+          未签名 iOS ipa（GitHub Actions 自动构建，commit ${{ github.sha }}）。
 
           **安装方式**：把这个 .ipa 导入 SideStore / AltStore，用你自己的 Apple ID 重签后安装。
 
