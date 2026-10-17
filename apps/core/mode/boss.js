@@ -7498,22 +7498,21 @@ export default () => {
 				forced: true,
 				logTarget: "player",
 				filter(event, player) {
-					return event.result && event.result.length >= 2 && event.player != player;
+					return event.result && event.result.length >= 2 && event.player !== player;
 				},
-				content() {
-					"step 0";
-					trigger.player.chooseCard(
-						function (card) {
-							return trigger.result.includes(card);
-						},
-						"归心：交给" + get.translation(player) + "一张牌",
-						true
-					);
-					"step 1";
-					if (result.bool) {
-						player.gain(result.cards, trigger.player);
-						trigger.player.$give(1, player);
+				async content(event, trigger, player) {
+					const result = await trigger.player
+						.chooseCard({
+							filterCard: card => trigger.result.includes(card),
+							prompt: `归心：交给${get.translation(player)}一张牌`,
+							forced: true,
+						})
+						.forResult();
+					if (!result.bool) {
+						return;
 					}
+					trigger.player.$give(1, player);
+					await player.gain({ cards: result.cards, source: trigger.player });
 				},
 			},
 			xiongcai: {
