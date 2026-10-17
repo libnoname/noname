@@ -9664,14 +9664,10 @@ export default () => {
 				filter(event, player) {
 					return player.hp < player.maxHp;
 				},
-				content() {
-					"step 0";
-					player.judge(function (card) {
-						return get.color(card) == "red" ? 1 : 0;
-					});
-					"step 1";
+				async content(event, trigger, player) {
+					const result = await player.judge({ judge: card => (get.color(card) === "red" ? 1 : 0) }).forResult();
 					if (result.bool) {
-						player.recover();
+						await player.recover();
 					}
 				},
 			},
