@@ -5060,26 +5060,22 @@ export default () => {
 				trigger: { global: "phaseBegin" },
 				forced: true,
 				filter(event, player) {
-					return player != event.player;
+					return player !== event.player;
 				},
-				content() {
-					"step 0";
-					var list = game.filterPlayer(function (current) {
-						return current != player && current.countCards("hej");
-					});
-					if (list.length) {
-						var target = list.randomGet();
-						player.line(target, "green");
-						var card = target.getCards("hej").randomGet();
-						event.card = card;
-						player.gain(card, target);
-						target.$giveAuto(card, player);
-					} else {
-						event.finish();
+				async content(event, trigger, player) {
+					const list = game.filterPlayer(current => current !== player && current.hasCards("hej"));
+					if (!list.length) {
+						return;
 					}
-					"step 1";
-					if (player.getCards("h").includes(card) && get.type(card) == "equip") {
-						player.chooseUseTarget(card, true, "nopopup", "noanimate");
+					const target = list.randomGet();
+					player.line(target, "green");
+					const card = target.getCards("hej").randomGet();
+					event.card = card;
+					const gain = player.gain({ cards: [card], source: target });
+					target.$giveAuto(card, player);
+					await gain;
+					if (player.getCards("h").includes(card) && get.type(card) === "equip") {
+						await player.chooseUseTarget({ card, forced: true, nopopup: true, animate: false });
 					}
 				},
 			},
