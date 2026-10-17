@@ -8913,35 +8913,23 @@ export default () => {
 			},
 			boss_suoming: {
 				trigger: { player: "phaseJieshuBegin" },
-				direct: true,
 				filter(event, player) {
-					return game.hasPlayer(function (current) {
-						return current != player && !current.isLinked();
-					});
+					return game.hasPlayer(current => current !== player && !current.isLinked());
 				},
-				content() {
-					"step 0";
-					var num = game.countPlayer(function (current) {
-						return current != player && !current.isLinked();
-					});
-					player.chooseTarget(get.prompt("boss_suoming"), [1, num], function (card, player, target) {
-						return !target.isLinked() && player != target;
-					}).ai = function (target) {
-						return -get.attitude(player, target);
-					};
-					"step 1";
-					if (result.bool) {
-						player.logSkill("boss_suoming", result.targets);
-						event.targets = result.targets;
-						event.num = 0;
-					} else {
-						event.finish();
-					}
-					"step 2";
-					if (event.num < event.targets.length) {
-						event.targets[event.num].link();
-						event.num++;
-						event.redo();
+				async cost(event, trigger, player) {
+					const num = game.countPlayer(current => current !== player && !current.isLinked());
+					event.result = await player
+						.chooseTarget({
+							prompt: get.prompt(event.skill),
+							selectTarget: [1, num],
+							filterTarget: (card, player, target) => !target.isLinked() && player !== target,
+							ai: target => -get.attitude(player, target),
+						})
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					for (const target of event.targets) {
+						await target.link();
 					}
 				},
 			},
