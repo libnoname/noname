@@ -10209,8 +10209,8 @@ export default () => {
 				audio: 2,
 				mode: ["identity", "guozhan", "boss", "stone"],
 				init(player) {
-					if (get.mode() == "boss" && player == game.boss) {
-						lib.onwash.push(function () {
+					if (get.mode() === "boss" && player === game.boss) {
+						lib.onwash.push(() => {
 							if (!_status.boss_baonuwash) {
 								_status.boss_baonuwash = true;
 								_status.event.parent.trigger("boss_baonuwash");
@@ -10218,37 +10218,44 @@ export default () => {
 								_status.event.player.addSkill("boss_baonuwash");
 							}
 						});
-						for (var i in lib.card) {
-							if (lib.card[i].subtype == "equip1") {
+						for (const i in lib.card) {
+							if (lib.card[i].subtype === "equip1") {
 								lib.card[i].recastable = true;
 							}
 						}
 					}
 				},
 				filter(event, player) {
-					if (event.name == "changeHp") {
-						return player.hp <= 4 && event.changedHp != 0;
+					if (event.name === "changeHp") {
+						return player.hp <= 4 && event.changedHp !== 0;
 					}
 					return _status.boss_baonuwash;
 				},
-				content() {
-					"step 0";
+				async content(event, trigger, player) {
 					if (player.hp > 6) {
-						game.delay();
+						await game.delay();
 					}
-					"step 1";
-					player
-						.chooseControl("暴怒战神", "神鬼无前", function () {
-							if (Math.random() < 0.5) {
-								return "神鬼无前";
-							}
-							return "暴怒战神";
+					if (!player.isIn()) {
+						return;
+					}
+					const result = await player
+						.chooseControl({
+							controls: ["暴怒战神", "神鬼无前"],
+							prompt: "选择一个形态",
+							ai: () => {
+								if (Math.random() < 0.5) {
+									return "神鬼无前";
+								}
+								return "暴怒战神";
+							},
 						})
-						.set("prompt", "选择一个形态");
-					"step 2";
-					var hp = player.hp;
+						.forResult();
+					if (!player.isIn()) {
+						return;
+					}
+					const hp = player.hp;
 					player.removeSkill("boss_baonu", true);
-					if (result.control == "暴怒战神") {
+					if (result.control === "暴怒战神") {
 						player.init("boss_lvbu2");
 					} else {
 						player.init("boss_lvbu3");
@@ -10265,13 +10272,15 @@ export default () => {
 					if (player.isTurnedOver()) {
 						player.turnOver();
 					}
-					player.discard(player.getCards("j"));
-					"step 3";
-					let evt = _status.event.getParent("phaseLoop", true);
+					await player.discard({ cards: player.getCards("j") });
+					if (!player.isIn()) {
+						return;
+					}
+					const evt = event.getParent("phaseLoop", true);
 					if (evt) {
 						game.resetSkills();
-						let evtx = _status.event;
-						while (evtx != evt) {
+						let evtx = event;
+						while (evtx !== evt) {
 							evtx.finish();
 							evtx.untrigger(true);
 							evtx = evtx.getParent();
@@ -10288,13 +10297,13 @@ export default () => {
 					effect: {
 						target(card, player, target) {
 							if (get.tag(card, "damage") || get.tag(card, "loseHp")) {
-								if (player.hp == 5) {
+								if (player.hp === 5) {
 									if (game.players.length < 4) {
 										return [0, 5];
 									}
-									var num = 0;
-									for (var i = 0; i < game.players.length; i++) {
-										if (game.players[i] != game.boss && game.players[i].hp == 1) {
+									let num = 0;
+									for (const current of game.players) {
+										if (current !== game.boss && current.hp === 1) {
 											num++;
 										}
 									}
