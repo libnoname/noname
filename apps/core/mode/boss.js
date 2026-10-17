@@ -9727,27 +9727,24 @@ export default () => {
 				frequent: true,
 				unique: true,
 				filter(event, player) {
-					return _status.currentPhase != player;
+					return _status.currentPhase !== player;
 				},
-				content() {
-					"step 0";
-					player.judge(function (card) {
-						return get.color(card) == "red" ? 1 : 0;
-					});
-					"step 1";
-					if (result.bool) {
-						player.chooseTarget(true, "选择一个目标令其失去1点体力", function (card, player, target) {
-							return player != target;
-						}).ai = function (target) {
-							return Math.max(1, 9 - target.hp);
-						};
-					} else {
-						event.finish();
+				async content(event, trigger, player) {
+					const judgeResult = await player.judge({ judge: card => (get.color(card) === "red" ? 1 : 0) }).forResult();
+					if (!judgeResult.bool) {
+						return;
 					}
-					"step 2";
+					const result = await player
+						.chooseTarget({
+							forced: true,
+							prompt: "选择一个目标令其失去1点体力",
+							filterTarget: (card, player, target) => player !== target,
+							ai: target => Math.max(1, 9 - target.hp),
+						})
+						.forResult();
 					if (result.targets.length) {
 						player.line(result.targets);
-						result.targets[0].loseHp();
+						await result.targets[0].loseHp();
 					}
 				},
 				ai: {
