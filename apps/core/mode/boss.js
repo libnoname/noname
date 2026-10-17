@@ -4037,29 +4037,29 @@ export default () => {
 				audio: true,
 				trigger: { global: "loseAfter" },
 				filter(event, player) {
-					var evt = event.getParent(3);
-					return event.type == "discard" && evt.name == "phaseDiscard" && evt.player == event.player && evt.player != player && event.cards2 && event.cards2.filterInD("d").length > 0;
+					const evt = event.getParent(3);
+					return event.type === "discard" && evt.name === "phaseDiscard" && evt.player === event.player && evt.player !== player && event.cards2 && event.cards2.filterInD("d").length > 0;
 				},
-				content() {
-					"step 0";
-					event.cards = trigger.cards2.filterInD("d");
-					"step 1";
-					var next = player
-						.chooseCardButton(get.prompt("boss_shiyou"), event.cards, [1, event.cards.length])
-						.set("ai", function (button) {
-							return get.value(button.link, player);
-						})
-						.set("filterButton", function (button) {
-							for (var i = 0; i < ui.selected.buttons.length; i++) {
-								if (get.suit(ui.selected.buttons[i].link) == get.suit(button.link)) {
-									return false;
+				async content(event, trigger, player) {
+					const cards = trigger.cards2.filterInD("d");
+					const result = await player
+						.chooseCardButton({
+							prompt: get.prompt("boss_shiyou"),
+							cards,
+							select: [1, cards.length],
+							ai: button => get.value(button.link, player),
+							filter: button => {
+								for (const selected of ui.selected.buttons) {
+									if (get.suit(selected.link) === get.suit(button.link)) {
+										return false;
+									}
 								}
-							}
-							return true;
-						});
-					"step 2";
+								return true;
+							},
+						})
+						.forResult();
 					if (result.bool) {
-						player.gain(result.links, "gain2", "log");
+						await player.gain({ cards: result.links, animate: "gain2", log: true });
 					}
 				},
 			},
