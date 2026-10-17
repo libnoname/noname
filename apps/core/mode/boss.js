@@ -9635,17 +9635,15 @@ export default () => {
 				frequent: true,
 				unique: true,
 				filter(event, player) {
-					return _status.currentPhase?.isIn() && _status.currentPhase != player;
+					return _status.currentPhase?.isIn() && _status.currentPhase !== player;
 				},
-				content() {
-					"step 0";
-					player.judge();
-					"step 1";
-					if (result.color == "black") {
-						_status.currentPhase.loseHp();
+				async content(event, trigger, player) {
+					const result = await player.judge().forResult();
+					if (result.color === "black") {
+						await _status.currentPhase.loseHp();
 					} else {
-						player.recover();
-						player.draw();
+						await player.recover();
+						await player.draw();
 					}
 				},
 				ai: {
