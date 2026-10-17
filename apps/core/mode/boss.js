@@ -9676,15 +9676,12 @@ export default () => {
 				trigger: { player: "phaseJieshuBegin" },
 				forced: true,
 				unique: true,
-				content() {
-					"step 0";
-					event.players = get.players(player);
-					event.players.remove(player);
-					player.draw(2);
-					"step 1";
-					if (event.players.length) {
-						event.players.shift().damage("fire");
-						event.redo();
+				async content(event, trigger, player) {
+					const players = get.players(player);
+					players.remove(player);
+					await player.draw(2);
+					for (const target of players) {
+						await target.damage({ nature: "fire" });
 					}
 				},
 			},
