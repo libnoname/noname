@@ -4952,53 +4952,44 @@ export default () => {
 			boss_honglianx: {
 				mod: {
 					ignoredHandcard(card, player) {
-						if (get.color(card) == "red") {
+						if (get.color(card) === "red") {
 							return true;
 						}
 					},
 					cardDiscardable(card, player, name) {
-						if (name == "phaseDiscard" && get.color(card) == "red") {
+						if (name === "phaseDiscard" && get.color(card) === "red") {
 							return false;
 						}
 					},
 				},
 				forced: true,
 				trigger: { player: "phaseZhunbeiBegin" },
-				content() {
-					"step 0";
-					event.num1 = 3;
-					event.num2 = [0, 1, 2, 3].randomGet();
-					event.togain = [];
-					while (event.togain.length < event.num2) {
-						var card = get.cardPile(function (card) {
-							return !event.togain.includes(card) && get.color(card) == "red";
-						});
-						if (card) {
-							event.togain.push(card);
-						} else {
+				async content(event, trigger, player) {
+					const num = [0, 1, 2, 3].randomGet();
+					const togain = [];
+					while (togain.length < num) {
+						const card = get.cardPile(card => !togain.includes(card) && get.color(card) === "red");
+						if (!card) {
 							break;
 						}
+						togain.push(card);
 					}
-					event.num1 -= event.togain.length;
-					if (event.togain.length) {
-						player.gain(event.togain, "draw");
+					const targetCount = 3 - togain.length;
+					const gain = togain.length ? player.gain({ cards: togain, animate: "draw" }) : null;
+					if (targetCount === 0) {
+						await gain;
+						return;
 					}
-					if (event.num1 == 0) {
-						event.finish();
-					} else {
-						event.list = game
-							.filterPlayer(function (current) {
-								return current != player;
-							})
-							.randomGets(event.num1)
-							.sortBySeat();
-						player.line(event.list, "fire");
+					const list = game
+						.filterPlayer(current => current !== player)
+						.randomGets(targetCount)
+						.sortBySeat();
+					player.line(list, "fire");
+					if (gain) {
+						await gain;
 					}
-					"step 1";
-					var target = event.list.shift();
-					target.damage("fire");
-					if (event.list.length) {
-						event.redo();
+					for (const target of list) {
+						await target.damage({ nature: "fire" });
 					}
 				},
 			},
