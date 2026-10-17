@@ -3925,36 +3925,16 @@ export default () => {
 				trigger: { player: "die" },
 				forceDie: true,
 				forced: true,
-				content() {
-					"step 0";
-					var list = game.filterPlayer(function (current) {
-						return (
-							current != player &&
-							!game.hasPlayer(function (current2) {
-								return current2.hp > current.hp;
-							})
-						);
-					});
-					if (list.length) {
-						var target = list.randomGet();
+				async content(event, trigger, player) {
+					// 第二次伤害沿用 damage() 的默认伤害值。
+					for (const num of [2, undefined]) {
+						const list = game.filterPlayer(current => current !== player && !game.hasPlayer(current2 => current2.hp > current.hp));
+						if (!list.length) {
+							return;
+						}
+						const target = list.randomGet();
 						player.line(target);
-						target.damage(2).nature = lib.linked.randomGet();
-					} else {
-						event.finish();
-					}
-					"step 1";
-					var list = game.filterPlayer(function (current) {
-						return (
-							current != player &&
-							!game.hasPlayer(function (current2) {
-								return current2.hp > current.hp;
-							})
-						);
-					});
-					if (list.length) {
-						var target = list.randomGet();
-						player.line(target);
-						target.damage().nature = lib.linked.randomGet();
+						await target.damage({ num, nature: lib.linked.randomGet() });
 					}
 				},
 			},
