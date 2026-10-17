@@ -8081,16 +8081,16 @@ export default () => {
 				enable: "phaseUse",
 				usable: 1,
 				filterTarget(card, player, target) {
-					if (player == target) {
+					if (player === target) {
 						return false;
 					}
-					return target.countCards("h") > 0;
+					return target.hasCards("h");
 				},
 				selectTarget: 2,
 				multitarget: true,
 				multiline: true,
 				filter(event, player) {
-					return player.countCards("h") > 0;
+					return player.hasCards("h");
 				},
 				prepare: "throw",
 				discard: false,
@@ -8098,23 +8098,16 @@ export default () => {
 				check(card) {
 					return 6 - get.value(card);
 				},
-				content() {
-					"step 0";
-					if (targets[0].countCards("h") && targets[1].countCards("h")) {
-						targets[0].chooseToCompare(targets[1]);
-					} else {
-						event.finish();
+				async content(event, trigger, player) {
+					const { targets, cards } = event;
+					if (!targets[0].hasCards("h") || !targets[1].hasCards("h")) {
+						return;
 					}
-					"step 1";
-					if (result.bool) {
-						targets[0].gain(cards);
-						targets[0].$gain2(cards);
-						targets[1].damage(targets[0]);
-					} else {
-						targets[1].gain(cards);
-						targets[1].$gain2(cards);
-						targets[0].damage(targets[1]);
-					}
+					const result = await targets[0].chooseToCompare(targets[1]).forResult();
+					const [winner, loser] = result.bool ? targets : [targets[1], targets[0]];
+					winner.$gain2(cards);
+					await winner.gain({ cards });
+					await loser.damage({ source: winner });
 				},
 				ai: {
 					expose: 0.3,
