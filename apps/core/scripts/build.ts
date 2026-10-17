@@ -58,6 +58,7 @@ async function main() {
 	const individuals: Record<IndividualType, IndividualContent[]> = {
 		character: [],
 		mode: [
+			{ name: "boss", index: "mode/boss.js", source: "mode/boss.js" },
 			{ name: "brawl", index: "mode/brawl.js", source: "mode/brawl.js" },
 			{ name: "chess", index: "mode/chess.js", source: "mode/chess.js" },
 			{ name: "doudizhu", index: "mode/doudizhu.js", source: "mode/doudizhu.js" },
