@@ -7226,24 +7226,26 @@ export default () => {
 				intro: {
 					content: "锁定技，回合开始时，你进行判定，若结果不为红桃，你受到1点无来源的伤害，若结果不为黑桃，你失去此技能",
 				},
-				content() {
-					"step 0";
-					player.judge(function (card) {
-						var suit = get.suit(card);
-						if (suit == "spade") {
-							return -1;
-						}
-						if (suit == "heart") {
-							return 1;
-						}
-						return 0;
-					});
-					"step 1";
-					if (result.suit != "heart") {
-						player.damage("nosource");
-					}
-					if (result.suit != "spade") {
+				async content(event, trigger, player) {
+					const result = await player
+						.judge({
+							judge: card => {
+								const suit = get.suit(card);
+								if (suit === "spade") {
+									return -1;
+								}
+								if (suit === "heart") {
+									return 1;
+								}
+								return 0;
+							},
+						})
+						.forResult();
+					if (result.suit !== "spade") {
 						player.removeSkill("boss_zhongdu");
+					}
+					if (result.suit !== "heart") {
+						await player.damage({ nosource: true });
 					}
 				},
 			},
