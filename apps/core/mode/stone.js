@@ -11017,7 +11017,7 @@ export default () => {
 				filter(event, player) {
 					return !player.isMin() && player.getEnemy().countFellow() > player.countFellow();
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.changeRage((player.getEnemy().countFellow() - player.countFellow()) * 10);
 				},
 			},
