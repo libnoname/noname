@@ -7429,27 +7429,30 @@ export default () => {
 						}
 					}
 				},
-				content() {
-					"step 0";
-					event.chooser = player.getLeader();
-					event.chooser.chooseTarget(
-						"吞噬：令一名友方随从死亡",
-						function (card, playerx, target) {
-							return player != target && target.isMin() && target.side == player.side;
+				async content(event, trigger, player) {
+					const chooser = player.getLeader();
+					const next = chooser.chooseTarget({
+						prompt: "吞噬：令一名友方随从死亡",
+						filterTarget: (card, playerx, target) => {
+							return player !== target && target.isMin() && target.side === player.side;
 						},
-						true
-					).ai = function (target) {
-						return -target.hp - target.countCards("h") / 4;
-					};
-					player.line(event.chooser);
-					"step 1";
+						forced: true,
+						ai: target => {
+							return -target.hp - target.countCards("h") / 4;
+						},
+					});
+					player.line(chooser);
+					const result = await next.forResult();
+					if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+						return;
+					}
 					if (result.bool) {
-						event.chooser.line(result.targets[0]);
+						chooser.line(result.targets[0]);
 						game.delay();
-						var target = result.targets[0];
-						var hs = target.getCards("h");
+						const target = result.targets[0];
+						const hs = target.getCards("h");
 						if (hs.length) {
-							player.gain(hs);
+							player.gain({ cards: hs });
 						}
 						target.$give(hs.length, player);
 						player.hp += target.hp;
