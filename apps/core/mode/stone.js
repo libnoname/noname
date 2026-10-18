@@ -5859,7 +5859,7 @@ export default () => {
 					return target == player;
 				},
 				selectTarget: -1,
-				content() {
+				async content(event, trigger, player) {
 					player.addTempSkill("spell_yemanpaoxiao", { player: "phaseBegin" });
 				},
 				ai: {
