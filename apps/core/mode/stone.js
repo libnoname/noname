@@ -8678,7 +8678,7 @@ export default () => {
 				filter(event, player) {
 					return event.player.hasSkill("druid_conglinzhihun");
 				},
-				content() {
+				async content(event, trigger, player) {
 					game.delay();
 					player.addFellowAuto("stone_shurenx");
 					player.removeSkill("druid_conglinzhihun2");
