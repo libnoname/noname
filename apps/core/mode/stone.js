@@ -8757,7 +8757,7 @@ export default () => {
 			shaman_shihuawuqi: {
 				trigger: { player: "phaseBegin" },
 				forced: true,
-				content() {
+				async content(event, trigger, player) {
 					player.draw(3);
 				},
 				mark: true,
