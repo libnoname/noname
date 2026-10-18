@@ -8433,7 +8433,7 @@ export default () => {
 				filter(event) {
 					return event.card && get.type(event.card) == "trick" && event.notLink();
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.num++;
 				},
 			},
