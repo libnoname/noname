@@ -8353,9 +8353,9 @@ export default () => {
 					var target = player.getLeader();
 					return _status.currentPhase == target && target.countFellow() > 1;
 				},
-				content() {
-					var target = player.getLeader();
-					var num = target.countFellow();
+				async content(event, trigger, player) {
+					const target = player.getLeader();
+					const num = target.countFellow();
 					if (num > 1) {
 						target.actused -= num - 1;
 						target.updateActCount();
