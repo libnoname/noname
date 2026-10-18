@@ -9879,7 +9879,7 @@ export default () => {
 				filter(event, player) {
 					return event.source && event.source != player && event.source.isMin() && player.side == event.source.side && event.notLink();
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.num++;
 				},
 				ai: {
