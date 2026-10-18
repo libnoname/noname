@@ -8457,17 +8457,17 @@ export default () => {
 				filter(event, player) {
 					return get.type(event.card) == "stonecharacter" && event.player == player.getLeader();
 				},
-				content() {
+				async content(event, trigger, player) {
 					if (!player.storage.shaman_zoushi) {
 						player.storage.shaman_zoushi = true;
 					} else {
-						var list = [];
-						for (var i = 0; i < game.players.length; i++) {
-							if (game.players[i].side != player.side) {
-								list.push(game.players[i]);
+						const list = [];
+						for (const current of game.players) {
+							if (current.side !== player.side) {
+								list.push(current);
 							}
 						}
-						var target = list.randomGet();
+						const target = list.randomGet();
 						player.line(target, "green");
 						target.damage();
 						game.delay();
