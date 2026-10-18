@@ -5853,40 +5853,42 @@ export default () => {
 				stoneact: 1,
 				career: "druid",
 				filterTarget(card, player, target) {
-					return target == player;
+					return target === player;
 				},
 				selectTarget: -1,
-				content() {
-					"step 0";
-					player.chooseControl("法术牌", "随从牌").ai = function () {
-						return Math.random() < 0.5 ? "法术牌" : "随从牌";
-					};
-					"step 1";
-					var list = [];
-					var bool = result.control == "法术牌";
-					for (var i in lib.card) {
-						if (lib.card[i].stonehidden) {
-							continue;
-						}
-						if (bool) {
-							if (lib.card[i].type == "stonecard") {
-								list.push(i);
+				content: [
+					async (event, trigger, player) => {
+						return player
+							.chooseControl({
+								controls: ["法术牌", "随从牌"],
+								ai: () => (Math.random() < 0.5 ? "法术牌" : "随从牌"),
+							})
+							.forResult();
+					},
+					async (event, trigger, player) => {
+						const list = [];
+						const type = event._result.control === "法术牌" ? "stonecard" : "stonecharacter";
+						for (const name in lib.card) {
+							if (lib.card[name].stonehidden) {
+								continue;
 							}
-						} else {
-							if (lib.card[i].type == "stonecharacter") {
-								list.push(i);
+							if (lib.card[name].type === type) {
+								list.push(name);
 							}
 						}
-					}
-					list = list.randomGets(3);
-					var cards = [];
-					for (var i = 0; i < list.length; i++) {
-						cards.push(game.createCard(list[i]));
-					}
-					player.chooseCardButton(cards, "选择一张加入手牌", true);
-					"step 2";
-					player.gain(result.links, "draw");
-				},
+						const cards = list.randomGets(3).map(name => game.createCard(name));
+						return player
+							.chooseCardButton({
+								cards,
+								prompt: "选择一张加入手牌",
+								forced: true,
+							})
+							.forResult();
+					},
+					async (event, trigger, player) => {
+						await player.gain({ cards: event._result.links, animate: "draw" });
+					},
+				],
 				ai: {
 					order: 2,
 					value: 5,
