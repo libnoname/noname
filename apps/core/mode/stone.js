@@ -9798,7 +9798,7 @@ export default () => {
 				filter(event, player) {
 					return get.type(event.card) == "stonecharacter" && event.player == player.getLeader();
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.draw();
 				},
 			},
