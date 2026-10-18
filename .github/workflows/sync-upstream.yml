@@ -3,7 +3,7 @@ name: Sync with upstream
 # 用途：让本 Fork 与上游 libnoname/noname 保持同步，不用手动点「Sync fork」。
 #
 # 覆盖分支：每晚自动枚举本 Fork 的全部现有分支（每分支一个独立任务），
-#     唯一排除 build-output（构建产物分支，由 build.yml 强推维护，不参与上游同步）。
+#     排除 build-output（构建产物分支，由 build.yml 强推维护）与 backup/*（备份分支，保持快照、不参与同步）。
 #     新增分支无需改本文件——创建后会自动纳入下一次同步。
 # 同步源：与本工作流所用的 merge-upstream 接口（即网页「Sync fork」按钮）的实际语义对齐——
 #     上游存在同名分支时，同步「上游的同名分支」；否则回退「上游 main」。
@@ -79,7 +79,7 @@ permissions:
   contents: write # merge-upstream 需要写权限
 
 jobs:
-  # 前置：运行时枚举本 Fork 的全部现有分支（排除 build-output），供同步矩阵使用。
+  # 前置：运行时枚举本 Fork 的全部现有分支（排除 build-output 与 backup/*），供同步矩阵使用。
   # 新增分支无需修改本文件——下一次运行会自动纳入。
   list-branches:
     name: List all branches
@@ -89,7 +89,7 @@ jobs:
       branches: ${{ steps.list.outputs.branches }}
       count: ${{ steps.list.outputs.count }}
     steps:
-      - name: 枚举分支（排除 build-output）
+      - name: 枚举分支（排除 build-output 与 backup/*）
         id: list
         env:
           GH_TOKEN: ${{ secrets.SYNC_TOKEN || secrets.GITHUB_TOKEN }}
@@ -97,7 +97,7 @@ jobs:
         run: |
           set -euo pipefail
           all=$(gh api "repos/$FORK/branches?per_page=100" --paginate --jq '.[].name' | sort)
-          names=$(printf '%s\n' "$all" | grep -v -x 'build-output' || true)
+          names=$(printf '%s\n' "$all" | grep -v -x 'build-output' | grep -v '^backup/' || true)
           if [ -z "$names" ]; then
             echo "::error::未枚举到任何可同步分支（异常，请检查）"
             exit 1
@@ -120,7 +120,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # 分支列表由前置任务在运行时自动枚举（fork 全部现有分支，排除 build-output）
+        # 分支列表由前置任务在运行时自动枚举（fork 全部现有分支，排除 build-output 与 backup/*）
         branch: ${{ fromJSON(needs.list-branches.outputs.branches) }}
 
     # 同一分支同时只允许一个同步任务（按分支分组，各分支可并行）
