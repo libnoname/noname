@@ -2832,244 +2832,248 @@ export default () => {
 				game.additionaldead = [];
 			},
 			chooseCharacter() {
-				var next = game.createEvent("chooseCharacter");
+				const next = game.createEvent("chooseCharacter");
 				next.showConfig = true;
-				next.setContent(function () {
-					"step 0";
-					ui.arena.classList.add("choose-character");
-					var i;
-					var list = [];
-					event.list = list;
-					for (i in lib.character) {
-						if (lib.character[i].isMinskin) {
-							continue;
-						}
-						if (lib.character[i].isHiddenInStoneMode) {
-							continue;
-						}
-						if (lib.config.forbidstone.includes(i)) {
-							continue;
-						}
-						if (lib.filter.characterDisabled(i)) {
-							continue;
-						}
-						list.push(i);
-					}
-					list.randomSort();
-					var dialog = ui.create.dialog("按顺序选择出场角色" + (get.config("double_character") ? "（双将）" : ""), "hidden");
-					dialog.add("0/" + (get.config("double_character") ? 2 : 1) * get.config("battle_number"));
-					dialog.add([list.slice(0, get.config("battle_number") * 2 + 5), "character"]);
-					dialog.open();
-
-					var next = game.me.chooseButton(dialog, true).set("onfree", true);
-					next.selectButton = function () {
-						return (get.config("double_character") ? 2 : 1) * get.config("battle_number");
-					};
-					next.custom.add.button = function () {
-						if (ui.cheat2 && ui.cheat2.backup) {
-							return;
-						}
-						_status.event.dialog.content.childNodes[0].innerHTML = "按顺序选择出场角色" + (get.config("double_character") ? "（双将）" : "");
-						_status.event.dialog.content.childNodes[1].innerHTML = ui.selected.buttons.length + "/" + _status.event.selectButton();
-					};
-					event.changeDialog = function () {
-						if (ui.cheat2 && ui.cheat2.dialog == _status.event.dialog) {
-							return;
-						}
-						if (game.changeCoin) {
-							game.changeCoin(-3);
+				next.setContent([
+					async (event, trigger, player) => {
+						ui.arena.classList.add("choose-character");
+						const list = [];
+						event.list = list;
+						for (const i in lib.character) {
+							if (lib.character[i].isMinskin) {
+								continue;
+							}
+							if (lib.character[i].isHiddenInStoneMode) {
+								continue;
+							}
+							if (lib.config.forbidstone.includes(i)) {
+								continue;
+							}
+							if (lib.filter.characterDisabled(i)) {
+								continue;
+							}
+							list.push(i);
 						}
 						list.randomSort();
+						const dialog = ui.create.dialog(`按顺序选择出场角色${get.config("double_character") ? "（双将）" : ""}`, "hidden");
+						dialog.add(`0/${(get.config("double_character") ? 2 : 1) * get.config("battle_number")}`);
+						dialog.add([list.slice(0, get.config("battle_number") * 2 + 5), "character"]);
+						dialog.open();
 
-						var buttons = ui.create.div(".buttons");
-						var node = _status.event.dialog.buttons[0].parentNode;
-						_status.event.dialog.buttons = ui.create.buttons(list.slice(0, get.config("battle_number") * 2 + 5), "character", buttons);
-						_status.event.dialog.content.insertBefore(buttons, node);
-						buttons.addTempClass("start");
-						node.remove();
+						const next = game.me
+							.chooseButton({
+								dialog,
+								forced: true,
+								selectButton: () => (get.config("double_character") ? 2 : 1) * get.config("battle_number"),
+							})
+							.set("onfree", true);
+						next.custom.add.button = () => {
+							if (ui.cheat2 && ui.cheat2.backup) {
+								return;
+							}
+							_status.event.dialog.content.childNodes[0].innerHTML = `按顺序选择出场角色${get.config("double_character") ? "（双将）" : ""}`;
+							_status.event.dialog.content.childNodes[1].innerHTML = `${ui.selected.buttons.length}/${_status.event.selectButton()}`;
+						};
+						event.changeDialog = () => {
+							if (ui.cheat2 && ui.cheat2.dialog === _status.event.dialog) {
+								return;
+							}
+							if (game.changeCoin) {
+								game.changeCoin(-3);
+							}
+							list.randomSort();
 
-						game.uncheck();
-						game.check();
-					};
-					ui.create.cheat = function () {
-						_status.createControl = ui.cheat2;
-						ui.cheat = ui.create.control("更换", event.changeDialog);
-						delete _status.createControl;
-					};
-					if (lib.onfree) {
-						lib.onfree.push(function () {
-							event.dialogxx = ui.create.characterDialog("heightset");
-							if (ui.cheat2) {
-								ui.cheat2.addTempClass("controlpressdownx", 500);
-								ui.cheat2.classList.remove("disabled");
-							}
-							event.dialogxx.style.height = (game.layout == "newlayout" ? 350 : 410) + "px";
-							event.dialogxx._scrollset = true;
-						});
-					} else {
-						event.dialogxx = ui.create.characterDialog("heightset");
-					}
-					ui.create.cheat2 = function () {
-						ui.cheat2 = ui.create.control("自由选将", function () {
-							if (this.dialog == _status.event.dialog) {
-								if (game.changeCoin) {
-									game.changeCoin(10);
-								}
-								this.dialog.close();
-								_status.event.dialog = this.backup;
-								this.backup.open();
-								delete this.backup;
-								game.uncheck();
-								game.check();
-								if (ui.cheat) {
-									ui.cheat.addTempClass("controlpressdownx", 500);
-									ui.cheat.classList.remove("disabled");
-								}
-							} else {
-								if (game.changeCoin) {
-									game.changeCoin(-10);
-								}
-								this.backup = _status.event.dialog;
-								_status.event.dialog.close();
-								_status.event.dialog = _status.event.parent.dialogxx;
-								this.dialog = _status.event.dialog;
-								this.dialog.open();
-								game.uncheck();
-								game.check();
-								if (ui.cheat) {
-									ui.cheat.classList.add("disabled");
-								}
-							}
-						});
+							const buttons = ui.create.div(".buttons");
+							const node = _status.event.dialog.buttons[0].parentNode;
+							_status.event.dialog.buttons = ui.create.buttons(list.slice(0, get.config("battle_number") * 2 + 5), "character", buttons);
+							_status.event.dialog.content.insertBefore(buttons, node);
+							buttons.addTempClass("start");
+							node.remove();
+
+							game.uncheck();
+							game.check();
+						};
+						ui.create.cheat = () => {
+							_status.createControl = ui.cheat2;
+							ui.cheat = ui.create.control("更换", event.changeDialog);
+							delete _status.createControl;
+						};
 						if (lib.onfree) {
-							ui.cheat2.classList.add("disabled");
-						}
-					};
-					if (!ui.cheat && get.config("change_choice")) {
-						ui.create.cheat();
-					}
-					if (!ui.cheat2 && get.config("free_choose")) {
-						ui.create.cheat2();
-					}
-					"step 1";
-					if (ui.cheat) {
-						ui.cheat.close();
-						delete ui.cheat;
-					}
-					if (ui.cheat2) {
-						ui.cheat2.close();
-						delete ui.cheat2;
-					}
-					if (ui.deckcontrol) {
-						ui.deckcontrol.remove();
-						delete ui.deckcontrol;
-					}
-					_status.mylist = result.links.slice(0);
-					for (var i = 0; i < result.links.length; i++) {
-						event.list.remove(result.links[i]);
-					}
-					event.list.randomSort();
-					_status.enemylist = event.list.slice(0, result.links.length);
-					_status.double_character = get.config("double_character");
-					"step 2";
-					event.choosingDeck = true;
-					if (_status.mode == "deck") {
-						_status.deck = [];
-						if (!_status.auto) {
-							ui.auto.hide();
-							game.pause();
-							var list = _status.mylist.slice(0);
-							if (_status.double_character) {
-								event.dialog = ui.create.dialog("", "hidden", "forcebutton");
-							} else {
-								event.dialog = ui.create.dialog("", "hidden", "forcebutton");
-							}
-
-							var buttons = ui.create.div(".buttons", event.dialog.content);
-							var currentNode = null;
-							var clickButton = function (click) {
-								if (!event.choosingDeck) {
-									return;
+							lib.onfree.push(() => {
+								event.dialogxx = ui.create.characterDialog("heightset");
+								if (ui.cheat2) {
+									ui.cheat2.addTempClass("controlpressdownx", 500);
+									ui.cheat2.classList.remove("disabled");
 								}
-								if (click !== false) {
-									_status.deck.push(this.name);
-								}
-								if (currentNode) {
-									currentNode.delete();
-								}
-								if (list.length) {
-									var names = [];
-									if (_status.double_character) {
-										names.push(list.shift());
-										names.push(list.shift());
-										event.dialog.content.firstChild.innerHTML = "为" + get.translation(names[0]) + "/" + get.translation(names[1]) + "选择一个卡组";
-										currentNode = ui.create.player().init(names[0], names[1]);
-									} else {
-										names.push(list.shift());
-										event.dialog.content.firstChild.innerHTML = "为" + get.translation(names[0]) + "选择一个卡组";
-										currentNode = ui.create.player().init(names[0]);
-									}
-									currentNode.classList.add("stone_deck");
-									ui.arena.appendChild(currentNode);
-									ui.refresh(currentNode);
-									currentNode.classList.add("shown");
-								} else {
-									event.choosingDeck = false;
-									event.dialog.close();
-									ui.auto.show();
-									game.resume();
-								}
-							};
-							clickButton(false);
-							for (var i in lib.storage.deckList) {
-								if (lib.storage.deckList[i].deck.length == 30) {
-									var deckitem = ui.create.div(".deckitem.shadowed", "<span>" + i + "</span>", buttons, clickButton);
-									ui.create.div(".menubutton.round", deckitem).dataset.career = lib.storage.deckList[i].career;
-									deckitem.name = i;
-								}
-							}
-							for (var i = 0; i < lib.careerList.length; i++) {
-								var deckitem = ui.create.div(".deckitem.shadowed", "<span>随机</span>", buttons, clickButton);
-								ui.create.div(".menubutton.round", deckitem).dataset.career = lib.careerList[i];
-								deckitem.name = "random:" + lib.careerList[i];
-							}
-							event.dialog.open();
+								event.dialogxx.style.height = `${game.layout === "newlayout" ? 350 : 410}px`;
+								event.dialogxx._scrollset = true;
+							});
 						} else {
-							var bn = parseInt(get.config("battle_number"));
-							for (var i = 0; i < bn; i++) {
-								_status.deck.push("random");
+							event.dialogxx = ui.create.characterDialog("heightset");
+						}
+						ui.create.cheat2 = () => {
+							ui.cheat2 = ui.create.control("自由选将", function () {
+								if (this.dialog === _status.event.dialog) {
+									if (game.changeCoin) {
+										game.changeCoin(10);
+									}
+									this.dialog.close();
+									_status.event.dialog = this.backup;
+									this.backup.open();
+									delete this.backup;
+									game.uncheck();
+									game.check();
+									if (ui.cheat) {
+										ui.cheat.addTempClass("controlpressdownx", 500);
+										ui.cheat.classList.remove("disabled");
+									}
+								} else {
+									if (game.changeCoin) {
+										game.changeCoin(-10);
+									}
+									this.backup = _status.event.dialog;
+									_status.event.dialog.close();
+									_status.event.dialog = _status.event.parent.dialogxx;
+									this.dialog = _status.event.dialog;
+									this.dialog.open();
+									game.uncheck();
+									game.check();
+									if (ui.cheat) {
+										ui.cheat.classList.add("disabled");
+									}
+								}
+							});
+							if (lib.onfree) {
+								ui.cheat2.classList.add("disabled");
+							}
+						};
+						if (!ui.cheat && get.config("change_choice")) {
+							ui.create.cheat();
+						}
+						if (!ui.cheat2 && get.config("free_choose")) {
+							ui.create.cheat2();
+						}
+						return await next.forResult();
+					},
+					async (event, trigger, player) => {
+						const result = event._result;
+						if (ui.cheat) {
+							ui.cheat.close();
+							delete ui.cheat;
+						}
+						if (ui.cheat2) {
+							ui.cheat2.close();
+							delete ui.cheat2;
+						}
+						if (ui.deckcontrol) {
+							ui.deckcontrol.remove();
+							delete ui.deckcontrol;
+						}
+						_status.mylist = result.links.slice(0);
+						for (const name of result.links) {
+							event.list.remove(name);
+						}
+						event.list.randomSort();
+						_status.enemylist = event.list.slice(0, result.links.length);
+						_status.double_character = get.config("double_character");
+					},
+					async (event, trigger, player) => {
+						event.choosingDeck = true;
+						if (_status.mode === "deck") {
+							_status.deck = [];
+							if (!_status.auto) {
+								ui.auto.hide();
+								game.pause();
+								const list = _status.mylist.slice(0);
+								event.dialog = ui.create.dialog("", "hidden", "forcebutton");
+
+								const buttons = ui.create.div(".buttons", event.dialog.content);
+								let currentNode = null;
+								const clickButton = function (click) {
+									if (!event.choosingDeck) {
+										return;
+									}
+									if (click !== false) {
+										_status.deck.push(this.name);
+									}
+									if (currentNode) {
+										currentNode.delete();
+									}
+									if (list.length) {
+										const names = [];
+										if (_status.double_character) {
+											names.push(list.shift());
+											names.push(list.shift());
+											event.dialog.content.firstChild.innerHTML = `为${get.translation(names[0])}/${get.translation(names[1])}选择一个卡组`;
+											currentNode = ui.create.player().init(names[0], names[1]);
+										} else {
+											names.push(list.shift());
+											event.dialog.content.firstChild.innerHTML = `为${get.translation(names[0])}选择一个卡组`;
+											currentNode = ui.create.player().init(names[0]);
+										}
+										currentNode.classList.add("stone_deck");
+										ui.arena.appendChild(currentNode);
+										ui.refresh(currentNode);
+										currentNode.classList.add("shown");
+									} else {
+										event.choosingDeck = false;
+										event.dialog.close();
+										ui.auto.show();
+										game.resume();
+									}
+								};
+								clickButton(false);
+								for (const i in lib.storage.deckList) {
+									if (lib.storage.deckList[i].deck.length === 30) {
+										const deckitem = ui.create.div(".deckitem.shadowed", `<span>${i}</span>`, buttons, clickButton);
+										ui.create.div(".menubutton.round", deckitem).dataset.career = lib.storage.deckList[i].career;
+										deckitem.name = i;
+									}
+								}
+								for (const career of lib.careerList) {
+									const deckitem = ui.create.div(".deckitem.shadowed", "<span>随机</span>", buttons, clickButton);
+									ui.create.div(".menubutton.round", deckitem).dataset.career = career;
+									deckitem.name = `random:${career}`;
+								}
+								event.dialog.open();
+							} else {
+								const bn = parseInt(get.config("battle_number"));
+								for (let i = 0; i < bn; i++) {
+									_status.deck.push("random");
+								}
 							}
 						}
-					}
-					"step 3";
-					game.addRecentCharacter.apply(this, _status.mylist);
-					if (ui.coin) {
-						_status.coinCoeff = get.coinCoeff(_status.mylist);
-					}
-					if (_status.double_character) {
-						game.me.init(_status.mylist.shift(), _status.mylist.shift());
-						game.enemy.init(_status.enemylist.shift(), _status.enemylist.shift());
-					} else {
-						game.me.init(_status.mylist.shift());
-						game.enemy.init(_status.enemylist.shift());
-					}
-					game.me.maxHp++;
-					game.me.hp++;
-					game.me.update();
-					game.enemy.maxHp++;
-					game.enemy.hp++;
-					game.enemy.update();
-					if (_status.mode == "deck") {
-						get.deck(game.me, _status.deck.shift());
-						get.deck(game.enemy, "random");
-					}
-					ui.control.style.transitionDuration = "0s";
-					ui.refresh(ui.control);
-					ui.arena.classList.remove("choose-character");
-					setTimeout(function () {
-						ui.control.style.transitionDuration = "";
-					}, 500);
-				});
+					},
+					async (event, trigger, player) => {
+						game.addRecentCharacter.apply(event, _status.mylist);
+						if (ui.coin) {
+							_status.coinCoeff = get.coinCoeff(_status.mylist);
+						}
+						if (_status.double_character) {
+							game.me.init(_status.mylist.shift(), _status.mylist.shift());
+							game.enemy.init(_status.enemylist.shift(), _status.enemylist.shift());
+						} else {
+							game.me.init(_status.mylist.shift());
+							game.enemy.init(_status.enemylist.shift());
+						}
+						game.me.maxHp++;
+						game.me.hp++;
+						game.me.update();
+						game.enemy.maxHp++;
+						game.enemy.hp++;
+						game.enemy.update();
+						if (_status.mode === "deck") {
+							get.deck(game.me, _status.deck.shift());
+							get.deck(game.enemy, "random");
+						}
+						ui.control.style.transitionDuration = "0s";
+						ui.refresh(ui.control);
+						ui.arena.classList.remove("choose-character");
+						setTimeout(() => {
+							ui.control.style.transitionDuration = "";
+						}, 500);
+					},
+				]);
 			},
 		},
 		get: {
