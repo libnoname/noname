@@ -9331,9 +9331,9 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content() {
-					var target = player.getLeader();
-					target.damage("fire");
+				async content(event, trigger, player) {
+					const target = player.getLeader();
+					target.damage({ nature: "fire" });
 					player.line(target, "green");
 					game.delay();
 				},
