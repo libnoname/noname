@@ -6458,16 +6458,18 @@ export default () => {
 				stoneact: 4,
 				career: "shaman",
 				notarget: true,
-				content() {
-					"step 0";
-					if (player.canAddFellow()) {
-						player.addFellowAuto("stone_youlinglang");
-					}
-					"step 1";
-					if (player.canAddFellow()) {
-						player.addFellowAuto("stone_youlinglang");
-					}
-				},
+				content: [
+					async (event, trigger, player) => {
+						if (player.canAddFellow()) {
+							player.addFellowAuto("stone_youlinglang");
+						}
+					},
+					async (event, trigger, player) => {
+						if (player.canAddFellow()) {
+							player.addFellowAuto("stone_youlinglang");
+						}
+					},
+				],
 				ai: {
 					order: 9,
 					value: 5,
