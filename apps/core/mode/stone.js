@@ -3340,7 +3340,8 @@ export default () => {
 					return target.isMin();
 				},
 				selectTarget: -1,
-				content() {
+				async content(event, trigger, player) {
+					const { target } = event;
 					if (player.hp <= 2) {
 						target.damage(3);
 					} else {
