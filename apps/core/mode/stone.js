@@ -8885,8 +8885,8 @@ export default () => {
 				intro: {
 					content: "使用下一张法术牌时获得X点行动值，X为该法术的行动值消耗且不超过3",
 				},
-				content() {
-					var num = lib.card[trigger.card.name].stoneact;
+				async content(event, trigger, player) {
+					let num = lib.card[trigger.card.name].stoneact;
 					if (num > 3) {
 						num = 3;
 					}
