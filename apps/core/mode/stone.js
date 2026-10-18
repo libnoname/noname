@@ -6425,8 +6425,9 @@ export default () => {
 					return target.isMin() && target.side != player.side;
 				},
 				selectTarget: -1,
-				content() {
-					target.damage(Math.ceil(Math.random() * 2), "thunder");
+				async content(event, trigger, player) {
+					const { target } = event;
+					target.damage({ num: Math.ceil(Math.random() * 2), nature: "thunder" });
 				},
 				ai: {
 					order: 9,
