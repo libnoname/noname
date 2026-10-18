@@ -9185,7 +9185,7 @@ export default () => {
 				filter(event, player) {
 					return event.source.side == player.side && event.source != player && event.source.countCards("h") <= 2;
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.source.classList.remove("turnedover");
 					player.line(trigger.source, "green");
 				},
