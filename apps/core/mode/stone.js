@@ -4831,23 +4831,18 @@ export default () => {
 				multitarget: true,
 				multiline: true,
 				selectTarget: -1,
-				content() {
-					"step 0";
-					if (targets[0]) {
-						var hs = targets[0].getCards("h", function (card) {
-							return get.type(card) == "stonecharacter";
-						});
-						if (hs.length && targets[0].canAddFellow()) {
-							targets[0].useCard(targets[0], hs.randomGet(), false).noActCount = true;
+				async content(event, trigger, player) {
+					for (let i = 0; i < 2; i++) {
+						if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+							return;
 						}
-					}
-					"step 1";
-					if (targets[1]) {
-						var hs = targets[1].getCards("h", function (card) {
-							return get.type(card) == "stonecharacter";
-						});
-						if (hs.length && targets[1].canAddFellow()) {
-							targets[1].useCard(targets[1], hs.randomGet(), false).noActCount = true;
+						const target = event.targets[i];
+						if (!target) {
+							continue;
+						}
+						const hs = target.getCards("h", card => get.type(card) === "stonecharacter");
+						if (hs.length && target.canAddFellow()) {
+							await target.useCard({ card: hs.randomGet(), targets: [target], addCount: false }).set("noActCount", true);
 						}
 					}
 				},
@@ -4857,19 +4852,17 @@ export default () => {
 					useful: 5,
 					result: {
 						player(player) {
-							var hs = player.getCards("h", function (card) {
-								return get.type(card) == "stonecharacter";
-							});
-							if (hs.length == 0) {
+							const hs = player.getCards("h", card => get.type(card) === "stonecharacter");
+							if (hs.length === 0) {
 								return 0;
 							}
-							var enemy = player.getEnemy();
+							const enemy = player.getEnemy();
 							if (enemy.countCards("h") <= 1) {
 								return 1;
 							}
-							var num = 0;
-							for (var i = 0; i < hs.length; i++) {
-								num += get.info(hs[i]).stoneact;
+							let num = 0;
+							for (const card of hs) {
+								num += get.info(card).stoneact;
 							}
 							if (num / hs.length >= 3) {
 								return 1;
