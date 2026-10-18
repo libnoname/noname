@@ -7024,13 +7024,15 @@ export default () => {
 				filterTarget(card, player, target) {
 					return target == player.getEnemy();
 				},
-				content() {
-					"step 0";
-					target.gain(target.getCards("e"), "gain2");
-					"step 1";
-					var dh = target.countCards("h") - player.countCards("h");
+				async content(event, trigger, player) {
+					const { target } = event;
+					await target.gain({ cards: target.getCards("e"), animate: "gain2" });
+					if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+						return;
+					}
+					const dh = target.countCards("h") - player.countCards("h");
 					if (dh > 0) {
-						target.discard(target.getCards("h").randomGets(dh));
+						await target.discard({ cards: target.getCards("h").randomGets(dh) });
 					}
 				},
 				ai: {
