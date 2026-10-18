@@ -3627,14 +3627,15 @@ export default () => {
 				enable: true,
 				fullimage: true,
 				filterTarget: true,
-				content() {
-					"step 0";
+				async content(event, trigger, player) {
 					event.card = player.getDeckCards()[0];
-					player.gain(event.card, "gain2", "log");
-					"step 1";
-					var num = lib.card[event.card.name].stoneact;
-					if (num && typeof num == "number") {
-						target.damage(num);
+					await player.gain({ cards: [event.card], animate: "gain2", log: true });
+					if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+						return;
+					}
+					const num = lib.card[event.card.name].stoneact;
+					if (num && typeof num === "number") {
+						await event.target.damage(num);
 					}
 				},
 				ai: {
