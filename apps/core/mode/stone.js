@@ -9094,12 +9094,14 @@ export default () => {
 				filter(event, player) {
 					return player.getLeader().canAddFellow();
 				},
-				content() {
-					"step 0";
-					player.getLeader().addFellowAuto("stone_haidao");
-					"step 1";
-					player.line(result, "green");
-				},
+				content: [
+					async (event, trigger, player) => {
+						player.getLeader().addFellowAuto("stone_haidao");
+					},
+					async (event, trigger, player, result) => {
+						player.line(result, "green");
+					},
+				],
 			},
 			warrior_zhujia: {
 				trigger: { player: "damageEnd" },
