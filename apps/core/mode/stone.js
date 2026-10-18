@@ -7880,17 +7880,21 @@ export default () => {
 					var target = player.getLeader();
 					return target.countCards("e") > 0;
 				},
-				content() {
-					"step 0";
-					event.chooser = player.getLeader();
-					event.chooser.chooseToDiscard("是否弃置一张装备牌令" + get.translation(player) + "摸三张牌？", "he", function (card) {
-						return get.type(card) == "equip";
-					}).ai = function (card) {
-						return 7 - get.value(card);
-					};
-					"step 1";
+				async content(event, trigger, player) {
+					const chooser = player.getLeader();
+					const result = await chooser
+						.chooseToDiscard({
+							prompt: `是否弃置一张装备牌令${get.translation(player)}摸三张牌？`,
+							position: "he",
+							filterCard: card => get.type(card) === "equip",
+							ai: card => 7 - get.value(card),
+						})
+						.forResult();
+					if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+						return;
+					}
 					if (result.bool) {
-						player.draw(3);
+						await player.draw(3);
 					}
 				},
 			},
