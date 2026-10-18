@@ -9284,11 +9284,11 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content() {
-					var target = player.getLeader();
-					var hs = target.getCards("h");
+				async content(event, trigger, player) {
+					const target = player.getLeader();
+					const hs = target.getCards("h");
 					if (hs.length) {
-						target.discard(hs.randomGets(2));
+						target.discard({ cards: hs.randomGets(2).slice() });
 					}
 				},
 			},
