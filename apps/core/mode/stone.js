@@ -8201,21 +8201,21 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content() {
-					var target = player.getEnemy();
-					var added = [];
-					for (var i = 0; i < ui.cardPile.childNodes.length; i++) {
-						if (get.type(ui.cardPile.childNodes[i]) == "delay") {
-							var name = ui.cardPile.childNodes[i].name;
+				async content(event, trigger, player) {
+					const target = player.getEnemy();
+					const added = [];
+					for (let i = 0; i < ui.cardPile.childNodes.length; i++) {
+						if (get.type(ui.cardPile.childNodes[i]) === "delay") {
+							const name = ui.cardPile.childNodes[i].name;
 							if (!added.includes(name) && !target.hasJudge(name)) {
 								target.addJudge(ui.cardPile.childNodes[i]);
 								added.add(name);
 							}
 						}
 					}
-					for (var i = 0; i < ui.discardPile.childNodes.length; i++) {
-						if (get.type(ui.discardPile.childNodes[i]) == "delay") {
-							var name = ui.discardPile.childNodes[i].name;
+					for (let i = 0; i < ui.discardPile.childNodes.length; i++) {
+						if (get.type(ui.discardPile.childNodes[i]) === "delay") {
+							const name = ui.discardPile.childNodes[i].name;
 							if (!added.includes(name) && !target.hasJudge(name)) {
 								target.addJudge(ui.discardPile.childNodes[i]);
 								added.add(name);
