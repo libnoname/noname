@@ -4011,14 +4011,21 @@ export default () => {
 				enable: true,
 				fullimage: true,
 				filterTarget(card, player, target) {
-					return player == target;
+					return player === target;
 				},
 				selectTarget: -1,
-				content() {
-					"step 0";
-					player.chooseCardButton("选择一张加入手牌", player.getDeckCards(3), true);
-					"step 1";
-					player.gain(result.links, "draw");
+				async content(event, trigger, player) {
+					const result = await player
+						.chooseCardButton({
+							prompt: "选择一张加入手牌",
+							cards: player.getDeckCards(3),
+							forced: true,
+						})
+						.forResult();
+					if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+						return;
+					}
+					await player.gain({ cards: result.links, animate: "draw" });
 				},
 				ai: {
 					order: 2,
