@@ -9356,7 +9356,7 @@ export default () => {
 				filter(event, player) {
 					return get.type(event.card) == "stonecharacter";
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.actused -= 2;
 					player.updateActCount();
 					player.removeSkill("paladin_zhaohuan2");
