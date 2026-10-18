@@ -7001,7 +7001,8 @@ export default () => {
 				filterTarget(card, player, target) {
 					return target == player;
 				},
-				content() {
+				async content(event, trigger, player) {
+					const { target } = event;
 					if (target.isDying()) {
 						target.recover();
 					} else {
