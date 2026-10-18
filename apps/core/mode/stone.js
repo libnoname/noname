@@ -4567,14 +4567,15 @@ export default () => {
 				multitarget: true,
 				multiline: true,
 				fullimage: true,
-				content() {
-					var cards = [];
-					for (var i = 0; i < targets.length; i++) {
-						if (lib.card[targets[i].name + "_stonecharacter"]) {
-							cards.push(game.createCard(targets[i].name + "_stonecharacter"));
+				async content(event, trigger, player) {
+					const { targets } = event;
+					const cards = [];
+					for (const target of targets) {
+						if (lib.card[`${target.name}_stonecharacter`]) {
+							cards.push(game.createCard(`${target.name}_stonecharacter`));
 						}
 					}
-					player.gain(cards, "gain2");
+					player.gain({ cards: cards.slice(), animate: "gain2" });
 				},
 				ai: {
 					order: 2,
