@@ -8519,7 +8519,7 @@ export default () => {
 				filter(event, player) {
 					return event.player.career && player.side == event.player.side;
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.line(trigger.player, "green");
 					trigger.player.actused--;
 					trigger.player.updateActCount();
