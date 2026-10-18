@@ -7017,35 +7017,28 @@ export default () => {
 				forced: true,
 				unique: true,
 				filter(event, player) {
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].isMin() && game.players[i] != player) {
+					for (const target of game.players) {
+						if (target.isMin() && target !== player) {
 							return true;
 						}
 					}
 					return false;
 				},
-				content() {
-					"step 0";
-					var list = [];
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].isMin() && game.players[i] != player) {
-							list.push(game.players[i]);
+				async content(event, trigger, player) {
+					const list = game.players.filter(target => target.isMin() && target !== player);
+					list.sort(lib.sort.seat);
+					for (const current of list) {
+						const next = current.damage({ num: 2, nature: "fire" });
+						player.line(current, "fire");
+						await next;
+						if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+							return;
 						}
 					}
-					list.sort(lib.sort.seat);
-					event.list = list;
-					"step 1";
-					if (event.list.length) {
-						var current = event.list.shift();
-						current.damage(2, "fire");
-						player.line(current, "fire");
-						event.redo();
-					}
-					"step 2";
-					var target = player.getLeader();
-					var hs = target.getCards("h");
+					const target = player.getLeader();
+					const hs = target.getCards("h");
 					if (hs.length) {
-						target.discard(hs);
+						target.discard({ cards: hs });
 					}
 					game.delay();
 				},
