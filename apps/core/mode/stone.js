@@ -9666,14 +9666,14 @@ export default () => {
 				filter(event, player) {
 					return event.career && event.player.side == player.side;
 				},
-				content() {
-					var list = [];
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].side != player.side) {
-							list.push(game.players[i]);
+				async content(event, trigger, player) {
+					const list = [];
+					for (const current of game.players) {
+						if (current.side !== player.side) {
+							list.push(current);
 						}
 					}
-					var target = list.randomGet();
+					const target = list.randomGet();
 					player.line(target, "green");
 					target.damage();
 					game.delay();
