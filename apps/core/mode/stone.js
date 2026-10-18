@@ -5733,10 +5733,11 @@ export default () => {
 				selectTarget: 2,
 				multitarget: true,
 				multiline: true,
-				content() {
+				async content(event, trigger, player) {
+					const { targets } = event;
 					targets.sort(lib.sort.seat);
-					for (var i = 0; i < targets.length; i++) {
-						targets[i].die();
+					for (const target of targets) {
+						target.die();
 					}
 				},
 				ai: {
