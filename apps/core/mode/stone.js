@@ -7440,14 +7440,14 @@ export default () => {
 				filter(event, player) {
 					return event.player.hasSkill("warlock_zhaohuan");
 				},
-				content() {
+				async content(event, trigger, player) {
 					game.delay();
 					player.removeSkill("warlock_zhaohuan2");
-					var hs = player.getCards("h", function (card) {
-						return get.type(card) == "stonecharacter";
+					const hs = player.getCards("h", card => {
+						return get.type(card) === "stonecharacter";
 					});
 					if (hs.length && player.canAddFellow()) {
-						player.useCard(player, hs.randomGet(), false).noActCount = true;
+						player.useCard({ targets: [player], card: hs.randomGet(), addCount: false }).noActCount = true;
 					}
 				},
 			},
