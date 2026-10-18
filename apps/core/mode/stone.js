@@ -10110,7 +10110,8 @@ export default () => {
 					}
 					return target.career && target.side != player.side;
 				},
-				content() {
+				async content(event, trigger, player) {
+					const { target } = event;
 					player.actused += 2;
 					player.updateActCount();
 					target.damage();
