@@ -4160,23 +4160,25 @@ export default () => {
 				targetprompt: ["增加体力并摸牌"],
 				selectTarget: [0, 1],
 				notarget: true,
-				content() {
-					"step 0";
-					if (targets.length) {
-						targets[0].maxHp++;
-						targets[0].hp++;
-						target.update();
-						targets[0].draw(3);
-						event.finish();
-					} else {
-						event.num = 0;
-					}
-					"step 1";
-					if (player.canAddFellow() && event.num++ < 10) {
+				content: [
+					async (event, trigger, player) => {
+						const { targets, target } = event;
+						if (targets.length) {
+							targets[0].maxHp++;
+							targets[0].hp++;
+							target.update();
+							targets[0].draw(3);
+							event.finish();
+						}
+					},
+					...Array.from({ length: 10 }, () => async (event, trigger, player) => {
+						if (!player.canAddFellow()) {
+							event.finish();
+							return;
+						}
 						player.addFellowAuto("stone_xiaojingling");
-						event.redo();
-					}
-				},
+					}),
+				],
 				ai: {
 					order: 5,
 					result: {
