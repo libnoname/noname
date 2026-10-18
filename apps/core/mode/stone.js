@@ -7213,40 +7213,43 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content() {
-					"step 0";
-					var target = player.getLeader();
-					var next = target.chooseControl("召唤树人", "增强随从");
-					next.prompt = "召唤两个嘲讽树人，或令所有其他随从增加1点体力和体力上限并摸两张牌";
-					next.ai = function () {
-						if (target.countFellow() <= 2) {
-							return "召唤树人";
+				content: [
+					async (event, trigger, player) => {
+						const target = player.getLeader();
+						return await target
+							.chooseControl({
+								controls: ["召唤树人", "增强随从"],
+								prompt: "召唤两个嘲讽树人，或令所有其他随从增加1点体力和体力上限并摸两张牌",
+								ai: () => (target.countFellow() <= 2 ? "召唤树人" : "增强随从"),
+							})
+							.forResult();
+					},
+					async (event, trigger, player) => {
+						if (event._result.control === "增强随从") {
+							const targets = player.getLeader().getFellow();
+							targets.remove(player);
+							for (const target of targets) {
+								target.hp++;
+								target.maxHp++;
+								target.update();
+							}
+							game.asyncDraw(targets, 2);
+							event.finish();
 						}
-						return "增强随从";
-					};
-					"step 1";
-					if (result.control == "增强随从") {
-						var targets = player.getLeader().getFellow();
-						targets.remove(player);
-						for (var i = 0; i < targets.length; i++) {
-							targets[i].hp++;
-							targets[i].maxHp++;
-							targets[i].update();
+					},
+					async (event, trigger, player) => {
+						const target = player.getLeader();
+						if (target.canAddFellow()) {
+							target.addFellowAuto("stone_shurenxx");
 						}
-						game.asyncDraw(targets, 2);
-						event.finish();
-					}
-					"step 2";
-					var target = player.getLeader();
-					if (target.canAddFellow()) {
-						target.addFellowAuto("stone_shurenxx");
-					}
-					"step 3";
-					var target = player.getLeader();
-					if (target.canAddFellow()) {
-						target.addFellowAuto("stone_shurenxx");
-					}
-				},
+					},
+					async (event, trigger, player) => {
+						const target = player.getLeader();
+						if (target.canAddFellow()) {
+							target.addFellowAuto("stone_shurenxx");
+						}
+					},
+				],
 			},
 			stone_fuchou: {
 				trigger: { player: "dieBegin" },
