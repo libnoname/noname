@@ -7186,7 +7186,7 @@ export default () => {
 				filter(event, player) {
 					return event.source && event.source != player && player.side == event.source.side && event.notLink() && event.card && get.type(event.card) == "stonecard";
 				},
-				content() {
+				async content(event, trigger, player) {
 					if (trigger.player.isMin()) {
 						trigger.num += 4;
 					} else {
