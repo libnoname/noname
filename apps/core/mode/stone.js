@@ -10209,24 +10209,26 @@ export default () => {
 				trigger: { player: "phaseEnd" },
 				forced: true,
 				direct: true,
-				content() {
-					"step 0";
-					var players = get.players();
-					var targets = [];
-					for (var i = 0; i < players.length; i++) {
-						if (players[i].side == player.side && !players[i].career && players[i].hp < players[i].maxHp) {
-							targets.push(players[i]);
-							players[i].recover();
+				content: [
+					async (event, trigger, player) => {
+						const players = get.players();
+						const targets = [];
+						for (const current of players) {
+							if (current.side === player.side && !current.career && current.hp < current.maxHp) {
+								targets.push(current);
+								current.recover();
+							}
 						}
-					}
-					if (targets.length) {
-						player.logSkill("shaman_zhiliao");
-					} else {
-						event.finish();
-					}
-					"step 1";
-					game.delay();
-				},
+						if (targets.length) {
+							player.logSkill("shaman_zhiliao");
+						} else {
+							event.finish();
+						}
+					},
+					async (event, trigger, player) => {
+						game.delay();
+					},
+				],
 				ai: {
 					threaten: 2,
 				},
