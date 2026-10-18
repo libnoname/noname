@@ -10767,16 +10767,16 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content() {
-					var targets = [];
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].isMin() && game.players[i].side != player.side) {
-							targets.push(game.players[i]);
+				async content(event, trigger, player) {
+					const targets = [];
+					for (const current of game.players) {
+						if (current.isMin() && current.side !== player.side) {
+							targets.push(current);
 						}
 					}
 					targets.sort(lib.sort.seat);
-					for (var i = 0; i < targets.length; i++) {
-						targets[i].discard(targets[i].getCards("he"));
+					for (const target of targets) {
+						target.discard({ cards: target.getCards("he").slice() });
 					}
 				},
 			},
