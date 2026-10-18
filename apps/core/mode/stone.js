@@ -8551,13 +8551,13 @@ export default () => {
 				intro: {
 					content: "在你的下一准备阶段，令所有友方随从增加1点体力和体力上限并摸一张牌",
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.removeSkill("paladin_zhengqianghaosheng");
-					var list = player.getFellow();
-					for (var i = 0; i < list.length; i++) {
-						list[i].maxHp++;
-						list[i].hp++;
-						list[i].update();
+					const list = player.getFellow();
+					for (const current of list) {
+						current.maxHp++;
+						current.hp++;
+						current.update();
 					}
 					game.asyncDraw(list);
 				},
