@@ -3968,15 +3968,15 @@ export default () => {
 				enable: true,
 				fullimage: true,
 				notarget: true,
-				content() {
-					var list = [];
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].side != player.side) {
-							list.push(game.players[i]);
+				async content(event, trigger, player) {
+					const list = [];
+					for (const current of game.players) {
+						if (current.side !== player.side) {
+							list.push(current);
 						}
 					}
 					if (list.length) {
-						var target = list.randomGet();
+						const target = list.randomGet();
 						target.damage();
 						player.line(target);
 					}
