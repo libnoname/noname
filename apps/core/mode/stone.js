@@ -9433,17 +9433,17 @@ export default () => {
 					}
 					return false;
 				},
-				content() {
-					var list = [];
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].name == "stone_xinbing" && game.players[i].side == player.side) {
-							list.push(game.players[i]);
+				async content(event, trigger, player) {
+					const list = [];
+					for (const current of game.players) {
+						if (current.name === "stone_xinbing" && current.side === player.side) {
+							list.push(current);
 						}
 					}
-					for (var i = 0; i < list.length; i++) {
-						list[i].maxHp++;
-						list[i].hp++;
-						list[i].update();
+					for (const current of list) {
+						current.maxHp++;
+						current.hp++;
+						current.update();
 					}
 					game.asyncDraw(list, 2);
 					player.line(list, "green");
