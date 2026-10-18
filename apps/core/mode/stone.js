@@ -5034,8 +5034,9 @@ export default () => {
 					return target.isMin() && target.countCards("h") > 0;
 				},
 				selectTarget: -1,
-				content() {
-					var num = 1;
+				async content(event, trigger, player) {
+					const { target } = event;
+					const num = 1;
 					// if(player.hasFellowSkill('stone_shenyou')){
 					// 	num=2;
 					// }
