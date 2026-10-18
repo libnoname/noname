@@ -6372,7 +6372,8 @@ export default () => {
 				stoneact: 2,
 				career: "paladin",
 				filterTarget: true,
-				content() {
+				async content(event, trigger, player) {
+					const { target } = event;
 					target.damage();
 					player.drawDeck();
 				},
