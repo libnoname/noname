@@ -7903,16 +7903,16 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content() {
-					var list = [];
-					var target = player.getLeader();
-					for (var i = 0; i < target.deckCards.length; i++) {
-						if (get.type(target.deckCards[i]) == "stonecharacter") {
-							list.push(target.deckCards[i]);
+				async content(event, trigger, player) {
+					const list = [];
+					const target = player.getLeader();
+					for (const item of target.deckCards) {
+						if (get.type(item) === "stonecharacter") {
+							list.push(item);
 						}
 					}
 					if (list.length) {
-						target.gain(target, list.randomGet(), "gain2");
+						target.gain({ source: target, cards: [list.randomGet()], animate: "gain2" });
 					}
 				},
 			},
