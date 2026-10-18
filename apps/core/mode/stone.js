@@ -10912,7 +10912,7 @@ export default () => {
 				filter(event, player) {
 					return !player.isMin();
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.actused = 0;
 					if (player.side) {
 						player.actcount = player.getEnemy().actcount + 1;
@@ -10924,7 +10924,7 @@ export default () => {
 						}
 					}
 					if (player.actcount > 6) {
-						if (get.config("mana_mode") == "inc") {
+						if (get.config("mana_mode") === "inc") {
 							player.actcount = 6;
 						} else {
 							player.actcount -= 4;
