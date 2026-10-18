@@ -7548,7 +7548,7 @@ export default () => {
 				filter(event, player) {
 					return event.player == player.getLeader() && event.player.canAddFellow();
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.player.addFellowAuto("stone_shengjiachong");
 				},
 				ai: {
