@@ -4705,18 +4705,20 @@ export default () => {
 				career: "mage",
 				selectTarget: -1,
 				filterTarget(card, player, target) {
-					return player == target;
+					return player === target;
 				},
-				content() {
-					"step 0";
-					if (player.canAddFellow()) {
-						player.addFellowAuto("stone_jingxiang", false);
-					}
-					"step 1";
-					if (player.canAddFellow()) {
-						player.addFellowAuto("stone_jingxiang", false);
-					}
-				},
+				content: [
+					async (event, trigger, player) => {
+						if (player.canAddFellow()) {
+							player.addFellowAuto("stone_jingxiang", false);
+						}
+					},
+					async (event, trigger, player) => {
+						if (player.canAddFellow()) {
+							player.addFellowAuto("stone_jingxiang", false);
+						}
+					},
+				],
 				ai: {
 					order: 4,
 					value: 5,
