@@ -6609,12 +6609,13 @@ export default () => {
 				stoneact: 4,
 				career: "mage",
 				filterTarget: true,
-				content() {
-					var num = 3;
+				async content(event, trigger, player) {
+					const { target } = event;
+					let num = 3;
 					if (!target.isMin()) {
 						num = Math.min(3, target.hp);
 					}
-					target.damage(num, "fire");
+					target.damage({ num, nature: "fire" });
 				},
 				ai: {
 					order: 8,
