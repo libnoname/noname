@@ -11002,7 +11002,7 @@ export default () => {
 				trigger: { player: "dieBegin" },
 				forced: true,
 				popup: false,
-				content() {
+				async content(event, trigger, player) {
 					if (player.isMin()) {
 						player.changeRage(10);
 					} else {
