@@ -3909,8 +3909,9 @@ export default () => {
 					return target == player.getEnemy();
 				},
 				selectTarget: -1,
-				content() {
-					var num = 2;
+				async content(event, trigger, player) {
+					const { target } = event;
+					const num = 2;
 					// if(player.hasFellowSkill('stone_shenyou')){
 					// 	num=4;
 					// }
