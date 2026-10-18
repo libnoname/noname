@@ -3285,11 +3285,12 @@ export default () => {
 				filterTarget(card, player, target) {
 					return target.isMin();
 				},
-				content() {
-					"step 0";
-					target.die();
-					"step 1";
-					player.recover();
+				async content(event, trigger, player) {
+					await event.target.die();
+					if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+						return;
+					}
+					await player.recover();
 				},
 				ai: {
 					order: 7.5,
