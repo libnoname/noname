@@ -338,7 +338,9 @@ async content(event, trigger, player) {
 
 这里将 `links` 整理成了 `cards`，使 `content` 可以统一从 `event.cards` 读取。
 
-`chooseonly` 只阻止选择事件执行其默认操作。迁移者仍需在 `content` 中显式完成弃置、获得等操作，否则技能只会选中牌而不会移动它们。
+`chooseonly` 只延后默认的弃置、获得等操作，迁移者仍需在 `content` 中显式完成，否则牌不会移动。
+
+它不会消除选择流程的其他副作用：`discardPlayerCard`、`gainPlayerCard` 仍会触发 `rewriteDiscardResult`、`rewriteGainResult`，例如“挽危”可在此时选择并记录技能；`gainPlayerCard` 的 `chooseonly` 分支也仍播放给予动画。涉及这些触发或动画时，须单独核对其与技能日志、实际移动牌的顺序，不能仅凭 `chooseonly` 判定迁移等价。
 
 ## 手动构造 `event.result`
 
