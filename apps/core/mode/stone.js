@@ -9604,11 +9604,11 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content() {
-					var targets = [];
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].isMin() && game.players[i] != player && game.players[i].side == player.side) {
-							targets.push(game.players[i]);
+				async content(event, trigger, player) {
+					const targets = [];
+					for (const current of game.players) {
+						if (current.isMin() && current !== player && current.side === player.side) {
+							targets.push(current);
 						}
 					}
 					targets.sort(lib.sort.seat);
