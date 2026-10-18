@@ -9619,10 +9619,10 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content() {
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].isMin() && game.players[i] != player && game.players[i].side == player.side && game.players[i].hp < game.players[i].maxHp) {
-							game.players[i].recover();
+				async content(event, trigger, player) {
+					for (const current of game.players) {
+						if (current.isMin() && current !== player && current.side === player.side && current.hp < current.maxHp) {
+							current.recover();
 						}
 					}
 				},
