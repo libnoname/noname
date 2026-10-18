@@ -7155,12 +7155,12 @@ export default () => {
 					}
 					return false;
 				},
-				content() {
-					var list = [];
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].side == player.side && game.players[i].isDamaged()) {
-							list.push(game.players[i]);
-							game.players[i].recover(game.players[i].maxHp);
+				async content(event, trigger, player) {
+					const list = [];
+					for (const current of game.players) {
+						if (current.side === player.side && current.isDamaged()) {
+							list.push(current);
+							current.recover(current.maxHp);
 						}
 					}
 					player.line(list, "green");
