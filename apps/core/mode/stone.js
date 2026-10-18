@@ -5102,10 +5102,11 @@ export default () => {
 					return target == player.getEnemy();
 				},
 				selectTarget: -1,
-				content() {
-					var card = target.getCards("h").randomGet();
+				async content(event, trigger, player) {
+					const { target } = event;
+					const card = target.getCards("h").randomGet();
 					if (card) {
-						player.gain(game.createCard(card.name, card.suit, card.number, card.nature), "draw");
+						player.gain({ cards: [game.createCard(card.name, card.suit, card.number, card.nature)], animate: "draw" });
 					}
 				},
 				ai: {
