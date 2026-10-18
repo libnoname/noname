@@ -3666,7 +3666,8 @@ export default () => {
 				filterTarget(card, player, target) {
 					return target.isMin() && target.countCards("h") > 0;
 				},
-				content() {
+				async content(event, trigger, player) {
+					const { target } = event;
 					target.draw(target.countCards("h"));
 				},
 				ai: {
