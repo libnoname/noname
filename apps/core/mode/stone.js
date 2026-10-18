@@ -8341,7 +8341,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content() {
+				async content(event, trigger, player) {
 					game.asyncDraw([player.getLeader(), player.getEnemy()], 1, { drawDeck: 1 });
 				},
 			},
