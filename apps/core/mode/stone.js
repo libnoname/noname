@@ -4278,19 +4278,27 @@ export default () => {
 				filterTarget(card, player, target) {
 					return target.isMin();
 				},
-				content() {
-					"step 0";
-					player.chooseControl("两点", "一点").prompt = "造成2点伤害，或造成1点伤害并从牌库中获得一张牌";
-					"step 1";
-					if (result.control == "一点") {
-						target.damage();
-					} else {
-						target.damage(2);
-						event.finish();
-					}
-					"step 2";
-					player.drawDeck();
-				},
+				content: [
+					async (event, trigger, player) => {
+						return player
+							.chooseControl({
+								controls: ["两点", "一点"],
+								prompt: "造成2点伤害，或造成1点伤害并从牌库中获得一张牌",
+							})
+							.forResult();
+					},
+					async (event, trigger, player) => {
+						if (event._result.control === "一点") {
+							event.target.damage();
+						} else {
+							event.target.damage(2);
+							event.finish();
+						}
+					},
+					async (event, trigger, player) => {
+						player.drawDeck();
+					},
+				],
 				ai: {
 					order: 8,
 					value: 5,
