@@ -9045,7 +9045,7 @@ export default () => {
 				filter(event, player) {
 					return event.player.isAlive() && event.player.isMin();
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.player.die({ source: player });
 				},
 			},
