@@ -9761,8 +9761,8 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content() {
-					var target = player.getLeader();
+				async content(event, trigger, player) {
+					const target = player.getLeader();
 					target.actused--;
 					target.updateActCount();
 				},
