@@ -5215,7 +5215,8 @@ export default () => {
 				enable: true,
 				fullimage: true,
 				filterTarget: true,
-				content() {
+				async content(event, trigger, player) {
+					const { target } = event;
 					target.damage();
 					player.changeHujia(2);
 				},
