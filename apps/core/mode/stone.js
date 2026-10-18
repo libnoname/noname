@@ -7601,18 +7601,24 @@ export default () => {
 					}
 					return false;
 				},
-				content() {
-					"step 0";
-					event.chooser = player.getLeader();
-					event.chooser.chooseTarget("普照：选择一名己方随从增加2点体力和体力上限", function (card, playerx, target) {
-						return player != target && player.side == target.side && target.isMin();
-					}).ai = function (target) {
-						return get.attitude(event.chooser, target) * Math.max(1, 10 - target.hp);
-					};
-					player.line(event.chooser);
-					"step 1";
+				async content(event, trigger, player) {
+					const chooser = player.getLeader();
+					const next = chooser.chooseTarget({
+						prompt: "普照：选择一名己方随从增加2点体力和体力上限",
+						filterTarget: (card, playerx, target) => {
+							return player !== target && player.side === target.side && target.isMin();
+						},
+						ai: target => {
+							return get.attitude(chooser, target) * Math.max(1, 10 - target.hp);
+						},
+					});
+					player.line(chooser);
+					const result = await next.forResult();
+					if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+						return;
+					}
 					if (result.bool) {
-						event.chooser.line(result.targets[0]);
+						chooser.line(result.targets[0]);
 						result.targets[0].maxHp += 2;
 						result.targets[0].hp += 2;
 						result.targets[0].update();
