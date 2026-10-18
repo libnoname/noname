@@ -9,7 +9,7 @@ export class Control extends HTMLDivElement {
 			args = other._args;
 		}
 
-		const nc = !ui.control.querySelector("div:not(.removing):not(.stayleft)");
+		const nc = !ui.control.querySelector("div:not(.removing):not(.stayleft):not(.controlscrollbar)");
 		const controls = Array.isArray(args[0]) ? args[0] : args;
 		/**
 		 * @type {this}
@@ -39,7 +39,8 @@ export class Control extends HTMLDivElement {
 			control.style.transition = "opacity 0.5s";
 			control.addTempClass("controlpressdownx", 500);
 			ui.refresh(control);
-			if (!control.stayleft) {
+			// 横向滚动模式下按钮条是从左侧排布的，不能再套用居中模式的 translateX(-width/2)
+			if (!control.stayleft && !ui.control.classList.contains("controloverflow")) {
 				control.style.transform = `translateX(-${control.offsetWidth / 2}px)`;
 			}
 			control.style.opacity = 1;
@@ -50,21 +51,42 @@ export class Control extends HTMLDivElement {
 		control.addEventListener(lib.config.touchscreen ? "touchend" : "click", ui.click.control2);
 
 		if (lib.config.button_press) {
-			control.addEventListener(lib.config.touchscreen ? "touchstart" : "mousedown", function () {
+			/** 还原按下时的缩放 */
+			const restorePress = function () {
+				this.classList.remove("controlpressdown");
+				const node = control._pressnode || this;
+				delete control._pressnode;
+				if (node === this) {
+					if (typeof this._offset == "number") {
+						this.style.transform = `translateX(${this._offset}px)`;
+					}
+				} else {
+					node.style.transform = "";
+				}
+			};
+			control.addEventListener(lib.config.touchscreen ? "touchstart" : "mousedown", function (e) {
 				if (this.classList.contains("disabled")) {
 					return;
 				}
 				this.classList.add("controlpressdown");
+				control._pressnode = this;
+				// 横向滚动模式下整条按钮条可能有几千像素宽，
+				// 对它整体做 scale(0.97) 会绕远在屏幕外的中心缩放，让可见部分整体位移，
+				// 所以只缩放被按下的那一个按钮。
+				if (ui.control.classList.contains("controloverflow")) {
+					if (e.target && e.target !== this) {
+						control._pressnode = e.target;
+						e.target.style.transform = "scale(0.94)";
+					}
+					return;
+				}
 				if (typeof this._offset == "number") {
 					this.style.transform = `translateX(${this._offset}px) scale(0.97)`;
 				}
 			});
-			control.addEventListener(lib.config.touchscreen ? "touchend" : "mouseup", function () {
-				this.classList.remove("controlpressdown");
-				if (typeof this._offset == "number") {
-					this.style.transform = `translateX(${this._offset}px)`;
-				}
-			});
+			control.addEventListener(lib.config.touchscreen ? "touchend" : "mouseup", restorePress);
+			control.addEventListener("touchcancel", restorePress);
+			control.addEventListener("mouseleave", restorePress);
 		}
 
 		ui.updatec();
@@ -78,7 +100,9 @@ export class Control extends HTMLDivElement {
 		if (this.childNodes.length) {
 			this.style.transition = "opacity 0.5s";
 			ui.refresh(this);
-			this.style.transform = "translateX(-" + this.offsetWidth / 2 + "px)";
+			if (!ui.control.classList.contains("controloverflow")) {
+				this.style.transform = "translateX(-" + this.offsetWidth / 2 + "px)";
+			}
 			this.style.opacity = 1;
 			ui.refresh(this);
 			this.style.transition = "";

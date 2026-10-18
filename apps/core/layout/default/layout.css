@@ -2204,6 +2204,57 @@ div.select-all:not(.card):not(.player) {
 	position: absolute;
 	left: 50%;
 }
+
+/*--------按钮过多时：左对齐单行 + 横向滚动 + 顶部自绘滚动条--------*/
+#control.controloverflow {
+	overflow-x: auto;
+	overflow-y: hidden;
+	text-align: left;
+	transition: none;
+	overflow-anchor: none;
+	scrollbar-width: none;
+	-ms-overflow-style: none;
+	-webkit-overflow-scrolling: touch;
+	touch-action: pan-x;
+}
+#control.controloverflow::-webkit-scrollbar {
+	display: none;
+	width: 0;
+	height: 0;
+}
+#control.controloverflow > .control {
+	left: 0;
+	top: 10px;
+	width: max-content;
+	/* 按钮条可能有几千像素宽，缩放必须绕左边缘，否则可见部分会整体位移 */
+	transform-origin: 0 50%;
+}
+#control.controloverflow > .controlscrollbar {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	height: 10px;
+	display: none;
+	pointer-events: auto;
+	touch-action: none;
+	cursor: pointer;
+	transition: none;
+}
+#control.controloverflow > .controlscrollbar > .controlscrollthumb {
+	position: absolute;
+	left: 0;
+	top: 2px;
+	height: 6px;
+	border-radius: 3px;
+	background: rgba(110, 110, 110, 0.8);
+	box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25);
+}
+#control.controloverflow > .controlscrollbar:hover > .controlscrollthumb,
+#control.controloverflow > .controlscrollbar.dragging > .controlscrollthumb {
+	background: rgba(70, 70, 70, 0.95);
+}
+
 #arena.choose-to-move > #control,
 #arena.discard-player-card > #control,
 #arena.gain-player-card > #control,
