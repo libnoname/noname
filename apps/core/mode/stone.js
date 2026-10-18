@@ -10367,10 +10367,10 @@ export default () => {
 					return true;
 				},
 				usable: 1,
-				content() {
+				async content(event, trigger, player) {
 					player.actused += 2;
 					player.updateActCount();
-					var name = "stone_tuteng" + Math.ceil(Math.random() * 4);
+					const name = `stone_tuteng${Math.ceil(Math.random() * 4)}`;
 					player.addFellowAuto(name);
 					event.parent.career = "shaman";
 				},
