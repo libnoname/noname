@@ -10525,7 +10525,7 @@ export default () => {
 				filter(event, player) {
 					return player.countCards("h") == 0;
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.draw(2);
 				},
 			},
