@@ -8864,7 +8864,7 @@ export default () => {
 				filter(event, player) {
 					return player.getLeader().hasSkill("spell_yemanpaoxiao") && event.notLink();
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.num++;
 				},
 			},
