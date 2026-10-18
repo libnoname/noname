@@ -5417,15 +5417,17 @@ export default () => {
 					return target == player;
 				},
 				selectTarget: -1,
-				content() {
-					"step 0";
-					event.num = player.getEnemy().countFellow();
-					"step 1";
-					if (player.canAddFellow() && event.num--) {
-						player.addFellowAuto("stone_liegou");
-						event.redo();
-					}
-				},
+				content: [
+					async (event, trigger, player) => {
+						event.num = player.getEnemy().countFellow();
+					},
+					async (event, trigger, player) => {
+						if (player.canAddFellow() && event.num--) {
+							player.addFellowAuto("stone_liegou");
+							event.redo();
+						}
+					},
+				],
 				ai: {
 					order: 7,
 					value: 5,
