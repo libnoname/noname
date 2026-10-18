@@ -7984,11 +7984,11 @@ export default () => {
 						}
 					}
 				},
-				content() {
-					var num = 1;
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].isMin() && game.players[i].hp > num) {
-							num = game.players[i].hp;
+				async content(event, trigger, player) {
+					let num = 1;
+					for (const current of game.players) {
+						if (current.isMin() && current.hp > num) {
+							num = current.hp;
 						}
 					}
 					player.hp = num;
