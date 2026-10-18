@@ -10813,118 +10813,120 @@ export default () => {
 					if (!player.canAddFellow()) {
 						return false;
 					}
-					if (player == game.me) {
+					if (player === game.me) {
 						return _status.friendRage >= 100;
-					} else if (player == game.me.getEnemy()) {
+					} else if (player === game.me.getEnemy()) {
 						return _status.enemyRage >= 100;
 					}
 					return false;
 				},
-				content() {
-					"step 0";
-					var list = [];
-					var list2 = [];
-					for (var i in lib.character) {
-						if (lib.character[i].trashBin.includes("stonelegend_" + player.career)) {
-							list.push(i);
-						} else if (lib.character[i].trashBin.includes("stonelegend")) {
-							list2.push(i);
-						}
-					}
-					var dialog = ui.create.dialog("hidden", "召唤一名传说随从", '<div class="text center">消耗100怒气值和4点行动值</div>', [list.concat(list2), "character"]);
-					var heilong = false;
-					var dc = player.getEnemy().countFellow() - player.countFellow();
-					if (dc > 2) {
-						heilong = true;
-					} else if (dc == 2) {
-						if (player.getEnemy().countFellow() >= 3) {
-							heilong = Math.random() < 0.5;
-						} else if (player.actcount - player.getActCount() <= 0) {
-							heilong = true;
-						} else {
-							dc = 0;
-							for (var i = 0; i < game.players.length; i++) {
-								if (game.players[i].isMin() && game.players[i].side != player.side) {
-									dc += game.players[i].hp;
-								}
+				content: [
+					async (event, trigger, player) => {
+						const list = [];
+						const list2 = [];
+						for (const i in lib.character) {
+							if (lib.character[i].trashBin.includes(`stonelegend_${player.career}`)) {
+								list.push(i);
+							} else if (lib.character[i].trashBin.includes("stonelegend")) {
+								list2.push(i);
 							}
-							if (dc > 5) {
+						}
+						const dialog = ui.create.dialog("hidden", "召唤一名传说随从", '<div class="text center">消耗100怒气值和4点行动值</div>', [list.concat(list2), "character"]);
+						let heilong = false;
+						let dc = player.getEnemy().countFellow() - player.countFellow();
+						if (dc > 2) {
+							heilong = true;
+						} else if (dc === 2) {
+							if (player.getEnemy().countFellow() >= 3) {
+								heilong = Math.random() < 0.5;
+							} else if (player.actcount - player.getActCount() <= 0) {
 								heilong = true;
 							} else {
-								heilong = Math.random() < 0.3;
+								dc = 0;
+								for (const target of game.players) {
+									if (target.isMin() && target.side !== player.side) {
+										dc += target.hp;
+									}
+								}
+								if (dc > 5) {
+									heilong = true;
+								} else {
+									heilong = Math.random() < 0.3;
+								}
 							}
 						}
-					}
-					var honglong = false;
-					if (!heilong) {
-						var num = 0;
-						for (var i = 0; i < game.players.length; i++) {
-							if (game.players[i] == player) {
-								num += 1.5 * (game.players[i].maxHp - game.players[i].hp);
-							} else if (game.players[i].side == player.side) {
-								num += game.players[i].maxHp - game.players[i].hp;
+						let honglong = false;
+						if (!heilong) {
+							let num = 0;
+							for (const target of game.players) {
+								if (target === player) {
+									num += 1.5 * (target.maxHp - target.hp);
+								} else if (target.side === player.side) {
+									num += target.maxHp - target.hp;
+								}
+							}
+							if (num > 6) {
+								honglong = true;
+							} else if (player.maxHp - player.hp >= 3 && player.hp <= 2) {
+								honglong = true;
 							}
 						}
-						if (num > 6) {
-							honglong = true;
-						} else if (player.maxHp - player.hp >= 3 && player.hp <= 2) {
-							honglong = true;
+						return player
+							.chooseButton({
+								dialog,
+								ai: button => {
+									if (button.link === "stone_siwangzhiyi") {
+										return heilong ? 3 : 0;
+									}
+									if (button.link === "stone_alaikesita") {
+										return honglong ? 2 : 0;
+									}
+									return Math.random();
+								},
+							})
+							.forResult();
+					},
+					async (event, trigger, player, result) => {
+						if (!result.bool) {
+							event.finish();
+							return;
 						}
-					}
-					player.chooseButton(dialog).ai = function (button) {
-						if (button.link == "stone_siwangzhiyi") {
-							if (heilong) {
-								return 3;
-							}
-							return 0;
-						}
-						if (button.link == "stone_alaikesita") {
-							if (honglong) {
-								return 2;
-							}
-							return 0;
-						}
-						return Math.random();
-					};
-					"step 1";
-					if (result.bool) {
 						player.$skill(get.translation(result.links[0]), "legend", "metal");
 						game.delay(2);
 						event.addname = result.links[0];
 						player.changeRage(-100);
 						player.actused += 4;
 						player.updateActCount();
-					} else {
-						event.finish();
-					}
-					"step 2";
-					if (event.addname) {
-						if (event.addname == "stone_jialakesi") {
-							if (player.name == "stone_jialakesix") {
-								player.hp = player.maxHp;
-								player.update();
-								player.actused -= 4;
-								player.updateActCount();
-								player.storage.stone_lianyu++;
-							} else {
-								if (player.name2) {
-									player.storage.stone_lianyu = 1;
+					},
+					async (event, trigger, player) => {
+						if (event.addname) {
+							if (event.addname === "stone_jialakesi") {
+								if (player.name === "stone_jialakesix") {
+									player.hp = player.maxHp;
+									player.update();
+									player.actused -= 4;
+									player.updateActCount();
+									player.storage.stone_lianyu++;
 								} else {
-									player.storage.stone_lianyu = 0;
+									if (player.name2) {
+										player.storage.stone_lianyu = 1;
+									} else {
+										player.storage.stone_lianyu = 0;
+									}
+									player.init("stone_jialakesix");
+									game.addVideo("reinit2", player, "stone_jialakesix");
 								}
-								player.init("stone_jialakesix");
-								game.addVideo("reinit2", player, "stone_jialakesix");
+								player.syncStorage("stone_lianyu");
+								const card = game.createCard("stone_jialakesi_stonecharacter");
+								card.node.info.remove();
+								card.node.addinfo.remove();
+								player.$give(card, player);
+							} else {
+								player.addFellowAuto(event.addname);
 							}
-							player.syncStorage("stone_lianyu");
-							var card = game.createCard("stone_jialakesi_stonecharacter");
-							card.node.info.remove();
-							card.node.addinfo.remove();
-							player.$give(card, player);
-						} else {
-							player.addFellowAuto(event.addname);
 						}
-					}
-				},
+					},
+				],
 			},
 		},
 		translate: {
