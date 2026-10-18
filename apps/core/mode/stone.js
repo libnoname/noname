@@ -3937,11 +3937,12 @@ export default () => {
 				enable: true,
 				fullimage: true,
 				filterTarget: true,
-				content() {
-					var num = 1;
-					var friends = player.getFellow();
-					for (var i = 0; i < friends.length; i++) {
-						if (lib.beastList.includes(friends[i].name)) {
+				async content(event, trigger, player) {
+					const { target } = event;
+					let num = 1;
+					const friends = player.getFellow();
+					for (const friend of friends) {
+						if (lib.beastList.includes(friend.name)) {
 							num = 2;
 							break;
 						}
