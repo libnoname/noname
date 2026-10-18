@@ -7851,15 +7851,15 @@ export default () => {
 				filter(event, player) {
 					return player.getLeader().countFellow() > 1 && player.getLeader().canAddFellow();
 				},
-				content() {
-					var num = player.getLeader().countFellow() - 1;
-					var list = [];
-					for (var i in lib.character) {
-						if (lib.character[i].isFellowInStoneMode && !lib.character[i].isHiddenInStoneMode && lib.character[i].extraModeData && lib.character[i].extraModeData[0] == num) {
+				async content(event, trigger, player) {
+					const num = player.getLeader().countFellow() - 1;
+					const list = [];
+					for (const i in lib.character) {
+						if (lib.character[i].isFellowInStoneMode && !lib.character[i].isHiddenInStoneMode && lib.character[i].extraModeData && lib.character[i].extraModeData[0] === num) {
 							list.push(i);
 						}
 					}
-					var target = player.getLeader();
+					const target = player.getLeader();
 					if (list.length) {
 						target.addFellowAuto(list.randomGet());
 					}
