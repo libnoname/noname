@@ -3691,8 +3691,8 @@ export default () => {
 				},
 				fullimage: true,
 				notarget: true,
-				content() {
-					var target = player.getEnemy().getFellow().randomGet();
+				async content(event, trigger, player) {
+					const target = player.getEnemy().getFellow().randomGet();
 					player.line(target);
 					target.die();
 				},
