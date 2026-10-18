@@ -6922,7 +6922,8 @@ export default () => {
 				filterTarget(card, player, target) {
 					return target.isMin() && target.side == player.side && (!target.hasSkill("lschaofeng") || target.hp < target.maxHp);
 				},
-				content() {
+				async content(event, trigger, player) {
+					const { target } = event;
 					if (target.hp < target.maxHp) {
 						target.recover(target.maxHp - target.hp);
 					}
