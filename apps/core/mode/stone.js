@@ -9370,8 +9370,8 @@ export default () => {
 					var leader = player.getLeader();
 					return leader.hp < leader.maxHp;
 				},
-				content() {
-					var leader = player.getLeader();
+				async content(event, trigger, player) {
+					const leader = player.getLeader();
 					leader.recover(2);
 				},
 			},
