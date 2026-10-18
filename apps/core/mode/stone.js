@@ -9751,7 +9751,7 @@ export default () => {
 				intro: {
 					content: "下个出牌阶段开始时获得四点额外行动值",
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.actused -= 4;
 					player.updateActCount();
 					player.removeSkill("druid_ziyang");
