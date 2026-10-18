@@ -5569,16 +5569,18 @@ export default () => {
 				filterTarget(card, player, target) {
 					return target.isMin();
 				},
-				content() {
-					"step 0";
-					event.num = Math.ceil(Math.random() * 3);
-					target.damage(event.num);
-					"step 1";
-					if (player.canAddFellow() && event.num--) {
-						player.addFellowAuto("stone_xiaogui");
-						event.redo();
-					}
-				},
+				content: [
+					async (event, trigger, player) => {
+						event.num = Math.ceil(Math.random() * 3);
+						event.target.damage(event.num);
+					},
+					async (event, trigger, player) => {
+						if (player.canAddFellow() && event.num--) {
+							player.addFellowAuto("stone_xiaogui");
+							event.redo();
+						}
+					},
+				],
 				ai: {
 					order: 6,
 					value: 5,
