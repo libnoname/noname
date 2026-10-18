@@ -8743,7 +8743,7 @@ export default () => {
 				filter(event, player) {
 					return event.parent.name != "shaman_fengnu";
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.phase();
 				},
 				ai: {
