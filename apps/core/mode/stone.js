@@ -7203,7 +7203,7 @@ export default () => {
 				filter(event, player) {
 					return event.source && event.source != player && event.source == player.getLeader() && event.notLink() && event.card && get.type(event.card) == "stonecard";
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.num++;
 				},
 				ai: {
