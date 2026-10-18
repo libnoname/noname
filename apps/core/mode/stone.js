@@ -10698,13 +10698,13 @@ export default () => {
 				filter(event, player) {
 					return player.getEnemy().countCards("e") > 0;
 				},
-				content() {
-					var enemy = player.getEnemy();
-					var es = enemy.getCards("e");
+				async content(event, trigger, player) {
+					const enemy = player.getEnemy();
+					const es = enemy.getCards("e");
 					if (es.length) {
 						player.getLeader().line(enemy);
 						game.delay();
-						enemy.discard(es.randomGet());
+						enemy.discard({ cards: [es.randomGet()] });
 						// game.log(get.translation(event.enemy)+'将'+get.translation(es)+'收入手牌')
 					}
 				},
