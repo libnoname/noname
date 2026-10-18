@@ -3833,8 +3833,9 @@ export default () => {
 					}
 					return target.hp < target.maxHp;
 				},
-				content() {
-					var num = 2;
+				async content(event, trigger, player) {
+					const { target } = event;
+					let num = 2;
 					if (player.hasFellowSkill("stone_shenyou")) {
 						num = 4;
 					}
