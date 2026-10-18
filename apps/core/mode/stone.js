@@ -5102,18 +5102,20 @@ export default () => {
 					}
 					return target.hp < target.maxHp;
 				},
-				content() {
-					"step 0";
-					var num = 1;
+				async content(event, trigger, player) {
+					const { target } = event;
+					let num = 1;
 					if (player.hasFellowSkill("stone_shenyou")) {
 						num = 2;
 					}
 					if (player.hasFellowSkill("priest_hunwu")) {
-						target.loseHp(num);
+						await target.loseHp(num);
 					} else {
-						target.recover(num);
+						await target.recover(num);
 					}
-					"step 1";
+					if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+						return;
+					}
 					if (target.hp < target.maxHp && player.canAddFellow()) {
 						player.addFellowAuto("stone_shengguanghuwei");
 					}
