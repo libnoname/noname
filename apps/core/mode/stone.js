@@ -8664,7 +8664,7 @@ export default () => {
 				intro: {
 					content: "你死亡后，召唤一个树人",
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.getLeader().addSkill("druid_conglinzhihun2");
 				},
 				ai: {
