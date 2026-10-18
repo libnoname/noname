@@ -8380,11 +8380,11 @@ export default () => {
 				filter(event, player) {
 					return event.player.hasSkill("druid_qicheng");
 				},
-				content() {
+				async content(event, trigger, player) {
 					game.delay();
-					var list = [];
-					for (var i in lib.character) {
-						if (lib.character[i].isFellowInStoneMode && !lib.character[i].isHiddenInStoneMode && lib.character[i].extraModeData && lib.character[i].extraModeData[0] == 1) {
+					const list = [];
+					for (const i in lib.character) {
+						if (lib.character[i].isFellowInStoneMode && !lib.character[i].isHiddenInStoneMode && lib.character[i].extraModeData && lib.character[i].extraModeData[0] === 1) {
 							list.push(i);
 						}
 					}
