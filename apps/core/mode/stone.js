@@ -7217,8 +7217,8 @@ export default () => {
 				filter(event, player) {
 					return get.type(event.card) == "stonecard" && event.player == player.getLeader();
 				},
-				content() {
-					trigger.player.gain(game.createCard("spell_huoqiushu"), "gain2");
+				async content(event, trigger, player) {
+					trigger.player.gain({ cards: [game.createCard("spell_huoqiushu")], animate: "gain2" });
 				},
 				ai: {
 					threaten: 1.5,
