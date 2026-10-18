@@ -8618,8 +8618,8 @@ export default () => {
 				filter(event, player) {
 					return event.player.hasSkill("hunter_tanxianmao");
 				},
-				content() {
-					player.gain(game.createCard("spell_tanxianmao"), "gain2");
+				async content(event, trigger, player) {
+					player.gain({ cards: [game.createCard("spell_tanxianmao")], animate: "gain2" });
 					player.removeSkill("hunter_tanxianmao2");
 				},
 			},
