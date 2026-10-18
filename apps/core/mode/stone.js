@@ -8786,7 +8786,7 @@ export default () => {
 				filter(event, player) {
 					return player.hp - event.num < 2;
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.num = player.hp - 2;
 				},
 				intro: {
