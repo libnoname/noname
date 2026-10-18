@@ -10240,24 +10240,26 @@ export default () => {
 				filter(event, player) {
 					return event.player == player.getLeader();
 				},
-				content() {
-					"step 0";
-					var players = get.players();
-					var targets = [];
-					for (var i = 0; i < players.length; i++) {
-						if (players[i].side == player.side && !players[i].career && players[i].countCards("h") <= 1) {
-							targets.push(players[i]);
+				content: [
+					async (event, trigger, player) => {
+						const players = get.players();
+						const targets = [];
+						for (const current of players) {
+							if (current.side === player.side && !current.career && current.countCards("h") <= 1) {
+								targets.push(current);
+							}
 						}
-					}
-					if (targets.length) {
-						game.asyncDraw(targets);
-						player.logSkill("shaman_fali");
-					} else {
-						event.finish();
-					}
-					"step 1";
-					game.delay();
-				},
+						if (targets.length) {
+							game.asyncDraw(targets);
+							player.logSkill("shaman_fali");
+						} else {
+							event.finish();
+						}
+					},
+					async (event, trigger, player) => {
+						game.delay();
+					},
+				],
 			},
 			shaman_zhuore: {
 				trigger: { global: "phaseEnd" },
