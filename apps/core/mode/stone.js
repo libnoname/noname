@@ -3189,7 +3189,8 @@ export default () => {
 				stoneact: 3,
 				career: "warlock",
 				filterTarget: true,
-				content() {
+				async content(event, trigger, player) {
+					const { target } = event;
 					target.damage(2);
 				},
 				ai: {
