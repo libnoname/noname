@@ -9861,11 +9861,11 @@ export default () => {
 					}
 					return false;
 				},
-				content() {
-					var list = [];
-					for (var i = 0; i < game.players.length; i++) {
-						if (!game.players[i].career && game.players[i].hasSkill("shaman_tuteng") && game.players[i].side == player.side) {
-							list.push(game.players[i]);
+				async content(event, trigger, player) {
+					const list = [];
+					for (const current of game.players) {
+						if (!current.career && current.hasSkill("shaman_tuteng") && current.side === player.side) {
+							list.push(current);
 						}
 					}
 					if (list.length) {
