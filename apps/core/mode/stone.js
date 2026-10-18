@@ -3506,10 +3506,11 @@ export default () => {
 				},
 				fullimage: true,
 				filterTarget: true,
-				content() {
-					var num = 0;
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].side == player.side && game.players[i].isDamaged()) {
+				async content(event, trigger, player) {
+					const { target } = event;
+					let num = 0;
+					for (const current of game.players) {
+						if (current.side === player.side && current.isDamaged()) {
 							num++;
 						}
 					}
