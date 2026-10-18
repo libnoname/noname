@@ -4043,17 +4043,19 @@ export default () => {
 				stoneact: 3,
 				career: "hunter",
 				filterTarget(card, player, target) {
-					return target.side != player.side && target.isMin();
+					return target.side !== player.side && target.isMin();
 				},
 				selectTarget: [1, 2],
-				content() {
-					"step 0";
-					target.damage();
-					"step 1";
+				async content(event, trigger, player) {
+					const { target } = event;
+					await target.damage();
+					if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+						return;
+					}
 					if (target.isAlive()) {
-						var hs = target.getCards("h");
+						const hs = target.getCards("h");
 						if (hs.length) {
-							target.discard(hs.randomGets(2));
+							await target.discard({ cards: hs.randomGets(2) });
 						}
 					}
 				},
@@ -4063,7 +4065,7 @@ export default () => {
 					useful: 5,
 					result: {
 						target(player, target) {
-							if (target.countCards("h")) {
+							if (target.hasCards("h")) {
 								return -2;
 							}
 							return -1.5;
