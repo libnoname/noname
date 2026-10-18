@@ -9000,13 +9000,12 @@ export default () => {
 					var target = player.getLeader();
 					return target.countCards("e") > 0;
 				},
-				content() {
-					"step 0";
-					event.chooser = player.getLeader();
-					event.chooser.chooseCardTarget({
+				async content(event, trigger, player) {
+					const chooser = player.getLeader();
+					const next = chooser.chooseCardTarget({
 						position: "e",
 						filterTarget(card, player, target) {
-							return player.side != target.side;
+							return player.side !== target.side;
 						},
 						filterCard: true,
 						ai1(card) {
@@ -9017,12 +9016,15 @@ export default () => {
 						},
 						prompt: "偷袭：弃置一张装备区内的牌并对一名敌方角色1点伤害",
 					});
-					player.line(event.chooser);
-					"step 1";
+					player.line(chooser);
+					const result = await next.forResult();
+					if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+						return;
+					}
 					if (result.bool) {
-						event.chooser.discard(result.cards);
-						event.chooser.line(result.targets[0]);
-						result.targets[0].damage(event.chooser);
+						chooser.discard({ cards: result.cards });
+						chooser.line(result.targets[0]);
+						result.targets[0].damage({ source: chooser });
 					}
 				},
 			},
