@@ -4361,14 +4361,17 @@ export default () => {
 				enable: true,
 				fullimage: true,
 				filterTarget(card, player, target) {
-					return target.isMin() && target.side != player.side;
+					return target.isMin() && target.side !== player.side;
 				},
-				content() {
-					"step 0";
-					target.die()._triggered = null;
-					event.name = target.name;
-					"step 1";
-					player.getEnemy().gain(game.createCard(event.name + "_stonecharacter"), "gain2");
+				async content(event, trigger, player) {
+					const next = event.target.die();
+					next._triggered = null;
+					event.name = event.target.name;
+					await next;
+					if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+						return;
+					}
+					await player.getEnemy().gain({ cards: [game.createCard(`${event.name}_stonecharacter`)], animate: "gain2" });
 				},
 				ai: {
 					order: 8.8,
