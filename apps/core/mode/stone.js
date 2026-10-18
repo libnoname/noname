@@ -9199,7 +9199,7 @@ export default () => {
 				filter(event, player) {
 					return event.player.isMin();
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.draw();
 				},
 				ai: {
