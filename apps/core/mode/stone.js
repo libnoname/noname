@@ -10743,7 +10743,7 @@ export default () => {
 			stone_chilundashi2: {
 				trigger: { player: "phaseDrawBegin" },
 				forced: true,
-				content() {
+				async content(event, trigger, player) {
 					trigger.num++;
 					player.removeSkill("stone_chilundashi2");
 				},
