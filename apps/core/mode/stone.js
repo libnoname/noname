@@ -6641,7 +6641,8 @@ export default () => {
 					return target.isMin() && target.side != player.side;
 				},
 				selectTarget: -1,
-				content() {
+				async content(event, trigger, player) {
+					const { target } = event;
 					target.damage(2);
 				},
 				ai: {
