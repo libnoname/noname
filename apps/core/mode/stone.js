@@ -8580,23 +8580,23 @@ export default () => {
 				},
 				forced: true,
 				popup: false,
-				content() {
-					"step 0";
-					event.num = 0;
-					for (var i = 0; i < trigger.cards.length; i++) {
-						if (get.position(trigger.cards[i]) == "d") {
-							if (trigger.cards[i].name == "spell_zhumo") {
+				content: [
+					async (event, trigger, player) => {
+						event.num = 0;
+						for (const card of trigger.cards) {
+							if (get.position(card) === "d" && card.name === "spell_zhumo") {
 								event.num++;
 							}
 						}
-					}
-					event.target = player.getEnemy();
-					"step 1";
-					if (event.num-- && event.target.canAddFellow()) {
-						event.target.addFellowAuto("stone_zhumo");
-						event.redo();
-					}
-				},
+						event.target = player.getEnemy();
+					},
+					async (event, trigger, player) => {
+						if (event.num-- && event.target.canAddFellow()) {
+							event.target.addFellowAuto("stone_zhumo");
+							event.redo();
+						}
+					},
+				],
 			},
 
 			druid_conglinzhihun: {
