@@ -7562,7 +7562,7 @@ export default () => {
 				filter(event, player) {
 					return player.getLeader().countCards("h", { type: "stonecharacter" }) > 0;
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.addSkill("stone_chongfeng");
 					if (player.isTurnedOver()) {
 						player.turnOver();
