@@ -10504,18 +10504,24 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content() {
-					"step 0";
-					event.chooser = player.getLeader();
-					event.chooser.chooseTarget("暗影：选择敌方一名角色视为对其使用一张杀", function (card, player, target) {
-						return lib.filter.targetEnabled({ name: "sha" }, event.chooser, target);
-					}).ai = function (target) {
-						return get.effect(target, { name: "sha" }, event.chooser);
-					};
-					player.line(event.chooser);
-					"step 1";
+				async content(event, trigger, player) {
+					const chooser = player.getLeader();
+					const next = chooser.chooseTarget({
+						prompt: "暗影：选择敌方一名角色视为对其使用一张杀",
+						filterTarget: (card, player, target) => {
+							return lib.filter.targetEnabled({ name: "sha" }, chooser, target);
+						},
+						ai: target => {
+							return get.effect(target, { name: "sha" }, chooser);
+						},
+					});
+					player.line(chooser);
+					const result = await next.forResult();
+					if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+						return;
+					}
 					if (result.bool) {
-						event.chooser.useCard({ name: "sha" }, result.targets, false);
+						chooser.useCard({ card: { name: "sha" }, targets: result.targets, addCount: false });
 					}
 				},
 			},
