@@ -8871,7 +8871,7 @@ export default () => {
 			stone_zibao: {
 				trigger: { player: "phaseAfter" },
 				forced: true,
-				content() {
+				async content(event, trigger, player) {
 					player.die();
 				},
 			},
