@@ -5937,20 +5937,28 @@ export default () => {
 				notarget: true,
 				multitarget: true,
 				targetprompt: ["造成1点伤害"],
-				content() {
-					"step 0";
-					if (targets.length) {
-						targets[0].damage();
-						event.finish();
-					} else {
-						event.num = 2;
-					}
-					"step 1";
-					if (player.canAddFellow() && event.num--) {
+				content: [
+					async (event, trigger, player) => {
+						if (event.targets.length) {
+							event.targets[0].damage();
+							event.finish();
+						}
+					},
+					async (event, trigger, player) => {
+						if (!player.canAddFellow()) {
+							event.finish();
+							return;
+						}
 						player.addFellowAuto("stone_shumiao");
-						event.redo();
-					}
-				},
+					},
+					async (event, trigger, player) => {
+						if (!player.canAddFellow()) {
+							event.finish();
+							return;
+						}
+						player.addFellowAuto("stone_shumiao");
+					},
+				],
 				ai: {
 					order: 7,
 					value: 5,
