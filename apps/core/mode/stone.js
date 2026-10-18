@@ -8054,17 +8054,16 @@ export default () => {
 					var leader = player.getLeader();
 					return leader.hp < leader.maxHp;
 				},
-				content() {
-					"step 0";
-					player.line(target, "green");
-					var target = player.getLeader();
+				async content(event, trigger, player) {
+					player.line(event.target, "green");
+					const target = player.getLeader();
 					event.target = target;
-					target.judge(function (card) {
-						return get.color(card) == "red" ? 1 : 0;
-					});
-					"step 1";
-					if (result.color == "red") {
-						event.target.recover();
+					const result = await target.judge({ judge: card => (get.color(card) === "red" ? 1 : 0) }).forResult();
+					if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+						return;
+					}
+					if (result.color === "red") {
+						await target.recover();
 					}
 				},
 			},
