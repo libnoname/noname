@@ -4138,7 +4138,8 @@ export default () => {
 					return player.side == target.side && target.isMin() && !target.hasSkill("druid_conglinzhihun");
 				},
 				selectTarget: -1,
-				content() {
+				async content(event, trigger, player) {
+					const { target } = event;
 					target.addSkill("druid_conglinzhihun");
 				},
 				ai: {
