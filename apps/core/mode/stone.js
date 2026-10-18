@@ -7470,8 +7470,8 @@ export default () => {
 				filter(event, player) {
 					return player.getLeader().isDamaged();
 				},
-				content() {
-					var target = player.getLeader();
+				async content(event, trigger, player) {
+					const target = player.getLeader();
 					player.line(target, "green");
 					target.recover();
 				},
