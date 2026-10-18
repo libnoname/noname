@@ -9757,20 +9757,26 @@ export default () => {
 					}
 					return false;
 				},
-				content() {
-					"step 0";
-					event.chooser = player.getLeader();
-					event.chooser.chooseTarget("火袭：对一名对方随从造成2点伤害", function (card, playerx, target) {
-						return player.side != target.side && target.isMin();
-					}).ai = function (target) {
-						return Math.max(1, 10 - target.hp);
-					};
-					player.line(event.chooser);
-					"step 1";
+				async content(event, trigger, player) {
+					const chooser = player.getLeader();
+					const next = chooser.chooseTarget({
+						prompt: "火袭：对一名对方随从造成2点伤害",
+						filterTarget: (card, playerx, target) => {
+							return player.side !== target.side && target.isMin();
+						},
+						ai: target => {
+							return Math.max(1, 10 - target.hp);
+						},
+					});
+					player.line(chooser);
+					const result = await next.forResult();
+					if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+						return;
+					}
 					if (result.bool) {
-						event.chooser.line(result.targets[0]);
+						chooser.line(result.targets[0]);
 						game.delay();
-						result.targets[0].damage(2, "fire", event.chooser);
+						result.targets[0].damage({ num: 2, nature: "fire", source: chooser });
 					}
 				},
 			},
