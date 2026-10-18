@@ -4933,7 +4933,7 @@ export default () => {
 					return target == player;
 				},
 				selectTarget: -1,
-				content() {
+				async content(event, trigger, player) {
 					player.drawDeck(2);
 					player.addTempSkill("shaman_xianzuzhishi");
 				},
