@@ -4235,29 +4235,27 @@ export default () => {
 				targetprompt: ["造成五点伤害"],
 				multitarget: true,
 				filterTarget(card, player, target) {
-					return target.side != player.side && target.isMin();
+					return target.side !== player.side && target.isMin();
 				},
 				selectTarget: [0, 1],
 				notarget: true,
-				content() {
-					"step 0";
+				async content(event, trigger, player) {
+					const { targets } = event;
 					if (targets.length) {
-						targets[0].damage(4);
-						event.finish();
-					} else {
-						var list = player.getFellow(true);
-						if (list.length) {
-							list.sort(lib.sort.seat);
-							event.list = list;
-							player.line(list);
-						} else {
-							event.finish();
-						}
+						await targets[0].damage(4);
+						return;
 					}
-					"step 1";
-					if (event.list.length) {
-						event.list.shift().damage(2);
-						event.redo();
+					const list = player.getFellow(true);
+					if (!list.length) {
+						return;
+					}
+					list.sort(lib.sort.seat);
+					player.line(list);
+					for (const target of list) {
+						if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+							return;
+						}
+						await target.damage(2);
 					}
 				},
 				ai: {
@@ -4266,7 +4264,7 @@ export default () => {
 					value: 5,
 					result: {
 						target(player, target) {
-							if (target == player.getEnemy()) {
+							if (target === player.getEnemy()) {
 								return -2;
 							}
 							return -1;
