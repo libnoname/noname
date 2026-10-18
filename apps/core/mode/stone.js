@@ -3541,8 +3541,8 @@ export default () => {
 				stoneact: 4,
 				career: "paladin",
 				enable(card, player) {
-					var n1 = player.countFellow();
-					var n2 = player.getEnemy().countFellow();
+					const n1 = player.countFellow();
+					const n2 = player.getEnemy().countFellow();
 					return n1 > 0 && n2 > 0 && n1 + n2 > 2;
 				},
 				fullimage: true,
@@ -3552,29 +3552,20 @@ export default () => {
 				selectTarget: -1,
 				multitarget: true,
 				multiline: true,
-				content() {
-					"step 0";
+				async content(event, trigger, player) {
+					const { targets } = event;
 					if (!targets.length) {
-						event.finish();
 						return;
 					}
-					var maxf = [],
-						maxe = [];
-					for (var i = 0; i < targets.length; i++) {
-						if (targets[i].side == player.side) {
-							if (!maxf.length || targets[i].hp == maxf[0].hp) {
-								maxf.push(targets[i]);
-							} else if (targets[i].hp > maxf[0].hp) {
-								maxf.length = 0;
-								maxf.push(targets[i]);
-							}
-						} else {
-							if (!maxe.length || targets[i].hp == maxe[0].hp) {
-								maxe.push(targets[i]);
-							} else if (targets[i].hp > maxe[0].hp) {
-								maxe.length = 0;
-								maxe.push(targets[i]);
-							}
+					const maxf = [];
+					const maxe = [];
+					for (const target of targets) {
+						const max = target.side === player.side ? maxf : maxe;
+						if (!max.length || target.hp === max[0].hp) {
+							max.push(target);
+						} else if (target.hp > max[0].hp) {
+							max.length = 0;
+							max.push(target);
 						}
 					}
 					if (maxf.length) {
@@ -3585,10 +3576,11 @@ export default () => {
 					}
 					targets.sort(lib.sort.seat);
 					event.targets = targets;
-					"step 1";
-					if (event.targets.length) {
-						event.targets.shift().die();
-						event.redo();
+					while (event.targets.length) {
+						await event.targets.shift().die();
+						if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+							return;
+						}
 					}
 				},
 				ai: {
