@@ -6810,7 +6810,8 @@ export default () => {
 					return target.isMin() && target.maxHp > 1;
 				},
 				selectTarget: -1,
-				content() {
+				async content(event, trigger, player) {
+					const { target } = event;
 					target.loseMaxHp(target.maxHp - 1);
 				},
 				ai: {
