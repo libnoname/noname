@@ -10941,8 +10941,8 @@ export default () => {
 				filter(event, player) {
 					return !player.isMin() && !event.noActCount && _status.currentPhase == player;
 				},
-				content() {
-					var stoneact = get.info(trigger.card).stoneact;
+				async content(event, trigger, player) {
+					const stoneact = get.info(trigger.card).stoneact;
 					if (typeof stoneact === "number") {
 						player.actused += stoneact - 1;
 					}
