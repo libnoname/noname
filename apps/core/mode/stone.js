@@ -7928,7 +7928,7 @@ export default () => {
 				filter(event, player) {
 					return player.hasFellowSkill("hunter_zhanhuo", true) && player.isMin();
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.num += player.countFellowSkill("hunter_zhanhuo", true);
 				},
 			},
