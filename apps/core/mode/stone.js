@@ -7337,27 +7337,28 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content() {
-					"step 0";
-					var list = [];
-					for (var i in lib.card) {
+				async content(event, trigger, player) {
+					let list = [];
+					for (const i in lib.card) {
 						if (lib.card[i].stonehidden) {
 							continue;
 						}
-						if (lib.card[i].type == "stonecharacter" || lib.card[i].type) {
-							if (lib.card[i].stoneact == 1) {
+						if (lib.card[i].type === "stonecharacter" || lib.card[i].type) {
+							if (lib.card[i].stoneact === 1) {
 								list.push(i);
 							}
 						}
 					}
 					list = list.randomGets(3);
-					var cards = [];
-					for (var i = 0; i < list.length; i++) {
-						cards.push(game.createCard(list[i]));
+					const cards = [];
+					for (const name of list) {
+						cards.push(game.createCard(name));
 					}
-					player.getLeader().chooseCardButton(cards, "选择一张加入手牌", true);
-					"step 1";
-					player.getLeader().gain(result.links, "draw");
+					const result = await player.getLeader().chooseCardButton({ cards, prompt: "选择一张加入手牌", forced: true }).forResult();
+					if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+						return;
+					}
+					await player.getLeader().gain({ cards: result.links, animate: "draw" });
 				},
 			},
 			warlock_zhaohuan: {
