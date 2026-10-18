@@ -8705,8 +8705,8 @@ export default () => {
 					content: "你死亡后，召唤一个自身的复制",
 				},
 				marktext: "魂",
-				content() {
-					var target = player.getLeader();
+				async content(event, trigger, player) {
+					const target = player.getLeader();
 					target.addSkill("shaman_xianzuzhihun2");
 					target.storage.shaman_xianzuzhihun = player.name;
 				},
