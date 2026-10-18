@@ -8831,8 +8831,8 @@ export default () => {
 				filter(event, player) {
 					return event.player.hasSkill("hunter_jiewang");
 				},
-				content() {
-					player.gain(game.createCard(lib.beastList.randomGet() + "_stonecharacter"), "draw");
+				async content(event, trigger, player) {
+					player.gain({ cards: [game.createCard(`${lib.beastList.randomGet()}_stonecharacter`)], animate: "draw" });
 					player.removeSkill("hunter_jiewang2");
 				},
 			},
