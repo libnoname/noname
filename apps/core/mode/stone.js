@@ -6122,8 +6122,9 @@ export default () => {
 				contentBefore() {
 					player.discard(player.getEquip(1));
 				},
-				content() {
-					if (typeof player.storage.spell_modaoyou == "number") {
+				async content(event, trigger, player) {
+					const { target } = event;
+					if (typeof player.storage.spell_modaoyou === "number") {
 						target.damage(player.storage.spell_modaoyou + 1);
 					} else {
 						target.damage();
