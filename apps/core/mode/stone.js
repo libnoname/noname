@@ -3611,7 +3611,8 @@ export default () => {
 				filterTarget(card, player, target) {
 					return target.isMin() && !target.hasSkill("paladin_zhihuizhufu");
 				},
-				content() {
+				async content(event, trigger, player) {
+					const { target } = event;
 					target.addSkill("paladin_zhihuizhufu");
 					target.storage.paladin_zhihuizhufu = player;
 				},
