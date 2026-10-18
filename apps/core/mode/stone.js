@@ -4326,20 +4326,21 @@ export default () => {
 				filterTarget(card, player, target) {
 					return target.isMin();
 				},
-				content() {
-					"step 0";
-					target.die();
-					"step 1";
-					var list = [];
-					for (var i in lib.card) {
-						if (lib.card[i].stonehidden) {
+				async content(event, trigger, player) {
+					await event.target.die();
+					if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+						return;
+					}
+					const list = [];
+					for (const name in lib.card) {
+						if (lib.card[name].stonehidden) {
 							continue;
 						}
-						if (lib.card[i].type == "stonecharacter") {
-							list.push(i);
+						if (lib.card[name].type === "stonecharacter") {
+							list.push(name);
 						}
 					}
-					player.getEnemy().gain(game.createCard(list.randomGet()), "draw");
+					await player.getEnemy().gain({ cards: [game.createCard(list.randomGet())], animate: "draw" });
 				},
 				ai: {
 					order: 8.8,
