@@ -3717,7 +3717,7 @@ export default () => {
 					return player == target;
 				},
 				selectTarget: -1,
-				content() {
+				async content(event, trigger, player) {
 					player.addSkill("paladin_zhengqianghaosheng");
 				},
 				ai: {
