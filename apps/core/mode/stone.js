@@ -7170,29 +7170,32 @@ export default () => {
 				filter(event, player) {
 					return player.getLeader().career == "warlock";
 				},
-				content() {
-					"step 0";
-					var target = player.getLeader();
-					if (target.name == "stone_jialakesix") {
-						target.hp = target.maxHp;
-						target.update();
-						target.actused -= 6;
-						target.updateActCount();
-						target.storage.stone_lianyu++;
-					} else {
-						if (target.name2) {
-							target.storage.stone_lianyu = 1;
+				content: [
+					async (event, trigger, player) => {
+						const target = player.getLeader();
+						if (target.name === "stone_jialakesix") {
+							target.hp = target.maxHp;
+							target.update();
+							target.actused -= 6;
+							target.updateActCount();
+							target.storage.stone_lianyu++;
 						} else {
-							target.storage.stone_lianyu = 0;
+							if (target.name2) {
+								target.storage.stone_lianyu = 1;
+							} else {
+								target.storage.stone_lianyu = 0;
+							}
+							target.init("stone_jialakesix");
+							game.addVideo("reinit2", target, "stone_jialakesix");
 						}
-						target.init("stone_jialakesix");
-						game.addVideo("reinit2", target, "stone_jialakesix");
-					}
-					target.syncStorage("stone_lianyu");
-					game.delay();
-					"step 1";
-					player.die()._triggered = null;
-				},
+						target.syncStorage("stone_lianyu");
+						game.delay();
+					},
+					async (event, trigger, player) => {
+						const next = player.die();
+						next._triggered = null;
+					},
+				],
 			},
 			stone_jinu: {
 				trigger: { player: "phaseDrawBegin" },
