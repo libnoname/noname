@@ -3771,7 +3771,8 @@ export default () => {
 				filterTarget(card, player, target) {
 					return target.isMin();
 				},
-				content() {
+				async content(event, trigger, player) {
+					const { target } = event;
 					target.maxHp += 3;
 					target.hp += 3;
 					target.update();
