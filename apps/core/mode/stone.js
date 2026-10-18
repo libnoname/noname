@@ -8574,7 +8574,7 @@ export default () => {
 				filter(event, player) {
 					return game.players.includes(player.storage.paladin_zhihuizhufu);
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.storage.paladin_zhihuizhufu.drawDeck();
 				},
 			},
