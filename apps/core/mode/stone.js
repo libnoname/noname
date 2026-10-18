@@ -9981,7 +9981,7 @@ export default () => {
 			_rogue_skill: {
 				enable: "phaseUse",
 				filter(event, player) {
-					if (player.career != "rogue") {
+					if (player.career !== "rogue") {
 						return false;
 					}
 					if (player.getActCount() + 2 > player.actcount) {
@@ -9990,40 +9990,39 @@ export default () => {
 					return true;
 				},
 				usable: 1,
-				content() {
-					"step 0";
-					player.actused += 2;
-					player.updateActCount();
-					var equip1 = get.cardPile(function (card) {
-						return get.subtype(card) == "equip1";
-					});
-					if (!equip1) {
-						equip1 = game.createCard("qingnang");
-					}
-					var equip4 = get.cardPile(function (card) {
-						return get.type(card) == "equip" && get.subtype(card) != "equip1";
-					});
-					if (!equip4) {
-						equip4 = game.createCard("chitu");
-					}
-					player.$gain(equip1);
-					setTimeout(function () {
-						player.$gain(equip4);
-					}, 250);
-					game.delay();
-					event.equip1 = equip1;
-					event.equip4 = equip4;
-					"step 1";
-					player.equip(event.equip1);
-					game.delay(0.5);
-					"step 2";
-					player.equip(event.equip4);
-					event.parent.career = "rogue";
-				},
+				content: [
+					async (event, trigger, player) => {
+						player.actused += 2;
+						player.updateActCount();
+						let equip1 = get.cardPile(card => get.subtype(card) === "equip1");
+						if (!equip1) {
+							equip1 = game.createCard("qingnang");
+						}
+						let equip4 = get.cardPile(card => get.type(card) === "equip" && get.subtype(card) !== "equip1");
+						if (!equip4) {
+							equip4 = game.createCard("chitu");
+						}
+						player.$gain(equip1);
+						setTimeout(() => {
+							player.$gain(equip4);
+						}, 250);
+						game.delay();
+						event.equip1 = equip1;
+						event.equip4 = equip4;
+					},
+					async (event, trigger, player) => {
+						player.equip(event.equip1);
+						game.delay(0.5);
+					},
+					async (event, trigger, player) => {
+						player.equip(event.equip4);
+						event.parent.career = "rogue";
+					},
+				],
 				ai: {
 					order(skill, player) {
 						if (!player.getEquip(1) && player.countCards("e") < 2) {
-							if (player.countCards("h", "sha") && player.getActCount() + 3 <= player.actcount) {
+							if (player.hasCards("h", "sha") && player.getActCount() + 3 <= player.actcount) {
 								return 4;
 							}
 							return 0.1;
