@@ -4926,11 +4926,12 @@ export default () => {
 				stoneact: 3,
 				career: "shaman",
 				filterTarget: true,
-				content() {
-					"step 0";
-					target.damage(3, "fire");
-					"step 1";
-					player.loseHp();
+				async content(event, trigger, player) {
+					await event.target.damage({ num: 3, nature: "fire" });
+					if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+						return;
+					}
+					await player.loseHp();
 				},
 				ai: {
 					order: 8,
