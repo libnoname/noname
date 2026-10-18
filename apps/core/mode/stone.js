@@ -8293,8 +8293,8 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content() {
-					player.getLeader().gain(game.createCard("spell_aoshuzhihui"), "gain2");
+				async content(event, trigger, player) {
+					player.getLeader().gain({ cards: [game.createCard("spell_aoshuzhihui")], animate: "gain2" });
 				},
 			},
 			mage_yanshu: {
