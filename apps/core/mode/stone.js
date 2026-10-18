@@ -8051,7 +8051,7 @@ export default () => {
 				filter(event, player) {
 					return event.player.side != player.side && !player.hasSkill("qianxing");
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.tempHide();
 				},
 			},
