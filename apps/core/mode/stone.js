@@ -8330,8 +8330,8 @@ export default () => {
 					return event.player.isMin() && _status.currentPhase == player.getLeader();
 				},
 				unique: true,
-				content() {
-					var target = player.getLeader();
+				async content(event, trigger, player) {
+					const target = player.getLeader();
 					target.actused--;
 					target.updateActCount();
 					player.line(target, "green");
