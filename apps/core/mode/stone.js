@@ -6493,25 +6493,24 @@ export default () => {
 				stoneact: 2,
 				career: "shaman",
 				notarget: true,
-				content() {
-					"step 0";
-					var list = [];
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].isMin() && game.players[i].side != player.side) {
-							list.push(game.players[i]);
+				async content(event, trigger, player) {
+					let list = [];
+					for (const target of game.players) {
+						if (target.isMin() && target.side !== player.side) {
+							list.push(target);
 						}
 					}
 					if (list.length) {
 						list = list.randomGets(2);
 						list.sort(lib.sort.seat);
 					}
-					event.list = list;
-					"step 1";
-					if (event.list.length) {
-						var current = event.list.shift();
+					while (list.length) {
+						if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+							return;
+						}
+						const current = list.shift();
 						player.line(current, "thunder");
-						current.damage("thunder");
-						event.redo();
+						await current.damage({ nature: "thunder" });
 					}
 				},
 				ai: {
