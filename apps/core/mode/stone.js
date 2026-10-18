@@ -10990,7 +10990,7 @@ export default () => {
 				trigger: { player: "damageEnd" },
 				forced: true,
 				popup: false,
-				content() {
+				async content(event, trigger, player) {
 					if (player.isMin()) {
 						player.changeRage(3 * trigger.num);
 					} else {
