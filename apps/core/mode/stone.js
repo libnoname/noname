@@ -4078,20 +4078,23 @@ export default () => {
 				stoneact: 3,
 				career: "hunter",
 				notarget: true,
-				content() {
-					"step 0";
-					if (player.canAddFellow()) {
-						player.addFellowAuto("stone_jiewangzhu");
-					}
-					"step 1";
-					if (player.canAddFellow()) {
-						player.addFellowAuto("stone_jiewangzhu");
-					}
-					"step 2";
-					if (player.canAddFellow()) {
-						player.addFellowAuto("stone_jiewangzhu");
-					}
-				},
+				content: [
+					async (event, trigger, player) => {
+						if (player.canAddFellow()) {
+							player.addFellowAuto("stone_jiewangzhu");
+						}
+					},
+					async (event, trigger, player) => {
+						if (player.canAddFellow()) {
+							player.addFellowAuto("stone_jiewangzhu");
+						}
+					},
+					async (event, trigger, player) => {
+						if (player.canAddFellow()) {
+							player.addFellowAuto("stone_jiewangzhu");
+						}
+					},
+				],
 				ai: {
 					order: 9,
 					value: 5,
