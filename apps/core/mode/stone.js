@@ -9173,8 +9173,8 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content() {
-					var leader = player.getLeader();
+				async content(event, trigger, player) {
+					const leader = player.getLeader();
 					leader.changeHujia(2);
 				},
 			},
