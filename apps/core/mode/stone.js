@@ -7637,46 +7637,52 @@ export default () => {
 					}
 					return false;
 				},
-				content() {
-					"step 0";
-					event.chooser = player.getLeader();
-					event.chooser.chooseTarget("缩小：令一名随从减少2点体力上限", function (card, playerx, target) {
-						return player != target && target.isMin() && target.maxHp > 1;
-					}).ai = function (target) {
-						if (get.attitude(player, target) >= 0) {
-							return 0;
-						}
-						if (target.hp == 1) {
-							return 0.01;
-						}
-						if (target.maxHp - target.hp >= 2) {
-							return 0.01;
-						}
-						if (target.maxHp - target.hp == 1) {
-							if (target.hp == 2) {
-								return 1;
+				async content(event, trigger, player) {
+					const chooser = player.getLeader();
+					const next = chooser.chooseTarget({
+						prompt: "缩小：令一名随从减少2点体力上限",
+						filterTarget: (card, playerx, target) => {
+							return player !== target && target.isMin() && target.maxHp > 1;
+						},
+						ai: target => {
+							if (get.attitude(player, target) >= 0) {
+								return 0;
 							}
-							return 0.1;
-						}
-						switch (target.hp) {
-							case 1:
+							if (target.hp === 1) {
 								return 0.01;
-							case 2:
-								return 1;
-							case 3:
-								return 2;
-							case 4:
-								return 1.5;
-							case 5:
-								return 1;
-							default:
-								return 0.8;
-						}
-					};
-					player.line(event.chooser);
-					"step 1";
+							}
+							if (target.maxHp - target.hp >= 2) {
+								return 0.01;
+							}
+							if (target.maxHp - target.hp === 1) {
+								if (target.hp === 2) {
+									return 1;
+								}
+								return 0.1;
+							}
+							switch (target.hp) {
+								case 1:
+									return 0.01;
+								case 2:
+									return 1;
+								case 3:
+									return 2;
+								case 4:
+									return 1.5;
+								case 5:
+									return 1;
+								default:
+									return 0.8;
+							}
+						},
+					});
+					player.line(chooser);
+					const result = await next.forResult();
+					if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+						return;
+					}
 					if (result.bool) {
-						event.chooser.line(result.targets[0]);
+						chooser.line(result.targets[0]);
 						result.targets[0].maxHp -= 2;
 						if (result.targets[0].maxHp < 1) {
 							result.targets[0].maxHp = 1;
