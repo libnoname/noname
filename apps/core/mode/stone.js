@@ -10268,25 +10268,27 @@ export default () => {
 				filter(event, player) {
 					return event.player == player.getLeader();
 				},
-				content() {
-					"step 0";
-					var players = get.players();
-					var targets = [];
-					for (var i = 0; i < players.length; i++) {
-						if (players[i].side != player.side && !players[i].career) {
-							targets.push(players[i]);
+				content: [
+					async (event, trigger, player) => {
+						const players = get.players();
+						const targets = [];
+						for (const current of players) {
+							if (current.side !== player.side && !current.career) {
+								targets.push(current);
+							}
 						}
-					}
-					if (targets.length) {
-						var target = targets.randomGet();
-						player.logSkill("shaman_zhuore", target);
-						target.damage();
-					} else {
-						event.finish();
-					}
-					"step 1";
-					game.delay();
-				},
+						if (targets.length) {
+							const target = targets.randomGet();
+							player.logSkill("shaman_zhuore", target);
+							target.damage();
+						} else {
+							event.finish();
+						}
+					},
+					async (event, trigger, player) => {
+						game.delay();
+					},
+				],
 			},
 			_shaman_skill: {
 				enable: "phaseUse",
