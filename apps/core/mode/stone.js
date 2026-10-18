@@ -6064,7 +6064,7 @@ export default () => {
 					return target == player;
 				},
 				selectTarget: -1,
-				content() {
+				async content(event, trigger, player) {
 					player.addSkill("spell_sijidaifa");
 				},
 				ai: {
