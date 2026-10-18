@@ -10026,7 +10026,7 @@ export default () => {
 					return true;
 				},
 				usable: 1,
-				content() {
+				async content(event, trigger, player) {
 					player.actused += 2;
 					player.updateActCount();
 					player.drawDeck(2);
