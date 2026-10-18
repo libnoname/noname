@@ -4647,7 +4647,8 @@ export default () => {
 				enable: true,
 				fullimage: true,
 				filterTarget: true,
-				content() {
+				async content(event, trigger, player) {
+					const { target } = event;
 					if (target.maxHp < 2) {
 						target.maxHp = 2;
 					}
