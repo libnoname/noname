@@ -7264,7 +7264,7 @@ export default () => {
 				filter(event, player) {
 					return player.isDamaged();
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.num += 2;
 				},
 				ai: {
