@@ -9523,46 +9523,49 @@ export default () => {
 				forced: true,
 				unique: true,
 				filter(event, player) {
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].side != player.side && game.players[i].isMin()) {
+					for (const target of game.players) {
+						if (target.side !== player.side && target.isMin()) {
 							return true;
 						}
 					}
 					return false;
 				},
-				content() {
-					"step 0";
-					event.chooser = player.getLeader();
-					event.chooser.chooseTarget("护卫：对一名对方随从造成1点伤害或弃置其所有牌并将其体力上限改为1", function (card, playerx, target) {
-						return player.side != target.side && target.isMin();
-					}).ai = function (target) {
-						return Math.max(1, 10 - target.hp);
-					};
-					player.line(event.chooser);
-					"step 1";
-					if (result.bool) {
+				content: [
+					async (event, trigger, player) => {
+						event.chooser = player.getLeader();
+						const next = event.chooser.chooseTarget({
+							prompt: "护卫：对一名对方随从造成1点伤害或弃置其所有牌并将其体力上限改为1",
+							filterTarget: (card, playerx, target) => player.side !== target.side && target.isMin(),
+							ai: target => Math.max(1, 10 - target.hp),
+						});
+						player.line(event.chooser);
+						return next.forResult();
+					},
+					async (event, trigger, player, result) => {
+						if (!result.bool) {
+							event.finish();
+							return;
+						}
 						event.target = result.targets[0];
-						event.chooser.chooseControl("造成伤害", "discard_card").ai = function () {
-							if (event.target.hp > 1) {
-								return "discard_card";
-							}
-							return "造成伤害";
-						};
+						const next = event.chooser.chooseControl({
+							controls: ["造成伤害", "discard_card"],
+							ai: () => (event.target.hp > 1 ? "discard_card" : "造成伤害"),
+						});
 						event.chooser.line(event.target);
 						game.delay();
-					} else {
-						event.finish();
-					}
-					"step 2";
-					if (result.control == "造成伤害") {
-						event.target.damage(event.chooser);
-					} else {
-						event.target.discard(event.target.getCards("h"));
-						if (event.target.maxHp > 2) {
-							event.target.loseMaxHp(event.target.maxHp - 2);
+						return next.forResult();
+					},
+					async (event, trigger, player, result) => {
+						if (result.control === "造成伤害") {
+							await event.target.damage({ source: event.chooser });
+						} else {
+							event.target.discard({ cards: event.target.getCards("h") });
+							if (event.target.maxHp > 2) {
+								event.target.loseMaxHp(event.target.maxHp - 2);
+							}
 						}
-					}
-				},
+					},
+				],
 			},
 			druid_yexingchengzhang: {
 				trigger: { player: "phaseUseBegin" },
