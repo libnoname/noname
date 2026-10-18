@@ -10515,7 +10515,7 @@ export default () => {
 				filter(event, player) {
 					return player.hasSkill("stone_shishigui2");
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.loseHp();
 					player.removeSkill("stone_shishigui2");
 				},
