@@ -3872,20 +3872,20 @@ export default () => {
 					return target == player.getEnemy();
 				},
 				selectTarget: -1,
-				content() {
+				async content(event, trigger, player) {
 					if (!player.canAddFellow()) {
 						return;
 					}
-					var deck = player.getEnemy().deckCards;
+					const deck = player.getEnemy().deckCards;
 					if (deck) {
-						var list = [];
-						for (var i = 0; i < deck.length; i++) {
-							if (get.type(deck[i]) == "stonecharacter") {
-								list.push(deck[i].name);
+						const list = [];
+						for (const card of deck) {
+							if (get.type(card) === "stonecharacter") {
+								list.push(card.name);
 							}
 						}
 						if (list.length) {
-							var name = list.randomGet();
+							const name = list.randomGet();
 							player.addFellowAuto(name.slice(0, name.indexOf("_stonecharacter")));
 						}
 					}
