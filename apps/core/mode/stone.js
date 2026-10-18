@@ -8079,21 +8079,27 @@ export default () => {
 					}
 					return false;
 				},
-				content() {
-					"step 0";
-					event.chooser = player.getLeader();
-					event.chooser.chooseTarget("化石：令一名随从的体力值及体力上限变为2", function (card, playerx, target) {
-						return player != target && target.isMin() && (target.hp != 2 || target.maxHp != 2);
-					}).ai = function (target) {
-						if (target.hp == 2 && target.maxHp > 2) {
-							return (get.attitude(event.chooser, target) * (2 - target.maxHp)) / 100;
-						}
-						return get.attitude(event.chooser, target) * (2 - target.hp);
-					};
-					player.line(event.chooser);
-					"step 1";
+				async content(event, trigger, player) {
+					const chooser = player.getLeader();
+					const next = chooser.chooseTarget({
+						prompt: "化石：令一名随从的体力值及体力上限变为2",
+						filterTarget: (card, playerx, target) => {
+							return player !== target && target.isMin() && (target.hp !== 2 || target.maxHp !== 2);
+						},
+						ai: target => {
+							if (target.hp === 2 && target.maxHp > 2) {
+								return (get.attitude(chooser, target) * (2 - target.maxHp)) / 100;
+							}
+							return get.attitude(chooser, target) * (2 - target.hp);
+						},
+					});
+					player.line(chooser);
+					const result = await next.forResult();
+					if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+						return;
+					}
 					if (result.bool) {
-						event.chooser.line(result.targets[0]);
+						chooser.line(result.targets[0]);
 						result.targets[0].hp = 2;
 						result.targets[0].maxHp = 2;
 						result.targets[0].update();
