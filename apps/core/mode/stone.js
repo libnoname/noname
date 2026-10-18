@@ -6974,10 +6974,11 @@ export default () => {
 				selectTarget: -1,
 				multitarget: true,
 				multiline: true,
-				content() {
+				async content(event, trigger, player) {
+					const { targets } = event;
 					targets.sort(lib.sort.seat);
-					for (var i = 0; i < targets.length; i++) {
-						targets[i].loseHp();
+					for (const target of targets) {
+						target.loseHp();
 					}
 					ui.clear();
 				},
