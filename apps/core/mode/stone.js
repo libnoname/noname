@@ -4457,15 +4457,16 @@ export default () => {
 					return target == player.getEnemy();
 				},
 				selectTarget: -1,
-				content() {
+				async content(event, trigger, player) {
+					const { target } = event;
 					if (target.deckCards) {
-						var cards = [];
-						for (var i = 0; i < 3; i++) {
+						const cards = [];
+						for (let i = 0; i < 3; i++) {
 							cards.push(game.createCard("spell_zhumo"));
 						}
 						player.$give(cards, target);
-						for (var i = 0; i < cards.length; i++) {
-							target.deckCards.push(cards[i]);
+						for (const card of cards) {
+							target.deckCards.push(card);
 						}
 						game.addGlobalSkill("rogue_zhumo");
 					}
