@@ -8275,7 +8275,7 @@ export default () => {
 					return event.player == player.getLeader();
 				},
 				priority: -11,
-				content() {
+				async content(event, trigger, player) {
 					trigger.num = 1;
 				},
 			},
