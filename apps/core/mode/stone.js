@@ -6483,7 +6483,8 @@ export default () => {
 				},
 				multitarget: true,
 				multiline: true,
-				content() {
+				async content(event, trigger, player) {
+					const { targets } = event;
 					game.asyncDraw(targets, 2);
 				},
 				ai: {
