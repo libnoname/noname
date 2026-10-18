@@ -5181,8 +5181,9 @@ export default () => {
 					return target.isMin();
 				},
 				selectTarget: -1,
-				content() {
-					var num = 3;
+				async content(event, trigger, player) {
+					const { target } = event;
+					let num = 3;
 					if (player.hasFellowSkill("stone_shenyou")) {
 						num = 6;
 					}
