@@ -1146,7 +1146,7 @@ declare interface CardInfo {
 	 * ```
 	  * @since 1.11.5
 	 */
-	contentBefore?: ContentFuncByAll | OldContentFuncByAll | (ContentFuncByAll | OldContentFuncByAll)[];
+	contentBefore?: ContentFuncByAll | OldContentFuncByAll | ContentFuncsByAll;
 	/**
 	 * 卡牌使用效果（使用卡牌后执行的内容）
 	 *
@@ -1166,7 +1166,7 @@ declare interface CardInfo {
 	 * ```
 	  * @since 1.11.5
 	 */
-	content?: ContentFuncByAll | OldContentFuncByAll | (ContentFuncByAll | OldContentFuncByAll)[];
+	content?: ContentFuncByAll | OldContentFuncByAll | ContentFuncsByAll;
 	/**
 	 * 使用后内容（在 content 之后执行）
 	 *
@@ -1186,7 +1186,7 @@ declare interface CardInfo {
 	 * ```
 	  * @since 1.11.5
 	 */
-	contentAfter?: ContentFuncByAll | OldContentFuncByAll | (ContentFuncByAll | OldContentFuncByAll)[];
+	contentAfter?: ContentFuncByAll | OldContentFuncByAll | ContentFuncsByAll;
 	/**
 	 * 效果结算次数
 	 *
@@ -1520,7 +1520,7 @@ declare interface CardInfo {
 	 * ```
 	  * @since 1.11.5
 	 */
-	prepareEquip?: ContentFuncByAll | OldContentFuncByAll;
+	prepareEquip?: ContentFuncByAll | OldContentFuncByAll | ContentFuncsByAll;
 	/**
 	 * 穿戴装备牌时执行的内容（支持数组形式多个执行）
 	 *
@@ -1547,7 +1547,7 @@ declare interface CardInfo {
 	 * ```
 	  * @since 1.11.5
 	 */
-	onEquip?: ContentFuncByAll | OldContentFuncByAll | (ContentFuncByAll | OldContentFuncByAll)[];
+	onEquip?: ContentFuncByAll | OldContentFuncByAll | ContentFuncsByAll;
 	/**
 	 * 执行 onLose 的前提
 	 *
@@ -1605,7 +1605,7 @@ declare interface CardInfo {
 	 * 典型用途：木牛流马（extra.js）配合 onLose 在失去装备时掉落其储存的牌。
 	  * @since 1.11.5
 	 */
-	onLose?: ContentFuncByAll | OldContentFuncByAll | (ContentFuncByAll | OldContentFuncByAll)[];
+	onLose?: ContentFuncByAll | OldContentFuncByAll | ContentFuncsByAll;
 	/**
 	 * 移除装备时以事件执行 onLose
 	 *
@@ -1781,7 +1781,7 @@ declare interface CardInfo {
 	 * 其中 `result` 为判定结果（含 `result.bool`），如乐不思蜀/闪电的 effect 用它判断是否结算。
 	  * @since 1.11.5
 	 */
-	effect?: ContentFuncByAll | OldContentFuncByAll;
+	effect?: ContentFuncByAll | OldContentFuncByAll | ContentFuncsByAll;
 	/**
 	 * 延时锦囊牌仅占位（不判定、无效果）
 	 *
