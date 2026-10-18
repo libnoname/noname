@@ -4477,19 +4477,21 @@ export default () => {
 				enable: true,
 				fullimage: true,
 				filterTarget(card, player, target) {
-					return target == player.getEnemy();
+					return target === player.getEnemy();
 				},
 				selectTarget: -1,
-				content() {
-					"step 0";
-					var list = target.getFellow();
+				async content(event, trigger, player) {
+					const { target } = event;
+					const list = target.getFellow();
 					if (list.length) {
-						list.randomGet().die({ source: player });
+						await list.randomGet().die({ source: player });
 					}
-					"step 1";
-					var es = target.getCards("e");
+					if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+						return;
+					}
+					const es = target.getCards("e");
 					if (es.length) {
-						target.discard(es.randomGet());
+						await target.discard({ cards: [es.randomGet()] });
 					}
 				},
 				ai: {
