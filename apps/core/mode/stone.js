@@ -8957,7 +8957,7 @@ export default () => {
 				filter(event) {
 					return event.changedHp != 0;
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.draw(Math.abs(trigger.num));
 				},
 			},
