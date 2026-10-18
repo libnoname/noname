@@ -9995,10 +9995,11 @@ export default () => {
 				filterTarget(card, player, target) {
 					return !target.career;
 				},
-				content() {
+				async content(event, trigger, player) {
+					const { target } = event;
 					player.actused += 2;
 					player.updateActCount();
-					target.damage("fire");
+					target.damage({ nature: "fire" });
 					event.parent.career = "mage";
 				},
 				ai: {
