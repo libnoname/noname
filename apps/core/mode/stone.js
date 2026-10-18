@@ -8068,7 +8068,7 @@ export default () => {
 				filter(event, player) {
 					return player.name == "stone_xinbing" && player.hasFellowSkill("paladin_moma");
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.num += player.countFellowSkill("paladin_moma");
 				},
 			},
