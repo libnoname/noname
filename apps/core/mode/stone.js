@@ -10435,7 +10435,7 @@ export default () => {
 				trigger: { player: "phaseAfter" },
 				forced: true,
 				unique: true,
-				content() {
+				async content(event, trigger, player) {
 					player.die();
 				},
 			},
