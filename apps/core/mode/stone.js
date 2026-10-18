@@ -7530,7 +7530,7 @@ export default () => {
 				filter(event, player) {
 					return event.player == player.getLeader();
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.maxHp++;
 					player.hp++;
 					player.update();
