@@ -10571,20 +10571,26 @@ export default () => {
 					}
 					return false;
 				},
-				content() {
-					"step 0";
-					event.chooser = player.getLeader();
-					event.chooser.chooseTarget("叫嚣：弃置对方一名随从的所有牌", function (card, playerx, target) {
-						return player.side != target.side && target.isMin() && target.countCards("he") > 0;
-					}).ai = function (target) {
-						return target.countCards("he");
-					};
-					player.line(event.chooser);
-					"step 1";
+				async content(event, trigger, player) {
+					const chooser = player.getLeader();
+					const next = chooser.chooseTarget({
+						prompt: "叫嚣：弃置对方一名随从的所有牌",
+						filterTarget: (card, playerx, target) => {
+							return player.side !== target.side && target.isMin() && target.hasCards("he");
+						},
+						ai: target => {
+							return target.countCards("he");
+						},
+					});
+					player.line(chooser);
+					const result = await next.forResult();
+					if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+						return;
+					}
 					if (result.bool) {
-						event.chooser.line(result.targets[0]);
+						chooser.line(result.targets[0]);
 						game.delay();
-						result.targets[0].discard(result.targets[0].getCards("he"));
+						result.targets[0].discard({ cards: result.targets[0].getCards("he") });
 					}
 				},
 			},
