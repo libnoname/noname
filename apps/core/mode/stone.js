@@ -5846,19 +5846,20 @@ export default () => {
 				filterTarget(card, player, target) {
 					return target.side != player.side;
 				},
-				content() {
-					"step 0";
-					event.list = [];
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i] != target && game.players[i].side == target.side) {
-							event.list.push(game.players[i]);
+				async content(event, trigger, player) {
+					const { target } = event;
+					const list = [];
+					for (const current of game.players) {
+						if (current !== target && current.side === target.side) {
+							list.push(current);
 						}
 					}
-					target.damage(2);
-					"step 1";
-					if (event.list.length) {
-						event.list.shift().damage();
-						event.redo();
+					await target.damage(2);
+					while (list.length) {
+						if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+							return;
+						}
+						await list.shift().damage();
 					}
 				},
 				ai: {
