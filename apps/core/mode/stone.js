@@ -10840,7 +10840,7 @@ export default () => {
 				filter(event) {
 					return event.source && event.source.isMin();
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.source.addSkill("stone_mafengzhuru2");
 				},
 			},
