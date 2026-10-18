@@ -6262,24 +6262,25 @@ export default () => {
 				stoneact: 3,
 				career: "paladin",
 				notarget: true,
-				content() {
-					"step 0";
-					if (player.canAddFellow()) {
-						player.addFellowAuto("stone_xinbing");
-					}
-					"step 1";
-					if (player.canAddFellow()) {
-						player.addFellowAuto("stone_xinbing");
-					}
-					"step 2";
-					var equip1 = get.cardPile(function (card) {
-						return get.subtype(card) == "equip1";
-					});
-					if (!equip1) {
-						equip1 = game.createCard("qingnang");
-					}
-					player.equip(equip1);
-				},
+				content: [
+					async (event, trigger, player) => {
+						if (player.canAddFellow()) {
+							player.addFellowAuto("stone_xinbing");
+						}
+					},
+					async (event, trigger, player) => {
+						if (player.canAddFellow()) {
+							player.addFellowAuto("stone_xinbing");
+						}
+					},
+					async (event, trigger, player) => {
+						let equip1 = get.cardPile(card => get.subtype(card) === "equip1");
+						if (!equip1) {
+							equip1 = game.createCard("qingnang");
+						}
+						await player.equip(equip1);
+					},
+				],
 				ai: {
 					order: 8.5,
 					value: 5,
