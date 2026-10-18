@@ -9469,20 +9469,20 @@ export default () => {
 					}
 					return false;
 				},
-				content() {
-					var target1 = player.getLeader();
-					var target2 = player.getEnemy();
-					var list = [];
-					for (var i in lib.card) {
+				async content(event, trigger, player) {
+					const target1 = player.getLeader();
+					const target2 = player.getEnemy();
+					const list = [];
+					for (const i in lib.card) {
 						if (lib.card[i].stonehidden) {
 							continue;
 						}
-						if (lib.card[i].type == "stonecard") {
+						if (lib.card[i].type === "stonecard") {
 							list.push(i);
 						}
 					}
-					target1.gain(game.createCard(list.randomGet()));
-					target2.gain(game.createCard(list.randomGet()));
+					target1.gain({ cards: [game.createCard(list.randomGet())] });
+					target2.gain({ cards: [game.createCard(list.randomGet())] });
 					target1.$draw();
 					target2.$draw();
 					game.delay();
