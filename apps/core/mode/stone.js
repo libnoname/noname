@@ -4660,33 +4660,27 @@ export default () => {
 				stoneact: 2,
 				career: "mage",
 				filterTarget(card, player, target) {
-					return target.side != player.side && target.isMin();
+					return target.side !== player.side && target.isMin();
 				},
 				selectTarget: -1,
 				multitarget: true,
 				multiline: true,
-				content() {
-					"step 0";
+				async content(event, trigger, player) {
+					const { targets } = event;
 					if (!targets.length) {
-						event.finish();
 						return;
 					}
-					var map = [];
-					for (var i = 0; i < targets.length; i++) {
-						map.push(0);
-					}
-					for (var i = 0; i < 3; i++) {
+					const map = Array(targets.length).fill(0);
+					for (let i = 0; i < 3; i++) {
 						map[Math.floor(Math.random() * map.length)]++;
 					}
-					event.num = 0;
-					event.map = map;
-					"step 1";
-					if (event.num < targets.length) {
-						if (event.map[event.num]) {
-							targets[event.num].damage(event.map[event.num]);
+					for (let i = 0; i < targets.length; i++) {
+						if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+							return;
 						}
-						event.num++;
-						event.redo();
+						if (map[i]) {
+							await targets[i].damage(map[i]);
+						}
 					}
 				},
 				ai: {
