@@ -5268,7 +5268,8 @@ export default () => {
 				filterTarget(card, player, target) {
 					return target.isMin() && target.hp < target.maxHp;
 				},
-				content() {
+				async content(event, trigger, player) {
+					const { target } = event;
 					target.die();
 				},
 				ai: {
