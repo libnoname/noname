@@ -8846,9 +8846,9 @@ export default () => {
 				filter(event) {
 					return get.type(event.card) == "stonecard";
 				},
-				content() {
-					var list = ["spell_lierenyinji", "spell_guanmenfanggou", "spell_duochongsheji", "spell_kuaisusheji", "spell_zhaohuanchongwu"];
-					player.gain(game.createCard(list.randomGet()), "draw");
+				async content(event, trigger, player) {
+					const list = ["spell_lierenyinji", "spell_guanmenfanggou", "spell_duochongsheji", "spell_kuaisusheji", "spell_zhaohuanchongwu"];
+					player.gain({ cards: [game.createCard(list.randomGet())], animate: "draw" });
 				},
 			},
 			spell_yemanpaoxiao: {
