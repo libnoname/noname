@@ -6694,12 +6694,14 @@ export default () => {
 				filterTarget(card, player, target) {
 					return target.isMin() && (target.maxHp > 1 || target.countCards("he") > 0);
 				},
-				content() {
-					"step 0";
-					target.discard(target.getCards("he"));
-					"step 1";
+				async content(event, trigger, player) {
+					const { target } = event;
+					await target.discard({ cards: target.getCards("he") });
+					if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+						return;
+					}
 					if (target.maxHp > 2) {
-						target.loseMaxHp(target.maxHp - 2);
+						await target.loseMaxHp(target.maxHp - 2);
 					}
 				},
 				ai: {
