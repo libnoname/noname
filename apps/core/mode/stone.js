@@ -3214,8 +3214,9 @@ export default () => {
 				filterTarget(card, player, target) {
 					return target.isMin();
 				},
-				content() {
-					if (target.side != player.side) {
+				async content(event, trigger, player) {
+					const { target } = event;
+					if (target.side !== player.side) {
 						target.damage(4);
 					} else {
 						target.draw(4);
