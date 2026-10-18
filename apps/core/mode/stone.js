@@ -3314,7 +3314,8 @@ export default () => {
 				filterTarget(card, player, target) {
 					return target.isMin() && !target.hasSkill("warlock_fushishu");
 				},
-				content() {
+				async content(event, trigger, player) {
+					const { target } = event;
 					target.addSkill("warlock_fushishu");
 				},
 				ai: {
