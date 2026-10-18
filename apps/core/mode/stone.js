@@ -3240,23 +3240,26 @@ export default () => {
 				enable: true,
 				fullimage: true,
 				notarget: true,
-				content() {
-					"step 0";
-					var fellows = player.getEnemy().getFellow();
-					if (fellows.length) {
-						fellows.randomGet().die();
-					}
-					"step 1";
-					var fellows = player.getEnemy().getFellow();
-					if (fellows.length) {
-						fellows.randomGet().die();
-					}
-					"step 2";
-					var hs = player.getCards("h");
-					if (hs.length) {
-						player.discard(hs.randomGets(2));
-					}
-				},
+				content: [
+					async (event, trigger, player) => {
+						const fellows = player.getEnemy().getFellow();
+						if (fellows.length) {
+							await fellows.randomGet().die();
+						}
+					},
+					async (event, trigger, player) => {
+						const fellows = player.getEnemy().getFellow();
+						if (fellows.length) {
+							await fellows.randomGet().die();
+						}
+					},
+					async (event, trigger, player) => {
+						const hs = player.getCards("h");
+						if (hs.length) {
+							await player.discard({ cards: hs.randomGets(2) });
+						}
+					},
+				],
 				ai: {
 					order: 7,
 					value: 5,
