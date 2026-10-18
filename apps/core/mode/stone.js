@@ -9161,27 +9161,33 @@ export default () => {
 					}
 					return false;
 				},
-				content() {
-					"step 0";
-					event.chooser = player.getLeader();
-					event.chooser.chooseTarget("监工：对一名随从造成1点伤害然后令其摸两张牌", function (card, playerx, target) {
-						return player != target && target.isMin();
-					}).ai = function (target) {
-						var att = get.attitude(event.chooser, target);
-						if (target.hp == 1) {
-							return -att;
-						}
-						if (target.hp == 2) {
-							return 0;
-						}
-						return att;
-					};
-					player.line(event.chooser);
-					"step 1";
+				async content(event, trigger, player) {
+					const chooser = player.getLeader();
+					const next = chooser.chooseTarget({
+						prompt: "监工：对一名随从造成1点伤害然后令其摸两张牌",
+						filterTarget: (card, playerx, target) => {
+							return player !== target && target.isMin();
+						},
+						ai: target => {
+							const att = get.attitude(chooser, target);
+							if (target.hp === 1) {
+								return -att;
+							}
+							if (target.hp === 2) {
+								return 0;
+							}
+							return att;
+						},
+					});
+					player.line(chooser);
+					const result = await next.forResult();
+					if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+						return;
+					}
 					if (result.bool) {
-						event.chooser.line(result.targets[0]);
+						chooser.line(result.targets[0]);
 						game.delay();
-						result.targets[0].damage(event.chooser);
+						result.targets[0].damage({ source: chooser });
 						result.targets[0].draw(2);
 					}
 				},
