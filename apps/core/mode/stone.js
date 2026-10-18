@@ -7811,30 +7811,32 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content() {
-					"step 0";
-					var list = [];
-					var target = player.getLeader();
-					for (var i = 0; i < target.deckCards.length; i++) {
-						if (get.type(target.deckCards[i]) == "stonecharacter" && get.info(target.deckCards[i]).stoneact == 1) {
-							list.push(target.deckCards[i]);
+				content: [
+					async (event, trigger, player) => {
+						const list = [];
+						const target = player.getLeader();
+						for (const card of target.deckCards) {
+							if (get.type(card) === "stonecharacter" && get.info(card).stoneact === 1) {
+								list.push(card);
+							}
 						}
-					}
-					if (list.length && target.canAddFellow()) {
-						target.useCard(target, list.randomGet(), false).noActCount = true;
-					}
-					"step 1";
-					var list = [];
-					var target = player.getEnemy();
-					for (var i = 0; i < target.deckCards.length; i++) {
-						if (get.type(target.deckCards[i]) == "stonecharacter" && get.info(target.deckCards[i]).stoneact == 1) {
-							list.push(target.deckCards[i]);
+						if (list.length && target.canAddFellow()) {
+							target.useCard({ card: list.randomGet(), targets: [target], addCount: false }).noActCount = true;
 						}
-					}
-					if (list.length && target.canAddFellow()) {
-						target.useCard(target, list.randomGet(), false).noActCount = true;
-					}
-				},
+					},
+					async (event, trigger, player) => {
+						const list = [];
+						const target = player.getEnemy();
+						for (const card of target.deckCards) {
+							if (get.type(card) === "stonecharacter" && get.info(card).stoneact === 1) {
+								list.push(card);
+							}
+						}
+						if (list.length && target.canAddFellow()) {
+							target.useCard({ card: list.randomGet(), targets: [target], addCount: false }).noActCount = true;
+						}
+					},
+				],
 			},
 			hunter_chuanlin: {
 				trigger: { source: "fellow" },
