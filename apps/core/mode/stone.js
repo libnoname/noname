@@ -8912,7 +8912,7 @@ export default () => {
 				forced: true,
 				unique: true,
 				popup: false,
-				content() {
+				async content(event, trigger, player) {
 					trigger.cancel();
 				},
 				ai: {
