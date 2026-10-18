@@ -7840,7 +7840,7 @@ export default () => {
 				filter(event, player) {
 					return event.player.side == player.side && event.source != player;
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.draw();
 				},
 			},
