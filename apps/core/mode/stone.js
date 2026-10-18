@@ -5260,12 +5260,14 @@ export default () => {
 				filterTarget(card, player, target) {
 					return target.isMin();
 				},
-				content() {
-					"step 0";
-					target.damage();
-					"step 1";
+				async content(event, trigger, player) {
+					const { target } = event;
+					await target.damage();
+					if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+						return;
+					}
 					if (target.isAlive()) {
-						target.draw(2);
+						await target.draw(2);
 					}
 				},
 				ai: {
