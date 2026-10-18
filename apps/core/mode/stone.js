@@ -5614,24 +5614,22 @@ export default () => {
 				stoneact: 3,
 				career: "warlock",
 				filterTarget(card, player, target) {
-					return target.side == player.side && target.isMin();
+					return target.side === player.side && target.isMin();
 				},
-				content() {
-					"step 0";
-					target.die({ source: player });
-					event.num = target.hp;
-					"step 1";
-					event.list = [];
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].isMin() && game.players[i].side != player.side) {
-							event.list.push(game.players[i]);
-						}
+				async content(event, trigger, player) {
+					const next = event.target.die({ source: player });
+					const num = event.target.hp;
+					await next;
+					if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+						return;
 					}
-					event.list.sort(lib.sort.seat);
-					"step 2";
-					if (event.list.length) {
-						event.list.shift().damage(event.num);
-						event.redo();
+					const list = game.players.filter(target => target.isMin() && target.side !== player.side);
+					list.sort(lib.sort.seat);
+					for (const target of list) {
+						await target.damage(num);
+						if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+							return;
+						}
 					}
 				},
 				ai: {
@@ -5640,23 +5638,23 @@ export default () => {
 					useful: 5,
 					result: {
 						player(player, target) {
-							if (player == target) {
+							if (player === target) {
 								return -10;
 							}
-							var list = [];
-							var maxHp = 0;
-							for (var i = 0; i < game.players.length; i++) {
-								if (game.players[i].isMin() && game.players[i].side != player.side) {
-									list.push(game.players[i]);
-									if (game.players[i].hp > maxHp) {
-										maxHp = game.players[i].hp;
+							const list = [];
+							let maxHp = 0;
+							for (const current of game.players) {
+								if (current.isMin() && current.side !== player.side) {
+									list.push(current);
+									if (current.hp > maxHp) {
+										maxHp = current.hp;
 									}
 								}
 							}
 							if (list.length < 2) {
 								return 0;
 							}
-							if (list.length == 2 && target.hp >= 4) {
+							if (list.length === 2 && target.hp >= 4) {
 								return 0;
 							}
 							if (target.hp > maxHp) {
