@@ -9550,7 +9550,7 @@ export default () => {
 				filter(event, player) {
 					return event.player.isMin() && event.player != player && !event.player.isTurnedOver();
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.player.turnOver();
 				},
 			},
