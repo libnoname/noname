@@ -9913,11 +9913,12 @@ export default () => {
 					}
 					return target.hp < target.maxHp;
 				},
-				content() {
+				async content(event, trigger, player) {
+					const { target } = event;
 					player.actused += 2;
 					player.updateActCount();
 					event.parent.career = "priest";
-					var num = 1;
+					let num = 1;
 					if (player.hasFellowSkill("stone_shenyou")) {
 						num = 2;
 					}
