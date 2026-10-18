@@ -5338,15 +5338,15 @@ export default () => {
 					return target.isMin();
 				},
 				selectTarget: -1,
-				content() {
-					"step 0";
+				async content(event, trigger, player) {
+					const { targets } = event;
 					targets.randomRemove();
 					targets.sort(lib.sort.seat);
-					event.list = targets;
-					"step 1";
-					if (event.list.length) {
-						event.list.shift().die();
-						event.redo();
+					while (targets.length) {
+						if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+							return;
+						}
+						await targets.shift().die();
 					}
 				},
 				ai: {
