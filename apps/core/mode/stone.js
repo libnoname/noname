@@ -5943,27 +5943,28 @@ export default () => {
 				stoneact: 2,
 				career: "rogue",
 				filterTarget: true,
-				content() {
-					"step 0";
-					if (player.countCards("e")) {
-						player.chooseToDiscard("e", "是否弃置一张装备区内的牌令伤害+1？").ai = function (card) {
-							return 7 - get.value(card);
-						};
-					} else {
-						event.goto(2);
-					}
-					"step 1";
-					if (result.bool) {
-						event.add = true;
-					}
-					"step 2";
-					if (event.add) {
-						target.damage(2);
-					} else {
-						target.damage();
-					}
-					player.storage.spell_cigu = false;
-				},
+				content: [
+					async (event, trigger, player) => {
+						if (!player.hasCards("e")) {
+							return { bool: false };
+						}
+						return player
+							.chooseToDiscard({
+								position: "e",
+								prompt: "是否弃置一张装备区内的牌令伤害+1？",
+								ai: card => 7 - get.value(card),
+							})
+							.forResult();
+					},
+					async (event, trigger, player, result) => {
+						if (result.bool) {
+							event.target.damage(2);
+						} else {
+							event.target.damage();
+						}
+						player.storage.spell_cigu = false;
+					},
+				],
 				ai: {
 					order: 8,
 					value: 6,
