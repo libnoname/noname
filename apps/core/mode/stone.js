@@ -9120,7 +9120,7 @@ export default () => {
 				trigger: { player: "dieBegin" },
 				forced: true,
 				unique: true,
-				content() {
+				async content(event, trigger, player) {
 					player.getLeader().addSkill("rogue_xunbao2");
 				},
 			},
