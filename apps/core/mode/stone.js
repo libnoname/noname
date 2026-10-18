@@ -6221,7 +6221,8 @@ export default () => {
 					return target.side != player.side;
 				},
 				selectTarget: -1,
-				content() {
+				async content(event, trigger, player) {
+					const { target } = event;
 					target.damage();
 				},
 				ai: {
