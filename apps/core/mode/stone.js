@@ -10542,7 +10542,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				silent: true,
 				unique: true,
-				content() {
+				async content(event, trigger, player) {
 					player.tempHide();
 				},
 			},
