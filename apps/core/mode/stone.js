@@ -9631,10 +9631,10 @@ export default () => {
 				trigger: { player: "dieBegin" },
 				forced: true,
 				unique: true,
-				content() {
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].side != player.side) {
-							game.players[i].addSkill("hunter_nuhou2");
+				async content(event, trigger, player) {
+					for (const current of game.players) {
+						if (current.side !== player.side) {
+							current.addSkill("hunter_nuhou2");
 						}
 					}
 				},
