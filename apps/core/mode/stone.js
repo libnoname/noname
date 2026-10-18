@@ -4788,7 +4788,8 @@ export default () => {
 				filterTarget(card, player, target) {
 					return target.isMin() && !target.hasSkill("shaman_fengnu");
 				},
-				content() {
+				async content(event, trigger, player) {
+					const { target } = event;
 					target.addSkill("shaman_fengnu");
 				},
 				ai: {
