@@ -9959,11 +9959,12 @@ export default () => {
 					return "造成" + get.cnNumber(_status.event.player.storage.anyingxingtai) + "点伤害";
 				},
 				filterTarget: true,
-				content() {
+				async content(event, trigger, player) {
+					const { target } = event;
 					player.actused += 2;
 					player.updateActCount();
 					event.parent.career = "priest";
-					var num = 1;
+					const num = 1;
 					// if(player.hasFellowSkill('stone_shenyou')){
 					// 	num=2;
 					// }
