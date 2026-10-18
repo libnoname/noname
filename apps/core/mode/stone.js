@@ -5776,15 +5776,29 @@ export default () => {
 					return target == player;
 				},
 				selectTarget: -1,
-				content() {
-					"step 0";
-					event.num = 3;
-					"step 1";
-					if (player.canAddFellow() && event.num--) {
+				content: [
+					async (event, trigger, player) => {
+						if (!player.canAddFellow()) {
+							event.finish();
+							return;
+						}
 						player.addFellowAuto("stone_shuren");
-						event.redo();
-					}
-				},
+					},
+					async (event, trigger, player) => {
+						if (!player.canAddFellow()) {
+							event.finish();
+							return;
+						}
+						player.addFellowAuto("stone_shuren");
+					},
+					async (event, trigger, player) => {
+						if (!player.canAddFellow()) {
+							event.finish();
+							return;
+						}
+						player.addFellowAuto("stone_shuren");
+					},
+				],
 				ai: {
 					order: 6,
 					value: 5,
