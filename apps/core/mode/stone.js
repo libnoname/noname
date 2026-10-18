@@ -8247,29 +8247,22 @@ export default () => {
 				filter(event, player) {
 					return player.getLeader().countCards("e") > 0 && player.getEnemy().hasFellow();
 				},
-				content() {
-					"step 0";
-					var num = player.getLeader().countCards("e");
-					var map = [];
-					var targets = player.getEnemy().getFellow();
+				async content(event, trigger, player) {
+					const num = player.getLeader().countCards("e");
+					const targets = player.getEnemy().getFellow();
 					event.targets = targets;
-					for (var i = 0; i < targets.length; i++) {
-						map.push(0);
-					}
-					for (var i = 0; i < num; i++) {
+					const map = targets.map(() => 0);
+					for (let i = 0; i < num; i++) {
 						map[Math.floor(Math.random() * map.length)]++;
 					}
-					event.num = 0;
-					event.map = map;
-					"step 1";
-					var targets = event.targets;
-					if (event.num < targets.length) {
-						if (event.map[event.num]) {
-							player.line(targets[event.num], "fire");
-							targets[event.num].damage(event.map[event.num], "fire");
+					for (let i = 0; i < targets.length; i++) {
+						if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+							return;
 						}
-						event.num++;
-						event.redo();
+						if (map[i]) {
+							player.line(targets[i], "fire");
+							await targets[i].damage({ num: map[i], nature: "fire" });
+						}
 					}
 				},
 			},
