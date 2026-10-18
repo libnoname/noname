@@ -4986,12 +4986,13 @@ export default () => {
 					return target.isDamaged();
 				},
 				selectTarget: -1,
-				content() {
-					var num = 1;
+				async content(event, trigger, player) {
+					const { target } = event;
+					let num = 1;
 					if (player.hasFellowSkill("stone_shenyou")) {
 						num = 2;
 					}
-					if (player.side == target.side) {
+					if (player.side === target.side) {
 						if (player.hasFellowSkill("priest_hunwu")) {
 							target.loseHp(num);
 						} else {
