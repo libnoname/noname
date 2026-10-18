@@ -5571,7 +5571,8 @@ export default () => {
 				filterTarget(card, player, target) {
 					return target.side == player.side && target.isMin();
 				},
-				content() {
+				async content(event, trigger, player) {
+					const { target } = event;
 					target.draw(4);
 					target.hp = 5;
 					target.maxHp = 5;
