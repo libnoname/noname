@@ -8445,7 +8445,7 @@ export default () => {
 				filter(event, player) {
 					return event.player.side == player.side;
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.line(player.getLeader(), "green");
 					player.getLeader().drawDeck();
 				},
