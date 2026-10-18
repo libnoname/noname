@@ -7643,8 +7643,8 @@ export default () => {
 				trigger: { player: "damageEnd" },
 				forced: true,
 				unique: true,
-				content() {
-					var target = player.getEnemy();
+				async content(event, trigger, player) {
+					const target = player.getEnemy();
 					player.line(target, "green");
 					target.damage();
 				},
