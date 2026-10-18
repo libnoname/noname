@@ -9509,18 +9509,24 @@ export default () => {
 					}
 					return false;
 				},
-				content() {
-					"step 0";
-					event.chooser = player.getLeader();
-					event.chooser.chooseTarget("驯兽：选择一名己方随从增加1点体力和体力上限并摸两张牌", function (card, playerx, target) {
-						return player != target && player.side == target.side && target.isMin();
-					}).ai = function (target) {
-						return get.attitude(event.chooser, target);
-					};
-					player.line(event.chooser);
-					"step 1";
+				async content(event, trigger, player) {
+					const chooser = player.getLeader();
+					const next = chooser.chooseTarget({
+						prompt: "驯兽：选择一名己方随从增加1点体力和体力上限并摸两张牌",
+						filterTarget: (card, playerx, target) => {
+							return player !== target && player.side === target.side && target.isMin();
+						},
+						ai: target => {
+							return get.attitude(chooser, target);
+						},
+					});
+					player.line(chooser);
+					const result = await next.forResult();
+					if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+						return;
+					}
 					if (result.bool) {
-						event.chooser.line(result.targets[0]);
+						chooser.line(result.targets[0]);
 						result.targets[0].maxHp++;
 						result.targets[0].hp++;
 						result.targets[0].update();
