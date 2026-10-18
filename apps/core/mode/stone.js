@@ -7173,8 +7173,8 @@ export default () => {
 				filter(event, player) {
 					return _status.currentPhase == player.getLeader();
 				},
-				content() {
-					var target = player.getLeader();
+				async content(event, trigger, player) {
+					const target = player.getLeader();
 					target.actused -= 4;
 					target.updateActCount();
 					player.line(target, "green");
