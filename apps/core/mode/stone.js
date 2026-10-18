@@ -10748,22 +10748,25 @@ export default () => {
 				filter(event, player) {
 					return player.getEnemy().countFellow() >= player.getLeader().countFellow();
 				},
-				content() {
-					"step 0";
-					event.chooser = player.getEnemy();
-					event.chooser.chooseTarget(
-						"毒噬：选择己方一名随从令其死亡",
-						function (card, playerx, target) {
-							return target.isMin() && target.side != player.side;
+				async content(event, trigger, player) {
+					const chooser = player.getEnemy();
+					const next = chooser.chooseTarget({
+						prompt: "毒噬：选择己方一名随从令其死亡",
+						filterTarget: (card, playerx, target) => {
+							return target.isMin() && target.side !== player.side;
 						},
-						true
-					).ai = function (target) {
-						return -target.hp;
-					};
-					player.line(event.chooser);
-					"step 1";
+						forced: true,
+						ai: target => {
+							return -target.hp;
+						},
+					});
+					player.line(chooser);
+					const result = await next.forResult();
+					if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+						return;
+					}
 					if (result.bool) {
-						event.chooser.line(result.targets[0]);
+						chooser.line(result.targets[0]);
 						game.delay();
 						result.targets[0].die();
 					}
