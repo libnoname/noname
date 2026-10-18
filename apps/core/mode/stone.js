@@ -9647,8 +9647,8 @@ export default () => {
 				filter(event, player) {
 					return player.hasSkill("hunter_nuhou2");
 				},
-				content() {
-					player.damage("nosource");
+				async content(event, trigger, player) {
+					player.damage({ nosource: true });
 					player.removeSkill("hunter_nuhou2");
 				},
 			},
