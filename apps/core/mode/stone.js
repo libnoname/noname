@@ -601,38 +601,39 @@ export default () => {
 					return !player.isMin() && !player.canAddFellow();
 				},
 				notarget: true,
-				content() {
-					"step 0";
-					var name = card.name.slice(0, card.name.indexOf("_stonecharacter"));
-					var added = false;
-					var i;
-					for (i = 0; i < player.actcharacterlist.length; i++) {
-						if (player.actcharacterlist[i] === null) {
-							added = true;
-							break;
+				content: [
+					async (event, trigger, player) => {
+						const { card } = event;
+						const name = card.name.slice(0, card.name.indexOf("_stonecharacter"));
+						let i;
+						for (i = 0; i < player.actcharacterlist.length; i++) {
+							if (player.actcharacterlist[i] === null) {
+								break;
+							}
 						}
-					}
-					var pos = i + 4;
-					if (player != game.me) {
-						pos += 4;
-					}
-					var fellow = game.addFellow(pos, name);
-					fellow.side = player.side;
-					fellow.classList.add("turnedover");
-					player.actcharacterlist[i] = fellow;
-					fellow.$gain2(card);
-					event.source = fellow;
-					var num = lib.character[name][5][1];
-					if (num) {
-						fellow.draw(num, false);
-					}
-					player.updateActCount();
-					if (fellow.hasSkillTag("noPhaseDelay")) {
-						fellow.noPhaseDelay = true;
-					}
-					"step 1";
-					event.trigger("fellow");
-				},
+						let pos = i + 4;
+						if (player !== game.me) {
+							pos += 4;
+						}
+						const fellow = game.addFellow(pos, name);
+						fellow.side = player.side;
+						fellow.classList.add("turnedover");
+						player.actcharacterlist[i] = fellow;
+						fellow.$gain2(card);
+						event.source = fellow;
+						const num = lib.character[name][5][1];
+						if (num) {
+							fellow.draw(num, false);
+						}
+						player.updateActCount();
+						if (fellow.hasSkillTag("noPhaseDelay")) {
+							fellow.noPhaseDelay = true;
+						}
+					},
+					async (event, trigger, player) => {
+						event.trigger("fellow");
+					},
+				],
 				ai: {
 					order: 8.5,
 					useful: [5.5, 1],
