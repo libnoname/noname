@@ -4622,8 +4622,9 @@ export default () => {
 				career: "mage",
 				stonehidden: true,
 				filterTarget: true,
-				content() {
-					target.damage(2, "fire");
+				async content(event, trigger, player) {
+					const { target } = event;
+					target.damage({ num: 2, nature: "fire" });
 				},
 				ai: {
 					order: 7,
