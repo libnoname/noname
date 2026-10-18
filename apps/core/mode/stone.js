@@ -3365,13 +3365,15 @@ export default () => {
 				enable: true,
 				fullimage: true,
 				filterTarget(card, player, target) {
-					return target.side != player.side;
+					return target.side !== player.side;
 				},
-				content() {
-					"step 0";
-					player.damage(2, target);
-					"step 1";
-					target.damage(2);
+				async content(event, trigger, player) {
+					const { target } = event;
+					await player.damage({ num: 2, source: target });
+					if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+						return;
+					}
+					await target.damage(2);
 				},
 				ai: {
 					order: 8,
@@ -3382,7 +3384,7 @@ export default () => {
 							if (player.hujia >= 2) {
 								return -1.5;
 							}
-							if (player.hujia == 1) {
+							if (player.hujia === 1) {
 								if (player.hp > 3) {
 									return -1.5;
 								}
