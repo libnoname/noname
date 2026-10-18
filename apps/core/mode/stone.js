@@ -6661,12 +6661,14 @@ export default () => {
 					return target.isMin() && target.side != player.side;
 				},
 				selectTarget: -1,
-				content() {
-					"step 0";
-					target.damage();
-					"step 1";
+				async content(event, trigger, player) {
+					const { target } = event;
+					await target.damage();
+					if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+						return;
+					}
 					if (target.isAlive()) {
-						target.turnOver();
+						await target.turnOver();
 					}
 				},
 				ai: {
