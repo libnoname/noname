@@ -10253,7 +10253,7 @@ export default () => {
 				trigger: { player: "phaseDrawBefore" },
 				forced: true,
 				popup: false,
-				content() {
+				async content(event, trigger, player) {
 					trigger.cancel();
 				},
 				ai: {
