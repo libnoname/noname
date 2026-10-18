@@ -8607,7 +8607,7 @@ export default () => {
 				intro: {
 					content: "你死亡时，将一张探险帽置入主将的手牌",
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.getLeader().addSkill("hunter_tanxianmao2");
 				},
 			},
