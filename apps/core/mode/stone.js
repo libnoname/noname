@@ -10872,15 +10872,15 @@ export default () => {
 					}
 					return false;
 				},
-				content() {
-					var list = [];
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].isMin() && game.players[i] != player && game.players[i].side == player.side && game.players[i].hp < game.players[i].maxHp) {
-							list.push(game.players[i]);
+				async content(event, trigger, player) {
+					const list = [];
+					for (const current of game.players) {
+						if (current.isMin() && current !== player && current.side === player.side && current.hp < current.maxHp) {
+							list.push(current);
 						}
 					}
 					if (list.length) {
-						var target = list.randomGet();
+						const target = list.randomGet();
 						target.recover();
 						game.delay();
 						player.line(target, "green");
