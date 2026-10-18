@@ -7963,19 +7963,18 @@ export default () => {
 				forced: true,
 				direct: true,
 				filter(event, player) {
-					return event.player == player.getLeader() && event.player.countFellow() > 1;
+					return event.player === player.getLeader() && event.player.countFellow() > 1;
 				},
-				content() {
-					"step 0";
-					var players = get.players();
-					var targets = [];
-					for (var i = 0; i < players.length; i++) {
-						if (players[i].side == player.side && players[i].isMin() && players[i] != player) {
-							targets.push(players[i]);
+				async content(event, trigger, player) {
+					const players = get.players();
+					const targets = [];
+					for (const target of players) {
+						if (target.side === player.side && target.isMin() && target !== player) {
+							targets.push(target);
 						}
 					}
 					if (targets.length) {
-						var target = targets.randomGet();
+						const target = targets.randomGet();
 						player.logSkill("rogue_shoudao", target);
 						target.maxHp++;
 						target.hp++;
