@@ -6927,44 +6927,46 @@ export default () => {
 				stoneact: 3,
 				selectTarget: -1,
 				filterTarget(card, player, target) {
-					return target == player.getEnemy();
+					return target === player.getEnemy();
 				},
-				content() {
-					"step 0";
-					var targets = [player, target];
-					event.cards = [targets[0].getCards("e"), targets[1].getCards("e")];
-					targets[0].lose(event.cards[0], ui.special);
-					targets[1].lose(event.cards[1], ui.special);
-					if (event.cards[0].length) {
-						targets[0].$give(event.cards[0], targets[1]);
-					}
-					if (event.cards[1].length) {
-						targets[1].$give(event.cards[1], targets[0]);
-					}
-					"step 1";
-					var targets = [player, target];
-					for (var i = 0; i < event.cards[1].length; i++) {
-						targets[0].equip(event.cards[1][i]);
-					}
-					for (var i = 0; i < event.cards[0].length; i++) {
-						targets[1].equip(event.cards[0][i]);
-					}
-					"step 2";
-					var dh = target.countCards("h") - player.countCards("h");
-					if (dh > 0) {
-						player.draw(dh);
-					}
-				},
+				content: [
+					async (event, trigger, player) => {
+						const { target } = event;
+						event.cards = [player.getCards("e"), target.getCards("e")];
+						player.lose({ cards: event.cards[0].slice(), position: ui.special });
+						target.lose({ cards: event.cards[1].slice(), position: ui.special });
+						if (event.cards[0].length) {
+							player.$give(event.cards[0], target);
+						}
+						if (event.cards[1].length) {
+							target.$give(event.cards[1], player);
+						}
+					},
+					async (event, trigger, player) => {
+						for (const card of event.cards[1]) {
+							player.equip(card);
+						}
+						for (const card of event.cards[0]) {
+							event.target.equip(card);
+						}
+					},
+					async (event, trigger, player) => {
+						const dh = event.target.countCards("h") - player.countCards("h");
+						if (dh > 0) {
+							await player.draw(dh);
+						}
+					},
+				],
 				ai: {
 					order: 7,
 					value: 1,
 					useful: 1,
 					result: {
 						target(player, target) {
-							var ne1 = target.countCards("e"),
-								ne2 = player.countCards("e");
-							var nh1 = target.countCards("h"),
-								nh2 = player.countCards("h");
+							const ne1 = target.countCards("e");
+							const ne2 = player.countCards("e");
+							let nh1 = target.countCards("h");
+							const nh2 = player.countCards("h");
 							if (nh1 < nh2) {
 								nh1 = nh2;
 							}
