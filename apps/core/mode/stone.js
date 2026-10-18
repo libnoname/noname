@@ -9323,7 +9323,7 @@ export default () => {
 				filter(event, player) {
 					return player.getLeader().canAddFellow();
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.getLeader().addFellowAuto("stone_xiaogui");
 				},
 			},
