@@ -8499,11 +8499,11 @@ export default () => {
 					}
 					return false;
 				},
-				content() {
-					var num = 0;
-					var fellows = player.getLeader().getFellow();
-					for (var i = 0; i < fellows.length; i++) {
-						if (fellows[i].hasSkill("shaman_tuteng")) {
+				async content(event, trigger, player) {
+					let num = 0;
+					const fellows = player.getLeader().getFellow();
+					for (const fellow of fellows) {
+						if (fellow.hasSkill("shaman_tuteng")) {
 							num++;
 						}
 					}
