@@ -8339,16 +8339,23 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content() {
-					"step 0";
-					player.getLeader().chooseControl("冲锋", "潜行").ai = function () {
-						if (Math.random() < 0.5) {
-							return "潜行";
-						}
-						return "冲锋";
-					};
-					"step 1";
-					if (result.control == "潜行") {
+				async content(event, trigger, player) {
+					const result = await player
+						.getLeader()
+						.chooseControl({
+							controls: ["冲锋", "潜行"],
+							ai: () => {
+								if (Math.random() < 0.5) {
+									return "潜行";
+								}
+								return "冲锋";
+							},
+						})
+						.forResult();
+					if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+						return;
+					}
+					if (result.control === "潜行") {
 						player.maxHp++;
 						player.hp++;
 						player.update();
