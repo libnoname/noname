@@ -8773,7 +8773,7 @@ export default () => {
 				filter(event, player) {
 					return event.player == player.getLeader();
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.removeSkill("shaman_shihuawuqi");
 				},
 			},
