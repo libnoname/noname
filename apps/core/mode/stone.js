@@ -554,43 +554,42 @@ export default () => {
 		],
 		element: {
 			content: {
-				addFellowAuto() {
-					"step 0";
-					if (!player.canAddFellow()) {
-						event.finish();
-						return;
-					}
-					var name = event.fellowName;
-					var added = false;
-					var i;
-					for (i = 0; i < player.actcharacterlist.length; i++) {
-						if (player.actcharacterlist[i] === null) {
-							added = true;
-							break;
+				addFellowAuto: [
+					async (event, trigger, player) => {
+						if (!player.canAddFellow()) {
+							event.finish();
+							return;
 						}
-					}
-					var pos = i + 4;
-					if (player != game.me) {
-						pos += 4;
-					}
-					var fellow = game.addFellow(pos, name, "zoominanim");
-					fellow.side = player.side;
-					fellow.classList.add("turnedover");
-					player.actcharacterlist[i] = fellow;
-					event.source = fellow;
-					var num = lib.character[name][5][1];
-					if (num) {
-						fellow.draw(num, false);
-					}
-					player.updateActCount();
-					if (fellow.hasSkillTag("noPhaseDelay") || event.delay === false) {
-						fellow.noPhaseDelay = true;
-					}
-					// player.line(fellow,'green');
-					"step 1";
-					event.trigger("fellow");
-					event.result = event.source;
-				},
+						const name = event.fellowName;
+						let i;
+						for (i = 0; i < player.actcharacterlist.length; i++) {
+							if (player.actcharacterlist[i] === null) {
+								break;
+							}
+						}
+						let pos = i + 4;
+						if (player !== game.me) {
+							pos += 4;
+						}
+						const fellow = game.addFellow(pos, name, "zoominanim");
+						fellow.side = player.side;
+						fellow.classList.add("turnedover");
+						player.actcharacterlist[i] = fellow;
+						event.source = fellow;
+						const num = lib.character[name][5][1];
+						if (num) {
+							fellow.draw(num, false);
+						}
+						player.updateActCount();
+						if (fellow.hasSkillTag("noPhaseDelay") || event.delay === false) {
+							fellow.noPhaseDelay = true;
+						}
+					},
+					async (event, trigger, player) => {
+						event.trigger("fellow");
+						event.result = event.source;
+					},
+				],
 			},
 			stonecharacter: {
 				type: "stonecharacter",
