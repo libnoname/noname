@@ -9023,7 +9023,7 @@ export default () => {
 				filter(event) {
 					return event.player.isMin();
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.getLeader().drawDeck();
 				},
 			},
