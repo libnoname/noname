@@ -9204,22 +9204,22 @@ export default () => {
 					}
 					return false;
 				},
-				content() {
-					"step 0";
-					var list = [];
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].isMin() && game.players[i] != player) {
-							list.push(game.players[i]);
+				async content(event, trigger, player) {
+					const list = [];
+					for (const target of game.players) {
+						if (target.isMin() && target !== player) {
+							list.push(target);
 						}
 					}
 					list.sort(lib.sort.seat);
-					event.list = list;
-					"step 1";
-					if (event.list.length) {
-						var current = event.list.shift();
-						current.damage();
+					while (list.length) {
+						if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+							return;
+						}
+						const current = list.shift();
+						const next = current.damage();
 						player.line(current, "green");
-						event.redo();
+						await next;
 					}
 				},
 			},
