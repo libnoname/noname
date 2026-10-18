@@ -4905,7 +4905,8 @@ export default () => {
 				filterTarget(card, player, target) {
 					return target.isMin() && !target.hasSkill("shaman_xianzuzhihun");
 				},
-				content() {
+				async content(event, trigger, player) {
+					const { target } = event;
 					target.addSkill("shaman_xianzuzhihun");
 				},
 				ai: {
