@@ -9843,7 +9843,7 @@ export default () => {
 				filter(event, player) {
 					return event.player.career && player.side == event.player.side && event.player.isAlive();
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.player.drawDeck();
 					trigger.player.recover();
 				},
