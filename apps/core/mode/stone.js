@@ -4756,12 +4756,13 @@ export default () => {
 				stoneact: 6,
 				career: "mage",
 				filterTarget: true,
-				content() {
-					var num = 4;
+				async content(event, trigger, player) {
+					const { target } = event;
+					let num = 4;
 					if (!target.isMin()) {
 						num = Math.min(4, target.hp);
 					}
-					target.damage(num, "fire");
+					target.damage({ num, nature: "fire" });
 				},
 				ai: {
 					order: 8,
