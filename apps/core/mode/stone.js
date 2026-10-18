@@ -10482,7 +10482,7 @@ export default () => {
 				filter(event, player) {
 					return player.hasSkill("stone_juxingchanchu2");
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.loseHp();
 					player.removeSkill("stone_juxingchanchu2");
 				},
