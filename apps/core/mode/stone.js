@@ -8482,7 +8482,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content() {
+				async content(event, trigger, player) {
 					player.draw(Math.ceil(Math.random() * 3));
 				},
 			},
