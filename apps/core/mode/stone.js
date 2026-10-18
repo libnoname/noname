@@ -7966,7 +7966,7 @@ export default () => {
 				filter(event, player) {
 					return event.player.side == player.side && get.subtype(event.card) == "equip1";
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.draw(2);
 				},
 				ai: {
