@@ -3804,8 +3804,8 @@ export default () => {
 					return player == target;
 				},
 				selectTarget: -1,
-				content() {
-					if (typeof player.storage.anyingxingtai != "number") {
+				async content(event, trigger, player) {
+					if (typeof player.storage.anyingxingtai !== "number") {
 						player.storage.anyingxingtai = 1;
 					} else if (player.storage.anyingxingtai < 2) {
 						player.storage.anyingxingtai = 2;
