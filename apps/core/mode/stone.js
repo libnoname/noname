@@ -7783,15 +7783,15 @@ export default () => {
 						}
 					}
 				},
-				content() {
-					var list = [];
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].side == player.side && game.players[i].isDamaged()) {
-							list.push(game.players[i]);
+				async content(event, trigger, player) {
+					const list = [];
+					for (const current of game.players) {
+						if (current.side === player.side && current.isDamaged()) {
+							list.push(current);
 						}
 					}
 					if (list.length) {
-						var target = list.randomGet();
+						const target = list.randomGet();
 						target.recover(2);
 						player.line(target, "green");
 					}
