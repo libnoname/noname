@@ -4197,24 +4197,21 @@ export default () => {
 				},
 				fullimage: true,
 				filterTarget(card, player, target) {
-					return player == target;
+					return player === target;
 				},
 				selectTarget: -1,
-				content() {
-					"step 0";
+				async content(event, trigger, player) {
 					if (player.hasSkill("druid_ziyang")) {
 						player.drawDeck(3);
-						event.finish();
-					} else {
-						player.chooseControl("获得行动值", "摸牌").ai = function () {
-							if (player.countCards("h") <= 1) {
-								return "摸牌";
-							}
-							return "获得行动值";
-						};
+						return;
 					}
-					"step 1";
-					if (result.control == "摸牌") {
+					const result = await player
+						.chooseControl({
+							controls: ["获得行动值", "摸牌"],
+							ai: () => (player.countCards("h") <= 1 ? "摸牌" : "获得行动值"),
+						})
+						.forResult();
+					if (result.control === "摸牌") {
 						player.drawDeck(3);
 					} else {
 						player.addSkill("druid_ziyang");
