@@ -4535,14 +4535,14 @@ export default () => {
 					return target == player.getEnemy();
 				},
 				selectTarget: -1,
-				content() {
-					var cards = player.getEnemy().deckCards.randomGets(2);
-					var list = [];
-					for (var i = 0; i < cards.length; i++) {
-						list.push(game.createCard(cards[i].name, cards[i].suit, cards[i].number, cards[i].nature));
+				async content(event, trigger, player) {
+					const cards = player.getEnemy().deckCards.randomGets(2);
+					const list = [];
+					for (const card of cards) {
+						list.push(game.createCard(card.name, card.suit, card.number, card.nature));
 					}
 					if (list.length) {
-						player.gain(list, "draw");
+						player.gain({ cards: list.slice(), animate: "draw" });
 					}
 				},
 				ai: {
