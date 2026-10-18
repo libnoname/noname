@@ -9656,7 +9656,7 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content() {
+				async content(event, trigger, player) {
 					player.classList.remove("turnedover");
 				},
 			},
