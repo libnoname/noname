@@ -10557,7 +10557,7 @@ export default () => {
 			stone_kutongsiseng2: {
 				trigger: { player: "phaseEnd" },
 				forced: true,
-				content() {
+				async content(event, trigger, player) {
 					player.draw();
 					player.removeSkill("stone_kutongsiseng2");
 				},
