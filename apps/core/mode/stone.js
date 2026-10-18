@@ -9997,20 +9997,22 @@ export default () => {
 					return true;
 				},
 				usable: 1,
-				content() {
-					"step 0";
-					player.actused += 2;
-					player.updateActCount();
-					event.parent.career = "warlock";
-					player.addFellowAuto("stone_diyuhuox");
-					"step 1";
-					var num = player.storage.stone_lianyu;
-					if (num && get.itemtype(result) == "player") {
-						result.maxHp += num;
-						result.hp += num;
-						result.directgain(get.cards(num));
-					}
-				},
+				content: [
+					async (event, trigger, player) => {
+						player.actused += 2;
+						player.updateActCount();
+						event.parent.career = "warlock";
+						player.addFellowAuto("stone_diyuhuox");
+					},
+					async (event, trigger, player, result) => {
+						const num = player.storage.stone_lianyu;
+						if (num && get.itemtype(result) === "player") {
+							result.maxHp += num;
+							result.hp += num;
+							result.directgain(get.cards(num));
+						}
+					},
+				],
 				ai: {
 					order: 0.5,
 					result: {
