@@ -6873,7 +6873,8 @@ export default () => {
 				filterTarget(card, player, target) {
 					return target.isMin() && target.side != player.side && target.countCards("h") <= 1;
 				},
-				content() {
+				async content(event, trigger, player) {
+					const { target } = event;
 					target.getLeader().removeFellow(target);
 					target.side = player.side;
 					player.addFellow(target);
