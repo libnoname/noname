@@ -9131,8 +9131,8 @@ export default () => {
 				filter(event, player) {
 					return event.player.hasSkill("rogue_xunbao");
 				},
-				content() {
-					player.gain(game.createCard("spell_sijidaifa"), "gain2");
+				async content(event, trigger, player) {
+					player.gain({ cards: [game.createCard("spell_sijidaifa")], animate: "gain2" });
 					player.removeSkill("rogue_xunbao2");
 				},
 			},
