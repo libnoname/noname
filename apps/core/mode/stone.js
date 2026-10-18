@@ -5040,12 +5040,16 @@ export default () => {
 				filterTarget(card, player, target) {
 					return target.isMin() && target.side != player.side;
 				},
-				content() {
-					"step 0";
-					target.die()._triggered = null;
-					"step 1";
+				async content(event, trigger, player) {
+					const { target } = event;
+					const next = target.die();
+					next._triggered = null;
+					await next;
+					if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+						return;
+					}
 					if (player.deckCards) {
-						player.deckCards.push(game.createCard(target.name + "_stonecharacter"));
+						player.deckCards.push(game.createCard(`${target.name}_stonecharacter`));
 					}
 				},
 				ai: {
