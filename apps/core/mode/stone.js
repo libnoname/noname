@@ -7939,18 +7939,15 @@ export default () => {
 				trigger: { source: "fellow" },
 				forced: true,
 				unique: true,
-				content() {
-					"step 0";
-					var target = player.getLeader();
+				async content(event, trigger, player) {
+					let target = player.getLeader();
 					if (target.getEquip(1)) {
 						target = target.getEnemy();
 						player.line(target, "green");
 						target.damage();
 					} else {
 						player.line(target, "green");
-						var equip1 = get.cardPile(function (card) {
-							return get.subtype(card) == "equip1";
-						});
+						let equip1 = get.cardPile(card => get.subtype(card) === "equip1");
 						if (!equip1) {
 							equip1 = game.createCard("qingnang");
 						}
