@@ -9310,7 +9310,7 @@ export default () => {
 				filter(event, player) {
 					return event.player.hasSkill("warlock_yongsheng");
 				},
-				content() {
+				async content(event, trigger, player) {
 					game.delay();
 					player.addFellowAuto("stone_kongjuzhanma");
 					player.removeSkill("warlock_yongsheng2");
