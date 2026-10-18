@@ -4593,8 +4593,9 @@ export default () => {
 				stoneact: 2,
 				career: "mage",
 				filterTarget: true,
-				content() {
-					target.damage("fire");
+				async content(event, trigger, player) {
+					const { target } = event;
+					target.damage({ nature: "fire" });
 					if (player.deckCards) {
 						player.deckCards.push(game.createCard("spell_chirehuoba"));
 					}
