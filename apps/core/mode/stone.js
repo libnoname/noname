@@ -7520,18 +7520,24 @@ export default () => {
 					}
 					return false;
 				},
-				content() {
-					"step 0";
-					event.chooser = player.getLeader();
-					event.chooser.chooseTarget("陪练：令一名随从获得嘲讽", function (card, playerx, target) {
-						return player != target && target.isMin() && !target.hasSkill("lschaofeng");
-					}).ai = function (target) {
-						return get.attitude(event.chooser, target) * target.hp;
-					};
-					player.line(event.chooser);
-					"step 1";
+				async content(event, trigger, player) {
+					const chooser = player.getLeader();
+					const next = chooser.chooseTarget({
+						prompt: "陪练：令一名随从获得嘲讽",
+						filterTarget: (card, playerx, target) => {
+							return player !== target && target.isMin() && !target.hasSkill("lschaofeng");
+						},
+						ai: target => {
+							return get.attitude(chooser, target) * target.hp;
+						},
+					});
+					player.line(chooser);
+					const result = await next.forResult();
+					if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+						return;
+					}
 					if (result.bool) {
-						event.chooser.line(result.targets[0]);
+						chooser.line(result.targets[0]);
 						result.targets[0].addSkill("lschaofeng");
 					}
 				},
