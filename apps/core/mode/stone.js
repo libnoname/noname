@@ -8536,7 +8536,7 @@ export default () => {
 				intro: {
 					content: "下个回合结束后死亡",
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.die();
 				},
 				ai: {
