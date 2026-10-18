@@ -8724,7 +8724,7 @@ export default () => {
 					}
 					return event.player.hasSkill("shaman_xianzuzhihun");
 				},
-				content() {
+				async content(event, trigger, player) {
 					game.delay();
 					player.addFellowAuto(player.storage.shaman_xianzuzhihun);
 					player.removeSkill("shaman_xianzuzhihun2");
