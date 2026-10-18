@@ -7379,12 +7379,12 @@ export default () => {
 				filter(event, player) {
 					return event.player.hasSkill("stone_fuchou");
 				},
-				content() {
+				async content(event, trigger, player) {
 					game.delay();
 					player.removeSkill("stone_fuchou2");
-					var targets = player.getEnemy().getFellow();
+					const targets = player.getEnemy().getFellow();
 					if (targets.length) {
-						player.useCard(targets, game.createCard("spell_fuchouzhinu"), false).noActCount = true;
+						player.useCard({ targets: targets, card: game.createCard("spell_fuchouzhinu"), addCount: false }).noActCount = true;
 					}
 				},
 			},
