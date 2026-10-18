@@ -9494,7 +9494,7 @@ export default () => {
 				filter(event, player) {
 					return event.source && event.source == player.getLeader() && event.parent.name == "_mage_skill";
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.num++;
 				},
 			},
