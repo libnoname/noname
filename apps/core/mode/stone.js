@@ -10231,10 +10231,11 @@ export default () => {
 					return player.canUse("sha", target, null, false);
 				},
 				direct: true,
-				content() {
+				async content(event, trigger, player) {
+					const { targets } = event;
 					player.actused += 2;
 					player.updateActCount();
-					player.useCard({ name: "sha" }, targets, "_druid_skill", false).animate = false;
+					player.useCard({ card: { name: "sha" }, targets: targets, skill: "_druid_skill", addCount: false }).animate = false;
 					event.parent.career = "druid";
 				},
 				ai: {
