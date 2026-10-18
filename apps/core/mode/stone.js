@@ -6182,17 +6182,17 @@ export default () => {
 					return target == player;
 				},
 				selectTarget: -1,
-				content() {
+				async content(event, trigger, player) {
 					player.markSkill("spell_modaoyou");
-					if (typeof player.storage.spell_modaoyou != "number") {
+					if (typeof player.storage.spell_modaoyou !== "number") {
 						player.storage.spell_modaoyou = 1;
 					} else {
 						player.storage.spell_modaoyou++;
 					}
-					var list = [];
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].isMin() && game.players[i].side == player.side) {
-							list.push(game.players[i]);
+					const list = [];
+					for (const current of game.players) {
+						if (current.isMin() && current.side === player.side) {
+							list.push(current);
 						}
 					}
 					if (list.length) {
