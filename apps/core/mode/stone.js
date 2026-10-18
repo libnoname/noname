@@ -7698,16 +7698,18 @@ export default () => {
 				filter(event, player) {
 					return event.career && event.player.side == player.side;
 				},
-				content() {
-					"step 0";
-					var target = player.getLeader();
-					target.damage();
-					player.line(target, "green");
-					"step 1";
-					var target = player.getEnemy();
-					target.damage();
-					player.line(target, "green");
-				},
+				content: [
+					async (event, trigger, player) => {
+						const target = player.getLeader();
+						target.damage();
+						player.line(target, "green");
+					},
+					async (event, trigger, player) => {
+						const target = player.getEnemy();
+						target.damage();
+						player.line(target, "green");
+					},
+				],
 			},
 			priest_shengshui: {
 				trigger: { player: "phaseBegin" },
