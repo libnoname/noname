@@ -3463,12 +3463,14 @@ export default () => {
 				filterTarget(card, player, target) {
 					return target.isMin() && target.isTurnedOver();
 				},
-				content() {
-					"step 0";
-					target.draw(3);
-					"step 1";
+				async content(event, trigger, player) {
+					const { target } = event;
+					await target.draw(3);
+					if (event.finished || (player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+						return;
+					}
 					if (target.isTurnedOver()) {
-						target.turnOver();
+						await target.turnOver();
 					}
 				},
 				ai: {
