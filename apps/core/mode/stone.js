@@ -8973,14 +8973,14 @@ export default () => {
 					}
 					return false;
 				},
-				content() {
-					var list = [];
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].isMin() && game.players[i].side == player.side && game.players[i] != player) {
-							list.push(game.players[i]);
+				async content(event, trigger, player) {
+					const list = [];
+					for (const current of game.players) {
+						if (current.isMin() && current.side === player.side && current !== player) {
+							list.push(current);
 						}
 					}
-					var target = list.randomGet();
+					const target = list.randomGet();
 					player.line(target, "green");
 					target.maxHp++;
 					target.hp++;
