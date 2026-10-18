@@ -3446,7 +3446,8 @@ export default () => {
 				filterTarget(card, player, target) {
 					return target.isMin() && target.isDamaged();
 				},
-				content() {
+				async content(event, trigger, player) {
+					const { target } = event;
 					target.draw(4);
 				},
 				ai: {
