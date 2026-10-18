@@ -9417,7 +9417,7 @@ export default () => {
 				filter(event, player) {
 					return event.career && event.player.side == player.side;
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.draw(2);
 				},
 			},
