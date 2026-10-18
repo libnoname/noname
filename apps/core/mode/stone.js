@@ -9783,10 +9783,10 @@ export default () => {
 				filter(event, player) {
 					return event.player.hasSkill("druid_chengzhang");
 				},
-				content() {
-					if (player.countCards("h")) {
+				async content(event, trigger, player) {
+					if (player.hasCards("h")) {
 						game.delay();
-						player.chooseToDiscard("h", true);
+						player.chooseToDiscard({ position: "h", forced: true });
 					}
 					player.removeSkill("druid_chengzhang3");
 				},
