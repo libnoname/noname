@@ -41756,15 +41756,15 @@ const skills = {
 				})
 			);
 		},
-		content() {
+		async content(event, trigger, player) {
 			if (!player.hasSkill("rebiluan2")) {
 				player.addSkill("rebiluan2");
 			}
-			var ng = [];
-			var players = game.filterPlayer();
-			for (var i = 0; i < players.length; i++) {
-				if (players[i].group != "unknown") {
-					ng.add(players[i].group);
+			const ng = [];
+			const players = game.filterPlayer();
+			for (const current of players) {
+				if (current.group !== "unknown") {
+					ng.add(current.group);
 				}
 			}
 			player.$damagepop(ng.length, "unknownx");
