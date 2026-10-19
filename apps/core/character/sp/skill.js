@@ -42407,7 +42407,7 @@ const skills = {
 			var evt = event.getl(player);
 			return evt && evt.hs && evt.hs.length > 0;
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.removeSkill("oldcihuai2");
 		},
 	},
