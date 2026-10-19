@@ -65,9 +65,11 @@ async function main() {
 			{ name: "doudizhu", index: "mode/doudizhu.js", source: "mode/doudizhu.js" },
 			{ name: "guozhan", index: getDirectoryEntry("mode", "guozhan"), source: "mode/guozhan" },
 			{ name: "identity", index: "mode/identity.js", source: "mode/identity.js" },
+			{ name: "realtime", index: "mode/realtime.js", source: "mode/realtime.js" },
 			{ name: "single", index: "mode/single.js", source: "mode/single.js" },
 			{ name: "stone", index: "mode/stone.js", source: "mode/stone.js" },
 			{ name: "tafang", index: "mode/tafang.js", source: "mode/tafang.js" },
+			{ name: "versus", index: "mode/versus.js", source: "mode/versus.js" },
 		],
 		card: [],
 	};
