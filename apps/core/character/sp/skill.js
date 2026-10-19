@@ -36073,7 +36073,7 @@ const skills = {
 		filter(event, player) {
 			return !player.getStat("damage");
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.loseHp();
 		},
 	},
