@@ -37178,7 +37178,8 @@ const skills = {
 		filterTarget(card, player, target) {
 			return target != player;
 		},
-		content() {
+		async content(event, trigger, player) {
+			const { target } = event;
 			player.markAuto("fenxun2", [target]);
 			player.addTempSkill("fenxun2");
 		},
