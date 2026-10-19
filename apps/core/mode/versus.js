@@ -6597,8 +6597,8 @@ export default () => {
 					}
 					return !event.numFixed && player.countMark("boss_huchen") > 0;
 				},
-				content: function () {
-					if (trigger.name == "die") {
+				async content(event, trigger, player) {
+					if (trigger.name === "die") {
 						player.addMark("boss_huchen", 1);
 					} else {
 						trigger.num += player.countMark("boss_huchen");
