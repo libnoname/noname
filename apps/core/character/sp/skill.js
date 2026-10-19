@@ -22811,15 +22811,15 @@ const skills = {
 			return event.isFirstTarget && player.countCards("h") > player.getHandcardLimit() && event.targets.some(target => target != player);
 		},
 		//group:'olbihun_give',
-		content() {
-			if (trigger.targets.length == 1) {
-				var cards = trigger.cards.filterInD();
+		async content(event, trigger, player) {
+			if (trigger.targets.length === 1) {
+				const cards = trigger.cards.filterInD();
 				if (cards.length) {
 					game.delayx();
-					trigger.targets[0].gain(cards, "gain2");
+					trigger.targets[0].gain({ cards, animate: "gain2" });
 				}
 			}
-			var targets = trigger.targets.filter(target => target != player);
+			const targets = trigger.targets.filter(target => target !== player);
 			trigger.targets.removeArray(targets);
 			trigger.getParent().triggeredTargets1.removeArray(targets);
 		},
