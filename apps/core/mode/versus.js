@@ -2171,520 +2171,521 @@ export default () => {
 					game.onSwapControl();
 				});
 			},
-			chooseCharacter: function () {
-				var next = game.createEvent("chooseCharacter");
+			chooseCharacter: () => {
+				const next = game.createEvent("chooseCharacter");
 				next.showConfig = true;
-				next.setContent(function () {
-					"step 0";
-					if (lib.config.continue_name_versus) {
-						_status.friend = lib.config.continue_name_versus.friend;
-						_status.enemy = lib.config.continue_name_versus.enemy;
-						_status.color = lib.config.continue_name_versus.color;
+				next.setContent([
+					async (event, trigger, player) => {
+						if (lib.config.continue_name_versus) {
+							_status.friend = lib.config.continue_name_versus.friend;
+							_status.enemy = lib.config.continue_name_versus.enemy;
+							_status.color = lib.config.continue_name_versus.color;
+							game.additionaldead = [];
+							game.saveConfig("continue_name_versus");
+							lib.init.onfree();
+							return;
+						}
+						event.check = function () {
+							this.dialog.classList.add("fullwidth");
+							this.dialog.classList.add("fullheight");
+							this.dialog.classList.add("noslide");
+							for (let i = 0; i < this.dialog.buttons.length; i++) {
+								this.dialog.buttons[i].style.opacity = 1;
+							}
+							this.dialog.add("选项");
+							this.dialog.versus_zhu = this.dialog.add(ui.create.switcher("versus_zhu", lib.storage.zhu)).querySelector(".toggle");
+							// this.dialog.versus_only_zhu=this.dialog.add(ui.create.switcher('versus_only_zhu',lib.storage.only_zhu)).querySelector('.toggle');
+							this.dialog.versus_main_zhu = this.dialog.add(ui.create.switcher("versus_main_zhu", lib.storage.main_zhu)).querySelector(".toggle");
+							if (lib.storage.zhu) {
+								// this.dialog.versus_only_zhu.parentNode.classList.remove('disabled');
+								this.dialog.versus_main_zhu.parentNode.classList.remove("disabled");
+							} else {
+								// this.dialog.versus_only_zhu.parentNode.classList.add('disabled');
+								this.dialog.versus_main_zhu.parentNode.classList.add("disabled");
+							}
+							// this.dialog.versus_cross_seat=this.dialog.add(ui.create.switcher('versus_cross_seat',lib.storage.cross_seat)).querySelector('.toggle');
+							// this.dialog.versus_random_seat=this.dialog.add(ui.create.switcher('versus_random_seat',lib.storage.random_seat)).querySelector('.toggle');
+							this.dialog.versus_noreplace_end = this.dialog.add(ui.create.switcher("versus_noreplace_end", lib.storage.noreplace_end)).querySelector(".toggle");
+							this.dialog.versus_assign_enemy = this.dialog.add(ui.create.switcher("versus_assign_enemy", lib.storage.assign_enemy)).querySelector(".toggle");
+							this.dialog.versus_single_control = this.dialog.add(ui.create.switcher("versus_single_control", lib.storage.single_control)).querySelector(".toggle");
+							this.dialog.versus_first_less = this.dialog.add(ui.create.switcher("versus_first_less", get.config("first_less"))).querySelector(".toggle");
+							this.dialog.versus_reward = this.dialog.add(ui.create.switcher("versus_reward", [0, 1, 2, 3, 4], lib.storage.versus_reward)).querySelector(".toggle");
+							this.dialog.versus_punish = this.dialog.add(ui.create.switcher("versus_punish", ["弃牌", "无", "摸牌"], lib.storage.versus_punish)).querySelector(".toggle");
+							this.dialog.versus_seat_order = this.dialog.add(ui.create.switcher("seat_order", ["对阵", "交叉", "随机"], lib.storage.seat_order)).querySelector(".toggle");
+							this.dialog.versus_number = this.dialog.add(ui.create.switcher("versus_number", [1, 2, 3], lib.storage.number)).querySelector(".toggle");
+							this.dialog.replace_number = this.dialog.add(ui.create.switcher("replace_number", [0, 1, 2, 3, 5, 7, 9, 17], lib.storage.replace_number)).querySelector(".toggle");
+							this.dialog.choice = this.dialog.add(ui.create.switcher("choice", [12, 16, 20, 24, 40, "∞"], lib.storage.choice)).querySelector(".toggle");
+
+							// if(lib.storage.cross_seat){
+							// 	this.dialog.versus_random_seat.parentNode.classList.add('disabled');
+							// }
+							// else{
+							// 	this.dialog.versus_random_seat.parentNode.classList.remove('disabled');
+							// 	if(lib.storage.random_seat){
+							// 		this.dialog.versus_cross_seat.parentNode.classList.add('disabled');
+							// 	}
+							// 	else{
+							// 		this.dialog.versus_cross_seat.parentNode.classList.remove('disabled');
+							// 	}
+							// }
+						};
+						event.confirm = () => {
+							const dialog = event.dialog;
+							const num = lib.storage.number + lib.storage.replace_number;
+							_status.friend.splice(num);
+							_status.enemy.splice(num);
+							dialog.close();
+							if (ui.confirm) {
+								ui.confirm.close();
+							}
+							game.resume();
+						};
+						ui.control.style.transition = "all 0s";
+						if (get.is.phoneLayout()) {
+							ui.control.style.top = "calc(100% - 80px)";
+						} else if (game.layout === "newlayout") {
+							ui.control.style.top = "calc(100% - 30px)";
+						} else {
+							ui.control.style.top = "calc(100% - 70px)";
+						}
+						_status.friend = [];
+						_status.enemy = [];
 						game.additionaldead = [];
-						event.goto(1);
-						game.saveConfig("continue_name_versus");
-						lib.init.onfree();
-						return;
-					}
-					event.check = function () {
-						this.dialog.classList.add("fullwidth");
-						this.dialog.classList.add("fullheight");
-						this.dialog.classList.add("noslide");
-						for (var i = 0; i < this.dialog.buttons.length; i++) {
-							this.dialog.buttons[i].style.opacity = 1;
+						_status.color = Math.random() < 0.5;
+						const list = [];
+						for (const i in lib.character) {
+							// if(lib.config.forbidversus.includes(i)) continue;
+							if (lib.filter.characterDisabled(i)) {
+								continue;
+							}
+							list.push(i);
 						}
-						this.dialog.add("选项");
-						this.dialog.versus_zhu = this.dialog.add(ui.create.switcher("versus_zhu", lib.storage.zhu)).querySelector(".toggle");
-						// this.dialog.versus_only_zhu=this.dialog.add(ui.create.switcher('versus_only_zhu',lib.storage.only_zhu)).querySelector('.toggle');
-						this.dialog.versus_main_zhu = this.dialog.add(ui.create.switcher("versus_main_zhu", lib.storage.main_zhu)).querySelector(".toggle");
-						if (lib.storage.zhu) {
-							// this.dialog.versus_only_zhu.parentNode.classList.remove('disabled');
-							this.dialog.versus_main_zhu.parentNode.classList.remove("disabled");
+						const groupSort = name => {
+							if (lib.character[name][1] === "wei") {
+								return 0;
+							}
+							if (lib.character[name][1] === "shu") {
+								return 1;
+							}
+							if (lib.character[name][1] === "wu") {
+								return 2;
+							}
+							if (lib.character[name][1] === "qun") {
+								return 3;
+							}
+						};
+						const sortByGroup = (a, b) => {
+							const del = groupSort(a) - groupSort(b);
+							if (del !== 0) {
+								return del;
+							}
+							if (a.indexOf("_") !== -1) {
+								a = a.slice(a.indexOf("_") + 1);
+							}
+							if (b.indexOf("_") !== -1) {
+								b = b.slice(b.indexOf("_") + 1);
+							}
+							return a > b ? 1 : -1;
+						};
+						if (lib.storage.choice === "∞") {
+							list.sort(sortByGroup);
 						} else {
-							// this.dialog.versus_only_zhu.parentNode.classList.add('disabled');
-							this.dialog.versus_main_zhu.parentNode.classList.add("disabled");
+							list.randomSort();
 						}
-						// this.dialog.versus_cross_seat=this.dialog.add(ui.create.switcher('versus_cross_seat',lib.storage.cross_seat)).querySelector('.toggle');
-						// this.dialog.versus_random_seat=this.dialog.add(ui.create.switcher('versus_random_seat',lib.storage.random_seat)).querySelector('.toggle');
-						this.dialog.versus_noreplace_end = this.dialog.add(ui.create.switcher("versus_noreplace_end", lib.storage.noreplace_end)).querySelector(".toggle");
-						this.dialog.versus_assign_enemy = this.dialog.add(ui.create.switcher("versus_assign_enemy", lib.storage.assign_enemy)).querySelector(".toggle");
-						this.dialog.versus_single_control = this.dialog.add(ui.create.switcher("versus_single_control", lib.storage.single_control)).querySelector(".toggle");
-						this.dialog.versus_first_less = this.dialog.add(ui.create.switcher("versus_first_less", get.config("first_less"))).querySelector(".toggle");
-						this.dialog.versus_reward = this.dialog.add(ui.create.switcher("versus_reward", [0, 1, 2, 3, 4], lib.storage.versus_reward)).querySelector(".toggle");
-						this.dialog.versus_punish = this.dialog.add(ui.create.switcher("versus_punish", ["弃牌", "无", "摸牌"], lib.storage.versus_punish)).querySelector(".toggle");
-						this.dialog.versus_seat_order = this.dialog.add(ui.create.switcher("seat_order", ["对阵", "交叉", "随机"], lib.storage.seat_order)).querySelector(".toggle");
-						this.dialog.versus_number = this.dialog.add(ui.create.switcher("versus_number", [1, 2, 3], lib.storage.number)).querySelector(".toggle");
-						this.dialog.replace_number = this.dialog.add(ui.create.switcher("replace_number", [0, 1, 2, 3, 5, 7, 9, 17], lib.storage.replace_number)).querySelector(".toggle");
-						this.dialog.choice = this.dialog.add(ui.create.switcher("choice", [12, 16, 20, 24, 40, "∞"], lib.storage.choice)).querySelector(".toggle");
-
-						// if(lib.storage.cross_seat){
-						// 	this.dialog.versus_random_seat.parentNode.classList.add('disabled');
+						_status.list = list;
+						const choice = lib.storage.choice === "∞" ? list.length : lib.storage.choice;
+						event.dialog = ui.create.dialog("选择角色", [list.slice(0, choice), "character"]);
+						event.dialog.classList.add("fixed");
+						// for(var i=0;i<event.dialog.buttons.length;i++){
+						// 	event.dialog.buttons[i].style.transform='scale(0.95)';
 						// }
-						// else{
-						// 	this.dialog.versus_random_seat.parentNode.classList.remove('disabled');
-						// 	if(lib.storage.random_seat){
-						// 		this.dialog.versus_cross_seat.parentNode.classList.add('disabled');
-						// 	}
-						// 	else{
-						// 		this.dialog.versus_cross_seat.parentNode.classList.remove('disabled');
-						// 	}
-						// }
-					};
-					event.confirm = function () {
-						var dialog = event.dialog;
-						var num = lib.storage.number + lib.storage.replace_number;
-						_status.friend.splice(num);
-						_status.enemy.splice(num);
-						dialog.close();
-						if (ui.confirm) {
-							ui.confirm.close();
-						}
-						game.resume();
-					};
-					ui.control.style.transition = "all 0s";
-					if (get.is.phoneLayout()) {
-						ui.control.style.top = "calc(100% - 80px)";
-					} else if (game.layout == "newlayout") {
-						ui.control.style.top = "calc(100% - 30px)";
-					} else {
-						ui.control.style.top = "calc(100% - 70px)";
-					}
-					_status.friend = [];
-					_status.enemy = [];
-					game.additionaldead = [];
-					_status.color = Math.random() < 0.5;
-					var i,
-						list = [];
-					for (i in lib.character) {
-						// if(lib.config.forbidversus.includes(i)) continue;
-						if (lib.filter.characterDisabled(i)) {
-							continue;
-						}
-						list.push(i);
-					}
-					var groupSort = function (name) {
-						if (lib.character[name][1] == "wei") {
-							return 0;
-						}
-						if (lib.character[name][1] == "shu") {
-							return 1;
-						}
-						if (lib.character[name][1] == "wu") {
-							return 2;
-						}
-						if (lib.character[name][1] == "qun") {
-							return 3;
-						}
-					};
-					var sortByGroup = function (a, b) {
-						var del = groupSort(a) - groupSort(b);
-						if (del != 0) {
-							return del;
-						}
-						if (a.indexOf("_") != -1) {
-							a = a.slice(a.indexOf("_") + 1);
-						}
-						if (b.indexOf("_") != -1) {
-							b = b.slice(b.indexOf("_") + 1);
-						}
-						return a > b ? 1 : -1;
-					};
-					if (lib.storage.choice == "∞") {
-						list.sort(sortByGroup);
-					} else {
-						list.randomSort();
-					}
-					_status.list = list;
-					var choice = lib.storage.choice == "∞" ? list.length : lib.storage.choice;
-					event.dialog = ui.create.dialog("选择角色", [list.slice(0, choice), "character"]);
-					event.dialog.classList.add("fixed");
-					// for(var i=0;i<event.dialog.buttons.length;i++){
-					// 	event.dialog.buttons[i].style.transform='scale(0.95)';
-					// }
-					event.check();
-					ui.create.cheat = function () {
-						_status.createControl = event.fill;
-						ui.cheat = ui.create.control("更换", function () {
-							if (_status.choosefinished) {
-								return;
-							}
-							if (lib.storage.choice == "∞") {
-								list.sort(sortByGroup);
-							} else {
-								list.randomSort();
-							}
-							_status.friend.length = 0;
-							_status.enemy.length = 0;
-							var choice = lib.storage.choice == "∞" ? list.length : lib.storage.choice;
+						event.check();
+						ui.create.cheat = () => {
+							_status.createControl = event.fill;
+							ui.cheat = ui.create.control("更换", () => {
+								if (_status.choosefinished) {
+									return;
+								}
+								if (lib.storage.choice === "∞") {
+									list.sort(sortByGroup);
+								} else {
+									list.randomSort();
+								}
+								_status.friend.length = 0;
+								_status.enemy.length = 0;
+								const choice = lib.storage.choice === "∞" ? list.length : lib.storage.choice;
 
-							ui.dialog.content.firstChild.innerHTML = "选择角色";
-							var buttons = ui.create.div(".buttons");
-							var node = _status.event.dialog.buttons[0].parentNode;
-							_status.event.dialog.buttons = ui.create.buttons(list.slice(0, choice), "character", buttons);
-							_status.event.dialog.content.insertBefore(buttons, node);
-							buttons.addTempClass("start");
-							node.remove();
+								ui.dialog.content.firstChild.innerHTML = "选择角色";
+								const buttons = ui.create.div(".buttons");
+								const node = _status.event.dialog.buttons[0].parentNode;
+								_status.event.dialog.buttons = ui.create.buttons(list.slice(0, choice), "character", buttons);
+								_status.event.dialog.content.insertBefore(buttons, node);
+								buttons.addTempClass("start");
+								node.remove();
 
-							// event.check();
-						});
-						delete _status.createControl;
-					};
-					if (!ui.cheat && get.config("change_choice")) {
-						ui.create.cheat();
-					}
-					if (lib.config.test_game) {
-						setTimeout(function () {
-							event.switchToAuto();
-						}, 500);
-					}
-					event.switchToAuto = function () {
-						delete _status.choosefinished;
-						event.fill.close();
-						var buttons = _status.event.dialog.buttons.slice(0);
-						buttons.randomSort();
-						for (var i = 0; i < buttons.length; i++) {
-							if (buttons[i].classList.contains("glow") || buttons[i].classList.contains("selectedx")) {
-								buttons.splice(i, 1);
-								i--;
-							}
+								// event.check();
+							});
+							delete _status.createControl;
+						};
+						if (!ui.cheat && get.config("change_choice")) {
+							ui.create.cheat();
 						}
-						var dialog = _status.event.dialog;
-						var max = dialog.versus_number.link + dialog.replace_number.link;
-						for (var i = 0; i < buttons.length; i++) {
-							if (_status.friend.length < max) {
-								_status.friend.push(buttons[i].link);
-							} else if (_status.enemy.length < max) {
-								_status.enemy.push(buttons[i].link);
-							} else {
-								break;
-							}
+						if (lib.config.test_game) {
+							setTimeout(() => {
+								event.switchToAuto();
+							}, 500);
 						}
-						_status.friend.splice(max);
-						_status.enemy.splice(max);
-						dialog.close();
-						if (ui.confirm) {
-							ui.confirm.close();
-						}
-						game.resume();
-					};
-					event.fill = ui.create.control("补全", event.switchToAuto);
-					event.custom.replace.button = function (button) {
-						if (_status.choose_enemy) {
-							if (button.classList.contains("glow") || button.classList.contains("selectedx") || _status.choosefinished) {
-								return;
-							}
-							_status.choose_enemy = false;
-							if (!_status.color) {
-								button.classList.add("selectedx");
-								// button.style.transform='rotate(-3deg)';
-							} else {
-								button.classList.add("glow");
-								// button.style.transform='rotate(-3deg)';
-							}
-							_status.enemy.push(button.link);
-							var buttons = _status.event.dialog.buttons.slice(0);
-							for (var i = 0; i < buttons.length; i++) {
+						event.switchToAuto = () => {
+							delete _status.choosefinished;
+							event.fill.close();
+							const buttons = _status.event.dialog.buttons.slice(0);
+							buttons.randomSort();
+							for (let i = 0; i < buttons.length; i++) {
 								if (buttons[i].classList.contains("glow") || buttons[i].classList.contains("selectedx")) {
 									buttons.splice(i, 1);
 									i--;
 								}
 							}
-						} else {
-							if (button.classList.contains("glow") || button.classList.contains("selectedx") || _status.choosefinished) {
-								return;
-							}
-							if (_status.color) {
-								button.classList.add("selectedx");
-								// button.style.transform='rotate(-3deg)';
-							} else {
-								button.classList.add("glow");
-								// button.style.transform='rotate(-3deg)';
-							}
-							_status.friend.push(button.link);
-							var buttons = _status.event.dialog.buttons.slice(0);
-							for (var i = 0; i < buttons.length; i++) {
-								if (buttons[i].classList.contains("glow") || buttons[i].classList.contains("selectedx")) {
-									buttons.splice(i, 1);
-									i--;
+							const dialog = _status.event.dialog;
+							const max = dialog.versus_number.link + dialog.replace_number.link;
+							for (let i = 0; i < buttons.length; i++) {
+								if (_status.friend.length < max) {
+									_status.friend.push(buttons[i].link);
+								} else if (_status.enemy.length < max) {
+									_status.enemy.push(buttons[i].link);
+								} else {
+									break;
 								}
 							}
-							if (lib.storage.assign_enemy) {
-								_status.choose_enemy = true;
+							_status.friend.splice(max);
+							_status.enemy.splice(max);
+							dialog.close();
+							if (ui.confirm) {
+								ui.confirm.close();
+							}
+							game.resume();
+						};
+						event.fill = ui.create.control("补全", event.switchToAuto);
+						event.custom.replace.button = button => {
+							if (_status.choose_enemy) {
+								if (button.classList.contains("glow") || button.classList.contains("selectedx") || _status.choosefinished) {
+									return;
+								}
+								_status.choose_enemy = false;
+								if (!_status.color) {
+									button.classList.add("selectedx");
+									// button.style.transform='rotate(-3deg)';
+								} else {
+									button.classList.add("glow");
+									// button.style.transform='rotate(-3deg)';
+								}
+								_status.enemy.push(button.link);
+								var buttons = _status.event.dialog.buttons.slice(0);
+								for (let i = 0; i < buttons.length; i++) {
+									if (buttons[i].classList.contains("glow") || buttons[i].classList.contains("selectedx")) {
+										buttons.splice(i, 1);
+										i--;
+									}
+								}
 							} else {
-								var button2 = buttons[Math.floor(Math.random() * buttons.length)];
+								if (button.classList.contains("glow") || button.classList.contains("selectedx") || _status.choosefinished) {
+									return;
+								}
 								if (_status.color) {
-									button2.classList.add("glow");
-									// button2.style.transform='rotate(-3deg)';
+									button.classList.add("selectedx");
+									// button.style.transform='rotate(-3deg)';
 								} else {
-									button2.classList.add("selectedx");
-									// button2.style.transform='rotate(-3deg)';
+									button.classList.add("glow");
+									// button.style.transform='rotate(-3deg)';
 								}
-								_status.enemy.push(button2.link);
-								_status.event.dialog.content.firstChild.innerHTML = "对方选择了" + get.translation(button2.link);
-							}
-						}
-					};
-					event.custom.add.window = function () {
-						var dialog = _status.event.dialog;
-						if (_status.friend.length == _status.enemy.length && _status.friend.length >= dialog.versus_number.link + dialog.replace_number.link) {
-							event.fill.firstChild.innerHTML = "开始";
-							_status.choosefinished = true;
-							if (ui.cheat) {
-								ui.cheat.close();
-								delete ui.cheat;
-							}
-						}
-						game.save("zhu", dialog.versus_zhu.link);
-						if (lib.storage.zhu) {
-							// dialog.versus_only_zhu.parentNode.classList.remove('disabled');
-							dialog.versus_main_zhu.parentNode.classList.remove("disabled");
-						} else {
-							// dialog.versus_only_zhu.parentNode.classList.add('disabled');
-							dialog.versus_main_zhu.parentNode.classList.add("disabled");
-						}
-						// game.save('only_zhu',dialog.versus_only_zhu.link);
-						game.save("main_zhu", dialog.versus_main_zhu.link);
-						game.save("assign_enemy", dialog.versus_assign_enemy.link);
-						game.save("seat_order", dialog.versus_seat_order.link);
-						// game.save('cross_seat',dialog.versus_cross_seat.link);
-						game.save("noreplace_end", dialog.versus_noreplace_end.link);
-						game.save("single_control", dialog.versus_single_control.link);
-						switch (lib.storage.seat_order) {
-							case "交叉":
-								lib.storage.cross_seat = true;
-								lib.storage.random_seat = false;
-								break;
-							case "随机":
-								lib.storage.cross_seat = false;
-								lib.storage.random_seat = true;
-								break;
-							default:
-								lib.storage.cross_seat = false;
-								lib.storage.random_seat = false;
-						}
-						game.saveConfig("first_less", dialog.versus_first_less.link, true);
-						game.save("number", dialog.versus_number.link);
-						game.save("versus_reward", dialog.versus_reward.link);
-						game.save("versus_punish", dialog.versus_punish.link);
-						game.save("replace_number", dialog.replace_number.link);
-						game.save("choice", dialog.choice.link);
-						var count, i;
-						if (dialog.buttons.length > lib.storage.choice) {
-							count = dialog.buttons.length - lib.storage.choice;
-							var removed = [];
-							for (i = dialog.buttons.length - 1; i >= 0 && count > 0; i--) {
-								if (dialog.buttons[i].classList.contains("target") == false && dialog.buttons[i].classList.contains("glow") == false) {
-									dialog.buttons[i].remove();
-									_status.list.remove(dialog.buttons[i].link);
-									removed.push(dialog.buttons[i].link);
-									dialog.buttons.splice(i, 1);
-									count--;
+								_status.friend.push(button.link);
+								var buttons = _status.event.dialog.buttons.slice(0);
+								for (let i = 0; i < buttons.length; i++) {
+									if (buttons[i].classList.contains("glow") || buttons[i].classList.contains("selectedx")) {
+										buttons.splice(i, 1);
+										i--;
+									}
 								}
-							}
-							for (i = 0; i < removed.length; i++) {
-								_status.list.splice(lib.storage.choice, 0, removed[i]);
-							}
-						} else if (dialog.buttons.length < lib.storage.choice || lib.storage.choice == "∞") {
-							var list = _status.list;
-							var choice = lib.storage.choice == "∞" ? list.length : lib.storage.choice;
-							var buttons = dialog.querySelector(".buttons");
-							var button;
-							for (i = dialog.buttons.length; i < choice; i++) {
-								button = ui.create.button(list[i], "character", buttons).addTempClass("zoom");
-								dialog.buttons.push(button);
-								button.style.opacity = 1;
-							}
-						}
-					};
-					game.pause();
-					lib.init.onfree();
-					"step 1";
-					_status.friendBackup = _status.friend.slice(0);
-					_status.enemyBackup = _status.enemy.slice(0);
-
-					_status.friendDied = [];
-					_status.enemyDied = [];
-					_status.totalCount = _status.friend.length;
-					_status.coinCoeff = get.coinCoeff(_status.friend);
-
-					// ui.auto.show();
-					ui.wuxie.show();
-					ui.control.style.display = "none";
-					setTimeout(function () {
-						ui.control.style.top = "";
-						ui.control.style.display = "";
-						ui.control.style.transition = "";
-					}, 500);
-					if (ui.cheat) {
-						ui.cheat.close();
-						delete ui.cheat;
-					}
-					delete _status.list;
-					var num = lib.storage.number;
-					ui.create.players(num * 2);
-					for (var i = 0; i < game.players.length; i++) {
-						game.players[i].getId();
-						game.players[i].node.action.innerHTML = "行动";
-					}
-					if (lib.storage.single_control && game.players.length >= 4) {
-						ui.arena.setNumber(parseInt(ui.arena.dataset.number) + 1);
-						for (var i = 0; i < game.players.length; i++) {
-							game.players[i].dataset.position = parseInt(game.players[i].dataset.position) + 1;
-						}
-						game.singleHandcard = true;
-						ui.arena.classList.add("single-handcard");
-						ui.window.classList.add("single-handcard");
-						ui.fakeme = ui.create.div(".fakeme.avatar");
-						// ui.fakeme.line=lib.element.player.line;
-						// ui.fakemebg=ui.create.div('.avatar',ui.fakeme).hide();
-					}
-					_status.prepareArena = true;
-					ui.create.me();
-					if (ui.fakeme) {
-						ui.me.appendChild(ui.fakeme);
-					}
-					var position, i;
-					if (lib.storage.zhu && lib.storage.only_zhu) {
-						position = Math.ceil(num / 2) - 1;
-					} else {
-						position = Math.floor(Math.random() * num);
-					}
-					game.friend = [];
-					game.enemy = [];
-					if (lib.storage.random_seat) {
-						var players = game.players.slice(0);
-						game.friend.push(game.me);
-						players.remove(game.me);
-						for (i = 0; i < num - 1; i++) {
-							game.friend.push(players.randomRemove());
-						}
-						for (i = 0; i < num; i++) {
-							game.enemy.push(players.randomRemove());
-						}
-					} else {
-						for (var i in lib.skill) {
-							if (lib.skill[i].seatRelated === true) {
-								lib.skill[i] = {};
-								if (lib.translate[i + "_info"]) {
-									lib.translate[i + "_info"] = "此模式下不可用";
-								}
-							}
-						}
-						if (lib.storage.cross_seat) {
-							for (i = 0; i < game.players.length; i++) {
-								if (i % 2 == 0) {
-									game.friend.push(game.players[i]);
+								if (lib.storage.assign_enemy) {
+									_status.choose_enemy = true;
 								} else {
-									game.enemy.push(game.players[i]);
+									const button2 = buttons[Math.floor(Math.random() * buttons.length)];
+									if (_status.color) {
+										button2.classList.add("glow");
+										// button2.style.transform='rotate(-3deg)';
+									} else {
+										button2.classList.add("selectedx");
+										// button2.style.transform='rotate(-3deg)';
+									}
+									_status.enemy.push(button2.link);
+									_status.event.dialog.content.firstChild.innerHTML = `对方选择了${get.translation(button2.link)}`;
 								}
 							}
+						};
+						event.custom.add.window = () => {
+							const dialog = _status.event.dialog;
+							if (_status.friend.length === _status.enemy.length && _status.friend.length >= dialog.versus_number.link + dialog.replace_number.link) {
+								event.fill.firstChild.innerHTML = "开始";
+								_status.choosefinished = true;
+								if (ui.cheat) {
+									ui.cheat.close();
+									delete ui.cheat;
+								}
+							}
+							game.save("zhu", dialog.versus_zhu.link);
+							if (lib.storage.zhu) {
+								// dialog.versus_only_zhu.parentNode.classList.remove('disabled');
+								dialog.versus_main_zhu.parentNode.classList.remove("disabled");
+							} else {
+								// dialog.versus_only_zhu.parentNode.classList.add('disabled');
+								dialog.versus_main_zhu.parentNode.classList.add("disabled");
+							}
+							// game.save('only_zhu',dialog.versus_only_zhu.link);
+							game.save("main_zhu", dialog.versus_main_zhu.link);
+							game.save("assign_enemy", dialog.versus_assign_enemy.link);
+							game.save("seat_order", dialog.versus_seat_order.link);
+							// game.save('cross_seat',dialog.versus_cross_seat.link);
+							game.save("noreplace_end", dialog.versus_noreplace_end.link);
+							game.save("single_control", dialog.versus_single_control.link);
+							switch (lib.storage.seat_order) {
+								case "交叉":
+									lib.storage.cross_seat = true;
+									lib.storage.random_seat = false;
+									break;
+								case "随机":
+									lib.storage.cross_seat = false;
+									lib.storage.random_seat = true;
+									break;
+								default:
+									lib.storage.cross_seat = false;
+									lib.storage.random_seat = false;
+							}
+							game.saveConfig("first_less", dialog.versus_first_less.link, true);
+							game.save("number", dialog.versus_number.link);
+							game.save("versus_reward", dialog.versus_reward.link);
+							game.save("versus_punish", dialog.versus_punish.link);
+							game.save("replace_number", dialog.replace_number.link);
+							game.save("choice", dialog.choice.link);
+							let count;
+							if (dialog.buttons.length > lib.storage.choice) {
+								count = dialog.buttons.length - lib.storage.choice;
+								const removed = [];
+								for (let i = dialog.buttons.length - 1; i >= 0 && count > 0; i--) {
+									if (dialog.buttons[i].classList.contains("target") === false && dialog.buttons[i].classList.contains("glow") === false) {
+										dialog.buttons[i].remove();
+										_status.list.remove(dialog.buttons[i].link);
+										removed.push(dialog.buttons[i].link);
+										dialog.buttons.splice(i, 1);
+										count--;
+									}
+								}
+								for (let i = 0; i < removed.length; i++) {
+									_status.list.splice(lib.storage.choice, 0, removed[i]);
+								}
+							} else if (dialog.buttons.length < lib.storage.choice || lib.storage.choice === "∞") {
+								const list = _status.list;
+								const choice = lib.storage.choice === "∞" ? list.length : lib.storage.choice;
+								const buttons = dialog.querySelector(".buttons");
+								let button;
+								for (let i = dialog.buttons.length; i < choice; i++) {
+									button = ui.create.button(list[i], "character", buttons).addTempClass("zoom");
+									dialog.buttons.push(button);
+									button.style.opacity = 1;
+								}
+							}
+						};
+						game.pause();
+						lib.init.onfree();
+					},
+					async (event, trigger, player, result) => {
+						_status.friendBackup = _status.friend.slice(0);
+						_status.enemyBackup = _status.enemy.slice(0);
+
+						_status.friendDied = [];
+						_status.enemyDied = [];
+						_status.totalCount = _status.friend.length;
+						_status.coinCoeff = get.coinCoeff(_status.friend);
+
+						// ui.auto.show();
+						ui.wuxie.show();
+						ui.control.style.display = "none";
+						setTimeout(() => {
+							ui.control.style.top = "";
+							ui.control.style.display = "";
+							ui.control.style.transition = "";
+						}, 500);
+						if (ui.cheat) {
+							ui.cheat.close();
+							delete ui.cheat;
+						}
+						delete _status.list;
+						const num = lib.storage.number;
+						ui.create.players(num * 2);
+						for (let i = 0; i < game.players.length; i++) {
+							game.players[i].getId();
+							game.players[i].node.action.innerHTML = "行动";
+						}
+						if (lib.storage.single_control && game.players.length >= 4) {
+							ui.arena.setNumber(parseInt(ui.arena.dataset.number) + 1);
+							for (let i = 0; i < game.players.length; i++) {
+								game.players[i].dataset.position = parseInt(game.players[i].dataset.position) + 1;
+							}
+							game.singleHandcard = true;
+							ui.arena.classList.add("single-handcard");
+							ui.window.classList.add("single-handcard");
+							ui.fakeme = ui.create.div(".fakeme.avatar");
+							// ui.fakeme.line=lib.element.player.line;
+							// ui.fakemebg=ui.create.div('.avatar',ui.fakeme).hide();
+						}
+						_status.prepareArena = true;
+						ui.create.me();
+						if (ui.fakeme) {
+							ui.me.appendChild(ui.fakeme);
+						}
+						let position;
+						if (lib.storage.zhu && lib.storage.only_zhu) {
+							position = Math.ceil(num / 2) - 1;
 						} else {
-							for (i = 0; i < position; i++) {
-								game.friend.push(game.players[i - position + num * 2]);
+							position = Math.floor(Math.random() * num);
+						}
+						game.friend = [];
+						game.enemy = [];
+						if (lib.storage.random_seat) {
+							const players = game.players.slice(0);
+							game.friend.push(game.me);
+							players.remove(game.me);
+							for (let i = 0; i < num - 1; i++) {
+								game.friend.push(players.randomRemove());
 							}
-							for (i = position; i < num; i++) {
-								game.friend.push(game.players[i - position]);
+							for (let i = 0; i < num; i++) {
+								game.enemy.push(players.randomRemove());
 							}
-							for (i = 0; i < num; i++) {
-								game.enemy.push(game.players[num - position + i]);
+						} else {
+							for (const i in lib.skill) {
+								if (lib.skill[i].seatRelated === true) {
+									lib.skill[i] = {};
+									if (lib.translate[`${i}_info`]) {
+										lib.translate[`${i}_info`] = "此模式下不可用";
+									}
+								}
+							}
+							if (lib.storage.cross_seat) {
+								for (let i = 0; i < game.players.length; i++) {
+									if (i % 2 === 0) {
+										game.friend.push(game.players[i]);
+									} else {
+										game.enemy.push(game.players[i]);
+									}
+								}
+							} else {
+								for (let i = 0; i < position; i++) {
+									game.friend.push(game.players[i - position + num * 2]);
+								}
+								for (let i = position; i < num; i++) {
+									game.friend.push(game.players[i - position]);
+								}
+								for (let i = 0; i < num; i++) {
+									game.enemy.push(game.players[num - position + i]);
+								}
 							}
 						}
-					}
-					if ((position == Math.ceil(num / 2) - 1 && lib.storage.zhu) || (lib.storage.zhu && lib.storage.single_control)) {
-						var dialog = ui.create.dialog("按顺序选择出场角色", [_status.friend, "character"]);
-						game.me.chooseButton(dialog, num, true);
-					}
-					if (lib.storage.random_seat && lib.storage.zhu) {
-						if (lib.storage.only_zhu) {
-							game.friendZhu = game.me;
-						} else {
-							game.friendZhu = game.friend.randomGet();
+						if ((position === Math.ceil(num / 2) - 1 && lib.storage.zhu) || (lib.storage.zhu && lib.storage.single_control)) {
+							const dialog = ui.create.dialog("按顺序选择出场角色", [_status.friend, "character"]);
+							game.me.chooseButton({ dialog, selectButton: num, forced: true });
 						}
-						game.enemyZhu = game.enemy.randomGet();
-					}
-					for (i = 0; i < num; i++) {
-						game.friend[i].side = _status.color;
-						game.enemy[i].side = !_status.color;
 						if (lib.storage.random_seat && lib.storage.zhu) {
-							if (game.friendZhu == game.friend[i]) {
-								game.friend[i].identity = "zhu";
-								game.friend[i].setIdentity(_status.color + "Zhu");
+							if (lib.storage.only_zhu) {
+								game.friendZhu = game.me;
 							} else {
-								game.friend[i].identity = "zhong";
-								game.friend[i].setIdentity(_status.color + "Zhong");
+								game.friendZhu = game.friend.randomGet();
 							}
-							if (game.enemyZhu == game.enemy[i]) {
-								game.enemy[i].identity = "zhu";
-								game.enemy[i].setIdentity(!_status.color + "Zhu");
-							} else {
-								game.enemy[i].identity = "zhong";
-								game.enemy[i].setIdentity(!_status.color + "Zhong");
-							}
-						} else {
-							if (game.me == game.friend[i] && lib.storage.zhu) {
-								game.friend[i].identity = "zhu";
-								game.friend[i].setIdentity(_status.color + "Zhu");
-								game.friendZhu = game.friend[i];
-							} else {
-								game.friend[i].identity = "zhong";
-								game.friend[i].setIdentity(_status.color + "Zhong");
-							}
-							if (lib.storage.zhu && get.distance(game.enemy[i], game.me, "pure") == num) {
-								game.enemy[i].identity = "zhu";
-								game.enemy[i].setIdentity(!_status.color + "Zhu");
-								game.enemyZhu = game.enemy[i];
-							} else {
-								game.enemy[i].identity = "zhong";
-								game.enemy[i].setIdentity(!_status.color + "Zhong");
-							}
+							game.enemyZhu = game.enemy.randomGet();
 						}
-						game.friend[i].node.identity.dataset.color = get.translation(_status.color + "Color");
-						game.enemy[i].node.identity.dataset.color = get.translation(!_status.color + "Color");
-						// game.friend[i].node.identity.style.backgroundColor=get.translation(_status.color+'Color');
-						// game.enemy[i].node.identity.style.backgroundColor=get.translation(!_status.color+'Color');
-					}
-					if (lib.storage.zhu && !game.enemyZhu) {
-						game.enemy[0].identity = "zhu";
-						game.enemy[0].setIdentity(!_status.color + "Zhu");
-						game.enemyZhu = game.enemy[0];
-					}
-					"step 2";
-					var num = lib.storage.number;
-					if (result && result.buttons) {
-						var list = [];
-						for (i = 0; i < result.buttons.length; i++) {
-							list.push(result.buttons[i].link);
-							_status.friend.remove(result.buttons[i].link);
+						for (let i = 0; i < num; i++) {
+							game.friend[i].side = _status.color;
+							game.enemy[i].side = !_status.color;
+							if (lib.storage.random_seat && lib.storage.zhu) {
+								if (game.friendZhu === game.friend[i]) {
+									game.friend[i].identity = "zhu";
+									game.friend[i].setIdentity(`${_status.color}Zhu`);
+								} else {
+									game.friend[i].identity = "zhong";
+									game.friend[i].setIdentity(`${_status.color}Zhong`);
+								}
+								if (game.enemyZhu === game.enemy[i]) {
+									game.enemy[i].identity = "zhu";
+									game.enemy[i].setIdentity(`${!_status.color}Zhu`);
+								} else {
+									game.enemy[i].identity = "zhong";
+									game.enemy[i].setIdentity(`${!_status.color}Zhong`);
+								}
+							} else {
+								if (game.me === game.friend[i] && lib.storage.zhu) {
+									game.friend[i].identity = "zhu";
+									game.friend[i].setIdentity(`${_status.color}Zhu`);
+									game.friendZhu = game.friend[i];
+								} else {
+									game.friend[i].identity = "zhong";
+									game.friend[i].setIdentity(`${_status.color}Zhong`);
+								}
+								if (lib.storage.zhu && get.distance(game.enemy[i], game.me, "pure") === num) {
+									game.enemy[i].identity = "zhu";
+									game.enemy[i].setIdentity(`${!_status.color}Zhu`);
+									game.enemyZhu = game.enemy[i];
+								} else {
+									game.enemy[i].identity = "zhong";
+									game.enemy[i].setIdentity(`${!_status.color}Zhong`);
+								}
+							}
+							game.friend[i].node.identity.dataset.color = get.translation(`${_status.color}Color`);
+							game.enemy[i].node.identity.dataset.color = get.translation(`${!_status.color}Color`);
+							// game.friend[i].node.identity.style.backgroundColor=get.translation(_status.color+'Color');
+							// game.enemy[i].node.identity.style.backgroundColor=get.translation(!_status.color+'Color');
 						}
-						_status.friend = list.concat(_status.friend);
-					}
-					for (i = 0; i < num; i++) {
-						game.friend[i].init(_status.friend[i]);
-						game.enemy[i].init(_status.enemy[i]);
+						if (lib.storage.zhu && !game.enemyZhu) {
+							game.enemy[0].identity = "zhu";
+							game.enemy[0].setIdentity(`${!_status.color}Zhu`);
+							game.enemyZhu = game.enemy[0];
+						}
+					},
+					async (event, trigger, player, result) => {
+						const num = lib.storage.number;
+						if (result && result.buttons) {
+							const list = [];
+							for (let i = 0; i < result.buttons.length; i++) {
+								list.push(result.buttons[i].link);
+								_status.friend.remove(result.buttons[i].link);
+							}
+							_status.friend = list.concat(_status.friend);
+						}
+						for (let i = 0; i < num; i++) {
+							game.friend[i].init(_status.friend[i]);
+							game.enemy[i].init(_status.enemy[i]);
 
-						game.friend[i].node.identity.dataset.color = get.translation(_status.color + "Color");
-						game.enemy[i].node.identity.dataset.color = get.translation(!_status.color + "Color");
-					}
-					if (lib.storage.zhu && lib.storage.main_zhu) {
-						if (!game.friendZhu.isInitFilter("noZhuHp")) {
-							game.friendZhu.maxHp++;
-							game.friendZhu.hp++;
-							game.friendZhu.update();
+							game.friend[i].node.identity.dataset.color = get.translation(`${_status.color}Color`);
+							game.enemy[i].node.identity.dataset.color = get.translation(`${!_status.color}Color`);
 						}
+						if (lib.storage.zhu && lib.storage.main_zhu) {
+							if (!game.friendZhu.isInitFilter("noZhuHp")) {
+								game.friendZhu.maxHp++;
+								game.friendZhu.hp++;
+								game.friendZhu.update();
+							}
 
-						if (!game.enemyZhu.isInitFilter("noZhuHp")) {
-							game.enemyZhu.maxHp++;
-							game.enemyZhu.hp++;
-							game.enemyZhu.update();
+							if (!game.enemyZhu.isInitFilter("noZhuHp")) {
+								game.enemyZhu.maxHp++;
+								game.enemyZhu.hp++;
+								game.enemyZhu.update();
+							}
 						}
-					}
-					_status.friend.splice(0, num);
-					_status.enemy.splice(0, num);
-					if (lib.storage.single_control && game.players.length >= 4) {
-						// ui.fakemebg.show();
-						game.onSwapControl();
-					}
-				});
+						_status.friend.splice(0, num);
+						_status.enemy.splice(0, num);
+						if (lib.storage.single_control && game.players.length >= 4) {
+							// ui.fakemebg.show();
+							game.onSwapControl();
+						}
+					},
+				]);
 			},
 			chooseCharacterOL: function () {
 				switch (lib.configOL.versus_mode) {
