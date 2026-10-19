@@ -44568,7 +44568,7 @@ const skills = {
 		audio: "huxiao",
 		trigger: { player: "shaMiss" },
 		forced: true,
-		content() {
+		async content(event, trigger, player) {
 			if (player.stat[player.stat.length - 1].card.sha > 0) {
 				player.stat[player.stat.length - 1].card.sha--;
 			}
