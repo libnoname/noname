@@ -45797,7 +45797,7 @@ const skills = {
 		audio: 1,
 		trigger: { player: ["gainMaxHpEnd", "loseMaxHpEnd"] },
 		forced: true,
-		content() {
+		async content(event, trigger, player) {
 			player.draw(player.isMinHandcard() ? 2 : 1);
 		},
 	},
