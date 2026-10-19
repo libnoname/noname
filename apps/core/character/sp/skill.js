@@ -42995,14 +42995,14 @@ const skills = {
 		forced: true,
 		audio: false,
 		sourceSkill: "kuiwei",
-		content() {
-			var num = game.countPlayer(function (current) {
+		async content(event, trigger, player) {
+			const num = game.countPlayer(current => {
 				return current.getEquips(1).length;
 			});
 			if (num >= player.countCards("he")) {
-				player.discard(player.getCards("he"));
+				player.discard({ cards: player.getCards("he") });
 			} else if (num) {
-				player.chooseToDiscard("he", num, true);
+				player.chooseToDiscard({ position: "he", selectCard: num, forced: true });
 			}
 			player.removeSkill("kuiwei2");
 		},
