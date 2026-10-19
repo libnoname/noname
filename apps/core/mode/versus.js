@@ -6783,16 +6783,24 @@ export default () => {
 				filterTarget: function (card, player, target) {
 					return target.isEnemyOf(player) && target.type == "mech" && target.countCards("he") > 0;
 				},
-				content: function () {
-					"step 0";
-					if (!target.countCards("he")) {
-						event.finish();
-					} else {
-						target.chooseCard("he", true, "将一张牌交给" + get.translation(player));
+				async content(event, trigger, player) {
+					const { target } = event;
+					if (!target.hasCards("he")) {
+						return;
 					}
-					"step 1";
+					const result = await target
+						.chooseCard({
+							position: "he",
+							forced: true,
+							prompt: `将一张牌交给${get.translation(player)}`,
+						})
+						.forResult();
+					if ((player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+						return;
+					}
+
 					if (result.bool) {
-						player.gain(result.cards, target, "give");
+						await player.gain({ cards: result.cards, source: target, animate: "give" });
 					}
 				},
 				ai: {
