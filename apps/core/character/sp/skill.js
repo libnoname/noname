@@ -40638,7 +40638,7 @@ const skills = {
 		filter(event, player) {
 			return player.getExpansions("fentian").length >= 3;
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			player.loseMaxHp();
 			player.storage.zhiri = true;
