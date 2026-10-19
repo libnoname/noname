@@ -37115,11 +37115,11 @@ const skills = {
 				return suits.length > 0;
 			}
 		},
-		content() {
-			var suits = [];
-			var es = player.getCards("e");
-			for (var i = 0; i < es.length; i++) {
-				suits.add(get.suit(es[i]));
+		async content(event, trigger, player) {
+			const suits = [];
+			const es = player.getCards("e");
+			for (const card of es) {
+				suits.add(get.suit(card));
 			}
 			player.removeAdditionalSkill("qizhou");
 			switch (suits.length) {
