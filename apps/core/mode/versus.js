@@ -6971,27 +6971,29 @@ export default () => {
 			boss_huodi: {
 				audio: 2,
 				trigger: { player: "phaseEnd" },
-				direct: true,
 				filter: function (event, player) {
 					return game.hasPlayer(function (current) {
 						return current.isFriendOf(player) && current.isTurnedOver();
 					});
 				},
-				content: function () {
-					"step 0";
-					player.chooseTarget(get.prompt("boss_huodi"), function (card, player, target) {
-						return !target.isFriendOf(player);
-					}).ai = function (target) {
-						if (target.isTurnedOver()) {
-							return 0;
-						}
-						return -get.attitude(player, target);
-					};
-					"step 1";
-					if (result.bool) {
-						player.logSkill("boss_huodi", result.targets);
-						result.targets[0].turnOver();
-					}
+				async cost(event, trigger, player) {
+					event.result = await player
+						.chooseTarget({
+							prompt: get.prompt("boss_huodi"),
+							filterTarget: (card, player, target) => {
+								return !target.isFriendOf(player);
+							},
+							ai: target => {
+								if (target.isTurnedOver()) {
+									return 0;
+								}
+								return -get.attitude(player, target);
+							},
+						})
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					await event.targets[0].turnOver();
 				},
 				ai: {
 					expose: 0.2,
