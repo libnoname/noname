@@ -42845,8 +42845,9 @@ const skills = {
 		discard: false,
 		lose: false,
 		delay: false,
-		content() {
-			target.addToExpansion(cards, player, "give").gaintag.add("rezhoufu_judge");
+		async content(event, trigger, player) {
+			const { target, cards } = event;
+			target.addToExpansion({ cards, source: player, animate: "give", gaintag: ["rezhoufu_judge"] });
 			target.addSkill("rezhoufu_judge");
 		},
 		ai: {
