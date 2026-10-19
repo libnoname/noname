@@ -19311,8 +19311,8 @@ const skills = {
 		logTarget: "source",
 		skillAnimation: true,
 		animationColor: "thunder",
-		content() {
-			player.discardPlayerCard(trigger.source, "he", [1, player.countCards("he")], true).set("forceDie", true);
+		async content(event, trigger, player) {
+			player.discardPlayerCard({ target: trigger.source, position: "he", selectButton: [1, player.countCards("he")], forced: true }).set("forceDie", true);
 		},
 	},
 	//韩遂
