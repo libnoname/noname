@@ -7559,53 +7559,57 @@ export default () => {
 				unique: true,
 				audio: false,
 				group: "boss_biantian4",
-				content: function () {
-					"step 0";
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].hasSkill("boss_biantian3")) {
-							game.players[i].removeSkill("boss_biantian3");
-							game.players[i].popup("boss_biantian3");
-						}
-						if (game.players[i].hasSkill("boss_biantian2")) {
-							game.players[i].removeSkill("boss_biantian2");
-							game.players[i].popup("boss_biantian2");
-						}
-					}
-					player.judge(function (card) {
-						var color = get.color(card);
-						if (color == "black") {
-							return 1;
-						}
-						if (color == "red") {
-							return 0;
-						}
-						return -1;
-					});
-					"step 1";
-					var targets = [],
-						players = game.filterPlayer();
-					if (result.color == "red") {
-						game.trySkillAudio("boss_biantianx2");
-						for (var i = 0; i < players.length; i++) {
-							if (!players[i].isFriendOf(player)) {
-								players[i].addSkill("boss_biantian3");
-								players[i].popup("kuangfeng");
-								targets.push(players[i]);
+				content: [
+					async (event, trigger, player, result) => {
+						for (const current of game.players) {
+							if (current.hasSkill("boss_biantian3")) {
+								current.removeSkill("boss_biantian3");
+								current.popup("boss_biantian3");
+							}
+							if (current.hasSkill("boss_biantian2")) {
+								current.removeSkill("boss_biantian2");
+								current.popup("boss_biantian2");
 							}
 						}
-						player.logSkill("kuangfeng", targets, "fire");
-					} else if (result.color == "black") {
-						game.trySkillAudio("boss_biantianx1");
-						for (var i = 0; i < players.length; i++) {
-							if (players[i].isFriendOf(player)) {
-								players[i].addSkill("boss_biantian2");
-								players[i].popup("dawu");
-								targets.push(players[i]);
+						player.judge({
+							judge: card => {
+								const color = get.color(card);
+								if (color === "black") {
+									return 1;
+								}
+								if (color === "red") {
+									return 0;
+								}
+								return -1;
+							},
+						});
+					},
+					async (event, trigger, player, result) => {
+						const targets = [];
+						const players = game.filterPlayer();
+						if (result.color === "red") {
+							game.trySkillAudio("boss_biantianx2");
+							for (const current of players) {
+								if (!current.isFriendOf(player)) {
+									current.addSkill("boss_biantian3");
+									current.popup("kuangfeng");
+									targets.push(current);
+								}
 							}
+							player.logSkill("kuangfeng", targets, "fire");
+						} else if (result.color === "black") {
+							game.trySkillAudio("boss_biantianx1");
+							for (const current of players) {
+								if (current.isFriendOf(player)) {
+									current.addSkill("boss_biantian2");
+									current.popup("dawu");
+									targets.push(current);
+								}
+							}
+							player.logSkill("dawu", targets, "thunder");
 						}
-						player.logSkill("dawu", targets, "thunder");
-					}
-				},
+					},
+				],
 				ai: {
 					threaten: 1.6,
 				},
