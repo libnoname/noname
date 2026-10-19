@@ -28810,9 +28810,9 @@ const skills = {
 					var evt = event.getParent();
 					return evt.skill == "juesheng" && evt.player == player;
 				},
-				content() {
-					var target = trigger.getParent().target;
-					trigger.num = Math.max(target.getAllHistory("useCard", evt => evt.card.name == "sha").length, 1);
+				async content(event, trigger, player) {
+					const target = trigger.getParent().target;
+					trigger.num = Math.max(target.getAllHistory("useCard", evt => evt.card.name === "sha").length, 1);
 					target.addTempSkills("juesheng", { player: "phaseAfter" });
 				},
 			},
