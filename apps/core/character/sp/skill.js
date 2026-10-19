@@ -40759,7 +40759,7 @@ const skills = {
 			return event.card && event.card.name == "sha" && event.addCount !== false && event.cards && event.cards.length == 1 && get.type(event.cards[0], "trick") == "trick";
 		},
 		forced: true,
-		content() {
+		async content(event, trigger, player) {
 			trigger.addCount = false;
 			if (player.stat[player.stat.length - 1].card.sha > 0) {
 				player.stat[player.stat.length - 1].card.sha--;
