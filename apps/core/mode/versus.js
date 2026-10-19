@@ -5741,18 +5741,18 @@ export default () => {
 					player: "useCard1",
 				},
 				silent: true,
-				content: function () {
-					if (event.triggername == "useCard1") {
+				async content(event, trigger, player) {
+					if (event.triggername === "useCard1") {
 						if (!_status.shishengshibai) {
 							_status.shishengshibai = 0;
 						}
 						_status.shishengshibai++;
-						game.broadcastAll(function (num) {
+						game.broadcastAll(num => {
 							if (ui.guanduInfo) {
-								ui.guanduInfo.innerHTML = "十胜十败（" + num + "）";
+								ui.guanduInfo.innerHTML = `十胜十败（${num}）`;
 							}
 						}, _status.shishengshibai);
-						if (_status.shishengshibai % 10 == 0 && trigger.targets && trigger.targets.length > 0 && !["delay", "equip"].includes(get.type(trigger.card))) {
+						if (_status.shishengshibai % 10 === 0 && trigger.targets && trigger.targets.length > 0 && !["delay", "equip"].includes(get.type(trigger.card))) {
 							trigger.effectCount++;
 						}
 					}
