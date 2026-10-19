@@ -32125,7 +32125,7 @@ const skills = {
 		},
 		forced: true,
 		locked: false,
-		content() {
+		async content(event, trigger, player) {
 			player.addMark("reluanzhan", 1, false);
 		},
 		intro: { content: "mark" },
