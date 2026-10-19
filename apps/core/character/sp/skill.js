@@ -37613,7 +37613,7 @@ const skills = {
 				filter(event) {
 					return event.skill == "fanghun_sha" || event.skill == "fanghun_shan";
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.draw();
 				},
 			},
