@@ -7479,60 +7479,59 @@ export default () => {
 			boss_zhinang: {
 				trigger: { player: "phaseBegin" },
 				frequent: true,
-				content: function () {
-					"step 0";
-					event.cards = get.cards(5);
-					event.cards2 = [];
-					for (var i = 0; i < event.cards.length; i++) {
-						var type = get.type(event.cards[i], "trick");
-						if (type == "trick" || type == "equip") {
-							event.cards2.push(event.cards[i]);
+				content: [
+					async (event, trigger, player, result) => {
+						event.cards = get.cards(5);
+						event.cards2 = [];
+						for (const card of event.cards) {
+							const type = get.type(card, "trick");
+							if (type === "trick" || type === "equip") {
+								event.cards2.push(card);
+							}
 						}
-					}
-					if (!event.isMine() || event.cards2.length == 0) {
-						player.showCards(event.cards);
-					}
-					"step 1";
-					if (event.cards2.length == 0) {
-						event.finish();
-					} else {
-						var dialog = ui.create.dialog("将五张牌中的锦囊牌或装备牌交给一名己方角色", "hidden");
+						if (!event.isMine() || event.cards2.length === 0) {
+							await player.showCards(event.cards);
+						}
+					},
+					async (event, trigger, player, result) => {
+						if (event.cards2.length === 0) {
+							event.finish();
+							return;
+						}
+						const dialog = ui.create.dialog("将五张牌中的锦囊牌或装备牌交给一名己方角色", "hidden");
 						dialog.add(event.cards);
-						for (var i = 0; i < dialog.buttons.length; i++) {
-							if (event.cards2.includes(dialog.buttons[i].link)) {
-								dialog.buttons[i].style.opacity = 1;
-							} else {
-								dialog.buttons[i].style.opacity = 0.5;
-							}
+						for (const button of dialog.buttons) {
+							button.style.opacity = event.cards2.includes(button.link) ? 1 : 0.5;
 						}
-						var next = player.chooseTarget(true, dialog, function (card, player, target) {
-							return target.isFriendOf(player);
-						});
-						next.ai = function (target) {
-							var att = get.attitude(player, target);
-							if (att > 0 && target.hasJudge("lebu")) {
-								return 0.1;
-							}
-							if (player.countCards("h") > player.hp) {
-								if (target == player) {
+						player.chooseTarget({
+							forced: true,
+							dialog,
+							filterTarget: (card, player, target) => target.isFriendOf(player),
+							ai: target => {
+								const att = get.attitude(player, target);
+								if (att > 0 && target.hasJudge("lebu")) {
+									return 0.1;
+								}
+								if (player.countCards("h") > player.hp && target === player) {
 									return Math.max(1, att - 2);
 								}
-							}
-							if (target == player) {
-								return att + 5;
-							}
-							return att;
-						};
-					}
-					"step 2";
-					if (result && result.targets && result.targets.length) {
-						event.target = result.targets[0];
-					}
-					if (event.cards2.length) {
-						player.line(event.target, "green");
-						event.target.gain(event.cards2, "gain2", "log");
-					}
-				},
+								if (target === player) {
+									return att + 5;
+								}
+								return att;
+							},
+						});
+					},
+					async (event, trigger, player, result) => {
+						if (result && result.targets && result.targets.length) {
+							event.target = result.targets[0];
+						}
+						if (event.cards2.length) {
+							player.line(event.target, "green");
+							await event.target.gain({ cards: event.cards2, animate: "gain2", log: true });
+						}
+					},
+				],
 				ai: {
 					threaten: 1.3,
 				},
