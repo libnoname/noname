@@ -91,7 +91,7 @@ jobs:
       branches: ${{ steps.list.outputs.branches }}
       count: ${{ steps.list.outputs.count }}
     steps:
-      - name: 枚举分支（排除 build-output、backup/* 与失效镜像）
+      - name: List branches
         id: list
         env:
           GH_TOKEN: ${{ secrets.SYNC_TOKEN || secrets.GITHUB_TOKEN }}
@@ -146,7 +146,7 @@ jobs:
       BRANCH: ${{ matrix.branch }}
 
     steps:
-      - name: 比较上游与 Fork
+      - name: Compare with upstream
         id: compare
         run: |
           set -euo pipefail
@@ -224,7 +224,7 @@ jobs:
           echo "上游本次改动的工作流文件数：$touched"
           echo "workflows_touched=$touched" >> "$GITHUB_OUTPUT"
 
-      - name: 合并上游更新
+      - name: Merge upstream updates
         id: merge
         if: steps.compare.outputs.up_to_date != 'true'
         run: |
@@ -258,7 +258,7 @@ jobs:
           echo "::error::  git fetch upstream && git merge upstream/main   # 解决冲突后 push"
           exit 1
 
-      - name: 核对合并结果
+      - name: Verify merge result
         id: verify
         if: steps.compare.outputs.up_to_date != 'true' && steps.merge.outcome == 'success'
         run: |
@@ -284,7 +284,7 @@ jobs:
           fi
           echo "::notice::已确认与同步源一致（$SYNC_SOURCE 领先 0 个提交）"
 
-      - name: 写入运行摘要
+      - name: Write run summary
         if: always()
         env:
           UP_TO_DATE: ${{ steps.compare.outputs.up_to_date }}
