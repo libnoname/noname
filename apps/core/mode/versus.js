@@ -6852,17 +6852,16 @@ export default () => {
 			boss_lianyujg: {
 				trigger: { player: "phaseEnd" },
 				unique: true,
-				content: function () {
-					"step 0";
-					event.players = game.filterPlayer(function (current) {
-						return current.isEnemyOf(player);
-					});
-					"step 1";
-					if (event.players.length) {
-						var current = event.players.shift();
+				async content(event, trigger, player) {
+					const targets = game.filterPlayer(current => current.isEnemyOf(player));
+					while (targets.length) {
+						const current = targets.shift();
 						player.line(current, "fire");
-						current.damage("fire");
-						event.redo();
+						await current.damage({ nature: "fire" });
+
+						if ((player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+							return;
+						}
 					}
 				},
 				ai: {
