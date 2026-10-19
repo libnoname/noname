@@ -6176,7 +6176,7 @@ export default () => {
 					}
 					return bool && num >= 3;
 				},
-				content: function () {
+				async content(event, trigger, player) {
 					trigger.cancel();
 					game.log(player, "跳过了判定阶段");
 				},
