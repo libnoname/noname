@@ -12320,12 +12320,18 @@ const skills = {
 		forced: true,
 		locked: false,
 		logTarget: "player",
-		content() {
+		async content(event, trigger, player) {
 			const target = trigger.player;
-			const num = ["h", "e", "j"].reduce((sum, pos) => sum + Boolean(target.countCards(pos)), 0);
+			const num = ["h", "e", "j"].reduce((sum, pos) => sum + Boolean(target.hasCards(pos)), 0);
 			if (num) {
-				player.gainPlayerCard(target, num, "hej", true).set("filterButton", button => {
-					return !ui.selected.buttons.some(but => get.position(button.link) == get.position(but.link));
+				player.gainPlayerCard({
+					target,
+					selectButton: num,
+					position: "hej",
+					forced: true,
+					filterButton: button => {
+						return !ui.selected.buttons.some(but => get.position(button.link) === get.position(but.link));
+					},
 				});
 			}
 		},
