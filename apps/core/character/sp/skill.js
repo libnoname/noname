@@ -32033,7 +32033,8 @@ const skills = {
 		filterTarget(card, player, target) {
 			return target != player;
 		},
-		content() {
+		async content(event, trigger, player) {
+			const { targets } = event;
 			player.markAuto("refenxun2", targets);
 			player.addTempSkill("refenxun2");
 		},
