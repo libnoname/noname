@@ -26079,16 +26079,16 @@ const skills = {
 		trigger: { player: "damageEnd" },
 		filter: (event, player) => player != _status.currentPhase,
 		forced: true,
-		content() {
+		async content(event, trigger, player) {
 			if (!player.storage.shanduan) {
 				player.storage.shanduan = [1, 2, 3, 4];
 			}
-			var list = player.storage.shanduan;
-			for (var i = 0; i < list.length; i++) {
-				var num = list[i],
-					add = true;
-				for (var j = 0; j < list.length; j++) {
-					if (list[j] < num) {
+			const list = player.storage.shanduan;
+			for (let i = 0; i < list.length; i++) {
+				const num = list[i];
+				let add = true;
+				for (const value of list) {
+					if (value < num) {
 						add = false;
 						break;
 					}
@@ -26098,7 +26098,7 @@ const skills = {
 					break;
 				}
 			}
-			player.addTip("shanduan", get.translation("shanduan") + " " + player.storage["shanduan"].slice().join(" "));
+			player.addTip("shanduan", `${get.translation("shanduan")} ${player.storage["shanduan"].slice().join(" ")}`);
 			game.delayx();
 		},
 		init(player, skill) {
