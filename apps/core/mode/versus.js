@@ -6950,7 +6950,7 @@ export default () => {
 					return event.num > 0 && event.player != player && event.player.hp < event.player.maxHp;
 				},
 				logTarget: "player",
-				content: function () {
+				async content(event, trigger, player) {
 					player.line(trigger.player, "green");
 					trigger.num--;
 				},
