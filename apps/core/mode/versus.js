@@ -5688,11 +5688,11 @@ export default () => {
 						}).length > 0
 					);
 				},
-				content: function () {
-					if (trigger.name == "phaseDraw") {
+				async content(event, trigger, player) {
+					if (trigger.name === "phaseDraw") {
 						trigger.num--;
 					} else {
-						player.draw();
+						await player.draw();
 					}
 				},
 			},
