@@ -38853,10 +38853,10 @@ const skills = {
 			return event.source && event.source.isIn();
 		},
 		logTarget: "source",
-		content() {
-			var num = 7 - player.countMark("regushe");
+		async content(event, trigger, player) {
+			const num = 7 - player.countMark("regushe");
 			if (num > 0) {
-				trigger.source.chooseToDiscard(num, true, "he");
+				trigger.source.chooseToDiscard({ selectCard: num, forced: true, position: "he" });
 			}
 			trigger.source.loseHp();
 		},
