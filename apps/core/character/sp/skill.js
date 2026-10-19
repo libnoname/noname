@@ -38165,8 +38165,8 @@ const skills = {
 		check(event, player) {
 			return get.attitude(player, event.target) < 0;
 		},
-		content() {
-			trigger.target.chooseToDiscard("he", true, 2);
+		async content(event, trigger, player) {
+			trigger.target.chooseToDiscard({ position: "he", forced: true, selectCard: 2 });
 		},
 	},
 	zhanyi_trick: {
