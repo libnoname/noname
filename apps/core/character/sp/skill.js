@@ -22366,9 +22366,9 @@ const skills = {
 		filter(event, player) {
 			return get.cardNameLength(event.card) == player.getHistory("useCard").indexOf(event) + 1;
 		},
-		content() {
-			var card = trigger.card;
-			if (card.name == "sha" || (get.type(card) == "trick" && get.tag(card, "damage") > 0)) {
+		async content(event, trigger, player) {
+			const card = trigger.card;
+			if (card.name === "sha" || (get.type(card) === "trick" && get.tag(card, "damage") > 0)) {
 				trigger.baseDamage++;
 			} else {
 				player.draw();
