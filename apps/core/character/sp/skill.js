@@ -22557,7 +22557,7 @@ const skills = {
 					});
 					return num < event.cards.length;
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.draw();
 				},
 			},
