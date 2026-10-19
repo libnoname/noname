@@ -10199,7 +10199,7 @@ const skills = {
 		},
 		forced: true,
 		priority: 12, //本体御用优先级
-		content() {
+		async content(event, trigger, player) {
 			player.storage[event.name] = 2 + (trigger.name === "dying");
 			player.markSkill(event.name);
 		},
