@@ -6748,7 +6748,7 @@ export default () => {
 					return false;
 				},
 				trigger: { target: "useCardToTargeted" },
-				content: function () {
+				async content(event, trigger, player) {
 					player.turnOver();
 					trigger.getParent().excluded.add(player);
 				},
