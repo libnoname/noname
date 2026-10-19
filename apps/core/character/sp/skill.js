@@ -34956,9 +34956,9 @@ const skills = {
 			delete player.storage.new_zhixi;
 			delete player.storage.new_zhixi2;
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.addMark("new_zhixi", 1, false);
-			if (get.type2(trigger.card) == "trick") {
+			if (get.type2(trigger.card) === "trick") {
 				player.storage.new_zhixi2 = true;
 			}
 		},
