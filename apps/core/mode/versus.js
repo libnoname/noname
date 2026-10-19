@@ -6022,18 +6022,21 @@ export default () => {
 				check: function (event, player) {
 					return event.player.needsToDiscard(1) || event.player.countCards("h") > player.countCards("h") + 1 || player.hp == 1;
 				},
-				content: function () {
-					"step 0";
-					trigger.player.chooseCard("将一张手牌交给" + get.translation(player), true).ai = function (card) {
-						if (get.type(card) == "trick") {
-							return 8 - get.value(card);
-						}
-						return 6 - get.value(card);
-					};
-					"step 1";
+				async content(event, trigger, player) {
+					const result = await trigger.player
+						.chooseCard({
+							prompt: `将一张手牌交给${get.translation(player)}`,
+							forced: true,
+							ai: card => (get.type(card) === "trick" ? 8 - get.value(card) : 6 - get.value(card)),
+						})
+						.forResult();
+					if ((player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+						return;
+					}
+
 					if (result.bool && result.cards.length) {
-						player.gain(result.cards, trigger.player, "give");
-						if (get.type(result.cards[0]) == "trick") {
+						player.gain({ cards: result.cards, source: trigger.player, animate: "give" });
+						if (get.type(result.cards[0]) === "trick") {
 							player.addTempSkill("wenji2", { player: "phaseBegin" });
 						}
 					}
