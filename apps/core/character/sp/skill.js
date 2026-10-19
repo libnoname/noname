@@ -40692,7 +40692,7 @@ const skills = {
 			}
 			return !player.storage.danji && player.countCards("h") > player.hp;
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			player.loseMaxHp();
 			player.addSkills(["mashu", "nuzhan"]);
