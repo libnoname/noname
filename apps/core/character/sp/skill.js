@@ -38028,7 +38028,7 @@ const skills = {
 		filter(event, player) {
 			return get.type(event.card) == "equip";
 		},
-		content() {
+		async content(event, trigger, player) {
 			lib.skill.shanjia.sync(player);
 		},
 	},
