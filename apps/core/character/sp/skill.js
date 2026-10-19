@@ -19184,8 +19184,8 @@ const skills = {
 			return (event.name != "phase" || game.phaseNumber == 0) && player.countCards("h") < Math.min(8, game.countPlayer());
 		},
 		forced: true,
-		content() {
-			if (trigger.name == "useCardToTargeted") {
+		async content(event, trigger, player) {
+			if (trigger.name === "useCardToTargeted") {
 				player.skip("phaseJudge");
 				player.addTempSkill("olcuorui_skip", { player: "phaseJudgeSkipped" });
 			} else {
