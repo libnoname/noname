@@ -43563,7 +43563,7 @@ const skills = {
 		forced: true,
 		popup: false,
 		firstDo: true,
-		content() {
+		async content(event, trigger, player) {
 			trigger.addCount = false;
 			if (player.stat[player.stat.length - 1].card.sha > 0) {
 				player.stat[player.stat.length - 1].card.sha--;
