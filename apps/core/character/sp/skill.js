@@ -42266,7 +42266,7 @@ const skills = {
 		filter(event, player) {
 			return event.card && event.card.name == "sha" && player.countCards("h") == 0;
 		},
-		content() {
+		async content(event, trigger, player) {
 			trigger.num++;
 		},
 		ai: {
