@@ -39370,7 +39370,7 @@ const skills = {
 			return false;
 		},
 		autodelay: true,
-		content() {
+		async content(event, trigger, player) {
 			trigger.getParent().targets.add(player);
 			trigger.player.line(player, "green");
 		},
