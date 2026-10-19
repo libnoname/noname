@@ -39392,25 +39392,31 @@ const skills = {
 			return player.isPhaseUsing() && event.player.isIn() && event.player.countCards("hej") > 0 && event.player != player && !player.hasSkill("zhidao2");
 		},
 		forced: true,
-		content() {
-			var num = 0;
-			if (trigger.player.countCards("h")) {
+		async content(event, trigger, player) {
+			let num = 0;
+			if (trigger.player.hasCards("h")) {
 				num++;
 			}
-			if (trigger.player.countCards("e")) {
+			if (trigger.player.hasCards("e")) {
 				num++;
 			}
-			if (trigger.player.countCards("j")) {
+			if (trigger.player.hasCards("j")) {
 				num++;
 			}
 			if (num) {
-				player.gainPlayerCard(trigger.player, num, "hej", true).set("filterButton", function (button) {
-					for (var i = 0; i < ui.selected.buttons.length; i++) {
-						if (get.position(button.link) == get.position(ui.selected.buttons[i].link)) {
-							return false;
+				player.gainPlayerCard({
+					target: trigger.player,
+					selectButton: num,
+					position: "hej",
+					forced: true,
+					filterButton: button => {
+						for (const selected of ui.selected.buttons) {
+							if (get.position(button.link) === get.position(selected.link)) {
+								return false;
+							}
 						}
-					}
-					return true;
+						return true;
+					},
 				});
 			}
 			player.addTempSkill("zhidao2");
