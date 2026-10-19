@@ -45187,8 +45187,8 @@ const skills = {
 		trigger: { player: "phaseDiscardBegin" },
 		forced: true,
 		sourceSkill: "yongsi",
-		content() {
-			player.chooseToDiscard(game.countGroup(), "he", true);
+		async content(event, trigger, player) {
+			player.chooseToDiscard({ selectCard: game.countGroup(), position: "he", forced: true });
 		},
 	},
 	bifa: {
