@@ -7203,7 +7203,7 @@ const skills = {
 				filter(event, player) {
 					return event.name != "phase" || game.phaseNumber == 0;
 				},
-				content() {
+				async content(event, trigger, player) {
 					_status.olkuangxin ??= {};
 					_status.olkuangxin[player.playerid] = player.hp;
 				},
