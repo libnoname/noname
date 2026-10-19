@@ -31912,18 +31912,17 @@ const skills = {
 			return false;
 		},
 		preHidden: true,
-		content() {
-			var suit = get.suit(trigger.card);
-			var number = get.number(trigger.card);
-			var cards = [];
-			for (var i = 0; i < ui.cardPile.childNodes.length; i++) {
-				var card = ui.cardPile.childNodes[i];
-				if (card.suit == suit && card.number == number) {
+		async content(event, trigger, player) {
+			const suit = get.suit(trigger.card);
+			const number = get.number(trigger.card);
+			const cards = [];
+			for (const card of ui.cardPile.childNodes) {
+				if (card.suit === suit && card.number === number) {
 					cards.push(card);
 				}
 			}
 			if (cards.length) {
-				player.gain(cards, "gain2");
+				player.gain({ cards, animate: "gain2" });
 			}
 		},
 	},
