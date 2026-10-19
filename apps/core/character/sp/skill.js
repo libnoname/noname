@@ -32639,7 +32639,7 @@ const skills = {
 				filter(event, player) {
 					return event.card.name == "sha";
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.baseDamage += _status.yanhuo || 0;
 				},
 			},
