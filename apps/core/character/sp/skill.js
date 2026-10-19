@@ -31583,7 +31583,7 @@ const skills = {
 		filter(event, player) {
 			return get.type(event.card, null, false) == "basic";
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.addSkill("wangong2");
 		},
 	},
