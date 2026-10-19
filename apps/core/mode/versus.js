@@ -7022,25 +7022,27 @@ export default () => {
 			boss_leili: {
 				audio: 2,
 				trigger: { source: "damageEnd" },
-				direct: true,
 				filter: function (event) {
 					return event.card && event.card.name == "sha";
 				},
-				content: function () {
-					"step 0";
-					player.chooseTarget(get.prompt("boss_leili"), function (card, player, target) {
-						if (target == trigger.player) {
-							return false;
-						}
-						return target.isEnemyOf(player);
-					}).ai = function (target) {
-						return get.damageEffect(target, player, player, "thunder");
-					};
-					"step 1";
-					if (result.bool) {
-						player.logSkill("boss_leili", result.targets);
-						result.targets[0].damage("thunder");
-					}
+				async cost(event, trigger, player) {
+					event.result = await player
+						.chooseTarget({
+							prompt: get.prompt("boss_leili"),
+							filterTarget: (card, player, target) => {
+								if (target === trigger.player) {
+									return false;
+								}
+								return target.isEnemyOf(player);
+							},
+							ai: target => {
+								return get.damageEffect(target, player, player, "thunder");
+							},
+						})
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					await event.targets[0].damage({ nature: "thunder" });
 				},
 				ai: {
 					expose: 0.2,
