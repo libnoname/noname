@@ -22124,7 +22124,7 @@ const skills = {
 						})
 					);
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.tempBanSkill("olmiuyan", "roundStart");
 				},
 			},
