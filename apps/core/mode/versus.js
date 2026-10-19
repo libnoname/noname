@@ -7647,8 +7647,8 @@ export default () => {
 						return current.isFriendOf(player) && current.isDamaged();
 					});
 				},
-				content: function () {
-					var list = game.filterPlayer(function (current) {
+				async content(event, trigger, player) {
+					const list = game.filterPlayer(current => {
 						return current.isFriendOf(player) && current.isDamaged();
 					});
 					if (list.length) {
