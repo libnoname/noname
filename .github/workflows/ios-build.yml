@@ -71,10 +71,11 @@ concurrency:
   group: "ios-build-${{ github.ref }}"
   cancel-in-progress: false
 
-# 双包策略（2026-10-19 起）：
+# 双包策略（2026-10-19 起，两任务并行）：
 #   job build-ipa      → 精简包 noname-ios-unsigned.ipa（不含原画/语音，游戏内按需下载）
-#   job build-ipa-full → 完整包 noname-ios-full-unsigned.ipa（含全部原画与台词语音；
-#                        在精简任务创建 Release 之后，自动附加到同一 Release，共用版本号）
+#   job build-ipa-full → 完整包 noname-ios-full-unsigned.ipa（含全部原画与台词语音）
+#   两任务并行（互不阻塞，墙钟时间 = 较慢者）；完整任务在开始时用与精简任务相同的算法
+#   计算版本号，构建完成后等待精简任务创建对应 Release，再把自己的 ipa 附加进去。
 jobs:
   build-ipa:
     name: Build unsigned IPA
@@ -82,9 +83,6 @@ jobs:
     # 改用 Swift Package Manager，最低 Xcode 26.0，且不再需要 CocoaPods）。
     runs-on: macos-26
     timeout-minutes: 90
-
-    outputs:
-      release_tag: ${{ steps.release.outputs.tag }}
 
     steps:
       - name: Show runner info and free disk
@@ -528,10 +526,29 @@ jobs:
     # 改用 Swift Package Manager，最低 Xcode 26.0，且不再需要 CocoaPods）。
     runs-on: macos-26
     timeout-minutes: 90
-    needs: build-ipa
     if: github.event_name == 'push' || inputs.create_release
 
     steps:
+      - name: Resolve release tag (start of run; 与精简任务同一算法)
+        # 两任务并行：这里在运行开始时就确定版本号（此时精简任务尚未创建 Release，
+        # 两边读到的现有 Release 列表一致 → 得到同一个 vX.Y.Z）。
+        id: tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            TAG="${{ github.ref_name }}"
+          else
+            tags=$(gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" --paginate --jq '.[].tag_name' 2>/dev/null || true)
+            next=$(printf '%s\n' "$tags" \
+              | sed -nE 's/^v?([0-9]+)\.([0-9]+)\.([0-9]+)$/\1 \2 \3/p' \
+              | awk 'NF==3 { if (maj=="" || $1>maj || ($1==maj && ($2>mid || ($2==mid && $3>pat)))) { maj=$1; mid=$2; pat=$3 } } END { if (maj=="") print "1.0.0"; else print maj "." mid "." (pat+1) }')
+            TAG="v${next}"
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "本次目标 Release：$TAG"
+
       - name: Show runner info and free disk
         run: |
           echo "===== Runner ====="
@@ -804,13 +821,26 @@ jobs:
           echo "ipa_name=$IPA_NAME" >> "$GITHUB_OUTPUT"
 
       - name: Upload full IPA to Release
-        if: needs.build-ipa.outputs.release_tag != ''
+        if: github.event_name == 'push' || inputs.create_release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           IPA_PATH: ${{ steps.package.outputs.ipa_path }}
-          TAG: ${{ needs.build-ipa.outputs.release_tag }}
+          TAG: ${{ steps.tag.outputs.tag }}
         run: |
           set -euo pipefail
+          # 精简任务并行执行，通常 3-5 分钟创建 Release；这里最多等待 10 分钟。
+          for i in $(seq 1 60); do
+            if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+              echo "Release $TAG 已就绪"
+              break
+            fi
+            if [ "$i" = 60 ]; then
+              echo "::error::等待 Release $TAG 超时（精简任务可能失败，见同一次运行的另一个作业）"
+              exit 1
+            fi
+            echo "等待 Release $TAG…（$i/60）"
+            sleep 10
+          done
           echo "附加完整包到 Release：$TAG"
           gh release upload "$TAG" "$IPA_PATH" --repo "$GITHUB_REPOSITORY" --clobber
           ls -lh "$IPA_PATH"
