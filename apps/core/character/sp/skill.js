@@ -41461,7 +41461,7 @@ const skills = {
 		filter(event, player) {
 			return event.card && (event.card.name == "nanman" || event.card.name == "wanjian" || (event.card.name == "sha" && !game.hasNature(event.card) && get.suit(event.card) == "spade")) && player.isDamaged();
 		},
-		content() {
+		async content(event, trigger, player) {
 			trigger.baseDamage++;
 			if (game.roundNumber <= player.hp) {
 				player.addMark("ranshang", 1);
