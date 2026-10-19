@@ -41,549 +41,550 @@ export default () => {
 				delete lib.card.lizhengshangyou;
 			}
 		},
-		start() {
-			"step 0";
-			_status.mode = get.config("versus_mode");
-			if (_status.connectMode) {
-				_status.mode = lib.configOL.versus_mode;
-			}
-			if (_status.brawl && _status.brawl.submode) {
-				_status.mode = _status.brawl.submode;
-			}
-			if (lib.config.test_game) {
-				_status.mode = "standard";
-			}
-			"step 1";
-			var playback = localStorage.getItem(lib.configprefix + "playback");
-			if (playback) {
-				ui.create.me();
-				ui.arena.style.display = "none";
-				ui.system.style.display = "none";
-				_status.playback = playback;
-				localStorage.removeItem(lib.configprefix + "playback");
-				var store = lib.db.transaction(["video"], "readwrite").objectStore("video");
-				store.get(parseInt(playback)).onsuccess = function (e) {
-					if (e.target.result) {
-						game.playVideoContent(e.target.result.video);
-					} else {
-						alert("播放失败：找不到录像");
-						game.reload();
-					}
-				};
-				event.finish();
-				return;
-			}
-			if (_status.connectMode) {
-				game.waitForPlayer(function () {
-					switch (lib.configOL.versus_mode) {
-						case "1v1":
-							lib.configOL.number = 2;
-							break;
-						case "2v2":
-							lib.configOL.number = 4;
-							break;
-						case "3v3":
-							lib.configOL.number = 6;
-							break;
-						case "4v4":
-						case "guandu":
-							lib.configOL.number = 8;
-							break;
-					}
-				});
-			} else if (_status.mode == "jiange" || _status.mode == "siguo" || _status.mode == "four" || _status.mode == "guandu") {
-				if (_status.mode == "four" && !get.config("enable_all_cards_four")) {
-					lib.card.list = lib.cardsFour;
-					game.fixedPile = true;
-				} else if (_status.mode == "siguo") {
-					for (var i = 0; i < lib.card.list.length; i++) {
-						switch (lib.card.list[i][2]) {
-							case "tao":
-								lib.card.list[i][2] = "zong";
-								break;
-							case "jiu":
-								lib.card.list[i][2] = "xionghuangjiu";
-								break;
-							case "wuzhong":
-								lib.card.list[i][2] = "tongzhougongji";
-								break;
-							case "wugu":
-							case "taoyuan":
-								lib.card.list[i][2] = "lizhengshangyou";
-								break;
-						}
-					}
-				} else if (_status.mode == "guandu") {
-					for (var i = 0; i < lib.card.list.length; i++) {
-						switch (lib.card.list[i][2]) {
-							case "jiu":
-								lib.card.list[i][2] = "xujiu";
-								break;
-							case "wugu":
-								lib.card.list[i][2] = "tunliang";
-								break;
-							case "nanman":
-								lib.card.list[i][2] = "lulitongxin";
-								break;
-							case "taoyuan":
-							case "shandian":
-								lib.card.list[i][2] = "yuanjun";
-								break;
-							case "muniu":
-								lib.card.list.splice(i--, 1);
-								break;
-						}
-					}
+		start: [
+			async (event, trigger, player) => {
+				_status.mode = get.config("versus_mode");
+				if (_status.connectMode) {
+					_status.mode = lib.configOL.versus_mode;
 				}
-				game.prepareArena(8);
-			} else if (_status.mode == "two") {
-				game.prepareArena(4);
-			} else if (_status.mode == "endless") {
-				game.prepareArena(2);
-			} else if (_status.mode == "three") {
-				if (lib.character.wenpin) {
-					lib.character.wenpin[3] = ["zhenwei_three"];
+				if (_status.brawl && _status.brawl.submode) {
+					_status.mode = _status.brawl.submode;
 				}
-				if (lib.character.zhugejin) {
-					lib.character.zhugejin[3] = ["hongyuan", "huanshi_three", "mingzhe"];
+				if (lib.config.test_game) {
+					_status.mode = "standard";
 				}
-				if (lib.character.key_yuzuru) {
-					lib.character.key_yuzuru[2] = 4;
-					lib.character.key_yuzuru[3] = ["yuzuru_bujin"];
-				}
-				if (lib.character.guanyu) {
-					lib.character.guanyu[3] = ["wusheng", "zhongyi"];
-				}
-				if (lib.character.lvbu) {
-					lib.character.lvbu[3] = ["wushuang", "zhanshen"];
-				}
-				if (lib.character.xiahoudun) {
-					lib.character.xiahoudun[3] = ["ganglie_three"];
-				}
-				if (!get.config("enable_all_cards")) {
-					lib.translate.wuzhong_info += "若对方存活角色多于己方，则额外摸一张牌";
-					lib.translate.zhuge_info = "锁定技，出牌阶段，你使用【杀】的次数上限+3";
-					lib.card.list = lib.cardsThree;
-					game.fixedPile = true;
-				} else if (Array.isArray(lib.config.forbidthreecard)) {
-					for (var i = 0; i < lib.card.list.length; i++) {
-						if (lib.config.forbidthreecard.includes(lib.card.list[i][2])) {
-							lib.card.list.splice(i--, 1);
-						}
-					}
-				}
-				ui.create.cardsAsync();
-				game.finishCards();
-			} else {
-				if (lib.storage.choice == undefined) {
-					game.save("choice", 20);
-				}
-				if (lib.storage.zhu == undefined) {
-					game.save("zhu", true);
-				}
-				if (lib.storage.noreplace_end == undefined) {
-					game.save("noreplace_end", true);
-				}
-				if (get.config("first_less") == undefined) {
-					game.saveConfig("first_less", true, true);
-				}
-				if (lib.storage.autoreplaceinnerhtml == undefined) {
-					game.save("autoreplaceinnerhtml", true);
-				}
-				if (lib.storage.single_control == undefined) {
-					game.save("single_control", true);
-				}
-				if (lib.storage.number == undefined) {
-					game.save("number", 3);
-				}
-				if (lib.storage.versus_reward == undefined) {
-					game.save("versus_reward", 3);
-				}
-				if (lib.storage.versus_punish == undefined) {
-					game.save("versus_punish", "弃牌");
-				}
-				if (lib.storage.replace_number == undefined) {
-					game.save("replace_number", 3);
-				}
-
-				switch (lib.storage.seat_order) {
-					case "交叉":
-						lib.storage.cross_seat = true;
-						lib.storage.random_seat = false;
-						break;
-					case "随机":
-						lib.storage.cross_seat = false;
-						lib.storage.random_seat = true;
-						break;
-					default:
-						lib.storage.cross_seat = false;
-						lib.storage.random_seat = false;
-				}
-				game.save("only_zhu", true);
-				ui.wuxie.hide();
-				ui.create.cardsAsync();
-				game.finishCards();
-			}
-			// game.delay();
-			"step 2";
-			if (!_status.connectMode && _status.brawl && _status.brawl.chooseCharacterBefore) {
-				_status.brawl.chooseCharacterBefore();
-			}
-			if (_status.connectMode) {
-				if (_status.mode == "guandu") {
-					for (var i = 0; i < lib.card.list.length; i++) {
-						switch (lib.card.list[i][2]) {
-							case "jiu":
-								lib.card.list[i][2] = "xujiu";
-								break;
-							case "wugu":
-								lib.card.list[i][2] = "tunliang";
-								break;
-							case "nanman":
-								lib.card.list[i][2] = "lulitongxin";
-								break;
-							case "taoyuan":
-							case "shandian":
-								lib.card.list[i][2] = "yuanjun";
-								break;
-							case "muniu":
-								lib.card.list.splice(i--, 1);
-								break;
-						}
-					}
-				}
-				if (lib.configOL.versus_mode == "1v1") {
-					game.randomMapOL("hidden");
-				} else {
-					game.randomMapOL();
-				}
-			} else if (_status.mode == "guandu") {
-				var list = [
-					["zhu", "ezhu", "ezhong", "zhong", "ezhong", "zhong", "zhong", "ezhong"],
-					["zhu", "ezhong", "zhong", "ezhu", "ezhong", "zhong", "ezhong", "zhong"],
-					["zhu", "ezhong", "zhong", "ezhong", "zhong", "ezhong", "zhong", "ezhu"],
-					["zhu", "ezhu", "zhong", "ezhong", "zhong", "ezhong", "zhong", "ezhong"],
-					["zhu", "ezhong", "zhong", "ezhong", "zhong", "ezhu", "zhong", "ezhong"],
-				].randomGet();
-
-				var side = true;
-				var num = Math.floor(Math.random() * 8);
-				list = list.splice(8 - num).concat(list);
-				_status.firstAct = game.players[num];
-				for (var i = 0; i < 8; i++) {
-					if (list[i][0] == "e") {
-						game.players[i].side = side;
-						game.players[i].identity = list[i].slice(1);
-					} else {
-						game.players[i].side = !side;
-						game.players[i].identity = list[i];
-					}
-					if (game.players[i].identity == "zhu") {
-						game[game.players[i].side + "Zhu"] = game.players[i];
-						game.players[i].isZhu = true;
-					}
-					game.players[i].setIdentity(game.players[i].identity);
-					game.players[i].node.identity.dataset.color = get.translation(game.players[i].side + "Color");
-					game.players[i].getId();
-				}
-				game.chooseCharacterGuandu();
-			} else if (_status.mode == "four") {
-				_status.fouralign = [0, 1, 2, 3, 4];
-				var list = [
-					["zhong", "ezhong", "ezhong", "zhong", "zhong", "ezhong", "ezhong", "zhong"],
-					["zhong", "ezhong", "zhong", "ezhong", "ezhong", "zhong", "ezhong", "zhong"],
-					["zhong", "ezhong", "ezhong", "zhong", "ezhong", "zhong", "zhong", "ezhong"],
-					["zhong", "ezhong", "zhong", "ezhong", "zhong", "ezhong", "zhong", "ezhong"],
-					["zhong", "ezhong", "ezhong", "zhong", "ezhong", "zhong", "ezhong", "zhong"],
-				][_status.fouralign.randomRemove()];
-				var rand1 = Math.floor(Math.random() * 4);
-				var rand2 = Math.floor(Math.random() * 4);
-				for (var i = 0; i < list.length; i++) {
-					if (list[i] == "zhong") {
-						if (rand1 == 0) {
-							list[i] = "zhu";
-						}
-						rand1--;
-					} else {
-						if (rand2 == 0) {
-							list[i] = "ezhu";
-						}
-						rand2--;
-					}
-				}
-
-				var side = Math.random() < 0.5;
-				var num = Math.floor(Math.random() * 8);
-				list = list.splice(8 - num).concat(list);
-				_status.firstAct = game.players[num];
-				for (var i = 0; i < 8; i++) {
-					if (list[i][0] == "e") {
-						game.players[i].side = side;
-						game.players[i].identity = list[i].slice(1);
-					} else {
-						game.players[i].side = !side;
-						game.players[i].identity = list[i];
-					}
-					if (game.players[i].identity == "zhu") {
-						game[game.players[i].side + "Zhu"] = game.players[i];
-						game.players[i].isZhu = true;
-					}
-					game.players[i].setIdentity(game.players[i].identity);
-					game.players[i].node.identity.dataset.color = get.translation(game.players[i].side + "Color");
-					game.players[i].getId();
-				}
-				game.chooseCharacterFour();
-			} else if (_status.mode == "two") {
-				for (var i = 0; i < game.players.length; i++) {
-					game.players[i].getId();
-				}
-				game.chooseCharacterTwo();
-			} else if (_status.mode == "endless") {
-				game.chooseCharacterEndless();
-			} else if (_status.mode == "siguo") {
-				var list = ["wei", "wei", "shu", "shu", "wu", "wu", "qun", "qun"].randomSort();
-				for (var i = 0; i < game.players.length; i++) {
-					game.players[i].side = list[i];
-					game.players[i].identity = list[i];
-					game.players[i].setIdentity(list[i]);
-					game.players[i].node.identity.style.display = "none";
-					game.players[i].getId();
-					game.players[i].node.action.innerHTML = "即将<br>获胜";
-					game.players[i].node.action.style.letterSpacing = "0px";
-					game.players[i].node.action.style.lineHeight = "22px";
-					game.players[i].node.action.style.top = "3px";
-					game.players[i].node.action.style.right = "3px";
-				}
-				game.chooseCharacterSiguo();
-			} else if (_status.mode == "jiange") {
-				var list = ["shumech", "shu", "shuboss", "shu", "wei", "weiboss", "wei", "weimech"];
-				var pos = Math.floor(Math.random() * 8);
-				for (var i = 0; i < 8; i++) {
-					var j = pos + i;
-					if (j >= 8) {
-						j -= 8;
-					}
-					if (list[i][0] == "w") {
-						game.players[j].side = true;
-						game.players[j].setIdentity("wei");
-						game.players[j].identity = "wei";
-					} else {
-						game.players[j].side = false;
-						game.players[j].setIdentity("shu");
-						game.players[j].identity = "shu";
-					}
-					if (list[i].indexOf("mech") != -1) {
-						game.players[j].type = "mech";
-					} else if (list[i].indexOf("boss") != -1) {
-						game.players[j].type = "boss";
-					} else {
-						game.players[j].type = "human";
-					}
-					game.players[i].getId();
-				}
-				game.chooseCharacterJiange();
-			} else if (_status.mode == "three") {
-				game.chooseCharacterThree();
-			} else {
-				game.chooseCharacter();
-			}
-			"step 3";
-			var players = get.players(lib.sort.position);
-			var info = [];
-			for (var i = 0; i < players.length; i++) {
-				info.push({
-					name: players[i].name1,
-					name2: players[i].name2,
-					identity: players[i].node.identity.firstChild.innerHTML,
-					nickname: players[i].node.nameol.innerHTML,
-					color: players[i].node.identity.dataset.color,
-				});
-			}
-			_status.videoInited = true;
-			if (_status.mode == "four" || _status.mode == "jiange" || _status.connectMode || _status.mode == "two" || _status.mode == "siguo" || _status.mode == "endless") {
-				info.push(false);
-			} else if (_status.mode == "three") {
-				info.push(true);
-			} else {
-				info.push(lib.storage.single_control && game.players.length >= 4);
-			}
-			game.addVideo("init", null, info);
-			event.trigger("gameStart");
-			if (_status.connectMode) {
-				if (_status.mode == "1v1") {
-					_status.first_less = true;
-					game.gameDraw(_status.firstChoose.next);
-					game.phaseLoop(_status.firstChoose.next);
-				} else if (_status.mode == "2v2" || _status.mode == "3v3") {
-					_status.first_less = true;
-					var firstChoose = _status.firstAct || game.players.randomGet();
-					if (firstChoose.next.side == firstChoose.side) {
-						firstChoose = firstChoose.next;
-					}
-					game.gameDraw(firstChoose, function (player) {
-						if (lib.configOL.replace_handcard && player == firstChoose.previousSeat) {
-							return 5;
-						}
-						return 4;
-					});
-					game.phaseLoop(firstChoose);
-				} else if (_status.mode == "guandu") {
-					game.gameDraw(_status.firstAct);
-					game.phaseLoop(_status.firstAct);
-				} else if (_status.mode == "4v4") {
-					game.gameDraw(_status.firstAct, function (player) {
-						if (player == _status.firstAct.previousSeat) {
-							return 5;
-						}
-						return 4;
-					});
-					game.replaceHandcards(_status.firstAct.previous, _status.firstAct.previous.previous);
-					game.phaseLoop(_status.firstAct);
-				}
-				event.finish();
-			} else {
-				if (_status.mode == "guandu") {
-					game.gameDraw(_status.firstAct, 4);
-					game.phaseLoop(_status.firstAct);
-				} else if (_status.mode == "two") {
-					_status.first_less = true;
-					_status.first_less_forced = true;
-					var firstChoose = _status.firstAct;
-					game.gameDraw(firstChoose, function (player) {
-						if (player == _status.firstAct.previousSeat && get.config("replace_handcard_two")) {
-							return 5;
-						}
-						return 4;
-					});
-					game.phaseLoop(firstChoose);
-				} else if (_status.mode == "endless") {
-					_status.first_less = true;
-					_status.first_less_forced = true;
-					var firstChoose = _status.firstAct;
-					game.gameDraw(firstChoose);
-					game.phaseLoop(firstChoose);
-				} else if (_status.mode == "four") {
-					game.gameDraw(_status.firstAct, function (player) {
-						if (player == _status.firstAct.previousSeat) {
-							return 5;
-						}
-						return 4;
-					});
-					if (game.me == _status.firstAct.previous || game.me == _status.firstAct.previous.previous) {
-						game.me.chooseBool("是否置换手牌？");
-						event.replaceCard = true;
-					}
-				} else if (_status.mode == "siguo") {
-					_status.siguoai = [
-						[-7.5, -2, 0, -4.5, -6, -7.5],
-						[-7.5, -2, 0, -4.5, -6, -7.5],
-						[-6, -6, -1, -4.5, -6, -7.5],
-						[-6, -3, 0, -3, -3, -6],
-						[-6, -3, 0, -3, -3, -6],
-						[-6, -6, -6, -6, -6, -6],
-					].randomGet();
-					var firstChoose = _status.firstAct;
-					game.gameDraw(firstChoose);
-					game.phaseLoop(firstChoose);
-				} else if (_status.mode == "jiange") {
-					var firstAct;
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].type == "mech" && game.players[i].group == "wei") {
-							firstAct = game.players[i];
-							break;
-						}
-					}
-					_status.actlist = [firstAct, firstAct.next, firstAct.previous, firstAct.next.next, firstAct.previous.previous, firstAct.next.next.next, firstAct.previous.previous.previous, firstAct.next.next.next.next];
-					game.gameDraw(firstAct);
-					game.phaseLoopJiange();
-				} else if (_status.mode == "three") {
-					var firstAct;
-					if (_status.color) {
-						firstAct = game.enemyZhu;
-					} else {
-						firstAct = game.friendZhu;
-					}
-					game.gameDraw(firstAct, 4);
-					game.addGlobalSkill("autoswap");
-					if (lib.config.show_handcardbutton) {
-						ui.versushs = ui.create.system("手牌", null, true);
-						lib.setPopped(ui.versushs, game.versusHoverHandcards, 220);
-					}
-					game.phaseLoopThree(firstAct);
-				} else {
-					var firstAct;
-					if (lib.storage.zhu) {
-						_status.currentSide = true;
-						firstAct = _status.currentSide == game.me.side ? game.friendZhu : game.enemyZhu;
-					} else {
-						if (!lib.storage.cross_seat && !lib.storage.random_seat && lib.storage.number > 1) {
-							for (var i = 0; i < game.players.length - 1; i++) {
-								if (game.players[i].side != game.players[i + 1].side) {
-									var actcount;
-									if (Math.random() < 0.5) {
-										actcount = i;
-									} else {
-										if (i >= lib.storage.number) {
-											actcount = i - lib.storage.number;
-										} else {
-											actcount = i + lib.storage.number;
-										}
-									}
-									if (actcount > 0) {
-										actcount--;
-									} else {
-										actcount = game.players.length - 1;
-									}
-									firstAct = game.players[actcount];
-									break;
-								}
-							}
+			},
+			async (event, trigger, player) => {
+				const playback = localStorage.getItem(`${lib.configprefix}playback`);
+				if (playback) {
+					ui.create.me();
+					ui.arena.style.display = "none";
+					ui.system.style.display = "none";
+					_status.playback = playback;
+					localStorage.removeItem(`${lib.configprefix}playback`);
+					const store = lib.db.transaction(["video"], "readwrite").objectStore("video");
+					store.get(parseInt(playback)).onsuccess = e => {
+						if (e.target.result) {
+							game.playVideoContent(e.target.result.video);
 						} else {
-							firstAct = game.players[Math.floor(Math.random() * game.players.length)];
+							alert("播放失败：找不到录像");
+							game.reload();
+						}
+					};
+					event.finish();
+					return;
+				}
+				if (_status.connectMode) {
+					game.waitForPlayer(() => {
+						switch (lib.configOL.versus_mode) {
+							case "1v1":
+								lib.configOL.number = 2;
+								break;
+							case "2v2":
+								lib.configOL.number = 4;
+								break;
+							case "3v3":
+								lib.configOL.number = 6;
+								break;
+							case "4v4":
+							case "guandu":
+								lib.configOL.number = 8;
+								break;
+						}
+					});
+				} else if (_status.mode === "jiange" || _status.mode === "siguo" || _status.mode === "four" || _status.mode === "guandu") {
+					if (_status.mode === "four" && !get.config("enable_all_cards_four")) {
+						lib.card.list = lib.cardsFour;
+						game.fixedPile = true;
+					} else if (_status.mode === "siguo") {
+						for (const card of lib.card.list) {
+							switch (card[2]) {
+								case "tao":
+									card[2] = "zong";
+									break;
+								case "jiu":
+									card[2] = "xionghuangjiu";
+									break;
+								case "wuzhong":
+									card[2] = "tongzhougongji";
+									break;
+								case "wugu":
+								case "taoyuan":
+									card[2] = "lizhengshangyou";
+									break;
+							}
+						}
+					} else if (_status.mode === "guandu") {
+						for (let i = 0; i < lib.card.list.length; i++) {
+							switch (lib.card.list[i][2]) {
+								case "jiu":
+									lib.card.list[i][2] = "xujiu";
+									break;
+								case "wugu":
+									lib.card.list[i][2] = "tunliang";
+									break;
+								case "nanman":
+									lib.card.list[i][2] = "lulitongxin";
+									break;
+								case "taoyuan":
+								case "shandian":
+									lib.card.list[i][2] = "yuanjun";
+									break;
+								case "muniu":
+									lib.card.list.splice(i--, 1);
+									break;
+							}
 						}
 					}
-					game.gameDraw(firstAct, 4);
-					_status.first_less = true;
-					_status.round = 0;
-					if (lib.storage.single_control) {
+					game.prepareArena(8);
+				} else if (_status.mode === "two") {
+					game.prepareArena(4);
+				} else if (_status.mode === "endless") {
+					game.prepareArena(2);
+				} else if (_status.mode === "three") {
+					if (lib.character.wenpin) {
+						lib.character.wenpin[3] = ["zhenwei_three"];
+					}
+					if (lib.character.zhugejin) {
+						lib.character.zhugejin[3] = ["hongyuan", "huanshi_three", "mingzhe"];
+					}
+					if (lib.character.key_yuzuru) {
+						lib.character.key_yuzuru[2] = 4;
+						lib.character.key_yuzuru[3] = ["yuzuru_bujin"];
+					}
+					if (lib.character.guanyu) {
+						lib.character.guanyu[3] = ["wusheng", "zhongyi"];
+					}
+					if (lib.character.lvbu) {
+						lib.character.lvbu[3] = ["wushuang", "zhanshen"];
+					}
+					if (lib.character.xiahoudun) {
+						lib.character.xiahoudun[3] = ["ganglie_three"];
+					}
+					if (!get.config("enable_all_cards")) {
+						lib.translate.wuzhong_info += "若对方存活角色多于己方，则额外摸一张牌";
+						lib.translate.zhuge_info = "锁定技，出牌阶段，你使用【杀】的次数上限+3";
+						lib.card.list = lib.cardsThree;
+						game.fixedPile = true;
+					} else if (Array.isArray(lib.config.forbidthreecard)) {
+						for (let i = 0; i < lib.card.list.length; i++) {
+							if (lib.config.forbidthreecard.includes(lib.card.list[i][2])) {
+								lib.card.list.splice(i--, 1);
+							}
+						}
+					}
+					ui.create.cardsAsync();
+					game.finishCards();
+				} else {
+					if (lib.storage.choice == undefined) {
+						game.save("choice", 20);
+					}
+					if (lib.storage.zhu == undefined) {
+						game.save("zhu", true);
+					}
+					if (lib.storage.noreplace_end == undefined) {
+						game.save("noreplace_end", true);
+					}
+					if (get.config("first_less") == undefined) {
+						game.saveConfig("first_less", true, true);
+					}
+					if (lib.storage.autoreplaceinnerhtml == undefined) {
+						game.save("autoreplaceinnerhtml", true);
+					}
+					if (lib.storage.single_control == undefined) {
+						game.save("single_control", true);
+					}
+					if (lib.storage.number == undefined) {
+						game.save("number", 3);
+					}
+					if (lib.storage.versus_reward == undefined) {
+						game.save("versus_reward", 3);
+					}
+					if (lib.storage.versus_punish == undefined) {
+						game.save("versus_punish", "弃牌");
+					}
+					if (lib.storage.replace_number == undefined) {
+						game.save("replace_number", 3);
+					}
+
+					switch (lib.storage.seat_order) {
+						case "交叉":
+							lib.storage.cross_seat = true;
+							lib.storage.random_seat = false;
+							break;
+						case "随机":
+							lib.storage.cross_seat = false;
+							lib.storage.random_seat = true;
+							break;
+						default:
+							lib.storage.cross_seat = false;
+							lib.storage.random_seat = false;
+					}
+					game.save("only_zhu", true);
+					ui.wuxie.hide();
+					ui.create.cardsAsync();
+					game.finishCards();
+				}
+				// game.delay();
+			},
+			async (event, trigger, player) => {
+				if (!_status.connectMode && _status.brawl && _status.brawl.chooseCharacterBefore) {
+					_status.brawl.chooseCharacterBefore();
+				}
+				if (_status.connectMode) {
+					if (_status.mode === "guandu") {
+						for (let i = 0; i < lib.card.list.length; i++) {
+							switch (lib.card.list[i][2]) {
+								case "jiu":
+									lib.card.list[i][2] = "xujiu";
+									break;
+								case "wugu":
+									lib.card.list[i][2] = "tunliang";
+									break;
+								case "nanman":
+									lib.card.list[i][2] = "lulitongxin";
+									break;
+								case "taoyuan":
+								case "shandian":
+									lib.card.list[i][2] = "yuanjun";
+									break;
+								case "muniu":
+									lib.card.list.splice(i--, 1);
+									break;
+							}
+						}
+					}
+					if (lib.configOL.versus_mode === "1v1") {
+						game.randomMapOL("hidden");
+					} else {
+						game.randomMapOL();
+					}
+				} else if (_status.mode === "guandu") {
+					let list = [
+						["zhu", "ezhu", "ezhong", "zhong", "ezhong", "zhong", "zhong", "ezhong"],
+						["zhu", "ezhong", "zhong", "ezhu", "ezhong", "zhong", "ezhong", "zhong"],
+						["zhu", "ezhong", "zhong", "ezhong", "zhong", "ezhong", "zhong", "ezhu"],
+						["zhu", "ezhu", "zhong", "ezhong", "zhong", "ezhong", "zhong", "ezhong"],
+						["zhu", "ezhong", "zhong", "ezhong", "zhong", "ezhu", "zhong", "ezhong"],
+					].randomGet();
+
+					const side = true;
+					const num = Math.floor(Math.random() * 8);
+					list = list.splice(8 - num).concat(list);
+					_status.firstAct = game.players[num];
+					for (let i = 0; i < 8; i++) {
+						if (list[i][0] === "e") {
+							game.players[i].side = side;
+							game.players[i].identity = list[i].slice(1);
+						} else {
+							game.players[i].side = !side;
+							game.players[i].identity = list[i];
+						}
+						if (game.players[i].identity === "zhu") {
+							game[`${game.players[i].side}Zhu`] = game.players[i];
+							game.players[i].isZhu = true;
+						}
+						game.players[i].setIdentity(game.players[i].identity);
+						game.players[i].node.identity.dataset.color = get.translation(`${game.players[i].side}Color`);
+						game.players[i].getId();
+					}
+					game.chooseCharacterGuandu();
+				} else if (_status.mode === "four") {
+					_status.fouralign = [0, 1, 2, 3, 4];
+					let list = [
+						["zhong", "ezhong", "ezhong", "zhong", "zhong", "ezhong", "ezhong", "zhong"],
+						["zhong", "ezhong", "zhong", "ezhong", "ezhong", "zhong", "ezhong", "zhong"],
+						["zhong", "ezhong", "ezhong", "zhong", "ezhong", "zhong", "zhong", "ezhong"],
+						["zhong", "ezhong", "zhong", "ezhong", "zhong", "ezhong", "zhong", "ezhong"],
+						["zhong", "ezhong", "ezhong", "zhong", "ezhong", "zhong", "ezhong", "zhong"],
+					][_status.fouralign.randomRemove()];
+					let rand1 = Math.floor(Math.random() * 4);
+					let rand2 = Math.floor(Math.random() * 4);
+					for (let i = 0; i < list.length; i++) {
+						if (list[i] === "zhong") {
+							if (rand1 === 0) {
+								list[i] = "zhu";
+							}
+							rand1--;
+						} else {
+							if (rand2 === 0) {
+								list[i] = "ezhu";
+							}
+							rand2--;
+						}
+					}
+
+					const side = Math.random() < 0.5;
+					const num = Math.floor(Math.random() * 8);
+					list = list.splice(8 - num).concat(list);
+					_status.firstAct = game.players[num];
+					for (let i = 0; i < 8; i++) {
+						if (list[i][0] === "e") {
+							game.players[i].side = side;
+							game.players[i].identity = list[i].slice(1);
+						} else {
+							game.players[i].side = !side;
+							game.players[i].identity = list[i];
+						}
+						if (game.players[i].identity === "zhu") {
+							game[`${game.players[i].side}Zhu`] = game.players[i];
+							game.players[i].isZhu = true;
+						}
+						game.players[i].setIdentity(game.players[i].identity);
+						game.players[i].node.identity.dataset.color = get.translation(`${game.players[i].side}Color`);
+						game.players[i].getId();
+					}
+					game.chooseCharacterFour();
+				} else if (_status.mode === "two") {
+					for (const current of game.players) {
+						current.getId();
+					}
+					game.chooseCharacterTwo();
+				} else if (_status.mode === "endless") {
+					game.chooseCharacterEndless();
+				} else if (_status.mode === "siguo") {
+					const list = ["wei", "wei", "shu", "shu", "wu", "wu", "qun", "qun"].randomSort();
+					for (let i = 0; i < game.players.length; i++) {
+						game.players[i].side = list[i];
+						game.players[i].identity = list[i];
+						game.players[i].setIdentity(list[i]);
+						game.players[i].node.identity.style.display = "none";
+						game.players[i].getId();
+						game.players[i].node.action.innerHTML = "即将<br>获胜";
+						game.players[i].node.action.style.letterSpacing = "0px";
+						game.players[i].node.action.style.lineHeight = "22px";
+						game.players[i].node.action.style.top = "3px";
+						game.players[i].node.action.style.right = "3px";
+					}
+					game.chooseCharacterSiguo();
+				} else if (_status.mode === "jiange") {
+					const list = ["shumech", "shu", "shuboss", "shu", "wei", "weiboss", "wei", "weimech"];
+					const pos = Math.floor(Math.random() * 8);
+					for (let i = 0; i < 8; i++) {
+						let j = pos + i;
+						if (j >= 8) {
+							j -= 8;
+						}
+						if (list[i][0] === "w") {
+							game.players[j].side = true;
+							game.players[j].setIdentity("wei");
+							game.players[j].identity = "wei";
+						} else {
+							game.players[j].side = false;
+							game.players[j].setIdentity("shu");
+							game.players[j].identity = "shu";
+						}
+						if (list[i].indexOf("mech") !== -1) {
+							game.players[j].type = "mech";
+						} else if (list[i].indexOf("boss") !== -1) {
+							game.players[j].type = "boss";
+						} else {
+							game.players[j].type = "human";
+						}
+						game.players[i].getId();
+					}
+					game.chooseCharacterJiange();
+				} else if (_status.mode === "three") {
+					game.chooseCharacterThree();
+				} else {
+					game.chooseCharacter();
+				}
+			},
+			async (event, trigger, player) => {
+				const players = get.players(lib.sort.position);
+				const info = [];
+				for (const current of players) {
+					info.push({
+						name: current.name1,
+						name2: current.name2,
+						identity: current.node.identity.firstChild.innerHTML,
+						nickname: current.node.nameol.innerHTML,
+						color: current.node.identity.dataset.color,
+					});
+				}
+				_status.videoInited = true;
+				if (_status.mode === "four" || _status.mode === "jiange" || _status.connectMode || _status.mode === "two" || _status.mode === "siguo" || _status.mode === "endless") {
+					info.push(false);
+				} else if (_status.mode === "three") {
+					info.push(true);
+				} else {
+					info.push(lib.storage.single_control && game.players.length >= 4);
+				}
+				game.addVideo("init", null, info);
+				event.trigger("gameStart");
+				if (_status.connectMode) {
+					if (_status.mode === "1v1") {
+						_status.first_less = true;
+						game.gameDraw(_status.firstChoose.next);
+						game.phaseLoop(_status.firstChoose.next);
+					} else if (_status.mode === "2v2" || _status.mode === "3v3") {
+						_status.first_less = true;
+						let firstChoose = _status.firstAct || game.players.randomGet();
+						if (firstChoose.next.side === firstChoose.side) {
+							firstChoose = firstChoose.next;
+						}
+						game.gameDraw(firstChoose, player => {
+							if (lib.configOL.replace_handcard && player === firstChoose.previousSeat) {
+								return 5;
+							}
+							return 4;
+						});
+						game.phaseLoop(firstChoose);
+					} else if (_status.mode === "guandu") {
+						game.gameDraw(_status.firstAct);
+						game.phaseLoop(_status.firstAct);
+					} else if (_status.mode === "4v4") {
+						game.gameDraw(_status.firstAct, player => {
+							if (player === _status.firstAct.previousSeat) {
+								return 5;
+							}
+							return 4;
+						});
+						game.replaceHandcards(_status.firstAct.previous, _status.firstAct.previous.previous);
+						game.phaseLoop(_status.firstAct);
+					}
+					event.finish();
+				} else {
+					if (_status.mode === "guandu") {
+						game.gameDraw(_status.firstAct, 4);
+						game.phaseLoop(_status.firstAct);
+					} else if (_status.mode === "two") {
+						_status.first_less = true;
+						_status.first_less_forced = true;
+						const firstChoose = _status.firstAct;
+						game.gameDraw(firstChoose, player => {
+							if (player === _status.firstAct.previousSeat && get.config("replace_handcard_two")) {
+								return 5;
+							}
+							return 4;
+						});
+						game.phaseLoop(firstChoose);
+					} else if (_status.mode === "endless") {
+						_status.first_less = true;
+						_status.first_less_forced = true;
+						const firstChoose = _status.firstAct;
+						game.gameDraw(firstChoose);
+						game.phaseLoop(firstChoose);
+					} else if (_status.mode === "four") {
+						game.gameDraw(_status.firstAct, player => {
+							if (player === _status.firstAct.previousSeat) {
+								return 5;
+							}
+							return 4;
+						});
+						if (game.me === _status.firstAct.previous || game.me === _status.firstAct.previous.previous) {
+							game.me.chooseBool({ prompt: "是否置换手牌？" });
+							event.replaceCard = true;
+						}
+					} else if (_status.mode === "siguo") {
+						_status.siguoai = [
+							[-7.5, -2, 0, -4.5, -6, -7.5],
+							[-7.5, -2, 0, -4.5, -6, -7.5],
+							[-6, -6, -1, -4.5, -6, -7.5],
+							[-6, -3, 0, -3, -3, -6],
+							[-6, -3, 0, -3, -3, -6],
+							[-6, -6, -6, -6, -6, -6],
+						].randomGet();
+						const firstChoose = _status.firstAct;
+						game.gameDraw(firstChoose);
+						game.phaseLoop(firstChoose);
+					} else if (_status.mode === "jiange") {
+						let firstAct;
+						for (const current of game.players) {
+							if (current.type === "mech" && current.group === "wei") {
+								firstAct = current;
+								break;
+							}
+						}
+						_status.actlist = [firstAct, firstAct.next, firstAct.previous, firstAct.next.next, firstAct.previous.previous, firstAct.next.next.next, firstAct.previous.previous.previous, firstAct.next.next.next.next];
+						game.gameDraw(firstAct);
+						game.phaseLoopJiange();
+					} else if (_status.mode === "three") {
+						let firstAct;
+						if (_status.color) {
+							firstAct = game.enemyZhu;
+						} else {
+							firstAct = game.friendZhu;
+						}
+						game.gameDraw(firstAct, 4);
 						game.addGlobalSkill("autoswap");
-						if (game.players.length > 2 && lib.config.show_handcardbutton) {
+						if (lib.config.show_handcardbutton) {
 							ui.versushs = ui.create.system("手牌", null, true);
 							lib.setPopped(ui.versushs, game.versusHoverHandcards, 220);
 						}
-					}
-					_status.enemyCount = ui.create.system("杀敌: " + get.cnNumber(0, true), null, true);
-					_status.friendCount = ui.create.system("阵亡: " + get.cnNumber(0, true), null, true);
-
-					lib.setPopped(_status.friendCount, game.versusHoverFriend);
-					lib.setPopped(_status.enemyCount, game.versusHoverEnemy);
-
-					if (lib.storage.zhu) {
-						game.versusPhaseLoop(firstAct);
+						game.phaseLoopThree(firstAct);
 					} else {
+						let firstAct;
+						if (lib.storage.zhu) {
+							_status.currentSide = true;
+							firstAct = _status.currentSide === game.me.side ? game.friendZhu : game.enemyZhu;
+						} else {
+							if (!lib.storage.cross_seat && !lib.storage.random_seat && lib.storage.number > 1) {
+								for (let i = 0; i < game.players.length - 1; i++) {
+									if (game.players[i].side !== game.players[i + 1].side) {
+										let actcount;
+										if (Math.random() < 0.5) {
+											actcount = i;
+										} else {
+											if (i >= lib.storage.number) {
+												actcount = i - lib.storage.number;
+											} else {
+												actcount = i + lib.storage.number;
+											}
+										}
+										if (actcount > 0) {
+											actcount--;
+										} else {
+											actcount = game.players.length - 1;
+										}
+										firstAct = game.players[actcount];
+										break;
+									}
+								}
+							} else {
+								firstAct = game.players[Math.floor(Math.random() * game.players.length)];
+							}
+						}
+						game.gameDraw(firstAct, 4);
+						_status.first_less = true;
+						_status.round = 0;
+						if (lib.storage.single_control) {
+							game.addGlobalSkill("autoswap");
+							if (game.players.length > 2 && lib.config.show_handcardbutton) {
+								ui.versushs = ui.create.system("手牌", null, true);
+								lib.setPopped(ui.versushs, game.versusHoverHandcards, 220);
+							}
+						}
+						_status.enemyCount = ui.create.system(`杀敌: ${get.cnNumber(0, true)}`, null, true);
+						_status.friendCount = ui.create.system(`阵亡: ${get.cnNumber(0, true)}`, null, true);
+
+						lib.setPopped(_status.friendCount, game.versusHoverFriend);
+						lib.setPopped(_status.enemyCount, game.versusHoverEnemy);
+
 						game.versusPhaseLoop(firstAct);
 					}
+					if (_status.mode !== "four") {
+						event.finish();
+					}
 				}
-				if (_status.mode != "four") {
-					event.finish();
+			},
+			async (event, trigger, player, result) => {
+				if (event.replaceCard && result.bool) {
+					const hs = game.me.getCards("h");
+					for (const card of hs) {
+						card.discard(false);
+					}
+					game.me.directgain(get.cards(hs.length));
 				}
-			}
-			"step 4";
-			if (event.replaceCard && result.bool) {
-				var hs = game.me.getCards("h");
-				for (var i = 0; i < hs.length; i++) {
-					hs[i].discard(false);
+				if (_status.ladder) {
+					lib.storage.ladder.current -= 40;
+					_status.ladder_tmp = true;
+					game.save("ladder", lib.storage.ladder);
+					game.addGlobalSkill("versus_ladder");
 				}
-				game.me.directgain(get.cards(hs.length));
-			}
-			if (_status.ladder) {
-				lib.storage.ladder.current -= 40;
-				_status.ladder_tmp = true;
-				game.save("ladder", lib.storage.ladder);
-				game.addGlobalSkill("versus_ladder");
-			}
-			game.phaseLoop(_status.firstAct);
-		},
+				game.phaseLoop(_status.firstAct);
+			},
+		],
 		game: {
 			getLadderName: function (score) {
 				if (score < 900) {
