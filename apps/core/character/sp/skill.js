@@ -45767,7 +45767,7 @@ const skills = {
 		audio: 2,
 		trigger: { global: "dieAfter" },
 		forced: true,
-		content() {
+		async content(event, trigger, player) {
 			player.gainMaxHp();
 			player.recover();
 		},
