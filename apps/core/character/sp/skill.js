@@ -18577,7 +18577,7 @@ const skills = {
 				},
 				forced: true,
 				locked: false,
-				content() {
+				async content(event, trigger, player) {
 					player.removeSkill("olgangshu_buff");
 					game.log(player, "重置了", "#g【刚述】", "的数值");
 				},
