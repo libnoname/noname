@@ -43033,7 +43033,7 @@ const skills = {
 		filter(event, player) {
 			return event.targets.includes(player) && player != event.player && event.card.name == "sha" && player.hp < player.countCards("h");
 		},
-		content() {},
+		async content(event, trigger, player) {},
 		ai: { neg: true },
 		gainable: true,
 		subSkill: {
