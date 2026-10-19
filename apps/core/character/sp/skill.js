@@ -19324,9 +19324,9 @@ const skills = {
 		},
 		direct: true,
 		clearTime: true,
-		content() {
-			var next = player.chooseToUse();
-			next.set("openskilldialog", "逆乱：是否将一张黑色牌当作【杀】对" + get.translation(trigger.player) + "使用？");
+		async content(event, trigger, player) {
+			const next = player.chooseToUse();
+			next.set("openskilldialog", `逆乱：是否将一张黑色牌当作【杀】对${get.translation(trigger.player)}使用？`);
 			next.set("norestore", true);
 			next.set("_backupevent", `${event.name}_backup`);
 			next.set("custom", {
@@ -19338,7 +19338,7 @@ const skills = {
 			next.set("complexTarget", true);
 			next.set("complexSelect", true);
 			next.set("filterTarget", function (card, player, target) {
-				if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
+				if (target !== _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
 					return false;
 				}
 				return lib.filter.targetEnabled.apply(this, arguments);
