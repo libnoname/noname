@@ -37954,7 +37954,7 @@ const skills = {
 		filter(event) {
 			return event.changedHp < 0;
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.removeSkill("xiahui2");
 		},
 		onremove(player) {
