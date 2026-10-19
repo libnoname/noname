@@ -7217,21 +7217,22 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
-					"step 0";
-					player.turnOver();
-					"step 1";
-					var list = game.filterPlayer(function (current) {
-						return current.isDamaged() && current.isFriendOf(player);
-					});
-					player.line(list, "green");
-					event.targets = list;
-					"step 2";
-					if (event.targets.length) {
-						event.targets.shift().recover();
-						event.redo();
-					}
-				},
+				content: [
+					async (event, trigger, player, result) => {
+						await player.turnOver();
+					},
+					async (event, trigger, player, result) => {
+						const targets = game.filterPlayer(current => current.isDamaged() && current.isFriendOf(player));
+						player.line(targets, "green");
+						while (targets.length) {
+							await targets.shift().recover();
+
+							if ((player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+								return;
+							}
+						}
+					},
+				],
 				ai: {
 					threaten: 1.5,
 				},
