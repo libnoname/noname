@@ -6896,28 +6896,36 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
-					"step 0";
-					var noneed = trigger.card.name == "tao" && trigger.targets[0] == player && player.hp == player.maxHp - 1;
-					player.chooseTarget(get.prompt("boss_qiwu"), function (card, player, target) {
-						return target.hp < target.maxHp && target.isFriendOf(player);
-					}).ai = function (target) {
-						var num = get.attitude(player, target);
-						if (num > 0) {
-							if (noneed && player == target) {
-								num = 0.5;
-							} else if (target.hp == 1) {
-								num += 3;
-							} else if (target.hp == 2) {
-								num += 1;
-							}
-						}
-						return num;
-					};
-					"step 1";
+				async content(event, trigger, player) {
+					const noneed = trigger.card.name === "tao" && trigger.targets[0] === player && player.hp === player.maxHp - 1;
+					const result = await player
+						.chooseTarget({
+							prompt: get.prompt("boss_qiwu"),
+							filterTarget: (card, player, target) => {
+								return target.hp < target.maxHp && target.isFriendOf(player);
+							},
+							ai: target => {
+								let num = get.attitude(player, target);
+								if (num > 0) {
+									if (noneed && player === target) {
+										num = 0.5;
+									} else if (target.hp === 1) {
+										num += 3;
+									} else if (target.hp === 2) {
+										num += 1;
+									}
+								}
+								return num;
+							},
+						})
+						.forResult();
+					if ((player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+						return;
+					}
+
 					if (result.bool) {
 						player.logSkill("qiwu", result.targets);
-						result.targets[0].recover();
+						await result.targets[0].recover();
 					}
 				},
 				ai: {
