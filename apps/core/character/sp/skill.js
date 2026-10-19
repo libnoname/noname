@@ -16358,7 +16358,7 @@ const skills = {
 				firstDo: true,
 				forced: true,
 				popup: false,
-				content() {
+				async content(event, trigger, player) {
 					player.addTempSkill("olxiangxv_in");
 				},
 			},
