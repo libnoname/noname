@@ -31043,7 +31043,7 @@ const skills = {
 					}
 					return player.countMark("quxi_gain") - player.countMark("quxi_lose") != 0;
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.num += player.countMark("quxi_gain") - player.countMark("quxi_lose");
 				},
 			},
