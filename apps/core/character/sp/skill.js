@@ -29568,7 +29568,7 @@ const skills = {
 				filter(event, player) {
 					return event.player != player && event.card.name == player.storage.olxianlve;
 				},
-				content() {
+				async content(event, trigger, player) {
 					if (!trigger.olxianlve_map) {
 						trigger.olxianlve_map = {};
 					}
