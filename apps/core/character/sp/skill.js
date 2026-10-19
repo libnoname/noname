@@ -17783,7 +17783,7 @@ const skills = {
 				},
 				forced: true,
 				usable: 1,
-				content() {
+				async content(event, trigger, player) {
 					player.unmarkSkill("hezhong_0");
 					trigger.effectCount++;
 					game.log(trigger.card, "额外结算一次");
