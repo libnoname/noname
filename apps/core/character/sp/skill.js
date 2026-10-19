@@ -39467,8 +39467,8 @@ const skills = {
 		init2(player) {
 			player.markSkill("luanzhan");
 		},
-		content() {
-			if (typeof player.storage.luanzhan == "number") {
+		async content(event, trigger, player) {
+			if (typeof player.storage.luanzhan === "number") {
 				player.storage.luanzhan += trigger.num;
 			} else {
 				player.storage.luanzhan = trigger.num;
