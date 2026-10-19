@@ -44653,7 +44653,7 @@ const skills = {
 			return event.hasNature("fire");
 		},
 		logTarget: "player",
-		content() {
+		async content(event, trigger, player) {
 			if (!player.storage.huxiao3) {
 				player.storage.huxiao3 = [];
 			}
