@@ -37774,7 +37774,7 @@ const skills = {
 		filter(event, player) {
 			return !event.numFixed;
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.draw(game.countGroup());
 			trigger.changeToZero();
 		},
