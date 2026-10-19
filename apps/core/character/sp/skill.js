@@ -32667,7 +32667,7 @@ const skills = {
 				filter(event, player) {
 					return event.skill == "spniluan" && event.addCount !== false && player.getHistory("sourceDamage", card => card.card == event.card).length == 0;
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.addCount = false;
 					if (player.stat[player.stat.length - 1].card.sha > 0) {
 						player.stat[player.stat.length - 1].card.sha--;
