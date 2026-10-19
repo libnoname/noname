@@ -7844,8 +7844,9 @@ export default () => {
 				enable: true,
 				selectTarget: [1, 3],
 				filterTarget: true,
-				content: function () {
-					target.draw();
+				async content(event, trigger, player) {
+					const { target } = event;
+					await target.draw();
 				},
 				ai: {
 					basic: {
