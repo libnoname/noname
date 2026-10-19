@@ -21972,7 +21972,7 @@ const skills = {
 					const card = event.getParent(2).card;
 					return card?.storage?.olhuiyun;
 				},
-				content() {
+				async content(event, trigger, player) {
 					game.broadcastAll(cards => {
 						cards.forEach(card => card.addGaintag("olhuiyun_tag"));
 					}, trigger.cards);
