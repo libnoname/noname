@@ -7137,22 +7137,19 @@ export default () => {
 				},
 				forced: true,
 				locked: false,
-				content: function () {
-					"step 0";
-					var targets = game.filterPlayer(function (current) {
-						return current.isEnemyOf(player);
-					});
+				async content(event, trigger, player) {
+					const targets = game.filterPlayer(current => current.isEnemyOf(player));
 					targets.sort(lib.sort.seat);
-					event.targets = targets;
 					player.line(targets, "thunder");
-					event.num = targets.length;
-					"step 1";
-					if (event.targets.length) {
-						event.targets.shift().damage("thunder");
-						event.redo();
+					const num = targets.length;
+					while (targets.length) {
+						await targets.shift().damage({ nature: "thunder" });
+
+						if ((player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+							return;
+						}
 					}
-					"step 2";
-					player.recover(event.num);
+					await player.recover(num);
 				},
 				ai: {
 					threaten: function (player, target) {
