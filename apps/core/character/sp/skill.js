@@ -32877,7 +32877,7 @@ const skills = {
 				filter(event, player) {
 					return !player.getHistory("sourceDamage").length;
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.draw();
 				},
 			},
