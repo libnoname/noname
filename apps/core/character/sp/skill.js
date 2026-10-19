@@ -35581,8 +35581,8 @@ const skills = {
 		filter(event, player) {
 			return event.player == player || (player.storage.xianfu2 && player.storage.xianfu2.includes(event.player));
 		},
-		content() {
-			if (player == trigger.player) {
+		async content(event, trigger, player) {
+			if (player === trigger.player) {
 				lib.skill.xianfu2.onremove(player);
 			} else {
 				player.storage.xianfu2.remove(event.player);
