@@ -34596,8 +34596,8 @@ const skills = {
 		},
 		forced: true,
 		popup: false,
-		content() {
-			player.gain(trigger.cards.filterInD(), "gain2");
+		async content(event, trigger, player) {
+			player.gain({ cards: trigger.cards.filterInD(), animate: "gain2" });
 		},
 	},
 	//新大小乔
