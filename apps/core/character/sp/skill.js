@@ -43227,7 +43227,7 @@ const skills = {
 			});
 		},
 		forced: true,
-		content() {
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			player.gainMaxHp();
 			player.recover();
