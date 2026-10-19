@@ -15870,8 +15870,8 @@ const skills = {
 				},
 				forced: true,
 				popup: false,
-				content() {
-					if (trigger.name == "gain") {
+				async content(event, trigger, player) {
+					if (trigger.name === "gain") {
 						trigger.gaintag.add("olchongshen");
 					} else {
 						player.removeGaintag("olchongshen");
