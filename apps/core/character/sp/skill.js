@@ -41708,8 +41708,8 @@ const skills = {
 		},
 		forced: true,
 		audio: false,
-		content() {
-			if (typeof player.storage.fengpo == "number") {
+		async content(event, trigger, player) {
+			if (typeof player.storage.fengpo === "number") {
 				trigger.num += player.storage.fengpo;
 			}
 		},
