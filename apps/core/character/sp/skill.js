@@ -45100,9 +45100,10 @@ const skills = {
 					return 0;
 			}
 		},
-		content() {
+		async content(event, trigger, player) {
+			const { target } = event;
 			player.addTempSkill("duwu2");
-			target.damage("nocard");
+			target.damage({ nocard: true });
 		},
 		ai: {
 			damage: true,
