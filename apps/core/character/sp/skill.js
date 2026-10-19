@@ -38409,7 +38409,7 @@ const skills = {
 		filter(event, player) {
 			return event.name != "phase" || game.phaseNumber == 0;
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.draw(player.maxHp);
 		},
 	},
