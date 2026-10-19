@@ -46569,11 +46569,11 @@ const skills = {
 						})
 					);
 				},
-				contentBefore() {
+				async contentBefore(event, trigger, player) {
 					player.awakenSkill(event.skill);
-					var skill = lib.skill.jianjie;
-					var huoji = player.getStorage("jianjie_huoji").slice(0),
-						lianhuan = player.getStorage("jianjie_lianhuan").slice(0);
+					const skill = lib.skill.jianjie;
+					const huoji = player.getStorage("jianjie_huoji").slice(0);
+					const lianhuan = player.getStorage("jianjie_lianhuan").slice(0);
 					huoji.forEach(source => {
 						skill.removeMark("huoji", source, player, true);
 					});
