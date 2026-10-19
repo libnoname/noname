@@ -7696,29 +7696,33 @@ export default () => {
 			boss_lingfeng: {
 				audio: 2,
 				trigger: { player: "phaseDrawBefore" },
-				content: function () {
-					"step 0";
-					trigger.cancel();
-					event.cards = get.cards(2);
-					player.showCards(event.cards);
-					"step 1";
-					if (get.color(event.cards[0]) != get.color(event.cards[1])) {
-						player.chooseTarget("是否令一名敌方角色失去1点体力？", function (card, player, target) {
-							return !target.isFriendOf(player);
-						}).ai = function (target) {
-							return -get.attitude(player, target);
-						};
-					}
-					"step 2";
-					if (result.bool && result.targets && result.targets.length) {
-						player.line(result.targets, "green");
-						result.targets[0].loseHp();
-					}
-					"step 3";
-					player.gain(event.cards);
-					player.$draw(event.cards);
-					game.delay();
-				},
+				content: [
+					async (event, trigger, player, result) => {
+						trigger.cancel();
+						event.cards = get.cards(2);
+						await player.showCards(event.cards);
+					},
+					async (event, trigger, player, result) => {
+						if (get.color(event.cards[0]) !== get.color(event.cards[1])) {
+							player.chooseTarget({
+								prompt: "是否令一名敌方角色失去1点体力？",
+								filterTarget: (card, player, target) => !target.isFriendOf(player),
+								ai: target => -get.attitude(player, target),
+							});
+						}
+					},
+					async (event, trigger, player, result) => {
+						if (result.bool && result.targets && result.targets.length) {
+							player.line(result.targets, "green");
+							await result.targets[0].loseHp();
+						}
+					},
+					async (event, trigger, player, result) => {
+						player.gain({ cards: event.cards });
+						player.$draw(event.cards);
+						game.delay();
+					},
+				],
 				ai: {
 					threaten: 1.4,
 				},
