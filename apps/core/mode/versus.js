@@ -7961,8 +7961,9 @@ export default () => {
 				modTarget: function (card, player, target) {
 					return target.hp < target.maxHp;
 				},
-				content: function () {
-					target.recover();
+				async content(event, trigger, player) {
+					const { target } = event;
+					await target.recover();
 				},
 				ai: {
 					basic: {
