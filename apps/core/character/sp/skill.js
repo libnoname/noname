@@ -12440,7 +12440,7 @@ const skills = {
 					return !event.numFixed;
 				},
 				forced: true,
-				content() {
+				async content(event, trigger, player) {
 					trigger.num -= player.countMark(event.name);
 					player.removeSkill(event.name);
 				},
