@@ -46219,15 +46219,12 @@ const skills = {
 			return bool1 || bool2;
 		},
 		forced: true,
-		content() {
+		async content(event, trigger, player) {
 			if (!player.hasSkill("xinfu_xionghuo") || player.countMark("xinfu_xionghuo") < 3) {
 				player.addMark("xinfu_xionghuo", 1);
 			}
-			if (trigger.player.hp < 0 && get.itemtype(trigger.parent.cards) == "cards" && trigger.parent.cards.some(card => get.position(card, true) == "o")) {
-				player.gain(
-					trigger.parent.cards.filter(card => get.position(card, true) == "o"),
-					"gain2"
-				);
+			if (trigger.player.hp < 0 && get.itemtype(trigger.parent.cards) === "cards" && trigger.parent.cards.some(card => get.position(card, true) === "o")) {
+				player.gain({ cards: trigger.parent.cards.filter(card => get.position(card, true) === "o"), animate: "gain2" });
 			}
 		},
 		ai: {
