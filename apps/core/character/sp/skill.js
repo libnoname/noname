@@ -46034,7 +46034,8 @@ const skills = {
 		filterTarget(card, player, target) {
 			return player != target && !target.hasMark("xinfu_xionghuo");
 		},
-		content() {
+		async content(event, trigger, player) {
+			const { target } = event;
 			player.removeMark("xinfu_xionghuo", 1);
 			target.addMark("xinfu_xionghuo", 1);
 		},
