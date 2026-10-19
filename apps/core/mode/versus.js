@@ -7771,11 +7771,11 @@ export default () => {
 					}
 					return event.source == game.me || event.player == game.me;
 				},
-				content: function () {
+				async content(event, trigger, player) {
 					switch (event.triggername) {
 						case "damageEnd": {
-							if (trigger.source.side != trigger.player.side) {
-								if (trigger.source == game.me) {
+							if (trigger.source.side !== trigger.player.side) {
+								if (trigger.source === game.me) {
 									_status.ladder_mmr += 0.5 * Math.max(1, trigger.num);
 								} else {
 									_status.ladder_mmr += 0.2 * Math.max(1, trigger.num);
@@ -7784,9 +7784,9 @@ export default () => {
 							break;
 						}
 						case "recoverEnd": {
-							if (trigger.source != trigger.player) {
-								if (trigger.source == game.me) {
-									if (trigger.player.side == game.me.side) {
+							if (trigger.source !== trigger.player) {
+								if (trigger.source === game.me) {
+									if (trigger.player.side === game.me.side) {
 										_status.ladder_mmr += 0.5 * trigger.num;
 									} else {
 										_status.ladder_mmr -= 0.3 * trigger.num;
@@ -7798,22 +7798,22 @@ export default () => {
 							break;
 						}
 						case "dieEnd": {
-							if (trigger.source == game.me && trigger.player.side != game.me.side) {
+							if (trigger.source === game.me && trigger.player.side !== game.me.side) {
 								_status.ladder_mmr += 2;
 							}
 							break;
 						}
 						case "gainEnd": {
 							if (trigger.cards && trigger.cards.length) {
-								if (trigger.source == game.me && trigger.player != game.me) {
-									if (trigger.player.side == game.me.side) {
+								if (trigger.source === game.me && trigger.player !== game.me) {
+									if (trigger.player.side === game.me.side) {
 										_status.ladder_mmr += 0.3 * trigger.cards.length;
 									} else {
 										_status.ladder_mmr -= 0.1 * trigger.cards.length;
 									}
 								} else {
 									if (trigger.source) {
-										if (trigger.source.side != game.me.side) {
+										if (trigger.source.side !== game.me.side) {
 											_status.ladder_mmr += 0.3 * trigger.cards.length;
 										}
 									} else {
@@ -7824,7 +7824,7 @@ export default () => {
 							break;
 						}
 						case "phaseDiscardEnd": {
-							if (trigger.player == player) {
+							if (trigger.player === player) {
 								if (trigger.cards && trigger.cards.length) {
 									_status.ladder_mmr -= 0.2 * trigger.cards.length;
 								}
