@@ -8508,14 +8508,12 @@ export default () => {
 									} else {
 										var next = game.createEvent("replacePlayer");
 										next.source = player;
-										next.setContent(function () {
+										next.setContent(async (event, trigger, player) => {
 											event.dialog = ui.create.dialog("选择替补角色", [_status.friend, "character"]);
-											event.filterButton = function () {
-												return true;
-											};
+											event.filterButton = () => true;
 											event.player = event.source;
 											event.forced = true;
-											event.custom.replace.confirm = function () {
+											event.custom.replace.confirm = () => {
 												event.result = ui.selected.buttons[0].link;
 												event.dialog.close();
 												if (ui.confirm) {
@@ -8525,7 +8523,7 @@ export default () => {
 												game.resume();
 												game.uncheck();
 											};
-											event.switchToAuto = function () {
+											event.switchToAuto = () => {
 												event.result = _status.friend.randomGet();
 												event.dialog.close();
 												if (ui.confirm) {
