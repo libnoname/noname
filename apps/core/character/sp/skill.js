@@ -45387,11 +45387,11 @@ const skills = {
 			}
 		},
 		derivation: ["oltiaoxin", "olpaoxiao", "xinshensu"],
-		content() {
+		async content(event, trigger, player) {
 			player.removeAdditionalSkill("baobian");
-			var list = [];
+			const list = [];
 			if (player.hp <= 3) {
-				if (trigger.num != undefined && trigger.num < 0 && player.hp - trigger.num > 1) {
+				if (trigger.num != null && trigger.num < 0 && player.hp - trigger.num > 1) {
 					player.logSkill("baobian");
 				}
 				list.push("oltiaoxin");
