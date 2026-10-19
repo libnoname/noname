@@ -6864,12 +6864,12 @@ export default () => {
 			},
 			boss_mojianjg: {
 				trigger: { player: "phaseUseBegin" },
-				content: function () {
-					var list = game.filterPlayer(function (current) {
+				async content(event, trigger, player) {
+					const list = game.filterPlayer(current => {
 						return player.canUse("wanjian", current) && current.isEnemyOf(player);
 					});
 					list.sort(lib.sort.seat);
-					player.useCard({ name: "wanjian" }, list);
+					await player.useCard({ card: { name: "wanjian" }, targets: list });
 				},
 				ai: {
 					threaten: 1.8,
