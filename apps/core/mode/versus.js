@@ -6760,15 +6760,17 @@ export default () => {
 					return get.attitude(player, target) > 0 && lib.filter.cardSavable({ name: "tao", isCard: true }, player, target);
 				},
 				logTarget: "player",
-				content: function () {
-					"step 0";
-					player.loseHp();
-					"step 1";
-					var card = { name: "tao", isCard: true };
-					if (lib.filter.cardSavable(card, player, trigger.player)) {
-						player.useCard(card, trigger.player);
-					}
-				},
+				content: [
+					async (event, trigger, player, result) => {
+						await player.loseHp();
+					},
+					async (event, trigger, player, result) => {
+						const card = { name: "tao", isCard: true };
+						if (lib.filter.cardSavable(card, player, trigger.player)) {
+							await player.useCard({ card, targets: [trigger.player] });
+						}
+					},
+				],
 			},
 			boss_jiaoxie: {
 				enable: "phaseUse",
