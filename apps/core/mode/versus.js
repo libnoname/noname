@@ -3331,39 +3331,38 @@ export default () => {
 					},
 				]);
 			},
-			chooseCharacterOL3: function () {
-				var next = game.createEvent("chooseCharacterOL");
-				next.setContent(function () {
-					"step 0";
+			chooseCharacterOL3: () => {
+				const next = game.createEvent("chooseCharacterOL");
+				next.setContent(async (event, trigger, player) => {
 					game.additionaldead = [];
 					game.broadcastAll(
-						function (ref, bool) {
+						(ref, bool) => {
 							ui.arena.classList.add("choose-character");
-							for (var i = 0; i < 6; i++) {
+							for (let i = 0; i < 6; i++) {
 								ref.side = bool;
 								ref = ref.next;
 								bool = !bool;
 							}
-							for (var i = 0; i < game.players.length; i++) {
-								if (game.players[i].side == game.me.side) {
+							for (let i = 0; i < game.players.length; i++) {
+								if (game.players[i].side === game.me.side) {
 									game.players[i].node.identity.firstChild.innerHTML = "友";
 								} else {
 									game.players[i].node.identity.firstChild.innerHTML = "敌";
 								}
-								game.players[i].node.identity.dataset.color = game.players[i].side + "zhu";
+								game.players[i].node.identity.dataset.color = `${game.players[i].side}zhu`;
 							}
 						},
 						game.players[0],
 						Math.random() < 0.5
 					);
-					if (game.me.side == undefined) {
+					if (game.me.side == null) {
 						game.me.side = game.players[0].side;
 					}
 					_status.onreconnect = [
-						function () {
-							var players = game.players.concat(game.dead);
-							for (var i = 0; i < players.length; i++) {
-								if (players[i].side == game.me.side) {
+						() => {
+							const players = game.players.concat(game.dead);
+							for (let i = 0; i < players.length; i++) {
+								if (players[i].side === game.me.side) {
 									players[i].node.identity.firstChild.innerHTML = "友";
 								} else {
 									players[i].node.identity.firstChild.innerHTML = "敌";
@@ -3371,28 +3370,29 @@ export default () => {
 							}
 						},
 					];
-					var list = get.charactersOL();
-					var choose = [];
+					const list = get.charactersOL();
+					const choose = [];
 					event.list = list;
-					for (var i = 0; i < game.players.length; i++) {
+					for (let i = 0; i < game.players.length; i++) {
 						choose.push([game.players[i], ["选择出场和备用武将", [list.randomRemove(5), "character"]], 2, true]);
 					}
-					game.me.chooseButtonOL(choose, function (player, result) {
-						if (game.online || player == game.me) {
-							player.init(result.links[0]);
-						}
-					});
-					"step 1";
-					for (var i in result) {
-						if (result[i] == "ai") {
+					const result = await game.me
+						.chooseButtonOL(choose, (player, result) => {
+							if (game.online || player === game.me) {
+								player.init(result.links[0]);
+							}
+						})
+						.forResult();
+					for (const i in result) {
+						if (result[i] === "ai") {
 							result[i] = event.list.randomRemove(2);
 						} else {
 							result[i] = result[i].links;
 						}
 					}
 					game.broadcastAll(
-						function (result, func1, func2) {
-							setTimeout(function () {
+						(result, func1, func2) => {
+							setTimeout(() => {
 								ui.arena.classList.remove("choose-character");
 							}, 500);
 							_status.friendDied = [];
@@ -3401,17 +3401,17 @@ export default () => {
 							_status.friend = [];
 							_status.enemy = [];
 
-							_status.enemyCount = ui.create.system("杀敌: " + get.cnNumber(0, true), null, true);
-							_status.friendCount = ui.create.system("阵亡: " + get.cnNumber(0, true), null, true);
+							_status.enemyCount = ui.create.system(`杀敌: ${get.cnNumber(0, true)}`, null, true);
+							_status.friendCount = ui.create.system(`阵亡: ${get.cnNumber(0, true)}`, null, true);
 
 							lib.setPopped(_status.friendCount, func1);
 							lib.setPopped(_status.enemyCount, func2);
 
-							for (var i in result) {
+							for (const i in result) {
 								if (!lib.playerOL[i].name1) {
 									lib.playerOL[i].init(result[i][0]);
 								}
-								if (lib.playerOL[i].side == game.me.side) {
+								if (lib.playerOL[i].side === game.me.side) {
 									_status.friend.push(result[i][1]);
 								} else {
 									_status.enemy.push(result[i][1]);
@@ -3423,9 +3423,9 @@ export default () => {
 						game.versusHoverEnemy
 					);
 					_status.onreconnect = [
-						function (list1, list2, list3, list4, side, func1, func2) {
-							if (side != game.me.side) {
-								var tmp;
+						(list1, list2, list3, list4, side, func1, func2) => {
+							if (side !== game.me.side) {
+								let tmp;
 								tmp = list1;
 								list1 = list2;
 								list2 = tmp;
@@ -3439,14 +3439,14 @@ export default () => {
 							_status.friend = list3;
 							_status.enemy = list4;
 
-							_status.enemyCount = ui.create.system("杀敌: " + get.cnNumber(_status.enemyDied.length, true), null, true);
-							_status.friendCount = ui.create.system("阵亡: " + get.cnNumber(_status.friendDied.length, true), null, true);
+							_status.enemyCount = ui.create.system(`杀敌: ${get.cnNumber(_status.enemyDied.length, true)}`, null, true);
+							_status.friendCount = ui.create.system(`阵亡: ${get.cnNumber(_status.friendDied.length, true)}`, null, true);
 
 							lib.setPopped(_status.friendCount, func1);
 							lib.setPopped(_status.enemyCount, func2);
 
-							for (var i = 0; i < game.players.length; i++) {
-								if (game.players[i].side == game.me.side) {
+							for (let i = 0; i < game.players.length; i++) {
+								if (game.players[i].side === game.me.side) {
 									game.players[i].node.identity.firstChild.innerHTML = "友";
 								} else {
 									game.players[i].node.identity.firstChild.innerHTML = "敌";
