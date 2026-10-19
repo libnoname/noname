@@ -34074,7 +34074,7 @@ const skills = {
 			return evt && evt.hs && evt.hs.length > 0;
 		},
 		preHidden: true,
-		content() {
+		async content(event, trigger, player) {
 			player.draw();
 		},
 	},
