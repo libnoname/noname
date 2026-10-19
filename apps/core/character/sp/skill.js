@@ -44021,7 +44021,7 @@ const skills = {
 				target.link();
 			}
 		},
-		contentAfter() {
+		async contentAfter(event, trigger, player) {
 			if (!player.isLinked()) {
 				player.link();
 			}
