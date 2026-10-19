@@ -28429,8 +28429,9 @@ const skills = {
 			return 7 - ui.selected.cards.length - get.value(card);
 		},
 		allowChooseAll: true,
-		content() {
-			var num = Math.min(cards.length, 4 - player.countMark("spmanwang"));
+		async content(event, trigger, player) {
+			const { cards } = event;
+			const num = Math.min(cards.length, 4 - player.countMark("spmanwang"));
 			if (num >= 1) {
 				player.addSkills("sppanqin");
 			}
