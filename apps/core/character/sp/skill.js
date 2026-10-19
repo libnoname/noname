@@ -47667,8 +47667,8 @@ const skills = {
 			return get.type(event.card) == "equip";
 		},
 		direct: true,
-		content() {
-			player.chooseUseTarget({ name: "sha" }, get.prompt("xinfu_qinguo"), "视为使用一张【杀】", false).logSkill = "xinfu_qinguo";
+		async content(event, trigger, player) {
+			player.chooseUseTarget({ card: { name: "sha" }, prompt: get.prompt("xinfu_qinguo"), prompt2: "视为使用一张【杀】", addCount: false }).logSkill = "xinfu_qinguo";
 		},
 		subSkill: {
 			recover: {
