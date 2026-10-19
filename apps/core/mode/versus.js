@@ -8163,41 +8163,36 @@ export default () => {
 				notarget: true,
 				enable: true,
 				type: "trick",
-				content: function () {
-					"step 0";
-					var num = 0;
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].side == player.side) {
-							if (game.players[i] != player) {
-								event.friend = game.players[i];
+				async content(event, trigger, player) {
+					let num = 0;
+					let friend;
+					for (const current of game.players) {
+						if (current.side === player.side) {
+							if (current !== player) {
+								friend = current;
 							}
-							num += game.players[i].storage.longchuanzhibao;
+							num += current.storage.longchuanzhibao;
 						}
 					}
-					player
-						.chooseControl(function () {
-							if (num > 2) {
-								return 0;
-							}
-							if (num == 2 && get.population(player.side) == 1) {
-								return 0;
-							}
-							return 1;
+					const result = await player
+						.chooseControl({
+							ai: () => (num > 2 || (num === 2 && get.population(player.side) === 1) ? 0 : 1),
+							choiceList: [`摸${get.cnNumber(num)}张牌`, "你和队友各摸一张牌"],
 						})
-						.set("choiceList", ["摸" + get.cnNumber(num) + "张牌", "你和队友各摸一张牌"]);
-					event.num = num;
-					"step 1";
-					if (result.index == 0) {
-						if (event.num) {
-							player.draw(event.num);
+						.forResult();
+					if ((player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+						return;
+					}
+
+					if (result.index === 0) {
+						if (num) {
+							await player.draw(num);
 						}
+					} else if (friend) {
+						player.line(friend);
+						game.asyncDraw([player, friend]);
 					} else {
-						if (event.friend) {
-							player.line(event.friend);
-							game.asyncDraw([player, event.friend]);
-						} else {
-							player.draw();
-						}
+						await player.draw();
 					}
 				},
 				ai: {
