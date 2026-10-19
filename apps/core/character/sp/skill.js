@@ -37912,16 +37912,16 @@ const skills = {
 			}
 			return false;
 		},
-		content() {
-			var cards = trigger.getl(player).cards2;
-			game.countPlayer(function (current) {
-				if (current == player) {
+		async content(event, trigger, player) {
+			const cards = trigger.getl(player).cards2;
+			game.countPlayer(current => {
+				if (current === player) {
 					return;
 				}
-				var hs = current.getCards("h"),
-					cardsx = trigger.getg(current).filter(function (card) {
-						return hs.includes(card) && cards.includes(card) && get.color(card, player) == "black";
-					});
+				const hs = current.getCards("h");
+				const cardsx = trigger.getg(current).filter(card => {
+					return hs.includes(card) && cards.includes(card) && get.color(card, player) === "black";
+				});
 				if (cardsx.length > 0) {
 					current.addSkill("xiahui2");
 					current.addGaintag(cardsx, "xiahui");
