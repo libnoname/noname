@@ -42153,7 +42153,7 @@ const skills = {
 		filter(event, player) {
 			return player.countCards("h") == 0;
 		},
-		content() {
+		async content(event, trigger, player) {
 			trigger.num++;
 		},
 		ai: {
