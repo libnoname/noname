@@ -27679,8 +27679,8 @@ const skills = {
 		},
 		logTarget: "target",
 		forced: true,
-		content() {
-			var target = trigger.target;
+		async content(event, trigger, player) {
+			const target = trigger.target;
 			target.addTempSkill("chixueqingfeng2");
 			target.markAuto("chixueqingfeng2", [trigger.card]);
 		},
