@@ -14025,12 +14025,12 @@ const skills = {
 				},
 				forced: true,
 				popup: false,
-				content() {
+				async content(event, trigger, player) {
 					const cards = player.getCards("h");
 					if (!trigger.olziruo) {
 						trigger.olziruo = {};
 					}
-					trigger.olziruo[player.playerid] = [trigger.cards.some(card => cards[0] == card), trigger.cards.some(card => cards[cards.length - 1] == card)];
+					trigger.olziruo[player.playerid] = [trigger.cards.some(card => cards[0] === card), trigger.cards.some(card => cards[cards.length - 1] === card)];
 				},
 			},
 			gain: {
