@@ -6228,7 +6228,7 @@ export default () => {
 				filter: function (event, player) {
 					return !player.storage.xionghuangjiu;
 				},
-				content: function () {
+				async content(event, trigger, player) {
 					player.storage.xionghuangjiu = trigger.card;
 				},
 			},
