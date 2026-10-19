@@ -7705,16 +7705,16 @@ const skills = {
 					return event.name != "phase" || game.phaseNumber == 0;
 				},
 				forced: true,
-				content() {
+				async content(event, trigger, player) {
 					const cards = [];
 					for (const type of ["basic", "trick", "equip"]) {
-						const card = get.cardPile2(cardx => get.type2(cardx) == type && !cards.includes(cardx));
+						const card = get.cardPile2(cardx => get.type2(cardx) === type && !cards.includes(cardx));
 						if (card) {
 							cards.push(card);
 						}
 					}
 					if (cards.length) {
-						player.addToExpansion(cards, "gain2").gaintag.add("oljiyun");
+						player.addToExpansion({ cards, animate: "gain2", gaintag: ["oljiyun"] });
 					}
 				},
 			},
