@@ -23539,7 +23539,7 @@ const skills = {
 			var num = player.countMark("olqizhou");
 			return lib.skill.olqizhou.getSuitNum(player) != num;
 		},
-		content() {
+		async content(event, trigger, player) {
 			lib.skill.olqizhou.applyChange(player);
 		},
 		getSuitNum(player) {
