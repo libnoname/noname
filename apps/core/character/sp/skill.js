@@ -45130,7 +45130,7 @@ const skills = {
 			let evt = event.reason.getParent();
 			return evt.name == "duwu" && evt.player == player;
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.loseHp();
 			player.tempBanSkill("duwu");
 		},
