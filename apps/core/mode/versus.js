@@ -6216,8 +6216,8 @@ export default () => {
 				forced: true,
 				popup: false,
 				audio: false,
-				content: function () {
-					game.broadcastAll(function (player) {
+				async content(event, trigger, player) {
+					game.broadcastAll(player => {
 						player.removeSkill("xionghuangjiu");
 					}, player);
 				},
