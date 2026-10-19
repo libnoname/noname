@@ -7905,7 +7905,8 @@ export default () => {
 					return target.isEnemyOf(player);
 				},
 				selectTarget: 1,
-				content: function () {
+				async content(event, trigger, player) {
+					const { target } = event;
 					target.addTempSkill("xujiu2");
 					target.addMark("xujiu2", event.baseDamage || 1, false);
 				},
