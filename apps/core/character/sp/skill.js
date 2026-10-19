@@ -34032,7 +34032,7 @@ const skills = {
 		audio: 2,
 		trigger: { source: "dieAfter" },
 		frequent: true,
-		content() {
+		async content(event, trigger, player) {
 			player.draw(3);
 		},
 	},
