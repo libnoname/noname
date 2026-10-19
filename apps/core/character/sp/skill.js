@@ -43652,7 +43652,7 @@ const skills = {
 				filter(event, player) {
 					return /*get.mode()!='guozhan'&&*/ player != event.source;
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.draw();
 				},
 			},
