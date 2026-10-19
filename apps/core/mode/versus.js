@@ -6616,7 +6616,7 @@ export default () => {
 					return event.player.isAlive();
 				},
 				logTarget: "player",
-				content: function () {
+				async content(event, trigger, player) {
 					trigger.player.addTempSkill("boss_fengjian2", { player: "phaseAfter" });
 					trigger.player.markAuto("boss_fengjian2", [player]);
 				},
