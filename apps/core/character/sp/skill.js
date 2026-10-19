@@ -27706,7 +27706,7 @@ const skills = {
 		filter(event, player) {
 			return player.storage.chixueqingfeng2 && player.storage.chixueqingfeng2.includes(event.card);
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.storage.chixueqingfeng2.remove(trigger.card);
 			if (!player.storage.chixueqingfeng2.length) {
 				player.removeSkill("chixueqingfeng2");
