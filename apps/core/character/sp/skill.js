@@ -40781,7 +40781,7 @@ const skills = {
 		filter(event, player) {
 			return event.card && event.card.name == "sha" && event.cards && event.cards.length == 1 && get.type(event.cards[0]) == "equip";
 		},
-		content() {
+		async content(event, trigger, player) {
 			trigger.baseDamage++;
 		},
 	},
