@@ -1251,45 +1251,44 @@ export default () => {
 					);
 				});
 			},
-			chooseCharacterTwo: function () {
-				var next = game.createEvent("chooseCharacter");
+			chooseCharacterTwo: () => {
+				const next = game.createEvent("chooseCharacter");
 				next.showConfig = true;
-				next.setContent(function () {
-					"step 0";
+				next.setContent(async (event, trigger, player) => {
 					ui.arena.classList.add("choose-character");
-					var bool = Math.random() < 0.5;
-					var bool2 = Math.random() < 0.5;
-					var ref = game.players[0];
+					const bool = Math.random() < 0.5;
+					const bool2 = Math.random() < 0.5;
+					const ref = game.players[0];
 
 					ref.side = bool;
 					ref.next.side = bool2;
 					ref.next.next.side = !bool;
 					ref.previous.side = !bool2;
 
-					var firstChoose = game.players.randomGet();
-					if (firstChoose.next.side == firstChoose.side) {
+					let firstChoose = game.players.randomGet();
+					if (firstChoose.next.side === firstChoose.side) {
 						firstChoose = firstChoose.next;
 					}
 					_status.firstAct = firstChoose;
-					for (var i = 0; i < 4; i++) {
-						firstChoose.node.name.innerHTML = get.verticalStr(get.cnNumber(i + 1, true) + "号位");
+					for (let i = 0; i < 4; i++) {
+						firstChoose.node.name.innerHTML = get.verticalStr(`${get.cnNumber(i + 1, true)}号位`);
 						firstChoose = firstChoose.next;
 					}
 
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].side == game.me.side) {
+					for (let i = 0; i < game.players.length; i++) {
+						if (game.players[i].side === game.me.side) {
 							game.players[i].node.identity.firstChild.innerHTML = "友";
 						} else {
 							game.players[i].node.identity.firstChild.innerHTML = "敌";
 						}
-						game.players[i].node.identity.dataset.color = game.players[i].side + "zhu";
+						game.players[i].node.identity.dataset.color = `${game.players[i].side}zhu`;
 					}
 					//22选将框分配
-					var list = [];
-					var list4 = [];
-					for (i in lib.characterReplace) {
-						var ix = lib.characterReplace[i];
-						for (var j = 0; j < ix.length; j++) {
+					const list = [];
+					const list4 = [];
+					for (const i in lib.characterReplace) {
+						const ix = lib.characterReplace[i];
+						for (let j = 0; j < ix.length; j++) {
 							if (lib.filter.characterDisabled(ix[j])) {
 								ix.splice(j--, 1);
 							}
@@ -1299,25 +1298,25 @@ export default () => {
 							list4.addArray(ix);
 						}
 					}
-					for (i in lib.character) {
+					for (const i in lib.character) {
 						if (!list4.includes(i) && !lib.filter.characterDisabled(i)) {
 							list.push(i);
 							list4.push(i);
 						}
 					}
-					var choose = [];
+					const choose = [];
 					event.list = list;
 					_status.characterlist = list4;
 
-					var addSetting = function (dialog) {
+					const addSetting = dialog => {
 						dialog.add("选择座位").classList.add("add-setting");
-						var seats = document.createElement("table");
+						const seats = document.createElement("table");
 						seats.classList.add("add-setting");
 						seats.style.margin = "0";
 						seats.style.width = "100%";
 						seats.style.position = "relative";
-						for (var i = 1; i <= game.players.length; i++) {
-							var td = ui.create.div(".shadowed.reduce_radius.pointerdiv.tdnode");
+						for (let i = 1; i <= game.players.length; i++) {
+							const td = ui.create.div(".shadowed.reduce_radius.pointerdiv.tdnode");
 							td.innerHTML = get.cnNumber(i, true);
 							td.link = i - 1;
 							seats.appendChild(td);
@@ -1331,38 +1330,38 @@ export default () => {
 								if (_status.justdragged) {
 									return;
 								}
-								if (get.distance(_status.firstAct, game.me, "absolute") == this.link) {
+								if (get.distance(_status.firstAct, game.me, "absolute") === this.link) {
 									return;
 								}
-								var current = this.parentNode.querySelector(".bluebg");
+								const current = this.parentNode.querySelector(".bluebg");
 								if (current) {
 									current.classList.remove("bluebg");
 								}
 								this.classList.add("bluebg");
 								_status.firstAct = game.me;
-								for (var i = 0; i < this.link; i++) {
+								for (let i = 0; i < this.link; i++) {
 									_status.firstAct = _status.firstAct.previous;
 								}
-								var firstChoose = _status.firstAct;
+								let firstChoose = _status.firstAct;
 								firstChoose.next.side = !firstChoose.side;
 								firstChoose.next.next.side = !firstChoose.side;
 								firstChoose.previous.side = firstChoose.side;
-								for (var i = 0; i < game.players.length; i++) {
-									if (game.players[i].side == game.me.side) {
+								for (let i = 0; i < game.players.length; i++) {
+									if (game.players[i].side === game.me.side) {
 										game.players[i].node.identity.firstChild.innerHTML = "友";
 									} else {
 										game.players[i].node.identity.firstChild.innerHTML = "敌";
 									}
-									game.players[i].node.identity.dataset.color = game.players[i].side + "zhu";
+									game.players[i].node.identity.dataset.color = `${game.players[i].side}zhu`;
 								}
-								for (var i = 0; i < 4; i++) {
-									firstChoose.node.name.innerHTML = get.verticalStr(get.cnNumber(i + 1, true) + "号位");
+								for (let i = 0; i < 4; i++) {
+									firstChoose.node.name.innerHTML = get.verticalStr(`${get.cnNumber(i + 1, true)}号位`);
 									firstChoose = firstChoose.next;
 								}
 							});
 						}
 						dialog.content.appendChild(seats);
-						if (game.me == game.zhu) {
+						if (game.me === game.zhu) {
 							seats.previousSibling.style.display = "none";
 							seats.style.display = "none";
 						}
@@ -1373,12 +1372,12 @@ export default () => {
 							dialog.add(ui.create.div(".placeholder.add-setting"));
 						}
 					};
-					var removeSetting = function () {
-						var dialog = _status.event.dialog;
+					const removeSetting = () => {
+						const dialog = _status.event.dialog;
 						if (dialog) {
 							dialog.style.height = "";
 							delete dialog._scrollset;
-							var list = Array.from(dialog.querySelectorAll(".add-setting"));
+							const list = Array.from(dialog.querySelectorAll(".add-setting"));
 							while (list.length) {
 								list.shift().remove();
 							}
@@ -1388,14 +1387,14 @@ export default () => {
 					event.addSetting = addSetting;
 					event.removeSetting = removeSetting;
 
-					var characterChoice;
+					let characterChoice;
 					if (_status.brawl && _status.brawl.chooseCharacter) {
 						characterChoice = _status.brawl.chooseCharacter(list, game.me);
 					} else {
 						characterChoice = list.randomGets(7);
 					}
-					var basenum = 1;
-					var basestr = "选择角色";
+					let basenum = 1;
+					let basestr = "选择角色";
 					if (get.config("two_assign")) {
 						basenum = 2;
 						basestr = "选择你和队友的角色";
@@ -1407,25 +1406,25 @@ export default () => {
 						game.additionaldead = [];
 						basenum *= 2;
 					}
-					var dialog = ui.create.dialog(basestr, [characterChoice, "characterx"]);
-					game.me.chooseButton(true, dialog, basenum).set("onfree", true);
+					const dialog = ui.create.dialog(basestr, [characterChoice, "characterx"]);
+					const choice = game.me.chooseButton({ dialog, forced: true, selectButton: basenum }).set("onfree", true);
 					if (!_status.brawl || !_status.brawl.noAddSetting) {
 						if (get.config("change_identity")) {
 							addSetting(dialog);
 						}
 					}
 
-					ui.create.cheat = function () {
+					ui.create.cheat = () => {
 						_status.createControl = ui.cheat2;
-						ui.cheat = ui.create.control("更换", function () {
-							if (ui.cheat2 && ui.cheat2.dialog == _status.event.dialog) {
+						ui.cheat = ui.create.control("更换", () => {
+							if (ui.cheat2 && ui.cheat2.dialog === _status.event.dialog) {
 								return;
 							}
 							if (game.changeCoin) {
 								game.changeCoin(-3);
 							}
-							var buttons = ui.create.div(".buttons");
-							var node = _status.event.dialog.buttons[0].parentNode;
+							const buttons = ui.create.div(".buttons");
+							const node = _status.event.dialog.buttons[0].parentNode;
 							_status.event.dialog.buttons = ui.create.buttons(list.randomGets(7), "characterx", buttons);
 							_status.event.dialog.content.insertBefore(buttons, node);
 							buttons.addTempClass("start");
@@ -1436,7 +1435,7 @@ export default () => {
 						delete _status.createControl;
 					};
 					if (lib.onfree) {
-						lib.onfree.push(function () {
+						lib.onfree.push(() => {
 							event.dialogxx = ui.create.characterDialog("heightset");
 							if (ui.cheat2) {
 								ui.cheat2.addTempClass("controlpressdownx", 500);
@@ -1446,9 +1445,9 @@ export default () => {
 					} else {
 						event.dialogxx = ui.create.characterDialog("heightset");
 					}
-					ui.create.cheat2 = function () {
+					ui.create.cheat2 = () => {
 						ui.cheat2 = ui.create.control("自由选将", function () {
-							if (this.dialog == _status.event.dialog) {
+							if (this.dialog === _status.event.dialog) {
 								if (game.changeCoin) {
 									game.changeCoin(10);
 								}
@@ -1488,7 +1487,7 @@ export default () => {
 							ui.create.cheat2();
 						}
 					}
-					"step 1";
+					const result = await choice.forResult();
 					if (ui.cheat) {
 						ui.cheat.close();
 						delete ui.cheat;
@@ -1497,7 +1496,7 @@ export default () => {
 						ui.cheat2.close();
 						delete ui.cheat2;
 					}
-					for (var i = 0; i < result.links.length; i++) {
+					for (let i = 0; i < result.links.length; i++) {
 						game.addRecentCharacter(result.links[i]);
 					}
 					game.me.init(result.links[0]);
@@ -1505,18 +1504,18 @@ export default () => {
 						game.me.replacetwo = result.links[1];
 					}
 					event.list.remove(game.me.name1);
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i] != game.me) {
+					for (let i = 0; i < game.players.length; i++) {
+						if (game.players[i] !== game.me) {
 							if (_status.brawl && _status.brawl.chooseCharacter) {
-								var list = _status.brawl.chooseCharacter(event.list, game.players[i]);
-								game.players[i].init(list.randomGet());
+								const brawlList = _status.brawl.chooseCharacter(event.list, game.players[i]);
+								game.players[i].init(brawlList.randomGet());
 								event.list.remove(game.players[i].name1);
 								if (_status.replacetwo) {
-									game.players[i].replacetwo = list.randomGet(game.players[i].name1);
+									game.players[i].replacetwo = brawlList.randomGet(game.players[i].name1);
 									event.list.remove(game.players[i].replacetwo);
 								}
 							} else {
-								if (event.two_assign && game.players[i].side == game.me.side) {
+								if (event.two_assign && game.players[i].side === game.me.side) {
 									if (_status.replacetwo) {
 										game.players[i].init(result.links[2]);
 										game.players[i].replacetwo = result.links[3];
@@ -1524,13 +1523,13 @@ export default () => {
 										game.players[i].init(result.links[1]);
 									}
 								} else {
-									var name = event.list.randomRemove();
+									let name = event.list.randomRemove();
 									if (lib.characterReplace[name] && lib.characterReplace[name].length) {
 										name = lib.characterReplace[name].randomGet();
 									}
 									game.players[i].init(name);
 									if (_status.replacetwo) {
-										var name2 = event.list.randomRemove();
+										let name2 = event.list.randomRemove();
 										if (lib.characterReplace[name2] && lib.characterReplace[name2].length) {
 											name2 = lib.characterReplace[name2].randomGet();
 										}
@@ -1540,15 +1539,15 @@ export default () => {
 							}
 						}
 					}
-					for (var i = 0; i < game.players.length; i++) {
+					for (let i = 0; i < game.players.length; i++) {
 						_status.characterlist.remove(game.players[i].name1);
 						_status.characterlist.remove(game.players[i].replacetwo);
 					}
-					setTimeout(function () {
+					setTimeout(() => {
 						ui.arena.classList.remove("choose-character");
 					}, 500);
 					if (get.config("olfeiyang_four")) {
-						var target = _status.firstAct.previous;
+						const target = _status.firstAct.previous;
 						if (target.isIn()) {
 							target.addSkill("olfeiyang");
 						}
