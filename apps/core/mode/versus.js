@@ -7697,7 +7697,7 @@ export default () => {
 					return event.hasNature("fire");
 				},
 				forced: true,
-				content: function () {
+				async content(event, trigger, player) {
 					trigger.cancel();
 				},
 				ai: {
