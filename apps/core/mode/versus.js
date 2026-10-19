@@ -7096,17 +7096,16 @@ export default () => {
 						return current.isEnemyOf(player) && current.countCards("j");
 					});
 				},
-				content: function () {
-					"step 0";
-					event.targets = game.filterPlayer(function (current) {
-						return current.isEnemyOf(player) && current.countCards("j");
-					});
-					event.targets.sort(lib.sort.seat);
-					player.line(event.targets, "thunder");
-					"step 1";
-					if (event.targets.length) {
-						event.targets.shift().damage("thunder");
-						event.redo();
+				async content(event, trigger, player) {
+					const targets = game.filterPlayer(current => current.isEnemyOf(player) && current.hasCards("j"));
+					targets.sort(lib.sort.seat);
+					player.line(targets, "thunder");
+					while (targets.length) {
+						await targets.shift().damage({ nature: "thunder" });
+
+						if ((player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+							return;
+						}
 					}
 				},
 			},
