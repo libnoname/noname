@@ -46871,20 +46871,20 @@ const skills = {
 			return false;
 		},
 		forced: true,
-		content() {
+		async content(event, trigger, player) {
 			if (trigger.name.indexOf("lose") !== 0) {
-				for (var i = 0; i < lib.suit.length; i++) {
-					if (!player.hasMark("xinfu_falu_" + lib.suit[i])) {
-						player.addMark("xinfu_falu_" + lib.suit[i]);
+				for (const suit of lib.suit) {
+					if (!player.hasMark(`xinfu_falu_${suit}`)) {
+						player.addMark(`xinfu_falu_${suit}`);
 					}
 				}
 				return;
 			}
-			var evt = trigger.getl(player);
-			for (var i = 0; i < evt.cards2.length; i++) {
-				var suit = get.suit(evt.cards2[i]);
-				if (!player.hasMark("xinfu_falu_" + suit)) {
-					player.addMark("xinfu_falu_" + suit);
+			const evt = trigger.getl(player);
+			for (const card of evt.cards2) {
+				const suit = get.suit(card);
+				if (!player.hasMark(`xinfu_falu_${suit}`)) {
+					player.addMark(`xinfu_falu_${suit}`);
 				}
 			}
 		},
