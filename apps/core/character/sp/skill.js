@@ -21620,20 +21620,20 @@ const skills = {
 				forced: true,
 				charlotte: true,
 				popup: false,
-				content() {
-					var cards = [],
-						cards2 = trigger.cards;
-					for (var cardx of cards2) {
-						var type = get.type2(cardx, player);
-						var card = get.discardPile(function (card) {
-							return get.type2(card, false) == type && !cards2.includes(card) && !cards.includes(card);
+				async content(event, trigger, player) {
+					const cards = [];
+					const cards2 = trigger.cards;
+					for (const cardx of cards2) {
+						const type = get.type2(cardx, player);
+						const card = get.discardPile(card => {
+							return get.type2(card, false) === type && !cards2.includes(card) && !cards.includes(card);
 						}, "random");
 						if (card) {
 							cards.push(card);
 						}
 					}
 					if (cards.length) {
-						player.gain(cards, "gain2");
+						player.gain({ cards, animate: "gain2" });
 					}
 				},
 			},
