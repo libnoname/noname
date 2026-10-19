@@ -6061,42 +6061,38 @@ export default () => {
 				filter: function (event, player) {
 					return !player.getStat("damage") && player.countUsed() >= 2;
 				},
-				content: function () {
-					"step 0";
-					var target = null;
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].side == player.side && game.players[i] != player) {
-							target = game.players[i];
-							break;
-						}
-					}
+				async content(event, trigger, player) {
+					const target = game.players.find(current => current.side === player.side && current !== player);
 					if (target) {
 						event.target = target;
-						player
-							.chooseControl("cancel2", function () {
-								if (target.countCards("h") >= player.countCards("h")) {
-									return 1;
-								}
-								return 0;
+						const result = await player
+							.chooseControl({
+								controls: ["cancel2"],
+								ai: () => (target.countCards("h") >= player.countCards("h") ? 1 : 0),
+								prompt: get.prompt("xingzhao"),
+								choiceList: ["摸两张牌", `令${get.translation(target)}摸两张牌`],
 							})
-							.set("prompt", get.prompt("xingzhao"))
-							.set("choiceList", ["摸两张牌", "令" + get.translation(target) + "摸两张牌"]);
-					} else {
-						player.chooseBool(get.prompt("xingzhao"));
-					}
-					"step 1";
-					if (event.target) {
-						if (result.index == 0) {
+							.forResult();
+						if ((player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+							return;
+						}
+
+						if (result.index === 0) {
 							player.logSkill("xingzhao");
-							player.draw(2);
-						} else if (result.index == 1) {
+							await player.draw(2);
+						} else if (result.index === 1) {
 							player.logSkill("xingzhao", event.target);
-							event.target.draw(2);
+							await event.target.draw(2);
 						}
 					} else {
+						const result = await player.chooseBool({ prompt: get.prompt("xingzhao") }).forResult();
+						if ((player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+							return;
+						}
+
 						if (result.bool) {
 							player.logSkill("xingzhao");
-							player.draw(2);
+							await player.draw(2);
 						}
 					}
 				},
