@@ -38058,7 +38058,8 @@ const skills = {
 			}
 			return 0;
 		},
-		content() {
+		async content(event, trigger, player) {
+			const { cards } = event;
 			player.loseHp();
 			switch (get.type(cards[0], "trick")) {
 				case "basic":
