@@ -26,6 +26,11 @@ async function buildPreload() {
 	await build({
 		root,
 		configFile: false,
+		// 构建开关：完整包（NONAME_FULL_ASSETS=1）在打包 preload 时把「下载素材」
+		// 整段剔除（见 src/preload.ts 的恒假条件 + 动态 import 死代码消除）。
+		define: {
+			__NONAME_FULL_ASSETS__: JSON.stringify(process.env.NONAME_FULL_ASSETS === "1"),
+		},
 		build: {
 			outDir: preloadOutDir,
 			emptyOutDir: true,
@@ -85,7 +90,8 @@ function patchAndroidAssets() {
  * 生成「补充下载清单」`dist/asset-download-manifest.json`。
  *
  * 用途：iOS 瘦身包会删掉 `audio/skill`、`audio/die`、`image/character` 三个目录
- * （见 `.github/workflows/ios-build.yml` 的 slim_assets），游戏内的「下载素材」
+ * （见 `.github/workflows/ios-build.yml` 的「Strip character art and voice」步骤），
+ * 游戏内的「下载素材」
  * 按钮需要知道**该补哪些文件**。
  *
  * 为什么不复用 `asset-manifest.json`：那一份是在**删除资源之后**重建的，
@@ -155,7 +161,8 @@ function writeAssetManifest() {
 }
 
 await buildPreload();
-writeDownloadManifest();
+// 完整包不打包「下载素材」功能，也就不需要补充下载清单（见上方 writeDownloadManifest 注释）。
+if (process.env.NONAME_FULL_ASSETS !== "1") writeDownloadManifest();
 writeAssetManifest();
 capSync();
 patchAndroidAssets();
