@@ -27232,7 +27232,7 @@ const skills = {
 				filter(event, player) {
 					return player.countMark("olshengong_draw") > 0;
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.draw(player.countMark(event.name));
 				},
 			},
