@@ -7247,13 +7247,13 @@ export default () => {
 						}
 					}
 				},
-				content: function () {
-					var target = game.findPlayer(function (current) {
-						return current.type == "mech" && current.isEnemyOf(player);
+				async content(event, trigger, player) {
+					const target = game.findPlayer(current => {
+						return current.type === "mech" && current.isEnemyOf(player);
 					});
 					if (target) {
 						player.line(target, "thunder");
-						target.damage(Math.random() > 0.4 ? 2 : 3, "thunder");
+						await target.damage({ num: Math.random() > 0.4 ? 2 : 3, nature: "thunder" });
 					}
 				},
 				ai: {
