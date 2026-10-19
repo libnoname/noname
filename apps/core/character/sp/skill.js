@@ -20912,9 +20912,9 @@ const skills = {
 			}
 			return event.num2 <= player.countMark("gushe");
 		},
-		content() {
-			var num = player.countMark("gushe");
-			if (player == trigger.player) {
+		async content(event, trigger, player) {
+			const num = player.countMark("gushe");
+			if (player === trigger.player) {
 				trigger.num1 += num;
 				if (trigger.num1 > 13) {
 					trigger.num1 = 13;
@@ -20925,8 +20925,8 @@ const skills = {
 					trigger.num2 = 13;
 				}
 			}
-			game.log(player, "的拼点牌点数+" + num);
-			var stat = player.getStat().skill;
+			game.log(player, `的拼点牌点数+${num}`);
+			const stat = player.getStat().skill;
 			delete stat.gushe;
 		},
 		ai: {
