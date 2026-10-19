@@ -1562,60 +1562,59 @@ export default () => {
 					}
 				});
 			},
-			chooseCharacterEndless: function () {
-				var next = game.createEvent("chooseCharacter");
+			chooseCharacterEndless: () => {
+				const next = game.createEvent("chooseCharacter");
 				next.showConfig = true;
-				next.setContent(function () {
-					"step 0";
+				next.setContent(async (event, trigger, player) => {
 					ui.arena.classList.add("choose-character");
-					for (var i in lib.skill) {
+					for (const i in lib.skill) {
 						if (lib.skill[i].seatRelated === true) {
 							lib.skill[i] = {};
-							if (lib.translate[i + "_info"]) {
-								lib.translate[i + "_info"] = "此模式下不可用";
+							if (lib.translate[`${i}_info`]) {
+								lib.translate[`${i}_info`] = "此模式下不可用";
 							}
 						}
 					}
 
-					var firstChoose = game.players.randomGet();
+					const firstChoose = game.players.randomGet();
 					_status.firstAct = firstChoose;
 
 					firstChoose.side = false;
 					firstChoose.next.side = true;
 
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].side == game.me.side) {
+					for (let i = 0; i < game.players.length; i++) {
+						if (game.players[i].side === game.me.side) {
 							game.players[i].node.identity.firstChild.innerHTML = "友";
 						} else {
 							game.players[i].node.identity.firstChild.innerHTML = "敌";
 						}
-						game.players[i].node.identity.dataset.color = game.players[i].side + "zhu";
+						game.players[i].node.identity.dataset.color = `${game.players[i].side}zhu`;
 					}
-					var list = [];
-					for (i in lib.character) {
+					const list = [];
+					for (const i in lib.character) {
 						if (!lib.filter.characterDisabled(i)) {
 							list.push(i);
 						}
 					}
-					var choose = [];
+					const choose = [];
 					event.list = list;
 					_status.endlessListAll = list.slice(0);
 
-					var characterChoice = list.randomGets(6);
-					var dialog = ui.create.dialog("选择角色", [characterChoice, "character"]);
-					game.me.chooseButton(true, dialog).set("onfree", true);
+					const characterChoice = list.randomGets(6);
+					const dialog = ui.create.dialog("选择角色", [characterChoice, "character"]);
+					const choice = game.me.chooseButton({ dialog, forced: true }).set("onfree", true);
 
-					ui.create.cheat = function () {
+					ui.create.cheat = () => {
 						_status.createControl = ui.cheat2;
-						ui.cheat = ui.create.control("更换", function () {
-							if (ui.cheat2 && ui.cheat2.dialog == _status.event.dialog) {
+						ui.cheat = ui.create.control("更换", () => {
+							if (ui.cheat2 && ui.cheat2.dialog === _status.event.dialog) {
 								return;
 							}
 							if (game.changeCoin) {
 								game.changeCoin(-3);
 							}
-							var buttons = ui.create.div(".buttons");
-							var node = _status.event.dialog.buttons[0].parentNode;
+							const buttons = ui.create.div(".buttons");
+							const node = _status.event.dialog.buttons[0].parentNode;
 							_status.event.dialog.buttons = ui.create.buttons(list.randomGets(7), "character", buttons);
 							_status.event.dialog.content.insertBefore(buttons, node);
 							buttons.addTempClass("start");
@@ -1626,7 +1625,7 @@ export default () => {
 						delete _status.createControl;
 					};
 					if (lib.onfree) {
-						lib.onfree.push(function () {
+						lib.onfree.push(() => {
 							event.dialogxx = ui.create.characterDialog("heightset");
 							if (ui.cheat2) {
 								ui.cheat2.addTempClass("controlpressdownx", 500);
@@ -1636,9 +1635,9 @@ export default () => {
 					} else {
 						event.dialogxx = ui.create.characterDialog("heightset");
 					}
-					ui.create.cheat2 = function () {
+					ui.create.cheat2 = () => {
 						ui.cheat2 = ui.create.control("自由选将", function () {
-							if (this.dialog == _status.event.dialog) {
+							if (this.dialog === _status.event.dialog) {
 								if (game.changeCoin) {
 									game.changeCoin(10);
 								}
@@ -1678,7 +1677,7 @@ export default () => {
 							ui.create.cheat2();
 						}
 					}
-					"step 1";
+					const result = await choice.forResult();
 					if (ui.cheat) {
 						ui.cheat.close();
 						delete ui.cheat;
@@ -1687,13 +1686,13 @@ export default () => {
 						ui.cheat2.close();
 						delete ui.cheat2;
 					}
-					for (var i = 0; i < result.links.length; i++) {
+					for (let i = 0; i < result.links.length; i++) {
 						game.addRecentCharacter(result.links[i]);
 					}
 					game.me.init(result.links[0]);
 					event.list.remove(game.me.name1);
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i] != game.me) {
+					for (let i = 0; i < game.players.length; i++) {
+						if (game.players[i] !== game.me) {
 							game.players[i].init(event.list.randomRemove());
 							if (_status.replacetwo) {
 								game.players[i].replacetwo = event.list.randomRemove();
@@ -1701,7 +1700,7 @@ export default () => {
 						}
 					}
 					_status.endlessList = event.list;
-					setTimeout(function () {
+					setTimeout(() => {
 						ui.arena.classList.remove("choose-character");
 					}, 500);
 				});
