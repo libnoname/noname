@@ -45977,24 +45977,24 @@ const skills = {
 			});
 		},
 		forced: true,
-		content() {
+		async content(event, trigger, player) {
 			event.num = 0;
-			var list = game.filterPlayer(function (target) {
+			const list = game.filterPlayer(target => {
 				if (target.isMinHandcard()) {
 					event.num = target.countCards("h");
 				}
-				return player != target;
+				return player !== target;
 			});
 			if (event.num < 1) {
 				event.finish();
-			} else {
-				var target = list.randomGet();
-				var cards = target.getCards("h").randomGets(event.num);
-				player.line(target);
-				var content = [get.translation(target) + "的部分手牌", cards];
-				game.log(player, "观看了", target, "的部分手牌");
-				player.chooseControl("ok").set("dialog", content);
+				return;
 			}
+			const target = list.randomGet();
+			const cards = target.getCards("h").randomGets(event.num);
+			player.line(target);
+			const content = [`${get.translation(target)}的部分手牌`, cards];
+			game.log(player, "观看了", target, "的部分手牌");
+			player.chooseControl({ controls: ["ok"] }).set("dialog", content);
 		},
 	},
 	olfujian: {
