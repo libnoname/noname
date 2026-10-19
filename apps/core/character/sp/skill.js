@@ -45786,7 +45786,7 @@ const skills = {
 		},
 		forced: true,
 		juexingji: true,
-		content() {
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			player.draw(player.maxHp);
 			player.addSkills(["benghuai", "weizhong"]);
