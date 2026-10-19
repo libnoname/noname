@@ -5831,7 +5831,7 @@ export default () => {
 							return !event.numFixed && player.hasMark("xutuhuanjin_yingzi");
 						},
 						forced: true,
-						content: function () {
+						async content(event, trigger, player) {
 							trigger.num += player.countMark("xutuhuanjin_yingzi");
 						},
 						marktext: "缓",
