@@ -39788,7 +39788,7 @@ const skills = {
 			return (skills && skills.length > 0) != player.hasEmptySlot(5);
 		},
 		direct: true,
-		content() {
+		async content(event, trigger, player) {
 			player.removeAdditionalSkill("linglong");
 			if (player.hasEmptySlot(5)) {
 				player.addAdditionalSkill("linglong", ["reqicai"]);
