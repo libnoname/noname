@@ -21793,12 +21793,12 @@ const skills = {
 				filter(event, player) {
 					return event.cards.some(i => get.owner(i) == player);
 				},
-				content() {
+				async content(event, trigger, player) {
 					game.broadcastAll(
-						function (cards) {
+						cards => {
 							cards.forEach(card => card.addGaintag("oldaili_tag"));
 						},
-						trigger.cards.filter(i => get.owner(i) == player)
+						trigger.cards.filter(i => get.owner(i) === player)
 					);
 					player.markSkill("oldaili");
 				},
