@@ -46601,7 +46601,7 @@ const skills = {
 			}
 			return get.type(event.card, "trick") == "trick";
 		},
-		content() {
+		async content(event, trigger, player) {
 			trigger.cancel();
 		},
 		ai: {
