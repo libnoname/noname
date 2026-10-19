@@ -8285,7 +8285,7 @@ const skills = {
 				trigger: { source: "damageBegin1" },
 				forced: true,
 				popup: false,
-				content() {
+				async content(event, trigger, player) {
 					player.removeSkill(event.name);
 					trigger.num++;
 				},
