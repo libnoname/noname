@@ -46473,7 +46473,7 @@ const skills = {
 				filter(event, player) {
 					return event.skill == "jianjie_huoji";
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.setContent(lib.skill.olhuoji.huogongContent);
 				},
 			},
