@@ -3463,418 +3463,427 @@ export default () => {
 					];
 				});
 			},
-			chooseCharacterOL2: function () {
-				var next = game.createEvent("chooseCharacterOL");
-				next.setContent(function () {
-					"step 0";
-					var ref = game.players[0];
-					var bool = Math.random() < 0.5;
-					var bool2 = Math.random() < 0.5;
-					ref.side = bool;
-					ref.next.side = bool2;
-					ref.next.next.side = !bool;
-					ref.previous.side = !bool2;
-					var firstChoose = game.players.randomGet();
-					if (firstChoose.next.side == firstChoose.side) {
-						firstChoose = firstChoose.next;
-					}
-					_status.firstAct = firstChoose;
-					for (var i = 0; i < 4; i++) {
-						firstChoose.node.name.innerHTML = get.verticalStr(get.cnNumber(i + 1, true) + "号位");
-						firstChoose = firstChoose.next;
-					}
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].side == game.me.side) {
-							game.players[i].node.identity.firstChild.innerHTML = "友";
-						} else {
-							game.players[i].node.identity.firstChild.innerHTML = "敌";
+			chooseCharacterOL2: () => {
+				const next = game.createEvent("chooseCharacterOL");
+				next.setContent([
+					async (event, trigger, player) => {
+						const ref = game.players[0];
+						const bool = Math.random() < 0.5;
+						const bool2 = Math.random() < 0.5;
+						ref.side = bool;
+						ref.next.side = bool2;
+						ref.next.next.side = !bool;
+						ref.previous.side = !bool2;
+						let firstChoose = game.players.randomGet();
+						if (firstChoose.next.side === firstChoose.side) {
+							firstChoose = firstChoose.next;
 						}
-						game.players[i].node.identity.dataset.color = game.players[i].side + "zhu";
-					}
-					ui.arena.classList.add("choose-character");
-					game.broadcast(
-						function (ref, bool, bool2, firstChoose) {
-							ref.side = bool;
-							ref.next.side = bool2;
-							ref.next.next.side = !bool;
-							ref.previous.side = !bool2;
-							for (var i = 0; i < 4; i++) {
-								firstChoose.node.name.innerHTML = get.verticalStr(get.cnNumber(i + 1, true) + "号位");
-								firstChoose = firstChoose.next;
+						_status.firstAct = firstChoose;
+						for (let i = 0; i < 4; i++) {
+							firstChoose.node.name.innerHTML = get.verticalStr(`${get.cnNumber(i + 1, true)}号位`);
+							firstChoose = firstChoose.next;
+						}
+						for (let i = 0; i < game.players.length; i++) {
+							if (game.players[i].side === game.me.side) {
+								game.players[i].node.identity.firstChild.innerHTML = "友";
+							} else {
+								game.players[i].node.identity.firstChild.innerHTML = "敌";
 							}
-							for (var i = 0; i < game.players.length; i++) {
-								if (game.players[i].side == game.me.side) {
-									game.players[i].node.identity.firstChild.innerHTML = "友";
-								} else {
-									game.players[i].node.identity.firstChild.innerHTML = "敌";
+							game.players[i].node.identity.dataset.color = `${game.players[i].side}zhu`;
+						}
+						ui.arena.classList.add("choose-character");
+						game.broadcast(
+							(ref, bool, bool2, firstChoose) => {
+								ref.side = bool;
+								ref.next.side = bool2;
+								ref.next.next.side = !bool;
+								ref.previous.side = !bool2;
+								for (let i = 0; i < 4; i++) {
+									firstChoose.node.name.innerHTML = get.verticalStr(`${get.cnNumber(i + 1, true)}号位`);
+									firstChoose = firstChoose.next;
 								}
-								game.players[i].node.identity.dataset.color = game.players[i].side + "zhu";
-							}
-							ui.arena.classList.add("choose-character");
-						},
-						ref,
-						bool,
-						bool2,
-						_status.firstAct
-					);
-					_status.onreconnect = [
-						function () {
-							var players = game.players.concat(game.dead);
-							for (var i = 0; i < players.length; i++) {
-								if (players[i].side == game.me.side) {
-									players[i].node.identity.firstChild.innerHTML = "友";
-								} else {
-									players[i].node.identity.firstChild.innerHTML = "敌";
+								for (let i = 0; i < game.players.length; i++) {
+									if (game.players[i].side === game.me.side) {
+										game.players[i].node.identity.firstChild.innerHTML = "友";
+									} else {
+										game.players[i].node.identity.firstChild.innerHTML = "敌";
+									}
+									game.players[i].node.identity.dataset.color = `${game.players[i].side}zhu`;
 								}
-							}
-						},
-					];
+								ui.arena.classList.add("choose-character");
+							},
+							ref,
+							bool,
+							bool2,
+							_status.firstAct
+						);
+						_status.onreconnect = [
+							() => {
+								const players = game.players.concat(game.dead);
+								for (let i = 0; i < players.length; i++) {
+									if (players[i].side === game.me.side) {
+										players[i].node.identity.firstChild.innerHTML = "友";
+									} else {
+										players[i].node.identity.firstChild.innerHTML = "敌";
+									}
+								}
+							},
+						];
 
-					//22联机分配武将
-					var list = [];
-					var libCharacter = {};
-					var list4 = [];
-					for (var i = 0; i < lib.configOL.characterPack.length; i++) {
-						var pack = lib.characterPack[lib.configOL.characterPack[i]];
-						for (var j in pack) {
-							if (lib.connectBanned.includes(j)) {
-								continue;
-							}
-							if (lib.character[j]) {
-								libCharacter[j] = pack[j];
-							}
-						}
-					}
-					for (i in lib.characterReplace) {
-						var ix = lib.characterReplace[i];
-						for (var j = 0; j < ix.length; j++) {
-							if (!libCharacter[ix[j]] || lib.filter.characterDisabled(ix[j], libCharacter)) {
-								ix.splice(j--, 1);
+						//22联机分配武将
+						const list = [];
+						const libCharacter = {};
+						const list4 = [];
+						for (let i = 0; i < lib.configOL.characterPack.length; i++) {
+							const pack = lib.characterPack[lib.configOL.characterPack[i]];
+							for (const j in pack) {
+								if (lib.connectBanned.includes(j)) {
+									continue;
+								}
+								if (lib.character[j]) {
+									libCharacter[j] = pack[j];
+								}
 							}
 						}
-						if (ix.length) {
-							list.push(i);
-							list4.addArray(ix);
-						}
-					}
-					game.broadcast(function (list) {
-						for (var i in lib.characterReplace) {
-							var ix = lib.characterReplace[i];
-							for (var j = 0; j < ix.length; j++) {
-								if (!list.includes(ix[j])) {
+						for (const i in lib.characterReplace) {
+							const ix = lib.characterReplace[i];
+							for (let j = 0; j < ix.length; j++) {
+								if (!libCharacter[ix[j]] || lib.filter.characterDisabled(ix[j], libCharacter)) {
 									ix.splice(j--, 1);
 								}
 							}
+							if (ix.length) {
+								list.push(i);
+								list4.addArray(ix);
+							}
 						}
-					}, list4);
-					for (i in libCharacter) {
-						if (list4.includes(i) || lib.filter.characterDisabled(i, libCharacter)) {
-							continue;
-						}
-						list.push(i);
-						list4.push(i);
-					}
-					var choose = {};
-					event.list = list;
-					_status.characterlist = list4;
-					//推荐队友选将
-					//给所有人生成对话框
-					for (var i = 0; i < game.players.length; i++) {
-						choose[game.players[i].playerid] = list.randomRemove(6);
-					}
-					game._characterChoice = choose;
-					event._choiceMap = {};
-					event.videoId = lib.status.videoId++;
-					game.broadcastAll(
-						function (id, choice) {
-							game._characterChoice = choice;
-							game._characterDialogID = id;
-							var dialog = ui.create.dialog("请选择武将");
-							dialog.videoId = id;
-							var players, friends;
-							var player = game.me;
-							for (var i in choice) {
-								var current = lib.playerOL[i];
-								if (current == player) {
-									players = choice[i];
-								} else if (current.side == player.side) {
-									friends = choice[i];
+						game.broadcast(list => {
+							for (const i in lib.characterReplace) {
+								const ix = lib.characterReplace[i];
+								for (let j = 0; j < ix.length; j++) {
+									if (!list.includes(ix[j])) {
+										ix.splice(j--, 1);
+									}
 								}
 							}
-							dialog.addText("你的选将框");
-							var buttons = ui.create.div(".buttons", dialog.content);
-							dialog.players = ui.create.buttons(players, "characterx", buttons);
-							dialog.buttons = dialog.buttons.concat(dialog.players);
-							dialog.addText("队友的选将框（点击可为其推荐武将）");
-							buttons = ui.create.div(".buttons", dialog.content);
-							dialog.friends = ui.create.buttons(friends, "characterx", buttons);
-							dialog.buttons = dialog.buttons.concat(dialog.friends);
-						},
-						event.videoId,
-						choose
-					);
-					//发送选择事件
-					var send = function () {
-						var next = game.me.chooseButton([1, 2], true);
-						next.set("dialog", game._characterDialogID);
-						next.set("callback", function (player, result) {
-							player.init(result.links[0], null, null, false);
-							var button = game._playerChoice;
-							button.classList.remove("glow2");
-							button.classList.add("selected");
-							delete game._playerChoice;
-						});
-						//托管选择
-						next.set("ai", function (button) {
-							if (ui.selected.buttons.length) {
-								return 0;
+						}, list4);
+						for (const i in libCharacter) {
+							if (list4.includes(i) || lib.filter.characterDisabled(i, libCharacter)) {
+								continue;
 							}
-							var dialog = get.idDialog(game._characterDialogID);
-							if (dialog.friends && dialog.friends.includes(button)) {
-								return 0;
-							}
-							if (dialog.classList.contains("glow2")) {
-								return 1 + Math.random();
-							}
-							return 0.5 + Math.random();
-						});
-						//修改点击按钮后的反应
-						next.set("custom", {
-							replace: {
-								button: function (button) {
-									var dialog = get.idDialog(game._characterDialogID);
-									var origin = button._link,
-										choice = button.link;
-									//选择按钮时自动取消选择上一个按钮
-									if (dialog.players.includes(button)) {
-										if (!button.classList.contains("selected")) {
-											button.classList.add("selected");
-											ui.selected.buttons.add(button);
-											game._playerChoice = button;
-											for (var other of dialog.players) {
-												if (other != button && other.classList.contains("selected")) {
-													other.classList.remove("selected");
-													ui.selected.buttons.remove(other);
+							list.push(i);
+							list4.push(i);
+						}
+						const choose = {};
+						event.list = list;
+						_status.characterlist = list4;
+						//推荐队友选将
+						//给所有人生成对话框
+						for (let i = 0; i < game.players.length; i++) {
+							choose[game.players[i].playerid] = list.randomRemove(6);
+						}
+						game._characterChoice = choose;
+						event._choiceMap = {};
+						event.videoId = lib.status.videoId++;
+						game.broadcastAll(
+							(id, choice) => {
+								game._characterChoice = choice;
+								game._characterDialogID = id;
+								const dialog = ui.create.dialog("请选择武将");
+								dialog.videoId = id;
+								let players;
+								let friends;
+								const player = game.me;
+								for (const i in choice) {
+									const current = lib.playerOL[i];
+									if (current === player) {
+										players = choice[i];
+									} else if (current.side === player.side) {
+										friends = choice[i];
+									}
+								}
+								dialog.addText("你的选将框");
+								let buttons = ui.create.div(".buttons", dialog.content);
+								dialog.players = ui.create.buttons(players, "characterx", buttons);
+								dialog.buttons = dialog.buttons.concat(dialog.players);
+								dialog.addText("队友的选将框（点击可为其推荐武将）");
+								buttons = ui.create.div(".buttons", dialog.content);
+								dialog.friends = ui.create.buttons(friends, "characterx", buttons);
+								dialog.buttons = dialog.buttons.concat(dialog.friends);
+							},
+							event.videoId,
+							choose
+						);
+						//发送选择事件
+						const send = () => {
+							const next = game.me.chooseButton({
+								selectButton: [1, 2],
+								forced: true,
+								//托管选择
+								ai: button => {
+									if (ui.selected.buttons.length) {
+										return 0;
+									}
+									const dialog = get.idDialog(game._characterDialogID);
+									if (dialog.friends && dialog.friends.includes(button)) {
+										return 0;
+									}
+									if (dialog.classList.contains("glow2")) {
+										return 1 + Math.random();
+									}
+									return 0.5 + Math.random();
+								},
+							});
+							next.set("dialog", game._characterDialogID);
+							next.set("callback", (player, result) => {
+								player.init(result.links[0], null, null, false);
+								const button = game._playerChoice;
+								button.classList.remove("glow2");
+								button.classList.add("selected");
+								delete game._playerChoice;
+							});
+							//修改点击按钮后的反应
+							next.set("custom", {
+								replace: {
+									button: button => {
+										const dialog = get.idDialog(game._characterDialogID);
+										const origin = button._link;
+										const choice = button.link;
+										//选择按钮时自动取消选择上一个按钮
+										if (dialog.players.includes(button)) {
+											if (!button.classList.contains("selected")) {
+												button.classList.add("selected");
+												ui.selected.buttons.add(button);
+												game._playerChoice = button;
+												for (const other of dialog.players) {
+													if (other !== button && other.classList.contains("selected")) {
+														other.classList.remove("selected");
+														ui.selected.buttons.remove(other);
+													}
 												}
 											}
-										}
-										game.check();
-									} else {
-										//给队友推荐选将
-										if (game._friendConfirmed) {
-											return;
-										}
-										if (button == dialog._recommending) {
-											return;
-										}
-										dialog._recommending = button;
-										button.classList.add("glow2");
-										for (var other of dialog.friends) {
-											if (other != button && other.classList.contains("glow2")) {
-												other.classList.remove("glow2");
-											}
-										}
-										//将最小发送延时间隔设置为0.5秒 避免通过频繁点击进行炸服
-										if (dialog.delay) {
-											return;
-										}
-										if (game.online) {
-											game.send("tempResult", origin);
+											game.check();
 										} else {
-											game.me.tempUnwait(origin);
-										}
-										dialog.delay = setTimeout(function () {
-											delete dialog.delay;
+											//给队友推荐选将
 											if (game._friendConfirmed) {
 												return;
 											}
-											var recommend = dialog._recommending._link;
-											if (recommend != origin) {
-												if (game.online) {
-													game.send("tempResult", recommend);
-												} else {
-													game.me.tempUnwait(recommend);
+											if (button === dialog._recommending) {
+												return;
+											}
+											dialog._recommending = button;
+											button.classList.add("glow2");
+											for (const other of dialog.friends) {
+												if (other !== button && other.classList.contains("glow2")) {
+													other.classList.remove("glow2");
 												}
 											}
-										}, 500);
-									}
-								},
-							},
-							add: {},
-						});
-						if (game.online) {
-							game.resume();
-						}
-					};
-					//推荐选将后的回传函数
-					event.recommend = function (player, choice) {
-						if (player.name1 || game._characterDialogID == undefined) {
-							return;
-						}
-						var dialog = get.idDialog(game._characterDialogID);
-						if (dialog) {
-							for (var button of dialog.players) {
-								if (button._link == choice) {
-									button.classList.add("glow2");
-								} else if (button.classList.contains("glow2")) {
-									button.classList.remove("glow2");
-								}
-							}
-						}
-					};
-					//确认选将后的回传函数
-					event.confirm = function (player, choice) {
-						if (!player.name1) {
-							player.init(choice, null, null, false);
-						}
-						game._friendConfirmed = true;
-						if (game._characterDialogID == undefined) {
-							return;
-						}
-						var dialog = get.idDialog(game._characterDialogID);
-						if (!dialog) {
-							return;
-						}
-						for (var button of dialog.friends) {
-							button.classList.remove("glow2");
-							if (button.link == choice || (lib.characterReplace[button._link] && lib.characterReplace[button._link].includes(choice))) {
-								button.classList.add("selected");
-							}
-						}
-					};
-					//处理result
-					var sendback = function (result, player) {
-						var type = typeof result;
-						var friend = game.findPlayer(function (current) {
-							return current != player && current.side == player.side;
-						});
-						//处理推荐选将
-						if (type == "string") {
-							if (friend == game.me) {
-								event.recommend(friend, result);
-							} else if (friend.isOnline()) {
-								friend.send(event.recommend, friend, result);
-							} else {
-								friend._aiChoice = result;
-							}
-						}
-						//处理确认选将
-						else if (result && type == "object") {
-							var choice = result.links[0];
-							event._choiceMap[player.playerid] = choice;
-							if (friend == game.me) {
-								event.confirm(player, choice);
-							} else if (friend.isOnline()) {
-								friend.send(event.confirm, player, choice);
-							}
-						}
-					};
-					event.sendback = sendback;
-
-					//发送
-					event.ai_targets = [];
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].isOnline()) {
-							event.withol = true;
-							game.players[i].send(send);
-							game.players[i].wait(sendback);
-						} else if (game.players[i] == game.me) {
-							event.withme = true;
-							send();
-							game.me.wait(sendback);
-						} else {
-							event.ai_targets.push(game.players[i]);
-							game.players[i].showTimer();
-						}
-					}
-					//模拟AI思考后选择
-					if (event.ai_targets.length) {
-						event.ai_targets.randomSort();
-						setTimeout(function () {
-							event.interval = setInterval(function () {
-								var target = event.ai_targets.shift();
-								var list = game._characterChoice[target.playerid];
-								var choice;
-								//AI必选玩家推荐角色
-								if (target._aiChoice && list.includes(target._aiChoice)) {
-									choice = target._aiChoice;
-								} else {
-									choice = list.randomGet();
-								}
-								if (lib.characterReplace[choice]) {
-									choice = lib.characterReplace[choice].randomGet();
-								}
-								event.sendback(
-									{
-										result: bool,
-										links: [choice],
+											//将最小发送延时间隔设置为0.5秒 避免通过频繁点击进行炸服
+											if (dialog.delay) {
+												return;
+											}
+											if (game.online) {
+												game.send("tempResult", origin);
+											} else {
+												game.me.tempUnwait(origin);
+											}
+											dialog.delay = setTimeout(() => {
+												delete dialog.delay;
+												if (game._friendConfirmed) {
+													return;
+												}
+												const recommend = dialog._recommending._link;
+												if (recommend !== origin) {
+													if (game.online) {
+														game.send("tempResult", recommend);
+													} else {
+														game.me.tempUnwait(recommend);
+													}
+												}
+											}, 500);
+										}
 									},
-									target
-								);
-								target.hideTimer();
-								if (!event.ai_targets.length) {
-									clearInterval(event.interval);
-									if (event.withai) {
-										game.resume();
+								},
+								add: {},
+							});
+							if (game.online) {
+								game.resume();
+							}
+						};
+						//推荐选将后的回传函数
+						event.recommend = (player, choice) => {
+							if (player.name1 || game._characterDialogID == null) {
+								return;
+							}
+							const dialog = get.idDialog(game._characterDialogID);
+							if (dialog) {
+								for (const button of dialog.players) {
+									if (button._link === choice) {
+										button.classList.add("glow2");
+									} else if (button.classList.contains("glow2")) {
+										button.classList.remove("glow2");
 									}
 								}
-							}, 1000);
-						}, 6000);
-					}
-					"step 1";
-					if (event.withme) {
-						game.me.unwait(result);
-					}
-					"step 2";
-					if (event.withol && !event.resultOL) {
-						game.pause();
-					}
-					"step 3";
-					if (event.ai_targets.length > 0) {
-						event.withai = true;
-						game.pause();
-					}
-					"step 4";
-					game.broadcastAll(function (id) {
-						var dialog = get.idDialog(id);
-						if (dialog) {
-							dialog.close();
-							clearInterval(dialog.delay);
+							}
+						};
+						//确认选将后的回传函数
+						event.confirm = (player, choice) => {
+							if (!player.name1) {
+								player.init(choice, null, null, false);
+							}
+							game._friendConfirmed = true;
+							if (game._characterDialogID == null) {
+								return;
+							}
+							const dialog = get.idDialog(game._characterDialogID);
+							if (!dialog) {
+								return;
+							}
+							for (const button of dialog.friends) {
+								button.classList.remove("glow2");
+								if (button.link === choice || (lib.characterReplace[button._link] && lib.characterReplace[button._link].includes(choice))) {
+									button.classList.add("selected");
+								}
+							}
+						};
+						//处理result
+						const sendback = (result, player) => {
+							const type = typeof result;
+							const friend = game.findPlayer(current => {
+								return current !== player && current.side === player.side;
+							});
+							//处理推荐选将
+							if (type === "string") {
+								if (friend === game.me) {
+									event.recommend(friend, result);
+								} else if (friend.isOnline()) {
+									friend.send(event.recommend, friend, result);
+								} else {
+									friend._aiChoice = result;
+								}
+							}
+							//处理确认选将
+							else if (result && type === "object") {
+								const choice = result.links[0];
+								event._choiceMap[player.playerid] = choice;
+								if (friend === game.me) {
+									event.confirm(player, choice);
+								} else if (friend.isOnline()) {
+									friend.send(event.confirm, player, choice);
+								}
+							}
+						};
+						event.sendback = sendback;
+
+						//发送
+						event.ai_targets = [];
+						for (let i = 0; i < game.players.length; i++) {
+							if (game.players[i].isOnline()) {
+								event.withol = true;
+								game.players[i].send(send);
+								game.players[i].wait(sendback);
+							} else if (game.players[i] === game.me) {
+								event.withme = true;
+								send();
+								game.me.wait(sendback);
+							} else {
+								event.ai_targets.push(game.players[i]);
+								game.players[i].showTimer();
+							}
 						}
-					}, event.videoId);
-					var result = event._choiceMap;
-					for (var i in lib.playerOL) {
-						if (!lib.character[result[i]]) {
-							result[i] = game._characterChoice[i].randomGet();
+						//模拟AI思考后选择
+						if (event.ai_targets.length) {
+							event.ai_targets.randomSort();
+							setTimeout(() => {
+								event.interval = setInterval(() => {
+									const target = event.ai_targets.shift();
+									const list = game._characterChoice[target.playerid];
+									let choice;
+									//AI必选玩家推荐角色
+									if (target._aiChoice && list.includes(target._aiChoice)) {
+										choice = target._aiChoice;
+									} else {
+										choice = list.randomGet();
+									}
+									if (lib.characterReplace[choice]) {
+										choice = lib.characterReplace[choice].randomGet();
+									}
+									event.sendback(
+										{
+											result: bool,
+											links: [choice],
+										},
+										target
+									);
+									target.hideTimer();
+									if (!event.ai_targets.length) {
+										clearInterval(event.interval);
+										if (event.withai) {
+											game.resume();
+										}
+									}
+								}, 1000);
+							}, 6000);
 						}
-						_status.characterlist.remove(result[i]);
-						if (!lib.playerOL[i].name1) {
-							lib.playerOL[i].init(result[i]);
+					},
+					async (event, trigger, player, result) => {
+						if (event.withme) {
+							game.me.unwait(result);
 						}
-						lib.playerOL[i].update();
-					}
-					game.broadcast(function (result) {
-						for (var i in result) {
+					},
+					async (event, trigger, player, result) => {
+						if (event.withol && !event.resultOL) {
+							game.pause();
+						}
+					},
+					async (event, trigger, player, result) => {
+						if (event.ai_targets.length > 0) {
+							event.withai = true;
+							game.pause();
+						}
+					},
+					async (event, trigger, player) => {
+						game.broadcastAll(id => {
+							const dialog = get.idDialog(id);
+							if (dialog) {
+								dialog.close();
+								clearInterval(dialog.delay);
+							}
+						}, event.videoId);
+						const result = event._choiceMap;
+						for (const i in lib.playerOL) {
+							if (!lib.character[result[i]]) {
+								result[i] = game._characterChoice[i].randomGet();
+							}
+							_status.characterlist.remove(result[i]);
 							if (!lib.playerOL[i].name1) {
 								lib.playerOL[i].init(result[i]);
-								lib.playerOL[i].update();
 							}
+							lib.playerOL[i].update();
 						}
-						setTimeout(function () {
+						game.broadcast(result => {
+							for (const i in result) {
+								if (!lib.playerOL[i].name1) {
+									lib.playerOL[i].init(result[i]);
+									lib.playerOL[i].update();
+								}
+							}
+							setTimeout(() => {
+								ui.arena.classList.remove("choose-character");
+							}, 500);
+						}, result);
+						setTimeout(() => {
 							ui.arena.classList.remove("choose-character");
 						}, 500);
-					}, result);
-					setTimeout(function () {
-						ui.arena.classList.remove("choose-character");
-					}, 500);
-					if (lib.configOL.olfeiyang_four) {
-						var target = _status.firstAct.previous;
-						if (target.isIn()) {
-							target.addSkill("olfeiyang");
+						if (lib.configOL.olfeiyang_four) {
+							const target = _status.firstAct.previous;
+							if (target.isIn()) {
+								target.addSkill("olfeiyang");
+							}
 						}
-					}
-					game.addGlobalSkill("versus_viewHandcard");
-				});
+						game.addGlobalSkill("versus_viewHandcard");
+					},
+				]);
 			},
 			chooseCharacterOL1: function () {
 				var next = game.createEvent("chooseCharacterOL");
