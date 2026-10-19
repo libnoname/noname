@@ -47249,8 +47249,8 @@ const skills = {
 				filter(event, player) {
 					return player.storage.xinyingshi_source && player.storage.xinyingshi_source.isIn() && player.getExpansions("xinyingshi_cards").length > 0;
 				},
-				content() {
-					player.storage.xinyingshi_source.gain(player.getExpansions("xinyingshi_cards"), player, "give", "bySelf");
+				async content(event, trigger, player) {
+					player.storage.xinyingshi_source.gain({ cards: player.getExpansions("xinyingshi_cards"), source: player, animate: "give", bySelf: true });
 				},
 			},
 		},
