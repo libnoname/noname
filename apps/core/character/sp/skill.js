@@ -38964,7 +38964,7 @@ const skills = {
 		filter(event, player) {
 			return event.getParent().name == "gushe" && !event.iwhile && event.num1 <= player.countMark("gushe");
 		},
-		content() {
+		async content(event, trigger, player) {
 			if (trigger.num1 < player.countMark("gushe")) {
 				trigger.num1 += player.countMark("gushe");
 			} else {
