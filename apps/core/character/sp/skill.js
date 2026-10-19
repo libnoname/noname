@@ -41477,7 +41477,7 @@ const skills = {
 		filter(event, player) {
 			return event.card == player.storage.hanyong3;
 		},
-		content() {
+		async content(event, trigger, player) {
 			trigger.num++;
 		},
 	},
