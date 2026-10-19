@@ -47934,7 +47934,7 @@ const skills = {
 		},
 		forced: true,
 		logTarget: "source",
-		content() {
+		async content(event, trigger, player) {
 			player.addTempSkill("xinfu_weilu_effect", { player: "die" });
 			player.markAuto("xinfu_weilu_effect", [trigger.source]);
 			game.delayx();
