@@ -6156,8 +6156,8 @@ export default () => {
 					}
 					return bool && num >= 2;
 				},
-				content: function () {
-					player.draw();
+				async content(event, trigger, player) {
+					await player.draw();
 				},
 			},
 			xingzhao3: {
