@@ -28690,8 +28690,8 @@ const skills = {
 			return false;
 		},
 		forced: true,
-		content() {
-			for (var i of lib.skill.rebaobian.derivation) {
+		async content(event, trigger, player) {
+			for (const i of lib.skill.rebaobian.derivation) {
 				if (!player.hasSkill(i, null, null, false)) {
 					player.addSkills(i);
 					break;
