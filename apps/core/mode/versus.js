@@ -7625,7 +7625,7 @@ export default () => {
 					content: "已获得狂风标记",
 				},
 				forced: true,
-				content: function () {
+				async content(event, trigger, player) {
 					trigger.num++;
 				},
 				ai: {
