@@ -46114,7 +46114,7 @@ const skills = {
 				},
 				forced: true,
 				locked: false,
-				content() {
+				async content(event, trigger, player) {
 					player.addMark("xinfu_xionghuo", 3 - player.countMark("xinfu_xionghuo"));
 				},
 			},
