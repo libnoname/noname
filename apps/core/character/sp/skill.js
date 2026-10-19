@@ -27735,7 +27735,7 @@ const skills = {
 		filter(event, player) {
 			return event.card && event.card.name == "sha" && get.color(event.card) == "red";
 		},
-		content() {
+		async content(event, trigger, player) {
 			trigger.directHit.addArray(game.players);
 		},
 		ai: {
