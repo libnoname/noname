@@ -2060,52 +2060,50 @@ export default () => {
 					},
 				]);
 			},
-			chooseCharacterThree: function () {
-				var next = game.createEvent("chooseCharacter");
-				next.setContent(function () {
-					"step 0";
+			chooseCharacterThree: () => {
+				const next = game.createEvent("chooseCharacter");
+				next.setContent(async (event, trigger, player) => {
 					if (lib.config.continue_name_versus_three) {
 						event.friendlist = lib.config.continue_name_versus_three.friend;
 						event.enemylist = lib.config.continue_name_versus_three.enemy;
 						_status.color = lib.config.continue_name_versus_three.color;
 						game.additionaldead = [];
 						game.saveConfig("continue_name_versus_three");
-						event.goto(2);
 						lib.init.onfree();
 					} else {
-						var chara = get.config("character_three") || lib.choiceThree;
-						game.chooseCharacterDouble(
-							function (i) {
-								if (get.config("enable_all_three")) {
-									if (lib.filter.characterDisabled(i)) {
-										return false;
+						const chara = get.config("character_three") || lib.choiceThree;
+						const result = await game
+							.chooseCharacterDouble(
+								i => {
+									if (get.config("enable_all_three")) {
+										if (lib.filter.characterDisabled(i)) {
+											return false;
+										}
+										return !lib.filter.characterDisabled(i);
+									} else {
+										return chara.includes(i);
 									}
-									return !lib.filter.characterDisabled(i);
-								} else {
-									return chara.includes(i);
+								},
+								i => {
+									return i === 1 ? "主帅" : "前锋";
 								}
-							},
-							function (i) {
-								return i == 1 ? "主帅" : "前锋";
-							}
-						);
+							)
+							.forResult();
+						game.addRecentCharacter(...result.friend);
+						event.friendlist = result.friend;
+						event.enemylist = result.enemy;
 					}
-					"step 1";
-					game.addRecentCharacter.apply(this, result.friend);
-					event.friendlist = result.friend;
-					event.enemylist = result.enemy;
-					"step 2";
 					_status.friendBackup = event.friendlist.slice(0);
 					_status.enemyBackup = event.enemylist.slice(0);
 					_status.coinCoeff = get.coinCoeff(event.friendlist);
 
 					ui.create.players(6);
-					for (var i = 0; i < game.players.length; i++) {
+					for (let i = 0; i < game.players.length; i++) {
 						game.players[i].getId();
 						game.players[i].node.action.innerHTML = "行动";
 					}
 					ui.arena.setNumber(7);
-					for (var i = 0; i < game.players.length; i++) {
+					for (let i = 0; i < game.players.length; i++) {
 						game.players[i].dataset.position = parseInt(game.players[i].dataset.position) + 1;
 					}
 					game.singleHandcard = true;
@@ -2119,15 +2117,15 @@ export default () => {
 					game.friend = [];
 					game.enemy = [];
 
-					for (var i in lib.skill) {
+					for (const i in lib.skill) {
 						if (lib.skill[i].seatRelated === true) {
 							lib.skill[i] = {};
-							if (lib.translate[i + "_info"]) {
-								lib.translate[i + "_info"] = "此模式下不可用";
+							if (lib.translate[`${i}_info`]) {
+								lib.translate[`${i}_info`] = "此模式下不可用";
 							}
 						}
 					}
-					for (i = 0; i < game.players.length; i++) {
+					for (let i = 0; i < game.players.length; i++) {
 						if (i < 3) {
 							game.friend.push(game.players[i]);
 						} else {
@@ -2136,27 +2134,27 @@ export default () => {
 					}
 					game.friendZhu = game.players[1];
 					game.enemyZhu = game.players[4];
-					for (var i = 0; i < 3; i++) {
+					for (let i = 0; i < 3; i++) {
 						game.friend[i].side = _status.color;
 						game.enemy[i].side = !_status.color;
-						if (game.friendZhu == game.friend[i]) {
+						if (game.friendZhu === game.friend[i]) {
 							game.friend[i].identity = "zhu";
-							game.friend[i].setIdentity(_status.color + "Zhu");
+							game.friend[i].setIdentity(`${_status.color}Zhu`);
 						} else {
 							game.friend[i].identity = "zhong";
-							game.friend[i].setIdentity(_status.color + "Zhong");
+							game.friend[i].setIdentity(`${_status.color}Zhong`);
 						}
-						if (game.enemyZhu == game.enemy[i]) {
+						if (game.enemyZhu === game.enemy[i]) {
 							game.enemy[i].identity = "zhu";
-							game.enemy[i].setIdentity(!_status.color + "Zhu");
+							game.enemy[i].setIdentity(`${!_status.color}Zhu`);
 						} else {
 							game.enemy[i].identity = "zhong";
-							game.enemy[i].setIdentity(!_status.color + "Zhong");
+							game.enemy[i].setIdentity(`${!_status.color}Zhong`);
 						}
 						game.friend[i].init(event.friendlist[i]);
 						game.enemy[i].init(event.enemylist[i]);
-						game.friend[i].node.identity.dataset.color = get.translation(_status.color + "Color");
-						game.enemy[i].node.identity.dataset.color = get.translation(!_status.color + "Color");
+						game.friend[i].node.identity.dataset.color = get.translation(`${_status.color}Color`);
+						game.enemy[i].node.identity.dataset.color = get.translation(`${!_status.color}Color`);
 					}
 					if (!game.friendZhu.isInitFilter("noZhuHp")) {
 						game.friendZhu.maxHp++;
