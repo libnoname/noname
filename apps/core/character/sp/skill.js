@@ -43898,7 +43898,7 @@ const skills = {
 		filter(event, player) {
 			return event.card.name == "sha" && player.countCards("h") < player.hp;
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.draw();
 		},
 	},
