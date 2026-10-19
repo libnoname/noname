@@ -6187,7 +6187,7 @@ export default () => {
 					return event.card && event.card == player.storage.xionghuangjiu && event.notLink();
 				},
 				forced: true,
-				content: function () {
+				async content(event, trigger, player) {
 					trigger.num++;
 				},
 				temp: true,
