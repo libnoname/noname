@@ -42559,7 +42559,7 @@ const skills = {
 			return event.getParent().excluded.includes(player) || get.tag(event.card, "multineg") || get.effect(player, event.card, event.player, player) <= 0;
 		},
 		trigger: { target: "useCardToTargeted" },
-		content() {
+		async content(event, trigger, player) {
 			trigger.getParent().excluded.add(player);
 			player.draw();
 		},
