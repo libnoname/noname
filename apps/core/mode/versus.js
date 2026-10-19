@@ -7089,8 +7089,8 @@ export default () => {
 				check: function () {
 					return false;
 				},
-				content: function () {
-					player.loseHp();
+				async content(event, trigger, player) {
+					await player.loseHp();
 				},
 			},
 			boss_skonghun: {
