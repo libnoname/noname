@@ -8605,6 +8605,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 				}
 			},
 		]);
+		return next;
 	}
 	updateRoundNumber() {
 		game.broadcastAll(
