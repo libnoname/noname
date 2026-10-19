@@ -36441,8 +36441,8 @@ const skills = {
 		logTarget() {
 			return _status.currentPhase;
 		},
-		content() {
-			var source = _status.currentPhase;
+		async content(event, trigger, player) {
+			const source = _status.currentPhase;
 			if (source.hasSkill("hengjiang2")) {
 				source.storage.hengjiang2 += trigger.num;
 				source.storage.hengjiang3.add(player);
