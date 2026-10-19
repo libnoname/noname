@@ -6277,12 +6277,12 @@ export default () => {
 								}
 							}
 						},
-						content: function () {
-							for (var i = 0; i < game.players.length; i++) {
-								game.players[i].classList.remove("current_action");
+						async content(event, trigger, player) {
+							for (const current of game.players) {
+								current.classList.remove("current_action");
 							}
-							var me = game.me._trueMe || game.me;
-							game.over(_status.winside == me.side);
+							const me = game.me._trueMe || game.me;
+							game.over(_status.winside === me.side);
 						},
 					},
 				},
