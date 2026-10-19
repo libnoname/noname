@@ -21214,11 +21214,11 @@ const skills = {
 				filter(event, player) {
 					return event.name != "phase" || game.phaseNumber == 0;
 				},
-				content() {
+				async content(event, trigger, player) {
 					if (!_status.olzhuyan) {
 						_status.olzhuyan = {};
 					}
-					if (event.triggername == "phaseBefore") {
+					if (event.triggername === "phaseBefore") {
 						game.countPlayer(current => {
 							_status.olzhuyan[current.playerid] = [current.hp, current.countCards("h")];
 						});
