@@ -43717,7 +43717,7 @@ const skills = {
 		filter(event, player) {
 			return !player.getStat("damage");
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.draw(2);
 		},
 		audio: 2,
