@@ -44015,7 +44015,8 @@ const skills = {
 		selectTarget() {
 			return [1, Math.max(1, _status.event.player.getDamagedHp())];
 		},
-		content() {
+		async content(event, trigger, player) {
+			const { target } = event;
 			if (!target.isLinked()) {
 				target.link();
 			}
