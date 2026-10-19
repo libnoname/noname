@@ -24554,13 +24554,13 @@ const skills = {
 			}
 			return false;
 		},
-		content() {
+		async content(event, trigger, player) {
 			if (!trigger.visible) {
-				var cards = trigger.getl(player).hs.filter(function (i) {
-					return get.color(i, player) == "red";
+				const cards = trigger.getl(player).hs.filter(i => {
+					return get.color(i, player) === "red";
 				});
 				if (cards.length > 0) {
-					player.showCards(cards, get.translation(player) + "发动了【明哲】");
+					player.showCards(cards, `${get.translation(player)}发动了【明哲】`);
 				}
 			}
 			player.draw();
