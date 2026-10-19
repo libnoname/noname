@@ -35171,8 +35171,8 @@ const skills = {
 				filter(event, player) {
 					return event.name != "gain" || player != _status.currentPhase;
 				},
-				content() {
-					if (trigger.name == "gain") {
+				async content(event, trigger, player) {
+					if (trigger.name === "gain") {
 						trigger.gaintag.add("zishu");
 					} else {
 						player.removeGaintag("zishu");
