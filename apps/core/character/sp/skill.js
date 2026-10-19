@@ -22296,7 +22296,7 @@ const skills = {
 				filter(event, player) {
 					return player.hasMark("olkangrui_add");
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.num += player.countMark("olkangrui_add");
 					player.removeMark("olkangrui_add", player.countMark("olkangrui_add"), false);
 					player.storage.olkangrui_nil = true;
