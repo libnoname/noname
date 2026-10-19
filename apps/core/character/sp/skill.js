@@ -26780,7 +26780,7 @@ const skills = {
 				filter(event, player) {
 					return player.getStorage("tongxie_effect").includes(event.player);
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.player.addTempSkill("tongxie_count2");
 				},
 			},
