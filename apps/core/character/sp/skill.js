@@ -42370,9 +42370,9 @@ const skills = {
 		check(event, player) {
 			return !player.countCards("h", "sha");
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.showHandcards();
-			if (!player.countCards("h", "sha")) {
+			if (!player.hasCards("h", "sha")) {
 				player.addTempSkill("oldcihuai2");
 			}
 		},
