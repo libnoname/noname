@@ -35977,7 +35977,7 @@ const skills = {
 				forced: true,
 				skillAnimation: true,
 				animationColor: "gray",
-				content() {
+				async content(event, trigger, player) {
 					player.awakenSkill("moucheng");
 					player.changeSkills(["jingong"], ["wylianji"]);
 				},
