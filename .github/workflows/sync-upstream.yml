@@ -3,7 +3,9 @@ name: Sync with upstream
 # 用途：让本 Fork 与上游 libnoname/noname 保持同步，不用手动点「Sync fork」。
 #
 # 覆盖分支：每晚自动枚举本 Fork 的全部现有分支（每分支一个独立任务），
-#     排除 build-output（构建产物分支，由 build.yml 强推维护）与 backup/*（备份分支，保持快照、不参与同步）。
+#     排除 build-output（构建产物分支，由 build.yml 强推维护）、backup/*（备份分支，保持快照）
+#     与 feat/#3531* / feat/#3537*（上游已删除同名分支的陈旧镜像——对应 PR 已 squash 合入上游 main，
+#     本地副本与 main 合并必冲突，2026-10-19 起排除；如需清理可删除这两个分支后再移除本排除项）。
 #     新增分支无需改本文件——创建后会自动纳入下一次同步。
 # 同步源：与本工作流所用的 merge-upstream 接口（即网页「Sync fork」按钮）的实际语义对齐——
 #     上游存在同名分支时，同步「上游的同名分支」；否则回退「上游 main」。
@@ -76,10 +78,10 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write # merge-upstream 需要写权限
+  contents: read # 枚举分支只需读权限；写权限下放到 sync 任务
 
 jobs:
-  # 前置：运行时枚举本 Fork 的全部现有分支（排除 build-output 与 backup/*），供同步矩阵使用。
+  # 前置：运行时枚举本 Fork 的全部现有分支（排除 build-output、backup/* 与已失效的上游镜像），供同步矩阵使用。
   # 新增分支无需修改本文件——下一次运行会自动纳入。
   list-branches:
     name: List all branches
@@ -89,7 +91,7 @@ jobs:
       branches: ${{ steps.list.outputs.branches }}
       count: ${{ steps.list.outputs.count }}
     steps:
-      - name: 枚举分支（排除 build-output 与 backup/*）
+      - name: 枚举分支（排除 build-output、backup/* 与失效镜像）
         id: list
         env:
           GH_TOKEN: ${{ secrets.SYNC_TOKEN || secrets.GITHUB_TOKEN }}
@@ -97,13 +99,14 @@ jobs:
         run: |
           set -euo pipefail
           all=$(gh api "repos/$FORK/branches?per_page=100" --paginate --jq '.[].name' | sort)
-          names=$(printf '%s\n' "$all" | grep -v -x 'build-output' | grep -v '^backup/' || true)
+          names=$(printf '%s\n' "$all" | grep -v -x 'build-output' | grep -v '^backup/' \
+            | grep -vE '^feat/#(3531|3537)-' || true)
           if [ -z "$names" ]; then
             echo "::error::未枚举到任何可同步分支（异常，请检查）"
             exit 1
           fi
-          # 生成 JSON 数组供 matrix.fromJSON 使用（分支名不含引号/反斜杠，直接包裹即可）
-          json="[$(printf '%s\n' "$names" | sed 's/.*/"&"/' | tr '\n' ',' | sed 's/,$//')]"
+          # 用 jq 构造 JSON 数组：分支名可能含引号等字符，手工拼字符串会生成非法 JSON。
+          json=$(printf '%s\n' "$names" | jq -R . | jq -s -c .)
           echo "branches=$json" >> "$GITHUB_OUTPUT"
           count=$(printf '%s\n' "$names" | grep -c .)
           echo "count=$count" >> "$GITHUB_OUTPUT"
@@ -115,12 +118,14 @@ jobs:
     needs: list-branches
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: write # merge-upstream 需要写权限
 
     # 每个分支一个独立任务，互不影响（fail-fast=false 让单个分支失败不牵连其它）
     strategy:
       fail-fast: false
       matrix:
-        # 分支列表由前置任务在运行时自动枚举（fork 全部现有分支，排除 build-output 与 backup/*）
+        # 分支列表由前置任务在运行时自动枚举（fork 全部现有分支，排除 build-output、backup/* 与失效镜像）
         branch: ${{ fromJSON(needs.list-branches.outputs.branches) }}
 
     # 同一分支同时只允许一个同步任务（按分支分组，各分支可并行）
