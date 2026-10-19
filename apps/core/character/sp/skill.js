@@ -31212,7 +31212,7 @@ const skills = {
 				filter(event, player) {
 					return player.storage.juguan_draw && player.storage.juguan_draw.includes(event.source);
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.unmarkAuto("juguan_draw", [trigger.source]);
 					if (!player.storage.juguan_draw || !player.storage.juguan_draw.length) {
 						player.removeSkill("juguan_draw");
