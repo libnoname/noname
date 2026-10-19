@@ -7149,7 +7149,7 @@ export default () => {
 					}
 					return event.player.isFriendOf(player);
 				},
-				content: function () {
+				async content(event, trigger, player) {
 					trigger.num = 1;
 				},
 			},
