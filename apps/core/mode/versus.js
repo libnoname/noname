@@ -6568,8 +6568,8 @@ export default () => {
 					var target = event.source;
 					return target && target == _status.currentPhase && target.isAlive() && target.isFriendOf(player) && event.card && event.card.name == "sha" && event.getParent().type == "card";
 				},
-				content: function () {
-					var source = trigger.source;
+				async content(event, trigger, player) {
+					const source = trigger.source;
 					source.addTempSkill("boss_xiaorui2");
 					source.addMark("boss_xiaorui2", 1, false);
 				},
