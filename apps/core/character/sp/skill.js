@@ -8074,7 +8074,7 @@ const skills = {
 					return game.filterPlayer(target => target.hasSkill("olfeibian_effect"));
 				},
 				forced: true,
-				content() {
+				async content(event, trigger, player) {
 					for (const i of event.targets) {
 						i.loseHp();
 					}
