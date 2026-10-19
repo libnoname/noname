@@ -35959,7 +35959,7 @@ const skills = {
 			content: "已造成#点伤害",
 		},
 		juexingji: true,
-		content() {
+		async content(event, trigger, player) {
 			player.storage.moucheng += trigger.num;
 			if (player.hasSkill("moucheng")) {
 				player.markSkill("moucheng");
