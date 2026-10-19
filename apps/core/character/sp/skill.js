@@ -25646,9 +25646,9 @@ const skills = {
 			}
 			return false;
 		},
-		content() {
-			var cards = trigger.cards.filterInD("oe");
-			player.addToExpansion(cards, "gain2").gaintag.add("huamu");
+		async content(event, trigger, player) {
+			const cards = trigger.cards.filterInD("oe");
+			player.addToExpansion({ cards, animate: "gain2", gaintag: ["huamu"] });
 		},
 		ai: {
 			reverseOrder: true,
