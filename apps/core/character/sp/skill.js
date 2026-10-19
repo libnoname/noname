@@ -36488,12 +36488,12 @@ const skills = {
 		},
 		forced: true,
 		popup: false,
-		content() {
-			var players = player.storage.hengjiang3;
-			for (var i = 0; i < players.length; i++) {
-				if (players[i].isIn()) {
-					players[i].logSkill("hengjiang");
-					players[i].line(player, "green");
+		async content(event, trigger, player) {
+			const players = player.storage.hengjiang3;
+			for (const current of players) {
+				if (current.isIn()) {
+					current.logSkill("hengjiang");
+					current.line(player, "green");
 				}
 			}
 			game.asyncDraw(player.storage.hengjiang3);
