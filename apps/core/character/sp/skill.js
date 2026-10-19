@@ -34006,8 +34006,8 @@ const skills = {
 		filter(event, player) {
 			return player.maxHp > 0 && !get.is.single() && (event.name != "phase" || game.phaseNumber == 0);
 		},
-		content() {
-			player.draw(Math.min(5, player.maxHp), false);
+		async content(event, trigger, player) {
+			player.draw({ num: Math.min(5, player.maxHp) }).set("animate", false);
 		},
 		group: "cuorui_nojudge",
 		subSkill: {
