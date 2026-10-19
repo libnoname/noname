@@ -22064,9 +22064,9 @@ const skills = {
 					}
 					return true;
 				},
-				content() {
-					if (trigger.name == "showCards") {
-						game.broadcastAll(function (cards) {
+				async content(event, trigger, player) {
+					if (trigger.name === "showCards") {
+						game.broadcastAll(cards => {
 							cards.forEach(card => card.addGaintag("olmiuyan_tag"));
 						}, trigger.cards);
 					} else {
