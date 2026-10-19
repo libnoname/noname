@@ -17851,8 +17851,8 @@ const skills = {
 		forced: true,
 		locked: false,
 		logTarget: "player",
-		content() {
-			player.addToExpansion(trigger.cards.filterInD(), "gain2").gaintag.add("olfushi");
+		async content(event, trigger, player) {
+			player.addToExpansion({ cards: trigger.cards.filterInD(), animate: "gain2", gaintag: ["olfushi"] });
 		},
 		marktext: "豕",
 		intro: {
