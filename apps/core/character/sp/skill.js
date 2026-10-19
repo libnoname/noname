@@ -22096,18 +22096,18 @@ const skills = {
 						return current != player && current.hasCard(card => card.hasGaintag("olmiuyan_tag"));
 					});
 				},
-				content() {
-					var cards = [],
-						players = game.filterPlayer(current => current != player).sortBySeat();
+				async content(event, trigger, player) {
+					const cards = [];
+					const players = game.filterPlayer(current => current !== player).sortBySeat();
 					players.forEach(current => {
-						var cardsx = current.getCards("h", function (card) {
+						const cardsx = current.getCards("h", card => {
 							return card.hasGaintag("olmiuyan_tag");
 						});
 						if (cardsx.length) {
 							cards.addArray(cardsx);
 						}
 					});
-					player.gain(cards, "give");
+					player.gain({ cards, animate: "give" });
 				},
 			},
 			remove: {
