@@ -7345,24 +7345,29 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
-					"step 0";
-					player.turnOver();
-					"step 1";
-					event.targets = get.players();
-					"step 2";
-					if (event.targets.length) {
-						var current = event.targets.shift();
-						if (current.isEnemyOf(player)) {
-							var es = current.getCards("e");
-							if (es.length) {
-								current.discard(es);
-								player.line(current, "green");
+				content: [
+					async (event, trigger, player, result) => {
+						await player.turnOver();
+					},
+					async (event, trigger, player, result) => {
+						const targets = get.players();
+						while (targets.length) {
+							const current = targets.shift();
+							if (current.isEnemyOf(player)) {
+								const es = current.getCards("e");
+								if (es.length) {
+									const next = current.discard({ cards: es });
+									player.line(current, "green");
+									await next;
+								}
+							}
+
+							if ((player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+								return;
 							}
 						}
-						event.redo();
-					}
-				},
+					},
+				],
 			},
 			boss_tanshi: {
 				trigger: { player: "phaseEnd" },
