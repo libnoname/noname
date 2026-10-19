@@ -46794,7 +46794,7 @@ const skills = {
 					}
 					return true;
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.xinfu_xushen = true;
 				},
 				sub: true,
