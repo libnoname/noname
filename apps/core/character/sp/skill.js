@@ -32212,7 +32212,7 @@ const skills = {
 			}
 			return event.targets.length < player.countMark("reluanzhan");
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.removeMark("reluanzhan", Math.ceil(player.countMark("reluanzhan") / 2));
 		},
 	},
