@@ -31362,7 +31362,7 @@ const skills = {
 		filter(event, player) {
 			return event.card.name == "nanman";
 		},
-		content() {
+		async content(event, trigger, player) {
 			trigger.cancel();
 		},
 	},
