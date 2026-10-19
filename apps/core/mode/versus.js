@@ -5986,7 +5986,7 @@ export default () => {
 				},
 				forced: true,
 				silent: true,
-				content: function () {
+				async content(event, trigger, player) {
 					trigger.num++;
 				},
 			},
