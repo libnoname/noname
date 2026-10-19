@@ -43790,7 +43790,7 @@ const skills = {
 						return current.hasSkill("shoucheng", null, null, false);
 					}, true);
 				},
-				content() {
+				async content(event, trigger, player) {
 					game.removeGlobalSkill("shoucheng_draw");
 				},
 				ai: {
