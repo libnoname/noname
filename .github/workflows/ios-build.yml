@@ -162,7 +162,7 @@ jobs:
             npx cap add ios
           fi
 
-      - name: Capacitor sync (builds preload.js)
+      - name: Capacitor sync
         working-directory: apps/mobile
         # afterSync.ts 内部顺序：buildPreload() → writeAssetManifest() → capSync()
         # 这一步会把 preload.js 与 dist 全量资源同步进 ios/App/App/public。
@@ -215,7 +215,7 @@ jobs:
           fi
           echo ".xcodeproj found in $PROJ_DIR ✓"
 
-      - name: Strip character art and voice (always)
+      - name: Strip character art and voice
         working-directory: apps/mobile
         run: |
           # 侧载工具对未压缩 App 体积非常敏感：
@@ -542,7 +542,7 @@ jobs:
       NONAME_FULL_ASSETS: "1"
 
     steps:
-      - name: Resolve release tag (start of run; 与精简任务同一算法)
+      - name: Resolve release tag
         # 两任务并行：这里在运行开始时就确定版本号（此时精简任务尚未创建 Release，
         # 两边读到的现有 Release 列表一致 → 得到同一个 vX.Y.Z）。
         id: tag
@@ -637,7 +637,7 @@ jobs:
             npx cap add ios
           fi
 
-      - name: Capacitor sync (builds preload.js)
+      - name: Capacitor sync
         working-directory: apps/mobile
         # afterSync.ts 内部顺序：buildPreload() → writeAssetManifest() → capSync()
         # 这一步会把 preload.js 与 dist 全量资源同步进 ios/App/App/public（完整包不做裁剪）。
@@ -656,7 +656,7 @@ jobs:
           fi
           echo "完整包：下载器已剔除 ✓"
 
-      - name: Free disk (dist no longer needed after sync)
+      - name: Free disk
         # dist 已全量同步进 iOS 工程，删掉工作区副本可释放约 1.5GB，
         # 给 xcodebuild 的 DerivedData 留足空间（完整包场景磁盘压力明显高于精简包）。
         run: |
