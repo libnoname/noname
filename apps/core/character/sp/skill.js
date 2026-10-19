@@ -40060,10 +40060,10 @@ const skills = {
 			}
 			return num >= 3;
 		},
-		content() {
+		async content(event, trigger, player) {
 			trigger.changeToZero();
-			var num = game.countPlayer(function (target) {
-				return target.hp == player.hp;
+			const num = game.countPlayer(target => {
+				return target.hp === player.hp;
 			});
 			if (num) {
 				player.draw(num);
