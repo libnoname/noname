@@ -31180,7 +31180,7 @@ const skills = {
 					var evt = event.getParent("useCard");
 					return event.card && evt && event.card == evt.card && evt.skill == "juguan_backup" && evt.player == player;
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.addSkill("juguan_draw");
 					player.markAuto("juguan_draw", [trigger.player]);
 				},
