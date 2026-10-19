@@ -36325,8 +36325,8 @@ const skills = {
 			}
 			return get.attitude(player, event.target) < 0;
 		},
-		content() {
-			trigger.target.chooseToDiscard("e", true);
+		async content(event, trigger, player) {
+			trigger.target.chooseToDiscard({ position: "e", forced: true });
 		},
 	},
 	chuanxin: {
