@@ -40144,7 +40144,7 @@ const skills = {
 				filter(event, player) {
 					return Array.isArray(player.storage.xingwu_color) && _status.currentPhase == player;
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.storage.xingwu_color.remove(get.color(trigger.card));
 				},
 			},
