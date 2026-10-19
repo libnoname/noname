@@ -42920,14 +42920,14 @@ const skills = {
 						})
 						.sortBySeat();
 				},
-				content() {
-					var targets = game
-						.filterPlayer(function (current) {
-							return current.hasHistory("lose", function (evt) {
+				async content(event, trigger, player) {
+					const targets = game
+						.filterPlayer(current => {
+							return current.hasHistory("lose", evt => {
 								if (!evt || !evt.xs || !evt.xs.length) {
 									return false;
 								}
-								for (var i in evt.gaintag_map) {
+								for (const i in evt.gaintag_map) {
 									if (evt.gaintag_map[i].includes("rezhoufu_judge")) {
 										return true;
 									}
