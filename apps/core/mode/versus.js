@@ -8040,10 +8040,12 @@ export default () => {
 				filterTarget: function (card, player, target) {
 					return target == player;
 				},
-				content: function () {
+				async content(event, trigger, player) {
+					const { target, targets, cards } = event;
+					let { card } = event;
 					if (target.isDying()) {
 						target.recover();
-						if (_status.currentPhase == target) {
+						if (_status.currentPhase === target) {
 							target.getStat().card.jiu--;
 						}
 					} else {
@@ -8051,8 +8053,8 @@ export default () => {
 							card = cards[0];
 						}
 						game.broadcastAll(
-							function (target, card, gain2) {
-								if (get.population(target.side) == 1) {
+							(target, card, gain2) => {
+								if (get.population(target.side) === 1) {
 									target.addSkill("xionghuangjiu");
 								} else {
 									if (!target.storage.jiu) {
@@ -8066,16 +8068,16 @@ export default () => {
 									target.node.jiu = ui.create.div(".playerjiu", target.node.avatar);
 									target.node.jiu2 = ui.create.div(".playerjiu", target.node.avatar2);
 								}
-								if (gain2 && card.clone && (card.clone.parentNode == target.parentNode || card.clone.parentNode == ui.arena)) {
+								if (gain2 && card.clone && (card.clone.parentNode === target.parentNode || card.clone.parentNode === ui.arena)) {
 									card.clone.moveDelete(target);
 								}
 							},
 							target,
 							card,
-							target == targets[0]
+							target === targets[0]
 						);
-						if (target == targets[0]) {
-							if (card.clone && (card.clone.parentNode == target.parentNode || card.clone.parentNode == ui.arena)) {
+						if (target === targets[0]) {
+							if (card.clone && (card.clone.parentNode === target.parentNode || card.clone.parentNode === ui.arena)) {
 								game.addVideo("gain2", target, get.cardsInfo([card]));
 							}
 						}
