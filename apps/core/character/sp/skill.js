@@ -43092,7 +43092,7 @@ const skills = {
 		trigger: { player: "phaseZhunbeiBegin" },
 		silent: true,
 		sourceSkill: "wangzun",
-		content() {
+		async content(event, trigger, player) {
 			player.unmarkSkill("wangzun");
 			player.storage.wangzun = null;
 		},
