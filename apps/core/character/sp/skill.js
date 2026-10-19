@@ -18511,8 +18511,8 @@ const skills = {
 					}
 					return !event.numFixed;
 				},
-				content() {
-					var info = lib.skill.olgangshu.getInfo(player);
+				async content(event, trigger, player) {
+					const info = lib.skill.olgangshu.getInfo(player);
 					trigger.num += info[1];
 					info[1] = 0;
 					player.markSkill("olgangshu_buff");
