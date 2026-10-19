@@ -29665,7 +29665,7 @@ const skills = {
 				filter(event, player) {
 					return player.identity == "fan" && event.source && ["zhu", "zhong", "mingzhong"].includes(event.source.identity);
 				},
-				content() {
+				async content(event, trigger, player) {
 					game.over(["zhu", "zhong", "mingzhong"].includes(game.me.identity));
 				},
 			},
