@@ -48429,9 +48429,9 @@ const skills = {
 		filter(event, player) {
 			return event.player.getExpansions("xinfu_yingshi").length > 0;
 		},
-		content() {
-			var target = trigger.player;
-			player.gain(target.getExpansions("xinfu_yingshi"), target, "give", "bySelf");
+		async content(event, trigger, player) {
+			const target = trigger.player;
+			player.gain({ cards: target.getExpansions("xinfu_yingshi"), source: target, animate: "give", bySelf: true });
 		},
 	},
 	xinfu_duanfa: {
