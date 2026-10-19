@@ -8573,8 +8573,8 @@ const skills = {
 				},
 				forced: true,
 				logTarget: "player",
-				content() {
-					player.gain(trigger.cards.filterInD(), "gain2");
+				async content(event, trigger, player) {
+					player.gain({ cards: trigger.cards.filterInD(), animate: "gain2" });
 				},
 			},
 		},
