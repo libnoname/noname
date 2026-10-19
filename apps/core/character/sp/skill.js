@@ -48596,7 +48596,7 @@ const skills = {
 					}
 					return true;
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.draw();
 				},
 				sub: true,
