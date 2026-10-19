@@ -8311,7 +8311,7 @@ const skills = {
 			);
 		},
 		forced: true,
-		content() {
+		async content(event, trigger, player) {
 			player.draw();
 		},
 	},
