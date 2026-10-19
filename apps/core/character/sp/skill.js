@@ -24307,7 +24307,7 @@ const skills = {
 			}
 			return false;
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.changeZhuanhuanji("olfeibai");
 			trigger.num++;
 		},
