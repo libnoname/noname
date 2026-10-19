@@ -40418,12 +40418,12 @@ const skills = {
 			}
 			return player.countCards("h", "shan") > 0;
 		},
-		content() {
-			var target = trigger.player;
+		async content(event, trigger, player) {
+			const target = trigger.player;
 			target.addTempSkill("meibu_viewas");
 			target.addTempSkill("meibu_range");
 			target.storage.meibu = player;
-			target.markSkillCharacter("meibu", player, "魅步", "锦囊牌均视为杀且" + get.translation(player) + "视为在攻击范围内");
+			target.markSkillCharacter("meibu", player, "魅步", `锦囊牌均视为杀且${get.translation(player)}视为在攻击范围内`);
 		},
 		ai: {
 			expose: 0.2,
