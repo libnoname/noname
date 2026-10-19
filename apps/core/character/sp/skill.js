@@ -42879,7 +42879,7 @@ const skills = {
 				filter(event, player) {
 					return !event.directresult && player.getExpansions("rezhoufu_judge").length;
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.directresult = player.getExpansions("rezhoufu_judge")[0];
 					player.storage.rezhoufu_judge_markcount = 0;
 				},
