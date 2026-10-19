@@ -47495,12 +47495,12 @@ const skills = {
 		forced: true,
 		silent: true,
 		popup: false,
-		content() {
+		async content(event, trigger, player) {
 			player.logSkill("xinfu_jixu");
-			for (var i = 0; i < player.storage.jixu_sha.length; i++) {
-				if (!trigger.targets.includes(player.storage.jixu_sha[i]) && player.canUse("sha", player.storage.jixu_sha[i], false)) {
-					player.line(player.storage.jixu_sha[i], trigger.card.nature);
-					trigger.targets.push(player.storage.jixu_sha[i]);
+			for (const target of player.storage.jixu_sha) {
+				if (!trigger.targets.includes(target) && player.canUse("sha", target, false)) {
+					player.line(target, trigger.card.nature);
+					trigger.targets.push(target);
 				}
 			}
 		},
