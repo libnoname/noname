@@ -5671,7 +5671,7 @@ export default () => {
 				filter: function (event, player) {
 					return !event.hasNature("linked");
 				},
-				content: function () {
+				async content(event, trigger, player) {
 					game.setNature(trigger, "fire");
 				},
 			},
