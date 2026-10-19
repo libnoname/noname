@@ -28727,7 +28727,7 @@ const skills = {
 		},
 		forced: true,
 		logTarget: "target",
-		content() {
+		async content(event, trigger, player) {
 			trigger.target.addTempSkill("qinggang2");
 			trigger.target.storage.qinggang2.add(trigger.card);
 		},
