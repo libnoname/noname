@@ -1,4 +1,5 @@
 export enum FileSystemErrorCode {
+	NotSupported = "NOT_SUPPORTED",
 	NotFound = "NOT_FOUND",
 	AlreadyExists = "ALREADY_EXISTS",
 	NotFile = "NOT_FILE",
