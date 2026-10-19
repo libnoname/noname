@@ -18157,7 +18157,7 @@ const skills = {
 				},
 				forced: true,
 				popup: false,
-				content() {
+				async content(event, trigger, player) {
 					trigger.num--;
 				},
 				ai: {
