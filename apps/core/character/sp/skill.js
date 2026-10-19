@@ -38357,7 +38357,8 @@ const skills = {
 			}
 			return 0;
 		},
-		content() {
+		async content(event, trigger, player) {
+			const { cards, target } = event;
 			player.give(cards, target, "give");
 			target.recover();
 		},
