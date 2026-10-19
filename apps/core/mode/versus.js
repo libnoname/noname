@@ -2950,153 +2950,163 @@ export default () => {
 					},
 				]);
 			},
-			chooseCharacterGuandu: function () {
-				var next = game.createEvent("chooseCharacter");
-				next.setContent(function () {
-					"step 0";
-					lib.init.onfree();
-					ui.arena.classList.add("choose-character");
-					const side = game.me.side.toString();
-					event.friendSide = side;
-					event.enemySide = side == "true" ? "false" : "true";
-					event.zhuList = [["caocao"], ["re_yuanshao"]];
-					event.falseList = ["xiahouyuan", "litong", "zangba", "manchong", "xunyu", "guojia", "zhangliao", "xuhuang", "caohong", "jsp_guanyu", "hanhaoshihuan", "caoren", "yujin", "liuye", "chengyu", "xunyou", "zhangxiu", "sp_jiaxu"].filter(function (name) {
-						if (lib.characterReplace[name]) {
-							let goon = false;
-							for (let i of lib.characterReplace[name]) {
-								if (lib.character[i]) {
-									lib.character[i][1] = "wei";
-									goon = true;
+			chooseCharacterGuandu: () => {
+				const next = game.createEvent("chooseCharacter");
+				next.setContent([
+					async (event, trigger, player) => {
+						lib.init.onfree();
+						ui.arena.classList.add("choose-character");
+						const side = game.me.side.toString();
+						event.friendSide = side;
+						event.enemySide = side === "true" ? "false" : "true";
+						event.zhuList = [["caocao"], ["re_yuanshao"]];
+						event.falseList = ["xiahouyuan", "litong", "zangba", "manchong", "xunyu", "guojia", "zhangliao", "xuhuang", "caohong", "jsp_guanyu", "hanhaoshihuan", "caoren", "yujin", "liuye", "chengyu", "xunyou", "zhangxiu", "sp_jiaxu"].filter(name => {
+							if (lib.characterReplace[name]) {
+								let goon = false;
+								for (const i of lib.characterReplace[name]) {
+									if (lib.character[i]) {
+										lib.character[i][1] = "wei";
+										goon = true;
+									}
 								}
+								return goon;
+							} else if (lib.character[name]) {
+								lib.character[name][1] = "wei";
+								return true;
 							}
-							return goon;
-						} else if (lib.character[name]) {
-							lib.character[name][1] = "wei";
-							return true;
-						}
-						return false;
-					});
-					event.trueList = ["xinping", "hanmeng", "gaogan", "yuantanyuanshang", "lvkuanglvxiang", "xinpi", "xunchen", "sp_ol_zhanghe", "chenlin", "jsp_liubei", "yj_jushou", "guotufengji", "gaolan", "xuyou", "tianfeng", "chunyuqiong", "shenpei"].filter(function (name) {
-						if (lib.characterReplace[name]) {
-							let goon = false;
-							for (let i of lib.characterReplace[name]) {
-								if (lib.character[i]) {
-									lib.character[i][1] = "qun";
-									goon = true;
+							return false;
+						});
+						event.trueList = ["xinping", "hanmeng", "gaogan", "yuantanyuanshang", "lvkuanglvxiang", "xinpi", "xunchen", "sp_ol_zhanghe", "chenlin", "jsp_liubei", "yj_jushou", "guotufengji", "gaolan", "xuyou", "tianfeng", "chunyuqiong", "shenpei"].filter(name => {
+							if (lib.characterReplace[name]) {
+								let goon = false;
+								for (const i of lib.characterReplace[name]) {
+									if (lib.character[i]) {
+										lib.character[i][1] = "qun";
+										goon = true;
+									}
 								}
+								return goon;
+							} else if (lib.character[name]) {
+								lib.character[name][1] = "qun";
+								return true;
 							}
-							return goon;
-						} else if (lib.character[name]) {
-							lib.character[name][1] = "qun";
-							return true;
-						}
-						return false;
-					});
-					"step 1";
-					game[event.enemySide + "Zhu"].chooseButton(["请选择你的武将牌", [event.zhuList[event.enemySide == "true" ? 1 : 0], "characterx"]], true);
-					"step 2";
-					game[event.enemySide + "Zhu"].init(result.links[0]);
-					game[event.enemySide + "Zhu"].maxHp++;
-					game[event.enemySide + "Zhu"].hp++;
-					game[event.enemySide + "Zhu"].update();
-					"step 3";
-					game.countPlayer(current => {
-						if (current.side.toString() == event.enemySide && current.identity == "zhong") {
-							let choice = event[event.enemySide + "List"].randomRemove(2)[0];
-							if (lib.characterReplace[choice]) {
-								choice = lib.characterReplace[choice].randomGet();
-							}
-							current.init(choice);
-						}
-					});
-					"step 4";
-					var evt_list = [
-						["huoshaowuchao", "chunyuqiong"],
-						["liangcaokuifa", "sp_xuyou"],
-						["zhanyanliangzhuwenchou", "jsp_guanyu"],
-						["shishengshibai", "re_guojia"],
-						["xutuhuanjin", "yj_jushou"],
-						["liangjunxiangchi", "yj_jushou"],
-						["jianshoudaiyuan", "tianfeng"],
-						["yiruoshengqiang", "re_caocao"],
-						["shichongerjiao", "sp_xuyou"],
-					].randomGet();
-					var evt = evt_list[0],
-						character = evt_list[1];
-					game.addGlobalSkill(evt);
-					const showGuanduEvent = function (evt) {
-						if (ui["GuanduEvent_" + evt]) {
-							return;
-						}
-						ui["GuanduEvent_" + evt] = ui.create.system(get.translation(evt), null, true);
-						lib.setPopped(
-							ui["GuanduEvent_" + evt],
-							function () {
-								var uiintro = ui.create.dialog("hidden");
-								uiintro.add(get.translation(evt));
-								uiintro.add('<div class="text center">' + get.translation(evt + "_info") + "</div>");
-								var ul = uiintro.querySelector("ul");
-								if (ul) {
-									ul.style.width = "180px";
-								}
-								uiintro.add(ui.create.div(".placeholder"));
-								return uiintro;
-							},
-							250
-						);
-					};
-					showGuanduEvent(evt);
-					game.broadcastAll(function (evt) {
-						if (lib.config.background_speak) {
-							game.playAudio("skill", evt);
-						}
-						if (evt == "shishengshibai") {
-							ui.guanduInfo = get.is.phoneLayout() ? ui.create.div(".touchinfo.left", ui.window) : ui.create.div(ui.gameinfo);
-							ui.guanduInfo.innerHTML = "十胜十败（0）";
-						}
-					}, evt);
-					game.me.chooseControl("ok").set("dialog", ["###本局特殊事件：" + get.translation(evt) + "###" + get.translation(evt + "_info"), [[character], "character"]]);
-					"step 5";
-					game[event.friendSide + "Zhu"].chooseButton(["请选择你的武将牌", [event.zhuList[event.friendSide == "true" ? 1 : 0], "characterx"]], true);
-					"step 6";
-					if (game[event.friendSide + "Zhu"] == game.me) {
-						game[event.friendSide + "Zhu"].init(result.links[0]);
-						game[event.friendSide + "Zhu"].maxHp++;
-						game[event.friendSide + "Zhu"].hp++;
-						game[event.friendSide + "Zhu"].update();
-					} else {
-						event.zhuChoice = result.links[0];
-					}
-					"step 7";
-					if (game.me.identity != "zhu") {
-						event.choose_me = true;
-						game.me.chooseButton(["请选择你的武将牌", [event[event.friendSide + "List"].randomRemove(2), "characterx"]], true);
-					}
-					"step 8";
-					if (event.choose_me) {
-						game.me.init(result.links[0]);
-					}
-					game.countPlayer(function (current) {
-						if (current != game.me && current.side.toString() == event.friendSide) {
-							if (current.identity == "zhong") {
-								let choice = event[event.friendSide + "List"].randomRemove(2)[0];
+							return false;
+						});
+					},
+					async (event, trigger, player, result) => {
+						game[`${event.enemySide}Zhu`].chooseButton({ createDialog: ["请选择你的武将牌", [event.zhuList[event.enemySide === "true" ? 1 : 0], "characterx"]], forced: true });
+					},
+					async (event, trigger, player, result) => {
+						game[`${event.enemySide}Zhu`].init(result.links[0]);
+						game[`${event.enemySide}Zhu`].maxHp++;
+						game[`${event.enemySide}Zhu`].hp++;
+						game[`${event.enemySide}Zhu`].update();
+					},
+					async (event, trigger, player, result) => {
+						game.countPlayer(current => {
+							if (current.side.toString() === event.enemySide && current.identity === "zhong") {
+								let choice = event[`${event.enemySide}List`].randomRemove(2)[0];
 								if (lib.characterReplace[choice]) {
 									choice = lib.characterReplace[choice].randomGet();
 								}
 								current.init(choice);
-							} else {
-								current.init(event.zhuChoice);
-								current.maxHp++;
-								current.hp++;
-								current.update();
 							}
+						});
+					},
+					async (event, trigger, player, result) => {
+						const evt_list = [
+							["huoshaowuchao", "chunyuqiong"],
+							["liangcaokuifa", "sp_xuyou"],
+							["zhanyanliangzhuwenchou", "jsp_guanyu"],
+							["shishengshibai", "re_guojia"],
+							["xutuhuanjin", "yj_jushou"],
+							["liangjunxiangchi", "yj_jushou"],
+							["jianshoudaiyuan", "tianfeng"],
+							["yiruoshengqiang", "re_caocao"],
+							["shichongerjiao", "sp_xuyou"],
+						].randomGet();
+						const evt = evt_list[0];
+						const character = evt_list[1];
+						game.addGlobalSkill(evt);
+						const showGuanduEvent = evt => {
+							if (ui[`GuanduEvent_${evt}`]) {
+								return;
+							}
+							ui[`GuanduEvent_${evt}`] = ui.create.system(get.translation(evt), null, true);
+							lib.setPopped(
+								ui[`GuanduEvent_${evt}`],
+								() => {
+									const uiintro = ui.create.dialog("hidden");
+									uiintro.add(get.translation(evt));
+									uiintro.add(`<div class="text center">${get.translation(`${evt}_info`)}</div>`);
+									const ul = uiintro.querySelector("ul");
+									if (ul) {
+										ul.style.width = "180px";
+									}
+									uiintro.add(ui.create.div(".placeholder"));
+									return uiintro;
+								},
+								250
+							);
+						};
+						showGuanduEvent(evt);
+						game.broadcastAll(evt => {
+							if (lib.config.background_speak) {
+								game.playAudio("skill", evt);
+							}
+							if (evt === "shishengshibai") {
+								ui.guanduInfo = get.is.phoneLayout() ? ui.create.div(".touchinfo.left", ui.window) : ui.create.div(ui.gameinfo);
+								ui.guanduInfo.innerHTML = "十胜十败（0）";
+							}
+						}, evt);
+						game.me.chooseControl({ controls: ["ok"] }).set("dialog", [`###本局特殊事件：${get.translation(evt)}###${get.translation(`${evt}_info`)}`, [[character], "character"]]);
+					},
+					async (event, trigger, player, result) => {
+						game[`${event.friendSide}Zhu`].chooseButton({ createDialog: ["请选择你的武将牌", [event.zhuList[event.friendSide === "true" ? 1 : 0], "characterx"]], forced: true });
+					},
+					async (event, trigger, player, result) => {
+						if (game[`${event.friendSide}Zhu`] === game.me) {
+							game[`${event.friendSide}Zhu`].init(result.links[0]);
+							game[`${event.friendSide}Zhu`].maxHp++;
+							game[`${event.friendSide}Zhu`].hp++;
+							game[`${event.friendSide}Zhu`].update();
+						} else {
+							event.zhuChoice = result.links[0];
 						}
-					});
-					"step 9";
-					setTimeout(function () {
-						ui.arena.classList.remove("choose-character");
-					}, 500);
-				});
+					},
+					async (event, trigger, player, result) => {
+						if (game.me.identity !== "zhu") {
+							event.choose_me = true;
+							game.me.chooseButton({ createDialog: ["请选择你的武将牌", [event[`${event.friendSide}List`].randomRemove(2), "characterx"]], forced: true });
+						}
+					},
+					async (event, trigger, player, result) => {
+						if (event.choose_me) {
+							game.me.init(result.links[0]);
+						}
+						game.countPlayer(current => {
+							if (current !== game.me && current.side.toString() === event.friendSide) {
+								if (current.identity === "zhong") {
+									let choice = event[`${event.friendSide}List`].randomRemove(2)[0];
+									if (lib.characterReplace[choice]) {
+										choice = lib.characterReplace[choice].randomGet();
+									}
+									current.init(choice);
+								} else {
+									current.init(event.zhuChoice);
+									current.maxHp++;
+									current.hp++;
+									current.update();
+								}
+							}
+						});
+					},
+					async (event, trigger, player, result) => {
+						setTimeout(() => {
+							ui.arena.classList.remove("choose-character");
+						}, 500);
+					},
+				]);
 			},
 			chooseCharacterOL4: function () {
 				var next = game.createEvent("chooseCharacter");
