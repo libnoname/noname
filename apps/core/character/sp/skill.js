@@ -33092,7 +33092,7 @@ const skills = {
 			}
 			return num > 1;
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.removeSkill("zlshoufu2");
 		},
 	},
