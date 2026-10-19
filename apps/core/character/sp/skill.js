@@ -48049,9 +48049,10 @@ const skills = {
 		discard: false,
 		lose: false,
 		allowChooseAll: true,
-		content() {
+		async content(event, trigger, player) {
+			const { target, cards } = event;
 			player.awakenSkill(event.name);
-			target.addToExpansion(cards, player, "give").gaintag.add("xinfu_zengdao2");
+			target.addToExpansion({ cards, source: player, animate: "give", gaintag: ["xinfu_zengdao2"] });
 			target.addSkill("xinfu_zengdao2");
 		},
 		ai: {
