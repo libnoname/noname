@@ -5818,7 +5818,7 @@ export default () => {
 					return true;
 				},
 				forced: true,
-				content: function () {
+				async content(event, trigger, player) {
 					player.addTempSkill("xutuhuanjin_yingzi", { player: "phaseDrawAfter" });
 					player.addMark("xutuhuanjin_yingzi", 1, false);
 				},
