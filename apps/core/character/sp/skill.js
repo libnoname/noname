@@ -45145,7 +45145,7 @@ const skills = {
 		filter(event, player) {
 			return get.sgn(player.hp - 2.5) != get.sgn(player.hp - 2.5 - event.num);
 		},
-		content() {},
+		async content(event, trigger, player) {},
 		mod: {
 			globalFrom(from, to, current) {
 				if (from.hp > 2) {
