@@ -7061,20 +7061,28 @@ export default () => {
 				audio: true,
 				trigger: { player: "phaseBegin" },
 				direct: true,
-				content: function () {
-					"step 0";
-					player.chooseTarget(get.prompt("boss_fengxing"), function (card, player, target) {
-						if (target.isFriendOf(player)) {
-							return false;
-						}
-						return lib.filter.targetEnabled({ name: "sha" }, player, target);
-					}).ai = function (target) {
-						return get.effect(target, { name: "sha" }, player);
-					};
-					"step 1";
+				async content(event, trigger, player) {
+					const result = await player
+						.chooseTarget({
+							prompt: get.prompt("boss_fengxing"),
+							filterTarget: (card, player, target) => {
+								if (target.isFriendOf(player)) {
+									return false;
+								}
+								return lib.filter.targetEnabled({ name: "sha" }, player, target);
+							},
+							ai: target => {
+								return get.effect(target, { name: "sha" }, player);
+							},
+						})
+						.forResult();
+					if ((player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+						return;
+					}
+
 					if (result.bool) {
 						player.logSkill("boss_fengxing");
-						player.useCard({ name: "sha" }, result.targets, false);
+						await player.useCard({ card: { name: "sha" }, targets: result.targets, addCount: false });
 					}
 				},
 				ai: {
