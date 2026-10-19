@@ -48280,8 +48280,8 @@ const skills = {
 			return event.num > 1 && range < 3;
 		},
 		preHidden: true,
-		content() {
-			trigger.num = event.triggername == "damageBegin4" ? 1 : trigger.num + 1;
+		async content(event, trigger, player) {
+			trigger.num = event.triggername === "damageBegin4" ? 1 : trigger.num + 1;
 		},
 		ai: {
 			filterDamage: true,
