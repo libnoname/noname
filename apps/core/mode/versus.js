@@ -7385,20 +7385,19 @@ export default () => {
 						return current.isEnemyOf(player) && current.countCards("h") > nh;
 					});
 				},
-				content: function () {
-					"step 0";
-					var nh = player.countCards("h");
-					var targets = game.filterPlayer(function (current) {
-						return current.isEnemyOf(player) && current.countCards("h") > nh;
-					});
+				async content(event, trigger, player) {
+					const nh = player.countCards("h");
+					const targets = game.filterPlayer(current => current.isEnemyOf(player) && current.countCards("h") > nh);
 					targets.sort(lib.sort.seat);
-					event.targets = targets;
-					"step 1";
-					if (event.targets.length) {
-						var current = event.targets.shift();
-						current.damage();
+					while (targets.length) {
+						const current = targets.shift();
+						const next = current.damage();
 						player.line(current, "thunder");
-						event.redo();
+						await next;
+
+						if ((player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+							return;
+						}
 					}
 				},
 			},
