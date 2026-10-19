@@ -32622,7 +32622,7 @@ const skills = {
 		forceDie: true,
 		skillAnimation: true,
 		animationColor: "soil",
-		content() {
+		async content(event, trigger, player) {
 			player.line(game.players, "green");
 			game.addGlobalSkill("spyanhuo_damage");
 			game.broadcastAll(() => {
