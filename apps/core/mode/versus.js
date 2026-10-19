@@ -8220,14 +8220,15 @@ export default () => {
 					}
 					return target.countCards("he");
 				},
-				content: function () {
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].side == target.side && game.players[i].storage.longchuanzhibao) {
-							target.recover();
+				async content(event, trigger, player) {
+					const { target } = event;
+					for (const current of game.players) {
+						if (current.side === target.side && current.storage.longchuanzhibao) {
+							await target.recover();
 							return;
 						}
 					}
-					target.chooseToDiscard("he", true);
+					await target.chooseToDiscard({ position: "he", forced: true });
 				},
 				ai: {
 					basic: {
