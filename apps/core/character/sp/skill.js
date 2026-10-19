@@ -32544,8 +32544,8 @@ const skills = {
 			return event.name != "phase" || game.phaseNumber == 0;
 		},
 		direct: true,
-		content() {
-			player.chooseUseTarget("sha", get.prompt("xiaoxi"), "视为使用一张【杀】").logSkill = "xiaoxi";
+		async content(event, trigger, player) {
+			player.chooseUseTarget({ card: { name: "sha", isCard: true }, prompt: get.prompt("xiaoxi"), prompt2: "视为使用一张【杀】" }).logSkill = "xiaoxi";
 		},
 	},
 	spmouzhu: {
