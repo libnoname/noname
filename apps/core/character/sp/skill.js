@@ -33972,8 +33972,8 @@ const skills = {
 		},
 		direct: true,
 		clearTime: true,
-		content() {
-			var next = player.chooseToUse();
+		async content(event, trigger, player) {
+			const next = player.chooseToUse();
 			next.logSkill = "niluan";
 			next.set("openskilldialog", get.prompt2("niluan"));
 			next.set("norestore", true);
