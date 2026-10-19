@@ -21426,7 +21426,7 @@ const skills = {
 				charlotte: true,
 				forced: true,
 				popup: false,
-				content() {
+				async content(event, trigger, player) {
 					const evt = trigger.getParent("phase", true, true);
 					if (evt?.phaseList) {
 						evt.phaseList.splice(evt.num + 1, 0, "phaseUse|olhongji");
