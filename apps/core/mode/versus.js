@@ -7002,19 +7002,21 @@ export default () => {
 			boss_chuanyun: {
 				audio: true,
 				trigger: { player: "phaseEnd" },
-				direct: true,
-				content: function () {
-					"step 0";
-					player.chooseTarget(get.prompt("boss_chuanyun"), function (card, player, target) {
-						return player.hp < target.hp;
-					}).ai = function (target) {
-						return get.damageEffect(target, player, player);
-					};
-					"step 1";
-					if (result.bool) {
-						player.logSkill("boss_chuanyun", result.targets);
-						result.targets[0].damage();
-					}
+				async cost(event, trigger, player) {
+					event.result = await player
+						.chooseTarget({
+							prompt: get.prompt("boss_chuanyun"),
+							filterTarget: (card, player, target) => {
+								return player.hp < target.hp;
+							},
+							ai: target => {
+								return get.damageEffect(target, player, player);
+							},
+						})
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					await event.targets[0].damage();
 				},
 			},
 			boss_leili: {
