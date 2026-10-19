@@ -16937,7 +16937,7 @@ const skills = {
 				prompt2(event, player) {
 					return "与" + get.translation(event.player) + "各摸一张牌";
 				},
-				content() {
+				async content(event, trigger, player) {
 					game.asyncDraw([trigger.player, player]);
 				},
 			},
