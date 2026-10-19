@@ -8669,14 +8669,16 @@ export default () => {
 							}
 							if (friend) {
 								var next = game.createEvent("versusDraw");
-								next.setContent(function () {
-									"step 0";
-									player.chooseBool("是否摸一张牌？");
-									"step 1";
-									if (result.bool) {
-										player.draw();
-									}
-								});
+								next.setContent([
+									async (event, trigger, player) => {
+										return await player.chooseBool({ prompt: "是否摸一张牌？" }).forResult();
+									},
+									async (event, trigger, player, result) => {
+										if (result.bool) {
+											await player.draw();
+										}
+									},
+								]);
 								next.player = friend;
 							}
 						} else if (_status.mode == "4v4") {
