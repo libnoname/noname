@@ -32091,8 +32091,8 @@ const skills = {
 				}) > 0
 			);
 		},
-		content() {
-			player.chooseToDiscard("he", true);
+		async content(event, trigger, player) {
+			player.chooseToDiscard({ position: "he", forced: true });
 		},
 		onremove: true,
 		intro: {
