@@ -25465,14 +25465,14 @@ const skills = {
 			}
 			return player.hasEnabledSlot();
 		},
-		content() {
-			var list = [];
-			for (var i = 1; i < 6; i++) {
-				for (var j = 0; j < player.countEnabledSlot(i); j++) {
+		async content(event, trigger, player) {
+			const list = [];
+			for (let i = 1; i < 6; i++) {
+				for (let j = 0; j < player.countEnabledSlot(i); j++) {
 					list.push(i);
 				}
 			}
-			player.disableEquip(list);
+			player.disableEquip({ slots: list.map(slot => `equip${slot}`) });
 			player.draw(4);
 		},
 		mod: {
