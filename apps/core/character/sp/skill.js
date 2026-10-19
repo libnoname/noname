@@ -37068,10 +37068,10 @@ const skills = {
 					});
 				},
 				logTarget: "player",
-				content() {
+				async content(event, trigger, player) {
 					player.draw(
-						trigger.player.hasHistory("sourceDamage", function (evt) {
-							return evt.card == trigger.card;
+						trigger.player.hasHistory("sourceDamage", evt => {
+							return evt.card === trigger.card;
 						})
 							? 2
 							: 1
