@@ -29907,7 +29907,7 @@ const skills = {
 		filter(event, player) {
 			return player.countCards("h") < Math.min(5, player.getHandcardLimit());
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.drawTo(Math.min(5, player.getHandcardLimit()));
 		},
 	},
