@@ -38804,10 +38804,10 @@ const skills = {
 			// if(player!=event.target&&event.iwhile) return false;
 			return (player == event.player ? event.num1 : event.num2) <= player.countMark("regushe");
 		},
-		content() {
-			if (player == trigger.target || !trigger.iwhile) {
-				trigger[player == trigger.player ? "num1" : "num2"] += player.countMark("regushe");
-				game.log(player, "的拼点牌点数+" + player.countMark("regushe"));
+		async content(event, trigger, player) {
+			if (player === trigger.target || !trigger.iwhile) {
+				trigger[player === trigger.player ? "num1" : "num2"] += player.countMark("regushe");
+				game.log(player, `的拼点牌点数+${player.countMark("regushe")}`);
 			}
 			game.delayx();
 			// var cards=[trigger.card1];
@@ -38824,7 +38824,7 @@ const skills = {
 			// 	}
 			// }
 			// cards=cards.filterInD();
-			var cards = [];
+			let cards = [];
 			if (trigger.num1 > trigger.num2) {
 				cards.push(trigger.card1);
 			}
@@ -38833,7 +38833,7 @@ const skills = {
 			}
 			cards = cards.filterInD();
 			if (cards.length) {
-				player.gain(cards, "gain2");
+				player.gain({ cards, animate: "gain2" });
 			}
 		},
 		group: "rejici2",
