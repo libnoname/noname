@@ -24774,7 +24774,7 @@ const skills = {
 					});
 					return num == map[player.playerid];
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.draw(2 * trigger.olhuanfu_map[player.playerid]);
 				},
 			},
