@@ -35725,10 +35725,10 @@ const skills = {
 				})
 			);
 		},
-		content() {
+		async content(event, trigger, player) {
 			trigger.directHit.addArray(
-				game.filterPlayer(function (current) {
-					return current != player && get.distance(current, player) <= 1;
+				game.filterPlayer(current => {
+					return current !== player && get.distance(current, player) <= 1;
 				})
 			);
 		},
