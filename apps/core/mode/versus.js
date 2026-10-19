@@ -5721,7 +5721,7 @@ export default () => {
 				onremove: true,
 				trigger: { player: "damageBegin2" },
 				forced: true,
-				content: function () {
+				async content(event, trigger, player) {
 					trigger.num += player.countMark("xujiu2");
 				},
 				intro: { content: "本回合受到的伤害+#" },
