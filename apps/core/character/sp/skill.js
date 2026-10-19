@@ -30696,7 +30696,7 @@ const skills = {
 					}
 					return true;
 				},
-				content() {
+				async content(event, trigger, player) {
 					lib.skill.olsujian.update(player);
 				},
 			},
