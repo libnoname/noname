@@ -8558,7 +8558,7 @@ const skills = {
 			);
 		},
 		forced: true,
-		content() {
+		async content(event, trigger, player) {
 			trigger.card.suit = "diamond";
 			trigger.card.color = "red";
 			game.log(player, "将", trigger.card, "的花色改为", "#y♦");
