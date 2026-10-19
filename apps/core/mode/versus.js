@@ -7347,8 +7347,8 @@ export default () => {
 				filter: function (event, player) {
 					return player.countCards("h") > 0;
 				},
-				content: function () {
-					player.chooseToDiscard("h", true);
+				async content(event, trigger, player) {
+					await player.chooseToDiscard({ position: "h", forced: true });
 				},
 			},
 			boss_tunshi: {
