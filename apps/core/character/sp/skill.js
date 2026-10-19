@@ -33768,7 +33768,7 @@ const skills = {
 		filter(event, player) {
 			return get.type(event.card) == "equip" && player.countMark("neifa_nobasic") > 0;
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.draw(player.countMark("neifa_nobasic"));
 		},
 		ai: {
