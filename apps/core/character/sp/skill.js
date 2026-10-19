@@ -43881,14 +43881,14 @@ const skills = {
 			return false;
 		},
 		frequent: true,
-		content() {
-			var cards = trigger.cards.slice(0);
-			for (var i = 0; i < cards.length; i++) {
-				if (get.position(cards[i], true) != "o") {
+		async content(event, trigger, player) {
+			const cards = trigger.cards.slice(0);
+			for (let i = 0; i < cards.length; i++) {
+				if (get.position(cards[i], true) !== "o") {
 					cards.splice(i--, 1);
 				}
 			}
-			player.gain(cards, "gain2");
+			player.gain({ cards, animate: "gain2" });
 		},
 	},
 	guixiu: {
