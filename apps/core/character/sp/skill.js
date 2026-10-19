@@ -48459,7 +48459,8 @@ const skills = {
 		},
 		delay: false,
 		allowChooseAll: true,
-		content() {
+		async content(event, trigger, player) {
+			const { cards } = event;
 			player.draw(cards.length);
 			player.storage.xinfu_duanfa += cards.length;
 		},
