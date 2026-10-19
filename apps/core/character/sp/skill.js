@@ -34987,7 +34987,7 @@ const skills = {
 			//if(player.countCards('h',{type:'basic'})<=1) return true;
 			return false;
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.draw(2);
 			player.addTempSkill("qingzhong_give");
 		},
