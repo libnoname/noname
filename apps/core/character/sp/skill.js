@@ -35192,8 +35192,8 @@ const skills = {
 					}
 					return event.getParent(2).name != "zishu_draw";
 				},
-				content() {
-					player.draw("nodelay");
+				async content(event, trigger, player) {
+					player.draw({ nodelay: true });
 				},
 			},
 		},
