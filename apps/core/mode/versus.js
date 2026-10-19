@@ -736,13 +736,12 @@ export default () => {
 					game.saveConfig("gameRecord", lib.config.gameRecord);
 				}
 			},
-			chooseCharacterJiange: function () {
-				var next = game.createEvent("chooseCharacter");
+			chooseCharacterJiange: () => {
+				const next = game.createEvent("chooseCharacter");
 				next.showConfig = true;
-				next.setContent(function () {
-					"step 0";
+				next.setContent(async (event, trigger, player) => {
 					ui.arena.classList.add("choose-character");
-					for (var i in lib.characterPack.mode_versus) {
+					for (const i in lib.characterPack.mode_versus) {
 						lib.character[i] = lib.characterPack.mode_versus[i];
 					}
 					lib.characterIntro.boss_liedixuande = lib.characterIntro.liubei;
@@ -761,16 +760,15 @@ export default () => {
 					lib.characterIntro.boss_elaiziman = lib.characterIntro.dianwei;
 					lib.characterIntro.boss_shenjianhansheng = lib.characterIntro.huangzhong;
 					lib.characterIntro.boss_yiyongwenze = lib.characterIntro.yujin;
-					"step 1";
-					for (var i in lib.skill) {
+					for (const i in lib.skill) {
 						if (lib.skill[i].seatRelated === true) {
 							lib.skill[i] = {};
-							if (lib.translate[i + "_info"]) {
-								lib.translate[i + "_info"] = "此模式下不可用";
+							if (lib.translate[`${i}_info`]) {
+								lib.translate[`${i}_info`] = "此模式下不可用";
 							}
 						}
 					}
-					var list = {
+					const list = {
 						weilist: [],
 						shulist: [],
 						weimech: [],
@@ -778,9 +776,8 @@ export default () => {
 						weiboss: [],
 						shuboss: [],
 					};
-					event.list = list;
 					if (lib.characterPack.boss) {
-						for (var i in lib.characterPack.boss) {
+						for (const i in lib.characterPack.boss) {
 							if (!lib.character[i]) {
 								if (lib.characterPack.boss[i].isJiangeBoss || lib.characterPack.boss[i].isJiangeMech) {
 									lib.character[i] = lib.characterPack.boss[i];
@@ -788,12 +785,12 @@ export default () => {
 							}
 						}
 					}
-					for (var i in lib.character) {
+					for (const i in lib.character) {
 						if (lib.character[i].isJiangeBoss) {
-							list[lib.character[i].group + "boss"].push(i);
+							list[`${lib.character[i].group}boss`].push(i);
 							continue;
 						} else if (lib.character[i].isJiangeMech) {
-							list[lib.character[i].group + "mech"].push(i);
+							list[`${lib.character[i].group}mech`].push(i);
 							continue;
 						}
 						if (lib.filter.characterDisabled(i)) {
@@ -802,33 +799,33 @@ export default () => {
 						if (get.is.double(i)) {
 							continue;
 						}
-						if (lib.character[i].group == "wei") {
+						if (lib.character[i].group === "wei") {
 							list.weilist.push(i);
-						} else if (lib.character[i].group == "shu") {
+						} else if (lib.character[i].group === "shu") {
 							list.shulist.push(i);
 						}
 					}
-					var dialog;
+					let dialog;
 					switch (game.me.type) {
-						case "human":
-							for (var i = 0; i < game.players.length; i++) {
-								if (game.players[i].type != "human") {
+						case "human": {
+							for (let i = 0; i < game.players.length; i++) {
+								if (game.players[i].type !== "human") {
 									game.players[i].init(list[game.players[i].identity + game.players[i].type].randomRemove());
 								}
 							}
-							dialog = ui.create.dialog("选择角色", [list[game.me.identity + "list"].randomGets(8), "character"]);
-							ui.create.cheat = function () {
+							dialog = ui.create.dialog("选择角色", [list[`${game.me.identity}list`].randomGets(8), "character"]);
+							ui.create.cheat = () => {
 								_status.createControl = ui.cheat2;
-								ui.cheat = ui.create.control("更换", function () {
-									if (ui.cheat2 && ui.cheat2.dialog == _status.event.dialog) {
+								ui.cheat = ui.create.control("更换", () => {
+									if (ui.cheat2 && ui.cheat2.dialog === _status.event.dialog) {
 										return;
 									}
 									if (game.changeCoin) {
 										game.changeCoin(-3);
 									}
-									var buttons = ui.create.div(".buttons");
-									var node = _status.event.dialog.buttons[0].parentNode;
-									_status.event.dialog.buttons = ui.create.buttons(list[game.me.identity + "list"].randomGets(8), "character", buttons);
+									const buttons = ui.create.div(".buttons");
+									const node = _status.event.dialog.buttons[0].parentNode;
+									_status.event.dialog.buttons = ui.create.buttons(list[`${game.me.identity}list`].randomGets(8), "character", buttons);
 									_status.event.dialog.content.insertBefore(buttons, node);
 									buttons.addTempClass("start");
 									node.remove();
@@ -837,15 +834,15 @@ export default () => {
 								});
 								delete _status.createControl;
 							};
-							var createCharacterDialog = function () {
-								event.dialogxx = ui.create.characterDialog("heightset", function (name) {
+							const createCharacterDialog = () => {
+								event.dialogxx = ui.create.characterDialog("heightset", name => {
 									if (lib.character[name].isJiangeBoss) {
 										return true;
 									}
 									if (lib.character[name].isJiangeMech) {
 										return true;
 									}
-									if (lib.character[name][1] != game.me.identity) {
+									if (lib.character[name][1] !== game.me.identity) {
 										return true;
 									}
 								});
@@ -859,9 +856,9 @@ export default () => {
 							} else {
 								createCharacterDialog();
 							}
-							ui.create.cheat2 = function () {
+							ui.create.cheat2 = () => {
 								ui.cheat2 = ui.create.control("自由选将", function () {
-									if (this.dialog == _status.event.dialog) {
+									if (this.dialog === _status.event.dialog) {
 										if (game.changeCoin) {
 											game.changeCoin(10);
 										}
@@ -904,25 +901,32 @@ export default () => {
 								}
 							}
 							break;
+						}
 						case "mech":
-							dialog = ui.create.dialog("选择角色", [list[game.me.identity + "mech"], "character"]);
+							dialog = ui.create.dialog("选择角色", [list[`${game.me.identity}mech`], "character"]);
 							break;
 						case "boss":
-							for (var i = 0; i < game.players.length; i++) {
-								if (game.players[i].type == "mech") {
+							for (let i = 0; i < game.players.length; i++) {
+								if (game.players[i].type === "mech") {
 									game.players[i].init(list[game.players[i].identity + game.players[i].type].randomRemove());
 								}
 							}
-							dialog = ui.create.dialog("选择角色", [list[game.me.identity + "boss"], "character"]);
+							dialog = ui.create.dialog("选择角色", [list[`${game.me.identity}boss`], "character"]);
 							break;
 					}
-					game.me.chooseButton(dialog, true).set("onfree", true).selectButton = function () {
-						if (get.config("double_character_jiange")) {
-							return [2, 2];
-						}
-						return [1, 1];
-					};
-					"step 2";
+					const choice = game.me
+						.chooseButton({
+							dialog,
+							forced: true,
+							selectButton: () => {
+								if (get.config("double_character_jiange")) {
+									return [2, 2];
+								}
+								return [1, 1];
+							},
+						})
+						.set("onfree", true);
+					const result = await choice.forResult();
 					if (ui.cheat) {
 						ui.cheat.close();
 						delete ui.cheat;
@@ -931,24 +935,24 @@ export default () => {
 						ui.cheat2.close();
 						delete ui.cheat2;
 					}
-					var double = result.links.length == 2;
+					const double = result.links.length === 2;
 					game.me.init(result.links[0], result.links[1]);
-					for (var i = 0; i < game.players.length; i++) {
+					for (let i = 0; i < game.players.length; i++) {
 						if (game.players[i].name1) {
 							continue;
 						}
-						if (game.players[i].type != "human") {
-							game.players[i].init(event.list[game.players[i].identity + game.players[i].type].randomRemove());
+						if (game.players[i].type !== "human") {
+							game.players[i].init(list[game.players[i].identity + game.players[i].type].randomRemove());
 						} else {
 							if (double) {
-								game.players[i].init(event.list[game.players[i].identity + "list"].randomRemove(), event.list[game.players[i].identity + "list"].randomRemove());
+								game.players[i].init(list[`${game.players[i].identity}list`].randomRemove(), list[`${game.players[i].identity}list`].randomRemove());
 							} else {
-								game.players[i].init(event.list[game.players[i].identity + "list"].randomRemove());
+								game.players[i].init(list[`${game.players[i].identity}list`].randomRemove());
 							}
 						}
 					}
 					game.addRecentCharacter(game.me.name, game.me.name2);
-					setTimeout(function () {
+					setTimeout(() => {
 						ui.arena.classList.remove("choose-character");
 					}, 500);
 				});
