@@ -27204,10 +27204,10 @@ const skills = {
 					}
 					return false;
 				},
-				content() {
-					var cards = [];
-					var storage = player.storage.olshengong_destroy;
-					for (var i of trigger.cards) {
+				async content(event, trigger, player) {
+					const cards = [];
+					const storage = player.storage.olshengong_destroy;
+					for (const i of trigger.cards) {
 						if (storage.includes(i)) {
 							delete _status.olshengong_map[i.name];
 							storage.remove(i);
