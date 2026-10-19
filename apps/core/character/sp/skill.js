@@ -8274,8 +8274,8 @@ const skills = {
 			);
 		},
 		forced: true,
-		content() {
-			player.addSkill(event.name + "_effect");
+		async content(event, trigger, player) {
+			player.addSkill(`${event.name}_effect`);
 		},
 		subSkill: {
 			effect: {
