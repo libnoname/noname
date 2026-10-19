@@ -27401,7 +27401,7 @@ const skills = {
 		filter(event, player) {
 			return !event.numFixed;
 		},
-		content() {
+		async content(event, trigger, player) {
 			trigger.num += 2;
 		},
 		mod: {
