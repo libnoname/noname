@@ -34489,7 +34489,7 @@ const skills = {
 				filter(event, player) {
 					return event.cards2 && event.cards2.length > 0;
 				},
-				content() {
+				async content(event, trigger, player) {
 					lib.skill.xinshanjia.sync(player);
 				},
 			},
