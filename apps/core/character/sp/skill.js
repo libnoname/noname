@@ -33242,7 +33242,7 @@ const skills = {
 				);
 			});
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			player.changeSkills(["xinjingong"], ["xinlianji"]);
 		},
