@@ -11886,7 +11886,7 @@ const skills = {
 			return game.filterPlayer(target => target.getHp() <= player.getHp()).sortBySeat();
 		},
 		forced: true,
-		content() {
+		async content(event, trigger, player) {
 			trigger.directHit.addArray(event.targets);
 			game.log(event.targets, "不可响应", trigger.card);
 		},
