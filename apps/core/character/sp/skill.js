@@ -30494,7 +30494,7 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseDiscardBefore" },
 		forced: true,
-		content() {
+		async content(event, trigger, player) {
 			trigger.setContent(lib.skill.olsujian.phaseDiscard);
 		},
 		async phaseDiscard(event, trigger, player) {
