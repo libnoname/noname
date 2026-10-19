@@ -40020,7 +40020,7 @@ const skills = {
 		check(event, player) {
 			return player.hp >= 3 && player.countCards("h") > player.hp + 1 + player.storage.xunzhi;
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.loseHp();
 			player.storage.xunzhi += 2;
 		},
