@@ -42089,10 +42089,10 @@ const skills = {
 		filter(event, player) {
 			return !event.numFixed;
 		},
-		content() {
+		async content(event, trigger, player) {
 			trigger.changeToZero();
-			var num = game.countPlayer(function (current) {
-				if (player.hasZhuSkill("guiming") && current.group == "wu" && current != player) {
+			const num = game.countPlayer(current => {
+				if (player.hasZhuSkill("guiming") && current.group === "wu" && current !== player) {
 					return true;
 				}
 				return current.isDamaged();
