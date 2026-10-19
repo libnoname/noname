@@ -39507,7 +39507,7 @@ const skills = {
 					}
 					return false;
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.storage.luanzhan = 0;
 					player.markSkill("luanzhan");
 				},
