@@ -6633,7 +6633,6 @@ export default () => {
 			},
 			boss_keding: {
 				trigger: { player: "useCard2" },
-				direct: true,
 				filter: function (event, player) {
 					if (!event.targets || event.targets.length != 1) {
 						return false;
@@ -6660,59 +6659,58 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
-					"step 0";
-					var card = trigger.card;
-					var prompt2 = "弃置任意张手牌，并为" + get.translation(card) + "增加等量的目标";
-					var targets = game.filterPlayer(function (current) {
+				async cost(event, trigger, player) {
+					const card = trigger.card;
+					const prompt2 = `弃置任意张手牌，并为${get.translation(card)}增加等量的目标`;
+					const targets = game.filterPlayer(current => {
 						return !trigger.targets.includes(current) && lib.filter.targetEnabled2(card, player, current) && lib.filter.targetInRange(card, player, current);
 					});
-					var max = 0;
+					let max = 0;
 					if (!trigger.targets[0].hasSkill("heiguangkai_skill")) {
-						max = targets.filter(function (target) {
+						max = targets.filter(target => {
 							return get.effect(target, card, player, player) > 0;
 						}).length;
 					}
-					player.chooseCardTarget({
-						prompt: get.prompt("boss_keding"),
-						prompt2: prompt2,
-						selectCard: function () {
-							var player = _status.event.player;
-							var targets = _status.event.targets;
-							return [Math.max(1, ui.selected.targets.length), Math.min(targets.length, player.countCards("h"))];
-						},
-						selectTarget: function () {
-							return ui.selected.cards.length;
-						},
-						position: "h",
-						filterCard: lib.filter.cardDiscardable,
-						filterTarget: function (card, player, target) {
-							return _status.event.targets.includes(target);
-						},
-						targets: targets,
-						ai1: function (card) {
-							if (ui.selected.cards.length >= _status.event.max) {
-								return 0;
-							}
-							return 5 - get.value(card);
-						},
-						ai2: function (target) {
-							if (target.hasSkill("heiguangkai_skill")) {
-								return 0;
-							}
-							var trigger = _status.event.getTrigger();
-							var player = _status.event.player;
-							return get.effect(target, trigger.card, player, player);
-						},
-						max: max,
-						allowChooseAll:true,
-					});
-					"step 1";
-					if (result.bool) {
-						player.logSkill("boss_keding", result.targets);
-						player.discard(result.cards);
-						trigger.targets.addArray(result.targets);
-					}
+					event.result = await player
+						.chooseCardTarget({
+							prompt: get.prompt("boss_keding"),
+							prompt2: prompt2,
+							selectCard: () => {
+								const player = _status.event.player;
+								const targets = _status.event.targets;
+								return [Math.max(1, ui.selected.targets.length), Math.min(targets.length, player.countCards("h"))];
+							},
+							selectTarget: () => {
+								return ui.selected.cards.length;
+							},
+							position: "h",
+							filterCard: lib.filter.cardDiscardable,
+							filterTarget: (card, player, target) => {
+								return _status.event.targets.includes(target);
+							},
+							targets: targets,
+							ai1: card => {
+								if (ui.selected.cards.length >= _status.event.max) {
+									return 0;
+								}
+								return 5 - get.value(card);
+							},
+							ai2: target => {
+								if (target.hasSkill("heiguangkai_skill")) {
+									return 0;
+								}
+								const trigger = _status.event.getTrigger();
+								const player = _status.event.player;
+								return get.effect(target, trigger.card, player, player);
+							},
+							max: max,
+							allowChooseAll: true,
+						})
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					player.discard({ cards: event.cards });
+					trigger.targets.addArray(event.targets);
 				},
 			},
 			boss_bashi: {
