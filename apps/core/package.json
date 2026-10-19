@@ -23,7 +23,8 @@
         "build": "tsx scripts/build.ts",
         "build:types": "tsc -p tsconfig.types.json",
         "generateAsset": "tsx scripts/generateAsset.ts",
-        "lint": "pnpm eslint noname/**"
+        "lint": "pnpm eslint noname/**",
+        "lint:prettier": "pnpm prettier -c noname/**"
     },
     "dependencies": {
         "@codemirror/autocomplete": "^6.20.0",
