@@ -7596,7 +7596,7 @@ export default () => {
 				intro: {
 					content: "已获得大雾标记",
 				},
-				content: function () {
+				async content(event, trigger, player) {
 					trigger.cancel();
 				},
 				ai: {
