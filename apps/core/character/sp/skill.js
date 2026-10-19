@@ -25445,7 +25445,7 @@ const skills = {
 				audio: "sanku",
 				trigger: { player: "gainMaxHpBegin" },
 				forced: true,
-				content() {
+				async content(event, trigger, player) {
 					trigger.cancel();
 				},
 			},
