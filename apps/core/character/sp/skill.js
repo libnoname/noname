@@ -22318,7 +22318,7 @@ const skills = {
 				filter(event, player) {
 					return !player.storage.olkangrui_nil;
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.storage.olkangrui_nil = true;
 					game.log(player, "本回合手牌上限基数为", "#g0");
 				},
