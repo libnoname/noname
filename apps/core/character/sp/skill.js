@@ -34020,7 +34020,7 @@ const skills = {
 				filter(event, player) {
 					return !player.storage.cuorui && (get.is.single() || player.countCards("j"));
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.storage.cuorui = true;
 					trigger.cancel();
 					game.log(player, "跳过了", "#g判定阶段");
