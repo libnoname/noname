@@ -6257,7 +6257,7 @@ export default () => {
 				filter: function (event, player) {
 					return event.player.storage.longchuanzhibao > 0;
 				},
-				content: function () {
+				async content(event, trigger, player) {
 					player.gainZhibao(1, trigger.player);
 					game.delay();
 				},
