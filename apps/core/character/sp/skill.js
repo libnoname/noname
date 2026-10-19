@@ -48913,7 +48913,7 @@ const skills = {
 			}
 			return event.targets.length > 0 && !player.countCards("h", { type: "basic" });
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.draw(trigger.targets.length);
 		},
 		ai: {
