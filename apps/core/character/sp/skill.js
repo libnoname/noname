@@ -47689,7 +47689,7 @@ const skills = {
 					return evt && evt.es.length;
 				},
 				frequent: true,
-				content() {
+				async content(event, trigger, player) {
 					player.recover();
 				},
 			},
