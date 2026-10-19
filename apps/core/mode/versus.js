@@ -5699,22 +5699,20 @@ export default () => {
 			zhanyanliangzhuwenchou: {
 				trigger: { player: "phaseBegin" },
 				silent: true,
-				content: function () {
-					"step 0";
-					player.chooseUseTarget(
-						{
-							name: "juedou",
-							isCard: true,
-							storage: { nowuxie: true },
-						},
-						"选择一名角色，视为对其使用【决斗】",
-						"或点【取消】失去1点体力"
-					);
-					"step 1";
-					if (!result.bool) {
-						player.loseHp();
-					}
-				},
+				content: [
+					async (event, trigger, player, result) => {
+						player.chooseUseTarget({
+							card: { name: "juedou", isCard: true, storage: { nowuxie: true } },
+							prompt: "选择一名角色，视为对其使用【决斗】",
+							prompt2: "或点【取消】失去1点体力",
+						});
+					},
+					async (event, trigger, player, result) => {
+						if (!result.bool) {
+							await player.loseHp();
+						}
+					},
+				],
 			},
 			xujiu2: {
 				charlotte: true,
