@@ -47752,8 +47752,9 @@ const skills = {
 			}
 			return false;
 		},
-		callback() {
-			player.addToExpansion(card, "gain2").gaintag.add("xinfu_jijun");
+		async callback(event, trigger, player) {
+			const { card } = event;
+			player.addToExpansion({ cards: [card], animate: "gain2", gaintag: ["xinfu_jijun"] });
 		},
 		content() {
 			player.judge(function (card) {
