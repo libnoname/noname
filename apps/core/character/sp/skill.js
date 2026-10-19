@@ -38547,7 +38547,7 @@ const skills = {
 		filter(event) {
 			return get.type(event.card) == "trick";
 		},
-		content() {
+		async content(event, trigger, player) {
 			trigger.nowuxie = true;
 		},
 		mod: {
