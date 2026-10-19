@@ -7751,44 +7751,47 @@ export default () => {
 			boss_tianyun: {
 				trigger: { player: "phaseEnd" },
 				direct: true,
-				content: function () {
-					"step 0";
-					event.forceDie = true;
-					player.chooseTarget(get.prompt("boss_tianyun"), function (card, player, target) {
-						return target.isEnemyOf(player);
-					}).ai = function (target) {
-						if (player.hp <= 1) {
-							return 0;
+				content: [
+					async (event, trigger, player, result) => {
+						event.forceDie = true;
+						player.chooseTarget({
+							prompt: get.prompt("boss_tianyun"),
+							filterTarget: (card, player, target) => target.isEnemyOf(player),
+							ai: target => {
+								if (player.hp <= 1 || get.attitude(player, target) > -3) {
+									return 0;
+								}
+								const eff = get.damageEffect(target, player, player, "fire");
+								if (eff > 0) {
+									return eff + target.countCards("e") / 2;
+								}
+								return 0;
+							},
+						});
+					},
+					async (event, trigger, player, result) => {
+						if (!result.bool) {
+							event.finish();
+							return;
 						}
-						if (get.attitude(player, target) > -3) {
-							return 0;
-						}
-						var eff = get.damageEffect(target, player, player, "fire");
-						if (eff > 0) {
-							return eff + target.countCards("e") / 2;
-						}
-						return 0;
-					};
-					"step 1";
-					if (result.bool) {
 						player.logSkill("boss_tianyun", result.targets, "fire");
 						player.loseHp();
 						event.target = result.targets[0];
-					} else {
-						event.finish();
-					}
-					"step 2";
-					if (event.target) {
-						event.target.damage(Math.random() > 0.4 ? 2 : 3, "fire");
-					}
-					"step 3";
-					if (event.target) {
-						var es = event.target.getCards("e");
-						if (es.length) {
-							event.target.discard(es);
+					},
+					async (event, trigger, player, result) => {
+						if (event.target) {
+							await event.target.damage({ num: Math.random() > 0.4 ? 2 : 3, nature: "fire" });
 						}
-					}
-				},
+					},
+					async (event, trigger, player, result) => {
+						if (event.target) {
+							const es = event.target.getCards("e");
+							if (es.length) {
+								await event.target.discard({ cards: es });
+							}
+						}
+					},
+				],
 				ai: {
 					threaten: 2,
 				},
