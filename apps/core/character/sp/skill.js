@@ -45452,9 +45452,9 @@ const skills = {
 			var target = lib.skill.chongzhen.logTarget(event, player);
 			return "获得" + get.translation(target) + "的一张手牌";
 		},
-		content() {
-			var target = lib.skill.chongzhen.logTarget(trigger, player);
-			player.gainPlayerCard(target, "h", true);
+		async content(event, trigger, player) {
+			const target = lib.skill.chongzhen.logTarget(trigger, player);
+			player.gainPlayerCard({ target, position: "h", forced: true });
 		},
 		ai: {
 			combo: "ollongdan",
