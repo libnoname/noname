@@ -1,1 +1,1 @@
-export const ItemType = Symbol("Noname.Experimental.ItemType")
+export const ItemType = Symbol("Noname.Experimental.ItemType");

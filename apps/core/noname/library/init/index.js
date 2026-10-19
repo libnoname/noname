@@ -180,19 +180,17 @@ export class LibInit {
 			if (file) {
 				path = `${path}${/^db:extension-[^:]*$/.test(path) ? ":" : "/"}${file}.css`;
 			}
-			(path.startsWith("db:") ? game.getDB("image", path.slice(3)).then(get.objectURL) : new Promise(resolve => resolve(path))).then(
-				resolvedPath => {
-					style.href = resolvedPath;
-					if (typeof before == "function") {
-						style.addEventListener("load", before);
-						document.head.appendChild(style);
-					} else if (before) {
-						document.head.insertBefore(style, before);
-					} else {
-						document.head.appendChild(style);
-					}
+			(path.startsWith("db:") ? game.getDB("image", path.slice(3)).then(get.objectURL) : new Promise(resolve => resolve(path))).then(resolvedPath => {
+				style.href = resolvedPath;
+				if (typeof before == "function") {
+					style.addEventListener("load", before);
+					document.head.appendChild(style);
+				} else if (before) {
+					document.head.insertBefore(style, before);
+				} else {
+					document.head.appendChild(style);
 				}
-			);
+			});
 		}
 		return style;
 	}
@@ -212,12 +210,7 @@ export class LibInit {
 		let scriptSource = file ? `${path}${/^db:extension-[^:]*$/.test(path) ? ":" : "/"}${file}.js` : path;
 		if (path.startsWith("http")) {
 			scriptSource += `?rand=${get.id()}`;
-		} else if (
-			lib.config.fuck_sojson &&
-			!_status.connectMode &&
-			scriptSource.includes("extension") != -1 &&
-			scriptSource.startsWith(lib.assetURL)
-		) {
+		} else if (lib.config.fuck_sojson && !_status.connectMode && scriptSource.includes("extension") != -1 && scriptSource.startsWith(lib.assetURL)) {
 			const pathToRead = scriptSource.slice(lib.assetURL.length);
 			const alertMessage = `检测到您安装了使用免费版sojson进行加密的扩展。请谨慎使用这些扩展，避免游戏数据遭到破坏。\n扩展文件：${pathToRead}`;
 			if (typeof game.readFileAsText == "function") {
@@ -244,10 +237,7 @@ export class LibInit {
 		}
 		const script = document.createElement("script");
 		//script.type = "module";
-		(scriptSource.startsWith("db:")
-			? game.getDB("image", scriptSource.slice(3)).then(get.objectURL)
-			: new Promise(resolve => resolve(scriptSource))
-		).then(resolvedScriptSource => {
+		(scriptSource.startsWith("db:") ? game.getDB("image", scriptSource.slice(3)).then(get.objectURL) : new Promise(resolve => resolve(scriptSource))).then(resolvedScriptSource => {
 			script.src = resolvedScriptSource;
 			if (path.startsWith("http")) {
 				script.addEventListener("load", () => script.remove());
@@ -341,47 +331,26 @@ export class LibInit {
 			ui.css.styles.remove();
 		}
 		ui.css.styles = lib.init.sheet();
-		ui.css.styles.sheet.insertRule(
-			"#arena .player>.name,#arena .button.character>.name {font-family: " + (lib.config.name_font || "xinwei") + ",xinwei}",
-			0
-		);
-		ui.css.styles.sheet.insertRule(
-			"#arena .player>.name,.button.character>.name {font-family: " + (lib.config.name_font || "xinwei") + ",xinwei}",
-			0
-		);
+		ui.css.styles.sheet.insertRule("#arena .player>.name,#arena .button.character>.name {font-family: " + (lib.config.name_font || "xinwei") + ",xinwei}", 0);
+		ui.css.styles.sheet.insertRule("#arena .player>.name,.button.character>.name {font-family: " + (lib.config.name_font || "xinwei") + ",xinwei}", 0);
 		ui.css.styles.sheet.insertRule("#arena .player .identity>div {font-family: " + (lib.config.identity_font || "huangcao") + ",xinwei}", 0);
-		ui.css.styles.sheet.insertRule(
-			".button.character.newstyle>.identity {font-family: " + (lib.config.identity_font || "huangcao") + ",xinwei}",
-			0
-		);
+		ui.css.styles.sheet.insertRule(".button.character.newstyle>.identity {font-family: " + (lib.config.identity_font || "huangcao") + ",xinwei}", 0);
 		if (lib.config.cardtext_font && lib.config.cardtext_font != "default") {
 			ui.css.styles.sheet.insertRule(".card div:not(.info):not(.background) {font-family: " + lib.config.cardtext_font + ";}", 0);
 		}
 		if (lib.config.global_font && lib.config.global_font != "default") {
 			ui.css.styles.sheet.insertRule("#window {font-family: " + lib.config.global_font + ",xinwei}", 0);
-			ui.css.styles.sheet.insertRule(
-				"#window #control{font-family: STHeiti,SimHei,Microsoft JhengHei,Microsoft YaHei,WenQuanYi Micro Hei,Suits,Helvetica,Arial,sans-serif}",
-				0
-			);
+			ui.css.styles.sheet.insertRule("#window #control{font-family: STHeiti,SimHei,Microsoft JhengHei,Microsoft YaHei,WenQuanYi Micro Hei,Suits,Helvetica,Arial,sans-serif}", 0);
 		}
 		switch (lib.config.glow_phase) {
 			case "yellow":
-				ui.css.styles.sheet.insertRule(
-					"#arena .player:not(.selectable):not(.selected).glow_phase {box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px, rgb(217, 152, 62) 0 0 15px, rgb(217, 152, 62) 0 0 15px !important;}",
-					0
-				);
+				ui.css.styles.sheet.insertRule("#arena .player:not(.selectable):not(.selected).glow_phase {box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px, rgb(217, 152, 62) 0 0 15px, rgb(217, 152, 62) 0 0 15px !important;}", 0);
 				break;
 			case "green":
-				ui.css.styles.sheet.insertRule(
-					"#arena .player:not(.selectable):not(.selected).glow_phase {box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px, rgba(10, 155, 67, 1) 0 0 15px, rgba(10, 155, 67, 1) 0 0 15px !important;}",
-					0
-				);
+				ui.css.styles.sheet.insertRule("#arena .player:not(.selectable):not(.selected).glow_phase {box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px, rgba(10, 155, 67, 1) 0 0 15px, rgba(10, 155, 67, 1) 0 0 15px !important;}", 0);
 				break;
 			case "purple":
-				ui.css.styles.sheet.insertRule(
-					"#arena .player:not(.selectable):not(.selected).glow_phase {box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px, rgb(189, 62, 170) 0 0 15px, rgb(189, 62, 170) 0 0 15px !important;}",
-					0
-				);
+				ui.css.styles.sheet.insertRule("#arena .player:not(.selectable):not(.selected).glow_phase {box-shadow: rgba(0, 0, 0, 0.3) 0 0 0 1px, rgb(189, 62, 170) 0 0 15px, rgb(189, 62, 170) 0 0 15px !important;}", 0);
 				break;
 		}
 	}
@@ -424,10 +393,7 @@ export class LibInit {
 				} else {
 					ui.arena.classList.remove("oldlayout");
 				}
-				if (
-					lib.config.cardshape == "oblong" &&
-					(game.layout == "long" || game.layout == "mobile" || game.layout == "long2" || game.layout == "nova")
-				) {
+				if (lib.config.cardshape == "oblong" && (game.layout == "long" || game.layout == "mobile" || game.layout == "long2" || game.layout == "nova")) {
 					ui.arena.classList.add("oblongcard");
 					ui.window.classList.add("oblongcard");
 				} else {
@@ -654,9 +620,7 @@ export class LibInit {
 			if (resultUrl.protocol == "db:") {
 				// 我思索了一下，如果这玩意能造成无限递归
 				// 那么我只能说，你赢了
-				game.getDB("image", linkString.slice(3)).then(storeResult =>
-					this.parseResourceAddress(storeResult, defaultHandle, loadAsDataUrlCallback, true)
-				);
+				game.getDB("image", linkString.slice(3)).then(storeResult => this.parseResourceAddress(storeResult, defaultHandle, loadAsDataUrlCallback, true));
 			} else {
 				get.blobFromUrl(resultUrl)
 					.then(blob => get.dataUrlAsync(blob))

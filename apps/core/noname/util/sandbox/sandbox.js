@@ -207,7 +207,7 @@ class Rule {
 		if (thiz.#domain !== Domain.current) {
 			throw new Error("当前不是 Rule 所属的运行域");
 		}
-	};
+	}
 
 	/**
 	 * ```plain
@@ -392,7 +392,7 @@ class Rule {
 /**
  * ```plain
  * 将全局索引函数单独提取了出来
- * 
+ *
  * 解析全局索引集合
  * 将类似于 "/Object/assign" 的索引解析为 [Object, "assign"] 的索引
  * 支持以下几种情况:
@@ -407,7 +407,7 @@ class Rule {
  *     ...
  * ]
  * ```
- * 
+ *
  * @param {Window} window
  * @param {string|Array<string|symbol|RegExp>} selector
  * @returns {Array<[any, string|symbol]>}
@@ -479,8 +479,7 @@ function buildGlobalIndexes(window, selector) {
 		// 此时需要遍历向下索引
 		const root = path.shift();
 		const pattern = path.shift();
-		const keys = Reflect.ownKeys(root)
-			.filter(k => k in root && pattern.test(typeof k == "string" ? k : `@${k.description}`));
+		const keys = Reflect.ownKeys(root).filter(k => k in root && pattern.test(typeof k == "string" ? k : `@${k.description}`));
 
 		if (!keys.length) {
 			continue;
@@ -589,11 +588,11 @@ const MAPPING_GLOBALS = Object.freeze([
  *
  * 这些函数的成功执行依赖于browser context
  * 必须要顶级域来提供给其他运行域
- * 
+ *
  * 补充:
  * 对于需要异步执行函数的功能，沙盒本身的运行域因为被卸载了document，受限于浏览器规则不会被执行
  * 这时候我们需要借助顶级域的对应功能，将它们包装（封送）到沙盒的运行域中，保证异步函数正常执行
- * 
+ *
  * 另外需要判断原型链的类也需要从顶级域给出，否则会导致检查失败的问题
  * ```
  */
@@ -820,7 +819,7 @@ class Globals {
  *
  * 根据HTML现有函数设置
  * 请不要改动下面的列表
- * 
+ *
  * 补充:
  * 对于需要执行回调函数的功能，沙盒本身的运行域因为被卸载了document，受限于浏览器规则不会被执行
  * 这时候我们需要借助顶级域的执行上下文，将回调函数包装（封送）到顶级的运行域中，保证回调函数正常执行
@@ -923,8 +922,8 @@ class NativeWrapper {
 	static wrapFunctions(global, selector) {
 		let flags = 2; // 默认装箱了喵
 
-		if(Array.isArray(selector)) {
-			if (selector.length > 1 && selector[selector.length - 1] === '*') {
+		if (Array.isArray(selector)) {
+			if (selector.length > 1 && selector[selector.length - 1] === "*") {
 				flags |= 1;
 				selector.splice(selector.length - 1, 1);
 			}
@@ -1264,7 +1263,7 @@ class DomainMonitors {
 			// 根据 actions 添加到不同的触发器集合
 			addToActionMap(actionMap);
 		}
-	};
+	}
 
 	/**
 	 * ```plain
@@ -1338,7 +1337,7 @@ class DomainMonitors {
 			// 根据 actions 从不同的触发器集合移除
 			removeFromActionMap(actionMap);
 		}
-	};
+	}
 
 	/**
 	 * ```plain
@@ -1378,7 +1377,7 @@ class DomainMonitors {
 		}
 
 		return array;
-	};
+	}
 
 	/**
 	 * ```plain
@@ -1428,7 +1427,7 @@ class DomainMonitors {
 				monitors.add(monitor);
 			}
 		}
-	};
+	}
 
 	/**
 	 * ```plain
@@ -1686,7 +1685,7 @@ class Monitor {
 		if (thiz.#domain !== Domain.current) {
 			throw new Error("当前不是 Monitor 所属的运行域");
 		}
-	};
+	}
 
 	/**
 	 * ```plain
@@ -2005,7 +2004,7 @@ class Monitor {
 	 */
 	static #exposeInfo(thiz) {
 		return [thiz.#actions, thiz.#allowDomains, thiz.#disallowDomains, thiz.#checkInfo["target"]];
-	};
+	}
 
 	/**
 	 * ```plain
@@ -2025,7 +2024,7 @@ class Monitor {
 		}
 
 		return true;
-	};
+	}
 
 	/**
 	 * ```plain
@@ -2052,7 +2051,7 @@ class Monitor {
 		}
 
 		thiz.#handler(access, nameds, control);
-	};
+	}
 
 	/**
 	 * @param {Symbol} signal
@@ -2102,7 +2101,7 @@ class Marshal {
 		}
 
 		return true;
-	};
+	}
 
 	/**
 	 * ```plain
@@ -2114,7 +2113,7 @@ class Marshal {
 	 */
 	static #strictMarshal(obj) {
 		return obj instanceof Sandbox || obj instanceof Rule || obj instanceof Monitor;
-	};
+	}
 
 	/**
 	 * ```plain
@@ -2131,7 +2130,7 @@ class Marshal {
 	 */
 	static #revertProxy(proxy) {
 		return [proxy[Marshal.#sourceDomain], proxy[Marshal.#revertTarget]];
-	};
+	}
 
 	/**
 	 * ```plain
@@ -2144,7 +2143,7 @@ class Marshal {
 	 */
 	static #cacheProxy(obj, domain) {
 		return domain[SandboxExposer](SandboxSignal_GetMarshalledProxy, obj);
-	};
+	}
 
 	/**
 	 * ```plain
@@ -2162,7 +2161,7 @@ class Marshal {
 		}
 
 		return rule;
-	};
+	}
 
 	/**
 	 * ```plain
@@ -2311,7 +2310,7 @@ class Marshal {
 
 		// 如果可能，应该尽量避免陷入相同运行域
 		if (prevDomain === domain) {
-			return console.warn("trapDomain 处于相同 domain"), action();
+			return (console.warn("trapDomain 处于相同 domain"), action());
 		}
 
 		Domain[SandboxExposer2](SandboxSignal_EnterDomain, domain);
@@ -2323,7 +2322,7 @@ class Marshal {
 		} finally {
 			Domain[SandboxExposer2](SandboxSignal_ExitDomain);
 		}
-	};
+	}
 
 	/**
 	 * ```plain
@@ -2348,7 +2347,7 @@ class Marshal {
 		}
 
 		return newArray;
-	};
+	}
 
 	/**
 	 * ```plain
@@ -2373,7 +2372,7 @@ class Marshal {
 		}
 
 		return newObject;
-	};
+	}
 
 	/**
 	 * ```plain
@@ -2401,7 +2400,7 @@ class Marshal {
 
 		Reflect.setPrototypeOf(cloned, null);
 		return cloned;
-	};
+	}
 
 	/**
 	 * ```plain
@@ -2811,8 +2810,7 @@ class Marshal {
 						}
 
 						keys = dispatched.returnValue;
-					}
-					else {
+					} else {
 						// @ts-expect-error Sandbox
 						keys = Reflect.ownKeys(...args);
 					}
@@ -2902,7 +2900,7 @@ class Marshal {
 		Marshal.#marshalledProxies.add(proxy);
 		targetDomain[SandboxExposer](SandboxSignal_SetMarshalledProxy, target, proxy);
 		return proxy;
-	};
+	}
 
 	/**
 	 * @param {Symbol} signal
@@ -3160,7 +3158,7 @@ class Domain {
 	static #enterDomain(domain) {
 		Domain.#domainStack.push(Domain.#currentDomain);
 		Domain.#currentDomain = domain;
-	};
+	}
 
 	static #exitDomain() {
 		if (Domain.#domainStack.length < 1) {
@@ -3169,7 +3167,7 @@ class Domain {
 
 		// @ts-expect-error Sandbox
 		Domain.#currentDomain = Domain.#domainStack.pop();
-	};
+	}
 
 	/**
 	 * @returns {Array<Domain>}
@@ -3191,7 +3189,7 @@ class Domain {
 
 		// @ts-expect-error Sandbox
 		return list;
-	};
+	}
 
 	/**
 	 * ```plain
@@ -3395,12 +3393,12 @@ class Sandbox {
 	/**
 	 * ```plain
 	 * 创建一个新的沙盒
-	 * 
+	 *
 	 * 并指定沙盒使用的持久化ID
 	 * 当服务器需要使用`localStorage`时必须指定持久化ID来确保每次访问的持久化数据的一致性
 	 * ```
-	 * 
-	 * @param {string} persistId 
+	 *
+	 * @param {string} persistId
 	 */
 	constructor(persistId) {
 		this.#persistId = typeof persistId == "string" && persistId.length > 0 ? persistId : null;
@@ -3413,7 +3411,7 @@ class Sandbox {
 		this.#domainFunction = this.#domainWindow.Function;
 		// this.#domainEval = this.#domainWindow.eval;
 		Sandbox.#domainMap.set(this.#domain, this);
-		
+
 		this.#proxyStorage = persistId ? this.#createSandboxStorage() : null;
 
 		Sandbox.#initDomainFunctions(this, this.#domainWindow);
@@ -3431,7 +3429,7 @@ class Sandbox {
 		if (thiz.#sourceDomain !== Domain.current) {
 			throw new TypeError("当前运行域不是沙盒的所有运行域");
 		}
-	};
+	}
 
 	/**
 	 * ```plain
@@ -3510,7 +3508,7 @@ class Sandbox {
 		rewriteCtor(defaultGeneratorFunction.prototype, new Proxy(defaultGeneratorFunction, handler));
 		rewriteCtor(defaultAsyncFunction.prototype, new Proxy(defaultAsyncFunction, handler));
 		rewriteCtor(defaultAsyncGeneratorFunction.prototype, new Proxy(defaultAsyncGeneratorFunction, handler));
-	};
+	}
 
 	// /**
 	//  * ```plain
@@ -3556,13 +3554,13 @@ class Sandbox {
 		if (!/[;\n\r]$/.test(code)) {
 			const newCode = `return (${code})`;
 			try {
-				new Function(newCode)
-				code = newCode
-			} catch { }
+				new Function(newCode);
+				code = newCode;
+			} catch {}
 		}
 
 		return thiz.exec(code);
-	};
+	}
 
 	/**
 	 * ```plain
@@ -3691,7 +3689,7 @@ class Sandbox {
 		/**
 		 * ```plain
 		 * 如果要扩充沙盒的内建函数或类，请在此增加喵
-		 * 
+		 *
 		 * 沙盒中模拟window提供的全局变量全部在这里喵
 		 * ```
 		 */
@@ -3762,8 +3760,7 @@ class Sandbox {
 		};
 
 		// 先从沙盒运行域实际的window中得到所有的全局属性名
-		const globalKeys = Reflect.ownKeys(this.#domainWindow)
-			.filter(key => typeof key == "string");
+		const globalKeys = Reflect.ownKeys(this.#domainWindow).filter(key => typeof key == "string");
 
 		// 我们遍历 `patternBuiltins` 并将符合条件的属性放到 `builtins` 中
 		for (const key of globalKeys) {
@@ -3790,7 +3787,7 @@ class Sandbox {
 		});
 
 		// 防止MD5报错
-		builtins.exports = undefined; 
+		builtins.exports = undefined;
 		builtins.define = undefined;
 
 		Object.assign(this.#scope, builtins);
@@ -3966,7 +3963,7 @@ class Sandbox {
 
 			return Marshal[SandboxExposer2](SandboxSignal_TrapDomain, domain, domainAction);
 		};
-	};
+	}
 
 	/**
 	 * ```plain
@@ -4145,7 +4142,7 @@ class Sandbox {
 		delete descriptors.self;
 		delete descriptors.document;
 		Object.defineProperties(rawScope, descriptors);
-	};
+	}
 
 	static #makeName(/** @type {string} */ prefix, /** @type {any} */ conflict) {
 		let builtName;
@@ -4155,11 +4152,11 @@ class Sandbox {
 		} while (builtName in conflict);
 
 		return builtName;
-	};
+	}
 
 	/**
 	 * 创建沙盒的`localStorage`原型
-	 * 
+	 *
 	 * @returns {Storage}
 	 */
 	#createSandboxStorage() {
@@ -4171,10 +4168,9 @@ class Sandbox {
 		/** @type {Storage} */
 		const localStorage = Sandbox.#topWindow.localStorage;
 		/** @type {Array<string>} */
-		const keys = Object.keys(localStorage)
-			.filter(key => key.startsWith(prefix));
+		const keys = Object.keys(localStorage).filter(key => key.startsWith(prefix));
 
-		Sandbox.#topWindow.addEventListener("storage", function(e) {
+		Sandbox.#topWindow.addEventListener("storage", function (e) {
 			if (e.storageArea !== localStorage) {
 				return;
 			}
@@ -4183,7 +4179,7 @@ class Sandbox {
 				keys.length = 0;
 				return;
 			}
-			
+
 			if (!e.key.startsWith(prefix)) {
 				return;
 			}
@@ -4202,7 +4198,7 @@ class Sandbox {
 			}
 		});
 
-		prototype.clear = function() {
+		prototype.clear = function () {
 			const removingKeys = Object.assign([], keys);
 			keys.length = 0;
 
@@ -4211,19 +4207,19 @@ class Sandbox {
 			}
 		};
 
-		prototype.getItem = function(key) {
+		prototype.getItem = function (key) {
 			return localStorage[prefix + key];
 		};
 
-		prototype.key = function(index) {
+		prototype.key = function (index) {
 			return keys[index] || null;
 		};
 
-		prototype.removeItem = function(key) {
+		prototype.removeItem = function (key) {
 			delete localStorage[prefix + key];
 		};
 
-		prototype.setItem = function(key, value) {
+		prototype.setItem = function (key, value) {
 			localStorage[prefix + key] = value;
 		};
 
@@ -4240,7 +4236,7 @@ class Sandbox {
 
 	/**
 	 * 创建`localStorage`实例 (简单模拟了一下`localStorage`)
-	 * 
+	 *
 	 * @returns {Storage?}
 	 */
 	#createSandboxStorageProxy() {
@@ -4270,7 +4266,7 @@ class Sandbox {
 				if (p in prototype) {
 					return true;
 				}
-				
+
 				prototype.setItem(p, String(newValue));
 				return true;
 			},
@@ -4281,7 +4277,7 @@ class Sandbox {
 
 				prototype.removeItem(p);
 				return true;
-			}
+			},
 		});
 	}
 

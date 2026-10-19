@@ -2,7 +2,7 @@ import { lib, game, ui } from "noname";
 import { createApp } from "vue";
 
 import OnloadSplash from "./OnloadSplash.vue";
-import type { OnloadSplash as IOnloadSplash } from "./onload-splash"
+import type { OnloadSplash as IOnloadSplash } from "./onload-splash";
 
 export class DefaultSplash implements IOnloadSplash {
 	readonly id: string = "style1";

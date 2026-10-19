@@ -222,12 +222,15 @@ export class Is {
 
 		const gaintag = card.gaintag;
 		// TODO: 添加通用前缀处理系统
-		return Array.isArray(gaintag) && gaintag.some(tag => {
-			if (tag.startsWith("eternal_")) {
-				return tag.slice(8).startsWith("visible_");
-			}
-			return tag.startsWith("visible_");
-		});
+		return (
+			Array.isArray(gaintag) &&
+			gaintag.some(tag => {
+				if (tag.startsWith("eternal_")) {
+					return tag.slice(8).startsWith("visible_");
+				}
+				return tag.startsWith("visible_");
+			})
+		);
 	}
 	/**
 	 * 是否是伤害牌

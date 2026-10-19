@@ -412,25 +412,19 @@ export async function boot() {
 				if (ui.css.hp_stylesheet1) {
 					ui.css.hp_stylesheet1.remove();
 				}
-				ui.css.hp_stylesheet1 = lib.init.sheet(
-					`.hp:not(.text):not(.actcount)[data-condition="high"]>div:not(.lost){background-image:url(${data})}`
-				);
+				ui.css.hp_stylesheet1 = lib.init.sheet(`.hp:not(.text):not(.actcount)[data-condition="high"]>div:not(.lost){background-image:url(${data})}`);
 			},
 			hp_style2(data) {
 				if (ui.css.hp_stylesheet2) {
 					ui.css.hp_stylesheet2.remove();
 				}
-				ui.css.hp_stylesheet2 = lib.init.sheet(
-					`.hp:not(.text):not(.actcount)[data-condition="mid"]>div:not(.lost){background-image:url(${data})}`
-				);
+				ui.css.hp_stylesheet2 = lib.init.sheet(`.hp:not(.text):not(.actcount)[data-condition="mid"]>div:not(.lost){background-image:url(${data})}`);
 			},
 			hp_style3(data) {
 				if (ui.css.hp_stylesheet3) {
 					ui.css.hp_stylesheet3.remove();
 				}
-				ui.css.hp_stylesheet3 = lib.init.sheet(
-					`.hp:not(.text):not(.actcount)[data-condition="low"]>div:not(.lost){background-image:url(${data})}`
-				);
+				ui.css.hp_stylesheet3 = lib.init.sheet(`.hp:not(.text):not(.actcount)[data-condition="low"]>div:not(.lost){background-image:url(${data})}`);
 			},
 			hp_style4(data) {
 				if (ui.css.hp_stylesheet4) {
@@ -457,26 +451,19 @@ export async function boot() {
 			}
 			ui.css.border_stylesheet = lib.init.sheet();
 			ui.css.border_stylesheet.sheet.insertRule(`#window .player>.framebg{display:block;background-image:url("${data}")}`, 0);
-			ui.css.border_stylesheet.sheet.insertRule(
-				".player>.count{z-index: 3 !important;border-radius: 2px !important;text-align: center !important;}",
-				0
-			);
+			ui.css.border_stylesheet.sheet.insertRule(".player>.count{z-index: 3 !important;border-radius: 2px !important;text-align: center !important;}", 0);
 		}),
 		tryLoadCustomStyle("control_style", data => {
 			if (ui.css.control_stylesheet) {
 				ui.css.control_stylesheet.remove();
 			}
-			ui.css.control_stylesheet = lib.init.sheet(
-				`#window .control,.menubutton:not(.active):not(.highlight):not(.red):not(.blue),#window #system>div>div{background-image:url("${data}")}`
-			);
+			ui.css.control_stylesheet = lib.init.sheet(`#window .control,.menubutton:not(.active):not(.highlight):not(.red):not(.blue),#window #system>div>div{background-image:url("${data}")}`);
 		}),
 		tryLoadCustomStyle("menu_style", data => {
 			if (ui.css.menu_stylesheet) {
 				ui.css.menu_stylesheet.remove();
 			}
-			ui.css.menu_stylesheet = lib.init.sheet(
-				`html #window>.dialog.popped,html .menu,html .menubg{background-image:url("${data}");background-size:cover}`
-			);
+			ui.css.menu_stylesheet = lib.init.sheet(`html #window>.dialog.popped,html .menu,html .menubg{background-image:url("${data}");background-size:cover}`);
 		}),
 	];
 
@@ -1096,10 +1083,7 @@ function createTouchDraggedFilter() {
 		if (_status.dragged) {
 			return;
 		}
-		if (
-			Math.abs(e.touches[0].clientX / game.documentZoom - this.startX) > 10 ||
-			Math.abs(e.touches[0].clientY / game.documentZoom - this.startY) > 10
-		) {
+		if (Math.abs(e.touches[0].clientX / game.documentZoom - this.startX) > 10 || Math.abs(e.touches[0].clientY / game.documentZoom - this.startY) > 10) {
 			_status.dragged = true;
 		}
 	});
@@ -1110,11 +1094,7 @@ function createTouchDraggedFilter() {
  *
  * 实际上但凡有重载都不会抽象
  */
-async function tryLoadCustomStyle(
-	id: string,
-	keys: (data: string) => void | Record<string, (data: string) => void>,
-	fallback?: () => void
-): Promise<void> {
+async function tryLoadCustomStyle(id: string, keys: (data: string) => void | Record<string, (data: string) => void>, fallback?: () => void): Promise<void> {
 	if (typeof keys === "function") {
 		keys = {
 			[id]: keys,

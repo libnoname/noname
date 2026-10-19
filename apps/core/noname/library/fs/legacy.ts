@@ -4,42 +4,13 @@ import type { FileSystem } from "./index";
 export type LegacyWriteData = string | Blob | ArrayBuffer | ArrayBufferView;
 
 export interface LegacyFileSystemGame {
-	checkFile?: (
-		fileName: string,
-		callback?: (result: -1 | 0 | 1) => void,
-		onerror?: (error: Error) => void
-	) => void;
-	checkDir?: (
-		directory: string,
-		callback?: (result: -1 | 0 | 1) => void,
-		onerror?: (error: Error) => void
-	) => void;
-	readFile?: (
-		fileName: string,
-		callback?: (data: ArrayBuffer) => unknown,
-		onerror?: (error: Error) => void
-	) => void;
-	readFileAsText?: (
-		fileName: string,
-		callback?: (data: string) => unknown,
-		onerror?: (error: Error) => void
-	) => void;
-	writeFile?: (
-		data: LegacyWriteData,
-		path: string,
-		name: string,
-		callback?: (error?: unknown) => void
-	) => void;
-	removeFile?: (
-		fileName: string,
-		callback?: (error?: unknown) => void,
-		onerror?: (error: Error) => void
-	) => void;
-	getFileList?: (
-		directory: string,
-		callback?: (folders: string[], files: string[]) => unknown,
-		onerror?: (error: Error) => void
-	) => void;
+	checkFile?: (fileName: string, callback?: (result: -1 | 0 | 1) => void, onerror?: (error: Error) => void) => void;
+	checkDir?: (directory: string, callback?: (result: -1 | 0 | 1) => void, onerror?: (error: Error) => void) => void;
+	readFile?: (fileName: string, callback?: (data: ArrayBuffer) => unknown, onerror?: (error: Error) => void) => void;
+	readFileAsText?: (fileName: string, callback?: (data: string) => unknown, onerror?: (error: Error) => void) => void;
+	writeFile?: (data: LegacyWriteData, path: string, name: string, callback?: (error?: unknown) => void) => void;
+	removeFile?: (fileName: string, callback?: (error?: unknown) => void, onerror?: (error: Error) => void) => void;
+	getFileList?: (directory: string, callback?: (folders: string[], files: string[]) => unknown, onerror?: (error: Error) => void) => void;
 	ensureDirectory?: (paths: string | string[], callback?: () => void, file?: boolean) => void;
 	createDir?: (directory: string, successCallback?: () => void, errorCallback?: (error: Error) => void) => void;
 	removeDir?: (directory: string, successCallback?: () => void, errorCallback?: (error: Error) => void) => void;
@@ -140,13 +111,7 @@ export function installLegacyFileSystemAPI(game: LegacyFileSystemGame, fileSyste
 	};
 }
 
-function checkPathType(
-	fileSystem: FileSystem,
-	path: string,
-	expectedType: "file" | "directory",
-	callback?: (result: -1 | 0 | 1) => void,
-	onerror?: (error: Error) => void
-) {
+function checkPathType(fileSystem: FileSystem, path: string, expectedType: "file" | "directory", callback?: (result: -1 | 0 | 1) => void, onerror?: (error: Error) => void) {
 	fileSystem.stat(path).then(
 		info => callback?.(info === null ? -1 : info.type === expectedType ? 1 : 0),
 		error => handleLegacyError(error, onerror)
@@ -154,9 +119,7 @@ function checkPathType(
 }
 
 function toExactArrayBuffer(data: Uint8Array): ArrayBuffer {
-	return data.byteOffset === 0 && data.byteLength === data.buffer.byteLength && data.buffer instanceof ArrayBuffer
-		? data.buffer
-		: new Uint8Array(data).buffer;
+	return data.byteOffset === 0 && data.byteLength === data.buffer.byteLength && data.buffer instanceof ArrayBuffer ? data.buffer : new Uint8Array(data).buffer;
 }
 
 async function toUint8Array(data: LegacyWriteData, path: string): Promise<Uint8Array> {
@@ -185,10 +148,7 @@ async function toUint8Array(data: LegacyWriteData, path: string): Promise<Uint8A
 
 function isBlob(data: unknown): data is Blob {
 	const typeTag = Object.prototype.toString.call(data);
-	return (
-		(typeTag === "[object Blob]" || typeTag === "[object File]") &&
-		typeof (data as Blob).arrayBuffer === "function"
-	);
+	return (typeTag === "[object Blob]" || typeTag === "[object File]") && typeof (data as Blob).arrayBuffer === "function";
 }
 
 function handleLegacyError(error: unknown, callback?: (error: Error) => void) {

@@ -1,7 +1,7 @@
 import { menuContainer, popupContainer, updateActive, setUpdateActive, updateActiveCard, setUpdateActiveCard, menux, menuxpages, menuUpdates, openMenu, clickToggle, clickSwitcher, clickContainer, clickMenuItem, createMenu, createConfig } from "../index.js";
 import { ui, game, get, ai, lib, _status } from "noname";
 import { delay } from "@/util/index.js";
-import { security } from "@/util/sandbox.js"
+import { security } from "@/util/sandbox.js";
 import { Character } from "@/library/element/index.js";
 
 export const extensionMenu = function (connectMenu) {
@@ -111,7 +111,7 @@ export const extensionMenu = function (connectMenu) {
 	var createModeConfig = function (mode, position) {
 		var page = ui.create.div("");
 		page.style.paddingBottom = "10px";
-		let node = ui.create.div(".menubutton.large", mode.startsWith("extension_") ? (lib.translate[mode] || mode.slice(10)) : lib.translate[`${mode}_play_config`], position, clickMode);
+		let node = ui.create.div(".menubutton.large", mode.startsWith("extension_") ? lib.translate[mode] || mode.slice(10) : lib.translate[`${mode}_play_config`], position, clickMode);
 		if (node.innerHTML.length >= 5) {
 			node.classList.add("smallfont");
 		}
@@ -440,13 +440,17 @@ export const extensionMenu = function (connectMenu) {
 					// var callback = () => {
 					if (exportext) {
 						// var proexport = function () {
-						game.importExtension(extension, null, page.currentExtension, /* {
+						game.importExtension(
+							extension,
+							null,
+							page.currentExtension /* {
 									intro: introExtLine.querySelector("input").value || "",
 									author: authorExtLine.querySelector("input").value || "",
 									netdisk: diskExtLine.querySelector("input").value || "",
 									forum: forumExtLine.querySelector("input").value || "",
 									version: versionExtLine.querySelector("input").value || "",
-								} */);
+								} */
+						);
 						// };
 						// if (game.getFileList) {
 						// 	game.getFileList("extension/" + page.currentExtension, function (folders, files) {
