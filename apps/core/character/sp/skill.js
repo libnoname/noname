@@ -48473,7 +48473,7 @@ const skills = {
 				forced: true,
 				silent: true,
 				popup: false,
-				content() {
+				async content(event, trigger, player) {
 					player.storage.xinfu_duanfa = 0;
 				},
 				sub: true,
