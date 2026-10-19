@@ -957,42 +957,40 @@ export default () => {
 					}, 500);
 				});
 			},
-			chooseCharacterSiguo: function () {
-				var next = game.createEvent("chooseCharacter");
+			chooseCharacterSiguo: () => {
+				const next = game.createEvent("chooseCharacter");
 				next.showConfig = true;
-				next.setContent(function () {
-					"step 0";
+				next.setContent(async (event, trigger, player) => {
 					_status.firstAct = game.players.randomGet();
-					for (var i = 0; i < game.players.length; i++) {
-						game.players[i].node.name.innerHTML = get.verticalStr(get.cnNumber(get.distance(_status.firstAct, game.players[i], "absolute") + 1, true) + "号位");
+					for (let i = 0; i < game.players.length; i++) {
+						game.players[i].node.name.innerHTML = get.verticalStr(`${get.cnNumber(get.distance(_status.firstAct, game.players[i], "absolute") + 1, true)}号位`);
 					}
 					ui.arena.classList.add("choose-character");
-					"step 1";
-					var list = {
+					const list = {
 						wei: [],
 						shu: [],
 						wu: [],
 						qun: [],
 					};
 					event.list = list;
-					for (var i in lib.character) {
+					for (const i in lib.character) {
 						if (lib.filter.characterDisabled(i)) {
 							continue;
 						}
 						if (get.is.double(i)) {
 							continue;
 						}
-						if (get.config("siguo_character") == "off" && lib.characterPack.mode_versus[i]) {
+						if (get.config("siguo_character") === "off" && lib.characterPack.mode_versus[i]) {
 							continue;
 						}
 						if (list[lib.character[i][1]]) {
 							list[lib.character[i][1]].push(i);
 						}
 					}
-					var duallist = [];
-					if (get.config("siguo_character") == "increase") {
-						for (var i in lib.characterPack.mode_versus) {
-							if (lib.characterPack.mode_versus[i][1] == game.me.identity) {
+					const duallist = [];
+					if (get.config("siguo_character") === "increase") {
+						for (const i in lib.characterPack.mode_versus) {
+							if (lib.characterPack.mode_versus[i][1] === game.me.identity) {
 								duallist.push(i);
 							}
 						}
@@ -1004,26 +1002,26 @@ export default () => {
 					} else {
 						event.friendChoice = list[game.me.identity].randomRemove();
 					}
-					var myChoice = list[game.me.identity].randomGets(7);
+					const myChoice = list[game.me.identity].randomGets(7);
 					if (duallist.length) {
-						var myChoiceName = duallist.randomGet();
+						const myChoiceName = duallist.randomGet();
 						if (list[game.me.identity].includes(myChoiceName) && !myChoice.includes(myChoiceName)) {
 							myChoice.randomRemove();
 							myChoice.push(myChoiceName);
 						}
 					}
-					var dialog = ui.create.dialog("选择角色", [myChoice.concat([event.friendChoice]), "character"]);
+					const dialog = ui.create.dialog("选择角色", [myChoice.concat([event.friendChoice]), "character"]);
 					dialog.buttons[7].node.name.innerHTML = get.verticalStr("队友选择");
 
-					var addSetting = function (dialog) {
+					const addSetting = dialog => {
 						dialog.add("选择座位").classList.add("add-setting");
-						var seats = document.createElement("table");
+						const seats = document.createElement("table");
 						seats.classList.add("add-setting");
 						seats.style.margin = "0";
 						seats.style.width = "100%";
 						seats.style.position = "relative";
-						for (var i = 1; i <= game.players.length; i++) {
-							var td = ui.create.div(".shadowed.reduce_radius.pointerdiv.tdnode");
+						for (let i = 1; i <= game.players.length; i++) {
+							const td = ui.create.div(".shadowed.reduce_radius.pointerdiv.tdnode");
 							td.innerHTML = get.cnNumber(i, true);
 							td.link = i - 1;
 							seats.appendChild(td);
@@ -1037,25 +1035,25 @@ export default () => {
 								if (_status.justdragged) {
 									return;
 								}
-								if (get.distance(_status.firstAct, game.me, "absolute") == this.link) {
+								if (get.distance(_status.firstAct, game.me, "absolute") === this.link) {
 									return;
 								}
-								var current = this.parentNode.querySelector(".bluebg");
+								const current = this.parentNode.querySelector(".bluebg");
 								if (current) {
 									current.classList.remove("bluebg");
 								}
 								this.classList.add("bluebg");
 								_status.firstAct = game.me;
-								for (var i = 0; i < this.link; i++) {
+								for (let i = 0; i < this.link; i++) {
 									_status.firstAct = _status.firstAct.previous;
 								}
-								for (var i = 0; i < game.players.length; i++) {
-									game.players[i].node.name.innerHTML = get.verticalStr(get.cnNumber(get.distance(_status.firstAct, game.players[i], "absolute") + 1, true) + "号位");
+								for (let i = 0; i < game.players.length; i++) {
+									game.players[i].node.name.innerHTML = get.verticalStr(`${get.cnNumber(get.distance(_status.firstAct, game.players[i], "absolute") + 1, true)}号位`);
 								}
 							});
 						}
 						dialog.content.appendChild(seats);
-						if (game.me == game.zhu) {
+						if (game.me === game.zhu) {
 							seats.previousSibling.style.display = "none";
 							seats.style.display = "none";
 						}
@@ -1066,12 +1064,12 @@ export default () => {
 							dialog.add(ui.create.div(".placeholder.add-setting"));
 						}
 					};
-					var removeSetting = function () {
-						var dialog = _status.event.dialog;
+					const removeSetting = () => {
+						const dialog = _status.event.dialog;
 						if (dialog) {
 							dialog.style.height = "";
 							delete dialog._scrollset;
-							var list = Array.from(dialog.querySelectorAll(".add-setting"));
+							const list = Array.from(dialog.querySelectorAll(".add-setting"));
 							while (list.length) {
 								list.shift().remove();
 							}
@@ -1085,17 +1083,17 @@ export default () => {
 						addSetting(dialog);
 					}
 
-					ui.create.cheat = function () {
+					ui.create.cheat = () => {
 						_status.createControl = ui.cheat2;
-						ui.cheat = ui.create.control("更换", function () {
-							if (ui.cheat2 && ui.cheat2.dialog == _status.event.dialog) {
+						ui.cheat = ui.create.control("更换", () => {
+							if (ui.cheat2 && ui.cheat2.dialog === _status.event.dialog) {
 								return;
 							}
 							if (game.changeCoin) {
 								game.changeCoin(-3);
 							}
-							var buttons = ui.create.div(".buttons");
-							var node = _status.event.dialog.buttons[0].parentNode;
+							const buttons = ui.create.div(".buttons");
+							const node = _status.event.dialog.buttons[0].parentNode;
 							list[game.me.identity].add(event.friendChoice);
 							event.friendChoice = list[game.me.identity].randomRemove();
 							_status.event.dialog.buttons = ui.create.buttons(list[game.me.identity].randomGets(7).concat([event.friendChoice]), "character", buttons);
@@ -1108,10 +1106,10 @@ export default () => {
 						});
 						delete _status.createControl;
 					};
-					var createCharacterDialog = function () {
-						event.dialogxx = ui.create.characterDialog("heightset", function (name) {
-							// if(name==event.friendChoice) return true;
-							if (lib.character[name][1] != game.me.identity) {
+					const createCharacterDialog = () => {
+						event.dialogxx = ui.create.characterDialog("heightset", name => {
+							// if(name===event.friendChoice) return true;
+							if (lib.character[name][1] !== game.me.identity) {
 								return true;
 							}
 						});
@@ -1125,9 +1123,9 @@ export default () => {
 					} else {
 						createCharacterDialog();
 					}
-					ui.create.cheat2 = function () {
+					ui.create.cheat2 = () => {
 						ui.cheat2 = ui.create.control("自由选将", function () {
-							if (this.dialog == _status.event.dialog) {
+							if (this.dialog === _status.event.dialog) {
 								if (game.changeCoin) {
 									game.changeCoin(10);
 								}
@@ -1161,15 +1159,9 @@ export default () => {
 							ui.cheat2.classList.add("disabled");
 						}
 					};
-					game.me
-						.chooseButton(dialog, true)
+					const choice = game.me
+						.chooseButton({ dialog, forced: true, filterButton: button => button.link !== _status.event.friendChoice })
 						.set("onfree", true)
-						.set("filterButton", function (button) {
-							if (button.link == _status.event.friendChoice) {
-								return false;
-							}
-							return true;
-						})
 						.set("friendChoice", event.friendChoice);
 					if (!ui.cheat && get.config("change_choice")) {
 						ui.create.cheat();
@@ -1177,7 +1169,7 @@ export default () => {
 					if (!ui.cheat2 && get.config("free_choose")) {
 						ui.create.cheat2();
 					}
-					"step 2";
+					const result = await choice.forResult();
 					if (ui.cheat) {
 						ui.cheat.close();
 						delete ui.cheat;
@@ -1188,25 +1180,25 @@ export default () => {
 					}
 					game.me.init(result.links[0]);
 					event.list[game.me.side].remove(result.links[0]);
-					var added = { wei: 0, shu: 0, wu: 0, qun: 0 };
-					var dualside = { wei: [], shu: [], wu: [], qun: [] };
-					if (get.config("siguo_character") == "increase") {
-						for (var i in lib.characterPack.mode_versus) {
+					const added = { wei: 0, shu: 0, wu: 0, qun: 0 };
+					const dualside = { wei: [], shu: [], wu: [], qun: [] };
+					if (get.config("siguo_character") === "increase") {
+						for (const i in lib.characterPack.mode_versus) {
 							if (Math.random() < 0.5) {
 								dualside[lib.characterPack.mode_versus[i][1]].push(i);
 							}
 						}
 					}
-					for (var i = 0; i < game.players.length; i++) {
+					for (let i = 0; i < game.players.length; i++) {
 						game.players[i].node.identity.style.display = "";
-						if (game.players[i] != game.me) {
-							if (game.players[i].identity == game.me.identity) {
+						if (game.players[i] !== game.me) {
+							if (game.players[i].identity === game.me.identity) {
 								game.players[i].init(event.friendChoice);
 							} else {
 								if (dualside[game.players[i].side] && dualside[game.players[i].side].length) {
-									var enemyChoice = dualside[game.players[i].side];
+									const enemyChoice = dualside[game.players[i].side];
 									if (enemyChoice._skipped || Math.random() < 0.5) {
-										var enemyChoiceName = enemyChoice.randomRemove();
+										const enemyChoiceName = enemyChoice.randomRemove();
 										if (event.list[game.players[i].side].includes(enemyChoiceName)) {
 											game.players[i].init(enemyChoiceName);
 											event.list[game.players[i].side].remove(enemyChoiceName);
@@ -1221,7 +1213,7 @@ export default () => {
 							}
 						}
 						game.players[i].addSkill("longchuanzhibao");
-						if (added[game.players[i].side] == 0) {
+						if (added[game.players[i].side] === 0) {
 							if (Math.random() < 0.5) {
 								game.players[i].gainZhibao();
 								added[game.players[i].side] = 1;
@@ -1234,7 +1226,7 @@ export default () => {
 					}
 					_status.firstAct.gainZhibao();
 					game.addRecentCharacter(game.me.name1);
-					setTimeout(function () {
+					setTimeout(() => {
 						ui.arena.classList.remove("choose-character");
 					}, 500);
 
@@ -1242,15 +1234,15 @@ export default () => {
 					// ui.longchuanzhibao.style.display='none';
 					lib.setPopped(
 						ui.longchuanzhibao,
-						function () {
-							var map = { wei: 0, shu: 0, wu: 0, qun: 0 };
-							for (var i = 0; i < game.players.length; i++) {
-								var current = game.players[i];
+						() => {
+							const map = { wei: 0, shu: 0, wu: 0, qun: 0 };
+							for (let i = 0; i < game.players.length; i++) {
+								const current = game.players[i];
 								map[current.side] += current.storage.longchuanzhibao;
 							}
-							var uiintro = ui.create.dialog("hidden");
-							for (var i in map) {
-								uiintro.addText(get.translation(i) + "势力：" + get.cnNumber(map[i]) + "个");
+							const uiintro = ui.create.dialog("hidden");
+							for (const i in map) {
+								uiintro.addText(`${get.translation(i)}势力：${get.cnNumber(map[i])}个`);
 							}
 							uiintro.content.lastChild.style.paddingBottom = "8px";
 							return uiintro;
