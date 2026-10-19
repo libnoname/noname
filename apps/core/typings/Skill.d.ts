@@ -494,13 +494,13 @@ declare interface Skill {
 	 *  其执行时机和chooseButton一致，当chooseButton不存在时且game.online为false，则会执行这个
 	 * @param config 
 	 */
-	precontent?: ContentFuncByAll | OldContentFuncByAll;
+	precontent?: ContentFuncByAll | OldContentFuncByAll | ContentFuncsByAll;
 	/**
 	 * 在content之前触发内容
 	 * 
 	 * 在useSkill中使用，主动触发技能content之前
 	 */
-	contentBefore?: ContentFuncByAll | OldContentFuncByAll;
+	contentBefore?: ContentFuncByAll | OldContentFuncByAll | ContentFuncsByAll;
 	/**
 	 * 触发内容（技能内容）
 	 * 
@@ -514,13 +514,13 @@ declare interface Skill {
 	 * 注：此时的content，已经为触发该技能的效果而创建的，该技能执行中的事件，此时的event一般是不具备
 	 *  触发信息，触发的信息，主要在trigger触发事件中获取。
 	 */
-	content?: ContentFuncByAll | OldContentFuncByAll;
+	content?: ContentFuncByAll | OldContentFuncByAll | ContentFuncsByAll;
 	/**
 	 * 在content之后触发内容
 	 * 
 	 * 在useSkill中使用，主动触发技能content之后
 	 */
-	contentAfter?: ContentFuncByAll | OldContentFuncByAll;
+	contentAfter?: ContentFuncByAll | OldContentFuncByAll | ContentFuncsByAll;
 
 	//技能初始化与移除：
 	/**
@@ -962,7 +962,7 @@ declare interface Skill {
 	 * 
 	 * 取值false（因为undefined != false结果为true，故默认不填和true效果一致）
 	 */
-	discard?: boolean | ContentFuncByAll | OldContentFuncByAll;
+	discard?: boolean | ContentFuncByAll | OldContentFuncByAll | ContentFuncsByAll;
 	/** 
 	 * 是否失去牌（是否调用player.lose）
 	 * 
@@ -981,7 +981,7 @@ declare interface Skill {
 	 */
 	prepare?: string | ((cards: Card[], player: Player, targets: Player[]) => string | void);
 	/** 在lose事件中使用，触发执行“lose_卡牌名”事件的content */
-	onLose?: OldContentFuncByAll | OldContentFuncByAll[];
+	onLose?: ContentFuncByAll | OldContentFuncByAll | ContentFuncsByAll;
 	/**
 	 *  在lose事件中使用，必须要失去的卡牌为“equips”（装备牌），有onLose才生效。
 	 * 若符合以上条件，则检测该牌是否需要后续触发执行“lose_卡牌名”事件，既上面配置的onLose
@@ -1467,7 +1467,7 @@ declare interface Skill {
 	 * 
 	 * callback就是作为以上事件的content使用
 	 */
-	callback?: ContentFuncByAll | OldContentFuncByAll;
+	callback?: ContentFuncByAll | OldContentFuncByAll | ContentFuncsByAll;
 	/**
 	 * v1.10.11
 	 * 
