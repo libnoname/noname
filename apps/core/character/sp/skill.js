@@ -32002,13 +32002,13 @@ const skills = {
 					return event.card.name == "sha" && !event.getParent().directHit.includes(event.target) && get.distance(player, event.target) <= 1;
 				},
 				logTarget: "target",
-				content() {
-					var id = trigger.target.playerid;
-					var map = trigger.getParent().customArgs;
+				async content(event, trigger, player) {
+					const id = trigger.target.playerid;
+					const map = trigger.getParent().customArgs;
 					if (!map[id]) {
 						map[id] = {};
 					}
-					if (typeof map[id].shanRequired == "number") {
+					if (typeof map[id].shanRequired === "number") {
 						map[id].shanRequired++;
 					} else {
 						map[id].shanRequired = 2;
