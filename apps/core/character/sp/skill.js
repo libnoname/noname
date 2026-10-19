@@ -24272,10 +24272,10 @@ const skills = {
 		logAudio(event, player) {
 			return "olximo" + (1 + player.countMark("olbixin")) + ".mp3";
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.addMark("olbixin", 1, false);
 			game.log(player, "删除了", "#g【笔心】", "描述的前五个字符");
-			if (player.countMark("olbixin") == 3) {
+			if (player.countMark("olbixin") === 3) {
 				game.log(player, "交换了", "#g【笔心】", "方括号中的两个数字");
 				//player.removeSkill('olximo');
 				//game.log(player,'失去了技能','#g【洗墨】');
