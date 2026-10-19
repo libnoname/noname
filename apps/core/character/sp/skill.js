@@ -41415,7 +41415,7 @@ const skills = {
 		check() {
 			return false;
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.addMark("ranshang", trigger.num);
 		},
 		intro: {
