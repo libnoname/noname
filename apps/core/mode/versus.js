@@ -6004,11 +6004,11 @@ export default () => {
 				},
 				forced: true,
 				silent: true,
-				content: function () {
-					var bool1 = lib.skill.shichongerjiao.filterx(trigger, player);
-					var bool2 = lib.skill.shichongerjiao.filtery(trigger, player);
+				async content(event, trigger, player) {
+					const bool1 = lib.skill.shichongerjiao.filterx(trigger, player);
+					const bool2 = lib.skill.shichongerjiao.filtery(trigger, player);
 					if (bool1) {
-						player.chooseToDiscard("he", true);
+						player.chooseToDiscard({ position: "he", forced: true });
 					}
 					if (bool2) {
 						player.loseHp();
