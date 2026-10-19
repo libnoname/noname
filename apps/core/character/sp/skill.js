@@ -37599,7 +37599,7 @@ const skills = {
 		filter(event) {
 			return event.card && event.card.name == "sha";
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.addMark("fanghun", trigger.num || 1);
 			player.addMark("fanghun2", trigger.num || 1, false);
 		},
