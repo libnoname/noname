@@ -6939,18 +6939,19 @@ export default () => {
 						return current.isEnemyOf(player) && !current.isLinked();
 					});
 				},
-				content: function () {
-					"step 0";
-					event.targets = game.filterPlayer();
-					event.targets.sort(lib.sort.seat);
-					"step 1";
-					if (event.targets.length) {
-						var target = event.targets.shift();
+				async content(event, trigger, player) {
+					const targets = game.filterPlayer();
+					targets.sort(lib.sort.seat);
+					while (targets.length) {
+						const target = targets.shift();
 						if (!target.isLinked() && target.isEnemyOf(player)) {
 							player.line(target, "green");
-							target.link();
+							await target.link();
 						}
-						event.redo();
+
+						if ((player.isDead() && !event.forceDie) || (player.isOut() && !event.includeOut) || player.removed) {
+							return;
+						}
 					}
 				},
 			},
