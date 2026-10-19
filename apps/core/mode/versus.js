@@ -7437,9 +7437,9 @@ export default () => {
 				check: function (event, player) {
 					return get.attitude(player, event.player) < 0;
 				},
-				content: function () {
+				async content(event, trigger, player) {
 					player.line(trigger.player, "green");
-					trigger.player.loseHp();
+					await trigger.player.loseHp();
 				},
 				ai: {
 					expose: 0.2,
