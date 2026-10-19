@@ -40134,7 +40134,7 @@ const skills = {
 			color: {
 				trigger: { player: "phaseZhunbeiBegin" },
 				silent: true,
-				content() {
+				async content(event, trigger, player) {
 					player.storage.xingwu_color = ["black", "red"];
 				},
 			},
