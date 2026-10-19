@@ -43074,7 +43074,7 @@ const skills = {
 			return event.player != player && !player.storage.wangzun;
 		},
 		logTarget: "player",
-		content() {
+		async content(event, trigger, player) {
 			player.draw();
 			player.markSkill("wangzun");
 			player.storage.wangzun = trigger.player;
