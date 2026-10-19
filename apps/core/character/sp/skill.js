@@ -39704,7 +39704,7 @@ const skills = {
 		filter(event, player) {
 			return player.isMaxHandcard(true);
 		},
-		content() {
+		async content(event, trigger, player) {
 			trigger.num++;
 		},
 		ai: { presha: true },
