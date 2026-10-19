@@ -28547,7 +28547,7 @@ const skills = {
 				filter(event, player) {
 					return event.card.name == "nanman" && event.getParent(2).name == "sppanqin" && player.countMark("spmanwang") < 4 && player.hasSkill("spmanwang", null, null, false) && event.cards.length <= event.targets.length;
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.addMark("spmanwang", 1, false);
 					switch (player.countMark("spmanwang")) {
 						case 1:
