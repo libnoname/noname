@@ -30471,7 +30471,7 @@ const skills = {
 			delete _status.olxiuhao_judging;
 			return bool;
 		},
-		content() {
+		async content(event, trigger, player) {
 			trigger.cancel();
 			trigger.source.draw(2);
 		},
