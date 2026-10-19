@@ -8054,7 +8054,7 @@ const skills = {
 				trigger: { global: "phaseBefore", player: "enterGame" },
 				filter: event => event.name !== "phase" || game.phaseNumber === 0,
 				forced: true,
-				content() {
+				async content(event, trigger, player) {
 					game.broadcastAll(player => {
 						if (!player.forceCountChoose) {
 							player.forceCountChoose = {};
