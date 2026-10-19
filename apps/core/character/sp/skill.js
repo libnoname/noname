@@ -48191,7 +48191,7 @@ const skills = {
 				},
 				silent: true,
 				forceDie: true,
-				content: () => {
+				async content(event, trigger, player) {
 					game.removeGlobalSkill("xinfu_guanwei_ai");
 				},
 				ai: {
