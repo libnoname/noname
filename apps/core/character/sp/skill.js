@@ -21812,7 +21812,7 @@ const skills = {
 				charlotte: true,
 				popup: false,
 				firstDo: true,
-				content() {
+				async content(event, trigger, player) {
 					player.showCards(trigger.result);
 				},
 			},
