@@ -46127,7 +46127,7 @@ const skills = {
 				forced: true,
 				locked: false,
 				logTarget: "player",
-				content() {
+				async content(event, trigger, player) {
 					trigger.num++;
 				},
 			},
