@@ -21739,9 +21739,9 @@ const skills = {
 			}
 			return true;
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.turnOver();
-			player.draw(3, "visible").gaintag = ["oldaili_tag"];
+			player.draw({ num: 3, visible: true, gaintag: ["oldaili_tag"] });
 		},
 		mod: {
 			aiValue(player, card, num) {
