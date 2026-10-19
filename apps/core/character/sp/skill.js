@@ -31191,7 +31191,7 @@ const skills = {
 				forced: true,
 				charlotte: true,
 				onremove: true,
-				content() {
+				async content(event, trigger, player) {
 					player.removeSkill("juguan_draw");
 					if (!trigger.numFixed) {
 						trigger.num += 2;
