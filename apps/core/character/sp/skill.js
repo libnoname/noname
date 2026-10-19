@@ -31594,9 +31594,9 @@ const skills = {
 		firstDo: true,
 		charlotte: true,
 		sourceSkill: "wangong",
-		content() {
+		async content(event, trigger, player) {
 			player.removeSkill("wangong2");
-			if (trigger.card.name == "sha") {
+			if (trigger.card.name === "sha") {
 				trigger.baseDamage++;
 			}
 		},
