@@ -34327,7 +34327,7 @@ const skills = {
 			return count == player.getAttackRange();
 		},
 		audio: 2,
-		content() {
+		async content(event, trigger, player) {
 			player.draw(player.getHistory("useCard").length + player.getHistory("respond").length);
 		},
 		ai: {
