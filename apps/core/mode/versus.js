@@ -7511,15 +7511,15 @@ export default () => {
 				trigger: { player: "dieBegin" },
 				forced: true,
 				popup: false,
-				content: function () {
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].hasSkill("boss_biantian3")) {
-							game.players[i].removeSkill("boss_biantian3");
-							game.players[i].popup("boss_biantian3");
+				async content(event, trigger, player) {
+					for (const current of game.players) {
+						if (current.hasSkill("boss_biantian3")) {
+							current.removeSkill("boss_biantian3");
+							current.popup("boss_biantian3");
 						}
-						if (game.players[i].hasSkill("boss_biantian2")) {
-							game.players[i].removeSkill("boss_biantian2");
-							game.players[i].popup("boss_biantian2");
+						if (current.hasSkill("boss_biantian2")) {
+							current.removeSkill("boss_biantian2");
+							current.popup("boss_biantian2");
 						}
 					}
 				},
