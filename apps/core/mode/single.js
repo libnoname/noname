@@ -1872,8 +1872,8 @@ export default {
 			filter(event, player) {
 				return event.card.name == "sha";
 			},
-			content() {
-				player.draw();
+			async content(event, trigger, player) {
+				await player.draw();
 			},
 		},
 		sgzhiheng: {
@@ -1925,8 +1925,12 @@ export default {
 				global: "gameDrawAfter",
 			},
 			direct: true,
-			content() {
-				player.chooseUseTarget("shuiyanqijunx", get.prompt("huwei"), "视为使用一张【水淹七军】").logSkill = "huwei";
+			async content(event, trigger, player) {
+				await player.chooseUseTarget({
+					card: { name: "shuiyanqijunx", isCard: true },
+					prompt: get.prompt("huwei"),
+					prompt2: "视为使用一张【水淹七军】",
+				}).set("logSkill", "huwei");
 			},
 		},
 		sgliegong: {
@@ -1986,10 +1990,10 @@ export default {
 			forceDie: true,
 			skillAnimation: true,
 			animationColor: "orange",
-			content() {
-				var cards = player.getCards("e");
+			async content(event, trigger, player) {
+				const cards = player.getCards("e");
 				player.cangji_yozuru = cards;
-				player.lose(cards, ui.special);
+				player.lose({ cards, position: ui.special });
 				player.addSkill("cangji_yozuru");
 			},
 			subSkill: {
@@ -2001,10 +2005,10 @@ export default {
 					forced: true,
 					popup: false,
 					//onremove:true,
-					content() {
-						var cards = player.cangji_yozuru.slice(0);
-						for (var i = 0; i < cards.length; i++) {
-							player.equip(cards[i]);
+					async content(event, trigger, player) {
+						const cards = player.cangji_yozuru.slice(0);
+						for (const card of cards) {
+							player.equip(card);
 						}
 						player.removeSkill("cangji_yozuru");
 						delete player.cangji_yozuru;
@@ -2019,11 +2023,15 @@ export default {
 			filter(event, player) {
 				return event.player != player && event.player.isPhaseUsing() && (event.card.name == "sha" || get.type(event.card) == "trick");
 			},
-			content() {
+			async content(event, trigger, player) {
 				if (!player.hasSkill("sgrenwang_one")) {
 					player.addTempSkill("sgrenwang_one", "phaseUseEnd");
-				} else if (trigger.player.countDiscardableCards(player, "he")) {
-					player.discardPlayerCard(trigger.player, "he", get.prompt("sgrenwang")).logSkill = ["sgrenwang", trigger.player];
+				} else if (trigger.player.hasDiscardableCards(player, "he")) {
+					await player.discardPlayerCard({
+						target: trigger.player,
+						position: "he",
+						prompt: get.prompt("sgrenwang"),
+					}).set("logSkill", ["sgrenwang", trigger.player]);
 				}
 			},
 		},
@@ -2056,8 +2064,8 @@ export default {
 					forced: true,
 					silent: true,
 					popup: false,
-					content() {
-						if (trigger.target != player) {
+					async content(event, trigger, player) {
+						if (trigger.target !== player) {
 							player.addTempSkill("sgduanliang_sss");
 						}
 					},
@@ -2161,15 +2169,10 @@ export default {
 				return false;
 			},
 			frequent: true,
-			content() {
-				var list = [];
-				for (var i = 0; i < trigger.cards.length; i++) {
-					if (get.type(trigger.cards[i]) == "equip" && get.position(trigger.cards[i]) == "d") {
-						list.push(trigger.cards[i]);
-					}
-				}
+			async content(event, trigger, player) {
+				const list = trigger.cards.filter(card => get.type(card) === "equip" && get.position(card) === "d");
 				if (list.length) {
-					player.gain(list, "gain2");
+					await player.gain({ cards: list, animate: "gain2" });
 				}
 			},
 		},

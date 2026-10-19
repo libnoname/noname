@@ -12655,7 +12655,7 @@ export class Library {
 				game
 					.createEvent("giveup", false)
 					.set("includeOut", true)
-					.setContent(function () {
+					.setContent(async (event, trigger, player) => {
 						game.log(player, "投降");
 						player.popup("投降");
 						player.die("nosource").includeOut = true;

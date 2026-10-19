@@ -460,10 +460,10 @@ const skills = {
 				},
 				selectCard: [1, Infinity],
 				position: "h",
-				precontent(event, trigger, player) {
+				async precontent(event, trigger, player) {
 					player
 						.when("useCard")
-						.filter(evt => evt.getParent() == event.getParent())
+						.filter(evt => evt.getParent() === event.getParent())
 						.step(async (event, trigger, player) => {
 							const num = player.countCards("h");
 							if (trigger.targets?.some(target => target.countCards("h") === num)) {

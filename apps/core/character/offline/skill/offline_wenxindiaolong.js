@@ -845,8 +845,8 @@ const skills = {
 		onuse(links, player) {
 			const next = game.createEvent("huamao_limu_recover", false, _status.event.getParent());
 			next.player = player;
-			next.setContent(() => {
-				player.recover();
+			next.setContent(async (event, trigger, player) => {
+				await player.recover();
 			});
 		},
 		ai: {

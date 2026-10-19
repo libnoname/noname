@@ -9141,7 +9141,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 
 		const cards = player.getCards("h");
 		const next = player.showCards(cards);
-		next.setContent(() => {});
+		next.setContent(async (event, trigger, player) => {});
 
 		let str = `${get.translation(player.name)}的手牌`;
 		if (typeof event.prompt == "string") {

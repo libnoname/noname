@@ -6483,7 +6483,7 @@ const skills = {
 				},
 				silent: true,
 				forceDie: true,
-				content: () => {
+				async content(event, trigger, player) {
 					game.removeGlobalSkill("jsrgjiemeng_effect");
 				},
 			},

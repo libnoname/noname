@@ -71,7 +71,7 @@ export default {
 				if (!result || !result.bool) {
 					return;
 				}
-				await target.showCards(result.cards).setContent(() => {});
+				await target.showCards(result.cards).setContent(async () => {});
 				event.dialog = ui.create.dialog(`${get.translation(target)}展示的手牌`, result.cards);
 				event.videoId = lib.status.videoId++;
 

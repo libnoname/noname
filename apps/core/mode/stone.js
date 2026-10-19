@@ -6088,7 +6088,7 @@ export default {
 				const { target } = event;
 				target.damage();
 			},
-			contentAfter() {
+			async contentAfter(event, trigger, player) {
 				player.drawDeck();
 			},
 			ai: {
@@ -6117,8 +6117,9 @@ export default {
 				return target.side !== player.side;
 			},
 			selectTarget: -1,
-			contentBefore() {
-				player.discard(player.getEquip(1));
+			async contentBefore(event, trigger, player) {
+				const card = player.getEquip(1);
+				await player.discard({ cards: card ? [card] : [] });
 			},
 			async content(event, trigger, player) {
 				const { target } = event;
@@ -6129,7 +6130,7 @@ export default {
 				}
 				player.unmarkSkill("spell_modaoyou");
 			},
-			contentAfter() {
+			async contentAfter(event, trigger, player) {
 				player.storage.spell_modaoyou = 0;
 			},
 			ai: {
