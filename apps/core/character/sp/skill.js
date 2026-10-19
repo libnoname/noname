@@ -38464,12 +38464,12 @@ const skills = {
 		filter(event, player) {
 			return player.getExpansions("tuifeng").length > 0;
 		},
-		content() {
-			var cards = player.getExpansions("tuifeng");
+		async content(event, trigger, player) {
+			const cards = player.getExpansions("tuifeng");
 			player.draw(2 * cards.length);
 			player.addTempSkill("tuifeng3");
 			player.addMark("tuifeng3", cards.length, false);
-			player.loseToDiscardpile(cards);
+			player.loseToDiscardpile({ cards });
 		},
 	},
 	tuifeng3: {
