@@ -47327,8 +47327,8 @@ const skills = {
 			}
 			return event.getParent().name == "draw" && event.getParent(2).name != "xinfu_zhanji";
 		},
-		content() {
-			player.draw("nodelay");
+		async content(event, trigger, player) {
+			player.draw({ nodelay: true });
 		},
 	},
 	xinfu_songsang: {
