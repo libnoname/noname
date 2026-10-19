@@ -43632,14 +43632,14 @@ const skills = {
 			});
 			return get.prompt("qiluan") + "（可摸" + get.cnNumber(num) + "张牌）";
 		},
-		content() {
+		async content(event, trigger, player) {
 			//if(get.mode()=='guozhan'){
 			//	player.draw(3);
 			//}
 			//else{
 			player.draw(
-				game.countPlayer2(function (current) {
-					return (current.getStat("kill") || 0) * (current == player ? 3 : 1);
+				game.countPlayer2(current => {
+					return (current.getStat("kill") || 0) * (current === player ? 3 : 1);
 				})
 			);
 			//}
