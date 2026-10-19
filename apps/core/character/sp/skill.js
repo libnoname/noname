@@ -31079,10 +31079,10 @@ const skills = {
 			var evt = event.getl(player);
 			return evt && evt.hs && evt.hs.length > 0;
 		},
-		content() {
-			var cards = [],
-				hs = trigger.getl(player).hs;
-			for (var i of hs) {
+		async content(event, trigger, player) {
+			const cards = [];
+			const hs = trigger.getl(player).hs;
+			for (const i of hs) {
 				cards.add(get.suit(i, player));
 			}
 			player.addTempSkill("bixiong2", { player: "phaseBegin" });
