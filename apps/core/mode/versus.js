@@ -3108,227 +3108,228 @@ export default () => {
 					},
 				]);
 			},
-			chooseCharacterOL4: function () {
-				var next = game.createEvent("chooseCharacter");
-				next.setContent(function () {
-					"step 0";
-					var list = [
-						["zhong", "ezhong", "ezhong", "zhong", "zhong", "ezhong", "ezhong", "zhong"],
-						["zhong", "ezhong", "zhong", "ezhong", "ezhong", "zhong", "ezhong", "zhong"],
-						["zhong", "ezhong", "ezhong", "zhong", "ezhong", "zhong", "zhong", "ezhong"],
-						["zhong", "ezhong", "zhong", "ezhong", "zhong", "ezhong", "zhong", "ezhong"],
-						["zhong", "ezhong", "ezhong", "zhong", "ezhong", "zhong", "ezhong", "zhong"],
-					].randomGet();
-					var rand1 = Math.floor(Math.random() * 4);
-					var rand2 = Math.floor(Math.random() * 4);
-					for (var i = 0; i < list.length; i++) {
-						if (list[i] == "zhong") {
-							if (rand1 == 0) {
-								list[i] = "zhu";
+			chooseCharacterOL4: () => {
+				const next = game.createEvent("chooseCharacter");
+				next.setContent([
+					async (event, trigger, player) => {
+						let list = [
+							["zhong", "ezhong", "ezhong", "zhong", "zhong", "ezhong", "ezhong", "zhong"],
+							["zhong", "ezhong", "zhong", "ezhong", "ezhong", "zhong", "ezhong", "zhong"],
+							["zhong", "ezhong", "ezhong", "zhong", "ezhong", "zhong", "zhong", "ezhong"],
+							["zhong", "ezhong", "zhong", "ezhong", "zhong", "ezhong", "zhong", "ezhong"],
+							["zhong", "ezhong", "ezhong", "zhong", "ezhong", "zhong", "ezhong", "zhong"],
+						].randomGet();
+						let rand1 = Math.floor(Math.random() * 4);
+						let rand2 = Math.floor(Math.random() * 4);
+						for (let i = 0; i < list.length; i++) {
+							if (list[i] === "zhong") {
+								if (rand1 === 0) {
+									list[i] = "zhu";
+								}
+								rand1--;
+							} else {
+								if (rand2 === 0) {
+									list[i] = "ezhu";
+								}
+								rand2--;
 							}
-							rand1--;
-						} else {
-							if (rand2 == 0) {
-								list[i] = "ezhu";
-							}
-							rand2--;
 						}
-					}
 
-					var side = Math.random() < 0.5;
-					var map = {};
-					var num = Math.floor(Math.random() * 8);
-					list = list.splice(8 - num).concat(list);
-					_status.firstAct = game.players[num];
-					event.current = _status.firstAct.next;
-					for (var i = 0; i < 8; i++) {
-						if (list[i][0] == "e") {
-							game.players[i].side = side;
-							game.players[i].identity = list[i].slice(1);
-						} else {
-							game.players[i].side = !side;
-							game.players[i].identity = list[i];
-						}
-						map[game.players[i].playerid] = [game.players[i].side, game.players[i].identity];
-					}
-					if (_status.firstAct.side) {
-						for (var i = 0; i < game.players.length; i++) {
-							game.players[i].side = !game.players[i].side;
+						const side = Math.random() < 0.5;
+						const map = {};
+						const num = Math.floor(Math.random() * 8);
+						list = list.splice(8 - num).concat(list);
+						_status.firstAct = game.players[num];
+						event.current = _status.firstAct.next;
+						for (let i = 0; i < 8; i++) {
+							if (list[i][0] === "e") {
+								game.players[i].side = side;
+								game.players[i].identity = list[i].slice(1);
+							} else {
+								game.players[i].side = !side;
+								game.players[i].identity = list[i];
+							}
 							map[game.players[i].playerid] = [game.players[i].side, game.players[i].identity];
 						}
-					}
-					game.broadcastAll(function (current) {
-						for (var i = 0; i < game.players.length; i++) {
-							game.players[i].node.name_seat = ui.create.div(".name.name_seat", get.verticalStr(lib.translate["unknown" + get.distance(current, game.players[i], "absolute")]), game.players[i]);
-							game.players[i].node.name_seat.style.opacity = 1;
+						if (_status.firstAct.side) {
+							for (let i = 0; i < game.players.length; i++) {
+								game.players[i].side = !game.players[i].side;
+								map[game.players[i].playerid] = [game.players[i].side, game.players[i].identity];
+							}
 						}
-					}, _status.firstAct);
+						game.broadcastAll(current => {
+							for (let i = 0; i < game.players.length; i++) {
+								game.players[i].node.name_seat = ui.create.div(".name.name_seat", get.verticalStr(lib.translate[`unknown${get.distance(current, game.players[i], "absolute")}`]), game.players[i]);
+								game.players[i].node.name_seat.style.opacity = 1;
+							}
+						}, _status.firstAct);
 
-					var filterChoice = function (name) {
-						// if(name=='zuoci'||name=='miheng') return true;
-						if (!lib.choiceFour.includes(name)) {
-							return true;
-						}
-						if (lib.characterPack.refresh && lib.characterPack.refresh[name]) {
-							if (!lib.configOL.characterPack.includes("refresh")) {
+						const filterChoice = name => {
+							// if(name==='zuoci'||name==='miheng') return true;
+							if (!lib.choiceFour.includes(name)) {
 								return true;
 							}
-							return false;
-						}
-						if (lib.characterPack.standard && lib.characterPack.standard[name]) {
-							if (!lib.configOL.characterPack.includes("standard")) {
-								return true;
-							}
-							if (lib.configOL.characterPack.includes("refresh") && lib.characterPack.refresh["re_" + name]) {
-								return true;
-							}
-							return false;
-						}
-						if (lib.characterPack.shenhua && lib.characterPack.shenhua[name]) {
-							if (!lib.configOL.characterPack.includes("shenhua")) {
-								return true;
-							}
-							return false;
-						}
-						if (lib.characterPack.sp && lib.characterPack.sp[name]) {
-							if (!lib.configOL.characterPack.includes("sp")) {
-								return true;
-							}
-							return false;
-						}
-						if (lib.characterPack.yijiang && lib.characterPack.yijiang[name]) {
-							if (!lib.configOL.characterPack.includes("yijiang")) {
-								return true;
-							}
-							return false;
-						}
-						return true;
-					};
-					event.flipassign = true;
-					event.videoId = lib.status.videoId++;
-					var func = function (filter, id, selected, map, choiceFour) {
-						lib.choiceFour = choiceFour;
-						var dialog = ui.create.characterDialog("heightset", filter, "expandall").open();
-						dialog.videoId = id;
-						for (var i in map) {
-							var player = lib.playerOL[i];
-							if (player) {
-								player.side = map[i][0];
-								player.identity = map[i][1];
-								player.setIdentity();
-								player.node.identity.dataset.color = get.translation(player.side + "Color");
-								if (player.identity == "zhu") {
-									game[player.side + "Zhu"] = player;
-									player.isZhu = true;
+							if (lib.characterPack.refresh && lib.characterPack.refresh[name]) {
+								if (!lib.configOL.characterPack.includes("refresh")) {
+									return true;
 								}
+								return false;
 							}
-						}
-						ui.arena.classList.add("choose-character");
-					};
-					event.map = map;
-					event.selected = [];
-					game.broadcastAll(func, filterChoice, event.videoId, event.selected, map, lib.choiceFour);
-					_status.onreconnect = [func, filterChoice, event.videoId, event.selected, map, lib.choiceFour];
-					"step 1";
-					game.broadcastAll(function (player) {
-						player.classList.add("selectedx");
-					}, event.current);
-					event.current
-						.chooseButton(true)
-						.set("filterButton", function (button) {
-							return !_status.event.selected.includes(button.link);
-						})
-						.set("ai", function (button) {
-							if (_status.event.player.identity == "zhu") {
-								if (Math.random() < 0.8) {
-									var info = lib.character[button.link];
-									if (!info || !info.isZhugong) {
-										return 0;
+							if (lib.characterPack.standard && lib.characterPack.standard[name]) {
+								if (!lib.configOL.characterPack.includes("standard")) {
+									return true;
+								}
+								if (lib.configOL.characterPack.includes("refresh") && lib.characterPack.refresh[`re_${name}`]) {
+									return true;
+								}
+								return false;
+							}
+							if (lib.characterPack.shenhua && lib.characterPack.shenhua[name]) {
+								if (!lib.configOL.characterPack.includes("shenhua")) {
+									return true;
+								}
+								return false;
+							}
+							if (lib.characterPack.sp && lib.characterPack.sp[name]) {
+								if (!lib.configOL.characterPack.includes("sp")) {
+									return true;
+								}
+								return false;
+							}
+							if (lib.characterPack.yijiang && lib.characterPack.yijiang[name]) {
+								if (!lib.configOL.characterPack.includes("yijiang")) {
+									return true;
+								}
+								return false;
+							}
+							return true;
+						};
+						event.flipassign = true;
+						event.videoId = lib.status.videoId++;
+						const func = (filter, id, selected, map, choiceFour) => {
+							lib.choiceFour = choiceFour;
+							const dialog = ui.create.characterDialog("heightset", filter, "expandall").open();
+							dialog.videoId = id;
+							for (const i in map) {
+								const player = lib.playerOL[i];
+								if (player) {
+									player.side = map[i][0];
+									player.identity = map[i][1];
+									player.setIdentity();
+									player.node.identity.dataset.color = get.translation(`${player.side}Color`);
+									if (player.identity === "zhu") {
+										game[`${player.side}Zhu`] = player;
+										player.isZhu = true;
 									}
 								}
 							}
-							var seed = _status.event.seed;
-							var rank = get.rank(button.link, true);
-							if (seed > 0.4) {
-								return rank >= 6 ? Math.random() : -Math.random();
-							} else if (seed > 0.1) {
-								return rank >= 4 && rank < 6 ? Math.random() : -Math.random();
+							ui.arena.classList.add("choose-character");
+						};
+						event.map = map;
+						event.selected = [];
+						game.broadcastAll(func, filterChoice, event.videoId, event.selected, map, lib.choiceFour);
+						_status.onreconnect = [func, filterChoice, event.videoId, event.selected, map, lib.choiceFour];
+					},
+					async (event, trigger, player, result) => {
+						game.broadcastAll(player => {
+							player.classList.add("selectedx");
+						}, event.current);
+						event.current
+							.chooseButton({
+								forced: true,
+								filterButton: button => {
+									return !_status.event.selected.includes(button.link);
+								},
+								ai: button => {
+									if (_status.event.player.identity === "zhu") {
+										if (Math.random() < 0.8) {
+											const info = lib.character[button.link];
+											if (!info || !info.isZhugong) {
+												return 0;
+											}
+										}
+									}
+									const seed = _status.event.seed;
+									const rank = get.rank(button.link, true);
+									if (seed > 0.4) {
+										return rank >= 6 ? Math.random() : -Math.random();
+									} else if (seed > 0.1) {
+										return rank >= 4 && rank < 6 ? Math.random() : -Math.random();
+									} else {
+										return rank < 4 ? Math.random() : -Math.random();
+									}
+								},
+							})
+							.set("selected", event.selected)
+							.set("dialog", event.videoId)
+							.set("seed", Math.random());
+					},
+					async (event, trigger, player, result) => {
+						event.selected.push(result.links[0]);
+						game.broadcastAll(
+							(player, name, zhu) => {
+								player.classList.remove("selectedx");
+								player.init(name);
+								if (player.node.name_seat) {
+									player.node.name_seat.remove();
+								}
+							},
+							event.current,
+							result.links[0]
+						);
+						if (event.current.identity === "zhu") {
+							if (!event.current.isInitFilter("noZhuHp")) {
+								event.current.maxHp++;
+								event.current.hp++;
+								event.current.update();
+							}
+						}
+						event.current.classList.remove("selectedx");
+						if (game.players.some(current => !current.name1)) {
+							const side = event.current.side;
+							event.current = _status.firstAct.next;
+							if (event.flipassign) {
+								for (let iwhile = 0; iwhile < 8; iwhile++) {
+									event.current = event.current.next;
+									if (event.current.side !== side && !event.current.name1) {
+										break;
+									}
+								}
 							} else {
-								return rank < 4 ? Math.random() : -Math.random();
-							}
-						})
-						.set("selected", _status.event.selected)
-						.set("dialog", event.videoId)
-						.set("seed", Math.random());
-					"step 2";
-					event.selected.push(result.links[0]);
-					game.broadcastAll(
-						function (player, name, zhu) {
-							player.classList.remove("selectedx");
-							player.init(name);
-							if (player.node.name_seat) {
-								player.node.name_seat.remove();
-							}
-						},
-						event.current,
-						result.links[0]
-					);
-					if (event.current.identity == "zhu") {
-						if (!event.current.isInitFilter("noZhuHp")) {
-							event.current.maxHp++;
-							event.current.hp++;
-							event.current.update();
-						}
-					}
-					event.current.classList.remove("selectedx");
-					for (var i = 0; i < game.players.length; i++) {
-						if (!game.players[i].name1) {
-							break;
-						}
-					}
-					if (i < game.players.length) {
-						var side = event.current.side;
-						event.current = _status.firstAct.next;
-						if (event.flipassign) {
-							for (var iwhile = 0; iwhile < 8; iwhile++) {
-								event.current = event.current.next;
-								if (event.current.side != side && !event.current.name1) {
-									break;
+								for (let iwhile = 0; iwhile < 8; iwhile++) {
+									event.current = event.current.previous;
+									if (event.current.side === side && !event.current.name1) {
+										break;
+									}
 								}
 							}
-						} else {
-							for (var iwhile = 0; iwhile < 8; iwhile++) {
-								event.current = event.current.previous;
-								if (event.current.side == side && !event.current.name1) {
-									break;
-								}
-							}
+							event.flipassign = !event.flipassign;
+							event.goto(1);
 						}
-						event.flipassign = !event.flipassign;
-						event.goto(1);
-					}
-					"step 3";
-					_status.onreconnect = [
-						function () {
-							for (var i = 0; i < game.players.length; i++) {
-								var player = game.players[i];
-								if (player.identity == "zhu") {
-									game[player.side + "Zhu"] = player;
-									player.isZhu = true;
+					},
+					async (event, trigger, player, result) => {
+						_status.onreconnect = [
+							() => {
+								for (let i = 0; i < game.players.length; i++) {
+									const player = game.players[i];
+									if (player.identity === "zhu") {
+										game[`${player.side}Zhu`] = player;
+										player.isZhu = true;
+									}
 								}
+							},
+						];
+						game.broadcastAll(id => {
+							const dialog = get.idDialog(id);
+							if (dialog) {
+								dialog.close();
 							}
-						},
-					];
-					game.broadcastAll(function (id) {
-						var dialog = get.idDialog(id);
-						if (dialog) {
-							dialog.close();
-						}
-						setTimeout(function () {
-							ui.arena.classList.remove("choose-character");
-						}, 500);
-					}, event.videoId);
-				});
+							setTimeout(() => {
+								ui.arena.classList.remove("choose-character");
+							}, 500);
+						}, event.videoId);
+					},
+				]);
 			},
 			chooseCharacterOL3: function () {
 				var next = game.createEvent("chooseCharacterOL");
