@@ -40456,9 +40456,9 @@ const skills = {
 				filter(event, player) {
 					return event.skill == "meibu_viewas";
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.removeSkill("meibu_viewas");
-					game.broadcastAll(function (player) {
+					game.broadcastAll(player => {
 						if (player.marks.meibu && player.marks.meibu.info) {
 							player.marks.meibu.info.content = player.marks.meibu.info.content.slice(8);
 						}
