@@ -7407,25 +7407,24 @@ export default () => {
 					}
 					return false;
 				},
-				content: function () {
-					var enemy,
-						players = game.filterPlayer();
-					for (var i = 0; i < players.length; i++) {
-						if (players[i].type == "mech") {
-							if (players[i].isFriendOf(player)) {
-								if (players[i].hp < players[i].maxHp) {
-									player.line(players[i], "green");
-									players[i].recover();
+				async content(event, trigger, player) {
+					let enemy;
+					for (const current of game.filterPlayer()) {
+						if (current.type === "mech") {
+							if (current.isFriendOf(player)) {
+								if (current.hp < current.maxHp) {
+									player.line(current, "green");
+									await current.recover();
 									return;
 								}
 							} else {
-								enemy = players[i];
+								enemy = current;
 							}
 						}
 					}
 					if (enemy) {
 						player.line(enemy, "fire");
-						enemy.damage("fire");
+						await enemy.damage({ nature: "fire" });
 					}
 				},
 			},
