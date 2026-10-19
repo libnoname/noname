@@ -22922,25 +22922,25 @@ const skills = {
 		filter(event, player) {
 			return player.getAttackRange() > 0;
 		},
-		content() {
-			var skills = game.filterSkills(
+		async content(event, trigger, player) {
+			let skills = game.filterSkills(
 				player.getStockSkills(true, true).filter(skill => {
 					const info = get.info(skill);
 					return !info.persevereSkill || !info.charlotte;
 				}),
 				player
 			);
-			var num = Math.min(player.getAttackRange(), skills.length);
+			const num = Math.min(player.getAttackRange(), skills.length);
 			skills = skills.slice(0, num);
 			player.disableSkill("olchuanwu", skills);
 			player.addTempSkill("olchuanwu_restore");
-			var str = "";
-			for (var i of skills) {
-				str += "【" + get.translation(i) + "】、";
+			let str = "";
+			for (const i of skills) {
+				str += `【${get.translation(i)}】、`;
 				player.popup(i);
 			}
 			str = str.slice(0, -1);
-			game.log(player, "的技能", "#g" + str, "失效了");
+			game.log(player, "的技能", `#g${str}`, "失效了");
 			player.draw(num);
 		},
 		subSkill: {
