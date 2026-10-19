@@ -47756,9 +47756,11 @@ const skills = {
 			const { card } = event;
 			player.addToExpansion({ cards: [card], animate: "gain2", gaintag: ["xinfu_jijun"] });
 		},
-		content() {
-			player.judge(function (card) {
-				return 1;
+		async content(event, trigger, player) {
+			player.judge({
+				judge: card => {
+					return 1;
+				},
 			}).callback = lib.skill.xinfu_jijun.callback;
 		},
 		onremove(player, skill) {
