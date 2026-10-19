@@ -19383,8 +19383,8 @@ const skills = {
 			});
 		},
 		direct: true,
-		content() {
-			player.chooseUseTarget({ name: "sha" }, get.prompt("olxiaoxi"), "视为使用一张无距离限制的【杀】", false, "nodistance").logSkill = "olxiaoxi";
+		async content(event, trigger, player) {
+			player.chooseUseTarget({ card: { name: "sha" }, prompt: get.prompt("olxiaoxi"), prompt2: "视为使用一张无距离限制的【杀】", addCount: false, nodistance: true }).logSkill = "olxiaoxi";
 		},
 	},
 	//段颎
