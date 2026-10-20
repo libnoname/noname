@@ -1,5 +1,5 @@
 {
-	"exclude": ["dist", "output", "node_modules"],
+	"exclude": ["**/dist", "**/output", "**/node_modules", "apps/mobile/android", "apps/mobile/ios", ".claude"],
 	"compilerOptions": {
 		"target": "ESNext",
 		"module": "ESNext",

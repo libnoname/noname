@@ -7,14 +7,8 @@ const workspaceRoot = resolve(mobileRoot, "../..");
 const androidRoot = resolve(mobileRoot, "android");
 
 const args = new Set(process.argv.slice(2));
-const variant = process.argv.find((arg) => arg.startsWith("--variant="))?.split("=", 2)[1] ?? "release";
-const normalizedVariant = variant.toLowerCase();
-const task = args.has("--aab") ? `bundle${capitalize(normalizedVariant)}` : `assemble${capitalize(normalizedVariant)}`;
 
-if (!/^[a-z][a-z0-9]*$/.test(normalizedVariant)) {
-	throw new Error(`Invalid Android build variant: ${variant}`);
-}
-
+// --help 必须在任何参数校验之前处理，否则 `--help --variant=Foo` 这种写法会先抛错而不是显示帮助
 if (args.has("--help")) {
 	console.log(`Usage: pnpm build:android [options]
 
@@ -24,6 +18,14 @@ Options:
   --skip-web-build  Reuse the existing dist directory
 `);
 	process.exit(0);
+}
+
+const variant = process.argv.find((arg) => arg.startsWith("--variant="))?.split("=", 2)[1] ?? "release";
+const normalizedVariant = variant.toLowerCase();
+const task = args.has("--aab") ? `bundle${capitalize(normalizedVariant)}` : `assemble${capitalize(normalizedVariant)}`;
+
+if (!/^[a-z][a-z0-9]*$/.test(normalizedVariant)) {
+	throw new Error(`Invalid Android build variant: ${variant}`);
 }
 
 checkJavaVersion();

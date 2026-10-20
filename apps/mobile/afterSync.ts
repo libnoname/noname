@@ -1,7 +1,9 @@
 import { copyFileSync, existsSync, mkdirSync, readdirSync, renameSync, rmSync, statSync, writeFileSync } from "fs";
-import { posix, relative, resolve, sep } from "path";
+import { resolve } from "path";
 import { spawnSync } from "child_process";
 import { build } from "vite";
+
+import { writeAssetManifest } from "./scripts/asset-manifest.js";
 
 const root = import.meta.dirname;
 const workspaceRoot = resolve(root, "../..");
@@ -107,35 +109,12 @@ function writeDownloadManifest() {
 	console.log(`asset-download-manifest.json written: ${entries.length} entries`);
 }
 
-/** iOS 资源通道不支持列目录，需在 cap sync 前生成资源清单。 */
-function writeAssetManifest() {
-	const entries: string[] = [];
-	const ignored = new Set(["asset-manifest.json", "asset-download-manifest.json", "preload.js", "node_modules"]);
-
-	const collect = (dir: string) => {
-		for (const name of readdirSync(dir)) {
-			if (ignored.has(name)) continue;
-
-			const absolute = resolve(dir, name);
-			if (statSync(absolute).isDirectory()) {
-				collect(absolute);
-				continue;
-			}
-
-			// 统一为 POSIX 分隔符，保证运行时按前缀过滤不受平台影响
-			entries.push(relative(distDir, absolute).split(sep).join(posix.sep));
-		}
-	};
-
-	collect(distDir);
-	entries.sort();
-
-	writeFileSync(resolve(distDir, "asset-manifest.json"), `${JSON.stringify(entries)}\n`, "utf8");
-	console.log(`asset-manifest.json written: ${entries.length} entries`);
-}
+// iOS 资源通道不支持列目录，需在 cap sync 前生成资源清单。
+// 实现见 scripts/asset-manifest.ts，作为构建与 CI 共用的唯一来源。
 
 await buildPreload();
 if (process.env.NONAME_FULL_ASSETS !== "1") writeDownloadManifest();
-writeAssetManifest();
+const manifestEntries = writeAssetManifest(distDir);
+console.log(`asset-manifest.json written: ${manifestEntries} entries`);
 capSync();
 patchAndroidAssets();
