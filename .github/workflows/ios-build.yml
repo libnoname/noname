@@ -31,7 +31,7 @@ name: Build unsigned iOS IPA
 #   ③ GitHub 网页 → Actions → “Build unsigned iOS IPA” → Run workflow（手动触发）。
 # 产物位置：运行页面底部 Artifacts；同时更新到 Nightly Release（预发布）与上游正式版镜像（如适用）。
 #
-# 发布策略（2026-10-20 起；fork 仓库不适用 fork 通用的版本号规则）：
+# 发布策略（fork 仓库不适用 fork 通用的版本号规则）：
 #   ① Nightly Release：固定 tag `nightly` 的**预发布**，标题固定「Nightly Release」；
 #      每次构建覆盖更新两个 ipa（不新建 Release），正文含本次构建信息与双包说明；
 #   ② 上游正式版镜像：上游发布新的正式版 Release 后，下一次构建（定时同步后的 0:00）
@@ -72,7 +72,7 @@ concurrency:
   group: "ios-build-${{ github.ref }}"
   cancel-in-progress: false
 
-# 双包策略（2026-10-19 起，两任务并行）：
+# 双包策略
 #   job build-ipa      → 精简包 noname-ios-unsigned.ipa（不含原画/语音，游戏内按需下载）
 #   job build-ipa-full → 完整包 noname-ios-full-unsigned.ipa（含全部原画与台词语音）
 #   两任务并行（互不阻塞，墙钟时间 = 较慢者）；两个任务各自解析同一组发布目标
