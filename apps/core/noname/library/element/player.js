@@ -5,6 +5,7 @@ import { security } from "@/util/sandbox.js";
 import { ContentCompiler } from "./gameEvent.js";
 import { AsyncFunction } from "@/util/index.js";
 import dedent from "dedent";
+import { executionContext } from "./GameEvent/ExecutionContext.js";
 
 export class Player extends HTMLDivElement {
 	/**
@@ -7996,6 +7997,7 @@ export class Player extends HTMLDivElement {
 		} else {
 			next.targets = [];
 		}
+		executionContext.setSkill(next, this, next.skill);
 		next.setContent("useSkill");
 		return next;
 	}

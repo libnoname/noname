@@ -1,5 +1,6 @@
 import { _status, game, get, lib, ui } from "noname";
 import { Player } from "./index.js";
+import { executionContext } from "./GameEvent/ExecutionContext.js";
 import ContentCompiler from "./GameEvent/compilers/ContentCompiler.js";
 import { EventCompileable, EventCompiledContent } from "./GameEvent/compilers/IContentCompiler.js";
 import GameEventManager from "./GameEvent/GameEventManager.js";
@@ -893,6 +894,10 @@ export class GameEvent implements PromiseLike<void> {
 					this.ai2 = info.ai2;
 				}
 				this.filterOk = info.filterOk;
+			}
+			if (typeof this.filterTarget === "function") {
+				const filter = this.filterTarget, frame = { player: this.player, skill, event: this, stage: "filterTarget" };
+				this.filterTarget = function (...args) { return executionContext.run(frame, filter, this, args); };
 			}
 			delete this.fakeforce;
 		}

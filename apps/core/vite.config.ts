@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
+import eventContextPlugin from "./scripts/vite-plugin-event-context.ts";
 
 const port = {
 	client: 8081,
@@ -16,7 +17,7 @@ export default defineConfig({
 			noname: "/noname.js",
 		},
 	},
-	plugins: [vue()],
+	plugins: [eventContextPlugin(), vue()],
 	server: {
 		host: "127.0.0.1",
 		port: port.client,

@@ -13,6 +13,7 @@
 import { _status, lib, get, ai, ui } from "noname";
 import { isClass, userAgentLowerCase, GeneratorFunction, AsyncFunction, delay } from "@/util/index.js";
 
+import { executionContext } from "../library/element/GameEvent/ExecutionContext.js";
 import { DynamicStyle } from "./dynamic-style/index.js";
 import { GamePromises } from "./promises.js";
 import { Check } from "./check.js";
@@ -6005,6 +6006,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		next.includeOut = true;
 		next._trigger = event;
 		next.indexedData = indexedData;
+		executionContext.setSkill(next, player, skill);
 		next.setContent("createTrigger");
 		return next;
 	}

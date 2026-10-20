@@ -9,6 +9,7 @@
  * @typedef { InstanceType<typeof lib.element.Control> } Control
  */
 import { ai, get, game, _status, ui } from "noname";
+import { executionContext } from "./element/GameEvent/ExecutionContext.js";
 import { LibInit } from "./init/index.js";
 import { Announce } from "./announce/index.js";
 import { experimental } from "./experimental/index.js";
@@ -11131,7 +11132,7 @@ export class Library {
 			) {
 				return false;
 			}
-			if (info.filter && !info.filter(event, player, triggerName, indexedData)) {
+			if (info.filter && !executionContext.run({ player, skill, event, stage: "filter" }, info.filter, info, [event, player, triggerName, indexedData])) {
 				return false;
 			}
 			if (event._notrigger.includes(player) && !lib.skill.global.includes(skill)) {
@@ -11208,7 +11209,7 @@ export class Library {
 			if (!checkEnable(info.enable)) {
 				return false;
 			}
-			if (info.filter && !info.filter(event, player)) {
+			if (info.filter && !executionContext.run({ player, skill, event, stage: "filter" }, info.filter, info, [event, player])) {
 				return false;
 			}
 			if (info.viewAs && typeof info.viewAs !== "function") {
