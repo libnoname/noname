@@ -26,8 +26,7 @@ async function buildPreload() {
 	await build({
 		root,
 		configFile: false,
-		// 构建开关：完整包（NONAME_FULL_ASSETS=1）在打包 preload 时把「下载素材」
-		// 整段剔除（见 src/preload.ts 的恒假条件 + 动态 import 死代码消除）。
+		// 完整包不打包素材下载功能。
 		define: {
 			__NONAME_FULL_ASSETS__: JSON.stringify(process.env.NONAME_FULL_ASSETS === "1"),
 		},
@@ -57,10 +56,7 @@ async function buildPreload() {
 }
 
 function capSync() {
-	// 直接用 node 调 Capacitor CLI 的 JS 入口，而不是 shell 里的 `cap`。
-	// 原因：Windows 的 `cmd /c cap` 不会去 node_modules/.bin 找可执行文件
-	// （那是 POSIX shell 的机制），会报「'cap' 不是内部或外部命令」。
-	// 用 node 直调 .js 入口在 Windows / macOS / Linux 上行为一致。
+	// 直接调用 CLI，避免依赖平台的 shell 命令解析。
 	const cliEntry = resolve(root, "node_modules/@capacitor/cli/bin/capacitor");
 
 	const result = spawnSync(process.execPath, [cliEntry, "sync"], {
@@ -86,23 +82,7 @@ function patchAndroidAssets() {
 	renameSync(pnpmDir, androidSafePnpmDir);
 }
 
-/**
- * 生成「补充下载清单」`dist/asset-download-manifest.json`。
- *
- * 用途：iOS 瘦身包会删掉 `audio/skill`、`audio/die`、`image/character` 三个目录
- * （见 `.github/workflows/ios-build.yml` 的「Strip character art and voice」步骤），
- * 游戏内的「下载素材」
- * 按钮需要知道**该补哪些文件**。
- *
- * 为什么不复用 `asset-manifest.json`：那一份是在**删除资源之后**重建的，
- * 恰好不含被删掉的文件。必须在资源还完整的阶段（本函数执行时）单独留一份。
- *
- * 顺带的好处：运行时不再需要请求 `api.github.com`。
- * 该接口匿名限额只有 60 次/小时，且在大陆网络下常被干扰返回 5xx。
- *
- * 注意：必须在 `writeAssetManifest()` **之前**调用，这样本文件会被列进
- * `asset-manifest.json` 的忽略项，不会反过来污染内置资源清单。
- */
+/** 裁剪前生成完整素材下载清单，供精简包补齐资源。 */
 function writeDownloadManifest() {
 	/** 与 src/ios/asset-download.ts 里的 TARGET_GROUPS 保持一致 */
 	const groups = ["image/character", "audio/skill", "audio/die"];
@@ -127,13 +107,7 @@ function writeDownloadManifest() {
 	console.log(`asset-download-manifest.json written: ${entries.length} entries`);
 }
 
-/**
- * 生成内置资源清单 `dist/asset-manifest.json`。
- *
- * iOS 的 WKWebView 自定义 scheme 不支持目录列举，运行时的 `getFileList`
- * （游戏靠它扫描 mode/character/card 等目录）只能依赖这份构建期清单。
- * 清单必须存在于 dist 内、且在 `cap sync` 之前写盘，才会被同步进 iOS 工程。
- */
+/** iOS 资源通道不支持列目录，需在 cap sync 前生成资源清单。 */
 function writeAssetManifest() {
 	const entries: string[] = [];
 	const ignored = new Set(["asset-manifest.json", "asset-download-manifest.json", "preload.js", "node_modules"]);
@@ -161,7 +135,6 @@ function writeAssetManifest() {
 }
 
 await buildPreload();
-// 完整包不打包「下载素材」功能，也就不需要补充下载清单（见上方 writeDownloadManifest 注释）。
 if (process.env.NONAME_FULL_ASSETS !== "1") writeDownloadManifest();
 writeAssetManifest();
 capSync();

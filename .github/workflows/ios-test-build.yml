@@ -1,0 +1,121 @@
+name: Build test iOS IPA
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-ios:
+    name: Build unsigned iOS IPA (slim assets)
+    runs-on: macos-26
+    timeout-minutes: 90
+    env:
+      NONAME_BUILD_CHANNEL: test
+      NONAME_BUILD_COMMIT: ${{ github.sha }}
+
+    steps:
+      - name: Checkout repository (shallow)
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          lfs: false
+          submodules: false
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          version: 10
+          run_install: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts --prefer-offline
+
+      - name: Build noname
+        run: pnpm build
+
+      - name: Verify iOS Capacitor project
+        run: test -f apps/mobile/ios/App/App.xcodeproj/project.pbxproj
+
+      - name: Capacitor sync
+        working-directory: apps/mobile
+        run: pnpm sync
+
+      - name: Strip character art and voice
+        working-directory: apps/mobile
+        run: pnpm exec tsx ios/strip-assets.ts
+
+      - name: Free disk
+        run: rm -rf dist
+
+      - name: Cache SPM packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Caches/org.swift.swiftpm
+            ${{ runner.temp }}/SourcePackages
+          key: spm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'apps/mobile/ios/App/CapApp-SPM/Package.swift') }}
+          restore-keys: |
+            spm-${{ runner.os }}-
+
+      - name: Build unsigned iOS app
+        working-directory: apps/mobile/ios/App
+        run: |
+          xcodebuild \
+            -project App.xcodeproj \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination "generic/platform=iOS" \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            -clonedSourcePackagesDirPath "$RUNNER_TEMP/SourcePackages" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_ENTITLEMENTS="" \
+            AD_HOC_CODE_SIGNING_ALLOWED=YES \
+            ONLY_ACTIVE_ARCH=YES \
+            ARCHS=arm64 \
+            EXCLUDED_ARCHS="i386 x86_64" \
+            DEBUG_INFORMATION_FORMAT=dwarf \
+            GCC_GENERATE_DEBUGGING_SYMBOLS=NO \
+            COPY_PHASE_STRIP=YES \
+            STRIP_INSTALLED_PRODUCT=YES \
+            -quiet \
+            build
+
+      - name: Package unsigned IPA
+        id: package
+        run: |
+          APP_PATH="$RUNNER_TEMP/DerivedData/Build/Products/Release-iphoneos/App.app"
+          IPA_NAME="noname-ios-unsigned"
+          BUILD_DIR="$RUNNER_TEMP/ipa-build"
+          rm -rf "$BUILD_DIR"
+          mkdir -p "$BUILD_DIR/Payload"
+          cp -r "$APP_PATH" "$BUILD_DIR/Payload/"
+
+          find "$BUILD_DIR/Payload" -name "._*" -delete || true
+
+          cd "$BUILD_DIR"
+          zip -qry "$IPA_NAME.ipa" Payload -x '*.DS_Store' -x '*/._*'
+
+          shasum -a 256 "$IPA_NAME.ipa" > "$IPA_NAME.ipa.sha256"
+
+          echo "ipa_path=$BUILD_DIR/$IPA_NAME.ipa" >> "$GITHUB_OUTPUT"
+
+      - name: Upload test IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: noname-ios-unsigned
+          path: |
+            ${{ steps.package.outputs.ipa_path }}
+            ${{ steps.package.outputs.ipa_path }}.sha256
+          retention-days: 14
+          if-no-files-found: error
