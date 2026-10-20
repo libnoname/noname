@@ -10,7 +10,7 @@
   "scripts": {
     "sync": "tsx afterSync.ts",
     "build:android": "tsx buildAndroid.ts",
-    "build:ios": "tsx buildIos.ts",
+    "build:ios": "tsx ios/build.ts",
     "lint": "pnpm eslint src/**"
   },
   "dependencies": {

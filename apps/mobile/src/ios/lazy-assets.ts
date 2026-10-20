@@ -24,7 +24,7 @@
  *
  * iOS 端已有两层覆盖层，写进 `Documents/` 的文件游戏立刻就能读到：
  *
- * 1. `fs/ios.ts` 的 `IosFileSystem`：`readFile` 先查可写层，未命中再回退内置资源；
+ * 1. `fs.ts` 的 `IosFileSystem`：`readFile` 先查可写层，未命中再回退内置资源；
  * 2. `ios/App/App/NonameRouter.swift`：WebView 对 `<img src>` / `<audio src>`
  *    这类直接请求也走同一套覆盖层。
  *
