@@ -8,7 +8,7 @@
  * iOS 侧载包（AltStore / SideStore）装不下全量资源：`audio/skill`(470M) +
  * `image/character`(390M) + `audio/die`(111M) 接近 1GB，而超过 300MB 的 ipa
  * 在未打补丁的 AltStore 上会直接报 `Bad Allocation`。因此
- * `.github/workflows/ios-build.yml` **恒定**删掉这三个目录，包里只留 3 张默认剪影。
+ * `.github/workflows/release.yml` **恒定**删掉这三个目录，包里只留 3 张默认剪影。
  *
  * 删掉之后有两种补齐方式，本模块负责更省事的那一种：
  *

@@ -24,7 +24,7 @@
  * ## 背景
  *
  * iOS 侧载包（AltStore / SideStore）对未压缩 App 体积非常敏感：
- * 上游 `.github/workflows/ios-build.yml` 会**恒定**把这三大目录整目录删掉
+ * 上游 `.github/workflows/release.yml` 会**恒定**把这三大目录整目录删掉
  * （不再有开关），否则约 2.8GB 的资源根本装不进手机：
  *
  * - `audio/skill`    470M  武将技能语音（全为 mp3）
