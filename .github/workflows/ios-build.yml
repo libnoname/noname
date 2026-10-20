@@ -29,12 +29,14 @@ name: Build unsigned iOS IPA
 #      维护者日常无需任何人工介入；
 #   ② 打 ios-v* tag 时自动构建（用于人工指定版本号发版）；
 #   ③ GitHub 网页 → Actions → “Build unsigned iOS IPA” → Run workflow（手动触发）。
-# 产物位置：运行页面底部的 Artifacts；同时会附到自动创建的 Release 上。
+# 产物位置：运行页面底部 Artifacts；同时更新到 Nightly Release（预发布）与上游正式版镜像（如适用）。
 #
-# 版本号规则（详见仓库根目录《无名杀 iOS 操作手册》）：
-#   Actions 发布的 Release 一律视为小版本号递增，初始 v1.0.0，此后 patch +1
-#   （v1.0.0 → v1.0.1 → v1.0.2 …），标题与说明同时标注所对应的上游版本；
-#   以 ios-v* tag 触发时，版本号以 tag 名为准，不参与上述自动递增。
+# 发布策略（2026-10-20 起；fork 仓库不适用 fork 通用的版本号规则）：
+#   ① Nightly Release：固定 tag `nightly` 的**预发布**，标题固定「Nightly Release」；
+#      每次构建覆盖更新两个 ipa（不新建 Release），正文含本次构建信息与双包说明；
+#   ② 上游正式版镜像：上游发布新的正式版 Release 后，下一次构建（定时同步后的 0:00）
+#      自动创建正式版 Release —— tag 用上游 tag，**标题与正文和上游逐字一致，不得增删改**；
+#      双资产齐全后不再重复创建（缺失时自动补齐）。
 #
 # 详细说明与本地构建方式见本仓库根目录的《无名杀 iOS 操作手册》：
 # https://github.com/cklsit/noname/blob/main/%E6%97%A0%E5%90%8D%E6%9D%80iOS%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C.md
@@ -65,8 +67,7 @@ on:
 permissions:
   contents: write # 创建 Release 需要
 
-# 并发控制：同 ref 只保留一个构建。版本号在发布步骤按「现有 Release」计算并 +0.0.1，
-# 串行可避免两次构建并发算出同一个版本号、发布时 tag 撞车。
+# 并发控制：同 ref 只保留一个构建（避免两次构建并发更新同一个 Release 的资产与说明）。
 concurrency:
   group: "ios-build-${{ github.ref }}"
   cancel-in-progress: false
@@ -74,8 +75,9 @@ concurrency:
 # 双包策略（2026-10-19 起，两任务并行）：
 #   job build-ipa      → 精简包 noname-ios-unsigned.ipa（不含原画/语音，游戏内按需下载）
 #   job build-ipa-full → 完整包 noname-ios-full-unsigned.ipa（含全部原画与台词语音）
-#   两任务并行（互不阻塞，墙钟时间 = 较慢者）；完整任务在开始时用与精简任务相同的算法
-#   计算版本号，构建完成后等待精简任务创建对应 Release，再把自己的 ipa 附加进去。
+#   两任务并行（互不阻塞，墙钟时间 = 较慢者）；两个任务各自解析同一组发布目标
+#   （Nightly Release + 是否需要创建上游正式版镜像），完整任务等待精简任务建好
+#   Release 后，把自己的 ipa 补传进去（覆盖更新）。
 #   完整任务另设 NONAME_FULL_ASSETS=1：preload 产物剔除「下载素材」模块、
 #   不生成补充下载清单（两个任务内均以 Verify 步骤自校验，见下）。
 jobs:
@@ -87,6 +89,31 @@ jobs:
     timeout-minutes: 90
 
     steps:
+      - name: Resolve release targets
+        id: targets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          # Nightly Release：固定 tag（预发布，每晚更新同一个 Release，不新建）
+          echo "nightly_tag=nightly" >> "$GITHUB_OUTPUT"
+          # 上游最新正式版（releases/latest 只取非预发布、非草稿的最新一版）
+          up_tag=$(gh api repos/libnoname/noname/releases/latest --jq .tag_name 2>/dev/null || true)
+          if [ -z "$up_tag" ]; then
+            echo "mirror_tag=" >> "$GITHUB_OUTPUT"
+            echo "未取到上游最新 Release，本次跳过镜像"
+            exit 0
+          fi
+          # 已镜像且双资产齐全 → 跳过；否则本次补建/补传（幂等自愈）
+          assets=$(gh release view "$up_tag" --repo "$GITHUB_REPOSITORY" --json assets --jq '[.assets[].name] | sort | join(",")' 2>/dev/null || true)
+          if [ "${assets}" = "noname-ios-full-unsigned.ipa,noname-ios-unsigned.ipa" ]; then
+            echo "mirror_tag=" >> "$GITHUB_OUTPUT"
+            echo "上游 ${up_tag} 已镜像（双资产齐全），本次只更新 Nightly Release"
+          else
+            echo "mirror_tag=$up_tag" >> "$GITHUB_OUTPUT"
+            echo "上游 ${up_tag} 未镜像或资产不全，本次创建/补齐正式版镜像"
+          fi
+
       - name: Show runner info and free disk
         run: |
           echo "===== Runner ====="
@@ -457,57 +484,57 @@ jobs:
           retention-days: ${{ github.event_name == 'workflow_dispatch' && fromJSON(inputs.retention_days) || 14 }}
           if-no-files-found: error
 
-      - name: Publish to Release
+      - name: Publish releases
         id: release
         if: github.event_name == 'push' || inputs.create_release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           IPA_PATH: ${{ steps.package.outputs.ipa_path }}
+          NIGHTLY_TAG: ${{ steps.targets.outputs.nightly_tag }}
+          MIRROR_TAG: ${{ steps.targets.outputs.mirror_tag }}
         run: |
           set -euo pipefail
-          # 版本号规则：初始 1.0.0；无论 feat/fix，Actions 发布的 Release 一律视为小版本号 +0.0.1。
-          # 版本号 = 现有 Release 中最大 semver（v?X.Y.Z）的 patch+1；无则 1.0.0。
-          if [ "${{ github.ref_type }}" = "tag" ]; then
-            TAG="${{ github.ref_name }}"
-            TITLE="iOS unsigned ${{ github.ref_name }}"
-            VERSION_LINE="**版本**：${{ github.ref_name }}（tag 触发）"
+          # ── 1) Nightly Release（固定 tag / 固定标题 / 预发布；覆盖更新，不新建） ──
+          notes=$(mktemp)
+          {
+            echo "**本次构建**：commit ${GITHUB_SHA:0:7}，上游 $(gh api repos/libnoname/noname/releases/latest --jq .tag_name 2>/dev/null || echo 未知)，$(date -u '+%Y-%m-%d %H:%M UTC')"
+            echo ""
+            echo '**本 Release 提供两个包（每晚覆盖更新）**：'
+            echo '- `noname-ios-unsigned.ipa`（**精简包**，推荐）：不含武将原画、技能语音与阵亡语音，游戏内按需下载（需要联网，首次遇到某个武将时略有延迟）'
+            echo '- `noname-ios-full-unsigned.ipa`（**完整包**）：包含全部武将原画与台词语音，无需联网补素材（体积较大）'
+            echo ""
+            echo '未签名 iOS ipa（GitHub Actions 自动构建）。**安装方式**：把任一 .ipa 导入 SideStore / AltStore，用你自己的 Apple ID 重签后安装。'
+            echo ""
+            echo '⚠️ 未签名包无法直接安装，必须经过侧载工具重签。免费 Apple ID 签名的应用 7 天后过期，需要重新刷新。'
+          } > "$notes"
+          if gh release view "$NIGHTLY_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release edit "$NIGHTLY_TAG" --repo "$GITHUB_REPOSITORY" --title "Nightly Release" --notes-file "$notes"
+            echo "Nightly Release 已存在：更新说明"
           else
-            tags=$(gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" --paginate --jq '.[].tag_name' 2>/dev/null || true)
-            next=$(printf '%s\n' "$tags" \
-              | sed -nE 's/^v?([0-9]+)\.([0-9]+)\.([0-9]+)$/\1 \2 \3/p' \
-              | awk 'NF==3 { if (maj=="" || $1>maj || ($1==maj && ($2>mid || ($2==mid && $3>pat)))) { maj=$1; mid=$2; pat=$3 } } END { if (maj=="") print "1.0.0"; else print maj "." mid "." (pat+1) }')
-            upstream_tag=$(gh api repos/libnoname/noname/releases/latest --jq .tag_name 2>/dev/null || echo "未知")
-            upstream_sha=$(gh api repos/libnoname/noname/commits/main --jq '.sha[0:8]' 2>/dev/null || echo "未知")
-            TAG="v${next}"
-            TITLE="iOS unsigned ${next}（上游 ${upstream_tag}）"
-            VERSION_LINE="**版本**：${next}（对应上游 \`libnoname/noname\` ${upstream_tag}，main@${upstream_sha}）"
+            gh release create "$NIGHTLY_TAG" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+              --title "Nightly Release" --prerelease --notes-file "$notes"
+            echo "Nightly Release 已创建（预发布）"
           fi
-          echo "Release tag: $TAG"
-          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          gh release upload "$NIGHTLY_TAG" "$IPA_PATH" --repo "$GITHUB_REPOSITORY" --clobber
 
-          # 标签已存在就复用，否则新建
-          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            echo "Release $TAG already exists, uploading asset only."
-          else
-            gh release create "$TAG" \
-              --repo "$GITHUB_REPOSITORY" \
-              --title "$TITLE" \
-              --notes "$VERSION_LINE
-
-          **本 Release 提供两个包**：
-          - \`noname-ios-unsigned.ipa\`（**精简包**，推荐）：不含武将原画、技能语音与阵亡语音，
-            游戏内按需下载（需要联网，首次遇到某个武将时略有延迟）
-          - \`noname-ios-full-unsigned.ipa\`（**完整包**）：包含全部武将原画与台词语音，
-            无需联网补素材（体积较大；由同一晚的另一个构建任务自动附加到本 Release）
-
-          未签名 iOS ipa（GitHub Actions 自动构建，commit ${{ github.sha }}）。
-
-          **安装方式**：把任一 .ipa 导入 SideStore / AltStore，用你自己的 Apple ID 重签后安装。
-
-          ⚠️ 未签名包无法直接安装，必须经过侧载工具重签。免费 Apple ID 签名的应用 7 天后过期，需要重新刷新。"
+          # ── 2) 上游正式版镜像（标题与正文和上游逐字一致，不得增删改） ──
+          if [ -n "$MIRROR_TAG" ]; then
+            meta=$(mktemp)
+            gh api "repos/libnoname/noname/releases/tags/$MIRROR_TAG" > "$meta"
+            title=$(jq -r '.name // ""' "$meta")
+            jq -r '.body // ""' "$meta" > "${meta}.body"
+            if gh release view "$MIRROR_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+              echo "镜像 ${MIRROR_TAG} 已存在：仅补传资产"
+            else
+              if [ -n "$title" ]; then
+                gh release create "$MIRROR_TAG" --repo "$GITHUB_REPOSITORY" --target main --title "$title" --notes-file "${meta}.body"
+              else
+                gh release create "$MIRROR_TAG" --repo "$GITHUB_REPOSITORY" --target main --notes-file "${meta}.body"
+              fi
+              echo "已创建正式版镜像：${MIRROR_TAG}（标题/正文与上游一致）"
+            fi
+            gh release upload "$MIRROR_TAG" "$IPA_PATH" --repo "$GITHUB_REPOSITORY" --clobber
           fi
-
-          gh release upload "$TAG" "$IPA_PATH" --repo "$GITHUB_REPOSITORY" --clobber
 
       - name: Summary
         env:
@@ -542,25 +569,30 @@ jobs:
       NONAME_FULL_ASSETS: "1"
 
     steps:
-      - name: Resolve release tag
-        # 两任务并行：这里在运行开始时就确定版本号（此时精简任务尚未创建 Release，
-        # 两边读到的现有 Release 列表一致 → 得到同一个 vX.Y.Z）。
-        id: tag
+      - name: Resolve release targets
+        id: targets
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          if [ "${{ github.ref_type }}" = "tag" ]; then
-            TAG="${{ github.ref_name }}"
-          else
-            tags=$(gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" --paginate --jq '.[].tag_name' 2>/dev/null || true)
-            next=$(printf '%s\n' "$tags" \
-              | sed -nE 's/^v?([0-9]+)\.([0-9]+)\.([0-9]+)$/\1 \2 \3/p' \
-              | awk 'NF==3 { if (maj=="" || $1>maj || ($1==maj && ($2>mid || ($2==mid && $3>pat)))) { maj=$1; mid=$2; pat=$3 } } END { if (maj=="") print "1.0.0"; else print maj "." mid "." (pat+1) }')
-            TAG="v${next}"
+          # Nightly Release：固定 tag（预发布，每晚更新同一个 Release，不新建）
+          echo "nightly_tag=nightly" >> "$GITHUB_OUTPUT"
+          # 上游最新正式版（releases/latest 只取非预发布、非草稿的最新一版）
+          up_tag=$(gh api repos/libnoname/noname/releases/latest --jq .tag_name 2>/dev/null || true)
+          if [ -z "$up_tag" ]; then
+            echo "mirror_tag=" >> "$GITHUB_OUTPUT"
+            echo "未取到上游最新 Release，本次跳过镜像"
+            exit 0
           fi
-          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-          echo "本次目标 Release：$TAG"
+          # 已镜像且双资产齐全 → 跳过；否则本次补建/补传（幂等自愈）
+          assets=$(gh release view "$up_tag" --repo "$GITHUB_REPOSITORY" --json assets --jq '[.assets[].name] | sort | join(",")' 2>/dev/null || true)
+          if [ "${assets}" = "noname-ios-full-unsigned.ipa,noname-ios-unsigned.ipa" ]; then
+            echo "mirror_tag=" >> "$GITHUB_OUTPUT"
+            echo "上游 ${up_tag} 已镜像（双资产齐全），本次只更新 Nightly Release"
+          else
+            echo "mirror_tag=$up_tag" >> "$GITHUB_OUTPUT"
+            echo "上游 ${up_tag} 未镜像或资产不全，本次创建/补齐正式版镜像"
+          fi
 
       - name: Show runner info and free disk
         run: |
@@ -851,26 +883,32 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           IPA_PATH: ${{ steps.package.outputs.ipa_path }}
-          TAG: ${{ steps.tag.outputs.tag }}
+          NIGHTLY_TAG: ${{ steps.targets.outputs.nightly_tag }}
+          MIRROR_TAG: ${{ steps.targets.outputs.mirror_tag }}
         run: |
           set -euo pipefail
-          # 精简任务并行执行，通常 3-5 分钟创建 Release；这里最多等待 10 分钟。
-          for i in $(seq 1 60); do
-            echo "检查 Release ${TAG}（第 ${i}/60 次）"
-            if gh release view "${TAG}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
-              echo "Release ${TAG} 已就绪"
-              break
-            fi
-            if [ "${i}" = 60 ]; then
-              echo "::error::等待 Release ${TAG} 超时（精简任务可能失败，见同一次运行的另一个作业）"
-              exit 1
-            fi
-            echo "等待 Release ${TAG}…"
-            sleep 10
-          done
-          echo "附加完整包到 Release：$TAG"
-          gh release upload "$TAG" "$IPA_PATH" --repo "$GITHUB_REPOSITORY" --clobber
-          ls -lh "$IPA_PATH"
+          wait_release() {
+            local tag="$1"
+            local i
+            for i in $(seq 1 60); do
+              echo "检查 Release ${tag}（第 ${i}/60 次）"
+              if gh release view "${tag}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
+                echo "Release ${tag} 已就绪"
+                return 0
+              fi
+              sleep 10
+            done
+            echo "::error::等待 Release ${tag} 超时（精简任务可能失败）"
+            return 1
+          }
+          wait_release "${NIGHTLY_TAG}"
+          gh release upload "${NIGHTLY_TAG}" "$IPA_PATH" --repo "$GITHUB_REPOSITORY" --clobber
+          echo "完整包已更新到 Nightly Release"
+          if [ -n "${MIRROR_TAG}" ]; then
+            wait_release "${MIRROR_TAG}"
+            gh release upload "${MIRROR_TAG}" "$IPA_PATH" --repo "$GITHUB_REPOSITORY" --clobber
+            echo "完整包已附加到正式版镜像 ${MIRROR_TAG}"
+          fi
           {
             echo "## iOS 完整包（full assets）✅"
             echo ""
@@ -878,5 +916,6 @@ jobs:
             echo "| --- | --- |"
             echo "| 产物 | \`noname-ios-full-unsigned.ipa\` |"
             echo "| 大小 | $(du -h "$IPA_PATH" | cut -f1) |"
-            echo "| Release | \`$TAG\` |"
+            echo "| Nightly | \`${NIGHTLY_TAG}\` |"
+            echo "| 正式版镜像 | \`${MIRROR_TAG:-（本次无需）}\` |"
           } >> "$GITHUB_STEP_SUMMARY"
