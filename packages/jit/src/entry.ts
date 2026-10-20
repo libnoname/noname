@@ -14,6 +14,27 @@
 		SERVICE_WORKER_LOAD_FAILED: ["无法启用即时编译功能", "serviceWorker加载失败"].join("\n"),
 	};
 
+	// iOS 的 WKWebView 不支持 service worker，属于平台限制而非用户环境问题。
+	// 移动端弹「功能不可用」的提示只会挡住游戏，因此整体跳过即时编译功能；
+	// 其他平台（桌面浏览器等）保持原有行为，方便用户升级浏览器后重试。
+	//
+	// 平台识别与 @capacitor/core 的 getPlatformId 保持一致：
+	// WKWebView 会注入 window.webkit.messageHandlers.bridge，据此判断为 iOS。
+	// 这里不能用 Capacitor.getPlatform()，因为本脚本被注入到 <head> 最前
+	// （head-prepend），执行时 @capacitor/core 尚未加载。
+	//
+	// 必须在最前面拦截：否则一旦某个 iOS 版本带有 serviceWorker 但注册失败，
+	// 会走到下面的 catch 分支触发 window.location.reload()，页面无谓地闪白重载。
+	//
+	// `window.webkit` 是 WKWebView 私有的非标准扩展，不在 TS 的 DOM 类型里，
+	// 因此这里就地做一次结构化断言，避免为一个平台判断去污染全局 Window 接口。
+	const wkWebView = window as unknown as {
+		webkit?: { messageHandlers?: { bridge?: unknown } };
+	};
+	if (wkWebView.webkit?.messageHandlers?.bridge) {
+		return;
+	}
+
 	if (!("serviceWorker" in navigator)) {
 		alert(globalText.SERVICE_WORKER_NOT_SUPPORT);
 		return;
