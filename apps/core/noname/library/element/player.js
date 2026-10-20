@@ -5,6 +5,12 @@ import { security } from "@/util/sandbox.js";
 import { ContentCompiler } from "./gameEvent.js";
 import { AsyncFunction } from "@/util/index.js";
 import dedent from "dedent";
+import { skillContext } from "./GameEvent/skillContext.js";
+
+// Reviewed aggregate semantics, not an opt-in list for ownership. All other
+// names work automatically in a trusted skill frame, including new extensions.
+// 梦魇、傀、平定 are shared; 暴怒、忍戒 are bearer resources.
+const aggregateMarks = new Set(["new_wuhun", "zongkui_mark", "yingba_mark", "jsrgzhenglve_mark", "dcjizhong", "equan", "baonu", "renjie"]);
 
 export class Player extends HTMLDivElement {
 	/**
@@ -4742,10 +4748,10 @@ export class Player extends HTMLDivElement {
 	 * 清除玩家的标记
 	 * @param { string } i
 	 * @param { boolean } [log]
-	 * @param {{source: Player|string|null}} [options] 省略时按旧规则操作总量；null 仅操作未知来源
+	 * @param {{source: Player|string|null}} [options] 省略时按可靠技能来源操作，上下文外操作总量；null 仅操作未知来源
 	 */
 	clearMark(i, log, options) {
-		const source = this._getMarkSource(options);
+		const source = this._getMarkSource(options, i);
 		if (source !== undefined && Array.isArray(this.storage[i])) {
 			const state = this._getMarkSourceState(i);
 			const items = state ? state.entries.find(entry => entry.source === source)?.value : source === null ? this.storage[i] : [];
@@ -4760,15 +4766,18 @@ export class Player extends HTMLDivElement {
 		}
 	}
 	/**
-	 * Explicit Mark source selector. Omission means aggregate access; null means
+	 * Mark source selector. Omission uses a trusted skill holder, otherwise aggregate; null means
 	 * unknown/unattributed. Player arguments must already have a playerid.
 	 * @private
 	 * @param {{source: Player|string|null}} [options]
+	 * @param {string} [name]
 	 * @returns {string|null|undefined}
 	 */
-	_getMarkSource(options) {
+	_getMarkSource(options, name) {
 		if (options === undefined) {
-			return undefined;
+			if (name !== undefined && aggregateMarks.has(name)) return undefined;
+			const id = skillContext.current?.player?.playerid;
+			return typeof id === "string" && id.length ? id : undefined;
 		}
 		if (!options || !Object.hasOwn(options, "source")) {
 			throw new TypeError("Mark options require an explicit source");
@@ -4785,7 +4794,7 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * Private provenance for the existing storage value, never a replacement for
-	 * storage. Allocate only for explicitly sourced marks. Observable storage changes
+	 * storage. Allocate only for sourced marks. Observable storage changes
 	 * invalidate provenance: changed data becomes unknown instead of being guessed.
 	 * This local metadata is deliberately not part of syncStorage/video payloads.
 	 * @private
@@ -4892,11 +4901,11 @@ export class Player extends HTMLDivElement {
 	 * @param { string } i
 	 * @param { number } [num = 1]
 	 * @param { boolean } [log]
-	 * @param {{source: Player|string|null}} [options] 仅移除指定来源；省略时未知份额优先，然后按来源创建顺序移除
+	 * @param {{source: Player|string|null}} [options] 仅移除指定来源；上下文外省略时未知份额优先，然后按来源创建顺序移除
 	 */
 	removeMark(i, num, log, options) {
-		const source = this._getMarkSource(options);
-		if (source !== undefined && num !== undefined && (!Number.isFinite(num) || num < 0)) {
+		const source = this._getMarkSource(options, i);
+		if (options !== undefined && source !== undefined && num !== undefined && (!Number.isFinite(num) || num < 0)) {
 			throw new RangeError("Source mark quantity must be finite and nonnegative");
 		}
 		if (typeof num != "number" || !num) {
@@ -4937,14 +4946,14 @@ export class Player extends HTMLDivElement {
 	 * @param { string } i
 	 * @param { number } [num = 1]
 	 * @param { boolean } [log]
-	 * @param {{source: Player|string|null}} [options] 显式玩家实例身份；省略时新增未知来源份额，不推断施加者
+	 * @param {{source: Player|string|null}} [options] 显式玩家实例身份；省略时使用可靠技能上下文；上下文外新增未知来源份额
 	 */
 	addMark(i, num, log, options) {
-		const source = this._getMarkSource(options);
-		if (source !== undefined && num !== undefined && (!Number.isFinite(num) || num < 0)) {
+		const source = this._getMarkSource(options, i);
+		if (options !== undefined && source !== undefined && num !== undefined && (!Number.isFinite(num) || num < 0)) {
 			throw new RangeError("Source mark quantity must be finite and nonnegative");
 		}
-		if (source !== undefined && this.storage[i] !== undefined && typeof this.storage[i] !== "number") {
+		if (options !== undefined && source !== undefined && this.storage[i] !== undefined && typeof this.storage[i] !== "number") {
 			throw new TypeError("Use markAuto for source array marks");
 		}
 		if (typeof num != "number" || !num) {
@@ -4985,7 +4994,7 @@ export class Player extends HTMLDivElement {
 	 * @param {{source: Player|string|null}} [options] 设置该来源的数量，其他来源保持不变
 	 */
 	setMark(name, num, log, options) {
-		if (this._getMarkSource(options) !== undefined) {
+		if (options !== undefined && this._getMarkSource(options, name) !== undefined) {
 			if (!Number.isFinite(num) || num < 0) {
 				throw new RangeError("Source mark quantity must be finite and nonnegative");
 			}
@@ -5003,18 +5012,18 @@ export class Player extends HTMLDivElement {
 	/**
 	 * 返回玩家的标记数
 	 * @param { string } i
-	 * @param {{source: Player|string|null}} [options] 省略查总量；null 查未知来源；数组按该来源的唯一元素计数
+	 * @param {{source: Player|string|null}} [options] 省略时按可靠技能上下文查询，上下文外查总量；null 查未知来源；数组按该来源的唯一元素计数
 	 * @returns { number }
 	 */
 	countMark(i, options) {
-		const source = this._getMarkSource(options);
+		const source = this._getMarkSource(options, i);
 		const state = this._getMarkSourceState(i);
 		if (source !== undefined) {
 			if (state) {
 				const value = state.entries.find(entry => entry.source === source)?.value;
 				return Array.isArray(value) ? value.length : value || 0;
 			}
-			// Old storage has no evidence of a creator. Never infer one from events.
+			// Old storage has no evidence of a creator. Never reassign its unknown share.
 			if (source !== null) {
 				return 0;
 			}
@@ -7998,6 +8007,7 @@ export class Player extends HTMLDivElement {
 		} else {
 			next.targets = [];
 		}
+		skillContext.set(next, next.player);
 		next.setContent("useSkill");
 		return next;
 	}
@@ -10495,8 +10505,8 @@ export class Player extends HTMLDivElement {
 	 * @param {{source: Player|string|null}} [options] 同一元素可由多个来源共同保有，storage 中仍只出现一次
 	 */
 	markAuto(name, info, options) {
-		const source = this._getMarkSource(options);
-		if (source !== undefined && info !== undefined && this.storage[name] !== undefined && !Array.isArray(this.storage[name])) {
+		const source = this._getMarkSource(options, name);
+		if (options !== undefined && source !== undefined && info !== undefined && this.storage[name] !== undefined && !Array.isArray(this.storage[name])) {
 			throw new TypeError("Use addMark for source numeric marks");
 		}
 		if (typeof info != "undefined") {
@@ -10539,10 +10549,10 @@ export class Player extends HTMLDivElement {
 	 * 移除角色对应storage中相应元素并刷新标记状态
 	 * @param { string } name 技能ID
 	 * @param { * } info 移除storage数组中对应元素/元素数组
-	 * @param {{source: Player|string|null}} [options] 仅移除该来源的成员关系；省略则移除所有来源的该元素
+	 * @param {{source: Player|string|null}} [options] 仅移除该来源的成员关系；省略时按可靠技能来源操作，上下文外移除所有来源的该元素
 	 */
 	unmarkAuto(name, info, options) {
-		const source = this._getMarkSource(options);
+		const source = this._getMarkSource(options, name);
 		var storage = this.storage[name];
 		if (Array.isArray(storage)) {
 			const state = this._getMarkSourceState(name, source !== undefined);
@@ -11329,7 +11339,7 @@ export class Player extends HTMLDivElement {
 				}
 				this.initedSkills.push(skill);
 				if (info.init /* && !_status.video */) {
-					info.init(this, skill);
+					skillContext.run({ player: this, event: skillContext.current?.event }, info.init, info, [this, skill]);
 				}
 			}
 			if (info.trigger && this.playerid) {
@@ -11814,7 +11824,7 @@ export class Player extends HTMLDivElement {
 				var info = get.info(skills);
 				if (info.ondisable && info.onremove) {
 					if (typeof info.onremove == "function") {
-						info.onremove(this, skill);
+						skillContext.run({ player: this, event: skillContext.current?.event }, info.onremove, info, [this, skill]);
 					} else if (typeof info.onremove == "string") {
 						if (info.onremove == "storage") {
 							delete this.storage[skill];
@@ -12088,7 +12098,7 @@ export class Player extends HTMLDivElement {
 				if (info) {
 					if (info.onremove) {
 						if (typeof info.onremove == "function") {
-							info.onremove(this, skill);
+							skillContext.run({ player: this, event: skillContext.current?.event }, info.onremove, info, [this, skill]);
 						} else if (typeof info.onremove == "string") {
 							if (info.onremove == "storage") {
 								delete this.storage[skill];

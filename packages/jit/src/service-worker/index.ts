@@ -48,7 +48,7 @@ const strategies: CompileStrategy.BaseStrategy[] = [
 	new CompileStrategy.WorkerResourceStrategy(),
 	new CompileStrategy.UrlResourceStrategy(),
 	new CompileStrategy.JSONStrategy(),
-	new CompileStrategy.TSStrategy({ allowJs: false }),
+	new CompileStrategy.TSStrategy({ allowJs: true }),
 	new CompileStrategy.CSSStrategy(),
 	new CompileStrategy.VueSFCStrategy(),
 ];

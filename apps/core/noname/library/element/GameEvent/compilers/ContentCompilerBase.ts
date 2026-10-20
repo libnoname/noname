@@ -1,3 +1,4 @@
+import { skillContext } from "../skillContext.js";
 import { game, _status } from "noname";
 import { IContentCompiler, EventContent } from "./IContentCompiler.js";
 
@@ -19,6 +20,7 @@ export default abstract class ContentCompilerBase implements IContentCompiler {
 	 * @param event 事件
 	 */
 	beforeExecute(event: GameEvent) {
+		skillContext.bindCallbacks(event);
 		const handlerType = event.getDefaultHandlerType() as `on${Capitalize<string>}`;
 		const option: HandlerOption = { state: "begin" };
 		event.callHandler(handlerType, event, option);

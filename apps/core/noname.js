@@ -10,3 +10,6 @@ export { Get, get, setGet } from "./noname/get/index.js";
 export { Library, lib, setLibrary } from "./noname/library/index.js";
 export { status, _status, setStatus } from "./noname/status/index.js";
 export { UI, ui, setUI } from "./noname/ui/index.js";
+
+// Internal dependency of compiled async skill modules, not a Mark API.
+export { skillContextAwaiter } from "./noname/library/element/GameEvent/skillContext.js";
