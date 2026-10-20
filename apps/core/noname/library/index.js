@@ -11131,7 +11131,7 @@ export class Library {
 			) {
 				return false;
 			}
-			if (info.filter && !game.withMarkExecution(player, skill, () => info.filter(event, player, triggerName, indexedData), { phase: "filter", event })) {
+			if (info.filter && !info.filter(event, player, triggerName, indexedData)) {
 				return false;
 			}
 			if (event._notrigger.includes(player) && !lib.skill.global.includes(skill)) {
@@ -11208,7 +11208,7 @@ export class Library {
 			if (!checkEnable(info.enable)) {
 				return false;
 			}
-			if (info.filter && !game.withMarkExecution(player, skill, () => info.filter(event, player), { phase: "filter", event })) {
+			if (info.filter && !info.filter(event, player)) {
 				return false;
 			}
 			if (info.viewAs && typeof info.viewAs !== "function") {
@@ -13220,7 +13220,6 @@ export class Library {
 				}
 			},
 			reinit: function (config, state, state2, ip, observe, onreconnect, cardtag, postReconnect) {
-				game.resetOwnedMarks();
 				ui.auto.show();
 				ui.pause.show();
 				game.clearConnect();
@@ -13379,7 +13378,6 @@ export class Library {
 							player.node.hp.show();
 						}
 						player.playerid = i;
-						if (info._ownedMarkIdentity) player._ownedMarkIdentity = info._ownedMarkIdentity;
 						player.nickname = info.nickname;
 						player.group = info.group;
 						player.node.name.dataset.nature = get.groupnature(info.group);
@@ -13581,7 +13579,6 @@ export class Library {
 					}
 					game.arrangePlayers();
 					ui.create.me(true);
-					if (state.ownedMarks) game.importOwnedMarkState(state.ownedMarks, { force: true });
 
 					_status.event = lib.element.GameEvent.initialGameEvent();
 					_status.paused = false;

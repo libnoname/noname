@@ -10,7 +10,6 @@ import { security, CodeSnippet, ErrorManager } from "@/util/sandbox.js";
 import JSZip from "jszip";
 import { HTMLPoptipElement } from "@/library/poptip.js";
 import { CacheContext } from "@/library/cache/cacheContext.js";
-import { appendOwnedMarkIntro } from "./ownedMarkIntro.js";
 
 // 用于标识Map、Set等对象在序列化中的类型
 // 使用了md5("__noname_type")的值作为键
@@ -2029,7 +2028,6 @@ export class Get {
 	}
 	arenaState() {
 		var state = {
-			ownedMarks: JSON.stringify(game.exportOwnedMarkState()),
 			number: ui.arena.dataset.number,
 			players: {},
 			mode: _status.mode,
@@ -2050,7 +2048,6 @@ export class Get {
 	}
 	skillState(player) {
 		var skills = {
-			ownedMarks: JSON.stringify(game.exportOwnedMarkState()),
 			global: lib.skill.global,
 		};
 		var skillinfo = {};
@@ -5104,14 +5101,8 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		}
 	}
 	nodeintro(node, simple, evt, uiintro) {
-		if (game.isMarkExecutionActive?.()) return game.withMarkExecution(null, null, () => get.nodeintro(node, simple, evt, uiintro), { phase: "intro" });
 		uiintro ??= ui.create.dialog("hidden", "notouchscroll");
 		uiintro.setAttribute("id", "nodeintro");
-		const markBearer = node.classList.contains("mark") && node.parentNode?.parentNode?.classList.contains("player") ? node.parentNode.parentNode : null;
-		const appendMarkSources = () => {
-			if (markBearer) appendOwnedMarkIntro(uiintro, markBearer, node.skill, { game, get, document });
-		};
-		let pendingMarkSources = false;
 		if (node.classList.contains("player") && !node.name) {
 			return uiintro;
 		}
@@ -5669,10 +5660,8 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			if (typeof info.mark == "function") {
 				var stint = info.mark(uiintro, player.storage[node.skill], player, evt, node.skill);
 				if (stint instanceof Promise) {
-					pendingMarkSources = true;
 					uiintro.hide();
 					stint.then(() => {
-						appendMarkSources();
 						uiintro.show();
 						if (evt) {
 							lib.placePoppedDialog(uiintro, evt);
@@ -6277,7 +6266,6 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			}
 			uiintro._place_text = uiintro.add('<div class="text">' + node.nodeContent + "</div>");
 		}
-		if (!pendingMarkSources) appendMarkSources();
 		if (lib.config.touchscreen) {
 			lib.setScroll(uiintro.contentContainer);
 		}

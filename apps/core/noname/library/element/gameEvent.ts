@@ -798,7 +798,7 @@ export class GameEvent implements PromiseLike<void> {
 					this.selectButton = info.selectButton;
 				}
 				if (info.filterTarget != undefined) {
-					this.filterTarget = game.captureMarkCallback(get.filter(info.filterTarget), { actor: this.player, skill, phase: "filter", event: this });
+					this.filterTarget = get.filter(info.filterTarget);
 				}
 				if (info.selectTarget != undefined) {
 					this.selectTarget = info.selectTarget;
@@ -874,7 +874,7 @@ export class GameEvent implements PromiseLike<void> {
 			} else {
 				this.filterButton = info.filterButton ? get.filter(info.filterButton) : undefined;
 				this.selectButton = info.selectButton;
-				this.filterTarget = info.filterTarget ? game.captureMarkCallback(get.filter(info.filterTarget), { actor: this.player, skill, phase: "filter", event: this }) : undefined;
+				this.filterTarget = info.filterTarget ? get.filter(info.filterTarget) : undefined;
 				this.selectTarget = info.selectTarget;
 				this.deadTarget = info.deadTarget;
 				this.chessForceAll = info.chessForceAll;
