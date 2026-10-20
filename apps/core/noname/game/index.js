@@ -14,6 +14,7 @@ import { _status, lib, get, ai, ui } from "noname";
 import { isClass, userAgentLowerCase, GeneratorFunction, AsyncFunction, delay } from "@/util/index.js";
 
 import { executionContext } from "../library/element/GameEvent/ExecutionContext.js";
+import { contextualMarkPopulation } from "../library/element/Player/markSemantics.js";
 import { DynamicStyle } from "./dynamic-style/index.js";
 import { GamePromises } from "./promises.js";
 import { Check } from "./check.js";
@@ -9022,7 +9023,9 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			if (!mod) {
 				return;
 			}
-			const result = mod.call(this, ...arg);
+			const holder = argumentArray[argumentArray.length - 1];
+			const player = get.itemtype(holder) === "player" ? holder : arg.find(value => get.itemtype(value) === "player");
+			const result = executionContext.run({ player, skill: value, stage: "mod" }, mod, this, arg);
 			if (result != undefined && typeof arg[arg.length - 1] != "object") {
 				arg[arg.length - 1] = result;
 			}
@@ -10205,7 +10208,8 @@ ${e instanceof Error ? e.stack : String(e)}`);
 	 * @param { boolean } [includeOut]
 	 */
 	hasPlayer(func, includeOut) {
-		return game.players.some(value => (includeOut || !value.isOut()) && func(value));
+		const population = contextualMarkPopulation();
+		return game.players.some(value => (includeOut || !value.isOut()) && (!population || population(value)) && func(value));
 	}
 	/**
 	 * @param { (player: Player) => boolean } func
@@ -10219,6 +10223,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 	 * @param { boolean } [includeOut]
 	 */
 	countPlayer(func, includeOut) {
+		const population = contextualMarkPopulation();
 		if (typeof func != "function") {
 			func = lib.filter.all;
 		}
@@ -10226,6 +10231,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			if (!includeOut && currentValue.isOut()) {
 				return previousValue;
 			}
+			if (population && !population(currentValue)) return previousValue;
 			const result = func(currentValue);
 			if (typeof result == "number") {
 				previousValue += result;

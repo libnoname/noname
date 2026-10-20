@@ -2,6 +2,7 @@ import ts from "typescript";
 
 /** Compile at module load/build time, preserving lexical closures and async tags. */
 export function transformEventContext(source: string, fileName: string) {
+	if (/\basync\s+function\s*\*/.test(source)) return source; // Native async-generator protocols are outside this lowering.
 	if (!/\basync\b/.test(source) || source.includes("__nonameEventAwaiter")) return source;
 	let used = false;
 	const result = ts.transpileModule(source, {

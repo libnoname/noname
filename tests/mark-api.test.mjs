@@ -3,6 +3,8 @@ import fs from "node:fs";
 import vm from "node:vm";
 import test from "node:test";
 import ts from "typescript";
+import { executionContext } from "../apps/core/noname/library/element/GameEvent/ExecutionContext.js";
+import { contextualMarkSource } from "../apps/core/noname/library/element/Player/markSemantics.js";
 
 // Execute the actual Player class; replace only browser/network/event boundaries.
 // No Mark method is replaced. Load the real array polyfills, including NaN behavior.
@@ -15,7 +17,7 @@ function fixture() {
 		createEvent(name) { const event = { name, setContent() {} }; events.push(event); return event; },
 	};
 	const context = vm.createContext({
-		game, lib, HTMLDivElement: class {}, CacheContext: { inject() {} }, ui: { updatem() {} },
+		game, lib, executionContext, contextualMarkSource, HTMLDivElement: class {}, CacheContext: { inject() {} }, ui: { updatem() {} },
 		get: { event() {}, info(name) { return lib.skill[name]; }, cnNumber: String, itemtype() {} },
 	});
 	const polyfill = fs.readFileSync(new URL("../apps/core/noname/init/polyfill.ts", import.meta.url), "utf8");
@@ -347,4 +349,43 @@ test("preexisting duplicate array entries retain their unknown multiplicity besi
 	assert.equal(p.countMark("camp"), 1);
 	p.clearMark("camp", false, { source: "A" });
 	assert.equal(p.countMark("camp"), 0);
+});
+
+
+test("declared legacy calls automatically isolate identical skill holders without source arguments", () => {
+ const { player } = fixture(), a = player(), b = player(), c = player();
+ const mark = "xinfu_xionghuo";
+ executionContext.run({ player: a, skill: mark }, () => { a.addMark(mark, 3, false); a.removeMark(mark, 1, false); c.addMark(mark, 1, false); });
+ executionContext.run({ player: b, skill: mark }, () => {
+  b.addMark(mark, 3, false);
+  assert.equal(c.hasMark(mark), false);
+  b.removeMark(mark, 1, false); c.addMark(mark, 1, false);
+  assert.equal(c.countMark(mark), 1);
+ });
+ assert.equal(c.countMark(mark), 2);
+ executionContext.run({ player: a, skill: "xinfu_xionghuo_effect" }, () => c.clearMark(mark, false));
+ assert.equal(c.countMark(mark), 1);
+ assert.equal(a.countMark(mark), 2);
+ assert.equal(b.countMark(mark), 2);
+ assert.equal(c.countMark(mark, { source: b }), 1);
+});
+
+test("undeclared shared/resource marks retain aggregate behavior inside a trusted skill frame", () => {
+ const { player } = fixture(), a = player(), b = player(), c = player();
+ executionContext.run({ player: a, skill: "same" }, () => { c.addMark("nightmare", 2, false); a.addMark("baonu", 3, false); });
+ executionContext.run({ player: b, skill: "same" }, () => { assert.equal(c.countMark("nightmare"), 2); c.removeMark("nightmare", 1, false); });
+ assert.equal(c.countMark("nightmare"), 1); assert.equal(a.countMark("baonu"), 3);
+});
+
+test("explicit aggregate/unknown/source selectors override a contextual source without guessing unknown data", () => {
+ const { player } = fixture(), a = player(), b = player(), c = player(), mark = "drlt_jieying_mark";
+ c.addMark(mark, 2, false);
+ executionContext.run({ player: a, skill: "drlt_jieying_1" }, () => {
+  assert.equal(c.countMark(mark), 0);
+  c.addMark(mark, 1, false);
+  c.addMark(mark, 1, false, { source: b });
+  assert.equal(c.countMark(mark), 1);
+  assert.equal(c.countMark(mark, { source: null }), 2);
+  assert.equal(c.countMark(mark, { aggregate: true }), 4);
+ });
 });
