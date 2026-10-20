@@ -495,9 +495,9 @@ jobs:
               --notes "$VERSION_LINE
 
           **本 Release 提供两个包**：
-          - `noname-ios-unsigned.ipa`（**精简包**，推荐）：不含武将原画、技能语音与阵亡语音，
+          - \`noname-ios-unsigned.ipa\`（**精简包**，推荐）：不含武将原画、技能语音与阵亡语音，
             游戏内按需下载（需要联网，首次遇到某个武将时略有延迟）
-          - `noname-ios-full-unsigned.ipa`（**完整包**）：包含全部武将原画与台词语音，
+          - \`noname-ios-full-unsigned.ipa\`（**完整包**）：包含全部武将原画与台词语音，
             无需联网补素材（体积较大；由同一晚的另一个构建任务自动附加到本 Release）
 
           未签名 iOS ipa（GitHub Actions 自动构建，commit ${{ github.sha }}）。
@@ -856,15 +856,16 @@ jobs:
           set -euo pipefail
           # 精简任务并行执行，通常 3-5 分钟创建 Release；这里最多等待 10 分钟。
           for i in $(seq 1 60); do
-            if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-              echo "Release $TAG 已就绪"
+            echo "检查 Release ${TAG}（第 ${i}/60 次）"
+            if gh release view "${TAG}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
+              echo "Release ${TAG} 已就绪"
               break
             fi
-            if [ "$i" = 60 ]; then
-              echo "::error::等待 Release $TAG 超时（精简任务可能失败，见同一次运行的另一个作业）"
+            if [ "${i}" = 60 ]; then
+              echo "::error::等待 Release ${TAG} 超时（精简任务可能失败，见同一次运行的另一个作业）"
               exit 1
             fi
-            echo "等待 Release $TAG…（$i/60）"
+            echo "等待 Release ${TAG}…"
             sleep 10
           done
           echo "附加完整包到 Release：$TAG"
