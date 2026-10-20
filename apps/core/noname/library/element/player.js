@@ -4742,30 +4742,173 @@ export class Player extends HTMLDivElement {
 	 * 清除玩家的标记
 	 * @param { string } i
 	 * @param { boolean } [log]
+	 * @param {{source: Player|string|null}} [options] 省略时按旧规则操作总量；null 仅操作未知来源
 	 */
-	clearMark(i, log) {
-		let num = this.countMark(i);
-		if (num > 0) {
-			this.removeMark(i, num, log);
+	clearMark(i, log, options) {
+		const source = this._getMarkSource(options);
+		if (source !== undefined && Array.isArray(this.storage[i])) {
+			const state = this._getMarkSourceState(i);
+			const items = state ? state.entries.find(entry => entry.source === source)?.value : source === null ? this.storage[i] : [];
+			if (items?.length) {
+				this.unmarkAuto(i, items.slice(), options);
+			}
+			return;
 		}
+		let num = this.countMark(i, options);
+		if (num > 0) {
+			this.removeMark(i, num, log, options);
+		}
+	}
+	/**
+	 * Explicit Mark source selector. Omission means aggregate access; null means
+	 * unknown/unattributed. Player arguments must already have a playerid.
+	 * @private
+	 * @param {{source: Player|string|null}} [options]
+	 * @returns {string|null|undefined}
+	 */
+	_getMarkSource(options) {
+		if (options === undefined) {
+			return undefined;
+		}
+		if (!options || !Object.hasOwn(options, "source")) {
+			throw new TypeError("Mark options require an explicit source");
+		}
+		const source = options.source;
+		if (source === null) {
+			return null;
+		}
+		const id = source instanceof Player ? source.playerid : source;
+		if (typeof id !== "string" || !id.length) {
+			throw new TypeError("Mark source requires a Player with playerid or a nonempty identity string");
+		}
+		return id;
+	}
+	/**
+	 * Private provenance for the existing storage value, never a replacement for
+	 * storage. Allocate only for explicitly sourced marks. Observable storage changes
+	 * invalidate provenance: changed data becomes unknown instead of being guessed.
+	 * This local metadata is deliberately not part of syncStorage/video payloads.
+	 * @private
+	 */
+	_getMarkSourceState(name, create = false) {
+		const value = this.storage[name];
+		let state = this._markSources?.[name];
+		if (!state && !create) {
+			return;
+		}
+		if (value !== undefined && !Array.isArray(value) && (!Number.isFinite(value) || value < 0)) {
+			if (create) {
+				throw new TypeError("Source marks require an array or finite nonnegative number");
+			}
+			delete this._markSources?.[name];
+			return;
+		}
+		const snapshot = state?.value;
+		const same = state && (Array.isArray(value)
+			? Array.isArray(snapshot) && value === state.reference && value.length === snapshot.length &&
+				Array.from(value.keys()).every(i => Object.hasOwn(value, i) === Object.hasOwn(snapshot, i) && Object.is(value[i], snapshot[i]))
+			: value === snapshot);
+		if (!same) {
+			const sources = this._markSources || Object.create(null);
+			if (!this._markSources) {
+				/** @private @type {Record<string, {reference: any, value: any, entries: {source: string|null, value: any}[]}>} */
+				this._markSources = sources;
+				Object.defineProperty(this, "_markSources", { enumerable: false });
+			}
+			const initial = Array.isArray(value) ? value.slice() : value || 0;
+			state = sources[name] = { reference: value, value: initial, entries: [{ source: null, value: Array.isArray(initial) ? initial.slice() : initial }] };
+		}
+		return state;
+	}
+	/** Commit provenance before logging, display callbacks or events can run. @private */
+	_saveMarkSourceState(name, state) {
+		if (state) {
+			state.entries = state.entries.filter(entry => Array.isArray(entry.value) ? entry.value.length : entry.value > 0);
+			state.reference = this.storage[name];
+			state.value = Array.isArray(this.storage[name]) ? this.storage[name].slice() : this.storage[name];
+		}
+	}
+	/**
+	 * Numeric mutation shared by addMark/removeMark; storage stays authoritative.
+	 * @private
+	 * @param {string} name
+	 * @param {number} delta
+	 * @param {string|null|undefined} source
+	 * @returns {number}
+	 */
+	_changeMarkSourceNumber(name, delta, source) {
+		const previous = this.storage[name];
+		if (source !== undefined && !Number.isFinite(previous + delta)) {
+			throw new RangeError("Source mark total must remain finite");
+		}
+		const state = this._getMarkSourceState(name, source !== undefined);
+		// Work on a copy so rejected arithmetic cannot partly change provenance.
+		const entries = state?.entries.map(entry => ({ ...entry })) || [];
+		let entry = entries?.find(entry => entry.source === (source === undefined ? null : source));
+		if (delta < 0) {
+			delta = -Math.min(-delta, source === undefined ? previous : entry?.value || 0);
+		}
+		if (state && Number.isFinite(previous + delta)) {
+			if (delta > 0) {
+				if (!entry) {
+					entry = { source: source === undefined ? null : source, value: 0 };
+					entries.push(entry);
+				}
+				entry.value += delta;
+			} else if (source !== undefined) {
+				if (entry) {
+					entry.value += delta;
+				}
+			} else {
+				// Legacy total removal retains aggregate semantics: unknown first,
+				// then known shares in creation order. It is not an ownership check.
+				let remaining = -delta;
+				for (const part of [...entries.filter(part => part.source === null), ...entries.filter(part => part.source !== null)]) {
+					const take = Math.min(part.value, remaining);
+					part.value -= take;
+					remaining -= take;
+				}
+			}
+		}
+		// Sum the committed shares, avoiding orphan floating-point residue after
+		// the last source is consumed. Unsourced marks keep legacy arithmetic.
+		const total = state && Number.isFinite(previous + delta) ? entries.reduce((sum, part) => sum + part.value, 0) : previous + delta;
+		if (source !== undefined && (!Number.isFinite(total) || Math.abs(total - previous - delta) > Number.EPSILON * Math.abs(delta) * 4)) {
+			throw new RangeError("Source mark change cannot be represented in the aggregate");
+		}
+		this.storage[name] = total;
+		if (state) {
+			state.entries = entries;
+		}
+		if (state && !Number.isFinite(this.storage[name])) {
+			delete this._markSources?.[name];
+		} else {
+			this._saveMarkSourceState(name, state);
+		}
+		return delta;
 	}
 	/**
 	 * 移除玩家的标记
 	 * @param { string } i
 	 * @param { number } [num = 1]
 	 * @param { boolean } [log]
+	 * @param {{source: Player|string|null}} [options] 仅移除指定来源；省略时未知份额优先，然后按来源创建顺序移除
 	 */
-	removeMark(i, num, log) {
+	removeMark(i, num, log, options) {
+		const source = this._getMarkSource(options);
+		if (source !== undefined && num !== undefined && (!Number.isFinite(num) || num < 0)) {
+			throw new RangeError("Source mark quantity must be finite and nonnegative");
+		}
 		if (typeof num != "number" || !num) {
 			num = 1;
 		}
 		if (typeof this.storage[i] != "number" || !this.storage[i]) {
 			return;
 		}
-		if (num > this.storage[i]) {
-			num = this.storage[i];
+		num = -this._changeMarkSourceNumber(i, -num, source);
+		if (!num) {
+			return;
 		}
-		this.storage[i] -= num;
 		if (log !== false) {
 			var str = false;
 			var info = get.info(i);
@@ -4794,15 +4937,23 @@ export class Player extends HTMLDivElement {
 	 * @param { string } i
 	 * @param { number } [num = 1]
 	 * @param { boolean } [log]
+	 * @param {{source: Player|string|null}} [options] 显式玩家实例身份；省略时新增未知来源份额，不推断施加者
 	 */
-	addMark(i, num, log) {
+	addMark(i, num, log, options) {
+		const source = this._getMarkSource(options);
+		if (source !== undefined && num !== undefined && (!Number.isFinite(num) || num < 0)) {
+			throw new RangeError("Source mark quantity must be finite and nonnegative");
+		}
+		if (source !== undefined && this.storage[i] !== undefined && typeof this.storage[i] !== "number") {
+			throw new TypeError("Use markAuto for source array marks");
+		}
 		if (typeof num != "number" || !num) {
 			num = 1;
 		}
 		if (typeof this.storage[i] != "number") {
 			this.storage[i] = 0;
 		}
-		this.storage[i] += num;
+		num = this._changeMarkSourceNumber(i, num, source);
 		if (log !== false) {
 			var str = false;
 			var info = get.info(i);
@@ -4831,21 +4982,43 @@ export class Player extends HTMLDivElement {
 	 * @param { string } name
 	 * @param { number } num
 	 * @param { boolean } [log]
+	 * @param {{source: Player|string|null}} [options] 设置该来源的数量，其他来源保持不变
 	 */
-	setMark(name, num, log) {
-		const count = this.countMark(name);
+	setMark(name, num, log, options) {
+		if (this._getMarkSource(options) !== undefined) {
+			if (!Number.isFinite(num) || num < 0) {
+				throw new RangeError("Source mark quantity must be finite and nonnegative");
+			}
+			if (Array.isArray(this.storage[name])) {
+				throw new TypeError("Use markAuto/unmarkAuto for source array marks");
+			}
+		}
+		const count = this.countMark(name, options);
 		if (count > num) {
-			this.removeMark(name, count - num, log);
+			this.removeMark(name, count - num, log, options);
 		} else if (count < num) {
-			this.addMark(name, num - count, log);
+			this.addMark(name, num - count, log, options);
 		}
 	}
 	/**
 	 * 返回玩家的标记数
 	 * @param { string } i
+	 * @param {{source: Player|string|null}} [options] 省略查总量；null 查未知来源；数组按该来源的唯一元素计数
 	 * @returns { number }
 	 */
-	countMark(i) {
+	countMark(i, options) {
+		const source = this._getMarkSource(options);
+		const state = this._getMarkSourceState(i);
+		if (source !== undefined) {
+			if (state) {
+				const value = state.entries.find(entry => entry.source === source)?.value;
+				return Array.isArray(value) ? value.length : value || 0;
+			}
+			// Old storage has no evidence of a creator. Never infer one from events.
+			if (source !== null) {
+				return 0;
+			}
+		}
 		if (this.storage[i] == undefined) {
 			return 0;
 		}
@@ -4860,10 +5033,11 @@ export class Player extends HTMLDivElement {
 	/**
 	 * 返回玩家是否拥有某个标记
 	 * @param { string } i
+	 * @param {{source: Player|string|null}} [options]
 	 * @returns { boolean }
 	 */
-	hasMark(i) {
-		return this.countMark(i) > 0;
+	hasMark(i, options) {
+		return this.countMark(i, options) > 0;
 	}
 	updateMark(i, storage) {
 		if (!this.marks[i]) {
@@ -10318,19 +10492,37 @@ export class Player extends HTMLDivElement {
 	 * 向角色对应storage中添加相应元素，刷新标记状态
 	 * @param { string } name 技能ID
 	 * @param { * } [info] 向storage数组中添加对应元素/元素数组
+	 * @param {{source: Player|string|null}} [options] 同一元素可由多个来源共同保有，storage 中仍只出现一次
 	 */
-	markAuto(name, info) {
+	markAuto(name, info, options) {
+		const source = this._getMarkSource(options);
+		if (source !== undefined && info !== undefined && this.storage[name] !== undefined && !Array.isArray(this.storage[name])) {
+			throw new TypeError("Use addMark for source numeric marks");
+		}
 		if (typeof info != "undefined") {
 			if (!Array.isArray(this.storage[name])) {
 				this.storage[name] = [];
 			}
+			const state = this._getMarkSourceState(name, source !== undefined);
 			if (Array.isArray(info)) {
 				this.storage[name].addArray(info);
 			} else {
 				this.storage[name].add(info);
 			}
+			if (state) {
+				// A set item may belong to several sources without appearing twice
+				// in the original storage array or its displayed aggregate count.
+				let entry = state.entries.find(entry => entry.source === (source === undefined ? null : source));
+				if (!entry) {
+					entry = { source: source === undefined ? null : source, value: [] };
+					state.entries.push(entry);
+				}
+				entry.value.addArray(Array.isArray(info) ? info : [info]);
+				this._saveMarkSourceState(name, state);
+			}
 			this.markSkill(name);
 		} else {
+			this._getMarkSourceState(name);
 			var storage = this.storage[name];
 			if (Array.isArray(storage)) {
 				this[storage.length > 0 ? "markSkill" : "unmarkSkill"](name);
@@ -10347,14 +10539,52 @@ export class Player extends HTMLDivElement {
 	 * 移除角色对应storage中相应元素并刷新标记状态
 	 * @param { string } name 技能ID
 	 * @param { * } info 移除storage数组中对应元素/元素数组
+	 * @param {{source: Player|string|null}} [options] 仅移除该来源的成员关系；省略则移除所有来源的该元素
 	 */
-	unmarkAuto(name, info) {
+	unmarkAuto(name, info, options) {
+		const source = this._getMarkSource(options);
 		var storage = this.storage[name];
 		if (Array.isArray(storage)) {
-			if (Array.isArray(info)) {
-				storage.removeArray(info.slice(0));
+			const state = this._getMarkSourceState(name, source !== undefined);
+			const items = Array.isArray(info) ? info.slice() : [info];
+			// Exact SameValueZero membership avoids the legacy remove(NaN)
+			// polyfill's coercive comparison consuming another source's item.
+			const removeExact = (array, item) => {
+				const index = array.findIndex(value => value === item || (Number.isNaN(value) && Number.isNaN(item)));
+				if (index < 0) {
+					return false;
+				}
+				array.splice(index, 1);
+				return true;
+			};
+			if (state && source !== undefined) {
+				for (const entry of state.entries) {
+					if (entry.source === source) {
+						for (const item of items) {
+							removeExact(entry.value, item);
+						}
+					}
+				}
+				for (const item of items) {
+					const matches = value => value === item || (Number.isNaN(value) && Number.isNaN(item));
+					const required = state.entries.reduce((count, entry) => Math.max(count, entry.value.filter(matches).length), 0);
+					let count = storage.filter(matches).length;
+					while (count-- > required) {
+						removeExact(storage, item);
+					}
+				}
+				this._saveMarkSourceState(name, state);
 			} else {
-				storage.remove(info);
+				storage.removeArray(items);
+				if (state) {
+					// Preserve legacy removal behavior, including polyfill quirks,
+					// but retain provenance only for the members actually remaining.
+					for (const entry of state.entries) {
+						const remaining = storage.slice();
+						entry.value = entry.value.filter(item => removeExact(remaining, item));
+					}
+					this._saveMarkSourceState(name, state);
+				}
 			}
 			this[storage.length > 0 ? "markSkill" : "unmarkSkill"](name);
 		}
@@ -10495,6 +10725,7 @@ export class Player extends HTMLDivElement {
 		}
 	}
 	markSkill(name, info, card, nobroadcast) {
+		this._getMarkSourceState(name);
 		if (info === true) {
 			this.syncStorage(name);
 			info = null;
@@ -10536,6 +10767,7 @@ export class Player extends HTMLDivElement {
 		return this;
 	}
 	unmarkSkill(name, nobroadcast) {
+		this._getMarkSourceState(name);
 		game.addVideo("unmarkSkill", this, name);
 		if (!nobroadcast) {
 			game.broadcast(
@@ -10572,6 +10804,7 @@ export class Player extends HTMLDivElement {
 				}
 			}
 		}
+		this._getMarkSourceState(name);
 		return this;
 	}
 	markSkillCharacter(id, target, name, content, nobroadcast) {
