@@ -1141,6 +1141,12 @@ table {
 .dialog.character > .packnode > div:last-child {
 	margin-bottom: 9px;
 }
+.dialog.popped .caption > .text li {
+	margin-left: 1.2em;
+}
+.dialog.popped .caption > .text ul li {
+	margin-left: 0;
+}
 .dialog.popped .caption > .text > ul > li:not(*:last-child) {
 	margin-bottom: 8px;
 }

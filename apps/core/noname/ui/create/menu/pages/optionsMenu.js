@@ -1,4 +1,4 @@
-import { menuContainer, popupContainer, updateActive, setUpdateActive, updateActiveCard, setUpdateActiveCard, menux, menuxpages, menuUpdates, openMenu, clickToggle, clickSwitcher, clickContainer, clickMenuItem, createMenu, createConfig } from "../index.js";
+import { menuContainer, popupContainer, updateActive, setUpdateActive, updateActiveCard, setUpdateActiveCard, menux, menuxpages, menuUpdates, openMenu, clickToggle, clickSwitcher, clickContainer, createMenu, createConfig } from "../index.js";
 import { ui, game, get, ai, lib, _status } from "noname";
 import { nonameInitialized } from "@/util/index.js";
 import JSZip from "jszip";
@@ -456,8 +456,7 @@ export const optionsMenu = function (connectMenu) {
 									game.saveConfig("background_music", link);
 									game.saveConfig("customBackgroundMusic", lib.config.customBackgroundMusic);
 									nodezz.item[link] = lib.config.customBackgroundMusic[link];
-									var textMenu = ui.create.div("", lib.config.customBackgroundMusic[link], nodeyy, clickMenuItem, nodeyy.childElementCount - 2);
-									textMenu._link = link;
+									nodexx._link.addTextMenuItem(link, lib.config.customBackgroundMusic[link], nodeyy.childElementCount - 2);
 									nodezz.updatex.call(nodexx, []);
 									_status.music_importing = false;
 									if (!_status._aozhan) {
@@ -475,7 +474,7 @@ export const optionsMenu = function (connectMenu) {
 				} else if (j == "extension_source") {
 					ui.extension_source = cfgnode;
 					cfgnode.updateInner = function () {
-						this._link.choosing.innerHTML = lib.config.extension_source;
+						this._link.setChoice(lib.config.extension_source);
 					};
 				}
 				map[j] = cfgnode;
