@@ -20,6 +20,20 @@ import { Check } from "./check.js";
 import { security } from "@/util/sandbox.js";
 import { save } from "@/util/config.js";
 import { debounce } from "@/util/utils.js";
+import { OwnedMarkStore } from "../library/element/ownedMarkStore.js";
+import { createOwnedMarkMethods } from "./ownedMarks.js";
+import { createMarkCompatibilityMethods } from "./markCompatibility.js";
+
+const markCompatibilityMethods = createMarkCompatibilityMethods();
+
+const ownedMarkMethods = createOwnedMarkMethods({
+	OwnedMarkStore,
+	getId: () => get.id(),
+	isVideo: () => _status.video,
+	getSkill: name => lib.skill[name],
+	readSavedState: key => lib.storage[key],
+	updateMarkLayout: player => ui.updatem(player),
+});
 
 export class Game {
 	documentZoom;
@@ -39,6 +53,30 @@ export class Game {
 	 * @type { { [key: string]: Player } }
 	 */
 	playerMap = {};
+	registerOwnedMarkPolicy(...args) { return markCompatibilityMethods.registerOwnedMarkPolicy.apply(this, args); }
+	getOwnedMarkPolicy(...args) { return markCompatibilityMethods.getOwnedMarkPolicy.apply(this, args); }
+	isMarkExecutionActive(...args) { return markCompatibilityMethods.isMarkExecutionActive.apply(this, args); }
+	exportOwnedMarkPolicies(...args) { return markCompatibilityMethods.exportOwnedMarkPolicies.apply(this, args); }
+	validateOwnedMarkPolicies(...args) { return markCompatibilityMethods.validateOwnedMarkPolicies.apply(this, args); }
+	restoreOwnedMarkPolicies(...args) { return markCompatibilityMethods.restoreOwnedMarkPolicies.apply(this, args); }
+	withMarkExecution(...args) { return markCompatibilityMethods.withMarkExecution.apply(this, args); }
+	captureMarkCallback(...args) { return markCompatibilityMethods.captureMarkCallback.apply(this, args); }
+	bindMarkExecution(...args) { return markCompatibilityMethods.bindMarkExecution.apply(this, args); }
+	runMarkContent(...args) { return markCompatibilityMethods.runMarkContent.apply(this, args); }
+	getOwnedMarkAccess(...args) { return markCompatibilityMethods.getOwnedMarkAccess.apply(this, args); }
+	countLegacyOwnedMark(...args) { return markCompatibilityMethods.countLegacyOwnedMark.apply(this, args); }
+	applyLegacyOwnedMark(...args) { return markCompatibilityMethods.applyLegacyOwnedMark.apply(this, args); }
+	getOwnedMarkStore() { return ownedMarkMethods.getOwnedMarkStore.call(this); }
+	getOwnedMarkIdentity(player) { return ownedMarkMethods.getOwnedMarkIdentity.call(this, player); }
+	resolveOwnedMarkPlayer(identity) { return ownedMarkMethods.resolveOwnedMarkPlayer.call(this, identity); }
+	exportOwnedMarkState() { return ownedMarkMethods.exportOwnedMarkState.call(this); }
+	importOwnedMarkState(payload, options) { return ownedMarkMethods.importOwnedMarkState.call(this, payload, options); }
+	refreshOwnedMarks() { return ownedMarkMethods.refreshOwnedMarks.call(this); }
+	syncOwnedMarks(snapshot) { return ownedMarkMethods.syncOwnedMarks.call(this, snapshot); }
+	handleOwnedMarkLifecycle(player, reason, skill) { return ownedMarkMethods.handleOwnedMarkLifecycle.call(this, player, reason, skill); }
+	resetOwnedMarks() { return ownedMarkMethods.resetOwnedMarks.call(this); }
+	saveOwnedMarkState(key, mode) { return ownedMarkMethods.saveOwnedMarkState.call(this, key, mode); }
+	loadOwnedMarkState(state, options) { return ownedMarkMethods.loadOwnedMarkState.call(this, state, options); }
 	/**
 	 * 当主机返回结果时，客机应该根据此Map的数据寻找回调函数喵
 	 *
@@ -3593,6 +3631,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			}
 		},
 		init: function (players) {
+			game.resetOwnedMarks();
 			if (game.chess) {
 				return;
 			}
@@ -4648,6 +4687,9 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			} else {
 				console.log(player);
 			}
+		},
+		ownedMarks: function (_player, content) {
+			game.importOwnedMarkState(content, { replay: true });
 		},
 		storage: function (player, content) {
 			if (player && content) {
@@ -9020,7 +9062,9 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			if (!mod) {
 				return;
 			}
-			const result = mod.call(this, ...arg);
+			// A global mod's subject is not necessarily its provider. Never inherit
+			// the calling skill's actor as the owner of this unrelated calculation.
+			const result = game.withMarkExecution(null, null, () => mod.call(this, ...arg), { phase: "mod" });
 			if (result != undefined && typeof arg[arg.length - 1] != "object") {
 				arg[arg.length - 1] = result;
 			}
@@ -9031,6 +9075,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 	 * @param { number } [num]
 	 */
 	prepareArena(num) {
+		game.resetOwnedMarks();
 		_status.prepareArena = true;
 		game.showHistory(false);
 		ui.create.players(num);
@@ -10008,6 +10053,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 	 * @param { Player } player
 	 */
 	removePlayer(player) {
+		game.handleOwnedMarkLifecycle(player, "remove");
 		if (_status.roundStart == player) {
 			_status.roundStart = player.next || player.getNext() || game.players[0];
 		}
@@ -10733,6 +10779,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		if (get.itemtype(player) != "player") {
 			return;
 		}
+		game.handleOwnedMarkLifecycle(player, "remove");
 		//把牌都弃置掉，不然移除也跟着没了
 		const cards = player.getCards("hejsx");
 		if (cards.length) {

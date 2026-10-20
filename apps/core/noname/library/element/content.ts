@@ -4157,6 +4157,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				//创建cost事件
 				const next = game.createEvent(`${event.skill}_cost`);
 				next.player = player;
+				game.bindMarkExecution(next, player, event.skill);
 				if (event.frequentSkill) {
 					next.set("frequentSkill", event.skill);
 				}
@@ -4280,6 +4281,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 
 		const next = game.createEvent(event.skill);
 		next.player = player;
+		game.bindMarkExecution(next, player, event.skill);
 		next._trigger = trigger;
 		next.triggername = event.triggername;
 		next.setContent(info.content);
@@ -10697,6 +10699,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			const info = get.info(event.skill);
 			if (info && info.contentBefore) {
 				const next = game.createEvent(`${event.skill}ContentBefore`);
+				game.bindMarkExecution(next, player, event.skill);
 				next.setContent(info.contentBefore);
 				next.targets = targets;
 				next.cards = cards;
@@ -10737,6 +10740,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 
 			const next = game.createEvent(event.skill);
 			next.setContent(info.content);
+			game.bindMarkExecution(next, player, event.skill);
 			next.targets = targets;
 			next.cards = cards;
 			next.player = player;
@@ -10791,6 +10795,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			const info = get.info(event.skill);
 			if (info && info.contentAfter) {
 				const next = game.createEvent(`${event.skill}ContentAfter`);
+				game.bindMarkExecution(next, player, event.skill);
 				next.setContent(info.contentAfter);
 				next.targets = targets;
 				next.cards = cards;
@@ -12541,6 +12546,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 		async (event, trigger, player) => {
 			game.callHook("checkDie", [event, player]);
 			await event.trigger("die");
+			if (player.isDead()) game.handleOwnedMarkLifecycle(player, "death");
 		},
 		async (event, trigger, player) => {
 			const { reason, source } = event;

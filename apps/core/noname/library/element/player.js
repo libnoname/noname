@@ -3987,6 +3987,7 @@ export class Player extends HTMLDivElement {
 		}
 	}
 	reinit(from, to, maxHp, online) {
+		game.handleOwnedMarkLifecycle(this, "reset");
 		var info1 = lib.character[from];
 		var info2 = lib.character[to];
 		var smooth = true,
@@ -4104,6 +4105,7 @@ export class Player extends HTMLDivElement {
 		}
 	}
 	uninit() {
+		game.handleOwnedMarkLifecycle(this, "reset");
 		delete this.name;
 		delete this.name1;
 		delete this.tempname;
@@ -4144,6 +4146,7 @@ export class Player extends HTMLDivElement {
 
 		this.$uninit();
 		this.marks = {};
+		game.refreshOwnedMarks();
 
 		return this;
 	}
@@ -4393,7 +4396,9 @@ export class Player extends HTMLDivElement {
 	}
 	applySkills(skills) {
 		for (var i in skills) {
-			if (i == "global") {
+			if (i == "ownedMarks") {
+				continue;
+			} else if (i == "global") {
 				lib.skill.global = skills[i];
 			}
 			//else if(i=='skillinfo'){
@@ -4412,9 +4417,12 @@ export class Player extends HTMLDivElement {
 				}
 			}
 		}
+		if (skills.ownedMarks) game.importOwnedMarkState(skills.ownedMarks);
+		game.refreshOwnedMarks();
 	}
 	getState() {
 		var state = {
+			_ownedMarkIdentity: this._ownedMarkIdentity,
 			hp: this.hp,
 			maxHp: this.maxHp,
 			nickname: this.nickname,
@@ -4743,10 +4751,102 @@ export class Player extends HTMLDivElement {
 	 * @param { string } i
 	 * @param { boolean } [log]
 	 */
-	clearMark(i, log) {
-		let num = this.countMark(i);
+	/** Resolve only an explicitly supplied Player or stable owned-mark identity. */
+	_ownedMarkRef(player) {
+		return typeof player === "string" ? player : game.getOwnedMarkIdentity(player);
+	}
+	_ownedMarkSelector(name, owner, options = {}) {
+		return { bearer: game.getOwnedMarkIdentity(this), name, owner: owner === undefined ? undefined : this._ownedMarkRef(owner), effectId: options.effectId, revision: options.revision };
+	}
+	/** Mutations commit before emitting quantity events or starting any asynchronous skill work. */
+	_mutateOwnedMarks(action, log = false) {
+		if (game.online) throw new Error("Owned marks are mutated by the authoritative host only");
+		if (game._applyingOwnedMarks || game._restoringOwnedMarks) throw new Error("Cannot mutate owned marks during state projection or recovery");
+		const store = game.getOwnedMarkStore(), before = store.snapshot();
+		const players = new Set([this, ...(game.players || []), ...(game.dead || []), ...(game._ownedMarkPlayers?.values() || [])]);
+		const numericBefore = new Map([...players].map(player => [player, Object.fromEntries(Object.entries(player.storage).filter(([, value]) => typeof value === "number"))]));
+		const depth = game._ownedMarkMutationDepth || 0;
+		game._ownedMarkMutationDepth = depth + 1;
+		let result;
+		try { result = action(store); }
+		finally { game._ownedMarkMutationDepth = depth; }
+		const after = store.snapshot();
+		if (!depth && !game._applyingOwnedMarks && after.revision !== before.revision) {
+			for (const b of after.buckets) {
+				const previous = before.buckets.find(p => p.bearer === b.bearer && p.name === b.name);
+				const total = x => x ? x.anonymous + x.effects.reduce((n, e) => n + e.count, 0) : 0;
+				const player = game.resolveOwnedMarkPlayer(b.bearer);
+				const delta = total(b) - (previous ? total(previous) : numericBefore.get(player)?.[b.name] || 0);
+				if (!delta || !player) continue;
+				if (log !== false) {
+					const info = get.info(b.name), label = info?.intro?.name2 || info?.intro?.name || lib.translate[b.name];
+					if (label) game.log(player, delta > 0 ? "获得了" : "移去了", get.cnNumber(Math.abs(delta)), "个", "#g【" + label + "】");
+				}
+				const next = game.createEvent(delta > 0 ? "addMark" : "removeMark", false, get.event());
+				next.player = player; next.num = Math.abs(delta); next.markName = b.name; next.log = log;
+				next.forceDie = true; next.includeOut = true; next.ownedMarkRevision = after.revision;
+				next.setContent("emptyEvent");
+			}
+		}
+		return result;
+	}
+	/** Add a new effect instance. Repeated applications intentionally do not merge parameters. */
+	addOwnedMark(name, owner, count = 1, options = {}) {
+		if (Array.isArray(this.storage[name]) || (this.storage[name] != null && typeof this.storage[name] !== "number")) throw new TypeError("Owned numeric marks cannot replace array or object storage");
+		const ownerId = this._ownedMarkRef(owner);
+		return this._mutateOwnedMarks(store => store.grant({
+			name, bearer: game.getOwnedMarkIdentity(this), owner: ownerId,
+			creator: options.creator === undefined ? ownerId : this._ownedMarkRef(options.creator),
+			beneficiary: options.beneficiary === undefined ? ownerId : this._ownedMarkRef(options.beneficiary),
+			count, params: options.params ?? {}, sourceSkill: options.sourceSkill ?? "", lifecycle: options.lifecycle,
+		}, this.storage[name] ?? 0), options.log);
+	}
+	getOwnedMarks(name, owner) {
+		return game.getOwnedMarkStore().list(this._ownedMarkSelector(name, owner));
+	}
+	countOwnedMark(name, owner) {
+		return game.getOwnedMarkStore().count(this._ownedMarkSelector(name, owner));
+	}
+	hasOwnedMark(name, owner) { return this.countOwnedMark(name, owner) > 0; }
+	getMarkOwners(name) { return [...new Set(this.getOwnedMarks(name).map(effect => effect.owner))]; }
+	removeOwnedMark(name, owner, count = Infinity, options = {}) {
+		if (owner === undefined) throw new TypeError("removeOwnedMark requires owner; use clearOwnedMarks for an explicit all-source clear");
+		return this._mutateOwnedMarks(store => store.remove(this._ownedMarkSelector(name, owner, options), count), options.log);
+	}
+	consumeOwnedMark(name, owner, effectId, revision) {
+		if (!effectId) throw new TypeError("consumeOwnedMark requires a specific effect ID");
+		return this.removeOwnedMark(name, owner, Infinity, { effectId, revision })[0];
+	}
+	transferOwnedMark(name, target, owner, count = Infinity, options = {}) {
+		if (owner === undefined) throw new TypeError("transferOwnedMark requires the explicit owner");
+		if (Array.isArray(target.storage[name]) || (target.storage[name] != null && typeof target.storage[name] !== "number")) throw new TypeError("Transfer destination is not a numeric mark");
+		const targetId = game.getOwnedMarkIdentity(target);
+		return this._mutateOwnedMarks(store => store.transfer(this._ownedMarkSelector(name, owner, options), targetId, count, target.storage[name] ?? 0), options.log);
+	}
+	clearOwnedMarks(name, owner) {
+		return this._mutateOwnedMarks(store => store.clear(this._ownedMarkSelector(name, owner)));
+	}
+	updateOwnedMark(name, effectId, owner, patch, options = {}) {
+		if (owner === undefined || !effectId) throw new TypeError("updateOwnedMark requires owner and effect ID");
+		return this._mutateOwnedMarks(store => store.update(this._ownedMarkSelector(name, owner, { effectId, revision: options.revision }), patch));
+	}
+	mergeOwnedMarks(name, owner) {
+		if (owner === undefined) throw new TypeError("mergeOwnedMarks requires the explicit owner");
+		return this._mutateOwnedMarks(store => store.merge(this._ownedMarkSelector(name, owner)));
+	}
+	/** The original API remains an aggregate operation, never a guessed per-owner operation. */
+	_legacyOwnedMark(name, total, log) {
+		if (game._applyingOwnedMarks || !this._ownedMarkIdentity) return false;
+		const store = game.getOwnedMarkStore();
+		if (!store.isTracked(this._ownedMarkIdentity, name)) return false;
+		this._mutateOwnedMarks(() => store.legacySet(this._ownedMarkIdentity, name, Math.max(0, total ?? 0)), log !== false);
+		return true;
+	}
+	clearMark(i, log, ownership) {
+		const access = game.getOwnedMarkAccess?.(this, i, "remove", ownership);
+		let num = this.countMark(i, access?.kind === "all" ? { scope: "all" } : ownership);
 		if (num > 0) {
-			this.removeMark(i, num, log);
+			this.removeMark(i, num, log, ownership);
 		}
 	}
 	/**
@@ -4755,10 +4855,12 @@ export class Player extends HTMLDivElement {
 	 * @param { number } [num = 1]
 	 * @param { boolean } [log]
 	 */
-	removeMark(i, num, log) {
+	removeMark(i, num, log, ownership) {
 		if (typeof num != "number" || !num) {
 			num = 1;
 		}
+		if (game.applyLegacyOwnedMark?.(this, i, "remove", num, log, ownership)) return;
+		if (this._legacyOwnedMark(i, this.countMark(i, { scope: "all" }) - num, log)) return;
 		if (typeof this.storage[i] != "number" || !this.storage[i]) {
 			return;
 		}
@@ -4795,10 +4897,12 @@ export class Player extends HTMLDivElement {
 	 * @param { number } [num = 1]
 	 * @param { boolean } [log]
 	 */
-	addMark(i, num, log) {
+	addMark(i, num, log, ownership) {
 		if (typeof num != "number" || !num) {
 			num = 1;
 		}
+		if (game.applyLegacyOwnedMark?.(this, i, "add", num, log, ownership)) return;
+		if (this._legacyOwnedMark(i, this.countMark(i, { scope: "all" }) + num, log)) return;
 		if (typeof this.storage[i] != "number") {
 			this.storage[i] = 0;
 		}
@@ -4832,12 +4936,12 @@ export class Player extends HTMLDivElement {
 	 * @param { number } num
 	 * @param { boolean } [log]
 	 */
-	setMark(name, num, log) {
-		const count = this.countMark(name);
+	setMark(name, num, log, ownership) {
+		const count = this.countMark(name, ownership);
 		if (count > num) {
-			this.removeMark(name, count - num, log);
+			this.removeMark(name, count - num, log, ownership);
 		} else if (count < num) {
-			this.addMark(name, num - count, log);
+			this.addMark(name, num - count, log, ownership);
 		}
 	}
 	/**
@@ -4845,7 +4949,9 @@ export class Player extends HTMLDivElement {
 	 * @param { string } i
 	 * @returns { number }
 	 */
-	countMark(i) {
+	countMark(i, ownership) {
+		const owned = game.countLegacyOwnedMark?.(this, i, ownership);
+		if (owned !== undefined) return owned;
 		if (this.storage[i] == undefined) {
 			return 0;
 		}
@@ -4862,8 +4968,8 @@ export class Player extends HTMLDivElement {
 	 * @param { string } i
 	 * @returns { boolean }
 	 */
-	hasMark(i) {
-		return this.countMark(i) > 0;
+	hasMark(i, ownership) {
+		return this.countMark(i, ownership) > 0;
 	}
 	updateMark(i, storage) {
 		if (!this.marks[i]) {
@@ -5684,6 +5790,7 @@ export class Player extends HTMLDivElement {
 		return skills;
 	}
 	syncStorage(skill) {
+		if (this._legacyOwnedMark(skill, this.storage[skill], false)) return;
 		switch (get.itemtype(this.storage[skill])) {
 			case "cards":
 				game.addVideo("storage", this, [skill, get.cardsInfo(this.storage[skill]), "cards"]);
@@ -6761,6 +6868,7 @@ export class Player extends HTMLDivElement {
 		if (next.ai == undefined) {
 			next.ai = get.attitude2;
 		}
+		next.filterTarget = game.captureMarkCallback(next.filterTarget);
 		next.setContent("chooseTarget");
 		next._args = Array.from(arguments);
 		next.forceDie = true;
@@ -7703,7 +7811,7 @@ export class Player extends HTMLDivElement {
 					const mod = get.info(skill).mod[key == "cardsuit" ? "suit" : key];
 					if (mod) {
 						let arg = [card, this, get[key.slice(4)](card, false), preResult];
-						let result = mod.call(game, ...arg);
+						let result = game.withMarkExecution(null, null, () => mod.call(game, ...arg), { phase: "mod" });
 						if (key == "cardsuit") {
 							const mod2 = get.info(skill).mod[key];
 							if (mod2) {
@@ -7809,6 +7917,7 @@ export class Player extends HTMLDivElement {
 		if (next.skill && get.info(next.skill) && get.info(next.skill).changeTarget) {
 			get.info(next.skill).changeTarget(next.player, next.targets);
 		}
+		if (next.skill) game.bindMarkExecution(next, this, next.skill);
 		if (next.targets) {
 			for (var i = 0; i < next.targets.length; i++) {
 				if (get.attitude(this, next.targets[i]) >= -1 && get.attitude(this, next.targets[i]) < 0) {
@@ -8157,7 +8266,7 @@ export class Player extends HTMLDivElement {
 			if (mod) {
 				for (let i = 0; i < next.cards.length; i++) {
 					let arg = [next.cards[i], next.discarder, this, event, "unchanged"],
-						result = mod.call(game, ...arg);
+						result = game.withMarkExecution(null, null, () => mod.call(game, ...arg), { phase: "mod" });
 					if (result !== undefined && typeof arg[arg.length - 1] !== "object") {
 						arg[arg.length - 1] = result;
 					}
@@ -8171,7 +8280,7 @@ export class Player extends HTMLDivElement {
 			if (mod) {
 				for (let i = 0; i < next.cards.length; i++) {
 					let arg = [next.cards[i], this, event, "unchanged"],
-						result = mod.call(game, ...arg);
+						result = game.withMarkExecution(null, null, () => mod.call(game, ...arg), { phase: "mod" });
 					if (result !== undefined && typeof arg[arg.length - 1] !== "object") {
 						arg[arg.length - 1] = result;
 					}
@@ -8326,7 +8435,7 @@ export class Player extends HTMLDivElement {
 					const mod = get.info(skill).mod[key == "cardsuit" ? "suit" : key];
 					if (mod) {
 						let arg = [card, this, get[key.slice(4)](card, false), preResult];
-						let result = mod.call(game, ...arg);
+						let result = game.withMarkExecution(null, null, () => mod.call(game, ...arg), { phase: "mod" });
 						if (key == "cardsuit") {
 							const mod2 = get.info(skill).mod[key];
 							if (mod2) {
@@ -10320,6 +10429,7 @@ export class Player extends HTMLDivElement {
 	 * @param { * } [info] 向storage数组中添加对应元素/元素数组
 	 */
 	markAuto(name, info) {
+		if (info !== undefined && this._ownedMarkIdentity && game.getOwnedMarkStore().isTracked(this._ownedMarkIdentity, name)) throw new TypeError("markAuto cannot replace an owned numeric mark with an array");
 		if (typeof info != "undefined") {
 			if (!Array.isArray(this.storage[name])) {
 				this.storage[name] = [];
@@ -10536,6 +10646,14 @@ export class Player extends HTMLDivElement {
 		return this;
 	}
 	unmarkSkill(name, nobroadcast) {
+		if (game._applyingOwnedMarks || game._restoringOwnedMarks) {
+			if (this.marks[name]) {
+				this.marks[name].delete();
+				delete this.marks[name];
+				ui.updatem(this);
+			}
+			return this;
+		}
 		game.addVideo("unmarkSkill", this, name);
 		if (!nobroadcast) {
 			game.broadcast(
@@ -11096,7 +11214,7 @@ export class Player extends HTMLDivElement {
 				}
 				this.initedSkills.push(skill);
 				if (info.init /* && !_status.video */) {
-					info.init(this, skill);
+					game.withMarkExecution(this, skill, () => info.init(this, skill), { phase: "init" });
 				}
 			}
 			if (info.trigger && this.playerid) {
@@ -11581,7 +11699,7 @@ export class Player extends HTMLDivElement {
 				var info = get.info(skills);
 				if (info.ondisable && info.onremove) {
 					if (typeof info.onremove == "function") {
-						info.onremove(this, skill);
+						game.withMarkExecution(this, skills, () => info.onremove(this, skill), { phase: "onremove" });
 					} else if (typeof info.onremove == "string") {
 						if (info.onremove == "storage") {
 							delete this.storage[skill];
@@ -11837,6 +11955,7 @@ export class Player extends HTMLDivElement {
 				if (info?.fixed && arguments[1] !== true) {
 					return skill;
 				}
+				game.handleOwnedMarkLifecycle(this, "removeSkill", skill);
 				this.unmarkSkill(skill);
 				game.broadcastAll(
 					function (player, skill) {
@@ -11855,7 +11974,7 @@ export class Player extends HTMLDivElement {
 				if (info) {
 					if (info.onremove) {
 						if (typeof info.onremove == "function") {
-							info.onremove(this, skill);
+							game.withMarkExecution(this, skill, () => info.onremove(this, skill), { phase: "onremove" });
 						} else if (typeof info.onremove == "string") {
 							if (info.onremove == "storage") {
 								delete this.storage[skill];

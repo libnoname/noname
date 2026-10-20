@@ -1,4 +1,5 @@
 import { GameEvent } from "../../gameEvent.js";
+import { game } from "noname";
 import { EventContent } from "./IContentCompiler.ts";
 import ContentCompilerBase from "./ContentCompilerBase.ts";
 
@@ -30,7 +31,7 @@ export default class ArrayCompiler extends ContentCompilerBase {
 				let result: Result | undefined;
 				if (!compiler.isPrevented(event)) {
 					const original = content[event.step];
-					result = await Reflect.apply(original, this, [event, event._trigger, event.player, event._result]);
+					result = await game.runMarkContent(event, () => Reflect.apply(original, this, [event, event._trigger, event.player, event._result]));
 				}
 				const nextResult = await event.waitNext();
 				event._result = result ?? nextResult ?? event._result;
