@@ -4,27 +4,60 @@ import vm from "node:vm";
 import test from "node:test";
 import ts from "typescript";
 import { executionContext } from "../apps/core/noname/library/element/GameEvent/ExecutionContext.js";
-import { contextualMarkSource } from "../apps/core/noname/library/element/Player/markSemantics.js";
+import { encodeMarkState, decodeMarkState } from "../apps/core/noname/library/element/Player/markState.js";
+import { contextualMarkSource, contextualMarkAvailable, recordMarkTransfer, planMarkTransfer } from "../apps/core/noname/library/element/Player/markSemantics.js";
 
 // Execute the actual Player class; replace only browser/network/event boundaries.
 // No Mark method is replaced. Load the real array polyfills, including NaN behavior.
 function fixture() {
-	const events = [], videos = [], syncs = [];
+	const events = [],
+		videos = [],
+		syncs = [];
 	const lib = { skill: { camp: { intro: { content: "mark" } } }, translate: {} };
 	const game = {
-		log() {}, broadcast() {},
-		addVideo(...args) { videos.push(args); },
-		createEvent(name) { const event = { name, setContent() {} }; events.push(event); return event; },
+		log() {},
+		broadcast() {},
+		addVideo(...args) {
+			videos.push(args);
+		},
+		createEvent(name) {
+			const event = { name, setContent() {} };
+			events.push(event);
+			return event;
+		},
 	};
 	const context = vm.createContext({
-		game, lib, executionContext, contextualMarkSource, HTMLDivElement: class {}, CacheContext: { inject() {} }, ui: { updatem() {} },
-		get: { event() {}, info(name) { return lib.skill[name]; }, cnNumber: String, itemtype() {} },
+		game,
+		lib,
+		executionContext,
+		contextualMarkSource,
+		contextualMarkAvailable,
+		recordMarkTransfer,
+		planMarkTransfer,
+		encodeMarkState,
+		decodeMarkState,
+		HTMLDivElement: class {},
+		CacheContext: { inject() {} },
+		ui: { updatem() {} },
+		get: {
+			stringifiedResult(value) {
+				return value;
+			},
+			event() {},
+			info(name) {
+				return lib.skill[name];
+			},
+			cnNumber: String,
+			itemtype() {},
+		},
 	});
 	const polyfill = fs.readFileSync(new URL("../apps/core/noname/init/polyfill.ts", import.meta.url), "utf8");
 	const arrayHelpers = polyfill.slice(polyfill.indexOf('Object.defineProperty(Array.prototype, "add",'), polyfill.indexOf('Object.defineProperty(Array.prototype, "unique",'));
 	vm.runInContext(ts.transpile(arrayHelpers), context);
-	const source = fs.readFileSync(new URL("../apps/core/noname/library/element/player.js", import.meta.url), "utf8")
-		.replace(/^import .*;\r?\n/gm, "").replace("export class Player", "globalThis.Player = class Player");
+	const source = fs
+		.readFileSync(new URL("../apps/core/noname/library/element/player.js", import.meta.url), "utf8")
+		.replace(/^import .*;\r?\n/gm, "")
+		.replace("export class Player", "globalThis.Player = class Player");
 	vm.runInContext(source, context);
 	let id = 0;
 	function player() {
@@ -35,11 +68,12 @@ function fixture() {
 		p.mark = (name, info) => ({ name, info, style: { transform: "" }, delete() {} });
 		return p;
 	}
-	return { player, events, videos, syncs, lib };
+	return { player, events, videos, syncs, lib, game };
 }
 
 test("legacy numeric and shared calls keep totals, defaults, events and storage shape", () => {
-	const { player, events, syncs } = fixture(), p = player();
+	const { player, events, syncs } = fixture(),
+		p = player();
 	p.addMark("camp", 2, false);
 	p.addMark("camp", 0, false); // Historical zero means one.
 	assert.equal(p.storage.camp, 3);
@@ -51,12 +85,27 @@ test("legacy numeric and shared calls keep totals, defaults, events and storage 
 	assert.equal(p.countMark("camp"), 0);
 	assert.equal(p.hasMark("camp"), false);
 	assert.equal(p.marks.camp, undefined);
-	assert.deepEqual(events.map(e => [e.name, e.num]), [["addMark", 2], ["addMark", 1], ["removeMark", 1], ["addMark", 3], ["removeMark", 5]]);
-	assert.deepEqual(syncs.map(x => x[1]), [2, 3, 2, 5, 0]);
+	assert.deepEqual(
+		events.map(e => [e.name, e.num]),
+		[
+			["addMark", 2],
+			["addMark", 1],
+			["removeMark", 1],
+			["addMark", 3],
+			["removeMark", 5],
+		]
+	);
+	assert.deepEqual(
+		syncs.map(x => x[1]),
+		[2, 3, 2, 5, 0]
+	);
 });
 
 test("two explicit Player sources are isolated without changing aggregate numeric storage", () => {
-	const { player } = fixture(), a = player(), b = player(), c = player();
+	const { player } = fixture(),
+		a = player(),
+		b = player(),
+		c = player();
 	c.addMark("camp", 2, false, { source: a });
 	c.addMark("camp", 3, false, { source: b });
 	assert.equal(c.storage.camp, 5);
@@ -71,7 +120,8 @@ test("two explicit Player sources are isolated without changing aggregate numeri
 });
 
 test("source setMark changes only its own share and source-less setMark still changes total", () => {
-	const { player } = fixture(), p = player();
+	const { player } = fixture(),
+		p = player();
 	p.addMark("camp", 2, false, { source: "A" });
 	p.addMark("camp", 3, false, { source: "B" });
 	p.setMark("camp", 4, false, { source: "A" });
@@ -86,7 +136,8 @@ test("source setMark changes only its own share and source-less setMark still ch
 });
 
 test("unqualified consumption uses unknown share first, then explicit shares in insertion order", () => {
-	const { player } = fixture(), p = player();
+	const { player } = fixture(),
+		p = player();
 	p.addMark("camp", 2, false, { source: "A" });
 	p.addMark("camp", 3, false, { source: "B" });
 	p.addMark("camp", 1, false);
@@ -98,7 +149,9 @@ test("unqualified consumption uses unknown share first, then explicit shares in 
 });
 
 test("legacy arrays keep unique items, reference identity and clearMark no-op", () => {
-	const { player } = fixture(), p = player(), card = {};
+	const { player } = fixture(),
+		p = player(),
+		card = {};
 	p.markAuto("camp", card);
 	p.markAuto("camp", card);
 	const array = p.storage.camp;
@@ -111,7 +164,9 @@ test("legacy arrays keep unique items, reference identity and clearMark no-op", 
 });
 
 test("array source membership preserves overlapping items until their last source is removed", () => {
-	const { player } = fixture(), p = player(), item = {};
+	const { player } = fixture(),
+		p = player(),
+		item = {};
 	p.markAuto("camp", item, { source: "A" });
 	p.markAuto("camp", item, { source: "B" });
 	assert.equal(p.countMark("camp"), 1);
@@ -125,7 +180,8 @@ test("array source membership preserves overlapping items until their last sourc
 });
 
 test("source-less array removal deletes all memberships, source-less add preserves unknown membership", () => {
-	const { player } = fixture(), p = player();
+	const { player } = fixture(),
+		p = player();
 	p.markAuto("camp", "card", { source: "A" });
 	p.markAuto("camp", "card");
 	p.clearMark("camp", false, { source: "A" });
@@ -137,7 +193,8 @@ test("source-less array removal deletes all memberships, source-less add preserv
 });
 
 test("external storage replacement invalidates unsupported provenance instead of guessing", () => {
-	const { player } = fixture(), p = player();
+	const { player } = fixture(),
+		p = player();
 	p.addMark("camp", 2, false, { source: "A" });
 	p.storage.camp = 9;
 	assert.equal(p.countMark("camp", { source: "A" }), 0);
@@ -149,7 +206,8 @@ test("external storage replacement invalidates unsupported provenance instead of
 });
 
 test("invalid explicit identity and numeric quantities fail before state or visible effects change", () => {
-	const { player, events } = fixture(), p = player();
+	const { player, events } = fixture(),
+		p = player();
 	for (const source of [{ name: "xurong" }, "", 1]) {
 		assert.throws(() => p.addMark("camp", 1, false, { source }), { name: "TypeError" });
 	}
@@ -161,7 +219,8 @@ test("invalid explicit identity and numeric quantities fail before state or visi
 });
 
 test("unmarkSkill preserves display-only semantics but reconciles custom storage deletion", () => {
-	const { player, lib } = fixture(), p = player();
+	const { player, lib } = fixture(),
+		p = player();
 	p.addMark("camp", 2, false, { source: "A" });
 	p.unmarkSkill("camp");
 	assert.equal(p.countMark("camp", { source: "A" }), 2);
@@ -174,10 +233,13 @@ test("unmarkSkill preserves display-only semantics but reconciles custom storage
 });
 
 test("source removal event reports the consumed amount and callback sees committed shares", () => {
-	const { player, events, lib } = fixture(), p = player();
+	const { player, events, lib } = fixture(),
+		p = player();
 	p.addMark("camp", 2, false, { source: "A" });
 	let during;
-	lib.skill.camp.intro.onunmark = () => { during = p.countMark("camp", { source: "A" }); };
+	lib.skill.camp.intro.onunmark = () => {
+		during = p.countMark("camp", { source: "A" });
+	};
 	p.removeMark("camp", 10, false, { source: "A" });
 	assert.equal(during, 0);
 	assert.equal(events.at(-1).num, 2);
@@ -185,7 +247,9 @@ test("source removal event reports the consumed amount and callback sees committ
 });
 
 test("bearers and mark names remain independent even with identical general names", () => {
-	const { player } = fixture(), a = player(), b = player();
+	const { player } = fixture(),
+		a = player(),
+		b = player();
 	a.addMark("camp", 2, false, { source: a });
 	a.addMark("other", 3, false, { source: b });
 	b.addMark("camp", 4, false, { source: b });
@@ -196,7 +260,8 @@ test("bearers and mark names remain independent even with identical general name
 });
 
 test("explicit unknown arrays and legacy numeric-to-array conversion keep array semantics", () => {
-	const { player } = fixture(), p = player();
+	const { player } = fixture(),
+		p = player();
 	p.markAuto("camp", "x", { source: null });
 	assert.equal(p.countMark("camp", { source: null }), 1);
 	p.addMark("other", 2, false, { source: "A" });
@@ -206,7 +271,8 @@ test("explicit unknown arrays and legacy numeric-to-array conversion keep array 
 });
 
 test("unknown-only clear and missing-source removal never erase known sources or emit phantom events", () => {
-	const { player, events } = fixture(), p = player();
+	const { player, events } = fixture(),
+		p = player();
 	p.addMark("camp", 2, false);
 	p.addMark("camp", 3, false, { source: "A" });
 	p.clearMark("camp", false, { source: null });
@@ -218,7 +284,8 @@ test("unknown-only clear and missing-source removal never erase known sources or
 });
 
 test("finite source additions cannot overflow aggregate storage", () => {
-	const { player, events } = fixture(), p = player();
+	const { player, events } = fixture(),
+		p = player();
 	p.addMark("camp", Number.MAX_VALUE, false, { source: "A" });
 	assert.throws(() => p.addMark("camp", Number.MAX_VALUE, false, { source: "B" }), { name: "RangeError" });
 	assert.equal(p.countMark("camp"), Number.MAX_VALUE);
@@ -227,7 +294,8 @@ test("finite source additions cannot overflow aggregate storage", () => {
 });
 
 test("legacy signed numeric operations cannot underflow zero", () => {
-	const { player } = fixture(), p = player();
+	const { player } = fixture(),
+		p = player();
 	p.addMark("camp", 2, false, { source: "A" });
 	p.addMark("camp", -10, false);
 	assert.equal(p.countMark("camp"), 0);
@@ -237,7 +305,9 @@ test("legacy signed numeric operations cannot underflow zero", () => {
 });
 
 test("display-only markSkill keeps custom intro and card arguments without inventing a source", () => {
-	const { player } = fixture(), p = player(), intro = { content: () => "custom" };
+	const { player } = fixture(),
+		p = player(),
+		intro = { content: () => "custom" };
 	p.storage.camp = 3;
 	p.markSkill("camp", intro);
 	assert.equal(p.marks.camp.info, intro);
@@ -247,7 +317,8 @@ test("display-only markSkill keeps custom intro and card arguments without inven
 });
 
 test("array lists deduplicate per source and legacy refresh does not discard another membership", () => {
-	const { player } = fixture(), p = player();
+	const { player } = fixture(),
+		p = player();
 	p.markAuto("camp", ["x", "x", "y"], { source: "A" });
 	p.markAuto("camp", ["x", "z"], { source: "B" });
 	assert.equal(p.countMark("camp"), 3);
@@ -259,7 +330,8 @@ test("array lists deduplicate per source and legacy refresh does not discard ano
 });
 
 test("storage deletion and type replacement never resurrect old source shares", () => {
-	const { player } = fixture(), p = player();
+	const { player } = fixture(),
+		p = player();
 	p.addMark("camp", 2, false, { source: "A" });
 	delete p.storage.camp;
 	p.markAuto("camp");
@@ -272,7 +344,8 @@ test("storage deletion and type replacement never resurrect old source shares", 
 });
 
 test("source state is per bearer and does not add keys to serialized storage", () => {
-	const { player } = fixture(), p = player();
+	const { player } = fixture(),
+		p = player();
 	p.addMark("camp", 1, false, { source: "__proto__" });
 	p.addMark("camp", 2, false, { source: "A" });
 	assert.equal(p.countMark("camp", { source: "A" }), 2);
@@ -282,7 +355,8 @@ test("source state is per bearer and does not add keys to serialized storage", (
 });
 
 test("source addition rejects a quantity lost to floating point rounding", () => {
-	const { player } = fixture(), p = player();
+	const { player } = fixture(),
+		p = player();
 	p.addMark("camp", Number.MAX_VALUE, false, { source: "A" });
 	assert.throws(() => p.addMark("camp", 1, false, { source: "B" }), { name: "RangeError" });
 	assert.equal(p.countMark("camp", { source: "B" }), 0);
@@ -290,7 +364,8 @@ test("source addition rejects a quantity lost to floating point rounding", () =>
 });
 
 test("fractional source arithmetic never leaves a positive aggregate after all shares were consumed", () => {
-	const { player } = fixture(), p = player();
+	const { player } = fixture(),
+		p = player();
 	p.addMark("camp", 0.2, false, { source: "A" });
 	p.addMark("camp", 0.1, false, { source: "B" });
 	p.clearMark("camp", false, { source: "A" });
@@ -300,7 +375,9 @@ test("fractional source arithmetic never leaves a positive aggregate after all s
 });
 
 test("source consumption rejects rounded-away or amplified aggregate changes atomically", () => {
-	const { player, events } = fixture(), p = player(), q = player();
+	const { player, events } = fixture(),
+		p = player(),
+		q = player();
 	p.addMark("camp", Number.MAX_VALUE, false, { source: "A" });
 	const before = events.length;
 	assert.throws(() => p.removeMark("camp", 1, false, { source: "A" }), { name: "RangeError" });
@@ -314,7 +391,8 @@ test("source consumption rejects rounded-away or amplified aggregate changes ato
 });
 
 test("source NaN removal uses exact membership and cannot consume another source's string", () => {
-	const { player } = fixture(), p = player();
+	const { player } = fixture(),
+		p = player();
 	p.markAuto("camp", "foo", { source: "A" });
 	p.markAuto("camp", NaN, { source: "B" });
 	p.unmarkAuto("camp", NaN, { source: "B" });
@@ -325,7 +403,8 @@ test("source NaN removal uses exact membership and cannot consume another source
 });
 
 test("legacy array removal retains real polyfill behavior while provenance follows actual remaining members", () => {
-	const { player } = fixture(), p = player();
+	const { player } = fixture(),
+		p = player();
 	p.markAuto("camp", "foo", { source: "A" });
 	p.markAuto("camp", NaN, { source: "B" });
 	p.unmarkAuto("camp", NaN);
@@ -337,7 +416,8 @@ test("legacy array removal retains real polyfill behavior while provenance follo
 });
 
 test("preexisting duplicate array entries retain their unknown multiplicity beside sourced memberships", () => {
-	const { player } = fixture(), p = player();
+	const { player } = fixture(),
+		p = player();
 	p.markAuto("camp", "x");
 	p.storage.camp.push("x");
 	p.markAuto("camp", "x", { source: "A" });
@@ -351,41 +431,152 @@ test("preexisting duplicate array entries retain their unknown multiplicity besi
 	assert.equal(p.countMark("camp"), 0);
 });
 
-
 test("declared legacy calls automatically isolate identical skill holders without source arguments", () => {
- const { player } = fixture(), a = player(), b = player(), c = player();
- const mark = "xinfu_xionghuo";
- executionContext.run({ player: a, skill: mark }, () => { a.addMark(mark, 3, false); a.removeMark(mark, 1, false); c.addMark(mark, 1, false); });
- executionContext.run({ player: b, skill: mark }, () => {
-  b.addMark(mark, 3, false);
-  assert.equal(c.hasMark(mark), false);
-  b.removeMark(mark, 1, false); c.addMark(mark, 1, false);
-  assert.equal(c.countMark(mark), 1);
- });
- assert.equal(c.countMark(mark), 2);
- executionContext.run({ player: a, skill: "xinfu_xionghuo_effect" }, () => c.clearMark(mark, false));
- assert.equal(c.countMark(mark), 1);
- assert.equal(a.countMark(mark), 2);
- assert.equal(b.countMark(mark), 2);
- assert.equal(c.countMark(mark, { source: b }), 1);
+	const { player } = fixture(),
+		a = player(),
+		b = player(),
+		c = player();
+	const mark = "xinfu_xionghuo";
+	executionContext.run({ player: a, skill: mark }, () => {
+		a.addMark(mark, 3, false);
+		a.removeMark(mark, 1, false);
+		c.addMark(mark, 1, false);
+	});
+	executionContext.run({ player: b, skill: mark }, () => {
+		b.addMark(mark, 3, false);
+		assert.equal(c.hasMark(mark), false);
+		b.removeMark(mark, 1, false);
+		c.addMark(mark, 1, false);
+		assert.equal(c.countMark(mark), 1);
+	});
+	assert.equal(c.countMark(mark), 2);
+	executionContext.run({ player: a, skill: "xinfu_xionghuo_effect" }, () => c.clearMark(mark, false));
+	assert.equal(c.countMark(mark), 1);
+	assert.equal(a.countMark(mark), 2);
+	assert.equal(b.countMark(mark), 2);
+	assert.equal(c.countMark(mark, { source: b }), 1);
 });
 
 test("undeclared shared/resource marks retain aggregate behavior inside a trusted skill frame", () => {
- const { player } = fixture(), a = player(), b = player(), c = player();
- executionContext.run({ player: a, skill: "same" }, () => { c.addMark("nightmare", 2, false); a.addMark("baonu", 3, false); });
- executionContext.run({ player: b, skill: "same" }, () => { assert.equal(c.countMark("nightmare"), 2); c.removeMark("nightmare", 1, false); });
- assert.equal(c.countMark("nightmare"), 1); assert.equal(a.countMark("baonu"), 3);
+	const { player } = fixture(),
+		a = player(),
+		b = player(),
+		c = player();
+	executionContext.run({ player: a, skill: "same" }, () => {
+		c.addMark("nightmare", 2, false);
+		a.addMark("baonu", 3, false);
+	});
+	executionContext.run({ player: b, skill: "same" }, () => {
+		assert.equal(c.countMark("nightmare"), 2);
+		c.removeMark("nightmare", 1, false);
+	});
+	assert.equal(c.countMark("nightmare"), 1);
+	assert.equal(a.countMark("baonu"), 3);
 });
 
 test("explicit aggregate/unknown/source selectors override a contextual source without guessing unknown data", () => {
- const { player } = fixture(), a = player(), b = player(), c = player(), mark = "drlt_jieying_mark";
- c.addMark(mark, 2, false);
- executionContext.run({ player: a, skill: "drlt_jieying_1" }, () => {
-  assert.equal(c.countMark(mark), 0);
-  c.addMark(mark, 1, false);
-  c.addMark(mark, 1, false, { source: b });
-  assert.equal(c.countMark(mark), 1);
-  assert.equal(c.countMark(mark, { source: null }), 2);
-  assert.equal(c.countMark(mark, { aggregate: true }), 4);
- });
+	const { player } = fixture(),
+		a = player(),
+		b = player(),
+		c = player(),
+		mark = "drlt_jieying_mark";
+	c.addMark(mark, 2, false);
+	executionContext.run({ player: a, skill: "drlt_jieying_1" }, () => {
+		assert.equal(c.countMark(mark), 0);
+		c.addMark(mark, 1, false);
+		c.addMark(mark, 1, false, { source: b });
+		assert.equal(c.countMark(mark), 1);
+		assert.equal(c.countMark(mark, { source: null }), 2);
+		assert.equal(c.countMark(mark, { aggregate: true }), 4);
+	});
+});
+
+test("source state roundtrips numeric and overlapping array members using aggregate references", () => {
+	const { player } = fixture(),
+		a = player(),
+		b = player(),
+		c = player(),
+		restored = player();
+	c.addMark("camp", 2, false, { source: a });
+	c.addMark("camp", 3, false, { source: b });
+	c.markAuto("array", "x", { source: a });
+	c.markAuto("array", ["x", "y"], { source: b });
+	const wire = JSON.parse(JSON.stringify(c._exportMarkState()));
+	restored._restoreMarkState(wire);
+	assert.equal(restored.countMark("camp", { source: a }), 2);
+	assert.equal(restored.countMark("camp", { source: b }), 3);
+	assert.equal(restored.countMark("array"), 2);
+	restored.clearMark("array", false, { source: a });
+	assert.equal(restored.countMark("array"), 2);
+	restored.clearMark("array", false, { source: b });
+	assert.equal(restored.countMark("array"), 0);
+});
+
+test("source state rejects stale/duplicate messages and malformed totals before changing aggregate", () => {
+	const { player } = fixture(),
+		p = player(),
+		q = player();
+	p.addMark("camp", 1, false, { source: "A" });
+	const first = JSON.parse(JSON.stringify(p._exportMarkState().marks.camp));
+	p.addMark("camp", 1, false, { source: "B" });
+	const second = JSON.parse(JSON.stringify(p._exportMarkState().marks.camp));
+	assert.equal(q._applyMarkState("camp", second.value, second.sources), true);
+	assert.equal(q._applyMarkState("camp", first.value, first.sources), false);
+	assert.equal(q._applyMarkState("camp", second.value, second.sources), false);
+	assert.equal(q.countMark("camp"), 2);
+	const corrupt = { ...second.sources, revision: second.sources.revision + 1, entries: [{ source: "A", value: 90 }] };
+	assert.throws(() => q._applyMarkState("camp", 3, corrupt), { name: "TypeError" });
+	assert.equal(q.countMark("camp"), 2);
+	q._applyMarkState("camp", 4); // An old replay has no origin metadata.
+	assert.equal(q.countMark("camp", { source: "A" }), 0);
+	assert.equal(q.countMark("camp", { source: null }), 4);
+});
+
+test("actual source broadcasts cannot let a stale markSkill/unmarkSkill overwrite newer display", () => {
+	const { player, game } = fixture(),
+		p = player(),
+		q = player(),
+		messages = [];
+	delete p.syncStorage;
+	game.broadcast = (fn, ...args) => messages.push([fn, args]);
+	p.addMark("camp", 1, false, { source: "A" });
+	p.clearMark("camp", false, { source: "A" });
+	p.addMark("camp", 2, false, { source: "B" });
+	const deliver = ([fn, args]) => fn(...args.map(value => (value === p ? q : value)));
+	messages.slice(-2).forEach(deliver);
+	assert.equal(q.countMark("camp", { source: "B" }), 2);
+	assert.ok(q.marks.camp);
+	messages.slice(0, -2).forEach(deliver);
+	assert.equal(q.countMark("camp", { source: "B" }), 2);
+	assert.ok(q.marks.camp, "stale unmark must not hide current sources");
+});
+
+test("restoring an old save or empty metadata never retains provenance from the previous state", () => {
+	const { player } = fixture(),
+		p = player();
+	p.addMark("camp", 1, false, { source: "A" });
+	p._restoreMarkState({ version: 1, marks: {} });
+	assert.equal(p.countMark("camp", { source: "A" }), 0);
+	assert.equal(p.countMark("camp", { source: null }), 1);
+	p.addMark("camp", 1, false, { source: "B" });
+	p._restoreMarkState(undefined);
+	assert.equal(p.countMark("camp", { source: "B" }), 0);
+});
+
+test("external storage changes and deletions produce newer transferable unknown states", () => {
+	const { player } = fixture(),
+		p = player(),
+		q = player();
+	p.addMark("camp", 1, false, { source: "A" });
+	let payload = p._exportMarkState().marks.camp;
+	q._applyMarkState("camp", payload.value, payload.sources);
+	p.storage.camp = 5;
+	payload = p._exportMarkState().marks.camp;
+	assert.equal(q._applyMarkState("camp", payload.value, payload.sources), true);
+	assert.equal(q.countMark("camp", { source: "A" }), 0);
+	assert.equal(q.countMark("camp", { source: null }), 5);
+	delete p.storage.camp;
+	payload = p._exportMarkState().marks.camp;
+	assert.equal(q._applyMarkState("camp", payload.value, payload.sources), true);
+	assert.equal(q.countMark("camp"), 0);
 });

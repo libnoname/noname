@@ -4651,8 +4651,18 @@ ${e instanceof Error ? e.stack : String(e)}`);
 				console.log(player);
 			}
 		},
+		markIdentity: function (player, id) {
+			if (player && typeof id === "string" && id.length) {
+				player.playerid = id;
+				lib.playerOL[id] = player;
+			}
+		},
 		storage: function (player, content) {
 			if (player && content) {
+				if (content[2] === "mark") {
+					player._applyMarkState(content[0], get.parsedResult(content[1]), content[3], true);
+					return;
+				}
 				if (content[2]) {
 					switch (content[2]) {
 						case "cards":
@@ -4663,7 +4673,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 							break;
 					}
 				}
-				player.storage[content[0]] = content[1];
+				player._applyMarkState(content[0], content[1]);
 			} else {
 				console.log(player);
 			}

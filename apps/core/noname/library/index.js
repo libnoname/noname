@@ -13578,6 +13578,13 @@ export class Library {
 						}
 						player.update();
 					}
+					// Decode Player members only after every instance is registered.
+					for (const [id, info] of Object.entries(state.players)) {
+						const player = lib.playerOL[id];
+						player._restoreMarkState(info.markState);
+						for (const name of Object.keys(player._exportMarkState().marks)) player.markSkill(name, null, null, true);
+					}
+
 					game.arrangePlayers();
 					ui.create.me(true);
 

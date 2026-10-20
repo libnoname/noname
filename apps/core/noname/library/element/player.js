@@ -5,7 +5,8 @@ import { security } from "@/util/sandbox.js";
 import { ContentCompiler } from "./gameEvent.js";
 import { AsyncFunction } from "@/util/index.js";
 import dedent from "dedent";
-import { contextualMarkSource } from "./Player/markSemantics.js";
+import { encodeMarkState, decodeMarkState } from "./Player/markState.js";
+import { contextualMarkSource, contextualMarkAvailable, recordMarkTransfer, planMarkTransfer } from "./Player/markSemantics.js";
 import { executionContext } from "./GameEvent/ExecutionContext.js";
 
 export class Player extends HTMLDivElement {
@@ -4410,13 +4411,15 @@ export class Player extends HTMLDivElement {
 				this.stat = [skills.stat];
 			} else if (lib.playerOL[i]) {
 				for (var j in skills[i]) {
-					lib.playerOL[i][j] = skills[i][j];
+					if (j !== "markState") lib.playerOL[i][j] = skills[i][j];
 				}
+				lib.playerOL[i]._restoreMarkState(skills[i].markState);
 			}
 		}
 	}
 	getState() {
 		var state = {
+			markState: JSON.stringify(get.stringifiedResult(this._exportMarkState())),
 			hp: this.hp,
 			maxHp: this.maxHp,
 			nickname: this.nickname,
@@ -4744,7 +4747,7 @@ export class Player extends HTMLDivElement {
 	 * 清除玩家的标记
 	 * @param { string } i
 	 * @param { boolean } [log]
-	 * @param {{source: Player|string|null}} [options] 省略时按旧规则操作总量；null 仅操作未知来源
+	 * @param {{source?: Player|string|null, aggregate?: boolean}} [options] 省略时使用已审核技能上下文，否则操作总量；source:null 仅操作未知来源
 	 */
 	clearMark(i, log, options) {
 		const source = this._getMarkSource(options, i);
@@ -4762,10 +4765,12 @@ export class Player extends HTMLDivElement {
 		}
 	}
 	/**
-	 * Explicit Mark source selector. Omission means aggregate access; null means
+	 * Mark source selector. Omission uses a reviewed skill context or aggregate
+	 * compatibility when no such context exists; null means
 	 * unknown/unattributed. Player arguments must already have a playerid.
 	 * @private
-	 * @param {{source: Player|string|null}} [options]
+	 * @param {{source?: Player|string|null, aggregate?: boolean}} [options]
+	 * @param {string} [name]
 	 * @returns {string|null|undefined}
 	 */
 	_getMarkSource(options, name) {
@@ -4788,9 +4793,9 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * Private provenance for the existing storage value, never a replacement for
-	 * storage. Allocate only for explicitly sourced marks. External storage writes
+	 * storage. Allocate only for explicitly or contextually sourced marks. External storage writes
 	 * invalidate provenance: changed data becomes unknown instead of being guessed.
-	 * This local metadata is deliberately not part of syncStorage/video payloads.
+	 * Transport uses versioned snapshots alongside the unchanged storage value.
 	 * @private
 	 */
 	_getMarkSourceState(name, create = false) {
@@ -4817,7 +4822,9 @@ export class Player extends HTMLDivElement {
 				this._markSources = sources;
 				Object.defineProperty(this, "_markSources", { enumerable: false });
 			}
-			const initial = Array.isArray(value) ? value.slice() : value || 0;
+			this._markSourceRevisions ||= Object.create(null);
+			this._markSourceRevisions[name] = (this._markSourceRevisions[name] || 0) + 1;
+			const initial = Array.isArray(value) ? value.slice() : value === undefined ? undefined : value || 0;
 			state = sources[name] = { value: initial, entries: [{ source: null, value: Array.isArray(initial) ? initial.slice() : initial }] };
 		}
 		return state;
@@ -4827,8 +4834,57 @@ export class Player extends HTMLDivElement {
 		if (state) {
 			state.entries = state.entries.filter(entry => Array.isArray(entry.value) ? entry.value.length : entry.value > 0);
 			state.value = Array.isArray(this.storage[name]) ? this.storage[name].slice() : this.storage[name];
+			this._markSourceRevisions ||= Object.create(null);
+			this._markSourceRevisions[name] = (this._markSourceRevisions[name] || 0) + 1;
 		}
 	}
+	/** Private source transport; original storage remains the authoritative value. */
+	_exportMarkSourceState(name) {
+		return encodeMarkState(this.storage[name], this._getMarkSourceState(name), this._markSourceRevisions?.[name] || 0);
+	}
+	_applyMarkState(name, value, sources, force = false) {
+		// Validate the complete replacement before touching either representation.
+		const decoded = decodeMarkState(value, sources);
+		if (!force && sources && this._markSourceRevisions?.[name] >= sources.revision) return false;
+		if (sources?.kind === "absent") delete this.storage[name];
+		else this.storage[name] = value;
+		if (!decoded) {
+			delete this._markSources?.[name];
+			delete this._markSourceRevisions?.[name];
+			return true;
+		}
+		const state = this._getMarkSourceState(name, true);
+		if (state) Object.assign(state, decoded);
+		this._markSourceRevisions ||= Object.create(null);
+		this._markSourceRevisions[name] = sources.revision;
+		return true;
+	}
+	_exportMarkState() {
+		const marks = Object.create(null);
+		for (const name of Object.keys(this._markSources || {})) {
+			const sources = this._exportMarkSourceState(name);
+			if (sources) marks[name] = { value: this.storage[name], sources };
+		}
+		return { version: 1, marks };
+	}
+	_restoreMarkState(payload) {
+		if (typeof payload === "string") payload = get.parsedResult(JSON.parse(payload));
+		if (payload === undefined) {
+			if (this._markSources) this._markSources = Object.create(null);
+			this._markSourceRevisions = Object.create(null);
+			return; // Old saves have no evidence of origin.
+		}
+		if (!payload || payload.version !== 1 || !payload.marks || typeof payload.marks !== "object") throw new TypeError("Unsupported Mark state");
+		const entries = Object.entries(payload.marks);
+		for (const [, entry] of entries) {
+			if (!entry || !entry.sources) throw new TypeError("Missing Mark source state");
+			decodeMarkState(entry.value, entry.sources);
+		}
+		if (this._markSources) this._markSources = Object.create(null);
+		this._markSourceRevisions = Object.create(null);
+		for (const [name, entry] of entries) this._applyMarkState(name, entry.value, entry.sources, true);
+	}
+
 	/**
 	 * Numeric mutation shared by addMark/removeMark; storage stays authoritative.
 	 * @private
@@ -4893,10 +4949,11 @@ export class Player extends HTMLDivElement {
 	 * @param { string } i
 	 * @param { number } [num = 1]
 	 * @param { boolean } [log]
-	 * @param {{source: Player|string|null}} [options] 仅移除指定来源；省略时未知份额优先，然后按来源创建顺序移除
+	 * @param {{source?: Player|string|null, aggregate?: boolean}} [options] 指定来源或已审核上下文仅移除该份额；总量操作按未知份额优先，再按来源创建顺序移除
 	 */
 	removeMark(i, num, log, options) {
 		const source = this._getMarkSource(options, i);
+		if (options === undefined && source !== undefined && (num === 0 || !contextualMarkAvailable(this, i, source))) return;
 		if (source !== undefined && num !== undefined && (!Number.isFinite(num) || num < 0)) {
 			throw new RangeError("Source mark quantity must be finite and nonnegative");
 		}
@@ -4910,6 +4967,7 @@ export class Player extends HTMLDivElement {
 		if (!num) {
 			return;
 		}
+		if (options === undefined && source !== undefined) recordMarkTransfer(i, this, source, num);
 		if (log !== false) {
 			var str = false;
 			var info = get.info(i);
@@ -4928,6 +4986,7 @@ export class Player extends HTMLDivElement {
 		next.player = this;
 		next.num = num;
 		next.markName = i;
+		next.markSource = source;
 		next.log = log;
 		next.forceDie = true;
 		next.includeOut = true;
@@ -4938,10 +4997,11 @@ export class Player extends HTMLDivElement {
 	 * @param { string } i
 	 * @param { number } [num = 1]
 	 * @param { boolean } [log]
-	 * @param {{source: Player|string|null}} [options] 显式玩家实例身份；省略时新增未知来源份额，不推断施加者
+	 * @param {{source?: Player|string|null, aggregate?: boolean}} [options] 指定来源优先，其次已审核技能上下文；无法确定来源时保持未知份额
 	 */
 	addMark(i, num, log, options) {
 		const source = this._getMarkSource(options, i);
+		if (options === undefined && source !== undefined && (num === 0 || !contextualMarkAvailable(this, i, source))) return;
 		if (source !== undefined && num !== undefined && (!Number.isFinite(num) || num < 0)) {
 			throw new RangeError("Source mark quantity must be finite and nonnegative");
 		}
@@ -4951,10 +5011,13 @@ export class Player extends HTMLDivElement {
 		if (typeof num != "number" || !num) {
 			num = 1;
 		}
+		const transfer = options === undefined && source !== undefined ? planMarkTransfer(i, source, num) : undefined;
+		if (transfer) { num = transfer.amount; if (!num) return; }
 		if (typeof this.storage[i] != "number") {
 			this.storage[i] = 0;
 		}
 		num = this._changeMarkSourceNumber(i, num, source);
+		transfer?.commit();
 		if (log !== false) {
 			var str = false;
 			var info = get.info(i);
@@ -4973,6 +5036,7 @@ export class Player extends HTMLDivElement {
 		next.player = this;
 		next.num = num;
 		next.markName = i;
+		next.markSource = source;
 		next.log = log;
 		next.forceDie = true;
 		next.includeOut = true;
@@ -4983,7 +5047,7 @@ export class Player extends HTMLDivElement {
 	 * @param { string } name
 	 * @param { number } num
 	 * @param { boolean } [log]
-	 * @param {{source: Player|string|null}} [options] 设置该来源的数量，其他来源保持不变
+	 * @param {{source?: Player|string|null, aggregate?: boolean}} [options] 设置该来源的数量，其他来源保持不变
 	 */
 	setMark(name, num, log, options) {
 		if (this._getMarkSource(options, name) !== undefined) {
@@ -5004,11 +5068,12 @@ export class Player extends HTMLDivElement {
 	/**
 	 * 返回玩家的标记数
 	 * @param { string } i
-	 * @param {{source: Player|string|null}} [options] 省略查总量；null 查未知来源；数组按该来源的唯一元素计数
+	 * @param {{source?: Player|string|null, aggregate?: boolean}} [options] 已审核上下文查该来源，否则查总量；source:null 查未知来源；aggregate:true 强制查总量
 	 * @returns { number }
 	 */
 	countMark(i, options) {
 		const source = this._getMarkSource(options, i);
+		if (options === undefined && source !== undefined && !contextualMarkAvailable(this, i, source)) return 0;
 		const state = this._getMarkSourceState(i);
 		if (source !== undefined) {
 			if (state) {
@@ -5034,7 +5099,7 @@ export class Player extends HTMLDivElement {
 	/**
 	 * 返回玩家是否拥有某个标记
 	 * @param { string } i
-	 * @param {{source: Player|string|null}} [options]
+	 * @param {{source?: Player|string|null, aggregate?: boolean}} [options]
 	 * @returns { boolean }
 	 */
 	hasMark(i, options) {
@@ -5859,6 +5924,20 @@ export class Player extends HTMLDivElement {
 		return skills;
 	}
 	syncStorage(skill) {
+		const sources = this._exportMarkSourceState(skill);
+		if (sources) {
+			// Record actual instance bindings via the existing video player routing.
+			// Seats route the recorded event; they never create an inferred owner.
+			const ids = new Set([this.playerid, ...sources.entries.map(entry => entry.source)]);
+			for (const player of [...(game.players || []), ...(game.dead || [])]) {
+				if (ids.has(player.playerid)) game.addVideo("markIdentity", player, player.playerid);
+			}
+			game.addVideo("storage", this, [skill, get.stringifiedResult(this.storage[skill]), "mark", sources]);
+			game.broadcast(function (player, name, value, sources) {
+				if (player._applyMarkState(name, value, sources)) player.updateMarks();
+			}, this, skill, this.storage[skill], sources);
+			return;
+		}
 		switch (get.itemtype(this.storage[skill])) {
 			case "cards":
 				game.addVideo("storage", this, [skill, get.cardsInfo(this.storage[skill]), "cards"]);
@@ -10494,7 +10573,7 @@ export class Player extends HTMLDivElement {
 	 * 向角色对应storage中添加相应元素，刷新标记状态
 	 * @param { string } name 技能ID
 	 * @param { * } [info] 向storage数组中添加对应元素/元素数组
-	 * @param {{source: Player|string|null}} [options] 同一元素可由多个来源共同保有，storage 中仍只出现一次
+	 * @param {{source?: Player|string|null, aggregate?: boolean}} [options] 同一元素可由多个来源共同保有，storage 中仍只出现一次
 	 */
 	markAuto(name, info, options) {
 		const source = this._getMarkSource(options, name);
@@ -10522,6 +10601,7 @@ export class Player extends HTMLDivElement {
 				entry.value.addArray(Array.isArray(info) ? info : [info]);
 				this._saveMarkSourceState(name, state);
 			}
+			if (this._markSources?.[name]) this.syncStorage(name);
 			this.markSkill(name);
 		} else {
 			this._getMarkSourceState(name);
@@ -10541,7 +10621,7 @@ export class Player extends HTMLDivElement {
 	 * 移除角色对应storage中相应元素并刷新标记状态
 	 * @param { string } name 技能ID
 	 * @param { * } info 移除storage数组中对应元素/元素数组
-	 * @param {{source: Player|string|null}} [options] 仅移除该来源的成员关系；省略则移除所有来源的该元素
+	 * @param {{source?: Player|string|null, aggregate?: boolean}} [options] 指定来源或已审核上下文仅移除该来源关系；总量操作移除所有来源的该元素
 	 */
 	unmarkAuto(name, info, options) {
 		const source = this._getMarkSource(options, name);
@@ -10588,6 +10668,7 @@ export class Player extends HTMLDivElement {
 					this._saveMarkSourceState(name, state);
 				}
 			}
+			if (this._markSources?.[name]) this.syncStorage(name);
 			this[storage.length > 0 ? "markSkill" : "unmarkSkill"](name);
 		}
 	}
@@ -10737,8 +10818,10 @@ export class Player extends HTMLDivElement {
 		} else {
 			game.addVideo("markSkill", this, [name]);
 		}
-		const func = function (storage, player, name, info, card) {
-			player.storage[name] = storage;
+		const func = function (storage, player, name, info, card, sources) {
+			if (sources && player._markSourceRevisions?.[name] > sources.revision) return;
+			if (sources) player._applyMarkState(name, storage, sources);
+			else player.storage[name] = storage;
 			if (!info) {
 				if (player.marks[name]) {
 					player.updateMarks();
@@ -10762,9 +10845,9 @@ export class Player extends HTMLDivElement {
 			}
 			player.updateMarks();
 		};
-		func(this.storage[name], this, name, info, card);
+		func(this.storage[name], this, name, info, card, this._exportMarkSourceState(name));
 		if (!nobroadcast) {
-			game.broadcast(func, this.storage[name], this, name, info, card);
+			game.broadcast(func, this.storage[name], this, name, info, card, this._exportMarkSourceState(name));
 		}
 		return this;
 	}
@@ -10773,7 +10856,11 @@ export class Player extends HTMLDivElement {
 		game.addVideo("unmarkSkill", this, name);
 		if (!nobroadcast) {
 			game.broadcast(
-				function (player, name) {
+				function (player, name, value, sources) {
+					if (sources) {
+						if (player._markSourceRevisions?.[name] > sources.revision) return;
+						player._applyMarkState(name, value, sources);
+					}
 					if (player.marks[name]) {
 						player.marks[name].delete();
 						player.marks[name].style.transform += " scale(0.2)";
@@ -10782,7 +10869,7 @@ export class Player extends HTMLDivElement {
 					}
 				},
 				this,
-				name
+				name, this.storage[name], this._exportMarkSourceState(name)
 			);
 		}
 		if (this.marks[name]) {
@@ -11816,7 +11903,7 @@ export class Player extends HTMLDivElement {
 				var info = get.info(skills);
 				if (info.ondisable && info.onremove) {
 					if (typeof info.onremove == "function") {
-						executionContext.run({ player: this, skill, stage: "onremove" }, info.onremove, info, [this, skill]);
+						executionContext.run({ player: this, skill: skills, stage: "onremove" }, info.onremove, info, [this, skill]);
 					} else if (typeof info.onremove == "string") {
 						if (info.onremove == "storage") {
 							delete this.storage[skill];
