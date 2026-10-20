@@ -2060,7 +2060,6 @@ export class Get {
 				disabledSkills: lib.playerOL[i].disabledSkills,
 				tempSkills: lib.playerOL[i].tempSkills,
 				storage: lib.playerOL[i].storage,
-				markState: JSON.stringify(get.stringifiedResult(lib.playerOL[i]._exportMarkState())),
 			};
 		}
 		//for(var i in lib.skill){

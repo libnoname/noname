@@ -13,8 +13,6 @@
 import { _status, lib, get, ai, ui } from "noname";
 import { isClass, userAgentLowerCase, GeneratorFunction, AsyncFunction, delay } from "@/util/index.js";
 
-import { executionContext } from "../library/element/GameEvent/ExecutionContext.js";
-import { contextualMarkPopulation } from "../library/element/Player/markSemantics.js";
 import { DynamicStyle } from "./dynamic-style/index.js";
 import { GamePromises } from "./promises.js";
 import { Check } from "./check.js";
@@ -4651,18 +4649,8 @@ ${e instanceof Error ? e.stack : String(e)}`);
 				console.log(player);
 			}
 		},
-		markIdentity: function (player, id) {
-			if (player && typeof id === "string" && id.length) {
-				player.playerid = id;
-				lib.playerOL[id] = player;
-			}
-		},
 		storage: function (player, content) {
 			if (player && content) {
-				if (content[2] === "mark") {
-					player._applyMarkState(content[0], get.parsedResult(content[1]), content[3], true);
-					return;
-				}
 				if (content[2]) {
 					switch (content[2]) {
 						case "cards":
@@ -4673,7 +4661,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 							break;
 					}
 				}
-				player._applyMarkState(content[0], content[1]);
+				player.storage[content[0]] = content[1];
 			} else {
 				console.log(player);
 			}
@@ -6017,7 +6005,6 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		next.includeOut = true;
 		next._trigger = event;
 		next.indexedData = indexedData;
-		executionContext.setSkill(next, player, skill);
 		next.setContent("createTrigger");
 		return next;
 	}
@@ -6029,7 +6016,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 	 */
 	createEvent(name, trigger, triggerEvent) {
 		const next = new lib.element.GameEvent(name, trigger, _status.eventManager);
-		const parent = triggerEvent || executionContext.current?.executingEvent || _status.eventManager.getStartedEvent();
+		const parent = triggerEvent || _status.eventManager.getStartedEvent();
 		if (parent) {
 			parent.next.push(next);
 		} else {
@@ -9033,9 +9020,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			if (!mod) {
 				return;
 			}
-			const holder = argumentArray[argumentArray.length - 1];
-			const player = get.itemtype(holder) === "player" ? holder : arg.find(value => get.itemtype(value) === "player");
-			const result = executionContext.run({ player, skill: value, stage: "mod" }, mod, this, arg);
+			const result = mod.call(this, ...arg);
 			if (result != undefined && typeof arg[arg.length - 1] != "object") {
 				arg[arg.length - 1] = result;
 			}
@@ -10218,8 +10203,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 	 * @param { boolean } [includeOut]
 	 */
 	hasPlayer(func, includeOut) {
-		const population = contextualMarkPopulation();
-		return game.players.some(value => (includeOut || !value.isOut()) && (!population || population(value)) && func(value));
+		return game.players.some(value => (includeOut || !value.isOut()) && func(value));
 	}
 	/**
 	 * @param { (player: Player) => boolean } func
@@ -10233,7 +10217,6 @@ ${e instanceof Error ? e.stack : String(e)}`);
 	 * @param { boolean } [includeOut]
 	 */
 	countPlayer(func, includeOut) {
-		const population = contextualMarkPopulation();
 		if (typeof func != "function") {
 			func = lib.filter.all;
 		}
@@ -10241,7 +10224,6 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			if (!includeOut && currentValue.isOut()) {
 				return previousValue;
 			}
-			if (population && !population(currentValue)) return previousValue;
 			const result = func(currentValue);
 			if (typeof result == "number") {
 				previousValue += result;

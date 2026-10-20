@@ -1,4 +1,3 @@
-import { executionContext } from "../ExecutionContext.js";
 import { GameEvent } from "../../gameEvent.js";
 import { EventContent } from "./IContentCompiler.ts";
 import ContentCompilerBase from "./ContentCompilerBase.ts";
@@ -31,7 +30,7 @@ export default class ArrayCompiler extends ContentCompilerBase {
 				let result: Result | undefined;
 				if (!compiler.isPrevented(event)) {
 					const original = content[event.step];
-					result = await executionContext.run({ ...executionContext.forEvent(event), executingEvent: event }, original, this, [event, event._trigger, event.player, event._result]);
+					result = await Reflect.apply(original, this, [event, event._trigger, event.player, event._result]);
 				}
 				const nextResult = await event.waitNext();
 				event._result = result ?? nextResult ?? event._result;

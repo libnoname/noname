@@ -4,7 +4,6 @@ if (!url.href.endsWith("/")) {
 }
 export const rootURL = url;
 
-export { eventContextAwaiter } from "./noname/library/element/GameEvent/ExecutionContext.js";
 export { AI, ai, setAI } from "./noname/ai/index.js";
 export { Game, game, setGame } from "./noname/game/index.js";
 export { Get, get, setGet } from "./noname/get/index.js";

@@ -1,5 +1,4 @@
 // 不经过编译
-import { claimMarkEffect } from "./Player/markSemantics.js";
 import { _status, game, get, lib, ui, ai } from "noname";
 import { GameEvent } from "./gameEvent.js";
 import { Player } from "./player.js";
@@ -4305,19 +4304,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 		}
 		next.indexedData = event.indexedData;
 
-		const releaseMark = claimMarkEffect(event.skill, trigger.player, player, event);
-		if (releaseMark === false) {
-			// The content event was queued, but its source has already disappeared
-			// or is resolving elsewhere. Resolve it without executing side effects.
-			next.finish();
-			await next;
-			return;
-		}
-		try {
-			await next;
-		} finally {
-			releaseMark?.();
-		}
+		await next;
 
 		//删除when生成的临时技能
 		if (event.skill.startsWith("player_when_")) {
