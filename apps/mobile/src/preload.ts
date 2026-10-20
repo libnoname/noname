@@ -1,9 +1,10 @@
 import { App } from "@capacitor/app";
 import { Capacitor, registerPlugin, SystemBars } from "@capacitor/core";
 
-import { createIosFileSystem } from "./fs/ios.js";
+import { createIosFileSystem } from "./ios/fs.js";
 import { attachFileSystemAPI } from "./fs/legacy-api.js";
-import { relaxFileInputFilters } from "./ios-file-input.js";
+import { ensureImportSkeleton } from "./ios/import.js";
+import { relaxFileInputFilters } from "./ios/ios-file-input.js";
 import { base64ToArrayBuffer, callbackError, joinFilePath, sanitizeExportName, writeDataToBase64, type NativeAccessResult, type NativeFileSystem } from "./fs/types.js";
 
 /** 构建开关（afterSync.ts 通过 Vite define 注入）：true = 完整包，剔除「下载素材」功能 */
@@ -40,7 +41,7 @@ async function resolveFileSystem(platform: string): Promise<NativeFileSystem> {
 
 		case "ios":
 			// iOS 是沙盒机制，没有「让用户选目录」的概念，无需授权流程；
-			// 内置资源与 Documents 可写目录由实现层自行处理，详见 `fs/ios.ts`。
+			// 内置资源与 Documents 可写目录由实现层自行处理，详见 `ios/fs.ts`。
 			return createIosFileSystem();
 
 		default:
@@ -70,79 +71,6 @@ async function hideSystemBars() {
 	}
 }
 
-/** 供玩家用「文件」App 手动导入的目录骨架（相对可写根目录） */
-const IMPORT_FOLDERS = ["image/character", "audio/skill", "audio/die", "extension"];
-
-/** 放在可写根目录里的中文说明 */
-const IMPORT_README_NAME = "使用说明.txt";
-
-// 用模板字符串而非字符串数组：一整段多行文本可读性好得多，prettier 也不会把它压成一行。
-const IMPORT_README = `无名杀 · 手动导入说明
-
-把文件放进下面这些目录，然后重启游戏即可生效（不需要重装）。
-目录里没有的文件会继续使用 App 内置资源，所以只放一部分也没问题；
-把这里放的文件删掉，就会还原成内置版本。
-
-image/character/   武将立绘
-    文件名用武将 ID，例如 zhaoyun.jpg
-    国战立绘前面加 gz_，例如 gz_zhaoyun.jpg
-
-audio/skill/       技能语音
-    文件名用技能 ID，例如 benghuai.mp3
-    同一技能多段配音可用 benghuai1.mp3、benghuai2.mp3
-
-audio/die/         阵亡语音
-    文件名用武将 ID，例如 zhaoyun.mp3
-
-extension/         扩展
-    每个扩展一个文件夹，文件夹名就是扩展名，例如 extension/我的扩展/
-
-提示：也可以用游戏内「菜单 → 其它 → 更新 → 下载素材」自动补齐官方原画与语音。
-`;
-
-/** `ensureImportSkeleton` 需要的 `game` 方法子集 */
-interface ImportTarget {
-	ensureDirectory?: (list: string | string[], callback?: () => void, file?: boolean) => void;
-	checkFile?: (fileName: string, callback?: (result: -1 | 0 | 1) => void, onerror?: (err: Error) => void) => void;
-	writeFile?: (data: string | Blob, path: string, name: string, callback?: (error?: unknown) => void) => void;
-}
-
-/**
- * iOS 上预建导入用的目录骨架，并放一份中文说明。
- *
- * 背景：`Info.plist` 打开 `UIFileSharingEnabled` + `LSSupportsOpeningDocumentsInPlace`
- * 之后，App 的 `Documents/` 会出现在「文件」App 的「我的 iPhone」下，玩家可以手动
- * 放入素材与扩展。但若目录是空的，玩家既不知道能放什么、也不知道文件该叫什么名字，
- * 于是这里在首次启动时把目录和说明准备好。
- *
- * 全部「尽力而为」：任何一步失败都只记日志，绝不能影响游戏启动。
- */
-async function ensureImportSkeleton(game: ImportTarget): Promise<void> {
-	// `ensureDirectory` 底层是递归建目录，失败时会走 console.error
-	for (const folder of IMPORT_FOLDERS) {
-		game.ensureDirectory?.(folder, () => {}, false);
-	}
-
-	// 说明文件已存在就不覆盖——玩家可能自己编辑过
-	const existed = await new Promise<boolean>(resolve => {
-		try {
-			game.checkFile?.(
-				IMPORT_README_NAME,
-				result => resolve(result === 1),
-				() => resolve(false)
-			);
-		} catch {
-			resolve(false);
-		}
-	});
-	if (existed) {
-		return;
-	}
-
-	// path 传空串表示写到可写根目录本身
-	game.writeFile?.(IMPORT_README, "", IMPORT_README_NAME, () => {});
-}
-
 export default async function preload({ lib, game, ui }) {
 	lib.path = (await import("path-browserify-esm")).default;
 
@@ -163,20 +91,20 @@ export default async function preload({ lib, game, ui }) {
 	// 各平台通用的文件读写 API（checkFile / readFile / writeFile / getFileList ...）
 	attachFileSystemAPI(game, fs);
 
-	// iOS 双包策略（见 ios-build.yml）：精简包不含武将原画与语音，完整包全量携带。
+	// iOS 精简包不含武将原画与语音，完整包全量携带。
 	// 精简包提供两条互补的补齐路径；完整包在构建期（NONAME_FULL_ASSETS=1）把下面
 	// 整段连同两个模块一起从产物中剔除（条件恒假 → 动态 import 被死代码消除）。
 	//
 	// 1）「边玩边下」（默认、无需操作）：游戏用到某个武将的立绘/语音而本地没有时，
-	//    就地把它从上游拉下来写进可写目录。见 `lazy-assets.ts`。
+	//    就地把它从上游拉下来写进可写目录。见 `ios/lazy-assets.ts`。
 	// 2）手动批量下载：菜单 → 其它 → 更新 → 下载素材，一次补齐约 970MB。
 	//
 	// 两者都必须在 attachFileSystemAPI 之后安装，因为它们依赖 game.writeFile/checkFile。
 	// 注意：安装时机早于 boot()，而菜单是在 boot() 阶段才构建的，因此菜单包裹一定会被用到。
 	if (!__NONAME_FULL_ASSETS__ && platform === "ios") {
 		const [{ installLazyAssets }, { installAssetDownloader }] = await Promise.all([
-			import("./lazy-assets.js"),
-			import("./asset-download.js"),
+			import("./ios/lazy-assets.js"),
+			import("./ios/asset-download.js"),
 		]);
 		installLazyAssets({ lib, game, ui });
 		installAssetDownloader({ lib, game, ui });

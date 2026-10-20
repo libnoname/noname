@@ -32,14 +32,14 @@
  *    仅在工程缺失时本脚本会报错并提示如何恢复。
  *
  * 💡 没有 Mac 或不想配开发者证书时，可以走 GitHub Actions 云端构建未签名 ipa，
- *    见 `.github/workflows/ios-build.yml`；完整操作步骤见本仓库根目录的《无名杀 iOS 操作手册》。
+ *    见 `.github/workflows/release.yml`；完整操作步骤见本仓库根目录的《无名杀 iOS 操作手册》。
  */
 
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-const mobileRoot = import.meta.dirname;
+const mobileRoot = resolve(import.meta.dirname, "..");
 const workspaceRoot = resolve(mobileRoot, "../..");
 const iosRoot = resolve(mobileRoot, "ios");
 const archivePath = resolve(iosRoot, "build/noname.xcarchive");

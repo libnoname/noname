@@ -40,7 +40,7 @@
  *
  * 之所以写入后立刻生效，是因为 iOS 端已经有两层「覆盖层」：
  *
- * 1. `apps/mobile/src/fs/ios.ts` 的 `IosFileSystem`：
+ * 1. `apps/mobile/src/ios/fs.ts` 的 `IosFileSystem`：
  *    `readFile` 先查 `Documents/<path>`，未命中才回退内置资源；
  * 2. `apps/mobile/ios/App/App/NonameRouter.swift`：
  *    WebView 对 `<img src>` / `<audio src>` 的直接请求也走同一套覆盖层。

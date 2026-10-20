@@ -27,7 +27,7 @@ class NonameRouter: NSObject, Router {
     /// 可写层相对 App `Documents/` 的根目录名。
     ///
     /// 取**空字符串**表示直接把 `Documents/` 当作游戏根目录，与
-    /// `apps/mobile/src/fs/ios.ts` 的 `WRITABLE_ROOT`、以及安卓端
+    /// `apps/mobile/src/ios/fs.ts` 的 `WRITABLE_ROOT`、以及安卓端
     /// 「用户选定目录自身即根目录」的语义保持一致。
     ///
     /// 好处：iOS「文件」App 暴露的正是 `Documents/`，玩家手动放进去的
@@ -46,7 +46,7 @@ class NonameRouter: NSObject, Router {
     func route(for path: String) -> String {
         // 先剥掉查询串与锚点，再按路径定位文件。
         //
-        // 「边玩边下」（apps/mobile/src/lazy-assets.ts）在补齐某个素材后，
+        // 「边玩边下」（apps/mobile/src/ios/lazy-assets.ts）在补齐某个素材后，
         // 需要让 WebView 重新请求同一个文件——而把 `style.backgroundImage` /
         // `audio.src` 设成与之前完全相同的值属于空操作。因此那边会给 URL 追加
         // 一个 `?_lazy=<时间戳>` 后缀；这里统一丢弃，保证两种写法都指向同一个文件。
