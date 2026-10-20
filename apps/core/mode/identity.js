@@ -2524,7 +2524,6 @@ export default {
 
 			/** @type { ContentFuncsByAll } */
 			const contents = [
-				// "step 0"
 				async (event, trigger, player) => {
 					ui.arena.classList.add("choose-character");
 					let identityList;
@@ -2727,7 +2726,6 @@ export default {
 					chooseButtonEvent.set("createDialog", ["选择角色", [list, "characterx"]]);
 					chooseButtonEvent.set("ai", () => Math.random());
 				},
-				// "step 1"
 				async (event, trigger, player, result) => {
 					if (!game.zhu.name) {
 						game.zhu.init(result.links[0], result.links[1]);

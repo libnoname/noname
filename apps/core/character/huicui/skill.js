@@ -16252,36 +16252,6 @@ const skills = {
 			}).length;
 			trigger.getParent().effectCount += num;
 		},
-		/*subSkill:{
-			effect:{
-				trigger:{player:'useCardAfter'},
-				forced:true,
-				charlotte:true,
-				filter:function(event,player){
-					return event.tongli_effect!=undefined;
-				},
-				content:function(){
-					'step 0'
-					event.card=trigger.tongli_effect[0];
-					event.count=trigger.tongli_effect[1];
-					'step 1'
-					event.count--;
-					for(var i of trigger.targets){
-						if(!i.isIn()||!player.canUse(card,i,false)) return;
-					}
-					if(trigger.addedTarget&&!trigger.addedTarget.isIn()) return;
-					if(trigger.addedTargets&&trigger.addedTargets.length){
-						for(var i of trigger.addedTargets){
-							if(!i.isIn()) return;
-						}
-					}
-					var next=player.useCard(get.copy(card),trigger.targets,false);
-					if(trigger.addedTarget) next.addedTarget=trigger.addedTarget;
-					if(trigger.addedTargets&&trigger.addedTargets.length) next.addedTargets=trigger.addedTargets.slice(0);
-					if(event.count>0) event.redo();
-				},
-			},
-		},*/
 	},
 	shezang: {
 		audio: 2,
