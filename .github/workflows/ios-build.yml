@@ -522,7 +522,8 @@ jobs:
             meta=$(mktemp)
             gh api "repos/libnoname/noname/releases/tags/$MIRROR_TAG" > "$meta"
             title=$(jq -r '.name // ""' "$meta")
-            jq -r '.body // ""' "$meta" > "${meta}.body"
+            # -j：不追加尾随换行，保证镜像正文与上游逐字节一致
+            jq -j '.body // ""' "$meta" > "${meta}.body"
             if gh release view "$MIRROR_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
               echo "镜像 ${MIRROR_TAG} 已存在：仅补传资产"
             else
