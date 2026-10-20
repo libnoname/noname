@@ -4785,7 +4785,7 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * Private provenance for the existing storage value, never a replacement for
-	 * storage. Allocate only for explicitly sourced marks. External storage writes
+	 * storage. Allocate only for explicitly sourced marks. Observable storage changes
 	 * invalidate provenance: changed data becomes unknown instead of being guessed.
 	 * This local metadata is deliberately not part of syncStorage/video payloads.
 	 * @private
@@ -4805,17 +4805,18 @@ export class Player extends HTMLDivElement {
 		}
 		const snapshot = state?.value;
 		const same = state && (Array.isArray(value)
-			? Array.isArray(snapshot) && value.length === snapshot.length && value.every((item, i) => Object.is(item, snapshot[i]))
+			? Array.isArray(snapshot) && value === state.reference && value.length === snapshot.length &&
+				Array.from(value.keys()).every(i => Object.hasOwn(value, i) === Object.hasOwn(snapshot, i) && Object.is(value[i], snapshot[i]))
 			: value === snapshot);
 		if (!same) {
 			const sources = this._markSources || Object.create(null);
 			if (!this._markSources) {
-				/** @private @type {Record<string, {value: any, entries: {source: string|null, value: any}[]}>} */
+				/** @private @type {Record<string, {reference: any, value: any, entries: {source: string|null, value: any}[]}>} */
 				this._markSources = sources;
 				Object.defineProperty(this, "_markSources", { enumerable: false });
 			}
 			const initial = Array.isArray(value) ? value.slice() : value || 0;
-			state = sources[name] = { value: initial, entries: [{ source: null, value: Array.isArray(initial) ? initial.slice() : initial }] };
+			state = sources[name] = { reference: value, value: initial, entries: [{ source: null, value: Array.isArray(initial) ? initial.slice() : initial }] };
 		}
 		return state;
 	}
@@ -4823,6 +4824,7 @@ export class Player extends HTMLDivElement {
 	_saveMarkSourceState(name, state) {
 		if (state) {
 			state.entries = state.entries.filter(entry => Array.isArray(entry.value) ? entry.value.length : entry.value > 0);
+			state.reference = this.storage[name];
 			state.value = Array.isArray(this.storage[name]) ? this.storage[name].slice() : this.storage[name];
 		}
 	}
