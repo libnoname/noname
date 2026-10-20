@@ -9,7 +9,7 @@ const config: CapacitorConfig = {
 		// 否则顶部标签栏 / 系统按钮的坐标会整体下移，点击热区对不上。
 		contentInset: "never",
 		// 允许加载 Capacitor 的本地资源方案（capacitor://localhost）。
-		// `fs/ios.ts` 依赖它读取打包进 App 的只读资源。
+		// `src/ios/fs.ts` 依赖它读取打包进 App 的只读资源。
 		limitsNavigationsToAppBoundDomains: false,
 	},
 	plugins: {

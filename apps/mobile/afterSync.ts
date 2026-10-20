@@ -104,7 +104,7 @@ function patchAndroidAssets() {
  * `asset-manifest.json` 的忽略项，不会反过来污染内置资源清单。
  */
 function writeDownloadManifest() {
-	/** 与 asset-download.ts 里的 TARGET_GROUPS 保持一致 */
+	/** 与 src/ios/asset-download.ts 里的 TARGET_GROUPS 保持一致 */
 	const groups = ["image/character", "audio/skill", "audio/die"];
 	const entries: string[] = [];
 
