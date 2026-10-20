@@ -175,7 +175,11 @@ export class TSStrategy extends CompileStrategy {
 		this.allowJs = allowJs;
 	}
 	match(ctx: RequestContext): boolean {
-		if(this.allowJs && ctx.url.pathname.endsWith(".js")) return true;
+		if (this.allowJs && ctx.url.pathname.endsWith(".js")) {
+			// Adding an ESM dependency to a classic script breaks lib.init.js.
+			// Only module-script fetches use this path; raw fetches stay untouched.
+			return ctx.request.destination === "script" && ctx.request.mode === "cors";
+		}
 		if (!ctx.url.pathname.endsWith(".ts") ) return false;
 		if (ctx.url.pathname.endsWith(".d.ts")) return false;
 		if (ctx.request.headers.get("accept")?.includes("video/mp2t")) return false;
