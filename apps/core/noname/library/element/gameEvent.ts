@@ -1,3 +1,4 @@
+import { skillContext } from "./GameEvent/skillContext.js";
 import { _status, game, get, lib, ui } from "noname";
 import { Player } from "./index.js";
 import ContentCompiler from "./GameEvent/compilers/ContentCompiler.js";
@@ -28,6 +29,7 @@ export class GameEvent implements PromiseLike<void> {
 
 		this.name = name;
 		this.manager = manager;
+		skillContext.capture(this);
 		if (trigger && !game.online) {
 			this._triggered = 0;
 		}
@@ -61,7 +63,7 @@ export class GameEvent implements PromiseLike<void> {
 				console.log(key, value);
 				console.log(_status.event);
 			}
-			this[key] = value;
+			this[key] = skillContext.isCallback(key) ? skillContext.bind(this, value) : value;
 			this._set.push([key, value]);
 		}
 		return this;
@@ -89,7 +91,11 @@ export class GameEvent implements PromiseLike<void> {
 	 * @returns A Promise for the completion of which ever callback is executed.
 	 */
 	then<TResult1, TResult2>(onfulfilled?: (() => TResult1 | Promise<TResult1>) | null, onrejected?: ((reason: any) => TResult2 | Promise<TResult2>) | null): Promise<TResult1 | TResult2> {
-		return (this.parent ? this.parent.waitNext().then(() => undefined) : this.start()).then(onfulfilled, onrejected);
+		const frame = skillContext.current;
+		const bind = callback => typeof callback === "function" ? function (this: any, ...args: any[]) {
+			return skillContext.run(frame, callback, this, args);
+		} : callback;
+		return (this.parent ? this.parent.waitNext().then(() => undefined) : this.start()).then(bind(onfulfilled), bind(onrejected));
 	}
 	/**
 	 * Attaches a callback for only the rejection of the Promise.
@@ -237,9 +243,9 @@ export class GameEvent implements PromiseLike<void> {
 			// }
 			// this.manager.eventStack.push(this);
 			this.manager.setStatusEvent(this, true);
-			await this.loop().then(() => {
+			await this.loop().finally(() => {
 				// this.manager.eventStack.pop();
-				this.manager.popStatusEvent();
+				this.manager.popStatusEvent(this);
 			});
 		})();
 		return this.#start;
@@ -378,7 +384,7 @@ export class GameEvent implements PromiseLike<void> {
 				let toadds: triggerSkillTodo[] = [];
 				const priority = get.priority(skill)
 				if (typeof info.getIndex === "function") {
-					const indexedResult = info.getIndex<any>(evt.getTrigger(), player, evt.triggername);
+					const indexedResult = skillContext.run({ player: lib.skill.global.includes(skill) ? undefined : player, event: skillContext.current?.event }, info.getIndex, info, [evt.getTrigger(), player, evt.triggername]);
 					if (typeof indexedResult === "number") {
 						for (let i = 0; i < indexedResult; i++) {
 							toadds.push({
@@ -540,7 +546,7 @@ export class GameEvent implements PromiseLike<void> {
 					const list = info.firstDo ? firstDo.todoList : info.lastDo ? lastDo.todoList : this.todoList;
 					const priority = get.priority(skill);
 					if (typeof info.getIndex === "function") {
-						const indexedResult = info.getIndex<any>(event, player, name);
+						const indexedResult = skillContext.run({ player: lib.skill.global.includes(skill) ? undefined : player, event: skillContext.current?.event }, info.getIndex, info, [event, player, name]);
 						if (typeof indexedResult === "number") {
 							for (let i = 0; i < indexedResult; i++) {
 								list.push({
@@ -893,6 +899,13 @@ export class GameEvent implements PromiseLike<void> {
 					this.ai2 = info.ai2;
 				}
 				this.filterOk = info.filterOk;
+			}
+			for (const key of ["filterTarget", "filterCard", "filterButton", "filterOk"]) {
+				const callback = this[key];
+				if (typeof callback === "function") {
+					const frame = { player: this.player, event: this };
+					this[key] = function (this: any, ...args: any[]) { return skillContext.run(frame, callback, this, args); };
+				}
 			}
 			delete this.fakeforce;
 		}

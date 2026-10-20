@@ -1,4 +1,5 @@
 import ts from "typescript";
+import { transformSkillContext } from "../skill-context-transform";
 
 let importMap: Record<string, string>;
 /**
@@ -66,7 +67,7 @@ async function applyImportMap(source: string, fileName: string) {
 export async function compile(source: string, fileName: string) {
 	// const transformedSource = await applyImportMap(source, fileName);
 
-	const result = ts.transpileModule(source, {
+	const result = ts.transpileModule(transformSkillContext(source, fileName), {
 		compilerOptions: {
 			module: ts.ModuleKind.ES2015,
 			target: ts.ScriptTarget.ES2020,

@@ -1,3 +1,4 @@
+import { skillContext } from "./GameEvent/skillContext.js";
 // 不经过编译
 import { _status, game, get, lib, ui, ai } from "noname";
 import { GameEvent } from "./gameEvent.js";
@@ -4173,6 +4174,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 					next.includeOut = true;
 				}
 				next.skill = event.skill;
+				skillContext.set(next, lib.skill.global.includes(event.skill) ? undefined : player);
 				next.setContent(info.cost);
 
 				result = await next.forResult();
@@ -4282,6 +4284,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 		next.player = player;
 		next._trigger = trigger;
 		next.triggername = event.triggername;
+		skillContext.set(next, lib.skill.global.includes(event.skill) ? undefined : player);
 		next.setContent(info.content);
 
 		next.skillHidden = event.skillHidden;
@@ -5374,6 +5377,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			} else if (info && info.precontent && !game.online && !event.nouse) {
 				const next = game.createEvent(`pre_${event.result.skill}`);
 
+				skillContext.set(next, lib.skill.global.includes(event.result.skill) ? undefined : player);
 				next.setContent(info.precontent);
 				next.set("result", event.result);
 				next.set("player", player);
@@ -5633,6 +5637,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 					return next.forResult();
 				} else if (info && info.precontent && !game.online) {
 					const next = game.createEvent(`pre_${event.result.skill}`);
+					skillContext.set(next, lib.skill.global.includes(event.result.skill) ? undefined : player);
 					next.setContent(info.precontent);
 					next.set("result", event.result);
 					next.set("player", player);
@@ -6071,6 +6076,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 					const info = get.info(event.result.skill);
 					if (info && info.precontent && !game.online) {
 						const next = game.createEvent(`pre_${event.result.skill}`);
+						skillContext.set(next, lib.skill.global.includes(event.result.skill) ? undefined : player);
 						next.setContent(info.precontent);
 						next.set("result", event.result);
 						next.set("player", player);
@@ -10697,6 +10703,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			const info = get.info(event.skill);
 			if (info && info.contentBefore) {
 				const next = game.createEvent(`${event.skill}ContentBefore`);
+				skillContext.set(next, lib.skill.global.includes(event.skill) ? undefined : player);
 				next.setContent(info.contentBefore);
 				next.targets = targets;
 				next.cards = cards;
@@ -10736,6 +10743,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			}
 
 			const next = game.createEvent(event.skill);
+			skillContext.set(next, lib.skill.global.includes(event.skill) ? undefined : player);
 			next.setContent(info.content);
 			next.targets = targets;
 			next.cards = cards;
@@ -10791,6 +10799,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			const info = get.info(event.skill);
 			if (info && info.contentAfter) {
 				const next = game.createEvent(`${event.skill}ContentAfter`);
+				skillContext.set(next, lib.skill.global.includes(event.skill) ? undefined : player);
 				next.setContent(info.contentAfter);
 				next.targets = targets;
 				next.cards = cards;

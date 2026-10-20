@@ -1,3 +1,4 @@
+import { skillContext } from "./element/GameEvent/skillContext.js";
 /**
  * @typedef { InstanceType<typeof lib.element.Player> } Player
  * @typedef { InstanceType<typeof lib.element.Card> } Card
@@ -11078,6 +11079,9 @@ export class Library {
 				return false;
 			}
 			const info = get.info(skill);
+			const invoke = (callback, args, receiver) => skillContext.run(
+				{ player: lib.skill.global.includes(skill) ? undefined : player, event: skillContext.current?.event }, callback, receiver, args
+			);
 			if (!info) {
 				console.error(new ReferenceError("缺少info的技能:", skill));
 				return false;
@@ -11131,7 +11135,7 @@ export class Library {
 			) {
 				return false;
 			}
-			if (info.filter && !info.filter(event, player, triggerName, indexedData)) {
+			if (info.filter && !invoke(info.filter, [event, player, triggerName, indexedData], info)) {
 				return false;
 			}
 			if (event._notrigger.includes(player) && !lib.skill.global.includes(skill)) {
@@ -11140,7 +11144,7 @@ export class Library {
 			if (info.usable !== undefined) {
 				let num = info.usable;
 				if (typeof num === "function") {
-					num = info.usable(skill, player);
+					num = invoke(info.usable, [skill, player], info);
 				}
 				if (typeof num === "number" && (player.getStat("triggerSkill")[skill] ?? 0) >= num) {
 					return false;
@@ -11174,6 +11178,9 @@ export class Library {
 		 */
 		filterEnable(event, player, skill) {
 			const info = get.info(skill);
+			const invoke = (callback, args, receiver) => skillContext.run(
+				{ player: lib.skill.global.includes(skill) ? undefined : player, event: skillContext.current?.event }, callback, receiver, args
+			);
 			if (!info) {
 				console.error(new ReferenceError("缺少info的技能:", skill));
 				return false;
@@ -11192,7 +11199,7 @@ export class Library {
 			}
 			const checkEnable = enable => {
 				if (typeof enable === "function") {
-					return enable(event);
+					return invoke(enable, [event], undefined);
 				}
 				if (Array.isArray(enable)) {
 					return enable.some(i => checkEnable(i));
@@ -11208,11 +11215,11 @@ export class Library {
 			if (!checkEnable(info.enable)) {
 				return false;
 			}
-			if (info.filter && !info.filter(event, player)) {
+			if (info.filter && !invoke(info.filter, [event, player], info)) {
 				return false;
 			}
 			if (info.viewAs && typeof info.viewAs !== "function") {
-				if (info.viewAsFilter && info.viewAsFilter(player) === false) {
+				if (info.viewAsFilter && invoke(info.viewAsFilter, [player], info) === false) {
 					return false;
 				}
 				if (event.filterCard && !event.filterCard(get.autoViewAs(info.viewAs, "unsure"), player, event)) {
@@ -11222,7 +11229,7 @@ export class Library {
 			if (info.usable !== undefined) {
 				let num = info.usable;
 				if (typeof num === "function") {
-					num = info.usable(skill, player);
+					num = invoke(info.usable, [skill, player], info);
 				}
 				if (typeof num === "number" && get.skillCount(skill, player) >= num) {
 					return false;

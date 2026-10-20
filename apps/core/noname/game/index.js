@@ -1,3 +1,4 @@
+import { skillContext } from "../library/element/GameEvent/skillContext.js";
 /**
  * @typedef {{
  * 	cardMove: GameEvent[],
@@ -6005,6 +6006,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		next.includeOut = true;
 		next._trigger = event;
 		next.indexedData = indexedData;
+		skillContext.set(next, lib.skill.global.includes(skill) ? undefined : player);
 		next.setContent("createTrigger");
 		return next;
 	}
@@ -6016,7 +6018,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 	 */
 	createEvent(name, trigger, triggerEvent) {
 		const next = new lib.element.GameEvent(name, trigger, _status.eventManager);
-		const parent = triggerEvent || _status.eventManager.getStartedEvent();
+		const parent = triggerEvent || skillContext.current?.event || _status.eventManager.getStartedEvent();
 		if (parent) {
 			parent.next.push(next);
 		} else {
@@ -9020,7 +9022,8 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			if (!mod) {
 				return;
 			}
-			const result = mod.call(this, ...arg);
+			// Modifier queries describe the bearer's total state, not management rights.
+			const result = skillContext.run({ event: skillContext.current?.event }, mod, this, arg);
 			if (result != undefined && typeof arg[arg.length - 1] != "object") {
 				arg[arg.length - 1] = result;
 			}
