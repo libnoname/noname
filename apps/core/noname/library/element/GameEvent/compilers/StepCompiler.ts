@@ -1,10 +1,11 @@
 // 喵喵！step写法的content全在这里处理喵！
 import { _status, ai, game, get, lib, ui } from "noname";
 import { AsyncFunction, GeneratorFunction, AsyncGeneratorFunction } from "@/util/index.js";
-import { security, CodeSnippet, ErrorManager } from "@/util/sandbox.js"
+import { security, CodeSnippet, ErrorManager } from "@/util/sandbox.js";
 import { EventContent } from "./IContentCompiler.ts";
 import ContentCompilerBase from "./ContentCompilerBase.ts";
 import ContentCompiler from "./ContentCompiler.ts";
+import { eventContextAwaiter } from "../ExecutionContext.js";
 
 type GeneralFunction = (...args: any[]) => any;
 
@@ -91,11 +92,18 @@ class StepParser {
 	}
 
 	packStep(code: string) {
+		// Lowered nested async callbacks need their module helper even though
+		// Step recompilation deliberately discards all other lexical bindings.
+		// Discover the reserved accessor, not a guessed variable name: Rollup
+		// can rename an imported binding when it builds character bundles.
+		const helpers = [...new Set(Array.from(`${this.stepHead}\n${code}`.matchAll(/(?<![\w$])([A-Za-z_$][\w$]*)\s*(?:\.\s*__nonameAwait|\[\s*["']__nonameAwait["']\s*\])/g), match => match[1]))];
+		const topVars = [...StepParser.topVars, ...helpers];
+		const dependencies = Object.fromEntries(helpers.map(name => [name, eventContextAwaiter]));
 		const compiled = new this.functionConstructor(
 			...StepParser.params,
 			`
             var { ${StepParser.deconstructs.join(", ")} } = event;
-            var { ${StepParser.topVars.join(", ")} } = topVars;
+            var { ${topVars.join(", ")} } = topVars;
             
             ${this.stepHead}
             {
@@ -107,7 +115,7 @@ class StepParser {
 		this.originals.push(compiled);
 		this.contents.push(function (event, trigger, player) {
 			// @ts-expect-error ignore
-			return compiled.apply(this, [{ _status, ai, game, get, lib, ui }, event, trigger, player]);
+			return compiled.apply(this, [{ _status, ai, game, get, lib, ui, ...dependencies }, event, trigger, player]);
 		});
 	}
 

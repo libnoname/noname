@@ -1,4 +1,5 @@
 import { game, _status } from "noname";
+import { executionContext } from "../ExecutionContext.js";
 import { IContentCompiler, EventContent } from "./IContentCompiler.js";
 
 type HandlerOption = { state?: "begin" | "end" };
@@ -19,6 +20,7 @@ export default abstract class ContentCompilerBase implements IContentCompiler {
 	 * @param event 事件
 	 */
 	beforeExecute(event: GameEvent) {
+		executionContext.bindEventCallbacks(event);
 		const handlerType = event.getDefaultHandlerType() as `on${Capitalize<string>}`;
 		const option: HandlerOption = { state: "begin" };
 		event.callHandler(handlerType, event, option);

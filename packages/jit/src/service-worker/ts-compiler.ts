@@ -7,13 +7,7 @@ let importMap: Record<string, string>;
  */
 async function applyImportMap(source: string, fileName: string) {
 	if (!importMap) importMap = await fetch("/jit/import-map.json").then(i => i.json());
-	const sourceFile = ts.createSourceFile(
-		fileName,
-		source,
-		ts.ScriptTarget.ES2020,
-		true,
-		ts.ScriptKind.TSX
-	);
+	const sourceFile = ts.createSourceFile(fileName, source, ts.ScriptTarget.ES2020, true, ts.ScriptKind.TSX);
 
 	const transformer = <T extends ts.Node>(context: ts.TransformationContext) => {
 		const visit: ts.Visitor = node => {
@@ -22,32 +16,17 @@ async function applyImportMap(source: string, fileName: string) {
 				const spec = node.moduleSpecifier.text;
 				const mapped = importMap[spec];
 				if (mapped) {
-					return ts.factory.updateImportDeclaration(
-						node,
-						node.modifiers,
-						node.importClause,
-						ts.factory.createStringLiteral(mapped),
-						node.assertClause
-					);
+					return ts.factory.updateImportDeclaration(node, node.modifiers, node.importClause, ts.factory.createStringLiteral(mapped), node.assertClause);
 				}
 			}
 
 			// 动态 import('...')
-			if (
-				ts.isCallExpression(node) &&
-				node.expression.kind === ts.SyntaxKind.ImportKeyword &&
-				node.arguments.length === 1
-			) {
+			if (ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword && node.arguments.length === 1) {
 				const arg = node.arguments[0];
 				if (ts.isStringLiteral(arg)) {
 					const mapped = importMap[arg.text];
 					if (mapped) {
-						return ts.factory.updateCallExpression(
-							node,
-							node.expression,
-							node.typeArguments,
-							[ts.factory.createStringLiteral(mapped)]
-						);
+						return ts.factory.updateCallExpression(node, node.expression, node.typeArguments, [ts.factory.createStringLiteral(mapped)]);
 					}
 				}
 			}
@@ -67,7 +46,10 @@ async function applyImportMap(source: string, fileName: string) {
 export async function compile(source: string, fileName: string) {
 	// const transformedSource = await applyImportMap(source, fileName);
 
-	const result = ts.transpileModule(transformEventContext(source, fileName), {
+	// Extension workers and utility modules must not acquire a DOM-engine import.
+	// Context lowering is for modules that explicitly depend on the game runtime.
+	const contextSource = /\bfrom\s*["']noname["']/.test(source) ? transformEventContext(source, fileName) : source;
+	const result = ts.transpileModule(contextSource, {
 		compilerOptions: {
 			module: ts.ModuleKind.ES2015,
 			target: ts.ScriptTarget.ES2020,

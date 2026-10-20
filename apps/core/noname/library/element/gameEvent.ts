@@ -62,7 +62,7 @@ export class GameEvent implements PromiseLike<void> {
 				console.log(key, value);
 				console.log(_status.event);
 			}
-			this[key] = value;
+			this[key] = ["filterTarget", "filterCard", "filterButton", "filterOk", "ai", "ai1", "ai2"].includes(key) ? executionContext.bindEvent(this, value) : value;
 			this._set.push([key, value]);
 		}
 		return this;
@@ -90,7 +90,9 @@ export class GameEvent implements PromiseLike<void> {
 	 * @returns A Promise for the completion of which ever callback is executed.
 	 */
 	then<TResult1, TResult2>(onfulfilled?: (() => TResult1 | Promise<TResult1>) | null, onrejected?: ((reason: any) => TResult2 | Promise<TResult2>) | null): Promise<TResult1 | TResult2> {
-		return (this.parent ? this.parent.waitNext().then(() => undefined) : this.start()).then(onfulfilled, onrejected);
+		const fulfilled = typeof onfulfilled === "function" ? executionContext.bind(onfulfilled) : onfulfilled;
+		const rejected = typeof onrejected === "function" ? executionContext.bind(onrejected) : onrejected;
+		return (this.parent ? this.parent.waitNext().then(() => undefined) : this.start()).then(fulfilled, rejected);
 	}
 	/**
 	 * Attaches a callback for only the rejection of the Promise.
@@ -238,9 +240,9 @@ export class GameEvent implements PromiseLike<void> {
 			// }
 			// this.manager.eventStack.push(this);
 			this.manager.setStatusEvent(this, true);
-			await this.loop().then(() => {
+			await this.loop().finally(() => {
 				// this.manager.eventStack.pop();
-				this.manager.popStatusEvent();
+				this.manager.popStatusEvent(this);
 			});
 		})();
 		return this.#start;
@@ -377,7 +379,7 @@ export class GameEvent implements PromiseLike<void> {
 					continue;
 				}
 				let toadds: triggerSkillTodo[] = [];
-				const priority = get.priority(skill)
+				const priority = get.priority(skill);
 				if (typeof info.getIndex === "function") {
 					const indexedResult = info.getIndex<any>(evt.getTrigger(), player, evt.triggername);
 					if (typeof indexedResult === "number") {
@@ -426,7 +428,7 @@ export class GameEvent implements PromiseLike<void> {
 				} else {
 					map.todoList.sort((a, b) => b.priority - a.priority);
 				}
-			};
+			}
 		}
 	}
 	removeTrigger(skills, player) {
@@ -559,7 +561,7 @@ export class GameEvent implements PromiseLike<void> {
 									priority,
 									indexedData,
 								});
-							};
+							}
 						}
 					} else {
 						list.push({
@@ -642,7 +644,10 @@ export class GameEvent implements PromiseLike<void> {
 			next.triggername = name;
 			next.playerMap = playerMap;
 			event._triggering = next;
-			next.then(() => (event._triggering = void 0));
+			const clearTrigger = () => {
+				event._triggering = void 0;
+			};
+			next.then(clearTrigger, clearTrigger);
 			return next;
 		}
 		return null;
@@ -896,8 +901,11 @@ export class GameEvent implements PromiseLike<void> {
 				this.filterOk = info.filterOk;
 			}
 			if (typeof this.filterTarget === "function") {
-				const filter = this.filterTarget, frame = { player: this.player, skill, event: this, stage: "filterTarget" };
-				this.filterTarget = function (...args) { return executionContext.run(frame, filter, this, args); };
+				const filter = this.filterTarget,
+					frame = { player: this.player, skill, event: this, stage: "filterTarget" };
+				this.filterTarget = function (...args) {
+					return executionContext.run(frame, filter, this, args);
+				};
 			}
 			delete this.fakeforce;
 		}

@@ -6019,7 +6019,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 	 */
 	createEvent(name, trigger, triggerEvent) {
 		const next = new lib.element.GameEvent(name, trigger, _status.eventManager);
-		const parent = triggerEvent || _status.eventManager.getStartedEvent();
+		const parent = triggerEvent || executionContext.current?.executingEvent || _status.eventManager.getStartedEvent();
 		if (parent) {
 			parent.next.push(next);
 		} else {
