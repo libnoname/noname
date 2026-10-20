@@ -1,0 +1,10 @@
+<!doctype html><meta charset="utf-8" /><title>Mark integration</title>
+<script type="module">
+	window.markTest = { status: "loading" };
+	import("./mark-integration.js")
+		.then(m => m.run())
+		.then(
+			result => (window.markTest = { status: "done", result }),
+			error => (window.markTest = { status: "error", error: error.stack })
+		);
+</script>

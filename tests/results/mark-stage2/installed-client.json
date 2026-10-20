@@ -1,0 +1,13 @@
+{
+  "url": "http://localhost:8089/index.html",
+  "version": "1.11.6",
+  "build": {
+    "channel": "test",
+    "commit": "4761340432b91a7aadab18286f7e0a2eef64c65a",
+    "builtAt": "unknown"
+  },
+  "ready": true,
+  "sourceRestore": "function",
+  "players": 0,
+  "text": "身份\n国战\n对决\n联机\n挑战\n斗地主\n单挑\n战棋\n塔防\n炉石\n乱斗\n奥特肉鸽"
+}
