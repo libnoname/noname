@@ -93,7 +93,11 @@ export default async function preload({ lib, game }) {
 	// iOS：预建「文件」App 里可见的导入目录与说明，方便玩家手动放素材 / 扩展。
 	// 不 await —— 这是锦上添花，不该拖慢启动，更不该因失败影响游戏。
 	if (platform === "ios") {
-		void ensureImportSkeleton(game).catch(error => console.warn("[mobile] 预建导入目录失败:", error));
+		try {
+			ensureImportSkeleton(game);
+		} catch (error) {
+			console.warn("[mobile] 预建导入目录失败:", error);
+		}
 
 		// iOS 的「文件」选择器会按 accept 严格过滤、且没有「显示全部文件」的逃生入口，
 		// 导致「选项 → 音效 → 背景音乐 → 导入」这类地方整份列表全灰、点不动。
