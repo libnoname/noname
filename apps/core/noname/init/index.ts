@@ -5,7 +5,7 @@ import * as config from "@/util/config.js";
 import { setOnError } from "@/util/error.ts";
 import { security, initializeSandboxRealms } from "@/util/sandbox.js";
 import { CacheContext } from "@/library/cache/cacheContext.js";
-import { importCardPack, importCharacterPack, importExtension, importMode, prefetchExtension } from "./import.js";
+import { importCardPack, importCharacterPack, importExtension, importMode } from "./import.js";
 import { loadCard, loadCardPile, loadCharacter, loadExtension, loadMode, loadPlay } from "./loading.js";
 
 // 无名杀，启动！
@@ -323,10 +323,6 @@ export async function boot() {
 
 	const extensionlist = await getExtensionList();
 	if (extensionlist.length) {
-		// 扩展的求值必须串行（loadExtension 依赖 _status.extension 等全局状态），
-		// 但模块的下载/解析与顺序无关，先并行预取，串行阶段即可直接命中模块缓存。
-		await Promise.allSettled(extensionlist.map(name => prefetchExtension(name)));
-
 		_status.extensionLoading = [];
 		_status.extensionLoaded = [];
 		for (const i of extensionlist) {

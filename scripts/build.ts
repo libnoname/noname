@@ -3,7 +3,7 @@ import { existsSync } from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 
-const root = import.meta.dirname;
+const repoRoot = path.resolve(import.meta.dirname, "..");
 
 /**
  * 同步执行一条命令，并在失败时立刻中止构建。
@@ -14,7 +14,7 @@ const root = import.meta.dirname;
  */
 function run(command: string, step: string) {
 	console.log(`\n==> ${step}: ${command}`);
-	const result = spawnSync(command, { shell: true, stdio: "inherit" });
+	const result = spawnSync(command, { shell: true, stdio: "inherit", cwd: repoRoot });
 
 	if (result.error) {
 		console.error(`\n构建失败（${step}）：${result.error.message}`);
@@ -32,12 +32,8 @@ run("pnpm -F noname... build", "构建本体及其依赖包");
 // 空 glob 会让 `pnpm -F` 以「No projects matched the filters」失败退出；
 // 在下面的严格退出码检查生效后，这会让每一次构建都直接中断。
 // 因此这里只在确实存在扩展包时才执行该步骤，既保留扩展包的构建能力，又不误报失败。
-const extensionRoot = path.resolve(root, "packages/extension");
-const extensionPackages = existsSync(extensionRoot)
-	? (await fs.readdir(extensionRoot, { withFileTypes: true }))
-			.filter(entry => entry.isDirectory() && existsSync(path.resolve(extensionRoot, entry.name, "package.json")))
-			.map(entry => entry.name)
-	: [];
+const extensionRoot = path.resolve(repoRoot, "packages/extension");
+const extensionPackages = existsSync(extensionRoot) ? (await fs.readdir(extensionRoot, { withFileTypes: true })).filter(entry => entry.isDirectory() && existsSync(path.resolve(extensionRoot, entry.name, "package.json"))).map(entry => entry.name) : [];
 
 if (extensionPackages.length > 0) {
 	run("pnpm -F ./packages/extension/** build", `构建扩展包（${extensionPackages.length} 个）`);
@@ -48,13 +44,4 @@ if (extensionPackages.length > 0) {
 console.log("合并打包结果");
 await fs.rm("dist", { recursive: true, force: true });
 await fs.mkdir("dist", { recursive: true });
-await Promise.all([
-	fs.cp("apps/core/dist", "dist", { recursive: true }),
-	fs.cp("apps/core/audio", "dist/audio", { recursive: true }),
-	fs.cp("apps/core/image", "dist/image", { recursive: true }),
-	fs.cp("apps/core/extension", "dist/extension", { recursive: true }),
-	fs.cp("docs", "dist/docs", { recursive: true }),
-	fs.cp(".nomedia", "dist/.nomedia"),
-	fs.cp("LICENSE", "dist/LICENSE"),
-	fs.cp("README.md", "dist/README.md"),
-]);
+await Promise.all([fs.cp("apps/core/dist", "dist", { recursive: true }), fs.cp("apps/core/audio", "dist/audio", { recursive: true }), fs.cp("apps/core/image", "dist/image", { recursive: true }), fs.cp("apps/core/extension", "dist/extension", { recursive: true }), fs.cp("docs", "dist/docs", { recursive: true }), fs.cp(".nomedia", "dist/.nomedia"), fs.cp("LICENSE", "dist/LICENSE"), fs.cp("README.md", "dist/README.md")]);
