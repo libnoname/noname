@@ -1,10 +1,17 @@
 name: Build test iOS IPA
 
 on:
+  push:
+    branches:
+      - feat/ios-integration
   workflow_dispatch:
 
 permissions:
   contents: read
+
+concurrency:
+  group: ios-test-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-ios:
