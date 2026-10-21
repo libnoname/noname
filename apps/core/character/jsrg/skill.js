@@ -9468,20 +9468,6 @@ const skills = {
 			if (trigger.target.countDiscardableCards(player, "he")) {
 				await player.discardPlayerCard("平讨：弃置" + get.translation(trigger.target) + get.cnNumber(num) + "张牌", num, "he", trigger.target, true);
 			}
-
-			/*
-			else event.finish();
-			'step 2'
-			if(player.isMinHandcard()||player.isMinHp()){
-				let id=trigger.target.playerid;
-				let map=trigger.getParent().customArgs;
-				if(!map[id]) map[id]={};
-				if(typeof map[id].extraDamage!='number'){
-					map[id].extraDamage=0;
-				}
-				map[id].extraDamage++;
-			}
-			*/
 		},
 		ai: {
 			unequip_ai: true,
