@@ -20,6 +20,7 @@
 import { Filesystem, Directory, Encoding } from "@capacitor/filesystem";
 import { Capacitor } from "@capacitor/core";
 import type { NativeAccessResult, NativeEntryResult, NativeFileSystem, NativeListResult, NativeReadResult } from "../fs/types.js";
+import { buildManifestIndex, type ManifestIndex } from "./manifest-index.js";
 
 /**
  * 内置资源根目录。
@@ -208,16 +209,10 @@ export class IosFileSystem implements NativeFileSystem {
 	private async resolveType(path: string, expected: "file" | "directory"): Promise<"file" | "directory" | "none"> {
 		const writablePath = this.toWritablePath(path);
 
-		if (await this.exists(writablePath)) {
-			try {
-				const info = await Filesystem.stat({
-					path: writablePath,
-					directory: Directory.Documents,
-				});
-				return info.type === "directory" ? "directory" : "file";
-			} catch {
-				// stat 失败时继续探测内置资源
-			}
+		// 一次 stat 同时得到「是否存在」与「类型」，避免先 exists 再 stat 的两次原生调用
+		const writableType = await this.statWritable(writablePath);
+		if (writableType !== null) {
+			return writableType;
 		}
 
 		// 内置资源：通过资源通道探测（HEAD 请求判断文件是否存在）
@@ -246,11 +241,19 @@ export class IosFileSystem implements NativeFileSystem {
 		if (path === "") {
 			return true;
 		}
+		return (await this.statWritable(path)) !== null;
+	}
+
+	/** 一次 stat 同时判断存在性与类型；不存在或 stat 失败时返回 null */
+	private async statWritable(path: string): Promise<"file" | "directory" | null> {
+		if (path === "") {
+			return "directory";
+		}
 		try {
-			await Filesystem.stat({ path, directory: Directory.Documents });
-			return true;
+			const info = await Filesystem.stat({ path, directory: Directory.Documents });
+			return info.type === "directory" ? "directory" : "file";
 		} catch {
-			return false;
+			return null;
 		}
 	}
 
@@ -276,10 +279,17 @@ export class IosFileSystem implements NativeFileSystem {
 	/**
 	 * 探测内置资源里是否存在某个文件。
 	 *
-	 * Capacitor 的 iOS 资源由 WKWebView 的自定义 scheme 提供，
-	 * 因此这里用 `fetch(..., { method: "GET" })` 判断可读性。
+	 * 快路径直接查资源清单索引：清单已收录 1.5 万条内置文件，
+	 * 命中即可确认存在，无需经过 WebView 资源通道。
+	 * 清单刻意不收录的条目（`preload.js`、`node_modules` 等）再回退到 fetch。
 	 */
 	private async bundledFileExists(path: string): Promise<boolean> {
+		const normalized = normalizeSegments(path);
+		const index = await this.loadManifestIndex();
+		if (index.files.has(normalized)) {
+			return true;
+		}
+
 		try {
 			const response = await fetch(this.toBundledUrl(path));
 			if (!response.ok) {
@@ -320,60 +330,59 @@ export class IosFileSystem implements NativeFileSystem {
 	 * 因此 iOS 端无法真正「读取打包资源的目录列表」。
 	 *
 	 * 解决方案：由构建阶段生成一份资源清单（`asset-manifest.json`），
-	 * 运行时按清单过滤出该目录下的条目。清单见 `scripts` 目录下的生成脚本，
-	 * 以及本文件末尾 `loadManifest` 的懒加载逻辑。
+	 * 首次使用时预处理成目录索引（见 `manifest-index.ts`），
+	 * 之后每次列举都是 O(1)，不再全量扫描 1.5 万条路径。
 	 */
 	private async listBundled(dir: string): Promise<{ name: string; isDirectory: boolean }[]> {
-		const manifest = await this.loadManifest();
-		const normalized = normalizeSegments(dir);
-		const prefix = normalized === "" ? "" : `${normalized}/`;
-
-		const folders = new Set<string>();
-		const files = new Set<string>();
-
-		for (const entry of manifest) {
-			if (prefix !== "" && !entry.startsWith(prefix)) {
-				continue;
-			}
-
-			const relative = entry.slice(prefix.length);
-			if (relative === "") {
-				continue;
-			}
-
-			const slashIndex = relative.indexOf("/");
-			if (slashIndex === -1) {
-				files.add(relative);
-			} else {
-				folders.add(relative.slice(0, slashIndex));
-			}
+		const index = await this.loadManifestIndex();
+		const entry = index.directories.get(normalizeSegments(dir));
+		if (!entry) {
+			return [];
 		}
 
-		return [...[...folders].map(name => ({ name, isDirectory: true })), ...[...files].map(name => ({ name, isDirectory: false }))];
+		return [
+			...entry.folders.map(name => ({ name, isDirectory: true })),
+			...entry.files.map(name => ({ name, isDirectory: false })),
+		];
 	}
 
-	/** 懒加载并缓存资源清单；缺失时退化为空清单（仅影响目录列举，不影响文件读取） */
-	private async loadManifest(): Promise<string[]> {
-		if (this.manifestCache) {
-			return this.manifestCache;
+	/** 懒加载资源清单并构建索引；缺失时退化为空索引（仅影响目录列举与存在性快路径） */
+	private async loadManifestIndex(): Promise<ManifestIndex> {
+		if (this.manifestIndex) {
+			return this.manifestIndex;
+		}
+		if (this.manifestPromise) {
+			return this.manifestPromise;
 		}
 
-		try {
-			const response = await fetch(this.toBundledUrl("asset-manifest.json"));
-			if (!response.ok) {
-				this.manifestCache = [];
-				return this.manifestCache;
+		// 并发调用共享同一次加载，避免启动阶段重复请求清单
+		const promise = (async () => {
+			let entries: string[] = [];
+
+			try {
+				const response = await fetch(this.toBundledUrl("asset-manifest.json"));
+				if (response.ok) {
+					const data = (await response.json()) as unknown;
+					if (Array.isArray(data)) {
+						entries = data.filter((item): item is string => typeof item === "string");
+					}
+				}
+			} catch {
+				// 清单缺失只影响目录列举与存在性快路径，文件读取不受影响
 			}
-			const data = (await response.json()) as unknown;
-			this.manifestCache = Array.isArray(data) ? data.filter((item): item is string => typeof item === "string") : [];
-		} catch {
-			this.manifestCache = [];
-		}
 
-		return this.manifestCache;
+			const index = buildManifestIndex(entries);
+			this.manifestIndex = index;
+			this.manifestPromise = null;
+			return index;
+		})();
+
+		this.manifestPromise = promise;
+		return promise;
 	}
 
-	private manifestCache: string[] | null = null;
+	private manifestIndex: ManifestIndex | null = null;
+	private manifestPromise: Promise<ManifestIndex> | null = null;
 
 	/** 资源目录不应该是 HTML，用于排除「目录被返回成 index.html」的误判 */
 	private looksLikeAsset(path: string): boolean {
