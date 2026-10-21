@@ -14,6 +14,7 @@ extension/**
 dist
 dist-types
 output
+coverage
 node_modules
 package-lock.json
 .turbo

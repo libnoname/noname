@@ -58,6 +58,29 @@ await player.gain({
 - [Player 事件的对象参数](./docs/player-event-object-parameters.md)
 - [从不定参数迁移到对象参数](./docs/player-event-object-parameters-migration.md)
 
+## 单元测试
+
+核心逻辑的单元测试位于 `apps/core/test/`，使用 Vitest 运行：
+
+- `apps/core/test/**/*.test.ts`：测试文件，命名统一为 `*.test.ts`。
+- `apps/core/test/stubs/noname.ts`：引擎替身；测试中 `import ... from "noname"` 会解析到它。
+- `apps/core/test/helpers/`、`apps/core/test/fixtures/`：公共替身与夹具，出现重复时再抽取。
+
+在仓库根目录运行：
+
+```bash
+pnpm test
+pnpm -F noname test:watch
+pnpm -F noname test:coverage
+```
+
+编写约定：
+
+- 纯逻辑测试直接导入目标模块；不要加载真实引擎，也不要为测试修改业务代码。
+- 需要替换全局实例或模块的测试，在 `afterEach` 中恢复，避免用例之间互相影响。
+- 事件相关测试优先复用 `test/helpers/` 中的最小 fake event，不要实现第二套事件引擎。
+- 技能测试导入真实技能定义，不为覆盖率断言无关的实现细节。
+
 ## Pull Request 标题
 
 Pull Request 标题必须遵循 [Conventional Commits](https://www.conventionalcommits.org/zh-hans/)：
@@ -118,5 +141,5 @@ pnpm lint
 - [ ] `feat` 和 `fix` 内容没有出现在同一个 Pull Request 中。
 - [ ] 新增或重写的技能 `content` 使用了 `Async Content`。
 - [ ] 武将代码中的 `Player` 事件调用遵循对象参数规范。
-- [ ] 已运行 `pnpm lint`，并完成与改动范围相符的验证。
+- [ ] 已运行 `pnpm lint` 与 `pnpm test`，并完成与改动范围相符的验证。
 - [ ] 已在描述中写明变更内容和验证方式，并在存在相关 issue 时完成关联。

@@ -9,6 +9,7 @@
         "serve": "pnpm -F @noname/fs dev --dirname=../../dist",
         "start": "pnpm build && pnpm serve",
         "generateTestPack": "pnpm build && tsx scripts/generateTestPack.ts",
+        "test": "pnpm -F noname test",
         "lint": "pnpm -r lint"
     },
     "devDependencies": {

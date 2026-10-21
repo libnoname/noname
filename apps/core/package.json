@@ -23,8 +23,11 @@
         "build": "tsx scripts/build.ts",
         "build:types": "tsc -p tsconfig.types.json",
         "generateAsset": "tsx scripts/generateAsset.ts",
-        "lint": "pnpm eslint noname/**",
-        "lint:prettier": "pnpm prettier -c noname/**"
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "test:coverage": "vitest run --coverage",
+        "lint": "pnpm eslint noname/** test/** vitest.config.ts",
+        "lint:prettier": "pnpm prettier -c noname/** test/** vitest.config.ts"
     },
     "dependencies": {
         "@codemirror/autocomplete": "^6.20.0",
@@ -68,11 +71,13 @@
         "@types/fs-extra": "^11.0.4",
         "@types/ws": "^8.18.1",
         "@vitejs/plugin-vue": "^6.0.4",
+        "@vitest/coverage-v8": "^5.0.5",
         "concurrently": "^9.2.1",
         "cross-env": "^10.1.0",
         "fs-extra": "^11.3.3",
         "glob": "^13.0.3",
         "vite": "^7.3.1",
-        "vite-plugin-static-copy": "^3.2.0"
+        "vite-plugin-static-copy": "^3.2.0",
+        "vitest": "^5.0.5"
     }
 }
