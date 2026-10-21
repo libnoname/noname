@@ -7382,7 +7382,7 @@ const skills = {
 						});
 						let recheck = false;
 						if (damageCards.length) {
-							if (card.name == "sha" && damageCards.some(cardx => cardx.name === "sha") && player.getCardUsable(card) > 0) {
+							if (card.name == "sha" && damageCards.some(cardx => cardx.name === "sha") && player.getCardUsable(card) > 1) {
 								recheck = true;
 							} else if (damageCards.some(cardx => cardx.name !== "sha")) {
 								recheck = true;
