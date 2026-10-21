@@ -1858,7 +1858,7 @@ const skills = {
 				check(card) {
 					return 7 - get.value(card);
 				},
-				precontent(event, trigger, player) {
+				async precontent(event, trigger, player) {
 					player.trySkillAnimate("hm_didao", "hm_didao", player.checkShow("hm_didao"));
 					player.awakenSkill("hm_didao");
 				},

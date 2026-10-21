@@ -3,7 +3,7 @@ import { Basic } from "./basic.js";
 
 export class AI {
 	basic = new Basic();
-	get get(){
+	get get() {
 		return get;
 	}
 	/**

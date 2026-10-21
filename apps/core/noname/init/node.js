@@ -155,7 +155,7 @@ export default function nodeReady({ lib, game, get, _status, ui }) {
 	game.open = function (url) {
 		window.open(url);
 	};
-	
+
 	/**
 	 * 检查指定的路径是否是一个文件
 	 *
@@ -257,12 +257,7 @@ export default function nodeReady({ lib, game, get, _status, ui }) {
 				};
 				fileReader.readAsArrayBuffer(data, "UTF-8");
 			} else {
-				lib.node.fs.writeFile(
-					__dirname + "/" + path + "/" + name,
-					typeof data == "string" ? data : new Uint8Array(data),
-					null,
-					callback
-				);
+				lib.node.fs.writeFile(__dirname + "/" + path + "/" + name, typeof data == "string" ? data : new Uint8Array(data), null, callback);
 			}
 		});
 	};

@@ -1856,7 +1856,7 @@ export default {
 									const next = game.createEvent("replacePlayer");
 									next.source = player;
 									next.list = list;
-									next.setContent(() => {
+									next.setContent(async (event, trigger, player) => {
 										event.dialog = ui.create.dialog("是否选择一名角色重新加入游戏？", [event.list, "character"]);
 										event.filterButton = () => true;
 										event.player = event.source;

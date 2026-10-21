@@ -256,8 +256,7 @@ const skills = {
 			if (player !== trigger.player && player.countCards("h")) {
 				const result = await player
 					.chooseCard({
-						prompt: get.prompt("starbishi"),
-						prompt2: `交给${get.translation(trigger.player)}任意张牌（可不交），若其手牌数与体力值相等会执行出牌阶段。`,
+						prompt: `弼士：是否交给${get.translation(trigger.player)}任意张牌（取消则不交），若其手牌数与体力值相等会执行出牌阶段。`,
 						position: "he",
 						selectCard: [1, Infinity],
 						att: get.attitude(player, trigger.player),
@@ -283,9 +282,9 @@ const skills = {
 				target
 					.when("phaseUseBegin")
 					.filter(evt => evt._extraPhaseReason == event.name)
-					.step(async (event, trigger, player) => {
-						target.addTempSkill(`starbishi_buff`, "phaseChange");
-						target.markAuto("starbishi_buff", player);
+					.step(async (event, trigger, player2) => {
+						player2.addTempSkill(`starbishi_buff`, "phaseChange");
+						player2.markAuto("starbishi_buff", player);
 					});
 			}
 		},
@@ -313,10 +312,11 @@ const skills = {
 							.getHistory("useCard", evt => {
 								return evt.getParent("phaseUse") == event.getParent("phaseUse");
 							})
-							.indexOf(event) === 0
+							.indexOf(trigger) === 0
 					) {
 						trigger.nowuxie = true;
 						trigger.directHit.addArray(game.players);
+						game.log(trigger.card, "不可被响应");
 					}
 					if (get.tag(trigger.card, "damage")) {
 						player.getStorage("starbishi_buff")[0]?.draw();
@@ -2078,6 +2078,7 @@ const skills = {
 					}
 					return 7 - get.value(card);
 				})
+				.set("target", target)
 				.forResult();
 			if (result?.bool && result.cards?.length) {
 				const num = result.cards.length;

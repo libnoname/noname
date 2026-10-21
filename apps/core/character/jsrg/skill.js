@@ -1581,12 +1581,12 @@ const skills = {
 				onremove: true,
 				mod: {
 					cardSavable: (card, player) => {
-						if (player.getStorage("jsrgzonghai_blocker").includes(get.event().getParent()._jsrgzonghai_id)) {
+						if (player.getStorage("jsrgzonghai_blocker").includes(get.event().getParent("dying", false, true)._jsrgzonghai_id)) {
 							return false;
 						}
 					},
 					cardEnabled: (card, player) => {
-						if (player.getStorage("jsrgzonghai_blocker").includes(get.event().getParent()._jsrgzonghai_id)) {
+						if (player.getStorage("jsrgzonghai_blocker").includes(get.event().getParent("dying", false, true)._jsrgzonghai_id)) {
 							return false;
 						}
 					},
@@ -6483,7 +6483,7 @@ const skills = {
 				},
 				silent: true,
 				forceDie: true,
-				content: () => {
+				async content(event, trigger, player) {
 					game.removeGlobalSkill("jsrgjiemeng_effect");
 				},
 			},
@@ -9468,20 +9468,6 @@ const skills = {
 			if (trigger.target.countDiscardableCards(player, "he")) {
 				await player.discardPlayerCard("平讨：弃置" + get.translation(trigger.target) + get.cnNumber(num) + "张牌", num, "he", trigger.target, true);
 			}
-
-			/*
-			else event.finish();
-			'step 2'
-			if(player.isMinHandcard()||player.isMinHp()){
-				let id=trigger.target.playerid;
-				let map=trigger.getParent().customArgs;
-				if(!map[id]) map[id]={};
-				if(typeof map[id].extraDamage!='number'){
-					map[id].extraDamage=0;
-				}
-				map[id].extraDamage++;
-			}
-			*/
 		},
 		ai: {
 			unequip_ai: true,

@@ -3562,7 +3562,7 @@ const skills = {
 					.loseAsync({
 						lose_list: sortedList,
 					})
-					.setContent(() => {
+					.setContent(async (event, trigger, player) => {
 						for (const [current, cards] of event.lose_list) {
 							const next = current.lose({ cards, position: ui.discardPile });
 							current.$throw(cards);

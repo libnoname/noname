@@ -324,9 +324,7 @@ function describeBackendResponse(response) {
 	const status = Number.isInteger(response.status) ? response.status : 0;
 	const rawContentType = response.headers?.get?.("content-type") ?? "";
 	const mediaType = rawContentType.split(";", 1)[0].trim().toLowerCase();
-	return /^[a-z0-9!#$&^_.+-]+\/[a-z0-9!#$&^_.+-]+$/.test(mediaType)
-		? `HTTP ${status}, Content-Type: ${mediaType}`
-		: `HTTP ${status}`;
+	return /^[a-z0-9!#$&^_.+-]+\/[a-z0-9!#$&^_.+-]+$/.test(mediaType) ? `HTTP ${status}, Content-Type: ${mediaType}` : `HTTP ${status}`;
 }
 
 function assertValidPath(path) {

@@ -1066,10 +1066,7 @@ const _zhanfa = {
 			},
 			filter(event, player, name) {
 				if (name == "damageBegin1") {
-					return (
-						_status.currentPhase == player &&
-						game.getGlobalHistory("everything", evt => evt.name == "damage" && evt.source == player).indexOf(event) == 0
-					);
+					return _status.currentPhase == player && game.getGlobalHistory("everything", evt => evt.name == "damage" && evt.source == player).indexOf(event) == 0;
 				} else {
 					return _status.currentPhase != player && !player.hasSkill("zf_hengfeng_triggered");
 				}
@@ -1113,10 +1110,7 @@ const _zhanfa = {
 			num: 2,
 			filter(event, player, name) {
 				if (name == "damageBegin1") {
-					return (
-						_status.currentPhase == player &&
-						game.getGlobalHistory("everything", evt => evt.name == "damage" && evt.source == player).indexOf(event) == 0
-					);
+					return _status.currentPhase == player && game.getGlobalHistory("everything", evt => evt.name == "damage" && evt.source == player).indexOf(event) == 0;
 				} else {
 					return _status.currentPhase != player && !player.hasSkill("zf_hengfeng2_triggered");
 				}
@@ -1327,9 +1321,7 @@ const _zhanfa = {
 			silent: true,
 			trigger: { player: "phaseDrawAfter" },
 			async content(event, trigger, player) {
-				const num = player
-					.getHistory("gain", evt => evt.getParent()?.name == "draw" && evt.getParent("phaseDraw") == trigger)
-					.reduce((sum, evt) => sum + evt.cards.length, 0);
+				const num = player.getHistory("gain", evt => evt.getParent()?.name == "draw" && evt.getParent("phaseDraw") == trigger).reduce((sum, evt) => sum + evt.cards.length, 0);
 				if (num) {
 					player.addMark(event.name, Math.ceil(num / 2), false);
 					player.when({ global: "phaseAfter" }).step(async (event, trigger, player) => {
@@ -1878,9 +1870,7 @@ const _zhanfa = {
 				if (event.getParent()?.name != "draw") {
 					return 0;
 				}
-				const prev = player
-					.getAllHistory("gain", evt => evt.getParent()?.name == "draw", event)
-					.reduce((sum, evt) => sum + evt.cards.length, 0);
+				const prev = player.getAllHistory("gain", evt => evt.getParent()?.name == "draw", event).reduce((sum, evt) => sum + evt.cards.length, 0);
 				const cur = prev + event.cards.length;
 				return Math.floor(cur / 9) - Math.floor(prev / 9);
 			},
@@ -1901,9 +1891,7 @@ const _zhanfa = {
 				if (event.getParent()?.name != "draw") {
 					return 0;
 				}
-				const prev = player
-					.getAllHistory("gain", evt => evt.getParent()?.name == "draw", event)
-					.reduce((sum, evt) => sum + evt.cards.length, 0);
+				const prev = player.getAllHistory("gain", evt => evt.getParent()?.name == "draw", event).reduce((sum, evt) => sum + evt.cards.length, 0);
 				const cur = prev + event.cards.length;
 				return Math.floor(cur / 6) - Math.floor(prev / 6);
 			},
@@ -2017,15 +2005,7 @@ const _zhanfa = {
 				if (event.card.name != "sha") {
 					return false;
 				}
-				return (
-					player.getRoundHistory("useCard", evt => evt.card.name == "sha").indexOf(event) == 0 &&
-					game.hasPlayer(
-						target =>
-							!event.targets.includes(target) &&
-							lib.filter.targetEnabled2(event.card, player, target) &&
-							lib.filter.targetInRange(event.card, player, target)
-					)
-				);
+				return player.getRoundHistory("useCard", evt => evt.card.name == "sha").indexOf(event) == 0 && game.hasPlayer(target => !event.targets.includes(target) && lib.filter.targetEnabled2(event.card, player, target) && lib.filter.targetInRange(event.card, player, target));
 			},
 			forced: false,
 			async cost(event, trigger, player) {
@@ -2033,11 +2013,7 @@ const _zhanfa = {
 				event.result = await player
 					.chooseTarget(get.prompt2(event.skill), select, (card, player, target) => {
 						const cardx = get.event().getTrigger().card;
-						return (
-							!get.event().getTrigger().targets.includes(target) &&
-							lib.filter.targetEnabled2(cardx, player, target) &&
-							lib.filter.targetInRange(cardx, player, target)
-						);
+						return !get.event().getTrigger().targets.includes(target) && lib.filter.targetEnabled2(cardx, player, target) && lib.filter.targetInRange(cardx, player, target);
 					})
 					.set("ai", target => get.effect(target, get.event().getTrigger().card, get.player(), get.player()))
 					.forResult();
@@ -2416,10 +2392,7 @@ const _zhanfa = {
 						.set("ai", () => Math.random())
 						.forResult();
 					if (result?.bool && result.cards?.length) {
-						await player.showCards(
-							result.cards,
-							`${get.translation(player)}因<span class = bluetext>虚焰</span>修改过的【火攻】展示的牌`
-						);
+						await player.showCards(result.cards, `${get.translation(player)}因<span class = bluetext>虚焰</span>修改过的【火攻】展示的牌`);
 					}
 					return result;
 				});
@@ -2687,11 +2660,7 @@ const _zhanfa = {
 				if (_status.currentPhase == player || event.targets.length != 1) {
 					return false;
 				}
-				return (
-					get.type2(event.card) == "basic" &&
-					event.player.isEnemiesOf(player, false) &&
-					event.player.countDiscardableCards(player, "he") > 0
-				);
+				return get.type2(event.card) == "basic" && event.player.isEnemiesOf(player, false) && event.player.countDiscardableCards(player, "he") > 0;
 			},
 			logTarget: "player",
 			async content(event, trigger, player) {
@@ -2716,11 +2685,7 @@ const _zhanfa = {
 				if (_status.currentPhase == player || event.targets.length != 1) {
 					return false;
 				}
-				return (
-					get.type2(event.card) == "trick" &&
-					event.player.isEnemiesOf(player, false) &&
-					event.player.countDiscardableCards(player, "he") > 0
-				);
+				return get.type2(event.card) == "trick" && event.player.isEnemiesOf(player, false) && event.player.countDiscardableCards(player, "he") > 0;
 			},
 		},
 	},
@@ -3306,172 +3271,7 @@ export class ZhanfaManager {
 	/**
 	 * @type {string[]} 单骑战法列表
 	 */
-	danqiList = [
-		"zf_xicongtianjiang",
-		"zf_xicongtianjiang2",
-		"zf_badaoshu",
-		"zf_badaoshu2",
-		"zf_banyun",
-		"zf_bowen",
-		"zf_bowen2",
-		"zf_bowen3",
-		"zf_boming",
-		"zf_buzhen2",
-		"zf_buzhen3",
-		"zf_buzhen",
-		"zf_cangtaohu",
-		"zf_caochuanjiejian",
-		"zf_cedingtianxia",
-		"zf_cedingtianxia2",
-		"zf_chenqibubei",
-		"zf_chenqibubei2",
-		"zf_chijiuzhan",
-		"zf_chijiuzhan4",
-		"zf_chijiuzhan3",
-		"zf_cuixue",
-		"zf_cuixue2",
-		"zf_danliangboduo",
-		"zf_dangtouyibang",
-		"zf_dangtouyibang2",
-		"zf_dushu",
-		"zf_dushu2",
-		"zf_duanliangcao2",
-		"zf_duoduoyishan",
-		"zf_duoduoyishan2",
-		"zf_duoduoyishan3",
-		"zf_erlianji",
-		"zf_sanlianji",
-		"zf_ershengsan",
-		"zf_fanci",
-		"zf_fenjin",
-		"zf_fengshounian",
-		"zf_fuyiqusha",
-		"zf_fuyiquhuo",
-		"zf_fuyiqushan",
-		"zf_fuyiqutao",
-		"zf_fuyiquchai",
-		"zf_fuyiqujue",
-		"zf_fuyiqusuo",
-		"zf_fuyiqushun",
-		"zf_geshandaniu",
-		"zf_guandaozhiji",
-		"zf_guangongren",
-		"zf_hanzhan",
-		"zf_haoshenfa",
-		"zf_hengjiangsuo",
-		"zf_hengfeng",
-		"zf_hengfeng2",
-		"zf_houfaxianzhi",
-		"zf_houshi",
-		"zf_houshi2",
-		"zf_hugujiu",
-		"zf_hugujiu2",
-		"zf_hujia",
-		"zf_hujia2",
-		"zf_jishiyu",
-		"zf_jiyi",
-		"zf_jiyi2",
-		"zf_jiemeng",
-		"zf_jinnangji",
-		"zf_jingjijia",
-		"zf_jingyumoulve",
-		"zf_jingyumoulve2",
-		"zf_jueduiwuxie",
-		"zf_kuangbao",
-		"zf_kuangbao3",
-		"zf_kuangbao4",
-		"zf_kuangbao2",
-		"zf_laoguzhuangbei",
-		"zf_leihuoshi",
-		"zf_leihuoshi2",
-		"zf_leiming",
-		"zf_liebian",
-		"zf_liebian2",
-		"zf_liebian3",
-		"zf_miaoji",
-		"zf_miaoji2",
-		"zf_miaoshoukongkong",
-		"zf_mopai",
-		"zf_mopai2",
-		"zf_muniuliuma",
-		"zf_pinang",
-		"zf_pinang2",
-		"zf_pinang3",
-		"zf_pianzhuanjia",
-		"zf_pofuchenzhou",
-		"zf_qiangquhaoduo",
-		"zf_qiaoquhaoduo",
-		"zf_ruofankui",
-		"zf_ruoxi",
-		"zf_sanbanfu",
-		"zf_sanbanfu2",
-		"zf_shenlongbaiwei",
-		"zf_shenlongbaiwei2",
-		"zf_shiqiboduo",
-		"zf_shixue",
-		"zf_shoudaoqinlai",
-		"zf_shoudaoqinlai2",
-		"zf_shoudaoqinlai3",
-		"zf_shuanglve",
-		"zf_shuangren",
-		"zf_shuangren2",
-		"zf_tijiashu",
-		"zf_tipo",
-		"zf_tipo2",
-		"zf_tipo3",
-		"zf_tianjiangjinnang",
-		"zf_tianjianghengcai",
-		"zf_tianjiangzhuangbei",
-		"zf_tianjiangkapai",
-		"zf_tiebushan",
-		"zf_tiebushan2",
-		"zf_tiebushan3",
-		"zf_touxi",
-		"zf_wendingtizhi",
-		"zf_wendinghouqin",
-		"zf_wendingjingong",
-		"zf_wendingchengzai",
-		"zf_wendingshiqi",
-		"zf_woxinchangdan",
-		"zf_xialuxiangfeng",
-		"zf_xinshounianlai",
-		"zf_xuyan",
-		"zf_xulijian",
-		"zf_xushi",
-		"zf_xuezhan",
-		"zf_xuezhan2",
-		"zf_xuezhan3",
-		"zf_yanxian",
-		"zf_yaoli",
-		"zf_yaoli3",
-		"zf_yaoli4",
-		"zf_yaoli2",
-		"zf_yinyangshufa",
-		"zf_yingjifangan",
-		"zf_yingjizhanshu",
-		"zf_yingjizhanlve",
-		"zf_yongzhan",
-		"zf_yongzhan2",
-		"zf_yuzhanyuyong3",
-		"zf_yuzhanyuyong2",
-		"zf_yuzhanyuyong",
-		"zf_yuanzhu",
-		"zf_yuanzhu2",
-		"zf_yuanzhu3",
-		"zf_yuanjiji",
-		"zf_yuanmou",
-		"zf_yuanmou3",
-		"zf_yuanmou2",
-		"zf_zengshou",
-		"zf_zengshou2",
-		"zf_zhandouxuexi2",
-		"zf_zhandouxuexi3",
-		"zf_zhandouxuexi",
-		"zf_zhongjiji",
-		"zf_zhudao",
-		"zf_zhudao2",
-		"zf_zuiquan",
-	];
+	danqiList = ["zf_xicongtianjiang", "zf_xicongtianjiang2", "zf_badaoshu", "zf_badaoshu2", "zf_banyun", "zf_bowen", "zf_bowen2", "zf_bowen3", "zf_boming", "zf_buzhen2", "zf_buzhen3", "zf_buzhen", "zf_cangtaohu", "zf_caochuanjiejian", "zf_cedingtianxia", "zf_cedingtianxia2", "zf_chenqibubei", "zf_chenqibubei2", "zf_chijiuzhan", "zf_chijiuzhan4", "zf_chijiuzhan3", "zf_cuixue", "zf_cuixue2", "zf_danliangboduo", "zf_dangtouyibang", "zf_dangtouyibang2", "zf_dushu", "zf_dushu2", "zf_duanliangcao2", "zf_duoduoyishan", "zf_duoduoyishan2", "zf_duoduoyishan3", "zf_erlianji", "zf_sanlianji", "zf_ershengsan", "zf_fanci", "zf_fenjin", "zf_fengshounian", "zf_fuyiqusha", "zf_fuyiquhuo", "zf_fuyiqushan", "zf_fuyiqutao", "zf_fuyiquchai", "zf_fuyiqujue", "zf_fuyiqusuo", "zf_fuyiqushun", "zf_geshandaniu", "zf_guandaozhiji", "zf_guangongren", "zf_hanzhan", "zf_haoshenfa", "zf_hengjiangsuo", "zf_hengfeng", "zf_hengfeng2", "zf_houfaxianzhi", "zf_houshi", "zf_houshi2", "zf_hugujiu", "zf_hugujiu2", "zf_hujia", "zf_hujia2", "zf_jishiyu", "zf_jiyi", "zf_jiyi2", "zf_jiemeng", "zf_jinnangji", "zf_jingjijia", "zf_jingyumoulve", "zf_jingyumoulve2", "zf_jueduiwuxie", "zf_kuangbao", "zf_kuangbao3", "zf_kuangbao4", "zf_kuangbao2", "zf_laoguzhuangbei", "zf_leihuoshi", "zf_leihuoshi2", "zf_leiming", "zf_liebian", "zf_liebian2", "zf_liebian3", "zf_miaoji", "zf_miaoji2", "zf_miaoshoukongkong", "zf_mopai", "zf_mopai2", "zf_muniuliuma", "zf_pinang", "zf_pinang2", "zf_pinang3", "zf_pianzhuanjia", "zf_pofuchenzhou", "zf_qiangquhaoduo", "zf_qiaoquhaoduo", "zf_ruofankui", "zf_ruoxi", "zf_sanbanfu", "zf_sanbanfu2", "zf_shenlongbaiwei", "zf_shenlongbaiwei2", "zf_shiqiboduo", "zf_shixue", "zf_shoudaoqinlai", "zf_shoudaoqinlai2", "zf_shoudaoqinlai3", "zf_shuanglve", "zf_shuangren", "zf_shuangren2", "zf_tijiashu", "zf_tipo", "zf_tipo2", "zf_tipo3", "zf_tianjiangjinnang", "zf_tianjianghengcai", "zf_tianjiangzhuangbei", "zf_tianjiangkapai", "zf_tiebushan", "zf_tiebushan2", "zf_tiebushan3", "zf_touxi", "zf_wendingtizhi", "zf_wendinghouqin", "zf_wendingjingong", "zf_wendingchengzai", "zf_wendingshiqi", "zf_woxinchangdan", "zf_xialuxiangfeng", "zf_xinshounianlai", "zf_xuyan", "zf_xulijian", "zf_xushi", "zf_xuezhan", "zf_xuezhan2", "zf_xuezhan3", "zf_yanxian", "zf_yaoli", "zf_yaoli3", "zf_yaoli4", "zf_yaoli2", "zf_yinyangshufa", "zf_yingjifangan", "zf_yingjizhanshu", "zf_yingjizhanlve", "zf_yongzhan", "zf_yongzhan2", "zf_yuzhanyuyong3", "zf_yuzhanyuyong2", "zf_yuzhanyuyong", "zf_yuanzhu", "zf_yuanzhu2", "zf_yuanzhu3", "zf_yuanjiji", "zf_yuanmou", "zf_yuanmou3", "zf_yuanmou2", "zf_zengshou", "zf_zengshou2", "zf_zhandouxuexi2", "zf_zhandouxuexi3", "zf_zhandouxuexi", "zf_zhongjiji", "zf_zhudao", "zf_zhudao2", "zf_zuiquan"];
 
 	/**
 	 * @type {string[]} 山河图战法列表

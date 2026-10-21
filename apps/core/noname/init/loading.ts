@@ -245,7 +245,7 @@ export async function loadExtension(extension) {
 					alert(`加载《${extension[0]}》扩展的content时出现错误。
 该错误本身可能并不影响扩展运行。您可以在“设置→通用→无视扩展报错”中关闭此弹窗。
 错误信息: 
-${(e instanceof Error ? e.stack : String(e))}`);
+${e instanceof Error ? e.stack : String(e)}`);
 				}
 			}
 		}
@@ -552,7 +552,6 @@ function mixinLibrary(config, lib) {
 	Object.keys(window.noname_character_perfectPairs).forEach(i => (lib.perfectPair[i] = window.noname_character_perfectPairs[i]));
 	// @ts-expect-error ignore
 	delete window.noname_character_perfectPairs;
-
 
 	for (let name in config) {
 		if (KeptWords.includes(name)) {

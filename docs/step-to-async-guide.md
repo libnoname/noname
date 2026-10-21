@@ -1,4 +1,4 @@
-# Step Content 转 Async Content 指南
+# Step Content 转 Async Content(s) 指南
 
 本文整理 `setContent` 中旧式 `step` 写法与新式 `async` 写法的区别，并给出常见转换方法。适合在重构技能、事件 content、模式 start 流程时作为上下文。
 
@@ -53,6 +53,17 @@ async function
 ```
 
 所以二者最终都走 `ArrayCompiler`，差别主要在写法和等待方式。
+
+### 迁移目标：Async Content 或 Array Content
+
+迁移时按保持原有调度语义所需的等待方式选择：
+
+- 能通过明确的子事件 `await` 保持执行顺序，无需在函数内部调用 `await event.waitNext()`：转换为单个 Async Content。
+- 必须在函数内部调用 `await event.waitNext()`，等待当前事件的 `next` 队列整体结算后才能继续：转换为 Array Content，数组各项使用 async 函数（也称 async contents）。在需要等待队列的位置划分函数，由 `ArrayCompiler` 在每段函数结束后自动调用 `waitNext()`。
+
+这里判断的是迁移后的实际等待需求，不是旧代码中是否出现了 `waitNext()`；单个 async 函数返回后由编译器执行的 `waitNext()` 也不属于函数内部的等待。数组分段只等待当前事件的 `next` 队列，不会让改挂到 `after` 或其他事件队列的事件提前执行。
+
+后文的单函数示例适用于第一种情况。两种形式都需要核对原 step 边界的终止检查；无需内部 `waitNext()` 并不意味着合并后必然行为等价。
 
 ## Step Content 是什么
 
@@ -129,6 +140,8 @@ content: async function (event, trigger, player) {
 - `continue`
 - 局部变量
 
+`await next` 等待事件完成，但不直接返回 `next.result`；需要结果时使用 `.forResult()`。
+
 ## 核心区别
 
 | 对比项 | Step Content | Async Content |
@@ -140,6 +153,12 @@ content: async function (event, trigger, player) {
 | 局部变量 | step 间不自然共享，通常要挂到 `event` | 普通局部变量自然可用 |
 | 可读性 | 像状态机 | 像正常异步流程 |
 | 调试 | 依赖编译拆分后的代码片段 | 更接近原始代码 |
+
+### 原 step 边界的终止检查
+
+`ArrayCompiler` 在每个 step 执行前通过 `isPrevented()` 检查事件拥有者是否死亡、离场或被移除；死亡、离场检查分别受 `forceDie`、`includeOut` 控制。单个 async 函数内部每次 `await` 后不会自动重做这些检查。例如子事件导致技能拥有者死亡时，原先后续 step 可能停止，合并后的代码却仍会继续。
+
+迁移时逐个核对原 step 边界的终止条件，需要时保留对应检查和终止行为，不能仅靠添加 `await` 保证等价；特殊事件（如 `phaseLoop`）应按实现单独判断。
 
 ## 隐式变量差异
 
@@ -551,15 +570,18 @@ for (let count = 0; count < 3; count++) {
 
 ### 规则 4：event.redo 转成循环
 
+`event.redo()` 只重复当前 step，不会自动回到上一个 step。循环体应对应被重复的步骤。
+
 Step：
 
 ```js
 "step 0";
-player.judge(card => get.color(card) == "black" ? 1 : -1);
+event.count = 0;
 
 "step 1";
-if (result.bool) {
-  player.draw();
+player.draw();
+event.count++;
+if (event.count < 3) {
   event.redo();
 }
 ```
@@ -567,12 +589,10 @@ if (result.bool) {
 Async：
 
 ```js
-while (true) {
-  const result = await player.judge(card => (get.color(card) == "black" ? 1 : -1)).forResult();
-  if (!result.bool) {
-    break;
-  }
+let count = 0;
+while (count < 3) {
   await player.draw();
+  count++;
 }
 ```
 
@@ -634,39 +654,6 @@ await target.gain(result.cards, player);
 
 ## 常见转换例子
 
-### 选择目标后执行效果
-
-Step：
-
-```js
-content: function () {
-  "step 0";
-  player.chooseTarget("选择一名角色", lib.filter.notMe).set("ai", target => {
-    return get.attitude(player, target);
-  });
-
-  "step 1";
-  if (result.bool) {
-    result.targets[0].draw();
-  }
-}
-```
-
-Async：
-
-```js
-content: async function (event, trigger, player) {
-  const result = await player
-    .chooseTarget("选择一名角色", lib.filter.notMe)
-    .set("ai", target => get.attitude(player, target))
-    .forResult();
-
-  if (result.bool) {
-    await result.targets[0].draw();
-  }
-}
-```
-
 ### cost 转换
 
 Step：
@@ -691,43 +678,6 @@ cost: async function (event, trigger, player) {
     .chooseToDiscard(get.prompt(event.skill), "h")
     .set("ai", card => 6 - get.value(card))
     .forResult();
-}
-```
-
-### 多次循环
-
-Step：
-
-```js
-content: function () {
-  "step 0";
-  event.num = 0;
-
-  "step 1";
-  player.chooseBool("是否继续？");
-
-  "step 2";
-  if (result.bool) {
-    player.draw();
-    event.num++;
-    if (event.num < 3) {
-      event.goto(1);
-    }
-  }
-}
-```
-
-Async：
-
-```js
-content: async function (event, trigger, player) {
-  for (let num = 0; num < 3; num++) {
-    const result = await player.chooseBool("是否继续？").forResult();
-    if (!result.bool) {
-      break;
-    }
-    await player.draw();
-  }
 }
 ```
 
@@ -772,22 +722,24 @@ Step：
 content: function () {
   "step 0";
   event.cards = [];
-  player.judge(card => (get.color(card) == "black" ? 1 : -1));
 
   "step 1";
+  player.judge(card => (get.color(card) == "black" ? 1 : -1));
+
+  "step 2";
   if (result.bool && result.card) {
     event.cards.push(result.card);
     player.chooseBool("是否再次发动？");
   } else {
-    event.goto(3);
-  }
-
-  "step 2";
-  if (result.bool) {
-    event.goto(0);
+    event.goto(4);
   }
 
   "step 3";
+  if (result.bool) {
+    event.goto(1);
+  }
+
+  "step 4";
   if (event.cards.length) {
     player.gain(event.cards, "gain2");
   }
@@ -850,11 +802,9 @@ content: async function (event, trigger, player) {
 }
 ```
 
-但要注意：如果 `"step 0"` 前的代码有副作用，旧 step 写法里它可能每一步都会执行。转换时需要确认真实意图：
+`stepHead` 会在每个 step 重新执行。只有确认声明的取值跨 step 不变且没有副作用时，才可像上例一样移到 async 函数开头；否则应在原 step 对应的位置重新计算或执行，保留原执行次数与时机。
 
-- 只是声明变量：放到 async 函数开头
-- 每一步都要执行：放进循环或对应位置
-- 只应执行一次但旧代码放错了：转换时顺手改成只执行一次
+疑似旧 Bug 应单独标记，不在迁移中顺手修复。
 
 ## 机械转换思路
 
@@ -904,6 +854,7 @@ content: async function (event, trigger, player) {
 
 转换时逐项检查：
 
+- 是否按等待需求选择了单个 Async Content 或 Array Content；需要内部 `event.waitNext()` 的流程应改为数组分段
 - 每个会创建子事件的调用，后续代码是否依赖它完成；依赖就加 `await`
 - 如果事件被 `next.remove(...)` 后挂到 `after` 或别的事件 `next/after`，不要 `await`
 - `event.insertAfter(...)`、`player.showCharacter(...)`、`player.insertPhase(...)` 这类调度型调用通常只调用不等待
@@ -917,99 +868,4 @@ content: async function (event, trigger, player) {
 - `cost` 是否正确写入 `event.result`
 - `content` 是否保留原来的 `event.result`、`event.cards`、`event.targets` 语义
 - 没有结果需求的事件是否仍然需要 `await` 来保证顺序
-
-## 常见坑
-
-### 忘记 await
-
-错误：
-
-```js
-player.chooseToDiscard(1, true);
-player.draw();
-```
-
-这会先创建两个子事件，然后当前 async 函数直接继续/返回。若期望先弃牌再摸牌并让代码等待，应写：
-
-```js
-await player.chooseToDiscard(1, true);
-await player.draw();
-```
-
-### 忘记 forResult
-
-错误：
-
-```js
-const result = await player.chooseTarget("选择目标");
-if (result.bool) ...
-```
-
-`await event` 只等待事件完成，不直接返回 `event.result`。应写：
-
-```js
-const result = await player.chooseTarget("选择目标").forResult();
-if (result.bool) ...
-```
-
-### 把 step 的 result 当成 event.result
-
-Step 中：
-
-```js
-if (result.bool) ...
-```
-
-这里的 `result` 是上一个子事件的结果。Async 中应改成本地变量：
-
-```js
-const result = await next.forResult();
-```
-
-只有需要设置当前事件结果时才写：
-
-```js
-event.result = result;
-```
-
-### 保留 event.goto 但没有必要
-
-Async 写法下，`event.goto()` 大多数时候不再需要。保留它会让代码继续像旧状态机，不利于阅读。优先改成：
-
-- `if`
-- `return`
-- `while`
-- `for`
-- `break`
-- `continue`
-
-## 推荐风格
-
-推荐：
-
-```js
-async content(event, trigger, player) {
-  const target = trigger.player;
-  const result = await player.chooseCard("he", true).forResult();
-  if (!result.bool) {
-    return;
-  }
-
-  await target.gain(result.cards, player);
-  await player.draw();
-}
-```
-
-不推荐：
-
-```js
-async content(event, trigger, player) {
-  player.chooseCard("he", true);
-  const result = event.result;
-  target.gain(result.cards, player);
-}
-```
-
-## 一句话总结
-
-`step` 写法依赖引擎在每个 `"step N"` 之间自动等待子事件，并把结果塞进 `result`；`async` 写法则把这些隐式行为显式化：用 `await` 等事件，用 `.forResult()` 取结果，用正常 JavaScript 控制流替代 `goto/redo`。转换的核心就是把“跨 step 的隐式等待和 result”改成“局部变量 + await”。
+- 原 step 边界的死亡、离场、移除检查及相应终止行为是否仍然等价

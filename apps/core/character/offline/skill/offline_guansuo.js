@@ -686,7 +686,7 @@ const skills = {
 			await player.recoverTo(player.maxHp);
 			const next = game.createEvent("xiguiContent", false);
 			next.player = player;
-			next.setContent(() => {
+			next.setContent(async (event, trigger, player) => {
 				player.when({ global: "roundEnd" }).step(async (event, trigger, player) => {
 					await player.changeSkills(["tydangxian"], ["dragzhawang"]);
 				});

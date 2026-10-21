@@ -1844,7 +1844,7 @@ const skills = {
 				filter: () => !game.hasPlayer(i => i.hasSkill("jxlianpo", null, null, false), true),
 				silent: true,
 				forceDie: true,
-				content: () => {
+				async content(event, trigger, player) {
 					game.removeGlobalSkill("jxlianpo_global");
 				},
 			},

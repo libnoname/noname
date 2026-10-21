@@ -410,33 +410,25 @@ export class PlayerGuozhan extends lib.element.Player {
 		next.player = this;
 		next.target = target;
 		next.num = num;
-		next.setContent(function () {
-			// @ts-expect-error 类型就是这么写的
+		next.setContent(async (event, trigger, player) => {
+			const { target } = event;
 			if (!player.storage.zhibi) {
-				// @ts-expect-error 类型就是这么写的
 				player.storage.zhibi = [];
 			}
-			// @ts-expect-error 类型就是这么写的
 			player.storage.zhibi.add(target);
-			var content,
-				str = get.translation(target) + "的";
-			// @ts-expect-error 类型就是这么写的
+			let content;
+			const str = `${get.translation(target)}的`;
 			if (event.num == 0 || !target.isUnseen(1)) {
-				content = [str + "主将", [[target.name1], "character"]];
-				// @ts-expect-error 类型就是这么写的
+				content = [`${str}主将`, [[target.name1], "character"]];
 				game.log(player, "观看了", target, "的主将");
-				// @ts-expect-error 类型就是这么写的
 			} else if (event.num == 1 || !target.isUnseen(0)) {
-				content = [str + "副将", [[target.name2], "character"]];
-				// @ts-expect-error 类型就是这么写的
+				content = [`${str}副将`, [[target.name2], "character"]];
 				game.log(player, "观看了", target, "的副将");
 			} else {
-				content = [str + "主将和副将", [[target.name1, target.name2], "character"]];
-				// @ts-expect-error 类型就是这么写的
+				content = [`${str}主将和副将`, [[target.name1, target.name2], "character"]];
 				game.log(player, "观看了", target, "的主将和副将");
 			}
-			// @ts-expect-error 类型就是这么写的
-			player.chooseControl("ok").set("dialog", content);
+			await player.chooseControl({ controls: ["ok"], dialog: content });
 		});
 	}
 

@@ -13,7 +13,7 @@ export class CacheContext {
 		// this.lib = this._createCacheProxy(lib);
 		// this.game = this._createCacheProxy(game);
 		// this.get = this._createCacheProxy(get);
-		for (const i in proxyed){
+		for (const i in proxyed) {
 			this[i] = this._createCacheProxy(proxyed[i]);
 		}
 		this.sourceMap = new Map();
@@ -24,7 +24,7 @@ export class CacheContext {
 	 * 设置缓存上下文代理的对象。
 	 * @param {Record<string, any>} proxy
 	 */
-	static setProxy(proxy){
+	static setProxy(proxy) {
 		proxyed = proxy;
 	}
 

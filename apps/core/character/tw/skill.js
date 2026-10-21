@@ -16002,7 +16002,7 @@ const skills = {
 						var next = game.createEvent("twmouli_update");
 						event.next.remove(next);
 						event.getParent().after.push(next);
-						next.setContent(function () {
+						next.setContent(async (event, trigger, player) => {
 							game.updateRoundNumber();
 						});
 					},
