@@ -7372,6 +7372,20 @@ const skills = {
 						}
 						_status.luanchou_judging = true;
 						let eff = [0, 0, 0, get.damageEffect(other, player, player, get.nature(card)) / get.attitude(player, player)];
+						const vcard = get.autoViewAs(card);
+						const damageCards = player.getCards("hs", cardx => {
+							if (vcard.cards.some(cardxx => cardxx === cardx)) {
+								return false;
+							}
+							return get.is.damageCard(card)&&player.canUse(card,target);
+						});
+						if (damageCards.length) {
+							if (card.name == "sha" && damageCards.some(cardx => cardx.name === "sha") && player.getCardUsable(card) > 0) {
+								eff[3] /= 10;
+							} else if (damageCards.some(cardx => cardx.name !== "sha")) {
+								eff[3] /= 10;
+							}
+						}
 						delete _status.luanchou_judging;
 						return eff;
 					}
