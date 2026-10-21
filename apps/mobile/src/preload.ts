@@ -7,9 +7,6 @@ import { ensureImportSkeleton } from "./ios/import.js";
 import { relaxFileInputFilters } from "./ios/ios-file-input.js";
 import { base64ToArrayBuffer, callbackError, joinFilePath, sanitizeExportName, writeDataToBase64, type NativeAccessResult, type NativeFileSystem } from "./fs/types.js";
 
-/** 构建开关（afterSync.ts 通过 Vite define 注入）：true = 完整包，剔除「下载素材」功能 */
-declare const __NONAME_FULL_ASSETS__: boolean;
-
 /**
  * Android 端通过 SAF（Storage Access Framework）访问游戏目录，
  * 原生实现见 `apps/mobile/android/.../SafFsPlugin.kt`。
@@ -71,7 +68,7 @@ async function hideSystemBars() {
 	}
 }
 
-export default async function preload({ lib, game, ui }) {
+export default async function preload({ lib, game }) {
 	lib.path = (await import("path-browserify-esm")).default;
 
 	const platform = Capacitor.getPlatform();
@@ -91,24 +88,7 @@ export default async function preload({ lib, game, ui }) {
 	// 各平台通用的文件读写 API（checkFile / readFile / writeFile / getFileList ...）
 	attachFileSystemAPI(game, fs);
 
-	// iOS 精简包不含武将原画与语音，完整包全量携带。
-	// 精简包提供两条互补的补齐路径；完整包在构建期（NONAME_FULL_ASSETS=1）把下面
-	// 整段连同两个模块一起从产物中剔除（条件恒假 → 动态 import 被死代码消除）。
-	//
-	// 1）「边玩边下」（默认、无需操作）：游戏用到某个武将的立绘/语音而本地没有时，
-	//    就地把它从上游拉下来写进可写目录。见 `ios/lazy-assets.ts`。
-	// 2）手动批量下载：菜单 → 其它 → 更新 → 下载素材，一次补齐约 970MB。
-	//
-	// 两者都必须在 attachFileSystemAPI 之后安装，因为它们依赖 game.writeFile/checkFile。
-	// 注意：安装时机早于 boot()，而菜单是在 boot() 阶段才构建的，因此菜单包裹一定会被用到。
-	if (!__NONAME_FULL_ASSETS__ && platform === "ios") {
-		const [{ installLazyAssets }, { installAssetDownloader }] = await Promise.all([
-			import("./ios/lazy-assets.js"),
-			import("./ios/asset-download.js"),
-		]);
-		installLazyAssets({ lib, game, ui });
-		installAssetDownloader({ lib, game, ui });
-	}
+	// 暂停安装 iOS 素材下载功能；实现保留在 ios/lazy-assets.ts 和 ios/asset-download.ts。
 
 	// iOS：预建「文件」App 里可见的导入目录与说明，方便玩家手动放素材 / 扩展。
 	// 不 await —— 这是锦上添花，不该拖慢启动，更不该因失败影响游戏。
