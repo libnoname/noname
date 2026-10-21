@@ -176,7 +176,7 @@ const skills = {
 		trigger: { global: ["phaseEnd", "damageBegin1"] },
 		filter(event, player) {
 			if (event.name == "phase") {
-				const card = get.autoViewAs({ name: "juedou", isCard: true }, "unsure");
+				const card = get.autoViewAs({ name: "juedou", isCard: true }, []);
 				return event.player != player && player.countMark("potcuifeng_round") < 2 && player.canUse(card, event.player);
 			}
 			return event.card?.storage?.potcuifeng && game.hasPlayer(current => current.hasHistory("respond", evt => evt.card.name == "sha"));
@@ -187,27 +187,27 @@ const skills = {
 					.chooseBool({
 						prompt: get.prompt(event.skill, trigger.player),
 						prompt2: "视为对其使用一张【决斗】？",
-						ai() {
-							const { player, target } = get.event();
-							const card = get.autoViewAs({ name: "juedou", isCard: true }, "unsure");
-							return get.effect(target, card, player, player);
+						ai(event, player) {
+							const { target } = get.event();
+							const card = get.autoViewAs({ name: "juedou", isCard: true }, []);
+							return get.effect(target, card, player, player) > 0;
 						},
 					})
 					.set("target", trigger.player)
 					.forResult();
-				if (event.result?.bool) {
-					event.result.targets = [trigger.player];
-				}
 			} else {
 				event.result = { bool: true };
 			}
+		},
+		logTarget(event) {
+			return event.name === "phase" ? [event.player] : null;
 		},
 		async content(event, trigger, player) {
 			if (trigger.name == "phase") {
 				player.addTempSkill(`${event.name}_round`, "roundStart");
 				player.addMark(`${event.name}_round`, 1, false);
 				const { targets } = event;
-				const card = get.autoViewAs({ name: "juedou", isCard: true, storage: { potcuifeng: true } }, "unsure");
+				const card = get.autoViewAs({ name: "juedou", isCard: true, storage: { potcuifeng: true } }, []);
 				await player.useCard({ card, targets });
 			} else {
 				const num = game.filterPlayer2().reduce((sum, target) => sum + target.countHistory("respond", evt => evt.card.name == "sha"), 0);
