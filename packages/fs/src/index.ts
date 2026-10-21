@@ -2,6 +2,8 @@ import Fastify from "fastify";
 import fastifyStatic from "@fastify/static";
 import cors from "@fastify/cors";
 import fs from "fs/promises";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
+import crypto from "crypto";
 import path from "path";
 import { cwd } from "process";
 import { exec } from "child_process";
@@ -28,8 +30,31 @@ export const defaultConfig = {
 	server: false,
 	port: 8089,
 	debug: false,
+	// 监听地址：默认仅回环，避免局域网内其它设备直接调用文件接口。
+	// 需要局域网访问（例如手机连电脑上的本地服务）时显式传 host: "0.0.0.0"。
+	host: "127.0.0.1",
 	dirname: cwd(),
 };
+
+/**
+ * 本地会话凭据：首次启动生成并持久化到 `<dirname>/Home/.fs_auth_token`。
+ * 持久化是为了让同名 Cookie 在重启后继续有效（页面/Service Worker 缓存不会立刻重新拉取页面）。
+ */
+function loadAuthToken(dirname: string) {
+	const tokenPath = path.join(dirname, "Home", ".fs_auth_token");
+	try {
+		const saved = readFileSync(tokenPath, "utf-8").trim();
+		if (saved.length >= 32) return saved;
+	} catch {}
+	const token = crypto.randomBytes(32).toString("hex");
+	try {
+		mkdirSync(path.dirname(tokenPath), { recursive: true });
+		writeFileSync(tokenPath, token, { mode: 0o600 });
+	} catch {
+		console.warn("无法持久化本地会话凭据，本次运行使用临时凭据");
+	}
+	return token;
+}
 
 function createFsHandler(dirname: string) {
 	const join = (url: string) => path.join(dirname, url);
@@ -58,6 +83,19 @@ function createFsHandler(dirname: string) {
 	return { join, ensureSafe, wrap };
 }
 
+/** 仅允许本机来源（localhost / 127.0.0.1 / [::1]，端口不限，兼容 vite 开发服务器） */
+function isLocalOrigin(value: string) {
+	try {
+		const { hostname } = new URL(value);
+		return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "[::1]";
+	} catch {
+		return false;
+	}
+}
+
+const AUTH_COOKIE = "noname_fs_auth";
+const DEV_HEADER = "noname-fs-dev";
+
 export default function createApp(config: Partial<typeof defaultConfig> = {}) {
 	const cfg = { ...defaultConfig, ...config };
 	cfg.dirname = path.resolve(cfg.dirname);
@@ -67,9 +105,55 @@ export default function createApp(config: Partial<typeof defaultConfig> = {}) {
 	});
 
 	const { ensureSafe, wrap } = createFsHandler(cfg.dirname);
+	const authToken = loadAuthToken(cfg.dirname);
+
+	const apiPaths = new Set([
+		"/createDir",
+		"/removeDir",
+		"/readFile",
+		"/readFileAsText",
+		"/writeFile",
+		"/removeFile",
+		"/getFileList",
+		"/checkFile",
+		"/checkDir",
+	]);
+
+	const hasAuth = (req: any) => {
+		const header = String(req.headers["x-noname-fs-auth"] ?? "");
+		if (header && header === authToken) return true;
+		// 本地开发：vite 代理注入固定标记，仅在 debug 模式下接受；
+		// 跨站页面无法伪造该请求头（自定义头会触发 CORS 预检，而预检来源必须为本机）。
+		if (cfg.debug && header === DEV_HEADER) return true;
+		const cookie = String(req.headers.cookie ?? "");
+		return cookie.split(";").some(item => item.trim() === `${AUTH_COOKIE}=${authToken}`);
+	};
+
+	// 统一鉴权：拒绝跨站来源；文件接口必须携带本地会话凭据
+	app.addHook("onRequest", async (req, reply) => {
+		const origin = String(req.headers.origin ?? "");
+		const referer = String(req.headers.referer ?? "");
+		if ((origin && !isLocalOrigin(origin)) || (referer && !isLocalOrigin(referer))) {
+			return reply.code(403).send(failedJson(403, "拒绝跨站请求"));
+		}
+		const pathname = req.url.split("?")[0];
+		if (apiPaths.has(pathname)) {
+			if (!hasAuth(req)) {
+				return reply.code(403).send(failedJson(403, "未授权：缺少本地会话凭据"));
+			}
+		} else if (req.method === "GET") {
+			// 任何静态页面加载都会刷新会话 Cookie（同站请求携带；跨站请求不会携带 SameSite=Strict 的 Cookie）
+			reply.header(
+				"Set-Cookie",
+				`${AUTH_COOKIE}=${authToken}; Path=/; HttpOnly; SameSite=Strict; Max-Age=31536000`
+			);
+		}
+	});
 
 	app.register(cors, {
-		origin: "*",
+		origin: (origin: string | undefined, callback: (err: Error | null, allow: boolean) => void) => {
+			callback(null, !origin || isLocalOrigin(origin));
+		},
 		methods: ["GET", "POST", "OPTIONS"],
 	});
 
@@ -204,7 +288,7 @@ export default function createApp(config: Partial<typeof defaultConfig> = {}) {
 	});
 
 	const callback = () => {
-		console.log(`Server listening on port ${cfg.port}`);
+		console.log(`Server listening on ${cfg.host}:${cfg.port}`);
 		if (!cfg.server && !cfg.debug) exec(`start http://localhost:${cfg.port}/`);
 	};
 
@@ -221,7 +305,7 @@ export default function createApp(config: Partial<typeof defaultConfig> = {}) {
 	// } else {
 	// 	app.listen(config.port, callback);
 	// }
-	app.listen({ port: cfg.port }, callback);
+	app.listen({ port: cfg.port, host: cfg.host }, callback);
 
 	return app;
 }

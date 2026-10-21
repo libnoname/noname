@@ -10,6 +10,8 @@ createApp({
 	port: 8089,
 	dirname,
 	server: true,
+	// 未打包（开发）时开启 debug：允许 vite 代理注入的本地开发标记，便于 Electron 开发调试；打包后关闭。
+	debug: !app.isPackaged,
 });
 
 // 获取单实例锁
