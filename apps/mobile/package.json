@@ -11,6 +11,7 @@
     "sync": "tsx afterSync.ts",
     "build:android": "tsx buildAndroid.ts",
     "build:ios": "tsx ios/build.ts",
+    "test": "node --test \"test/*.test.mjs\"",
     "lint": "pnpm eslint src/**"
   },
   "dependencies": {
