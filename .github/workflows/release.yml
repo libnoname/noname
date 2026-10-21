@@ -295,7 +295,7 @@ jobs:
 
       - name: Capacitor sync
         working-directory: apps/mobile
-        run: pnpm sync
+        run: pnpm sync:ios
 
       - name: Strip character art and voice
         working-directory: apps/mobile

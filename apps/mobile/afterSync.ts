@@ -8,6 +8,11 @@ const workspaceRoot = resolve(root, "../..");
 const distDir = resolve(workspaceRoot, "dist");
 const preloadOutDir = resolve(root, ".mobile-preload");
 const androidAssetsNodeModules = resolve(root, "android/app/src/main/assets/public/node_modules");
+const platform = process.argv[2];
+
+if (platform !== undefined && platform !== "android" && platform !== "ios") {
+	throw new Error(`Invalid sync platform: ${platform}`);
+}
 
 function cleanOldPreloadArtifacts() {
 	if (!existsSync(distDir)) return;
@@ -55,7 +60,7 @@ function capSync() {
 	// 直接调用 CLI，避免依赖平台的 shell 命令解析。
 	const cliEntry = resolve(root, "node_modules/@capacitor/cli/bin/capacitor");
 
-	const result = spawnSync(process.execPath, [cliEntry, "sync"], {
+	const result = spawnSync(process.execPath, [cliEntry, "sync", ...(platform ? [platform] : [])], {
 		cwd: root,
 		stdio: "inherit",
 	});
@@ -131,7 +136,12 @@ function writeAssetManifest() {
 }
 
 await buildPreload();
-if (process.env.NONAME_FULL_ASSETS !== "1") writeDownloadManifest();
-writeAssetManifest();
+if (platform === "android") {
+	rmSync(resolve(distDir, "asset-download-manifest.json"), { force: true });
+	rmSync(resolve(distDir, "asset-manifest.json"), { force: true });
+} else {
+	if (process.env.NONAME_FULL_ASSETS !== "1") writeDownloadManifest();
+	writeAssetManifest();
+}
 capSync();
-patchAndroidAssets();
+if (platform !== "ios") patchAndroidAssets();

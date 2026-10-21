@@ -9,6 +9,8 @@
   ],
   "scripts": {
     "sync": "tsx afterSync.ts",
+    "sync:android": "tsx afterSync.ts android",
+    "sync:ios": "tsx afterSync.ts ios",
     "build:android": "tsx buildAndroid.ts",
     "build:ios": "tsx ios/build.ts",
     "test": "node --test \"test/*.test.mjs\"",

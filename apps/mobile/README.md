@@ -8,10 +8,12 @@ The Android project serves the built web app from `../../dist`.
 
 ```bash
 pnpm build
-pnpm -F @noname/mobile sync
+pnpm -F @noname/mobile sync:android
 ```
 
-`sync` first bundles `src/preload.ts` into `../../dist/preload.js`, then runs `cap sync`, and finally renames packaged `.pnpm` assets to `_pnpm` for Android assets compatibility. After syncing, open `apps/mobile/android` in Android Studio or build with Gradle.
+`sync:android` first bundles `src/preload.ts` into `../../dist/preload.js`, then runs `cap sync android`, and finally renames packaged `.pnpm` assets to `_pnpm` for Android assets compatibility. After syncing, open `apps/mobile/android` in Android Studio or build with Gradle.
+
+Use `pnpm -F @noname/mobile sync:ios` to sync only iOS and generate its asset manifests. Use `pnpm -F @noname/mobile sync` to sync both platforms. Builds and CI select their platform explicitly.
 
 ## CI Build
 

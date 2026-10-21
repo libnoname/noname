@@ -60,7 +60,7 @@ if (args.has("--skip-web-build")) {
 	run("pnpm", ["build"], workspaceRoot, "Web build");
 }
 
-run("pnpm", ["sync"], mobileRoot, "Capacitor sync");
+run("pnpm", ["sync:ios"], mobileRoot, "Capacitor sync");
 
 run("xcodebuild", [buildTargetFlag, buildTarget, "-scheme", "App", "-configuration", configuration, "-archivePath", archivePath, "-destination", "generic/platform=iOS", "DEVELOPMENT_TEAM=" + teamId, "CODE_SIGN_STYLE=Automatic", "archive"], iosRoot, "xcodebuild archive");
 
