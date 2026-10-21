@@ -26,10 +26,6 @@ async function buildPreload() {
 	await build({
 		root,
 		configFile: false,
-		// 完整包不打包素材下载功能。
-		define: {
-			__NONAME_FULL_ASSETS__: JSON.stringify(process.env.NONAME_FULL_ASSETS === "1"),
-		},
 		build: {
 			outDir: preloadOutDir,
 			emptyOutDir: true,
