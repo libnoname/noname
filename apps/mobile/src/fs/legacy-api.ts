@@ -81,18 +81,15 @@ export function attachFileSystemAPI(game: FileApiTarget, native: NativeFileSyste
 	};
 
 	game.writeFile = function writeFile(data, path, name, callback = () => {}) {
-		// 先确保父目录存在，再写入；两步都失败时统一回调同一个错误
-		game.ensureDirectory?.(path, async () => {
-			try {
+		native
+			.createDir({ dir: path })
+			.then(async () => {
 				await native.writeFile({
 					path: joinFilePath(path, name),
 					data: await writeDataToBase64(data),
 				});
-				callback();
-			} catch (error) {
-				callback(error);
-			}
-		});
+			})
+			.then(() => callback(), callback);
 	};
 
 	game.removeFile = function removeFile(fileName, callback = () => {}, onerror = () => {}) {
