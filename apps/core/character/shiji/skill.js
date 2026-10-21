@@ -7378,7 +7378,7 @@ const skills = {
 							if (vcard.cards.some(cardxx => cardxx === cardx)) {
 								return false;
 							}
-							return get.is.damageCard(card) && player.canUse(card, target);
+							return get.is.damageCard(cardx) && player.canUse(cardx, target);
 						});
 						let recheck = false;
 						if (damageCards.length) {

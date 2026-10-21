@@ -18179,6 +18179,38 @@ const skills = {
 			}
 			_status.postReconnect.dchuashang[1].add(type);
 			const cardId = `dchuashang_${type}`;
+			if (!lib.card[cardId]) {
+				const card = {
+					derivation: "cuilingyi",
+					fullskin: true,
+					image: "image/card/cuilingyi_huashang.png",
+					type,
+					ai: { basic: { equipValue: 2 } },
+					originalType: type,
+					cardPrompt(card) {
+						let str = `原本是一张${get.translation(this.originalType)}牌。`;
+						const subtypes = get.subtypes(card);
+						if (subtypes?.length) {
+							str = `${str.slice(0, -1)}，被置入了${subtypes.map(i => `${get.translation(i)}栏`).join("、")}。`;
+						}
+						return str;
+					},
+					async onLose(event, trigger, player) {
+						event.cards.forEach(card => {
+							card.fix();
+							ui.discardPile.appendChild(card);
+							game.log(card, "被置入了弃牌堆");
+						});
+						if (event.getParent(2).name === "gain") {
+							const remove = event.getParent(2).cards.filter(card => card[card.cardSymbol] === event.card);
+							event.getParent(2).cards.removeArray(remove);
+						}
+					},
+				};
+				lib.translate[cardId] = "华裳·" + get.translation(type);
+				lib.translate[`${cardId}_info`] = `原本是一张${get.translation(type)}牌。`;
+				lib.card[cardId] = card;
+			}
 			if (!lib.card[cardId].ai?.basic?.value) {
 				lib.card[cardId].type = "equip";
 				game.finishCard(cardId);
