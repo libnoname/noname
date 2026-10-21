@@ -16,6 +16,8 @@ jobs:
             script: lint
           - name: Prettier Check
             script: lint:prettier
+          - name: Unit Tests
+            script: test
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
