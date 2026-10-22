@@ -23813,37 +23813,46 @@ const skills = {
 			}
 			const result = await player
 				.chooseButton(dialog, [1, num], true)
-				.set("ai", function (button) {
-					var player = _status.event.player,
-						target = _status.event.getParent().target;
-					var card = button.link,
-						cards = ui.selected.buttons.map(button => button.link);
-					var hs = player.getCards("h"),
-						discard = false;
-					for (var i of cards) {
-						if (hs.includes(i)) {
+				.set("processAI", function () {
+					const player = get.player(),
+						target = get.event().getParent().target;
+					const playerHs = player.getCards("h"),
+						targetHs = target.getCards("h");
+					const range = get.select(get.event().selectButton);
+					const cards = [];
+					let discard = false;
+					//若能观看对方手牌，则优先选择对方的闪
+					if (player.hasSkillTag("viewHandcard", null, target, true)) {
+						let shan = targetHs.filter(card => card.name === "shan");
+						if (shan.length) {
 							discard = true;
-							break;
+							shan = shan.randomGets(range[1]);
+							targetHs.removeArray(shan);
+							cards.addArray(shan);
 						}
 					}
-					if (hs.includes(card)) {
-						if (discard || get.name(card) != "shan") {
-							return 0;
+					//否则选择自己的闪
+					if (!discard) {
+						let shan = playerHs.filter(card => card.name === "shan").sort((a, b) => get.value(a) - get.value(b))[0];
+						if (shan) {
+							discard = true;
+							cards.push(shan);
 						}
-						if (target.hasCard(card => get.value(card, target) > 5, "e")) {
-							return 2;
+					}
+					//剩余数选择对方的牌
+					if (cards.length < range[1]) {
+						const rest = range[1] - cards.length;
+						let num = Math.min(targetHs.length, rest);
+						//若有展示闪、能全选择对方全部牌、对方没有有高价值装备，则留一个空位用于获得牌
+						if (discard && num >= targetHs.length && !target.hasCards("e", card => get.value(card, target) > 5)) {
+							num = targetHs.length - 1;
 						}
-						return 0;
+						cards.addArray(targetHs.randomGets(num));
 					}
-					if (
-						discard &&
-						!target.hasCard(function (cardx) {
-							return cardx != card && !cards.includes(cardx) && get.value(cardx, target) > 0;
-						}, "he")
-					) {
-						return 0;
-					}
-					return 1 + Math.random();
+					return {
+						bool: true,
+						links: cards,
+					};
 				})
 				.forResult();
 			let list1 = [],
