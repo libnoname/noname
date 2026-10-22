@@ -49,16 +49,29 @@
 }
 
 /* -----------------------OL许劭 评鉴窗口---------------------- */
-.olshilun-window {
+.dialog.olshilun-window {
 	position: absolute;
-	inset: 0;
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	width: 100%;
+	height: 100%;
 	z-index: 91;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	background: none;
+	box-shadow: none;
 	pointer-events: auto;
 	transition: none;
+	transform: none;
+	margin: 0;
+}
+
+.dialog.olshilun-window > .bar,
+.dialog.olshilun-window > .content-container {
+	display: none;
 }
 
 .olshilun-mask {
@@ -345,7 +358,7 @@
 	z-index: 9;
 }
 
-.olshilun-window > .olshilun-progressbar {
+.dialog.olshilun-window > .olshilun-progressbar {
 	position: absolute;
 	left: calc(50% - var(--olshilun-bar-width, 600px) / 2);
 	bottom: var(--olshilun-bar-bottom, 10px);
@@ -357,7 +370,7 @@
 	transition: none;
 }
 
-.olshilun-window > .olshilun-progressbar::before {
+.dialog.olshilun-window > .olshilun-progressbar::before {
 	content: "";
 	position: absolute;
 	left: var(--progress-bar-left, 0);

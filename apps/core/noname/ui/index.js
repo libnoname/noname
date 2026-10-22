@@ -142,12 +142,6 @@ export class UI {
 	 */
 	toastQueue = [];
 	/**
-	 * OL许劭评鉴窗口
-	 * @type {any}
-	 */
-	OlshilunWindow;
-
-	/**
 	 * @type {HTMLDivElement}
 	 */
 	cardPile;

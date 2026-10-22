@@ -1,387 +1,5 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
-ui.OlshilunWindow = class OlshilunWindow {
-	constructor(gid, data, ownerid) {
-		this.ASSET = lib.assetURL + "image/olxushao/";
-		this.gid = gid;
-		this.data = data;
-		this.ownerid = ownerid;
-		this.size = data.size || 6;
-		this.selected = [];
-		this.found = [];
-		this.used = {};
-		this.hidden = {};
-		this.glow = [];
-		this.glows = [];
-		this.clock = null;
-		this.autoTimer = null;
-		this.result = null;
-		this.finish = null;
-		this.init();
-	}
-	asset(file) {
-		return `url("${this.ASSET}${file}")`;
-	}
-	stagePoint(cx, cy) {
-		const stage = this.stage.getBoundingClientRect();
-		const zoom = this.zoom || 1;
-		return {
-			left: (cx - stage.left) / zoom,
-			top: (cy - stage.top) / zoom,
-		};
-	}
-	elementCenter(el) {
-		if (!el || !this.stage) return this.stagePoint(0, 0);
-		const rect = el.getBoundingClientRect();
-		return this.stagePoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
-	}
-	wordPoint(cells) {
-		if (!this.stage) return null;
-		if (!cells || !cells.length) {
-			const box = this.stage.getBoundingClientRect();
-			return this.stagePoint(box.left + box.width / 2, box.top + box.height / 2);
-		}
-		const first = this.cells[cells[0]];
-		const last = this.cells[cells[cells.length - 1]];
-		if (!first || !last) return null;
-		const a = first.getBoundingClientRect();
-		const b = last.getBoundingClientRect();
-		return this.stagePoint((a.left + a.width / 2 + b.left + b.width / 2) / 2, (a.top + a.height / 2 + b.top + b.height / 2) / 2);
-	}
-	flySkill(name, start, target, done) {
-		const wrap = ui.create.div(".olshilun-skill-flywrap", this.stage);
-		const fly = ui.create.div(".olshilun-skill-fly", wrap);
-		fly.innerHTML = get.translation(name);
-		fly.style.backgroundImage = this.asset("btnn1.png");
-		wrap.style.transition = "none";
-		wrap.style.left = start.left + "px";
-		wrap.style.top = start.top + "px";
-		wrap.style.transform = "translate(-50%, -50%) scale(0)";
-		void wrap.offsetWidth;
-		wrap.style.transition = "transform 0.32s ease-out";
-		wrap.style.transform = "translate(-50%, -50%) scale(1)";
-		const win = this;
-		const finishFx = () => {
-			if (target) target.classList.remove("olshilun-pending");
-			if (done) done();
-		};
-		setTimeout(() => {
-			if (!win.node || !win.node.parentNode) {
-				wrap.remove();
-				return finishFx();
-			}
-			const end = win.elementCenter(target);
-			wrap.style.transition = "left 0.56s linear, top 0.56s linear";
-			wrap.style.left = end.left + "px";
-			wrap.style.top = end.top + "px";
-			setTimeout(() => {
-				wrap.remove();
-				finishFx();
-			}, 560);
-		}, 320);
-	}
-	playObtainSkillFx(title) {
-		const skills = title && title.skills ? title.skills.slice() : [];
-		if (!skills.length || !this.stage || !this.panel) return;
-		const start = this.wordPoint(title.cells);
-		if (!start) return;
-		const win = this;
-		const run = index => {
-			if (!win.node || !win.node.parentNode || index >= skills.length) return;
-			const name = skills[index];
-			const item = ui.create.div(".olshilun-skill-item olshilun-pending", win.panel);
-			item.innerHTML = get.translation(name);
-			item.style.backgroundImage = win.asset("btnn1.png");
-			win.flySkill(name, start, item, () => run(index + 1));
-		};
-		run(0);
-	}
-	paint() {
-		const data = this.data;
-		for (let i = 0; i < this.cells.length; i++) {
-			const cell = this.cells[i];
-			const isSelected = this.selected.includes(i);
-			const isUsed = !!this.used[i];
-			const isHidden = !!this.hidden[i];
-			const isGlow = this.glow.includes(i);
-			const char = cell.querySelector(".olshilun-char");
-			cell.classList.toggle("olshilun-on", isSelected && !isUsed);
-			cell.classList.toggle("done", !!isUsed);
-			let bg = "pingjian_item_bg.png";
-			if (isUsed) bg = "pingjian_item_bg_help.png";
-			else if (isSelected) bg = "pingjian_item_bg_link.png";
-			else if (isGlow) bg = "pingjian_item_bg_help.png";
-			cell.style.backgroundImage = this.asset(bg);
-			let frame = cell.querySelector(".olshilun-select");
-			if (isSelected && !isUsed) {
-				if (!frame) {
-					frame = ui.create.div(".olshilun-select", cell);
-					frame.style.backgroundImage = this.asset("skill_pingjian_selected.png");
-				}
-			} else if (frame) frame.remove();
-			if (char) {
-				char.innerHTML = isHidden && !isUsed ? "" : data.chars[i];
-				char.classList.toggle("olshilun-hint", i === data.hint || (isGlow && !isUsed && !isSelected));
-			}
-			let egg = cell.querySelector(".olshilun-egg");
-			if (isHidden) {
-				if (!egg) {
-					egg = ui.create.div(".olshilun-egg", cell);
-					egg.style.backgroundImage = this.asset("skill_pingjian_unknown.png");
-				}
-			} else if (egg) egg.remove();
-		}
-	}
-	_createProgressBar() {
-		this.progressBar = ui.create.div(".olshilun-progressbar", this.node);
-		this.bar = this.progressBar;
-		this.progressBar.style.transition = "none";
-		this.progressBar.style.visibility = "hidden";
-		this.progressBar.style.setProperty("--olshilun-bar-bottom", "54px");
-		this.progressBar.style.setProperty("--olshilun-bar-width", "510px");
-		this.progressBar.style.setProperty("--olshilun-bar-height", "10px");
-		this.progressBar.style.setProperty("--progress-bar-height", "80%");
-		this.progressBar.style.setProperty("--progress-bar-left", "0.2%");
-		this.progressBar.style.setProperty("--progress-bar-top", "10%");
-		this.hint = ui.create.div(".olshilun-status", this.progressBar);
-		this.hint.innerHTML = this.foundText();
-		this._alignProgressBar();
-		const win = this;
-		requestAnimationFrame(() => {
-			win._alignProgressBar();
-			if (win.progressBar) win.progressBar.style.visibility = "";
-		});
-	}
-	_alignProgressBar() {
-		const bar = this.progressBar;
-		const grid = this.grid;
-		if (!bar || !grid || !this.node) return;
-		const host = this.node.getBoundingClientRect();
-		const box = grid.getBoundingClientRect();
-		bar.style.left = box.left - host.left + (box.width - 510) / 2 + "px";
-		bar.style.top = box.bottom - host.top + 80 + "px";
-		bar.style.bottom = "auto";
-	}
-	runCountdown(totalSec, callback) {
-		const el = this.progressBar;
-		const start = Date.now();
-		const frame = 1000 / 30;
-		let isCancelled = false;
-		let timeoutId = null;
-		const tick = () => {
-			if (!el || isCancelled || !this.node || !this.node.parentNode) return;
-			const left = Math.max(0, totalSec - (Date.now() - start) / 1000);
-			el.style.setProperty("--clip", "inset(0 " + (1 - left / totalSec) * 100 + "% 0 0)");
-			if (left > 0) timeoutId = setTimeout(tick, frame);
-			else if (callback) callback();
-		};
-		tick();
-		return {
-			cancel() {
-				isCancelled = true;
-				if (timeoutId) clearTimeout(timeoutId);
-			},
-		};
-	}
-	reloadBar(sec) {
-		if (!this.progressBar) return;
-		if (this.countdown) {
-			this.countdown.cancel();
-			this.countdown = null;
-		}
-		this.progressBar.style.setProperty("--clip", "inset(0 0 0 0)");
-		this.countdown = this.runCountdown(sec);
-	}
-	foundText() {
-		const n = this.found?.length || 0;
-		return n ? "您已经完成了" + n + "个战功" : "请连线出完整战功";
-	}
-	say(text) {
-		if (this.hint) this.hint.innerHTML = text || "";
-	}
-	sayOwner(text) {
-		const me = game.me;
-		if (me && me.playerid && this.ownerid && me.playerid !== this.ownerid) {
-			this.say("请等待" + ((this.data && this.data.ownerName) || "") + "连线出完整战功");
-			return;
-		}
-		this.say(text);
-	}
-	keepGlow(entry) {
-		const gid = this.gid;
-		if (entry.timer) clearTimeout(entry.timer);
-		entry.timer = setTimeout(() => {
-			const later = ui["olshilunDialog_" + gid] && ui["olshilunDialog_" + gid].olshilun;
-			if (!later || !later.glows) return;
-			later.glows = later.glows.filter(item => item !== entry);
-			later.glow = later.glows.flatMap(item => item.cells);
-			later.paint();
-		}, 6000);
-	}
-	light(index) {
-		if (this.found.includes(index)) return;
-		const title = this.data.titles[index];
-		if (!title) return;
-		if (!this.glows) this.glows = [];
-		if (this.glows.some(entry => entry.index === index)) return;
-		const entry = { index, cells: title.cells.slice(), timer: null };
-		this.glows.push(entry);
-		this.glow = this.glows.flatMap(item => item.cells);
-		this.paint();
-		this.keepGlow(entry);
-	}
-	dark(index) {
-		this.hidden[index] = true;
-		this.paint();
-	}
-	applySelect(list) {
-		this.selected = (list || []).slice();
-		if (this.glows) {
-			for (const entry of this.glows) {
-				if (entry.cells.some(cell => this.selected.includes(cell))) this.keepGlow(entry);
-			}
-		}
-		this.paint();
-		this.sayOwner(this.foundText());
-	}
-	applyFound(index) {
-		const title = this.data.titles[index];
-		if (!title || this.found.includes(index)) return;
-		this.found.push(index);
-		for (const cell of title.cells) this.used[cell] = true;
-		this.selected = [];
-		if (this.glows) {
-			for (const entry of this.glows) {
-				if (entry.index === index && entry.timer) clearTimeout(entry.timer);
-			}
-			this.glows = this.glows.filter(entry => entry.index !== index);
-		}
-		this.glow = this.glows ? this.glows.flatMap(entry => entry.cells) : [];
-		this.paint();
-		this.playObtainSkillFx(title);
-		this.sayOwner(this.foundText());
-	}
-	showFinish(text) {
-		if (this.clock) {
-			clearInterval(this.clock);
-			this.clock = null;
-		}
-		this.say(text || "");
-		this.reloadBar(2);
-	}
-	close() {
-		if (this.clock) clearInterval(this.clock);
-		if (this.autoTimer) clearInterval(this.autoTimer);
-		if (this.countdown) {
-			this.countdown.cancel();
-			this.countdown = null;
-		}
-		if (this.node && this.node.olshilunMask) this.node.olshilunMask.remove();
-		if (this.node) this.node.remove();
-		delete ui["olshilunDialog_" + this.gid];
-		const helper = ui["olshilunHelper_" + this.gid];
-		if (helper) helper.remove();
-		delete ui["olshilunHelper_" + this.gid];
-	}
-	addHelper(data) {
-		const me = game.me;
-		const gid = this.gid;
-		const ownerid = this.ownerid;
-		if (!(me && me.playerid && me.playerid !== ownerid && (!me.isIn || me.isIn()) && !ui["olshilunHelper_" + gid])) return;
-		const helper = ui.create.div(".olshilun-btns", this.stage);
-		ui["olshilunHelper_" + gid] = helper;
-		const helperButtons = [];
-		let helperUsed = false;
-		const lockHelper = () => {
-			helperUsed = true;
-			for (const button of helperButtons) {
-				button.dataset.olshilunDisabled = "1";
-				button.style.filter = "grayscale(1)";
-				button.style.boxShadow = "none";
-			}
-		};
-		const pickTitle = () => {
-			const current = ui["olshilunDialog_" + gid] && ui["olshilunDialog_" + gid].olshilun;
-			const list = [];
-			for (let i = 0; i < data.titles.length; i++) {
-				if (!current || !current.found.includes(i)) list.push(i);
-			}
-			return list.randomGet();
-		};
-		const pickCell = () => {
-			const current = ui["olshilunDialog_" + gid] && ui["olshilunDialog_" + gid].olshilun;
-			const list = [];
-			for (let i = 0; i < data.chars.length; i++) {
-				if (current && (current.used[i] || current.hidden[i])) continue;
-				list.push(i);
-			}
-			return list.randomGet();
-		};
-		const addButton = (file, key, action) => {
-			const button = ui.create.div(".olshilun-btn", helper);
-			button.style.backgroundImage = this.asset(file);
-			button.addEventListener(lib.config.touchscreen ? "touchend" : "click", () => {
-				if (helperUsed || _status.dragged || _status.justdragged) return;
-				if (action === "glow" ? pickTitle() == null : pickCell() == null) return;
-				if (game.online) {
-					game.requestSkillData("olshilun_sync", key, 5000, gid);
-				} else {
-					lib.skill.olshilun.helperAction(game.me, gid, action);
-				}
-				lockHelper();
-			});
-			helperButtons.push(button);
-		};
-		addButton("pingjian_btn_help.png", "assist", "glow");
-		addButton("pingjian_btn_hide.png", "hinder", "hide");
-	}
-	init() {
-		const data = this.data;
-		const gid = this.gid;
-		const size = this.size;
-		const ASSET = this.ASSET;
-		const mask = ui.create.div(".olshilun-mask", ui.window);
-		const node = ui.create.div(".olshilun-window", ui.window);
-		node.videoId = gid;
-		node.olshilunMask = mask;
-		node.olshilun = this;
-		this.node = node;
-		const stage = ui.create.div(".olshilun-stage", node);
-		this.stage = stage;
-		this.zoom = 0.75;
-		const scroll = ui.create.div(".olshilun-scroll", stage);
-		const heading = ui.create.div(".olshilun-title", scroll);
-		heading.innerHTML = "评鉴";
-		const field = ui.create.div(".olshilun-grid", scroll);
-		this.grid = field;
-		const cells = [];
-		for (let y = 0; y < size; y++) {
-			for (let x = 0; x < size; x++) {
-				const index = y * size + x;
-				const cell = ui.create.div(".olshilun-cell", field);
-				cell.dataset.index = String(index);
-				cell.style.gridColumn = String(x + 1);
-				cell.style.gridRow = String(y + 1);
-				cell.style.backgroundImage = `url("${ASSET}pingjian_item_bg.png")`;
-				const char = ui.create.div(".olshilun-char", cell);
-				char.innerHTML = data.chars[index];
-				cells[index] = cell;
-			}
-		}
-		this.cells = cells;
-		const sidebar = ui.create.div(".olshilun-skills", stage);
-		sidebar.style.borderImage = `url("${ASSET}pingjian_skillitem_bg.png") 40 4 4 4 fill stretch`;
-		const sidebarTitle = ui.create.div(".olshilun-skills-title", sidebar);
-		sidebarTitle.innerHTML = "获取技能";
-		this.panel = ui.create.div(".olshilun-skill-list", sidebar);
-		this._createProgressBar();
-		this.paint();
-		this.sayOwner(this.foundText());
-		ui["olshilunDialog_" + gid] = node;
-		this.addHelper(data);
-	}
-};
-
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
 	// 唐棠：择行 by weiqiaocode
@@ -884,6 +502,395 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
+		createDialog(gid, data, ownerid) {
+			const exist = get.idDialog(gid);
+			if (exist) return exist;
+			const dialog = ui.create.dialog("hidden");
+			dialog.videoId = gid;
+			dialog.classList.add("olshilun-window", "fixed");
+			dialog.ASSET = lib.assetURL + "image/olxushao/";
+			dialog.gid = gid;
+			dialog.data = data;
+			dialog.ownerid = ownerid;
+			dialog.size = data.size || 6;
+			dialog.selected = [];
+			dialog.found = [];
+			dialog.used = {};
+			dialog.hiddenCells = {};
+			dialog.glow = [];
+			dialog.glows = [];
+			dialog.clock = null;
+			dialog.autoTimer = null;
+			dialog.result = null;
+			dialog.finish = null;
+			dialog.asset = function (file) {
+				return `url("${this.ASSET}${file}")`;
+			};
+			dialog.stagePoint = function (cx, cy) {
+				const stage = this.stage.getBoundingClientRect();
+				const zoom = this.zoom || 1;
+				return {
+					left: (cx - stage.left) / zoom,
+					top: (cy - stage.top) / zoom,
+				};
+			}
+			dialog.elementCenter = function (el) {
+				if (!el || !this.stage) return this.stagePoint(0, 0);
+				const rect = el.getBoundingClientRect();
+				return this.stagePoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+			}
+			dialog.wordPoint = function (cells) {
+				if (!this.stage) return null;
+				if (!cells || !cells.length) {
+					const box = this.stage.getBoundingClientRect();
+					return this.stagePoint(box.left + box.width / 2, box.top + box.height / 2);
+				}
+				const first = this.cells[cells[0]];
+				const last = this.cells[cells[cells.length - 1]];
+				if (!first || !last) return null;
+				const a = first.getBoundingClientRect();
+				const b = last.getBoundingClientRect();
+				return this.stagePoint((a.left + a.width / 2 + b.left + b.width / 2) / 2, (a.top + a.height / 2 + b.top + b.height / 2) / 2);
+			}
+			dialog.flySkill = function (name, start, target, done) {
+				const wrap = ui.create.div(".olshilun-skill-flywrap", this.stage);
+				const fly = ui.create.div(".olshilun-skill-fly", wrap);
+				fly.innerHTML = get.translation(name);
+				fly.style.backgroundImage = this.asset("btnn1.png");
+				wrap.style.transition = "none";
+				wrap.style.left = start.left + "px";
+				wrap.style.top = start.top + "px";
+				wrap.style.transform = "translate(-50%, -50%) scale(0)";
+				void wrap.offsetWidth;
+				wrap.style.transition = "transform 0.32s ease-out";
+				wrap.style.transform = "translate(-50%, -50%) scale(1)";
+				const win = this;
+				const finishFx = () => {
+					if (target) target.classList.remove("olshilun-pending");
+					if (done) done();
+				};
+				setTimeout(() => {
+					if (!win.node || !win.node.parentNode) {
+						wrap.remove();
+						return finishFx();
+					}
+					const end = win.elementCenter(target);
+					wrap.style.transition = "left 0.56s linear, top 0.56s linear";
+					wrap.style.left = end.left + "px";
+					wrap.style.top = end.top + "px";
+					setTimeout(() => {
+						wrap.remove();
+						finishFx();
+					}, 560);
+				}, 320);
+			}
+			dialog.playObtainSkillFx = function (title) {
+				const skills = title && title.skills ? title.skills.slice() : [];
+				if (!skills.length || !this.stage || !this.panel) return;
+				const start = this.wordPoint(title.cells);
+				if (!start) return;
+				const win = this;
+				const run = index => {
+					if (!win.node || !win.node.parentNode || index >= skills.length) return;
+					const name = skills[index];
+					const item = ui.create.div(".olshilun-skill-item olshilun-pending", win.panel);
+					item.innerHTML = get.translation(name);
+					item.style.backgroundImage = win.asset("btnn1.png");
+					win.flySkill(name, start, item, () => run(index + 1));
+				};
+				run(0);
+			}
+			dialog.paint = function () {
+				const data = this.data;
+				for (let i = 0; i < this.cells.length; i++) {
+					const cell = this.cells[i];
+					const isSelected = this.selected.includes(i);
+					const isUsed = !!this.used[i];
+					const isHidden = !!this.hiddenCells[i];
+					const isGlow = this.glow.includes(i);
+					const char = cell.querySelector(".olshilun-char");
+					cell.classList.toggle("olshilun-on", isSelected && !isUsed);
+					cell.classList.toggle("done", !!isUsed);
+					let bg = "pingjian_item_bg.png";
+					if (isUsed) bg = "pingjian_item_bg_help.png";
+					else if (isSelected) bg = "pingjian_item_bg_link.png";
+					else if (isGlow) bg = "pingjian_item_bg_help.png";
+					cell.style.backgroundImage = this.asset(bg);
+					let frame = cell.querySelector(".olshilun-select");
+					if (isSelected && !isUsed) {
+						if (!frame) {
+							frame = ui.create.div(".olshilun-select", cell);
+							frame.style.backgroundImage = this.asset("skill_pingjian_selected.png");
+						}
+					} else if (frame) frame.remove();
+					if (char) {
+						char.innerHTML = isHidden && !isUsed ? "" : data.chars[i];
+						char.classList.toggle("olshilun-hint", i === data.hint || (isGlow && !isUsed && !isSelected));
+					}
+					let egg = cell.querySelector(".olshilun-egg");
+					if (isHidden) {
+						if (!egg) {
+							egg = ui.create.div(".olshilun-egg", cell);
+							egg.style.backgroundImage = this.asset("skill_pingjian_unknown.png");
+						}
+					} else if (egg) egg.remove();
+				}
+			}
+			dialog._createProgressBar = function () {
+				this.progressBar = ui.create.div(".olshilun-progressbar", this.node);
+				this.bar = this.progressBar;
+				this.progressBar.style.transition = "none";
+				this.progressBar.style.visibility = "hidden";
+				this.progressBar.style.setProperty("--olshilun-bar-bottom", "54px");
+				this.progressBar.style.setProperty("--olshilun-bar-width", "510px");
+				this.progressBar.style.setProperty("--olshilun-bar-height", "10px");
+				this.progressBar.style.setProperty("--progress-bar-height", "80%");
+				this.progressBar.style.setProperty("--progress-bar-left", "0.2%");
+				this.progressBar.style.setProperty("--progress-bar-top", "10%");
+				this.hint = ui.create.div(".olshilun-status", this.progressBar);
+				this.hint.innerHTML = this.foundText();
+				this._alignProgressBar();
+				const win = this;
+				requestAnimationFrame(() => {
+					win._alignProgressBar();
+					if (win.progressBar) win.progressBar.style.visibility = "";
+				});
+			}
+			dialog._alignProgressBar = function () {
+				const bar = this.progressBar;
+				const grid = this.grid;
+				if (!bar || !grid || !this.node) return;
+				const host = this.node.getBoundingClientRect();
+				const box = grid.getBoundingClientRect();
+				bar.style.left = box.left - host.left + (box.width - 510) / 2 + "px";
+				bar.style.top = box.bottom - host.top + 80 + "px";
+				bar.style.bottom = "auto";
+			}
+			dialog.runCountdown = function (totalSec, callback) {
+				const el = this.progressBar;
+				const start = Date.now();
+				const frame = 1000 / 30;
+				let isCancelled = false;
+				let timeoutId = null;
+				const tick = () => {
+					if (!el || isCancelled || !this.node || !this.node.parentNode) return;
+					const left = Math.max(0, totalSec - (Date.now() - start) / 1000);
+					el.style.setProperty("--clip", "inset(0 " + (1 - left / totalSec) * 100 + "% 0 0)");
+					if (left > 0) timeoutId = setTimeout(tick, frame);
+					else if (callback) callback();
+				};
+				tick();
+				return {
+					cancel() {
+						isCancelled = true;
+						if (timeoutId) clearTimeout(timeoutId);
+					},
+				};
+			}
+			dialog.reloadBar = function (sec) {
+				if (!this.progressBar) return;
+				if (this.countdown) {
+					this.countdown.cancel();
+					this.countdown = null;
+				}
+				this.progressBar.style.setProperty("--clip", "inset(0 0 0 0)");
+				this.countdown = this.runCountdown(sec);
+			}
+			dialog.foundText = function () {
+				const n = this.found?.length || 0;
+				return n ? "您已经完成了" + n + "个战功" : "请连线出完整战功";
+			}
+			dialog.say = function (text) {
+				if (this.hint) this.hint.innerHTML = text || "";
+			}
+			dialog.sayOwner = function (text) {
+				const me = game.me;
+				if (me && me.playerid && this.ownerid && me.playerid !== this.ownerid) {
+					this.say("请等待" + ((this.data && this.data.ownerName) || "") + "连线出完整战功");
+					return;
+				}
+				this.say(text);
+			}
+			dialog.keepGlow = function (entry) {
+				const gid = this.gid;
+				if (entry.timer) clearTimeout(entry.timer);
+				entry.timer = setTimeout(() => {
+					const later = get.idDialog(gid);
+					if (!later || !later.glows) return;
+					later.glows = later.glows.filter(item => item !== entry);
+					later.glow = later.glows.flatMap(item => item.cells);
+					later.paint();
+				}, 6000);
+			}
+			dialog.light = function (index) {
+				if (this.found.includes(index)) return;
+				const title = this.data.titles[index];
+				if (!title) return;
+				if (!this.glows) this.glows = [];
+				if (this.glows.some(entry => entry.index === index)) return;
+				const entry = { index, cells: title.cells.slice(), timer: null };
+				this.glows.push(entry);
+				this.glow = this.glows.flatMap(item => item.cells);
+				this.paint();
+				this.keepGlow(entry);
+			}
+			dialog.dark = function (index) {
+				this.hiddenCells[index] = true;
+				this.paint();
+			};
+			dialog.applySelect = function (list) {
+				this.selected = (list || []).slice();
+				if (this.glows) {
+					for (const entry of this.glows) {
+						if (entry.cells.some(cell => this.selected.includes(cell))) this.keepGlow(entry);
+					}
+				}
+				this.paint();
+				this.sayOwner(this.foundText());
+			}
+			dialog.applyFound = function (index) {
+				const title = this.data.titles[index];
+				if (!title || this.found.includes(index)) return;
+				this.found.push(index);
+				for (const cell of title.cells) this.used[cell] = true;
+				this.selected = [];
+				if (this.glows) {
+					for (const entry of this.glows) {
+						if (entry.index === index && entry.timer) clearTimeout(entry.timer);
+					}
+					this.glows = this.glows.filter(entry => entry.index !== index);
+				}
+				this.glow = this.glows ? this.glows.flatMap(entry => entry.cells) : [];
+				this.paint();
+				this.playObtainSkillFx(title);
+				this.sayOwner(this.foundText());
+			}
+			dialog.showFinish = function (text) {
+				if (this.clock) {
+					clearInterval(this.clock);
+					this.clock = null;
+				}
+				this.say(text || "");
+				this.reloadBar(2);
+			}
+			dialog.closeWindow = function () {
+				if (this.clock) clearInterval(this.clock);
+				if (this.autoTimer) clearInterval(this.autoTimer);
+				if (this.countdown) {
+					this.countdown.cancel();
+					this.countdown = null;
+				}
+				if (this.olshilunMask) this.olshilunMask.remove();
+				if (this.helper) this.helper.remove();
+				ui.dialogs.remove(this);
+				this.remove();
+			};
+			dialog.addHelper = function (data) {
+				const me = game.me;
+				const gid = this.gid;
+				const ownerid = this.ownerid;
+				if (!(me && me.playerid && me.playerid !== ownerid && (!me.isIn || me.isIn()) && !this.helper)) return;
+				const helper = ui.create.div(".olshilun-btns", this.stage);
+				this.helper = helper;
+				const helperButtons = [];
+				let helperUsed = false;
+				const lockHelper = () => {
+					helperUsed = true;
+					for (const button of helperButtons) {
+						button.dataset.olshilunDisabled = "1";
+						button.style.filter = "grayscale(1)";
+						button.style.boxShadow = "none";
+					}
+				};
+				const pickTitle = () => {
+					const current = get.idDialog(gid);
+					const list = [];
+					for (let i = 0; i < data.titles.length; i++) {
+						if (!current || !current.found.includes(i)) list.push(i);
+					}
+					return list.randomGet();
+				};
+				const pickCell = () => {
+					const current = get.idDialog(gid);
+					const list = [];
+					for (let i = 0; i < data.chars.length; i++) {
+						if (current && (current.used[i] || current.hiddenCells[i])) continue;
+						list.push(i);
+					}
+					return list.randomGet();
+				};
+				const addButton = (file, key, action) => {
+					const button = ui.create.div(".olshilun-btn", helper);
+					button.style.backgroundImage = this.asset(file);
+					button.addEventListener(lib.config.touchscreen ? "touchend" : "click", () => {
+						if (helperUsed || _status.dragged || _status.justdragged) return;
+						if (action === "glow" ? pickTitle() == null : pickCell() == null) return;
+						if (game.online) {
+							game.requestSkillData("olshilun_sync", key, 5000, gid);
+						} else {
+							lib.skill.olshilun.helperAction(game.me, gid, action);
+						}
+						lockHelper();
+					});
+					helperButtons.push(button);
+				};
+				addButton("pingjian_btn_help.png", "assist", "glow");
+				addButton("pingjian_btn_hide.png", "hinder", "hide");
+			}
+			dialog.init = function () {
+				const data = this.data;
+				const gid = this.gid;
+				const size = this.size;
+				const ASSET = this.ASSET;
+				const mask = ui.create.div(".olshilun-mask", ui.window);
+				const node = this;
+				node.olshilunMask = mask;
+				this.node = node;
+				const stage = ui.create.div(".olshilun-stage", node);
+				this.stage = stage;
+				this.zoom = 0.75;
+				const scroll = ui.create.div(".olshilun-scroll", stage);
+				const heading = ui.create.div(".olshilun-title", scroll);
+				heading.innerHTML = "评鉴";
+				const field = ui.create.div(".olshilun-grid", scroll);
+				this.grid = field;
+				const cells = [];
+				for (let y = 0; y < size; y++) {
+					for (let x = 0; x < size; x++) {
+						const index = y * size + x;
+						const cell = ui.create.div(".olshilun-cell", field);
+						cell.dataset.index = String(index);
+						cell.style.gridColumn = String(x + 1);
+						cell.style.gridRow = String(y + 1);
+						cell.style.backgroundImage = `url("${ASSET}pingjian_item_bg.png")`;
+						const char = ui.create.div(".olshilun-char", cell);
+						char.innerHTML = data.chars[index];
+						cells[index] = cell;
+					}
+				}
+				this.cells = cells;
+				const sidebar = ui.create.div(".olshilun-skills", stage);
+				sidebar.style.borderImage = `url("${ASSET}pingjian_skillitem_bg.png") 40 4 4 4 fill stretch`;
+				const sidebarTitle = ui.create.div(".olshilun-skills-title", sidebar);
+				sidebarTitle.innerHTML = "获取技能";
+				this.panel = ui.create.div(".olshilun-skill-list", sidebar);
+				this._createProgressBar();
+				this.paint();
+				this.sayOwner(this.foundText());
+				this.addHelper(data);
+			};
+			dialog.init();
+			if (!ui.dialogs.includes(dialog)) ui.dialogs.unshift(dialog);
+			if (!dialog.parentNode) ui.window.appendChild(dialog);
+			dialog.style.left = "0";
+			dialog.style.top = "0";
+			dialog.style.width = "100%";
+			dialog.style.height = "100%";
+			dialog.style.transform = "none";
+			dialog.style.opacity = "1";
+			dialog.style.transition = "none";
+			return dialog;
+		},
 		pingjianPool: [
 			{ name: "ol_wanglang", skill: "gushe", title: "螳臂当车" },
 			{ name: "huaman", skill: "mansi", title: "花俏蛮娇" },
@@ -1060,14 +1067,13 @@ const skills = {
 			}
 			function board(action, gid, a, b) {
 				if (action === "create") {
-					if (ui["olshilunDialog_" + gid]) return;
-					new ui.OlshilunWindow(gid, a, b);
+					if (get.idDialog(gid)) return;
+					lib.skill.olshilun.createDialog(gid, a, b);
 					return;
 				}
-				const node = ui["olshilunDialog_" + gid];
-				const win = node && node.olshilun;
+				const win = get.idDialog(gid);
 				if (action === "close") {
-					if (win) win.close();
+					if (win) win.closeWindow();
 					return;
 				}
 				if (!win) return;
@@ -1078,9 +1084,8 @@ const skills = {
 				if (action === "finish") return win.showFinish(b);
 			}
 			function play(player, gid, data, board, auto) {
-				if (!ui["olshilunDialog_" + gid]) board("create", gid, data, player.playerid);
-				const dialog = ui["olshilunDialog_" + gid];
-				const state = dialog && dialog.olshilun;
+				if (!get.idDialog(gid)) board("create", gid, data, player.playerid);
+				const state = get.idDialog(gid);
 				if (!state) {
 					game.resume();
 					return;
@@ -1201,7 +1206,7 @@ const skills = {
 					if (closeBtn) closeBtn.style.display = "none";
 					state.clock = setInterval(function () {
 						if (finished || !autoMode) return;
-						if (!ui["olshilunDialog_" + gid]) {
+						if (!get.idDialog(gid)) {
 							finish();
 							return;
 						}
@@ -1295,7 +1300,7 @@ const skills = {
 					grid.addEventListener("pointerup", endDrag);
 					grid.addEventListener("pointercancel", endDrag);
 				}
-				const closeBtn = ui.create.div(".olshilun-close", state.stage || dialog);
+				const closeBtn = ui.create.div(".olshilun-close", state.stage || state.node);
 				closeBtn.style.backgroundImage = 'url("' + lib.assetURL + 'image/olxushao/pingjian_close.png")';
 				closeBtn.addEventListener(lib.config.touchscreen ? "touchend" : "click", function () {
 					if (autoMode || finished || _status.dragged || _status.justdragged) return;
@@ -1322,8 +1327,8 @@ const skills = {
 			const gid = lib.status.videoId++;
 			data.ownerName = get.translation(player);
 			game.broadcastAll(board, "create", gid, data, player.playerid);
-			const currentNode = ui["olshilunDialog_" + gid];
-			if (currentNode && currentNode.olshilun) currentNode.olshilun.board = board;
+			const currentWin = get.idDialog(gid);
+			if (currentWin) currentWin.board = board;
 			lib.skill.olshilun.aiHelperActions(
 				player,
 				gid,
@@ -1339,7 +1344,7 @@ const skills = {
 				play(player, gid, data, board, true);
 			}
 			await game.pause();
-			const state = ui["olshilunDialog_" + gid] && ui["olshilunDialog_" + gid].olshilun;
+			const state = get.idDialog(gid);
 			let result = event.result;
 			if (!result || typeof result !== "object" || !Array.isArray(result.list)) {
 				result = (state && state.result) || event._result;
@@ -1375,8 +1380,7 @@ const skills = {
 			}
 		},
 		helperAction(player, gid, action) {
-			const dialog = ui["olshilunDialog_" + gid];
-			const state = dialog && dialog.olshilun;
+			const state = get.idDialog(gid);
 			const board = state && state.board;
 			if (!state || typeof board !== "function") return;
 			const list = [];
@@ -1389,7 +1393,7 @@ const skills = {
 				}
 			} else {
 				for (let i = 0; i < state.data.chars.length; i++) {
-					if (state.used[i] || state.hidden[i]) continue;
+					if (state.used[i] || state.hiddenCells[i]) continue;
 					if (state.actorUsed && state.actorUsed[i]) continue;
 					list.push(i);
 				}
@@ -1412,8 +1416,7 @@ const skills = {
 				charlotte: true,
 				sync: {
 					found(player, gid, index) {
-						const dialog = ui["olshilunDialog_" + gid];
-						const state = dialog && dialog.olshilun;
+						const state = get.idDialog(gid);
 						const title = state && state.data && state.data.titles[index];
 						if (!title) return;
 						state.actorFound ??= [];
