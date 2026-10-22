@@ -22028,9 +22028,29 @@ const skills = {
 		ai: {
 			effect: {
 				player(card, player, target) {
-					if (get.attitude(player, target) > 0 && card?.name === "huogong" && card.storage?.olhuiyun && player.getStorage("olhuiyun_used").length < 3) {
-						return [0, 0.5, 0, 0.5];
+					if (card.name !== "huogong" || !card.storage?.olhuiyun) {
+						return;
 					}
+					const storage = player.getStorage("olhuiyun_used");
+					if (storage.length >= 3) {
+						return;
+					}
+					let eff = 0;
+					if (!storage.includes(3)) {
+						eff = 1;
+					}
+					const cards = target.getCards("h", card => card.hasGaintag("olhuiyun_tag"));
+					let cardx;
+					if (!storage.includes(1) && cards.length) {
+						cardx = cards.find(cardx => target.getUseValue(cardx) > 0);
+					} else if (!storage.includes(2)) {
+						cardx = target.getCards("h").find(cardx => target.getUseValue(cardx) > 0);
+					}
+					if (cardx) {
+						eff = target.getUseValue(cardx) / 10;
+					}
+					let result = get.attitude(player, target) > 0 ? 0 : 1;
+					return [result, -0.5, result, eff];
 				},
 			},
 		},
