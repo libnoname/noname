@@ -141,6 +141,11 @@ export class UI {
 	 * @type {HTMLDivElement[]}
 	 */
 	toastQueue = [];
+	/**
+	 * OL许劭评鉴窗口
+	 * @type {any}
+	 */
+	OlshilunWindow;
 
 	/**
 	 * @type {HTMLDivElement}
