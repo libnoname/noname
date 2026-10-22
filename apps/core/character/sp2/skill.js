@@ -2062,23 +2062,32 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
+			if (!target.hasGainableCards(player, "he")) {
+				target.chat("无牌可给");
+				return;
+			}
 			let result = await target
-				.chooseToGive(player, "he", true, [1, Infinity], "allowChooseAll")
-				.set("ai", card => {
-					const { player, target } = get.event();
-					const att = get.attitude(player, target);
-					if (att <= 0) {
-						if (ui.selected.cards.length > 1) {
+				.chooseToGive({
+					target: player,
+					selectCard: [1, Infinity],
+					position: "he",
+					allowChooseAll: true,
+					ai: card => {
+						const { player, target } = get.event();
+						const att = get.attitude(player, target);
+						if (att <= 0) {
+							if (ui.selected.cards.length > 1) {
+								return 0;
+							}
+							return 6 - get.value(card);
+						}
+						if (ui.selected.cards.length) {
 							return 0;
 						}
-						return 6 - get.value(card);
-					}
-					if (ui.selected.cards.length) {
-						return 0;
-					}
-					return 7 - get.value(card);
+						return 7 - get.value(card);
+					},
+					forced: true,
 				})
-				.set("target", target)
 				.forResult();
 			if (result?.bool && result.cards?.length) {
 				const num = result.cards.length;
