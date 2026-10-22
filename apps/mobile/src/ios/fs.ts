@@ -20,7 +20,8 @@
 import { Filesystem, Directory, Encoding } from "@capacitor/filesystem";
 import { Capacitor } from "@capacitor/core";
 import type { NativeAccessResult, NativeEntryResult, NativeFileSystem, NativeListResult, NativeReadResult } from "../fs/types.js";
-import { buildManifestIndex, type ManifestIndex } from "./manifest-index.js";
+import { buildManifestIndex, getManifestPathType, type ManifestIndex } from "./manifest-index.js";
+import { probeBundledResource } from "./resource-probe.js";
 
 /**
  * 内置资源根目录。
@@ -59,11 +60,11 @@ export class IosFileSystem implements NativeFileSystem {
 	}
 
 	async checkFile(options: { fileName: string }): Promise<NativeEntryResult> {
-		return { type: await this.resolveType(options.fileName, "file") };
+		return { type: await this.resolveType(options.fileName) };
 	}
 
 	async checkDir(options: { dir: string }): Promise<NativeEntryResult> {
-		return { type: await this.resolveType(options.dir, "directory") };
+		return { type: await this.resolveType(options.dir) };
 	}
 
 	async readFile(options: { fileName: string }): Promise<NativeReadResult> {
@@ -113,8 +114,8 @@ export class IosFileSystem implements NativeFileSystem {
 
 		if (!(await this.exists(writablePath))) {
 			// 内置资源属于 App 包，不可删除，这里明确报错而不是静默失败
-			const bundled = (await this.listBundled(options.fileName)).length > 0 || (await this.bundledFileExists(options.fileName));
-			throw new Error(bundled ? `内置资源只读: ${options.fileName}` : `文件不存在: ${options.fileName}`);
+			const bundledType = await this.resolveBundledType(options.fileName);
+			throw new Error(bundledType === "none" ? `文件不存在: ${options.fileName}` : `内置资源只读: ${options.fileName}`);
 		}
 
 		await Filesystem.deleteFile({
@@ -199,8 +200,8 @@ export class IosFileSystem implements NativeFileSystem {
 			throw new Error(`不能删除可写根目录: ${options.dir}`);
 		}
 		if (!(await this.exists(path))) {
-			const bundled = (await this.listBundled(options.dir)).length > 0 || (await this.bundledFileExists(options.dir));
-			throw new Error(bundled ? `内置资源只读: ${options.dir}` : `目录不存在: ${options.dir}`);
+			const bundledType = await this.resolveBundledType(options.dir);
+			throw new Error(bundledType === "none" ? `目录不存在: ${options.dir}` : `内置资源只读: ${options.dir}`);
 		}
 
 		await Filesystem.rmdir({
@@ -211,7 +212,7 @@ export class IosFileSystem implements NativeFileSystem {
 	}
 
 	/** 查询某个路径在两个层里的类型 */
-	private async resolveType(path: string, expected: "file" | "directory"): Promise<"file" | "directory" | "none"> {
+	private async resolveType(path: string): Promise<"file" | "directory" | "none"> {
 		const writablePath = this.toWritablePath(path);
 
 		// 一次 stat 同时得到「是否存在」与「类型」，避免先 exists 再 stat 的两次原生调用
@@ -220,25 +221,7 @@ export class IosFileSystem implements NativeFileSystem {
 			return writableType;
 		}
 
-		// 内置资源：优先查清单索引，未命中的文件通过 GET 探测
-		if (expected === "file") {
-			if (await this.bundledFileExists(path)) {
-				return "file";
-			}
-			// 也可能是目录：尝试列目录
-			if ((await this.listBundled(path)).length > 0) {
-				return "directory";
-			}
-		} else {
-			if ((await this.listBundled(path)).length > 0) {
-				return "directory";
-			}
-			if (await this.bundledFileExists(path)) {
-				return "file";
-			}
-		}
-
-		return "none";
+		return this.resolveBundledType(path);
 	}
 
 	/** 判断可写层中是否存在该路径 */
@@ -282,29 +265,40 @@ export class IosFileSystem implements NativeFileSystem {
 	// ---------- 内置资源访问 ----------
 
 	/**
-	 * 探测内置资源里是否存在某个文件。
+	 * 查询内置资源中路径的类型。
 	 *
-	 * 快路径直接查资源清单索引：清单已收录 1.5 万条内置文件，
-	 * 命中即可确认存在，无需经过 WebView 资源通道。
-	 * 清单刻意不收录的条目（`preload.js`、`node_modules` 等）再回退到 GET。
+	 * 清单中的文件和目录都走 O(1) 索引，不再调用目录列举或额外 GET。
+	 * 清单刻意不收录的条目（`preload.js`、`node_modules` 等）才回退到
+	 * WebView 资源通道，并缓存不可变内置层的结果。
 	 */
-	private async bundledFileExists(path: string): Promise<boolean> {
+	private async resolveBundledType(path: string): Promise<"file" | "directory" | "none"> {
 		const normalized = normalizeSegments(path);
 		const index = await this.loadManifestIndex();
-		if (index.files.has(normalized)) {
-			return true;
+		const knownType = getManifestPathType(index, normalized);
+		if (knownType !== "unknown") return knownType;
+
+		const cached = this.bundledProbeCache.get(normalized);
+		if (cached) {
+			return (await cached) ? "file" : "none";
 		}
 
-		const response = await fetch(this.toBundledUrl(path));
-		if (response.status === 404) {
-			return false;
+		const probe = this.probeBundledFile(path);
+		this.bundledProbeCache.set(normalized, probe);
+
+		try {
+			return (await probe) ? "file" : "none";
+		} catch (error) {
+			// 5xx、网络错误等不是稳定结果，不应永久缓存。
+			if (this.bundledProbeCache.get(normalized) === probe) {
+				this.bundledProbeCache.delete(normalized);
+			}
+			throw error;
 		}
-		if (!response.ok) {
-			throw new Error(`内置资源探测失败 (${response.status}): ${path}`);
-		}
-		// 目录请求在部分实现下会返回 HTML，因此仍需排除「看起来是目录」的情况
-		const contentType = response.headers.get("content-type") ?? "";
-		return !contentType.includes("text/html") || this.looksLikeAsset(path);
+	}
+
+	/** 探测清单之外的内置文件；结果由 resolveBundledType 缓存。 */
+	private async probeBundledFile(path: string): Promise<boolean> {
+		return probeBundledResource(this.toBundledUrl(path), this.looksLikeAsset(path));
 	}
 
 	/** 读取内置资源的二进制，转成 base64 */
@@ -387,6 +381,8 @@ export class IosFileSystem implements NativeFileSystem {
 
 	private manifestIndex: ManifestIndex | null = null;
 	private manifestPromise: Promise<ManifestIndex> | null = null;
+	/** 清单外路径的不可变内置资源探测结果；只缓存成功与 404。 */
+	private bundledProbeCache = new Map<string, Promise<boolean>>();
 
 	/** 资源目录不应该是 HTML，用于排除「目录被返回成 index.html」的误判 */
 	private looksLikeAsset(path: string): boolean {

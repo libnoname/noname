@@ -18178,8 +18178,8 @@ const skills = {
 				];
 			}
 			_status.postReconnect.dchuashang[1].add(type);
-			if (!lib.card[`dchuashang_${type}`]) {
-				lib.translate[`dchuashang_${type}`] = "华裳";
+			const cardId = `dchuashang_${type}`;
+			if (!lib.card[cardId]) {
 				const card = {
 					derivation: "cuilingyi",
 					fullskin: true,
@@ -18196,7 +18196,6 @@ const skills = {
 						return str;
 					},
 					async onLose(event, trigger, player) {
-						// 神秘结算
 						event.cards.forEach(card => {
 							card.fix();
 							ui.discardPile.appendChild(card);
@@ -18208,9 +18207,14 @@ const skills = {
 						}
 					},
 				};
-				lib.translate[`dchuashang_${type}_info`] = `原本是一张${get.translation(type)}牌。`;
-				lib.card[`dchuashang_${type}`] = card;
-				game.finishCard(`dchuashang_${type}`);
+				lib.translate[cardId] = "华裳·" + get.translation(type);
+				lib.translate[`${cardId}_info`] = `原本是一张${get.translation(type)}牌。`;
+				lib.card[cardId] = card;
+			}
+			if (!lib.card[cardId].ai?.basic?.value) {
+				lib.card[cardId].type = "equip";
+				game.finishCard(cardId);
+				lib.card[cardId].type = type;
 			}
 		},
 		video(player, info) {
