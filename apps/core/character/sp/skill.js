@@ -1139,7 +1139,6 @@ const skills = {
 						game.log(player, "完成称号", "#g" + title.plain);
 						if (player && typeof player.popup === "function") player.popup(title.plain, "fire");
 					}
-					if (state.found.length >= data.titles.length) finish();
 				};
 				const publish = function (list) {
 					state.selected = list;
