@@ -21,6 +21,7 @@ import { Filesystem, Directory, Encoding } from "@capacitor/filesystem";
 import { Capacitor } from "@capacitor/core";
 import type { NativeAccessResult, NativeEntryResult, NativeFileSystem, NativeListResult, NativeReadResult } from "../fs/types.js";
 import { buildManifestIndex, getManifestPathType, type ManifestIndex } from "./manifest-index.js";
+import { probeBundledResource } from "./resource-probe.js";
 
 /**
  * 内置资源根目录。
@@ -297,14 +298,7 @@ export class IosFileSystem implements NativeFileSystem {
 
 	/** 探测清单之外的内置文件；结果由 resolveBundledType 缓存。 */
 	private async probeBundledFile(path: string): Promise<boolean> {
-		const response = await fetch(this.toBundledUrl(path));
-		if (response.status === 404) return false;
-		if (!response.ok) {
-			throw new Error(`内置资源探测失败 (${response.status}): ${path}`);
-		}
-		// 目录请求在部分实现下会返回 HTML，因此仍需排除「看起来是目录」的情况
-		const contentType = response.headers.get("content-type") ?? "";
-		return !contentType.includes("text/html") || this.looksLikeAsset(path);
+		return probeBundledResource(this.toBundledUrl(path), this.looksLikeAsset(path));
 	}
 
 	/** 读取内置资源的二进制，转成 base64 */
