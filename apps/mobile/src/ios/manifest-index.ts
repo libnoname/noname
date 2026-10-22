@@ -24,6 +24,8 @@ export interface ManifestIndex {
 	directories: Map<string, ManifestDirectory>;
 }
 
+export type ManifestPathType = "file" | "directory" | "unknown";
+
 /** 与 `fs.ts` 的 normalizeSegments 保持一致：统一分隔符并剔除空段、`.`、`..` */
 export function normalizeManifestPath(path: string): string {
 	return path
@@ -31,6 +33,14 @@ export function normalizeManifestPath(path: string): string {
 		.split("/")
 		.filter(segment => segment !== "" && segment !== "." && segment !== "..")
 		.join("/");
+}
+
+/** 使用已构建索引一次判定文件、目录或未知路径。 */
+export function getManifestPathType(index: ManifestIndex, path: string): ManifestPathType {
+	const normalized = normalizeManifestPath(path);
+	if (index.files.has(normalized)) return "file";
+	if (index.directories.has(normalized)) return "directory";
+	return "unknown";
 }
 
 export function buildManifestIndex(entries: readonly string[]): ManifestIndex {

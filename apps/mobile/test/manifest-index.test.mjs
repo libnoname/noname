@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { buildManifestIndex } from "../src/ios/manifest-index.ts";
+import { buildManifestIndex, getManifestPathType } from "../src/ios/manifest-index.ts";
 
 test("按目录建立索引：根目录、嵌套目录、文件", () => {
 	const index = buildManifestIndex(["a/b.txt", "a/c/d.js", "e.txt"]);
@@ -37,4 +37,12 @@ test("目录子项按名称排序", () => {
 test("未知目录返回 undefined（由调用方退化为空列表）", () => {
 	const index = buildManifestIndex(["a.txt"]);
 	assert.equal(index.directories.get("missing"), undefined);
+});
+
+test("一次判定文件、目录与未知路径", () => {
+	const index = buildManifestIndex(["a/b.txt"]);
+
+	assert.equal(getManifestPathType(index, "a/b.txt"), "file");
+	assert.equal(getManifestPathType(index, "a"), "directory");
+	assert.equal(getManifestPathType(index, "a/missing.txt"), "unknown");
 });

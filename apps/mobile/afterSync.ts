@@ -1,7 +1,8 @@
-import { copyFileSync, existsSync, mkdirSync, readdirSync, renameSync, rmSync, statSync, writeFileSync } from "fs";
-import { posix, relative, resolve, sep } from "path";
+import { copyFileSync, existsSync, mkdirSync, readdirSync, renameSync, rmSync, writeFileSync } from "fs";
+import { resolve } from "path";
 import { spawnSync } from "child_process";
 import { build } from "vite";
+import { writeAssetManifest } from "./scripts/asset-manifest.js";
 
 const root = import.meta.dirname;
 const workspaceRoot = resolve(root, "../..");
@@ -95,10 +96,11 @@ function writeDownloadManifest() {
 			console.warn(`asset-download-manifest: 跳过缺失目录 ${group}`);
 			continue;
 		}
-		for (const name of readdirSync(absolute)) {
+		for (const entry of readdirSync(absolute, { withFileTypes: true })) {
+			const { name } = entry;
 			// 默认剪影是游戏必需的占位图，任何时候都内置，无需下载
 			if (name.startsWith("default_silhouette_")) continue;
-			if (!statSync(resolve(absolute, name)).isFile()) continue;
+			if (!entry.isFile()) continue;
 			entries.push(`${group}/${name}`);
 		}
 	}
@@ -108,40 +110,14 @@ function writeDownloadManifest() {
 	console.log(`asset-download-manifest.json written: ${entries.length} entries`);
 }
 
-/** iOS 资源通道不支持列目录，需在 cap sync 前生成资源清单。 */
-function writeAssetManifest() {
-	const entries: string[] = [];
-	const ignored = new Set(["asset-manifest.json", "asset-download-manifest.json", "preload.js", "node_modules"]);
-
-	const collect = (dir: string) => {
-		for (const name of readdirSync(dir)) {
-			if (ignored.has(name)) continue;
-
-			const absolute = resolve(dir, name);
-			if (statSync(absolute).isDirectory()) {
-				collect(absolute);
-				continue;
-			}
-
-			// 统一为 POSIX 分隔符，保证运行时按前缀过滤不受平台影响
-			entries.push(relative(distDir, absolute).split(sep).join(posix.sep));
-		}
-	};
-
-	collect(distDir);
-	entries.sort();
-
-	writeFileSync(resolve(distDir, "asset-manifest.json"), `${JSON.stringify(entries)}\n`, "utf8");
-	console.log(`asset-manifest.json written: ${entries.length} entries`);
-}
-
 await buildPreload();
 if (platform === "android") {
 	rmSync(resolve(distDir, "asset-download-manifest.json"), { force: true });
 	rmSync(resolve(distDir, "asset-manifest.json"), { force: true });
 } else {
 	if (process.env.NONAME_FULL_ASSETS !== "1") writeDownloadManifest();
-	writeAssetManifest();
+	const entries = writeAssetManifest(distDir);
+	console.log(`asset-manifest.json written: ${entries} entries`);
 }
 capSync();
 if (platform !== "ios") patchAndroidAssets();
