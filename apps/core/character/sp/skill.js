@@ -23823,7 +23823,7 @@ const skills = {
 					let discard = false;
 					//若能观看对方手牌，则优先选择对方的闪
 					if (player.hasSkillTag("viewHandcard", null, target, true)) {
-						let shan = targetHs.filter(card => card.name === "shan");
+						let shan = targetHs.filter(card => get.name(card, target) === "shan");
 						if (shan.length) {
 							discard = true;
 							shan = shan.randomGets(range[1]);
@@ -23833,7 +23833,7 @@ const skills = {
 					}
 					//否则选择自己的闪
 					if (!discard) {
-						let shan = playerHs.filter(card => card.name === "shan").sort((a, b) => get.value(a) - get.value(b))[0];
+						let shan = playerHs.filter(card => get.name(card, player) === "shan").sort((a, b) => get.value(a) - get.value(b))[0];
 						if (shan) {
 							discard = true;
 							cards.push(shan);
