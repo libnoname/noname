@@ -3,7 +3,6 @@ import { Capacitor, registerPlugin, SystemBars } from "@capacitor/core";
 
 import { createIosFileSystem } from "./ios/fs.js";
 import { attachFileSystemAPI } from "./fs/legacy-api.js";
-import { ensureImportSkeleton } from "./ios/import.js";
 import { base64ToArrayBuffer, callbackError, joinFilePath, sanitizeExportName, writeDataToBase64, type NativeAccessResult, type NativeFileSystem } from "./fs/types.js";
 
 /**
@@ -88,7 +87,10 @@ export default async function preload({ lib, game }) {
 
 	if (platform === "ios") {
 		try {
-			ensureImportSkeleton(game);
+			const CUSTOMIZATION_FOLDERS = ["image/character", "audio/skill", "audio/die", "extension"];
+			for (const folder of CUSTOMIZATION_FOLDERS) {
+				game.ensureDirectory?.(folder, () => {}, false);
+			}
 		} catch (error) {
 			console.warn("[mobile] 预建导入目录失败:", error);
 		}
