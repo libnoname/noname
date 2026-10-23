@@ -102,7 +102,7 @@ jobs:
         id: package
         run: |
           APP_PATH="$RUNNER_TEMP/DerivedData/Build/Products/Release-iphoneos/App.app"
-          IPA_NAME="noname-ios-unsigned"
+          IPA_NAME="noname-${NONAME_BUILD_COMMIT:0:8}"
           BUILD_DIR="$RUNNER_TEMP/ipa-build"
           rm -rf "$BUILD_DIR"
           mkdir -p "$BUILD_DIR/Payload"
@@ -116,11 +116,12 @@ jobs:
           shasum -a 256 "$IPA_NAME.ipa" > "$IPA_NAME.ipa.sha256"
 
           echo "ipa_path=$BUILD_DIR/$IPA_NAME.ipa" >> "$GITHUB_OUTPUT"
+          echo "ipa_name=$IPA_NAME" >> "$GITHUB_OUTPUT"
 
       - name: Upload test IPA
         uses: actions/upload-artifact@v4
         with:
-          name: noname-ios-unsigned
+          name: ${{ steps.package.outputs.ipa_name }}
           path: |
             ${{ steps.package.outputs.ipa_path }}
             ${{ steps.package.outputs.ipa_path }}.sha256
