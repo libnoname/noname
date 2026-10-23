@@ -10812,7 +10812,7 @@ const skills = {
 				.set("prompt2", "你可重铸一张牌。若重铸牌为" + (get.tag(trigger.card, "damage") ? "" : "非") + "伤害类，则" + get.translation(trigger.card) + "对相同目标再结算一次。")
 				.set("ai", card => {
 					const eff = get.event().eff;
-					if (get.tag(card, "damage") === Boolean(eff[0])) {
+					if (Boolean(get.tag(card, "damage")) === Boolean(eff[0])) {
 						return 6 - get.value(card) + eff[1];
 					}
 					return 6 - get.value(card);

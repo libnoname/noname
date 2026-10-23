@@ -5756,6 +5756,8 @@ const skills = {
 		keepSkill: true,
 		enable: "phaseUse",
 		usable: 1,
+		selectCard: -1,
+		filterCard: lib.filter.none,
 		filterTarget: true,
 		async content(event, trigger, player) {
 			const {
@@ -26518,10 +26520,7 @@ const skills = {
 							target.addMark("dcsbtaozhou_debuff", delta, false);
 						}
 						if (delta >= 2) {
-							const sha = get.autoViewAs({ name: "sha" });
-							if (target.canUse(sha, player, false)) {
-								await target.addSkills("dcsbzijin");
-							}
+							await target.addSkills("dcsbzijin");
 						}
 						const roundNumberToRestore = game.roundNumber + chosenNumber;
 						player.tempBanSkill("dcsbtaozhou", "forever");
