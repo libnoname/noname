@@ -231,7 +231,13 @@ export default {
 						const cards = target.getCards("e");
 						const js = target.getCards("j");
 						let val = cards.reduce((sum, card) => sum + get.equipValue(card, target), 0) / Math.sqrt(cards.length);
+						if (!isFinite(val)) {
+							val = -0.1;
+						}
 						val -= js.reduce((sum, card) => sum + get.effect(target, card.viewAs ? { name: card.viewAs } : card, target, player), 0) / Math.sqrt(js.length);
+						if (!isFinite(val)) {
+							val = -0.1;
+						}
 						return -val;
 					},
 				},
