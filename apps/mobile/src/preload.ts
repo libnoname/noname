@@ -4,7 +4,6 @@ import { Capacitor, registerPlugin, SystemBars } from "@capacitor/core";
 import { createIosFileSystem } from "./ios/fs.js";
 import { attachFileSystemAPI } from "./fs/legacy-api.js";
 import { ensureImportSkeleton } from "./ios/import.js";
-import { relaxFileInputFilters } from "./ios/ios-file-input.js";
 import { base64ToArrayBuffer, callbackError, joinFilePath, sanitizeExportName, writeDataToBase64, type NativeAccessResult, type NativeFileSystem } from "./fs/types.js";
 
 /**
@@ -85,27 +84,15 @@ export default async function preload({ lib, game }) {
 		throw new Error("游戏资源缺失: noname.js");
 	}
 
-	// 各平台通用的文件读写 API（checkFile / readFile / writeFile / getFileList ...）
 	attachFileSystemAPI(game, fs);
 
-	// 暂停安装 iOS 素材下载功能；实现保留在 ios/lazy-assets.ts 和 ios/asset-download.ts。
-
-	// iOS：预建「文件」App 里可见的导入目录与说明，方便玩家手动放素材 / 扩展。
-	// 不 await —— 这是锦上添花，不该拖慢启动，更不该因失败影响游戏。
 	if (platform === "ios") {
 		try {
 			ensureImportSkeleton(game);
 		} catch (error) {
 			console.warn("[mobile] 预建导入目录失败:", error);
 		}
-
-		// iOS 的「文件」选择器会按 accept 严格过滤、且没有「显示全部文件」的逃生入口，
-		// 导致「选项 → 音效 → 背景音乐 → 导入」这类地方整份列表全灰、点不动。
-		// 这里统一去掉所有文件选择框的 accept，改为选完再由游戏自己判断。
-		relaxFileInputFilters();
 	}
-
-	// 以下三项依赖具体运行容器，不适合同步进文件系统适配层
 
 	game.export = function (data: string | Blob, name?: string) {
 		const fileName = sanitizeExportName(name);
