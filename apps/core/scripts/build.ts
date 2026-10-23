@@ -145,6 +145,10 @@ async function buildSelf(target: string | string[], importMap: Record<string, st
 		build: {
 			target,
 			sourcemap: false,
+			// 本体也不能压缩：联机通过 `game.broadcast(func, ...)` 把回调函数
+			// 序列化后发给客户端执行，而压缩会重命名函数体内引用的标识符
+			// （如 game / lib / _status），客户端拿到源码后会找不到对应变量。
+			// 包体另有 StepCompiler 依赖 "step N" 源码标记的问题，见 buildIndividual()。
 			minify: false,
 			rollupOptions: {
 				preserveEntrySignatures: "strict",
@@ -187,6 +191,12 @@ async function buildIndividual(type: string, target: string | string[], input: R
 		build: {
 			target,
 			sourcemap: false,
+			// ⚠️ 不要改成压缩。包体里存在 585 处 "step N" 步骤标记（mode 571、
+			// card 11、character 3），运行时由 StepCompiler 通过
+			// Function.prototype.toString() 反编译、按标记切段后 new Function 重编译。
+			// 一旦压缩，标记会被当作无用表达式删除、外层标识符会被改名，
+			// 步骤化 content 会静默失效或抛 ReferenceError。
+			// 详见 buildSelf() 里的同一处说明。
 			minify: false,
 			outDir: `dist/${type}`,
 			rollupOptions: {

@@ -3744,6 +3744,11 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				n += info.globalFrom;
 			}
 		}
+		// `attackTo` 只能影响 method === "attack" 的结果，但它来源于 equips2 的扫描结果。
+		// 原实现在扫描循环里直接写 `m += info.attackTo`，而 `m` 是在下面的 attack 分支里
+		// 才用 `let` 声明的——一旦目标装备了带 distance.attackTo 的牌，这里就会抛
+		// "Cannot access 'm' before initialization"。改为扫描时累加到独立变量，attack 分支再合并。
+		let equips2AttackTo = 0;
 		for (let i = 0; i < equips2.length; i++) {
 			let info = get.info(equips2[i]).distance;
 			if (!info) {
@@ -3753,11 +3758,11 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				n += info.globalTo;
 			}
 			if (info.attackTo) {
-				m += info.attackTo;
+				equips2AttackTo += info.attackTo;
 			}
 		}
 		if (method == "attack") {
-			let m = n;
+			let m = n + equips2AttackTo;
 			m = game.checkMod(from, to, m, "attackFrom", from);
 			m = game.checkMod(from, to, m, "attackTo", to);
 			return m;
@@ -6553,7 +6558,8 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		}
 		from = from._trueMe || from;
 		arguments[0] = from;
-		var att = CacheContext.requireCacheContext().get.rawAttitude.apply(this, arguments);
+		// 只用到一次缓存，没有已注册的缓存上下文时直接调用，避免白建一个上下文
+		var att = CacheContext.invoke("get", "rawAttitude", this, arguments);
 		if (from.isMad()) {
 			att = -att;
 		}
@@ -6788,8 +6794,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		return 1;
 	}
 	cacheOrder(item) {
-		let cache = CacheContext.requireCacheContext();
-		return cache.get.order(item);
+		return CacheContext.invoke("get", "order", this, [item]);
 	}
 	/**
 	 * @returns { number }
@@ -6843,8 +6848,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		return result;
 	}
 	cacheEffectUse(target, card, player, player2, isLink) {
-		let cache = CacheContext.requireCacheContext();
-		return cache.get.effect_use(target, card, player, player2, isLink);
+		return CacheContext.invoke("get", "effect_use", this, [target, card, player, player2, isLink]);
 	}
 	/**
 	 * 计算使用牌或技能时的AI效果分值。
@@ -7119,8 +7123,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		return final;
 	}
 	cacheEffect(target, card, player, player2, isLink) {
-		let cache = CacheContext.requireCacheContext();
-		return cache.get.effect(target, card, player, player2, isLink);
+		return CacheContext.invoke("get", "effect", this, [target, card, player, player2, isLink]);
 	}
 	/**
 	 * 计算牌或技能对目标的AI效果分值。

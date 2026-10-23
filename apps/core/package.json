@@ -23,7 +23,8 @@
         "build": "tsx scripts/build.ts",
         "build:types": "tsc -p tsconfig.types.json",
         "generateAsset": "tsx scripts/generateAsset.ts",
-        "lint": "pnpm eslint noname/**",
+        "test": "node --test \"test/*.test.mjs\"",
+        "lint": "pnpm eslint noname/** test/**",
         "lint:prettier": "pnpm prettier -c noname/**"
     },
     "dependencies": {

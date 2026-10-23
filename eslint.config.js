@@ -6,7 +6,10 @@ import vueParser from "vue-eslint-parser";
 import globals from "globals";
 
 export default defineConfig(globalIgnores(["**/dist/", "**/output/", "**/node_modules/"]), js.configs.recommended, ts.configs.recommended, vue.configs["flat/essential"], {
-	files: ["**/*.js", "**/*.ts", "**/*.vue"],
+	// 注意要包含 .mjs：本仓库的单元测试是 .mjs（apps/core/test/*.test.mjs），
+	// 漏掉它会让这些文件落到 js.configs.recommended 的默认环境里，
+	// 既没有 globals 也不生效下面这些关闭项，凭空报一堆 no-undef。
+	files: ["**/*.js", "**/*.mjs", "**/*.ts", "**/*.vue"],
 	rules: {
 		"@typescript-eslint/no-require-imports": 0,
 		"@typescript-eslint/no-unused-vars": 0,

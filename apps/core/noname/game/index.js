@@ -1904,8 +1904,30 @@ export class Game {
 		if (!lib.node || !lib.node.clients || game.online) {
 			return;
 		}
+		const targets = [];
 		for (const client of lib.node.clients) {
 			if (client.inited) {
+				targets.push(client);
+			}
+		}
+		if (targets.length === 0) {
+			return;
+		}
+		// 单客户端（或客户端未提供 sendSerialized，例如扩展自定义的 Client）走原路径。
+		const Client = lib.element.Client;
+		if (targets.length === 1 || typeof Client?.buildPayload !== "function" || typeof targets[0].sendSerialized !== "function") {
+			for (const client of targets) {
+				client.send(func, ...args);
+			}
+			return;
+		}
+		// 多客户端：同一份参数只序列化一次，再把同一个字符串发给所有人。
+		// 原先每个客户端都要各自跑一遍 get.stringifiedResult + JSON.stringify。
+		const payload = Client.buildPayload([func, ...args]);
+		for (const client of targets) {
+			if (typeof client.sendSerialized === "function") {
+				client.sendSerialized(payload);
+			} else {
 				client.send(func, ...args);
 			}
 		}
@@ -2406,7 +2428,9 @@ export class Game {
 
 		const newTicksMap = ticksMap ?? {};
 		const newSkillTicks = newTicksMap[skill] ?? (newTicksMap[skill] = {});
-		newSkillTicks[sync] ??= Date.now();
+		// 必须每次覆盖时间戳：此前用 `??=` 只在首次写入，
+		// 于是 lastTicks 永远等于第一次调用的时刻，500ms 的频率校验在首次之后永久失效。
+		newSkillTicks[sync] = Date.now();
 		game.#skillSyncTicks.set(player, newTicksMap);
 
 		// 执行并返回喵
@@ -9164,6 +9188,15 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		const node = ui.create.div();
 		node.innerHTML = lib.config.log_highlight ? str : str2;
 		ui.sidebar.insertBefore(node, ui.sidebar.firstChild);
+		// ui.sidebar 里只会放日志节点（其它地方对它只有两种操作：清空，或把整个
+		// sidebar 移进弹窗展示），但它没有像 ui.arenalog 那样的裁剪（见下方
+		// scrollHeight 判定），长局会累积上千个节点，每次插入都要重排。
+		// 这里保留最近 500 条，从尾部（最旧）删除。
+		// 不能用高度判定：用户查看日志时 sidebar 会被移进弹窗，此刻 offsetHeight
+		// 为 0，高度判定会把日志一次删空。
+		while (ui.sidebar.childNodes.length > 500) {
+			ui.sidebar.lastChild.remove();
+		}
 		game.addVideo("log", null, lib.config.log_highlight ? str : str2);
 		game.broadcast((str, str2) => game.log(lib.config.log_highlight ? str : str2), str, str2);
 		if (!_status.video && !game.online) {
@@ -10691,7 +10724,10 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			});
 		}
 		//初始化history和stat
-		player.actionHistory = new Array(players[0].actionHistory.length).fill({
+		// 注意：不能用 Array#fill —— fill 会把同一个对象引用填到每个下标，
+		// 导致所有回合的历史桶共享同一组数组，任一回合计数会串写到其它回合。
+		const actionHistoryLength = players[0].actionHistory.length;
+		player.actionHistory = Array.from({ length: actionHistoryLength }, () => ({
 			useCard: [],
 			respond: [],
 			skipped: [],
@@ -10701,7 +10737,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			damage: [],
 			custom: [],
 			useSkill: [],
-		});
+		}));
 		for (let i = 0; i < players[0].actionHistory.length; i++) {
 			["isRound", "isSkipped"].forEach(key => {
 				if (players[0].actionHistory[i][key]) {

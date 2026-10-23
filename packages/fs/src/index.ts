@@ -24,11 +24,48 @@ const failedJson = <T = any>(code: number, message?: string): JsonResult<T> => (
 	errorMsg: message,
 });
 
+/**
+ * 默认允许的跨域来源。
+ *
+ * 这里**不能**再写 `origin: "*"`：本服务提供 /writeFile、/removeFile、/removeDir
+ * 这类无鉴权的写接口，配合 `*` 意味着用户访问的任意网页都能向本机
+ * http://localhost:8089 发跨域请求，读写甚至删除游戏目录里的文件。
+ *
+ * 合法使用场景都是「本机」或「本机应用」，因此默认只放行：
+ *   - 没有 Origin 头（同源导航、非浏览器客户端、服务端代理）
+ *   - `null`（file:// 打包版桌面端 / Electron）
+ *   - localhost / 127.0.0.1 / [::1]（含 vite 开发服务器所在端口）
+ *   - capacitor://localhost、ionic://localhost（移动端 WebView）
+ * 需要额外来源时用 `--allowOrigin=<origin>[,<origin>...]` 显式追加。
+ */
+const DEFAULT_ALLOWED_ORIGIN_PATTERNS = ["capacitor://localhost", "ionic://localhost"];
+
+function isLocalOrigin(origin: string): boolean {
+	let url: URL;
+	try {
+		url = new URL(origin);
+	} catch {
+		return false;
+	}
+	if (url.protocol === "file:") {
+		return true;
+	}
+	return url.hostname === "localhost" || url.hostname === "127.0.0.1" || url.hostname === "[::1]" || url.hostname === "::1";
+}
+
 export const defaultConfig = {
 	server: false,
 	port: 8089,
 	debug: false,
 	dirname: cwd(),
+	/** 监听地址。显式绑定回环地址，避免依赖框架默认值。 */
+	host: "127.0.0.1",
+	/** 单次写请求的体积上限，默认 64 MiB（原为 10 GiB，等于没有上限）。 */
+	maxBodySize: 64 * 1024 * 1024,
+	/** 静态资源缓存秒数。0 = 每次都发条件请求（本地开发友好，仍有 ETag/304）。 */
+	maxAge: 0,
+	/** 追加允许的跨域来源，逗号分隔，例如 `--allowOrigin=http://192.168.1.5:8081`。 */
+	allowOrigin: "",
 };
 
 function createFsHandler(dirname: string) {
@@ -68,16 +105,42 @@ export default function createApp(config: Partial<typeof defaultConfig> = {}) {
 
 	const { ensureSafe, wrap } = createFsHandler(cfg.dirname);
 
+	// CORS 只放行本机来源（详见 DEFAULT_ALLOWED_ORIGIN_PATTERNS 的注释）。
+	// 同源请求不带 Origin 头，不受影响；vite 开发服务器是服务端代理，也不受影响。
+	const extraAllowedOrigins = String(cfg.allowOrigin || "")
+		.split(",")
+		.map(item => item.trim())
+		.filter(Boolean);
+
 	app.register(cors, {
-		origin: "*",
+		origin(origin: string | undefined, callback: (err: Error | null, allow: boolean) => void) {
+			// 无 Origin 头：同源导航或非浏览器客户端
+			if (!origin) {
+				return callback(null, true);
+			}
+			// `Origin: null`：file:// 打包版桌面端
+			if (origin === "null") {
+				return callback(null, true);
+			}
+			if (DEFAULT_ALLOWED_ORIGIN_PATTERNS.includes(origin) || extraAllowedOrigins.includes(origin) || isLocalOrigin(origin)) {
+				return callback(null, true);
+			}
+			if (cfg.debug) {
+				console.log(`[fs] 拒绝跨域来源: ${origin}`);
+			}
+			// 不抛错，只是不回 CORS 头，让浏览器按同源策略拦截
+			return callback(null, false);
+		},
 		methods: ["GET", "POST", "OPTIONS"],
 	});
 
 	app.register(fastifyStatic, {
 		root: cfg.dirname,
 		prefix: "/",
-		dotfiles: "allow",
-		maxAge: 0,
+		// 不要把 .git / .gitignore / .wrangler 等点文件当静态资源发出去。
+		// dotfiles: "allow" 会让 `GET /.git/config` 直接可读。
+		dotfiles: "ignore",
+		maxAge: cfg.maxAge,
 	});
 
 	// index.html
@@ -123,7 +186,7 @@ export default function createApp(config: Partial<typeof defaultConfig> = {}) {
 	app.post(
 		"/writeFile",
 		{
-			bodyLimit: 10 * 1024 * 1024 * 1024,
+			bodyLimit: cfg.maxBodySize,
 		},
 		wrap(async ({ path: p, data }: { path: string; data: number[] }) => {
 			const full = ensureSafe(p);
@@ -204,10 +267,21 @@ export default function createApp(config: Partial<typeof defaultConfig> = {}) {
 	});
 
 	const callback = () => {
-		console.log(`Server listening on port ${cfg.port}`);
+		console.log(`Server listening on http://${cfg.host}:${cfg.port}/`);
+		if (cfg.host !== "127.0.0.1" && cfg.host !== "localhost" && cfg.host !== "::1") {
+			console.warn(
+				`[fs] 注意：当前监听地址为 ${cfg.host}，本服务的写/删接口没有鉴权，` +
+					"暴露到局域网意味着同网段任何设备都能改动游戏目录。仅在确有必要时这样使用。"
+			);
+		}
 		if (!cfg.server && !cfg.debug) exec(`start http://localhost:${cfg.port}/`);
 	};
 
+	// 说明：这里曾有一段被注释掉的 HTTPS 分支，读取仓库内的
+	// localhost.decrypted.key / localhost.crt。那两个文件是真实私钥+证书且已入库，
+	// 现已从版本控制移除（见 .gitignore）。若本地确实需要 HTTPS，请自行生成
+	// 自签名证书后再启用下面这段，并且不要把私钥提交回来。
+	//
 	// if (config.https) {
 	// 	const SSLOptions = {
 	// 		key: fs.readFileSync(path.join(config.dirname, "localhost.decrypted.key")),
@@ -217,11 +291,11 @@ export default function createApp(config: Partial<typeof defaultConfig> = {}) {
 	// 	// 会提示NET::ERR_CERT_AUTHORITY_INVALID
 	// 	// 但浏览器还是可以访问的
 	// 	// todo: 解决sw注册问题
-	// 	httpsServer.listen(config.port, callback);
+	// 	httpsServer.listen({ port: cfg.port, host: cfg.host }, callback);
 	// } else {
-	// 	app.listen(config.port, callback);
+	// 	app.listen({ port: cfg.port, host: cfg.host }, callback);
 	// }
-	app.listen({ port: cfg.port }, callback);
+	app.listen({ port: cfg.port, host: cfg.host }, callback);
 
 	return app;
 }

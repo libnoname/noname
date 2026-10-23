@@ -68,6 +68,13 @@ export async function boot() {
 	// 初始化security
 	await security.initSecurity({ lib, game, ui, get, ai, _status });
 
+	// 沙盒加固当前是「上游有意关闭」的（见 util/sandbox/initRealms.js 的开关注释，
+	// 对应上游提交 3f242939c）。这里明确说明一次，免得后来者读到沙盒相关代码后，
+	// 误以为扩展/模式代码处于隔离运行域中。
+	if (sandboxEnabled && !security.SANDBOX_ENABLED) {
+		console.info("[noname] 沙盒加固未启用：扩展与模式代码在主运行域中执行（这是当前预期行为）。");
+	}
+
 	CacheContext.setProxy({ lib, game, get });
 
 	const ua = userAgentLowerCase;
@@ -189,22 +196,28 @@ export async function boot() {
 		const appearenceConfig = lib.configMenu.appearence.config,
 			fontSheet = ui.css.fontsheet.sheet,
 			suitsFont = config.get("suits_font");
+		// 字体文件很大（xinwei.woff2 约 7.7 MB，yuanli / shousha 各约 4.7–4.9 MB），
+		// 而 @font-face 的 font-display 默认值是 auto，即「字体没到之前不显示文字」
+		// （FOIT）。弱网下表现为白屏数秒，用户不知道是在加载。
+		// 统一加 font-display: swap：先用回退字体把文字画出来，字体到位后再替换。
+		// 老浏览器不认识该描述符时会直接忽略，不影响解析。
+		const fontFaceRule = (family: string, src: string) => `@font-face {font-family: '${family}'; src: ${src}; font-display: swap;}`;
 		Object.keys(pack.font).forEach(value => {
 			const font = pack.font[value];
 			appearenceConfig.name_font.item[value] = font;
 			appearenceConfig.identity_font.item[value] = font;
 			appearenceConfig.cardtext_font.item[value] = font;
 			appearenceConfig.global_font.item[value] = font;
-			fontSheet.insertRule(`@font-face {font-family: '${value}'; src: local('${font}'), url('${lib.assetURL}font/${value}.woff2');}`, 0);
+			fontSheet.insertRule(fontFaceRule(value, `local('${font}'), url('${lib.assetURL}font/${value}.woff2')`), 0);
 			if (suitsFont) {
-				fontSheet.insertRule(`@font-face {font-family: '${value}'; src: local('${font}'), url('${lib.assetURL}font/suits.woff2');}`, 0);
+				fontSheet.insertRule(fontFaceRule(value, `local('${font}'), url('${lib.assetURL}font/suits.woff2')`), 0);
 			}
 		});
 		if (suitsFont) {
-			fontSheet.insertRule(`@font-face {font-family: 'Suits'; src: url('${lib.assetURL}font/suits.woff2');}`, 0);
+			fontSheet.insertRule(fontFaceRule("Suits", `url('${lib.assetURL}font/suits.woff2')`), 0);
 		}
-		fontSheet.insertRule(`@font-face {font-family: 'NonameSuits'; src: url('${lib.assetURL}font/suits.woff2');}`, 0);
-		fontSheet.insertRule(`@font-face {font-family: 'MotoyaLMaru'; src: url('${lib.assetURL}font/motoyamaru.woff2');}`, 0);
+		fontSheet.insertRule(fontFaceRule("NonameSuits", `url('${lib.assetURL}font/suits.woff2')`), 0);
+		fontSheet.insertRule(fontFaceRule("MotoyaLMaru", `url('${lib.assetURL}font/motoyamaru.woff2')`), 0);
 		appearenceConfig.cardtext_font.item.default = "默认";
 		appearenceConfig.global_font.item.default = "默认";
 	}
@@ -294,12 +307,17 @@ export async function boot() {
 		document.addEventListener("touchmove", ui.click.windowtouchmove);
 	}
 
-	// 在dom加载完后执行相应的操作
-	await new Promise(resolve => {
-		if (document.readyState !== "complete") {
-			window.onload = resolve;
+	// 在 DOM 解析完成后执行相应的操作。
+	//
+	// 这里刻意只等 DOM 就绪，不等 window.onload：入口是 type="module" 的脚本，
+	// 浏览器保证它在文档解析结束后才执行，所以此刻 readyState 至少是 "interactive"，
+	// DOM 已可安全操作。而 window.onload 还要等 CSS、背景图、字体等全部子资源下载完，
+	// 会把下面所有武将包/卡包/扩展的加载一并推迟到那时——纯等待，没有收益。
+	await new Promise<void>(resolve => {
+		if (document.readyState === "complete" || document.readyState === "interactive") {
+			resolve();
 		} else {
-			resolve(void 0);
+			document.addEventListener("DOMContentLoaded", () => resolve(), { once: true });
 		}
 	});
 
@@ -310,6 +328,8 @@ export async function boot() {
 		for (const i of extensionlist) {
 			await importExtension(i);
 		}
+		// 这次等待不是冗余：importExtension 失败时会走 createEmptyExtension 分支
+		// 并再次 game.import，那批 promise 只会在这里被等到。
 		if (_status.extensionLoading) {
 			await Promise.all(_status.extensionLoading);
 		}
