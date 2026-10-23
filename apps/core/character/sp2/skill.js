@@ -7782,9 +7782,14 @@ const skills = {
 			const num = event.triggername == "damageEnd" ? 1 : -1;
 			const target = event.targets[0];
 			const effect = event.name + "_effect";
-			const storage = target.getStorage(effect, [0, null]);
-			storage[0] += num;
-			storage[1] = event.getParent("phase", false, true);
+			const storage = target.getStorage(effect, []);
+			const phase = event.getParent("phase", true, true);
+			const index = storage.findIndex(([_, evt]) => evt === phase);
+			if (index !== -1) {
+				storage[index][0] += num;
+			} else {
+				storage.push([num, phase]);
+			}
 			target.setStorage(effect, storage, true);
 			target.addSkill(effect);
 			await game.delayx();
@@ -7797,29 +7802,48 @@ const skills = {
 					player: ["phaseDrawBegin2", "phaseAfter"],
 				},
 				filter(event, player) {
-					const [num, evt] = player.getStorage("dcbihuo_effect", [0, null]);
+					const storage = player.getStorage("dcbihuo_effect", []);
 					if (event.name === "phase") {
-						return event !== evt;
+						return storage.some(([_, evt]) => evt !== event);
 					}
 					if (event.numFixed) {
 						return false;
 					}
-					const phase = event.getParent("phase", false, true);
-					return typeof num === "number" && num !== 0 && phase !== evt;
+					const phase = event.getParent("phase", true, true);
+					return storage.some(([num, evt]) => num !== 0 && evt !== phase);
 				},
 				forced: true,
 				popup: false,
 				async content(event, trigger, player) {
+					const storage = player.getStorage(event.name, []);
 					if (trigger.name === "phase") {
-						player.removeSkill(event.name);
+						for (let i = 0; i < storage.length; i++) {
+							const [_, evt] = storage[i];
+							if (evt !== trigger) {
+								storage.splice(i--, 1);
+							}
+						}
+						if (!storage.length) {
+							player.removeSkill(event.name);
+						} else {
+							player.setStorage(event.name, storage, true);
+						}
 						return;
 					}
-					const [num] = player.getStorage(event.name, [0, null]);
+					const phase = event.getParent("phase", true, true);
+					let num = storage.reduce((sum, [num, evt]) => (evt === phase ? sum : sum + num), 0);
 					trigger.num += num;
 					game.log(player, "的额定摸牌数", "#g" + (num >= 0 ? "+" : "") + num);
 				},
 				mark: true,
-				intro: { content: ([num]) => "额定摸牌数" + (num >= 0 ? "+" : "") + num },
+				intro: {
+					content(storage, player, skill) {
+						storage ??= player.getStorage(skill, []);
+						const phase = get.event().getParent("phase", true, true);
+						let num = storage.reduce((sum, [num, evt]) => (evt === phase ? sum : sum + num), 0);
+						return "额定摸牌数" + (num >= 0 ? "+" : "") + num;
+					},
+				},
 			},
 		},
 	},
