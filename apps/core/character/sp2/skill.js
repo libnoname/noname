@@ -7769,7 +7769,7 @@ const skills = {
 						if (att >= 0) {
 							return 0;
 						}
-						if ((target.storage.dcbihuo_effect || 0) <= -2) {
+						if (target.getStorage("dcbihuo_effect", 0) < -2) {
 							return -att / 10;
 						}
 						return (-att / Math.sqrt(Math.min(5, 1 + target.countCards("h")))) * Math.sqrt(1 + target.hp);
@@ -7782,31 +7782,57 @@ const skills = {
 			const num = event.triggername == "damageEnd" ? 1 : -1;
 			const target = event.targets[0];
 			const effect = event.name + "_effect";
-			if (typeof target.storage[effect] != "number") {
-				target.storage[effect] = 0;
-			}
-			target.storage[effect] += num;
-			target.addTempSkill(effect, { player: "phaseAfter" });
-			target.markSkill(effect);
+			let storage = target.getStorage(effect, 0);
+			storage += num;
+			target.setStorage(effect, storage, true);
+			target.addSkill(effect);
 			await game.delayx();
 		},
 		subSkill: {
 			effect: {
 				charlotte: true,
 				onremove: true,
-				trigger: { player: "phaseDrawBegin2" },
-				filter(event, player) {
-					return typeof player.storage.dcbihuo_effect == "number" && !event.numFixed;
+				mark: true,
+				intro: {
+					content(num = 0) {
+						return "下回合额定摸牌数" + (num >= 0 ? "+" : "") + num;
+					},
 				},
-				forced: true,
-				popup: false,
+				trigger: {
+					player: "phaseBegin",
+				},
+				filter(event, player) {
+					return player.hasStorage("dcbihuo_effect");
+				},
+				silent: true,
 				async content(event, trigger, player) {
-					const num = player.countMark(event.name);
+					const storage = player.getStorage(event.name, 0);
+					player.removeSkill(event.name);
+					player.setStorage("dcbihuo_sha", storage, true);
+					player.addTempSkill("dcbihuo_sha");
+				},
+			},
+			sha: {
+				charlotte: true,
+				onremove: true,
+				mark: true,
+				intro: {
+					content(num = 0) {
+						return "本回合额定摸牌数" + (num >= 0 ? "+" : "") + num;
+					},
+				},
+				trigger: {
+					player: "phaseDrawBegin2",
+				},
+				filter(event, player) {
+					return player.hasStorage("dcbihuo_sha") && !event.numFixed;
+				},
+				silent: true,
+				async content(event, trigger, player) {
+					const num = player.getStorage(event.name, 0);
 					trigger.num += num;
 					game.log(player, "的额定摸牌数", "#g" + (num >= 0 ? "+" : "") + num);
 				},
-				mark: true,
-				intro: { content: num => "额定摸牌数" + (num >= 0 ? "+" : "") + num },
 			},
 		},
 	},
