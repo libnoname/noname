@@ -230,10 +230,8 @@ export default {
 					target(player, target) {
 						const cards = target.getCards("e");
 						const js = target.getCards("j");
-						let val = get.value(cards, target);
-						for (const card of js) {
-							val -= get.effect(target, card.viewAs ? { name: card.viewAs } : card, target, player);
-						}
+						let val = cards.reduce((sum, card) => sum + get.equipValue(card, target), 0) / Math.sqrt(cards.length);
+						val -= js.reduce((sum, card) => sum + get.effect(target, card.viewAs ? { name: card.viewAs } : card, target, player), 0) / Math.sqrt(js.length);
 						return -val;
 					},
 				},
