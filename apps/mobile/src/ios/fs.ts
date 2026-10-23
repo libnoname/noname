@@ -18,9 +18,13 @@
  */
 
 import { Filesystem, Directory, Encoding } from "@capacitor/filesystem";
-import { Capacitor } from "@capacitor/core";
+import { Capacitor, registerPlugin } from "@capacitor/core";
 import type { NativeAccessResult, NativeEntryResult, NativeFileSystem, NativeListResult, NativeReadResult } from "../fs/types.js";
-import { buildManifestIndex, type ManifestIndex } from "./manifest-index.js";
+
+const BundledFileSystem = registerPlugin<{
+	stat(options: { path: string }): Promise<NativeEntryResult>;
+	readdir(options: { path: string }): Promise<NativeListResult>;
+}>("BundledFileSystem");
 
 /**
  * 内置资源根目录。
@@ -59,11 +63,11 @@ export class IosFileSystem implements NativeFileSystem {
 	}
 
 	async checkFile(options: { fileName: string }): Promise<NativeEntryResult> {
-		return { type: await this.resolveType(options.fileName, "file") };
+		return { type: await this.resolveType(options.fileName) };
 	}
 
 	async checkDir(options: { dir: string }): Promise<NativeEntryResult> {
-		return { type: await this.resolveType(options.dir, "directory") };
+		return { type: await this.resolveType(options.dir) };
 	}
 
 	async readFile(options: { fileName: string }): Promise<NativeReadResult> {
@@ -113,7 +117,7 @@ export class IosFileSystem implements NativeFileSystem {
 
 		if (!(await this.exists(writablePath))) {
 			// 内置资源属于 App 包，不可删除，这里明确报错而不是静默失败
-			const bundled = (await this.listBundled(options.fileName)).length > 0 || (await this.bundledFileExists(options.fileName));
+			const bundled = (await BundledFileSystem.stat({ path: options.fileName })).type !== "none";
 			throw new Error(bundled ? `内置资源只读: ${options.fileName}` : `文件不存在: ${options.fileName}`);
 		}
 
@@ -124,21 +128,23 @@ export class IosFileSystem implements NativeFileSystem {
 	}
 
 	async getFileList(options: { dir: string }): Promise<NativeListResult> {
-		const folders = new Set<string>();
-		const files = new Set<string>();
-
-		// 先收集内置资源层的条目
-		for (const entry of await this.listBundled(options.dir)) {
-			if (entry.isDirectory) {
-				folders.add(entry.name);
-			} else {
-				files.add(entry.name);
-			}
+		const writablePath = this.toWritablePath(options.dir);
+		const writableType = await this.statWritable(writablePath);
+		if (writableType === "file") {
+			throw new Error(`${options.dir} 不是文件夹`);
 		}
 
-		// 再叠加可写层的条目（同名时以可写层为准，与覆盖层语义一致）
-		const writablePath = this.toWritablePath(options.dir);
-		if (await this.exists(writablePath)) {
+		const bundledType = (await BundledFileSystem.stat({ path: options.dir })).type;
+		if (writableType === null && bundledType !== "directory") {
+			throw new Error(bundledType === "file" ? `${options.dir} 不是文件夹` : `${options.dir} 不存在`);
+		}
+
+		const bundled = bundledType === "directory" ? await BundledFileSystem.readdir({ path: options.dir }) : { folders: [], files: [] };
+		const folders = new Set(bundled.folders);
+		const files = new Set(bundled.files);
+
+		// 同名时以可写层为准，包括文件与目录类型不同的情况。
+		if (writableType === "directory") {
 			try {
 				const result = await Filesystem.readdir({
 					path: writablePath,
@@ -149,22 +155,13 @@ export class IosFileSystem implements NativeFileSystem {
 						folders.add(entry.name);
 						files.delete(entry.name);
 					} else {
-						if (!folders.has(entry.name)) {
-							files.add(entry.name);
-						}
+						files.add(entry.name);
+						folders.delete(entry.name);
 					}
 				}
 			} catch (error) {
-				// 列举**可写根目录**时 path 是空串，个别 Capacitor 实现可能不接受。
-				// 这不该让整个列举失败——退化成「只返回内置层」即可，读取不受影响。
+				// 保留可写目录列举失败时退化为仅内置资源的行为。
 				console.warn(`[ios-fs] 列举可写目录失败（已降级为仅内置资源）: ${options.dir}`, error);
-			}
-		}
-
-		if (folders.size === 0 && files.size === 0) {
-			// 两层都没有内容：抛错以符合 Android 端「目录不存在」的行为
-			if (!(await this.exists(writablePath))) {
-				throw new Error(`${options.dir} 不存在`);
 			}
 		}
 
@@ -199,7 +196,7 @@ export class IosFileSystem implements NativeFileSystem {
 			throw new Error(`不能删除可写根目录: ${options.dir}`);
 		}
 		if (!(await this.exists(path))) {
-			const bundled = (await this.listBundled(options.dir)).length > 0 || (await this.bundledFileExists(options.dir));
+			const bundled = (await BundledFileSystem.stat({ path: options.dir })).type !== "none";
 			throw new Error(bundled ? `内置资源只读: ${options.dir}` : `目录不存在: ${options.dir}`);
 		}
 
@@ -211,7 +208,7 @@ export class IosFileSystem implements NativeFileSystem {
 	}
 
 	/** 查询某个路径在两个层里的类型 */
-	private async resolveType(path: string, expected: "file" | "directory"): Promise<"file" | "directory" | "none"> {
+	private async resolveType(path: string): Promise<"file" | "directory" | "none"> {
 		const writablePath = this.toWritablePath(path);
 
 		// 一次 stat 同时得到「是否存在」与「类型」，避免先 exists 再 stat 的两次原生调用
@@ -220,25 +217,7 @@ export class IosFileSystem implements NativeFileSystem {
 			return writableType;
 		}
 
-		// 内置资源：优先查清单索引，未命中的文件通过 GET 探测
-		if (expected === "file") {
-			if (await this.bundledFileExists(path)) {
-				return "file";
-			}
-			// 也可能是目录：尝试列目录
-			if ((await this.listBundled(path)).length > 0) {
-				return "directory";
-			}
-		} else {
-			if ((await this.listBundled(path)).length > 0) {
-				return "directory";
-			}
-			if (await this.bundledFileExists(path)) {
-				return "file";
-			}
-		}
-
-		return "none";
+		return (await BundledFileSystem.stat({ path })).type;
 	}
 
 	/** 判断可写层中是否存在该路径 */
@@ -281,32 +260,6 @@ export class IosFileSystem implements NativeFileSystem {
 
 	// ---------- 内置资源访问 ----------
 
-	/**
-	 * 探测内置资源里是否存在某个文件。
-	 *
-	 * 快路径直接查资源清单索引：清单已收录 1.5 万条内置文件，
-	 * 命中即可确认存在，无需经过 WebView 资源通道。
-	 * 清单刻意不收录的条目（`preload.js`、`node_modules` 等）再回退到 GET。
-	 */
-	private async bundledFileExists(path: string): Promise<boolean> {
-		const normalized = normalizeSegments(path);
-		const index = await this.loadManifestIndex();
-		if (index.files.has(normalized)) {
-			return true;
-		}
-
-		const response = await fetch(this.toBundledUrl(path));
-		if (response.status === 404) {
-			return false;
-		}
-		if (!response.ok) {
-			throw new Error(`内置资源探测失败 (${response.status}): ${path}`);
-		}
-		// 目录请求在部分实现下会返回 HTML，因此仍需排除「看起来是目录」的情况
-		const contentType = response.headers.get("content-type") ?? "";
-		return !contentType.includes("text/html") || this.looksLikeAsset(path);
-	}
-
 	/** 读取内置资源的二进制，转成 base64 */
 	private async readBundled(path: string): Promise<string> {
 		const response = await fetch(this.toBundledUrl(path));
@@ -325,72 +278,6 @@ export class IosFileSystem implements NativeFileSystem {
 			throw new Error(response.status === 404 ? `内置资源不存在: ${path}` : `内置资源读取失败 (${response.status}): ${path}`);
 		}
 		return response.text();
-	}
-
-	/**
-	 * 列出内置资源目录。
-	 *
-	 * 限制说明：WKWebView 的自定义 scheme **不支持目录列举**，
-	 * 因此 iOS 端无法真正「读取打包资源的目录列表」。
-	 *
-	 * 解决方案：由构建阶段生成一份资源清单（`asset-manifest.json`），
-	 * 首次使用时预处理成目录索引（见 `manifest-index.ts`），
-	 * 之后每次列举都是 O(1)，不再全量扫描 1.5 万条路径。
-	 */
-	private async listBundled(dir: string): Promise<{ name: string; isDirectory: boolean }[]> {
-		const index = await this.loadManifestIndex();
-		const entry = index.directories.get(normalizeSegments(dir));
-		if (!entry) {
-			return [];
-		}
-
-		return [
-			...entry.folders.map(name => ({ name, isDirectory: true })),
-			...entry.files.map(name => ({ name, isDirectory: false })),
-		];
-	}
-
-	/** 懒加载资源清单并构建索引；缺失时退化为空索引（仅影响目录列举与存在性快路径） */
-	private async loadManifestIndex(): Promise<ManifestIndex> {
-		if (this.manifestIndex) {
-			return this.manifestIndex;
-		}
-		if (this.manifestPromise) {
-			return this.manifestPromise;
-		}
-
-		// 并发调用共享同一次加载，避免启动阶段重复请求清单
-		const promise = (async () => {
-			let entries: string[] = [];
-
-			try {
-				const response = await fetch(this.toBundledUrl("asset-manifest.json"));
-				if (response.ok) {
-					const data = (await response.json()) as unknown;
-					if (Array.isArray(data)) {
-						entries = data.filter((item): item is string => typeof item === "string");
-					}
-				}
-			} catch {
-				// 清单缺失只影响目录列举与存在性快路径，文件读取不受影响
-			}
-
-			const index = buildManifestIndex(entries);
-			this.manifestIndex = index;
-			this.manifestPromise = null;
-			return index;
-		})();
-
-		this.manifestPromise = promise;
-		return promise;
-	}
-
-	private manifestIndex: ManifestIndex | null = null;
-	private manifestPromise: Promise<ManifestIndex> | null = null;
-
-	/** 资源目录不应该是 HTML，用于排除「目录被返回成 index.html」的误判 */
-	private looksLikeAsset(path: string): boolean {
-		return /\.[a-z0-9]+$/i.test(path);
 	}
 
 	private toBundledUrl(path: string): string {
