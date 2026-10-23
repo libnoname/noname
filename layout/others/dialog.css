@@ -1,0 +1,298 @@
+:root {
+    --tip-display: none;
+}
+
+/* addNewRow的对话框的样式 */
+.dialog.addNewRow {
+    --bgColor: #2f2f3557;
+    width: 80%;
+
+    left: 10%;
+    border-radius: 10px;
+}
+
+.dialog.addNewRow .row-container {
+    display: grid;
+    height: fit-content;
+    margin: 10px auto !important;
+    width: 95%;
+}
+
+.dialog.addNewRow .row-container>* {
+    position: relative;
+}
+
+.dialog.addNewRow .item-container>.caption {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: initial;
+    flex-wrap: wrap;
+    align-content: center
+}
+
+.dialog.addNewRow .item-container {
+
+    width: 90%;
+    height: 95%;
+    margin: auto;
+    display: flex;
+    justify-content: center;
+    border-radius: 10px;
+    padding: 3px 3px;
+    overflow: auto;
+    max-width: 90%;
+}
+
+.dialog.addNewRow .item-container>* {
+    flex-shrink: 0;
+    position: relative;
+}
+
+.dialog.addNewRow .item-container>.item:not(:first-of-type) {
+    margin-left: var(--ml, 3px);
+}
+
+/* .dialog.addNewRow .item-container.zoom>.item.card:hover {
+    z-index: 99;
+    scale: 1.1;
+} */
+
+.dialog.addNewRow:not(.fullheight) {
+    top: 10% ;
+    max-height: 55%;
+}
+
+.dialog.addNewRow>.content-container {
+    border-radius: 10px;
+    /* background-color: var(--bgColor); */
+}
+
+/* 自由选将搜索框中文字的样式 */
+.searcher.caption>input::placeholder {
+    font-weight: lighter;
+    color: rgba(126, 114, 114, 0.724)
+}
+
+/*记牌器相关的样式*/
+.popupContainer.deckMonitor {
+
+
+    width: 100%;
+    height: 100%;
+    background-color: rgb(44 39 39 / 38%);
+    z-index: 9;
+
+
+
+}
+
+.popupContainer.deckMonitor * {
+    text-shadow: none;
+    box-sizing: border-box;
+}
+
+.popupContainer.deckMonitor .deckMonitor {
+    --bgColor: #45362c;
+    border: 3px solid rgb(213 194 179);
+    width: 80%;
+    height: 75%;
+    background-color: var(--bgColor);
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+
+
+}
+
+.popupContainer.deckMonitor .deckMonitor .title {
+    width: 100%;
+    height: 10%;
+    top: 0%;
+    background-color: var(--bgColor);
+    font-size: 2em;
+    color: #fff5f5;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+
+}
+
+.popupContainer.deckMonitor .deckMonitor .title span {
+    text-decoration: underline;
+    font-size: 0.8em;
+    color: yellow;
+    font-weight: lighter;
+
+}
+
+.popupContainer.deckMonitor .deckMonitor .contentContainer {
+    width: 100%;
+    height: 90%;
+    bottom: 0%;
+    display: flex;
+    justify-content: space-between;
+    background: #45362c;
+    border: 2px solid #594d41;
+    padding: 5px;
+    box-sizing: border-box;
+    /* 滚动方案开启，压缩方案关闭 */
+    overflow-x: scroll;
+}
+
+.popupContainer.deckMonitor .deckMonitor .contentContainer * {
+    position: relative;
+}
+
+.popupContainer.deckMonitor .deckMonitor .contentContainer .columnContainer {
+    background-color: #c2b597;
+    height: 100%;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: 100px;
+    margin: 0 5px;
+    padding: 3px;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    max-width: calc(100% / 6);
+    /* 滚动方案开启，压缩方案关闭 */
+    min-width: calc(100% / 7);
+}
+
+.popupContainer.deckMonitor .deckMonitor .contentContainer .columnContainer .subtitle {
+    width: 100%;
+    text-align: center;
+    color: black;
+    flex-grow: 0;
+    height: 10%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.3em;
+    flex-shrink: 0;
+    overflow: scroll;
+}
+
+.popupContainer.deckMonitor .deckMonitor .contentContainer .columnContainer .itemContainer {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    align-items: center;
+    overflow: auto;
+}
+
+.popupContainer.deckMonitor .deckMonitor .contentContainer .columnContainer .itemContainer .itemCount {
+    display: flex;
+    flex: 1 3 30px;
+    flex-shrink: 0;
+    overflow: visible;
+    font-size: 0.9em;
+    justify-content: center;
+
+}
+
+.popupContainer.deckMonitor .deckMonitor .contentContainer .columnContainer .itemContainer .item {
+
+    background-color: #45362c;
+    display: flex;
+    width: 96%;
+    margin-top: 4px;
+    padding: 2px 2px;
+    border-radius: 3px;
+    align-items: center;
+    border-radius: 3px;
+    transition: 0.2s;
+
+
+}
+
+.popupContainer.deckMonitor .deckMonitor .contentContainer .columnContainer .itemContainer .item:hover {
+    box-shadow: 0 0 4px 3px yellow;
+}
+
+.popupContainer.deckMonitor .deckMonitor .contentContainer .columnContainer .itemContainer .item .itemName {
+    background: #d6cece;
+    margin: 3px;
+    margin: 5px 2px;
+    border-radius: 5px;
+    color: black;
+    text-shadow: none;
+    padding: 2px;
+    font-size: 0.9em;
+    flex: 1 5 50px;
+    justify-content: center;
+    display: flex;
+}
+
+.popupContainer.deckMonitor .deckMonitor .contentContainer .columnContainer .itemContainer .item .tip {
+    position: absolute;
+    background: #f5eded;
+    width: 102%;
+    height: fit-content;
+    z-index: 1;
+    padding: 6px;
+    color: black;
+    border: 3px solid #143308;
+    border-radius: 3px;
+    left: 0;
+    display: none;
+}
+
+/* ----------tip相关的样式------------------ */
+
+
+.player .tipContainer {
+    --bg: #2b2b28;
+    position: absolute;
+    box-sizing: border-box;
+    width: 100%;
+    bottom: max(48%, var(--bottom, 46%));
+    height: fit-content;
+    display: var(--tip-display);
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    z-index: 2;
+}
+
+.player[data-position="0"] .tipContainer {
+    width: max(var(--w, 120px), 120px);
+}
+
+.player .tipContainer>.tip {
+    position: relative;
+    box-sizing: border-box;
+    width: 93%;
+    background: var(--bg);
+    border-radius: 5px;
+    padding: 3px 3px;
+    border: 1px solid #8f8686;
+    margin-bottom: 3px;
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: flex-start;
+    align-items: center;
+    color: #e0dddd;
+    text-shadow: none;
+    left:6%
+}
+
+/* 方案二 */
+/* .player .tipContainer {
+    --bg: #48310cf0;
+    border: solid 3px #a17132;
+    padding: 0;
+    border-radius: 5px;
+    box-sizing: border-box;
+
+}
+
+.player .tipContainer>.tip {
+    border: none;
+    border-radius: 0;
+    margin: 0;
+    padding: 2px;
+    font-size: 1.1em;
+} */
