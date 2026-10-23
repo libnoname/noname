@@ -526,19 +526,23 @@ const skills = {
 			dialog.asset = function (file) {
 				return `url("${this.ASSET}${file}")`;
 			};
+			dialog.screenScale = function () {
+				const width = this.offsetWidth;
+				return width ? this.getBoundingClientRect().width / width : 1;
+			};
 			dialog.stagePoint = function (cx, cy) {
 				const stage = this.stage.getBoundingClientRect();
-				const zoom = this.zoom || 1;
+				const zoom = this.screenScale() * (this.zoom || 1);
 				return {
 					left: (cx - stage.left) / zoom,
 					top: (cy - stage.top) / zoom,
 				};
-			}
+			};
 			dialog.elementCenter = function (el) {
 				if (!el || !this.stage) return this.stagePoint(0, 0);
 				const rect = el.getBoundingClientRect();
 				return this.stagePoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
-			}
+			};
 			dialog.wordPoint = function (cells) {
 				if (!this.stage) return null;
 				if (!cells || !cells.length) {
@@ -551,7 +555,7 @@ const skills = {
 				const a = first.getBoundingClientRect();
 				const b = last.getBoundingClientRect();
 				return this.stagePoint((a.left + a.width / 2 + b.left + b.width / 2) / 2, (a.top + a.height / 2 + b.top + b.height / 2) / 2);
-			}
+			};
 			dialog.flySkill = function (name, start, target, done) {
 				const wrap = ui.create.div(".olshilun-skill-flywrap", this.stage);
 				const fly = ui.create.div(".olshilun-skill-fly", wrap);
@@ -583,7 +587,7 @@ const skills = {
 						finishFx();
 					}, 560);
 				}, 320);
-			}
+			};
 			dialog.playObtainSkillFx = function (title) {
 				const skills = title && title.skills ? title.skills.slice() : [];
 				if (!skills.length || !this.stage || !this.panel) return;
@@ -599,7 +603,7 @@ const skills = {
 					win.flySkill(name, start, item, () => run(index + 1));
 				};
 				run(0);
-			}
+			};
 			dialog.paint = function () {
 				const data = this.data;
 				for (let i = 0; i < this.cells.length; i++) {
@@ -635,7 +639,7 @@ const skills = {
 						}
 					} else if (egg) egg.remove();
 				}
-			}
+			};
 			dialog._createProgressBar = function () {
 				this.progressBar = ui.create.div(".olshilun-progressbar", this.node);
 				this.bar = this.progressBar;
@@ -655,17 +659,18 @@ const skills = {
 					win._alignProgressBar();
 					if (win.progressBar) win.progressBar.style.visibility = "";
 				});
-			}
+			};
 			dialog._alignProgressBar = function () {
 				const bar = this.progressBar;
 				const grid = this.grid;
 				if (!bar || !grid || !this.node) return;
 				const host = this.node.getBoundingClientRect();
 				const box = grid.getBoundingClientRect();
-				bar.style.left = box.left - host.left + (box.width - 510) / 2 + "px";
-				bar.style.top = box.bottom - host.top + 80 + "px";
+				const scale = this.screenScale();
+				bar.style.left = (box.left - host.left) / scale + (box.width / scale - 510) / 2 + "px";
+				bar.style.top = (box.bottom - host.top) / scale + 80 + "px";
 				bar.style.bottom = "auto";
-			}
+			};
 			dialog.runCountdown = function (totalSec, callback) {
 				const el = this.progressBar;
 				const start = Date.now();
@@ -686,7 +691,7 @@ const skills = {
 						if (timeoutId) clearTimeout(timeoutId);
 					},
 				};
-			}
+			};
 			dialog.reloadBar = function (sec) {
 				if (!this.progressBar) return;
 				if (this.countdown) {
@@ -695,14 +700,14 @@ const skills = {
 				}
 				this.progressBar.style.setProperty("--clip", "inset(0 0 0 0)");
 				this.countdown = this.runCountdown(sec);
-			}
+			};
 			dialog.foundText = function () {
 				const n = this.found?.length || 0;
 				return n ? "您已经完成了" + n + "个战功" : "请连线出完整战功";
-			}
+			};
 			dialog.say = function (text) {
 				if (this.hint) this.hint.innerHTML = text || "";
-			}
+			};
 			dialog.sayOwner = function (text) {
 				const me = game.me;
 				if (me && me.playerid && this.ownerid && me.playerid !== this.ownerid) {
@@ -710,7 +715,7 @@ const skills = {
 					return;
 				}
 				this.say(text);
-			}
+			};
 			dialog.keepGlow = function (entry) {
 				const gid = this.gid;
 				if (entry.timer) clearTimeout(entry.timer);
@@ -721,7 +726,7 @@ const skills = {
 					later.glow = later.glows.flatMap(item => item.cells);
 					later.paint();
 				}, 6000);
-			}
+			};
 			dialog.light = function (index) {
 				if (this.found.includes(index)) return;
 				const title = this.data.titles[index];
@@ -733,7 +738,7 @@ const skills = {
 				this.glow = this.glows.flatMap(item => item.cells);
 				this.paint();
 				this.keepGlow(entry);
-			}
+			};
 			dialog.dark = function (index) {
 				this.hiddenCells[index] = true;
 				this.paint();
@@ -747,7 +752,7 @@ const skills = {
 				}
 				this.paint();
 				this.sayOwner(this.foundText());
-			}
+			};
 			dialog.applyFound = function (index) {
 				const title = this.data.titles[index];
 				if (!title || this.found.includes(index)) return;
@@ -764,7 +769,7 @@ const skills = {
 				this.paint();
 				this.playObtainSkillFx(title);
 				this.sayOwner(this.foundText());
-			}
+			};
 			dialog.showFinish = function (text) {
 				if (this.clock) {
 					clearInterval(this.clock);
@@ -772,7 +777,7 @@ const skills = {
 				}
 				this.say(text || "");
 				this.reloadBar(2);
-			}
+			};
 			dialog.closeWindow = function () {
 				if (this.clock) clearInterval(this.clock);
 				if (this.autoTimer) clearInterval(this.autoTimer);
@@ -836,7 +841,7 @@ const skills = {
 				};
 				addButton("pingjian_btn_help.png", "assist", "glow");
 				addButton("pingjian_btn_hide.png", "hinder", "hide");
-			}
+			};
 			dialog.init = function () {
 				const data = this.data;
 				const gid = this.gid;
@@ -1136,6 +1141,7 @@ const skills = {
 					return a % size === b % size || Math.floor(a / size) === Math.floor(b / size);
 				};
 				const doFound = function (index) {
+					if (finished) return;
 					const title = data.titles[index];
 					if (!title || state.found.includes(index)) return;
 					send("found", index);
@@ -1149,9 +1155,16 @@ const skills = {
 					state.selected = list;
 					send("select", list.slice());
 				};
+				const isLine = function (list) {
+					for (let i = 1; i < list.length; i++) {
+						if (!adjacent(list[i - 1], list[i]) || !straight(list[0], list[i])) return false;
+					}
+					return true;
+				};
 				const tryMatch = function () {
+					if (finished) return;
 					const list = state.selected;
-					if (!list.length) return;
+					if (!list.length || !isLine(list)) return;
 					const text = list.map(cell => data.chars[cell]).join("");
 					const reverse = text.split("").reverse().join("");
 					for (let i = 0; i < data.titles.length; i++) {
@@ -1167,8 +1180,7 @@ const skills = {
 					const list = state.selected.slice();
 					const pos = list.indexOf(index);
 					if (options && options.toggle && pos >= 0) {
-						list.splice(pos, 1);
-						publish(list);
+						publish(list.slice(0, pos));
 						return true;
 					}
 					if (options && options.slide && pos >= 0) {
