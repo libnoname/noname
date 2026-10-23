@@ -7769,7 +7769,7 @@ const skills = {
 						if (att >= 0) {
 							return 0;
 						}
-						if ((target.storage.dcbihuo_effect || 0) <= -2) {
+						if ((target.storage?.dcbihuo_effect?.[0] || 0) <= -2) {
 							return -att / 10;
 						}
 						return (-att / Math.sqrt(Math.min(5, 1 + target.countCards("h")))) * Math.sqrt(1 + target.hp);
@@ -7782,31 +7782,44 @@ const skills = {
 			const num = event.triggername == "damageEnd" ? 1 : -1;
 			const target = event.targets[0];
 			const effect = event.name + "_effect";
-			if (typeof target.storage[effect] != "number") {
-				target.storage[effect] = 0;
-			}
-			target.storage[effect] += num;
-			target.addTempSkill(effect, { player: "phaseAfter" });
-			target.markSkill(effect);
+			const storage = target.getStorage(effect, [0, null]);
+			storage[0] += num;
+			storage[1] = event.getParent("phase", false, true);
+			target.setStorage(effect, storage, true);
+			target.addSkill(effect);
 			await game.delayx();
 		},
 		subSkill: {
 			effect: {
 				charlotte: true,
 				onremove: true,
-				trigger: { player: "phaseDrawBegin2" },
+				trigger: {
+					player: ["phaseDrawBegin2", "phaseAfter"],
+				},
 				filter(event, player) {
-					return typeof player.storage.dcbihuo_effect == "number" && !event.numFixed;
+					const [num, evt] = player.getStorage("dcbihuo_effect", [0, null]);
+					if (event.name === "phase") {
+						return event !== evt;
+					}
+					if (event.numFixed) {
+						return false;
+					}
+					const phase = event.getParent("phase", false, true);
+					return typeof num === "number" && num !== 0 && phase !== evt;
 				},
 				forced: true,
 				popup: false,
 				async content(event, trigger, player) {
-					const num = player.countMark(event.name);
+					if (trigger.name === "phase") {
+						player.removeSkill(event.name);
+						return;
+					}
+					const [num] = player.getStorage(event.name, [0, null]);
 					trigger.num += num;
 					game.log(player, "的额定摸牌数", "#g" + (num >= 0 ? "+" : "") + num);
 				},
 				mark: true,
-				intro: { content: num => "额定摸牌数" + (num >= 0 ? "+" : "") + num },
+				intro: { content: ([num]) => "额定摸牌数" + (num >= 0 ? "+" : "") + num },
 			},
 		},
 	},
