@@ -4581,19 +4581,29 @@ const skills = {
 			}
 		},
 		ai: {
-			order: 3,
+			order(skill, player) {
+				//场上存在至少两名态度较为明确的角色才考虑发动技能
+				if (game.countPlayer(current => current !== player && get.attitude(player, current) !== 0) > 1) {
+					return 1;
+				}
+				return 0;
+			},
 			result: {
-				target(player, target) {
-					if (target == player) {
-						return 0.1;
-					}
-					return -2;
-				},
 				player(player, target) {
 					if (player.hp > 2 && player.countCards("h") > 2) {
 						return 1;
 					}
 					return 0;
+				},
+				target(player, target) {
+					//尽量不选择态度不明的角色
+					if (get.attitude(player, target) === 0) {
+						return 0;
+					}
+					if (target == player) {
+						return 0.1;
+					}
+					return -2;
 				},
 			},
 		},

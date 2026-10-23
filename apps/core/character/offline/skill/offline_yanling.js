@@ -76,11 +76,16 @@ const skills = {
 						return target !== current && current.canCompare(target);
 					},
 					ai(target) {
-						const current = get.event().current;
-						return get.attitude(get.player(), current) * get.effect(target, { name: "juedou" }, current, get.player());
+						const { current, att } = get.event();
+						let eff = get.effect(target, { name: "juedou" }, current, get.player());
+						if (att > 0) {
+							eff -= 2;
+						}
+						return eff;
 					},
-					current,
 				})
+				.set("current", current)
+				.set("att", get.attitude(player, current))
 				.forResult();
 			if (!choose.bool || !choose.targets?.length) {
 				return;
