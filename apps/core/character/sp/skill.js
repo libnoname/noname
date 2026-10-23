@@ -502,77 +502,511 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
+		createDialog(gid, data, ownerid) {
+			const exist = get.idDialog(gid);
+			if (exist) return exist;
+			const dialog = ui.create.dialog("hidden");
+			dialog.videoId = gid;
+			dialog.classList.add("olshilun-window", "fixed");
+			dialog.ASSET = lib.assetURL + "image/olxushao/";
+			dialog.gid = gid;
+			dialog.data = data;
+			dialog.ownerid = ownerid;
+			dialog.size = data.size || 6;
+			dialog.selected = [];
+			dialog.found = [];
+			dialog.used = {};
+			dialog.hiddenCells = {};
+			dialog.glow = [];
+			dialog.glows = [];
+			dialog.clock = null;
+			dialog.autoTimer = null;
+			dialog.result = null;
+			dialog.finish = null;
+			dialog.asset = function (file) {
+				return `url("${this.ASSET}${file}")`;
+			};
+			dialog.screenScale = function () {
+				const width = this.offsetWidth;
+				return width ? this.getBoundingClientRect().width / width : 1;
+			};
+			dialog.stagePoint = function (cx, cy) {
+				const stage = this.stage.getBoundingClientRect();
+				const zoom = this.screenScale() * (this.zoom || 1);
+				return {
+					left: (cx - stage.left) / zoom,
+					top: (cy - stage.top) / zoom,
+				};
+			};
+			dialog.elementCenter = function (el) {
+				if (!el || !this.stage) return this.stagePoint(0, 0);
+				const rect = el.getBoundingClientRect();
+				return this.stagePoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+			};
+			dialog.wordPoint = function (cells) {
+				if (!this.stage) return null;
+				if (!cells || !cells.length) {
+					const box = this.stage.getBoundingClientRect();
+					return this.stagePoint(box.left + box.width / 2, box.top + box.height / 2);
+				}
+				const first = this.cells[cells[0]];
+				const last = this.cells[cells[cells.length - 1]];
+				if (!first || !last) return null;
+				const a = first.getBoundingClientRect();
+				const b = last.getBoundingClientRect();
+				return this.stagePoint((a.left + a.width / 2 + b.left + b.width / 2) / 2, (a.top + a.height / 2 + b.top + b.height / 2) / 2);
+			};
+			dialog.flySkill = function (name, start, target, done) {
+				const wrap = ui.create.div(".olshilun-skill-flywrap", this.stage);
+				const fly = ui.create.div(".olshilun-skill-fly", wrap);
+				fly.innerHTML = get.translation(name);
+				fly.style.backgroundImage = this.asset("btnn1.png");
+				wrap.style.transition = "none";
+				wrap.style.left = start.left + "px";
+				wrap.style.top = start.top + "px";
+				wrap.style.transform = "translate(-50%, -50%) scale(0)";
+				void wrap.offsetWidth;
+				wrap.style.transition = "transform 0.32s ease-out";
+				wrap.style.transform = "translate(-50%, -50%) scale(1)";
+				const win = this;
+				const finishFx = () => {
+					if (target) target.classList.remove("olshilun-pending");
+					if (done) done();
+				};
+				setTimeout(() => {
+					if (!win.node || !win.node.parentNode) {
+						wrap.remove();
+						return finishFx();
+					}
+					const end = win.elementCenter(target);
+					wrap.style.transition = "left 0.56s linear, top 0.56s linear";
+					wrap.style.left = end.left + "px";
+					wrap.style.top = end.top + "px";
+					setTimeout(() => {
+						wrap.remove();
+						finishFx();
+					}, 560);
+				}, 320);
+			};
+			dialog.playObtainSkillFx = function (title) {
+				const skills = title && title.skills ? title.skills.slice() : [];
+				if (!skills.length || !this.stage || !this.panel) return;
+				const start = this.wordPoint(title.cells);
+				if (!start) return;
+				const win = this;
+				const run = index => {
+					if (!win.node || !win.node.parentNode || index >= skills.length) return;
+					const name = skills[index];
+					const item = ui.create.div(".olshilun-skill-item olshilun-pending", win.panel);
+					item.innerHTML = get.translation(name);
+					item.style.backgroundImage = win.asset("btnn1.png");
+					win.flySkill(name, start, item, () => run(index + 1));
+				};
+				run(0);
+			};
+			dialog.paint = function () {
+				const data = this.data;
+				for (let i = 0; i < this.cells.length; i++) {
+					const cell = this.cells[i];
+					const isSelected = this.selected.includes(i);
+					const isUsed = !!this.used[i];
+					const isHidden = !!this.hiddenCells[i];
+					const isGlow = this.glow.includes(i);
+					const char = cell.querySelector(".olshilun-char");
+					cell.classList.toggle("olshilun-on", isSelected && !isUsed);
+					cell.classList.toggle("done", !!isUsed);
+					let bg = "pingjian_item_bg.png";
+					if (isUsed) bg = "pingjian_item_bg_help.png";
+					else if (isSelected) bg = "pingjian_item_bg_link.png";
+					else if (isGlow) bg = "pingjian_item_bg_help.png";
+					cell.style.backgroundImage = this.asset(bg);
+					let frame = cell.querySelector(".olshilun-select");
+					if (isSelected && !isUsed) {
+						if (!frame) {
+							frame = ui.create.div(".olshilun-select", cell);
+							frame.style.backgroundImage = this.asset("skill_pingjian_selected.png");
+						}
+					} else if (frame) frame.remove();
+					if (char) {
+						char.innerHTML = isHidden && !isUsed ? "" : data.chars[i];
+						char.classList.toggle("olshilun-hint", i === data.hint || (isGlow && !isUsed && !isSelected));
+					}
+					let egg = cell.querySelector(".olshilun-egg");
+					if (isHidden) {
+						if (!egg) {
+							egg = ui.create.div(".olshilun-egg", cell);
+							egg.style.backgroundImage = this.asset("skill_pingjian_unknown.png");
+						}
+					} else if (egg) egg.remove();
+				}
+			};
+			dialog._createProgressBar = function () {
+				this.progressBar = ui.create.div(".olshilun-progressbar", this.node);
+				this.bar = this.progressBar;
+				this.progressBar.style.transition = "none";
+				this.progressBar.style.visibility = "hidden";
+				this.progressBar.style.setProperty("--olshilun-bar-bottom", "54px");
+				this.progressBar.style.setProperty("--olshilun-bar-width", "510px");
+				this.progressBar.style.setProperty("--olshilun-bar-height", "10px");
+				this.progressBar.style.setProperty("--progress-bar-height", "80%");
+				this.progressBar.style.setProperty("--progress-bar-left", "0.2%");
+				this.progressBar.style.setProperty("--progress-bar-top", "10%");
+				this.hint = ui.create.div(".olshilun-status", this.progressBar);
+				this.hint.innerHTML = this.foundText();
+				this._alignProgressBar();
+				const win = this;
+				requestAnimationFrame(() => {
+					win._alignProgressBar();
+					if (win.progressBar) win.progressBar.style.visibility = "";
+				});
+			};
+			dialog._alignProgressBar = function () {
+				const bar = this.progressBar;
+				const grid = this.grid;
+				if (!bar || !grid || !this.node) return;
+				const host = this.node.getBoundingClientRect();
+				const box = grid.getBoundingClientRect();
+				const scale = this.screenScale();
+				bar.style.left = (box.left - host.left) / scale + (box.width / scale - 510) / 2 + "px";
+				bar.style.top = (box.bottom - host.top) / scale + 80 + "px";
+				bar.style.bottom = "auto";
+			};
+			dialog.runCountdown = function (totalSec, callback) {
+				const el = this.progressBar;
+				const start = Date.now();
+				const frame = 1000 / 30;
+				let isCancelled = false;
+				let timeoutId = null;
+				const tick = () => {
+					if (!el || isCancelled || !this.node || !this.node.parentNode) return;
+					const left = Math.max(0, totalSec - (Date.now() - start) / 1000);
+					el.style.setProperty("--clip", "inset(0 " + (1 - left / totalSec) * 100 + "% 0 0)");
+					if (left > 0) timeoutId = setTimeout(tick, frame);
+					else if (callback) callback();
+				};
+				tick();
+				return {
+					cancel() {
+						isCancelled = true;
+						if (timeoutId) clearTimeout(timeoutId);
+					},
+				};
+			};
+			dialog.reloadBar = function (sec) {
+				if (!this.progressBar) return;
+				if (this.countdown) {
+					this.countdown.cancel();
+					this.countdown = null;
+				}
+				this.progressBar.style.setProperty("--clip", "inset(0 0 0 0)");
+				this.countdown = this.runCountdown(sec);
+			};
+			dialog.foundText = function () {
+				const n = this.found?.length || 0;
+				return n ? "您已经完成了" + n + "个战功" : "请连线出完整战功";
+			};
+			dialog.say = function (text) {
+				if (this.hint) this.hint.innerHTML = text || "";
+			};
+			dialog.sayOwner = function (text) {
+				const me = game.me;
+				if (me && me.playerid && this.ownerid && me.playerid !== this.ownerid) {
+					this.say("请等待" + ((this.data && this.data.ownerName) || "") + "连线出完整战功");
+					return;
+				}
+				this.say(text);
+			};
+			dialog.keepGlow = function (entry) {
+				const gid = this.gid;
+				if (entry.timer) clearTimeout(entry.timer);
+				entry.timer = setTimeout(() => {
+					const later = get.idDialog(gid);
+					if (!later || !later.glows) return;
+					later.glows = later.glows.filter(item => item !== entry);
+					later.glow = later.glows.flatMap(item => item.cells);
+					later.paint();
+				}, 6000);
+			};
+			dialog.light = function (index) {
+				if (this.found.includes(index)) return;
+				const title = this.data.titles[index];
+				if (!title) return;
+				if (!this.glows) this.glows = [];
+				if (this.glows.some(entry => entry.index === index)) return;
+				const entry = { index, cells: title.cells.slice(), timer: null };
+				this.glows.push(entry);
+				this.glow = this.glows.flatMap(item => item.cells);
+				this.paint();
+				this.keepGlow(entry);
+			};
+			dialog.dark = function (index) {
+				this.hiddenCells[index] = true;
+				this.paint();
+			};
+			dialog.applySelect = function (list) {
+				this.selected = (list || []).slice();
+				if (this.glows) {
+					for (const entry of this.glows) {
+						if (entry.cells.some(cell => this.selected.includes(cell))) this.keepGlow(entry);
+					}
+				}
+				this.paint();
+				this.sayOwner(this.foundText());
+			};
+			dialog.applyFound = function (index) {
+				const title = this.data.titles[index];
+				if (!title || this.found.includes(index)) return;
+				this.found.push(index);
+				for (const cell of title.cells) this.used[cell] = true;
+				this.selected = [];
+				if (this.glows) {
+					for (const entry of this.glows) {
+						if (entry.index === index && entry.timer) clearTimeout(entry.timer);
+					}
+					this.glows = this.glows.filter(entry => entry.index !== index);
+				}
+				this.glow = this.glows ? this.glows.flatMap(entry => entry.cells) : [];
+				this.paint();
+				this.playObtainSkillFx(title);
+				this.sayOwner(this.foundText());
+			};
+			dialog.showFinish = function (text) {
+				if (this.clock) {
+					clearInterval(this.clock);
+					this.clock = null;
+				}
+				this.say(text || "");
+				this.reloadBar(2);
+			};
+			dialog.closeWindow = function () {
+				if (this.clock) clearInterval(this.clock);
+				if (this.autoTimer) clearInterval(this.autoTimer);
+				if (this.countdown) {
+					this.countdown.cancel();
+					this.countdown = null;
+				}
+				if (this.olshilunMask) this.olshilunMask.remove();
+				if (this.helper) this.helper.remove();
+				ui.dialogs.remove(this);
+				this.remove();
+			};
+			dialog.addHelper = function (data) {
+				const me = game.me;
+				const gid = this.gid;
+				const ownerid = this.ownerid;
+				if (!(me && me.playerid && me.playerid !== ownerid && (!me.isIn || me.isIn()) && !this.helper)) return;
+				const helper = ui.create.div(".olshilun-btns", this.stage);
+				this.helper = helper;
+				const helperButtons = [];
+				let helperUsed = false;
+				const lockHelper = () => {
+					helperUsed = true;
+					for (const button of helperButtons) {
+						button.dataset.olshilunDisabled = "1";
+						button.style.filter = "grayscale(1)";
+						button.style.boxShadow = "none";
+					}
+				};
+				const pickTitle = () => {
+					const current = get.idDialog(gid);
+					const list = [];
+					for (let i = 0; i < data.titles.length; i++) {
+						if (!current || !current.found.includes(i)) list.push(i);
+					}
+					return list.randomGet();
+				};
+				const pickCell = () => {
+					const current = get.idDialog(gid);
+					const list = [];
+					for (let i = 0; i < data.chars.length; i++) {
+						if (current && (current.used[i] || current.hiddenCells[i])) continue;
+						list.push(i);
+					}
+					return list.randomGet();
+				};
+				const addButton = (file, key, action) => {
+					const button = ui.create.div(".olshilun-btn", helper);
+					button.style.backgroundImage = this.asset(file);
+					button.addEventListener(lib.config.touchscreen ? "touchend" : "click", () => {
+						if (helperUsed || _status.dragged || _status.justdragged) return;
+						if (action === "glow" ? pickTitle() == null : pickCell() == null) return;
+						if (game.online) {
+							game.requestSkillData("olshilun_sync", key, 5000, gid);
+						} else {
+							lib.skill.olshilun.helperAction(game.me, gid, action);
+						}
+						lockHelper();
+					});
+					helperButtons.push(button);
+				};
+				addButton("pingjian_btn_help.png", "assist", "glow");
+				addButton("pingjian_btn_hide.png", "hinder", "hide");
+			};
+			dialog.init = function () {
+				const data = this.data;
+				const gid = this.gid;
+				const size = this.size;
+				const ASSET = this.ASSET;
+				const mask = ui.create.div(".olshilun-mask", ui.window);
+				const node = this;
+				node.olshilunMask = mask;
+				this.node = node;
+				const stage = ui.create.div(".olshilun-stage", node);
+				this.stage = stage;
+				this.zoom = 0.75;
+				const scroll = ui.create.div(".olshilun-scroll", stage);
+				const heading = ui.create.div(".olshilun-title", scroll);
+				heading.innerHTML = "评鉴";
+				const field = ui.create.div(".olshilun-grid", scroll);
+				this.grid = field;
+				const cells = [];
+				for (let y = 0; y < size; y++) {
+					for (let x = 0; x < size; x++) {
+						const index = y * size + x;
+						const cell = ui.create.div(".olshilun-cell", field);
+						cell.dataset.index = String(index);
+						cell.style.gridColumn = String(x + 1);
+						cell.style.gridRow = String(y + 1);
+						cell.style.backgroundImage = `url("${ASSET}pingjian_item_bg.png")`;
+						const char = ui.create.div(".olshilun-char", cell);
+						char.innerHTML = data.chars[index];
+						cells[index] = cell;
+					}
+				}
+				this.cells = cells;
+				const sidebar = ui.create.div(".olshilun-skills", stage);
+				sidebar.style.borderImage = `url("${ASSET}pingjian_skillitem_bg.png") 40 4 4 4 fill stretch`;
+				const sidebarTitle = ui.create.div(".olshilun-skills-title", sidebar);
+				sidebarTitle.innerHTML = "获取技能";
+				this.panel = ui.create.div(".olshilun-skill-list", sidebar);
+				this._createProgressBar();
+				this.paint();
+				this.sayOwner(this.foundText());
+				this.addHelper(data);
+			};
+			dialog.init();
+			if (!ui.dialogs.includes(dialog)) ui.dialogs.unshift(dialog);
+			if (!dialog.parentNode) ui.window.appendChild(dialog);
+			dialog.style.left = "0";
+			dialog.style.top = "0";
+			dialog.style.width = "100%";
+			dialog.style.height = "100%";
+			dialog.style.transform = "none";
+			dialog.style.opacity = "1";
+			dialog.style.transition = "none";
+			return dialog;
+		},
+		pingjianPool: [
+			{ name: "ol_wanglang", skill: "gushe", title: "螳臂当车" },
+			{ name: "huaman", skill: "mansi", title: "花俏蛮娇" },
+			{ name: "ol_puyuan", skill: "olshengong", title: "鬼斧神工" },
+			{ name: "xiahouxuan", skill: "olqingyi", title: "朗朗日月" },
+			{ name: "ol_feiyi", skill: "yanru", title: "中才之相" },
+			{ name: "ol_jiangwan", skill: "olxvfa", title: "社稷之器" },
+			{ name: "clan_wangguang", skill: "clanlilun", title: "相机而动" },
+			{ name: "ol_peixiu", skill: "olcaifeng", title: "地载十六州" },
+			{ name: "sp_ol_caocao", skill: "spolxixiang", title: "一战天下定" },
+			{ name: "sp_ol_caocao", skill: "spolzhubei", title: "踌躇的孤雁" },
+			{ name: "ol_sb_jiaxu", skill: "olsbwance", title: "良平之奇" },
+			{ name: "ol_sb_wenchou", skill: "olsblunzhan", title: "万夫之勇" },
+			{ name: "ol_miheng", skill: "olkuangjuan", title: "狂才傲世" },
+			{ name: "ol_sb_xuyou", skill: "olsbqianfu", title: "帷幄擎炬" },
+			{ name: "ol_jsrg_sunjian", skill: "olpingtao", title: "以时进讨" },
+			{ name: "ol_jsrg_zhangliao", skill: "olzhengbing", title: "利刃风骑" },
+			{ name: "ol_sb_dongzhao", skill: "olsbyishi", title: "天阶登志" },
+			{ name: "ol_sb_zhurong", skill: "olsbrenche", title: "火神的祝佑" },
+			{ name: "ol_sb_zhouyu", skill: "olsbzuifeng", title: "雅量之魁英" },
+			{ name: "re_sunquan", skill: "rezhiheng", title: "年轻的贤君" },
+			{ name: "re_yuanshao", skill: "luanji", title: "高贵的名门" },
+			{ name: "xunyou", skill: "qice", title: "曹魏的谋主" },
+			{ name: "xin_masu", skill: "olsanyao", title: "街亭之殇" },
+			{ name: "zhangxiu", skill: "drlt_xiongluan", title: "北地枪王" },
+			{ name: "caochun", skill: "olshanjia", title: "虎豹骑首" },
+			{ name: "shen_ganning", skill: "drlt_poxi", title: "江表之力牧" },
+			{ name: "re_jiaxu", skill: "reluanwu", title: "洞悉先机者" },
+			{ name: "sp_menghuo", skill: "spmanwang", title: "勒格诗惹" },
+			{ name: "zhanghua", skill: "oljianhe", title: "双剑化龙" },
+			{ name: "clan_zhongyan", skill: "clanguangu", title: "慨然永怀" },
+			{ name: "clan_kebineng", skill: "olpingduan", title: "瀚海鲸波" },
+			{ name: "ol_liru", skill: "dcfencheng", title: "乱世谋焚" },
+			{ name: "baoxin", skill: "mutao", title: "坚朴的忠相" },
+			{ name: "re_simayi", skill: "refankui", title: "心吞三国" },
+			{ name: "yangxiu", skill: "jilei", title: "恃才放旷" },
+			{ name: "zhangchangpu", skill: "xingshen", title: "省身明德" },
+			{ name: "huangchengyan", skill: "yashi", title: "仰观太虚" },
+			{ name: "caoxi", skill: "oljianxuan", title: "魁立倾厦" },
+			{ name: "ol_sb_huangyueying", skill: "olsblixian", title: "才惠双绝" },
+			{ name: "ol_xuelingyun", skill: "olsiqi", title: "红烛垂泪" },
+			{ name: "ol_niufu", skill: "olshisuan", title: "尔卜尔筮" },
+			{ name: "guohuanghou", skill: "danxin", title: "垂宪后叶" },
+			{ name: "huanshujun", skill: "olmiaoxin", title: "环佩解君" },
+			{ name: "guojia", skill: "yiji", title: "早终的先知" },
+			{ name: "xunyu", skill: "jieming", title: "驱虎吞狼" },
+			{ name: "caopi", skill: "fangzhu", title: "霸业继承者" },
+			{ name: "shen_caocao", skill: "guixin", title: "天下归心" },
+			{ name: "manchong", skill: "yuce", title: "法不容情" },
+			{ name: "re_caocao", skill: "new_jianxiong", title: "治世之能臣" },
+			{ name: "caorui", skill: "huituo", title: "天资的明君" },
+			{ name: "xizhicai", skill: "chouce", title: "社稷的先驱" },
+			{ name: "weizi", skill: "liejie", title: "慧眼识君" },
+			{ name: "clan_zhongyu", skill: "clanhuanghan", title: "机捷谈笑" },
+			{ name: "ol_caochong", skill: "olchengxiang", title: "神通妙算" },
+			{ name: "ol_hanfu", skill: "olkuangshou", title: "委蛇两端" },
+			{ name: "ol_yuanhuan", skill: "ollinjie", title: "无愆恒下" },
+			{ name: "shixie", skill: "olbiluan", title: "雄长百越" },
+			{ name: "ol_xiaoqiao", skill: "piaoling", title: "小家碧玉" },
+			{ name: "ol_yangyi", skill: "oljuanxia", title: "武侯长史" },
+			{ name: "yanrou", skill: "xiangshu", title: "冠宇啸北" },
+			{ name: "qiaozhou", skill: "xingbu", title: "天行有常" },
+			{ name: "ol_zhouqun", skill: "oltianhou", title: "详阴阳之妙" },
+			{ name: "ol_liwan", skill: "ollianju", title: "遐雁归迩" },
+			{ name: "clan_yangbiao", skill: "clanyichi", title: "坚争抗壮" },
+			{ name: "diaochan", skill: "biyue", title: "绝世的舞姬" },
+			{ name: "caoren", skill: "xinjushou", title: "固若金汤" },
+			{ name: "sp_caoren", skill: "lizhan", title: "鬼神只之勇" },
+			{ name: "sp_caiwenji", skill: "moshi", title: "归汉的才女" },
+			{ name: "yufan", skill: "zhiyan", title: "狂直之士" },
+			{ name: "wangyi", skill: "miji", title: "大义不惜" },
+			{ name: "zhugezhan", skill: "xinfu_zuilun", title: "临难死义" },
+			{ name: "haozhao", skill: "drlt_zhengu", title: "扣弦的豪将" },
+			{ name: "ol_sb_jiangwei", skill: "olsbranji", title: "炎志灼心" },
+			{ name: "clan_zhongyao", skill: "clanjieli", title: "意前笔启" },
+			{ name: "clan_yangzhong", skill: "clankudu", title: "歧路也汤汤" },
+			{ name: "ol_sb_xuyou", skill: "olsbfenchao", title: "烛照官渡" },
+			{ name: "ol_bulianshi", skill: "olzhuiyi", title: "后后嘉荣" },
+		],
 		async content(event, trigger, player) {
 			const SIZE = 6;
 			const TITLE_MIN = 2;
 			const TITLE_MAX = 6;
-			const TITLE_COUNT_MIN = 3;
-			const TITLE_COUNT_MAX = 4;
-			const CHAR_LIMIT = 24;
 			const TIME_LIMIT = 45;
-
 			function plainTitle(title) {
 				let str = title == null ? "" : String(title);
 				if (str.includes("<") || str.includes(">")) str = get.plainText(str);
 				return str.replace(/#[a-zA-Z0-9]/g, "").trim();
 			}
-
-			function checkSkill(name, type) {
-				const info = lib.skill[name];
-				if (!info || info.charlotte || info.silent || info.juexingji || info.hiddenSkill || info.dutySkill) return false;
-				if (info.zhuSkill) {
-					const owner = _status.event && _status.event.player ? _status.event.player : game.me;
-					if (!owner || typeof owner.isZhu2 !== "function" || !owner.isZhu2()) return false;
-				}
-				if (type === "phaseUse") {
-					let enables = info.enable;
-					if (!enables) return false;
-					if (!Array.isArray(enables)) enables = [enables];
-					return enables.includes("phaseUse");
-				}
-				let triggers = info.trigger && info.trigger.player;
-				if (!triggers) return false;
-				if (!Array.isArray(triggers)) triggers = [triggers];
-				return triggers.includes(type);
-			}
-
 			function initTitles() {
 				if (_status.characterTitleInited) return;
 				_status.characterTitleInited = {};
-				game.initCharacterList();
-				const allList = _status.characterlist.slice();
-				for (const target of game.filterPlayer2()) {
-					for (const name of get.nameList(target)) {
-						if (name && lib.character[name] && !name.startsWith("gz_shibing") && !name.startsWith("gz_jun_")) allList.add(name);
-					}
-				}
-				for (const name of allList) {
-					if (!lib.characterTitle[name]) continue;
-					const skills2 = lib.character[name] && lib.character[name].skills;
-					if (!skills2 || !skills2.length) continue;
-					const skills = [];
-					for (const skill2 of skills2) {
-						const list = [skill2];
-						game.expandSkills(list);
-						if (list.some(skill => ["phaseUse", "phaseJieshuBegin", "damageEnd"].some(type => checkSkill(skill, type)))) {
-							skills.add(skill2);
-						}
-					}
-					if (skills.length) _status.characterTitleInited[lib.characterTitle[name]] = skills;
+				for (const item of lib.skill.olshilun.pingjianPool) {
+					if (!item?.skill || !lib.skill[item.skill]) continue;
+					const chars = Array.from(plainTitle(item.title));
+					if (chars.length < TITLE_MIN || chars.length > TITLE_MAX) continue;
+					if (!chars.every(char => /[\u4e00-\u9fff]/.test(char))) continue;
+					_status.characterTitleInited[item.title] ??= [];
+					_status.characterTitleInited[item.title].add(item.skill);
 				}
 			}
-
 			function getTitlePool() {
 				const pool = [];
 				for (const title of Object.keys(_status.characterTitleInited || {})) {
 					const chars = Array.from(plainTitle(title));
 					if (chars.length < TITLE_MIN || chars.length > TITLE_MAX) continue;
 					if (!chars.every(char => /[\u4e00-\u9fff]/.test(char))) continue;
-					pool.push({ title: title, plain: chars.join(""), chars: chars });
+					pool.push({ title, plain: chars.join(""), chars });
 				}
 				return pool;
 			}
-
 			function findPath(cells, length, prefer) {
 				const dirs = prefer
 					? [prefer, [prefer[0] ? 0 : 1, prefer[1] ? 0 : 1]]
@@ -606,471 +1040,62 @@ const skills = {
 				}
 				return null;
 			}
-
-			function tryCreateBoard(pool, charPool) {
+			function tryCreateBoard(pool) {
 				const total = SIZE * SIZE;
-				const want = TITLE_COUNT_MIN + get.rand(0, TITLE_COUNT_MAX - TITLE_COUNT_MIN);
-				const dirs = [];
-				for (let i = 0; i < want; i++) {
-					dirs.push(i % 2 === 0 ? [1, 0] : [0, 1]);
-				}
-				dirs.randomSort();
 				const cells = new Array(total).fill(null);
 				const titles = [];
-				let budget = CHAR_LIMIT;
 				for (const item of pool.randomSort()) {
-					if (titles.length >= want) break;
-					if (item.chars.length > budget) continue;
-					const path = findPath(cells, item.chars.length, dirs[titles.length]);
+					const path = findPath(cells, item.chars.length);
 					if (!path) continue;
 					path.forEach((cell, index) => {
 						cells[cell] = { char: item.chars[index] };
 					});
 					titles.push({ title: item.title, plain: item.plain, cells: path.slice(), skills: _status.characterTitleInited[item.title] });
-					budget -= item.chars.length;
 				}
-				if (titles.length < TITLE_COUNT_MIN) return null;
-				//整盘只有一种走向时重新生成
-				if (titles.length > 1) {
-					const horizontal = titles[0].cells.every(cell => Math.floor(cell / SIZE) === Math.floor(titles[0].cells[0] / SIZE));
-					if (titles.every(item => item.cells.every(cell => Math.floor(cell / SIZE) === Math.floor(item.cells[0] / SIZE)) === horizontal)) return null;
-				}
+				if (!titles.length) return null;
+				const fillChars = titles.flatMap(item => Array.from(item.plain));
 				const chars = [];
-				for (let i = 0; i < total; i++) chars[i] = cells[i] ? cells[i].char : charPool.randomGet();
-				return { size: SIZE, chars: chars, titles: titles, timeLimit: TIME_LIMIT };
+				for (let i = 0; i < total; i++) chars[i] = cells[i] ? cells[i].char : fillChars.randomGet();
+				const hintTitle = titles.randomGet();
+				const hint = hintTitle && hintTitle.cells.length ? hintTitle.cells[0] : null;
+				return { size: SIZE, chars, titles, hint, timeLimit: TIME_LIMIT };
 			}
-
 			function createBoard() {
 				initTitles();
 				const pool = getTitlePool();
 				if (!pool.length) return null;
-				const charPool = Array.from(new Set(pool.flatMap(item => item.chars)));
-				if (!charPool.length) return null;
 				for (let i = 0; i < 30; i++) {
-					const data = tryCreateBoard(pool, charPool);
+					const data = tryCreateBoard(pool);
 					if (data) return data;
 				}
 				return null;
 			}
-			function board(action, gid, a, b, c) {
-				const dialog = ui["olshilunDialog_" + gid];
-				const state = dialog && dialog.olshilun;
-
-				const paint = function (target) {
-					const data = target.data;
-					for (let i = 0; i < target.cells.length; i++) {
-						const cell = target.cells[i];
-						const isSelected = target.selected.includes(i);
-						const isUsed = !!target.used[i];
-						const isHidden = !!target.hidden[i];
-						const isGlow = target.glow.includes(i);
-						let background = "linear-gradient(160deg, rgba(178,152,216,0.9), rgba(126,96,172,0.9))";
-						let color = "#ffffff";
-						let border = "1px solid rgba(255,255,255,0.55)";
-						let shadow = "none";
-						let text = data.chars[i];
-						if (isUsed) {
-							background = "rgba(58,42,84,0.92)";
-							color = "rgba(232,212,255,0.6)";
-							border = "1px solid rgba(150,110,210,0.85)";
-						} else if (isSelected) {
-							background = "linear-gradient(160deg, rgba(255,242,170,0.98), rgba(244,190,62,0.98))";
-							color = "#4a2c00";
-							border = "1px solid rgba(255,255,255,0.95)";
-							shadow = "0 0 10px 2px rgba(255,224,120,0.95)";
-						}
-						if (isGlow && !isUsed) {
-							border = "1px solid rgba(255,226,138,0.95)";
-							shadow = "0 0 12px 3px rgba(255,220,110,0.95)";
-						}
-						if (isHidden && !isUsed) {
-							text = "?";
-							color = "rgba(226,208,255,0.4)";
-						}
-						cell.innerHTML = text;
-						cell.style.background = background;
-						cell.style.color = color;
-						cell.style.border = border;
-						cell.style.boxShadow = shadow;
-					}
-				};
-
-				const write = function (target, titles) {
-					for (const title of titles) {
-						const head = ui.create.div("", target.panel);
-						head.style.position = "relative";
-						head.innerHTML = "【" + title.plain + "】";
-						head.style.color = "#ffe9a8";
-						head.style.fontSize = "13px";
-						const line = ui.create.div("", target.panel);
-						line.style.position = "relative";
-						line.innerHTML = title.skills.map(name => get.translation(name)).join("　");
-						line.style.color = "#e6dcff";
-						line.style.fontSize = "12px";
-						line.style.lineHeight = "1.25";
-						line.style.wordBreak = "break-all";
-					}
-				};
-
-				const say = function (target, text) {
-					if (target && target.status) target.status.innerHTML = text;
-				};
-
-				const sayOwner = function (target, text) {
-					const me = game.me;
-					if (target && me && me.playerid && target.ownerid && me.playerid !== target.ownerid) {
-						say(target, "请等待" + ((target.data && target.data.ownerName) || "") + "连线完成评鉴");
-						return;
-					}
-					say(target, text);
-				};
-
-				const keepGlow = function (target, entry) {
-					if (entry.timer) clearTimeout(entry.timer);
-					entry.timer = setTimeout(function () {
-						const later = ui["olshilunDialog_" + gid] && ui["olshilunDialog_" + gid].olshilun;
-						if (!later || !later.glows) return;
-						later.glows = later.glows.filter(item => item !== entry);
-						later.glow = later.glows.flatMap(item => item.cells);
-						paint(later);
-					}, 6000);
-				};
-
-				const light = function (index) {
-					const current = ui["olshilunDialog_" + gid] && ui["olshilunDialog_" + gid].olshilun;
-					if (!current || current.found.includes(index)) return;
-					const title = current.data.titles[index];
-					if (!title) return;
-					if (!current.glows) current.glows = [];
-					if (current.glows.some(entry => entry.index === index)) return;
-					const entry = { index: index, cells: title.cells.slice(), timer: null };
-					current.glows.push(entry);
-					current.glow = current.glows.flatMap(item => item.cells);
-					paint(current);
-					keepGlow(current, entry);
-				};
-
-				const dark = function (index) {
-					const current = ui["olshilunDialog_" + gid] && ui["olshilunDialog_" + gid].olshilun;
-					if (!current) return;
-					current.hidden[index] = true;
-					paint(current);
-				};
-
+			function board(action, gid, a, b) {
 				if (action === "create") {
-					if (dialog) return;
-					const data = a;
-					const ownerid = b;
-					const size = data.size || 6;
-					const node = ui.create.div(".olshilunDialog.popped", ui.window);
-					node.videoId = gid;
-					node.style.position = "absolute";
-					node.style.transition = "none";
-					node.style.left = "50%";
-					node.style.top = "50%";
-					node.style.transform = "translate(-50%, -50%)";
-					node.style.width = "fit-content";
-					node.style.height = "fit-content";
-					node.style.display = "flex";
-					node.style.flexDirection = "column";
-					node.style.alignItems = "center";
-					node.style.gap = "6px";
-					node.style.padding = "8px 14px 10px";
-					node.style.background = "linear-gradient(160deg, rgba(72,54,104,0.95), rgba(28,20,44,0.95))";
-					node.style.border = "1px solid rgba(220,198,255,0.7)";
-					node.style.borderRadius = "8px";
-					node.style.boxShadow = "0 0 20px rgba(120,80,190,0.65)";
-					node.style.zIndex = "30";
-					const heading = ui.create.div("", node);
-					heading.style.position = "relative";
-					heading.innerHTML = "评鉴";
-					heading.style.color = "#f2e6ff";
-					heading.style.fontSize = "20px";
-					heading.style.fontWeight = "bold";
-					heading.style.letterSpacing = "2px";
-					heading.style.textShadow = "0 0 6px rgba(150,90,220,0.95)";
-					heading.style.cursor = "move";
-					heading.style.userSelect = "none";
-					heading.addEventListener("mousedown", function (event) {
-						if (_status.dragged || _status.justdragged) return;
-						const zoom = game.documentZoom || 1;
-						const rect = node.getBoundingClientRect();
-						const startX = event.clientX;
-						const startY = event.clientY;
-						const startLeft = rect.left / zoom;
-						const startTop = rect.top / zoom;
-						const move = function (ev) {
-							node.style.transform = "";
-							node.style.left = startLeft + (ev.clientX - startX) / zoom + "px";
-							node.style.top = startTop + (ev.clientY - startY) / zoom + "px";
-						};
-						const up = function () {
-							document.removeEventListener("mousemove", move);
-							document.removeEventListener("mouseup", up);
-						};
-						document.addEventListener("mousemove", move);
-						document.addEventListener("mouseup", up);
-						event.preventDefault();
-					});
-					const main = ui.create.div("", node);
-					main.style.position = "relative";
-					main.style.display = "flex";
-					main.style.gap = "8px";
-					main.style.alignItems = "flex-start";
-					const field = ui.create.div("", main);
-					field.style.position = "relative";
-					field.style.display = "flex";
-					field.style.flexDirection = "column";
-					field.style.gap = "3px";
-					field.style.padding = "6px";
-					field.style.background = "rgba(18,10,32,0.7)";
-					field.style.borderRadius = "6px";
-					const cells = [];
-					for (let y = 0; y < size; y++) {
-						const row = ui.create.div("", field);
-						row.style.position = "relative";
-						row.style.display = "flex";
-						row.style.gap = "3px";
-						for (let x = 0; x < size; x++) {
-							const index = y * size + x;
-							const cell = ui.create.div("", row);
-							cell.style.position = "relative";
-							cell.dataset.index = index;
-							cell.innerHTML = data.chars[index];
-							cell.style.width = "42px";
-							cell.style.height = "42px";
-							cell.style.display = "flex";
-							cell.style.alignItems = "center";
-							cell.style.justifyContent = "center";
-							cell.style.textAlign = "center";
-							cell.style.lineHeight = "1";
-							cell.style.fontSize = "24px";
-							cell.style.borderRadius = "4px";
-							cell.style.border = "1px solid rgba(255,255,255,0.55)";
-							cell.style.boxSizing = "border-box";
-							cell.style.userSelect = "none";
-							cells[index] = cell;
-						}
-					}
-					const sidebar = ui.create.div("", main);
-					sidebar.style.position = "relative";
-					sidebar.style.width = "136px";
-					sidebar.style.height = size * 45 + "px";
-					sidebar.style.padding = "6px";
-					sidebar.style.background = "rgba(18,10,32,0.7)";
-					sidebar.style.borderRadius = "6px";
-					sidebar.style.display = "flex";
-					sidebar.style.flexDirection = "column";
-					sidebar.style.gap = "4px";
-					sidebar.style.boxSizing = "border-box";
-					sidebar.style.overflow = "hidden";
-					const sidebarTitle = ui.create.div("", sidebar);
-					sidebarTitle.style.position = "relative";
-					sidebarTitle.innerHTML = "获取技能";
-					sidebarTitle.style.color = "#fff";
-					sidebarTitle.style.fontSize = "14px";
-					sidebarTitle.style.textAlign = "center";
-					sidebarTitle.style.padding = "2px 0";
-					sidebarTitle.style.borderRadius = "4px";
-					sidebarTitle.style.background = "linear-gradient(90deg, rgba(160,100,230,0.95), rgba(88,46,158,0.95))";
-					const sidebarList = ui.create.div("", sidebar);
-					sidebarList.style.position = "relative";
-					sidebarList.style.flex = "1";
-					sidebarList.style.overflow = "auto";
-					sidebarList.style.display = "flex";
-					sidebarList.style.flexDirection = "column";
-					sidebarList.style.gap = "4px";
-					const status = ui.create.div("", node);
-					status.style.position = "relative";
-					status.innerHTML = "请连线完成评鉴";
-					status.style.color = "#ffeccc";
-					status.style.fontSize = "14px";
-					status.style.minHeight = "20px";
-					status.style.maxWidth = size * 45 + "px";
-					status.style.textAlign = "center";
-					status.style.textShadow = "0 0 4px #000";
-					const bar = ui.create.div("", node);
-					bar.style.position = "relative";
-					bar.style.width = size * 45 + "px";
-					bar.style.height = "10px";
-					bar.style.borderRadius = "5px";
-					bar.style.border = "1px solid rgba(255,255,255,0.45)";
-					bar.style.background = "rgba(0,0,0,0.65)";
-					bar.style.overflow = "hidden";
-					bar.style.boxSizing = "border-box";
-					const barInner = ui.create.div("", bar);
-					barInner.style.position = "relative";
-					barInner.style.width = "100%";
-					barInner.style.height = "100%";
-					barInner.style.background = "linear-gradient(90deg, #ff7b6b, #b81f1f)";
-					barInner.style.transition = "width 0.2s linear";
-					node.olshilun = {
-						gid: gid,
-						data: data,
-						ownerid: ownerid,
-						size: size,
-						cells: cells,
-						panel: sidebarList,
-						status: status,
-						bar: barInner,
-						selected: [],
-						found: [],
-						used: {},
-						hidden: {},
-						glow: [],
-						glows: [],
-						clock: null,
-						autoTimer: null,
-						result: null,
-						finish: null,
-					};
-					paint(node.olshilun);
-					sayOwner(node.olshilun, "请连线完成评鉴");
-					ui["olshilunDialog_" + gid] = node;
-					const me = game.me;
-					if (me && me.playerid && me.playerid !== ownerid && (!me.isIn || me.isIn()) && !ui["olshilunHelper_" + gid]) {
-						const helper = ui.create.div("", node);
-						helper.style.position = "absolute";
-						helper.style.left = "100%";
-						helper.style.top = "50%";
-						helper.style.transform = "translateY(-50%)";
-						helper.style.marginLeft = "8px";
-						helper.style.display = "flex";
-						helper.style.flexDirection = "column";
-						helper.style.gap = "12px";
-						helper.style.zIndex = "31";
-						ui["olshilunHelper_" + gid] = helper;
-						const helperButtons = [];
-						let helperUsed = false;
-						const lockHelper = function () {
-							helperUsed = true;
-							for (const button of helperButtons) {
-								button.dataset.olshilunDisabled = "1";
-								button.style.opacity = "0.4";
-								button.style.boxShadow = "none";
-							}
-						};
-						const pickTitle = function () {
-							const current = ui["olshilunDialog_" + gid] && ui["olshilunDialog_" + gid].olshilun;
-							const list = [];
-							for (let i = 0; i < data.titles.length; i++) {
-								if (!current || !current.found.includes(i)) list.push(i);
-							}
-							return list.randomGet();
-						};
-						const pickCell = function () {
-							const current = ui["olshilunDialog_" + gid] && ui["olshilunDialog_" + gid].olshilun;
-							const list = [];
-							for (let i = 0; i < data.chars.length; i++) {
-								if (current && (current.used[i] || current.hidden[i])) continue;
-								list.push(i);
-							}
-							return list.randomGet();
-						};
-						const addButton = function (text, color, key, action) {
-							const button = ui.create.div("", helper);
-							button.style.position = "relative";
-							button.innerHTML = text;
-							button.style.width = "54px";
-							button.style.height = "54px";
-							button.style.borderRadius = "50%";
-							button.style.display = "flex";
-							button.style.alignItems = "center";
-							button.style.justifyContent = "center";
-							button.style.fontSize = "16px";
-							button.style.fontWeight = "bold";
-							button.style.color = "#fff";
-							button.style.cursor = "pointer";
-							button.style.userSelect = "none";
-							button.style.textShadow = "0 0 4px #000";
-							button.style.background = "radial-gradient(circle at 35% 30%, " + color + ", rgba(24,12,40,0.92))";
-							button.style.boxShadow = "0 0 14px 3px " + color;
-							button.addEventListener(lib.config.touchscreen ? "touchend" : "click", function () {
-								if (helperUsed || _status.dragged || _status.justdragged) return;
-								if (action === "glow" ? pickTitle() == null : pickCell() == null) return;
-								if (game.online) {
-									game.requestSkillData("olshilun_sync", key, 5000, gid);
-								} else {
-									lib.skill.olshilun.helperAction(game.me, gid, action);
-								}
-								lockHelper();
-							});
-							helperButtons.push(button);
-						};
-						addButton("协助", "rgba(255,214,106,0.95)", "assist", "glow");
-						addButton("妨碍", "rgba(255,122,122,0.95)", "hinder", "hide");
-					}
+					if (get.idDialog(gid)) return;
+					lib.skill.olshilun.createDialog(gid, a, b);
 					return;
 				}
+				const win = get.idDialog(gid);
 				if (action === "close") {
-					if (state && state.clock) clearInterval(state.clock);
-					if (state && state.autoTimer) clearInterval(state.autoTimer);
-					if (dialog) dialog.remove();
-					delete ui["olshilunDialog_" + gid];
-					const helper = ui["olshilunHelper_" + gid];
-					if (helper) helper.remove();
-					delete ui["olshilunHelper_" + gid];
+					if (win) win.closeWindow();
 					return;
 				}
-
-				if (!state) return;
-				if (action === "select") {
-					state.selected = (a || []).slice();
-					if (state.glows) {
-						for (const entry of state.glows) {
-							if (entry.cells.some(cell => state.selected.includes(cell))) keepGlow(state, entry);
-						}
-					}
-					paint(state);
-					sayOwner(state, "请连线完成评鉴");
-					return;
-				}
-				if (action === "found") {
-					const title = state.data.titles[a];
-					if (!title || state.found.includes(a)) return;
-					state.found.push(a);
-					for (const cell of title.cells) state.used[cell] = true;
-					state.selected = [];
-					if (state.glows) {
-						for (const entry of state.glows) {
-							if (entry.index === a && entry.timer) clearTimeout(entry.timer);
-						}
-						state.glows = state.glows.filter(entry => entry.index !== a);
-					}
-					state.glow = state.glows ? state.glows.flatMap(entry => entry.cells) : [];
-					paint(state);
-					write(state, [title]);
-					sayOwner(state, "完成称号：" + title.plain);
-					return;
-				}
-				if (action === "glow") {
-					light(a);
-					return;
-				}
-				if (action === "hide") {
-					dark(a);
-					return;
-				}
-				if (action === "finish") {
-					if (state.clock) {
-						clearInterval(state.clock);
-						state.clock = null;
-					}
-					say(state, b || "");
-					if (state.bar) state.bar.style.width = "0%";
-					return;
-				}
+				if (!win) return;
+				if (action === "select") return win.applySelect(a);
+				if (action === "found") return win.applyFound(a);
+				if (action === "glow") return win.light(a);
+				if (action === "hide") return win.dark(a);
+				if (action === "finish") return win.showFinish(b);
 			}
 			function play(player, gid, data, board, auto) {
-				if (!ui["olshilunDialog_" + gid]) board("create", gid, data, player.playerid);
-				const dialog = ui["olshilunDialog_" + gid];
-				const state = dialog && dialog.olshilun;
+				if (!get.idDialog(gid)) board("create", gid, data, player.playerid);
+				const state = get.idDialog(gid);
 				if (!state) {
 					game.resume();
 					return;
 				}
 				const currentEvent = _status.event;
-				const total = (data.timeLimit || 45) * 1000;
 				const send = function (action, ...args) {
 					if (game.online) board(action, gid, ...args);
 					else game.broadcastAll(board, action, gid, ...args);
@@ -1090,8 +1115,12 @@ const skills = {
 						clearInterval(state.autoTimer);
 						state.autoTimer = null;
 					}
+					if (state.countdown) {
+						state.countdown.cancel();
+						state.countdown = null;
+					}
 					const list = state.found.map(index => data.titles[index].title);
-					const result = { bool: list.length > 0, list: list };
+					const result = { bool: list.length > 0, list };
 					state.result = result;
 					const text = list.length ? "评鉴完成：获得 " + list.map(name => "『" + clean(name) + "』").join("") : "评鉴失败";
 					if (game.online && currentEvent) currentEvent._result = result;
@@ -1100,6 +1129,9 @@ const skills = {
 					_status.imchoosing = false;
 				};
 				state.finish = finish;
+				state.countdown = state.runCountdown(data.timeLimit || 45, function () {
+					if (!finished) finish();
+				});
 				const adjacent = function (a, b) {
 					const size = state.size;
 					return Math.abs((a % size) - (b % size)) + Math.abs(Math.floor(a / size) - Math.floor(b / size)) === 1;
@@ -1109,6 +1141,7 @@ const skills = {
 					return a % size === b % size || Math.floor(a / size) === Math.floor(b / size);
 				};
 				const doFound = function (index) {
+					if (finished) return;
 					const title = data.titles[index];
 					if (!title || state.found.includes(index)) return;
 					send("found", index);
@@ -1117,24 +1150,22 @@ const skills = {
 						game.log(player, "完成称号", "#g" + title.plain);
 						if (player && typeof player.popup === "function") player.popup(title.plain, "fire");
 					}
-					if (state.found.length >= data.titles.length) finish();
 				};
-				const select = function (index) {
-					if (finished || state.used[index]) return;
-					const list = state.selected;
-					const pos = list.indexOf(index);
-					if (pos >= 0) {
-						if (pos === list.length - 1) list.pop();
-						else list.length = pos + 1;
-					} else if (!list.length || (adjacent(list[list.length - 1], index) && straight(list[0], index))) {
-						list.push(index);
-					} else {
-						list.length = 0;
-						list.push(index);
-					}
-					const text = list.map(cell => data.chars[cell]).join("");
+				const publish = function (list) {
+					state.selected = list;
 					send("select", list.slice());
-					if (!text) return;
+				};
+				const isLine = function (list) {
+					for (let i = 1; i < list.length; i++) {
+						if (!adjacent(list[i - 1], list[i]) || !straight(list[0], list[i])) return false;
+					}
+					return true;
+				};
+				const tryMatch = function () {
+					if (finished) return;
+					const list = state.selected;
+					if (!list.length || !isLine(list)) return;
+					const text = list.map(cell => data.chars[cell]).join("");
 					const reverse = text.split("").reverse().join("");
 					for (let i = 0; i < data.titles.length; i++) {
 						if (state.found.includes(i)) continue;
@@ -1144,9 +1175,29 @@ const skills = {
 						}
 					}
 				};
+				const selectCell = function (index, options) {
+					if (finished || autoMode || index == null || state.used[index]) return false;
+					const list = state.selected.slice();
+					const pos = list.indexOf(index);
+					if (options && options.toggle && pos >= 0) {
+						publish(list.slice(0, pos));
+						return true;
+					}
+					if (options && options.slide && pos >= 0) {
+						if (pos >= list.length - 1) return false;
+						publish(list.slice(0, pos + 1));
+						return true;
+					}
+					if (pos >= 0) return false;
+					let next;
+					if (!list.length || (adjacent(list[list.length - 1], index) && straight(list[0], index))) next = list.concat(index);
+					else next = [index];
+					if (next.length > 5) next = [index];
+					publish(next);
+					return true;
+				};
 				let autoMode = false;
 				const autoState = { order: [], index: 0, step: 0, wait: 0 };
-				const deadline = Date.now() + total;
 				const isAuto = function () {
 					return !!auto || (player === game.me && !!_status.auto);
 				};
@@ -1164,10 +1215,10 @@ const skills = {
 					autoState.step = 0;
 					autoState.wait = 0;
 					for (const cell of state.cells) cell.style.cursor = "default";
-					if (controls) controls.style.display = "none";
+					if (closeBtn) closeBtn.style.display = "none";
 					state.clock = setInterval(function () {
 						if (finished || !autoMode) return;
-						if (!ui["olshilunDialog_" + gid]) {
+						if (!get.idDialog(gid)) {
 							finish();
 							return;
 						}
@@ -1193,58 +1244,78 @@ const skills = {
 				const startCountdown = function () {
 					stopClock();
 					for (const cell of state.cells) cell.style.cursor = "pointer";
-					if (controls) controls.style.display = "flex";
-					state.clock = setInterval(function () {
-						if (finished) {
-							clearInterval(state.clock);
-							state.clock = null;
-							return;
-						}
-						const left = Math.max(0, deadline - Date.now());
-						if (state.bar) state.bar.style.width = ((left / total) * 100).toFixed(1) + "%";
-						if (left <= 0) finish();
-					}, 200);
+					if (closeBtn) closeBtn.style.display = "";
 				};
 				const startManual = function () {
 					if (finished || !autoMode) return;
 					autoMode = false;
 					startCountdown();
 				};
-				for (let i = 0; i < state.cells.length; i++) {
-					const cell = state.cells[i];
-					cell.addEventListener(lib.config.touchscreen ? "touchend" : "click", function () {
-						if (autoMode || _status.dragged || _status.justdragged) return;
-						select(Number(this.dataset.index));
-					});
-				}
-				const controls = ui.create.div("", dialog);
-				controls.style.position = "relative";
-				controls.style.display = "flex";
-				controls.style.gap = "12px";
-				const makeButton = function (text, handler) {
-					const button = ui.create.div("", controls);
-					button.style.position = "relative";
-					button.innerHTML = text;
-					button.style.padding = "3px 16px";
-					button.style.borderRadius = "4px";
-					button.style.fontSize = "14px";
-					button.style.color = "#fff";
-					button.style.cursor = "pointer";
-					button.style.userSelect = "none";
-					button.style.background = "linear-gradient(180deg, rgba(160,116,222,0.95), rgba(88,46,158,0.95))";
-					button.style.border = "1px solid rgba(255,255,255,0.5)";
-					button.addEventListener(lib.config.touchscreen ? "touchend" : "click", function () {
-						if (_status.dragged || _status.justdragged) return;
-						handler();
-					});
+				const grid = state.grid;
+				let dragging = false;
+				let dragMoved = false;
+				let tapIndex = null;
+				let tapWasSelected = false;
+				const cellFromPoint = function (x, y) {
+					if (!grid) return null;
+					const list = document.elementsFromPoint ? document.elementsFromPoint(x, y) : [document.elementFromPoint(x, y)];
+					for (let i = 0; i < list.length; i++) {
+						const node = list[i];
+						if (!node || !node.closest) continue;
+						const cell = node.closest(".olshilun-cell");
+						if (!cell || !grid.contains(cell)) continue;
+						const index = Number(cell.dataset.index);
+						if (state.used[index]) return null;
+						return index;
+					}
+					return null;
 				};
-				makeButton("重选", function () {
-					if (autoMode || finished) return;
-					state.selected = [];
-					send("select", []);
-				});
-				makeButton("结束", function () {
-					if (autoMode || finished) return;
+				const playCellSound = function () {
+					game.playAudio({ path: "../image/olxushao/button.mp3" });
+				};
+				if (grid) {
+					grid.addEventListener("contextmenu", function (event) {
+						event.preventDefault();
+					});
+					grid.addEventListener("pointerdown", function (event) {
+						if (finished || autoMode) return;
+						const hit = cellFromPoint(event.clientX, event.clientY);
+						if (hit == null) return;
+						dragging = true;
+						dragMoved = false;
+						tapIndex = hit;
+						tapWasSelected = state.selected.includes(hit);
+						if (grid.setPointerCapture && event.pointerId != null) grid.setPointerCapture(event.pointerId);
+						if (!tapWasSelected && selectCell(hit)) playCellSound();
+						event.preventDefault();
+					});
+					grid.addEventListener("pointermove", function (event) {
+						if (!dragging) return;
+						const hit = cellFromPoint(event.clientX, event.clientY);
+						if (hit == null) return;
+						if (tapIndex === hit && !dragMoved) return;
+						dragMoved = true;
+						tapIndex = hit;
+						if (selectCell(hit, { slide: true })) playCellSound();
+						event.preventDefault();
+					});
+					const endDrag = function () {
+						if (!dragging) return;
+						if (!dragMoved && tapIndex != null && tapWasSelected) {
+							if (selectCell(tapIndex, { toggle: true })) playCellSound();
+						}
+						dragging = false;
+						dragMoved = false;
+						tapIndex = null;
+						tryMatch();
+					};
+					grid.addEventListener("pointerup", endDrag);
+					grid.addEventListener("pointercancel", endDrag);
+				}
+				const closeBtn = ui.create.div(".olshilun-close", state.stage || state.node);
+				closeBtn.style.backgroundImage = 'url("' + lib.assetURL + 'image/olxushao/pingjian_close.png")';
+				closeBtn.addEventListener(lib.config.touchscreen ? "touchend" : "click", function () {
+					if (autoMode || finished || _status.dragged || _status.justdragged) return;
 					finish();
 				});
 				if (isAuto()) startAuto();
@@ -1260,16 +1331,16 @@ const skills = {
 				}, 250);
 				game.pause();
 			}
-			const gid = lib.status.videoId++;
 			const data = createBoard();
 			if (!data) {
 				event.result = { bool: false, list: [] };
 				return;
 			}
+			const gid = lib.status.videoId++;
 			data.ownerName = get.translation(player);
 			game.broadcastAll(board, "create", gid, data, player.playerid);
-			const currentNode = ui["olshilunDialog_" + gid];
-			if (currentNode && currentNode.olshilun) currentNode.olshilun.board = board;
+			const currentWin = get.idDialog(gid);
+			if (currentWin) currentWin.board = board;
 			lib.skill.olshilun.aiHelperActions(
 				player,
 				gid,
@@ -1285,7 +1356,7 @@ const skills = {
 				play(player, gid, data, board, true);
 			}
 			await game.pause();
-			const state = ui["olshilunDialog_" + gid] && ui["olshilunDialog_" + gid].olshilun;
+			const state = get.idDialog(gid);
 			let result = event.result;
 			if (!result || typeof result !== "object" || !Array.isArray(result.list)) {
 				result = (state && state.result) || event._result;
@@ -1295,7 +1366,7 @@ const skills = {
 			const text = result.bool && result.list.length ? "评鉴完成：获得 " + result.list.map(name => "『" + plainTitle(name) + "』").join("") : "评鉴失败";
 			await game.delay(0.6);
 			game.broadcastAll(board, "finish", gid, result, text);
-			await game.delay(1.4);
+			await game.delay(2);
 			game.broadcastAll(board, "close", gid);
 			if (result?.bool && result.list?.length) {
 				let addSkill = [];
@@ -1321,14 +1392,12 @@ const skills = {
 			}
 		},
 		helperAction(player, gid, action) {
-			const dialog = ui["olshilunDialog_" + gid];
-			const state = dialog && dialog.olshilun;
+			const state = get.idDialog(gid);
 			const board = state && state.board;
 			if (!state || typeof board !== "function") return;
 			const list = [];
 			if (action === "glow") {
 				for (let i = 0; i < state.data.titles.length; i++) {
-					//已完成或正在协助的称号不再重复选中
 					if (state.found.includes(i)) continue;
 					if (state.actorFound && state.actorFound.includes(i)) continue;
 					if (state.glows && state.glows.some(entry => entry.index === i)) continue;
@@ -1336,8 +1405,7 @@ const skills = {
 				}
 			} else {
 				for (let i = 0; i < state.data.chars.length; i++) {
-					//已经被妨碍过、已经用掉的字不再重复选中
-					if (state.used[i] || state.hidden[i]) continue;
+					if (state.used[i] || state.hiddenCells[i]) continue;
 					if (state.actorUsed && state.actorUsed[i]) continue;
 					list.push(i);
 				}
@@ -1360,8 +1428,7 @@ const skills = {
 				charlotte: true,
 				sync: {
 					found(player, gid, index) {
-						const dialog = ui["olshilunDialog_" + gid];
-						const state = dialog && dialog.olshilun;
+						const state = get.idDialog(gid);
 						const title = state && state.data && state.data.titles[index];
 						if (!title) return;
 						state.actorFound ??= [];
