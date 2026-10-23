@@ -36,22 +36,6 @@ const BundledFileSystem = registerPlugin<{
  */
 const BUNDLED_BASE_URL = "capacitor://localhost";
 
-/**
- * 可写层的根目录名（位于 iOS 的 Documents 目录下）。
- *
- * 这里刻意取**空字符串**，也就是把 `Documents/` 本身当作游戏根目录，原因有两点：
- *
- * 1. **与安卓对齐**：安卓端 SAF 让用户选的那个目录就是游戏根目录，没有中间层
- *    （见 `SafOverlayStore` 的 `rootUri`）。iOS 用空根后两端语义一致。
- * 2. **方便手动导入**：iOS 的「文件」App 暴露的正是 `Documents/`
- *    （见 `Info.plist` 的 `UIFileSharingEnabled` + `LSSupportsOpeningDocumentsInPlace`）。
- *    根目录对齐后，玩家可以直接在「文件」里按 `image/character`、`audio/skill`、
- *    `extension` 的结构放入素材与扩展，游戏立刻就能读到，无需越狱或重装。
- *
- * ⚠️ 必须与 `ios/App/App/NonameRouter.swift` 的 `writableRoot` 保持一致。
- */
-const WRITABLE_ROOT = "";
-
 export class IosFileSystem implements NativeFileSystem {
 	/**
 	 * iOS 不需要目录授权，恒为已授权。
@@ -71,7 +55,7 @@ export class IosFileSystem implements NativeFileSystem {
 	}
 
 	async readFile(options: { fileName: string }): Promise<NativeReadResult> {
-		const writablePath = this.toWritablePath(options.fileName);
+		const writablePath = normalizeSegments(options.fileName);
 
 		// 覆盖层：优先读可写层
 		if (await this.exists(writablePath)) {
@@ -87,7 +71,7 @@ export class IosFileSystem implements NativeFileSystem {
 	}
 
 	async readFileAsText(options: { fileName: string }): Promise<NativeReadResult> {
-		const writablePath = this.toWritablePath(options.fileName);
+		const writablePath = normalizeSegments(options.fileName);
 
 		if (await this.exists(writablePath)) {
 			const result = await Filesystem.readFile({
@@ -104,7 +88,7 @@ export class IosFileSystem implements NativeFileSystem {
 
 	async writeFile(options: { path: string; data: string }): Promise<void> {
 		await Filesystem.writeFile({
-			path: this.toWritablePath(options.path),
+			path: normalizeSegments(options.path),
 			directory: Directory.Documents,
 			data: options.data,
 			// 写入前自动补齐父目录，避免调用方必须先 createDir
@@ -113,7 +97,7 @@ export class IosFileSystem implements NativeFileSystem {
 	}
 
 	async removeFile(options: { fileName: string }): Promise<void> {
-		const writablePath = this.toWritablePath(options.fileName);
+		const writablePath = normalizeSegments(options.fileName);
 
 		if (!(await this.exists(writablePath))) {
 			// 内置资源属于 App 包，不可删除，这里明确报错而不是静默失败
@@ -128,7 +112,7 @@ export class IosFileSystem implements NativeFileSystem {
 	}
 
 	async getFileList(options: { dir: string }): Promise<NativeListResult> {
-		const writablePath = this.toWritablePath(options.dir);
+		const writablePath = normalizeSegments(options.dir);
 		const writableType = await this.statWritable(writablePath);
 		if (writableType === "file") {
 			throw new Error(`${options.dir} 不是文件夹`);
@@ -169,7 +153,7 @@ export class IosFileSystem implements NativeFileSystem {
 	}
 
 	async createDir(options: { dir: string }): Promise<void> {
-		const path = this.toWritablePath(options.dir);
+		const path = normalizeSegments(options.dir);
 		if (path === "") {
 			// 根目录始终存在
 			return;
@@ -190,7 +174,7 @@ export class IosFileSystem implements NativeFileSystem {
 	}
 
 	async removeDir(options: { dir: string }): Promise<void> {
-		const path = this.toWritablePath(options.dir);
+		const path = normalizeSegments(options.dir);
 
 		if (path === "") {
 			throw new Error(`不能删除可写根目录: ${options.dir}`);
@@ -209,7 +193,7 @@ export class IosFileSystem implements NativeFileSystem {
 
 	/** 查询某个路径在两个层里的类型 */
 	private async resolveType(path: string): Promise<"file" | "directory" | "none"> {
-		const writablePath = this.toWritablePath(path);
+		const writablePath = normalizeSegments(path);
 
 		// 一次 stat 同时得到「是否存在」与「类型」，避免先 exists 再 stat 的两次原生调用
 		const writableType = await this.statWritable(writablePath);
@@ -239,23 +223,6 @@ export class IosFileSystem implements NativeFileSystem {
 		} catch {
 			return null;
 		}
-	}
-
-	/**
-	 * 游戏内路径 → Documents 目录下的相对路径。
-	 *
-	 * `WRITABLE_ROOT` 为空时，返回值就是相对 Documents 的裸路径
-	 * （根目录本身对应空字符串）。
-	 */
-	private toWritablePath(path: string): string {
-		const normalized = normalizeSegments(path);
-		if (WRITABLE_ROOT === "") {
-			return normalized;
-		}
-		if (normalized === "") {
-			return WRITABLE_ROOT;
-		}
-		return `${WRITABLE_ROOT}/${normalized}`;
 	}
 
 	// ---------- 内置资源访问 ----------
