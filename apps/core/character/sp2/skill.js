@@ -1860,6 +1860,10 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
+			if (!target.hasGainableCards(player, "he")) {
+				target.chat("无牌可给");
+				return;
+			}
 			let result = await target
 				.chooseToGive(player, "he", true, [1, Infinity], "allowChooseAll")
 				.set("ai", card => {
@@ -1876,7 +1880,6 @@ const skills = {
 					}
 					return 7 - get.value(card);
 				})
-				.set("target", target)
 				.forResult();
 			if (result?.bool && result.cards?.length) {
 				const num = result.cards.length;

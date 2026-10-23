@@ -18095,7 +18095,11 @@ const skills = {
 				};
 				lib.translate[`dchuashang_${type}_info`] = `原本是一张${get.translation(type)}牌。`;
 				lib.card[`dchuashang_${type}`] = card;
+			}
+			if (!lib.card[`dchuashang_${type}`].ai?.basic?.value) {
+				lib.card[`dchuashang_${type}`].type = "equip";
 				game.finishCard(`dchuashang_${type}`);
+				lib.card[`dchuashang_${type}`].type = type;
 			}
 		},
 		video(player, info) {
