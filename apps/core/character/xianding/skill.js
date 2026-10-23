@@ -30071,6 +30071,8 @@ const skills = {
 							if (target.hasHistory("damage", evt => evt.card === next.card)) {
 								bool = true;
 							}
+						} else {
+							break;
 						}
 					} else {
 						break;
