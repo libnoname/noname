@@ -2690,6 +2690,9 @@ export class Create {
 			}
 		}
 		ui.volumn = ui.create.system("♫");
+		if (lib.device === "ios") {
+			ui.volumn.style.display = "none";
+		}
 		lib.setPopped(ui.volumn, ui.click.volumn, 200);
 		// if(lib.config.show_pause) ui.auto.style.marginLeft='10px';
 		if (!lib.config.show_volumn) {
