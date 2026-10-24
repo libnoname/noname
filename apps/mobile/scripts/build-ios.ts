@@ -4,7 +4,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-const mobileRoot = resolve(import.meta.dirname, "../..");
+const mobileRoot = resolve(import.meta.dirname, "..");
 const workspaceRoot = resolve(mobileRoot, "../..");
 const iosRoot = resolve(mobileRoot, "native/ios");
 const archivePath = resolve(iosRoot, "build/noname.xcarchive");

@@ -3,7 +3,7 @@ import { resolve } from "path";
 import { spawnSync } from "child_process";
 import { build } from "vite";
 
-const root = import.meta.dirname;
+const root = resolve(import.meta.dirname, "..");
 const workspaceRoot = resolve(root, "../..");
 const distDir = resolve(workspaceRoot, "dist");
 const preloadOutDir = resolve(root, ".mobile-preload");
@@ -57,7 +57,6 @@ async function buildPreload() {
 }
 
 function capSync() {
-	// 直接调用 CLI，避免依赖平台的 shell 命令解析。
 	const cliEntry = resolve(root, "node_modules/@capacitor/cli/bin/capacitor");
 
 	const result = spawnSync(process.execPath, [cliEntry, "sync", ...(platform ? [platform] : [])], {

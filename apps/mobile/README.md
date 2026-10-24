@@ -2,6 +2,10 @@
 
 Android client for Noname, built with Capacitor.
 
+## Build Scripts
+
+Build and sync scripts live in `scripts/`: `sync.ts`, `build-android.ts`, and `build-ios.ts`. iOS CI also runs `scripts/strip-ios-assets.ts` after syncing to remove character art and voice assets. The package commands below remain unchanged.
+
 ## Build Flow
 
 The Android project serves the built web app from `../../dist`.

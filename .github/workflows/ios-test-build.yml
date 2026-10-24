@@ -57,7 +57,7 @@ jobs:
 
       - name: Strip character art and voice
         working-directory: apps/mobile
-        run: pnpm exec tsx native/ios/strip-assets.ts
+        run: pnpm exec tsx scripts/strip-ios-assets.ts
 
       - name: Free disk
         run: rm -rf dist
