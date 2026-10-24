@@ -8770,7 +8770,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			const dialog = [["give", "展示牌堆顶的一张牌并令一名角色获得之"]];
-			if (game.hasPlayer(current => current.countCards("he", card => lib.filter.cardRecastable(card, player)) >= 3)) {
+			if (game.hasPlayer(current => current.countCards("he", card => lib.filter.cardRecastable(card, player)))) {
 				dialog.push(["recast", "重铸一名角色的三张牌"]);
 			}
 			const result = await player
@@ -8801,7 +8801,7 @@ const skills = {
 				const targetResult = await player
 					.chooseTarget({
 						filterTarget(card, player, target) {
-							return target.countCards("he", lib.filter.cardRecastable(card, player)) >= 3;
+							return target.countCards("he", lib.filter.cardRecastable(card, player));
 						},
 						prompt: targetPrompt,
 						ai(target) {
@@ -8818,29 +8818,35 @@ const skills = {
 				const thisTarget = targetResult.targets[0];
 				const phase = get.copy(event.getParent("phase"));
 				if (thisTarget !== player) player.setStorage("twdumou", [thisTarget, phase]);
-				if (!targetResult || thisTarget.countCards("he", card => lib.filter.cardRecastable(card, player)) < 3) {
+				if (!targetResult || !thisTarget.countCards("he", card => lib.filter.cardRecastable(card, player))) {
 					return;
 				}
-				const cardResult = await player
-					.choosePlayerCard({
-						forced: true,
-						prompt: "督鍪：重铸该角色的三张牌",
-						target: targetResult.targets[0],
-						selectButton: 3,
-						allowChooseAll: true,
-						filterButton(button) {
-							return lib.filter.cardRecastable(button.link, get.player());
-						},
-						ai(button) {
-							if (get.event().target === get.player()) {
-								return _status.currentPhase === player ? -player.getUseValue(button.link) : -get.value(button.link);
-							}
-							return Math.random();
-						},
-					})
-					.forResult();
-				if (cardResult?.cards?.length) {
-					await thisTarget.recast(cardResult.cards, void 0, player => (player.draw(3).set("log", false).gaintag = ["twdumou_tag"]));
+				let cards;
+				if(thisTarget.countCards("he", card => lib.filter.cardRecastable(card, player)) <=3){
+					cards = thisTarget.getCards("he", card => lib.filter.cardRecastable(card, player));
+				}else{
+					const cardResult = await player
+						.choosePlayerCard({
+							forced: true,
+							prompt: "督鍪：重铸该角色的三张牌",
+							target: targetResult.targets[0],
+							selectButton: 3,
+							allowChooseAll: true,
+							filterButton(button) {
+								return lib.filter.cardRecastable(button.link, get.player());
+							},
+							ai(button) {
+								if (get.event().target === get.player()) {
+									return _status.currentPhase === player ? -player.getUseValue(button.link) : -get.value(button.link);
+								}
+								return Math.random();
+							},
+						})
+						.forResult();
+					cards = cardResult?.cards;
+				}
+				if (cards?.length) {
+					await thisTarget.recast(cards, void 0, player => (player.draw(cards.length).set("log", false).gaintag = ["twdumou_tag"]));
 				}
 			} else if (link === "give") {
 				const card = get.cards(1);
