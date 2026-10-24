@@ -4,9 +4,9 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-const mobileRoot = resolve(import.meta.dirname, "..");
+const mobileRoot = resolve(import.meta.dirname, "../..");
 const workspaceRoot = resolve(mobileRoot, "../..");
-const iosRoot = resolve(mobileRoot, "ios");
+const iosRoot = resolve(mobileRoot, "native/ios");
 const archivePath = resolve(iosRoot, "build/noname.xcarchive");
 const exportDir = resolve(iosRoot, "build/export");
 
@@ -25,7 +25,7 @@ Options:
 Requirements:
   - Must run on macOS (xcodebuild is required).
   - Xcode 26.0+ (Capacitor 8 uses Swift Package Manager).
-  - The iOS project ships with the repository (apps/mobile/ios).
+  - The iOS project ships with the repository (apps/mobile/native/ios).
 `);
 	process.exit(0);
 }

@@ -49,7 +49,7 @@ jobs:
         run: pnpm build
 
       - name: Verify iOS Capacitor project
-        run: test -f apps/mobile/ios/App/App.xcodeproj/project.pbxproj
+        run: test -f apps/mobile/native/ios/App/App.xcodeproj/project.pbxproj
 
       - name: Capacitor sync
         working-directory: apps/mobile
@@ -57,7 +57,7 @@ jobs:
 
       - name: Strip character art and voice
         working-directory: apps/mobile
-        run: pnpm exec tsx ios/strip-assets.ts
+        run: pnpm exec tsx native/ios/strip-assets.ts
 
       - name: Free disk
         run: rm -rf dist
@@ -68,12 +68,12 @@ jobs:
           path: |
             ~/Library/Caches/org.swift.swiftpm
             ${{ runner.temp }}/SourcePackages
-          key: spm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'apps/mobile/ios/App/CapApp-SPM/Package.swift') }}
+          key: spm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'apps/mobile/native/ios/App/CapApp-SPM/Package.swift') }}
           restore-keys: |
             spm-${{ runner.os }}-
 
       - name: Build unsigned iOS app
-        working-directory: apps/mobile/ios/App
+        working-directory: apps/mobile/native/ios/App
         run: |
           xcodebuild \
             -project App.xcodeproj \

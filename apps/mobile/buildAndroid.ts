@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 
 const mobileRoot = import.meta.dirname;
 const workspaceRoot = resolve(mobileRoot, "../..");
-const androidRoot = resolve(mobileRoot, "android");
+const androidRoot = resolve(mobileRoot, "native/android");
 
 const args = new Set(process.argv.slice(2));
 const variant = process.argv.find((arg) => arg.startsWith("--variant="))?.split("=", 2)[1] ?? "release";

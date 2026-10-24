@@ -5,13 +5,6 @@ import { createIosFileSystem } from "./ios/fs.js";
 import { attachFileSystemAPI } from "./fs/legacy-api.js";
 import { base64ToArrayBuffer, callbackError, joinFilePath, sanitizeExportName, writeDataToBase64, type NativeAccessResult, type NativeFileSystem } from "./fs/types.js";
 
-/**
- * Android 端通过 SAF（Storage Access Framework）访问游戏目录，
- * 原生实现见 `apps/mobile/android/.../SafFsPlugin.kt`。
- *
- * 插件方法在平台分支里被当作 `NativeFileSystem` 使用，
- * 这样 Android / iOS 两套实现可以共用下面的 `game.*` API 安装逻辑。
- */
 interface SafFsPlugin extends NativeFileSystem {
 	hasAccess(): Promise<NativeAccessResult>;
 	requestAccess(): Promise<NativeAccessResult>;

@@ -21,7 +21,7 @@ import Foundation
 /// 因此只要在这里先查沙盒、命中时返回沙盒文件的绝对路径，就能让普通 fetch 请求
 /// 也走可写覆盖层，从而支持从 Documents 目录加载扩展。
 class NonameRouter: NSObject, Router {
-    /// Capacitor 的内置资源根目录（`ios/App/App/public`）。
+    /// Capacitor 的内置资源根目录（`native/ios/App/App/public`）。
     var basePath: String = ""
 
     private lazy var documentsURL: URL? = {
