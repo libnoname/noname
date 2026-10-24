@@ -70,31 +70,14 @@ class SafFsPlugin : Plugin() {
     }
 
     @PluginMethod
-    fun checkFile(call: PluginCall) {
+    fun statEntry(call: PluginCall) {
         wrap(call) {
-            val fileName = call.getString("fileName") ?: throw IllegalArgumentException("缺少 fileName")
-            val file = store.findSaf(fileName)
+            val entryName = call.getString("entryName") ?: throw IllegalArgumentException("缺少 entryName")
+            val file = store.findSaf(entryName)
             JSObject().put("type", when {
                 file != null && file.isFile -> "file"
                 file != null && file.isDirectory -> "directory"
-                else -> when (store.assetType(fileName)) {
-                    EntryType.FILE -> "file"
-                    EntryType.DIRECTORY -> "directory"
-                    EntryType.NONE -> "none"
-                }
-            })
-        }
-    }
-
-    @PluginMethod
-    fun checkDir(call: PluginCall) {
-        wrap(call) {
-            val dir = call.getString("dir") ?: throw IllegalArgumentException("缺少 dir")
-            val file = store.findSaf(dir)
-            JSObject().put("type", when {
-                file != null && file.isFile -> "file"
-                file != null && file.isDirectory -> "directory"
-                else -> when (store.assetType(dir)) {
+                else -> when (store.assetType(entryName)) {
                     EntryType.FILE -> "file"
                     EntryType.DIRECTORY -> "directory"
                     EntryType.NONE -> "none"
