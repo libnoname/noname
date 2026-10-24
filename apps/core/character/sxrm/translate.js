@@ -163,6 +163,27 @@ const translates = {
 	sxrmyangbei_info: "准备阶段或结束阶段，你可以翻面并摸三张牌。当你使用【杀】或普通锦囊牌指定唯一目标后，其可以弃置所有手牌令此技能本回合失效。",
 	sxrmyinfeng: "阴锋",
 	sxrmyinfeng_info: "锁定技，当你每回合首次造成伤害后，你令受伤角色获得以下效果直到你下回合开始：体力上限减至其体力值且其造成和受到的伤害均视为失去体力。",
+	//蚀心入魔·痴
+	sxrm_lvbu: "魔吕布",
+	sxrm_lvbu_prefix: "魔",
+	sxrmwuyan: "无厌",
+	sxrmwuyan_info: `游戏开始时，你获得${get.poptip("ol_wuqian")}和${get.poptip("ol_shenfen")}和一至五个由你选择的${get.poptip({
+		id: "sxrmwuyan_tip1",
+		name: "限定技",
+		type: "character",
+		info: `技能库：<li>${get.poptip("xinfencheng")}<li>${get.poptip("yeyan")}<li>${get.poptip("fenwei")}<li>${get.poptip("yongjin")}<li>${get.poptip("reluanwu")}<li>${get.poptip("oldniepan")}`,
+	})}；然后你将获得的限定技${get.poptip({
+		id: "sxrmwuyan_tip2",
+		name: "改为",
+		type: "character",
+		info: "所有角色的相同技能都会被修改",
+	})}每轮限一次并减等量的体力上限。`,
+	sxrmjumo: "拘魔",
+	sxrmjumo_info: "锁定技，蓄力技（2/2），回合开始时，消耗2点蓄力点将本回合出牌和弃牌阶段改为摸牌阶段。",
+	sxrmqikuan: "乞宽",
+	sxrmqikuan_info: "未受伤其他角色的结束阶段，其可弃置两张基本牌令你获得1点蓄力点；然后你可令其加1点体力上限。",
+	sxrmshinie: "噬啮",
+	sxrmshinie_info: `每回合限一次，当你需要发动${get.poptip("ol_wuqian")}、${get.poptip("ol_shenfen")}移除“暴怒”标记时，你可以将一名其他角色的等量体力上限当“暴怒”标记来移除（体力上限需足够）。`,
 };
 
 export default translates;
