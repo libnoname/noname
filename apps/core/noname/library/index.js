@@ -5011,7 +5011,7 @@ export class Library {
 					},
 					onclick(volume) {
 						game.saveConfig("volumn_background", parseInt(volume));
-						ui.backgroundMusic.volume = volume / 8;
+						game.setAudioVolume(ui.backgroundMusic, volume / 8);
 					},
 				},
 				clear_background_music: {

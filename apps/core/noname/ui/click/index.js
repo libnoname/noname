@@ -1282,7 +1282,7 @@ export class Click {
 			volume = 0;
 		}
 		game.saveConfig("volumn_background", volume);
-		ui.backgroundMusic.volume = volume / 8;
+		game.setAudioVolume(ui.backgroundMusic, volume / 8);
 		for (var i = 0; i < 8; i++) {
 			if (i < lib.config.volumn_background) {
 				this.parentNode.childNodes[i].innerHTML = "●";

@@ -2442,6 +2442,17 @@ export class Game {
 		}
 	}
 	/**
+	 * 设置音频元素的音量
+	 * 
+	 * > 由于iOS端修改音频元素的volume属性不会影响音量设置，需要为iOS端提供一个可注入的接口
+	 * 
+	 * @param {HTMLAudioElement} audio
+	 * @param {number} volume
+	 */
+	setAudioVolume(audio, volume) {
+		audio.volume = volume;
+	}
+	/**
 	 * @overload
 	 * @param { object } options
 	 * @param { string } options.path
@@ -2502,7 +2513,7 @@ export class Game {
 		}
 
 		const audio = document.createElement("audio");
-		audio.volume = lib.config.volumn_audio / 8;
+		game.setAudioVolume(audio, lib.config.volumn_audio / 8);
 		audio.autoplay = true;
 
 		audio.oncanplay = ev => {
@@ -2722,7 +2733,7 @@ export class Game {
 		var str = "audio/skill/";
 		var audio = document.createElement("audio");
 		audio.autoplay = true;
-		audio.volume = lib.config.volumn_audio / 8;
+		game.setAudioVolume(audio, lib.config.volumn_audio / 8);
 		audio.src = lib.assetURL + str + name + ".mp3";
 		audio.addEventListener("ended", function () {
 			this.remove();

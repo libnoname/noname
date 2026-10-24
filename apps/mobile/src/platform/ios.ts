@@ -2,6 +2,13 @@ import { registerPlugin } from "@capacitor/core";
 import { Filesystem, Directory, Encoding } from "@capacitor/filesystem";
 import { joinFilePath, dataToBase64, base64ToArrayBuffer, toTriState, callbackError, type EntryType, type MinimalFileSystem } from "./general";
 
+interface AudioState {
+	volume: number;
+	source?: MediaElementAudioSourceNode;
+	gain?: GainNode;
+	connected: boolean;
+}
+
 interface BundledFileSystem {
 	stat(options: { path: string }): Promise<{ type: EntryType }>;
 	readdir(options: { path: string }): Promise<{
@@ -104,6 +111,11 @@ export function attachIosFileSystem(game: any): void {
 			.then(() => successCallback())
 			.catch(error => callbackError(errorCallback, error));
 	};
+}
+
+export function injectIosAudioVolume(game: any): void {
+	const audioVolume = new IosAudioVolume();
+	game.setAudioVolume = audioVolume.setAudioVolume;
 }
 
 class IosFileSystem implements MinimalFileSystem {
@@ -305,4 +317,102 @@ class IosFileSystem implements MinimalFileSystem {
 		}
 		return response.text();
 	}
+}
+
+class IosAudioVolume {
+	private context?: AudioContext;
+	private states = new WeakMap<HTMLAudioElement, AudioState>();
+	private pending = new Set<HTMLAudioElement>();
+
+	constructor() {
+		for (const type of ["touchend", "click", "keydown"]) {
+			document.addEventListener(type, this.unlock, {
+				capture: true,
+				passive: true,
+			});
+		}
+
+		document.addEventListener("visibilitychange", () => {
+			if (document.visibilityState === "visible" && this.context) {
+				this.resume();
+			}
+		});
+	}
+
+	setAudioVolume = (audio: HTMLAudioElement, volume: number): void => {
+		audio.volume = volume;
+		let state = this.states.get(audio);
+		if (!state) {
+			const entry: AudioState = { volume, connected: false };
+			state = entry;
+			this.states.set(audio, entry);
+			audio.addEventListener("play", () => this.route(audio, entry));
+			const disconnect = () => {
+				this.pending.delete(audio);
+				entry.source?.disconnect();
+				entry.gain?.disconnect();
+				entry.connected = false;
+			};
+			for (const type of ["pause", "ended", "error", "emptied"]) {
+				audio.addEventListener(type, disconnect);
+			}
+		}
+		state.volume = volume;
+		if (state.source) audio.volume = 1;
+		this.route(audio, state);
+	}
+
+	private route(audio: HTMLAudioElement, state: AudioState): void {
+		// 原 route 的函数体，实例字段统一加 this.
+		if (!this.context || this.context.state !== "running") {
+			this.pending.add(audio);
+			return;
+		}
+		this.pending.delete(audio);
+		try {
+			if (!state.source) {
+				state.gain = this.context.createGain();
+				state.source = this.context.createMediaElementSource(audio);
+				state.gain.gain.value = state.volume;
+			}
+			const gain = state.gain!;
+			if (!state.connected) {
+				state.source.connect(gain);
+				gain.connect(this.context.destination);
+				state.connected = true;
+			}
+			audio.volume = 1;
+			gain.gain.setTargetAtTime(state.volume, this.context.currentTime, 0.01);
+		} catch (error) {
+			console.warn("[ios-audio] 接管音量失败:", error);
+		}
+	}
+
+	private resume(): void {
+		this.context
+			?.resume()
+			.then(this.attachPending)
+			.catch(error => console.warn("[ios-audio] 恢复音频失败:", error));
+	}
+
+	private attachPending = (): void => {
+		if (this.context?.state !== "running") return;
+
+		for (const audio of this.pending) {
+			this.route(audio, this.states.get(audio)!);
+		}
+	};
+
+	private unlock = (): void => {
+		try {
+			if (!this.context) {
+				this.context = new AudioContext();
+				this.context.addEventListener("statechange", this.attachPending);
+			}
+			if (this.context.state === "running") this.attachPending();
+			else this.resume();
+		} catch (error) {
+			console.warn("[ios-audio] 创建音频上下文失败:", error);
+		}
+	};
 }

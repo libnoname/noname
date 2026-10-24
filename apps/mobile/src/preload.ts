@@ -3,7 +3,7 @@ import { Capacitor, SystemBars } from "@capacitor/core";
 
 import { sanitizeExportName, type MinimalFileSystem } from "./platform/general";
 import { initializeAndroid, attachAndroidFileSystem } from "./platform/android";
-import { initializeIos, attachIosFileSystem } from "./platform/ios";
+import { initializeIos, attachIosFileSystem, injectIosAudioVolume } from "./platform/ios";
 
 export default async function preload({ lib, game }) {
 	lib.path = (await import("path-browserify-esm")).default;
@@ -17,7 +17,7 @@ export default async function preload({ lib, game }) {
 	if (rootCheck.type !== "file") {
 		throw new Error("游戏资源缺失: noname.js");
 	}
-	attachFileSystemAPI(game, platform);
+	injectGameMethods(game, platform);
 
 	game.export = function (data: string | Blob, name?: string) {
 		const fileName = sanitizeExportName(name);
@@ -64,7 +64,7 @@ function resolveFileSystem(platform: string) {
 	}
 }
 
-function attachFileSystemAPI(game: any, platform: string) {
+function injectGameMethods(game: any, platform: string) {
 	switch (platform) {
 		case "android":
 			attachAndroidFileSystem(game);
@@ -72,6 +72,7 @@ function attachFileSystemAPI(game: any, platform: string) {
 		
 		case "ios":
 			attachIosFileSystem(game);
+			injectIosAudioVolume(game);
 			break;
 	}
 }

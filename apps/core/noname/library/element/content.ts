@@ -1595,7 +1595,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				hitsound = `${lib.assetURL}audio/effect/${hitsound}`;
 			}
 			const hitsound_audio = new Audio(hitsound);
-			hitsound_audio.volume = 0.25;
+			game.setAudioVolume(hitsound_audio, 0.25);
 			let abs = 1;
 			let node_pos = 0;
 			if (custom_mapping) {

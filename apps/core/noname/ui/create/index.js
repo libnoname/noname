@@ -2426,7 +2426,7 @@ export class Create {
 		// if(lib.config.player_height_nova=='long') ui.arena.classList.add('player_autolong');
 		ui.arena.dataset.target_shake = lib.config.target_shake || "off";
 		ui.backgroundMusic = document.createElement("audio");
-		ui.backgroundMusic.volume = lib.config.volumn_background / 8;
+		game.setAudioVolume(ui.backgroundMusic, lib.config.volumn_background / 8);
 		game.playBackgroundMusic();
 		ui.backgroundMusic.autoplay = true;
 		ui.backgroundMusic.addEventListener("ended", game.playBackgroundMusic);
