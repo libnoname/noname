@@ -1,4 +1,12 @@
 const characters = {
+	// 痴
+	sxrm_lvbu: {
+		sex: "male",
+		group: "devil",
+		hp: 5,
+		skills: ["sxrmwuyan", "sxrmjumo", "sxrmqikuan", "sxrmshinie"],
+		groupInGuozhan: "qun",
+	},
 	//嗔
 	sxrm_zhouyu: {
 		sex: "male",
