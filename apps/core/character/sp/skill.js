@@ -896,85 +896,6 @@ const skills = {
 			dialog.style.transition = "none";
 			return dialog;
 		},
-		pingjianPool: [
-			{ name: "ol_wanglang", skill: "gushe", title: "螳臂当车" },
-			{ name: "huaman", skill: "mansi", title: "花俏蛮娇" },
-			{ name: "ol_puyuan", skill: "olshengong", title: "鬼斧神工" },
-			{ name: "xiahouxuan", skill: "olqingyi", title: "朗朗日月" },
-			{ name: "ol_feiyi", skill: "yanru", title: "中才之相" },
-			{ name: "ol_jiangwan", skill: "olxvfa", title: "社稷之器" },
-			{ name: "clan_wangguang", skill: "clanlilun", title: "相机而动" },
-			{ name: "ol_peixiu", skill: "olcaifeng", title: "地载十六州" },
-			{ name: "sp_ol_caocao", skill: "spolxixiang", title: "一战天下定" },
-			{ name: "sp_ol_caocao", skill: "spolzhubei", title: "踌躇的孤雁" },
-			{ name: "ol_sb_jiaxu", skill: "olsbwance", title: "良平之奇" },
-			{ name: "ol_sb_wenchou", skill: "olsblunzhan", title: "万夫之勇" },
-			{ name: "ol_miheng", skill: "olkuangjuan", title: "狂才傲世" },
-			{ name: "ol_sb_xuyou", skill: "olsbqianfu", title: "帷幄擎炬" },
-			{ name: "ol_jsrg_sunjian", skill: "olpingtao", title: "以时进讨" },
-			{ name: "ol_jsrg_zhangliao", skill: "olzhengbing", title: "利刃风骑" },
-			{ name: "ol_sb_dongzhao", skill: "olsbyishi", title: "天阶登志" },
-			{ name: "ol_sb_zhurong", skill: "olsbrenche", title: "火神的祝佑" },
-			{ name: "ol_sb_zhouyu", skill: "olsbzuifeng", title: "雅量之魁英" },
-			{ name: "re_sunquan", skill: "rezhiheng", title: "年轻的贤君" },
-			{ name: "re_yuanshao", skill: "luanji", title: "高贵的名门" },
-			{ name: "xunyou", skill: "qice", title: "曹魏的谋主" },
-			{ name: "xin_masu", skill: "olsanyao", title: "街亭之殇" },
-			{ name: "zhangxiu", skill: "drlt_xiongluan", title: "北地枪王" },
-			{ name: "caochun", skill: "olshanjia", title: "虎豹骑首" },
-			{ name: "shen_ganning", skill: "drlt_poxi", title: "江表之力牧" },
-			{ name: "re_jiaxu", skill: "reluanwu", title: "洞悉先机者" },
-			{ name: "sp_menghuo", skill: "spmanwang", title: "勒格诗惹" },
-			{ name: "zhanghua", skill: "oljianhe", title: "双剑化龙" },
-			{ name: "clan_zhongyan", skill: "clanguangu", title: "慨然永怀" },
-			{ name: "clan_kebineng", skill: "olpingduan", title: "瀚海鲸波" },
-			{ name: "ol_liru", skill: "dcfencheng", title: "乱世谋焚" },
-			{ name: "baoxin", skill: "mutao", title: "坚朴的忠相" },
-			{ name: "re_simayi", skill: "refankui", title: "心吞三国" },
-			{ name: "yangxiu", skill: "jilei", title: "恃才放旷" },
-			{ name: "zhangchangpu", skill: "xingshen", title: "省身明德" },
-			{ name: "huangchengyan", skill: "yashi", title: "仰观太虚" },
-			{ name: "caoxi", skill: "oljianxuan", title: "魁立倾厦" },
-			{ name: "ol_sb_huangyueying", skill: "olsblixian", title: "才惠双绝" },
-			{ name: "ol_xuelingyun", skill: "olsiqi", title: "红烛垂泪" },
-			{ name: "ol_niufu", skill: "olshisuan", title: "尔卜尔筮" },
-			{ name: "guohuanghou", skill: "danxin", title: "垂宪后叶" },
-			{ name: "huanshujun", skill: "olmiaoxin", title: "环佩解君" },
-			{ name: "guojia", skill: "yiji", title: "早终的先知" },
-			{ name: "xunyu", skill: "jieming", title: "驱虎吞狼" },
-			{ name: "caopi", skill: "fangzhu", title: "霸业继承者" },
-			{ name: "shen_caocao", skill: "guixin", title: "天下归心" },
-			{ name: "manchong", skill: "yuce", title: "法不容情" },
-			{ name: "re_caocao", skill: "new_jianxiong", title: "治世之能臣" },
-			{ name: "caorui", skill: "huituo", title: "天资的明君" },
-			{ name: "xizhicai", skill: "chouce", title: "社稷的先驱" },
-			{ name: "weizi", skill: "liejie", title: "慧眼识君" },
-			{ name: "clan_zhongyu", skill: "clanhuanghan", title: "机捷谈笑" },
-			{ name: "ol_caochong", skill: "olchengxiang", title: "神通妙算" },
-			{ name: "ol_hanfu", skill: "olkuangshou", title: "委蛇两端" },
-			{ name: "ol_yuanhuan", skill: "ollinjie", title: "无愆恒下" },
-			{ name: "shixie", skill: "olbiluan", title: "雄长百越" },
-			{ name: "ol_xiaoqiao", skill: "piaoling", title: "小家碧玉" },
-			{ name: "ol_yangyi", skill: "oljuanxia", title: "武侯长史" },
-			{ name: "yanrou", skill: "xiangshu", title: "冠宇啸北" },
-			{ name: "qiaozhou", skill: "xingbu", title: "天行有常" },
-			{ name: "ol_zhouqun", skill: "oltianhou", title: "详阴阳之妙" },
-			{ name: "ol_liwan", skill: "ollianju", title: "遐雁归迩" },
-			{ name: "clan_yangbiao", skill: "clanyichi", title: "坚争抗壮" },
-			{ name: "diaochan", skill: "biyue", title: "绝世的舞姬" },
-			{ name: "caoren", skill: "xinjushou", title: "固若金汤" },
-			{ name: "sp_caoren", skill: "lizhan", title: "鬼神只之勇" },
-			{ name: "sp_caiwenji", skill: "moshi", title: "归汉的才女" },
-			{ name: "yufan", skill: "zhiyan", title: "狂直之士" },
-			{ name: "wangyi", skill: "miji", title: "大义不惜" },
-			{ name: "zhugezhan", skill: "xinfu_zuilun", title: "临难死义" },
-			{ name: "haozhao", skill: "drlt_zhengu", title: "扣弦的豪将" },
-			{ name: "ol_sb_jiangwei", skill: "olsbranji", title: "炎志灼心" },
-			{ name: "clan_zhongyao", skill: "clanjieli", title: "意前笔启" },
-			{ name: "clan_yangzhong", skill: "clankudu", title: "歧路也汤汤" },
-			{ name: "ol_sb_xuyou", skill: "olsbfenchao", title: "烛照官渡" },
-			{ name: "ol_bulianshi", skill: "olzhuiyi", title: "后后嘉荣" },
-		],
 		async content(event, trigger, player) {
 			const SIZE = 6;
 			const TITLE_MIN = 2;
@@ -985,16 +906,47 @@ const skills = {
 				if (str.includes("<") || str.includes(">")) str = get.plainText(str);
 				return str.replace(/#[a-zA-Z0-9]/g, "").trim();
 			}
+			function checkSkill(name, type) {
+				const info = lib.skill[name];
+				if (!info || info.charlotte || info.silent || info.juexingji || info.hiddenSkill || info.dutySkill) return false;
+				if (info.zhuSkill) {
+					const owner = _status.event && _status.event.player ? _status.event.player : game.me;
+					if (!owner || typeof owner.isZhu2 !== "function" || !owner.isZhu2()) return false;
+				}
+				if (type === "phaseUse") {
+					let enables = info.enable;
+					if (!enables) return false;
+					if (!Array.isArray(enables)) enables = [enables];
+					return enables.includes("phaseUse");
+				}
+				let triggers = info.trigger && info.trigger.player;
+				if (!triggers) return false;
+				if (!Array.isArray(triggers)) triggers = [triggers];
+				return triggers.includes(type);
+			}
 			function initTitles() {
 				if (_status.characterTitleInited) return;
 				_status.characterTitleInited = {};
-				for (const item of lib.skill.olshilun.pingjianPool) {
-					if (!item?.skill || !lib.skill[item.skill]) continue;
-					const chars = Array.from(plainTitle(item.title));
-					if (chars.length < TITLE_MIN || chars.length > TITLE_MAX) continue;
-					if (!chars.every(char => /[\u4e00-\u9fff]/.test(char))) continue;
-					_status.characterTitleInited[item.title] ??= [];
-					_status.characterTitleInited[item.title].add(item.skill);
+				game.initCharacterList();
+				const allList = _status.characterlist.slice();
+				for (const target of game.filterPlayer2()) {
+					for (const name of get.nameList(target)) {
+						if (name && lib.character[name] && !name.startsWith("gz_shibing") && !name.startsWith("gz_jun_")) allList.add(name);
+					}
+				}
+				for (const name of allList) {
+					if (!lib.characterTitle[name]) continue;
+					const skills2 = lib.character[name] && lib.character[name].skills;
+					if (!skills2 || !skills2.length) continue;
+					const skills = [];
+					for (const skill2 of skills2) {
+						const list = [skill2];
+						game.expandSkills(list);
+						if (list.some(skill => ["phaseUse", "phaseJieshuBegin", "damageEnd"].some(type => checkSkill(skill, type)))) {
+							skills.add(skill2);
+						}
+					}
+					if (skills.length) _status.characterTitleInited[lib.characterTitle[name]] = skills;
 				}
 			}
 			function getTitlePool() {
@@ -1150,6 +1102,7 @@ const skills = {
 						game.log(player, "完成称号", "#g" + title.plain);
 						if (player && typeof player.popup === "function") player.popup(title.plain, "fire");
 					}
+					if (state.found.length >= data.titles.length) finish();
 				};
 				const publish = function (list) {
 					state.selected = list;
@@ -1638,6 +1591,12 @@ const skills = {
 						player.storage[event.name][skill] = trigger || evt.getParent();
 						game.broadcast((player, storage) => (player.storage = storage), player, player.storage);
 					}
+				},
+				ai: {
+					order(item, player) {
+						return get.order("olshilun", player) - 0.1;
+					},
+					result: { player: 1 },
 				},
 			},
 		},
