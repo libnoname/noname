@@ -13,6 +13,14 @@
 		SERVICE_WORKER_NOT_SUPPORT: ["无法启用即时编译功能", "您使用的客户端或浏览器不支持启用serviceWorker"].join("\n"),
 		SERVICE_WORKER_LOAD_FAILED: ["无法启用即时编译功能", "serviceWorker加载失败"].join("\n"),
 	};
+	
+	// ios端目前不支持jit功能，直接关闭
+	const wkWebView = window as unknown as {
+		webkit?: { messageHandlers?: { bridge?: unknown } };
+	};
+	if (wkWebView.webkit?.messageHandlers?.bridge) {
+		return;
+	}
 
 	if (!("serviceWorker" in navigator)) {
 		alert(globalText.SERVICE_WORKER_NOT_SUPPORT);

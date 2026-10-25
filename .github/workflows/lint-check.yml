@@ -8,6 +8,16 @@ jobs:
   eslint:
     name: ESLint Check
     runs-on: ubuntu-latest
+    env:
+      BASE_REF: ${{ github.base_ref || 'main' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: ESLint Check
+            script: lint
+          - name: Prettier Check
+            script: lint:prettier
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -15,7 +25,7 @@ jobs:
           fetch-depth: 1
 
       - name: Fetch base branch (shallow)
-        run: git fetch --no-tags --depth=1 origin ${{ github.base_ref }}:${{ github.base_ref }}
+        run: git fetch --no-tags --depth=1 origin "$BASE_REF:$BASE_REF"
 
       - name: Install pnpm
         uses: pnpm/action-setup@v5
@@ -32,5 +42,5 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
 
-      - name: Run ESLint
-        run: pnpm --filter "...[${{ github.base_ref }}]" --filter "!./" lint
+      - name: Run ${{ matrix.name }}
+        run: pnpm --filter "...[$BASE_REF]" --filter "!./" run --if-present ${{ matrix.script }}

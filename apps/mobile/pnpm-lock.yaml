@@ -20,6 +20,9 @@ importers:
       '@capacitor/filesystem':
         specifier: ^8.1.1
         version: 8.1.1(@capacitor/core@8.1.0)
+      '@capacitor/ios':
+        specifier: 8.1.0
+        version: 8.1.0(@capacitor/core@8.1.0)
       path-browserify-esm:
         specifier: 1.0.6
         version: 1.0.6
@@ -55,6 +58,11 @@ packages:
     resolution: {integrity: sha512-g8szun+Nj9O/CIWNJ1c4cTsGchJE3B7080X+eh3hQXKf9UdRDllwVJy6reoI5EngwWh9xUgkI7fwkxg5BONrKw==}
     peerDependencies:
       '@capacitor/core': '>=8.0.0'
+
+  '@capacitor/ios@8.1.0':
+    resolution: {integrity: sha512-wPaQ8ayL0UY+SxydZbrmfzPs8TryZVEB6hrL/XBnXxQtb6rpEmIy/3GIltPwM+/T4m/IuaSDZOToWK65ruC00g==}
+    peerDependencies:
+      '@capacitor/core': ^8.1.0
 
   '@capacitor/synapse@1.0.4':
     resolution: {integrity: sha512-/C1FUo8/OkKuAT4nCIu/34ny9siNHr9qtFezu4kxm6GY1wNFxrCFWjfYx5C1tUhVGz3fxBABegupkpjXvjCHrw==}
@@ -840,6 +848,10 @@ snapshots:
     dependencies:
       '@capacitor/core': 8.1.0
       '@capacitor/synapse': 1.0.4
+
+  '@capacitor/ios@8.1.0(@capacitor/core@8.1.0)':
+    dependencies:
+      '@capacitor/core': 8.1.0
 
   '@capacitor/synapse@1.0.4': {}
 
