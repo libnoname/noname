@@ -2699,25 +2699,11 @@ const skills = {
 							current.getHistory("custom").push({ dcdichou: true });
 						}
 					}
-					if (!game.hasPlayer(current => current.hasHistory("custom", evt => evt.dcdichou))) return;
-					const result = await player
-						.chooseTarget({
-							prompt: "涤仇：对至少一名本回合移除过“仇”的角色各造成1点火焰伤害",
-							selectTarget: [1, Infinity],
-							forced: true,
-							filterTarget: (card, player, target) => {
-								return target.hasHistory("custom", evt => evt.dcdichou);
-							},
-							ai: target => {
-								const player = get.player();
-								return get.damageEffect(target, player, player, "fire");
-							},
-						})
-						.forResult();
-					if (!result?.targets?.length) {
+					// 目标直接取本回合失去过“仇”的角色：选择面板在部分环境可能返回空结果，导致清理标记后不结算伤害
+					const targets = game.filterPlayer(current => current.hasHistory("custom", evt => evt.dcdichou)).sortBySeat();
+					if (!targets.length) {
 						return;
 					}
-					const targets = result.targets.sortBySeat();
 					player.line(targets);
 					for (const target of targets) {
 						await target.damage("fire");
