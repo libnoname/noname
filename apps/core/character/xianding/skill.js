@@ -3081,8 +3081,8 @@ const skills = {
 						}
 					});
 					if (xiangying === result) {
-						if (target.isIn() && target.countCards("he")) {
-							await player.gainPlayerCard(target, 1, "he", true, "visible");
+						if (target.isIn() && target.countCards("h")) {
+							await player.gainPlayerCard(target, 1, "h", true, "visible");
 						}
 					} else {
 						const cardx = new lib.element.VCard({ name: "juedou", isCard: true });
