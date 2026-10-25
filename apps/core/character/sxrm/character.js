@@ -1,5 +1,5 @@
 const characters = {
-	// 痴
+	// 贪
 	sxrm_lvbu: {
 		sex: "male",
 		group: "devil",

@@ -2,7 +2,7 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
-	// 痴包
+	// 贪包
 	// 魔吕布
 	sxrmwuyan: {
 		audio: 2,
@@ -164,7 +164,7 @@ const skills = {
 				"step 0";
 				event.num = 0;
 				targets.sortBySeat();
-				("step 1");
+				"step 1";
 				if (cards.length == 4) {
 					event.goto(2);
 				} else {
@@ -178,7 +178,7 @@ const skills = {
 						event.redo();
 					}
 				}
-				("step 2");
+				"step 2";
 				player.loseHp(3);
 				if (targets.length == 1) {
 					event.goto(4);
@@ -193,7 +193,7 @@ const skills = {
 						.set("forceDie", true)
 						.set("targets", targets);
 				}
-				("step 3");
+				"step 3";
 				if (event.num < targets.length) {
 					var dnum = 1;
 					if (result.bool && result.targets && targets[event.num] == result.targets[0]) {
@@ -207,7 +207,7 @@ const skills = {
 				} else {
 					event.redo();
 				}
-				("step 4");
+				"step 4";
 				player
 					.chooseControl("2点", "3点")
 					.set("prompt", "请选择伤害点数")
@@ -215,7 +215,7 @@ const skills = {
 						return "3点";
 					})
 					.set("forceDie", true);
-				("step 5");
+				"step 5";
 				targets[0].damage("fire", result.control == "2点" ? 2 : 3, "nocard");
 			},
 			ai: {

@@ -163,7 +163,7 @@ const translates = {
 	sxrmyangbei_info: "准备阶段或结束阶段，你可以翻面并摸三张牌。当你使用【杀】或普通锦囊牌指定唯一目标后，其可以弃置所有手牌令此技能本回合失效。",
 	sxrmyinfeng: "阴锋",
 	sxrmyinfeng_info: "锁定技，当你每回合首次造成伤害后，你令受伤角色获得以下效果直到你下回合开始：体力上限减至其体力值且其造成和受到的伤害均视为失去体力。",
-	//蚀心入魔·痴
+	//蚀心入魔·贪
 	sxrm_lvbu: "魔吕布",
 	sxrm_lvbu_prefix: "魔",
 	sxrmwuyan: "无厌",
