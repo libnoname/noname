@@ -344,7 +344,7 @@ jobs:
         id: package
         run: |
           APP_PATH="$RUNNER_TEMP/DerivedData/Build/Products/Release-iphoneos/App.app"
-          IPA_NAME="noname.ios.experimental.ipa"
+          IPA_NAME="noname.ios.experimental"
           BUILD_DIR="$RUNNER_TEMP/ipa-build"
           rm -rf "$BUILD_DIR"
           mkdir -p "$BUILD_DIR/Payload"
