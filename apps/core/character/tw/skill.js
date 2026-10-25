@@ -30267,7 +30267,8 @@ const skills = {
 				const result = (await next.forResult()).cards;
 				if (result?.length) {
 					await target.showCards(result, "密图");
-					event[target.playerid] = result[0];
+					// 摸到的两张牌都视为“以此法展示”，拼点时任意一张都不触发失去体力上限
+					event[target.playerid] = result;
 				}
 				target.addTempSkill("twmitu_ai", "phaseChange");
 			}
@@ -30348,7 +30349,7 @@ const skills = {
 						}
 						const card = event[event.player == current ? "card1" : "card2"],
 							showed = evt[current.playerid];
-						return showed && get.itemtype(showed) == "card" && showed != card;
+						return get.itemtype(card) == "card" && Array.isArray(showed) && !showed.includes(card);
 					});
 				},
 				logTarget(event, player, name, index) {
