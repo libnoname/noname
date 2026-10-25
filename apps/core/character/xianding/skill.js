@@ -11236,6 +11236,12 @@ const skills = {
 		subSkill: {
 			damage: {
 				charlotte: true,
+				mark: true,
+				marktext: "伤",
+				intro: {
+					name: "明访",
+					content: (storage, player) => `手牌中有${player.countCards("h", card => card.hasGaintag("dcsbmingfang_damage"))}张被展示的牌，受到伤害+1`,
+				},
 				onremove(player, skill) {
 					player.removeGaintag(skill);
 				},
