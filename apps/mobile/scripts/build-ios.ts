@@ -1,5 +1,3 @@
-/** 本地签名构建；未签名测试包见 .github/workflows/ios-test-build.yml。 */
-
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
