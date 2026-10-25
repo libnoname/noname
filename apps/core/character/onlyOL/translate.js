@@ -73,9 +73,14 @@ const translates = {
 	dm_zhangfei: "魔张飞",
 	dm_zhangfei_prefix: "魔",
 	olzhuohun: "灼魂",
-	olzhuohun_info: "锁定技，你的回合内：你的【闪】均视为【杀】；一名角色的勾玉首次变为一个颜色后，你摸一张牌。",
+	olzhuohun_info: `锁定技，你的回合内：你的【闪】均视为【杀】；一名角色的${get.poptip("olzhuohun_hpcolor")}首次变为一个颜色后，你摸一张牌。`,
 	olchenshi: "瞋视",
-	olchenshi_info: `锁定技，若其他角色的勾玉颜色与你：不同，你使用黑色【杀】能额外指定其为目标；相同，你对其，或其对你使用的黑色【杀】改为【决斗】。你因【杀】和【决斗】首次造成了或受到了至少3点伤害后，你回复1点体力，${get.poptip({
+	olchenshi_info: `锁定技，若其他角色的${get.poptip({
+		id: "olzhuohun_hpcolor",
+		name: "勾玉颜色",
+		type: "character",
+		info: `根据体力值与体力上限的关系：<li>大于1/2（四舍五入）或满血：<span class="greentext">绿色</span><li>更低但大于1/3（向下取整）：<span class="yellowtext">黄色</span><li>更低：<span style="color:red;">红色</span>`,
+	})}与你：不同，你使用黑色【杀】能额外指定其为目标；相同，你对其，或其对你使用的黑色【杀】改为【决斗】。你因【杀】和【决斗】首次造成了或受到了至少3点伤害后，你回复1点体力，${get.poptip({
 		id: "olzhuohun_rewrite",
 		name: "修改〖灼魂〗",
 		type: "character",
