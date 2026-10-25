@@ -58,8 +58,8 @@ jobs:
 
           gh release create "$TAG" "${RELEASE_ARGS[@]}"
 
-  build-packages:
-    name: Build Packages
+  build-core:
+    name: Build Core
     needs: create-release
     runs-on: ubuntu-latest
     env:
@@ -116,8 +116,8 @@ jobs:
           release/noname.full.zip.sha256 \
           --clobber
 
-  build-installer:
-    name: Build Installer
+  build-windows:
+    name: Build Windows
     needs: create-release
     runs-on: windows-latest
     env:
@@ -173,7 +173,7 @@ jobs:
           --clobber
 
   build-android:
-    name: Build Android packages
+    name: Build Android
     needs: create-release
     runs-on: ubuntu-latest
     env:
@@ -256,7 +256,7 @@ jobs:
             --clobber
 
   build-ios:
-    name: Build iOS IPA
+    name: Build iOS
     needs: create-release
     runs-on: macos-26
     timeout-minutes: 90
@@ -344,7 +344,7 @@ jobs:
         id: package
         run: |
           APP_PATH="$RUNNER_TEMP/DerivedData/Build/Products/Release-iphoneos/App.app"
-          IPA_NAME="noname-ios-unsigned"
+          IPA_NAME="noname.ios.experimental.ipa"
           BUILD_DIR="$RUNNER_TEMP/ipa-build"
           rm -rf "$BUILD_DIR"
           mkdir -p "$BUILD_DIR/Payload"
@@ -373,8 +373,8 @@ jobs:
     name: Release Version
     runs-on: ubuntu-latest
     needs:
-      - build-packages
-      - build-installer
+      - build-core
+      - build-windows
       - build-android
       - build-ios
     permissions:
@@ -401,8 +401,8 @@ jobs:
     if: ${{ failure() }}
     needs:
       - create-release
-      - build-packages
-      - build-installer
+      - build-core
+      - build-windows
       - build-android
       - build-ios
       - release
