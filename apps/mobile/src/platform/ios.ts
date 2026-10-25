@@ -107,7 +107,7 @@ export function attachIosFileSystem(game: any): void {
 }
 
 class IosFileSystem implements MinimalFileSystem {
-	private BundledBaseUrl = "capacitor://localhost";
+	private readonly BundledBaseUrl = "capacitor://localhost";
 
 	constructor(private bundleFs: BundledFileSystem) {}
 
@@ -292,7 +292,7 @@ class IosFileSystem implements MinimalFileSystem {
 	private async readBundled(path: string): Promise<ArrayBuffer> {
 		const response = await fetch(this.toBundledUrl(path));
 		if (!response.ok) {
-			throw new Error(response.status === 404 ? `内置资源不存在: ${path}` : `内置资源读取失败 (${response.status}): ${path}`);
+			throw new Error(response.status === 404 ? `文件不存在: ${path}` : `文件读取失败 (${response.status}): ${path}`);
 		}
 
 		return response.arrayBuffer();
@@ -301,7 +301,7 @@ class IosFileSystem implements MinimalFileSystem {
 	private async readBundledText(path: string): Promise<string> {
 		const response = await fetch(this.toBundledUrl(path));
 		if (!response.ok) {
-			throw new Error(response.status === 404 ? `内置资源不存在: ${path}` : `内置资源读取失败 (${response.status}): ${path}`);
+			throw new Error(response.status === 404 ? `文件不存在: ${path}` : `文件读取失败 (${response.status}): ${path}`);
 		}
 		return response.text();
 	}
