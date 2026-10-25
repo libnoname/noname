@@ -8,6 +8,8 @@ jobs:
   lint:
     name: ${{ matrix.name }}
     runs-on: ubuntu-latest
+    env:
+      BASE_REF: ${{ github.base_ref || 'main' }}
     strategy:
       fail-fast: false
       matrix:
@@ -23,7 +25,7 @@ jobs:
           fetch-depth: 1
 
       - name: Fetch base branch (shallow)
-        run: git fetch --no-tags --depth=1 origin ${{ github.base_ref }}:${{ github.base_ref }}
+        run: git fetch --no-tags --depth=1 origin "$BASE_REF:$BASE_REF"
 
       - name: Install pnpm
         uses: pnpm/action-setup@v5
@@ -41,4 +43,4 @@ jobs:
         run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Run ${{ matrix.name }}
-        run: pnpm --filter "...[${{ github.base_ref }}]" --filter "!./" run --if-present ${{ matrix.script }}
+        run: pnpm --filter "...[$BASE_REF]" --filter "!./" run --if-present ${{ matrix.script }}
