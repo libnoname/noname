@@ -129,7 +129,7 @@ const skills = {
 			audio: 2,
 			enable: "phaseUse",
 			filterCard(card, player) {
-				return !ui.selected.cards.some(cardx => get.suit(cardx, player) == get.suit(card, player));
+				return !ui.selected.cards.some((cardx) => get.suit(cardx, player) == get.suit(card, player));
 			},
 			selectCard: [0, 4],
 			filterTarget(card, player, target) {
@@ -153,70 +153,52 @@ const skills = {
 			animationColor: "metal",
 			skillAnimation: "legend",
 			check(card) {
-				if (!lib.skill.yeyan.getBigFire(get.event("player"))) {
+				if (!lib.skill.yeyan.getBigFire(get.event().player)) {
 					return -1;
 				}
 				return 1 / (get.value(card) || 0.5);
 			},
 			multitarget: true,
 			multiline: true,
-			content() {
-				"step 0";
-				event.num = 0;
-				targets.sortBySeat();
-				"step 1";
-				if (cards.length == 4) {
-					event.goto(2);
-				} else {
-					if (event.num < targets.length) {
-						targets[event.num].damage("fire", 1, "nocard");
-						event.num++;
-					}
-					if (event.num == targets.length) {
-						event.finish();
-					} else {
-						event.redo();
-					}
-				}
-				"step 2";
-				player.loseHp(3);
-				if (targets.length == 1) {
-					event.goto(4);
-				} else {
-					player
-						.chooseTarget("请选择受到2点伤害的角色", true, function (card, player, target) {
-							return _status.event.targets.includes(target);
-						})
-						.set("ai", function (target) {
-							return 1;
-						})
-						.set("forceDie", true)
-						.set("targets", targets);
-				}
-				"step 3";
-				if (event.num < targets.length) {
-					var dnum = 1;
-					if (result.bool && result.targets && targets[event.num] == result.targets[0]) {
-						dnum = 2;
-					}
-					targets[event.num].damage("fire", dnum, "nocard");
-					event.num++;
-				}
-				if (event.num == targets.length) {
-					event.finish();
-				} else {
-					event.redo();
-				}
-				"step 4";
-				player
-					.chooseControl("2点", "3点")
-					.set("prompt", "请选择伤害点数")
-					.set("ai", function () {
-						return "3点";
+			async content(event, trigger, player) {
+				const { cards: cards2, targets } = event;
+				if (cards2.length !== 4) {
+					await game.doAsyncInOrder(
+					targets,
+					(target) => target.damage({
+						num: 1,
+						nature: "fire",
+						nocard: true
 					})
-					.set("forceDie", true);
-				"step 5";
-				targets[0].damage("fire", result.control == "2点" ? 2 : 3, "nocard");
+					);
+					return;
+				}
+				await player.loseHp(3);
+				if (targets.length === 1) {
+					const result = await player.chooseControl("2点", "3点").set("prompt", "请选择伤害点数").set("ai", () => "3点").set("forceDie", true).forResult();
+					await targets[0].damage({
+					num: result.control === "2点" ? 2 : 3,
+					nature: "fire",
+					nocard: true
+					});
+				} else {
+					const result = await player.chooseTarget("请选择受到2点伤害的角色", true, (card, player2, target) => {
+					return get.event().targets.includes(target);
+					}).set("ai", () => 1).set("forceDie", true).set("targets", targets).forResult();
+					const target2 = result.targets[0];
+					targets.sortBySeat();
+					for (const target of targets) {
+					let damageNum = 1;
+					if (target === target2) {
+						damageNum = 2;
+					}
+					await target.damage({
+						num: damageNum,
+						nature: "fire",
+						nocard: true
+					});
+					}
+				}
 			},
 			ai: {
 				order(item, player) {
@@ -229,7 +211,7 @@ const skills = {
 							return 0;
 						}
 						const att = get.sgn(get.attitude(player, target));
-						const targets = game.filterPlayer(target => get.damageEffect(target, player, player, "fire") && (!lib.skill.yeyan.getBigFire(player) || (target.hp <= 3 && !target.hasSkillTag("filterDamage", null, { player: player }))));
+						const targets = game.filterPlayer((target2) => get.damageEffect(target2, player, player, "fire") && (!lib.skill.yeyan.getBigFire(player) || target2.hp <= 3 && !target2.hasSkillTag("filterDamage", null, { player })));
 						if (!targets.includes(target)) {
 							return 0;
 						}
@@ -237,39 +219,38 @@ const skills = {
 							if (ui.selected.targets.length) {
 								return 0;
 							}
-							if (!(targets.length == 1 || (att < 0 && target.identity && target.identity.indexOf("zhu") != -1))) {
+							if (!(targets.length == 1 || att < 0 && target.identity && target.identity.indexOf("zhu") != -1)) {
 								return 0;
 							}
 						}
 						return att * get.damageEffect(target, player, player, "fire");
-					},
-				},
+					}
+				}
 			},
 			getBigFire(player) {
 				if (player.getDiscardableCards(player, "h").reduce((list, card) => list.add(get.suit(card, player)), []).length < 4) {
 					return false;
 				}
-				const targets = game.filterPlayer(target => get.damageEffect(target, player, player, "fire") && target.hp <= 3 && !target.hasSkillTag("filterDamage", null, { player: player }));
+				const targets = game.filterPlayer((target) => get.damageEffect(target, player, player, "fire") && target.hp <= 3 && !target.hasSkillTag("filterDamage", null, { player }));
 				if (!targets.length) {
 					return false;
 				}
-				if (targets.length == 1 || targets.some(target => get.attitude(player, target) < 0 && target.identity && target.identity.indexOf("zhu") != -1)) {
+				if (targets.length == 1 || targets.some((target) => get.attitude(player, target) < 0 && target.identity && target.identity.indexOf("zhu") != -1)) {
 					let suits = player.getDiscardableCards(player, "h").reduce((map, card) => {
-							const suit = get.suit(card, player);
-							if (!map[suit]) {
-								map[suit] = [];
-							}
-							return map;
-						}, {}),
-						cards = [];
-					Object.keys(suits).forEach(i => {
-						suits[i].addArray(player.getDiscardableCards(player, "h").filter(card => get.suit(card) == i));
-						cards.add(suits[i].sort((a, b) => get.value(a) - get.value(b))[0]);
+					const suit = get.suit(card, player);
+					if (!map[suit]) {
+						map[suit] = [];
+					}
+					return map;
+					}, {}), cards2 = [];
+					Object.keys(suits).forEach((i) => {
+						suits[i].addArray(player.getDiscardableCards(player, "h").filter((card) => get.suit(card) == i));
+						cards2.add(suits[i].sort((a, b) => get.value(a) - get.value(b))[0]);
 					});
-					return player.hp + player.countCards("h", card => !cards.includes(card) && player.canSaveCard(card, player)) - 3 > 0;
+					return player.hp + player.countCards("h", (card) => !cards2.includes(card) && player.canSaveCard(card, player)) - 3 > 0;
 				}
 				return false;
-			},
+			}
 		},
 		fenwei: {
 			audio: 2,
