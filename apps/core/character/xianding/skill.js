@@ -2575,17 +2575,37 @@ const skills = {
 		},
 		getIndex(event, player) {
 			const evt = event.getl?.(player);
-			return evt.cards2
+			const suits = evt.cards2
 				.map(card => get.suit(card, player))
 				.filter(suit => ["diamond", "heart"].includes(suit))
 				.unique();
+			if (!player.isDamaged() && !player.hasDisabledSlot()) {
+				suits.remove("heart");
+			}
+			// 同时失去♦️与♥️时只触发一次，由技能拥有者选择其中一项
+			if (suits.length > 1) {
+				return ["diamond+heart"];
+			}
+			return suits;
 		},
 		prompt2(event, player, name, suit) {
+			if (suit == "diamond+heart") return "你同时失去了♦️和♥️牌：选择一项（摸两张牌；或回复1点体力并恢复一个装备栏）";
 			if (suit == "diamond") return "你失去♦️牌后，你可以摸两张牌";
 			return "你失去♥️牌后，你可以回复1点体力并恢复一个装备栏";
 		},
 		async content(event, trigger, player) {
-			const suit = event.indexedData;
+			let suit = event.indexedData;
+			if (suit == "diamond+heart") {
+				const result = await player
+					.chooseControl("摸两张牌", "回复1点体力并恢复一个装备栏")
+					.set("prompt", "绍威：请选择一项")
+					.set("ai", () => {
+						const player = get.player();
+						return player.isDamaged() || player.hasDisabledSlot() ? 1 : 0;
+					})
+					.forResult();
+				suit = result.control === "摸两张牌" ? "diamond" : "heart";
+			}
 			if (suit == "diamond") {
 				await player.draw(2);
 			} else {
@@ -3081,8 +3101,8 @@ const skills = {
 						}
 					});
 					if (xiangying === result) {
-						if (target.isIn() && target.countCards("he")) {
-							await player.gainPlayerCard(target, 1, "he", true, "visible");
+						if (target.isIn() && target.countCards("h")) {
+							await player.gainPlayerCard(target, 1, "h", true, "visible");
 						}
 					} else {
 						const cardx = new lib.element.VCard({ name: "juedou", isCard: true });
@@ -11219,6 +11239,15 @@ const skills = {
 		subSkill: {
 			damage: {
 				charlotte: true,
+				mark: true,
+				marktext: "伤",
+				intro: {
+					name: "明访",
+					content: (storage, player) => {
+						const num = player.countCards("h", card => card.hasGaintag("dcsbmingfang_damage"));
+						return `手牌中被展示的牌每张使其受到伤害+1（当前${num}张）`;
+					},
+				},
 				onremove(player, skill) {
 					player.removeGaintag(skill);
 				},
