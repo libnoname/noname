@@ -2719,10 +2719,11 @@ const skills = {
 							current.getHistory("custom").push({ dcdichou: true });
 						}
 					}
-					if (!game.hasPlayer(current => current.hasHistory("custom", evt => evt.dcdichou))) return;
+					// 选择至少一名本回合失去过“仇”的角色各造成1点火焰伤害；
+					// 选择面板异常返回空结果时兜底取一名，避免清理标记后不结算伤害
 					const result = await player
 						.chooseTarget({
-							prompt: "涤仇：对至少一名本回合移除过“仇”的角色各造成1点火焰伤害",
+							prompt: "涤仇：对至少一名本回合失去过“仇”的角色各造成1点火焰伤害",
 							selectTarget: [1, Infinity],
 							forced: true,
 							filterTarget: (card, player, target) => {
@@ -2734,10 +2735,13 @@ const skills = {
 							},
 						})
 						.forResult();
-					if (!result?.targets?.length) {
+					let targets = (result?.targets ?? []).sortBySeat();
+					if (!targets.length) {
+						targets = game.filterPlayer(current => current.hasHistory("custom", evt => evt.dcdichou)).slice(0, 1);
+					}
+					if (!targets.length) {
 						return;
 					}
-					const targets = result.targets.sortBySeat();
 					player.line(targets);
 					for (const target of targets) {
 						await target.damage("fire");
