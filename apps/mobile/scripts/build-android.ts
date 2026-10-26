@@ -2,9 +2,9 @@ import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 
-const mobileRoot = import.meta.dirname;
+const mobileRoot = resolve(import.meta.dirname, "..");
 const workspaceRoot = resolve(mobileRoot, "../..");
-const androidRoot = resolve(mobileRoot, "android");
+const androidRoot = resolve(mobileRoot, "native/android");
 
 const args = new Set(process.argv.slice(2));
 const variant = process.argv.find((arg) => arg.startsWith("--variant="))?.split("=", 2)[1] ?? "release";
@@ -34,7 +34,7 @@ if (args.has("--skip-web-build")) {
 	run("pnpm", ["build"], workspaceRoot, "Web build");
 }
 
-run("pnpm", ["sync"], mobileRoot, "Capacitor sync");
+run("pnpm", ["sync:android"], mobileRoot, "Capacitor sync");
 
 const gradleCommand = process.platform === "win32" ? "gradlew.bat" : "bash";
 const gradleArgs = process.platform === "win32" ? [task, "--no-daemon", "--stacktrace"] : ["gradlew", task, "--no-daemon", "--stacktrace"];

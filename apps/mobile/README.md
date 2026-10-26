@@ -1,28 +1,35 @@
 # Noname Mobile
 
-Android client for Noname, built with Capacitor.
+Android/iOS client for Noname, built with Capacitor.
 
 ## Build Flow
 
-The Android project serves the built web app from `../../dist`.
+The project serves the built web app from `../../dist`.
 
 ```bash
 pnpm build
-pnpm -F @noname/mobile sync
+# Andoird
+pnpm -F @noname/mobile sync:android
+# iOS
+pnpm -F @noname/mobile sync:ios
 ```
 
-`sync` first bundles `src/preload.ts` into `../../dist/preload.js`, then runs `cap sync`, and finally renames packaged `.pnpm` assets to `_pnpm` for Android assets compatibility. After syncing, open `apps/mobile/android` in Android Studio or build with Gradle.
+`sync:android` and `sync:ios` first bundle `src/preload.ts` into `../../dist/preload.js`, then run `cap sync` for the selected platform. Android sync also renames packaged `.pnpm` assets to `_pnpm` for compatibility, while iOS sync generates asset manifests. After syncing, open `apps/mobile/native/android` in Android Studio or build with Gradle; for iOS, open `apps/mobile/native/ios` in Xcode and build there.
 
 ## CI Build
 
-Android Studio is not required. The Gradle Wrapper and the build script can build the APK or AAB directly:
+Both platforms provide command-line build scripts. Each script builds the web app, syncs assets for its platform, and runs the native build. Use `--skip-web-build` to reuse an existing `dist` directory; platform sync still runs. Both require Node.js, pnpm, and installed workspace dependencies.
+
+### Android
+
+Android builds require JDK 21 and an Android SDK with the required SDK/build-tools packages. Android Studio is not required; the build script uses the Gradle Wrapper to build an APK or AAB:
 
 ```bash
 pnpm -F @noname/mobile build:android
 pnpm -F @noname/mobile build:android -- --aab
 ```
 
-The default command builds `android/app/build/outputs/apk/release/app-release.apk`. Use `--variant=debug` for a debug APK, or `--skip-web-build` when `dist` has already been built and you only need to run the Android build. Build machines need Node.js, pnpm, JDK 21, and an Android SDK with the required SDK/build-tools packages; Android Studio itself is not needed.
+The default command builds `apps/mobile/native/android/app/build/outputs/apk/release/app-release.apk`. With `--aab`, the output is `apps/mobile/native/android/app/build/outputs/bundle/release/app-release.aab`. Use `--variant=debug` for a debug build.
 
 Gradle builds require JDK 21. If another Java version is active, set `JAVA_HOME` and prepend its `bin` directory for the current shell before building. This is temporary and does not change the system-wide Java configuration.
 
@@ -44,11 +51,11 @@ pnpm -F @noname/mobile build:android
 
 The script checks the active Java version before building and stops with a clear error if it is not JDK 21. JDK 25 currently fails during Android project configuration.
 
-### Release Signing
+#### Release Signing
 
-Release signing reads values from environment variables first, then from the local `android/keystore.properties` file. If no signing values are provided, the build falls back to the debug keystore for development.
+Release signing reads values from environment variables first, then from the local `native/android/keystore.properties` file. If no signing values are provided, the build falls back to the debug keystore for development.
 
-For local builds, create `android/keystore.properties` (this file is ignored by Git):
+For local builds, create `native/android/keystore.properties` (this file is ignored by Git):
 
 ```properties
 storeFile=C:/path/to/noname-release.jks
@@ -70,38 +77,24 @@ The GitHub Actions release workflow stores the keystore as the `ANDROID_KEYSTORE
 
 The release APK/AAB is then signed automatically by `build:android`. Keep the keystore and passwords outside the repository; losing the keystore prevents updates to an already-published app.
 
-## File System Model
+### iOS
 
-The mobile client uses Android SAF as a writable overlay over packaged APK assets:
+iOS builds require macOS and Xcode 26.0 or later, including the iOS SDK and command-line tools. The build script uses `xcodebuild` to archive the app and export a signed IPA:
 
-- APK assets are the read-only base layer.
-- The SAF directory is the writable overlay layer.
-- Reads and static resource requests check SAF first, then fall back to APK assets.
-- Writes, creates, deletes, exports, and downloaded/modified user files only affect SAF.
+```bash
+pnpm -F @noname/mobile build:ios -- --team=YOUR_TEAM_ID
+pnpm -F @noname/mobile build:ios -- --team=YOUR_TEAM_ID --configuration=Release --method=app-store-connect
+```
 
-This avoids copying the full game directory during installation. An empty SAF directory is valid; core files such as `noname.js` can still be loaded from packaged assets.
+`--team` is required. The defaults are `--configuration=Debug` and `--method=development`; use `--method=ad-hoc` for ad hoc distribution or `--method=app-store-connect` for App Store Connect. The archive is written to `apps/mobile/native/ios/build/noname.xcarchive`, and the IPA is exported to `apps/mobile/native/ios/build/export`.
 
-## Startup Permission
+#### Release Signing
 
-On startup, `src/preload.ts` requests SAF directory access before booting the game. The selected directory is stored with persistable read/write URI permission.
+The script uses automatic signing with the specified Apple Developer team. The build machine must have the signing certificates, private keys, and provisioning profiles required for that team and distribution method. For signed CI builds, provision these credentials on the macOS runner before running `build:ios`; the script does not install them.
 
-The selected directory does not need to contain a full Noname installation. It is used for user-writable data and file overrides.
+## Platform Details
 
-If a file exists in both layers, the SAF file wins. Removing the SAF file reveals the packaged asset again.
+See the platform documentation for file system behavior, startup access, and native bridges:
 
-## Native Bridge
-
-The custom Android plugin is `SafFs`.
-
-It exposes the file APIs used by `game.*` in preload:
-
-- `checkFile`, `checkDir`
-- `readFile`, `readFileAsText`
-- `writeFile`
-- `removeFile`, `removeDir`
-- `getFileList`
-- `createDir`
-
-Read APIs use overlay semantics. Mutating APIs only touch SAF and reject attempts to modify files that exist only in APK assets.
-
-`JsAwarePathHandler` applies the same overlay behavior to `https://localhost/...` WebView requests, so external files can override packaged resources by path.
+- [Android](native/android/README.md)
+- [iOS](native/ios/README.md)

@@ -1,13 +1,18 @@
-import { copyFileSync, existsSync, mkdirSync, readdirSync, renameSync, rmSync } from "fs";
+import { copyFileSync, existsSync, mkdirSync, readdirSync, renameSync, rmSync, statSync, writeFileSync } from "fs";
 import { resolve } from "path";
 import { spawnSync } from "child_process";
 import { build } from "vite";
 
-const root = import.meta.dirname;
+const root = resolve(import.meta.dirname, "..");
 const workspaceRoot = resolve(root, "../..");
 const distDir = resolve(workspaceRoot, "dist");
 const preloadOutDir = resolve(root, ".mobile-preload");
-const androidAssetsNodeModules = resolve(root, "android/app/src/main/assets/public/node_modules");
+const androidAssetsNodeModules = resolve(root, "native/android/app/src/main/assets/public/node_modules");
+const platform = process.argv[2];
+
+if (platform !== undefined && platform !== "android" && platform !== "ios") {
+	throw new Error(`Invalid sync platform: ${platform}`);
+}
 
 function cleanOldPreloadArtifacts() {
 	if (!existsSync(distDir)) return;
@@ -52,17 +57,15 @@ async function buildPreload() {
 }
 
 function capSync() {
-	const command = process.platform === "win32" ? "cmd" : "cap";
-	const args = process.platform === "win32" ? ["/c", "cap", "sync"] : ["sync"];
-	const result = spawnSync(command, args, {
+	const cliEntry = resolve(root, "node_modules/@capacitor/cli/bin/capacitor");
+
+	const result = spawnSync(process.execPath, [cliEntry, "sync", ...(platform ? [platform] : [])], {
 		cwd: root,
 		stdio: "inherit",
 	});
 
 	if (result.status !== 0) {
-		throw new Error(
-			`cap sync failed with exit code ${result.status ?? "unknown"}${result.error ? `: ${result.error.message}` : ""}`
-		);
+		throw new Error(`cap sync failed with exit code ${result.status ?? "unknown"}${result.error ? `: ${result.error.message}` : ""}`);
 	}
 }
 
@@ -81,4 +84,4 @@ function patchAndroidAssets() {
 
 await buildPreload();
 capSync();
-patchAndroidAssets();
+if (platform !== "ios") patchAndroidAssets();
