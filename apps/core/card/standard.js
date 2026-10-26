@@ -253,7 +253,7 @@ export default {
 					}
 					if (game.hasNature(event.card, "stab") && target.countCards("h") > 0) {
 						const discardResult = await target
-							.chooseToDiscard("刺杀：请弃置一张牌，否则此【杀】依然造成伤害")
+							.chooseToDiscard("刺杀：请弃置一张手牌，否则此刺【杀】依然造成伤害")
 							.set("ai", card => {
 								const target = _status.event.player;
 								const evt = _status.event.getParent();
