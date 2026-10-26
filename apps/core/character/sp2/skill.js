@@ -253,7 +253,8 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = trigger.player;
-			if (player !== trigger.player && player.countCards("h")) {
+			// 无手牌但装备区有牌时同样可以交给对方
+			if (player !== trigger.player && player.countCards("he")) {
 				const result = await player
 					.chooseCard({
 						prompt: `弼士：是否交给${get.translation(trigger.player)}任意张牌（取消则不交），若其手牌数与体力值相等会执行出牌阶段。`,
