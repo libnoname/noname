@@ -9,7 +9,9 @@ export class Control extends HTMLDivElement {
 			args = other._args;
 		}
 
-		const nc = !ui.control.querySelector("div:not(.removing):not(.stayleft):not(.controlscrollbar)");
+		// 不能用 querySelector 找后代：滚动条滑块 .controlscrollthumb 也是 div，
+		// 会被 div:not(.controlscrollbar) 命中，导致之后的首行永远拿不到 nozoom
+		const nc = !Array.from(ui.control.children).some(node => !node.classList.contains("removing") && !node.classList.contains("stayleft") && !node.classList.contains("controlscrollbar"));
 		const controls = Array.isArray(args[0]) ? args[0] : args;
 		/**
 		 * @type {this}
@@ -61,7 +63,7 @@ export class Control extends HTMLDivElement {
 						this.style.transform = `translateX(${this._offset}px)`;
 					}
 				} else {
-					node.style.transform = "";
+					node.classList.remove("controlpressed");
 				}
 			};
 			control.addEventListener(lib.config.touchscreen ? "touchstart" : "mousedown", function (e) {
@@ -72,11 +74,13 @@ export class Control extends HTMLDivElement {
 				control._pressnode = this;
 				// 横向滚动模式下整条按钮条可能有几千像素宽，
 				// 对它整体做 scale(0.97) 会绕远在屏幕外的中心缩放，让可见部分整体位移，
-				// 所以只缩放被按下的那一个按钮。
+				// 所以只缩放被按下的那一个按钮（缩放比例写在 layout.css 里）。
 				if (ui.control.classList.contains("controloverflow")) {
-					if (e.target && e.target !== this) {
-						control._pressnode = e.target;
-						e.target.style.transform = "scale(0.94)";
+					// 事件目标可能是按钮内部的后代元素，要向上找最近的按钮本身
+					const target = e.target instanceof HTMLElement ? e.target.closest(".control > div") : null;
+					if (target && target !== this && target.parentNode === this) {
+						control._pressnode = target;
+						target.classList.add("controlpressed");
 					}
 					return;
 				}
