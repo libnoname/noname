@@ -2599,7 +2599,10 @@ const skills = {
 				const result = await player
 					.chooseControl("摸两张牌", "回复1点体力并恢复一个装备栏")
 					.set("prompt", "绍威：请选择一项")
-					.set("ai", () => (player.isDamaged() || player.hasDisabledSlot() ? 1 : 0))
+					.set("ai", () => {
+						const player = get.player();
+						return player.isDamaged() || player.hasDisabledSlot() ? 1 : 0;
+					})
 					.forResult();
 				suit = result.control === "摸两张牌" ? "diamond" : "heart";
 			}
@@ -11240,7 +11243,10 @@ const skills = {
 				marktext: "伤",
 				intro: {
 					name: "明访",
-					content: (storage, player) => `手牌中有${player.countCards("h", card => card.hasGaintag("dcsbmingfang_damage"))}张被展示的牌，受到伤害+1`,
+					content: (storage, player) => {
+						const num = player.countCards("h", card => card.hasGaintag("dcsbmingfang_damage"));
+						return `手牌中被展示的牌每张使其受到伤害+1（当前${num}张）`;
+					},
 				},
 				onremove(player, skill) {
 					player.removeGaintag(skill);
