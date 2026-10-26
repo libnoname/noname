@@ -12,7 +12,7 @@ export default async function preload({ lib, game }) {
 	App.addListener("resume", hideSystemBars).catch(() => {});
 
 	const platform = Capacitor.getPlatform();
-	const fs = await resolveFileSystem(platform);
+	const { fs } = await resolveFileSystem(platform);
 	const rootCheck = await fs.statEntry({ entryName: "noname.js" });
 	if (rootCheck.type !== "file") {
 		throw new Error("游戏资源缺失: noname.js");
