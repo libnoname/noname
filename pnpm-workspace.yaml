@@ -4,6 +4,7 @@ packages:
   - packages/extension/*
 
 allowBuilds:
+  core-js-bundle: set this to true or false
   electron: true
   electron-winstaller: true
   esbuild: true
