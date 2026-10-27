@@ -89,8 +89,11 @@ export default {
 				}
 				if (target.isDying() || event.getParent(2).type === "dying") {
 					target.recover();
-					if (_status.currentPhase === target && typeof target.getStat().card.jiu === "number") {
-						target.getStat().card.jiu--;
+					const useEvent = event.getParent();
+					const stat = player.getStat().card;
+					if (useEvent.name === "useCard" && useEvent.addCount !== false && !useEvent._jiuCountRefunded && stat.jiu > 0) {
+						stat.jiu--;
+						useEvent._jiuCountRefunded = true;
 					}
 				} else {
 					game.addVideo("jiuNode", target, true);
