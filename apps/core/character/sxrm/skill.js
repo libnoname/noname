@@ -939,14 +939,14 @@ const skills = {
 				.chooseToDiscard({
 					prompt: `###是否发动【乞宽】弃置两张基本牌？###令${get.translation(player)}的蓄力点+1，其将消耗2点蓄力点，将出牌和弃牌阶段改为摸牌。`,
 					selectCard: 2,
-					target: trigger.player,
 					filterCard(card) {
 						return get.type(card) === "basic";
 					},
+					source: player,
 					chooseonly: true,
 					ai(card) {
-						const player = get.event().target;
-						if (!player.hasSkill("sxrmjumo") || !player.countCharge(true)) {
+						const source = get.event().source;
+						if (!source.hasSkill("sxrmjumo") || !source.countCharge(true)) {
 							return 0;
 						}
 						return 66 - get.value(card);
