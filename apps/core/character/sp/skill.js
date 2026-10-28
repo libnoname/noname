@@ -45684,8 +45684,8 @@ const skills = {
 			if (!event.skill || event.skill.indexOf("fanghun") + event.skill.indexOf("longdan") == -2) {
 				return false;
 			}
-			var target = lib.skill.chongzhen.logTarget(event, player);
-			return target && target.countGainableCards(player, "h") > 0;
+			const target = lib.skill.chongzhen.logTarget(event, player);
+			return target && target.isIn();
 		},
 		logTarget(event, player) {
 			if (event.name == "respond") {
@@ -45696,13 +45696,53 @@ const skills = {
 			}
 			return event.respondTo[0];
 		},
-		prompt2(event, player) {
-			var target = lib.skill.chongzhen.logTarget(event, player);
-			return "获得" + get.translation(target) + "的一张手牌";
+		async cost(event, trigger, player) {
+			const target = lib.skill.chongzhen.logTarget(trigger, player);
+			const canGain = target.countGainableCards(player, "h") > 0;
+			const controls = [];
+			if (canGain) {
+				controls.push("获得其一张手牌");
+			}
+			controls.push("对其造成1点伤害");
+			controls.push("cancel2");
+			let choice = controls.indexOf("对其造成1点伤害");
+			if (get.attitude(player, target) > 0) {
+				choice = controls.indexOf("cancel2");
+			} else if (canGain && target.hp > 1) {
+				choice = controls.indexOf("获得其一张手牌");
+			}
+			const result = await player
+				.chooseControl({
+					controls,
+					prompt: get.prompt2(event.skill, target, player),
+				})
+				.set("choice", choice)
+				.forResult();
+			if (typeof result?.control == "string" && result.control != "cancel2") {
+				event.result = {
+					bool: true,
+					cost_data: result.control,
+				};
+			}
 		},
 		async content(event, trigger, player) {
 			const target = lib.skill.chongzhen.logTarget(trigger, player);
-			player.gainPlayerCard({ target, position: "h", forced: true });
+			let draw = false;
+			if (event.cost_data == "获得其一张手牌") {
+				await player.gainPlayerCard({ target, position: "h", forced: true });
+				if (target.countCards("h") == 0) {
+					draw = true;
+				}
+			} else {
+				const damage = target.damage({ num: 1, source: player, nocard: true });
+				await damage;
+				if (damage._dyinged) {
+					draw = true;
+				}
+			}
+			if (draw) {
+				await player.draw(2);
+			}
 		},
 		ai: {
 			combo: "ollongdan",
