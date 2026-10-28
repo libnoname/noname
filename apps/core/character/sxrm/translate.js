@@ -171,7 +171,7 @@ const translates = {
 		id: "sxrmwuyan_tip1",
 		name: "限定技",
 		type: "character",
-		info: `技能库：<li>${get.poptip("xinfencheng")}<li>${get.poptip("yeyan")}<li>${get.poptip("fenwei")}<li>${get.poptip("yongjin")}<li>${get.poptip("reluanwu")}<li>${get.poptip("oldniepan")}`,
+		info: `技能库：<li>${get.poptip("dcfencheng")}<li>${get.poptip("yeyan")}<li>${get.poptip("fenwei")}<li>${get.poptip("yongjin")}<li>${get.poptip("reluanwu")}<li>${get.poptip("oldniepan")}`,
 	})}；然后你将获得的限定技${get.poptip({
 		id: "sxrmwuyan_tip2",
 		name: "改为",
