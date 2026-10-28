@@ -14202,14 +14202,14 @@ const skills = {
 			if (gains.length) {
 				await player.gain(gains, "gain2");
 				const name = `${event.name}_tiandu`;
-				const map = player.getStorage(name, new Map());
+				// 用普通对象保存花色点数记录：markSkill 会广播 storage，Map 无法通过序列化，其他玩家会显示为空表
+				const records = player.getStorage(name, {});
 				gains.forEach(card => {
 					const suit = get.suit(card, false);
 					const number = get.number(card, false);
-					const numbers = map.has(suit) ? map.get(suit) : [];
-					map.set(suit, numbers.concat([number]));
+					records[suit] = (records[suit] ?? []).concat([number]);
 				});
-				player.setStorage(name, map, true);
+				player.setStorage(name, records, true);
 				player.addSkill(name);
 			}
 			const remains = tops.concat(bottoms);
@@ -14235,7 +14235,7 @@ const skills = {
 						if (get.is.phoneLayout()) {
 							dialog.classList.add("fullheight");
 						}
-						const records = player.getStorage("dckanyu_tiandu", new Map());
+						const records = player.getStorage("dckanyu_tiandu", {});
 						const suits = lib.suit.slice();
 						const numbers = Array.from(Array(13)).map((value, index) => index + 1);
 						addNewRow(
@@ -14251,7 +14251,7 @@ const skills = {
 										if (suit === "spade" && number >= 2 && number <= 9) {
 											return "⚡";
 										}
-										if (records.has(suit) && records.get(suit).includes(number)) {
+										if (records[suit]?.includes(number)) {
 											return "⚡";
 										}
 										return "<span class='greentext'>●</span>";
@@ -14278,8 +14278,8 @@ const skills = {
 						const { player, judgeFromKanyu } = this;
 						const suit = get.suit(card, false);
 						const number = get.number(card, false);
-						const map = player.getStorage("dckanyu_tiandu", new Map());
-						if (map.has(suit) && map.get(suit).includes(number)) {
+						const records = player.getStorage("dckanyu_tiandu", {});
+						if (records[suit]?.includes(number)) {
 							return -5;
 						}
 						return judgeFromKanyu(card);
