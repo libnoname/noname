@@ -6536,7 +6536,10 @@ const skills = {
 						trigger.num = Math.max(0, trigger.num + record[0]);
 						return;
 					}
-					const list = [2 + record[0], player.getCardUsable("sha", true), player.getHandcardLimit(), player.getHp()];
+					// 无次数限制效果（诸葛连弩、咆哮等）不参与出杀次数的增减：改按基础次数与本技能累计修正计算
+					const usableSha = player.getCardUsable("sha", true);
+					const shaNum = usableSha === Infinity ? 1 + record[1] : usableSha;
+					const list = [2 + record[0], shaNum, player.getHandcardLimit(), player.getHp()];
 					const prompt = trigger.name == "phaseJieshu" ? `是否令一项数值-1并发动一次${get.poptip("mbcaiqiu")}？` : `令一项数值+1`;
 					const choiceList = [
 						["draw", `摸牌阶段摸牌数(${list[0]})`],
