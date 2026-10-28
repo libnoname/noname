@@ -1020,7 +1020,7 @@ const skills = {
 						str2,
 						ai() {
 							const str2 = get.event().str2;
-							if (get.event().controls.includes(str2) && game.filterPlayer(current => get.attitude(player, current) <= 0 && current.maxHp >= 2)) {
+							if (get.event().controls.includes(str2) && game.filterPlayer(current => get.attitude(player, current) <= 0 && current.maxHp >= num)) {
 								return str2;
 							} else {
 								return 0;
