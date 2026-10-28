@@ -528,7 +528,6 @@ const translates = {
 	baobian: "豹变",
 	lihun: "离魂",
 	lihun2: "离魂",
-
 	yuanhu: "援护",
 	tianming: "天命",
 	mizhao: "密诏",
