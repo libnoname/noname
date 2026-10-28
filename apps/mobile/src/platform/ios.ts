@@ -12,7 +12,7 @@ interface BundledFileSystem {
 
 let fs: IosFileSystem;
 
-export function initializeIos(): MinimalFileSystem {
+export function initializeIos(): { fs: MinimalFileSystem } {
 	fs = new IosFileSystem(registerPlugin<BundledFileSystem>("BundledFileSystem"));
 	try {
 		const folders = ["image/character", "audio/skill", "audio/die", "extension"];
@@ -22,7 +22,7 @@ export function initializeIos(): MinimalFileSystem {
 	} catch (error) {
 		console.warn("[mobile] 预建导入目录失败:", error);
 	}
-	return fs;
+	return { fs };
 }
 
 export function attachIosFileSystem(game: any): void {

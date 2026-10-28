@@ -2575,17 +2575,37 @@ const skills = {
 		},
 		getIndex(event, player) {
 			const evt = event.getl?.(player);
-			return evt.cards2
+			const suits = evt.cards2
 				.map(card => get.suit(card, player))
 				.filter(suit => ["diamond", "heart"].includes(suit))
 				.unique();
+			if (!player.isDamaged() && !player.hasDisabledSlot()) {
+				suits.remove("heart");
+			}
+			// 同时失去♦️与♥️时只触发一次，由技能拥有者选择其中一项
+			if (suits.length > 1) {
+				return ["diamond+heart"];
+			}
+			return suits;
 		},
 		prompt2(event, player, name, suit) {
+			if (suit == "diamond+heart") return "你同时失去了♦️和♥️牌：选择一项（摸两张牌；或回复1点体力并恢复一个装备栏）";
 			if (suit == "diamond") return "你失去♦️牌后，你可以摸两张牌";
 			return "你失去♥️牌后，你可以回复1点体力并恢复一个装备栏";
 		},
 		async content(event, trigger, player) {
-			const suit = event.indexedData;
+			let suit = event.indexedData;
+			if (suit == "diamond+heart") {
+				const result = await player
+					.chooseControl("摸两张牌", "回复1点体力并恢复一个装备栏")
+					.set("prompt", "绍威：请选择一项")
+					.set("ai", () => {
+						const player = get.player();
+						return player.isDamaged() || player.hasDisabledSlot() ? 1 : 0;
+					})
+					.forResult();
+				suit = result.control === "摸两张牌" ? "diamond" : "heart";
+			}
 			if (suit == "diamond") {
 				await player.draw(2);
 			} else {
@@ -2699,10 +2719,11 @@ const skills = {
 							current.getHistory("custom").push({ dcdichou: true });
 						}
 					}
-					if (!game.hasPlayer(current => current.hasHistory("custom", evt => evt.dcdichou))) return;
+					// 选择至少一名本回合失去过“仇”的角色各造成1点火焰伤害；
+					// 选择面板异常返回空结果时兜底取一名，避免清理标记后不结算伤害
 					const result = await player
 						.chooseTarget({
-							prompt: "涤仇：对至少一名本回合移除过“仇”的角色各造成1点火焰伤害",
+							prompt: "涤仇：对至少一名本回合失去过“仇”的角色各造成1点火焰伤害",
 							selectTarget: [1, Infinity],
 							forced: true,
 							filterTarget: (card, player, target) => {
@@ -2714,10 +2735,13 @@ const skills = {
 							},
 						})
 						.forResult();
-					if (!result?.targets?.length) {
+					let targets = (result?.targets ?? []).sortBySeat();
+					if (!targets.length) {
+						targets = game.filterPlayer(current => current.hasHistory("custom", evt => evt.dcdichou)).slice(0, 1);
+					}
+					if (!targets.length) {
 						return;
 					}
-					const targets = result.targets.sortBySeat();
 					player.line(targets);
 					for (const target of targets) {
 						await target.damage("fire");
@@ -3081,8 +3105,8 @@ const skills = {
 						}
 					});
 					if (xiangying === result) {
-						if (target.isIn() && target.countCards("he")) {
-							await player.gainPlayerCard(target, 1, "he", true, "visible");
+						if (target.isIn() && target.countCards("h")) {
+							await player.gainPlayerCard(target, 1, "h", true, "visible");
 						}
 					} else {
 						const cardx = new lib.element.VCard({ name: "juedou", isCard: true });
@@ -11219,6 +11243,15 @@ const skills = {
 		subSkill: {
 			damage: {
 				charlotte: true,
+				mark: true,
+				marktext: "伤",
+				intro: {
+					name: "明访",
+					content: (storage, player) => {
+						const num = player.countCards("h", card => card.hasGaintag("dcsbmingfang_damage"));
+						return `手牌中被展示的牌每张使其受到伤害+1（当前${num}张）`;
+					},
+				},
 				onremove(player, skill) {
 					player.removeGaintag(skill);
 				},
