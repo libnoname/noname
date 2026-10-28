@@ -1016,7 +1016,7 @@ const skills = {
 					.chooseControl({
 						controls,
 						forced: true,
-						prompt: "无前：请选择：",
+						prompt: "噬啮：请选择：",
 						str2,
 						ai() {
 							const str2 = get.event().str2;
