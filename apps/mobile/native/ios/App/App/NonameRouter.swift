@@ -52,7 +52,11 @@ class NonameRouter: NSObject, Router {
     }
 
     static func normalize(_ path: String) -> String? {
-        let unified = path.replacingOccurrences(of: "\\", with: "/")
+        // 先剥离 fragment 与查询串，与安卓端 AssetsPathHandler 的行为保持一致，
+        // 避免把 `?v=xxx` 之类的后缀当作文件名的一部分。
+        let withoutFragment = path.split(separator: "#", maxSplits: 1, omittingEmptySubsequences: false)[0]
+        let withoutQuery = withoutFragment.split(separator: "?", maxSplits: 1, omittingEmptySubsequences: false)[0]
+        let unified = String(withoutQuery).replacingOccurrences(of: "\\", with: "/")
         let rawSegments = unified.split(separator: "/", omittingEmptySubsequences: true)
 
         var segments: [String] = []
