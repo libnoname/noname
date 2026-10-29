@@ -3388,6 +3388,12 @@ ${e instanceof Error ? e.stack : String(e)}`);
 	 * @param {*} [dev]
 	 */
 	multiDownload2(list, onsuccess, onerror, onfinish, process, dev) {
+		if (typeof game.download !== "function") {
+			if (onerror) {
+				onerror(new Error("当前平台不支持下载"));
+			}
+			return;
+		}
 		list = list.slice(0);
 		let download = function () {
 			if (list.length) {
@@ -3439,6 +3445,12 @@ ${e instanceof Error ? e.stack : String(e)}`);
 	 * @param {*} [dev]
 	 */
 	multiDownload(list, onsuccess, onerror, onfinish, process, dev) {
+		if (typeof game.download !== "function") {
+			if (onerror) {
+				onerror(new Error("当前平台不支持下载"));
+			}
+			return;
+		}
 		if (lib.config.dev) {
 			game.print(get.url());
 		}
@@ -3475,6 +3487,12 @@ ${e instanceof Error ? e.stack : String(e)}`);
 	 * @param { Function } [onprogress]
 	 */
 	fetch(url, onload, onerror, onprogress) {
+		if (typeof game.download !== "function") {
+			if (onerror) {
+				onerror(new Error("当前平台不支持下载"));
+			}
+			return;
+		}
 		var tmpName = "~tmp" + get.id();
 		game.download(
 			encodeURI(url),
