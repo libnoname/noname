@@ -87,14 +87,7 @@ export function callbackError(callback: Function | undefined, error: unknown) {
  * 因此在写盘完成时一次性回报 onprogress(loaded, total)。
  */
 export function installDownload(game: any, fs: DownloadFileSystem) {
-	game.download = function download(
-		url: string,
-		folder: string,
-		onsuccess?: () => void,
-		onerror?: (error: unknown) => void,
-		dev?: unknown,
-		onprogress?: (loaded: number, total?: number) => void
-	) {
+	game.download = function download(url: string, folder: string, onsuccess?: () => void, onerror?: (error: unknown) => void, dev?: unknown, onprogress?: (loaded: number, total?: number) => void) {
 		let target = String(url);
 		if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(target)) {
 			const getLib = (globalThis as any).get;
@@ -104,6 +97,8 @@ export function installDownload(game: any, fs: DownloadFileSystem) {
 				target = new URL(target, globalThis.location.href).href;
 			}
 		}
+		// 扩展目录名可能含中文等非 ASCII 字符，原生请求需要先转义
+		target = encodeURI(target);
 		const fail = (error: unknown) => {
 			const wrapped = error instanceof Error ? error : new Error(String(error));
 			(wrapped as any).source = folder;
