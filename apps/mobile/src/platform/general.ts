@@ -9,6 +9,7 @@ export interface MinimalFileSystem {
 export interface DownloadFileSystem {
 	createDir(options: { dir: string }): Promise<void>;
 	writeFile(options: { path: string; data: string }): Promise<void>;
+	statEntry?(options: { entryName: string }): Promise<{ type: string }>;
 }
 
 export function sanitizeExportName(name?: string) {
@@ -87,6 +88,16 @@ export function callbackError(callback: Function | undefined, error: unknown) {
  * 因此在写盘完成时一次性回报 onprogress(loaded, total)。
  */
 export function installDownload(game: any, fs: DownloadFileSystem) {
+	const debugLines: string[] = [];
+	const logDebug = (line: string) => {
+		debugLines.push(line);
+		if (debugLines.length > 40) {
+			debugLines.splice(0, debugLines.length - 40);
+		}
+		void dataToBase64(debugLines.join("\n"))
+			.then(data => fs.writeFile({ path: "download-debug.log", data }))
+			.catch(() => {});
+	};
 	game.download = function download(url: string, folder: string, onsuccess?: () => void, onerror?: (error: unknown) => void, dev?: unknown, onprogress?: (loaded: number, total?: number) => void) {
 		let target = String(url);
 		if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(target)) {
@@ -102,6 +113,7 @@ export function installDownload(game: any, fs: DownloadFileSystem) {
 		const fail = (error: unknown) => {
 			const wrapped = error instanceof Error ? error : new Error(String(error));
 			(wrapped as any).source = folder;
+			logDebug(`fail folder=${folder} error=${wrapped.message}`);
 			callbackError(onerror as Function | undefined, wrapped);
 		};
 		void (async () => {
@@ -114,12 +126,15 @@ export function installDownload(game: any, fs: DownloadFileSystem) {
 				if (response.status < 200 || response.status >= 300) {
 					throw new Error(`下载失败（HTTP ${response.status}）：${target}`);
 				}
-				const base64 = typeof response.data === "string" ? response.data : await dataToBase64(response.data as ArrayBuffer);
+				const dataType = typeof response.data;
+				const base64 = dataType === "string" ? (response.data as string) : await dataToBase64(response.data as ArrayBuffer);
 				const dir = dirnameOf(folder);
 				if (dir) {
 					await fs.createDir({ dir });
 				}
 				await fs.writeFile({ path: folder, data: base64 });
+				const stat = await fs.statEntry?.({ entryName: folder }).catch(error => ({ type: `error:${String(error)}` }));
+				logDebug(`ok folder=${folder} dataType=${dataType} base64Len=${base64.length} stat=${stat?.type ?? "-"}`);
 				if (typeof onprogress === "function") {
 					const bytes = Math.floor((base64.length * 3) / 4);
 					onprogress(bytes, bytes);
