@@ -11416,6 +11416,7 @@ const skills = {
 			await next;
 		},
 		group: "mbfunan_draw",
+		global: "mbfunan_globalAI",
 		subSkill: {
 			rewrite: {
 				charlotte: true,
@@ -11459,6 +11460,47 @@ const skills = {
 				locked: false,
 				async content(event, trigger, player) {
 					await player.draw();
+				},
+			},
+			globalAI: {
+				charlotte: true,
+				ai: {
+					effect: {
+						player(card, player, target) {
+							if (card.name === "judedou" && target.hasSkill("mbfunan") && target.hasCards("h")) {
+								return 0.5;
+							}
+						},
+						target(card, player, target, result2) {
+							const event = get.event();
+							//无懈部分
+							if (event.name === "chooseToUse" && event.type === "wuxie") {
+								const { info_map: map } = event;
+								if (map.card.name !== "wuxe") {
+									return;
+								}
+								//获取上一次【无懈】对拼事件
+								const evt = event.getParent(5);
+								if (!evt || evt.name !== "_wuxie") {
+									return;
+								}
+								//若对方有〖复难〗，则改收益为0，不用【无懈】
+								if (evt.wuxieresult.hasSkill("mbfunan")) {
+									return 0;
+								}
+							}
+							//决斗部分
+							else if (event.name === "juedou") {
+								if (card.name !== "damage") {
+									return;
+								}
+								//若对方有〖复难〗，且伤害收益为负，则改收益为正。不拼【杀】
+								if (player.hasSkill("mbfunan") && result2 < 0) {
+									return -1;
+								}
+							}
+						},
+					},
 				},
 			},
 		},
