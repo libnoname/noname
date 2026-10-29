@@ -1,6 +1,6 @@
 import { registerPlugin } from "@capacitor/core";
 import { Filesystem, Directory, Encoding } from "@capacitor/filesystem";
-import { joinFilePath, dataToBase64, base64ToArrayBuffer, toTriState, callbackError, type EntryType, type MinimalFileSystem } from "./general";
+import { joinFilePath, dataToBase64, base64ToArrayBuffer, toTriState, callbackError, installDownload, type EntryType, type MinimalFileSystem } from "./general";
 
 interface BundledFileSystem {
 	stat(options: { path: string }): Promise<{ type: EntryType }>;
@@ -104,6 +104,8 @@ export function attachIosFileSystem(game: any): void {
 			.then(() => successCallback())
 			.catch(error => callbackError(errorCallback, error));
 	};
+
+	installDownload(game, fs);
 }
 
 class IosFileSystem implements MinimalFileSystem {

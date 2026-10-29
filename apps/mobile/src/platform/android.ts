@@ -1,5 +1,5 @@
 import { registerPlugin } from "@capacitor/core";
-import { joinFilePath, dataToBase64, base64ToArrayBuffer, toTriState, callbackError, type EntryType, type MinimalFileSystem } from "./general";
+import { joinFilePath, dataToBase64, base64ToArrayBuffer, toTriState, callbackError, installDownload, type EntryType, type MinimalFileSystem } from "./general";
 
 interface AccessResult {
 	granted: boolean;
@@ -115,4 +115,6 @@ export function attachAndroidFileSystem(game: any): void {
 			.then(() => successCallback())
 			.catch(error => callbackError(errorCallback, error));
 	};
+
+	installDownload(game, fs);
 }

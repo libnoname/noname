@@ -1,7 +1,14 @@
+import { CapacitorHttp } from "@capacitor/core";
+
 export type EntryType = "file" | "directory" | "none";
 
 export interface MinimalFileSystem {
 	statEntry(options: { entryName: string }): Promise<{ type: EntryType }>;
+}
+
+export interface DownloadFileSystem {
+	createDir(options: { dir: string }): Promise<void>;
+	writeFile(options: { path: string; data: string }): Promise<void>;
 }
 
 export function sanitizeExportName(name?: string) {
@@ -11,6 +18,11 @@ export function sanitizeExportName(name?: string) {
 export function joinFilePath(path: string, name: string) {
 	if (path.endsWith("/") || path === "") return `${path}${name}`;
 	return `${path}/${name}`;
+}
+
+export function dirnameOf(path: string) {
+	const index = path.lastIndexOf("/");
+	return index <= 0 ? "" : path.slice(0, index);
 }
 
 export function base64ToArrayBuffer(base64: string) {
@@ -65,4 +77,63 @@ export function callbackError(callback: Function | undefined, error: unknown) {
 	if (typeof callback == "function") {
 		callback(error instanceof Error ? error : new Error(String(error)));
 	}
+}
+
+/**
+ * 为 Capacitor 端补上 game.download。
+ *
+ * 走 CapacitorHttp（原生请求，不受 WKWebView 的 CORS 限制），二进制以 base64 返回，
+ * 可直接交给各平台的 writeFile（均以 base64 为入参）。原生接口不提供下载进度，
+ * 因此在写盘完成时一次性回报 onprogress(loaded, total)。
+ */
+export function installDownload(game: any, fs: DownloadFileSystem) {
+	game.download = function download(
+		url: string,
+		folder: string,
+		onsuccess?: () => void,
+		onerror?: (error: unknown) => void,
+		dev?: unknown,
+		onprogress?: (loaded: number, total?: number) => void
+	) {
+		let target = String(url);
+		if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(target)) {
+			const getLib = (globalThis as any).get;
+			if (typeof getLib?.url === "function") {
+				target = getLib.url(dev) + target;
+			} else if (typeof globalThis.location !== "undefined") {
+				target = new URL(target, globalThis.location.href).href;
+			}
+		}
+		const fail = (error: unknown) => {
+			const wrapped = error instanceof Error ? error : new Error(String(error));
+			(wrapped as any).source = folder;
+			callbackError(onerror as Function | undefined, wrapped);
+		};
+		void (async () => {
+			try {
+				const response = await CapacitorHttp.request({
+					url: target,
+					method: "GET",
+					responseType: "arraybuffer" as any,
+				});
+				if (response.status < 200 || response.status >= 300) {
+					throw new Error(`下载失败（HTTP ${response.status}）：${target}`);
+				}
+				const base64 = typeof response.data === "string" ? response.data : await dataToBase64(response.data as ArrayBuffer);
+				const dir = dirnameOf(folder);
+				if (dir) {
+					await fs.createDir({ dir });
+				}
+				await fs.writeFile({ path: folder, data: base64 });
+				if (typeof onprogress === "function") {
+					const bytes = Math.floor((base64.length * 3) / 4);
+					onprogress(bytes, bytes);
+				}
+				onsuccess?.();
+			} catch (error) {
+				fail(error);
+			}
+		})();
+	};
+	return game.download;
 }
