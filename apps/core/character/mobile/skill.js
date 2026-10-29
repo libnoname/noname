@@ -11467,7 +11467,7 @@ const skills = {
 				ai: {
 					effect: {
 						player(card, player, target) {
-							if (card.name === "judedou" && target.hasSkill("mbfunan") && target.hasCards("h")) {
+							if (card.name === "juedou" && target.hasSkill("mbfunan") && target.hasCards("h")) {
 								return 0.5;
 							}
 						},
@@ -11476,11 +11476,11 @@ const skills = {
 							//无懈部分
 							if (event.name === "chooseToUse" && event.type === "wuxie") {
 								const { info_map: map } = event;
-								if (map.card.name !== "wuxe") {
+								if (map.card.name !== "wuxie") {
 									return;
 								}
 								//获取上一次【无懈】对拼事件
-								const evt = event.getParent(5);
+								const evt = event.getParent("_wuxie")?.getParent(5);
 								if (!evt || evt.name !== "_wuxie") {
 									return;
 								}
