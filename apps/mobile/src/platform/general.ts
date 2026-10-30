@@ -118,23 +118,26 @@ export function installDownload(game: any, fs: DownloadFileSystem) {
 		};
 		void (async () => {
 			try {
+				// 文本类文件按 text 取回后自行做 UTF-8 → base64；二进制仍用 arraybuffer。
+				// 这样不依赖原生端对 string 返回值的猜测（曾把纯文本误当 base64 写坏文件）。
+				const textLike = /\.(?:js|mjs|cjs|json|css|txt|md|markdown|html?|xml|svg)$/i.test(folder);
 				const response = await CapacitorHttp.request({
 					url: target,
 					method: "GET",
-					responseType: "arraybuffer" as any,
+					responseType: (textLike ? "text" : "arraybuffer") as any,
 				});
 				if (response.status < 200 || response.status >= 300) {
 					throw new Error(`下载失败（HTTP ${response.status}）：${target}`);
 				}
 				const dataType = typeof response.data;
-				const base64 = dataType === "string" ? (response.data as string) : await dataToBase64(response.data as ArrayBuffer);
+				const base64 = textLike ? await dataToBase64(String(response.data ?? "")) : dataType === "string" ? (response.data as string) : await dataToBase64(response.data as ArrayBuffer);
 				const dir = dirnameOf(folder);
 				if (dir) {
 					await fs.createDir({ dir });
 				}
 				await fs.writeFile({ path: folder, data: base64 });
 				const stat = await fs.statEntry?.({ entryName: folder }).catch(error => ({ type: `error:${String(error)}` }));
-				logDebug(`ok folder=${folder} dataType=${dataType} base64Len=${base64.length} stat=${stat?.type ?? "-"}`);
+				logDebug(`ok folder=${folder} textLike=${textLike} dataType=${dataType} base64Len=${base64.length} stat=${stat?.type ?? "-"}`);
 				if (typeof onprogress === "function") {
 					const bytes = Math.floor((base64.length * 3) / 4);
 					onprogress(bytes, bytes);
