@@ -3060,7 +3060,7 @@ export class Game {
 		extensionMenu.delete = {
 			name: "删除此扩展",
 			clear: true,
-			onclick() {
+			async onclick() {
 				if (this.innerHTML != "<span>确认删除</span>") {
 					this.innerHTML = "<span>确认删除</span>";
 					new Promise(resolve => setTimeout(resolve, 1000)).then(() => (this.innerHTML = "<span>删除此扩展</span>"));
@@ -3083,7 +3083,7 @@ export class Game {
 						}
 					}
 				}
-				game.removeExtension(name);
+				await game.removeExtension(name);
 				if (typeof object.onremove == "function") {
 					object.onremove();
 				}
@@ -6420,7 +6420,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 	 * @param { string } extensionName
 	 * @param { boolean } [keepFile]
 	 */
-	removeExtension(extensionName, keepFile) {
+	async removeExtension(extensionName, keepFile) {
 		const prefix = `extension_${extensionName}`;
 		Object.keys(lib.config).forEach(key => {
 			if (key.startsWith(prefix)) {
@@ -6445,7 +6445,53 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		if (!game.readFile || keepFile) {
 			return;
 		}
-		game.promises.removeDir(`extension/${extensionName}`).catch(console.error);
+		// 配置 id 来自 info.json 的 name，实际目录名可能与之不同，先解析再删除
+		const target = await this.resolveExtensionDirectory(extensionName);
+		try {
+			await game.promises.removeDir(target);
+		} catch (error) {
+			console.warn(`删除扩展目录失败：${target}`, error);
+		}
+	}
+	/**
+	 * 把配置里的扩展 id 解析成实际目录名。
+	 * 配置 id 取 info.json 的 name，而目录名可能是手动放置时的任意名称；
+	 * 删除时若直接拼 `extension/<id>` 会因目录不存在而失败。
+	 * @param {string} extensionName
+	 * @returns {Promise<string>}
+	 */
+	async resolveExtensionDirectory(extensionName) {
+		const direct = `extension/${extensionName}`;
+		try {
+			if ((await game.promises.checkFile(`${direct}/extension.js`)) == 1) {
+				return direct;
+			}
+		} catch {
+			// 忽略，继续回退扫描
+		}
+		try {
+			const [folders] = await game.promises.getFileList("extension");
+			for (const folder of folders) {
+				if (folder === extensionName) {
+					return `extension/${folder}`;
+				}
+				const infoPath = `extension/${folder}/info.json`;
+				if ((await game.promises.checkFile(infoPath)) != 1) {
+					continue;
+				}
+				try {
+					const info = JSON.parse(await game.promises.readFileAsText(infoPath));
+					if (info && info.name === extensionName) {
+						return `extension/${folder}`;
+					}
+				} catch {
+					// info.json 解析失败则跳过该目录
+				}
+			}
+		} catch {
+			// 目录列举失败时退回直接路径
+		}
+		return direct;
 	}
 	addRecentCharacter() {
 		let list = get.config("recentCharacter") || [];

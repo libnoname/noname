@@ -647,10 +647,27 @@ async function getExtensionList() {
 			const tsFile = new URL("./extension.ts", path);
 
 			if ((await game.promises.checkFile(get.relativePath(file))) == 1 || (await game.promises.checkFile(get.relativePath(tsFile))) == 1) {
-				extensions.push(ext);
-				toLoad.push(ext);
-				if (!config.has(`extension_${ext}_enable`)) {
-					await game.promises.saveConfig(`extension_${ext}_enable`, false);
+				if (!extensions.includes(ext)) {
+					extensions.push(ext);
+					toLoad.push(ext);
+				}
+				// 开关配置键以 info.json 的 name 为准：game.import 登记扩展时用的就是该 name，
+				// 目录名与包名不一致时按目录名写开关会出现「界面显示开启、实际未启用」。
+				let registeredName = ext;
+				const infoRelative = `extension/${ext}/info.json`;
+				if ((await game.promises.checkFile(infoRelative)) == 1) {
+					try {
+						const info = JSON.parse(await game.promises.readFileAsText(infoRelative));
+						const infoName = info && typeof info.name === "string" ? info.name.trim() : "";
+						if (infoName) {
+							registeredName = infoName;
+						}
+					} catch (error) {
+						console.warn(`扩展 info.json 解析失败：${ext}`, error);
+					}
+				}
+				if (!config.has(`extension_${registeredName}_enable`)) {
+					await game.promises.saveConfig(`extension_${registeredName}_enable`, false);
 				}
 			}
 		});
