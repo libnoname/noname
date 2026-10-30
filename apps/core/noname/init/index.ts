@@ -642,15 +642,41 @@ async function getExtensionList() {
 		const unimportedExtensions = extFolders.filter(folder => !extensions.includes(folder) && !config.get("all").plays.includes(folder));
 
 		const promises = unimportedExtensions.map(async ext => {
-			const path = new URL(`./${ext}/`, extensionPath);
+			// 手动放置的目录名常与 info.json 的 name 不同，
+			// 而扩展自身按 name 拼自己的资源路径，这里统一把目录名改成 name，
+			// 使登记 id、开关键、加载路径与扩展内部路径保持一致。
+			let folder = ext;
+			const infoRelative = `extension/${folder}/info.json`;
+			if ((await game.promises.checkFile(infoRelative)) == 1) {
+				try {
+					const info = JSON.parse(await game.promises.readFileAsText(infoRelative));
+					const infoName = info && typeof info.name == "string" ? info.name.trim() : "";
+					if (infoName && infoName !== folder && typeof game.renameDir == "function") {
+						try {
+							await new Promise((resolve, reject) => game.renameDir(`extension/${folder}`, `extension/${infoName}`, resolve, reject));
+							extensions.remove(folder);
+							folder = infoName;
+						} catch (error) {
+							console.warn(`扩展目录改名失败：${folder} -> ${infoName}`, error);
+						}
+					}
+				} catch (error) {
+					console.warn(`扩展 info.json 解析失败：${ext}`, error);
+				}
+			}
+
+			const path = new URL(`./${folder}/`, extensionPath);
 			const file = new URL("./extension.js", path);
 			const tsFile = new URL("./extension.ts", path);
 
 			if ((await game.promises.checkFile(get.relativePath(file))) == 1 || (await game.promises.checkFile(get.relativePath(tsFile))) == 1) {
-				extensions.push(ext);
-				toLoad.push(ext);
-				if (!config.has(`extension_${ext}_enable`)) {
-					await game.promises.saveConfig(`extension_${ext}_enable`, false);
+				if (!extensions.includes(folder)) {
+					extensions.push(folder);
+					toLoad.push(folder);
+				}
+				if (!config.has(`extension_${folder}_enable`)) {
+					// 与扩展菜单里 enable 项的默认值保持一致，避免「界面显示开启、实际未启用」
+					await game.promises.saveConfig(`extension_${folder}_enable`, true);
 				}
 			}
 		});
