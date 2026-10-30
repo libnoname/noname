@@ -1,5 +1,7 @@
 export default {
-	//sb_zhuran: "",
+	sb_guoyouzhi: "性顺志忠",
+	//sb_chentai: "",
+	sb_zhuran: "临危胆定",
 	sp_yangwan: "迷计惑心",
 	liucheng: "泣梧的湘女",
 	sb_huangzhong: "没金铩羽",

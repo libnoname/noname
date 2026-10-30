@@ -131,7 +131,7 @@ export class GetGuozhan extends Get {
 		if (name1 == "gz_re_xushu") {
 			return true;
 		}
-		if (name2 == "gz_dengai") {
+		if (["gz_dengai", "gz_simayue"].includes(name2)) {
 			return lib.character[name1][2] % 2 == 1;
 		}
 		if (["gz_sunce", "gz_jiangwei"].includes(name1)) {
@@ -216,7 +216,7 @@ export class GetGuozhan extends Get {
 			}
 			var added = false;
 			for (var j of sides) {
-				if (i.isFriendOf(pmap[j])) {
+				if (i.isVictoryFriendOf(pmap[j])) {
 					added = true;
 					map[j].push(i);
 					if (i == this) {
@@ -246,11 +246,11 @@ export class GetGuozhan extends Get {
 			from_p = get.population(fid);
 		} else {
 			from_p = game.countPlayer(function (current) {
-				return current.isFriendOf(from);
+				return current.isVictoryFriendOf(from);
 			}, true);
 		}
 		var to_p = game.countPlayer(function (current) {
-			return current.isFriendOf(to);
+			return current.isVictoryFriendOf(to);
 		}, true);
 		if (to.identity == "ye") {
 			to_p += 1.5;
@@ -306,7 +306,7 @@ export class GetGuozhan extends Get {
 		if (from == to) {
 			return 5 + difficulty;
 		}
-		if (from.isFriendOf(to)) {
+		if (from.isVictoryFriendOf(to)) {
 			return 5 + difficulty;
 		}
 		if (from.identity == "unknown" && fid == to.identity) {

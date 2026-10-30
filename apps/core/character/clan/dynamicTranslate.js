@@ -1,6 +1,32 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const dynamicTranslates = {
+	clanfuyao(player, skill) {
+		const bool = player.storage[skill];
+		let yang = "展示未展示过的手牌至两者数量相同",
+			yin = "弃置任意手牌至两者数量相同";
+		if (bool) {
+			yin = `<span class='bluetext'>${yin}</span>`;
+		} else {
+			yang = `<span class='firetext'>${yang}</span>`;
+		}
+		let start = "转换技。出牌阶段，你可以将手牌中展示过和未展示过的牌：",
+			end = "。然后你视为使用一张本阶段未以此法使用过的单目标普通锦囊牌。";
+		return `${start}阳，${yang}；阴，${yin}${end}`;
+	},
+	clanchengwang(player, skill) {
+		const bool = player.storage[skill];
+		let yang = "摸至全场最多，然后若你使用了牌，你可令一名角色弃置两张牌",
+			yin = "弃至全场最少，然后若你使用了牌，你可令一名角色摸两张牌";
+		if (bool) {
+			yin = `<span class='bluetext'>${yin}</span>`;
+		} else {
+			yang = `<span class='firetext'>${yang}</span>`;
+		}
+		let start = "转换技，每回合限一次。当你需要使用牌时（无懈可击除外），你可将手牌：",
+			end = "。若你未使用牌，你与当前回合角色各失去1点体力。";
+		return `${start}阳，${yang}；阴，${yin}${end}`;
+	},
 	clandongxu(player, skill) {
 		const bool = player.storage[skill];
 		let yang = "你可以将一张装备牌置于其他角色装备区（替换原装备）",

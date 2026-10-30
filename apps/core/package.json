@@ -2,7 +2,7 @@
     "name": "noname",
     "productName": "无名杀",
     "description": "",
-    "version": "1.11.4.1",
+    "version": "1.11.7",
     "license": "GPL-3.0-only",
     "repository": {
         "type": "git",
@@ -24,7 +24,8 @@
         "build:types": "tsc -p tsconfig.types.json",
         "generateAsset": "tsx scripts/generateAsset.ts",
         "lint": "pnpm eslint noname/**",
-        "test": "vitest run"
+        "test": "vitest run",
+        "lint:prettier": "pnpm prettier -c noname/**"
     },
     "dependencies": {
         "@codemirror/autocomplete": "^6.20.0",

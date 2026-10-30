@@ -20,6 +20,7 @@ const characters = {
 		skills: ["qixing", "kuangfeng", "dawu"],
 		groupInGuozhan: "shu",
 		names: "诸葛|亮",
+		clans: ["琅琊诸葛氏"],
 	},
 	shen_lvmeng: {
 		sex: "male",

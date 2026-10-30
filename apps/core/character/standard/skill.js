@@ -390,7 +390,7 @@ const skills = {
 	},
 	guicai: {
 		audio: 2,
-		audioname2: { xin_simayi: "jilue_guicai" },
+		audioname2: { new_simayi: "reguicai_new_simayi" },
 		trigger: { global: "judge" },
 		preHidden: true,
 		filter(event, player) {
@@ -856,7 +856,7 @@ const skills = {
 					},
 				});
 				if (get.mode() !== "guozhan" && !player.hasSkillTag("rejudge")) {
-					judgeEvent.set("callback", async event => {
+					judgeEvent.set("callback", async (event, trigger, player) => {
 						if (event.judgeResult.color === "black" && get.position(event.card, true) === "o") {
 							await player.gain({
 								cards: [event.card],
@@ -1142,7 +1142,12 @@ const skills = {
 				if (current.group === "shu") {
 					const next = current.chooseToRespond({
 						prompt: `是否替${get.translation(player)}打出一张杀？`,
-						card: get.autoViewAs({ name: "sha" }),
+						filterCard: function (card, player) {
+							if (get.name(card) !== "sha") {
+								return false;
+							}
+							return lib.filter.cardRespondable(card, player);
+						},
 						ai() {
 							const event = get.event();
 							return get.attitude(event.player, event.source) - 2;
@@ -1543,7 +1548,7 @@ const skills = {
 		audio: 2,
 		audioname: ["jianyong"],
 		audioname2: {
-			xin_simayi: "jilue_jizhi",
+			new_simayi: "rejizhi_new_simayi",
 		},
 		trigger: { player: "useCard" },
 		frequent: true,
@@ -1572,7 +1577,7 @@ const skills = {
 		audio: 2,
 		audioname: ["gz_jun_sunquan"],
 		audioname2: {
-			xin_simayi: "jilue_zhiheng",
+			new_simayi: "rezhiheng_new_simayi",
 		},
 		mod: {
 			aiOrder(player, card, num) {
@@ -1683,6 +1688,7 @@ const skills = {
 		enable: "phaseUse",
 		prompt: "失去1点体力并摸两张牌",
 		delay: false,
+		manualConfirm: true,
 		async content(event, trigger, player) {
 			player.loseHp(1);
 			player.draw(2, "nodelay");
@@ -2117,7 +2123,7 @@ const skills = {
 	jijiu_re_huatuo: { audio: 2 },
 	wushuang: {
 		audio: 2,
-		audioname: ["re_lvbu", "shen_lvbu", "lvlingqi"],
+		audioname: ["re_lvbu", "shen_lvbu", "lvlingqi", "mb_shen_lvbu"],
 		audioname2: { sb_lvbu: "sbliyu_effect" },
 		forced: true,
 		locked: true,
@@ -2126,7 +2132,7 @@ const skills = {
 	},
 	wushuang1: {
 		audio: "wushuang",
-		audioname: ["re_lvbu", "shen_lvbu", "lvlingqi"],
+		audioname: ["re_lvbu", "shen_lvbu", "lvlingqi", "mb_shen_lvbu"],
 		audioname2: {
 			sb_lvbu: "sbliyu_effect",
 			gz_lvlingqi: "wushuang_lvlingqi",
@@ -2164,7 +2170,7 @@ const skills = {
 	},
 	wushuang2: {
 		audio: "wushuang",
-		audioname: ["re_lvbu", "shen_lvbu", "lvlingqi"],
+		audioname: ["re_lvbu", "shen_lvbu", "lvlingqi", "mb_shen_lvbu"],
 		audioname2: {
 			sb_lvbu: "sbliyu_effect",
 			gz_lvlingqi: "wushuang_lvlingqi",
@@ -2333,11 +2339,11 @@ const skills = {
 		},
 	},
 	new_jiangchi: {
-		audio: 2,
+		audio: "jiangchi",
 		trigger: {
 			player: "phaseDrawEnd",
 		},
-		logAudio: (event, player, name, indexedData, costResult) => (costResult.cost_data.control === "弃牌" ? "new_jiangchi1.mp3" : "new_jiangchi2.mp3"),
+		logAudio: (event, player, name, indexedData, costResult) => (costResult.cost_data.control === "弃牌" ? "jiangchi2.mp3" : "jiangchi1.mp3"),
 		async cost(event, trigger, player) {
 			const list = ["弃牌", "摸牌", "cancel2"];
 			if (!player.hasCards("he")) {

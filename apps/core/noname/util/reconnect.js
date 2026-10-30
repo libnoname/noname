@@ -23,7 +23,7 @@
  */
 export function decideReconnect(state) {
 	const { wasOnline, wasGameOver, noReconnect, reconnecting, hasIp } = state;
-	const attempts = state.attempts ?? 0;
+	const attempts = Math.max(0, state.attempts ?? 0);
 	const maxAttempts = state.maxAttempts ?? 5;
 
 	// 是否需要重连：本次为联机中的异常断开，或正处于重试链中（续连）。
@@ -52,9 +52,20 @@ export function decideReconnect(state) {
  * （game.createServer 自起的 8080 服务端，不经大厅）走 `reinit`，二者都要调用，
  * 否则直连模式下重连成功后计数不清零、重连遮罩也不会收起。
  *
- * @param {{reconnectAttempts?: number, reconnecting?: boolean}} status 通常为 `_status`
+ * @param {{reconnectAttempts?: number, reconnecting?: boolean, reconnectTimer?: ReturnType<typeof setTimeout>}} status 通常为 `_status`
  */
 export function clearReconnectState(status) {
+	clearTimeout(status.reconnectTimer);
+	delete status.reconnectTimer;
 	status.reconnectAttempts = 0;
 	status.reconnecting = false;
+}
+
+/** 完成当前连接回调；回调可能立即发起另一连接。 */
+export function finishConnectCallback(status, success) {
+	const callback = status.connectCallback;
+	if (!callback) return false;
+	delete status.connectCallback;
+	callback(success);
+	return true;
 }

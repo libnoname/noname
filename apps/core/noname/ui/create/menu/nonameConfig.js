@@ -17,12 +17,7 @@ export const NonameToggle = {
  */
 export const NonameConfig = {
 	template: html`
-		<div
-			ref="node"
-			:class="{ config: true, switcher: config.item || config.input, toggle: !config.item && !config.range && !config.clear && !config.input }"
-			@click="nodeClick"
-			:style="nodeStyle"
-		>
+		<div ref="node" :class="{ config: true, switcher: config.item || config.input, toggle: !config.item && !config.range && !config.clear && !config.input }" @click="nodeClick" :style="nodeStyle">
 			<span>{{ config.name }}</span>
 			<div v-if="config.item">{{ config.item[config.init] }}</div>
 			<div v-else-if="config.range">

@@ -72,7 +72,7 @@ const characters = {
 	std_xushao: {
 		sex: "male",
 		group: "qun",
-		hp: 3,
+		hp: 4,
 		skills: ["stdyingmen", "stdpingjian"],
 	},
 	std_zhangxuan: {
@@ -115,7 +115,7 @@ const characters = {
 	std_zhangfen: {
 		sex: "male",
 		group: "wu",
-		hp: 3,
+		hp: 4,
 		skills: ["stdwanglu"],
 	},
 	std_zhaoyan: {
@@ -270,6 +270,7 @@ const characters = {
 		hp: 3,
 		skills: ["stdaocai", "stdduwu"],
 		names: "诸葛|恪",
+		clans: ["琅琊诸葛氏"],
 	},
 	std_mengda: {
 		sex: "male",

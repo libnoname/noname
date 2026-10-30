@@ -283,11 +283,7 @@ get.event = function (key) {
 				var es = [];
 				if (arg3 !== false) {
 					for (i = 0; i < this.node.equips.childElementCount; i++) {
-						if (
-							!this.node.equips.childNodes[i].classList.contains("removing") &&
-							!this.node.equips.childNodes[i].classList.contains("feichu") &&
-							!this.node.equips.childNodes[i].classList.contains("emptyequip")
-						) {
+						if (!this.node.equips.childNodes[i].classList.contains("removing") && !this.node.equips.childNodes[i].classList.contains("feichu") && !this.node.equips.childNodes[i].classList.contains("emptyequip")) {
 							var equipskills = get.info(this.node.equips.childNodes[i]).skills;
 							if (equipskills) {
 								es.addArray(equipskills);
@@ -331,32 +327,18 @@ get.event = function (key) {
 				for (i = 0; i < arg1.length; i++) {
 					if (arg1[i] == "h") {
 						for (j = 0; j < this.node.handcards1.childElementCount; j++) {
-							if (
-								!this.node.handcards1.childNodes[j].classList.contains("removing") &&
-								!this.node.handcards1.childNodes[j].classList.contains("feichu") &&
-								!this.node.handcards1.childNodes[j].classList.contains("emptyequip") &&
-								!this.node.handcards1.childNodes[j].classList.contains("glows")
-							) {
+							if (!this.node.handcards1.childNodes[j].classList.contains("removing") && !this.node.handcards1.childNodes[j].classList.contains("feichu") && !this.node.handcards1.childNodes[j].classList.contains("emptyequip") && !this.node.handcards1.childNodes[j].classList.contains("glows")) {
 								cards.push(this.node.handcards1.childNodes[j]);
 							}
 						}
 						for (j = 0; j < this.node.handcards2.childElementCount; j++) {
-							if (
-								!this.node.handcards2.childNodes[j].classList.contains("removing") &&
-								!this.node.handcards2.childNodes[j].classList.contains("feichu") &&
-								!this.node.handcards2.childNodes[j].classList.contains("emptyequip") &&
-								!this.node.handcards2.childNodes[j].classList.contains("glows")
-							) {
+							if (!this.node.handcards2.childNodes[j].classList.contains("removing") && !this.node.handcards2.childNodes[j].classList.contains("feichu") && !this.node.handcards2.childNodes[j].classList.contains("emptyequip") && !this.node.handcards2.childNodes[j].classList.contains("glows")) {
 								cards.push(this.node.handcards2.childNodes[j]);
 							}
 						}
 					} else if (arg1[i] == "e") {
 						for (j = 0; j < this.node.equips.childElementCount; j++) {
-							if (
-								!this.node.equips.childNodes[j].classList.contains("removing") &&
-								!this.node.equips.childNodes[j].classList.contains("feichu") &&
-								!this.node.equips.childNodes[j].classList.contains("emptyequip")
-							) {
+							if (!this.node.equips.childNodes[j].classList.contains("removing") && !this.node.equips.childNodes[j].classList.contains("feichu") && !this.node.equips.childNodes[j].classList.contains("emptyequip")) {
 								cards.push(this.node.equips.childNodes[j]);
 							}
 						}
@@ -370,11 +352,7 @@ get.event = function (key) {
 						}
 					} else if (arg1[i] == "j") {
 						for (j = 0; j < this.node.judges.childElementCount; j++) {
-							if (
-								!this.node.judges.childNodes[j].classList.contains("removing") &&
-								!this.node.judges.childNodes[j].classList.contains("feichu") &&
-								!this.node.judges.childNodes[j].classList.contains("emptyequip")
-							) {
+							if (!this.node.judges.childNodes[j].classList.contains("removing") && !this.node.judges.childNodes[j].classList.contains("feichu") && !this.node.judges.childNodes[j].classList.contains("emptyequip")) {
 								cards.push(this.node.judges.childNodes[j]);
 								if (this.node.judges.childNodes[j].viewAs && arguments.length > 1) {
 									this.node.judges.childNodes[j].tempJudge = this.node.judges.childNodes[j].name;
@@ -737,8 +715,7 @@ lib.element.Player.prototype.when = function (...triggerNames) {
 			} else {
 				const a = fun2;
 				//防止传入()=>xxx的情况
-				const begin =
-					a.indexOf("{") == a.indexOf("}") && a.indexOf("{") == -1 && a.indexOf("=>") > -1 ? a.indexOf("=>") + 2 : a.indexOf("{") + 1;
+				const begin = a.indexOf("{") == a.indexOf("}") && a.indexOf("{") == -1 && a.indexOf("=>") > -1 ? a.indexOf("=>") + 2 : a.indexOf("{") + 1;
 				const str2 = a.slice(begin, a.lastIndexOf("}") != -1 ? a.lastIndexOf("}") : undefined).trim();
 				// 防止注入喵
 				if (!get.isFunctionBody(str2)) {

@@ -1,4 +1,16 @@
 const characters = {
+	star_zhugejin: {
+		sex: "male",
+		group: "wu",
+		hp: 3,
+		skills: ["starzunjian", "starhongya"],
+	},
+	star_dongyun: {
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		skills: ["starzhengting", "starbishi"],
+	},
 	caobao: {
 		sex: "male",
 		group: "qun",
@@ -27,7 +39,7 @@ const characters = {
 	cuilie: {
 		sex: "male",
 		group: "qun",
-		hp: 3,
+		hp: 4,
 		skills: ["dczijue", "dcchibi"],
 	},
 	star_jiangwan: {
@@ -114,7 +126,7 @@ const characters = {
 		sex: "male",
 		group: "shu",
 		hp: 4,
-		skills: ["starweigu","starjuefa"],
+		skills: ["starweigu", "starjuefa"],
 		names: "夏侯|霸",
 	},
 	liqueguosi: {

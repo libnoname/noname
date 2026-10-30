@@ -224,7 +224,7 @@ function requireSandbox() {
 const GRANTED_LIST_KEY = "security_grantedServers";
 
 /**
- * @param {string} key 
+ * @param {string} key
  * @returns {Record<string,boolean>}
  */
 function readStorage(key) {
@@ -251,7 +251,7 @@ function resetGrantedServers() {
 }
 
 /**
- * @param {string} ip 
+ * @param {string} ip
  * @returns {boolean}
  */
 function alertForServer(ip) {
@@ -272,12 +272,7 @@ function alertForServer(ip) {
  * @returns {boolean}
  */
 function alertForNewServer() {
-	const tips = [
-		"您登录的服务器不在受信任的列表中，是否要信任来自服务器的代码?",
-		"\n如果您信任此服务器则可以选择“确定”，否则您应该选择“取消”来启动隔离沙盒。",
-		"请注意：开启隔离沙盒可能会让服务器部分功能受限，以此换取更安全的执行环境。",
-		"\n另外，您无论如何选择都可以随时通过点击“联机模式选项-更多-重置受信任的服务器列表”来重置您的选择。"
-	];
+	const tips = ["您登录的服务器不在受信任的列表中，是否要信任来自服务器的代码?", "\n如果您信任此服务器则可以选择“确定”，否则您应该选择“取消”来启动隔离沙盒。", "请注意：开启隔离沙盒可能会让服务器部分功能受限，以此换取更安全的执行环境。", "\n另外，您无论如何选择都可以随时通过点击“联机模式选项-更多-重置受信任的服务器列表”来重置您的选择。"];
 
 	return confirm(tips.join("\n"));
 }
@@ -561,20 +556,7 @@ async function initSecurity({ lib, game, ui, get, ai, _status }) {
 	bannedRule.setGranted(AccessAction.META, false); // 禁止设置原型
 
 	// 禁止访问关键对象
-	[
-		lib.cheat,
-		lib.node,
-		lib.message,
-		window.process,
-		window.module,
-		window.exports,
-		window.cordova,
-		window.NonameAndroidBridge,
-		window.noname_shijianInterfaces,
-		window,
-	]
-		.filter(Boolean)
-		.forEach(o => Marshal.setRule(o, bannedRule));
+	[lib.cheat, lib.node, lib.message, lib.fs, window.process, window.module, window.exports, window.cordova, window.NonameAndroidBridge, window.noname_shijianInterfaces, window].filter(Boolean).forEach(o => Marshal.setRule(o, bannedRule));
 
 	// 构造禁止修改的规则
 	const writeRule = new Rule();
@@ -600,6 +582,19 @@ async function initSecurity({ lib, game, ui, get, ai, _status }) {
 		})
 		// 让 Monitor 开始工作
 		.start(); // 差点忘记启动了喵
+
+	// lib.fs 可能在平台初始化期间被替换，不能只限制初始化时的实例。
+	new Monitor()
+		.action(AccessAction.READ)
+		.action(AccessAction.WRITE)
+		.action(AccessAction.DEFINE)
+		.action(AccessAction.DELETE)
+		.require("target", lib)
+		.require("property", "fs")
+		.then(() => {
+			throw new Error("不允许不受信任的代码访问 `lib.fs`");
+		})
+		.start();
 
 	// 监听原型、toStringTag的更改
 	const toStringTag = Symbol.toStringTag;
@@ -672,7 +667,7 @@ async function initSecurity({ lib, game, ui, get, ai, _status }) {
  * 创建一个新的沙盒
  * ```
  *
- * @param {string} persistId 
+ * @param {string} persistId
  * @returns {Sandbox?}
  */
 function createSandbox(persistId) {

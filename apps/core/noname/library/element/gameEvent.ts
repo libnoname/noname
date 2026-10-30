@@ -376,7 +376,7 @@ export class GameEvent implements PromiseLike<void> {
 					continue;
 				}
 				let toadds: triggerSkillTodo[] = [];
-				const priority = get.priority(skill)
+				const priority = get.priority(skill);
 				if (typeof info.getIndex === "function") {
 					const indexedResult = info.getIndex<any>(evt.getTrigger(), player, evt.triggername);
 					if (typeof indexedResult === "number") {
@@ -425,7 +425,7 @@ export class GameEvent implements PromiseLike<void> {
 				} else {
 					map.todoList.sort((a, b) => b.priority - a.priority);
 				}
-			};
+			}
 		}
 	}
 	removeTrigger(skills, player) {
@@ -558,7 +558,7 @@ export class GameEvent implements PromiseLike<void> {
 									priority,
 									indexedData,
 								});
-							};
+							}
 						}
 					} else {
 						list.push({

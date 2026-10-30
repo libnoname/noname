@@ -1,4 +1,5 @@
 export default {
+	star_zhugejin: "怀玉之臣",
 	caobao: "杯盏游神",
 	star_zhangsong: "乌鹊折槁",
 	star_zhanghe: "河北之庭柱",
@@ -6,6 +7,7 @@ export default {
 	cuilie: "镇纲责僭",
 	star_jiangwan: "讬忠赞业",
 	star_yanliang: "狰颤四方",
+	star_dongyun: "謇谔镇慝",
 	lijue: "奸谋恶勇",
 	zhangji: "武威雄豪",
 	fanchou: "庸生变难",

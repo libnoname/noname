@@ -1,6 +1,39 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 import { broadcastAll } from "./patch/game.js";
 
+const qunlangRevisions = {
+	gz_caocao: "gz_jiubian_caocao",
+	gz_caoren: "gz_jiubian_caoren",
+	gz_yuejin: "gz_jiubian_yuejin",
+	gz_bianfuren: "gz_jiubian_bianfuren",
+	gz_menghuo: "gz_jiubian_menghuo",
+	gz_ganning: "gz_jiubian_ganning",
+	gz_yanwen: "gz_jiubian_yanwen",
+	gz_zhangren: "gz_jiubian_zhangren",
+	gz_jiling: "gz_jiubian_jiling",
+	gz_jin_simashi: "gz_jiubian_simashi",
+	gz_jin_yanghuiyu: "gz_jiubian_yanghuiyu",
+	gz_xusheng: "gz_jiubian_xusheng",
+	gz_chendong: "gz_jiubian_chendong",
+	gz_lingtong: "gz_jiubian_lingtong",
+	gz_lukang: "gz_jiubian_lukang",
+	gz_caohong: "gz_jiubian_caohong",
+	gz_ganfuren: "gz_jiubian_ganfuren",
+};
+
+const applyQunlangRevisions = pack => {
+	const enabled = _status.connectMode ? lib.configOL.qunlangCharacters : get.config("qunlangCharacters");
+	if (enabled) {
+		for (const [origin, revision] of Object.entries(qunlangRevisions)) {
+			if (!pack[origin] || !pack[revision]) continue;
+			pack[origin] = new lib.element.Character(pack[revision]);
+		}
+	}
+	for (const revision of Object.values(qunlangRevisions)) {
+		delete pack[revision];
+	}
+};
+
 /**
  * @type {ContentFuncByAll}
  */
@@ -53,7 +86,7 @@ export const start = async (event, trigger, player) => {
 		_status.mode = mode;
 
 		// 如果当前模式不在可选列表中，则默认为normal
-		if (!["normal", "yingbian", "old"].includes(mode)) {
+		if (!["normal", "yingbian", "old", "jiubian"].includes(mode)) {
 			_status.mode = mode = "normal";
 		}
 
@@ -72,6 +105,10 @@ export const start = async (event, trigger, player) => {
 				// @ts-expect-error 祖宗之法就是这么写的
 				lib.card.list = lib.guozhanPile_yingbian.slice(0);
 				delete lib.translate.shuiyanqijunx_info_guozhan;
+				break;
+			case "jiubian":
+				// @ts-expect-error 祖宗之法就是这么写的
+				lib.card.list = lib.guozhanPile_jiubian.slice(0);
 				break;
 			default:
 				// @ts-expect-error 祖宗之法就是这么写的
@@ -137,7 +174,7 @@ export const start = async (event, trigger, player) => {
 		_status.mode = mode;
 
 		// 如果当前模式不在可选列表中，则默认为normal
-		if (!["normal", "yingbian", "old", "free"].includes(mode)) {
+		if (!["normal", "yingbian", "old", "jiubian", "free"].includes(mode)) {
 			_status.mode = mode = "normal";
 		}
 
@@ -167,6 +204,10 @@ export const start = async (event, trigger, player) => {
 				}
 				break;
 			}
+			case "jiubian":
+				// @ts-expect-error 祖宗之法就是这么写的
+				lib.card.list = lib.guozhanPile_jiubian.slice(0);
+				break;
 			case "normal":
 				// @ts-expect-error 祖宗之法就是这么写的
 				lib.card.list = lib.guozhanPile.slice(0);
@@ -317,6 +358,9 @@ export const startBefore = () => {
 	const playback = localStorage.getItem(lib.configprefix + "playback");
 
 	// @ts-expect-error 祖宗之法就是这么写的
+	applyQunlangRevisions(lib.characterPack.mode_guozhan);
+
+	// @ts-expect-error 祖宗之法就是这么写的
 	for (let character in lib.characterPack.mode_guozhan) {
 		if (!get.config("onlyguozhan") && !playback) {
 			if (lib.character[character.slice(3)] && (!get.config("guozhanSkin") || !lib.characterPack.mode_guozhan[character].hasSkinInGuozhan)) {
@@ -347,6 +391,7 @@ export const startBefore = () => {
 export const onreinit = () => {
 	// @ts-expect-error 祖宗之法就是这么写的
 	const pack = lib.characterPack.mode_guozhan;
+	applyQunlangRevisions(pack);
 
 	for (const character in pack) {
 		lib.character[character] = pack[character];

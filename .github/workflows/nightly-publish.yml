@@ -32,12 +32,19 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Resolve Nightly Metadata
+        id: info
+        shell: bash
+        run: |
+          BUILD_TIME="$(TZ=Asia/Shanghai date --iso-8601=seconds)"
+          BUILD_DATE="${BUILD_TIME%%T*}"
+          echo "NONAME_BUILD_CHANNEL=nightly" >> "$GITHUB_ENV"
+          echo "NONAME_BUILD_COMMIT=$GITHUB_SHA" >> "$GITHUB_ENV"
+          echo "NONAME_BUILD_TIME=$BUILD_TIME" >> "$GITHUB_ENV"
+          echo "date=${BUILD_DATE//-/}" >> "$GITHUB_OUTPUT"
+
       - name: Build and Generate test pack
         run: pnpm generateTestPack
-
-      - name: Generate Nightly Name
-        id: info
-        run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
 
       - name: Upload Nightly Artifact
         uses: actions/upload-artifact@v7

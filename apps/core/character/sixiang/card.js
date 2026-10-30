@@ -16,17 +16,14 @@ const cards = {
 		},
 		enable: true,
 		selectTarget: -1,
-		filterTarget: (card, player, target) => player == target && target.canEquip(card, true),
+		filterTarget: (card, player, target) => player === target && target.canEquip(card, true),
 		modTarget: true,
 		allowMultiple: false,
-		content: function () {
-			if (
-				!card?.cards.some(card => {
-					return get.position(card, true) !== "o";
-				})
-			) {
-				target.equip(card);
+		content: async ({ card, target }) => {
+			if (card?.cards.some(physicalCard => get.position(physicalCard, true) !== "o")) {
+				return;
 			}
+			await target.equip(card);
 			//if (cards.length && get.position(cards[0], true) == "o") target.equip(cards[0]);
 		},
 		toself: true,
@@ -45,17 +42,14 @@ const cards = {
 		},
 		enable: true,
 		selectTarget: -1,
-		filterTarget: (card, player, target) => player == target && target.canEquip(card, true),
+		filterTarget: (card, player, target) => player === target && target.canEquip(card, true),
 		modTarget: true,
 		allowMultiple: false,
-		content: function () {
-			if (
-				!card?.cards.some(card => {
-					return get.position(card, true) !== "o";
-				})
-			) {
-				target.equip(card);
+		content: async ({ card, target }) => {
+			if (card?.cards.some(physicalCard => get.position(physicalCard, true) !== "o")) {
+				return;
 			}
+			await target.equip(card);
 			//if (cards.length && get.position(cards[0], true) == "o") target.equip(cards[0]);
 		},
 		toself: true,

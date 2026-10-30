@@ -2,7 +2,7 @@
 # https://www.conventionalcommits.org
 conventional_commits = true
 allow_commit_types = ["build", "feat", "fix", "docs", "style", "refactor", "perf", "test", "chore", "ci", "revert", "style", "test"]
-subject_imperative = true
+subject_imperative = false
 allow_wip_commits = true
 require_signed_off_by = false
 # Bypass checks for bot/automation authors and co-authors:

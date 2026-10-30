@@ -17,13 +17,15 @@ import { updateURLs } from "./update-urls.js";
 import { defaultHooks } from "./hooks/index.js";
 import { security, ErrorManager } from "@/util/sandbox.js";
 import { assetURL, userAgentLowerCase, GeneratorFunction, AsyncFunction, characterDefaultPicturePath } from "@/util/index.js";
-import { clearReconnectState, decideReconnect } from "@/util/reconnect.js";
+import { clearReconnectState, decideReconnect, finishConnectCallback } from "@/util/reconnect.js";
 
 import { defaultSplashs } from "@/init/onload/index.js";
 import dedent from "dedent";
 import { PoptipManager, HTMLPoptipElement } from "./poptip.js";
 import { ZhanfaManager } from "./zhanfa.js";
 import skills from "./skill.js";
+import { DefaultFileSystemAdapter, FileSystem } from "./fs/index.js";
+import help from "./help";
 
 const html = dedent;
 
@@ -235,31 +237,7 @@ export class Library {
 		function () {
 			_status.skillOwner = {};
 			//武将包排序
-			let packSort = [
-				"standard",
-				"shenhua",
-				"yijiang",
-				"refresh",
-				"extra",
-				"sp",
-				"xinghuoliaoyuan",
-				"sp2",
-				"mobile",
-				"tw",
-				"yingbian",
-				"offline",
-				"sb",
-				"clan",
-				"huicui",
-				"shiji",
-				"bingshi",
-				"xianding",
-				"jsrg",
-				"onlyOL",
-				"newjiang",
-				"sixiang",
-				"sxrm",
-			];
+			let packSort = ["standard", "shenhua", "yijiang", "refresh", "extra", "sp", "xinghuoliaoyuan", "sp2", "mobile", "tw", "yingbian", "offline", "sb", "clan", "huicui", "shiji", "bingshi", "xianding", "jsrg", "onlyOL", "newjiang", "sixiang", "sxrm"];
 			packSort = packSort.reverse();
 			const packs = Object.keys(lib.characterPack).sort((a, b) => {
 				return packSort.indexOf(b) - packSort.indexOf(a);
@@ -337,9 +315,7 @@ export class Library {
 							if (ui.css.cardback_stylesheet) {
 								ui.css.cardback_stylesheet.remove();
 							}
-							ui.css.cardback_stylesheet = lib.init.sheet(
-								".card:empty,.card.infohidden{background-image:url(" + fileLoadedEvent.target.result + ")}"
-							);
+							ui.css.cardback_stylesheet = lib.init.sheet(".card:empty,.card.infohidden{background-image:url(" + fileLoadedEvent.target.result + ")}");
 							document.documentElement.style.setProperty("--cardback-url", `url(${fileLoadedEvent.target.result})`);
 							game.getDB("image", "cardback_style2", function (fileToLoad) {
 								if (!fileToLoad) {
@@ -350,9 +326,7 @@ export class Library {
 									if (ui.css.cardback_stylesheet2) {
 										ui.css.cardback_stylesheet2.remove();
 									}
-									ui.css.cardback_stylesheet2 = lib.init.sheet(
-										".card.infohidden:not(.infoflip){background-image:url(" + fileLoadedEvent.target.result + ")}"
-									);
+									ui.css.cardback_stylesheet2 = lib.init.sheet(".card.infohidden:not(.infoflip){background-image:url(" + fileLoadedEvent.target.result + ")}");
 									document.documentElement.style.setProperty("--cardback-url", `url(${fileLoadedEvent.target.result})`);
 								};
 								fileReader.readAsDataURL(fileToLoad, "UTF-8");
@@ -394,6 +368,10 @@ export class Library {
 	 * @type { string }
 	 */
 	version;
+	/**
+	 * @type { Readonly<import("@/util/meta.js").BuildInfo> | null }
+	 */
+	buildInfo = null;
 	/**
 	 * @type { Videos[] }
 	 */
@@ -573,14 +551,7 @@ export class Library {
 							},
 							async (event, trigger, player) => {
 								var type = get.type2(event.card);
-								event.list = game
-									.filterPlayer(
-										current =>
-											current != player &&
-											current.countCards("h") > 0 &&
-											(_status.connectMode || current.hasCard(cardx => get.type2(cardx) == type, "h"))
-									)
-									.sortBySeat(_status.currentPhase || player);
+								event.list = game.filterPlayer(current => current != player && current.countCards("h") > 0 && (_status.connectMode || current.hasCard(cardx => get.type2(cardx) == type, "h"))).sortBySeat(_status.currentPhase || player);
 								event.id = get.id();
 							},
 							async (event, trigger, player) => {
@@ -589,15 +560,7 @@ export class Library {
 								} else if (_status.connectMode && (event.list[0].isOnline() || event.list[0] == game.me)) {
 									event.goto(4);
 								} else {
-									event.send(
-										(event.current = event.list.shift()),
-										event.card,
-										player,
-										trigger.targets,
-										event.id,
-										trigger.parent.id,
-										trigger.yingbianZhuzhanAI
-									);
+									event.send((event.current = event.list.shift()), event.card, player, trigger.targets, event.id, trigger.parent.id, trigger.yingbianZhuzhanAI);
 								}
 							},
 							async event => {
@@ -640,29 +603,11 @@ export class Library {
 									if (current.isOnline()) {
 										withol = true;
 										current.wait(sendback);
-										current.send(
-											event.send,
-											current,
-											event.card,
-											player,
-											trigger.targets,
-											event.id,
-											trigger.parent.id,
-											trigger.yingbianZhuzhanAI,
-											get.skillState(current)
-										);
+										current.send(event.send, current, event.card, player, trigger.targets, event.id, trigger.parent.id, trigger.yingbianZhuzhanAI, get.skillState(current));
 										list.splice(i--, 1);
 									} else if (current == game.me) {
 										withme = true;
-										event.send(
-											current,
-											event.card,
-											player,
-											trigger.targets,
-											event.id,
-											trigger.parent.id,
-											trigger.yingbianZhuzhanAI
-										);
+										event.send(current, event.card, player, trigger.targets, event.id, trigger.parent.id, trigger.yingbianZhuzhanAI);
 										list.splice(i--, 1);
 									}
 								}
@@ -1586,8 +1531,7 @@ export class Library {
 					init: "GitHub Proxy",
 					unfrequent: true,
 					item: {},
-					intro: () =>
-						`获取在线扩展时的地址。当前地址：${document.createElement("br").outerHTML}${lib.config.extension_sources[lib.config.extension_source]}`,
+					intro: () => `获取在线扩展时的地址。当前地址：${document.createElement("br").outerHTML}${lib.config.extension_sources[lib.config.extension_source]}`,
 				},
 				extension_create: {
 					name: "添加获取扩展地址",
@@ -2071,11 +2015,14 @@ export class Library {
 					restart: true,
 					onblur(e) {
 						const text = e.target;
-						let zoom = Number.parseInt(text.innerText);
+						const zoom = Number.parseInt(text.innerText);
 						const originalValue = lib.config.ui_zoom;
+						const originalZoom = Number.parseInt(originalValue);
 
-						if (isNaN(zoom)) {
+						if (Number.isNaN(zoom)) {
 							alert("请填写数值！");
+							text.innerText = originalValue;
+							return;
 						}
 						if (zoom < 50 || zoom > 300) {
 							alert("请填入50~300以内的整数！");
@@ -2091,18 +2038,57 @@ export class Library {
 							return;
 						}
 
-						text.innerText = zoomText;
-						game.saveConfig("ui_zoom", zoomText);
-						game.documentZoom = (game.deviceZoom * zoom) / 100;
+						const applyZoom = value => {
+							game.documentZoom = (game.deviceZoom * value) / 100;
+							ui.updatez();
+							if (Array.isArray(lib.onresize)) {
+								lib.onresize.forEach(fun => {
+									if (typeof fun === "function") {
+										fun();
+									}
+								});
+							}
+						};
 
-						ui.updatez();
-						if (Array.isArray(lib.onresize)) {
-							lib.onresize.forEach(fun => {
-								if (typeof fun === "function") {
-									fun();
-								}
-							});
-						}
+						text.innerText = zoomText;
+						applyZoom(zoom);
+
+						const popupContainer = ui.create.div(".popup-container", ui.window);
+						const dialogContainer = ui.create.div(".prompt-container", popupContainer);
+						const dialog = ui.create.div(".menubg", ui.create.div(dialogContainer));
+						const countdownNode = ui.create.div("", dialog);
+						const controls = ui.create.div(dialog);
+						const deadline = Date.now() + 10000;
+						let settled = false;
+						let countdownInterval;
+						let rollbackTimeout;
+
+						const finish = keep => {
+							if (settled) return;
+							settled = true;
+							clearInterval(countdownInterval);
+							clearTimeout(rollbackTimeout);
+							popupContainer.remove();
+
+							if (keep) {
+								game.saveConfig("ui_zoom", zoomText);
+							} else {
+								text.innerText = originalValue;
+								applyZoom(originalZoom);
+							}
+						};
+						const updateCountdown = () => {
+							const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+							countdownNode.innerHTML = `是否保留 ${zoomText} 的界面缩放？<br>若不操作，将在 ${remaining} 秒后自动恢复。`;
+						};
+
+						ui.create.div(".menubutton.large", "保留设置", controls, () => finish(true));
+						ui.create.div(".menubutton.large", "撤销", controls, () => finish(false));
+						dialog.addEventListener("click", event => event.stopPropagation());
+						popupContainer.addEventListener("click", () => finish(false));
+						updateCountdown();
+						countdownInterval = setInterval(updateCountdown, 250);
+						rollbackTimeout = setTimeout(() => finish(false), 10000);
 					},
 				},
 				image_background: {
@@ -2253,8 +2239,7 @@ export class Library {
 										background = "default";
 										this.lastChild.innerHTML = "默认";
 									} else {
-										this.lastChild.innerHTML =
-											lib.configMenu.appearence.config.image_background.item[lib.config.image_background];
+										this.lastChild.innerHTML = lib.configMenu.appearence.config.image_background.item[lib.config.image_background];
 										return;
 									}
 								}
@@ -2468,9 +2453,7 @@ export class Library {
 									if (ui.css.card_stylesheet) {
 										ui.css.card_stylesheet.remove();
 									}
-									ui.css.card_stylesheet = lib.init.sheet(
-										".card:not(*:empty){background-image:url(" + fileLoadedEvent.target.result + ")}"
-									);
+									ui.css.card_stylesheet = lib.init.sheet(".card:not(*:empty){background-image:url(" + fileLoadedEvent.target.result + ")}");
 								};
 								fileReader.readAsDataURL(fileToLoad, "UTF-8");
 							});
@@ -2655,9 +2638,7 @@ export class Library {
 										if (ui.css.cardback_stylesheet) {
 											ui.css.cardback_stylesheet.remove();
 										}
-										ui.css.cardback_stylesheet = lib.init.sheet(
-											".card:empty,.card.infohidden{background-image:url(" + fileLoadedEvent.target.result + ")}"
-										);
+										ui.css.cardback_stylesheet = lib.init.sheet(".card:empty,.card.infohidden{background-image:url(" + fileLoadedEvent.target.result + ")}");
 										document.documentElement.style.setProperty("--cardback-url", `url(${fileLoadedEvent.target.result})`);
 										game.getDB("image", "cardback_style2", function (fileToLoad) {
 											if (!fileToLoad) {
@@ -2668,9 +2649,7 @@ export class Library {
 												if (ui.css.cardback_stylesheet2) {
 													ui.css.cardback_stylesheet2.remove();
 												}
-												ui.css.cardback_stylesheet2 = lib.init.sheet(
-													".card.infohidden:not(.infoflip){background-image:url(" + fileLoadedEvent.target.result + ")}"
-												);
+												ui.css.cardback_stylesheet2 = lib.init.sheet(".card.infohidden:not(.infoflip){background-image:url(" + fileLoadedEvent.target.result + ")}");
 												document.documentElement.style.setProperty("--cardback-url", `url(${fileLoadedEvent.target.result})`);
 											};
 											fileReader.readAsDataURL(fileToLoad, "UTF-8");
@@ -2836,11 +2815,7 @@ export class Library {
 									if (ui.css.hp_stylesheet1) {
 										ui.css.hp_stylesheet1.remove();
 									}
-									ui.css.hp_stylesheet1 = lib.init.sheet(
-										'.hp:not(.text):not(.actcount)[data-condition="high"]>div:not(.lost){background-image:url(' +
-											fileLoadedEvent.target.result +
-											")}"
-									);
+									ui.css.hp_stylesheet1 = lib.init.sheet('.hp:not(.text):not(.actcount)[data-condition="high"]>div:not(.lost){background-image:url(' + fileLoadedEvent.target.result + ")}");
 								};
 								fileReader.readAsDataURL(fileToLoad, "UTF-8");
 							});
@@ -2853,11 +2828,7 @@ export class Library {
 									if (ui.css.hp_stylesheet2) {
 										ui.css.hp_stylesheet2.remove();
 									}
-									ui.css.hp_stylesheet2 = lib.init.sheet(
-										'.hp:not(.text):not(.actcount)[data-condition="mid"]>div:not(.lost){background-image:url(' +
-											fileLoadedEvent.target.result +
-											")}"
-									);
+									ui.css.hp_stylesheet2 = lib.init.sheet('.hp:not(.text):not(.actcount)[data-condition="mid"]>div:not(.lost){background-image:url(' + fileLoadedEvent.target.result + ")}");
 								};
 								fileReader.readAsDataURL(fileToLoad, "UTF-8");
 							});
@@ -2870,11 +2841,7 @@ export class Library {
 									if (ui.css.hp_stylesheet3) {
 										ui.css.hp_stylesheet3.remove();
 									}
-									ui.css.hp_stylesheet3 = lib.init.sheet(
-										'.hp:not(.text):not(.actcount)[data-condition="low"]>div:not(.lost){background-image:url(' +
-											fileLoadedEvent.target.result +
-											")}"
-									);
+									ui.css.hp_stylesheet3 = lib.init.sheet('.hp:not(.text):not(.actcount)[data-condition="low"]>div:not(.lost){background-image:url(' + fileLoadedEvent.target.result + ")}");
 								};
 								fileReader.readAsDataURL(fileToLoad, "UTF-8");
 							});
@@ -2887,9 +2854,7 @@ export class Library {
 									if (ui.css.hp_stylesheet4) {
 										ui.css.hp_stylesheet4.remove();
 									}
-									ui.css.hp_stylesheet4 = lib.init.sheet(
-										".hp:not(.text):not(.actcount)>.lost{background-image:url(" + fileLoadedEvent.target.result + ")}"
-									);
+									ui.css.hp_stylesheet4 = lib.init.sheet(".hp:not(.text):not(.actcount)>.lost{background-image:url(" + fileLoadedEvent.target.result + ")}");
 								};
 								fileReader.readAsDataURL(fileToLoad, "UTF-8");
 							});
@@ -3012,9 +2977,7 @@ export class Library {
 									if (ui.css.player_stylesheet) {
 										ui.css.player_stylesheet.remove();
 									}
-									ui.css.player_stylesheet = lib.init.sheet(
-										'#window .player{background-image:url("' + fileLoadedEvent.target.result + '");background-size:100% 100%;}'
-									);
+									ui.css.player_stylesheet = lib.init.sheet('#window .player{background-image:url("' + fileLoadedEvent.target.result + '");background-size:100% 100%;}');
 								};
 								fileReader.readAsDataURL(fileToLoad, "UTF-8");
 							});
@@ -3184,14 +3147,8 @@ export class Library {
 									}
 									ui.css.border_stylesheet = lib.init.sheet();
 									ui.css.border_stylesheet.id = "ui.css.border";
-									ui.css.border_stylesheet.sheet.insertRule(
-										'#window .player>.framebg{display:block;background-image:url("' + fileLoadedEvent.target.result + '")}',
-										0
-									);
-									ui.css.border_stylesheet.sheet.insertRule(
-										".player>.count{z-index: 3 !important;border-radius: 2px !important;text-align: center !important;}",
-										0
-									);
+									ui.css.border_stylesheet.sheet.insertRule('#window .player>.framebg{display:block;background-image:url("' + fileLoadedEvent.target.result + '")}', 0);
+									ui.css.border_stylesheet.sheet.insertRule(".player>.count{z-index: 3 !important;border-radius: 2px !important;text-align: center !important;}", 0);
 								};
 								fileReader.readAsDataURL(fileToLoad, "UTF-8");
 							});
@@ -3203,26 +3160,9 @@ export class Library {
 							} else {
 								ui.arena.dataset.framedecoration = "";
 							}
-							ui.css.border_stylesheet.sheet.insertRule(
-								'#window .player>.framebg,#window #arena.long.mobile:not(.fewplayer) .player[data-position="0"]>.framebg{display:block;background-image:url("' +
-									lib.assetURL +
-									"theme/style/player/" +
-									layout +
-									'1.png")}',
-								0
-							);
-							ui.css.border_stylesheet.sheet.insertRule(
-								'#window #arena.long:not(.fewplayer) .player>.framebg, #arena.oldlayout .player>.framebg{background-image:url("' +
-									lib.assetURL +
-									"theme/style/player/" +
-									layout +
-									'3.png")}',
-								0
-							);
-							ui.css.border_stylesheet.sheet.insertRule(
-								".player>.count{z-index: 3 !important;border-radius: 2px !important;text-align: center !important;}",
-								0
-							);
+							ui.css.border_stylesheet.sheet.insertRule('#window .player>.framebg,#window #arena.long.mobile:not(.fewplayer) .player[data-position="0"]>.framebg{display:block;background-image:url("' + lib.assetURL + "theme/style/player/" + layout + '1.png")}', 0);
+							ui.css.border_stylesheet.sheet.insertRule('#window #arena.long:not(.fewplayer) .player>.framebg, #arena.oldlayout .player>.framebg{background-image:url("' + lib.assetURL + "theme/style/player/" + layout + '3.png")}', 0);
+							ui.css.border_stylesheet.sheet.insertRule(".player>.count{z-index: 3 !important;border-radius: 2px !important;text-align: center !important;}", 0);
 						}
 					},
 					unfrequent: true,
@@ -3398,11 +3338,7 @@ export class Library {
 									if (ui.css.menu_stylesheet) {
 										ui.css.menu_stylesheet.remove();
 									}
-									ui.css.menu_stylesheet = lib.init.sheet(
-										'html #window>.dialog.popped,html .menu,html .menubg{background-image:url("' +
-											fileLoadedEvent.target.result +
-											'");background-size:cover}'
-									);
+									ui.css.menu_stylesheet = lib.init.sheet('html #window>.dialog.popped,html .menu,html .menubg{background-image:url("' + fileLoadedEvent.target.result + '");background-size:cover}');
 								};
 								fileReader.readAsDataURL(fileToLoad, "UTF-8");
 							});
@@ -3419,9 +3355,7 @@ export class Library {
 									str = "linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4));color:white;text-shadow:black 0 0 2px";
 									break;
 							}
-							ui.css.menu_stylesheet = lib.init.sheet(
-								"html #window>.dialog.popped,html .menu,html .menubg{background-image:" + str + "}"
-							);
+							ui.css.menu_stylesheet = lib.init.sheet("html #window>.dialog.popped,html .menu,html .menubg{background-image:" + str + "}");
 						}
 					},
 					unfrequent: true,
@@ -3537,11 +3471,7 @@ export class Library {
 									if (ui.css.control_stylesheet) {
 										ui.css.control_stylesheet.remove();
 									}
-									ui.css.control_stylesheet = lib.init.sheet(
-										'#window .control,.menubutton:not(.active):not(.highlight):not(.red):not(.blue),#window #system>div>div{background-image:url("' +
-											fileLoadedEvent.target.result +
-											'")}'
-									);
+									ui.css.control_stylesheet = lib.init.sheet('#window .control,.menubutton:not(.active):not(.highlight):not(.red):not(.blue),#window #system>div>div{background-image:url("' + fileLoadedEvent.target.result + '")}');
 								};
 								fileReader.readAsDataURL(fileToLoad, "UTF-8");
 							});
@@ -3559,17 +3489,9 @@ export class Library {
 									break;
 							}
 							if (layout == "wood") {
-								ui.css.control_stylesheet = lib.init.sheet(
-									"#window .control,#window .menubutton,#window #system>div>div,#window #system>div>.pressdown2{background-image:" +
-										str +
-										"}"
-								);
+								ui.css.control_stylesheet = lib.init.sheet("#window .control,#window .menubutton,#window #system>div>div,#window #system>div>.pressdown2{background-image:" + str + "}");
 							} else {
-								ui.css.control_stylesheet = lib.init.sheet(
-									"#window .control,.menubutton:not(.active):not(.highlight):not(.red):not(.blue),#window #system>div>div{background-image:" +
-										str +
-										"}"
-								);
+								ui.css.control_stylesheet = lib.init.sheet("#window .control,.menubutton:not(.active):not(.highlight):not(.red):not(.blue),#window #system>div>div{background-image:" + str + "}");
 							}
 						}
 					},
@@ -3601,15 +3523,7 @@ export class Library {
 								cbnum6 += cbnum4;
 								cbnum4 = 0;
 							}
-							ui.css.buttonsheet = lib.init.sheet(
-								"#system>div>div, .caption>div>.tdnode{padding-top:" +
-									cbnum1 +
-									"px !important;padding-bottom:" +
-									cbnum2 +
-									"px !important}",
-								"#control>.control>div{padding-top:" + cbnum3 + "px;padding-bottom:" + cbnum4 + "px}",
-								"#control>.control{padding-top:" + cbnum5 + "px;padding-bottom:" + cbnum6 + "px}"
-							);
+							ui.css.buttonsheet = lib.init.sheet("#system>div>div, .caption>div>.tdnode{padding-top:" + cbnum1 + "px !important;padding-bottom:" + cbnum2 + "px !important}", "#control>.control>div{padding-top:" + cbnum3 + "px;padding-bottom:" + cbnum4 + "px}", "#control>.control{padding-top:" + cbnum5 + "px;padding-bottom:" + cbnum6 + "px}");
 						}
 					},
 				},
@@ -3919,10 +3833,7 @@ export class Library {
 							linked = true;
 						}
 						game.saveConfig("cardshape", item);
-						if (
-							item == "oblong" &&
-							(game.layout == "long" || game.layout == "mobile" || game.layout == "long2" || game.layout == "nova")
-						) {
+						if (item == "oblong" && (game.layout == "long" || game.layout == "mobile" || game.layout == "long2" || game.layout == "nova")) {
 							ui.arena.classList.add("oblongcard");
 							ui.window.classList.add("oblongcard");
 						} else {
@@ -4086,8 +3997,7 @@ export class Library {
 						if (link != "default") {
 							node.style.fontFamily = link;
 						} else {
-							node.style.fontFamily =
-								"'STHeiti','SimHei','Microsoft JhengHei','Microsoft YaHei','WenQuanYi Micro Hei','Suits',Helvetica,Arial,sans-serif";
+							node.style.fontFamily = "'STHeiti','SimHei','Microsoft JhengHei','Microsoft YaHei','WenQuanYi Micro Hei','Suits',Helvetica,Arial,sans-serif";
 						}
 						node.style.fontSize = "20px";
 					},
@@ -5033,11 +4943,7 @@ export class Library {
 						this.lastChild.innerHTML = this._link.config.item[lib.config.background_music];
 						var menu = this._link.menu;
 						for (var i = 0; i < menu.childElementCount; i++) {
-							if (
-								!["music_off", "music_custom", "music_random"]
-									.concat(lib.config.all.background_music)
-									.includes(menu.childNodes[i]._link)
-							) {
+							if (!["music_off", "music_custom", "music_random"].concat(lib.config.all.background_music).includes(menu.childNodes[i]._link)) {
 								menu.childNodes[i].delete();
 							}
 						}
@@ -5053,10 +4959,7 @@ export class Library {
 					},
 				},
 				import_music: {
-					name:
-						'<div style="white-space:nowrap;width:calc(100% - 5px)">' +
-						'<input type="file" style="width:calc(100% - 40px)" accept="audio/*">' +
-						'<button style="width:40px">确定</button></div>',
+					name: '<div style="white-space:nowrap;width:calc(100% - 5px)">' + '<input type="file" style="width:calc(100% - 40px)" accept="audio/*">' + '<button style="width:40px">确定</button></div>',
 					clear: true,
 				},
 				background_audio: {
@@ -5266,10 +5169,7 @@ export class Library {
 					clear: true,
 				},
 				import_data_button: {
-					name:
-						'<div style="white-space:nowrap;width:calc(100% - 10px)">' +
-						'<input type="file" accept="*/*" style="width:calc(100% - 40px)">' +
-						'<button style="width:40px">确定</button></div>',
+					name: '<div style="white-space:nowrap;width:calc(100% - 10px)">' + '<input type="file" accept="*/*" style="width:calc(100% - 40px)">' + '<button style="width:40px">确定</button></div>',
 					clear: true,
 				},
 				export_data: {
@@ -5319,9 +5219,7 @@ export class Library {
 											const hasInfoJson = all[1].includes("info.json");
 
 											if (!hasExtensionJs) {
-												const message = hasInfoJson
-													? `扩展${name}有 info.json 但缺少 extension.js 文件`
-													: `扩展${name}缺少必须的 extension.js 文件`;
+												const message = hasInfoJson ? `扩展${name}有 info.json 但缺少 extension.js 文件` : `扩展${name}缺少必须的 extension.js 文件`;
 												console.error(message);
 												game.removeExtension(name);
 											}
@@ -5698,6 +5596,22 @@ export class Library {
 			},
 		},
 	};
+	setDoudizhuConfigIntro(node, link, _value, config) {
+		let info = "";
+		if (config.name === "加强地主") {
+			info = link !== "disabled" && Object.hasOwn(config.item, link) ? get.translation(link + "_info") : "";
+		} else if (config.name === "〖飞扬〗版本") {
+			const skill = { online: "feiyang", mobile: "mbfeiyang", decade: "dcfeiyang" }[link];
+			info = skill ? get.translation(skill + "_info") : "";
+		} else if (config.name === "农民遗产") {
+			info = { online: "一名农民死亡后，另一名农民摸一张牌。", mobile: "一名农民死亡后，另一名农民选择摸两张牌或回复1点体力。", decade: "一名农民死亡后，另一名农民不获得额外效果。" }[link] || "";
+		}
+		if (info) {
+			lib.setIntro(node, uiintro => {
+				uiintro._place_text = uiintro.add(`<div class="text" style="display:inline">${info}</div>`);
+			});
+		}
+	}
 	mode = {
 		identity: {
 			name: "身份",
@@ -6612,11 +6526,12 @@ export class Library {
 					item: {
 						normal: "势备",
 						yingbian: "应变",
+						jiubian: "九变",
 						old: "怀旧",
 					},
 					frequent: true,
 					restart: true,
-					intro: "<li>势备：默认模式，使用线下《君临天下·势备篇》的牌堆进行游戏。<br><li>应变：使用OL的应变国战牌堆进行游戏。<br><li>怀旧：使用传统国战的牌堆进行游戏。",
+					intro: "<li>势备：默认模式，使用线下《君临天下·势备篇》的牌堆进行游戏。<br><li>应变：使用OL的应变国战牌堆进行游戏。<br><li>九变：使用九变篇国战牌堆进行游戏。<br><li>怀旧：使用传统国战的牌堆进行游戏。",
 				},
 				connect_player_number: {
 					name: "游戏人数",
@@ -6629,10 +6544,22 @@ export class Library {
 				},
 				connect_aozhan: {
 					name: "鏖战模式",
-					init: true,
-					intro: "若开启此选项，则将在游戏中引入“鏖战模式”的规则：<br>当游戏中仅剩四名或更少角色时（七人以下游戏时改为三名或更少），若此时全场没有超过一名势力相同的角色，则从一个新的回合开始，游戏进入鏖战模式直至游戏结束。<br>◇在鏖战模式下，【桃】只能当做【杀】或【闪】使用或打出，不能用来回复体力。<br>注：进入鏖战模式后，即使之后有两名或者更多势力相同的角色出现，仍然不会取消鏖战模式。",
+					init: "normal",
+					item: {
+						off: "关闭",
+						normal: "原鏖战",
+						jiubian: "九变鏖战",
+					},
+					intro: "◇原鏖战：进入鏖战后，【桃】只能当做【杀】或【闪】使用或打出，不能用来回复体力。<br>◇九变鏖战：进入鏖战后，【桃】只能当做【酒】使用或打出，并且每轮开始时翻开一张场景牌并执行对应效果。",
 					frequent: true,
 					restart: true,
+				},
+				connect_qunlangCharacters: {
+					name: "使用群狼环鼎武将",
+					init: false,
+					frequent: true,
+					restart: true,
+					intro: "开启后，部分旧国战武将将替换为群狼环鼎修订版本，并隐藏对应的九变篇独立武将。",
 				},
 				get connect_separatism() {
 					return lib.mode.guozhan.config.separatism;
@@ -6698,12 +6625,13 @@ export class Library {
 					item: {
 						normal: "势备",
 						yingbian: "应变",
+						jiubian: "九变",
 						old: "怀旧",
 						free: "自由",
 					},
 					frequent: true,
 					restart: true,
-					intro: "<li>势备：默认模式，使用线下《君临天下·势备篇》的牌堆进行游戏。<br><li>应变：使用OL的应变国战牌堆进行游戏。<br><li>怀旧：使用传统国战的牌堆进行游戏。<br><li>自由：使用玩家的自定义牌堆进行游戏。",
+					intro: "<li>势备：默认模式，使用线下《君临天下·势备篇》的牌堆进行游戏。<br><li>应变：使用OL的应变国战牌堆进行游戏。<br><li>九变：使用九变篇国战牌堆进行游戏。<br><li>怀旧：使用传统国战的牌堆进行游戏。<br><li>自由：使用玩家的自定义牌堆进行游戏。",
 				},
 				player_number: {
 					name: "游戏人数",
@@ -6722,10 +6650,22 @@ export class Library {
 				},
 				aozhan: {
 					name: "鏖战模式",
-					init: true,
+					init: "normal",
+					item: {
+						off: "关闭",
+						normal: "原鏖战",
+						jiubian: "九变鏖战",
+					},
 					frequent: true,
 					restart: true,
-					intro: "若开启此选项，则将在游戏中引入“鏖战模式”的规则：<br>当游戏中仅剩四名或更少角色时（七人以下游戏时改为三名或更少），若此时全场没有超过一名势力相同的角色，则从一个新的回合开始，游戏进入鏖战模式直至游戏结束。<br>◇在鏖战模式下，【桃】只能当做【杀】或【闪】使用或打出，不能用来回复体力。<br>注：进入鏖战模式后，即使之后有两名或者更多势力相同的角色出现，仍然不会取消鏖战模式。",
+					intro: "◇原鏖战：进入鏖战后，【桃】只能当做【杀】或【闪】使用或打出，不能用来回复体力。<br>◇九变鏖战：进入鏖战后，【桃】只能当做【酒】使用或打出，并且每轮开始时翻开一张场景牌并执行对应效果。<br>◇场景牌包括：不进则退、胜者为王、激励、祸起、落石、贱礼。",
+				},
+				qunlangCharacters: {
+					name: "使用群狼环鼎武将",
+					init: false,
+					frequent: true,
+					restart: true,
+					intro: "开启后，部分旧国战武将将替换为群狼环鼎修订版本，并隐藏对应的九变篇独立武将。",
 				},
 				separatism: {
 					name: "群雄割据",
@@ -6808,6 +6748,7 @@ export class Library {
 				},
 				changeViceType: {
 					name: "副将变更方式",
+					intro: "发现式：从候选武将中选择副将。随机式：随机变更为一名副将。九变模式固定使用随机式，不受此设置影响。",
 					init: "default",
 					item: {
 						default: "发现式",
@@ -7118,14 +7059,7 @@ export class Library {
 						map.enable_all_three.hide();
 						map.enable_all_cards.hide();
 					}
-					if (
-						config.versus_mode == "jiange" ||
-						config.versus_mode == "two" ||
-						config.versus_mode == "endless" ||
-						config.versus_mode == "three" ||
-						config.versus_mode == "one" ||
-						config.versus_mode == "siguo"
-					) {
+					if (config.versus_mode == "jiange" || config.versus_mode == "two" || config.versus_mode == "endless" || config.versus_mode == "three" || config.versus_mode == "one" || config.versus_mode == "siguo") {
 						map.free_choose.show();
 					} else {
 						map.free_choose.hide();
@@ -7754,6 +7688,7 @@ export class Library {
 					name: "加强地主",
 					init: "disabled",
 					restart: true,
+					textMenu: this.setDoudizhuConfigIntro,
 					item: {
 						disabled: "禁用",
 						yinfu: "获得〖殷富〗",
@@ -7767,6 +7702,7 @@ export class Library {
 					name: "农民遗产",
 					init: "mobile",
 					restart: true,
+					textMenu: this.setDoudizhuConfigIntro,
 					item: {
 						online: "OL版本",
 						mobile: "手杀版本",
@@ -7777,6 +7713,7 @@ export class Library {
 					name: "〖飞扬〗版本",
 					init: "online",
 					restart: true,
+					textMenu: this.setDoudizhuConfigIntro,
 					item: {
 						online: "OL版本",
 						mobile: "手杀版本",
@@ -8014,6 +7951,7 @@ export class Library {
 					name: "加强地主",
 					init: "disabled",
 					restart: true,
+					textMenu: this.setDoudizhuConfigIntro,
 					item: {
 						disabled: "禁用",
 						yinfu: "获得〖殷富〗",
@@ -8027,6 +7965,7 @@ export class Library {
 					name: "农民遗产",
 					init: "mobile",
 					restart: true,
+					textMenu: this.setDoudizhuConfigIntro,
 					item: {
 						online: "OL版本",
 						mobile: "手杀版本",
@@ -8037,6 +7976,7 @@ export class Library {
 					name: "〖飞扬〗版本",
 					init: "online",
 					restart: true,
+					textMenu: this.setDoudizhuConfigIntro,
 					item: {
 						online: "OL版本",
 						mobile: "手杀版本",
@@ -8735,37 +8675,19 @@ export class Library {
 		videoId: 0,
 		globalId: 0,
 	};
-	help = {
-		关于游戏:
-			'<div style="margin:10px">关于无名杀</div><ul style="margin-top:0"><li>无名杀官方发布地址仅有GitHub仓库！<br><a href="https://github.com/libnoname/noname">点击前往Github仓库</a><br><li>无名杀基于GPLv3开源协议。<br><a href="https://www.gnu.org/licenses/gpl-3.0.html">点击查看GPLv3协议</a><br><li>其他所有的所谓“无名杀”社群（包括但不限于绝大多数“官方”QQ群、QQ频道等）均为玩家自发组织，与无名杀官方无关！',
-		游戏操作:
-			"<ul><li>长按/鼠标悬停/右键单击显示信息。<li>触屏模式中，双指点击切换暂停；下划显示菜单，上划切换托管。<li>键盘快捷键<br>" +
-			"<table><tr><td>A<td>切换托管<tr><td>W<td>切换不询问无懈<tr><td>空格<td>暂停</table><li>编辑牌堆<br>在卡牌包中修改牌堆后，将自动创建一个临时牌堆，在所有模式中共用，当保存当前牌堆后，临时牌堆被清除。每个模式可设置不同的已保存牌堆，设置的牌堆优先级大于临时牌堆。</ul>",
-		游戏命令:
-			'<div style="margin:10px">变量名</div><ul style="margin-top:0"><li>场上角色<br>game.players<li>阵亡角色<br>game.dead' +
-			"<li>玩家<br>game.me<li>玩家的上/下家<br>game.me.previous/next" +
-			"<li>玩家的上/下家（含阵亡）<br>game.me.previousSeat/<br>nextSeat" +
-			"<li>牌堆<br>ui.cardPile<li>弃牌堆<br>ui.discardPile</ul>" +
-			'<div style="margin:10px">角色属性</div><ul style="margin-top:0"><li>体力值<br>player.hp' +
-			'<li>体力上限<br>player.maxHp<li>身份<br>player.identity<li>手牌<br>player.getCards("h")<li>装备牌<br>player.getCards("e")<li>判定牌<br>player.getCards("j")' +
-			"<li>是否存活/横置/翻面<br>player.isAlive()/<br>isLinked()/<br>isTurnedOver()</ul>" +
-			'<div style="margin:10px">角色操作</div><ul style="margin-top:0"><li>受到伤害<br>player.damage(source,<br>num)' +
-			"<li>回复体力<br>player.recover(num)<li>摸牌<br>player.draw(num)<li>获得牌<br>player.gain(cards)<li>弃牌<br>player.discard(cards)" +
-			"<li>使用卡牌<br>player.useCard(card,<br>targets)<li>死亡<br>player.die()<li>复活<br>player.revive(hp)</ul>" +
-			'<div style="margin:10px">游戏操作</div><ul style="margin-top:0"><li>在命令框中输出结果<br>game.print(str)<li>清除命令框中的内容<br>cls<li>上一条/下一条输入的内容<br>up/down<li>游戏结束<br>game.over(bool)' +
-			"<li>角色资料<br>lib.character<li>卡牌资料<br>lib.card</ul>",
-		get 游戏名词() {
-			return (
-				"<ul>" +
-				lib.poptip
-					.getIdList("rule")
-					.map(id => `<strong>${lib.poptip.getName(id)}</strong>：<br>${lib.poptip.getInfo(id)}</li>`)
-					.unique()
-					.join("<br><br>") +
-				"</ul>"
-			);
-		},
-	};
+	/** @type {Record<string, HelpContent>} */
+	help = help;
+	/**
+	 * 文件系统操作入口（新）。
+	 *
+	 * 旨在整合之前`game.readFile/writeFile/...`用于读写文件的函数，为多平台支持提供统一适配器
+	 *
+	 * 当前仅浏览器的开发服务器环境会安装具体适配器；其他运行环境暂使用默认适配器，
+	 * 调用文件系统操作时会抛出错误。此入口为后续 Node.js/Cordova 适配保留统一接口。
+	 *
+	 * @type {FileSystem}
+	 */
+	fs = new FileSystem(new DefaultFileSystemAdapter());
 	/**
 	 * @type {import('path-browserify-esm')}
 	 */
@@ -9066,10 +8988,7 @@ export class Library {
 	}
 	saveVideo() {
 		if (_status.videoToSave) {
-			game.export(
-				lib.init.encode(JSON.stringify(_status.videoToSave)),
-				"无名杀 - 录像 - " + _status.videoToSave.name[0] + " - " + _status.videoToSave.name[1]
-			);
+			game.export(lib.init.encode(JSON.stringify(_status.videoToSave)), "无名杀 - 录像 - " + _status.videoToSave.name[0] + " - " + _status.videoToSave.name[1]);
 		}
 	}
 	init = new LibInit();
@@ -9177,221 +9096,10 @@ export class Library {
 			const mode = lib.config.all.mode.slice(0);
 			mode.remove("connect");
 			mode.remove("brawl");
-			const banned = [
-				"shen_guanyu",
-				"shen_caocao",
-				"caopi",
-				"re_daqiao",
-				"caorui",
-				"daqiao",
-				"lingcao",
-				"liuzan",
-				"lusu",
-				"luxun",
-				"yanwen",
-				"zhouyu",
-				"ns_wangyue",
-				"gw_yenaifa",
-				"old_caozhen",
-				"swd_jiangziya",
-				"xuhuang",
-				"maliang",
-				"guojia",
-				"simayi",
-				"swd_kangnalishi",
-				"hs_siwangzhiyi",
-				"hs_nozdormu",
-				"old_zhuzhi",
-			];
+			const banned = ["shen_guanyu", "shen_caocao", "caopi", "re_daqiao", "caorui", "daqiao", "lingcao", "liuzan", "lusu", "luxun", "yanwen", "zhouyu", "ns_wangyue", "gw_yenaifa", "old_caozhen", "swd_jiangziya", "xuhuang", "maliang", "guojia", "simayi", "swd_kangnalishi", "hs_siwangzhiyi", "hs_nozdormu", "old_zhuzhi"];
 			const bannedcards = ["zengbin"];
-			const favs = [
-				"hs_tuoqi",
-				"hs_siwangxianzhi",
-				"hs_xukongzhiying",
-				"hs_hsjiasha",
-				"gjqt_xieyi",
-				"gjqt_yunwuyue",
-				"gjqt_beiluo",
-				"gjqt_cenying",
-				"shen_lvmeng",
-				"shen_zhaoyun",
-				"shen_zhugeliang",
-				"ow_ana",
-				"chenlin",
-				"ns_guanlu",
-				"hs_guldan",
-				"swd_guyue",
-				"pal_jiangyunfan",
-				"mtg_jiesi",
-				"swd_lanyin",
-				"pal_liumengli",
-				"swd_muyun",
-				"pal_nangonghuang",
-				"swd_muyue",
-				"pal_murongziying",
-				"swd_qiner",
-				"pal_shenqishuang",
-				"hs_taisi",
-				"wangji",
-				"pal_xingxuan",
-				"xunyou",
-				"hs_yelise",
-				"pal_yuejinzhao",
-				"pal_yueqi",
-				"gjqt_yuewuyi",
-				"swd_yuxiaoxue",
-				"ow_zhaliya",
-				"zhangchunhua",
-				"hs_zhihuanhua",
-				"swd_zhiyin",
-				"old_zhonghui",
-				"gjqt_bailitusu",
-				"hs_barnes",
-				"ow_dva",
-				"swd_hengai",
-				"pal_jushifang",
-				"hs_kazhakusi",
-				"hs_lafamu",
-				"ow_liekong",
-				"hs_lreno",
-				"pal_mingxiu",
-				"swd_murongshi",
-				"gw_oudimu",
-				"gjqt_ouyangshaogong",
-				"hs_pyros",
-				"qinmi",
-				"gw_sanhanya",
-				"hs_selajin",
-				"swd_shuwaner",
-				"swd_situqiang",
-				"hs_xialikeer",
-				"pal_xuejian",
-				"swd_yuchiyanhong",
-				"swd_yuwentuo",
-				"swd_zhaoyun",
-				"zhugeliang",
-				"gw_aigeleisi",
-				"gw_aimin",
-				"gjqt_aruan",
-				"hs_aya",
-				"swd_cheyun",
-				"swd_chenjingchou",
-				"gw_diandian",
-				"swd_huzhongxian",
-				"hs_jinglinglong",
-				"hs_kaituozhe",
-				"hs_kalimosi",
-				"gw_linjing",
-				"ow_luxiao",
-				"re_luxun",
-				"hs_morgl",
-				"swd_sikongyu",
-				"hs_sthrall",
-				"sunquan",
-				"sunshangxiang",
-				"gw_yioufeisisp",
-				"gw_yisilinni",
-				"hs_yogg",
-				"hs_ysera",
-				"pal_yuntianhe",
-				"zhugejin",
-				"zhugeke",
-				"gw_zhuoertan",
-				"hs_anduin",
-				"swd_anka",
-				"ow_banzang",
-				"ow_chanyata",
-				"diaochan",
-				"swd_duguningke",
-				"sp_diaochan",
-				"hetaihou",
-				"ns_huamulan",
-				"swd_huanglei",
-				"swd_huanyuanzhi",
-				"re_huatuo",
-				"gw_huoge",
-				"pal_jiangcheng",
-				"yj_jushou",
-				"swd_kendi",
-				"yxs_libai",
-				"mtg_lilianna",
-				"xin_liru",
-				"liuxie",
-				"pal_lixiaoyao",
-				"pal_longkui",
-				"ns_nanhua",
-				"swd_qi",
-				"swd_septem",
-				"gw_shasixiwusi",
-				"ow_tianshi",
-				"swd_weida",
-				"gjqt_xiayize",
-				"swd_xiyan",
-				"hs_xsylvanas",
-				"hs_yelinlonghou",
-				"ow_yuanshi",
-				"zuoci",
-			];
-			const vintage = [
-				"tianjian",
-				"shuiyun",
-				"zhuyue",
-				"zhimeng",
-				"poyun",
-				"qianfang",
-				"xfenxin",
-				"danqing",
-				"ywuhun",
-				"tianwu",
-				"xuelu",
-				"shahun",
-				"yuling",
-				"duhun",
-				"liaoyuan",
-				"touxi",
-				"wangchen",
-				"poyue",
-				"kunlunjing",
-				"huanhun",
-				"yunchou",
-				"tuzhen",
-				"cyqiaoxie",
-				"mufeng",
-				"duanyi",
-				"guozao",
-				"yaotong",
-				"pozhen",
-				"tanlin",
-				"susheng",
-				"jikong",
-				"shouyin",
-				"jilve",
-				"hxunzhi",
-				"huodan",
-				"shanxian",
-				"ziyu",
-				"kuoyin",
-				"feiren",
-				"zihui",
-				"jidong",
-				"baoxue",
-				"aqianghua",
-				"maoding",
-				"bfengshi",
-				"zhongdun",
-				"pingzhang",
-				"maichong",
-				"guozai",
-				"jingxiang",
-				"yuelu",
-				"liechao",
-				"fengnu",
-				"hanshuang",
-				"enze",
-				"malymowang",
-				"xshixin",
-				"qingzun",
-			];
+			const favs = ["hs_tuoqi", "hs_siwangxianzhi", "hs_xukongzhiying", "hs_hsjiasha", "gjqt_xieyi", "gjqt_yunwuyue", "gjqt_beiluo", "gjqt_cenying", "shen_lvmeng", "shen_zhaoyun", "shen_zhugeliang", "ow_ana", "chenlin", "ns_guanlu", "hs_guldan", "swd_guyue", "pal_jiangyunfan", "mtg_jiesi", "swd_lanyin", "pal_liumengli", "swd_muyun", "pal_nangonghuang", "swd_muyue", "pal_murongziying", "swd_qiner", "pal_shenqishuang", "hs_taisi", "wangji", "pal_xingxuan", "xunyou", "hs_yelise", "pal_yuejinzhao", "pal_yueqi", "gjqt_yuewuyi", "swd_yuxiaoxue", "ow_zhaliya", "zhangchunhua", "hs_zhihuanhua", "swd_zhiyin", "old_zhonghui", "gjqt_bailitusu", "hs_barnes", "ow_dva", "swd_hengai", "pal_jushifang", "hs_kazhakusi", "hs_lafamu", "ow_liekong", "hs_lreno", "pal_mingxiu", "swd_murongshi", "gw_oudimu", "gjqt_ouyangshaogong", "hs_pyros", "qinmi", "gw_sanhanya", "hs_selajin", "swd_shuwaner", "swd_situqiang", "hs_xialikeer", "pal_xuejian", "swd_yuchiyanhong", "swd_yuwentuo", "swd_zhaoyun", "zhugeliang", "gw_aigeleisi", "gw_aimin", "gjqt_aruan", "hs_aya", "swd_cheyun", "swd_chenjingchou", "gw_diandian", "swd_huzhongxian", "hs_jinglinglong", "hs_kaituozhe", "hs_kalimosi", "gw_linjing", "ow_luxiao", "re_luxun", "hs_morgl", "swd_sikongyu", "hs_sthrall", "sunquan", "sunshangxiang", "gw_yioufeisisp", "gw_yisilinni", "hs_yogg", "hs_ysera", "pal_yuntianhe", "zhugejin", "zhugeke", "gw_zhuoertan", "hs_anduin", "swd_anka", "ow_banzang", "ow_chanyata", "diaochan", "swd_duguningke", "sp_diaochan", "hetaihou", "ns_huamulan", "swd_huanglei", "swd_huanyuanzhi", "re_huatuo", "gw_huoge", "pal_jiangcheng", "yj_jushou", "swd_kendi", "yxs_libai", "mtg_lilianna", "xin_liru", "liuxie", "pal_lixiaoyao", "pal_longkui", "ns_nanhua", "swd_qi", "swd_septem", "gw_shasixiwusi", "ow_tianshi", "swd_weida", "gjqt_xiayize", "swd_xiyan", "hs_xsylvanas", "hs_yelinlonghou", "ow_yuanshi", "zuoci"];
+			const vintage = ["tianjian", "shuiyun", "zhuyue", "zhimeng", "poyun", "qianfang", "xfenxin", "danqing", "ywuhun", "tianwu", "xuelu", "shahun", "yuling", "duhun", "liaoyuan", "touxi", "wangchen", "poyue", "kunlunjing", "huanhun", "yunchou", "tuzhen", "cyqiaoxie", "mufeng", "duanyi", "guozao", "yaotong", "pozhen", "tanlin", "susheng", "jikong", "shouyin", "jilve", "hxunzhi", "huodan", "shanxian", "ziyu", "kuoyin", "feiren", "zihui", "jidong", "baoxue", "aqianghua", "maoding", "bfengshi", "zhongdun", "pingzhang", "maichong", "guozai", "jingxiang", "yuelu", "liechao", "fengnu", "hanshuang", "enze", "malymowang", "xshixin", "qingzun"];
 			const favmodes = ["versus|three", "versus|four", "versus|two", "chess|combat"];
 			for (let i = 0; i < mode.length; i++) {
 				game.saveConfig(mode[i] + "_banned", banned);
@@ -9752,27 +9460,7 @@ export class Library {
 				log(str);
 				str = "红桃牌" + sa + "； " + "方片牌" + sb + "； " + "梅花牌" + sc + "； " + "黑桃牌" + sd;
 				log(str);
-				str =
-					"杀" +
-					sha +
-					"； " +
-					"黑杀" +
-					heisha +
-					"； " +
-					"红杀" +
-					hongsha +
-					"； " +
-					"闪" +
-					shan +
-					"； " +
-					"桃" +
-					tao +
-					"； " +
-					"酒" +
-					jiu +
-					"； " +
-					"无懈" +
-					wuxie;
+				str = "杀" + sha + "； " + "黑杀" + heisha + "； " + "红杀" + hongsha + "； " + "闪" + shan + "； " + "桃" + tao + "； " + "酒" + jiu + "； " + "无懈" + wuxie;
 				log(str);
 				if (arguments[1]) {
 					for (let i = 1; i <= 13; i++) {
@@ -9981,15 +9669,7 @@ export class Library {
 				}
 			}
 
-			let list2 = lib.rank.s
-				.concat(lib.rank.ap)
-				.concat(lib.rank.a)
-				.concat(lib.rank.am)
-				.concat(lib.rank.bp)
-				.concat(lib.rank.b)
-				.concat(lib.rank.bm)
-				.concat(lib.rank.c)
-				.concat(lib.rank.d);
+			let list2 = lib.rank.s.concat(lib.rank.ap).concat(lib.rank.a).concat(lib.rank.am).concat(lib.rank.bp).concat(lib.rank.b).concat(lib.rank.bm).concat(lib.rank.c).concat(lib.rank.d);
 			Object.keys(lib.character).forEach(key => {
 				if (!lib.config.forbidai.includes(key) && !key.startsWith("boss_") && !key.startsWith("tafang_") && !list2.includes(key)) {
 					log(get.translation(key), key);
@@ -10624,10 +10304,8 @@ export class Library {
 		ws: {
 			onopen: function () {
 				clearTimeout(this._connectTimeout);
-				if (_status.connectCallback) {
-					_status.connectCallback(true);
-					delete _status.connectCallback;
-				}
+				if (this._nocallback || game.ws !== this) return;
+				finishConnectCallback(_status, true);
 			},
 			onmessage: function (messageevent) {
 				if (messageevent.data == "heartbeat") {
@@ -10664,10 +10342,10 @@ export class Library {
 				if (this._nocallback) {
 					return;
 				}
-				if (_status.connectCallback) {
-					_status.connectCallback(false);
-					delete _status.connectCallback;
-				} else {
+				if (_status.reloading) {
+					return;
+				}
+				if (!finishConnectCallback(_status, false)) {
 					alert("连接失败");
 				}
 			},
@@ -10676,10 +10354,12 @@ export class Library {
 				if (this._nocallback) {
 					return;
 				}
-				if (_status.connectCallback) {
-					_status.connectCallback(false);
-					delete _status.connectCallback;
+				if (_status.reloading) {
+					return;
 				}
+				finishConnectCallback(_status, false);
+				// 回调可能立即建立新连接，不得清理或重试该连接。
+				if (game.ws !== this) return;
 				// 清理 WebSocket 引用
 				game.ws = null;
 				game.sandbox = null;
@@ -10705,6 +10385,7 @@ export class Library {
 
 				if (decision.action === "none") {
 					// 未联机或游戏正常结束，无需重连
+					delete _status.noReconnect;
 					return;
 				}
 				if (decision.action === "reload") {
@@ -10724,6 +10405,7 @@ export class Library {
 					ui.create.connecting();
 				}
 				_status.reconnectTimer = setTimeout(function () {
+					delete _status.reconnectTimer;
 					// 空回调不可省略：game.connect 依赖 _status.connectCallback 存在，
 					// 否则重试失败时 onerror 会走 else 分支弹出“连接失败”
 					game.connect(_status.ip, function () {
@@ -10902,115 +10584,145 @@ export class Library {
 		},
 	};
 	filter = {
+		/**
+		 * 恒真函数，用于允许所有传递的对象
+		 *
+		 * @returns { true }
+		 */
 		all: () => true,
+		/**
+		 * 恒假函数，用于过滤所有传递的对象
+		 *
+		 * @returns { false }
+		 */
 		none: () => false,
 		/**
-		 * Check if the card does not count toward the player's hand limit
-		 *
 		 * 检测此牌是否不计入此角色的手牌上限
-		 * @param { Card } card
-		 * @param { Player } player
+		 *
+		 * @param { Card } card - 需要判断的牌
+		 * @param { Player } player - 拥有此牌的玩家
 		 * @returns { boolean }
 		 */
-		ignoredHandcard: (card, player) => game.checkMod(card, player, false, "ignoredHandcard", player),
+		ignoredHandcard: (card, player) => Boolean(game.checkMod(card, player, false, "ignoredHandcard", player)),
 		/**
-		 * Check if the card is giftable
-		 *
 		 * 检测此牌是否可赠予
-		 * @param { Card } card
-		 * @param { Player } player
-		 * @param { Player } target
-		 * @param { boolean } [strict]
+		 *
+		 * @param { Card } card - 需要判断的牌
+		 * @param { Player } player - 发起赠与的玩家
+		 * @param { Player } target - 被赠与的对象
+		 * @param { boolean } [strict] - 是否执行合法性校验
+		 * @returns { boolean }
 		 */
-		cardGiftable: (card, player, target, strict) => {
+		cardGiftable(card, player, target, strict) {
 			const mod = game.checkMod(card, player, target, "unchanged", "cardGiftable", player);
-			if (!mod || (strict && ((mod == "unchanged" && (get.position(card) != "h" || !get.cardtag(card, "gifts"))) || player == target))) {
+			if (!mod || (strict && ((mod === "unchanged" && (get.position(card) !== "h" || !get.cardtag(card, "gifts"))) || player === target))) {
 				return false;
 			}
-			return get.type(card, null, target) != "equip" || target.canEquip(card, true);
+			return get.type(card, null, target) !== "equip" || target.canEquip(card, true);
 		},
 		/**
-		 * Check if the card is recastable
-		 *
 		 * 检查此牌是否可重铸
-		 * @param { Card } card
-		 * @param { Player } player
-		 * @param { Player } [source]
-		 * @param { boolean } [strict]
+		 *
+		 * @param { Card } card - 需要判断的牌
+		 * @param { Player } [player] - 拥有牌的角色
+		 * @param { Player } [source] - 执行重铸的玩家
+		 * @param { boolean } [strict] - 是否执行合法性校验
 		 */
-		cardRecastable: (card, player = get.owner(card), source, strict) => {
-			if (!player) {
-				if (player === null) {
-					console.trace(`cardRecastable的player参数不应传入null,可以用void 0或undefined占位`);
-				}
-				player = get.owner(card);
+		cardRecastable(card, player, source, strict) {
+			player ??= get.owner(card);
+			if (player == null) {
+				throw new ReferenceError("尝试检查一张无拥有者牌是否可以重铸");
 			}
+			source ??= player;
 			const mod = game.checkMod(card, player, source, "unchanged", "cardRecastable", player);
 			if (!mod) {
 				return false;
 			}
-			if (strict && mod == "unchanged") {
-				if (get.position(card) != "h") {
+			if (strict && mod === "unchanged") {
+				if (get.position(card) !== "h") {
 					return false;
 				}
-				const info = get.info(card),
-					recastable = info.recastable || info.chongzhu;
-				return Boolean(typeof recastable == "function" ? recastable(_status.event, player) : recastable);
+				const info = get.info(card);
+				const recastable = info.recastable || info.chongzhu;
+				return Boolean(typeof recastable === "function" ? recastable(_status.event, player) : recastable);
 			}
 			return true;
 		},
-		//装备栏相关
 		/**
-		 * @param { Card } card
-		 * @param { Player } player
+		 * 判断一张装备牌是否可以被替换。
+		 *
+		 * @param { Card | VCard } card - 需要判断的装备牌
+		 * @param { Player } player - 持有/装备此牌的角色
 		 * @returns { boolean }
 		 */
-		canBeReplaced: function (card, player) {
-			var mod = game.checkMod(card, player, "unchanged", "canBeReplaced", player);
-			if (mod != "unchanged") {
-				return mod;
+		canBeReplaced(card, player) {
+			const mod = game.checkMod(card, player, "unchanged", "canBeReplaced", player);
+			if (mod !== "unchanged") {
+				return Boolean(mod);
 			}
 			return true;
 		},
-		//装备栏 END
-		buttonIncluded: function (button) {
-			return !(_status.event.excludeButton && _status.event.excludeButton.includes(button));
+		/**
+		 * 判断按钮是否未被当前事件排除。
+		 *
+		 * @param { Button } button - 待判断的按钮
+		 * @returns { boolean }
+		 */
+		buttonIncluded(button) {
+			return !_status.event.excludeButton?.includes(button);
 		},
-		filterButton: function (button) {
+		/**
+		 * 默认的按钮筛选条件，允许所有按钮。
+		 *
+		 * @param { Button } button - 待筛选的按钮
+		 * @returns { boolean }
+		 */
+		filterButton(button) {
 			return true;
 		},
-		cardSavable: function (card, player, target) {
-			if (get.itemtype(card) == "card") {
-				var mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
-				if (mod2 != "unchanged") {
-					return mod2;
+		/**
+		 * 检测此牌是否可用于救助目标
+		 *
+		 * @param { Card | VCard | CardBaseUIData  } card - 需要判断的牌
+		 * @param { Player } player - 使用此牌的玩家
+		 * @param { Player } target - 被救助的目标
+		 * @returns { boolean }
+		 */
+		cardSavable(card, player, target) {
+			if (get.itemtype(card) === "card") {
+				// @ts-expect-error 我们需要ts
+				const mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
+				if (mod2 !== "unchanged") {
+					return Boolean(mod2);
 				}
 			}
-			card = get.autoViewAs(card);
-			var mod = game.checkMod(card, player, target, "unchanged", "cardSavable", player);
-			if (mod != "unchanged") {
-				return mod;
+			const card2 = get.autoViewAs(card);
+			let mod = game.checkMod(card2, player, target, "unchanged", "cardSavable", player);
+			if (mod !== "unchanged") {
+				return Boolean(mod);
 			}
-			var savable = get.info(card).savable;
-			if (typeof savable == "function") {
-				savable = savable(card, player, target);
+			let savable = get.info(card2).savable;
+			if (typeof savable === "function") {
+				savable = savable(card2, player, target);
 			}
 			return savable;
 		},
 		/**
+		 * 判断技能是否可响应指定事件。
 		 *
-		 * @param {GameEvent} event
-		 * @param {Player} player
-		 * @param {string} triggername
-		 * @param {string} skill
-		 * @returns {boolean}
+		 * @param { GameEvent } event - 待响应的事件
+		 * @param { Player } player - 技能所属角色
+		 * @param { string } triggerName - 触发时机名称
+		 * @param { string } skill - 技能名称
+		 * @param { any } [indexedData] - 触发时附带的索引数据
+		 * @returns { boolean }
 		 */
-		filterTrigger: function (event, player, triggername, skill, indexedData) {
+		filterTrigger(event, player, triggerName, skill, indexedData) {
 			if (
 				player._hookTrigger &&
 				player._hookTrigger.some(i => {
 					const info = lib.skill[i].hookTrigger;
-					return info && info.block && info.block(event, player, triggername, skill);
+					return info && info.block && info.block(event, player, triggerName, skill);
 				})
 			) {
 				return false;
@@ -11025,7 +10737,7 @@ export class Library {
 			}
 			if (!game.expandSkills(player.getSkills(false).concat(lib.skill.global)).includes(skill)) {
 				//hiddenSkills
-				if (get.mode() != "guozhan") {
+				if (get.mode() !== "guozhan") {
 					return false;
 				}
 				if (info.noHidden) {
@@ -11043,16 +10755,16 @@ export class Library {
 			}
 			if (
 				!Object.keys(info.trigger).some(role => {
-					if (role != "global" && player != event[role]) {
+					if (role !== "global" && player !== event[role]) {
 						return false;
 					}
 					const list = [];
-					if (typeof info.trigger[role] == "string") {
+					if (typeof info.trigger[role] === "string") {
 						list.add(info.trigger[role]);
 					} else if (Array.isArray(info.trigger[role])) {
 						list.addArray(info.trigger[role]);
 					}
-					if (list.includes(triggername)) {
+					if (list.includes(triggerName)) {
 						return true;
 					}
 					const map = lib.relatedTrigger,
@@ -11064,12 +10776,12 @@ export class Library {
 							}
 						}
 					}
-					return list.includes(triggername);
+					return list.includes(triggerName);
 				})
 			) {
 				return false;
 			}
-			if (info.filter && !info.filter(event, player, triggername, indexedData)) {
+			if (info.filter && !info.filter(event, player, triggerName, indexedData)) {
 				return false;
 			}
 			if (event._notrigger.includes(player) && !lib.skill.global.includes(skill)) {
@@ -11088,35 +10800,34 @@ export class Library {
 				return false;
 			}
 			for (const item in player.storage) {
-				if (item.startsWith("temp_ban_")) {
-					if (player.storage[item] !== true) {
-						continue;
-					}
-					const skillName = item.slice(9);
-					if (lib.skill[skillName]) {
-						const skills = game.expandSkills([skillName]);
-						if (skills.includes(skill)) {
-							return false;
-						}
-					}
+				if (!item.startsWith("temp_ban_") || player.storage[item] !== true) {
+					continue;
+				}
+				const skillName = item.slice(9);
+				if (!lib.skill[skillName]) {
+					continue;
+				}
+				const skills = game.expandSkills([skillName]);
+				if (skills.includes(skill)) {
+					return false;
 				}
 			}
 			return true;
 		},
 		/**
+		 * 判断技能是否可在当前事件中发动。
 		 *
-		 * @param {GameEvent} event
-		 * @param {Player} player
-		 * @param {string} skill
-		 * @returns {boolean}
+		 * @param { GameEvent } event - 当前事件
+		 * @param { Player } player - 技能所属角色
+		 * @param { string } skill - 技能名称
+		 * @returns { boolean }
 		 */
-		filterEnable: function (event, player, skill) {
+		filterEnable(event, player, skill) {
 			const info = get.info(skill);
 			if (!info) {
 				console.error(new ReferenceError("缺少info的技能:", skill));
 				return false;
 			}
-			// if (!game.expandSkills(player.getSkills('invisible').concat(lib.skill.global)).includes(skill)) return false;
 			if (!game.expandSkills(player.getSkills(false).concat(lib.skill.global)).includes(skill)) {
 				//hiddenSkills
 				if (player.hasSkillTag("nomingzhi", false, null, true)) {
@@ -11191,327 +10902,390 @@ export class Library {
 			}
 			return true;
 		},
-		characterDisabled: function (i, libCharacter) {
-			const args = Array.from(arguments).slice(2);
-			if (!lib.character[i]) {
+		/**
+		 * 判断武将是否因配置、模式或禁用列表而不可选用。
+		 *
+		 * @param { string } name - 武将名称
+		 * @param { Record<string, Character> } [_characters] - 候选武将表；保留此参数以兼容现有调用。
+		 * @param { ...string } options - 附加选项，包含 `"ignoreForibidden"` 时忽略 AI 禁用标记。
+		 * @returns { boolean }
+		 */
+		characterDisabled(name, _characters, ...options) {
+			const character = lib.character[name];
+			if (!character || character.isUnseen) {
 				return true;
 			}
-			if (lib.character[i].isUnseen) {
-				return true;
-			}
-			if (!args.includes("ignoreForibidden")) {
-				if (lib.config.forbidai.includes(i) || lib.character[i].isAiForbidden) {
+			if (!options.includes("ignoreForibidden")) {
+				if (lib.config.forbidai.includes(name) || character.isAiForbidden) {
 					return true;
 				}
 			}
-			if (lib.characterFilter[i] && !lib.characterFilter[i](get.mode())) {
+			if (lib.characterFilter[name] && !lib.characterFilter[name](get.mode())) {
 				return true;
 			}
 			if (_status.connectMode) {
-				if (lib.configOL.banned.includes(i) || lib.connectBanned.includes(i)) {
+				if (lib.configOL.banned.includes(name) || lib.connectBanned.includes(name)) {
 					return true;
 				}
-				var double_character = false;
-				if (lib.configOL.mode == "guozhan") {
-					double_character = true;
-				} else if (lib.configOL.double_character && (lib.configOL.mode == "identity" || lib.configOL.mode == "stone")) {
-					double_character = true;
-				} else if (lib.configOL.double_character_jiange && lib.configOL.mode == "versus" && _status.mode == "jiange") {
-					double_character = true;
-				}
-				if (double_character && lib.config.forbiddouble.includes(i)) {
+				const doubleCharacter = lib.configOL.mode === "guozhan" || (lib.configOL.double_character && (lib.configOL.mode === "identity" || lib.configOL.mode === "stone")) || (lib.configOL.double_character_jiange && lib.configOL.mode === "versus" && _status.mode === "jiange");
+				if (doubleCharacter && lib.config.forbiddouble.includes(name)) {
 					return true;
 				}
 			} else {
-				if (lib.config.banned.includes(i)) {
+				if (lib.config.banned.includes(name)) {
 					return true;
 				}
-				var double_character = false;
-				if (get.mode() == "guozhan") {
-					double_character = true;
-				} else if (get.config("double_character") && (lib.config.mode == "identity" || lib.config.mode == "stone")) {
-					double_character = true;
-				} else if (get.config("double_character_jiange") && lib.config.mode == "versus" && _status.mode == "jiange") {
-					double_character = true;
-				}
-				if (double_character && lib.config.forbiddouble.includes(i)) {
+				const doubleCharacter = get.mode() === "guozhan" || (get.config("double_character") && (lib.config.mode === "identity" || lib.config.mode === "stone")) || (get.config("double_character_jiange") && lib.config.mode === "versus" && _status.mode === "jiange");
+				if (doubleCharacter && lib.config.forbiddouble.includes(name)) {
 					return true;
 				}
-			}
-		},
-		characterDisabled2: function (i) {
-			var info = lib.character[i];
-			const args = Array.from(arguments).slice(1);
-			if (!info) {
-				return true;
-			}
-			if (info[4]) {
-				if (info.isBoss || info.isHiddenBoss) {
-					return !lib.config?.plays?.includes("boss");
-				}
-				if (info.isMinskin) {
-					return true;
-				}
-				if (info.isUnseen) {
-					return true;
-				}
-				if (!args.includes("ignoreForibidden") && info.isAiForbidden && (!_status.event.isMine || !_status.event.isMine())) {
-					return true;
-				}
-				if (lib.characterFilter[i] && !lib.characterFilter[i](get.mode())) {
-					return true;
-				}
-			}
-			return false;
-		},
-		skillDisabled: function (skill) {
-			if (!lib.translate[skill] || !lib.translate[skill + "_info"]) {
-				return true;
-			}
-			var info = lib.skill[skill];
-			if (info && !info.unique && !info.temp && !info.sub && !info.fixed && !info.vanish) {
-				return false;
-			}
-			return true;
-		},
-		cardEnabled: function (card, player, event) {
-			if (player == undefined) {
-				player = _status.event.player;
-			}
-			if (!player) {
-				return false;
-			}
-			if (get.itemtype(card) == "card") {
-				var mod2 = game.checkMod(card, player, event, "unchanged", "cardEnabled2", player);
-				if (mod2 != "unchanged") {
-					return mod2;
-				}
-			}
-			card = get.autoViewAs(card);
-			if (event === "forceEnable") {
-				var mod = game.checkMod(card, player, event, "unchanged", "cardEnabled", player);
-				if (mod != "unchanged") {
-					return mod;
-				}
-				return true;
-			} else {
-				var filter = get.info(card).enable;
-				if (!filter) {
-					return;
-				}
-				var mod = game.checkMod(card, player, event, "unchanged", "cardEnabled", player);
-				if (mod != "unchanged") {
-					return mod;
-				}
-				if (typeof filter == "boolean") {
-					return filter;
-				}
-				if (typeof filter == "function") {
-					return filter(card, player, event);
-				}
-			}
-		},
-		cardRespondable: function (card, player, event) {
-			event = event || _status.event;
-			if (event.name != "chooseToRespond") {
-				return true;
-			}
-			if (player == undefined) {
-				player = _status.event.player;
-			}
-			if (!player) {
-				return false;
-			}
-			var source = event.getParent().player;
-			if (source && source != player) {
-				if (source.hasSkillTag("norespond", false, [card, player, event], true)) {
-					return false;
-				}
-			}
-			if (get.itemtype(card) == "card") {
-				var mod2 = game.checkMod(card, player, event, "unchanged", "cardEnabled2", player);
-				if (mod2 != "unchanged") {
-					return mod2;
-				}
-			}
-			card = get.autoViewAs(card);
-			var mod = game.checkMod(card, player, "unchanged", "cardRespondable", player);
-			if (mod != "unchanged") {
-				return mod;
-			}
-			return true;
-		},
-		cardUsable2: function (card, player, event) {
-			card = get.autoViewAs(card);
-			var info = get.info(card);
-			if (info.updateUsable == "phaseUse") {
-				event = event || _status.event;
-				if (event.type == "chooseToUse_button") {
-					event = event.getParent();
-				}
-				if (player != _status.event.player) {
-					return true;
-				}
-				if (event.getParent().name != "phaseUse") {
-					return true;
-				}
-				if (event.getParent().player != player) {
-					return true;
-				}
-			}
-			var num = info.usable;
-			if (typeof num == "function") {
-				num = num(card, player);
-			}
-			num = game.checkMod(card, player, num, "cardUsable", player);
-			if (typeof num != "number") {
-				return true;
-			} else {
-				return player.countUsed(card) < num;
-			}
-		},
-		cardUsable(card, player, event) {
-			card = get.autoViewAs(card);
-			var info = get.info(card);
-			event = event || _status.event;
-			if (event.type == "chooseToUse_button") {
-				event = event.getParent();
-			}
-			if (player != event.player) {
-				return true;
-			}
-			if (info.updateUsable == "phaseUse") {
-				if (event.getParent().name != "phaseUse") {
-					return true;
-				}
-				if (event.getParent().player != player) {
-					return true;
-				}
-			}
-			event.addCount_extra = true;
-			var num = info.usable;
-			if (typeof num == "function") {
-				num = num(card, player);
-			}
-			num = game.checkMod(card, player, num, "cardUsable", player);
-			if (typeof num != "number") {
-				return typeof num == "boolean" ? num : true;
-			}
-			if (player.countUsed(card) < num) {
-				return true;
-			}
-			if (
-				game.hasPlayer2(function (current) {
-					return game.checkMod(card, player, current, false, "cardUsableTarget", player);
-				}, true)
-			) {
-				return true;
 			}
 			return false;
 		},
 		/**
-		 * player的card在event事件中能否被自己弃置
-		 * @param { Card } card 要被弃置的牌
-		 * @param { Player } player 执行弃牌的角色
-		 * @param { string } [event] 弃置牌事件的名称
+		 * 判断武将是否因特殊标签或模式限制而不可选用。
+		 *
+		 * @param { string } name - 武将名称
+		 * @param { ...string } options - 附加选项，包含 `"ignoreForibidden"` 时忽略 AI 禁用标记。
 		 * @returns { boolean }
 		 */
-		cardDiscardable: function (card, player, event) {
-			event = event || _status.event;
-			if (typeof event != "string") {
-				event = event.getParent().name;
+		characterDisabled2(name, ...options) {
+			const character = lib.character[name];
+			if (!character) {
+				return true;
 			}
-			var mod = game.checkMod(card, player, event, "unchanged", "cardDiscardable", player);
-			if (mod != "unchanged") {
-				return mod;
+			if (character[4]) {
+				if (character.isBoss || character.isHiddenBoss) {
+					return !lib.config?.plays?.includes("boss");
+				}
+				if (character.isMinskin) {
+					return true;
+				}
+				if (character.isUnseen) {
+					return true;
+				}
+				if (!options.includes("ignoreForibidden") && character.isAiForbidden && (!_status.event.isMine || !_status.event.isMine())) {
+					return true;
+				}
+				if (lib.characterFilter[name] && !lib.characterFilter[name](get.mode())) {
+					return true;
+				}
+			}
+			return false;
+		},
+		/**
+		 * 判断技能是否因缺少翻译或具有非普通技能标签而不可选用。
+		 *
+		 * @param { string } skill - 技能名称
+		 * @returns { boolean }
+		 */
+		skillDisabled(skill) {
+			if (!lib.translate[skill] || !lib.translate[skill + "_info"]) {
+				return true;
+			}
+			const info = lib.skill[skill];
+			return Boolean(!info || info.unique || info.temp || info.sub || info.fixed || info.vanish);
+		},
+		/**
+		 * 判断一张牌对某角色在指定事件中是否可用。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 需要判断的牌
+		 * @param { Player } [player] - 使用/发动此牌的角色。
+		 * @param { GameEvent | "forceEnable" } [event] - 当前事件上下文；传`"forceEnable"`时强制跳过牌自身 enable 判断。
+		 * @returns { boolean }
+		 */
+		cardEnabled(card, player, event) {
+			player ??= get.player();
+			if (!player) {
+				return false;
+			}
+			if (get.itemtype(card) === "card") {
+				const mod2 = game.checkMod(card, player, event, "unchanged", "cardEnabled2", player);
+				if (mod2 !== "unchanged") {
+					return Boolean(mod2);
+				}
+			}
+			const card2 = get.autoViewAs(card);
+			if (event === "forceEnable") {
+				const mod = game.checkMod(card2, player, event, "unchanged", "cardEnabled", player);
+				if (mod != "unchanged") {
+					return Boolean(mod);
+				}
+				return true;
+			} else {
+				const filter = get.info(card2).enable;
+				if (!filter) {
+					return false;
+				}
+				const mod = game.checkMod(card2, player, event, "unchanged", "cardEnabled", player);
+				if (mod !== "unchanged") {
+					return Boolean(mod);
+				}
+				if (typeof filter === "boolean") {
+					return filter;
+				}
+				if (typeof filter === "function") {
+					return filter(card2, player, event);
+				}
+			}
+			return false;
+		},
+		/**
+		 * 判断一张牌对某角色在指定事件中是否可以打出。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card
+		 * @param { Player } [player]
+		 * @param { GameEvent } [event]
+		 * @returns { boolean }
+		 */
+		cardRespondable(card, player, event) {
+			event ??= _status.event;
+			if (event.name !== "chooseToRespond") {
+				return true;
+			}
+			player ??= get.player();
+			if (!player) {
+				return false;
+			}
+			const source = event.getParent()?.player;
+			if (source && source !== player) {
+				if (source.hasSkillTag("norespond", false, [card, player, event], true)) {
+					return false;
+				}
+			}
+			if (get.itemtype(card) === "card") {
+				const mod2 = game.checkMod(card, player, event, "unchanged", "cardEnabled2", player);
+				if (mod2 !== "unchanged") {
+					return Boolean(mod2);
+				}
+			}
+			const card2 = get.autoViewAs(card);
+			const mod = game.checkMod(card2, player, "unchanged", "cardRespondable", player);
+			if (mod !== "unchanged") {
+				return Boolean(mod);
+			}
+			return true;
+		},
+		/**
+		 * 判断一张牌对某角色在指定事件中是否仍有使用次数。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 需要判断的牌
+		 * @param { Player } [player] - 使用/发动此牌的角色。
+		 * @param { GameEvent } [event] - 当前事件上下文。
+		 * @returns { boolean }
+		 */
+		cardUsable2(card, player, event) {
+			const card2 = get.autoViewAs(card);
+			const info = get.info(card2);
+			if (info.updateUsable === "phaseUse") {
+				event ??= _status.event;
+				if (event.type === "chooseToUse_button") {
+					event = event.getParent();
+					if (event == null) {
+						return false;
+					}
+				}
+				if (player !== get.player()) {
+					return true;
+				}
+				const phaseUseEvent = event.getParent();
+				if (phaseUseEvent == null) {
+					return false;
+				}
+				if (phaseUseEvent.name !== "phaseUse") {
+					return true;
+				}
+				if (phaseUseEvent.player !== player) {
+					return true;
+				}
+			}
+			player ??= get.player();
+			if (!player) {
+				return false;
+			}
+			let num = info.usable;
+			if (typeof num === "function") {
+				num = num(card2, player);
+			}
+			num = game.checkMod(card2, player, num, "cardUsable", player);
+			if (typeof num !== "number") {
+				return true;
+			}
+			return player.countUsed(card2) < num;
+		},
+		/**
+		 * 判断一张牌对某角色在指定事件中是否可使用。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 需要判断的牌
+		 * @param { Player } player - 使用/发动此牌的角色。
+		 * @param { GameEvent } [event] - 当前事件上下文。
+		 * @returns { boolean }
+		 */
+		cardUsable(card, player, event) {
+			const card2 = get.autoViewAs(card);
+			const info = get.info(card2);
+			event ??= _status.event;
+			if (event.type === "chooseToUse_button") {
+				event = event.getParent();
+				if (event == null) {
+					return false;
+				}
+			}
+			if (player !== event.player) {
+				return true;
+			}
+			if (info.updateUsable === "phaseUse") {
+				const phaseUseEvent = event.getParent();
+				if (phaseUseEvent == null) {
+					return false;
+				}
+				if (phaseUseEvent.name !== "phaseUse") {
+					return true;
+				}
+				if (phaseUseEvent.player !== player) {
+					return true;
+				}
+			}
+			event.addCount_extra = true;
+			let num = info.usable;
+			if (typeof num === "function") {
+				num = num(card2, player);
+			}
+			num = game.checkMod(card2, player, num, "cardUsable", player);
+			if (typeof num !== "number") {
+				return typeof num === "boolean" ? num : true;
+			}
+			if (player.countUsed(card2) < num) {
+				return true;
+			}
+			return game.hasPlayer2(current => Boolean(game.checkMod(card2, player, current, false, "cardUsableTarget", player)), true);
+		},
+		/**
+		 * player的card在event事件中能否被自己弃置
+		 *
+		 * @param { Card } card - 需要判断的牌
+		 * @param { Player } player - 执行弃牌的角色
+		 * @param { string | GameEvent } [event] - 弃置牌事件或事件名称
+		 * @returns { boolean }
+		 */
+		cardDiscardable(card, player, event) {
+			event ??= get.event();
+			if (event != null && typeof event !== "string") {
+				event = event.getParent()?.name;
+			}
+			const mod = game.checkMod(card, player, event, "unchanged", "cardDiscardable", player);
+			if (mod !== "unchanged") {
+				return Boolean(mod);
 			}
 			return true;
 		},
 		/**
 		 * target的card在event事件中能否被player弃置
-		 * @param { Card } card 要被弃置的牌
-		 * @param { Player } player 执行弃牌的角色
-		 * @param { Player } target 被弃置牌的现持有者
-		 * @param { string } [event] 弃置牌事件的名称
+		 *
+		 * @param { Card } card - 需要判断的牌
+		 * @param { Player } player - 执行弃牌的角色
+		 * @param { Player } target - 被弃置牌的现持有者
+		 * @param { string | GameEvent } [event] - 弃置牌事件或事件名称
 		 * @returns { boolean }
 		 */
-		canBeDiscarded: function (card, player, target, event) {
-			event = event || _status.event;
-			if (typeof event != "string") {
-				event = event.getParent().name;
+		canBeDiscarded(card, player, target, event) {
+			event ??= _status.event;
+			if (typeof event !== "string") {
+				event = event.getParent()?.name;
 			}
-			if (player == target && !lib.filter.cardDiscardable(card, player, event)) {
+			if (player === target && !lib.filter.cardDiscardable(card, player, event)) {
 				return false;
 			}
-			var mod = game.checkMod(card, player, target, event, "unchanged", "canBeDiscarded", target);
-			if (mod != "unchanged") {
-				return mod;
+			const mod = game.checkMod(card, player, target, event, "unchanged", "canBeDiscarded", target);
+			if (mod !== "unchanged") {
+				return Boolean(mod);
 			}
 			return true;
 		},
 		/**
 		 * target的card在event事件中能否被player获得
-		 * @param { Card } card 要被获得的牌
-		 * @param { Player } player 获得牌的角色
-		 * @param { Player } target 被获得牌的现持有者
-		 * @param { string } [event] 获得牌事件的名称
+		 *
+		 * @param { Card } card - 需要判断的牌
+		 * @param { Player } player - 获得牌的角色
+		 * @param { Player } target - 被获得牌的现持有者
+		 * @param { string | GameEvent } [event] - 获得牌事件或事件名称
 		 * @returns { boolean }
 		 */
-		canBeGained: function (card, player, target, event) {
-			event = event || _status.event;
-			if (typeof event != "string") {
-				event = event.getParent().name;
+		canBeGained(card, player, target, event) {
+			event ??= _status.event;
+			if (typeof event !== "string") {
+				event = event.getParent()?.name;
 			}
-			var mod = game.checkMod(card, player, target, event, "unchanged", "canBeGained", target);
-			if (mod != "unchanged") {
-				return mod;
+			const mod = game.checkMod(card, player, target, event, "unchanged", "canBeGained", target);
+			if (mod !== "unchanged") {
+				return Boolean(mod);
 			}
 			return true;
 		},
-		cardAiIncluded: function (card) {
-			if (_status.event.isMine()) {
+		/**
+		 * 判断一张牌是否应包含在当前事件的AI选择中。
+		 *
+		 * @param { string } card - 需要判断的牌
+		 * @returns { boolean }
+		 */
+		cardAiIncluded(card) {
+			const event = get.event();
+			if (event.isMine()) {
 				return true;
 			}
-			return _status.event._aiexclude.includes(card) == false;
+			return event._aiexclude.includes(card) === false;
 		},
+		/**
+		 * 判断一张牌对某角色在指定事件中是否可被选择。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 需要判断的牌
+		 * @param { Player } [player] - 使用/发动此牌的角色。
+		 * @param { GameEvent } [event] - 当前事件上下文。
+		 * @returns { boolean }
+		 */
 		filterCard(card, player, event) {
-			var info = get.info(card);
-			//if(info.toself&&!lib.filter.targetEnabled(card,player,player)) return false;
-			if (player == undefined) {
-				player = _status.event.player;
-			}
+			const info = get.info(card);
+			player ??= get.player();
 			if (!lib.filter.cardEnabled(card, player, event) || !lib.filter.cardUsable(card, player, event)) {
 				return false;
 			}
 			if (info.notarget) {
 				return true;
 			}
-			var range;
-			var select = get.copy(info.selectTarget);
-			if (select == undefined) {
-				if (info.filterTarget == undefined) {
+			let range;
+			const select = get.copy(info.selectTarget);
+			if (select == null) {
+				if (info.filterTarget == null) {
 					return true;
 				}
 				range = [1, 1];
-			} else if (typeof select == "number") {
+			} else if (typeof select === "number") {
 				range = [select, select];
-			} else if (get.itemtype(select) == "select") {
+			} else if (get.itemtype(select) === "select") {
 				range = select;
-			} else if (typeof select == "function") {
+			} else if (typeof select === "function") {
 				range = select(card, player);
-				if (typeof range == "number") {
+				if (typeof range === "number") {
 					range = [range, range];
 				}
 			}
 			game.checkMod(card, player, range, "selectTarget", player);
-			if (!range || range[1] != -1) {
+			if (!range || range[1] !== -1) {
 				return true;
 			}
-			var filterTarget = event && event.filterTarget ? event.filterTarget : lib.filter.filterTarget;
-			return game.hasPlayer2(function (current) {
-				return filterTarget(card, player, current);
-			}, true);
+			const filterTarget = event?.filterTarget || lib.filter.filterTarget;
+			return game.hasPlayer2(current => filterTarget(card, player, current), true);
 		},
+		/**
+		 * 判断一张牌在当前选择事件中是否可以指定目标。
+		 *
+		 * 此函数在常规目标合法性前，额外校验当前事件中的牌可用性、使用次数和singleCard追加目标规则。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 需要判断的牌
+		 * @param { Player } player - 使用/指定此目标的角色
+		 * @param { Player } target - 被指定的目标角色
+		 * @returns { boolean }
+		 */
 		targetEnabledx(card, player, target) {
 			if (!card || !target || target.removed) {
 				return false;
@@ -11523,28 +11297,33 @@ export class Library {
 			if (!info?.includeOut && target.isOut()) {
 				return false;
 			}
-			let event = _status.event,
-				evt = event.getParent("chooseToUse");
+			const event = _status.event;
+			let evt = event.getParent("chooseToUse");
 			if (get.itemtype(evt) !== "event") {
 				evt = event;
 			}
-			if (
-				event._backup &&
-				event._backup.filterCard == lib.filter.filterCard &&
-				(!lib.filter.cardEnabled(card, player, event) || !lib.filter.cardUsable(card, player, evt))
-			) {
+			if (event._backup && event._backup.filterCard === lib.filter.filterCard && (!lib.filter.cardEnabled(card, player, event) || !lib.filter.cardUsable(card, player, evt))) {
 				return false;
 			}
 			if (event.addCount_extra) {
-				if (!lib.filter.cardUsable2(card, player) && !game.checkMod(card, player, target, false, "cardUsableTarget", player)) {
+				const usableTarget = game.checkMod(card, player, target, false, "cardUsableTarget", player);
+				if (!lib.filter.cardUsable2(card, player) && !usableTarget) {
 					return false;
 				}
 			}
 			if (info.singleCard && info.filterAddedTarget && ui.selected.targets.length) {
 				return Boolean(info.filterAddedTarget(card, player, target, ui.selected.targets[ui.selected.targets.length - 1]));
 			}
-			return lib.filter.targetEnabled.apply(this, arguments);
+			return lib.filter.targetEnabled(card, player, target);
 		},
+		/**
+		 * 判断一张牌是否可以按常规规则指定目标。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 需要判断的牌
+		 * @param { Player } player - 使用/指定此目标的角色
+		 * @param { Player } target - 被指定的目标角色
+		 * @returns { boolean }
+		 */
 		targetEnabled(card, player, target) {
 			if (!card || !target || target.removed) {
 				return false;
@@ -11556,24 +11335,33 @@ export class Library {
 			if (!info?.includeOut && target.isOut()) {
 				return false;
 			}
-			const filter = info.filterTarget;
-			if (!info.singleCard || ui.selected.targets.length == 0) {
-				let mod = game.checkMod(card, player, target, "unchanged", "playerEnabled", player);
-				if (mod != "unchanged") {
-					return mod;
+			if (!info.singleCard || ui.selected.targets.length === 0) {
+				const playerEnabled = game.checkMod(card, player, target, "unchanged", "playerEnabled", player);
+				if (playerEnabled !== "unchanged") {
+					return Boolean(playerEnabled);
 				}
-				mod = game.checkMod(card, player, target, "unchanged", "targetEnabled", target);
-				if (mod != "unchanged") {
-					return mod;
+				const targetEnabled = game.checkMod(card, player, target, "unchanged", "targetEnabled", target);
+				if (targetEnabled !== "unchanged") {
+					return Boolean(targetEnabled);
 				}
 			}
-			if (typeof filter == "boolean") {
-				return filter;
+			const filterTarget = info.filterTarget;
+			if (typeof filterTarget === "boolean") {
+				return filterTarget;
 			}
-			if (typeof filter == "function") {
-				return Boolean(filter(card, player, target));
+			if (typeof filterTarget === "function") {
+				return Boolean(filterTarget(card, player, target));
 			}
+			return false;
 		},
+		/**
+		 * 判断一张牌是否可以指定目标，或是否可通过牌的modTarget额外影响目标。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 需要判断的牌
+		 * @param { Player } player - 使用/指定此目标的角色
+		 * @param { Player } target - 被指定或额外影响的目标角色
+		 * @returns { boolean }
+		 */
 		targetEnabled2(card, player, target) {
 			if (!card || !target || target.removed) {
 				return false;
@@ -11589,22 +11377,32 @@ export class Library {
 				return true;
 			}
 
-			if (game.checkMod(card, player, target, "unchanged", "playerEnabled", player) == false) {
+			const playerEnabled = game.checkMod(card, player, target, "unchanged", "playerEnabled", player);
+			if (playerEnabled === false) {
 				return false;
 			}
-			if (game.checkMod(card, player, target, "unchanged", "targetEnabled", target) == false) {
+			const targetEnabled = game.checkMod(card, player, target, "unchanged", "targetEnabled", target);
+			if (targetEnabled === false) {
 				return false;
 			}
 
-			const filter = get.info(card).modTarget;
-			if (typeof filter == "boolean") {
-				return filter;
+			const modTarget = info.modTarget;
+			if (typeof modTarget === "boolean") {
+				return modTarget;
 			}
-			if (typeof filter == "function") {
-				return Boolean(filter(card, player, target));
+			if (typeof modTarget === "function") {
+				return Boolean(modTarget(card, player, target));
 			}
 			return false;
 		},
+		/**
+		 * 仅根据牌自身的filterTarget或modTarget定义判断目标是否可被涉及。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 需要判断的牌
+		 * @param { Player } player - 使用/指定此目标的角色
+		 * @param { Player } target - 被指定或涉及的目标角色
+		 * @returns { boolean }
+		 */
 		targetEnabled3(card, player, target) {
 			if (!card || !target || target.removed) {
 				return false;
@@ -11617,128 +11415,198 @@ export class Library {
 				return false;
 			}
 
-			if (info.filterTarget == true) {
+			const { filterTarget, modTarget } = info;
+			if (filterTarget === true) {
 				return true;
 			}
-			if (typeof info.filterTarget == "function" && info.filterTarget(card, player, target)) {
+			if (typeof filterTarget === "function" && filterTarget(card, player, target)) {
 				return true;
 			}
 
-			if (info.modTarget == true) {
+			if (modTarget === true) {
 				return true;
 			}
-			if (typeof info.modTarget == "function" && info.modTarget(card, player, target)) {
-				return true;
+			if (typeof modTarget === "function") {
+				return Boolean(modTarget(card, player, target));
 			}
 			return false;
 		},
-		targetInRange: function (card, player, target) {
-			var info = get.info(card);
-			var range = info.range;
-			var outrange = info.outrange;
-			if (range == undefined && outrange == undefined) {
+		/**
+		 * 判断目标是否满足一张牌的距离范围限制。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 需要判断的牌
+		 * @param { Player } player - 使用/指定此目标的角色
+		 * @param { Player } target - 被指定的目标角色
+		 * @returns { boolean }
+		 */
+		targetInRange(card, player, target) {
+			const info = get.info(card);
+			const { range, outrange } = info;
+			const hasRange = range != null;
+			const hasOutrange = outrange != null;
+			if (!hasRange && !hasOutrange) {
 				return true;
 			}
 
-			var mod = game.checkMod(card, player, target, "unchanged", "targetInRange", player);
-			var extra = 0;
-			if (mod != "unchanged") {
-				if (typeof mod == "boolean") {
+			const mod = game.checkMod(card, player, target, "unchanged", "targetInRange", player);
+			let extra = 0;
+			if (mod !== "unchanged") {
+				if (typeof mod === "boolean") {
 					return mod;
 				}
-				if (typeof mod == "number") {
+				if (typeof mod === "number") {
 					extra = mod;
 				}
 			}
-			if (typeof info.range == "function") {
-				return info.range(card, player, target);
+			if (typeof range === "function") {
+				return Boolean(range(card, player, target));
 			}
 
 			if (player.hasSkill("undist") || target.hasSkill("undist")) {
 				return false;
 			}
-			for (var i in range) {
-				if (i == "attack") {
-					var range2 = player.getAttackRange();
-					if (range2 <= 0) {
+			for (const type in range ?? {}) {
+				if (type === "attack") {
+					const attackRange = player.getAttackRange();
+					if (attackRange <= 0) {
 						return false;
 					}
-					var distance = get.distance(player, target) + extra;
-					if (range[i] <= distance - range2) {
+					const distance = get.distance(player, target) + extra;
+					if (range[type] <= distance - attackRange) {
 						return false;
 					}
 				} else {
-					var distance = get.distance(player, target, i) + extra;
-					if (range[i] < distance) {
+					const distance = get.distance(player, target, type) + extra;
+					if (range[type] < distance) {
 						return false;
 					}
 				}
 			}
-			for (var i in outrange) {
-				if (i == "attack") {
-					var range2 = player.getAttackRange();
-					if (range2 <= 0) {
+			for (const type in outrange ?? {}) {
+				if (type === "attack") {
+					const attackRange = player.getAttackRange();
+					if (attackRange <= 0) {
 						return false;
 					}
-					var distance = get.distance(player, target) + extra;
-					if (outrange[i] > distance - range2 + 1) {
+					const distance = get.distance(player, target) + extra;
+					if (outrange[type] > distance - attackRange + 1) {
 						return false;
 					}
 				} else {
-					var distance = get.distance(player, target, i) + extra;
-					if (outrange[i] > distance) {
+					const distance = get.distance(player, target, type) + extra;
+					if (outrange[type] > distance) {
 						return false;
 					}
 				}
 			}
 			return true;
 		},
-		filterTarget: function (card, player, target) {
+		/**
+		 * 判断是否可指定目标，且目标处于使用距离内。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 使用的牌
+		 * @param { Player } player - 使用牌的角色
+		 * @param { Player } target - 被指定的目标角色
+		 * @returns { boolean }
+		 */
+		filterTarget(card, player, target) {
 			return lib.filter.targetEnabledx(card, player, target) && lib.filter.targetInRange(card, player, target);
 		},
-		filterTarget2: function (card, player, target) {
+		/**
+		 * 判断是否可通过常规或额外目标规则指定目标，且目标处于使用距离内。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 使用的牌
+		 * @param { Player } player - 使用牌的角色
+		 * @param { Player } target - 被指定的目标角色
+		 * @returns { boolean }
+		 */
+		filterTarget2(card, player, target) {
 			return lib.filter.targetEnabled2(card, player, target) && lib.filter.targetInRange(card, player, target);
 		},
-		notMe: function (card, player, target) {
-			return player != target;
+		/**
+		 * 判断目标是否不是使用者自身。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 当前牌
+		 * @param { Player } player - 使用牌的角色
+		 * @param { Player } target - 被判断的目标角色
+		 * @returns { boolean }
+		 */
+		notMe(card, player, target) {
+			return player !== target;
 		},
-		isMe: function (card, player, target) {
-			return player == target;
+		/**
+		 * 判断目标是否为使用者自身。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 当前牌
+		 * @param { Player } player - 使用牌的角色
+		 * @param { Player } target - 被判断的目标角色
+		 * @returns { boolean }
+		 */
+		isMe(card, player, target) {
+			return player === target;
 		},
-		attackFrom: function (card, player, target) {
+		/**
+		 * 判断目标与使用者的攻击距离是否至多为 1。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 当前牌
+		 * @param { Player } player - 使用牌的角色
+		 * @param { Player } target - 被判断的目标角色
+		 * @returns { boolean }
+		 */
+		attackFrom(card, player, target) {
 			return get.distance(player, target, "attack") <= 1;
 		},
-		globalFrom: function (card, player, target) {
+		/**
+		 * 判断目标与使用者的全局距离是否至多为 1。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 当前牌
+		 * @param { Player } player - 使用牌的角色
+		 * @param { Player } target - 被判断的目标角色
+		 * @returns { boolean }
+		 */
+		globalFrom(card, player, target) {
 			return get.distance(player, target) <= 1;
 		},
-		selectCard: function () {
+		/**
+		 * 返回默认选牌数量范围。
+		 *
+		 * @returns { [number, number] }
+		 */
+		selectCard() {
 			return [1, 1];
 		},
-		selectTarget: function (card, player) {
+		/**
+		 * 返回可选择目标数量的范围。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } [card] - 待使用的牌，默认取当前牌
+		 * @param { Player } [player] - 使用牌的角色，默认取当前角色
+		 * @returns { [number, number] | undefined }
+		 */
+		selectTarget(card, player) {
 			if (!card) {
 				card = get.card();
 			}
 			if (!player) {
 				player = get.player();
 			}
-			if (card == undefined) {
+			if (card == null) {
 				return;
 			}
-			var range,
-				info = get.info(card);
-			var select = get.copy(info.selectTarget);
-			if (select == undefined) {
-				if (info.filterTarget == undefined) {
+			let range;
+			const info = get.info(card);
+			const select = get.copy(info.selectTarget);
+			if (select === undefined || select === null) {
+				if (info.filterTarget === undefined || info.filterTarget === null) {
 					return [0, 0];
 				}
 				range = [1, 1];
-			} else if (typeof select == "number") {
+			} else if (typeof select === "number") {
 				range = [select, select];
-			} else if (get.itemtype(select) == "select") {
+			} else if (get.itemtype(select) === "select") {
 				range = select;
-			} else if (typeof select == "function") {
+			} else if (typeof select === "function") {
 				range = select(card, player);
-				if (typeof range == "number") {
+				if (typeof range === "number") {
 					range = [range, range];
 				}
 			}
@@ -11748,54 +11616,75 @@ export class Library {
 			}
 			return range;
 		},
-		judge: function (card, player, target) {
+		/**
+		 * 判断一张延时锦囊/判定牌是否可以置入目标判定区。
+		 *
+		 * @param { Card | VCard | CardBaseUIData } card - 需要判断的牌
+		 * @param { Player } player - 使用/置入此牌的角色
+		 * @param { Player } target - 被置入判定区的目标角色
+		 * @returns { boolean }
+		 */
+		judge(card, player, target) {
+			// @ts-expect-error 类型问题已经理不清了
 			if (!target.canAddJudge(card, player)) {
 				return false;
 			}
-			let mod = game.checkMod(card, player, target, "unchanged", "playerEnabled", player);
-			if (mod != "unchanged") {
-				return mod;
+			const playerEnabled = game.checkMod(card, player, target, "unchanged", "playerEnabled", player);
+			if (playerEnabled !== "unchanged") {
+				return Boolean(playerEnabled);
 			}
-			let mod2 = game.checkMod(card, player, target, "unchanged", "targetEnabled", target);
-			if (mod2 != "unchanged") {
-				return mod2;
+			const targetEnabled = game.checkMod(card, player, target, "unchanged", "targetEnabled", target);
+			if (targetEnabled !== "unchanged") {
+				return Boolean(targetEnabled);
 			}
 			return true;
 		},
-		autoRespondSha: function () {
+		/**
+		 * 判断当前响应事件是否应自动跳过出杀。
+		 *
+		 * @this {{ player: Player }}
+		 * @returns { boolean }
+		 */
+		autoRespondSha() {
 			return !this.player.hasSha("respond");
 		},
-		autoRespondShan: function () {
+		/**
+		 * 判断当前响应事件是否应自动跳过出闪。
+		 *
+		 * @this {{ player: Player }}
+		 * @returns { boolean }
+		 */
+		autoRespondShan() {
 			return !this.player.hasShan("respond");
 		},
-		wuxieSwap: function (event) {
-			if (event.type == "wuxie") {
-				if (ui.wuxie && ui.wuxie.classList.contains("glow")) {
+		/**
+		 * 判断无懈响应事件是否应跳过自动切换控制角色。
+		 *
+		 * @param { GameEvent } event - 当前响应事件
+		 * @returns { boolean }
+		 */
+		wuxieSwap(event) {
+			if (event.type !== "wuxie") {
+				return false;
+			}
+			if (ui.wuxie?.classList.contains("glow")) {
+				return true;
+			}
+			if (ui.tempnowuxie?.classList.contains("glow") && event.state > 0) {
+				const triggerEvent = event.getTrigger();
+				if (triggerEvent) {
+					if (ui.tempnowuxie._origin === triggerEvent.parent.id) {
+						return true;
+					}
+				} else if (ui.tempnowuxie._origin === _status.event.id2) {
 					return true;
 				}
-				if (ui.tempnowuxie && ui.tempnowuxie.classList.contains("glow") && event.state > 0) {
-					var triggerevent = event.getTrigger();
-					if (triggerevent) {
-						if (ui.tempnowuxie._origin == triggerevent.parent.id) {
-							return true;
-						}
-					} else if (ui.tempnowuxie._origin == _status.event.id2) {
-						return true;
-					}
-				}
-				if (lib.config.wuxie_self) {
-					var tw = event.info_map;
-					if (
-						tw.player &&
-						tw.player.isUnderControl(true) &&
-						!tw.player.hasSkillTag("noautowuxie") &&
-						(!tw.targets || tw.targets.length <= 1) &&
-						!tw.noai
-					) {
-						return true;
-					}
-				}
 			}
+			if (!lib.config.wuxie_self) {
+				return false;
+			}
+			const infoMap = event.info_map;
+			return Boolean(infoMap.player && infoMap.player.isUnderControl(true) && !infoMap.player.hasSkillTag("noautowuxie") && (!infoMap.targets || infoMap.targets.length <= 1) && !infoMap.noai);
 		},
 	};
 	sort = {
@@ -12120,17 +12009,7 @@ export class Library {
 					game.broadcast(function (player) {
 						player.setNickname();
 					}, player);
-					this.send(
-						"reinit",
-						lib.configOL,
-						get.arenaState(),
-						game.getState ? game.getState() : {},
-						game.ip,
-						null,
-						_status.onreconnect,
-						_status.cardtag,
-						_status.postReconnect
-					);
+					this.send("reinit", lib.configOL, get.arenaState(), game.getState ? game.getState() : {}, game.ip, null, _status.onreconnect, _status.cardtag, _status.postReconnect);
 				} else if (version != lib.versionOL) {
 					this.send("denied", "version");
 					lib.node.clients.remove(this);
@@ -12148,22 +12027,10 @@ export class Library {
 						this.closed = true;
 					} else if (game.phaseNumber && lib.configOL.observe) {
 						lib.node.observing.push(this);
-						this.send(
-							"reinit",
-							lib.configOL,
-							get.arenaState(),
-							game.getState ? game.getState() : {},
-							game.ip,
-							game.players[0].playerid,
-							null,
-							_status.cardtag,
-							_status.postReconnect
-						);
+						this.send("reinit", lib.configOL, get.arenaState(), game.getState ? game.getState() : {}, game.ip, game.players[0].playerid, null, _status.cardtag, _status.postReconnect);
 						// 没有系统提示的接口喵？
 						game.log("玩家 ", `#y${get.plainText(config.nickname)}`, " 进入房间观战");
-						game.me.chat(
-							`玩家 <span style="font-weight: bold; color: rgb(126, 180, 255)">${get.plainText(config.nickname)}</span> 进入房间观战`
-						);
+						game.me.chat(`玩家 <span style="font-weight: bold; color: rgb(126, 180, 255)">${get.plainText(config.nickname)}</span> 进入房间观战`);
 						if (!ui.removeObserve) {
 							ui.removeObserve = ui.create.system(
 								"移除旁观",
@@ -12412,7 +12279,7 @@ export class Library {
 				game
 					.createEvent("giveup", false)
 					.set("includeOut", true)
-					.setContent(function () {
+					.setContent(async (event, trigger, player) => {
 						game.log(player, "投降");
 						player.popup("投降");
 						player.die("nosource").includeOut = true;
@@ -12575,9 +12442,7 @@ export class Library {
 			},
 			selfclose: function () {
 				// 用户被踢出 / 房主断开：取消自动重连，并标记走 reload 路径
-				clearTimeout(_status.reconnectTimer);
-				_status.reconnectAttempts = 0;
-				_status.reconnecting = false;
+				clearReconnectState(_status);
 				_status.noReconnect = true;
 				if (game.online || game.onlineroom) {
 					if ((game.servermode || game.onlinehall) && _status.over) {
@@ -12637,31 +12502,16 @@ export class Library {
 					game.ip = get.trimip(_status.ip);
 					ui.create.connectRooms(list);
 					if (events) {
-						ui.connectEvents = ui.create.div(
-							".forceopaque.menubutton.large.connectevents.pointerdiv",
-							"约战",
-							ui.window,
-							ui.click.connectEvents
-						);
+						ui.connectEvents = ui.create.div(".forceopaque.menubutton.large.connectevents.pointerdiv", "约战", ui.window, ui.click.connectEvents);
 						ui.connectEventsCount = ui.create.div(".forceopaque.menubutton.icon.connectevents.highlight.hidden", "", ui.window);
-						ui.connectClients = ui.create.div(
-							".forceopaque.menubutton.large.connectevents.pointerdiv.left",
-							"在线",
-							ui.window,
-							ui.click.connectClients
-						);
+						ui.connectClients = ui.create.div(".forceopaque.menubutton.large.connectevents.pointerdiv.left", "在线", ui.window, ui.click.connectClients);
 						ui.connectClientsCount = ui.create.div(".forceopaque.menubutton.icon.connectevents.highlight.left", "1", ui.window);
-						ui.createRoomButton = ui.create.div(
-							".forceopaque.menubutton.large.connectevents.pointerdiv.left2",
-							"创建房间",
-							ui.window,
-							function () {
-								if (!_status.creatingroom) {
-									_status.creatingroom = true;
-									ui.click.connectMenu();
-								}
+						ui.createRoomButton = ui.create.div(".forceopaque.menubutton.large.connectevents.pointerdiv.left2", "创建房间", ui.window, function () {
+							if (!_status.creatingroom) {
+								_status.creatingroom = true;
+								ui.click.connectMenu();
 							}
-						);
+						});
 						if (events.length) {
 							ui.connectEventsCount.innerHTML = events.filter(function (evt) {
 								return evt.creator == game.onlineKey || !get.is.banWords(evt.content);
@@ -12742,13 +12592,7 @@ export class Library {
 							}
 						} else {
 							ui.create.connecting();
-							game.send(
-								"server",
-								game.roomId == game.onlineKey ? "create" : "enter",
-								game.roomId,
-								get.connectNickname(),
-								lib.config.connect_avatar
-							);
+							game.send("server", game.roomId == game.onlineKey ? "create" : "enter", game.roomId, get.connectNickname(), lib.config.connect_avatar);
 						}
 					}
 					lib.init.onfree();
@@ -12787,9 +12631,7 @@ export class Library {
 						}
 						map[i[4]] = i;
 						if (!map2[i[4]]) {
-							var player = ui.roombase.add(
-								'<div class="popup text pointerdiv" style="width:calc(100% - 10px);display:inline-block;white-space:nowrap">空房间</div>'
-							);
+							var player = ui.roombase.add('<div class="popup text pointerdiv" style="width:calc(100% - 10px);display:inline-block;white-space:nowrap">空房间</div>');
 							player.roomindex = i;
 							player.initRoom = lib.element.Player.prototype.initRoom;
 							player.addEventListener(lib.config.touchscreen ? "touchend" : "click", ui.click.connectroom);
@@ -12881,6 +12723,8 @@ export class Library {
 			},
 			init: function (id, config, ip, servermode, roomId) {
 				game.online = true;
+				// 直连尚未开始的房间会收到 init，而不是 reinit。
+				clearReconnectState(_status);
 				game.onlineID = id;
 				game.ip = ip;
 				game.servermode = servermode;
@@ -13458,10 +13302,13 @@ export class Library {
 					default:
 						alert(reason); //其它原因直接弹窗显示
 				}
-				// 服务端明确拒绝：roomlist 不会再到达，需就地终止重连链，
-				// 否则随后的 onclose 会因 reconnecting 仍为 true 而反复重试；
-				// 同时收起重连遮罩，避免 onclose 判定为无需重连后遮罩滞留
+				// 拒绝后不再自动回到同一个房间，避免 roomlist 后被拒绝时无限重试。
+				game.roomId = null;
+				game.saveConfig("tmp_user_roomId");
+				game.saveConfig("tmp_owner_roomId");
+				game.saveConfig("reconnect_info");
 				clearReconnectState(_status);
+				_status.noReconnect = true;
 				ui.create.connecting(true);
 				game.ws.close();
 				if (_status.connectDenied) {
@@ -13788,6 +13635,13 @@ export class Library {
 			},
 		],
 		[
+			"嗔",
+			{
+				color: "#5a6968",
+				nature: "graymm",
+			},
+		],
+		[
 			"用间",
 			{
 				color: "#c3f9ff",
@@ -14085,6 +13939,13 @@ export class Library {
 				 * @returns {string}
 				 */
 				getSpan: () => `${get.prefixSpan("汉末")}${get.prefixSpan("神")}`,
+			},
+		],
+		[
+			"纵横",
+			{
+				color: "#ffff5e",
+				nature: "shenmm",
 			},
 		],
 		[
@@ -14485,12 +14346,30 @@ export class Library {
 			},
 		],
 		[
+			"春秋",
+			{
+				color: "#10e98e",
+				nature: "thundermm",
+			},
+		],
+		[
 			"青史",
 			{
 				getSpan: () => {
 					const span = document.createElement("span");
 					span.style.fontFamily = "NonameSuits";
 					span.textContent = "📚";
+					return span.outerHTML;
+				},
+			},
+		],
+		[
+			"那兔",
+			{
+				getSpan: () => {
+					const span = document.createElement("span");
+					span.style.fontFamily = "NonameSuits";
+					span.textContent = "🐰";
 					return span.outerHTML;
 				},
 			},
@@ -14669,8 +14548,8 @@ export class Library {
 			{
 				color: "#5A2A1C",
 				nature: "firemm",
-			}
-		]
+			},
+		],
 	]);
 	groupnature = {
 		shen: "shen",
@@ -14699,31 +14578,7 @@ export class Library {
 	]);
 	selectGroup = ["shen", "devil"]; //"western",
 	phaseName = ["phaseZhunbei", "phaseJudge", "phaseDraw", "phaseUse", "phaseDiscard", "phaseJieshu"];
-	quickVoice = [
-		"我从未见过如此厚颜无耻之人！",
-		"这波不亏",
-		"请收下我的膝盖",
-		"你咋不上天呢",
-		"放开我的队友，冲我来",
-		"你随便杀，闪不了算我输",
-		"见证奇迹的时刻到了",
-		"能不能快一点啊，兵贵神速啊",
-		"主公，别开枪，自己人",
-		"小内再不跳，后面还怎么玩儿啊",
-		"你们忍心，就这么让我酱油了？",
-		"我，我惹你们了吗",
-		"姑娘，你真是条汉子",
-		"三十六计，走为上，容我去去便回",
-		"人心散了，队伍不好带啊",
-		"昏君，昏君啊！",
-		"风吹鸡蛋壳，牌去人安乐",
-		"小内啊，您老悠着点儿",
-		"不好意思，刚才卡了",
-		"你可以打得再烂一点吗",
-		"哥们，给力点儿行嘛",
-		"哥哥，交个朋友吧",
-		"妹子，交个朋友吧",
-	];
+	quickVoice = ["我从未见过如此厚颜无耻之人！", "这波不亏", "请收下我的膝盖", "你咋不上天呢", "放开我的队友，冲我来", "你随便杀，闪不了算我输", "见证奇迹的时刻到了", "能不能快一点啊，兵贵神速啊", "主公，别开枪，自己人", "小内再不跳，后面还怎么玩儿啊", "你们忍心，就这么让我酱油了？", "我，我惹你们了吗", "姑娘，你真是条汉子", "三十六计，走为上，容我去去便回", "人心散了，队伍不好带啊", "昏君，昏君啊！", "风吹鸡蛋壳，牌去人安乐", "小内啊，您老悠着点儿", "不好意思，刚才卡了", "你可以打得再烂一点吗", "哥们，给力点儿行嘛", "哥哥，交个朋友吧", "妹子，交个朋友吧"];
 	InitFilter = {
 		noZhuHp: "不享受主公的额外体力上限",
 		noZhuSkill: "不享受地主的额外技能",

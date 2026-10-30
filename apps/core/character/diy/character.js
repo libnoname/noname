@@ -108,6 +108,7 @@ const characters = {
 		hp: 3,
 		skills: ["nsxingyun", "nshanlang"],
 		names: "诸葛|亮",
+		clans: ["琅琊诸葛氏"],
 	},
 
 	ns_zhangwei: {
@@ -220,6 +221,7 @@ const characters = {
 		hp: 3,
 		skills: ["nsguanxing", "kongcheng", "nsyunxing"],
 		names: "诸葛|亮",
+		clans: ["琅琊诸葛氏"],
 	},
 	ns_wangyue: {
 		sex: "male",

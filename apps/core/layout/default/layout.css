@@ -1480,10 +1480,12 @@ body > .background.land {
 	border-radius: 14px;
 }
 
-div:not(.handcards) > .card:not(.thrown) > .info,
+div:not(.handcards):not(.handcards-container) > .card:not(.thrown) > .info,
+div:not(.handcards):not(.handcards-container) > .card:not(.thrown) > .name,
 .handcards > .card:last-child > .info,
-div:not(.handcards) > .card:not(.thrown) > .name,
-.handcards > .card:last-child > .name {
+.handcards > .card:last-child > .name,
+.handcards-container > .card:last-child > .info,
+.handcards-container > .card:last-child > .name {
 	transform: none !important;
 }
 
@@ -5731,4 +5733,27 @@ progress.progress::-webkit-progress-value {
 #window noname-poptip {
 	text-decoration: underline;
 	font-weight: bolder;
+}
+
+.card.oljuhun {
+	background: #f5f0df !important;
+	color: #171717 !important;
+}
+.card.oljuhun > :not(.oljuhun-label) {
+	visibility: hidden !important;
+}
+.card.oljuhun > .oljuhun-label {
+	display: block !important;
+	visibility: visible !important;
+}
+.card.oljuhun.selectable:not(.selected) {
+	outline: 2px solid #eac35b !important;
+	outline-offset: -3px;
+}
+.card.oljuhun.selected {
+	outline: 3px solid #fff0a0 !important;
+	outline-offset: -3px;
+}
+#arena.selecting .card.oljuhun:not(.selectable):not(.selected) {
+	filter: brightness(0.48) grayscale(0.65) !important;
 }

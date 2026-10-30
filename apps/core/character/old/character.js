@@ -1,4 +1,33 @@
 const characters = {
+	two_yudu: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["gongjun", "zhuzhai"],
+		img: "image/character/yudu.jpg",
+		dieAudios: ["yudu"],
+	},
+	old_pot_dengai: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["old_pottuntian", "old_potjixi", "old_potzaoxian"],
+	},
+	yj_y_xunxu: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["kanlv", "yjshenwei"],
+		img: "image/character/yj_x_xunxu.jpg",
+		dieAudios: ["yj_x_xunxu"],
+	},
+	cy_lingju: {
+		sex: "female",
+		group: "qun",
+		hp: 3,
+		skills: ["jiechou", "ciju", "chouyuan"],
+		names: "吕|null",
+	},
 	two_yj_hanbing: {
 		sex: "female",
 		group: "qun",
@@ -505,6 +534,7 @@ const characters = {
 		skills: ["old_zuilun", "old_fuyin"],
 		names: "诸葛|瞻",
 		dieAudios: ["zhugezhan"],
+		clans: ["琅琊诸葛氏"],
 	},
 	old_guanqiujian: {
 		sex: "male",

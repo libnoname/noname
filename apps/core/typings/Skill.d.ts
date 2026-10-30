@@ -63,7 +63,7 @@ declare interface Mod {
 	/**
 	 * 卡牌能否主动弃置
 	 */
-	cardDiscardable?(card: Card, player: Player, eventName: string, result: boolean | "unchanged"): boolean | "unchanged" | void;
+	cardDiscardable?(card: Card, player: Player, eventName: string | undefined, result: boolean | "unchanged"): boolean | "unchanged" | void;
 	/**
 	 * 卡牌是否可用(卡牌能否被选择)
 	 * 比cardEnabled2更弱一些
@@ -71,7 +71,7 @@ declare interface Mod {
 	 * 适用范围：player.canUse，lib.filter.cardEnabled，默认lib.filter.filterCard
 	 * 
 	 */
-	cardEnabled?(card: Card, player: Player, result: boolean | "unchanged"): boolean | "unchanged" | void;
+	cardEnabled?(card: Card | VCard | CardBaseUIData, player: Player, event: GameEvent | "forceEnable" | undefined, result: boolean | "unchanged"): boolean | "unchanged" | void;
 	/**
 	 * 卡牌是否可用（适用范围基本可以视为所有情况下）
 	 * 
@@ -79,28 +79,28 @@ declare interface Mod {
 	 * 
 	 * 适用范围：event.backup中技能信息触发（viewAS），cardEnabled（优先于该mod的触发），cardRespondable（优先于该mod的触发），_save（优先于cardSavable的mod触发）中均触发
 	 */
-	cardEnabled2?(card: Card, player: Player, result: boolean | "unchanged"): boolean | "unchanged" | void;
+	cardEnabled2?(card: Card | VCard | CardBaseUIData, player: Player, event: GameEvent | "forceEnable" | undefined, result: boolean | "unchanged"): boolean | "unchanged" | void;
 	/**卡牌能否被赠与 */
-	cardGiftable?(card: Card, player: Player, target: Player, current: boolean): boolean | void
+	cardGiftable?(card: Card, player: Player, target: Player, current: boolean | "unchanged"): boolean | "unchanged" | void;
 	/**卡牌能否被重铸 */
-	cardRecastable?(card: Card, player: Player, source: Player, result: boolean): boolean | void
+	cardRecastable?(card: Card, player: Player, source: Player, result: boolean | "unchanged"): boolean | "unchanged" | void
 	/**
 	 * 卡牌是否可用（改变卡牌的使用次数）
 	 * 
 	 * 要与cardEnabled一起使用（目前看来两个效果一致）
 	 * 
-	 * @param card  牌
-	 * @param player  玩家
-	 * @param num 使用次数
+	 * @param card - 牌
+	 * @param player - 玩家
+	 * @param num - 使用次数
 	 */
-	cardUsable?(card: Card, player: Player, num: number): boolean | number | void;
+	cardUsable?(card: Card | VCard, player: Player, num: number): boolean | number | void;
 	/**
 	 * 卡牌是否可以响应
 	 * 
 	 * 要与cardEnabled一起使用（目前看来两个效果一致）
 	 * 
 	 */
-	cardRespondable?(card: Card, player: Player, result: boolean | "unchanged"): boolean | "unchanged" | void;
+	cardRespondable?(card: Card | VCard, player: Player, result: boolean | "unchanged"): boolean | "unchanged" | void;
 	/**
 	 * 卡牌是否可以救人
 	 * 
@@ -112,11 +112,11 @@ declare interface Mod {
 	 * 
 	 * 适用范围：濒死阶段的filterCard
 	 * 
-	 * @param card 牌
-	 * @param player 玩家
-	 * @param taregt 当前处于濒死求救得玩家
+	 * @param card - 牌
+	 * @param player - 玩家
+	 * @param taregt - 当前处于濒死求救得玩家
 	 */
-	cardSavable?(card: Card, player: Player, taregt: Player, result: boolean): boolean | "unchanged" | void;
+	cardSavable?(card: Card | VCard | CardBaseUIData, player: Player, taregt: Player, result: boolean | "unchanged"): boolean | "unchanged" | void;
 	/** 
 	 * 在全局的防御范围 （globalToYou其他玩家到你的距离）
 	 * 注：防御距离就是要和别人的距离越远，所以，拉开距离需要增加；
@@ -161,21 +161,21 @@ declare interface Mod {
 	/**
 	 * 选择的目标范围,直接对range进行修改即可，无需返回值。
 	 */
-	selectTarget?(card: Card, player: Player, range: Select): void;
+	selectTarget?(card: Card | VCard | CardBaseUIData, player: Player, range: Select): void;
 	/**
 	* 【表示能否成为你的目标，返回true表示必须是你的目标，false不能成为你的目标】
 	* @param card
 	* @param player 源玩家（使用牌的角色）
 	* @param target 目标玩家
 	*/
-	playerEnabled?(card: Card, player: Player, target: Player, result: boolean | "unchanged"): boolean | "unchanged" | void;
+	playerEnabled?(card: Card | VCard | CardBaseUIData, player: Player, target: Player, result: boolean | "unchanged"): boolean | "unchanged" | void;
 	/**
 	* 【表示你能否成为其他角色的目标】 
 	* @param card
 	* @param player 使用牌的角色
 	* @param target 玩家
 	*/
-	targetEnabled?(card: Card, player: Player, target: Player, result: boolean | "unchanged"): boolean | "unchanged" | void;
+	targetEnabled?(card: Card | VCard | CardBaseUIData, player: Player, target: Player, result: boolean | "unchanged"): boolean | "unchanged" | void;
 
 	/**
 	 * 可以指定任意（范围内）目标
@@ -184,7 +184,7 @@ declare interface Mod {
 	 * @param target 目标
 	 * @return 返回bool值可以不接受，范围检测，使用返回的结果;返回number，即计算距离是增加该距离；不返回，默认正常的范围检测
 	 */
-	targetInRange?(card: Card, player: Player, target: Player, result: boolean | number): boolean | number | void;
+	targetInRange?(card: Card | VCard | CardBaseUIData, player: Player, target: Player, result: boolean | "unchanged" | number): boolean | number | "unchanged" | void;
 	/**
 	 * 弃牌阶段时，忽略弃置的手牌
 	 * @param card 
@@ -192,14 +192,14 @@ declare interface Mod {
 	 */
 	ignoredHandcard?(card: Card, player: Player, current: boolean): boolean | void;
 	/** 表示自己牌能否被别人弃置 */
-	canBeDiscarded?(card: Card, player: Player, target: Player, eventName: string, result: boolean): boolean | void;
+	canBeDiscarded?(card: Card | VCard, player: Player, target: Player, eventName: string | undefined, result: boolean | "unchanged"): boolean | "unchanged" | void;
 	/** 
 	 * 自己的牌能否被别人获得
 	 * 装备区的牌能否被移动到其他角色装备区内
 	 */
-	canBeGained?(card: Card, player: Player, target: Player, eventName: string, reslut: boolean): boolean | void;
+	canBeGained?(card: Card, player: Player, target: Player, eventName: string | undefined, reslut: boolean | "unchanged"): boolean | "unchanged" | void;
 	/**往往用于装备牌，能否被顶替 */
-	canBeReplaced?(card: Card, player: Player, current: boolean): boolean | void;
+	canBeReplaced?(card: Card | VCard, player: Player, current: boolean | "unchanged"): boolean | "unchanged" | void;
 	/**
 	 * 改变花色	用于get.suit
 	 */
@@ -229,7 +229,7 @@ declare interface Mod {
 	/** 改变最终花色	用于get.suit*/
 	cardsuit?(card: Card, player: Player, suit: string): string | void;
 	/** 对特定角色使用牌的次数限制（用于优化【对特定角色使用牌无次数限制】的机制）【v1.9.105】 */
-	cardUsableTarget?(card: Card, player: Player, target: Player, result: boolean): boolean | void;
+	cardUsableTarget?(card: Card | VCard | CardBaseUIData, player: Player, target: Player, result: boolean): boolean | void;
 
 	/** 用于get.value，对最后得返回value结果做处理 */
 	aiValue?(player: Player, card: Card, num: number): number | void;
@@ -494,13 +494,13 @@ declare interface Skill {
 	 *  其执行时机和chooseButton一致，当chooseButton不存在时且game.online为false，则会执行这个
 	 * @param config 
 	 */
-	precontent?: ContentFuncByAll | OldContentFuncByAll;
+	precontent?: ContentFuncByAll | OldContentFuncByAll | ContentFuncsByAll;
 	/**
 	 * 在content之前触发内容
 	 * 
 	 * 在useSkill中使用，主动触发技能content之前
 	 */
-	contentBefore?: ContentFuncByAll | OldContentFuncByAll;
+	contentBefore?: ContentFuncByAll | OldContentFuncByAll | ContentFuncsByAll;
 	/**
 	 * 触发内容（技能内容）
 	 * 
@@ -514,13 +514,13 @@ declare interface Skill {
 	 * 注：此时的content，已经为触发该技能的效果而创建的，该技能执行中的事件，此时的event一般是不具备
 	 *  触发信息，触发的信息，主要在trigger触发事件中获取。
 	 */
-	content?: ContentFuncByAll | OldContentFuncByAll;
+	content?: ContentFuncByAll | OldContentFuncByAll | ContentFuncsByAll;
 	/**
 	 * 在content之后触发内容
 	 * 
 	 * 在useSkill中使用，主动触发技能content之后
 	 */
-	contentAfter?: ContentFuncByAll | OldContentFuncByAll;
+	contentAfter?: ContentFuncByAll | OldContentFuncByAll | ContentFuncsByAll;
 
 	//技能初始化与移除：
 	/**
@@ -962,7 +962,7 @@ declare interface Skill {
 	 * 
 	 * 取值false（因为undefined != false结果为true，故默认不填和true效果一致）
 	 */
-	discard?: boolean | ContentFuncByAll | OldContentFuncByAll;
+	discard?: boolean | ContentFuncByAll | OldContentFuncByAll | ContentFuncsByAll;
 	/** 
 	 * 是否失去牌（是否调用player.lose）
 	 * 
@@ -981,7 +981,7 @@ declare interface Skill {
 	 */
 	prepare?: string | ((cards: Card[], player: Player, targets: Player[]) => string | void);
 	/** 在lose事件中使用，触发执行“lose_卡牌名”事件的content */
-	onLose?: OldContentFuncByAll | OldContentFuncByAll[];
+	onLose?: ContentFuncByAll | OldContentFuncByAll | ContentFuncsByAll;
 	/**
 	 *  在lose事件中使用，必须要失去的卡牌为“equips”（装备牌），有onLose才生效。
 	 * 若符合以上条件，则检测该牌是否需要后续触发执行“lose_卡牌名”事件，既上面配置的onLose
@@ -1467,7 +1467,7 @@ declare interface Skill {
 	 * 
 	 * callback就是作为以上事件的content使用
 	 */
-	callback?: ContentFuncByAll | OldContentFuncByAll;
+	callback?: ContentFuncByAll | OldContentFuncByAll | ContentFuncsByAll;
 	/**
 	 * v1.10.11
 	 * 
@@ -1829,7 +1829,7 @@ declare interface SkillAI {
 			effect有3种可能的返回值,1个数字，长度为2的数组，长度为4的数组。
 			1个数字n:收益*n
 			长度为2的数组[a,b]:a*收益+b
-			长度为4的数组[a,b,c,d]:对目标为a*收益+b，对使用者为c*收益+d
+			长度为4的数组[a,b,c,d]:对你为a*收益+b，对另一个视角为c*收益+d
 			*注意 zeroplayertarget 实际上是[0,0,0,0]  zerotarget  实际上是[0,0
 			"下面以target:function(){},别人对你使用杀为例，括号里为可能的技能描述"
 				return -1;//负影响(杀对你造成伤害时改为等量回复)
@@ -1849,7 +1849,7 @@ declare interface SkillAI {
 		 * 
 		 * 返回结果的字符串："zeroplayer","zerotarget","zeroplayertarget",指定最终结果的:对使用者的收益值,对目标的收益值为0
 		 * 
-		 * 返回数组的情况[a,b,c,d]:对被使用者 a*result+b 对被使用者c*result+d
+		 * 返回数组的情况[a,b,c,d]:对使用者 a*result1+b 对被使用者c*result2+d
 		 * @param result1 即当前ai.result.player的结果
 		 */
 		player?(card: Card, player: Player, target: Player, result1: number): "zeroplayer" | "zerotarget" | "zeroplayertarget" | number | number[] | void | boolean;
@@ -1858,7 +1858,7 @@ declare interface SkillAI {
 		 * 
 		 * 返回结果的字符串："zeroplayer","zerotarget","zeroplayertarget",指定最终结果的:对使用者的收益值,对目标的收益值为0
 		 * 
-		 * 返回数组的情况[a,b,c,d]:对被使用者a*result+b 对被使用者c*result+d
+		 * 返回数组的情况[a,b,c,d]:对被使用者a*result2+b 对使用者c*result1+d
 		 * @param result2 即当前ai.result.target的结果
 		 */
 		target?(card: Card, player: Player, target: Player, result2: number): "zeroplayer" | "zerotarget" | "zeroplayertarget" | number | number[] | boolean | void;

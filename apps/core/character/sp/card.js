@@ -1,6 +1,63 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const cards = {
+	// 彩莲
+	ol_cailian: {
+		fullskin: true,
+		derivation: "ol_sunhanhua",
+		type: "equip",
+		distance: {
+			attackRange(card) {
+				return get.subtypes(card, false).includes("equip1") ? 1 : false;
+			},
+		},
+		skills: ["ol_cailian_skill"],
+		selectTarget: -1,
+		filterTarget(card, player, target) {
+			if (player !== target) return false;
+			return lib.skill.olhuaguang.getSlots(player, card).length > 0;
+		},
+		async prepareEquip(event, trigger, player) {
+			if (event.card.subtypes?.length) return;
+			const slots = lib.skill.olhuaguang.getSlots(player);
+			if (!slots.length) return;
+			const result = await player
+				.chooseControl(slots)
+				.set("prompt", "请选择置入【彩莲】的装备栏")
+				.set("ai", () => _status.event.controls.randomGet())
+				.forResult();
+			event.card.subtypes = [result.control];
+		},
+		async onLose(event, trigger, player) {
+			if (event.cards.some(card => card._ol_cailian_moving)) return;
+			const loseEvent = event.getParent();
+			const equipEvent = event.getParent(2);
+			const movingInside = loseEvent?.type === "equip" && equipEvent?.name === "equip" && equipEvent.player === player && get.nameList(player).includes("ol_sunhanhua");
+			if (movingInside) return;
+			for (const card of event.cards) {
+				card.fix();
+				card.remove();
+				card.destroyed = true;
+				game.log(card, "被销毁了");
+			}
+		},
+		ai: {
+			basic: { equipValue: 7 },
+			equipValue: 7,
+		},
+	},
+	// 螭纹玉佩
+	chiwenyupei: {
+		fullskin: true,
+		cardcolor: "diamond",
+		type: "equip",
+		subtype: "equip5",
+		skills: ["chiwenyupei"],
+		ai: {
+			equipValue: 5,
+			basic: { equipValue: 5 },
+		},
+	},
 	//曹婴三种类型
 	caoying_basic: {
 		fullskin: true,
@@ -201,37 +258,37 @@ const cards = {
 		filterTarget(card, player, target) {
 			return target.countCards("h") && target != player && target.hasSex("male");
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
+			const { target } = event;
 			event.list = game
 				.filterPlayer(function (current) {
 					return current != player && current != target && current.hasSex("female");
 				})
 				.sortBySeat();
-			"step 1";
-			if (target.countCards("h") && event.list.length) {
-				event.current = event.list.shift();
-				event.current.gainPlayerCard(target, true, "h");
-				target.line2([event.current, player]);
-			} else {
-				event.goto(4);
+			while (true) {
+				if (target.countCards("h") && event.list.length) {
+					event.current = event.list.shift();
+					const next = event.current.gainPlayerCard(target, true, "h");
+					target.line2([event.current, player]);
+					await next;
+					const result = await event.current.chooseCard("h", true, "将一张手牌交给" + get.translation(player)).forResult();
+					if (result.bool) {
+						await event.current.give(result.cards, player);
+					}
+				} else {
+					break;
+				}
 			}
-			"step 2";
-			event.current.chooseCard("h", true, "将一张手牌交给" + get.translation(player));
-			"step 3";
-			if (result.bool) {
-				event.current.give(result.cards, player);
-			}
-			event.goto(1);
-			"step 4";
-			var n1 = target.countCards("h");
-			var n2 = player.countCards("h");
+			const n1 = target.countCards("h");
+			const n2 = player.countCards("h");
 			if (n1 > n2) {
-				target.damage(player);
+				const next = target.damage(player);
 				player.line(target);
+				await next;
 			} else if (n1 < n2) {
-				player.damage(target);
+				const next = player.damage(target);
 				target.line(player);
+				await next;
 			}
 		},
 		ai: {
@@ -268,14 +325,13 @@ const cards = {
 		filterTarget(card, player, target) {
 			return target != player;
 		},
-		content() {
-			"step 0";
-			var num = Math.min(5, target.maxHp - target.hp);
+		async content(event, trigger, player) {
+			const { target } = event;
+			const num = Math.min(5, target.maxHp - target.hp);
 			if (num) {
-				target.draw(num);
+				await target.draw(num);
 			}
-			"step 1";
-			target.damage();
+			await target.damage();
 		},
 		ai: {
 			order: 6,
@@ -311,11 +367,9 @@ const cards = {
 		subtype: "equip5",
 		skills: ["zhuangshu_basic"],
 		forceDie: true,
-		onLose() {
-			if (
-				(!event.getParent(2) || event.getParent(2).name != "swapEquip") &&
-				(event.getParent().type != "equip" || event.getParent().swapEquip)
-			) {
+		async onLose(event) {
+			const { cards } = event;
+			if ((!event.getParent(2) || event.getParent(2).name != "swapEquip") && (event.getParent().type != "equip" || event.getParent().swapEquip)) {
 				cards.forEach(card => {
 					card.fix();
 					card.remove();
@@ -342,11 +396,9 @@ const cards = {
 		subtype: "equip5",
 		forceDie: true,
 		skills: ["zhuangshu_trick"],
-		onLose() {
-			if (
-				(!event.getParent(2) || event.getParent(2).name != "swapEquip") &&
-				(event.getParent().type != "equip" || event.getParent().swapEquip)
-			) {
+		async onLose(event) {
+			const { cards } = event;
+			if ((!event.getParent(2) || event.getParent(2).name != "swapEquip") && (event.getParent().type != "equip" || event.getParent().swapEquip)) {
 				cards.forEach(card => {
 					card.fix();
 					card.remove();
@@ -368,11 +420,9 @@ const cards = {
 		skills: ["zhuangshu_equip"],
 		forceDie: true,
 		inherit: "zhuangshu_basic",
-		onLose() {
-			if (
-				(!event.getParent(2) || event.getParent(2).name != "swapEquip") &&
-				(event.getParent().type != "equip" || event.getParent().swapEquip)
-			) {
+		async onLose(event) {
+			const { cards } = event;
+			if ((!event.getParent(2) || event.getParent(2).name != "swapEquip") && (event.getParent().type != "equip" || event.getParent().swapEquip)) {
 				cards.forEach(card => {
 					card.fix();
 					card.remove();
@@ -396,10 +446,7 @@ const cards = {
 		},
 		async onLose(event, trigger, player) {
 			const { cards } = event;
-			if (
-				(!event.getParent(2) || event.getParent(2).name != "swapEquip") &&
-				(event.getParent().type != "equip" || event.getParent().swapEquip)
-			) {
+			if ((!event.getParent(2) || event.getParent(2).name != "swapEquip") && (event.getParent().type != "equip" || event.getParent().swapEquip)) {
 				cards.forEach(card => {
 					card.fix();
 					card.remove();

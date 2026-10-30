@@ -20,6 +20,12 @@ importers:
       '@capacitor/filesystem':
         specifier: ^8.1.1
         version: 8.1.1(@capacitor/core@8.1.0)
+      '@capacitor/ios':
+        specifier: 8.1.0
+        version: 8.1.0(@capacitor/core@8.1.0)
+      path-browserify-esm:
+        specifier: 1.0.6
+        version: 1.0.6
     devDependencies:
       '@capacitor/cli':
         specifier: ^8.1.0
@@ -52,6 +58,11 @@ packages:
     resolution: {integrity: sha512-g8szun+Nj9O/CIWNJ1c4cTsGchJE3B7080X+eh3hQXKf9UdRDllwVJy6reoI5EngwWh9xUgkI7fwkxg5BONrKw==}
     peerDependencies:
       '@capacitor/core': '>=8.0.0'
+
+  '@capacitor/ios@8.1.0':
+    resolution: {integrity: sha512-wPaQ8ayL0UY+SxydZbrmfzPs8TryZVEB6hrL/XBnXxQtb6rpEmIy/3GIltPwM+/T4m/IuaSDZOToWK65ruC00g==}
+    peerDependencies:
+      '@capacitor/core': ^8.1.0
 
   '@capacitor/synapse@1.0.4':
     resolution: {integrity: sha512-/C1FUo8/OkKuAT4nCIu/34ny9siNHr9qtFezu4kxm6GY1wNFxrCFWjfYx5C1tUhVGz3fxBABegupkpjXvjCHrw==}
@@ -598,6 +609,9 @@ packages:
   package-json-from-dist@1.0.1:
     resolution: {integrity: sha512-UEZIS3/by4OC8vL3P2dTXRETpebLI2NiI5vIrjaD/5UtrkFX/tNbwjTSRAGC/+7CAo2pIcBaRgWmcBBHcsaCIw==}
 
+  path-browserify-esm@1.0.6:
+    resolution: {integrity: sha512-9nUwYvvu/yq1PYrUyYCihNWmpzacaRYF6gGbjLWErrZ4MRDWyfPN7RpE8E7tsw8eqBU/rr7mcoTXbS+Vih8uUA==}
+
   path-key@3.1.1:
     resolution: {integrity: sha512-ojmeN0qd+y0jszEtoY48r0Peq5dwMEkIlCOu6Q5f41lfkswXuKtYrhgoTpLnyIcHm24Uhqx+5Tqm2InSwLhE6Q==}
     engines: {node: '>=8'}
@@ -834,6 +848,10 @@ snapshots:
     dependencies:
       '@capacitor/core': 8.1.0
       '@capacitor/synapse': 1.0.4
+
+  '@capacitor/ios@8.1.0(@capacitor/core@8.1.0)':
+    dependencies:
+      '@capacitor/core': 8.1.0
 
   '@capacitor/synapse@1.0.4': {}
 
@@ -1272,6 +1290,8 @@ snapshots:
       is-wsl: 2.2.0
 
   package-json-from-dist@1.0.1: {}
+
+  path-browserify-esm@1.0.6: {}
 
   path-key@3.1.1: {}
 

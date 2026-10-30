@@ -1,6 +1,15 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 
-import { clearReconnectState, decideReconnect } from "./reconnect.js";
+import { clearReconnectState, decideReconnect, finishConnectCallback } from "./reconnect.js";
+
+describe("finishConnectCallback", () => {
+	it("回调中发起新连接时保留新回调", () => {
+		const next = vi.fn();
+		const status = { connectCallback: () => (status.connectCallback = next) };
+		finishConnectCallback(status, false);
+		expect(status.connectCallback).toBe(next);
+	});
+});
 
 /**
  * decideReconnect 是从 lib.element.ws.onclose 中抽出的纯决策函数，
@@ -76,8 +85,20 @@ describe("decideReconnect", () => {
 		expect(decideReconnect(s).action).toBe("reload");
 	});
 
+	it("maxAttempts 为 0 时不重试", () => {
+		expect(decideReconnect({ ...base, maxAttempts: 0 }).action).toBe("reload");
+	});
+
+	it("负的重试次数按首次重试处理", () => {
+		expect(decideReconnect({ ...base, attempts: -1 })).toEqual({ action: "retry", delay: 1000, nextAttempts: 1 });
+	});
+
 	it("noReconnect 优先于重试（即便有 ip、次数未满）", () => {
 		expect(decideReconnect({ ...base, noReconnect: true, attempts: 0 }).action).toBe("reload");
+	});
+
+	it("大厅握手后被拒绝时即使仍在线也不重试", () => {
+		expect(decideReconnect({ ...base, wasOnline: true, reconnecting: false, noReconnect: true }).action).toBe("reload");
 	});
 });
 
@@ -86,6 +107,19 @@ describe("decideReconnect", () => {
  * 大厅走 roomlist，直连房主走 reinit。
  */
 describe("clearReconnectState", () => {
+	it("取消已安排的重连并清除定时器引用", () => {
+		vi.useFakeTimers();
+		try {
+			const reconnect = vi.fn();
+			const status = { reconnectAttempts: 1, reconnecting: true, reconnectTimer: setTimeout(reconnect, 1000) };
+			clearReconnectState(status);
+			vi.advanceTimersByTime(1000);
+			expect(reconnect).not.toHaveBeenCalled();
+			expect(status.reconnectTimer).toBeUndefined();
+		} finally {
+			vi.useRealTimers();
+		}
+	});
 	it("清零重试计数并结束重试链", () => {
 		const status = { reconnectAttempts: 3, reconnecting: true };
 		clearReconnectState(status);

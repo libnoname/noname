@@ -1,4 +1,6 @@
 export default {
+	"#sclfudi1": "弃暗投明，为明公计！",
+	"#sclfudi2": "绣虽有降心，奈何贵营难容。",
 	"#juejing": "龙战于野，其血玄黄。",
 	"#longhun1": "潜龙于渊，涉灵愈伤。",
 	"#longhun2": "千里一怒，红莲灿世。",

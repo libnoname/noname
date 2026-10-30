@@ -1,4 +1,6 @@
 export default {
+	tangtang: "伊侍佐佑",
+	//wangai: "",
 	//ol_huangfusong: "",
 	ol_caojinyu: "春秋盈昃",
 	//pangji: "",
@@ -238,4 +240,5 @@ export default {
 	caoxiancaohua: "与君化木",
 	tengfanglan: "铃兰凋落",
 	wangcan: "七子之冠冕",
+	ol_duanwei: "凉国之英",
 };

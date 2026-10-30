@@ -167,8 +167,7 @@ export function createMenu(connectMenu, tabs, config) {
 			active._link.remove();
 		}
 		this.classList.add("active");
-		menuTabBar.style.transform =
-			"translateX(" + (this.getBoundingClientRect().left - this.parentNode.firstChild.getBoundingClientRect().left) / get.menuZoom() + "px)";
+		menuTabBar.style.transform = "translateX(" + (this.getBoundingClientRect().left - this.parentNode.firstChild.getBoundingClientRect().left) / get.menuZoom() + "px)";
 		menuContent.appendChild(this._link);
 	};
 	ui.click.menuTab = function (tab) {

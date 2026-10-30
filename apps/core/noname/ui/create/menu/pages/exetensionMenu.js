@@ -1,7 +1,7 @@
 import { menuContainer, popupContainer, updateActive, setUpdateActive, updateActiveCard, setUpdateActiveCard, menux, menuxpages, menuUpdates, openMenu, clickToggle, clickSwitcher, clickContainer, clickMenuItem, createMenu, createConfig } from "../index.js";
 import { ui, game, get, ai, lib, _status } from "noname";
 import { delay } from "@/util/index.js";
-import { security } from "@/util/sandbox.js"
+import { security } from "@/util/sandbox.js";
 import { Character } from "@/library/element/index.js";
 
 export const extensionMenu = function (connectMenu) {
@@ -111,7 +111,7 @@ export const extensionMenu = function (connectMenu) {
 	var createModeConfig = function (mode, position) {
 		var page = ui.create.div("");
 		page.style.paddingBottom = "10px";
-		let node = ui.create.div(".menubutton.large", mode.startsWith("extension_") ? (lib.translate[mode] || mode.slice(10)) : lib.translate[`${mode}_play_config`], position, clickMode);
+		let node = ui.create.div(".menubutton.large", mode.startsWith("extension_") ? lib.translate[mode] || mode.slice(10) : lib.translate[`${mode}_play_config`], position, clickMode);
 		if (node.innerHTML.length >= 5) {
 			node.classList.add("smallfont");
 		}
@@ -440,13 +440,17 @@ export const extensionMenu = function (connectMenu) {
 					// var callback = () => {
 					if (exportext) {
 						// var proexport = function () {
-						game.importExtension(extension, null, page.currentExtension, /* {
+						game.importExtension(
+							extension,
+							null,
+							page.currentExtension /* {
 									intro: introExtLine.querySelector("input").value || "",
 									author: authorExtLine.querySelector("input").value || "",
 									netdisk: diskExtLine.querySelector("input").value || "",
 									forum: forumExtLine.querySelector("input").value || "",
 									version: versionExtLine.querySelector("input").value || "",
-								} */);
+								} */
+						);
 						// };
 						// if (game.getFileList) {
 						// 	game.getFileList("extension/" + page.currentExtension, function (folders, files) {
@@ -1942,17 +1946,18 @@ export const extensionMenu = function (connectMenu) {
 								const descriptor = Object.getOwnPropertyDescriptor(obj, key);
 								if (descriptor?.get || descriptor?.set) {
 									if (descriptor.get) {
-										str += indent + get.stringify(descriptor.get, 1) + ",\n";
+										str += indent + get.stringify(descriptor.get, 1, true) + ",\n";
 									}
 									if (descriptor.set) {
-										str += indent + get.stringify(descriptor.set, 1) + ",\n";
+										str += indent + get.stringify(descriptor.set, 1, true) + ",\n";
 									}
 								} else {
 									let keyString = (/[^a-zA-Z]/.test(key) ? `"${key}"` : key) + ": ";
-									if (get.is.functionMethod(obj, key)) {
+									const isFunctionMethod = get.is.functionMethod(obj, key);
+									if (isFunctionMethod) {
 										keyString = "";
 									}
-									str += indent + keyString + get.stringify(obj[key], 1) + ",\n";
+									str += indent + keyString + get.stringify(obj[key], 1, isFunctionMethod) + ",\n";
 								}
 							}
 							Object.getOwnPropertySymbols(obj).forEach(symbol => {
@@ -2149,17 +2154,18 @@ export const extensionMenu = function (connectMenu) {
 								const descriptor = Object.getOwnPropertyDescriptor(obj, key);
 								if (descriptor?.get || descriptor?.set) {
 									if (descriptor.get) {
-										str += indent + get.stringify(descriptor.get, 1) + ",\n";
+										str += indent + get.stringify(descriptor.get, 1, true) + ",\n";
 									}
 									if (descriptor.set) {
-										str += indent + get.stringify(descriptor.set, 1) + ",\n";
+										str += indent + get.stringify(descriptor.set, 1, true) + ",\n";
 									}
 								} else {
 									let keyString = (/[^a-zA-Z]/.test(key) ? `"${key}"` : key) + ": ";
-									if (get.is.functionMethod(obj, key)) {
+									const isFunctionMethod = get.is.functionMethod(obj, key);
+									if (isFunctionMethod) {
 										keyString = "";
 									}
-									str += indent + keyString + get.stringify(obj[key], 1) + ",\n";
+									str += indent + keyString + get.stringify(obj[key], 1, isFunctionMethod) + ",\n";
 								}
 							}
 							Object.getOwnPropertySymbols(obj).forEach(symbol => {

@@ -35,4 +35,4 @@ USER appuser
 EXPOSE 8082
 WORKDIR /app
 
-CMD ["node", "dist/index.js"]
+CMD ["node", "dist/cli.js"]

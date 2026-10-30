@@ -1,5 +1,6 @@
 export default {
 	mb_shen_jiangwei: "万民承霖",//烟雨济世即为神！
+	mb_shen_machao: "势震九天",
 	shen_huatuo: "悬壶济世",
 	shen_lusu: "兴吴之邓禹",
 	shen_guojia: "星月奇佐",
