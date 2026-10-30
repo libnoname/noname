@@ -8321,13 +8321,12 @@ const skills = {
 			markcount: "expansion",
 			content: "expansion",
 		},
-		group: "gzbuqu_recover",
+		group: ["gzbuqu_recover", "gzbuqu_hujia"],
 		frequent: true,
 		ondisable: true,
 		onremove(player, skill) {
 			const cards = player.getExpansions(skill);
 			if (cards.length) {
-				//delete player.nodying;
 				player.loseToDiscardpile(cards);
 				if (player.hp <= 0) {
 					player.dying({});
@@ -8335,7 +8334,6 @@ const skills = {
 			}
 		},
 		process(player) {
-			//delete player.nodying;
 			const nums = [];
 			const cards = player.getExpansions("gzbuqu");
 			for (let i = 0; i < cards.length; i++) {
@@ -8346,9 +8344,21 @@ const skills = {
 				}
 			}
 			return true;
-			//player.nodying=true;
 		},
 		subSkill: {
+			hujia: {
+				trigger: { player: "changeHp" },
+				forced: true,
+				popup: false,
+				filter(event, player) {
+					// 体力不大于零、扣血量为零、护甲发生抵扣、父事件为伤害、已有创、创的点数互异
+					return player.hp <= 0 && event.num === 0 && event.hujia > 0 && event.getParent().name === "damage" && player.getExpansions("gzbuqu").length > 0 && lib.skill.gzbuqu.process(player);
+				},
+				async content(event, trigger, player) {
+					// 护甲完全抵消扣血时不会触发添加“创”，阻止本次伤害的濒死结算。
+					trigger.getParent().nodying = true;
+				},
+			},
 			recover: {
 				trigger: { player: "recoverAfter" },
 				filter(event, player) {
