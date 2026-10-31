@@ -1,0 +1,30 @@
+export default {
+	gz_caocao: "曹操",
+	gz_simayi: "司马懿",
+	gz_xiahoudun: "夏侯惇",
+	gz_zhangliao: "张辽",
+	gz_xuzhu: "许褚",
+	gz_guojia: "郭嘉",
+	gz_zhenji: "甄宓",
+	gz_xiahouyuan: "夏侯渊",
+	gz_zhanghe: "张郃",
+	gz_xuhuang: "徐晃",
+	gz_caoren: "曹仁",
+	gz_dianwei: "典韦",
+	gz_xunyu: "荀彧",
+	gz_caopi: "曹丕",
+	gz_yuejin: "乐进",
+
+	gz_liubei: "刘备",
+	gz_guanyu: "关羽",
+	gz_zhangfei: "张飞",
+	gz_zhugeliang: "诸葛亮",
+	gz_zhaoyun: "赵云",
+	gz_machao: "马超",
+	gz_huangyueying: "黄月英",
+	gz_huangzhong: "黄忠",
+	gz_weiyan: "魏延",
+	gz_pangtong: "庞统",
+};
+
+export const sort = ["guozhan_default", "国战标准"];
