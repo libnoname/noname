@@ -11475,21 +11475,16 @@ const skills = {
 							const event = get.event();
 							//无懈部分
 							if (event.name === "chooseToUse" && event.type === "wuxie") {
-								const { info_map: map } = event;
-								if (map.card.name !== "wuxie") {
+								const { respondTo } = event;
+								if (!respondTo) {
 									return;
 								}
-								//获取上一次【无懈】对拼事件
-								const evt = event.getParent("_wuxie")?.getParent(5);
-								if (!evt || evt.name !== "_wuxie") {
-									return;
-								}
-								//若对方有〖复难〗，则改收益为0，不用【无懈】
-								if (evt.wuxieresult.hasSkill("mbfunan")) {
+								//若被响应者有〖复难〗且响应者对被响应者态度值为负，则改收益为0，不用【无懈】
+								if (respondTo[1].hasSkill("mbfunan") && get.attitude(event.player, respondTo[0]) < 0) {
 									return 0;
 								}
 							}
-							//决斗部分
+							//决斗部分，修改决斗拼杀的受伤收益判断(toRespond)
 							else if (event.name === "juedou") {
 								if (card.name !== "damage") {
 									return;
