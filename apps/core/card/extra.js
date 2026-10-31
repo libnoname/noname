@@ -839,6 +839,10 @@ export default {
 				backup(links, player) {
 					return {
 						muniu: links[0].vcardID,
+						position: "h",
+						selectCard: 1,
+						manualConfirm: true,
+						prompt: "选择一张手牌扣置于木牛流马下",
 						filterCard: true,
 						ai1(card) {
 							if (card.name === "du") {
