@@ -20,6 +20,7 @@ import { Check } from "./check.js";
 import { security } from "@/util/sandbox.js";
 import { save } from "@/util/config.js";
 import { debounce } from "@/util/utils.js";
+import { clearReconnectState } from "@/util/reconnect.js";
 
 export class Game {
 	documentZoom;
@@ -1904,7 +1905,7 @@ export class Game {
 		if (!lib.node || !lib.node.clients || game.online) {
 			return;
 		}
-		for (const client of lib.node.clients) {
+		for (const client of [...lib.node.clients]) {
 			if (client.inited) {
 				client.send(func, ...args);
 			}
@@ -2169,6 +2170,7 @@ export class Game {
 		_status.connectCallback = callback;
 		try {
 			if (game.ws) {
+				clearTimeout(game.ws._connectTimeout);
 				game.ws._nocallback = true;
 				game.ws.close();
 				delete game.ws;
@@ -2187,18 +2189,29 @@ export class Game {
 		game.ws.onmessage = lib.element.ws.onmessage;
 		game.ws.onerror = lib.element.ws.onerror;
 		game.ws.onclose = lib.element.ws.onclose;
+		// 连接超时处理
+		const ws = game.ws;
+		ws._connectTimeout = setTimeout(() => {
+			if (game.ws === ws && ws.readyState !== 1) {
+				ws.close();
+			}
+		}, 10000);
 		_status.ip = ip;
 	}
 	send() {
 		if (game.observe && arguments[0] != "reinited") {
 			return;
 		}
-		if (game.ws) {
+		// readyState 必须为 OPEN(1)；CLOSING(2)/CLOSED(3) 时 game.ws 仍非空，
+		// 直接 send 会抛 InvalidStateError
+		if (game.ws && game.ws.readyState === 1) {
 			const args = Array.from(arguments);
 			if (typeof args[0] == "function") {
 				args.unshift("exec");
 			}
 			game.ws.send(JSON.stringify(get.stringifiedResult(args)));
+		} else {
+			console.warn("联机消息未发送：WebSocket 未连接", { readyState: game.ws?.readyState });
 		}
 	}
 	/**
@@ -4927,6 +4940,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 	};
 	reload() {
 		if (_status) {
+			clearReconnectState(_status);
 			if (_status.reloading) {
 				return;
 			}
@@ -6545,6 +6559,13 @@ ${e instanceof Error ? e.stack : String(e)}`);
 	 * @returns
 	 */
 	over(result, bool) {
+		if (_status.reconnecting) {
+			ui.create.connecting(true);
+		}
+		clearTimeout(_status.reconnectTimer);
+		delete _status.reconnectTimer;
+		_status.reconnectAttempts = 0;
+		_status.reconnecting = false;
 		if (_status.over) {
 			return;
 		}
