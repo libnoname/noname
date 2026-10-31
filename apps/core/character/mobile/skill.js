@@ -11416,6 +11416,7 @@ const skills = {
 			await next;
 		},
 		group: "mbfunan_draw",
+		global: "mbfunan_globalAI",
 		subSkill: {
 			rewrite: {
 				charlotte: true,
@@ -11459,6 +11460,42 @@ const skills = {
 				locked: false,
 				async content(event, trigger, player) {
 					await player.draw();
+				},
+			},
+			globalAI: {
+				charlotte: true,
+				ai: {
+					effect: {
+						player(card, player, target) {
+							if (card.name === "juedou" && target.hasSkill("mbfunan") && target.hasCards("h")) {
+								return 0.5;
+							}
+						},
+						target(card, player, target, result2) {
+							const event = get.event();
+							//无懈部分
+							if (event.name === "chooseToUse" && event.type === "wuxie") {
+								const { respondTo } = event;
+								if (!respondTo) {
+									return;
+								}
+								//若被响应者有〖复难〗且响应者对被响应者态度值为负，则改收益为0，不用【无懈】
+								if (respondTo[1].hasSkill("mbfunan") && get.attitude(event.player, respondTo[0]) < 0) {
+									return 0;
+								}
+							}
+							//决斗部分，修改决斗拼杀的受伤收益判断(toRespond)
+							else if (event.name === "juedou") {
+								if (card.name !== "damage") {
+									return;
+								}
+								//若对方有〖复难〗，且伤害收益为负，则改收益为正。不拼【杀】
+								if (player.hasSkill("mbfunan") && result2 < 0) {
+									return -1;
+								}
+							}
+						},
+					},
 				},
 			},
 		},
