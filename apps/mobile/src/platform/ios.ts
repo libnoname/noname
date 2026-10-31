@@ -91,6 +91,13 @@ export function attachIosFileSystem(game: any): void {
 		game.createDir?.(pathArray.join("/"), callback, console.error);
 	};
 
+	game.renameDir = function renameDir(from, to, callback = () => {}, onerror = console.error) {
+		fs
+			.rename({ from, to })
+			.then(() => callback())
+			.catch(error => callbackError(onerror, error));
+	};
+
 	game.createDir = function createDir(directory, successCallback = () => {}, errorCallback = console.error) {
 		fs
 			.createDir({ dir: directory })
@@ -207,6 +214,15 @@ class IosFileSystem implements MinimalFileSystem {
 		}
 
 		return { folders: [...folders], files: [...files] };
+	}
+
+	async rename(options: { from: string; to: string }): Promise<void> {
+		await Filesystem.rename({
+			from: this.normalizeSegments(options.from),
+			to: this.normalizeSegments(options.to),
+			directory: Directory.Documents,
+			toDirectory: Directory.Documents,
+		});
 	}
 
 	async createDir(options: { dir: string }): Promise<void> {
