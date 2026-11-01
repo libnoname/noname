@@ -45729,8 +45729,9 @@ const skills = {
 			const target = lib.skill.chongzhen.logTarget(trigger, player);
 			let draw = false;
 			if (event.cost_data == "获得其一张手牌") {
-				await player.gainPlayerCard({ target, position: "h", forced: true });
-				if (target.countCards("h") == 0) {
+				const count = target.countCards("h");
+				const gain = await player.gainPlayerCard({ target, position: "h", forced: true }).forResult();
+				if (count == 1 && gain.cards?.length) {
 					draw = true;
 				}
 			} else {
