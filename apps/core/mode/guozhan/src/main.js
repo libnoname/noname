@@ -309,26 +309,35 @@ export const start = async (event, trigger, player) => {
 		playerFirst = game.players[Math.floor(Math.random() * game.players.length)];
 	}
 
+	broadcastAll(player => {
+		_status.seatNumSettled = true;
+		for (let seat = 1; seat <= game.players.length; seat++) {
+			player.seatNum = seat;
+			player = player.next;
+		}
+	}, playerFirst);
+
 	await event.trigger("gameStart");
 
 	await game.gameDraw(playerFirst);
-	broadcastAll(player => {
+	broadcastAll(() => {
 		for (let i = 0; i < game.players.length; ++i) {
-			var seatNum = get.distance(player, game.players[i], "absolute");
+			var seatNum = game.players[i].getSeatNum() - 1;
 			game.players[i].name = `unknown${seatNum}`;
 			game.players[i].node.name_seat = ui.create.div(".name.name_seat", get.seatTranslation(seatNum), game.players[i]);
 			// if(game.players[i]==game.me){
 			// 	lib.translate[game.players[i].name]+='（你）';
 			// }
 		}
-	}, playerFirst);
+	});
 
 	const players = get.players(lib.sort.position);
 	const info = [];
 	for (let i = 0; i < players.length; ++i) {
 		info.push({
-			name: game.players[i].name,
-			translate: lib.translate[game.players[i].name],
+			name: players[i].name,
+			translate: lib.translate[players[i].name],
+			seatNum: players[i].getSeatNum(),
 			name1: players[i].name1,
 			name2: players[i].name2,
 			nickname: players[i].node.nameol.innerHTML,
