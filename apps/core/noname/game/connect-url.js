@@ -5,8 +5,8 @@
  * - 全角标点转半角、去首尾空白
  * - `http://` → `ws://`、`https://` → `wss://`；其它协议返回 null
  * - 未写协议时按 `useWss` 补 `ws://` / `wss://`
- * - 旧版兼容：未写协议且未写端口的地址补 8080（与桌面端既有行为一致；
- *   服务在其它端口时请显式写 `:端口`）
+ * - 旧版兼容：未写协议、未写端口且无路径的地址补 8080（与桌面端既有行为一致；
+ *   带路径或服务在其它端口时请显式写 `:端口`）
  *
  * @param {string} input 玩家输入
  * @param {boolean} [useWss] 是否使用 wss（来自「使用 WSS 协议」开关）
@@ -60,8 +60,9 @@ export function normalizeConnectAddress(input, useWss = false) {
 	if (!url.port) {
 		const hostPart = text.split("://").pop() ?? "";
 		const hasPort = /:\d+(?:[/?#]|$)/.test(hostPart);
-		if (!hasPort && !scheme) {
-			// 与桌面端既有行为对齐：未写协议、未写端口时默认 8080
+		// 与桌面端既有行为对齐：未写协议、未写端口、且没有路径时才默认 8080
+		// （带路径的地址沿用旧行为，不补端口）
+		if (!hasPort && !scheme && url.pathname === "/") {
 			url.port = "8080";
 		}
 	}
