@@ -970,7 +970,7 @@ const characters = {
 	sp_zhaoyun: {
 		sex: "male",
 		group: "qun",
-		hp: 3,
+		hp: 4,
 		skills: ["ollongdan", "chongzhen"],
 	},
 	liuxie: {
