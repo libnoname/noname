@@ -2137,10 +2137,6 @@ export class Game {
 			return;
 		}
 		const url = tempUrl.href;
-		const explicitScheme = /^([a-zA-Z][a-zA-Z0-9+.-]*):\/\//.exec(ip)?.[1]?.toLowerCase();
-		if (explicitScheme && (explicitScheme === "wss") !== !!get.config("wss_mode", "connect")) {
-			console.warn(`地址中已显式指定 ${explicitScheme}://，将忽略「使用 WSS 协议」开关`);
-		}
 		console.log(`正在连接 ${url}`);
 
 		_status.connectCallback = callback;

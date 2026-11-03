@@ -33,9 +33,15 @@ export default async function preload({ lib, game }) {
 	};
 
 	game.exit = function () {
-		// iOS 不允许程序内退出应用，Capacitor 的 iOS 实现会以 "not implemented" 拒绝，
-		// 直接调用会变成未处理的 Promise 拒绝并弹出错误框；这里退化为返回主菜单。
+		// iOS 不允许程序内退出应用，Capacitor 的 iOS 实现会以 "not implemented" 拒绝；
+		// 这里改为走「退出房间」路径：清理重连信息与房间 id 后重载回主菜单，
+		// 直接 reload 会保留当前模式并自动进入对局。
 		if (platform === "ios") {
+			const exitRoom = (window as any).ui?.click?.exit;
+			if (typeof exitRoom === "function") {
+				exitRoom();
+				return;
+			}
 			game.reload();
 			return;
 		}
