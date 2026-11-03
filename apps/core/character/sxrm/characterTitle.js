@@ -1,4 +1,5 @@
 export default {
+	sxrm_yanfuren: "醉生梦死",
 	sxrm_zhouyu: "哀弦万耳惊",
 	sxrm_sunshangxiang: "生死相随",
 	sxrm_zhangzhao: "迂儒",
