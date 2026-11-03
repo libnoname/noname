@@ -34,15 +34,9 @@ export default async function preload({ lib, game }) {
 
 	game.exit = function () {
 		// iOS 不允许程序内退出应用，Capacitor 的 iOS 实现会以 "not implemented" 拒绝；
-		// 这里改为走「退出房间」路径：清理重连信息与房间 id 后重载回主菜单，
-		// 直接 reload 会保留当前模式并自动进入对局。
+		// 这里清掉模式信息后重载回主菜单，否则 reload 会自动进入当前模式。
 		if (platform === "ios") {
-			const exitRoom = (window as any).ui?.click?.exit;
-			if (typeof exitRoom === "function") {
-				exitRoom();
-				return;
-			}
-			game.reload();
+			game.promises.saveConfig("mode").then(() => game.reload());
 			return;
 		}
 		App.exitApp().catch(error => {
