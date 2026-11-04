@@ -3,7 +3,72 @@
 import { lib, game, ui, get, Get, ai, _status } from "noname";
 import { showYexingsContent, chooseCharacterContent, chooseCharacterOLContent } from "./content.js";
 
+// 模式补丁可能直接覆盖原型，提前保存基础翻译以避免递归调用自身。
+const baseTranslation = Get.prototype.translation;
+const baseNodeIntro = Get.prototype.nodeintro;
+const baseCardsetion = Get.prototype.cardsetion;
+
 export class GetGuozhan extends Get {
+	cardsetion(player, sourceEvent) {
+		const result = baseCardsetion.call(this, player, sourceEvent);
+		return typeof result === "string" ? result.replace(/^.*?<br\s*\/?>\s*<span\b[^>]*>/is, () => (player || game.me).getName(true)) : result;
+	}
+
+	nodeintro(node, simple, evt, uiintro) {
+		const result = baseNodeIntro.call(this, node, simple, evt, uiintro);
+		const player = node.linkplayer ? node.link : node;
+		if (!result || node._customintro || player._nointro || get.itemtype(player) !== "player" || !player.name) {
+			return result;
+		}
+		const caption = result.content.firstElementChild;
+		const originalName = get.translation(player.name);
+		if (caption?.classList.contains("caption") && caption.innerHTML.startsWith(originalName)) {
+			caption.innerHTML = get.translation(player) + caption.innerHTML.slice(originalName.length);
+		}
+		if (simple && !get.is.phoneLayout()) {
+			return result;
+		}
+		const canView = index => {
+			if (!player[index ? "name2" : "name1"]) {
+				return false;
+			}
+			if (_status.video) {
+				return !player.classList.contains(index ? "unseen2_v" : "unseen_v");
+			}
+			return !player.isUnseen(index) || (!game.observe && (player === game.me || player.isUnderControl(true)));
+		};
+		const visible = [0, 1].filter(canView);
+		const oldEntry = Array.from(result.content.children).find(entry => entry.link === player);
+		if (visible.length) {
+			const viewInfos = ui.create.div(".text.center");
+			Object.assign(viewInfos.style, { display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "8px 16px" });
+			for (const index of visible) {
+				const nameKey = index ? "name2" : "name1";
+				const avatarKey = index ? "avatar2" : "avatar";
+				const skinKey = index ? "name2" : "name";
+				const viewInfo = ui.create.div(".pointerdiv", viewInfos);
+				Object.assign(viewInfo.style, { position: "relative", whiteSpace: "nowrap" });
+				viewInfo.innerHTML = index ? "查看副将" : "查看主将";
+				viewInfo.listen(() => {
+					if (canView(index)) {
+						ui.click.charactercard(player[nameKey], null, null, true, player.node[avatarKey], player.skin[skinKey] || player[nameKey]);
+					}
+				});
+			}
+			result.content.insertBefore(viewInfos, oldEntry || result.content.lastElementChild);
+		}
+		oldEntry?.remove();
+		ui.update();
+		return result;
+	}
+
+	translation(str, arg) {
+		if (str && typeof str === "object" && get.itemtype(str) === "player") {
+			return str.getName();
+		}
+		return baseTranslation.call(this, str, arg);
+	}
+
 	/**
 	 * > ?.?
 	 *
