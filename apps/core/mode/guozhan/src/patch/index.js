@@ -1,9 +1,13 @@
-import { GameGuozhan } from "./game.js";
+import { game } from "noname";
+import { GameGuozhan, createGuozhanVideoContent } from "./game.js";
 import { GetGuozhan } from "./get.js";
 import { PlayerGuozhan } from "./player.js";
 import ContentGuozhan from "./content.js";
 
-export const gamePatch = _generateExtraFunctions(GameGuozhan.prototype);
+export const gamePatch = {
+	..._generateExtraFunctions(GameGuozhan.prototype),
+	videoContent: createGuozhanVideoContent(game.videoContent),
+};
 export const getPatch = _generateExtraFunctions(GetGuozhan.prototype);
 export const playerPatch = _generateExtraFunctions(PlayerGuozhan.prototype);
 export const contentPatch = ContentGuozhan;

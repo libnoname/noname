@@ -56,45 +56,10 @@ async function main() {
 	 * Individual译为“个体”，不过此处只是找个后续不太用得上的单词
 	 */
 	const individuals: Record<IndividualType, IndividualContent[]> = {
-		character: [],
-		mode: [
-			{ name: "boss", index: "mode/boss.js", source: "mode/boss.js" },
-			{ name: "brawl", index: "mode/brawl.js", source: "mode/brawl.js" },
-			{ name: "chess", index: "mode/chess.js", source: "mode/chess.js" },
-			{ name: "connect", index: "mode/connect.js", source: "mode/connect.js" },
-			{ name: "doudizhu", index: "mode/doudizhu.js", source: "mode/doudizhu.js" },
-			{ name: "guozhan", index: getDirectoryEntry("mode", "guozhan"), source: "mode/guozhan" },
-			{ name: "identity", index: "mode/identity.js", source: "mode/identity.js" },
-			{ name: "realtime", index: "mode/realtime.js", source: "mode/realtime.js" },
-			{ name: "single", index: "mode/single.js", source: "mode/single.js" },
-			{ name: "stone", index: "mode/stone.js", source: "mode/stone.js" },
-			{ name: "tafang", index: "mode/tafang.js", source: "mode/tafang.js" },
-			{ name: "versus", index: "mode/versus.js", source: "mode/versus.js" },
-		],
-		card: [],
+		character: collectIndividuals("character"),
+		mode: collectIndividuals("mode"),
+		card: collectIndividuals("card"),
 	};
-
-	// #4427 - 武将包均重写完毕
-	const characterDirectories = readdirSync(join(root, "character"), { withFileTypes: true })
-		.filter(entry => entry.isDirectory())
-		.sort((a, b) => a.name.localeCompare(b.name));
-	for (const { name } of characterDirectories) {
-		individuals.character.push({
-			name,
-			index: getDirectoryEntry("character", name),
-			source: `character/${name}`,
-		});
-	}
-
-	// #3941 - 卡牌包均重写完毕
-	for (const file of readdirSync(join(root, "card")).sort()) {
-		const index = `card/${file}`;
-		individuals.card.push({
-			name: getEntryName(file),
-			index,
-			source: index,
-		});
-	}
 
 	// 将单独构建的包体全部复制到dist/src中
 	for (const [type, content] of Object.entries(individuals)) {
@@ -222,6 +187,19 @@ async function buildIndividual(type: string, target: string | string[], input: R
  */
 function getEntryName(file: string): string {
 	return file.replace(/\.(js|ts)$/, "");
+}
+
+/**
+ * 扫描顶层目录，收集需要单独构建的包体。
+ */
+function collectIndividuals(type: IndividualType): IndividualContent[] {
+	return readdirSync(join(root, type), { withFileTypes: true })
+		.filter(entry => entry.isDirectory() || type !== "character")
+		.sort((a, b) => a.name.localeCompare(b.name))
+		.map(entry => {
+			const index = entry.isDirectory() ? getDirectoryEntry(type, entry.name) : `${type}/${entry.name}`;
+			return { name: getEntryName(entry.name), index, source: `${type}/${entry.name}` };
+		});
 }
 
 /** 取得目录型包体的入口，优先使用 TypeScript 文件。 */
