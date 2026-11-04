@@ -1,6 +1,34 @@
 import { lib, game, Game, ui, get, ai, _status } from "noname";
 import { showYexingsContent, chooseCharacterContent, chooseCharacterOLContent } from "./content.js";
 
+/** 仅为国战创建录像处理表，不修改通用处理表。 */
+export function createGuozhanVideoContent(base) {
+	return {
+		...base,
+		init(players) {
+			base.init.call(this, players);
+			for (const [index, player] of game.players.entries()) {
+				const seat = /^unknown(\d+)$/.exec(players[index].name);
+				player.seatNum = players[index].seatNum ?? (seat ? Number(seat[1]) + 1 : 0);
+			}
+		},
+		swapSeat(content) {
+			const player1 = game.playerMap[content[0]];
+			const player2 = game.playerMap[content[1]];
+			if (player1 && player2) {
+				[player1.seatNum, player2.seatNum] = [player2.seatNum, player1.seatNum];
+			}
+			return base.swapSeat.call(this, content);
+		},
+		reinit3(source, content) {
+			if (source && content && !content.avatar2) {
+				source.name1 = content.to;
+			}
+			return base.reinit3.call(source, source, content);
+		},
+	};
+}
+
 const withoutGouniResultEffect = callback => {
 	const old = _status.gz_gouni_checkingResult;
 	_status.gz_gouni_checkingResult = true;
@@ -16,6 +44,15 @@ const withoutGouniResultEffect = callback => {
 };
 
 export class GameGuozhan extends Game {
+	swapSeat(player1, player2, prompt, behind, noanimate) {
+		super.swapSeat(player1, player2, prompt, behind, noanimate);
+		for (const player of [player1, player2]) {
+			if (player.node.name_seat) {
+				player.node.name_seat.innerHTML = get.seatTranslation(player.getSeatNum() - 1);
+			}
+		}
+	}
+
 	/**
 	 * 不确定是干啥的，反正恒返回真
 	 *

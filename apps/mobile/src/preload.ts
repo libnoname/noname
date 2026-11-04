@@ -33,7 +33,15 @@ export default async function preload({ lib, game }) {
 	};
 
 	game.exit = function () {
-		App.exitApp();
+		// iOS 不允许程序内退出应用，Capacitor 的 iOS 实现会以 "not implemented" 拒绝；
+		// 这里清掉模式信息后重载回主菜单，否则 reload 会自动进入当前模式。
+		if (platform === "ios") {
+			game.promises.saveConfig("mode").then(() => game.reload());
+			return;
+		}
+		App.exitApp().catch(error => {
+			console.warn("退出应用失败", error);
+		});
 	};
 
 	game.open = function (url: string) {
