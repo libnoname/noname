@@ -39,23 +39,38 @@ function zhudianSyncAll() {
 	}
 }
 
+/** 判定两名角色是否属于同一阵营（按当前模式） */
+function zhudianSameCamp(a, b) {
+	const mode = get.mode();
+	if (mode === "identity") {
+		const camp = player => {
+			const identity = player.identity;
+			// 主公、忠臣、明忠与平民同属主公方
+			if (identity === "zhu" || identity === "zhong" || identity === "mingzhong" || identity === "commoner") {
+				return "zhu";
+			}
+			if (identity === "fan") {
+				return "fan";
+			}
+			// 内奸独自为营
+			if (identity === "nei") {
+				return player;
+			}
+			return identity || player;
+		};
+		return camp(a) === camp(b);
+	}
+	if (typeof a.side === "boolean" && typeof b.side === "boolean") {
+		return a.side === b.side;
+	}
+	// 国战（势力/野心家结盟）、斗地主（地主/农民）等交给 isFriendOf 判定
+	return a.isFriendOf(b);
+}
+
 /** 13 张“筑殿”：目标所在阵营获胜 */
 function zhudianWin(target) {
-	const camp = player => {
-		const identity = player.identity;
-		if (["zhu", "zhong", "mingzhong"].includes(identity)) {
-			return "zhu";
-		}
-		return identity || player.side || player.name;
-	};
-	let bool = target === game.me;
-	if (!bool && game.me && target.identity && game.me.identity) {
-		bool = camp(target) === camp(game.me);
-	}
-	if (!bool && game.me && target.side && game.me.side) {
-		bool = target.side === game.me.side;
-	}
-	game.over(bool);
+	const me = game.me?._trueMe || game.me;
+	game.over(me ? zhudianSameCamp(target, me) : true);
 }
 
 /** “罗材”结算：亮出牌堆顶的牌，获得与“筑殿”牌同字或同点数的牌 */
