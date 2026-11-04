@@ -206,4 +206,5 @@ export default {
 	old_bulianshi: "无冕之后",
 	ol_maliang: "多谋善断",
 	mb_shen_lvbu: "修罗之道",
+	mb_suyue: "袖里乾坤",
 };
