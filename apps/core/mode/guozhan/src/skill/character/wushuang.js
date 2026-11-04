@@ -2890,9 +2890,9 @@ export default {
 				target = event.target;
 			let chooseButton;
 			if (player.countCards("h") > 0) {
-				chooseButton = player.chooseButton(4, ["你的手牌", player.getCards("h"), get.translation(target.name) + "的手牌", target.getCards("h")]);
+				chooseButton = player.chooseButton(4, ["你的手牌", player.getCards("h"), get.translation(target) + "的手牌", target.getCards("h")]);
 			} else {
-				chooseButton = player.chooseButton(4, [get.translation(target.name) + "的手牌", target.getCards("h")]);
+				chooseButton = player.chooseButton(4, [get.translation(target) + "的手牌", target.getCards("h")]);
 			}
 			chooseButton.set("target", target);
 			chooseButton.set("ai", function (button) {
