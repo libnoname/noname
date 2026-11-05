@@ -9,15 +9,34 @@ function zhudianCount(player) {
 }
 
 /** 角色“筑殿”牌的最小点数，无牌时为 Infinity */
-function zhudianMinNumber(player) {
-	const numbers = player
+function zhudianNumbers(player) {
+	const stored = player.getStorage("zhudian_numbers", []).filter(num => typeof num === "number");
+	if (stored.length) {
+		return stored;
+	}
+	return player
 		.getExpansions("zhudian")
 		.map(card => get.number(card))
 		.filter(num => typeof num === "number");
+}
+
+function zhudianMinNumber(player) {
+	const numbers = zhudianNumbers(player);
 	if (!numbers.length) {
 		return Infinity;
 	}
 	return Math.min(...numbers);
+}
+
+function addZhudianNumbers(player, numbers) {
+	player.setStorage("zhudian_numbers", Array.from(new Set(zhudianNumbers(player).concat(numbers))));
+}
+
+function removeZhudianNumbers(player, numbers) {
+	player.setStorage(
+		"zhudian_numbers",
+		zhudianNumbers(player).filter(num => !numbers.includes(num))
+	);
 }
 
 /** 按“筑殿”牌数同步衍生技“罗材” */
@@ -33038,6 +33057,8 @@ const skills = {
 			let fromExpansion = false;
 			let origin = null;
 			let cards = [];
+			let target = null;
+			let place = false;
 			if (hasExpansion) {
 				const control = await player.chooseControl("手牌或装备区的牌", "场上的“筑殿”牌").set("prompt", "筑殿：选择要处理的牌").forResult();
 				if (!control?.control) {
@@ -33057,57 +33078,89 @@ const skills = {
 					return;
 				}
 				cards = result.links.slice(0);
-			} else {
-				const result = await player
-					.chooseCard("he", "筑殿：选择任意张点数不同的牌", [1, Infinity], (card, player) => {
-						return !ui.selected.cards.some(selected => get.number(selected) === get.number(card));
-					})
-					.forResult();
-				if (!result.bool) {
+				const control = await player.chooseControl("重铸", "置于武将牌上").set("prompt", "筑殿：如何处理这些牌").forResult();
+				if (!control?.control) {
 					return;
 				}
-				cards = result.cards.slice(0);
-			}
-			if (!cards.length) {
-				return;
-			}
-			const canPlace = game.hasPlayer(target => {
-				const min = zhudianMinNumber(target);
-				return cards.every(card => get.number(card) < min);
-			});
-			let place = false;
-			if (canPlace) {
-				const control = await player.chooseControl("重铸", "置于武将牌上").set("prompt", "筑殿：如何处理这些牌").forResult();
-				place = control?.control === "置于武将牌上";
-			}
-			if (!place) {
-				if (fromExpansion) {
-					await player.gain(cards.slice(0), origin, "give");
-					zhudianSync(origin);
+				place = control.control === "置于武将牌上";
+				if (place) {
+					const next = await player
+						.chooseTarget("筑殿：选择一名角色，将这些牌置于其武将牌上", (card, player, target) => {
+							return cards.every(card => get.number(card) < zhudianMinNumber(target));
+						})
+						.forResult();
+					if (!next.bool) {
+						return;
+					}
+					target = next.targets[0];
 				}
-				const hand = player.getCards("h");
-				if (cards.some(card => !hand.includes(card))) {
-					await player.gain(cards.slice(0), player, "gain2");
+			} else {
+				const canPlace = game.hasPlayer(current => zhudianMinNumber(current) > 1 || zhudianMinNumber(current) === Infinity);
+				let action = "重铸";
+				if (canPlace) {
+					const control = await player.chooseControl("重铸", "置于武将牌上").set("prompt", "筑殿：如何处理这些牌").forResult();
+					if (!control?.control) {
+						return;
+					}
+					action = control.control;
 				}
-				await player.recast(cards);
-				zhudianSyncAll();
+				place = action === "置于武将牌上";
+				if (place) {
+					const next = await player
+						.chooseTarget("筑殿：选择放置“筑殿”牌的角色", (card, player, target) => {
+							const min = zhudianMinNumber(target);
+							return min > 1 || min === Infinity;
+						})
+						.forResult();
+					if (!next.bool) {
+						return;
+					}
+					target = next.targets[0];
+					const max = zhudianMinNumber(target);
+					const result = await player
+						.chooseCard("he", "筑殿：选择点数互不相同、且小于该角色“筑殿”牌点数的牌", [1, Infinity], (card, player) => {
+							const number = get.number(card);
+							if (typeof number !== "number" || number >= max) {
+								return false;
+							}
+							return !ui.selected.cards.some(selected => get.number(selected) === number);
+						})
+						.forResult();
+					if (!result.bool) {
+						return;
+					}
+					cards = result.cards.slice(0);
+				} else {
+					const result = await player
+						.chooseCard("he", "筑殿：选择任意张点数不同的牌重铸", [1, Infinity], (card, player) => {
+							return !ui.selected.cards.some(selected => get.number(selected) === get.number(card));
+						})
+						.forResult();
+					if (!result.bool) {
+						return;
+					}
+					cards = result.cards.slice(0);
+					await player.recast(cards);
+					zhudianSyncAll();
+					return;
+				}
+			}
+			if (!cards.length || !target) {
 				return;
 			}
-			const targetResult = await player
-				.chooseTarget("筑殿：选择一名角色，将这些牌置于其武将牌上", (card, player, target) => {
-					const min = zhudianMinNumber(target);
-					return cards.every(card => get.number(card) < min);
-				})
-				.forResult();
-			if (!targetResult.bool) {
-				return;
-			}
-			const target = targetResult.targets[0];
+			const numbers = cards.map(card => get.number(card));
 			if (fromExpansion) {
 				await player.gain(cards.slice(0), origin, "give");
+				removeZhudianNumbers(origin, numbers);
 				zhudianSync(origin);
+				if (!place) {
+					await player.recast(cards);
+					zhudianSyncAll();
+					return;
+				}
 			}
 			await target.addToExpansion({ cards: cards.slice(0), source: player, animate: "give", gaintag: ["zhudian"] });
+			addZhudianNumbers(target, numbers);
 			zhudianSyncAll();
 			const num = zhudianCount(target);
 			if (num > 0) {
