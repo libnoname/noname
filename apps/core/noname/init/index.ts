@@ -609,6 +609,18 @@ export async function boot() {
 	game.loop();
 }
 
+async function readExtensionInfoName(infoFile: URL): Promise<string> {
+	const relativePath = get.relativePath(infoFile);
+	try {
+		if ((await game.promises.checkFile(relativePath)) != 1) return "";
+		const info = JSON.parse(await game.promises.readFileAsText(relativePath));
+		return typeof info?.name == "string" ? info.name : "";
+	} catch (error) {
+		console.warn(`扩展 info.json 读取失败：${relativePath}`, error);
+		return "";
+	}
+}
+
 async function getExtensionList() {
 	if (localStorage.getItem(lib.configprefix + "disable_extension")) return [];
 
@@ -640,6 +652,7 @@ async function getExtensionList() {
 		const [extFolders] = await game.promises.getFileList(get.relativePath(extensionPath));
 
 		const unimportedExtensions = extFolders.filter(folder => !extensions.includes(folder) && !config.get("all").plays.includes(folder));
+		const misnamedExtensions: [dir: string, ext: string][] = [];
 
 		const promises = unimportedExtensions.map(async ext => {
 			const path = new URL(`./${ext}/`, extensionPath);
@@ -647,6 +660,12 @@ async function getExtensionList() {
 			const tsFile = new URL("./extension.ts", path);
 
 			if ((await game.promises.checkFile(get.relativePath(file))) == 1 || (await game.promises.checkFile(get.relativePath(tsFile))) == 1) {
+				// 扩展的配置项与资源路径均以扩展名为准，文件夹名不一致时无法正常工作，不予导入
+				const infoName = await readExtensionInfoName(new URL("./info.json", path));
+				if (infoName && infoName !== ext) {
+					misnamedExtensions.push([ext, infoName]);
+					return;
+				}
 				extensions.push(ext);
 				toLoad.push(ext);
 				if (!config.has(`extension_${ext}_enable`)) {
@@ -657,6 +676,12 @@ async function getExtensionList() {
 		await Promise.allSettled(promises);
 
 		await game.promises.saveConfig("extensions", extensions);
+
+		if (misnamedExtensions.length) {
+			const lines = misnamedExtensions.map(([folder, name]) => `${folder} → ${name}${extFolders.includes(name) ? "（已存在同名文件夹）" : ""}`);
+			console.warn("以下扩展的文件夹名与扩展名不一致，未自动导入：", misnamedExtensions);
+			alert(`以下扩展的文件夹名与扩展名不一致，未自动导入。\n请将文件夹改为对应的扩展名后重启游戏：\n${lines.join("\n")}`);
+		}
 	} else if (searchParamsImportExtension) {
 		extensions.push(searchParamsImportExtension);
 		toLoad.push(searchParamsImportExtension);
