@@ -33071,11 +33071,6 @@ const skills = {
 			if (!cards.length) {
 				return;
 			}
-			const numbers = cards.map(card => get.number(card));
-			if (new Set(numbers).size !== numbers.length) {
-				player.popup("点数重复");
-				return;
-			}
 			const canPlace = game.hasPlayer(target => {
 				const min = zhudianMinNumber(target);
 				return cards.every(card => get.number(card) < min);
