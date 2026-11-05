@@ -33109,7 +33109,13 @@ const skills = {
 					const next = await player
 						.chooseTarget("筑殿：选择放置“筑殿”牌的角色", (card, player, target) => {
 							const min = zhudianMinNumber(target);
-							return min > 1 || min === Infinity;
+							if (min === Infinity) {
+								return player.countCards("he") > 0;
+							}
+							if (min <= 1) {
+								return false;
+							}
+							return player.countCards("he", card => get.number(card) < min) > 0;
 						})
 						.forResult();
 					if (!next.bool) {
@@ -33118,7 +33124,7 @@ const skills = {
 					target = next.targets[0];
 					const max = zhudianMinNumber(target);
 					const result = await player
-						.chooseCard("he", "筑殿：选择点数互不相同、且小于该角色“筑殿”牌点数的牌", [1, Infinity], (card, player) => {
+						.chooseCard("he", `筑殿：选择点数互不相同、且小于${max === Infinity ? "任意点数" : max}的牌`, [1, Infinity], (card, player) => {
 							const number = get.number(card);
 							if (typeof number !== "number" || number >= max) {
 								return false;
