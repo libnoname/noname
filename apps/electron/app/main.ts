@@ -1,16 +1,46 @@
 /// <reference types="vite/client" />
-import { app, BrowserWindow, crashReporter, dialog, Menu, shell } from "electron";
+import { app, BrowserWindow, crashReporter, dialog, Menu, net, protocol, shell } from "electron";
 import fs from "fs";
 import path from "path";
+import { pathToFileURL } from "url";
 import remote from "@electron/remote/main/index.js";
-import createApp from "@noname/fs";
 remote.initialize();
 const dirname = path.join(import.meta.dirname, "../");
-createApp({
-	port: 8089,
-	dirname,
-	server: true,
-});
+
+const LOCAL_HOST = "localhost:8089";
+
+async function handleLocalRequest(request: Request) {
+	const root = path.resolve(dirname);
+	let pathname: string;
+	try {
+		pathname = decodeURIComponent(new URL(request.url).pathname);
+	} catch {
+		return new Response("Bad Request", { status: 400 });
+	}
+	let full = path.resolve(root, "." + pathname);
+	if (full !== root && !full.startsWith(root + path.sep)) {
+		return new Response("Forbidden", { status: 403 });
+	}
+	try {
+		if ((await fs.promises.stat(full)).isDirectory()) full = path.join(full, "index.html");
+		await fs.promises.access(full);
+	} catch {
+		return new Response("Not Found", { status: 404 });
+	}
+	return net.fetch(pathToFileURL(full).toString());
+}
+
+function registerLocalProtocol() {
+	protocol.handle("http", request => {
+		if (new URL(request.url).host === LOCAL_HOST) {
+			if (request.method !== "GET" && request.method !== "HEAD") {
+				return new Response("Method Not Allowed", { status: 405 });
+			}
+			return handleLocalRequest(request);
+		}
+		return net.fetch(request, { bypassCustomProtocolHandlers: true });
+	});
+}
 
 // 获取单实例锁
 const gotTheLock = app.requestSingleInstanceLock();
@@ -23,6 +53,8 @@ app.setAppUserModelId("com.libnoname.noname");
 
 //防止32位无名杀的乱码
 app.setName("无名杀");
+// protocol.handle 内部会 new Headers(request.headers)，非 Latin-1 的 UA 会使其抛错（ERR_UNEXPECTED）
+app.userAgentFallback = app.userAgentFallback.replace("无名杀", "noname");
 
 function setPath(path1: any, path2: any) {
 	app.getPath(path1);
@@ -96,7 +128,7 @@ function createMainWindow() {
 	if (import.meta.env.DEV) {
 		win.loadURL(`http://localhost:8080`);
 	} else {
-		win.loadURL(`http://localhost:8089/index.html`);
+		win.loadURL(`http://${LOCAL_HOST}/index.html`);
 	}
 	remote.enable(win.webContents);
 	const menuTemplate: Electron.MenuItemConstructorOptions[] = [
@@ -167,6 +199,7 @@ function createMainWindow() {
 }
 
 app.whenReady().then(() => {
+	if (!import.meta.env.DEV) registerLocalProtocol();
 	createWindow();
 	app.on("activate", () => {
 		if (BrowserWindow.getAllWindows().length === 0) {
