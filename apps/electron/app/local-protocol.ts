@@ -1,3 +1,21 @@
+// ==============================================================================
+// ■ local-protocol.ts
+// ------------------------------------------------------------------------------
+// 拦截 HTTP 协议，以 `localhost:8089` 提供游戏本地静态文件，替代原本地 HTTP 服务。
+// ==============================================================================
+
+/**
+ * @file
+ * 为何全局拦截 http，而非启动本地 http 服务、改用 file:// 或自定义协议：
+ * - 页面 origin 必须保持 `http://localhost:8089`，否则 localStorage / IndexedDB 中已有的配置与存档会因 origin 变化而丢失
+ * - 不启动真实的 http 服务：监听端口会暴露给本机其他网页与进程（#4524），且端口可能被占用
+ * - 兼容通过 service worker 在运行时编译 TS / Vue 的机制，而 `file://` 下无法注册 service worker
+ * - `protocol.handle` 只能按协议拦截，无法按 host 过滤，因此其他 host 的 http 请求也会经过这里，只能转发出去
+ *
+ * 转发的代价：外部 http 请求改由主进程重新发起，重定向会在主进程内跟随（渲染端的 `response.url` 仍是原地址），
+ * 且无法通过 `redirect: "manual"` 规避（请求会挂起）。https / ws / wss 不受影响。
+ */
+
 import { net, protocol } from "electron";
 import fs from "fs";
 import path from "path";
