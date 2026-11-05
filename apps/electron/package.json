@@ -21,7 +21,6 @@
   },
   "dependencies": {
     "@electron/get": "^4.0.2",
-    "@electron/remote": "^2.1.3",
-    "@noname/fs": "workspace:*"
+    "@electron/remote": "^2.1.3"
   }
 }
