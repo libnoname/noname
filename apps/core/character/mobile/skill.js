@@ -33151,7 +33151,7 @@ const skills = {
 					return;
 				}
 			}
-			if (!cards.length || !target) {
+			if (!cards.length) {
 				return;
 			}
 			const numbers = cards.map(card => get.number(card));
@@ -33164,6 +33164,9 @@ const skills = {
 					zhudianSyncAll();
 					return;
 				}
+			}
+			if (!target) {
+				return;
 			}
 			await target.addToExpansion({ cards: cards.slice(0), source: player, animate: "give", gaintag: ["zhudian"] });
 			addZhudianNumbers(target, numbers);
