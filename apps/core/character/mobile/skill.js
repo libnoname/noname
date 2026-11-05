@@ -33010,6 +33010,21 @@ const skills = {
 	//苏越
 	zhudian: {
 		audio: 6,
+		intro: {
+			markcount: "expansion",
+			mark(dialog, content, player) {
+				const cards = player.getExpansions("zhudian");
+				if (cards.length) {
+					dialog.addAuto(cards);
+				}
+			},
+			content(content, player) {
+				const cards = player.getExpansions("zhudian");
+				if (cards.length) {
+					return get.translation(cards);
+				}
+			},
+		},
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
@@ -33054,6 +33069,11 @@ const skills = {
 				cards = result.cards.slice(0);
 			}
 			if (!cards.length) {
+				return;
+			}
+			const numbers = cards.map(card => get.number(card));
+			if (new Set(numbers).size !== numbers.length) {
+				player.popup("点数重复");
 				return;
 			}
 			const canPlace = game.hasPlayer(target => {
