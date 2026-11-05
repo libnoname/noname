@@ -33009,6 +33009,7 @@ const skills = {
 	},
 	//苏越
 	zhudian: {
+		audio: 6,
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
@@ -33122,6 +33123,7 @@ const skills = {
 		},
 	},
 	mb_luocai: {
+		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
