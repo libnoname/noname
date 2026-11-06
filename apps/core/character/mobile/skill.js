@@ -33059,6 +33059,36 @@ const skills = {
 			let cards = [];
 			let target = null;
 			let place = false;
+			// 逐张选牌：每次都把已选点数从可选范围中排除，UI 层直接无法选中重复点数
+			const selectCards = async (prompt, limit) => {
+				const used = [];
+				const selected = [];
+				while (true) {
+					const text = used.length ? `${prompt}（已选点数：${used.join("、")}，取消表示结束）` : prompt;
+					const result = await player
+						.chooseCard("he", text, [1, 1], card => {
+							const number = get.number(card);
+							if (typeof number !== "number") {
+								return false;
+							}
+							if (limit != null && number >= limit) {
+								return false;
+							}
+							return !used.includes(number);
+						})
+						.set("forced", used.length === 0)
+						.forResult();
+					if (!result.bool) {
+						break;
+					}
+					selected.push(result.cards[0]);
+					used.push(get.number(result.cards[0]));
+					if (player.countCards("he") <= selected.length) {
+						break;
+					}
+				}
+				return selected;
+			};
 			if (hasExpansion) {
 				const control = await player.chooseControl("手牌或装备区的牌", "场上的“筑殿”牌").set("prompt", "筑殿：选择要处理的牌").forResult();
 				if (!control?.control) {
@@ -33123,29 +33153,15 @@ const skills = {
 					}
 					target = next.targets[0];
 					const max = zhudianMinNumber(target);
-					const result = await player
-						.chooseCard("he", `筑殿：选择点数互不相同、且小于${max === Infinity ? "任意点数" : max}的牌`, [1, Infinity], (card, player) => {
-							const number = get.number(card);
-							if (typeof number !== "number" || number >= max) {
-								return false;
-							}
-							return !ui.selected.cards.some(selected => get.number(selected) === number);
-						})
-						.forResult();
-					if (!result.bool) {
+					cards = await selectCards(`筑殿：选择点数互不相同、且小于${max === Infinity ? "任意点数" : max}的牌`, max);
+					if (!cards.length) {
 						return;
 					}
-					cards = result.cards.slice(0);
 				} else {
-					const result = await player
-						.chooseCard("he", "筑殿：选择任意张点数不同的牌重铸", [1, Infinity], (card, player) => {
-							return !ui.selected.cards.some(selected => get.number(selected) === get.number(card));
-						})
-						.forResult();
-					if (!result.bool) {
+					cards = await selectCards("筑殿：选择任意张点数不同的牌重铸", null);
+					if (!cards.length) {
 						return;
 					}
-					cards = result.cards.slice(0);
 					await player.recast(cards);
 					zhudianSyncAll();
 					return;
