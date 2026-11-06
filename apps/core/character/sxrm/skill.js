@@ -589,7 +589,6 @@ const skills = {
 						const { targets } = get.event();
 						return !targets?.includes(target);
 					},
-					forced: true,
 					ai(target) {
 						const player = get.player();
 						const att = get.attitude(player, target);
