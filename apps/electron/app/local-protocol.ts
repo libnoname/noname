@@ -61,7 +61,15 @@ async function handleLocalRequest(request: Request, root: string) {
 		return new Response("Not Found", { status: 404 });
 	}
 	const fileUrl = pathToFileURL(full).toString();
-	const range = parseRange(request.method === "GET" ? request.headers.get("Range") : null, stat.size);
+	if (request.method === "HEAD") {
+		const response = await net.fetch(fileUrl, stat.size > 0 ? { headers: { Range: "bytes=0-0" } } : undefined);
+		await response.arrayBuffer();
+		const headers = new Headers(response.headers);
+		headers.set("Accept-Ranges", "bytes");
+		headers.set("Content-Length", String(stat.size));
+		return new Response(null, { status: 200, headers });
+	}
+	const range = parseRange(request.headers.get("Range"), stat.size);
 	if (range === "unsatisfiable") {
 		return new Response(null, {
 			status: 416,
@@ -74,10 +82,6 @@ async function handleLocalRequest(request: Request, root: string) {
 	headers.set("Accept-Ranges", "bytes");
 	if (!range) {
 		headers.set("Content-Length", String(stat.size));
-		if (request.method === "HEAD") {
-			await response.body?.cancel();
-			return new Response(null, { status: 200, headers });
-		}
 		return new Response(response.body, { status: 200, headers });
 	}
 	headers.set("Content-Length", String(range.end - range.start + 1));
