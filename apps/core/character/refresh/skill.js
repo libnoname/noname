@@ -13305,16 +13305,24 @@ const skills = {
 					let result;
 					while (targets.length) {
 						const target = targets.shift();
+						if (!target.isIn()) {
+							continue;
+						}
 						event.target = target;
 
 						// step 0 -> await the choice
 						result = await target
-							.chooseToDiscard("弃置一张牌或失去1点体力")
-							.set("ai", card => 9 - get.value(card))
+							.chooseToDiscard({
+								prompt: "弃置一张牌或失去1点体力",
+								ai: card => 9 - get.value(card),
+							})
 							.forResult();
+						if (!target.isIn()) {
+							continue;
+						}
 
 						// step 1
-						if (!result.bool) {
+						if (!result?.bool) {
 							await target.loseHp();
 						}
 
