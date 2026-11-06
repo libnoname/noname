@@ -17,8 +17,8 @@ export default {
 	mb_zhugeguo: "祈福安宁",
 	//mb_xiahoumao: "",
 	mb_tw_zhangji: "边安人宁",
-	o_tanshihuai: "最终恐惧", 
-	o_lvbu: "人中赤兔", 
+	o_tanshihuai: "最终恐惧",
+	o_lvbu: "人中赤兔",
 	o_gaoshun: "白刃对决",
 	o_sunquan: "合肥战神",
 	mb_zhangzhi: "一笔飞白",
@@ -206,5 +206,5 @@ export default {
 	old_bulianshi: "无冕之后",
 	ol_maliang: "多谋善断",
 	mb_shen_lvbu: "修罗之道",
-	mb_suyue: "袖里乾坤",
+	mb_suyue: "岵裁灵埏",
 };
