@@ -3045,6 +3045,16 @@ export class Click {
 		game.resume();
 	}
 	skill(skill) {
+		// 唯一可用木牛无需选择装备，直接进入原生扣置手牌流程。
+		const choice = _status.event;
+		if (skill === "muniu_skill" && !_status.connectMode && choice.name === "chooseToUse" && choice.isMine() && choice.muniu_skill?.length === 1) {
+			const source = get.info(skill);
+			if (source.filter(choice, choice.player)) {
+				lib.skill.muniu_skill_backup = source.chooseButton.backup(choice.muniu_skill, choice.player);
+				lib.skill.muniu_skill_backup.sourceSkill = skill;
+				skill = "muniu_skill_backup";
+			}
+		}
 		var info = get.info(skill);
 		var event = _status.event;
 		event.backup(skill);
@@ -3088,6 +3098,9 @@ export class Click {
 		}
 	}
 	ok(node) {
+		if (_status.event.skill === "muniu_skill_backup" && !game.check()) {
+			return;
+		}
 		const gameEvent = get.event(),
 			custom = gameEvent.custom,
 			replaceConfirm = custom?.replace?.confirm;

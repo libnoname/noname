@@ -2023,7 +2023,13 @@ export class Create {
 		return new lib.element.Control(...arguments);
 	}
 	confirm(str, func) {
-		if (ui.confirm && ui.confirm.str == str) {
+		const event = _status.event;
+		const muniu = !func && event?.name === "chooseToUse" && event.skill === "muniu_skill_backup" && event.isMine() && !event.forced && !event.fakeforce;
+		const disabled = muniu && !str.includes("o");
+		if (muniu) {
+			str = "oc";
+		}
+		if (ui.confirm && ui.confirm.str == str && !muniu) {
 			return;
 		}
 		if (str == "o") {
@@ -2050,6 +2056,14 @@ export class Create {
 		}
 		if (ui.confirm) {
 			ui.confirm.str = str;
+			for (const button of ui.confirm.childNodes) {
+				if (button.link === "ok") {
+					button.classList.toggle("disabled", disabled);
+					button.setAttribute("aria-disabled", String(disabled));
+					button.style.opacity = disabled ? "0.4" : "";
+					button.style.pointerEvents = disabled ? "none" : "";
+				}
+			}
 			if (func) {
 				ui.confirm.custom = func;
 			} else {
