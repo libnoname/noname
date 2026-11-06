@@ -74,6 +74,10 @@ async function handleLocalRequest(request: Request, root: string) {
 	headers.set("Accept-Ranges", "bytes");
 	if (!range) {
 		headers.set("Content-Length", String(stat.size));
+		if (request.method === "HEAD") {
+			await response.body?.cancel();
+			return new Response(null, { status: 200, headers });
+		}
 		return new Response(response.body, { status: 200, headers });
 	}
 	headers.set("Content-Length", String(range.end - range.start + 1));
@@ -95,6 +99,7 @@ function parseRange(header: string | null, size: number): { start: number; end: 
 	if (match[1] === "") {
 		const suffix = Number(match[2]);
 		if (suffix === 0) return "unsatisfiable";
+		if (size === 0) return null;
 		start = Math.max(0, size - suffix);
 		end = size - 1;
 	} else {
