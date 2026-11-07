@@ -24,6 +24,7 @@
         "build:types": "tsc -p tsconfig.types.json",
         "generateAsset": "tsx scripts/generateAsset.ts",
         "lint": "pnpm eslint noname/**",
+        "test": "vitest run",
         "lint:prettier": "pnpm prettier -c noname/**"
     },
     "dependencies": {
@@ -73,6 +74,7 @@
         "fs-extra": "^11.3.3",
         "glob": "^13.0.3",
         "vite": "^7.3.1",
-        "vite-plugin-static-copy": "^3.2.0"
+        "vite-plugin-static-copy": "^3.2.0",
+        "vitest": "^4.1.4"
     }
 }
