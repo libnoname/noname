@@ -223,9 +223,16 @@ const skills = {
 		frequent: true,
 		async content(e, t, p) {
 			await p.draw(2);
-			if (!_status.sxrm_dress) _status.sxrm_dress = game.createCard("sxrm_nvzhuang", "heart", 9);
+			if (!p.isIn()) return;
+			if (!_status.sxrm_dress) {
+				const card = game.createCard("serafuku", "heart", 9);
+				game.broadcastAll(card => {
+					_status.sxrm_dress = card;
+					card.skills = [...(lib.card.serafuku.skills || []), "jueqing"];
+				}, card);
+			}
 			const c = _status.sxrm_dress;
-			if (p.isIn() && !get.owner(c) && ["d", "c", "s", null, undefined].includes(get.position(c, true)) && p.canEquip(c, true)) await p.useCard(c, p);
+			if (!get.owner(c) && ["d", "s", null, undefined].includes(get.position(c, true)) && p.canUse(c, p)) await p.useCard(c, p);
 		},
 	},
 	sxrmsigu_lv: {
