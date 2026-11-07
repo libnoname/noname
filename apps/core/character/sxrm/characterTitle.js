@@ -1,4 +1,11 @@
 export default {
+	sxrm_dingyuan: "虎子无犬父",
+	sxrm_lisu: "拨云见日",
+	sxrm_chenguichendeng: "股掌戏虎",
+	sxrm_lvlingqi: "落花逐流",
+	sxrm_meng_lvbu: "饥鹰饱虎",
+	sxrm_lvbu: "口吞三世佛",
+
 	sxrm_zhouyu: "哀弦万耳惊",
 	sxrm_sunshangxiang: "生死相随",
 	sxrm_zhangzhao: "迂儒",
