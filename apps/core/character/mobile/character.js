@@ -1384,6 +1384,12 @@ const characters = {
 		groupInGuozhan: "qun",
 		dieAudios: ["shen_lvbu"],
 	},
+	mb_suyue: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["zhudian"],
+	},
 };
 
 export default characters;

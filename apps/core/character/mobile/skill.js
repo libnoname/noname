@@ -1,5 +1,124 @@
 ﻿import { lib, game, ui, get, ai, _status } from "noname";
 
+const ZHUDIAN_THRESHOLDS = [1, 5, 9, 13];
+
+/** 已激活的“筑殿”效果数（1/5/9/13） */
+function zhudianCount(player) {
+	const count = player.getExpansions("zhudian").length;
+	return ZHUDIAN_THRESHOLDS.filter(num => count >= num).length;
+}
+
+/** 角色“筑殿”牌的最小点数，无牌时为 Infinity */
+function zhudianNumbers(player) {
+	const stored = player.getStorage("zhudian_numbers", []).filter(num => typeof num === "number");
+	if (stored.length) {
+		return stored;
+	}
+	return player
+		.getExpansions("zhudian")
+		.map(card => get.number(card))
+		.filter(num => typeof num === "number");
+}
+
+function zhudianMinNumber(player) {
+	const numbers = zhudianNumbers(player);
+	if (!numbers.length) {
+		return Infinity;
+	}
+	return Math.min(...numbers);
+}
+
+function addZhudianNumbers(player, numbers) {
+	player.setStorage("zhudian_numbers", Array.from(new Set(zhudianNumbers(player).concat(numbers))));
+}
+
+function removeZhudianNumbers(player, numbers) {
+	player.setStorage(
+		"zhudian_numbers",
+		zhudianNumbers(player).filter(num => !numbers.includes(num))
+	);
+}
+
+/** 按“筑殿”牌数同步衍生技“罗材” */
+function zhudianSync(player) {
+	if (!player?.isIn?.()) {
+		return;
+	}
+	const has = player.getExpansions("zhudian").length > 0;
+	if (has && !player.hasSkill("mb_luocai")) {
+		player.addSkill("mb_luocai");
+	} else if (!has && player.hasSkill("mb_luocai")) {
+		player.removeSkill("mb_luocai");
+	}
+}
+
+function zhudianSyncAll() {
+	for (const current of game.filterPlayer()) {
+		zhudianSync(current);
+	}
+}
+
+/** 判定两名角色是否属于同一阵营（按当前模式） */
+function zhudianSameCamp(a, b) {
+	const mode = get.mode();
+	if (mode === "identity") {
+		const camp = player => {
+			const identity = player.identity;
+			// 主公、忠臣、明忠与平民同属主公方
+			if (identity === "zhu" || identity === "zhong" || identity === "mingzhong" || identity === "commoner") {
+				return "zhu";
+			}
+			if (identity === "fan") {
+				return "fan";
+			}
+			// 内奸独自为营
+			if (identity === "nei") {
+				return player;
+			}
+			return identity || player;
+		};
+		return camp(a) === camp(b);
+	}
+	if (typeof a.side === "boolean" && typeof b.side === "boolean") {
+		return a.side === b.side;
+	}
+	// 国战（势力/野心家结盟）、斗地主（地主/农民）等交给 isFriendOf 判定
+	return a.isFriendOf(b);
+}
+
+/** 13 张“筑殿”：目标所在阵营获胜 */
+function zhudianWin(target) {
+	const me = game.me?._trueMe || game.me;
+	game.over(me ? zhudianSameCamp(target, me) : true);
+}
+
+/** “罗材”结算：亮出牌堆顶的牌，获得与“筑殿”牌同字或同点数的牌 */
+async function luocaiEffect(player) {
+	const zhu = player.getExpansions("zhudian").slice(0);
+	if (!zhu.length) {
+		return;
+	}
+	const numbers = zhu.map(card => get.number(card));
+	const names = zhu.map(card => get.name(card));
+	const cards = get.cards(zhu.length >= 5 ? 5 : 3);
+	await game.cardsGotoOrdering(cards);
+	await player.showCards(cards, `${get.translation(player)}发动了【罗材】`);
+	const gain = cards.filter(card => {
+		if (numbers.includes(get.number(card))) {
+			return true;
+		}
+		const name = get.name(card);
+		return names.some(zhuName => [...zhuName].some(char => name.includes(char)));
+	});
+	if (gain.length) {
+		await player.gain(gain, "gain2");
+	}
+	const rest = cards.filter(card => !gain.includes(card));
+	if (rest.length) {
+		await game.cardsDiscard(rest);
+	}
+}
+
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
 	//马云禄
@@ -32935,6 +33054,227 @@ const skills = {
 				player.line(target, "green");
 				game.log(player, "与", target, "交换了身份牌");
 			}
+		},
+	},
+	//苏越
+	zhudian: {
+		audio: 6,
+		intro: {
+			markcount: "expansion",
+			mark(dialog, content, player) {
+				const cards = player.getExpansions("zhudian");
+				if (cards.length) {
+					dialog.addAuto(cards);
+				}
+			},
+			content(content, player) {
+				const cards = player.getExpansions("zhudian");
+				if (cards.length) {
+					return get.translation(cards);
+				}
+			},
+		},
+		enable: "phaseUse",
+		usable: 1,
+		filter(event, player) {
+			if (player.countCards("he")) {
+				return true;
+			}
+			return game.hasPlayer(current => current.getExpansions("zhudian").length > 0);
+		},
+		async content(event, trigger, player) {
+			const hasExpansion = game.hasPlayer(current => current.getExpansions("zhudian").length > 0);
+			let fromExpansion = false;
+			let origin = null;
+			let cards = [];
+			let target = null;
+			let place = false;
+			// 逐张选牌：每次都把已选点数从可选范围中排除，UI 层直接无法选中重复点数
+			const selectCards = async (prompt, limit) => {
+				const used = [];
+				const selected = [];
+				while (true) {
+					const text = used.length ? `${prompt}（已选点数：${used.join("、")}，取消表示结束）` : prompt;
+					const result = await player
+						.chooseCard("he", text, [1, 1], card => {
+							const number = get.number(card);
+							if (typeof number !== "number") {
+								return false;
+							}
+							if (limit != null && number >= limit) {
+								return false;
+							}
+							return !used.includes(number);
+						})
+						.set("forced", used.length === 0)
+						.forResult();
+					if (!result.bool) {
+						break;
+					}
+					selected.push(result.cards[0]);
+					used.push(get.number(result.cards[0]));
+					if (player.countCards("he") <= selected.length) {
+						break;
+					}
+				}
+				return selected;
+			};
+			if (hasExpansion) {
+				const control = await player.chooseControl("手牌或装备区的牌", "场上的“筑殿”牌").set("prompt", "筑殿：选择要处理的牌").forResult();
+				if (!control?.control) {
+					return;
+				}
+				fromExpansion = control.control === "场上的“筑殿”牌";
+			}
+			if (fromExpansion) {
+				const targetResult = await player.chooseTarget("筑殿：选择一名有“筑殿”牌的角色", (card, player, target) => target.getExpansions("zhudian").length > 0).forResult();
+				if (!targetResult.bool) {
+					return;
+				}
+				origin = targetResult.targets[0];
+				const buttons = origin.getExpansions("zhudian").slice(0);
+				const result = await player.chooseButton(["筑殿：选择要处理的“筑殿”牌", buttons], [1, buttons.length]).forResult();
+				if (!result.bool) {
+					return;
+				}
+				cards = result.links.slice(0);
+				const control = await player.chooseControl("重铸", "置于武将牌上").set("prompt", "筑殿：如何处理这些牌").forResult();
+				if (!control?.control) {
+					return;
+				}
+				place = control.control === "置于武将牌上";
+				if (place) {
+					const next = await player
+						.chooseTarget("筑殿：选择一名角色，将这些牌置于其武将牌上", (card, player, target) => {
+							return cards.every(card => get.number(card) < zhudianMinNumber(target));
+						})
+						.forResult();
+					if (!next.bool) {
+						return;
+					}
+					target = next.targets[0];
+				}
+			} else {
+				const canPlace = game.hasPlayer(current => zhudianMinNumber(current) > 1 || zhudianMinNumber(current) === Infinity);
+				let action = "重铸";
+				if (canPlace) {
+					const control = await player.chooseControl("重铸", "置于武将牌上").set("prompt", "筑殿：如何处理这些牌").forResult();
+					if (!control?.control) {
+						return;
+					}
+					action = control.control;
+				}
+				place = action === "置于武将牌上";
+				if (place) {
+					const next = await player
+						.chooseTarget("筑殿：选择放置“筑殿”牌的角色", (card, player, target) => {
+							const min = zhudianMinNumber(target);
+							if (min === Infinity) {
+								return player.countCards("he") > 0;
+							}
+							if (min <= 1) {
+								return false;
+							}
+							return player.countCards("he", card => get.number(card) < min) > 0;
+						})
+						.forResult();
+					if (!next.bool) {
+						return;
+					}
+					target = next.targets[0];
+					const max = zhudianMinNumber(target);
+					cards = await selectCards(`筑殿：选择点数互不相同、且小于${max === Infinity ? "任意点数" : max}的牌`, max);
+					if (!cards.length) {
+						return;
+					}
+				} else {
+					cards = await selectCards("筑殿：选择任意张点数不同的牌重铸", null);
+					if (!cards.length) {
+						return;
+					}
+					await player.recast(cards);
+					zhudianSyncAll();
+					return;
+				}
+			}
+			if (!cards.length) {
+				return;
+			}
+			const numbers = cards.map(card => get.number(card));
+			if (fromExpansion) {
+				await player.gain(cards.slice(0), origin, "give");
+				removeZhudianNumbers(origin, numbers);
+				zhudianSync(origin);
+				if (!place) {
+					await player.recast(cards);
+					zhudianSyncAll();
+					return;
+				}
+			}
+			if (!target) {
+				return;
+			}
+			await target.addToExpansion({ cards: cards.slice(0), source: player, animate: "give", gaintag: ["zhudian"] });
+			addZhudianNumbers(target, numbers);
+			zhudianSyncAll();
+			const num = zhudianCount(target);
+			if (num > 0) {
+				await player.draw(num);
+			}
+			if (target.getExpansions("zhudian").length >= 13) {
+				zhudianWin(target);
+			}
+		},
+		group: ["zhudian_draw"],
+		subSkill: {
+			draw: {
+				trigger: { player: "phaseDrawBegin2" },
+				forced: true,
+				locked: false,
+				filter(event, player) {
+					return !event.numFixed && game.hasPlayer(current => current.hasSkill("mb_luocai"));
+				},
+				async content(event, trigger) {
+					trigger.num += game.countPlayer(current => current.hasSkill("mb_luocai"));
+				},
+			},
+		},
+		mod: {
+			maxHandcard(player, num) {
+				return num + game.countPlayer(current => current.hasSkill("mb_luocai"));
+			},
+		},
+	},
+	mb_luocai: {
+		audio: 2,
+		enable: "phaseUse",
+		usable: 1,
+		filter(event, player) {
+			return player.getExpansions("zhudian").length > 0;
+		},
+		async content(event, trigger, player) {
+			await luocaiEffect(player);
+		},
+		group: ["mb_luocai_damage"],
+		subSkill: {
+			damage: {
+				trigger: { player: "damageAfter" },
+				forced: false,
+				filter(event, player) {
+					return player.getExpansions("zhudian").length >= 9 && !player.hasSkill("mb_luocai_used");
+				},
+				async content(event, trigger, player) {
+					player.addTempSkill("mb_luocai_used", "roundStart");
+					await luocaiEffect(player);
+				},
+			},
+		},
+	},
+	mb_luocai_used: {
+		charlotte: true,
+		mark: true,
+		intro: {
+			content: "本轮的“罗材”已因受到伤害发动过",
 		},
 	},
 };
