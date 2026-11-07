@@ -1830,10 +1830,23 @@ const skills = {
 			if (index % 2 == 0) {
 				await player.draw(2);
 			}
-			if (index > 0) {
+			if (index > 0 && !trigger.mbhanyong) {
 				game.log(trigger.card, "造成的伤害+1");
 				trigger.mbhanyong = true;
+				_status.mbhanyongCount = (_status.mbhanyongCount || 0) + 1;
 				game.addGlobalSkill("mbhanyong_damage");
+				// 取消用牌会跳过 useCardAfter，交给事件的 after 队列回收。
+				trigger.insertAfter(async (event, trigger, player) => {
+					const evt = event.getParent();
+					if (!evt.mbhanyong) {
+						return;
+					}
+					delete evt.mbhanyong;
+					_status.mbhanyongCount--;
+					if (!_status.mbhanyongCount) {
+						game.removeGlobalSkill("mbhanyong_damage");
+					}
+				}, {});
 			}
 			if (index == 2) {
 				player.addMark("mbranshang");
