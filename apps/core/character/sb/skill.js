@@ -87,7 +87,7 @@ const skills = {
 			if (!cards.length) return;
 			const result = await player
 				.chooseButton({
-					createDialog: [`忠纯：选择一张牌令${get.translation(target)}获得并使用之`, cards],
+					createDialog: [`忠纯：选择一张牌令${get.translation(target)}获得，然后其可以使用之`, cards],
 					ai(button) {
 						const { player, target } = get.event();
 						if (get.attitude(player, target) > 0) {
@@ -10808,7 +10808,7 @@ const skills = {
 		audio: 2,
 		trigger: { global: "damageEnd" },
 		filter(event, player) {
-			return event.hujia && !event.player.hujia && event.player.isIn() && player.countCards("h") > 1 && !player.hasSkill("sbxiayuan_round", null, false, false);
+			return event.player !== player && event.hujia && !event.player.hujia && event.player.isIn() && player.countCards("h") > 1 && !player.hasSkill("sbxiayuan_round", null, false, false);
 		},
 		async cost(event, trigger, player) {
 			event.result = await player

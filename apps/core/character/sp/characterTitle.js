@@ -187,7 +187,7 @@ export default {
 	yadan: "西羌相",
 	ol_peixiu: "玄静守真",
 	caimao: "蛟海腾云",
-	ol_jiangwan: "遐雁归迩",
+	ol_jiangwan: "社稷之器",
 	mawan: "驱率羌胡",
 	budugen: "秋城雁阵",
 	caoteng: "魏高帝",
