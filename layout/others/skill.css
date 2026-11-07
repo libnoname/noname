@@ -1,0 +1,428 @@
+/* -----------------------神黄忠的对话框---------------------- */
+.dialog.dclieqiong {
+    background-repeat: no-repeat;
+    width: auto !important;
+    aspect-ratio: 4/7;
+    height: 80% !important;
+
+    background-size: contain;
+    background-position: center;
+    background-color: hsla(26, 59%, 37%, 0.749);
+    left: 50%;
+    top: 50%;
+    transform: translateX(-50%) !important;
+
+}
+.dialog.dclieqiong>.position {
+    height: 50px;
+    width: 50px;
+    /* background: yellow; */
+    background: url(../../image/card/yiwu_click.png) center/100% no-repeat;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    top: 14%;
+}
+.dialog.dclieqiong>.position.selected_cp {
+    background-image: url(../../image/card/yiwu_click_chosen.png);
+}
+.dialog.dclieqiong>.position.selected_cp::before {
+    content: var(--info, "");
+    position: absolute;
+    bottom: 100%;
+    transform: translateX(-40%);
+    width: 230px;
+    height: 40px;
+    background-color: #3a3434;
+    font-size: 0.9em;
+    border: 2px solid #b3a4a4;
+    border-radius: 5px;
+    padding: 3px 4px;
+    overflow: auto;
+    color: #ecec3a;
+    text-shadow: none;
+}
+.dialog.dclieqiong>.title {
+    left: 50%;
+    width: 100%;
+    transform: translateX(-50%);
+    top: 1%;
+}
+
+/* -----------------------OL许劭 评鉴窗口---------------------- */
+.dialog.olshilun-window {
+	position: absolute;
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 91;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: none;
+	box-shadow: none;
+	pointer-events: auto;
+	transition: none;
+	transform: none;
+	margin: 0;
+}
+
+.dialog.olshilun-window > .bar,
+.dialog.olshilun-window > .content-container {
+	display: none;
+}
+
+.olshilun-mask {
+	position: absolute;
+	inset: 0;
+	z-index: 55;
+	background-color: rgba(0, 0, 0, 0.45);
+	background-image: url("../../image/olxushao/newStyleBaseUIMask.png");
+	background-size: 100% 100%;
+	pointer-events: none;
+}
+
+.olshilun-stage {
+	position: relative;
+	z-index: 1;
+	width: 1219px;
+	height: 731px;
+	zoom: 0.75;
+	overflow: visible;
+}
+
+.olshilun-stage::before {
+	content: "";
+	position: absolute;
+	left: -160px;
+	top: -50px;
+	width: 1219px;
+	height: 731px;
+	background-image: url("../../image/olxushao/skill_pingjian_bg.png");
+	background-repeat: no-repeat;
+	background-position: left top;
+	background-size: 100% 100%;
+	pointer-events: none;
+	z-index: 0;
+}
+
+.olshilun-scroll {
+	position: absolute;
+	left: 41%;
+	top: 8%;
+	width: 38%;
+	height: 78%;
+	z-index: 2;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	overflow: visible;
+	transition: none;
+}
+
+.olshilun-title {
+	position: relative;
+	left: auto;
+	top: auto;
+	width: auto;
+	height: auto;
+	color: rgb(229, 232, 246);
+	font-size: 40px;
+	font-family: yuanli, "方正北魏楷书_GBK", serif;
+	letter-spacing: 10px;
+	line-height: 1.2;
+	margin-top: 2px;
+	-webkit-text-stroke: 2px rgb(48, 43, 48);
+	paint-order: stroke fill;
+	text-shadow: none;
+	transition: none;
+}
+
+.olshilun-grid {
+	width: 425px;
+	height: 425px;
+	margin-top: 18px;
+	display: grid;
+	position: relative;
+	left: auto;
+	top: auto;
+	grid-template-columns: repeat(6, 70px);
+	grid-template-rows: repeat(6, 70px);
+	gap: 1px;
+	overflow: visible;
+	transition: none;
+	touch-action: none;
+	-webkit-user-select: none;
+	user-select: none;
+}
+
+.olshilun-cell,
+.olshilun-cell * {
+	transition: none;
+}
+
+.olshilun-cell {
+	position: relative;
+	left: auto;
+	top: auto;
+	width: 70px;
+	height: 70px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: 100% 100%;
+	color: rgb(131, 121, 145);
+	font-size: 30px;
+	font-family: yuanli, "方正北魏楷书_GBK", serif;
+	cursor: pointer;
+	touch-action: none;
+	user-select: none;
+	text-shadow: none;
+	box-shadow: none;
+	outline: none;
+	border: none;
+	filter: none;
+	overflow: visible;
+}
+
+.olshilun-char {
+	position: relative;
+	display: inline-block;
+	left: auto;
+	top: auto;
+	width: auto;
+	height: auto;
+	z-index: 1;
+	color: rgb(131, 121, 145);
+	font-size: 30px;
+	-webkit-text-stroke: 0;
+	text-shadow: none;
+}
+
+.olshilun-char.olshilun-hint {
+	color: rgb(140, 196, 238);
+}
+
+.olshilun-cell.done,
+.olshilun-cell.done .olshilun-char,
+.olshilun-cell.done .olshilun-char.olshilun-hint {
+	color: rgb(143, 117, 35);
+}
+
+.olshilun-egg {
+	position: absolute;
+	inset: 6%;
+	left: 6%;
+	top: 6%;
+	width: auto;
+	height: auto;
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: contain;
+	pointer-events: none;
+	z-index: 4;
+}
+
+.olshilun-select {
+	position: absolute;
+	left: -7px;
+	top: -7px;
+	right: auto;
+	bottom: auto;
+	width: 84px;
+	height: 84px;
+	box-sizing: border-box;
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: 84px 84px;
+	border: none;
+	pointer-events: none;
+	z-index: 5;
+}
+
+.olshilun-skills {
+	position: absolute;
+	right: 4%;
+	top: 14%;
+	width: 156px;
+	height: 68%;
+	box-sizing: border-box;
+	background: none;
+	border-style: solid;
+	border-width: 40px 4px 4px 4px;
+	border-image-slice: 40 4 4 4 fill;
+	border-image-repeat: stretch;
+	padding: 6px 4px;
+	overflow: visible;
+}
+
+.olshilun-skill-list {
+	position: relative;
+	left: auto;
+	top: auto;
+	width: 100%;
+	height: 100%;
+	overflow-x: hidden;
+	overflow-y: auto;
+}
+
+.olshilun-skills-title {
+	position: absolute;
+	left: 0;
+	top: -40px;
+	width: 100%;
+	height: 40px;
+	line-height: 40px;
+	text-align: center;
+	margin: 0;
+	z-index: 2;
+	pointer-events: none;
+	color: rgb(240, 209, 47);
+	font-family: yuanli, "方正北魏楷书_GBK", serif;
+	font-size: 26px;
+}
+
+.olshilun-skill-item {
+	position: relative;
+	left: auto;
+	top: auto;
+	width: 85.8px;
+	height: 39px;
+	line-height: 39px;
+	margin: 0 auto 8px;
+	box-sizing: border-box;
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: 85.8px 39px;
+	border: none;
+	color: #ffffff;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	font-size: 22px;
+	font-family: yuanli, "方正北魏楷书_GBK", serif;
+}
+
+.olshilun-skill-item.olshilun-pending {
+	visibility: hidden;
+}
+
+.olshilun-skill-flywrap {
+	position: absolute;
+	width: 85.8px;
+	height: 39px;
+	margin: 0;
+	z-index: 20;
+	pointer-events: none;
+	transform-origin: center center;
+	transform: translate(-50%, -50%) scale(0);
+}
+
+.olshilun-skill-fly {
+	position: relative;
+	left: auto;
+	top: auto;
+	width: 85.8px;
+	height: 39px;
+	line-height: 39px;
+	box-sizing: border-box;
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: 85.8px 39px;
+	border: none;
+	color: #ffffff;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	font-size: 22px;
+	font-family: yuanli, "方正北魏楷书_GBK", serif;
+	transition: none;
+}
+
+.olshilun-close {
+	position: absolute;
+	right: 18%;
+	top: 7%;
+	width: 36px;
+	height: 36px;
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: 22px 22px;
+	cursor: pointer;
+	z-index: 9;
+}
+
+.dialog.olshilun-window > .olshilun-progressbar {
+	position: absolute;
+	left: calc(50% - var(--olshilun-bar-width, 600px) / 2);
+	bottom: var(--olshilun-bar-bottom, 10px);
+	width: var(--olshilun-bar-width, 600px);
+	height: var(--olshilun-bar-height, 9px);
+	background-image: url("../../image/olxushao/selfSeatCountdownBg.png");
+	background-size: 100% 100%;
+	z-index: 8;
+	transition: none;
+}
+
+.dialog.olshilun-window > .olshilun-progressbar::before {
+	content: "";
+	position: absolute;
+	left: var(--progress-bar-left, 0);
+	top: var(--progress-bar-top, 0);
+	width: 100%;
+	height: var(--progress-bar-height, 100%);
+	background-image: url("../../image/olxushao/selfSeatCountDown2.png");
+	background-size: 100% 100%;
+	background-repeat: no-repeat;
+	clip-path: var(--clip, inset(0 0 0 0));
+	transition: clip-path 0.1s linear;
+}
+
+.olshilun-status {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	bottom: auto;
+	width: auto;
+	height: auto;
+	transform: translate(-50%, -50%);
+	text-align: center;
+	color: #f3ead2;
+	font-size: 18px;
+	font-family: yuanli, "方正北魏楷书_GBK", serif;
+	letter-spacing: 2px;
+	text-shadow: 0 0 4px #2a1c38, 0 1px 2px #2a1c38;
+	pointer-events: none;
+	z-index: 2;
+	white-space: nowrap;
+}
+
+.olshilun-btns {
+	position: absolute;
+	right: -70px;
+	top: 66%;
+	transform: translateY(-50%);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 8px;
+	z-index: 6;
+}
+
+.olshilun-btn {
+	position: relative;
+	left: auto;
+	top: auto;
+	width: 108px;
+	height: 108px;
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: contain;
+	cursor: pointer;
+}
