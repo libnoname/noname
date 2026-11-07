@@ -16,12 +16,23 @@ const skills = {
 		grant(target) {
 			const state = target.storage.sxrmxiace_limit || (target.storage.sxrmxiace_limit = { pending: 0, active: [] });
 			state.pending++;
+			lib.skill.sxrmxiace.sync(target, state);
 			target.addSkill("sxrmxiace_limit");
 			target.markSkill("sxrmxiace_limit");
 		},
+		sync(player, state) {
+			game.broadcastAll(
+				(player, state) => {
+					if (state) player.storage.sxrmxiace_limit = state;
+					else delete player.storage.sxrmxiace_limit;
+				},
+				player,
+				state
+			);
+		},
 		phase(player, context = _status.event) {
 			const phase = context?.name === "phaseUse" ? context : context?.getParent?.("phaseUse");
-			return player.storage.sxrmxiace_limit?.active.find(entry => entry.phase === phase);
+			return player.storage.sxrmxiace_limit?.active.find(entry => entry.id === phase?.sxrmxiaceId);
 		},
 		handMaterial(card, player) {
 			const cards = card.cards?.length ? card.cards : [card];
@@ -48,12 +59,14 @@ const skills = {
 				firstDo: true,
 				mark: true,
 				marktext: "策",
-				onremove: true,
+				onremove(player) {
+					lib.skill.sxrmxiace.sync(player, null);
+				},
 				trigger: { player: ["phaseUseBegin", "phaseUseAfter", "useCard1"] },
 				filter(event, player) {
 					const state = player.storage.sxrmxiace_limit;
 					if (!state) return false;
-					if (event.name === "phaseUse") return state.pending > 0 || state.active.some(entry => entry.phase === event);
+					if (event.name === "phaseUse") return state.pending > 0 || state.active.some(entry => entry.id === event.sxrmxiaceId);
 					const entry = lib.skill.sxrmxiace.phase(player, event);
 					return !!entry && !entry.used && lib.skill.sxrmxiace.handUse(event, player);
 				},
@@ -61,11 +74,12 @@ const skills = {
 					const state = player.storage.sxrmxiace_limit;
 					if (event.triggername === "phaseUseBegin") {
 						if (state.pending) {
-							state.active.push({ phase: trigger, used: false, bonus: state.pending * 2 });
+							trigger.sxrmxiaceId = get.id();
+							state.active.push({ id: trigger.sxrmxiaceId, used: false, bonus: state.pending * 2 });
 							state.pending = 0;
 						}
 					} else if (event.triggername === "phaseUseAfter") {
-						state.active = state.active.filter(entry => entry.phase !== trigger);
+						state.active = state.active.filter(entry => entry.id !== trigger.sxrmxiaceId);
 					} else {
 						const entry = lib.skill.sxrmxiace.phase(player, trigger);
 						if (!entry || entry.used) return;
@@ -73,8 +87,12 @@ const skills = {
 						trigger.effectCount = (typeof trigger.effectCount === "number" ? trigger.effectCount : 1) + entry.bonus;
 						game.log(trigger.card, "因狭策额外结算", entry.bonus, "次");
 					}
-					if (!state.pending && !state.active.length) player.removeSkill("sxrmxiace_limit");
-					else player.markSkill("sxrmxiace_limit");
+					if (!state.pending && !state.active.length) {
+						player.removeSkill("sxrmxiace_limit");
+					} else {
+						lib.skill.sxrmxiace.sync(player, state);
+						player.markSkill("sxrmxiace_limit");
+					}
 				},
 				mod: {
 					cardEnabled(card, player, event) {
@@ -110,7 +128,9 @@ const skills = {
 			// Bind cleanup before gaining/placing cards, including interrupted skill resolution.
 			if (phase) {
 				const turns = player.storage.sxrmmangfu_cleanup || (player.storage.sxrmmangfu_cleanup = []);
-				if (!turns.includes(phase)) turns.push(phase);
+				phase.sxrmmangfuId ??= get.id();
+				if (!turns.includes(phase.sxrmmangfuId)) turns.push(phase.sxrmmangfuId);
+				lib.skill.sxrmmangfu.sync(player, turns);
 				player.addSkill("sxrmmangfu_cleanup");
 				// Like native 请君: grant only the ambush response, never the end-phase skill.
 				player.addAdditionalSkill("sxrmmangfu_ambush", ["sxrmshefu_effect"], true);
@@ -125,6 +145,16 @@ const skills = {
 				if (result.bool) await player.useSkill("sxrmshefu", result.cards);
 			}
 		},
+		sync(player, turns) {
+			game.broadcastAll(
+				(player, turns) => {
+					if (turns) player.storage.sxrmmangfu_cleanup = turns;
+					else delete player.storage.sxrmmangfu_cleanup;
+				},
+				player,
+				turns
+			);
+		},
 		subSkill: {
 			cleanup: {
 				charlotte: true,
@@ -133,16 +163,16 @@ const skills = {
 				popup: false,
 				lastDo: true,
 				onremove(player) {
-					delete player.storage.sxrmmangfu_cleanup;
+					lib.skill.sxrmmangfu.sync(player, null);
 					player.removeAdditionalSkill("sxrmmangfu_ambush");
 				},
 				trigger: { global: "phaseAfter" },
 				filter(event, player) {
-					return player.storage.sxrmmangfu_cleanup?.includes(event);
+					return player.storage.sxrmmangfu_cleanup?.includes(event.sxrmmangfuId);
 				},
 				async content(event, trigger, player) {
-					const remaining = player.storage.sxrmmangfu_cleanup.filter(phase => phase !== trigger);
-					if (remaining.length) player.storage.sxrmmangfu_cleanup = remaining;
+					const remaining = player.storage.sxrmmangfu_cleanup.filter(id => id !== trigger.sxrmmangfuId);
+					if (remaining.length) lib.skill.sxrmmangfu.sync(player, remaining);
 					else {
 						player.removeSkill("sxrmmangfu_cleanup");
 						player.removeAdditionalSkill("sxrmmangfu_ambush");
