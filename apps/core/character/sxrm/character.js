@@ -1,4 +1,32 @@
 const characters = {
+	sxrm_dingyuan: { sex: "male", group: "qun", hp: 4, skills: ["sxrmjifu"] },
+	sxrm_lisu: { sex: "male", group: "qun", hp: 3, skills: ["sxrmhuiduan", "sxrmshanyou"] },
+	sxrm_chenguichendeng: { sex: "male", group: "qun", hp: 3, skills: ["sxrmyuzhu", "sxrmqingsang"], names: "陈|珪-陈|登" },
+	sxrm_lvlingqi: { sex: "female", group: "qun", hp: 4, skills: ["sxrmjiayi", "sxrmsigu_lv"] },
+	sxrm_meng_lvbu: { sex: "male", group: "wei", hp: 5, skills: ["sxrmlulu", "sxrmzezhu", "sxrmleixun"] },
+	sxrm_chengong: {
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		skills: ["sxrmxiace", "sxrmmangfu"],
+		names: "陈|宫",
+	},
+	sxrm_diaochan: { sex: "female", group: "qun", hp: 3, skills: ["sxrmmihui", "sxrmsizhi"], names: "null|貂蝉" },
+	sxrm_yanfuren: {
+		sex: "female",
+		group: "qun",
+		hp: 3,
+		skills: ["sxrmbaocheng", "sxrmchangzui"],
+		names: "严|夫人",
+	},
+	// 贪
+	sxrm_lvbu: {
+		sex: "male",
+		group: "devil",
+		hp: 5,
+		skills: ["sxrmwuyan", "sxrmjumo", "sxrmqikuan", "sxrmshinie"],
+		groupInGuozhan: "qun",
+	},
 	//嗔
 	sxrm_zhouyu: {
 		sex: "male",
