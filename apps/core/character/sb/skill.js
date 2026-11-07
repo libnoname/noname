@@ -10808,7 +10808,7 @@ const skills = {
 		audio: 2,
 		trigger: { global: "damageEnd" },
 		filter(event, player) {
-			return event.hujia && !event.player.hujia && event.player.isIn() && player.countCards("h") > 1 && !player.hasSkill("sbxiayuan_round", null, false, false);
+			return event.player !== player && event.hujia && !event.player.hujia && event.player.isIn() && player.countCards("h") > 1 && !player.hasSkill("sbxiayuan_round", null, false, false);
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
