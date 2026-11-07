@@ -5,6 +5,169 @@ import { Create } from "./create/index.js";
 export class UI {
 	updates = [];
 	thrown = [];
+	/**
+	 * #control 的横向滚动条状态（只有溢出模式才会创建）
+	 * @type { { bar: HTMLElement, thumb: HTMLElement, thumbLeft: number, dragging: boolean, moved: boolean, startX: number, startScroll: number, pressedTrack: boolean, pressedX: number } | null }
+	 */
+	_controlScrollbar = null;
+
+	/**
+	 * 横向滚动条的高度（px）。
+	 * 数值由 layout.css 的 --control-scrollbar-height 提供，JS 不再另存一份固定值。
+	 * @param { HTMLElement } container
+	 */
+	getControlScrollbarHeight(container) {
+		const height = getComputedStyle(container).getPropertyValue("--control-scrollbar-height");
+		return parseFloat(height) || 0;
+	}
+
+	/**
+	 * 同步自绘滚动条的滑块位置/长度（横向滚动条画在按钮上方）
+	 * @param { HTMLElement } container
+	 */
+	syncControlScrollbar(container) {
+		const state = this._controlScrollbar;
+		if (!state || state.bar.parentNode !== container) {
+			return;
+		}
+		const view = container.clientWidth;
+		const total = container.scrollWidth;
+		// 能不能滚动用 class 表示，位置/长度这类算出来的值才写内联样式
+		state.bar.classList.toggle("visible", view > 0 && total > view + 1);
+		if (!view || total <= view + 1) {
+			return;
+		}
+		// 滚动条是滚动容器里的子元素，抵消掉滚动位移，让它固定在按钮上方
+		state.bar.style.transform = `translateX(${container.scrollLeft}px)`;
+		const thumbWidth = Math.max(28, Math.round((view * view) / total));
+		const travel = view - thumbWidth;
+		const maxScroll = total - view;
+		const left = maxScroll > 0 ? Math.round((container.scrollLeft / maxScroll) * travel) : 0;
+		state.thumbLeft = Math.max(0, Math.min(travel, left));
+		state.thumb.style.width = `${thumbWidth}px`;
+		state.thumb.style.transform = `translateX(${state.thumbLeft}px)`;
+	}
+
+	/**
+	 * 取得（必要时创建）放在按钮上方的横向滚动条
+	 * @param { HTMLElement } container
+	 */
+	getControlScrollbar(container) {
+		if (this._controlScrollbar) {
+			const bar = this._controlScrollbar.bar;
+			if (bar.parentNode !== container) {
+				container.appendChild(bar);
+			}
+			return this._controlScrollbar;
+		}
+		const bar = ui.create.div(".controlscrollbar");
+		const thumb = ui.create.div(".controlscrollthumb", bar);
+		const state = { bar, thumb, thumbLeft: 0, dragging: false, moved: false, startX: 0, startScroll: 0, pressedTrack: false, pressedX: 0 };
+		this._controlScrollbar = state;
+		container.appendChild(bar);
+
+		const viewWidth = () => container.clientWidth;
+		const zoom = () => {
+			const width = bar.getBoundingClientRect().width;
+			const view = viewWidth() || 1;
+			return width / view || 1;
+		};
+
+		const onMove = e => {
+			if (!state.dragging) {
+				return;
+			}
+			e.preventDefault();
+			const view = viewWidth();
+			const total = container.scrollWidth;
+			const travel = view - thumb.offsetWidth;
+			if (travel <= 0) {
+				return;
+			}
+			const dx = (e.clientX - state.startX) / zoom();
+			if (Math.abs(e.clientX - state.startX) > 2) {
+				state.moved = true;
+			}
+			container.scrollLeft = state.startScroll + (dx / travel) * (total - view);
+			// 立即同步，避免拖动时滚动条跟不上鼠标
+			ui.syncControlScrollbar(container);
+		};
+		const onUp = () => {
+			if (!state.dragging) {
+				return;
+			}
+			// 只是点了下轨道（没有拖动）：跳到该位置
+			if (!state.moved && state.pressedTrack) {
+				const view = viewWidth();
+				const total = container.scrollWidth;
+				if (total > view) {
+					container.scrollLeft = (state.pressedX / view) * total - view / 2;
+					ui.syncControlScrollbar(container);
+				}
+			}
+			state.dragging = false;
+			bar.classList.remove("dragging");
+			window.removeEventListener("pointermove", onMove);
+			window.removeEventListener("pointerup", onUp);
+			window.removeEventListener("pointercancel", onUp);
+		};
+		bar.addEventListener("pointerdown", e => {
+			const view = viewWidth();
+			const total = container.scrollWidth;
+			if (total <= view + 1) {
+				return;
+			}
+			// 在轨道任意位置按下都直接开始拖动（不必精确点中细滑块）
+			e.preventDefault();
+			e.stopPropagation();
+			const rect = bar.getBoundingClientRect();
+			const x = (e.clientX - rect.left) / zoom();
+			state.dragging = true;
+			state.moved = false;
+			state.pressedTrack = x < state.thumbLeft || x > state.thumbLeft + thumb.offsetWidth;
+			state.pressedX = x;
+			state.startX = e.clientX;
+			state.startScroll = container.scrollLeft;
+			bar.classList.add("dragging");
+			window.addEventListener("pointermove", onMove, { passive: false });
+			window.addEventListener("pointerup", onUp);
+			window.addEventListener("pointercancel", onUp);
+		});
+
+		let ticking = false;
+		container.addEventListener(
+			"scroll",
+			() => {
+				if (ticking) {
+					return;
+				}
+				ticking = true;
+				requestAnimationFrame(() => {
+					ticking = false;
+					ui.syncControlScrollbar(container);
+				});
+			},
+			{ passive: true }
+		);
+		// 鼠标滚轮/触控板纵向滚动也映射成横向滚动条位移
+		container.addEventListener(
+			"wheel",
+			e => {
+				if (!container.classList.contains("controloverflow")) {
+					return;
+				}
+				const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+				if (!delta) {
+					return;
+				}
+				container.scrollLeft += delta;
+				e.preventDefault();
+			},
+			{ passive: false }
+		);
+		return state;
+	}
+
 	touchlines = [];
 	todiscard = {};
 	/**
@@ -237,6 +400,9 @@ export class UI {
 		if (_status.noupdatec) {
 			return;
 		}
+		if (ui.updatecOverflow()) {
+			return;
+		}
 		var length = 0,
 			minoffset = -Infinity;
 		var controls = [];
@@ -269,7 +435,7 @@ export class UI {
 		widths = leftwidths.concat(widths);
 		var staylefts = [];
 		for (var i = 0; i < ui.control.childNodes.length; i++) {
-			if (ui.control.childNodes[i].classList.contains("removing")) {
+			if (ui.control.childNodes[i].classList.contains("removing") || ui.control.childNodes[i].classList.contains("controlscrollbar")) {
 				continue;
 			}
 			if (lib.config.wuxie_right && ui.control.childNodes[i].stayleft) {
@@ -361,6 +527,116 @@ export class UI {
 				control._offset = offset;
 			}
 		}
+	}
+	/**
+	 * 按钮（技能、选项等）过多、单行总宽超过 `#control` 宽度时，
+	 * 改为「左对齐单行 + 横向滚动」排布，避免两端按钮被裁掉后点不到。
+	 * 未溢出时恢复原本的居中排布。
+	 *
+	 * @returns { boolean } 是否已按滚动模式排布
+	 */
+	updatecOverflow() {
+		const container = ui.control;
+		if (!container || container.classList.contains("hidden")) {
+			return false;
+		}
+		const available = container.clientWidth;
+		if (!available) {
+			return false;
+		}
+		const gap = get.is.phoneLayout() ? 12 : 6;
+		const nodes = [];
+		const widths = [];
+		const stayleftNodes = [];
+		const stayleftWidths = [];
+		let height = 0;
+		for (let i = 0; i < container.childNodes.length; i++) {
+			const node = /** @type { HTMLElement } */ (container.childNodes[i]);
+			if (node.classList.contains("removing") || node.classList.contains("controlscrollbar")) {
+				continue;
+			}
+			const width = Math.max(node.offsetWidth, node.scrollWidth);
+			height = Math.max(height, node.offsetHeight);
+			// lib.config.wuxie_right（无懈按钮靠左）的行，普通布局里也是排在最前面的
+			if (lib.config.wuxie_right && node.classList.contains("stayleft")) {
+				stayleftNodes.push(node);
+				stayleftWidths.push(width);
+			} else {
+				nodes.push(node);
+				widths.push(width);
+			}
+		}
+		nodes.unshift(...stayleftNodes);
+		widths.unshift(...stayleftWidths);
+		let contentWidth = 0;
+		for (const width of widths) {
+			contentWidth += width;
+		}
+		if (nodes.length > 1) {
+			contentWidth += gap * (nodes.length - 1);
+		}
+		// 换高度时不要走 #control 的 0.5s 过渡，否则按钮会跟着上下滑
+		const setHeight = value => {
+			container.style.transitionProperty = "none";
+			container.style.height = value ? value + "px" : "";
+			ui.refresh(container);
+			container.style.transitionProperty = "";
+		};
+		const reset = () => {
+			if (ui._controlScrollbar) {
+				ui._controlScrollbar.bar.classList.remove("visible");
+			}
+			if (container.classList.contains("controloverflow")) {
+				container.classList.remove("controloverflow");
+				ui.refresh(container);
+				setHeight(0);
+			}
+		};
+		if (!nodes.length) {
+			// 只剩正在淡出的旧按钮：保持当前模式，避免每次点击都在两种排布之间来回跳
+			return container.classList.contains("controloverflow");
+		}
+		if (contentWidth + 8 <= available) {
+			reset();
+			return false;
+		}
+		container.classList.add("controloverflow");
+		const scrollbar = ui.getControlScrollbar(container);
+		// 保证滚动条始终是最后一个子节点，别影响 firstChild 之类的既有逻辑
+		if (container.lastChild !== scrollbar.bar) {
+			container.appendChild(scrollbar.bar);
+		}
+		if (height) {
+			// 额外留出顶部滚动条的高度（高度由 CSS 变量决定，滚动条本身高度也是它）
+			const targetHeight = height + ui.getControlScrollbarHeight(container);
+			if (container.style.height != targetHeight + "px") {
+				ui.refresh(container);
+				setHeight(targetHeight);
+			}
+		}
+		// 走到这里必然放不下（上面已经 return），按钮串固定从左侧起排，靠横向滚动查看
+		let offset = 4;
+		for (let i = 0; i < nodes.length; i++) {
+			const node = nodes[i];
+			const target = Math.round(offset);
+			const isNew = typeof node._offset != "number";
+			if (isNew) {
+				// 新出现的按钮条直接落到目标位置，不做 0.5s 滑入
+				node.style.transitionProperty = "none";
+			}
+			if (node._offset !== target) {
+				node.addTempClass("controlpressdownx", 500);
+				node.style.transform = "translateX(" + target + "px)";
+				node._offset = target;
+			}
+			if (isNew) {
+				ui.refresh(node);
+				node.style.transitionProperty = "";
+			}
+			offset += widths[i] + gap;
+		}
+		ui.syncControlScrollbar(container);
+		return true;
 	}
 	updatex() {
 		ui.update.apply(this, arguments);
