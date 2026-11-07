@@ -1833,7 +1833,7 @@ const skills = {
 			if (index > 0) {
 				game.log(trigger.card, "造成的伤害+1");
 				trigger.mbhanyong = true;
-				player.addTempSkill("mbhanyong_damage");
+				game.addGlobalSkill("mbhanyong_damage");
 			}
 			if (index == 2) {
 				player.addMark("mbranshang");
@@ -1842,14 +1842,13 @@ const skills = {
 		subSkill: {
 			damage: {
 				charlotte: true,
-				forceDie: true,
-				trigger: { global: "damageBegin1" },
+				trigger: { player: "damageBegin1" },
 				forced: true,
 				firstDo: true,
 				popup: false,
 				filter(event, player) {
 					const evt = event.getParent("useCard", true);
-					return evt?.player === player && evt.mbhanyong && event.card === evt.card && event.getParent().type === "card";
+					return evt?.mbhanyong && event.card === evt.card && event.getParent().type === "card";
 				},
 				async content(event, trigger, player) {
 					trigger.num++;
