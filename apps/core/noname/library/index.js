@@ -13563,6 +13563,13 @@ export class Library {
 			},
 		],
 		[
+			"贪",
+			{
+				color: "#5a6968",
+				nature: "graymm",
+			},
+		],
+		[
 			"嗔",
 			{
 				color: "#5a6968",
