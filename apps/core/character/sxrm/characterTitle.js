@@ -4,6 +4,9 @@ export default {
 	sxrm_chenguichendeng: "股掌戏虎",
 	sxrm_lvlingqi: "落花逐流",
 	sxrm_meng_lvbu: "饥鹰饱虎",
+	sxrm_chengong: "暴怒的军师",
+	sxrm_diaochan: "受困仙子",
+	sxrm_yanfuren: "醉生梦死",
 	sxrm_lvbu: "口吞三世佛",
 
 	sxrm_zhouyu: "哀弦万耳惊",
