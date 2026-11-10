@@ -4098,13 +4098,15 @@ export default {
 				if (!event) {
 					return true;
 				}
-				if (event.ai) {
-					const ai = event.ai;
+				if (event.ai1 || event.ai) {
+					const ai = event.ai1 || event.ai;
 					const tmp = _status.event;
 					_status.event = event;
 					const result = ai({ name: "shan" }, _status.event.player, event);
 					_status.event = tmp;
-					return result > 0;
+					if (result > 0) {
+						return true;
+					}
 				}
 				const type = event.name === "chooseToRespond" ? "respond" : "use";
 				const evt = event.getParent();
