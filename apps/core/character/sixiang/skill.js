@@ -1546,6 +1546,12 @@ const skills = {
 				return `将一张装备牌当做${get.translation(links[0][3]) || ""}${get.translation(links[0][2])}使用`;
 			},
 		},
+		ai: {
+			order: 1,
+			result: {
+				player: 0.5,
+			},
+		},
 	},
 	stdhuangong: {
 		trigger: {
