@@ -14984,25 +14984,20 @@ const skills = {
 		async content(event, trigger, player) {
 			player.addTempSkill("dcmohua_effect");
 			player.setStorage("dcmohua_effect", trigger.player);
-			const history = trigger.player.getHistory("useCard", evt => evt.isPhaseUsing(trigger.player) && get.type(evt.card) !== "equip");
+			const source = trigger.player;
+			const history = source.getHistory("useCard", evt => evt.isPhaseUsing(source) && get.type(evt.card) !== "equip");
 			for (const evt of history) {
-				const { name } = evt.card;
-				const card = (event.card = { name, storage: { dcmohua: evt } });
-				const next = player.chooseToUse(function (card, player, target) {
-					const { cardx } = get.event();
-					if (!cardx || get.name(card) !== cardx.name) {
-						return false;
-					}
-					return lib.filter.filterCard.apply(this, arguments);
-				});
-				next.set("dcmohua", true);
-				next.set("manualConfirm", true);
-				next.set("openskilldialog", `${get.translation(event.name)}：请选择【${get.translation(card.name)}】的目标`);
-				next.set("cardx", card);
-				const result = await next.forResult();
-				if (!result?.bool) {
+				if (!source.isIn()) {
 					break;
 				}
+				// 按原局目标直接重放，不再要求重新选目标：
+				// 原目标均离场则跳过该张，无目标牌以原使用者自身作为唯一目标
+				const targets = (evt.targets || []).filter(target => target?.isIn?.());
+				if (evt.targets?.length && !targets.length) {
+					continue;
+				}
+				const card = new lib.element.VCard({ name: evt.card.name, storage: { dcmohua: evt } });
+				await source.useCard({ card, targets: targets.length ? targets : [source] });
 			}
 			player.removeSkill("dcmohua_effect");
 		},
