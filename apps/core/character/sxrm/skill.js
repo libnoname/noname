@@ -1126,7 +1126,7 @@ const skills = {
 						forced: true,
 						ai(button) {
 							const { player, target } = get.event();
-							return -target.getUseValue({ name: button.link[2], nature: button.link[3] });
+							return target.getUseValue({ name: button.link[2], nature: button.link[3] }) * get.sgnAttitude(player, target);
 						},
 					})
 					.set("target", targetx)
@@ -2555,7 +2555,6 @@ const skills = {
 			return game.hasPlayer(current => current != player && player.canUse(card, current));
 		},
 		async cost(event, trigger, player) {
-			const card = new lib.element.VCard({ name: "huogong", isCard: true });
 			event.result = await player
 				.chooseTarget(
 					get.prompt2(event.skill),
@@ -2565,7 +2564,7 @@ const skills = {
 					},
 					[1, 4]
 				)
-				.set("huogong", card)
+				.set("huogong", get.autoViewAs({ name: "huogong", isCard: true, storage: { sxrmhuoe: true } }, []))
 				.set("ai", target => {
 					const { huogong, player } = get.event();
 					return get.effect(target, huogong, player, player);
@@ -2573,7 +2572,7 @@ const skills = {
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			const card = new lib.element.VCard({ name: "huogong", isCard: true, storage: { huoe: true } }),
+			const card = get.autoViewAs({ name: "huogong", isCard: true, storage: { sxrmhuoe: true } }, []),
 				targets = event.targets;
 			player.addTempSkill("sxrmhuoe_effect");
 			const next = player.useCard(card, targets);
@@ -2612,6 +2611,23 @@ const skills = {
 			if (num < 13) {
 				await player.loseHp();
 			}
+		},
+		ai: {
+			effect: {
+				player(card, player, target, result1) {
+					if (card.name !== "huogong" || !card.storage?.sxrmhuoe) {
+						return;
+					}
+					if (player === target || get.attitude(player, target) > 0 || !target.hasCards("h")) {
+						return;
+					}
+					if (result1 < 0) {
+						return -1;
+					} else if (result1 === 0) {
+						return [1, 1];
+					}
+				},
+			},
 		},
 		subSkill: {
 			effect: {

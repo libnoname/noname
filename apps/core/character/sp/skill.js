@@ -23336,9 +23336,22 @@ const skills = {
 		logTarget: (event, player, name, target) => target,
 		check: (event, player, name, target) =>
 			get.attitude(player, target) > 0 ||
-			target.hasCard(card => {
-				return get.value(card, target) * get.sgnAttitude(player, target) < -6;
-			}, "ej"),
+			target.hasCards("ej", i => {
+				if (get.position(i) == "e") {
+					return get.equipResult(player, target, i) * get.sgnAttitude(player, target) < 0;
+				}
+				return (
+					get.effect(
+						target,
+						{
+							name: i.viewAs || i.name,
+							cards: [i],
+						},
+						target,
+						player
+					) < 0
+				);
+			}),
 		async content(event, trigger, player) {
 			const {
 				targets: [target],
@@ -23355,29 +23368,27 @@ const skills = {
 						.set("ai", target => {
 							const player = get.player();
 							const sign = get.sgnAttitude(player, target);
-							return (
-								6 -
-								target
-									.getCards("ej")
-									.map(i => {
-										let val = 0;
-										if (get.position(i) == "e") {
-											val = get.value(i, target);
-										} else {
-											val = get.effect(
-												player,
-												{
-													name: i.viewAs || i.name,
-													cards: [i],
-												},
-												target,
-												target
-											);
-										}
-										return sign * val;
-									})
-									.sort((a, b) => a - b)[0]
-							);
+							const num = target
+								.getCards("ej")
+								.map(i => {
+									if (get.position(i) == "e") {
+										return get.equipResult(player, target, i) * sign;
+									}
+									return get.effect(
+										target,
+										{
+											name: i.viewAs || i.name,
+											cards: [i],
+										},
+										target,
+										player
+									);
+								})
+								.sort((a, b) => a - b)[0];
+							if (typeof num !== "number" || num >= 0) {
+								return 0;
+							}
+							return 6 - num;
 						})
 						.set("targets", targets)
 						.forResult();
