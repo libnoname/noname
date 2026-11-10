@@ -1126,7 +1126,7 @@ const skills = {
 						forced: true,
 						ai(button) {
 							const { player, target } = get.event();
-							return -target.getUseValue({ name: button.link[2], nature: button.link[3] });
+							return target.getUseValue({ name: button.link[2], nature: button.link[3] }) * get.sgnAttitude(player, target);
 						},
 					})
 					.set("target", targetx)
