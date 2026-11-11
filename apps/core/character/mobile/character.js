@@ -1387,7 +1387,7 @@ const characters = {
 	mb_suyue: {
 		sex: "male",
 		group: "wei",
-		hp: 3,
+		hp: 4,
 		skills: ["zhudian"],
 	},
 };
