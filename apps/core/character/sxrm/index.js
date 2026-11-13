@@ -12,7 +12,6 @@ import voices from "./voices.js";
 import { characterSort, characterSortTranslate } from "./sort.js";
 
 game.import("character", function () {
-	lib.namePrefix.set("贪", { color: "#5a6968", nature: "graymm" });
 	return {
 		name: "sxrm",
 		connect: true,

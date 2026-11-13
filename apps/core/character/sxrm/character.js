@@ -36,7 +36,6 @@ const characters = {
 		group: "qun",
 		hp: 3,
 		skills: ["sxrmxiace", "sxrmmangfu"],
-		names: "陈|宫",
 	},
 	sxrm_diaochan: {
 		sex: "female",
@@ -50,7 +49,7 @@ const characters = {
 		group: "qun",
 		hp: 3,
 		skills: ["sxrmbaocheng", "sxrmchangzui"],
-		names: "严|夫人",
+		names: "严|null",
 	},
 	sxrm_lvbu: {
 		sex: "male",
