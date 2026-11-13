@@ -2,6 +2,14 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
 	sxrm: "蚀心入魔",
+	sxrm_chengong: "贪陈宫",
+	sxrm_chengong_prefix: "贪",
+	sxrmxiace: "狭策",
+	sxrmxiace_limit: "狭策",
+	sxrmxiace_info: "准备阶段，你可以令一名角色于其下个出牌阶段内仅能使用一张手牌，且此牌额外结算两次。",
+	sxrmmangfu: "莽伏",
+	sxrmmangfu_cleanup: "莽伏",
+	sxrmmangfu_info: `其他角色的准备阶段，你可以获得其至多两张手牌并发动等量次${get.poptip("sxrmshefu")}，此回合结束时，你移去你的剩余‘伏兵’并失去等量体力。`,
 	//蚀心入魔·疑
 	sxrm_caocao: "魔曹操",
 	sxrm_caocao_prefix: "魔",

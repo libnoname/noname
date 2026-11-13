@@ -2,6 +2,190 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	sxrmxiace: {
+		trigger: { player: "phaseZhunbeiBegin" },
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget("狭策：令一名角色下个出牌阶段仅能使用一次手牌，且额外结算两次")
+				.set("ai", target => get.attitude(get.player(), target) * (target.countCards("h") <= 2 ? 1 : -1))
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			lib.skill.sxrmxiace.grant(event.targets[0]);
+		},
+		grant(target) {
+			const state = target.storage.sxrmxiace_limit || (target.storage.sxrmxiace_limit = { pending: 0, active: [] });
+			state.pending++;
+			lib.skill.sxrmxiace.sync(target, state);
+			target.addSkill("sxrmxiace_limit");
+			target.markSkill("sxrmxiace_limit");
+		},
+		sync(player, state) {
+			game.broadcastAll(
+				(player, state) => {
+					if (state) player.storage.sxrmxiace_limit = state;
+					else delete player.storage.sxrmxiace_limit;
+				},
+				player,
+				state
+			);
+		},
+		phase(player, context = _status.event) {
+			const phase = context?.name === "phaseUse" ? context : context?.getParent?.("phaseUse");
+			return player.storage.sxrmxiace_limit?.active.find(entry => entry.id === phase?.sxrmxiaceId);
+		},
+		handMaterial(card, player) {
+			const cards = card.cards?.length ? card.cards : [card];
+			return cards.some(material => get.position(material) === "h" && get.owner(material) === player);
+		},
+		handUse(event, player) {
+			if (!event.cards?.length) return false;
+			// Material cards have already left the hand when useCard1 fires.
+			const losses = player.getHistory("lose", loss => (loss.relatedEvent || loss.getParent()) === event);
+			return losses.some(loss => loss.hs?.some(card => event.cards.includes(card)));
+		},
+		blocked(card, player, context = _status.event) {
+			// cardEnabled2 is also called by response selection. Never block a response.
+			const choice = context?.name === "chooseToRespond" ? context : context?.getParent?.("chooseToRespond");
+			if (choice?.name === "chooseToRespond") return;
+			const entry = lib.skill.sxrmxiace.phase(player, context);
+			if (entry?.used && lib.skill.sxrmxiace.handMaterial(card, player)) return false;
+		},
+		subSkill: {
+			limit: {
+				charlotte: true,
+				forced: true,
+				popup: false,
+				firstDo: true,
+				mark: true,
+				marktext: "策",
+				onremove(player) {
+					lib.skill.sxrmxiace.sync(player, null);
+				},
+				trigger: { player: ["phaseUseBegin", "phaseUseAfter", "useCard1"] },
+				filter(event, player) {
+					const state = player.storage.sxrmxiace_limit;
+					if (!state) return false;
+					if (event.name === "phaseUse") return state.pending > 0 || state.active.some(entry => entry.id === event.sxrmxiaceId);
+					const entry = lib.skill.sxrmxiace.phase(player, event);
+					return !!entry && !entry.used && lib.skill.sxrmxiace.handUse(event, player);
+				},
+				async content(event, trigger, player) {
+					const state = player.storage.sxrmxiace_limit;
+					if (event.triggername === "phaseUseBegin") {
+						if (state.pending) {
+							trigger.sxrmxiaceId = get.id();
+							state.active.push({ id: trigger.sxrmxiaceId, used: false, bonus: state.pending * 2 });
+							state.pending = 0;
+						}
+					} else if (event.triggername === "phaseUseAfter") {
+						state.active = state.active.filter(entry => entry.id !== trigger.sxrmxiaceId);
+					} else {
+						const entry = lib.skill.sxrmxiace.phase(player, trigger);
+						if (!entry || entry.used) return;
+						entry.used = true;
+						trigger.effectCount = (typeof trigger.effectCount === "number" ? trigger.effectCount : 1) + entry.bonus;
+						game.log(trigger.card, "因狭策额外结算", entry.bonus, "次");
+					}
+					if (!state.pending && !state.active.length) {
+						player.removeSkill("sxrmxiace_limit");
+					} else {
+						lib.skill.sxrmxiace.sync(player, state);
+						player.markSkill("sxrmxiace_limit");
+					}
+				},
+				mod: {
+					cardEnabled(card, player, event) {
+						return lib.skill.sxrmxiace.blocked(card, player, typeof event === "object" ? event : _status.event);
+					},
+					cardEnabled2(card, player) {
+						return lib.skill.sxrmxiace.blocked(card, player);
+					},
+				},
+				intro: {
+					content(storage) {
+						if (storage?.pending) return "下个出牌阶段限一次使用手牌（允许转化及多牌合成），且额外结算两次。";
+						return "本出牌阶段限一次使用手牌；打出响应不受限制。";
+					},
+				},
+			},
+		},
+	},
+	sxrmmangfu: {
+		trigger: { global: "phaseZhunbeiBegin" },
+		filter(event, player) {
+			return event.player !== player && event.player.countGainableCards(player, "h") > 0;
+		},
+		async cost(event, trigger, player) {
+			const result = await player
+				.choosePlayerCard(trigger.player, "h", [1, 2], "莽伏：获得至多两张手牌并发动等量次设伏")
+				.set("filterButton", button => lib.filter.canBeGained(button.link, player, trigger.player))
+				.forResult();
+			event.result = { bool: result.bool, cards: result.cards, targets: [trigger.player] };
+		},
+		async content(event, trigger, player) {
+			const phase = trigger.getParent("phase");
+			// Bind cleanup before gaining/placing cards, including interrupted skill resolution.
+			if (phase) {
+				const turns = player.storage.sxrmmangfu_cleanup || (player.storage.sxrmmangfu_cleanup = []);
+				phase.sxrmmangfuId ??= get.id();
+				if (!turns.includes(phase.sxrmmangfuId)) turns.push(phase.sxrmmangfuId);
+				lib.skill.sxrmmangfu.sync(player, turns);
+				player.addSkill("sxrmmangfu_cleanup");
+				// Like native 请君: grant only the ambush response, never the end-phase skill.
+				player.addAdditionalSkill("sxrmmangfu_ambush", ["sxrmshefu_effect"], true);
+			}
+			await player.gain(event.cards, trigger.player, "giveAuto");
+			const count = event.cards.filter(card => get.owner(card) === player).length;
+			for (let index = 0; index < count && player.isIn() && player.countCards("he"); index++) {
+				const result = await player
+					.chooseCard("设伏：扣置一张手牌或装备牌为伏兵（" + (index + 1) + "/" + count + "）", "he", true)
+					.set("ai", card => 6 - get.value(card))
+					.forResult();
+				if (result.bool) await player.useSkill("sxrmshefu", result.cards);
+			}
+		},
+		sync(player, turns) {
+			game.broadcastAll(
+				(player, turns) => {
+					if (turns) player.storage.sxrmmangfu_cleanup = turns;
+					else delete player.storage.sxrmmangfu_cleanup;
+				},
+				player,
+				turns
+			);
+		},
+		subSkill: {
+			cleanup: {
+				charlotte: true,
+				forced: true,
+				forceDie: true,
+				popup: false,
+				lastDo: true,
+				onremove(player) {
+					lib.skill.sxrmmangfu.sync(player, null);
+					player.removeAdditionalSkill("sxrmmangfu_ambush");
+				},
+				trigger: { global: "phaseAfter" },
+				filter(event, player) {
+					return player.storage.sxrmmangfu_cleanup?.includes(event.sxrmmangfuId);
+				},
+				async content(event, trigger, player) {
+					const remaining = player.storage.sxrmmangfu_cleanup.filter(id => id !== trigger.sxrmmangfuId);
+					if (remaining.length) lib.skill.sxrmmangfu.sync(player, remaining);
+					else {
+						player.removeSkill("sxrmmangfu_cleanup");
+						player.removeAdditionalSkill("sxrmmangfu_ambush");
+					}
+					const cards = player.getExpansions("sxrmshefu_effect").slice();
+					if (cards.length) {
+						await player.loseToDiscardpile(cards);
+						if (player.isIn()) await player.loseHp(cards.length);
+					}
+				},
+			},
+		},
+	},
 	//嗔包
 	//魔周瑜
 	sxrmjiehuo: {
