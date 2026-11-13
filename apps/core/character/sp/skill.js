@@ -11545,11 +11545,24 @@ const skills = {
 											item: [`${item.name}<br>（触发等级：${item.fromIndex}）`],
 											custom(itemContainer) {
 												itemContainer.link = index;
-												itemContainer.classList.add("button");
+												itemContainer.classList.add("button", "noclick");
 												dialog.buttons.add(itemContainer);
 											},
 											clickItemContainer(itemContainer, 棍, 母, e) {
-												ui.click.button.call(itemContainer, e);
+												const event = get.event();
+												if (!event.isMine()) {
+													return;
+												}
+												const selected = itemContainer.classList.contains("selected");
+												for (const button of event.dialog.buttons) {
+													button.classList.remove("selected");
+												}
+												ui.selected.buttons.length = 0;
+												if (!selected) {
+													itemContainer.classList.add("selected");
+													ui.selected.buttons.push(itemContainer);
+												}
+												game.check();
 											},
 										};
 									})
@@ -11589,11 +11602,24 @@ const skills = {
 											item: [`${["", '<span style="color: #EEC900; text-shadow: 0.5px 0.5px 0.5px white, 0.5px 0.5px 0.5px white, 0.5px 0.5px 0.5px white, 0.5px 0.5px 0.5px white;">'][item.toIndex - from.fromIndex]}${item.name}${["", "</span>"][item.toIndex - from.fromIndex]}`],
 											custom(itemContainer) {
 												itemContainer.link = index;
-												itemContainer.classList.add("button");
+												itemContainer.classList.add("button", "noclick");
 												dialog.buttons.add(itemContainer);
 											},
 											clickItemContainer(itemContainer, 棍, 母, e) {
-												ui.click.button.call(itemContainer, e);
+												const event = get.event();
+												if (!event.isMine()) {
+													return;
+												}
+												const selected = itemContainer.classList.contains("selected");
+												for (const button of event.dialog.buttons) {
+													button.classList.remove("selected");
+												}
+												ui.selected.buttons.length = 0;
+												if (!selected) {
+													itemContainer.classList.add("selected");
+													ui.selected.buttons.push(itemContainer);
+												}
+												game.check();
 											},
 										};
 									})
@@ -11687,11 +11713,25 @@ const skills = {
 															item: [`${lib.translate[`${item}_info`]}<br>（剩余${player.storage[item][0]}次）`],
 															custom(itemContainer) {
 																itemContainer.link = item;
-																itemContainer.classList.add("button");
+																itemContainer.classList.add("button", "noclick");
 																dialog.buttons.add(itemContainer);
 															},
 															clickItemContainer(itemContainer, 棍, 母, e) {
-																ui.click.button.call(itemContainer, e);
+																const event = get.event();
+																if (!event.isMine()) {
+																	return;
+																}
+																if (itemContainer.classList.contains("selected")) {
+																	itemContainer.classList.remove("selected");
+																	ui.selected.buttons.remove(itemContainer);
+																} else {
+																	if (ui.selected.buttons.length >= num) {
+																		return;
+																	}
+																	itemContainer.classList.add("selected");
+																	ui.selected.buttons.push(itemContainer);
+																}
+																game.check();
 															},
 														};
 													})
@@ -11750,11 +11790,24 @@ const skills = {
 														item: [lib.translate[`${item}_info`]],
 														custom(itemContainer) {
 															itemContainer.link = item;
-															itemContainer.classList.add("button");
+															itemContainer.classList.add("button", "noclick");
 															dialog.buttons.add(itemContainer);
 														},
 														clickItemContainer(itemContainer, 棍, 母, e) {
-															ui.click.button.call(itemContainer, e);
+															const event = get.event();
+															if (!event.isMine()) {
+																return;
+															}
+															const selected = itemContainer.classList.contains("selected");
+															for (const button of event.dialog.buttons) {
+																button.classList.remove("selected");
+															}
+															ui.selected.buttons.length = 0;
+															if (!selected) {
+																itemContainer.classList.add("selected");
+																ui.selected.buttons.push(itemContainer);
+															}
+															game.check();
 														},
 													};
 												})
