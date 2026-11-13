@@ -1,0 +1,146 @@
+.player .equips {
+	width: 120px;
+	height: auto;
+	top: auto;
+	right: auto;
+	bottom: 18px;
+	left: 10px;
+	text-align: left;
+}
+#arena.slim_player .player .equips {
+	left: 7px;
+}
+#arena.uslim_player .player .equips {
+	left: 3px;
+}
+#arena.mslim_player .player .equips {
+	left: 3px;
+}
+.player.minskin .equips {
+	transform: scale(0.73);
+	transform-origin: bottom left;
+}
+.player .equips > .card::after,
+.player .equips > .card::before {
+	visibility: hidden;
+}
+.player .equips > .card {
+	position: relative;
+	width: 100%;
+	height: 22px;
+	line-height: 22px;
+	margin-top: 0;
+	margin-bottom: 0;
+	background: linear-gradient(to right, rgba(0, 0, 0, 0.3), transparent),
+		linear-gradient(135deg, rgba(0, 0, 0, 0.5), transparent 80%, transparent) !important;
+	box-shadow: none;
+	color: white;
+	text-shadow: black 0 0 2px;
+	animation: card_start2x 0.5s;
+	-webkit-animation: card_start2x 0.5s;
+	display: block;
+	left: 0;
+	top: 0;
+	transition: all 0.5s;
+
+	border-radius: 0;
+	border-width: 1px 0 0;
+	border-style: solid;
+	border-image: linear-gradient(to right, rgba(0, 0, 0, 0.4) 70%, transparent) 100% 0 0;
+}
+.player .equips > .card > .image {
+	display: none;
+}
+
+.player.unseen .equips > .card {
+	background: none;
+	/*border-image:linear-gradient(to right, transparent,rgba(0,0,0,0.4) 10%,rgba(0, 0, 0,0.4) 70%,transparent) 100% 0 0;*/
+}
+.player.unseen .equips > .card {
+	border-image: linear-gradient(
+			to right,
+			transparent,
+			rgba(0, 0, 0, 0.4) 10%,
+			rgba(0, 0, 0, 0.4) 70%,
+			transparent
+		)
+		100% 0 0;
+}
+.player.unseen .equips > .card:first-child {
+	border-image: linear-gradient(transparent, transparent);
+}
+.player .equips > .card.selected {
+	background: linear-gradient(to right, rgba(0, 133, 255, 0.3), transparent),
+		linear-gradient(135deg, rgba(0, 133, 255, 0.5), transparent 80%, transparent) !important;
+	box-shadow: none !important;
+	border-width: 1px 0 0;
+	border-style: solid;
+	border-image: linear-gradient(to right, rgba(0, 103, 205, 0.4) 70%, transparent) 100% 0 0;
+}
+.player .equips > .card.fire:not(.fakeequip) {
+	color: rgb(255, 119, 63);
+}
+.player .equips > .card.thunder:not(.fakeequip) {
+	color: rgb(117, 186, 255);
+}
+.player .equips > .card.poison:not(.fakeequip) {
+	color: rgb(104, 221, 127);
+}
+.player .equips > .card.brown:not(.fakeequip) {
+	color: rgb(195, 161, 223);
+}
+
+.equips > .card > .background {
+	display: none !important;
+}
+.equips > .card > .name2 {
+	display: block;
+	margin-left: 5px;
+	white-space: nowrap;
+}
+.equips > .card > div {
+	animation: none !important;
+	-webkit-animation: none !important;
+}
+.equips > .card > .name,
+.equips > .card > .info {
+	display: none !important;
+}
+
+.equips > .removing {
+	margin-top: -12px !important;
+	margin-bottom: -11px !important;
+	transform: scale(1);
+}
+.equips > .removing + .removing {
+	margin-top: -23px !important;
+}
+
+.player.linked .equips {
+	transform: rotate(90deg) translate(-152px, -6px);
+	transform-origin: bottom left;
+}
+#arena.slim_player .player.linked .equips {
+	transform: rotate(90deg) translate(-155px, -6px);
+}
+#arena.uslim_player .player.linked .equips {
+	transform: rotate(90deg) translate(-159px, -6px);
+}
+#arena.mslim_player .player.linked .equips {
+	transform: rotate(90deg) translate(-157px, -6px);
+}
+.player.minskin.linked .equips {
+	transform: rotate(90deg) translate(-92px, -6px) scale(0.73);
+}
+#arena.slim_player .player.minskin.linked .equips {
+	transform: rotate(90deg) translate(-95px, -6px) scale(0.73);
+}
+#arena.uslim_player .player.minskin.linked .equips {
+	transform: rotate(90deg) translate(-99px, -6px) scale(0.73);
+}
+#arena.mslim_player .player.minskin.linked .equips {
+	transform: rotate(90deg) translate(-97px, -6px) scale(0.73);
+}
+.player.linked .identity {
+	transform: rotate(90deg);
+}

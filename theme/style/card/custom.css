@@ -1,0 +1,35 @@
+.card:not(*:empty) {
+	color: rgb(77, 60, 51);
+	text-shadow: none;
+	background-size: 100% 100%;
+}
+#arena.mobile:not(.chess) .player[data-position="0"] > .equips > .equip5 {
+	border-radius: 4px;
+}
+#arena.mobile:not(.chess) .player[data-position="0"] > .equips > .equip5 > .image {
+	width: 100%;
+	height: 100%;
+	left: 0;
+	top: 0;
+}
+#arena.mobile:not(.chess) .player[data-position="0"] > .equips > .equip5 > .name {
+	display: block;
+	transform: scale(0.43) !important;
+	transform-origin: left top;
+	left: 2px;
+	top: 3px;
+}
+#arena.mobile:not(.chess) .player[data-position="0"] > .equips > .equip5 > .name.long {
+	top: 2px;
+}
+#arena.mobile:not(.chess) .player[data-position="0"] > .equips > .equip5 > .info {
+	display: block;
+	transform: scale(0.43) !important;
+	transform-origin: right top;
+	right: 3px;
+	top: 3px;
+}
+
+#arena:not(.chess) .player[data-position="0"] > .equips > .equip5 > .image {
+	background-position: -4px -4px;
+}
