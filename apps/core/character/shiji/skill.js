@@ -8769,7 +8769,7 @@ const skills = {
 						if (get.damageEffect(current, evt.getParent().player, current) >= 0) {
 							return 0;
 						}
-						const type = evt.cardType;
+						const type = get.event().cardType;
 						const cards = current.getCards("he", card => get.type2(card) === type);
 						if (cards.length === 1) {
 							return 1;
