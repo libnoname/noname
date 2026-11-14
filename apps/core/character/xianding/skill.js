@@ -44732,7 +44732,7 @@ const skills = {
 			},
 			filter(button, player) {
 				const evt = get.event().getParent(),
-					vcard = get.autoViewAs({ name: button.link[2], nature: button.link[3] }, []);
+					vcard = get.autoViewAs({ name: button.link[2], nature: button.link[3], isCard: true }, []);
 				if (evt && typeof evt.filterCard === "function") {
 					return evt.filterCard(vcard, player, evt);
 				}
@@ -44746,7 +44746,7 @@ const skills = {
 				} else if (event.getParent().type !== "phase" && !event.getParent().lvli_damage) {
 					return 1;
 				}
-				return player.getUseValue(get.autoViewAs({ name: button.link[2], nature: button.link[3] }, []));
+				return player.getUseValue(get.autoViewAs({ name: button.link[2], nature: button.link[3], isCard: true }, []));
 			},
 			backup(links, player) {
 				const backup = get.copy(get.info("lvli_bakup"));
@@ -44754,7 +44754,7 @@ const skills = {
 				return backup;
 			},
 			prompt(links, player) {
-				const vcard = get.autoViewAs({ name: link[0][2], nature: link[0][3] }, []);
+				const vcard = get.autoViewAs({ name: link[0][2], nature: link[0][3], isCard: true }, []);
 				return `请选择${get.translation(vcard)}的目标`;
 			},
 		},
@@ -44853,7 +44853,7 @@ const skills = {
 					);
 					const next = player
 						.chooseToUse({ forced: true })
-						.set("openskilldialog", get.info("lvli").chooseButton.prompt([[null, null, name, nature]]))
+						.set("openskilldialog", get.info("lvli").chooseButton.prompt([event.cost_data]))
 						.set("norestore", true)
 						.set("_backupevent", "lvli_backup")
 						.set("custom", {
