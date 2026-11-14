@@ -1,4 +1,5 @@
 import { lib, game, get, _status, ui } from "noname";
+import { clearReconnectState } from "@/util/reconnect.js";
 export class Click {
 	/**
 	 * @type {() => void}
@@ -571,6 +572,8 @@ export class Click {
 		}
 	}
 	exit() {
+		clearReconnectState(_status);
+		_status.noReconnect = true;
 		if (game.servermode && lib.config.reconnect_info && _status.over) {
 			if (!_status.roomtimeout) {
 				lib.config.reconnect_info[2] = game.roomId;
