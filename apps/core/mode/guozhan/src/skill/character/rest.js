@@ -19479,7 +19479,9 @@ export default {
 				if (name.indexOf("gz_") === 0 && (lib.junList.includes(name.slice(3)) || get.character(name)?.junName)) {
 					const junzhu_name = get.character(name).junName ?? `gz_jun_${name.slice(3)}`;
 					const group = lib.character[junzhu_name][1];
-					const notChange = game.hasPlayer(current => get.is.jun(current) && current.identity === group);
+					// 君主武将包被关闭时不再提供替换；离线以 guozhan_banned 为准，联机以房间禁将表为准
+					const banned = _status.connectMode ? lib.configOL.banned : lib.config.guozhan_banned;
+					const notChange = banned?.includes(junzhu_name) || game.hasPlayer(current => get.is.jun(current) && current.identity === group);
 					const result = notChange
 						? {
 								bool: false,
