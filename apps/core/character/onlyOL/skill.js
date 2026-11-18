@@ -2207,6 +2207,22 @@ const skills = {
 		},
 	},
 	qiexie: {
+		mod: {
+			aiValue(player, card, num) {
+				if (card.name.indexOf("qiexie_") === -1 || get.position(card) !== "e") {
+					return num;
+				}
+				const owner = get.owner(card);
+				if (player !== owner) {
+					return 0;
+				} else if (_status.currentPhase !== player || _status.event.skill !== "cuijue") {
+					return num + 8;
+				}
+			},
+			aiUseful() {
+				return lib.skill.qiexie.mod.aiValue.apply(this, arguments);
+			},
+		},
 		audio: 2,
 		trigger: { player: "phaseZhunbeiBegin" },
 		forced: true,

@@ -3839,6 +3839,33 @@ const skills = {
 					return false;
 				}
 			},
+			aiValue(player, card, num) {
+				if (card.hasGaintag("dcjigu")) {
+					return 0;
+				}
+			},
+			aiUseful(player, card, num) {
+				if (card.hasGaintag("dcjigu")) {
+					return 0;
+				}
+			},
+		},
+		ai: {
+			effect: {
+				target(card, player, target, result2) {
+					if (get.type(card) !== "equip") {
+						return;
+					} else if (get.cardNameLength(card) === 3) {
+						return [-1, -10];
+					}
+					const attack = target.getEquipRange([card]);
+					if (attack && (game.hasPlayer(current => current !== player && get.attitude(target, current) < 0 && !current.inRange(target)) || target.hasSkill("dcsirui"))) {
+						return;
+					} else if (result2 > 0) {
+						return -1;
+					}
+				},
+			},
 		},
 		group: "dcjigu_temp",
 		subSkill: {

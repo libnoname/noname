@@ -8766,10 +8766,10 @@ const skills = {
 				.chooseControl({
 					choiceList: ["受到1点伤害", `展示手牌并弃置所有${get.translation(cardType)}牌`],
 					ai(evt, current) {
-						if (get.damageEffect(current, evt.getParent().player, current) >= 0) {
+						if (get.damageEffect(current, evt.player, current) >= 0) {
 							return 0;
 						}
-						const type = evt.cardType;
+						const type = get.event().cardType;
 						const cards = current.getCards("he", card => get.type2(card) === type);
 						if (cards.length === 1) {
 							return 1;

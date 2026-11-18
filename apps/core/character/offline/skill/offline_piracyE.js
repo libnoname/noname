@@ -1294,7 +1294,7 @@ const skills = {
 				});
 			} else {
 				const target = event.targets[0];
-				const num = trigger.getl(target).cards2.filter(card => trigger.getg(player)).length;
+				const num = trigger.getl(target).cards2.filter(card => trigger.getg(player).includes(card)).length;
 				if (num > 0) {
 					await target.draw({ num: num });
 				}

@@ -6805,7 +6805,7 @@ const skills = {
 
 						event.list = cards2;
 
-						result = await player.chooseCardButton(event.list, true, "按顺序将牌置于牌堆顶（先选择的在上）", event.list.length).forResult();
+						const result = await player.chooseCardButton(event.list, true, "按顺序将牌置于牌堆顶（先选择的在上）", event.list.length).forResult();
 
 						const list = result.links.slice(0);
 						while (list.length) {

@@ -2578,11 +2578,24 @@ const skills = {
 			const next = player.useCard(card, targets);
 			await next;
 			player.removeSkill("sxrmhuoe_effect");
+			const names = ["huogong", "useCard"];
 			const cards = game
 				.getGlobalHistory("everything", evt => {
-					return evt.name == "showCards" && evt.getParent(evtx => evtx == next, true);
+					if (evt.name !== "showCards") {
+						return false;
+					}
+					for (const i in names) {
+						const evtx = evt.getParent(Number(i) + 1);
+						if (evtx.name !== names[i] || evtx.player !== player) {
+							return false;
+						} else if (evtx.name === "useCard" && evtx !== next) {
+							return false;
+						}
+					}
+					return true;
 				})
-				.reduce((arr, evt) => arr.concat(evt.cards ?? []), []);
+				.reduce((arr, evt) => arr.concat(evt.cards ?? []), [])
+				.unique();
 			if (!cards.length) {
 				return;
 			}
@@ -2603,8 +2616,8 @@ const skills = {
 						owner = get.owner(card);
 					if (!owner) {
 						await target.gain(card, "gain2");
-					} else if (target != owner) {
-						await owner.give(card, target, true);
+					} else if (target !== owner) {
+						await target.gain(card, owner, "give");
 					}
 				}
 			}
