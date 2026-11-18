@@ -6061,7 +6061,6 @@ const skills = {
 			});
 			await player.draw({ num: Math.min(5, toAdd.length) });
 			await player.addSkills(toAdd.randomGets(3));
-			player.addTempSkill(`${event.name}_die`, { player: "dieAfter" });
 		},
 		subSkill: {
 			effect: {
@@ -6114,6 +6113,7 @@ const skills = {
 				slient: true,
 				async content(event, trigger, player) {
 					player.removeSkill(event.name);
+					player.addTempSkill("dcmingding_die", { player: "dieAfter" });
 					player.addSkill("dcmingding_clear2");
 				},
 			},
