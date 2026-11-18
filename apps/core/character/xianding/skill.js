@@ -6114,12 +6114,17 @@ const skills = {
 				slient: true,
 				async content(event, trigger, player) {
 					player.removeSkill(event.name);
-					player.addTempSkill("dcmingding_clear2");
+					player.addSkill("dcmingding_clear2");
 				},
 			},
 			clear2: {
 				charlotte: true,
-				onremove(player) {
+				trigger: {
+					player: "phaseAfter",
+				},
+				slient: true,
+				async content(event, trigger, player) {
+					player.removeSkill(event.name);
 					player.removeSkill(["dcmingding_effect", "dcmingding_die"]);
 				},
 			},
