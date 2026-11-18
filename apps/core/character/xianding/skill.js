@@ -22268,6 +22268,13 @@ const skills = {
 	},
 	zhuiji_matie: { audio: 2 },
 	twodcspshichou: {
+		mod: {
+			cardUsable(card, player){
+				if (get.name(card, player) === "sha" && get.event().skill === "twodcspshichou") {
+					return Infinity;
+				}
+			},
+		},
 		audio: "ol_shichou",
 		enable: "phaseUse",
 		viewAs: {
