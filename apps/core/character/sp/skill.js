@@ -7019,10 +7019,7 @@ const skills = {
 		},
 		async precontent(event, trigger, player) {
 			event.result._apply_args = {
-				oncard: (card, player) => {
-					const evt = get.event();
-					evt.directHit.addArray(game.players);
-				},
+				directHit: game.players,
 			};
 			player.addTempSkill("newwuniang_mxzxz");
 		},
