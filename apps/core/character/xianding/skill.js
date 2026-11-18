@@ -6049,13 +6049,8 @@ const skills = {
 				await player.removeSkills(toRemove);
 			}
 			await player.recoverTo(1);
-			player.addTempSkill(`${event.name}_effect`, { player: "dieAfter" });
-			player
-				.when({ player: "phaseAfter" })
-				.filter(evt => evt !== trigger.getParent("phase", true))
-				.then(async (event, trigger, player) => {
-					player.removeSkill("dcmingding_effect");
-				});
+			player.addTempSkill([`${event.name}_effect`, `${event.name}_clear1`], { player: "dieAfter" });
+			player.removeSkill(`${event.name}_clear2`);
 			const toAdd = [];
 			game.checkAllGlobalHistory("everything", evt => {
 				if (evt.name !== "changeSkills" || evt.player !== player || evt.getParent()?.name !== "dcxiangchen") {
@@ -6067,20 +6062,19 @@ const skills = {
 			await player.draw({ num: Math.min(5, toAdd.length) });
 			await player.addSkills(toAdd.randomGets(3));
 			player.addTempSkill(`${event.name}_die`, { player: "dieAfter" });
-			player.setStorage(`${event.name}_die`, trigger.getParent("phase", true));
 		},
 		subSkill: {
 			effect: {
-				audio: "dcmingding",
 				charlotte: true,
-				forced: true,
+				mark: true,
 				intro: {
 					content: "防止你受到的伤害",
 				},
-				mark: true,
+				audio: "dcmingding",
 				trigger: {
 					player: "damageBegin4",
 				},
+				forced: true,
 				async content(event, trigger, player) {
 					trigger.cancel();
 				},
@@ -6096,24 +6090,37 @@ const skills = {
 				},
 			},
 			die: {
-				audio: "dcmingding",
 				charlotte: true,
-				onremove: true,
-				forced: true,
+				mark: true,
+				marktext: "💀",
 				intro: {
 					content: "回合结束时失去所有体力",
 				},
-				mark: true,
-				marktext: "💀",
+				audio: "dcmingding",
 				trigger: {
 					player: "phaseEnd",
 				},
-				filter(event, player) {
-					return event !== player.storage.dcmingding_die;
-				},
+				forced: true,
 				async content(event, trigger, player) {
 					player.removeSkill(event.name);
 					await player.loseHp(player.getHp());
+				},
+			},
+			clear1: {
+				charlotte: true,
+				trigger: {
+					player: "phaseBegin",
+				},
+				slient: true,
+				async content(event, trigger, player) {
+					player.removeSkill(event.name);
+					player.addTempSkill("dcmingding_clear2");
+				},
+			},
+			clear2: {
+				charlotte: true,
+				onremove(player) {
+					player.removeSkill(["dcmingding_effect", "dcmingding_die"]);
 				},
 			},
 		},
