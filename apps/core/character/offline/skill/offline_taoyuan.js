@@ -790,7 +790,7 @@ const skills = {
 		audio: "xunshi",
 		mod: {
 			suit(card) {
-				if (lib.skill.xunshi.isXunshi(card)) {
+				if (lib.skill.xunshi.isXunshi(card) && get.position(card) === "h") {
 					return "none";
 				}
 			},
