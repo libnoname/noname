@@ -1407,6 +1407,7 @@ const skills = {
 									const player = get.player();
 									return get.effect(target, { name: "draw" }, player, player) + get.effect(target, { name: "shunshou" }, player, player) > 0;
 								},
+								forced: true,
 							})
 							.set("targets", targets)
 							.forResult()
@@ -1627,6 +1628,9 @@ const skills = {
 				round: 1,
 				forced: true,
 				trigger: { global: "phaseAfter" },
+				filter(event) {
+					return event.player.getSeatNum() === 1;
+				},
 				async content(event, trigger, player) {
 					player.insertPhase();
 				},
