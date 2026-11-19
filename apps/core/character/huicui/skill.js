@@ -8702,7 +8702,7 @@ const skills = {
 				})
 				.set("sourcex", player)
 				.forResult();
-			if (result.bool) {
+			if (result?.bool) {
 				if (
 					player.hasHistory("damage", evt => {
 						return evt.card && evt.card.name == "sha" && evt.getParent(4) == event;

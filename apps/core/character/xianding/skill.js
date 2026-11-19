@@ -898,7 +898,7 @@ const skills = {
 					})
 					.set("judge2", result => (result.bool ? true : false))
 					.forResult();
-				switch (result.suit) {
+				switch (result?.suit) {
 					case "diamond":
 						await target.damage({ num: 1, source: player, nature: "fire" });
 						break;
