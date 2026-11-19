@@ -2446,34 +2446,28 @@ const skills = {
 		trigger: {
 			global: ["damageBegin1", "damageBegin3"],
 		},
-		init(player, skill) {
-			player.storage[skill] = {
-				awaken1: false,
-				awaken2: false,
-			};
-		},
 		filter(event, player, name) {
 			const target = name === "damageBegin1" ? event.source : event.player;
 			if (!target?.isIn() || target.isPhaseUsing()) {
 				return false;
 			}
-			let awaken1 = false;
-			let awaken2 = false;
-			if (player.storage["dcsbzhubo"]) {
-				({ awaken1, awaken2 } = player.storage["dcsbzhubo"]);
-			}
+			const { awaken1, awaken2 } = player.getStorage("dcsbzhubo", {});
 			return (awaken2 && target === player) || (awaken1 && name === "damageBegin3") || name === "damageBegin1";
 		},
 		logTarget(event, player, name) {
 			return name === "damageBegin1" ? event.source : event.player;
 		},
+		check(event, player, name) {
+			const { awaken1, awaken2 } = player.getStorage("dcsbzhubo", {});
+			const target = name === "damageBegin1" ? event.source : event.player;
+			if (get.attitude(player, target) > 0) {
+				return true;
+			}
+			return name === "damageBegin3";
+		},
 		async content(event, trigger, player) {
 			const triggername = event.triggername;
-			let awaken1 = false;
-			let awaken2 = false;
-			if (player.storage["dcsbzhubo"]) {
-				({ awaken1, awaken2 } = player.storage["dcsbzhubo"]);
-			}
+			const { awaken1, awaken2 } = player.getStorage(event.name, {});
 			if (!awaken2) {
 				await player.loseHp();
 			}
@@ -2483,9 +2477,8 @@ const skills = {
 					controls: ["伤害+1", "各摸两张牌"],
 					prompt: "逐波：请选择一项",
 					choiceList: [`令${get.translation(target)}${triggername === "damageBegin1" ? "造成" : "受到"}的伤害+1`, `与${get.translation(target)}各摸2张牌`],
-					ai: () => {
-						const { target, triggername } = get.event;
-						const player = get.player();
+					ai(event, player) {
+						const { target, triggername } = get.event();
 						if (get.attitude(player, target) > 0) {
 							return 1;
 						}
@@ -2505,18 +2498,6 @@ const skills = {
 					await game.asyncDraw([player, target], 2);
 				}
 			}
-		},
-		check(event, player, name) {
-			let awaken1 = false;
-			let awaken2 = false;
-			if (player.storage["dcsbzhubo"]) {
-				({ awaken1, awaken2 } = player.storage["dcsbzhubo"]);
-			}
-			const target = name === "damageBegin1" ? event.source : event.player;
-			if (get.attitude(player, target) > 0) {
-				return true;
-			}
-			return name === "damageBegin3";
 		},
 	},
 	dcsbqijue: {
@@ -2538,13 +2519,7 @@ const skills = {
 			if (!player.hasSkill("dcsbzhubo")) {
 				return;
 			}
-			if (!player.storage["dcsbzhubo"]) {
-				player.storage["dcsbzhubo"] = {
-					awaken1: false,
-					awaken2: false,
-				};
-			}
-			player.storage["dcsbzhubo"][player === target ? "awaken2" : "awaken1"] = true;
+			player.setStorage("dcsbzhubo", { [player === target ? "awaken2" : "awaken1"]: true }, true);
 		},
 	},
 	//威关银屏
