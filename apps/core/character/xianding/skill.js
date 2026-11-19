@@ -46473,6 +46473,7 @@ const skills = {
 		},
 	},
 	guanchong: {
+		locked: true,
 		trigger: {
 			global: ["gainEnd", "loseAsyncEnd"],
 		},

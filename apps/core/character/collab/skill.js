@@ -3068,6 +3068,7 @@ const skills = {
 	},
 	//宫百万
 	dchaoshi: {
+		locked: true,
 		trigger: {
 			global: ["phaseEnd"],
 		},
