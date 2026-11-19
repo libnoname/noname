@@ -4370,7 +4370,7 @@ const skills = {
 				},
 				mod: {
 					cardEnabled(card, player) {
-						if (get.name(card) == "shan" || player.isDying()) {
+						if (get.name(card) == "shan" || get.event().skill == "hefeichonglei_wansha") {
 							return;
 						}
 						const target = get.event()?.getParent("phaseUse", true, true)?.player;
@@ -4383,12 +4383,13 @@ const skills = {
 							}
 							return get.type(card) != "basic";
 						});
-						if ("cards" in card && Array.isArray(card.cards) && card.cards.containsSome(...hs)) {
+						const vcard = get.autoViewAs(card);
+						if (vcard.cards.containsSome(...hs)) {
 							return false;
 						}
 					},
 					cardRespondable(card, player) {
-						if (get.name(card) == "shan" || player.isDying() || get.event().skill == "hefeichonglei_wansha") {
+						if (get.name(card) == "shan" || get.event().skill == "hefeichonglei_wansha") {
 							return;
 						}
 						const target = get.event()?.getParent("phaseUse", true, true)?.player;
@@ -4401,12 +4402,13 @@ const skills = {
 							}
 							return get.type(card) != "basic";
 						});
-						if ("cards" in card && Array.isArray(card.cards) && card.cards.containsSome(...hs)) {
+						const vcard = get.autoViewAs(card);
+						if (vcard.cards.containsSome(...hs)) {
 							return false;
 						}
 					},
 					cardSavable(card, player) {
-						if (get.name(card) == "shan" || player.isDying()) {
+						if (get.name(card) == "shan" || get.event().skill == "hefeichonglei_wansha") {
 							return;
 						}
 						const target = get.event()?.getParent("phaseUse", true, true)?.player;
@@ -4419,7 +4421,8 @@ const skills = {
 							}
 							return get.type(card) != "basic";
 						});
-						if ("cards" in card && Array.isArray(card.cards) && card.cards.containsSome(...hs)) {
+						const vcard = get.autoViewAs(card);
+						if (vcard.cards.containsSome(...hs)) {
 							return false;
 						}
 					},
