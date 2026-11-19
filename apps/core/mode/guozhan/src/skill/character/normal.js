@@ -3379,67 +3379,67 @@ export default {
 			}
 		},
 		filterTarget(fuck, player, target) {
-					const card = ui.selected.cards[0],
-						event = _status.event,
-						backup = event._backup;
-					if (!card || game.checkMod(card, player, "unchanged", "cardEnabled2", player) === false) {
-						return false;
-					}
-					const cardx = get.autoViewAs({ name: "tiesuo" }, [card]);
-					return backup.filterCard(cardx, player, event) && backup.filterTarget(cardx, player, target);
+			const card = ui.selected.cards[0],
+				event = _status.event,
+				backup = event._backup;
+			if (!card || game.checkMod(card, player, "unchanged", "cardEnabled2", player) === false) {
+				return false;
+			}
+			const cardx = get.autoViewAs({ name: "tiesuo" }, [card]);
+			return backup.filterCard(cardx, player, event) && backup.filterTarget(cardx, player, target);
 		},
 		selectTarget() {
-					const card = ui.selected.cards[0],
-						event = _status.event,
-						player = event.player,
-						backup = event._backup;
-					let recast = false,
-						use = false;
-					const cardx = get.autoViewAs({ name: "tiesuo" }, [card]);
-					if (event.type == "phase" && player.canRecast(card)) {
-						recast = true;
-					}
-					if (card && game.checkMod(card, player, "unchanged", "cardEnabled2", player) !== false) {
-						if (backup.filterCard(cardx, player, event)) {
-							use = true;
-						}
-					}
-					if (!use) {
-						return [0, 0];
-					} else {
-						const select = backup.selectTarget(cardx, player);
-						if (recast && select[0] > 0) {
-							select[0] = 0;
-						}
-						return select;
-					}
+			const card = ui.selected.cards[0],
+				event = _status.event,
+				player = event.player,
+				backup = event._backup;
+			let recast = false,
+				use = false;
+			const cardx = get.autoViewAs({ name: "tiesuo" }, [card]);
+			if (event.type == "phase" && player.canRecast(card)) {
+				recast = true;
+			}
+			if (card && game.checkMod(card, player, "unchanged", "cardEnabled2", player) !== false) {
+				if (backup.filterCard(cardx, player, event)) {
+					use = true;
+				}
+			}
+			if (!use) {
+				return [0, 0];
+			} else {
+				const select = backup.selectTarget(cardx, player);
+				if (recast && select[0] > 0) {
+					select[0] = 0;
+				}
+				return select;
+			}
 		},
 		filterOk() {
-					const card = ui.selected.cards[0],
-						event = _status.event,
-						player = event.player,
-						backup = event._backup;
-					const selected = ui.selected.targets.length;
-					let recast = false,
-						use = false;
-					const cardx = get.autoViewAs({ name: "tiesuo" }, [card]);
-					if (event.type == "phase" && player.canRecast(card)) {
-						recast = true;
-					}
-					if (card && game.checkMod(card, player, "unchanged", "cardEnabled2", player) !== false) {
-						if (backup.filterCard(cardx, player, event)) {
-							use = true;
-						}
-					}
-					if (recast && selected == 0) {
-						return true;
-					} else if (use) {
-						const select = backup.selectTarget(cardx, player);
-						if (select[0] <= -1) {
-							return true;
-						}
-						return selected >= select[0] && selected <= select[1];
-					}
+			const card = ui.selected.cards[0],
+				event = _status.event,
+				player = event.player,
+				backup = event._backup;
+			const selected = ui.selected.targets.length;
+			let recast = false,
+				use = false;
+			const cardx = get.autoViewAs({ name: "tiesuo" }, [card]);
+			if (event.type == "phase" && player.canRecast(card)) {
+				recast = true;
+			}
+			if (card && game.checkMod(card, player, "unchanged", "cardEnabled2", player) !== false) {
+				if (backup.filterCard(cardx, player, event)) {
+					use = true;
+				}
+			}
+			if (recast && selected == 0) {
+				return true;
+			} else if (use) {
+				const select = backup.selectTarget(cardx, player);
+				if (select[0] <= -1) {
+					return true;
+				}
+				return selected >= select[0] && selected <= select[1];
+			}
 		},
 		ai1(card) {
 			return 6 - get.value(card);
@@ -3647,7 +3647,7 @@ export default {
 		//priority:2,
 		audio: "botu",
 		filter(event, player) {
-			const history = player.getHistory("useCard");
+			const history = player.getHistory("useCard", evt => evt.isPhaseUsing(player));
 			const suits = [];
 			const types = [];
 			for (let i = 0; i < history.length; i++) {
