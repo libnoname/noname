@@ -45543,8 +45543,9 @@ const skills = {
 						return get.owner(button.link) === get.owner(ui.selected.buttons[0].link);
 					})
 					.set("ai", button => {
+						const owner = get.owner(button.link);
 						const color = get.color(button.link) === _status.event.color;
-						return color ? Math.random() : 0.35;
+						return -(color ? Math.random() : 0.35) * get.attitude(player, owner);
 					})
 					.forResult();
 				await player.showCards(result3.links);
@@ -45605,7 +45606,7 @@ const skills = {
 					})
 					.set("ai", button => {
 						const owner = get.owner(button.link);
-						return get.value(button.link, owner);
+						return -get.value(button.link, owner) * get.attitude(player, owner);
 					})
 					.forResult();
 				const map = {};
