@@ -1654,8 +1654,14 @@ const skills = {
 		async content(event, trigger, player) {
 			const target = event.targets[0];
 			await player.loseHp();
+			if (!player.isIn()) {
+				return;
+			}
 			await player.draw();
 			const discardMap = await game.chooseAnyOL([player, target], get.info(event.name).chooseToDiscard, []).forResult();
+			if (!discardMap) {
+				return;
+			}
 			const playerResult = discardMap.get(player);
 			const targetResult = discardMap.get(target);
 			const playerCount = playerResult?.cards?.length || 0;

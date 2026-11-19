@@ -6049,13 +6049,8 @@ const skills = {
 				await player.removeSkills(toRemove);
 			}
 			await player.recoverTo(1);
-			player.addTempSkill(`${event.name}_effect`, { player: "dieAfter" });
-			player
-				.when({ player: "phaseAfter" })
-				.filter(evt => evt !== trigger.getParent("phase", true))
-				.then(async (event, trigger, player) => {
-					player.removeSkill("dcmingding_effect");
-				});
+			player.addTempSkill([`${event.name}_effect`, `${event.name}_clear1`], { player: "dieAfter" });
+			player.removeSkill(`${event.name}_clear2`);
 			const toAdd = [];
 			game.checkAllGlobalHistory("everything", evt => {
 				if (evt.name !== "changeSkills" || evt.player !== player || evt.getParent()?.name !== "dcxiangchen") {
@@ -6066,21 +6061,19 @@ const skills = {
 			});
 			await player.draw({ num: Math.min(5, toAdd.length) });
 			await player.addSkills(toAdd.randomGets(3));
-			player.addTempSkill(`${event.name}_die`, { player: "dieAfter" });
-			player.setStorage(`${event.name}_die`, trigger.getParent("phase", true));
 		},
 		subSkill: {
 			effect: {
-				audio: "dcmingding",
 				charlotte: true,
-				forced: true,
+				mark: true,
 				intro: {
 					content: "防止你受到的伤害",
 				},
-				mark: true,
+				audio: "dcmingding",
 				trigger: {
 					player: "damageBegin4",
 				},
+				forced: true,
 				async content(event, trigger, player) {
 					trigger.cancel();
 				},
@@ -6096,24 +6089,43 @@ const skills = {
 				},
 			},
 			die: {
-				audio: "dcmingding",
 				charlotte: true,
-				onremove: true,
-				forced: true,
+				mark: true,
+				marktext: "💀",
 				intro: {
 					content: "回合结束时失去所有体力",
 				},
-				mark: true,
-				marktext: "💀",
+				audio: "dcmingding",
 				trigger: {
 					player: "phaseEnd",
 				},
-				filter(event, player) {
-					return event !== player.storage.dcmingding_die;
-				},
+				forced: true,
 				async content(event, trigger, player) {
 					player.removeSkill(event.name);
 					await player.loseHp(player.getHp());
+				},
+			},
+			clear1: {
+				charlotte: true,
+				trigger: {
+					player: "phaseBegin",
+				},
+				slient: true,
+				async content(event, trigger, player) {
+					player.removeSkill(event.name);
+					player.addTempSkill("dcmingding_die", { player: "dieAfter" });
+					player.addSkill("dcmingding_clear2");
+				},
+			},
+			clear2: {
+				charlotte: true,
+				trigger: {
+					player: "phaseAfter",
+				},
+				slient: true,
+				async content(event, trigger, player) {
+					player.removeSkill(event.name);
+					player.removeSkill(["dcmingding_effect", "dcmingding_die"]);
 				},
 			},
 		},
@@ -14149,6 +14161,43 @@ const skills = {
 	},
 	//郭缇萦
 	dckanyu: {
+		marktext: "舆",
+		intro: {
+			content: "雷公助我！",
+			mark(dialog, storage, player) {
+				const addNewRow = lib.element.dialog.addNewRow.bind(dialog);
+				dialog.css({ width: "50%" });
+				if (get.is.phoneLayout()) {
+					dialog.classList.add("fullheight");
+				}
+				const records = player.getStorage("dckanyu_tiandu", new Map());
+				const suits = lib.suit.slice();
+				const numbers = Array.from(Array(13)).map((value, index) => index + 1);
+				addNewRow(
+					...[" "].concat(numbers.map(number => get.strNumber(number))).map(number => {
+						return { item: number, ratio: number === " " ? 1 : 2 };
+					})
+				);
+				for (const suit of suits) {
+					const list = [{ item: get.translation(suit), ratio: 1 }];
+					for (const number of numbers) {
+						list.add({
+							item: ((suit, number, records) => {
+								if (suit === "spade" && number >= 2 && number <= 9) {
+									return "⚡";
+								}
+								if (records.has(suit) && records.get(suit).includes(number)) {
+									return "⚡";
+								}
+								return "<span class='greentext'>●</span>";
+							})(suit, number, records),
+							ratio: 2,
+						});
+					}
+					addNewRow(...list);
+				}
+			},
+		},
 		audio: 2,
 		trigger: {
 			player: "damageBegin4",
@@ -14211,6 +14260,7 @@ const skills = {
 				});
 				player.setStorage(name, map, true);
 				player.addSkill(name);
+				player.localMarkSkill(event.name, player, event);
 			}
 			const remains = tops.concat(bottoms);
 			remains.reverse();
@@ -14226,43 +14276,6 @@ const skills = {
 			tiandu: {
 				charlotte: true,
 				onremove: true,
-				marktext: "舆",
-				intro: {
-					content: "雷公助我！",
-					mark(dialog, storage, player) {
-						const addNewRow = lib.element.dialog.addNewRow.bind(dialog);
-						dialog.css({ width: "50%" });
-						if (get.is.phoneLayout()) {
-							dialog.classList.add("fullheight");
-						}
-						const records = player.getStorage("dckanyu_tiandu", new Map());
-						const suits = lib.suit.slice();
-						const numbers = Array.from(Array(13)).map((value, index) => index + 1);
-						addNewRow(
-							...[" "].concat(numbers.map(number => get.strNumber(number))).map(number => {
-								return { item: number, ratio: number === " " ? 1 : 2 };
-							})
-						);
-						for (const suit of suits) {
-							const list = [{ item: get.translation(suit), ratio: 1 }];
-							for (const number of numbers) {
-								list.add({
-									item: ((suit, number, records) => {
-										if (suit === "spade" && number >= 2 && number <= 9) {
-											return "⚡";
-										}
-										if (records.has(suit) && records.get(suit).includes(number)) {
-											return "⚡";
-										}
-										return "<span class='greentext'>●</span>";
-									})(suit, number, records),
-									ratio: 2,
-								});
-							}
-							addNewRow(...list);
-						}
-					},
-				},
 				trigger: {
 					player: "judgeBefore",
 				},
@@ -22268,6 +22281,13 @@ const skills = {
 	},
 	zhuiji_matie: { audio: 2 },
 	twodcspshichou: {
+		mod: {
+			cardUsable(card, player) {
+				if (get.name(card, player) === "sha" && get.event().skill === "twodcspshichou") {
+					return Infinity;
+				}
+			},
+		},
 		audio: "ol_shichou",
 		enable: "phaseUse",
 		viewAs: {

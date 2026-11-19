@@ -742,7 +742,7 @@ const skills = {
 			if (!bool1 && !bool2) {
 				return false;
 			}
-			return get.is.damageCard(event.card) && get.info("pskuifa").kuifa(event.card);
+			return get.is.damageCard(event.card) && (event.targets.length > 1 || get.info("pskuifa").kuifa(event.card));
 		},
 		async cost(event, trigger, player) {
 			const targets = trigger.targets;

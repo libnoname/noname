@@ -4216,7 +4216,9 @@ const skills = {
 				} else {
 					player.flashAvatar("zhinang", map[type][skill]);
 				}
-				await player.addAdditionalSkills(`zhinang_${get.type2(trigger.card)}`, skill);
+				let name = `zhinang_${get.type2(trigger.card)}`;
+				await player.removeAdditionalSkills(name);
+				await player.addAdditionalSkills(name, skill);
 			}
 		},
 		init(player, skill) {
