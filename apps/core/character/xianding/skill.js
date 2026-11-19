@@ -28901,7 +28901,7 @@ const skills = {
 				}
 			},
 		},
-		chooseToDiscard(player, source, targetList, eventId) {
+		chooseToDiscard(player, source, targets, eventId) {
 			const next = player.chooseToDiscard({
 				position: "he",
 				selectCard: [1, Infinity],
@@ -28911,43 +28911,41 @@ const skills = {
 				ai(card) {
 					// 敌人之间：如果是自己就弃到其手牌-1或2张停下(牌少只弃一张)，否则看心情决定数量
 					// 队友之间：一张
-					const player = get.player();
-					const sourcex = get.event().sourcex;
-					const target = get.event().targets[0];
-					const att = get.attitude(sourcex, target);
-					if (player === sourcex) {
+					const { player, source, targets } = get.event();
+					const att = get.attitude(player, source);
+					if (player === source) {
 						if (att < 0) {
 							let num = 2;
-							if (player.countCards("h") < 4) {
+							if (player.countCards("h") < 3) {
 								num = 1;
-								if (Math.random() < 0.5) {
-									num = 0;
-								}
 							}
-							if (ui.selected.cards.length < Math.min(2, target.countCards("h") - 1)) {
-								return 6 - get.value(card);
+							if (ui.selected.cards.length < Math.min(num, Math.max(targets[0].countCards("h") - 1, 1))) {
+								return (6 - get.value(card)) * get.number(card);
 							}
 						} else {
 							if (ui.selected.cards.length) {
 								return 0;
 							}
-							return 6 - get.value(card);
+							return (6 - get.value(card)) * get.number(card);
 						}
 					} else {
 						if (att < 0) {
-							if (ui.selected.cards.length <= Math.floor(Math.random() * 4)) {
-								return 6 - get.value(card);
+							if (ui.selected.cards.length <= Math.floor(get.event().getRand() * 4)) {
+								return (6 - get.value(card)) * get.number(card);
 							}
 						} else {
-							return 6 - get.value(card);
+							if (ui.selected.cards.length) {
+								return 0;
+							}
+							return (6 - get.value(card)) * (13 - get.number(card));
 						}
 					}
 					return 0;
 				},
 			});
-			next.set("sourcex", source);
+			next.set("source", source);
+			next.set("targets", targets);
 			next.set("id", eventId);
-			next.set("targets", targetList);
 			next.set("_global_waiting", true);
 			return next;
 		},
