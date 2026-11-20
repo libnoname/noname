@@ -898,7 +898,7 @@ const skills = {
 					})
 					.set("judge2", result => (result.bool ? true : false))
 					.forResult();
-				switch (result.suit) {
+				switch (result?.suit) {
 					case "diamond":
 						await target.damage({ num: 1, source: player, nature: "fire" });
 						break;
@@ -2446,34 +2446,28 @@ const skills = {
 		trigger: {
 			global: ["damageBegin1", "damageBegin3"],
 		},
-		init(player, skill) {
-			player.storage[skill] = {
-				awaken1: false,
-				awaken2: false,
-			};
-		},
 		filter(event, player, name) {
 			const target = name === "damageBegin1" ? event.source : event.player;
 			if (!target?.isIn() || target.isPhaseUsing()) {
 				return false;
 			}
-			let awaken1 = false;
-			let awaken2 = false;
-			if (player.storage["dcsbzhubo"]) {
-				({ awaken1, awaken2 } = player.storage["dcsbzhubo"]);
-			}
+			const { awaken1, awaken2 } = player.getStorage("dcsbzhubo", {});
 			return (awaken2 && target === player) || (awaken1 && name === "damageBegin3") || name === "damageBegin1";
 		},
 		logTarget(event, player, name) {
 			return name === "damageBegin1" ? event.source : event.player;
 		},
+		check(event, player, name) {
+			const { awaken1, awaken2 } = player.getStorage("dcsbzhubo", {});
+			const target = name === "damageBegin1" ? event.source : event.player;
+			if (get.attitude(player, target) > 0) {
+				return true;
+			}
+			return name === "damageBegin3";
+		},
 		async content(event, trigger, player) {
 			const triggername = event.triggername;
-			let awaken1 = false;
-			let awaken2 = false;
-			if (player.storage["dcsbzhubo"]) {
-				({ awaken1, awaken2 } = player.storage["dcsbzhubo"]);
-			}
+			const { awaken1, awaken2 } = player.getStorage(event.name, {});
 			if (!awaken2) {
 				await player.loseHp();
 			}
@@ -2483,9 +2477,8 @@ const skills = {
 					controls: ["伤害+1", "各摸两张牌"],
 					prompt: "逐波：请选择一项",
 					choiceList: [`令${get.translation(target)}${triggername === "damageBegin1" ? "造成" : "受到"}的伤害+1`, `与${get.translation(target)}各摸2张牌`],
-					ai: () => {
-						const { target, triggername } = get.event;
-						const player = get.player();
+					ai(event, player) {
+						const { target, triggername } = get.event();
 						if (get.attitude(player, target) > 0) {
 							return 1;
 						}
@@ -2505,18 +2498,6 @@ const skills = {
 					await game.asyncDraw([player, target], 2);
 				}
 			}
-		},
-		check(event, player, name) {
-			let awaken1 = false;
-			let awaken2 = false;
-			if (player.storage["dcsbzhubo"]) {
-				({ awaken1, awaken2 } = player.storage["dcsbzhubo"]);
-			}
-			const target = name === "damageBegin1" ? event.source : event.player;
-			if (get.attitude(player, target) > 0) {
-				return true;
-			}
-			return name === "damageBegin3";
 		},
 	},
 	dcsbqijue: {
@@ -2538,13 +2519,7 @@ const skills = {
 			if (!player.hasSkill("dcsbzhubo")) {
 				return;
 			}
-			if (!player.storage["dcsbzhubo"]) {
-				player.storage["dcsbzhubo"] = {
-					awaken1: false,
-					awaken2: false,
-				};
-			}
-			player.storage["dcsbzhubo"][player === target ? "awaken2" : "awaken1"] = true;
+			player.setStorage("dcsbzhubo", { [player === target ? "awaken2" : "awaken1"]: true }, true);
 		},
 	},
 	//威关银屏
@@ -28926,7 +28901,7 @@ const skills = {
 				}
 			},
 		},
-		chooseToDiscard(player, source, targetList, eventId) {
+		chooseToDiscard(player, source, targets, eventId) {
 			const next = player.chooseToDiscard({
 				position: "he",
 				selectCard: [1, Infinity],
@@ -28936,43 +28911,41 @@ const skills = {
 				ai(card) {
 					// 敌人之间：如果是自己就弃到其手牌-1或2张停下(牌少只弃一张)，否则看心情决定数量
 					// 队友之间：一张
-					const player = get.player();
-					const sourcex = get.event().sourcex;
-					const target = get.event().targets[0];
-					const att = get.attitude(sourcex, target);
-					if (player === sourcex) {
+					const { player, source, targets } = get.event();
+					const att = get.attitude(player, source);
+					if (player === source) {
 						if (att < 0) {
 							let num = 2;
-							if (player.countCards("h") < 4) {
+							if (player.countCards("h") < 3) {
 								num = 1;
-								if (Math.random() < 0.5) {
-									num = 0;
-								}
 							}
-							if (ui.selected.cards.length < Math.min(2, target.countCards("h") - 1)) {
-								return 6 - get.value(card);
+							if (ui.selected.cards.length < Math.min(num, Math.max(targets[0].countCards("h") - 1, 1))) {
+								return (6 - get.value(card)) * get.number(card);
 							}
 						} else {
 							if (ui.selected.cards.length) {
 								return 0;
 							}
-							return 6 - get.value(card);
+							return (6 - get.value(card)) * get.number(card);
 						}
 					} else {
 						if (att < 0) {
-							if (ui.selected.cards.length <= Math.floor(Math.random() * 4)) {
-								return 6 - get.value(card);
+							if (ui.selected.cards.length <= Math.floor(get.event().getRand() * 4)) {
+								return (6 - get.value(card)) * get.number(card);
 							}
 						} else {
-							return 6 - get.value(card);
+							if (ui.selected.cards.length) {
+								return 0;
+							}
+							return (6 - get.value(card)) * (13 - get.number(card));
 						}
 					}
 					return 0;
 				},
 			});
-			next.set("sourcex", source);
+			next.set("source", source);
+			next.set("targets", targets);
 			next.set("id", eventId);
-			next.set("targets", targetList);
 			next.set("_global_waiting", true);
 			return next;
 		},
@@ -45543,8 +45516,9 @@ const skills = {
 						return get.owner(button.link) === get.owner(ui.selected.buttons[0].link);
 					})
 					.set("ai", button => {
+						const owner = get.owner(button.link);
 						const color = get.color(button.link) === _status.event.color;
-						return color ? Math.random() : 0.35;
+						return -(color ? Math.random() : 0.35) * get.attitude(player, owner);
 					})
 					.forResult();
 				await player.showCards(result3.links);
@@ -45605,7 +45579,7 @@ const skills = {
 					})
 					.set("ai", button => {
 						const owner = get.owner(button.link);
-						return get.value(button.link, owner);
+						return -get.value(button.link, owner) * get.attitude(player, owner);
 					})
 					.forResult();
 				const map = {};
@@ -46499,6 +46473,7 @@ const skills = {
 		},
 	},
 	guanchong: {
+		locked: true,
 		trigger: {
 			global: ["gainEnd", "loseAsyncEnd"],
 		},

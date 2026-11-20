@@ -1,21 +1,30 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const dynamicTranslates = {
+	dckaiji(player, skill) {
+		const bool = player.storage[skill];
+		let yang = "摸X张牌",
+			yin = "弃置至多X张牌";
+		if (bool) {
+			yin = `<span class="bluetext">${yin}</span>`;
+		} else {
+			yang = `<span class="firetext">${yang}</span>`;
+		}
+		const start = `转换技。出牌阶段限一次，你可以：`,
+			end = `（X为你的体力上限且至多为5）。`;
+		return `${start}阳：${yang}；阴：${yin}${end}`;
+	},
 	dcranlv(player, skill) {
 		if (!player.storage[skill]?.length) {
 			return lib.translate[skill + "_info"];
 		}
-		let list = [
-			"横置或重置至多四名角色",
-			"摸三张牌",
-			"弃置一名角色两张牌",
-		];
+		let list = ["横置或重置至多四名角色", "摸三张牌", "弃置一名角色两张牌"];
 		for (let i in list) {
 			if (player.storage[skill][i] === false) {
-				list[i] = `<span style="text-decoration: line-through;">${list[i]}</span>`
+				list[i] = `<span style="text-decoration: line-through;">${list[i]}</span>`;
 			}
 		}
-		return `有角色受到非属性伤害后，你可选择一项执行后移除：1.${list[0]}；2.${list[1]}；3.${list[2]}。`
+		return `有角色受到非属性伤害后，你可选择一项执行后移除：1.${list[0]}；2.${list[1]}；3.${list[2]}。`;
 	},
 	dcsbxieshu(player, skill) {
 		const usable = player.storage[skill] ? "" : "每回合限一次，";
@@ -35,7 +44,8 @@ const dynamicTranslates = {
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
 	dcsbzhubo(player, skill) {
-		let awaken1 = false, awaken2 = false;
+		let awaken1 = false,
+			awaken2 = false;
 		if (player.storage["dcsbzhubo"]) {
 			({ awaken1, awaken2 } = player.storage["dcsbzhubo"]);
 		}
@@ -44,7 +54,7 @@ const dynamicTranslates = {
 		else if (awaken1) str = "有角色于其出牌阶段外受到伤害时";
 		let str2 = awaken2 ? "" : "失去1点体力并";
 		let str3 = awaken2 ? "自己" : "其";
-		return `每回合限一次，${str}，你可以${str2}选择一项：1.你与${str3}各摸两张牌；2.此伤害+1。`
+		return `每回合限一次，${str}，你可以${str2}选择一项：1.你与${str3}各摸两张牌；2.此伤害+1。`;
 	},
 	fengliao(player) {
 		const bool = player.storage.fengliao;
