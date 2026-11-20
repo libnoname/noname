@@ -4306,11 +4306,11 @@ const skills = {
 							return;
 						}
 						const event = get.event();
-						if (["chooseToUse", "chooseToRespond"].includes(event?.name)) {
+						if (!["chooseToUse", "chooseToRespond"].includes(event?.name)) {
 							return;
 						}
 						const target = event.getParent("phaseUse", true, true)?.player;
-						if (!target || !target.hasSkill("hefeichonglei") || target == player) {
+						if (!target || !target.hasSkill("hefeichonglei") || target === player) {
 							return;
 						}
 						player.storage.hefeichonglei_wansha_check = true;

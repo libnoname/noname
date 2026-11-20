@@ -4296,6 +4296,10 @@ const skills = {
 		async content(event, trigger, player) {
 			let skill = event.indexedData;
 			let list = get.skillCategoriesOf(skill, player);
+			//移除多余的锁定技标签
+			if (list.includes("锁定技") && list.includes("觉醒技")) {
+				list.remove("锁定技");
+			}
 			for (const item of list) {
 				if (item in lib.skill.gouzhu.effectMap) {
 					const next = game.createEvent("gouzhu_effect", false);
