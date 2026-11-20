@@ -20,7 +20,7 @@
   - 桌面端 (Electron)：Windows (x64/ia32), Linux (x64/arm64), macOS (x64/arm64)
   - 移动端 (Capacitor)：Android, iOS
 - 必需工具：
-  - Node.js: `^20.19.0 || >=22.12.0`（CI 推荐 Node 24）
+  - Node.js: 核心与桌面开发支持 `^20.19.0 || >=22.12.0`（CI 推荐 Node 24）；移动端 Capacitor 8 CLI 必须 `>=22.0.0`
   - pnpm: `>= 9`
   - 移动端构建可选：JDK 21, Android SDK (build-tools 36.0.0), Xcode
 - 统一启用：
@@ -83,7 +83,7 @@
 
 - **强制 Async Content 规范**：
   - 新增或重写技能的 `content` 时，必须使用 `Async Content`，显式声明 `async content(event, trigger, player)` 参数。
-  - 按事件调度语义合理使用 `await`：仅对需要等待其完成并依赖结果的子事件使用 `await`；对 `event.insertAfter(...)`、`player.insertPhase(...)` 等调度型调用，不要在当前内容中盲目 `await`。
+  - 按事件调度语义合理使用 `await`：后续逻辑依赖子事件的返回值或其结算后的状态变化（或需要保证结算时序）时，必须 `await`（如 `await player.draw(2)` 后读取手牌）；对 `event.insertAfter(...)`、`player.insertPhase(...)` 等调度型调用，不要在当前内容中盲目 `await`。
   - 涉及需等待整个事件队列结算的复杂流程，按 `docs/step-to-async-guide.md` 规范使用 `Array Content`（由引擎分段自动处理队列等待）。
   - 严禁新增 `Step Content`；`Async Content` 中严禁使用 `event.goto()` 或 `event.redo()` 改写控制流；循环操作使用原生的 `while` / `for` 异步循环。若仅修改现有技能，最好顺带重写未改动的旧 `content`。
 - **强制 Player 事件对象参数规范**：
@@ -120,11 +120,11 @@
 
 - **格式检查**：
   ```bash
-  pnpm -F noname lint:prettier
+  pnpm -F noname lint:prettier             # 核心包脚本默认仅覆盖 noname/**；修改 character/card/mode 等业务目录需对相应路径执行（如 pnpm prettier -c apps/core/character/**）
   ```
 - **代码规范检查 (ESLint)**：
   ```bash
-  pnpm lint
+  pnpm lint                                # 递归检查各子包；注意核心包默认仅覆盖 noname/**，业务目录改动需指定路径检查（如 pnpm eslint apps/core/character/**）
   ```
 - **核心类型检查**：
   ```bash
@@ -136,8 +136,8 @@
   ```
 - **单模块构建**：
   ```bash
-  pnpm -F noname build                     # 核心引擎构建
-  pnpm -F ./packages/extension/** build    # 官方扩展构建
+  pnpm -F "noname..." build                # 核心引擎构建（带 ... 连同 @noname/jit 等前置工作区依赖一并构建）
+  pnpm -F "./packages/extension/**" build  # 官方扩展构建（通配符加引号避免被 shell 提前展开）
   pnpm -F @noname/electron build           # 桌面端构建
   pnpm -F @noname/mobile sync              # 移动端同步
   ```
@@ -145,6 +145,8 @@
   ```bash
   pnpm dev                                 # 启动开发服务器与本地文件服务，打开浏览器验证游戏交互
   ```
+
+> 不要对文档进行任何格式检查
 
 ## 7. 文档与交付
 
