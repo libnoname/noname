@@ -4299,132 +4299,26 @@ const skills = {
 				onremove: true,
 			},
 			wansha: {
-				enable: ["chooseToUse", "chooseToRespond"],
-				filterCard(card, player) {
-					const target = get.event()?.getParent("phaseUse", true, true)?.player;
-					if (!target || !target.hasSkill("hefeichonglei") || target == player || player.isDying()) {
-						return false;
-					}
-					if (target.hasSkill("hefeiheyuzhangliao") && get.info("friendgongli").isFriendOf(target, "hefei_yuejin")) {
-						return true;
-					}
-					return get.type(card) != "basic";
-				},
-				position: "hs",
-				viewAs: {
-					name: "shan",
-				},
-				viewAsFilter(player) {
-					const target = get.event()?.getParent("phaseUse", true, true)?.player;
-					if (!target || !target.hasSkill("hefeichonglei") || target == player || player.isDying()) {
-						return false;
-					}
-					if (
-						player.countCards("hs", card => {
-							if (target.hasSkill("hefeiheyuzhangliao") && get.info("friendgongli").isFriendOf(target, "hefei_yuejin")) {
-								return true;
-							}
-							return get.type(card) != "basic";
-						})
-					) {
-						return true;
-					}
-					return false;
-				},
-				prompt() {
-					const target = get.event()?.getParent("phaseUse", true, true)?.player;
-					if (!target || !target.hasSkill("hefeichonglei")) {
-						return "";
-					}
-					if (target.hasSkill("hefeiheyuzhangliao") && get.info("friendgongli").isFriendOf(target, "hefei_yuejin")) {
-						return "将一张手牌当作闪使用或打出";
-					}
-					return "将一张非基本手牌当作闪使用或打出";
-				},
-				check(card) {
-					const val = get.value(card);
-					if (_status.event.name == "chooseToRespond") {
-						return 1 / Math.max(0.1, val);
-					}
-					return 5 - val;
-				},
-				locked: false,
-				ai: {
-					respondShan: true,
-					skillTagFilter(player) {
-						const target = get.event()?.getParent("phaseUse", true, true)?.player;
-						if (!target || !target.hasSkill("hefeichonglei") || target == player || player.isDying()) {
-							return false;
-						}
-						if (
-							!player.countCards("hs", card => {
-								if (target.hasSkill("hefeiheyuzhangliao") && get.info("friendgongli").isFriendOf(target, "hefei_yuejin")) {
-									return true;
-								}
-								return get.type(card) != "basic";
-							})
-						) {
-							return false;
-						}
-					},
-				},
+				charlotte: true,
 				mod: {
-					cardEnabled(card, player) {
-						if (get.name(card) == "shan" || get.event().skill == "hefeichonglei_wansha") {
+					cardname(card, player, name) {
+						if (name === "shan" || get.position(card) !== "h" || player.storage.hefeichonglei_wansha_check) {
 							return;
 						}
-						const target = get.event()?.getParent("phaseUse", true, true)?.player;
+						const event = get.event();
+						if (["chooseToUse", "chooseToRespond"].includes(event?.name)) {
+							return;
+						}
+						const target = event.getParent("phaseUse", true, true)?.player;
 						if (!target || !target.hasSkill("hefeichonglei") || target == player) {
 							return;
 						}
-						const hs = player.getCards("hs", card => {
-							if (target.hasSkill("hefeiheyuzhangliao") && get.info("friendgongli").isFriendOf(target, "hefei_yuejin")) {
-								return true;
-							}
-							return get.type(card) != "basic";
-						});
-						const vcard = get.autoViewAs(card);
-						if (vcard.cards.containsSome(...hs)) {
-							return false;
+						player.storage.hefeichonglei_wansha_check = true;
+						if ((target.hasSkill("hefeiheyuzhangliao") && get.info("friendgongli").isFriendOf(target, "hefei_yuejin")) || get.type(card) != "basic") {
+							delete player.storage.hefeichonglei_wansha_check;
+							return "shan";
 						}
-					},
-					cardRespondable(card, player) {
-						if (get.name(card) == "shan" || get.event().skill == "hefeichonglei_wansha") {
-							return;
-						}
-						const target = get.event()?.getParent("phaseUse", true, true)?.player;
-						if (!target || !target.hasSkill("hefeichonglei") || target == player) {
-							return;
-						}
-						const hs = player.getCards("hs", card => {
-							if (target.hasSkill("hefeiheyuzhangliao") && get.info("friendgongli").isFriendOf(target, "hefei_yuejin")) {
-								return true;
-							}
-							return get.type(card) != "basic";
-						});
-						const vcard = get.autoViewAs(card);
-						if (vcard.cards.containsSome(...hs)) {
-							return false;
-						}
-					},
-					cardSavable(card, player) {
-						if (get.name(card) == "shan" || get.event().skill == "hefeichonglei_wansha") {
-							return;
-						}
-						const target = get.event()?.getParent("phaseUse", true, true)?.player;
-						if (!target || !target.hasSkill("hefeichonglei") || target == player) {
-							return;
-						}
-						const hs = player.getCards("hs", card => {
-							if (target.hasSkill("hefeiheyuzhangliao") && get.info("friendgongli").isFriendOf(target, "hefei_yuejin")) {
-								return true;
-							}
-							return get.type(card) != "basic";
-						});
-						const vcard = get.autoViewAs(card);
-						if (vcard.cards.containsSome(...hs)) {
-							return false;
-						}
+						delete player.storage.hefeichonglei_wansha_check;
 					},
 				},
 			},
