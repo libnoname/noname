@@ -26644,9 +26644,11 @@ const skills = {
 			if (cards.length) {
 				while (cards.length) {
 					const card = cards.randomRemove(1)[0];
-					const useEvent = target.useCard(player, false, card);
-					useEvent.card.beizhu = true;
-					await useEvent;
+					if (target.canUse(card, player, false, false)) {
+						const useEvent = target.useCard(player, false, card);
+						useEvent.card.beizhu = true;
+						await useEvent;
+					}
 					const hs = target.getCards("h");
 					cards = cards.filter(function (card) {
 						return (
@@ -26659,7 +26661,8 @@ const skills = {
 									cards: [card],
 								},
 								player,
-								false
+								false,
+								false,
 							)
 						);
 					});
