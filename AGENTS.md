@@ -20,7 +20,7 @@
   - 桌面端 (Electron)：Windows (x64), Linux (x64), macOS (x64/arm64)
   - 移动端 (Capacitor)：Android, iOS
 - 必需工具：
-  - Node.js: 核心与桌面开发支持 >=22.12.0`（推荐使用当前的 Node LTS）
+  - Node.js: 核心支持 `^20.19.0 || >=22.12.0`，桌面和移动端开发使用 `>=22.12.0`（推荐使用当前 Node LTS）
   - pnpm: `>= 9`
   - 移动端构建可选：JDK 21, Android SDK (build-tools 36.0.0), Xcode
 - 统一启用：
@@ -139,7 +139,7 @@
   pnpm -F "noname..." build                # 核心引擎构建（带 ... 连同 @noname/jit 等前置工作区依赖一并构建）
   pnpm -F "./packages/extension/**" build  # 官方扩展构建（通配符加引号避免被 shell 提前展开）
   pnpm -F @noname/electron build           # 桌面端构建
-  pnpm -F @noname/mobile sync              # 移动端同步（需先构建核心引擎）
+  pnpm -F @noname/mobile sync              # 移动端同步（需先在根目录运行 pnpm build 生成根目录 dist/）
   ```
 - **本地启动与交互验证**：
   ```bash
