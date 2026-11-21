@@ -83,7 +83,7 @@ const skills = {
 							.filter(evt => evt.getParent() == event.getParent())
 							.step(async (event, trigger, player) => {
 								const pos = player == target ? "e" : "he";
-								if (target?.isIn() && [player, target].some(current => current.hp == current.countCards("h")) && target.hasCards(pos)) {
+								if (target?.isIn() && [player, target].some(current => current.getHp() == current.countCards("h")) && target.hasCards(pos)) {
 									await player.gainPlayerCard({ forced: true, target, position: "he" });
 								}
 							});
@@ -115,7 +115,7 @@ const skills = {
 			event.result = await player
 				.chooseTarget({
 					prompt: get.prompt(event.skill),
-					prompt2: `令至多${num}名角色各弃置一张牌`,
+					prompt2: `令至多${get.cnNumber(num)}名角色各弃置一张牌`,
 					filterTarget(card, player, target) {
 						return target.hasCards("he");
 					},
