@@ -20223,7 +20223,7 @@ const skills = {
 						})
 						.flat()
 						.unique();
-					await player.gain(cards, "draw");
+					await player.gain(cards, "draw2");
 					if (cards.length) {
 						if (_status.connectMode) {
 							game.broadcastAll(() => {
