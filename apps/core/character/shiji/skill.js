@@ -518,7 +518,7 @@ const skills = {
 						if (!ui.selected.cards?.length) return false;
 						if (ui.selected.targets?.length) return true;
 						const card = ui.selected.cards[0];
-						return lib.filter.cardRecastable(card, player);
+						return lib.filter.cardRecastable(card, get.player());
 					},
 					ai1(card) {
 						const player = get.player();

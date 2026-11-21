@@ -4216,7 +4216,9 @@ const skills = {
 				} else {
 					player.flashAvatar("zhinang", map[type][skill]);
 				}
-				await player.addAdditionalSkills(`zhinang_${get.type2(trigger.card)}`, skill);
+				let name = `zhinang_${get.type2(trigger.card)}`;
+				await player.removeAdditionalSkills(name);
+				await player.addAdditionalSkills(name, skill);
 			}
 		},
 		init(player, skill) {
@@ -4294,6 +4296,10 @@ const skills = {
 		async content(event, trigger, player) {
 			let skill = event.indexedData;
 			let list = get.skillCategoriesOf(skill, player);
+			//移除多余的锁定技标签
+			if (list.includes("锁定技") && list.includes("觉醒技")) {
+				list.remove("锁定技");
+			}
 			for (const item of list) {
 				if (item in lib.skill.gouzhu.effectMap) {
 					const next = game.createEvent("gouzhu_effect", false);
@@ -5078,15 +5084,18 @@ const skills = {
 		},
 		check(event, player) {
 			const target = event.player;
-			const type = get.type2(event.card, target);
 			const att = get.attitude(player, target);
-			if (att <= 0) {
+			const sha = get.autoViewAs({ name: "sha", isCard: true }, []);
+			const plaEff = get.effect_use(target, sha, player, player),
+				tarEff = get.effect_use(player, sha, target, player);
+			if (plaEff >= 0 || tarEff >= 0) {
+				return true;
+			} else if (att <= 0) {
 				return true;
 			}
-			if (target.isAllCardsKnown(player) && (target.getHp() >= 3 || get.effect(target, { name: "sha" }, player, player) > 0 || target.hasShan())) {
+			if (target.isAllCardsKnown(player) && (target.getHp() >= 3 || target.mayHaveShan(player, "use"))) {
 				return true;
-			}
-			if (1.5 * target.getHp() + 0.8 * target.countCards("h") > 6 - player.countMark("zhenfeng")) {
+			} else if (player.hasShan("use") && 1.5 * target.getHp() + 0.8 * target.countCards("h") > 6 - player.countMark("zhenfeng")) {
 				return true;
 			}
 			return false;

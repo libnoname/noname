@@ -2072,7 +2072,7 @@ const skills = {
 						return 0;
 					}
 					if (get.attitude(player, target) > 0) {
-						return 10 - Math.min(...es.map(card => get.equipValue(card)));
+						return 5 - Math.min(...es.map(card => get.equipValue(card)));
 					}
 					return Math.max(...es.map(card => get.equipValue(card)));
 				})

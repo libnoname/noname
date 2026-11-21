@@ -2216,7 +2216,7 @@ const skills = {
 				if (player !== owner) {
 					return 0;
 				} else if (_status.currentPhase !== player || _status.event.skill !== "cuijue") {
-					return num + 8;
+					return num + 3;
 				}
 			},
 			aiUseful() {
@@ -2402,7 +2402,11 @@ const skills = {
 					allowMultiple: false,
 					content: lib.element.content.equipCard,
 					toself: true,
-					ai: {},
+					ai: {
+						equipValue(card, player, index, raw) {
+							return lib.skill.qiexie.mod.aiValue(player, card, 2);
+						},
+					},
 					skills: ["qiexie_destroy"],
 				};
 				var maxHp = get.infoMaxHp(info[2]);
@@ -2435,7 +2439,7 @@ const skills = {
 						} else {
 							val *= 0.6;
 						}
-						return (val += skills.length);
+						return lib.skill.qiexie.mod.aiValue(player, card, val + skills.length);
 					};
 				}
 				str += "此牌离开你的装备区后，改为置入剩余武将牌牌堆。";

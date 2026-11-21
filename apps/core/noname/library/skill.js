@@ -10,7 +10,8 @@ export default {
 					.getVCards("j", vcard => {
 						if (get.type(vcard) != "delay") {
 							false;
-						} else if (!vcard.storage?.equipEnable) {
+						}
+						if (!vcard.storage?.equipEnable) {
 							return false;
 						}
 						return vcard.cards.some(card => get.type(card) == "equip");
@@ -31,9 +32,10 @@ export default {
 			globalTo(from, to, distance) {
 				let num = to
 					.getVCards("j", vcard => {
-						if (get.type(vcard) != "delay") {
+						if (get.type(vcard) !== "delay") {
 							false;
-						} else if (!vcard.storage?.equipEnable) {
+						}
+						if (!vcard.storage?.equipEnable) {
 							return false;
 						}
 						return vcard.cards.some(card => get.type(card) == "equip");
@@ -53,9 +55,10 @@ export default {
 			},
 			attackRangeBase(player) {
 				const vcards = player.getVCards("j", vcard => {
-					if (get.type(vcard) != "delay") {
+					if (get.type(vcard) !== "delay") {
 						false;
-					} else if (!vcard.storage?.equipEnable) {
+					}
+					if (!vcard.storage?.equipEnable) {
 						return false;
 					}
 					return vcard.cards.some(card => get.type(card) == "equip");

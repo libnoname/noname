@@ -1654,8 +1654,14 @@ const skills = {
 		async content(event, trigger, player) {
 			const target = event.targets[0];
 			await player.loseHp();
+			if (!player.isIn()) {
+				return;
+			}
 			await player.draw();
 			const discardMap = await game.chooseAnyOL([player, target], get.info(event.name).chooseToDiscard, []).forResult();
+			if (!discardMap) {
+				return;
+			}
 			const playerResult = discardMap.get(player);
 			const targetResult = discardMap.get(target);
 			const playerCount = playerResult?.cards?.length || 0;
@@ -4293,129 +4299,26 @@ const skills = {
 				onremove: true,
 			},
 			wansha: {
-				enable: ["chooseToUse", "chooseToRespond"],
-				filterCard(card, player) {
-					const target = get.event()?.getParent("phaseUse", true, true)?.player;
-					if (!target || !target.hasSkill("hefeichonglei") || target == player || player.isDying()) {
-						return false;
-					}
-					if (target.hasSkill("hefeiheyuzhangliao") && get.info("friendgongli").isFriendOf(target, "hefei_yuejin")) {
-						return true;
-					}
-					return get.type(card) != "basic";
-				},
-				position: "hs",
-				viewAs: {
-					name: "shan",
-				},
-				viewAsFilter(player) {
-					const target = get.event()?.getParent("phaseUse", true, true)?.player;
-					if (!target || !target.hasSkill("hefeichonglei") || target == player || player.isDying()) {
-						return false;
-					}
-					if (
-						player.countCards("hs", card => {
-							if (target.hasSkill("hefeiheyuzhangliao") && get.info("friendgongli").isFriendOf(target, "hefei_yuejin")) {
-								return true;
-							}
-							return get.type(card) != "basic";
-						})
-					) {
-						return true;
-					}
-					return false;
-				},
-				prompt() {
-					const target = get.event()?.getParent("phaseUse", true, true)?.player;
-					if (!target || !target.hasSkill("hefeichonglei")) {
-						return "";
-					}
-					if (target.hasSkill("hefeiheyuzhangliao") && get.info("friendgongli").isFriendOf(target, "hefei_yuejin")) {
-						return "将一张手牌当作闪使用或打出";
-					}
-					return "将一张非基本手牌当作闪使用或打出";
-				},
-				check(card) {
-					const val = get.value(card);
-					if (_status.event.name == "chooseToRespond") {
-						return 1 / Math.max(0.1, val);
-					}
-					return 5 - val;
-				},
-				locked: false,
-				ai: {
-					respondShan: true,
-					skillTagFilter(player) {
-						const target = get.event()?.getParent("phaseUse", true, true)?.player;
-						if (!target || !target.hasSkill("hefeichonglei") || target == player || player.isDying()) {
-							return false;
-						}
-						if (
-							!player.countCards("hs", card => {
-								if (target.hasSkill("hefeiheyuzhangliao") && get.info("friendgongli").isFriendOf(target, "hefei_yuejin")) {
-									return true;
-								}
-								return get.type(card) != "basic";
-							})
-						) {
-							return false;
-						}
-					},
-				},
+				charlotte: true,
 				mod: {
-					cardEnabled(card, player) {
-						if (get.name(card) == "shan" || player.isDying()) {
+					cardname(card, player, name) {
+						if (name === "shan" || get.position(card) !== "h" || player.storage.hefeichonglei_wansha_check) {
 							return;
 						}
-						const target = get.event()?.getParent("phaseUse", true, true)?.player;
-						if (!target || !target.hasSkill("hefeichonglei") || target == player) {
+						const event = get.event();
+						if (!["chooseToUse", "chooseToRespond"].includes(event?.name)) {
 							return;
 						}
-						const hs = player.getCards("hs", card => {
-							if (target.hasSkill("hefeiheyuzhangliao") && get.info("friendgongli").isFriendOf(target, "hefei_yuejin")) {
-								return true;
-							}
-							return get.type(card) != "basic";
-						});
-						if ("cards" in card && Array.isArray(card.cards) && card.cards.containsSome(...hs)) {
-							return false;
-						}
-					},
-					cardRespondable(card, player) {
-						if (get.name(card) == "shan" || player.isDying() || get.event().skill == "hefeichonglei_wansha") {
+						const target = event.getParent("phaseUse", true, true)?.player;
+						if (!target || !target.hasSkill("hefeichonglei") || target === player) {
 							return;
 						}
-						const target = get.event()?.getParent("phaseUse", true, true)?.player;
-						if (!target || !target.hasSkill("hefeichonglei") || target == player) {
-							return;
+						player.storage.hefeichonglei_wansha_check = true;
+						if ((target.hasSkill("hefeiheyuzhangliao") && get.info("friendgongli").isFriendOf(target, "hefei_yuejin")) || get.type(card) != "basic") {
+							delete player.storage.hefeichonglei_wansha_check;
+							return "shan";
 						}
-						const hs = player.getCards("hs", card => {
-							if (target.hasSkill("hefeiheyuzhangliao") && get.info("friendgongli").isFriendOf(target, "hefei_yuejin")) {
-								return true;
-							}
-							return get.type(card) != "basic";
-						});
-						if ("cards" in card && Array.isArray(card.cards) && card.cards.containsSome(...hs)) {
-							return false;
-						}
-					},
-					cardSavable(card, player) {
-						if (get.name(card) == "shan" || player.isDying()) {
-							return;
-						}
-						const target = get.event()?.getParent("phaseUse", true, true)?.player;
-						if (!target || !target.hasSkill("hefeichonglei") || target == player) {
-							return;
-						}
-						const hs = player.getCards("hs", card => {
-							if (target.hasSkill("hefeiheyuzhangliao") && get.info("friendgongli").isFriendOf(target, "hefei_yuejin")) {
-								return true;
-							}
-							return get.type(card) != "basic";
-						});
-						if ("cards" in card && Array.isArray(card.cards) && card.cards.containsSome(...hs)) {
-							return false;
-						}
+						delete player.storage.hefeichonglei_wansha_check;
 					},
 				},
 			},
@@ -26741,9 +26644,11 @@ const skills = {
 			if (cards.length) {
 				while (cards.length) {
 					const card = cards.randomRemove(1)[0];
-					const useEvent = target.useCard(player, false, card);
-					useEvent.card.beizhu = true;
-					await useEvent;
+					if (target.canUse(card, player, false, false)) {
+						const useEvent = target.useCard(player, false, card);
+						useEvent.card.beizhu = true;
+						await useEvent;
+					}
 					const hs = target.getCards("h");
 					cards = cards.filter(function (card) {
 						return (
@@ -26756,7 +26661,8 @@ const skills = {
 									cards: [card],
 								},
 								player,
-								false
+								false,
+								false,
 							)
 						);
 					});

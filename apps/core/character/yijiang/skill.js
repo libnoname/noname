@@ -15193,7 +15193,7 @@ const skills = {
 
 			result = await player
 				.chooseTarget({
-					selectTarget(card, player, target) {
+					filterTarget(card, player, target) {
 						card = get.event().card;
 						const type = get.type(card);
 						switch (type) {

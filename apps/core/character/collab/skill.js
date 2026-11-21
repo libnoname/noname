@@ -2412,16 +2412,6 @@ const skills = {
 	},
 	// TW魔张梁
 	twrenfang: {
-		audio: 2,
-		trigger: {
-			global: "cardsDiscardAfter",
-		},
-		direct: true,
-		locked: true,
-		marktext: "方",
-		intro: {
-			content: "你有#个标记",
-		},
 		mod: {
 			maxHandcard(player, num) {
 				return num + player.countMark("twrenfang");
@@ -2432,22 +2422,33 @@ const skills = {
 				}
 			},
 		},
-		async content(event, trigger, player) {
-			if (trigger.getParent().name !== "orderingDiscard") {
-				return;
+		audio: 2,
+		trigger: { global: "cardsDiscardAfter" },
+		filter(event, player) {
+			if (!event.cards.filterInD("d").length) {
+				return false;
 			}
-			const evt = trigger.getParent().getParent();
-			if (evt.player !== player) return;
-			let num;
-			if (["useCard", "respond"].includes(evt.name)) {
-				num = trigger.cards.filterInD("d").length;
-			} else {
-				return;
+			const evt = event.getParent();
+			if (evt.name != "orderingDiscard") {
+				return false;
 			}
-			if (!num) return;
-			player.logSkill("twrenfang");
-			player.addMark("twrenfang", num);
+			const evtx = evt.relatedEvent || evt.getParent();
+			if (player != evtx.player) {
+				return false;
+			}
+			return ["useCard", "respond"].some(key =>
+				player.hasHistory(key, evtxx => {
+					return evtx.getParent() == (evtxx.relatedEvent || evtxx.getParent());
+				})
+			);
 		},
+		forced: true,
+		async content(event, trigger, player) {
+			player.addMark(event.name, trigger.cards.filterInD("d").length);
+		},
+		onremove: true,
+		marktext: "方",
+		intro: { name: "人方(人方/绝灭)", name2: "人方", content: "mark" },
 	},
 	twjuemie: {
 		audio: 2,
@@ -2457,7 +2458,7 @@ const skills = {
 		filter(event, player) {
 			return !player.hasSkill("twjuemie_mahou") && player.countMark("twrenfang") >= 36;
 		},
-		prompt: "是否移去36个“人方”，并施法：对X名角色造成36点雷电伤害？",
+		manualConfirm: true,
 		async content(event, trigger, player) {
 			player.removeMark("twrenfang", 36);
 			const result = await player
@@ -2481,10 +2482,9 @@ const skills = {
 			player.addTempSkill("twjuemie_mahou", { player: "die" });
 		},
 		ai: {
+			combo: "twrenfang",
 			order: 9,
-			result: {
-				player: 1,
-			},
+			result: { player: 1 },
 		},
 		subSkill: {
 			mahou: {
@@ -2503,26 +2503,23 @@ const skills = {
 						return;
 					}
 					let count = list[0];
-					let targets;
-					if (game.filterPlayer().length <= count) {
-						targets = game.filterPlayer();
-					} else {
-						const result = await player
-							.chooseTarget(true, count, `对${get.cnNumber(count)}名角色造成36点雷电伤害`)
-							.set("ai", target => {
-								const player = get.player();
-								return get.damageEffect(target, player, player, "thunder");
-							})
-							.forResult();
-						if (result?.targets?.length) {
-							targets = result.targets;
-							player.line(targets, "thunder");
-						}
+					const result =
+						game.countPlayer() <= count
+							? { targets: game.filterPlayer() }
+							: await player
+									.chooseTarget(true, count, `对${get.cnNumber(count)}名角色造成36点雷电伤害`)
+									.set("ai", target => {
+										const player = get.player();
+										return get.damageEffect(target, player, player, "thunder");
+									})
+									.forResult();
+					if (result?.targets?.length) {
+						const targets = result.targets;
+						player.line(targets, "thunder");
+						game.doAsyncInOrder(targets, async target => {
+							await target.damage(36, "thunder");
+						});
 					}
-					if (!targets?.length) return;
-					game.doAsyncInOrder(targets, async target => {
-						await target.damage(36, "thunder");
-					});
 					player.removeSkill("twjuemie_mahou");
 				},
 				mark: true,
@@ -3068,6 +3065,7 @@ const skills = {
 	},
 	//宫百万
 	dchaoshi: {
+		locked: true,
 		trigger: {
 			global: ["phaseEnd"],
 		},
