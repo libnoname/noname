@@ -1,4 +1,4 @@
-import { defineConfig } from "vite";
+import { defineConfig } from "vitest/config";
 import vue from "@vitejs/plugin-vue";
 
 const port = {
@@ -17,6 +17,10 @@ export default defineConfig({
 		},
 	},
 	plugins: [vue()],
+	test: {
+		// 只收集源码下的测试，避免误收 dist/ 构建产物中的同名测试文件
+		include: ["noname/**/*.test.js"],
+	},
 	server: {
 		host: "127.0.0.1",
 		port: port.client,
