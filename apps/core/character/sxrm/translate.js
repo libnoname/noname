@@ -1,6 +1,13 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
+	sxrm_yanfuren: "贪严夫人",
+	sxrm_yanfuren_prefix: "贪",
+	sxrmbaocheng: "保城",
+	sxrmbaocheng_gain: "保城",
+	sxrmbaocheng_info: "与你距离1以内的角色每回合首次成为【杀】的唯一目标后，你可以将此牌改为【兵临城下】；此牌亮出♥牌时，你可令其获得这些♥牌，然后此牌再亮出两倍获得数量的牌（可重复获得）。",
+	sxrmchangzui: "长醉",
+	sxrmchangzui_info: "你的【酒】对一回合内的【杀】均生效；你可以将一张装备牌当【酒】使用。",
 	sxrm: "蚀心入魔",
 	//蚀心入魔·疑
 	sxrm_caocao: "魔曹操",

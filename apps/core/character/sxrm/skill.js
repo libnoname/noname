@@ -2,6 +2,121 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	sxrmbaocheng: {
+		trigger: { global: "useCardToTargeted" },
+		global: "sxrmbaocheng_record",
+		filter(event, player) {
+			return event.getParent("useCard").sxrmbaochengFirstTargets?.includes(event.target.playerid) && event.card.name === "sha" && event.targets.length === 1 && event.target.isIn() && get.distance(player, event.target) <= 1 && !!lib.card.binglinchengxiax;
+		},
+		logTarget: "target",
+		check(event, player) {
+			return get.effect(event.target, { name: "binglinchengxiax" }, event.player, player) > get.effect(event.target, event.card, event.player, player);
+		},
+		async content(event, trigger, player) {
+			const use = trigger.getParent("useCard");
+			// Keep the original use event/materials/target; the engine re-reads card info later.
+			use.card.name = "binglinchengxiax";
+			delete use.card.nature;
+			use.sxrmbaochengOwner = player;
+			player.addSkill("sxrmbaocheng_gain");
+			for (const card of use.cards || []) {
+				if (card.clone) ui.create.cardTempName(use.card, card.clone);
+			}
+			game.log(player, "将", use.card, "改为【兵临城下】");
+		},
+		subSkill: {
+			record: {
+				charlotte: true,
+				forced: true,
+				popup: false,
+				firstDo: true,
+				priority: 1000,
+				trigger: { global: "useCardToPlayered" },
+				filter(event) {
+					return event.card?.name === "sha" && event.targets?.length === 1;
+				},
+				content(event, trigger) {
+					const use = trigger.getParent("useCard");
+					if (use.sxrmbaochengRecorded) return;
+					use.sxrmbaochengRecorded = true;
+					// Current-turn global history survives card-name mutation and records declines.
+					const history = game.getGlobalHistory();
+					const seen = history.sxrmbaochengTargets || (history.sxrmbaochengTargets = []);
+					const id = trigger.target.playerid;
+					if (!seen.includes(id)) {
+						seen.push(id);
+						use.sxrmbaochengFirstTargets = [id];
+					}
+				},
+			},
+			gain: {
+				charlotte: true,
+				forced: true,
+				popup: false,
+				forceDie: true,
+				trigger: { global: ["showCardsAfter", "useCardAfter"] },
+				filter(event, player) {
+					if (event.name === "useCard") return event.sxrmbaochengOwner === player;
+					const content = event.getParent();
+					return content?.name === "binglinchengxiax" && content.getParent("useCard")?.sxrmbaochengOwner === player && event.cards.some(card => get.suit(card, false) === "heart" && get.position(card, true) === "o");
+				},
+				async content(event, trigger, player) {
+					if (trigger.name === "useCard") {
+						// Nested conversions may still need this helper.
+						const active = game.getGlobalHistory("useCard", use => use !== trigger && use.sxrmbaochengOwner === player && !use.sxrmbaochengFinished);
+						trigger.sxrmbaochengFinished = true;
+						if (!active.length) player.removeSkill("sxrmbaocheng_gain");
+						return;
+					}
+					const content = trigger.getParent();
+					const target = content.target;
+					let batch = trigger.cards;
+					while (player.isIn() && target.isIn() && content.player.isIn()) {
+						const hearts = batch.filter(card => get.suit(card, false) === "heart" && get.position(card, true) === "o");
+						if (!hearts.length) break;
+						const result = await player
+							.chooseBool("保城：是否令" + get.translation(target) + "获得" + hearts.length + "张♥牌，并继续亮出" + hearts.length * 2 + "张牌？")
+							.set("ai", () => get.attitude(player, target) > 0)
+							.forResult();
+						if (!result.bool || !target.isIn()) break;
+						await target.gain(hearts, "gain2");
+						// Count cards actually gained; replacements must not create phantom draws.
+						const gained = hearts.filter(card => get.owner(card) === target).length;
+						content.showCards = content.showCards.filter(card => get.position(card, true) === "o");
+						if (!gained || !target.isIn() || !content.player.isIn()) break;
+						batch = get.cards(gained * 2, true);
+						if (!batch.length) break;
+						content.showCards.push(...batch);
+						// Keep extra cards in the native card event's ordering lifecycle.
+						await game.cardsGotoOrdering(batch).set("relatedEvent", content);
+						// This reveal belongs to the skill event, so it cannot recursively trigger this helper.
+						await content.player.showCards(batch, "保城：追加亮牌", true).set("clearArena", false);
+					}
+				},
+			},
+		},
+	},
+	sxrmchangzui: {
+		enable: "chooseToUse",
+		viewAs: { name: "jiu" },
+		filterCard: { type: "equip" },
+		position: "hes",
+		viewAsFilter(player) {
+			return player.hasCard({ type: "equip" }, "hes");
+		},
+		prompt: "将一张装备牌当【酒】使用",
+		check(card) {
+			if (_status.event.type === "dying") return 1 / (get.value(card) || 0.5);
+			return 5 - get.value(card);
+		},
+		locked: false,
+		ai: {
+			jiuSustain: true,
+			skillTagFilter(player, tag, name) {
+				if (tag === "jiuSustain") return name === "useCard";
+			},
+		},
+	},
 	//嗔包
 	//魔周瑜
 	sxrmjiehuo: {
