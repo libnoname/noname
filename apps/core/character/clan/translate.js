@@ -266,7 +266,7 @@ const translates = {
 	clankuanqu: "款曲",
 	clankuanqu_info: "出牌阶段限一次，你可将两张牌当【杀】或【桃】对一名角色使用。然后若你或其手牌数等于体力值，你获得其一张牌。",
 	clananliu: "暗流",
-	clananliu_info: "你受到伤害后，你可令至多X名角色各弃置一张牌，然后你摸X张牌（X为与你手牌数相同的角色数且至多为5）。",
+	clananliu_info: "当你受到伤害后，你可令至多X名角色各弃置一张牌，然后你摸X张牌（X为与你手牌数相同的角色数且至多为5）。",
 };
 
 export default translates;
