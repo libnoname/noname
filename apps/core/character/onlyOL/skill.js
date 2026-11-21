@@ -14071,7 +14071,7 @@ const skills = {
 						.set("complexSelect", true)
 						.set("sourcex", target2)
 						.forResult();
-					if (result.bool) {
+					if (result?.bool) {
 						return;
 					}
 				}
