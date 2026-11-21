@@ -13839,6 +13839,7 @@ const skills = {
 				},
 				onremove(player, skill) {
 					player.enableSkill(skill);
+					player.removeStorage(skill);
 				},
 				trigger: {
 					player: "useCard",
@@ -13848,7 +13849,7 @@ const skills = {
 					if (event.name !== "useCard") {
 						return true;
 					}
-					if (!player.getStorage("dcsbzhenyu_disable").includes(get.name(event.card))) {
+					if (!player.hasStorage("dcsbzhenyu_disable", get.name(event.card))) {
 						return false;
 					}
 					return player.hasHistory("lose", evt => {
