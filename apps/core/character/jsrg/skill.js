@@ -6961,7 +6961,7 @@ const skills = {
 				const next = target.chooseToRespond({
 					prompt: "是否替" + get.translation(player) + "打出一张" + names + "？",
 					filterCard: function (card, player) {
-						if (!get.event().namex.includes(get.name(card))) {
+						if (!get.event().namex?.includes(get.name(card))) {
 							return false;
 						}
 						return lib.filter.cardRespondable(card, player);
