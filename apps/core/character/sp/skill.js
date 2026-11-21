@@ -26890,6 +26890,15 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
+				intro: {
+					mark(dialog, storage, player, evt, skill) {
+						storage ??= player.getStorage(skill, []);
+						if (storage?.length) {
+							dialog.addText("同协角色");
+							dialog.add(storage);
+						}
+					},
+				},
 				audio: "tongxie",
 				charlotte: true,
 				trigger: { global: "useCardAfter" },
@@ -26995,23 +27004,24 @@ const skills = {
 						.sortBySeat();
 					event.num = 0;
 					const { targets } = event;
+
+					const targetsx = targets.slice().sort((a, b) => b.hp - a.hp);
+					const boolTarget = targetsx.find(target => {
+						let eff1 = get.damageEffect(trigger.player, trigger.source, target, trigger.nature),
+							eff2 = get.effect(target, { name: "losehp" }, target, target);
+						if (trigger.num > 1) {
+							eff1 = Math.min(-1, eff1) * trigger.num;
+						}
+						return eff2 > eff1;
+					});
+					
 					while (true) {
 						const target = targets[event.num];
 						event.num++;
 						event.target = target;
 						const result = await target
 							.chooseBool("同协：是否为" + get.translation(trigger.player) + "阻挡伤害？", "失去1点体力，防止" + get.translation(trigger.player) + "即将受到的" + get.cnNumber(trigger.num) + "点伤害")
-							.set("ai", function () {
-								var player = _status.event.player,
-									target = _status.event.getTrigger().player;
-								var trigger = _status.event.getTrigger();
-								var eff1 = get.damageEffect(target, trigger.source, player, trigger.nature);
-								if (trigger.num > 1) {
-									eff1 = Math.min(-1, eff1) * trigger.num;
-								}
-								var eff2 = get.effect(player, { name: "losehp" }, player, player);
-								return eff2 > eff1;
-							})
+							.set("check", target === boolTarget)
 							.forResult();
 						if (result.bool) {
 							target.logSkill("tongxie_damage", trigger.player);
