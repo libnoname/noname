@@ -12188,7 +12188,8 @@ const skills = {
 						}
 					},
 					cardUsable(card) {
-						if (card.name === "sha" && card.cards?.length === 1 && card.cards[0].hasGaintag("olbianyu_viewAs")) {
+						const vcard = get.autoViewAs(card);
+						if (vcard.name === "sha" && vcard.cards?.length === 1 && vcard.cards[0].hasGaintag("olbianyu_viewAs")) {
 							return Infinity;
 						}
 					},
@@ -12196,7 +12197,7 @@ const skills = {
 				charlotte: true,
 				onremove: (player, skill) => player.removeGaintag(skill),
 				trigger: { player: "useCard1" },
-				filterx(event, player) {
+				filter(event, player) {
 					if (get.type(event.card) !== "basic") {
 						return true;
 					}
@@ -27014,7 +27015,7 @@ const skills = {
 						}
 						return eff2 > eff1;
 					});
-					
+
 					while (true) {
 						const target = targets[event.num];
 						event.num++;
