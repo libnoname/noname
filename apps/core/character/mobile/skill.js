@@ -7490,7 +7490,7 @@ const skills = {
 		audio: 4,
 		trigger: { global: "roundStart" },
 		filter(event, player) {
-			return game.roundNumber < 3 || player.hasSkill("mblingfa", null, false, false);
+			return game.roundNumber < 3 || player.hasSkill("mblingfa", false, false, false);
 		},
 		async cost(event, trigger, player) {
 			switch (game.roundNumber) {
