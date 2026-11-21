@@ -29,6 +29,37 @@ const skills = {
 			if (modedStr == str) return false;
 			return modedStr;
 		},
+		checkRefresh(skills) {
+			for (const skill of skills) {
+				if (!lib.skill[skill].limited) continue;
+				for (const user of game.filterPlayer2(current => current.hasSkill(skill))) {
+					if (user.awakenedSkills.includes(skill)) {
+						player.refreshSkill(skill);
+						player.setStorage(skill + "_roundcount", game.roundNumber);
+					}
+				}
+			}
+		},
+		skillChange(key, value, position = "skill") {
+			if (!_status.postReconnect.sxrmwuyan) {
+				_status.postReconnect.sxrmwuyan = [
+					function (list) {
+						for (var data of list) {
+							lib.skill.sxrmwuyan.skillChange(...data);
+						}
+					},
+					[],
+				];
+			}
+			_status.postReconnect.sxrmwuyan[1].add(arguments);
+			if (position) {
+				if (["skill", "translate"].includes(position)) {
+					lib[position][key] = value;
+				} else {
+					lib.skill[position][key] = value;
+				}
+			} else return false;
+		},
 		dcfencheng: {
 			audio: 2,
 			audioname: ["ol_liru"],
@@ -710,13 +741,6 @@ const skills = {
 			await player.addSkills(["ol_wuqian", "ol_shenfen"]);
 			let skills;
 			skills = ["dcfencheng", "yeyan", "fenwei", "yongjin", "reluanwu", "oldniepan"];
-			const removes = [];
-			for (let i in skills) {
-				if (lib.skill.sxrmwuyan.desModify(skills[i]) === false) {
-					removes.add(skills[i]);
-				}
-			}
-			skills.removeArray(removes);
 			const num = [1, 2, 3].randomGet();
 			const list = skills.map(skill => [
 				skill,
@@ -738,22 +762,27 @@ const skills = {
 					createDialog: ["无厌：获得至多5个技能并改为每轮限一次，然后你减少等量体力上限", node],
 					selectButton: [1, 5],
 					forced: true,
+					num,
 					ai(button) {
-						if (ui.selected.buttons.some(button => button.link === "oldniepan")) {
-							return Math.random();
-						}
+						const num = get.event().num;
 						if (ui.selected.buttons.length >= num) {
 							return 0;
 						}
-						return button.link === "oldniepan" ? 2 : Math.random();
+						if (ui.selected.buttons.some(button => button.link === "oldniepan")) {
+							return Math.random();
+						}
+						return button.link === "oldniepan" ? 2 : 0;
 					},
 				})
 				.forResult();
-			if (result.links.length) {
+			if (result?.links?.length) {
+				lib.skill.sxrmwuyan.checkRefresh(result.links);
 				for (let skill of result.links) {
+					if (!lib.skill[skill].limited) continue;
 					game.broadcastAll(function (skill2) {
-						lib.skill[skill2] = lib.skill.sxrmwuyan[skill2];
-						lib.translate[skill2 + "_info"] = lib.skill.sxrmwuyan.desModify(skill2);
+						lib.skill.sxrmwuyan.skillChange(skill2, lib.skill.sxrmwuyan[skill2]);
+						lib.skill.sxrmwuyan.skillChange(skill2 + "_info", lib.skill.sxrmwuyan.desModify(skill2), "translate");
+						game.finishSkill(skill2);
 					}, skill);
 				}
 				await player.addAdditionalSkills("sxrmwuyan", result.links, true);
@@ -790,7 +819,7 @@ const skills = {
 			result: {
 				target(player, target) {
 					const shinie = player.hasSkill("sxrmshinie_enable") && !player.getStat("triggerSkill")["sxrmshinie"];
-					if (shinie && player.countMark("baonu") < 2 && !game.filterPlayer(current => get.attitude(player, current) <= 0 && current.maxHp >= 2)) {
+					if (shinie && player.countMark("baonu") < 2 && !game.filterPlayer(current => get.attitude(player, current) <= 0 && current.maxHp >= 2)?.length) {
 						return false;
 					}
 					if (!shinie && !player.hasSkill("baonu")) {
@@ -814,7 +843,7 @@ const skills = {
 					) {
 						num = -1;
 					}
-					if (shinie && game.filterPlayer(current => get.attitude(player, current) <= 0 && current.maxHp >= 2)) {
+					if (shinie && game.filterPlayer(current => get.attitude(player, current) <= 0 && current.maxHp >= 2).length) {
 						num -= 6;
 					}
 					return num;
@@ -879,13 +908,13 @@ const skills = {
 			result: {
 				player(player) {
 					const shinie = player.hasSkill("sxrmshinie_enable") && !player.getStat("triggerSkill")["sxrmshinie"];
-					if (shinie && player.countMark("baonu") < 6 && !game.filterPlayer(current => get.attitude(player, current) <= 0 && current.maxHp >= 6)) {
+					if (shinie && player.countMark("baonu") < 6 && !game.filterPlayer(current => get.attitude(player, current) <= 0 && current.maxHp >= 6)?.length) {
 						return false;
 					}
 					if (!shinie && !player.hasSkill("baonu")) {
 						return false;
 					}
-					if (shinie && game.filterPlayer(current => get.attitude(player, current) <= 0 && current.maxHp >= 6)) {
+					if (shinie && game.filterPlayer(current => get.attitude(player, current) <= 0 && current.maxHp >= 6).length) {
 						return 666;
 					}
 					return game.countPlayer(function (current) {
@@ -988,10 +1017,10 @@ const skills = {
 		init() {
 			game.broadcastAll(function () {
 				for (let key in lib.skill.sxrmwuqian) {
-					lib.skill.ol_wuqian[key] = lib.skill.sxrmwuqian[key];
+					lib.skill.sxrmwuyan.skillChange(key, lib.skill.sxrmwuqian[key], "ol_wuqian");
 				}
 				for (let key in lib.skill.sxrmshenfen) {
-					lib.skill.ol_shenfen[key] = lib.skill.sxrmshenfen[key];
+					lib.skill.sxrmwuyan.skillChange(key, lib.skill.sxrmshenfen[key], "ol_shenfen");
 				}
 			});
 		},
@@ -1000,7 +1029,7 @@ const skills = {
 			const num = player.getStorage("sxrmshinie");
 			let str1 = `消耗${num}个“暴怒”`;
 			let str2 = `消耗${num}点别人的体力上限！`;
-			if (player.countMark("baonu") >= 2) {
+			if (player.countMark("baonu") >= num) {
 				controls.add(str1);
 			}
 			const daomeidans = game.filterPlayer(current => current !== player && current.maxHp >= num);
