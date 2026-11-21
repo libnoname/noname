@@ -42914,11 +42914,8 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			let list = game
-				.filterPlayer(target => {
-					const group = target[get.mode() === "guozhan" ? "identity" : "group"];
-					return group !== "unkonwn";
-				})
-				.map(current => current[get.mode() === "guozhan" ? "identity" : "group"])
+				.filterPlayer()
+				.map(current => current.group)
 				.unique();
 			if (player.storage.xiemu2) {
 				list.removeArray(player.storage.xiemu2);
