@@ -14060,6 +14060,7 @@ const skills = {
 		},
 	},
 	dcsaran: {
+		locked: true,
 		audio: 2,
 		audioname: ["v_sunshangxiang_shadow"],
 		locked: false,
@@ -14078,10 +14079,7 @@ const skills = {
 		getIndex(event) {
 			return event.num;
 		},
-		frequent: "check",
-		check(event, player) {
-			return true;
-		},
+		forced: true,
 		async content(event, trigger, player) {
 			const storage = player.getStorage("v_sunshangxiang_changeSkin", false);
 			if (storage) {
