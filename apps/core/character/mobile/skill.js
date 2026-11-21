@@ -6057,15 +6057,8 @@ const skills = {
 			return get.type2(evt.card) == get.type2(event.card) || get.suit(evt.card) == get.suit(event.card);
 		},
 		forced: true,
-		logAudio(event) {
-			const history = game.getAllGlobalHistory("useCard"),
-				index = history.indexOf(event);
-			const evt = history[index - 1];
-			const bool1 = get.type2(evt.card) == get.type2(event.card),
-				bool2 = get.suit(evt.card) == get.suit(event.card),
-				bool3 = get.name(evt.card) == get.name(event.card);
-			return bool1 && bool2 && bool3 ? "mbshiju3.mp3" : 2;
-		},
+		popup: false,
+		logAudio: index => (typeof index === "number" ? `mbshiju${index}.mp3` : 2),
 		async content(event, trigger, player) {
 			const history = game.getAllGlobalHistory("useCard"),
 				index = history.indexOf(trigger);
@@ -6076,6 +6069,7 @@ const skills = {
 			const bool1 = get.type2(evt.card) == get.type2(trigger.card),
 				bool2 = get.suit(evt.card) == get.suit(trigger.card),
 				bool3 = get.name(evt.card) == get.name(trigger.card);
+			player.logSkill(event.name, null, null, null, [bool1 && bool2 && bool3 ? 3 : get.rand(1, 2)]);
 			if (bool1) {
 				await player.gain(get.cards(1, true), "gain2", false);
 			}
@@ -7496,7 +7490,7 @@ const skills = {
 		audio: 4,
 		trigger: { global: "roundStart" },
 		filter(event, player) {
-			return game.roundNumber < 3 || player.hasSkill("mblingfa", null, false, false);
+			return game.roundNumber < 3 || player.hasSkill("mblingfa", false, false, false);
 		},
 		async cost(event, trigger, player) {
 			switch (game.roundNumber) {
@@ -26662,7 +26656,7 @@ const skills = {
 								},
 								player,
 								false,
-								false,
+								false
 							)
 						);
 					});

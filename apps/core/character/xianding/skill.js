@@ -13839,6 +13839,7 @@ const skills = {
 				},
 				onremove(player, skill) {
 					player.enableSkill(skill);
+					player.removeStorage(skill);
 				},
 				trigger: {
 					player: "useCard",
@@ -13848,7 +13849,7 @@ const skills = {
 					if (event.name !== "useCard") {
 						return true;
 					}
-					if (!player.getStorage("dcsbzhenyu_disable").includes(get.name(event.card))) {
+					if (!player.hasStorage("dcsbzhenyu_disable", get.name(event.card))) {
 						return false;
 					}
 					return player.hasHistory("lose", evt => {
@@ -14060,6 +14061,7 @@ const skills = {
 		},
 	},
 	dcsaran: {
+		locked: true,
 		audio: 2,
 		audioname: ["v_sunshangxiang_shadow"],
 		locked: false,
@@ -14078,10 +14080,7 @@ const skills = {
 		getIndex(event) {
 			return event.num;
 		},
-		frequent: "check",
-		check(event, player) {
-			return true;
-		},
+		forced: true,
 		async content(event, trigger, player) {
 			const storage = player.getStorage("v_sunshangxiang_changeSkin", false);
 			if (storage) {
@@ -20225,7 +20224,7 @@ const skills = {
 						})
 						.flat()
 						.unique();
-					await player.gain(cards, "draw");
+					await player.gain(cards, "draw2");
 					if (cards.length) {
 						if (_status.connectMode) {
 							game.broadcastAll(() => {

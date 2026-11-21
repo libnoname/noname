@@ -13386,6 +13386,12 @@ const skills = {
 				_status.event = evt;
 				_status.event.finish();
 				_status.event.untrigger(true);
+				if (_status.currentPhase) {
+					game.broadcastAll(player => {
+						player.classList.remove("glow_phase");
+						delete _status.currentPhase;
+					}, _status.currentPhase);
+				}
 			}
 		},
 		ai: {

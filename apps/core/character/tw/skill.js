@@ -26030,7 +26030,7 @@ const skills = {
 		trigger: { global: "roundStart" },
 		filter(event, player) {
 			const skill = "twlingfa";
-			return game.roundNumber < 3 || (player.hasSkill(skill, null, false, false) && !lib.skill[skill].derivation.every(i => player.hasSkill(i, null, false, false)));
+			return game.roundNumber < 3 || (player.hasSkill(skill, false, false, false) && !lib.skill[skill].derivation.every(i => player.hasSkill(i, null, false, false)));
 		},
 		prompt2(event, player) {
 			const skill = "twlingfa";

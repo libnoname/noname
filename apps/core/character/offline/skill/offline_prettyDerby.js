@@ -525,8 +525,8 @@ const skills = {
 			const result = await player.chooseToCompare(event.targets).setContent("chooseToCompareMeanwhile").forResult();
 			if (!result?.winner || result.winner !== player) {
 				await player.damage();
-				const { player: card, targets: cards } = result;
-				const list = cards.filter(cardx => get.position(cardx) === "d" && get.number(cardx) < get.number(card));
+				const { targets: cards, num1, num2 } = result;
+				const list = cards.filter((cardx, i) => get.position(cardx) === "d" && num2[i] < num1[i]);
 				if (list?.length) {
 					await player.gain({
 						cards: list,
