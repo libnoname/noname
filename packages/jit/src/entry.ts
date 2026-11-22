@@ -27,26 +27,23 @@
 		return;
 	}
 
-	// 初次加载worker，需要重新启动一次
-	if (sessionStorage.getItem("isJITReloaded") !== "true") {
-		let registrations = await navigator.serviceWorker.getRegistrations();
-		await registrations.find(registration => registration?.active?.scriptURL == `${scope}service-worker.js`)?.unregister();
-		sessionStorage.setItem("isJITReloaded", "true");
-		window.location.reload();
-		return;
-	}
+	// 接收消息：worker 首次安装或更新后激活时，会发 reload 让页面重载一次，改由新 worker 接管。
+	// 必须在 register 之前监听，否则可能错过这条消息。
+	navigator.serviceWorker.addEventListener("message", e => {
+		if (e.data?.type === "reload") {
+			window.location.reload();
+		}
+	});
 
+	// 以前每次启动都先注销旧 worker 再重载整页，每次打开游戏都会白白多加载一遍（约 0.8 秒）。
+	// 现在直接注册：worker 没变时页面一开始就由它控制，无需重载；
+	// worker 首次安装或脚本有更新时，新 worker 在 activate 里 claim 并发 reload，只重载这一次。
+	// updateViaCache: "none" 保证每次都检查 service-worker.js 是否有更新，不被 HTTP 缓存挡住。
 	try {
 		await navigator.serviceWorker.register(`${scope}service-worker.js`, {
 			type: "module",
-			updateViaCache: "all",
+			updateViaCache: "none",
 			scope,
-		});
-		// 接收消息
-		navigator.serviceWorker.addEventListener("message", e => {
-			if (e.data?.type === "reload") {
-				window.location.reload();
-			}
 		});
 		// 发送消息
 		// navigator.serviceWorker.controller?.postMessage({ action: "reload" });
