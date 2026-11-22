@@ -2650,7 +2650,7 @@ const skills = {
 				charlotte: true,
 				filter(event, player) {
 					const evt = event.getParent();
-					return evt.name == "huogong" && evt.card?.storage?.huoe;
+					return evt.name == "huogong" && evt.card?.storage?.sxrmhuoe;
 				},
 				async cost(event, trigger, player) {
 					if (
