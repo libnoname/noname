@@ -6085,7 +6085,7 @@ const skills = {
 				trigger: {
 					player: "phaseBegin",
 				},
-				slient: true,
+				silent: true,
 				async content(event, trigger, player) {
 					player.removeSkill(event.name);
 					player.addTempSkill("dcmingding_die", { player: "dieAfter" });
@@ -6097,7 +6097,7 @@ const skills = {
 				trigger: {
 					player: "phaseAfter",
 				},
-				slient: true,
+				silent: true,
 				async content(event, trigger, player) {
 					player.removeSkill(event.name);
 					player.removeSkill(["dcmingding_effect", "dcmingding_die"]);
