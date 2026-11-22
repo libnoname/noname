@@ -1,10 +1,10 @@
 window.noname_update = {
-	version: "1.11.7",
+	version: "1.12.0",
 	update: "NULL",
 	changeLog: [
 		"※ 当前版本暂未发布，仅供测试 ※",
-		"暂时没什么好说的，先感谢 蓝色大肥鱼",
-		"如有问题，请加群565727384反馈"
+		"跨越大版本带有破坏性，请谨慎使用",
+		"如有问题，请在Github的issue中提交"
 	],
 	files: [],
 };
