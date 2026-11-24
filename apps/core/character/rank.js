@@ -1800,6 +1800,7 @@ window.noname_character_rank = {
 		"v_liubei",
 	],
 	bm: [
+		"mb_suyue",
 		"mb_zhongyao",
 		"mb_wutugu",
 		"mb_chengyu",
@@ -3426,6 +3427,7 @@ window.noname_character_rank = {
 			"sunhe",
 		],
 		rare: [
+			"mb_suyue",
 			"wangai",
 			"ol_quancong",
 			"re_zhoufei",
