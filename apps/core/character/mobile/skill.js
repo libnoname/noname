@@ -1,124 +1,5 @@
 ﻿import { lib, game, ui, get, ai, _status } from "noname";
 
-const ZHUDIAN_THRESHOLDS = [1, 5, 9, 13];
-
-/** 已激活的“筑殿”效果数（1/5/9/13） */
-function zhudianCount(player) {
-	const count = player.getExpansions("zhudian").length;
-	return ZHUDIAN_THRESHOLDS.filter(num => count >= num).length;
-}
-
-/** 角色“筑殿”牌的最小点数，无牌时为 Infinity */
-function zhudianNumbers(player) {
-	const stored = player.getStorage("zhudian_numbers", []).filter(num => typeof num === "number");
-	if (stored.length) {
-		return stored;
-	}
-	return player
-		.getExpansions("zhudian")
-		.map(card => get.number(card))
-		.filter(num => typeof num === "number");
-}
-
-function zhudianMinNumber(player) {
-	const numbers = zhudianNumbers(player);
-	if (!numbers.length) {
-		return Infinity;
-	}
-	return Math.min(...numbers);
-}
-
-function addZhudianNumbers(player, numbers) {
-	player.setStorage("zhudian_numbers", Array.from(new Set(zhudianNumbers(player).concat(numbers))));
-}
-
-function removeZhudianNumbers(player, numbers) {
-	player.setStorage(
-		"zhudian_numbers",
-		zhudianNumbers(player).filter(num => !numbers.includes(num))
-	);
-}
-
-/** 按“筑殿”牌数同步衍生技“罗材” */
-function zhudianSync(player) {
-	if (!player?.isIn?.()) {
-		return;
-	}
-	const has = player.getExpansions("zhudian").length > 0;
-	if (has && !player.hasSkill("mb_luocai")) {
-		player.addSkill("mb_luocai");
-	} else if (!has && player.hasSkill("mb_luocai")) {
-		player.removeSkill("mb_luocai");
-	}
-}
-
-function zhudianSyncAll() {
-	for (const current of game.filterPlayer()) {
-		zhudianSync(current);
-	}
-}
-
-/** 判定两名角色是否属于同一阵营（按当前模式） */
-function zhudianSameCamp(a, b) {
-	const mode = get.mode();
-	if (mode === "identity") {
-		const camp = player => {
-			const identity = player.identity;
-			// 主公、忠臣、明忠与平民同属主公方
-			if (identity === "zhu" || identity === "zhong" || identity === "mingzhong" || identity === "commoner") {
-				return "zhu";
-			}
-			if (identity === "fan") {
-				return "fan";
-			}
-			// 内奸独自为营
-			if (identity === "nei") {
-				return player;
-			}
-			return identity || player;
-		};
-		return camp(a) === camp(b);
-	}
-	if (typeof a.side === "boolean" && typeof b.side === "boolean") {
-		return a.side === b.side;
-	}
-	// 国战（势力/野心家结盟）、斗地主（地主/农民）等交给 isFriendOf 判定
-	return a.isFriendOf(b);
-}
-
-/** 13 张“筑殿”：目标所在阵营获胜 */
-function zhudianWin(target) {
-	const me = game.me?._trueMe || game.me;
-	game.over(me ? zhudianSameCamp(target, me) : true);
-}
-
-/** “罗材”结算：亮出牌堆顶的牌，获得与“筑殿”牌同字或同点数的牌 */
-async function luocaiEffect(player) {
-	const zhu = player.getExpansions("zhudian").slice(0);
-	if (!zhu.length) {
-		return;
-	}
-	const numbers = zhu.map(card => get.number(card));
-	const names = zhu.map(card => get.name(card));
-	const cards = get.cards(zhu.length >= 5 ? 5 : 3);
-	await game.cardsGotoOrdering(cards);
-	await player.showCards(cards, `${get.translation(player)}发动了【罗材】`);
-	const gain = cards.filter(card => {
-		if (numbers.includes(get.number(card))) {
-			return true;
-		}
-		const name = get.name(card);
-		return names.some(zhuName => [...zhuName].some(char => name.includes(char)));
-	});
-	if (gain.length) {
-		await player.gain(gain, "gain2");
-	}
-	const rest = cards.filter(card => !gain.includes(card));
-	if (rest.length) {
-		await game.cardsDiscard(rest);
-	}
-}
-
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
 	//马云禄
@@ -153,7 +34,7 @@ const skills = {
 			const result = await player
 				.chooseControl({
 					controls,
-					prompt: get.prompt2(event.skill),
+					prompt: get.prompt2(event.skill, trigger.target),
 					ai() {
 						const { controls, player, target } = get.event();
 						const num = player.countCards("he", { suit: "diamond" }) + target.countCards("e", { suit: "diamond" }) + Math.floor(target.countCards("h") / 5);
@@ -171,10 +52,10 @@ const skills = {
 				event.result = {
 					bool: true,
 					cost_data: result.control,
-					targets: [trigger.target],
 				};
 			}
 		},
+		logTarget: "target",
 		async content(event, trigger, player) {
 			const {
 				cost_data: control,
@@ -300,6 +181,7 @@ const skills = {
 		subSkill: {
 			targeted: {
 				charlotte: true,
+				onremove: true,
 				init(player, skill) {
 					player.addTip(skill, `${get.translation(skill)} 防具失效`);
 				},
@@ -334,6 +216,7 @@ const skills = {
 					return !player.hasCard(card => get.is.damageCard(card), "h");
 				},
 				forced: true,
+				locked: false,
 				async content(event, trigger, player) {
 					let card = get.cardPile(card => get.is.damageCard(card));
 					if (card) await player.gain(card, "draw");
@@ -462,55 +345,35 @@ const skills = {
 		usable: 1,
 		basicList: ["sha", "shan", "jiu", "tao"],
 		derivation: ["sha", "shan", "jiu", "tao"].map(i => "mbzhaofu_" + i),
+		getList(event, player) {
+			const list = lib.inpile_nature.slice(0);
+			list.unshift(null);
+			const vcards = list
+				.filter(nature => event.filterCard(get.autoViewAs({ name: "sha", nature }, "unsure"), player, event))
+				.map(nature => {
+					return ["基本", "", "sha", nature];
+				});
+			vcards.addArray(
+				["shan", "jiu", "tao"]
+					.filter(name => event.filterCard(get.autoViewAs({ name }, "unsure"), player, event))
+					.map(name => {
+						return ["基本", "", name];
+					})
+			);
+			return vcards;
+		},
 		filter(event, player) {
 			if (player.countCards("h") != player.countDiscardableCards(player, "h") || !player.countCards("h")) {
 				return false;
 			}
-			return get.inpileVCardList(info => {
-				if (!get.info("mbzhaofu").basicList.includes(info[2])) {
-					return false;
-				}
-				return event.filterCard(
-					get.autoViewAs(
-						{
-							name: info[2],
-							nature: info[3],
-						},
-						"unsure"
-					),
-					player,
-					event
-				);
-			}).length;
+			return get.info("mbzhaofu").getList(event, player).length;
 		},
 		chooseButton: {
 			dialog(event, player) {
-				const list = get.inpileVCardList(info => {
-					if (!get.info("mbzhaofu").basicList.includes(info[2])) {
-						return false;
-					}
-					return event.filterCard(
-						get.autoViewAs(
-							{
-								name: info[2],
-								nature: info[3],
-							},
-							"unsure"
-						),
-						player,
-						event
-					);
-				});
-				return ui.create.dialog("照抚", [list, "vcard"]);
-			},
-			filter(button, player) {
-				return _status.event.getParent().filterCard(
-					{
-						name: button.link[2],
-					},
-					player,
-					_status.event.getParent()
-				);
+				const vcards = get.info("mbzhaofu").getList(event, player);
+				const dialog = ui.create.dialog("照抚", [vcards, "vcard"], "hidden");
+				dialog.direct = true;
+				return dialog;
 			},
 			check(button) {
 				if (_status.event.getParent().type != "phase") {
@@ -540,7 +403,7 @@ const skills = {
 						const cards = player.getCards("h"),
 							name = event.result.card.name;
 						await player.modedDiscard({ cards });
-						if (cards.length == get.info("mbzhaofu").basicList.indexOf(name) + 1) {
+						if (cards.length == get.info("mbzhaofu").basicList.indexOf(name) + 1 && game.hasPlayer(current => player !== current)) {
 							const result = await player
 								.chooseTarget({
 									prompt: get.prompt("mbzhaofu"),
@@ -566,10 +429,10 @@ const skills = {
 			},
 		},
 		hiddenCard(player, name) {
-			if (!lib.inpile.includes(name) || !get.info("mbzhaofu").basicList.includes(name)) {
+			if (!get.info("mbzhaofu").basicList.includes(name)) {
 				return false;
 			}
-			return player.countCards("h") == player.countDiscardableCards(player, "h") && player.countCards("h");
+			return player.countCards("h") == player.countDiscardableCards(player, "h") && player.hasCards("h");
 		},
 		ai: {
 			fireAttack: true,
@@ -641,54 +504,81 @@ const skills = {
 		prompt: "弃置所有手牌并视为使用一张【桃】",
 	},
 	mbqiliu: {
+		init(player, skill) {
+			player.addSkill(skill + "_first");
+		},
+		onremove(player, skill) {
+			player.removeSkill(skill + "_first");
+		},
 		audio: 2,
-		forced: true,
-		trigger: {
-			player: ["loseAfter", "useCardAfter"],
-			global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
-		},
+		trigger: { player: "useCardAfter" },
 		filter(event, player, name) {
-			if (event.name == "useCard") {
-				return event.card.name == "tao" && player != _status.currentPhase && event.targets?.some(target => target != player);
-			}
-			if (player.countCards("h") || player.hasSkill("mbqiliu_round")) {
-				return false;
-			}
-			if (event.getParent(2).name != "pre_mbzhaofu_backup") {
-				return false;
-			}
-			const evt = event.getl(player),
-				num =
-					player.actionHistory.filter(evt => {
-						return evt.isMe && !evt.isSkipped;
-					}).length - (player == _status.currentPhase ? 1 : 0);
-			if (!evt?.hs?.length || evt.player != player) {
-				return false;
-			}
-			return num > 0;
+			return event.card.name == "tao" && player != _status.currentPhase && event.targets?.some(target => target != player);
 		},
+		forced: true,
 		logTarget(event, player) {
-			if (event.name == "useCard") {
-				return event.targets.filter(target => target != player).sortBySeat();
-			}
-			return player;
+			return event.targets.filter(target => target != player).sortBySeat();
 		},
 		async content(event, trigger, player) {
-			if (trigger.name == "useCard") {
-				player.addTempSkill(event.name + "_effect");
-				player.markAuto(event.name + "_effect", event.targets);
-				event.targets.forEach(target => target.addTempSkill(event.name + "_mark"));
-			} else {
-				const num =
-					player.actionHistory.filter(evt => {
-						return evt.isMe && !evt.isSkipped;
-					}).length - (player == _status.currentPhase ? 1 : 0);
-				await player.draw({ num: num });
-				player.addTempSkill(event.name + "_round", "roundStart");
-			}
+			player.addTempSkill(event.name + "_effect");
+			player.markAuto(event.name + "_effect", event.targets);
+			event.targets.forEach(target => target.addTempSkill(event.name + "_mark"));
 		},
+		group: "mbqiliu_draw",
 		subSkill: {
-			round: { charlotte: true },
+			draw: {
+				audio: "mbqiliu",
+				trigger: {
+					player: "loseAfter",
+					global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
+				},
+				filter(event, player) {
+					if (player.hasCards("h") || event.getParent(2).name !== "pre_mbzhaofu_backup") {
+						return false;
+					}
+					if (
+						player
+							.getRoundHistory("custom", evt => evt.mbqiliu)
+							.map(evt => evt.mbqiliu)
+							.indexOf(event.getParent(2)) != 0
+					) {
+						return false;
+					}
+					const num =
+						player.actionHistory.filter(evt => {
+							return evt.isMe && !evt.isSkipped;
+						}).length - (player == _status.currentPhase ? 1 : 0);
+					return num > 0;
+				},
+				forced: true,
+				async content(event, trigger, player) {
+					const num =
+						player.actionHistory.filter(evt => {
+							return evt.isMe && !evt.isSkipped;
+						}).length - (player == _status.currentPhase ? 1 : 0);
+					await player.draw({ num });
+				},
+			},
+			first: {
+				charlotte: true,
+				trigger: {
+					player: "loseEnd",
+					global: ["equipEnd", "addJudgeEnd", "gainEnd", "loseAsyncEnd", "addToExpansionEnd"],
+				},
+				filter(event, player) {
+					if (player.hasCards("h") || event.getParent(2).name !== "pre_mbzhaofu_backup") {
+						return false;
+					}
+					const evt = event.getl(player);
+					return evt?.player == player && evt.hs?.length > 0;
+				},
+				forced: true,
+				popup: false,
+				firstDo: true,
+				async content(event, trigger, player) {
+					player.getHistory("custom").push({ mbqiliu: trigger.getParent(2) });
+				},
+			},
 			mark: {
 				charlotte: true,
 				mark: true,
@@ -708,8 +598,8 @@ const skills = {
 					const {
 						targets: [target],
 					} = event;
-					trigger.cancel();
 					player.unmarkAuto(event.name, [target]);
+					trigger.cancel();
 					target.removeSkill("mbqiliu_mark");
 					player.tempBanSkill("mbqiliu");
 				},
@@ -805,7 +695,7 @@ const skills = {
 		marktext: "趋",
 		intro: {
 			name: "趋",
-			markcount(storage) {
+			markcount(storage = [0, 0]) {
 				storage = storage ?? [0, 0];
 				let str = storage[0].toString();
 				if (storage[1] > 0) {
@@ -813,8 +703,7 @@ const skills = {
 				}
 				return str;
 			},
-			content(storage) {
-				storage = storage ?? [0, 0];
+			content(storage = [0, 0]) {
 				let str = `<li>使用牌数：${storage[0]}/2`;
 				if (storage[1] > 0) {
 					str += `<li>本回合蓄力点最大值：${storage[1]}`;
@@ -835,7 +724,7 @@ const skills = {
 										prompt: "进趋：令一名有蓄力技的角色获得1点蓄力点",
 										forced: true,
 										filterTarget(card, player, target) {
-											return get.event().targets.includes(target);
+											return get.event().targets?.includes(target);
 										},
 										ai(target) {
 											return get.attitude(get.player(), target);
@@ -26662,7 +26551,7 @@ const skills = {
 								},
 								player,
 								false,
-								false,
+								false
 							)
 						);
 					});
@@ -32967,224 +32856,547 @@ const skills = {
 	},
 	//苏越
 	zhudian: {
-		audio: 6,
-		intro: {
-			markcount: "expansion",
-			mark(dialog, content, player) {
-				const cards = player.getExpansions("zhudian");
-				if (cards.length) {
-					dialog.addAuto(cards);
+		getCards(player) {
+			return player.getCards("he").addArray(game.filterPlayer(current => current.hasExpansions("zhudian")).flatMap(current => current.getExpansions("zhudian")));
+		},
+		getNum(player) {
+			return [1, 5, 9, 13].filter(num => player.countExpansions("zhudian") >= num).length;
+		},
+		getMin(player) {
+			const expansions = player.getExpansions("zhudian");
+			if (!expansions.length) {
+				return Infinity;
+			}
+			return Math.min(...expansions.map(card => get.number(card)));
+		},
+		effect(player, target) {
+			target.removeAdditionalSkill("zhudian");
+			if (target.countExpansions("zhudian") >= 1) {
+				if (!target.hasSkill("luocai")) {
+					target.addSkills("luocai");
 				}
-			},
-			content(content, player) {
-				const cards = player.getExpansions("zhudian");
-				if (cards.length) {
-					return get.translation(cards);
-				}
+			} else if (target.hasSkill("luocai")) {
+				target.removeSkills("luocai");
+			}
+			if (target.countExpansions("zhudian") >= 13) {
+				const winners = player.getFriends();
+				game.over(player == game.me || winners.includes(game.me));
+			}
+		},
+		mod: {
+			maxHandcard(player, num) {
+				return num + game.countPlayer(current => current.hasSkill("luocai"));
 			},
 		},
+		locked: false,
+		derivation: "luocai",
+		audio: 6,
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			if (player.countCards("he")) {
-				return true;
-			}
-			return game.hasPlayer(current => current.getExpansions("zhudian").length > 0);
+			return (
+				player.hasCards("he") ||
+				game.hasPlayer(current => current.hasExpansions("zhudian")) ||
+				game.hasPlayer(current => {
+					const expansions = current.getExpansions("zhudian");
+					if (!expansions.length) {
+						return true;
+					}
+					const min = Math.min(...expansions.map(card => get.number(card)));
+					const cards = get.info("zhudian").getCards(player);
+					return cards.some(card => !expansions.includes(card) && get.number(card) < min);
+				})
+			);
 		},
-		async content(event, trigger, player) {
-			const hasExpansion = game.hasPlayer(current => current.getExpansions("zhudian").length > 0);
-			let fromExpansion = false;
-			let origin = null;
-			let cards = [];
-			let target = null;
-			let place = false;
-			// 逐张选牌：每次都把已选点数从可选范围中排除，UI 层直接无法选中重复点数
-			const selectCards = async (prompt, limit) => {
-				const used = [];
-				const selected = [];
-				while (true) {
-					const text = used.length ? `${prompt}（已选点数：${used.join("、")}，取消表示结束）` : prompt;
-					const result = await player
-						.chooseCard("he", text, [1, 1], card => {
-							const number = get.number(card);
-							if (typeof number !== "number") {
+		chooseButton: {
+			dialog(event, player) {
+				const dialog = ui.create.dialog(
+					`筑殿：请选择一项`,
+					[
+						[
+							["recast", "重铸自己的牌或一名角色的“筑殿”牌"],
+							["put", "放置“筑殿”牌"],
+						],
+						"textbutton",
+					],
+					"hidden"
+				);
+				return dialog;
+			},
+			filter(button, player) {
+				const link = button.link;
+				if (link == "recast") {
+					return player.hasCards("he") || game.hasPlayer(current => current.hasExpansions("zhudian"));
+				}
+				return game.hasPlayer(current => {
+					const expansions = current.getExpansions("zhudian");
+					if (!expansions.length) {
+						return true;
+					}
+					const min = Math.min(...expansions.map(card => get.number(card)));
+					const cards = get.info("zhudian").getCards(player);
+					return cards.some(card => !expansions.includes(card) && get.number(card) < min);
+				});
+			},
+			check(button) {
+				const link = button.link;
+				const player = get.player();
+				if (link == "put") {
+					if (
+						game.hasPlayer(current => {
+							const att = get.attitude(player, current);
+							if (att <= 0) {
 								return false;
 							}
-							if (limit != null && number >= limit) {
-								return false;
-							}
-							return !used.includes(number);
+							const min = get.info("zhudian").getMin(current);
+							const hs = player.countCards("he", card => get.number(card) < min);
+							return hs >= 2;
 						})
-						.set("forced", used.length === 0)
-						.forResult();
-					if (!result.bool) {
-						break;
+					) {
+						return 10;
 					}
-					selected.push(result.cards[0]);
-					used.push(get.number(result.cards[0]));
-					if (player.countCards("he") <= selected.length) {
-						break;
-					}
-				}
-				return selected;
-			};
-			if (hasExpansion) {
-				const control = await player.chooseControl("手牌或装备区的牌", "场上的“筑殿”牌").set("prompt", "筑殿：选择要处理的牌").forResult();
-				if (!control?.control) {
-					return;
-				}
-				fromExpansion = control.control === "场上的“筑殿”牌";
-			}
-			if (fromExpansion) {
-				const targetResult = await player.chooseTarget("筑殿：选择一名有“筑殿”牌的角色", (card, player, target) => target.getExpansions("zhudian").length > 0).forResult();
-				if (!targetResult.bool) {
-					return;
-				}
-				origin = targetResult.targets[0];
-				const buttons = origin.getExpansions("zhudian").slice(0);
-				const result = await player.chooseButton(["筑殿：选择要处理的“筑殿”牌", buttons], [1, buttons.length]).forResult();
-				if (!result.bool) {
-					return;
-				}
-				cards = result.links.slice(0);
-				const control = await player.chooseControl("重铸", "置于武将牌上").set("prompt", "筑殿：如何处理这些牌").forResult();
-				if (!control?.control) {
-					return;
-				}
-				place = control.control === "置于武将牌上";
-				if (place) {
-					const next = await player
-						.chooseTarget("筑殿：选择一名角色，将这些牌置于其武将牌上", (card, player, target) => {
-							return cards.every(card => get.number(card) < zhudianMinNumber(target));
-						})
-						.forResult();
-					if (!next.bool) {
-						return;
-					}
-					target = next.targets[0];
-				}
-			} else {
-				const canPlace = game.hasPlayer(current => zhudianMinNumber(current) > 1 || zhudianMinNumber(current) === Infinity);
-				let action = "重铸";
-				if (canPlace) {
-					const control = await player.chooseControl("重铸", "置于武将牌上").set("prompt", "筑殿：如何处理这些牌").forResult();
-					if (!control?.control) {
-						return;
-					}
-					action = control.control;
-				}
-				place = action === "置于武将牌上";
-				if (place) {
-					const next = await player
-						.chooseTarget("筑殿：选择放置“筑殿”牌的角色", (card, player, target) => {
-							const min = zhudianMinNumber(target);
-							if (min === Infinity) {
-								return player.countCards("he") > 0;
-							}
-							if (min <= 1) {
-								return false;
-							}
-							return player.countCards("he", card => get.number(card) < min) > 0;
-						})
-						.forResult();
-					if (!next.bool) {
-						return;
-					}
-					target = next.targets[0];
-					const max = zhudianMinNumber(target);
-					cards = await selectCards(`筑殿：选择点数互不相同、且小于${max === Infinity ? "任意点数" : max}的牌`, max);
-					if (!cards.length) {
-						return;
-					}
+					return 0;
 				} else {
-					cards = await selectCards("筑殿：选择任意张点数不同的牌重铸", null);
-					if (!cards.length) {
-						return;
+					if (
+						game.hasPlayer(current => {
+							const expansions = current.getExpansions("zhudian");
+							if (!expansions.length) {
+								return false;
+							}
+							const att = get.attitude(player, current);
+							if (expansions.some(card => get.number(card) < 5) && att > 0) {
+								return true;
+							}
+							if (expansions.some(card => get.number(card) >= 5) && att < 0) {
+								return true;
+							}
+							return false;
+						})
+					) {
+						return 9;
 					}
-					await player.recast(cards);
-					zhudianSyncAll();
-					return;
+					if (player.countCards("he") && player.countExpansions("zhudian") >= 5) {
+						return 7;
+					}
+					return 0;
 				}
-			}
-			if (!cards.length) {
-				return;
-			}
-			const numbers = cards.map(card => get.number(card));
-			if (fromExpansion) {
-				await player.gain(cards.slice(0), origin, "give");
-				removeZhudianNumbers(origin, numbers);
-				zhudianSync(origin);
-				if (!place) {
-					await player.recast(cards);
-					zhudianSyncAll();
-					return;
-				}
-			}
-			if (!target) {
-				return;
-			}
-			await target.addToExpansion({ cards: cards.slice(0), source: player, animate: "give", gaintag: ["zhudian"] });
-			addZhudianNumbers(target, numbers);
-			zhudianSyncAll();
-			const num = zhudianCount(target);
-			if (num > 0) {
-				await player.draw(num);
-			}
-			if (target.getExpansions("zhudian").length >= 13) {
-				zhudianWin(target);
+			},
+			backup(links, player) {
+				return get.copy(lib.skill[`zhudian_${links[0]}`]);
+			},
+			prompt(links, player) {
+				return `###筑殿###${lib.skill[`zhudian_${links[0]}`].prompt()}`;
+			},
+		},
+		init(player, skill) {
+			game.filterPlayer().forEach(current => lib.skill[skill].effect(player, current));
+		},
+		onremove(player, skill) {
+			const cards = player.getExpansions(skill);
+			if (cards.length) {
+				player.loseToDiscardpile(cards2);
 			}
 		},
-		group: ["zhudian_draw"],
+		intro: {
+			content: "expansion",
+			markcount: "expansion",
+		},
+		ai: {
+			order: 7,
+			result: { player: 1 },
+		},
+		group: ["zhudian_draw", "zhudian_buff"],
 		subSkill: {
 			draw: {
+				audio: "zhudian",
 				trigger: { player: "phaseDrawBegin2" },
 				forced: true,
 				locked: false,
 				filter(event, player) {
-					return !event.numFixed && game.hasPlayer(current => current.hasSkill("mb_luocai"));
+					return !event.numFixed && game.hasPlayer(current => current.hasSkill("luocai"));
 				},
 				async content(event, trigger) {
-					trigger.num += game.countPlayer(current => current.hasSkill("mb_luocai"));
+					trigger.num += game.countPlayer(current => current.hasSkill("luocai"));
 				},
 			},
-		},
-		mod: {
-			maxHandcard(player, num) {
-				return num + game.countPlayer(current => current.hasSkill("mb_luocai"));
+			buff: {
+				audio: "zhudian",
+				trigger: { global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"] },
+				getIndex(event, player, name) {
+					const targets = [];
+					if (event.name == "addToExpansion") {
+						if (event.gaintag.includes("zhudian")) {
+							targets.add(event.player);
+						}
+					}
+					if (event.name == "lose" && event.getlx !== false) {
+						if (Object.values(event.gaintag_map).flat().includes("zhudian")) {
+							targets.add(event.player);
+						}
+					}
+					game.checkGlobalHistory("cardMove", evt => {
+						if (evt.name != "lose" || event != evt.getParent()) {
+							return false;
+						}
+						if (Object.values(evt.gaintag_map).flat().includes("zhudian")) {
+							targets.add(evt.player);
+						}
+					});
+					return targets.sortBySeat();
+				},
+				filter(event, player, name, target) {
+					return target?.isIn();
+				},
+				firstDo: true,
+				forced: true,
+				popup: false,
+				locked: false,
+				async content(event, trigger, player) {
+					const target = event.indexedData;
+					lib.skill.zhudian.effect(player, target);
+				},
 			},
-		},
-	},
-	mb_luocai: {
-		audio: 2,
-		enable: "phaseUse",
-		usable: 1,
-		filter(event, player) {
-			return player.getExpansions("zhudian").length > 0;
-		},
-		async content(event, trigger, player) {
-			await luocaiEffect(player);
-		},
-		group: ["mb_luocai_damage"],
-		subSkill: {
-			damage: {
-				trigger: { player: "damageAfter" },
-				forced: false,
-				filter(event, player) {
-					return player.getExpansions("zhudian").length >= 9 && !player.hasSkill("mb_luocai_used");
+			backup: {},
+			recast: {
+				audio: "zhudian",
+				filterCard: () => false,
+				selectCard: -1,
+				prompt(event) {
+					return "你可以重铸任意张点数不同的牌或一名角色的任意张“筑殿”牌";
 				},
 				async content(event, trigger, player) {
-					player.addTempSkill("mb_luocai_used", "roundStart");
-					await luocaiEffect(player);
+					if (!player.hasCards("he") && !game.hasPlayer(current => current.hasExpansions("zhudian"))) {
+						return;
+					}
+					let result = await player
+						.chooseCardTarget({
+							prompt: "你可以重铸任意张点数不同的牌或一名角色的任意张“筑殿”牌",
+							complexCard: true,
+							forced: true,
+							filterCard(card, player) {
+								if (!player.canRecast(card)) {
+									return false;
+								}
+								return !ui.selected.cards.reduce((list, card) => list.add(get.number(card, player)), []).includes(get.number(card, player));
+							},
+							position: "he",
+							selectCard: [0, Infinity],
+							filterTarget(card, player, target) {
+								return target.hasExpansions("zhudian");
+							},
+							selectTarget: [0, 1],
+							filterOk() {
+								return (ui.selected.cards.length > 0) ^ (ui.selected.targets.length > 0);
+							},
+							ai1(card) {
+								const player = get.player();
+								const enemies = game.filterPlayer(current => get.attitude(player, current) < 0 && current.hasExpansions("zhudian"));
+								if (enemies.length) {
+									return 0;
+								}
+								if (player.countExpansions("zhudian") >= 5) {
+									return 8 - get.value(card);
+								}
+								return 6 - get.value(card);
+							},
+							ai2(target) {
+								const player = get.player();
+								if (ui.selected.cards.length) {
+									return 0;
+								}
+								const enemies = game.filterPlayer(current => get.attitude(player, current) < 0 && current.hasExpansions("zhudian")).sort((a, b) => b.countExpansions("zhudian") - a.countExpansions("zhudian"));
+								if (enemies.length) {
+									if (!enemies.includes(target)) {
+										return 0;
+									}
+									return 1 / (enemies.indexOf(target) + 1);
+								}
+								if (target == player && player.getExpansions("zhudian").some(card => get.number(card) <= 5)) {
+									return 10;
+								}
+								return target.countExpansions("zhudian");
+							},
+						})
+						.forResult();
+					if (result?.cards?.length) {
+						const { cards } = result;
+						await player.recast(cards);
+						const num = get.info("zhudian").getNum(player);
+						await player.draw(num);
+					} else if (result?.targets?.length) {
+						const [target] = result.targets;
+						const cards = target.getExpansions("zhudian");
+						if (!cards.length) {
+							return;
+						}
+						result = await player
+							.chooseButton([`筑殿：请选择重铸${get.translation(target)}的任意张“筑殿”牌`, cards], true, "allowChooseAll", [1, Infinity])
+							.set("ai", button => {
+								const { player, target } = get.event();
+								const link = button.link;
+								const att = get.attitude(player, target);
+								if (att > 0) {
+									const cards = target.getExpansions("zhudian").sort((a, b) => get.number(a) - get.number(b));
+									if (cards.length > 5) {
+										if (cards.slice(0, cards.length - 5).includes(link)) {
+											return 1;
+										}
+										return 0;
+									}
+									if (ui.selected.buttons.length) {
+										return 0;
+									}
+									return link == cards[0] ? 1 : 0;
+								}
+								return 1;
+							})
+							.set("target", target)
+							.forResult();
+						if (result?.bool) {
+							await target.recast(result.links);
+						}
+						const num = get.info("zhudian").getNum(target);
+						await player.draw(num);
+					}
+				},
+			},
+			put: {
+				audio: "zhudian",
+				filterCard: () => false,
+				selectCard: -1,
+				prompt(event) {
+					return "你可以将任意张点数不同的牌或“筑殿”牌置于一名角色的武将牌上（须小于该角色所有“筑殿”牌的点数）";
+				},
+				async content(event, trigger, player) {
+					const dialog = [],
+						map = new Map();
+					const cards = get.info("zhudian").getCards(player);
+					dialog.push("筑殿：请选择你要放置的牌和角色");
+					if (player.hasCards("h")) {
+						dialog.addArray(['<div class="text center">你的手牌</div>', player.getCards("h")]);
+					}
+					if (player.hasCards("e")) {
+						dialog.addArray(['<div class="text center">你的装备</div>', player.getCards("e")]);
+					}
+					game.filterPlayer(current => current.hasExpansions("zhudian"))
+						.sortBySeat(player)
+						.forEach(current => {
+							map.set(current, current.getExpansions("zhudian"));
+							dialog.addArray([`<div class="text center">${player == current ? "你" : get.translation(current)}的“筑殿”牌</div>`, current.getExpansions("zhudian")]);
+						});
+					const targets = game.filterPlayer(current => {
+						const min = get.info("zhudian").getMin(current);
+						return cards.some(card => !current.getExpansions("zhudian").includes(card) && get.number(card) < min);
+					});
+					const forced = targets.length > 0;
+					if (!forced) {
+						return;
+					}
+					const next = player.chooseButtonTarget({
+						createDialog: dialog,
+						complexSelect: true,
+						map,
+						cards,
+						forced: true,
+						filterButton(button) {
+							const { player, map } = get.event();
+							const link = button.link;
+							if (ui.selected.buttons.length) {
+								const card = ui.selected.buttons[0].link;
+								if (ui.selected.buttons.some(btn => get.number(btn.link) == get.number(link))) {
+									return false;
+								}
+								if (get.owner(link) !== get.owner(card)) {
+									return false;
+								}
+								if (get.position(link) !== get.position(card)) {
+									if ("he".includes(get.position(link)) && "he".includes(get.position(card))) {
+										return true;
+									}
+									return false;
+								}
+								return true;
+							}
+							return game.hasPlayer(current => {
+								const min = get.info("zhudian").getMin(current);
+								return get.number(link) < min;
+							});
+						},
+						selectButton: [1, Infinity],
+						filterTarget(card, player, target) {
+							const expansions = target.getExpansions("zhudian");
+							if (!expansions.length) {
+								return true;
+							}
+							const min = Math.min(...expansions.map(card => get.number(card)));
+							return ui.selected.buttons.every(button => get.number(button.link) < min);
+						},
+						canHidden: true,
+						processAI() {
+							const { player, map, cards, targets: targetsx } = get.event();
+							const targets = game.filterPlayer().sortBySeat(player);
+							const sources = [];
+							const he = player.getCards("he");
+							if (he.length) {
+								sources.push({ owner: player, cards: he, type: "he" });
+							}
+							for (const [owner, cards] of map) {
+								sources.push({ owner, cards, type: "x" });
+							}
+							let best = null;
+							for (const target of targets) {
+								const expansions = target.getExpansions("zhudian");
+								const min = get.info("zhudian").getMin(target);
+								for (const source of sources) {
+									// 按点数分组，不重复点数
+									const numberMap = new Map();
+									for (const card of source.cards) {
+										const number = get.number(card);
+										if (!(number < min)) {
+											continue;
+										}
+										if (!numberMap.has(number)) {
+											numberMap.set(number, []);
+										}
+										numberMap.get(number).push(card);
+									}
+									if (!numberMap.size) {
+										continue;
+									}
+									const sourceAttitude = source.type === "x" ? get.attitude(player, source.owner) : 0;
+									const links = [];
+									// 每个点数只选择一张最合适的牌
+									for (const [number, candidates] of numberMap) {
+										let bestCard = null;
+										let bestCardScore = -Infinity;
+										for (const card of candidates) {
+											const value = get.value(card, player);
+											let score;
+											if (source.type === "he") {
+												// 自己的牌：价值越低越优先
+												score = -value;
+											} else if (sourceAttitude < 0) {
+												// 敌方的牌：价值越高越优先
+												score = value;
+											} else {
+												// 友方的牌：价值越低越优先
+												score = -value;
+											}
+											if (score > bestCardScore) {
+												bestCardScore = score;
+												bestCard = card;
+											}
+										}
+										if (bestCard) {
+											links.push(bestCard);
+										}
+									}
+									if (!links.length) {
+										continue;
+									}
+									// 按点数排序
+									links.sort((a, b) => get.number(a) - get.number(b));
+									// 放置牌数越多，通常收益越高
+									const countScore = links.length * 8;
+									// 目标角色态度
+									const targetScore = get.attitude(player, target) * 2;
+									// 来源角色态度
+									const sourceScore = source.type === "x" ? -sourceAttitude * 1.5 : 0;
+									// cost
+									let cardCost = 0;
+									for (const card of links) {
+										const value = get.value(card, player);
+										if (source.type === "he") {
+											cardCost += value * 0.5;
+										} else if (sourceAttitude >= 0) {
+											cardCost += value * 0.3;
+										}
+									}
+									const totalScore = countScore + targetScore + sourceScore - cardCost;
+									if (!best || totalScore > best.score) {
+										best = { score: totalScore, links, target };
+									}
+								}
+							}
+							if (!best) {
+								const target = targetsx.sort((a, b) => get.attitude(player, b) - get.attitude(player, a))[0];
+								const min = get.info("zhudian").getMin(target);
+								const links = cards.filter(card => !target.getExpansions("zhudian").includes(card) && get.number(card) < min).randomGets(1);
+								return { bool: true, links, targets: [target] };
+							}
+							return { bool: true, links: best.links, targets: [best.target] };
+						},
+					});
+					next.set(
+						"targetprompt2",
+						next.targetprompt2.concat([
+							target => {
+								if (!target.classList.contains("selectable")) {
+									return false;
+								}
+								const min = get.info("zhudian").getMin(target);
+								if (min === Infinity) {
+									return "随便放";
+								}
+								return `最小为${min}`;
+							},
+						])
+					);
+					const result = await next.forResult();
+					if (result?.bool && result.links?.length && result.targets?.length) {
+						const target = result.targets[0];
+						const next = target.addToExpansion(result.links, "give", player);
+						next.gaintag.add("zhudian");
+						await next;
+						const num = get.info("zhudian").getNum(target);
+						await player.draw(num);
+					}
 				},
 			},
 		},
 	},
-	mb_luocai_used: {
-		charlotte: true,
-		mark: true,
-		intro: {
-			content: "本轮的“罗材”已因受到伤害发动过",
+	luocai: {
+		getNum: player => (player.countExpansions("zhudian") >= 5 && game.hasPlayer(current => current.hasSkill("zhudian")) ? 5 : 3),
+		audio: 2,
+		enable: "phaseUse",
+		trigger: { player: "damageEnd" },
+		filter(event, player) {
+			if (event.name == "damage") {
+				if (!game.hasPlayer(current => current.hasSkill("zhudian"))) {
+					return false;
+				}
+				return player.countExpansions("zhudian") >= 9 && player.getRoundHistory("damage").indexOf(event) == 0;
+			}
+			return !player.hasMark("luocai_used");
 		},
+		prompt: (event, player) => (event.name === "chooseToUse" ? get.info("luocai").prompt2(event, player) : get.prompt("luocai")),
+		prompt2(event, player) {
+			const num = get.info("luocai").getNum(player);
+			return `你可以亮出牌堆顶的${get.cnNumber(num)}张牌，获得其中条件的牌。`;
+		},
+		async content(event, trigger, player) {
+			if (!trigger) {
+				player.addTempSkill("luocai_used", "phaseUseAfter");
+				player.addMark("luocai_used", 1, false);
+			}
+			const expansions = player.getExpansions("zhudian");
+			const num = get.info("luocai").getNum(player);
+			const cards = get.cards(num);
+			await game.cardsGotoOrdering(cards);
+			await player.showCards(cards, `${get.translation(player)}发动了【罗材】`);
+			const gains = cards.filter(card => {
+				return expansions.some(cardx => [...get.translation(card.name)].containsSome(...get.translation(cardx.name)) || get.number(card) == get.number(cardx));
+			});
+			if (gains.length) {
+				await player.gain(gains, "gain2");
+			}
+		},
+		ai: {
+			combo: "zhudian",
+			order: 5,
+			result: { player: 1 },
+		},
+		subSkill: { used: { charlotte: true, onremove: true } },
 	},
 };
 

@@ -2471,7 +2471,7 @@ const skills = {
 						let next = player.next;
 						while (next != player && get.attitude(next, player) > 0) {
 							safe++;
-							next = next.next;
+							next = next?.next;
 						}
 					}
 					return Math.max(1, Math.min(safe, 3, game.countPlayer(), player.getDamagedHp())) - 1;
