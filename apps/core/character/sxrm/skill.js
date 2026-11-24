@@ -2,6 +2,106 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig["skill"] } */
 const skills = {
+	sxrmmihui: {
+		trigger: { global: "roundEnd" },
+		filter(event, player) {
+			return game.hasPlayer(target => target !== player && target.sex === "male");
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget("秘会：选择一名男性角色", (card, player, target) => {
+					return target !== player && target.sex === "male";
+				})
+				.set("ai", target => get.attitude(get.player(), target))
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const phases = ["phaseZhunbei", "phaseJudge", "phaseDraw", "phaseUse", "phaseDiscard", "phaseJieshu"];
+			const labels = ["准备阶段", "判定阶段", "摸牌阶段", "出牌阶段", "弃牌阶段", "结束阶段"];
+			const result = await player
+				.chooseButton(["秘会：选择自己的三个阶段（按正常顺序执行）", [labels.map(label => [label, label]), "textbutton"]], 3, true)
+				.set("ai", button => ({ 摸牌阶段: 6, 出牌阶段: 5, 准备阶段: 4, 结束阶段: 3, 判定阶段: 2, 弃牌阶段: 1 })[button.link])
+				.forResult();
+			if (!result.bool || !player.isIn()) return;
+			const own = phases.filter((phase, index) => result.links.includes(labels[index]));
+			const rest = phases.filter(phase => !own.includes(phase));
+
+			await player.phase("sxrmmihui").set("phaseList", own);
+			if (target.isIn()) await target.phase("sxrmmihui").set("phaseList", rest);
+		},
+	},
+	sxrmsizhi: {
+		trigger: { player: ["phaseZhunbeiBegin", "damageEnd"] },
+		filter(event, player) {
+			return game.hasPlayer(target => target.isIn() && player.canCompare(target, true));
+		},
+		check(event, player) {
+			return player.hp > 1 && player.countCards("h") < 5;
+		},
+		async content(event, trigger, player) {
+			const phase = trigger.getParent("phase");
+			let target = event.targets?.[0];
+			while (player.isIn()) {
+				if (target && (!target.isIn() || !player.canCompare(target))) break;
+				await player.draw(2);
+				if (!player.isIn()) break;
+				if (!target) {
+					if (!game.hasPlayer(current => player.canCompare(current))) break;
+					const choice = await player
+						.chooseTarget("死志：选择本次发动固定的拼点对手", true, (card, player, target) => player.canCompare(target))
+						.set("ai", target => -get.attitude(get.player(), target))
+						.forResult();
+					if (!choice.bool) break;
+					target = choice.targets[0];
+				}
+				if (!target.isIn() || !player.canCompare(target)) break;
+				const result = await player.chooseToCompare(target).forResult();
+				if (!result || result.cancelled || (!result.player && !result.target && !result.tie && !result.winner)) break;
+				if (result.winner !== player && phase) lib.skill.sxrmsizhi.addDebt(player, phase);
+				const winningCard = result.winner === player ? result.player : result.winner === target ? result.target : null;
+				if (winningCard && get.color(winningCard, false) === "red") break;
+			}
+		},
+		addDebt(player, phase) {
+			const entries = player.storage.sxrmsizhi_debt || (player.storage.sxrmsizhi_debt = []);
+			let entry = entries.find(item => item.phase === phase);
+			if (!entry) entries.push((entry = { phase, count: 0 }));
+			entry.count++;
+			player.addSkill("sxrmsizhi_debt");
+			player.markSkill("sxrmsizhi_debt");
+		},
+		subSkill: {
+			debt: {
+				charlotte: true,
+				forced: true,
+				popup: false,
+				lastDo: true,
+				mark: true,
+				marktext: "志",
+				intro: {
+					content(storage) {
+						return "待结算失去体力：" + (storage || []).reduce((sum, entry) => sum + entry.count, 0);
+					},
+				},
+				trigger: { global: ["phaseJieshuBegin", "phaseAfter"] },
+				filter(event, player) {
+					const phase = event.name === "phase" ? event : event.getParent("phase");
+					return (player.storage.sxrmsizhi_debt || []).some(entry => entry.phase === phase);
+				},
+				async content(event, trigger, player) {
+					const phase = trigger.name === "phase" ? trigger : trigger.getParent("phase");
+					const entries = player.storage.sxrmsizhi_debt || [];
+					const count = entries.filter(entry => entry.phase === phase).reduce((sum, entry) => sum + entry.count, 0);
+					player.storage.sxrmsizhi_debt = entries.filter(entry => entry.phase !== phase);
+					if (!player.storage.sxrmsizhi_debt.length) player.unmarkSkill("sxrmsizhi_debt");
+
+					if (trigger.name !== "phase" && count && player.isIn()) await player.loseHp(count);
+				},
+				onremove: true,
+			},
+		},
+	},
 	//嗔包
 	//魔周瑜
 	sxrmjiehuo: {

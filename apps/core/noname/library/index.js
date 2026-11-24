@@ -13562,6 +13562,7 @@ export class Library {
 				nature: "graymm",
 			},
 		],
+		["贪", { color: "#5a6968", nature: "graymm" }],
 		[
 			"嗔",
 			{

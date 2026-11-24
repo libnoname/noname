@@ -1,4 +1,5 @@
 const characters = {
+	sxrm_diaochan: { sex: "female", group: "qun", hp: 3, skills: ["sxrmmihui", "sxrmsizhi"], names: "null|貂蝉" },
 	//嗔
 	sxrm_zhouyu: {
 		sex: "male",

@@ -68,7 +68,7 @@ window.noname_character_replace = {
 	dengai: ["dengai", "ol_dengai", "ol_sb_dengai", "re_dengai", "jsrg_dengai", "ren_dengai", "dc_sb_dengai", "bigsb_dengai", "pot_dengai", "old_pot_dengai"],
 	dengzhi: ["ol_dengzhi", "re_dengzhi", "dengzhi", "tw_dengzhi", "std_re_dengzhi"],
 	dianwei: ["dianwei", "ol_dianwei", "dc_sb_dianwei", "re_dianwei", "xia_dianwei", "huan_dianwei", "ylyg_dianwei"],
-	diaochan: ["diaochan", "re_diaochan", "sp_diaochan", "dm_diaochan", "yue_diaochan", "sb_diaochan", "ym_jsrg_diaochan"],
+	diaochan: ["diaochan", "re_diaochan", "sp_diaochan", "dm_diaochan", "yue_diaochan", "sb_diaochan", "ym_jsrg_diaochan", "sxrm_diaochan"],
 	dingfeng: ["dingfeng", "star_dingfeng", "tw_dingfeng", "std_dingfeng", "old_dingfeng", "zj_dingfeng"],
 	dingshangwan: ["dingshangwan", "ol_dingshangwan", "mb_dingshangwan", "huan_dingshangwan"],
 	dingyuan: ["ol_dingyuan", "dingyuan"],

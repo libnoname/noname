@@ -2,6 +2,13 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
 	sxrm: "蚀心入魔",
+	sxrm_diaochan: "贪貂蝉",
+	sxrm_diaochan_prefix: "贪",
+	sxrmmihui: "秘会",
+	sxrmmihui_info: "每轮结束时，你可以选择一名男性角色，你优先执行一个含三个你选择的阶段的额外回合，然后其执行一个含剩余三个阶段的额外回合。",
+	sxrmsizhi: "死志",
+	sxrmsizhi_debt: "死志",
+	sxrmsizhi_info: "准备阶段或当你受到伤害后，你可摸两张牌并拼点：除非赢的拼点牌为红色，否则须重复此流程；然后此回合结束阶段，你失去没赢次数点体力。",
 	//蚀心入魔·疑
 	sxrm_caocao: "魔曹操",
 	sxrm_caocao_prefix: "魔",
