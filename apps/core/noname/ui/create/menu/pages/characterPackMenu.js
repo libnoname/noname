@@ -315,6 +315,10 @@ export const characterPackMenu = function (connectMenu) {
 									}
 								}
 								game.saveConfig(connectMenu ? "connect_" + modex.mode + "_banned" : get.mode() + "_banned", banned);
+								// 离线模式下同步当前模式的禁将快照，避免切换武将包后必须重启才生效
+								if (!connectMenu && mode === "mode_" + get.mode()) {
+									lib.config.banned = banned;
+								}
 								updateActive();
 							},
 						};
