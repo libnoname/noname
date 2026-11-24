@@ -1,4 +1,11 @@
 const characters = {
+	sxrm_chengong: {
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		skills: ["sxrmxiace", "sxrmmangfu"],
+		names: "陈|宫",
+	},
 	//嗔
 	sxrm_zhouyu: {
 		sex: "male",

@@ -1,4 +1,5 @@
 export default {
+	sxrm_chengong: "暴怒的军师",
 	sxrm_zhouyu: "哀弦万耳惊",
 	sxrm_sunshangxiang: "生死相随",
 	sxrm_zhangzhao: "迂儒",
