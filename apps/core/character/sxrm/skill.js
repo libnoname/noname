@@ -5,7 +5,14 @@ const skills = {
 	// 贪包
 	// 魔吕布
 	// 包含为了改装而直接搬运的技能代码："ol_wuqian", "ol_shenfen", "dcfencheng", "yeyan", "fenwei", "yongjin", "reluanwu", "oldniepan"
-	// 若对上述技能进行更新，请为此技能的相应部分进行同步
+	/**
+	 * 若对上述技能进行更新，请按以下步骤对sxrmwuyan中的衍生技能进行维护：
+	 * 1.将6个限定技的代码直接覆盖在sxrmwuyan的同名属性中
+	 * 2.在6个技能的对象中添加“round: 1”并删除“limited: true”和content中的语句“player.awakenSkill("xxx")”
+	 * 3.用ctrl+h替换所有在技能内部出现的id，如对于技能yeyan，将yeyan内部的所有yeyan替换为sxrmwuyan_yeyan
+	 * 4.sxrmwuqian和sxrmshenfen（对应源技能ol_wuqian和ol_shenfen）这些技能为了适配sxrmshinie而高度修改，若原技能有改动须单独进行维护，或咨询@Foxissimo-8
+	 */
+
 	sxrmwuyan: {
 		audio: 2,
 		forced: true,
@@ -28,17 +35,6 @@ const skills = {
 			let modedStr = str.replace(tagStr[0], modedTagStr);
 			if (modedStr == str) return false;
 			return modedStr;
-		},
-		checkRefresh(skills) {
-			for (const skill of skills) {
-				if (!lib.skill[skill].limited) continue;
-				for (const user of game.filterPlayer2(current => current.hasSkill(skill))) {
-					if (user.awakenedSkills.includes(skill)) {
-						player.refreshSkill(skill);
-						player.setStorage(skill + "_roundcount", game.roundNumber);
-					}
-				}
-			}
 		},
 		skillChange(key, value, position = "skill") {
 			if (!_status.postReconnect.sxrmwuyan) {
@@ -186,7 +182,7 @@ const skills = {
 			animationColor: "metal",
 			skillAnimation: "legend",
 			check(card) {
-				if (!lib.skill.yeyan.getBigFire(get.event().player)) {
+				if (!lib.skill.sxrmwuyan_yeyan.getBigFire(get.event().player)) {
 					return -1;
 				}
 				return 1 / (get.value(card) || 0.5);
@@ -244,7 +240,7 @@ const skills = {
 			},
 			ai: {
 				order(item, player) {
-					return lib.skill.yeyan.getBigFire(player) ? 10 : 1;
+					return lib.skill.sxrmwuyan_yeyan.getBigFire(player) ? 10 : 1;
 				},
 				fireAttack: true,
 				result: {
@@ -253,11 +249,11 @@ const skills = {
 							return 0;
 						}
 						const att = get.sgn(get.attitude(player, target));
-						const targets = game.filterPlayer(target2 => get.damageEffect(target2, player, player, "fire") && (!lib.skill.yeyan.getBigFire(player) || (target2.hp <= 3 && !target2.hasSkillTag("filterDamage", null, { player }))));
+						const targets = game.filterPlayer(target2 => get.damageEffect(target2, player, player, "fire") && (!lib.skill.sxrmwuyan_yeyan.getBigFire(player) || (target2.hp <= 3 && !target2.hasSkillTag("filterDamage", null, { player }))));
 						if (!targets.includes(target)) {
 							return 0;
 						}
-						if (lib.skill.yeyan.getBigFire(player)) {
+						if (lib.skill.sxrmwuyan_yeyan.getBigFire(player)) {
 							if (ui.selected.targets.length) {
 								return 0;
 							}
@@ -363,7 +359,7 @@ const skills = {
 				event.cards = [];
 				while (event.count > 0) {
 					event.count--;
-					if (!lib.skill.yongjin.filter(null, player, event.cards)) {
+					if (!lib.skill.sxrmwuyan_yongjin.filter(null, player, event.cards)) {
 						break;
 					}
 					const chooseTargetResult = await player
@@ -714,7 +710,7 @@ const skills = {
 			ai: {
 				order: 1,
 				skillTagFilter(player, arg, target) {
-					if (player != target || player.storage.oldniepan) {
+					if (player != target || player.storage.sxrmwuyan_oldniepan) {
 						return false;
 					}
 				},
@@ -731,7 +727,7 @@ const skills = {
 					},
 				},
 				threaten(player, target) {
-					if (!target.storage.oldniepan) {
+					if (!target.storage.sxrmwuyan_oldniepan) {
 						return 0.6;
 					}
 				},
@@ -776,16 +772,15 @@ const skills = {
 				})
 				.forResult();
 			if (result?.links?.length) {
-				lib.skill.sxrmwuyan.checkRefresh(result.links);
 				for (let skill of result.links) {
-					if (!lib.skill[skill].limited) continue;
 					game.broadcastAll(function (skill2) {
-						lib.skill.sxrmwuyan.skillChange(skill2, lib.skill.sxrmwuyan[skill2]);
-						lib.skill.sxrmwuyan.skillChange(skill2 + "_info", lib.skill.sxrmwuyan.desModify(skill2), "translate");
-						game.finishSkill(skill2);
+						lib.skill.sxrmwuyan.skillChange("sxrmwuyan_"+skill2, lib.skill.sxrmwuyan[skill2]);
+						lib.skill.sxrmwuyan.skillChange("sxrmwuyan_"+skill2, get.translation(skill2),"translate");
+						lib.skill.sxrmwuyan.skillChange("sxrmwuyan_"+skill2 + "_info", lib.skill.sxrmwuyan.desModify(skill2), "translate");
+						game.finishSkill("sxrmwuyan_"+skill2);
 					}, skill);
 				}
-				await player.addAdditionalSkills("sxrmwuyan", result.links, true);
+				await player.addAdditionalSkills("sxrmwuyan", result.links.map(name=>"sxrmwuyan_"+name), true);
 				await player.loseMaxHp(result.links.length);
 			}
 		},

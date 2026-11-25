@@ -172,12 +172,7 @@ const translates = {
 		name: "限定技",
 		type: "character",
 		info: `技能库：<li>${get.poptip("dcfencheng")}<li>${get.poptip("yeyan")}<li>${get.poptip("fenwei")}<li>${get.poptip("yongjin")}<li>${get.poptip("reluanwu")}<li>${get.poptip("oldniepan")}`,
-	})}；然后你将获得的限定技${get.poptip({
-		id: "sxrmwuyan_tip2",
-		name: "改为",
-		type: "character",
-		info: "所有角色的相同技能都会被修改",
-	})}每轮限一次并减等量的体力上限。`,
+	})}；然后你将获得的限定技改为每轮限一次并减等量的体力上限。`,
 	sxrmjumo: "拘魔",
 	sxrmjumo_info: "锁定技，蓄力技（2/2），回合开始时，消耗2点蓄力点将本回合出牌和弃牌阶段改为摸牌阶段。",
 	sxrmqikuan: "乞宽",
