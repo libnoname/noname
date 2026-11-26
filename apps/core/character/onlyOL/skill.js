@@ -11104,7 +11104,7 @@ const skills = {
 						return 0;
 					}
 					if (player.canUse("sha", target, false, false)) {
-						return -Math.sign(get.effect_use(target, { name: "sha", isCard: true }, target, player));
+						return -Math.sign(get.effect_use(target, { name: "sha", isCard: true }, player, player));
 					}
 					return 0;
 				},

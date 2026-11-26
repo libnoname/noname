@@ -14061,10 +14061,9 @@ const skills = {
 		},
 	},
 	dcsaran: {
-		locked: true,
+		locked: false,
 		audio: 2,
 		audioname: ["v_sunshangxiang_shadow"],
-		locked: false,
 		mod: {
 			cardUsable(card, player, num) {
 				if (card.name === "sha") {

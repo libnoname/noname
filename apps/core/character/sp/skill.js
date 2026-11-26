@@ -27022,7 +27022,7 @@ const skills = {
 						event.target = target;
 						const result = await target
 							.chooseBool("同协：是否为" + get.translation(trigger.player) + "阻挡伤害？", "失去1点体力，防止" + get.translation(trigger.player) + "即将受到的" + get.cnNumber(trigger.num) + "点伤害")
-							.set("check", target === boolTarget)
+							.set("choice", target === boolTarget)
 							.forResult();
 						if (result.bool) {
 							target.logSkill("tongxie_damage", trigger.player);
@@ -42946,7 +42946,7 @@ const skills = {
 		count(group) {
 			var player = _status.event.player;
 			return game.countPlayer(function (current) {
-				return current != player && (current[get.mode() === "guozhan" ? "identity" : "group"] == group) == group && get.attitude(current, player) < 0;
+				return current != player && current.group == group && get.attitude(current, player) < 0;
 			});
 		},
 	},
