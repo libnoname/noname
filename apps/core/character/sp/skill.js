@@ -24252,7 +24252,13 @@ const skills = {
 	olbixin: {
 		audio: 2,
 		trigger: { global: ["phaseZhunbeiBegin", "phaseJieshuBegin"] },
-		onremove: ["olbixin", "olbixin_basic", "olbixin_trick", "olbixin_equip"],
+		onremove(player, skill) {
+			let list = [skill, skill + "_basic", skill + "_trick", skill + "_equip"];
+			for (let i of list) {
+				player.removeStorage(i);
+			}
+			player.unmarkSkill(skill + "_mark");
+		},
 		map: { 基本: "basic", 锦囊: "trick", 装备: "equip" },
 		filter(event, player) {
 			const count = player.countMark("olbixin");
@@ -24519,7 +24525,6 @@ const skills = {
 			},
 			full_backup: {},
 			mark: {
-				charlotte: true,
 				intro: {
 					mark(dialog, storage, player) {
 						const max = player.countMark("olbixin") < 3 ? 1 : 3,
