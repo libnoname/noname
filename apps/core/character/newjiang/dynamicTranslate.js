@@ -41,7 +41,7 @@ const dynamicTranslates = {
 	},
 	xianmou(player) {
 		const bool = player.storage.xianmou;
-		let yang = "观看牌堆顶五张牌并获得至多X张牌，若未获得X张牌则获得〖遗计〗直到再发动此项",
+		let yang = `观看牌堆顶五张牌并获得至多X张牌，若未获得X张牌则获得${get.poptip("new_reyiji")}直到再发动此项`,
 			yin = "观看一名角色手牌并弃置其中至多X张牌，若弃置X张牌则你进行一次【闪电】判定";
 		if (bool) {
 			yin = `<span class='bluetext'>${yin}</span>`;

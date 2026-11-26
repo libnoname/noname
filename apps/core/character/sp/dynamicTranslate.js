@@ -24,7 +24,7 @@ const dynamicTranslates = {
 	},
 	olqiumu(player, skill) {
 		const bool = player.storage[`${skill}_rewrite`];
-		return `锁定技，本回合成为过你的${bool ? "黑色" : "红色"}牌目标的角色进入濒死状态时，你将${get.poptip("olchunhui")}、${get.poptip("olxiasheng")}或〖秋暮〗描述中的“${bool ? "黑色" : "红色"}”均改为“黑色”，若描述变化，你获得其所有黑色手牌。`;
+		return `锁定技，本回合成为过你的${bool ? "黑色" : "红色"}牌目标的角色进入濒死状态时，你将${get.poptip("olchunhui")}、${get.poptip("olxiasheng")}或${get.poptip("olqiumu")}描述中的“${bool ? "黑色" : "红色"}”均改为“黑色”，若描述变化，你获得其所有黑色手牌。`;
 	},
 	olwenyi(player) {
 		let info = lib.translate["olwenyi_info"],
@@ -211,7 +211,7 @@ const dynamicTranslates = {
 	olkouchao(player) {
 		const nameList = player.storage.olkouchao || ["sha", "huogong", "guohe"];
 		const str = nameList.map(i => "【" + get.translation(i) + "】").join("/");
-		return "每轮每项限一次，你可以将一张牌当作" + str + "使用。此牌结算完毕后，将此项改为本局游戏最后一张不因使用进入弃牌堆的基本牌或普通锦囊牌的牌名，然后若〖寇钞〗的所有项均为基本牌，则你修改〖寇钞〗的所有项为【顺手牵羊】。";
+		return "每轮每项限一次，你可以将一张牌当作" + str + `使用。此牌结算完毕后，将此项改为本局游戏最后一张不因使用进入弃牌堆的基本牌或普通锦囊牌的牌名，然后若${get.poptip("olkouchao")}的所有项均为基本牌，则你修改${get.poptip("olkouchao")}的所有项为【顺手牵羊】。`;
 	},
 	olliyong(player) {
 		const bool = player.storage.olliyong;

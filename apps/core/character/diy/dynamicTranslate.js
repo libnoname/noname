@@ -11,7 +11,7 @@ const dynamicTranslates = {
 		if (player.storage.abyusa_jueqing_rewrite) {
 			return "锁定技，你即将造成的伤害均视为失去体力。";
 		}
-		return "当你对其他角色造成伤害时，你可以令此伤害值+X。若如此做，你失去X点体力，并于此伤害结算完成后修改〖绝情〗（X为伤害值）。";
+		return `当你对其他角色造成伤害时，你可以令此伤害值+X。若如此做，你失去X点体力，并于此伤害结算完成后修改${get.poptip("abyusa_jueqing")}（X为伤害值）。`;
 	},
 	tomoya_shangxian(player) {
 		if (player.storage.tomoya_shangxian) {

@@ -23,7 +23,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技，每回合限一次。当你需要使用牌时（无懈可击除外），你可将手牌：",
+		let start = "转换技，每回合限一次。当你需要使用牌时（【无懈可击】除外），你可将手牌：",
 			end = "。若你未使用牌，你与当前回合角色各失去1点体力。";
 		return `${start}阳，${yang}；阴，${yin}${end}`;
 	},

@@ -5,11 +5,11 @@ const dynamicTranslates = {
 		if (player.storage.rejueqing_rewrite) {
 			return "锁定技，你即将造成的伤害均视为失去体力。";
 		}
-		return "当你对其他角色造成伤害时，你可以令此伤害值+X。若如此做，你失去X点体力，并于此伤害结算完成后修改〖绝情〗（X为伤害值）。";
+		return `当你对其他角色造成伤害时，你可以令此伤害值+X。若如此做，你失去X点体力，并于此伤害结算完成后修改${get.poptip("rejueqing")}（X为伤害值）。`;
 	},
 	reyanzhu(player) {
 		if (!player.storage.reyanzhu) {
-			return "出牌阶段限一次，你可以令一名其他角色选择一项：将装备区里的所有牌交给你并令你修改〖宴诛〗和〖兴学〗，或弃置一张牌并令下一次受到的伤害+1直到其下回合开始。";
+			return `出牌阶段限一次，你可以令一名其他角色选择一项：将装备区里的所有牌交给你并令你修改${get.poptip("reyanzhu")}和${get.poptip("rexingxue")}，或弃置一张牌并令下一次受到的伤害+1直到其下回合开始。`;
 		}
 		return "出牌阶段限一次，你可以选择一名其他角色。该角色下一次受到的伤害+1直到其下回合开始。";
 	},

@@ -243,7 +243,7 @@ const dynamicTranslates = {
 	},
 	dchuishu(player) {
 		var list = lib.skill.dchuishu.getList(player);
-		return "摸牌阶段结束时，你可以摸[" + list[0] + "]张牌。若如此做：你弃置[" + list[1] + "]张手牌，且当你于本回合内弃置第[" + list[2] + "]+1张牌后，你从弃牌堆中随机获得〖慧淑〗第三个括号数字张非基本牌。";
+		return "摸牌阶段结束时，你可以摸[" + list[0] + "]张牌。若如此做：你弃置[" + list[1] + "]张手牌，且当你于本回合内弃置第[" + list[2] + `]+1张牌后，你从弃牌堆中随机获得${get.poptip("dchuishu")}第三个括号数字张非基本牌。`;
 	},
 	dcshoutan(player) {
 		const bool = player.storage.dcshoutan;

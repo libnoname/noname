@@ -60,7 +60,7 @@ const dynamicTranslates = {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
 		let start = "转换技。①出牌阶段，你可以将性别变更为：",
-			end = "。②当你即将死亡时，你取消之并将性别变更为〖齐心①〗的转换状态，将体力调整至此状态的体力，然后你本局游戏不能发动〖齐心〗。";
+			end = `。②当你即将死亡时，你取消之并将性别变更为〖齐心①〗的转换状态，将体力调整至此状态的体力，然后你本局游戏不能发动${get.poptip("dcqixin")}。`;
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
 	olshouhun(player) {

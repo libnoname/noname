@@ -1522,9 +1522,9 @@ export class Get {
 			if (target === player) {
 				str += "（你）";
 			}
-			return `是否对${str}发动【${get.skillTranslation(skill, player)}】？`;
+			return `是否对${str}发动〖${get.skillTranslation(skill, player)}〗？`;
 		}
-		return `是否发动【${get.skillTranslation(skill, player)}】？`;
+		return `是否发动〖${get.skillTranslation(skill, player)}〗？`;
 	}
 	/**
 	 * 返回发动技能时的询问提示文本，并在存在技能描述时附加描述。

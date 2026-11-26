@@ -61,7 +61,7 @@ const dynamicTranslates = {
 	sbtiandu(player) {
 		const bool = player.storage.sbtiandu;
 		let yang = "你可以弃置两张手牌，然后视为使用一张普通锦囊牌",
-			yin = "你进行判定并获得判定牌，然后若判定结果与你本局游戏因〖天妒〗弃置的牌花色相同，你受到1点无来源伤害";
+			yin = `你进行判定并获得判定牌，然后若判定结果与你本局游戏因${get.poptip("sbtiandu")}弃置的牌花色相同，你受到1点无来源伤害`;
 		if (bool) {
 			yin = `<span class='bluetext'>${yin}</span>`;
 		} else {

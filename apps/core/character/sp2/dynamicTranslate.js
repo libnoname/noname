@@ -23,17 +23,17 @@ const dynamicTranslates = {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
 		let start = "转换技，锁定技。当你使用一张牌时，",
-			end = "（X为你本阶段内发动过〖漂萍〗的次数且至多等于你的体力值）。";
+			end = `（X为你本阶段内发动过${get.poptip("piaoping")}的次数且至多等于你的体力值）。`;
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
 	zhuili(player) {
 		if (!player.hasSkill("piaoping", null, null, false)) {
-			return "锁定技。当你成为其他角色使用黑色牌的目标后，若你的〖漂萍〗：处于阳状态，则你将〖漂萍〗转换至阴状态；处于阴状态，则你令〖托献〗发动次数+1，然后若〖托献〗发动次数大于3，则〖惴栗〗于本回合内失效。";
+			return `锁定技。当你成为其他角色使用黑色牌的目标后，若你的${get.poptip("piaoping")}：处于阳状态，则你将${get.poptip("piaoping")}转换至阴状态；处于阴状态，则你令${get.poptip("tuoxian")}发动次数+1，然后若${get.poptip("tuoxian")}发动次数大于3，则${get.poptip("zhuili")}于本回合内失效。`;
 		}
 		if (player.storage.piaoping) {
-			return '锁定技。当你成为其他角色使用黑色牌的目标后，若你的〖漂萍〗：<span class="bluetext">处于阳状态，则你将〖漂萍〗转换至阴状态；</span>处于阴状态，则你令〖托献〗发动次数+1，然后若〖托献〗发动次数大于3，则〖惴栗〗于本回合内失效。';
+			return `锁定技。当你成为其他角色使用黑色牌的目标后，若你的${get.poptip("piaoping")}：<span class="bluetext">处于阳状态，则你将${get.poptip("piaoping")}转换至阴状态；</span>处于阴状态，则你令${get.poptip("tuoxian")}发动次数+1，然后若${get.poptip("tuoxian")}发动次数大于3，则${get.poptip("zhuili")}于本回合内失效。`;
 		}
-		return '锁定技。当你成为其他角色使用黑色牌的目标后，若你的〖漂萍〗：处于阳状态，则你将〖漂萍〗转换至阴状态；<span class="bluetext">处于阴状态，则你令〖托献〗发动次数+1，然后若〖托献〗发动次数大于3，则〖惴栗〗于本回合内失效。</span>';
+		return `锁定技。当你成为其他角色使用黑色牌的目标后，若你的${get.poptip("piaoping")}：处于阳状态，则你将${get.poptip("piaoping")}转换至阴状态；<span class="bluetext">处于阴状态，则你令${get.poptip("tuoxian")}发动次数+1，然后若${get.poptip("tuoxian")}发动次数大于3，则${get.poptip("zhuili")}于本回合内失效。</span>`;
 	},
 	dcdouzhen(player) {
 		const bool = player.countMark("dcdouzhen") % 2;
