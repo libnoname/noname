@@ -62,7 +62,7 @@ const dynamicTranslates = {
 		return str;
 	},
 	dcjianzhuan(player) {
-		let str = "锁定技。①当你于出牌阶段使用牌时，你选择此阶段未执行过的一项执行：";
+		let str = "锁定技，①当你于出牌阶段使用牌时，你选择此阶段未执行过的一项执行：";
 		const list = ["⒈令一名其他角色弃置X张牌", "；", "⒉摸X张牌", "；", "⒊重铸X张牌", "；", "⒋弃置X张牌"],
 			info = get.info("dcjianzhuan").choices,
 			storage = player.getStorage("dcjianzhuan");
@@ -94,7 +94,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。出牌阶段限一次，你可观看一名角色的手牌并展示其中一张牌，",
+		let start = "转换技，出牌阶段限一次，你可观看一名角色的手牌并展示其中一张牌，",
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},

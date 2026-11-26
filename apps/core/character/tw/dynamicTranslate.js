@@ -23,7 +23,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。",
+		let start = "转换技，",
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
@@ -79,7 +79,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "锁定技，转换技。",
+		let start = "锁定技，转换技，",
 			end = "，目标角色须交给使用者一张牌。若此牌为装备牌，则使用者可使用此牌。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
@@ -101,7 +101,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。",
+		let start = "转换技，",
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
@@ -114,7 +114,7 @@ const dynamicTranslates = {
 		return str;
 	},
 	twduwang(player) {
-		let str = "使命技。";
+		let str = "使命技，";
 		if (!player.storage.twduwang_fail) {
 			str += "①";
 		}

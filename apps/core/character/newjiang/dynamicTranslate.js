@@ -23,7 +23,7 @@ const dynamicTranslates = {
 		}
 		let start = player.storage.duanwan ? "" : "①出牌阶段，你使用【杀】的次数上限+1。②",
 			end = "。";
-		start += "转换技。" + (player.storage.duanwan ? "每回合限一次，" : "");
+		start += "转换技，" + (player.storage.duanwan ? "每回合限一次，" : "");
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
 	spshidi(player) {
@@ -35,7 +35,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技，锁定技。①准备阶段/结束阶段开始时，若你发动此分支的累计次数为奇数/偶数，则你获得一个“☯”。",
+		let start = "转换技，锁定技，①准备阶段/结束阶段开始时，若你发动此分支的累计次数为奇数/偶数，则你获得一个“☯”。",
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},

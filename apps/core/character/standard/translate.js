@@ -152,7 +152,7 @@ const translates = {
 	std_panfeng: "标潘凤",
 	std_panfeng_prefix: "标",
 	stdkuangfu: "狂斧",
-	stdkuangfu_info: "锁定技。出牌阶段限一次。当你使用【杀】对其他角色造成伤害后，若其体力值：小于你，你摸两张牌；不小于你，你失去1点体力。",
+	stdkuangfu_info: "锁定技，出牌阶段限一次。当你使用【杀】对其他角色造成伤害后，若其体力值：小于你，你摸两张牌；不小于你，你失去1点体力。",
 	ganfuren: "标甘夫人",
 	ganfuren_prefix: "标",
 	stdshushen: "淑慎",

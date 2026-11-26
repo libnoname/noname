@@ -28,7 +28,7 @@ const dynamicTranslates = {
 	},
 	huamao_wushen(player, skill) {
 		const suit = get.translation(get.info("wxdl_huamao").getSuit(player, skill));
-		return `锁定技。①你的${suit}手牌均视为【杀】。②你使用${suit}【杀】无距离和次数限制且不可被响应。`;
+		return `锁定技，①你的${suit}手牌均视为【杀】。②你使用${suit}【杀】无距离和次数限制且不可被响应。`;
 	},
 	huamao_liushi(player, skill) {
 		const suit = get.translation(get.info("wxdl_huamao").getSuit(player, skill));
@@ -88,7 +88,7 @@ const dynamicTranslates = {
 	},
 	huamao_ninghan(player, skill) {
 		const suit = get.translation(get.info("wxdl_huamao").getSuit(player, skill));
-		return `锁定技。①所有角色手牌中的${suit}【杀】均视为冰【杀】。②当一名角色受到冰冻伤害后，你将造成此伤害的牌对应的实体牌置入“城”。`;
+		return `锁定技，①所有角色手牌中的${suit}【杀】均视为冰【杀】。②当一名角色受到冰冻伤害后，你将造成此伤害的牌对应的实体牌置入“城”。`;
 	},
 	eu_zhitong(player) {
 		const bool = player.storage.eu_zhitong;
@@ -112,7 +112,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。摸牌阶段开始时，你可以跳过摸牌阶段，",
+		let start = "转换技，摸牌阶段开始时，你可以跳过摸牌阶段，",
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
@@ -125,7 +125,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。",
+		let start = "转换技，",
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
@@ -150,7 +150,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。准备阶段，",
+		let start = "转换技，准备阶段，",
 			end = "。";
 		return `${start}阳：${yang}。阴：${yin}${end}`;
 	},
@@ -166,7 +166,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。游戏开始时，你可以改变此转换技的状态。出牌阶段开始时，你可以摸一张牌并：",
+		let start = "转换技，游戏开始时，你可以改变此转换技的状态。出牌阶段开始时，你可以摸一张牌并：",
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
@@ -179,7 +179,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。其他角色的回合开始时，若其体力值大于你，或其未处于横置状态，",
+		let start = "转换技，其他角色的回合开始时，若其体力值大于你，或其未处于横置状态，",
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
@@ -192,7 +192,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。回合开始时，你令本轮：",
+		let start = "转换技，回合开始时，你令本轮：",
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
@@ -205,7 +205,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。",
+		let start = "转换技，",
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
@@ -218,7 +218,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。",
+		let start = "转换技，",
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},

@@ -10,7 +10,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技，锁定技。出牌阶段开始时，",
+		let start = "转换技，锁定技，出牌阶段开始时，",
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},

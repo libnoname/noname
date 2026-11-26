@@ -39,9 +39,9 @@ const dynamicTranslates = {
 	},
 	kamome_jieban(player) {
 		if (player.storage.kamome_jieban) {
-			return '转换技。每回合限一次，当你受到或造成伤害后，阴：你可将两张牌交给一名其他角色，然后其交给你一张牌。<span class="bluetext">阳：你可将一张牌交给一名其他角色，然后其交给你两张牌。</span>';
+			return '转换技，每回合限一次，当你受到或造成伤害后，阴：你可将两张牌交给一名其他角色，然后其交给你一张牌。<span class="bluetext">阳：你可将一张牌交给一名其他角色，然后其交给你两张牌。</span>';
 		}
-		return '转换技。每回合限一次，当你受到或造成伤害后，<span class="bluetext">阴：你可将两张牌交给一名其他角色，然后其交给你一张牌。</span>阳：你可将一张牌交给一名其他角色，然后其交给你两张牌。';
+		return '转换技，每回合限一次，当你受到或造成伤害后，<span class="bluetext">阴：你可将两张牌交给一名其他角色，然后其交给你一张牌。</span>阳：你可将一张牌交给一名其他角色，然后其交给你两张牌。';
 	},
 	shiroha_guying(player) {
 		var str = "当你受到伤害/对其他角色造成伤害时，你";
@@ -77,9 +77,9 @@ const dynamicTranslates = {
 	},
 	junkchigang(player) {
 		if (player.storage.junkchigang) {
-			return `转换技，锁定技。判定阶段开始前，你取消此阶段。然后你获得一个额外的：阳，摸牌阶段；<span class="bluetext">阴，出牌阶段。</span>`;
+			return `转换技，锁定技，判定阶段开始前，你取消此阶段。然后你获得一个额外的：阳，摸牌阶段；<span class="bluetext">阴，出牌阶段。</span>`;
 		}
-		return `转换技，锁定技。判定阶段开始前，你取消此阶段。然后你获得一个额外的：<span class="bluetext">阳，摸牌阶段</span>；阴，出牌阶段。`;
+		return `转换技，锁定技，判定阶段开始前，你取消此阶段。然后你获得一个额外的：<span class="bluetext">阳，摸牌阶段</span>；阴，出牌阶段。`;
 	},
 };
 export default dynamicTranslates;

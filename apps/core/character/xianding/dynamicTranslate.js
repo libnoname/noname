@@ -10,7 +10,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class="firetext">${yang}</span>`;
 		}
-		const start = `转换技。出牌阶段限一次，你可以：`,
+		const start = `转换技，出牌阶段限一次，你可以：`,
 			end = `（X为你的体力上限且至多为5）。`;
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
@@ -65,7 +65,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "锁定技，转换技。你使用牌指定唯一目标后，",
+		let start = "锁定技，转换技，你使用牌指定唯一目标后，",
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
@@ -104,7 +104,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class="firetext">${yang}</span>`;
 		}
-		const start = `转换技。①游戏开始时，你可以转换此技能状态；②一张牌结算结束后，若此牌的目标包括你，你可以选择一张手牌，`,
+		const start = `转换技，①游戏开始时，你可以转换此技能状态；②一张牌结算结束后，若此牌的目标包括你，你可以选择一张手牌，`,
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
@@ -121,7 +121,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class="firetext">${yang}</span>`;
 		}
-		const start = `转换技。①游戏开始时，你可以转换此技能状态；②当你使用锦囊牌时，${player.storage.dcsbjuemou_rewrite ? "或回合开始/结束时，" : ""}你可以：`,
+		const start = `转换技，①游戏开始时，你可以转换此技能状态；②当你使用锦囊牌时，${player.storage.dcsbjuemou_rewrite ? "或回合开始/结束时，" : ""}你可以：`,
 			end = "。若你因此技能进入濒死，你将体力值回复至1点。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
@@ -161,7 +161,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。出牌阶段限一次，你可以弃置至多体力上限张牌，选择一名其他角色：",
+		let start = "转换技，出牌阶段限一次，你可以弃置至多体力上限张牌，选择一名其他角色：",
 			end = "。此阶段结束时，若其手牌数和体力值均不大于你，其下回合摸牌阶段摸牌数-1且装备区里的所有牌失效。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
@@ -237,7 +237,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。结束阶段，你可令一名角色选择并执行一项，然后移除此选项。",
+		let start = "转换技，结束阶段，你可令一名角色选择并执行一项，然后移除此选项。",
 			end = "。（X为该阴阳态剩余选项的数量）。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
@@ -254,7 +254,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。出牌阶段限一次，",
+		let start = "转换技，出牌阶段限一次，",
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
@@ -273,7 +273,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。①游戏开始时，你可以转换此技能状态；②每回合每项各限一次，当你得到其他角色的牌后，或其他角色得到你的牌后：",
+		let start = "转换技，①游戏开始时，你可以转换此技能状态；②每回合每项各限一次，当你得到其他角色的牌后，或其他角色得到你的牌后：",
 			end = "（X为你的体力上限，Y为X-其打出【杀】数）。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
@@ -286,7 +286,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。①游戏开始时，你可以转换此技能状态；②每回合限一次，你对其他角色使用牌后，你可以选择其中一名目标角色：",
+		let start = "转换技，①游戏开始时，你可以转换此技能状态；②每回合限一次，你对其他角色使用牌后，你可以选择其中一名目标角色：",
 			end = "。若其未因此受到伤害，你对其造成1点火焰伤害。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
@@ -299,7 +299,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。①游戏开始时，你可以转换此技能状态；②出牌阶段每名角色限一次，你可以令一名攻击范围内的其他角色交给你一张牌。",
+		let start = "转换技，①游戏开始时，你可以转换此技能状态；②出牌阶段每名角色限一次，你可以令一名攻击范围内的其他角色交给你一张牌。",
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
@@ -319,7 +319,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。①游戏开始时，你可以转换此技能状态；②出牌阶段限一次，你可以观看一名其他角色A的手牌并展示其至多一半手牌：",
+		let start = "转换技，①游戏开始时，你可以转换此技能状态；②出牌阶段限一次，你可以观看一名其他角色A的手牌并展示其至多一半手牌：",
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
