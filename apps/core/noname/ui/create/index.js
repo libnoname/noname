@@ -797,18 +797,21 @@ export class Create {
 		if (bool) {
 			ui.window.classList.remove("connecting");
 			if (ui.connecting) {
+				clearTimeout(ui.connecting.splashtimeout);
 				ui.connecting.delete();
 				delete ui.connecting;
 			}
 		} else {
 			ui.window.classList.add("connecting");
-			ui.connecting = ui.create.div(".fullsize.connectlayer");
-			document.body.appendChild(ui.connecting);
-			ui.create.div("", "正在重连...", ui.connecting);
-			ui.connecting.splashtimeout = setTimeout(function () {
-				if (ui.connecting) {
-					delete ui.connecting.splashtimeout;
-				}
+			if (!ui.connecting) {
+				ui.connecting = ui.create.div(".fullsize.connectlayer");
+				document.body.appendChild(ui.connecting);
+				ui.create.div("", "正在重连...", ui.connecting);
+			}
+			const connecting = ui.connecting;
+			clearTimeout(connecting.splashtimeout);
+			connecting.splashtimeout = setTimeout(function () {
+				delete connecting.splashtimeout;
 			}, 300);
 			// setTimeout(function(){
 			// 	if(ui.connecting){
