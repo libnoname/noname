@@ -635,6 +635,7 @@ const skills = {
 			const index = event.cost_data;
 			player.addTempSkill(`${event.name}_effect`);
 			player.markAuto(`${event.name}_effect`, index);
+			game.log(player, `令本回合下次拼点结束后没赢的角色`, `#y${get.info(event.name).effectList[index]}`);
 		},
 		effectList: [`依次弃置两张牌，不足则失去等量体力；`, `横置并受到1点火焰伤害`, `将所有手牌当一张普通锦囊牌使用`],
 		group: ["hsshezuo_compare"],

@@ -24252,7 +24252,13 @@ const skills = {
 	olbixin: {
 		audio: 2,
 		trigger: { global: ["phaseZhunbeiBegin", "phaseJieshuBegin"] },
-		onremove: ["olbixin", "olbixin_basic", "olbixin_trick", "olbixin_equip"],
+		onremove(player, skill) {
+			let list = [skill, skill + "_basic", skill + "_trick", skill + "_equip"];
+			for (let i of list) {
+				player.removeStorage(i);
+			}
+			player.unmarkSkill(skill + "_mark");
+		},
 		map: { 基本: "basic", 锦囊: "trick", 装备: "equip" },
 		filter(event, player) {
 			const count = player.countMark("olbixin");
@@ -24355,6 +24361,7 @@ const skills = {
 			event.type = type;
 			event.card = { name: name, nature: nature };
 			player.addMark(event.name + "_" + type, 1, false);
+			player.localMarkSkill("olbixin_mark", player, event);
 			await player.draw(player.countMark(event.name) >= 3 ? 1 : 3);
 			await game.delayx();
 			if (player.hasCard(card => get.type2(card) == event.type, "h")) {
@@ -24374,6 +24381,7 @@ const skills = {
 						return;
 					}
 					const player = event.player;
+					player.localMarkSkill("olbixin_mark", player, event);
 					const list = lib.skill.olbixin.getList(player, event);
 					event.set("olbixin_list", list);
 				},
@@ -24458,6 +24466,7 @@ const skills = {
 								const type = lib.skill.olbixin_full_backup.type;
 								game.log(player, "声明了", type, "牌");
 								player.addMark("olbixin_" + type, 1, false);
+								player.localMarkSkill("olbixin_mark", player, event);
 								await player.draw(player.countMark("olbixin") >= 3 ? 1 : 3);
 								const cards = player.getCards("h", card => get.type2(card) == lib.skill.olbixin_full_backup.type);
 								const cardsx = cards.filter(i => game.checkMod(i, player, "unchanged", "cardEnabled2", player) !== false);
@@ -24515,6 +24524,18 @@ const skills = {
 				},
 			},
 			full_backup: {},
+			mark: {
+				intro: {
+					mark(dialog, storage, player) {
+						const max = player.countMark("olbixin") < 3 ? 1 : 3,
+							types = ["basic", "trick", "equip"];
+						dialog.addText(`剩余声明次数`);
+						for (const type of types) {
+							dialog.addText(`${get.translation(type)}：${max - player.countMark(`olbixin_${type}`)}`);
+						}
+					},
+				},
+			},
 		},
 	},
 	olximo: {
