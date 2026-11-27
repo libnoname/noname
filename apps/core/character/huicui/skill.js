@@ -8262,19 +8262,21 @@ const skills = {
 			}
 			return target.countCards("h") < player.countCards("h");
 		},
+		position: "he",
+		selectCard: [1, 2],
 		filterCard(card, player) {
 			if (!ui.selected.cards.length) {
 				return true;
 			}
 			return get.name(ui.selected.cards[0]) != get.name(card);
 		},
-		selectCard: [1, 2],
 		complexCard: true,
-		position: "he",
+		check(card) {
+			return 8 - get.value(card) - Math.sign(get.player().getUseValue(card));
+		},
 		discard: false,
 		lose: false,
 		delay: false,
-		group: "dcminze_draw",
 		async content(event, trigger, player) {
 			const { cards, target } = event;
 			await player.give(cards, target);
@@ -8287,9 +8289,23 @@ const skills = {
 			);
 		},
 		ai: {
-			order: 6.5,
 			expose: 0.2,
+			order(item, player) {
+				player ??= get.player();
+				if (!game.hasPlayer(current => current !== player && get.attitude(player, current) > 0)) {
+					return 0;
+				}
+				if (player.needsToDiscard()) {
+					return 6;
+				}
+				return 0;
+			},
+			result: {
+				player: 0,
+				target: 1,
+			},
 		},
+		group: "dcminze_draw",
 		subSkill: {
 			targeted: { onremove: true, charlotte: true },
 			given: {

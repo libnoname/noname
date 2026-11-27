@@ -12188,7 +12188,8 @@ const skills = {
 						}
 					},
 					cardUsable(card) {
-						if (card.name === "sha" && card.cards?.length === 1 && card.cards[0].hasGaintag("olbianyu_viewAs")) {
+						const vcard = get.autoViewAs(card);
+						if (vcard.name === "sha" && vcard.cards?.length === 1 && vcard.cards[0].hasGaintag("olbianyu_viewAs")) {
 							return Infinity;
 						}
 					},
@@ -12196,7 +12197,7 @@ const skills = {
 				charlotte: true,
 				onremove: (player, skill) => player.removeGaintag(skill),
 				trigger: { player: "useCard1" },
-				filterx(event, player) {
+				filter(event, player) {
 					if (get.type(event.card) !== "basic") {
 						return true;
 					}
@@ -26890,6 +26891,15 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
+				intro: {
+					mark(dialog, storage, player, evt, skill) {
+						storage ??= player.getStorage(skill, []);
+						if (storage?.length) {
+							dialog.addText("同协角色");
+							dialog.add(storage);
+						}
+					},
+				},
 				audio: "tongxie",
 				charlotte: true,
 				trigger: { global: "useCardAfter" },
@@ -26995,23 +27005,24 @@ const skills = {
 						.sortBySeat();
 					event.num = 0;
 					const { targets } = event;
+
+					const targetsx = targets.slice().sort((a, b) => b.hp - a.hp);
+					const boolTarget = targetsx.find(target => {
+						let eff1 = get.damageEffect(trigger.player, trigger.source, target, trigger.nature),
+							eff2 = get.effect(target, { name: "losehp" }, target, target);
+						if (trigger.num > 1) {
+							eff1 = Math.min(-1, eff1) * trigger.num;
+						}
+						return eff2 > eff1;
+					});
+
 					while (true) {
 						const target = targets[event.num];
 						event.num++;
 						event.target = target;
 						const result = await target
 							.chooseBool("同协：是否为" + get.translation(trigger.player) + "阻挡伤害？", "失去1点体力，防止" + get.translation(trigger.player) + "即将受到的" + get.cnNumber(trigger.num) + "点伤害")
-							.set("ai", function () {
-								var player = _status.event.player,
-									target = _status.event.getTrigger().player;
-								var trigger = _status.event.getTrigger();
-								var eff1 = get.damageEffect(target, trigger.source, player, trigger.nature);
-								if (trigger.num > 1) {
-									eff1 = Math.min(-1, eff1) * trigger.num;
-								}
-								var eff2 = get.effect(player, { name: "losehp" }, player, player);
-								return eff2 > eff1;
-							})
+							.set("choice", target === boolTarget)
 							.forResult();
 						if (result.bool) {
 							target.logSkill("tongxie_damage", trigger.player);
@@ -42904,11 +42915,8 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			let list = game
-				.filterPlayer(target => {
-					const group = target[get.mode() === "guozhan" ? "identity" : "group"];
-					return group !== "unkonwn";
-				})
-				.map(current => current[get.mode() === "guozhan" ? "identity" : "group"])
+				.filterPlayer()
+				.map(current => current.group)
 				.unique();
 			if (player.storage.xiemu2) {
 				list.removeArray(player.storage.xiemu2);
@@ -42938,7 +42946,7 @@ const skills = {
 		count(group) {
 			var player = _status.event.player;
 			return game.countPlayer(function (current) {
-				return current != player && (current[get.mode() === "guozhan" ? "identity" : "group"] == group) == group && get.attitude(current, player) < 0;
+				return current != player && current.group == group && get.attitude(current, player) < 0;
 			});
 		},
 	},

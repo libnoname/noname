@@ -831,6 +831,7 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 		if (cards.length > 0) {
 			await player.loseToDiscardpile({ cards });
 		}
+		player.$handleEquipChange();
 	},
 	async enableEquip(event, trigger, player) {
 		const { slots } = event;

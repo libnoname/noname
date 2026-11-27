@@ -10929,6 +10929,16 @@ const skills = {
 		filterCard(card) {
 			return get.type(card) != "basic";
 		},
+		check(card) {
+			const val = get.value(card);
+			if (ui.selected.cards?.length) {
+				const val2 = get.value(ui.selected.cards[0]);
+				if (val2 < 0 && val > 0) {
+					return 0;
+				}
+			}
+			return 8 - val;
+		},
 		selectCard: [1, 2],
 		position: "he",
 		lose: false,
@@ -10985,6 +10995,19 @@ const skills = {
 			used: {
 				charlotte: true,
 				onremove: true,
+			},
+		},
+		ai: {
+			order: 5,
+			result: {
+				player: 0,
+				target(player, target) {
+					const cards = ui.selected.cards;
+					if (!cards?.length) {
+						return 0;
+					}
+					return Math.sign(get.value(cards, target));
+				},
 			},
 		},
 	},
@@ -11070,6 +11093,20 @@ const skills = {
 					next.set("addCount", false);
 					next.set("logSkill", event.name);
 					await next;
+				},
+			},
+		},
+		ai: {
+			order: 10,
+			result: {
+				target(player, target) {
+					if (get.attitude(player, target) >= 0) {
+						return 0;
+					}
+					if (player.canUse("sha", target, false, false)) {
+						return -Math.sign(get.effect_use(target, { name: "sha", isCard: true }, player, player));
+					}
+					return 0;
 				},
 			},
 		},
@@ -14071,7 +14108,7 @@ const skills = {
 						.set("complexSelect", true)
 						.set("sourcex", target2)
 						.forResult();
-					if (result.bool) {
+					if (result?.bool) {
 						return;
 					}
 				}

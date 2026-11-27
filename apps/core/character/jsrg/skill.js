@@ -6960,8 +6960,11 @@ const skills = {
 				const names = list.map(i => "【" + get.translation(i) + "】").join("或");
 				const next = target.chooseToRespond({
 					prompt: "是否替" + get.translation(player) + "打出一张" + names + "？",
-					filterCard: function (card, player) {
-						if (!get.event().namex.includes(get.name(card))) {
+					filterCard: function (card, player, event) {
+						if (get.itemtype(event) !== "event") {
+							event = get.event();
+						}
+						if (!event.namex?.includes(get.name(card))) {
 							return false;
 						}
 						return lib.filter.cardRespondable(card, player);

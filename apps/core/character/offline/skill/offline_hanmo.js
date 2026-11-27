@@ -2046,7 +2046,7 @@ const skills = {
 		},
 		forced: true,
 		filter(event, player) {
-			const history = game.getGlobalHistory("useCard");
+			const history = game.getGlobalHistory("useCard").filter(evt => evt.targets?.length);
 			const index = history.indexOf(event.getParent()) - 1;
 			if (index < 0) {
 				return false;

@@ -5946,15 +5946,8 @@ const skills = {
 			return get.type2(evt.card) == get.type2(event.card) || get.suit(evt.card) == get.suit(event.card);
 		},
 		forced: true,
-		logAudio(event) {
-			const history = game.getAllGlobalHistory("useCard"),
-				index = history.indexOf(event);
-			const evt = history[index - 1];
-			const bool1 = get.type2(evt.card) == get.type2(event.card),
-				bool2 = get.suit(evt.card) == get.suit(event.card),
-				bool3 = get.name(evt.card) == get.name(event.card);
-			return bool1 && bool2 && bool3 ? "mbshiju3.mp3" : 2;
-		},
+		popup: false,
+		logAudio: index => (typeof index === "number" ? `mbshiju${index}.mp3` : 2),
 		async content(event, trigger, player) {
 			const history = game.getAllGlobalHistory("useCard"),
 				index = history.indexOf(trigger);
@@ -5965,6 +5958,7 @@ const skills = {
 			const bool1 = get.type2(evt.card) == get.type2(trigger.card),
 				bool2 = get.suit(evt.card) == get.suit(trigger.card),
 				bool3 = get.name(evt.card) == get.name(trigger.card);
+			player.logSkill(event.name, null, null, null, [bool1 && bool2 && bool3 ? 3 : get.rand(1, 2)]);
 			if (bool1) {
 				await player.gain(get.cards(1, true), "gain2", false);
 			}
@@ -27753,34 +27747,36 @@ const skills = {
 					return eff;
 				})
 				.forResult();
-			if (!result2.bool) {
+			if (!result2?.bool) {
 				return;
 			}
 			const target = result2.targets[0];
 			player.line(target, "thunder");
+			let result3 = {};
 			if (cards.length == 1) {
-				return;
+				result3 = { bool: true, moved: [cards, []] };
+			} else {
+				result3 = await player
+					.chooseToMove("整经：请分配整理出的经典", true)
+					.set("list", [["置于" + get.translation(target) + "的武将牌上", cards], ["自己获得"]])
+					.set("filterMove", function (from, to, moved) {
+						if (moved[0].length == 1 && to == 1 && from.link == moved[0][0]) {
+							return false;
+						}
+						return true;
+					})
+					.set("filterOk", function (moved) {
+						return moved[0].length > 0;
+					})
+					.set("processAI", function (list) {
+						var cards = list[0][1].slice(0).sort(function (a, b) {
+							return get.value(a) - get.value(b);
+						});
+						return [cards.splice(0, 1), cards];
+					})
+					.forResult();
 			}
-			const result3 = await player
-				.chooseToMove("整经：请分配整理出的经典", true)
-				.set("list", [["置于" + get.translation(target) + "的武将牌上", cards], ["自己获得"]])
-				.set("filterMove", function (from, to, moved) {
-					if (moved[0].length == 1 && to == 1 && from.link == moved[0][0]) {
-						return false;
-					}
-					return true;
-				})
-				.set("filterOk", function (moved) {
-					return moved[0].length > 0;
-				})
-				.set("processAI", function (list) {
-					var cards = list[0][1].slice(0).sort(function (a, b) {
-						return get.value(a) - get.value(b);
-					});
-					return [cards.splice(0, 1), cards];
-				})
-				.forResult();
-			if (result3.bool) {
+			if (result3?.bool) {
 				const cards3 = result3.moved[0],
 					gains = result3.moved[1];
 				target.addSkill("zhengjing2");
