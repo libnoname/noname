@@ -10235,7 +10235,7 @@ export class Library {
 			dongcha: "洞察",
 			dongcha_info: "①游戏开始时，随机一名反贼的身份对你可见。②准备阶段，你可以弃置场上的一张牌。",
 			sheshen: "舍身",
-			sheshen_info: "锁定技。当主公即将死亡时，你令其增加1点体力上限并回复体力至X点（X为你的体力值），然后其获得你的所有牌。若如此做，你死亡。",
+			sheshen_info: "锁定技，当主公即将死亡时，你令其增加1点体力上限并回复体力至X点（X为你的体力值），然后其获得你的所有牌。若如此做，你死亡。",
 			identity_mingcha: "明察",
 			identity_mingcha_info: "游戏开始时，你可以查看一名角色的身份是否为反贼（对所有玩家可见）。",
 			visible_sxrm_connect_tag: "连接牌",

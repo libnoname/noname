@@ -23,7 +23,7 @@ const dynamicTranslates = {
 		}
 		let start = player.storage.duanwan ? "" : "①出牌阶段，你使用【杀】的次数上限+1。②",
 			end = "。";
-		start += "转换技。" + (player.storage.duanwan ? "每回合限一次，" : "");
+		start += "转换技，" + (player.storage.duanwan ? "每回合限一次，" : "");
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
 	spshidi(player) {
@@ -35,13 +35,13 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技，锁定技。①准备阶段/结束阶段开始时，若你发动此分支的累计次数为奇数/偶数，则你获得一个“☯”。",
+		let start = "转换技，锁定技，①准备阶段/结束阶段开始时，若你发动此分支的累计次数为奇数/偶数，则你获得一个“☯”。",
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
 	xianmou(player) {
 		const bool = player.storage.xianmou;
-		let yang = "观看牌堆顶五张牌并获得至多X张牌，若未获得X张牌则获得〖遗计〗直到再发动此项",
+		let yang = `观看牌堆顶五张牌并获得至多X张牌，若未获得X张牌则获得${get.poptip("new_reyiji")}直到再发动此项`,
 			yin = "观看一名角色手牌并弃置其中至多X张牌，若弃置X张牌则你进行一次【闪电】判定";
 		if (bool) {
 			yin = `<span class='bluetext'>${yin}</span>`;

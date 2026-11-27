@@ -11,7 +11,7 @@ const dynamicTranslates = {
 		if (player.storage.abyusa_jueqing_rewrite) {
 			return "锁定技，你即将造成的伤害均视为失去体力。";
 		}
-		return "当你对其他角色造成伤害时，你可以令此伤害值+X。若如此做，你失去X点体力，并于此伤害结算完成后修改〖绝情〗（X为伤害值）。";
+		return `当你对其他角色造成伤害时，你可以令此伤害值+X。若如此做，你失去X点体力，并于此伤害结算完成后修改${get.poptip("abyusa_jueqing")}（X为伤害值）。`;
 	},
 	tomoya_shangxian(player) {
 		if (player.storage.tomoya_shangxian) {
@@ -33,15 +33,15 @@ const dynamicTranslates = {
 	},
 	yuzuru_quji(player) {
 		if (player.storage._yuzuru_sss) {
-			return "出牌阶段限一次，你可以弃置X张牌并选择至多等量已受伤的其他角色，这些角色各回复1点体力。（X为你已损失的体力值）";
+			return "出牌阶段限一次，你可以弃置X张牌并选择至多等量已受伤的其他角色，这些角色各回复1点体力。（X为你已损失的体力值）。";
 		}
-		return "出牌阶段限一次，你可以弃置X张牌并选择至多等量已受伤的其他角色，这些角色各回复1点体力。若你以此法弃置了黑色牌，则你失去1点体力。（X为你已损失的体力值）";
+		return "出牌阶段限一次，你可以弃置X张牌并选择至多等量已受伤的其他角色，这些角色各回复1点体力。若你以此法弃置了黑色牌，则你失去1点体力。（X为你已损失的体力值）。";
 	},
 	kamome_jieban(player) {
 		if (player.storage.kamome_jieban) {
-			return '转换技。每回合限一次，当你受到或造成伤害后，阴：你可将两张牌交给一名其他角色，然后其交给你一张牌。<span class="bluetext">阳：你可将一张牌交给一名其他角色，然后其交给你两张牌。</span>';
+			return '转换技，每回合限一次，当你受到或造成伤害后，阴：你可将两张牌交给一名其他角色，然后其交给你一张牌。<span class="bluetext">阳：你可将一张牌交给一名其他角色，然后其交给你两张牌。</span>';
 		}
-		return '转换技。每回合限一次，当你受到或造成伤害后，<span class="bluetext">阴：你可将两张牌交给一名其他角色，然后其交给你一张牌。</span>阳：你可将一张牌交给一名其他角色，然后其交给你两张牌。';
+		return '转换技，每回合限一次，当你受到或造成伤害后，<span class="bluetext">阴：你可将两张牌交给一名其他角色，然后其交给你一张牌。</span>阳：你可将一张牌交给一名其他角色，然后其交给你两张牌。';
 	},
 	shiroha_guying(player) {
 		var str = "当你受到伤害/对其他角色造成伤害时，你";
@@ -77,9 +77,9 @@ const dynamicTranslates = {
 	},
 	junkchigang(player) {
 		if (player.storage.junkchigang) {
-			return `转换技，锁定技。判定阶段开始前，你取消此阶段。然后你获得一个额外的：阳，摸牌阶段；<span class="bluetext">阴，出牌阶段。</span>`;
+			return `转换技，锁定技，判定阶段开始前，你取消此阶段。然后你获得一个额外的：阳，摸牌阶段；<span class="bluetext">阴，出牌阶段。</span>`;
 		}
-		return `转换技，锁定技。判定阶段开始前，你取消此阶段。然后你获得一个额外的：<span class="bluetext">阳，摸牌阶段</span>；阴，出牌阶段。`;
+		return `转换技，锁定技，判定阶段开始前，你取消此阶段。然后你获得一个额外的：<span class="bluetext">阳，摸牌阶段</span>；阴，出牌阶段。`;
 	},
 };
 export default dynamicTranslates;

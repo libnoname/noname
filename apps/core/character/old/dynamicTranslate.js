@@ -19,7 +19,7 @@ const dynamicTranslates = {
 		} else {
 			str1 = `<span class="firetext">${str1}</span>`;
 		}
-		return `转换技。当你使用背置牌时，你可以，${str1}；阴：${str2}。`;
+		return `转换技，当你使用背置牌时，你可以，${str1}；阴：${str2}。`;
 	},
 };
 export default dynamicTranslates;

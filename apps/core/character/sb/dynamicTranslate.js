@@ -6,9 +6,9 @@ const dynamicTranslates = {
 	},
 	sblongdan(player) {
 		if (player.hasSkill("sblongdan_mark", null, null, false)) {
-			return "蓄力技（1/3）。①你可以消耗1点蓄力值，将一张基本牌当做任意基本牌使用或打出，然后若你以此法使用牌，你摸一张牌。②一名角色的回合结束时，你获得1点蓄力值。";
+			return "蓄力技（1/3），①你可以消耗1点蓄力值，将一张基本牌当做任意基本牌使用或打出，然后若你以此法使用牌，你摸一张牌。②一名角色的回合结束时，你获得1点蓄力值。";
 		}
-		return "蓄力技（1/3）。①你可以消耗1点蓄力值，将【杀】当做【闪】或将【闪】当做【杀】使用或打出，然后若你以此法使用牌，你摸一张牌。②一名角色的回合结束时，你获得1点蓄力值。";
+		return "蓄力技（1/3），①你可以消耗1点蓄力值，将【杀】当做【闪】或将【闪】当做【杀】使用或打出，然后若你以此法使用牌，你摸一张牌。②一名角色的回合结束时，你获得1点蓄力值。";
 	},
 	sblianhuan(player) {
 		var str = "①出牌阶段，你可以重铸一张♣手牌。②出牌阶段限一次。你可以将一张♣手牌当【铁索连环】使用。";
@@ -37,7 +37,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。",
+		let start = "转换技，",
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
@@ -50,7 +50,7 @@ const dynamicTranslates = {
 	},
 	sbweimu(player) {
 		const storage = player.storage.sbweimu;
-		var str = "锁定技。";
+		var str = "锁定技，";
 		str += storage ? "①" : "";
 		str += "当你成为黑色锦囊牌的目标时，取消之。";
 		if (storage) {
@@ -61,13 +61,13 @@ const dynamicTranslates = {
 	sbtiandu(player) {
 		const bool = player.storage.sbtiandu;
 		let yang = "你可以弃置两张手牌，然后视为使用一张普通锦囊牌",
-			yin = "你进行判定并获得判定牌，然后若判定结果与你本局游戏因〖天妒〗弃置的牌花色相同，你受到1点无来源伤害";
+			yin = `你进行判定并获得判定牌，然后若判定结果与你本局游戏因${get.poptip("sbtiandu")}弃置的牌花色相同，你受到1点无来源伤害`;
 		if (bool) {
 			yin = `<span class='bluetext'>${yin}</span>`;
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。出牌阶段开始时，",
+		let start = "转换技，出牌阶段开始时，",
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},

@@ -16,7 +16,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。",
+		let start = "转换技，",
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
@@ -29,7 +29,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。",
+		let start = "转换技，",
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
@@ -42,7 +42,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。出牌阶段限一次，",
+		let start = "转换技，出牌阶段限一次，",
 			end = "。若如此做，直到本回合结束，你使用与弃置牌花色相同的牌无距离和次数限制。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
@@ -55,7 +55,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。",
+		let start = "转换技，",
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},

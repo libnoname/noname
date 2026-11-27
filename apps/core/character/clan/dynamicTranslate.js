@@ -10,7 +10,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。出牌阶段，你可以将手牌中展示过和未展示过的牌：",
+		let start = "转换技，出牌阶段，你可以将手牌中展示过和未展示过的牌：",
 			end = "。然后你视为使用一张本阶段未以此法使用过的单目标普通锦囊牌。";
 		return `${start}阳，${yang}；阴，${yin}${end}`;
 	},
@@ -23,7 +23,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技，每回合限一次。当你需要使用牌时（无懈可击除外），你可将手牌：",
+		let start = "转换技，每回合限一次。当你需要使用牌时（【无懈可击】除外），你可将手牌：",
 			end = "。若你未使用牌，你与当前回合角色各失去1点体力。";
 		return `${start}阳，${yang}；阴，${yin}${end}`;
 	},
@@ -36,7 +36,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技,",
+		let start = "转换技，",
 			end = "。然后视为使用一张【闪】或令你被抵消的【杀】依然造成伤害。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
@@ -49,7 +49,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。每名角色Ａ的出牌阶段限一次，",
+		let start = "转换技，每名角色Ａ的出牌阶段限一次，",
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
@@ -62,7 +62,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。出牌阶段限一次，",
+		let start = "转换技，出牌阶段限一次，",
 			end = "，然后你可以使用其中的一张牌。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
@@ -75,7 +75,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "限定技，转换技。",
+		let start = "限定技，转换技，",
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},

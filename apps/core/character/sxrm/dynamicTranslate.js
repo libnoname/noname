@@ -23,7 +23,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。你视为拥有：",
+		let start = "转换技，你视为拥有：",
 			end = "。当你发动当前分支的对应技能时，切换本技能状态。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},

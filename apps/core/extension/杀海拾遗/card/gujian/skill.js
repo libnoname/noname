@@ -690,7 +690,7 @@ const skill = {
 		},
 		content() {
 			player.chooseToUse(
-				get.prompt("shihuifen", trigger.player).replace(/发动/, "使用"),
+				`是否对${get.translation(trigger.player)}${trigger.player === player ? "（你）" : ""}使用【${get.translation("shihuifen")}】？`,
 				function (card, player) {
 					if (card.name !== "shihuifen") {
 						return false;
@@ -713,7 +713,7 @@ const skill = {
 		},
 		content() {
 			player.chooseToUse(
-				get.prompt("jinlianzhu", trigger.player).replace(/发动/, "使用"),
+				`是否对${get.translation(trigger.player)}${trigger.player === player ? "（你）" : ""}使用【${get.translation("jinlianzhu")}】？`,
 				function (card, player) {
 					if (card.name !== "jinlianzhu") {
 						return false;

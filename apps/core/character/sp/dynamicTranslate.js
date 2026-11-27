@@ -24,7 +24,7 @@ const dynamicTranslates = {
 	},
 	olqiumu(player, skill) {
 		const bool = player.storage[`${skill}_rewrite`];
-		return `锁定技，本回合成为过你的${bool ? "黑色" : "红色"}牌目标的角色进入濒死状态时，你将${get.poptip("olchunhui")}、${get.poptip("olxiasheng")}或〖秋暮〗描述中的“${bool ? "黑色" : "红色"}”均改为“黑色”，若描述变化，你获得其所有黑色手牌。`;
+		return `锁定技，本回合成为过你的${bool ? "黑色" : "红色"}牌目标的角色进入濒死状态时，你将${get.poptip("olchunhui")}、${get.poptip("olxiasheng")}或${get.poptip("olqiumu")}描述中的“${bool ? "黑色" : "红色"}”均改为“黑色”，若描述变化，你获得其所有黑色手牌。`;
 	},
 	olwenyi(player) {
 		let info = lib.translate["olwenyi_info"],
@@ -46,9 +46,9 @@ const dynamicTranslates = {
 	},*/
 	shanduan(player) {
 		if (player.storage.shanduan) {
-			return "锁定技。①摸牌/出牌/弃牌阶段开始时，你为本回合摸牌阶段摸牌数/攻击范围和使用【杀】的限制次数/手牌上限的默认值从数组R=[" + get.translation(player.storage.shanduan) + "]中分配数值。②当你于回合外受到伤害后，你令下回合〖善断①〗以此法分配的数值集合R中的最小值+1。";
+			return "锁定技，①摸牌/出牌/弃牌阶段开始时，你为本回合摸牌阶段摸牌数/攻击范围和使用【杀】的限制次数/手牌上限的默认值从数组R=[" + get.translation(player.storage.shanduan) + "]中分配数值。②当你于回合外受到伤害后，你令下回合〖善断①〗以此法分配的数值集合R中的最小值+1。";
 		}
-		return "锁定技。①摸牌/出牌/弃牌阶段开始时，你为本回合摸牌阶段摸牌数/攻击范围和使用【杀】的限制次数/手牌上限的默认值从数组R=[1，2，3，4]中分配数值。②当你于回合外受到伤害后，你令下回合〖善断①〗以此法分配的数值集合R中的最小值+1。";
+		return "锁定技，①摸牌/出牌/弃牌阶段开始时，你为本回合摸牌阶段摸牌数/攻击范围和使用【杀】的限制次数/手牌上限的默认值从数组R=[1，2，3，4]中分配数值。②当你于回合外受到伤害后，你令下回合〖善断①〗以此法分配的数值集合R中的最小值+1。";
 	},
 	kunfen(player) {
 		if (player.storage.kunfen) {
@@ -85,7 +85,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。每轮每项各限一次，你可以废除你的一个装备栏，视为使用一张未以此法使用过的：",
+		let start = "转换技，每轮每项各限一次，你可以废除你的一个装备栏，视为使用一张未以此法使用过的：",
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
@@ -132,7 +132,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技，锁定技。",
+		let start = "转换技，锁定技，",
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
@@ -145,7 +145,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。你可以将一张黑色牌当做【火攻】使用，然后若此牌：",
+		let start = "转换技，你可以将一张黑色牌当做【火攻】使用，然后若此牌：",
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
@@ -158,7 +158,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。①出牌阶段，你可以：",
+		let start = "转换技，①出牌阶段，你可以：",
 			end = "。②结束阶段，你可以弃置一张牌，令一名其他角色执行你当前〖扫谷①〗的分支。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
@@ -191,7 +191,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。每回合限一次，你可以将一张牌称为“玄”置于武将牌上，然后视为使用：",
+		let start = "转换技，每回合限一次，你可以将一张牌称为“玄”置于武将牌上，然后视为使用：",
 			end = "。若此次置于武将牌上的“玄”：不为装备牌，你弃置一张牌；为装备牌，你将所有“玄”置入弃牌堆，然后摸等量的牌。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
@@ -204,14 +204,14 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技，锁定技。①当你使用最",
+		let start = "转换技，锁定技，①当你使用最",
 			end = "侧的手牌时，你摸一张牌。②你以此法摸牌后本回合不能整理手牌。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
 	olkouchao(player) {
 		const nameList = player.storage.olkouchao || ["sha", "huogong", "guohe"];
 		const str = nameList.map(i => "【" + get.translation(i) + "】").join("/");
-		return "每轮每项限一次，你可以将一张牌当作" + str + "使用。此牌结算完毕后，将此项改为本局游戏最后一张不因使用进入弃牌堆的基本牌或普通锦囊牌的牌名，然后若〖寇钞〗的所有项均为基本牌，则你修改〖寇钞〗的所有项为【顺手牵羊】。";
+		return "每轮每项限一次，你可以将一张牌当作" + str + `使用。此牌结算完毕后，将此项改为本局游戏最后一张不因使用进入弃牌堆的基本牌或普通锦囊牌的牌名，然后若${get.poptip("olkouchao")}的所有项均为基本牌，则你修改${get.poptip("olkouchao")}的所有项为【顺手牵羊】。`;
 	},
 	olliyong(player) {
 		const bool = player.storage.olliyong;
@@ -222,7 +222,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。出牌阶段，",
+		let start = "转换技，出牌阶段，",
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},

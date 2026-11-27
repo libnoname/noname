@@ -47,7 +47,7 @@ const dynamicTranslates = {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
 		let start = "转换技，",
-			end = "。若你以此法未造成伤害，你令〖知天〗可见牌与观看牌数-1（至少减至1），然后你摸两张牌。";
+			end = `。若你以此法未造成伤害，你令${get.poptip("olsbzhitian")}可见牌与观看牌数-1（至少减至1），然后你摸两张牌。`;
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
 	olsbjinming(player) {
@@ -58,7 +58,7 @@ const dynamicTranslates = {
 			}
 			str += i;
 		}
-		str += "然后本回合结束时你摸X张牌，若未满足选择的条件，则删除此选项（X为你最后一次发动〖矜名〗选择的选项序号）。";
+		str += `然后本回合结束时你摸X张牌，若未满足选择的条件，则删除此选项（X为你最后一次发动${get.poptip("olsbjinming")}选择的选项序号）。`;
 		return str;
 	},
 	old_oljiaozhao(player) {

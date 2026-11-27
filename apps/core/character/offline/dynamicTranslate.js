@@ -28,7 +28,7 @@ const dynamicTranslates = {
 	},
 	huamao_wushen(player, skill) {
 		const suit = get.translation(get.info("wxdl_huamao").getSuit(player, skill));
-		return `锁定技。①你的${suit}手牌均视为【杀】。②你使用${suit}【杀】无距离和次数限制且不可被响应。`;
+		return `锁定技，①你的${suit}手牌均视为【杀】。②你使用${suit}【杀】无距离和次数限制且不可被响应。`;
 	},
 	huamao_liushi(player, skill) {
 		const suit = get.translation(get.info("wxdl_huamao").getSuit(player, skill));
@@ -56,7 +56,7 @@ const dynamicTranslates = {
 	},
 	huamao_jiexun(player, skill) {
 		const suit = get.translation(get.info("wxdl_huamao").getSuit(player, skill));
-		return `结束阶段，你可令一名其他角色摸等同于场上${suit}牌数的牌，然后弃置X张牌（X为此前该技能发动过的次数）。若有角色因此法弃置了所有牌，则你将X归零，然后你发动〖复难〗时，无须令对方获得你使用的牌。`;
+		return `结束阶段，你可令一名其他角色摸等同于场上${suit}牌数的牌，然后弃置X张牌（X为此前该技能发动过的次数）。若有角色因此法弃置了所有牌，则你将X归零，然后你发动${get.poptip("funan")}时，无须令对方获得你使用的牌。`;
 	},
 	huamao_leiji(player, skill) {
 		const suit = get.translation(get.info("wxdl_huamao").getSuit(player, skill));
@@ -72,7 +72,7 @@ const dynamicTranslates = {
 	},
 	huamao_jiyu(player, skill) {
 		const suit = get.translation(get.info("wxdl_huamao").getSuit(player, skill));
-		return `出牌阶段限一次，你可以令一名角色弃置一张手牌。若如此做，你不能使用与之相同花色的牌，直到回合结束。若其以此法弃置的牌为${suit}，你翻面并令其失去1点体力。若你有未被〖讥谀〗限制的手牌，则你可以继续发动此技能，但不能选择本回合已经选择过的目标。`;
+		return `出牌阶段限一次，你可以令一名角色弃置一张手牌。若如此做，你不能使用与之相同花色的牌，直到回合结束。若其以此法弃置的牌为${suit}，你翻面并令其失去1点体力。若你有未被${get.poptip("huamao_jiyu")}限制的手牌，则你可以继续发动此技能，但不能选择本回合已经选择过的目标。`;
 	},
 	huamao_luoying(player, skill) {
 		const suit = get.translation(get.info("wxdl_huamao").getSuit(player, skill));
@@ -88,7 +88,7 @@ const dynamicTranslates = {
 	},
 	huamao_ninghan(player, skill) {
 		const suit = get.translation(get.info("wxdl_huamao").getSuit(player, skill));
-		return `锁定技。①所有角色手牌中的${suit}【杀】均视为冰【杀】。②当一名角色受到冰冻伤害后，你将造成此伤害的牌对应的实体牌置入“城”。`;
+		return `锁定技，①所有角色手牌中的${suit}【杀】均视为冰【杀】。②当一名角色受到冰冻伤害后，你将造成此伤害的牌对应的实体牌置入“城”。`;
 	},
 	eu_zhitong(player) {
 		const bool = player.storage.eu_zhitong;
@@ -106,13 +106,13 @@ const dynamicTranslates = {
 	peyuanjue(player) {
 		const bool = player.storage.peyuanjue;
 		let yang = "令所有角色的基本牌视为无次数限制的【杀】",
-			yin = "令所有角色与你互相计算距离为1，且你视为拥有〖同忾〗";
+			yin = `令所有角色与你互相计算距离为1，且你视为拥有${get.poptip("petongkai")}`;
 		if (bool) {
 			yin = `<span class='bluetext'>${yin}</span>`;
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。摸牌阶段开始时，你可以跳过摸牌阶段，",
+		let start = "转换技，摸牌阶段开始时，你可以跳过摸牌阶段，",
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
@@ -125,7 +125,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。",
+		let start = "转换技，",
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
@@ -150,7 +150,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。准备阶段，",
+		let start = "转换技，准备阶段，",
 			end = "。";
 		return `${start}阳：${yang}。阴：${yin}${end}`;
 	},
@@ -166,7 +166,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。游戏开始时，你可以改变此转换技的状态。出牌阶段开始时，你可以摸一张牌并：",
+		let start = "转换技，游戏开始时，你可以改变此转换技的状态。出牌阶段开始时，你可以摸一张牌并：",
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
@@ -179,7 +179,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。其他角色的回合开始时，若其体力值大于你，或其未处于横置状态，",
+		let start = "转换技，其他角色的回合开始时，若其体力值大于你，或其未处于横置状态，",
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
@@ -192,7 +192,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。回合开始时，你令本轮：",
+		let start = "转换技，回合开始时，你令本轮：",
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
@@ -205,7 +205,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。",
+		let start = "转换技，",
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
@@ -218,7 +218,7 @@ const dynamicTranslates = {
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
-		let start = "转换技。",
+		let start = "转换技，",
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},

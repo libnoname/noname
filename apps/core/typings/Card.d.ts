@@ -1291,7 +1291,7 @@ declare interface CardInfo {
 	 * 	}
 	 * }
 	 * ```
-	 * 参考：standard.js 中【雷杀】"add"、【闪】"draw"、【南蛮入侵】"remove"、【决斗】"hit"。
+	 * 参考：standard.js 中雷【杀】"add"、【闪】"draw"、【南蛮入侵】"remove"、【决斗】"hit"。
 	  * @since 1.11.5
 	 */
 	defaultYingbianEffect?: "add" | "draw" | "remove" | "hit" | string | null;

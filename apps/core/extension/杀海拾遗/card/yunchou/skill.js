@@ -77,7 +77,7 @@ const skill = {
 		async content(event, trigger, player) {
 			await player
 				.chooseToUse(
-					get.prompt("chenhuodajie", trigger.player).replace(/发动/, "使用"),
+					`是否对${get.translation(trigger.player)}${trigger.player === player ? "（你）" : ""}使用【${get.translation("chenhuodajie")}】？`,
 					function (card, player) {
 						if (get.name(card) !== "chenhuodajie") {
 							return false;
