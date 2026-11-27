@@ -1,5 +1,7 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
+const potkuangguAchieveInfo = `你对距离1以内的一名角色造成伤害后，可以选择一项：1.回复1点体力；2.摸一张牌；3.${get.poptip("rule_beishui")}：弃置一张牌并令你此阶段使用【杀】的次数+1。`;
+
 const translates = {
 	pot_zhaoyun: "势赵云",
 	pot_zhaoyun_prefix: "势",
@@ -198,7 +200,7 @@ const translates = {
 	pot_weiyan: "势魏延",
 	pot_weiyan_prefix: "势",
 	potzhongao: "忠傲",
-	potzhongao_info: `使命技，①游戏开始时，你获得${get.poptip("potkuanggu")}。②成功：你杀死一名角色后，升级${get.poptip("potkuanggu")}为${get.poptip("potkuanggu_pot_weiyan_achieve")}，然后若你本阶段使用的牌数：小于因${get.poptip("potzhuangshi")}弃置的牌数，摸一张牌；小于因${get.poptip("potzhuangshi")}失去的体力值，回复1点体力（体力值已满则改为摸一张牌）。③失败：你进入濒死，或你未于出牌阶段开始时执行${get.poptip("potzhuangshi")}，失去${get.poptip("potzhuangshi")}并获得${get.poptip("kunfen")}。`,
+	potzhongao_info: `使命技，①游戏开始时，你获得${get.poptip("potkuanggu")}。②成功：你杀死一名角色后，升级${get.poptip("potkuanggu")}为${get.poptip({ type: "skill", name: "狂骨·二级", info: potkuangguAchieveInfo })}，然后若你本阶段使用的牌数：小于因${get.poptip("potzhuangshi")}弃置的牌数，摸一张牌；小于因${get.poptip("potzhuangshi")}失去的体力值，回复1点体力（体力值已满则改为摸一张牌）。③失败：你进入濒死，或你未于出牌阶段开始时执行${get.poptip("potzhuangshi")}，失去${get.poptip("potzhuangshi")}并获得${get.poptip("kunfen")}。`,
 	potzhuangshi: "壮誓",
 	potzhuangshi_info: "出牌阶段开始时，你可以执行任意项：1.弃置任意张手牌，令你此阶段使用的前等量张牌无距离限制且不可被响应；2.失去任意点体力，令你此阶段使用的前等量张牌不计入次数限制。",
 	potzhuangshi_tag: "已选择弃置",
@@ -207,7 +209,7 @@ const translates = {
 	potkuanggu: "狂骨",
 	potkuanggu_info: "你对距离1以内的一名角色造成伤害后，可以选择一项：1.回复1点体力；2.摸一张牌。",
 	potkuanggu_pot_weiyan_achieve: "狂骨·二级",
-	potkuanggu_pot_weiyan_achieve_info: `你对距离1以内的一名角色造成伤害后，可以选择一项：1.回复1点体力；2.摸一张牌；3.${get.poptip("rule_beishui")}：弃置一张牌并令你此阶段使用【杀】的次数+1。`,
+	potkuanggu_pot_weiyan_achieve_info: potkuangguAchieveInfo,
 	pot_lusu: "势鲁肃",
 	pot_lusu_prefix: "势",
 	pothaoshi: "好施",

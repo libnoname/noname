@@ -1,5 +1,7 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
+const twjieyuanUpgradeInfo = "当你对体力值大于等于你的其他角色造成伤害时，你可以重铸一张牌，令此伤害+1。当你受到体力值大于等于你的其他角色造成的伤害时，你可以重铸一张牌，令此伤害-1。";
+
 const translates = {
 	tw_jushou: "TW界沮授",
 	tw_jushou_prefix: "TW|界",
@@ -58,9 +60,9 @@ const translates = {
 	twjieyuan: "竭缘",
 	twjieyuan_info: "当你对体力值大于等于你的其他角色造成伤害时，你可以弃置一张黑色手牌，令此伤害+1。当你受到体力值大于等于你的其他角色造成的伤害时，你可以弃置一张红色手牌，令此伤害-1。",
 	twjieyuan2: "竭缘·改",
-	twjieyuan2_info: "当你对体力值大于等于你的其他角色造成伤害时，你可以重铸一张牌，令此伤害+1。当你受到体力值大于等于你的其他角色造成的伤害时，你可以重铸一张牌，令此伤害-1。",
+	twjieyuan2_info: twjieyuanUpgradeInfo,
 	twfenxin: "焚心",
-	twfenxin_info: `使命技，游戏开始时，你选择一名其他角色，你与其互相计算距离视为1。当你或其受到伤害后，你摸一张牌。成功：当你与其累计受到4点以上伤害或其死亡后，你修改${get.poptip("twjieyuan")}为${get.poptip("twjieyuan2")}；失败：当你进入濒死状态时，你将体力回复至1点。`,
+	twfenxin_info: `使命技，游戏开始时，你选择一名其他角色，你与其互相计算距离视为1。当你或其受到伤害后，你摸一张牌。成功：当你与其累计受到4点以上伤害或其死亡后，你修改${get.poptip("twjieyuan")}为${get.poptip({ type: "skill", name: "竭缘·改", info: twjieyuanUpgradeInfo })}；失败：当你进入濒死状态时，你将体力回复至1点。`,
 	twfucheng: "浮沉",
 	twfucheng_info: `锁定技，回合开始时，若你的手牌均为：黑色，你获得${get.poptip("sbwushuang")}；红色，你获得${get.poptip("sbbiyue")}。`,
 	tw_sb_xiahoudun: "TW谋夏侯惇",

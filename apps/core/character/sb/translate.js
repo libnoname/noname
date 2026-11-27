@@ -1,5 +1,7 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
+const sblongdanUpgradeInfo = "蓄力技（1/3），①你可以消耗1点蓄力值，将一张基本牌当做任意基本牌使用或打出，然后摸一张牌。②一名角色的回合结束时，你获得1点蓄力值。";
+
 const translates = {
 	sb_guoyouzhi: "谋郭攸之",
 	sb_guoyouzhi_prefix: "谋",
@@ -150,9 +152,9 @@ const translates = {
 	sblongdan: "龙胆",
 	sblongdan_info: "蓄力技（1/3），①你可以消耗1点蓄力值，将【杀】当做【闪】或将【闪】当做【杀】使用或打出，然后你摸一张牌。②一名角色的回合结束时，你获得1点蓄力值。",
 	sbjizhu: "积著",
-	sbjizhu_info: `准备阶段开始时，你可以和一名其他角色进行${get.poptip("rule_xieli")}。其的下个结束阶段开始时，若你与其协力成功，则你修改${get.poptip("sblongdan")}为${get.poptip("sblongdan_shabi")}直到你的下个回合结束后。`,
+	sbjizhu_info: `准备阶段开始时，你可以和一名其他角色进行${get.poptip("rule_xieli")}。其的下个结束阶段开始时，若你与其协力成功，则你修改${get.poptip("sblongdan")}为${get.poptip({ type: "skill", name: "龙胆·改", info: sblongdanUpgradeInfo })}直到你的下个回合结束后。`,
 	sblongdan_shabi: "龙胆·改",
-	sblongdan_shabi_info: "蓄力技（1/3），①你可以消耗1点蓄力值，将一张基本牌当做任意基本牌使用或打出，然后摸一张牌。②一名角色的回合结束时，你获得1点蓄力值。",
+	sblongdan_shabi_info: sblongdanUpgradeInfo,
 	sb_liubei: "谋刘备",
 	sbrende: "仁德",
 	sbrende_info: "蓄力技（0/8），①出牌阶段每名角色限一次。你可以将任意张牌交给一名其他角色，然后你获得等量蓄力点。②每回合限一次。你可以移去2点蓄力点，视为使用或打出一张基本牌。③出牌阶段开始时，你获得2点蓄力点。",
@@ -272,7 +274,7 @@ const translates = {
 	sb_caopi: "谋曹丕",
 	sb_caopi_prefix: "谋",
 	sbxingshang: "行殇",
-	sbxingshang_info: "①当一名角色受到伤害后（每回合限一次）或死亡时，你获得2个“颂”标记（你至多拥有9个“颂”标记）。②出牌阶段限两次，你可以：" + ["移去2个“颂”标记，令一名角色复原武将牌", "移去2个“颂”标记，令一名角色摸三张牌", "移去3个“颂”标记，令一名体力上限小于10的角色回复1点体力，增加1点体力上限，随机恢复一个已废除的装备栏", `移去4个“颂”标记，获得一名阵亡角色武将牌上除主公技外的所有技能，然后你失去${get.poptip("sbxingshang")}}、${get.poptip("sbfangzhu")}}和${get.poptip("sbsongwei")}}`].map((str, index) => `${index + 1}.${str}`).join("；") + "。",
+	sbxingshang_info: "①当一名角色受到伤害后（每回合限一次）或死亡时，你获得2个“颂”标记（你至多拥有9个“颂”标记）。②出牌阶段限两次，你可以：" + ["移去2个“颂”标记，令一名角色复原武将牌", "移去2个“颂”标记，令一名角色摸三张牌", "移去3个“颂”标记，令一名体力上限小于10的角色回复1点体力，增加1点体力上限，随机恢复一个已废除的装备栏", `移去4个“颂”标记，获得一名阵亡角色武将牌上除主公技外的所有技能，然后你失去${get.poptip("sbxingshang")}、${get.poptip("sbfangzhu")}和${get.poptip("sbsongwei")}`].map((str, index) => `${index + 1}.${str}`).join("；") + "。",
 	sbfangzhu: "放逐",
 	sbfangzhu_info: "出牌阶段限一次，你可以：" + ["移去2个“颂”标记，令一名其他角色于手牌中只能使用基本牌直到其回合结束", "移去6个“颂”标记，令一名其他角色于手牌中只能使用锦囊牌直到其回合结束", "移去8个“颂”标记，令一名其他角色于手牌中只能使用装备牌直到其回合结束", "移去6个“颂”标记，令一名其他角色的非Charlotte技能失效直到其回合结束", "移去4个“颂”标记，令一名其他角色不能响应另一名角色使用的牌直到其回合结束", "移去8个“颂”标记，令一名其他角色将武将牌翻面"].map((str, index) => `${index + 1}.${str}`).join("；") + "。",
 	sbfangzhu_info_doudizhu: "出牌阶段限一次，你可以：" + ["移去2个“颂”标记，令一名其他角色于手牌中只能使用基本牌直到其回合结束", "移去6个“颂”标记，令一名其他角色于手牌中只能使用锦囊牌直到其回合结束", "移去4个“颂”标记，令一名其他角色不能响应另一名角色使用的牌直到其回合结束"].map((str, index) => `${index + 1}.${str}`).join("；") + "。",

@@ -951,7 +951,7 @@ const translates = {
 		info: "当有牌进入弃牌堆后，系统将这些牌中的【闪】、【桃】和【酒】移出游戏。",
 	})}”。`,
 	mbweitong: "卫统",
-	mbweitong_info: `${get.poptip("rule_chihengji")}，主公技。游戏开始时，若你有${get.poptip("mbqianlong")}且场上有其他魏势力角色，你因“潜龙”于游戏开始时获得的“道心”标记数修改为60枚。`,
+	mbweitong_info: `${get.poptip("rule_chihengji")}，主公技，游戏开始时，若你有${get.poptip("mbqianlong")}且场上有其他魏势力角色，你因${get.poptip("mbqianlong")}于游戏开始时获得的“道心”标记数修改为60枚。`,
 	mb_simafu: "手杀司马孚",
 	mb_simafu_prefix: "手杀",
 	mbpanxiang: "蹒襄",

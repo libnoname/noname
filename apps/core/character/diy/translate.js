@@ -1,5 +1,8 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
+const nsfuzhouDamageInfo = "出牌阶段限两次。你可以将一张黑色牌置于一名角色的判定区内，称为“符”。其于判定阶段进行“符”判定，若判定结果为：黑色，其受到1点雷属性伤害并弃置一张牌；红色，你摸两张牌，且该角色本回合手牌上限-1。";
+const nsfuzhouDrawInfo = "出牌阶段限两次。你可以将一张黑色牌置于一名角色的判定区内，称为“符”。其于判定阶段进行“符”判定，若判定结果为：黑色，其受到1点雷属性伤害并弃置一张牌；红色，你摸两张牌，该角色回复1点体力并摸一张牌，且本回合的手牌上限+1。";
+
 const translates = {
 	ns_zuoci: "左慈",
 	ns_wangyun: "王允",
@@ -69,7 +72,7 @@ const translates = {
 	nsjiquan_mark: "集权",
 	nsjiquan_info: "与你距离1以内的其他角色造成或受到伤害后，你可以将其区域内的一张牌置于你的武将牌上（称为“威”）。你使用【杀】的次数上限+X（X为“威”数）。",
 	nsfuwei: "附位",
-	nsfuwei_info: `觉醒技，结束阶段开始时，若“威”数大于4，则你加2点体力上限，获得${get.poptip("nsdiemou")}和${get.poptip("nszhihuang")}，并将${get.poptip("nsjiquan")}改为锁定技。`,
+	nsfuwei_info: `觉醒技，结束阶段开始时，若“威”数大于4，则你加2点体力上限，获得${get.poptip("nsdiemou")}和〖制皇〗，并将${get.poptip("nsjiquan")}改为锁定技。`,
 	nsdiemou: "喋谋",
 	nsdiemou_info: "锁定技，出牌阶段开始时，若“威”大于全场角色数，你移去所有“威”，减1点体力上限并摸X张牌。若X大于4，你翻面。（X为移去的“威”数）。",
 	nszhihuang: "制皇",
@@ -103,11 +106,11 @@ const translates = {
 	nsguidao: "鬼道",
 	nsguidao_info: "一名角色的判定牌生效前，你可以打出一张黑色牌替换之。",
 	nstaiping: "太平",
-	nstaiping_info: `觉醒技，准备阶段，若你：已因${get.poptip("nsfuzhou")}造成了两次或更多的伤害，则你将${get.poptip("nsguidao")}中的“黑色牌”修改为“牌”，将${get.poptip("nsfuzhou")}修改为${get.poptip("nsfuzhou_damage")}；若你已因${get.poptip("nsfuzhou")}摸了两次或更多的牌，则你将${get.poptip("nsguidao")}中的“黑色牌”修改为“牌”，将${get.poptip("nsfuzhou")}修改为${get.poptip("nsfuzhou_draw")}。`,
+	nstaiping_info: `觉醒技，准备阶段，若你：已因${get.poptip("nsfuzhou")}造成了两次或更多的伤害，则你将${get.poptip("nsguidao")}中的“黑色牌”修改为“牌”，将${get.poptip("nsfuzhou")}修改为${get.poptip({ type: "skill", name: "符咒·邪", info: nsfuzhouDamageInfo })}；若你已因${get.poptip("nsfuzhou")}摸了两次或更多的牌，则你将${get.poptip("nsguidao")}中的“黑色牌”修改为“牌”，将${get.poptip("nsfuzhou")}修改为${get.poptip({ type: "skill", name: "符咒·正", info: nsfuzhouDrawInfo })}。`,
 	nsfuzhou_damage: "符咒·邪",
-	nsfuzhou_damage_info: "出牌阶段限两次。你可以将一张黑色牌置于一名角色的判定区内，称为“符”。其于判定阶段进行“符”判定，若判定结果为：黑色，其受到1点雷属性伤害并弃置一张牌；红色，你摸两张牌，且该角色本回合手牌上限-1。",
+	nsfuzhou_damage_info: nsfuzhouDamageInfo,
 	nsfuzhou_draw: "符咒·正",
-	nsfuzhou_draw_info: "出牌阶段限两次。你可以将一张黑色牌置于一名角色的判定区内，称为“符”。其于判定阶段进行“符”判定，若判定结果为：黑色，其受到1点雷属性伤害并弃置一张牌；红色，你摸两张牌，该角色回复1点体力并摸一张牌，且本回合的手牌上限+1。",
+	nsfuzhou_draw_info: nsfuzhouDrawInfo,
 	ns_yanghu: "羊祜",
 	nsbizhao: "避召",
 	nsbizhao_info: "隐匿技，锁定技，当你于回合外明置此武将牌后，其他角色计算与你的距离+1直至你的回合开始。",

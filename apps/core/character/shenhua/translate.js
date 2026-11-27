@@ -359,7 +359,7 @@ const translates = {
 	guhuo_guess: "蛊惑",
 	guhuo_guess_info: "",
 	chanyuan: "缠怨",
-	chanyuan_info: `锁定技，你不能于${get.poptip("guhuo")}的结算流程中进行质疑。当你的体力值为1时，你的其他技能失效。`,
+	chanyuan_info: `锁定技，你不能于${get.poptip("xinfu_guhuo")}的结算流程中进行质疑。当你的体力值为1时，你的其他技能失效。`,
 	guhuo_respond: "蛊惑",
 	guhuo_respond_info: "",
 	guhuo_wuxie: "蛊惑",

@@ -235,7 +235,7 @@ const skill = {
 		},
 		content() {
 			player.chooseToUse(
-				get.prompt("shencaojie", trigger.player).replace(/发动/, "使用"),
+				`是否对${get.translation(trigger.player)}${trigger.player === player ? "（你）" : ""}使用【${get.translation("shencaojie")}】？`,
 				function (card, player) {
 					if (card.name !== "shencaojie") {
 						return false;

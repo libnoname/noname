@@ -1,5 +1,8 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
+const renchengUpgradeInfo = "出牌阶段限一次，你可以摸三张牌，然后可以交给一名其他角色至多三张牌，若交给其的牌中包含：基本牌，其下个出牌阶段使用牌无距离限制；锦囊牌，你可以弃置一名角色区域里的一张牌；装备牌，你与其各回复1点体力。";
+const dcgeyuanUpgradeInfo = "锁定技，当有一张牌进入弃牌堆后，若此牌的点数在“圆环之理”内，且“圆环之弧”为空或此牌的点数与“圆环之弧”两端的点数相邻，则你将此牌的点数记录进“圆环之弧”；然后若“圆环之弧”与“圆环之理”长度相同，则你清空“圆环之弧”并可以选择至多三名角色，这些角色中的第一名角色摸三张牌，第二名角色弃置四张牌，第三名角色将其手牌与牌堆底的五张牌交换。";
+
 const translates = {
 	dc_wangyuanji: "新杀王元姬",
 	dc_wangyuanji_prefix: "新杀",
@@ -162,11 +165,11 @@ const translates = {
 	mogui: "漠规",
 	mogui_info: "你的回合内，你可以于对应阶段开始时执行并移除对应项：1.判定阶段，选择一名角色，其回复1点体力并弃置判定区里的所有牌；2.摸牌阶段，令一名角色摸牌阶段摸牌数和使用【杀】的次数上限+1；3.弃牌阶段，弃置至多五张牌，令一名角色手牌上限+1并摸等量张牌。",
 	zunjian: "遵谏",
-	zunjian_info: `觉醒技，回合开始时，若你已移除${get.poptip("mogui")}的所有选项，你回复1点体力并选择一项：1.摸两张牌并重置${get.poptip("mogui")}；2.回复1点体力，然后失去${get.poptip("mogui")}并修改${get.poptip("rencheng")}为${get.poptip("rencheng_rewrite")}。`,
+	zunjian_info: `觉醒技，回合开始时，若你已移除${get.poptip("mogui")}的所有选项，你回复1点体力并选择一项：1.摸两张牌并重置${get.poptip("mogui")}；2.回复1点体力，然后失去${get.poptip("mogui")}并修改${get.poptip("rencheng")}为${get.poptip({ type: "skill", name: "仁诚·改", info: renchengUpgradeInfo })}。`,
 	rencheng: "仁诚",
 	rencheng_info: "出牌阶段限一次，你可以摸两张牌，然后可以交给一名其他角色至多两张牌。",
 	rencheng_rewrite: "仁诚·改",
-	rencheng_rewrite_info: "出牌阶段限一次，你可以摸三张牌，然后可以交给一名其他角色至多三张牌，若交给其的牌中包含：基本牌，其下个出牌阶段使用牌无距离限制；锦囊牌，你可以弃置一名角色区域里的一张牌；装备牌，你与其各回复1点体力。",
+	rencheng_rewrite_info: renchengUpgradeInfo,
 	zhangyu: "张裕",
 	dcxiangchen: "相谶",
 	dcxiangchen_info: `出牌阶段限一次，你可选择一名角色并随机出现与其势力和初始体力值相等的武将的三个技能，然后你从中选择一个获得，你的回合结束时失去以此法获得的技能。你或上次发动${get.poptip("dcxiangchen")}的目标角色体力变化后，你可发动此技能。（以此法获得的技能存在三个时再次发动改为摸一张牌，无法获得限定技、觉醒技、主公技)。`,
@@ -525,9 +528,9 @@ const translates = {
 	dcjieshu: "解术",
 	dcjieshu_info: "锁定技，①所有点数不在“圆环之理”中的牌不计入你的手牌上限。②当你使用或打出牌时，若“圆环之弧”为空或此牌的点数与“圆环之弧”两端的点数相邻，则你摸一张牌。",
 	dcgusuan: "股算",
-	dcgusuan_info: `觉醒技，一名角色的回合结束时，若你的“圆环之理”长度为3，则你减1点体力上限并修改${get.poptip("dcgeyuan")}为${get.poptip("dcgeyuan_magica")}。`,
+	dcgusuan_info: `觉醒技，一名角色的回合结束时，若你的“圆环之理”长度为3，则你减1点体力上限并修改${get.poptip("dcgeyuan")}为${get.poptip({ type: "skill", name: "割圆·改", info: dcgeyuanUpgradeInfo })}。`,
 	dcgeyuan_magica: "割圆·改",
-	dcgeyuan_magica_info: "锁定技，当有一张牌进入弃牌堆后，若此牌的点数在“圆环之理”内，且“圆环之弧”为空或此牌的点数与“圆环之弧”两端的点数相邻，则你将此牌的点数记录进“圆环之弧”；然后若“圆环之弧”与“圆环之理”长度相同，则你清空“圆环之弧”并可以选择至多三名角色，这些角色中的第一名角色摸三张牌，第二名角色弃置四张牌，第三名角色将其手牌与牌堆底的五张牌交换。",
+	dcgeyuan_magica_info: dcgeyuanUpgradeInfo,
 	zhangfen: "张奋",
 	dcwanglu: "望橹",
 	dcwanglu_info: "锁定技，准备阶段开始时，若你的装备区内：有【大攻车】，则你获得一个额外的出牌阶段；没有【大攻车】，则你将一张【大攻车】置入装备区。",

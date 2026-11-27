@@ -770,7 +770,7 @@ const translates = {
 	rejiqiao: "机巧",
 	rejiqiao_info: "出牌阶段开始时，你可以弃置任意张牌，然后亮出牌堆顶X张牌（X为你以此法弃置的牌数与其中装备牌数之和），你获得其中所有非装备牌。",
 	relinglong: "玲珑",
-	relinglong_info: `锁定技，若你的装备区：有空置的防具栏，你视为拥有【八卦阵】；有空置的两种坐骑栏，你的手牌上限+2；有空置的宝物栏，你视为拥有${get.poptip("reqicai")}；以上均满足：你使用的【杀】或普通锦囊牌不可被响应。`,
+	relinglong_info: `锁定技，若你的装备区：有空置的防具栏，你视为装备【八卦阵】；有空置的两种坐骑栏，你的手牌上限+2；有空置的宝物栏，你视为拥有${get.poptip("reqicai")}；以上均满足：你使用的【杀】或普通锦囊牌不可被响应。`,
 	ol_zhangzhang: "界张昭张纮",
 	ol_zhangzhang_prefix: "界",
 	olzhijian: "直谏",
