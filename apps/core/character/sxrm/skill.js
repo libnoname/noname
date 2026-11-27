@@ -10,6 +10,7 @@ const skills = {
 	 * 1.将6个限定技的代码直接覆盖在sxrmwuyan的同名属性中
 	 * 2.在6个技能的对象中添加“round: 1”并删除“limited: true”和content中的语句“player.awakenSkill("xxx")”
 	 * 3.用ctrl+h替换所有在技能内部出现的id，如对于技能yeyan，将yeyan内部的所有yeyan替换为sxrmwuyan_yeyan
+	 * 4.将"oldniepan"的ai部分中"player.storage.xxx"的部分改为"player.storage.xx_roundcount === game.roundNumber"，若player前面加了!则删除此!，并用"!=="代替"==="
 	 * 4.sxrmwuqian和sxrmshenfen（对应源技能ol_wuqian和ol_shenfen）这些技能为了适配sxrmshinie而高度修改，若原技能有改动须单独进行维护，或咨询@Foxissimo-8
 	 */
 
@@ -47,10 +48,14 @@ const skills = {
 					[],
 				];
 			}
-			_status.postReconnect.sxrmwuyan[1].add(arguments);
+			const args = new Array(...arguments)
+			_status.postReconnect.sxrmwuyan[1].add(args);
 			if (position) {
 				if (["skill", "translate"].includes(position)) {
 					lib[position][key] = value;
+					if (position === "skill") {
+						game.finishSkill(key);
+					}
 				} else {
 					lib.skill[position][key] = value;
 				}
@@ -710,7 +715,7 @@ const skills = {
 			ai: {
 				order: 1,
 				skillTagFilter(player, arg, target) {
-					if (player != target || player.storage.sxrmwuyan_oldniepan) {
+					if (player != target || player.storage.sxrmwuyan_oldniepan_roundcount === game.roundNumber) {
 						return false;
 					}
 				},
@@ -727,7 +732,7 @@ const skills = {
 					},
 				},
 				threaten(player, target) {
-					if (!target.storage.sxrmwuyan_oldniepan) {
+					if (target.storage.sxrmwuyan_oldniepan_roundcount !== game.roundNumber) {
 						return 0.6;
 					}
 				},
@@ -777,7 +782,6 @@ const skills = {
 						lib.skill.sxrmwuyan.skillChange("sxrmwuyan_"+skill2, lib.skill.sxrmwuyan[skill2]);
 						lib.skill.sxrmwuyan.skillChange("sxrmwuyan_"+skill2, get.translation(skill2),"translate");
 						lib.skill.sxrmwuyan.skillChange("sxrmwuyan_"+skill2 + "_info", lib.skill.sxrmwuyan.desModify(skill2), "translate");
-						game.finishSkill("sxrmwuyan_"+skill2);
 					}, skill);
 				}
 				await player.addAdditionalSkills("sxrmwuyan", result.links.map(name=>"sxrmwuyan_"+name), true);
@@ -963,6 +967,7 @@ const skills = {
 				.chooseToDiscard({
 					prompt: `###是否发动【乞宽】弃置两张基本牌？###令${get.translation(player)}的蓄力点+1，其将消耗2点蓄力点，将出牌和弃牌阶段改为摸牌。`,
 					selectCard: 2,
+					position: "he",
 					filterCard(card) {
 						return get.type(card) === "basic";
 					},
@@ -1044,7 +1049,7 @@ const skills = {
 						str2,
 						ai() {
 							const str2 = get.event().str2;
-							if (get.event().controls.includes(str2) && game.filterPlayer(current => get.attitude(player, current) <= 0 && current.maxHp >= num)) {
+							if (get.event().controls.includes(str2) && game.filterPlayer(current => get.attitude(player, current) <= 0 && current.maxHp >= num).length) {
 								return str2;
 							} else {
 								return 0;
