@@ -258,7 +258,7 @@ const translates = {
 	yizan6: "翊赞",
 	yizan6_info: "你可以将一张基本牌当【杀】打出。",
 	longyuan: "龙渊",
-	longyuan_info: `<span class=greentext>觉醒技</span> 当你使用或打出基本牌时，若你已经已累计发动过3次${get.poptip("yizan_use")}，你将${get.poptip("yizan_use")}改为“你可以将一张基本牌当任意基本牌牌使用或打出”。`,
+	longyuan_info: "<span class=greentext>觉醒技</span> 当你使用或打出基本牌时，若你已经已累计发动过3次〖翊赞〗，你将〖翊赞〗改为“你可以将一张基本牌当任意基本牌牌使用或打出”。",
 	wuniang: "武娘",
 	wuniang_info: "你使用或打出【杀】时，你可以获得一名其他角色的一张牌，然后该角色摸一张牌；若“关索”在场，你可令“关索”也摸一张牌。",
 	zhennan: "镇南",

@@ -171,7 +171,7 @@ const translates = {
 	clan_wuyi: "族吴懿",
 	clan_wuyi_prefix: "族",
 	clangaojin: "高劲",
-	clangaojin_info: "当你于一回合内使用第X张牌时(X为你的手牌上限)，你可令你本回合使用的下一张牌无距离和次数限制，然后你可以选择至多两项：1.手牌上限-1；2.摸体力值数张牌；3.手牌上限+1；若选项相邻，你弃置×张牌。",
+	clangaojin_info: "当你于一回合内使用第X张牌时(X为你的手牌上限)，你可令你本回合使用的下一张牌无距离和次数限制，然后你可以选择至多两项：1.手牌上限-1；2.摸体力值数张牌；3.手牌上限+1；若选项相邻，你弃置X张牌。",
 	old_clangaojin: "高劲",
 	old_clangaojin_info: "锁定技，游戏开始时你计算与其他角色的距离-X，当你计算与其他角色的距离发生变化后，你摸一张牌（X为你的手牌上限）。",
 	old_clangaojin_append: `<span style="font-family: yuanli"><li><span style="text-decoration: line-through;">补丁×</span>注意事项：<br>真正意义上的距离变化后时机在无名杀现有框架无法实现，请不要反馈在某些情况距离变化后此技能不发动的问题。</span>`,
