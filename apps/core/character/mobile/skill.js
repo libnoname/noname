@@ -153,7 +153,7 @@ const skills = {
 			return player.countMark("baonu") >= 2 && game.hasPlayer(target => lib.skill.mbwuqian.filterTarget(null, player, target));
 		},
 		filterTarget(card, player, target) {
-			return !target.getStorage("mbwuqian_targeted").includes(player);
+			return target !== player && !target.getStorage("mbwuqian_targeted").includes(player);
 		},
 		async content(event, trigger, player) {
 			const { target } = event;
